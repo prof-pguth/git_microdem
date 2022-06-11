@@ -251,7 +251,6 @@ uses
   DEMPersw in '..\common_code\DEMPersw.pas' {ThreeDview},
   demambushparams in '..\common_code\demambushparams.pas' {PickAmbushParams},
   demdbfilter in '..\common_code\demdbfilter.pas' {dbFilterCreation},
-  JpegDumpForm in '..\..\Components\CCR Exif v1.5.1\CCR Exif v1.5.1\VCL Demos\JpegDump\JpegDumpForm.pas' {NewfrmJpegDump},
   tersplsh in '..\common_code\tersplsh.pas' {TerBaseSplashForm},
   basemap in '..\microdem_open_source\basemap.pas',
   DataBaseCreate in '..\microdem_open_source\DataBaseCreate.pas',
@@ -308,7 +307,6 @@ uses
   weapons_fan_thread in '..\microdem_open_source\weapons_fan_thread.pas',
   md_use_tools in '..\microdem_open_source\md_use_tools.pas',
   DEMStat in '..\common_code\DEMStat.pas',
-  JpegDumpOutputFrame in '..\..\Components\CCR Exif v1.5.1\CCR Exif v1.5.1\VCL Demos\JpegDump\JpegDumpOutputFrame.pas' {NewOutputFrame: TFrame},
   monthly_grids in '..\common_code\monthly_grids.pas' {GridTimeSeriesControlForm},
   petmar_db in '..\microdem_open_source\petmar_db.pas',
   petmar_geology in '..\microdem_open_source\petmar_geology.pas',
@@ -336,7 +334,9 @@ uses
   CCR.Exif.StreamHelper in '..\xif\CCR.Exif.StreamHelper.pas',
   CCR.Exif.TagIDs in '..\xif\CCR.Exif.TagIDs.pas',
   CCR.Exif.TiffUtils in '..\xif\CCR.Exif.TiffUtils.pas',
-  CCR.Exif.XMPUtils in '..\xif\CCR.Exif.XMPUtils.pas';
+  CCR.Exif.XMPUtils in '..\xif\CCR.Exif.XMPUtils.pas',
+  JpegDumpForm in '..\xif\JpegDumpForm.pas' {NewfrmJpegDump},
+  JpegDumpOutputFrame in '..\xif\JpegDumpOutputFrame.pas' {NewOutputFrame: TFrame};
 
 {$R *.RES}
 

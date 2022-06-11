@@ -1,6 +1,6 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
-        <ProjectGuid>{2C0C8D31-62DC-4929-96E1-98AA10D028FD}</ProjectGuid>
+        <ProjectGuid>{E56ABDE1-2FF6-44C3-9F5F-85346EEBCB96}</ProjectGuid>
         <MainSource>microdem.dpr</MainSource>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Debug</Config>
@@ -168,9 +168,9 @@
         <VerInfo_MajorVer>2022</VerInfo_MajorVer>
         <VerInfo_Release>11</VerInfo_Release>
         <DCC_DcuOutput>C:\turbo\obj_files_64\</DCC_DcuOutput>
-        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2022.6.11.6;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2022.6.11.10;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
-        <VerInfo_Build>6</VerInfo_Build>
+        <VerInfo_Build>10</VerInfo_Build>
         <Debugger_RunParams> </Debugger_RunParams>
         <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
         <DCC_OutputDRCFile>false</DCC_OutputDRCFile>
@@ -818,18 +818,6 @@
         <DCCReference Include="..\common_code\demdbfilter.pas">
             <Form>dbFilterCreation</Form>
         </DCCReference>
-        <DCCReference Include="..\..\Components\CCR Exif v1.5.1\CCR Exif v1.5.1\VCL Demos\JpegDump\JpegDumpForm.pas">
-            <Form>NewfrmJpegDump</Form>
-        </DCCReference>
-        <DCCReference Include="..\..\Components\CCR Exif v1.5.1\CCR Exif v1.5.1\CCR.Exif.BaseUtils.pas"/>
-        <DCCReference Include="..\..\Components\CCR Exif v1.5.1\CCR Exif v1.5.1\CCR.Exif.Consts.pas"/>
-        <DCCReference Include="..\..\Components\CCR Exif v1.5.1\CCR Exif v1.5.1\CCR.Exif.IPTC.pas"/>
-        <DCCReference Include="..\..\Components\CCR Exif v1.5.1\CCR Exif v1.5.1\CCR.Exif.JpegUtils.pas"/>
-        <DCCReference Include="..\..\Components\CCR Exif v1.5.1\CCR Exif v1.5.1\CCR.Exif.pas"/>
-        <DCCReference Include="..\..\Components\CCR Exif v1.5.1\CCR Exif v1.5.1\CCR.Exif.StreamHelper.pas"/>
-        <DCCReference Include="..\..\Components\CCR Exif v1.5.1\CCR Exif v1.5.1\CCR.Exif.TagIDs.pas"/>
-        <DCCReference Include="..\..\Components\CCR Exif v1.5.1\CCR Exif v1.5.1\CCR.Exif.TiffUtils.pas"/>
-        <DCCReference Include="..\..\Components\CCR Exif v1.5.1\CCR Exif v1.5.1\CCR.Exif.XMPUtils.pas"/>
         <DCCReference Include="..\common_code\tersplsh.pas">
             <Form>TerBaseSplashForm</Form>
         </DCCReference>
@@ -909,10 +897,6 @@
         <DCCReference Include="..\microdem_open_source\weapons_fan_thread.pas"/>
         <DCCReference Include="..\microdem_open_source\md_use_tools.pas"/>
         <DCCReference Include="..\common_code\DEMStat.pas"/>
-        <DCCReference Include="..\..\Components\CCR Exif v1.5.1\CCR Exif v1.5.1\VCL Demos\JpegDump\JpegDumpOutputFrame.pas">
-            <Form>NewOutputFrame</Form>
-            <DesignClass>TFrame</DesignClass>
-        </DCCReference>
         <DCCReference Include="..\common_code\monthly_grids.pas">
             <Form>GridTimeSeriesControlForm</Form>
         </DCCReference>
@@ -937,7 +921,6 @@
         </DCCReference>
         <DCCReference Include="..\common_fmx\firemonkey_common.pas"/>
         <DCCReference Include="..\common_code\DEM_NLCD.pas"/>
-        <DCCReference Include="..\..\components\CCR Exif v1.5.1\CCR Exif v1.5.1\VCL Demos\CCR.Exif.Demos.pas"/>
         <DCCReference Include="..\common_code\demsatmerge.pas">
             <Form>IHSMergeForm</Form>
         </DCCReference>
@@ -951,6 +934,25 @@
         </DCCReference>
         <DCCReference Include="..\movie\new_petmar_movie.pas">
             <Form>FormAnimate</Form>
+        </DCCReference>
+        <DCCReference Include="..\xif\CCR.Exif.BaseUtils.pas"/>
+        <DCCReference Include="..\xif\CCR.Exif.Consts.pas"/>
+        <DCCReference Include="..\xif\CCR.Exif.Demos.pas"/>
+        <DCCReference Include="..\xif\CCR.Exif.IPTC.pas"/>
+        <DCCReference Include="..\xif\CCR.Exif.JpegUtils.pas"/>
+        <DCCReference Include="..\xif\CCR.Exif.pas"/>
+        <DCCReference Include="..\xif\CCR.Exif.StreamHelper.pas"/>
+        <DCCReference Include="..\xif\CCR.Exif.TagIDs.pas"/>
+        <DCCReference Include="..\xif\CCR.Exif.TiffUtils.pas"/>
+        <DCCReference Include="..\xif\CCR.Exif.XMPUtils.pas"/>
+        <DCCReference Include="..\xif\JpegDumpForm.pas">
+            <Form>NewfrmJpegDump</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\xif\JpegDumpOutputFrame.pas">
+            <Form>NewOutputFrame</Form>
+            <FormType>dfm</FormType>
+            <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <None Include="nevadia_defines.inc"/>
         <None Include="..\common_code\demdatabase_maps.inc"/>
