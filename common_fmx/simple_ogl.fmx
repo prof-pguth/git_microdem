@@ -1,0 +1,24 @@
+object Form2: TForm2
+  Left = 0
+  Top = 0
+  Caption = 'Form2'
+  ClientHeight = 480
+  ClientWidth = 640
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  OnCreate = Form3DCreate
+  OnClose = Form3DClose
+  OnRender = Form3DRender
+  OnResize = Form3DResize
+  DesignerMasterStyle = 0
+  object Timer1: TTimer
+    OnTimer = Timer1Timer
+    Left = 304
+    Top = 224
+  end
+  object Timer2: TTimer
+    Left = 360
+    Top = 288
+  end
+end
