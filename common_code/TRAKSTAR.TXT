@@ -1,0 +1,234 @@
+                              Documentation for
+                                TrakStar/SGP4
+                                    with
+                                 Visibility
+
+                                 Developed by
+                                 Dr TS Kelso
+
+                                 Version 2.65
+                               2000 January 22
+
+Copyright (C) 1992-2000.  All rights reserved.
+
+
+PURPOSE
+
+The enclosed Pascal source code implements the NORAD SGP4/SDP4 orbital 
+models for use with the standard two-line orbital element sets to 
+determine earth-centered inertial (ECI) and topocentric coordinates of 
+earth-orbiting objects. This code implements both the near-earth and 
+deep-space portions of the NORAD SGP4 orbital model.  This program is 
+built on the new Pascal units contained in SGP4-PLB26A.ZIP (SGP4 Pascal 
+Libraries Version 2.65).
+
+
+OVERVIEW
+
+This program is intended to be as straightforward as possible.  It 
+permits the user to calculate any of the following for user-designated 
+satellites and observing stations:
+
+     1) Earth-Centered Inertial (ECI) Position and Velocity
+     2) Latitude, Longitude, and Altitude
+     3) Look Angles (Azimuth, Elevation, Range, and Range Rate)
+     4) Right Ascension and Declination (Topocentric)
+
+This new version also calculates satellite visibility information, 
+showing when a satellite is in earth eclipse (first two options above) 
+or, optionally, restricting pass conditions (second two options above) 
+to visible passes only.
+
+The program accepts as input, pre-defined files of satellite two-line 
+element sets and observer coordinates and outputs all data as text 
+files.
+
+
+OPTIONS
+
+The program begins by allowing the user to select the appropriate option 
+from the choices above.  A window is placed on the screen and the active 
+option is highlighted.  The up and down cursor keys are used to move 
+among the options; pressing <ENTER> selects the active option.  The 
+window remains on the screen to show which option was selected (only the 
+active window, however, is highlighted).
+
+If Options 3 or 4 are selected, the user is prompted to select whether 
+only visible passes should be output or all passes.  If visible passes 
+are selected, the user is also prompted to select the criteria for 
+twilight.  Choices are civil (sun 6 degrees or more below the horizon), 
+nautical (12 degrees or more), or astronomical (18 degrees or more).  
+Civil twilight is recommended.
+
+
+DATA FILES
+
+The two types of data files required of this program are *.TLE (two-line 
+element sets) and *.OB (observer) files.  All data comes from the data 
+directory specified on Lines 1 and 2 of TRAKSTAR.CFG (the sample version 
+defaults to the current drive and directory).  These two lines should 
+look something like:
+
+C:
+PATH\
+
+where the first line is the data drive (a blank line indicates to use 
+the current drive) and the second line is the data directory (a blank 
+line indicates to use the current directory).  The drive letter should 
+end with a colon and the path should end with a backslash.
+
+The *.TLE files are structured with up to 250 sets of data consisting of 
+a satellite name (24 characters long) and a standard NORAD two-line 
+element set.  A sample is presented below:
+
+NOAA 12                 
+1 21263U 91032A   99329.00000000  .00001016  00000-0  46795-3 0  5090
+2 21263  98.5408 325.7794 0011954 220.1062   7.5043 14.23188367443036
+NOAA 14                 
+1 23455U 94089A   99329.00000000  .00000712  00000-0  41335-3 0  1251
+2 23455  99.1145 298.5400 0009134 313.2001  85.3429 14.12098274252643
+NOAA 15                 
+1 25338U 98030A   99329.00000000  .00000632  00000-0  29967-3 0  5794
+2 25338  98.6607 356.4008 0011020 145.9965 128.3475 14.23036638 79673
+
+Data in this format may be obtained from the CelesTrak WWW site.  The 
+user may select the satellite element sets to perform calculations on in 
+two ways.  First, the user may break satellites into logical groupings 
+(e.g., DMSP.TLE, NOAA.TLE, MIR.TLE, or GOES.TLE)--when selecting 
+satellites, the user can select from among up to 50 such files in a 
+scrollable window.  These individual files may be easily updated using a 
+master file of satellite elements and using the Pass Update program 
+(PASSUPDT25A.ZIP).
+
+After the input satellite data file is selected, the user is then 
+prompted in another window to tag the satellites to use in the orbital 
+calculations. Satellites are tagged by moving the highlight bar to the 
+desired satellite (using the up and down cursor keys) and pressing the 
+space bar; the highlight bar will advance after each toggle.  To select 
+(or deselect) all satellites, use the "A" key.  When the desired 
+satellites are tagged, press <ENTER>.  This window does not remain 
+visible since it generally is not possible to show all satellites 
+selected (since there may be as many as 250 of them).
+
+If an option is selected which is observer based (Look Angles or Right 
+Ascension and Declination), a window is also presented to selected the 
+observer file (in the same manner as the satellite data file was 
+selected). The observer file consists a line for each observation site 
+with a name (25 characters long), decimal north latitude (in degrees), 
+decimal east longitude (in degrees), and altitude above mean sea level 
+(in meters).  A sample follows:
+
+DAY  Dayton, OH             39.759   -084.195    750
+CEL  Beavercreek, OH        39.760   -084.061   1010
+
+The first three characters of the site name are used in the output and 
+should be unique; it is recommended that they be set up as in this 
+example.
+
+
+TIME SETTINGS
+
+Once the input files have been designated, the start and stop times and 
+the output time interval must be specified.  A box will be presented for 
+each selection.  For the start time, the program will read the current 
+system time and offer it as the default time (since it is assumed that 
+the user will want to generate ephemerides for the near future).  The 
+user may change this time by using the right and left cursor keys to 
+select the field (year, month, day, hour, minutes, seconds, hundredths 
+of seconds) and the up and down cursor keys to change the selected field 
+(up increases, down decreases); the Home and End keys will go to the 
+beginning or end of the selected range, respectively. This method of 
+selection is designed to prevent inappropriate inputs.
+
+Once the start time is selected, a window for the stop time appears, 
+with the start time offered as a default (since the stop time MUST be 
+greater than or equal to the start time).  After the stop time is 
+selected, the time interval is presented for input; intervals can range 
+from one second to just under ten days (propagations longer than this 
+will probably not be very accurate).
+
+While all internal calculations are done using UTC, TrakStar converts 
+input and output times to local time based on the last two lines of 
+TRAKSTAR.CFG. For example, Eastern Standard Time would be represented 
+as:
+
+-5.0                              % Time difference from UTC (hours)
+N                                 % Allow for Daylight Savings Time
+
+To generate times as UTC, simply set the time difference to zero.
+
+
+OUTPUT
+
+Once the data to be used and the time conditions have been selected, the 
+program begins generating output.  For each element set selected, an 
+output file will be generated of the form OPTcatnr.els where OPT is the 
+option selected (ECI, LLA, OBS, RAD, VOB, or VRD), catnr is the 
+five-digit NORAD Catalog Number, and els is the three-digit element set 
+number (note that this means you can generate data for files containing 
+different element sets for the same object).
+
+Data is directed to the drive and directory specified on Lines 3 and 4 
+of the file TRAKSTAR.CFG.  These lines take the same format as Lines 1 
+and 2.  The sample file included with this distribution defaults to the 
+current drive and directory.
+
+For complete descriptions of the output formats, look at the 
+documentation in SGP4-PLB26A.ZIP (SGP4 Pascal Libraries Version 2.65).
+
+For Options 1 and 2 (ECI and LLA), data is generated for the entire time 
+period specified.  If the start and stop times are the same, only one 
+line of output will be generated.  Output consists of date and time 
+followed by (1) ECI position (in kilometers) and velocity (in 
+kilometers/second) or (2) geodetic latitude, longitude, and altitude.  
+An ECL at the end of the line indicates that the satellite is in umbral 
+earth eclipse.  Sample outputs of these formats are included in this 
+package.
+
+For Options 3 and 4 (OBS and RAD or VOB and VRD), which are observer 
+based, the program will perform calculations for the entire time period 
+for the first observer before doing the same for the next observer.  
+Therefore, output in the file will consist of observations separated by 
+observing site.  In the output for all passes (OBS and RAD), only 
+observations which are visible to the observer (i.e., above the horizon) 
+are placed in the output file.  For visible passes (VOB and VRD), only 
+observations which are (1) above the horizon when (2) the sun is below 
+the appropriate threshold and (3) the satellite is not in umbral earth 
+eclipse are output.  All observations are calculated taking atmospheric 
+refraction into account (under standard temperature and pressure).
+
+For the OBS (look angles for all passes) or VOB (look angles for visible 
+passes), output consists of date and time followed by azimuth (degrees), 
+elevation (degrees), range (kilometers), and range rate 
+(kilometers/second). For the RAD (right ascension/declination for all 
+passes) or VRD (right ascension/declination for visible passes), output 
+consists of date and time followed by topocentric right ascension and 
+declination.
+
+Sample outputs of these formats are included in this package.  Note that 
+the files have a separator (a blank line) between passes.
+
+
+CONCLUSION
+
+This program provides a state-of-the-art and highly accurate 
+implementation of the NORAD orbital models to easily generate various 
+forms of ephemerides.  For current data, ECI positions agree to the 
+sub-meter level with Air Force Space Command-developed models.  And the 
+look angle module has been shown to be accurate to better than one-tenth 
+of a degree (typically around one-hundredth of a degree). For details on 
+accuracy, see the article "Real-World Benchmarking" at:
+
+    http://celestrak.com/columns/
+
+TrakStar was the first program to fully use the Turbo Pascal SGP4 units 
+just released and is part of a continuing effort to promote 
+standardization of orbital calculations using the NORAD orbital models.  
+As always, I will endeavor to continue to improve these packages and will 
+gratefully accept user feedback or contributions to the effort.
+
+                                       - Dr TS Kelso
+                                         CelesTrak WWW
+                                         http://celestrak.com
+                                         E-Mail:  tskelso@celestrak.com
+                                         Beavercreek, OH
