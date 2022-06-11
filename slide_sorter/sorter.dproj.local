@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2018/12/20 16:41:45.000.701,=C:\turbo\monster_microdem\Unit1.pas</Transaction>
+    <Transaction>2019/04/21 11:50:14.000.109,=C:\turbo\monster_microdem\Unit1.pas</Transaction>
+    <Transaction>2019/04/21 11:50:56.000.368,C:\turbo\monster_microdem\Unit1.pas=C:\turbo\monster_microdem\slider_sorter_form.pas</Transaction>
+    <Transaction>2019/04/21 11:50:56.000.368,C:\turbo\monster_microdem\Unit1.fmx=C:\turbo\monster_microdem\slider_sorter_form.fmx</Transaction>
+    <Transaction>2019/04/21 11:51:09.000.673,C:\turbo\monster_microdem\slider_sorter_form.fmx=C:\turbo\monster_microdem\slide_sorter\slider_sorter_form.fmx</Transaction>
+    <Transaction>2019/04/21 11:51:09.000.673,C:\turbo\monster_microdem\slider_sorter_form.pas=C:\turbo\monster_microdem\slide_sorter\slider_sorter_form.pas</Transaction>
+    <Transaction>2019/04/21 11:55:38.000.119,C:\turbo\monster_microdem\Project1.dproj=C:\turbo\monster_microdem\slide_sorter\sorter.dproj</Transaction>
+    <Transaction>2019/05/04 11:22:17.905,=C:\turbo\monster_microdem\microdem_open_source\PETImage.pas</Transaction>
+    <Transaction>2019/05/04 11:25:08.612,=C:\turbo\monster_microdem\microdem_open_source\petmar.pas</Transaction>
+    <Transaction>2019/05/04 11:25:08.638,=C:\turbo\monster_microdem\microdem_open_source\petmar_types.pas</Transaction>
+    <Transaction>2019/05/04 11:34:29.738,C:\turbo\monster_microdem\microdem_open_source\PETImage.pas=</Transaction>
+    <Transaction>2019/05/04 11:34:36.086,C:\turbo\monster_microdem\microdem_open_source\petmar.pas=</Transaction>
+    <Transaction>2019/05/04 11:34:41.367,C:\turbo\monster_microdem\microdem_open_source\petmar_types.pas=</Transaction>
+  </Transactions>
+</BorlandProject>

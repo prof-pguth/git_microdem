@@ -1,0 +1,382 @@
+object SlideSorterForm: TSlideSorterForm
+  Left = 0
+  Top = 0
+  Caption = 'PETMAR Trilobites slide sorter'
+  ClientHeight = 868
+  ClientWidth = 2370
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  OnActivate = FormActivate
+  OnCreate = FormCreate
+  OnClose = FormClose
+  OnResize = FormResize
+  DesignerMasterStyle = 0
+  object LeftPanel1: TPanel
+    Align = Left
+    Size.Width = 400.000000000000000000
+    Size.Height = 868.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 0
+    object Panel4: TPanel
+      Align = Bottom
+      Position.Y = 805.000000000000000000
+      Size.Width = 400.000000000000000000
+      Size.Height = 63.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 0
+      object Button1: TButton
+        Position.X = 24.000000000000000000
+        Position.Y = 8.000000000000000000
+        TabOrder = 0
+        Text = 'Back'
+        OnClick = Button1Click
+      end
+      object Button2: TButton
+        Position.X = 112.000000000000000000
+        Position.Y = 8.000000000000000000
+        TabOrder = 2
+        Text = 'Save'
+        OnClick = Button2Click
+      end
+      object Button3: TButton
+        Position.X = 200.000000000000000000
+        Position.Y = 8.000000000000000000
+        TabOrder = 3
+        Text = 'Delete'
+        OnClick = Button3Click
+      end
+      object Button10: TButton
+        Position.X = 280.000000000000000000
+        Position.Y = 8.000000000000000000
+        TabOrder = 1
+        Text = 'Next'
+        OnClick = Button7Click
+      end
+      object Label1: TLabel
+        Position.X = 48.000000000000000000
+        Position.Y = 38.000000000000000000
+        Size.Width = 281.000000000000000000
+        Size.Height = 17.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Label1'
+        TabOrder = 4
+      end
+    end
+    object ImageViewer1: TImageViewer
+      Align = Client
+      Size.Width = 400.000000000000000000
+      Size.Height = 805.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 1
+      OnDblClick = ImageViewer1DblClick
+      OnMouseDown = ImageViewer1MouseDown
+      OnMouseMove = ImageViewer1MouseMove
+      OnMouseUp = ImageViewer1MouseUp
+      Viewport.Width = 396.000000000000000000
+      Viewport.Height = 801.000000000000000000
+    end
+  end
+  object RightPanel2: TPanel
+    Align = Right
+    Position.X = 1170.000000000000000000
+    Size.Width = 600.000000000000000000
+    Size.Height = 868.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 2
+    object Panel6: TPanel
+      Align = Bottom
+      Position.Y = 805.000000000000000000
+      Size.Width = 600.000000000000000000
+      Size.Height = 63.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 0
+      object Button7: TButton
+        Position.X = 256.000000000000000000
+        Position.Y = 8.000000000000000000
+        TabOrder = 3
+        Text = 'Next'
+        OnClick = Button7Click
+      end
+      object Button8: TButton
+        Position.X = 96.000000000000000000
+        Position.Y = 8.000000000000000000
+        TabOrder = 4
+        Text = 'Save'
+        OnClick = Button8Click
+      end
+      object Button9: TButton
+        Position.X = 176.000000000000000000
+        Position.Y = 8.000000000000000000
+        TabOrder = 5
+        Text = 'Delete'
+        OnClick = Button9Click
+      end
+      object Button12: TButton
+        Position.X = 16.000000000000000000
+        Position.Y = 8.000000000000000000
+        TabOrder = 0
+        Text = 'Back'
+        OnClick = Button1Click
+      end
+      object Label3: TLabel
+        Position.X = 56.000000000000000000
+        Position.Y = 38.000000000000000000
+        Size.Width = 297.000000000000000000
+        Size.Height = 17.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Label1'
+        TabOrder = 6
+      end
+      object Button13: TButton
+        Position.X = 408.000000000000000000
+        Position.Y = 8.000000000000000000
+        TabOrder = 2
+        Text = '>>>'
+        OnClick = Button13Click
+      end
+      object Button14: TButton
+        StyledSettings = [Family, Size, Style]
+        Position.X = 488.000000000000000000
+        Position.Y = 8.000000000000000000
+        TabOrder = 1
+        Text = 'Del-Del-Del'
+        TextSettings.FontColor = claCrimson
+        OnClick = Button14Click
+      end
+    end
+    object ImageViewer3: TImageViewer
+      Align = Client
+      Size.Width = 600.000000000000000000
+      Size.Height = 805.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 1
+      OnDblClick = ImageViewer3DblClick
+      OnMouseDown = ImageViewer3MouseDown
+      OnMouseMove = ImageViewer3MouseMove
+      OnMouseUp = ImageViewer3MouseUp
+      Viewport.Width = 596.000000000000000000
+      Viewport.Height = 801.000000000000000000
+    end
+  end
+  object CenterPanel3: TPanel
+    Align = HorzCenter
+    Position.X = 585.000000000000000000
+    Size.Width = 400.000000000000000000
+    Size.Height = 868.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 3
+    object Panel5: TPanel
+      Align = Bottom
+      Position.Y = 805.000000000000000000
+      Size.Width = 400.000000000000000000
+      Size.Height = 63.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 0
+      object Button5: TButton
+        Position.X = 64.000000000000000000
+        Position.Y = 8.000000000000000000
+        Size.Width = 57.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 2
+        Text = 'Save'
+        OnClick = Button5Click
+      end
+      object Button6: TButton
+        Position.X = 128.000000000000000000
+        Position.Y = 8.000000000000000000
+        TabOrder = 3
+        Text = 'Delete'
+        OnClick = Button6Click
+      end
+      object Button4: TButton
+        Position.X = 216.000000000000000000
+        Position.Y = 8.000000000000000000
+        TabOrder = 1
+        Text = 'Next'
+        OnClick = Button7Click
+      end
+      object Button11: TButton
+        Position.X = 8.000000000000000000
+        Position.Y = 8.000000000000000000
+        Size.Width = 56.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 0
+        Text = 'Back'
+        OnClick = Button1Click
+      end
+      object Label2: TLabel
+        Position.X = 48.000000000000000000
+        Position.Y = 38.000000000000000000
+        Size.Width = 321.000000000000000000
+        Size.Height = 17.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Label1'
+        TabOrder = 4
+      end
+      object SpeedButton1: TSpeedButton
+        Position.X = 336.000000000000000000
+        Position.Y = 8.000000000000000000
+        Size.Width = 50.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Menu'
+        OnClick = SpeedButton1Click
+      end
+    end
+    object ImageViewer2: TImageViewer
+      Align = Client
+      Size.Width = 400.000000000000000000
+      Size.Height = 805.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 1
+      OnClick = ImageViewer2Click
+      OnMouseDown = ImageViewer2MouseDown
+      OnMouseMove = ImageViewer2MouseMove
+      OnMouseUp = ImageViewer2MouseUp
+      Viewport.Width = 396.000000000000000000
+      Viewport.Height = 801.000000000000000000
+    end
+  end
+  object PopupMenu1: TPopupMenu
+    Left = 1024
+    Top = 328
+    object MenuItem6: TMenuItem
+      Text = 'Edit'
+      OnClick = MenuItem6Click
+    end
+    object MenuItem2: TMenuItem
+      Text = 'Copy to clipboard'
+      OnClick = MenuItem2Click
+    end
+    object MenuItem8: TMenuItem
+      Text = 'Change directory'
+      OnClick = MenuItem8Click
+    end
+    object MenuItem1: TMenuItem
+      Text = 'Return to start'
+      OnClick = MenuItem1Click
+    end
+    object MenuItem7: TMenuItem
+      Text = '-'
+    end
+    object MenuItem3: TMenuItem
+      Text = 'Three equal images'
+      OnClick = MenuItem3Click
+    end
+    object MenuItem4: TMenuItem
+      Text = 'Four equal images'
+      OnClick = MenuItem4Click
+    end
+    object MenuItem5: TMenuItem
+      Text = 'Large central image'
+      OnClick = MenuItem5Click
+    end
+    object MenuItem9: TMenuItem
+      Text = '-'
+    end
+    object MenuItem10: TMenuItem
+      Text = 'Advance 1'
+      OnClick = MenuItem10Click
+    end
+    object MenuItem11: TMenuItem
+      Text = 'Advance 5'
+      OnClick = MenuItem11Click
+    end
+    object MenuItem12: TMenuItem
+      Text = 'Advance 10'
+      OnClick = MenuItem12Click
+    end
+    object MenuItem13: TMenuItem
+      Text = '-'
+    end
+    object MenuItem14: TMenuItem
+      Text = 'Open with zoom to center'
+      OnClick = MenuItem14Click
+    end
+  end
+  object FarRightPanel1: TPanel
+    Align = Right
+    Position.X = 1770.000000000000000000
+    Size.Width = 600.000000000000000000
+    Size.Height = 868.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 1
+    object Panel2: TPanel
+      Align = Bottom
+      Position.Y = 805.000000000000000000
+      Size.Width = 600.000000000000000000
+      Size.Height = 63.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 0
+      object Button15: TButton
+        Position.X = 256.000000000000000000
+        Position.Y = 8.000000000000000000
+        TabOrder = 3
+        Text = 'Next'
+        OnClick = Button7Click
+      end
+      object Button16: TButton
+        Position.X = 96.000000000000000000
+        Position.Y = 8.000000000000000000
+        TabOrder = 4
+        Text = 'Save'
+        OnClick = Button16Click
+      end
+      object Button17: TButton
+        Position.X = 176.000000000000000000
+        Position.Y = 8.000000000000000000
+        TabOrder = 5
+        Text = 'Delete'
+        OnClick = Button17Click
+      end
+      object Button18: TButton
+        Position.X = 16.000000000000000000
+        Position.Y = 8.000000000000000000
+        TabOrder = 0
+        Text = 'Back'
+        OnClick = Button1Click
+      end
+      object Label4: TLabel
+        Position.X = 56.000000000000000000
+        Position.Y = 38.000000000000000000
+        Size.Width = 297.000000000000000000
+        Size.Height = 17.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Label1'
+        TabOrder = 6
+      end
+      object Button19: TButton
+        Position.X = 336.000000000000000000
+        Position.Y = 8.000000000000000000
+        TabOrder = 2
+        Text = '>>>'
+        OnClick = Button13Click
+      end
+      object Button20: TButton
+        StyledSettings = [Family, Size, Style]
+        Position.X = 456.000000000000000000
+        Position.Y = 8.000000000000000000
+        TabOrder = 1
+        Text = 'Del-Del-Del'
+        TextSettings.FontColor = claCrimson
+        OnClick = Button14Click
+      end
+    end
+    object ImageViewer4: TImageViewer
+      Align = Client
+      Size.Width = 600.000000000000000000
+      Size.Height = 805.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 1
+      OnDblClick = ImageViewer4DblClick
+      OnMouseDown = ImageViewer4MouseDown
+      OnMouseMove = ImageViewer4MouseMove
+      OnMouseUp = ImageViewer4MouseUp
+      Viewport.Width = 596.000000000000000000
+      Viewport.Height = 801.000000000000000000
+    end
+  end
+end
