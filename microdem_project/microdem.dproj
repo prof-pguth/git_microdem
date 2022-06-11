@@ -793,9 +793,6 @@
         <DCCReference Include="..\gis_ops\tiger_address.pas">
             <Form>TigerAddressForm</Form>
         </DCCReference>
-        <DCCReference Include="..\..\Components\SolarPosSource\U_SolarPos2.pas">
-            <Form>SolorPosForm1</Form>
-        </DCCReference>
         <DCCReference Include="..\common_code\usoutlines.pas">
             <Form>USOutlineForm</Form>
         </DCCReference>
@@ -953,6 +950,10 @@
             <Form>NewOutputFrame</Form>
             <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
+        </DCCReference>
+        <DCCReference Include="..\SolarPosSource\U_SolarPos2.pas">
+            <Form>SolorPosForm1</Form>
+            <FormType>dfm</FormType>
         </DCCReference>
         <None Include="nevadia_defines.inc"/>
         <None Include="..\common_code\demdatabase_maps.inc"/>

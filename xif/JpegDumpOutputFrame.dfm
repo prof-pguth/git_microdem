@@ -5,7 +5,6 @@ object NewOutputFrame: TNewOutputFrame
   Width = 389
   Height = 326
   TabOrder = 0
-  PixelsPerInch = 96
   object Memo: TMemo
     Left = 0
     Top = 0
@@ -34,9 +33,9 @@ object NewOutputFrame: TNewOutputFrame
     object imgExifThumbnail: TImage
       AlignWithMargins = True
       Left = 5
-      Top = 18
+      Top = 25
       Width = 143
-      Height = 303
+      Height = 296
       Align = alClient
       ExplicitLeft = 176
       ExplicitTop = 0

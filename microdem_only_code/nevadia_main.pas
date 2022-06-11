@@ -1120,7 +1120,7 @@ uses
 
    PetImage_Form,
    TerSplsh,
-   U_SolarPos2,
+   //U_SolarPos2,
    stereo_viewer,
    get_thumbnails,
    Main_Gray_game,
@@ -1154,7 +1154,7 @@ uses
    DEMdbTable,
    Petmar_ini_file,
    db_display_options,
-   toggle_db_use, map_overlays;
+   toggle_db_use, map_overlays, U_SolarPos2;
 
 
 {$IfDef IncludeASTERGDEMassessment}

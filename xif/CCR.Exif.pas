@@ -56,8 +56,7 @@ uses
   Types, SysUtils, Classes, TypInfo,
   {$IfDef VCL} Graphics, Jpeg, Contnrs, {$ENDIF}
   {$IfDef FMX}FMX.Types,{$ENDIF}
-   CCR.Exif.BaseUtils, CCR.Exif.IPTC,
-  CCR.Exif.StreamHelper, CCR.Exif.TagIDs, CCR.Exif.TiffUtils, CCR.Exif.XMPUtils;
+  CCR.Exif.BaseUtils, CCR.Exif.IPTC,CCR.Exif.StreamHelper, CCR.Exif.TagIDs, CCR.Exif.TiffUtils, CCR.Exif.XMPUtils;
 
 const
   SmallEndian = CCR.Exif.StreamHelper.SmallEndian;

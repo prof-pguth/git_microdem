@@ -242,7 +242,6 @@ uses
   petimage_form in '..\common_code\petimage_form.pas' {ImageDisplayForm},
   demhandw in '..\common_code\demhandw.pas' {DemHandForm},
   tiger_address in '..\gis_ops\tiger_address.pas' {TigerAddressForm},
-  U_SolarPos2 in '..\..\Components\SolarPosSource\U_SolarPos2.pas' {SolorPosForm1},
   usoutlines in '..\common_code\usoutlines.pas' {USOutlineForm},
   main_gray_game in '..\common_code\main_gray_game.pas' {GrayGameForm},
   demssocalc in '..\common_code\demssocalc.pas' {SSOCalcDlg},
@@ -336,7 +335,8 @@ uses
   CCR.Exif.TiffUtils in '..\xif\CCR.Exif.TiffUtils.pas',
   CCR.Exif.XMPUtils in '..\xif\CCR.Exif.XMPUtils.pas',
   JpegDumpForm in '..\xif\JpegDumpForm.pas' {NewfrmJpegDump},
-  JpegDumpOutputFrame in '..\xif\JpegDumpOutputFrame.pas' {NewOutputFrame: TFrame};
+  JpegDumpOutputFrame in '..\xif\JpegDumpOutputFrame.pas' {NewOutputFrame: TFrame},
+  U_SolarPos2 in '..\SolarPosSource\U_SolarPos2.pas' {SolorPosForm1};
 
 {$R *.RES}
 
@@ -361,6 +361,7 @@ begin
          Application.Title := '';
          Application.HelpFile := 'microdem.chm';
          Application.CreateForm(Twmdem, wmdem);
+  Application.CreateForm(TSolorPosForm1, SolorPosForm1);
   Application.Run;
       end;
     finally

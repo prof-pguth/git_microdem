@@ -18,6 +18,13 @@
 {                                                                                      }
 {**************************************************************************************}
 
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Modified as Part of ianMICRODEM GIS Program    }
+{ PETMAR Trilobite Breeding Ranch                }
+{ Released under the MIT Licences                }
+{ Copyright (c) 2022 Peter L. Guth               }
+{________________________________________________}
+
 unit JpegDumpForm;
 {
   Demonstrates using the enumerator functions of CCR.Exif.JPEGUtils to parse a JPEG

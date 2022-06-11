@@ -3,8 +3,8 @@ object NewfrmJpegDump: TNewfrmJpegDump
   Top = 81
   BorderWidth = 4
   Caption = 'Jpeg Header Dump'
-  ClientHeight = 507
-  ClientWidth = 1031
+  ClientHeight = 528
+  ClientWidth = 1054
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -16,16 +16,17 @@ object NewfrmJpegDump: TNewfrmJpegDump
   Visible = True
   OnClose = FormClose
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object panBtns: TPanel
     Left = 0
-    Top = 471
-    Width = 1031
+    Top = 492
+    Width = 1054
     Height = 36
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 0
+    ExplicitTop = 471
+    ExplicitWidth = 1031
     object btnOpen: TBitBtn
       Left = 100
       Top = 0
@@ -165,11 +166,13 @@ object NewfrmJpegDump: TNewfrmJpegDump
   object PageControl: TPageControl
     Left = 0
     Top = 0
-    Width = 1031
-    Height = 471
+    Width = 1054
+    Height = 492
     ActivePage = tabOriginal
     Align = alClient
     TabOrder = 1
+    ExplicitWidth = 1031
+    ExplicitHeight = 471
     object tabOriginal: TTabSheet
       Caption = 'Original'
     end
