@@ -112,19 +112,19 @@ procedure MakeAtlasParametersTable(fName : PathStr);
 
 {$IfDef ExHydrography}
 {$Else}
-procedure MakeSideScanRecordFile(fName : PathStr; Long : boolean = true);
-procedure MakeHydrographyIndex(fName : PathStr);
-procedure MakeSideScanIndex(fName : PathStr);
-procedure MakeSideScanTargetFile(fName : PathStr);
+   procedure MakeSideScanRecordFile(fName : PathStr; Long : boolean = true);
+   procedure MakeHydrographyIndex(fName : PathStr);
+   procedure MakeSideScanIndex(fName : PathStr);
+   procedure MakeSideScanTargetFile(fName : PathStr);
 {$EndIf}
 
 {$IfDef ExGeology}
 {$Else}
-procedure CreateISOGravity(fName : PathStr);
-procedure CreateGeologySymbolFile(fName : PathStr);
-procedure MakeStatColGIS(fName : PathStr);
-procedure MakeEarthQuakeCentroidsFile(fName : PathStr);
-procedure CreateXYADBTable(fName : PathStr);
+   procedure CreateISOGravity(fName : PathStr);
+   procedure CreateGeologySymbolFile(fName : PathStr);
+   procedure MakeStatColGIS(fName : PathStr);
+   procedure MakeEarthQuakeCentroidsFile(fName : PathStr);
+   procedure CreateXYADBTable(fName : PathStr);
 {$EndIf}
 
 
@@ -196,14 +196,14 @@ begin
       AddAField('DIFF_GEO',ftFloat,7,2);
       {$IfDef NoUTMDiffsDatumShift}
       {$Else}
-      AddAField('DIFF_UTM',ftFloat,7,2);
+         AddAField('DIFF_UTM',ftFloat,7,2);
       {$EndIf}
       AddAField('DIFF_GEO_X',ftFloat,7,2);
       AddAField('DIFF_GEO_Y',ftFloat,7,2);
       {$IfDef NoUTMDiffsDatumShift}
       {$Else}
-      AddAField('DIFF_UTM_X',ftFloat,7,2);
-      AddAField('DIFF_UTM_Y',ftFloat,7,2);
+         AddAField('DIFF_UTM_X',ftFloat,7,2);
+         AddAField('DIFF_UTM_Y',ftFloat,7,2);
       {$EndIf}
       WriteCorrectHeader;
    end;
@@ -260,10 +260,10 @@ begin
           Table.Destroy;
           WriteCorrectHeader;
        end;
-      {$IfDef RecordMakeTables} WriteLineToDebugFile('CreateTableOfType succeed');   {$EndIf}
+      {$IfDef RecordMakeTables} WriteLineToDebugFile('CreateTableOfType succeed'); {$EndIf}
     end
     else begin
-       {$IfDef VCL}  MessageToContinue(TableDefinitionsFileName + ' missing; cannot create ' + what);   {$EndIf}
+       {$IfDef VCL} MessageToContinue(TableDefinitionsFileName + ' missing; cannot create ' + what); {$EndIf}
     end;
 end;
 
@@ -351,7 +351,6 @@ procedure CreateProjectTable(fName : PathStr);
 begin
    CreateDataBase := tCreateDataBase.Create(fName);
    with CreateDataBase do begin
-      //AddLatLongToTable;
       AddBoundingBoxToTable;
       AddAField('DATA_LAYER',ftString,12,0);
       AddAField('FILENAME',ftString,255,0);
@@ -491,6 +490,17 @@ begin
 end;
 
 
+procedure MakeBasicBoundingBoxTable(fName : PathStr; NameStr : shortstring = '');
+begin
+   CreateDataBase := tCreateDataBase.Create(fName);
+   if (NameStr = '') then NameStr := 'NAME';
+   CreateDataBase.AddAField(NameStr,ftstring,35);
+   CreateDataBase.AddBoundingBoxToTable;
+   CreateDataBase.WriteCorrectHeader;
+end;
+
+
+
 procedure MakeNodeTable(fName : PathStr);
 begin
    CreateDataBase := tCreateDataBase.Create(fName);
@@ -515,16 +525,6 @@ begin
       AddAField('DOWN_ORD',ftInteger,3);
       WriteCorrectHeader;
    end;
-end;
-
-
-procedure MakeBasicBoundingBoxTable(fName : PathStr; NameStr : shortstring = '');
-begin
-   CreateDataBase := tCreateDataBase.Create(fName);
-   if (NameStr = '') then NameStr := 'NAME';
-   CreateDataBase.AddAField(NameStr,ftstring,35);
-   CreateDataBase.AddBoundingBoxToTable;
-   CreateDataBase.WriteCorrectHeader;
 end;
 
 
@@ -1048,54 +1048,48 @@ end;
 procedure MakeSideScanRecordFile(fName : PathStr; Long : boolean = true);
 begin
    CreateDataBase := tCreateDataBase.Create(fName);
-   //with CreateDataBase do begin
-      CreateDataBase.AddLatLongToTable(true);
-      CreateDataBase.AddAField('PING',ftInteger,9);
-      CreateDataBase.AddAField('TIME',ftString,12);
-      CreateDataBase.AddAField('DEPTH',ftFloat,6,2);
-      CreateDataBase.AddAField('SLANT_RNG',ftInteger,3);
-      if Long then begin
-         CreateDataBase.AddAField('SPEED',ftFloat,6,2);
-         CreateDataBase.AddAField('HEADING',ftFloat,6,1);
-         CreateDataBase.AddAField('FISH_HEAD',ftFloat,6,1);
-         CreateDataBase.AddAField('FISH_DEPTH',ftFloat,6,1);
-         CreateDataBase.AddAField('WATER_TEMP',ftFloat,6,2);
-         CreateDataBase.AddAField('PRESSURE',ftFloat,6,2);
-         CreateDataBase.AddAField('FISH_PITCH',ftFloat,6,2);
-         CreateDataBase.AddAField('FISH_ALT',ftFloat,6,2);
-         CreateDataBase.AddAField('FISH_ROLL',ftFloat,6,2);
-      end;
-      CreateDataBase.AddRecNoToTable;
-      CreateDataBase.WriteCorrectHeader;
-   //end;
+   CreateDataBase.AddLatLongToTable(true);
+   CreateDataBase.AddAField('PING',ftInteger,9);
+   CreateDataBase.AddAField('TIME',ftString,12);
+   CreateDataBase.AddAField('DEPTH',ftFloat,6,2);
+   CreateDataBase.AddAField('SLANT_RNG',ftInteger,3);
+   if Long then begin
+      CreateDataBase.AddAField('SPEED',ftFloat,6,2);
+      CreateDataBase.AddAField('HEADING',ftFloat,6,1);
+      CreateDataBase.AddAField('FISH_HEAD',ftFloat,6,1);
+      CreateDataBase.AddAField('FISH_DEPTH',ftFloat,6,1);
+      CreateDataBase.AddAField('WATER_TEMP',ftFloat,6,2);
+      CreateDataBase.AddAField('PRESSURE',ftFloat,6,2);
+      CreateDataBase.AddAField('FISH_PITCH',ftFloat,6,2);
+      CreateDataBase.AddAField('FISH_ALT',ftFloat,6,2);
+      CreateDataBase.AddAField('FISH_ROLL',ftFloat,6,2);
+   end;
+   CreateDataBase.AddRecNoToTable;
+   CreateDataBase.WriteCorrectHeader;
 end;
 
 procedure MakeHydrographyIndex(fName : PathStr);
 begin
    CreateDataBase := tCreateDataBase.Create(fName);
-   //with CreateDataBase do begin
-      CreateDataBase.AddAField('FILENAME',ftString,120,0);
-      CreateDataBase.AddAField('CHIRP',ftInteger,8,0);
-      CreateDataBase.AddBoundingBoxToTable;
-      CreateDataBase.WriteCorrectHeader;
-   //end;
+   CreateDataBase.AddAField('FILENAME',ftString,120,0);
+   CreateDataBase.AddAField('CHIRP',ftInteger,8,0);
+   CreateDataBase.AddBoundingBoxToTable;
+   CreateDataBase.WriteCorrectHeader;
 end;
 
 
 procedure MakeSideScanIndex(fName : PathStr);
 begin
    CreateDataBase := tCreateDataBase.Create(fName);
-   //with CreateDataBase do begin
-      CreateDataBase.AddAField('FILENAME',ftString,120,0);
-      CreateDataBase.AddLatLongToTable(true);
-      CreateDataBase.AddAField('LAT2',ftFloat,12,8);
-      CreateDataBase.AddAField('LONG2',ftFloat,13,8);
-      CreateDataBase.AddAField('RANGE',ftFloat,6,2);
-      CreateDataBase.AddAField('HEADING',ftFloat,6,1);
-      CreateDataBase.AddAField('LENGTH',ftFloat,6,1);
-      CreateDataBase.AddAField('PINGS',ftInteger,6,0);
-      CreateDataBase.WriteCorrectHeader;
-   //end;
+   CreateDataBase.AddAField('FILENAME',ftString,120,0);
+   CreateDataBase.AddLatLongToTable(true);
+   CreateDataBase.AddAField('LAT2',ftFloat,12,8);
+   CreateDataBase.AddAField('LONG2',ftFloat,13,8);
+   CreateDataBase.AddAField('RANGE',ftFloat,6,2);
+   CreateDataBase.AddAField('HEADING',ftFloat,6,1);
+   CreateDataBase.AddAField('LENGTH',ftFloat,6,1);
+   CreateDataBase.AddAField('PINGS',ftInteger,6,0);
+   CreateDataBase.WriteCorrectHeader;
 end;
 
 {$EndIf}
@@ -1104,26 +1098,23 @@ end;
 procedure CreateMilIconsTable(fName : PathStr);
 begin
    CreateDataBase := tCreateDataBase.Create(fName);
-   //with CreateDataBase do begin
-      CreateDataBase.AddLatLongToTable;
-      CreateDataBase.AddAField('UNITNAME',ftString,18);
-      CreateDataBase.AddAField('PARENT',ftString,18);
-      CreateDataBase.AddAField('TOP_TEXT',ftString,18);
-      CreateDataBase.AddAField('BTM_TEXT',ftString,18);
-      CreateDataBase.AddAField('MILSYMFONT',ftString,48);
-      CreateDataBase.AddAField('TEXTFONT',ftString,48);
-      CreateDataBase.AddAField('UNITLEVEL',ftInteger,2);
-      CreateDataBase.AddAField('FILLLEVEL',ftInteger,2);
-      CreateDataBase.AddAField('SYMFONTS',ftInteger,2);
-      CreateDataBase.AddAField('TEXFONTS',ftInteger,2);
-      CreateDataBase.AddAField('CHARNUM',ftInteger,3);
-      CreateDataBase.AddAField('TEXTBOLD',ftInteger,1);
-      CreateDataBase.AddAField('FILLCOLOR',ftInteger,10);
-      CreateDataBase.AddAField('TEXTCOLOR',ftInteger,10);
-      CreateDataBase.AddAField('FONTCOLOR',ftInteger,10);
-      CreateDataBase.AddAField('ICON',ftString,100);
-      CreateDataBase.WriteCorrectHeader;
-   //end;
+   CreateDataBase.AddAField('UNITNAME',ftString,18);
+   CreateDataBase.AddAField('PARENT',ftString,18);
+   CreateDataBase.AddAField('TOP_TEXT',ftString,18);
+   CreateDataBase.AddAField('BTM_TEXT',ftString,18);
+   CreateDataBase.AddAField('MILSYMFONT',ftString,48);
+   CreateDataBase.AddAField('TEXTFONT',ftString,48);
+   CreateDataBase.AddAField('UNITLEVEL',ftInteger,2);
+   CreateDataBase.AddAField('FILLLEVEL',ftInteger,2);
+   CreateDataBase.AddAField('SYMFONTS',ftInteger,2);
+   CreateDataBase.AddAField('TEXFONTS',ftInteger,2);
+   CreateDataBase.AddAField('CHARNUM',ftInteger,3);
+   CreateDataBase.AddAField('TEXTBOLD',ftInteger,1);
+   CreateDataBase.AddAField('FILLCOLOR',ftInteger,10);
+   CreateDataBase.AddAField('TEXTCOLOR',ftInteger,10);
+   CreateDataBase.AddAField('FONTCOLOR',ftInteger,10);
+   CreateDataBase.AddAField('ICON',ftString,100);
+   CreateDataBase.WriteCorrectHeader;
 end;
 
 
@@ -1348,18 +1339,16 @@ end;
 procedure CreateImageRegistrationTable(fName : PathStr);
 begin
    CreateDataBase := tCreateDataBase.Create(fName);
-   //with CreateDataBase do begin
-      CreateDataBase.AddAField('POINT',ftString,35,0);
-      CreateDataBase.AddLatLongToTable;
-      CreateDataBase.AddAField('X_IMAGE',ftInteger,8,0);
-      CreateDataBase.AddAField('Y_IMAGE',ftInteger,8,0);
-      CreateDataBase.AddAField('X_UTM',ftFloat,12,2);
-      CreateDataBase.AddAField('Y_UTM',ftFloat,12,2);
-      CreateDataBase.AddAField('X_REF_IM',ftInteger,8,0);
-      CreateDataBase.AddAField('Y_REF_IM',ftInteger,8,0);
-      CreateDataBase.AddRecNoToTable;
-      CreateDataBase.WriteCorrectHeader;
-   //end;
+   CreateDataBase.AddAField('POINT',ftString,35,0);
+   CreateDataBase.AddLatLongToTable;
+   CreateDataBase.AddAField('X_IMAGE',ftInteger,8,0);
+   CreateDataBase.AddAField('Y_IMAGE',ftInteger,8,0);
+   CreateDataBase.AddAField('X_UTM',ftFloat,12,2);
+   CreateDataBase.AddAField('Y_UTM',ftFloat,12,2);
+   CreateDataBase.AddAField('X_REF_IM',ftInteger,8,0);
+   CreateDataBase.AddAField('Y_REF_IM',ftInteger,8,0);
+   CreateDataBase.AddRecNoToTable;
+   CreateDataBase.WriteCorrectHeader;
 end;
 
 

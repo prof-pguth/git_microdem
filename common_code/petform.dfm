@@ -12,10 +12,8 @@ object PETMARCommonForm: TPETMARCommonForm
   Font.Height = -17
   Font.Name = 'System'
   Font.Style = []
-  OldCreateOrder = True
   Position = poScreenCenter
   OnActivate = FormActivate
-  PixelsPerInch = 96
   TextHeight = 20
   object Edit1: TEdit
     Left = 0

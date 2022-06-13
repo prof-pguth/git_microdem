@@ -11,8 +11,10 @@ unit dem_manager;
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
+      //{$Define RecordCloseDEM}
+
+
       //{$Define RecordClosingData}
-      {$Define RecordCloseDEM}
       //{$Define RecordNewMaps}
       //{$Define LoadDEMsCovering}
       //{$Define RecordProjects}
@@ -803,7 +805,7 @@ end;
       {$If Defined(RecordIniMemoryOverwrite) or Defined(TimeLoadDEM)} IniMemOverwriteCheck('start OpenNewDEM'); {$EndIf}
       Result := 0;
       try
-         HeavyDutyProcessing := true;   //defined for the case of opening multiple DEMs with GetMultiple Files
+         DEMMergeInProgress := true;   //defined for the case of opening multiple DEMs with GetMultiple Files
          if (FName <> '') then begin
            {$If Defined(TimeLoadDEM)} WriteLineToDebugFile('OpenNewDEM passed DEM: ' + fName); {$EndIf}
            LoadNewDEM(Result,fName,LoadMap,'DEM/grid for ' + WhatFor);
@@ -825,7 +827,7 @@ end;
       finally
         {$If Defined(TimeLoadDEM)} WriteLineToDebugFile('OpenNewDEM final cleanup'); {$EndIf}
         LastDEMLoaded := Result;
-        HeavyDutyProcessing := false;
+        DEMMergeInProgress := false;
       end;
       {$If Defined(TimeLoadDEM)} if (Result = 0) then WriteLineToDebugFile('OpenNewDEM fail') else WriteLineToDebugFile('OpenNewDEM out  ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].DEMMapProjection.GetProjectionName); {$EndIf}
       {$IfDef RecordIniMemoryOverwrite} IniMemOverwriteCheck('end OpenNewDEM'); {$EndIf}

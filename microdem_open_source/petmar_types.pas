@@ -591,7 +591,7 @@ begin
       if (Decimals < 0) then begin
          while Result[Length(Result)] = '0' do Delete(Result,length(Result),1);
          if Result[Length(Result)] = '.' then Delete(Result,length(Result),1);
-         {$IfDef RecordRealToString} WriteLineToDebugFile('after (Decimals < 0):' + Result);{$EndIf}
+         {$IfDef RecordRealToString} WriteLineToDebugFile('after (Decimals < 0):' + Result); {$EndIf}
       end;
       if (Long < 0) then begin
          while Result[1] = ' ' do Delete(Result,1,1);

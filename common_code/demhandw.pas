@@ -70,7 +70,6 @@ type
     Close1: TMenuItem;
     Help1: TMenuItem;
     Subset1: TMenuItem;
-    Thin1: TMenuItem;
     Create1: TMenuItem;
     Edit1: TMenuItem;
     Delete1: TMenuItem;
@@ -82,7 +81,6 @@ type
     DUR1: TMenuItem;
     RLD1: TMenuItem;
     ASCIIXYZ1: TMenuItem;
-    ASCIIfile1: TMenuItem;
     Satellite1: TMenuItem;
     BMP1: TMenuItem;
     Resample1: TMenuItem;
@@ -101,7 +99,6 @@ type
     ASCIIsortremoveduplicates1: TMenuItem;
     Datumshift1: TMenuItem;
     TIGERindex1: TMenuItem;
-    N9: TMenuItem;
     Specifyshift1: TMenuItem;
     AddLineEndPoints: TMenuItem;
     Database2: TMenuItem;
@@ -157,7 +154,6 @@ type
     ASCIImergefiles1: TMenuItem;
     //Albertalandsurvey1: TMenuItem;
     ShiftXYZcoordinates1: TMenuItem;
-    CDEDdirectorytoMDDEM1: TMenuItem;
     NCEPNCARReanalysiswinds1: TMenuItem;
     Addfilenameasfield1: TMenuItem;
     N5: TMenuItem;
@@ -278,8 +274,6 @@ type
     FLTfiles1: TMenuItem;
     xview2json1: TMenuItem;
     Verticaldatums1: TMenuItem;
-    N8: TMenuItem;
-    N12: TMenuItem;
     GDALwarpGeotifftoadjacentUTMzone1: TMenuItem;
     DEMtoLAZ1: TMenuItem;
     GDALwarpSentinel11: TMenuItem;
@@ -304,7 +298,6 @@ type
     procedure DUR1Click(Sender: TObject);
     procedure RLD1Click(Sender: TObject);
     procedure ASCIIXYZ1Click(Sender: TObject);
-    procedure ASCIIfile1Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure ASCIIduplicates1Click(Sender: TObject);
     procedure ASCIIsort1Click(Sender: TObject);
@@ -353,7 +346,6 @@ type
     procedure IMGdirectorytoMDDEM1Click(Sender: TObject);
     procedure ASCIImergefiles1Click(Sender: TObject);
     procedure ShiftXYZcoordinates1Click(Sender: TObject);
-    procedure CDEDdirectorytoMDDEM1Click(Sender: TObject);
     procedure NCEPNCARReanalysiswinds1Click(Sender: TObject);
     procedure Addfilenameasfield1Click(Sender: TObject);
     procedure RepairSHPandSHXboundingboxes1Click(Sender: TObject);
@@ -452,7 +444,6 @@ type
     procedure FLTfiles1Click(Sender: TObject);
     procedure xview2json1Click(Sender: TObject);
     procedure Verticaldatums1Click(Sender: TObject);
-    procedure N12Click(Sender: TObject);
     procedure GDALwarpGeotifftoadjacentUTMzone1Click(Sender: TObject);
     procedure DEMtoLAZ1Click(Sender: TObject);
     procedure GDALwarpSentinel11Click(Sender: TObject);
@@ -1121,68 +1112,6 @@ begin
 end;
 
 
-procedure TDemHandForm.ASCIIfile1Click(Sender: TObject);
-label
-   DoneIt;
-const
-   FileName : PathStr = '';
-var
-   Dfile,Outf : TextFile;
-   ThinFactor,i,skip : integer;
-   Count,Size        : LongInt;
-   MenuStr : ShortString;
-   AddSkips : boolean;
-   NewFileName : PathStr;
-begin
-   if (FileName = '') then FileName := ProgramRootDir;
-   if GetFileFromDirectory('to thin','*.*',FileName) then begin
-      if not GetFileNameDefaultExt('new thinned subset','*.*',NewFileName) then exit;
-      assignFile(Dfile,FileName);
-      reset(Dfile);
-      count := 0;
-      StartCount('Lines in file');
-      while not EOF(Dfile) do begin
-         readln(DFile);
-         inc(Count);
-         if (Count mod 100 = 0) then UpdateCount(Count);
-      end;
-      EndCount;
-      CloseFile(DFile);
-      reset(DFile);
-      FileName := '';
-      assignFile(Outf,NewFileName);
-      rewrite(OutF);
-      ThinFactor := 2;
-      ReadDefault('Thin factor for ' + IntToStr(Count) + ' line file', ThinFactor);
-      Skip := 0;
-      ReadDefault('Lines to skip at start',Skip);
-      if (Skip > 0) then AddSkips := AnswerIsYes('Put skipped lines in output')
-      else AddSkips := false;
-
-      Size := Count;
-      Count := 0;
-      StartProgress('Thin');
-      for i := 1 to Skip do begin
-         readln(Dfile,MenuStr);
-         if AddSkips then writeln(OutF,MenuStr);
-      end;
-      while not EOF(DFile) do begin
-         for i := 1 to ThinFactor do begin
-            if EOF(DFile) then goto DoneIt;
-            readln(DFile,MenuStr);
-            if (i=1) then writeln(OutF,MenuStr);
-         end;
-         inc(Count);
-         if (Count mod 100 = 0) then UpdateProgressBar(Count* ThinFactor / Size);
-      end;
-      DoneIt:;
-      closeFile(DFile);
-      closeFile(Outf);
-      EndCount;
-   end;
-end;
-
-
 procedure TDemHandForm.Conictolatlong1Click(Sender: TObject);
 {$IfDef ExGIS}
 begin
@@ -1605,7 +1534,6 @@ begin
             inc(j);
          end
          else begin
-            //ProcessRecord;
             ShapeFileCreator.OldProcessRecordForShapeFile(dCoord^,1,j,Parts,zs);
             Table.Insert;
             Table.Post;
@@ -2788,8 +2716,64 @@ end;
 
 
 procedure TDemHandForm.ASCIIthin1Click(Sender: TObject);
+label
+   DoneIt;
+const
+   FileName : PathStr = '';
+var
+   Dfile,Outf : TextFile;
+   ThinFactor,i,skip : integer;
+   Count,Size        : LongInt;
+   MenuStr : ShortString;
+   AddSkips : boolean;
+   NewFileName : PathStr;
 begin
-   ASCIIfile1Click(Sender);
+   if (FileName = '') then FileName := ProgramRootDir;
+   if GetFileFromDirectory('to thin','*.*',FileName) then begin
+      if not GetFileNameDefaultExt('new thinned subset','*.*',NewFileName) then exit;
+      assignFile(Dfile,FileName);
+      reset(Dfile);
+      count := 0;
+      StartCount('Lines in file');
+      while not EOF(Dfile) do begin
+         readln(DFile);
+         inc(Count);
+         if (Count mod 100 = 0) then UpdateCount(Count);
+      end;
+      EndCount;
+      CloseFile(DFile);
+      reset(DFile);
+      FileName := '';
+      assignFile(Outf,NewFileName);
+      rewrite(OutF);
+      ThinFactor := 2;
+      ReadDefault('Thin factor for ' + IntToStr(Count) + ' line file', ThinFactor);
+      Skip := 0;
+      ReadDefault('Lines to skip at start',Skip);
+      if (Skip > 0) then AddSkips := AnswerIsYes('Put skipped lines in output')
+      else AddSkips := false;
+
+      Size := Count;
+      Count := 0;
+      StartProgress('Thin');
+      for i := 1 to Skip do begin
+         readln(Dfile,MenuStr);
+         if AddSkips then writeln(OutF,MenuStr);
+      end;
+      while not EOF(DFile) do begin
+         for i := 1 to ThinFactor do begin
+            if EOF(DFile) then goto DoneIt;
+            readln(DFile,MenuStr);
+            if (i=1) then writeln(OutF,MenuStr);
+         end;
+         inc(Count);
+         if (Count mod 100 = 0) then UpdateProgressBar(Count* ThinFactor / Size);
+      end;
+      DoneIt:;
+      closeFile(DFile);
+      closeFile(Outf);
+      EndCount;
+   end;
 end;
 
 
@@ -3252,33 +3236,6 @@ begin
 end;
 
 
-procedure TDemHandForm.N12Click(Sender: TObject);
-var
-   Paths,TheFiles : tStringList;
-   Dir,fName : PathStr;
-   i,j : integer;
-begin
-   Paths := tStringList.Create;
-   Paths.Add(MainMapData);
-   if GetMultipleDirectories('Landsat or Sentinel-2 image',Paths) then begin
-      for i := 0 to pred(Paths.Count) do begin
-         Dir := Paths.Strings[i];
-         TheFiles := tStringList.Create;
-         FindMatchingFiles(Dir,'*.tif',TheFiles,6);
-         if (TheFiles.Count > 0) then begin
-            for j := 0 to pred(TheFiles.Count) do begin
-               fName := TheFiles.Strings[j];
-               DeleteFileIfExists(fName);
-            end;
-            OpenSatImageFromDirectory(Dir);
-         end
-         else MessageToContinue('No TIFF files in ' + Dir);
-         TheFiles.Destroy;
-      end;
-   end;
-end;
-
-
 procedure TDemHandForm.NCEPNCARReanalysiswinds1Click(Sender: TObject);
 var
    fName : PathStr;
@@ -3715,7 +3672,6 @@ procedure TDemHandForm.LASGeotoUTM1Click(Sender: TObject);
          lf :  tLAS_data;
          elevparams,
          params,params2 : Shortstring;
-         //cmd : ANSIString;
          i : integer;
          DefaultFilter : byte;
          DeleteOriginalFiles : boolean;
@@ -3903,7 +3859,6 @@ begin
    if (DataPath = '') then DataPath := MainMapData;
    if (Sender = BILdirectorytoMDDEM1) then TStr := '*.bil'
    else if (Sender = IMGdirectorytoMDDEM1) then TStr := '*.img'
-   else if (Sender = CDEDdirectorytoMDDEM1) then TStr := '*.dem'
    else if (Sender = ASCfiles1) then TStr := '*.asc'
    else if (Sender = XTfiles1) then TStr := '*.txt'
    else if (Sender = FLTfiles1) then TStr := '*.flt'
@@ -3933,7 +3888,7 @@ begin
          ApplicationProcessMessages;
          OutName := OutPath + bName + OutF;
 
-         if (Sender = CDEDdirectorytoMDDEM1) or (not FileExists(OutName)) then begin
+         if (not FileExists(OutName)) then begin
             if StrUtils.AnsiContainsText(fName,'shd') then begin
             end
             else begin
@@ -4048,12 +4003,12 @@ begin
      for i := 0 to pred(FilesWanted.Count) do begin
         fName := FilesWanted.Strings[i];
         LoadNewDEM(DEM,fName,false);
-
-        ReplaceCharacter(DEMGlb[DEM].GeotiffImageDesc,',',';');
-
-        outF.Add(ExtractFileName(FName) + ',' + DEMGlb[DEM].GeotiffImageDesc + ',' + RealToString(DEMGlb[DEM].DEMBoundBoxGeo.YMax,-12,-4) + ',' + RealToString(DEMGlb[DEM].DEMBoundBoxGeo.YMin,-12,-4) +
-             ',' + RealToString(DEMGlb[DEM].DEMBoundBoxGeo.xMax,-12,-4) + ',' + RealToString(DEMGlb[DEM].DEMBoundBoxGeo.xMin,-12,-4));
-        CloseSingleDEM(DEM);
+        if ValidDEM(DEM) then begin
+           ReplaceCharacter(DEMGlb[DEM].GeotiffImageDesc,',',';');
+           outF.Add(ExtractFileName(FName) + ',' + DEMGlb[DEM].GeotiffImageDesc + ',' + RealToString(DEMGlb[DEM].DEMBoundBoxGeo.YMax,-12,-4) + ',' + RealToString(DEMGlb[DEM].DEMBoundBoxGeo.YMin,-12,-4) +
+                ',' + RealToString(DEMGlb[DEM].DEMBoundBoxGeo.xMax,-12,-4) + ',' + RealToString(DEMGlb[DEM].DEMBoundBoxGeo.xMin,-12,-4));
+           CloseSingleDEM(DEM);
+        end;
      end;
    end;
    outf.SaveToFile('c:\temp\test.txt');
@@ -4288,12 +4243,6 @@ begin
       end;
       closeFile(InFile);
    end;
-end;
-
-
-procedure TDemHandForm.CDEDdirectorytoMDDEM1Click(Sender: TObject);
-begin
-   BatchRenameDEMfiles(Sender);
 end;
 
 

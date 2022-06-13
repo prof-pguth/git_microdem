@@ -463,6 +463,8 @@ var
    clNearKMLWhite,
    clBrown,
    clAlmostBlack : tColor;
+   HeavyDutyProcessing,
+   LoadingFromMapLibrary,
    WantOut,WantShowProgress : boolean;
    RevisionDate : shortstring;
 var
@@ -2670,7 +2672,7 @@ end;
            StartupInfo : TStartupInfo;
            ProcessInfo : TProcessInformation;
          begin
-            {$IfDef RecordShellExecute} if Log then WriteLineToDebugFile('WinExecAndWait32 in, cmd=' + FileName ); {$EndIf}
+            {$IfDef RecordShellExecute} if Log and (not HeavyDutyProcessing) then WriteLineToDebugFile('WinExecAndWait32 in, cmd=' + FileName ); {$EndIf}
             if Wait then ShowHourglassCursor;
             StrPCopy(zAppName,FileName);
             GetDir(0,WorkDir);
@@ -2699,7 +2701,7 @@ end;
             end;
             ApplicationProcessMessages;
             if Wait then ShowDefaultCursor;
-            {$IfDef RecordShellExecute} if Log then WriteLineToDebugFile('WinExecAndWait32 out, result=' + IntToStr(Result)); {$EndIf}
+            {$IfDef RecordShellExecute} if Log and (not HeavyDutyProcessing) then WriteLineToDebugFile('WinExecAndWait32 out, result=' + IntToStr(Result)); {$EndIf}
          end;
 
 
@@ -4126,8 +4128,8 @@ end;
 
 
 procedure UpdateProgressBar(HowFar : float64);
-var
-   Value : integer;
+//var
+   //Value : integer;
 begin
    {$IfDef VCL}
       if WantShowProgress and (PETProgF <> Nil) and (not Math.IsNAN(HowFar)) and (not Math.IsInfinite(HowFar)) then begin
@@ -4648,7 +4650,7 @@ begin
    repeat
       try
          {$IfDef VCL}
-         Result := Windows.CopyFile(pchar(SourceFile),pchar(DestinationFile),false {Fail if Exists});
+            Result := Windows.CopyFile(pchar(SourceFile),pchar(DestinationFile),false {Fail if Exists});
          {$EndIf}
          exit;
       except
@@ -4667,7 +4669,7 @@ begin
    repeat
       try
          {$IfDef VCL}
-         Result := Windows.MoveFile(pchar(SourceFile),pchar(DestinationFile));
+            Result := Windows.MoveFile(pchar(SourceFile),pchar(DestinationFile));
          {$EndIf}
          exit;
       except
@@ -4682,21 +4684,23 @@ end {CopyFile};
 initialization
    {$IfDef MessageStartup} MessageToContinue('start PETMAR initialization'); {$EndIf}
    ThreadsWorking := false;
+   HeavyDutyProcessing := false;
+   LoadingFromMapLibrary := false;
    claBrown := ConvertTColorToPlatformColor(clBrown);
 finalization
    {$If Defined(RecordClosing)} WriteLineToDebugFile('Closing petmar in dbfn=' + DebugFileName); {$EndIf}
-   {$IfDef RecordPrint} WriteLineToDebugFile('RecordPrintProblems active in PETMAR');{$EndIf}
-   {$IfDef RecordStartup} WriteLineToDebugFile('RecordStartupProblems active in PETMAR');{$EndIf}
-   {$IfDef MessageStartup} WriteLineToDebugFile('MessageStartupProblems active in PETMAR');{$EndIf}
-   {$IfDef RecordFindFiles} WriteLineToDebugFile('RecordFindFilesProblems active in PETMAR');{$EndIf}
-   {$IfDef TempFileClose} WriteLineToDebugFile('TempFileCloseProblems active in PETMAR');{$EndIf}
-   {$IfDef RecordShellExecute} WriteLineToDebugFile('RecordShellExecute active in PETMAR');{$EndIf}
-   {$IfDef RecordBitmap} WriteLineToDebugFile('RecordBitmapProblems active in PETMAR');{$EndIf}
-   {$IfDef RecordFileFilter} WriteLineToDebugFile('RecordFileFilterProblems active in PETMAR');{$EndIf}
-   {$IfDef RecordFileDelection} WriteLineToDebugFile('RecordFileDelection active in PETMAR');   {$EndIf}
-   {$IfDef RecordLegends} WriteLineToDebugFile('RecordLegends active in PETMAR');   {$EndIf}
-   {$IfDef RecordListPick} WriteLineToDebugFile('RecordListPick active in PETMAR');   {$EndIf}
-   {$IfDef RecordUnzips} WriteLineToDebugFile('RecordUnzips active in PETMAR');    {$EndIf}
+   {$IfDef RecordPrint} WriteLineToDebugFile('RecordPrintProblems active in PETMAR'); {$EndIf}
+   {$IfDef RecordStartup} WriteLineToDebugFile('RecordStartupProblems active in PETMAR'); {$EndIf}
+   {$IfDef MessageStartup} WriteLineToDebugFile('MessageStartupProblems active in PETMAR'); {$EndIf}
+   {$IfDef RecordFindFiles} WriteLineToDebugFile('RecordFindFilesProblems active in PETMAR'); {$EndIf}
+   {$IfDef TempFileClose} WriteLineToDebugFile('TempFileCloseProblems active in PETMAR'); {$EndIf}
+   {$IfDef RecordShellExecute} WriteLineToDebugFile('RecordShellExecute active in PETMAR'); {$EndIf}
+   {$IfDef RecordBitmap} WriteLineToDebugFile('RecordBitmapProblems active in PETMAR'); {$EndIf}
+   {$IfDef RecordFileFilter} WriteLineToDebugFile('RecordFileFilterProblems active in PETMAR'); {$EndIf}
+   {$IfDef RecordFileDelection} WriteLineToDebugFile('RecordFileDelection active in PETMAR'); {$EndIf}
+   {$IfDef RecordLegends} WriteLineToDebugFile('RecordLegends active in PETMAR'); {$EndIf}
+   {$IfDef RecordListPick} WriteLineToDebugFile('RecordListPick active in PETMAR'); {$EndIf}
+   {$IfDef RecordUnzips} WriteLineToDebugFile('RecordUnzips active in PETMAR'); {$EndIf}
    {$IfDef RecordHelp} WriteLineToDebugFile('Record active in PETMAR'); {$EndIf}
    {$IfDef RecordWebDownloads} WriteLineToDebugFile('RecordWebDownloads active in PETMAR'); {$EndIf}
    {$If Defined(RecordDialogs)} WriteLineToDebugFile('RecordDialogs active in PETMAR'); {$EndIf}

@@ -76,8 +76,8 @@ begin
 end;
 
 procedure TPETMARCommonForm.FormActivate(Sender: TObject);
-var
-   OnMonitor : integer;
+//var
+   //OnMonitor : integer;
 begin
    ActiveControl := Edit1;
    Left := Mouse.CursorPos.X;

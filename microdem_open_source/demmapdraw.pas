@@ -106,7 +106,7 @@
       //{$Define RecordTerrainCategories}
       //{$Define RecordDefineDatum}
    {$Else}
-      {$Define RecordTiming}
+      //{$Define RecordTiming}
    {$EndIf}
 {$EndIf}
 

@@ -134,7 +134,7 @@ var
    aLine : shortstring;
    UTM : tMapProjection;
    fName : PathStr;
-   Lat,theDB : integer;
+   Lat : integer;
    Dist,GridTrueAngle,LongW,LongC,LongE  : float64;
 
          procedure DoMeridian(Long : float64);
@@ -166,7 +166,7 @@ begin
    end;
     fName := Petmar.NextFileNumber(MDTempDir,'UTM_spacing_',DefaultDBExt);
     {$IfDef RecordHistogram} WriteLineToDebugFile('Convert and load table');    {$EndIf}
-    TheDB := StringList2CSVtoDB(Results,fName);
+    StringList2CSVtoDB(Results,fName);
 end;
 
 
@@ -179,7 +179,7 @@ var
 begin
    Results := tStringList.Create;
    Results.Add('Latitude,M_DEG_Y,M_DEG_X,M_DEG_AVG,M_SEC_Y,M_SEC_X,M_SEC_AVG');
-   Lat := 0;
+  //Lat := 0;
    Long := -100;
    for Lat := 85 downto 0 do begin
       MetersPerDegree(Lat,Long,Distance1,Distance2,Distance3);
@@ -285,7 +285,7 @@ end;
 procedure DoGridSpacingAndDeclination(CurDEM : integer);
 var
    Results,Summary : tStringList;
-   x,y,GridInc,RecId,db,i,db2 : integer;
+   x,y,GridInc,RecId,db,i : integer;
    fName : PathStr;
    JustCorners : boolean;
    dx_min,dx_max,dy_min,dy_max,grid_true_min,grid_true_max,Lat,Long : float64;
@@ -361,7 +361,7 @@ begin
       end;
    end;
    fName := Petmar.NextFileNumber(MDTempDir, 'DEM_summary_','.dbf');
-   db2 := DEMGlb[CurDEM].SelectionMap.StringListToLoadedDatabase(Summary,fName);
+   DEMGlb[CurDEM].SelectionMap.StringListToLoadedDatabase(Summary,fName);
 end;
 
 

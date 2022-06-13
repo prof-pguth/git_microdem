@@ -2148,7 +2148,7 @@ var
    i,j : int32;
    Dist,Bearing : float64;
 begin
-   {$IfDef RecordLineLength} writelineToDebugFile('tShapeFile.LineLength, recno=' + IntToStr(RecNum));{$EndIf}
+   {$IfDef RecordLineLength} writelineToDebugFile('tShapeFile.LineLength, recno=' + IntToStr(RecNum)); {$EndIf}
    Result := 0;
    if LineShapeFile(MainFileHeader.ShapeType) or AreaShapeFile(MainFileHeader.ShapeType) then begin
       GetLineCoords(RecNum,GetZs);
@@ -2213,21 +2213,21 @@ initialization
    DrawPolygonsAsPolygons := true;
 finalization
    {$IfDef RecordClosing} WriteLineToDebugFile('Closing demesrishapefile in'); {$EndIf}
-   {$IfDef RecordShapeFile} writeLineToDebugFile('RecordShapeFileProblems active in demesrishapefile');{$EndIf}
+   {$IfDef RecordShapeFile} writeLineToDebugFile('RecordShapeFileProblems active in demesrishapefile'); {$EndIf}
    {$IfDef RecordReproject} writeLineToDebugFile('RecordReprojectProblems active in demesrishapefile (degrades performance)'); {$EndIf}
    {$IfDef RecordClosing} WriteLineToDebugFile('RecordClosingProblems active in demesrishapefile'); {$EndIf}
    {$IfDef RecordCreateShapeFile} WriteLineToDebugFile('RecordCreateShapeFile active in demesrishapefile'); {$EndIf}
    {$IfDef RecordFindPoint} WriteLineToDebugFile('RecordFindPointProblems active in demesrishapefile'); {$EndIf}
-   {$IfDef TrackShapeDigitization} WriteLineToDebugFile('TrackShapeDigitization active in demesrishapefile');{$EndIf}
-   {$IfDef RecordShapefilesReprojection} WriteLineToDebugFile('RecordShapefilesReprojection active in demesrishapefile');{$EndIf}
-   {$IfDef RecordSPCS} WriteLineToDebugFile('RecordSPCSProblems active in demesrishapefile');{$EndIf}
-   {$IfDef RecordShapeFileWriteFull} WriteLineToDebugFile('RecordShapeFileWriteFullProblems active in demesrishapefile');{$EndIf}
-   {$IfDef RecordShapeFileWrite} WriteLineToDebugFile('RecordShapeFileWrite active in demesrishapefile');{$EndIf}
-   {$IfDef RecordMemoryStream} WriteLineToDebugFile('RecordMemoryStreamProblems active in demesrishapefile');{$EndIf}
-   {$IfDef RecordPointProblem} WriteLineToDebugFile('RecordPointProblem active in demesrishapefile (slowdown)');{$EndIf}
-   {$IfDef RecordTooManyPoints} WriteLineToDebugFile('RecordTooManyPoints active in demesrishapefile (slowdown)');{$EndIf}
-   {$IfDef RecordPart} WriteLineToDebugFile('RecordPartProblems in demesrishapefile (slowdown)');{$EndIf}
-   {$IfDef RecordMergeShapefiles} WriteLineToDebugFile('RecordMergeShapefiles in demesrishapefile');{$EndIf}
+   {$IfDef TrackShapeDigitization} WriteLineToDebugFile('TrackShapeDigitization active in demesrishapefile'); {$EndIf}
+   {$IfDef RecordShapefilesReprojection} WriteLineToDebugFile('RecordShapefilesReprojection active in demesrishapefile'); {$EndIf}
+   {$IfDef RecordSPCS} WriteLineToDebugFile('RecordSPCSProblems active in demesrishapefile'); {$EndIf}
+   {$IfDef RecordShapeFileWriteFull} WriteLineToDebugFile('RecordShapeFileWriteFullProblems active in demesrishapefile'); {$EndIf}
+   {$IfDef RecordShapeFileWrite} WriteLineToDebugFile('RecordShapeFileWrite active in demesrishapefile'); {$EndIf}
+   {$IfDef RecordMemoryStream} WriteLineToDebugFile('RecordMemoryStreamProblems active in demesrishapefile'); {$EndIf}
+   {$IfDef RecordPointProblem} WriteLineToDebugFile('RecordPointProblem active in demesrishapefile (slowdown)'); {$EndIf}
+   {$IfDef RecordTooManyPoints} WriteLineToDebugFile('RecordTooManyPoints active in demesrishapefile (slowdown)'); {$EndIf}
+   {$IfDef RecordPart} WriteLineToDebugFile('RecordPartProblems in demesrishapefile (slowdown)'); {$EndIf}
+   {$IfDef RecordMergeShapefiles} WriteLineToDebugFile('RecordMergeShapefiles in demesrishapefile'); {$EndIf}
    {$IfDef RecordShapeFileLine} WriteLineToDebugFile('RecordShapeFileLineProblems in demesrishapefile (major slowdown)'); {$EndIf}
    {$IfDef RecordLineWidth} WriteLineToDebugFile('RecordLineWidth in demesrishapefile (major slowdown)'); {$EndIf}
    {$IfDef TimeDBPlot} WriteLineToDebugFile('TimeDBPlot in demesrishapefile'); {$EndIf}

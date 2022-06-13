@@ -29,7 +29,6 @@ object wmdem: Twmdem
     Left = 0
     Top = 0
     Width = 2250
-    Height = 29
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34

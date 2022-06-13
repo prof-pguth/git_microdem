@@ -168,8 +168,6 @@ const
 function GetGDALversion : ANSIstring;
 var
    cmd : shortstring;
-   //fName : PathStr;
-   //sl : tStringList;
 begin
    cmd := GDAL_info_name + ' --version |clip';
    GDALCommand(MDTempDir + 'gdal_info.bat',cmd,false);
@@ -969,7 +967,6 @@ end;
             if (Ext = '.TIF') or (Ext = '.TIFF') then Imagebb := GeotiffBBox(fName)
             else begin
                GetGDALinfo(fName, GDALinfo);
-               //xxx
             end;
 
             if LatLongBox then begin
@@ -990,12 +987,14 @@ end;
                end
                else begin
                   GeotiffMetadata(mdMicrodem, fName);
-                  MessageToContinue('Failure; does image really cover this map area?  Check Metadata for image extent');
+                  if not HeavyDutyProcessing then MessageToContinue('Failure; does image really cover this map area?  Check Metadata for image extent');
                end;
             end
             else begin
-               MessageToContinue('Map area is not covered by ' + ExtractFileNameNoExt(fName) + '  ' + sfBoundBoxToString(ImageBB,4));
-               {$IfDef RecordSubsetOpen} WriteLineToDebugFile('Not covered on map'); {$EndIf}
+               if (not HeavyDutyProcessing) then begin
+                  MessageToContinue('Map area is not covered by ' + ExtractFileNameNoExt(fName) + '  ' + sfBoundBoxToString(ImageBB,4));
+                  {$IfDef RecordSubsetOpen} WriteLineToDebugFile('Not covered on map'); {$EndIf}
+               end;
             end;
          end;
       end;
@@ -1142,7 +1141,6 @@ end;
            function SetGDALprogramName(fName : PathStr; var FullName : PathStr) : boolean;
            begin
               FullName := GDALtools_Dir + fName;
-              if not FileExists(FullName) then GetFileFromDirectory(fName,'*.exe',FullName);
               Result := FileExists(FullName);
               {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} if Not Result then WriteLineToDebugFile('GDAL file missing, ' + FullName); {$EndIf}
            end;
@@ -1160,15 +1158,28 @@ end;
 
       begin
          {$If Defined(RecordGDAL)} WriteLineToDebugFile('GetGDALFileNames in'); {$EndIf}
-         //64 bit now only version
-         GDALtools_Dir := 'C:\OSGeo4W\bin\';
-         GDALtools_Data := 'C:\OSGeo4W\share\gdal\';
-         if PathIsValid(GDALtools_Dir) and PathIsValid(GDALtools_Data) then begin
+
+         if PathIsValid(GDALtools_Dir) and PathIsValid(GDALtools_Data) and SetRest then begin
             {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('GDAL valid, ' + GDALtools_Dir + '  ' + GetGDALversion); {$EndIf}
-            SetRest;
             exit;
          end;
 
+         if not PathIsValid(GDALtools_Dir) then begin
+            GDALtools_Dir := 'C:\OSGeo4W\bin\';
+            GetDOSPath('GDAL binary directory',GDALtools_Dir);
+         end;
+
+         if not PathIsValid(GDALtools_Data) then begin
+            GDALtools_Data := 'c:\OSGeo4W\share\gdal\';
+            GetDOSPath('GDAL tools data directory',GDALtools_Data);
+         end;
+
+         if PathIsValid(GDALtools_Dir) and PathIsValid(GDALtools_Data) and SetRest then begin
+            {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('User picked GDAL valid, ' + GDALtools_Dir + '  ' + GetGDALversion); {$EndIf}
+            exit;
+         end;
+
+(*
          if (UpperCase(ProgramRootDir[1]) <> 'C') then begin
             GDALtools_Dir := ProgramRootDir[1] + ':\OSGeo4W\bin\';
             GDALtools_Data := ProgramRootDir[1] + ':\OSGeo4W\share\gdal\';
@@ -1178,6 +1189,7 @@ end;
                exit;
             end;
          end;
+*)
 
          {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)}
             if not PathIsValid(GDALtools_Dir) then WriteLineToDebugFile('Invalid: ' + GDALtools_Dir);
@@ -1186,11 +1198,9 @@ end;
 
          MDdef.DontBugMeAboutGDAL := not AnswerIsYes('Do you want to be reminded about GDAL problems in the future');
 
-         if MDdef.DontBugMeAboutGDAL then begin
-            SaveMDdefaults;
-            exit;
-         end;
+         if MDdef.DontBugMeAboutGDAL then SaveMDdefaults;
 
+         (*
          if AnswerIsYes('Manually try to set GDAL locations (you must download them)') then begin
             if not PathIsValid(GDALtools_Dir) then begin
               GetDOSPath('GDAL',GDALtools_Dir);
@@ -1205,6 +1215,7 @@ end;
                SetRest;
             end;
          end;
+         *)
       end;
 
 

@@ -467,8 +467,7 @@ const
 var
    xstart,ystart,xend,yend,
    x,y,ChangeCount : integer;
-   MaxDiff,Red1,Red2,Green1,Green2,Blue1,Blue2,
-   Red3,  //Green3,Blue3,
+   MaxDiff,Red1,Red2,Green1,Green2,Blue1,Blue2,Red3,
    Gray1,Gray2,Gray3 : byte;
    Diffs : array[0..255] of integer;
    BMP3 : tMyBitmap;
@@ -632,7 +631,6 @@ procedure PopUpDefaultHorizontalLegendOnBitmap(Min,Max : float64;  Units : short
 var
    Bitmap : tMyBitmap;
 begin
-   //Bitmap := Nil;
    Bitmap := DefaultHorizontalLegendOnBitmap(Min,Max,Units,'',Legend,ChloroplethScheme);
    DisplayBitmap(Bitmap,'Legend');
    Bitmap.Free;
@@ -701,7 +699,6 @@ begin
    PetImage.SaveBitmap(Bitmap2,fName2);
    Result.StartAlphaBlending(fName2);
 end;
-
 
 
 procedure TImageDisplayForm.TrackBar1Change(Sender: TObject);

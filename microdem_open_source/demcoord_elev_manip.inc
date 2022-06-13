@@ -57,67 +57,6 @@ end;
 
 
 (*
-function tDEMDataSet.GetRawGridElevation(Col,Row : integer; var z : float32) : boolean;
-begin
-   if GridInDataSet(Col,Row) and (not(MissingDataInGrid(Col,Row))) then begin
-      if (DEMheader.DEMPrecision = FloatingPointDEM) then z := ShortFloatElevations^[Col]^[Row]
-      else if (DEMheader.DEMPrecision = WordDEM) then z := WordElevations^[Col]^[Row]
-      else if (DEMheader.DEMPrecision = LongWordDEM) then z := LongWordElevations^[Col]^[Row]
-      else if (DEMheader.DEMPrecision = ByteDEM) then z := ByteElevations^[Col]^[Row]
-      else z := DTEDCols[Col]^[Row];
-      z := zInMeters(z);
-      Result := not MissingElevation(z);
-   end
-   else begin
-      Result := false;
-      z := ThisDEMMissingValue;
-   end;
-end;
-
-function tDEMDataSet.GridElevSureInData(x,y : integer) : float32;
-begin
-   if MissingDataInGrid(x,y) then begin
-      Result := ThisDEMMissingValue;
-   end
-   else begin
-      if (DEMheader.DEMPrecision = FloatingPointDEM) then Result := ShortFloatElevations^[x]^[y]
-      else if (DEMheader.DEMPrecision = SmallIntDEM) then Result := DTEDCols[x]^[y]
-      else if (DEMheader.DEMPrecision = WordDEM) then Result := WordElevations^[x]^[y]
-      else if (DEMheader.DEMPrecision = LongWordDEM) then Result := LongWordElevations^[x]^[y]
-      else if (DEMheader.DEMPrecision = ByteDEM) then Result := ByteElevations^[x]^[y];
-      if MissingElevation(Result) then Result := ThisDEMMissingValue
-      else Result := zinMeters(Result);
-   end;
-end;
-
-*)
-
-(*
-function tDEMDataSet.GridElevMeters(x,y : integer) : float32;
-begin
-   if GridInDataSet(x,y) then begin
-      Result := GridElevSureInData(x,y);
-   end
-   else begin
-      Result := ThisDEMMissingValue;
-   end;
-end;
-
-
-function tDEMDataSet.GetRawGridElevation(Col,Row : integer; var z : Integer) : boolean;
-var
-   zf : float32;
-begin
-   Result := GetRawGridElevation(Col,Row,zf);
-   if Result then z := round(zf);
-end;
-*)
-
-
-
-
-
-(*
 procedure tDEMDataSet.InterpolateBiCubic(xgrid,ygrid : float64; var z : float32);
 var
    Elev,xgrad,ygrad,crossgrad  : tElevFloatArray;

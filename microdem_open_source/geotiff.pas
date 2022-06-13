@@ -21,7 +21,7 @@ unit GeoTiff;
 
 {$IfDef Recordproblems}  //normally only defined for debugging specific problems
 
-   {$Define RecordGeotiffFailures}
+   //{$Define RecordGeotiffFailures}
 
    {$IFDEF DEBUG}
       //{$Define RecordGeotiffProjection}
@@ -978,7 +978,7 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
 
               {$IfDef GeotiffCorner} WriteLineToDebugFile('Read Geotiff DEM,  SW corner  X=' + RealToString(WantDEM.DEMheader.DEMSWCornerX,-18,-6) + '  Y=' + RealToString(WantDEM.DEMheader.DEMSWCornerY,-18,-6)); {$EndIf}
 
-              {$IfDef RecordInitializeDEM} WriteLineToDebugFile(WantDEM.GridDefinition);   {$EndIf}
+              {$IfDef RecordInitializeDEM} WriteLineToDebugFile(WantDEM.GridDefinition); {$EndIf}
               {$If Defined(RecordInitializeDEM)} WriteLineToDebugFile('tTIFFImage.CreateDEM Header set, ' + sfBoundBoxToString(WantDEM.DEMBoundBoxProjected,6)); {$EndIf}
 
                if (WantDEM.DEMMapProjection.PName = UK_OS) then begin
@@ -995,8 +995,11 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
                   WantDEM.DEMheader.UTMZone := GetUTMZone(WantDEM.DEMheader.DEMSWCornerX + 0.5 * WantDEM.DEMheader.NumCol * WantDEM.DEMheader.DEMxSpacing);
                end
                else if (WantDEM.DEMMapProjection.wktString <> '') then begin
-                 WantDEM.DEMheader.DEMUsed := WKTDEM;
-                 if not WantDEM.DEMMapProjection.WKTProjectionFromString(WantDEM.DEMMapProjection.wktString) then MessageToContinue('Could not intialize projection from wkt: ' + WantDEM.DEMMapProjection.wktString);
+                  WantDEM.DEMheader.DEMUsed := WKTDEM;
+                  WantDEM.DEMheader.DataSpacing := SpaceMeters;
+                  WantDEM.DEMheader.UTMZone := WantDEM.DEMMapProjection.projUTMZone;
+                  WantDEM.DEMheader.LatHemi := WantDEM.DEMMapProjection.LatHemi;
+                  if not WantDEM.DEMMapProjection.WKTProjectionFromString(WantDEM.DEMMapProjection.wktString) then MessageToContinue('Could not intialize projection from wkt: ' + WantDEM.DEMMapProjection.wktString);
                end
                else begin
                   WantDEM.DEMheader.DEMUsed := UTMBasedDEM;
@@ -1026,9 +1029,9 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
                   {$IfDef RecordInitializeDEM} WriteLineToDebugFile('WantDEM.AllocateDEMMemory failed'); {$EndIf}
                   Result := false;
                end;
-              {$IfDef TrackA} writeLineToDebugFile('tTIFFImage.CreateTiffDEM out, a=' + RealToString(WantDEM.DEMMapProjection.a,-18,-2));   {$EndIf}
+              {$IfDef TrackA} writeLineToDebugFile('tTIFFImage.CreateTiffDEM out, a=' + RealToString(WantDEM.DEMMapProjection.a,-18,-2)); {$EndIf}
               {$If Defined(RecordInitializeDEM) or Defined(RecordDEMMapProjection)} WantDEM.DEMMapProjection.ShortProjInfo('tTIFFImage.InitializeDEM in'); {$EndIf}
-              {$IfDef RecordNLCD} WriteLineToDebugFile('Initialize TIFF DEM out, ' + WantDEM.AreaName + '  data=' + LabelElevUnits[WantDEM.DEMheader.ElevUnits]);   {$EndIf}
+              {$IfDef RecordNLCD} WriteLineToDebugFile('Initialize TIFF DEM out, ' + WantDEM.AreaName + '  data=' + LabelElevUnits[WantDEM.DEMheader.ElevUnits]); {$EndIf}
          end;
 
 
@@ -1055,7 +1058,7 @@ begin
 
    {$If Defined(RecordDefineDatum) or Defined(RecordGeotiff) or Defined(RecordGeotiffProjection)} WriteLineToDebugFile('Create Geotiff DEM in, Projection=' + WantDEM.DEMMapProjection.GetProjectionName); {$EndIf}
    {$IfDef RecordInitializeDEM} WriteLineToDebugFile('ModelX=' + RealToString(TiffHeader.ModelX,-18,-6) + ' ModelY=' + RealToString(TiffHeader.ModelY,-18,-6) ); {$EndIf}
-      if TiffHeader.SamplesPerPixel > 1 then begin
+      if (TiffHeader.SamplesPerPixel > 1) then begin
          MessageToContinue('File has ' + IntToStr(TiffHeader.SamplesPerPixel) + ' bands and is not a DEM; open as an image');
          Result := false;
          exit;

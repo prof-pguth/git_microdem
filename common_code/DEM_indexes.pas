@@ -12,7 +12,7 @@ unit dem_indexes;
   {$IFDEF DEBUG}
      //{$Define RecordAutoZoom}
      //{$Define RecordImageIndex}
-     //{$Define RecordIndex}
+     {$Define RecordIndex}
      //{$Define RecordIndexFileNames}
      //{$Define RecordMerge}
      //{$Define RecordIndexImagery}
@@ -1052,7 +1052,6 @@ end;
             LastDEMName := OldDEMName;
          {$IfDef RecordMerge} WriteLineToDebugFile('MergeMultipleDEMsHere out'); {$EndIf}
          finally
-            //HeavyDutyProcessing := false;
             UpdateMenusForAllMaps;
             DEMMergeInProgress := false;
          end;
@@ -1113,46 +1112,51 @@ var
    i : integer;
 begin
    {$If Defined(RecordIndex) or Defined(RecordImageIndex)} WriteLineToDebugFile('Enter LoadMapLibraryBox'); {$EndIf}
-   ShowHourglassCursor;
-   LoadOne := false;
-   WantDEM := 0;
-   WantImage := 0;
-   MDDef.MissingToSeaLevel := false;
-   OpenIndexedSeriesTable(IndexSeriesTable);
-   if (WantSeries = '') then IndexSeriesTable.ApplyFilter('(USE = ' + QuotedStr('Y') + ')')
-   else IndexSeriesTable.ApplyFilter('(SERIES = ' + QuotedStr(WantSeries) + ')');
+   try
+      LoadingFromMapLibrary := true;
+      ShowHourglassCursor;
+      LoadOne := false;
+      WantDEM := 0;
+      WantImage := 0;
+      MDDef.MissingToSeaLevel := false;
+      OpenIndexedSeriesTable(IndexSeriesTable);
+      if (WantSeries = '') then IndexSeriesTable.ApplyFilter('(USE = ' + QuotedStr('Y') + ')')
+      else IndexSeriesTable.ApplyFilter('(SERIES = ' + QuotedStr(WantSeries) + ')');
 
-   while not IndexSeriesTable.Eof do begin
-      MergeSeriesName := IndexSeriesTable.GetFieldByNameAsString('SERIES');
-      MergedName := '';
-      if IndexSeriesTable.FieldExists('SHORT_NAME') then MergedName := IndexSeriesTable.GetFieldByNameAsString('SHORT_NAME');
-      if (MergedName = '') then MergedName := MergeSeriesName;
+      while not IndexSeriesTable.Eof do begin
+         MergeSeriesName := IndexSeriesTable.GetFieldByNameAsString('SERIES');
+         MergedName := '';
+         if IndexSeriesTable.FieldExists('SHORT_NAME') then MergedName := IndexSeriesTable.GetFieldByNameAsString('SHORT_NAME');
+         if (MergedName = '') then MergedName := MergeSeriesName;
 
-      {$If Defined(RecordIndex) or Defined(RecordImageIndex)} WriteLineToDebugFile('Merge Series: ' + MergeSeriesName); {$EndIf}
-      DataInSeries := GetListOfDataInBoxInSeries(MergeSeriesName,inNWLat,inNWLong,inSELat,inSELong);
-      if (DataInSeries <> Nil) then begin
-         DataType := UpperCase(IndexSeriesTable.GetFieldByNameAsString('DATA_TYPE'));
-         if (DataType = 'DEMS') or (DataType = 'BATHY') then begin
-            LoadTheDEMs(DataInSeries);
-            {$IfDef RecordMerge} WriteLineToDebugFile('LoadTheDEMs completed'); {$EndIf}
-         end
-         else begin
-            {$ifDef ExSat}
-            {$Else}
-               for I := 0 to pred(DataInSeries.Count) do begin
-                   fName := DataInSeries.Strings[i];
-                   {$If Defined(RecordIndex) or Defined(RecordImageIndex)} WriteLineToDebugFile('Load ' + fName); {$EndIf}
-                   OpenAndDisplayNewScene(nil,fName,true,true,(not GlobalDRGMap));
-                end;
-            {$EndIf}
-            FreeAndNil(DataInSeries);
+         {$If Defined(RecordIndex) or Defined(RecordImageIndex)}  WriteLineToDebugFile('');  WriteLineToDebugFile('Merge Series: ' + MergeSeriesName); {$EndIf}
+         DataInSeries := GetListOfDataInBoxInSeries(MergeSeriesName,inNWLat,inNWLong,inSELat,inSELong);
+         if (DataInSeries <> Nil) then begin
+            DataType := UpperCase(IndexSeriesTable.GetFieldByNameAsString('DATA_TYPE'));
+            if (DataType = 'DEMS') or (DataType = 'BATHY') then begin
+               LoadTheDEMs(DataInSeries);
+               {$IfDef RecordMerge} WriteLineToDebugFile('LoadTheDEMs completed'); {$EndIf}
+            end
+            else begin
+               {$ifDef ExSat}
+               {$Else}
+                  for I := 0 to pred(DataInSeries.Count) do begin
+                      fName := DataInSeries.Strings[i];
+                      {$If Defined(RecordIndex) or Defined(RecordImageIndex)} WriteLineToDebugFile('Load ' + fName); {$EndIf}
+                      OpenAndDisplayNewScene(nil,fName,true,true,(not GlobalDRGMap));
+                   end;
+               {$EndIf}
+               FreeAndNil(DataInSeries);
+            end;
          end;
+         IndexSeriesTable.Next;
       end;
-      IndexSeriesTable.Next;
+      IndexSeriesTable.Destroy;
+      ShowDefaultCursor;
+      Result := LoadOne;
+   finally
+      LoadingFromMapLibrary := false;
    end;
-   IndexSeriesTable.Destroy;
-   ShowDefaultCursor;
-   Result := LoadOne;
    {$If Defined(RecordIndex) or Defined(RecordImageIndex)} WriteLineToDebugFile('Out LoadMapLibraryBox'); {$EndIf}
 end;
 

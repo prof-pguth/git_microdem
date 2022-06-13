@@ -2220,6 +2220,7 @@ end;
 
 procedure tDEMDataSet.AssignProjectionFromDEM(var MapProjection : tMapProjection; DebugName : shortstring);
 begin
+   {$IfDef RecordCreateNewDEM} WriteLineToDebugFile('tDEMDataSet.AssignProjectionFromDEM out, projection=' + MapProjection.GetProjectionName); {$EndIf}
    MapProjection.projUTMZone := DEMheader.UTMZone;
    MapProjection.LatHemi := DEMheader.LatHemi;
    if (DEMheader.wktString <> '') then begin
@@ -2234,7 +2235,7 @@ begin
    end;
    MapProjection.ProjDebugName := DebugName;
    {$IfDef RecordProjectionParameters} MapProjection.ProjectionParamsToDebugFile('tDEMDataSet.AssignProjectionFromDEM, after definition'); {$EndIf}
-   {$IfDef RecordCreateNewDEM} WriteLineToDebugFile('tDEMDataSet.AssignProjectionFromDEM, projection=' + MapProjection.GetProjectionName); {$EndIf}
+   {$IfDef RecordCreateNewDEM} WriteLineToDebugFile('tDEMDataSet.AssignProjectionFromDEM out, projection=' + MapProjection.GetProjectionName); {$EndIf}
 end;
 
 
@@ -2286,7 +2287,7 @@ var
 
       begin {proc InitializeDatum}
          {$IfDef RecordDefineDatum} WriteLineToDebugFile('InitializeDatum enter for DEM, proj=' + DEMMapProjection.GetProjectionName); {$EndIf}
-         if (DEMheader.DigitizeDatum in [Rectangular{,SinusEllip}]) then exit;
+         if (DEMheader.DigitizeDatum in [Rectangular]) then exit;
 
          if (DEMheader.WKTString <> '') then begin
             DEMMapProjection.WKTProjectionFromString(DEMheader.WKTString);
@@ -2967,6 +2968,7 @@ var
    i : integer;
    SlopeAsp : tSlopeAspectRec;
 begin
+   Result := MaxSmallInt;
    if GetSlopeAndAspect(x,y,SlopeAsp) then begin
       try
          Sum := 0;
@@ -2978,9 +2980,6 @@ begin
       except
           on Exception do Result := MaxSmallInt;
       end;
-   end
-   else begin
-      Result := MaxSmallInt;
    end;
 end;
 
@@ -3982,26 +3981,26 @@ finalization
    {$IfDef RecordCreateNewDEM} WriteLineToDebugFile('RecordCreateNewDEM in read_dem');   {$EndIf}
    {$IfDef RecordGDAL} WriteLineToDebugFile('RecordGDALProblems in read_dem'); {$EndIf}
    {$IfDef RecordWorldFile} WriteLineToDebugFile('RecordWorldFileProblems in read_dem'); {$EndIf}
-   {$IfDef RecordLOS} WriteLineToDebugFile('RecordLOSProblems in demcoord');{$EndIf}
-   {$IfDef RecordWriteDEM} WriteLineToDebugFile('RecordWriteDEMProblems in demcoord');{$EndIf}
-   {$IfDef RecordClosing} WriteLineToDebugFile('RecordClosingProblems in demcoord');{$EndIf}
-   {$IfDef RecordCloseDEM} WriteLineToDebugFile('RecordCloseDEM in demcoord');{$EndIf}
-   {$IfDef RecordResample} WriteLineToDebugFile('RecordResampleProblems in demcoord');{$EndIf}
-   {$IfDef RecordHorizon} WriteLineToDebugFile('RecordHorizonProblems in demcoord');{$EndIf}
-   {$IfDef RecordDetailedHorizon} WriteLineToDebugFile('RecordDetailedHorizonProblems in demcoord  (performance degrader)');{$EndIf}
-   {$IfDef RecordPointClass} WriteLineToDebugFile('RecordPointClassProblems in demcoord  (performance degrader)');{$EndIf}
-   {$IfDef RecordGetStraightRoute} WriteLineToDebugFile('RecordGetStraightRoute in demcoord  (performance degrader)');{$EndIf}
-   {$IfDef RecordDetailedResample} WriteLineToDebugFile('RecordDetailedResampleProblems in demcoord  (performance degrader)');{$EndIf}
-   {$IfDef RecordLOSAlgorithm} WriteLineToDebugFile('RecordLOSAlgorithm in demcoord');{$EndIf}
+   {$IfDef RecordLOS} WriteLineToDebugFile('RecordLOSProblems in demcoord'); {$EndIf}
+   {$IfDef RecordWriteDEM} WriteLineToDebugFile('RecordWriteDEMProblems in demcoord'); {$EndIf}
+   {$IfDef RecordClosing} WriteLineToDebugFile('RecordClosingProblems in demcoord'); {$EndIf}
+   {$IfDef RecordCloseDEM} WriteLineToDebugFile('RecordCloseDEM in demcoord'); {$EndIf}
+   {$IfDef RecordResample} WriteLineToDebugFile('RecordResampleProblems in demcoord'); {$EndIf}
+   {$IfDef RecordHorizon} WriteLineToDebugFile('RecordHorizonProblems in demcoord'); {$EndIf}
+   {$IfDef RecordDetailedHorizon} WriteLineToDebugFile('RecordDetailedHorizonProblems in demcoord  (performance degrader)'); {$EndIf}
+   {$IfDef RecordPointClass} WriteLineToDebugFile('RecordPointClassProblems in demcoord  (performance degrader)'); {$EndIf}
+   {$IfDef RecordGetStraightRoute} WriteLineToDebugFile('RecordGetStraightRoute in demcoord  (performance degrader)'); {$EndIf}
+   {$IfDef RecordDetailedResample} WriteLineToDebugFile('RecordDetailedResampleProblems in demcoord  (performance degrader)'); {$EndIf}
+   {$IfDef RecordLOSAlgorithm} WriteLineToDebugFile('RecordLOSAlgorithm in demcoord'); {$EndIf}
    {$IfDef RecordFullStraightRoute} WriteLineToDebugFile('RecordFullStraightRoute in demcoord  (performance degrader)'); {$EndIf}
    {$IfDef RecordGetUTMStraightRoute} WriteLineToDebugFile('RecordGetUTMStraightRoute in demcoord  (performance degrader)'); {$EndIf}
    {$IfDef RecordDEMHeader} WriteLineToDebugFile('RecordDEMHeader in demcoord'); {$EndIf}
-   {$IfDef SPCS} WriteLineToDebugFile('SPCS in demcoord');{$EndIf}
+   {$IfDef SPCS} WriteLineToDebugFile('SPCS in demcoord'); {$EndIf}
    {$IfDef Filter} WriteLineToDebugFile('Filter in demcoord  (big slowdown)'); {$EndIf}
    {$IfDef RecordDEMMapProjection} WriteLineToDebugFile('RecordDEMMapProjectionProblems in demcoord'); {$EndIf}
    {$IfDef RecordVariogram} WriteLineToDebugFile('RecordVariogram in demcoord'); {$EndIf}
    {$IfDef TriPrismErrors} WriteLineToDebugFile('TriPrismErrors in demcoord'); {$EndIf}
-   {$IfDef TriPrismResults} WriteLineToDebugFile('TriPrismResults in demcoord');{$EndIf}
+   {$IfDef TriPrismResults} WriteLineToDebugFile('TriPrismResults in demcoord'); {$EndIf}
    {$IfDef RecordGridIdentical} WriteLineToDebugFile('RecordGirdIdentical  in demcoord'); {$EndIf}
    {$IfDef RecordCreateNewDEM} WriteLineToDebugFile('RecordCreateNewDEM  in demcoord'); {$EndIf}
    {$IfDef RecordVegGrid} WriteLineToDebugFile('RecordVegGrid  in demcoord'); {$EndIf}

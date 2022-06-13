@@ -1591,7 +1591,6 @@ begin
    LiveFlySpeedButton.Visible := MDDef.ShowViews and (MDDef.ProgramOption in [ExpertProgram]);
    FlyThrough1.Visible := FlySpeedButton.Visible;
    LOSButton.Visible := (MDDef.ProgramOption in [ExpertProgram]);
-   //SpeedButton3.Visible := not (MDDef.ProgramOption in [ShipwrecksProgram,EconProgram]);
 
    LOS1.Visible := LOSButton.Visible;
    LOS1.Caption := '&LOS';
@@ -1603,8 +1602,6 @@ begin
    Horizontalearthcurvature1.Visible := ExpertDEMVersion;
    Clustergrids1.Visible := ExpertDEMVersion;
 
-  // Pointspacing1.Visible := ExpertDEMVersion;
-
    Superimposedtopoprofiles1.Visible := (NumDEMDataSetsOpen > 1) and (MDDef.ShowDEMcompare) and (MDDef.ProgramOption = ExpertProgram);
 
    Newpanorama1.Visible := (NumDEMDataSetsOpen > 0) and (MDDef.ProgramOption = ExpertProgram);
@@ -1613,7 +1610,6 @@ begin
    Openshapefilemap1.Visible := (MDDef.ProgramOption in [ExpertProgram,GeographyProgram]);
    OpenDataBaseWithoutMap1.Visible := (MDDef.ProgramOption = ExpertProgram);
 
-   //ContourGhosts1.Visible := ExpertDEMVersion;
    DEMProperties1.Visible := ExpertDEMVersion;
    View1.Visible := (NumDEMDataSetsOpen > 0) and (MDDef.ShowViews) and (MDDef.ProgramOption <> DragonPlotProgram);
 
@@ -1797,6 +1793,7 @@ procedure ProcessCommandLine(CommandLine : AnsiString);
 var
    Key,Value : AnsiString;
    DEM,NewDEM : integer;
+   FileList : tStringList;
    Action,xval,yval : shortstring;
    infile,outfile,upfile,downfile : PathStr;
 
@@ -1834,6 +1831,11 @@ begin
       if Key = 'X' then xval := Value;
       if Key = 'Y' then yval := Value;
       if Key = 'RAD' then MDDef.OpenBoxSizeMeters := StrToInt(Value);
+      if Key = 'FILELIST' then begin
+         FileList := tStringList.Create;
+         FileList.LoadFromFile(Value)
+      end;
+
       if Key = 'PROJ' then begin
           if Value = 'UTM' then MDDef.LidarGridProjection := 0;
           if Value = 'GEO' then MDDef.LidarGridProjection := 1;
@@ -1862,6 +1864,8 @@ begin
       {$EndIf}
    end;
 
+   {$IfDef RecordCommandLine} writeLineToDebugFile('action=' + Action); {$EndIf}
+
    if Action = 'DEM2JSON' then begin
       if OpenADEM then begin
          DEMGlb[DEM].SaveAsGeoJSON;
@@ -1869,7 +1873,6 @@ begin
    end;
 
    if Action = 'RESAMPAVG' then begin
-      {$IfDef RecordCommandLine} writeLineToDebugFile('do resample averaging'); {$EndIf}
       if OpenADEM(true) then begin
          {$IfDef RecordCommandLine} writeLineToDebugFile('dem opened'); {$EndIf}
          NewDEM := DEMGlb[DEM].ResampleByAveraging(false, false,Outfile);
@@ -1878,7 +1881,6 @@ begin
    end;
 
    if Action = 'SLOPEMAP' then begin
-      {$IfDef RecordCommandLine} writeLineToDebugFile('do slope map'); {$EndIf}
       if OpenADEM then begin
          {$IfDef RecordCommandLine} writeLineToDebugFile('dem opened'); {$EndIf}
          NewDEM := CreateSlopeMap(DEM,false);
@@ -1888,8 +1890,16 @@ begin
       end;
    end;
 
+   if Action = 'DEMIX-CRITERIA' then begin
+      ComputeDEMIXstats(FileList);
+   end;
+
+   if Action = 'DEMIX-CREATE-REF' then begin
+      BatchResampleForDEMIX(FileList);
+   end;
+
+
    if Action = 'OPENMAP' then begin
-      {$IfDef RecordCommandLine} writeLineToDebugFile('do openness map'); {$EndIf}
       if OpenADEM then begin
          {$IfDef RecordCommandLine} writeLineToDebugFile('dem opened'); {$EndIf}
          MDDef.DoUpOpen := (UpFile <> '');
@@ -1905,7 +1915,6 @@ begin
 
 
    if Action = 'SLOPEUNCERTAIN' then begin
-      {$IfDef RecordCommandLine} writeLineToDebugFile('do slope uncertainty'); {$EndIf}
       if OpenADEM then begin
          if (xval <> '') then CarlosXRecord := StrToInt(xVal);
          if (yval <> '') then CarlosYRecord := StrToInt(yVal);
@@ -1930,7 +1939,6 @@ begin
    {$EndIf}
 
    if Action = 'LCP' then begin
-      {$IfDef RecordCommandLine} writeLineToDebugFile('Command line Call LeastCostPathOptions'); {$EndIf}
       LeastCostPathOptions(1);
    end;
 
@@ -2009,11 +2017,7 @@ var
            else begin
               ShowDragonPlot := false;
               MDDef.ProgramOption := ExpertProgram;
-              //if TrilobiteComputer then UnCustomizeMDDefaultsForDragonPlot;
            end;
-         end
-         else begin
-           //if TrilobiteComputer then UnCustomizeMDDefaultsForDragonPlot;
          end;
       end;
 

@@ -1588,7 +1588,7 @@ procedure GetFields(Table : tMyData; VisCols : Array100Boolean; TypesAllowed : t
 var
    i : integer;
 begin
-   {$IfDef RecordGetField} WriteLineToDebugFile('GetFields');{$Endif}
+   {$IfDef RecordGetField} WriteLineToDebugFile('GetFields'); {$EndIf}
    FieldsInDB := tStringList.Create;
    if SortFields then FieldsInDB.Sorted := true;
    if (Table <> Nil) then with Table do begin
@@ -1826,11 +1826,11 @@ initialization
    ForceAllInStringGrid := false;
    WeKnowTheHeader := false;
 finalization
-   {$IfDef RecordDataBaseFilter} WriteLineToDebugFile('RecordDataBaseFilter active in petdbutils');{$EndIf}
-   {$IfDef RecordDataBaseImage} WriteLineToDebugFile('RecordDataBaseImage active in petdbutils');{$EndIf}
-   {$IfDef RecordOpenDB} WriteLineToDebugFile('RecordOpenDB active in petdbutils');{$EndIf}
-   {$IfDef RecordDBF} WriteLineToDebugFile('RecordDBF active in petdbutils');{$EndIf}
-   {$IfDef RecordFieldPresent} WriteLineToDebugFile('RecordFieldPresent active in petdbutils');{$EndIf}
+   {$IfDef RecordDataBaseFilter} WriteLineToDebugFile('RecordDataBaseFilter active in petdbutils'); {$EndIf}
+   {$IfDef RecordDataBaseImage} WriteLineToDebugFile('RecordDataBaseImage active in petdbutils'); {$EndIf}
+   {$IfDef RecordOpenDB} WriteLineToDebugFile('RecordOpenDB active in petdbutils'); {$EndIf}
+   {$IfDef RecordDBF} WriteLineToDebugFile('RecordDBF active in petdbutils'); {$EndIf}
+   {$IfDef RecordFieldPresent} WriteLineToDebugFile('RecordFieldPresent active in petdbutils'); {$EndIf}
    {$IfDef ListOpenDB} WriteLineToDebugFile('ListOpenDB active in petdbutils'); {$EndIf}
    {$IfDef RecordStringFromTable} WriteLineToDebugFile('RecordStringFromTable active in petdbutils');   {$EndIf}
    {$IfDef RecordRange} WriteLineToDebugFile('RecordRange active in petdbutils'); {$EndIf}

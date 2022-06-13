@@ -9,18 +9,29 @@
 
 
 function TMapForm.MakeTempGrid(OpenMap : boolean = false; GetParameters : boolean = false) : integer;
+var
+   UTMzone : integer;
+   Latch : ANSIchar;
 begin
    {$IfDef RecordMakeGrid} WriteLineToDebugFile('MakeTempGrid in'); {$EndIf}
-    if GetParameters then GetGridParameters;
-    WGS84DatumConstants.DefineDatumFromUTMZone('WGS84',MDdef.DefaultUTMZone,MDdef.DefaultLatHemi,'LAS RedefineWGS84');
-    if (MDDef.LidarGridProjection = UTMBasedDEM) then begin
-       Result := CreateGridToMatchMap(cgUTM,OpenMap,FloatingPointDEM,MDDef.DefLidarXGridSize,MDDef.DefLidarYGridSize,MDdef.DefaultUTMZone,MDDef.LasDEMPixelIs);
-    end
-    else if (MDDef.LidarGridProjection = ArcSecDEM) then begin
-       Result := CreateGridToMatchMap(cgLatLong,OpenMap,FloatingPointDEM,MDDef.DefLidarGeoGridSizeX,MDDef.DefLidarGeoGridSizeY,MDdef.DefaultUTMZone,MDDef.LasDEMPixelIs);
+    if GetParameters then begin
+       GetGridParameters;
+       UTMzone := MDdef.DefaultUTMZone;
+       Latch := MDdef.DefaultLatHemi;
     end
     else begin
-       Result := CreateGridToMatchMap(cgWKT,OpenMap,FloatingPointDEM,MDDef.DefWKTGridSize,MDDef.DefWKTGridSize,MDdef.DefaultUTMZone,MDDef.LasDEMPixelIs);
+       UTMzone := MapDraw.PrimMapProj.projUTMZone;
+       Latch := MapDraw.PrimMapProj.LatHemi;
+    end;
+    WGS84DatumConstants.DefineDatumFromUTMZone('WGS84',UTMZone,LatCh,'LAS RedefineWGS84');
+    if (MDDef.LidarGridProjection = UTMBasedDEM) then begin
+       Result := CreateGridToMatchMap(cgUTM,OpenMap,FloatingPointDEM,MDDef.DefLidarXGridSize,MDDef.DefLidarYGridSize,UTMZone,MDDef.LasDEMPixelIs);
+    end
+    else if (MDDef.LidarGridProjection = ArcSecDEM) then begin
+       Result := CreateGridToMatchMap(cgLatLong,OpenMap,FloatingPointDEM,MDDef.DefLidarGeoGridSizeX,MDDef.DefLidarGeoGridSizeY,UTMZone,MDDef.LasDEMPixelIs);
+    end
+    else begin
+       Result := CreateGridToMatchMap(cgWKT,OpenMap,FloatingPointDEM,MDDef.DefWKTGridSize,MDDef.DefWKTGridSize,UTMZone,MDDef.LasDEMPixelIs);
     end;
     DEMGlb[Result].DEMheader.ElevUnits := Undefined;
     DEMGlb[Result].AreaName := 'new_grid';

@@ -481,7 +481,6 @@ begin
 end;
 
 
-
 function GetFieldFromXMLMetadata(fName : PathStr; Field : Shortstring) : shortstring;
 var
    sl : tStringList;
@@ -502,7 +501,6 @@ begin
    end;
    sl.Destroy;
 end;
-
 
 
 function UNIXTimeToDateTime(UnixTime: LongWord): TDateTime;
@@ -763,11 +761,11 @@ end;
 
 {$IfDef ExOSM}
 {$Else}
-function IsThisAnOSMshapefile(fName : PathStr) : boolean;
-begin
-   fName := UpperCase(fName);
-   Result := FileExists(ChangeFileExt(fName,'.SHP')) and (StrUtils.AnsiContainsText(fName,'OPENSTREETMAP') or StrUtils.AnsiContainsText(fName,'OSM')or StrUtils.AnsiContainsText(fName,'PLANET_'));
-end;
+   function IsThisAnOSMshapefile(fName : PathStr) : boolean;
+   begin
+      fName := UpperCase(fName);
+      Result := FileExists(ChangeFileExt(fName,'.SHP')) and (StrUtils.AnsiContainsText(fName,'OPENSTREETMAP') or StrUtils.AnsiContainsText(fName,'OSM')or StrUtils.AnsiContainsText(fName,'PLANET_'));
+   end;
 {$EndIf}
 
 function CheckIfTigerOrOSM(fName : PathStr) : boolean;
@@ -3059,7 +3057,6 @@ var
          AParameter('GISDB','AddFitNav',AddFitNav,true);
          AParameter('GISDB','DBfilterCaseInSensitive',DBfilterCaseInSensitive,true);
          AParameter('GISDB','SaveIntermediateDBs',SaveIntermediateDBs,false);
-         //AParameter('GISDB','AutoEnhanceShapeFiles',AutoEnhanceShapeFiles,true);
          AParameter('GISDB','DupeImportsAllowed',DupeImportsAllowed,false);
          AParameter('GISDB','DefDBFilter',DefDBFilter,0);
          AColorParameter('GISDB','DBOutlineColor',DBOutlineColor,claRed);
@@ -3134,7 +3131,6 @@ var
             AParameter('GISDB','OSMtoCDS',OSMtoCDS,true);
          {$EndIf}
 
-
          //AColorParameter('GISDB','CanEditGIS',CanEditGIS,egisSometimes);
          if (IniWhat = iniWrite) then IniFile.WriteInteger('GISDB','CanEditGIS',ord(CanEditGIS));
          if (IniWhat = iniRead) then CanEditGIS := tCanEditGIS(IniFile.ReadInteger('GISDB','CanEditGIS',ord(egisSometimes)));
@@ -3158,22 +3154,20 @@ var
       {$IfDef RecordINIfiles} WriteLineToDebugFile('MapDraweSettings'); {$EndIf}
       with MDIniFile,MDDef do begin
          {$IfDef VCL}
-         AParameter('MapDraw','MapSizeToVerify',MapSizeToVerify,SystemMemorySize div 1024 div 1024 div 32);
-         AParameter('MapDraw','DefaultMapXSize',DefaultMapXSize,Screen.Width-25);
-         AParameter('MapDraw','DefaultMapYSize',DefaultMapYSize,Screen.Height-25);
+            AParameter('MapDraw','MapSizeToVerify',MapSizeToVerify,SystemMemorySize div 1024 div 1024 div 32);
+            AParameter('MapDraw','DefaultMapXSize',DefaultMapXSize,Screen.Width-25);
+            AParameter('MapDraw','DefaultMapYSize',DefaultMapYSize,Screen.Height-25);
          {$EndIf}
 
          {$IfDef FMX}
-         AParameter('MapDraw','MapSizeToVerify',MapSizeToVerify,200);
-         AParameter('MapDraw','DefaultMapXSize',DefaultMapXSize,1200);
-         AParameter('MapDraw','DefaultMapYSize',DefaultMapYSize,800);
+            AParameter('MapDraw','MapSizeToVerify',MapSizeToVerify,200);
+            AParameter('MapDraw','DefaultMapXSize',DefaultMapXSize,1200);
+            AParameter('MapDraw','DefaultMapYSize',DefaultMapYSize,800);
          {$EndIf}
 
          AParameter('MapDraw','MaxMapSize',MaxMapSize,24000);
          AParameter('MapDraw','MaxDrapeXSize',MaxDrapeXSize,2000);
          AParameter('MapDraw','MaxDrapeYSize',MaxDrapeYSize,2000);
-         //AParameter('MapDraw','DefaultVMapXSize',DefaultVMapXSize,640);
-         //AParameter('MapDraw','DefaultVMapYSize',DefaultVMapYSize,480);
          AParameter('MapDraw','DefaultTerrainXSize',DefaultTerrainXSize,600);
          AParameter('MapDraw','DefaultTerrainYSize',DefaultTerrainYSize,600);
          AParameter('MapDraw','SinglePixel',SinglePixel,true);
@@ -3204,7 +3198,6 @@ var
          AParameter('MapDraw','LargeScaleWorldOutlinePixelSize',LargeScaleWorldOutlinePixelSize,250);
          AParameter('MapDraw','MedScaleWorldOutlinePixelSize',MedScaleWorldOutlinePixelSize,1500);
          AParameter('MapDraw','SmallScaleWorldOutlinePixelSize',SmallScaleWorldOutlinePixelSize,10000);
-         //AParameter('MapDraw','AspectContinuous',AspectContinuous,false);
          AParameter('MapDraw','AspectMapMode',AspectMapMode,0);
 
          AParameter('MapDraw','MaxSlopeOnMaps',MaxSlopeOnMaps,100);
@@ -4992,7 +4985,6 @@ end;
 
 procedure SetDefaults;
 begin
-   //{$IfDef RecordDefault} ShowKeyDefaults('Enter SetDefaults'); {$EndIf}
    RecordDirs('Set Defaults in');
    ProcessIniFile(iniInit);
    RecordDirs('Set Defaults out');
@@ -5008,19 +5000,6 @@ begin
    Result := FileExists(MrSidDecodeName) and FileExists(MrSidInfoName);
 end;
 
-(*
-{$IfDef RecordDefault}
-   procedure ShowKeyDefaults(Mess : shortString);
-   begin
-      WriteLineToDebugFile(Mess);
-      WriteLineToDebugFile('  Default map: ' + IntToStr(Ord(MDDef.DefDEMMap)));
-      WriteLineToDebugFile('  Persp width=' + IntToStr(MDDef.PerspectiveOptions.PersWidth) + '    & height=' + IntToStr(MDDef.PerspectiveOptions.PersHeight));
-      WriteLineToDebugFile('  Persp first profile= ' + IntToStr(MDDef.PerspectiveOptions.PersFirstProfile));
-      WriteLineToDebugFile('  NapEarth = ' + TrueOrFalse(MDDef.PerspectiveOptions.NapEarth));
-      WriteLineToDebugFile('  Vertical earth curvature = ' + CurvAlgName(MDDef.CurvAlg));
-   end;
-{$EndIf}
-*)
 
 procedure LoadMDdefaults;
 

@@ -226,15 +226,6 @@ object DemHandForm: TDemHandForm
         Caption = 'Line KML to shapefile'
         OnClick = LineKML1Click
       end
-      object JavascripttoDBF1: TMenuItem
-        Caption = 'Javascript to DBF'
-      end
-      object N9: TMenuItem
-        Caption = '-'
-      end
-      object Drainagebasinoperations1: TMenuItem
-        Caption = 'Drainage basin operations'
-      end
     end
     object Export1: TMenuItem
       Caption = '&Export'
@@ -256,13 +247,6 @@ object DemHandForm: TDemHandForm
       object LASfilesbysize1: TMenuItem
         Caption = 'LAS files by size'
         OnClick = LASfilesbysize1Click
-      end
-    end
-    object Thin1: TMenuItem
-      Caption = '&Thin'
-      object ASCIIfile1: TMenuItem
-        Caption = '&ASCII file'
-        OnClick = ASCIIfile1Click
       end
     end
     object Resample1: TMenuItem
@@ -429,10 +413,6 @@ object DemHandForm: TDemHandForm
           Caption = 'FLT files'
           OnClick = FLTfiles1Click
         end
-        object CDEDdirectorytoMDDEM1: TMenuItem
-          Caption = 'DEM files (MD, CDED, USGS ASCII)'
-          OnClick = CDEDdirectorytoMDDEM1Click
-        end
         object ADFdirectory1: TMenuItem
           Caption = 'ADF directories'
           OnClick = ADFdirectory1Click
@@ -557,13 +537,6 @@ object DemHandForm: TDemHandForm
       object PrepOSMfiles1: TMenuItem
         Caption = 'Prep OSM/Natural Earth/GADM files'
         OnClick = PrepOSMfiles1Click
-      end
-      object N8: TMenuItem
-        Caption = '-'
-      end
-      object N12: TMenuItem
-        Caption = 'Repair Sentinel-2'
-        OnClick = N12Click
       end
     end
     object Create1: TMenuItem

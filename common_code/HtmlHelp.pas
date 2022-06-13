@@ -8,11 +8,7 @@
 
 unit HtmlHelp;
 
-
-
 interface
-
-
 
 uses
     windows,Graphics;

@@ -74,44 +74,13 @@ end;
 
 procedure ResampleForDEMIX(DEM : integer);
 var
-   NewDEM,NewDEM2 : integer;
+   NewDEM : integer;
    fName : PathStr;
 begin
    {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('');  WriteLineToDebugFile('ResampleForDEMIX DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
    SaveBackupDefaults;
    MDDef.DefDEMMap := mtDEMBlank;
-
-
-   (*
-   MDDef.LidarGridProjection := UTMDEM;
-   MDDef.LasDEMPixelIs := 1; //area
-
-
-   fName := ExtractFilePath(DEMGlb[DEM].DEMFileName) + 'md_' + DEMGlb[DEM].AreaName + '_0.5sec_area.tif';
-   NewDEM := DEMGlb[DEM].ResampleByAveraging(true,false,fName);
-   CloseSingleDEM(newDEM);
-   *)
-
-
    MDDef.LidarGridProjection := ArcSecDEM;
-
-
-   (*
-   MDdef.DefLidarGeoGridSizeX := 0.5;
-   MDdef.DefLidarGeoGridSizeY := 0.5;
-
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX 0.5 sec area');  {$EndIf}
-   MDDef.LasDEMPixelIs := 1; //area
-   fName := ExtractFilePath(DEMGlb[DEM].DEMFileName) + 'md_' + DEMGlb[DEM].AreaName + '_0.5sec_area.tif';
-   NewDEM := DEMGlb[DEM].ResampleByAveraging(true,false,fName);
-   CloseSingleDEM(newDEM);
-
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX 0.5 sec point');  {$EndIf}
-   MDDef.LasDEMPixelIs := 2; //point
-   fName := ExtractFilePath(DEMGlb[DEM].DEMFileName) + 'md_' + DEMGlb[DEM].AreaName + '_0.5sec_point.tif';
-   NewDEM := DEMGlb[DEM].ResampleByAveraging(true,false,fName);
-   CloseSingleDEM(newDEM);
-   *)
 
    {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX 1 sec area');  {$EndIf}
    MDdef.DefLidarGeoGridSizeX := 1;
@@ -121,57 +90,13 @@ begin
    fName := ExtractFilePath(DEMGlb[DEM].DEMFileName) + 'md_' + DEMGlb[DEM].AreaName + '_1sec_area.tif';
    {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX, ' + fName);  {$EndIf}
    NewDEM := DEMGlb[DEM].ResampleByAveraging(true,false,fName);
-
-
-
-
-
-   (*
-   fName := ExtractFilePath(DEMGlb[DEM].DEMFileName) + 'md_' + DEMGlb[DEM].AreaName + '_upsample_0.5sec_area.tif';
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX, ' + fName);  {$EndIf}
-   DEMGlb[NewDEM].ReinterpolateLatLongDEM(NewDEM2,0.5);
-   DEMGlb[NewDEM2].SaveAsGeotiff(FName);
-   CloseSingleDEM(newDEM2);
-
-
-
-
-
-   fName := ExtractFilePath(DEMGlb[DEM].DEMFileName) + 'md_' + DEMGlb[DEM].AreaName + '_1sec_reinterpolate_15m.tif';
-   DEMGlb[NewDEM].ReinterpolateUTMDEM(NewDEM2,15,DEMGlb[DEM].DEMHeader.UTMzone,fName);
-   DEMGlb[NewDEM2].SaveAsGeotiff(FName);
-   CloseSingleDEM(newDEM2);
-
-   fName := ExtractFilePath(DEMGlb[DEM].DEMFileName) + 'md_' + DEMGlb[DEM].AreaName + '_1sec_reinterpolate_25m.tif';
-   DEMGlb[NewDEM].ReinterpolateUTMDEM(NewDEM2,25,DEMGlb[DEM].DEMHeader.UTMzone,fName);
-   DEMGlb[NewDEM2].SaveAsGeotiff(FName);
-   CloseSingleDEM(newDEM2);
-
-   fName := ExtractFilePath(DEMGlb[DEM].DEMFileName) + 'md_' + DEMGlb[DEM].AreaName + '_1sec_reinterpolate_30m.tif';
-   DEMGlb[NewDEM].ReinterpolateUTMDEM(NewDEM2,30,DEMGlb[DEM].DEMHeader.UTMzone,fName);
-   DEMGlb[NewDEM2].SaveAsGeotiff(FName);
-   CloseSingleDEM(newDEM2);
-   *)
-
    CloseSingleDEM(newDEM);
-
-
 
    MDDef.LasDEMPixelIs := 2; //point
    fName := ExtractFilePath(DEMGlb[DEM].DEMFileName) + 'md_' + DEMGlb[DEM].AreaName + '_1sec_point.tif';
    {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX, ' + fName);  {$EndIf}
    NewDEM := DEMGlb[DEM].ResampleByAveraging(false,false,fName);
    DEMGlb[NewDEM].SetUpMap(NewDEM,true,mtDEMBlank);
-
-   (*
-   fName := ExtractFilePath(DEMGlb[DEM].DEMFileName) + 'md_' + DEMGlb[DEM].AreaName + '_upsample_0.5sec_point.tif';
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX, ' + fName);  {$EndIf}
-   DEMGlb[NewDEM].ReinterpolateLatLongDEM(NewDEM2,0.5);
-   DEMGlb[NewDEM2].SaveAsGeotiff(FName);
-   CloseSingleDEM(newDEM2);
-   *)
-
-
    CloseSingleDEM(newDEM);
 
    if (DEMGlb[DEM].DEMSWcornerLat > 50) and (DEMGlb[DEM].DEMSWcornerLat < 60) then begin

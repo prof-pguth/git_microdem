@@ -25,7 +25,7 @@
 
    {$IFDEF DEBUG}
       //{$Define RawProjectInverse}  //must also be set in BaseMap
-      {$Define RecordDEMIX}
+      //{$Define RecordDEMIX}
       //{$Define RecordStreamModeDigitize}
       //{$Define RecordPickRoute}
       //{$Define RecordMapResize}
@@ -2745,7 +2745,6 @@ const
    LockMaps : boolean = false;
 var
    EnsembleClassDB : integer;
-   HeavyDutyProcessing,
    //MergingDEMs,
    ClosingIsHappening : boolean;
    Sub,SteepestSlopeCol,SteepestSlopeRow,
@@ -3337,8 +3336,8 @@ var
 
 procedure EnsemblePrediction(Lat,Long : float64; var BestClass : Integer; var Agreement : float64);
 var
-   i,c,NumClass,cat,BestHighClass : integer;
-   z,prob,MaxProb,MaxHighProb : float32;
+   i,c,NumClass,cat{,BestHighClass} : integer;
+   z,prob,MaxProb{,MaxHighProb} : float32;
    MostLikelyHigh,
    MostLikely : array[1..15] of integer;
    ClassCat : array[1..15] of float32;
@@ -3354,9 +3353,9 @@ begin
          inc(NumClass);
          if DEMGlb[i].GetElevFromLatLongDegree(Lat,Long,z) then begin
            c := round(z);
-           MaxProb := 0;
-           MaxHighProb := 0;
-           BestHighClass := 0;
+          //MaxProb := 0;
+           //MaxHighProb := 0;
+           //BestHighClass := 0;
            for cat := 1 to 7 do begin
               prob := Prediction[i,c,cat];
               ClassCat[cat] := ClassCat[cat] + prob;
@@ -11118,7 +11117,7 @@ var
 
 
 begin
-    if DEMMergeInProgress or HeavyDutyProcessing {or MergingDEMs} or ClosingIsHappening or (wmDEM = Nil) or (MapDraw = Nil) or WMDEM.ProgramClosing or ClosingMapNow then begin
+    if DEMMergeInProgress or HeavyDutyProcessing or LoadingFromMapLibrary or ClosingIsHappening or (wmDEM = Nil) or (MapDraw = Nil) or WMDEM.ProgramClosing or ClosingMapNow then begin
        {$IfDef RecordStreamModeDigitize} WriteLineToDebugFile('TMapForm.Image1MouseMove out fast 1'); {$EndIf}
        exit;
     end;
@@ -21920,7 +21919,6 @@ var
    i : integer;
 begin
    {$IfDef MessageStartUpUnit} MessageToContinue('DEMMapf initialization'); {$EndIf}
-   HeavyDutyProcessing := false;
   // MergingDEMs := false;
    for i := 1 to MaxVectorMap do VectorMap[i] := Nil;
    VegGraph := Nil;

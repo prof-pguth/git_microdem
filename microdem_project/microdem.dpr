@@ -352,7 +352,7 @@ begin
   end
   else begin
     try
-      if GetLastError = ERROR_ALREADY_EXISTS then
+      if (GetLastError = ERROR_ALREADY_EXISTS) then
         MessageToContinue('Program already running.  Closing...')
       else begin
          {$IfDef MessageStartUpProblems} MessageToContinue('Startup microdem.dpr'); {$EndIf}
@@ -361,8 +361,7 @@ begin
          Application.Title := '';
          Application.HelpFile := 'microdem.chm';
          Application.CreateForm(Twmdem, wmdem);
-  Application.CreateForm(TSolorPosForm1, SolorPosForm1);
-  Application.Run;
+         Application.Run;
       end;
     finally
        CloseHandle(FMutex);

@@ -2291,7 +2291,7 @@ end;
            StartProgress('Extract CSV');
            MyData.First;
            repeat
-               {$IfDef RecordDataBaseSaveFileFull} WriteLineToDebugFile('count=' + IntToStr(Count));{$EndIf}
+               {$IfDef RecordDataBaseSaveFileFull} WriteLineToDebugFile('count=' + IntToStr(Count)); {$EndIf}
                if (Count mod 2000 = 0) then begin
                   UpdateProgressBar(Count / MyData.FiltRecsInDB);
                   EmpSource.Enabled := false;
@@ -2949,7 +2949,7 @@ end;
                FilesWanted : tStringList;
                i : integer;
             begin
-               {$IfDef RecordOpenDataBase} WriteLineToDebugFile('OpenADataBase in,fName=' + fName);{$EndIf}
+               {$IfDef RecordOpenDataBase} WriteLineToDebugFile('OpenADataBase in,fName=' + fName); {$EndIf}
                if (fName = '') then begin
                   FilesWanted := tStringList.Create;
                   FilesWanted.Add(ExtractFilePath(LastDataBase));
@@ -4334,7 +4334,7 @@ end;
       var
         I : Integer;
       begin
-        {$IfDef RecordDBindexes} WriteLineToDebugFile('Delete SX in ' + cIndexName);{$EndIf}
+        {$IfDef RecordDBindexes} WriteLineToDebugFile('Delete SX in ' + cIndexName); {$EndIf}
         TableX.active := False;
         TableX.IndexDefs.update;
         // Look for all Indizes
@@ -5952,16 +5952,16 @@ finalization
    {$IfDef RecordClosing} WriteLineToDebugFile('Closing demdatabase in'); {$EndIf}
    {$IfDef RecordZoomMap} WriteLineToDebugFile('RecordZoomMap active in demdatabase'); {$EndIf}
    {$IfDef RecordPlotDBRules} WriteLineToDebugFile('RecordPlotDBRules active in demdatabase'); {$EndIf}
-   {$IfDef RecordLineWidth} WriteLineToDebugFile('RecordLineWidth active in demdatabase');{$EndIf}
-   {$IfDef RecordID} WriteLineToDebugFile('RecordIDProblems active in demdatabase');{$EndIf}
-   {$IfDef RecordSPCS} WriteLineToDebugFile('RecordSPCSProblems active in demdatabase');{$EndIf}
-   {$IfDef RecordDBPlot} WriteLineToDebugFile('RecordDBPlot active in demdatabase');{$EndIf}
-   {$IfDef RecordDataBasePlotProblemsEveryPoint} WriteLineToDebugFile('RecordDataBasePlotProblemsEveryPoint active in demdatabase');{$EndIf}
-   {$IfDef RecordTiger} WriteLineToDebugFile('RecordTIGER active in demdatabase');{$EndIf}
-   {$IfDef RecordCloseDB} WriteLineToDebugFile('RecordCloseDBProblems active in demdatabase');{$EndIf}
-   {$IfDef RecordOpenDataBase} WriteLineToDebugFile('RecordOpenDataBaseProblems active in demdatabase');{$EndIf}
-   {$IfDef RecordPointInArea} WriteLineToDebugFile('RecordPointInAreaProblems active in demdatabase');{$EndIf}
-   {$IfDef RecordBeachBall} WriteLineToDebugFile('RecordBeachBallProblems active in demdatabase');{$EndIf}
+   {$IfDef RecordLineWidth} WriteLineToDebugFile('RecordLineWidth active in demdatabase'); {$EndIf}
+   {$IfDef RecordID} WriteLineToDebugFile('RecordIDProblems active in demdatabase'); {$EndIf}
+   {$IfDef RecordSPCS} WriteLineToDebugFile('RecordSPCSProblems active in demdatabase'); {$EndIf}
+   {$IfDef RecordDBPlot} WriteLineToDebugFile('RecordDBPlot active in demdatabase'); {$EndIf}
+   {$IfDef RecordDataBasePlotProblemsEveryPoint} WriteLineToDebugFile('RecordDataBasePlotProblemsEveryPoint active in demdatabase'); {$EndIf}
+   {$IfDef RecordTiger} WriteLineToDebugFile('RecordTIGER active in demdatabase'); {$EndIf}
+   {$IfDef RecordCloseDB} WriteLineToDebugFile('RecordCloseDBProblems active in demdatabase'); {$EndIf}
+   {$IfDef RecordOpenDataBase} WriteLineToDebugFile('RecordOpenDataBaseProblems active in demdatabase'); {$EndIf}
+   {$IfDef RecordPointInArea} WriteLineToDebugFile('RecordPointInAreaProblems active in demdatabase'); {$EndIf}
+   {$IfDef RecordBeachBall} WriteLineToDebugFile('RecordBeachBallProblems active in demdatabase'); {$EndIf}
    {$IfDef RecordMaskDEMShapeFile} WriteLineToDebugFile('RecordMaskDEMShapeFile active in demdatabase');   {$EndIf}
    {$IfDef RecordFilterDataBase} WriteLineToDebugFile('RecordFilterDataBase active in demdatabase');   {$EndIf}
    {$IfDef RecordLinkTable} WriteLineToDebugFile('RecordLinkTable active in demdatabase');   {$EndIf}

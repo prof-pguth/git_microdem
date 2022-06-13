@@ -1,10 +1,11 @@
 unit dem_tin;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{   file verified 6/22/2011       }
-{_________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{   file verified 6/22/2011              }
+{   6/2022: long time since unit tested  }
+{________________________________________}
 
 
 {$I nevadia_defines.inc}
@@ -25,8 +26,7 @@ unit dem_tin;
 {$EndIf}
 
 
-{Ware, J.M., 1998, A procedure for automatically correcting invalid flat triangles occurring in
-    triangulated contour data: Computers & Geoscience, vol.14, no.2, p141-150.}
+{Ware, J.M., 1998, A procedure for automatically correcting invalid flat triangles occurring in triangulated contour data: Computers & Geoscience, vol.14, no.2, p141-150.}
 
 
 interface
@@ -273,10 +273,10 @@ begin
 
          {$IfDef ExTINGraph}
          {$Else}
-         If ImportParamsDialog.CheckBox1.Checked then begin
-            PlotForm := TThisContourGraph.Create(Application);
-            PlotForm.OpenXYZFile(rfile);
-         end;
+            If ImportParamsDialog.CheckBox1.Checked then begin
+               PlotForm := TThisContourGraph.Create(Application);
+               PlotForm.OpenXYZFile(rfile);
+            end;
          {$EndIf};
 
          reset(InputFile);
@@ -309,12 +309,12 @@ begin
 
                {$IfDef ExTINGraph}
                {$Else}
-               If ImportParamsDialog.CheckBox1.Checked then begin
-                  v[1] := x;
-                  v[2] := y;
-                  v[3] := z;
-                  BlockWrite(rfile,v,1);
-               end;
+                  If ImportParamsDialog.CheckBox1.Checked then begin
+                     v[1] := x;
+                     v[2] := y;
+                     v[3] := z;
+                     BlockWrite(rfile,v,1);
+                  end;
                {$EndIf}
 
                if (abs(x) > 0.001) and (abs(Y) > 0.0001) then begin
@@ -389,33 +389,33 @@ begin
 
          {$IfDef ExTINGraph}
          {$Else}
-         If ImportParamsDialog.CheckBox1.Checked then begin
-            PlotForm.Caption := FileName + ' Data Points';
-            with PlotForm,GraphDraw do begin
-                 MinHorizAxis := xMin;
-                 MaxHorizAxis := xMax;
-                 MinVertAxis := yMin;
-                 MaxVertAxis := yMax;
-                 MaxZ := zMax / ImportParamsDialog.zMult;
-                 MinZ := zMin / ImportParamsDialog.zMult;
-                 SetUpGraphForm;
-                 GraphDraw.CorrectScaling := true;
-                 CloseFile(rfile);
-                 PadAxis(MinHorizAxis,MaxHorizAxis);
-                 PadAxis(MinVertAxis,MaxVertAxis);
-                 GraphDraw.GraphDrawn := false;
-                 xs := ClientWidth - LeftMargin;
-                 ys := ClientHeight - BottomMargin;
-                 xs := (MaxHorizAxis - MinHorizAxis) / xs;
-                 ys := (MaxVertAxis - MinVertAxis) / ys;
-                 if (XS/ys < 5) and (xs/ys > 0.2) then begin
-                    if xs < ys then ClientWidth := round( (MaxHorizAxis - MinHorizAxis) / ys + LeftMargin)
-                    else ClientHeight := round( (MaxVertAxis - MinVertAxis) / xs + BottomMargin);
-                 end;
-                 GraphDraw.GraphDrawn := true;
-                 RedrawDiagram11Click(nil);
+            If ImportParamsDialog.CheckBox1.Checked then begin
+               PlotForm.Caption := FileName + ' Data Points';
+               with PlotForm,GraphDraw do begin
+                    MinHorizAxis := xMin;
+                    MaxHorizAxis := xMax;
+                    MinVertAxis := yMin;
+                    MaxVertAxis := yMax;
+                    MaxZ := zMax / ImportParamsDialog.zMult;
+                    MinZ := zMin / ImportParamsDialog.zMult;
+                    SetUpGraphForm;
+                    GraphDraw.CorrectScaling := true;
+                    CloseFile(rfile);
+                    PadAxis(MinHorizAxis,MaxHorizAxis);
+                    PadAxis(MinVertAxis,MaxVertAxis);
+                    GraphDraw.GraphDrawn := false;
+                    xs := ClientWidth - LeftMargin;
+                    ys := ClientHeight - BottomMargin;
+                    xs := (MaxHorizAxis - MinHorizAxis) / xs;
+                    ys := (MaxVertAxis - MinVertAxis) / ys;
+                    if (XS/ys < 5) and (xs/ys > 0.2) then begin
+                       if xs < ys then ClientWidth := round( (MaxHorizAxis - MinHorizAxis) / ys + LeftMargin)
+                       else ClientHeight := round( (MaxVertAxis - MinVertAxis) / xs + BottomMargin);
+                    end;
+                    GraphDraw.GraphDrawn := true;
+                    RedrawDiagram11Click(nil);
+               end;
             end;
-         end;
          {$EndIf}
          xyzTable.Destroy;
       end;
@@ -432,9 +432,7 @@ var
    x,y,xs1,ys1,xs2,ys2,xs3,ys3 : integer;
 begin
    if (BaseMap <> Nil) then begin
-      {$IfDef RecordTINProblems}
-      WriteLineToDebugFile('tTIN.ShowTrianglesOnMap');
-      {$EndIf}
+      {$IfDef RecordTINProblems} WriteLineToDebugFile('tTIN.ShowTrianglesOnMap'); {$EndIf}
 
       BaseMap.Image1.Canvas.Pen.Width := MDDef.DelaunayLineThick;
       BaseMap.Image1.Canvas.Pen.Color := ConvertPlatformColorToTColor(MDDef.DelaunayLineColor);
@@ -519,7 +517,6 @@ begin
          PlotForm2.TINInterpolateButton.Visible := true;
          PlotForm2.Panel1.Visible := true;
          PlotForm2.Panel1.Height := 35;
-         //PlotForm2.Close;
          PlotForm2 := Nil;
          TinTable := tMyData.Create(TriFName);
    {$EndIf}
@@ -596,7 +593,7 @@ var
    NewHeadRecs : tDEMheader;
    {$IfDef ExTINGraph}
    {$Else}
-   Bitmap : tMyBitmap;
+      Bitmap : tMyBitmap;
    {$EndIf}
 begin
    {$IfDef RecordTINProblems} WriteLineToDebugFile('tTIN.InterpolateDEM'); {$EndIf}
@@ -610,7 +607,7 @@ begin
       Count := 0;
       {$IfDef ExTINGraph}
       {$Else}
-      CopyImageToBitmap(PlotForm2.Image1,Bitmap);
+         CopyImageToBitmap(PlotForm2.Image1,Bitmap);
       {$EndIf}
       while not TinTable.Eof do begin
          inc(count);
@@ -623,8 +620,8 @@ begin
                if ElevInTriangle(Long,Lat,z) then begin
                   {$IfDef ExTINGraph}
                   {$Else}
-                  ScreenSymbol(Bitmap.Canvas,PlotForm2.GraphDraw.GraphX(long),Plotform2.GraphDraw.GraphY(lat),FilledBox,1,
-                      PlatformRainBowColorFunct(z,ContourData^.zmin,ContourData^.zmax));
+                     ScreenSymbol(Bitmap.Canvas,PlotForm2.GraphDraw.GraphX(long),Plotform2.GraphDraw.GraphY(lat),FilledBox,1,
+                         PlatformRainBowColorFunct(z,ContourData^.zmin,ContourData^.zmax));
                   {$EndIf}
                   if GridInDataSet(X,Y) then begin
                      SetGridElevation(x,y,z);
@@ -634,14 +631,14 @@ begin
          end;
          {$IfDef ExTINGraph}
          {$Else}
-         PlotForm2.Image1.Picture.Graphic := Bitmap;
+            PlotForm2.Image1.Picture.Graphic := Bitmap;
          {$EndIf}
          TinTable.Next;
       end {while};
       EndProgress;
       {$IfDef ExTINGraph}
       {$Else}
-      Bitmap.Free;
+         Bitmap.Free;
       {$EndIf}
       fName := MainMapData + 'tins\tin-dem.dem';
       {$IfDef RecordTINProblems} WriteLineToDebugFile('writing');  {$EndIf}
@@ -853,8 +850,8 @@ begin
    PetImage.CloneImageToBitmap(Map.Image1,Bitmap);
    FillScanlineAddresses(Bitmap,P0);
    {$IfDef RecordInterpolateImage}
-   WriteLineToDebugFile('Create Bitmap size: ' + IntToStr(Bitmap.Width) +  'x' + intToStr(Bitmap.Width));
-   WriteLineToDebugFile('Source Bitmap size: ' + IntToStr(Bitmap2.Width) +  'x' + intToStr(Bitmap2.Width));
+      WriteLineToDebugFile('Create Bitmap size: ' + IntToStr(Bitmap.Width) +  'x' + intToStr(Bitmap.Width));
+      WriteLineToDebugFile('Source Bitmap size: ' + IntToStr(Bitmap2.Width) +  'x' + intToStr(Bitmap2.Width));
    {$EndIf}
 
    StartProgress('Image ' + Progress);
@@ -988,8 +985,7 @@ begin
    yim := MaxSmallInt;
    {$IfDef RecordTINRoamProblems} WriteLineToDebugFile('Unfiltered: ' + IntToStr(Tintable.RecordCount)); {$EndIf}
 
-   Tintable.ApplyFilter( 'X_LOW < ' + RealToString(x+extra,-18,-8) + ' AND X_HI > ' + RealToString(x-extra,-18,-8) + ' AND ' +
-                      'Y_LOW < ' + RealToString(y+extra,-18,-8) + ' AND Y_HI > ' + RealToString(y-extra,-18,-8));
+   Tintable.ApplyFilter( 'X_LOW < ' + RealToString(x+extra,-18,-8) + ' AND X_HI > ' + RealToString(x-extra,-18,-8) + ' AND ' + 'Y_LOW < ' + RealToString(y+extra,-18,-8) + ' AND Y_HI > ' + RealToString(y-extra,-18,-8));
    {$IfDef RecordTINRoamProblems} WriteLineToDebugFile('Filter: ' + Tintable.Filter+ '  Filtered: ' + IntToStr(Tintable.RecordCount)); {$EndIf}
 
    while not TinTable.EOF do begin
@@ -1101,14 +1097,14 @@ end;
 
 initialization
 finalization
-{$IfDef RecordTINProblems} WriteLineToDebugFile('RecordTINProblems active in DEM_TIN');{$EndIf}
-{$IfDef RecordXYZReadProblems} WriteLineToDebugFile('RecordXYZReadProblems active in DEM_TIN');{$EndIf}
-{$IfDef RecordTINRoamProblems} WriteLineToDebugFile('RecordTINRoamProblems active in DEM_TIN');{$EndIf}
-{$IfDef RecordImportProblems} WriteLineToDebugFile('RecordImportProblems active in DEM_TIN');{$EndIf}
-{$IfDef RecordTINInterpolationProblems} WriteLineToDebugFile('RecordTINInterpolationProblems active in DEM_TIN  (severe degradation)');{$EndIf}
-{$IfDef RecordXYZConvertProblems} WriteLineToDebugFile('RecordXYZConvertProblems active in DEM_TIN');{$EndIf}
-{$IfDef RecordInterpolateImage} WriteLineToDebugFile('RecordInterpolateImage active in DEM_TIN');{$EndIf}
-{$IfDef RecordDetailedTINProblems} WriteLineToDebugFile('RecordDetailedTINProblems active in DEM_TIN (major slowdown)');{$EndIf}
+   {$IfDef RecordTINProblems} WriteLineToDebugFile('RecordTINProblems active in DEM_TIN'); {$EndIf}
+   {$IfDef RecordXYZReadProblems} WriteLineToDebugFile('RecordXYZReadProblems active in DEM_TIN'); {$EndIf}
+   {$IfDef RecordTINRoamProblems} WriteLineToDebugFile('RecordTINRoamProblems active in DEM_TIN'); {$EndIf}
+   {$IfDef RecordImportProblems} WriteLineToDebugFile('RecordImportProblems active in DEM_TIN'); {$EndIf}
+   {$IfDef RecordTINInterpolationProblems} WriteLineToDebugFile('RecordTINInterpolationProblems active in DEM_TIN  (severe degradation)'); {$EndIf}
+   {$IfDef RecordXYZConvertProblems} WriteLineToDebugFile('RecordXYZConvertProblems active in DEM_TIN'); {$EndIf}
+   {$IfDef RecordInterpolateImage} WriteLineToDebugFile('RecordInterpolateImage active in DEM_TIN'); {$EndIf}
+   {$IfDef RecordDetailedTINProblems} WriteLineToDebugFile('RecordDetailedTINProblems active in DEM_TIN (major slowdown)'); {$EndIf}
 end.
 
 
