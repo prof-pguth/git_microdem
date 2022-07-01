@@ -1315,6 +1315,10 @@ object dbtablef: Tdbtablef
         Caption = 'Transpose for wine contest'
         OnClick = ransposeforwinecontest1Click
       end
+      object Graphfortransposeddata1: TMenuItem
+        Caption = 'Graph for transposed data'
+        OnClick = Graphfortransposeddata1Click
+      end
     end
     object N13: TMenuItem
       Caption = '-'

@@ -599,7 +599,7 @@ begin
    {$IfDef RecordTINProblems} WriteLineToDebugFile('tTIN.InterpolateDEM'); {$EndIf}
 
    NewHeadRecs := DEMGlb[BaseMap.MapDraw.DEMonMap].DEMheader;
-   OpenAndZeroNewDEM(true,NewHeadRecs,NewDEM,'tin_dem',true);
+   OpenAndZeroNewDEM(true,NewHeadRecs,NewDEM,'tin_dem',InitDEMmissing);
    DEMGlb[NewDEM].AreaName := 'TIN interpolation';
    with DEMGlb[NewDEM],DEMheader do begin
       StartProgress('Interpolate');

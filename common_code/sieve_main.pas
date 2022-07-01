@@ -153,63 +153,63 @@ var
    v        : array[1..2] of float32;
    rfile    : file;
 begin
-      assignFile(DataFile,FileName);
-      reset(DataFile);
-      NumDataPoints := 0;
-      TotalWeight := 0;
-      MinDataX := 99e99;
-      MaxDataX := -99e99;
-      while not EOF(DataFile) do begin
-         if EOLN(DataFile) then readln(DataFile)
-         else begin
-            inc(NumDataPoints);
-            readln(DataFile,x[NumDataPoints],y[NumDataPoints]);
-            if x[NumDataPoints] > MaxDataX then MaxDataX := x[NumDataPoints];
-            if x[NumDataPoints] < MinDataX then MinDataX := x[NumDataPoints];
-            TotalWeight := TotalWeight + y[NumDataPoints];
+   assignFile(DataFile,FileName);
+   reset(DataFile);
+   NumDataPoints := 0;
+   TotalWeight := 0;
+   MinDataX := 99e99;
+   MaxDataX := -99e99;
+   while not EOF(DataFile) do begin
+      if EOLN(DataFile) then readln(DataFile)
+      else begin
+         inc(NumDataPoints);
+         readln(DataFile,x[NumDataPoints],y[NumDataPoints]);
+         if x[NumDataPoints] > MaxDataX then MaxDataX := x[NumDataPoints];
+         if x[NumDataPoints] < MinDataX then MinDataX := x[NumDataPoints];
+         TotalWeight := TotalWeight + y[NumDataPoints];
+      end {if};
+   end {while};
+   closeFile(DataFile);
+   if TotalWeight < 0.0001 then exit;
+   {bubble sort data}
+   for i := 1 to pred(NumDataPoints) do begin
+      for j := 1 to pred(NumDataPoints) do begin
+         if x[j] > x[succ(j)] then begin
+            temp := x[j];
+            x[j] := x[succ(j)];
+            x[succ(j)] := temp;
+            temp := y[j];
+            y[j] := y[succ(j)];
+            y[succ(j)] := temp;
          end {if};
-      end {while};
-      closeFile(DataFile);
-      if TotalWeight < 0.0001 then exit;
-      {bubble sort data}
-      for i := 1 to pred(NumDataPoints) do begin
-         for j := 1 to pred(NumDataPoints) do begin
-            if x[j] > x[succ(j)] then begin
-               temp := x[j];
-               x[j] := x[succ(j)];
-               x[succ(j)] := temp;
-               temp := y[j];
-               y[j] := y[succ(j)];
-               y[succ(j)] := temp;
-            end {if};
-         end {for j};
+      end {for j};
+   end {for i};
+
+   ThisGraph.OpenDataFile(rfile);
+   if ThisGraph.GraphDraw.LegendList = Nil then ThisGraph.GraphDraw.LegendList := tStringList.Create;
+
+   ThisGraph.GraphDraw.LegendList.Add(ExtractFileName(FileName));
+   CopyImageToBitmap(ThisGraph.Image1,Bitmap);
+   Bitmap.Canvas.Pen.Color := TheColor;
+   Bitmap.Canvas.Pen.Width := 3;
+   ThisGraph.GraphDraw.FileColors256[ThisGraph.GraphDraw.DataFilesPlotted.Count] := ConvertTColorToPlatformColor(TheColor);
+   if MMandArithmeticAxis1.Checked then with ThisGraph do begin
+      for i := 1 to NumDataPoints do begin
+         y[i] := 100.0 * y[i] / TotalWeight;
+         if i > 1 then y[i] := y[i] + y[pred(i)];
+         if y[i] < 0.000001 then y[i] := 0.000001;
+         x[i] := Math.Power(2,-x[i]);
       end {for i};
 
-      ThisGraph.OpenDataFile(rfile);
-      if ThisGraph.GraphDraw.LegendList = Nil then ThisGraph.GraphDraw.LegendList := tStringList.Create;
-
-      ThisGraph.GraphDraw.LegendList.Add(ExtractFileName(FileName));
-      CopyImageToBitmap(ThisGraph.Image1,Bitmap);
-      Bitmap.Canvas.Pen.Color := TheColor;
-      Bitmap.Canvas.Pen.Width := 3;
-      ThisGraph.GraphDraw.FileColors256[ThisGraph.GraphDraw.DataFilesPlotted.Count] := ConvertTColorToPlatformColor(TheColor);
-      if MMandArithmeticAxis1.Checked then with ThisGraph do begin
-         for i := 1 to NumDataPoints do begin
-            y[i] := 100.0 * y[i] / TotalWeight;
-            if i > 1 then y[i] := y[i] + y[pred(i)];
-            if y[i] < 0.000001 then y[i] := 0.000001;
-            x[i] := Math.Power(2,-x[i]);
-         end {for i};
-
-         for i := 1 to NumDataPoints do begin
-            v[1] := x[i];
-            v[2] := y[i];
-            BlockWrite(rfile,v,1)
-         end;
-         CloseFile(rfile);
-         with GraphDraw.DataFilesPlotted do PlotAFile(Bitmap,Strings[pred(Count)],1);
-         RedrawDiagram11Click(nil);
+      for i := 1 to NumDataPoints do begin
+         v[1] := x[i];
+         v[2] := y[i];
+         BlockWrite(rfile,v,1)
       end;
+      CloseFile(rfile);
+      with GraphDraw.DataFilesPlotted do PlotAFile(Bitmap,Strings[pred(Count)],1);
+      RedrawDiagram11Click(nil);
+   end;
 
       if PhiAndNormalProbabilityAxis1.Checked then with ThisGraph do begin
          if ShowStatistics1.Checked then begin

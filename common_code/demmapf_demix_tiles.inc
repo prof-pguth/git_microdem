@@ -163,7 +163,7 @@ begin
          end;
       end;
       GISdb[Result].MyData.Edit;
-      GISdb[Result].MyData.SetFieldByNameAsFloat('GRID_FULL',100 * Valid / Pts);
+      GISdb[Result].MyData.SetFieldByNameAsFloat('GRID_FULL',100.0 * Valid / Pts);
       {$IfDef RecordDEMIX} writeLineToDebugFile('File boundary, ' + GridLimitsToString(bbgrid) + RealToString(100 * Valid / Pts,8,2)); {$EndIf}
       GISdb[Result].MyData.Next;
    end;

@@ -733,7 +733,7 @@ begin
       NewHeadRecs.ElevUnits := euIntCode;
       NewValue := 1;
       ReadDefault('New grid value',NewValue);
-      if not OpenAndZeroNewDEM(true,NewHeadRecs,NewDEM,'',true) then exit;
+      if not OpenAndZeroNewDEM(true,NewHeadRecs,NewDEM,'',InitDEMmissing) then exit;
    end;
 
    DefineTerrainCategory;

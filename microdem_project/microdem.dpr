@@ -361,7 +361,7 @@ begin
          Application.Title := '';
          Application.HelpFile := 'microdem.chm';
          Application.CreateForm(Twmdem, wmdem);
-         Application.Run;
+  Application.Run;
       end;
     finally
        CloseHandle(FMutex);

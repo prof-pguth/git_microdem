@@ -1173,7 +1173,6 @@ end;
              Image1.Canvas.TextOut(x,y,TStr);
          end;
       until (hrTime > 24);
-
    end;
 {$EndIf}
 

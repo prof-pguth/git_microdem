@@ -2804,7 +2804,7 @@ begin
 
    {$IfDef VCL}
    PETMARCommonForm := tPETMARCommonForm.Create(Application);
-   PETMARCommonForm.BMPSaveDialog1.InitialDir := ProgramRootDir;
+   //PETMARCommonForm.BMPSaveDialog1.InitialDir := ProgramRootDir;
    PETMARCommonForm.DefaultMonitor := dmMainForm;
    {$EndIf}
 

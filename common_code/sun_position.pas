@@ -913,9 +913,9 @@ begin
                       HoursMinutesString(SunAppears) + ',' +
                       HoursMinutesString(SunDisappears) + ',' +
                       HoursMinutesString(SunSet) +  ',' +
-                      RealToString(DurationDayLight, 13,2) + ',' +
-                      RealToString(SunUp*(MDDef.SunlightPrecision / 60), 11,2) + ',' +
-                      RealToString(SunMasked*(MDDef.SunlightPrecision / 60), 10,2) );
+                      RealToString(DurationDayLight,-13,2) + ',' +
+                      RealToString(SunUp*(MDDef.SunlightPrecision / 60),-11,2) + ',' +
+                      RealToString(SunMasked*(MDDef.SunlightPrecision / 60),-10,2) );
       end;
       EndProgress;
       fName := Petmar.NextFileNumber(MDTempDir, 'terrain_mask_',DefaultDBExt);

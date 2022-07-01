@@ -282,9 +282,12 @@ end;
 
 function CreateANewDEMMapWindow(CurDEM : integer; DrawIt : boolean; mt : tMapType; MapCaption : ShortString) : tMapForm;
 begin
+   {$If Defined(RecordSetup) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('CreateANewDEMMapWindow, DEM=' + IntToStr(CurDEM) + '  maptype=' + IntToStr(ord(mt)) ); {$EndIf}
    Result := TMapForm.Create(Application);
+   DEMGlb[CurDEM].SelectionMap.MapDraw.CopyMapParams(Result.MapDraw,false);
    Result.MapDraw.FirstMapDrawing := false;
    Result.SetUpNewDEMMapWindow(CurDEM,mt,MapCaption,false,DrawIt,false);
+   {$If Defined(RecordSetup) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('CreateANewDEMMapWindow out'); {$EndIf}
 end;
 
 

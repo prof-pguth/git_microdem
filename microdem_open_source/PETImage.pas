@@ -2676,7 +2676,7 @@ end;
 {$Else}
 procedure SimpleFillShape(Canvas : VCL.Graphics.tCanvas; xs,ys,MinX,MinY,MaxX,MaxY : integer;  CurrentPattern : tPatternRecord);
 
-   {nested} procedure Fly(XStart,YStart,Incr : integer);
+   procedure Fly(XStart,YStart,Incr : integer);
    var
       ElevMax,x,y : integer;
 

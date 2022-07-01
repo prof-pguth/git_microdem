@@ -8,49 +8,12 @@
 {include file for demcoord.pas}
 
 
-    function NextLineFromString(var aString : AnsiString) : AnsiString;
-    var
-       i : integer;
-    begin
-       i := 1;
-       while not (aString[i] in [#10,#13]) do begin
-          inc(i);
-          if (i > length(aString)) then begin
-             Result := '';
-             exit;
-          end;
-       end;
-       Result := ptCopy(astring,1,i);
-       Delete(astring,1,i);
-    end;
-
-
-    function FirstIntegerOnLine(var aString : AnsiString) : integer;
-    var
-       TStr : AnsiString;
-       err : integer;
-    begin
-       TStr := NextLineFromString(aString);
-       TStr := BeforeSpecifiedCharacterANSI(TStr,' ',false);
-       val(TStr,Result,err);
-    end;
-
-
-
 function tDEMDataSet.ReadDEMNow(var tFile : PathStr; transformtoNewDatum : boolean) : boolean;
 var
    Ext   : ExtStr;
    TStr  : ANSIString;
    Error : boolean;
 
-   {$IfDef AllowOddballDEMs}
-      {$I ..\common_code\demcoord_read_odd_dems.inc}
-   {$EndIf}
-
-   {$IfDef ExDTED}
-   {$Else}
-      {$I demcoord_read_dted.inc}
-   {$EndIf}
 
    {$IfDef  ExGeotiff}
    {$Else}
@@ -83,6 +46,17 @@ var
          else Result := false;
       end;
    {$EndIf}
+
+
+   {$IfDef AllowOddballDEMs}
+      {$I ..\common_code\demcoord_read_odd_dems.inc}
+   {$EndIf}
+
+   {$IfDef ExDTED}
+   {$Else}
+      {$I demcoord_read_dted.inc}
+   {$EndIf}
+
 
 
     function ReadNewMicroDEMFormat(DEMFileName : PathStr) : boolean;
@@ -238,7 +212,7 @@ var
              if MDdef.WrapETOPO then DEMheader.NumCol := 4801;
           end;
 
-          if ReallyReadDEM and AllocateDEMMemory(true) then begin
+          if ReallyReadDEM and AllocateDEMMemory(InitDEMNone) then begin
              Showprogress := WantShowProgress and (DEMheader.NumCol > 4000) and ShowDEMReadingProgress;
              if ShowProgress then StartProgress('Read DEM ' + AreaName);
              for x := 0 to pred(DEMheader.NumCol) do begin
@@ -346,7 +320,7 @@ var
       DEMheader.DEMSWCornerX := long;
       DEMheader.DEMSWCornerY := lat;
       if ReallyReadDEM then begin
-         if not AllocateDEMMemory(true) then begin
+         if not AllocateDEMMemory(InitDEMnone) then begin
             closeFile(inf);
             exit;
          end;
@@ -381,7 +355,6 @@ var
 
 var
    ofName : PathStr;
-   Proceed : boolean;
 begin
    {$IfDef RecordReadDEM} WriteLineToDebugFile('enter read DEM for ' +  tFile); {$EndIf}
    InsureFileIsNotReadOnly(tFile);
@@ -414,52 +387,7 @@ begin
    end;
 
    {$IfDef AllowOddballDEMs}
-      if Error then begin
-         if ExtEquals(Ext, '.IMG') then begin
-            ofName := ChangeFileExt(DEMFileName,'.LBL');
-            if FileExists(OfName) then begin
-               DEMFileName := ofName;
-               Ext := '.lbl';
-            end;
-         end;
-
-         if ExtEquals(Ext, '.FRQ') then begin
-            ofName := ChangeFileExt(DEMFileName,'.TIF');
-            if FileExists(OfName) then begin
-               DEMFileName := ofName;
-               Ext := '.tif';
-            end;
-         end;
-
-         if ExtEquals(Ext, '.HDR') then  begin
-            if FileExists(ChangeFileExt(DEMFileName,'.flt')) then begin
-               DEMFileName := ChangeFileExt(DEMFileName,'.flt');
-               Ext := '.flt';
-            end;
-
-            if FileExists(ChangeFileExt(DEMFileName,'.bil')) then  begin
-               DEMFileName := ChangeFileExt(DEMFileName,'.bil');
-               Ext := '.bil';
-            end;
-         end
-         else if ExtEquals(Ext, '.PRU') then ReadNOAAEEZfile(DEMFileName)
-         else if ExtEquals(Ext, '.G03') or ExtEquals(Ext, '.G98') then ReadNGDCGRD98file(DEMFileName,Error)
-         {$IfDef ExcludeUKOSDEM} {$Else} else if ExtEquals(Ext, '.NTF') then Error := ReadOSfile(DEMFileName) {$EndIf}
-         else if (UpperCase(ExtractFileNameNoExt(DEMFileName)) = 'DEMFLOAT') or ExtEquals(Ext, '.FLT') or ExtEquals(Ext, '.BIL') then begin
-            ReadNEDBIL(DEMFileName,Error);
-         end
-         else if ExtEquals(Ext, '.ASC') or ExtEquals(Ext, '.GRD') or ExtEquals(Ext, '.TXT') then begin
-            ReadASCIIArcGrid(DEMFileName,Self,Error);
-         end
-         else if ExtEquals(Ext, '.DTM') then begin
-            ReadFusionDTM(DEMFileName,Self,Error);
-         end;
-
-         if Error and (not GDALGridFormat(Ext)) then begin
-            {$IfDef ExDTED}{$Else} ReadDMADTED(Error,DEMFileName); {$EndIf}
-            Error := not TryGDAL(DEMFileName);
-         end;
-      end;
+      if Error then TryOddball(DEMFileName);
    {$EndIf}
 
    if Error then begin
@@ -540,7 +468,7 @@ begin
        NewHeader.NumCol := round((LongWGS[3] - NewHeader.DEMSWCornerX) / NewHeader.DEMxSpacing);
        NewHeader.NumRow := round((LatWGS[3] - NewHeader.DEMSWCornerY) / NewHeader.DEMxSpacing);
     end;
-    OpenAndZeroNewDEM(false,NewHeader,NewDEM,'DEM to match maps');
+    OpenAndZeroNewDEM(false,NewHeader,NewDEM,'DEM to match maps',InitDEMmissing);
     {$IfDef RecordUKOS} WriteLineToDebugFile('OpenAndZeroNewDEM done'); {$EndIf}
     {$IfDef VCL} StartProgress('Reinterpolate ' + DEMGlb[BigDEM].AreaName);  {$EndIf}
     for Col := 0 to pred(NewHeader.NumCol) do begin
@@ -592,7 +520,7 @@ begin
       if not OK then MessageToContinue(ImpGridIncSpace);
     until OK;
     ShowHourglassCursor;
-    OpenAndZeroNewDEM(false,NewHeader,Result,'Global DEM');
+    OpenAndZeroNewDEM(false,NewHeader,Result,'Global DEM',InitDEMmissing);
 
     {$IfDef NoMapOptions}
     {$Else}
@@ -623,7 +551,7 @@ begin
    {$EndIf}
 
    Result := 0;
-   OpenAndZeroNewDEM(true,NewHeadRecs,Result,'',true);
+   OpenAndZeroNewDEM(true,NewHeadRecs,Result,'',InitDEMmissing);
 
    {$IfDef VCL}
       CreateDEMSelectionMap(Result,false,false,mtDEMBlank);
@@ -682,7 +610,7 @@ begin
       WantedDEM.DEMheader.NumRow := PlansHeader.NumRow;
       WantedDEM.DEMheader.UTMZone := PlansHeader.CoordZone;
       WantedDEM.DEMheader.DEMPrecision := FloatingPointDEM;
-      WantedDEM.AllocateDEMMemory(true);
+      WantedDEM.AllocateDEMMemory(InitDEMnone);
       RecSize := 4*WantedDEM.DEMheader.NumRow;
       GetMem(OneRow,RecSize);
       for Col := 0 to pred(WantedDEM.DEMheader.NumCol) do begin
@@ -898,7 +826,7 @@ begin
 
       DEMheader.DEMPrecision := FloatingPointDEM;
 
-      if (DEMheader.NumCol = 0) or (DEMheader.NumRow = 0) or (not AllocateDEMMemory(true)) then begin
+      if (DEMheader.NumCol = 0) or (DEMheader.NumRow = 0) or (not AllocateDEMMemory(InitDEMnone)) then begin
          Error := true;
          exit;
       end;
@@ -937,7 +865,6 @@ begin
 
    if NewArea(True,WantedDEM,DEMMessage,FullFileName) then begin
       {$If Defined(RecordZRange) or Defined(RecordReadDEM)} WriteLineToDebugFile('LoadNewDEM NewArea over, ' + DEMGlb[WantedDEM].AreaName + '  ' + DEMGlb[WantedDEM].Zrange); {$EndIf}
-
       Result := true;
       if CreateMap then begin
         {$IfDef VCL}
@@ -970,14 +897,14 @@ begin
 end;
 
 
-function OpenAndZeroNewDEM(TransformToNewDatum : boolean; NewHeader : tDEMheader; var WantedDEM : integer; DEMname : ShortString; AllMissing : boolean = true; InitialValue : float64 = 0) : boolean;
+function OpenAndZeroNewDEM(TransformToNewDatum : boolean; NewHeader : tDEMheader; var WantedDEM : integer; DEMname : ShortString; InitDEMMode : byte; InitialValue : float64 = 0) : boolean;
 begin
    {$IfDef RecordCreateNewDEM} writelineToDebugFile('OpenAndZeroNewDEM ' + NewHeader.WKTString); {$EndIf}
    WantedDEM := 0;
    ShowHourglassCursor;
    OpenDEMDataStructures(WantedDEM);
    DEMGlb[WantedDEM].DEMheader := NewHeader;
-   Result := DEMGlb[WantedDEM].AllocateDEMMemory(AllMissing,InitialValue);
+   Result := DEMGlb[WantedDEM].AllocateDEMMemory(InitDEMmode,InitialValue);
    DEMGlb[WantedDEM].DefineDEMVariables(TransformToNewDatum);
    if (DEMName <> '') then DEMGlb[WantedDEM].AreaName := DEMName;
    DEMGlb[WantedDEM].DEMstatus := dsUnsaved;
@@ -1039,7 +966,7 @@ begin
    if MDdef.SeaLevelToMissing and DEMGlb[ImportingDEM].ElevationDEM then DEMGlb[ImportingDEM].MarkInRangeMissing(-0.01,0.01,NumPts);
 
    if (ImportingDEM <> 0) and FileExists(DEMGlb[ImportingDEM].MetadataFileName) then DEMGlb[ImportingDEM].DEMmetadata.LoadFromFile(DEMGlb[ImportingDEM].MetadataFileName);
-   {$If Defined(RecordReadDEM) or Defined(TimeLoadDEM)} WriteLineToDebugFile('exit ReadDEMNow, ' + DEMGlb[ImportingDEM].KeyDEMParams(true)); {$EndIf}
+   {$If Defined(RecordReadDEM) or Defined(TimeLoadDEM) or Defined(ShortDEMLoad)} WriteLineToDebugFile('exit ReadDEMNow, ' + DEMGlb[ImportingDEM].AreaName + '  ' + DEMGlb[ImportingDEM].KeyDEMParams(true)); {$EndIf}
 end;
 
 

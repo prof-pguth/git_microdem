@@ -10,9 +10,12 @@ unit dem_indexes;
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
   {$IFDEF DEBUG}
+     {$Define RecordMultipleFilesInBoundingBox}
+     {$Define RecordLoadMapLibraryBox}
+     {$Define MergeSummary}
      //{$Define RecordAutoZoom}
      //{$Define RecordImageIndex}
-     {$Define RecordIndex}
+     //{$Define RecordIndex}
      //{$Define RecordIndexFileNames}
      //{$Define RecordMerge}
      //{$Define RecordIndexImagery}
@@ -31,7 +34,7 @@ uses
    Petmar_db,
    Data.DB,
    {$IfDef UseFireDacSQLlite}
-      FireDAC.Comp.Client, FireDAC.Comp.Dataset,FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteWrapper,
+      FireDAC.Comp.Client,FireDAC.Comp.Dataset,FireDAC.Phys.SQLite,FireDAC.Phys.SQLiteWrapper,
    {$EndIf}
 
    {$IfDef UseBDETables}
@@ -562,7 +565,7 @@ var
                        Ext := UpperCase(ExtractFileExt(FName));
                        Where := AlreadyIndexed.IndexOf(fName);
                        if  Where = -1 then begin
-                          {$IfDef ListIndexFileName} WriteLineToDebugFile('  file not indexed already'); {$EndIf}
+                          {$IfDef ListIndexFileName} WriteLineToDebugFile(' file not indexed already'); {$EndIf}
 
                           {$ifDef ExSat}
                           {$Else}
@@ -909,6 +912,14 @@ begin
          end;
          IndexDataOnline.Next;
       end;
+      {$If Defined(RecordMultipleFilesInBoundingBox)}
+         if (Result.Count > 1) then begin
+            WriteLineToDebugFile('');
+            WriteLineToDebugFile('Multiple files in box with filter=' + theFilter);
+            WriteStringListToDebugFile(Result);
+            WriteLineToDebugFile('');
+         end;
+      {$EndIf}
    end;
    CloseIndexDataOnline;
 end;
@@ -938,11 +949,9 @@ end;
          DatumsPresent : tStringList;
          First : boolean;
          TStr,MenuStr        : ShortString;
-         //DEMs : array[0..MaxDEMsToMerge] of tDEMDataSet;
       begin
-         {$IfDef RecordMerge} WriteLineToDebugFile('arrive Merge for DEM #' + IntToStr(WantedDEM)); {$EndIf}
+         {$If Defined(RecordMerge) or Defined(MergeSummary)} WriteLineToDebugFile('arrive Merge for DEM #' + IntToStr(WantedDEM)); {$EndIf}
          try
-            //MergingDEMs := true;
             if (DEMList.Count > MaxDEMsToMerge) then MessageToContinue('Trying to merge too many DEMs');
             OldDEMName := LastDEMName;
             DatumsPresent := tStringList.Create;
@@ -954,16 +963,8 @@ end;
             First := true;
             for i := 0 to pred(DEMList.Count) do begin
                FName := DEMList.Strings[i];
-               //MenuStr := 'Read ' + IntToStr(succ(I)) + '/' + IntToStr(DEMList.Count);
-               //{$IfDef RecordMerge} WriteLineToDebugFile(MenuStr + ' ' + ExtractFileName(fName)); {$EndIf}
-               //WMDEM.StatusBar1.Panels[0].Text := MenuStr;
-               //ChDir(ProgramRootDir);
-               //ApplicationProcessMessages;
                FName := DEMList.Strings[i];
-               //DEMGlb[CurDEM] := tDEMDataSet.Create(0);
-               //if DEMGlb[CurDEM].ReadDEMNow(fName,false) then begin
                if NewArea(true,CurDEM,'',FName) then begin
-                  //ShowHourglassCursor;
                   if First then begin
                      NewHeader := DEMGlb[CurDEM].DEMheader;
                      xmin := DEMGlb[CurDEM].DEMheader.DEMSWCornerX;
@@ -994,10 +995,9 @@ end;
                else DEMGlb[CurDEM] := Nil;
             end;
 
-
             {$IfDef RecordMerge} WriteLineToDebugFile('done first pass in DEM Merge'); {$EndIf}
             NewHeader.ElevUnits := euMeters;
-            if OpenAndZeroNewDEM(DatumsPresent.Count > 1,NewHeader,WantedDEM,'Merge_' + TStr,true) then begin
+            if OpenAndZeroNewDEM(DatumsPresent.Count > 1,NewHeader,WantedDEM,'Merge_' + TStr,InitDEMmissing) then begin
                TStr := MergeSeriesName;
                if (MergeSeriesName = '') then TStr := LastSubDir(DEMList.Strings[0]);
                {$IfDef RecordMerge} WriteLineToDebugFile('New DEM ' + IntToStr(WantedDEM) + ' opened'); {$EndIf}
@@ -1005,16 +1005,12 @@ end;
                for i := 0 to pred(DEMList.Count) do begin
                   FName := DEMList.Strings[i];
                   if NewArea(true,CurDEM,'',FName) then begin
-
-                  //if (DEMGlb[CurDEM] <> Nil) then begin
                      ShowHourglassCursor;
                      MenuStr := 'Merge ' + IntToStr(succ(I)) + '/' + IntToStr(DEMList.Count);
                      StartProgress(MenuStr);
                      {$IfDef RecordMerge} WriteLineToDebugFile(MenuStr);     {$EndIf}
 
                      WMDEM.StatusBar1.Panels[0].Text := MenuStr;
-                     //ApplicationProcessMessages;
-
                      MergeCol := round((DEMGlb[CurDEM].DEMheader.DEMSWCornerX - DEMGlb[WantedDEM].DEMheader.DEMSWCornerX) / XSpace);
                      MergeRow := round((DEMGlb[CurDEM].DEMheader.DEMSWCornerY - DEMGlb[WantedDEM].DEMheader.DEMSWCornerY) / YSpace);
 
@@ -1048,12 +1044,13 @@ end;
                if DisplayIt then CreateDEMSelectionMap(WantedDEM,true,MDDef.DefElevsPercentile,MDdef.DefDEMMap);       //this is the first created
             end;
             WMDEM.StatusBar1.Panels[0].Text := '';
-            //MergingDEMs := false;
             LastDEMName := OldDEMName;
-         {$IfDef RecordMerge} WriteLineToDebugFile('MergeMultipleDEMsHere out'); {$EndIf}
+            //fName := MDTempDir + DEMGlb[WantedDEM].AreaName + '.dem';
+            //DEMGlb[WantedDEM].WriteNewFormatDEM(fName,'Merged DEMs');
          finally
             UpdateMenusForAllMaps;
             DEMMergeInProgress := false;
+            {$If Defined(RecordMerge) or Defined(MergeSummary)} WriteLineToDebugFile('MergeMultipleDEMsHere out, merged=' + IntToStr(DEMList.Count)); {$EndIf}
          end;
       end;
 
@@ -1066,9 +1063,8 @@ end;
 
 function LoadMapLibraryBox(var WantDEM,WantImage : integer; Load : boolean; inNWLat,inNWLong,inSELat,inSELong : float64; WantSeries : shortstring = ''; DisplayIt : boolean = true) : boolean;
 var
-   fName : PathStr;
-   LoadOne : boolean;
    MergedName : ShortString;
+   LoadOne : boolean;
 
 
          procedure LoadTheDEMs(var LoadList : tStringList);
@@ -1089,7 +1085,7 @@ var
                 end;
 
                 if (LoadList.Count > 1) then begin
-                   {$IfDef RecordIndex} WriteLineToDebugFile('call MergeDEMs, count='+IntToStr(LoadList.Count)); {$EndIf}
+                   {$IfDef RecordIndex} WriteLineToDebugFile('call MergeDEMs, count=' + IntToStr(LoadList.Count)); {$EndIf}
                    MergeMultipleDEMsHere(WantDEM,LoadList,DisplayIt);
                    DEMGlb[WantDEM].DEMFileName := NextFileNumber(MDTempDir, MergeSeriesName + '_','.dem');
                    DEMGlb[WantDEM].WriteNewFormatDEM(DEMGlb[WantDEM].DEMFileName);
@@ -1101,7 +1097,7 @@ var
                 end;
                 Loadone := true;
                 if (WantDEM <> 0) then DEMGlb[WantDEM].AreaName := MergedName;
-                {$IfDef RecordIndex} WriteLineToDebugFile('Exit LoadTheDEMs'); {$EndIf}
+                {$If Defined(RecordIndex) or Defined(RecordLoadMapLibraryBox)} WriteLineToDebugFile('Exit LoadTheDEMs, WantDEM=' + IntToStr(WantDEM)); {$EndIf}
              end;
          end;
 
@@ -1110,6 +1106,7 @@ var
    IndexSeriesTable : tMyData;
    DataType : ShortString;
    i : integer;
+   fName : PathStr;
 begin
    {$If Defined(RecordIndex) or Defined(RecordImageIndex)} WriteLineToDebugFile('Enter LoadMapLibraryBox'); {$EndIf}
    try

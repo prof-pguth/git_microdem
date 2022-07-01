@@ -199,7 +199,7 @@ begin
        {$IfDef RecordTraceCrests} WriteLineToDebugFile('ComputeDunecrestspacingheight in open databases=' + IntToStr(TotalNumOpenDatabase));   {$EndIf}
        NewHeadRecs := DEMGlb[MapDraw.DEMonMap].DEMheader;
        NewHeadRecs.DEMPrecision := ByteDEM;
-       if not OpenAndZeroNewDEM(true,NewHeadRecs,ScratchDEM,'',false,0) then exit;
+       if not OpenAndZeroNewDEM(true,NewHeadRecs,ScratchDEM,'',InitDEMValue,0) then exit;
 
        Results := Nil;
        CrestNum := 0;

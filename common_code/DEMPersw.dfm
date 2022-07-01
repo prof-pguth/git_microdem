@@ -22,7 +22,6 @@ object ThreeDview: TThreeDview
   OnCreate = FormCreate
   OnKeyPress = FormKeyPress
   OnResize = FormResize
-  PixelsPerInch = 96
   TextHeight = 16
   object ScrollBox1: TScrollBox
     Left = 0

@@ -4,8 +4,8 @@ object GetDipStrike: TGetDipStrike
   ActiveControl = OKBtn
   BorderStyle = bsDialog
   Caption = 'Structural Geology Overlay Options'
-  ClientHeight = 243
-  ClientWidth = 270
+  ClientHeight = 244
+  ClientWidth = 260
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
@@ -14,33 +14,32 @@ object GetDipStrike: TGetDipStrike
   Font.Style = [fsBold]
   Position = poScreenCenter
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Bevel1: TBevel
     Left = 8
     Top = 8
     Width = 225
-    Height = 169
+    Height = 195
     Shape = bsFrame
     IsControl = True
   end
   object Label1: TLabel
-    Left = 24
-    Top = 120
+    Left = 16
+    Top = 136
     Width = 59
     Height = 13
     Caption = 'Dip/Strike'
   end
   object Label2: TLabel
-    Left = 24
-    Top = 144
+    Left = 16
+    Top = 160
     Width = 32
     Height = 13
     Caption = 'Note:'
   end
   object OKBtn: TBitBtn
     Left = 4
-    Top = 188
+    Top = 209
     Width = 65
     Height = 27
     Kind = bkOK
@@ -53,7 +52,7 @@ object GetDipStrike: TGetDipStrike
   end
   object CancelBtn: TBitBtn
     Left = 72
-    Top = 188
+    Top = 209
     Width = 77
     Height = 27
     Kind = bkCancel
@@ -65,7 +64,7 @@ object GetDipStrike: TGetDipStrike
   end
   object HelpBtn: TBitBtn
     Left = 156
-    Top = 188
+    Top = 209
     Width = 77
     Height = 27
     Kind = bkHelp
@@ -80,7 +79,7 @@ object GetDipStrike: TGetDipStrike
     Left = 24
     Top = 16
     Width = 185
-    Height = 98
+    Height = 114
     Caption = 'Plot symbols as'
     ItemIndex = 0
     Items.Strings = (
@@ -92,15 +91,15 @@ object GetDipStrike: TGetDipStrike
     OnClick = RadioGroup1Click
   end
   object Edit1: TEdit
-    Left = 88
-    Top = 120
+    Left = 80
+    Top = 136
     Width = 137
     Height = 21
     TabOrder = 4
   end
   object Edit2: TEdit
-    Left = 88
-    Top = 144
+    Left = 80
+    Top = 160
     Width = 137
     Height = 21
     TabOrder = 5

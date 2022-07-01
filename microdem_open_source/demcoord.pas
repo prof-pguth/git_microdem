@@ -15,8 +15,8 @@ unit DEMCoord;
 
 
 {$IFDEF DEBUG}
-   {$Define NoInline}
-   {$Define NoParallelFor}
+   //{$Define NoInline}
+   //{$Define NoParallelFor}
 {$ELSE}
    //{$Define NoInline}
    //{$Define NoParallelFor}
@@ -31,6 +31,8 @@ unit DEMCoord;
 
    {$IFDEF DEBUG}
       {$Define RecordDEMIX}
+      {$Define ShortDEMLoad}
+      //{$Define RecordDEMCreation}
       //{$Define RecordSSO}
       //{$Define RecordDEMDigitizeDatum}
       //{$Define TimeLoadDEM}
@@ -273,7 +275,7 @@ type
          DEMDatumShiftDone     : boolean;
          BytesPerElevation : int32;
          BytesPerColumn : int32;
-         //procedure InterpolateBiCubic(xgrid,ygrid : float64; var z : float32);
+         function InterpolateBiCubic(xgrid,ygrid : float32; var z : float32) : boolean;
          function CheckForUTMZones : boolean;
          procedure MissingDataToSeaLevelStrip(SeaLevel : float64; PartLimits :  tGridLimits);
          procedure FilterStrip(NewDEM, FilterLap : integer; GridLimits : tGridLimits; FilterCategory : tFilterCat; Filter : FilterType);
@@ -343,7 +345,7 @@ type
          function ElevationGrid : boolean;
          function ReadDEMNow(var tFile : PathStr; transformtoNewDatum : boolean) : boolean;
          function ReloadDEM(transformtoNewDatum : boolean) : boolean;
-         procedure SetNewDEM(var NewDEM : integer; SaveFP,AllocateMemory,MarkMissing : boolean);
+         procedure SetNewDEM(var NewDEM : integer); //SaveFP,AllocateMemory,MarkMissing : boolean);
          procedure FreeDEMMemory;
 
          function TheShortDEMName : ShortString;
@@ -391,9 +393,9 @@ type
          procedure DEMGridToLatLongDegree(XGrid,YGrid : float64; var Lat,Long : float64);
 
          procedure LatLongDegreetoUTM(Lat,Long : float64; var XUTM,YUTM : float64);
-
          function LatLongDegreeToDEMGrid(Lat,Long : float64; var XGrid,YGrid : float32) : boolean; overload; {$IfDef NoInLine} {$Else} inline; {$EndIf}
          function LatLongDegreeToDEMGrid(Lat,Long : float64; var XGrid,YGrid : float64) : boolean; overload; {$IfDef NoInLine} {$Else} inline; {$EndIf}
+
          function LatLongDegreeToDEMGridInteger(Lat,Long : float64; var XGrid,YGrid : integer) : boolean; {$IfDef NoInLine} {$Else} inline; {$EndIf}
 
          procedure ClipDEMGrid(var x,y : float64);  overload;
@@ -528,7 +530,7 @@ type
 
          function FigureOpenness(Col,Row,RegionSizeMeters : integer; var  Upward,Downward : float64; Findings : tStringList = Nil) : boolean;
 
-         function AllocateDEMMemory(MissingData : boolean; InitVal : float64 = 0) : boolean;
+         function AllocateDEMMemory(InitDEM : byte; InitVal : float64 = 0) : boolean;
 
          procedure ResetPrimaryDatumZone(NewLong : float64);
 
@@ -565,7 +567,7 @@ type
             procedure SaveAsDTED(OutLatInterval,OutLongInterval : integer; OutName : PathStr = ''; ShowProgress : boolean = false);
          {$EndIf}
 
-         function CloneAndOpenGrid(NewPrecision : tDEMprecision; Gridname : shortstring; ElevUnits : tElevUnit; AllSetToZero : boolean = false; ThinFactor : integer = 0) : integer;
+         function CloneAndOpenGrid(NewPrecision : tDEMprecision; Gridname : shortstring; ElevUnits : tElevUnit{; AllSetToZero : boolean = false; ThinFactor : integer = 0}) : integer;
 
          procedure ThinThisDEM(var ThinDEM : integer; ThinFactor : integer = 0; DoItByAveraging : boolean = false);
          procedure AverageResampleThisDEM(var ThinDEM : integer; ThinFactor : integer = 0);
@@ -769,7 +771,7 @@ function LoadNewDEM(var WantedDem : integer; var FullFileName : PathStr; CreateM
 
 function NewArea(TransformToNewDatum : boolean; var ImportingDEM : integer; DEMMessage : shortstring; var TFile : PathStr; DEMtoUse : integer = 0) : boolean;
 procedure OpenDEMDataStructures(var WantedDEM : integer);
-function OpenAndZeroNewDEM(TransformToNewDatum : boolean; NewHeader : tDEMheader; var WantedDEM : integer; DEMname : ShortString; AllMissing : boolean = true; InitialValue : float64 = 0) : boolean;
+function OpenAndZeroNewDEM(TransformToNewDatum : boolean; NewHeader : tDEMheader; var WantedDEM : integer; DEMname : ShortString; InitDEMMode : byte; InitialValue : float64 = 0) : boolean;
 
 function MakeNewBlankDEMMap(LatCorner,LongCorner,LatSize,LongSize : float64; xpixels,ypixels : integer) : integer;
 
@@ -943,7 +945,7 @@ begin
       TStr := 'Thin_';
    end;
 
-   OpenAndZeroNewDEM(true,NewHeadRecs,ThinDEM,TStr + IntToStr(ThinFactor) + '_' + AreaName,true);
+   OpenAndZeroNewDEM(true,NewHeadRecs,ThinDEM,TStr + IntToStr(ThinFactor) + '_' + AreaName,InitDEMmissing);
 
    StartProgress(DEMGlb[ThinDEM].AreaName);
    for Col := 0 to pred(DEMGlb[ThinDEM].DEMheader.NumCol) do begin
@@ -1084,7 +1086,7 @@ end;
 
 
 
-function tDEMDataSet.CloneAndOpenGrid(NewPrecision : tDEMprecision; Gridname : shortstring; ElevUnits : tElevUnit; AllSetToZero : boolean = false; ThinFactor : integer = 0) : integer;
+function tDEMDataSet.CloneAndOpenGrid(NewPrecision : tDEMprecision; Gridname : shortstring; ElevUnits : tElevUnit) {AllSetToZero : boolean = false; ThinFactor : integer = 0)} : integer;
 var
    NewHeadRecs : tDEMheader;
 begin
@@ -1092,15 +1094,17 @@ begin
    NewHeadRecs := DEMheader;
    NewHeadRecs.DEMPrecision := NewPrecision;
    NewHeadRecs.ElevUnits := ElevUnits;
+   (*
    if (ThinFactor > 1) then begin
       NewHeadRecs.NumCol := DEMheader.NumCol div ThinFactor;
       NewHeadRecs.NumRow := DEMheader.NumRow div ThinFactor;
       NewHeadRecs.DEMySpacing := DEMheader.DEMySpacing * ThinFactor;
       NewHeadRecs.DEMxSpacing := DEMheader.DEMxSpacing * ThinFactor;
    end;
+   *)
   {$IfDef RecordCreateNewDEM} WriteLineToDebugFile('tDEMDataSet.CloneAndOpenGrid off to OpenAndZero'); {$EndIf}
    Result := 0;
-   if OpenAndZeroNewDEM(true,NewHeadRecs,Result,Gridname,(not AllSetToZero),0) then begin
+   if OpenAndZeroNewDEM(true,NewHeadRecs,Result,Gridname,{(not AllSetToZero)}InitDEMMissing,0) then begin
       AssignProjectionFromDEM(DEMGlb[Result].DEMMapProjection,'DEM=' + IntToStr(Result));
    end;
   {$IfDef RecordCreateNewDEM} WriteLineToDebugFile('tDEMDataSet.CloneAndOpenGrid out'); {$EndIf}
@@ -1231,7 +1235,7 @@ end;
 
 function ValidDEM(DEM : integer) : boolean;
 begin
-   Result := (DEM > 0) and (DEM <= MaxDEMDataSets) and (DEMGlb[DEM] <> Nil);
+   Result := (DEM > 0) and (DEM <= MaxDEMDataSets) and Assigned(DEMGlb[DEM]);
 end;
 
 
@@ -1551,7 +1555,7 @@ constructor tDEMDataSet.Create;
 var
    i : integer;
 begin
-   {$IfDef RecordReadDEM} if not DEMMergeInProgress then WriteLineToDebugFile('Create DEM ' + IntToStr(WhichDEM)); {$EndIf}
+   {$If Defined(RecordReadDEM)} if not DEMMergeInProgress then WriteLineToDebugFile('Create DEM ' + IntToStr(WhichDEM)); {$EndIf}
    ThisDEM := WhichDEM;
    ZeroDEMHeader(DEMheader, false);
    ElevationMultiple := 1;
@@ -1599,7 +1603,8 @@ begin
       end;
    {$EndIf}
 
-   {$IfDef RecordReadDEM} if not DEMMergeInProgress then WriteLineToDebugFile('Created DEM OK'); {$EndIf}
+   {$If Defined(RecordReadDEM)} if not DEMMergeInProgress then WriteLineToDebugFile('Created DEM OK '+ IntToStr(WhichDEM)); {$EndIf}
+   {$If Defined(RecordDEMCreation)} WriteLineToDebugFile('Created DEM OK '+ IntToStr(WhichDEM)); {$EndIf}
 end;
 
 
@@ -1678,24 +1683,30 @@ begin
    end;
    {$EndIf}
 
-   if (DEMMetadata <> nil) then begin
+   if (DEMMetadata <> nil) then try
       if (DEMMetadata.Count > 0) then DEMmetadata.SaveToFile(MetadataFileName);
       DEMMetadata.Free;
+   finally
+      DEMMetadata := nil;
    end;
 
+   (*
    if (DEMMapProjection <> Nil) then try
       DEMMapProjection.Destroy;
    finally
       DEMMapProjection := Nil;
    end;
+   *)
+   FreeAndNil(DEMMapProjection);
 
    {$IfDef NoMapOptions}
    {$Else}
-       if (SelectionMap <> Nil) then try
+       if Assigned(SelectionMap) then try
           {$If Defined(RecordClosing) or Defined(RecordDEMClose)}  WriteLineToDebugFile('tDEMDataSet.Destroy has selection map');   {$EndIf}
           SelectionMap.ClosingMapNow := true;
-          Application.ProcessMessages;
+          //Application.ProcessMessages;
           SelectionMap.Close;
+          //FreeAndNil(SelectionMap);
        finally
           SelectionMap := Nil;
           {$If Defined(RecordClosing) or Defined(RecordDEMClose)} WriteLineToDebugFile('tDEMDataSet.Destroy finished close selection map'); {$EndIf}
@@ -2015,7 +2026,7 @@ begin
       fcSaveFloatingPoint : Title  := 'float32';
    end;
 
-   OpenAndZeroNewDEM(true,NewHeadRecs,NewDEM,Title + '_' + AreaName,true);
+   OpenAndZeroNewDEM(true,NewHeadRecs,NewDEM,Title + '_' + AreaName,InitDEMmissing);
    StartProgress(DEMGlb[NewDEM].AreaName);
    for Row := 0 to pred(DEMGlb[NewDEM].DEMheader.NumRow) do begin
       if (Col mod 100 = 0) then UpdateProgressBar(Col / pred(DEMGlb[NewDEM].DEMheader.NumRow));
@@ -2125,9 +2136,10 @@ end;
 
 procedure tDEMDataSet.BoxAreaExtremeElevations(Limits : tGridLimits; var TheMinElev,TheMaxElev,AvgElev : float32);
 var
-   x,y,NPts  : integer;
+   x,y  : integer;
+   NPts : int64;
    z    : float32;
-   zsum : extended;
+   zsum : float64;
 begin
    MinOfPairFirst(Limits.YGridLow,Limits.YGridHigh);
    ClipDEMGrid(Limits.XGridLow,Limits.YGridLow);
@@ -2135,6 +2147,7 @@ begin
    TheMinElev := MaxSmallInt;
    TheMaxElev := -MaxSmallInt;
    zsum := 0;
+   Npts := 0;
    for x := Limits.XGridLow to Limits.XGridHigh do begin
       for y := Limits.YGridLow to Limits.YGridHigh do begin
          if GetElevMeters(x,y,z) then begin
@@ -2541,7 +2554,7 @@ begin
        Result.DEMheader := DEMheader;
        Result.DEMheader.NumCol := succ(GridLimits.XGridHigh-GridLimits.XGridLow);
        Result.DEMheader.NumRow := succ(GridLimits.YGridHigh-GridLimits.YGridLow);
-       if not Result.AllocateDEMMemory(true) then exit;
+       if not Result.AllocateDEMMemory(InitDEMnone) then exit;
        {$IfDef RecordWriteDEM} WriteLineToDebugFile('tDEMDataSet.RectangleSubsetDEM after trim'); {$EndIf}
        if ShowSatProgress and (GridLimits.XGridHigh - GridLimits.XGridLow > 4000) then StartProgress('Subset');
        for x := GridLimits.XGridLow to GridLimits.XGridHigh do begin
@@ -2624,7 +2637,8 @@ begin
    EndProgress;
 end;
 
-function tDEMDataSet.AllocateDEMMemory(MissingData : boolean; InitVal : float64 = 0) : boolean;
+
+function tDEMDataSet.AllocateDEMMemory(InitDEM : byte; InitVal : float64 = 0) : boolean;
 var
    Col : int32;
 begin
@@ -2637,7 +2651,7 @@ begin
       else if (DEMheader.DEMPrecision in [WordDEM,SmallIntDEM]) then BytesPerElevation := 2
       else MessageToContinue('tDEMDataSet.BytesPerElevation unhandled case');
 
-      if MissingData then InitVal := ThisDEMMissingValue;
+      if (InitDEM = InitDEMMissing) then InitVal := ThisDEMMissingValue;
       BytesPerColumn := BytesPerElevation * DEMheader.NumRow;
 
       if Not DEMMemoryAlreadyAllocated then begin
@@ -2680,8 +2694,8 @@ begin
          EndProgress;
       end;
       {$IfDef RecordDEMMemoryAllocations} WriteLineToDebugFile('tDEMDataSet.AllocateDEMMemory, allocated'); {$EndIf}
-      if MissingData then SetEntireGridMissing
-      else SetEntireGridToConstant(InitVal);
+      if (InitDEM = InitDEMmissing) then SetEntireGridMissing
+      else if (InitDEM = InitDEMvalue) then SetEntireGridToConstant(InitVal);
       {$IfDef RecordDEMMemoryAllocations} WriteLineToDebugFile('tDEMDataSet.AllocateDEMMemory, initialized'); {$EndIf}
    end
    else begin
@@ -2861,7 +2875,7 @@ begin
       YGrid := (Yproj - DEMBoundBoxProjected.ymin) / DEMheader.DEMySpacing;
    end;
    Result := GridInDataSet(XGrid,YGrid);
-end {proc LatLongToDEMGrid\};
+end {proc LatLongToDEMGrid};
 
 
 function tDEMDataSet.LatLongDegreeToDEMGrid(Lat,Long : float64; var XGrid,YGrid : float32) : boolean;
@@ -3412,28 +3426,23 @@ begin
 end;
 
 
-procedure tDEMDataSet.SetNewDEM(var NewDEM : integer; SaveFP,AllocateMemory,MarkMissing : boolean);
+procedure tDEMDataSet.SetNewDEM(var NewDEM : integer); //SaveFP,AllocateMemory,MarkMissing : boolean);
 begin
    {$IfDef RecordCreateNewDEM} WriteLineToDebugFile('tDEMDataSet.SetNewDEM=' + IntToStr(NewDEM)); {$EndIf}
    NewDEM := 0;
    OpenDEMDataStructures(NewDEM);
    DEMGlb[NewDEM].DEMheader := DEMheader;
    DEMGlb[NewDEM].AreaName := AreaName;
-   if SaveFP then begin
-      DEMGlb[NewDEM].DEMheader.DEMPrecision := FloatingPointDEM;
-   end
-   else begin
-      DEMGlb[NewDEM].DEMheader.DEMPrecision := DEMheader.DEMPrecision;
-   end;
+   DEMGlb[NewDEM].DEMheader.DEMPrecision := FloatingPointDEM;
    DEMGlb[NewDEM].DEMheader.UTMZone := DEMMapProjection.projUTMZone;
    DEMGlb[NewDEM].DEMheader.LatHemi := DEMMapProjection.LatHemi;
    DEMGlb[NewDEM].DEMheader.DigitizeDatum := WGS84d;
    DEMGlb[NewDEM].DefineDEMVariables(true);
 
-   if AllocateMemory then begin
+   //if AllocateMemory then begin
       {$If Defined(RecordCreateNewDEM) or Defined(RecordResample)} WriteLineToDebugFile('tDEMDataSet.SetNewDEM=' + IntToStr(NewDEM)); {$EndIf}
-      DEMGlb[NewDEM].AllocateDEMMemory(MarkMissing);
-   end;
+      DEMGlb[NewDEM].AllocateDEMMemory(InitDEMmissing);
+   //end;
 end;
 
 
@@ -3564,7 +3573,9 @@ end;
 function tDEMDataSet.GetSamplingSize(GridLimits: tGridLimits) : integer;
 begin
    Result := 1;
-   while(succ(GridLimits.XgridHigh - GridLimits.XGridLow) div Result * succ(GridLimits.YGridHigh - GridLimits.YGridLow) div Result) > bfArrayMaxSize do inc(Result);
+   while (1.0 * (succ(GridLimits.XgridHigh - GridLimits.XGridLow) div Result) * 1.0 * (succ(GridLimits.YGridHigh - GridLimits.YGridLow) div Result) ) > bfArrayMaxSize do begin
+      inc(Result);
+   end;
 end;
 
 

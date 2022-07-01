@@ -131,7 +131,6 @@ function IsSatelliteMap(MapType : tMapType) : boolean;
 function IsSatelliteColorImage(MapType : tMapType) : boolean;
 
 procedure SetReflectanceDefaults;
-//procedure SetGlobalDefaults;
 procedure SetContourDefaults;
 procedure SetSlopedefaultColors(var NumCats : SmallInt; var SlopeCut : ColorCutArrayType; var SlopeColors : tColorArray);
 
@@ -1467,6 +1466,7 @@ var
             AParameter('Geomorph','BatchRegionSize5',BatchRegionSize[5],1000);
             AParameter('Geomorph','ElevBinSize',ElevBinSize,1);
             AParameterShortFloat('Geomorph','HistBinSize',HistBinSize,1);
+            AParameterShortFloat('Geomorph','BicubicSlope',BicubicSlope,1);
             AColorParameter('Geomorph','GrainColor',GrainColor,claRed);
 
             {$IfDef ExGeomorphGrids}
@@ -3588,7 +3588,10 @@ begin
       AParameter('Graph','TransparentLevel',TransparentLevel,255);
       AParameter('Graph','UseGif',UseGif,false);
       AParameter('Graph','GIFDefaultDelay',GIFDefaultDelay,500);
+      AParameter('Graph','GIFDefaultSize',GIFFontSize,18);
       AParameter('Graph','GIFfileLabels',GIFfileLabels,false);
+
+
 
       AParameter('Graph','JPEGQuality',JPEGQuality,50);
       AParameter('Graph','DefaultGraphXSize',DefaultGraphXSize,600);

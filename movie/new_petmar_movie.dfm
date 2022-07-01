@@ -132,6 +132,13 @@ object FormAnimate: TFormAnimate
         Height = 14
         Caption = 'Frame delay (msec)'
       end
+      object Label2: TLabel
+        Left = 24
+        Top = 392
+        Width = 44
+        Height = 14
+        Caption = 'Font size'
+      end
       object ButtonAnimate: TButton
         Left = 28
         Top = 12
@@ -244,6 +251,15 @@ object FormAnimate: TFormAnimate
         Caption = 'Labels from file name'
         TabOrder = 8
         OnClick = CheckBox1Click
+      end
+      object Edit2: TEdit
+        Left = 74
+        Top = 389
+        Width = 38
+        Height = 22
+        TabOrder = 9
+        Text = 'Edit2'
+        OnChange = Edit2Change
       end
     end
   end

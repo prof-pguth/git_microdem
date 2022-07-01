@@ -180,7 +180,7 @@ type
     LASGeotoUTM1: TMenuItem;
     Maindatabase1: TMenuItem;
     Separatefile1: TMenuItem;
-    CloudCompareASCIIfile1: TMenuItem;
+    //CloudCompareASCIIfile1: TMenuItem;
     GDALreprojectimagetoUTMNAD831: TMenuItem;
     Cloudcompare1: TMenuItem;
     RANSAC1: TMenuItem;
@@ -247,23 +247,23 @@ type
     LASfilesbysize1: TMenuItem;
     IFfiles1: TMenuItem;
     AssignbyEPSGandreprojecttoUTM1: TMenuItem;
-    CloudCompare2: TMenuItem;
+    //CloudCompare2: TMenuItem;
     Experimental1: TMenuItem;
     N10: TMenuItem;
     ASCIIreplaceheaderline1: TMenuItem;
     ASCIIheader1: TMenuItem;
     Histogramsbyclass1: TMenuItem;
     Addcolors1: TMenuItem;
-    Coloredmaps1: TMenuItem;
-    Statsbyclass1: TMenuItem;
+    //Coloredmaps1: TMenuItem;
+    //Statsbyclass1: TMenuItem;
     Addgroundclassifiedpoints1: TMenuItem;
-    LoadDBintoslicer1: TMenuItem;
+    //LoadDBintoslicer1: TMenuItem;
     Plateboundaryfile1: TMenuItem;
-    BatchCSFdemo1: TMenuItem;
-    Classificationaccuracy1: TMenuItem;
-    Quickclassification1: TMenuItem;
-    InsertroughnessandcurvatureinDBF1: TMenuItem;
-    Extractclassification1: TMenuItem;
+    //BatchCSFdemo1: TMenuItem;
+    //Classificationaccuracy1: TMenuItem;
+    //Quickclassification1: TMenuItem;
+    //InsertroughnessandcurvatureinDBF1: TMenuItem;
+    //Extractclassification1: TMenuItem;
     ranslatecoordsASCIIfile1: TMenuItem;
     N17: TMenuItem;
     ASCIIremovelinesinsecondfile1: TMenuItem;
@@ -367,7 +367,7 @@ type
     procedure LASGeotoUTM1Click(Sender: TObject);
     procedure Maindatabase1Click(Sender: TObject);
     procedure Separatefile1Click(Sender: TObject);
-    procedure CloudCompareASCIIfile1Click(Sender: TObject);
+    //procedure CloudCompareASCIIfile1Click(Sender: TObject);
     procedure GDALreprojectimagetoUTMNAD831Click(Sender: TObject);
     procedure RANSAC1Click(Sender: TObject);
     procedure GDALGeodatabasetoshapefile1Click(Sender: TObject);
@@ -420,21 +420,21 @@ type
     procedure LASfilesbysize1Click(Sender: TObject);
     procedure IFfiles1Click(Sender: TObject);
     procedure AssignbyEPSGandreprojecttoUTM1Click(Sender: TObject);
-    procedure MergeCSVfiles1Click(Sender: TObject);
-    procedure CloudCompare2Click(Sender: TObject);
+    //procedure MergeCSVfiles1Click(Sender: TObject);
+    //procedure CloudCompare2Click(Sender: TObject);
     procedure ASCIIreplaceheaderline1Click(Sender: TObject);
-    procedure Histogramsbyclass1Click(Sender: TObject);
+    //procedure Histogramsbyclass1Click(Sender: TObject);
     procedure Addcolors1Click(Sender: TObject);
-    procedure Coloredmaps1Click(Sender: TObject);
-    procedure Statsbyclass1Click(Sender: TObject);
+    //procedure Coloredmaps1Click(Sender: TObject);
+    //procedure Statsbyclass1Click(Sender: TObject);
     procedure Addgroundclassifiedpoints1Click(Sender: TObject);
-    procedure LoadDBintoslicer1Click(Sender: TObject);
+    //procedure LoadDBintoslicer1Click(Sender: TObject);
     procedure Plateboundaryfile1Click(Sender: TObject);
-    procedure BatchCSFdemo1Click(Sender: TObject);
-    procedure Classificationaccuracy1Click(Sender: TObject);
-    procedure Quickclassification1Click(Sender: TObject);
-    procedure InsertroughnessandcurvatureinDBF1Click(Sender: TObject);
-    procedure Extractclassification1Click(Sender: TObject);
+    //procedure BatchCSFdemo1Click(Sender: TObject);
+    //procedure Classificationaccuracy1Click(Sender: TObject);
+    //procedure Quickclassification1Click(Sender: TObject);
+    //procedure InsertroughnessandcurvatureinDBF1Click(Sender: TObject);
+    //procedure Extractclassification1Click(Sender: TObject);
     procedure ranslatecoordsASCIIfile1Click(Sender: TObject);
     procedure ASCIIremovelinesinsecondfile1Click(Sender: TObject);
     procedure Chromelist1Click(Sender: TObject);
@@ -473,37 +473,36 @@ implementation
 uses
    {$IfDef ExVectorOverlay}
    {$Else}
-   DEMEditW,
+      DEMEditW,
    {$EndIf}
 
    {$IfDef ExGIS}
    {$Else}
-   DEMDataBase,
-   DEMESRIShapeFile,
-   DataBaseCreate,
+      DEMDataBase,
+      DEMESRIShapeFile,
+      DataBaseCreate,
    {$EndIf}
 
    {$IfDef ExTIGER}
    {$Else}
-   DEMTiger,
+      DEMTiger,
    {$EndIf}
 
    {$IfDef ExSidescan}
    {$Else}
-   MST_format,
+      MST_format,
    {$EndIf}
 
    {$IfDef ExAdvancedImportExport}
    {$Else}
-   DEM_TIN,
-   DEMXYZExport,
+      DEM_TIN,
+      DEMXYZExport,
    {$EndIf}
 
    {$IfDef ExSat}
    {$Else}
-   //DEMEROSM,
-   DEMEROS,
-   Geotiff,
+      DEMEROS,
+      Geotiff,
    {$EndIf}
 
 
@@ -535,11 +534,6 @@ uses
        compress_form,
        MD_use_tools,
    {$EndIf}
-
-   {$If Defined(Include2019datafusion) or Defined(Include2021datafusion)}
-      experimental_md,
-   {$EndIf}
-
 
    {$IfDef ExSat}
    {$Else}
@@ -1415,12 +1409,11 @@ procedure TDemHandForm.GDALwarpSentinel11Click(Sender: TObject);
 var
    SatDir,fName,fName2,outName : PathStr;
    DefaultFilter : byte;
-   BatchFile,{FileNames,}TheFiles: tStringList;
+   BatchFile,TheFiles: tStringList;
    UTMspace : float32;
-   UTMzone,
-   i,j : Integer;
+   UTMzone,i,j : Integer;
    ch : ANSIchar;
-   TStr2,{outer,InProj,}OutEPSG : shortString;
+   TStr2,OutEPSG : shortString;
    cmd : ANSIString;
    GDALinfo : tGDALinfo;
    Paths,RecycleList : tStringList;
@@ -1438,12 +1431,9 @@ begin
          OutEPSG := 'EPSG:326' + AddDayMonthLeadingZero(MDdef.DefaultUTMZone);
          StartGDALbatchFile(BatchFile);
          RecycleList := tStringList.Create;
-         //FileNames.Add(ExtractFilePath(LastImageName));
-
          for i := 0 to pred(Paths.Count) do begin
             SatDir := Paths[i];
             TheFiles := Nil;
-            //FileNames := tStringList.Create;
             FindMatchingFiles(SatDir,'*.tiff',TheFiles,6);
             for j := 0 to pred(TheFiles.Count) do begin
                fName := TheFiles.Strings[j];
@@ -1464,7 +1454,6 @@ begin
          Paths.Free;
          EndBatchFile(MDTempDir + 'warp_sentinel1.bat',batchfile,true);
          for i := 0 to pred(RecycleList.Count) do File2Trash(RecycleList.Strings[i]);
-         //TheFiles.Free;
       end;
    end;
 
@@ -1480,10 +1469,10 @@ begin
    end;
 end;
 
-procedure TDemHandForm.LoadDBintoslicer1Click(Sender: TObject);
-begin
-   {$IfDef Include2019datafusion}  LoadDBIntoSlicer; {$EndIf}
-end;
+//procedure TDemHandForm.LoadDBintoslicer1Click(Sender: TObject);
+//begin
+   //{$IfDef Include2019datafusion}  LoadDBIntoSlicer; {$EndIf}
+//end;
 
 procedure TDemHandForm.FormCreate(Sender: TObject);
 begin
@@ -1550,14 +1539,6 @@ end;
 
 procedure TDemHandForm.SOESTtidetimeseries1Click(Sender: TObject);
 {uses University of Hawaii tide station time series, http://uhslc.soest.hawaii.edu/}
-(*
-088CALDERA       LAT=27 04.0S  LONG=070 50.0W
-331BRISBANE      LAT=27 22.0S  LONG=153 10.0E
-600USHUAIA       LAT=54 48.3S  LONG=068 17.7W
-170CHRISTMA      LAT=10 25.0S  LONG=105 40.0E
-
-088CALDERA 1980 11  9999 1282 1273 1255 1256 1284 1299 1281 1259 1263 1272
-*)
 var
    k,Year1,Year2  : integer;
    Lat,Long     : float64;
@@ -1650,8 +1631,6 @@ begin
 
    with DEMGlb[WantedDEM],DEMheader do begin
       ZeroDEMHeader(DEMheader,(ImportParamsDialog.RadioGroup2.ItemIndex in [0,1]));
-
-      //DigitizeDatum := ddLocal;
       FSplit(FileName,Dir,Name,Ext);
       AreaName := Name;
 
@@ -1679,7 +1658,6 @@ begin
 
       if (DEMUsed = ArcSecDEM) then begin
          DataSpacing := SpaceDegrees;
-         //l1 := ArcSpacingFactor(DataSpacing);
          ReadDefault('Verify x data spacing (deg)',DEMxSpacing);
          ReadDefault('Verify y data spacing (deg)',DEMySpacing);
          NumCol := succ(round((xRange) / DEMxSpacing));
@@ -1705,14 +1683,14 @@ begin
       MinElev := zMin;
 
       {$IfDef RecordImportProblems}
-      WriteLineToDebugFile('First set header calculations done');
-      for i := 0 to pred(Memo1.Lines.Count) do WriteLineToDebugFile(Memo1.Lines[i]);
+         WriteLineToDebugFile('First set header calculations done');
+         for i := 0 to pred(Memo1.Lines.Count) do WriteLineToDebugFile(Memo1.Lines[i]);
       {$EndIf}
 
       EditHeaderRecord(WantedDEM,false);
       {$IfDef RecordImportProblems} WriteLineToDebugFile('after edit xpacing=' + RealToString(fLongInterval,-24,-12) + '    ypacing=' + RealToString(fLatInterval,-24,-12)); {$EndIf}
       SetElevationMultiple;
-      AllocateDEMMemory(true);
+      AllocateDEMMemory(InitDEMMissing);
 
       NewCount := 0;
       if (ImportParamsDialog.CheckBox1.Checked) then begin
@@ -1761,10 +1739,10 @@ begin
 end;
 
 
-procedure TDemHandForm.Classificationaccuracy1Click(Sender: TObject);
-begin
-   {$IfDef Include2019datafusion} ClassificationAccuracy(Memo1); {$EndIf}
-end;
+//procedure TDemHandForm.Classificationaccuracy1Click(Sender: TObject);
+//begin
+   //{$IfDef Include2019datafusion} ClassificationAccuracy(Memo1); {$EndIf}
+//end;
 
 
 procedure TDemHandForm.Close1Click(Sender: TObject);
@@ -1853,16 +1831,16 @@ begin
 end;
 
 
-procedure TDemHandForm.CloudCompare2Click(Sender: TObject);
-begin
-   {$IfDef Include2019datafusion} AddRoughCurvFromCloudCompare; {$EndIf}
-end;
+//procedure TDemHandForm.CloudCompare2Click(Sender: TObject);
+//begin
+   //{$IfDef Include2019datafusion} AddRoughCurvFromCloudCompare; {$EndIf}
+//end;
 
 
-procedure TDemHandForm.CloudCompareASCIIfile1Click(Sender: TObject);
-begin
-   {$IfDef Include2019datafusion} CloudCompare(true); {$EndIf}
-end;
+//procedure TDemHandForm.CloudCompareASCIIfile1Click(Sender: TObject);
+//begin
+   //{$IfDef Include2019datafusion} CloudCompare(true); {$EndIf}
+//end;
 
 
 procedure TDemHandForm.Help1Click(Sender: TObject);
@@ -1871,10 +1849,10 @@ begin
 end;
 
 
-procedure TDemHandForm.Histogramsbyclass1Click(Sender: TObject);
-begin
-   {$IfDef Include2019datafusion} GetHistogramsByClass; {$EndIf}
-end;
+//procedure TDemHandForm.Histogramsbyclass1Click(Sender: TObject);
+//begin
+   //{$IfDef Include2019datafusion} GetHistogramsByClass; {$EndIf}
+//end;
 
 procedure TDemHandForm.HTMLcleanup1Click(Sender: TObject);
 {$IfDef ExKML}
@@ -1912,12 +1890,10 @@ procedure TDemHandForm.HTMLextractlinks1Click(Sender: TObject);
 var
    Links,ThisFile : tStringList;
    fName : PathStr;
-   Dir,TStr{,MenuStr} : ANSIstring;
+   Dir,TStr : ANSIstring;
    SeekLink,
-   //ImageLink,
-   //Title,
    ThisLine : ANSIstring;
-   i{,j,k}      : integer;
+   i      : integer;
 begin
    Links := tStringList.Create;
    ShowHourglassCursor;
@@ -2083,7 +2059,6 @@ end;
 
 procedure TDemHandForm.Filemodificationdates1Click(Sender: TObject);
 var
-   //Tstrl,
    FNames : tStringList;
    fName : PathStr;
    DefaultFilter : byte;
@@ -2167,7 +2142,7 @@ begin
          {$Else}
             EditHeaderRecord(WantedDEM,true);
          {$EndIf}
-         if not AllocateDEMMemory(true) then exit;
+         if not AllocateDEMMemory(InitDEMMissing) then exit;
          if (ItsASCII = dfASCII) then begin
             assignFile(InFile,FileName);
             reset(InFile);
@@ -2233,10 +2208,10 @@ begin
     LASGeotoUTM1Click(Sender);
 end;
 
-procedure TDemHandForm.BatchCSFdemo1Click(Sender: TObject);
-begin
-   {$IfDef Include2019datafusion} BatchCSFDemo(Memo1); {$EndIf}
-end;
+//procedure TDemHandForm.BatchCSFdemo1Click(Sender: TObject);
+//begin
+   //{$IfDef Include2019datafusion} BatchCSFDemo(Memo1); {$EndIf}
+//end;
 
 procedure TDemHandForm.BILdirectorytoMDDEM1Click(Sender: TObject);
 begin
@@ -2295,10 +2270,10 @@ begin
 end;
 
 
-procedure TDemHandForm.InsertroughnessandcurvatureinDBF1Click(Sender: TObject);
-begin
-   {$IfDef Include2019datafusion} InsertCloudCompareRoughnessCurvature(Memo1); {$EndIf}
-end;
+//procedure TDemHandForm.InsertroughnessandcurvatureinDBF1Click(Sender: TObject);
+//begin
+   //{$IfDef Include2019datafusion} InsertCloudCompareRoughnessCurvature(Memo1); {$EndIf}
+//end;
 
 procedure TDemHandForm.IrishgridtoUTM1Click(Sender: TObject);
 var
@@ -2317,9 +2292,9 @@ begin
          else if (Sender = DefinedtoUTM1) or (Sender = ChangeUTMzone1) then ReprojectDefinedLasFileToUTM(FilesWanted.Strings[i])
          else if (Sender = zshift1) then ZShiftDefinedLasFileToMeters(FilesWanted.Strings[i])
          else ReprojectIrishLasFileToUTM(FilesWanted.Strings[i]);
-         if MDDef.Ls.DeleteLASAfterTransformation then SysUtils.DeleteFile(FilesWanted.Strings[i]);
       end;
    end;
+   if MDDef.Ls.DeleteLASAfterTransformation then for i := 0 to pred(FilesWanted.Count) do SysUtils.DeleteFile(FilesWanted.Strings[i]);
    FilesWanted.Free;
    wmdem.StatusBar1.Panels[0].Text := '';
 end;
@@ -2506,10 +2481,10 @@ begin
 end;
 
 
-procedure TDemHandForm.Extractclassification1Click(Sender: TObject);
-begin
-   {$IfDef Include2019datafusion} ExtractClassificatio(Memo1); {$EndIf}
-end;
+//procedure TDemHandForm.Extractclassification1Click(Sender: TObject);
+//begin
+   //{$IfDef Include2019datafusion} ExtractClassificatio(Memo1); {$EndIf}
+//end;
 
 procedure TDemHandForm.ExtractXYZfromDXFfile1Click(Sender: TObject);
 var
@@ -2517,7 +2492,7 @@ var
    Data  : tStringList;
    I,pts     : Integer;
    Table : tMyData;
-   TStr,{c,}xc,yc,zc : ShortString;
+   TStr,xc,yc,zc : ShortString;
 begin
    fName := '';
    if not GetFileFromDirectory('DXF file','*.dxf',FName) then exit;
@@ -2785,10 +2760,7 @@ var
    i,j,m     : integer;
    OutCh : AnsiChar;
    TStr,MenuStr : ShortString;
-   //inf,outf : file;
-   //ch : ANSIchar;
    DefaultFilter : byte;
-   //fName2 : PathStr;
    FilesWanted : TStringList;
 begin
    if (Sender = ASCIIremovecommas1) then begin
@@ -3079,7 +3051,6 @@ begin
 end;
 
 
-
 procedure TDemHandForm.MaskDEMs1Click(Sender: TObject);
 var
    fName : PathStr;
@@ -3115,10 +3086,10 @@ begin
    StatusBar1.Panels[0].Text := '';
 end;
 
-procedure TDemHandForm.MergeCSVfiles1Click(Sender: TObject);
-begin
-   {$IfDef Include2019datafusion}  MergeCSVPairedFiles(Memo1); {$EndIf}
-end;
+//procedure TDemHandForm.MergeCSVfiles1Click(Sender: TObject);
+//begin
+   //{$IfDef Include2019datafusion} MergeCSVPairedFiles(Memo1); {$EndIf}
+//end;
 
 
 procedure TDemHandForm.Specifyshift1Click(Sender: TObject);
@@ -3126,10 +3097,10 @@ begin
    Conictolatlong1Click(Sender);
 end;
 
-procedure TDemHandForm.Statsbyclass1Click(Sender: TObject);
-begin
-   {$IfDef Include2019datafusion} GetStatsByClass(Memo1); {$EndIf}
-end;
+//procedure TDemHandForm.Statsbyclass1Click(Sender: TObject);
+//begin
+   //{$IfDef Include2019datafusion} GetStatsByClass(Memo1); {$EndIf}
+//end;
 
 procedure TDemHandForm.AddlengthfieldtoDBFfile1Click(Sender: TObject);
 begin
@@ -3204,10 +3175,10 @@ begin
    Bynumberoffiles1Click(Sender);
 end;
 
-procedure TDemHandForm.Coloredmaps1Click(Sender: TObject);
-begin
-   {$IfDef Include2019datafusion} ColoredMaps(Memo1); {$EndIf}
-end;
+//procedure TDemHandForm.Coloredmaps1Click(Sender: TObject);
+//begin
+   //{$IfDef Include2019datafusion} ColoredMaps(Memo1); {$EndIf}
+//end;
 
 procedure TDemHandForm.Compressuncompress1Click(Sender: TObject);
 begin
@@ -3503,10 +3474,10 @@ begin
    PrepOSMFiles;
 end;
 
-procedure TDemHandForm.Quickclassification1Click(Sender: TObject);
-begin
-   {$IfDef Include2019datafusion} QuickClass(Memo1); {$EndIf}
-end;
+//procedure TDemHandForm.Quickclassification1Click(Sender: TObject);
+//begin
+   //{$IfDef Include2019datafusion} QuickClass(Memo1); {$EndIf}
+//end;
 
 procedure TDemHandForm.ToUTM1Click(Sender: TObject);
 begin

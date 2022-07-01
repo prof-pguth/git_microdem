@@ -13,6 +13,7 @@
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
       {$Define RecordDEMIX}
+      {$Define TrackDEMIX_DEMs}
       //{$Define RecordFullDEMIX}
       //{$Define RecordDEMIXLoad}
 
@@ -708,10 +709,10 @@ type
     procedure Satellitepredictions1Click(Sender: TObject);
     //procedure OpenTCPinterface1Click(Sender: TObject);
     procedure Maxwellplanning1Click(Sender: TObject);
-    procedure Bathymetrygrid1Click(Sender: TObject);
-    procedure Chart12263180K1Click(Sender: TObject);
-    procedure Chart12282125K1Click(Sender: TObject);
-    procedure Chart12283110K1Click(Sender: TObject);
+    //procedure Bathymetrygrid1Click(Sender: TObject);
+    //procedure Chart12263180K1Click(Sender: TObject);
+    //procedure Chart12282125K1Click(Sender: TObject);
+    //procedure Chart12283110K1Click(Sender: TObject);
     procedure Subset81Ssidescan1Click(Sender: TObject);
     procedure GISdatasampler1Click(Sender: TObject);
     procedure OpenScannedmap1Click(Sender: TObject);
@@ -1101,19 +1102,6 @@ uses
       Make_grid,
    {$EndIf}
 
-   {$IfDef ExDP}
-   {$Else}
-      //gps_sensor,
-   {$EndIf}
-
-   {$If Defined(Include2019datafusion) or Defined(Include2021datafusion)}
-      experimental_md,
-   {$EndIf}
-
-
-   //ContGraf,
-
-
    Slider_sorter_form,
    NyqGraph,
    gdal_tools,
@@ -1127,7 +1115,6 @@ uses
    DEM_manager,
    new_petmar_movie,
 
-  // GetMapF,
    lcp_options,
    ScreenUnicode,
    DEMSlopeCompare,
@@ -1148,18 +1135,12 @@ uses
    NE_outlines,
    map_splitter,
    dem_gaz_opts, us_properties, demstringgrid,
-   //gis_legend,
-   Get_PLSS, //Get_SPCS,
-   //dem_browser,
+   Get_PLSS,
    DEMdbTable,
    Petmar_ini_file,
    db_display_options,
    toggle_db_use, map_overlays, U_SolarPos2;
 
-
-{$IfDef IncludeASTERGDEMassessment}
-   {$I c:\turbo\monster_microdem\research_options\astergdem.pas}
-{$EndIf}
 
    {$I nevadia_main_batch.inc}
 
@@ -1257,35 +1238,6 @@ begin
 end;
 
 
-procedure YPMaps(What : shortString);
-var
-   bDir,BaseName,dName,zName,fName : PathStr;
-begin
-   StopSplashing;
-   BaseName := 'yp686_ops';
-   bDir := MainMapData + BaseName + '\';
-   if (Not PathIsValid(BDir)) then begin
-      zName := BaseName + '.zip';
-      dName := MainMapData + zName;
-      if DownloadFileFromWeb(WebDataDownLoadDir + zName,dName) then begin
-         ZipMasterUnzip(dName,MainMapData);
-      end
-      else begin
-         MessageToContinue('Download fail : ' + zName);
-         exit;
-      end;
-   end;
-   if (what = 'Bathy') then begin
-      fName := bDir + 'annap_bathy.DEM';
-      LoadNewDEM(LastDEMLoaded,fName,true);
-   end
-   else begin
-      fname := bDir + 'chart_'+  what + '.tif';
-      OpenAndDisplayNewScene(Nil,fName,true,true,false);
-   end;
-end;
-
-
 procedure Twmdem.LOS1Click(Sender: TObject);
 begin
    {$IfDef RecordMenu} WriteLineToDebugFile('Twmdem.LOS1Click'); {$EndIf}
@@ -1309,20 +1261,6 @@ begin
    LandCoverBarGraphs(true,false,false);
 end;
 
-procedure Twmdem.Chart12263180K1Click(Sender: TObject);
-begin
-   YPMaps('12263');
-end;
-
-procedure Twmdem.Chart12282125K1Click(Sender: TObject);
-begin
-   YPMaps('12282');
-end;
-
-procedure Twmdem.Chart12283110K1Click(Sender: TObject);
-begin
-   YPMaps('12283');
-end;
 
 procedure Twmdem.Tile1Click(Sender: TObject);
 begin
@@ -1654,10 +1592,6 @@ begin
    {$Else}
       HypImageSpeedButton.Visible := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]) and MDDef.ShowOpenImagery;
       Openhyperspectralimagery1.Visible := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]) and MDDef.ShowOpenImagery;
-   {$EndIf}
-
-   {$IfDef IncludeASTERGDEMassessment}
-      ASTERGDEMassessment1.Visible := false;
    {$EndIf}
 
    {$IfDef ExPointCloud}
@@ -2077,6 +2011,8 @@ begin
             GetGDALFileNames;
         {$EndIf}
      {$EndIf}
+
+     if not PathIsValid(MapLibDir) then PickMapIndexLocation;
 
     {$IfDef NoCommandLineParameters}
     {$Else}
@@ -3928,13 +3864,12 @@ begin
 end;
 
 procedure Twmdem.Existingfile2Click(Sender: TObject);
-{$IfDef ExMovie}
 begin
-{$Else}
-begin
-   StopSplashing;
-   CreateNewMovie('',true);
-{$EndIf}
+   {$IfDef ExMovie}
+   {$Else}
+      StopSplashing;
+      CreateNewMovie('',true);
+   {$EndIf}
 end;
 
 procedure Twmdem.Exit2Click(Sender: TObject);
@@ -4410,7 +4345,7 @@ var
                   DEMUsed := ArcSecDEM;
                   DEMheader.UTMZone := GetUTMZone(DEMSWCornerX + 0.5 * NumCol * DEMxSpacing);
                   ElevUnits  := Undefined;
-                  AllocateDEMMemory(true);
+                  AllocateDEMMemory(InitDEMMissing);
                   DefineDEMVariables(true);
                   {$IfDef RecordGeostats} writeLineToDebugFile('New grid created ' + IntToStr(ParamDEMs[i])); {$EndIf}
                end;
@@ -5457,9 +5392,6 @@ begin
    DownloadandUnzipDataFileIfNotPresent(dName);
    pName := MainMapData + dName + '\ches_bay_noaa_est_bathy.dem';
    LastDEMLoaded := OpenNewDEM(pName);
-   YPMaps('12263');
-   YPMaps('12282');
-   YPMaps('12283');
 end;
 
 
@@ -5631,11 +5563,6 @@ begin
       FilesWanted.Free;
       ShowDefaultCursor;
    until not AnswerIsYes('More files');
-end;
-
-procedure Twmdem.Bathymetrygrid1Click(Sender: TObject);
-begin
-   YPMaps('Bathy');
 end;
 
 

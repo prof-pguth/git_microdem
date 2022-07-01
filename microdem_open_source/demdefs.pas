@@ -637,6 +637,12 @@ const
    ArcSecDEM = 1;
    WKTDEM = 2;
 
+const
+   InitDEMzero = 0;
+   InitDEMnone = 1;
+   InitDEMvalue = 2;
+   InitDEMmissing = 3;
+
 type   //for DEM Header record
    tDEMAvailable = byte;
    tSpacingUnit = (SpaceMeters,oldSpaceSeconds,oldSpaceMinutes,SpaceKM,Space100m,SpaceFeet,SpaceKFeet,SpaceDegrees,DeadSpaceHundredthSecond,unusedMercProj100m,
@@ -2010,7 +2016,7 @@ type
        ShowObserverMaskingCircle : boolean;
        MakeTigerMapGrayscale,
        SubdueTigerBase : boolean;
-       GIFDefaultDelay : int16;
+       GIFDefaultDelay,GifFontSize : int16;
        GIFfileLabels,
        DBfilterClearLayer,
        DBfilterRedrawOnClose : boolean;
@@ -2173,6 +2179,7 @@ type
        PlateauTolerance : byte;
        CrestThreadInterval : SmallInt;
        ClipboardExports : byte;
+       BicubicSlope : float32;
 
        ShowWinExec,
        LogDOSoutput,

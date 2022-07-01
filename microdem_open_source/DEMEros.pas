@@ -1026,7 +1026,7 @@ begin
    NewHeadRecs.DEMySpacing := BandYSpace[Band1];
    NewHeadRecs.UTMZone := ImageMapProjection.projUTMZone;
    NewHeadRecs.LatHemi := ImageMapProjection.LatHemi;
-   OpenAndZeroNewDEM(true,NewHeadRecs,Result,NewBandTitle,true);
+   OpenAndZeroNewDEM(true,NewHeadRecs,Result,NewBandTitle,InitDEMmissing);
 
    DEMGlb[Result].DEMheader.ElevUnits := Undefined;
 

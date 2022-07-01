@@ -1051,7 +1051,7 @@ end;
 procedure tMapProjection.GetProjectParameters;
 var
   q0 : float64;
-  Table1 : tMyData;
+  //Table1 : tMyData;
 begin
    {$IfDef RecordProjectionParameters} ShortProjInfo(' GetProjectParameters in'); {$EndIf}
       if (a = NaN) then a := SphericalEarthAkm * 1000;
@@ -1159,7 +1159,6 @@ begin
       end;
      {$If Defined(track_f) or Defined(RecordProjectionParameters)} ShortProjInfo(' GetProjectParameters Out'); {$EndIf}
      {$IfDef RecordFalse} WriteLineToDebugFile(ProjDebugName + ' GetProjectParameters Out, ' + FalseSettingsString); {$EndIf}
-
 end {proc GetProjectParameters};
 
 

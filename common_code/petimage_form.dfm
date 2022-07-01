@@ -152,7 +152,6 @@ object ImageDisplayForm: TImageDisplayForm
         FFFFFCCFFFFFFFFFFFFFFCCFFFFFCCCCCCFFFCCFFFCCCCCCCCFFFCCFFFCCCCCC
         CCFFFCCFFFFFFFCCCCFFFCCCFFFFFFCCCCCFFCCCFFFFFCCCCCCFFFCCCCCCCCCC
         FCCFFFCCCCCCCCCFFCCFFFFFFFFFFFFFFCCFFFFFFFFFFFFFFFFF}
-      OnClick = RedrawSpeedButton12Click
     end
     object SpeedButton7: TSpeedButton
       Left = 125
@@ -161,7 +160,6 @@ object ImageDisplayForm: TImageDisplayForm
       Height = 24
       Hint = 'Geolocate on image'
       Caption = '+?'
-      OnClick = SpeedButton7Click
     end
     object SpeedButton8: TSpeedButton
       Left = 148
@@ -170,7 +168,6 @@ object ImageDisplayForm: TImageDisplayForm
       Height = 24
       Hint = 'Digitize on image'
       Caption = 'Dig'
-      OnClick = SpeedButton8Click
     end
     object SpeedButton6: TSpeedButton
       Left = 176
@@ -186,7 +183,6 @@ object ImageDisplayForm: TImageDisplayForm
       Width = 23
       Height = 24
       Caption = 'V'
-      OnClick = VClick
     end
     object SpeedButton9: TSpeedButton
       Left = 222
@@ -194,7 +190,6 @@ object ImageDisplayForm: TImageDisplayForm
       Width = 23
       Height = 24
       Caption = '<'
-      OnClick = SpeedButton9Click
     end
     object SpeedButton10: TSpeedButton
       Left = 245
@@ -224,7 +219,6 @@ object ImageDisplayForm: TImageDisplayForm
         333337F3373337F33333307F8F8F70333333373FF333F7333333330777770333
         333333773FF77333333333370007333333333333777333333333}
       NumGlyphs = 2
-      OnClick = ZoomInSpeedButton4Click
     end
     object ZoomOutSpeedButton5: TSpeedButton
       Left = 293
@@ -246,7 +240,6 @@ object ImageDisplayForm: TImageDisplayForm
         333337F3333337F333333078F8F870333333373FF333F7333333330777770333
         333333773FF77333333333370007333333333333777333333333}
       NumGlyphs = 2
-      OnClick = ZoomOutSpeedButton5Click
     end
     object SpeedButton11: TSpeedButton
       Left = 318
@@ -500,11 +493,9 @@ object ImageDisplayForm: TImageDisplayForm
       end
       object Reloadimage1: TMenuItem
         Caption = 'Reload image'
-        OnClick = Reloadimage1Click
       end
       object Refresh1: TMenuItem
         Caption = 'Refresh'
-        OnClick = Refresh1Click
       end
       object Saveimage1: TMenuItem
         Caption = '&Save image'
@@ -517,7 +508,6 @@ object ImageDisplayForm: TImageDisplayForm
       end
       object Pastefromclipboard1: TMenuItem
         Caption = 'Paste from clipboard'
-        OnClick = Pastefromclipboard1Click
       end
       object Alphablending1: TMenuItem
         Caption = 'Alpha blending'
@@ -645,7 +635,6 @@ object ImageDisplayForm: TImageDisplayForm
         end
         object Yellow1: TMenuItem
           Caption = 'Yellow'
-          OnClick = Yellow1Click
         end
         object Magenta1: TMenuItem
           Caption = 'Magenta'
@@ -653,11 +642,9 @@ object ImageDisplayForm: TImageDisplayForm
         end
         object MakeRGBseparates1: TMenuItem
           Caption = 'Make R/G/B separates'
-          OnClick = MakeRGBseparates1Click
         end
         object MakeRGBgrayscales1: TMenuItem
           Caption = 'Make R/G/B grayscales'
-          OnClick = MakeRGBgrayscales1Click
         end
         object MakeRGBandgrayscaleseparates1: TMenuItem
           Caption = 'Make RGB and grayscale separates'
@@ -678,7 +665,6 @@ object ImageDisplayForm: TImageDisplayForm
       end
       object Picksolidcolor1: TMenuItem
         Caption = 'Pick solid color'
-        OnClick = Picksolidcolor1Click
       end
       object Horizontalpalette1: TMenuItem
         Caption = 'Horizontal palette'
@@ -689,11 +675,9 @@ object ImageDisplayForm: TImageDisplayForm
       end
       object Colorcrosssections1: TMenuItem
         Caption = 'Color cross sections'
-        OnClick = Colorcrosssections1Click
       end
       object Pickhorizon1: TMenuItem
         Caption = 'Pick horizon'
-        OnClick = Pickhorizon1Click
       end
       object N4: TMenuItem
         Caption = '-'
@@ -762,7 +746,6 @@ object ImageDisplayForm: TImageDisplayForm
     end
     object Zoom1: TMenuItem
       Caption = 'Zoom'
-      OnClick = Zoom1Click
     end
     object Options1: TMenuItem
       Caption = 'Image options'
@@ -814,7 +797,6 @@ object ImageDisplayForm: TImageDisplayForm
     end
     object Pastefromclipboard2: TMenuItem
       Caption = 'Paste new image from clipboard'
-      OnClick = Pastefromclipboard2Click
     end
     object Overlaynewimagefromclipboard1: TMenuItem
       Caption = 'Overlay new image from clipboard'
@@ -826,18 +808,15 @@ object ImageDisplayForm: TImageDisplayForm
     end
     object Makethisupperleftcorner1: TMenuItem
       Caption = 'Make this upper left corner'
-      OnClick = Makethisupperleftcorner1Click
     end
     object Makethislowerrightcorner1: TMenuItem
       Caption = 'Make this lower right corner'
-      OnClick = Makethislowerrightcorner1Click
     end
     object Startregionselection1: TMenuItem
       Caption = 'Start region selection'
     end
     object Pickthispointforsolidcolor1: TMenuItem
       Caption = 'Pick this point for solid color'
-      OnClick = Pickthispointforsolidcolor1Click
     end
     object Solid1: TMenuItem
       Caption = 'Solid color'
@@ -876,7 +855,6 @@ object ImageDisplayForm: TImageDisplayForm
     end
     object Usethissubsetonmultiplebitmaps1: TMenuItem
       Caption = 'Use this subset on multiple bitmaps'
-      OnClick = Usethissubsetonmultiplebitmaps1Click
     end
   end
 end

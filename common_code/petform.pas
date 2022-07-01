@@ -21,8 +21,8 @@ uses
 type
   TPETMARCommonForm = class(TForm)
     OpenDialog1: TOpenDialog;
-    PrintDialog1: TPrintDialog;
-    BMPSaveDialog1: TSaveDialog;
+    //PrintDialog1: TPrintDialog;
+    //BMPSaveDialog1: TSaveDialog;
     Edit1: TEdit;
     OKBtn: TBitBtn;
     SaveDialog1: TSaveDialog;
@@ -54,7 +54,7 @@ begin
    Close;
 end;
 
-
+(*
 function FindWindowExtd(partialTitle: string): HWND;
 var
   hWndTemp: hWnd;
@@ -74,10 +74,10 @@ begin
   end;
   result := hWndTemp;
 end;
+*)
+
 
 procedure TPETMARCommonForm.FormActivate(Sender: TObject);
-//var
-   //OnMonitor : integer;
 begin
    ActiveControl := Edit1;
    Left := Mouse.CursorPos.X;

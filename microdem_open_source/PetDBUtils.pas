@@ -1465,8 +1465,7 @@ end;
 function MakePointGeoFilter(LatFieldName,LongFieldName : string16; HiLat,LowLong,LowLat,HighLong : float64) : AnsiString;
 begin
    if (LatFieldName = '') then LatFieldName := 'LAT';
-   if (LongFieldName = '') then LongFieldName := 'LAT';
-   //Dec := FilterDecBasedOnMapSize(MapPixelSize);
+   if (LongFieldName = '') then LongFieldName := 'LONG';
    if (LowLong > 0) and (HighLong < 0) then begin
       Result := '(' + LatFieldName + '>=' + RealToString(LowLat,-18,6) + ') AND (' + LatFieldName + '<=' + RealToString(HiLat,-18,6) +
         ') AND ((' + LongFieldName + '>=' + RealToString(LowLong,-18,6) + ') OR (' + LongFieldName + '<=' + RealToString(HighLong,-18,6) + '))';
@@ -1488,10 +1487,9 @@ begin
 end;
 
 
-
 function CornersFromBoundBoxGeo(bb : sfBoundBox) : shortString;
 begin
-   Result := 'NW corner: ' + LatLongDegreeToString(bb.ymax,bb.xmin) + '   SE corner: ' + LatLongDegreeToString(bb.ymin,bb.xmax);
+   Result := 'NW corner: ' + LatLongDegreeToString(bb.ymax,bb.xmin) + ' SE corner: ' + LatLongDegreeToString(bb.ymin,bb.xmax);
 end;
 
 
@@ -1506,25 +1504,19 @@ var
    TStr : shortstring;
 begin
   {$IfDef RecordDataBaseFilter} WriteLineToDebugFile('MakeCornersGeoFilter:  NW corner: ' + LatLongDegreeToString(HiLat,LowLong)) + '   SE corner: ' + LatLongDegreeToString(LowLat,HighLong)); {$EndIf}
-
    LongitudeAngleInRange(LowLong);
    LongitudeAngleInRange(HighLong);
-   //Dec := FilterDecBasedOnMapSize(MapPixelSize);
-
    if (LowLong < HighLong) then TStr := 'LONG_LOW<=' + RealToString(HighLong,-18,6) + ' AND LONG_HI>=' + RealToString(LowLong,-18,6)
    else TStr := '((LONG_LOW<=' + RealToString(HighLong,-18,6) + ' AND LONG_HI>=' + RealToString(LowLong,-18,6) + ') OR ' +
                  '(LONG_LOW<=' + RealToString(LowLong,-18,6) + ' AND LONG_HI<=' + RealToString(HighLong,-18,6) + ')';
-
-
   Result := '(LAT_LOW<=' + RealToString(HiLat,-18,6) + ' AND LAT_HI>=' + RealToString(LowLat,-18,6) + ' AND ' + TStr + ')';
-
   {$IfDef RecordDataBaseFilter} WritelineToDebugFile('   Filter= ' + Result); {$EndIf}
 end;
 
 
 {$IfDef VCL}
 
-function OrigPickField(Table : tMyData; Mess: ShortString; TypesAllowed : tSetFieldType{; AllFields : boolean = false}) : ShortString;
+function OrigPickField(Table : tMyData; Mess: ShortString; TypesAllowed : tSetFieldType) : ShortString;
 var
   FieldsInDB : tStringList;
   WantField,i  : integer;

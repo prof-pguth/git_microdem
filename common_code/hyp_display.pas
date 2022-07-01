@@ -20,7 +20,6 @@ uses
   System.UItypes,
   Hyperspectral_Image, BaseGraf,DEMMapf,Petmar_types;
 
-
 type
   THyperspectralForm = class(TForm)
     Panel1: TPanel;
@@ -279,32 +278,28 @@ end;
 
 procedure THyperspectralForm.BitBtn10Click(Sender: TObject);
 begin
-   //if MultiGridArray[MultiGridUsed].SatImageIndex = 0 then begin
-      if MultiGridArray[MultiGridUsed].SatImageIndex = 0  then begin
-         RedBandNum := 48;
-         GreenBandNum := 32;
-         BlueBandNum := 18;
-      end;
-      if (Sender <> Nil) then begin
-         AssociateBandDEMs('False color');
-         {$IfDef RecordColorImage} WriteLineToDebugFile('THyperspectralForm.BitBtn10Click out, title=' + BaseMap.MapDraw.BaseTitle); {$EndIf}
-      end;
-  //end;
+   if MultiGridArray[MultiGridUsed].SatImageIndex = 0  then begin
+      RedBandNum := 48;
+      GreenBandNum := 32;
+      BlueBandNum := 18;
+   end;
+   if (Sender <> Nil) then begin
+      AssociateBandDEMs('False color');
+      {$IfDef RecordColorImage} WriteLineToDebugFile('THyperspectralForm.BitBtn10Click out, title=' + BaseMap.MapDraw.BaseTitle); {$EndIf}
+   end;
 end;
 
 procedure THyperspectralForm.BitBtn11Click(Sender: TObject);
 begin
-   //if MultiGridArray[MultiGridUsed].SatImageIndex = 0 then begin
-      if MultiGridArray[MultiGridUsed].SatImageIndex = 0  then begin
-         RedBandNum := 32;
-         GreenBandNum := 18;
-         BlueBandNum := 14;
-      end;
-      if (Sender <> Nil) then begin
-         AssociateBandDEMs('True color');
-        {$IfDef RecordColorImage} WriteLineToDebugFile('THyperspectralForm.BitBtn11Click out, title=' + BaseMap.MapDraw.BaseTitle); {$EndIf}
-      end;
-   //end;
+   if MultiGridArray[MultiGridUsed].SatImageIndex = 0  then begin
+      RedBandNum := 32;
+      GreenBandNum := 18;
+      BlueBandNum := 14;
+   end;
+   if (Sender <> Nil) then begin
+      AssociateBandDEMs('True color');
+     {$IfDef RecordColorImage} WriteLineToDebugFile('THyperspectralForm.BitBtn11Click out, title=' + BaseMap.MapDraw.BaseTitle); {$EndIf}
+   end;
 end;
 
 procedure THyperspectralForm.BitBtn13Click(Sender: TObject);
@@ -572,12 +567,7 @@ begin
       if ComboBox3.Text = SatImage[MultiGridArray[MultiGridUsed].SatImageIndex].BandLongName[i] then BlueBandNum := i;
       if ComboBox4.Text = SatImage[MultiGridArray[MultiGridUsed].SatImageIndex].BandLongName[i] then GrayBandNum := i;
    end;
-   //ThreeColor := ShowColor;
-
    AssociateBandDEMs('User picks');
-
-   //if ThreeColor then BaseMap.SetRGBMultibandToShowOnMap('User picks',RedBandNum,GreenBandNum,BlueBandNum)
-   //else BaseMap.SetMultibandToShowOnMap(GrayBandNum);
 end;
 
 
@@ -614,13 +604,8 @@ begin
    Petmar.FindMatchingFiles(MainMapData  + 'spectral_library\','*.txt',Files,1);
    for I := 0 to pred(Files.Count) do ListBox1.Items.Add(ExtractFileName(Files.Strings[i]));
    Files.Free;
-   //RedBand := 3;
-   //GreenBand := 2;
-   //BlueBand := 1;
-
    Edit2.Text := RealToString(MDDef.MinImagePercentile,-12,-2);
    Edit1.Text := RealToString(MDDef.MaxImagePercentile,-12,-2);
-
    CheckBox2.Checked := MDDef.BandsByWavelength;
    wmDEM.FormPlacementInCorner(self);
    {$IfDef RecordColorImage} WriteLineToDebugFile('THyperspectralForm.FormCreate out'); {$EndIf}

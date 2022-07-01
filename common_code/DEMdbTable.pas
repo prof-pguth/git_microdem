@@ -925,6 +925,7 @@ type
     Lattimecolors1: TMenuItem;
     Boxplot1: TMenuItem;
     ransposeforwinecontest1: TMenuItem;
+    Graphfortransposeddata1: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
     procedure Shiftpointrecords1Click(Sender: TObject);
     procedure Creategrid1Click(Sender: TObject);
@@ -1631,6 +1632,7 @@ type
     procedure Lattimecolors1Click(Sender: TObject);
     procedure Boxplot1Click(Sender: TObject);
     procedure ransposeforwinecontest1Click(Sender: TObject);
+    procedure Graphfortransposeddata1Click(Sender: TObject);
     //procedure BarGraphLengend1Click(Sender: TObject);
   private
     procedure PlotSingleFile(fName : PathStr; xoff,yoff : float64);
@@ -1866,113 +1868,13 @@ uses
 {End of the MDI parent declaration}
 
 var
-   HighlightCycle,RecordBeingEditted : integer;
+   HighlightCycle{,RecordBeingEditted} : integer;
    BroadCastingFilterChanges : boolean;
 
 
 {$I demdbtable_demix_graphs.inc}
 
 
-(*
-procedure AdjustColumnWidths(DBGrid: TDBGrid);
-{Developed by Philippe Randour (philippe_randour@hotmail.com) in August 2000. It can be freely used. }
-var
-  TotalColumnWidth, ColumnCount, GridClientWidth, Filler, i: Integer;
-begin
-  ColumnCount := DBGrid.Columns.Count;
-  if ColumnCount = 0 then
-    Exit;
-
-  // compute total width used by grid columns and vertical lines if any
-  TotalColumnWidth := 0;
-  for i := 0 to ColumnCount-1 do
-    TotalColumnWidth := TotalColumnWidth + DBGrid.Columns[i].Width;
-  if dgColLines in DBGrid.Options then
-    // include vertical lines in total (one per column)
-    TotalColumnWidth := TotalColumnWidth + ColumnCount;
-
-  // compute grid client width by excluding vertical scroll bar, grid indicator,
-  // and grid border
-  GridClientWidth := DBGrid.Width - GetSystemMetrics(SM_CXVSCROLL);
-  if dgIndicator in DBGrid.Options then begin
-    GridClientWidth := GridClientWidth - IndicatorWidth;
-    if dgColLines in DBGrid.Options then
-      Dec(GridClientWidth);
-  end;
-  if DBGrid.BorderStyle = bsSingle then begin
-    if DBGrid.Ctl3D then // border is sunken (vertical border is 2 pixels wide)
-      GridClientWidth := GridClientWidth - 4
-    else // border is one-dimensional (vertical border is one pixel wide)
-      GridClientWidth := GridClientWidth - 2;
-  end;
-
-  // adjust column widths
-  if TotalColumnWidth < GridClientWidth then begin
-    Filler := (GridClientWidth - TotalColumnWidth) div ColumnCount;
-    for i := 0 to ColumnCount-1 do
-      DBGrid.Columns[i].Width := DBGrid.Columns[i].Width + Filler;
-  end
-  else if TotalColumnWidth > GridClientWidth then begin
-    Filler := (TotalColumnWidth - GridClientWidth) div ColumnCount;
-    if (TotalColumnWidth - GridClientWidth) mod ColumnCount <> 0 then
-      Inc(Filler);
-    for i := 0 to ColumnCount-1 do
-      DBGrid.Columns[i].Width := DBGrid.Columns[i].Width - Filler;
-  end;
-end;
-
-
-
-procedure FitGrid(Grid: TDBGrid);
-//http://stackoverflow.com/questions/17509924/adjust-column-width-dbgrid
-const
-  C_Add=3;
-var
-  ds: TDataSet;
-  bm: TBookmark;
-  i: Integer;
-  w: Integer;
-  a: Array of Integer;
-begin
-  ds := Grid.DataSource.DataSet;
-  if Assigned(ds) then
-  begin
-    ds.DisableControls;
-    bm := ds.GetBookmark;
-    try
-      ds.First;
-      SetLength(a, Grid.Columns.Count);
-      while not ds.Eof do
-      begin
-        for I := 0 to Grid.Columns.Count - 1 do
-        begin
-          if Assigned(Grid.Columns[i].Field) then
-          begin
-            w :=  Grid.Canvas.TextWidth(ds.FieldByName(Grid.Columns[i].Field.FieldName).DisplayText);
-            if a[i] < w  then
-               a[i] := w ;
-          end;
-        end;
-        ds.Next;
-      end;
-      //if fieldwidth is smaller than Row 0 (field names) fix
-      for I := 0 to Grid.Columns.Count - 1 do
-      begin
-        w :=  Grid.Canvas.TextWidth(Grid.Columns[i].Field.FieldName);
-        if a[i] < w  then
-           a[i] := w ;
-      end;
-
-      for I := 0 to Grid.Columns.Count - 1 do
-        Grid.Columns[i].Width := a[i] + C_Add;
-        ds.GotoBookmark(bm);
-    finally
-      ds.FreeBookmark(bm);
-      ds.EnableControls;
-    end;
-  end;
-end;
-*)
 
 type tPointInPolygon = (pipLabels,pipDelete,pipSetMask);
 
@@ -1981,7 +1883,6 @@ procedure MarkPointInPolygon(PIP : tPointInPolygon; DB,MaskDB : integer; NameFie
 var
    i,x,y,rc : integer;
    LatCent,LongCent : float64;
-   //PutNames : boolean;
    bmp : tMyBitmap;
 begin
    StartProgress('Mask');
@@ -9779,6 +9680,11 @@ begin
    Addazimuthtotravelpath1Click(Sender);
 end;
 
+procedure Tdbtablef.Graphfortransposeddata1Click(Sender: TObject);
+begin
+   TransposeDEMIXwinecontestGraph(DBonTable);
+end;
+
 procedure Tdbtablef.Graphicallymovepoints1Click(Sender: TObject);
 var
    Lat,Long : float64;
@@ -13655,8 +13561,8 @@ var
          end;
 
 begin
-   DEMGlb[GISdb[DBonTable].TheMapOwner.MapDraw.DEMonMap].SetNewDEM(NewDEM,true,true,true);
-   DEMGlb[GISdb[DBonTable].TheMapOwner.MapDraw.DEMonMap].SetNewDEM(DiffDEM,true,true,true);
+   DEMGlb[GISdb[DBonTable].TheMapOwner.MapDraw.DEMonMap].SetNewDEM(NewDEM);
+   DEMGlb[GISdb[DBonTable].TheMapOwner.MapDraw.DEMonMap].SetNewDEM(DiffDEM);
    GISdb[DBonTable].MyData.First;
    while not GISdb[DBonTable].MyData.eof do begin
       New(Coords);
@@ -13750,7 +13656,7 @@ begin
 
       for j := 0 to pred(FieldsUsed.Count) do begin
          WantedFieldName := FieldsUsed.Strings[j];
-         if OpenAndZeroNewDEM(true,NewHeadRecs,NewDEM,FieldsUsed.Strings[j],true) then begin
+         if OpenAndZeroNewDEM(true,NewHeadRecs,NewDEM,FieldsUsed.Strings[j],InitDEMmissing) then begin
             //AreaName := FieldsUsed.Strings[j];
             DEMGlb[NewDEM].ShortName := FieldsUsed.Strings[j];
             MyData.First;

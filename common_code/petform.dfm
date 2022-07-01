@@ -4,8 +4,8 @@ object PETMARCommonForm: TPETMARCommonForm
   ActiveControl = Edit1
   BorderIcons = []
   Caption = 'G'
-  ClientHeight = 122
-  ClientWidth = 353
+  ClientHeight = 181
+  ClientWidth = 492
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -18,10 +18,11 @@ object PETMARCommonForm: TPETMARCommonForm
   object Edit1: TEdit
     Left = 0
     Top = 41
-    Width = 353
+    Width = 492
     Height = 28
     Align = alTop
     TabOrder = 0
+    ExplicitWidth = 353
   end
   object OKBtn: TBitBtn
     Left = 24
@@ -39,34 +40,26 @@ object PETMARCommonForm: TPETMARCommonForm
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 353
+    Width = 492
     Height = 41
     Align = alTop
     Caption = 'Panel1'
     TabOrder = 2
+    ExplicitWidth = 353
   end
   object OpenDialog1: TOpenDialog
     Options = [ofEnableSizing]
-    Left = 184
-    Top = 72
-  end
-  object PrintDialog1: TPrintDialog
-    Left = 136
-    Top = 72
-  end
-  object BMPSaveDialog1: TSaveDialog
-    Title = 'Save Image As'
-    Left = 272
-    Top = 72
+    Left = 126
+    Top = 114
   end
   object SaveDialog1: TSaveDialog
     Options = [ofHideReadOnly, ofExtensionDifferent, ofEnableSizing]
     Left = 224
-    Top = 72
+    Top = 114
   end
   object ColorDialog1: TColorDialog
-    Left = 104
-    Top = 72
+    Left = 26
+    Top = 114
   end
   object FontDialog1: TFontDialog
     Font.Charset = DEFAULT_CHARSET
@@ -74,7 +67,7 @@ object PETMARCommonForm: TPETMARCommonForm
     Font.Height = -11
     Font.Name = 'Tahoma'
     Font.Style = []
-    Left = 320
-    Top = 72
+    Left = 416
+    Top = 122
   end
 end

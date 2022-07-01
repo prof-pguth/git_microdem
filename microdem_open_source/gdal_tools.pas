@@ -15,9 +15,9 @@ unit gdal_tools;
 
 
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
-   {$Define RecordGDALOpen}
-   {$Define RecordACOLITE}
-   {$Define RecordSubsetOpen}
+   //{$Define RecordGDALOpen}
+   //{$Define RecordACOLITE}
+   //{$Define RecordSubsetOpen}
 
    {$IFDEF DEBUG}
       //{$Define RecordACOLITE}
@@ -25,11 +25,11 @@ unit gdal_tools;
       //{$Define RecordGDALOpen}
       //{$Define RecordUseOtherPrograms}
       //{$Define RecordSaveProblems}
-     {$Define RecordGDAL}
-     //{$Define RecordWBT}
-     //{$Define RecordOGR}
-     //{$Define RecordGeoPDF}
-     //{$Define RecordReformat}
+      //{$Define RecordGDAL}
+      //{$Define RecordWBT}
+      //{$Define RecordOGR}
+      //{$Define RecordGeoPDF}
+      //{$Define RecordReformat}
    {$Else}
    {$EndIf}
 {$EndIf}
@@ -169,18 +169,12 @@ function GetGDALversion : ANSIstring;
 var
    cmd : shortstring;
 begin
+   SaveBackupDefaults;
+   MDDef.ShowWinExec := false;
    cmd := GDAL_info_name + ' --version |clip';
    GDALCommand(MDTempDir + 'gdal_info.bat',cmd,false);
    Result := Clipboard.AsText;
-(*
-   fName := MDTempDir + 'gdalver.txt';
-   cmd := GDAL_info_name + ' --version > ' + fName;
-   WinExecAndWait32(cmd,true,false);
-   sl := tStringList.Create;
-   sl.LoadFromFile(fName);
-   Result := sl[0];
-   sl.Destroy;
-*)
+   RestoreBackupDefaults;
 end;
 
 
@@ -1171,7 +1165,7 @@ end;
 
          if not PathIsValid(GDALtools_Data) then begin
             GDALtools_Data := 'c:\OSGeo4W\share\gdal\';
-            GetDOSPath('GDAL tools data directory',GDALtools_Data);
+            if not PathIsValid(GDALtools_Data) then GetDOSPath('GDAL tools data directory',GDALtools_Data);
          end;
 
          if PathIsValid(GDALtools_Dir) and PathIsValid(GDALtools_Data) and SetRest then begin
@@ -1468,14 +1462,6 @@ end;
              if StrUtils.AnsiContainsText(TStr,'PROJCS["WGS_1984_Web_Mercator_Auxiliary_Sphere"') then GDALInfo.inEPSG := 3857;
              FindUTMZone(TStr,GDALinfo.UTMzone,GDALInfo.Hemi);
              ParseForMapCenter(TStr,GDALInfo.cLat,GDALInfo.cLong);
-
-
-      (*
-       NumCol,NumRow : integer;
-       dx,dy,
-       ulLat,ulLong,
-      *)
-
          end;
          Metadata.Free;
          GetEPSG(GDALinfo);

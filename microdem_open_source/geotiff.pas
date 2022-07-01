@@ -30,7 +30,7 @@ unit GeoTiff;
       //{$Define RecordDEMMapProjection}
       //{$Define ShowKeyDEM}
       //{$Define TrackZ}
-
+      //{$Define RecordTiePoints}
       //{$Define RecordGeotiffFailures}
       //{$Define GeotiffCorner}
       //{$Define RecordGeotiffRestart}
@@ -97,6 +97,7 @@ type
       MinSampleValue,MaxSampleValue : array[1..MaxBands] of int32;
       SampleFormat : tSampleFormat;
       OffsetArray : ^tOffsetArray;
+      TieBoundBox : sfBoundBox;
 
       //tGeoTiffHeader unique values
          HemiChar   : AnsiChar;
@@ -200,6 +201,7 @@ uses
    {$EndIf}
 
    dem_nlcd,
+   demesrishapefile,
    gdal_tools,
    PETMath;
 
@@ -555,7 +557,6 @@ var
    v : DoubleBytes;
    i : integer;
 begin
-   //BlockRead(TiffFile,v,8);
    FileRead(TiffHandle,v,8);
    if BigEndian then for i := 1 to 8 do Run[i] := v[9-i]
    else for i := 1 to 8 do Run[i] := v[i];
@@ -569,7 +570,6 @@ var
    v : DoubleBytes;
    i : integer;
 begin
-   //BlockRead(TiffFile,v,4);
    FileRead(TiffHandle,v,4);
    if BigEndian then for i := 1 to 4 do Run[i] := v[5-i]
    else for i := 1 to 4 do Run[i] := v[i];
@@ -582,7 +582,6 @@ var
    i1,i2 : word;
    v : array[1..2] of byte;
 begin
-  // BlockRead(TiffFile,v,2);
    FileRead(TiffHandle,v,2);
    if BigEndian then begin
       i1 := v[2];
@@ -602,7 +601,6 @@ var
    v : DoubleBytes;
    i : integer;
 begin
-   //BlockRead(TiffFile,v,4);
    FileRead(TiffHandle,v,4);
    if BigEndian then for i := 1 to 4 do Run[i] := v[5-i]
    else for i := 1 to 4 do Run[i] := v[i];
@@ -616,7 +614,6 @@ var
    v : DoubleBytes;
    i : integer;
 begin
-   //BlockRead(TiffFile,v,4);
    FileRead(TiffHandle,v,4);
    if BigEndian then for i := 1 to 4 do Run[i] := v[5-i]
    else for i := 1 to 4 do Run[i] := v[i];
@@ -630,7 +627,6 @@ var
    v : DoubleBytes;
    i : integer;
 begin
-   //BlockRead(TiffFile,v,8);
    FileRead(TiffHandle,v,8);
    if BigEndian then for i := 1 to 8 do Run[i] := v[9-i]
    else for i := 1 to 8 do Run[i] := v[i];
@@ -736,7 +732,7 @@ var
          end;
 
 begin
-   SeekFileOffset({TiffFile,}Band,Row);
+   SeekFileOffset(Band,Row);
    if (TiffHeader.PhotometricInterpretation = 2) or (TiffHeader.SamplesPerPixel > 1) then begin    //color image
       if (TiffHeader.BitsPerSample in [15,16]) then begin
          GetTiffRow16bit(Band,Row,Row16bit^);
@@ -1025,7 +1021,7 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
                {$IfDef RecordInitializeDEM} WriteLineToDebugFile('Back from define DEM variables '  + WantDEM.AreaName + '  ' + sfBoundBoxToString(WantDEM.DEMBoundBoxProjected,4)); {$EndIf}
 
                Result := true;
-               if ReallyReadDEM and (not WantDEM.AllocateDEMMemory(true)) then begin
+               if ReallyReadDEM and (not WantDEM.AllocateDEMMemory(InitDEMnone)) then begin
                   {$IfDef RecordInitializeDEM} WriteLineToDebugFile('WantDEM.AllocateDEMMemory failed'); {$EndIf}
                   Result := false;
                end;
@@ -1357,9 +1353,12 @@ var
          Procedure HandleTiePoints(ModelTiePointOffset,ModelTiePointSize : LongInt);
          var
             i : integer;
+            TieBoundBox : sfBoundBox;
          begin
             FileSeek(TiffHandle,ModelTiePointOffset,0);
             TiePoints := ModelTiePointSize div 6;
+            InitializeBoundingBox(TieBoundBox);
+
             for i := 1 to TiePoints do begin
                TiffHeader.RasterX := MakeDouble;
                TiffHeader.RasterY := MakeDouble;
@@ -1367,9 +1366,11 @@ var
                TiffHeader.ModelX := MakeDouble;
                TiffHeader.ModelY := MakeDouble;
                TiffHeader.ModelZ := MakeDouble;
-               {$If Defined(RecordFullGeotiff) or Defined(RecordInitializeDEM)}
-                  WriteLineToDebugFile('Tie point ' + IntToStr(i) + ' rasterx =' + RealToString(TiffHeader.RasterX,-12,2) + ' rastery =' + RealToString(TiffHeader.RasterY,-12,2) +
-                      ' modelx =' + RealToString(TiffHeader.ModelX,-12,-4) + ' modely =' + RealToString(TiffHeader.ModelY,-12,-4));
+               PetMath.CompareValueToExtremes(TiffHeader.ModelX,TieBoundBox.xMin,TieBoundBox.xMax);
+               PetMath.CompareValueToExtremes(TiffHeader.ModelY,TieBoundBox.yMin,TieBoundBox.yMax);
+               {$If Defined(RecordFullGeotiff) or Defined(RecordInitializeDEM) or Defined(RecordTiePoints)}
+                  WriteLineToDebugFile('Tie point ' + IntToStr(i) + ' rasterx=' + RealToString(TiffHeader.RasterX,-12,2) + ' rastery=' + RealToString(TiffHeader.RasterY,-12,2) +
+                      ' modelx =' + RealToString(TiffHeader.ModelX,-18,-8) + ' modely=' + RealToString(TiffHeader.ModelY,-18,-8) + ' modelz=' + RealToString(TiffHeader.Modelz,-18,-2));
                {$EndIf}
 
                if (TiePoints = 4) then begin

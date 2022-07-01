@@ -12,8 +12,7 @@ unit dem_manager;
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
       //{$Define RecordCloseDEM}
-
-
+      //{$Define ShortRecordCloseDEM}
       //{$Define RecordClosingData}
       //{$Define RecordNewMaps}
       //{$Define LoadDEMsCovering}
@@ -27,7 +26,7 @@ unit dem_manager;
       //{$Define TimeSatLoad}
       //{$Define RecordMenu}
       //{$Define RecordSatLoad}
-      //{$Define RecordSimpleClose}
+      {$Define RecordSimpleClose}
    {$Else}
       {$Define TimeLoadDEM}
    {$EndIf}
@@ -67,7 +66,7 @@ uses
 function OpenAndDisplayNewScene(Files : tStringList; IndexFileName : PathStr; DisplayIt,NeedHist,ASatImage : boolean;  WhichSat : integer = 0; DEMtoAssociate : integer = 0) : integer;
 
 procedure CloseAllDEMs;
-procedure CloseSingleDEM(var i : integer; ResetMenus : boolean = true);
+procedure CloseSingleDEM(var DEMtoClose : integer; ResetMenus : boolean = true);
 
 procedure CloseAllWindowsAndData;
 procedure CloseEverything;
@@ -177,6 +176,8 @@ function GeotiffBBox(fName : PathStr) : sfBoundBox;
       function GetImage(var ImageWanted : integer; CanCancel : boolean = false; TheMessage : ShortString = '') : boolean;
    {$EndIf}
 {$EndIf}
+
+//procedure AddOpenDEMsToDebugLog(what : shortstring);
 
 
 function ValidDEMExt(ext : extstr) : boolean;
@@ -425,7 +426,7 @@ begin
    else Mult := 2;
 
    {$IfDef RecordNewMaps} WriteLineToDebugFile('CreateNewGrid call OpenAndZero'); {$EndIf}
-   OpenAndZeroNewDEM(false,NewHeader,Result,DEMName);
+   OpenAndZeroNewDEM(false,NewHeader,Result,DEMName,InitDEMmissing);
    {$IfDef RecordNewMaps} WriteLineToDebugFile('CreateNewGrid call CreateDEMSelectionMap'); {$EndIf}
    CreateDEMSelectionMap(Result,false,MDDef.DefElevsPercentile,mtDEMBlank);
    {$IfDef RecordNewMaps} WriteLineToDebugFile('CreateNewGrid out ' + DEMGlb[Result].FullDEMParams); {$EndIf}
@@ -612,8 +613,7 @@ end;
     end;
 
 
-procedure CloseSingleDEM(var i : integer; ResetMenus : boolean = true);
-
+procedure CloseSingleDEM(var DEMtoClose : integer; ResetMenus : boolean = true);
 
 
       procedure CloseYeDEM(i : integer);
@@ -642,15 +642,15 @@ var
 begin
    try
       ClosingIsHappening := true;
-      if ValidDEM(i) then begin
-         CloseString := 'CloseSingleDEM, dem=' + IntToStr(i) + '   ' + DEMGlb[i].AreaName;
-         {$IfDef RecordCloseDEM} WriteLineToDebugFile('In ' + CloseString); {$EndIf}
-         if (i = PredAgesDEM) then PredAgesDEM := 0;
-         if (i = SedThickDEM) then SedThickDEM := 0;
-         if (i = SedTypeDEM) then SedTypeDEM := 0;
+      if ValidDEM(DEMtoClose) then begin
+         CloseString := 'CloseSingleDEM, dem=' + IntToStr(DEMtoClose) + '   ' + DEMGlb[DEMtoClose].AreaName;
+         {$If Defined(RecordCloseDEM)} WriteLineToDebugFile('In ' + CloseString); {$EndIf}
+         if (DEMtoClose = PredAgesDEM) then PredAgesDEM := 0;
+         if (DEMtoClose = SedThickDEM) then SedThickDEM := 0;
+         if (DEMtoClose = SedTypeDEM) then SedTypeDEM := 0;
 
-         j := i;
-         i := 0;
+         j := DEMtoClose;
+         DEMtoClose := 0;
          CloseYeDEM(j);
          ApplicationProcessMessages;
          {$IfDef VCL}
@@ -659,7 +659,7 @@ begin
          {$If Defined(RecordCloseDEM) or Defined(RecordSimpleClose)} WriteLineToDebugFile('CloseSingleDEM out OK ' + CloseString); {$EndIf}
       end
       else begin
-         {$IfDef RecordCloseDEM} WriteLineToDebugFile('No DEM to close, i=' + IntToStr(I)); {$EndIf}
+         {$IfDef RecordCloseDEM} WriteLineToDebugFile('No DEM to close, i=' + IntToStr(DEMtoClose)); {$EndIf}
       end;
    finally
       ClosingIsHappening := false;
@@ -780,7 +780,7 @@ end;
       with PetList do begin
          Caption := theMessage;
          for i := 1 to MaxDEMDataSets do DEMsWanted[i] := false;
-         for i := 1 to MaxDEMDataSets do if (DEMGlb[i] <> Nil) and (not DEMGlb[i].HiddenGrid) then
+         for i := 1 to MaxDEMDataSets do if ValidDEM(i) and (not DEMGlb[i].HiddenGrid) then
              ListBox1.Items.Add('DEM' + IntegerToString(i,4) +': ' + DEMGlb[i].AreaName);
          CancelBtn.Enabled := true;
          PetList.Width:= 400;
@@ -883,7 +883,7 @@ end;
          {$If Defined(RecordStartup) or Defined(RecordProjects)} WriteLineToDebugFile('Open Last LOS'); {$EndIf}
          LastSavedLOSfName := ProjectDir + 'last_los' + DefaultDBExt;
          if not FileExists(LastSavedLOSfName) then LastSavedLOSfName := ProjectDir + 'last_los.csv';
-         if FileExists(LastSavedLOSfName) and (DEMGlb[1] <> Nil) then begin
+         if FileExists(LastSavedLOSfName) and ValidDEM(DEMGlb[1]) then begin
             DEMGlb[1].SelectionMap.LoadLOStopoprofile1Click(Nil);
          end;
      {$EndIf}
@@ -1175,7 +1175,7 @@ end;
       var
          ImageWanted : integer;
       begin
-         if (NumDEMDataSetsOpen = 1)  and (DEMglb[1] <> Nil) then DEMWanted := 1
+         if (NumDEMDataSetsOpen = 1)  and ValidDEM(1) then DEMWanted := 1
          else GetDEMorImage(true,false,DEMWanted,ImageWanted,CanCancel,TheMessage);
          Result := (DEMWanted <> 0);
       end;
@@ -1193,7 +1193,7 @@ end;
          TheList := TStringList.Create;
          if DEM then begin
             TStr2 := 'DEM';
-            for i := 1 to MaxDEMDataSets do if (DEMGlb[i] <> Nil) and (not DEMGlb[i].HiddenGrid) and (ExcludeDEM <> i) then
+            for i := 1 to MaxDEMDataSets do if (ValidDEM(i)) and (not DEMGlb[i].HiddenGrid) and (ExcludeDEM <> i) then
                TheList.Add('DEM' + IntegerToString(i,4) +': ' + DEMGlb[i].AreaName);
          end;
          {$IfDef ExSat}
@@ -1356,16 +1356,9 @@ end;
       var
          dName : PathStr;
       begin
-
-
          if (Not FileExists(Geoid2008FName)) then begin
-
             DownloadandUnzipDataFileIfNotPresent('geoid');
             CheckGeoidNames;
-
-            //dName := MainMapData + 'geoid.7z';
-            //DownloadFileFromWeb(WebDataDownLoadDir + 'geoid.7z',dName);
-            //ZipMasterUnzip(dName,ExtractFilePath(dName));
          end;
       end;
 
@@ -1381,18 +1374,12 @@ end;
 
 {$EndIf}
 
-(*
-function OpenDEM(DEM : integer) : boolean;
-begin
-   Result := (DEM <> 0) and (DEMGlb[DEM] <> Nil);
-end;
-*)
 
 {$IfDef Exgis}
 {$Else}
    function OpenDBString : shortstring;
    begin
-       Result := 'Open DBs: ' + IntToStr(NumOpenDB);
+      Result := 'Open DBs: ' + IntToStr(NumOpenDB);
    end;
 {$EndIf}
 
@@ -1401,14 +1388,15 @@ procedure OpenDEMsToDebugFile(Why : shortstring);
 var
    i : integer;
 begin
-    for i := 1 to 2 do WriteLineToDebugFile('');
-    WriteLineToDebugFile(why);
-    for i := 1 to MaxDEMDataSets do begin
+   for i := 1 to 2 do WriteLineToDebugFile('');
+   WriteLineToDebugFile(why);
+   for i := 1 to MaxDEMDataSets do begin
       if ValidDEM(i) then begin
+         writeLineToDebugFile(IntegerToString(i,5) + '  ' + DEMGlb[i].AreaName);
          writeLineToDebugFile(IntegerToString(i,5) + '  ' + DEMGlb[i].AreaName + '  (' + DEMGlb[i].ColsRowsString + '  ' +  DEMGlb[i].DemSizeString + ')');
       end;
    end;
-    for i := 1 to 2 do WriteLineToDebugFile('');
+   for i := 1 to 2 do WriteLineToDebugFile('');
 end;
 
 
@@ -1422,19 +1410,20 @@ var
          nf,i : integer;
          Extra : shortstring;
       begin
-          nf := 0;
-          for i := pred(WMDEM.MDIChildCount) downto 0 do
-             if (WMDEM.MDIChildren[i] is wType) then inc(nf);
-          if (nf > 0) then begin
-             Result.Add('');
-             Result.Add(wName + ' open');
-             for i := pred(WMDEM.MDIChildCount) downto 0 do
-                if WMDEM.MDIChildren[i] is wType then begin
-                   if (wType = DEMMapf.tMapForm) then Extra := (WMDEM.MDIChildren[i] as TMapForm).MapDraw.MapSizeString
-                   else Extra := '';
-                   Result.Add('     ' + WMDEM.MDIChildren[i].Caption + Extra);
-                end;
-          end;
+         nf := 0;
+         for i := pred(WMDEM.MDIChildCount) downto 0 do
+            if (WMDEM.MDIChildren[i] is wType) then inc(nf);
+         if (nf > 0) then begin
+            Result.Add('');
+            Result.Add(wName + ' open');
+            for i := pred(WMDEM.MDIChildCount) downto 0 do begin
+               if WMDEM.MDIChildren[i] is wType then begin
+                  if (wType = DEMMapf.tMapForm) then Extra := (WMDEM.MDIChildren[i] as TMapForm).MapDraw.MapSizeString
+                  else Extra := '';
+                  Result.Add('     ' + WMDEM.MDIChildren[i].Caption + Extra);
+               end;
+            end;
+         end;
       end;
    {$EndIf}
 
@@ -1445,7 +1434,7 @@ begin
 
    if (NumDEMDataSetsOpen > 0) then begin
       Result.Add('DEMs/grids open');
-       for i := 1 to MaxDEMDataSets do begin
+      for i := 1 to MaxDEMDataSets do begin
          if ValidDEM(i) then begin
             Result.Add(IntegerToString(i,5) + '  ' + DEMGlb[i].AreaName + '  (' + DEMGlb[i].ColsRowsString + '  ' +  DEMGlb[i].DemSizeString + ')');
          end;

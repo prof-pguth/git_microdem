@@ -1051,7 +1051,7 @@ var
    z,z2 : float32;
 begin
    StartProgress('Sum grids');
-   if OpenAndZeroNewDEM(true,DEMGlb[FirstDEM].DEMheader,Result,NewName,true) then begin
+   if OpenAndZeroNewDEM(true,DEMGlb[FirstDEM].DEMheader,Result,NewName,InitDEMmissing) then begin
       for Col := 0 to pred(DEMGlb[Result].DEMheader.NumCol) do begin
          if (Col mod 100 = 0) then UpdateProgressBar(Col/DEMGlb[Result].DEMheader.NumCol);
          for Row := 0 to pred(DEMGlb[Result].DEMheader.NumRow) do begin
@@ -1203,7 +1203,7 @@ begin
      NewHeadRecs := DEMGlb[StartingGrid].DEMheader;
      NewHeadRecs.DEMPrecision := ByteDEM;
 
-     if not OpenAndZeroNewDEM(true,NewHeadRecs,Result,'Clusters',false,0) then exit;
+     if not OpenAndZeroNewDEM(true,NewHeadRecs,Result,'Clusters',InitDEMvalue,0) then exit;
         with DEMGlb[Result],DEMheader do begin
            ShortName := 'Clusters';
            DEMheader.ElevUnits := Undefined;
@@ -2159,6 +2159,7 @@ var
 
       begin
          {$IfDef RecordElevMoment} WriteLineToDebugFile('Start DEM=' + IntToStr(CurDEM) + '  ' + DEMGlb[CurDEM].AreaName); {$EndIf}
+         New(zvs);
          inc(DEMsDone);
          ShowHourglassCursor;
          OnLine := 3;
@@ -2166,22 +2167,19 @@ var
          if MDDef.ElevMoments then begin
             {$IfDef RecordElevMoment} WriteLineToDebugFile('Start elev'); {$EndIf}
             if (Memo1 <> Nil) then Memo1.Lines.Add(TimeToStr(Now) + ' start elev');
-            New(zvs);
-            DEMGlb[CurDEM].ElevationMomentsWithArray(DEMGlb[CurDEM].FullDEMGridLimits,MomentVar,zvs^);
+            DEMGlb[CurDEM].ElevationMomentsWithArray({DEMGlb[CurDEM].FullDEM}GridLimits,MomentVar,zvs^);
             MinElev := MomentVar.MinZ;
             MaxElev := MomentVar.MaxZ;
             MomentsToStringGrid(GridForm.StringGrid1,OnLine,DEMsDone,'Elevation',MomentVar);
             inc(Online,11);
             if MDDef.GraphsOfMoments then ElevFiles.Add(SaveSingleValueSeries(MomentVar.npts,zvs^));
-            Dispose(zvs);
             ElevDist.Add(MomentResults);
          end;
 
          if MDDef.SlopeMoments then begin
            {$IfDef RecordElevMoment} WriteLineToDebugFile('Start slope'); {$EndIf}
            if (Memo1 <> Nil) then Memo1.Lines.Add(TimeToStr(Now) + ' start slope');
-           New(zvs);
-           DEMGlb[CurDEM].SlopeMomentsWithArray(DEMGlb[CurDEM].FullDEMGridLimits, MomentVar,zvs^);
+           DEMGlb[CurDEM].SlopeMomentsWithArray({DEMGlb[CurDEM].FullDEM}GridLimits, MomentVar,zvs^);
            MomentsToStringGrid(GridForm.StringGrid1,OnLine,DEMsDone,'Slope',MomentVar);
            inc(Online,11);
            if MomentVar.MaxZ > MaxSlope then MaxSlope := MomentVar.MaxZ;
@@ -2195,11 +2193,10 @@ var
            if (Memo1 <> Nil) then Memo1.Lines.Add(TimeToStr(Now) + ' start roughness');
            New(zvs);
            MomentVar.NPts := 0;
-           DEMGlb[CurDEM].RoughnessMomentsWithArray(DEMGlb[CurDEM].FullDEMGridLimits, MomentVar,zvs^);
+           DEMGlb[CurDEM].RoughnessMomentsWithArray({DEMGlb[CurDEM].FullDEM}GridLimits, MomentVar,zvs^);
            MomentsToStringGrid(GridForm.StringGrid1,OnLine,DEMsDone,'Roughness',MomentVar);
            inc(Online,11);
            RufDist.Add(MomentResults);
-           Dispose(zvs);
          end;
 
 
@@ -2209,7 +2206,6 @@ var
          if MDDef.PlanCurvMoments or MDDef.SlopeCurvMoments then begin
              {$IfDef RecordElevMoment} WriteLineToDebugFile('Start curvature'); {$EndIf}
              MomentVar.Npts := 0;
-             New(zvs);
              New(zvs2);
              StartProgress('Curvature');
              Col := GridLimits.XGridLow;
@@ -2229,18 +2225,19 @@ var
              EndProgress;
 
              if MDDef.SlopeCurvMoments then begin
-                MomentReport('Slope curvature',zvs^,MomentVar.npts,{false,}'',GridForm.StringGrid1,OnLine,DEMsDone);
+                MomentReport('Slope curvature',zvs^,MomentVar.npts,'',GridForm.StringGrid1,OnLine,DEMsDone);
                 if MDDef.GraphsOfMoments then ProfCurvFiles.Add(SaveSingleValueSeries(MomentVar.npts,zvs^));
                 inc(Online,8);
              end;
              if MDDef.PlanCurvMoments then begin
-                MomentReport('Plan curvature',zvs2^,MomentVar.npts,{false,}'',GridForm.StringGrid1,OnLine,DEMsDone);
+                MomentReport('Plan curvature',zvs2^,MomentVar.npts,'',GridForm.StringGrid1,OnLine,DEMsDone);
                 if MDDef.GraphsOfMoments then PlanCurvFiles.Add(SaveSingleValueSeries(MomentVar.npts,zvs2^));
                 inc(Online,8);
              end;
-             Dispose(zvs);
              Dispose(zvs2);
          end;
+         Dispose(zvs);
+
 
          GridForm.StringGrid1.Cells[DEMsDone,0] := DEMGlb[CurDEM].AreaName;
          GridForm.StringGrid1.Cells[DEMsDone,1] := RealToString(DEMGlb[CurDEM].AverageSpace,-12,2);
@@ -2292,7 +2289,8 @@ begin
 
       for j := 1 to MaxDEMDataSets do if ValidDEM(j) then begin
          {$IfDef RecordElevMoment} WriteLineToDebugFile('Start DEM=' + IntToStr(j)); {$EndIf}
-         GridLimits := DEMGlb[j].FullDEMGridLimits;
+         GridLimits := DEMGlb[j].SelectionMap.MapDraw.MapAreaDEMGridLimits;
+         //GridLimits := DEMGlb[j].FullDEMGridLimits;
          MomentReportForDEM(j);
          if MDDef.GraphsOfMoments then LegendFiles.Add(DEMGlb[j].AreaName);
       end;

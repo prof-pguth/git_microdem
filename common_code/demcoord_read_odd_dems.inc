@@ -63,7 +63,7 @@
          StringToByteArray('WGS84',DEMheader.DMAMapDefinition.h_DatumCode);
          ElevUnits := euMeters;
 
-         if not AllocateDEMMemory(true) then exit;
+         if not AllocateDEMMemory(InitDEMnone) then exit;
          StartProgress('Read');
          for j := pred(NumRow) downto 0 do begin
             if (j mod 500 = 0) then UpdateProgressBar((NumRow-j)/pred(NumRow));
@@ -138,7 +138,7 @@
          StringToByteArray('WGS84', DEMheader.DMAMapDefinition.h_DatumCode);
          ElevUnits := euMeters;
          if ReallyReadDEM then begin
-            if not AllocateDEMMemory(true) then exit;
+            if not AllocateDEMMemory(InitDEMMissing) then exit;
             if FileExists(Dir + bName + '.DAT') then try
                InsureFileIsNotReadOnly(Dir + bName + '.DAT');
                zs := tStringList.Create;
@@ -376,7 +376,7 @@ begin
       end;
 
       if ReallyReadDEM then begin
-         if not AllocateDEMMemory(true) then exit;
+         if not AllocateDEMMemory(InitDEMMissing) then exit;
          {$IfDef RecordReadDEM} WriteLineToDebugFile('AllocateDEMMemory OK, start read'); {$EndIf}
          StartProgress('DEM');
          for y := pred(NumRow) downto 0 do begin
@@ -443,5 +443,58 @@ end;
          ReadASCIIArcGrid(DEMFileName,Self,Result);
       end;
 {$EndIf}
+
+
+
+      procedure TryOddball(var DEMFileName : PathStr);
+      var
+         ofName : PathStr;
+      begin
+         if ExtEquals(Ext, '.IMG') then begin
+            ofName := ChangeFileExt(DEMFileName,'.LBL');
+            if FileExists(OfName) then begin
+               DEMFileName := ofName;
+               Ext := '.lbl';
+            end;
+         end;
+
+         if ExtEquals(Ext, '.FRQ') then begin
+            ofName := ChangeFileExt(DEMFileName,'.TIF');
+            if FileExists(OfName) then begin
+               DEMFileName := ofName;
+               Ext := '.tif';
+            end;
+         end;
+
+         if ExtEquals(Ext, '.HDR') then  begin
+            if FileExists(ChangeFileExt(DEMFileName,'.flt')) then begin
+               DEMFileName := ChangeFileExt(DEMFileName,'.flt');
+               Ext := '.flt';
+            end;
+
+            if FileExists(ChangeFileExt(DEMFileName,'.bil')) then  begin
+               DEMFileName := ChangeFileExt(DEMFileName,'.bil');
+               Ext := '.bil';
+            end;
+         end
+         else if ExtEquals(Ext, '.PRU') then ReadNOAAEEZfile(DEMFileName)
+         else if ExtEquals(Ext, '.G03') or ExtEquals(Ext, '.G98') then ReadNGDCGRD98file(DEMFileName,Error)
+         {$IfDef ExcludeUKOSDEM} {$Else} else if ExtEquals(Ext, '.NTF') then Error := ReadOSfile(DEMFileName) {$EndIf}
+         else if (UpperCase(ExtractFileNameNoExt(DEMFileName)) = 'DEMFLOAT') or ExtEquals(Ext, '.FLT') or ExtEquals(Ext, '.BIL') then begin
+            ReadNEDBIL(DEMFileName,Error);
+         end
+         else if ExtEquals(Ext, '.ASC') or ExtEquals(Ext, '.GRD') or ExtEquals(Ext, '.TXT') then begin
+            ReadASCIIArcGrid(DEMFileName,Self,Error);
+         end
+         else if ExtEquals(Ext, '.DTM') then begin
+            ReadFusionDTM(DEMFileName,Self,Error);
+         end;
+
+         if Error and (not GDALGridFormat(Ext)) then begin
+            {$IfDef ExDTED}{$Else} ReadDMADTED(Error,DEMFileName); {$EndIf}
+            Error := not TryGDAL(DEMFileName);
+         end;
+      end;
+
 
 

@@ -82,7 +82,7 @@ end {proc};
 
 procedure FillInBox(Canvas : TCanvas; StartCol,StartRow,EndCol,EndRow : integer; CurrentPattern : tPatternRecord; DrawBox : boolean);
 var
-   x,y      : integer;
+   x,y : integer;
 begin
    Canvas.Pen.Color := clBlack;
    Canvas.Pen.Width := 1;
@@ -136,7 +136,7 @@ begin
       end {while};
       close(PatternFile);
       Result := true;
-      {$IfDef RecordProblems}WriteLineToDebugFile('Pattern file read: ' + PatternFileName + '  out with Patterns read: ' + IntToStr(NumStandardPattern)); {$EndIf}
+      {$IfDef RecordProblems}WriteLineToDebugFile('Pattern file read: ' + PatternFileName + ' out with Patterns read: ' + IntToStr(NumStandardPattern)); {$EndIf}
    end
    else begin
       {$IfDef RecordProblems} WriteLineToDebugFile('Pattern file already read'); {$EndIf}

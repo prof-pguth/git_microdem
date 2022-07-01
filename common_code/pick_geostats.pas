@@ -136,7 +136,7 @@ type
     procedure BitBtn22Click(Sender: TObject);
     procedure CheckBox3Click(Sender: TObject);
   private
-    procedure GetBatchRegionSize;
+    //procedure GetBatchRegionSize;
     procedure NeedSingleDEM;
     { Private declarations }
   public
@@ -487,7 +487,7 @@ begin
    SlopeCompareOptions := TSlopeCompareOptions.Create(Application);
    with SlopeCompareOptions do begin
      SlopeCompareOptions.ShowModal;
-     DeltaSlope := DEMGlb[CurDEM].CloneAndOpenGrid(FloatingPointDEM,DEMGlb[CurDEM].AreaName + ' Slope Algorithm Difference',PercentSlope,false,1);
+     DeltaSlope := DEMGlb[CurDEM].CloneAndOpenGrid(FloatingPointDEM,DEMGlb[CurDEM].AreaName + ' Slope Algorithm Difference',PercentSlope);
 
      StartProgress('Differences');
      for Col := 0 to pred(DEMGlb[1].DEMheader.NumCol) do begin
@@ -705,7 +705,7 @@ begin
    end;
 end;
 
-
+(*      removed 6/16/2022
 procedure TPickGeoStat.GetBatchRegionSize;
 var
    i : integer;
@@ -714,6 +714,8 @@ begin
       MDDef.BatchRegionSize[i] := StrToInt(StringGrid1.Cells[0,i]);
    end;
 end;
+*)
+
 
 procedure TPickGeoStat.FormCreate(Sender: TObject);
 var

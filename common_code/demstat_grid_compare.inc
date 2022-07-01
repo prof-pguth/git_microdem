@@ -285,7 +285,7 @@ begin
    {$IfDef RecordDEMCompare} WriteLineToDebugFile('GridMinimun in'); {$EndIf}
    GetTwoCompatibleGrids('Minimum of two grids',true,Map1,Map2,false);
    NewHeader := DEMGlb[Map1].DEMheader;
-   if OpenAndZeroNewDEM(true,NewHeader,DiffMap,'Minimum: ' + DEMGlb[Map2].AreaName + ' / ' + DEMGlb[Map1].AreaName,true) then begin
+   if OpenAndZeroNewDEM(true,NewHeader,DiffMap,'Minimum: ' + DEMGlb[Map2].AreaName + ' / ' + DEMGlb[Map1].AreaName,InitDEMmissing) then begin
       StartProgress('Minimum');
        for Col := 0 to pred(DEMGlb[Map1].DEMheader.NumCol) do begin
           for Row := 0 to pred(DEMGlb[Map1].DEMheader.NumRow) do begin
@@ -315,7 +315,7 @@ begin
    NewHeader := DEMGlb[Map2Den].DEMheader;
    NewHeader.ElevUnits := Undefined;
    NewHeader.DEMPrecision := FloatingPointDEM;
-   if OpenAndZeroNewDEM(true,NewHeader,DiffMap,'Ratio: ' + DEMGlb[Map1Num].AreaName + ' / ' + DEMGlb[Map2Den].AreaName,true) then begin
+   if OpenAndZeroNewDEM(true,NewHeader,DiffMap,'Ratio: ' + DEMGlb[Map1Num].AreaName + ' / ' + DEMGlb[Map2Den].AreaName,InitDEMmissing) then begin
       StartProgress('Ratio');
        for Col := 0 to pred(DEMGlb[Map2Den].DEMheader.NumCol) do begin
           for Row := 0 to pred(DEMGlb[Map2Den].DEMheader.NumRow) do begin
@@ -352,7 +352,7 @@ begin
    DEMGlb[Result].DEMheader.ElevUnits := euIntCode;
    DEMGlb[Result].DEMstatus := dsUnsaved;
 
-   if not DEMGlb[Result].AllocateDEMMemory(true) then exit;
+   if not DEMGlb[Result].AllocateDEMMemory(InitDEMMissing) then exit;
    Tolerance := 0.25;
    if DEMGlb[Map1].DEMheader.DEMPrecision = FloatingPointDEM then ReadDefault('Max tolerance for no change',Tolerance);
    Change := 0;
@@ -400,7 +400,7 @@ var
                DEMGlb[Result].DEMheader.DEMPrecision := FloatingPointDEM;
                DEMGlb[Result].DEMheader.ElevUnits := Undefined;
                DEMGlb[Result].DEMstatus := dsUnsaved;
-               DEMGlb[Result].AllocateDEMMemory(true);
+               DEMGlb[Result].AllocateDEMMemory(InitDEMmissing);
             end;
 
 begin
@@ -454,7 +454,7 @@ begin
    DEMGlb[Result].DEMheader.ElevUnits := Undefined;
    DEMGlb[Result].DEMstatus := dsUnsaved;
 
-   if not DEMGlb[Result].AllocateDEMMemory(true) then exit;
+   if not DEMGlb[Result].AllocateDEMMemory(InitDEMMissing) then exit;
 
    if ShowScatterPlot then begin
       ThisGraph := TThisBaseGraph.Create(Application);

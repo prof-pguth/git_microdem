@@ -1384,7 +1384,7 @@ begin
    StartProgress('ENVI read');
    for I := 1 to NumGrids do begin
      UpdateProgressBar(i/NumGrids);
-     OpenAndZeroNewDEM(true,DEMHeader,Grids[i],'',true);
+     OpenAndZeroNewDEM(true,DEMHeader,Grids[i],'',InitDEMnone);
      for y := 0 to pred(DEMHeader.NumRow) do begin
         if DEMHeader.DEMPrecision = ByteDEM then begin
            BlockRead(inf,ByteArray,DEMHeader.NumCol);
@@ -1677,7 +1677,7 @@ begin
    NewHeader := DEMGlb[Grids[1]].DEMheader;
    NewHeader.DEMPrecision := Precision;
    NewHeader.ElevUnits := zUnits;
-   OpenAndZeroNewDEM(true,NewHeader,Result,ptTrim(theName),true);
+   OpenAndZeroNewDEM(true,NewHeader,Result,ptTrim(theName),InitDEMnone);
    DEMGlb[Result].DefineDEMVariables(true);
    StartProgress(theName);
 end;

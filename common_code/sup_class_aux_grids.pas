@@ -1146,7 +1146,7 @@ begin
    NewHeadRecs := DEMGlb[ClassDEMs[1]].DEMheader;
    NewHeadRecs.DEMPrecision := byteDEM;
    NewHeadRecs.ElevUnits := euIntCode;
-   if not OpenAndZeroNewDEM(true,NewHeadRecs,NewMask,'New mask',true) then exit;
+   if not OpenAndZeroNewDEM(true,NewHeadRecs,NewMask,'New mask',InitDEMMissing) then exit;
    NPts := 0;
    if ShowSatProgress then StartProgress('Masking');
 

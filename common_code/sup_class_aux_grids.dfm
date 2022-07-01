@@ -15,7 +15,6 @@ object SupClassAuxGrids: TSupClassAuxGrids
   FormStyle = fsStayOnTop
   OnClose = FormClose
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Label7: TLabel
     Left = 8

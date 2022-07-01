@@ -7,8 +7,8 @@
                    DEMheader.DataSpacing  := OldHeadRecs.DataSpacing;
                    DEMheader.NumCol := OldHeadRecs.NumCol;
                    DEMheader.NumRow := OldHeadRecs.NumRow;
-                   DEMheader.ElevUnits    := OldHeadRecs.ElevUnits;
-                   DEMheader.UTMZone      := OldHeadRecs.UTMZone;
+                   DEMheader.ElevUnits := OldHeadRecs.ElevUnits;
+                   DEMheader.UTMZone   := OldHeadRecs.UTMZone;
                    DEMheader.DMAMapDefinition := OldHeadRecs.DMAMapDefinition;
                    DEMheader.DigitizeDatum := OldHeadRecs.DigitizeDatum;
                    DEMheader.LatHemi    := OldHeadRecs.LatHemi;
@@ -61,7 +61,6 @@
                    DEMheader.DigitizeDatum  := HeaderV2.DigitizeDatum;
                    DEMheader.LatHemi := HeaderV2.LatHemi;
                    DEMheader.DEMPrecision := HeaderV2.DEMPrecision;
-                   //DEMheader.SPCS_FIPS_Zone  := HeaderV2.FIPS_Zone;
                    DEMheader.DEMSWCornerX := HeaderV2.hdfSWCornerx;
                    DEMheader.DEMSWCornerY  := HeaderV2.hdfSWCornerY;
                    if (abs(DEMheader.DEMSWCornerX) < 0.0000001) and (abs(HeaderV2.oldhdfSWCornerY) > 0.0000001) then begin
@@ -94,7 +93,6 @@
                    DEMheader.DigitizeDatum  := HeaderV3.DigitizeDatum;
                    DEMheader.LatHemi  := HeaderV3.LatHemi;
                    DEMheader.DEMPrecision := HeaderV3.DEMPrecision;
-                   //DEMheader.SPCS_FIPS_Zone  := HeaderV3.FIPS_Zone;
                    DEMheader.DEMSWCornerX := HeaderV3.hdfSWCornerx;
                    DEMheader.DEMSWCornerY  := HeaderV3.hdfSWCornerY;
                    if (DEMheader.NumCol = 0) or (DEMheader.NumRow = 0) then begin // DEM from program version before 6/16/2011
@@ -103,10 +101,37 @@
                    end;
                 end;
 				
-	
-				
-				
+
              procedure ReadThatOldHeader;
+
+                   function FirstIntegerOnLine(var aString : AnsiString) : integer;
+
+                            function NextLineFromString(var aString : AnsiString) : AnsiString;
+                            var
+                               i : integer;
+                            begin
+                               i := 1;
+                               while not (aString[i] in [#10,#13]) do begin
+                                  inc(i);
+                                  if (i > length(aString)) then begin
+                                     Result := '';
+                                     exit;
+                                  end;
+                               end;
+                               Result := ptCopy(astring,1,i);
+                               Delete(astring,1,i);
+                            end;
+
+                   var
+                      TStr : AnsiString;
+                      err : integer;
+                   begin
+                      TStr := NextLineFromString(aString);
+                      TStr := BeforeSpecifiedCharacterANSI(TStr,' ',false);
+                      val(TStr,Result,err);
+                   end;
+
+
              begin
                 aTStr := TStr;
                 HeaderOffset := FirstIntegerOnLine(aTStr);

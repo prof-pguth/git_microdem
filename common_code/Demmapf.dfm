@@ -1753,6 +1753,11 @@ object MapForm: TMapForm
               OnClick = oGeographic1Click
             end
           end
+          object MICRODEMupsamplebilinearbicubic1: TMenuItem
+            Caption = 'MICRODEM upsample, bilinear/bicubic'
+            GroupIndex = 1
+            OnClick = MICRODEMupsamplebilinearbicubic1Click
+          end
           object GDALupsample1: TMenuItem
             Caption = 'GDAL upsample, bllinear/bicubic'
             GroupIndex = 1

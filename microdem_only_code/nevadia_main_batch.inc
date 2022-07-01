@@ -26,7 +26,6 @@ begin
       StartSingleThreadTimer('Create DEMIX reference DEMs');
       for i := 0 to pred(FilesWanted.Count) do begin
         ThreadTimers.UpdateThreadStats(9, round(100 * (i / FilesWanted.Count)));
-
         fName := FilesWanted.Strings[i];
         LoadNewDEM(DEM,fName,true);
         if ValidDEM(DEM) then begin
@@ -45,7 +44,7 @@ end;
 
 procedure ComputeDEMIXstats(FilesWanted : tStringList = Nil);
 const
-   AreaString = 'AREA,DEMIX_TILE,DEM,REF_DEM,REF_TYPE,REF_SLOPE,GRID_FULL,';
+   AreaString = 'AREA,DEMIX_TILE,DEM,REF_DEM,REF_TYPE,LANDCOVER,GRID_FULL,';
    MaxRefStore = 100;
    MaxTestDEM = 10;
 var
@@ -65,11 +64,13 @@ var
    bbgrid : tGridLimits;
    GeodeticFName,LocalDatumAddFName,LocalDatumSubFName,LandCoverFName,
    RefDSMPointFName,RefDSMareaFName,RefDTMPointFName,RefDTMareaFName, COPRefDTMFName,
-   fName,IceSatFName,OutputDir : PathStr;
+   cfName,fName,IceSatFName,OutputDir : PathStr;
    IndexSeriesTable : tMyData;
    TestAreaName,WantSeries,DEMIXtile,SlopeMask : shortstring;
+   LatCent,LongCent,
    GridFull,Lat,Long : float64;
    zRef,z,z2 : float32;
+   TileStats,
    ICESatStats,
    LagStats,
    SlopeMoments,
@@ -91,9 +92,9 @@ var
 
          procedure InitializeStringLists;
          const
-            SlopeDiffStatsString = 'SMD_MIN,SMD_Max,SMD_Mean,SMD_AVG,SMD_STD,SMD_MEDIAN,SMD_RMSE,SMD_MAE,SMD_AB_MD,SMD_AB_MN,SMD_N,SMD_LE90';
-            ElevDiffStatsString =  'ELD_MIN,ELD_Max,ELD_Mean,ELD_AVG,ELD_STD,ELD_MEDIAN,ELD_RMSE,ELD_MAE,ELD_AB_MD,ELD_AB_MN,ELD_N,ELD_LE90';
-            RufDiffStatsString =  'RUFD_MIN,RUFD_Max,RUFD_Mean,RUFD_AVG,RUFD_STD,RUFD_MED,RUFD_RMSE,RUFD_MAE,RUFD_AB_MD,RUFD_AB_MN,RUFD_N,RUFD_LE90';
+            SlopeDiffStatsString = 'SMD_MIN,SMD_Max,SMD_Mean,SMD_AVG,SMD_STD,SMD_MEDIAN,SMD_RMSE,SMD_MAE,SMD_N,SMD_LE90';
+            ElevDiffStatsString = 'ELD_MIN,ELD_Max,ELD_Mean,ELD_AVG,ELD_STD,ELD_MEDIAN,ELD_RMSE,ELD_MAE,ELD_N,ELD_LE90';
+            RufDiffStatsString = 'RUFD_MIN,RUFD_Max,RUFD_Mean,RUFD_AVG,RUFD_STD,RUFD_MED,RUFD_RMSE,RUFD_MAE,RUFD_N,RUFD_LE90';
 
             IcePointsStatsString = 'DICE_MIN,DICE_Max,DICE_Mean,DICE_AVG,DICE_STD,DICE_MEDI,DICE_RMSE,DICE_MAE,DICE_N,DICE_AMED';
             BMPointsStatsString = 'DBM_MIN,DBM_Max,DBM_Mean,DBM_AVG,DBM_STD,DBM_MEDI,DBM_RMSE,DBM_MAE,DBM_N,DBM_AMED';
@@ -106,6 +107,9 @@ var
 
             LagStatsString = 'Lag_Max,Lag_Mean,Lag_STD,LAG_MEDIAN,LAG_LE90,LAG_NPTS';
          begin
+            TileStats := tStringList.Create;
+            TileStats.Add('DEMIX_TILE,LAT,LONG,AVG_ELEV,AVG_SLOPE,RELIEF,FOREST_PC,URBAN_PC');
+
             LagStats := tStringList.Create;
             LagStats.Add(AreaString + LagStatsString);
 
@@ -170,7 +174,6 @@ end;
                      if DoStats and FinalSaveResults then begin
                         {$IfDef RecordDEMIX} writeLineToDebugFile(fName + '  lines=' + IntToStr(sl.Count)); {$EndIf}
                         db := OpenDataBase('',fName);
-                        //GISdb[db].dbtablef.Graphsforwinecontest1Click(Nil);
                         GISdb[db].dbtablef.ransposeforwinecontest1Click(Nil);
                      end;
                   end
@@ -180,6 +183,8 @@ end;
 
          begin
             {$IfDef RecordFullDEMIX} writeLineToDebugFile('DEMIX start string list processing'); {$EndIf}
+            ProcessStringList('DEMIX_tiles_used',TileStats);
+
             ProcessStringList('ICESat_best_diff_stats',ICESATStats);
             ProcessStringList('Geodetic_control_stats',GeodeticStats);
 
@@ -249,10 +254,15 @@ end;
          end;
 
          function UseThisTile : boolean;
+         var
+            bb : sfBoundBox;
          begin
             GridFull := GISdb[DEMIXtileDB].MyData.GetFieldByNameAsFloat('GRID_FULL');
             Result := GridFull >= MDDef.DEMIX_Full;
             DEMIXtile := GISdb[DEMIXtileDB].MyData.GetFieldByNameAsString('NAME');
+            bb := GISdb[DEMIXtileDB].MyData.GetRecordBoundingBox;
+            LatCent := 0.5 * (bb.ymax + bb.ymin);
+            LongCent := 0.5 * (bb.xmax + bb.xmin);
          end;
 
          function MomentStatsString(MomentVar : tMomentVar) : shortstring;
@@ -260,19 +270,6 @@ end;
             Result := RealToString(MomentVar.MinZ,-8,2) + ',' + RealToString(MomentVar.MaxZ,-8,2) + ',' + RealToString(MomentVar.Mean,-8,2) + ',' +
                 RealToString(MomentVar.adev,-8,2) + ',' + RealToString(MomentVar.sdev,-8,2) + ',' + RealToString(MomentVar.median,-8,2) + ',' + RealToString(MomentVar.rmse,-8,2)  + ',' +
                 RealToString(MomentVar.mae,-8,2) + ',' + IntToStr(MomentVar.NPts);
-         end;
-
-         function MomentStatsStringWithABS(MomentVar : tMomentVar; var bfArray32) : shortstring;
-         var
-            MedianAbs : float64;
-            i : integer;
-         begin
-            for i := 0 to pred(MomentVar.NPts) do zs^[i] := abs(zs^[i]);
-            MedianAbs := Median(zs^,MomentVar.NPts,false);
-            Result := RealToString(MomentVar.MinZ,-8,2) + ',' +
-                           RealToString(MomentVar.MaxZ,-8,2) + ',' + RealToString(MomentVar.Mean,-8,2) + ',' + RealToString(MomentVar.adev,-8,2) + ',' + RealToString(MomentVar.sdev,-8,2) + ',' +
-                           RealToString(MomentVar.median,-8,2) + ',' + RealToString(MomentVar.rmse,-8,2) + ',' + RealToString(MomentVar.mae,-8,2)  + ',' +
-                           RealToString(MedianAbs,-8,2) + ',' + RealToString(abs(MomentVar.Mean),-8,2) + ',' + IntToStr(MomentVar.NPts);
          end;
 
 
@@ -293,7 +290,7 @@ begin
       moment(thezs,theMoments,msAll);
       for i := 0 to pred(theMoments.NPts) do thezs[i] := abs(thezs[i]);
       theMoments.LE90 := Percentile(90,thezs,theMoments.NPts,false);
-      sl.Add(LineHeader(DEM,RefDEM) + MomentStatsStringWithABS(theMoments,thezs) + ',' + RealToString(theMoments.LE90,-12,-2) + ',' + RealToString(Percent,-12,-2));
+      sl.Add(LineHeader(DEM,RefDEM) + MomentStatsString(theMoments) + ',' + RealToString(theMoments.LE90,-12,-2) + ',' + RealToString(Percent,-12,-2));
    end;
 end;
 
@@ -398,6 +395,23 @@ end;
                   end;
 
 
+                  procedure LandCover(Lat,Long : float32; Difference : float32);
+                  var
+                     z : float32;
+                  begin
+                     if (LandCoverGrid <> 0) and DEMGlb[LandCoverGrid].GetElevFromLatLongDegree(Lat,Long,z) then begin
+                        if round(z) in [111..126] then begin
+                           zsForest^[ForestMomentVar.NPts] := Difference;
+                           inc(ForestMomentVar.Npts);
+                        end
+                        else if round(z) in [50] then begin
+                           zsUrban^[UrbanMomentVar.NPts] := Difference;
+                           inc(UrbanMomentVar.Npts);
+                        end;
+                     end;
+                  end;
+
+
 
            procedure CompareElevationsToReferenceDEM(DEM,RefDEM : integer; RefType : shortstring);
            //do full DEM pixel by pixel comparison to reference DEM
@@ -436,7 +450,8 @@ end;
                                        inc(SteepMomentVar.Npts);
                                     end;
                                  end;
-
+                                 LandCover(Lat,long,Difference);
+                                  (*
                                  if (LandCoverGrid <> 0) and DEMGlb[LandCoverGrid].GetElevFromLatLongDegree(Lat,Long,z) then begin
                                     if round(z) in [111..126] then begin
                                        zsForest^[ForestMomentVar.NPts] := Difference;
@@ -447,17 +462,17 @@ end;
                                        inc(UrbanMomentVar.Npts);
                                     end;
                                  end;
+                                 *)
                               end;
                            end;
                         end;
                      end;
 
                      if (MomentVar.NPts > 0) and ElevDiffHists then begin
-                           fName := OutputDir + 'elev_diff_hists\' + DEMGLB[DEM].AreaName  + '_to_' + RefType + '-' + DEMIXtile + '.z';
-                           ElevFiles.Add(SaveSingleValueSeries(MomentVar.npts,zs^,fName));
-                           LegendFiles.Add(ExtractFileNameNoExt(fName));
+                        fName := OutputDir + 'elev_diff_hists\' + DEMGLB[DEM].AreaName  + '_to_' + RefType + '-' + DEMIXtile + '.z';
+                        ElevFiles.Add(SaveSingleValueSeries(MomentVar.npts,zs^,fName));
+                        LegendFiles.Add(ExtractFileNameNoExt(fName));
                      end;
-
 
                      SlopeMask := 'ALL';
                      WriteDifferenceResult(ElevDiffStats,DEM,RefDEM,zs^,MomentVar,100);
@@ -502,24 +517,14 @@ end;
                               if DEMGlb[RefDEM].GetSlopeAndAspect(xg,yg,SlopeAsp) then begin
                                  Difference := SlopeAspectTest.SlopePercent - SlopeAspectRef.SlopePercent;
                                  if SlopeAsp.SlopePercent < MDDef.SlopeSteepBoundary then begin
-                                    zsflat^[FlatMomentVar.NPts] := difference;
+                                    zsflat^[FlatMomentVar.NPts] := Difference;
                                     inc(FlatMomentVar.Npts);
                                  end
                                  else begin
                                     zsSteep^[SteepMomentVar.NPts] := Difference;
                                     inc(SteepMomentVar.Npts);
                                  end;
-
-                                 if (LandCoverGrid <> 0) and DEMGlb[LandCoverGrid].GetElevFromLatLongDegree(Lat,Long,z) then begin
-                                    if round(z) in [111..126] then begin
-                                       zsForest^[ForestMomentVar.NPts] := Difference;
-                                       inc(ForestMomentVar.Npts);
-                                    end
-                                    else if round(z) in [50] then begin
-                                       zsUrban^[UrbanMomentVar.NPts] := Difference;
-                                       inc(UrbanMomentVar.Npts);
-                                    end;
-                                 end;
+                                 LandCover(Lat,Long,Difference);
                               end;
                            end;
                         end;
@@ -550,7 +555,6 @@ end;
             procedure CompareRoughNessToReferenceDEM(DEM,RefDEM : integer; RefType : shortstring);
             //do full DEM pixel by pixel comparison to reference DEM
             var
-               //i,
                Col,Row,xg,yg : integer;
                SlopeAsp : tSlopeAspectRec;
                Ruff1,Ruff2,z,Difference : float32;
@@ -582,7 +586,8 @@ end;
                                        inc(SteepMomentVar.Npts);
                                     end;
                                  end;
-
+                                 LandCover(Lat,long,Difference);
+                                 (*
                                  if (LandCoverGrid <> 0) and DEMGlb[LandCoverGrid].GetElevFromLatLongDegree(Lat,Long,z) then begin
                                     if round(z) in [111..126] then begin
                                        zsForest^[ForestMomentVar.NPts] := Difference;
@@ -593,6 +598,7 @@ end;
                                        inc(UrbanMomentVar.Npts);
                                     end;
                                  end;
+                                 *)
                               end;
                            end;
                         end;
@@ -625,9 +631,8 @@ end;
             var
                Col,Row,Npts : integer;
                x,y : ^bfarray32;
-               //xs,ys : integer;
                Lat,Long : float64;
-               a,b,siga,sigb,r,{xg,yg,}z,zref : float32;
+               a,b,siga,sigb,r,z,zref : float32;
             begin
                if (RefDEM = 0) then exit;
                New(x);
@@ -675,8 +680,7 @@ end;
                   {$IfDef RecordFullDEMIX} WriteTileDetails(gbb); {$EndIf}
                   aMomentVar := DEMGlb[DEM].ElevationMoments(gbb);
                   ElevMoments.Add(DEMIXtile + ' ' + DEMGlb[DEM].AreaName +  MomentResultsToString(aMomentVar) + ',' + MomentStatsString(aMomentVar));
-                  if (RefDEM = 0) then begin
-                     //save to use for differences
+                  if (RefDEM = 0) then begin //save to use for differences
                      ElevMomentVar[DEM] := aMomentVar;
                   end
                   else begin
@@ -703,8 +707,7 @@ end;
                      {$IfDef RecordFullDEMIX} writeLineToDebugFile('Slope moments, ' + LineHeader(DEM,RefDEM)); {$EndIf}
                      {$IfDef RecordFullDEMIX} writeLineToDebugFile(DEMIXtile + ' ' + DEMGlb[DEM].AreaName + MomentStatsString(aMomentVar) + ',' + MomentResultsToString(aMomentVar)); {$EndIf}
                      SlopeMoments.Add(DEMIXtile + ' ' + DEMGlb[DEM].AreaName  + MomentResultsToString(aMomentVar) + ',' + MomentStatsString(aMomentVar));
-                     if (RefDEM = 0) then begin
-                        //save to use for differences
+                     if (RefDEM = 0) then begin //save to use for differences
                         SlopeMomentVar[DEM] := aMomentVar;
                      end
                      else begin
@@ -739,6 +742,49 @@ end;
                end;
                GISdb[DEMIXtileDB].MyData.Next;
             end;
+         end;
+
+         procedure GetTileStatistics(RefDEM : integer);
+            //'DEMIX_TILE,LAT,LONG,AVG_ELEV,AVG_SLOPE,RELIEF,FOREST_PC,URBAN_PC');
+         var
+           ElevMomentVar,SlopeMomentVar : tMomentVar;
+           Col,Row,NPts : integer;
+           ForestPC,UrbanPC : float32;
+         begin
+            GISdb[DEMIXtileDB].MyData.First;
+            while not GISdb[DEMIXtileDB].MyData.eof do begin
+               if UseThisTile then begin
+                  bbgrid := GridBoundingBox(RefDEM,0);
+                  ZeroMomentVar;
+                  ElevMomentVar.Npts := 0;
+                  SlopeMomentVar.Npts := 0;
+                  NPts := 0;
+                  DEMGlb[RefDEM].ElevationMomentsWithArray(bbgrid,ElevMomentVar,zs^);
+                  DEMGlb[RefDEM].SlopeMomentsWithArray(bbgrid,SlopeMomentVar,zs^);
+
+                  if (LandCoverGrid <> 0) then begin
+                     for Col := bbgrid.xgridlow to bbgrid.xgridhigh do begin
+                        for Row := bbgrid.ygridlow to bbgrid.ygridhigh do begin
+                           DEMGlb[RefDEM].DEMGridToLatLongDegree(Col,Row,Lat,Long);
+                           LandCover(Lat,long,Difference);
+                           inc(NPts);
+                        end;
+                     end;
+                     ForestPC := 100 * ForestMomentVar.Npts / NPts;
+                     UrbanPC := 100 * UrbanMomentVar.Npts / NPts;
+                  end
+                  else begin
+                     ForestPC := -9999;
+                     UrbanPC := -9999;
+                  end;
+
+                  TileStats.Add(DEMIXTile + ',' + RealToString(LatCent,-12,-6) + ',' + RealToString(LongCent,-12,-6) + ',' + RealToString(ElevMomentVar.Mean,-12,-2)   + ',' +
+                     RealToString(SlopeMomentVar.Mean,-12,-2)  + ',' + RealToString(ElevMomentVar.Maxz - ElevMomentVar.Minz,-12,-2) + ',' +
+                     RealToString(ForestPC,-12,-2)  + ',' + RealToString(UrbanPC,-12,-2)  );
+               end;
+               GISdb[DEMIXtileDB].MyData.Next;
+            end;
+
          end;
 
 
@@ -806,6 +852,7 @@ end;
          begin
             if (RefDEM <> 0) then begin
                {$IfDef RecordDEMIX} writeLineToDebugFile('CompareToReference, DEM=' + IntToStr(DEM) + '   ref=' + IntToStr(RefDEM)); {$EndIf}
+               //GetTileStatistics(RefDEM);
                CompareRoughNessToReferenceDEM(DEM,RefDEM,RefType);
                CompareElevationsToReferenceDEM(DEM,RefDEM,RefType);
                CompareSlopesToReferenceDEM(DEM,RefDEM,RefType);
@@ -835,6 +882,7 @@ end;
                            TestAreaName := LastSubDir(ExtractFilePath(fName));
                            if (RefDEM = 0) then RefDEM := DEM;
                         end;
+
                      end
                      else DEM := 0;
                   end;
@@ -850,7 +898,6 @@ end;
             ReferenceFileOpen(COPRefDTM,COPRefDTMFName);
             Result := ValidDEM(RefDEM);
             if Result then begin
-
                {$IfDef RecordDEMIX} writeLineToDebugFile('ProcessDEMIXtestarea in, ref DEMs open'); {$EndIf}
                if (AddLocalVDatum <> 0) then CloseSingleDEM(AddLocalVDatum);
                if (SubLocalVDatum <> 0) then CloseSingleDEM(SubLocalVDatum);
@@ -860,16 +907,15 @@ end;
                {$IfDef RecordDEMIX} writeLineToDebugFile('ProcessDEMIXtestarea in, geoid grid opened, REFDEM=' + IntToStr(RefDEM)); {$EndIf}
             end
             else begin
-               {$IfDef RecordDEMIX} writeLineToDebugFile('Failure, ref DEMs open'); {$EndIf}
+               {$IfDef RecordDEMIX} writeLineToDebugFile('Failure, ref DEMs open ' + cfName); {$EndIf}
             end;
          end;
-
 
 
    var
       WantDEM,Ser,i,j : integer;
    begin
-      {$IfDef RecordDEMIX} writeLineToDebugFile(''); writeLineToDebugFile(''); writeLineToDebugFile('ProcessDEMIXtestarea in'); writeLineToDebugFile(''); {$EndIf}
+      {$IfDef RecordDEMIXFull} writeLineToDebugFile(''); writeLineToDebugFile(''); writeLineToDebugFile('ProcessDEMIXtestarea in'); writeLineToDebugFile(''); {$EndIf}
 
       ReportErrors := false;
 
@@ -914,14 +960,14 @@ end;
             end;
             {$IfDef RecordFullDEMIX} writeLineToDebugFile('ProcessDEMIXtestarea in, zs created'); {$EndIf}
 
+            {$If Defined(RecordFullDEMIX) or Defined(TrackDEMIX_DEMs)} OpenDEMsToDebugFile('DEMs start loading');  {$EndIf}
+
             //do critera for reference DEMs
             ReferenceDEMcriteria(RefDTMpoint);
             ReferenceDEMcriteria(RefDTMarea);
             ReferenceDEMcriteria(RefDSMpoint);
             ReferenceDEMcriteria(RefDSMarea);
             ReferenceDEMcriteria(COPRefDTM);
-
-            {$IfDef RecordFullDEMIX} OpenDEMsToDebugFile('DEMs start loading');  {$EndIf}
 
             OpenIndexedSeriesTable(IndexSeriesTable);
             IndexSeriesTable.ApplyFilter('USE=' + QuotedStr('Y'));
@@ -930,6 +976,7 @@ end;
                WantSeries := IndexSeriesTable.GetFieldByNameAsString('SERIES');
                {$IfDef RecordDEMIXLoad} writeLineToDebugFile('Try ' + WantSeries + ' ' + IntToStr(Ser) + '/' + IntToStr(IndexSeriesTable.FiltRecsInDB)); {$EndIf}
                wmdem.SetPanelText(0,WantSeries);
+               {$IfDef RecordDEMIX} writeLineToDebugFile('Ref DEM=' + DEMGlb[RefDEM].AreaName + '  ' + sfBoundBoxToString(DEMGlb[RefDEM].DEMBoundBoxGeo,6)); {$EndIf}
                if LoadMapLibraryBox(WantDEM,WantImage,true,DEMGlb[RefDEM].DEMBoundBoxGeo,WantSeries,false) and ValidDEM(WantDEM) then begin
                   {$IfDef RecordDEMIXLoad} writeLineToDebugFile('Opened:' + WantSeries + '  DEM=' + IntToStr(WantDEM)); {$EndIf}
                   inc(Ser);
@@ -941,18 +988,19 @@ end;
                else begin
                   {$IfDef RecordDEMIXLoad} OpenDEMsToDebugFile('Did not open ' + WantSeries); {$EndIf}
                end;
+               {$If Defined(TrackDEMIX_DEMs)} OpenDEMsToDebugFile('DEMs open after loading ' + WantSeries);  {$EndIf}
                IndexSeriesTable.Next;
             end;
-            {$IfDef RecordFullDEMIX} OpenDEMsToDebugFile('DEMs were loaded');  {$EndIf}
-
+            {$If Defined(RecordFullDEMIX) or Defined(TrackDEMIX_DEMs)} OpenDEMsToDebugFile('DEMs were loaded');  {$EndIf}
 
             if ElevDiffHists then begin
                ElevFiles := tStringList.Create;
                LegendFiles := tStringList.Create;
             end;
 
+            GetTileStatistics(RefDEM);
             for i := 1 to Ser do begin
-               {$IfDef RecordDEMIX} for j := 1 to 2 do writeLineToDebugFile(''); writeLineToDebugFile('Start tests for DEM=' + IntToStr(TestDEM[i]) + '/' + IntToStr(Ser) + '  ' + TestSeries[i]); {$EndIf}
+               {$IfDef RecordFullDEMIX} for j := 1 to 2 do writeLineToDebugFile(''); writeLineToDebugFile('Start tests for DEM=' + IntToStr(TestDEM[i]) + '/' + IntToStr(Ser) + '  ' + TestSeries[i]); {$EndIf}
                if Copy(DEMGlb[TestDEM[i]].AreaName,1,4) = 'ALOS' then begin
                   CompareToReference(TestDEM[i],RefDTMArea,'DTM');
                   CompareToReference(TestDEM[i],RefDSMArea,'DSM');
@@ -969,10 +1017,10 @@ end;
                DEMIXTile := '';
                DoICESat(TestDEM[i]);
                DoGeodetic(TestDEM[i]);
-               {$IfDef RecordDEMIX} writeLineToDebugFile('All tests done for ' + TestSeries[i]); {$EndIf}
+               {$IfDef RecordFullDEMIX} writeLineToDebugFile('All tests done for ' + TestSeries[i]); {$EndIf}
             end;
 
-            {$IfDef RecordDEMIX} for i := 1 to 2 do writeLineToDebugFile(''); {$EndIf}
+            {$IfDef RecordDEMIXFull} for i := 1 to 2 do writeLineToDebugFile(''); {$EndIf}
             Dispose(zs);
             Dispose(zssteep);
             Dispose(zsflat);
@@ -982,10 +1030,13 @@ end;
             end;
 
             IndexSeriesTable.Destroy;
-            {$IfDef RecordDEMIX} writeLineToDebugFile('call CloseAndNilNumberedDB(DEMIXtileDB)'); {$EndIf}
+            {$IfDef RecordDEMIXFull} writeLineToDebugFile('call CloseAndNilNumberedDB(DEMIXtileDB)'); {$EndIf}
             CloseAndNilNumberedDB(DEMIXtileDB);
          end;
          ReportErrors := true;
+
+         {$If Defined(RecordFullDEMIX) or Defined(TrackDEMIX_DEMs)} OpenDEMsToDebugFile('closing all DEMs');  {$EndIf}
+
          CloseAllDEMs;
 
          if ElevDiffHists then begin
@@ -1011,7 +1062,7 @@ end;
     end;
 
 var
-   cfName,DataPath : pathStr;
+   DataPath : pathStr;
    i : integer;
    DefaultFilter : byte;
    TStr : shortstring;
@@ -1063,6 +1114,7 @@ begin
             RefDTMareaFName :=  DataPath + Rules.GetFieldByNameAsString('DTM_AREA');
             RefDSMPointFName := DataPath + Rules.GetFieldByNameAsString('DSM_POINT');
             RefDSMareaFName := DataPath + Rules.GetFieldByNameAsString('DSM_AREA');
+            LandCoverFName := Rules.GetFieldByNameAsString('LANDCOVER');
             ProcessDEMIXtestarea;
             Rules.Next;
          end;

@@ -64,6 +64,8 @@ type
     BitBtn3: TBitBtn;
     BitBtn4: TBitBtn;
     CheckBox1: TCheckBox;
+    Label2: TLabel;
+    Edit2: TEdit;
     procedure ButtonAnimateClick(Sender: TObject);
     procedure ButtonSaveClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -73,6 +75,7 @@ type
     procedure BitBtn3Click(Sender: TObject);
     procedure BitBtn4Click(Sender: TObject);
     procedure CheckBox1Click(Sender: TObject);
+    procedure Edit2Change(Sender: TObject);
   private
     { Private declarations }
   public
@@ -126,6 +129,7 @@ begin
    MovieName := DEMDefs.MovieDir;
    MovieList := tStringList.Create;
    Edit1.Text := IntToStr(MDDef.GIFDefaultDelay);
+   Edit2.Text := IntToStr(MDDef.GifFontSize);
    CheckBox1.Checked := MDDef.GIFfileLabels;
 
   // Enable GIF animation and transparency
@@ -259,7 +263,7 @@ var
                  bmp.Height := MovieY;
               end;
               if MDDef.GIFfileLabels then begin
-                 bmp.Canvas.Font.Size := 14;
+                 bmp.Canvas.Font.Size := MDDef.GIFfontsize;
                  bmp.Canvas.Font.Style := [fsBold];
                  TStr := ExtractFileNameNoExt(fname);
                  bmp.Canvas.TextOut((bmp.width - bmp.Canvas.TextWidth(Tstr)) div 2,0,TStr);
@@ -368,6 +372,11 @@ begin
 end;
 
 
+
+procedure TFormAnimate.Edit2Change(Sender: TObject);
+begin
+   CheckEditString(Edit2.Text,MDDef.GifFontSize);
+end;
 
 end.
 

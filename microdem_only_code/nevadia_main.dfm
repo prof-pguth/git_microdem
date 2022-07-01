@@ -2828,19 +2828,15 @@ object wmdem: Twmdem
       GroupIndex = 6
       object Bathymetrygrid1: TMenuItem
         Caption = 'Bathymetry grid'
-        OnClick = Bathymetrygrid1Click
       end
       object Chart12263180K1: TMenuItem
         Caption = 'Chart 12263 (1:80K)'
-        OnClick = Chart12263180K1Click
       end
       object Chart12282125K1: TMenuItem
         Caption = 'Chart 12282 (1:25K)'
-        OnClick = Chart12282125K1Click
       end
       object Chart12283110K1: TMenuItem
         Caption = 'Chart 12283 (1:10K)'
-        OnClick = Chart12283110K1Click
       end
     end
   end

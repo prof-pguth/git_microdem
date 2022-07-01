@@ -509,13 +509,6 @@ begin
 
             Red3 := abs(Red1-Red2);
             MaxDiff := Red3;
-            (*
-            Green3 := abs(Green1-Green2);
-            Blue3 := abs(Blue1-Blue2);
-            if Green3 > MaxDiff then MaxDiff := Green3;
-            if Blue3 > MaxDiff then MaxDiff := Blue3;
-            if Gray3 > MaxDiff then MaxDiff := Gray3;
-            *)
             inc(Diffs[MaxDiff]);
             if (MaxDiff < MDDef.ImageDiffThreshhold) then begin
                if Display then BMPMemory3.SetPixelRGB(x,y,0,0,0);
@@ -1496,7 +1489,6 @@ var
    r,g,b : byte;
    h,l,s : float64;
    BMPMemory : tBMPMemory;
-   //aRGBTrip : tRGBTriple;
 begin
    StartProgress('Recolor');
    if (Method = NoGrays) then begin
@@ -1969,53 +1961,62 @@ begin
 end;
 
 
-procedure TImageDisplayForm.MergeRGBseparates1Click(Sender: TObject);
+function MergeRGBBitmaps(var RedBitmap,GreenBitmap,BlueBitmap : tMyBitmap; PurgeBMPs : boolean = true) : tMyBitmap;
 var
-   RedBitmap,BlueBitmap,GreenBitMap,MergeBitmap : tMyBitmap;
+   RedMem,BlueMem,GreenMem,MergeMem : tBMPMemory;
    x,y : integer;
-   fName : PathStr;
-
-      function ColorFromBitmap(RedBitmap : tMyBitmap) : byte;
-      var
-         g,b : byte;
-      begin
-         if (RedBitmap = Nil) then Result := 0
-         else GetRGBfromTColor(RedBitMap.Canvas.Pixels[x,y],Result,g,b);
-      end;
-
 begin
-   RedBitmap := Nil;
-   BlueBitmap := Nil;
-   GreenBitmap := Nil;
-   If OpenDialog1.Execute then begin
-      RedBitmap := tMyBitmap.Create;
-      RedBitmap.LoadFromFile(OpenDialog1.FileName);
-   end;
-   If OpenDialog1.Execute then begin
-      GreenBitmap := tMyBitmap.Create;
-      GreenBitmap.LoadFromFile(OpenDialog1.FileName);
-   end;
-   If OpenDialog1.Execute then begin
-      BlueBitmap := tMyBitmap.Create;
-      BlueBitmap.LoadFromFile(OpenDialog1.FileName);
-   end;
-   CreateBitmap(MergeBitmap,RedBitmap.Width,RedBitmap.Height);
+   CreateBitmap(Result,RedBitmap.Width,RedBitmap.Height);
+   MergeMem := tBMPMemory.Create(Result);
+   RedMem := tBMPMemory.Create(RedBitmap);
+   GreenMem := tBMPMemory.Create(GreenBitmap);
+   BlueMem := tBMPMemory.Create(BlueBitmap);
+
    StartProgress('Merge');
-   for x := 0 to pred(MergeBitmap.Width) do begin
-      UpdateProgressBar(x/MergeBitmap.Width);
-      for y := 0 to pred(MergeBitmap.Height) do begin
-         ColorFromBitmap(RedBitmap);
-         ColorFromBitmap(GreenBitmap);
-         ColorFromBitmap(BlueBitmap);
-         MergeBitMap.Canvas.Pixels[x,y] := $02000000+ RGB(ColorFromBitmap(RedBitmap),ColorFromBitmap(GreenBitmap), ColorFromBitmap(BlueBitmap));
+   for x := 0 to pred(Result.Width) do begin
+      UpdateProgressBar(x/Result.Width);
+      for y := 0 to pred(Result.Height) do begin
+         MergeMem.SetRedChannel(x,y,RedMem.RedChannel(x,y));
+         MergeMem.SetGreenChannel(x,y,GreenMem.GreenChannel(x,y));
+         MergeMem.SetBlueChannel(x,y,BlueMem.BlueChannel(x,y));
       end;
    end;
-   fName := MDTempDir + 'working.bmp';
-   PetImage.SaveBitmap(MergeBitmap,fName);
-   LoadImage(fName);
-   EndProgress;
+   RedMem.Destroy;
+   GreenMem.Destroy;
+   BlueMem.Destroy;
+   MergeMem.Destroy;
+   if PurgeBMPs then begin
+      RedBitmap.Destroy;
+      GreenBitmap.Destroy;
+      BlueBitmap.Destroy;
+   end;
 end;
 
+
+function MergeRGBFiles(RedName,GreenName,BlueName : PathStr ) : tMyBitmap;
+var
+   RedBitmap,GreenBitmap,BlueBitmap : tMyBitmap;
+begin
+   RedBitmap := LoadBitmapFromFile(RedName);
+   GreenBitmap := LoadBitmapFromFile(GreenName);
+   BlueBitmap := LoadBitmapFromFile(BlueName);
+   Result := MergeRGBBitmaps(RedBitmap,GreenBitmap,BlueBitmap);
+end;
+
+
+procedure TImageDisplayForm.MergeRGBseparates1Click(Sender: TObject);
+var
+   RedName,GreenName,BlueName,fName : PathStr;
+   MergeBitmap : tMyBitmap;
+begin
+   if GetGraphicsFileName('red color', RedName) and GetGraphicsFileName('green color', GreenName) and GetGraphicsFileName('blue color', BlueName) then begin
+      MergeBitmap := MergeRGBFiles(RedName,GreenName,BlueName);
+      fName := MDTempDir + 'working.bmp';
+      PetImage.SaveBitmap(MergeBitmap,fName);
+      LoadImage(fName);
+      EndProgress;
+   end;
+end;
 
 procedure TImageDisplayForm.Magenta1Click(Sender: TObject);
 begin
@@ -2499,7 +2500,7 @@ begin
 end;
 
 initialization
-   {$IfDef MessageStartUpUnitProblems} MessageToContinue('Startup petimage');  {$EndIf}
+   {$IfDef MessageStartUpUnitProblems} MessageToContinue('Startup petimage'); {$EndIf}
    LastPhotoRoamX := -1;
    LastPhotoRoamY := -1;
 finalization

@@ -16,7 +16,6 @@ object gis_scaled_form: Tgis_scaled_form
   Position = poDefault
   OnClose = FormClose
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Panel1: TPanel
     Left = 8

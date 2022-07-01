@@ -3941,7 +3941,7 @@ var
 
 begin
    {$IfDef RecordPointInArea} WriteLineToDebugFile('TGISdataBaseModule.PointsForLineAreaDB in'); {$EndIf}
-   if {MyData.FieldExists('NAME') and} ( (DistApart > 0) or MyData.FieldExists('NPTS')) then begin
+   if ((DistApart > 0) or MyData.FieldExists('NPTS')) then begin
       Results := tStringList.Create;
       Results.Add('LAT,LONG,NAME,' + RecNoFName);
       MyData.First;
@@ -3953,7 +3953,7 @@ begin
             Dist := aShapeFile.LineLength(MyData.RecNo);
             NPts := trunc(Dist / DistApart);
          end;
-         {$IfDef RecordPointInArea} WriteLineToDebugFile('   NPTs=' + IntToStr(NPts));   {$EndIf}
+         {$IfDef RecordPointInArea} WriteLineToDebugFile('  NPTs=' + IntToStr(NPts));   {$EndIf}
          if (Npts > 0) then begin
             if MyData.FieldExists('NAME') then aName := MyData.GetFieldByNameAsString('NAME');
             if AreaShapeFile(ShapeFileType) then begin
@@ -4028,42 +4028,40 @@ var
 
 
 begin
-      PointSep := 1;
-      Results := tStringList.Create;
-      Results.Add('LAT,LONG,Z,' + RecNoFName);
-      MyData.First;
-      RecLong := 0;
-      while not MyData.EOF do begin
-         aShapeFile.GetLineCoords(MyData.RecNo);
-         Lat := aShapeFile.CurrentLineCoords^[0].Lat;
-         Long := aShapeFile.CurrentLineCoords^[0].Long;
-         AddPoint;
-         for i := 1 to pred(aShapeFile.CurrentPolyLineHeader.NumPoints) do begin
-            LastLat := Lat;
-            LastLong := Long;
-            Lat := aShapeFile.CurrentLineCoords^[i].Lat;
-            Long := aShapeFile.CurrentLineCoords^[i].Long;
-            VincentyCalculateDistanceBearing(Lat,Long,LastLat,LastLong,Distance,Bearing);
-            NPts := round(Distance/PointSep);
-            if NPts = 0 then NPts := 1;
+   PointSep := 1;
+   Results := tStringList.Create;
+   Results.Add('LAT,LONG,Z,' + RecNoFName);
+   MyData.First;
+   RecLong := 0;
+   while not MyData.EOF do begin
+      aShapeFile.GetLineCoords(MyData.RecNo);
+      Lat := aShapeFile.CurrentLineCoords^[0].Lat;
+      Long := aShapeFile.CurrentLineCoords^[0].Long;
+      AddPoint;
+      for i := 1 to pred(aShapeFile.CurrentPolyLineHeader.NumPoints) do begin
+         LastLat := Lat;
+         LastLong := Long;
+         Lat := aShapeFile.CurrentLineCoords^[i].Lat;
+         Long := aShapeFile.CurrentLineCoords^[i].Long;
+         VincentyCalculateDistanceBearing(Lat,Long,LastLat,LastLong,Distance,Bearing);
+         NPts := round(Distance/PointSep);
+         if NPts = 0 then NPts := 1;
 
-            dLat := (Lat - LastLat) / Npts;
-            dLong := (Long - LastLong) / Npts;
-            for j := 1 to Npts do begin
-               Lat := LastLat + j * dLat;
-               Long := LastLong + j * dLong;
-               AddPoint;
-            end;
+         dLat := (Lat - LastLat) / Npts;
+         dLong := (Long - LastLong) / Npts;
+         for j := 1 to Npts do begin
+            Lat := LastLat + j * dLat;
+            Long := LastLong + j * dLong;
+            AddPoint;
          end;
-         MyData.Next;
       end;
+      MyData.Next;
+   end;
 
-      fName := '_line_XYZ_points_';
-      fName := Petmar.NextFileNumber(ExtractFilePath(DBFullName),ExtractFileNameNoExt(DBFullName) + fName,'.dbf');
-      theMapOwner.StringListtoLoadedDatabase(Results,fName);
+   fName := '_line_XYZ_points_';
+   fName := Petmar.NextFileNumber(ExtractFilePath(DBFullName),ExtractFileNameNoExt(DBFullName) + fName,'.dbf');
+   theMapOwner.StringListtoLoadedDatabase(Results,fName);
 end;
-
-
 
 
 function TGISdataBaseModule.IniFileName : PathStr;
@@ -4147,7 +4145,6 @@ end;
 
          fName2 := IniFileName;
          DBNumber := NumOpenDB;
-
 
           if (ShapeFileType = 11) then begin
              dbOpts.DBAutoShow := dbasZValues;

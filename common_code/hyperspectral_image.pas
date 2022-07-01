@@ -32,30 +32,30 @@ type
 
 type
    tHypersectralImage = class
-  private
-      protected
-      private
-         SingleRow : tSingleRow;
-         RedRow,GreenRow,BlueRow,GrayRow : tBILRow;
-         function GetBILRow(Band,Row : integer) : tBILRow;
-      public
-         HypData : tHypData;
-         AvirisFile : file;
-         RedBand,BlueBand,GreenBand,GrayBand,
-         NumCols,NumRows,NumBands : integer;
-         HyperFilename : PathStr;
-         Scatter1,Scatter2, RefGraph2,
-         Histogram,RefGraph  : tThisBaseGraph;
-         BandCenters : array[1..MaxHyperBands] of float32;
-         constructor Create(FName : PathStr; var Success : boolean);
-         destructor Destroy; override;
-         function GetBandBitmap(Gray,Red,Green,Blue : integer) : tMyBitmap;
-         procedure DisplayCube(Gray,Red,Green,Blue : integer; x : integer = 0; y : integer = 0);
-         procedure DisplayHistogram(Gray,Red,Green,Blue : integer);
-         procedure ScatterPlot(Red,Green,Blue : integer);
-         procedure CreateTable;
-         procedure OpenHypFile;
-         procedure CloseHypFile;
+   protected
+   private
+      SingleRow : tSingleRow;
+      RedRow,GreenRow,BlueRow,GrayRow : tBILRow;
+      function GetBILRow(Band,Row : integer) : tBILRow;
+   public
+      HypData : tHypData;
+      AvirisFile : file;
+      RedBand,BlueBand,GreenBand,GrayBand,
+      NumCols,NumRows,NumBands : integer;
+      HyperFilename : PathStr;
+      Scatter1,Scatter2,
+      RefGraph,RefGraph2,
+      Histogram  : tThisBaseGraph;
+      BandCenters : array[1..MaxHyperBands] of float32;
+      constructor Create(FName : PathStr; var Success : boolean);
+      destructor Destroy; override;
+      function GetBandBitmap(Gray,Red,Green,Blue : integer) : tMyBitmap;
+      procedure DisplayCube(Gray,Red,Green,Blue : integer; x : integer = 0; y : integer = 0);
+      procedure DisplayHistogram(Gray,Red,Green,Blue : integer);
+      procedure ScatterPlot(Red,Green,Blue : integer);
+      procedure CreateTable;
+      procedure OpenHypFile;
+      procedure CloseHypFile;
    end;
 
 

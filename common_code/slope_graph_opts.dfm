@@ -3,7 +3,7 @@ object slopegraphopts: Tslopegraphopts
   Top = 205
   BorderIcons = []
   Caption = 'Elevation/Slope Graph options'
-  ClientHeight = 290
+  ClientHeight = 254
   ClientWidth = 330
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -13,18 +13,17 @@ object slopegraphopts: Tslopegraphopts
   Font.Style = []
   OnClose = FormClose
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
-    Left = 216
-    Top = 88
+    Left = 207
+    Top = 95
     Width = 55
     Height = 13
     Caption = 'Elev bin (m)'
   end
   object CheckBox1: TCheckBox
     Left = 8
-    Top = 16
+    Top = 9
     Width = 153
     Height = 17
     Caption = 'Elevation frequencies'
@@ -40,7 +39,7 @@ object slopegraphopts: Tslopegraphopts
   end
   object CheckBox3: TCheckBox
     Left = 8
-    Top = 72
+    Top = 78
     Width = 209
     Height = 17
     Caption = 'Elevation slope plot (%)'
@@ -56,7 +55,7 @@ object slopegraphopts: Tslopegraphopts
   end
   object CheckBox5: TCheckBox
     Left = 8
-    Top = 128
+    Top = 146
     Width = 161
     Height = 17
     Caption = 'Aspect rose'
@@ -64,7 +63,7 @@ object slopegraphopts: Tslopegraphopts
   end
   object CheckBox6: TCheckBox
     Left = 8
-    Top = 105
+    Top = 123
     Width = 209
     Height = 17
     Caption = 'Elevation slope diagram (degrees)'
@@ -72,7 +71,7 @@ object slopegraphopts: Tslopegraphopts
   end
   object CheckBox7: TCheckBox
     Left = 8
-    Top = 144
+    Top = 169
     Width = 169
     Height = 17
     Caption = 'Text results'
@@ -80,7 +79,7 @@ object slopegraphopts: Tslopegraphopts
   end
   object CheckBox8: TCheckBox
     Left = 8
-    Top = 160
+    Top = 192
     Width = 217
     Height = 17
     Caption = 'Color legend'
@@ -88,7 +87,7 @@ object slopegraphopts: Tslopegraphopts
   end
   object CheckBox9: TCheckBox
     Left = 24
-    Top = 89
+    Top = 95
     Width = 177
     Height = 17
     Caption = 'Slope standard deviation'
@@ -121,9 +120,9 @@ object slopegraphopts: Tslopegraphopts
     IsControl = True
   end
   object Edit1: TEdit
-    Left = 288
-    Top = 85
-    Width = 30
+    Left = 268
+    Top = 92
+    Width = 54
     Height = 21
     TabOrder = 11
     Text = 'Edit1'

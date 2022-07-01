@@ -317,8 +317,8 @@ begin
        NewHeadRecs := DEMGlb[DEMonMap].DEMheader;
        NewHeadRecs.DEMPrecision := ByteDEM;
        NewHeadRecs.ElevUnits := Undefined;
-       OpenAndZeroNewDEM(true,NewHeadRecs,NewDEM,'Occupied_layers_above_clear_zone',true);
-       OpenAndZeroNewDEM(true,NewHeadRecs,OccupiedLayersDEM,'Occupied_veg_layers',true);
+       OpenAndZeroNewDEM(true,NewHeadRecs,NewDEM,'Occupied_layers_above_clear_zone',InitDEMmissing);
+       OpenAndZeroNewDEM(true,NewHeadRecs,OccupiedLayersDEM,'Occupied_veg_layers',InitDEMmissing);
 
        NumOccupiedVoxels := 0;
        NumOccupiedNeighbors := 0;

@@ -121,57 +121,61 @@ begin
    end;
    {$EndIf}
 
-   FSplit(FileName,Dir,Name,Ext);
-   SafeMakeDir(Dir);
+   try
+      ClosingMapNotAllowed := true;
+      FSplit(FileName,Dir,Name,Ext);
+      SafeMakeDir(Dir);
 
-   {$IfDef RecordWriteDEM} WriteLineToDebugFile('Start DEM write ' + FileName); {$EndIf}
+      {$IfDef RecordWriteDEM} WriteLineToDebugFile('Start DEM write ' + FileName); {$EndIf}
 
-   NewHeadRecs := DEMheader;
-   NewHeadRecs.NumCol := succ(Limits.XGridHigh - Limits.XGridLow);
-   NewHeadRecs.NumRow := succ(Limits.YGridHigh - Limits.YGridLow);
-   if (DEMheader.NumCol <> NewHeadRecs.NumCol) or (DEMheader.NumRow <> NewHeadRecs.NumRow) then begin
-      NewHeadRecs.DEMSWCornerX := DEMHeader.DEMSWCornerX + Limits.XGridLow * DEMheader.DEMxSpacing;
-      NewHeadRecs.DEMSWCornerY := DEMHeader.DEMSWCornerY + Limits.YGridLow * DEMheader.DEMySpacing;
-   end;
+      NewHeadRecs := DEMheader;
+      NewHeadRecs.NumCol := succ(Limits.XGridHigh - Limits.XGridLow);
+      NewHeadRecs.NumRow := succ(Limits.YGridHigh - Limits.YGridLow);
+      if (DEMheader.NumCol <> NewHeadRecs.NumCol) or (DEMheader.NumRow <> NewHeadRecs.NumRow) then begin
+         NewHeadRecs.DEMSWCornerX := DEMHeader.DEMSWCornerX + Limits.XGridLow * DEMheader.DEMxSpacing;
+         NewHeadRecs.DEMSWCornerY := DEMHeader.DEMSWCornerY + Limits.YGridLow * DEMheader.DEMySpacing;
+      end;
 
-   BoxAreaExtremeElevations(Limits,MinZ,MaxZ,avgelev);
-   NewHeadRecs.MinElev := MinZ;
-   NewHeadRecs.MaxElev := MaxZ;
-   NewHeadRecs.StoredMinElev := MinZ / ElevationMultiple;
-   NewHeadRecs.StoredMaxElev := MaxZ / ElevationMultiple;
+      BoxAreaExtremeElevations(Limits,MinZ,MaxZ,avgelev);
+      NewHeadRecs.MinElev := MinZ;
+      NewHeadRecs.MaxElev := MaxZ;
+      NewHeadRecs.StoredMinElev := MinZ / ElevationMultiple;
+      NewHeadRecs.StoredMaxElev := MaxZ / ElevationMultiple;
 
-    assignFile(fFile,FileName);
-    rewrite(fFile,1);
-    FillChar(HeaderBytes,2049,0);
-    HeaderString := HeaderToString(NewHeadRecs);
-    StringToByteArray(HeaderString,HeaderBytes);
-    BlockWrite(fFile,HeaderBytes[1],2048);
+       assignFile(fFile,FileName);
+       rewrite(fFile,1);
+       FillChar(HeaderBytes,2049,0);
+       HeaderString := HeaderToString(NewHeadRecs);
+       StringToByteArray(HeaderString,HeaderBytes);
+       BlockWrite(fFile,HeaderBytes[1],2048);
 
-    if ShowDEMReadingProgress and (NewHeadRecs.NumCol > 4000) then StartProgress('Write ' + ExtractFileName(FileName));
-    ShowHourglassCursor;
-    for x := Limits.XGridLow to Limits.XGridHigh do begin
-       if (x mod 50 = 0) and ShowDEMReadingProgress and (NewHeadRecs.NumCol > 4000) then UpDateProgressBar(x/pred(NewHeadRecs.NumCol));
-       if (NewHeadRecs.DEMPrecision = FloatingPointDEM) then begin
-          BlockWrite(Ffile,ShortFloatElevations^[x]^[Limits.YGridLow],4*NewHeadRecs.NumRow);
-       end
-       else if (NewHeadRecs.DEMPrecision = ByteDEM) then begin
-          BlockWrite(Ffile,ByteElevations^[x]^[Limits.YGridLow],NewHeadRecs.NumRow);
-       end
-       else if (NewHeadRecs.DEMPrecision = WordDEM) then begin
-          BlockWrite(Ffile,WordElevations^[x]^[Limits.YGridLow],2*NewHeadRecs.NumRow);
-       end
-       else if (NewHeadRecs.DEMPrecision = LongWordDEM) then begin
-          BlockWrite(Ffile,LongWordElevations^[x]^[Limits.YGridLow],4*NewHeadRecs.NumRow);
-       end
-       else begin
-          BlockWrite(Ffile,DTEDCols[x]^[Limits.YGridLow],2*NewHeadRecs.NumRow);
-          {$IfDef RecordFullWriteDEM} writeLineToDebugFile('Last in column: ' + IntToStr(DTEDCols[x]^[pred(HeadRecs.NumRow)])); {$EndIf}
+       if ShowDEMReadingProgress and (NewHeadRecs.NumCol > 4000) then StartProgress('Write ' + ExtractFileName(FileName));
+       ShowHourglassCursor;
+       for x := Limits.XGridLow to Limits.XGridHigh do begin
+          if (x mod 50 = 0) and ShowDEMReadingProgress and (NewHeadRecs.NumCol > 4000) then UpDateProgressBar(x/pred(NewHeadRecs.NumCol));
+          if (NewHeadRecs.DEMPrecision = FloatingPointDEM) then begin
+             BlockWrite(Ffile,ShortFloatElevations^[x]^[Limits.YGridLow],4*NewHeadRecs.NumRow);
+          end
+          else if (NewHeadRecs.DEMPrecision = ByteDEM) then begin
+             BlockWrite(Ffile,ByteElevations^[x]^[Limits.YGridLow],NewHeadRecs.NumRow);
+          end
+          else if (NewHeadRecs.DEMPrecision = WordDEM) then begin
+             BlockWrite(Ffile,WordElevations^[x]^[Limits.YGridLow],2*NewHeadRecs.NumRow);
+          end
+          else if (NewHeadRecs.DEMPrecision = LongWordDEM) then begin
+             BlockWrite(Ffile,LongWordElevations^[x]^[Limits.YGridLow],4*NewHeadRecs.NumRow);
+          end
+          else begin
+             BlockWrite(Ffile,DTEDCols[x]^[Limits.YGridLow],2*NewHeadRecs.NumRow);
+             {$IfDef RecordFullWriteDEM} writeLineToDebugFile('Last in column: ' + IntToStr(DTEDCols[x]^[pred(HeadRecs.NumRow)])); {$EndIf}
+          end;
        end;
+       CloseFile(FFile);
+    finally
+       EndProgress;
+       DEMstatus := dsSaved;
+       ClosingMapNotAllowed := false;
     end;
-    EndProgress;
-    CloseFile(FFile);
-
-   DEMstatus := dsSaved;
    {$IfDef RecordWriteDEM} WriteLineToDebugFile('End DEM write'); {$EndIf}
 end;
 
@@ -226,7 +230,7 @@ end;
 procedure tDEMDataSet.SaveAsGeotiff(SaveName : PathStr = '');
 var
    missing : double;
-   z : float64;
+  // z : float64;
    WField : word;
    Offset,NumEnt, ASCIIsize,SF,MissingSize,WidthImage,HeightImage,BytesPer,RowBytes,GeokeyEntries : integer;
    TIFFHeader : tTiffHeader;

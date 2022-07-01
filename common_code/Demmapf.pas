@@ -72,7 +72,7 @@
       //{$Define RecordSatClass}
       //{$Define RecordCheckProperTix}
       //{$Define RecordWMS}
-      {$Define RecordNewMaps}
+      //{$Define RecordNewMaps}
       //{$Define RecordNewWKT}
       //{$Define RecordNewWKTFull}
       //{$Define RecordNewSatMap}
@@ -1393,6 +1393,7 @@ type
     N7x7region2: TMenuItem;
     GDALcontourshapefile1: TMenuItem;
     DEMIXevaluatehalfsecondgrids1: TMenuItem;
+    MICRODEMupsamplebilinearbicubic1: TMenuItem;
     //procedure HiresintervisibilityDEM1Click(Sender: TObject);
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
@@ -2409,6 +2410,7 @@ type
     procedure N7x7region2Click(Sender: TObject);
     procedure GDALcontourshapefile1Click(Sender: TObject);
     procedure DEMIXevaluatehalfsecondgrids1Click(Sender: TObject);
+    procedure MICRODEMupsamplebilinearbicubic1Click(Sender: TObject);
     //procedure QuarterDEM1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
@@ -2746,6 +2748,7 @@ const
 var
    EnsembleClassDB : integer;
    //MergingDEMs,
+   ClosingMapNotAllowed,
    ClosingIsHappening : boolean;
    Sub,SteepestSlopeCol,SteepestSlopeRow,
    WantToEdit,
@@ -4347,46 +4350,46 @@ begin
    if (WhatStarting in [JustWandering]) then begin
       for j := 2 to pred(StreamProfileResults.Count) do FlightLocations.Add(StreamProfileResults[j]);
    end;
-   if (WhatStarting in [SeekingFlyThroughRoute]) then GetFlyThroughExpandedRoute;
-
    if (WhatStarting = SeekingThirdCircleFly) then SetUpCircleFly;
 
-   if (DEMPersf.View3D.FlightRouteDB = Nil) then begin
-      DEMPersF.View3D.FlightDBName := Petmar.NextFileNumber(MDTempDir, 'fly',DefaultDBExt);
-      CreateLatLongZTable(DEMPersF.View3D.FlightDBName,true,false,true,true,true,false,true);
-      DEMPersf.View3D.FlightRouteDB := tMyData.Create(DEMPersF.View3D.FlightDBName);
-      Dist := 0;
-      for i := 0 to pred(FlightLocations.Count) do begin
-         DEMPersf.View3D.FlightRouteDB.Insert;
-         ReadCoordsLatLongFromStreamProfileResults(FlightLocations,i,Lat,Long);
-         DEMPersf.View3D.FlightRouteDB.SetFieldByNameAsFloat('LAT',Lat);
-         DEMPersf.View3D.FlightRouteDB.SetFieldByNameAsFloat('LONG',Long);
-         DEMPersf.View3D.FlightRouteDB.SetFieldByNameAsFloat('AZIMUTH',StrToFloat(Copy(FlightLocations.Strings[i],27,8)));
-         if DEMGlb[MapDraw.DEMonMap].GetElevFromLatLongDegree(Lat,Long,z) then begin
-            DEMPersf.View3D.FlightRouteDB.SetFieldByNameAsFloat('Z',z);
-            if MDDef.PerspOpts.NapEarth then z := z + MDDef.PerspOpts.PersObsUp
-            else z := MDDef.PerspOpts.PerspAbsElev;
-            DEMPersf.View3D.FlightRouteDB.SetFieldByNameAsFloat('ALTITUDE',z);
+   if (WhatStarting in [SeekingFlyThroughRoute]) then begin
+      GetFlyThroughExpandedRoute;
+      if (WhatStarting in [LiveFly2,SeekingFlyThroughRoute]) and (DEMPersf.View3D.FlightRouteDB = Nil) then begin
+         DEMPersF.View3D.FlightDBName := Petmar.NextFileNumber(MDTempDir, 'fly',DefaultDBExt);
+         CreateLatLongZTable(DEMPersF.View3D.FlightDBName,true,false,true,true,true,false,true);
+         DEMPersf.View3D.FlightRouteDB := tMyData.Create(DEMPersF.View3D.FlightDBName);
+         Dist := 0;
+         for i := 0 to pred(FlightLocations.Count) do begin
+            DEMPersf.View3D.FlightRouteDB.Insert;
+            ReadCoordsLatLongFromStreamProfileResults(FlightLocations,i,Lat,Long);
+            DEMPersf.View3D.FlightRouteDB.SetFieldByNameAsFloat('LAT',Lat);
+            DEMPersf.View3D.FlightRouteDB.SetFieldByNameAsFloat('LONG',Long);
+            DEMPersf.View3D.FlightRouteDB.SetFieldByNameAsFloat('AZIMUTH',StrToFloat(Copy(FlightLocations.Strings[i],27,8)));
+            if DEMGlb[MapDraw.DEMonMap].GetElevFromLatLongDegree(Lat,Long,z) then begin
+               DEMPersf.View3D.FlightRouteDB.SetFieldByNameAsFloat('Z',z);
+               if MDDef.PerspOpts.NapEarth then z := z + MDDef.PerspOpts.PersObsUp
+               else z := MDDef.PerspOpts.PerspAbsElev;
+               DEMPersf.View3D.FlightRouteDB.SetFieldByNameAsFloat('ALTITUDE',z);
+            end;
+            if (i=0) then begin
+               DEMPersf.View3D.ViewerLat := Lat;
+               DEMPersf.View3D.ViewerLong := Long;
+            end else begin;
+               VincentyCalculateDistanceBearing(Lat,Long,LastLat,LastLong,SectLen,Azimuth);
+               Dist := Dist + 0.001 * SectLen;
+            end;
+            DEMPersf.View3D.FlightRouteDB.SetFieldByNameAsFloat('DISTANCE',Dist);
+            DEMPersf.View3D.FlightRouteDB.Post;
+            LastLat := Lat;
+            LastLong := Long;
          end;
-         if (i=0) then begin
-            DEMPersf.View3D.ViewerLat := Lat;
-            DEMPersf.View3D.ViewerLong := Long;
-         end else begin;
-            VincentyCalculateDistanceBearing(Lat,Long,LastLat,LastLong,SectLen,Azimuth);
-            Dist := Dist + 0.001 * SectLen;
-         end;
-         DEMPersf.View3D.FlightRouteDB.SetFieldByNameAsFloat('DISTANCE',Dist);
-         DEMPersf.View3D.FlightRouteDB.Post;
-         LastLat := Lat;
-         LastLong := Long;
       end;
    end;
 
    DEMPersF.CanModifyParameters := (not TargetFlyThrough);
 
    {$IfDef RecordFly}
-     WriteLineToDebugFile('mid StartTheFlyThrough with ' + IntToStr(MDDef.PerspOpts.FlyDepth));
-     WriteLineToDebugFile('Target coordinates:' + RealToString(DEMPersF.View3D.TargetXUTM,10,0) + RealToString(DEMPersF.View3D.TargetYUTM,12,0));
+     WriteLineToDebugFile('mid StartTheFlyThrough with ' + IntToStr(MDDef.PerspOpts.FlyDepth) + ' Target:' + RealToString(DEMPersF.View3D.TargetXUTM,10,0) + RealToString(DEMPersF.View3D.TargetYUTM,12,0));
      WriteLineToDebugFile('Selected points');
      WriteStringListToDebugFile(StreamProfileResults);
      WriteLineToDebugFile('Flight route');
@@ -4402,23 +4405,20 @@ begin
          DemPersf.Close;
          DEMPersf := Nil;
       end;
-      exit;
+   end
+   else begin
+      DEMPersF.View3D.TargetRun := TargetFlyThrough;
+      if ((WhatStarting = LiveFly2) or (FlightLocations.Count > 1))and MDdef.FlyOptions.ShowFlyThroughRoute then SetUpLocationMap;
+      if (StreamProfileResults <> Nil) then FreeAndNil(StreamProfileResults);
+      FlightLocations.Free;
+      DEMPersF.SetFocus;
+      TargetFlyThrough := false;
+      BackToWandering;
+      ShowSatProgress := false;
+      DEMPersF.SetPerspectiveWindowSize;
+      if (DEMPersF.View3D.PersOpts.WhichPerspective = BMPPerspective) then SetUpDrapeMap;
+      DEMPersF.PerspectiveView;
    end;
-
-   DEMPersF.View3D.TargetRun := TargetFlyThrough;
-
-   if ((WhatStarting = LiveFly2) or (FlightLocations.Count > 1))and MDdef.FlyOptions.ShowFlyThroughRoute then SetUpLocationMap;
-   if (StreamProfileResults <> Nil) then FreeAndNil(StreamProfileResults);
-   FlightLocations.Free;
-
-   DEMPersF.SetFocus;
-   TargetFlyThrough := false;
-   BackToWandering;
-   ShowSatProgress := false;
-   DEMPersF.SetPerspectiveWindowSize;
-   if (DEMPersF.View3D.PersOpts.WhichPerspective = BMPPerspective) then SetUpDrapeMap;
-   DEMPersF.PerspectiveView;
-
    {$IfDef RecordFly} WriteLineToDebugFile('end StartTheFlyThrough with flydepth=' + IntToStr(MDDef.PerspOpts.FlyDepth)); {$EndIf}
 {$EndIf}
 end;
@@ -4427,24 +4427,23 @@ end;
 function ValidElevationRequired : boolean;
 begin
    Result := (DEMNowDoing in [SeekingLOS,SeekingSecondLOS,SeekingSecondPerspective,SeekingSecondNewPanorama,SeekingSecondCircleFly,SeekingThirdCircleFly,LiveFly2,
-       SeekingPerspective,SeekingFirstNewPanorama,LiveFly, SeekingFirstCircleFly,FirstPointSelectionAlgorithm,SeekingAverageProfile,SeekingSecondAverageProfile,
+        SeekingPerspective,SeekingFirstNewPanorama,LiveFly, SeekingFirstCircleFly,FirstPointSelectionAlgorithm,SeekingAverageProfile,SeekingSecondAverageProfile,
         PlottingPointElevations,SeekingSecondPerspective,
-           FirstSlopePoint,SecondSlopePoint,CompareFanAlgorithms,FanSensitivity,
-           FirstRequiredAntenna,
-           SeekingFlyThroughRoute,SeekingSecondLOS,
-           SeekingAverageProfile,SeekingSecondAverageProfile,
-           SeekingPerspective,SeekingLOS,SeekingStreamProfile,
-           SeekingFirstNewPanorama,SeekingSecondNewPanorama,//PointParameters,
-           QuickWeaponsFan,EditWeaponsFans,GrainByRegionSize,GetPointFabric,
-           Calculating,CalculateVolume,
-           EditFlightPathOnMap,SeekingFirstCircleFly,SeekingSecondCircleFly,SeekingThirdCircleFly,
-           RouteObservation,LiveFly,LiveFly2,
-           {$IfDef ExGeology}{$Else} SeekingLeftSideMagModels,SeekingRightSideMagModels,ProjectFocalMechToSurface,SeekingFirstThreePoint,SeekingSecondThreePoint,SeekingThirdThreePoint,SeekingPlaneContact,{$EndIf}
-           {$IfDef ExDrainage}{$Else} FloodBasin,{$EndIf}
-           {$IfDef ExFresnel} {$Else} FirstFresnelPoint,SecondFresnelPoint, {$EndIf}
-           //GetDEMGrid,
-           FindBlockHorizon,
-           MultipleLOS,MultipleTopoProfileRight,SeekingTopoProfile,SimpleTopoProfileRight]);
+        FirstSlopePoint,SecondSlopePoint,CompareFanAlgorithms,FanSensitivity,
+        FirstRequiredAntenna,
+        SeekingFlyThroughRoute,SeekingSecondLOS,
+        SeekingAverageProfile,SeekingSecondAverageProfile,
+        SeekingPerspective,SeekingLOS,SeekingStreamProfile,
+        SeekingFirstNewPanorama,SeekingSecondNewPanorama,
+        QuickWeaponsFan,EditWeaponsFans,GrainByRegionSize,GetPointFabric,
+        Calculating,CalculateVolume,
+        EditFlightPathOnMap,SeekingFirstCircleFly,SeekingSecondCircleFly,SeekingThirdCircleFly,
+        RouteObservation,LiveFly,LiveFly2,
+        {$IfDef ExGeology}{$Else} SeekingLeftSideMagModels,SeekingRightSideMagModels,ProjectFocalMechToSurface,SeekingFirstThreePoint,SeekingSecondThreePoint,SeekingThirdThreePoint,SeekingPlaneContact,{$EndIf}
+        {$IfDef ExDrainage}{$Else} FloodBasin,{$EndIf}
+        {$IfDef ExFresnel} {$Else} FirstFresnelPoint,SecondFresnelPoint, {$EndIf}
+        FindBlockHorizon,
+        MultipleLOS,MultipleTopoProfileRight,SeekingTopoProfile,SimpleTopoProfileRight]);
 end;
 
 
@@ -4453,8 +4452,8 @@ procedure tMapForm.ThreeDCheckDblClick(NotSamePoint : boolean);
 var
    xSatg3,ysatg3,Lat1,Long1,Lat2,Long2,Heading : float64;
    z : float32;
-   Finalx,Finaly               : integer;
-   Checking                      : tCheckPoint;
+   Finalx,Finaly : integer;
+   Checking      : tCheckPoint;
 begin
    if (DEMNowDoing in [SeekingSecondLOS,SeekingSecondPerspective,SeekingSecondNewPanorama,MultipleTopoProfileRight,SimpleTopoProfileRight,SeekingSecondAverageProfile,
             {$IfDef ExGeology} {$Else} SeekingRightSideMagModels, {$EndIf}
@@ -4972,7 +4971,6 @@ var
    PotentialCoverage : float64;
    TStr : ShortString;
    ThreeColorMap : boolean;
-   //Report : tStringList;
 begin
    DEM_Fan_Compare.GetFanCompareOptions;
    NakedMapOptions;    //which calls SaveBackupDefaults;
@@ -4983,7 +4981,6 @@ begin
    Image1.Picture.Graphic := aBitmap;
    FreeAndNil(aBitmap);
 
-   //Report := tStringList.Create;
    for i := 1 to MDDef.MultipleFanAlgorithmsToUse do begin
       MDDef.wf := MDDef.CompareIVA[i];
       NewMap[i] := Self.DuplicateMap(false);
@@ -8999,6 +8996,11 @@ label
 begin
    {$IfDef RecordClosing} WriteLineToDebugFile('TMapForm FormCloseQuery in, map=' + Caption); {$EndIf}
    ApplicationProcessMessages;
+   if ClosingMapNotAllowed then begin
+      CanClose := false;
+      exit;
+   end;
+
 
    if ClosingMapNow then begin
       CanClose := true;
@@ -9877,9 +9879,9 @@ begin
      DEMGlb[MapDraw.DEMonMap].LatLongDegreeToDEMGrid(Lat,Long,xDEMg2,yDEMg2);
      MDDef.DefDEMMap := mtElevIHS;
      Findings := tStringList.Create;
-     for ElevInt := piBilinear to piSWGrid do begin
+     for ElevInt := low(tElevInterpolation) to high(tElevInterpolation) do begin
         MDDef.wf.ElevInterpolation := ElevInt;
-        CreateZoomWindow(false,5,20,xDEMg2,yDEMg2,xSATg2,ySATg2,false,false);
+        CreateZoomWindow(false,5,5,xDEMg2,yDEMg2,xSATg2,ySATg2,false,false);
         ZoomWindow.Image1.Canvas.Font.Size := 14;
         ZoomWindow.Image1.Canvas.Font.Name := 'Verdana';
         ZoomWindow.Image1.Canvas.TextOut(5,5,ElevInterpolationName[ElevInt]);
@@ -10702,10 +10704,8 @@ end;
          FinalMem.Destroy;
          FinalBMP.SaveToFile(MapDraw.BaseMapFName);
          FinalBmp.Destroy;
-        // MapDraw.MapType := mtRGB;
          {$IfDef RecordMultiGrids} WriteLineToDebugFile('TMapForm.SetRGBMultibandToShowOnMap redraw now, title=' + MapDraw.BaseTitle); {$EndIf}
 
-         //DoBaseMapRedraw;
          DoFastMapRedraw;
          Self.BringToFront;
          {$IfDef RecordMultiGrids} WriteLineToDebugFile('TMapForm.SetRGBMultibandToShowOnMap out, title=' + MapDraw.BaseTitle); {$EndIf}
@@ -11704,6 +11704,7 @@ begin
    else begin
       ZoomWindow.MapDraw.DeleteMapSavedLayers;
    end;
+   {$IfDef RecordZoomWindow} WriteLineToDebugFile('TMapForm.CreateZoomWindow created'); {$EndIf}
 
    ZoomWindow.Closable := false;
    ZoomWindow.MapDraw.FirstMapDrawing := false;
@@ -11718,22 +11719,22 @@ begin
    {$IfDef RecordZoomWindow} WriteLineToDebugFile('TMapForm.CreateZoomWindow set up done'); {$EndIf}
 
    if MapDraw.DEMMap then begin
+      ZoomWindow.MapDraw.MapType := mtIHSReflect;
       MDDef.MapTicks := tixNone;
       {$IfDef RecordZoomWindow} WriteLineToDebugFile('TMapForm.CreateZoomWindow center, x=' + RealToString(xDEMg,-12,-2) + '  y=' + RealToString(yDEMg,-12,-2)); {$EndIf}
       ZoomWindow.RedrawMapForDataGrid(xDEMg - DEMGridSize,yDEMg + DEMGridSize,xDEMg + DEMGridSize,yDEMg - DEMGridSize,MDDef.DefaultTerrainXSize,MDDef.DefaultTerrainYSize);
       {$IfDef RecordZoomWindow} WriteLineToDebugFile('TMapForm.CreateZoomWindow limits set,  data grid=' + sfBoundBoxToString(ZoomWindow.MapDraw.MapCorners.BoundBoxDataGrid,2)); {$EndIf}
-{$IfDef ExSat}
-  end;
-{$Else}
    end
-   else with MapDraw.SatView do begin
-      ZoomWindow.MapDraw.MapType := mtSatImageGray;
-      ZoomWindow.MapDraw.SatOnMap := MapDraw.SatOnMap;
-      MapDraw.DEMonMap := MapDraw.DEMonMap;
-      ZoomWindow.RedrawMapForDataGrid(xSatg-250,ySatg2 + 250,xSatg + 250,YSatG-250,MDDef.DefaultTerrainXSize,MDDef.DefaultTerrainYSize);
-      ZoomWindow.CheckAndDrawNewCorners;
+   else begin
+      {$IfDef ExSat}
+      {$Else}
+         ZoomWindow.MapDraw.MapType := mtSatImageGray;
+         ZoomWindow.MapDraw.SatOnMap := MapDraw.SatOnMap;
+         MapDraw.DEMonMap := MapDraw.DEMonMap;
+         ZoomWindow.RedrawMapForDataGrid(xSatg-250,ySatg2 + 250,xSatg + 250,YSatG-250,MDDef.DefaultTerrainXSize,MDDef.DefaultTerrainYSize);
+         ZoomWindow.CheckAndDrawNewCorners;
+      {$EndIf}
    end;
-{$EndIf}
 
    ZoomWindow.MapDraw.FirstMapDrawing := false;
    AddOverlay(ZoomWindow,ovoContours);
@@ -16305,18 +16306,18 @@ begin
       MinDEM  := 0;
 
       with DEMGlb[MapDraw.DEMonMap] do begin
-         if MDDef.doMeanDEM then OpenAndZeroNewDEM(true,NewHeadRecs,MeanDEM,'',true);
-         if MDDef.doEnvDEM then OpenAndZeroNewDEM(true,NewHeadRecs,EnvDEM,'',true);
-         if MDDef.doSTDDEM then OpenAndZeroNewDEM(true,NewHeadRecs,STDDEM,'',true);
-         if MDDef.doMedDEM then OpenAndZeroNewDEM(true,NewHeadRecs,MedDEM,'',true);
-         if MDDef.doFloorDEM then OpenAndZeroNewDEM(true,NewHeadRecs,FloorDEM,'',true);
-         if MDDef.doCeilingDEM then OpenAndZeroNewDEM(true,NewHeadRecs,CeilingDEM,'',true);
+         if MDDef.doMeanDEM then OpenAndZeroNewDEM(true,NewHeadRecs,MeanDEM,'',InitDEMmissing);
+         if MDDef.doEnvDEM then OpenAndZeroNewDEM(true,NewHeadRecs,EnvDEM,'',InitDEMmissing);
+         if MDDef.doSTDDEM then OpenAndZeroNewDEM(true,NewHeadRecs,STDDEM,'',InitDEMmissing);
+         if MDDef.doMedDEM then OpenAndZeroNewDEM(true,NewHeadRecs,MedDEM,'',InitDEMmissing);
+         if MDDef.doFloorDEM then OpenAndZeroNewDEM(true,NewHeadRecs,FloorDEM,'',InitDEMmissing);
+         if MDDef.doCeilingDEM then OpenAndZeroNewDEM(true,NewHeadRecs,CeilingDEM,'',InitDEMmissing);
 
          NewHeadRecs.DEMPrecision := byteDEM;
          NewHeadRecs.ElevUnits := euIntCode;
-         if MDDef.doDEMwithMax then OpenAndZeroNewDEM(true,NewHeadRecs,MaxDEM,'',true);
-         if MDDef.doDEMwithMin then OpenAndZeroNewDEM(true,NewHeadRecs,MinDEM,'',true);
-         if MDDef.doNPtsDEM then OpenAndZeroNewDEM(true,NewHeadRecs,NPTsDEM,'',true);
+         if MDDef.doDEMwithMax then OpenAndZeroNewDEM(true,NewHeadRecs,MaxDEM,'',InitDEMmissing);
+         if MDDef.doDEMwithMin then OpenAndZeroNewDEM(true,NewHeadRecs,MinDEM,'',InitDEMmissing);
+         if MDDef.doNPtsDEM then OpenAndZeroNewDEM(true,NewHeadRecs,NPTsDEM,'',InitDEMmissing);
 
          for I := 1 to MaxDEMDataSets do begin
             if (DEMGlb[i] <> Nil) then LargestAssignedDEM := i;
@@ -16578,6 +16579,24 @@ begin
     else GeotiffMetadata(mdMicrodem,SatImage[MapDraw.SatOnMap].IndexFileName);
 end;
 
+procedure TMapForm.MICRODEMupsamplebilinearbicubic1Click(Sender: TObject);
+var
+   Spacing : float32;
+   NewDEM1,NewDEM2 : integer;
+begin
+   Spacing := 0.1 * DEMGlb[MapDraw.DEMonMap].DEMheader.DEMxSpacing;
+   if DEMGlb[MapDraw.DEMonMap].DEMheader.DEMUsed = ArcSecDEM  then begin
+        Spacing := 3600 * Spacing;  //since it has to be in arc seconds for the reinterpolation routine
+        MDDef.wf.ElevInterpolation := piBicubic;
+        DEMGlb[MapDraw.DEMonMap].ReinterpolateLatLongDEM(NewDEM1,Spacing,MDTEMPDir + DEMGlb[MapDraw.DEMonMap].AreaName + '_bicubic.dem');
+        MDDef.wf.ElevInterpolation := piBilinear;
+        DEMGlb[MapDraw.DEMonMap].ReinterpolateLatLongDEM(NewDEM2,Spacing,MDTEMPDir + DEMGlb[MapDraw.DEMonMap].AreaName + '_biliear.dem');
+   end;
+   DEMGlb[NewDEM1].SetUpMap(NewDEM1,true,MapDraw.MapType);
+   DEMGlb[NewDEM2].SetUpMap(NewDEM2,true,MapDraw.MapType);
+     // ReinterpolateUTMDEM(var NewDEM : integer; FloatSpacing : float64; UTMzone : int16 = -99; fName : PathStr = ''; AddCaption : shortstring = '');
+end;
+
 procedure TMapForm.Database1Click(Sender: TObject);
 begin
    DataBaseSpeedButton28Click(Sender);
@@ -16600,7 +16619,6 @@ const
    zLo : float32 = 0;
 var
    x,y,zi,
-   //NumPts,
    Fixed,Original,PN,NPts  : integer;
    znw,zw,zsw,zn,z,zs,zne,ze,zse : float32;
    HiMissing,LowMissing : ShortString;
@@ -19561,9 +19579,12 @@ var
    i : integer;
 begin
    for i := 1 to MaxDEMDataSets do begin
-      if ValidDEM(i) and (I <> MapDraw.DEMonMap) and (DEMGlb[i].SelectionMap <> Nil) then begin
+      if (I <> MapDraw.DEMonMap) and ValidDEM(i) and Assigned(DEMGlb[i].SelectionMap) then begin
          DEMGlb[i].SelectionMap.MaskFromSecondGrid(MapDraw.DEMonMap, msSecondMissing);
-         DEMGlb[i].SelectionMap.SubsetAndZoomMapFromGeographicBounds(MapDraw.MapCorners.BoundBoxGeo);
+         //DEMGlb[i].SelectionMap.SubsetAndZoomMapFromGeographicBounds(MapDraw.MapCorners.BoundBoxGeo);
+         DEMGlb[i].SavePartOfDEMWithData(DEMGlb[i].DEMFileName);
+         DEMGlb[i].DEMAlreadyDefined := false;
+         DEMGlb[i].SelectionMap.ReloadDEMClick(Nil);
       end;
    end;
 end;
@@ -19840,7 +19861,7 @@ begin
     end;
 
     {$IfDef RecordNewMaps} WriteLineToDebugFile('Variables set DEM size: ' + IntToStr(NewHeader.NumCol) + 'x' + IntToStr(NewHeader.NumRow) + '  ' + NewHeader.WKTString); {$EndIf}
-    OpenAndZeroNewDEM(false,NewHeader,Result,'Grid with ' + NewName,true);
+    OpenAndZeroNewDEM(false,NewHeader,Result,'Grid with ' + NewName, InitDEMmissing);
     {$IfDef RecordNewMaps} WriteLineToDebugFile('OpenAndZeroNewDEM done, DEM=' + IntToStr(Result) + '  Projection ' + DEMGlb[Result].DEMMapProjection.GetProjectionName); {$EndIf}
 
     if OpenMap then begin
@@ -21930,6 +21951,7 @@ begin
    MouseDragging := false;
    CreateHiddenMap := false;
    SizeIsCorrectThankYou := false;
+   ClosingMapNotAllowed := false;
    DEMNowDoing := JustWandering;
    DEMDoingNext := JustWandering;
    DEMDoingWhatBefore := JustWandering;

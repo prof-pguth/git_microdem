@@ -616,7 +616,8 @@ var
 
 procedure TThisBaseGraph.DrawBoxPlot(Bitmap : tMyBitmap);
 var
-   x,y : float32;
+   //x,
+   y : float32;
    xi,yi,x1,x2 : integer;
    TStr : shortstring;
 begin

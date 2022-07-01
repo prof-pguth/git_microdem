@@ -940,7 +940,7 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
 
               procedure MissingDataGrid(var DEM : integer; GridName : ShortString);
               begin
-                 OpenAndZeroNewDEM(true,NewHeadRecs,DEM,GridName,true);
+                 OpenAndZeroNewDEM(true,NewHeadRecs,DEM,GridName,InitDEMMissing);
                  CheckDEM := DEM;
                  {$IfDef RecordMakeGrid} WriteLineToDebugFile('Missing data grid out, ' + DEMGlb[DEM].FullDEMParams); {$EndIf}
               end;
@@ -971,11 +971,11 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
              NewHeadRecs.ElevUnits := euMeters;
              if (PCGridMaker in [pcgmMeanStd]) then begin
                 MissingDataGrid(MeanReturnHeightDEM,NewGridname('Mean_return_ht_'));
-                OpenAndZeroNewDEM(true,NewHeadRecs,MeanReturnStdDEM,NewGridname('Mean_return_std_'),false,0);
+                OpenAndZeroNewDEM(true,NewHeadRecs,MeanReturnStdDEM,NewGridname('Mean_return_std_'),InitDEMvalue,0);
              end
              else if (PCGridMaker in [pcgmMeanFirst]) then begin
                 MissingDataGrid(MeanReturnHeightDEM,NewGridname('Mean_first_return_ht_'));
-                OpenAndZeroNewDEM(true,NewHeadRecs,MeanReturnStdDEM,NewGridname('Mean_first_return_std_'),false,0);
+                OpenAndZeroNewDEM(true,NewHeadRecs,MeanReturnStdDEM,NewGridname('Mean_first_return_std_'),InitDEMvalue,0);
              end
              else if (PCGridMaker in [pcgmLowXYZ]) then MissingDataGrid(NewLowXYZDEM,NewGridname('low_min_elev_'))
              else if (PCGridMaker in [pcgmGroundLowXYZ]) then MissingDataGrid(NewGroundXYZDEM,NewGridname('low_ground_min_elev_'))
@@ -1010,7 +1010,7 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
                    NewHeadRecs.DEMPrecision := ByteDEM;
                    NewHeadRecs.ElevUnits := Undefined;
                    UpdateProgressBar(i/MaxVegLayers);
-                   OpenAndZeroNewDEM(true,NewHeadRecs,VegDensity[i],'Voxel up to ' + IntToStr(i),false,0);
+                   OpenAndZeroNewDEM(true,NewHeadRecs,VegDensity[i],'Voxel up to ' + IntToStr(i),InitDEMvalue,0);
                 end;
                 EndProgress;
              end
@@ -1025,7 +1025,7 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
                    NewHeadRecs.DEMPrecision := SmallIntDEM;
                    NewHeadRecs.ElevUnits := Undefined;
                    UpdateProgressBar(i/MaxVegLayers);
-                   OpenAndZeroNewDEM(true,NewHeadRecs,VegDensity[i],'Voxel height ' + IntToStr(i * MDDef.VoxBinHeight),false,0);
+                   OpenAndZeroNewDEM(true,NewHeadRecs,VegDensity[i],'Voxel height ' + IntToStr(i * MDDef.VoxBinHeight),InitDEMvalue,0);
                 end;
                 EndProgress;
                 {$IfDef RecordMakeGrid} WriteLineToDebugFile('Tpt_cloud_opts_fm.BitBtn9Click done set up PCGridMaker = pcgmDensityVox'); {$EndIf}
@@ -1033,8 +1033,8 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
              else if (PCGridMaker in [pcgmScanAngle]) then begin
                 NewHeadRecs.DEMPrecision := SmallIntDEM;  //byte would work for scan angle, but we need negatives; and intensities go over 255
                 NewHeadRecs.ElevUnits := Undefined;
-                OpenAndZeroNewDEM(true,NewHeadRecs,MinScanAngleDEM,NewGridname('Min_scan_angle_'),false,-9999);
-                OpenAndZeroNewDEM(true,NewHeadRecs,MaxScanAngleDEM,NewGridname('Max_scan_angle_'),false,9999);
+                OpenAndZeroNewDEM(true,NewHeadRecs,MinScanAngleDEM,NewGridname('Min_scan_angle_'),InitDEMvalue,-9999);
+                OpenAndZeroNewDEM(true,NewHeadRecs,MaxScanAngleDEM,NewGridname('Max_scan_angle_'),InitDEMvalue,9999);
              end
              else if (PCGridMaker in [pcgmPointSourceID,pcgmUserData]) then begin
                 NewHeadRecs.ElevUnits := Undefined;
@@ -1049,28 +1049,28 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
                 if (PCGridMaker in [pcgmAllIntensity,pcGMMaxIntensity]) then MissingDataGrid(MaxIntensityDEM,NewGridname('Lidar_max_intensity_'));
                if (PCGridMaker in [pcgmAllIntensity,pcgmMinIntensity]) then MissingDataGrid(MaxIntensityDEM,NewGridname('Lidar_min_intensity_'));
                  if (PCGridMaker in [pcgmAllIntensity]) then begin
-                     OpenAndZeroNewDEM(true,NewHeadRecs,NewDensity,NewGridname('Num_ground_returns_'),false,0);
+                     OpenAndZeroNewDEM(true,NewHeadRecs,NewDensity,NewGridname('Num_ground_returns_'),InitDEMvalue,0);
                      NewHeadRecs.DEMPrecision := FloatingPointDEM;
-                     OpenAndZeroNewDEM(true,NewHeadRecs,MeanIntensityDEM,NewGridname('Lidar_mean_intensity_'),false,0);
+                     OpenAndZeroNewDEM(true,NewHeadRecs,MeanIntensityDEM,NewGridname('Lidar_mean_intensity_'),InitDEMvalue,0);
                  end;
              end
              else if (PCGridMaker in [pcgmClass]) then begin
                 NewHeadRecs.DEMPrecision := WordDEM;
                 NewHeadRecs.ElevUnits := Undefined;
-                OpenAndZeroNewDEM(true,NewHeadRecs,NewDensity,NewGridname('total_density'),false,0);
+                OpenAndZeroNewDEM(true,NewHeadRecs,NewDensity,NewGridname('total_density'),InitDEMvalue,0);
                 if (PCGridMaker = pcgmClass) then begin
-                   OpenAndZeroNewDEM(true,NewHeadRecs,NewVegDEM,NewGridname('Vegetation_density_'),false,0);
-                   OpenAndZeroNewDEM(true,NewHeadRecs,NewUnclassDEM,NewGridname('Unclassified_density_'),false,0);
-                   OpenAndZeroNewDEM(true,NewHeadRecs,NewGroundDensity,NewGridname('Ground_density_'),false,0);
-                   OpenAndZeroNewDEM(true,NewHeadRecs,NewBuildingDEM,NewGridname('Building_density_'),false,0);
-                   OpenAndZeroNewDEM(true,NewHeadRecs,NewOtherDEM,NewGridname('Other_density_'),false,0);
+                   OpenAndZeroNewDEM(true,NewHeadRecs,NewVegDEM,NewGridname('Vegetation_density_'),InitDEMvalue,0);
+                   OpenAndZeroNewDEM(true,NewHeadRecs,NewUnclassDEM,NewGridname('Unclassified_density_'),InitDEMvalue,0);
+                   OpenAndZeroNewDEM(true,NewHeadRecs,NewGroundDensity,NewGridname('Ground_density_'),InitDEMvalue,0);
+                   OpenAndZeroNewDEM(true,NewHeadRecs,NewBuildingDEM,NewGridname('Building_density_'),InitDEMvalue,0);
+                   OpenAndZeroNewDEM(true,NewHeadRecs,NewOtherDEM,NewGridname('Other_density_'),InitDEMvalue,0);
                 end;
              end
              else if (PCGridMaker = pcgmClassification) then begin
                 NewHeadRecs.DEMPrecision := ByteDEM;
                 //need to deal with LAS 1.4
                 NewHeadRecs.ElevUnits := euLASClass13;
-                OpenAndZeroNewDEM(true,NewHeadRecs,ClassDEM,NewGridname('Classification_'),true);
+                OpenAndZeroNewDEM(true,NewHeadRecs,ClassDEM,NewGridname('Classification_'),InitDEMmissing);
                 CheckDEM := ClassDEM;
              end;
          end;

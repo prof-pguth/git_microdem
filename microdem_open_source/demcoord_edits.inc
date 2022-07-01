@@ -48,7 +48,7 @@ end;
 
 procedure tDEMDataSet.AddaDEM(AddDEM : integer; Mult : integer = 1);
 var
-   x,y,Invalid  : integer;
+   x,y{,Invalid}  : integer;
    Lat,Long : float64;
    z,z2 : float32;
 begin
@@ -75,7 +75,7 @@ end;
 function tDEMDataSet.ResampleByAveraging(OpenMap : boolean; SaveCountGrid : boolean = true; SaveName : PathStr = '') : integer;
 var
    NewGrid,CountGrid,x,y,xi,yi : integer;
-   Lat,Long,xg,yg : float64;
+   Lat,Long{,xg,yg} : float64;
    z,z1 : float32;
    NewHeadRecs : tDEMheader;
 begin
@@ -92,12 +92,12 @@ begin
    NewHeadRecs.RasterPixelIsGeoKey1025 := MDDef.LasDEMPixelIs;
    NewHeadRecs.DEMPrecision := WordDEM;
    NewHeadRecs.ElevUnits := Undefined;
-   OpenAndZeroNewDEM(true,NewHeadRecs,CountGrid,MDTempDir + AreaName + '_resample_density',false,0);
+   OpenAndZeroNewDEM(true,NewHeadRecs,CountGrid,MDTempDir + AreaName + '_resample_density',InitDEMvalue,0);
    {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleByAveraging, ' + DEMGlb[CountGrid].AreaName + '  ' + DEMGlb[CountGrid].KeyDEMParams); {$EndIf}
 
    NewHeadRecs.DEMPrecision := FloatingPointDEM;
    NewHeadRecs.ElevUnits := euMeters;
-   OpenAndZeroNewDEM(true,NewHeadRecs,Result,MDTempDir + AreaName + '_down_sample_grid',false,0);
+   OpenAndZeroNewDEM(true,NewHeadRecs,Result,MDTempDir + AreaName + '_down_sample_grid',InitDEMvalue,0);
    {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleByAveraging, ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].KeyDEMParams); {$EndIf}
 
    for x := 0 to pred(DEMGlb[CountGrid].DEMHeader.NumCol) do begin
@@ -212,7 +212,7 @@ begin
    if (not (FilterCategory in [fcDissimilarNeighbors])) then begin
       Title := Title + ' (box size = ' + IntToStr(2*FilterLap+1) + ')';
    end;
-   OpenAndZeroNewDEM(true,NewHeadRecs,NewDEM,Title + '_filter_' + AreaName,true);
+   OpenAndZeroNewDEM(true,NewHeadRecs,NewDEM,Title + '_filter_' + AreaName,InitDEMmissing);
 
    MDdef.FilterGridsToEdge := true;
    StartProgress(DEMGlb[NewDEM].AreaName);
@@ -341,7 +341,7 @@ var
    Found : array[1..8] of boolean;
 begin
    StartProgressAbortOption('Fill holes ' + AreaName);
-   SetNewDEM(NewDEM,true,true,true);
+   SetNewDEM(NewDEM);
    HolesFilled := 0;
    TotalHoles := 0;
    for x := 1 to (DEMheader.NumCol-2) do begin

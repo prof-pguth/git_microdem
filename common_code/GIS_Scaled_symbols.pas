@@ -360,7 +360,7 @@ type
       procedure MakeHistogram;
       procedure ClearLegend;
       procedure ChangeDisplayOptions;
-      procedure StartQuickFilter(TwoFields : boolean = true);
+      //procedure StartQuickFilter(TwoFields : boolean = true);
       procedure Refilter;
       procedure ChangeQFCheckBox(qfCheck : tCheckBox; qfCombo : TComboBox; qfLabel : tLabel; var qfField : shortstring);
       procedure ChangeComboBox(theBox : tComboBox; Direction : integer);
@@ -475,7 +475,7 @@ begin
 end;
 
 
-
+(*   //removed 6/16/2022
 procedure Tgis_scaled_form.StartQuickFilter(TwoFields : boolean = true);
 begin
    Refilter;
@@ -486,7 +486,7 @@ begin
    {$IfDef RecordQuickFilter} WriteLineToDebugFile('Tdbtablef.Quickfiltering1Click' + ' ComboBox8.Items.Count=' + IntToStr(ComboBox10.Items.Count) + ' qf2ComboBox9.Items.Count=' + IntToStr(qf2ComboBox9.Items.Count)); {$EndIf}
    CheckThemPanels;
 end;
-
+*)
 
 procedure Tgis_scaled_form.CheckThemPanels;
 var
@@ -1716,8 +1716,8 @@ var
       end;
 
       function MakeTimeFilter(aDB : integer) : boolean;
-      var
-         NewTimeFilter : shortstring;
+      //var
+         //NewTimeFilter : shortstring;
       begin
          {$IfDef RecordSym} WriteLineToDebugFile('MakeTimeFilter'); {$EndIf}
          if GISdb[aDB].MyData.FieldExists('JAN_U_MS') then begin

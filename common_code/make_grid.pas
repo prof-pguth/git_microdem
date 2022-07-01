@@ -125,7 +125,7 @@ var
    z : float32;
 begin
    Radius := Radius div 2;
-   Result := DEMGlb[DEM].CloneAndOpenGrid(FloatingPointDEM,DEMGlb[DEM].AreaName + '_std_' + IntToStr(Radius) + 'x' + IntToStr(Radius),DEMGlb[DEM].DEMheader.ElevUnits,false,1);
+   Result := DEMGlb[DEM].CloneAndOpenGrid(FloatingPointDEM,DEMGlb[DEM].AreaName + '_std_' + IntToStr(Radius) + 'x' + IntToStr(Radius),DEMGlb[DEM].DEMheader.ElevUnits);   //,false,1);
    Radius := Radius div 2;
    StartProgressAbortOption('std dev grid');
    for x := 0 to pred(DEMGlb[DEM].DEMheader.NumCol) do begin
@@ -157,7 +157,7 @@ var
    x,y : integer;
    RoughNess : float32;
 begin
-   Result := DEMGlb[DEM].CloneAndOpenGrid(FloatingPointDEM,'md_slope_std_' + IntToStr(Radius) + 'x' + IntToStr(Radius) + '_' + DEMGlb[DEM].AreaName,PercentSlope,false,1);
+   Result := DEMGlb[DEM].CloneAndOpenGrid(FloatingPointDEM,'md_slope_std_' + IntToStr(Radius) + 'x' + IntToStr(Radius) + '_' + DEMGlb[DEM].AreaName,PercentSlope);  //,false,1);
    StartProgressAbortOption('std dev grid');
    for x := 0 to pred(DEMGlb[DEM].DEMheader.NumCol) do begin
       UpdateProgressBar(x/DEMGlb[DEM].DEMheader.NumCol);
@@ -181,7 +181,7 @@ var
    MomentVar : tMomentVar;
 begin
    SlopeGrid := CreateSlopeMap(DEM,OpenMap);
-   Result := DEMGlb[DEM].CloneAndOpenGrid(FloatingPointDEM,DEMGlb[DEM].AreaName + ' roughness_3x3',DEMGlb[DEM].DEMheader.ElevUnits,false,1);
+   Result := DEMGlb[DEM].CloneAndOpenGrid(FloatingPointDEM,DEMGlb[DEM].AreaName + ' roughness_3x3',DEMGlb[DEM].DEMheader.ElevUnits);  //,false,1);
    MomentVar.Npts := 9;
 
    StartProgressAbortOption('roughness');
@@ -552,7 +552,7 @@ var
        procedure NewGrid(var DEM : integer; Gridname : shortstring; ElevUnits : tElevUnit);
        begin
           Petmar.ReplaceCharacter(GridName,' ','_');
-          DEM := DEMGlb[CurDEM].CloneAndOpenGrid(FloatingPointDEM,DEMGlb[CurDEM].AreaName + GridName,ElevUnits,false,ThinFactor);
+          DEM := DEMGlb[CurDEM].CloneAndOpenGrid(FloatingPointDEM,DEMGlb[CurDEM].AreaName + GridName,ElevUnits);   //,false,ThinFactor);
           {$IfDef RecordCreateGeomorphMaps} WriteLineToDebugFile('Created DEM ' + IntToStr(DEM) + GridName + ' proj=' + DEMGlb[DEM].DEMMapProjection.ProjDebugName); {$EndIf}
        end;
 
@@ -904,7 +904,7 @@ begin
 
      MDDef.StatSampleIncr := 1;
      AllMissing := ch in ['g'];
-     if OpenAndZeroNewDEM(true,NewHeadRecs,Result,'',AllMissing,0) then begin
+     if OpenAndZeroNewDEM(true,NewHeadRecs,Result,'',InitDEMMissing,0) then begin
          DEMGlb[CurDEM].ReflectanceParams;
          if (SampleBoxSize = 0) and (ch in ['B']) then begin
             GetSampleBoxSize(CurDEM,MDDef.GeomorphBoxSizeMeters);

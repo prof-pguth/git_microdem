@@ -411,10 +411,10 @@ begin
       DEMGlb[CurDEM].ClipDEMGrid(GridLimits.XGridLow,GridLimits.YGridLow);
       DEMGlb[CurDEM].ClipDEMGrid(GridLimits.XGridHigh,GridLimits.YGridHigh);
       if MDDef.TrendSurfMap then begin
-         if not OpenAndZeroNewDEM(true,DEMGlb[CurDEM].DEMheader,TrendDEM,DEMGlb[CurDEM].AreaName + ' Trend_Order_'+ IntToStr(CurrentOrderTrendSurface),true) then exit;
+         if not OpenAndZeroNewDEM(true,DEMGlb[CurDEM].DEMheader,TrendDEM,DEMGlb[CurDEM].AreaName + ' Trend_Order_'+ IntToStr(CurrentOrderTrendSurface),InitDEMmissing) then exit;
       end;
       if MDDef.TrendMapDev then begin
-         if not OpenAndZeroNewDEM(true,DEMGlb[CurDEM].DEMheader,DevDEM,'Deviations_from_trend_Surface_' + IntToStr(CurrentOrderTrendSurface),true) then exit;
+         if not OpenAndZeroNewDEM(true,DEMGlb[CurDEM].DEMheader,DevDEM,'Deviations_from_trend_Surface_' + IntToStr(CurrentOrderTrendSurface),InitDEMmissing) then exit;
       end;
    end;
 

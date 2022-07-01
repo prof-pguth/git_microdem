@@ -14,7 +14,6 @@ object HorizonOptions: THorizonOptions
   Font.Style = []
   Position = poDesigned
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object BitBtn1: TBitBtn
     Left = 8

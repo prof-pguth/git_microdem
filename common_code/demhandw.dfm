@@ -165,7 +165,6 @@ object DemHandForm: TDemHandForm
         Caption = 'Cloud compare ASCII'
         object CloudCompareASCIIfile1: TMenuItem
           Caption = 'Cloud to cloud distance'
-          OnClick = CloudCompareASCIIfile1Click
         end
         object RANSAC1: TMenuItem
           Caption = 'RANSAC'
@@ -786,15 +785,12 @@ object DemHandForm: TDemHandForm
       end
       object CloudCompare2: TMenuItem
         Caption = 'Cloud Compare compute roughness and curvature'
-        OnClick = CloudCompare2Click
       end
       object InsertroughnessandcurvatureinDBF1: TMenuItem
         Caption = 'Insert roughness and curvature in DBF'
-        OnClick = InsertroughnessandcurvatureinDBF1Click
       end
       object BatchCSFdemo1: TMenuItem
         Caption = 'Batch CSFdemo for ground points'
-        OnClick = BatchCSFdemo1Click
       end
       object Addgroundclassifiedpoints1: TMenuItem
         Caption = 'Add ground classified points to DBF'
@@ -802,7 +798,6 @@ object DemHandForm: TDemHandForm
       end
       object Histogramsbyclass1: TMenuItem
         Caption = 'Histograms by class'
-        OnClick = Histogramsbyclass1Click
       end
       object Addcolors1: TMenuItem
         Caption = 'Add colors'
@@ -810,27 +805,21 @@ object DemHandForm: TDemHandForm
       end
       object Coloredmaps1: TMenuItem
         Caption = 'Colored maps'
-        OnClick = Coloredmaps1Click
       end
       object Statsbyclass1: TMenuItem
         Caption = 'Stats by class'
-        OnClick = Statsbyclass1Click
       end
       object LoadDBintoslicer1: TMenuItem
         Caption = 'Load DB into slicer'
-        OnClick = LoadDBintoslicer1Click
       end
       object Classificationaccuracy1: TMenuItem
         Caption = 'Classification accuracy'
-        OnClick = Classificationaccuracy1Click
       end
       object Quickclassification1: TMenuItem
         Caption = 'Quick classification'
-        OnClick = Quickclassification1Click
       end
       object Extractclassification1: TMenuItem
         Caption = 'Extract classification'
-        OnClick = Extractclassification1Click
       end
     end
     object Help1: TMenuItem
