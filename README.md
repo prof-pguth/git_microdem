@@ -1,5 +1,7 @@
 # git_microdem
  
+Last changes posted 1 July 2022
+
 MICRODEM help file at https://www.usna.edu/Users/oceano/pguth/md_help/html/microdem.htm
 
 All files in this top level folder are duplicates, and potentially old.  Do not use.  There is not easy way to delete them so I am slowing working on it.
