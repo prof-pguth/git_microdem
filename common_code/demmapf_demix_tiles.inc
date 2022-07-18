@@ -71,7 +71,6 @@ end;
 
 
 
-
 procedure ResampleForDEMIX(DEM : integer);
 var
    NewDEM : integer;
@@ -138,11 +137,11 @@ function DEMIXtileFill(DEM : integer; AreaBox : sfBoundBox) : integer;
 var
    Col,Row,Pts,Valid : integer;
    bbgrid : tGridLimits;
-   Missing : float64;
+   Full,Missing : float64;
    bb : sfBoundBox;
    FilledGrid : boolean;
-
 begin
+   StartProgress('DEMIX tiles');
    DEMGlb[DEM].ComputeMissingData(Missing);
    FilledGrid := Missing >= 99.9;
    {$IfDef RecordDEMIX} writeLineToDebugFile('DEMIXtileFill in, DEM=' + IntToStr(DEM) + ' ' + DEMGlb[DEM].AreaName +  ' grid full %=' + RealToString(Missing,-12,2)); {$EndIf}
@@ -155,6 +154,7 @@ begin
       DEMGlb[DEM].LatLongDegreeToDEMGridInteger(bb.ymin,bb.xmin,bbgrid.xgridlow,bbgrid.ygridlow);
       DEMGlb[DEM].LatLongDegreeToDEMGridInteger(bb.ymax,bb.xmax,bbgrid.xgridhigh,bbgrid.ygridhigh);
       for Col := bbgrid.xgridlow to bbgrid.xgridhigh do begin
+         UpdateProgressBar((bbgrid.xgridhigh - Col) / (bbgrid.xgridhigh - bbgrid.xgridlow));
          for Row := bbgrid.ygridlow to bbgrid.ygridhigh do begin
             inc(Pts);
             if DEMGlb[DEM].GridInDataSet(Col,Row) and (FilledGrid or (not DEMGlb[DEM].MissingDataInGrid(Col,Row))) then begin
@@ -163,10 +163,12 @@ begin
          end;
       end;
       GISdb[Result].MyData.Edit;
-      GISdb[Result].MyData.SetFieldByNameAsFloat('GRID_FULL',100.0 * Valid / Pts);
-      {$IfDef RecordDEMIX} writeLineToDebugFile('File boundary, ' + GridLimitsToString(bbgrid) + RealToString(100 * Valid / Pts,8,2)); {$EndIf}
+      Full := 100 * Valid / Pts;
+      GISdb[Result].MyData.CarefullySetFloat('GRID_FULL',Full,2);
+      {$IfDef RecordDEMIX} writeLineToDebugFile('File boundary, ' + GridLimitsToString(bbgrid) + RealToString(Full,8,2)); {$EndIf}
       GISdb[Result].MyData.Next;
    end;
+   EndProgress;
    {$IfDef RecordDEMIX} writeLineToDebugFile('DEM contains parts of tiles=' + IntToStr(GISdb[Result].MyData.TotRecsInDB)); {$EndIf}
 end;
 
@@ -200,7 +202,7 @@ begin
       if (MapDraw.MapCorners.BoundBoxGeo.xMin < 0) then FirstLong := trunc(MapDraw.MapCorners.BoundBoxGeo.xMin - 1)
       else FirstLong := trunc(MapDraw.MapCorners.BoundBoxGeo.xMin);
       LastLong := trunc(MapDraw.MapCorners.BoundBoxGeo.xMax+1);
-      DEMIXFName := Petmar.NextFileNumber(MDTempDir, 'demix_tiles_',DefaultDBExt);
+      DEMIXFName := Petmar.NextFileNumber(MDTempDir, 'demix_tiles_' {+ MapDraw.BaseTitle  + '_'},DefaultDBExt);
    end;
 
    ShapeFileCreator := tShapeFileCreation.Create(WGS84DatumConstants,DEMIXFName,true,5);
@@ -279,7 +281,7 @@ begin
 end;
 
 
-procedure TMapForm.Strobl10ktiles1Click(Sender: TObject);
+procedure TMapForm.DEMIX10ktiles1Click(Sender: TObject);
 begin
    if (MapDraw.DEMonMap <> 0) then DEMIXtileFill(MapDraw.DEMonMap, MapDraw.MapCorners.BoundBoxGeo)
    else LoadDEMIXtileOutlines(MapDraw.MapCorners.BoundBoxGeo);

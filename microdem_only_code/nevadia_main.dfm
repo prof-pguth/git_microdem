@@ -2218,8 +2218,16 @@ object wmdem: Twmdem
           Caption = 'DEMIX elevation histograms'
           OnClick = DEMIXelevationhistograms1Click
         end
+        object DEMIXmergeCSVfiles1: TMenuItem
+          Caption = 'DEMIX merge and transpose CSV files'
+          OnClick = DEMIXmergeCSVfiles1Click
+        end
+        object DEMIXmergeandtransposewithmeanmedian1: TMenuItem
+          Caption = 'DEMIX merge and transpose with mean-median'
+          OnClick = DEMIXmergeandtransposewithmeanmedian1Click
+        end
         object DEMIXwinecontest1: TMenuItem
-          Caption = 'DEMIX wine contest'
+          Caption = 'DEMIX wine contest criteria evaluation'
           OnClick = DEMIXwinecontest1Click
         end
         object ACOLITEallopensatelliteimages1: TMenuItem

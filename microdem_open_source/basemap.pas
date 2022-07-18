@@ -169,7 +169,9 @@ type
          procedure DefineWGS84;
          procedure DefineDatumFromUTMZone(DatumCode : ShortString; UTMZone : byte; inLatHemi : ANSIchar;  Why : shortstring = '');
          function InitializeProjectionFromWKT(fName : PathStr) : boolean;
-         function WKTProjectionFromString(TheProjectionString : Ansistring) : boolean;
+         function CheckForAllInDirectoryWKT(thePath : PathStr) : boolean;
+
+         function DecodeWKTProjectionFromString(TheProjectionString : Ansistring) : boolean;
          procedure StartUTMProjection(UTMZone : integer);
 
          function ProcessTiff2048(TiffOffset : integer) : shortString;
@@ -356,6 +358,21 @@ function tMapProjection.FalseSettingsString : shortstring;
 begin
    Result := 'Lat0: ' + RadToDegString(Lat0) + ' Long0: ' + RadToDegString(Long0) + ' false_east=' + RealToString(false_east,-12,-2) + ' false_north=' + RealToString(false_north,-12,-2);
 end;
+
+
+function tMapProjection.CheckForAllInDirectoryWKT(thePath : PathStr) : boolean;
+var
+   fName : PathStr;
+begin
+   fName := thePath + 'all.prj';
+   if FileExists(fName) then Result := InitializeProjectionFromWKT(fName)
+   else begin
+      fName := thePath + 'all.wkt';
+      if FileExists(fName) then Result := InitializeProjectionFromWKT(fName);
+   end;
+end;
+
+
 
 procedure tMapProjection.SetProjectionParameterFromGeotiffKey(Key : integer; Value : float64);
 begin
@@ -635,13 +652,13 @@ begin
             wktString := wktString + ptTrim(ProjData.Strings[i]);
       end;
       ProjData.Free;
-      Result := WKTProjectionFromString(wktString);
+      Result := DecodeWKTProjectionFromString(wktString);
    end;
   {$If Defined(RecordWKT) or Defined(LongCent)} ShortProjInfo('tMapProjection.InitializeProjectionFromWKT out'); {$EndIf}
 end;
 
 
-function tMapProjection.WKTProjectionFromString(TheProjectionString : ANSIstring) : boolean;
+function tMapProjection.DecodeWKTProjectionFromString(TheProjectionString : ANSIstring) : boolean;
 var
    ftf : float64;
 

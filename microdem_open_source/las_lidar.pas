@@ -1053,7 +1053,7 @@ begin
          end;
          {$If Defined(RecordCreateEveryFile) or Defined(RecordWKT)} WriteLineToDebugFile('WKT, ASCIIProjectionData= ' + ASCIIProjectionData);    {$EndIf}
 
-         lasProjectionDefinition.LasProjection.WKTProjectionFromString(ASCIIProjectionData);
+         lasProjectionDefinition.LasProjection.DecodeWKTProjectionFromString(ASCIIProjectionData);
          lasProjectionDefinition.LasProjection.InverseProjectDegrees(LasHeader.MaxX,LasHeader.MaxY,LAS_LatLong_Box.ymax,LAS_LatLong_Box.xmax);
          lasProjectionDefinition.LasProjection.InverseProjectDegrees(LasHeader.MinX,LasHeader.MinY,LAS_LatLong_Box.ymin,LAS_LatLong_Box.xmin);
 

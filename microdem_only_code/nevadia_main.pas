@@ -13,7 +13,7 @@
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
       {$Define RecordDEMIX}
-      {$Define TrackDEMIX_DEMs}
+      //{$Define TrackDEMIX_DEMs}
       //{$Define RecordFullDEMIX}
       //{$Define RecordDEMIXLoad}
 
@@ -512,6 +512,8 @@ type
     listgeo1: TMenuItem;
     DEMIXelevationhistograms1: TMenuItem;
     DEMIXcreatereferenceDEMs1: TMenuItem;
+    DEMIXmergeCSVfiles1: TMenuItem;
+    DEMIXmergeandtransposewithmeanmedian1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -871,6 +873,8 @@ type
     procedure listgeo1Click(Sender: TObject);
     procedure DEMIXelevationhistograms1Click(Sender: TObject);
     procedure DEMIXcreatereferenceDEMs1Click(Sender: TObject);
+    procedure DEMIXmergeCSVfiles1Click(Sender: TObject);
+    procedure DEMIXmergeandtransposewithmeanmedian1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1333,27 +1337,19 @@ end;
 
 
 procedure Twmdem.DEMIXelevationhistograms1Click(Sender: TObject);
-var
-   ElevFiles,LegendFiles : tStringList;
-   DefaultFilter : byte;
-   TStr : string;
-   i : integer;
 begin
-   {$IfDef RecordDEMIX} writeLineToDebugFile('Twmdem.DEMIXelevationhistograms1Click in'); {$EndIf}
-   StopSplashing;
-   ElevFiles := tStringList.Create;
-   ElevFiles.Add('H:\demix_wine_contest\wine_results\05-06-22--0904-50_elev_diffs\elev_diff_hists\');
-   DefaultFilter := 1;
-   if GetMultipleFiles('Files with elevation distributions','Files|*.z',ElevFiles,DefaultFilter) then begin
-      LegendFiles := tStringList.Create;
-      for I := 0 to pred(ElevFiles.Count) do begin
-         TStr := ExtractFileNameNoExt(ElevFiles[i]);
-         LegendFiles.Add(BeforeSpecifiedCharacter(TStr,'-'));
-         {$IfDef RecordDEMIX} writeLineToDebugFile('Twmdem.DEMIXelevationhistograms1Click ' + Tstr); {$EndIf}
-      end;
-      CreateMultipleHistograms(MDDef.CountHistograms,ElevFiles,LegendFiles,'Elevation difference','Elevation difference distribution');
-   end;
-   {$IfDef RecordDEMIX} writeLineToDebugFile('Twmdem.DEMIXelevationhistograms1Click out'); {$EndIf}
+   DEMIX_elevation_histograms;
+end;
+
+
+procedure Twmdem.DEMIXmergeandtransposewithmeanmedian1Click(Sender: TObject);
+begin
+   MergeDEMIXCSV(ProgramRootDir + 'demix_criteria_with_signed.txt');
+end;
+
+procedure Twmdem.DEMIXmergeCSVfiles1Click(Sender: TObject);
+begin
+   MergeDEMIXCSV(ProgramRootDir + 'demix_criteria.txt');
 end;
 
 procedure Twmdem.DEMIXtiles1Click(Sender: TObject);

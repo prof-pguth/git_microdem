@@ -11,14 +11,15 @@
 {$Define ExRiverNetworks}
 
 {$IFDEF DEBUG}
-   {$IfDef RecordProblems} //normally only defined for debugging specific problems
-      {$Define RecordCloseDB}
+   {$IfDef RecordProblems}  //normally only defined for debugging specific problems
+      //{$Define RecordCloseDB}
+      {$Define RecordDEMIX}
       //{$Define RecordSymbolColor}
       //{$Define RecordRedistrict}
       //{$Define RecordDataBaseTiming}
       //{$Define RecordDBPlot}
       //{$Define RecordFIT}
-      {$Define RecordKML}
+      //{$Define RecordKML}
       //{$Define RecordTiger}
 
       //{$Define RecordFieldStatistics}
@@ -60,7 +61,7 @@
       //{$Define RecordMaskDEMShapeFile}
       //{$Define RecordZoomMap}
       //{$Define RecordIcons}
-      {$Define RecordDBGraphs}
+      //{$Define RecordDBGraphs}
       //{$Define RecordUnique}
       //{$Define RecordQuadFill
 
@@ -732,6 +733,17 @@ procedure AdjustGazFeatureName(var FeatureName : ShortString);
 procedure PrepOSMFiles(OSMPath : PathStr = '');
 function DoAShapeFile(fName : PathStr; Trim : boolean = false) : integer;
 
+//DEMIX wine contest procedures
+      procedure RankDEMS(DBonTable : integer);
+      procedure SumsOfRankDEMS(DBonTable : integer);
+      procedure BestDEMSbyCategory(DBonTable : integer);
+      procedure ScoreDEMS(DBonTable : integer);
+      function TransposeDEMIXcriteria(DBonTable : integer; CriteriaFile : PathStr = '') : PathStr;
+      procedure TransposeDEMIXwinecontestGraph(DBonTable : integer);
+      procedure DEMIXwinecontestGraph(DBonTable : integer);
+      procedure DEMIXwineContestScoresGraph(DBonTable : integer);
+
+
 
 {$IfDef ExRiverNetworks}
 {$Else}
@@ -869,6 +881,7 @@ uses
 
 {$include demdatabase_special_cases.inc}
 
+{$include dem_database_demix_ops.inc}
 
 {$IfDef NoDBEdits}
 {$Else}
@@ -3888,7 +3901,7 @@ begin
    end;
    HighLightDBOnWorld := true;
 
-   {$IfDef EXPLSS}
+   {$IfDef ExPLSS}
    {$Else}
       for I := 1 to MaxPLSS do PLSS[i] := Nil;
    {$EndIf}
@@ -3981,7 +3994,7 @@ begin
                ExpandRoute(0,Route,Dist,AddFirst,AddLast,AddTurns);
                {$IfDef RecordPointInArea} WriteLineToDebugFile('   Route.Count=' + IntToStr(Route.Count)); {$EndIf}
                for i := 1 to Route.Count do begin
-                  {$IfDef RecordPointInArea} WriteLineToDebugFile('   ' + IntToStr(i)); {$EndIf}
+                  {$IfDef RecordPointInArea} WriteLineToDebugFile('  ' + IntToStr(i)); {$EndIf}
                   ReadCoordsLatLongFromStreamProfileResults(Route,pred(i),Lat,Long);
                   AddPoint;
                end;
@@ -4194,8 +4207,8 @@ end;
 function tGISdataBaseModule.AssembleGISFilter : AnsiString;
 begin
    {$IfDef RecordQueryGeoBox}
-      WriteLineToDebugFile('tGISdataBaseModule.AssembleFilter in, ' + dbName + '   Main filter: ' + dbOpts.MainFilter);
-      WriteLineToDebugFile('   Time filter: ' + dbOpts.TimeFilter + '   Geo filter: ' + dbOpts.GeoFilter);
+      WriteLineToDebugFile('tGISdataBaseModule.AssembleFilter in, ' + dbName + '  Main filter: ' + dbOpts.MainFilter);
+      WriteLineToDebugFile('  Time filter: ' + dbOpts.TimeFilter + '  Geo filter: ' + dbOpts.GeoFilter);
    {$EndIf}
 
    Result := dbOpts.MainFilter;
@@ -5665,9 +5678,10 @@ var
    i : integer;
 begin
    {$IfDef RecordCloseDB} WriteLineToDebugFile('TGISDataBase.CloseDataBase, ' + dbName); {$EndIf}
-   LayerIsOn := false;
-   ToggleLayer(LayerIsOn);
-   //RedrawLayerOnMap;
+   if not (WMDEM.ProgramClosing) then begin
+      LayerIsOn := false;
+      ToggleLayer(LayerIsOn);
+   end;
 
    if (DBNumber = ClimateStationDB) then ClimateStationDB := 0;
    if (DBNumber = WindsDB) then WindsDB := 0;

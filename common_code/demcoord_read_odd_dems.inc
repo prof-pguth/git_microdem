@@ -435,12 +435,12 @@ end;
 {$Else}
       function ReadOSfile(DEMFileName : PathStr) : boolean;
       begin
-         {$IfDef RecordReadDEM}   WriteLineToDebugFile('ReadOSfile ' + DEMFileName); {$EndIf}
+         {$IfDef RecordReadDEM} WriteLineToDebugFile('ReadOSfile ' + DEMFileName); {$EndIf}
          DEMheader.DataSpacing := SpaceMeters;
          DEMheader.DEMUsed := UTMBasedDEM;
          DEMheader.DigitizeDatum := UK_OS_grid;
          DEMMapProjection := CreateUKOSprojection;
-         ReadASCIIArcGrid(DEMFileName,Self,Result);
+         ReadASCIIArcGrid(DEMFileName,Self,Result,true);
       end;
 {$EndIf}
 
@@ -484,7 +484,7 @@ end;
             ReadNEDBIL(DEMFileName,Error);
          end
          else if ExtEquals(Ext, '.ASC') or ExtEquals(Ext, '.GRD') or ExtEquals(Ext, '.TXT') then begin
-            ReadASCIIArcGrid(DEMFileName,Self,Error);
+            ReadASCIIArcGrid(DEMFileName,Self,Error,ReallyReadDEM);
          end
          else if ExtEquals(Ext, '.DTM') then begin
             ReadFusionDTM(DEMFileName,Self,Error);

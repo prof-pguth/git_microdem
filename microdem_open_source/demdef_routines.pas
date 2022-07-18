@@ -209,6 +209,7 @@ function ClassBoxName : string;
 procedure InitializeMICRODEM;
 function PointInBoundingBox(Lat,Long : float64; BBox : sfBoundBox) : boolean;  inline;
 function AtLeastPartOfBoxInAnotherBox(BoxToTest,BoxAskingAbout : sfBoundBox) : boolean;
+function AllOfBoxInAnotherBox(BoxToTest,BoxAskingAbout : sfBoundBox) : boolean;
 procedure InitializeBoundBox(var bb : sfBoundBox);
 
 function ExpandIconFileName(var fName : PathStr) : boolean;
@@ -297,6 +298,7 @@ function GridLimitsString(GridLimits : tGridLimits) : shortstring;
    procedure RecordDirs(When : shortstring);
 {$EndIf}
 
+function DEMGridString(xgrid,ygrid : float32) : shortstring;
 
 function UNIXTimeToDateTime(UnixTime: LongWord): TDateTime;
 function DateTimeToUNIXTime(DelphiTime : TDateTime): LongWord;
@@ -366,6 +368,12 @@ uses
    Make_Tables,
    DEM_indexes,
    DataBaseCreate;
+
+
+function DEMGridString(xgrid,ygrid : float32) : shortstring;
+begin
+   Result := 'DEM grid: x=' + RealToString(Xgrid,-8,2) + '  y=' +  RealToString(Ygrid,-8,2);
+end;
 
 
 function RecycleCompressFile : boolean;
@@ -846,6 +854,13 @@ end;
       end;
 
 {$EndIf}
+
+
+function AllOfBoxInAnotherBox(BoxToTest,BoxAskingAbout : sfBoundBox) : boolean;
+begin
+   Result := ((BoxToTest.xmin <= BoxAskingAbout.xmax) and (BoxToTest.xmin >= BoxAskingAbout.xmin) and (BoxToTest.xmax <= BoxAskingAbout.xmax) and (BoxToTest.xmax >= BoxAskingAbout.xmin) and
+              (BoxToTest.ymin <= BoxAskingAbout.ymax) and (BoxToTest.ymin >= BoxAskingAbout.ymin) and (BoxToTest.ymax <= BoxAskingAbout.ymax) and (BoxToTest.ymax >= BoxAskingAbout.ymin));
+end;
 
 
 function AtLeastPartOfBoxInAnotherBox(BoxToTest,BoxAskingAbout : sfBoundBox) : boolean;
@@ -2507,7 +2522,14 @@ var
          AParameterShortFloat('Misc','MaxPercentile',CurrentSeaLevel,0);
 
          AParameter('Misc','DEMIX_Full',DEMIX_Full,100);
-         AParameterShortFloat('Misc','SlopeSteepBoundary',SlopeSteepBoundary,18);
+         AParameterShortFloat('Misc','DEMIXTieTolerance',DEMIXTieTolerance,0.011);
+
+         AParameterShortFloat('Misc','SlopeFlatBoundary',SlopeSteepBoundary,12.5);
+         AParameterShortFloat('Misc','SlopeGentleBoundary',SlopeSteepBoundary,25);
+         AParameterShortFloat('Misc','SlopeSteepBoundary',SlopeSteepBoundary,50);
+
+         AParameter('Misc','LandTypePointsNeeded',LandTypePointsNeeded,50);
+
          AParameter('Misc','ColorizeInPlace',ColorizeInPlace,true);
          AParameter('Misc','DeleteFIT',DeleteFIT,true);
          AParameter('Misc','BlackLimit',BlackLimit,25);

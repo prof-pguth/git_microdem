@@ -132,10 +132,8 @@ end;
 
 procedure Tbargraphform.BitBtn2Click(Sender: TObject);
 begin
-   //with GIS do begin
-      GIS.dbOpts.LabelField := GIS.PickField('unique values' ,[ftString,ftInteger,ftSmallInt]);
-      GIS.dbtablef.Legend1Click(Nil);
-   //end;
+   GIS.dbOpts.LabelField := GIS.PickField('unique values' ,[ftString,ftInteger,ftSmallInt]);
+   GIS.dbtablef.Legend1Click(Nil);
 end;
 
 procedure Tbargraphform.BitBtn3Click(Sender: TObject);
@@ -315,15 +313,13 @@ end;
 procedure Tbargraphform.SpeedButton2Click(Sender: TObject);
 begin
     if (Graph3 = Nil) then begin
-       Graph3 := TThisBaseGraph.Create(Application);
-      // with Graph3,GraphDraw do begin
-           Graph3.SetUpGraphForm;
-           GIS.PickNumericFields(2,{GIS.dbOpts.XField,GIS.dbOpts.YField,GIS.dbOpts.ZField,}'X axis','Y axis','x');
-           GIS.FieldRange32(GIS.dbOpts.XField,Graph3.GraphDraw.MinHorizAxis,Graph3.GraphDraw.MaxHorizAxis);
-           GIS.FieldRange32(GIS.dbOpts.YField,Graph3.GraphDraw.MinVertAxis,Graph3.GraphDraw.MaxVertAxis);
-           Graph3.GraphDraw.HorizLabel := GIS.dbOpts.XField;
-           Graph3.GraphDraw.VertLabel := GIS.dbOpts.YField;
-       //end;
+        Graph3 := TThisBaseGraph.Create(Application);
+        Graph3.SetUpGraphForm;
+        GIS.PickNumericFields(2,{GIS.dbOpts.XField,GIS.dbOpts.YField,GIS.dbOpts.ZField,}'X axis','Y axis','x');
+        GIS.FieldRange32(GIS.dbOpts.XField,Graph3.GraphDraw.MinHorizAxis,Graph3.GraphDraw.MaxHorizAxis);
+        GIS.FieldRange32(GIS.dbOpts.YField,Graph3.GraphDraw.MinVertAxis,Graph3.GraphDraw.MaxVertAxis);
+        Graph3.GraphDraw.HorizLabel := GIS.dbOpts.XField;
+        Graph3.GraphDraw.VertLabel := GIS.dbOpts.YField;
     end;
    Graph3.RedrawDiagram11Click(Nil);
    GIS.EmpSource.Enabled := false;

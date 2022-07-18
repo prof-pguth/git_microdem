@@ -14,7 +14,6 @@ object DRGAnaglyphForm: TDRGAnaglyphForm
   Position = poDefaultSizeOnly
   OnClose = FormClose
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Label3: TLabel
     Left = 134

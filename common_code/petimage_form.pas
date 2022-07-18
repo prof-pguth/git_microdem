@@ -1656,7 +1656,7 @@ begin
    XBMPSize := Bitmap.Width;
    YBMPSize := Bitmap.Height;
    ComboBox1Change(Nil);
-   {$IfDef RecordImageResize} WriteLineToDebugFile('Bitmap size ' + LoadedFile + '  ' + ImageSize(Bitmap));   {$EndIf}
+   {$IfDef RecordImageResize} WriteLineToDebugFile('Bitmap size ' + LoadedFile + '  ' + ImageSize(Bitmap)); {$EndIf}
    if (Not SizeCorrect) then begin
       ClientHeight := Image1.Height + Panel1.Height + Toolbar1.Height + StatusBar1.Height;
       ClientWidth := Image1.Width;
@@ -1679,7 +1679,7 @@ end;
 procedure TImageDisplayForm.LoadImage(var FName : PathStr; PickSize : boolean = false);
 begin
    try
-      {$IfDef RecordImageLoadProblems} WriteLineToDebugFile('TImageFm.LoadImage: ' + fName);  {$EndIf}
+      {$IfDef RecordImageLoadProblems} WriteLineToDebugFile('TImageFm.LoadImage: ' + fName); {$EndIf}
       ShowHourglassCursor;
       if not FileExists(fName) then begin
          OpenPictureDialog1.FileName := fName;
@@ -2143,11 +2143,11 @@ procedure TImageDisplayForm.CancelBtnClick(Sender: TObject);
 begin
   {$IfDef ExOpacity}
   {$Else}
-   if BaseTopBitmap <> Nil then FreeAndNil(BaseTopBitmap);
-   if TopBitmap <> Nil then FreeAndNil(TopBitmap);
-   Panel2.Height := 0;
-   BaseTopBitmap := Nil;
-   TopBitmap := Nil;
+      if BaseTopBitmap <> Nil then FreeAndNil(BaseTopBitmap);
+      if TopBitmap <> Nil then FreeAndNil(TopBitmap);
+      Panel2.Height := 0;
+      BaseTopBitmap := Nil;
+      TopBitmap := Nil;
    {$EndIf}
 end;
 

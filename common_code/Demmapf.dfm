@@ -3565,9 +3565,9 @@ object MapForm: TMapForm
           Caption = 'US SPCS'
           OnClick = USSPCS1Click
         end
-        object Strobl10ktiles1: TMenuItem
+        object DEMIX10ktiles1: TMenuItem
           Caption = 'DEMIX 10k tiles'
-          OnClick = Strobl10ktiles1Click
+          OnClick = DEMIX10ktiles1Click
         end
       end
       object N31: TMenuItem
@@ -3740,8 +3740,13 @@ object MapForm: TMapForm
           Caption = 'DEMIX 1 sec resample by averaging'
           OnClick = DEMIX1secresamplebyaveraging1Click
         end
+        object DEMIX1secresamplewithGDAL1: TMenuItem
+          Caption = 'DEMIX 1 sec resample with GDAL'
+          Enabled = False
+          OnClick = DEMIX1secresamplewithGDAL1Click
+        end
         object DEMIXevaluatehalfsecondgrids1: TMenuItem
-          Caption = 'DEMIX evaluate half second grids'
+          Caption = 'Evaluate half second grids'
           OnClick = DEMIXevaluatehalfsecondgrids1Click
         end
       end
@@ -4127,6 +4132,13 @@ object MapForm: TMapForm
       end
       object DEMIXtilestatistics1: TMenuItem
         Caption = 'DEMIX tile statistics'
+      end
+      object Experimental1: TMenuItem
+        Caption = 'Experimental'
+        object BestglobalDEM1: TMenuItem
+          Caption = 'Best global DEM'
+          OnClick = BestglobalDEM1Click
+        end
       end
     end
     object Imageanalysis1: TMenuItem
@@ -4839,17 +4851,24 @@ object MapForm: TMapForm
       Caption = 'ID DB'
       OnClick = ID2Click
     end
-    object PLSSlocation1: TMenuItem
-      Caption = 'PLSS location'
-      OnClick = PLSSlocation1Click
-    end
-    object Pointcoordinates2: TMenuItem
-      Caption = 'Point coordinates'
-      OnClick = Pointcoordinates2Click
-    end
-    object Pointzvaluesallgrids1: TMenuItem
-      Caption = 'Point z values (all grids)'
-      OnClick = Pointzvaluesallgrids1Click
+    object Coordinates1: TMenuItem
+      Caption = 'Coordinates and point characteristics'
+      object Pointcoordinates2: TMenuItem
+        Caption = 'Point coordinates'
+        OnClick = Pointcoordinates2Click
+      end
+      object Pointzvaluesallgrids1: TMenuItem
+        Caption = 'Point z values (all grids)'
+        OnClick = Pointzvaluesallgrids1Click
+      end
+      object Pixelextentandhighresaverage1: TMenuItem
+        Caption = 'Pixel extent and high-res average'
+        OnClick = Pixelextentandhighresaverage1Click
+      end
+      object PLSSlocation1: TMenuItem
+        Caption = 'PLSS location'
+        OnClick = PLSSlocation1Click
+      end
     end
     object TIGER1: TMenuItem
       Caption = 'TIGER'
@@ -5084,6 +5103,17 @@ object MapForm: TMapForm
       object Moonriseset1: TMenuItem
         Caption = 'Moon rise/set'
         OnClick = Moonriseset1Click
+      end
+      object Moonposition1: TMenuItem
+        Caption = 'Moon position'
+        object oday2: TMenuItem
+          Caption = 'Today'
+          OnClick = oday2Click
+        end
+        object oday3: TMenuItem
+          Caption = 'Pick date'
+          OnClick = oday3Click
+        end
       end
       object N49: TMenuItem
         Caption = '-'

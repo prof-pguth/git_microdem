@@ -164,7 +164,7 @@ begin
    Result := false;
    if GridInDataSet(x,y) then begin
       if (DEMheader.DEMPrecision = FloatingPointDEM) then z := ShortFloatElevations^[x]^[y]
-      else if (DEMheader.DEMPrecision = SmallIntDEM) then z := DTEDCols[x]^[y]
+      else if (DEMheader.DEMPrecision = SmallIntDEM) then z := SmallIntElevations[x]^[y]
       else if (DEMheader.DEMPrecision = WordDEM) then z := WordElevations^[x]^[y]
       else if (DEMheader.DEMPrecision = LongWordDEM) then z := LongWordElevations^[x]^[y]
       else if (DEMheader.DEMPrecision = ByteDEM) then z := ByteElevations^[x]^[y];
@@ -180,12 +180,13 @@ begin
 end;
 
 
-function tDEMDataSet.GetElevMetersOnGridInteger(x,y : integer; var z  : int64) : boolean;
+(*
+function tDEMDataSet.GetElevMetersOnGridInteger(x,y : integer; var z  : float32) : boolean;
 begin
    z := ThisDEMMissingValue;
    Result := false;
    if GridInDataSet(x,y) then begin
-      if (DEMheader.DEMPrecision = SmallIntDEM) then z := DTEDCols[x]^[y]
+      if (DEMheader.DEMPrecision = SmallIntDEM) then z := SmallIntElevations[x]^[y]
       else if (DEMheader.DEMPrecision = WordDEM) then z := WordElevations^[x]^[y]
       else if (DEMheader.DEMPrecision = LongWordDEM) then z := LongWordElevations^[x]^[y]
       else if (DEMheader.DEMPrecision = ByteDEM) then z := ByteElevations^[x]^[y];
@@ -198,6 +199,7 @@ begin
       end;
    end;
 end;
+*)
 
 
 function tDEMDataSet.GetElevMeters(XGrid,YGrid : float64; var z  : float32) : boolean;
@@ -284,7 +286,7 @@ function tDEMDataSet.MissingDataInGrid(XGrid,YGrid : integer) :  boolean;
 begin
    if GridInDataSet(xgrid,ygrid) then begin
       if (DEMheader.DEMPrecision = FloatingPointDEM) then Result := abs(ShortFloatElevations^[xgrid]^[ygrid] - ThisDEMMissingValue) < 0.001
-      else if (DEMheader.DEMPrecision = SmallIntDEM) then Result := DTEDCols[xgrid]^[ygrid] = MaxSmallInt
+      else if (DEMheader.DEMPrecision = SmallIntDEM) then Result := SmallIntElevations[xgrid]^[ygrid] = MaxSmallInt
       else if (DEMheader.DEMPrecision = WordDEM) then Result := WordElevations^[xgrid]^[ygrid] = MaxWord
       else if (DEMheader.DEMPrecision = LongWordDEM) then Result := LongWordElevations^[xgrid]^[ygrid] = MaxLongWord
       else if (DEMheader.DEMPrecision = ByteDEM) then begin
@@ -350,7 +352,7 @@ begin
 end;
 
 
-function tDEMDataSet.SetGridElevation(Col,Row : integer; z : float64) : boolean;
+function tDEMDataSet.SetGridElevation(Col,Row : int32; z : float64) : boolean;
 var
    zi : int64;
 begin
@@ -376,28 +378,28 @@ begin
          if (z > MaxSmallInt) then z := MaxSmallInt;
          if (z < -MaxSmallInt) then z := MaxSmallInt;
          zi := round(z);
-         DTEDCols[Col]^[Row] := zi;
+         SmallIntElevations[Col]^[Row] := zi;
       end;
    end;
 end;
 
 function tDEMDataSet.SetGridElevationLatLongDegree(Lat,Long : float64; z : float64) : boolean;
 var
-   xg,yg : integer;
+   xg,yg : int32;
 begin
    LatLongDegreeToDEMGridInteger(Lat,Long,xg,yg);
    Result := SetGridElevation(xg,yg,z);
 end;
 
 
-procedure tDEMDataSet.SetGridMissing(Col,Row : integer);
+procedure tDEMDataSet.SetGridMissing(Col,Row : int32);
 begin
    if GridInDataSet(Col,Row) then begin
       if (DEMheader.DEMPrecision = FloatingPointDEM) then ShortFloatElevations^[Col]^[Row] := ThisDEMMissingValue
       else if (DEMheader.DEMPrecision = ByteDEM) then ByteElevations^[Col]^[Row] := ThisDEMMissingValue
       else if (DEMheader.DEMPrecision = WordDEM) then WordElevations^[Col]^[Row] := ThisDEMMissingValue
       else if (DEMheader.DEMPrecision = LongWordDEM) then LongWordElevations^[Col]^[Row] := ThisDEMMissingValue
-      else DTEDCols[Col]^[Row] := ThisDEMMissingValue;
+      else SmallIntElevations[Col]^[Row] := ThisDEMMissingValue;
    end;
 end;
 

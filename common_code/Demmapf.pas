@@ -1279,7 +1279,7 @@ type
     Scribbleonmap1: TMenuItem;
     Absolutevalue1: TMenuItem;
     RMSE1: TMenuItem;
-    Strobl10ktiles1: TMenuItem;
+    DEMIX10ktiles1: TMenuItem;
     Loadlandcover1: TMenuItem;
     Averagetopographicprofile1: TMenuItem;
     DEMsfrommaplibrarymaparea1: TMenuItem;
@@ -1394,6 +1394,14 @@ type
     GDALcontourshapefile1: TMenuItem;
     DEMIXevaluatehalfsecondgrids1: TMenuItem;
     MICRODEMupsamplebilinearbicubic1: TMenuItem;
+    Moonposition1: TMenuItem;
+    Experimental1: TMenuItem;
+    BestglobalDEM1: TMenuItem;
+    DEMIX1secresamplewithGDAL1: TMenuItem;
+    Pixelextentandhighresaverage1: TMenuItem;
+    Coordinates1: TMenuItem;
+    oday2: TMenuItem;
+    oday3: TMenuItem;
     //procedure HiresintervisibilityDEM1Click(Sender: TObject);
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
@@ -2310,7 +2318,7 @@ type
     procedure Scribbleonmap1Click(Sender: TObject);
     procedure Absolutevalue1Click(Sender: TObject);
     procedure RMSE1Click(Sender: TObject);
-    procedure Strobl10ktiles1Click(Sender: TObject);
+    procedure DEMIX10ktiles1Click(Sender: TObject);
     procedure Loadlandcover1Click(Sender: TObject);
     procedure Averagetopographicprofile1Click(Sender: TObject);
     procedure DEMsfrommaplibrarymaparea1Click(Sender: TObject);
@@ -2411,6 +2419,11 @@ type
     procedure GDALcontourshapefile1Click(Sender: TObject);
     procedure DEMIXevaluatehalfsecondgrids1Click(Sender: TObject);
     procedure MICRODEMupsamplebilinearbicubic1Click(Sender: TObject);
+    procedure BestglobalDEM1Click(Sender: TObject);
+    procedure DEMIX1secresamplewithGDAL1Click(Sender: TObject);
+    procedure Pixelextentandhighresaverage1Click(Sender: TObject);
+    procedure oday2Click(Sender: TObject);
+    procedure oday3Click(Sender: TObject);
     //procedure QuarterDEM1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
@@ -2425,6 +2438,7 @@ type
     procedure SetPanButtons;
     procedure CheckAndDrawNewCorners;
     function GetSecondDEM(MustBeCompatible : boolean = true) : boolean;
+    function ValidDifferentDEM(i : integer) : boolean; inline;
 
     procedure SetMapOverlays;
     function NewSatWindow(nsb : tNewSatBand) : integer;
@@ -4510,7 +4524,7 @@ begin
 
    if DEMNowDoing in [SeekingLOS,SeekingPerspective,SeekingFirstNewPanorama,LiveFly,MultipleLOS,SeekingTopoProfile,SimpleTopoProfileRight,SeekingAverageProfile,
            SeekingFirstCircleFly,FirstPointSelectionAlgorithm] then begin
-      if DEMNowDoing in [SeekingPerspective,LiveFly,SeekingFirstCircleFly] then Checking := CheckAll
+      if DEMNowDoing in [{SeekingPerspective,}LiveFly,SeekingFirstCircleFly] then Checking := CheckAll
       else Checking := CheckReasonable;
       CheckThisPoint(LastX,LastY,xDEMg1,yDEMg1,xsatg1,ysatg1,Checking);
 
@@ -5315,6 +5329,11 @@ begin
 end;
 
 
+function TMapForm.ValidDifferentDEM(i : integer) : boolean;
+begin
+   Result := (i <> MapDraw.DEMonMap) and ValidDEM(i);
+end;
+
 procedure TMapForm.Differencemapsallotheropengrids1Click(Sender: TObject);
 {$IfDef ExComplexGeoStats}
 begin
@@ -5328,7 +5347,7 @@ begin
    Results := tStringList.Create;
    Results.Add('DEM,RMSE');
    for i := 1 to MaxDEMDataSets do begin
-      DoDEM[i] := (i <> MapDraw.DEMonMap) and ValidDEM(i);
+      DoDEM[i] := ValidDifferentDEM(i);
    end;
    for i := 1 to MaxDEMDataSets do if DoDEM[i] then begin
       NewDEM := MakeDifferenceMapOfBoxRegion(MapDraw.DEMonMap,i,DEMGlb[MapDraw.DEMonMap].FullDEMGridLimits,true,false,false,'Delta ' + DEMGlb[i].AreaName);
@@ -6007,11 +6026,9 @@ begin
    NewDEM := DEMGlb[Map1].CloneAndOpenGrid(FloatingPointDEM,mName,euMeters);
 
    if ShowSatProgress then StartProgress('Migration');
-   for Col := 0 to pred(DEMGlb[Map1].DEMheader.NumCol) do
-   begin
+   for Col := 0 to pred(DEMGlb[Map1].DEMheader.NumCol) do begin
       UpdateProgressBar(Col/DEMGlb[Map1].DEMheader.NumCol);
-      for Row := 0 to pred(DEMGlb[Map1].DEMheader.NumRow) do
-      begin
+      for Row := 0 to pred(DEMGlb[Map1].DEMheader.NumRow) do begin
          x := 0;
          y := 0;
          if not DEMGlb[Map1].MissingDataInGrid(Col,Row) then begin
@@ -6366,7 +6383,7 @@ procedure TMapForm.Histogram3Click(Sender: TObject);
 begin
    {$IfDef ExGeoStats}
    {$Else}
-      if (MapDraw.DEMonMap <> 0) then SingleDEMHistogram(MapDraw.DEMonMap,true);
+      if (MapDraw.ValidDEMonMap) then SingleDEMHistogram(MapDraw.DEMonMap,true);
    {$EndIf}
 end;
 
@@ -7439,7 +7456,7 @@ begin
       Saveallmapsasimage1.Visible := (MDDef.ProgramOption in [ExpertProgram]) and (NumOpenMaps > 1);
 
       ElevationsExtremes1.Checked := (ExtremeZDEM <> 0);
-      Missingdatacolor1.Visible := (MapDraw.DEMonMap <> 0) or (MapDraw.SatonMap <> 0);
+      Missingdatacolor1.Visible := (MapDraw.ValidDEMonMap) or (MapDraw.SatonMap <> 0);
       Lntransform1.Visible := ExpertDEMVersion and (DEMGlb[MapDraw.DEMonMap].DEMheader.MaxElev > 0);
       Vectoraverage1.Visible := ExpertDEMVersion and (DEMGlb[MapDraw.DEMonMap].DEMheader.ElevUnits = zDegrees);
 
@@ -7502,8 +7519,8 @@ begin
       Coccurrenceoftwogrids1.Visible := (NumDEMDataSetsOpen > 1);
 
       Topographicgrain1.Visible := MDDef.ShowGeomorphometry and (MapDraw <> Nil) and (MapDraw.VectorIndex = 0) and ValidDEM(MapDraw.DEMonMap);
-      ConvertUKOSDEM1.Visible := ExpertDEMVersion and (MapDraw.DEMonMap <> 0) and (DEMGlb[MapDraw.DEMonMap].DEMheader.DigitizeDatum = UK_OS_grid);
-      DEMgridhistogram1.Visible := ValidDEM(MapDraw.DEMonMap);
+      ConvertUKOSDEM1.Visible := ExpertDEMVersion and (MapDraw.ValidDEMonMap) and (DEMGlb[MapDraw.DEMonMap].DEMheader.DigitizeDatum = UK_OS_grid);
+      DEMgridhistogram1.Visible := MapDraw.ValidDEMonMap;
 
       {$IfDef ExDrainage}
          Quicksealevelrise1.Visible := false;
@@ -9211,7 +9228,7 @@ end;
 
       function TMapForm.GridLimitsForGeomorphOps : tGridLimits;
       begin
-         if (MapDraw.DEMonMap <> 0) then begin
+         if (MapDraw.ValidDEMonMap) then begin
             if MDDef.GeomorphMapsFullDEM then Result := DEMGlb[MapDraw.DEMonMap].FullDEMGridLimits
             else Result := MapDraw.MapAreaDEMGridLimits;
          end;
@@ -10896,6 +10913,11 @@ begin
 end;
 
 
+procedure TMapForm.DEMIX1secresamplewithGDAL1Click(Sender: TObject);
+begin
+    GDAL_downsample_DEM_1sec(MapDraw.DEMonMap,MDTempDir + 'gdal_downsample.dem');
+end;
+
 procedure TMapForm.DEMIXevaluatehalfsecondgrids1Click(Sender: TObject);
 begin
    {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} writeLineToDebugFile('TMapForm.DEMIXevaluatehalfsecondgrids1Click in, ' + DEMGlb[MapDraw.DEMonMap].DEMFileName); {$EndIf}
@@ -10904,8 +10926,8 @@ begin
    end;
    ResampleHalfSecondForDEMIX(MapDraw.DEMonMap);
    {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} writeLineToDebugFile('TMapForm.DEMIXevaluatehalfsecondgrids1Click out'); {$EndIf}
-
 end;
+
 
 procedure TMapForm.PlotGridPoint(xgrid,ygrid : float64; PlotColor : tPlatformColor);
 var
@@ -11006,10 +11028,9 @@ begin
 
    if ((MapDraw.ValidDEMMap) or MapDraw.ValidDEMonMap) and (not LockStatusBar) then begin
       {$IfDef RecordAllMapRoam} WriteLineToDebugFile('Point 2.1'); {$EndIf}
-      if not ((DEMGlb[MapDraw.DEMonMap].DEMheader.DigitizeDatum in [Rectangular])) then
-         DEMGlb[MapDraw.DEMonMap].LatLongDegreeToDEMGrid(Lat,Long,XGrid,YGrid);
+      if not ((DEMGlb[MapDraw.DEMonMap].DEMheader.DigitizeDatum in [Rectangular])) then DEMGlb[MapDraw.DEMonMap].LatLongDegreeToDEMGrid(Lat,Long,XGrid,YGrid);
 
-      if MDDef.ShowDEMGridCoords and (Panel3String = '') then Panel3String := 'DEM grid: x=' + RealToString(Xgrid,-8,1) + '  y=' +  RealToString(Ygrid,-8,1) + ' ' + Panel3String;
+      if MDDef.ShowDEMGridCoords and (Panel3String = '') then Panel3String := DEMGridString(xgrid,ygrid) + ' ' + Panel3String;
 
       {$IfDef RecordAllMapRoam} WriteLineToDebugFile('Point 2.11'); {$EndIf}
 
@@ -11117,7 +11138,7 @@ var
 
 
 begin
-    if DEMMergeInProgress or HeavyDutyProcessing or LoadingFromMapLibrary or ClosingIsHappening or (wmDEM = Nil) or (MapDraw = Nil) or WMDEM.ProgramClosing or ClosingMapNow then begin
+    if DEMMergeInProgress or OpeningNewGrid or HeavyDutyProcessing or LoadingFromMapLibrary or ClosingIsHappening or (wmDEM = Nil) or (MapDraw = Nil) or WMDEM.ProgramClosing or ClosingMapNow then begin
        {$IfDef RecordStreamModeDigitize} WriteLineToDebugFile('TMapForm.Image1MouseMove out fast 1'); {$EndIf}
        exit;
     end;
@@ -12333,8 +12354,8 @@ begin
 
    Gridmaskcolor1.Visible := MapDraw.MapType = mtDEMMask;
    Opennessoptions1.Visible := MapDraw.MapType = mtOpenness;
-   MonthlyWinds1.Visible := (WindsDB <> 0) and (GISDB[WindsDB] <> nil);
-   DrapecurrentmaptoOpenGL1.Visible := MapDraw.DEMonMap <> 0;
+   MonthlyWinds1.Visible := ValidDB(WindsDB);
+   DrapecurrentmaptoOpenGL1.Visible := MapDraw.ValidDEMonMap;
    GridgraticluetoGoogleEarth1.Visible := MDDef.ShowCartography;
    Maplibrary1.Visible := (MDDef.ProgramOption = ExpertProgram) and MDDef.ShowIntDB;
    AnnotateMap1.Visible := (Not (MDdef.ProgramOption in [GeologyProgram])) and (not (MapDraw.MapOwner in [moIndexMap,moMapDatabase]));
@@ -12714,6 +12735,71 @@ procedure TMapForm.Bearing1Click(Sender: TObject);
 begin
    ChangeDEMNowDoing(FirstBearingPoint);
 end;
+
+
+procedure TMapForm.BestglobalDEM1Click(Sender: TObject);
+var
+   Col,Row,DEM,BestDEM,NewDEM,db,Code : integer;
+   Lat,Long : float64;
+   z,z2,BestDiff : float32;
+   NewHeadRecs : tDEMHeader;
+   fName : PathStr;
+begin
+   LoadDEMsCoveringBox(MapDraw.MapCorners.BoundBoxGeo,true);
+   NewHeadRecs := DEMGlb[MapDraw.DEMonMap].DEMheader;
+   NewHeadRecs.DEMPrecision := ByteDEM;
+   fName := MDtempDir + 'best_dem.dem';
+   OpenAndZeroNewDEM(true,NewHeadRecs,NewDEM,fName,InitDEMMissing);
+
+   StartProgress('Best DEM');
+   for Col := 0 to pred(DEMGlb[MapDraw.DEMonMap].DEMheader.NumCol) do begin
+      UpdateProgressBar(Col/DEMGlb[MapDraw.DEMonMap].DEMheader.NumCol);
+      for Row := 0 to pred(DEMGlb[MapDraw.DEMonMap].DEMheader.NumRow) do begin
+         if DEMGlb[MapDraw.DEMonMap].GetElevMetersOnGrid(Col,Row,z) then begin
+            DEMGlb[MapDraw.DEMonMap].DEMGridToLatLongDegree(Col,Row,Lat,Long);
+            BestDiff := 99999;
+            BestDEM := 0;
+            for DEM := 1 to MaxDEMDataSets do begin
+               if (DEM <> MapDraw.DEMonMap) and (DEM <> NewDEM) and ValidDEM(DEM) then begin
+                  DEMGlb[DEM].GetElevFromLatLongDegree(Lat,Long,z2);
+                  if abs(z-z2) < BestDiff then begin
+                     BestDiff := abs(z-z2);
+                     BestDEM := DEM;
+                  end
+                  else if abs(abs(z-z2) - BestDiff) < 0.01 then begin
+                     if BestDEM >= 12 then inc(BestDEM)
+                     else BestDEM := 12;
+                  end;
+               end;
+            end;
+            DEMGlb[NewDEM].SetGridElevation(Col,Row,BestDEM);
+         end;
+      end;
+   end;
+   DEMGlb[NewDEM].AreaName := 'best_dem';
+   DEMGlb[NewDEM].WriteNewFormatDEM(fName);
+   DEMGlb[NewDEM].CreateVATforDEM(false);
+
+   db := DEMGlb[MapDraw.DEMonmap].SelectionMap.LoadDataBaseFile(DEMGlb[NewDEM].VATFileName);
+      GISdb[db].MyData.First;
+      while Not GISdb[db].MyData.eof do begin
+         Code := GISdb[db].MyData.GetFieldByNameAsInteger('VALUE');
+         GISdb[db].MyData.Edit;
+         if ValidDEM(Code) then begin
+            GISdb[db].MyData.SetFieldByNameAsString('NAME', DEMGlb[Code].AreaName);
+         end
+         else begin
+            GISdb[db].MyData.SetFieldByNameAsString('NAME','Ties=' + IntToStr(Code-10));
+         end;
+         GISdb[db].MyData.SetFieldByNameAsInteger('COLOR',WinGraphColors[Code mod 15]) ;
+         GISdb[db].MyData.Next;
+      end;
+   CloseAndNilNumberedDB(db);
+
+   DEMGlb[NewDEM].SetUpMap(NewDEM,true);
+   EndProgress;
+end;
+
 
 
 procedure TMapForm.Bigimagewithallmaps1Click(Sender: TObject);
@@ -15137,11 +15223,54 @@ begin
    ThinDEM1Click(Sender);
 end;
 
+procedure TMapForm.Pixelextentandhighresaverage1Click(Sender: TObject);
+var
+   xg, yg : double;
+   xi,yi : integer;
+   bb : sfBoundBox;
+   i : integer;
+   z : float32;
+   Lat,Long,xlow,ylow,xHigh,yHigh : float64;
+   Results : tStringList;
+   gl : tGridLimits;
+   mv : tMomentVar;
+begin
+    DEMGlb[MapDraw.DEMonMap].LatLongDegreeToDEMGrid(RightClickLat,RightClickLong,xg,yg);
+    xi := round(xg);
+    yi := round(yg);
+    DEMGlb[MapDraw.DEMonMap].DEMGridToLatLongDegree(xi,yi,Lat,Long);
+    bb := DEMGlb[MapDraw.DEMonMap].PixelBoundBoxGeo(xi,yi);
+    if DEMGlb[MapDraw.DEMonMap].GetElevMetersOnGrid(xi,yi,z) then begin
+       OutlineGeoBox(bb,clRed,3);
+       Results := tStringList.Create;
+       Results.Add('Click at:      ' + LatLongDegreeToString(RightClickLat,RightClickLong));
+       Results.Add('Nearest pixel: ' + LatLongDegreeToString(Lat,Long) + '  ' + DEMGridString(xi,yi));
+       Results.Add(DEMGlb[MapDraw.DEMonMap].AreaName + '   z=' + RealToString(z,-8,-2));
+       Results.Add('');
+       Results.Add('Contributing area elevations');
+       for i := 1 to MaxDEMDataSets do begin
+         if ValidDEM(i) and (DEMGlb[i].SelectionMap <> Nil) then begin
+            DEMGlb[i].SelectionMap.OutlineGeoBox(bb,clRed,3);
+            DEMGlb[i].LatLongDegreeToDEMGridInteger(bb.ymin,bb.xmin,gl.XGridLow,gl.YGridLow);
+            DEMGlb[i].LatLongDegreeToDEMGridInteger(bb.ymax,bb.xmax,gl.XGridHigh,gl.YGridHigh);
+            mv := DEMGlb[i].ElevationMoments(gl);
+            DEMGlb[i].GetElevFromLatLongDegree(Lat,Long,z);
+            if mv.NPts > 0 then begin
+               Results.Add(DEMGlb[i].AreaName + '  nearest z=' + RealToString(z,-8,-2) + '     pt in pixel=' + IntToStr(mv.Npts) + '  mean z=' + RealToString(mv.Mean,-8,-2));
+            end;
+         end;
+      end;
+      WriteStringListToDebugFile(Results);
+      DisplayAndPurgeStringList(Results,'All grids at location');
+    end;
+    ShowDefaultCursor;
+end;
+
 procedure TMapForm.Pixelsize1Click(Sender: TObject);
 var
    xg, yg : double;
 begin
-   if MapDraw.DEMonMap <> 0 then begin
+   if MapDraw.ValidDEMonMap then begin
       DEMGlb[MapDraw.DEMonMap].LatLongDegreeToDEMGrid(RightClickLat,RightClickLong,xg,yg);
       MessageToContinue(DEMGlb[MapDraw.DEMonMap].PixelSize(round(xg),round(yg)));
    end;
@@ -17345,18 +17474,15 @@ begin
    {$EndIf}
 end;
 
+
 procedure TMapForm.Moonriseset1Click(Sender: TObject);
 {$IfDef ExGeography}
 begin
 {$Else}
 var
-   iMonth,iDay,iYear : word;
    Month,Day,Year,Duration : integer;
 begin
-   DecodeDate(Now,iYear,iMonth,iDay);
-   Year := iYear;
-   Month := iMonth;
-   Day := iDay;
+   Month := -99;
    Duration := 365;
    GetDateAndDuration(Month,Day,Year,Duration);
    MoonRise(Month,Day,Year,Duration,RightClickLat,RightClickLong);
@@ -17457,29 +17583,53 @@ end;
 procedure TMapForm.Pointzvaluesallgrids1Click(Sender: TObject);
 var
    sl : tStringList;
-   xg,yg : integer;
 
-   procedure Figure(What : shortstring);
+   procedure Figure(What : integer);
    var
       z : float32;
+      xg,yg : integer;
       i : integer;
+      xgf,ygf : float32;
    begin
-      sl.Add(What + ': ' + LatLongDegreeToString(RightClickLat,RightClickLong,MDDef.OutPutLatLongMethod));
-      if (MapDraw.DEMonMap <> 0) and DEMGlb[MapDraw.DEMonMap].GetElevFromLatLongDegree(RightClickLat,RightClickLong,z) then sl.Add(RealToString(z,12,4) + ' ' + LabelElevUnits[DEMGlb[MapDraw.DEMonMap].DEMHeader.ElevUnits] + '   ' + DEMGlb[MapDraw.DEMonMap].AreaName);
+      if What = 1 then begin
+         DEMGlb[MapDraw.DEMonMap].LatLongDegreeToDEMGrid(RightClickLat,RightClickLong,xgf,ygf);
+         if (MapDraw.DEMonMap <> 0) and DEMGlb[MapDraw.DEMonMap].GetElevFromLatLongDegree(RightClickLat,RightClickLong,z) then begin
+            sl.Add(RealToString(z,12,4) + ' ' + LabelElevUnits[DEMGlb[MapDraw.DEMonMap].DEMHeader.ElevUnits] + '   ' + DEMGlb[MapDraw.DEMonMap].AreaName + '  ' + DEMGridString(xgf,ygf));
+         end;
 
-      for i := 1 to MaxDEMDataSets do begin
-         if ValidDEM(i) and (i <> MapDraw.DEMonMap) and DEMGlb[i].GetElevFromLatLongDegree(RightClickLat,RightClickLong,z) then sl.Add(RealToString(z,12,4)+ ' ' + LabelElevUnits[DEMGlb[i].DEMHeader.ElevUnits] + '   ' + DEMGlb[i].AreaName);
+         for i := 1 to MaxDEMDataSets do begin
+            if ValidDEM(i) and (i <> MapDraw.DEMonMap) then begin
+               DEMGlb[i].LatLongDegreeToDEMGrid(RightClickLat,RightClickLong,xgf,ygf);
+               if DEMGlb[i].GetElevFromLatLongDegree(RightClickLat,RightClickLong,z) then begin
+                  sl.Add(RealToString(z,12,4)+ ' ' + LabelElevUnits[DEMGlb[i].DEMHeader.ElevUnits] + '   ' + DEMGlb[i].AreaName + '  ' + DEMGridString(xgf,ygf));
+               end;
+            end;
+         end;
+      end
+      else begin
+         DEMGlb[MapDraw.DEMonMap].LatLongDegreeToDEMGridInteger(RightClickLat,RightClickLong,xg,yg);
+         if (MapDraw.DEMonMap <> 0) and DEMGlb[MapDraw.DEMonMap].GetElevMetersOnGrid(xg,yg,z) then begin
+            sl.Add(RealToString(z,12,4) + ' ' + LabelElevUnits[DEMGlb[MapDraw.DEMonMap].DEMHeader.ElevUnits] + '   ' + DEMGlb[MapDraw.DEMonMap].AreaName + '  ' + DEMGridString(xg,yg));
+         end;
+
+         for i := 1 to MaxDEMDataSets do begin
+            if ValidDEM(i) and (i <> MapDraw.DEMonMap) then begin
+               DEMGlb[i].LatLongDegreeToDEMGridInteger(RightClickLat,RightClickLong,xg,yg);
+               if DEMGlb[i].GetElevMetersOnGrid(xg,yg,z) then begin
+                  sl.Add(RealToString(z,12,4)+ ' ' + LabelElevUnits[DEMGlb[i].DEMHeader.ElevUnits] + '   ' + DEMGlb[i].AreaName + '  ' + DEMGridString(xg,yg));
+               end;
+            end;
+         end;
       end;
-
    end;
 
 begin
    sl := tStringList.Create;
-   Figure('Point clicked');
-   DEMGlb[MapDraw.DEMonMap].LatLongDegreeToDEMGridInteger(RightClickLat,RightClickLong,xg,yg);
-   DEMGlb[MapDraw.DEMonMap].DEMGridToLatLongDegree(xg,yg,RightClickLat,RightClickLong);
+   sl.Add('Point clicked  ' + LatLongDegreeToString(RightClickLat,RightClickLong,MDDef.OutPutLatLongMethod));
+   Figure(1);
    sl.Add('');
-   Figure('Nearest grid point');
+   sl.Add('Nearest grid point');
+   Figure(2);
    DisplayAndPurgeStringList(sl,'All grids at location');
 end;
 
@@ -22106,6 +22256,19 @@ begin
    {$EndIf}
 end;
 
+procedure TMapForm.oday2Click(Sender: TObject);
+var
+   iMonth,iDay,iYear : word;
+begin
+   DecodeDate(Now,iYear,iMonth,iDay);
+   MoonPositionStereoNet(RightClickLat,RightClickLong,iyear,imonth,iday);
+end;
+
+procedure TMapForm.oday3Click(Sender: TObject);
+begin
+   MoonPositionStereoNet(RightClickLat,RightClickLong,-99,-99,-99);
+end;
+
 procedure TMapForm.PGM1Click(Sender: TObject);
 begin
    {$IfDef ExOddballDEMexports}
@@ -23112,6 +23275,8 @@ end;
 
 
 procedure TMapForm.ThinDEM1Click(Sender: TObject);
+const
+   Radius : integer = 2;
 var
    NewDEM : integer;
    fName : PathStr;
@@ -23145,7 +23310,10 @@ begin
    if (Sender = Eastern1) then DEMGlb[MapDraw.DEMonMap].FindEdgeThisDEM(NewDEM,cdE);
    if (Sender = SouthWestern1) then DEMGlb[MapDraw.DEMonMap].FindEdgeThisDEM(NewDEM,cdSW);
    if (Sender = ResampleDEMgridbyaveraging1) then DEMGlb[MapDraw.DEMonMap].AverageResampleThisDEM(NewDEM,0);
-   if (Sender = DetrendDEMgrid1) then DEMGlb[MapDraw.DEMonMap].DetrendDEM(NewDEM);
+   if (Sender = DetrendDEMgrid1) then begin
+      ReadDefault('radius to filter (pixels)',Radius);
+      NewDEM := DEMGlb[MapDraw.DEMonMap].DetrendDEM(Radius);
+   end;
 
    if (NewDEM <> 0) then begin
       DEMGlb[NewDEM].SetUpMap(NewDEM,true,MapDraw.MapType);

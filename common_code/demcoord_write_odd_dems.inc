@@ -266,8 +266,8 @@ begin
       for y := pred(NumRow) downto 0 do begin
          if (y mod 1000 = 0) then UpdateProgressBar( (NumRow-y) / NumRow);
          for x := 0 to pred(NumCol) do begin
-            if MissingDataInGrid(x,y) then DtedCols[x]^[y] := MissVal;
-            write(Outf,DtedCols[x]^[y]);
+            if MissingDataInGrid(x,y) then SmallIntElevations[x]^[y] := MissVal;
+            write(Outf,SmallIntElevations[x]^[y]);
          end;
       end;
       CloseFile(OutF);

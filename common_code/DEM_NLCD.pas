@@ -221,7 +221,7 @@ var
       CatTable.ApplyFilter( 'SERIES = ' + QuotedStr(LandCover));
       if (CatTable.RecordCount > 0) then begin
          if AskLimit then VerifyRecordsToUse(CatTable,'LONG_NAME','Fields to mask');
-         {$IfDef RecordNLCDLegend} WriteLineToDebugFile('CatTable.Filter:  ' + CatTable.Filter); {$EndIf}
+         {$IfDef RecordNLCDLegend} WriteLineToDebugFile('CatTable.Filter: ' + CatTable.Filter); {$EndIf}
          repeat
             i := CatTable.GetFieldByNameAsInteger('CATEGORY');
             Categories[i].ShortName := CatTable.GetFieldByNameAsString('SHORT_NAME');

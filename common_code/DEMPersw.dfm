@@ -654,5 +654,16 @@ object ThreeDview: TThreeDview
         OnClick = Pickday1Click
       end
     end
+    object Moonposition1: TMenuItem
+      Caption = 'Moon position'
+      object Moonposition2: TMenuItem
+        Caption = 'Today'
+        OnClick = Moonposition2Click
+      end
+      object Pickday2: TMenuItem
+        Caption = 'Pick day'
+        OnClick = Pickday2Click
+      end
+    end
   end
 end

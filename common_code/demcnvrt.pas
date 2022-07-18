@@ -12,12 +12,10 @@ unit Demcnvrt;
    //{$Define RecordDEMconvert}
 {$EndIf}
 
-
 interface
 
 uses
    Windows, Classes, Graphics, Forms, Controls, Buttons,StdCtrls, ExtCtrls, Dialogs,SysUtils,
-
    Petmar_types,PETMAR,DEMDefs,Basemap;
 
 type
@@ -357,7 +355,6 @@ var
       OverlapMap.ForwardProjectDegrees(OutLat,OutLong,XUTM,YUTM);
       AddToMemo('Overlapping grid output datum:  x=' + RealToString(XUTM,-18,0) + '   y=' + RealToString(YUTM,-18,0) + '   ' + OverlapMap.CalculateMGRS(XUTM,YUTM,10));
       AddToMemo('');
-
    end;
 
 begin

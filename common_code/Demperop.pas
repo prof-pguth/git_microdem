@@ -848,6 +848,7 @@ end;
 procedure TPerspOptions.BitBtn7Click(Sender: TObject);
 begin
    GetLatLn.GetLatLongDefault(DEMGlb[DEMused].SelectionMap.MapDraw.PrimMapProj,'Viewer location',View3D.ViewerLat,View3D.ViewerLong);
+   DEMGlb[DEMused].SelectionMap.OutlinePerspectiveView( View3D.ViewHFOV,View3D.ViewerLat,View3D.ViewerLong,View3D.ViewDepth,View3D.ViewAzimuth,pmCopy);
 end;
 
 

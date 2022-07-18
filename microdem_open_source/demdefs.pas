@@ -1809,7 +1809,12 @@ type
       WBDeNoiseRadius,
       WBDenoiseElevDiff  : float32;
       DEMIX_Full : byte;
+      DEMIXTieTolerance : float32;
+
+      SlopeFlatBoundary,
+      SlopeGentleBoundary,
       SlopeSteepBoundary : float32;
+      LandTypePointsNeeded : int32;
        RotateVectMult : byte;
        AddFitNav,
        ConfirmDBEdits : boolean;

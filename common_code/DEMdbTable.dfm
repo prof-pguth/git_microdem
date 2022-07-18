@@ -1303,12 +1303,16 @@ object dbtablef: Tdbtablef
         Caption = 'Extract DEMIX tile DEMs'
         OnClick = ExtractDEMIXtiles1Click
       end
+      object N1degreetilestocoverrecordsintable1: TMenuItem
+        Caption = '1 degree tiles to cover records in table'
+      end
       object Pointstocheckverticaldatumshift1: TMenuItem
         Caption = 'Points to check vertical datum shift'
         OnClick = Pointstocheckverticaldatumshift1Click
       end
       object Graphsforwinecontest1: TMenuItem
         Caption = 'Graphs for wine contest'
+        Enabled = False
         OnClick = Graphsforwinecontest1Click
       end
       object ransposeforwinecontest1: TMenuItem
@@ -1318,6 +1322,26 @@ object dbtablef: Tdbtablef
       object Graphfortransposeddata1: TMenuItem
         Caption = 'Graph for transposed data'
         OnClick = Graphfortransposeddata1Click
+      end
+      object Graphavereagescoresbyterraincategories1: TMenuItem
+        Caption = 'Graph avereage scores by terrain categories'
+        OnClick = Graphavereagescoresbyterraincategories1Click
+      end
+      object BestDEM1: TMenuItem
+        Caption = 'Score Best DEM'
+        OnClick = BestDEM1Click
+      end
+      object BestDEMbycategory1: TMenuItem
+        Caption = 'Best DEM by category'
+        OnClick = BestDEMbycategory1Click
+      end
+      object RankDEMs1: TMenuItem
+        Caption = 'Rank DEMs'
+        OnClick = RankDEMs1Click
+      end
+      object Sumscores1: TMenuItem
+        Caption = 'Sum scores'
+        OnClick = Sumscores1Click
       end
     end
     object N13: TMenuItem

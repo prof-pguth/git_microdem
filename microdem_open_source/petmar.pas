@@ -1223,13 +1223,13 @@ end;
          {$EndIf}
          {$IfDef VCL}
          var
-           PetList: TPetList;
+           PetList : TPetList;
            i : integer;
          begin
             if (InList.Count = 0) then Result := false
             else begin
                 PetList := TPetList.Create(Application);
-                PetList.Caption := InMessage;
+                PetList.Caption := InMessage + '  (' + IntToStr(InList.Count) + ' choices)';
                 PetList.ListBox1.ItemIndex := PickedNum;
                 for i := 0 to pred(Inlist.Count) do PetList.ListBox1.Items.Add(InList.Strings[i]);
                 PetList.CancelBtn.Enabled := CanCancel;
@@ -2021,8 +2021,17 @@ end;
          end;
 
          procedure GetDateAndDuration(var Month,Day,Year,Duration : integer; ShowDuration : boolean = true);
+         var
+            iMonth,iDay,iYear : word;
          begin
+            if Month = -99 then begin
+               DecodeDate(Now,iYear,iMonth,iDay);
+               Year := iYear;
+               Month := iMonth;
+               Day := iDay;
+            end;
             GetDateForm := TGetDateForm.Create(Application);
+
             with GetDateForm do begin
                Edit1.Text := IntToStr(Month);
                Edit2.Text := IntToStr(Day);
@@ -4128,13 +4137,15 @@ end;
 
 
 procedure UpdateProgressBar(HowFar : float64);
-//var
-   //Value : integer;
 begin
    {$IfDef VCL}
       if WantShowProgress and (PETProgF <> Nil) and (not Math.IsNAN(HowFar)) and (not Math.IsInfinite(HowFar)) then begin
          ApplicationProcessMessages;
          PetProgF.Gauge1.Progress := round(100.0 * HowFar);
+         if HeavyDutyProcessing then begin
+            PetProgF.Top := 10;
+            PetProgF.Left := 10;
+         end;
          if WantOut then begin
             EndProgress;
          end;

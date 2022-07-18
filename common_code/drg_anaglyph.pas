@@ -80,14 +80,14 @@ procedure Set3DmapOptions(var MapForm : tMapForm);
 var
    DRGAnaglyphForm : DRG_Anaglyph.TDRGAnaglyphForm;
 begin
-   {$IfDef RecordAnaglyph} WriteLineToDebugFile('DrawAnaglyphMap in');  {$EndIf}
+   {$IfDef RecordAnaglyph} WriteLineToDebugFile('DrawAnaglyphMap in'); {$EndIf}
    if (MapForm.MapDraw.DEMonMap = 0) then MapForm.SetDEMwithmap1Click(Nil);
     DRGAnaglyphForm := TDRGAnaglyphForm.Create(Application);
     DRGAnaglyphForm.MapOwner := MapForm;
     DRGAnaglyphForm.RadioGroup1.Enabled := (MapForm.MapDraw.DEMonMap <> 0);
     if (MapForm.MapDraw.DEMonMap = 0) then DRGAnaglyphForm.RadioGroup1.ItemIndex := 0;
     DRGAnaglyphForm.Edit2.Text := IntToStr(MDDef.MaxAnaglyphShift);
-    {$IfDef RecordAnaglyph} WriteLineToDebugFile(' TMapForm.DRGanaglyph1Click set up done');   {$EndIf}
+    {$IfDef RecordAnaglyph} WriteLineToDebugFile(' TMapForm.DRGanaglyph1Click set up done'); {$EndIf}
     MapForm.AutoAnaglyphRedraw := false;
     DRGAnaglyphForm.Show;
    {$IfDef RecordAnaglyph} WriteLineToDebugFile(' TMapForm.DRGanaglyph1Click out'); {$EndIf}
@@ -120,7 +120,7 @@ begin
        {$EndIf}
        FreeAndNil(Bitmap);
     end;
-   {$IfDef RecordAnaglyph} WriteLineToDebugFile('add done map drawing');  {$EndIf}
+   {$IfDef RecordAnaglyph} WriteLineToDebugFile('add done map drawing'); {$EndIf}
 end;
 
 procedure TDRGAnaglyphForm.BitBtn1Click(Sender: TObject);

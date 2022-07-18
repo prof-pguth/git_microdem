@@ -8,21 +8,21 @@
 {include file for demcoord.pas}
 
 
-procedure tDEMDataSet.DetrendDEM(var NewDEM : integer);
+function tDEMDataSet.DetrendDEM(FilterRadius : integer = 2) : integer;
 var
    x,y,i,j,NPts : integer;
    Sum,z,zt : float32;
 begin
-   NewDEM := CloneAndOpenGrid(FloatingPointDEM,AreaName + '_detrend',DEMHeader.ElevUnits);
-   StartProgress('DEM math');
+   Result := CloneAndOpenGrid(FloatingPointDEM,AreaName + '_detrend',DEMHeader.ElevUnits);
+   StartProgress('Detrend');
    for x := 0 to pred(DEMheader.NumCol) do begin
       if (x mod 50 = 0) then UpDateProgressBar(x/pred(DEMheader.NumCol));
       for y := 0 to pred(DEMheader.NumRow) do begin
          if GetElevMeters(x,y,z) then begin
             Npts := 0;
             Sum := 0;
-            for i := -2 to 2 do begin
-               for j := -2 to 2 do begin
+            for i := -FilterRadius to FilterRadius do begin
+               for j := -FilterRadius to FilterRadius do begin
                    if (i<>0) and (j<>0) then begin
                       if GetElevMeters(x+i,y+j,zt) then begin
                          Sum := Sum + zt;
@@ -31,12 +31,13 @@ begin
                    end;
                end;
             end;
-            zt := Npts * z - Sum / NPts;
-            DEMGlb[NewDEM].SetGridElevation(x,y,zt);
+            if NPts > 0 then begin
+               zt := Npts * z - Sum / NPts;
+               DEMGlb[Result].SetGridElevation(x,y,zt);
+            end;
          end;
       end;
-    end;
-    //DEMGlb[NewDEM].SetUpMap(NewDEM,true);
+   end;
 end;
 
 
@@ -48,7 +49,7 @@ end;
 
 procedure tDEMDataSet.AddaDEM(AddDEM : integer; Mult : integer = 1);
 var
-   x,y{,Invalid}  : integer;
+   x,y  : integer;
    Lat,Long : float64;
    z,z2 : float32;
 begin
@@ -75,14 +76,10 @@ end;
 function tDEMDataSet.ResampleByAveraging(OpenMap : boolean; SaveCountGrid : boolean = true; SaveName : PathStr = '') : integer;
 var
    NewGrid,CountGrid,x,y,xi,yi : integer;
-   Lat,Long{,xg,yg} : float64;
+   Lat,Long : float64;
    z,z1 : float32;
    NewHeadRecs : tDEMheader;
 begin
-
-   //SaveCountGrid := true;
-
-
    {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIX)} writeLineToDebugFile('tDEMDataSet.ResampleByAveraging in, ' + AreaName + '  ' + KeyDEMParams); {$EndIf}
    NewGrid := SelectionMap.MakeTempGrid;
    {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleByAveraging ' + DEMGlb[NewGrid].AreaName + '  ' + DEMGlb[NewGrid].KeyDEMParams); {$EndIf}
@@ -100,13 +97,14 @@ begin
    OpenAndZeroNewDEM(true,NewHeadRecs,Result,MDTempDir + AreaName + '_down_sample_grid',InitDEMvalue,0);
    {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleByAveraging, ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].KeyDEMParams); {$EndIf}
 
+   (*  7/13/22, removed since that should already be done
    for x := 0 to pred(DEMGlb[CountGrid].DEMHeader.NumCol) do begin
        for y := 0 to pred(DEMGlb[CountGrid].DEMHeader.NumRow) do begin
           DEMGlb[CountGrid].SetGridElevation(x,y,0);
           DEMGlb[Result].SetGridElevation(x,y,0);
        end;
    end;
-
+   *)
 
    StartProgress('Get z values ' + ExtractFileName(SaveName));
    for x := 0 to pred(DEMHeader.NumCol) do begin
@@ -141,14 +139,13 @@ begin
 
    if (SaveName <> '') then begin
       DEMGlb[Result].SaveAsGeotiff(SaveName);
+      {$IfDef RecordSaveAverageResampleDEMformat} SaveName := ChangeFileExt(SaveName,'.dem'); DEMGlb[Result].WriteNewFormatDEM(SaveName); {$EndIf}
    end;
    if SaveCountGrid then begin
       DEMGlb[CountGrid].SetUpMap(CountGrid,true,mtElevSpectrum);
-      //DEMGlb[PixelGrid].SetUpMap(PixelGrid,true,mtElevSpectrum);
    end
    else begin
       CloseSingleDEM(CountGrid);
-      //CloseSingleDEM(PixelGrid);
    end;
    if OpenMap then DEMGlb[Result].SetUpMap(Result,true,SelectionMap.MapDraw.MapType);
    EndProgress;
@@ -258,11 +255,12 @@ end;
 
 procedure tDEMDataSet.SetEntireGridToConstant(z : float64);
 var
-   Col,Row : integer;
+   Col,Row,rc : integer;
 begin
    StartProgress('Initialize grid to ' + RealToString(z,-12,-2) + ' ' + AreaName);
+   rc := ProgressIncrement(DEMheader.NumCol);
    for Col := 0 to pred(DEMheader.NumCol) do begin
-      if Col mod (DEMheader.NumCol div 100) = 0 then UpdateProgressBar(Col/DEMheader.NumCol);
+      if Col mod rc = 0 then UpdateProgressBar(Col/DEMheader.NumCol);
       for Row := 0 to pred(DEMheader.NumRow) do SetGridElevation(Col,Row,z);
    end;
    EndProgress;

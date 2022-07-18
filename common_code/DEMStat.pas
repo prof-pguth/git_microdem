@@ -2238,7 +2238,6 @@ var
          end;
          Dispose(zvs);
 
-
          GridForm.StringGrid1.Cells[DEMsDone,0] := DEMGlb[CurDEM].AreaName;
          GridForm.StringGrid1.Cells[DEMsDone,1] := RealToString(DEMGlb[CurDEM].AverageSpace,-12,2);
          GridForm.StringGrid1.Cells[0,0] := 'DEM';
@@ -2290,16 +2289,13 @@ begin
       for j := 1 to MaxDEMDataSets do if ValidDEM(j) then begin
          {$IfDef RecordElevMoment} WriteLineToDebugFile('Start DEM=' + IntToStr(j)); {$EndIf}
          GridLimits := DEMGlb[j].SelectionMap.MapDraw.MapAreaDEMGridLimits;
-         //GridLimits := DEMGlb[j].FullDEMGridLimits;
          MomentReportForDEM(j);
          if MDDef.GraphsOfMoments then LegendFiles.Add(DEMGlb[j].AreaName);
       end;
 
-
       if RufDist.Count > 1 then RufDist.SaveToFile(NextFileNumber(MDTempDir,'roughness_raw_','.csv'));
       if SlopeDist.Count > 1 then SlopeDist.SaveToFile(NextFileNumber(MDTempDir,'slope_raw_','.csv'));
       if ElevDist.Count > 1 then ElevDist.SaveToFile(NextFileNumber(MDTempDir,'elev_raw_','.csv'));
-
 
       if RufDist.Count > 1 then StringList2CSVtoDB(RufDist,NextFileNumber(MDTempDir,'roughness','.dbf')) else RufDist.Free;
       if SlopeDist.Count > 1 then StringList2CSVtoDB(SlopeDist,NextFileNumber(MDTempDir,'slope','.dbf')) else SlopeDist.Free;

@@ -45,7 +45,7 @@ object DEMHeaderForm: TDEMHeaderForm
   object Label6: TLabel
     Left = 159
     Top = 112
-    Width = 5
+    Width = 226
     Height = 13
     Caption = 'L'
     Visible = False

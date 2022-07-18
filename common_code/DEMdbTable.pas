@@ -12,7 +12,7 @@
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    //{$Define RecordMaskDEMShapeFile}
    {$IfDef Debug}
-       //{$Define RecordDEMIX}
+       {$Define RecordDEMIX}
        //{$Define RecordDataBaseSaveFiles}
        //{$Define RecordDBPlot}
        //{$Define RecordCSVOut}
@@ -926,13 +926,18 @@ type
     Boxplot1: TMenuItem;
     ransposeforwinecontest1: TMenuItem;
     Graphfortransposeddata1: TMenuItem;
+    BestDEM1: TMenuItem;
+    BestDEMbycategory1: TMenuItem;
+    RankDEMs1: TMenuItem;
+    N1degreetilestocoverrecordsintable1: TMenuItem;
+    Sumscores1: TMenuItem;
+    Graphavereagescoresbyterraincategories1: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
     procedure Shiftpointrecords1Click(Sender: TObject);
     procedure Creategrid1Click(Sender: TObject);
     procedure Plot1series1Click(Sender: TObject);
     procedure Octree1Click(Sender: TObject);
     procedure DEMTerrainprofile1Click(Sender: TObject);
-    //procedure N3Dshapefileprofile1Click(Sender: TObject);
     procedure BitBtn18Click(Sender: TObject);
     procedure Inserttimeanimationfields1Click(Sender: TObject);
     procedure Allrecordsmatchingsinglefield1Click(Sender: TObject);
@@ -984,7 +989,6 @@ type
     procedure BitBtn12Click(Sender: TObject);
     procedure Longeststring1Click(Sender: TObject);
     procedure Colorcodebynumericfield1Click(Sender: TObject);
-    //procedure SpeedButton2Click(Sender: TObject);
     procedure Statisticsgroupedbyonefield1Click(Sender: TObject);
     procedure Histogram1Click(Sender: TObject);
     procedure Listuniquevalues1Click(Sender: TObject);
@@ -1008,7 +1012,6 @@ type
     procedure Associateimage1Click(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
     procedure Highlightcolor1Click(Sender: TObject);
-    //procedure Deleterecord1Click(Sender: TObject);
     procedure Linelength2Click(Sender: TObject);
     procedure Fanproperties1Click(Sender: TObject);
     procedure Plotfanlocations1Click(Sender: TObject);
@@ -1090,7 +1093,6 @@ type
     procedure MarkallN1Click(Sender: TObject);
     procedure Changelatlongfields1Click(Sender: TObject);
     procedure Principalcomponents1Click(Sender: TObject);
-    //procedure Exportpointstoregistrationtable1Click(Sender: TObject);
     procedure KML1Click(Sender: TObject);
     procedure Centr1Click(Sender: TObject);
     procedure Findneighbors1Click(Sender: TObject);
@@ -1113,8 +1115,6 @@ type
     procedure Listuniquevalues2Click(Sender: TObject);
     procedure Longeststring2Click(Sender: TObject);
     procedure Logoffield1Click(Sender: TObject);
-    //procedure NLCDcategories1Click(Sender: TObject);
-    //procedure AddNLCDcategory1Click(Sender: TObject);
     procedure DataDBFonlynogeometry1Click(Sender: TObject);
     procedure Layersymbology1Click(Sender: TObject);
     procedure ArcGISviewshedsensors1Click(Sender: TObject);
@@ -1158,7 +1158,6 @@ type
     procedure Insertlinecolorwidthfields1Click(Sender: TObject);
     procedure Insertareacolorsymbology1Click(Sender: TObject);
     procedure Loadfrommaplibrary1Click(Sender: TObject);
-    //procedure DBGrid1KeyDown(Sender: TObject; var Key: Word;  Shift: TShiftState);
     procedure AllDBs1Click(Sender: TObject);
     procedure Allfields1Click(Sender: TObject);
     procedure Exportlatlongz1Click(Sender: TObject);
@@ -1223,7 +1222,6 @@ type
     procedure Zoommaptorecord1Click(Sender: TObject);
     procedure Perimeterofeachrecord1Click(Sender: TObject);
     procedure FindrecordsonDEM1Click(Sender: TObject);
-    //procedure Networkends1Click(Sender: TObject);
     procedure CreateDEM1Click(Sender: TObject);
     procedure Searchandreplace1Click(Sender: TObject);
     procedure Plotcoveragecircles1Click(Sender: TObject);
@@ -1447,8 +1445,6 @@ type
     procedure SplitdatefieldYYYYMMDD1Click(Sender: TObject);
 
     procedure LoadTMscene1Click(Sender: TObject);
-    //procedure NDVI1Click(Sender: TObject);
-    //procedure NDSIsnow1Click(Sender: TObject);
     procedure Horizonblocking1Click(Sender: TObject);
     procedure Hideunusedfields1Click(Sender: TObject);
     procedure Rosediagram01801Click(Sender: TObject);
@@ -1537,7 +1533,6 @@ type
     procedure Allover1Click(Sender: TObject);
     procedure Allopengridselevationdifference1Click(Sender: TObject);
     procedure Selectfields1Click(Sender: TObject);
-    //procedure Createcostsurface1Click(Sender: TObject);
     procedure Accumulatedcostsurface1Click(Sender: TObject);
     procedure Exporttextdeliberate1Click(Sender: TObject);
     procedure RedclassifyLoppen1Click(Sender: TObject);
@@ -1633,7 +1628,12 @@ type
     procedure Boxplot1Click(Sender: TObject);
     procedure ransposeforwinecontest1Click(Sender: TObject);
     procedure Graphfortransposeddata1Click(Sender: TObject);
-    //procedure BarGraphLengend1Click(Sender: TObject);
+    procedure BestDEM1Click(Sender: TObject);
+    procedure N1degreetilestocoverrecordsintable1Click(Sender: TObject);
+    procedure BestDEMbycategory1Click(Sender: TObject);
+    procedure RankDEMs1Click(Sender: TObject);
+    procedure Sumscores1Click(Sender: TObject);
+    procedure Graphavereagescoresbyterraincategories1Click(Sender: TObject);
   private
     procedure PlotSingleFile(fName : PathStr; xoff,yoff : float64);
     procedure SetUpLinkGraph;
@@ -1668,7 +1668,6 @@ type
      AllGraphBitmap : tMyBitmap;
      GraphOwnerBitmap,
      BaseMapBitmap : tMyBitmap;
-     //CloseMethod : ShortString;
      ForceXMax,ForceYMax : float64;
 
      procedure ViewshedTargetCoverage(Target : integer; fName : PathStr = '');
@@ -1682,13 +1681,12 @@ type
      procedure UnHideColumns;
      procedure HideHouseKeepingColumns;
      procedure GetReadyForGeologyGeometry;
-    // procedure RewriteShapeFile(DeleteCurrent : boolean);
      procedure ShowStatus;
      procedure MakeFormDockable;
-     //procedure SetMultipleFilters;
      procedure HighlightFan(inColor : tPlatformColor);
      function CreateGrid(HowCreate : tcgHow; GridSize : float64 = -99) : integer;
   end;
+
 
 
 
@@ -1699,23 +1697,18 @@ implementation
 uses
    PETdbUtils,
 
-   {$IfDef ExNLCD}
-   {$Else}
-      //DEM_NLCD,
-   {$EndIf}
-
    {$IfDef ExSat}
    {$Else}
-      DEMEros,//DEMerosm,
+      DEMEros,
 
       {$IfDef ExAdvancedSats}
       {$Else}
-      multigrid,
+         multigrid,
       {$EndIf}
 
       {$IfDef ExGeoStats}
       {$Else}
-      sup_class_aux_grids,
+         sup_class_aux_grids,
       {$EndIf}
    {$EndIf}
 
@@ -1752,48 +1745,48 @@ uses
 
    {$IfDef ExTIN}
    {$Else}
-   DEM_tin,
+      DEM_tin,
    {$EndIf}
 
    {$IfDef ExKML}
    {$Else}
-   kml_creator, kml_opts,
+      kml_creator, kml_opts,
    {$EndIf}
 
    {$ifDef ExPointCloud}
    {$Else}
-   Slicer_3d,
-   Point_Cloud_Memory,
-   Las_Lidar,
+      Slicer_3d,
+      Point_Cloud_Memory,
+      Las_Lidar,
    {$EndIf}
 
    {$IfDef ExMag}
    {$Else}
-   demmagvar,
+      demmagvar,
    {$EndIf}
 
    {$IfDef NoClustering}
    {$Else}
-   MVClusterClientDataSet,
-   ClusterOptions, param_graphs,
+      MVClusterClientDataSet,
+      ClusterOptions, param_graphs,
    {$EndIf}
 
    {$IfDef ExFourier}
    {$Else}
-   PetFouri,
-   FitFourier,
-   CrossCor,
+      PetFouri,
+      FitFourier,
+      CrossCor,
    {$EndIf}
 
    {$IfDef ExFMX3D}
    {$Else}
-   View3D_main,
+      View3D_main,
    {$EndIf}
 
    {$IfDef ExGeology}
    {$Else}
-   sc_ColMain,
-   Beach_ball_options,
+      sc_ColMain,
+      Beach_ball_options,
    {$EndIf}
 
 
@@ -1801,35 +1794,35 @@ uses
 
    {$IfDef ExSidescan}
    {$Else}
-   SideImg, mst_format,
+      SideImg, mst_format,
    {$EndIf}
 
    {$IfDef ExGeography}
    {$Else}
-   KoppenGr,
-   sun_position,
-   moon_montenbruk_pfleger,
+      KoppenGr,
+      sun_position,
+      moon_montenbruk_pfleger,
    {$EndIf}
 
    {$IfDef ExIndexes}
    {$Else}
-   DEM_indexes,
+      DEM_indexes,
    {$EndIf}
 
    {$IfDef ExViewshed}
    {$Else}
-   DEMfanParams,
-   DEMweapn,
+      DEMfanParams,
+      DEMweapn,
    {$EndIf}
 
    {$IfDef ExAdvancedGIS}
    {$Else}
-   Map_Masking,
+      Map_Masking,
    {$EndIf}
 
    {$IfDef ExPers}
    {$Else}
-   DEMPersw,
+      DEMPersw,
    {$EndIf}
 
    {$IfDef ExGeostats}
@@ -1841,21 +1834,21 @@ uses
 
    {$IfDef ExRedistrict}
    {$Else}
-   demredistrict,
+      demredistrict,
    {$EndIf}
 
 
     {$IfDef ExMilIcons}
     {$Else}
-    dem_milicon,
+       dem_milicon,
     {$EndIf}
 
     {$IfDef ExOceanography}
     {$Else}
-    OCEANCAL, drift_model,
+       OCEANCAL, drift_model,
     {$EndIf}
 
-    map_overlays,
+   map_overlays,
    db_display_options,
    gdal_tools,
    Least_cost_path,
@@ -1870,10 +1863,6 @@ uses
 var
    HighlightCycle{,RecordBeingEditted} : integer;
    BroadCastingFilterChanges : boolean;
-
-
-{$I demdbtable_demix_graphs.inc}
-
 
 
 type tPointInPolygon = (pipLabels,pipDelete,pipSetMask);
@@ -1939,7 +1928,7 @@ procedure Tdbtablef.NearTIGERroads1Click(Sender: TObject);
 begin
    {$IfDef ExTiger}
    {$Else}
-   GISdb[DBonTable].TheMapOwner.TigerRoadMask(-99,true,DBonTable);
+      GISdb[DBonTable].TheMapOwner.TigerRoadMask(-99,true,DBonTable);
    {$EndIf}
 end;
 
@@ -2478,18 +2467,22 @@ begin
    end;
 end;
 
+procedure Tdbtablef.RankDEMs1Click(Sender: TObject);
+begin
+   RankDEMS(DBonTable);
+end;
+
+
 procedure Tdbtablef.ranslatefromtable1Click(Sender: TObject);
 begin
    Translatefromtable1Click(Nil);
 end;
 
 
-
 procedure Tdbtablef.ransposeforwinecontest1Click(Sender: TObject);
 begin
-   TansposeDEMIXcriteria(DBonTable);
+   TransposeDEMIXcriteria(DBonTable);
 end;
-
 
 
 procedure Tdbtablef.Translatefromtable1Click(Sender: TObject);
@@ -3627,6 +3620,9 @@ begin
 
       ChangeLatLongFields1.Visible := MDDef.AdvancedDBops;
       TinContour1.Visible := MDDef.AdvancedDBops;
+
+      BoxPlot1.Visible := GISDB[DBonTable].MyData.FieldExists('MIN') and GISDB[DBonTable].MyData.FieldExists('MAX');
+
       PlotPopupMenu2.PopUp(Mouse.CursorPos.X,Mouse.CursorPos.Y);
    end;
 end;
@@ -4030,6 +4026,11 @@ end;
 procedure Tdbtablef.Sumofneighbors1Click(Sender: TObject);
 begin
    IgnoreMissingData1Click(Sender);
+end;
+
+procedure Tdbtablef.Sumscores1Click(Sender: TObject);
+begin
+   SumsOfRankDEMS(DBonTable);
 end;
 
 procedure Tdbtablef.Sumtwofields1Click(Sender: TObject);
@@ -4488,11 +4489,32 @@ begin
      Slicer_3d.DB_3dSlices(GISdb[DBonTable].theMapOwner, Nil,GISdb[DBonTable]);
   end
   else begin
-      MPC := tMemoryPointCloud.Create(GISdb[DBonTable].dbFullName, Nil);
-      DB_3dSlices(Nil,MPC);
+     MPC := tMemoryPointCloud.Create(GISdb[DBonTable].dbFullName, Nil);
+     DB_3dSlices(Nil,MPC);
   end;
   {$EndIf}
 end;
+
+procedure Tdbtablef.N1degreetilestocoverrecordsintable1Click(Sender: TObject);
+var
+   Lat,Long : float64;
+   SWcorners : tstringlist;
+begin
+   GISdb[DBonTable].EmpSource.Enabled := false;
+   ShowHourglassCursor;
+   SWcorners := tstringlist.Create;
+   SWcorners.Duplicates := dupIgnore;
+   SWcorners.Sorted := true;
+   GISdb[DBonTable].MyData.First;
+   while not GISdb[DBonTable].MyData.eof do begin
+      if GISdb[DBonTable].GetLatLongToRepresentRecord(Lat,Long) then
+         SWCorners.Add(SWcornerString(Lat,Long,1));
+      GISdb[DBonTable].MyData.Next;
+   end;
+   ShowInNotepadPlusPlus(SWcorners,'SW_corners_of_1_degree_tiles_needed_to_cover_the_database');
+   ShowStatus;
+end;
+
 
 procedure Tdbtablef.N22Click(Sender: TObject);
 begin
@@ -4503,7 +4525,7 @@ procedure Tdbtablef.N2Dgraph1Click(Sender: TObject);
 begin
    {$IfDef NoDBGrafs}
    {$Else}
-   GISdb[DBonTable].MakeGraph(dbgtN2Dgraph1);
+      GISdb[DBonTable].MakeGraph(dbgtN2Dgraph1);
    {$EndIf}
 end;
 
@@ -9599,7 +9621,6 @@ begin
    GISdb[DBonTable].dbOpts.XField := 'LAT';
    GISdb[DBonTable].dbOpts.YField := 'ICESAT_GRD';
    GISdb[DBonTable].dbOpts.StringColorField := 'DATE';
-   //GISdb[DBonTable].MakeGraph(dbgtN2Dgraphcolorcodetext1);
    GISdb[DBonTable].ActuallyDrawGraph(dbgtN2Dgraphcolorcodetext1);
 end;
 
@@ -9678,6 +9699,11 @@ end;
 procedure Tdbtablef.Gradient1Click(Sender: TObject);
 begin
    Addazimuthtotravelpath1Click(Sender);
+end;
+
+procedure Tdbtablef.Graphavereagescoresbyterraincategories1Click(Sender: TObject);
+begin
+   DEMIXwineContestScoresGraph(DBonTable);
 end;
 
 procedure Tdbtablef.Graphfortransposeddata1Click(Sender: TObject);
@@ -11189,13 +11215,23 @@ begin
    Dipandstrikes1Click(Sender);
 end;
 
+procedure Tdbtablef.BestDEM1Click(Sender: TObject);
+begin
+    ScoreDEMS(DBonTable);
+end;
+
+
+procedure Tdbtablef.BestDEMbycategory1Click(Sender: TObject);
+begin
+   BestDEMSbyCategory(DBonTable);
+end;
+
 procedure Tdbtablef.Showarearecords1Click(Sender: TObject);
 var
    Bitmap : tMyBitmap;
    x,y,i,rc : integer;
    Lat,Long : float64;
    Sym : tDrawingSymbol;
-   //bbox : sfBoundBox;
 begin
    with GISdb[DBonTable],TheMapOwner.MapDraw do begin
       Sym := FilledBox;
@@ -13275,7 +13311,7 @@ end;
 procedure Tdbtablef.FillField1Click(Sender: TObject);
 begin
    Fillfieldforallrecords1Click(Sender);
-   ShowStatus;
+   //ShowStatus;
 end;
 
 procedure Tdbtablef.Fillfieldforallrecords1Click(Sender: TObject);

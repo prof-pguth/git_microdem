@@ -64,7 +64,7 @@ end;
 function LoadBlankVectorMapAndOverlay(ItsTiger,ItsGazetteer : boolean; fName : Pathstr = '') : integer;
 var
    db        : integer;
-   Lat1,Long1,Lat2,Long2,{Sum,}extra : float64;
+   Lat1,Long1,Lat2,Long2,extra : float64;
    fNames : tStringList;
    aName : ShortString;
 begin

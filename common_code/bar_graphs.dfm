@@ -11,7 +11,6 @@ object bargraphform: Tbargraphform
   Font.Style = []
   FormStyle = fsStayOnTop
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object RedrawSpeedButton12: TSpeedButton
     Left = 8

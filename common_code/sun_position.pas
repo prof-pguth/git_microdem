@@ -38,6 +38,10 @@ function HorizonBlockingGraph(MapForm : tMapForm; Lat,Long : float64; AngleGraph
 function HoursSolarIlluminationGraph(DEM : integer; Lat,Long : float64) : TThisBaseGraph;
 function HoursSolarIlluminationGrid(MapForm : tMapForm; JulianDay : integer) : integer;
 
+function MoonPositionStereoNet(Lat,Long : float32; iyear,imonth,iday : integer) : tNetForm;
+function MoonPositionDB(Lat,Long : float32; iyear,imonth,iday : integer) : integer;
+
+
 var
    SunGraph : tThisBaseGraph;
 
@@ -55,6 +59,143 @@ const
    ZenithDistance : array[1..4] of float64 = (90.83333,96.0,102.0,108.0);
 type
    tBlockAngles = array[0..3600] of float64;
+
+
+function MoonPostionFromUSNO(Lat,Long : float32; iyear,imonth,iday : integer) : tStringList;
+var
+   URL : shortstring;
+   fName,fName2 : PathStr;
+   webpage,positions : tstringlist;
+   FoundIt : boolean;
+   Time : shortstring;
+   Hour : float32;
+   xd,yd,i : integer;
+   Month,Day,year : word;
+begin
+   if iyear = -99 then begin
+      DecodeDate(Now,Year,Month,Day);
+      iYear := Year;
+      iMonth := Month;
+      iDay := Day;
+      GetDate(iMonth,iDay,iyear);
+   end;
+
+   URL := 'https://aa.usno.navy.mil/calculated/altaz?body=11&date=' + IntToStr(iYear) + '-' + AddDayMonthLeadingZero(iMonth) + '-' + AddDayMonthLeadingZero(iDay) +
+      '&intv_mag=10&lat=' + RealToString(Lat,-12,-6) + '&lon=' + RealToString(Long,-12,-6) + '&label=&tz=4&tz_sign=-1&submit=Get+Data';
+   fName2 := Petmar.NextFileNumber(MDTempDir, 'Moon_pos_', '.html');
+   DownloadFileFromWeb(URL,fName2);
+   Result := tstringlist.create;
+   Result.LoadFromFile(fName2);
+
+end;
+
+
+function MoonPositionDB(Lat,Long : float32; iyear,imonth,iday : integer) : integer;
+var
+   URL : shortstring;
+   fName,fName2 : PathStr;
+   webpage,positions : tstringlist;
+   FoundIt : boolean;
+   Time : shortstring;
+   Hour : float32;
+   xd,yd,
+   i : integer;
+begin
+   (*
+   URL := 'https://aa.usno.navy.mil/calculated/altaz?body=11&date=' + IntToStr(iYear) + '-' + AddDayMonthLeadingZero(iMonth) + '-' + AddDayMonthLeadingZero(iDay) +
+      '&intv_mag=10&lat=' + RealToString(Lat,-12,-6) + '&lon=' + RealToString(Long,-12,-6) + '&label=&tz=4&tz_sign=-1&submit=Get+Data';
+   fName2 := Petmar.NextFileNumber(MDTempDir, 'Moon_pos_', '.html');
+   DownloadFileFromWeb(URL,fName2);
+   webpage := tstringlist.create;
+   webpage.LoadFromFile(fName2);
+   *)
+   WebPage := MoonPostionFromUSNO(Lat,Long,iyear,imonth,iday);
+   positions := tstringlist.create;
+   positions.Add('TIME,HOUR,ALTITUDE,AZIMUTH,ILLUMIN_PC');
+   FoundIt := false;
+   for I := 0 to pred(webpage.Count) do begin
+      fName := webpage.Strings[i];
+      if copy(fName,1,4) = '<pre' then FoundIt := true;
+      if FoundIt and (length(fName) > 36) then begin
+         if fName[1] in ['0'..'2'] then begin
+            Hour := StrToFloat(Copy(fName,1,2)) + StrToFloat(Copy(fName,4,2)) / 60;
+            Positions.Add(Copy(fName,1,5) + ',' + RealToString(Hour,6,2)  + ',' + Copy(fName,12,5) + ',' + Copy(fName,24,5) + ',' + Copy(fName,36,4));
+          end;
+      end;
+      if fName = '</pre>' then FoundIt := false;
+   end;
+   Result := StringList2CSVtoDB(Positions, ChangeFileExt(fName2,'.dbf'));
+end;
+
+
+
+
+function MoonPositionStereoNet(Lat,Long : float32; iyear,imonth,iday : integer) : tNetForm;
+var
+   URL : shortstring;
+   fName,fName2 : PathStr;
+   webpage,positions : tstringlist;
+   FoundIt : boolean;
+   Time : shortstring;
+   Hour : float32;
+   xd,yd,
+   i,db : integer;
+begin
+   (*
+   URL := 'https://aa.usno.navy.mil/calculated/altaz?body=11&date=' + IntToStr(iYear) + '-' + AddDayMonthLeadingZero(iMonth) + '-' + AddDayMonthLeadingZero(iDay) +
+      '&intv_mag=10&lat=' + RealToString(Lat,-12,-6) + '&lon=' + RealToString(Long,-12,-6) + '&label=&tz=4&tz_sign=-1&submit=Get+Data';
+   fName2 := Petmar.NextFileNumber(MDTempDir, 'Moon_pos_', '.html');
+   DownloadFileFromWeb(URL,fName2);
+   webpage := tstringlist.create;
+   webpage.LoadFromFile(fName2);
+   *)
+
+   WebPage := MoonPostionFromUSNO(Lat,Long,iyear,imonth,iday);
+   positions := tstringlist.create;
+   positions.Add('TIME,HOUR,ALTITUDE,AZIMUTH,ILLUMIN_PC');
+   FoundIt := false;
+   for I := 0 to pred(webpage.Count) do begin
+      fName := webpage.Strings[i];
+      if copy(fName,1,4) = '<pre' then FoundIt := true;
+      if FoundIt and (length(fName) > 36) then begin
+         if fName[1] in ['0'..'2'] then begin
+            Hour := StrToFloat(Copy(fName,1,2)) + StrToFloat(Copy(fName,4,2)) / 60;
+            Positions.Add(Copy(fName,1,5) + ',' + RealToString(Hour,6,2)  + ',' + Copy(fName,12,5) + ',' + Copy(fName,24,5) + ',' + Copy(fName,36,4));
+          end;
+      end;
+      if fName = '</pre>' then FoundIt := false;
+   end;
+   db := StringList2CSVtoDB(Positions, ChangeFileExt(fName2,'.dbf'));
+
+   MDDef.NetDef.HemiSphereUsed := Upper;
+   MDDef.NetDef.DrawGridCircles := ngPolar;
+
+   Result := TNetForm.Create(Application);
+   Result.nd.LLcornerText := LatLongDegreeToString(Lat,Long,VeryShortDegrees) + ' ' +  DateToStr(EncodeDate(iYear,iMonth,iDay));
+   Result.Caption := 'Moon position ' + Result.nd.LLcornerText;
+   Result.nd.NewNet;
+
+
+   while not GISdb[db].MyData.eof do  begin
+      if GISdb[db].MyData.GetFieldByNameAsFloat('ALTITUDE') > 0  then
+         Result.nd.PlotPointOnNet(LinePlot,GISdb[db].MyData.GetFieldByNameAsFloat('ALTITUDE'),GISdb[db].MyData.GetFieldByNameAsFloat('AZIMUTH'),ASymbol(FilledBox,ClARed,3),xd,yd);
+      GISdb[db].MyData.Next;
+   end;
+
+   GISdb[db].MyData.First;
+   while not GISdb[db].MyData.eof do begin
+      Time := GISdb[db].MyData.GetFieldByNameAsString('TIME');
+      if copy(Time,4,2) = '00' then begin
+         Result.nd.LabelPointOnNet(GISdb[db].MyData.GetFieldByNameAsFloat('ALTITUDE'),GISdb[db].MyData.GetFieldByNameAsFloat('AZIMUTH'),round(GISdb[db].MyData.GetFieldByNameAsFloat('HOUR')));
+      end;
+      GISdb[db].MyData.Next;
+   end;
+
+   Result.UpdateDisplay;
+end;
+
+
+
 
 
 function GetSunriseSunSet(Latitude,Longitude : float64; tz,day : integer; var az,alt,sunrise,sunset,sunappears,sundisappears,DurationDayLight : float64; var BlockAngles : tBlockAngles) : boolean;
@@ -298,6 +439,7 @@ begin
      getriseset(ws, civilsunrise,  civilSunset);
    end;
 end;
+
 
 function HoursSolarIlluminationGrid(MapForm : tMapForm; JulianDay : integer) : integer;
 var
@@ -842,17 +984,18 @@ begin
    SunResults := Nil;
    SaveHemi := MDDef.NetDef.HemiSphereUsed;
    MDDef.NetDef.HemiSphereUsed := Upper;
+   MDDef.NetDef.DrawGridCircles := ngPolar;
    if (MDDef.HorizonIncrement < 0.1) then MDDef.HorizonIncrement := 0.1;
    Day := MDDef.SingleJulianDay;
    tz := round(Longitude / 15);
    if MDDef.VerifyTimeZone then ReadDefault('Time zone', tz);
-   Result := nil;
    NumDay := 0;
    if (DEM <> 0) then GetBlockAngles(DEM,0,Latitude,Longitude,BlockAngles);
-   if (Result = nil) then begin
+
+   //Result := nil;
+   //if (Result = nil) then begin
        Result := TNetForm.Create(Application);
-       MDDef.NetDef.DrawGridCircles := ngPolar;
-   end;
+   //end;
    Result.Caption := 'Sun Positions, equinox/solstice at ' + LatLongDegreeToString(Latitude,Longitude);
    Result.nd.LLcornerText := LatLongDegreeToString(Latitude,Longitude,VeryShortDegrees);
    Result.nd.NewNet;

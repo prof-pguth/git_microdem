@@ -13,6 +13,7 @@ unit petdbutils;
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
       //{$Define RecordDataBaseFilter}
+      {$Define RecordCSVMerge}
       //{$Define RecordDataBaseImage}
       //{$Define RecordOpenDB}
       //{$Define RecordCSVimport}
@@ -72,7 +73,6 @@ uses
    {$IfDef UseBDETables}
       BDE,
    {$EndIf}
-
 
    SysUtils,StrUtils, Classes,System.UITypes,
    DataBaseCreate,DEMDefs, PETMath,Petmar_types,petmar;
@@ -147,7 +147,7 @@ procedure QuickGraphFromStringList(var sl : tStringList; xf,yf,Capt : shortstrin
 {$EndIf}
 
 {$IfDef VCL}
-   function OrigPickField(Table : tMyData; Mess : ShortString; TypesAllowed : tSetFieldType{; AllFields : boolean = false}) : ShortString;
+   function OrigPickField(Table : tMyData; Mess : ShortString; TypesAllowed : tSetFieldType) : ShortString;
    procedure SendStringGridToDataBase(StringGrid1 : tStringGrid; CreateDataBase : tCreateDataBase; ZeroPadLen : tZeroPadLen);
    function DBtableToHTML(Table : tMyData; Source : tDataSource; VisCols : Array100Boolean) : AnsiString;
    procedure HTMLReport(Table : tMyData; Source : tDataSource; VisCols : Array100Boolean);  overload;
@@ -160,6 +160,7 @@ procedure QuickGraphFromStringList(var sl : tStringList; xf,yf,Capt : shortstrin
 {$Else}
    function DoCSVFileImport(fName : PathStr  = ''; SpecialGaz : tCSVImport = csvNormal) : PathStr;
    function StringList2CSVtoDB(Results : tstringList; fName : Pathstr = ''; CloseFile : boolean = false; SaveCSVfile : boolean = false) : integer;
+   procedure MergeCSVFiles(var Fnames : tstringList; OutName : PathStr);
 {$EndIf}
 
 
@@ -193,8 +194,40 @@ uses
    DEMDataBase,
    PETImage;
 
-//var
-   //TextSaveDir : PathStr;
+
+procedure MergeCSVFiles(var Fnames : tstringList; OutName : PathStr);
+var
+   Tstrl,OutPut : tStringList;
+   Header1,Header : shortstring;
+   fName : PathStr;
+   DefaultFilter : byte;
+   i,j : integer;
+begin
+   {$IfDef RecordCSVMerge}  writelinetoDebugFile(''); {$Endif}
+   Output := tStringList.Create;
+   if (OutName = '') then GetFileNameDefaultExt('Merged CSV file','*.csv',fName);
+   for I := 0 to pred(fNames.Count) do begin
+      fName := fNames.Strings[i];
+      Tstrl := tStringList.Create;
+      TStrl.LoadFromFile(fName);
+      {$IfDef RecordCSVMerge}  writelinetoDebugFile(IntegerToString(Tstrl.count,12) + ' lines in  ' + fname); {$Endif}
+      if (i = 0) then begin
+         Header1 := tstrl.strings[0];
+         for j := 0 to pred(TStrl.Count) do Output.Add(TStrl.Strings[j]);
+      end
+      else begin
+         Header := tstrl.strings[0];
+         if Uppercase(Header) = UpperCase(Header1) then for j := 1 to pred(TStrl.Count) do Output.Add(TStrl.Strings[j]);
+      end;
+      TStrl.Free;
+   end;
+   Output.SaveToFile(OutName);
+   {$IfDef RecordCSVMerge}  writelinetoDebugFile(IntegerToString(Output.count,8) + ' lines in merge ' + OutName); writelinetoDebugFile(''); {$Endif}
+   Output.Free;
+end;
+
+
+
 
 
 procedure QuickGraphFromStringList(var sl : tStringList; xf,yf,Capt : shortstring);

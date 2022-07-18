@@ -15,12 +15,10 @@ unit gdal_tools;
 
 
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
-   //{$Define RecordGDALOpen}
-   //{$Define RecordACOLITE}
+   {$Define RecordGDALOpen}
    //{$Define RecordSubsetOpen}
 
    {$IFDEF DEBUG}
-      //{$Define RecordACOLITE}
       //{$Define RecordSubsetOpen}
       //{$Define RecordGDALOpen}
       //{$Define RecordUseOtherPrograms}
@@ -112,6 +110,7 @@ uses
 
    procedure GDAL_Fill_Holes(InName : PathStr);
    procedure GDAL_Upsample_DEM(DEM : integer);
+   function GDAL_downsample_DEM_1sec(DEM : integer; OutName : PathStr) : integer;
    procedure GDALGeotiffToWKT(fName : PathStr);
 
    procedure StartGDALbatchFile(var BatchFile : tStringList);
@@ -176,6 +175,93 @@ begin
    Result := Clipboard.AsText;
    RestoreBackupDefaults;
 end;
+
+
+
+      procedure GetGDALFileNames;
+
+           function SetGDALprogramName(fName : PathStr; var FullName : PathStr) : boolean;
+           begin
+              FullName := GDALtools_Dir + fName;
+              Result := FileExists(FullName);
+              {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} if Not Result then WriteLineToDebugFile('GDAL file missing, ' + FullName); {$EndIf}
+           end;
+
+           function SetRest : boolean;
+           begin
+               Result := SetGDALprogramName('gdal_translate.exe',GDAL_translate_name) and SetGDALprogramName('gdal_contour.exe',GDAL_contour_name) and SetGDALprogramName('gdalwarp.exe',GDAL_warp_name) and
+                         SetGDALprogramName('gdaldem.exe',GDAL_dem_name) and SetGDALprogramName('ogr2ogr.exe',GDAL_ogr_name) and SetGDALprogramName('gdalinfo.exe',GDAL_info_name) and
+                         SetGDALprogramName('gdalsrsinfo.exe',GDAL_srs_info_name);
+               if not Result then begin
+                  MessageToContinue('GDAL files are missing; consider reinstalling OSGEO4W');
+               end;
+               SetGDALdataStr := 'set GDAL_DATA=' + GDALtools_Data;
+           end;
+
+      begin
+         {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('GetGDALFileNames in'); {$EndIf}
+
+         if PathIsValid(GDALtools_Dir) and PathIsValid(GDALtools_Data) and SetRest then begin
+            {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('GDAL valid, ' + GDALtools_Dir + '  ' + GetGDALversion); {$EndIf}
+            exit;
+         end;
+
+         if not PathIsValid(GDALtools_Dir) then begin
+            GDALtools_Dir := 'C:\OSGeo4W\bin\';
+            GetDOSPath('GDAL binary directory, something like ' +  GDALtools_Dir,GDALtools_Dir);
+         end;
+
+         if not PathIsValid(GDALtools_Data) then begin
+            GDALtools_Data := 'c:\OSGeo4W\share\gdal\';
+            if not PathIsValid(GDALtools_Data) then GetDOSPath('GDAL tools data directory, something like ' + GDALtools_Data,GDALtools_Data);
+         end;
+
+         if PathIsValid(GDALtools_Dir) and PathIsValid(GDALtools_Data) and SetRest then begin
+            {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('User picked GDAL valid, ' + GDALtools_Dir + '  ' + GetGDALversion); {$EndIf}
+            exit;
+         end;
+
+(*
+         if (UpperCase(ProgramRootDir[1]) <> 'C') then begin
+            GDALtools_Dir := ProgramRootDir[1] + ':\OSGeo4W\bin\';
+            GDALtools_Data := ProgramRootDir[1] + ':\OSGeo4W\share\gdal\';
+            if PathIsValid(GDALtools_Dir) and PathIsValid(GDALtools_Data) then begin
+               {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('GDAL Both paths valid, ' + GDALtools_Dir); {$EndIf}
+               SetRest;
+               exit;
+            end;
+         end;
+*)
+
+         {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)}
+            if not PathIsValid(GDALtools_Dir) then WriteLineToDebugFile('Invalid: ' + GDALtools_Dir);
+            if not PathIsValid(GDALtools_Data) then WriteLineToDebugFile('Invalid: ' + GDALtools_Data);
+         {$EndIf}
+
+         MDdef.DontBugMeAboutGDAL := not AnswerIsYes('Do you want to be reminded about GDAL problems in the future');
+
+         if MDdef.DontBugMeAboutGDAL then SaveMDdefaults;
+
+         (*
+         if AnswerIsYes('Manually try to set GDAL locations (you must download them)') then begin
+            if not PathIsValid(GDALtools_Dir) then begin
+              GetDOSPath('GDAL',GDALtools_Dir);
+            end;
+
+            if PathIsValid(GDALtools_Dir) then begin
+                {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('User ID ' + GDALtools_Dir); {$EndIf}
+               if not PathIsValid(GDALtools_Data) then begin
+                  GetDOSPath('GDAL data',GDALtools_Data);
+                   {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('User ID ' + GDALtools_Data); {$EndIf}
+               end;
+               SetRest;
+            end;
+         end;
+         *)
+      end;
+
+
+
 
 
 procedure GDAL_netcdf(fName : PathStr = '');
@@ -414,7 +500,7 @@ end;
 
 
 
-function GDAL_warp_DEM(DEM : integer;  OutName : PathStr; xspace,yspace : float32; IntString : shortstring; TargetEPSG : shortstring = '') : integer;
+function GDAL_warp_DEM(DEM : integer; OutName : PathStr; xspace,yspace : float32; IntString : shortstring; TargetEPSG : shortstring = '') : integer;
 var
    cmd : AnsiString;
    SpaceStr : shortString;
@@ -426,6 +512,36 @@ begin
    Result := GDAL_DEM_command(cmd,OutName,DEMGlb[DEM].SelectionMap.MapDraw.MapType);
 end;
 
+
+function GDAL_downsample_DEM_1sec(DEM : integer; OutName : PathStr) : integer;
+//tried a number of ways to change this, including having the input UTM EPSG
+(*
+C:\OSGeo4W\bin\gdalwarp.exe -te_srs EPSG:4326 -tr 0.000277778 0.000277778 -r average -te 46.095105 10.681662 46.201234 10.814749 H:\demix_wine_contest\italy\trentino_dtm.tif c:\mapdata\temp\gdal_downsample.dem
+Creating output file that is 42211541P x 72564645L.
+Using internal nodata values (e.g. -3.40282e+38) for image H:\demix_wine_contest\italy\trentino_dtm.tif.
+Copying nodata values from source H:\demix_wine_contest\italy\trentino_dtm.tif to destination .
+ERROR 2: usgsdem_create.cpp, 1291: cannot allocate 6126130975135890 bytes
+*)
+var
+   cmd : AnsiString;
+   IntString,
+   TargetEPSG,
+   TargetExtent,
+   SpaceStr : shortString;
+   LatSW,LatNE,LongSW,LongNE : float64;
+   InName : PathStr;
+begin
+   IntString := ' -r average';
+   TargetEPSG := ' -te_srs EPSG:4326';
+   SpaceStr := ' -tr 0.000277778 0.000277778';
+   DEMGlb[DEM].DEMGridToLatLongDegree(0,0,LatSW,LongSW);
+   DEMGlb[DEM].DEMGridToLatLongDegree(pred(DEMGlb[DEM].DEMHeader.NumCol),pred(DEMGlb[DEM].DEMHeader.NumRow),LatNE,LongNE);
+   TargetExtent := ' -te ' + RealToString(LatSW,-12,-6) + ' ' + RealToString(LongSW,-12,-6)  +  ' ' + RealToString(LatNE,-12,-6) + ' ' + RealToString(LongNE,-12,-6);
+   InName := DEMGlb[DEM].GeotiffDEMName;
+   cmd := GDAL_Warp_Name  + SpaceStr + IntString + TargetExtent + TargetEPSG + ' ' + InName + ' ' + OutName;
+   Result := GDAL_DEM_command(cmd,OutName,DEMGlb[DEM].SelectionMap.MapDraw.MapType);
+   //gdalwarp -t_srs EPSG:4326 -tr 0.3125 0.25 -r near -te 71.40625 24.875 84.21875 34.375 -te_srs EPSG:4326 -of GTiff foo.tiff bar.tiff
+end;
 
 procedure GDAL_upsample_DEM(DEM : integer);
 var
@@ -1127,89 +1243,6 @@ end;
             FilesWanted.Free;
             {$IfDef RecordReformat} WriteLineToDebugFile('GDALConvertImagesToGeotiff out'); {$EndIf}
          end;
-      end;
-
-
-      procedure GetGDALFileNames;
-
-           function SetGDALprogramName(fName : PathStr; var FullName : PathStr) : boolean;
-           begin
-              FullName := GDALtools_Dir + fName;
-              Result := FileExists(FullName);
-              {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} if Not Result then WriteLineToDebugFile('GDAL file missing, ' + FullName); {$EndIf}
-           end;
-
-           function SetRest : boolean;
-           begin
-               Result := SetGDALprogramName('gdal_translate.exe',GDAL_translate_name) and SetGDALprogramName('gdal_contour.exe',GDAL_contour_name) and SetGDALprogramName('gdalwarp.exe',GDAL_warp_name) and
-                         SetGDALprogramName('gdaldem.exe',GDAL_dem_name) and SetGDALprogramName('ogr2ogr.exe',GDAL_ogr_name) and SetGDALprogramName('gdalinfo.exe',GDAL_info_name) and
-                         SetGDALprogramName('gdalsrsinfo.exe',GDAL_srs_info_name);
-               if not Result then begin
-                  MessageToContinue('GDAL files are missing; consider reinstalling OSGEO4W');
-               end;
-               SetGDALdataStr := 'set GDAL_DATA=' + GDALtools_Data;
-           end;
-
-      begin
-         {$If Defined(RecordGDAL)} WriteLineToDebugFile('GetGDALFileNames in'); {$EndIf}
-
-         if PathIsValid(GDALtools_Dir) and PathIsValid(GDALtools_Data) and SetRest then begin
-            {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('GDAL valid, ' + GDALtools_Dir + '  ' + GetGDALversion); {$EndIf}
-            exit;
-         end;
-
-         if not PathIsValid(GDALtools_Dir) then begin
-            GDALtools_Dir := 'C:\OSGeo4W\bin\';
-            GetDOSPath('GDAL binary directory',GDALtools_Dir);
-         end;
-
-         if not PathIsValid(GDALtools_Data) then begin
-            GDALtools_Data := 'c:\OSGeo4W\share\gdal\';
-            if not PathIsValid(GDALtools_Data) then GetDOSPath('GDAL tools data directory',GDALtools_Data);
-         end;
-
-         if PathIsValid(GDALtools_Dir) and PathIsValid(GDALtools_Data) and SetRest then begin
-            {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('User picked GDAL valid, ' + GDALtools_Dir + '  ' + GetGDALversion); {$EndIf}
-            exit;
-         end;
-
-(*
-         if (UpperCase(ProgramRootDir[1]) <> 'C') then begin
-            GDALtools_Dir := ProgramRootDir[1] + ':\OSGeo4W\bin\';
-            GDALtools_Data := ProgramRootDir[1] + ':\OSGeo4W\share\gdal\';
-            if PathIsValid(GDALtools_Dir) and PathIsValid(GDALtools_Data) then begin
-               {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('GDAL Both paths valid, ' + GDALtools_Dir); {$EndIf}
-               SetRest;
-               exit;
-            end;
-         end;
-*)
-
-         {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)}
-            if not PathIsValid(GDALtools_Dir) then WriteLineToDebugFile('Invalid: ' + GDALtools_Dir);
-            if not PathIsValid(GDALtools_Data) then WriteLineToDebugFile('Invalid: ' + GDALtools_Data);
-         {$EndIf}
-
-         MDdef.DontBugMeAboutGDAL := not AnswerIsYes('Do you want to be reminded about GDAL problems in the future');
-
-         if MDdef.DontBugMeAboutGDAL then SaveMDdefaults;
-
-         (*
-         if AnswerIsYes('Manually try to set GDAL locations (you must download them)') then begin
-            if not PathIsValid(GDALtools_Dir) then begin
-              GetDOSPath('GDAL',GDALtools_Dir);
-            end;
-
-            if PathIsValid(GDALtools_Dir) then begin
-                {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('User ID ' + GDALtools_Dir); {$EndIf}
-               if not PathIsValid(GDALtools_Data) then begin
-                  GetDOSPath('GDAL data',GDALtools_Data);
-                   {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('User ID ' + GDALtools_Data); {$EndIf}
-               end;
-               SetRest;
-            end;
-         end;
-         *)
       end;
 
 

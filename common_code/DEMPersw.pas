@@ -119,6 +119,9 @@ type
     Sunposition1: TMenuItem;
     oday1: TMenuItem;
     Pickday1: TMenuItem;
+    Moonposition1: TMenuItem;
+    Moonposition2: TMenuItem;
+    Pickday2: TMenuItem;
     procedure SpeedButton13Click(Sender: TObject);
     procedure CancelBtnClick(Sender: TObject);
     procedure Alphablendbitmap1Click(Sender: TObject);
@@ -156,6 +159,8 @@ type
     procedure BitBtn2Click(Sender: TObject);
     procedure oday1Click(Sender: TObject);
     procedure Pickday1Click(Sender: TObject);
+    procedure Moonposition2Click(Sender: TObject);
+    procedure Pickday2Click(Sender: TObject);
   private
     { Private declarations }
     procedure ModifyWithoutRedraw(var Redraw : boolean);
@@ -191,6 +196,7 @@ type
      {$IfDef ExGeography}
      {$Else}
         procedure ShowSunPath(Day : integer);
+        procedure ShowMoonPath(Today : boolean);
      {$EndIf}
 
      function FindLatLong(var Lat,Long,Pitch,DistOut,Azimuth : float64; var Mess1,Mess2,Mess3,Mess4 : shortString; DoPLSS : boolean = false) : boolean;
@@ -1136,6 +1142,14 @@ begin
 end;
 
 
+procedure TThreeDview.Moonposition2Click(Sender: TObject);
+begin
+   {$IfDef ExGeography}
+   {$Else}
+      ShowMoonPath(true);
+   {$EndIf}
+end;
+
 procedure TThreeDview.oday1Click(Sender: TObject);
 begin
    {$IfDef ExGeography}
@@ -1147,6 +1161,42 @@ end;
 
 {$IfDef ExGeography}
 {$Else}
+   procedure TThreeDview.ShowMoonPath(Today : boolean);
+   var
+      x,y,db : integer;
+      az,alt : float64;
+      iYear,iMonth,iDay : integer;
+      Year,Month,Day : integer;
+      Sym : tFullSymbolDeclaration;
+      Time : shortstring;
+   begin
+      Sym.Color := claDarkGrey;
+      Sym.Size := 5;
+      Sym.DrawingSymbol := FilledCircle;
+      if Today then begin
+         imonth := 0;
+      end
+      else begin
+         iMonth := -99;
+      end;
+      db := MoonPositionDB(View3D.ViewerLat,View3D.ViewerLong, iyear,imonth,iday);
+
+      GISdb[db].MyData.First;
+      while not GISdb[db].MyData.eof do begin
+         Alt := GISdb[db].MyData.GetFieldByNameAsFloat('ALTITUDE');
+         if (Alt > 0) then begin
+            Az := GISdb[db].MyData.GetFieldByNameAsFloat('AZIMUTH');
+            Time := GISdb[db].MyData.GetFieldByNameAsString('TIME');
+            SymbolAtPitchAzimith(alt,az,Sym,true);
+            View3D.AzimuthToScreen(Az,x);
+            View3D.PitchToScreen(Alt,y);
+            Image1.Canvas.TextOut(x,y,Time);
+         end;
+         GISdb[db].MyData.Next;
+      end;
+   end;
+
+
    procedure TThreeDview.ShowSunPath(Day : integer);
    var
       hrtime,tz : float64;
@@ -1981,18 +2031,24 @@ procedure TThreeDview.Pickday1Click(Sender: TObject);
 begin
 {$Else}
 var
-   wYear,wmonth,wDay : word;
+   //wYear,wmonth,wDay : word;
    Year,Month,Day : integer;
 begin
-   DecodeDate(now,wYear,wmonth,wDay);
-   year := wyear;
-   month := wmonth;
-   day := wday;
+   //year := -99;
+   Month := -99;
    GetDate(Year,month,Day);
    ShowSunPath(AnnualJulianDay(Year,Month,Day));
 {$EndIf}
 end;
 
+
+procedure TThreeDview.Pickday2Click(Sender: TObject);
+begin
+   {$IfDef ExGeography}
+   {$Else}
+      ShowMoonPath(false);
+   {$EndIf}
+end;
 
 initialization
    {$IfDef MessageStartUpUnit} MessageToContinue('Startup dempersw'); {$EndIf}

@@ -166,7 +166,7 @@ begin
              BlockWrite(Ffile,LongWordElevations^[x]^[Limits.YGridLow],4*NewHeadRecs.NumRow);
           end
           else begin
-             BlockWrite(Ffile,DTEDCols[x]^[Limits.YGridLow],2*NewHeadRecs.NumRow);
+             BlockWrite(Ffile,SmallIntElevations[x]^[Limits.YGridLow],2*NewHeadRecs.NumRow);
              {$IfDef RecordFullWriteDEM} writeLineToDebugFile('Last in column: ' + IntToStr(DTEDCols[x]^[pred(HeadRecs.NumRow)])); {$EndIf}
           end;
        end;

@@ -26,7 +26,7 @@ unit dem_manager;
       //{$Define TimeSatLoad}
       //{$Define RecordMenu}
       //{$Define RecordSatLoad}
-      {$Define RecordSimpleClose}
+      //{$Define RecordSimpleClose}
    {$Else}
       {$Define TimeLoadDEM}
    {$EndIf}
@@ -618,20 +618,17 @@ procedure CloseSingleDEM(var DEMtoClose : integer; ResetMenus : boolean = true);
 
       procedure CloseYeDEM(i : integer);
       begin
-         try
-            {$IfDef RecordCloseDEM} WriteLineToDebugFile('Destroy DEMGlb=' + IntToStr(i) + '  ' + DEMGlb[i].AreaName); {$EndIf}
-            DEMGlb[i].Destroy;
-            {$IfDef RecordCloseDEM} WriteLineToDebugFile('Destroy OK for DEMGlb=' + IntToStr(i)); {$EndIf}
-         finally
-            {$IfDef RecordCloseDEM} WriteLineToDebugFile('Try Nil DEMGlb=' + IntToStr(i)); {$EndIf}
+         if ValidDEM(i) then try
             try
-               if ValidDEM(i) then begin
-                  {$IfDef RecordCloseDEM} WriteLineToDebugFile('Have to Nil DEMGlb=' + IntToStr(i)); {$EndIf}
-                  DEMGlb[i] := Nil;
-               end;
+               {$IfDef RecordCloseDEM} WriteLineToDebugFile('Destroy DEMGlb=' + IntToStr(i) + '  ' + DEMGlb[i].AreaName); {$EndIf}
+               DEMGlb[i].Destroy;
+               {$IfDef RecordCloseDEM} WriteLineToDebugFile('Destroy OK for DEMGlb=' + IntToStr(i)); {$EndIf}
             except
-               on Exception do ;
-            end;
+                  on Exception do ;
+            end
+         finally
+            {$IfDef RecordCloseDEM} WriteLineToDebugFile('Have to Nil DEMGlb=' + IntToStr(i)); {$EndIf}
+            DEMGlb[i] := Nil;
          end;
       end;
 
@@ -1392,12 +1389,13 @@ begin
    WriteLineToDebugFile(why);
    for i := 1 to MaxDEMDataSets do begin
       if ValidDEM(i) then begin
-         writeLineToDebugFile(IntegerToString(i,5) + '  ' + DEMGlb[i].AreaName);
+         //writeLineToDebugFile(IntegerToString(i,5) + '  ' + DEMGlb[i].AreaName);
          writeLineToDebugFile(IntegerToString(i,5) + '  ' + DEMGlb[i].AreaName + '  (' + DEMGlb[i].ColsRowsString + '  ' +  DEMGlb[i].DemSizeString + ')');
       end;
    end;
    for i := 1 to 2 do WriteLineToDebugFile('');
 end;
+
 
 
 function GetWhatsOpen : tStringList;
@@ -1531,97 +1529,102 @@ var
 
 
 begin
-   if FileExists(FName) and FileExtEquals(fName,DefaultDBExt) then begin
-      {$IfDef RecordProjects} WriteLineToDebugFile('RestoreSpecifiedDesktop in, fname=' + fName); {$EndIf}
-      ProcessIniFile(iniRead,'',ChangeFileExt(fName,'_project.ini'));
-      DeleteMultipleFiles(CurrentProject + '\','*.*');
-      LastDeskTop := fName;
-      {$IfDef RecordProjects} WriteLineToDebugFile('RestoreSpecifiedDesktop in, LastDeskTop=' + LastDeskTop); {$EndIf}
-      WantedSat := 0;
-      WantedDEM := 0;
-      Table := tMyData.Create(FName);
-      if Table.FieldExists('DATA_LAYER') then begin
-         while not Table.Eof do begin
-            What := Table.GetFieldByNameAsString('DATA_LAYER');
-            fName := Table.GetFieldByNameAsString('FILENAME');
+   try
+      HeavyDutyProcessing := true;
+      if FileExists(FName) and FileExtEquals(fName,DefaultDBExt) then begin
+         {$IfDef RecordProjects} WriteLineToDebugFile('RestoreSpecifiedDesktop in, fname=' + fName); {$EndIf}
+         ProcessIniFile(iniRead,'',ChangeFileExt(fName,'_project.ini'));
+         DeleteMultipleFiles(CurrentProject + '\','*.*');
+         LastDeskTop := fName;
+         {$IfDef RecordProjects} WriteLineToDebugFile('RestoreSpecifiedDesktop in, LastDeskTop=' + LastDeskTop); {$EndIf}
+         WantedSat := 0;
+         WantedDEM := 0;
+         Table := tMyData.Create(FName);
+         if Table.FieldExists('DATA_LAYER') then begin
+            while not Table.Eof do begin
+               What := Table.GetFieldByNameAsString('DATA_LAYER');
+               fName := Table.GetFieldByNameAsString('FILENAME');
 
-            {$IfDef RecordProjects} WriteLineToDebugFile(What + ' fname=' + fName); {$EndIf}
+               {$IfDef RecordProjects} WriteLineToDebugFile(What + ' fname=' + fName); {$EndIf}
 
-            if (What = 'DEM') then begin
-               if FileExists(fName) then begin
-                  WantedSat := 0;
-                  LoadNewDEM(WantedDem,fName,false,'new DEM','',false);
-                  if (WantedDEM = 0) then break;
-                  mt := MDdef.DefDEMMap;
-                  if Table.FieldExists('MAP_TYPE') then begin
-                     mt := Table.GetFieldByNameAsInteger('MAP_TYPE');
-                     if mt = 0 then mt := MDdef.DefDEMMap;
-                  end;
-                  CreateDEMSelectionMap(WantedDEM,true,MDDef.DefElevsPercentile, mt);
-                  LoadMapDetails(DEMGlb[WantedDEM].SelectionMap);
-               end
-               else MessageToContinue('Cannot find ' + fName);
-            end;
-
-            {$IfDef ExSat}
-            {$Else}
-               if( What = 'SAT') then begin
+               if (What = 'DEM') then begin
                   if FileExists(fName) then begin
-                     WantedDEM := 0;
-                     WantedSat := OpenAndDisplayNewScene(Nil,fname,true,true,true);
+                     WantedSat := 0;
+                     LoadNewDEM(WantedDem,fName,false,'new DEM','',false);
+                     if (WantedDEM = 0) then break;
+                     mt := MDdef.DefDEMMap;
                      if Table.FieldExists('MAP_TYPE') then begin
                         mt := Table.GetFieldByNameAsInteger('MAP_TYPE');
-                        if (mt <> 0) then SatImage[WantedSat].SelectionMap.MapDraw.MapType := mt;
+                        if mt = 0 then mt := MDdef.DefDEMMap;
                      end;
-                     LoadMapDetails(SatImage[WantedSat].SelectionMap);
-                     SatImage[WantedSat].SelectionMap.DoCompleteMapRedraw;
+                     CreateDEMSelectionMap(WantedDEM,true,MDDef.DefElevsPercentile, mt);
+                     LoadMapDetails(DEMGlb[WantedDEM].SelectionMap);
                   end
                   else MessageToContinue('Cannot find ' + fName);
                end;
-            {$EndIf}
 
-            {$IfDef ExVegDensity}
-            {$Else}
-               if What = 'VEG' then DEMGlb[WantedDem].OpenVegGrid(fName,1);
-               if What = 'VEG2' then DEMGlb[WantedDem].OpenVegGrid(fName,2);
-               if What = 'VOX1' then DEMGlb[WantedDem].VegDensityLayers[1] := tVegDensity.Create(fName,WantedDEM,false);
-               if What = 'VOX2' then DEMGlb[WantedDem].VegDensityLayers[2] := tVegDensity.Create(fName,WantedDEM,false);
-            {$EndIf}
-
-            if (What = 'DB') then begin
-               if FileExists(fName) then begin
-                  if (WantedSat <> 0) then SatImage[WantedSat].SelectionMap.LoadDataBaseFile(fName);
-                  if (WantedDEM <> 0) then DEMGlb[WantedDem].SelectionMap.LoadDataBaseFile(fName);
-               end
-               else MessageToContinue('Cannot find ' + fName);
-            end;
-
-            {$IfDef ExPointCloud}
-            {$Else}
-               if (What = 'PC1') or (What = 'PC2') or (What = 'PC3') or (What = 'PC4') then begin
-                  if (pt_cloud_opts_fm = Nil) then begin
-                     pt_cloud_opts_fm := Tpt_cloud_opts_fm.Create(Application);
-                     pt_cloud_opts_fm.Show;
-                     pt_cloud_opts_fm.BaseMap := DEMGlb[WantedDem].SelectionMap;
+               {$IfDef ExSat}
+               {$Else}
+                  if( What = 'SAT') then begin
+                     if FileExists(fName) then begin
+                        WantedDEM := 0;
+                        WantedSat := OpenAndDisplayNewScene(Nil,fname,true,true,true);
+                        if Table.FieldExists('MAP_TYPE') then begin
+                           mt := Table.GetFieldByNameAsInteger('MAP_TYPE');
+                           if (mt <> 0) then SatImage[WantedSat].SelectionMap.MapDraw.MapType := mt;
+                        end;
+                        LoadMapDetails(SatImage[WantedSat].SelectionMap);
+                        SatImage[WantedSat].SelectionMap.DoCompleteMapRedraw;
+                     end
+                     else MessageToContinue('Cannot find ' + fName);
                   end;
-                  LastLidarDirectory := fName;
-                  pt_cloud_opts_fm.GetFilesForPointCloud(StrToInt(Copy(What,3,1)),LastLidarDirectory,true);
-               end;
-            {$EndIf}
+               {$EndIf}
 
-            if (What = 'CART') then begin
-               DEMGlb[WantedDem].SelectionMap.LoadCartoDBoverlay(fName);
+               {$IfDef ExVegDensity}
+               {$Else}
+                  if What = 'VEG' then DEMGlb[WantedDem].OpenVegGrid(fName,1);
+                  if What = 'VEG2' then DEMGlb[WantedDem].OpenVegGrid(fName,2);
+                  if What = 'VOX1' then DEMGlb[WantedDem].VegDensityLayers[1] := tVegDensity.Create(fName,WantedDEM,false);
+                  if What = 'VOX2' then DEMGlb[WantedDem].VegDensityLayers[2] := tVegDensity.Create(fName,WantedDEM,false);
+               {$EndIf}
+
+               if (What = 'DB') then begin
+                  if FileExists(fName) then begin
+                     if (WantedSat <> 0) then SatImage[WantedSat].SelectionMap.LoadDataBaseFile(fName);
+                     if (WantedDEM <> 0) then DEMGlb[WantedDem].SelectionMap.LoadDataBaseFile(fName);
+                  end
+                  else MessageToContinue('Cannot find ' + fName);
+               end;
+
+               {$IfDef ExPointCloud}
+               {$Else}
+                  if (What = 'PC1') or (What = 'PC2') or (What = 'PC3') or (What = 'PC4') then begin
+                     if (pt_cloud_opts_fm = Nil) then begin
+                        pt_cloud_opts_fm := Tpt_cloud_opts_fm.Create(Application);
+                        pt_cloud_opts_fm.Show;
+                        pt_cloud_opts_fm.BaseMap := DEMGlb[WantedDem].SelectionMap;
+                     end;
+                     LastLidarDirectory := fName;
+                     pt_cloud_opts_fm.GetFilesForPointCloud(StrToInt(Copy(What,3,1)),LastLidarDirectory,true);
+                  end;
+               {$EndIf}
+
+               if (What = 'CART') then begin
+                  DEMGlb[WantedDem].SelectionMap.LoadCartoDBoverlay(fName);
+               end;
+               if (WantedDEM <> 0) then DEMGlb[WantedDem].SelectionMap.CheckProperTix;
+               Table.Next;
             end;
-            if (WantedDEM <> 0) then DEMGlb[WantedDem].SelectionMap.CheckProperTix;
-            Table.Next;
+            Table.Destroy;
          end;
-         Table.Destroy;
       end;
+      {$IfDef RecordProjects} WriteLineToDebugFile('RestoreSpecifiedDesktop processing done, LastDESKtop=' + LastDesktop); {$EndIf}
+   finally
+      HeavyDutyProcessing := false;
+      wmDEM.SetMenusForVersion;
+      wmDEM.Cascade;
+      StopSplashing;
    end;
-   {$IfDef RecordProjects} WriteLineToDebugFile('RestoreSpecifiedDesktop processing done, LastDESKtop=' + LastDesktop); {$EndIf}
-   wmDEM.SetMenusForVersion;
-   wmDEM.Cascade;
-   StopSplashing;
    {$IfDef RecordProjects} WriteLineToDebugFile('RestoreSpecifiedDesktop out, LastDESKtop=' + LastDesktop); {$EndIf}
 end;
 

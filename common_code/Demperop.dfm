@@ -14,7 +14,6 @@ object PerspOptions: TPerspOptions
   Font.Style = [fsBold]
   Position = poDefaultSizeOnly
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object OKBtn: TBitBtn
     Left = 8
@@ -93,7 +92,7 @@ object PerspOptions: TPerspOptions
     Top = 0
     Width = 465
     Height = 449
-    ActivePage = TabSheet3
+    ActivePage = TabSheet7
     TabOrder = 6
     object TabSheet1: TTabSheet
       Caption = 'General'

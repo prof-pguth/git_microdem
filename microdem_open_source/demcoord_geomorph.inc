@@ -445,8 +445,8 @@ begin
 
       if (MDDef.SlopeAlg in [smEightNeighborsUnweighted,smFourNeighbors,smEightNeighborsWeighted,smEightNeighborsWeightedByDistance,smFrameFiniteDifference,smSimpleDifference,smONeillAndMark]) then begin
          if (MDDef.SlopeAlg in [smEightNeighborsUnweighted]) then begin //this is the preferred method, Evans
-            SlopeAsp.dzdx := 1 / SlopeAsp.dx / 6 * (+SlopeAsp.zne+SlopeAsp.ze+SlopeAsp.zse-SlopeAsp.znw-SlopeAsp.zw-SlopeAsp.zsw);
-            SlopeAsp.dzdy := 1 / SlopeAsp.dy / 6 * (+SlopeAsp.znw+SlopeAsp.zn+SlopeAsp.zne-SlopeAsp.zsw-SlopeAsp.zs-SlopeAsp.zse);
+            SlopeAsp.dzdx := (+SlopeAsp.zne+SlopeAsp.ze+SlopeAsp.zse-SlopeAsp.znw-SlopeAsp.zw-SlopeAsp.zsw) / SlopeAsp.dx / 6;
+            SlopeAsp.dzdy := (+SlopeAsp.znw+SlopeAsp.zn+SlopeAsp.zne-SlopeAsp.zsw-SlopeAsp.zs-SlopeAsp.zse) / SlopeAsp.dy / 6;
          end
          else if (MDdef.SlopeAlg = smEightNeighborsWeighted) then begin  //Horn method
             SlopeAsp.dzdx := 0.125 * ( SlopeAsp.zne + (2 * SlopeAsp.ze) + SlopeAsp.zse  -SlopeAsp.znw - (2 * SlopeAsp.zw) - SlopeAsp.zsw) / SlopeAsp.dx;
@@ -1037,7 +1037,7 @@ begin
    NumValues := 0;
    for i := 1 to (DEMheader.NumCol-2) do begin
       for j := 1 to (DEMheader.NumRow-2) do begin
-         z := DTEDCols[i]^[j];
+         z := SmallIntElevations[i]^[j];
          if (z <> MaxSmallInt) then begin
             inc(CountArray^[z-round(DEMheader.MinElev)]);
             inc(NumValues);

@@ -6,9 +6,13 @@ unit petmar_db;
 { Part of ianMICRODEM GIS Program    }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
-{ Copyright (c) 2015 Peter L. Guth   }
+{ Copyright (c) 2022 Peter L. Guth   }
 {____________________________________}
 
+
+//The primary database format is dBase DBF, for ESRI shapefiles
+//Other formats are tolerated, and have been toyed with for use with other operating systems
+//  the other formats may not have been tested recently
 
 {$I nevadia_defines.inc}
 
@@ -303,13 +307,14 @@ implementation
 
 uses
    {$IfDef VCL}
-   PetImage,
+      PetImage,
    {$EndIf}
 
    {$IfDef ExGIS}
    {$Else}
-   DataBaseCreate,
-   PETDBUtils,
+      DataBaseCreate,
+      PETDBUtils,
+      DEMDatabase,
    {$EndIf}
 
    BaseMap,
@@ -869,6 +874,13 @@ begin
       if not GetFileFromDirectory('data base','*.dbf',fName) then exit;
    end;
 
+   if FileExtEquals(fName,'.csv') or FileExtEquals(fName,'.txt') then begin
+      OpenNumberedGISDataBase(i,fName,false);
+      CloseAndNilNumberedDB(i);
+      fName := ChangeFileExt(fName,'.dbf');
+   end;
+
+
    if (FName <> '') and FileExists(fName) then begin
        CheckFileNameForSpaces(fName);
        FullTableName := fName;
@@ -1357,11 +1369,17 @@ var
    TStr : shortstring;
 begin
    if Math.IsNaN(value) then exit;
+   SetFieldByNameAsString(FieldName,TStr);
+
    if (MaxDec >= 0) then begin
       TStr := RealToString(value,-18,maxDec);
       SetFieldByNameAsString(FieldName,TStr);
    end
    else begin
+      TStr := RealToString(value,-18,GetFieldPrecision(FieldName));
+      SetFieldByNameAsString(FieldName,TStr);
+(*
+
       {$IfDef BDELikeTables}
          if (TheBDEdata <> Nil) then TheBDEdata.FieldByName(FieldName).AsFloat := value;
       {$EndIf}
@@ -1374,6 +1392,7 @@ begin
       {$IfDef UseFDMemTable}
          if (FDMemTable <> nil) fdMemTable.FieldByName(FieldName).AsFloat := value;
       {$EndIf}
+*)
    end;
 end;
 

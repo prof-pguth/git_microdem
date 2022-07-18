@@ -4412,34 +4412,16 @@ end;
 
 procedure TDemHandForm.CSVmergefiles1Click(Sender: TObject);
 var
-   Tstrl,FNames,OutPut : tStringList;
-   Header1,Header : shortstring;
-   fName : PathStr;
+   FNames : tStringList;
+   OutName : PathStr;
    DefaultFilter : byte;
-   i,j : integer;
 begin
    FNames := tStringList.Create;
+   OutName := '';
    DefaultFilter := 1;
    if GetMultipleFiles('CSV to merge','CSV files|*.txt;*.csv',FNames,DefaultFilter) then begin
-      Output := tStringList.Create;
-      for I := 0 to pred(fNames.Count) do begin
-         fName := fNames.Strings[i];
-         Tstrl := tStringList.Create;
-         TStrl.LoadFromFile(fName);
-         if i = 0 then begin
-            Header1 := tstrl.strings[0];
-            for j := 0 to pred(TStrl.Count) do Output.Add(TStrl.Strings[j]);
-         end
-         else begin
-            Header := tstrl.strings[0];
-            if Uppercase(Header) = UpperCase(Header1) then for j := 1 to pred(TStrl.Count) do Output.Add(TStrl.Strings[j]);
-         end;
-         TStrl.Free;
-      end;
-      if GetFileNameDefaultExt('Merged CSV file','*.csv',fName) then Output.SaveToFile(fName);
-      Output.Free;
+      MergeCSVFiles(Fnames,OutName);
    end;
-   fNames.Free;
 end;
 
 

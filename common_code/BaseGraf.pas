@@ -616,7 +616,6 @@ var
 
 procedure TThisBaseGraph.DrawBoxPlot(Bitmap : tMyBitmap);
 var
-   //x,
    y : float32;
    xi,yi,x1,x2 : integer;
    TStr : shortstring;
@@ -638,7 +637,6 @@ begin
       Bitmap.Canvas.MoveTo(x1,yi-5); Bitmap.Canvas.LineTo(x1,yi+5);
       Bitmap.Canvas.MoveTo(x2,yi-5); Bitmap.Canvas.LineTo(x2,yi+5);
       Bitmap.Canvas.MoveTo(x1,yi); Bitmap.Canvas.LineTo(x2,yi);
-
 
       x1 := GraphDraw.GraphX(GISdb[DataBaseOnGraph].MyData.GetFieldByNameAsFloat('Q1'));
       x2 := GraphDraw.GraphX(GISdb[DataBaseOnGraph].MyData.GetFieldByNameAsFloat('Q3'));
@@ -3211,14 +3209,12 @@ begin
       MDDef.RoseBothEnds := AnswerIsYes('180 degree data');
       DrawAspectRose(RoseData^);
    end
-   else begin
-      if GraphDraw.GraphType in [gtTernary,gtTadpole,gtTwoVertAxes,gtNormal,gtBoxPlot] then begin
+   else if GraphDraw.GraphType in [gtTernary,gtTadpole,gtTwoVertAxes,gtNormal,gtBoxPlot] then begin
          ChangeGraphSettingsClick(Nil);
          if SettingsChanged then begin
             RedrawDiagram11Click(Nil);
             if GraphDraw.CorrectScaling then FormResize(nil);
          end;
-      end;
    end;
 end;
 

@@ -31,7 +31,8 @@ unit DEMCoord;
 
    {$IFDEF DEBUG}
       {$Define RecordDEMIX}
-      {$Define ShortDEMLoad}
+      //{$Define ShortDEMLoad}
+      {$Define RecordSaveAverageResampleDEMformat}
       //{$Define RecordDEMCreation}
       //{$Define RecordSSO}
       //{$Define RecordDEMDigitizeDatum}
@@ -265,12 +266,12 @@ type
    tDEMDataSet = class
       protected
       private
-         Zpercens              : ^floatarray1000;
-         ShortFloatElevations  : pShortFloatElevations;
          ByteElevations        : pByteElevations;
          WordElevations        : pWordElevations;
-         DTEDCols              : pSmallIntElevations;
+         SmallIntElevations    : pSmallIntElevations;
+         ShortFloatElevations  : pShortFloatElevations;
          Normals               : tNormalsPointer;
+         Zpercens              : ^floatarray1000;
          RefMinElev,RefMaxElev : float64;
          DEMDatumShiftDone     : boolean;
          BytesPerElevation : int32;
@@ -295,7 +296,7 @@ type
          LatSizeMap,               {size of area in latitude, in degrees}
          LongSizeMap,              {size of area in longitude, in degrees}
          DEMSWcornerLat,                  {local datum lat of lower left corner}
-         DEMSWcornerLong       : float64;   {local datum long of lower left corner}
+         DEMSWcornerLong    : float64;   {local datum long of lower left corner}
          ComputeSWCornerX,         //1/2 pixel shift for PixelIsArea
          ComputeSWCornerY,         //1/2 pixel shift for PixelIsArea
          AverageGridTrue,
@@ -396,31 +397,30 @@ type
          function LatLongDegreeToDEMGrid(Lat,Long : float64; var XGrid,YGrid : float32) : boolean; overload; {$IfDef NoInLine} {$Else} inline; {$EndIf}
          function LatLongDegreeToDEMGrid(Lat,Long : float64; var XGrid,YGrid : float64) : boolean; overload; {$IfDef NoInLine} {$Else} inline; {$EndIf}
 
-         function LatLongDegreeToDEMGridInteger(Lat,Long : float64; var XGrid,YGrid : integer) : boolean; {$IfDef NoInLine} {$Else} inline; {$EndIf}
+         function LatLongDegreeToDEMGridInteger(Lat,Long : float64; var XGrid,YGrid : int32) : boolean; {$IfDef NoInLine} {$Else} inline; {$EndIf}
 
          procedure ClipDEMGrid(var x,y : float64);  overload;
-         procedure ClipDEMGrid(var x,y : integer);  overload;
+         procedure ClipDEMGrid(var x,y : int32);  overload;
 
-         function GridInDataSet(XGrid,YGrid : integer) : boolean; overload; {$IfDef NoInLine} {$Else} inline; {$EndIf}
+         function GridInDataSet(XGrid,YGrid : int32) : boolean; overload; {$IfDef NoInLine} {$Else} inline; {$EndIf}
          function GridInDataSet(XGrid,YGrid : float64) : boolean; overload; {$IfDef NoInLine} {$Else} inline; {$EndIf}
          function LatLongDegreeInDEM(Lat,Long : float64) : boolean;
          function LatLongNearestGridPointInDEM(Lat,Long : float64) : boolean;
 
          function GetElevMeters(XGrid,YGrid : float64; var z  : float32) : boolean;  overload; {$IfDef NoInLine} {$Else} inline; {$EndIf}   {interpolates from grid coordinates in DEM to return elevation of a point}
-         function GetElevMetersOnGrid(x,y : integer; var z  : float32) : boolean;  overload; {$IfDef NoInLine} {$Else} inline; {$EndIf}       {grid coordinates in DEM to return elevation of a point}
-         function GetElevMetersOnGridInteger(x,y : integer; var z  : int64) : boolean;
+         function GetElevMetersOnGrid(x,y : int32; var z  : float32) : boolean;  overload; {$IfDef NoInLine} {$Else} inline; {$EndIf}       {grid coordinates in DEM to return elevation of a point}
          function GetElevFromUTM(x,y : float64; var z : float32) : boolean;
          function GetElevFromLatLongDegree(Lat,Long : float64; var z : float32) : boolean;
 
          function GetElevMetersFromSecondDEM(IdenticalGrids : boolean; Dem2,Col,Row : integer; var z  : float32) : boolean;
-         function GetSlopeAspectFromSecondDEM(Dem2,Col,Row : integer; var SlopeAspectRec : tSlopeAspectRec) : boolean;
+         function GetSlopeAspectFromSecondDEM(Dem2 : integer; Col,Row : int32; var SlopeAspectRec : tSlopeAspectRec) : boolean;
 
          function GetElevSquareMeters(XGrid,YGrid : float64; var Elev : tElevFloatArray) : boolean; inline;
-         function GetElev3x3Meters(XGrid,YGrid : integer; var Elev : tElevBoxArray) : boolean;  inline;
-         function GetNineElevMeters(Col,Row : integer; var znw,zw,zsw,zn,z,zs,zne,ze,zse : float32) : boolean; inline;
+         function GetElev3x3Meters(XGrid,YGrid : int32; var Elev : tElevBoxArray) : boolean;  inline;
+         function GetNineElevMeters(Col,Row : int32; var znw,zw,zsw,zn,z,zs,zne,ze,zse : float32) : boolean; inline;
 
-         function MinElevAroundPoint(xgrid,ygrid : integer; var z : float32) : boolean;
-         function MaxElevAroundPoint(xgrid,ygrid : integer; var z : float32) : boolean;
+         function MinElevAroundPoint(xgrid,ygrid : int32; var z : float32) : boolean;
+         function MaxElevAroundPoint(xgrid,ygrid : int32; var z : float32) : boolean;
          procedure GetElevationsInLongArray(GridLimits: tGridLimits; var NPts : int64; var Values : Petmath.bfarray32; IncludeSeaLevel : boolean = true);
 
          procedure SubtractaDEM(AddDEM : integer);
@@ -429,22 +429,8 @@ type
          function Geo_Z_Factor : float32;
 
          function ZinMeters(z : float64) : float64;
-         procedure GetElevCol(XGrid: integer; var z : pSmallIntCol); {returns entire column of elevations, needed to pass to contouring routine}
-         procedure GetFloatElevCol(XGrid: integer; var z : pShortFloatCol); {returns an entire column of elevations, needed to pass to contouring routine}
-
-         function SetGridElevationLatLongDegree(Lat,Long : float64; z : float64) : boolean;
-         function SetGridElevation(Col,Row : integer; z : float64) : boolean;
-         procedure IncrementGridValue(Col,Row : integer);
-         procedure SetGridMissing(Col,Row : integer); overload;
-         procedure SetGridMissing(x,y : float64); overload;
-         procedure SetEntireGridMissing;
-         procedure SetEntireGridToConstant(z : float64);
-         procedure ReclassifyRange(MinRange, MaxRange, NewZ : float64);
-         procedure ShiftGlobalDEM(NewLeftLong : float64);
-         procedure CheckUK_OS;
-         function RGBfromLongWord(x,y : integer; var r,g,b : byte) : boolean;
-         procedure RoundToByteRange;
-         function ScaleZtoByte(z : float64) : byte;
+         procedure GetElevCol(XGrid: int32; var z : pSmallIntCol); {returns entire column of elevations, needed to pass to contouring routine}
+         procedure GetFloatElevCol(XGrid: int32; var z : pShortFloatCol); {returns an entire column of elevations, needed to pass to contouring routine}
 
          procedure LocationOfMaximumZAroundPoint(var Lat,Long : float64; var MaxZ : float32; BoxSize : integer);
 
@@ -452,6 +438,22 @@ type
          procedure AreaExtremeElevationsFromLatLong(LatLow,LongLow,LatHi,LongHigh : float64; var TheMinElev,TheMaxElev : float32);
          procedure SimpleBoxAroundPoint(Col,Row,BoxSize : integer; var x1,y1,x2,y2 : integer);
          function BoxAroundPointFromFullSizeMeters(Col,Row,BoxSize : integer) : tGridLimits;
+
+         function SetGridElevationLatLongDegree(Lat,Long : float64; z : float64) : boolean;
+         function SetGridElevation(Col,Row : int32; z : float64) : boolean;
+         procedure IncrementGridValue(Col,Row : int32);
+         procedure SetGridMissing(Col,Row : int32); overload;
+         procedure SetGridMissing(x,y : float64); overload;
+         procedure SetEntireGridMissing;
+         procedure SetEntireGridToConstant(z : float64);
+         procedure ReclassifyRange(MinRange, MaxRange, NewZ : float64);
+         procedure ShiftGlobalDEM(NewLeftLong : float64);
+
+
+         procedure CheckUK_OS;
+         function RGBfromLongWord(x,y : integer; var r,g,b : byte) : boolean;
+         procedure RoundToByteRange;
+         function ScaleZtoByte(z : float64) : byte;
 
          procedure PixelSpacingAndRotation(Col,Row : integer; var Lat,Long : float64; var xdistance,ydistance,GridTrueAngle : float32; Quick : boolean = true);
          procedure GridSpacingDetails(Region : sfBoundBox; var AverageX,AverageY,AverageSpacing,AverageGridTrue : float64);
@@ -572,7 +574,7 @@ type
          procedure ThinThisDEM(var ThinDEM : integer; ThinFactor : integer = 0; DoItByAveraging : boolean = false);
          procedure AverageResampleThisDEM(var ThinDEM : integer; ThinFactor : integer = 0);
          procedure FilterThisDEM(FilterCategory : tFilterCat; var NewDEM : integer; BoxSize : integer = 0; FilterName : PathStr = '');
-         procedure DetrendDEM(var NewDEM : integer);
+         function DetrendDEM(FilterRadius : integer = 2) : integer;
          procedure ResaveNewResolution(FilterCategory : tFilterCat; var NewDEM : integer);
 
          function RectangleSubsetDEM(GridLimits : tGridLimits; FileName : PathStr = '') : PathStr; overload;
@@ -581,13 +583,11 @@ type
          procedure CutOutGeoBox(bb : sfBoundBox);
 
          function KeyDEMParams(short : boolean = false) : ShortString;
-         function SWcornerString : ShortString;
-
          function FullDEMParams : AnsiString;
+         function SWcornerString : ShortString;
          function PixelIsString : AnsiString;
-
          function DEMMapProjectionString : shortstring;
-         function DEMHoriznontalSpacingSummary  : ShortString;
+         function DEMHorizontalSpacingSummary  : ShortString;
          function HorizontalDEMSpacing(short : boolean = false) : ShortString;
          function SimpleHorizontalDEMSpacing(BoxSize : integer) : ShortString;
          function GridDefinition : ShortString;
@@ -775,7 +775,7 @@ function OpenAndZeroNewDEM(TransformToNewDatum : boolean; NewHeader : tDEMheader
 
 function MakeNewBlankDEMMap(LatCorner,LongCorner,LatSize,LongSize : float64; xpixels,ypixels : integer) : integer;
 
-procedure ReadASCIIArcGrid(FileName : PathStr; WantedDEM : tDEMDataSet; var Error : boolean);
+procedure ReadASCIIArcGrid(FileName : PathStr; WantedDEM : tDEMDataSet; var Error : boolean; ReallyReadDEM : boolean);
 procedure ReadFusionDTM(FileName : PathStr; WantedDEM : tDEMDataSet; var Error : boolean);
 
 function CreateNewGlobalGrid(GreenwhichLeft : boolean = true; Resolution : tDEMprecision = FloatingPointDEM; Spacing : float64 = -99) : integer;
@@ -808,7 +808,9 @@ var
    DEMGlb : tDEMDataSetArray;
    GhostContour  : float64;
    RouteTiffThroughGDAL,
+   OpeningNewGrid,
    SkipSphericalCheck,
+   SubsequentDEM,
    FoundFootContours : boolean;
    DEMJustSubset : PathStr;
    GlobalDEMforGetElevCol : integer;
@@ -1456,8 +1458,8 @@ begin
          for x := 0 to pred(DEMheader.NumCol) do begin
             if (x mod 100 = 0) then UpDateProgressBar(x/DEMheader.NumCol);
             if (DEMheader.DEMprecision = SmallIntDEM) then begin
-                if (x < StartCol) then DEMGlb[TempDEM].GetElevCol(x,DTEDCols^[StartCol+x])
-                else DEMGlb[TempDEM].GetElevCol(x,DTEDCols^[X-StartCol]);
+                if (x < StartCol) then DEMGlb[TempDEM].GetElevCol(x,SmallIntElevations^[StartCol+x])
+                else DEMGlb[TempDEM].GetElevCol(x,SmallIntElevations^[X-StartCol]);
             end;
             if (DEMheader.DEMprecision = FloatingPointDEM) then begin
                 if (x < StartCol) then DEMGlb[TempDEM].GetFloatElevCol(x,ShortFloatElevations^[StartCol+x])
@@ -1559,6 +1561,7 @@ begin
    ThisDEM := WhichDEM;
    ZeroDEMHeader(DEMheader, false);
    ElevationMultiple := 1;
+   AverageGridTrue := 0;
    DSMGrid := 0;
    FanBlowUpDEM := 0;
    FilterGrid := 0;
@@ -1650,10 +1653,10 @@ begin
     end
     else begin
        {$IfDef RecordCloseDEM} WriteLineToDebugFile('HeadRecs.DEMPrecision = SmallIntDEM');   {$EndIf}
-       if (DTEDCols <> Nil) then begin
-          for j := 0 to pred(DEMheader.NumCol) do FreeMem(DTEDCols^[j],BytesPerColumn);
-          Dispose(DTEDCols);
-          DTEDCols := Nil;
+       if (SmallIntElevations <> Nil) then begin
+          for j := 0 to pred(DEMheader.NumCol) do FreeMem(SmallIntElevations^[j],BytesPerColumn);
+          Dispose(SmallIntElevations);
+          SmallIntElevations := Nil;
           {$IfDef RecordCloseDEM} WriteLineToDebugFile('small ints cleared'); {$EndIf}
        end;
     end;
@@ -1704,9 +1707,7 @@ begin
        if Assigned(SelectionMap) then try
           {$If Defined(RecordClosing) or Defined(RecordDEMClose)}  WriteLineToDebugFile('tDEMDataSet.Destroy has selection map');   {$EndIf}
           SelectionMap.ClosingMapNow := true;
-          //Application.ProcessMessages;
           SelectionMap.Close;
-          //FreeAndNil(SelectionMap);
        finally
           SelectionMap := Nil;
           {$If Defined(RecordClosing) or Defined(RecordDEMClose)} WriteLineToDebugFile('tDEMDataSet.Destroy finished close selection map'); {$EndIf}
@@ -1777,14 +1778,14 @@ end;
 
 procedure tDEMDataSet.IncrementGridValue(Col,Row : integer);
 var
-   z : int64;
+   z : float32;
 begin
    if GridInDataSet(Col,Row) then begin
       if MissingDataInGrid(Col,Row) then begin
          SetGridElevation(Col,Row,1);
       end
-      else if GetElevMetersOnGridInteger(Col,Row,Z) then begin
-         SetGridElevation(Col,Row,Succ(z));
+      else if GetElevMetersOnGrid(Col,Row,Z) then begin
+         SetGridElevation(Col,Row,Succ(round(z)));
       end;
    end;
 end;
@@ -1960,7 +1961,7 @@ end;
 
 procedure tDEMDataSet.GetElevCol(XGrid : integer; var z : pSmallIntCol);
 begin
-   if (DTEDCols[XGrid] <> Nil) and (XGrid >= 0) and (XGrid <= pred(DEMheader.NumCol)) then      Move(DTEDCols[XGrid]^,z^,BytesPerColumn);
+   if (SmallIntElevations[XGrid] <> Nil) and (XGrid >= 0) and (XGrid <= pred(DEMheader.NumCol)) then      Move(SmallIntElevations[XGrid]^,z^,BytesPerColumn);
 end {proc GetElevCol};
 
 procedure tDEMDataSet.GetFloatElevCol(XGrid: integer; var z : pShortFloatCol); {returns an entire column of elevations, needed to pass to contouring routine}
@@ -2238,7 +2239,7 @@ begin
    MapProjection.LatHemi := DEMheader.LatHemi;
    if (DEMheader.wktString <> '') then begin
       {$IfDef RecordProjectionParameters} MapProjection.ProjectionParamsToDebugFile('tDEMDataSet.AssignProjectionFromDEM, wkt=' + DEMheader.wktString); {$EndIf}
-      MapProjection.WKTProjectionFromString(DEMheader.wktString);
+      MapProjection.DecodeWKTProjectionFromString(DEMheader.wktString);
    end
    else if DEMheader.DEMUsed in [ArcSecDEM] then MapProjection.PName := PlateCaree
    else if (DEMheader.DEMUsed = UTMBasedDEM) then begin
@@ -2303,7 +2304,7 @@ var
          if (DEMheader.DigitizeDatum in [Rectangular]) then exit;
 
          if (DEMheader.WKTString <> '') then begin
-            DEMMapProjection.WKTProjectionFromString(DEMheader.WKTString);
+            DEMMapProjection.DecodeWKTProjectionFromString(DEMheader.WKTString);
             DEMMapProjection.InverseProjectDegrees(DEMheader.DEMSWCornerX,DEMheader.DEMSWCornerY,DEMSWcornerLat,DEMSWcornerLong);
          end
          else if (DEMheader.DigitizeDatum in [Spherical,unusedLamAzEqAreaSphere]) then begin
@@ -2640,7 +2641,7 @@ end;
 
 function tDEMDataSet.AllocateDEMMemory(InitDEM : byte; InitVal : float64 = 0) : boolean;
 var
-   Col : int32;
+   Col, rc : int32;
 begin
    {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMMemoryAllocations)} WriteLineToDebugFile('tDEMDataSet.AllocateDEMMemory (' + ColsRowsString + ')  proj=' + DEMMapProjection.ProjDebugName); {$EndIf}
 
@@ -2678,18 +2679,19 @@ begin
          end
          else begin
             {$IfDef RecordDEMMemoryAllocations} WriteLineToDebugFile('tDEMDataSet.AllocateDEMMemory, int16'); {$EndIf}
-            New(DTEDCols);
+            New(SmallIntElevations);
             ThisDEMMissingValue := MaxSmallInt;
          end;
 
          StartProgress('Allocate DEM memory');
+         rc := ProgressIncrement(DEMheader.NumCol);
          for Col := 0 to pred(DEMheader.NumCol) do begin
-            if Col mod (DEMheader.NumCol div 100) = 0 then UpdateProgressBar(Col/DEMheader.NumCol);
+            if Col mod rc = 0 then UpdateProgressBar(Col/DEMheader.NumCol);
             if (DEMheader.DEMPrecision = FloatingPointDEM) then GetMem(ShortFloatElevations^[Col],BytesPerColumn)
             else if (DEMheader.DEMPrecision = LongWordDEM) then GetMem(LongWordElevations^[Col],BytesPerColumn)
             else if (DEMheader.DEMPrecision = WordDEM) then GetMem(WordElevations^[Col],BytesPerColumn)
             else if (DEMheader.DEMPrecision = ByteDEM) then GetMem(ByteElevations^[Col],BytesPerColumn)
-            else GetMem(DTEDCols^[Col],BytesPerColumn);
+            else GetMem(SmallIntElevations^[Col],BytesPerColumn);
          end;
          EndProgress;
       end;
@@ -3644,7 +3646,7 @@ begin
 end;
 
 
-function tDEMDataSet.DEMHoriznontalSpacingSummary : ShortString;
+function tDEMDataSet.DEMHorizontalSpacingSummary : ShortString;
 begin
    case DEMheader.DEMUsed of
       UTMBasedDEM  : Result := 'UTM-like DEM';
@@ -3978,6 +3980,8 @@ end;
 
 
 initialization
+   SubsequentDEM := false;
+   OpeningNewGrid := false;
 finalization
    {$IfDef RecordClosing} WriteLineToDebugFile('Closing read_dem in'); {$EndIf}
    {$IfDef RecordCloseDEM} WriteLineToDebugFile('RecordCloseDEM in read_dem'); {$EndIf}

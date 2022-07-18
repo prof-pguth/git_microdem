@@ -995,7 +995,7 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
                   WantDEM.DEMheader.DataSpacing := SpaceMeters;
                   WantDEM.DEMheader.UTMZone := WantDEM.DEMMapProjection.projUTMZone;
                   WantDEM.DEMheader.LatHemi := WantDEM.DEMMapProjection.LatHemi;
-                  if not WantDEM.DEMMapProjection.WKTProjectionFromString(WantDEM.DEMMapProjection.wktString) then MessageToContinue('Could not intialize projection from wkt: ' + WantDEM.DEMMapProjection.wktString);
+                  if not WantDEM.DEMMapProjection.DecodeWKTProjectionFromString(WantDEM.DEMMapProjection.wktString) then MessageToContinue('Could not intialize projection from wkt: ' + WantDEM.DEMMapProjection.wktString);
                end
                else begin
                   WantDEM.DEMheader.DEMUsed := UTMBasedDEM;
@@ -1113,14 +1113,16 @@ begin
                            if BigEndian then SwapToShortFloat(z);
                            if ValidZ(z) then begin
                               WantDEM.SetGridElevation(Col,dRow,z * TiffHeader.Factor);
-                           end;
+                           end
+                           else WantDEM.SetGridMissing(Col,dRow);
                         end;
                      end
                      else begin
                         RecsRead := FileRead(TiffHandle,Int32Row^,bs);
                         for Col := 0 to pred(WantDEM.DEMheader.NumCol) do begin
                            z := Int32Row^[Col];
-                           if ValidZ(z) then WantDEM.SetGridElevation(Col,dRow,z * TiffHeader.Factor);
+                           if ValidZ(z) then WantDEM.SetGridElevation(Col,dRow,z * TiffHeader.Factor)
+                           else WantDEM.SetGridMissing(Col,dRow);
                         end;
                      end;
                   end
@@ -1130,7 +1132,8 @@ begin
                         for Col := 0 to pred(WantDEM.DEMheader.NumCol) do begin
                            if BigEndian then zi := Swap(IntRow^[Col])
                            else zi := IntRow^[Col];
-                           if ValidZ(zi) then WantDEM.SetGridElevation(Col,dRow,zi);
+                           if ValidZ(zi) then WantDEM.SetGridElevation(Col,dRow,zi)
+                           else WantDEM.SetGridMissing(Col,dRow);
                         end;
                      end
                      else begin
@@ -1138,7 +1141,8 @@ begin
                         for Col := 0 to pred(WantDEM.DEMheader.NumCol) do begin
                            if BigEndian then zw := Swap(WordRow^[Col])
                            else zw := WordRow^[Col];
-                           if ValidZ(zw) then WantDEM.SetGridElevation(Col,dRow,zw);
+                           if ValidZ(zw) then WantDEM.SetGridElevation(Col,dRow,zw)
+                           else WantDEM.SetGridMissing(Col,dRow);
                         end;
                      end;
                   end
@@ -1148,7 +1152,8 @@ begin
                         z := DoubleRow^[Col];
                         if ValidZ(z) then begin
                            WantDEM.SetGridElevation(Col,dRow,z * TiffHeader.Factor);
-                        end;
+                        end
+                        else WantDEM.SetGridMissing(Col,dRow);;
                      end;
                   end
                   else if (TiffHeader.BitsPerSample in [8]) then begin
@@ -1905,7 +1910,7 @@ var
                            Success := false;
                            TStr := 'Unsupported compression (key 259)=' + IntToStr(Compression);
                            HeaderLogList.Insert(1,TStr);
-                           {$If Defined(RecordGeotiffFailures) or Defined(RecordProblems)} writeLineToDebugFile(MenuStr + '  ' + inFileName); {$EndIf}
+                           {$If Defined(RecordGeotiffFailures)} writeLineToDebugFile(TStr + '  ' + inFileName); {$EndIf}
                          end;
                      end;
                262 : begin
@@ -1922,7 +1927,7 @@ var
                         else begin
                            Success := false;
                            MenuStr := 'Unsupported Photo interp=' + IntToStr(PhotometricInterpretation);
-                           {$If Defined(RecordGeotiffFailures) or Defined(RecordProblems)} writeLineToDebugFile(MenuStr + '  ' + inFileName); {$EndIf}
+                           {$If Defined(RecordGeotiffFailures)} writeLineToDebugFile(MenuStr + '  ' + inFileName); {$EndIf}
                            HeaderLogList.Insert(1,MenuStr);
                         end;
                         {$IfDef VCL}
@@ -2098,7 +2103,7 @@ var
                              if StrUtils.AnsiContainsText(UpperCase(MapProjection.wktString),'ESRIPESTRING') then begin
                                 MapProjection.wktString := AfterSpecifiedStringANSI(MapProjection.wktString, 'ESRIPEString=');
                              end;
-                             HaveRegistration := MapProjection.WKTProjectionFromString(MapProjection.wktString);
+                             HaveRegistration := MapProjection.DecodeWKTProjectionFromString(MapProjection.wktString);
                           end
                           else if StrUtils.AnsiContainsText(TStr,'British_National_Grid|OSGB36|') then begin
                              MapProjection.pName := UK_OS;

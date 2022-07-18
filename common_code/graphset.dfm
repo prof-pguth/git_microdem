@@ -14,7 +14,6 @@ object GraphSettingsForm: TGraphSettingsForm
   Font.Style = [fsBold]
   Position = poDefaultSizeOnly
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Bevel1: TBevel
     Left = 16
