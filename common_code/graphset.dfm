@@ -4,8 +4,8 @@ object GraphSettingsForm: TGraphSettingsForm
   ActiveControl = OKBtn
   BorderStyle = bsDialog
   Caption = 'Graph Modifications'
-  ClientHeight = 424
-  ClientWidth = 396
+  ClientHeight = 563
+  ClientWidth = 728
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
@@ -15,14 +15,6 @@ object GraphSettingsForm: TGraphSettingsForm
   Position = poDefaultSizeOnly
   OnCreate = FormCreate
   TextHeight = 13
-  object Bevel1: TBevel
-    Left = 16
-    Top = 8
-    Width = 345
-    Height = 274
-    Shape = bsFrame
-    IsControl = True
-  end
   object XMinLabel: TLabel
     Left = 24
     Top = 69
@@ -52,15 +44,15 @@ object GraphSettingsForm: TGraphSettingsForm
     Caption = 'Max y '
   end
   object Label2: TLabel
-    Left = 163
-    Top = 20
+    Left = 371
+    Top = 21
     Width = 36
     Height = 13
     Caption = 'Month'
   end
   object Label3: TLabel
-    Left = 241
-    Top = 20
+    Left = 449
+    Top = 21
     Width = 31
     Height = 13
     Caption = 'Year '
@@ -98,28 +90,28 @@ object GraphSettingsForm: TGraphSettingsForm
   end
   object Label5: TLabel
     Left = 23
-    Top = 288
+    Top = 416
     Width = 64
     Height = 13
     Caption = 'Left margin'
   end
   object Label6: TLabel
     Left = 103
-    Top = 288
+    Top = 416
     Width = 64
     Height = 13
     Caption = 'Top margin'
   end
   object Label7: TLabel
     Left = 191
-    Top = 288
+    Top = 416
     Width = 81
     Height = 13
     Caption = 'Bottom margin'
   end
   object RedrawSpeedButton12: TSpeedButton
     Left = 312
-    Top = 380
+    Top = 508
     Width = 37
     Height = 28
     Hint = 'Force redraw'
@@ -136,14 +128,14 @@ object GraphSettingsForm: TGraphSettingsForm
   end
   object Label8: TLabel
     Left = 24
-    Top = 344
+    Top = 472
     Width = 122
     Height = 13
     Caption = 'Lower left corner text'
   end
   object OKBtn: TBitBtn
     Left = 16
-    Top = 380
+    Top = 508
     Width = 77
     Height = 27
     Kind = bkOK
@@ -155,7 +147,7 @@ object GraphSettingsForm: TGraphSettingsForm
   end
   object CancelBtn: TBitBtn
     Left = 123
-    Top = 380
+    Top = 508
     Width = 77
     Height = 27
     Kind = bkCancel
@@ -167,7 +159,7 @@ object GraphSettingsForm: TGraphSettingsForm
   end
   object HelpBtn: TBitBtn
     Left = 223
-    Top = 380
+    Top = 508
     Width = 77
     Height = 27
     Kind = bkHelp
@@ -209,48 +201,41 @@ object GraphSettingsForm: TGraphSettingsForm
   object XLabelEdit: TEdit
     Left = 20
     Top = 13
-    Width = 118
+    Width = 252
     Height = 21
     TabOrder = 7
   end
   object YLabelEdit: TEdit
     Left = 20
     Top = 104
-    Width = 117
+    Width = 252
     Height = 21
     TabOrder = 8
   end
-  object Edit1: TEdit
-    Left = 156
-    Top = 39
+  object Edit2: TEdit
+    Left = 364
+    Top = 66
     Width = 59
     Height = 21
     TabOrder = 9
   end
-  object Edit2: TEdit
-    Left = 156
-    Top = 65
+  object Edit3: TEdit
+    Left = 442
+    Top = 40
     Width = 59
     Height = 21
     TabOrder = 10
   end
-  object Edit3: TEdit
-    Left = 234
-    Top = 39
+  object Edit4: TEdit
+    Left = 442
+    Top = 66
     Width = 59
     Height = 21
     TabOrder = 11
   end
-  object Edit4: TEdit
-    Left = 234
-    Top = 65
-    Width = 59
-    Height = 21
-    TabOrder = 12
-  end
   object BitBtn1: TBitBtn
-    Left = 152
-    Top = 96
+    Left = 371
+    Top = 125
     Width = 85
     Height = 27
     Caption = 'Grid Size'
@@ -268,7 +253,7 @@ object GraphSettingsForm: TGraphSettingsForm
       C8807FF7777777777FF700000000000000007777777777777777333333333333
       3333333333333333333333333333333333333333333333333333}
     NumGlyphs = 2
-    TabOrder = 13
+    TabOrder = 12
     OnClick = BitBtn1Click
   end
   object ComboBox1: TComboBox
@@ -276,7 +261,7 @@ object GraphSettingsForm: TGraphSettingsForm
     Top = 129
     Width = 145
     Height = 21
-    TabOrder = 14
+    TabOrder = 13
     Items.Strings = (
       'Full Grid'
       'Part Grid'
@@ -291,7 +276,7 @@ object GraphSettingsForm: TGraphSettingsForm
     Top = 168
     Width = 145
     Height = 21
-    TabOrder = 15
+    TabOrder = 14
     Text = 'ComboBox2'
     Items.Strings = (
       'Cum normal (5-95%)'
@@ -300,12 +285,12 @@ object GraphSettingsForm: TGraphSettingsForm
       'Cum normal (0.01--99.99%)')
   end
   object CheckBox1: TCheckBox
-    Left = 160
-    Top = 168
+    Left = 368
+    Top = 170
     Width = 97
     Height = 17
     Caption = 'Annual cycle'
-    TabOrder = 16
+    TabOrder = 15
     Visible = False
   end
   object Edit5: TEdit
@@ -313,7 +298,7 @@ object GraphSettingsForm: TGraphSettingsForm
     Top = 200
     Width = 57
     Height = 21
-    TabOrder = 17
+    TabOrder = 16
     Visible = False
   end
   object Edit6: TEdit
@@ -321,7 +306,7 @@ object GraphSettingsForm: TGraphSettingsForm
     Top = 200
     Width = 57
     Height = 21
-    TabOrder = 18
+    TabOrder = 17
     Visible = False
   end
   object CheckBox2: TCheckBox
@@ -330,32 +315,32 @@ object GraphSettingsForm: TGraphSettingsForm
     Width = 129
     Height = 17
     Caption = 'Reverse y axis'
-    TabOrder = 19
+    TabOrder = 18
   end
   object Edit7: TEdit
     Left = 31
-    Top = 304
+    Top = 432
     Width = 65
     Height = 21
-    TabOrder = 20
+    TabOrder = 19
   end
   object Edit8: TEdit
     Left = 111
-    Top = 304
+    Top = 432
+    Width = 57
+    Height = 21
+    TabOrder = 20
+  end
+  object Edit9: TEdit
+    Left = 191
+    Top = 432
     Width = 57
     Height = 21
     TabOrder = 21
   end
-  object Edit9: TEdit
-    Left = 191
-    Top = 304
-    Width = 57
-    Height = 21
-    TabOrder = 22
-  end
   object BitBtn2: TBitBtn
     Left = 284
-    Top = 302
+    Top = 430
     Width = 65
     Height = 25
     Caption = 'Font'
@@ -373,15 +358,15 @@ object GraphSettingsForm: TGraphSettingsForm
       3333333333377333333333333333033333333333333733333333333333333333
       3333333333333333333333333333333333333333333333333333}
     NumGlyphs = 2
-    TabOrder = 23
+    TabOrder = 22
     OnClick = BitBtn2Click
   end
   object ComboBox3: TComboBox
-    Left = 144
-    Top = 32
+    Left = 520
+    Top = 8
     Width = 145
     Height = 21
-    TabOrder = 24
+    TabOrder = 23
     Text = 'ComboBox3'
     Visible = False
     OnChange = ComboBox3Change
@@ -392,7 +377,7 @@ object GraphSettingsForm: TGraphSettingsForm
     Width = 97
     Height = 17
     Caption = '1:1 line'
-    TabOrder = 25
+    TabOrder = 24
   end
   object CheckBox4: TCheckBox
     Left = 304
@@ -400,7 +385,7 @@ object GraphSettingsForm: TGraphSettingsForm
     Width = 45
     Height = 17
     Caption = 'Log'
-    TabOrder = 26
+    TabOrder = 25
   end
   object CheckBox5: TCheckBox
     Left = 31
@@ -408,7 +393,7 @@ object GraphSettingsForm: TGraphSettingsForm
     Width = 109
     Height = 17
     Caption = 'Reverse x axis'
-    TabOrder = 27
+    TabOrder = 26
   end
   object CheckBox6: TCheckBox
     Left = 195
@@ -416,13 +401,68 @@ object GraphSettingsForm: TGraphSettingsForm
     Width = 133
     Height = 17
     Caption = '1:1 x-y axis scaling'
-    TabOrder = 28
+    TabOrder = 27
   end
   object Edit10: TEdit
     Left = 152
-    Top = 341
+    Top = 469
     Width = 236
     Height = 21
+    TabOrder = 28
+  end
+  object GroupBox1: TGroupBox
+    Left = 16
+    Top = 296
+    Width = 169
+    Height = 73
+    Caption = 'Form size'
     TabOrder = 29
+    object Label9: TLabel
+      Left = 16
+      Top = 24
+      Width = 34
+      Height = 13
+      Caption = 'Width'
+    end
+    object Label10: TLabel
+      Left = 15
+      Top = 43
+      Width = 38
+      Height = 13
+      Caption = 'Height'
+    end
+    object Edit11: TEdit
+      Left = 72
+      Top = 16
+      Width = 78
+      Height = 21
+      TabOrder = 0
+      Text = 'Edit11'
+    end
+    object Edit12: TEdit
+      Left = 72
+      Top = 43
+      Width = 77
+      Height = 21
+      TabOrder = 1
+      Text = 'Edit12'
+    end
+  end
+  object CheckBox7: TCheckBox
+    Left = 432
+    Top = 432
+    Width = 97
+    Height = 17
+    Caption = 'Scroll graph'
+    TabOrder = 30
+    OnClick = CheckBox7Click
+  end
+  object Edit1: TEdit
+    Left = 368
+    Top = 40
+    Width = 55
+    Height = 21
+    TabOrder = 31
+    Text = 'Edit1'
   end
 end

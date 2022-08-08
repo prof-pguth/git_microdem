@@ -221,7 +221,7 @@ begin
 
    if (RoughGrid = 0) then begin
       if RadioGroup6.ItemIndex = 0 then RoughGrid := CreateRoughnessMap2(CurDEM,false,true)
-      else RoughGrid := CreateRoughnessMap(CurDEM,false,true);
+      else RoughGrid := CreateRoughnessMap(CurDEM,false);
    end;
    if ConvexGrid = 0 then ConvexGrid := CreateProfileConvexityMap(CurDEM,false);
    if SlopeGrid = 0 then SlopeGrid := CreateSlopeMap(CurDEM,false);

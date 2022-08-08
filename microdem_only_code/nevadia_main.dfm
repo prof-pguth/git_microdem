@@ -2070,6 +2070,10 @@ object wmdem: Twmdem
           Caption = 'GDAL slopes arc second DEMs'
           OnClick = GDALslopesarcsecondDEMs1Click
         end
+        object DEMIXtilesizebylatitude1: TMenuItem
+          Caption = 'DEMIX tile size by latitude'
+          OnClick = DEMIXtilesizebylatitude1Click
+        end
       end
       object DEMproperties1: TMenuItem
         Caption = 'DEM properties'
@@ -2206,13 +2210,13 @@ object wmdem: Twmdem
           Caption = 'Subsample compare thin/average'
           OnClick = Subsamplecomparethinaverage1Click
         end
+        object DEMIXreferenceDEMcreation1: TMenuItem
+          Caption = 'DEMIX reference DEM creation'
+          OnClick = DEMIXreferenceDEMcreation1Click
+        end
         object DEMIXtiles1: TMenuItem
           Caption = 'DEMIX tiles geostats'
           OnClick = DEMIXtiles1Click
-        end
-        object DEMIXcreatereferenceDEMs1: TMenuItem
-          Caption = 'DEMIX create reference DEMs'
-          OnClick = DEMIXcreatereferenceDEMs1Click
         end
         object DEMIXelevationhistograms1: TMenuItem
           Caption = 'DEMIX elevation histograms'
@@ -2981,7 +2985,6 @@ object wmdem: Twmdem
       end
       object N28: TMenuItem
         Caption = 'Assign projection (GDAL, hard wired)'
-        OnClick = N28Click
       end
       object GetGRASSextensions1: TMenuItem
         Caption = 'Get GRASS extensions'

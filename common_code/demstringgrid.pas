@@ -469,8 +469,8 @@ begin
 
    if (fName = '') then fName := ProgramRootDir + 'correlations' + DefaultDBExt;
    if GetFileFromDirectory('Correlation color table',DefaultDBMask,fName) then
-       Table := tMyData.Create(fName)
-    else  begin
+      Table := tMyData.Create(fName)
+    else begin
        Table := Nil;
        MinVal := 99999;
        MaxVal := -9999;
@@ -534,7 +534,7 @@ begin
                    Table.Next;
                    if Table.eof then break;
                 end;
-                Bitmap.Canvas.Brush.Color := RGB(Table.GetFieldByNameAsInteger('RED'), Table.GetFieldByNameAsInteger('GREEN'),Table.GetFieldByNameAsInteger('BLUE'));
+                Bitmap.Canvas.Brush.Color := Table.TColorFromTable;  //(Table.GetFieldByNameAsInteger('RED'),Table.GetFieldByNameAsInteger('GREEN'),Table.GetFieldByNameAsInteger('BLUE'));
              end;
          end;
          Bitmap.Canvas.Brush.Style := bsSolid;

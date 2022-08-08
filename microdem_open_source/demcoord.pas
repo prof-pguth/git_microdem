@@ -32,7 +32,7 @@ unit DEMCoord;
    {$IFDEF DEBUG}
       {$Define RecordDEMIX}
       //{$Define ShortDEMLoad}
-      {$Define RecordSaveAverageResampleDEMformat}
+      //{$Define RecordSaveAverageResampleDEMformat}
       //{$Define RecordDEMCreation}
       //{$Define RecordSSO}
       //{$Define RecordDEMDigitizeDatum}
@@ -346,7 +346,7 @@ type
          function ElevationGrid : boolean;
          function ReadDEMNow(var tFile : PathStr; transformtoNewDatum : boolean) : boolean;
          function ReloadDEM(transformtoNewDatum : boolean) : boolean;
-         procedure SetNewDEM(var NewDEM : integer); //SaveFP,AllocateMemory,MarkMissing : boolean);
+         procedure SetNewDEM(var NewDEM : integer);
          procedure FreeDEMMemory;
 
          function TheShortDEMName : ShortString;
@@ -703,7 +703,7 @@ type
                procedure EntireDEMFractalBox;
                function CreateWholeDEMHistogram : TThisBaseGraph;
                function CreatePartDEMHistogram(GridLimits: tGridLimits) : TThisBaseGraph;
-               function NormalAtPoint(Col,Row : integer; var n1,n2,n3 : float64) : boolean;   inline;
+               //function NormalAtPoint(Col,Row : integer; var n1,n2,n3 : float64) : boolean;   inline;
                procedure InitializeNormals(var NumPts : Integer);
                procedure DisposeNormals;
                function FigureEntropy : float64;
@@ -1088,7 +1088,7 @@ end;
 
 
 
-function tDEMDataSet.CloneAndOpenGrid(NewPrecision : tDEMprecision; Gridname : shortstring; ElevUnits : tElevUnit) {AllSetToZero : boolean = false; ThinFactor : integer = 0)} : integer;
+function tDEMDataSet.CloneAndOpenGrid(NewPrecision : tDEMprecision; Gridname : shortstring; ElevUnits : tElevUnit) : integer;
 var
    NewHeadRecs : tDEMheader;
 begin
@@ -1096,17 +1096,9 @@ begin
    NewHeadRecs := DEMheader;
    NewHeadRecs.DEMPrecision := NewPrecision;
    NewHeadRecs.ElevUnits := ElevUnits;
-   (*
-   if (ThinFactor > 1) then begin
-      NewHeadRecs.NumCol := DEMheader.NumCol div ThinFactor;
-      NewHeadRecs.NumRow := DEMheader.NumRow div ThinFactor;
-      NewHeadRecs.DEMySpacing := DEMheader.DEMySpacing * ThinFactor;
-      NewHeadRecs.DEMxSpacing := DEMheader.DEMxSpacing * ThinFactor;
-   end;
-   *)
   {$IfDef RecordCreateNewDEM} WriteLineToDebugFile('tDEMDataSet.CloneAndOpenGrid off to OpenAndZero'); {$EndIf}
    Result := 0;
-   if OpenAndZeroNewDEM(true,NewHeadRecs,Result,Gridname,{(not AllSetToZero)}InitDEMMissing,0) then begin
+   if OpenAndZeroNewDEM(true,NewHeadRecs,Result,Gridname,InitDEMMissing,0) then begin
       AssignProjectionFromDEM(DEMGlb[Result].DEMMapProjection,'DEM=' + IntToStr(Result));
    end;
   {$IfDef RecordCreateNewDEM} WriteLineToDebugFile('tDEMDataSet.CloneAndOpenGrid out'); {$EndIf}
@@ -3844,9 +3836,9 @@ begin
          if DEMGlb[DEM].Normals^[Col]^[Row][3] < pred(MaxSmallInt) then begin
             inc(SSOVars.NumPts);
 
-            SSOVars.x1sq := SSOVars.x1sq + DEMGlb[DEM].Normals^[Col]^[Row][1];
-            SSOVars.y1sq := SSOVars.y1sq + DEMGlb[DEM].Normals^[Col]^[Row][2];
-            SSOVars.z1sq := SSOVars.z1sq + DEMGlb[DEM].Normals^[Col]^[Row][3];
+            SSOVars.x1sq := SSOVars.x1sq + sqr(DEMGlb[DEM].Normals^[Col]^[Row][1]);
+            SSOVars.y1sq := SSOVars.y1sq + sqr(DEMGlb[DEM].Normals^[Col]^[Row][2]);
+            SSOVars.z1sq := SSOVars.z1sq + sqr(DEMGlb[DEM].Normals^[Col]^[Row][3]);
 
             for j := 1 to 3 do
                for k := 1 to 3 do

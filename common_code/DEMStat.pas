@@ -2523,7 +2523,7 @@ type
   tCorrs = array[1..MaxDEMDataSets,1..MaxDEMDataSets] of float64;
 var
   r,covar : float64;
-  i: Integer;
+  i,n: Integer;
   j: Integer;
   Findings : tStringList;
   MenuStr : ansistring;
@@ -2541,9 +2541,11 @@ begin
    Findings.Add(MenuStr);
    New(Corrs);
    StartProgress('Grid correlations');
+   n := 0;
    for i := 1 to MaxDEMDataSets do begin
       if ValidDEM(i) then begin
-         UpdateProgressBar(i/MaxDEMDataSets);
+         inc(n);
+         UpdateProgressBar(n/NumDEMDataSetsOpen);
          for j := i to MaxDEMDataSets do begin
             if ValidDEM(j) then begin
                if (i = j) then begin
@@ -2559,9 +2561,11 @@ begin
       end;
    end;
 
+   n := 0;
    for i := 1 to MaxDEMDataSets do begin
       if ValidDEM(i) then begin
-         UpdateProgressBar(i/NumDEMDataSetsOpen);
+         inc(n);
+         UpdateProgressBar(n/NumDEMDataSetsOpen);
          MenuStr := DEMGlb[i].AreaName;
          for j := 1 to MaxDEMDataSets do begin
             if ValidDEM(j) then begin

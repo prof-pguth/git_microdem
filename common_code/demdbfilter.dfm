@@ -14,7 +14,6 @@ object dbFilterCreation: TdbFilterCreation
   OnClose = FormClose
   OnCreate = FormCreate
   OnResize = FormResize
-  PixelsPerInch = 96
   TextHeight = 13
   object Panel1: TPanel
     Left = 0
@@ -245,7 +244,7 @@ object dbFilterCreation: TdbFilterCreation
           Text = ' '
         end
         object BitBtn5: TBitBtn
-          Left = 411
+          Left = 386
           Top = 62
           Width = 89
           Height = 25
@@ -275,6 +274,15 @@ object dbFilterCreation: TdbFilterCreation
           Caption = 'Quick'
           TabOrder = 8
           OnClick = BitBtn12Click
+        end
+        object BitBtn7: TBitBtn
+          Left = 481
+          Top = 62
+          Width = 42
+          Height = 25
+          Caption = 'OR'
+          TabOrder = 9
+          OnClick = BitBtn7Click
         end
       end
       object Memo1: TMemo

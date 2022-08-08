@@ -330,7 +330,7 @@ var
    dz : float64;
    i : integer;
 begin
-   {$IfDef RecordColorPalette} WriteLineToDebugFile('Petmar.DefineColorTableValues  palette=' + Palette); {$EndIf}
+   {$IfDef RecordColorPalette} WriteLineToDebugFile('Petmar.DefineColorTableValues palette=' + Palette); {$EndIf}
    ZColorTable.ZTableEntries := 0;
    if FileExists(ColorBrewerName) then begin
       if DefineColorArray(Palette,ZColorTable.ZTableEntries,ZColorTable.zTableColors,Reverse) then begin

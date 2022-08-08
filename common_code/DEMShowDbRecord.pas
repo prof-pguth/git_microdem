@@ -189,22 +189,22 @@ implementation
 uses
    {$IfDef ExSidescan}
    {$Else}
-   SideImg,
+      SideImg,
    {$EndIf}
 
    {$IfDef ExGeography}
    {$Else}
-   KoppenGr, koppen_opts,
+      KoppenGr, koppen_opts,
    {$EndIf}
 
    {$IfDef ExSat}
    {$Else}
-   DEMEROS,
+      DEMEROS,
    {$EndIf}
 
    {$IfDef ExGeology}
    {$Else}
-   Beach_Ball_Options,
+      Beach_Ball_Options,
    {$EndIf}
 
    {$IfDef ExStereoNet}
@@ -233,8 +233,7 @@ var
       procedure CheckWWWButton(WWWBtn1 : tBitBtn; WWWFieldName : ShortString);
       begin
          with GISdb[theDB],MyData do begin
-            WWWBtn1.Visible := (DBTableF <> Nil) and GISdb[DBTableF.DBonTable].WWWpresent and (WWWFieldName <> '') and
-                 (GetFieldByNameAsString(WWWFieldName) <> '');
+            WWWBtn1.Visible := (DBTableF <> Nil) and GISdb[DBTableF.DBonTable].WWWpresent and (WWWFieldName <> '') and (GetFieldByNameAsString(WWWFieldName) <> '');
             if WWWFieldName = 'HYPERLINK'  then WWWBtn1.Caption := 'LINK'
             else WWWBtn1.Caption := Copy(WWWFieldName,5,Length(WWWFieldName)-4);
          end;
@@ -312,7 +311,7 @@ var
    TStr2 : String;
    TStr : ShortString;
    bmp,bmp2,bmp3 : tMyBitmap;
-   FPs{,NLCDCats} : tStringList;
+   FPs  : tStringList;
    OldFilter : shortstring;
    Saved : TTabSheet;
    fName : PathStr;
@@ -613,6 +612,7 @@ procedure Tshowrecordform.BitBtn12Click(Sender: TObject);
 begin
    if BitBtn1.Visible then BitBtn1Click(Sender);
    GISDb[DBShown].MyData.Next;
+   CurrentRec_ID := GISDb[DBShown].MyData.GetFieldByNameAsInteger(RecNoFName);
    ShowRecords;
 end;
 
@@ -629,6 +629,7 @@ procedure Tshowrecordform.BitBtn14Click(Sender: TObject);
 begin
    if BitBtn1.Visible then BitBtn1Click(Sender);
    GISDb[DBShown].MyData.Prior;
+   CurrentRec_ID := GISDb[DBShown].MyData.GetFieldByNameAsInteger(RecNoFName);
    ShowRecords;
 end;
 
@@ -682,14 +683,24 @@ procedure Tshowrecordform.BitBtn1Click(Sender: TObject);
 var
    i : integer;
    TStr : ShortString;
+   OldFilter : shortstring;
 begin
+   OldFilter := GISDb[DBShown].MyData.Filter;
+   GISDb[DBShown].EmpSource.Enabled := false;
+   GISDb[DBShown].MyData.ApplyFilter(RecNoFName + '=' + IntToStr(CurrentRec_ID));
    GISDb[DBShown].MyData.Edit;
    for i := 0 to pred(GISDb[DBShown].MyData.FieldCount) do begin
      {$IfDef RecordDEditProblems} WriteLineToDebugFile(StringGrid1.Cells[0,succ(i)] +   '   /  ' + StringGrid1.Cells[1,succ(i)]); {$EndIf}
      TStr := StringGrid1.Cells[0,succ(i)];
-     if (TStr <> '') and GISDb[DBShown].MyData.FieldExists(TStr) then GISDb[DBShown].MyData.SetFieldByNameAsString(TStr,StringGrid1.Cells[1,succ(i)]);
+     if (TStr <> '') and GISDb[DBShown].MyData.FieldExists(TStr) then begin
+        GISDb[DBShown].MyData.SetFieldByNameAsString(TStr,StringGrid1.Cells[1,succ(i)]);
+     end;
    end;
    GISDb[DBShown].MyData.Post;
+
+   GISDb[DBShown].MyData.ApplyFilter(OldFilter);
+   GISDb[DBShown].EmpSource.Enabled := true;
+
    if (Sender = BitBtn1) then Close;
 end;
 

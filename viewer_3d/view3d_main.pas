@@ -223,7 +223,7 @@ uses
    BaseMap;
 
 var
-  Down: TPointF;
+  Down : TPointF;
 
 
       procedure TView3DForm.DoMap(aMapDraw : tMapDraw);

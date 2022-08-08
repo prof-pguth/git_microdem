@@ -194,8 +194,6 @@ function FontInstalled(Const FontName:String) : Boolean;
    procedure ScreenSymbol(Canvas : TCanvas; x,y : integer; Symbol : tFullSymbolDeclaration); overload;
 
 
-function GetFromListZeroBased(InMessage : ANSIstring; var PickedNum : integer; var InList : TStringList; CanCancel : boolean = false; MultiPick : boolean = false) : boolean;
-
 
       procedure StartCount(Title : ShortString);
       procedure UpdateCount(HowFar : LongInt);
@@ -204,9 +202,9 @@ function GetFromListZeroBased(InMessage : ANSIstring; var PickedNum : integer; v
 function ExecuteFile(const FileName, Params, DefaultDir: ANSIstring): THandle;
 function WinExecAndWait32(FileName : ANSIstring; Wait : boolean = true; Log : boolean = true) : integer;
 
+function GetFromListZeroBased(InMessage : ANSIstring; var PickedNum : integer; var InList : TStringList; CanCancel : boolean = false; MultiPick : boolean = false) : boolean;
 function GetFromList(InMessage : ANSIstring; var PickedNum : integer; InList : TStringList; CanCancel : boolean = false) : boolean;    overload;
 function GetFromList(InMessage : ANSIstring; InList : TStringList; CanCancel : boolean = false) : ShortString; overload;
-
 function GetMultipleFromList(InMessage : ANSIstring; var PickedNum : integer; var InList : TStringList; CanCancel : boolean = false) : boolean;
 
 procedure GetString(Prompt : ShortString; var Input : ShortString; ForceCaps : boolean; ValidChars : characters);
@@ -346,7 +344,6 @@ procedure ModifyRGBColor(Color : TPlatformColor; r,g,b : integer; a : integer = 
       function GetFileFromDirectory(InMessage : ANSIstring; Mask : ANSIstring;  var FileWanted : PathStr) : boolean;
       function GetDOSPath(TheMessage : AnsiString; var Path : PathStr) : boolean;
       procedure CleanUpFileName(var fname : PathStr);
-
 
       procedure FSplit(FName : PathStr; var Dir : DirStr; var Name : NameStr; var Ext : ExtStr);
       function ExtractFileNameNoExt(fName : PathStr) : NameStr;
@@ -1494,6 +1491,8 @@ end;
                   ColorTable.ApplyFilter('PALETTE=' + QuotedStr(Palette));
                end;
                NumColors := ColorTable.RecordCount;
+               if NumColors > 255 then NumColors := 255;
+
                for i := 1 to NumColors do begin
                   if (i in [1..255]) then begin
                      if Reverse then ColorsTable[NumColors - pred(i)] := ColorTable.PlatformColorFromTable

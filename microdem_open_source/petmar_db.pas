@@ -194,6 +194,7 @@ type
         function GetFieldName(i : integer) : ANSIString;
         function GetFieldType(fName : ANSIString) : tFieldType; overload;
         function GetFieldType(i : integer) : tFieldType; overload;
+        function GetFieldLength(WantFieldName : ANSIString) : integer;
         function GetFieldDataSize(I : integer) : integer;
         function GetFieldPrecision(fName : ANSIString) : integer; overload;
         function GetFieldPrecision(i : integer) : integer; overload;
@@ -205,7 +206,6 @@ type
 
         procedure SetAllFieldsBlank;
 
-        function GetFieldLength(WantFieldName : ANSIString) : integer;
         function IsNumericField(WantFieldName : ANSIString) : boolean;
         function IsFloatField(WantFieldName : ANSIString) : boolean;
         function IsIntegerField(WantFieldName : ANSIString) : boolean;
@@ -1378,34 +1378,21 @@ begin
    else begin
       TStr := RealToString(value,-18,GetFieldPrecision(FieldName));
       SetFieldByNameAsString(FieldName,TStr);
-(*
-
-      {$IfDef BDELikeTables}
-         if (TheBDEdata <> Nil) then TheBDEdata.FieldByName(FieldName).AsFloat := value;
-      {$EndIf}
-      {$IfDef UseTCLientDataSet}
-         if (TheClientDataSet <> Nil) then TheClientDataSet.FieldByName(FieldName).AsFloat := value;
-      {$EndIf}
-      {$IfDef UseFireDacSQLlite}
-         if (fdTable <> Nil) then fdTable.FieldByName(FieldName).AsFloat := value;
-      {$EndIf}
-      {$IfDef UseFDMemTable}
-         if (FDMemTable <> nil) fdMemTable.FieldByName(FieldName).AsFloat := value;
-      {$EndIf}
-*)
    end;
 end;
 
 
 procedure tMyData.CarefullySetFloat(FieldName : ANSIString; var Value : float64; Precision : float64);  //inline;
 begin
-   if (abs(Value) < Precision) then Value := 0;
+   //if (abs(Value) < Precision) then Value := 0;
+   Value := round(Value / Precision) * Precision;
    SetFieldByNameAsFloat(FieldName,value);
 end;
 
 procedure tMyData.CarefullySetFloat32(FieldName : ANSIString; var Value : float32; Precision : float32);  //inline;
 begin
-   if (abs(Value) < Precision) then Value := 0;
+   //if (abs(Value) < Precision) then Value := 0;
+   Value := round(Value / Precision) * Precision;
    SetFieldByNameAsFloat(FieldName,value);
 end;
 

@@ -336,7 +336,8 @@ uses
   CCR.Exif.XMPUtils in '..\xif\CCR.Exif.XMPUtils.pas',
   JpegDumpForm in '..\xif\JpegDumpForm.pas' {NewfrmJpegDump},
   JpegDumpOutputFrame in '..\xif\JpegDumpOutputFrame.pas' {NewOutputFrame: TFrame},
-  U_SolarPos2 in '..\SolarPosSource\U_SolarPos2.pas' {SolorPosForm1};
+  U_SolarPos2 in '..\SolarPosSource\U_SolarPos2.pas' {SolorPosForm1},
+  ufrmMain in '..\FireMonkey3DGlobalRotate\ufrmMain.pas' {frmMain};
 
 {$R *.RES}
 
@@ -361,7 +362,7 @@ begin
          Application.Title := '';
          Application.HelpFile := 'microdem.chm';
          Application.CreateForm(Twmdem, wmdem);
-  Application.Run;
+         Application.Run;
       end;
     finally
        CloseHandle(FMutex);

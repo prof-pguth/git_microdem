@@ -3,8 +3,8 @@ object BlockOpsForm: TBlockOpsForm
   Top = 0
   BorderIcons = []
   Caption = 'Geomorph Block Settings'
-  ClientHeight = 549
-  ClientWidth = 993
+  ClientHeight = 582
+  ClientWidth = 1133
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -374,14 +374,14 @@ object BlockOpsForm: TBlockOpsForm
         TabOrder = 2
         object Label10: TLabel
           Left = 12
-          Top = 124
+          Top = 140
           Width = 58
           Height = 13
           Caption = 'Box size (m)'
         end
         object Label8: TLabel
           Left = 12
-          Top = 150
+          Top = 166
           Width = 63
           Height = 13
           Caption = 'Map thinniing'
@@ -436,15 +436,15 @@ object BlockOpsForm: TBlockOpsForm
         end
         object Edit3: TEdit
           Left = 87
-          Top = 120
+          Top = 136
           Width = 49
           Height = 21
           TabOrder = 6
         end
         object BitBtn3: TBitBtn
-          Left = 3
-          Top = 176
-          Width = 126
+          Left = 56
+          Top = 190
+          Width = 80
           Height = 25
           Caption = 'Test box size'
           TabOrder = 7
@@ -452,10 +452,27 @@ object BlockOpsForm: TBlockOpsForm
         end
         object Edit8: TEdit
           Left = 89
-          Top = 147
+          Top = 163
           Width = 47
           Height = 21
           TabOrder = 8
+        end
+        object CheckBox59: TCheckBox
+          Left = 16
+          Top = 117
+          Width = 97
+          Height = 17
+          Caption = 'Vector strength'
+          TabOrder = 9
+        end
+        object BitBtn8: TBitBtn
+          Left = 8
+          Top = 190
+          Width = 42
+          Height = 25
+          Caption = 'SSO'
+          TabOrder = 10
+          OnClick = BitBtn8Click
         end
       end
       object GroupBox8: TGroupBox

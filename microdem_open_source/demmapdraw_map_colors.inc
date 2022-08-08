@@ -565,7 +565,7 @@ end;
           procedure ColorizeInPlace;
           var
              x,y{,zi} : integer;
-             Lat,Long,xg,yg{,z }: float64;
+             Lat,Long,xg,yg : float64;
              pUse : tRGBTriple;
              BMPMemory : tBMPMemory;
           begin
@@ -686,7 +686,7 @@ begin
       {$IfDef RecordNLCD} WriteLineToDebugFile('LandCoverGrid on DEM Map'); {$EndIf}
       for I := 1 to MaxNLCDCategories do begin
          if DEMGlb[DEMonMap].NLCDCats^[i].UseCat then begin
-            {$IfDef RecordNLCD} WriteLineToDebugFile(IntegerToString(i,3) + IntegerToString(DEMGlb[DEMonMap].NLCDCats^[i].Color,12));   {$EndIf}
+            {$IfDef RecordNLCD} WriteLineToDebugFile(IntegerToString(i,3) + IntegerToString(DEMGlb[DEMonMap].NLCDCats^[i].Color,12)); {$EndIf}
             pPal[i] := DEMGlb[DEMonMap].NLCDCats^[i].Color;
          end
          else pPal[i] := MDDef.MissingDataColor;
@@ -698,7 +698,7 @@ begin
       ColorsForLegends;
    end
    else if (MapType = mtElevFromTable) then begin
-      {$IfDef RecordElevColorFromTable}   WriteLineToDebugFile('MapType = mtElevFromTable starting maps w/ ' + ElevationDBaseTable);   {$EndIf}
+      {$IfDef RecordElevColorFromTable} WriteLineToDebugFile('MapType = mtElevFromTable starting maps w/ ' + ElevationDBaseTable); {$EndIf}
       if FileExists(HardLimitColorPaletteFName) then begin
          ColorTable := tMyData.Create(HardLimitColorPaletteFName);
          ColorTable.ApplyFilter('PALETTE=' + QuotedStr(ElevationFixedPalette));

@@ -17,7 +17,7 @@ var
 
    {$IfDef  ExGeotiff}
    {$Else}
-      function ReadTIFFDEM(DEMFileName : PathStr) : boolean;
+      function ReadTIFFDEM(var DEMFileName : PathStr) : boolean;
       var
          TiffImage : tTiffImage;
          RegVars : tRegVars;
@@ -668,27 +668,6 @@ var
             for i := 1 to length(line) do if Line[i] = #9 then Line[i] := ' ';
             val(ptTrim(AfterSpecifiedCharacter(Line,' ')),TheValue,err);
          end;
-
-         (*
-         procedure ReadValue(var TheValue : word);  overload;
-         var
-            i : integer;
-         begin
-            readln(InputFile,Line);
-            for i := 1 to length(line) do if Line[i] = #9 then Line[i] := ' ';
-            val(ptTrim(AfterSpecifiedCharacter(Line,' ')),TheValue,err);
-         end;
-
-
-         procedure ReadValue(var TheValue : Int16);  overload;
-         var
-            i : integer;
-         begin
-            readln(InputFile,Line);
-            for i := 1 to length(line) do if (Line[i] in  [#9,'A'..'Z','a'..'z']) then Line[i] := ' ';
-            val(ptTrim(AfterSpecifiedCharacter(Line,' ')),TheValue,err);
-         end;
-         *)
 
          procedure ReadTheDEM;
          var

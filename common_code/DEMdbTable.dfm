@@ -1299,9 +1299,17 @@ object dbtablef: Tdbtablef
     end
     object DEMIX1: TMenuItem
       Caption = 'DEMIX'
+      object Filteroutsignedcriteriameanandmedian1: TMenuItem
+        Caption = 'Filter out signed criteria (mean and median)'
+        OnClick = Filteroutsignedcriteriameanandmedian1Click
+      end
       object ExtractDEMIXtiles1: TMenuItem
         Caption = 'Extract DEMIX tile DEMs'
         OnClick = ExtractDEMIXtiles1Click
+      end
+      object DEMIXtilesummary1: TMenuItem
+        Caption = 'DEMIX tile summary'
+        OnClick = DEMIXtilesummary1Click
       end
       object N1degreetilestocoverrecordsintable1: TMenuItem
         Caption = '1 degree tiles to cover records in table'
@@ -1310,37 +1318,55 @@ object dbtablef: Tdbtablef
         Caption = 'Points to check vertical datum shift'
         OnClick = Pointstocheckverticaldatumshift1Click
       end
-      object Graphsforwinecontest1: TMenuItem
-        Caption = 'Graphs for wine contest'
-        Enabled = False
-        OnClick = Graphsforwinecontest1Click
-      end
       object ransposeforwinecontest1: TMenuItem
         Caption = 'Transpose for wine contest'
         OnClick = ransposeforwinecontest1Click
       end
-      object Graphfortransposeddata1: TMenuItem
-        Caption = 'Graph for transposed data'
-        OnClick = Graphfortransposeddata1Click
+      object Graphmeanmedianbyterraincategory1: TMenuItem
+        Caption = 'Graphs with various filters (experimental)'
+        object Keymeans1: TMenuItem
+          Caption = 'Key means'
+          OnClick = Keymeans1Click
+        end
+        object Keymeans2: TMenuItem
+          Caption = 'Key medians'
+          OnClick = Keymeans2Click
+        end
+        object PickParam1: TMenuItem
+          Caption = 'Pick criterion (parameter)'
+          OnClick = PickParam1Click
+        end
+        object Allcriteriavalues1: TMenuItem
+          Caption = 'Single tile, all criteria, values'
+          OnClick = Allcriteriavalues1Click
+        end
+        object Simpleexample1: TMenuItem
+          Caption = 'Simple example'
+          OnClick = Simpleexample1Click
+        end
+        object PercentageofcriteriawhereDEMisbest1: TMenuItem
+          Caption = 'Percentage of criteria where DEM is best'
+          OnClick = PercentageofcriteriawhereDEMisbest1Click
+        end
+        object Averageranksbyarea1: TMenuItem
+          Caption = 'Average ranks by area'
+          OnClick = Averageranksbyarea1Click
+        end
       end
       object Graphavereagescoresbyterraincategories1: TMenuItem
         Caption = 'Graph avereage scores by terrain categories'
         OnClick = Graphavereagescoresbyterraincategories1Click
       end
-      object BestDEM1: TMenuItem
-        Caption = 'Score Best DEM'
-        OnClick = BestDEM1Click
-      end
       object BestDEMbycategory1: TMenuItem
-        Caption = 'Best DEM by category'
+        Caption = 'Calculate average score by terrain category'
         OnClick = BestDEMbycategory1Click
       end
       object RankDEMs1: TMenuItem
-        Caption = 'Rank DEMs'
+        Caption = 'Rank DEMs and find best'
         OnClick = RankDEMs1Click
       end
       object Sumscores1: TMenuItem
-        Caption = 'Sum scores'
+        Caption = 'Sum scores based on active filters'
         OnClick = Sumscores1Click
       end
     end
@@ -3519,6 +3545,10 @@ object dbtablef: Tdbtablef
           OnClick = Flipbinnames1Click
         end
       end
+    end
+    object Hide1: TMenuItem
+      Caption = 'Hide'
+      OnClick = Hide1Click
     end
     object Find1: TMenuItem
       Caption = 'Find'

@@ -223,6 +223,7 @@ function YearLength(Year : integer) : integer;
 Function IsNumeric(s: AnsiString) : Boolean;
 
 function RadToDegString(rads : float64) : shortstring;
+function FilterSizeStr(i : integer) : shortstring;
 
 
 var
@@ -249,6 +250,12 @@ uses
 
 var
    LabelLength : integer;
+
+
+function FilterSizeStr(i : integer) : shortstring;
+begin
+   Result := IntToStr(i) + 'x' + IntToStr(i);
+end;
 
 
 function EnoughPoints(MomentVar : tMomentVar) : boolean;

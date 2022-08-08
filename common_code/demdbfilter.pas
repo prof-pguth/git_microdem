@@ -75,6 +75,7 @@ type
     ComboBox4: TComboBox;
     Edit3: TEdit;
     BitBtn13: TBitBtn;
+    BitBtn7: TBitBtn;
     procedure CheckBox23Click(Sender: TObject);
     procedure CheckBox20Click(Sender: TObject);
     procedure CheckBox21Click(Sender: TObject);
@@ -108,6 +109,7 @@ type
     procedure BitBtn11Click(Sender: TObject);
     procedure BitBtn12Click(Sender: TObject);
     procedure BitBtn13Click(Sender: TObject);
+    procedure BitBtn7Click(Sender: TObject);
   private
     { Private declarations }
     procedure CreateTimeFilter;
@@ -132,7 +134,7 @@ implementation
 
 
 uses
-   PETMAR,PETdbUtils,
+   PETMAR,PETdbUtils,toggle_db_use,
    DEMDefs,demdbtable, PETImage;
 
 var
@@ -360,6 +362,7 @@ begin
             if GetFieldType(WantedField) in [ftString] then
                if (ComboBox2.Text = '<') or (ComboBox2.Text = '<=') then ComboBox2.Text := '=';
             BitBtn5.Enabled := GetFieldType(WantedField) in [ftString,ftInteger,ftSmallInt,ftLargeInt];
+            BitBtn7.Enabled := GetFieldType(WantedField) in [ftString,ftInteger,ftSmallInt,ftLargeInt];
             Edit1.Enabled := GetFieldType(WantedField) in [ftFloat,ftInteger,ftSmallInt,ftLargeInt,ftDate];
             ComboBox3.Enabled := Edit1.Enabled;
             Edit2.Enabled := true;
@@ -530,6 +533,34 @@ begin
    GISDataBase.dbOpts.GeoFilter := '';
    BitBtn1Click(Sender);
 end;
+
+procedure TdbFilterCreation.BitBtn7Click(Sender: TObject);
+var
+   SL : tStringList;
+   aFilter : shortstring;
+   i : integer;
+begin
+   if GISDataBase.MyData.GetFieldType(GISDataBase.MyData.GetFieldName(WantedField)) in [ftString,ftInteger,ftSmallInt] then begin
+      GISDataBase.EmpSource.Enabled := false;
+      sl := GISDataBase.MyData.UniqueEntriesInDB(WantedFieldName);
+      GISDataBase.EmpSource.Enabled := true;
+      PickSomeFromStringList(SL,'fields to add with OR');
+      if sl.Count > 1 then begin
+         aFilter := '';
+         for i := 0 to pred(sl.Count) do begin
+            if GISDataBase.MyData.GetFieldType(GISDataBase.MyData.GetFieldName(WantedField)) in [ftString] then begin
+               aFilter := AddOrIfNeeded(aFilter) + WantedFieldName + '=' + QuotedStr(sl.Strings[i]);
+            end
+            else begin
+               aFilter := AddOrIfNeeded(aFilter) + WantedFieldName+ '=' + sl.Strings[i];
+            end;
+         end;
+         Memo1.Lines.Add('(' + aFilter + ')');
+      end;
+      sl.Free;
+   end;
+end;
+
 
 procedure TdbFilterCreation.ComboBox2Change(Sender: TObject);
 begin

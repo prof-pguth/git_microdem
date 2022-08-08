@@ -278,6 +278,7 @@ type
     DEMtoLAZ1: TMenuItem;
     GDALwarpSentinel11: TMenuItem;
     CSVmergefiles1: TMenuItem;
+    OGRshapefilestoGKPG1: TMenuItem;
     procedure ASCIIremovequotes1Click(Sender: TObject);
     procedure ASCII01Click(Sender: TObject);
     procedure HTMLcleanup1Click(Sender: TObject);
@@ -448,6 +449,7 @@ type
     procedure DEMtoLAZ1Click(Sender: TObject);
     procedure GDALwarpSentinel11Click(Sender: TObject);
     procedure CSVmergefiles1Click(Sender: TObject);
+    procedure OGRshapefilestoGKPG1Click(Sender: TObject);
   private
     { Private declarations }
      procedure ASCIIZvaluesImport(Order : tProcessOrder; ItsASCII : tDEMFormat = dfASCII);
@@ -944,6 +946,9 @@ begin
          MakeEarthQuakeCentroidsFile(fName);
       end;
 
+
+      {$IfDef RecordProblems} WriteLineToDebugFile('ImportHarvardCentroids to ' + fName); {$EndIf}
+
       TheTable := tMyData.Create(fName);
       StartProgress('Centroids');
       for j := 0 to pred(FilesWanted.Count) do begin
@@ -1035,6 +1040,7 @@ begin
       end;
       TheTable.Destroy;
       EndProgress;
+      {$IfDef RecordProblems} WriteLineToDebugFile('ImportHarvardCentroids out'); {$EndIf}
    end;
 end;
 
@@ -1949,12 +1955,12 @@ begin
          Links.Add('<br>');
        end;
        Links.Add(EndHTMLString);
-    end;
-   ShowDefaultCursor;
-   fName := ExtractFilePath(TheFiles.Strings[0]) + 'data_download.htm';
-   Links.SaveToFile(fName);
-   Links.Free;
-   ExecuteFile(fName, '', '');
+      ShowDefaultCursor;
+      fName := ExtractFilePath(TheFiles.Strings[0]) + 'data_download.htm';
+      Links.SaveToFile(fName);
+      Links.Free;
+      ExecuteFile(fName, '', '');
+   end;
    TheFiles.Free;
 end;
 
@@ -3355,64 +3361,106 @@ begin
 end;
 
 
+procedure TDemHandForm.OGRshapefilestoGKPG1Click(Sender: TObject);
+var
+   NewFileName,fName : PathStr;
+   k : integer;
+   FilesWanted : tStringList;
+   DefaultFilter : byte;
+   DeleteFiles : boolean;
+   i : integer;
+begin
+   {$IfDef RecordReformat} WriteLineToDebugFile('TDemHandForm.OGRshapefilestoGKPG1Click in'); {$EndIf}
+   FilesWanted := tStringList.Create;
+   FilesWanted.Add(MainMapData);
+   DefaultFilter := 1;
+   if GetMultipleFiles('shapte files','Shape files|*.shp',FilesWanted,DefaultFilter) then begin
+      for I := 0 to pred(FilesWanted.Count) do begin
+         fName := FilesWanted.Strings[i];
+         GDAL_Convert_Shapefile_2_geopackage(fName);
+      end;
+   end;
+   {$IfDef RecordReformat} WriteLineToDebugFile('TDemHandForm.OGRshapefilestoGKPG1Click out'); {$EndIf}
+end;
+
 procedure TDemHandForm.OpenTopography1Click(Sender: TObject);
 var
-   FileList : tStringList;
-   NumSucc,NumFail, i,j : Integer;
+   FileList,FilesWanted : tStringList;
+   NumSucc,NumFail, i,j,f,NumAlreadyDone : Integer;
    Input,OutPath : PathStr;
    TStr,inName,OutName : AnsiString;
+   DefFilter : byte;
 begin
    inPut := '';
-   GetFileFromDirectory('Files to download','*.txt;*.csv',InPut);
-   if FileExists(Input) then begin
-      FileList := tStringList.Create;
-      FileList.LoadFromFile(Input);
-      OutPath := MainMapData;
-      GetDosPath('Output',OutPath);
-      Memo1.Visible := true;
-      Memo1.Lines.Add(TimeToStr(Now) + ' start download, files= ' + IntToStr(FileList.Count));
-      wmdem.SetPanelText(3,'Started: ' + TimeToStr(Now));
-      repeat
-        NumSucc := 0;
-        NumFail := 0;
-        StartProgressAbortOption('Download');
-        for i := 0 to pred(FileList.Count) do   begin
-           UpdateProgressBar(i/FileList.Count);
-           wmdem.SetPanelText(2,IntToStr(succ(i)) + '/' + IntToStr(FileList.Count));
-           TStr := FileList.Strings[i];
-           InName := TStr;
-           if (InName <> '') then begin
-              j := length(TStr);
-              repeat
-                 dec(j)
-              until TStr[j] = '/';
-              OutName := OutPath + Copy(TStr,j+1,Length(TStr)-j);
-              if not FileExists(OutName) then begin
-                 if DownloadFileFromWeb(InName,OutName) then begin
-                    TStr := TStr + ' success';
-                    inc(NumSucc);
-                 end
-                 else begin
-                    TStr := TStr + ' failure ***** ' + InName;
-                    inc(NumFail);
+   DefFilter := 1;
+   FilesWanted := tStringList.Create;
+   FilesWanted.Add(MainMapData);
+   if GetMultipleFiles('Files to download','Text or csv*.txt;*.csv',FilesWanted,DefFilter) then begin
+   //GetFileFromDirectory('Files to download','*.txt;*.csv',InPut);
+      for f := 0 to pred(FilesWanted.Count) do begin
+         Input := FilesWanted.Strings[f];
+         Memo1.Visible := true;
+         Memo1.Lines.Add(TimeToStr(Now) + '  Download list ' + IntToStr(succ(f)) + '/' + IntToStr(FilesWanted.Count) + '  ' + ExtractFileNameNoExt(Input));
+         Memo1.Lines.Add('');
+         if FileExists(Input) then begin
+            FileList := tStringList.Create;
+            FileList.LoadFromFile(Input);
+            OutPath := ExtractFilePath(Input) + ExtractFileNameNoExt(Input) + '\';
+            SafeMakeDir(OutPath);
+            //OutPath := MainMapData;
+            //GetDosPath('Output',OutPath);
+            Memo1.Visible := true;
+            Memo1.Lines.Add(TimeToStr(Now) + ' start download, files= ' + IntToStr(FileList.Count));
+            wmdem.SetPanelText(3,'Started: ' + TimeToStr(Now));
+            repeat
+              NumSucc := 0;
+              NumFail := 0;
+              NumAlreadyDone := 0;
+              StartProgressAbortOption('Download list ' + IntToStr(succ(f)) + '/' + IntToStr(FilesWanted.Count));
+              for i := 0 to pred(FileList.Count) do begin
+                 UpdateProgressBar(pred(i)/FileList.Count);
+                 wmdem.SetPanelText(2,IntToStr(succ(i)) + '/' + IntToStr(FileList.Count));
+                 TStr := FileList.Strings[i];
+                 InName := TStr;
+                 if (InName <> '') then begin
+                    j := length(TStr);
+                    repeat
+                       dec(j)
+                    until TStr[j] = '/';
+                    OutName := OutPath + Copy(TStr,j+1,Length(TStr)-j);
+                    if FileExists(OutName) then begin
+                       inc(NumAlreadyDone);
+                    end
+                    else begin
+                       if DownloadFileFromWeb(InName,OutName) then begin
+                          TStr := TStr + ' success';
+                          inc(NumSucc);
+                       end
+                       else begin
+                          TStr := TStr + ' failure ***** ' + InName;
+                          inc(NumFail);
+                       end;
+                       Memo1.Lines.Add(IntToStr(I) + '/' + IntToStr(FileList.Count) + '  ' + TimeToStr(Now) + ' ' + TStr);
+                    end;
                  end;
-                 Memo1.Lines.Add(IntToStr(I) + '/' + IntToStr(FileList.Count) + '  ' + TimeToStr(Now) + ' ' + TStr);
+                 if WantOut then begin
+                    Memo1.Lines.Add('Aborted');
+                    break;
+                 end;
               end;
-           end;
-           if WantOut then begin
-              Memo1.Lines.Add('Aborted');
-              break;
-           end;
-        end;
-        EndProgress;
-        Memo1.Lines.Add('Done; downloads=' + intToStr(NumSucc) + '  failures=' + IntToStr(NumFail));
-        Memo1.Lines.Add('');
-        Memo1.Lines.Add('');
-      until Wantout or (NumFail = 0) or (not AnswerIsYes('Retry failures'));
-      FileList.Free;
-      wmdem.SetPanelText(3,'');
-      wmdem.SetPanelText(2,'');
+              EndProgress;
+              Memo1.Lines.Add('Done; downloads=' + intToStr(NumSucc) + '  failures=' + IntToStr(NumFail) + '  already done=' + IntToStr(NumAlreadyDone));
+              Memo1.Lines.Add('');
+              Memo1.Lines.Add('');
+              if NumFail = 0 then File2Trash(InName);
+            until Wantout or (NumFail = 0) or (not AnswerIsYes('Retry failures'));
+            FileList.Free;
+         end;
+      end;
    end;
+   FilesWanted.Free;
+   wmdem.SetPanelText(3,'');
+   wmdem.SetPanelText(2,'');
 end;
 
 
@@ -3827,7 +3875,6 @@ var
 begin
    {$IfDef RecordReformat} WriteLineToDebugFile('TDemHandForm.ADFgrids1Click in'); {$EndIf}
 
-   if (DataPath = '') then DataPath := MainMapData;
    if (Sender = BILdirectorytoMDDEM1) then TStr := '*.bil'
    else if (Sender = IMGdirectorytoMDDEM1) then TStr := '*.img'
    else if (Sender = ASCfiles1) then TStr := '*.asc'
@@ -3836,8 +3883,10 @@ begin
    else if (Sender = IFfiles1) then TStr := '*.tif'
    else TStr := 'w001001.adf';
 
-   GetDOSPath('DEMs with ' + TStr,DataPath);
+   if (DataPath = '') then DataPath := MainMapData;
+   GetDOSPath('input DEMs with ' + TStr,DataPath);
    GetDOSPath('DEM output',OutPath);
+   //OutPath := DataPath;
 
    TheFiles := Nil;
    Memo1.Visible := true;

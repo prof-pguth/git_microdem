@@ -1655,6 +1655,7 @@ type
           DoFabDir180,
           DoFabDir360,
           DoRoughness,
+          DoAvgVectStrength,
 
           DoSlopePC,
           DoSlopeDeg,
@@ -1809,7 +1810,7 @@ type
       WBDeNoiseRadius,
       WBDenoiseElevDiff  : float32;
       DEMIX_Full : byte;
-      DEMIXTieTolerance : float32;
+      //DEMIXTieTolerance : float32;
 
       SlopeFlatBoundary,
       SlopeGentleBoundary,

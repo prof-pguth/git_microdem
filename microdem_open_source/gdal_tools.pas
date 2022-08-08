@@ -118,14 +118,16 @@ uses
    procedure GDAL_ConvertGPXToSHP(var fName : pathStr);
    procedure GDALreprojectshapefile;
 
-   procedure CallGDALMerge(var MergefName : PathStr; OutNames : tStringList);
+   procedure CallGDALMerge(var MergefName : PathStr; OutNames : tStringList; MissingData : integer = 255);
    function GDAL_translateUTM(InName,OutName : PathStr; WGS84,NHemi : boolean;  UTMzone : int16) : shortstring;
    procedure GDALBandExtraction;
    procedure GDALcreatemultibandTIFF;
    procedure GDALGeodatabasetoshapefile;
    procedure GDAL_dual_UTM(DEM : integer);
 
-   procedure GDALAssignProjection;
+   procedure GDAL_Convert_Shapefile_2_geopackage(fName : pathStr);
+
+   procedure GDALAssignDEMProjection(DEMName,ProjName : PathStr);
 
    procedure GeneralConvertToWGS84Shapefile(fName : pathStr);
    function OGRrewriteShapefile(fName : pathStr) : PathStr;
@@ -145,7 +147,8 @@ uses
    procedure GDALConvert4BitGeotiff(fName : PathStr);
    procedure GDALConvertSingleImageToGeotiff(var fName : PathStr);
 
-
+   procedure UseGDAL_VRT_to_merge(var MergefName : PathStr; OutNames : tStringList; Added : ShortString = '');
+   procedure UseGDAL_Warp_to_merge(var MergefName : PathStr; OutNames : tStringList);
 
 implementation
 
@@ -261,9 +264,6 @@ end;
       end;
 
 
-
-
-
 procedure GDAL_netcdf(fName : PathStr = '');
 var
    sl,BatchFile : tStringList;
@@ -330,21 +330,19 @@ begin
 end;
 
 
-procedure GDALAssignProjection;
+procedure GDALAssignDEMProjection(DEMName,ProjName : PathStr);
 var
-   fName,ProjName,bfile : PathStr;
+   bfile : PathStr;
    cmd : shortString;
    BatchFile : tStringList;
 begin
-   fName :=  'C:\mapdata\geomorphons\geom_100M_MERIT_AF_030_060.tif';
-   ProjName :=  'C:\microdem\wkt_proj\equi7_africa.prj';
-   cmd := PythonEXEname + ' ' + PythonScriptDir + 'gdal_edit.py -a_srs ' + ProjName + ' ' + fName;
+   cmd := PythonEXEname + ' ' + PythonScriptDir + 'gdal_edit.py -a_srs ' + ProjName + ' ' + DEMName;
    StartGDALbatchFile(BatchFile);
    BatchFile.Add(cmd);
    bfile := Petmar.NextFileNumber(MDTempDir, 'gdal_assign_proj','.bat');
    EndBatchFile(bfile ,batchfile);
-   if FileExists(fName) then begin
-      OpenNewDEM(fName);
+   if FileExists(DEMName) then begin
+      //OpenNewDEM(DEMName);
    end
    else MessageToContinue('GDALAssignProjection failure, to see error messages try batch file in DOS window: ' + bfile);
 end;
@@ -387,7 +385,7 @@ begin
    if FileExistsErrorMessage(InName) then begin
       if sf <> '' then sf := ' -s ' + sf + ' ';
       if (Outname = '') then OutName := MDTempDir + 'gdal_TRI_Wilson_' + ExtractFileNameNoExt(InName) + '.tif';
-      GDAL_DEM_command(GDAL_dem_name + ' TRI ' + InName + ' ' + OutName + ' -alg Wilson' + sf, OutName);
+      GDAL_DEM_command(GDAL_dem_name + ' TRI ' + InName + ' ' + OutName + ' -alg Wilson' + sf, OutName,mtElevSpectrum);
    end;
 end;
 
@@ -397,7 +395,7 @@ begin
    if FileExistsErrorMessage(InName) then begin
       if sf <> '' then sf := ' -s ' + sf + ' ';
       if (Outname = '') then OutName := MDTempDir + 'gdal_TRI_Riley_' + ExtractFileNameNoExt(InName) + '.tif';
-      GDAL_DEM_command(GDAL_dem_name + ' TRI ' + InName + ' ' + OutName + ' -alg Riley' + sf, OutName);
+      GDAL_DEM_command(GDAL_dem_name + ' TRI ' + InName + ' ' + OutName + ' -alg Riley' + sf, OutName,mtElevSpectrum);
    end;
 end;
 
@@ -406,7 +404,7 @@ begin
    if FileExistsErrorMessage(InName) then begin
       if sf <> '' then sf := ' -s ' + sf + ' ';
       if (Outname = '') then OutName := MDTempDir + 'gdal_TPI_' + ExtractFileNameNoExt(InName) + '.tif';
-      GDAL_DEM_command(GDAL_dem_name + ' TPI ' + InName + ' ' + OutName + sf, OutName);
+      GDAL_DEM_command(GDAL_dem_name + ' TPI ' + InName + ' ' + OutName + sf, OutName,mtElevSpectrum);
    end;
 end;
 
@@ -815,9 +813,12 @@ end;
 
       function GDALGridFormat(Ext : ExtStr; OnlyGDAL : boolean = false) : boolean;
       begin
-         Ext := UpperCase(Ext);
-         Result := ExtEquals(Ext, '.ADF') or ExtEquals(Ext, '.IMG') or ExtEquals(Ext, '.CDF') or ExtEquals(Ext, '.BT') or ExtEquals(Ext, '.NC') or  ExtEquals(Ext, '.E00') or ExtEquals(Ext, '.PDF');
-         if not(OnlyGDAL) then Result := Result or (Ext = '.TIF') or (Ext = '.TIFF');
+         //Ext := UpperCase(Ext);
+         Result := ExtEquals(Ext, '.ADF') or ExtEquals(Ext, '.IMG') or ExtEquals(Ext, '.CDF') or ExtEquals(Ext, '.BT') or ExtEquals(Ext, '.NC') or
+             ExtEquals(Ext, '.E00') or ExtEquals(Ext, '.PDF') or ExtEquals(Ext, '.ASC');
+         if not(OnlyGDAL) then begin
+            Result := Result or ExtEquals(Ext,'.TIF') or ExtEquals(Ext,'.TIFF');
+         end;
       end;
 
 
@@ -1303,6 +1304,7 @@ end;
       const
          ogr2ogr_params = ' -skipfailures -overwrite -progress -t_srs EPSG:4326';
 
+
       procedure GDALGeodatabasetoshapefile;
       var
          fName,aDir,OutDir : PathStr;
@@ -1321,6 +1323,23 @@ end;
             GDALCommand(MDTempDir + 'r2v_part2.bat',GDAL_ogr_Name + ' ' +  OutDir + ' ' + aDir + ogr2ogr_params);
           end;
       end;
+
+
+      procedure GDAL_Convert_Shapefile_2_geopackage(fName : pathStr);
+      var
+         NewDir : PathStr;
+         cmd : shortstring;
+      begin
+//convert a shapefile to geopackage
+//$ ogr2ogr -f GPKG filename.gpkg abc.shp
+//all the files (shapefile/geopackage) will be added to one geopackage.
+//$ ogr2ogr -f GPKG filename.gpkg ./path/to/dir
+          cmd := GDAL_ogr_Name + ' -f GPKG ' + ChangeFileExt(fName,'.gpkg') + ' ' + fName  + ' -progress -t_srs EPSG:4326';
+          GDALCommand(MDTempDir + 'shp2gkpg.bat',cmd);
+          //NewDir := ExtractFilePath(fName) + ExtractFileNameNoExt(fName) + '_shapefile_wgs84';
+          //GDALCommand(MDTempDir + 'shp2wgs.bat',GDAL_ogr_Name + ' ' + NewDir + ' ' + fname + ogr2ogr_params);
+      end;
+
 
 
       procedure GeneralConvertToWGS84Shapefile(fName : pathStr);
@@ -1432,13 +1451,60 @@ end;
          BatchFile.Add(SetGDALdataStr);
       end;
 
+      procedure UseGDAL_Warp_to_merge(var MergefName : PathStr; OutNames : tStringList);
+      //gdalwarp --config GDAL_CACHEMAX 3000 -wm 3000 $(list_of_tiffs) merged.tiff
+      //option 3  did not work (could not get the list of input files to be acceptable
+      var
+         aName,OutVRT : PathStr;
+         cmd : shortstring;
+         BatchFile : tStringList;
+      begin
+         aName :=  Petmar.NextFileNumber(MDTempDir, 'gdal_merge_file_list_','.txt');
+         OutNames.SaveToFile(aName);
 
-      procedure CallGDALMerge(var MergefName : PathStr; OutNames : tStringList);
+         OutVRT := Petmar.NextFileNumber(MDTempDir, 'gdal_vrt_','.vrt');
+         cmd := GDALtools_Dir + 'gdalwarp --config GDAL_CACHEMAX 3000 -wm 3000 --input_file_list ' + aName + ' ' + ' ' + MergeFName;
+
+         StartGDALbatchFile(BatchFile);
+         BatchFile.Add('REM create VRT');
+         BatchFile.Add(cmd);
+
+         aName :=  Petmar.NextFileNumber(MDTempDir, 'gdal_warp2merge_','.bat');
+         EndBatchFile(aName,BatchFile);
+
+      end;
+
+
+      procedure UseGDAL_VRT_to_merge(var MergefName : PathStr; OutNames : tStringList; Added :ShortString = '');
+      var
+         aName,OutVRT : PathStr;
+         cmd : shortstring;
+         BatchFile : tStringList;
+      begin
+         aName :=  Petmar.NextFileNumber(MDTempDir, 'gdal_merge_file_list_','.txt');
+         OutNames.SaveToFile(aName);
+         OutVRT := Petmar.NextFileNumber(MDTempDir, 'gdal_vrt_','.vrt');
+         cmd := GDALtools_Dir + 'gdalbuildvrt ' + Added + ' -input_file_list ' + aName + ' ' + ' ' + OutVRT;
+
+         StartGDALbatchFile(BatchFile);
+         BatchFile.Add('REM create VRT');
+         BatchFile.Add(cmd);
+         cmd := GDALtools_Dir + 'gdal_translate -of GTiff ' + OutVrt + ' ' + MergefName;
+         BatchFile.Add(cmd);
+
+         aName :=  Petmar.NextFileNumber(MDTempDir, 'vrt2merge_','.bat');
+         EndBatchFile(aName,BatchFile);
+
+      end;
+
+
+      procedure CallGDALMerge(var MergefName : PathStr; OutNames : tStringList; MissingData : integer = 255);
       var
          BatchFile : tStringList;
          cmd : ANSIString;
          i : integer;
          DefFilter : byte;
+         fName : PathStr;
       begin
          if (OutNames = Nil) then begin
             OutNames := tStringList.Create;
@@ -1450,14 +1516,20 @@ end;
             MergefName := ExtractFilePath(OutNames[0]);
             Petmar.GetFileNameDefaultExt('Merged filename','*.tif',MergefName);
          end;
+
+         fName :=  Petmar.NextFileNumber(MDTempDir, 'gdal_merge_file_list_','.txt');
+         OutNames.SaveToFile(fName);
+
          StartGDALbatchFile(BatchFile);
          BatchFile.Add('REM Merge tiffs');
-         cmd := PythonEXEname + ' ' + PythonScriptDir + 'gdal_merge.py -init 255 -o ' + MergefName;
+         cmd := PythonEXEname + ' ' + PythonScriptDir + 'gdal_merge.py -a_nodata ' + IntToStr(MissingData) + ' -o ' + MergefName
+           +  ' --optfile ' + fName;
          for i := 0 to pred(OutNames.Count) do begin
             cmd := cmd + ' ' + OutNames[i];
          end;
          BatchFile.Add(cmd);
-         EndBatchFile(MDTempDir + 'merge.bat',BatchFile);
+         fName :=  Petmar.NextFileNumber(MDTempDir, 'gdalmerge_','.bat');
+         EndBatchFile(fName,BatchFile);
       end;
 
 

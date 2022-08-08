@@ -15,6 +15,7 @@ unit BaseGraf;
        //{$Define RecordGraphMemoryAlocations}
        //{$Define RecordGrafProblems}
        {$Define RecordScaling}
+       {$Define RecordGrafSize}
        //{$Define RecordFormResize}
        //{$Define RecordHistogram}
        //{$Define RecordSaveSeries}
@@ -758,7 +759,7 @@ begin
    rewrite(inf,sizeOf(float32));
    BlockWrite(inf,zs[First],Last);
    closeFile(inf);
-   {$IfDef RecordSaveSeries} writeLineToDebugFile('SaveSingleValueSeries, n=' +IntToStr(NumVals) + '  ' + Result ); {$EndIf}
+   {$IfDef RecordSaveSeries} writeLineToDebugFile('SaveSingleValueSeries, n=' + IntToStr(NumVals) + '  ' + Result ); {$EndIf}
 end;
 
 
@@ -2092,7 +2093,7 @@ var
                 end {while};
              end;
          end;
-         if GraphDraw.ShowHorizAxis0 then begin
+         if GraphDraw.ShowHorizAxis0 and (GraphDraw.MinHorizAxis < 0) and (GraphDraw.MaxHorizAxis > 0) then begin
             DrawLine(Bitmap,GraphDraw.GraphX(0),GraphDraw.TopMargin,GraphDraw.GraphX(0),GraphDraw.YWindowSize-GraphDraw.BottomMargin);
          end;
 
@@ -2387,7 +2388,7 @@ begin
    end;
    CreateBitmap(Bitmap,w,h);
    Bitmap.Monochrome := GraphDraw.MonochromeBitMap;
-   {$IfDef RecordGraf} WriteLineToDebugFile('Bitmap created, ' + IntToStr(w) + 'x' + IntToStr(h) + ' ' +  GraphDraw.AxisRange); {$EndIf}
+   {$If Defined(RecordGraf) or Defined(RecordGrafSize)} WriteLineToDebugFile('TThisBaseGraph.SetUpGraphForm Bitmap created, ' + IntToStr(w) + 'x' + IntToStr(h) + ' ' +  GraphDraw.AxisRange); {$EndIf}
    GraphDraw.XWindowSize := pred(Width);
    GraphDraw.YWindowSize := pred(Height);
    Bitmap.Canvas.Font := FontDialog1.Font;
@@ -2529,7 +2530,7 @@ begin
       {$If Defined(RecordScaling)} WriteLineToDebugFile('TThisBaseGraph.AutoScaleAndRedrawDiagram call RedrawDiagram11Click'); {$EndIf}
       RedrawDiagram11Click(Nil);
    end;
-   {$If Defined(RecordScaling)} WriteLineToDebugFile('TThisBaseGraph.AutoScaleAndRedrawDiagram in'); {$EndIf}
+   {$If Defined(RecordGrafSize) or  Defined(RecordScaling)} WriteLineToDebugFile('TThisBaseGraph.AutoScaleAndRedrawDiagram out Client size, ' + IntToStr(ClientWidth) + 'x' + IntToStr(ClientHeight) + ' ' +  GraphDraw.AxisRange); {$EndIf}
 end;
 
 
@@ -3210,11 +3211,11 @@ begin
       DrawAspectRose(RoseData^);
    end
    else if GraphDraw.GraphType in [gtTernary,gtTadpole,gtTwoVertAxes,gtNormal,gtBoxPlot] then begin
-         ChangeGraphSettingsClick(Nil);
-         if SettingsChanged then begin
-            RedrawDiagram11Click(Nil);
-            if GraphDraw.CorrectScaling then FormResize(nil);
-         end;
+      ChangeGraphSettingsClick(Nil);
+      if SettingsChanged then begin
+         RedrawDiagram11Click(Nil);
+         if GraphDraw.CorrectScaling then FormResize(nil);
+      end;
    end;
 end;
 
@@ -4367,127 +4368,35 @@ var
 {$EndIf}
 {$IfDef ExGraphs}
 {$Else}
-  GraphSettingsForm  : TGraphSettingsForm;
+  GraphSettingsForm : TGraphSettingsForm;
 {$EndIf}
-  i       : integer;
-  FieldsInDB : tStringList;
-  MyTable : tMyData;
-  fName : PathStr;
-  VisCols : Array100Boolean;
+  //i       : integer;
 begin
-   with GraphDraw do begin
    {$IfDef ExTernary}
    {$Else}
       if (GraphDraw.GraphType = gtTernary) then begin
          TernOptForm := TTernOptForm.Create(Application);
          SettingsChanged := true;
-         TernOptForm.RadioGroup1.ItemIndex := ord(TernaryGrid);
+         TernOptForm.RadioGroup1.ItemIndex := ord(GraphDraw.TernaryGrid);
          TernOptForm.RadioGroup2.ItemIndex := pred(TernaryScreenMult);
          TernOptForm.ShowModal;
-         TernaryGrid := tTernaryGrid(TernOptForm.RadioGroup1.ItemIndex);
+         GraphDraw.TernaryGrid := tTernaryGrid(TernOptForm.RadioGroup1.ItemIndex);
          TernaryScreenMult := succ(TernOptForm.RadioGroup2.ItemIndex);
          TernOptForm.Free;
          exit;
       end;
    {$EndIf}
 
-      GraphSettingsForm := TGraphSettingsForm.Create(Application);
-      GraphSettingsForm.OwningGraph := Self;
-      SettingsChanged := false;
-      with GraphSettingsForm do begin
-         XLabelEdit.Text := HorizLabel;
-         YLabelEdit.Text := VertLabel;
-         ComboBox1.ItemIndex := ord(GraphAxes);
-         ComboBox2.Visible := VertAxisFunctionType in [ShortCumNormalAxis,CumulativeNormalAxis,LongCumulativeNormalAxis,LongerCumulativeNormalAxis];
-         CheckBox1.Visible := GraphAxes in [XTimeYFullGrid,XTimeYPartGrid];
-         CheckBox1.Checked := AnnualCycle;
-         CheckBox2.Checked := not NormalCartesianY;
-         CheckBox3.Checked := Draw1to1Line;
-         CheckBox5.Checked := not NormalCartesianX;
-         CheckBox6.Checked := CorrectScaling;
-
-         Edit7.Text := IntToStr(LeftMargin);
-         Edit8.Text := IntToStr(TopMargin);
-         Edit9.Text := IntToStr(BottomMargin);
-         Edit10.Text := LLcornerText;
-
-         if (DBFLineFilesPlotted.Count > 0) then begin
-            ComboBox3.Visible := true;
-            fName := DBFLineFilesPlotted.Strings[0];
-            MyTable := tMyData.Create(fName);
-            PetdbUtils.GetFields(MyTable,VisCols,NumericFieldTypes,FieldsInDB,true);
-            for i := 0 to pred(FieldsInDB.Count) do ComboBox3.Items.Add(FieldsInDB.Strings[i]);
-            ComboBox3.Text := '';
-            MyTable.Destroy;
-         end;
-         if (XYZFilesPlotted.Count > 0) then begin
-            Colors.Visible := true;
-            Label1.Visible := true;
-            Label4.Visible := true;
-            Edit5.Visible := true;
-            Edit6.Visible := true;
-            Edit5.Text := RealToString(MinZ,-12,-6);
-            Edit6.Text := RealToString(MaxZ,-12,-6);
-         end;
-         if ComboBox2.Visible then begin
-            case VertAxisFunctionType of
-               ShortCumNormalAxis : ComboBox2.ItemIndex := 0;
-               CumulativeNormalAxis: ComboBox2.ItemIndex := 1;
-               LongCumulativeNormalAxis : ComboBox2.ItemIndex := 2;
-               LongerCumulativeNormalAxis : ComboBox2.ItemIndex := 3;
-            end;
-         end;
-         if GraphDraw.GraphType in [gtTwoVertAxes] then begin
-            YLabelEdit.Visible := false;
-            YMaxEdit.Visible := false;
-            YMinEdit.Visible := false;
-            YMaxLabel.Visible := false;
-            YMinLabel.Visible := false;
-         end;
-         if GraphAxes in [XTimeYFullGrid,XTimeYPartGrid] then begin
-            XMinLabel.Caption := 'Ending';
-            XMaxLabel.Caption := 'Starting';
-            XLabelEdit.Visible := false;
-            XMinEdit.Text := IntToStr(Day2);
-            XMaxEdit.Text := IntToStr(Day1);
-            Edit1.Text := IntToStr(Month1);
-            Edit2.Text := IntToStr(Month2);
-            Edit3.Text := IntToStr(Year1);
-            Edit4.Text := IntToStr(Year2);
-            Label2.Visible := true;
-            Label3.Visible := true;
-            Edit1.Visible := true;
-            Edit2.Visible := true;
-            Edit3.Visible := true;
-            Edit4.Visible := true;
-            Day.Visible := true;
-         end
-         else begin
-            Edit1.Visible := false;
-            Edit2.Visible := false;
-            Edit3.Visible := false;
-            Edit4.Visible := false;
-            Label2.Visible := false;
-            Label3.Visible := false;
-            Day.Visible := false;
-            XMinLabel.Caption := 'Min x';
-            XMaxLabel.Caption := 'Max x';
-            XLabelEdit.Visible := true;
-            XMinEdit.Text := RealToString(MinHorizAxis,-18,-6);
-            XMaxEdit.Text := RealToString(MaxHorizAxis,-18,-6);
-         end;
-
-         YMinEdit.Text := RealToString(MinVertAxis,-18,-6);
-         YMaxEdit.Text := RealToString(MaxVertAxis,-18,-6);
-
-          if (ShowModal = mrCancel) then SettingsChanged := false
-          else begin
-            SettingsChanged := true;
-            CheckSettings;
-          end;
-      end;
-      GraphSettingsForm.Destroy;
+   GraphSettingsForm := TGraphSettingsForm.Create(Application);
+   GraphSettingsForm.OwningGraph := Self;
+   SettingsChanged := false;
+   GraphSettingsForm.InitializeSettings;
+   if (GraphSettingsForm.ShowModal = mrCancel) then SettingsChanged := false
+   else begin
+      SettingsChanged := true;
+      GraphSettingsForm.CheckSettings;
    end;
+   GraphSettingsForm.Destroy;
 end;
 
 procedure TThisBaseGraph.Zcolorrange1Click(Sender: TObject);

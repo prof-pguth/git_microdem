@@ -20,6 +20,7 @@
 
 
 {$Define PlainMICRODEM}
+
 {$Define ExDRGimport}
 {$Define ExWMS}
 {$Define ExLandsatQA}

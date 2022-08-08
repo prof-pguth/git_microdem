@@ -63,7 +63,7 @@ uses
 
    System.IOutils,System.UITypes,System.Math,System.UIConsts,
    SysUtils, Classes,StrUtils,
-   petmar,Petmar_types,
+   petmar,Petmar_types,PetMath,
    DEMMapf,DEMMapDraw,DEMDefs,BaseMap,DEM_NLCD;
 
 
@@ -81,7 +81,6 @@ procedure BlastTinCreate(InName,OutName : PathStr; GridSize : float64);
 procedure CallLasInfo;
 procedure LAStoolsTextToLAS;
 procedure Lastools_DEMToLAZ(InName,OutName : PathStr; Extra : shortString = '');
-
 
 function WhiteBoxPresent : boolean;
 function WhiteBoxGroundClassify(InName,OutName : PathStr) : shortString;
@@ -103,12 +102,14 @@ function WhiteBoxMaximalCurvature(InName : PathStr): integer;
 function WhiteBoxMeanCurvature(InName : PathStr): integer;
 function WhiteBoxGaussianCurvature(InName : PathStr): integer;
 function WhiteBox_TRI(InName : PathStr; GeoFactor : Float32) : integer;
+function WhiteBox_AverageNormalVectorAngularDeviation(InName : PathStr; filtersize : integer) : integer;
+function WhiteBox_CircularVarianceOfAspect(InName : PathStr; filtersize : integer) : integer;
 
 
 procedure GetGrassExtensionsNow(InName : PathStr);
 function GrassSlopeMap(InName : PathStr) : integer;
 function GrassAspectMap(InName : PathStr) : integer;
-function GrassVectorRuggedness(InName : PathStr) : integer;
+function GrassVectorRuggedness(InName : PathStr; WindowSize : integer) : integer;
 function GrassProfileCurvatureMap(InName : PathStr) : integer;
 function GrassTangentialCurvatureMap(InName : PathStr) : integer;
 function GrassTRIMap(InName : PathStr) : integer;
@@ -117,14 +118,13 @@ function GrassTPIMap(InName : PathStr) : integer;
 
 function SagaTRIMap(InName : PathStr) : integer;
 function SagaTPIMap(InName : PathStr) : integer;
-
+function SagaVectorRuggednessMap(InName : PathStr; Radius : integer) : integer;
 
 procedure TauDEMOp(DEM : integer; TauDEM : tTauDEM);
 
 procedure RVTgrids(DEM : integer);
 
 procedure FusionTinCreate(InName,OutName : PathStr; GridSize : float64; GridZone : integer; HemiChar : ansichar);
-
 
 function MCC_lidarPresent : boolean;
 
@@ -155,6 +155,12 @@ const
    ClearGRASSdirectory = 'rd /S /Q c:\mapdata\temp\grass1';
 
 
+function BBtoPathString(bb : sfBoundBox; Decs : integer = 2) : shortstring;
+begin
+   Result := RealToString(bb.ymin,-8,Decs) + '_' + RealToString(bb.xmin,-8,Decs) + '_' + RealToString(bb.ymax,-8,Decs) + '_' + RealToString(bb.xmax,-8,Decs);
+end;
+
+
 
 function IsSagaCMDthere : boolean;
 begin
@@ -162,14 +168,17 @@ begin
 end;
 
 
-function SAGAMap(cmd : shortstring; OutName : shortstring) : integer;
+function SAGAMap(cmd : shortstring; inName,OutName : shortstring; ZUnits : tElevUnit) : integer;
 begin
-   WinExecAndWait32(cmd);
-   Result := OpenNewDEM(OutName,false);
-   if Result <> 0 then begin
-      DEMGlb[Result].DEMheader.ElevUnits := euMeters;
-      CreateDEMSelectionMap(Result,true,true,mtElevSpectrum);
-   end;
+   if IsSagaCMDthere and FileExists(InName) then begin
+      WinExecAndWait32(cmd);
+      Result := OpenNewDEM(OutName,false);
+      if (Result <> 0) then begin
+         DEMGlb[Result].DEMheader.ElevUnits := zUnits;
+         CreateDEMSelectionMap(Result,true,true,mtElevSpectrum);
+      end;
+   end
+   else Result := 0;
 end;
 
 
@@ -178,30 +187,31 @@ var
    cmd : shortstring;
    OutName : shortstring;
 begin
-   if IsSagaCMDthere and FileExists(InName) then begin
-      OutName := MDTempDir + 'saga_tri_' + ExtractFileNameNoExt(InName) + '.tif';
-      CMD := MDDef.SagaCMD + ' ta_morphometry 16 -DEM ' + inName + ' -TRI ' + OutName + ' -MODE 0';   //' -SCALE_MIN 1 -SCALE_MAX 1 -SCALE_NUM 1';
-      Result := SAGAMap(cmd,outname);
-   end;
+   OutName := MDTempDir + 'saga_tri_' + ExtractFileNameNoExt(InName) + '.tif';
+   CMD := MDDef.SagaCMD + ' ta_morphometry 16 -DEM ' + inName + ' -TRI ' + OutName + ' -MODE 0';
+   Result := SAGAMap(cmd,InName,outname,euMeters);
 end;
+
 
 function SagaTPIMap(InName : PathStr) : integer;
 var
    cmd : shortstring;
    OutName : shortstring;
 begin
-   if IsSagaCMDthere and FileExists(InName) then begin
-      OutName := MDTempDir + 'saga_tpi_' + ExtractFileNameNoExt(InName) + '.tif';
-      CMD := MDDef.SagaCMD + ' ta_morphometry 18 -DEM ' + inName + ' -TPI ' + OutName;   //' -SCALE_MIN 1 -SCALE_MAX 1 -SCALE_NUM 1';
-      Result := SAGAMap(cmd,outname);
-   end;
+   OutName := MDTempDir + 'saga_tpi_' + ExtractFileNameNoExt(InName) + '.tif';
+   CMD := MDDef.SagaCMD + ' ta_morphometry 18 -DEM ' + inName + ' -TPI ' + OutName;
+   Result := SAGAMap(cmd,InName,outname,euMeters);
 end;
 
 
-
-function BBtoPathString(bb : sfBoundBox; Decs : integer = 2) : shortstring;
+function SagaVectorRuggednessMap(InName : PathStr; Radius : integer) : integer;
+var
+   cmd : shortstring;
+   OutName : shortstring;
 begin
-    Result := RealToString(bb.ymin,-8,Decs) + '_' + RealToString(bb.xmin,-8,Decs) + '_' + RealToString(bb.ymax,-8,Decs) + '_' + RealToString(bb.xmax,-8,Decs);
+   OutName := MDTempDir + 'saga_vrm_rad_' + FilterSizeStr(Radius) + '_' + ExtractFileNameNoExt(InName) + '.tif';
+   CMD := MDDef.SagaCMD + ' ta_morphometry 17 -DEM ' + inName + ' -VRM ' + OutName + ' -RADIUS ' + IntToStr(Radius);
+   Result := SAGAMap(cmd,InName,outname,Undefined);
 end;
 
 
@@ -372,14 +382,25 @@ begin
 end;
 
 
+const
+   GrassEXE = 'grass78';
+   //GrassPath = 'H:\gis_software\grass_gis_8.2\';        only needed for 8.2
+
 procedure StartGrassBatchFile(var BatchFile : tStringList; InName : PathStr);
 begin
    BatchFile := tStringList.Create;
    BatchFile.Add(ClearGrassDirectory);
-   BatchFile.Add('call "C:\OSGeo4W\bin\o4w_env.bat"');
-   BatchFile.Add(SetGDALdataStr);
-   BatchFile.Add('set USE_PATH_FOR_GDAL_PYTHON=YES');
-   BatchFile.Add('grass78 -c ' + InName + ' c:\mapdata\temp\grass1\ --exec r.in.gdal input=' + InName + ' output=mymap |more');
+
+   if GrassEXE = 'grass78' then begin
+      BatchFile.Add('call "C:\OSGeo4W\bin\o4w_env.bat"');
+      BatchFile.Add(SetGDALdataStr);
+      BatchFile.Add('set USE_PATH_FOR_GDAL_PYTHON=YES');
+      BatchFile.Add('grass78 -c ' + InName + ' c:\mapdata\temp\grass1\ --exec r.in.gdal input=' + InName + ' output=mymap |more');
+   end
+   else begin
+      //this is not yet working
+      //BatchFile.Add('call ' + GrassPath + 'grass82.bat');
+   end;
 end;
 
 
@@ -395,8 +416,6 @@ begin
       Result := OpenNewDEM(OutName,false);
       DEMGlb[Result].DEMheader.ElevUnits := eu;
       CreateDEMSelectionMap(Result,true,true,mt);
-      //DEMGlb[Result].SelectionMap.MapDraw.MapType := mt;
-      //DEMGlb[Result].SelectionMap.DoBaseMapRedraw;
       {$IfDef RecordWBT} WriteLineToDebugFile('ExecuteGrassAndOpenMap map opened'); {$EndIf}
    end
    else MessageToContinue('Grass failure, try command in DOS window: ' + BatchName);
@@ -417,27 +436,39 @@ begin
      OutName := MDTempDir + GridName + ExtractFileNameNoExt(InName) + '.tif';
      StartGRASSbatchFile(BatchFile,InName);
 
-     BatchFile.Add('grass78 c:\mapdata\temp\grass1\PERMANENT --exec ' + CommandName  + ' |more');
-     BatchFile.Add('grass78 c:\mapdata\temp\grass1\PERMANENT --exec r.out.gdal input=' + NewLayer + ' out=' + OutName + ' type=Float' + TypeStr + ' --overwrite --quiet |more');
+     BatchFile.Add(GrassEXE + ' c:\mapdata\temp\grass1\PERMANENT --exec ' + CommandName  + ' |more');
+     BatchFile.Add(GrassEXE + ' c:\mapdata\temp\grass1\PERMANENT --exec r.out.gdal input=' + NewLayer + ' out=' + OutName + ' type=Float' + TypeStr + ' --overwrite --quiet |more');
      //add these to get the extensions; they need to be done with a grass workspace set up
      if GetGrassExtensions then begin
-        BatchFile.Add('grass78 c:\mapdata\temp\grass1\PERMANENT --exec g.extension r.vector.ruggedness |more');
-        BatchFile.Add('grass78 c:\mapdata\temp\grass1\PERMANENT --exec g.extension r.tri |more');
-        BatchFile.Add('grass78 c:\mapdata\temp\grass1\PERMANENT --exec g.extension r.tpi |more');
+        BatchFile.Add(GrassEXE + ' c:\mapdata\temp\grass1\PERMANENT --exec g.extension r.vector.ruggedness |more');
+        BatchFile.Add(GrassEXE + ' c:\mapdata\temp\grass1\PERMANENT --exec g.extension r.tri |more');
+        BatchFile.Add(GrassEXE + ' c:\mapdata\temp\grass1\PERMANENT --exec g.extension r.tpi |more');
         GetGrassExtensions := false;
      end;
      Result := ExecuteGrassAndOpenMap(BatchFile,BatchName,OutName,eu,mt);
   end;
 end;
 
-
+function GrassVectorRuggedness(InName : PathStr; WindowSize : integer) : integer;
+var
+   PartialResults : shortstring;
+begin
+   (*
+      //this only is valid for GRASS 82, and we are using 78
+      PartialResults :=  'strength=' + MDTempDir + 'grass_vector_strength' + ExtractFileNameNoExt(InName) + '.tif' +
+                      ' fisher=' + MDTempDir + 'grass_fisher_k' + ExtractFileNameNoExt(InName) + '.tif';
+   *)
+   PartialResults := 'size=' + IntToStr(WindowSize);
+   Result := AssembleGrassCommand(InName,'grass_vector_ruggedness_' + FilterSizeStr(WindowSize) + '_','r.vector.ruggedness elevation=mymap output=rugged ' +
+      PartialResults +  ' nprocs=-1','rugged','GrassVectorRugged_',Undefined,mtElevSpectrum);
+   //Result := AssembleGrassCommand(InName,'grass_vector_ruggedness_','r.vector.ruggedness elevation=mymap slope=slope aspect=aspect output=rugged nprocs=-1','rugged','GrassRugged_',Undefined,mtElevSpectrum);
+end;
 
 
 procedure GetGrassExtensionsNow(InName : PathStr);
 begin
    GetGrassExtensions := true;
    AssembleGrassCommand(InName,'grass_slope_','r.slope.aspect elevation=mymap slope=slope format=percent','slope','GrassSlope_',PercentSlope,mtElevSpectrum);
-
 end;
 
 
@@ -470,12 +501,6 @@ end;
 function GrassAspectMap(InName : PathStr) : integer;
 begin
    Result := AssembleGrassCommand(InName,'grass_aspect_','r.slope.aspect elevation=mymap aspect=aspect format=percent -n','aspect','GrassAspect_',AspectDeg,mtDEMaspect);
-end;
-
-
-function GrassVectorRuggedness(InName : PathStr) : integer;
-begin
-   Result := AssembleGrassCommand(InName,'grass_vector_ruggedness_','r.vector.ruggedness elevation=mymap output=rugged nprocs=-1','rugged','GrassRugged_',Undefined,mtElevSpectrum);
 end;
 
 
@@ -603,6 +628,29 @@ begin
   end;
 end;
 
+function WhiteBox_AverageNormalVectorAngularDeviation(InName : PathStr; filtersize : integer) : integer;
+var
+   cmd : ansistring;
+   OutName : PathStr;
+begin
+  if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
+     OutName := MDTempDir + 'WB_avg_norm_vect_dev_' + FilterSizeStr(FilterSize) + '_' + ExtractFileNameNoExt(InName) + '.tif';
+     cmd := WhiteBoxfName + WBNoCompress + '-r=AverageNormalVectorAngularDeviation -v --dem=' + InName + ' -o=' + OutName + ' --filter=' + IntToStr(FilterSize);
+     Result := ExecuteWBandOpenMap(cmd,OutName,zDegrees,mtElevSpectrum);
+  end;
+end;
+
+function WhiteBox_CircularVarianceOfAspect(InName : PathStr; filtersize : integer) : integer;
+var
+   cmd : ansistring;
+   OutName : PathStr;
+begin
+  if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
+     OutName := MDTempDir + 'WB_circ_var_aspect_' + FilterSizeStr(FilterSize) + '_' + ExtractFileNameNoExt(InName) + '.tif';
+     cmd := WhiteBoxfName + WBNoCompress + '-r=CircularVarianceOfAspect -v --dem=' + InName + ' -o=' + OutName + ' --filter=' + IntToStr(FilterSize);
+     Result := ExecuteWBandOpenMap(cmd,OutName,undefined,mtElevSpectrum);
+  end;
+end;
 
 
 procedure WhiteBoxMultiscaleRoughness(InName : PathStr);

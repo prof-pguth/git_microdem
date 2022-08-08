@@ -1512,6 +1512,8 @@ var
                AParameter('Geomorph','DoFabDir180',DoFabDir180,true);
                AParameter('Geomorph','DoFabDir360',DoFabDir360,true);
                AParameter('Geomorph','DoRoughness',DoRoughness,false);
+               AParameter('Geomorph','DoAvgVectStrength',DoAvgVectStrength,false);
+
                AParameter('Geomorph','DoSlopePC',DoSlopePC,true);
                AParameter('Geomorph','DoSlopeMperM',DoSlopeMperM,false);
                AParameter('Geomorph','DoSlopeDeg',DoSlopeDeg,false);
@@ -2522,7 +2524,7 @@ var
          AParameterShortFloat('Misc','MaxPercentile',CurrentSeaLevel,0);
 
          AParameter('Misc','DEMIX_Full',DEMIX_Full,100);
-         AParameterShortFloat('Misc','DEMIXTieTolerance',DEMIXTieTolerance,0.011);
+         //AParameterShortFloat('Misc','DEMIXTieTolerance',DEMIXTieTolerance,0.011);
 
          AParameterShortFloat('Misc','SlopeFlatBoundary',SlopeSteepBoundary,12.5);
          AParameterShortFloat('Misc','SlopeGentleBoundary',SlopeSteepBoundary,25);
@@ -4423,7 +4425,7 @@ begin
     TM_RGB_fname := ProgramRootDir + 'tm_rgb_v3' + DefaultDBExt;
     CSVImportRulesFName := ProgramRootDir + 'CSV_IMPORT_RULES_v4'+ DefaultDBExt;
     SatBandNames := ProgramRootDir + 'sat_band_names_v17' + DefaultDBExt;
-    ColorBrewerName := ProgramRootDir + 'color_palettes_v10' + DefaultDBExt;
+    ColorBrewerName := ProgramRootDir + 'color_palettes_v11' + DefaultDBExt;
     HardLimitColorPaletteFName := ProgramRootDir + 'hard_limit_color_palettes' + DefaultDBExt;
     TableDefinitionsFileName := ProgramRootDir + 'MD_TABLE_DEF_v2' + DefaultDBExt;
     GazOptFName := ProgramRootDir + 'gaz_symbols_v3' + DefaultDBExt;
@@ -4551,16 +4553,15 @@ begin
 
    {$IfDef ExGeology}
    {$Else}
-      MagAnomFile  := MainMapData + 'etopo1\EMAG2_V2.dem';
+      MagAnomFile  := GeologyDir + 'geology_grids\EMAG2_V2.dem';
       SedThickFile := GeologyDir + 'geology_grids\glob_sed_v3.tif';
       SedTypeFile := GeologyDir + 'geology_grids\seabed_lithology_v1.dem';
       PredAgesFile := GeologyDir + 'geology_grids\ages_3_6.dem';
       ContCrustOutlineFile := GeologyDir + 'ut_plates_cont_crust\continental_crust.shp';
-      CMT_fault_cent_fName := GeologyDir + 'cmt_quake_focal_mechs\cmt_fault_cent_aug_2020' + DefaultDBExt;
+      CMT_fault_cent_fName := GeologyDir + 'cmt_quake_focal_mechs\cmt_fault_cent_mar_2022' + DefaultDBExt;
       GSFML_global_picks := GeologyDir + 'mag_anom_picks\GSFML_global_picks_oct_2018' + DefaultDBExt;
       PlateBoundaryFile := GeologyDir + 'usgs_plate_boundaries_complex\usgs_plate_boundaries.shp';
-      VolcanoesDB := GeologyDir + 'smithsonian_volcanoes\volcanoes_4_7_4' + DefaultDBExt;
-
+      VolcanoesDB := GeologyDir + 'smithsonian_volcanoes\volcanoes_4_11_0' + DefaultDBExt;
       MagneticAnomalyTimeScale := GeologyDir + 'time\cande_kent_time' + DefaultDBExt;
       EpochsTimeScale :=  'geologic_time_epochs';
       PeriodsTimeScale := 'geologic_time_periods';
@@ -4568,7 +4569,7 @@ begin
       CurrentMotionsFile := GeologyDir + 'plate_motions\current_rotations_v4' + DefaultDBExt;
       PlatePolesFile := GeologyDir + 'plate_motions\total_poles' + DefaultDBExt;
 
-      DSDP_db := GeologyDir + 'ocean_drilling\ocean_drilling_v2' + DefaultDBExt;
+      DSDP_db := GeologyDir + 'ocean_drilling\ocean_drilling_march_2022' + DefaultDBExt;
       Hotspot_db := GeologyDir + 'hot_spots\hotspot' + DefaultDBExt;
       PlateOutlinesfName := GeologyDir + 'plate_outlines\bird_argus_others_plates.shp';
    {$EndIf}

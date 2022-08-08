@@ -132,6 +132,8 @@ type
     Edit11: TEdit;
     BitBtn7: TBitBtn;
     CheckBox58: TCheckBox;
+    CheckBox59: TCheckBox;
+    BitBtn8: TBitBtn;
     procedure OKBtnClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure Edit1Change(Sender: TObject);
@@ -151,6 +153,7 @@ type
     procedure BitBtn5Click(Sender: TObject);
     procedure BitBtn6Click(Sender: TObject);
     procedure BitBtn7Click(Sender: TObject);
+    procedure BitBtn8Click(Sender: TObject);
   private
     procedure SetAll(setting: boolean);
     procedure CheckSettings;
@@ -230,8 +233,7 @@ begin
     if MDDef.DoUpOpen or MDDef.DoDownOpen then MakeMomentsGrid(DEM, 'O',MDDef.OpenBoxSizeMeters);
     if MDDef.DoRelief1 or MDDef.DoAvgElev or MDDef.DoElevStd or MDDef.DoREL or MDDef.DoTPI then MakeMomentsGrid(DEM, 'R',MDDef.ReliefBoxSizeMeters);
     if MDDef.DoRelief2 or MDDef.DoSummit or MDDef.DoBaseLevel or MDDef.DoGeophysical or MDDef.DoDropoff or MDDef.DoElevRelief then MakeMomentsGrid(DEM, 'G',MDDef.ReliefBoxSizeMeters);
-    if MDDef.DoS1S2 or MDDef.DoS2S3 or MDDef.DoFabDir90 or MDDef.DoFabDir180 or MDDef.DoFabDir360 or MDDef.DoRoughness then MakeMomentsGrid(DEM, 'F',MDDef.SSOBoxSizeMeters);
-
+    BitBtn8Click(Sender);
     if MDDef.ElevMoments then MakeMomentsGrid(DEM, 'e',MDDef.MomentsBoxSizeMeters);
     if MDDef.SlopeMoments then MakeMomentsGrid(DEM, 's',MDDef.MomentsBoxSizeMeters);
     if MDDef.PlanCurvMoments then MakeMomentsGrid(DEM, 'l',MDDef.MomentsBoxSizeMeters);
@@ -262,6 +264,12 @@ begin
    CheckSettings;
    if MDDef.DoRelief1 or MDDef.DoAvgElev or MDDef.DoElevStd or MDDef.DoREL or MDDef.DoTPI then GridsByRegionSize(DEM, 'R');
    if MDDef.DoRelief2 or MDDef.DoSummit or MDDef.DoBaseLevel or MDDef.DoGeophysical or MDDef.DoDropoff or MDDef.DoElevRelief then GridsByRegionSize(DEM,'G');
+end;
+
+procedure TBlockOpsForm.BitBtn8Click(Sender: TObject);
+begin
+   CheckSettings;
+   if MDDef.DoS1S2 or MDDef.DoS2S3 or MDDef.DoFabDir90 or MDDef.DoFabDir180 or MDDef.DoFabDir360 or MDDef.DoRoughness or MDDEF.DoAvgVectStrength then MakeMomentsGrid(DEM, 'F',MDDef.SSOBoxSizeMeters);
 end;
 
 procedure TBlockOpsForm.CheckBox46Click(Sender: TObject);
@@ -338,6 +346,7 @@ begin
       CheckBox32.Checked := Setting;
       CheckBox44.Checked := Setting;  //MDDef.DoFabDir180;
       CheckBox45.Checked := Setting;  //MDDef.DoFabDir360;
+      CheckBox59.Checked := Setting;  //MDDef.DoFabDir360;
     //slope/aspect
       CheckBox33.Checked := Setting;  //MDDef.DoSlopePC;
       CheckBox34.Checked := Setting;  //MDDef.DoSlopeDeg;
@@ -411,6 +420,7 @@ begin
    CheckBox32.Checked := MDDef.DoRoughness;
    CheckBox44.Checked := MDDef.DoFabDir180;
    CheckBox45.Checked := MDDef.DoFabDir360;
+   CheckBox59.Checked := MDDef.DoAvgVectStrength;
 
    CheckBox33.Checked := MDDef.DoSlopePC;
    CheckBox34.Checked := MDDef.DoSlopeDeg;
@@ -502,6 +512,8 @@ begin
    MDDef.DoFabDir180 := CheckBox44.Checked;
    MDDef.DoFabDir360 := CheckBox45.Checked;
    MDDef.DoRoughness := CheckBox32.Checked;
+   MDDef.DoAvgVectStrength := CheckBox59.Checked;
+
 
    MDDef.DoSlopePC := CheckBox33.Checked;
    MDDef.DoSlopeDeg := CheckBox34.Checked;

@@ -19,6 +19,7 @@ unit pick_geostats;
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IfDef Debug}
       {$Define RecordGeostats}
+      {$Define RecordMapMaking}
    {$EndIf}
 {$EndIf}
 
@@ -89,8 +90,8 @@ type
     BitBtn20: TBitBtn;
     StringGrid1: TStringGrid;
     BitBtn21: TBitBtn;
-    BitBtn22: TBitBtn;
     CheckBox3: TCheckBox;
+    BitBtn22: TBitBtn;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure BitBtn1Click(Sender: TObject);
     procedure Radiogroup1Click(Sender: TObject);
@@ -342,9 +343,55 @@ end;
 
 
 procedure TPickGeoStat.BitBtn20Click(Sender: TObject);
+
+      procedure SaveDEM(DEM : integer);
+      begin
+         //DEMGlb[DEM].SaveAsGeotiff(MDTempDir + DEMGlb[DEM].AreaName + '.tif');
+      end;
+
+
+var
+   Radius,Box,DEM : integer;
+begin
+   {$IfDef RecordMapMaking} WriteLineToDebugFile('TPickGeoStat.BitBtn20Click in');  {$EndIf}
+   try
+      if (CurDEM = 0) then GetDEM(CurDEM,true,'single DEM geomorphometry');
+      HeavyDutyProcessing := true;
+      CreateSlopeMap(CurDEM);
+
+      DEM := MakeSingleNewDerivativeMap('g',CurDEM);  //rugosity
+      SaveDEM(DEM);
+      DEM := CreateRoughnessMap(CurDEM);
+      SaveDEM(DEM);
+      DEM := CreateRoughnessMap2(CurDEM,true,false);
+      SaveDEM(DEM);
+      DEM := CreateRoughnessMapAvgVector(CurDEM,true);
+      SaveDEM(DEM);
+      {$IfDef RecordMapMaking} WriteLineToDebugFile('TPickGeoStat.BitBtn20Click singles done, start loop');  {$EndIf}
+
+      for Radius := 1 to 4 do begin
+         Box := succ(2*Radius);
+         DEM := CreateRoughnessSlopeStandardDeviationMap(CurDEM,Box);
+         {$IfDef RecordMapMaking} WriteLineToDebugFile('TPickGeoStat.BitBtn20Click CreateRoughnessSlopeStandardDeviationMap done');  {$EndIf}
+         SaveDEM(DEM);
+         {$IfDef RecordMapMaking} WriteLineToDebugFile('TPickGeoStat.BitBtn20Click DEM saved');  {$EndIf}
+         WhiteBox_AverageNormalVectorAngularDeviation(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap,Box);
+         WhiteBox_CircularVarianceOfAspect(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap,Box);
+         SagaVectorRuggednessMap(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap,Box);
+         GrassVectorRuggedness(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap,Box);
+         {$IfDef RecordMapMaking} WriteLineToDebugFile('TPickGeoStat.BitBtn20Click loope done, radius=' + IntToStr(Radius));  {$EndIf}
+      end;
+   finally
+      HeavyDutyProcessing := false;
+   end;
+
+   {$IfDef RecordMapMaking} WriteLineToDebugFile('TPickGeoStat.BitBtn20Click out');  {$EndIf}
+
+(*
+var
+   j : integer;
 begin
    if CheckBox2.Checked then begin
-      var j : integer;
       for j := 0 to pred(InitialDEMs.Count) do begin
          CreateRoughnessMap2(StrToInt(InitialDEMs.Strings[j]),true,false);
       end;
@@ -352,7 +399,10 @@ begin
    else begin
       CreateRoughnessMap2(CurDEM,true,false);
    end;
+*)
 end;
+
+
 
 procedure TPickGeoStat.NeedSingleDEM;
 begin
@@ -411,28 +461,27 @@ begin
    RestoreBackupDefaults;
 end;
 
+
 procedure TPickGeoStat.BitBtn22Click(Sender: TObject);
+var
+   Radius,Box : integer;
 begin
    if (CurDEM = 0) then GetDEM(CurDEM,true,'single DEM geomorphometry');
+   HeavyDutyProcessing := true;
+   CreateSlopeMap(CurDEM);
    MakeTRIGrid(CurDEM,true,true);
    MakeTRIGrid(CurDEM,false,true);
-   CreateSlopeMap(CurDEM);
-
-   MakeSingleNewDerivativeMap('g',CurDEM);
-   //CreateRoughnessMap2(CurDEM,true,false);       //took forever
-   //CreateRoughnessMap(CurDEM);
-   CreateRoughnessSlopeStandardDeviationMap(CurDEM,3);
-   CreateRoughnessSlopeStandardDeviationMap(CurDEM,5);
-   CreateRoughnessSlopeStandardDeviationMap(CurDEM,7);
-
-   GRASSTRIMap(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
    GDAL_TRI_Riley(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
    GDAL_TRI_Wilson(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
    GDAL_TPI(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
    Whitebox_TRI(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap,DEMGlb[CurDEM].Geo_Z_Factor);
    SagaTRIMap(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
    SagaTPIMap(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
+   GRASSTRIMap(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
+   GRASSTPIMap(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
+   HeavyDutyProcessing := false;
 end;
+
 
 procedure TPickGeoStat.BitBtn2Click(Sender: TObject);
 {$IfDef ExGeostats}

@@ -60,7 +60,6 @@ begin
 end;
 
 
-
 function LoadBlankVectorMapAndOverlay(ItsTiger,ItsGazetteer : boolean; fName : Pathstr = '') : integer;
 var
    db        : integer;

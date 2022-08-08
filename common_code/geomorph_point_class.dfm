@@ -16,7 +16,6 @@ object PointClassForm: TPointClassForm
   Visible = True
   OnClose = FormClose
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Label7: TLabel
     Left = 32

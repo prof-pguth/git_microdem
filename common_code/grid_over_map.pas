@@ -1330,7 +1330,7 @@ begin
    CheckEditString(Edit9.Text,MDDef.GemorphAtlasMatchNeed);
 
    i := succ(2*MDDef.GemorphAtlasFilterSize);
-   Label22.Caption := IntToStr(i) + 'x' + IntToStr(i) + '  (' + IntToStr(i*i) + ')';
+   Label22.Caption := FilterSizeStr(i) + '  (' + IntToStr(i*i) + ')';
    Label13.Caption := IntToStr(Round(100*MDDef.GemorphAtlasMatchNeed/i/i)) + '%';
 end;
 

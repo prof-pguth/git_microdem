@@ -1008,7 +1008,7 @@ begin
            end;
         end;
     end;
-    DataFull:;
+  DataFull:;
     Las.FreeLASRecordMemory;
     Las.Destroy;
     EndProgress;

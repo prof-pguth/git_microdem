@@ -95,7 +95,7 @@ object PickGeoStat: TPickGeoStat
     Top = 0
     Width = 336
     Height = 273
-    ActivePage = TabSheet1
+    ActivePage = TabSheet3
     Align = alClient
     MultiLine = True
     TabOrder = 1
@@ -296,6 +296,15 @@ object PickGeoStat: TPickGeoStat
           24
           24)
       end
+      object BitBtn22: TBitBtn
+        Left = 3
+        Top = 96
+        Width = 169
+        Height = 25
+        Caption = 'TRI/TPI '
+        TabOrder = 5
+        OnClick = BitBtn22Click
+      end
     end
     object TabSheet4: TTabSheet
       Caption = 'Fractal'
@@ -433,15 +442,6 @@ object PickGeoStat: TPickGeoStat
         Caption = 'Compare slope by program'
         TabOrder = 6
         OnClick = BitBtn21Click
-      end
-      object BitBtn22: TBitBtn
-        Left = 235
-        Top = 112
-        Width = 75
-        Height = 25
-        Caption = 'TRI/TPI'
-        TabOrder = 7
-        OnClick = BitBtn22Click
       end
     end
     object TabSheet7: TTabSheet

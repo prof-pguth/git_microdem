@@ -24,6 +24,8 @@ unit GeoTiff;
    //{$Define RecordGeotiffFailures}
 
    {$IFDEF DEBUG}
+      {$Define RecordGeotiff}
+      //{$Define RecordGeotiffFailures}
       //{$Define RecordGeotiffProjection}
       //{$Define RecordDefineDatum}
       //{$Define TrackProjection}
@@ -31,10 +33,8 @@ unit GeoTiff;
       //{$Define ShowKeyDEM}
       //{$Define TrackZ}
       //{$Define RecordTiePoints}
-      //{$Define RecordGeotiffFailures}
       //{$Define GeotiffCorner}
       //{$Define RecordGeotiffRestart}
-      //{$Define RecordGeotiff}
       //{$Define TrackModelType}
       //{$Define RecordFullGeotiff}
       //{$Define RecordTffDisplayInBitmap}
@@ -990,6 +990,12 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
                   WantDEM.DEMheader.DEMUsed := ArcSecDEM;
                   WantDEM.DEMheader.UTMZone := GetUTMZone(WantDEM.DEMheader.DEMSWCornerX + 0.5 * WantDEM.DEMheader.NumCol * WantDEM.DEMheader.DEMxSpacing);
                end
+               else if (WantDEM.DEMMapProjection.PName = UTMEllipsoidal) then begin
+                  WantDEM.DEMheader.DEMUsed := UTMBasedDEM;
+                  WantDEM.DEMheader.DataSpacing := SpaceMeters;
+                  WantDEM.DEMheader.UTMZone := WantDEM.DEMMapProjection.projUTMZone;
+                  WantDEM.DEMheader.LatHemi := WantDEM.DEMMapProjection.LatHemi;
+               end
                else if (WantDEM.DEMMapProjection.wktString <> '') then begin
                   WantDEM.DEMheader.DEMUsed := WKTDEM;
                   WantDEM.DEMheader.DataSpacing := SpaceMeters;
@@ -1000,14 +1006,8 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
                else begin
                   WantDEM.DEMheader.DEMUsed := UTMBasedDEM;
                   WantDEM.DEMheader.DataSpacing := SpaceMeters;
-                  if (WantDEM.DEMMapProjection.PName = UTMEllipsoidal) then begin
-                     WantDEM.DEMheader.UTMZone := WantDEM.DEMMapProjection.projUTMZone;
-                     WantDEM.DEMheader.LatHemi := WantDEM.DEMMapProjection.LatHemi;
-                  end
-                  else begin
-                     WantDEM.DEMMapProjection.GetProjectParameters;
-                     WantDEM.DEMheader.DigitizeDatum := ddDefined;
-                  end;
+                  WantDEM.DEMMapProjection.GetProjectParameters;
+                  WantDEM.DEMheader.DigitizeDatum := ddDefined;
                   {$IfDef RecordInitializeDEM} WriteLineToDebugFile('DEM SW Corner: ' + RealToString(WantDEM.DEMheader.DEMSWCornerX,-18,-6) + RealToString(WantDEM.DEMheader.DEMSWCornerY,18,-6) + '  UTM zone:' + IntToStr(WantDEM.DEMheader.UTMzone));         {$EndIf}
                end;
 

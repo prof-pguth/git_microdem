@@ -18,6 +18,7 @@ unit dem_indexes;
      //{$Define RecordIndex}
      //{$Define RecordIndexFileNames}
      //{$Define RecordMerge}
+     {$Define RecordTimeMerge}
      //{$Define RecordIndexImagery}
      //{$Define RecordClosing}
      //{$Define RecordTileNameDecoding}
@@ -104,6 +105,7 @@ uses
    DEM_Manager,
    DEMMapf,
    DEMESRIShapeFile,
+   gdal_tools,
 
    {$IfDef ExPointCloud}
    {$Else}
@@ -942,124 +944,183 @@ var
    FName : ShortString;
    zf : float32;
    XSpace,YSpace,tf,
+   xutm,yutm,xgrid,ygrid,
    xmin,xmax,ymin,ymax,Lat,Long  : float64;
    NewHeader   : tDEMheader;
-   MergeCol,MergeRow,i,Col,Row: int32;
-   CurDEM     : integer;
-   OldDEMName     : PathStr;
-   DatumsPresent : tStringList;
-   TStr,MenuStr        : ShortString;
+   Inbounds,UTMDEMs : boolean;
+   MergeUTMzone,MergeCol,MergeRow,i,Col,Row: int32;
+   CurDEM,NPts     : integer;
+   aName,ProjName,MergefName,OldDEMName,OutVRT     : PathStr;
+   MenuStr,cmd  : ShortString;
 begin
-   {$If Defined(RecordMerge) or Defined(MergeSummary)} WriteLineToDebugFile('arrive Merge for DEM #' + IntToStr(WantedDEM)); {$EndIf}
+   {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('arrive Merge for DEM'); {$EndIf}
+   SkipMenuUpdating := true;
+   DEMMergeInProgress := true;
    try
-      if (DEMList.Count > MaxDEMsToMerge) then MessageToContinue('Trying to merge too many DEMs');
-      OldDEMName := LastDEMName;
-      DatumsPresent := tStringList.Create;
-      DatumsPresent.Duplicates := dupIgnore;
-      DatumsPresent.Sorted := true;
-      SkipMenuUpdating := true;
-      DEMMergeInProgress := true;
-      SubsequentDEM := false;
-      ReallyReadDEM := false;
-      //First := true;
-      for i := 0 to pred(DEMList.Count) do begin
-         FName := DEMList.Strings[i];
-         FName := DEMList.Strings[i];
-         if NewArea(true,CurDEM,'',FName) then begin
-            if not SubsequentDEM then begin
-               NewHeader := DEMGlb[CurDEM].DEMheader;
-               xmin := DEMGlb[CurDEM].DEMheader.DEMSWCornerX;
-               ymin := DEMGlb[CurDEM].DEMheader.DEMSWCornerY;
-               xMax := xMin + pred(DEMGlb[CurDEM].DEMheader.NumCol) * DEMGlb[CurDEM].DEMheader.DEMxSpacing;
-               yMax := yMin + pred(DEMGlb[CurDEM].DEMheader.NumRow) * DEMGlb[CurDEM].DEMheader.DEMySpacing;
-               XSpace := DEMGlb[CurDEM].DEMheader.DEMxSpacing;
-               YSpace := DEMGlb[CurDEM].DEMheader.DEMySpacing;
-               //First := false;
-               SubsequentDEM := true;
-            end
-            else begin
-               if (DEMGlb[CurDEM].DEMheader.DEMSWCornerX < xmin) then xmin := DEMGlb[CurDEM].DEMheader.DEMSWCornerX;
-               tf := DEMGlb[CurDEM].DEMheader.DEMSWCornerX + pred(DEMGlb[CurDEM].DEMheader.NumCol) * DEMGlb[CurDEM].DEMheader.DEMxSpacing;
-               if xMax < tf then xmax := tf;
+      aName := DEMList.Strings[0];
 
-               if (DEMGlb[CurDEM].DEMheader.DEMSWCornerY < ymin) then ymin := DEMGlb[CurDEM].DEMheader.DEMSWCornerY;
-               tf := DEMGlb[CurDEM].DEMheader.DEMSWCornerY + pred(DEMGlb[CurDEM].DEMheader.NumRow) * DEMGlb[CurDEM].DEMheader.DEMySpacing;
-               if (yMax < tf) then ymax := tf;
+      if GDALGridFormat(ExtractFileExt(aName),false) then begin
+         {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('GDAL options for DEM'); {$EndIf}
 
-               NewHeader.DEMSWCornerX := xmin;
-               NewHeader.DEMSWCornerY := ymin;
-               NewHeader.NumCol := succ(round((xmax - xmin) / XSpace));
-               NewHeader.NumRow := succ(round((ymax - ymin) / YSpace));
-            end {if};
-            {$IfDef RecordMerge} WriteLineToDebugFile('Merge ' + DEMGlb[CurDEM].AreaName + ' x range: ' + RealToString(xmin,-18,-6) + '--' + RealToString(xmax,-18,-6) + ' y range: ' + RealToString(ymin,-18,-6) + '--' + RealToString(ymax,-18,-6));     {$EndIf}
-            CloseSingleDEM(CurDEM);
-         end
-         else DEMGlb[CurDEM] := Nil;
-      end;
+         ProjName := '';
+         if FileExtEquals(aName,'.ASC') then begin //Spanish DEMs have no projection in the ASC files, and user must put WKT file in directory
+            {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('ASC reprojection'); {$EndIf}
+            ProjName := FindSingleWKTinDirectory(ExtractFilePath(aName));
+            if (ProjName <> '') then ProjName := 'a_srs ' + ProjName;
+         end;
 
-      {$IfDef RecordMerge} WriteLineToDebugFile('done first pass in DEM Merge'); {$EndIf}
-      NewHeader.ElevUnits := euMeters;
-      if OpenAndZeroNewDEM(DatumsPresent.Count > 1,NewHeader,WantedDEM,'Merge_' + TStr,InitDEMmissing) then begin
-         TStr := MergeSeriesName;
-         if (MergeSeriesName = '') then TStr := LastSubDir(DEMList.Strings[0]);
-         {$IfDef RecordMerge} WriteLineToDebugFile('New DEM ' + IntToStr(WantedDEM) + ' opened'); {$EndIf}
-         ReallyReadDEM := true;
-         for i := 0 to pred(DEMList.Count) do begin
+
+       //option 2 was about three times faster than option 1
+         MergefName := Petmar.NextFileNumber(MDTempDir,'DEM_Merge_','.tif');
+         UseGDAL_VRT_to_merge(MergefName,DEMList);
+         {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('GDAL VRT over for DEM'); {$EndIf}
+
+         (*
+       //option 1
+         MergefName := MDTempDir + 'Merge-2.tif';
+         CallGDALMerge(MergefName,DEMList,-9999);
+         {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('GDAL merge over for DEM'); {$EndIf}
+
+       //option 3  did not work (could not get the list of input files to be acceptable
+         MergefName := MDTempDir + 'Merge-3.tif';
+         UseGDAL_Warp_to_merge(MergefName,DEMList);
+         {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('GDAL warp over for DEM'); {$EndIf}
+       *)
+
+        (*
+         if FileExtEquals(aName,'.ASC') then begin //Spanish DEMs have no projection in the ASC files, and user must put WKT file in directory
+            {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('ASC reprojection'); {$EndIf}
+            ProjName := FindSingleWKTinDirectory(ExtractFilePath(aName));
+            if (ProjName <> '') then GDALAssignDEMProjection(MergefName,ProjName);
+         end;
+        *)
+
+         {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('open ' + MergeFName); {$EndIf}
+         WantedDEM := OpenNewDEM(MergefName,false);
+         {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('DEM=' + IntToStr(WantedDEM) + '  open ' + MergeFName); {$EndIf}
+      end
+      else begin
+         if (DEMList.Count > MaxDEMsToMerge) then MessageToContinue('Trying to merge too many DEMs');
+         OldDEMName := LastDEMName;
+         SubsequentDEM := false;
+         ReallyReadDEM := false;
+         DEMlist.Sorted := false;
+         for i := pred(DEMList.Count) downto 0 do begin
             FName := DEMList.Strings[i];
+            WMDEM.StatusBar1.Panels[0].Text := 'Still Check ' + IntToStr(succ(I)) + '/' + IntToStr(DEMList.Count);;
+
             if NewArea(true,CurDEM,'',FName) then begin
-               ShowHourglassCursor;
-               MenuStr := 'Merge ' + IntToStr(succ(I)) + '/' + IntToStr(DEMList.Count);
-               StartProgress(MenuStr);
-               {$IfDef RecordMerge} WriteLineToDebugFile(MenuStr); {$EndIf}
-               WMDEM.StatusBar1.Panels[0].Text := MenuStr;
-
-               //DEMGlb[WantedDEM].FillHolesSelectedBoxFromReferenceDEM(DEMGlb[WantedDEM].FullDEMGridLimits,CurDEM,hfOnlyHole);
-
-               (*
-               MergeCol := round((DEMGlb[CurDEM].DEMheader.DEMSWCornerX - DEMGlb[WantedDEM].DEMheader.DEMSWCornerX) / XSpace);
-               MergeRow := round((DEMGlb[CurDEM].DEMheader.DEMSWCornerY - DEMGlb[WantedDEM].DEMheader.DEMSWCornerY) / YSpace);
-               *)
-
-               {$IfDef RecordMerge} WriteLineToDebugFile('Merging DEM: ' + DEMGlb[CurDEM].AreaName + '  Start at MergeCol=' + IntToStr(MergeCol) + '   MergeRow=' + IntToStr(MergeRow)); {$EndIf}
-               for Row := pred(DEMGlb[CurDEM].DEMheader.NumRow) downto 0 do begin
-                  if (Row mod (DEMGlb[CurDEM].DEMheader.NumRow div 100) = 0) then UpdateProgressBar((DEMGlb[CurDEM].DEMheader.NumRow-Row)/DEMGlb[CurDEM].DEMheader.NumRow);
-                  for Col := 0 to pred(DEMGlb[CurDEM].DEMheader.NumCol) do begin
-                     if DEMGlb[CurDEM].GetElevMeters(Col,Row,zf) then begin
-                        DEMGlb[CurDEM].DEMGridToLatLongDegree(Col,Row,Lat,Long);
-
-                        DEMGlb[WantedDEM].SetGridElevationLatLongDegree(Lat,Long,zf);
-                     end;
-                  end {for Row};
-               end;
-
-               EndProgress;
-
+               if not SubsequentDEM then begin
+                  NewHeader := DEMGlb[CurDEM].DEMheader;
+                  xmin := DEMGlb[CurDEM].DEMheader.DEMSWCornerX;
+                  ymin := DEMGlb[CurDEM].DEMheader.DEMSWCornerY;
+                  xMax := xMin + pred(DEMGlb[CurDEM].DEMheader.NumCol) * DEMGlb[CurDEM].DEMheader.DEMxSpacing;
+                  yMax := yMin + pred(DEMGlb[CurDEM].DEMheader.NumRow) * DEMGlb[CurDEM].DEMheader.DEMySpacing;
+                  XSpace := DEMGlb[CurDEM].DEMheader.DEMxSpacing;
+                  YSpace := DEMGlb[CurDEM].DEMheader.DEMySpacing;
+                  MergeUTMzone := DEMGlb[CurDEM].DEMHeader.UTMZone;
+                  UTMDEMs := DEMGlb[CurDEM].DEMHeader.DEMUsed = UTMBasedDEM;
+                  SubsequentDEM := true;
+                  DEMlist.Strings[i] := DEMGlb[CurDEM].DEMfileName;
+               end
+               else begin
+                  if UTMDEMs and (DEMGlb[CurDEM].DEMHeader.UTMZone <> MergeUTMZone) then begin
+                     {$IfDef RecordMerge} WriteLineToDebugFile('Wrong UTM zone, exclude ' + DEMGlb[CurDEM].AreaName); {$EndIf}
+                     DEMlist.Delete(i);
+                  end
+                  else begin
+                     if (DEMGlb[CurDEM].DEMheader.DEMSWCornerX < xmin) then xmin := DEMGlb[CurDEM].DEMheader.DEMSWCornerX;
+                     tf := DEMGlb[CurDEM].DEMheader.DEMSWCornerX + pred(DEMGlb[CurDEM].DEMheader.NumCol) * DEMGlb[CurDEM].DEMheader.DEMxSpacing;
+                     if xMax < tf then xmax := tf;
+                     if (DEMGlb[CurDEM].DEMheader.DEMSWCornerY < ymin) then ymin := DEMGlb[CurDEM].DEMheader.DEMSWCornerY;
+                     tf := DEMGlb[CurDEM].DEMheader.DEMSWCornerY + pred(DEMGlb[CurDEM].DEMheader.NumRow) * DEMGlb[CurDEM].DEMheader.DEMySpacing;
+                     if (yMax < tf) then ymax := tf;
+                     NewHeader.DEMSWCornerX := xmin;
+                     NewHeader.DEMSWCornerY := ymin;
+                     NewHeader.NumCol := succ(round((xmax - xmin) / XSpace));
+                     NewHeader.NumRow := succ(round((ymax - ymin) / YSpace));
+                     DEMlist.Strings[i] := DEMGlb[CurDEM].DEMfileName;
+                  end;
+               end {if};
+               {$IfDef RecordMerge}
+                  WriteLineToDebugFile('Merge UTM zone ' + IntToStr(DEMGlb[CurDEM].DEMHeader.UTMZone) + '  ' + DEMGlb[CurDEM].AreaName + ' x range: ' +
+                      RealToString(xmin,-18,-6) + '--' + RealToString(xmax,-18,-6) + ' y range: ' + RealToString(ymin,-18,-6) + '--' + RealToString(ymax,-18,-6));
+               {$EndIf}
                CloseSingleDEM(CurDEM);
-            end;
-         end {for i};
+            end
+            else DEMGlb[CurDEM] := Nil;
+         end;
 
-         {$IfDef RecordMerge} WriteLineToDebugFile('Merge set up'); {$EndIf}
+         {$If Defined(RecordMerge) or Defined(RecordTimeMerge) } WriteLineToDebugFile('done first pass in DEM Merge'); {$EndIf}
+         NewHeader.ElevUnits := euMeters;
+         if OpenAndZeroNewDEM(false{DatumsPresent.Count > 1},NewHeader,WantedDEM,'Merge',InitDEMmissing) then begin
+            {$IfDef RecordMerge} WriteLineToDebugFile('New DEM ' + IntToStr(WantedDEM) + ' opened'); {$EndIf}
+            ReallyReadDEM := true;
+            for i := 0 to pred(DEMList.Count) do begin
+               FName := DEMList.Strings[i];
+               if NewArea(true,CurDEM,'',FName) then begin
+                  ShowHourglassCursor;
+                  MenuStr := 'Merge ' + IntToStr(succ(I)) + '/' + IntToStr(DEMList.Count);
+                  StartProgress(MenuStr);
+                  {$IfDef RecordMerge} WriteLineToDebugFile(MenuStr); {$EndIf}
+                  WMDEM.StatusBar1.Panels[0].Text := MenuStr;
+                  {$IfDef RecordMerge} WriteLineToDebugFile('Merging DEM: ' + DEMGlb[CurDEM].AreaName + '  Start at MergeCol=' + IntToStr(MergeCol) + '   MergeRow=' + IntToStr(MergeRow)); {$EndIf}
+                  for Row := pred(DEMGlb[CurDEM].DEMheader.NumRow) downto 0 do begin
+                     if (Row mod (DEMGlb[CurDEM].DEMheader.NumRow div 100) = 0) then UpdateProgressBar((DEMGlb[CurDEM].DEMheader.NumRow-Row)/DEMGlb[CurDEM].DEMheader.NumRow);
+                     for Col := 0 to pred(DEMGlb[CurDEM].DEMheader.NumCol) do begin
+                        if DEMGlb[CurDEM].GetElevMeters(Col,Row,zf) then begin
+                           if false and UTMDEMs then begin //added Aug 2022, but unclear if this was the cause of problems
+                             DEMGlb[CurDEM].DEMGridToUTM(Col,Row,xutm,yutm);
+                             DEMGlb[WantedDEM].UTMToDEMGrid(XUTM,YUTM,XGrid,YGrid,InBounds);
+                             if InBounds then DEMGlb[WantedDEM].SetGridElevation(round(xgrid),round(Ygrid),zf);
+                           end
+                           else begin
+                              DEMGlb[CurDEM].DEMGridToLatLongDegree(Col,Row,Lat,Long);
+                              DEMGlb[WantedDEM].SetGridElevationLatLongDegree(Lat,Long,zf);
+                           end;
+                        end;
+                     end {for Row};
+                  end;
+                  EndProgress;
+                  CloseSingleDEM(CurDEM);
+               end;
+            end {for i};
+            LastDEMName := OldDEMName;
+            DEMList.Free;
+          end;
+    end;
+
+
+    if (WantedDEM <> 0) then begin
+         {$If Defined(RecordMerge) or Defined(RecordTimeMerge) } WriteLineToDebugFile('Merge set up, WantedDEM=' + IntToStr(WantedDEM)); {$EndIf}
+         if (MergeSeriesName = '') then DEMGlb[WantedDEM].AreaName := LastSubDir(DEMList.Strings[0])
+         else DEMGlb[WantedDEM].AreaName := MergeSeriesName;
+
          if MDdef.AutoFillHoles then begin
             DEMGlb[WantedDEM].InterpolateAcrossHoles(false);
-            {$IfDef RecordMerge} WriteLineToDebugFile('Holes done'); {$EndIf}
+            {$If Defined(RecordMerge) or Defined(RecordTimeMerge)} WriteLineToDebugFile('Holes done'); {$EndIf}
          end;
          if MDdef.MissingToSeaLevel then begin
             DEMGlb[WantedDEM].MissingDataToSeaLevel;
-            {$IfDef RecordMerge} WriteLineToDebugFile('Sea level done'); {$EndIf}
+            {$If Defined(RecordMerge) or Defined(RecordTimeMerge) } WriteLineToDebugFile('Sea level done'); {$EndIf}
          end;
          SkipMenuUpdating := false;
          DEMGlb[WantedDEM].CheckMaxMinElev;
          DEMGlb[WantedDEM].DefineDEMVariables(True);
-         {$IfDef RecordMerge} WriteLineToDebugFile('Merge: ' + DEMGlb[WantedDEM].ZRange); {$EndIf}
-         if DisplayIt then CreateDEMSelectionMap(WantedDEM,true,MDDef.DefElevsPercentile,MDdef.DefDEMMap);       //this is the first created
+         {$If Defined(RecordMerge) or Defined(RecordTimeMerge) } WriteLineToDebugFile('Elev check Merge: ' + DEMGlb[WantedDEM].ZRange); {$EndIf}
+         if DisplayIt then CreateDEMSelectionMap(WantedDEM,true,MDDef.DefElevsPercentile,MDdef.DefDEMMap);
+      end
+      else begin
+         {$If Defined(RecordMerge) or Defined(RecordTimeMerge) } WriteLineToDebugFile('Failed set up, WantedDEM=' + IntToStr(WantedDEM)); {$EndIf}
       end;
-      WMDEM.StatusBar1.Panels[0].Text := '';
-      LastDEMName := OldDEMName;
    finally
+      WMDEM.StatusBar1.Panels[0].Text := '';
       UpdateMenusForAllMaps;
       DEMMergeInProgress := false;
       SubsequentDEM := false;
-      {$If Defined(RecordMerge) or Defined(MergeSummary)} WriteLineToDebugFile('MergeMultipleDEMsHere out, merged=' + IntToStr(DEMList.Count)); {$EndIf}
+      {$If Defined(RecordMerge) or Defined(MergeSummary) or Defined(RecordTimeMerge)}
+          WriteLineToDebugFile('MergeMultipleDEMsHere out, merged=' + IntToStr(DEMList.Count) + '  ' + DEMGlb[WantedDEM].AreaName);
+      {$EndIf}
    end;
 end;
 

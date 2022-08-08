@@ -617,11 +617,11 @@ end {DrawGridLines};
             yc := 0;
             xmin := 9999;
             xmax := -9999;
-            for i := 0 to 4*inc do with PolyLinePoints[i] do begin
-               xc := xc + x;
-               yc := yc + y;
-               if (x > xmax) then xmax := x;
-               if (x < xmin) then xmin := x;
+            for i := 0 to 4*inc do {with PolyLinePoints[i] do} begin
+               xc := xc + PolyLinePoints[i].x;
+               yc := yc + PolyLinePoints[i].y;
+               if (PolyLinePoints[i].x > xmax) then xmax := PolyLinePoints[i].x;
+               if (PolyLinePoints[i].x < xmin) then xmin := PolyLinePoints[i].x;
             end;
             xc := xc div succ(4*inc);
             yc := yc div succ(4*inc);
@@ -651,20 +651,20 @@ end {DrawGridLines};
                dx := (Long2-Long1) / inc;
                dy := (Lat2-Lat1) / inc;
                for i := 0 to inc do begin
-                  with PolyLinePoints[i] do LatLongDegreeToScreen(Lat1 + i * dy,Long1,x,y);
+                  {with PolyLinePoints[i] do} LatLongDegreeToScreen(Lat1 + i * dy,Long1,PolyLinePoints[i].x,PolyLinePoints[i].y);
                   if (i > 0) then begin
-                     with PolyLinePoints[i+inc] do LatLongDegreeToScreen(Lat2,Long1+i*dx,x,y);
-                     with PolyLinePoints[i+2*inc] do LatLongDegreeToScreen(Lat2-i*dy,Long2,x,y);
-                     with PolyLinePoints[i+3*inc] do LatLongDegreeToScreen(Lat1,Long2-i*dx,x,y);
+                     {with PolyLinePoints[i+inc] do} LatLongDegreeToScreen(Lat2,Long1+i*dx,PolyLinePoints[i+inc].x,PolyLinePoints[i+inc].y);
+                     {with PolyLinePoints[i+2*inc] do} LatLongDegreeToScreen(Lat2-i*dy,Long2,PolyLinePoints[i+2*inc].x,PolyLinePoints[i+2*inc].y);
+                     {with PolyLinePoints[i+3*inc] do} LatLongDegreeToScreen(Lat1,Long2-i*dx,PolyLinePoints[i+3*inc].x,PolyLinePoints[i+3*inc].y);
                   end;
                end;
                if Fill then Bitmap.Canvas.Polygon(slice(PolyLinePoints,succ(4*inc)))
                else Bitmap.Canvas.PolyLine(slice(PolyLinePoints,succ(4*inc)));
                xc := 0;
                yc := 0;
-               for i := 0 to 4*inc do with PolyLinePoints[i] do begin
-                  xc := xc + x;
-                  yc := yc + y;
+               for i := 0 to 4*inc do {with PolyLinePoints[i] do} begin
+                  xc := xc + PolyLinePoints[i].x;
+                  yc := yc + PolyLinePoints[i].y;
                end;
                xc := xc div succ(4*inc);
                yc := yc div succ(4*inc);

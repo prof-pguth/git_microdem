@@ -80,9 +80,9 @@ var
    z,z1 : float32;
    NewHeadRecs : tDEMheader;
 begin
-   {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIX)} writeLineToDebugFile('tDEMDataSet.ResampleByAveraging in, ' + AreaName + '  ' + KeyDEMParams); {$EndIf}
+   {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResample)} writeLineToDebugFile('tDEMDataSet.ResampleByAveraging in, ' + AreaName + '  ' + KeyDEMParams); {$EndIf}
    NewGrid := SelectionMap.MakeTempGrid;
-   {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleByAveraging ' + DEMGlb[NewGrid].AreaName + '  ' + DEMGlb[NewGrid].KeyDEMParams); {$EndIf}
+   {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResample)} WriteLineToDebugFile('ResampleByAveraging ' + DEMGlb[NewGrid].AreaName + '  ' + DEMGlb[NewGrid].KeyDEMParams); {$EndIf}
    NewHeadRecs := DEMGlb[NewGrid].DEMheader;
    CloseSingleDEM(NewGrid);
 
@@ -90,12 +90,12 @@ begin
    NewHeadRecs.DEMPrecision := WordDEM;
    NewHeadRecs.ElevUnits := Undefined;
    OpenAndZeroNewDEM(true,NewHeadRecs,CountGrid,MDTempDir + AreaName + '_resample_density',InitDEMvalue,0);
-   {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleByAveraging, ' + DEMGlb[CountGrid].AreaName + '  ' + DEMGlb[CountGrid].KeyDEMParams); {$EndIf}
+   {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResample)} WriteLineToDebugFile('ResampleByAveraging, ' + DEMGlb[CountGrid].AreaName + '  ' + DEMGlb[CountGrid].KeyDEMParams); {$EndIf}
 
    NewHeadRecs.DEMPrecision := FloatingPointDEM;
    NewHeadRecs.ElevUnits := euMeters;
    OpenAndZeroNewDEM(true,NewHeadRecs,Result,MDTempDir + AreaName + '_down_sample_grid',InitDEMvalue,0);
-   {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleByAveraging, ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].KeyDEMParams); {$EndIf}
+   {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResample)} WriteLineToDebugFile('ResampleByAveraging, ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].KeyDEMParams); {$EndIf}
 
    (*  7/13/22, removed since that should already be done
    for x := 0 to pred(DEMGlb[CountGrid].DEMHeader.NumCol) do begin

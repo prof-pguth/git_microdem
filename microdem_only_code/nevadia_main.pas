@@ -13,6 +13,8 @@
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
       {$Define RecordDEMIX}
+      //{$Define RecordDEMIXLoops}
+      //{$Define RecordDEMIXGridCompare}
       //{$Define TrackDEMIX_DEMs}
       //{$Define RecordFullDEMIX}
       //{$Define RecordDEMIXLoad}
@@ -482,7 +484,6 @@ type
     GDALWKT1: TMenuItem;
     N20: TMenuItem;
     N25: TMenuItem;
-    N28: TMenuItem;
     Postprocesscontest1: TMenuItem;
     WKTprojection1: TMenuItem;
     ArcsecondspacingDTEDDGED1: TMenuItem;
@@ -511,9 +512,10 @@ type
     OpensingleLandsatband1: TMenuItem;
     listgeo1: TMenuItem;
     DEMIXelevationhistograms1: TMenuItem;
-    DEMIXcreatereferenceDEMs1: TMenuItem;
     DEMIXmergeCSVfiles1: TMenuItem;
     DEMIXmergeandtransposewithmeanmedian1: TMenuItem;
+    DEMIXtilesizebylatitude1: TMenuItem;
+    DEMIXreferenceDEMcreation1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -842,7 +844,7 @@ type
     procedure LidarandglobalDEMs1Click(Sender: TObject);
     procedure Guam1Click(Sender: TObject);
     procedure GDALWKT1Click(Sender: TObject);
-    procedure N28Click(Sender: TObject);
+    //procedure N28Click(Sender: TObject);
     procedure Postprocesscontest1Click(Sender: TObject);
     procedure WKTprojection1Click(Sender: TObject);
     procedure ArcsecondspacingDTEDDGED1Click(Sender: TObject);
@@ -872,9 +874,10 @@ type
     procedure OpensingleLandsatband1Click(Sender: TObject);
     procedure listgeo1Click(Sender: TObject);
     procedure DEMIXelevationhistograms1Click(Sender: TObject);
-    procedure DEMIXcreatereferenceDEMs1Click(Sender: TObject);
     procedure DEMIXmergeCSVfiles1Click(Sender: TObject);
     procedure DEMIXmergeandtransposewithmeanmedian1Click(Sender: TObject);
+    procedure DEMIXtilesizebylatitude1Click(Sender: TObject);
+    procedure DEMIXreferenceDEMcreation1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1106,13 +1109,14 @@ uses
       Make_grid,
    {$EndIf}
 
+   ufrmMain,
+
    Slider_sorter_form,
    NyqGraph,
    gdal_tools,
 
    PetImage_Form,
    TerSplsh,
-   //U_SolarPos2,
    stereo_viewer,
    get_thumbnails,
    Main_Gray_game,
@@ -1330,12 +1334,6 @@ begin
    DoGridSpacingAndDeclination(0);
 end;
 
-procedure Twmdem.DEMIXcreatereferenceDEMs1Click(Sender: TObject);
-begin
-   BatchResampleForDEMIX;
-end;
-
-
 procedure Twmdem.DEMIXelevationhistograms1Click(Sender: TObject);
 begin
    DEMIX_elevation_histograms;
@@ -1352,9 +1350,26 @@ begin
    MergeDEMIXCSV(ProgramRootDir + 'demix_criteria.txt');
 end;
 
+procedure Twmdem.DEMIXreferenceDEMcreation1Click(Sender: TObject);
+begin
+   DEMIXreferenceDEMs;
+end;
+
 procedure Twmdem.DEMIXtiles1Click(Sender: TObject);
 begin
    DEMIXtilesStats;
+end;
+
+
+procedure Twmdem.DEMIXtilesizebylatitude1Click(Sender: TObject);
+var
+   WantBoundBoxGeo : sfBoundBox;
+begin
+   WantBoundBoxGeo.XMin := 0.01;
+   WantBoundBoxGeo.XMax := 0.02;
+   WantBoundBoxGeo.YMin := -85;
+   WantBoundBoxGeo.YMax := 85;
+   CreateDEMIXTileShapefile(WantBoundBoxGeo,false,true);
 end;
 
 
@@ -2510,10 +2525,6 @@ begin
    MakeDTEDTable;
 end;
 
-procedure Twmdem.N28Click(Sender: TObject);
-begin
-   GDALAssignProjection;
-end;
 
 procedure Twmdem.N81Sfileviewer1Click(Sender: TObject);
 begin
@@ -4021,7 +4032,6 @@ var
    Path : PathStr;
    tf : tStringList;
    TStr : string35;
-   //ch : char;
 begin
    tf := tStringList.Create;
    Path := MainMapData;

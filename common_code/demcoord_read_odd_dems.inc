@@ -484,7 +484,8 @@ end;
             ReadNEDBIL(DEMFileName,Error);
          end
          else if ExtEquals(Ext, '.ASC') or ExtEquals(Ext, '.GRD') or ExtEquals(Ext, '.TXT') then begin
-            ReadASCIIArcGrid(DEMFileName,Self,Error,ReallyReadDEM);
+            //ReadASCIIArcGrid(DEMFileName,Self,Error,ReallyReadDEM);
+            Error := not TryGDAL(DEMFileName);
          end
          else if ExtEquals(Ext, '.DTM') then begin
             ReadFusionDTM(DEMFileName,Self,Error);

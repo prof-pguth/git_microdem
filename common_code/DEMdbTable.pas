@@ -915,7 +915,6 @@ type
     EGM20081: TMenuItem;
     EGM961: TMenuItem;
     AddEGMfieldsfromalgorithms1: TMenuItem;
-    Graphsforwinecontest1: TMenuItem;
     ICESat21: TMenuItem;
     Latprofiles1: TMenuItem;
     Latprofiles2: TMenuItem;
@@ -925,13 +924,23 @@ type
     Lattimecolors1: TMenuItem;
     Boxplot1: TMenuItem;
     ransposeforwinecontest1: TMenuItem;
-    Graphfortransposeddata1: TMenuItem;
-    BestDEM1: TMenuItem;
+    //BestDEM1: TMenuItem;
     BestDEMbycategory1: TMenuItem;
     RankDEMs1: TMenuItem;
     N1degreetilestocoverrecordsintable1: TMenuItem;
     Sumscores1: TMenuItem;
     Graphavereagescoresbyterraincategories1: TMenuItem;
+    Graphmeanmedianbyterraincategory1: TMenuItem;
+    DEMIXtilesummary1: TMenuItem;
+    Keymeans1: TMenuItem;
+    Keymeans2: TMenuItem;
+    PickParam1: TMenuItem;
+    Filteroutsignedcriteriameanandmedian1: TMenuItem;
+    Hide1: TMenuItem;
+    Allcriteriavalues1: TMenuItem;
+    Simpleexample1: TMenuItem;
+    PercentageofcriteriawhereDEMisbest1: TMenuItem;
+    Averageranksbyarea1: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
     procedure Shiftpointrecords1Click(Sender: TObject);
     procedure Creategrid1Click(Sender: TObject);
@@ -1620,7 +1629,6 @@ type
     procedure EGM20081Click(Sender: TObject);
     procedure EGM961Click(Sender: TObject);
     procedure AddEGMfieldsfromalgorithms1Click(Sender: TObject);
-    procedure Graphsforwinecontest1Click(Sender: TObject);
     procedure N45Click(Sender: TObject);
     procedure Latprofiles1Click(Sender: TObject);
     procedure Latprofiles2Click(Sender: TObject);
@@ -1628,12 +1636,22 @@ type
     procedure Boxplot1Click(Sender: TObject);
     procedure ransposeforwinecontest1Click(Sender: TObject);
     procedure Graphfortransposeddata1Click(Sender: TObject);
-    procedure BestDEM1Click(Sender: TObject);
+    //procedure BestDEM1Click(Sender: TObject);
     procedure N1degreetilestocoverrecordsintable1Click(Sender: TObject);
     procedure BestDEMbycategory1Click(Sender: TObject);
     procedure RankDEMs1Click(Sender: TObject);
     procedure Sumscores1Click(Sender: TObject);
     procedure Graphavereagescoresbyterraincategories1Click(Sender: TObject);
+    procedure DEMIXtilesummary1Click(Sender: TObject);
+    procedure Keymeans1Click(Sender: TObject);
+    procedure Keymeans2Click(Sender: TObject);
+    procedure PickParam1Click(Sender: TObject);
+    procedure Filteroutsignedcriteriameanandmedian1Click(Sender: TObject);
+    procedure Hide1Click(Sender: TObject);
+    procedure Allcriteriavalues1Click(Sender: TObject);
+    procedure Simpleexample1Click(Sender: TObject);
+    procedure PercentageofcriteriawhereDEMisbest1Click(Sender: TObject);
+    procedure Averageranksbyarea1Click(Sender: TObject);
   private
     procedure PlotSingleFile(fName : PathStr; xoff,yoff : float64);
     procedure SetUpLinkGraph;
@@ -2340,7 +2358,7 @@ procedure Tdbtablef.UnHideColumns;
 var
    j : integer;
 begin
-   if (DBonTable <> 0) and (GISdb[DBonTable] <> Nil) then begin
+   if ValidDB(DBonTable) { <> 0) and (GISdb[DBonTable] <> Nil)} then begin
       for j := 0 to pred(DBGrid1.Columns.Count) do
          if (j <= 100) then DBGrid1.Columns[j].Visible := true;
       AnyHiddenColumns := false;
@@ -2354,11 +2372,24 @@ begin
 end;
 
 
+procedure Tdbtablef.Hide1Click(Sender: TObject);
+var
+   j : integer;
+begin
+   for j := 0 to pred(DBGrid1.Columns.Count) do begin
+      if SelectedColumn = trim(DBGrid1.Columns[j].FieldName) then begin
+         DBGrid1.Columns[j].Visible := false;
+         GISdb[DBonTable].dbOpts.VisCols[j] := false;
+         exit;
+      end;
+   end;
+end;
+
 procedure Tdbtablef.HideColumns;
 var
    j : integer;
 begin
-   if (DBonTable <> 0) and (GISdb[DBonTable] <> Nil) then begin
+  if ValidDB(DBonTable) { <> 0) and (GISdb[DBonTable] <> Nil)} then begin
       for j := 0 to pred(DBGrid1.Columns.Count) do
          if (j <= 100) then DBGrid1.Columns[j].Visible := GISdb[DBonTable].dbOpts.VisCols[j];
       AnyHiddenColumns := false;
@@ -2371,7 +2402,7 @@ procedure Tdbtablef.HideHouseKeepingColumns;
 var
    j : integer;
 begin
-   if (DBonTable <> 0) and (GISdb[DBonTable] <> Nil) then begin
+   if ValidDB(DBonTable)  { <> 0) and (GISdb[DBonTable] <> Nil)} then begin
       for j := 0 to pred(DBGrid1.Columns.Count) do begin
          if (j <= 100) then begin
             if (DBGrid1.Columns[j].FieldName = 'COLOR') or (DBGrid1.Columns[j].FieldName = RecNoFName) then begin
@@ -2389,7 +2420,7 @@ var
    j : integer;
    fName : ANSIstring;
 begin
-   if (DBonTable <> 0) and (GISdb[DBonTable] <> Nil) then begin
+   if ValidDB(DBonTable)  { <> 0) and (GISdb[DBonTable] <> Nil)} then begin
       GISdb[DBonTable].EmpSource.Enabled := false;
       StartProgress('Hiding');
       for j := 0 to pred(DBGrid1.Columns.Count) do begin
@@ -3518,6 +3549,7 @@ procedure Tdbtablef.BitBtn4Click(Sender: TObject);
 begin
    {$IfDef RecordDataBase} WriteLineToDebugFile('Tdbtablef.BitBtn4Click--DB filter selected');     {$EndIf}
    GISdb[DBonTable].DisplayTable(GISdb[DBonTable].MyData.Filter);
+   ShowStatus;
 end;
 
 
@@ -3630,7 +3662,7 @@ end;
 
 procedure Tdbtablef.FormActivate(Sender: TObject);
 begin
-   if (DBonTable <> 0) and (GISdb[DBonTable] <> Nil) and (not FormWorking) and (not Closing) then begin
+   if ValidDB(DBonTable) { <> 0) and (GISdb[DBonTable] <> Nil)} and (not FormWorking) and (not Closing) then begin
       {$IfDef RecordFormActivate} WriteLineToDebugFile('Tdbtablef.FormActivate in'); {$EndIf}
       Button4.Enabled := CheckBox1.Checked;
       GISdb[DBonTable].ColorButtonForSymbol(BitBtn1);
@@ -4773,6 +4805,11 @@ begin
    Sigmatee1Click(Sender);
 end;
 
+procedure Tdbtablef.Simpleexample1Click(Sender: TObject);
+begin
+    DEMIXwineContestMeanMedianGraph(dgSimpleExample,DBonTable);
+end;
+
 procedure Tdbtablef.Singlefield1Click(Sender: TObject);
 begin
    Countuniquevalues1Click(Sender);
@@ -5784,6 +5821,11 @@ begin
    ShowStatus;
 end;
 
+
+procedure Tdbtablef.Allcriteriavalues1Click(Sender: TObject);
+begin
+   DEMIXwineContestMeanMedianGraph(dgAllValues,DBonTable);
+end;
 
 procedure Tdbtablef.AllDBs1Click(Sender: TObject);
 begin
@@ -7810,6 +7852,11 @@ end;
 
 
 
+procedure Tdbtablef.Averageranksbyarea1Click(Sender: TObject);
+begin
+    DEMIXwineContestMeanMedianGraph(dgArea,DBonTable);
+end;
+
 procedure Tdbtablef.AverageStandarddeviation1Click(Sender: TObject);
 {$IfDef ExAdvancedSats}
 begin
@@ -8793,6 +8840,16 @@ begin
 end;
 
 
+procedure Tdbtablef.Keymeans1Click(Sender: TObject);
+begin
+   DEMIXwineContestMeanMedianGraph(dgMean,DBonTable) ;
+end;
+
+procedure Tdbtablef.Keymeans2Click(Sender: TObject);
+begin
+   DEMIXwineContestMeanMedianGraph(dgMedian,DBonTable) ;
+end;
+
 procedure Tdbtablef.RecordDisplay1Click(Sender: TObject);
 begin
    PrevNextButtonsEnabled := true;
@@ -9743,12 +9800,6 @@ begin
 end;
 
 
-procedure Tdbtablef.Graphsforwinecontest1Click(Sender: TObject);
-begin
-   DEMIXwinecontestGraph(DBonTable);
-end;
-
-
 procedure Tdbtablef.Graphwithranges1Click(Sender: TObject);
 var
    ThisGraph : TThisbasegraph;
@@ -10159,7 +10210,7 @@ var
    j : integer;
    fName : ANSIstring;
 begin
-   if (DBonTable <> 0) and (GISdb[DBonTable] <> Nil) then begin
+   if ValidDB(DBonTable) { <> 0) and (GISdb[DBonTable] <> Nil)} then begin
       GISdb[DBonTable].EmpSource.Enabled := false;
       for j := pred(GISdb[DBonTable].MyData.FieldCount) downto 0 do begin
          fName := GISdb[DBonTable].MyData.GetFieldName(j);
@@ -10286,6 +10337,11 @@ begin
 {$EndIf}
 end;
 
+
+procedure Tdbtablef.DEMIXtilesummary1Click(Sender: TObject);
+begin
+   DEMIXTileSummary(DBonTable);
+end;
 
 procedure Tdbtablef.DEMTerrainblowups1Click(Sender: TObject);
 var
@@ -11215,10 +11271,6 @@ begin
    Dipandstrikes1Click(Sender);
 end;
 
-procedure Tdbtablef.BestDEM1Click(Sender: TObject);
-begin
-    ScoreDEMS(DBonTable);
-end;
 
 
 procedure Tdbtablef.BestDEMbycategory1Click(Sender: TObject);
@@ -11281,7 +11333,7 @@ var
    NumNeigh,i : integer;
    OldFilter : string;
 begin
-   if (DBonTable <> 0) and (GISdb[DBonTable] <> Nil) and (GISdb[DBonTable].theMapOwner <> Nil) then with GISdb[DBonTable] do begin
+   if ValidDB(DBonTable) { <> 0) and (GISdb[DBonTable] <> Nil)} and (GISdb[DBonTable].theMapOwner <> Nil) then with GISdb[DBonTable] do begin
       LinkValue := MyData.GetFieldByNameAsString(NeighborLinkField);
       OldFilter :=  MyData.Filter;
       NeighborTable.ApplyFilter( NeighborLinkField + '=' + QuotedStr(LinkValue));
@@ -13383,6 +13435,11 @@ begin
    end;
 end;
 
+procedure Tdbtablef.Filteroutsignedcriteriameanandmedian1Click(Sender: TObject);
+begin
+   FilterOutSignedCriteria(DBonTable);
+end;
+
 procedure Tdbtablef.Changefieldsused1Click(Sender: TObject);
 begin
    VerifyRecordsToUse(GISdb[DBonTable].MyData,'LINE_NAME','Records to use');
@@ -13433,7 +13490,7 @@ end;
 procedure Tdbtablef.CheckBox1Click(Sender: TObject);
 begin
    {$IfDef RecordEditDB} WriteLineToDebugFile('CheckBox1Click (db edit) in'); {$EndIf}
-   if CheckBox1.Enabled and (DBonTable <> 0) and (GISdb[DBonTable] <> Nil) then begin
+   if CheckBox1.Enabled and ValidDB(DBonTable) { <> 0) and (GISdb[DBonTable] <> Nil)} then begin
       if StrUtils.AnsiContainsText(GISdb[DBonTable].DBFullName,' ') then begin
          {$IfDef RecordEditDB} WriteLineToDebugFile('Space in file name');{$EndIf}
          MessageToContinue('Cannot edit shapefile with space in file path or name ' + MessLineBreak + GISdb[DBonTable].DBFullName);
@@ -14337,6 +14394,11 @@ begin
     GISdb[DBonTable].RedrawLayerOnMap;
 end;
 
+procedure Tdbtablef.PercentageofcriteriawhereDEMisbest1Click(Sender: TObject);
+begin
+   DEMIXwineContestMeanMedianGraph(dgPercentBest,DBonTable) ;
+end;
+
 procedure Tdbtablef.Percentfield1Click(Sender: TObject);
 var
    WantField : shortstring;
@@ -14437,6 +14499,12 @@ procedure Tdbtablef.Picklineonmap1Click(Sender: TObject);
 begin
    Button5Click(Sender);
 end;
+
+procedure Tdbtablef.PickParam1Click(Sender: TObject);
+begin
+   DEMIXwineContestMeanMedianGraph(dgPick,DBonTable);
+end;
+
 
 procedure Tdbtablef.Pickpointsfortimesequentialseries1Click(Sender: TObject);
 begin

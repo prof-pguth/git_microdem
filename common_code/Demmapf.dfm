@@ -2200,6 +2200,10 @@ object MapForm: TMapForm
           Caption = 'Multiple values'
           OnClick = Multiplevalues1Click
         end
+        object INForNAN1: TMenuItem
+          Caption = 'INF or NAN'
+          OnClick = INForNAN1Click
+        end
         object Bytedata0tomissing1: TMenuItem
           Caption = 'Byte data, 0 to missing'
           OnClick = Bytedata0tomissing1Click
@@ -3611,6 +3615,10 @@ object MapForm: TMapForm
           OnClick = Openimage1Click
         end
       end
+      object N3Drotatingglobe1: TMenuItem
+        Caption = '3D rotating globe'
+        OnClick = N3Drotatingglobe1Click
+      end
       object imecoordinateconversion1: TMenuItem
         Caption = 'Time coordinate conversion'
       end
@@ -3873,6 +3881,14 @@ object MapForm: TMapForm
           Caption = 'Whitebox Geomorphons'
           OnClick = WhiteboxGeomorphons1Click
         end
+        object Whitebox1: TMenuItem
+          Caption = 'Whitebox Average Normal Vector Angular Deviation'
+          OnClick = Whitebox1Click
+        end
+        object WhiteboxCircularVarianceOfAspect1: TMenuItem
+          Caption = 'Whitebox Circular Variance Of Aspect'
+          OnClick = WhiteboxCircularVarianceOfAspect1Click
+        end
         object N50: TMenuItem
           Caption = '-'
         end
@@ -3957,6 +3973,10 @@ object MapForm: TMapForm
         object SAGATPImap1: TMenuItem
           Caption = 'SAGA TPI map'
           OnClick = SAGATPImap1Click
+        end
+        object SAGAVRMmapvectorruggedness1: TMenuItem
+          Caption = 'SAGA VRM map (vector ruggedness)'
+          OnClick = SAGAVRMmapvectorruggedness1Click
         end
         object N46: TMenuItem
           Caption = '-'

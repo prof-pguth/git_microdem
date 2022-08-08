@@ -8,11 +8,19 @@ unit Graphset;
 
 {$I nevadia_defines.inc}
 
+{$IfDef RecordProblems} //normally only defined for debugging specific problems
+   {$IFDEF DEBUG}
+       {$Define RecordGrafSize}
+   {$ELSE}
+
+   {$ENDIF}
+{$EndIf}
 
 interface
 
 uses
    Windows, Classes, Graphics, Forms, Controls, Buttons,  StdCtrls, ExtCtrls,
+   System.SysUtils,VCL.Menus,
    PETMAR, BaseGraf;
 
 type
@@ -20,7 +28,6 @@ type
     OKBtn: TBitBtn;
     CancelBtn: TBitBtn;
     HelpBtn: TBitBtn;
-    Bevel1: TBevel;
     XMinLabel: TLabel;
     XMaxLabel: TLabel;
     YMinLabel: TLabel;
@@ -33,7 +40,6 @@ type
     YLabelEdit: TEdit;
     Label2: TLabel;
     Label3: TLabel;
-    Edit1: TEdit;
     Edit2: TEdit;
     Edit3: TEdit;
     Edit4: TEdit;
@@ -63,18 +69,27 @@ type
     RedrawSpeedButton12: TSpeedButton;
     Label8: TLabel;
     Edit10: TEdit;
+    GroupBox1: TGroupBox;
+    Edit11: TEdit;
+    Edit12: TEdit;
+    Label9: TLabel;
+    Label10: TLabel;
+    CheckBox7: TCheckBox;
+    Edit1: TEdit;
     procedure BitBtn1Click(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure ComboBox3Change(Sender: TObject);
     procedure HelpBtnClick(Sender: TObject);
     procedure RedrawSpeedButton12Click(Sender: TObject);
+    procedure CheckBox7Click(Sender: TObject);
   private
     { Private declarations }
   public
     { Public declarations }
      OwningGraph        : TThisBaseGraph;
      procedure CheckSettings;
+     procedure InitializeSettings;
   end;
 
 implementation
@@ -82,7 +97,112 @@ implementation
 {$R *.DFM}
 
 uses
-   Petmath;
+   Petmath,Petmar_types,Petmar_db,Petdbutils;
+
+
+procedure TGraphSettingsForm.InitializeSettings;
+var
+   i : integer;
+   FieldsInDB : tStringList;
+   MyTable : tMyData;
+   fName : PathStr;
+   VisCols : Array100Boolean;
+begin
+    with OwningGraph,GraphDraw do begin
+         Edit11.Text := IntToStr(Width);
+         Edit12.Text := IntToStr(Height);
+         XLabelEdit.Text := HorizLabel;
+         YLabelEdit.Text := VertLabel;
+         ComboBox1.ItemIndex := ord(GraphAxes);
+         ComboBox2.Visible := VertAxisFunctionType in [ShortCumNormalAxis,CumulativeNormalAxis,LongCumulativeNormalAxis,LongerCumulativeNormalAxis];
+         CheckBox1.Visible := GraphAxes in [XTimeYFullGrid,XTimeYPartGrid];
+         CheckBox1.Checked := AnnualCycle;
+         CheckBox2.Checked := not NormalCartesianY;
+         CheckBox3.Checked := Draw1to1Line;
+         CheckBox5.Checked := not NormalCartesianX;
+         CheckBox6.Checked := CorrectScaling;
+
+         Edit7.Text := IntToStr(LeftMargin);
+         Edit8.Text := IntToStr(TopMargin);
+         Edit9.Text := IntToStr(BottomMargin);
+         Edit10.Text := LLcornerText;
+
+         if (DBFLineFilesPlotted.Count > 0) then begin
+            ComboBox3.Visible := true;
+            fName := DBFLineFilesPlotted.Strings[0];
+            MyTable := tMyData.Create(fName);
+            PetdbUtils.GetFields(MyTable,VisCols,NumericFieldTypes,FieldsInDB,true);
+            for i := 0 to pred(FieldsInDB.Count) do ComboBox3.Items.Add(FieldsInDB.Strings[i]);
+            ComboBox3.Text := '';
+            MyTable.Destroy;
+         end;
+         if (XYZFilesPlotted.Count > 0) then begin
+            Colors.Visible := true;
+            Label1.Visible := true;
+            Label4.Visible := true;
+            Edit5.Visible := true;
+            Edit6.Visible := true;
+            Edit5.Text := RealToString(MinZ,-12,-6);
+            Edit6.Text := RealToString(MaxZ,-12,-6);
+         end;
+         if ComboBox2.Visible then begin
+            case VertAxisFunctionType of
+               ShortCumNormalAxis : ComboBox2.ItemIndex := 0;
+               CumulativeNormalAxis: ComboBox2.ItemIndex := 1;
+               LongCumulativeNormalAxis : ComboBox2.ItemIndex := 2;
+               LongerCumulativeNormalAxis : ComboBox2.ItemIndex := 3;
+            end;
+         end;
+         if GraphDraw.GraphType in [gtTwoVertAxes] then begin
+            YLabelEdit.Visible := false;
+            YMaxEdit.Visible := false;
+            YMinEdit.Visible := false;
+            YMaxLabel.Visible := false;
+            YMinLabel.Visible := false;
+         end;
+    end;
+         if OwningGraph.GraphDraw.GraphAxes in [XTimeYFullGrid,XTimeYPartGrid] then begin
+            XMinLabel.Caption := 'Ending';
+            XMaxLabel.Caption := 'Starting';
+            XLabelEdit.Visible := false;
+            Day.Visible := true;
+            XMinEdit.Text := IntToStr(OwningGraph.GraphDraw.Day2);
+            XMaxEdit.Text := IntToStr(OwningGraph.GraphDraw.Day1);
+            Label2.Visible := true;
+            Label3.Visible := true;
+            Edit1.Text := IntToStr(OwningGraph.GraphDraw.Month1);
+            Edit2.Text := IntToStr(OwningGraph.GraphDraw.Month2);
+            Edit3.Text := IntToStr(OwningGraph.GraphDraw.Year1);
+            Edit4.Text := IntToStr(OwningGraph.GraphDraw.Year2);
+            Edit1.Visible := true;
+            Edit2.Visible := true;
+            Edit3.Visible := true;
+            Edit4.Visible := true;
+         end
+         else begin
+            Edit1.Visible := false;
+            Edit2.Visible := false;
+            Edit3.Visible := false;
+            Edit4.Visible := false;
+            Label2.Visible := false;
+            Label3.Visible := false;
+            Day.Visible := false;
+            XMinLabel.Caption := 'Min x';
+            XMaxLabel.Caption := 'Max x';
+            XLabelEdit.Visible := true;
+            XMinEdit.Text := RealToString(OwningGraph.GraphDraw.MinHorizAxis,-18,-6);
+            XMaxEdit.Text := RealToString(OwningGraph.GraphDraw.MaxHorizAxis,-18,-6);
+         end;
+
+         YMinEdit.Text := RealToString(OwningGraph.GraphDraw.MinVertAxis,-18,-6);
+         YMaxEdit.Text := RealToString(OwningGraph.GraphDraw.MaxVertAxis,-18,-6);
+end;
+
+procedure TGraphSettingsForm.CheckBox7Click(Sender: TObject);
+begin
+   OwningGraph.ScrollGraph := CheckBox7.Checked;
+   OwningGraph.ScrollBox1.AutoScroll := CheckBox7.Checked;
+end;
 
 procedure TGraphSettingsForm.CheckSettings;
 var
@@ -131,6 +251,11 @@ begin
        CheckEditString(Edit7.Text,LeftMargin);
        CheckEditString(Edit8.Text,TopMargin);
        CheckEditString(Edit9.Text,BottomMargin);
+       CheckEditString(Edit11.Text,i);
+       OwningGraph.ClientWidth := i;  //XWindowSize);
+       CheckEditString(Edit12.Text,i);
+       OwningGraph.ClientHeight := i;;  //YWindowSize);
+       {$If Defined(RecordGrafSize)} WriteLineToDebugFile('TGraphSettingsForm.CheckSetting out Client size, ' + IntToStr(OwningGraph.ClientWidth) + 'x' + IntToStr(OwningGraph.ClientHeight) + ' ' +  OwningGraph.GraphDraw.AxisRange); {$EndIf}
     end;
 end;
 

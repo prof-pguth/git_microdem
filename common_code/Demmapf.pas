@@ -1402,6 +1402,11 @@ type
     Coordinates1: TMenuItem;
     oday2: TMenuItem;
     oday3: TMenuItem;
+    N3Drotatingglobe1: TMenuItem;
+    SAGAVRMmapvectorruggedness1: TMenuItem;
+    Whitebox1: TMenuItem;
+    WhiteboxCircularVarianceOfAspect1: TMenuItem;
+    INForNAN1: TMenuItem;
     //procedure HiresintervisibilityDEM1Click(Sender: TObject);
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
@@ -2424,6 +2429,11 @@ type
     procedure Pixelextentandhighresaverage1Click(Sender: TObject);
     procedure oday2Click(Sender: TObject);
     procedure oday3Click(Sender: TObject);
+    procedure N3Drotatingglobe1Click(Sender: TObject);
+    procedure SAGAVRMmapvectorruggedness1Click(Sender: TObject);
+    procedure Whitebox1Click(Sender: TObject);
+    procedure WhiteboxCircularVarianceOfAspect1Click(Sender: TObject);
+    procedure INForNAN1Click(Sender: TObject);
     //procedure QuarterDEM1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
@@ -2614,7 +2624,7 @@ type
 
     procedure RedrawMapDefaultsSize;
 
-    function LoadDEMIXtileOutlines(WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false) : integer;
+    function LoadDEMIXtileOutlines(WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false) : integer;
 
     procedure MoveADBRecord(lat,Long : float64);
 
@@ -2643,7 +2653,7 @@ type
     function SiteContourMapBlowUp(Lat,Long : float64; SiteBlowupMapSize,ZoomSize,ContourInterval : integer; Title : shortString) : tMapForm;
     procedure OverlayContourFromSecondDEM(DEM : integer; z : float64; color : tPlatformcolor);
 
-    procedure AddLatLongPointToStreamProfile({Lat1,Long1,}Lat2,Long2 : float64);
+    procedure AddLatLongPointToStreamProfile(Lat2,Long2 : float64);
 
     function GeotiffDEMNameOfMap : PathStr;
 
@@ -2676,7 +2686,6 @@ type
     function Intersection(Lat1,Long1,Az1,Lat2,Long2,Az2 : float64; var Lat,Long : float64) : boolean;
 
     procedure IHSmergeOntoMap(var Bitmap2 : tMyBitmap; IHSValues : boolean = true; Opacity : byte = 100);
-    //procedure RedrawSatImage;
 
     procedure AddPointToDB(Lat,Long : float64; PointLabel : string = '');
     procedure DrawRecordBeingEditted(Table : tMyData);
@@ -2846,7 +2855,7 @@ function LoadBlankVectorMapAndOverlay(ItsTiger,ItsGazetteer : boolean; fName : P
    procedure CreateNewSatWindow(inSatView : tSatView; var ResultMap : tMapForm; CurSat : integer; mt : tMapType; MapCaption : ShortString; Selection : boolean; UseDEM : integer = 0);
 {$EndIf}
 
-
+function CreateDEMIXTileShapefile(WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false) : shortstring;
 function DEMIXtileFill(DEM : integer; AreaBox : sfBoundBox) : integer;
 procedure ResampleForDEMIX(DEM : integer);
 
@@ -3118,32 +3127,33 @@ uses
 
    {$IfDef ExKML}
    {$Else}
-   kml_creator,
+      kml_creator,
    {$EndIf}
 
    {$IfDef ExAdvancedGIS}
    {$Else}
-   Mask_multiple,
-   Map_algebra,
-   Map_Masking,
-   Raster_2_vector, survey_lines,
+      Mask_multiple,
+      Map_algebra,
+      Map_Masking,
+      Raster_2_vector, survey_lines,
    {$EndIf}
 
    {$IfDef ExAdvancedSats}
    {$Else}
-   MultiGrid,
+      MultiGrid,
    {$EndIf}
 
    {$IfDef ExVegDensity}
    {$Else}
-   Veg_density,
+      Veg_density,
    {$EndIf}
 
    {$IfDef NoExternalPrograms}
    {$Else}
-   MD_use_tools,
+      MD_use_tools,
    {$EndIf}
 
+   ufrmMain,
    aspect_colors,
    DEMLOSW, DEMLOS_Draw,
    BaseGraf,
@@ -3155,14 +3165,11 @@ uses
    Grayscale_shift,
    SystemCriticalU,
    DEM_computations,
-   //BaseGraf,
    DEM_Manager,
    PETGraphColors,
    Make_Tables,
    PETdbUtils,
    Grid_Postings_Form,
-   //PetMovie,
-   //GetMapF,
    GetLatLn,
    Thread_timers,
    DEMElevOps,
@@ -3207,7 +3214,6 @@ var
 {$Else}
     {$I demmapf_geology.inc}
 {$EndIf}
-
 
 
 procedure NakedMapOptions;
@@ -6523,7 +6529,6 @@ begin
 end;
 
 
-
 procedure TMapForm.errainsunblocking1Click(Sender: TObject);
 begin
    {$IfDef ExGeography}
@@ -6661,6 +6666,11 @@ begin
    {$EndIf}
 end;
 
+
+procedure TMapForm.N3Drotatingglobe1Click(Sender: TObject);
+begin
+   StartEarthRotation(MapDraw.FullMapfName);
+end;
 
 procedure TMapForm.N3DviewwithtwoDEMs1Click(Sender: TObject);
 var
@@ -7476,6 +7486,8 @@ begin
     {$If Defined(RecordCheckProperTix)} WriteLineToDebugFile('CheckProperTix start overlay menu'); {$EndIf}
 
 
+     N3Drotatingglobe1.Visible := (MapDraw.PrimMapProj.PName in [PlateCaree]) and MapDraw.PrimMapProj.FullWorld and (not FullMapSpeedButton.Enabled);
+
      GetGRASSextensions1.Visible := ValidDEM(MapDraw.DEMonMap) and (MDDef.ProgramOption in [ExpertProgram]);
 
     //Overlay menu
@@ -7614,7 +7626,7 @@ begin
 
 {$If Defined(RecordCheckProperTix)} WriteLineToDebugFile('CheckProperTix finish sats'); {$EndIf}
 
-      LASclassificationlegend1.Visible := (MapDraw.DEMonMap <> 0) and (DEMGlb[MapDraw.DEMonMap].DEMHeader.ElevUnits in [euLASclass13]);
+      LASclassificationlegend1.Visible := ValidDEM(MapDraw.DEMonMap) and (DEMGlb[MapDraw.DEMonMap].DEMHeader.ElevUnits in [euLASclass13]);
       Editshapefilegroup1.Visible := MapDraw.MapOverlays.ovShapeFileGroup <> '';
 
       Bearing1.Visible := (MDdef.ProgramOption in [ExpertProgram,GeologyProgram]);
@@ -7625,7 +7637,7 @@ begin
       Maplibrarycoverage1.visible := (MDDef.ProgramOption = ExpertProgram) and AllowMapLibraryLoads;
       Blankmapcolor1.Visible := MapDraw.MapType in [mtDEMBlank,mtSatBlank];
 
-      PLSSfromkeyboardlocation1.Visible := MDDef.ShowPLSS and  (MDDef.ProgramOption in [ExpertProgram]);
+      PLSSfromkeyboardlocation1.Visible := MDDef.ShowPLSS and (MDDef.ProgramOption in [ExpertProgram]);
 
       Modefilter1.Visible := ExpertDEMVersion  and (DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMPrecision = ByteDEM);
       Fillwithmodefilter1.Visible := ExpertDEMVersion  and (DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMPrecision = ByteDEM);
@@ -10898,7 +10910,7 @@ end;
 
 procedure TMapForm.DEMIX10Ktile1Click(Sender: TObject);
 begin
-   LoadDEMIXtileOutlines(PointBoundBoxGeo(RightClickLat,RightClickLong));
+   LoadDEMIXtileOutlines(PointBoundBoxGeo(RightClickLat,RightClickLong),false,true);
 end;
 
 
@@ -14629,6 +14641,11 @@ begin
     Markasmissing1Click(Sender);
 end;
 
+procedure TMapForm.INForNAN1Click(Sender: TObject);
+begin
+   Markasmissing1Click(Sender);
+end;
+
 procedure TMapForm.InfoSpeedButton6Click(Sender: TObject);
 begin
    Map2Click(Sender);
@@ -15469,8 +15486,12 @@ begin
 end;
 
 procedure TMapForm.GRASSvectorruggedness1Click(Sender: TObject);
+var
+   WindowSize : integer;
 begin
-   GrassVectorRuggedness(GeotiffDEMNameOfMap);
+   WindowSize := 5;
+   ReadDefault('window size (pixels)',WindowSize);
+   GrassVectorRuggedness(GeotiffDEMNameOfMap,WindowSize);
 end;
 
 procedure TMapForm.Band1Click(Sender: TObject);
@@ -16757,7 +16778,7 @@ begin
     HiMissing := 'Hi' + LowMissing;
     LowMissing := 'Lo' + LowMissing;
     PN := 0;
-    if (Sender = Bytedata0tomissing1) then begin
+    if (Sender = Bytedata0tomissing1) or (Sender = INForNAN1)then begin
     end
     else if (Sender = Inf1) then begin
        ReadDefault('Replace +Inf with',zn);
@@ -16892,6 +16913,21 @@ begin
                 inc(Original);
                 if ((Sender = Inf1) and IsInfinity(z)) or ((Sender = NAN1) and Math.IsNAN(z))  then begin
                    DEMGLb[MapDraw.DEMonMap].SetGridElevation(x,y,zn);
+                   inc(Fixed);
+                end;
+             end;
+          end;
+       end;
+    end
+    else if (Sender = INForNAN1) then begin
+       for x := 0 to pred(DEMGLb[MapDraw.DEMonMap].DEMheader.NumCol) do begin
+          if (x mod 100 = 0) and ShowSatProgress and (DEMGLb[MapDraw.DEMonMap].DEMheader.NumCol > 1500) then
+             StartProgress('NAN or infinity removal ' + DEMGLb[MapDraw.DEMonMap].AreaName);
+          for y := 0 to pred(DEMGLb[MapDraw.DEMonMap].DEMheader.NumRow) do begin
+             if DEMGLb[MapDraw.DEMonMap].GetElevMeters(x,y,z) then begin
+                inc(Original);
+                if IsInfinity(z) or Math.IsNAN(z) then begin
+                   DEMGLb[MapDraw.DEMonMap].SetGridMissing(x,y);
                    inc(Fixed);
                 end;
              end;
@@ -18128,9 +18164,9 @@ procedure TMapForm.MatchMapToThisOne(var DrapeMap : tMapForm);
 var
    Lat1,Long1,Lat2,Long2,xg1,yg1,xg2,yg2 : float64;
 begin
-   with MapDraw do begin
+   //with MapDraw do begin
       MapDraw.ScreenToLatLongDegree(0,0,Lat1,Long1);
-      MapDraw.ScreenToLatLongDegree(MapXSize,MapYSize,Lat2,Long2);
+      MapDraw.ScreenToLatLongDegree(MapDraw.MapXSize,MapDraw.MapYSize,Lat2,Long2);
       if (DrapeMap.MapDraw.DEMMap ) then begin
          DEMGlb[DrapeMap.MapDraw.DEMOnMap].LatLongDegreetoDEMGrid(Lat1,Long1,xg1,yg1);
          DEMGlb[DrapeMap.MapDraw.DEMOnMap].LatLongDegreetoDEMGrid(Lat2,Long2,xg2,yg2);
@@ -18155,7 +18191,7 @@ begin
       DrapeMap.ClientHeight := Self.ClientHeight;
       SizeIsCorrectThankYou := false;
       DrapeMap.DoCompleteMapRedraw;
-   end;
+   //end;
 end;
 
 
@@ -18470,12 +18506,29 @@ begin
    {$EndIf}
 end;
 
+procedure TMapForm.Whitebox1Click(Sender: TObject);
+const
+   FilterSize : integer = 5;
+begin
+   ReadDefault('Filter Size (pixels)',FilterSize);
+   WhiteBox_AverageNormalVectorAngularDeviation(GeotiffDEMNameOfMap,FilterSize);
+end;
+
+
 procedure TMapForm.Whiteboxaspectmap1Click(Sender: TObject);
 begin
    {$IfDef NoExternalPrograms}
    {$Else}
       WhiteBoxAspectMap(GeotiffDEMNameOfMap);
    {$EndIf}
+end;
+
+procedure TMapForm.WhiteboxCircularVarianceOfAspect1Click(Sender: TObject);
+const
+   FilterSize : integer = 5;
+begin
+   ReadDefault('Filter Size (pixels)',FilterSize);
+   WhiteBox_CircularVarianceOfAspect(GeotiffDEMNameOfMap,FilterSize);
 end;
 
 procedure TMapForm.Whiteboxfillholes1Click(Sender: TObject);
@@ -20593,14 +20646,14 @@ var
    Title : shortstring;
    fName : PathStr;
    Results : tStringList;
-   Total,Missing : int64;
+   Total{,Missing} : int64;
    Count :  array[1..MaxNLCDCategories] of int64;
 begin
    {$IfDef TrackNLCD} WriteLineToDebugFile('TMapForm.NLCDLegend1Click in'); {$EndIf}
    if (MapDraw.ValidDEMonMap and (DEMGlb[MapDraw.DEMonMap].LandCoverGrid)) then begin
       for x := 1 to MaxNLCDCategories do Count[x] := 0;
       Total := 0;
-      Missing := 0;
+      //Missing := 0;
       StartProgress('Land cover');
       for x := round(MapDraw.Mapcorners.BoundBoxDataGrid.xmin) to round(MapDraw.Mapcorners.BoundBoxDataGrid.xmax) do begin
          if (x mod 400 = 0) then UpDateProgressBar( (x-MapDraw.Mapcorners.BoundBoxDataGrid.xmin) / (MapDraw.Mapcorners.BoundBoxDataGrid.xmax - MapDraw.Mapcorners.BoundBoxDataGrid.xmin));
@@ -20611,10 +20664,10 @@ begin
                   inc(Count[zi]);
                   inc(Total);
                   LandCoverCatsUsed[zi] := true;
-               end
-               else inc(Missing);
-            end
-            else inc(Missing);
+               end;
+               //else inc(Missing);
+            end;
+            //else inc(Missing);
          end;
       end;
       EndProgress;
@@ -20632,7 +20685,7 @@ begin
                 ',' + IntToStr(x);
             if MDDef.LongLandCoverResults then Title := Title + ',' + IntToStr(x) + ',' + IntToStr(Count[x]);
             Results.Add(Title);
-            {$IfDef TrackNLCD} WriteLineToDebugFile(Title);   {$EndIf}
+            {$IfDef TrackNLCD} WriteLineToDebugFile(Title); {$EndIf}
          end;
          Title := LabelElevUnits[DEMGlb[MapDraw.DEMonMap].DEMheader.ElevUnits] + '_' + DEMGlb[MapDraw.DEMonMap].AreaName;
          fName := Petmar.NextFileNumber(MDTempDir, Title + '_','.csv');
@@ -22818,6 +22871,14 @@ end;
 procedure TMapForm.SAGATPImap1Click(Sender: TObject);
 begin
    SagaTPIMap(DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
+end;
+
+procedure TMapForm.SAGAVRMmapvectorruggedness1Click(Sender: TObject);
+const
+   Radius : integer = 5;
+begin
+   ReadDefault('Radius (pixels)',Radius);
+   SagaVectorRuggednessMap(DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap,Radius);
 end;
 
 procedure TMapForm.SameElevationColors1Click(Sender: TObject);

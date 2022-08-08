@@ -390,6 +390,10 @@ object DemHandForm: TDemHandForm
           Caption = 'OGR DXF/GPX/OSM/GKPG/GeoJSON to shapefile'
           OnClick = OGRDXFtoshapefile1Click
         end
+        object OGRshapefilestoGKPG1: TMenuItem
+          Caption = 'OGR shapefiles to GKPG'
+          OnClick = OGRshapefilestoGKPG1Click
+        end
       end
       object N17: TMenuItem
         Caption = '-'

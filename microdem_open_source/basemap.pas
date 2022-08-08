@@ -277,6 +277,7 @@ function WGSEquivalentDatum(StartDatum : shortstring) : boolean;
 function HemiFromLat(Lat : float64) : ANSIchar;
 
 procedure MetersPerDegree(Lat,Long : float64; var Distance1,Distance2,Distance3 : float64);
+function FindSingleWKTinDirectory(thePath : PathStr) : PathStr;
 
 
 {$IfDef VCL}
@@ -360,6 +361,18 @@ begin
 end;
 
 
+function FindSingleWKTinDirectory(thePath : PathStr) : PathStr;
+var
+   fName : PathStr;
+   TheFiles : tStringList;
+begin
+   TheFiles := tStringList.Create;
+   FindMatchingFiles(thePath,'*.wkt',TheFiles,0);
+   if TheFiles.Count = 1 then Result := TheFiles.Strings[0]
+   else Result := '';
+   TheFiles.Free;
+end;
+
 function tMapProjection.CheckForAllInDirectoryWKT(thePath : PathStr) : boolean;
 var
    fName : PathStr;
@@ -368,7 +381,12 @@ begin
    if FileExists(fName) then Result := InitializeProjectionFromWKT(fName)
    else begin
       fName := thePath + 'all.wkt';
-      if FileExists(fName) then Result := InitializeProjectionFromWKT(fName);
+      if FileExists(fName) then Result := InitializeProjectionFromWKT(fName)
+      else begin
+         fName := FindSingleWKTinDirectory(thePath);
+         if fName = '' then Result := false
+         else Result := InitializeProjectionFromWKT(fName);
+      end;
    end;
 end;
 
@@ -816,9 +834,9 @@ begin
       end;
       TheProjectionString := AfterSpecifiedString(TheProjectionString,'VertCS');
       VertFeet := StrUtils.AnsiContainsText(TheProjectionString,'9003');
-      {$Define RecordWKT} ShortProjInfo('finished WKT read');
+      {$IfDef RecordWKT} ShortProjInfo('finished WKT read'); {$EndIf}
       GetProjectParameters;
-      {$Define RecordWKT} ShortProjInfo('finished GetProjectParameters');
+      {$IfDef RecordWKT} ShortProjInfo('finished GetProjectParameters'); {$EndIf}
       //{$IfDef RecordWKT} WriteProjectionParametersToDebugFile('Final Projection from WKT file', true); {$EndIf}
    end
    else begin

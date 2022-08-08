@@ -174,6 +174,16 @@ const
                   'Garmin FIT|*.fit|' +
                   'All files|*.*';
 
+const
+   dgMean = 1;
+   dgMedian = 2;
+   dgPick = 3;
+   dgAllValues = 4;
+   dgAllScores = 5;
+   dgSimpleExample = 6;
+   dgPercentBest = 7;
+   dgArea = 8;
+
 type
   tHowRestrict = (resNone);
   tAddDEM = (adPickNearest,adElevDiff,adElevInterp,adElevNearest,adSlope,adElevAllGrids,adDeltaAllGrids,adElevNearestInt);
@@ -737,13 +747,14 @@ function DoAShapeFile(fName : PathStr; Trim : boolean = false) : integer;
       procedure RankDEMS(DBonTable : integer);
       procedure SumsOfRankDEMS(DBonTable : integer);
       procedure BestDEMSbyCategory(DBonTable : integer);
-      procedure ScoreDEMS(DBonTable : integer);
+      //procedure ScoreDEMS(DBonTable : integer);
       function TransposeDEMIXcriteria(DBonTable : integer; CriteriaFile : PathStr = '') : PathStr;
       procedure TransposeDEMIXwinecontestGraph(DBonTable : integer);
-      procedure DEMIXwinecontestGraph(DBonTable : integer);
+      //procedure DEMIXwinecontestGraph(DBonTable : integer);
       procedure DEMIXwineContestScoresGraph(DBonTable : integer);
-
-
+      procedure DEMIXwineContestMeanMedianGraph(What,DBonTable : integer);
+      procedure DEMIXTileSummary(DBonTable : integer);
+      procedure FilterOutSignedCriteria(DBonTable : integer);
 
 {$IfDef ExRiverNetworks}
 {$Else}
@@ -3739,7 +3750,7 @@ begin
       ClosingDB := i;
       GISdb[i].CloseDataBase;
       GISdb[ClosingDB] := Nil;
-      ClosingDB := 0;
+      i := 0;
       {$IfDef RecordCloseDB} WriteLineToDebugFile('CloseAndNilNumberedDB out'); {$EndIf}
    end;
 end;
@@ -5783,9 +5794,11 @@ end;
 procedure TGISdataBaseModule.ApplyGISFilter(fString : AnsiString);
 begin
    EmpSource.Enabled := false;
+   dbOpts.MainFilter := fString;
    MyData.ApplyFilter(fString);
-   ShowStatus;
-   ApplicationProcessMessages;
+   EmpSource.Enabled := false;
+   //ShowStatus;
+   //ApplicationProcessMessages;
 end;
 
 
