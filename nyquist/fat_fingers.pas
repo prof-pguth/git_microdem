@@ -12,7 +12,6 @@ unit fat_fingers;
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IfDef Debug}
-      {$Define RecordGeostats}
    {$EndIf}
 {$EndIf}
 

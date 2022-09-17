@@ -21,15 +21,16 @@
       //{$Define RecordFan}
       //{$Define RecordUpdate}
       //{$Define RecordDirs}
-      {$Define RecordLoadDefault}
+      //{$Define RecordLoadDefault}
       //{$Define RecordFindUTM}
-      //{$Define RecordGDAL}
-      {$Define RecordInitialization}
+      {$Define RecordGDAL}
+      {$Define RecordNaturalEarthFileNames}
+      //{$Define RecordInitialization}
       //{$IfDef RecordInitializationDetailed}
       //{$Define RecordINIfiles}
       //{$Define Options}
       //{$Define RecordDetailedStartup}
-      {$Define RecordProjects}
+      //{$Define RecordProjects}
       //{$Define RecordFont}
       //{$Define RecordDefaultColors}
       //{$Define RecordDefault}
@@ -709,9 +710,9 @@ end;
 procedure EndBatchFile(fName : PathStr; var BatchFile : tStringList; Wait : boolean = true; Log : boolean = true);
 begin
    BatchFile.SaveToFile(fName);
-   {$IfDef RecordGDAL} WriteLineToDebugFile('EndBatchFile created,fname=' + fname); {$EndIf}
+   {$IfDef RecordGDAL} if not HeavyDutyProcessing then WriteLineToDebugFile('EndBatchFile created,fname=' + fname); {$EndIf}
    WinExecAndWait32(fName,Wait,log);
-   {$IfDef RecordGDAL} WriteLineToDebugFile('EndBatchFile done'); {$EndIf}
+   {$IfDef RecordGDAL} if not HeavyDutyProcessing then WriteLineToDebugFile('EndBatchFile done'); {$EndIf}
    BatchFile.Free;
 end;
 {$EndIf}
@@ -2354,11 +2355,12 @@ var
             AParameter('Files','LastLidarMult',LastLidarMulti,'');
             AParameter('Files','LastOSMoverlay',LastOSMoverlay,'');
             AParameter('Files','MapLibDir',MapLibDir,'');
+            AParameter('Files','DEMIX_criterion_tolerance_fName',DEMIX_criterion_tolerance_fName,'');
 
             {$IfDef ExGDAL}
             {$Else}
                AParameter('GDAL','GDALtools_Dir',GDALtools_Dir,'');
-               AParameter('GDAL','GDALtools_Data',GDALtools_Data,'');
+               //AParameter('GDAL','GDALtools_Data',GDALtools_Data,'');
                AParameter('GDAL','DontBugMeAboutGDAL',DontBugMeAboutGDAL,true);
                AParameter('GDAL','RouteGeotiffExportGDAL',RouteGeotiffExportGDAL,true);
                AParameterShortFloat('GDAL','GDALThinFactor',GDALThinFactor,0.1);
@@ -2372,7 +2374,7 @@ var
 
             {$IfDef ExWMS}
             {$Else}
-            AParameter('Files','FavoriteWMS',FavoriteWMS,'');
+               AParameter('Files','FavoriteWMS',FavoriteWMS,'');
             {$EndIf}
 
             {$IfDef MSWindows}
@@ -2698,7 +2700,7 @@ var
          AParameter('Reflect','AutoGrayScaleReflectance',MDDef.AutoGrayScaleReflectance,true);
          AParameterShortFloat('Reflect','RefPhi',MDDef.RefPhi,335);
          AParameterShortFloat('Reflect','RefTheta',MDDef.RefTheta,45);
-         AParameterShortFloat('Reflect','RefVertExagLargeScaleDEM',MDDef.RefVertExagLargeScaleDEM,1);
+         AParameterShortFloat('Reflect','RefVertExag',MDDef.RefVertExag,1);
          AColorParameter('Reflect','WaterColor',MDDef.WaterColor,claBlue);
       end;
    end;
@@ -3393,14 +3395,24 @@ var
 
 
    procedure MarginaliaLocation(tName : shortstring; var ItemLocation : tLegendLocation; DefSpot : byte; DefDraw : boolean);
+   {tLegendLocation = record
+      DrawItem,
+      HorizontalLegend : boolean;
+      LegendSize,
+      MapPosition : byte;
+   end;}
    begin
       with MDIniFile do begin
          AParameter('MapMargin',tName + '.DrawItem',ItemLocation.DrawItem,DefDraw);
+         AParameter('MapMargin',tName + '.HorizontalLegend',ItemLocation.HorizontalLegend,true);
+         AParameter('MapMargin',tName + '.LegendSize',ItemLocation.LegendSize,1);
+         AParameter('MapMargin',tName + '.MapPosition',ItemLocation.MapPosition,DefSpot);
+
+         (*
          if (IniWhat = iniWrite) then IniFile.WriteInteger('MapMarginalia',tName + '.MapPosition',ord(ItemLocation.MapPosition));
-         if (IniWhat = iniRead) then  begin
-            ItemLocation.MapPosition := IniFile.ReadInteger('MapMarginalia',tName + '.MapPosition',DefSpot);
-         end;
+         if (IniWhat = iniRead) then ItemLocation.MapPosition := IniFile.ReadInteger('MapMarginalia',tName + '.MapPosition',DefSpot);
          if (iniWhat = iniInit) then ItemLocation.MapPosition := DefSpot;
+         *)
       end;
    end;
 
@@ -3704,15 +3716,14 @@ begin
       AParameter('MapMargin','LegendGraphWidth',LegendGraphWidth,50);
       AParameter('MapMargin','LegendBarWidth',LegendBarWidth,15);
       AParameter('MapMargin','LegendTickSize',LegendTickSize,10);
-      AParameter('MapMargin','LegendLocation.LegendSize',GridLegendLocation.LegendSize,1);
       AParameter('MapMargin','ClipboardExports',ClipboardExports,2);
       AParameter('MapMargin','BoxAroundQuickMaps',BoxAroundQuickMaps,true);
       AParameter('MapMargin','OpenGLCleanOverlays',OpenGLCleanOverlays,true);
 
       MarginaliaLocation('LegendLocation',GridLegendLocation,lpNWMap,true);
       MarginaliaLocation('ScaleBarLocation',ScaleBarLocation,lpSEMap,true);
-      MarginaliaLocation('NorthArrowLocation',NorthArrowLocation,lpSWMap,false);
       MarginaliaLocation('TerrainCatLegend',TerrainCatLegend,lpSWMap,true);
+      MarginaliaLocation('NorthArrowLocation',NorthArrowLocation,lpSWMap,false);
       MarginaliaLocation('MapNameLocation',MapNameLocation,lpNMap,false);
 
       AParameter('MissData','ASCIIMissingValue',ASCIIMissingValue,-9999);
@@ -4581,6 +4592,7 @@ begin
 
    //needed if map library is on an external drive and has changed
    if (MapLibDir <> '') and (not PathIsValid(MapLibDir)) then PickMapIndexLocation;
+   if (MDDef.DEMIX_criterion_tolerance_fName = '') then MDDef.DEMIX_criterion_tolerance_fName := ProgramRootDir + 'demix_criterion_tolerance.dbf';
 
    {$IfDef MessageStartupUnit} MessageToContinue('end demdefs setdefaultdirectories'); {$EndIf}
    {$IfDef RecordInitialization} WriteLineToDebugFile('SetDefaultDirectories in, MainMapData=' + MainMapData); {$EndIf}

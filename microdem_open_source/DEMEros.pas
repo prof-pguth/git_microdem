@@ -17,9 +17,9 @@
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IfDef Debug}
-      {$Define RecordLoadSat}
+      //{$Define RecordLoadSat}
       //{$Define RecordKeyDraw}
-      {$Define RecordTMSat}
+      //{$Define RecordTMSat}
       //{$Define RecordDrawSatOnMap}
       //{$Define RecordSatRegistration}
       //{$Define RecordSatColor}

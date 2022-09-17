@@ -37,7 +37,7 @@ uses
   BaseGraf in '..\common_code\BaseGraf.pas' {ThisBaseGraph},
   demoptions in '..\common_code\demoptions.pas' {OptionsForm},
   veg_density in '..\common_code\veg_density.pas',
-  fresnel_block_form in '..\common_code\fresnel_block_form.pas' {Fres_blockf},
+  Fresnel_block_form in '..\common_code\fresnel_block_form.pas' {Fres_blockf},
   DEMweapn in '..\common_code\DEMweapn.pas' {PickWeapon},
   drift_model in '..\common_code\drift_model.pas' {Drifting_form},
   lvis in '..\common_code\lvis.pas',
@@ -337,7 +337,8 @@ uses
   JpegDumpForm in '..\xif\JpegDumpForm.pas' {NewfrmJpegDump},
   JpegDumpOutputFrame in '..\xif\JpegDumpOutputFrame.pas' {NewOutputFrame: TFrame},
   U_SolarPos2 in '..\SolarPosSource\U_SolarPos2.pas' {SolorPosForm1},
-  ufrmMain in '..\FireMonkey3DGlobalRotate\ufrmMain.pas' {frmMain};
+  ufrmMain in '..\FireMonkey3DGlobalRotate\ufrmMain.pas' {frmMain},
+  simple_python in '..\python\simple_python.pas' {PythonForm1};
 
 {$R *.RES}
 

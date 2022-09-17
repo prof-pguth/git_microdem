@@ -13,7 +13,7 @@ unit petdbutils;
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
       //{$Define RecordDataBaseFilter}
-      {$Define RecordCSVMerge}
+      //{$Define RecordCSVMerge}
       //{$Define RecordDataBaseImage}
       //{$Define RecordOpenDB}
       //{$Define RecordCSVimport}

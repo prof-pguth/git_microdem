@@ -290,6 +290,19 @@ begin
 end;
 
 
+procedure tShapeFileCreation.AddBoundBoxToShapeStream(bb : sfBoundBox);
+begin
+   {$IfDef RecordCreateShapeFile} WriteLineToDebugFile('tShapeFileCreation.AddLineLatLongToShapeFile in'); {$EndIf}
+   AddPointToShapeStream(bb.ymax,bb.xmin);   //NW corner
+   AddPointToShapeStream(bb.ymax,bb.xmax);   //NE corner
+   AddPointToShapeStream(bb.ymin,bb.xmax);   //SE corner
+   AddPointToShapeStream(bb.ymin,bb.xmin);   //SW corner
+   AddPointToShapeStream(bb.ymax,bb.xmin);   //NE corner
+   ProcessRecordForShapeFile;
+end;
+
+
+
 procedure tShapeFileCreation.ProcessRecordForShapeFile;
 var
    off,ConL : int32;

@@ -8,33 +8,86 @@
 {include file for demcoord.pas}
 
 
-function tDEMDataSet.DetrendDEM(FilterRadius : integer = 2) : integer;
+(*
+   i,j,TPIGrid : integer;
+   GridLimits : tGridLimits;
+   znw,zw,zsw,zn,z,zs,zne,ze,zse : float32;
+   sum,FactorEW,FactorDiag : float64;
+   TStr : shortstring;
+begin
+    if Normalize then TStr := '_norm' else TStr := '';
+    Result := DEMGlb[CurDEM].CloneAndOpenGrid(FloatingPointDEM, 'MD_TRI' + TStr + '_' + DEMGlb[CurDem].AreaName,euMeters);
+
+    if DoTPI then TPIgrid := DEMGlb[CurDEM].CloneAndOpenGrid(FloatingPointDEM,'MD_TPI' + TStr + '_' + DEMGlb[CurDem].AreaName,euMeters);
+    GridLimits := TheDesiredLimits(CurDEM);
+    if ShowSatProgress then StartProgressAbortOption('TRI');
+    for j := GridLimits.YGridLow to GridLimits.YGridHigh do begin
+       if (j mod 25 = 0) and ShowSatProgress then UpdateProgressBar((j-GridLimits.YGridLow) / (GridLimits.YGridHigh-GridLimits.YGridLow));
+       if Normalize then begin
+          FactorEW := DEMGlb[CurDEM].AverageYSpace / DEMGlb[CurDEM].AverageXSpace;
+          FactorDiag := DEMGlb[CurDEM].AverageYSpace / DEMGlb[CurDEM].AverageDiaSpace;
+       end;
+       for i := GridLimits.XGridLow to GridLimits.XGridHigh do begin
+          if DEMGLB[CurDEM].SurroundedPointElevs(i,j, znw,zw,zsw,zn,z,zs,zne,ze,zse) then begin
+             if Normalize then begin
+                znw := z + (zNW-z) * FactorDiag;
+                zne := z + (zNE-z) * FactorDiag;
+                zsw := z + (zSW-z) * FactorDiag;
+                zse := z + (zSE-z) * FactorDiag;
+                ze := z + (ze-z) * FactorEW;
+                zw := z + (zw-z) * FactorEW;
+             end;
+             Sum := sqr(z-zn) + sqr(z-zne) + sqr(z-ze)+ sqr(z-zse)+ sqr(z-zs) + sqr(z-zsw)+ sqr(z-zw)+ sqr(z-znw);
+             //changed 9/18/21 to remove the averaging; now matches GDAL     changed back 4/22/2022 to match GRASS
+             sum := sqrt(sum/8);
+             DEMGlb[Result].SetGridElevation(i,j,sum);
+             if DoTPI then begin
+                Sum := z-(zn+zne+ze+zse+zs+zsw+zw+znw)/8;
+                DEMGlb[TPIGrid].SetGridElevation(i,j,sum);
+             end;
+          end;
+       end;
+    end;
+
+*)
+
+function tDEMDataSet.DetrendDEM(Normalize : boolean = true; FilterRadius : integer = 2) : integer;
 var
    x,y,i,j,NPts : integer;
-   Sum,z,zt : float32;
+   Sum,zt,
+   znw,zw,zsw,zn,z,zs,zne,ze,zse,
+   FactorNS,FactorEW,FactorDiag : float32;
+
 begin
-   Result := CloneAndOpenGrid(FloatingPointDEM,AreaName + '_detrend',DEMHeader.ElevUnits);
-   StartProgress('Detrend');
+   Result := CloneAndOpenGrid(FloatingPointDEM,AreaName + '_detrend_residual',DEMHeader.ElevUnits);
+
+   Normalize := AnswerIsYes('Normal distances to the y dimension pixel spacing');
+
+   if Normalize then begin
+      //factors to get the elevations at the Y spacing distance from the center pixel, assuming the same slope prevailed
+      FactorNS := 1;
+      FactorEW := AverageYSpace / AverageXSpace;  //equal to 1 for rectangular grids, probably > 1 for geographic grids
+      FactorDiag := AverageYSpace / AverageDiaSpace;   //sqrt(2) for UTM grids, something close for geographic
+   end;
+
+   StartProgress('Detrend/residual');
    for x := 0 to pred(DEMheader.NumCol) do begin
       if (x mod 50 = 0) then UpDateProgressBar(x/pred(DEMheader.NumCol));
       for y := 0 to pred(DEMheader.NumRow) do begin
-         if GetElevMeters(x,y,z) then begin
-            Npts := 0;
-            Sum := 0;
-            for i := -FilterRadius to FilterRadius do begin
-               for j := -FilterRadius to FilterRadius do begin
-                   if (i<>0) and (j<>0) then begin
-                      if GetElevMeters(x+i,y+j,zt) then begin
-                         Sum := Sum + zt;
-                         inc(Npts);
-                      end;
-                   end;
-               end;
-            end;
-            if NPts > 0 then begin
-               zt := Npts * z - Sum / NPts;
-               DEMGlb[Result].SetGridElevation(x,y,zt);
-            end;
+         if SurroundedPointElevs(x,y,znw,zw,zsw,zn,z,zs,zne,ze,zse) then begin
+            if Normalize then begin
+                znw :=  (zNW-z) * FactorDiag;
+                zne :=  (zNE-z) * FactorDiag;
+                zsw :=  (zSW-z) * FactorDiag;
+                zse :=  (zSE-z) * FactorDiag;
+                ze :=  (ze-z) * FactorEW;
+                zw :=  (zw-z) * FactorEW;
+                zn :=  (zn-z) * FactorNS;
+                zs :=  (zs-z) * FactorNS;
+                Sum := (zn+zne+ze+zse+zs+zsw+zw+znw)/8;
+            end
+            else Sum := z-(zn+zne+ze+zse+zs+zsw+zw+znw)/8;
+            DEMGlb[Result].SetGridElevation(x,y,sum);
          end;
       end;
    end;

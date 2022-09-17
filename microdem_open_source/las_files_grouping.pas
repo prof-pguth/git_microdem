@@ -35,7 +35,7 @@ unit las_files_grouping;
       //{$Define RecordLASheaderKeys}
       //{$Define RecordLASprojection}
       //{$Define RecordLASColors}
-      {$Define RecordLASHist}
+      //{$Define RecordLASHist}
       //{$Define RecordLASHistFull}
       //{$Define RecordLAS_subset}
    {$ENDIF}

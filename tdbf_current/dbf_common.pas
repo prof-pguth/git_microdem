@@ -84,7 +84,11 @@ type
       ftDateTime: (DateTime: TDateTimeAlias);
   end;
 {$else}
+  {$ifdef SUPPORT_NATIVEINT}
+  PtrInt = NativeInt;
+  {$else}
   PtrInt = Longint;
+  {$endif}
 {$endif}
 
   PSmallInt = ^SmallInt;
@@ -414,7 +418,10 @@ var
   MemStatus: TMemoryStatus;
 begin
   GlobalMemoryStatus(MemStatus);
-  Result := MemStatus.dwAvailPhys;
+  if MemStatus.dwAvailPhys <= MaxInt then
+    Result := MemStatus.dwAvailPhys
+  else
+    Result := MaxInt;
 end;
 
 {$endif}
@@ -484,29 +491,38 @@ end;
 {$else}
 
 function SwapIntBE(const Value: Cardinal): Cardinal;
+var
+  Source: Byte;
 begin
+  Source := PByteArray(@Value)[0];
   PByteArray(@Result)[0] := PByteArray(@Value)[3];
+  PByteArray(@Result)[3] := Source;
+  Source := PByteArray(@Value)[1];
   PByteArray(@Result)[1] := PByteArray(@Value)[2];
-  PByteArray(@Result)[2] := PByteArray(@Value)[1];
-  PByteArray(@Result)[3] := PByteArray(@Value)[0];
+  PByteArray(@Result)[2] := Source;
 end;
 
 procedure SwapInt64BE(Value, Result: Pointer); register;
 var
   PtrResult: PByteArray;
   PtrSource: PByteArray;
+  Source: Byte;
 begin
   // temporary storage is actually not needed, but otherwise compiler crashes (?)
   PtrResult := PByteArray(Result);
   PtrSource := PByteArray(Value);
+  Source := PtrSource[0];
   PtrResult[0] := PtrSource[7];
+  PtrResult[7] := Source;
+  Source := PtrSource[1];
   PtrResult[1] := PtrSource[6];
+  PtrResult[6] := Source;
+  Source := PtrSource[2];
   PtrResult[2] := PtrSource[5];
+  PtrResult[5] := Source;
+  Source := PtrSource[3];
   PtrResult[3] := PtrSource[4];
-  PtrResult[4] := PtrSource[3];
-  PtrResult[5] := PtrSource[2];
-  PtrResult[6] := PtrSource[1];
-  PtrResult[7] := PtrSource[0];
+  PtrResult[4] := Source;
 end;
 
 {$endif}

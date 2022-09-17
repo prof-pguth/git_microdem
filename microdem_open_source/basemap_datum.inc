@@ -327,11 +327,11 @@ begin
       Lat := arctan(sinh(y / a));
       Long := Long0 + x / a;
    end
-   else if PName = MillerCylindrical then begin {Snyder, 1987, p.88}
+   else if (PName = MillerCylindrical) then begin {Snyder, 1987, p.88}
       Lat := arctan(sinh(0.8*y / a)) / 0.8;
       Long := Long0 + x / a;
    end
-   else if PName = EqualEarth then begin
+   else if (PName = EqualEarth) then begin
       x := x / a;
       y := y / a;
 

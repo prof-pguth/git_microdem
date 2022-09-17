@@ -489,6 +489,9 @@ function GrassTPIMap(InName : PathStr) : integer;
 begin
 //r.tpi input=elevation@PERMANENT minradius=1 maxradius=25 steps=5 output=tpi
 //maxradius=25 fails (but might work in the user interface for GRASS?
+//variants of the option below, trying to get for just a single radius, failed
+//Result := AssembleGrassCommand(InName,'grass_TPI_','r.tpi input=mymap minradius=1 maxradius=5 steps=2 output=tpi','tpi','GrassTPI_',Undefined,mtElevSpectrum,'64');
+
    Result := AssembleGrassCommand(InName,'grass_TPI_','r.tpi input=mymap minradius=1 maxradius=15 steps=5 output=tpi','tpi','GrassTPI_',Undefined,mtElevSpectrum,'64');
 end;
 

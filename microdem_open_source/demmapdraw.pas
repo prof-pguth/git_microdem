@@ -41,6 +41,8 @@
       //{$Define ShowProjectedLimits}
       //{$Define RecordElevRange}
       //{$Define RecordMapDraw}
+      //{$Define RecordRefMapColors}
+
       //{$Define RecordMapBlow}        //needs to be off for threaded fan drawing
       //{$Define RecordElevationScaling}
       //{$Define RecordTIGER}
@@ -1220,7 +1222,7 @@ begin
                   DrawLASClassMap(BitMap);     //Las_rgb_colors[zi]);
                end
                else if ValidDEMMap then begin
-                  if BaseTitle = '' then begin
+                  if (BaseTitle = '') then begin
                      if DEMGlb[DEMonMap].LandcoverGrid then BaseTitle := 'Land cover'
                      else if DEMGlb[DEMonMap].ElevationGrid then BaseTitle := 'DEM'
                      else BaseTitle := 'Grid';

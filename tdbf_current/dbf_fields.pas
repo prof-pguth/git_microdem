@@ -35,6 +35,7 @@ type
     FIsLockField: Boolean;
     FNullPosition: integer;
 
+    function  GetAutoInc: Cardinal;
     function  GetDbfVersion: TXBaseVersion;
     procedure SetNativeFieldType(lFieldType: TDbfFieldType);
     procedure SetFieldType(lFieldType: TFieldType);
@@ -67,7 +68,7 @@ type
     property HasMin: Boolean read FHasMin write FHasMin;
     property HasMax: Boolean read FHasMax write FHasMax;
     property Offset: Integer read FOffset write FOffset;
-    property AutoInc: Cardinal read FAutoInc write FAutoInc;
+    property AutoInc: Cardinal read GetAutoInc write FAutoInc;
     property IsLockField: Boolean read FIsLockField write FIsLockField;
     property CopyFrom: Integer read FCopyFrom write FCopyFrom;
   published
@@ -198,6 +199,7 @@ begin
   FHasMin := false;
   FHasMax := false;
   FNullPosition := -1;
+  FAutoInc := 1;
 end;
 
 destructor TDbfFieldDef.Destroy; {override}
@@ -266,7 +268,6 @@ begin
   FHasMin := false;
   FHasMax := false;
   FOffset := 0;
-  FAutoInc := 0;
 end;
 
 procedure TDbfFieldDef.AssignTo(Dest: TPersistent);
@@ -293,6 +294,14 @@ begin
   end else
 {$endif}
     inherited AssignTo(Dest);
+end;
+
+function TDbfFieldDef.GetAutoInc: Cardinal;
+begin
+  if FNativeFieldType = '+' then
+    Result := FAutoInc
+  else
+    Result := 0;
 end;
 
 function TDbfFieldDef.GetDbfVersion: TXBaseVersion;

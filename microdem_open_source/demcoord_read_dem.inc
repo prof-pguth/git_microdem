@@ -15,23 +15,24 @@ var
    Error : boolean;
 
 
-   {$IfDef  ExGeotiff}
+   {$IfDef ExGeotiff}
    {$Else}
       function ReadTIFFDEM(var DEMFileName : PathStr) : boolean;
       var
          TiffImage : tTiffImage;
          RegVars : tRegVars;
       begin
-         {$IfDef RecordReadDEM} WriteLineToDebugFile('ReadTIFFDEM in'); {$EndIf}
+         {$If Defined(RecordReadDEM) or Defined(RecordGeotiff)} WriteLineToDebugFile('tDEMDataSet.ReadDEMNow ReadTIFFDEM in'); {$EndIf}
          TiffImage := tTiffImage.CreateGeotiff(DEMMapProjection,RegVars,false,DEMFileName,Result,false,false);
          if Result then begin
+            {$If Defined(RecordReadDEM) or Defined(RecordGeotiff)} WriteLineToDebugFile('Call TiffImage.CreateTiffDEM'); {$EndIf}
             Result := TiffImage.CreateTiffDEM(Self);
          end
          else begin
-            {$IfDef RecordReadDEM} WriteLineToDebugFile('ReadTIFFDEM error, ' + DEMFileName); {$EndIf}
+            {$If Defined(RecordReadDEM) or Defined(RecordGeotiff)} WriteLineToDebugFile('tDEMDataSet.ReadDEMNow ReadTIFFDEM error, ' + DEMFileName); {$EndIf}
          end;
          TiffImage.Destroy;
-         {$IfDef RecordReadDEM} WriteLineToDebugFile('ReadTIFFDEM out, ' + DEMMapProjection.GetProjectionName); {$EndIf}
+         {$If Defined(RecordReadDEM) or Defined(RecordGeotiff)} WriteLineToDebugFile('RtDEMDataSet.ReadDEMNow eadTIFFDEM out, ' + DEMMapProjection.GetProjectionName); {$EndIf}
       end;
    {$EndIf}
 
@@ -354,7 +355,8 @@ var
 
 
 var
-   ofName : PathStr;
+   ofName,WKTfile : PathStr;
+   DEMlist : tStringList;
 begin
    {$IfDef RecordReadDEM} WriteLineToDebugFile('enter read DEM for ' +  tFile); {$EndIf}
    InsureFileIsNotReadOnly(tFile);
@@ -362,9 +364,16 @@ begin
 
    Ext := ExtractFileExt(DEMFileName);
    Error := true;
-
+   WKTfile := FindSingleWKTinDirectory(ExtractFilePath(DEMFileName));
    if ExtEquals(Ext, '.DEM') then begin
       Error := not ReadNewMicroDEMFormat(DEMFileName)
+   end
+   else if ExtEquals(Ext,'.ASC') and (WKTFile <> '') then begin
+      ofName := DEMFileName;
+      DEMFileName := ChangeFileExt(DEMFileName,'.tif');
+      GDAL_Translate_2_geotiff(ofName,DEMFileName,'',true);
+      GDALAssignDEMProjection(DEMFileName,WKTfile);
+      Error := not ReadTIFFDEM(DEMFileName);
    end
    {$IfDef  ExGeotiff}
    {$Else}

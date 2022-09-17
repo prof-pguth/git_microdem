@@ -126,8 +126,6 @@ type
     procedure RegenerateIndexes;
     procedure LockRecord(RecNo: Integer; Buffer: TDbfRecordBuffer; Resync: Boolean);
     procedure UnlockRecord(RecNo: Integer; Buffer: TDbfRecordBuffer);
-    procedure RecordDeleted(RecNo: Integer; Buffer: TDbfRecordBuffer);
-    procedure RecordRecalled(RecNo: Integer; Buffer: TDbfRecordBuffer);
     procedure DeleteIndexFile(AIndexFile: TIndexFile);
     procedure Flush; override;
 
@@ -662,7 +660,6 @@ begin
       begin
         Assign(lFieldDef);
         Offset := lFieldOffset;
-        AutoInc := 0;
       end;
 
       // save field props
@@ -1146,6 +1143,7 @@ end;
 
 type
   TRestructFieldInfo = record
+    SourceFieldDef: TDbfFieldDef;
     SourceOffset: Integer;
     DestOffset: Integer;
     Size: Integer;
@@ -1230,14 +1228,30 @@ begin
   for lFieldNo := 0 to DestFieldDefs.Count - 1 do
   begin
     TempDstDef := DestFieldDefs.Items[lFieldNo];
-    if TempDstDef.CopyFrom >= 0 then
+    if DbfFieldDefs <> nil then
     begin
-      TempSrcDef := FFieldDefs.Items[TempDstDef.CopyFrom];
+      // When restructuring, caller specifies which field to copy from
+      if TempDstDef.CopyFrom >= 0 then
+        TempSrcDef := FFieldDefs.Items[TempDstDef.CopyFrom]
+      else
+        TempSrcDef := nil;
+    end
+    else
+    begin
+      // When copying, handle blob fields differently
+      if TempDstDef.IsBlob then
+        TempSrcDef := FFieldDefs.Items[lFieldNo]
+      else
+        TempSrcDef := nil;
+    end;
+    RestructFieldInfo[lFieldNo].SourceFieldDef := TempSrcDef;
+    if Assigned(TempSrcDef) then
+    begin
       if CharInSet(TempDstDef.NativeFieldType, ['F', 'N']) then
       begin
         // get minimum field length
         lFieldSize := Min(TempSrcDef.Precision, TempDstDef.Precision) +
-          Min(TempSrcDef.Size - TempSrcDef.Precision, 
+          Min(TempSrcDef.Size - TempSrcDef.Precision,
             TempDstDef.Size - TempDstDef.Precision);
         // if one has dec separator, but other not, we lose one digit
         if (TempDstDef.Precision > 0) xor 
@@ -1327,29 +1341,25 @@ begin
             for lFieldNo := 0 to DestFieldDefs.Count-1 do
             begin
               TempDstDef := DestFieldDefs.Items[lFieldNo];
-              if TempDstDef.CopyFrom >= 0 then begin
-                TempSrcDef := FFieldDefs.Items[TempDstDef.CopyFrom];
+              TempSrcDef := RestructFieldInfo[lFieldNo].SourceFieldDef;
+              if Assigned(TempSrcDef) then
+              begin
                 // handle blob fields differently
-                // don't try to copy new blob fields!
-                // DbfFieldDefs = nil -> pack only
-                // TempDstDef.CopyFrom >= 0 -> copy existing (blob) field
-                if TempDstDef.IsBlob and ((DbfFieldDefs = nil) or (TempDstDef.CopyFrom >= 0)) then
+                if TempDstDef.IsBlob and TempSrcDef.IsBlob then
                 begin
-                  if TempSrcDef.IsBlob then
+                  // get current blob blockno
+                  if GetFieldData(lFieldNo, ftInteger, pBuff, @lBlobPageNo, false) and (lBlobPageNo > 0) then
                   begin
-                    // get current blob blockno
-                    if GetFieldData(lFieldNo, ftInteger, pBuff, @lBlobPageNo, false) and (lBlobPageNo > 0) then
-                    begin
-                      BlobStream.Clear;
-                      FMemoFile.ReadMemo(lBlobPageNo, BlobStream);
-                      BlobStream.Position := 0;
-                      // always append
-                      DestDbfFile.FMemoFile.WriteMemo(lBlobPageNo, 0, BlobStream);
-                      // write new blockno
-                      DestDbfFile.SetFieldData(lFieldNo, ftInteger, @lBlobPageNo, pDestBuff, false);
-                    end;
+                    BlobStream.Clear;
+                    FMemoFile.ReadMemo(lBlobPageNo, BlobStream);
+                    BlobStream.Position := 0;
+                    // always append
+                    DestDbfFile.FMemoFile.WriteMemo(lBlobPageNo, 0, BlobStream);
+                    // write new blockno
+                    DestDbfFile.SetFieldData(lFieldNo, ftInteger, @lBlobPageNo, pDestBuff, false);
                   end;
-                end else if (DbfFieldDefs <> nil) and (TempDstDef.CopyFrom >= 0) then
+                end
+                else
                 begin
                   // copy content of field
                   if (TempSrcDef.NativeFieldType = TempDstDef.NativeFieldType) or
@@ -1436,16 +1446,16 @@ var
   IndexFile: TIndexFile;
 begin
   // recreate every index in every file
-  for lIndexNo := 0 to FIndexFiles.Count-1 do
-  begin
-    IndexFile := TIndexFile(FIndexFiles.Items[lIndexNo]);
-    IndexFile.TryExclusive;
-    try
-      IndexFile.CheckExclusiveAccess;
+  TryExclusive;
+  try
+    CheckExclusiveAccess;
+    for lIndexNo := 0 to FIndexFiles.Count-1 do
+    begin
+      IndexFile := TIndexFile(FIndexFiles.Items[lIndexNo]);
       PackIndex(IndexFile, EmptyStr, False);
-    finally
-      IndexFile.EndExclusive;
     end;
+  finally
+    EndExclusive;
   end;
 end;
 
@@ -2055,7 +2065,10 @@ begin
         // store to buffer, positive = high bit on, so flip it
         PCardinal(DestBuf+TempFieldDef.Offset)^ := SwapIntBE(NextVal or $80000000);
         // increase
-        Inc(NextVal);
+        if NextVal = High(NextVal) then
+          NextVal := Low(NextVal)
+        else
+          Inc(NextVal);
         TempFieldDef.AutoInc := NextVal;
         // write new value to header buffer
         PCardinal(FHeader+lAutoIncOffset)^ := SwapIntLE(NextVal);
@@ -2251,7 +2264,6 @@ var
 {$ifdef USE_CACHE}
   cur, last: Integer;
   prevCache: Integer;
-  lUniqueMode: TIndexUniqueType;
 {$endif}
 begin
   // save current mode in case we change it
@@ -2289,14 +2301,11 @@ begin
       cur := 1;
       last := RecordCount;
       DoProgress(0, last, STRING_PROGRESS_READINGRECORDS);
-      if lIndexFile.UniqueMode = iuUnique then
-        lUniqueMode := iuDistinct
-      else
-        lUniqueMode := lIndexFile.UniqueMode;
       while cur <= last do
       begin
         ReadRecord(cur, FPrevBuffer);
-        lIndexFile.Insert(cur, FPrevBuffer, lUniqueMode);
+        if not lIndexFile.Insert(cur, FPrevBuffer) then
+          lIndexFile.InsertError;
         DoProgress(cur, last, STRING_PROGRESS_READINGRECORDS);
         inc(cur);
       end;
@@ -2484,23 +2493,32 @@ var
   Locked: Boolean;
 begin
   Result := 0;
-  if not LockPage(-2, True) then
-    raise EDbfError.Create(STRING_RECORD_LOCKED);
-  try
-    Locked := LockPage(0, False);
-    if not Locked then
+  if NeedLocks and (not FileLocked) then
+    if not LockPage(-2, True) then
       raise EDbfError.Create(STRING_RECORD_LOCKED);
+  try
+    if NeedLocks and (not FileLocked) then
+    begin
+      Locked := LockPage(0, False);
+      if not Locked then
+        raise EDbfError.Create(STRING_RECORD_LOCKED);
+    end
+    else
+      Locked := True;
     try
-      if not LockPage(-1, False) then
-      EDbfError.Create(STRING_RECORD_LOCKED);
+      if NeedLocks and (not FileLocked) then
+        if not LockPage(-1, False) then
+          EDbfError.Create(STRING_RECORD_LOCKED);
       try
         // get new record index
         newRecord := RecordCount+1;
         // lock record so we can write data
-        if not LockPage(newRecord, False) then
-          EDbfError.Create(STRING_RECORD_LOCKED);
+        if NeedLocks and (not FileLocked) then
+          if not LockPage(newRecord, False) then
+            EDbfError.Create(STRING_RECORD_LOCKED);
         try
-          UnlockPage(0);
+          if NeedLocks and (not FileLocked) then
+            UnlockPage(0);
           Locked := False;
           // write autoinc value
           if not FInCopyFrom then
@@ -2510,7 +2528,7 @@ begin
           while I < FIndexFiles.Count do
           begin
             lIndex := TIndexFile(FIndexFiles.Items[I]);
-            if not lIndex.Insert(newRecord, Buffer, lIndex.UniqueMode) then
+            if not lIndex.Insert(newRecord, Buffer) then
               error := ecInsert;
             if lIndex.WriteError then
               error := ecWriteIndex;
@@ -2575,17 +2593,20 @@ begin
           else
             Result := newRecord;
         finally
-          UnlockPage(newRecord);
+          if NeedLocks and (not FileLocked) then
+            UnlockPage(newRecord);
         end;
       finally
-        UnlockPage(-1);
+        if NeedLocks and (not FileLocked) then
+          UnlockPage(-1);
       end;
     finally
-      if Locked then
+      if NeedLocks and (not FileLocked) and Locked then
         UnlockPage(0);
     end;
   finally
-    UnlockPage(-2);
+    if NeedLocks and (not FileLocked) then
+      UnlockPage(-2);
   end;
 end;
 
@@ -2619,7 +2640,7 @@ procedure TDbfFile.LockRecord(RecNo: Integer; Buffer: TDbfRecordBuffer; Resync: 
 var
   Locked : Boolean;
 begin
-  if NeedLocks then
+  if NeedLocks and (not FileLocked) then
   begin
     if FVirtualLocks then
     begin
@@ -2690,45 +2711,8 @@ begin
   // write new record buffer, all keys ok
   WriteRecord(RecNo, Buffer);
   // done updating, unlock
-  if NeedLocks then
+  if NeedLocks and (not FileLocked) then
     UnlockPage(RecNo);
-end;
-
-procedure TDbfFile.RecordDeleted(RecNo: Integer; Buffer: TDbfRecordBuffer);
-var
-  I: Integer;
-  lIndex: TIndexFile;
-begin
-  // notify indexes: record deleted
-  for I := 0 to FIndexFiles.Count - 1 do
-  begin
-    lIndex := TIndexFile(FIndexFiles.Items[I]);
-    lIndex.RecordDeleted(RecNo, Buffer);
-  end;
-end;
-
-procedure TDbfFile.RecordRecalled(RecNo: Integer; Buffer: TDbfRecordBuffer);
-var
-  I: Integer;
-  lIndex, lErrorIndex: TIndexFile;
-begin
-  // notify indexes: record recalled
-  I := 0;
-  while I < FIndexFiles.Count do
-  begin
-    lIndex := TIndexFile(FIndexFiles.Items[I]);
-    if not lIndex.RecordRecalled(RecNo, Buffer) then
-    begin
-      lErrorIndex := lIndex;
-      while I > 0 do
-      begin
-        Dec(I);
-        lIndex.RecordDeleted(RecNo, Buffer);
-      end;
-      lErrorIndex.InsertError;
-    end;
-    Inc(I);
-  end;
 end;
 
 procedure TDbfFile.DeleteIndexFile(AIndexFile: TIndexFile);

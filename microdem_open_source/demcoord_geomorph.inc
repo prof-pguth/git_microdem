@@ -21,7 +21,7 @@
             WavelengthMean,WavelengthMedian,WavelengthStdDev,HeightMean,HeightMedian,HeightStd,
             Lat,Long,Lat1,Long1,Lat2,Long2,aMinVal,aMaxVal : float64;
             z : float32;
-            ProfileData : tMyData;
+            //ProfileData : tMyData;
             TableName : PathStr;
          begin
              xsize := round(0.5 * MDDef.SSOBoxSizeMeters / AverageXSpace);
@@ -30,9 +30,11 @@
              ColInc := round(MDDef.PointSeparation / AverageXSpace);
              RowInc := round(MDDef.PointSeparation / AverageYSpace);
              Results := tStringList.Create;
-             if MDdef.DoFabricAmplitude then s1 := ',ELEV_M,FABRIC_AMP' else s1 := '';
-             if MDDef.DoWavelength then s2 := ',LEN_MEAN,LEN_MEDIAN,LEN_STD,HT_MEAN,HT_MEDIAN,HT_STD' else s2 := '';
-             if MDdef.DoFabricAmplitude then S3 := ',FABRIC_AMP' else s3 := '';
+             {$IfDef FabricWavelengthAmplitude}
+                if MDdef.DoFabricAmplitude then s1 := ',ELEV_M,FABRIC_AMP' else s1 := '';
+                if MDDef.DoWavelength then s2 := ',LEN_MEAN,LEN_MEDIAN,LEN_STD,HT_MEAN,HT_MEDIAN,HT_STD' else s2 := '';
+                if MDdef.DoFabricAmplitude then S3 := ',FABRIC_AMP' else s3 := '';
+             {$EndIf}
              Results.Add('LAT,LONG,S1S2,S2S3,NPTS,RELIEF,FABRIC_DIR' + s1 + s2 + S3);
              Col := Limits.xGridLow;
              while Col <= Limits.xGridHigh do begin
@@ -52,28 +54,32 @@
                                     RealToString(SSOvars.ElevRange,-12,-2)+ ',' +
                                     RealToString(SSOvars.TheDipDirs[3],-12,-1);
 
-                           if (MDdef.DoFabricAmplitude or MDDef.DoWavelength) and GetPerpendicularLineEnd(Lat,Long,0.5*MDDef.FabricAmplitudeDistance,SSOvars.TheDipDirs[3],Lat1,Long1,Lat2,Long2) then begin
-                              MDDef.ForceCrestComputations := true;
-                              LOSComputeOnly(ProfileData,Self,0,lat1,long1,lat2,long2,0,0);
-                              WantShowProgress := false;
-                              if MDdef.DoFabricAmplitude then begin
-                                 if ProfileData.FindFieldRange('ELEV_M',aMinVal,aMaxVal) then
-                                    aLine := aLine + ',' + RealToString(aMaxVal - aMinVal,-12,-2);
+                           {$IfDef FabricWavelengthAmplitude}
+                              if (MDdef.DoFabricAmplitude or MDDef.DoWavelength) and GetPerpendicularLineEnd(Lat,Long,0.5*MDDef.FabricAmplitudeDistance,SSOvars.TheDipDirs[3],Lat1,Long1,Lat2,Long2) then begin
+                                 MDDef.ForceCrestComputations := true;
+                                 LOSComputeOnly(0,lat1,long1,lat2,long2,0,0);
+                                 WantShowProgress := false;
+                                 if MDdef.DoFabricAmplitude then begin
+                                    if ProfileData.FindFieldRange('ELEV_M',aMinVal,aMaxVal) then
+                                       aLine := aLine + ',' + RealToString(aMaxVal - aMinVal,-12,-2);
+                                 end;
+                                 if MDDef.DoWavelength then begin
+                                   FindWavelengthStats(ProfileData,WavelengthMean,WavelengthMedian,WavelengthStdDev,HeightMean,HeightMedian,HeightStd);
+                                   if (WaveLengthMean > 0.01) then  begin
+                                      aline := aLine + ',' + RealToString(WavelengthMean,-12,-3)+ ',' +
+                                               RealToString(WavelengthMedian,-12,-3)+ ',' +
+                                               RealToString(WavelengthStdDev,-12,-3)+ ',' +
+                                               RealToString(HeightMean,-12,-3)+ ',' +
+                                               RealToString(HeightMedian,-12,-3)+ ',' +
+                                               RealToString(HeightStd,-12,-3);
+                                   end;
+                                 end;
+                                 WantShowProgress := true;
+                                 //ProfileData.Destroy;
                               end;
-                              if MDDef.DoWavelength then begin
-                                FindWavelengthStats(ProfileData,WavelengthMean,WavelengthMedian,WavelengthStdDev,HeightMean,HeightMedian,HeightStd);
-                                if (WaveLengthMean > 0.01) then  begin
-                                   aline := aLine + ',' + RealToString(WavelengthMean,-12,-3)+ ',' +
-                                            RealToString(WavelengthMedian,-12,-3)+ ',' +
-                                            RealToString(WavelengthStdDev,-12,-3)+ ',' +
-                                            RealToString(HeightMean,-12,-3)+ ',' +
-                                            RealToString(HeightMedian,-12,-3)+ ',' +
-                                            RealToString(HeightStd,-12,-3);
-                                end;
-                              end;
-                              WantShowProgress := true;
-                              ProfileData.Destroy;
-                           end;
+                          {$EndIf}
+
+
                            Results.Add(aLine);
                        end;
                     end
@@ -88,7 +94,7 @@
                 if ShowSatProgress and WantOut then break;
              end {while Col};
              if MDdef.DoWaveLength then begin
-                ProfileData.Destroy;
+                //ProfileData.Destroy;
                 DeleteFileIfExists(TableName);
              end;
          end;

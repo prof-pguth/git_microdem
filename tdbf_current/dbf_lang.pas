@@ -227,7 +227,7 @@ const
       LANG_THAI       or (SUBLANG_DEFAULT              shl 10) or (SORT_DEFAULT shl 16),
 {51}  0,0,0,0,0,
 {56}  LANG_JAPANESE   or (SUBLANG_DEFAULT              shl 10) or (SORT_DEFAULT shl 16),    // JPN: Dic932 ??
-      0,                                                                                    // Ascii: Binary
+      LANG_ENGLISH    or (SUBLANG_ENGLISH_US           shl 10) or (SORT_DEFAULT shl 16),    // Ascii: Binary
       LANG_ENGLISH    or (SUBLANG_ENGLISH_UK           shl 10) or (SORT_DEFAULT shl 16),    // Western Europe ??
       LANG_SPANISH    or (SUBLANG_SPANISH              shl 10) or (SORT_DEFAULT shl 16),
 {5A}  0,0,0,0,

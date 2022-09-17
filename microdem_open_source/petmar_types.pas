@@ -56,7 +56,8 @@ uses
    Math,Db,Classes,StrUtils;
 
 const
-   {$IF (CompilerVersion >= 35)} DelphiCompiler = '11 Alexandria'; {$EndIf}
+   {$IF (CompilerVersion >= 36) and (CompilerVersion < 37)} DelphiCompiler = '11 Alexandria'; {$EndIf}
+   {$IF (CompilerVersion >= 35) and (CompilerVersion < 36)} DelphiCompiler = '11 Alexandria'; {$EndIf}
    {$IF (CompilerVersion >= 34) and (CompilerVersion < 35)} DelphiCompiler = '10.4 Sydney'; {$EndIf}
    {$IF (CompilerVersion >= 33) and (CompilerVersion < 34)} DelphiCompiler = '10.3 Rio'; {$EndIf}
    {$IF (CompilerVersion >= 32) and (CompilerVersion < 33)} DelphiCompiler = '10.2 Tokyo'; {$EndIf}
@@ -102,31 +103,30 @@ const
 
 type
    {$IfDef MSWindows}
-   ShortString = System.ANSIString;
-   String23  = string[23];
-   String3   = string[3];   //needed for stratcol patterns
+      ShortString = System.ANSIString;
+      String23  = string[23];
+      String3   = string[3];   //needed for stratcol patterns
 
-   string35  = shortstring;
-   string16  = shortstring;
-   String10  = shortstring;
-   PathStr = System.ANSIString;
-   DirStr  = System.ANSIString;
-   NameStr = System.ANSIString;
-   ExtStr = System.ANSIString;
+      string35  = shortstring;
+      string16  = shortstring;
+      String10  = shortstring;
+      PathStr = System.ANSIString;
+      DirStr  = System.ANSIString;
+      NameStr = System.ANSIString;
+      ExtStr = System.ANSIString;
    {$Else}
-   string16  = string;
-   String10  = string;
-   String5   = array[1..5] of byte;
-   String3   = string;
-   AnsiChar = Char;
-   AnsiString = System.String;
-   ShortString = System.String;
-   PathStr = System.String;
-   DirStr  = System.String;
-   NameStr = System.String;
-   ExtStr = System.String;
+      string16  = string;
+      String10  = string;
+      String5   = array[1..5] of byte;
+      String3   = string;
+      AnsiChar = Char;
+      AnsiString = System.String;
+      ShortString = System.String;
+      PathStr = System.String;
+      DirStr  = System.String;
+      NameStr = System.String;
+      ExtStr = System.String;
    {$EndIf}
-
 
    Characters = Set of AnsiChar;
    Float64 = double;
@@ -305,7 +305,7 @@ type
    tLegendLocation = record
       DrawItem,
       HorizontalLegend : boolean;
-      LegendSize  : byte;
+      LegendSize,
       MapPosition : byte;
    end;
 

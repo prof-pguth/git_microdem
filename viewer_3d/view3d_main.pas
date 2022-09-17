@@ -233,7 +233,7 @@ var
          z : float32;
          Good : boolean;
       begin
-         if CurCloud = MaxClouds then begin
+         if (CurCloud = MaxClouds) then begin
             MessageToContinue('Limit is ' + IntToStr(MaxClouds));
             exit;
          end;

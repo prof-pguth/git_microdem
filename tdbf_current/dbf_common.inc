@@ -460,7 +460,8 @@
   {$define DELPHI_3}
 {$endif}
 
-{$ifdef VER350} // Delphi 10.4 Sydney
+{$ifdef VER350} // Delphi 11 Alexandria
+  {$define DELPHI_11}
   {$define DELPHI_104}
   {$define DELPHI_103}
   {$define DELPHI_102}
@@ -486,7 +487,6 @@
   {$define DELPHI_4}
   {$define DELPHI_3}
 {$endif}
-
 
 //-------------------------------------------------------
 //--- Conclude supported features from delphi version ---
@@ -559,12 +559,12 @@
 {$endif}
 
 {$ifdef Delphi_XE}
-  {$define InternalAddRecord_Wants_TRecordBuffer}
   {$define SUPPORT_FORMATSETTINGS}
   {$define SUPPORT_FORMATSETTINGS_CREATE}
 {$endif}
 
 {$ifdef DELPHI_XE3}
+  {$define InternalAddRecord_Wants_TRecordBuffer}
   {$define FLOATREC_DIGITS_IS_BYTE}
   {$define SUPPORT_TVALUEBUFFER}
   {$define SUPPORT_GENERICS_FIELDLIST}

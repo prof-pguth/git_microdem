@@ -24,7 +24,7 @@ unit GeoTiff;
    //{$Define RecordGeotiffFailures}
 
    {$IFDEF DEBUG}
-      {$Define RecordGeotiff}
+      //{$Define RecordGeotiff}
       //{$Define RecordGeotiffFailures}
       //{$Define RecordGeotiffProjection}
       //{$Define RecordDefineDatum}
@@ -1715,6 +1715,7 @@ var
                   2061 : SetADouble(TiffOffset,6);
                   3072 : begin
                              TStr := MapProjection.OpenFromTiff3072(TiffOffset);
+                             ProjectionDefined :=  TStr <> 'Undefined';
                              {$If Defined(RecordFullGeotiff) or Defined(TrackProjection)} MapProjection.WriteProjectionParametersToDebugFile('Key 3072'); {$EndIf}
                          end;
                   3073 : begin end;

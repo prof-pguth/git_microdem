@@ -180,27 +180,6 @@ begin
 end;
 
 
-(*
-function tDEMDataSet.GetElevMetersOnGridInteger(x,y : integer; var z  : float32) : boolean;
-begin
-   z := ThisDEMMissingValue;
-   Result := false;
-   if GridInDataSet(x,y) then begin
-      if (DEMheader.DEMPrecision = SmallIntDEM) then z := SmallIntElevations[x]^[y]
-      else if (DEMheader.DEMPrecision = WordDEM) then z := WordElevations^[x]^[y]
-      else if (DEMheader.DEMPrecision = LongWordDEM) then z := LongWordElevations^[x]^[y]
-      else if (DEMheader.DEMPrecision = ByteDEM) then z := ByteElevations^[x]^[y];
-      if MissingElevation(z) then begin
-         z := ThisDEMMissingValue;
-         Result := false;
-      end
-      else begin
-         Result := true;
-      end;
-   end;
-end;
-*)
-
 
 function tDEMDataSet.GetElevMeters(XGrid,YGrid : float64; var z  : float32) : boolean;
 {interpolate to get point elevation}
@@ -228,7 +207,7 @@ begin
      end
      else if GetElevSquareMeters(XGrid,YGrid,Elev) then begin {elevations surrounding a point: 1=SW, 2=SE, 3=NE, 4=NW, 5=1=SW}
           if MDDef.wf.ElevInterpolation in [piBilinear] then begin
-             z := (  (1-XIncr) * (1-YIncr)  * Elev[1] + (1-XIncr) * YIncr  * Elev[4] + XIncr * (1-YIncr) * Elev[2] + XIncr * YIncr * Elev[3]);
+             z := (  (1-XIncr) * (1-YIncr)  * Elev[1] + (1-XIncr) * YIncr * Elev[4] + XIncr * (1-YIncr) * Elev[2] + XIncr * YIncr * Elev[3]);
           end
           else if  MDDef.wf.ElevInterpolation = piTriangle then begin
              if (Yincr < 1 - XIncr) then z := YIncr * Elev[4] + (1 - YIncr - XIncr) * Elev[1] + XIncr * Elev[2]

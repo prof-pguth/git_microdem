@@ -27,6 +27,7 @@ unit dem_manager;
       //{$Define RecordMenu}
       //{$Define RecordSatLoad}
       //{$Define RecordSimpleClose}
+      {$Define RecordSatDirOpen}
    {$Else}
       {$Define TimeLoadDEM}
    {$EndIf}
@@ -900,18 +901,21 @@ end;
          TheFiles,Files2 : tStringList;
       begin
          if WarnAboutSpaces(LastSatDir) then exit;
-         {$If Defined(RecordSatLoad)} WriteLineToDebugFile('OpenSatImageFromDirectory in, ' + LastSatDir);   {$EndIf}
+
+         {$If Defined(RecordSatLoad) or Defined(RecordSatDirOpen)} WriteLineToDebugFile('OpenSatImageFromDirectory in, ' + LastSatDir);   {$EndIf}
          TheFiles := Nil;
          FindMatchingFiles(LastSatDir,'*.tif',TheFiles,6);
          if (TheFiles.Count = 0) then begin
-            {$IfDef RecordSatLoad} if (TheFiles.Count > 0) then WriteLineToDebugFile('only found TIF files=' + IntToStr(TheFiles.Count));   {$EndIf}
+            {$If Defined(RecordSatLoad) or Defined(RecordSatDirOpen)} WriteLineToDebugFile('found no TIF files'); {$EndIf}
             FreeAndNil(TheFiles);
             FindMatchingFiles(LastSatDir,'*.jp2',TheFiles,8);
             if (TheFiles.Count = 0) then begin
+                {$If Defined(RecordSatLoad) or Defined(RecordSatDirOpen)} WriteLineToDebugFile('found no JP2 files'); {$EndIf}
                 MessageToContinue('No JP2 files found in directory');
+                TheFiles.Free;
                 exit;
             end;
-           {$IfDef RecordSatLoad} WriteLineToDebugFile('OpenSatImageFromDirectory, jp2 files=' + IntToStr(TheFiles.Count));   {$EndIf}
+            {$If Defined(RecordSatLoad) or Defined(RecordSatDirOpen)} WriteLineToDebugFile('OpenSatImageFromDirectory, jp2 files=' + IntToStr(TheFiles.Count));   {$EndIf}
             for I := 0 to pred(TheFiles.Count) do begin
                if AnsiContainsText(TheFiles.Strings[i],'IMG_DATA') then begin
                   wmdem.SetPanelText(0,'Convert JP2: ' + IntToStr(succ(i)) + '/' + IntToStr(TheFiles.Count));
@@ -925,6 +929,7 @@ end;
             FindMatchingFiles(LastSatDir,'*.tif',TheFiles,6);
          end
          else begin
+            //already have TIFFs, but maybe need to delete JP2 that were not originally deleted
             if MDDef.DeleteJP2 then begin
                Files2 := Nil;
                FindMatchingFiles(LastSatDir,'*.jp2',Files2,8);
@@ -934,19 +939,20 @@ end;
          end;
 
          if IsThisSentinel2(TheFiles.Strings[0]) then begin
+            //there might be metadata or other TIFFS we don't want to open
             for i := pred(TheFiles.Count) downto 0 do begin
                if not AnsiContainsText(TheFiles.Strings[i],'IMG_DATA') then TheFiles.Delete(i);
             end;
          end;
 
-         {$IfDef RecordSatLoad} WriteLineToDebugFile('OpenSatImageFromDirectory, TIF files=' + IntToStr(TheFiles.Count));   {$EndIf}
+         {$If Defined(RecordSatLoad) or Defined(RecordSatDirOpen)} WriteLineToDebugFile('OpenSatImageFromDirectory, TIF files=' + IntToStr(TheFiles.Count));   {$EndIf}
          if (TheFiles.Count > 0) then begin
             if (TheFiles.Count = 1) then i := 0 else i := 1;      //for Sentinel-2, where band 1 is low resolution
             OpenAndDisplayNewScene(Nil,TheFiles.Strings[i],true,true,true);
          end;
          TheFiles.Free;
          UpdateMenusForAllMaps;
-         {$IfDef RecordSatLoad} WriteLineToDebugFile('OpenSatImageFromDirectory out');   {$EndIf}
+         {$If Defined(RecordSatLoad) or Defined(RecordSatDirOpen)} WriteLineToDebugFile('OpenSatImageFromDirectory out');   {$EndIf}
       end;
 
 
@@ -955,12 +961,13 @@ end;
          Paths : tStringList;
          i : integer;
       begin
-         {$If Defined(RecordSatLoad)} WriteLineToDebugFile('PickSatDirToOpen in');   {$EndIf}
+         {$If Defined(RecordSatLoad) or Defined(RecordSatDirOpen)} WriteLineToDebugFile('PickSatDirToOpen in');   {$EndIf}
          Paths := tStringList.Create;
          Paths.Add(LastSatDir);
          if GetMultipleDirectories('Landsat or Sentinel-2 image',Paths) then begin
             for i := 0 to pred(Paths.Count) do begin
                LastSatDir := Paths[i];
+               {$If Defined(RecordSatLoad) or Defined(RecordSatDirOpen)} WriteLineToDebugFile('call OpenSatImageFromDirectory, ' + LastSatDir);   {$EndIf}
                OpenSatImageFromDirectory(LastSatDir);
             end;
          end
@@ -1342,9 +1349,9 @@ end;
             DownloadFileFromWeb(WebDataDownLoadDir + dName,DBDir + dName);
             ZipMasterUnzip(DBDir + dName,DBDir);
             grDir := MainMapData + 'natural_earth_vector\';
-            LargeScaleWorldOutlines := grDir +'NE_10M_VECTORS.dbf';
-            MedScaleWorldOutlines := grDir + 'NE_50M_VECTORS.dbf';
-            SmallScaleWorldOutlines := grDir + 'NE_110M_VECTORS.dbf';
+            LargeScaleWorldOutlines := DBDir + 'Natural_Earth_Vector\NE_10M_VECTORS' + DefaultDBExt;
+            MedScaleWorldOutlines := DBDir + 'Natural_Earth_Vector\NE_50M_VECTORS' + DefaultDBExt;
+            SmallScaleWorldOutlines := DBDir + 'Natural_Earth_Vector\NE_110M_VECTORS' + DefaultDBExt;
          end;
       end;
 
@@ -1641,7 +1648,7 @@ var
          Table.SetFieldByNameAsString('DATA_LAYER',theType);
          Table.SetFieldByNameAsString('FILENAME',theName);
          if (MapOwner <> Nil) then begin
-            Table.FillBoundingBox(MapOwner.MapDraw.MapCorners.BoundBoxGeo);
+            Table.SetBoundingBox(MapOwner.MapDraw.MapCorners.BoundBoxGeo);
             Table.SetFieldByNameAsInteger('MAP_TYPE',MapOwner.MapDraw.MapType);
          end;
          Table.Post;

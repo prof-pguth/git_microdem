@@ -21,7 +21,7 @@ unit new_petmar_movie;
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IfDef Debug}
-      {$Define RecordMovie}
+      //{$Define RecordMovie}
    {$Else}
    {$EndIf}
 {$EndIf}

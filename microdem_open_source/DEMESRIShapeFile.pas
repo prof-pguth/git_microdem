@@ -241,6 +241,7 @@ type
          function CloseShapeFiles : integer;
          procedure AddLineLatLongToShapeFile(Lat1,Long1,Lat2,Long2,delta : float64; Convert : boolean);
          procedure AddBoxLatLongToShapeFile(Lat1,Long1,Lat2,Long2 : float64);
+         procedure AddBoundBoxToShapeStream(bb : sfBoundBox);
          procedure AddLineUTMToShapeFile(x1,y1,x2,y2,delta : float64);
          procedure AddPointToShapeStream(Lat,Long : float64);
          procedure AddPointWithZToShapeStream(Lat,Long,z : float64);
@@ -290,7 +291,7 @@ function IsItAShapefile(fName : PathStr) : boolean;
 
 var
    LastRecPolyLineHeader : sfPolyLineHeader;
-   DrawPolygonsAsPolygons,
+   DrawPolygonsAsPolygons,       //this is for PLSS, where it is false, otherwise it is true
    NeedCentroid : boolean;
    ShapeFileNewLeader : ShortString;
    {$IfDef NoDBMaps}

@@ -103,7 +103,7 @@ function Log10(x : float32) : float32;
 function erfc(x : float64): float64;
 function erf(x : float64) : float64;
 function Ninv( P : float32 ) : float32;
-function IsInfinity(const d: DOUBLE) : boolean;
+function IsInfinity(const d: double) : boolean;
 function ArcTanDeg(val : float64) : float64;
 
 procedure TransformCoordinates(xin,yin : float64; var xout,yout : float64; XlateArray : OneBySixFloatArray);
@@ -226,6 +226,8 @@ function RadToDegString(rads : float64) : shortstring;
 function FilterSizeStr(i : integer) : shortstring;
 
 
+function Friedman(DBonTable : integer; DEMs : tStringList; Alpha : float64 = 95) : boolean;
+
 var
    ArrowEndX,ArrowEndY : Integer;
 
@@ -246,10 +248,25 @@ implementation
 
 
 uses
-  Petmar;
+  Petmar,DEMDataBase;
 
 var
    LabelLength : integer;
+
+
+function IsInfinity(const d : double): boolean;
+// Like a NaN, an INF Double value has an exponent of 7FF, but the INF
+// values have a fraction field of 0. INF values can be positive or
+// negative, which is specified in the high-order, sign bit.
+VAR
+   Overlay : Int64 ABSOLUTE d;
+BEGIN
+  RESULT := (Overlay AND $7FF0000000000000) = $7FF0000000000000;
+END {IsInfinity};
+
+
+
+{$I stats_petmath.inc}
 
 
 function FilterSizeStr(i : integer) : shortstring;
@@ -891,16 +908,6 @@ BEGIN
 END {NearLine};
 
 
-function IsInfinity(const d : double): boolean;
-// Like a NaN, an INF Double value has an exponent of 7FF, but the INF
-// values have a fraction field of 0. INF values can be positive or
-// negative, which is specified in the high-order, sign bit.
-VAR
-   Overlay : Int64 ABSOLUTE d;
-BEGIN
-  RESULT := (Overlay AND $7FF0000000000000) = $7FF0000000000000;
-END {IsInfinity};
-
 
 function GetTickInt(PixelsHigh,LabelSpacing : integer; ElevRange : float64) : float64;
 begin
@@ -1428,7 +1435,7 @@ var
 begin { function Ninv}
    P := P * 0.01;
    Ninv := 0.0;
-   if( P > 0.5 ) then  Pr := 1.0 - P else Pr := P;
+   if ( P > 0.5 ) then  Pr := 1.0 - P else Pr := P;
    if ( Pr >= 1.0E-20) then begin
       if ( Pr <> 0.5 ) then begin
          Y    := sqrt ( ln( 1.0 / Pr / Pr ) );
@@ -1446,6 +1453,7 @@ begin { function Ninv}
    end
    else Ninv := 100.00;
 end {function Ninv};
+
 
 
 function CompassAngleToRadians(Angle : float64) : float64; {compass angles run clockwise from north; the computer uses radians running counterclockwise from east   }

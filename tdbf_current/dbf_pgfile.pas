@@ -33,7 +33,7 @@ type
   {$ifdef SUPPORT_INT64}
     TPagedFileOffset = Int64;
   {$else}
-    TPagedFileOffset = Integer;
+    TPagedFileOffset = Cardinal;
   {$endif}
   TPagedFileProgressEvent = procedure(Sender: TObject; Position, Max: Integer; var Aborted: Boolean; Msg: string) of object;
 
@@ -88,6 +88,7 @@ type
     FBufferModified: Boolean;
     FWriteError: Boolean;
     FOnProgress: TPagedFileProgressEvent;
+    FCompatibleLockOffset: Boolean;
   protected
     procedure SetHeaderOffset(NewValue: Integer); virtual;
     procedure SetRecordSize(NewValue: Integer); virtual;
@@ -130,6 +131,7 @@ type
     procedure EndExclusive; virtual;
     procedure CheckExclusiveAccess;
     procedure DisableForceCreate;
+    function  CalcLockOffset(const PageNo: Integer): TPagedFileOffset;
     function  CalcPageOffset(const PageNo: Integer): TPagedFileOffset;
     function  IsRecordPresent(IntRecNum: Integer): boolean;
     function  ReadRecord(IntRecNum: Integer; Buffer: Pointer): Integer; virtual;
@@ -169,6 +171,7 @@ type
     property BufferAhead: Boolean read FBufferAhead write SetBufferAhead;
     property WriteError: Boolean read FWriteError;
     property OnProgress: TPagedFileProgressEvent read FOnProgress write FOnProgress;
+    property CompatibleLockOffset: Boolean read FCompatibleLockOffset {$ifdef SUPPORT_INT64}write FCompatibleLockOffset{$endif};
   end;
 
 implementation
@@ -261,6 +264,7 @@ begin
   FAutoCreate := false;
   FVirtualLocks := true;
   FFileLocked := false;
+  FCompatibleLockOffset := True;
   FHeader := nil;
   FBufferPtr := nil;
   FBufferAhead := false;
@@ -396,6 +400,24 @@ begin
   // in-memory => exclusive access!
   if IsSharedAccess then
     raise EDbfError.Create(STRING_NEED_EXCLUSIVE_ACCESS);
+end;
+
+function TPagedFile.CalcLockOffset(const PageNo: Integer): TPagedFileOffset;
+begin
+  // Use the lock offset compatible with the BDE
+  Result := Cardinal($EFFFFFFE);
+
+  // Use a lock offset that does not conflict with the physical file
+  {$ifdef SUPPORT_INT64}
+  if not FCompatibleLockOffset then
+    Result := -3; // $FFFFFFFFFFFFFFFD
+  {$endif}
+
+  // Calculate lock offset for page
+  if PageNo >= 0 then
+    Result := Result - Cardinal(PageNo)
+  else
+    Result := Result + Cardinal(-PageNo);
 end;
 
 function TPagedFile.CalcPageOffset(const PageNo: Integer): TPagedFileOffset;
@@ -911,13 +933,9 @@ begin
     Abort;
 end;
 
-// BDE compatible lock offset found!
 const
-  LockOffset = $EFFFFFFE;       // BDE compatible
   FileLockSize = 2;
-
-// dBase supports maximum of a billion records
-  LockStart  = LockOffset - 1000000000;
+  RecordLockSize = 1000000000;
 
 function TPagedFile.LockSection(const Offset: TPagedFileOffset; const Length: Cardinal; const Wait: Boolean): Boolean;
   // assumes FNeedLock = true
@@ -957,7 +975,7 @@ end;
 
 function TPagedFile.LockAllPages(const Wait: Boolean): Boolean;
 var
-  Offset: Cardinal;
+  Offset: TPagedFileOffset;
   Length: Cardinal;
 begin
   // do we need locking?
@@ -965,37 +983,34 @@ begin
   begin
     if FVirtualLocks then
     begin
-{$ifdef SUPPORT_UINT32_CARDINAL}
-      Offset := LockOffset;
-      Length := FileLockSize;
-{$else}
-      // delphi 3 has strange types:
-      // cardinal 0..2 GIG ?? does it produce correct code?
-      Offset := Cardinal(LockOffset);
+      Offset := CalcLockOffset(0);
       Length := Cardinal(FileLockSize);
-{$endif}
-    end else begin
+    end
+    else
+    begin
       Offset := 0;
-      Length := $7FFFFFFF;
+      Length := Cardinal($7FFFFFFF);
     end;
     // lock requested section
     Result := LockSection(Offset, Length, Wait);
     if FVirtualLocks and Result then
     begin
-      Result := LockSection(LockStart, LockOffset - LockStart, Wait);
+      Result := LockSection(CalcLockOffset(0) - RecordLockSize, RecordLockSize,
+        Wait);
       if Result then
-        UnlockSection(LockStart, LockOffset - LockStart)
+        UnlockSection(CalcLockOffset(0) - RecordLockSize, RecordLockSize)
       else
         UnlockSection(Offset, Length);
     end;
     FFileLocked := Result;
-  end else
+  end
+  else
     Result := true;
 end;
 
 procedure TPagedFile.UnlockAllPages;
 var
-  Offset: Cardinal;
+  Offset: TPagedFileOffset;
   Length: Cardinal;
 begin
   // do we need locking?
@@ -1003,28 +1018,22 @@ begin
   begin
     if FVirtualLocks then
     begin
-{$ifdef SUPPORT_UINT32_CARDINAL}
-      Offset := LockOffset;
-      Length := FileLockSize;
-{$else}
-      // delphi 3 has strange types:
-      // cardinal 0..2 GIG ?? does it produce correct code?
-      Offset := Cardinal(LockOffset);
+      Offset := CalcLockOffset(0);
       Length := Cardinal(FileLockSize);
-{$endif}
-    end else begin
+    end
+    else
+    begin
       Offset := 0;
-      Length := $7FFFFFFF;
+      Length := Cardinal($7FFFFFFF);
     end;
     // unlock requested section
-    // FNeedLocks => FStream is of type TFileStream
     FFileLocked := not UnlockSection(Offset, Length);
   end;
 end;
 
 function TPagedFile.LockPage(const PageNo: Integer; const Wait: Boolean): Boolean;
 var
-  Offset: Cardinal;
+  Offset: TPagedFileOffset;
   Length: Cardinal;
 begin
   // do we need locking?
@@ -1032,10 +1041,7 @@ begin
   begin
     if FVirtualLocks then
     begin
-      if PageNo >= 0 then
-        Offset := LockOffset - Cardinal(PageNo)
-      else
-        Offset := LockOffset + Cardinal(-PageNo);
+      Offset := CalcLockOffset(PageNo);
       Length := 1;
     end else begin
       Offset := CalcPageOffset(PageNo);
@@ -1049,7 +1055,7 @@ end;
 
 procedure TPagedFile.UnlockPage(const PageNo: Integer);
 var
-  Offset: Cardinal;
+  Offset: TPagedFileOffset;
   Length: Cardinal;
 begin
   // do we need locking?
@@ -1058,10 +1064,7 @@ begin
     // calc offset + length
     if FVirtualLocks then
     begin
-      if PageNo >= 0 then
-        Offset := LockOffset - Cardinal(PageNo)
-      else
-        Offset := LockOffset + Cardinal(-PageNo);
+      Offset := CalcLockOffset(PageNo);
       Length := 1;
     end else begin
       Offset := CalcPageOffset(PageNo);

@@ -133,8 +133,8 @@ type
           TheClientDataSet : tClientDataSet;
        {$EndIf}
        {$IfDef VCL}
-       procedure StartRewrite(var OldName : PathStr);
-       procedure EndRewrite(var OldName,fName : PathStr);
+          procedure StartRewrite(var OldName : PathStr);
+          procedure EndRewrite(var OldName,fName : PathStr);
        {$EndIf}
       public
        Filter : ANSIString;
@@ -177,6 +177,7 @@ type
         function GetFieldByNameAsFloat(FieldName : ANSIString) : float64; inline;
         function GetFieldByNameAsInteger(FieldName : ANSIString) : integer; inline;
         function GetFieldByNameAsString(FieldName : ANSIString) : ANSIString; inline;
+
         procedure SetFieldByNameAsFloat(FieldName : ANSIString; value : float64; MaxDec : integer = -1); inline;
         procedure SetFieldByNameAsInteger(FieldName : ANSIString; value : integer); inline;
         procedure SetFieldByNameAsString(FieldName : ANSIString; value : String); inline;
@@ -228,7 +229,7 @@ type
         function InsureFieldPresentAndAdded(ft : TFieldType; FieldName : ANSIString; FieldLength : integer; FieldDecimals : integer = 0) : boolean;
         function AddBoundingBox : boolean;
         function GetRecordBoundingBox : sfBoundBox;
-        procedure FillBoundingBox(bbox : sfBoundBox);
+        procedure SetBoundingBox(bbox : sfBoundBox);
         function DeleteField(theField : shortstring) : boolean;
         function TrimField(theField : shortstring; NewLength : integer) : boolean;
 
@@ -254,6 +255,7 @@ type
         {$IfDef VCL}
            procedure DefineFontFromTable(Font : Graphics.tFont);
            procedure PostFont(aFont : Graphics.tFont);
+           function PickField(Mess: ShortString; TypesAllowed : tSetFieldType) : ShortString;
         {$EndIf}
    end;
 
@@ -828,7 +830,7 @@ begin
 end;
 
 
-constructor tMyData.Create(var fName: PathStr; dbMode : tdbMode = dbmDefault);
+constructor tMyData.Create(var fName : PathStr; dbMode : tdbMode = dbmDefault);
 {$IfDef SQLiteDefaultDBs}
 var
    fName2 : PathStr;
@@ -2066,6 +2068,29 @@ end;
 
 {$IfDef VCL}
 
+   function tMyData.PickField(Mess: ShortString; TypesAllowed : tSetFieldType) : ShortString;
+   var
+     FieldsInDB : tStringList;
+     WantField,i  : integer;
+   begin
+      FieldsInDB := tStringList.Create;
+      for i := 0 to pred(FieldCount) do begin
+         if (GetFieldType(i) in TypesAllowed) then begin
+            FieldsInDB.Add(GetFieldName(i));
+         end;
+      end;
+      if (FieldsInDB.Count = 0) then Result := ''
+      else begin
+         WantField := 0;
+         if GetFromListZeroBased('Database Field for ' + Mess,WantField,FieldsInDB,true) then begin
+            Result := FieldsInDB.Strings[WantField];
+         end
+         else Result := '';
+      end;
+      FieldsInDB.Free;
+   end;
+
+
 procedure tMyData.DefineFontFromTable(Font : Graphics.tFont);
 begin
     Font.Name := GetFieldByNameAsString('FONT_NAME');
@@ -2381,7 +2406,7 @@ begin
 end;
 
 
-procedure tMyData.FillBoundingBox(bbox : sfBoundBox);
+procedure tMyData.SetBoundingBox(bbox : sfBoundBox);
 begin
    SetFieldByNameAsFloat('LONG_LOW',bbox.XMin);
    SetFieldByNameAsFloat('LONG_HI',bbox.XMax);

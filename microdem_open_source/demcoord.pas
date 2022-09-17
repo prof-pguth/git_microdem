@@ -31,6 +31,7 @@ unit DEMCoord;
 
    {$IFDEF DEBUG}
       {$Define RecordDEMIX}
+      //{$Define RecordGeotiff}
       //{$Define ShortDEMLoad}
       //{$Define RecordSaveAverageResampleDEMformat}
       //{$Define RecordDEMCreation}
@@ -312,7 +313,7 @@ type
          DSMGrid            : integer;
          ThisDEMMissingValue : LongWord;
          Z_Mean,Z_Std : float32;
-         RefVertExag,
+         //RefVertExag,
          ElevationMultiple,
          Over30PercentSlope,
          Over50PercentSlope   : float64;
@@ -574,7 +575,7 @@ type
          procedure ThinThisDEM(var ThinDEM : integer; ThinFactor : integer = 0; DoItByAveraging : boolean = false);
          procedure AverageResampleThisDEM(var ThinDEM : integer; ThinFactor : integer = 0);
          procedure FilterThisDEM(FilterCategory : tFilterCat; var NewDEM : integer; BoxSize : integer = 0; FilterName : PathStr = '');
-         function DetrendDEM(FilterRadius : integer = 2) : integer;
+         function DetrendDEM(Normalize : boolean = true; FilterRadius : integer = 2) : integer;
          procedure ResaveNewResolution(FilterCategory : tFilterCat; var NewDEM : integer);
 
          function RectangleSubsetDEM(GridLimits : tGridLimits; FileName : PathStr = '') : PathStr; overload;
@@ -1086,8 +1087,6 @@ begin
 end;
 
 
-
-
 function tDEMDataSet.CloneAndOpenGrid(NewPrecision : tDEMprecision; Gridname : shortstring; ElevUnits : tElevUnit) : integer;
 var
    NewHeadRecs : tDEMheader;
@@ -1103,7 +1102,6 @@ begin
    end;
   {$IfDef RecordCreateNewDEM} WriteLineToDebugFile('tDEMDataSet.CloneAndOpenGrid out'); {$EndIf}
 end;
-
 
 
 procedure tDEMDataSet.TrackElevationRange(Where : shortstring);
@@ -1756,15 +1754,15 @@ var
    z,z2 : float32;
 begin
    Result := 0;
-   if GetElevMeters(Xgrid,YGrid,z) then begin
-       if GetElevMeters(pred(XGrid),pred(YGrid),z2) and (abs(z-z2) < 0.01) then inc(Result);
-       if GetElevMeters(XGrid, pred(YGrid),z2) and (abs(z-z2) < 0.01) then inc(Result);
-       if GetElevMeters(pred(XGrid),YGrid,z2) and (abs(z-z2) < 0.01) then inc(Result);
-       if GetElevMeters(succ(XGrid),succ(YGrid),z2) and (abs(z-z2) < 0.01) then inc(Result);
-       if GetElevMeters(XGrid, succ(YGrid),z2) and (abs(z-z2) < 0.01) then inc(Result);
-       if GetElevMeters(succ(XGrid),YGrid,z2) and (abs(z-z2) < 0.01) then inc(Result);
-       if GetElevMeters(pred(XGrid),succ(YGrid),z2) and (abs(z-z2) < 0.01) then inc(Result);
-       if GetElevMeters(succ(XGrid),pred(YGrid),z2) and (abs(z-z2) < 0.01) then inc(Result);
+   if GetElevMetersOnGrid(Xgrid,YGrid,z) then begin
+       if GetElevMetersOnGrid(pred(XGrid),pred(YGrid),z2) and (abs(z-z2) < 0.01) then inc(Result);
+       if GetElevMetersOnGrid(XGrid, pred(YGrid),z2) and (abs(z-z2) < 0.01) then inc(Result);
+       if GetElevMetersOnGrid(pred(XGrid),YGrid,z2) and (abs(z-z2) < 0.01) then inc(Result);
+       if GetElevMetersOnGrid(succ(XGrid),succ(YGrid),z2) and (abs(z-z2) < 0.01) then inc(Result);
+       if GetElevMetersOnGrid(XGrid, succ(YGrid),z2) and (abs(z-z2) < 0.01) then inc(Result);
+       if GetElevMetersOnGrid(succ(XGrid),YGrid,z2) and (abs(z-z2) < 0.01) then inc(Result);
+       if GetElevMetersOnGrid(pred(XGrid),succ(YGrid),z2) and (abs(z-z2) < 0.01) then inc(Result);
+       if GetElevMetersOnGrid(succ(XGrid),pred(YGrid),z2) and (abs(z-z2) < 0.01) then inc(Result);
    end;
 end;
 
@@ -1953,7 +1951,7 @@ end;
 
 procedure tDEMDataSet.GetElevCol(XGrid : integer; var z : pSmallIntCol);
 begin
-   if (SmallIntElevations[XGrid] <> Nil) and (XGrid >= 0) and (XGrid <= pred(DEMheader.NumCol)) then      Move(SmallIntElevations[XGrid]^,z^,BytesPerColumn);
+   if (SmallIntElevations[XGrid] <> Nil) and (XGrid >= 0) and (XGrid <= pred(DEMheader.NumCol)) then Move(SmallIntElevations[XGrid]^,z^,BytesPerColumn);
 end {proc GetElevCol};
 
 procedure tDEMDataSet.GetFloatElevCol(XGrid: integer; var z : pShortFloatCol); {returns an entire column of elevations, needed to pass to contouring routine}
@@ -2046,7 +2044,7 @@ const
 var
    Col,Row,Gap,Edges : integer;
    OnRun : boolean;
-  z : float32;
+   z : float32;
    TStr : shortString;
 
        procedure DoRun(StartCol,StartRow,ColInc,RowInc : integer);
@@ -2455,7 +2453,7 @@ begin {tDEMDataSet.DefineDEMVariables}
 
    GridSpacingDetails(DEMBoundBoxDataGrid,AverageXSpace,AverageYSpace,AverageSpace,AverageGridTrue);
    AverageDiaSpace := Sqrt(Sqr(AverageXSpace) + Sqr(AverageYSpace));
-   RefVertExag := MDDef.RefVertExagLargeScaleDEM;
+  // RefVertExag := MDDef.RefVertExagLargeScaleDEM;
 
    {$If Defined(RecordReadDEM) or Defined(RecordDefineDatum) or Defined(RecordCreateNewDEM)} WriteLineToDebugFile('tDEMDataSet.DefineDEMVariables ' + AreaName + ' out, ' + DEMMapProjection.KeyDatumParams); {$EndIf}
    {$IfDef RecordDEMMapProjection} DEMMapProjection.ProjectionParamsToDebugFile('tDEMDataSet.DefineDEMVariables in'); {$EndIf}
@@ -2783,16 +2781,7 @@ end;
 
 procedure tDEMDataSet.LatLongDegreetoUTM(Lat,Long : float64; var XUTM,YUTM : float64);
 begin
-   (*
-   if (not UTMValidDEM) then begin
-      SphericalMercatorLatLongToUTM(Lat,Long,xutm,yutm);
-   end
-   else if (DEMheader.DigitizeDatum in [Spherical]) then begin
-      MessageToContinue('Problem here in tDEMDataSet.LatLongDegreetoUTM');
-   end
-   else if (DEMheader.DigitizeDatum = Rectangular) then MessageToContinue('Should not be here in LatLongToUTM')
-   else *)
-    DEMMapProjection.ForwardProjectDegrees(Lat,Long,XUTM,YUTM);
+   DEMMapProjection.ForwardProjectDegrees(Lat,Long,XUTM,YUTM);
 end {proc LatLongtoUTM};
 
 
@@ -2982,7 +2971,7 @@ begin
          Sum := 0;
          for I := 1 to MDdef.UseRefDirs do begin
             //allows multi-directions, which will all have the same sun alitutde and azimuths spread around the circle
-            Sum := sum + ValidByteRange(round(255.0 * ( (cosDegSunAltitude * cosDeg(RefVertExag * SlopeAsp.SlopeDegree)) + (sinDegSunAltitude * sinDeg(RefVertExag * SlopeAsp.SlopeDegree) * cosDeg(RefPhi[i] - SlopeAsp.AspectDir)))));
+            Sum := sum + ValidByteRange(round(255.0 * ( (cosDegSunAltitude * cosDeg(MDDef.RefVertExag * SlopeAsp.SlopeDegree)) + (sinDegSunAltitude * sinDeg(MDDef.RefVertExag * SlopeAsp.SlopeDegree) * cosDeg(RefPhi[i] - SlopeAsp.AspectDir)))));
          end;
          Result := round(Sum/MDdef.UseRefDirs);
       except
@@ -3433,10 +3422,8 @@ begin
    DEMGlb[NewDEM].DEMheader.DigitizeDatum := WGS84d;
    DEMGlb[NewDEM].DefineDEMVariables(true);
 
-   //if AllocateMemory then begin
-      {$If Defined(RecordCreateNewDEM) or Defined(RecordResample)} WriteLineToDebugFile('tDEMDataSet.SetNewDEM=' + IntToStr(NewDEM)); {$EndIf}
-      DEMGlb[NewDEM].AllocateDEMMemory(InitDEMmissing);
-   //end;
+   {$If Defined(RecordCreateNewDEM) or Defined(RecordResample)} WriteLineToDebugFile('tDEMDataSet.SetNewDEM=' + IntToStr(NewDEM)); {$EndIf}
+   DEMGlb[NewDEM].AllocateDEMMemory(InitDEMmissing);
 end;
 
 
@@ -3454,8 +3441,6 @@ begin
       ReadDefault('UTM zone',MDdef.DefaultUTMZone);
    end
    else MDdef.DefaultUTMZone := UTMzone;
-
-
    NewDEM := SelectionMap.CreateGridToMatchMap(cgUTM,false,FloatingPointDEM,FloatSpacing,FloatSpacing,MDdef.DefaultUTMZone,MDDef.LasDEMPixelIs);
    DEMGlb[NewDEM].AreaName := AreaName + '_utm_reint_' + realToString(FloatSpacing,-8,-2);
    DEMGlb[NewDEM].FillHolesSelectedBoxFromReferenceDEM(DEMGlb[NewDEM].FullDEMGridLimits,SelectionMap.MapDraw.DEMonMap,hfOnlyHole);
@@ -3929,24 +3914,8 @@ end;
 
 function tAspectStats.QueensAspect: float64;
 var
-   Diagonal{,shift,n1,n2} : integer;
+   Diagonal : integer;
 begin
-(*
-   shift := round(DEMGlb[DEM].AverageGridTrue);
-   Diagonal := round(arctan(DEMGlb[DEM].AverageYSpace/DEMGlb[DEM].AverageXSpace) / DegToRad + DEMGlb[DEM].AverageGridTrue);
-   if (DEMGlb[DEM].DEMHeader.DEMUsed = ArcSecDEM) or MDDef.CorrectAspectTrue then begin
-      n1 := 0;
-      n2 := 360;
-   end
-   else begin
-      n1 := Shift;
-      if n1 < 0 then n1 := n1 + 360;
-      n2 := 360 + shift;
-      if n2 > 360 then n2 := n2 - 360;
-   end;
-   Result := 45 * (AspectFreqVals[n1] + AspectFreqVals[Diagonal] + AspectFreqVals[90+shift] + AspectFreqVals[180-Diagonal] + AspectFreqVals[180+shift] + AspectFreqVals[180+Diagonal] +
-                   AspectFreqVals[270+shift] + AspectFreqVals[360-Diagonal] + AspectFreqVals[n2]) / NPts;
-*)
    Diagonal := round(arctan(DEMGlb[DEM].AverageYSpace/DEMGlb[DEM].AverageXSpace) / DegToRad);
    Result := 45 * (AspectFreqValsGrid[0] + AspectFreqValsGrid[Diagonal] + AspectFreqValsGrid[90] + AspectFreqValsGrid[180-Diagonal] + AspectFreqValsGrid[180] + AspectFreqValsGrid[180+Diagonal] +
                    AspectFreqValsGrid[270] + AspectFreqValsGrid[360-Diagonal] + AspectFreqValsGrid[360]) / NPts;

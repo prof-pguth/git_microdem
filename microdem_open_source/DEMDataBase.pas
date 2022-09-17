@@ -183,6 +183,8 @@ const
    dgSimpleExample = 6;
    dgPercentBest = 7;
    dgArea = 8;
+   dgJust3Params = 9;
+   dg7Params = 10;
 
 type
   tHowRestrict = (resNone);
@@ -747,14 +749,15 @@ function DoAShapeFile(fName : PathStr; Trim : boolean = false) : integer;
       procedure RankDEMS(DBonTable : integer);
       procedure SumsOfRankDEMS(DBonTable : integer);
       procedure BestDEMSbyCategory(DBonTable : integer);
-      //procedure ScoreDEMS(DBonTable : integer);
       function TransposeDEMIXcriteria(DBonTable : integer; CriteriaFile : PathStr = '') : PathStr;
       procedure TransposeDEMIXwinecontestGraph(DBonTable : integer);
-      //procedure DEMIXwinecontestGraph(DBonTable : integer);
-      procedure DEMIXwineContestScoresGraph(DBonTable : integer);
+      function DEMIXwineContestScoresGraph(DBonTable : integer; XScalelabel : shortstring; MinHoriz : float32 = 0.5; MaxHoriz : float32 = 5.5) : tThisBaseGraph;
       procedure DEMIXwineContestMeanMedianGraph(What,DBonTable : integer);
       procedure DEMIXTileSummary(DBonTable : integer);
       procedure FilterOutSignedCriteria(DBonTable : integer);
+      procedure DEMIXisCOPorALOSbetter(DBonTable : integer);
+      procedure ExtractTheDEMIXtiles(DBonTable : integer);
+      procedure DEMIX_graph_best_in_Tile(DBonTable : integer);
 
 {$IfDef ExRiverNetworks}
 {$Else}
@@ -1644,30 +1647,29 @@ end;
 
 {$IfDef VCL}
 
-
-      function TGISdataBaseModule.PickField(Mess: ShortString; TypesAllowed : tSetFieldType; AllFields : boolean = false) : ShortString;
-      var
-        NumFields2,FieldsInDB : tStringList;
-        WantField,i  : integer;
-      begin
-         with MyData do begin
-            GetFields(MyData,DbOpts.VisCols,TypesAllowed,FieldsInDB,AllFields);
-            if (LinkTable <> Nil) then begin
-               PetdbUtils.GetFields(LinkTable,AllVis,NumericFieldTypes,NumFields2);
-               for I := 0 to pred(NumFields2.Count) do FieldsInDB.Add('LINK-' + NumFields2.Strings[i]);
-               NumFields2.Free;
-            end;
-            if (FieldsInDB.Count = 0) then Result := ''
-            else begin
-               WantField := 0;
-               if GetFromListZeroBased('Database Field for ' + Mess,WantField,FieldsInDB,true) then begin
-                  Result := FieldsInDB.Strings[WantField];
-               end
-               else Result := '';
-            end;
+   function TGISdataBaseModule.PickField(Mess: ShortString; TypesAllowed : tSetFieldType; AllFields : boolean = false) : ShortString;
+   var
+     NumFields2,FieldsInDB : tStringList;
+     WantField,i  : integer;
+   begin
+      with MyData do begin
+         GetFields(MyData,DbOpts.VisCols,TypesAllowed,FieldsInDB,AllFields);
+         if (LinkTable <> Nil) then begin
+            PetdbUtils.GetFields(LinkTable,AllVis,NumericFieldTypes,NumFields2);
+            for I := 0 to pred(NumFields2.Count) do FieldsInDB.Add('LINK-' + NumFields2.Strings[i]);
+            NumFields2.Free;
          end;
-         FieldsInDB.Free;
+         if (FieldsInDB.Count = 0) then Result := ''
+         else begin
+            WantField := 0;
+            if GetFromListZeroBased('Database Field for ' + Mess,WantField,FieldsInDB,true) then begin
+               Result := FieldsInDB.Strings[WantField];
+            end
+            else Result := '';
+         end;
       end;
+      FieldsInDB.Free;
+   end;
 
 
       function TGISdataBaseModule.GetMultipleNumericFields(WhatFor : shortstring) : tStringList;
@@ -5146,9 +5148,6 @@ begin
        end;
     {$EndIf}
 
-    //if not FileCanBeOpened(FileWanted) then exit;
-
-
     ShowHourglassCursor;
     Ext := UpperCase(ExtractFileExt(FileWanted));
     InitializeDBValues;
@@ -5268,6 +5267,7 @@ begin
             {$IfDef RecordMyDataCreation} WriteLineToDebugFile('ConvertDBFtoSQLite'); {$EndIf}
             FileWanted := ChangeFileExt(FileWanted,'.dbf');
             if not ConvertDBFtoSQLite(FileWanted) then begin
+               Self.Destroy;
                Result := false;
                exit;
             end;
@@ -5275,10 +5275,6 @@ begin
          FileWanted := NewFile;
          {$IfDef RecordMyDataCreation} WriteLineToDebugFile('changed input file to ' + FileWanted); {$EndIf}
       end;
-   {$Else}
-      //if FileExtEquals(fName,'.shp') then begin
-         //fName := ChangeFileExt(fName,DefaultDBExt);
-      //end;
    {$EndIf}
 
      dbName := ExtractFileNameNoExt(FileWanted);
@@ -5301,8 +5297,17 @@ begin
      {$EndIf}
 
     {$If Defined(RecordOpenDataBase) or Defined(BasicOpens)} WriteLineToDebugFile(dbFullName + '  ' + SmartMemorySizeBytes(GetFileSize(dbFullName))); {$EndIf}
+     try
+        MyData := tMyData.Create(dbFullName,DesiredDBMode);
+     except
+        On Exception do begin
+                       {$If Defined(RecordProblems)} HighLightLineToDebugFile(dbFullName + ' load failed'); {$EndIf}
+                       Self.Destroy;
+                       Result := false;
+                       exit;
+                     end;
+     end;
 
-     MyData := tMyData.Create(dbFullName,DesiredDBMode);
      DesiredDBMode := dbmDefault;
      if ZeroRecordsAllowed then begin
      end

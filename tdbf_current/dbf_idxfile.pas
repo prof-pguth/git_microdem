@@ -53,7 +53,6 @@ type
   TLocaleError = (leNone, leUnknown, leTableIndexMismatch, leNotAvailable);
   TLocaleSolution = (lsNotOpen, lsNoEdit, lsBinary);
   TIndexUniqueType = (iuNormal, iuUnique, iuDistinct);
-  TIndexModifyMode = (mmNormal, mmDeleteRecall);
 
   TDbfLocaleErrorEvent = procedure(var Error: TLocaleError; var Solution: TLocaleSolution) of object;
   TDbfCompareKeysEvent = function(Key1, Key2: PAnsiChar): Integer of object;
@@ -256,7 +255,6 @@ type
     FRangeIndex: Integer;
     FIsDescending: Boolean;
     FUniqueMode: TIndexUniqueType;
-    FModifyMode: TIndexModifyMode;
     FKeyBuffer: array[0..MaxIndexKeyLen] of AnsiChar;
     FLowBuffer: array[0..MaxIndexKeyLen] of AnsiChar;
     FHighBuffer: array[0..MaxIndexKeyLen] of AnsiChar;
@@ -295,12 +293,13 @@ type
     procedure LinkTags;
 
     function  FindKey(AInsert: boolean): Integer;
-    function  InsertKey(Buffer: TDbfRecordBuffer; RecNo: Integer; AUniqueMode: TIndexUniqueType): Boolean;
+    function  InsertKey(Buffer: TDbfRecordBuffer; RecNo: Integer): Boolean;
     procedure DeleteKey(Buffer: TDbfRecordBuffer; RecNo: Integer);
-    function  InsertCurrent(AUniqueMode: TIndexUniqueType): Boolean;
+    function  InsertCurrent: Boolean;
     function  DeleteCurrent: Boolean;
     function  UpdateCurrent(PrevBuffer, NewBuffer: TDbfRecordBuffer; RecNo: Integer): Boolean;
     function  UpdateIndex(Index: Integer; PrevBuffer, NewBuffer: TDbfRecordBuffer; RecNo: Integer): Boolean;
+    function  RecordIsIndexed(Buffer: TDbfRecordBuffer): Boolean;
     procedure ReadIndexes;
     procedure Resync(Relative: boolean);
     procedure ResyncRoot;
@@ -340,8 +339,10 @@ type
     procedure SetIndexName(const AIndexName: string);
 
     procedure LockIndex;
+    procedure LockIndexPage;
     procedure ResyncIndex(Relative: Boolean);
     procedure UnlockIndex;
+    procedure UnlockIndexPage;
     function SearchKeyInternal(Key: PAnsiChar; SearchType: TSearchKeyType): Boolean;
     function VersionPosition: TPagedFileOffset;
     function ReadVersion(PVersion: PByte): Boolean;
@@ -363,12 +364,10 @@ type
     procedure ClearIndex;
     procedure AddNewLevel;
     procedure InsertError;
-    function  Insert(RecNo: Integer; Buffer: TDbfRecordBuffer; AUniqueMode: TIndexUniqueType): Boolean;
+    function  Insert(RecNo: Integer; Buffer: TDbfRecordBuffer): Boolean;
     function  Update(RecNo: Integer; PrevBuffer, NewBuffer: TDbfRecordBuffer): Boolean;
     procedure Delete(RecNo: Integer; Buffer: TDbfRecordBuffer);
     function  CheckKeyViolation(Buffer: TDbfRecordBuffer; RecNo: Integer): Boolean;
-    procedure RecordDeleted({%H-}RecNo: Integer; {%H-}Buffer: TDbfRecordBuffer);
-    function  RecordRecalled({%H-}RecNo: Integer; {%H-}Buffer: TDbfRecordBuffer): Boolean;
     procedure DeleteIndex(const AIndexName: string);
     procedure RepageFile;
     procedure CompactFile;
@@ -433,10 +432,20 @@ type
 
 function IndexNameNormalize(Value: string): string;
 
+function dbfParseIndexKey(Buffer: Pointer; KeyType: AnsiChar;
+  KeyLength, SecondaryKeyType: Word; FoxPro: Boolean;
+  var Value: {$ifdef SUPPORT_VARIANTS}Variant{$else}AnsiString{$endif}): Boolean;
+function dbfParseIndexKeyAsString(Buffer: Pointer; KeyType: AnsiChar;
+  KeyLength, SecondaryKeyType: Word; FoxPro: Boolean;
+  var Value: AnsiString): Boolean;
+
 //------------------------------------------------------------------------------
 implementation
 
 uses
+{$ifdef SUPPORT_SEPARATE_VARIANTS_UNIT}
+  Variants,
+{$endif}
   dbf_ansistrings,
   dbf_dbffile,
   dbf_fields,
@@ -469,7 +478,276 @@ const
   IndexNameLen         = 16;
   IndexNameLenMax      = 8;
 
-  DateNullValue        = 1E100;
+  // Value of Julian epoch (Jan 1, 4713 BCE) used in date index key
+  DateJulianEpoch      = -2415019;
+
+  // Value to display for NULL index key
+  NullDisplayValue     = 'NULL';
+
+var
+  // Value of NULL in date index key
+  DateNullValue: Double = 1E100;
+
+function dbfParseIndexKey(Buffer: Pointer; KeyType: AnsiChar;
+  KeyLength, SecondaryKeyType: Word; FoxPro: Boolean;
+  var Value: {$ifdef SUPPORT_VARIANTS}Variant{$else}AnsiString{$endif}): Boolean;
+var
+{$ifdef SUPPORT_INT64}
+  Int64Value: Int64;
+{$endif}
+  StringValue: AnsiString;
+  DateTimeValue: TDateTime;
+  IntValue: Integer;
+  DwordValue: DWORD;
+  ByteValue: Byte;
+  FloatRec: TFloatRec;
+  DigitCount: ShortInt;
+  BCD: PByte;
+  Digit: ShortInt;
+  DoubleValue: Double;
+begin
+  Result := True;
+  case KeyType of
+    '@':
+    begin
+{$ifdef SUPPORT_INT64}
+      if (SecondaryKeyType = $00) and (KeyLength = 8) then
+      begin
+        Int64Value := PInt64(Buffer)^;
+        if Int64Value <> 0 then
+        begin
+          SwapInt64BE(@Int64Value, @Int64Value);
+{$ifdef SUPPORT_VARIANTS}
+          Value := BDETimeStampToDateTime(PDouble(@Int64Value)^);
+{$else}
+          Value := AnsiString(DateTimeToStr(BDETimeStampToDateTime(PDouble(
+            @Int64Value)^)));
+{$endif}
+        end
+        else
+{$ifdef SUPPORT_VARIANTS}
+          Value := Null;
+{$else}
+          Value := NullDisplayValue;
+{$endif}
+      end
+      else
+        Result := False;
+{$else}
+      Result := False;
+{$endif}
+    end;
+    'C':
+    begin
+      if SecondaryKeyType = $00 then
+      begin
+        SetLength(StringValue, KeyLength);
+        Move(Buffer^, PAnsiChar(StringValue)^, KeyLength);
+        Value := dbfTrimRight(StringValue);
+        if Value = '' then
+        begin
+{$ifdef SUPPORT_VARIANTS}
+          Value := Null;
+{$else}
+          Value := NullDisplayValue;
+{$endif}
+        end;
+      end
+      else
+        Result:= False;
+    end;
+    'D':
+    begin
+      if (SecondaryKeyType = $01) and (KeyLength = 8) then
+      begin
+        if PDouble(Buffer)^ <> DateNullValue then
+        begin
+          DateTimeValue := PDouble(Buffer)^ + DateJulianEpoch;
+{$ifdef SUPPORT_VARIANTS}
+          Value := DateTimeValue;
+{$else}
+          Value := DateTimeToStr(DateTimeValue);
+{$endif}
+        end
+        else
+{$ifdef SUPPORT_VARIANTS}
+          Value := Null;
+{$else}
+          Value := NullDisplayValue;
+{$endif}
+      end
+      else
+        Result:= False;
+    end;
+    'I', '+':
+    begin
+      if (SecondaryKeyType = $00) and (KeyLength = 4) then
+      begin
+        if FoxPro then
+{$ifdef SUPPORT_VARIANTS}
+          Value := Integer(SwapIntLE(PDWORD(Buffer)^))
+{$else}
+          Value := IntToStr(Integer(SwapIntLE(PDWORD(Buffer)^)))
+{$endif}
+        else
+        begin
+          if PInteger(Buffer)^ <> 0 then
+          begin
+            DwordValue := SwapIntBE(PDWORD(Buffer)^);
+            IntValue := PInteger(@DwordValue)^ xor Integer($80000000);
+{$ifdef SUPPORT_VARIANTS}
+            Value := IntValue;
+{$else}
+            Value := IntToStr(IntValue);
+{$endif}
+          end
+          else
+{$ifdef SUPPORT_VARIANTS}
+            Value := Null;
+{$else}
+            Value := NullDisplayValue;
+{$endif}
+        end;
+      end
+      else
+        Result:= False;
+    end;
+    'N':
+    begin
+      case SecondaryKeyType of
+        $00:
+        begin
+          if KeyLength = 12 then
+          begin
+            ByteValue := PByte(Buffer)^;
+            FillChar(FloatRec, SizeOf(FloatRec), 0);
+            FloatRec.Exponent := ByteValue - $34;
+            DigitCount := PShortInt(PAnsiChar(Buffer) + 1)^;
+            if (DigitCount and $80) <> 0 then
+            begin
+              DigitCount := DigitCount and ShortInt(not $80);
+              FloatRec.Negative := True;
+            end;
+            if (DigitCount >= 1) and (((DigitCount - 1) mod 4) = 0) then
+            begin
+              DigitCount := (DigitCount - 1) div 4;
+              if DigitCount <= 20 then
+              begin
+                BCD := PByte(PAnsiChar(Buffer) + 2);
+                Digit := 0;
+                while (Digit < DigitCount) and
+                  (Digit < High(FloatRec.Digits)) and Result do
+                begin
+                  if (Digit mod 2) = 0 then
+                    ByteValue := BCD^ shr 4
+                  else
+                  begin
+                    ByteValue := BCD^ and $0F;
+                    Inc(BCD);
+                  end;
+                  if ByteValue <= 9 then
+                  begin
+                    if (Digit < Pred(DigitCount)) or (ByteValue <> 0) then
+                      Byte(FloatRec.Digits[Digit]) := Ord('0') + ByteValue;
+                  end
+                  else
+                    Result := False;
+                  Inc(Digit);
+                end;
+                if Result then
+                begin
+                  StringValue := AnsiChar('0') + AnsiChar(DecimalSeparator) +
+                    PAnsiChar(@FloatRec.Digits) + AnsiChar('E') +
+                    AnsiString(IntToStr(FloatRec.Exponent));
+                  if FloatRec.Negative then
+                    StringValue := '-' + StringValue;
+                  Result := TryStrToFloat(string(StringValue), DoubleValue);
+                  if Result then
+{$ifdef SUPPORT_VARIANTS}
+                    Value := DoubleValue;
+{$else}
+                    Value := FloatToStr(DoubleValue);
+{$endif}
+                end;
+              end
+              else
+                Result:= False;
+            end
+            else
+              Result:= False;
+          end
+          else
+            Result := False;
+        end;
+        $01:
+        begin
+          if KeyLength = 8 then
+          begin
+            DoubleValue := PDouble(Buffer)^;
+{$ifdef SUPPORT_VARIANTS}
+            Value := DoubleValue;
+{$else}
+            Value := FloatToStr(DoubleValue);
+{$endif}
+          end
+          else
+            Result := False;
+        end;
+        else
+          Result := False;
+      end;
+    end;
+    'O':
+    begin
+{$ifdef SUPPORT_INT64}
+      if (SecondaryKeyType = $00) and (KeyLength = 8) then
+      begin
+        if PInt64(Buffer)^ <> 0 then
+        begin
+          DoubleValue := PDouble(Buffer)^;
+          SwapInt64BE(@DoubleValue, @DoubleValue);
+          if PInt64(@DoubleValue)^ > 0 then
+            PInt64(@DoubleValue)^ := not PInt64(@DoubleValue)^
+          else
+            DoubleValue := -DoubleValue;
+{$ifdef SUPPORT_VARIANTS}
+          Value := DoubleValue;
+{$else}
+          Value := FloatToStr(DoubleValue);
+{$endif}
+        end
+        else
+{$ifdef SUPPORT_VARIANTS}
+          Value := Null;
+{$else}
+          Value := NullDisplayValue;
+{$endif}
+      end
+      else
+        Result := False;
+{$else}
+      Result := False;
+{$endif}
+    end;
+  end;
+end;
+
+function dbfParseIndexKeyAsString(Buffer: Pointer; KeyType: AnsiChar;
+  KeyLength, SecondaryKeyType: Word; FoxPro: Boolean;
+  var Value: AnsiString): Boolean;
+var
+  VariantValue: Variant;
+begin
+  {$ifdef SUPPORT_VARIANTS}
+  Result := dbfParseIndexKey(Buffer, KeyType, KeyLength, SecondaryKeyType,
+    FoxPro, VariantValue);
+  if Result then
+    Value := AnsiString(VarToStr(VariantValue));
+  {$else}
+  Result := dbfParseIndexKey(Buffer, KeyType, KeyLength, SecondaryKeyType,
+    FoxPro, Value);
+  {$endif}
+end;
 
 type
 
@@ -1068,9 +1346,10 @@ begin
     if FLowerPage <> nil then
       size := size + FIndexFile.EntryHeaderSize;
     // copy bytes
-    Move(source^, dest^, size);
+    if size <> 0 then
+      Move(source^, dest^, size);
     // if not inner node, clear possible 'rightmost' entry
-    if (FLowerPage = nil) then
+    if (FLowerPage = nil) and (numEntriesNew > 0) then
       SetRecLowerPageNoOfEntry(splitRight, 0, 0);
 
     // calc new number of entries of this page
@@ -1399,9 +1678,18 @@ end;
 
 function TMdxPage.GetEntry(AEntryNo: Integer): Pointer;
 begin
-  // get base + offset
-  Result := PAnsiChar(@PMdxPage(PageBuffer)^.FirstEntry)
-    + (SwapWordLE(PIndexHdr(IndexFile.IndexHeader)^.KeyRecLen) * AEntryNo);
+  if (AEntryNo >= 0 ) and (AEntryNo <
+    SwapWordLE(PIndexHdr(FIndexFile.IndexHeader)^.NumKeys)) then
+  begin
+    // get base + offset
+    Result := PAnsiChar(@PMdxPage(PageBuffer)^.FirstEntry)
+      + (SwapWordLE(PIndexHdr(IndexFile.IndexHeader)^.KeyRecLen) * AEntryNo);
+  end
+  else
+  begin
+    // entry out of range, return nil instead of a bad pointer
+    Result := nil;
+  end;
 end;
 
 function TMdxPage.GetLowerPageNo: Integer;
@@ -1472,9 +1760,18 @@ end;
 
 function TNdxPage.GetEntry(AEntryNo: Integer): Pointer;
 begin
-  // get base + offset
-  Result := PAnsiChar(@PNdxPage(PageBuffer)^.FirstEntry) +
-    (SwapWordLE(PIndexHdr(FIndexFile.IndexHeader)^.KeyRecLen) * AEntryNo);
+  if (AEntryNo >= 0) and (AEntryNo <
+    SwapWordLE(PIndexHdr(FIndexFile.IndexHeader)^.NumKeys)) then
+  begin
+    // get base + offset
+    Result := PAnsiChar(@PNdxPage(PageBuffer)^.FirstEntry) +
+      (SwapWordLE(PIndexHdr(FIndexFile.IndexHeader)^.KeyRecLen) * AEntryNo);
+  end
+  else
+  begin
+    // entry out of range, return nil instead of a bad pointer
+    Result := nil;
+  end;
 end;
 
 function TNdxPage.GetLowerPageNo: Integer;
@@ -1771,7 +2068,6 @@ begin
   FOpened := false;
   FRangeActive := false;
   FUpdateMode := umCurrent;
-  FModifyMode := mmNormal;
   FTempMode := TDbfFile(ADbfFile).TempMode;
   FRangeIndex := -1;
   SelectIndexVars(-1);
@@ -2786,7 +3082,6 @@ var
   Len: Word;
   BufferList: TList;
   Index: Integer;
-  AUniqueMode: TIndexUniqueType;
   RecNoReading: Integer;
   RecordCountReading: Integer;
 begin
@@ -2840,11 +3135,10 @@ begin
           Inc(RecNoReading);
           FillChar(PEntry^, KeyRecLen, 0);
           ADbfFile.ReadRecord(RecNoReading, ADbfFile.PrevBuffer);
-          if (FUniqueMode = iuDistinct) and (PAnsiChar(ADbfFile.PrevBuffer)^ =
-            '*') then
-            FUserKey := nil
+          if RecordIsIndexed(ADbfFile.PrevBuffer) then
+            FUserKey := ExtractKeyFromBuffer(ADbfFile.PrevBuffer, RecNoReading)
           else
-            FUserKey := ExtractKeyFromBuffer(ADbfFile.PrevBuffer, RecNoReading);
+            FUserKey := nil;
           if Assigned(FUserKey) then
           begin
             PEntry^.RecBlockNo := RecNoReading;
@@ -2864,10 +3158,6 @@ begin
         FProgressPosition := 0;
         FProgressMax := EntryCount;
         DoProgress(FProgressPosition, FProgressMax, STRING_PROGRESS_WRITING_RECORDS);
-        if FUniqueMode = iuUnique then
-          AUniqueMode := iuDistinct
-        else
-          AUniqueMode := FUniqueMode;
         EntryIndex := 0;
         PPEntry := PPEntries;
         while EntryIndex < EntryCount do
@@ -2877,7 +3167,7 @@ begin
           begin
             FUserRecNo := PEntry^.RecBlockNo;
             FUserKey := @PEntry^.KeyData;
-            if not InsertCurrent(AUniqueMode) then
+            if not InsertCurrent then
               InsertError;
           end;
           Inc(PAnsiChar(PPEntry), SizeOf(Pointer));
@@ -2971,25 +3261,25 @@ begin
   WriteHeader;
 end;
 
-function TIndexFile.Insert(RecNo: Integer; Buffer: TDbfRecordBuffer; AUniqueMode: TIndexUniqueType): Boolean; {override;}
+function TIndexFile.Insert(RecNo: Integer; Buffer: TDbfRecordBuffer): Boolean; {override;}
 var
   I, curSel, count: Integer;
 begin
-  LockIndex;
-  try
-    // check if updating all or only current
-    FUserRecNo := RecNo;
-    if (FUpdateMode = umAll) or (FSelectedIndex = -1) then
+  // check if updating all or only current
+  FUserRecNo := RecNo;
+  if (FUpdateMode = umAll) or (FSelectedIndex = -1) then
+  begin
+    // remember currently selected index
+    curSel := FSelectedIndex;
+    Result := true;
+    I := 0;
+    count := SwapWordLE(PMdxHdr(Header)^.TagsUsed);
+    while I < count do
     begin
-      // remember currently selected index
-      curSel := FSelectedIndex;
-      Result := true;
-      I := 0;
-      count := SwapWordLE(PMdxHdr(Header)^.TagsUsed);
-      while I < count do
-      begin
-        SelectIndexVars(I);
-        Result := InsertKey(Buffer, RecNo, AUniqueMode);
+      SelectIndexVars(I);
+      LockIndex;
+      try
+        Result := InsertKey(Buffer, RecNo);
         if not Result then
         begin
           while I > 0 do
@@ -3000,18 +3290,24 @@ begin
           end;
           break;
         end;
-        Inc(I);
+        // check range, disabled by insert
+        ResyncRange(true);
+      finally
+        UnlockIndex;
       end;
-      // restore previous selected index
-      SelectIndexVars(curSel);
-    end else begin
-      Result := InsertKey(Buffer, RecNo, AUniqueMode);
+      Inc(I);
     end;
-
-    // check range, disabled by insert
-    ResyncRange(true);
-  finally
-    UnlockIndex;
+    // restore previous selected index
+    SelectIndexVars(curSel);
+  end else begin
+    LockIndex;
+    try
+      Result := InsertKey(Buffer, RecNo);
+      // check range, disabled by insert
+      ResyncRange(true);
+    finally
+      UnlockIndex;
+    end;
   end;
 end;
 
@@ -3171,7 +3467,7 @@ begin
   else
   if PIndexHdr(FIndexHeader)^.KeyType = 'D' then
   begin
-    FUserNumeric:= PDouble(Buffer)^ + 2415019; {Julian date}
+    FUserNumeric:= PDouble(Buffer)^ - DateJulianEpoch; {Julian date}
     Result:= TDbfRecordBuffer(@FUserNumeric);
   end;
 end;
@@ -3226,65 +3522,64 @@ begin
     ExprTrailingNulsToSpace(Dest, Result);
 end;
 
-function TIndexFile.InsertKey(Buffer: {$IFDEF SUPPORT_TRECORDBUFFER}PByte{$ELSE}PAnsiChar{$ENDIF}; RecNo: Integer; AUniqueMode: TIndexUniqueType): boolean;
+function TIndexFile.InsertKey(Buffer: {$IFDEF SUPPORT_TRECORDBUFFER}PByte{$ELSE}PAnsiChar{$ENDIF}; RecNo: Integer): boolean;
 begin
   Result := true;
-  // ignore deleted records
-  if (FModifyMode = mmNormal) and (FUniqueMode = iuDistinct) and
-     ({$IFDEF SUPPORT_TRECORDBUFFER}Buffer[0] = Ord('*'){$ELSE}Buffer^ = '*'{$ENDIF}) then
-    exit;
-  // check proper index and modifiability
-  if FCanEdit and (PIndexHdr(FIndexHeader)^.KeyLen <> 0) then
+  // check record is indexed
+  if RecordIsIndexed(Buffer) then
   begin
-    // get key from buffer
-    FUserKey := ExtractKeyFromBuffer(Buffer, RecNo);
-    // patch through
-    Result := InsertCurrent(AUniqueMode);
+    // check proper index and modifiability
+    if FCanEdit and (PIndexHdr(FIndexHeader)^.KeyLen <> 0) then
+    begin
+      // get key from buffer
+      FUserKey := ExtractKeyFromBuffer(Buffer, RecNo);
+      // patch through
+      Result := InsertCurrent;
+    end;
   end;
 end;
 
-function TIndexFile.InsertCurrent(AUniqueMode: TIndexUniqueType): boolean;
+function TIndexFile.InsertCurrent: boolean;
   // insert in current index
   // assumes: FUserKey is an OEM key
 begin
-  // only insert if not recalling or mode = distinct
-  // modify = mmDeleteRecall /\ unique <> distinct -> key already present
   Result := true;
-  if (FModifyMode <> mmDeleteRecall) or (AUniqueMode = iuDistinct) then
+  // temporarily remove range to find correct location of key
+  ResetRange;
+  // find this record as closely as possible
+  // if result = 0 then key already exists
+  // if unique index, then don't insert key if already present
+  if (FindKey(true) <> 0) or (FUniqueMode = iuNormal) then
   begin
-    // temporarily remove range to find correct location of key
-    ResetRange;
-    // find this record as closely as possible
-    // if result = 0 then key already exists
-    // if unique index, then don't insert key if already present
-    if (FindKey(true) <> 0) or (AUniqueMode = iuNormal) then
+    // if we found eof, write to pagebuffer
+    Leaf.GotoInsertEntry;
+    // insert requested entry, we know there is an entry available
+    Leaf.LocalInsert(FUserRecNo, FUserKey, 0);
+  end else begin
+    // key already exists -> test possible key violation
+    if FUniqueMode = iuDistinct then
     begin
-      // if we found eof, write to pagebuffer
-      Leaf.GotoInsertEntry;
-      // insert requested entry, we know there is an entry available
-      Leaf.LocalInsert(FUserRecNo, FUserKey, 0);
-    end else begin
-      // key already exists -> test possible key violation
-      if AUniqueMode = iuDistinct then
-      begin
-        // raising -> reset modify mode
-        FModifyMode := mmNormal;
-        ConstructInsertErrorMsg;
-        Result := false;
-      end;
+      ConstructInsertErrorMsg;
+      Result := false;
     end;
   end;
 end;
 
 procedure TIndexFile.ConstructInsertErrorMsg;
 var
-  InfoKey: AnsiString;
+  Value: AnsiString;
 begin
   if Length(FInsertError) > 0 then exit;
-  SetLength(InfoKey, KeyLen);
-  CopyCurrentKey(FUserKey, PAnsiChar(InfoKey));
-  FInsertError := Format(STRING_KEY_VIOLATION, [GetName,
-    PhysicalRecNo, dbfTrimRight(InfoKey)]);
+  if dbfParseIndexKeyAsString(FUserKey, KeyType, KeyLen,
+    PIndexHdr(IndexHeader)^.sKeyType, TDbfFile(FDbfFile).DbfVersion = xFoxPro,
+    Value) then
+  begin
+    if KeyType = 'C' then
+      Value := '''' + Value + '''';
+  end
+  else
+    Value := '';
+  FInsertError := Format(STRING_KEY_VIOLATION, [GetName, FUserRecNo, Value]);
 end;
 
 procedure TIndexFile.InsertError;
@@ -3303,28 +3598,35 @@ procedure TIndexFile.Delete(RecNo: Integer; Buffer: TdbfRecordBuffer);
 var
   I, curSel: Integer;
 begin
-  LockIndex;
-  try
-    // check if updating all or only current
-    FUserRecNo := RecNo;
-    if (FUpdateMode = umAll) or (FSelectedIndex = -1) then
+  // check if updating all or only current
+  FUserRecNo := RecNo;
+  if (FUpdateMode = umAll) or (FSelectedIndex = -1) then
+  begin
+    // remember currently selected index
+    curSel := FSelectedIndex;
+    for I := 0 to SwapWordLE(PMdxHdr(Header)^.TagsUsed) - 1 do
     begin
-      // remember currently selected index
-      curSel := FSelectedIndex;
-      for I := 0 to SwapWordLE(PMdxHdr(Header)^.TagsUsed) - 1 do
-      begin
-        SelectIndexVars(I);
+      SelectIndexVars(I);
+      LockIndex;
+      try
         DeleteKey(Buffer, RecNo);
+        // range may be changed
+        ResyncRange(true);
+      finally
+        UnlockIndex;
       end;
-      // restore previous selected index
-      SelectIndexVars(curSel);
-    end else begin
-      DeleteKey(Buffer, RecNo);
     end;
-    // range may be changed
-    ResyncRange(true);
-  finally
-    UnlockIndex;
+    // restore previous selected index
+    SelectIndexVars(curSel);
+  end else begin
+    LockIndex;
+    try
+      DeleteKey(Buffer, RecNo);
+      // range may be changed
+      ResyncRange(true);
+    finally
+      UnlockIndex;
+    end;
   end;
 end;
 
@@ -3343,31 +3645,35 @@ function TIndexFile.DeleteCurrent: Boolean;
   // deletes from current index
 begin
   Result := True;
-  // only delete if not delete record or mode = distinct
-  // modify = mmDeleteRecall /\ unique = distinct -> key needs to be deleted from index
-  if (FModifyMode <> mmDeleteRecall) or (FUniqueMode = iuDistinct) then
+  // prevent "confined" view of index while deleting
+  ResetRange;
+  // search correct entry to delete
+  if Leaf.PhysicalRecNo <> FUserRecNo then
   begin
-    // prevent "confined" view of index while deleting
-    ResetRange;
-    // search correct entry to delete
-    if Leaf.PhysicalRecNo <> FUserRecNo then
-    begin
-      Result := FindKey(false) = 0;
-      if not Result then
-        Result := Leaf.PhysicalRecNo = FUserRecNo;
-    end;
-    // delete selected entry
-    if Result then
-      Leaf.Delete
-    else
-      CheckInvalidError;
+    Result := FindKey(false) = 0;
+    if not Result then
+      Result := Leaf.PhysicalRecNo = FUserRecNo;
   end;
+  // delete selected entry
+  if Result then
+    Leaf.Delete
+  else
+    CheckInvalidError;
 end;
 
 function TIndexFile.UpdateIndex(Index: Integer; PrevBuffer, NewBuffer: TdbfRecordBuffer; RecNo: Integer): Boolean;
 begin
   SelectIndexVars(Index);
   Result := UpdateCurrent(PrevBuffer, NewBuffer, RecNo);
+end;
+
+function TIndexFile.RecordIsIndexed(Buffer: TDbfRecordBuffer): Boolean;
+begin
+  if FUniqueMode = iuDistinct then
+    // Distinct index excludes deleted records
+    Result := PAnsiChar(Buffer)^ <> '*'
+  else
+    Result := True;
 end;
 
 function TIndexFile.Update(RecNo: Integer; PrevBuffer, NewBuffer: TdbfRecordBuffer): Boolean;
@@ -3410,38 +3716,49 @@ end;
 
 function TIndexFile.UpdateCurrent(PrevBuffer, NewBuffer: TdbfRecordBuffer; RecNo: Integer): boolean;
 var
-  InsertKey, DeleteKey: PAnsiChar;
+  NewKey: PAnsiChar;
+  PrevKey: PAnsiChar;
   TempBuffer: array [0..MaxIndexKeyLen] of AnsiChar;
 begin
   Result := true;
-  if FCanEdit and (PIndexHdr(FIndexHeader)^.KeyLen <> 0) then
+  // check record is indexed
+  if RecordIsIndexed(PrevBuffer) or RecordIsIndexed(NewBuffer) then
   begin
-    DeleteKey := ExtractKeyFromBuffer(PrevBuffer, RecNo);
-    FillChar(TempBuffer{%H-}, SizeOf(TempBuffer), 0);
-    Move(DeleteKey^, TempBuffer, SwapWordLE(PIndexHdr(FIndexHeader)^.KeyLen));
-    DeleteKey := @TempBuffer[0];
-    InsertKey := ExtractKeyFromBuffer(NewBuffer, RecNo);
-
-    // compare to see if anything changed
-    if CompareKeys(DeleteKey, InsertKey) <> 0 then
+    if FCanEdit and (PIndexHdr(FIndexHeader)^.KeyLen <> 0) then
     begin
-      LockIndex;
-      try
-        FUserKey := DeleteKey;
-        Result := DeleteCurrent;
-        if Result then
-        begin
-          FUserKey := InsertKey;
-          Result := InsertCurrent(FUniqueMode);
-          if not Result then
+      PrevKey := ExtractKeyFromBuffer(PrevBuffer, RecNo);
+      FillChar(TempBuffer{%H-}, SizeOf(TempBuffer), 0);
+      Move(PrevKey^, TempBuffer, SwapWordLE(PIndexHdr(FIndexHeader)^.KeyLen));
+      PrevKey := @TempBuffer[0];
+      NewKey := ExtractKeyFromBuffer(NewBuffer, RecNo);
+
+      // compare to see if anything changed
+      if (CompareKeys(PrevKey, NewKey) <> 0) or
+        (RecordIsIndexed(PrevBuffer) <> RecordIsIndexed(NewBuffer)) then
+      begin
+        LockIndex;
+        try
+          if RecordIsIndexed(PrevBuffer) then
           begin
-            FUserKey := DeleteKey;
-            InsertCurrent(iuNormal);
-            FUserKey := InsertKey;
+            FUserKey := PrevKey;
+            Result := DeleteCurrent;
+          end
+          else
+            Result := True;
+          if Result and RecordIsIndexed(NewBuffer) then
+          begin
+            FUserKey := NewKey;
+            Result := InsertCurrent;
+            if (not Result) and RecordIsIndexed(PrevBuffer) then
+            begin
+              FUserKey := PrevKey;
+              InsertCurrent;
+              FUserKey := NewKey;
+            end;
           end;
+        finally
+          UnlockIndex;
         end;
-      finally
-        UnlockIndex;
       end;
     end;
   end;
@@ -3616,22 +3933,6 @@ begin
   Move(HighRange^, FHighBuffer[0], KeyLen);
   FRangeActive := true;
   ResyncRange(true);
-end;
-
-procedure TIndexFile.RecordDeleted(RecNo: Integer; Buffer: TdbfRecordBuffer);
-begin
-  // are we distinct -> then delete record from index
-  FModifyMode := mmDeleteRecall;
-  Delete(RecNo, Buffer);
-  FModifyMode := mmNormal;
-end;
-
-function TIndexFile.RecordRecalled(RecNo: Integer; Buffer: TdbfRecordBuffer): Boolean;
-begin
-  // are we distinct -> then reinsert record in index
-  FModifyMode := mmDeleteRecall;
-  Result := Insert(RecNo, Buffer, FUniqueMode);
-  FModifyMode := mmNormal;
 end;
 
 procedure TIndexFile.SetPhysicalRecNo(RecNo: Integer);
@@ -3887,37 +4188,44 @@ var
   TempPage: TIndexPage;
   gotoEntry: Integer;
 begin
-  // use our weighting system to quickly go to a seq recno
-  // recno starts at 1, entries at zero
-  Dec(RecNo);
-  TempPage := FRoot;
-  repeat
-    // don't div by zero
-    assert(TempPage.Weight > 0);
-    gotoEntry := RecNo div TempPage.Weight;
-    RecNo := RecNo mod TempPage.Weight;
-    // do we have this much entries?
-    if (TempPage.HighIndex < gotoEntry) then
-    begin
-      // goto next entry in upper page if not
-      // if recurnext fails, we have come at the end of the index
-      if (TempPage.UpperPage <> nil) and TempPage.UpperPage.RecurNext then
+  if RecNo = RecBOF then
+    WalkFirst
+  else if RecNo = RecEOF then
+    WalkLast
+  else
+  begin
+    // use our weighting system to quickly go to a seq recno
+    // recno starts at 1, entries at zero
+    Dec(RecNo);
+    TempPage := FRoot;
+    repeat
+      // don't div by zero
+      assert(TempPage.Weight > 0);
+      gotoEntry := RecNo div TempPage.Weight;
+      RecNo := RecNo mod TempPage.Weight;
+      // do we have this much entries?
+      if (TempPage.HighIndex < gotoEntry) then
       begin
-        // lower recno to get because we skipped an entry
-        TempPage.EntryNo := TempPage.LowIndex;
-        RecNo := 0;
+        // goto next entry in upper page if not
+        // if recurnext fails, we have come at the end of the index
+        if (TempPage.UpperPage <> nil) and TempPage.UpperPage.RecurNext then
+        begin
+          // lower recno to get because we skipped an entry
+          TempPage.EntryNo := TempPage.LowIndex;
+          RecNo := 0;
+        end else begin
+          // this can only happen if too big RecNo was entered, go to last
+          TempPage.RecurLast;
+          // terminate immediately
+          TempPage := Leaf;
+        end;
       end else begin
-        // this can only happen if too big RecNo was entered, go to last
-        TempPage.RecurLast;
-        // terminate immediately
-        TempPage := Leaf;
+        TempPage.EntryNo := gotoEntry;
       end;
-    end else begin
-      TempPage.EntryNo := gotoEntry;
-    end;
-    // get lower node
-    TempPage := TempPage.LowerPage;
-  until TempPage = nil;
+      // get lower node
+      TempPage := TempPage.LowerPage;
+    until TempPage = nil;
+  end;
 end;
 
 procedure TIndexFile.SetBracketLow;
@@ -4233,21 +4541,31 @@ procedure TIndexFile.LockIndex;
 begin
   if NeedLocks then
   begin
-    if not LockPage(0, True) then
-      raise EPagedFile.Create(STRING_WRITE_ERROR);
-    Resync(False);
+    LockIndexPage;
+    try
+      Resync(False);
+    except
+      UnlockIndexPage;
+      raise;
+    end;
   end;
+end;
+
+procedure TIndexFile.LockIndexPage;
+begin
+  if not LockPage(0, True) then
+    raise EPagedFile.Create(STRING_WRITE_ERROR);
 end;
 
 procedure TIndexFile.ResyncIndex(Relative: Boolean);
 begin
   if NeedLocks then
   begin
-    LockIndex;
+    LockIndexPage;
     try
       Resync(Relative);
     finally
-      UnlockPage(0);
+      UnlockIndexPage;
     end;
   end;
 end;
@@ -4267,9 +4585,14 @@ begin
         Inc(PVersion^);
       WriteVersion(PVersion);
     finally
-      UnlockPage(0);
+      UnlockIndexPage;
     end;
   end;
+end;
+
+procedure TIndexFile.UnlockIndexPage;
+begin
+  UnlockPage(0);
 end;
 
 function TIndexFile.SearchKeyInternal(Key: PAnsiChar;
@@ -4524,7 +4847,7 @@ end;
 function TIndexFile.GetDbfLanguageId: Byte;
 begin
   // get language id of parent dbf
-  Result := TDbfFile(FDbfFile).LanguageID;
+  Result := TDbfFile(FDbfFile).FileLangId;
 end;
 
 procedure TIndexFile.WriteHeader; {override;}

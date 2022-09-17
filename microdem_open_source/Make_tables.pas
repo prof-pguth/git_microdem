@@ -36,7 +36,7 @@ procedure MakeCliwocTable(fName : PathStr);
 procedure MakeFieldRangeTable(fName : PathStr);
 procedure MakePhotoIndex(fName : PathStr);
 procedure MakeBasicBoundingBoxTable(fName : PathStr; NameStr : shortstring = '');
-procedure MakeFresnelTable(fName : PathStr; FresnelFields,VegFields,PointCloudFields,GrazingFields,PointCloudExtremes,VegFields2,PointCloudFields2,VoxelFields,VoxelFields2 : boolean);
+procedure MakeTopoProfileTable(fName : PathStr; FresnelFields,VegFields,PointCloudFields,GrazingFields,PointCloudExtremes,VegFields2,PointCloudFields2,VoxelFields,VoxelFields2 : boolean);
 
 procedure MakeFresnelPointsTable(fName : PathStr);
 
@@ -654,7 +654,7 @@ begin
 end;
 
 
-procedure MakeFresnelTable(fName : PathStr; FresnelFields,VegFields,PointCloudFields,GrazingFields,PointCloudExtremes,VegFields2,PointCloudFields2,VoxelFields,VoxelFields2 : boolean);
+procedure MakeTopoProfileTable(fName : PathStr; FresnelFields,VegFields,PointCloudFields,GrazingFields,PointCloudExtremes,VegFields2,PointCloudFields2,VoxelFields,VoxelFields2 : boolean);
 begin
    {$IfDef RecordMakeTables} WriteLineToDebugFile('MakeFresnelTable in: ' + fName);  {$EndIf}
    CreateDataBase := tCreateDataBase.Create(fName);

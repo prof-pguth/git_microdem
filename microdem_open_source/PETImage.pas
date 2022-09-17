@@ -177,7 +177,7 @@ function ExtractPartOfImage(var Image1 : tImage; Left,Right,Top,Bottom : integer
 
       procedure SetRedrawMode(Image1 : tImage);  inline;
 
-      procedure MakeBigBitmap(var theFiles : tStringList; Capt : shortstring; SaveName : PathStr = '');
+      procedure MakeBigBitmap(var theFiles : tStringList; Capt : shortstring; SaveName : PathStr = ''; Cols : integer = -1);
       procedure RestoreBigCompositeBitmap(fName : PathStr);
 
       procedure Drehen90Grad(Bitmap : tMyBitmap);
@@ -185,8 +185,8 @@ function ExtractPartOfImage(var Image1 : tImage; Left,Right,Top,Bottom : integer
       procedure Drehen270Grad(Bitmap : tMyBitmap);
 
       procedure SaveImageAsThumbnail(Image1 : tImage; FName : PathStr; ThumbNailHeight : integer);
-      procedure LoadBitmapInImage(Image1 : tImage; fName : PathStr);
       procedure SaveImageAsBMP(Image1 : tImage; SaveName : PathStr = '');
+      procedure LoadBitmapInImage(Image1 : tImage; fName : PathStr);
       procedure CloneImageToBitmap(Image1 : tImage; var CloneBitmap : tMyBitmap; MakeItBlack : boolean = false);
       function CopyImageToBitmap(var Image1 : tImage; var Bitmap : tMyBitmap; ClearWhite : boolean = false) : boolean;
       procedure GrayscaleImage(var Image1 : tImage);
@@ -267,7 +267,7 @@ procedure RGBtoXY(r,g,b : byte; var x,y : integer);     inline;
 procedure RGBtoXYFloat(r,g,b : byte; var x,y : float64);  inline;
 function SetAlphaColor(rgbTriple : tRGBTriple) : TAlphaColor;  inline;
 procedure HSIfromRGBTrip(RGB : tPlatformColor; var H,S,I : float32);
-function CombineBitmaps(nc : byte; theFiles : tStringList; Capt : shortstring) : tMyBitmap;
+function CombineBitmaps(nc : integer; theFiles : tStringList; Capt : shortstring) : tMyBitmap;
 
 
 {$IfDef NoPatternFloodFill}
@@ -609,7 +609,7 @@ begin
 end;
 
 
-function CombineBitmaps(nc : byte; theFiles : tStringList; Capt : shortstring) : tMyBitmap;
+function CombineBitmaps(nc : integer; theFiles : tStringList; Capt : shortstring) : tMyBitmap;
 var
    bmp : tMyBitmap;
    SingleWide,SingleHigh,
@@ -637,6 +637,8 @@ begin
       end;
       Result.Canvas.Font.Size := 14;
       Result.Canvas.TextOut(25,Result.Height - 40,Capt);
+
+      GetImagePartOfBitmap(Result);
       //GetImagePartOfBitmap(Result);
    end;
 end;
@@ -662,14 +664,19 @@ begin
 end;
 
 
-procedure MakeBigBitmap(var theFiles : tStringList; Capt : shortstring; SaveName : PathStr = '');
+procedure MakeBigBitmap(var theFiles : tStringList; Capt : shortstring; SaveName : PathStr = ''; Cols : integer = -1);
 var
    bigbmp : tMyBitmap;
    fName : PathStr;
+   AskCols : boolean;
    ImageForm : TImageDisplayForm;
 begin
    if (TheFiles.Count > 0) then begin
-     BigBMP := CombineBitmaps(MDDef.BigBM_nc, theFiles, Capt);
+     AskCols := Cols < 0;
+     if AskCols then begin
+        Cols := MDDef.BigBM_nc;
+     end;
+     BigBMP := CombineBitmaps(Cols, theFiles, Capt);
      if (SaveName <> '') then begin
          SaveBitmap(BigBmp,SaveName);
          Bigbmp.Free;
@@ -682,8 +689,8 @@ begin
          ImageForm.BigBM_Capt := Capt;
          ImageForm.BigBM_files := fName;
          ImageForm.ChangeColumns1.Visible := true;
-         ImageForm.Changecolumns1Click(nil);
-         //ImageForm.RedrawSpeedButton12Click(Nil);
+         if AskCols then ImageForm.Changecolumns1Click(nil)
+         else ImageForm.RedrawSpeedButton12Click(Nil);
       end;
    end;
    theFiles.Destroy;

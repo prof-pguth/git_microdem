@@ -1296,21 +1296,21 @@ type
    end;
 
    tDefaultRecord = packed record
-       {$IfDef ExDRGimport}
+       {$If Defined(ExDRGimport) or Defined(ExGeoPDF)}
        {$Else}
           DRGQuadClip, DRGCollar,DRGStructures,DRGTransport,DRGHydrography,DRGShadedRelief,DRGBoundaries,DRGOrthos,DRGGrid,DRGContours,DRGWoodland,DRGPLSS : boolean;
        {$EndIf}
 
        {$IfDef ExTiger}
        {$Else}
-       TigrDef : tTigrDef;
+          TigrDef : tTigrDef;
        {$EndIf}
 
        {$IfDef ExPLSS}
        {$Else}
-       PLSSDef : tPLSSDef;
-       PLSSRangeDef,PLSSTownShipDef : byte;
-       ShowPLSS : boolean;
+          PLSSDef : tPLSSDef;
+          PLSSRangeDef,PLSSTownShipDef : byte;
+          ShowPLSS : boolean;
        {$EndIf}
 
        {$IfDef VCL}
@@ -1397,6 +1397,7 @@ type
        {$EndIf}
 
       {$IfDef ExFresnel}
+          RadioK : float32;
       {$Else}
           RadioK,
           FresnelFreq : float32;
@@ -1809,8 +1810,9 @@ type
       WBSegFilterRadius,
       WBDeNoiseRadius,
       WBDenoiseElevDiff  : float32;
+
       DEMIX_Full : byte;
-      //DEMIXTieTolerance : float32;
+      DEMIX_criterion_tolerance_fName : PathStr;
 
       SlopeFlatBoundary,
       SlopeGentleBoundary,
@@ -1827,15 +1829,15 @@ type
        MaxMrSidImageSize : int32;
        AskAboutSIDLevel : boolean;
 
-   ChangeMinRedColor,
-   ChangeMaxRedColor,
-   ChangeMinGreenColor,
-   ChangeMaxGreenColor : byte;
+      ChangeMinRedColor,
+      ChangeMaxRedColor,
+      ChangeMinGreenColor,
+      ChangeMaxGreenColor : byte;
 
-   ChangeMinRedValue,
-   ChangeMaxRedValue,
-   ChangeMinGreenValue,
-   ChangeMaxGreenValue : int16;
+      ChangeMinRedValue,
+      ChangeMaxRedValue,
+      ChangeMinGreenValue,
+      ChangeMaxGreenValue : int16;
 
        MapNameLocation,
        GridLegendLocation,
@@ -2252,7 +2254,7 @@ type
 
        UseRefDirs : integer;
        RefPhi,RefTheta,
-       RefVertExagLargeScaleDEM : float32;
+       RefVertExag : float32;
 
       //weapons fans
        MaskObsRange,
@@ -2794,8 +2796,6 @@ var
    Geoid96FName,
    GeoidDiffFName,
 
-   //spcs_tm_fName,
-   //spcs_lcc_fName,
    DBDir,
    TigerShapeRules,
    CSVImportRulesFName,
@@ -2891,8 +2891,6 @@ var
       LastVegDensity1fName,
       LastVegDensity2fName,
       LastVegGrid,
-      //BlowUpDEMSeries,
-      //BlowUpVegGridSeries,
    {$EndIf}
 
    {$IfDef ExSidescan}
@@ -2906,7 +2904,7 @@ var
    {$IfDef ExGDAL}
    {$Else}
       GDALtools_Dir,
-      GDALtools_Data,
+      //GDALtools_Data,
       GDAL_translate_name,
       GDAL_contour_name,
       GDAL_Warp_Name,
@@ -2921,8 +2919,8 @@ var
        OTB_dir,
    {$EndIf}
 
-   WhiteBoxFName,
    CloudCompareFName,
+   WhiteBoxFName,
 
    {$IfDef MSWindows}
       CurrentProject,

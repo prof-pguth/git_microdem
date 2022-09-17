@@ -550,6 +550,11 @@ begin
           StartUTMProjection(35);
           H_DatumCode := 'ETR89';
       end
+      else if ((FIPS_Zone = 5070)) then begin
+          PName := AlbersEqAreaConicalEllipsoid;
+          H_datumCode := 'WGS84';
+          GetProjectParameters;
+      end
       else if ((FIPS_Zone >= 3708) and (FIPS_Zone <= 3726))  then begin   //3747 is zone 17
           StartUTMProjection(FIPS_Zone - 3707);
           H_DatumCode := 'NAD83';
@@ -601,6 +606,8 @@ begin
           end;
       end;
       Result := GetProjectionName;
+      if projUTMZone = -99 then ProjUTMzone := 0;
+
    end;
    {$If Defined(RecordGeotiffCodes) or Defined(RecordOpenFromTiff3072) or Defined(RecordProjection)} WriteLineToDebugFile('tMapProjection.RecordOpenFromTiff3072 out, Projection=' + Result); {$EndIf}
    {$If Defined(LongCent)} WriteLineToDebugFile('tMapProjection.RecordOpenFromTiff3072 Out,  LongCent: ' + RadToDegString(Long0)); {$EndIf}

@@ -649,6 +649,9 @@ begin
 
    if IsReflectanceMap(MapType) then begin
       {$If Defined(RecordFullMapDraw) or Defined(RecordKeyMap)} WriteLineToDebugFile('Set hillshade colors'); {$EndIf}
+      {$If Defined(RecordRefMapColors)}
+         WriteLineToDebugFile('Set hillshade colors, hue=' + IntToStr(MDDef.MergeHue) + ' sat=' + IntToStr(MDDef.MergeSat) + ' int=' + IntToStr(MDDef.MergeInt));
+      {$EndIf}
       InterpolateMapColors := (ScreenPixelSize < DEMGlb[DEMonMap].AverageSpace);
       DEMGlb[DEMonMap].ReflectanceParams(MinMapElev,MaxMapElev);
       for i := 0 to 255 do pPal[i] := RGBtripFromHSI(TheHue(MDDef.MergeHue,i),MDDef.MergeSat,MDDef.MergeInt);

@@ -16,8 +16,9 @@ var
    Percent,Cum,MaxPC  : float64;
 begin
    {$IfDef RecordGlobalDEM} WriteLineToDebugFile('LandCoverSummary in');   {$EndIf}
-   CreateBitmap(Result,1400,60);
-   Top := 10;
+   CreateBitmap(Result,1400,30);
+   //Top := 10;
+   Top := 5;
 
     Total := 0;
     EmpSource.Enabled := false;
@@ -35,21 +36,24 @@ begin
        xend := 10 + round(Cum / 100 * 500);
        Result.Canvas.Brush.Style := bsSolid;
        Result.Canvas.Brush.Color := MyData.GetFieldByNameAsInteger('COLOR');
-       Result.Canvas.Rectangle(xstart,Top,xend,Top + 45);
+       //Result.Canvas.Rectangle(xstart,Top,xend,Top + 45);
+       Result.Canvas.Rectangle(xstart,Top,xend,Top + 25);
        xstart := xend;
        MyData.Next;
     end;
     if (theLabel <> '') then begin
-       Result.Canvas.Font.Size := 18;
+       //Result.Canvas.Font.Size := 18;
+       Result.Canvas.Font.Size := 14;
        Result.Canvas.Font.Style := [fsBold];
        Result.Canvas.Brush.Style := bsClear;
        Result.Canvas.TextOut(xend + 10,Top+5,RemoveUnderscores(theLabel));
        Maxstart := xend + 10 + Result.Canvas.TextWidth(RemoveUnderscores(theLabel));
-       Result.Canvas.Font.Size := 12;
+       //Result.Canvas.Font.Size := 12;
+       Result.Canvas.Font.Size := 10;
        Result.Canvas.TextOut(MaxStart,Top+10,MaxStr);
     end;
-    Top := Top + 25;
-    ShowStatus;
+    //Top := Top + 25;
+    //ShowStatus;
 
    if Display then DisplayBitmap(Result,'Land cover distribution');
    {$IfDef RecordGlobalDEM} WriteLineToDebugFile('LandCoverSummary out');   {$EndIf}

@@ -15,7 +15,6 @@ object fat_fingers_form: Tfat_fingers_form
   FormStyle = fsStayOnTop
   OnClose = FormClose
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 15
   object Label1: TLabel
     Left = 8

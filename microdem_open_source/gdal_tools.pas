@@ -137,7 +137,10 @@ uses
    procedure GDALConvertImagesToGeotiff(fName : PathStr = ''; Recycle : boolean = true);
    function GDAL_Translate_2_geotiff(fName : PathStr; OutName : PathStr = ''; ExtraOptions : ANSIString = ''; TrashOriginal : boolean = true) : PathStr;
    function GDAL_warp(var fName : PathStr) : PathStr;
-   procedure GDALconvertGeoPDF(Option : tGDALGeoPDF);
+   {$IfDef ExGeoPDF}
+   {$Else}
+      procedure GDALconvertGeoPDF(Option : tGDALGeoPDF);
+   {$EndIf}
    procedure GDALregister(LatLong : boolean; GISNum : Integer; ImageName : PathStr; LatHemi : AnsiChar);
 
    procedure GDALreprojectLASfile(fName : PathStr; T_EPSG,a_EPSG : integer);
@@ -167,6 +170,11 @@ const
    AddWKT = ' -wkt_format WKT2';
 
 
+   {$IfDef ExGeoPDF}
+   {$Else}
+      {$I geopdf.inc}
+   {$EndIf}
+
 function GetGDALversion : ANSIstring;
 var
    cmd : shortstring;
@@ -180,88 +188,79 @@ begin
 end;
 
 
+procedure GetGDALFileNames;
+label
+   NoMoreBugging;
 
-      procedure GetGDALFileNames;
+     function SetGDALprogramName(fName : PathStr; var FullName : PathStr) : boolean;
+     begin
+        FullName := GDALtools_Dir + fName;
+        Result := FileExists(FullName);
+        {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} if Not Result then WriteLineToDebugFile('GDAL file missing, ' + FullName); {$EndIf}
+     end;
 
-           function SetGDALprogramName(fName : PathStr; var FullName : PathStr) : boolean;
-           begin
-              FullName := GDALtools_Dir + fName;
-              Result := FileExists(FullName);
-              {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} if Not Result then WriteLineToDebugFile('GDAL file missing, ' + FullName); {$EndIf}
-           end;
-
-           function SetRest : boolean;
-           begin
-               Result := SetGDALprogramName('gdal_translate.exe',GDAL_translate_name) and SetGDALprogramName('gdal_contour.exe',GDAL_contour_name) and SetGDALprogramName('gdalwarp.exe',GDAL_warp_name) and
-                         SetGDALprogramName('gdaldem.exe',GDAL_dem_name) and SetGDALprogramName('ogr2ogr.exe',GDAL_ogr_name) and SetGDALprogramName('gdalinfo.exe',GDAL_info_name) and
-                         SetGDALprogramName('gdalsrsinfo.exe',GDAL_srs_info_name);
-               if not Result then begin
-                  MessageToContinue('GDAL files are missing; consider reinstalling OSGEO4W');
-               end;
-               SetGDALdataStr := 'set GDAL_DATA=' + GDALtools_Data;
-           end;
-
-      begin
-         {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('GetGDALFileNames in'); {$EndIf}
-
-         if PathIsValid(GDALtools_Dir) and PathIsValid(GDALtools_Data) and SetRest then begin
-            {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('GDAL valid, ' + GDALtools_Dir + '  ' + GetGDALversion); {$EndIf}
-            exit;
+     function SetRest : boolean;
+     begin
+         Result := SetGDALprogramName('gdal_translate.exe',GDAL_translate_name) and SetGDALprogramName('gdal_contour.exe',GDAL_contour_name) and SetGDALprogramName('gdalwarp.exe',GDAL_warp_name) and
+                   SetGDALprogramName('gdaldem.exe',GDAL_dem_name) and SetGDALprogramName('ogr2ogr.exe',GDAL_ogr_name) and SetGDALprogramName('gdalinfo.exe',GDAL_info_name) and
+                   SetGDALprogramName('gdalsrsinfo.exe',GDAL_srs_info_name);
+         if (not Result) then begin
+            MessageToContinue('GDAL files are missing; consider reinstalling OSGEO4W');
+            {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('user recommended reinstalling'); {$EndIf}
          end;
+         SetGDALdataStr := 'set GDAL_DATA=' + StringReplace(GDALtools_Dir, 'bin', 'share\gdal',[rfIgnoreCase]);
+     end;
 
-         if not PathIsValid(GDALtools_Dir) then begin
-            GDALtools_Dir := 'C:\OSGeo4W\bin\';
-            GetDOSPath('GDAL binary directory, something like ' +  GDALtools_Dir,GDALtools_Dir);
-         end;
+begin
+   {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} HighlightLineToDebugFile('GetGDALFileNames in'); {$EndIf}
 
-         if not PathIsValid(GDALtools_Data) then begin
-            GDALtools_Data := 'c:\OSGeo4W\share\gdal\';
-            if not PathIsValid(GDALtools_Data) then GetDOSPath('GDAL tools data directory, something like ' + GDALtools_Data,GDALtools_Data);
-         end;
+   if PathIsValid(GDALtools_Dir) {and PathIsValid(GDALtools_Data)} and SetRest then begin
+      {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('GDAL valid, ' + GDALtools_Dir + '  ' + GetGDALversion); {$EndIf}
+      exit;
+   end;
 
-         if PathIsValid(GDALtools_Dir) and PathIsValid(GDALtools_Data) and SetRest then begin
-            {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('User picked GDAL valid, ' + GDALtools_Dir + '  ' + GetGDALversion); {$EndIf}
-            exit;
-         end;
+   if not PathIsValid('C:\OSGeo4W\') then begin
+      {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('No default GDAL dir'); {$EndIf}
+      if not AnswerIsYes('No default GDAL installation present.  If you downloaded, do you want to try to find GDAL') then begin
+         {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('User stopped GDAL manual search'); {$EndIf}
+         goto NoMoreBugging;
+      end
+   end;
 
-(*
-         if (UpperCase(ProgramRootDir[1]) <> 'C') then begin
-            GDALtools_Dir := ProgramRootDir[1] + ':\OSGeo4W\bin\';
-            GDALtools_Data := ProgramRootDir[1] + ':\OSGeo4W\share\gdal\';
-            if PathIsValid(GDALtools_Dir) and PathIsValid(GDALtools_Data) then begin
-               {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('GDAL Both paths valid, ' + GDALtools_Dir); {$EndIf}
-               SetRest;
-               exit;
-            end;
-         end;
-*)
+   if not PathIsValid(GDALtools_Dir) then begin
+      {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('GDAL problem tools dir, ' + GDALtools_Dir); {$EndIf}
+      GDALtools_Dir := 'C:\OSGeo4W\bin\';
+      GetDOSPath('GDAL binary directory, something like ' +  GDALtools_Dir,GDALtools_Dir);
+      {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('User pick GDAL tools dir: ' + GDALtools_Dir); {$EndIf}
+   end;
 
-         {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)}
-            if not PathIsValid(GDALtools_Dir) then WriteLineToDebugFile('Invalid: ' + GDALtools_Dir);
-            if not PathIsValid(GDALtools_Data) then WriteLineToDebugFile('Invalid: ' + GDALtools_Data);
-         {$EndIf}
+   (*
+   if not PathIsValid(GDALtools_Data) then begin
+      {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('GDAL problem data dir, ' + GDALtools_Data); {$EndIf}
+      GDALtools_Data := 'c:\OSGeo4W\share\gdal\';
+      if not PathIsValid(GDALtools_Data) then GetDOSPath('GDAL tools data directory, something like ' + GDALtools_Data,GDALtools_Data);
+      {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('User pick GDAL data dir: ' + GDALtools_Dir); {$EndIf}
+   end;
+   *)
 
-         MDdef.DontBugMeAboutGDAL := not AnswerIsYes('Do you want to be reminded about GDAL problems in the future');
+   if PathIsValid(GDALtools_Dir) {and PathIsValid(GDALtools_Data)} and SetRest then begin
+      {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('User picked GDAL valid, ' + GDALtools_Dir + '  ' + GetGDALversion); {$EndIf}
+      exit;
+   end;
 
-         if MDdef.DontBugMeAboutGDAL then SaveMDdefaults;
+   {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)}
+      if not PathIsValid(GDALtools_Dir) then WriteLineToDebugFile('Invalid: ' + GDALtools_Dir);
+      //if not PathIsValid(GDALtools_Data) then WriteLineToDebugFile('Invalid: ' + GDALtools_Data);
+   {$EndIf}
 
-         (*
-         if AnswerIsYes('Manually try to set GDAL locations (you must download them)') then begin
-            if not PathIsValid(GDALtools_Dir) then begin
-              GetDOSPath('GDAL',GDALtools_Dir);
-            end;
+  NoMoreBugging:;
+   MDdef.DontBugMeAboutGDAL := not AnswerIsYes('Do you want to be reminded about GDAL problems in the future');
 
-            if PathIsValid(GDALtools_Dir) then begin
-                {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('User ID ' + GDALtools_Dir); {$EndIf}
-               if not PathIsValid(GDALtools_Data) then begin
-                  GetDOSPath('GDAL data',GDALtools_Data);
-                   {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('User ID ' + GDALtools_Data); {$EndIf}
-               end;
-               SetRest;
-            end;
-         end;
-         *)
-      end;
+   if MDdef.DontBugMeAboutGDAL then begin
+      {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('choose no more GDAL problem messages'); {$EndIf}
+      SaveMDdefaults;
+   end;
+end;
 
 
 procedure GDAL_netcdf(fName : PathStr = '');
@@ -339,7 +338,7 @@ begin
    cmd := PythonEXEname + ' ' + PythonScriptDir + 'gdal_edit.py -a_srs ' + ProjName + ' ' + DEMName;
    StartGDALbatchFile(BatchFile);
    BatchFile.Add(cmd);
-   bfile := Petmar.NextFileNumber(MDTempDir, 'gdal_assign_proj','.bat');
+   bfile := Petmar.NextFileNumber(MDTempDir, 'gdal_assign_proj_','.bat');
    EndBatchFile(bfile ,batchfile);
    if FileExists(DEMName) then begin
       //OpenNewDEM(DEMName);
@@ -360,7 +359,6 @@ begin
       cmd := PythonEXEname + ' ' + PythonScriptDir + 'gdal_fillnodata.py -md 100 -si 2 -o ' + OutName + ' ' + InName;
       StartGDALbatchFile(BatchFile);
       BatchFile.Add(cmd);
-      bfile := Petmar.NextFileNumber(MDTempDir, 'gdal_fill_holes','.bat');
       EndBatchFile(bfile,batchfile);
       if FileExists(OutName) then begin
          OpenNewDEM(OutName);
@@ -618,184 +616,6 @@ begin
 end;
 
 
-   {$IfDef ExDRGimport}
-      procedure GDALconvertGeoPDF(Option : tGDALGeoPDF);
-      begin
-      end;
-   {$Else}
-      procedure GDALconvertGeoPDF(Option : tGDALGeoPDF);
-      var
-         BatchName,fName,MergeFName,tName : PathStr;
-         lt,Code,bfn,UseThreads : integer;
-         UTMzone,i : int16;
-         BatchFile,
-         OutNames,
-         FilesWanted : tStringList;
-         DefFilter : byte;
-
-            procedure AllGeoPDFLayersOff(var KeepOn : boolean);
-            begin
-               MDDef.DRGCollar := false;
-               MDDef.DRGStructures := false;
-               MDDef.DRGTransport := false;
-               MDDef.DRGHydrography := false;
-               MDDef.DRGShadedRelief := false;
-               MDDef.DRGBoundaries := false;
-               MDDef.DRGOrthos := false;
-               MDDef.DRGGrid := false;
-               MDDef.DRGContours := false;
-               MDDef.DRGWoodland := false;
-               KeepOn := true;
-            end;
-
-            function ConvertGeoPDFtoGeoTiff(fName,OutName : PathStr) : ANSIString;
-            var
-               ExtraOptions : ANSIString;
-               TempName,ClipName : PathStr;
-            begin
-                 if FileExists(OutName) and (Uppercase(ExtractFilePath(OutName)) <> UpperCase(MDTempDir)) then begin
-                    if AnswerIsYes(OutName + ' exists; Overwrite') then Sysutils.DeleteFile(OutName)
-                    else exit;
-                 end;
-                 ExtraOptions := ' --config GDAL_PDF_LAYERS ';
-                 if MDDef.DRGCollar then ExtraOptions := ExtraOptions + 'Map_Collar,Map_Collar.Map_Elements,';
-                 if MDDef.DRGGrid then ExtraOptions := ExtraOptions + 'Map_Frame,Map_Frame.Projection_and_Grids,Map_Frame.Geographic_Names,';
-                 if MDDef.DRGStructures then ExtraOptions := ExtraOptions + 'Map_Frame.Structures,';
-                 if MDDef.DRGTransport then ExtraOptions := ExtraOptions + 'Map_Frame.Transportation,Map_Frame.Transportation.Road_Features,Map_Frame.Transportation.Trails,Map_Frame.Transportation.Railroads,Map_Frame.Transportation.Airports,';
-                 if MDDef.DRGHydrography then ExtraOptions := ExtraOptions + 'Map_Frame.Hydrography,';
-                 if MDDef.DRGContours then ExtraOptions := ExtraOptions + 'Map_Frame.Terrain,Map_Frame.Terrain.Contours,';
-                 if MDDef.DRGPLSS then ExtraOptions := ExtraOptions + 'Map_Frame.PLSS';
-                 if MDDef.DRGWoodland then ExtraOptions := ExtraOptions + 'Map_Frame.Woodland,';
-                 if MDDef.DRGShadedRelief then ExtraOptions := ExtraOptions + 'Map_Frame.Terrain.Shaded_Relief,';
-                 if MDDef.DRGBoundaries then ExtraOptions := ExtraOptions + 'Map_Frame.Boundaries,Map_Frame.Boundaries.Jurisdictional_Boundaries,Map_Frame.Boundaries.Jurisdictional_Boundaries.International,' +
-                      'Map_Frame.Boundaries.Jurisdictional_Boundaries.State_or_Territory,Map_Frame.Boundaries.Jurisdictional_Boundaries.County_or_Equivalent,Map_Frame.Boundaries.Federal_Administered_Lands,' +
-                      'Map_Frame.Boundaries.Federal_Administered_Lands.National_Park_Service,Map_Frame.Boundaries.Federal_Administered_Lands.Department_of_Defense,Map_Frame.Boundaries.Federal_Administered_Lands.Forest_Service,';
-                 if MDDef.DRGOrthos then ExtraOptions := ExtraOptions + 'Images,Images.Orthoimage,';
-                 Delete(ExtraOptions,length(ExtraOptions),1);
-
-                 TempName := MDTempDir + {'temp_' +} ExtractFileName(OutName);
-                 if MDDef.DRGQuadClip then ClipName := ' -crop_to_cutline  -cutline ' + MDTempDir + ExtractFileNameNoExt(fName) + '_clip.csv '
-                 else ClipName := '';
-                 Result := GDAL_translate_name + ' -of Gtiff ' + fName + ' ' + TempName + ExtraOptions;
-                 {$IfDef RecordGeoPDF} WriteLineToDebugFile('ConvertGeoPDFtoGetTiff cmd=' + Result); {$EndIf}
-                 BatchFile.Add('REM     ');
-                 BatchFile.Add('REM     create   ' + TempName);
-                 BatchFile.Add(Result);
-                 BatchFile.Add(GDAL_warp_name + ' -dstnodata "255 255 255" -of Gtiff' + ' -t_srs EPSG:' + IntToStr(Code) + ' ' + ClipName + TempName + ' ' + OutName);
-            end;
-
-             procedure ExtractByLayers;
-
-                      procedure SingleLayer(var WhichLayer : boolean; OutName : PathStr);
-                      begin
-                         AllGeoPDFLayersOff(WhichLayer);
-                         ConvertGeoPDFtoGeoTiff(fName,OutName);
-                      end;
-
-             begin
-                MDDef.DRGQuadClip := false;
-                SingleLayer(MDDef.DRGGrid,ExtractFilePath(fName) + ExtractFileNameNoExt(fName) + '_grid.tif');
-                SingleLayer(MDDef.DRGContours,ExtractFilePath(fName) + ExtractFileNameNoExt(fName) + '_contours.tif');
-                SingleLayer(MDDef.DRGCollar, ExtractFilePath(fName) + ExtractFileNameNoExt(fName) + '_collar.tif');
-                SingleLayer(MDDef.DRGStructures,ExtractFilePath(fName) + ExtractFileNameNoExt(fName) + '_structures.tif');
-                SingleLayer(MDDef.DRGTransport,ExtractFilePath(fName) + ExtractFileNameNoExt(fName) + '_transport.tif');
-                SingleLayer(MDDef.DRGHydrography,ExtractFilePath(fName) + ExtractFileNameNoExt(fName) + '_hydrography.tif');
-                SingleLayer(MDDef.DRGShadedRelief,ExtractFilePath(fName) + ExtractFileNameNoExt(fName) + '_shaded_relief.tif');
-                SingleLayer(MDDef.DRGWoodland,ExtractFilePath(fName) + ExtractFileNameNoExt(fName) + '_woodland.tif');
-                SingleLayer(MDDef.DRGBoundaries,ExtractFilePath(fName) + ExtractFileNameNoExt(fName) + '_boundaries.tif');
-                SingleLayer(MDDef.DRGOrthos,ExtractFilePath(fName) + ExtractFileNameNoExt(fName) + '_orthos.tif');
-             end;
-
-
-      begin
-         {$IfDef RecordGeoPDF} WriteLineToDebugFile('OpenGeoPDF in'); {$EndIf}
-         if IsGDALFilePresent(GDAL_translate_name) then begin
-            SaveBackupDefaults;
-            if (option=gdalOpenGeoPDFimagelayer1) then AllGeoPDFLayersOff(MDDef.DRGOrthos);
-            FilesWanted := tStringList.Create;
-            FilesWanted.Add(MainMapData);
-            DefFilter := 1;
-            if GetMultipleFiles('GeoPDF','*.PDF',FilesWanted,DefFilter) then begin
-              MergefName := '';
-
-              if (FilesWanted.Count > 1) and (option=gdalMergeGeoPDF1) then begin
-                MergefName := MDTempDir;
-                Petmar.GetFileNameDefaultExt('Merged maps','*.tif',MergefName);
-              end;
-              {$IfDef RecordGeoPDF} WriteLineToDebugFile('Files picked');   {$EndIf}
-
-              OutNames := tStringList.Create;
-              BatchGDALinfo(FilesWanted,MDDef.DRGQuadClip,UTMzone);
-              {$IfDef RecordGeoPDF} WriteLineToDebugFile('BatchGDALinfo done'); {$EndIf}
-               Code := 26900 + UTMZone;
-
-               StartGDALbatchFile(BatchFile);
-               BatchFile.Add('REM     convert GeoPDF');
-               if (FilesWanted.Count < MDDef.MaxThreadsForPC) then UseThreads := FilesWanted.Count
-               else UseThreads := MDDef.MaxThreadsForPC;
-               lt := FilesWanted.Count div UseThreads;
-               if (lt = 0) then lt := 1;
-               bfn := 0;
-               for i := 0 to pred(FilesWanted.Count) do begin
-                  fName := FilesWanted.Strings[i];
-                  BatchFile.Add('REM  GeoPDF ' + IntToStr(succ(i)) + '/' + IntToStr(FilesWanted.Count) );
-                  if (option = gdalAllindividuallayers1) then begin
-                     ExtractByLayers;
-                  end
-                  else begin
-                     if (MergeFName = '') then tName := ChangeFileExt(fName,'.tif')
-                     else tName := MDTempDir + 'f' + IntToStr(succ(i)) + '.tif';
-                     OutNames.Add(tName);
-                     if not FileExists(tName) then ConvertGeoPDFtoGeoTiff(fName,tName);
-                  end;
-
-                  if (Succ(i) mod lt = 0) or (i=pred(FilesWanted.Count)) then begin
-                     inc(bfn);
-                     BatchName := MDTempDir + 'convert' + IntToStr(bfn) + '.bat';
-                     BatchFile.Add('del ' + MDTempDir + IntToStr(bfn) + '.tmp');
-                     BatchFile.Add('exit');
-                     BatchFile.SaveToFile(BatchName);
-                     BatchFile.Clear;
-                     BatchFile.Add(SetGDALdataStr);
-                     BatchFile.Add('REM convert GeoPDF');
-                  end;
-               end;
-               FilesWanted.Free;
-               BatchFile.Clear;
-               for I := 1 to bfn do begin
-                  BatchFile.Add('echo %time% > ' + MDTempDir + IntToStr(i) + '.tmp');
-                  BatchFile.Add('start "' + IntToStr(i) + '" ' + MDTempDir + 'convert' + IntToStr(i) + '.bat');
-               end;
-               BatchFile.Add('@ping -n 1 127.0.0.1 > nul');
-               BatchFile.Add(':loop');
-               BatchFile.Add('@echo Processing......');
-               BatchFile.Add('if not exist *.tmp goto :next');
-               BatchFile.Add('    @ping -n 5 127.0.0.1 > nul');
-               BatchFile.Add('goto loop');
-               BatchFile.Add(':next');
-               BatchFile.Add('@echo Done Processing!');
-               BatchFile.Add('exit');
-               BatchName := MDTempDir + 'All_convert.bat';
-               BatchFile.SaveToFile(BatchName);
-               WinExecAndWait32(BatchName);
-               {$IfDef RecordGeoPDF} WriteLineToDebugFile('Translate and warp batch file finished'); {$EndIf}
-               if (MergeFName = '') then begin
-                  for i := 0 to pred(OutNames.Count) do begin
-                     OpenAndDisplayNewScene(Nil,OutNames[i],true,true,true);
-                  end;
-               end
-               else begin
-                  CallGDALmerge(MergefName,OutNames);
-                  OpenAndDisplayNewScene(Nil,MergefName,true,true,true);
-               end;
-              BatchFile.Free;
-              OutNames.Free;
-            end;
-            RestoreBackupDefaults;
-         end;
-         {$IfDef RecordGeoPDF} WriteLineToDebugFile('OpenGeoPDF out'); {$EndIf}
-      end;
-    {$EndIf}
 
      procedure ZeroGDALinfo(var GDALinfo : tGDALinfo);
      begin
@@ -1087,7 +907,6 @@ end;
                ExtentBoxString := GDALextentBoxUTM(bb);
             end;
 
-
             if AtLeastPartOfBoxInAnotherBox(ImageBB, bb) then begin
                if IsThisLandCover(fName,LandCover) then TStr := ' -r nearest '
                else TStr := '';
@@ -1140,14 +959,16 @@ end;
       function GDAL_Translate_2_geotiff(fName : PathStr; OutName : PathStr = ''; ExtraOptions : ANSIString = ''; TrashOriginal : boolean = true) : PathStr;
       var
          BatchFile : tStringList;
+         BatchName : PathStr;
       begin
          {$If Defined(RecordGDAL) or Defined(Reformat)} WriteLineToDebugFile(' GDAL_Translate_2_geotiff in with ' + GDAL_translate_name); {$EndIf}
          if IsGDALFilePresent(GDAL_translate_name) then begin
             if (OutName = '') then GetFilesNamesForGDALtranslate(fName,OutName);
             Result := OutName;
             StartGDALbatchFile(BatchFile);
-            BatchFile.Add(GDAL_translate_name + ' -of Gtiff ' + fName + ' ' + OutName + ExtraOptions);
-            EndBatchFile(MDtempDir + 'gdal_translate.bat',BatchFile);
+            BatchFile.Add(GDAL_translate_name + ' -of Gtiff '  + ExtraOptions + ' ' + fName + ' ' + OutName);
+            BatchName := Petmar.NextFileNumber(MDTempDir, 'gdal_translate_','.bat');
+            EndBatchFile(BatchName,BatchFile);
             if TrashOriginal then File2Trash(fName);
             {$If Defined(RecordGDAL) or Defined(Reformat)} WriteLineToDebugFile(' GDAL_Translate_2_geotiff end'); {$EndIf}
          end;
@@ -1453,7 +1274,7 @@ end;
 
       procedure UseGDAL_Warp_to_merge(var MergefName : PathStr; OutNames : tStringList);
       //gdalwarp --config GDAL_CACHEMAX 3000 -wm 3000 $(list_of_tiffs) merged.tiff
-      //option 3  did not work (could not get the list of input files to be acceptable
+      //this option did not work (could not get the list of input files to be acceptable
       var
          aName,OutVRT : PathStr;
          cmd : shortstring;
@@ -1471,11 +1292,10 @@ end;
 
          aName :=  Petmar.NextFileNumber(MDTempDir, 'gdal_warp2merge_','.bat');
          EndBatchFile(aName,BatchFile);
-
       end;
 
 
-      procedure UseGDAL_VRT_to_merge(var MergefName : PathStr; OutNames : tStringList; Added :ShortString = '');
+      procedure UseGDAL_VRT_to_merge(var MergefName : PathStr; OutNames : tStringList; Added : ShortString = '');
       var
          aName,OutVRT : PathStr;
          cmd : shortstring;
@@ -1484,7 +1304,7 @@ end;
          aName :=  Petmar.NextFileNumber(MDTempDir, 'gdal_merge_file_list_','.txt');
          OutNames.SaveToFile(aName);
          OutVRT := Petmar.NextFileNumber(MDTempDir, 'gdal_vrt_','.vrt');
-         cmd := GDALtools_Dir + 'gdalbuildvrt ' + Added + ' -input_file_list ' + aName + ' ' + ' ' + OutVRT;
+         cmd := GDALtools_Dir + 'gdalbuildvrt ' + Added + ' -input_file_list ' + aName + ' ' + OutVRT;
 
          StartGDALbatchFile(BatchFile);
          BatchFile.Add('REM create VRT');
@@ -1494,7 +1314,6 @@ end;
 
          aName :=  Petmar.NextFileNumber(MDTempDir, 'vrt2merge_','.bat');
          EndBatchFile(aName,BatchFile);
-
       end;
 
 

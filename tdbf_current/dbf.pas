@@ -246,6 +246,7 @@ type
     procedure SetRangeBuffer(LowRange: PAnsiChar; HighRange: PAnsiChar);
     procedure UpdateLock;
     function  ResyncSharedReadCurrentRecord: Boolean;
+    procedure CommitBlobStreams;
 
   protected
     { abstract methods }
@@ -254,7 +255,7 @@ type
     procedure FreeRecordBuffer(var Buffer: TDbfRecordBuffer); override; {virtual abstract}
     procedure GetBookmarkData(Buffer: TDbfRecordBuffer; Data: Pointer); override; {virtual abstract}
     function  GetBookmarkFlag(Buffer: TDbfRecordBuffer): TBookmarkFlag; override; {virtual abstract}
-    function  GetRecord(Buffer: TDbfRecBuf; GetMode: TGetMode; {%H-}DoCheck: Boolean): TGetResult; override; {virtual abstract}
+    function  GetRecord(Buffer: TDbfRecordBuffer; GetMode: TGetMode; {%H-}DoCheck: Boolean): TGetResult; override; {virtual abstract}
     function  GetRecordSize: Word; override; {virtual abstract}
     procedure InternalAddRecord(Buffer: {$ifdef InternalAddRecord_Wants_TRecordBuffer}TDbfRecordBuffer{$else}Pointer{$endif}; {%H-}Append: Boolean); override; {virtual abstract}
     procedure InternalClose; override; {virtual abstract}
@@ -913,7 +914,7 @@ begin
   end;
 end;
 
-function TDbf.GetRecord(Buffer: TDbfRecBuf; GetMode: TGetMode; DoCheck: Boolean): TGetResult; {override virtual abstract from TDataset}
+function TDbf.GetRecord(Buffer: TDbfRecordBuffer; GetMode: TGetMode; DoCheck: Boolean): TGetResult; {override virtual abstract from TDataset}
 var
   pRecord: pDbfRecord;
   acceptable: Boolean;
@@ -965,7 +966,7 @@ begin
       pRecord^.BookmarkData.PhysicalRecNo := FCursor.PhysicalRecNo;
       pRecord^.BookmarkFlag := bfCurrent;
       pRecord^.SequentialRecNo := FCursor.SequentialRecNo;
-      GetCalcFields(Buffer);
+      GetCalcFields(TDbfRecBuf(Buffer));
 
       if Filtered or FFindRecordFilter then
       begin
@@ -999,6 +1000,9 @@ var
   newRecord: integer;
 begin
   pRecord := pDbfRecord(Buffer);
+
+  // commit blobs
+  CommitBlobStreams;
 
   // we can not insert records in DBF files, only append
   // ignore Append parameter
@@ -1078,15 +1082,19 @@ procedure TDbf.InternalDelete; {override virtual abstract from TDataset}
 var
   lRecord: pDbfRecord;
 begin
+  // check can modify
+  if not CanModify then
+    DatabaseError(SDataSetReadOnly, Self);
   // start editing
-  InternalEdit;
-  SetState(dsEdit);
+  if not(State in [dsEdit, dsInsert]) then
+  begin
+    InternalEdit;
+    SetState(dsEdit);
+  end;
   // get record pointer
   lRecord := pDbfRecord(ActiveBuffer);
   // flag we deleted this record
   lRecord^.DeletedFlag := '*';
-  // notify indexes this record is deleted
-  FDbfFile.RecordDeleted(FEditingRecNo, @lRecord^.DeletedFlag);
   // done!
   InternalPost;
 end;
@@ -1310,14 +1318,7 @@ begin
       xBaseVII: FTableLevel := 7;
       xFoxPro:  FTableLevel := TDBF_TABLELEVEL_FOXPRO;
     end;
-    // 11.09.2007 Есди 0, например DBaseIII, будем считать из DbfGlobals
-    if FDbfFile.LanguageID=0 then  begin
-      FDbfFile.UseCodePage := DbfGlobals.DefaultCreateCodePage; // GETACPOEM;
-      FDbfFile.FileLangId := DbfGlobals.DefaultCreateLangId;     // DbfLangId_RUS_866
-    end;
-    // Реальный locale из заголовка файла
     FLanguageID := FDbfFile.LanguageID;
-
 
     // build VCL fielddef list from native DBF FieldDefs
   (*
@@ -1474,7 +1475,7 @@ end;
 procedure TDbf.InternalPost; {override virtual from TDataset}
 var
   pRecord: pDbfRecord;
-  I, newRecord: Integer;
+  newRecord: Integer;
 begin
   // inherited method checks required fields
 {$ifdef FPC}
@@ -1486,10 +1487,10 @@ begin
 {$endif}
   // if internalpost is called, we know we are active
   pRecord := pDbfRecord(ActiveBuffer);
+
   // commit blobs
-  for I := 0 to Pred(FieldDefs.Count) do
-    if Assigned(FBlobStreams^[I]) then
-      FBlobStreams^[I].Commit;
+  CommitBlobStreams;
+
   if State = dsEdit then
   begin
     // write changes
@@ -1762,6 +1763,8 @@ begin
   end;
   // reselect index
   IndexName := oldIndexName;
+  // reset cursor position
+  First;
 end;
 
 procedure TDbf.CopyFrom(DataSet: TDataSet; FileName: string;
@@ -2263,7 +2266,7 @@ begin
 {$else}
   lstKeys := TList.Create;
 {$endif}
-  FFilterBuffer := TDbfRecordBuffer(TempBuffer);
+  FFilterBuffer := TDbfRecordBuffer(FTempBuffer);
   SaveState := SetTempState(dsFilter);
   try
     GetFieldList(lstKeys, KeyFields);
@@ -3149,11 +3152,9 @@ begin
   begin
     if srcptr^ = '*' then
     begin
-      // notify indexes record is about to be recalled
-      FDbfFile.RecordRecalled(FCursor.PhysicalRecNo, src);
       // recall record
       srcptr^ := ' ';
-      FDbfFile.WriteRecord(FCursor.PhysicalRecNo, src);
+      SetModified(True);
     end;
   end;
 end;
@@ -3204,6 +3205,15 @@ begin
     Result := FDbfFile.ReadRecord(PhysicalRecNo, Buffer) <> 0;
   if Result then
     DataEvent(deRecordChange, 0);
+end;
+
+procedure TDbf.CommitBlobStreams;
+var
+  I: Integer;
+begin
+  for I := 0 to Pred(FieldDefs.Count) do
+    if Assigned(FBlobStreams^[I]) then
+      FBlobStreams^[I].Commit;
 end;
 
 {$ifdef SUPPORT_VARIANTS}

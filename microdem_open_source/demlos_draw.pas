@@ -75,18 +75,20 @@ type
          ComputePoints : integer;
          constructor Create;
          destructor Destroy;
-         function Execute(var UseData : tMyData; DEMonView : tDEMDataSet; LatLeft,LongLeft,LatRight,LongRight,LeftObsUp,RightObsUp : float64; FresnelDB : integer
-                {$IfDef ExPointCloudMemory}
-                 ) : tLOSResult;
-                {$Else}
-                ; pc1,pc2 : Point_cloud_memory.tMemoryPointCloud ) :  tLOSResult;
-                {$EndIf}
+         function Execute(DEMonView : integer; LatLeft,LongLeft,LatRight,LongRight,LeftObsUp,RightObsUp : float64; var ProfileDB : integer
+              {$IfDef ExPointCloudMemory}
+              ) :  tLOSResult;
+              {$Else}
+              ;pc1,pc2 : Point_cloud_memory.tMemoryPointCloud) :  tLOSResult;
+              {$EndIf}
+
 
    end;
 
    tLOSdraw = class
       protected
       private
+         DrawFresnel : boolean;
       public
         LOSVariety : tLOSVariety;
         FormSectLenMeters : float64;
@@ -98,7 +100,7 @@ type
         SliceDx,SliceDy,SliceRotate : float64;
         PixLong,PixelsHigh,ProfileBot,StartLOSLeft,StartLOSDown,
         DEMOnView,ProfileDropDown,
-        FresnelDB,FirstX,FirstY,MinAreaZ,MaxAreaZ : integer;
+        LOSProfileDB,FirstX,FirstY,MinAreaZ,MaxAreaZ : integer;
         ZoomedDiagram,CompareDensityAlongProfile,ShowSeaLevel,
         EnvelopeDone   : boolean;
 
@@ -141,16 +143,16 @@ type
    end;
 
 
+   function LOSComputeOnly(DEMonView : integer; VegGrid : integer; LatLeft,LongLeft,LatRight,LongRight,LeftObsUp,RightObsUp : float64; FresnelTable : integer = -1) :  tLOSResult;
 
 {$IfDef ExFresnel}
 {$Else}
-   function LOSComputeOnly(var UseData : tMyData; DEMonView : tDEMDataSet; VegGrid : integer; LatLeft,LongLeft,LatRight,LongRight,LeftObsUp,RightObsUp : float64) :  tLOSResult;
    function FresnelZoneResult(LosResult : tLOSResult) : shortstring;
    function FresnelZoneColor(LosResult : tLOSResult) : tPlatformColor;
 {$EndIf}
 
 
-{$IfDef ExGeostats}
+{$IfDef ExWaveLengthHeight}
 {$Else}
    procedure FindWavelengthStats(var UseData : tMyData; var WavelengthMean,WavelengthMedian,WavelengthStdDev,HeightMean,HeightMedian,HeightStd : float64; ColorFields : boolean = false);
    procedure AddToWaveSpacingHeightResults(var Findings : TStringList; WavelengthMean,WavelengthMedian,WavelengthStdDev,HeightMean,HeightMedian,HeightStd : float64);
@@ -254,8 +256,8 @@ begin
               if DEMGlb[i].LatLongDegreeInDEM(LatLeft,LongLeft) and DEMGlb[i].LatLongDegreeInDEM(LatRight,LongRight) then begin
                   {$IfDef RecordLOS} WriteLineToDebugFile('Recalculate profile, DEM=' + IntToStr(i)); {$EndIf}
                   RecalculateProfile;
-                  MultipleProfilesToShow.Add(GISdb[FresnelDB].DBFullName);
-                  CloseAndNilNumberedDB(FresnelDB);
+                  MultipleProfilesToShow.Add(GISdb[LOSProfileDB].DBFullName);
+                  CloseAndNilNumberedDB(LOSProfileDB);
               end;
            end;
         end;
@@ -265,9 +267,9 @@ begin
         {$IfDef RecordLOS} WriteLineToDebugFile('(MultipleProfilesToShow <> Nil)  image size: ' + IntToStr(Bitmap.Width) + 'x' + IntToStr(Bitmap.Height)); {$EndIf}
         DrawCollar(Bitmap);
         for i := 1 to MultipleProfilesToShow.Count do begin
-           OpenNumberedGISDataBase(FresnelDB,MultipleProfilesToShow.Strings[pred(i)]);
+           OpenNumberedGISDataBase(LOSProfileDB,MultipleProfilesToShow.Strings[pred(i)]);
            DrawTheProfile(Bitmap,'ELEV_M',ConvertPlatformColorToTColor(LineColors256[i]),LineSize256[i]);
-           CloseAndNilNumberedDB(FresnelDB);
+           CloseAndNilNumberedDB(LOSProfileDB);
         end;
      end;
      {$IfDef RecordLOS} WriteLineToDebugFile('Left side:  ' + LatLongDegreeToString(LatLeft,LongLeft)); {$EndIf}
@@ -362,76 +364,95 @@ begin
     if LOSVariety in [losMagModel,losAllDEMs,losAllDEMDropDown,losSimpleMagModel,losSimpleOne] then begin
        CalculatingCurvature := false;
     end;
+
+    {$IfDef ExFresnel}
+         DrawFresnel := false;
+    {$Else}
+      if LOSVariety = losVanilla then begin
+         DrawFresnel := MDDef.DrawFresnel;
+      end
+      else begin
+         DrawFresnel := false;
+      end;
+   {$EndIf}
+
+
      {$IfDef LoadLastLOS}
         LastSavedLOSfName := ProjectDir + 'last_los.csv';
         Saveprofileendpoints1Click(nil);
      {$EndIf}
 
-      if ValidDB(FresnelDB) then begin
-         {$IfDef RecordLOS} WriteLineToDebugFile('Closing FresnelDB'); {$EndIf}
-         CloseAndNilNumberedDB(FresnelDB);
+
+      if ValidDB(LOSProfileDB) then begin
+         {$IfDef RecordLOS} WriteLineToDebugFile('Closing ProfileDB'); {$EndIf}
+         CloseAndNilNumberedDB(LOSProfileDB);
       end;
-      {$IfDef VCL}
-         fName := NextFileNumber(MDTempDir, DEMGlb[DEMonView].AreaName + '_los_',DefaultDBExt);
-      {$Else}
-         fName := NextFileNumber(MDTempDir,'topo_los_',DefaultDBExt);
-      {$EndIf}
+      LOSProfileDB := 0;
+     // if DrawFresnel then begin
 
-      {$IfDef RecordLOS} WriteLineToDebugFile('Create=' + fName);   {$EndIf}
+         {$IfDef VCL}
+            fName := NextFileNumber(MDTempDir, DEMGlb[DEMonView].AreaName + '_los_',DefaultDBExt);
+         {$Else}
+            fName := NextFileNumber(MDTempDir,'topo_los_',DefaultDBExt);
+         {$EndIf}
 
-      MakeFresnelTable(fName,
-           {$IfDef ExFresnel}
+         {$IfDef RecordLOS} WriteLineToDebugFile('Create=' + fName);   {$EndIf}
+
+         MakeTopoProfileTable(fName,
+              {$IfDef ExFresnel}
+                 false,
+              {$Else}
+                 DrawFresnel,
+              {$EndIf}
+              {$IFDef ExVegDensity}
+                 false,
+              {$Else}
+                 (DEMGlb[DEMonView].VegGrid[1] <> 0),
+              {$EndIf}
+
+              {$IfDef ExPointCloudMemory}
+                 false,
+              {$Else}
+                 (LOSMemoryPointCloud[1] <> Nil),
+              {$EndIf}
+              MDDef.DoGrazingFields,
               false,
-           {$Else}
-              MDDef.DrawFresnel,
-           {$EndIf}
-           {$IFDef ExVegDensity}
-              false,
-           {$Else}
-              (DEMGlb[DEMonView].VegGrid[1] <> 0),
-           {$EndIf}
 
-           {$IfDef ExPointCloudMemory}
-              false,
-           {$Else}
-              (LOSMemoryPointCloud[1] <> Nil),
-           {$EndIf}
-           MDDef.DoGrazingFields,
-           false,
+              {$IFDef ExVegDensity}
+                 false,
+              {$Else}
+                 (DEMGlb[DEMonView].VegGrid[2] <> 0),
+              {$EndIf}
 
-           {$IFDef ExVegDensity}
-              false,
-           {$Else}
-              (DEMGlb[DEMonView].VegGrid[2] <> 0),
-           {$EndIf}
+              {$IfDef ExPointCloudMemory}
+                 false,
+              {$Else}
+                 (LOSMemoryPointCloud[2] <> Nil),
+              {$EndIf}
+              {$IFDef ExVegDensity}
+                 false,false );
+              {$Else}
+                 (DEMGlb[DEMonView].VegDensityLayers[1] <> Nil), (DEMGlb[DEMonView].VegDensityLayers[2] <> Nil)  );
+              {$EndIf}
 
-           {$IfDef ExPointCloudMemory}
-              false,
-           {$Else}
-              (LOSMemoryPointCloud[2] <> Nil),
-           {$EndIf}
-           {$IFDef ExVegDensity}
-              false,false );
-           {$Else}
-              (DEMGlb[DEMonView].VegDensityLayers[1] <> Nil), (DEMGlb[DEMonView].VegDensityLayers[2] <> Nil)  );
-           {$EndIf}
+         {$IfDef RecordLOS} WriteLineToDebugFile('Open=' + fName); {$EndIf}
+         ZeroRecordsAllowed := true;
+         OpenNumberedGISDataBase(LOSProfileDB,fName,false);
 
-      {$IfDef RecordLOS} WriteLineToDebugFile('Open=' + fName); {$EndIf}
-      FresnelDB := 0;
-      ZeroRecordsAllowed := true;
-      OpenNumberedGISDataBase(FresnelDB,fName,false);
-      if ValidDB(FresnelDB) then GISdb[FresnelDB].LayerIsOn := false;
+      //end;
 
-      {$IfDef RecordLOS} WriteLineToDebugFile('try LOSCalculation := tLOSCalculation.Create'); {$EndIf}
+      if ValidDB(LOSProfileDB) then GISdb[LOSProfileDB].LayerIsOn := false;
+
+      {$IfDef RecordLOS} WriteLineToDebugFile('try LOSCalculation := tLOSCalculation.Create, db=' + IntToStr(LOSProfileDB)); {$EndIf}
       LOSCalculation := tLOSCalculation.Create;
-      LosCalculation.Execute(GISdb[FresnelDB].MyData,DEMGlb[DEMonView],LatLeft,LongLeft,LatRight,LongRight,MDDef.ObsAboveGround, MDDef.TargetAboveGround,FresnelDB
+      LosCalculation.Execute(DEMonView,LatLeft,LongLeft,LatRight,LongRight,MDDef.ObsAboveGround, MDDef.TargetAboveGround,LOSProfileDB
          {$IfDef ExPointCloudMemory}{$Else},LOSMemoryPointCloud[1],LOSMemoryPointCloud[2] {$EndIf}    );
       LosCalculation.Destroy;
 
-      GISdb[FresnelDB].MyData.First;
-      ObsGroundElev := GISdb[FresnelDB].MyData.GetFieldByNameAsFloat('ELEV_M');
-      GISdb[FresnelDB].MyData.Last;
-      TargetGroundElev := GISdb[FresnelDB].MyData.GetFieldByNameAsFloat('ELEV_M');
+      GISdb[LOSProfileDB].MyData.First;
+      ObsGroundElev := GISdb[LOSProfileDB].MyData.GetFieldByNameAsFloat('ELEV_M');
+      GISdb[LOSProfileDB].MyData.Last;
+      TargetGroundElev := GISdb[LOSProfileDB].MyData.GetFieldByNameAsFloat('ELEV_M');
       CalculatingCurvature := true;
     {$IfDef RecordLOS} WriteLineToDebugFile('tLOSdraw.RecalculateProfile out'); {$EndIf}
 end;
@@ -466,11 +487,11 @@ var
              Bitmap.Canvas.Pen.Color := ConvertPlatformColorToTColor(MDDef.PitchLineColor);
              Bitmap.Canvas.Pen.Width := MDDef.PitchLineWidth;
           {$EndIf}
-          GISdb[FresnelDB].MyData.First;
+          GISdb[LOSProfileDB].MyData.First;
           FirstPoint := true;
-          z := GISdb[FresnelDB].MyData.GetFieldByNameAsFloat('ELEV_M') + MDDef.ObsAboveGround;
-            while not GISdb[FresnelDB].MyData.eof do begin
-               Dist := GISdb[FresnelDB].MyData.GetFieldByNameAsFloat('RANGE_KM');
+          z := GISdb[LOSProfileDB].MyData.GetFieldByNameAsFloat('ELEV_M') + MDDef.ObsAboveGround;
+            while not GISdb[LOSProfileDB].MyData.eof do begin
+               Dist := GISdb[LOSProfileDB].MyData.GetFieldByNameAsFloat('RANGE_KM');
                z2 := z + TanDeg(Pitch) * 1000 * Dist;
                LOSScreenLocation(1000*Dist,Z2,xpic,ypic);
                if (yPic >= StartLOSDown + PixelsHigh) or (yPic < 0) then goto Done;
@@ -483,7 +504,7 @@ var
                      else Bitmap.Canvas.LineTo(xpic,ypic);
                   {$EndIf}
                end;
-               GISdb[FresnelDB].MyData.Next;
+               GISdb[LOSProfileDB].MyData.Next;
             end;
           Done:;
       end;
@@ -491,18 +512,18 @@ var
       procedure ShowDenityAlongProfile(Thename : shortstring; TheField : ShortString; Offset : integer = 0);
       begin
           if (TheName <> '') then Legend.Add(theName);
-          GISdb[FresnelDB].MyData.First;
-          while not GISdb[FresnelDB].MyData.eof do begin
-             if (GISdb[FresnelDB].MyData.GetFieldByNameAsString(TheField) <> '') then begin
-                Dist := 1000 * GISdb[FresnelDB].MyData.GetFieldByNameAsFloat('RANGE_KM');
-                z := GISdb[FresnelDB].MyData.GetFieldByNameAsFloat('LOS_HT_M');
-                j := GISdb[FresnelDB].MyData.GetFieldByNameAsInteger(TheField);
+          GISdb[LOSProfileDB].MyData.First;
+          while not GISdb[LOSProfileDB].MyData.eof do begin
+             if (GISdb[LOSProfileDB].MyData.GetFieldByNameAsString(TheField) <> '') then begin
+                Dist := 1000 * GISdb[LOSProfileDB].MyData.GetFieldByNameAsFloat('RANGE_KM');
+                z := GISdb[LOSProfileDB].MyData.GetFieldByNameAsFloat('LOS_HT_M');
+                j := GISdb[LOSProfileDB].MyData.GetFieldByNameAsInteger(TheField);
                 LOSScreenLocation(Dist,z,xpic,ypic);
                 {$IfDef VCL}
                    if (XPic < 32000) then PetImage.BitmapSymbol(Bitmap,XPic,YPic + Offset,VertLine,2,VegDenstColors[j]);
                 {$EndIf}
              end;
-             GISdb[FresnelDB].MyData.Next;
+             GISdb[LOSProfileDB].MyData.Next;
           end;
       end;
 
@@ -512,30 +533,30 @@ var
             {$Else}
                Legend.Add(DEMGlb[DEMGlb[DEMonView].VegGrid[Grid]].AreaName);
             {$EndIf}
-            GISdb[FresnelDB].MyData.ApplyFilter(aField + '=' + QuotedStr('Y'));
-            while not GISdb[FresnelDB].MyData.eof do begin
-                Dist := 1000 * GISdb[FresnelDB].MyData.GetFieldByNameAsFloat('RANGE_KM');
-                z := GISdb[FresnelDB].MyData.GetFieldByNameAsFloat('LOS_HT_M');
+            GISdb[LOSProfileDB].MyData.ApplyFilter(aField + '=' + QuotedStr('Y'));
+            while not GISdb[LOSProfileDB].MyData.eof do begin
+                Dist := 1000 * GISdb[LOSProfileDB].MyData.GetFieldByNameAsFloat('RANGE_KM');
+                z := GISdb[LOSProfileDB].MyData.GetFieldByNameAsFloat('LOS_HT_M');
                 LOSScreenLocation(Dist,z,xpic,ypic);
                 {$IfDef VCL}
                    if (XPic < 32000) then PetImage.BitmapSymbol(Bitmap,XPic,YPic+Offset,VertLine,2,claLime);
                 {$EndIf}
-                GISdb[FresnelDB].MyData.Next;
+                GISdb[LOSProfileDB].MyData.Next;
             end;
-            GISdb[FresnelDB].MyData.ApplyFilter('');
+            GISdb[LOSProfileDB].MyData.ApplyFilter('');
         end;
 
 begin
   {$IfDef RecordLOS} WriteLineToDebugFile('tLOSdraw.DrawProfile start draw Profile'); {$EndIf}
 
    with DEMGlb[DEMonView] do begin
-     if (FresnelDB = 0) then RecalculateProfile;
+     if (LOSProfileDB = 0) then RecalculateProfile;
      {$IfDef RecordLOS} WriteLineToDebugFile('tLOSdraw.DrawProfile Profile recalculated'); {$EndIf}
      {$IfDef VCL}
         p3 := tBMPMemory.Create(Bitmap);
      {$EndIf}
      DrawCollar(Bitmap);
-     if ValidDB(FresnelDB) then GISdb[FresnelDB].EmpSource.Enabled := false;
+     if ValidDB(LOSProfileDB) then GISdb[LOSProfileDB].EmpSource.Enabled := false;
 
    {$IfDef ExFresnel}
    {$Else}
@@ -554,19 +575,19 @@ begin
            DrawTheProfile(Bitmap,'ELEV_M',-99,MDDef.LOSVisLineWidth,'COLOR');
         end
         else begin
-            GISdb[FresnelDB].MyData.First;
-            while not GISdb[FresnelDB].MyData.eof do begin
-               GISdb[FresnelDB].MyData.Edit;
-               Dist := GISdb[FresnelDB].MyData.GetFieldByNameAsFloat('RANGE_KM');
-               z := GISdb[FresnelDB].MyData.GetFieldByNameAsFloat('ELEV_M');
-               Color := GISdb[FresnelDB].MyData.GetFieldByNameAsInteger('COLOR');
+            GISdb[LOSProfileDB].MyData.First;
+            while not GISdb[LOSProfileDB].MyData.eof do begin
+               GISdb[LOSProfileDB].MyData.Edit;
+               Dist := GISdb[LOSProfileDB].MyData.GetFieldByNameAsFloat('RANGE_KM');
+               z := GISdb[LOSProfileDB].MyData.GetFieldByNameAsFloat('ELEV_M');
+               Color := GISdb[LOSProfileDB].MyData.GetFieldByNameAsInteger('COLOR');
                LOSScreenLocation(1000 * Dist,Z,xpic,ypic);
                {$IfDef VCL}
                if (XPic < 32000) then begin
                   p3.SetPixelColorSize(xpic,ypic,3,ConvertTColorToPlatformColor(Color));
                end;
                {$EndIf}
-               GISdb[FresnelDB].MyData.Next;
+               GISdb[LOSProfileDB].MyData.Next;
             end;
         end;
      end
@@ -592,12 +613,12 @@ begin
 
              Bitmap.Canvas.Pen.Width := 2;
              SymSize := 1;
-             GISdb[FresnelDB].MyData.First;
-             while not GISdb[FresnelDB].MyData.eof do begin
-                 Dist := 1000 * GISdb[FresnelDB].MyData.GetFieldByNameAsFloat('RANGE_KM');
-                 Lat := GISdb[FresnelDB].MyData.GetFieldByNameAsFloat('LAT');
-                 Long := GISdb[FresnelDB].MyData.GetFieldByNameAsFloat('LONG');
-                 z := GISdb[FresnelDB].MyData.GetFieldByNameAsFloat('ELEV_M');
+             GISdb[LOSProfileDB].MyData.First;
+             while not GISdb[LOSProfileDB].MyData.eof do begin
+                 Dist := 1000 * GISdb[LOSProfileDB].MyData.GetFieldByNameAsFloat('RANGE_KM');
+                 Lat := GISdb[LOSProfileDB].MyData.GetFieldByNameAsFloat('LAT');
+                 Long := GISdb[LOSProfileDB].MyData.GetFieldByNameAsFloat('LONG');
+                 z := GISdb[LOSProfileDB].MyData.GetFieldByNameAsFloat('ELEV_M');
 
                  DEMGlb[DEMonView].LatLongDegreeToDEMGridInteger(Lat,Long,Col,Row);
                  for i := 1 to MaxVegLayers do with DEMGlb[DEMonView] do begin
@@ -609,15 +630,15 @@ begin
                        Bitmap.Canvas.LineTo(xpic,ypic2);
                     end;
                  end {for i};
-                 GISdb[FresnelDB].MyData.Next;
+                 GISdb[LOSProfileDB].MyData.Next;
              end {while};
          end;
 
-          if MDDef.ShowCloudDensity and ValidDB(FresnelDB) and (LOSMemoryPointCloud[PtCldInUse] <> Nil) then begin
+          if MDDef.ShowCloudDensity and ValidDB(LOSProfileDB) and (LOSMemoryPointCloud[PtCldInUse] <> Nil) then begin
              if PtCldInUse = 1 then ShowDenityAlongProfile('','PTS_AROUND');
              if PtCldInUse = 2 then ShowDenityAlongProfile('','PTS2_AROUND');
           end;
-          if MDDef.LOSShowVoxelDensity and ValidDB(FresnelDB) then begin
+          if MDDef.LOSShowVoxelDensity and ValidDB(LOSProfileDB) then begin
              if (BaseMapDraw.VegDensityLayerInUse = 1) and (DEMGlb[DEMonView].VegDensityLayers[1] <> Nil) then ShowDenityAlongProfile('','VPTS_AROUND');
              if (BaseMapDraw.VegDensityLayerInUse = 2) and (DEMGlb[DEMonView].VegDensityLayers[2] <> Nil) then ShowDenityAlongProfile('','VPT2_AROUND');
           end;
@@ -699,59 +720,59 @@ begin
 
              Bitmap.Canvas.Pen.Color := clGreen;
              Bitmap.Canvas.Pen.Width := 1;
-             GISdb[FresnelDB].MyData.ApplyFilter(f1 + ' > 0.001');
-             while not GISdb[FresnelDB].MyData.eof do begin
-                Dist := GISdb[FresnelDB].MyData.GetFieldByNameAsFloat('RANGE_KM');
-                z := GISdb[FresnelDB].MyData.GetFieldByNameAsFloat('ELEV_M');
-                VegHt := GISdb[FresnelDB].MyData.GetFieldByNameAsFloat(f1);
+             GISdb[LOSProfileDB].MyData.ApplyFilter(f1 + ' > 0.001');
+             while not GISdb[LOSProfileDB].MyData.eof do begin
+                Dist := GISdb[LOSProfileDB].MyData.GetFieldByNameAsFloat('RANGE_KM');
+                z := GISdb[LOSProfileDB].MyData.GetFieldByNameAsFloat('ELEV_M');
+                VegHt := GISdb[LOSProfileDB].MyData.GetFieldByNameAsFloat(f1);
                 LOSScreenLocation(1000 * Dist,Z,xpic,ypic);
                 if (XPic < 32000) then begin
                    Bitmap.Canvas.MoveTo(xpic,ypic);
                    LOSScreenLocation(1000 * Dist,Z + VegHt,xpic,ypic);
                    Bitmap.Canvas.LineTo(xpic,ypic);
                 end;
-                GISdb[FresnelDB].MyData.Next;
+                GISdb[LOSProfileDB].MyData.Next;
              end;
 
              Bitmap.Canvas.Pen.Color := clLime;
-             GISdb[FresnelDB].MyData.ApplyFilter(f2 +  '=' + QuotedStr('Y'));
-             while not GISdb[FresnelDB].MyData.eof do begin
-                Dist := GISdb[FresnelDB].MyData.GetFieldByNameAsFloat('RANGE_KM');
-                z := GISdb[FresnelDB].MyData.GetFieldByNameAsFloat('ELEV_M');
-                VegHt := GISdb[FresnelDB].MyData.GetFieldByNameAsFloat(f1);
+             GISdb[LOSProfileDB].MyData.ApplyFilter(f2 +  '=' + QuotedStr('Y'));
+             while not GISdb[LOSProfileDB].MyData.eof do begin
+                Dist := GISdb[LOSProfileDB].MyData.GetFieldByNameAsFloat('RANGE_KM');
+                z := GISdb[LOSProfileDB].MyData.GetFieldByNameAsFloat('ELEV_M');
+                VegHt := GISdb[LOSProfileDB].MyData.GetFieldByNameAsFloat(f1);
                 LOSScreenLocation(1000 * Dist,Z,xpic,ypic);
                 if (XPic < 32000) then begin
                    Bitmap.Canvas.MoveTo(xpic,ypic);
                    LOSScreenLocation(1000 * Dist,Z + VegHt,xpic,ypic);
                    Bitmap.Canvas.LineTo(xpic,ypic);
                 end;
-                GISdb[FresnelDB].MyData.Next;
+                GISdb[LOSProfileDB].MyData.Next;
              end;
-             GISdb[FresnelDB].MyData.ApplyFilter('');
+             GISdb[LOSProfileDB].MyData.ApplyFilter('');
           end {if veg};
       {$EndIf}
 
       {$IfDef ExGeostats}
       {$Else}
-          if ValidDB(FresnelDB) and MDDef.PlotCrest and MDDef.ForceCrestComputations then begin
-             GISdb[FresnelDB].MyData.First;
-             while not GISdb[FresnelDB].MyData.eof do begin
-                Dist := 1000 * GISdb[FresnelDB].MyData.GetFieldByNameAsFloat('RANGE_KM');
-                z := GISdb[FresnelDB].MyData.GetFieldByNameAsFloat('ELEV_M');
+          if ValidDB(LOSProfileDB) and MDDef.PlotCrest and MDDef.ForceCrestComputations then begin
+             GISdb[LOSProfileDB].MyData.First;
+             while not GISdb[LOSProfileDB].MyData.eof do begin
+                Dist := 1000 * GISdb[LOSProfileDB].MyData.GetFieldByNameAsFloat('RANGE_KM');
+                z := GISdb[LOSProfileDB].MyData.GetFieldByNameAsFloat('ELEV_M');
                 LOSScreenLocation(Dist,z,xpic,ypic);
                 if (XPic < 32000) then begin
-                   if GISdb[FresnelDB].MyData.GetFieldByNameAsString('PEAK') = 'Y' then begin
+                   if GISdb[LOSProfileDB].MyData.GetFieldByNameAsString('PEAK') = 'Y' then begin
                      {$IfDef VCL}
                      PetImage.BitmapSymbol(Bitmap,XPic,YPic,FilledBox,3,claLime);
                      {$EndIf}
                    end
-                   else if GISdb[FresnelDB].MyData.GetFieldByNameAsString('PIT') = 'Y' then begin
+                   else if GISdb[LOSProfileDB].MyData.GetFieldByNameAsString('PIT') = 'Y' then begin
                      {$IfDef VCL}
                      PetImage.BitmapSymbol(Bitmap,XPic,YPic,FilledBox,3,claRed);
                      {$EndIf}
                    end;
                 end;
-                GISdb[FresnelDB].MyData.Next;
+                GISdb[LOSProfileDB].MyData.Next;
              end;
           end;
       {$EndIf}
@@ -791,8 +812,6 @@ begin
 end {proc DrawProfile};
 
 
-
-
 procedure tLOSdraw.DrawTheProfile(var Bitmap : tMyBitmap; FieldName : ShortString; Color : tColor; Width : integer; SecondName : ShortString = ''; Mult : integer = 1);
 var
    z,Dist: float64;
@@ -800,7 +819,7 @@ var
    xpic,ypic,xp,yp : integer;
    ColorFromDB : boolean;
 begin
-   GISdb[FresnelDB].MyData.First;
+   GISdb[LOSProfileDB].MyData.First;
    FirstPoint := true;
    ColorFromDB := (Color < 0);
 
@@ -814,11 +833,11 @@ begin
        Bitmap.Canvas.Stroke.Thickness := Width;
     {$EndIf}
 
-   while not GISdb[FresnelDB].MyData.eof do begin
-      Dist := GISdb[FresnelDB].MyData.GetFieldByNameAsFloat('RANGE_KM');
-      if GISdb[FresnelDB].MyData.CarefullyGetFieldByNameAsFloat64(FieldName,Z) then begin
+   while not GISdb[LOSProfileDB].MyData.eof do begin
+      Dist := GISdb[LOSProfileDB].MyData.GetFieldByNameAsFloat('RANGE_KM');
+      if GISdb[LOSProfileDB].MyData.CarefullyGetFieldByNameAsFloat64(FieldName,Z) then begin
          if (SecondName <> '') and (not ColorFromDB) then begin
-            z := z + Mult * GISdb[FresnelDB].MyData.GetFieldByNameAsFloat(SecondName);
+            z := z + Mult * GISdb[LOSProfileDB].MyData.GetFieldByNameAsFloat(SecondName);
          end;
          LOSScreenLocation(1000 * Dist,Z,xpic,ypic);
          if (XPic < 32000) then begin
@@ -828,10 +847,10 @@ begin
             else begin
                if (ColorFromDB) then begin
                   {$IfDef VCL}
-                  Bitmap.Canvas.Pen.Color := GISdb[FresnelDB].MyData.GetFieldByNameAsInteger(SecondName);
+                     Bitmap.Canvas.Pen.Color := GISdb[LOSProfileDB].MyData.GetFieldByNameAsInteger(SecondName);
                   {$EndIf}
                   {$IfDef FMX}
-                  Bitmap.Canvas.Stroke.Color := ConvertTColorToPlatformColor(GISdb[FresnelDB].MyData.GetFieldByNameAsInteger(SecondName));
+                     Bitmap.Canvas.Stroke.Color := ConvertTColorToPlatformColor(GISdb[ProfileDB].MyData.GetFieldByNameAsInteger(SecondName));
                   {$EndIf}
                end;
                PetImage.DrawLine(Bitmap,xpic,ypic,xp,yp);
@@ -841,7 +860,7 @@ begin
          end;
       end
       else FirstPoint := true;
-      GISdb[FresnelDB].MyData.Next;
+      GISdb[LOSProfileDB].MyData.Next;
    end;
 end;
 
@@ -1059,9 +1078,9 @@ begin
       if (XP < LastXP) then TStr := '';
 
       {$IfDef FMX}
-      Bitmap.canvas.Stroke.Kind := TBrushKind.Solid;
-      Bitmap.canvas.Stroke.Thickness := 1;
-      bitmap.Canvas.Fill.Color := TAlphaColors.Black;
+         Bitmap.canvas.Stroke.Kind := TBrushKind.Solid;
+         Bitmap.canvas.Stroke.Thickness := 1;
+         bitmap.Canvas.Fill.Color := TAlphaColors.Black;
       {$EndIf}
 
       BitmapTextOut(Bitmap,XP+3,ProfileBot + 10,TStr + TStr2);
@@ -1091,52 +1110,52 @@ begin
 end {proc DrawCollor};
 
 
-{$IfDef ExFresnel}
-{$Else}
 
-function FresnelZoneResult(LosResult : tLOSResult) : shortstring;
-begin
-   case LOSResult of
-      losIsVisible : Result := 'Visible';
-      losBlockByTerrain : Result := 'Blocked by terrain';
-      losEdgeFresnelIntrusion : Result := 'Near anteanna Fresnel blockage';
-      losCenterFresnelIntrusion : Result := 'Center link Fresnel blockage';
-   end;
-end;
-
-
-function FresnelZoneColor(LosResult : tLOSResult) : tPlatformColor;
-begin
-   case LOSResult of
-      losIsVisible : Result := claGreen;
-      losBlockByTerrain : Result := claRed;
-      losEdgeFresnelIntrusion : Result := claMaroon;
-      losCenterFresnelIntrusion : Result := claPurple;
-   end;
-end;
-
-
-function LOSComputeOnly(var UseData : tMyData; DEMonView : tDEMDataSet; VegGrid : integer; LatLeft,LongLeft,LatRight,LongRight,LeftObsUp,RightObsUp : float64) :  tLOSResult;
+function LOSComputeOnly(DEMonView : integer; VegGrid : integer; LatLeft,LongLeft,LatRight,LongRight,LeftObsUp,RightObsUp : float64; FresnelTable : integer = -1) :  tLOSResult;
 var
    LOSCalculation : tLOSCalculation;
    fName : PathStr;
 begin
   {$IfDef RecordLOS} WriteLineToDebugFile('enter LOSComputeOnly'); {$EndIf}
-   if (DEMonView = Nil) then exit;
-      fName := Petmar.NextFileNumber(MDTempDir, 'radio_los_',DefaultDBExt);
-      MakeFresnelTable(fName,true,(VegGrid <> 0),false,MDDef.DoGrazingFields,false,false,false,false,false);
-      UseData := tMyData.Create(fName);
+   if ValidDEM(DEMonView) then begin
+      if FresnelTable = -1 then begin
+         fName := Petmar.NextFileNumber(MDTempDir, 'radio_los_',DefaultDBExt);
+         MakeTopoProfileTable(fName,true,(VegGrid <> 0),false,MDDef.DoGrazingFields,false,false,false,false,false);
+         FresnelTable := OpenDataBase('LOScompute',fName,false);
+         //UseData := tMyData.Create(fName);
+      end;
 
-   LOSCalculation := tLOSCalculation.Create;
-   Result := LosCalculation.Execute(UseData,DEMonView,LatLeft,LongLeft,LatRight,LongRight,LeftObsUp,RightObsUp,0
-       {$IfDef ExPointCloudMemory}
-       );
-       {$Else}
-       ,Nil,Nil);
-       {$EndIf}
-   LosCalculation.Destroy;
-  {$IfDef RecordLOS} WriteLineToDebugFile('exit LOSComputeOnly'); {$EndIf}
+      LOSCalculation := tLOSCalculation.Create;
+      Result := LosCalculation.Execute(DEMonView,LatLeft,LongLeft,LatRight,LongRight,LeftObsUp,RightObsUp,FresnelTable,Nil,Nil);
+      LosCalculation.Destroy;
+     {$IfDef RecordLOS} WriteLineToDebugFile('exit LOSComputeOnly'); {$EndIf}
+   end;
 end;
+
+
+{$IfDef ExFresnel}
+{$Else}
+
+      function FresnelZoneResult(LosResult : tLOSResult) : shortstring;
+      begin
+         case LOSResult of
+            losIsVisible : Result := 'Visible';
+            losBlockByTerrain : Result := 'Blocked by terrain';
+            losEdgeFresnelIntrusion : Result := 'Near anteanna Fresnel blockage';
+            losCenterFresnelIntrusion : Result := 'Center link Fresnel blockage';
+         end;
+      end;
+
+
+      function FresnelZoneColor(LosResult : tLOSResult) : tPlatformColor;
+      begin
+         case LOSResult of
+            losIsVisible : Result := claGreen;
+            losBlockByTerrain : Result := claRed;
+            losEdgeFresnelIntrusion : Result := claMaroon;
+            losCenterFresnelIntrusion : Result := claPurple;
+         end;
+      end;
 
 {$EndIf}
 
@@ -1155,7 +1174,7 @@ begin
 end;
 
 
-function tLOSCalculation.Execute(var UseData : tMyData; DEMonView : tDEMDataSet; LatLeft,LongLeft,LatRight,LongRight,LeftObsUp,RightObsUp : float64; FresnelDB : integer
+function tLOSCalculation.Execute(DEMonView : integer; LatLeft,LongLeft,LatRight,LongRight,LeftObsUp,RightObsUp : float64; var ProfileDB : integer
      {$IfDef ExPointCloudMemory}
      ) :  tLOSResult;
      {$Else}
@@ -1180,6 +1199,7 @@ var
    NeedToCheckPointCloud : boolean;
    NeedZ,xgrids,ygrids,dists,elevs : ^Petmath.bfarray32;
    SlopeAspectRec : tSlopeAspectRec;
+   //UseData : tMyData;
 
 
     procedure RemoveNeighbors(var IsWhat : tBooleans);
@@ -1212,25 +1232,27 @@ var
             z : float32;
          begin
              VegLayer := round(LOSHt - elevs^[j]);
-             if (VegLayer > 0) and (VegLayer < DEMonView.VegDensityLayers[VegDensLayer].LayersPresent) then begin
+             if (VegLayer > 0) and (VegLayer < DEMglb[DEMonView].VegDensityLayers[VegDensLayer].LayersPresent) then begin
                 xg := round(xgrids^[j]);
                 yg := round(ygrids^[j]);
-                if (DEMonView.VegDensityLayers[VegDensLayer].VegLayers[VegLayer] <> 0) and DEMGlb[DEMonView.VegDensityLayers[VegDensLayer].VegLayers[VegLayer]].GetElevMeters(xg,yg,z) then
-                        UseData.SetFieldByNameAsInteger(f1,round(z));
+                if (DEMglb[DEMonView].VegDensityLayers[VegDensLayer].VegLayers[VegLayer] <> 0) and DEMGlb[DEMglb[DEMonView].VegDensityLayers[VegDensLayer].VegLayers[VegLayer]].GetElevMeters(xg,yg,z) then
+                        GISdb[ProfileDB].MyData.SetFieldByNameAsInteger(f1,round(z));
                 NumPts := 0;
-                for k := succ(VegLayer) to DEMonView.VegDensityLayers[VegDensLayer].LayersPresent do begin
-                   DEM := DEMonView.VegDensityLayers[VegDensLayer].VegLayers[k];
+                for k := succ(VegLayer) to DEMglb[DEMonView].VegDensityLayers[VegDensLayer].LayersPresent do begin
+                   DEM := DEMglb[DEMonView].VegDensityLayers[VegDensLayer].VegLayers[k];
                    if (DEM <> 0) and DEMGlb[DEM].GetElevMeters(xg,yg,z) then
                       NumPts := NumPts + round(z);
                 end;
-                if (NumPts > 0) then UseData.SetFieldByNameAsInteger(f2,NumPts);
+                if (NumPts > 0) then GISdb[ProfileDB].MyData.SetFieldByNameAsInteger(f2,NumPts);
              end;
          end {if};
          {$EndIf}
 
 
 begin
-   {$IfDef RecordLOS} WriteLineToDebugFile('tLOSCalculation.Execute in, DEM average space=' + RealToString(DEMonView.AverageSpace,-18,2)); {$EndIf}
+   {$IfDef RecordLOS} WriteLineToDebugFile('tLOSCalculation.Execute in, DEM average space=' + RealToString(DEMglb[DEMonView].AverageSpace,-18,2)); {$EndIf}
+     //if ValidDB(ProfileDB) then UseData := GISdb[ProfileDB].MyData
+     //else UseData := nil;
 
      new(xgrids);
      new(ygrids);
@@ -1240,81 +1262,85 @@ begin
      {$IfDef RecordLOS} WriteLineToDebugFile('start GetStraightRouteLatLongDegree'); {$EndIf}
 
      VincentyCalculateDistanceBearing(LatLeft,LongLeft,LatRight,LongRight,LOSLen,LOSAzimuth);
-     ComputePoints := round(2 * LOSLen / DEMonView.AverageSpace);
-     {$IfDef RecordLOS} WriteLineToDebugFile('ComputePoints=' + IntToStr(ComputePoints)); {$EndIf}
-     DEMonView.GetStraightRoute(false,LatLeft,LongLeft,LatRight,LongRight,MDDef.wf.StraightAlgorithm,ComputePoints,xgrids^,ygrids^,dists^);
+     ComputePoints := round(2 * LOSLen / DEMglb[DEMonView].AverageSpace);
+
+     if ComputePoints > 2000 then begin
+        ComputePoints := 2000;
+        {$IfDef RecordLOS} WriteLineToDebugFile('Reduced ComputePoints=' + IntToStr(ComputePoints)); {$EndIf}
+     end
+     else begin
+        {$IfDef RecordLOS} WriteLineToDebugFile('ComputePoints=' + IntToStr(ComputePoints)); {$EndIf}
+     end;
+
+     DEMglb[DEMonView].GetStraightRoute(false,LatLeft,LongLeft,LatRight,LongRight,MDDef.wf.StraightAlgorithm,ComputePoints,xgrids^,ygrids^,dists^);
      DropCurve := DropEarthCurve(LOSLen);
      {$IfDef RecordLOS} WriteLineToDebugFile('end GetStraightRouteLatLongDegree'); {$EndIf}
 
-     DEMonView.GetVisiblePoints(LeftObsUp,RightObsUp,-89,89,true,true,ComputePoints,xgrids^,ygrids^,dists^,elevs^,VisPoints);
-     if MDDef.ShowMaskedAirspace then DEMonView.LatLongDegreePointsRequiredAntenna(ComputePoints,LatLeft,LongLeft,MDDef.ObsAboveGround,LatRight,LongRight,xgrids^,ygrids^,dists^,NeedZ^);
-     {$IfDef RecordLOS} WriteLineToDebugFile('end GetVisiblePoints'); {$EndIf}
+     DEMglb[DEMonView].GetVisiblePoints(LeftObsUp,RightObsUp,-89,89,true,true,ComputePoints,xgrids^,ygrids^,dists^,elevs^,VisPoints);
+     if MDDef.ShowMaskedAirspace then DEMglb[DEMonView].LatLongDegreePointsRequiredAntenna(ComputePoints,LatLeft,LongLeft,MDDef.ObsAboveGround,LatRight,LongRight,xgrids^,ygrids^,dists^,NeedZ^);
 
       ObsElev := elevs^[0] + LeftObsUp;
       zTarget := elevs^[ComputePoints] + RightObsUp;
       Pitch := arcTan( -(ObsElev - (zTarget - DropCurve)) / LOSLen) / DegToRad;
 
-      if (UseData = Nil) and (not VisPoints[ComputePoints]) then begin
-         Result := losBlockByTerrain;
-         Goto ExitNow;
-      end;
+      {$IfDef RecordLOS} WriteLineToDebugFile('end GetVisiblePoints, start computepoints=' + IntToStr(ComputePoints)); {$EndIf}
 
       for j := 0 to ComputePoints do begin
-         UseData.Insert;
+         GISdb[ProfileDB].MyData.Insert;
          EarthCurve := DropEarthCurve(dists^[j]);
-         UseData.CarefullySetFloat('CURV_M',EarthCurve,0.01);
+         GISdb[ProfileDB].MyData.CarefullySetFloat('CURV_M',EarthCurve,0.01);
          LOSHt := ObsElev + TanDeg(Pitch) * dists^[j];
-         DEMonView.DEMGridToLatLongDegree(xgrids^[j],ygrids^[j],Lat,Long);
+         DEMglb[DEMonView].DEMGridToLatLongDegree(xgrids^[j],ygrids^[j],Lat,Long);
 
-         UseData.SetFieldByNameAsFloat('LOS_HT_M',LOSHt);
-         UseData.SetFieldByNameAsFloat('LAT',Lat);
-         UseData.SetFieldByNameAsFloat('LONG',Long);
+         GISdb[ProfileDB].MyData.SetFieldByNameAsFloat('LOS_HT_M',LOSHt);
+         GISdb[ProfileDB].MyData.SetFieldByNameAsFloat('LAT',Lat);
+         GISdb[ProfileDB].MyData.SetFieldByNameAsFloat('LONG',Long);
          if (elevs^[j] < 32000) then begin
-            UseData.SetFieldByNameAsFloat('ELEV_M',elevs^[j]);
-            if LOSHt < elevs^[j] then begin
+            GISdb[ProfileDB].MyData.SetFieldByNameAsFloat('ELEV_M',elevs^[j]);
+            if (LOSHt < elevs^[j]) then begin
                ch := 'Y';
-               UseData.SetFieldByNameAsString('BLOCK_TERR',ch);
+               GISdb[ProfileDB].MyData.SetFieldByNameAsString('BLOCK_TERR',ch);
             end;
          end;
 
-         UseData.SetFieldByNameAsFloat('RANGE_KM',0.001 * dists^[j]);
+         GISdb[ProfileDB].MyData.SetFieldByNameAsFloat('RANGE_KM',0.001 * dists^[j]);
 
          if MDDef.ShowMaskedAirspace then begin
             if NeedZ^[j] > 0.01 then begin
-               UseData.SetFieldByNameAsFloat('MASK_AIR',NeedZ^[j] + elevs^[j]);
+               GISdb[ProfileDB].MyData.SetFieldByNameAsFloat('MASK_AIR',NeedZ^[j] + elevs^[j]);
             end;
          end;
 
          {$IFDef ExVegDensity}
          {$Else}
-            if (DEMonView.VegDensityLayers[1] <> Nil) then PointFromDensityLayer(1,j,'VPTS_AROUND','VPTS_ABOVE');
-            if (DEMonView.VegDensityLayers[2] <> Nil) then PointFromDensityLayer(2,j,'VPT2_AROUND','VPT2_ABOVE');
+            if (DEMglb[DEMonView].VegDensityLayers[1] <> Nil) then PointFromDensityLayer(1,j,'VPTS_AROUND','VPTS_ABOVE');
+            if (DEMglb[DEMonView].VegDensityLayers[2] <> Nil) then PointFromDensityLayer(2,j,'VPT2_AROUND','VPT2_ABOVE');
          {$EndIf}
 
          {$IFDef ExVegDensity}
             NeedToCheckPointCloud := false;
          {$Else}
-            if (DEMonView.VegGrid[1] <> 0) then begin
-               if (DEMonView.VegGrid[2] <> 0) then begin
-                   DEMGlb[DEMonView.VegGrid[2]].GetJustVegHeight(xgrids^[j],ygrids^[j],veght);
+            if (DEMglb[DEMonView].VegGrid[1] <> 0) then begin
+               if (DEMglb[DEMonView].VegGrid[2] <> 0) then begin
+                   DEMGlb[DEMglb[DEMonView].VegGrid[2]].GetJustVegHeight(xgrids^[j],ygrids^[j],veght);
                    if (VegHt < 32000) then begin
-                      UseData.SetFieldByNameAsFloat('VEG2_HT',VegHt);
+                      GISdb[ProfileDB].MyData.SetFieldByNameAsFloat('VEG2_HT',VegHt);
                       if (elevs^[j] < 32000) then begin
                          if (LOSHt < elevs^[j] + VegHt) then begin
-                            UseData.SetFieldByNameAsString('BLOCK_VEG2','Y');
+                            GISdb[ProfileDB].MyData.SetFieldByNameAsString('BLOCK_VEG2','Y');
                             NeedToCheckPointCloud := true;
                          end;
                      end;
                    end;
                 end;
-               DEMGlb[DEMonView.VegGrid[1]].GetJustVegHeight(xgrids^[j],ygrids^[j],veght);
+               DEMGlb[DEMglb[DEMonView].VegGrid[1]].GetJustVegHeight(xgrids^[j],ygrids^[j],veght);
                NeedToCheckPointCloud := false;
                if (VegHt < 32000) then begin
-                  UseData.SetFieldByNameAsFloat('VEG_HT',VegHt);
+                  GISdb[ProfileDB].MyData.SetFieldByNameAsFloat('VEG_HT',VegHt);
                   if (elevs^[j] < 32000) then begin
                      if (LOSHt < elevs^[j] + VegHt) then begin
                         ch := 'Y';
-                        UseData.SetFieldByNameAsString('BLOCK_VEG',ch);
+                        GISdb[ProfileDB].MyData.SetFieldByNameAsString('BLOCK_VEG',ch);
                         NeedToCheckPointCloud := true;
                      end;
                  end;
@@ -1329,13 +1355,13 @@ begin
                 if (LosHt > elevs^[j]) and (LosHt < elevs^[j] + MDDef.MaxVegHeight) then begin
                    if (pc1 <> Nil) then begin
                       pc1.GetNumPointsNearAndAboveLocation(dists^[j],LosHt,NumPts,NumPts2);
-                      if (NumPts > 0) then GISdb[FresnelDB].MyData.SetFieldByNameAsInteger('PTS_AROUND',NumPts);
-                      if (NumPts2 > 0) then GISdb[FresnelDB].MyData.SetFieldByNameAsInteger('PTS_ABOVE',NumPts2);
+                      if (NumPts > 0) then GISdb[ProfileDB].MyData.SetFieldByNameAsInteger('PTS_AROUND',NumPts);
+                      if (NumPts2 > 0) then GISdb[ProfileDB].MyData.SetFieldByNameAsInteger('PTS_ABOVE',NumPts2);
                    end;
                    if (pc2 <> Nil) then begin
                       pc2.GetNumPointsNearAndAboveLocation(dists^[j],LosHt,NumPts,NumPts2);
-                      if (NumPts > 0) then GISdb[FresnelDB].MyData.SetFieldByNameAsInteger('PTS2_AROUND',NumPts);
-                      if (NumPts2 > 0) then GISdb[FresnelDB].MyData.SetFieldByNameAsInteger('PTS2_ABOVE',NumPts2);
+                      if (NumPts > 0) then GISdb[ProfileDB].MyData.SetFieldByNameAsInteger('PTS2_AROUND',NumPts);
+                      if (NumPts2 > 0) then GISdb[ProfileDB].MyData.SetFieldByNameAsInteger('PTS2_ABOVE',NumPts2);
                    end;
                 end;
             end;
@@ -1345,9 +1371,9 @@ begin
          {$Else}
              if (MDdef.CurvAlg = vcRadioLineOfSight) and MDdef.DrawFresnel then begin
                Fresnel2 := 17.31 * 5 * sqrt(0.001 * dists^[j] * (LOSLen - dists^[j]) / MDdef.FresnelFreq / LOSLen);
-               UseData.CarefullySetFloat('FRESNEL2_M',Fresnel2,0.1);
+               GISdb[ProfileDB].MyData.CarefullySetFloat('FRESNEL2_M',Fresnel2,0.1);
                Fresnel1 := 17.31 * sqrt(0.001 * dists^[j] * (LOSLen - dists^[j]) / MDdef.FresnelFreq / LOSLen);
-               UseData.CarefullySetFloat('FRESNEL1_M',Fresnel1,0.1);
+               GISdb[ProfileDB].MyData.CarefullySetFloat('FRESNEL1_M',Fresnel1,0.1);
              end;
          {$EndIf}
 
@@ -1357,38 +1383,40 @@ begin
           end;
 
           if (Elevs^[j] < 32000) then begin
-             if MDDef.ForceCrestComputations then begin
-                if (j > MDdef.PeakPitPostings) and (j < ComputePoints - MDdef.PeakPitPostings) then begin
-                   IsPeak[j] := true;
-                   IsPit[j] := true;
-                   for I := j-MDdef.PeakPitPostings to j+MDdef.PeakPitPostings do begin
-                      if (i <> j) then begin
-                         if elevs^[j] < elevs^[i] then IsPeak[j] := false;
-                         if elevs^[j] > elevs^[i] then IsPit[j] := false;
+
+             {$IfDef ExWaveLengthHeight}
+             {$Else}
+                if MDDef.ForceCrestComputations then begin
+                   if (j > MDdef.PeakPitPostings) and (j < ComputePoints - MDdef.PeakPitPostings) then begin
+                      IsPeak[j] := true;
+                      IsPit[j] := true;
+                      for I := j-MDdef.PeakPitPostings to j+MDdef.PeakPitPostings do begin
+                         if (i <> j) then begin
+                            if elevs^[j] < elevs^[i] then IsPeak[j] := false;
+                            if elevs^[j] > elevs^[i] then IsPit[j] := false;
+                         end;
                       end;
                    end;
                 end;
-             end;
+            {$EndIf}
 
               if (MDDef.LosVisible and VisPoints[j]) then Color := MDDef.FanColor else Color := MDDef.MaskColor;
 
-              UseData.SetColorFromPlatformColor(Color);
+              GISdb[ProfileDB].MyData.SetColorFromPlatformColor(Color);
 
               if MDDef.DoGrazingFields then begin
                  if (j > 0) then begin
                     Slope2 := ArcTan((elevs^[j] - elevs^[pred(j)]) / (dists^[j] - dists^[pred(j)])) / DegToRad;
                     if abs(Slope2) < 0.1 then Slope2 := 0;
-                    UseData.CarefullySetFloat('SLOPE_2D',Slope2,0.1);
+                    GISdb[ProfileDB].MyData.CarefullySetFloat('SLOPE_2D',Slope2,0.1);
                  end;
 
-                 if DEMonView.GetSlopeAndAspectFromLatLong(Lat,Long,SlopeAspectRec) then begin
-                  //DEMonView.LatLongDegreeToDEMGrid(Lat,Long,xg,yg);
-                  //Slope3 := DEMonView.SlopeOfPoint(round(xg),round(yg),Dir,AspDir);
+                 if DEMglb[DEMonView].GetSlopeAndAspectFromLatLong(Lat,Long,SlopeAspectRec) then begin
                      if (SlopeAspectRec.SlopePercent > 0.0001) then begin
-                        UseData.CarefullySetFloat32('ASPECT',SlopeAspectRec.AspectDir,0.1);
+                        GISdb[ProfileDB].MyData.CarefullySetFloat32('ASPECT',SlopeAspectRec.AspectDir,0.1);
                      end;
                      if abs(SlopeAspectRec.SlopePercent) < 0.1 then SlopeAspectRec.SlopePercent := 0;
-                     UseData.CarefullySetFloat32('SLOPE_3D',SlopeAspectRec.SlopePercent,0.1);
+                     GISdb[ProfileDB].MyData.CarefullySetFloat32('SLOPE_3D',SlopeAspectRec.SlopePercent,0.1);
                      n1 := cosDeg(SlopeAspectRec.SlopeDegree) * sinDeg(SlopeAspectRec.AspectDir);
                      n2 := cosDeg(SlopeAspectRec.SlopeDegree) * cosDeg(SlopeAspectRec.AspectDir);
                      n3 := -sinDeg(SlopeAspectRec.SlopeDegree);
@@ -1397,11 +1425,11 @@ begin
                   if (j > 0) then begin
                      LocalPitch := -ArcTan((ObsElev - lz - EarthCurve ) /dists^[j]) / DegToRad;
                      if abs(Pitch) < 0.1 then Pitch := 0;
-                     UseData.CarefullySetFloat('PITCH',LocalPitch,0.1);
+                     GISdb[ProfileDB].MyData.CarefullySetFloat('PITCH',LocalPitch,0.1);
 
                      Slope2 := ArcTan((elevs^[j] - lz) / (dists^[j] - dists^[pred(j)])) / DegToRad;
                      if abs(Slope2) < 0.1 then Slope2 := 0;
-                     UseData.CarefullySetFloat('SLOPE_2D',Slope2,0.1);
+                     GISdb[ProfileDB].MyData.CarefullySetFloat('SLOPE_2D',Slope2,0.1);
 
                      if VisPoints[j] then begin
                         l1 := cosDeg(Pitch) * sinDeg(LOSAzimuth);
@@ -1409,8 +1437,8 @@ begin
                         l3 := sinDeg(Pitch);
                         Graz2 := arcCos(n1*l1 + n2*l2 + n3*l3) / DegToRad;
                         Slope2 := Slope2+LocalPitch;
-                        UseData.CarefullySetFloat('GRAZING_2D',Slope2,0.1);
-                        UseData.CarefullySetFloat('GRAZING_3D',Graz2,0.1);
+                        GISdb[ProfileDB].MyData.CarefullySetFloat('GRAZING_2D',Slope2,0.1);
+                        GISdb[ProfileDB].MyData.CarefullySetFloat('GRAZING_3D',Graz2,0.1);
                      end;
                   end;
               end;
@@ -1421,78 +1449,84 @@ begin
                     if (LOSHt < elevs^[j]) then Intrudepc := 100
                     else if (LOSHt > elevs^[j] + Fresnel1) then Intrudepc := 0
                     else Intrudepc := 100 * (elevs^[j] - (LOSHt - Fresnel1)) / Fresnel1;
-                    UseData.SetFieldByNameAsFloat('INTRUDE_pc',Intrudepc);
+                    GISdb[ProfileDB].MyData.SetFieldByNameAsFloat('INTRUDE_pc',Intrudepc);
                  end;
               {$EndIf}
 
-              UseData.Post;
+              GISdb[ProfileDB].MyData.Post;
          end
          else begin
             {$IfDef ExFresnel}
             {$Else}
-            if ((dists^[j] < 1000)  or (dists^[j] > LosLen - 1000)) and (Intrudepc > 0.001) then begin
-               result := losEdgeFresnelIntrusion;
-               goto ExitNow;
-            end
-            else begin
-               if (Intrudepc > 40) then begin
-                  result := losCenterFresnelIntrusion;
+               if ((dists^[j] < 1000)  or (dists^[j] > LosLen - 1000)) and (Intrudepc > 0.001) then begin
+                  result := losEdgeFresnelIntrusion;
                   goto ExitNow;
+               end
+               else begin
+                  if (Intrudepc > 40) then begin
+                     result := losCenterFresnelIntrusion;
+                     goto ExitNow;
+                  end;
                end;
-            end;
             {$EndIf}
          end;
          lz := elevs^[j];
       end;
 
+      if (not VisPoints[ComputePoints]) then begin
+         Result := losBlockByTerrain;
+      end;
       result := losIsVisible;
 
-      if MDDef.ForceCrestComputations then begin
-         {$IfDef RecordLOS} WriteLineToDebugFile('Start peaks/pits');    {$EndIf}
-         RemoveNeighbors(IsPeak);
-         RemoveNeighbors(IsPit);
+     {$IfDef ExWaveLengthHeight}
+     {$Else}
+         if MDDef.ForceCrestComputations then begin
+            {$IfDef RecordLOS} WriteLineToDebugFile('Start peaks/pits');    {$EndIf}
+            RemoveNeighbors(IsPeak);
+            RemoveNeighbors(IsPit);
 
-         UseData.First;
-         for j := 0 to ComputePoints do begin
-            if IsPeak[j] or IsPit[j] then begin
-               UseData.Edit;
-               if IsPeak[j] then UseData.SetFieldByNameAsString('PEAK','Y')
-               else if IsPit[j] then UseData.SetFieldByNameAsString('PIT','Y');
+            GISdb[ProfileDB].MyData.First;
+            for j := 0 to ComputePoints do begin
+               if IsPeak[j] or IsPit[j] then begin
+                  GISdb[ProfileDB].MyData.Edit;
+                  if IsPeak[j] then GISdb[ProfileDB].MyData.SetFieldByNameAsString('PEAK','Y')
+                  else if IsPit[j] then GISdb[ProfileDB].MyData.SetFieldByNameAsString('PIT','Y');
+               end;
+               GISdb[ProfileDB].MyData.Next;
             end;
-            UseData.Next;
+            {$IfDef RecordLOS} WriteLineToDebugFile('Done  peaks/pits'); {$EndIf}
          end;
+      {$EndIf}
 
-         {$IfDef RecordLOS} WriteLineToDebugFile('Done  peaks/pits'); {$EndIf}
-      end;
 
-      if (UseData <> Nil) then begin
-        {$IfDef RecordLOS} WriteLineToDebugFile('Start VisComp'); {$EndIf}
+      {$IfDef ExFresnel}
+      {$Else}
+         if (GISdb[ProfileDB].MyData <> Nil) then begin
+           {$IfDef RecordLOS} WriteLineToDebugFile('Start VisComp'); {$EndIf}
 
-          if VisPoints[ComputePoints] then begin
-             {$IfDef ExFresnel}
-             {$Else}
-             if MDdef.DrawFresnel then begin
-                UseData.ApplyFilter( 'RANGE_KM < 1');
-                UseData.FindFieldRange('INTRUDE_pc',MinVal,MaxVal);
-                if (MaxVal > 0.001) then Result := losEdgeFresnelIntrusion
-                else begin
-                   KM_short_end := 0.001 * LOSLen - 1;
-                   UseData.ApplyFilter('RANGE_KM > ' + RealToString(KM_short_end,-12,2));
-                   UseData.FindFieldRange('INTRUDE_pc',MinVal,MaxVal);
-                   if MaxVal > 0.001 then Result := losEdgeFresnelIntrusion
+             if VisPoints[ComputePoints] then begin
+                if MDdef.DrawFresnel then begin
+                   GISdb[ProfileDB].MyData.ApplyFilter( 'RANGE_KM < 1');
+                   GISdb[ProfileDB].MyData.FindFieldRange('INTRUDE_pc',MinVal,MaxVal);
+                   if (MaxVal > 0.001) then Result := losEdgeFresnelIntrusion
                    else begin
-                      UseData.ApplyFilter('RANGE_KM > 1 AND RANGE_KM < ' + RealToString(KM_short_end,-12,2));
-                      UseData.FindFieldRange('INTRUDE_pc',MinVal,MaxVal);
-                      if (MaxVal > 40) then Result := losCenterFresnelIntrusion
-                      else Result := losIsVisible;
+                      KM_short_end := 0.001 * LOSLen - 1;
+                      GISdb[ProfileDB].MyData.ApplyFilter('RANGE_KM > ' + RealToString(KM_short_end,-12,2));
+                      GISdb[ProfileDB].MyData.FindFieldRange('INTRUDE_pc',MinVal,MaxVal);
+                      if MaxVal > 0.001 then Result := losEdgeFresnelIntrusion
+                      else begin
+                         GISdb[ProfileDB].MyData.ApplyFilter('RANGE_KM > 1 AND RANGE_KM < ' + RealToString(KM_short_end,-12,2));
+                         GISdb[ProfileDB].MyData.FindFieldRange('INTRUDE_pc',MinVal,MaxVal);
+                         if (MaxVal > 40) then Result := losCenterFresnelIntrusion
+                         else Result := losIsVisible;
+                      end;
                    end;
                 end;
-             end;
-             {$EndIf}
-          end
-          else Result := losBlockByTerrain;
-        {$IfDef RecordLOS} WriteLineToDebugFile('End VisComp'); {$EndIf}
-      end;
+             end
+             else Result := losBlockByTerrain;
+           {$IfDef RecordLOS} WriteLineToDebugFile('End VisComp'); {$EndIf}
+         end;
+      {$EndIf}
 
  ExitNow:;
   Dispose(xgrids);
@@ -1500,11 +1534,12 @@ begin
   Dispose(dists);
   Dispose(elevs);
   if MDDef.ShowMaskedAirspace then Dispose(NeedZ);
+  {$IfDef RecordLOS} WriteLineToDebugFile('tLOSCalculation.Execute out'); {$EndIf}
 end;
 
 
 
-{$IfDef ExGeostats}
+{$IfDef ExWaveLengthHeight}
 {$Else}
 
 procedure FindWavelengthStats(var UseData : tMyData; var WavelengthMean,WavelengthMedian,WavelengthStdDev,
@@ -1638,7 +1673,7 @@ begin
    //EraseFresnelDB := false;
    EnvelopeDone := false;
    ProfileDropDown := 0;
-   FresnelDB := 0;
+   LOSProfileDB := 0;
    MinAreaZ := MaxSmallInt;
    MaxAreaZ := -MaxSmallInt;
    TargetGroundElevLAS := -9999;

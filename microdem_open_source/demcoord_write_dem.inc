@@ -230,7 +230,6 @@ end;
 procedure tDEMDataSet.SaveAsGeotiff(SaveName : PathStr = '');
 var
    missing : double;
-  // z : float64;
    WField : word;
    Offset,NumEnt, ASCIIsize,SF,MissingSize,WidthImage,HeightImage,BytesPer,RowBytes,GeokeyEntries : integer;
    TIFFHeader : tTiffHeader;

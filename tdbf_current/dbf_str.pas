@@ -14,11 +14,11 @@ initialization
   STRING_FILE_NOT_FOUND               := 'Open: file not found: "%s".';
 
   STRING_RECORD_LOCKED                := 'Record locked.';
-  STRING_READ_ERROR                   := 'Error while reading occured.';
+  STRING_READ_ERROR                   := 'Error while reading occurred.';
   STRING_WRITE_ERROR                  := 'Error while writing occurred. (Disk full?)';
   STRING_WRITE_INDEX_ERROR            := 'Error while writing occurred; indexes probably corrupted. (Disk full?)';
   STRING_KEY_VIOLATION                := 'Key violation. (Key already present in file).'+#13+#10+
-                                         'Index: %s'+#13+#10+'Record=%d Key=''%s''.';
+                                         'Index: %s'+#13+#10+'Record=%d Key=%s.';
 
   STRING_INVALID_DBF_FILE             := 'Invalid DBF file.';
   STRING_FIELD_TOO_LONG               := 'Value is too long: %d characters (it can''t be more than %d).';
