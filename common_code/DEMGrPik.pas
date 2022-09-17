@@ -164,7 +164,6 @@ begin
    BitBtn1.Enabled := MDdef.ShowPrimaryGrid and (MDDef.MapTicks in [tixBoth,tixUTM]);
    BitBtn4.Enabled := MDdef.ShowPrimaryGrid and (MDDef.MapTicks in [tixLatLong,tixBoth]);
    Label3.Enabled := MDdef.ShowPrimaryGrid;
-   //Label6.Enabled := MDdef.ShowPrimaryGrid;
 
    Button1.Enabled := MDdef.ShowSecondaryGrid and (MDDef.MapTicks in [tixLatLong,tixUTM,tixBoth]);
    BitBtn2.Enabled := MDdef.ShowSecondaryGrid and (MDDef.MapTicks in [tixBoth,tixUTM]);
@@ -367,7 +366,7 @@ end;
 
 initialization
 finalization
-{$IfDef RecordGetGridOpts} WriteLineToDebugFile('RecordGetGridOpts active in DEMGrPik'); {$EndIf}
+   {$IfDef RecordGetGridOpts} WriteLineToDebugFile('RecordGetGridOpts active in DEMGrPik'); {$EndIf}
    {$IfDef RecordClosingProblems} WriteLineToDebugFile('Closing DEMgrPik'); {$EndIf}
 end.
 

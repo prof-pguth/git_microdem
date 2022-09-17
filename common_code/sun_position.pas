@@ -11,9 +11,9 @@ unit sun_position;
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$IfDef Debug}
       //{$Define RecordSolarPosition}
-      {$Define RecordHorizon}
+      //{$Define RecordHorizon}
       //{$Define RecordGetSunriseSet}
-      {$Define TimeSunlightMaps}
+      //{$Define TimeSunlightMaps}
       //{$Define RecordSunlightMaps}
       //{$Define RecordFullSunlightMaps}      //major slowdown
       //{$Define RecordBlockAngleDifference}  //major slowdown
@@ -30,7 +30,7 @@ uses
 
 function SunTime(Lat,Long : float64; DifGren,Year,Month,Day : integer; Rising,WithSec : boolean; SunAngle : tSunriseSunsetAngle) : string35;
 function ComputeSunPosition(lat,long,hrtime,tz : float64; day : integer; var az,alt,sunrise,sunset : float64) : boolean;
-procedure SunRiseSunSet({TheSun : boolean;} Lat,Long : float64; DoGraphical,FullTable : boolean);
+procedure SunRiseSunSet(Lat,Long : float64; DoGraphical,FullTable : boolean);
 function SunAndHorizon(BaseMap : tMapForm; DEM : integer; Latitude,Longitude : float64; ShowToday : boolean = true; ShowKeyDays : boolean = true) : tNetForm;
 procedure AnnualSunRiseGeometry(MapForm : tMapForm; Latitude,Longitude : float64; AddSunriseSunset: boolean = false);
 procedure SunAtLocalNoon(BaseMap : tMapForm; Latitude,Longitude : float64);
@@ -61,18 +61,13 @@ type
    tBlockAngles = array[0..3600] of float64;
 
 
-function MoonPostionFromUSNO(Lat,Long : float32; iyear,imonth,iday : integer) : tStringList;
+function MoonPostionFromUSNO(Lat,Long : float32; iyear,imonth,iday : integer; var HTML : PathStr) : tStringList;
 var
    URL : shortstring;
-   fName,fName2 : PathStr;
-   webpage,positions : tstringlist;
    FoundIt : boolean;
-   Time : shortstring;
-   Hour : float32;
-   xd,yd,i : integer;
    Month,Day,year : word;
 begin
-   if iyear = -99 then begin
+   if (iyear = -99) then begin
       DecodeDate(Now,Year,Month,Day);
       iYear := Year;
       iMonth := Month;
@@ -82,51 +77,42 @@ begin
 
    URL := 'https://aa.usno.navy.mil/calculated/altaz?body=11&date=' + IntToStr(iYear) + '-' + AddDayMonthLeadingZero(iMonth) + '-' + AddDayMonthLeadingZero(iDay) +
       '&intv_mag=10&lat=' + RealToString(Lat,-12,-6) + '&lon=' + RealToString(Long,-12,-6) + '&label=&tz=4&tz_sign=-1&submit=Get+Data';
-   fName2 := Petmar.NextFileNumber(MDTempDir, 'Moon_pos_', '.html');
-   DownloadFileFromWeb(URL,fName2);
+   HTML := Petmar.NextFileNumber(MDTempDir, 'Moon_pos_', '.html');
+   DownloadFileFromWeb(URL,HTML);
    Result := tstringlist.create;
-   Result.LoadFromFile(fName2);
-
+   Result.LoadFromFile(HTML);
 end;
 
 
 function MoonPositionDB(Lat,Long : float32; iyear,imonth,iday : integer) : integer;
 var
-   URL : shortstring;
-   fName,fName2 : PathStr;
+   aLine,fName2,HTML : PathStr;
    webpage,positions : tstringlist;
    FoundIt : boolean;
-   Time : shortstring;
    Hour : float32;
-   xd,yd,
    i : integer;
 begin
-   (*
-   URL := 'https://aa.usno.navy.mil/calculated/altaz?body=11&date=' + IntToStr(iYear) + '-' + AddDayMonthLeadingZero(iMonth) + '-' + AddDayMonthLeadingZero(iDay) +
-      '&intv_mag=10&lat=' + RealToString(Lat,-12,-6) + '&lon=' + RealToString(Long,-12,-6) + '&label=&tz=4&tz_sign=-1&submit=Get+Data';
-   fName2 := Petmar.NextFileNumber(MDTempDir, 'Moon_pos_', '.html');
-   DownloadFileFromWeb(URL,fName2);
-   webpage := tstringlist.create;
-   webpage.LoadFromFile(fName2);
-   *)
-   WebPage := MoonPostionFromUSNO(Lat,Long,iyear,imonth,iday);
+   WebPage := MoonPostionFromUSNO(Lat,Long,iyear,imonth,iday,HTML);
    positions := tstringlist.create;
    positions.Add('TIME,HOUR,ALTITUDE,AZIMUTH,ILLUMIN_PC');
    FoundIt := false;
    for I := 0 to pred(webpage.Count) do begin
-      fName := webpage.Strings[i];
-      if copy(fName,1,4) = '<pre' then FoundIt := true;
-      if FoundIt and (length(fName) > 36) then begin
-         if fName[1] in ['0'..'2'] then begin
-            Hour := StrToFloat(Copy(fName,1,2)) + StrToFloat(Copy(fName,4,2)) / 60;
-            Positions.Add(Copy(fName,1,5) + ',' + RealToString(Hour,6,2)  + ',' + Copy(fName,12,5) + ',' + Copy(fName,24,5) + ',' + Copy(fName,36,4));
+      aLine := webpage.Strings[i];
+      if copy(aLine,1,4) = '<pre' then FoundIt := true;
+      if FoundIt and (length(aLine) > 36) then begin
+         if aLine[1] in ['0'..'2'] then begin
+            Hour := StrToFloat(Copy(aLine,1,2)) + StrToFloat(Copy(aLine,4,2)) / 60;
+            Positions.Add(Copy(aLine,1,5) + ',' + RealToString(Hour,6,2)  + ',' + Copy(aLine,12,5) + ',' + Copy(aLine,24,5) + ',' + Copy(aLine,36,4));
           end;
       end;
-      if fName = '</pre>' then FoundIt := false;
+      if aLine = '</pre>' then FoundIt := false;
    end;
-   Result := StringList2CSVtoDB(Positions, ChangeFileExt(fName2,'.dbf'));
+   fName2 := Petmar.NextFileNumber(MDTempDir, 'Moon_pos_', '.dbf');
+   Result := StringList2CSVtoDB(Positions,fName2);
+   if Result = 0 then begin
+      ExecuteFile(HTML,'','');
+   end;
 end;
-
 
 
 
@@ -136,62 +122,41 @@ var
    fName,fName2 : PathStr;
    webpage,positions : tstringlist;
    FoundIt : boolean;
-   Time : shortstring;
+   aLine,Time : shortstring;
    Hour : float32;
    xd,yd,
    i,db : integer;
 begin
-   (*
-   URL := 'https://aa.usno.navy.mil/calculated/altaz?body=11&date=' + IntToStr(iYear) + '-' + AddDayMonthLeadingZero(iMonth) + '-' + AddDayMonthLeadingZero(iDay) +
-      '&intv_mag=10&lat=' + RealToString(Lat,-12,-6) + '&lon=' + RealToString(Long,-12,-6) + '&label=&tz=4&tz_sign=-1&submit=Get+Data';
-   fName2 := Petmar.NextFileNumber(MDTempDir, 'Moon_pos_', '.html');
-   DownloadFileFromWeb(URL,fName2);
-   webpage := tstringlist.create;
-   webpage.LoadFromFile(fName2);
-   *)
+   db := MoonPositionDB(Lat,Long,iyear,imonth,iday);
 
-   WebPage := MoonPostionFromUSNO(Lat,Long,iyear,imonth,iday);
-   positions := tstringlist.create;
-   positions.Add('TIME,HOUR,ALTITUDE,AZIMUTH,ILLUMIN_PC');
-   FoundIt := false;
-   for I := 0 to pred(webpage.Count) do begin
-      fName := webpage.Strings[i];
-      if copy(fName,1,4) = '<pre' then FoundIt := true;
-      if FoundIt and (length(fName) > 36) then begin
-         if fName[1] in ['0'..'2'] then begin
-            Hour := StrToFloat(Copy(fName,1,2)) + StrToFloat(Copy(fName,4,2)) / 60;
-            Positions.Add(Copy(fName,1,5) + ',' + RealToString(Hour,6,2)  + ',' + Copy(fName,12,5) + ',' + Copy(fName,24,5) + ',' + Copy(fName,36,4));
-          end;
-      end;
-      if fName = '</pre>' then FoundIt := false;
+   if ValidDB(db) then begin
+     MDDef.NetDef.HemiSphereUsed := Upper;
+     MDDef.NetDef.DrawGridCircles := ngPolar;
+
+     Result := TNetForm.Create(Application);
+     Result.nd.LLcornerText := LatLongDegreeToString(Lat,Long,VeryShortDegrees) + ' ' +  DateToStr(EncodeDate(iYear,iMonth,iDay));
+     Result.Caption := 'Moon position ' + Result.nd.LLcornerText;
+     Result.nd.NewNet;
+
+     while not GISdb[db].MyData.eof do  begin
+        if GISdb[db].MyData.GetFieldByNameAsFloat('ALTITUDE') > 0  then
+           Result.nd.PlotPointOnNet(LinePlot,GISdb[db].MyData.GetFieldByNameAsFloat('ALTITUDE'),GISdb[db].MyData.GetFieldByNameAsFloat('AZIMUTH'),ASymbol(FilledBox,ClARed,3),xd,yd);
+        GISdb[db].MyData.Next;
+     end;
+
+     GISdb[db].MyData.First;
+     while not GISdb[db].MyData.eof do begin
+        Time := GISdb[db].MyData.GetFieldByNameAsString('TIME');
+        if copy(Time,4,2) = '00' then begin
+           Result.nd.LabelPointOnNet(GISdb[db].MyData.GetFieldByNameAsFloat('ALTITUDE'),GISdb[db].MyData.GetFieldByNameAsFloat('AZIMUTH'),round(GISdb[db].MyData.GetFieldByNameAsFloat('HOUR')));
+        end;
+        GISdb[db].MyData.Next;
+     end;
+     Result.UpdateDisplay;
+   end
+   else begin
+      Result := Nil;
    end;
-   db := StringList2CSVtoDB(Positions, ChangeFileExt(fName2,'.dbf'));
-
-   MDDef.NetDef.HemiSphereUsed := Upper;
-   MDDef.NetDef.DrawGridCircles := ngPolar;
-
-   Result := TNetForm.Create(Application);
-   Result.nd.LLcornerText := LatLongDegreeToString(Lat,Long,VeryShortDegrees) + ' ' +  DateToStr(EncodeDate(iYear,iMonth,iDay));
-   Result.Caption := 'Moon position ' + Result.nd.LLcornerText;
-   Result.nd.NewNet;
-
-
-   while not GISdb[db].MyData.eof do  begin
-      if GISdb[db].MyData.GetFieldByNameAsFloat('ALTITUDE') > 0  then
-         Result.nd.PlotPointOnNet(LinePlot,GISdb[db].MyData.GetFieldByNameAsFloat('ALTITUDE'),GISdb[db].MyData.GetFieldByNameAsFloat('AZIMUTH'),ASymbol(FilledBox,ClARed,3),xd,yd);
-      GISdb[db].MyData.Next;
-   end;
-
-   GISdb[db].MyData.First;
-   while not GISdb[db].MyData.eof do begin
-      Time := GISdb[db].MyData.GetFieldByNameAsString('TIME');
-      if copy(Time,4,2) = '00' then begin
-         Result.nd.LabelPointOnNet(GISdb[db].MyData.GetFieldByNameAsFloat('ALTITUDE'),GISdb[db].MyData.GetFieldByNameAsFloat('AZIMUTH'),round(GISdb[db].MyData.GetFieldByNameAsFloat('HOUR')));
-      end;
-      GISdb[db].MyData.Next;
-   end;
-
-   Result.UpdateDisplay;
 end;
 
 

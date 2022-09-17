@@ -9,7 +9,7 @@ unit Koppengr;
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
-   {$Define RecordKoppen}
+   //{$Define RecordKoppen}
 {$EndIf}
 
 interface
@@ -70,7 +70,7 @@ type
   end;
 
 var
-   KoppenGraph: TKoppenGraph;
+   //KoppenGraph: TKoppenGraph;
    ClimographDB : tMyData;
 
 function OpenKoppenGraph(Width, Height : integer) : TKoppenGraph;  overload;

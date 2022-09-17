@@ -3,9 +3,9 @@ object RefOptFM: TRefOptFM
   Top = 242
   ActiveControl = OKBtn
   BorderStyle = bsDialog
-  Caption = 'Reflectance Map Options'
-  ClientHeight = 397
-  ClientWidth = 396
+  Caption = 'Hillshade/Reflectance Map Options'
+  ClientHeight = 430
+  ClientWidth = 470
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
@@ -13,17 +13,18 @@ object RefOptFM: TRefOptFM
   Font.Name = 'MS Sans Serif'
   Font.Style = [fsBold]
   Position = poDefaultSizeOnly
+  OnClose = FormClose
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Bevel1: TBevel
     Left = 0
     Top = 0
-    Width = 396
-    Height = 345
+    Width = 470
+    Height = 401
     Align = alTop
     Shape = bsFrame
     IsControl = True
+    ExplicitWidth = 525
   end
   object Label1: TLabel
     Left = 25
@@ -46,20 +47,20 @@ object RefOptFM: TRefOptFM
     Height = 13
   end
   object Label4: TLabel
-    Left = 32
+    Left = 8
     Top = 56
     Width = 56
     Height = 13
     Caption = 'Vert Exag'
   end
   object Image1: TImage
-    Left = 256
+    Left = 336
     Top = 104
     Width = 100
     Height = 100
   end
   object Image2: TImage
-    Left = 256
+    Left = 336
     Top = 8
     Width = 100
     Height = 100
@@ -67,15 +68,15 @@ object RefOptFM: TRefOptFM
     OnMouseMove = Image2MouseMove
   end
   object Label5: TLabel
-    Left = 24
-    Top = 272
+    Left = 296
+    Top = 224
     Width = 59
     Height = 13
     Caption = 'Saturation'
   end
   object RedrawSpeedButton12: TSpeedButton
-    Left = 353
-    Top = 351
+    Left = 385
+    Top = 407
     Width = 25
     Height = 25
     Hint = 'Force redraw'
@@ -97,23 +98,9 @@ object RefOptFM: TRefOptFM
     Height = 13
     Caption = 'Sea level (m)'
   end
-  object Label7: TLabel
-    Left = 8
-    Top = 191
-    Width = 23
-    Height = 13
-    Caption = 'Top'
-  end
-  object Label8: TLabel
-    Left = 8
-    Top = 215
-    Width = 29
-    Height = 13
-    Caption = 'Base'
-  end
   object OKBtn: TBitBtn
-    Left = 14
-    Top = 351
+    Left = 38
+    Top = 407
     Width = 77
     Height = 27
     Kind = bkOK
@@ -125,8 +112,8 @@ object RefOptFM: TRefOptFM
     IsControl = True
   end
   object CancelBtn: TBitBtn
-    Left = 97
-    Top = 351
+    Left = 121
+    Top = 407
     Width = 77
     Height = 27
     Kind = bkCancel
@@ -138,8 +125,8 @@ object RefOptFM: TRefOptFM
     IsControl = True
   end
   object HelpBtn: TBitBtn
-    Left = 180
-    Top = 351
+    Left = 204
+    Top = 407
     Width = 76
     Height = 27
     Kind = bkHelp
@@ -167,16 +154,16 @@ object RefOptFM: TRefOptFM
     OnChange = Edit2Change
   end
   object Edit3: TEdit
-    Left = 145
-    Top = 56
-    Width = 81
+    Left = 70
+    Top = 52
+    Width = 53
     Height = 21
     TabOrder = 5
     OnChange = Edit3Change
   end
   object Button1: TButton
-    Left = 272
-    Top = 351
+    Left = 286
+    Top = 407
     Width = 75
     Height = 27
     Caption = 'Default'
@@ -184,8 +171,8 @@ object RefOptFM: TRefOptFM
     OnClick = Button1Click
   end
   object CheckBox2: TCheckBox
-    Left = 8
-    Top = 104
+    Left = 320
+    Top = 311
     Width = 113
     Height = 17
     Caption = 'Sea level check'
@@ -193,8 +180,8 @@ object RefOptFM: TRefOptFM
     OnClick = CheckBox2Click
   end
   object CheckBox3: TCheckBox
-    Left = 8
-    Top = 120
+    Left = 320
+    Top = 327
     Width = 97
     Height = 17
     Caption = 'Lake check'
@@ -202,8 +189,8 @@ object RefOptFM: TRefOptFM
     OnClick = CheckBox3Click
   end
   object BitBtn1: TBitBtn
-    Left = 24
-    Top = 75
+    Left = 305
+    Top = 280
     Width = 75
     Height = 25
     Caption = 'Water'
@@ -212,7 +199,7 @@ object RefOptFM: TRefOptFM
   end
   object RadioGroup1: TRadioGroup
     Left = 136
-    Top = 83
+    Top = 141
     Width = 114
     Height = 183
     Caption = 'Colors'
@@ -230,40 +217,28 @@ object RefOptFM: TRefOptFM
     TabOrder = 10
     OnClick = RadioGroup1Click
   end
-  object UpDown1: TUpDown
-    Left = 232
-    Top = 60
-    Width = 16
-    Height = 24
-    Enabled = False
-    Min = 1
-    Position = 1
-    TabOrder = 11
-    Visible = False
-    OnClick = UpDown1Click
-  end
   object TrackBar1: TTrackBar
-    Left = 114
-    Top = 272
+    Left = 296
+    Top = 241
     Width = 137
     Height = 33
     Max = 255
     Frequency = 25
-    TabOrder = 12
+    TabOrder = 11
     OnChange = TrackBar1Change
   end
   object BitBtn2: TBitBtn
     Left = 8
-    Top = 308
+    Top = 316
     Width = 75
     Height = 25
     Caption = 'z Range'
-    TabOrder = 13
+    TabOrder = 12
     OnClick = BitBtn2Click
   end
   object RadioGroup2: TRadioGroup
-    Left = 93
-    Top = 297
+    Left = 8
+    Top = 353
     Width = 295
     Height = 36
     Caption = 'Directions to average'
@@ -277,16 +252,16 @@ object RefOptFM: TRefOptFM
       '6'
       '7'
       '8')
-    TabOrder = 14
+    TabOrder = 13
     OnClick = RadioGroup2Click
   end
   object CheckBox5: TCheckBox
-    Left = 257
-    Top = 274
+    Left = 136
+    Top = 330
     Width = 131
     Height = 17
     Caption = 'Immediate redraw'
-    TabOrder = 15
+    TabOrder = 14
     OnClick = CheckBox5Click
   end
   object Edit4: TEdit
@@ -294,26 +269,69 @@ object RefOptFM: TRefOptFM
     Top = 158
     Width = 41
     Height = 21
-    TabOrder = 16
+    TabOrder = 15
     Text = 'Edit4'
     OnChange = Edit4Change
   end
-  object Edit5: TEdit
-    Left = 43
-    Top = 188
-    Width = 41
-    Height = 21
-    TabOrder = 17
-    Text = 'Edit4'
-    OnChange = Edit5Change
+  object RadioGroup3: TRadioGroup
+    Left = 8
+    Top = 79
+    Width = 242
+    Height = 56
+    Caption = 'Vert Exag'
+    Columns = 5
+    Items.Strings = (
+      '1'
+      '1.5'
+      '2'
+      '2.5'
+      '3'
+      '5'
+      '7.5'
+      '10'
+      '12'
+      '15')
+    TabOrder = 16
+    OnClick = RadioGroup3Click
   end
-  object Edit6: TEdit
-    Left = 43
-    Top = 215
-    Width = 41
-    Height = 21
-    TabOrder = 18
-    Text = 'Edit4'
-    OnChange = Edit6Change
+  object GroupBox1: TGroupBox
+    Left = 8
+    Top = 185
+    Width = 122
+    Height = 68
+    Caption = 'Color change maps'
+    TabOrder = 17
+    object Label8: TLabel
+      Left = 17
+      Top = 39
+      Width = 50
+      Height = 13
+      Caption = 'Base (m)'
+    end
+    object Label7: TLabel
+      Left = 17
+      Top = 20
+      Width = 44
+      Height = 13
+      Caption = 'Top (m)'
+    end
+    object Edit6: TEdit
+      Left = 78
+      Top = 41
+      Width = 41
+      Height = 21
+      TabOrder = 0
+      Text = 'Edit4'
+      OnChange = Edit6Change
+    end
+    object Edit5: TEdit
+      Left = 78
+      Top = 14
+      Width = 41
+      Height = 21
+      TabOrder = 1
+      Text = 'Edit4'
+      OnChange = Edit5Change
+    end
   end
 end

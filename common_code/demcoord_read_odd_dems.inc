@@ -483,9 +483,11 @@ end;
          else if (UpperCase(ExtractFileNameNoExt(DEMFileName)) = 'DEMFLOAT') or ExtEquals(Ext, '.FLT') or ExtEquals(Ext, '.BIL') then begin
             ReadNEDBIL(DEMFileName,Error);
          end
-         else if ExtEquals(Ext, '.ASC') or ExtEquals(Ext, '.GRD') or ExtEquals(Ext, '.TXT') then begin
-            //ReadASCIIArcGrid(DEMFileName,Self,Error,ReallyReadDEM);
+         else if ExtEquals(Ext, '.ASC') then begin
             Error := not TryGDAL(DEMFileName);
+         end
+         else if ExtEquals(Ext, '.GRD') or ExtEquals(Ext, '.TXT') then begin
+            ReadASCIIArcGrid(DEMFileName,Self,Error,ReallyReadDEM);
          end
          else if ExtEquals(Ext, '.DTM') then begin
             ReadFusionDTM(DEMFileName,Self,Error);

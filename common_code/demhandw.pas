@@ -36,19 +36,19 @@ uses
    Petmar_db,
    Data.DB,
    {$IfDef UseFireDacSQLlite}
-   FireDAC.Comp.Client, FireDAC.Comp.Dataset,FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteWrapper,
+      FireDAC.Comp.Client, FireDAC.Comp.Dataset,FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteWrapper,
    {$EndIf}
 
    {$IfDef UseBDETables}
-   dbTables,
+      dbTables,
    {$EndIf}
 
    {$IfDef UseTDBF}
-   dbf,
+      dbf,
    {$EndIf}
 
    {$IfDef UseTCLientDataSet}
-   DBClient,
+      DBClient,
    {$EndIf}
 //end needed for inline of the core DB functions
 
@@ -59,8 +59,8 @@ uses
   BaseGraf,DEMdefs,Petmar_types,PETMAR;
 
 type
-   tProcessOrder = (LRD,LRU,DUR,UDR,RLD);
-   tDEMFormat = (dfASCII,dfBinary16BitInt,dfBinary32BitInt);
+   //tProcessOrder = (LRD,LRU,DUR,UDR,RLD);
+   //tDEMFormat = (dfASCII,dfBinary16BitInt,dfBinary32BitInt);
 
   TDemHandForm = class(TForm)
     MainMenu1: TMainMenu;
@@ -74,12 +74,6 @@ type
     Edit1: TMenuItem;
     Delete1: TMenuItem;
     Header2: TMenuItem;
-    ASCIIZvalues1: TMenuItem;
-    LRD1: TMenuItem;
-    LRU1: TMenuItem;
-    UDR1: TMenuItem;
-    DUR1: TMenuItem;
-    RLD1: TMenuItem;
     ASCIIXYZ1: TMenuItem;
     Satellite1: TMenuItem;
     BMP1: TMenuItem;
@@ -152,7 +146,6 @@ type
     IMGdirectorytoMDDEM1: TMenuItem;
     ASCIIremove1: TMenuItem;
     ASCIImergefiles1: TMenuItem;
-    //Albertalandsurvey1: TMenuItem;
     ShiftXYZcoordinates1: TMenuItem;
     NCEPNCARReanalysiswinds1: TMenuItem;
     Addfilenameasfield1: TMenuItem;
@@ -160,7 +153,6 @@ type
     RepairSHPandSHXboundingboxes1: TMenuItem;
     Emailcleanup1: TMenuItem;
     Viewsheds1: TMenuItem;
-   // Quizgenerator1: TMenuItem;
     Changefileextensions1: TMenuItem;
     Addfileextensions1: TMenuItem;
     Fileextensions1: TMenuItem;
@@ -180,7 +172,6 @@ type
     LASGeotoUTM1: TMenuItem;
     Maindatabase1: TMenuItem;
     Separatefile1: TMenuItem;
-    //CloudCompareASCIIfile1: TMenuItem;
     GDALreprojectimagetoUTMNAD831: TMenuItem;
     Cloudcompare1: TMenuItem;
     RANSAC1: TMenuItem;
@@ -200,12 +191,10 @@ type
     ENVIHDRIMG1: TMenuItem;
     XYZ1: TMenuItem;
     Ducknearshoresurveys2: TMenuItem;
-    //DBFtoprofileshapefiles1: TMenuItem;
     LineKML1: TMenuItem;
     XYZItoLAS1: TMenuItem;
     MaskDEMs1: TMenuItem;
     Assignprojection1: TMenuItem;
-    //ImageoverlaytoKML1: TMenuItem;
     MrSIDtotiff1: TMenuItem;
     Resizeimages1: TMenuItem;
     ASCIIremovelineswithsubstring1: TMenuItem;
@@ -213,7 +202,6 @@ type
     GDALwarpGeotifftoGeoWGS841: TMenuItem;
     N1: TMenuItem;
     HTMLfilelinks1: TMenuItem;
-    //JavascripttoDBF1: TMenuItem;
     ASCfiles1: TMenuItem;
     PrepOSMfiles1: TMenuItem;
     CreateSHXfilesforDBFfiles1: TMenuItem;
@@ -247,23 +235,14 @@ type
     LASfilesbysize1: TMenuItem;
     IFfiles1: TMenuItem;
     AssignbyEPSGandreprojecttoUTM1: TMenuItem;
-    //CloudCompare2: TMenuItem;
     Experimental1: TMenuItem;
     N10: TMenuItem;
     ASCIIreplaceheaderline1: TMenuItem;
     ASCIIheader1: TMenuItem;
     Histogramsbyclass1: TMenuItem;
     Addcolors1: TMenuItem;
-    //Coloredmaps1: TMenuItem;
-    //Statsbyclass1: TMenuItem;
     Addgroundclassifiedpoints1: TMenuItem;
-    //LoadDBintoslicer1: TMenuItem;
     Plateboundaryfile1: TMenuItem;
-    //BatchCSFdemo1: TMenuItem;
-    //Classificationaccuracy1: TMenuItem;
-    //Quickclassification1: TMenuItem;
-    //InsertroughnessandcurvatureinDBF1: TMenuItem;
-    //Extractclassification1: TMenuItem;
     ranslatecoordsASCIIfile1: TMenuItem;
     N17: TMenuItem;
     ASCIIremovelinesinsecondfile1: TMenuItem;
@@ -284,7 +263,6 @@ type
     procedure HTMLcleanup1Click(Sender: TObject);
     procedure SF3Censusdata1Click(Sender: TObject);
     procedure Ducknearshoresurveys1Click(Sender: TObject);
-    //procedure ExtractXYZfromVRML1Click(Sender: TObject);
     procedure KMLfiles1Click(Sender: TObject);
     procedure RenameSF3fields1Click(Sender: TObject);
     procedure ExtractXYZfromDXFfile1Click(Sender: TObject);
@@ -293,12 +271,6 @@ type
     procedure Help1Click(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure Header2Click(Sender: TObject);
-    procedure LRD1Click(Sender: TObject);
-    procedure LRU1Click(Sender: TObject);
-    procedure UDR1Click(Sender: TObject);
-    procedure DUR1Click(Sender: TObject);
-    procedure RLD1Click(Sender: TObject);
-    procedure ASCIIXYZ1Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure ASCIIduplicates1Click(Sender: TObject);
     procedure ASCIIsort1Click(Sender: TObject);
@@ -320,9 +292,7 @@ type
     procedure NIMAgazetteerdatabase1Click(Sender: TObject);
     procedure ASCIIremoveblanklines1Click(Sender: TObject);
     procedure IGERredistricting1Click(Sender: TObject);
-    procedure BinaryrawDEM1Click(Sender: TObject);
     procedure ASCIIreverseorder1Click(Sender: TObject);
-    procedure BinaryrawDEM32bit1Click(Sender: TObject);
     procedure ISOGravity1Click(Sender: TObject);
     procedure Repairheaders1Click(Sender: TObject);
     procedure Cardfileimport1Click(Sender: TObject);
@@ -368,7 +338,6 @@ type
     procedure LASGeotoUTM1Click(Sender: TObject);
     procedure Maindatabase1Click(Sender: TObject);
     procedure Separatefile1Click(Sender: TObject);
-    //procedure CloudCompareASCIIfile1Click(Sender: TObject);
     procedure GDALreprojectimagetoUTMNAD831Click(Sender: TObject);
     procedure RANSAC1Click(Sender: TObject);
     procedure GDALGeodatabasetoshapefile1Click(Sender: TObject);
@@ -384,7 +353,6 @@ type
     procedure ASCIItrimlines1Click(Sender: TObject);
     procedure ENVIHDRIMG1Click(Sender: TObject);
     procedure XYZ1Click(Sender: TObject);
-    //procedure DBFtoprofileshapefiles1Click(Sender: TObject);
     procedure LineKML1Click(Sender: TObject);
     procedure XYZItoLAS1Click(Sender: TObject);
     procedure MaskDEMs1Click(Sender: TObject);
@@ -395,7 +363,6 @@ type
     procedure GDALwarpGeotifftoUTMNAD831Click(Sender: TObject);
     procedure GDALwarpGeotifftoGeoWGS841Click(Sender: TObject);
     procedure HTMLfilelinks1Click(Sender: TObject);
-    //procedure JavascripttoDBF1Click(Sender: TObject);
     procedure ASCfiles1Click(Sender: TObject);
     procedure PrepOSMfiles1Click(Sender: TObject);
     procedure CreateSHXfilesforDBFfiles1Click(Sender: TObject);
@@ -421,21 +388,10 @@ type
     procedure LASfilesbysize1Click(Sender: TObject);
     procedure IFfiles1Click(Sender: TObject);
     procedure AssignbyEPSGandreprojecttoUTM1Click(Sender: TObject);
-    //procedure MergeCSVfiles1Click(Sender: TObject);
-    //procedure CloudCompare2Click(Sender: TObject);
     procedure ASCIIreplaceheaderline1Click(Sender: TObject);
-    //procedure Histogramsbyclass1Click(Sender: TObject);
     procedure Addcolors1Click(Sender: TObject);
-    //procedure Coloredmaps1Click(Sender: TObject);
-    //procedure Statsbyclass1Click(Sender: TObject);
     procedure Addgroundclassifiedpoints1Click(Sender: TObject);
-    //procedure LoadDBintoslicer1Click(Sender: TObject);
     procedure Plateboundaryfile1Click(Sender: TObject);
-    //procedure BatchCSFdemo1Click(Sender: TObject);
-    //procedure Classificationaccuracy1Click(Sender: TObject);
-    //procedure Quickclassification1Click(Sender: TObject);
-    //procedure InsertroughnessandcurvatureinDBF1Click(Sender: TObject);
-    //procedure Extractclassification1Click(Sender: TObject);
     procedure ranslatecoordsASCIIfile1Click(Sender: TObject);
     procedure ASCIIremovelinesinsecondfile1Click(Sender: TObject);
     procedure Chromelist1Click(Sender: TObject);
@@ -452,7 +408,6 @@ type
     procedure OGRshapefilestoGKPG1Click(Sender: TObject);
   private
     { Private declarations }
-     procedure ASCIIZvaluesImport(Order : tProcessOrder; ItsASCII : tDEMFormat = dfASCII);
   public
     { Public declarations }
      ActiveDEM : integer;
@@ -1576,179 +1531,6 @@ begin
 end;
 
 
-procedure TDemHandForm.ASCIIXYZ1Click(Sender: TObject);
-{$IfDef ExAdvancedImportExport}
-begin
-{$Else}
-var
-   Col,Row,NewCount,WantedDEM,db : integer;
-   xMax,xMin,l1,yMax,yMin,
-   xrange,yrange,x,y,zMin,ZMax,z    : float32;
-   xyzTable           : tMyData;
-   Dir                : DirStr;
-   Name               : NameStr;
-   Ext                : ExtStr;
-   InputFile          : TextFile;
-   xyzTableName,FileName : PathStr;
-   MenuStr : AnsiString;
-   XFieldName,YFieldName,ZFieldName : ShortString;
-   {$IfDef RecordImportProblems}
-      i : integer;
-   {$EndIf}
-
-
-         procedure AddPointToDEM;
-         begin
-            with DEMGlb[WantedDEM] do begin
-               if (DEMheader.DEMUsed = UTMBasedDEM) then begin
-                  Col := round( (x - DEMheader.DEMSWCornerX) / DEMheader.DEMxSpacing / l1);
-                  Row := round( (y - DEMheader.DEMSWCornerY) / DEMheader.DEMySpacing / l1);
-               end
-               else begin
-                  Col := round( (x * l1 - DEMheader.DEMSWCornerX) / DEMheader.DEMxSpacing);
-                  Row := round( (y * l1 - DEMheader.DEMSWCornerY) / DEMheader.DEMySpacing);
-               end;
-               SetGridElevation(Col,Row,z);
-            end;
-         end;
-
-
-begin
-   {$IfDef RecordImportProblems} WriteLineToDebugFile('Import ASCII XYZ'); {$EndIf}
-   FileName := ExtractFilePath(xyzName);
-   XFieldName := 'X';
-   YFieldName := 'Y';
-   ZFieldName := 'Z';
-
-   if not DEM_TIN.ConvertXYZASCIItoDBF(Memo1,FileName,xyzTableName,xMin,yMin,xMax,yMax,zMin,zMax,XFieldName,YFieldName,ZFieldName,false) then exit;
-   if (MDDef.XYZProduct = 1) and OpenNumberedGISDataBase(db,xyzTableName,false) then begin
-         xyzName := FileName;
-         Memo1.Lines.Add(xyzTableName + '  created');
-         exit;
-   end;
-
-   {$IfDef RecordImportProblems} WriteLineToDebugFile('DEM_TIN.ConvertXYZASCIItoDBF worked'); {$EndIf}
-
-   if not FileExists(FileName) then exit;
-
-   WantedDEM := 0;
-   OpenDEMDataStructures(WantedDEM);
-   DEMGlb[WantedDEM].AreaName := 'ASCII_XYZ_import';
-
-   with DEMGlb[WantedDEM],DEMheader do begin
-      ZeroDEMHeader(DEMheader,(ImportParamsDialog.RadioGroup2.ItemIndex in [0,1]));
-      FSplit(FileName,Dir,Name,Ext);
-      AreaName := Name;
-
-      l1 := 1;
-      if (ImportParamsDialog.RadioGroup2.ItemIndex in [2..4]) then  begin
-         if (YMax < 0) then LatHemi := 'S';
-         UTMZone := GetUTMZone(xmin);
-      end
-      else if (ImportParamsDialog.RadioGroup2.ItemIndex = 0) then begin
-         PickUTMZone(UTMZone);
-      end
-      else if (ImportParamsDialog.RadioGroup2.ItemIndex = 1) then  begin
-         DigitizeDatum := Rectangular;
-         UTMZone := 1;
-      end;
-      {$IfDef RecordImportProblems} WriteLineToDebugFile('UTM zone=' + IntToStr(UTMZone)); {$EndIf}
-
-      DEMxSpacing := 1;
-      DEMySpacing := 1;
-      EditHeaderRecord(WantedDEM,false);
-
-      {$IfDef RecordImportProblems} WriteLineToDebugFile('after verify xpacing=' + RealToString(fLongInterval,-24,-12) + '    ypacing=' + RealToString(fLatInterval,-24,-12)); {$EndIf}
-      xrange := xMax - xMin;
-      yrange := yMax - yMin;
-
-      if (DEMUsed = ArcSecDEM) then begin
-         DataSpacing := SpaceDegrees;
-         ReadDefault('Verify x data spacing (deg)',DEMxSpacing);
-         ReadDefault('Verify y data spacing (deg)',DEMySpacing);
-         NumCol := succ(round((xRange) / DEMxSpacing));
-         NumRow := succ(round((yRange) / DEMySpacing));
-         DEMSWCornerX := xmin;
-         DEMSWCornerY := ymin;
-      end
-      else begin
-         RectSpacingFactor(DataSpacing);
-         ReadDefault('Verify x data spacing',DEMxSpacing);
-         ReadDefault('Verify y data spacing',DEMySpacing);
-         Memo1.Lines.Add('x and y range:' + RealToString(xrange,15,5) + '--' + RealToString(yrange,15,5));
-         xrange := xrange / DEMxSpacing / l1;
-         yrange := yrange / DEMySpacing / l1;
-         Memo1.Lines.Add('x and y range:' + RealToString(xrange,15,5) + '--' + RealToString(yrange,15,5));
-         NumCol := succ(round(xrange));
-         NumRow := succ(round(yrange));
-         DEMSWCornerX := round(xmin);
-         DEMSWCornerY := round(ymin);
-      end;
-
-      MaxElev := zMax;
-      MinElev := zMin;
-
-      {$IfDef RecordImportProblems}
-         WriteLineToDebugFile('First set header calculations done');
-         for i := 0 to pred(Memo1.Lines.Count) do WriteLineToDebugFile(Memo1.Lines[i]);
-      {$EndIf}
-
-      EditHeaderRecord(WantedDEM,false);
-      {$IfDef RecordImportProblems} WriteLineToDebugFile('after edit xpacing=' + RealToString(fLongInterval,-24,-12) + '    ypacing=' + RealToString(fLatInterval,-24,-12)); {$EndIf}
-      SetElevationMultiple;
-      AllocateDEMMemory(InitDEMMissing);
-
-      NewCount := 0;
-      if (ImportParamsDialog.CheckBox1.Checked) then begin
-         StartProgress('Create DEM');
-         xyzTable := tMyData.Create(xyzTableName);
-         while not XYZTable.EOF do with ImportParamsDialog do begin
-            inc(NewCount);
-            if (NewCount mod 1000 = 0) then begin
-               UpdateProgressBar(NewCount/XYZTable.RecordCount);
-               StatusBar1.Panels[0].Text := IntToStr(NewCount);
-            end;
-            if WantOut then break;
-            x := XYZTable.GetFieldByNameAsFloat(XFieldName);
-            y := XYZTable.GetFieldByNameAsFloat(YFieldName);
-            z := XYZTable.GetFieldByNameAsFloat(ZFieldName);
-            AddPointToDEM;
-            XYZTable.Next;
-         end {while};
-         xyzTable.Destroy;
-      end
-      else begin
-         AssignFile(InputFile,FileName);
-         reset(InputFile);
-         while not EOF(InputFile) do begin
-            inc(NewCount);
-            if (NewCount mod 1000 = 0) then wmDEM.SetPanelText(0,IntToStr(NewCount));
-            readln(InputFile,MenuStr);
-            if ProcessASCIIXYZLine(MenuStr,ImportParamsDialog.ZMult,x,y,z) then begin
-               AddPointToDEM;
-            end;
-         end;
-         CloseFile(InputFile);
-      end;
-      EndProgress;
-      {$IfDef RecordImportProblems} WriteLineToDebugFile('  DEM read OK     after process xpacing=' + RealToString(fLongInterval,-24,-12) + '    ypacing=' + RealToString(fLatInterval,-24,-12) + '   UTM zone=' + IntToStr(UTMZone)); {$EndIf}
-      if PathIsValid(DEMDefs.WriteDEMDir) then SaveName := DEMDefs.WriteDEMDir + AreaName + '.dem'
-      else SaveName := DEMDefs.WriteDEMDir + AreaName + '.dem';
-      SaveName := '';
-      DEMGlb[1].WriteNewFormatDEM(SaveName);
-      Memo1.Lines.Add('New DEM written to ' + SaveName);
-   end {with};
-   if (ImportParamsDialog <> Nil) then ImportParamsDialog.Close;
-   {$IfDef RecordImportProblems} WriteLineToDebugFile(DEMGlb[WantedDEM].KeyDEMParams); {$EndIf}
-   CloseSingleDEM(WantedDEM);
-{$EndIf}
-end;
-
-
-//procedure TDemHandForm.Classificationaccuracy1Click(Sender: TObject);
-//begin
-   //{$IfDef Include2019datafusion} ClassificationAccuracy(Memo1); {$EndIf}
-//end;
 
 
 procedure TDemHandForm.Close1Click(Sender: TObject);
@@ -2100,7 +1882,7 @@ begin
    EditDEMHeader;
 end;
 
-
+(*
 procedure TDemHandForm.ASCIIZvaluesImport(Order : tProcessOrder; ItsASCII : tDEMFormat = dfASCII);
 var
    FileName,fName      : PathStr;
@@ -2196,7 +1978,7 @@ begin
       CloseSingleDEM(WantedDEM);
    end;
 end;
-
+*)
 
 procedure TDemHandForm.AssignbyEPSGandreprojecttoUTM1Click(Sender: TObject);
 begin
@@ -2224,36 +2006,6 @@ begin
    BatchRenameDEMfiles(Sender);
 end;
 
-procedure TDemHandForm.BinaryrawDEM1Click(Sender: TObject);
-begin
-   ASCIIZvaluesImport(LRD,dfBinary16BitInt);
-end;
-
-
-procedure TDemHandForm.BinaryrawDEM32bit1Click(Sender: TObject);
-begin
-   ASCIIZvaluesImport(LRD,dfBinary32BitInt);
-end;
-
-
-procedure TDemHandForm.LRD1Click(Sender: TObject);
-begin
-   ASCIIZvaluesImport(LRD);
-end;
-
-
-procedure TDemHandForm.LRU1Click(Sender: TObject);
-begin
-   ASCIIZvaluesImport(LRU);
-end;
-
-
-procedure TDemHandForm.UDR1Click(Sender: TObject);
-begin
-    ASCIIZvaluesImport(UDR);
-end;
-
-
 procedure TDemHandForm.UKOStoUTM1Click(Sender: TObject);
 begin
    IrishgridtoUTM1Click(Sender);
@@ -2264,22 +2016,6 @@ begin
    GDALConvertImagesToGeotiff;
 end;
 
-
-procedure TDemHandForm.DUR1Click(Sender: TObject);
-begin
-   ASCIIZvaluesImport(DUR);
-end;
-
-procedure TDemHandForm.RLD1Click(Sender: TObject);
-begin
-   ASCIIZvaluesImport(RLD);
-end;
-
-
-//procedure TDemHandForm.InsertroughnessandcurvatureinDBF1Click(Sender: TObject);
-//begin
-   //{$IfDef Include2019datafusion} InsertCloudCompareRoughnessCurvature(Memo1); {$EndIf}
-//end;
 
 procedure TDemHandForm.IrishgridtoUTM1Click(Sender: TObject);
 var
@@ -3885,7 +3621,8 @@ begin
 
    if (DataPath = '') then DataPath := MainMapData;
    GetDOSPath('input DEMs with ' + TStr,DataPath);
-   GetDOSPath('DEM output',OutPath);
+   if (Sender = ASCfiles1) then OutPath := DataPath  //these will replace the ASC files
+   else GetDOSPath('DEM output',OutPath);
    //OutPath := DataPath;
 
    TheFiles := Nil;
@@ -3898,7 +3635,7 @@ begin
       {$IfDef RecordReformat} WriteLineToDebugFile('No files found'); {$EndIf}
    end
    else begin
-      if AnswerIsYes('Geotiff format rather than MD DEM') then OutF := '.tif' else OutF := '.dem';
+      if (Sender <> ASCfiles1) then if AnswerIsYes('Geotiff format rather than MD DEM') then OutF := '.tif' else OutF := '.dem';
 
       for I := 0 to pred(TheFiles.Count) do begin
          fName := TheFiles.Strings[i];
@@ -3915,7 +3652,7 @@ begin
                if (Sender <> BILdirectorytoMDDEM1) or FileExists(ChangeFileExt(fName,'.hdr')) then begin
                   LoadNewDEM(j,fName,false);
                   if (j <> 0) and (DEMGlb[j] <> Nil) then begin
-                     SaveIt;
+                     if (Sender <> ASCfiles1) then SaveIt;  //ASC files converted during LoadNewDEM
                      CloseSingleDEM(j);
                   end;
                end;

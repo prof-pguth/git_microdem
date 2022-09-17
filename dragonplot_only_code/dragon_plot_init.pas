@@ -12,7 +12,7 @@ unit dragon_plot_init;
 
 {$IfDef RecordProblems}
    {$IfDef Debug}
-      {$Define RecordDP}
+      //{$Define RecordDP}
       //{$Define CheckAccessibility}
    {$EndIf}
 {$EndIf}
@@ -279,8 +279,6 @@ var
           AParameter('MDforDP','MDdef.TigrDef.MaxAutoTigerCounties', MDdef.TigrDef.MaxAutoTigerCounties,500);
           AParameter('MDforDP','MDdef.TigrDef.MaxAutoTigerCounties', MDdef.TigrDef.MaxAutoTigerCounties,500);
 
-          AParameter('MDforDP','MdDef.LegendLocation.DrawItem',MdDef.GridLegendLocation.DrawItem , false);
-          AParameter('MDforDP','MdDef.LegendLocation.HorizontalLegend',MdDef.GridLegendLocation.HorizontalLegend, false);
           AParameter('MDforDP','MDDef.DoReqFlyHigh', MDDef.DoReqFlyHigh, false);
           AParameter('MDforDP','MDDef.DrawLOS', MDDef.DrawLOS, false);
           AParameter('MDforDP','MDDef.TigertoCDS', MDDef.TigertoCDS, false);

@@ -10,7 +10,7 @@ unit uk_os_converter;
 
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
-   {$Define ShowProjection}
+   //{$Define ShowProjection}
 {$EndIf}
 
 interface

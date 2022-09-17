@@ -9,8 +9,8 @@ inherited OptionsForm: TOptionsForm
   OnClose = FormClose
   OnCreate = FormCreate
   OnResize = FormResize
-  ExplicitWidth = 880
-  ExplicitHeight = 626
+  ExplicitWidth = 874
+  ExplicitHeight = 617
   TextHeight = 20
   inherited Bevel1: TBevel
     Left = 0
@@ -47,10 +47,12 @@ inherited OptionsForm: TOptionsForm
     Top = 0
     Width = 862
     Height = 521
-    ActivePage = TabSheet4
+    ActivePage = TabSheet12
     Align = alClient
     MultiLine = True
     TabOrder = 2
+    ExplicitWidth = 856
+    ExplicitHeight = 512
     object TabSheet1: TTabSheet
       Caption = 'Program'
       object RadioGroup7: TRadioGroup
@@ -913,6 +915,15 @@ inherited OptionsForm: TOptionsForm
         Caption = 'Get geoid'
         TabOrder = 13
         OnClick = BitBtn39Click
+      end
+      object BitBtn42: TBitBtn
+        Left = 16
+        Top = 400
+        Width = 177
+        Height = 25
+        Caption = 'Get Natural Earth Vectors'
+        TabOrder = 14
+        OnClick = BitBtn42Click
       end
     end
     object TabSheet8: TTabSheet
@@ -3177,6 +3188,8 @@ inherited OptionsForm: TOptionsForm
     Height = 58
     Align = alBottom
     TabOrder = 3
+    ExplicitTop = 512
+    ExplicitWidth = 856
     object BitBtn3: TBitBtn
       Left = 178
       Top = 6

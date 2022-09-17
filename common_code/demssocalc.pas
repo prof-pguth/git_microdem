@@ -12,10 +12,10 @@
 {$IFDEF DEBUG}
   //{$Define NoParallelFor} //used to debug only
    {$IfDef RecordProblems}   //normally only defined for debugging specific problems
-      {$Define ShowDEMSSOCalc}
+      //{$Define ShowDEMSSOCalc}
    {$EndIf}
 {$ELSE}
-   {$Define ShowDEMSSOCalc}
+   //{$Define ShowDEMSSOCalc}
 {$ENDIF}
 
 
@@ -322,7 +322,11 @@ begin
    DrawOverlays;
 end;
 
+
 procedure TSSOCalcDlg.BitBtn4Click(Sender: TObject);
+{$IfDef ExWaveLengthHeight}
+begin
+{$Else}
 var
    WavelengthMean,WavelengthMedian,WavelengthStdDev,HeightMean,HeightMedian,HeightStd : float64;
 begin
@@ -331,6 +335,7 @@ begin
      theLOSView.FindWaveLengthHeight(True,WavelengthMean,WavelengthMedian,WavelengthStdDev,HeightMean,HeightMedian,HeightStd,Memo1);
      theLOSView.FormResize(Nil);
    end;
+{$EndIf}
 end;
 
 
@@ -419,7 +424,11 @@ begin
    {$IfDef ShowDEMSSOCalc} WriteLineToDebugFile('tSSOCalcDlg.BitBtn7Click out');  {$EndIf}
 end;
 
+
 procedure TSSOCalcDlg.BitBtn8Click(Sender: TObject);
+{$IfDef ExWaveLengthHeight}
+begin
+{$Else}
 var
    Results : tStringList;
    fName : PathStr;
@@ -434,12 +443,16 @@ begin
        Results.Free;
        Memo1.Lines.Add('No crests found');
     end;
+{$EndIf}
 end;
 
 
 procedure TSSOCalcDlg.BitBtn9Click(Sender: TObject);
 begin
+{$IfDef ExWaveLengthHeight}
+{$Else}
    ComputeDunecrestspacingheight(theBaseMap,theBaseMap.MapDraw.MapAreaDEMGridLimits,Memo1);
+{$EndIf}
 end;
 
 
@@ -554,6 +567,14 @@ begin
 
    if MDDef.GeomorphMapsFullDEM then RadioGroup1.ItemIndex := 0
    else RadioGroup1.ItemIndex := 1;
+
+   {$IfDef ExWaveLengthHeight}
+      BitBtn4.Visible := false;
+      BitBtn8.Visible := false;
+      BitBtn9.Visible := false;
+   {$EndIf}
+
+
 end;
 
 

@@ -16,7 +16,6 @@ object FloodingForm: TFloodingForm
   Visible = True
   OnClose = FormClose
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object StringGrid1: TStringGrid
     Left = 225

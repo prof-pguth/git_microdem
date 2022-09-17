@@ -15,12 +15,12 @@
       //{$Define RecordTowerProblems}
       //{$Define RecordCheckCameraParamters}
       //{$Define RecordCreateBlowUpMap}
-      {$Define RecordDrawSighting}
-      {$Define RecordDP}
-      {$Define RecordFigureView}
-      {$Define RecordClosing}
-      {$Define RecordLightning}
-      {$Define RecordKML}
+      //{$Define RecordDrawSighting}
+      //{$Define RecordDP}
+      //{$Define RecordFigureView}
+      //{$Define RecordClosing}
+      //{$Define RecordLightning}
+      //{$Define RecordKML}
       //{$Define RecordDefineDatum}
       //{$Define RecordClosingPersp}
       //{$Define RecordPostResults}
@@ -33,7 +33,7 @@
       //{$Define CheckAccessibility}
       //{$Define RecordHiResDEM}
    {$Else}
-      {$Define RecordDP}
+      //{$Define RecordDP}
    {$EndIf}
 {$EndIf}
 

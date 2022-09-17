@@ -18,8 +18,8 @@ unit pick_geostats;
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IfDef Debug}
-      {$Define RecordGeostats}
-      {$Define RecordMapMaking}
+      //{$Define RecordGeostats}
+      //{$Define RecordMapMaking}
    {$EndIf}
 {$EndIf}
 
@@ -242,6 +242,9 @@ begin
 end;
 
 procedure TPickGeoStat.BitBtn13Click(Sender: TObject);
+{$IfDef ExWaveLengthHeight}
+begin
+{$Else}
 var
    i : integer;
 begin
@@ -251,6 +254,7 @@ begin
    else begin
       ComputeDunecrestspacingheight(DEMGlb[CurDem].SelectionMap,GridLimits,Nil);
    end;
+{$EndIf}
 end;
 
 
@@ -463,8 +467,8 @@ end;
 
 
 procedure TPickGeoStat.BitBtn22Click(Sender: TObject);
-var
-   Radius,Box : integer;
+//var
+   //Radius,Box : integer;
 begin
    if (CurDEM = 0) then GetDEM(CurDEM,true,'single DEM geomorphometry');
    HeavyDutyProcessing := true;

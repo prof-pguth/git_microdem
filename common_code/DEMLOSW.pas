@@ -22,7 +22,7 @@ unit demlosw;
       //{$Define RecordUTMZones}
       //{$Define RecordSlopeCalc}
       //{$Define RecordLOSLegend}
-      //{$Define RecordLOSProblems}
+      {$Define RecordLOSProblems}
       //{$Define RecordLOSPrettyDrawing}
       //{$Define RecordRandomProfiles}
       //{$Define RecordWaveLenghtHeightProblems}
@@ -33,11 +33,6 @@ unit demlosw;
       //{$Define RecordMGTProblems}
    {$EndIf}
 {$Endif}
-
-
-{$IfDef ExGeology}
-   {$Define ExMagAnom}
-{$EndIf}
 
 
 interface
@@ -212,8 +207,11 @@ type
      procedure MarineMagneticAnomalies;
      procedure ShowOnMap;
      procedure EnableAzimuthShifts;
-     function FindNearestCrest(Distance : float64; var Lat,Long,Height,LeftHt,LeftLength,RightHt,RightLength : float64) : boolean;
-     procedure FindWaveLengthHeight(DisplayIt : boolean; var WavelengthMean,WavelengthMedian,WavelengthStdDev, HeightMean,HeightMedian,HeightStd : float64; Memo1 : tMemo = nil);
+     {$IfDef ExWaveLengthHeight}
+     {$Else}
+        function FindNearestCrest(Distance : float64; var Lat,Long,Height,LeftHt,LeftLength,RightHt,RightLength : float64) : boolean;
+        procedure FindWaveLengthHeight(DisplayIt : boolean; var WavelengthMean,WavelengthMedian,WavelengthStdDev, HeightMean,HeightMedian,HeightStd : float64; Memo1 : tMemo = nil);
+     {$EndIf}
 end;
 
 
@@ -283,11 +281,14 @@ var
 
    {$IfDef ExGeology}
    {$Else}
-   PickMagProfVars : TPickMagProfVars;
+      PickMagProfVars : TPickMagProfVars;
    {$EndIf}
 
+{$IfDef ExWaveLengthHeight}
+{$Else}
+   {$I demlos_crest_wavelength.inc}
+{$EndIf}
 
-{$I demlos_crest_wavelength.inc}
 
 {$I demlos_marine_mag.inc}
 
@@ -312,7 +313,7 @@ begin
          Result.LOSdraw.LongLeft := Long1;
          Result.LOSdraw.LatRight := Lat2;
          Result.LOSdraw.LongRight := Long2;
-
+         {$If Defined(RecordLOSProblems)} WriteLineToDebugFile('Left side=' + LatLongDegreeToString(Lat1,Long1) + '  rightside=' + LatLongDegreeToString(Lat2,Long2) ); {$EndIf}
          if (WhatType = MultipleTopoProfileRight) then Result.LOSdraw.LOSVariety := losAllDEMs
          else if (WhatType = SimpleTopoProfileRight) then Result.LOSdraw.LOSVariety := losSimpleOne
          else if (WhatType = MultipleLOS) then Result.LOSdraw.LOSVariety := losAllDEMDropDown
@@ -329,13 +330,14 @@ begin
          if inEnableAzimuthShifts then Result.EnableAzimuthShifts;
 
          if Result.ActuallyDraw then begin
-            {$IfDef RecordLOSProblems} WriteLineToDebugFile('Start ActuallyDraw'); {$EndIf}
+            {$IfDef RecordLOSProblems} WriteLineToDebugFile('StartLOS, ActuallyDraw'); {$EndIf}
             Result.RespondToResize := true;
             Result.FormResize(Nil);
             Result.FormStyle := fsMDIChild;
             Result.ShowOnMap;
             Result.SetFocus;
             wmDEM.FormPlacementInCorner(Result,lpNEMap);
+            {$IfDef RecordLOSProblems} WriteLineToDebugFile('StartLOS, Out'); {$EndIf}
          end;
       end;
    end
@@ -394,19 +396,19 @@ procedure TDEMLOSF.FrenelZoneencroachment1Click(Sender: TObject);
 begin
    {$IfDef ExFresnel}
    {$Else}
-      if (LOSdraw.FresnelDB <> 0) then begin
-         GISdb[LOSdraw.FresnelDB].DisplayTable;
-         GISdb[LOSdraw.FresnelDB].dbOpts.XField := 'RANGE_KM';
-         GISdb[LOSdraw.FresnelDB].dbOpts.YField := 'INTRUDE_PC';
-         GISdb[LOSdraw.FresnelDB].DBTablef.N2Dgraph1Click(Nil);
+      if (LOSdraw.LOSProfileDB <> 0) then begin
+         GISdb[LOSdraw.LOSProfileDB].DisplayTable;
+         GISdb[LOSdraw.LOSProfileDB].dbOpts.XField := 'RANGE_KM';
+         GISdb[LOSdraw.LOSProfileDB].dbOpts.YField := 'INTRUDE_PC';
+         GISdb[LOSdraw.LOSProfileDB].DBTablef.N2Dgraph1Click(Nil);
       end;
    {$EndIf}
 end;
 
 procedure TDEMLOSF.Frese1Click(Sender: TObject);
 begin
-   if (LOSdraw.FresnelDB <> 0) and (CrossTrackProfile = Nil) then begin
-     GISdb[LOSdraw.FresnelDB].DisplayTable;
+   if (LOSdraw.LOSProfileDB <> 0) and (CrossTrackProfile = Nil) then begin
+     GISdb[LOSdraw.LOSProfileDB].DisplayTable;
      CrossTrackProfile := BaseGraf.TThisBaseGraph.Create(Application);
      CrossTrackProfile.GraphDraw.HorizLabel := 'Distance from LOS (m)';
      CrossTrackProfile.GraphDraw.VertLabel := 'Elevation (m)';
@@ -435,11 +437,11 @@ procedure TDEMLOSF.Grazingangles1Click(Sender: TObject);
 begin
    {$IfDef ExFresnel}
    {$Else}
-      if (LOSdraw.FresnelDB <> 0) and MDDef.DoGrazingFields then begin
-        GISdb[LOSdraw.FresnelDB].DisplayTable;
-        GISdb[LOSdraw.FresnelDB].dbOpts.XField := 'RANGE_KM';
-        GISdb[LOSdraw.FresnelDB].dbOpts.YField := 'GRAZING_2D';
-        GISdb[LOSdraw.FresnelDB].DBTablef.N2Dgraph1Click(Nil);
+      if (LOSdraw.LOSProfileDB <> 0) and MDDef.DoGrazingFields then begin
+        GISdb[LOSdraw.LOSProfileDB].DisplayTable;
+        GISdb[LOSdraw.LOSProfileDB].dbOpts.XField := 'RANGE_KM';
+        GISdb[LOSdraw.LOSProfileDB].dbOpts.YField := 'GRAZING_2D';
+        GISdb[LOSdraw.LOSProfileDB].DBTablef.N2Dgraph1Click(Nil);
       end;
    {$EndIf}
 end;
@@ -479,11 +481,11 @@ begin
    {$IfDef ExGeology}
    {$Else}
       ClearProtractorTool;
-      if (LOSdraw.FresnelDB <> 0) then begin
+      if (LOSdraw.LOSProfileDB <> 0) then begin
          {$IfDef RecordClosing}
-         WriteLineToDebugFile('Close Fresnel DB ' + IntToStr(LOSdraw.FresnelDB));
+         WriteLineToDebugFile('Close Fresnel DB ' + IntToStr(LOSdraw.LOSProfileDB));
          {$EndIf}
-         CloseAndNilNumberedDB(LOSdraw.FresnelDB);
+         CloseAndNilNumberedDB(LOSdraw.LOSProfileDB);
       end
       else begin
          {$IfDef RecordClosing} WriteLineToDebugFile('No Fresnel DB');   {$EndIf}
@@ -639,7 +641,7 @@ var
             var
                SumBlocking : integer;
             begin
-                  with LOSDraw, GISdb[FresnelDB] do begin
+                  with LOSDraw, GISdb[LOSProfileDB] do begin
                       MyData.ApplyFilter(theField + ' > 0');
                       if (MyData.RecordCount = 0) then begin
                          if DoPopup then Results.Add('   No blockage');
@@ -673,7 +675,7 @@ var
             end;
 
       begin
-          GISdb[LOSdraw.FresnelDB].EmpSource.Enabled := false;
+          GISdb[LOSdraw.LOSProfileDB].EmpSource.Enabled := false;
           if DoPopup then begin
              Results.Add('');
              Results.Add('From ' + Which);
@@ -689,7 +691,7 @@ var
       {$Else}
          procedure DoHag(Which : integer; aField : ShortString);
          begin
-            with GISdb[LOSdraw.FresnelDB] do begin
+            with GISdb[LOSdraw.LOSProfileDB] do begin
                  if DoPopup then Results.Add('From HAG grid: ' + DEMGlb[DEMGlb[LOSdraw.DEMonView].VegGrid[Which]].AreaName);
                  MyData.ApplyFilter(aField + '=' + QuotedStr('Y'));
                  TerrainBlockage := MyData.RecordCount > 0;
@@ -719,8 +721,8 @@ var
       {$EndIf}
 
 begin
-   GISdb[LOSDraw.FresnelDB].MyData.ApplyFilter('');
-   PixSize := LOSDraw.FormSectLenMeters / pred(GISdb[LOSDraw.FresnelDB].MyData.RecordCount);
+   GISdb[LOSDraw.LOSProfileDB].MyData.ApplyFilter('');
+   PixSize := LOSDraw.FormSectLenMeters / pred(GISdb[LOSDraw.LOSProfileDB].MyData.RecordCount);
    if DoPopup then begin
       Results := tStringList.Create;
       Results.Add('Total profile length: ' + RealToString(LOSDraw.FormSectLenMeters,-12,2) + ' m');
@@ -737,15 +739,15 @@ begin
    {$Else}
       if (DEMGlb[LOSDraw.DEMonView].VegGrid[1] <> 0 )then begin
           if DoPopup then Results.Add('From DTM');
-          GISdb[LOSDraw.FresnelDB].MyData.ApplyFilter('BLOCK_TERR=' + QuotedStr('Y'));
+          GISdb[LOSDraw.LOSProfileDB].MyData.ApplyFilter('BLOCK_TERR=' + QuotedStr('Y'));
 
-          if (GISdb[LOSDraw.FresnelDB].MyData.RecordCount = 0) then begin
+          if (GISdb[LOSDraw.LOSProfileDB].MyData.RecordCount = 0) then begin
              if DoPopup then Results.Add('No terrain blockage');
              Result := Result + 'N,0,';
           end
           else begin
-             if DoPopup then Results.Add('Blocked by terrain: ' + RealToString(PixSize * GISdb[LOSDraw.FresnelDB].MyData.RecordCount,-12,1) + ' m');
-             Result := Result + 'Y,' + RealToString(PixSize * GISdb[LOSDraw.FresnelDB].MyData.RecordCount,-12,1) + ',';
+             if DoPopup then Results.Add('Blocked by terrain: ' + RealToString(PixSize * GISdb[LOSDraw.LOSProfileDB].MyData.RecordCount,-12,1) + ' m');
+             Result := Result + 'Y,' + RealToString(PixSize * GISdb[LOSDraw.LOSProfileDB].MyData.RecordCount,-12,1) + ',';
           end;
           if DoPopup then Results.Add('');
           if DEMGlb[LOSDraw.DEMonView].VegGrid[1] <> 0 then DoHag(1,'BLOCK_VEG');
@@ -867,7 +869,7 @@ with LOSdraw do begin
    if (LOSFormDoing = losFresnelCrossSection) then begin
        DEMGlb[DEMonView].DrawCrossTrackProfile(CrossTrackProfile,ProfLats[LastLOSX-StartLOSLeft],ProfLongs[LastLOSX-StartLOSLeft],LOSAzimuth,MDDef.LOSSliceBuffer,0.5*DEMGlb[DEMonView].AverageSpace);
 
-       with GISdb[FresnelDB],MyData do begin
+       with GISdb[LOSProfileDB],MyData do begin
           Bitty := 0.00001;
           repeat
              MyData.ApplyFilter(PointVeryCloseGeoFilter(LatFieldName,LongFieldName,ProfLats[LastLOSX-StartLOSLeft],ProfLongs[LastLOSX-StartLOSLeft],Bitty));
@@ -1025,7 +1027,7 @@ begin
       Parallelprofiles1.Visible := ((LOSVariety in [losVanilla,losSimpleOne]) or (MDDef.ProgramOption in [GeologyProgram])) and (not MultiProf);
       Magneticmodel1.Visible := (MDDef.ProgramOption in [ExpertProgram,GeologyProgram]) or (DEMGlb[DEMonView].DEMheader.ElevUnits in [TenthMgal,Milligal,TenthGamma,Gammas,HundredthMGal,Nanotesla]);
 
-      Wavelengthheight1.Visible := (FresnelDB <> 0) and MDDef.ShowGeomorphometry and (MDDef.ProgramOption in [ExpertProgram]);
+      Wavelengthheight1.Visible := (LOSProfileDB <> 0) and MDDef.ShowGeomorphometry and (MDDef.ProgramOption in [ExpertProgram]);
       Linesizeandcolors1.Visible := MultiProf;
       Grazingangles1.Visible := MDDef.DoGrazingFields;
       AllopenDEMs1.Visible := (NumDEMDataSetsOpen > 1);
@@ -1041,16 +1043,17 @@ begin
       {$IfDef ExFresnel}
          FrenelZoneencroachment1.Visible := false;
          Averageelevation1.Visible := false;
+         Frese1.Visible := false;
       {$Else}
          FrenelZoneencroachment1.Visible := MDDef.DrawFresnel and (not MultiProf);
          Averageelevation1.Visible := MDDef.DrawFresnel and (not MultiProf);
+         {$IFDef ExPointCloud}
+            Frese1.Visible := false;
+         {$Else}
+            Frese1.Visible := (LOSMemoryPointCloud[PtCldInUse] <> Nil) or (MDDef.DrawFresnel and (not MultiProf));
+         {$EndIf}
       {$EndIf}
 
-      {$IFDef ExPointCloud}
-         Frese1.Visible := false;
-      {$Else}
-         Frese1.Visible := (LOSMemoryPointCloud[PtCldInUse] <> Nil) or (MDDef.DrawFresnel and (not MultiProf));
-      {$EndIf}
 
 
       if (MDdef.ProgramOption = DragonPlotProgram) then begin
@@ -1250,7 +1253,7 @@ begin
    {$IfDef ExFresnel}
    {$Else}
       //CrestComputationsOn := true;
-      CloseAndNilNumberedDB(LOSDraw.FresnelDB);
+      CloseAndNilNumberedDB(LOSDraw.LOSProfileDB);
       FormResize(Nil);
       DEMSSOCalc.DrawTopoGrainOverlay(Nil,Self,false,2);
    {$EndIf}
@@ -1265,7 +1268,7 @@ begin
    VincentyPointAtDistanceBearing(LOSDraw.LatLeft,LOSDraw.LongLeft,LOSDraw.FormSectLenMeters,LOSDraw.LOSAzimuth,LOSDraw.LatRight,LOSDraw.LongRight);
    LOSDraw.LOSExtremeElevationsAndScreenCoordinates;   //(DEMonView);
    if (BaseMap <> Nil) then BaseMap.DoFastMapRedraw;
-   CloseAndNilNumberedDB(LOSDraw.FresnelDB);
+   CloseAndNilNumberedDB(LOSDraw.LOSProfileDB);
    FormResize(Nil);
    ShowOnMap;
 end;
@@ -1537,7 +1540,7 @@ procedure TDEMLOSF.Averageelevation1Click(Sender: TObject);
 begin
    {$IfDef ExFresnel}
    {$Else}
-      GISdb[LOSdraw.FresnelDB].DisplayFieldStatistics('ELEV_M');
+      GISdb[LOSdraw.LOSProfileDB].DisplayFieldStatistics('ELEV_M');
    {$EndIf}
 end;
 
@@ -1554,7 +1557,7 @@ procedure TDEMLOSF.Openprofiledatabase1Click(Sender: TObject);
 begin
   {$IfDef ExFresnel}
   {$Else}
-      if (LOSdraw.FresnelDB <> 0) then GISdb[LOSdraw.FresnelDB].DisplayTable;
+      if (LOSdraw.LOSProfileDB <> 0) then GISdb[LOSdraw.LOSProfileDB].DisplayTable;
   {$EndIf}
 end;
 
@@ -1575,7 +1578,7 @@ end;
       with LOSdraw do begin
          if (Point_Cloud_Options.pt_cloud_opts_fm <> Nil) then begin
             if (LOSMemoryPointCloud[PtCldInUse] = Nil) then begin
-               CloseAndNilNumberedDB(FresnelDB);
+               CloseAndNilNumberedDB(LOSProfileDB);
                CloneImageToBitmap(BaseMap.Image1,Bitmap);
                PointsInPolyLine := 5;
 
@@ -1650,7 +1653,7 @@ var
    Bitmap : tMyBitmap;
    TStr : shortstring;
 begin
-  {$IfDef RecordLOSProblems} WriteLineToDebugFile('enter TDEMLOSF.LineOfSightFromLatLong  Client size 1: ' + IntToStr(ClientWidth) + 'x' + IntToStr(ClientHeight)); {$EndIf}
+  {$IfDef RecordLOSProblems} WriteLineToDebugFile('enter TDEMLOSF.LineOfSightFromLatLong  ' + FormClientSize(Self) ); {$EndIf}
 
    CreateBitmap(Bitmap,Image1.ClientWidth,Image1.ClientHeight);
    LOSDraw.SetSize(Bitmap,ClientWidth,ClientHeight);

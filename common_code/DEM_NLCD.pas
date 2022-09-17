@@ -11,6 +11,8 @@ unit dem_nlcd;
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    //{$Define RecordNLCDProblems}
    //{$Define RecordNLCDLegend}
+   {$Define RecordBatch}
+   {$Define RecordBarGraphsDetailed}
    //{$Define RecordPaletteProblems}
 {$EndIf}
 
@@ -78,27 +80,50 @@ const
 var
    dbName : PathStr;
 
-   procedure ASeries(fName : PathStr; aTitle : shortstring);
+   procedure ASeries(LandCoverfName : PathStr; aTitle : shortstring);
    var
-      NewDEM,NumDrawn : integer;
-      j,x,top,NewDB,Base : integer;
+      NumDrawn : integer;
+      j,x,top,Base : integer;
       singleleg,legbmp,bmp : tMyBitmap;
       Table : tMyData;
 
-         procedure DoOne(bbox : sfBoundBox; aLabel : shortstring);
+         function DoOne(bbox : sfBoundBox; aLabel : shortstring) : boolean;
+         var
+            fName : PathStr;
+            NewDEM,NewDB : integer;
          begin
-            if (NewDEM <> 0) then CloseSingleDEM(NewDEM);
-            NewDEM := GDALsubsetimageandopen(bbox,true,fName);
-            NewDB := DEMGlb[NewDEM].SelectionMap.MakeNLCDLegend(aLabel);
-            if (NewDB <> 0) then begin
-               SingleLeg := GISDB[NewDB].BarGraphLegend(false,aLabel);
-               bmp.Canvas.Draw(0,TopSize + NumDrawn * singleleg.Height,SingleLeg);
-               inc(NumDrawn);
-               Base := TopSize + NumDrawn * singleleg.Height;
-               SingleLeg.Destroy;
+            {$IfDef RecordBatch} WriteLineToDebugFile('Do series=' + aLabel); {$EndIf}
+            try
+               Result := true;
+               NewDEM := GDALsubsetimageandopen(bbox,true,LandCoverfName);
+               {$IfDef RecordBarGraphsDetailed} WriteLineToDebugFile('Grid opened'); {$EndIf}
+               if (NewDEM = 0) then begin
+                  {$IfDef RecordBatch} HighlightLineToDebugFile('No data for ' + aLabel); {$EndIf}
+                  Result := false;
+               end
+               else begin
+                  NewDB := DEMGlb[NewDEM].SelectionMap.MakeNLCDLegend(aLabel);
+                  {$IfDef RecordBarGraphsDetailed} WriteLineToDebugFile('Legend made'); {$EndIf}
+                  inc(NumDrawn);  //outside loop in case nothing drawn
+                  if (NewDB = 0) then begin
+                     Result := false;
+                     fName := '';
+                  end
+                  else begin
+                     SingleLeg := GISDB[NewDB].BarGraphLegend(false,aLabel);
+                     {$IfDef RecordBarGraphsDetailed} WriteLineToDebugFile('Bar graph legend made'); {$EndIf}
+                     bmp.Canvas.Draw(0,TopSize + NumDrawn * singleleg.Height,SingleLeg);
+                     Base := TopSize + NumDrawn * singleleg.Height;
+                     SingleLeg.Destroy;
+                     fName := GISDB[NewDB].dbFullName;
+                  end;
+               end;
+            finally
+               CloseAndNilNumberedDB(NewDB);
+               DeleteFileIfExists(fName);
+               CloseSingleDEM(NewDEM);
+               {$IfDef RecordBarGraphsDetailed} WriteLineToDebugFile('Do One Out'); {$EndIf}
             end;
-            CloseAndNilNumberedDB(NewDB);
-            CloseSingleDEM(NewDEM);
          end;
 
        procedure AddTitle;
@@ -108,18 +133,32 @@ var
           bmp.Canvas.TextOut(5,5,aTitle);
        end;
 
+   var
+      Name : shortstring;
    begin
-       {$IfDef RecordBatch} WriteLineToDebugFile('Do series=' + fName); {$EndIf}
+       {$IfDef RecordBatch} HighLightLineToDebugFile('Do series=' + LandCoverfName); {$EndIf}
        NumDrawn := 0;
-       NewDEM := 0;
+      // NewDEM := 0;
        for j := 0 to MaxNLCDCategories do LandCoverCatsUsed[j] := false;
        if UseTable then begin
           Table := tMyData.Create(dbName);
           CreateBitmap(bmp,1200,100 + Table.RecordCount * 60);
           AddTitle;
-          while not Table.Eof do begin
-             DoOne(Table.GetRecordBoundingBox,Table.GetFieldByNameAsString('NAME'));
-             Table.Next;
+
+          if Table.FieldExists('DEMIX_TILE') then begin
+             {$IfDef RecordBatch} WriteLineToDebugFile('Start DEMIX tiles'); {$EndIf}
+             while not Table.Eof do begin
+                Name := Table.GetFieldByNameAsString('DEMIX_TILE');
+                DoOne(DEMIXtileBoundingBox(Name),Name);
+                Table.Next;
+             end;
+             {$IfDef RecordBatch} WriteLineToDebugFile('End DEMIX tiles'); {$EndIf}
+          end
+          else begin
+             while not Table.Eof do begin
+                DoOne(Table.GetRecordBoundingBox,Table.GetFieldByNameAsString('NAME'));
+                Table.Next;
+             end;
           end;
           Table.Destroy;
        end
@@ -133,6 +172,7 @@ var
           end;
        end;
 
+       (*
        if Legend then begin
          CreateBitmap(legbmp,1200,1800);
          legbmp.canvas.font.Size := 18;
@@ -153,24 +193,26 @@ var
          bmp.Canvas.Draw(0,Base + 20,LegBMP);
          LegBMP.Destroy;
        end;
-
+       *)
       GetImagePartOfBitmap(bmp);
       DisplayBitmap(Bmp,'Land cover distribution');
    end;
 
 begin
    {$IfDef RecordBatch} WriteLineToDebugFile('LandCoverBarGraphs in'); {$EndIf}
-
-   if UseTable then
-      if not GetFileFromDirectory('bounding box data base','*.dbf',dbName) then exit;
-
-   ASeries('g:\landcover\Geomorphon\geomorphon_1KMmaj_GMTEDmd.tif','Geomorphons');
-   ASeries('g:\landcover\iwahashi\iwahashi.tif','Iwahashi and Pike');
-   ASeries('g:\landcover\Meybeck\Meybeck_1km1.tif','Meybeck and others');
-   ASeries('g:\landcover\lccs_300m\ESACCI-LC-L4-LCCS-Map-300m-P1Y-2015-v2.0.7.tif','LCCS 300 m 2015');
-
-   CloseAllDatabases;
-   {$IfDef RecordBatch} WriteLineToDebugFile('LandCoverBarGraphs out'); {$EndIf}
+   try
+      HeavyDutyProcessing := true;
+      if UseTable then
+         if not GetFileFromDirectory('bounding box data base','*.dbf',dbName) then exit;
+      ASeries('h:\landcover\Geomorphon\geomorphon_1KMmaj_GMTEDmd.tif','Geomorphons');
+      ASeries('h:\landcover\iwahashi\iwahashi.tif','Iwahashi and Pike');
+      ASeries('h:\landcover\Meybeck\Meybeck_1km1.tif','Meybeck and others');
+      ASeries('h:\landcover\lccs_300m\ESACCI-LC-L4-LCCS-Map-300m-P1Y-2015-v2.0.7.tif','LCCS 300 m 2015');
+   finally
+      CloseAllDatabases;
+      HeavyDutyProcessing := false;
+      {$IfDef RecordBatch} WriteLineToDebugFile('LandCoverBarGraphs out'); {$EndIf}
+   end;
 end;
 
 

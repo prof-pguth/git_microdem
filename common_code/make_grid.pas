@@ -75,7 +75,6 @@ function AspectDifferenceMap(WhichDEM : integer; GridLimits : tGridLimits) : int
 
 function MakeMomentsGrid(CurDEM : integer; What : char; BoxSizeRadiusMeters : integer = -99; OpenMaps : boolean = true) : integer;
 
-
 function CreateProfileConvexityMap(WhichDEM : integer; OpenMap : boolean = true) : integer;
 function CreateSlopeMap(WhichDEM : integer; OpenMap : boolean = true; Components : boolean = false) : integer;
 
@@ -183,8 +182,6 @@ begin
    Result := CreateAnOrganizationMap(WhichDEM,OpenMap);
    RestoreBackupDefaults;
 end;
-
-
 
 
 function CreateRoughnessMap(WhichDEM : integer; OpenMap : boolean = true) : integer;

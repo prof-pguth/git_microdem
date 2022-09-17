@@ -9,7 +9,7 @@ unit elev_color_range;
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$IfDef Debug}
-      {$Define ElevColorChange}
+      //{$Define ElevColorChange}
    {$EndIf}
 {$EndIf}
 

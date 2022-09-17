@@ -19,7 +19,7 @@ unit petimage_form;
    //{$Define RecordGetImagePartOfBitmap}
    //{$Define RecordJPEG}
    //{$Define RecordPNG}
-   {$Define RecordClosing}
+   //{$Define RecordClosing}
    //{$Define RecordBitmapProblems}
    //{$Define RecordIHSmerges}
    //{$Define RecordRoamOnMapProblems}
@@ -1655,6 +1655,9 @@ begin
    Image1.Picture.Graphic := Bitmap;
    XBMPSize := Bitmap.Width;
    YBMPSize := Bitmap.Height;
+   Image1.Width := XBMPsize;
+   Image1.Height := YBMPsize;
+
    ComboBox1Change(Nil);
    {$IfDef RecordImageResize} WriteLineToDebugFile('Bitmap size ' + LoadedFile + '  ' + ImageSize(Bitmap)); {$EndIf}
    if (Not SizeCorrect) then begin
@@ -1670,7 +1673,6 @@ begin
       end;
       ComboBox1.Text := IntToStr(ImageBlowUp)  + '%';
    end;
-
 
    {$IfDef RecordImageResize} WriteLineToDebugFile('TImageFm.LoadImage, Im size: ' + IntToStr(Image1.Width) + 'x' + IntToStr(Image1.Height) + '  Client size: ' + IntToStr(ClientWidth) + 'x' + IntToStr(ClientHeight)); {$EndIf}
 end;

@@ -3,8 +3,8 @@ object DemHandForm: TDemHandForm
   Top = 244
   BorderIcons = [biSystemMenu]
   Caption = 'Data Manipulation'
-  ClientHeight = 650
-  ClientWidth = 1032
+  ClientHeight = 663
+  ClientWidth = 1034
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,8 +19,8 @@ object DemHandForm: TDemHandForm
   object Memo1: TMemo
     Left = 0
     Top = 0
-    Width = 1032
-    Height = 631
+    Width = 1034
+    Height = 644
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -31,11 +31,13 @@ object DemHandForm: TDemHandForm
     ScrollBars = ssVertical
     TabOrder = 0
     Visible = False
+    ExplicitWidth = 1032
+    ExplicitHeight = 631
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 631
-    Width = 1032
+    Top = 644
+    Width = 1034
     Height = 19
     Panels = <
       item
@@ -44,6 +46,8 @@ object DemHandForm: TDemHandForm
       item
         Width = 250
       end>
+    ExplicitTop = 631
+    ExplicitWidth = 1032
   end
   object MainMenu1: TMainMenu
     Left = 24
@@ -61,41 +65,15 @@ object DemHandForm: TDemHandForm
         Caption = 'Binary DEMs/grids'
         object BinaryrawDEM1: TMenuItem
           Caption = 'Binary raw DEM (16 bit)'
-          OnClick = BinaryrawDEM1Click
         end
         object BinaryrawDEM32bit1: TMenuItem
           Caption = 'Binary raw DEM (32 bit)'
-          OnClick = BinaryrawDEM32bit1Click
         end
       end
       object ASCII1: TMenuItem
         Caption = 'ASCII DEMs/grids'
-        object ASCIIZvalues1: TMenuItem
-          Caption = 'ASCII &Z values'
-          object LRD1: TMenuItem
-            Caption = 'LRD'
-            OnClick = LRD1Click
-          end
-          object LRU1: TMenuItem
-            Caption = 'LRU'
-            OnClick = LRU1Click
-          end
-          object UDR1: TMenuItem
-            Caption = 'UDR'
-            OnClick = UDR1Click
-          end
-          object DUR1: TMenuItem
-            Caption = 'DUR'
-            OnClick = DUR1Click
-          end
-          object RLD1: TMenuItem
-            Caption = 'RLD'
-            OnClick = RLD1Click
-          end
-        end
         object ASCIIXYZ1: TMenuItem
           Caption = 'ASCII XYZ'
-          OnClick = ASCIIXYZ1Click
         end
       end
       object Satellite1: TMenuItem

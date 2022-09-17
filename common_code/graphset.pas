@@ -10,7 +10,7 @@ unit Graphset;
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
-       {$Define RecordGrafSize}
+      //{$Define RecordGrafSize}
    {$ELSE}
 
    {$ENDIF}
@@ -21,39 +21,25 @@ interface
 uses
    Windows, Classes, Graphics, Forms, Controls, Buttons,  StdCtrls, ExtCtrls,
    System.SysUtils,VCL.Menus,
-   PETMAR, BaseGraf;
+   PETMAR, BaseGraf, Vcl.ComCtrls;
 
 type
   TGraphSettingsForm = class(TForm)
     OKBtn: TBitBtn;
     CancelBtn: TBitBtn;
     HelpBtn: TBitBtn;
-    XMinLabel: TLabel;
-    XMaxLabel: TLabel;
-    YMinLabel: TLabel;
-    YMaxLabel: TLabel;
-    XMinEdit: TEdit;
-    XMaxEdit: TEdit;
-    YMinEdit: TEdit;
-    YMaxEdit: TEdit;
-    XLabelEdit: TEdit;
-    YLabelEdit: TEdit;
     Label2: TLabel;
     Label3: TLabel;
     Edit2: TEdit;
     Edit3: TEdit;
     Edit4: TEdit;
     BitBtn1: TBitBtn;
-    Day: TLabel;
-    ComboBox1: TComboBox;
-    ComboBox2: TComboBox;
     CheckBox1: TCheckBox;
     Edit5: TEdit;
     Edit6: TEdit;
     Colors: TLabel;
     Label1: TLabel;
     Label4: TLabel;
-    CheckBox2: TCheckBox;
     Edit7: TEdit;
     Edit8: TEdit;
     Edit9: TEdit;
@@ -61,10 +47,7 @@ type
     Label6: TLabel;
     Label7: TLabel;
     BitBtn2: TBitBtn;
-    ComboBox3: TComboBox;
     CheckBox3: TCheckBox;
-    CheckBox4: TCheckBox;
-    CheckBox5: TCheckBox;
     CheckBox6: TCheckBox;
     RedrawSpeedButton12: TSpeedButton;
     Label8: TLabel;
@@ -76,6 +59,34 @@ type
     Label10: TLabel;
     CheckBox7: TCheckBox;
     Edit1: TEdit;
+    BitBtn3: TBitBtn;
+    BitBtn4: TBitBtn;
+    PageControl1: TPageControl;
+    TabSheet1: TTabSheet;
+    CheckBox4: TCheckBox;
+    XMinLabel: TLabel;
+    XMinEdit: TEdit;
+    XMaxEdit: TEdit;
+    XMaxLabel: TLabel;
+    XLabelEdit: TEdit;
+    TabSheet2: TTabSheet;
+    YLabelEdit: TEdit;
+    YMaxLabel: TLabel;
+    YMaxEdit: TEdit;
+    YMinEdit: TEdit;
+    YMinLabel: TLabel;
+    CheckBox2: TCheckBox;
+    CheckBox5: TCheckBox;
+    TabSheet3: TTabSheet;
+    Edit13: TEdit;
+    Label11: TLabel;
+    Label12: TLabel;
+    Edit14: TEdit;
+    Edit15: TEdit;
+    ComboBox2: TComboBox;
+    ComboBox1: TComboBox;
+    ComboBox3: TComboBox;
+    CheckBox8: TCheckBox;
     procedure BitBtn1Click(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -83,11 +94,14 @@ type
     procedure HelpBtnClick(Sender: TObject);
     procedure RedrawSpeedButton12Click(Sender: TObject);
     procedure CheckBox7Click(Sender: TObject);
+    procedure CheckBox8Click(Sender: TObject);
+    procedure BitBtn3Click(Sender: TObject);
+    procedure BitBtn4Click(Sender: TObject);
   private
     { Private declarations }
   public
     { Public declarations }
-     OwningGraph        : TThisBaseGraph;
+     OwningGraph : TThisBaseGraph;
      procedure CheckSettings;
      procedure InitializeSettings;
   end;
@@ -113,6 +127,7 @@ begin
          Edit12.Text := IntToStr(Height);
          XLabelEdit.Text := HorizLabel;
          YLabelEdit.Text := VertLabel;
+         Edit13.Text := OwningGraph.GraphDraw.VertLabel2;
          ComboBox1.ItemIndex := ord(GraphAxes);
          ComboBox2.Visible := VertAxisFunctionType in [ShortCumNormalAxis,CumulativeNormalAxis,LongCumulativeNormalAxis,LongerCumulativeNormalAxis];
          CheckBox1.Visible := GraphAxes in [XTimeYFullGrid,XTimeYPartGrid];
@@ -121,6 +136,8 @@ begin
          CheckBox3.Checked := Draw1to1Line;
          CheckBox5.Checked := not NormalCartesianX;
          CheckBox6.Checked := CorrectScaling;
+
+         CheckBox8.Checked := OwningGraph.GraphDraw.ShowGraphLeftLabels;
 
          Edit7.Text := IntToStr(LeftMargin);
          Edit8.Text := IntToStr(TopMargin);
@@ -154,18 +171,28 @@ begin
             end;
          end;
          if GraphDraw.GraphType in [gtTwoVertAxes] then begin
-            YLabelEdit.Visible := false;
-            YMaxEdit.Visible := false;
-            YMinEdit.Visible := false;
+           // YLabelEdit.Visible := false;
+            //YMaxEdit.Visible := false;
+            //YMinEdit.Visible := false;
             YMaxLabel.Visible := false;
             YMinLabel.Visible := false;
+            Edit14.Text := RealToString(OwningGraph.GraphDraw.MinVertAxis2,-18,-6);
+            Edit15.Text := RealToString(OwningGraph.GraphDraw.MaxVertAxis2,-18,-6);
+         end
+         else begin
+            TabSheet3.TabVisible := false;
          end;
     end;
+
+    YMinEdit.Text := RealToString(OwningGraph.GraphDraw.MinVertAxis,-18,-6);
+    YMaxEdit.Text := RealToString(OwningGraph.GraphDraw.MaxVertAxis,-18,-6);
+
+
          if OwningGraph.GraphDraw.GraphAxes in [XTimeYFullGrid,XTimeYPartGrid] then begin
             XMinLabel.Caption := 'Ending';
             XMaxLabel.Caption := 'Starting';
             XLabelEdit.Visible := false;
-            Day.Visible := true;
+            //Day.Visible := true;
             XMinEdit.Text := IntToStr(OwningGraph.GraphDraw.Day2);
             XMaxEdit.Text := IntToStr(OwningGraph.GraphDraw.Day1);
             Label2.Visible := true;
@@ -186,7 +213,7 @@ begin
             Edit4.Visible := false;
             Label2.Visible := false;
             Label3.Visible := false;
-            Day.Visible := false;
+           // Day.Visible := false;
             XMinLabel.Caption := 'Min x';
             XMaxLabel.Caption := 'Max x';
             XLabelEdit.Visible := true;
@@ -194,14 +221,18 @@ begin
             XMaxEdit.Text := RealToString(OwningGraph.GraphDraw.MaxHorizAxis,-18,-6);
          end;
 
-         YMinEdit.Text := RealToString(OwningGraph.GraphDraw.MinVertAxis,-18,-6);
-         YMaxEdit.Text := RealToString(OwningGraph.GraphDraw.MaxVertAxis,-18,-6);
 end;
 
 procedure TGraphSettingsForm.CheckBox7Click(Sender: TObject);
 begin
    OwningGraph.ScrollGraph := CheckBox7.Checked;
    OwningGraph.ScrollBox1.AutoScroll := CheckBox7.Checked;
+end;
+
+procedure TGraphSettingsForm.CheckBox8Click(Sender: TObject);
+begin
+   OwningGraph.GraphDraw.ShowGraphLeftLabels := CheckBox8.Checked;
+   RedrawSpeedButton12Click(Sender);
 end;
 
 procedure TGraphSettingsForm.CheckSettings;
@@ -214,7 +245,7 @@ begin
       NormalCartesianY := not CheckBox2.Checked;
       Draw1to1Line := CheckBox3.Checked;
       CorrectScaling := CheckBox6.Checked;
-      if ComboBox3.Text <> '' then DBFXFieldName := ComboBox3.Text;
+      if (ComboBox3.Text <> '') then DBFXFieldName := ComboBox3.Text;
 
       if ComboBox2.Visible then begin
          for i := 0 to pred(ComboBox2.Items.Count) do
@@ -240,10 +271,16 @@ begin
           CheckEditString(XMaxEdit.Text,MaxHorizAxis);
        end;
        VertLabel := YLabelEdit.Text;
+       VertLabel2 := Edit13.Text;
+
        LLcornerText := Edit10.Text;
        CheckEditString(YMinEdit.Text,MinVertAxis);
        CheckEditString(YMaxEdit.Text,MaxVertAxis);
+       CheckEditString(Edit14.Text,MinVertAxis2);
+       CheckEditString(Edit15.Text,MaxVertAxis2);
+
        if MaxVertAxis < MinVertAxis then SwapPair32(MinVertAxis,MaxVertAxis);
+       if MaxVertAxis2 < MinVertAxis2 then SwapPair32(MinVertAxis2,MaxVertAxis2);
        if MaxHorizAxis < MinHorizAxis then SwapPair32(MinHorizAxis,MaxHorizAxis);
        CheckEditString(Edit5.Text,MinZ);
        CheckEditString(Edit6.Text,MaxZ);
@@ -273,6 +310,26 @@ begin
    if (OwningGraph <> Nil) then OwningGraph.Font1Click(Sender);
 end;
 
+
+procedure TGraphSettingsForm.BitBtn3Click(Sender: TObject);
+var
+   i : integer;
+begin
+   for i := 1 to 15 do begin
+      OwningGraph.GraphDraw.Symbol[i].Size := OwningGraph.GraphDraw.Symbol[i].Size + 1;
+   end;
+   RedrawSpeedButton12Click(Sender);
+end;
+
+procedure TGraphSettingsForm.BitBtn4Click(Sender: TObject);
+var
+   i : integer;
+begin
+   for i := 1 to 15 do begin
+      OwningGraph.GraphDraw.Symbol[i].Size := OwningGraph.GraphDraw.Symbol[i].Size - 1;
+   end;
+   RedrawSpeedButton12Click(Sender);
+end;
 
 procedure TGraphSettingsForm.FormCreate(Sender: TObject);
 begin

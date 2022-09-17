@@ -7,9 +7,8 @@ inherited PickGrid: TPickGrid
   ClientWidth = 412
   Position = poDefaultSizeOnly
   OnCreate = FormCreate
-  ExplicitWidth = 430
-  ExplicitHeight = 532
-  PixelsPerInch = 96
+  ExplicitWidth = 424
+  ExplicitHeight = 523
   TextHeight = 20
   inherited Bevel1: TBevel
     Left = 0

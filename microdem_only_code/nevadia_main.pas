@@ -516,6 +516,10 @@ type
     DEMIXmergeandtransposewithmeanmedian1: TMenuItem;
     DEMIXtilesizebylatitude1: TMenuItem;
     DEMIXreferenceDEMcreation1: TMenuItem;
+    N35: TMenuItem;
+    DEMIXindexhighresreferenceDEMs1: TMenuItem;
+    DEMIXreferencetilesurvey1: TMenuItem;
+    Python1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -878,6 +882,9 @@ type
     procedure DEMIXmergeandtransposewithmeanmedian1Click(Sender: TObject);
     procedure DEMIXtilesizebylatitude1Click(Sender: TObject);
     procedure DEMIXreferenceDEMcreation1Click(Sender: TObject);
+    procedure DEMIXindexhighresreferenceDEMs1Click(Sender: TObject);
+    procedure DEMIXreferencetilesurvey1Click(Sender: TObject);
+    procedure Python1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1108,6 +1115,8 @@ uses
    {$Else}
       Make_grid,
    {$EndIf}
+
+   Simple_Python,
 
    ufrmMain,
 
@@ -1340,6 +1349,11 @@ begin
 end;
 
 
+procedure Twmdem.DEMIXindexhighresreferenceDEMs1Click(Sender: TObject);
+begin
+   IndexDEMIXreferenceDEMs;
+end;
+
 procedure Twmdem.DEMIXmergeandtransposewithmeanmedian1Click(Sender: TObject);
 begin
    MergeDEMIXCSV(ProgramRootDir + 'demix_criteria_with_signed.txt');
@@ -1353,6 +1367,11 @@ end;
 procedure Twmdem.DEMIXreferenceDEMcreation1Click(Sender: TObject);
 begin
    DEMIXreferenceDEMs;
+end;
+
+procedure Twmdem.DEMIXreferencetilesurvey1Click(Sender: TObject);
+begin
+   DEMIXreferenceDEMtiles;
 end;
 
 procedure Twmdem.DEMIXtiles1Click(Sender: TObject);
@@ -1468,6 +1487,14 @@ begin
    {$IfDef ExRedistrict}
       Legislativeredistricting1.Visible := false;
    {$EndIf}
+
+   {$IfDef ExGeoPDF}
+      OpenGeoPDF1.Visible := false;
+      OpenGeoPDFimagelayer1.Visible := false;
+      Allindividuallayers1.Visible := false;
+      Mergemasp1.Visible := false;
+   {$EndIf}
+
    Open1.Visible := (MDDef.ProgramOption <> DragonPlotProgram);
    Toolbar1.Visible := MDDef.ShowMainToolbar and (MDDef.ProgramOption <> DragonPlotProgram);
    Introductorytutorials1.Visible := (MDDef.ProgramOption <> DragonPlotProgram);
@@ -2452,7 +2479,7 @@ end;
 
 procedure Twmdem.Allindividuallayers1Click(Sender: TObject);
 begin
-   {$IfDef ExGDAL}
+   {$If Defined(ExGDAL) or Defined(ExGeoPDF)}
    {$Else}
       GDALconvertGeoPDF(gdalAllindividuallayers1);
    {$EndIf}
@@ -2788,6 +2815,13 @@ begin
        'Max bitmap: ' + IntToStr(MaxScreenXMax),true ) ;
 end;
 
+
+procedure Twmdem.Python1Click(Sender: TObject);
+begin
+   {$IfDef IncludePython}
+      StartPython;
+   {$EndIf}
+end;
 
 procedure Twmdem.Quickplatetectonicsmaps1Click(Sender: TObject);
 begin
@@ -4302,7 +4336,7 @@ end;
 
 procedure Twmdem.Mergemasp1Click(Sender: TObject);
 begin
-   {$IfDef ExGDAL}
+   {$If Defined(ExGDAL) or Defined(ExGeoPDF)}
    {$Else}
       GDALconvertGeoPDF(gdalMergeGeoPDF1);
    {$EndIf}
@@ -4499,6 +4533,7 @@ procedure Twmdem.Geoid1Click(Sender: TObject);
 var
    DEM : integer;
 begin
+   GetGeoid;
    DEM := OpenNewDEM(Geoid2008FName);
    AddOrSubtractOverlay(DEMGlb[DEM].SelectionMap,ovoWorldOutlines,true);
    DEMGlb[DEM].SelectionMap.DoFastMapRedraw;
@@ -4567,7 +4602,7 @@ end;
 
 procedure Twmdem.OpenGeoPDF1Click(Sender: TObject);
 begin
-   {$IfDef ExGDAL}
+   {$If Defined(ExGDAL) or Defined(ExGeoPDF)}
    {$Else}
       GDALconvertGeoPDF(gdalOpenGeoPDF1);
    {$EndIf}
@@ -4576,7 +4611,7 @@ end;
 
 procedure Twmdem.OpenGeoPDFimagelayer1Click(Sender: TObject);
 begin
-   {$IfDef ExGDAL}
+   {$If Defined(ExGDAL) or Defined(ExGeoPDF)}
    {$Else}
       GDALconvertGeoPDF(gdalOpenGeoPDFimagelayer1);
    {$EndIf}
@@ -6045,7 +6080,7 @@ begin
       end;
    until aPath = '';
    if (DEMList.Count > 0) then begin
-      MergeMultipleDEMsHere(WantedDEM,DEMList,true);
+      MergeMultipleDEMsHere(WantedDEM,DEMList,true,true);
    end;
 end;
 
@@ -6064,10 +6099,10 @@ begin
          DEMList.Destroy;
       end
       else begin
-         MergeMultipleDEMsHere(WantedDEM,DEMList,true);
-         StopSplashing;
-         SetMenusForVersion;
+         MergeMultipleDEMsHere(WantedDEM,DEMList,true,true);
       end;
+      StopSplashing;
+      SetMenusForVersion;
    end;
 end;
 

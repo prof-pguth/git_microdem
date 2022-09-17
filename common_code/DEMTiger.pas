@@ -13,7 +13,7 @@ unit DEMTiger;
 {$IfDef RecordProblems}
     {$IfDef Debug}
        //{$Define RecordTiger}
-       {$Define RecordRedistrict}
+       //{$Define RecordRedistrict}
        //{$Define RecordTIGERMasking}
        //{$Define RecordTigerIndexAll}
        //{$Define RecordTigerIndex}
@@ -137,7 +137,7 @@ begin
                   inc(Count);
                   GISdb[IndexNum].MyData.SetFieldByNameAsString('ON_HAND',TStr);
                   GISdb[IndexNum].MyData.SetFieldByNameAsString('FILENAME',fName);
-                  if (TStr = 'Y') then GISdb[IndexNum].MyData.FillBoundingBox(bBox);
+                  if (TStr = 'Y') then GISdb[IndexNum].MyData.SetBoundingBox(bBox);
                end;
                break;
             end;

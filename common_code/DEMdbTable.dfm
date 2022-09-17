@@ -1332,8 +1332,16 @@ object dbtablef: Tdbtablef
           Caption = 'Key medians'
           OnClick = Keymeans2Click
         end
+        object Key3params1: TMenuItem
+          Caption = 'Key 3 criteria differences from reference DEM'
+          OnClick = Key3params1Click
+        end
+        object N7Elevationdifferencecriteria1: TMenuItem
+          Caption = '7 Elevation difference criteria'
+          OnClick = N7Elevationdifferencecriteria1Click
+        end
         object PickParam1: TMenuItem
-          Caption = 'Pick criterion (parameter)'
+          Caption = 'Pick criterion to see differences from reference DEM'
           OnClick = PickParam1Click
         end
         object Allcriteriavalues1: TMenuItem
@@ -1358,7 +1366,7 @@ object dbtablef: Tdbtablef
         OnClick = Graphavereagescoresbyterraincategories1Click
       end
       object BestDEMbycategory1: TMenuItem
-        Caption = 'Calculate average score by terrain category'
+        Caption = 'Calculate average score by criterion and filters (Best DEM)'
         OnClick = BestDEMbycategory1Click
       end
       object RankDEMs1: TMenuItem
@@ -1368,6 +1376,18 @@ object dbtablef: Tdbtablef
       object Sumscores1: TMenuItem
         Caption = 'Sum scores based on active filters'
         OnClick = Sumscores1Click
+      end
+      object COPoALOS1: TMenuItem
+        Caption = 'COP or ALOS shootout'
+        OnClick = COPoALOS1Click
+      end
+      object BestDEMpertilebycriteria1: TMenuItem
+        Caption = 'Best DEM per tile, by criteria'
+        OnClick = BestDEMpertilebycriteria1Click
+      end
+      object FriedmanTest1: TMenuItem
+        Caption = 'Friedman Test'
+        OnClick = FriedmanTest1Click
       end
     end
     object N13: TMenuItem

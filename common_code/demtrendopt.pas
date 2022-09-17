@@ -275,8 +275,6 @@ var
          j,k,jb,kb : integer;
       begin
          {$IfDef RecordAllTrendSurfaceProblems} WriteLineToDebugFile('x=' + RealToString(xutm,-18,2) +  '  y=' + RealToString(yutm,-18,2) + '  x=' + RealToString(zMeters,-18,2) ); {$EndIf}
-          //xutm := xutm - xutmoffset;
-          //yutm := yutm - yutmoffset;
           JB := 1;
           for J := 1 to CurrentOrderTrendSurface do begin
              for k := 1 to J do begin
@@ -392,15 +390,6 @@ var
          *)
       end;
 
-
-        (*
-        function CalculateTrendSurfaceUTM(xutm,yutm : float64) : float64;  //inline;
-        begin
-            xutm := xutm - xutmoffset;
-            yutm := yutm - yutmoffset;
-            Result := CalculateTrendSurface(xutm,yutm);
-        end;
-        *)
 
 begin
    {$IfDef RecordTrendSurfaceProblems} WriteLineToDebugFile('ComputeTrendSurfaceFromDEM in'); {$EndIf}

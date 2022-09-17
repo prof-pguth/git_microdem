@@ -2,8 +2,8 @@ object MapForm: TMapForm
   Left = 45
   Top = 303
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1213
-  ClientWidth = 1919
+  ClientHeight = 1267
+  ClientWidth = 1915
   Color = clBtnHighlight
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -40,8 +40,8 @@ object MapForm: TMapForm
   object ScrollBox1: TScrollBox
     Left = 0
     Top = 27
-    Width = 1919
-    Height = 1186
+    Width = 1915
+    Height = 1240
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clRed
@@ -207,11 +207,13 @@ object MapForm: TMapForm
     end
     object BlendPanel: TPanel
       Left = 0
-      Top = 1141
-      Width = 1915
+      Top = 1204
+      Width = 1917
       Height = 41
       Align = alBottom
       TabOrder = 8
+      ExplicitTop = 1195
+      ExplicitWidth = 1911
       object TrackBar2: TTrackBar
         Left = 289
         Top = 1
@@ -330,7 +332,7 @@ object MapForm: TMapForm
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1919
+    Width = 1915
     Height = 27
     Align = alTop
     TabOrder = 1
@@ -1761,12 +1763,10 @@ object MapForm: TMapForm
           object GDALupsample1: TMenuItem
             Caption = 'GDAL upsample, bllinear/bicubic'
             GroupIndex = 1
-            OnClick = GDALupsample1Click
           end
           object GDALbilinearbicubictoUTM1: TMenuItem
             Caption = 'GDAL bilinear/bicubic to UTM'
             GroupIndex = 1
-            OnClick = GDALbilinearbicubictoUTM1Click
           end
         end
         object Pickmode1: TMenuItem
@@ -1829,12 +1829,10 @@ object MapForm: TMapForm
         object GDALtranslatesubset1: TMenuItem
           Caption = 'GDAL translate, subset this scene to current map area'
           GroupIndex = 1
-          OnClick = GDALtranslatesubset1Click
         end
         object GDALwarpsubset1: TMenuItem
           Caption = 'GDAL warp, subset this scene to current map area'
           GroupIndex = 1
-          OnClick = GDALwarpsubset1Click
         end
       end
       object CreateDEMtomatchmap1: TMenuItem
@@ -2036,15 +2034,6 @@ object MapForm: TMapForm
         GroupIndex = 1
         OnClick = Tools1Click
       end
-      object ViewExifimages1: TMenuItem
-        Caption = 'View Exif images'
-        GroupIndex = 1
-        OnClick = ViewExifimages1Click
-      end
-      object Timemaps1: TMenuItem
-        Caption = 'Time maps'
-        GroupIndex = 1
-      end
       object Import1: TMenuItem
         Caption = 'Import'
         GroupIndex = 1
@@ -2061,7 +2050,6 @@ object MapForm: TMapForm
         object Rasteraftersubsettomatchthismapextent1: TMenuItem
           Caption = 'GDAL Raster  subset to match this map'
           GroupIndex = 1
-          OnClick = Rasteraftersubsettomatchthismapextent1Click
         end
         object N10: TMenuItem
           Caption = '-'
@@ -2077,6 +2065,15 @@ object MapForm: TMapForm
           GroupIndex = 1
           OnClick = ASTERGDEMtomatchthismap1Click
         end
+      end
+      object ViewExifimages1: TMenuItem
+        Caption = 'View Exif images'
+        GroupIndex = 1
+        OnClick = ViewExifimages1Click
+      end
+      object Timemaps1: TMenuItem
+        Caption = 'Time maps'
+        GroupIndex = 1
       end
       object Exportmaplibrary1: TMenuItem
         Caption = 'Export map library'
@@ -2099,6 +2096,11 @@ object MapForm: TMapForm
         Caption = 'Get GRASS extensions'
         GroupIndex = 1
         OnClick = GetGRASSextensions1Click
+      end
+      object CreategeoatlasKMZ1: TMenuItem
+        Caption = 'Create geo atlas KMZ'
+        GroupIndex = 1
+        OnClick = CreategeoatlasKMZ1Click
       end
       object Close1: TMenuItem
         Caption = '&Close'
@@ -2378,7 +2380,6 @@ object MapForm: TMapForm
           object GDALfillholes1: TMenuItem
             Caption = 'GDAL fill holes'
             GroupIndex = 1
-            OnClick = GDALfillholes1Click
           end
         end
       end
@@ -3571,7 +3572,6 @@ object MapForm: TMapForm
         end
         object DEMIX10ktiles1: TMenuItem
           Caption = 'DEMIX 10k tiles'
-          OnClick = DEMIX10ktiles1Click
         end
       end
       object N31: TMenuItem
@@ -3925,39 +3925,30 @@ object MapForm: TMapForm
         end
         object GDALslopemap1: TMenuItem
           Caption = 'GDAL slope map (Zevenbergen -Thorne)'
-          OnClick = GDALslopemap1Click
         end
         object GDALslopemapHorn1: TMenuItem
           Caption = 'GDAL slope map (Horn)'
-          OnClick = GDALslopemapHorn1Click
         end
         object GDALaspectmapZevenbergenThorne1: TMenuItem
           Caption = 'GDAL aspect map (Zevenbergen - Thorne)'
-          OnClick = GDALaspectmapZevenbergenThorne1Click
         end
         object GDALaspectmapHorn1: TMenuItem
           Caption = 'GDAL aspect map (Horn)'
-          OnClick = GDALaspectmapHorn1Click
         end
         object GDALhillshadeHorn1: TMenuItem
           Caption = 'GDAL hillshade (Horn)'
-          OnClick = GDALhillshadeHorn1Click
         end
         object GDALTRIWilsonbathymetric1: TMenuItem
           Caption = 'GDAL TRI (Wilson, bathymetric)'
-          OnClick = GDALTRIWilsonbathymetric1Click
         end
         object GDALTRIRileyterrestrial1: TMenuItem
           Caption = 'GDAL TRI (Riley, terrestrial)'
-          OnClick = GDALTRIRileyterrestrial1Click
         end
         object GDALTPI1: TMenuItem
           Caption = 'GDAL TPI'
-          OnClick = GDALTPI1Click
         end
         object GDALroughness1: TMenuItem
           Caption = 'GDAL roughness'
-          OnClick = GDALroughness1Click
         end
         object GDALcontourshapefile1: TMenuItem
           Caption = 'GDAL contour shapefile'
@@ -4477,7 +4468,6 @@ object MapForm: TMapForm
       end
       object GDALinfo1: TMenuItem
         Caption = 'GDALinfo'
-        OnClick = GDALinfo1Click
       end
       object MICRODEMGeotiffinfo1: TMenuItem
         Caption = 'MICRODEM Geotiff info'
@@ -4657,7 +4647,7 @@ object MapForm: TMapForm
       OnClick = Slope3Click
     end
     object Reflectance3: TMenuItem
-      Caption = 'Reflectance'
+      Caption = 'Hillshade/Reflectance'
       OnClick = Reflectance3Click
     end
     object Openness1: TMenuItem
@@ -4778,7 +4768,7 @@ object MapForm: TMapForm
       OnClick = Contourinterval1Click
     end
     object Reflectanceoptions1: TMenuItem
-      Caption = 'Reflectance options'
+      Caption = 'Hillshade/Reflectance options'
       OnClick = Reflectanceoptions1Click
     end
     object Aspectoptions1: TMenuItem
@@ -5024,6 +5014,10 @@ object MapForm: TMapForm
       object DEMIX10Ktile1: TMenuItem
         Caption = 'DEMIX10K tile'
         OnClick = DEMIX10Ktile1Click
+      end
+      object Filtersizes1: TMenuItem
+        Caption = 'Filter sizes'
+        OnClick = Filtersizes1Click
       end
     end
     object Geomorphometry1: TMenuItem
@@ -5509,6 +5503,10 @@ object MapForm: TMapForm
       object Outlinemaparea1: TMenuItem
         Caption = 'Outline map area'
         OnClick = Outlinemaparea1Click
+      end
+      object Mapboundingbox1: TMenuItem
+        Caption = 'Map bounding box'
+        OnClick = Mapboundingbox1Click
       end
       object N25: TMenuItem
         Caption = '-'

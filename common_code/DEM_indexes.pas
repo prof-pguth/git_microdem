@@ -18,7 +18,7 @@ unit dem_indexes;
      //{$Define RecordIndex}
      //{$Define RecordIndexFileNames}
      //{$Define RecordMerge}
-     {$Define RecordTimeMerge}
+     //{$Define RecordTimeMerge}
      //{$Define RecordIndexImagery}
      //{$Define RecordClosing}
      //{$Define RecordTileNameDecoding}
@@ -79,7 +79,7 @@ procedure DefineShapeFileGrouping(fName : PathStr);
 procedure SetUpDataBaseForOperations(AllowNoDataMap : boolean = false);
 
 procedure CreateShapeFileGrouping(var fName : PathStr; var TheGroupingIndex : tMyData; Long : boolean; ShapeType : integer = 0);
-procedure MergeMultipleDEMsHere(var WantedDEM : integer; var DEMList : TStringList; DisplayIt : boolean);
+procedure MergeMultipleDEMsHere(var WantedDEM : integer; var DEMList : TStringList; DisplayIt,GDALversion : boolean);
 
 function DataTypeFileName : PathStr;
 function SeriesIndexFileName  : PathStr;
@@ -88,6 +88,8 @@ procedure OpenIndexedSeriesTable(var IndexSeriesTable : tMyData);
 procedure CreateLandsatIndex(Browse : boolean);
 function PickMapIndexLocation : boolean;
 
+procedure CheckDEMFileForMapLibrary(TheTable : Petmar_db.tMyData; Series : PathStr; var fName : PathStr);
+procedure VerifyMapLibraryFilesExist(theTable : Petmar_db.tMyData; Memo1 : tMemo = Nil);
 
 implementation
 
@@ -148,10 +150,10 @@ begin
       Dir := FromDriveLetter(ch);
       if PathIsValid(dir) then Locations.Add(Dir + '  (' + GetVolumeName(ch) + ')');
    end;
-   if Locations.Count = 0 then begin
+   if (Locations.Count = 0) then begin
       MessageToContinue('No map indexes found');
    end
-   else if Locations.Count = 1 then begin
+   else if (Locations.Count = 1) then begin
       Dir := Locations.Strings[0];
       MapLibDir := FromDriveLetter(Dir[1]);
       Result := true;
@@ -166,6 +168,7 @@ begin
    end;
    Locations.Destroy;
 end;
+
 
 
 function BoundingBoxFromFileName(fName : PathStr; var bb : sfBoundBox) : boolean;
@@ -192,80 +195,84 @@ begin
    WorkName := UpperCase(ExtractFileNameNoExt(fName));
    Result := false;
    if Length(WorkName) < 7 then exit;
+   try
+      if StrUtils.AnsiContainsText(UpperCase(fName),'MERIT') then TileSize := 5 else TileSize := 1;
 
-   if StrUtils.AnsiContainsText(UpperCase(fName),'MERIT') then TileSize := 5 else TileSize := 1;
+      if (Length(WorkName) = 7) then begin
+         WorkingString := WorkName;
+         Result := decode;
+         if Result then exit;
+      end;
 
-   if (Length(WorkName) = 7) then begin
-      WorkingString := WorkName;
+      if StrUtils.AnsiContainsText(WorkName,'COPERNICUS') then begin  //Copernicus_DSM_10_N21_00_E024_00_DEM,  Copernicus_DSM_COG_10_N21_00_E024_00_DEM
+         x := Pos('_N',WorkName);
+         if x = 0 then x := Pos('_S',WorkName);
+         if x <> 0 then begin
+            WorkingString := Copy(WorkName,x+1,3);
+            x := Pos('_E',WorkName);
+            if x = 0 then x := Pos('_W',WorkName);
+            if x <> 0 then begin
+               WorkingString := WorkingString + Copy(WorkName,x+1,4);
+               Result := decode;
+               if Result then exit;
+            end;
+         end;
+      end;
+
+      if StrUtils.AnsiContainsText(WorkName,'NASADEM_HGT_') then begin
+         WorkingString := Copy(WorkName,13,7);
+         Result := decode;
+         exit;
+      end;
+
+      if StrUtils.AnsiContainsText(WorkName,'ASTGTMV003_') then begin  //aster ASTGTMV003_N18W156_dem
+         WorkingString := Copy(WorkName,11,7);
+         Result := decode;
+         exit;
+      end;
+
+      if (WorkName[4] = '_') then begin  //srtm n09_e038_1arc_v3.tif
+         WorkingString := Copy(WorkName,1,3) + Copy(WorkName,5,4);
+         Result := decode;
+         if Result then exit;
+      end;
+
+      WorkingString := Copy(WorkName,1,7);    //ALOS   N021W160_AVE_DSM.tif
       Result := decode;
       if Result then exit;
-   end;
 
-   if StrUtils.AnsiContainsText(WorkName,'COPERNICUS') then begin  //Copernicus_DSM_10_N21_00_E024_00_DEM,  Copernicus_DSM_COG_10_N21_00_E024_00_DEM
-      x := Pos('_N',WorkName);
-      if x = 0 then x := Pos('_S',WorkName);
-      if x <> 0 then begin
-         WorkingString := Copy(WorkName,x+1,3);
-         x := Pos('_E',WorkName);
-         if x = 0 then x := Pos('_W',WorkName);
-         if x <> 0 then begin
-            WorkingString := WorkingString + Copy(WorkName,x+1,4);
+      WorkingString := WorkName[1] + Copy(WorkName,3,6);   //ALOS   N021W160_AVE_DSM.tif  with superflous 0 in all Latitudes
+      Result := decode;
+      if Result then exit;
+
+      if StrUtils.AnsiContainsText(WorkName,'TDM') then begin  //TanDEM-X  TDM1_DEM__04_N27W018_DEM.tif
+         if StrUtils.AnsiContainsText(WorkName,'_N') then begin  //TanDEM-X  TDM1_DEM__04_N27W018_DEM.tif
+            x := Pos('_N',WorkName);
+            WorkingString := Copy(WorkName,x+1,7);
+            Result := decode;
+            if Result then exit;
+
+            WorkingString := WorkName[x+1] + Copy(WorkName,x+3,6);
+            Result := decode;
+            if Result then exit;
+         end;
+
+         if StrUtils.AnsiContainsText(WorkName,'_S') then begin  //TanDEM-X  TDM1_DEM__04_N27W018_DEM.tif
+            x := Pos('_S',WorkName);
+            WorkingString := Copy(WorkName,x+1,7);
+            Result := decode;
+            if Result then exit;
+
+            WorkingString := WorkName[x+1] + Copy(WorkName,x+3,6);
             Result := decode;
             if Result then exit;
          end;
       end;
-   end;
-
-   if StrUtils.AnsiContainsText(WorkName,'NASADEM_HGT_') then begin
-      WorkingString := Copy(WorkName,13,7);
-      Result := decode;
-      if Result then exit;
-   end;
-
-   if StrUtils.AnsiContainsText(WorkName,'ASTGTMV003_') then begin  //aster ASTGTMV003_N18W156_dem
-      WorkingString := Copy(WorkName,11,7);
-      Result := decode;
-      if Result then exit;
-   end;
-
-   if (WorkName[4] = '_') then begin  //srtm n09_e038_1arc_v3.tif
-      WorkingString := Copy(WorkName,1,3) + Copy(WorkName,5,4);
-      Result := decode;
-      if Result then exit;
-   end;
-
-   WorkingString := Copy(WorkName,1,7);    //ALOS   N021W160_AVE_DSM.tif
-   Result := decode;
-   if Result then exit;
-
-   WorkingString := WorkName[1] + Copy(WorkName,3,6);   //ALOS   N021W160_AVE_DSM.tif  with superflous 0 in all Latitudes
-   Result := decode;
-   if Result then exit;
-
-   if StrUtils.AnsiContainsText(WorkName,'_N') then begin  //TanDEM-X  TDM1_DEM__04_N27W018_DEM.tif
-      x := Pos('_N',WorkName);
-      WorkingString := Copy(WorkName,x+1,7);
-      Result := decode;
-      if Result then exit;
-
-      WorkingString := WorkName[x+1] + Copy(WorkName,x+3,6);
-      Result := decode;
-      if Result then exit;
-   end;
-
-   if StrUtils.AnsiContainsText(WorkName,'_S') then begin  //TanDEM-X  TDM1_DEM__04_N27W018_DEM.tif
-      x := Pos('_S',WorkName);
-      WorkingString := Copy(WorkName,x+1,7);
-      Result := decode;
-      if Result then exit;
-
-      WorkingString := WorkName[x+1] + Copy(WorkName,x+3,6);
-      Result := decode;
-      if Result then exit;
+   finally
+      Result := false;
    end;
    {$IfDef RecordTileNameDecoding} WriteLineToDebugFile('Decode failure=' + fName); {$EndIf}
 end;
-
 
 
 function AuxDEMTif(fName : PathStr) : boolean;
@@ -308,54 +315,6 @@ begin
    Toggle_db_use.VerifyRecordsToUse(SeriesIndexFileName,'SERIES','Series to use index map','USE','DATA_TYPE','DATA_TYPE');
 end;
 
-
-procedure CreateLandsatIndex(Browse : boolean);
-var
-   Path,fName : PathStr;
-   TheFiles,Results : tStringList;
-   LandsatMetadata : tLandsatMetadata;
-   i,db : integer;
-begin
-   Path := MainMapData;
-   TheFiles := Nil;
-   if Browse then begin
-      GetDosPath('Landsat browse images',Path);
-      Petmar.FindMatchingFiles(Path,'*.jpg',TheFiles,3);
-   end
-   else begin
-      GetDosPath('Landsat full scenes',Path);
-      Petmar.FindMatchingFiles(Path,'*_MTL.txt',TheFiles,3);
-   end;
-
-   {$IfDef RecordGeostats} WriteLineToDebugFile('Twmdem.Landsatbrowseindex1Click for ' + Path); {$EndIf}
-
-   TheFiles.Sort;
-   Results := tStringlist.Create;
-   Results.Add('TM,SENSOR,PATH_ROW,PATH,ROW,YEAR,JULIAN_DAY,DATE,TIME,CLOUD_COVR,SUN_AZMTH,SUN_ELEV,IMAGE_QUAL,IMAGE');
-   for i := 0 to pred(TheFiles.Count) do begin
-       fName := TheFiles.Strings[i];
-       GetLandsatMetadata(fName,LandsatMetadata);
-       Results.Add( IntToStr(LandsatMetadata.TM_No) + ',' +
-                    LandsatMetadata.Sensor + ',' +
-                    IntToStr(LandsatMetadata.Path) + '/' + IntToStr(LandsatMetadata.Row) + ',' +
-                    IntToStr(LandsatMetadata.Path) + ',' +
-                    IntToStr(LandsatMetadata.Row) + ',' +
-                    IntToStr(LandsatMetadata.Year) + ',' +
-                    IntToStr(LandsatMetadata.JDay) + ',' +
-                    LandsatMetadata.Date + ',' +
-                    LandsatMetadata.SceneTime + ',' +
-                    FloatToStr(LandsatMetadata.CloudCover) + ',' +
-                    RealToString(LandsatMetadata.SunAzimuth,-12,2) + ',' +
-                    RealToString(LandsatMetadata.SunElevation,-12,2) + ',' +
-                    IntToStr(LandsatMetadata.ImageQuality) + ',' +
-                    fName);
-   end;
-   {$IfDef RecordGeostats} WriteStringListToDebugFile(Results); {$EndIf}
-   db := StringList2CSVtoDB(Results,Path + 'inventory.csv');
-   GISdb[db].SplitDateField(dfMDYSlash);
-   GISdb[db].TimeFieldsToDecYears;
-   TheFiles.Free;
-end;
 
 
 procedure PickDEMSeries(var sName : ShortString; WhatFor : shortstring);
@@ -404,6 +363,87 @@ begin
 end;
 
 
+procedure InsertMapLibraryRecord(TheTable : tMyData; FileName,Series : shortString; bb : sfBoundBox);
+begin
+   TheTable.Insert;
+   TheTable.SetFieldByNameAsString('FILENAME',FileName);
+   TheTable.SetFieldByNameAsString('SERIES',Series);
+   TheTable.SetBoundingBox(bb);
+   TheTable.Post;
+end;
+
+
+procedure CheckDEMFileForMapLibrary(TheTable : Petmar_db.tMyData; Series : PathStr; var fName : PathStr);
+var
+   WantedDEM : integer;
+   bb : sfBoundBox;
+begin
+   WantedDEM := 0;
+   {$IfDef RecordIndexFileNames} WriteLineToDebugFile('check: ' + fName); {$EndIf}
+   if MDDef.DeleteAuxTiffFiles and AuxDEMTif(fName) then begin
+      File2Trash(fName);
+   end
+   else begin
+      if BoundingBoxFromFileName(fName,bb) then begin
+         InsertMapLibraryRecord(TheTable,fName,Series,bb);
+      end
+      else begin
+         if NewArea(true,WantedDEM,'',FName,WantedDEM) and ValidDEM(WantedDEM) then begin
+            {$IfDef RecordIndexFileNames} WriteLineToDebugFile(' DEM open OK'); {$EndIf}
+            InsertMapLibraryRecord(TheTable,fName,Series,DEMglb[WantedDEM].DEMBoundBoxGeo);  //   DEMGlb[WantedDEM].DEMSWcornerLat,DEMGlb[WantedDEM].DEMSWcornerLong,DEMGlb[WantedDEM].DEMSWcornerLat+DEMGlb[WantedDEM].LatSizemap,DEMGlb[WantedDEM].DEMSWcornerLong+DEMGlb[WantedDEM].LongSizemap);
+            DEM_Manager.CloseALLDEMs;
+         end;
+      end;
+   end;
+end;
+
+procedure VerifyMapLibraryFilesExist(theTable : Petmar_db.tMyData; Memo1 : tMemo = Nil);
+var
+   NumFound,Tested,NumRenamed : integer;
+   fName : PathStr;
+begin
+   {$IfDef RecordIndex} WriteLineToDebugFile('TDemHandForm.Verifyfilesexist1Click'); {$EndIf}
+   if (Memo1 <> nil) then Memo1.Lines.Add('Check Map Library ' + MapLibraryFName);
+   NumFound := 0;
+   NumRenamed := 0;
+   Tested := 0;
+
+   StartProgress('Check for missing files');
+   while not TheTable.Eof do begin
+       inc(Tested);
+       if (Tested mod 500 = 0) then UpdateProgressBar(Tested/TheTable.RecordCount);
+       fName := TheTable.GetFieldByNameAsString('FILENAME');
+       if (not FileExists(fName)) then begin
+          fName[1] := MapLibraryFName[1];
+          if FileExists(fName) then begin
+             TheTable.Edit;
+             TheTable.SetFieldByNameAsString('FILENAME',fName);
+             inc(NumRenamed);
+          end
+          else begin
+             TheTable.Delete;
+             inc(NumFound);
+          end;
+          TheTable.Next;
+       end
+       else if StrUtils.AnsiContainsText(fName,'original_') or AuxDEMTif(fName) then begin
+          TheTable.Delete;
+          inc(NumFound);
+       end
+       else begin
+          TheTable.Next;
+       end;
+   end;
+   if (Memo1 <> nil) then begin
+      Memo1.Lines.Add('Removed missing files: ' + IntToStr(NumFound));
+      if (NumRenamed > 0) then Memo1.Lines.Add('Renamed on wrong drive: ' + IntToStr(NumRenamed));
+      Memo1.Lines.Add('Valid files remaining: ' + IntToStr(TheTable.RecordCount));
+   end;
+   EndProgress;
+end;
+
+
+
 procedure CreateMapLibrary(Memo1 : tMemo);
 var
    IndexSeriesTable,DataTypeTable : tMyData;
@@ -441,44 +481,6 @@ var
          Min,Max : float64;
          i : integer;
 
-            procedure InsertRecord(FileName,Series : shortString; LatLow,LongLow,LatHi,LongHi : float64);
-            begin
-               TheTable.Insert;
-               TheTable.SetFieldByNameAsString('FILENAME',FileName);
-               TheTable.SetFieldByNameAsString('SERIES',Series);
-               TheTable.SetFieldByNameAsFloat('LAT_LOW',LatLow);
-               TheTable.SetFieldByNameAsFloat('LONG_LOW',LongLow);
-               TheTable.SetFieldByNameAsFloat('LAT_HI',LatHi);
-               TheTable.SetFieldByNameAsFloat('LONG_HI',LongHi);
-               TheTable.Post;
-            end;
-
-
-            procedure CheckDEMFile(fName : PathStr);
-            var
-               WantedDEM : integer;
-               bb : sfBoundBox;
-            begin
-               WantedDEM := 0;
-               {$IfDef RecordIndexFileNames} WriteLineToDebugFile('check: ' + fName); {$EndIf}
-               if AuxDEMTif(fName) then begin
-                  If MDDef.DeleteAuxTiffFiles then File2Trash(fName);
-               end
-               else begin
-                  if BoundingBoxFromFileName(fName,bb) then begin
-                     InsertRecord(fName,Series,bb.ymin,bb.xmin,bb.ymax,bb.xmax);
-                  end
-                  else begin
-                     writelineToDebugFile('not decoded ' + fName);
-                     if NewArea(true,WantedDEM,'',FName,WantedDEM) and ValidDEM(WantedDEM) then begin
-                        {$IfDef RecordIndexFileNames} WriteLineToDebugFile(' DEM open OK'); {$EndIf}
-                        InsertRecord(fName,Series,DEMGlb[WantedDEM].DEMSWcornerLat,DEMGlb[WantedDEM].DEMSWcornerLong,DEMGlb[WantedDEM].DEMSWcornerLat+DEMGlb[WantedDEM].LatSizemap,DEMGlb[WantedDEM].DEMSWcornerLong+DEMGlb[WantedDEM].LongSizemap);
-                        DEM_Manager.CloseALLDEMs;
-                     end;
-                  end;
-               end;
-            end;
-
            {$IfDef ExSat}
            {$Else}
               procedure CheckImageryFile(fName : PathStr);
@@ -489,34 +491,24 @@ var
                  bb : sfBoundBox;
               begin
                  {$IfDef RecordIndexFileNames} WriteLineToDebugFile(fName); {$EndIf}
+                  (*
                   if ExtEquals(Ext,'.SID') then begin
                      GetMrSidGeoLimits(fName,LatLow,LongLow,LatHigh,LongHigh);
                      Success := true;
                      InsertRecord(fName,Series,LatLow,LongLow,LatHigh,LongHigh);
                   end
                   else begin
+                  *)
                      SatImage[1] := tSatImage.Create(SatView,Nil,fName,False,Success);
                      if Success then begin
                         bb := SatImage[1].SatelliteBoundBoxGeo(1);
-                        InsertRecord(fName,Series,bb.ymin,bb.XMin,bb.YMax,bb.xmax);
+                        InsertMapLibraryRecord(TheTable,fName,Series,bb);  //bb.ymin,bb.XMin,bb.YMax,bb.xmax);
+                        SatImage[1].Destroy;
                      end;
-                  end;
-                  if (SatImage[1] <> Nil) then SatImage[1].Destroy;
+                  //end;
+                  //if (SatImage[1] <> Nil) then SatImage[1].Destroy;
                 end;
              {$EndIf}
-
-
-             function DoExtension(Ext : ExtStr) : boolean;
-             var
-                j : integer;
-             begin
-                FindMatchingFiles(MDTempDir,Ext,TheDEMs,1);
-                for j := 0 to pred(TheDEMs.Count) do SysUtils.DeleteFile(TheDEMs.Strings[j]);
-                ZipMasterUnzip(fName,MDTempDir);
-                FindMatchingFiles(MDTempDir,Ext,TheDEMs,1);
-                for j := 0 to pred(TheDEMs.Count) do CheckDEMFile(TheDEMs[j]);
-                Result := (TheDEMs.Count > 0);
-             end;
 
 
          procedure DataTypeTableInsert(What : string16);
@@ -549,12 +541,12 @@ var
               wmDEM.SetPanelText(0,'Process: ' + Series);
               RawData := Nil;
               FindMatchingFiles(MapLibDir + DataType + '\' + Series,'*.*',RawData,6);
-              Memo1.Lines.Add('   ' + TimeToStr(Now) + ' Process: ' + Series + '  files= ' + IntToStr(RawData.Count));
+              Memo1.Lines.Add(' ' + TimeToStr(Now) + ' Process: ' + Series + '  files= ' + IntToStr(RawData.Count));
               {$IfDef RecordIndex} WriteLineToDebugFile('Index series=' + Series); {$EndIf}
               ReallyReadDEM := false;
               TheTable.ApplyFilter('SERIES=' + QuotedStr(Series));
               AlreadyIndexed := TheTable.UniqueEntriesInDB('FILENAME');
-              FullRedo :=  (TheTable.RecordCount = 0);
+              FullRedo := (TheTable.RecordCount = 0);
               try
                  if (RawData.Count > TheTable.RecordCount) then begin
                     for i := 0 to pred(RawData.Count) do begin
@@ -581,7 +573,7 @@ var
                                 SysUtils.DeleteFile(fName);
                              end
                              else begin
-                                CheckDEMFile(fName);
+                                CheckDEMFileForMapLibrary(TheTable,Series,fName);
                              end;
                           end;
                        end
@@ -621,7 +613,7 @@ var
          fName := DataTypeFileName;
          DataTypeTable := tMyData.Create(fName);
          DataTypeTableInsert('DEMS');
-         DataTypeTableInsert('DRGS');
+         //DataTypeTableInsert('DRGS');
          DataTypeTableInsert('IMAGERY');
          DataTypeTableInsert('BATHY');
          VerifyRecordsToUse(DataTypeTable,'DATA_TYPE');
@@ -658,56 +650,8 @@ var
          {$IfDef RecordIndex} WriteLineToDebugFile('Integrated indexing out'); {$EndIf}
       end;
 
-      procedure VerifyFilesExist;
-      var
-         TheTable : tMyData;
-         NumFound,Tested,NumRenamed : integer;
-         fName : PathStr;
-      begin
-         {$IfDef RecordIndex} WriteLineToDebugFile('TDemHandForm.Verifyfilesexist1Click'); {$EndIf}
-         Memo1.Lines.Add('Check Map Library ' + MapLibraryFName);
-         fName := MapLibraryFName;
-         TheTable := tMyData.Create(fName);
-         NumFound := 0;
-         NumRenamed := 0;
-         Tested := 0;
-
-         StartProgress('Check for missing files');
-         while not TheTable.Eof do begin
-             inc(Tested);
-             if (Tested mod 500 = 0) then UpdateProgressBar(Tested/TheTable.RecordCount);
-             fName := TheTable.GetFieldByNameAsString('FILENAME');
-             if (not FileExists(fName)) then begin
-                fName[1] := MapLibraryFName[1];
-                if FileExists(fName) then begin
-                   TheTable.Edit;
-                   TheTable.SetFieldByNameAsString('FILENAME',fName);
-                   inc(NumRenamed);
-                end
-                else begin
-                   TheTable.Delete;
-                   inc(NumFound);
-                end;
-                TheTable.Next;
-             end
-             else if StrUtils.AnsiContainsText(fName,'original_') or AuxDEMTif(fName) then begin
-                TheTable.Delete;
-                inc(NumFound);
-             end
-             else begin
-                TheTable.Next;
-             end;
-         end;
-         Memo1.Lines.Add('Removed missing files: ' + IntToStr(NumFound));
-         if NumRenamed > 0 then Memo1.Lines.Add('Renamed on wrong drive: ' + IntToStr(NumRenamed));
-         Memo1.Lines.Add('Valid files remaining: ' + IntToStr(TheTable.RecordCount));
-         TheTable.Destroy;
-         EndProgress;
-      end;
-
-
 var
-   TheTable : tMyData;
+   TheTable : Petmar_db.tMyData;
    fname : PathStr;
 begin
    {$IfDef RecordIndex} WriteLineToDebugFile('CreateMapLibrary in'); {$EndIf}
@@ -715,15 +659,16 @@ begin
    if (Memo1 <> Nil) then Memo1.Visible := true;
    PickMapIndexLocation;
 
+   fName := MapLibraryFName;
    if FileExists(MapLibraryFName) then begin
-      if AnswerIsYes('Verify files are present') then VerifyFilesExist;
+      TheTable := Petmar_db.tMyData.Create(FName);
+      if AnswerIsYes('Verify files are present') then VerifyMapLibraryFilesExist(theTable,Memo1);
    end
    else begin
       CreateIntegratedDataBaseTable(MapLibraryFName);
+      TheTable := Petmar_db.tMyData.Create(FName);
    end;
 
-   fName := MapLibraryFName;
-   TheTable := tMyData.Create(fName);
    IntegratedIndex(TheTable);
    TheTable.Destroy;
    if (Memo1 <> Nil) then Memo1.Lines.Add('Update over');
@@ -939,7 +884,7 @@ begin
 end;
 
 
-procedure MergeMultipleDEMsHere(var WantedDEM : integer; var DEMList : TStringList; DisplayIt : boolean);
+procedure MergeMultipleDEMsHere(var WantedDEM : integer; var DEMList : TStringList; DisplayIt,GDALversion : boolean);
 var
    FName : ShortString;
    zf : float32;
@@ -948,10 +893,127 @@ var
    xmin,xmax,ymin,ymax,Lat,Long  : float64;
    NewHeader   : tDEMheader;
    Inbounds,UTMDEMs : boolean;
-   MergeUTMzone,MergeCol,MergeRow,i,Col,Row: int32;
+   MergeUTMzone,MergeCol,MergeRow,i,Col,Row,TileX,TileY : int32;
    CurDEM,NPts     : integer;
    aName,ProjName,MergefName,OldDEMName,OutVRT     : PathStr;
    MenuStr,cmd  : ShortString;
+
+      procedure OldMICRODEMmerge;
+      var
+        i,Row,Col : integer;
+      begin
+         {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('MD merge for DEM'); {$EndIf}
+         if (DEMList.Count > MaxDEMsToMerge) then MessageToContinue('Trying to merge too many DEMs');
+         OldDEMName := LastDEMName;
+         SubsequentDEM := false;
+         ReallyReadDEM := false;
+         DEMlist.Sorted := false;
+         for i := pred(DEMList.Count) downto 0 do begin
+            FName := DEMList.Strings[i];
+            WMDEM.StatusBar1.Panels[0].Text := 'Still Check ' + IntToStr(succ(I)) + '/' + IntToStr(DEMList.Count);;
+            if FileExists(fName) then begin
+               if NewArea(true,CurDEM,'',FName) then begin
+                  if not SubsequentDEM then begin
+                     NewHeader := DEMGlb[CurDEM].DEMheader;
+                     xmin := DEMGlb[CurDEM].DEMheader.DEMSWCornerX;
+                     ymin := DEMGlb[CurDEM].DEMheader.DEMSWCornerY;
+                     xMax := xMin + pred(DEMGlb[CurDEM].DEMheader.NumCol) * DEMGlb[CurDEM].DEMheader.DEMxSpacing;
+                     yMax := yMin + pred(DEMGlb[CurDEM].DEMheader.NumRow) * DEMGlb[CurDEM].DEMheader.DEMySpacing;
+                     XSpace := DEMGlb[CurDEM].DEMheader.DEMxSpacing;
+                     YSpace := DEMGlb[CurDEM].DEMheader.DEMySpacing;
+                     MergeUTMzone := DEMGlb[CurDEM].DEMHeader.UTMZone;
+                     UTMDEMs := DEMGlb[CurDEM].DEMHeader.DEMUsed = UTMBasedDEM;
+                     SubsequentDEM := true;
+                     DEMlist.Strings[i] := DEMGlb[CurDEM].DEMfileName;
+                  end
+                  else begin
+                     if UTMDEMs and (DEMGlb[CurDEM].DEMHeader.UTMZone <> MergeUTMZone) then begin
+                        {$IfDef RecordMerge} WriteLineToDebugFile('Wrong UTM zone, exclude ' + DEMGlb[CurDEM].AreaName); {$EndIf}
+                        DEMlist.Delete(i);
+                     end
+                     else begin
+                        if (DEMGlb[CurDEM].DEMheader.DEMSWCornerX < xmin) then xmin := DEMGlb[CurDEM].DEMheader.DEMSWCornerX;
+                        tf := DEMGlb[CurDEM].DEMheader.DEMSWCornerX + pred(DEMGlb[CurDEM].DEMheader.NumCol) * DEMGlb[CurDEM].DEMheader.DEMxSpacing;
+                        if xMax < tf then xmax := tf;
+                        if (DEMGlb[CurDEM].DEMheader.DEMSWCornerY < ymin) then ymin := DEMGlb[CurDEM].DEMheader.DEMSWCornerY;
+                        tf := DEMGlb[CurDEM].DEMheader.DEMSWCornerY + pred(DEMGlb[CurDEM].DEMheader.NumRow) * DEMGlb[CurDEM].DEMheader.DEMySpacing;
+                        if (yMax < tf) then ymax := tf;
+                        NewHeader.DEMSWCornerX := xmin;
+                        NewHeader.DEMSWCornerY := ymin;
+                        NewHeader.NumCol := succ(round((xmax - xmin) / XSpace));
+                        NewHeader.NumRow := succ(round((ymax - ymin) / YSpace));
+                        DEMlist.Strings[i] := DEMGlb[CurDEM].DEMfileName;
+                     end;
+                  end {if};
+                  {$IfDef RecordMerge}
+                     WriteLineToDebugFile('Merge UTM zone ' + IntToStr(DEMGlb[CurDEM].DEMHeader.UTMZone) + '  ' + DEMGlb[CurDEM].AreaName + ' x range: ' +
+                         RealToString(xmin,-18,-6) + '--' + RealToString(xmax,-18,-6) + ' y range: ' + RealToString(ymin,-18,-6) + '--' + RealToString(ymax,-18,-6));
+                  {$EndIf}
+                  CloseSingleDEM(CurDEM);
+               end
+               else begin
+                  {$IfDef RecordProblemsMerge} HighlightLineToDebugFile('DEM merge missing file  ' + fName); {$EndIf}
+                  DEMlist.Delete(i);
+               end;
+            end;
+            //else DEMGlb[CurDEM] := Nil;
+         end;
+
+         {$If Defined(RecordMerge) or Defined(RecordTimeMerge) } WriteLineToDebugFile('done first pass in MD DEM Merge'); {$EndIf}
+         NewHeader.ElevUnits := euMeters;
+         if OpenAndZeroNewDEM(false,NewHeader,WantedDEM,'Merge',InitDEMmissing) then begin
+            {$IfDef RecordMerge} WriteLineToDebugFile('New DEM ' + IntToStr(WantedDEM) + ' opened'); {$EndIf}
+            if (MergeSeriesName = '') then DEMGlb[WantedDEM].AreaName := LastSubDir(ExtractFilePath(DEMList.Strings[0]))
+            else DEMGlb[WantedDEM].AreaName := MergeSeriesName;
+            ReallyReadDEM := true;
+            for i := 0 to pred(DEMList.Count) do begin
+               FName := DEMList.Strings[i];
+               if FileExists(fName) then begin
+                  if NewArea(true,CurDEM,'',FName) then begin
+                     if UTMDEMs then begin
+                        DEMGlb[CurDEM].DEMGridToUTM(0,0,xutm,yutm);
+                        DEMGlb[WantedDEM].UTMToDEMGrid(XUTM,YUTM,XGrid,YGrid,InBounds);
+                        TileX := round(Xgrid);
+                        TileY := round(Ygrid);
+                     end;
+                     ShowHourglassCursor;
+                     MenuStr := 'Merge ' + IntToStr(succ(I)) + '/' + IntToStr(DEMList.Count);
+                     StartProgress(MenuStr);
+                     {$IfDef RecordMerge} WriteLineToDebugFile(MenuStr); {$EndIf}
+                     WMDEM.StatusBar1.Panels[0].Text := MenuStr;
+                     {$IfDef RecordMerge} WriteLineToDebugFile('Merging DEM: ' + DEMGlb[CurDEM].AreaName + '  Start at MergeCol=' + IntToStr(MergeCol) + '   MergeRow=' + IntToStr(MergeRow)); {$EndIf}
+                     for Row := pred(DEMGlb[CurDEM].DEMheader.NumRow) downto 0 do begin
+                        if (Row mod (DEMGlb[CurDEM].DEMheader.NumRow div 100) = 0) then UpdateProgressBar((DEMGlb[CurDEM].DEMheader.NumRow-Row)/DEMGlb[CurDEM].DEMheader.NumRow);
+                        for Col := 0 to pred(DEMGlb[CurDEM].DEMheader.NumCol) do begin
+                           if DEMGlb[CurDEM].GetElevMeters(Col,Row,zf) then begin
+                              if {false and} UTMDEMs then begin //added Aug 2022, but unclear if this was the cause of problems
+                                (*
+                                DEMGlb[CurDEM].DEMGridToUTM(Col,Row,xutm,yutm);
+                                DEMGlb[WantedDEM].UTMToDEMGrid(XUTM,YUTM,XGrid,YGrid,InBounds);
+                                if InBounds then DEMGlb[WantedDEM].SetGridElevation(round(xgrid),round(Ygrid),zf);
+                                *)
+                                DEMGlb[WantedDEM].SetGridElevation(Col + TileX,Row + TileY,zf);
+                              end
+                              else begin
+                                 DEMGlb[CurDEM].DEMGridToLatLongDegree(Col,Row,Lat,Long);
+                                 DEMGlb[WantedDEM].SetGridElevationLatLongDegree(Lat,Long,zf);
+                              end;
+                           end;
+                        end {for Row};
+                     end;
+                     EndProgress;
+                     CloseSingleDEM(CurDEM);
+                  end;
+               end;
+            end {for i};
+            LastDEMName := OldDEMName;
+            DEMList.Free;
+            {$If Defined(RecordMerge) or Defined(RecordTimeMerge) } WriteLineToDebugFile('MD merge done, DEM=' + IntToStr(WantedDEM)); {$EndIf}
+          end;
+     end;
+
+
+
 begin
    {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('arrive Merge for DEM'); {$EndIf}
    SkipMenuUpdating := true;
@@ -959,7 +1021,7 @@ begin
    try
       aName := DEMList.Strings[0];
 
-      if GDALGridFormat(ExtractFileExt(aName),false) then begin
+      if GDALversion and GDALGridFormat(ExtractFileExt(aName),false) then begin
          {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('GDAL options for DEM'); {$EndIf}
 
          ProjName := '';
@@ -969,10 +1031,9 @@ begin
             if (ProjName <> '') then ProjName := 'a_srs ' + ProjName;
          end;
 
-
        //option 2 was about three times faster than option 1
          MergefName := Petmar.NextFileNumber(MDTempDir,'DEM_Merge_','.tif');
-         UseGDAL_VRT_to_merge(MergefName,DEMList);
+         UseGDAL_VRT_to_merge(MergefName,DEMList,ProjName);
          {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('GDAL VRT over for DEM'); {$EndIf}
 
          (*
@@ -991,110 +1052,25 @@ begin
          if FileExtEquals(aName,'.ASC') then begin //Spanish DEMs have no projection in the ASC files, and user must put WKT file in directory
             {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('ASC reprojection'); {$EndIf}
             ProjName := FindSingleWKTinDirectory(ExtractFilePath(aName));
-            if (ProjName <> '') then GDALAssignDEMProjection(MergefName,ProjName);
+             if (ProjName <> '') then GDALAssignDEMProjection(MergefName,ProjName);
          end;
         *)
 
          {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('open ' + MergeFName); {$EndIf}
-         WantedDEM := OpenNewDEM(MergefName,false);
+         if FileExists(MergefName) then begin
+            WantedDEM := OpenNewDEM(MergefName,false);
+         end
+         else begin
+            WantedDEM := 0;
+         end;
          {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('DEM=' + IntToStr(WantedDEM) + '  open ' + MergeFName); {$EndIf}
       end
       else begin
-         if (DEMList.Count > MaxDEMsToMerge) then MessageToContinue('Trying to merge too many DEMs');
-         OldDEMName := LastDEMName;
-         SubsequentDEM := false;
-         ReallyReadDEM := false;
-         DEMlist.Sorted := false;
-         for i := pred(DEMList.Count) downto 0 do begin
-            FName := DEMList.Strings[i];
-            WMDEM.StatusBar1.Panels[0].Text := 'Still Check ' + IntToStr(succ(I)) + '/' + IntToStr(DEMList.Count);;
-
-            if NewArea(true,CurDEM,'',FName) then begin
-               if not SubsequentDEM then begin
-                  NewHeader := DEMGlb[CurDEM].DEMheader;
-                  xmin := DEMGlb[CurDEM].DEMheader.DEMSWCornerX;
-                  ymin := DEMGlb[CurDEM].DEMheader.DEMSWCornerY;
-                  xMax := xMin + pred(DEMGlb[CurDEM].DEMheader.NumCol) * DEMGlb[CurDEM].DEMheader.DEMxSpacing;
-                  yMax := yMin + pred(DEMGlb[CurDEM].DEMheader.NumRow) * DEMGlb[CurDEM].DEMheader.DEMySpacing;
-                  XSpace := DEMGlb[CurDEM].DEMheader.DEMxSpacing;
-                  YSpace := DEMGlb[CurDEM].DEMheader.DEMySpacing;
-                  MergeUTMzone := DEMGlb[CurDEM].DEMHeader.UTMZone;
-                  UTMDEMs := DEMGlb[CurDEM].DEMHeader.DEMUsed = UTMBasedDEM;
-                  SubsequentDEM := true;
-                  DEMlist.Strings[i] := DEMGlb[CurDEM].DEMfileName;
-               end
-               else begin
-                  if UTMDEMs and (DEMGlb[CurDEM].DEMHeader.UTMZone <> MergeUTMZone) then begin
-                     {$IfDef RecordMerge} WriteLineToDebugFile('Wrong UTM zone, exclude ' + DEMGlb[CurDEM].AreaName); {$EndIf}
-                     DEMlist.Delete(i);
-                  end
-                  else begin
-                     if (DEMGlb[CurDEM].DEMheader.DEMSWCornerX < xmin) then xmin := DEMGlb[CurDEM].DEMheader.DEMSWCornerX;
-                     tf := DEMGlb[CurDEM].DEMheader.DEMSWCornerX + pred(DEMGlb[CurDEM].DEMheader.NumCol) * DEMGlb[CurDEM].DEMheader.DEMxSpacing;
-                     if xMax < tf then xmax := tf;
-                     if (DEMGlb[CurDEM].DEMheader.DEMSWCornerY < ymin) then ymin := DEMGlb[CurDEM].DEMheader.DEMSWCornerY;
-                     tf := DEMGlb[CurDEM].DEMheader.DEMSWCornerY + pred(DEMGlb[CurDEM].DEMheader.NumRow) * DEMGlb[CurDEM].DEMheader.DEMySpacing;
-                     if (yMax < tf) then ymax := tf;
-                     NewHeader.DEMSWCornerX := xmin;
-                     NewHeader.DEMSWCornerY := ymin;
-                     NewHeader.NumCol := succ(round((xmax - xmin) / XSpace));
-                     NewHeader.NumRow := succ(round((ymax - ymin) / YSpace));
-                     DEMlist.Strings[i] := DEMGlb[CurDEM].DEMfileName;
-                  end;
-               end {if};
-               {$IfDef RecordMerge}
-                  WriteLineToDebugFile('Merge UTM zone ' + IntToStr(DEMGlb[CurDEM].DEMHeader.UTMZone) + '  ' + DEMGlb[CurDEM].AreaName + ' x range: ' +
-                      RealToString(xmin,-18,-6) + '--' + RealToString(xmax,-18,-6) + ' y range: ' + RealToString(ymin,-18,-6) + '--' + RealToString(ymax,-18,-6));
-               {$EndIf}
-               CloseSingleDEM(CurDEM);
-            end
-            else DEMGlb[CurDEM] := Nil;
-         end;
-
-         {$If Defined(RecordMerge) or Defined(RecordTimeMerge) } WriteLineToDebugFile('done first pass in DEM Merge'); {$EndIf}
-         NewHeader.ElevUnits := euMeters;
-         if OpenAndZeroNewDEM(false{DatumsPresent.Count > 1},NewHeader,WantedDEM,'Merge',InitDEMmissing) then begin
-            {$IfDef RecordMerge} WriteLineToDebugFile('New DEM ' + IntToStr(WantedDEM) + ' opened'); {$EndIf}
-            ReallyReadDEM := true;
-            for i := 0 to pred(DEMList.Count) do begin
-               FName := DEMList.Strings[i];
-               if NewArea(true,CurDEM,'',FName) then begin
-                  ShowHourglassCursor;
-                  MenuStr := 'Merge ' + IntToStr(succ(I)) + '/' + IntToStr(DEMList.Count);
-                  StartProgress(MenuStr);
-                  {$IfDef RecordMerge} WriteLineToDebugFile(MenuStr); {$EndIf}
-                  WMDEM.StatusBar1.Panels[0].Text := MenuStr;
-                  {$IfDef RecordMerge} WriteLineToDebugFile('Merging DEM: ' + DEMGlb[CurDEM].AreaName + '  Start at MergeCol=' + IntToStr(MergeCol) + '   MergeRow=' + IntToStr(MergeRow)); {$EndIf}
-                  for Row := pred(DEMGlb[CurDEM].DEMheader.NumRow) downto 0 do begin
-                     if (Row mod (DEMGlb[CurDEM].DEMheader.NumRow div 100) = 0) then UpdateProgressBar((DEMGlb[CurDEM].DEMheader.NumRow-Row)/DEMGlb[CurDEM].DEMheader.NumRow);
-                     for Col := 0 to pred(DEMGlb[CurDEM].DEMheader.NumCol) do begin
-                        if DEMGlb[CurDEM].GetElevMeters(Col,Row,zf) then begin
-                           if false and UTMDEMs then begin //added Aug 2022, but unclear if this was the cause of problems
-                             DEMGlb[CurDEM].DEMGridToUTM(Col,Row,xutm,yutm);
-                             DEMGlb[WantedDEM].UTMToDEMGrid(XUTM,YUTM,XGrid,YGrid,InBounds);
-                             if InBounds then DEMGlb[WantedDEM].SetGridElevation(round(xgrid),round(Ygrid),zf);
-                           end
-                           else begin
-                              DEMGlb[CurDEM].DEMGridToLatLongDegree(Col,Row,Lat,Long);
-                              DEMGlb[WantedDEM].SetGridElevationLatLongDegree(Lat,Long,zf);
-                           end;
-                        end;
-                     end {for Row};
-                  end;
-                  EndProgress;
-                  CloseSingleDEM(CurDEM);
-               end;
-            end {for i};
-            LastDEMName := OldDEMName;
-            DEMList.Free;
-          end;
-    end;
-
+         OldMICRODEMmerge;
+      end;
 
     if (WantedDEM <> 0) then begin
          {$If Defined(RecordMerge) or Defined(RecordTimeMerge) } WriteLineToDebugFile('Merge set up, WantedDEM=' + IntToStr(WantedDEM)); {$EndIf}
-         if (MergeSeriesName = '') then DEMGlb[WantedDEM].AreaName := LastSubDir(DEMList.Strings[0])
-         else DEMGlb[WantedDEM].AreaName := MergeSeriesName;
 
          if MDdef.AutoFillHoles then begin
             DEMGlb[WantedDEM].InterpolateAcrossHoles(false);
@@ -1119,7 +1095,8 @@ begin
       DEMMergeInProgress := false;
       SubsequentDEM := false;
       {$If Defined(RecordMerge) or Defined(MergeSummary) or Defined(RecordTimeMerge)}
-          WriteLineToDebugFile('MergeMultipleDEMsHere out, merged=' + IntToStr(DEMList.Count) + '  ' + DEMGlb[WantedDEM].AreaName);
+          if WantedDEM <> 0 then WriteLineToDebugFile('MergeMultipleDEMsHere out, merged  ' + DEMGlb[WantedDEM].AreaName)
+          else WriteLineToDebugFile('MergeMultipleDEMsHere out, failure');
       {$EndIf}
    end;
 end;
@@ -1156,7 +1133,7 @@ var
 
                 if (LoadList.Count > 1) then begin
                    {$IfDef RecordIndex} WriteLineToDebugFile('call MergeDEMs, count=' + IntToStr(LoadList.Count)); {$EndIf}
-                   MergeMultipleDEMsHere(WantDEM,LoadList,DisplayIt);
+                   MergeMultipleDEMsHere(WantDEM,LoadList,DisplayIt,true);
                    DEMGlb[WantDEM].DEMFileName := NextFileNumber(MDTempDir, MergeSeriesName + '_','.dem');
                    DEMGlb[WantDEM].WriteNewFormatDEM(DEMGlb[WantDEM].DEMFileName);
                 end
@@ -1228,7 +1205,6 @@ begin
 end;
 
 
-
 procedure CopyMapLibraryBox(bb : sfBoundBox);
 var
    DataInSeries : tStringList;
@@ -1259,6 +1235,55 @@ begin
    IndexSeriesTable.Destroy;
    ShowDefaultCursor;
    {$IfDef RecordIndex} WriteLineToDebugFile('Out CopyMapLibraryBox'); {$EndIf}
+end;
+
+
+procedure CreateLandsatIndex(Browse : boolean);
+var
+   Path,fName : PathStr;
+   TheFiles,Results : tStringList;
+   LandsatMetadata : tLandsatMetadata;
+   i,db : integer;
+begin
+   Path := MainMapData;
+   TheFiles := Nil;
+   if Browse then begin
+      GetDosPath('Landsat browse images',Path);
+      Petmar.FindMatchingFiles(Path,'*.jpg',TheFiles,3);
+   end
+   else begin
+      GetDosPath('Landsat full scenes',Path);
+      Petmar.FindMatchingFiles(Path,'*_MTL.txt',TheFiles,3);
+   end;
+
+   {$IfDef RecordGeostats} WriteLineToDebugFile('Twmdem.Landsatbrowseindex1Click for ' + Path); {$EndIf}
+
+   TheFiles.Sort;
+   Results := tStringlist.Create;
+   Results.Add('TM,SENSOR,PATH_ROW,PATH,ROW,YEAR,JULIAN_DAY,DATE,TIME,CLOUD_COVR,SUN_AZMTH,SUN_ELEV,IMAGE_QUAL,IMAGE');
+   for i := 0 to pred(TheFiles.Count) do begin
+       fName := TheFiles.Strings[i];
+       GetLandsatMetadata(fName,LandsatMetadata);
+       Results.Add( IntToStr(LandsatMetadata.TM_No) + ',' +
+                    LandsatMetadata.Sensor + ',' +
+                    IntToStr(LandsatMetadata.Path) + '/' + IntToStr(LandsatMetadata.Row) + ',' +
+                    IntToStr(LandsatMetadata.Path) + ',' +
+                    IntToStr(LandsatMetadata.Row) + ',' +
+                    IntToStr(LandsatMetadata.Year) + ',' +
+                    IntToStr(LandsatMetadata.JDay) + ',' +
+                    LandsatMetadata.Date + ',' +
+                    LandsatMetadata.SceneTime + ',' +
+                    FloatToStr(LandsatMetadata.CloudCover) + ',' +
+                    RealToString(LandsatMetadata.SunAzimuth,-12,2) + ',' +
+                    RealToString(LandsatMetadata.SunElevation,-12,2) + ',' +
+                    IntToStr(LandsatMetadata.ImageQuality) + ',' +
+                    fName);
+   end;
+   {$IfDef RecordGeostats} WriteStringListToDebugFile(Results); {$EndIf}
+   db := StringList2CSVtoDB(Results,Path + 'inventory.csv');
+   GISdb[db].SplitDateField(dfMDYSlash);
+   GISdb[db].TimeFieldsToDecYears;
+   TheFiles.Free;
 end;
 
 

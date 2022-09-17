@@ -14,7 +14,7 @@ unit dem_optimal_lag;
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$IfDef Debug}
       //{$Define RecordFullLagProblems}
-      {$Define RecordLagProblems}
+      //{$Define RecordLagProblems}
    {$EndIf}
 {$EndIf}
 

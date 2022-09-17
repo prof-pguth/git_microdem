@@ -11,7 +11,7 @@ unit GIS_Scaled_symbols;
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    //{$Define RecordSym}
-   {$Define RecordQuickFilter}
+   //{$Define RecordQuickFilter}
    //{$Define RecordGISvectors}
    //{$Define RecordFormSetup}
    //{$Define RecordColorPalette}
@@ -1396,7 +1396,7 @@ begin
    {$IfDef RecordSym} WriteLineToDebugFile('Tgis_scaled_form.ShowFieldRanges in (change color symbolization)'); {$EndIf}
    if (NumbersComboBox2.Text = '') then exit;
 
-   if ResetRange then GISdb[theDB].FieldRange(NumbersComboBox2.Text,GISdb[theDB].dbOpts.ColorMin,GISdb[theDB].dbOpts.ColorMax,GISdb[theDB].MyData.Filtered);
+   if ResetRange or (abs(GISdb[theDB].dbOpts.ColorMax - GISdb[theDB].dbOpts.ColorMin) < 0.01)  then GISdb[theDB].FieldRange(NumbersComboBox2.Text,GISdb[theDB].dbOpts.ColorMin,GISdb[theDB].dbOpts.ColorMax,GISdb[theDB].MyData.Filtered);
 
    tStr := RealToString(GISdb[theDB].dbOpts.ColorMin,-12,-2) + ' to ' + RealToString(GISdb[theDB].dbOpts.ColorMax,-12,-2);
    Label3.Caption := 'Color: ' + TStr;

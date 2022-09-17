@@ -9,7 +9,7 @@ unit demstringgrid;
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    //{$Define StringGridSortProblems}
-   {$Define StringGridProblems}
+   //{$Define StringGridProblems}
 {$EndIf}
 
 interface

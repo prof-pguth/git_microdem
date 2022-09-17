@@ -14,14 +14,14 @@ unit DEMStat;
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IfDef Debug}
       {$Define NoParallelFor}
-      {$Define RecordLag}
+      //{$Define RecordLag}
       //{$Define RecordStdDef}
       //{$Define RecordElevationSlopePlot}
       //{$Define RecordSSO}
       //{$Define RecordGlobalDEM}
-      {$Define RecordElevMoment}
+      //{$Define RecordElevMoment}
       //{$Define RecordElevationSlopePlotAll}
-      {$Define RecordDEMCompare}
+      //{$Define RecordDEMCompare}
       //{$Define RecordStat}
       //{$Define RecordIceSat}
       //{$Define RecordGeoStat}
@@ -32,15 +32,10 @@ unit DEMStat;
       //{$Define RecordDetailedTraceCrests}
       //{$Define RecordClustering}
       //{$Define RecordFFT}
-      {$Define RecordHistogram}
+      //{$Define RecordHistogram}
       //{$Define RecordGridScatterGram}
    {$Else}
    {$EndIf}
-
-{$EndIf}
-
-{$IfDef ExGeoStats}
-   {$Define ExSat}
 {$EndIf}
 
 interface
@@ -115,9 +110,14 @@ type
       function IwashuriPikeCat(Slope,Convexity,Texture : float64) : integer; //inline;
       procedure IandPLegend(pc : array of float64);
 
+{$IfDef ExWaveLengthHeight}
+{$Else}
        procedure ComputeDunecrestspacingheight(MapForm : tMapForm; GridLimits : tGridLimits; Memo1 : tMemo);
        procedure ThreadCrest1Click(MapForm : tMapForm; StartLat,StartLong : float64; var Results : tStringList; CrestNum : integer);
        procedure CrestsAlongProfile(theLOSView : TDEMLOSF; var Results : tStringList; Memo1 : tMemo = Nil);
+{$EndIf}
+
+
        function ClusterGrids(StartingGrid,EndingGrid : integer) : integer;
 
        procedure SemiVariogramOptions;
@@ -229,7 +229,11 @@ var
 
 {$I demstat_global_dems.inc}
 
-{$I demstat_dune_crest.inc}
+
+{$IfDef ExWaveLengthHeight}
+{$Else}
+   {$I demstat_dune_crest.inc}
+{$EndIf}
 
 {$IfDef ExCompare}
 {$Else}
@@ -2842,76 +2846,80 @@ var
 begin
    if (DEM1 = 0) and (DEM2 = 0) then IdenticalGrids := GetTwoCompatibleGrids('DEM1=x axis, DEM2= y axis',false,DEM1,DEM2,false,true)
    else IdenticalGrids := DEMGlb[DEM1].SecondGridIdentical(DEM2);
-   {$IfDef RecordGridScatterGram}
-      WriteLineToDebugFile('Two grid scattergram');
-      WriteLineToDebugFile('  DEM 1:' + DEMGlb[DEM1].AreaName + '  ' + DEMGlb[DEM1].KeyDEMParams);
-      WriteLineToDebugFile('  DEM 2:' + DEMGlb[DEM2].AreaName + '  ' + DEMGlb[DEM2].KeyDEMParams);
-      WriteLineToDebugFile('  ll corner :' + RealToString(DEMGlb[DEM2].Headrecs.hdfSWCornerx,-12,-2) + '   ' + RealToString(DEMGlb[DEM2].Headrecs.hdfSWCornery,-12,-2) );
-   {$EndIf}
+   if ValidDEM(DEM1) and ValidDEM(DEM2) then begin
+      {$IfDef RecordGridScatterGram}
+         WriteLineToDebugFile('Two grid scattergram');
+         WriteLineToDebugFile('  DEM 1:' + DEMGlb[DEM1].AreaName + '  ' + DEMGlb[DEM1].KeyDEMParams);
+         WriteLineToDebugFile('  DEM 2:' + DEMGlb[DEM2].AreaName + '  ' + DEMGlb[DEM2].KeyDEMParams);
+         WriteLineToDebugFile('  ll corner :' + RealToString(DEMGlb[DEM2].Headrecs.hdfSWCornerx,-12,-2) + '   ' + RealToString(DEMGlb[DEM2].Headrecs.hdfSWCornery,-12,-2) );
+      {$EndIf}
 
-   if FullGrid then GridLimits := DEMGlb[DEM1].FullDEMGridLimits
-   else GridLimits := DEMGlb[DEM1].SelectionMap.MapDraw.MapAreaDEMGridLimits;
+      if FullGrid then GridLimits := DEMGlb[DEM1].FullDEMGridLimits
+      else GridLimits := DEMGlb[DEM1].SelectionMap.MapDraw.MapAreaDEMGridLimits;
 
-   {$IfDef RecordGridScatterGram} WriteLineToDebugFile('Grid from DEM 1: ' + GridLimitsToString(GridLimits)); {$EndIf}
-   Result := TThisBaseGraph.Create(Application);
-   Result.SetUpGraphForm;
-   Result.GraphDraw.AutoPointDensity := true;
-   Result.Caption := 'Two grid scattergram';
-   if DEMGlb[DEM1].ShortName = '' then Result.GraphDraw.HorizLabel := RemoveUnderscores(DEMGlb[DEM1].AreaName)
-   else Result.GraphDraw.HorizLabel := RemoveUnderscores(DEMGlb[DEM1].ShortName);
-   if DEMGlb[DEM2].ShortName = '' then Result.GraphDraw.VertLabel := RemoveUnderscores(DEMGlb[DEM2].AreaName)
-   else Result.GraphDraw.VertLabel := RemoveUnderscores(DEMGlb[DEM2].ShortName);
-   Result.OpenPointFile(rfile,Result.Symbol);
-   Incr := 1;
-   NPts := 0;
-   Prog := 0;
+      {$IfDef RecordGridScatterGram} WriteLineToDebugFile('Grid from DEM 1: ' + GridLimitsToString(GridLimits)); {$EndIf}
+      SetReasonableGraphSize;
 
-   StartProgress('Scatter plot');
-   while ( (GridLimits.XGridHigh - GridLimits.XGridLow) div Incr) * ((GridLimits.YGridHigh - GridLimits.YGridLow) div Incr) > Petmath.bfArrayMaxSize do inc(incr);
-   Col := GridLimits.XGridLow;
-   while (Col <= GridLimits.XGridHigh) do begin
+      Result := TThisBaseGraph.Create(Application);
+      Result.SetUpGraphForm;
+      Result.GraphDraw.AutoPointDensity := true;
+      Result.Caption := 'Two grid scattergram';
+      if DEMGlb[DEM1].ShortName = '' then Result.GraphDraw.HorizLabel := RemoveUnderscores(DEMGlb[DEM1].AreaName)
+      else Result.GraphDraw.HorizLabel := RemoveUnderscores(DEMGlb[DEM1].ShortName);
+      if DEMGlb[DEM2].ShortName = '' then Result.GraphDraw.VertLabel := RemoveUnderscores(DEMGlb[DEM2].AreaName)
+      else Result.GraphDraw.VertLabel := RemoveUnderscores(DEMGlb[DEM2].ShortName);
+      Result.OpenPointFile(rfile,Result.Symbol);
+      Incr := 1;
+      NPts := 0;
+      Prog := 0;
 
-      Row := GridLimits.YGridLow;
-      if (Prog mod 100 = 0) then  begin
-         UpdateProgressBar((Col - GridLimits.XGridLow) / (GridLimits.XGridHigh - GridLimits.XGridLow));
-         {$IfDef RecordGridScatterGram} WriteLineToDebugFile('Col=' + IntToStr(Col) );    {$EndIf}
-      end;
-      Inc(Prog);
+      StartProgress('Scatter plot');
+      while ( (GridLimits.XGridHigh - GridLimits.XGridLow) div Incr) * ((GridLimits.YGridHigh - GridLimits.YGridLow) div Incr) > Petmath.bfArrayMaxSize do inc(incr);
+      Col := GridLimits.XGridLow;
+      while (Col <= GridLimits.XGridHigh) do begin
 
-      while (Row <= GridLimits.YGridHigh) do begin
-         if DEMGlb[DEM1].GetElevMeters(Col,Row,v[1]) then begin
-            if IdenticalGrids then begin
-               if DEMGlb[DEM2].GetElevMeters(Col,Row,v[2]) then begin
-                  Result.AddPointToDataBuffer(rfile,v);
-                  inc(NPts);
-               end;
-            end
-            else begin
-               DEMGlb[DEM1].DEMGridToLatLongDegree(Col,Row,Lat,Long);
-               DEMGlb[DEM2].LatLongDegreetoDEMGrid(Lat,Long,XGrid,YGrid);
-               {$IfDef RecordGridScatterGram}
-                  if (Col mod 100 = 0)  and (Row mod 100 = 0) then begin
-                      WriteLineToDebugFile('Col=' + IntToStr(Col) + '  ' + 'Row=' + IntToStr(Row) + '  ' + LatLongDegreeToString(Lat,Long) + '  xgrid=' + IntToStr(Round(xgrid)) +  '  ygrid=' + IntToStr(Round(ygrid)));
+         Row := GridLimits.YGridLow;
+         if (Prog mod 100 = 0) then  begin
+            UpdateProgressBar((Col - GridLimits.XGridLow) / (GridLimits.XGridHigh - GridLimits.XGridLow));
+            {$IfDef RecordGridScatterGram} WriteLineToDebugFile('Col=' + IntToStr(Col) );    {$EndIf}
+         end;
+         Inc(Prog);
+
+         while (Row <= GridLimits.YGridHigh) do begin
+            if DEMGlb[DEM1].GetElevMeters(Col,Row,v[1]) then begin
+               if IdenticalGrids then begin
+                  if DEMGlb[DEM2].GetElevMeters(Col,Row,v[2]) then begin
+                     Result.AddPointToDataBuffer(rfile,v);
+                     inc(NPts);
                   end;
-               {$EndIf}
-               if DEMGlb[DEM2].GetElevMeters(XGrid,YGrid,v[2]) then begin
-                  Result.AddPointToDataBuffer(rfile,v);
-                  inc(NPts);
+               end
+               else begin
+                  DEMGlb[DEM1].DEMGridToLatLongDegree(Col,Row,Lat,Long);
+                  DEMGlb[DEM2].LatLongDegreetoDEMGrid(Lat,Long,XGrid,YGrid);
+                  {$IfDef RecordGridScatterGram}
+                     if (Col mod 100 = 0)  and (Row mod 100 = 0) then begin
+                         WriteLineToDebugFile('Col=' + IntToStr(Col) + '  ' + 'Row=' + IntToStr(Row) + '  ' + LatLongDegreeToString(Lat,Long) + '  xgrid=' + IntToStr(Round(xgrid)) +  '  ygrid=' + IntToStr(Round(ygrid)));
+                     end;
+                  {$EndIf}
+                  if DEMGlb[DEM2].GetElevMeters(XGrid,YGrid,v[2]) then begin
+                     Result.AddPointToDataBuffer(rfile,v);
+                     inc(NPts);
+                  end;
                end;
             end;
+            inc(Row,Incr);
          end;
-         inc(Row,Incr);
+         inc(Col,Incr);
       end;
-      inc(Col,Incr);
-   end;
-   Result.ClosePointDataFile(rfile);
-   EndProgress;
-   if (NPts > 0) then begin
-      Result.AutoScaleAndRedrawDiagram;
-   end
-   else begin
-      Result.Close;
-      MessageToContinue('No matches');
+      Result.ClosePointDataFile(rfile);
+      EndProgress;
+      if (NPts > 0) then begin
+         Result.AutoScaleAndRedrawDiagram;
+      end
+      else begin
+         Result.Close;
+         MessageToContinue('No matches');
+      end;
    end;
 end;
 

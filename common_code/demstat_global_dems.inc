@@ -12,6 +12,8 @@ var
    LidarFields,LidarLabels : tLidarStringArray;
    ns : integer;
 
+
+
 function GetCloudHeightFilter : shortstring;
 var
    Min,Max : float32;
@@ -690,7 +692,7 @@ end;
 
 procedure CloudSummaryGlobalDEMs(DB : integer);
 var
-   s1{,s2} : tStringList;
+   s1 : tStringList;
    j : integer;
    Min,Max : float64;
    fName : PathStr;
@@ -767,7 +769,7 @@ end;
 
 procedure IcesatPhotonConvert(Memo1 : tMemo);
 const
-   BeamName : array[0..6] of string10 = ('None','GT1R','GT1L','GT2R', 'GT2L','GT3R','GT3L');
+   BeamName : array[0..6] of string10 = ('None','GT1R','GT1L','GT2R','GT2L','GT3R','GT3L');
 var
    DefaultFilter : byte;
    outCSV,BigCSV,csv,FilesWanted  : tStringList;
@@ -806,6 +808,8 @@ begin
    Memo1.Visible := true;
    if GetMultipleFiles('IceSat-2 point cloud data','Any file|*.dbf;*.csv',FilesWanted,DefaultFilter) then begin
       ZeroLidarPointType0(lp1.lp0);
+
+      GetGeoid;
       GeoidGrid := OpenNewDEM(Geoid2008FName,false);
       DEMGlb[GeoidGrid].MultiplyGridByConstant(-1);
 
@@ -823,7 +827,7 @@ begin
          Beam := GetFieldFromXMLMetadata(ChangeFileExt(fName,'.xml'),'beam');
          lp1.lp0.UserData := 0;
          for j := 1 to 6 do
-            if Beam = BeamName[j] then lp1.lp0.UserData := j;
+            if (Beam = BeamName[j]) then lp1.lp0.UserData := j;
 
          if MDDef.icesat2.UseBeam[lp1.lp0.UserData] then begin
             StartProgress('Icesat-2 to LAS, ' + Beam);

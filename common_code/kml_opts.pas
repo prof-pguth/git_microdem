@@ -9,8 +9,8 @@ unit kml_opts;
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
-   {$Define KMLProblems}
-   {$Define ShowKMLProofing}
+   //{$Define KMLProblems}
+   //{$Define ShowKMLProofing}
    //{$Define SaveHTMLVersions}
 {$EndIf}
 

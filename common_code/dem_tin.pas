@@ -193,11 +193,12 @@ begin
       if not xyzTable.FieldExists('X') then XFieldName := 'LONG';
       if not xyzTable.FieldExists('Y') then YFieldName := 'LAT';
 
-      if (ZFieldName = '') then begin
+      if (ZFieldName = '') or (not xyzTable.FieldExists(ZFieldName)) then begin
          if (xyzTable.FieldExists('Z')) then ZFieldName := 'Z'
          else if (xyzTable.FieldExists('ELEV')) then ZFieldName := 'ELEV'
          else if (xyzTable.FieldExists('ELEVATION')) then ZFieldName := 'ELEVATION'
-         else if (xyzTable.FieldExists('DEPTH')) then ZFieldName := 'DEPTH';
+         else if (xyzTable.FieldExists('DEPTH')) then ZFieldName := 'DEPTH'
+         else zFieldName := xyzTable.PickField('z values',NumericFieldTypes);
       end;
 
       AddDelauneyZ := (ZFieldName <> '');

@@ -3,17 +3,18 @@ inherited PanoramaOps: TPanoramaOps
   Top = 292
   Caption = 'Panorama Options'
   ClientHeight = 196
-  ClientWidth = 319
+  ClientWidth = 421
   Position = poDefaultSizeOnly
   OnCreate = FormCreate
-  ExplicitWidth = 337
-  ExplicitHeight = 243
-  PixelsPerInch = 96
+  ExplicitLeft = 3
+  ExplicitTop = 3
+  ExplicitWidth = 433
+  ExplicitHeight = 234
   TextHeight = 20
   inherited Bevel1: TBevel
-    Width = 209
+    Width = 273
     Height = 185
-    ExplicitWidth = 209
+    ExplicitWidth = 273
     ExplicitHeight = 185
   end
   object Label1: TLabel [1]
@@ -38,18 +39,20 @@ inherited PanoramaOps: TPanoramaOps
     Caption = 'Increment per frame'
   end
   inherited OKBtn: TButton
-    Left = 236
-    ExplicitLeft = 236
+    Left = 316
+    Top = 12
+    ExplicitLeft = 316
+    ExplicitTop = 12
   end
   inherited CancelBtn: TButton
-    Left = 236
-    Top = 37
-    ExplicitLeft = 236
-    ExplicitTop = 37
+    Left = 316
+    Top = 41
+    ExplicitLeft = 316
+    ExplicitTop = 41
   end
   object HelpBtn: TButton
-    Left = 236
-    Top = 75
+    Left = 316
+    Top = 79
     Width = 75
     Height = 25
     Caption = '&Help'
@@ -69,24 +72,24 @@ inherited PanoramaOps: TPanoramaOps
     TabOrder = 3
   end
   object Edit1: TEdit
-    Left = 136
-    Top = 80
+    Left = 173
+    Top = 82
     Width = 57
     Height = 28
     TabOrder = 4
     Text = 'Edit1'
   end
   object Edit2: TEdit
-    Left = 136
-    Top = 104
+    Left = 173
+    Top = 106
     Width = 57
     Height = 28
     TabOrder = 5
     Text = 'Edit2'
   end
   object Edit3: TEdit
-    Left = 136
-    Top = 128
+    Left = 173
+    Top = 130
     Width = 57
     Height = 28
     TabOrder = 6

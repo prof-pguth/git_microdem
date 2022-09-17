@@ -9,9 +9,9 @@ unit demsatcontrast;
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
-    {$Define RecordContrast}
-    {$Define RecordPickBand}
-    {$Define RecordPixelSize}
+    //{$Define RecordContrast}
+    //{$Define RecordPickBand}
+    //{$Define RecordPixelSize}
 {$EndIf}
 
 

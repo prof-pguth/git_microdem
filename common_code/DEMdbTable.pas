@@ -941,6 +941,11 @@ type
     Simpleexample1: TMenuItem;
     PercentageofcriteriawhereDEMisbest1: TMenuItem;
     Averageranksbyarea1: TMenuItem;
+    Key3params1: TMenuItem;
+    COPoALOS1: TMenuItem;
+    BestDEMpertilebycriteria1: TMenuItem;
+    N7Elevationdifferencecriteria1: TMenuItem;
+    FriedmanTest1: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
     procedure Shiftpointrecords1Click(Sender: TObject);
     procedure Creategrid1Click(Sender: TObject);
@@ -1652,6 +1657,11 @@ type
     procedure Simpleexample1Click(Sender: TObject);
     procedure PercentageofcriteriawhereDEMisbest1Click(Sender: TObject);
     procedure Averageranksbyarea1Click(Sender: TObject);
+    procedure Key3params1Click(Sender: TObject);
+    procedure COPoALOS1Click(Sender: TObject);
+    procedure BestDEMpertilebycriteria1Click(Sender: TObject);
+    procedure N7Elevationdifferencecriteria1Click(Sender: TObject);
+    procedure FriedmanTest1Click(Sender: TObject);
   private
     procedure PlotSingleFile(fName : PathStr; xoff,yoff : float64);
     procedure SetUpLinkGraph;
@@ -3517,6 +3527,18 @@ begin
 end;
 
 
+procedure Tdbtablef.FriedmanTest1Click(Sender: TObject);
+var
+   DEMs : tStringList;
+begin
+   DEMs := tStringList.Create;
+   DEMs.Add('COP');
+   DEMs.Add('ALOS');
+   DEMs.Add('ASTER');
+   Friedman(DBonTable,DEMs);
+end;
+
+
 procedure Tdbtablef.Fuibn1Click(Sender: TObject);
 var
    aString : ShortString;
@@ -3614,9 +3636,9 @@ begin
       DipAndStrikes1.Visible := DipStrikeFieldExists;
       EarthquakeMechanisms2.Visible := FocalMechsPresent;
       {$IfDef ExGeography}
-      Climatestations1.Visible := false;
+         Climatestations1.Visible := false;
       {$Else}
-      Climatestations1.Visible := KoppenPresent;
+         Climatestations1.Visible := KoppenPresent;
       {$EndIf}
 
       LayerSymbology1.Visible := (LayerTable <> Nil);
@@ -3624,7 +3646,7 @@ begin
       Editgazetteersymbology1.Visible := GazDB;
       ColorfieldinDB1.Visible :=  (GISdb[DBonTable].ColorPresent or GISdb[DBonTable].RGBColorPresent) or GISdb[DBonTable].MyData.FieldExists('LINE_COLOR') ;
       TerrainFabric1.Visible := GISdb[DBonTable].MyData.FieldExists('S1S2') and GISdb[DBonTable].MyData.FieldExists('S2S3')  and GISdb[DBonTable].MyData.FieldExists('FABRIC_DIR');
-      //Recordsymbolization1.Checked := GISdb[DBonTable].dbOpts.SymbolsWithBuffers;
+
 
       PointSymbolsInDB1.Visible := PointSymbolFieldsPresent;
       ColorCodeByNumericField1.Visible := (NumericFields > 0) or (StringFields > 0);
@@ -3662,7 +3684,7 @@ end;
 
 procedure Tdbtablef.FormActivate(Sender: TObject);
 begin
-   if ValidDB(DBonTable) { <> 0) and (GISdb[DBonTable] <> Nil)} and (not FormWorking) and (not Closing) then begin
+   if ValidDB(DBonTable) and (not FormWorking) and (not Closing) then begin
       {$IfDef RecordFormActivate} WriteLineToDebugFile('Tdbtablef.FormActivate in'); {$EndIf}
       Button4.Enabled := CheckBox1.Checked;
       GISdb[DBonTable].ColorButtonForSymbol(BitBtn1);
@@ -3720,7 +3742,6 @@ begin
         TidePredictions1.Visible := MyData.FieldExists('AMPLITUDE') and MyData.FieldExists('PHASE') and MyData.FieldExists('SPEED');
         Monthlyanalysis1.Visible := MyData.FieldExists(MonthFieldName);
         Graphwithranges1.Visible := MyData.FieldExists('CLASS') and MyData.FieldExists('MEAN') and MyData.FieldExists('STD_DEV');
-        //TMProcess1.Visible := TMIndex;
         GeomorphometryStats1.Visible := (ItsAShapeFile and AreaShapeFile(ShapeFileType)) and MDDef.AdvancedDBops and GISdb[DBonTable].DEMwithDBsMap;
         Geomrophometrystaseachpointneighborhood1.Visible := ItsAPointDB and MDDef.AdvancedDBops and GISdb[DBonTable].DEMwithDBsMap;
         MultipleLinearRegression1.Visible := MDDef.AdvancedDBops;
@@ -3738,6 +3759,8 @@ begin
         LinkDataBase1.Visible := MDDef.AdvancedDBops;
         LVIS1.Visible := MyData.FieldExists('RH99');
         PointcloudstoanalyzeglobalDEMs1.Visible := (MyData.FieldExists('BEAM') and MyData.FieldExists('TRACK_ID')) or (MyData.FieldExists('CLOUD_0_5') and MyData.FieldExists('CLOUD_995'));
+
+        Graphavereagescoresbyterraincategories1.Visible := MyData.FieldExists('FILTER');
 
         {$IfDef ExGeography}
            Koppenlatitudestats1.Visible := false;
@@ -3920,7 +3943,6 @@ begin
               fName := ChangeFileExt(DBAuxDir + 'colors_' + WantedFieldName + '_' + ExtractFileName(dbFullName),DefaultDBExt);
               LinkColorTable := PetDBUtils.StringList2CSVtoDB(Findings,fName);
               FieldsInDB.Free;
-              //LinkColorTable := theMapOwner.LoadDataBaseFile(fName);
               GISdb[GISdb[DBonTable].LinkColorTable].MyData.First;
               i := 0;
               rc := GISdb[GISdb[DBonTable].LinkColorTable].MyData.FiltRecsInDB;
@@ -4067,7 +4089,7 @@ end;
 
 procedure Tdbtablef.Sumtwofields1Click(Sender: TObject);
 var
-   i,Sign{,rc} : integer;
+   i,Sign : integer;
    SumName : String[10];
    l1,l2 : shortstring;
    x,y : float32;
@@ -4115,7 +4137,7 @@ begin
        dbOpts.YField := '';
        if (Sender = SumTwoFields1) then Sign := 1 else Sign := -1;
 
-       PickNumericFields(i,{dbOpts.XField,dbOpts.YField,dbOpts.ZField,}l1,l2,'');
+       PickNumericFields(i,l1,l2,'');
        SumName := SumName + '_' + dbOpts.XField;
 
        SumName := GetFieldNameForDB('New Field',True,SumName);
@@ -4591,7 +4613,7 @@ begin
    {$IfDef RecordGraph} WriteLineToDebugFile('Tdbtablef.N2Dgraphallopendatabases1Click in'); {$EndIf}
    with GISdb[DBonTable] do begin
      if (Sender = N2Dgraphallopendatabases1) or (Sender = N2Dgraphallopendatabaseslines1) then begin
-        PickNumericFields(2,{dbOpts.XField,dbOpts.YField,dbOpts.ZField,}'X axis variable','Y axis variable','');
+        PickNumericFields(2,'X axis variable','Y axis variable','');
      end;
 
      ThisGraph := TThisbasegraph.Create(Application);
@@ -4685,10 +4707,8 @@ end;
 
 procedure Tdbtablef.Longeststring1Click(Sender: TObject);
 var
-   //i,
    Max : integer;
-   Ls,
-   FieldName : ShortString;
+   Ls,FieldName : ShortString;
 begin
    with GISdb[DBonTable] do begin
       if (Sender = LongestString2) then FieldName := SelectedColumn
@@ -6359,6 +6379,11 @@ procedure Tdbtablef.N45Click(Sender: TObject);
 begin
    {$IfDef RecordIceSat} WriteLineToDebugFile('ICESat2filecleanup1Click'); {$EndIf}
    IcesatProcessCanopy(DBonTable,false);
+end;
+
+procedure Tdbtablef.N7Elevationdifferencecriteria1Click(Sender: TObject);
+begin
+   DEMIXwineContestMeanMedianGraph(dg7Params,DBonTable);
 end;
 
 procedure ProcessLandsat(Table : tMyData; What :tNewSatBand);
@@ -8819,6 +8844,11 @@ begin
    end;
 end;
 
+procedure Tdbtablef.Key3params1Click(Sender: TObject);
+begin
+   DEMIXwineContestMeanMedianGraph(dgJust3Params,DBonTable);
+end;
+
 procedure Tdbtablef.Keyboardnewpointlocation1Click(Sender: TObject);
 var
    Lat,Long : float64;
@@ -8842,13 +8872,14 @@ end;
 
 procedure Tdbtablef.Keymeans1Click(Sender: TObject);
 begin
-   DEMIXwineContestMeanMedianGraph(dgMean,DBonTable) ;
+   DEMIXwineContestMeanMedianGraph(dgMean,DBonTable);
 end;
 
 procedure Tdbtablef.Keymeans2Click(Sender: TObject);
 begin
-   DEMIXwineContestMeanMedianGraph(dgMedian,DBonTable) ;
+   DEMIXwineContestMeanMedianGraph(dgMedian,DBonTable);
 end;
+
 
 procedure Tdbtablef.RecordDisplay1Click(Sender: TObject);
 begin
@@ -9399,6 +9430,11 @@ begin
 end;
 
 
+procedure Tdbtablef.COPoALOS1Click(Sender: TObject);
+begin
+   DEMIXisCOPorALOSbetter(DBonTable);
+end;
+
 procedure Tdbtablef.N2Dgraphcolorcodetext1Click(Sender: TObject);
 begin
    {$IfDef NoDBGrafs}
@@ -9760,7 +9796,7 @@ end;
 
 procedure Tdbtablef.Graphavereagescoresbyterraincategories1Click(Sender: TObject);
 begin
-   DEMIXwineContestScoresGraph(DBonTable);
+   DEMIXwineContestScoresGraph(DBonTable,'Average score');
 end;
 
 procedure Tdbtablef.Graphfortransposeddata1Click(Sender: TObject);
@@ -10210,7 +10246,7 @@ var
    j : integer;
    fName : ANSIstring;
 begin
-   if ValidDB(DBonTable) { <> 0) and (GISdb[DBonTable] <> Nil)} then begin
+   if ValidDB(DBonTable) then begin
       GISdb[DBonTable].EmpSource.Enabled := false;
       for j := pred(GISdb[DBonTable].MyData.FieldCount) downto 0 do begin
          fName := GISdb[DBonTable].MyData.GetFieldName(j);
@@ -10245,10 +10281,10 @@ end;
 
 procedure Tdbtablef.Koppenclassification1Click(Sender: TObject);
 begin
-{$IfDef ExGeography}
-{$Else}
-    GISdb[DBonTable].StartClimateDisplay(dbasKoppen);
-{$EndIf}
+   {$IfDef ExGeography}
+   {$Else}
+       GISdb[DBonTable].StartClimateDisplay(dbasKoppen);
+   {$EndIf}
 end;
 
 procedure Tdbtablef.Koppenicons1Click(Sender: TObject);
@@ -10348,15 +10384,13 @@ var
    i,xpic,ypic : integer;
    Lat,Long : float64;
 begin
-   with GISdb[DBonTable] do begin
-      if ValidLatLongFromTable(Lat,Long) then begin
-         for i := 1 to MaxDEMDataSets do if (DEMGlb[i] <> Nil) then begin
-            if DEMGlb[i].SelectionMap.MapDraw.LatLongOnScreen(Lat,Long) then begin
-               DEMGlb[i].SelectionMap.MapDraw.LatLongDegreeToScreen(Lat,Long,xpic,ypic);
-               DEMGlb[i].SelectionMap.LastX := xpic;
-               DEMGlb[i].SelectionMap.LastY := Ypic;
-               DEMGlb[i].SelectionMap.Terrainblowup1Click(Nil);
-            end;
+   if GISdb[DBonTable].ValidLatLongFromTable(Lat,Long) then begin
+      for i := 1 to MaxDEMDataSets do if (DEMGlb[i] <> Nil) then begin
+         if DEMGlb[i].SelectionMap.MapDraw.LatLongOnScreen(Lat,Long) then begin
+            DEMGlb[i].SelectionMap.MapDraw.LatLongDegreeToScreen(Lat,Long,xpic,ypic);
+            DEMGlb[i].SelectionMap.LastX := xpic;
+            DEMGlb[i].SelectionMap.LastY := Ypic;
+            DEMGlb[i].SelectionMap.Terrainblowup1Click(Nil);
          end;
       end;
    end;
@@ -10468,14 +10502,14 @@ var
 
 
 begin
-   with GISdb[DBonTable],MyData do begin
+   with GISdb[DBonTable]{,MyData} do begin
         if (Sender = AllProfiles1) and (MyData.RecordCount > 35) then begin
            if Not AnswerIsYes('Proceed with ' + IntToStr(MyData.RecordCount) + ' records') then exit;
         end;
 
         Result := tThisBaseGraph.Create(Application);
         u1 := '';
-        if (Sender <> Allnormalizedprofiles1) and (dbOpts.LabelField <> '') then u1 := ' ' + GetFieldByNameAsString(dbOpts.LabelField);
+        if (Sender <> Allnormalizedprofiles1) and (dbOpts.LabelField <> '') then u1 := ' ' + MyData.GetFieldByNameAsString(dbOpts.LabelField);
 
         Result.Caption := 'Terrain profile' + u1;
 
@@ -10590,15 +10624,15 @@ procedure Tdbtablef.Deadreckoning1Click(Sender: TObject);
 var
    Lat,Long,Speed,Heading,Distance,Time : float64;
 
-            procedure GetValues;
-            begin
-               Speed := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('KNOTS');
-               Heading := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('HEADING');
-               if GISdb[DBonTable].MyData.FieldExists('DT_HOURS') then Time := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('DT_HOURS')
-               else Time := 1;
-               Distance := Time * Speed * 1.852 * 1000;   //convert to meters
-               VincentyPointAtDistanceBearing(Lat,Long,Distance,Heading,Lat,Long);
-            end;
+      procedure GetValues;
+      begin
+         Speed := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('KNOTS');
+         Heading := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('HEADING');
+         if GISdb[DBonTable].MyData.FieldExists('DT_HOURS') then Time := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('DT_HOURS')
+         else Time := 1;
+         Distance := Time * Speed * 1.852 * 1000;   //convert to meters
+         VincentyPointAtDistanceBearing(Lat,Long,Distance,Heading,Lat,Long);
+      end;
 
 
 begin
@@ -10650,27 +10684,25 @@ var
    Hours : float64;
    IV : integer;
 begin
-   with GISdb[DBonTable],MyData do begin
-      AddFieldToDataBase(ftString,'TIME_STR',8,0);
-      EmpSource.Enabled := false;
-      First;
-      while not EOF do begin
-         Edit;
-         Hours := GetFieldByNameAsFloat('DEC_HOURS');
-         IV := trunc(Hours);
-         TStr := IntegerToString(IV,2);
-         Hours := 60 * (Hours - IV);
-         iv := trunc(Hours);
-         TStr := TSTr + ':' + IntegerToString(IV,2);
-         Hours := 60 * (Hours - IV);
-         iv := round(Hours);
-         TStr := TSTr + ':' + IntegerToString(IV,2);
-         for iv := 1 to 8 do if Tstr[iv] = ' ' then TStr[iv] := '0';
-         SetFieldByNameAsString('TIME_STR',TStr);
-         Next;
-      end;
-      ShowStatus;
+   GISdb[DBonTable].AddFieldToDataBase(ftString,'TIME_STR',8,0);
+   GISdb[DBonTable].EmpSource.Enabled := false;
+   GISdb[DBonTable].MyData.First;
+   while not  GISdb[DBonTable].MyData.EOF do begin
+      GISdb[DBonTable].MyData.Edit;
+      Hours := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('DEC_HOURS');
+      IV := trunc(Hours);
+      TStr := IntegerToString(IV,2);
+      Hours := 60 * (Hours - IV);
+      iv := trunc(Hours);
+      TStr := TSTr + ':' + IntegerToString(IV,2);
+      Hours := 60 * (Hours - IV);
+      iv := round(Hours);
+      TStr := TSTr + ':' + IntegerToString(IV,2);
+      for iv := 1 to 8 do if Tstr[iv] = ' ' then TStr[iv] := '0';
+      GISdb[DBonTable].MyData.SetFieldByNameAsString('TIME_STR',TStr);
+      GISdb[DBonTable].MyData.Next;
    end;
+   ShowStatus;
 end;
 
 procedure Tdbtablef.Defaultssymbols1Click(Sender: TObject);
@@ -11276,6 +11308,11 @@ end;
 procedure Tdbtablef.BestDEMbycategory1Click(Sender: TObject);
 begin
    BestDEMSbyCategory(DBonTable);
+end;
+
+procedure Tdbtablef.BestDEMpertilebycriteria1Click(Sender: TObject);
+begin
+   DEMIX_graph_best_in_Tile(DBonTable);
 end;
 
 procedure Tdbtablef.Showarearecords1Click(Sender: TObject);
@@ -13256,47 +13293,8 @@ begin
 end;
 
 procedure Tdbtablef.ExtractDEMIXtiles1Click(Sender: TObject);
-var
-   bb : sfBoundBox;
-   WantDEM,WantImage,i : integer;
-   OutPath : PathStr;
-   TileName,LastTileName,DEMIXname : shortstring;
 begin
-   {$IfDef RecordExports} WriteLineToDebugFile('Tdbtablef.ExtractDEMIXtiles1, n=' + IntToStr(GISdb[DBonTable].MyData.RecordCount)); {$EndIf}
-    SaveBackupDefaults;    //to keep from plotting on the DEMs, and not being able to loop through all records
-    MDdef.DBsOnAllMaps := false;
-    LastTileName := '';
-    GISdb[DBonTable].MyData.First;
-    repeat
-        {$IfDef RecordExports} WriteLineToDebugFile('Start loop: ' + IntToStr(GISdb[DBonTable].MyData.RecNo)); {$EndIf}
-        bb := GISdb[DBonTable].MyData.GetRecordBoundingBox;
-        TileName := SWcornerString(bb.ymin,bb.ymax,1);
-        DEMIXname := GISdb[DBonTable].MyData.GetFieldByNameAsString('NAME');
-        {$IfDef RecordExports} WriteLineToDebugFile(IntToStr(GISdb[DBonTable].MyData.RecNo) + '  ' + DEMIXname); {$EndIf}
-        OutPath := 'c:\mapdata\demix_tiles\' + DEMIXname + '\';
-        if (TileName <> LastTileName) then begin
-           {$IfDef RecordExports} WriteLineToDebugFile('Load library: ' + IntToStr(GISdb[DBonTable].MyData.RecNo)); {$EndIf}
-           CloseAllDEMs;
-           LoadMapLibraryBox(WantDEM,WantImage,true,bb);
-           SafeMakeDir(OutPath);
-           {$IfDef RecordExports} WriteLineToDebugFile('DEMs loaded: ' + IntToStr(GISdb[DBonTable].MyData.RecNo)); {$EndIf}
-        end;
-
-        for i := 1 to MaxDEMDataSets do begin
-           if ValidDEM(i) then begin
-              DEMGlb[i].SelectionMap.SubsetAndZoomMapFromGeographicBounds(bb);
-              DEMGlb[i].SaveGridSubsetGeotiff(DEMGlb[i].SelectionMap.MapDraw.MapAreaDEMGridLimits,OutPath + DEMGlb[i].AreaName + '.tif');
-              {$IfDef RecordExports} WriteLineToDebugFile('DEM tile written: ' + IntToStr(i) + '  rec='+ IntToStr(GISdb[DBonTable].MyData.RecNo)); {$EndIf}
-           end;
-        end;
-
-        LastTileName := TileName;
-        GISdb[DBonTable].MyData.Next;
-        {$IfDef RecordExports} WriteLineToDebugFile(IntToStr(GISdb[DBonTable].MyData.RecNo) + ' now doing'); {$EndIf}
-    until GISdb[DBonTable].MyData.eof;
-    CloseAllDEMs;
-    RestoreBackupDefaults;
-   {$IfDef RecordExports} WriteLineToDebugFile('Tdbtablef.ExtractDEMIXtiles1, out'); {$EndIf}
+  ExtractTheDEMIXtiles(DBonTable);
 end;
 
 
@@ -13702,6 +13700,10 @@ var
    FieldsUsed : tStringList;
    Num : integer;
 begin
+
+//TMapForm.MakeTempGrid(OpenMap : boolean = false; GetParameters : boolean = false) : integer;
+
+
    if (HowCreate = cgPointDensity) then begin
       Result := GISdb[DBOnTable].TheMapOwner.CreateGridToMatchMap(cgUTM,true,SmallIntDEM,GridSize);
       DEMGlb[Result].AreaName := GISdb[DBonTable].dbName + '_pt_density';
@@ -13736,20 +13738,23 @@ begin
          ReadDefault('radius (m)',Rad);
       end;
 
-      NewHeadRecs := DEMGlb[TheMapOwner.MapDraw.DEMonMap].DEMheader;
+      //NewHeadRecs := DEMGlb[TheMapOwner.MapDraw.DEMonMap].DEMheader;
 
       if (HowCreate = cgCode) then begin
          Code := 1;
          ReadDefault('Code for grid',Code);
          FieldsUsed := tStringList.Create;
          FieldsUsed.Add(dbName);
-         NewHeadRecs.DEMPrecision := ByteDEM;
+         //NewHeadRecs.DEMPrecision := ByteDEM;
       end
       else FieldsUsed := GISdb[DBonTable].GetAnalysisFields;
 
       for j := 0 to pred(FieldsUsed.Count) do begin
          WantedFieldName := FieldsUsed.Strings[j];
-         if OpenAndZeroNewDEM(true,NewHeadRecs,NewDEM,FieldsUsed.Strings[j],InitDEMmissing) then begin
+         //if OpenAndZeroNewDEM(true,NewHeadRecs,NewDEM,FieldsUsed.Strings[j],InitDEMmissing) then begin
+
+         NewDEM := GISdb[DBonTable].theMapOwner.MakeTempGrid(true,true);
+         if NewDEM <> 0 then begin
             //AreaName := FieldsUsed.Strings[j];
             DEMGlb[NewDEM].ShortName := FieldsUsed.Strings[j];
             MyData.First;
@@ -14396,7 +14401,7 @@ end;
 
 procedure Tdbtablef.PercentageofcriteriawhereDEMisbest1Click(Sender: TObject);
 begin
-   DEMIXwineContestMeanMedianGraph(dgPercentBest,DBonTable) ;
+   DEMIXwineContestMeanMedianGraph(dgPercentBest,DBonTable);
 end;
 
 procedure Tdbtablef.Percentfield1Click(Sender: TObject);

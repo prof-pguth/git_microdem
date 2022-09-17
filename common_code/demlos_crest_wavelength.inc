@@ -21,6 +21,7 @@ begin
    {$Else}
    if (LOSdraw.FresnelDB = 0) then exit;
    GISdb[LOSdraw.FresnelDB].EmpSource.Enabled := false;
+
    FindWavelengthStats(GISdb[LOSdraw.FresnelDB].MyData, WavelengthMean,WavelengthMedian,WavelengthStdDev,HeightMean,HeightMedian,HeightStd);
 
    if DisplayIt then begin
@@ -80,7 +81,7 @@ end;
 function TDEMLOSF.FindNearestCrest(Distance : float64; var Lat,Long,Height,LeftHt,LeftLength,RightHt,RightLength : float64) : boolean;
 var
    d,dd,LastDD,MinD,z : float64;
-   Rec,WhereCrest,i{,xp,yp} : integer;
+   Rec,WhereCrest,i : integer;
 begin
    {$IfDef RecordNearestCrest} WriteLineToDebugFile('Enter TDEMLOSF.FindNearestCrest for distance=' + RealToString(Distance,-12,4),true); {$EndIf}
 

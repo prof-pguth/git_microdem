@@ -323,8 +323,8 @@ begin
       MessageToContinue('Fresnel zones requires Radio LOS');
    end;
 
-   if LOSFormMustRecalculate and (theLOSForm.LOSdraw.FresnelDB <> 0) then begin
-      CloseAndNilNumberedDB(theLOSForm.LOSdraw.FresnelDB);
+   if LOSFormMustRecalculate and (theLOSForm.LOSdraw.LOSProfileDB <> 0) then begin
+      CloseAndNilNumberedDB(theLOSForm.LOSdraw.LOSProfileDB);
    end;
 end;
 

@@ -101,8 +101,7 @@ type
 
       procedure DisplayNewGrid(NewDEM : integer);
       procedure DrawPointGraph(var PointGraph : tThisBaseGraph; Lat,Long : float64; Redraw : boolean = true);
-      function AnnualParameterGraph(Lat,Long: float64) : TThisbasegraph;
-
+      function AnnualParameterGraph(Lat,Long: float64; TStr : shortstring = '') : TThisbasegraph;
       procedure KeyPercentiles(Bands : boolean = true);
       procedure MakeSlopeCorrelationGrids;
       procedure NormalizeGrids;
@@ -500,6 +499,7 @@ var
    z1 : float32;
    fName : PathStr;
    aLine : shortString;
+   GoodData : boolean;
 
    procedure NewDataFile(MG : integer);
    var
@@ -513,6 +513,9 @@ var
          for i := 1 to 12 do begin
             if DEMGlb[MultiGridArray[MG].Grids[i]].GetElevFromLatLongDegree(Lat,Long,z1) then begin
                Result.AddPointToDataBuffer(rfile,i,z1);
+            end
+            else begin
+               Gooddata := false;
             end;
          end;
          Result.ClosePointDataFile(rfile);
@@ -524,6 +527,7 @@ var
 
 begin
    {$IfDef RecordMultiGrids} WriteLineToDebugFile('TwoMultigridsAnnualParameterGraph in ' + LatLongDegreeToString(Lat,Long,DecDegrees)); {$EndIf}
+   GoodData := true;
    Result := TThisBaseGraph.Create(Application);
    Result.GraphDraw.MinHorizAxis := 1;
    Result.GraphDraw.MaxHorizAxis := 12;
@@ -531,11 +535,17 @@ begin
    Result.GraphDraw.VertLabel := '';
    Plots := 0;
    NewDataFile(MG1);
-   NewDataFile(MG2);
-   NewDataFile(MG3);
-   Result.SetUpGraphForm;
-   Result.LLcornerText := LatLongDegreeToString(Lat,Long,VeryShortDegrees) + ' ' + Extra;
-   Result.Caption := LatLongDegreeToString(Lat,Long,VeryShortDegrees);
+   if GoodData then NewDataFile(MG2);
+   if GoodData then NewDataFile(MG3);
+   if GoodData then begin
+      Result.SetUpGraphForm;
+      Result.LLcornerText := LatLongDegreeToString(Lat,Long,VeryShortDegrees) + ' ' + Extra;
+      Result.Caption := LatLongDegreeToString(Lat,Long,VeryShortDegrees);
+   end
+   else begin
+      Result.Destroy;
+      Result := nil;
+   end;
    {$IfDef RecordMultiGrids} WriteLineToDebugFile('TwoMultigridsAnnualParameterGraph out'); {$EndIf}
 end;
 
@@ -681,7 +691,7 @@ begin
 end;
 
 
-function tMultiGridArray.AnnualParameterGraph(Lat,Long: float64) : TThisbasegraph;
+function tMultiGridArray.AnnualParameterGraph(Lat,Long: float64; TStr : shortstring = '') : TThisbasegraph;
 var
    i,db : integer;
    z : float32;
@@ -689,6 +699,7 @@ var
    Findings : tStringList;
 begin
    {$IfDef RecordMultiGrids} WriteLineToDebugFile('tMultiGridArray.AnnualParameterGraph in ' + MG_Name); {$EndIf}
+   Result := Nil;
    Findings := tStringList.Create;
    Findings.Add('MONTH,PARAMETER');
    for I := 1 to 12 do begin
@@ -703,7 +714,7 @@ begin
 
       {$IfDef RecordMultiGrids} WriteLineToDebugFile('tMultiGridArray.AnnualParameterGraph db loaded'); {$EndIf}
       Result := GISdb[db].CreateScatterGram(GISdb[db].MonthFieldName,'PARAMETER',true,MG_Name + ' at ' + LatLongDegreeToString(Lat,Long,VeryShortDegrees),'Month',MG_Name);
-      Result.LLcornerText := LatLongDegreeToString(Lat,Long,VeryShortDegrees);
+      Result.LLcornerText := LatLongDegreeToString(Lat,Long,VeryShortDegrees) + ' ' + Tstr;
       Result.GraphDraw.ShowLine[1] := true;
       Result.RedrawDiagram11Click(Nil);
       {$IfDef RecordMultiGrids} WriteLineToDebugFile('tMultiGridArray.AnnualParameterGraph scattergram created'); {$EndIf}
@@ -894,6 +905,7 @@ end;
 procedure OpenTheMultigrid(ThisOne : integer; fName : PathStr);
 begin
    {$IfDef RecordMultiGrids} WriteLineToDebugFile('OpenTheMultigrid in ' + fName + '  Assign to MG=' + IntToStr(ThisOne)); {$EndIf}
+   HeavyDutyProcessing := true;
    MultiGridArray[ThisOne] := tMultiGridArray.Create;
    MultiGridArray[ThisOne].BasePath := fName;
    MultiGridArray[ThisOne].ReadMultigrids;
@@ -908,6 +920,7 @@ begin
       ThisOne := 0;
    end;
    StopSplashing;
+   HeavyDutyProcessing := false;
 end;
 
 
@@ -1546,6 +1559,7 @@ var
    fName,BaseName : PathStr;
 begin
    {$IfDef RecordMultiGrids} WriteLineToDebugFile('tMultiGridArray.LoadMultigrids in'); {$EndIf}
+   HeavyDutyProcessing := true;
    NumGrids := TheFilesSL.Count;
    if (TheFilesSL.Count > 0) then begin
       TheFiles := tStringList.Create;
@@ -1560,7 +1574,7 @@ begin
    end;
    TheFiles.Free;
    DEMNowDoing := JustWandering;
-
+   HeavyDutyProcessing := false;
    {$IfDef RecordMultiGrids} WriteLineToDebugFile('tMultiGridArray.LoadMultigrids out, NumGrids =' + IntToStr(NumGrids) ); {$EndIf}
 end;
 

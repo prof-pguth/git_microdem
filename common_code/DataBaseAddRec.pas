@@ -6,7 +6,7 @@ unit DataBaseAddRec;
 {_________________________________}
 
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
-   {$Define RecordAddRecProblems}
+   //{$Define RecordAddRecProblems}
 {$EndIf}
 
 {$I nevadia_defines.inc}

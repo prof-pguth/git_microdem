@@ -403,6 +403,7 @@ type
     BitBtn40: TBitBtn;
     Label20: TLabel;
     BitBtn41: TBitBtn;
+    BitBtn42: TBitBtn;
     procedure BitBtn32Click(Sender: TObject);
     procedure BitBtn13Click(Sender: TObject);
     procedure HelpBtnClick(Sender: TObject);
@@ -469,6 +470,7 @@ type
     procedure BitBtn39Click(Sender: TObject);
     procedure BitBtn40Click(Sender: TObject);
     procedure BitBtn41Click(Sender: TObject);
+    procedure BitBtn42Click(Sender: TObject);
   private
     { Private declarations }
       procedure labelDirectories;
@@ -869,7 +871,7 @@ end;
 
 procedure TOptionsForm.ShowDRGBoxes;
 begin
-   {$IfDef ExDRGimport}
+   {$If Defined(ExDRGimport) or Defined(ExGeoPDF)}
       GroupBox15.Visible := false;
    {$Else}
       CheckBox7.Checked := MDdef.DRGQuadClip;
@@ -2080,6 +2082,11 @@ end;
 procedure TOptionsForm.BitBtn41Click(Sender: TObject);
 begin
    AdjustIntegratedDataBaseSeries;
+end;
+
+procedure TOptionsForm.BitBtn42Click(Sender: TObject);
+begin
+    GetNaturalEarthData(True);
 end;
 
 procedure TOptionsForm.BitBtn4Click(Sender: TObject);

@@ -12,7 +12,7 @@ unit dem_computations;
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
    {$IfDef Debug}
       //{$Define RecordGMTConvert}
-      {$Define PixelRectBackup}
+      //{$Define PixelRectBackup}
       //{$Define RecordTDemHandFormFormClose}
       //{$Define RecordDuckProblems}
       //{$Define RecordSOESTtides}

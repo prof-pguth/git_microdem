@@ -2,8 +2,8 @@ object wmdem: Twmdem
   Left = 0
   Top = 262
   Caption = 'GIS program loading'
-  ClientHeight = 1443
-  ClientWidth = 2250
+  ClientHeight = 1447
+  ClientWidth = 2246
   Color = clScrollBar
   DefaultMonitor = dmDesktop
   Font.Charset = DEFAULT_CHARSET
@@ -28,7 +28,8 @@ object wmdem: Twmdem
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 2250
+    Width = 2246
+    Height = 29
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34
@@ -1675,8 +1676,8 @@ object wmdem: Twmdem
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 1424
-    Width = 2250
+    Top = 1428
+    Width = 2246
     Height = 19
     Panels = <
       item
@@ -2210,9 +2211,20 @@ object wmdem: Twmdem
           Caption = 'Subsample compare thin/average'
           OnClick = Subsamplecomparethinaverage1Click
         end
+        object N35: TMenuItem
+          Caption = '-'
+        end
+        object DEMIXindexhighresreferenceDEMs1: TMenuItem
+          Caption = 'DEMIX index high res reference DEMs'
+          OnClick = DEMIXindexhighresreferenceDEMs1Click
+        end
         object DEMIXreferenceDEMcreation1: TMenuItem
-          Caption = 'DEMIX reference DEM creation'
+          Caption = 'DEMIX 1 second reference DEM creation'
           OnClick = DEMIXreferenceDEMcreation1Click
+        end
+        object DEMIXreferencetilesurvey1: TMenuItem
+          Caption = 'DEMIX reference tile survey'
+          OnClick = DEMIXreferencetilesurvey1Click
         end
         object DEMIXtiles1: TMenuItem
           Caption = 'DEMIX tiles geostats'
@@ -2988,6 +3000,10 @@ object wmdem: Twmdem
       end
       object GetGRASSextensions1: TMenuItem
         Caption = 'Get GRASS extensions'
+      end
+      object Python1: TMenuItem
+        Caption = 'Python (experimental)'
+        OnClick = Python1Click
       end
     end
     object Spectrallibrary1: TMenuItem

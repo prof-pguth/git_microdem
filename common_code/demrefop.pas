@@ -18,7 +18,7 @@ interface
 uses
    DEMDefs,PETMar,PETMath,
    Windows, Classes, Graphics, Forms, Controls, Buttons,  StrUtils,
-   StdCtrls, ExtCtrls, Dialogs,
+   StdCtrls, ExtCtrls, Dialogs, System.SysUtils,
    Petmar_types,DEMMapf, ComCtrls;
 
 type
@@ -41,7 +41,6 @@ type
     RadioGroup1: TRadioGroup;
     Image1: TImage;
     Image2: TImage;
-    UpDown1: TUpDown;
     TrackBar1: TTrackBar;
     Label5: TLabel;
     BitBtn2: TBitBtn;
@@ -50,8 +49,12 @@ type
     CheckBox5: TCheckBox;
     Label6: TLabel;
     Edit4: TEdit;
-    Edit5: TEdit;
+    RadioGroup3: TRadioGroup;
+    GroupBox1: TGroupBox;
+    Label8: TLabel;
     Edit6: TEdit;
+    Edit5: TEdit;
+    Label7: TLabel;
     procedure Edit3Change(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
     procedure HelpBtnClick(Sender: TObject);
@@ -63,7 +66,6 @@ type
     procedure RadioGroup1Click(Sender: TObject);
     procedure Image2DblClick(Sender: TObject);
     procedure Image2MouseMove(Sender: TObject; Shift: TShiftState; X,Y: Integer);
-    procedure UpDown1Click(Sender: TObject; Button: TUDBtnType);
     procedure TrackBar1Change(Sender: TObject);
     procedure CancelBtnClick(Sender: TObject);
     procedure CheckBox2Click(Sender: TObject);
@@ -75,6 +77,8 @@ type
     procedure Edit4Change(Sender: TObject);
     procedure Edit5Change(Sender: TObject);
     procedure Edit6Change(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure RadioGroup3Click(Sender: TObject);
   private
     { Private declarations }
       procedure SetNewOptions;
@@ -110,6 +114,7 @@ procedure ChangeReflectanceOptions(aMapOwner : tMapForm);   // : boolean;
 var
    RefOptFm : TRefOptFm;
 begin
+   {$IfDef RecordRefOp} WriteLineToDebugFile('ChangeReflectanceOptions in'); {$EndIf}
    aMapOwner.MapDraw.MapMerge := mmNone;
    if (not IsReflectanceMap(aMapOwner.MapDraw.MapType)) then begin
       aMapOwner.MapDraw.MapType := MDDef.DefRefMap;
@@ -119,14 +124,15 @@ begin
    RefOptFm := TRefOptFm.Create(Application);
    DEMDef_routines.SaveBackupDefaults;
    RefOptFm.MapOwner := aMapOwner;
-   RefOptFm.UpDown1.Position := round(DEMGlb[RefOptFm.MapOwner.MapDraw.DEMonMap].RefVertExag);
-   RefOptFm.Edit3.Text := RealToString(DEMGlb[RefOptFm.MapOwner.MapDraw.DEMonMap].RefVertExag,-8,-2);
+   //RefOptFm.UpDown1.Position := round(DEMGlb[RefOptFm.MapOwner.MapDraw.DEMonMap].RefVertExag);
+   RefOptFm.Edit3.Text := RealToString(MDDef.RefVertExag,-8,-2);
    RefOptFm.SetUpForm;
    RefOptFm.SetupOver := true;
    RefOptFm.ShowModal;
    RefOptFm.SetNewOptions;
    if RefOptFm.Changed and (not MDdef.QuickMapRedraw) then RefOptFm.MapOwner.DoBaseMapRedraw;
    RefOptFm.Free;
+   {$IfDef RecordRefOp} WriteLineToDebugFile('ChangeReflectanceOptions out'); {$EndIf}
 end;
 
 
@@ -163,7 +169,7 @@ begin
    DrawSunOrientation;
    CheckBox2.Enabled := (RadioGroup1.ItemIndex = 0);
    CheckBox3.Enabled := (RadioGroup1.ItemIndex = 0);
-   TrackBar1.Enabled := (RadioGroup1.ItemIndex = 3);
+   TrackBar1.Enabled := (RadioGroup1.ItemIndex = 1);
    Label5.Enabled := (RadioGroup1.ItemIndex = 3);
    BitBtn2.Enabled := (RadioGroup1.ItemIndex > 0);
    BitBtn1.Enabled := CheckBox2.Checked or CheckBox3.Checked;
@@ -173,10 +179,6 @@ end;
 
 procedure TRefOptFM.SetNewOptions;
 begin
-   if (MapOwner <> Nil) and (MapOwner.MapDraw.DEMonMap <> 0) then begin
-      CheckEditString(Edit3.Text,MDDef.RefVertExagLargeScaleDEM);
-      DEMGlb[MapOwner.MapDraw.DEMonMap].RefVertExag := MDDef.RefVertExagLargeScaleDEM;
-   end;
 end;
 
 
@@ -272,6 +274,11 @@ begin
    QueryColor(BitBtn1,MDdef.WaterColor);
 end;
 
+procedure TRefOptFM.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+   Action := TCloseAction.caFree;
+end;
+
 procedure TRefOptFM.FormCreate(Sender: TObject);
 begin
    {$IfDef HideHelpButtons} HelpBtn.Visible := false; {$EndIf}
@@ -293,7 +300,7 @@ end;
 
 procedure TRefOptFM.RadioGroup1Click(Sender: TObject);
 begin
-   {$IfDef RecordRefOp} WriteLineToDebugFile('TRefOptFM.RadioGroup1Click'); {$EndIf}
+   {$IfDef RecordRefOp} WriteLineToDebugFile('TRefOptFM.RadioGroup1Click in'); {$EndIf}
    case RadioGroup1.ItemIndex of
       0 : MDDef.DefRefMap := mtGrayReflect;
       1 : MDDef.DefRefMap := mtIHSReflect;
@@ -311,12 +318,22 @@ begin
       MapOwner.MapDraw.MapType := MDDef.DefRefMap;
       DrawPreview;
    end;
+   {$IfDef RecordRefOp} WriteLineToDebugFile('TRefOptFM.RadioGroup1Click out'); {$EndIf}
 end;
 
 
 procedure TRefOptFM.RadioGroup2Click(Sender: TObject);
 begin
+   {$IfDef RecordRefOp} WriteLineToDebugFile('TRefOptFM.RadioGroup2Click in'); {$EndIf}
    MDdef.UseRefDirs := succ(RadioGroup2.ItemIndex);
+   DrawPreview;
+   {$IfDef RecordRefOp} WriteLineToDebugFile('TRefOptFM.RadioGroup2Click out'); {$EndIf}
+end;
+
+procedure TRefOptFM.RadioGroup3Click(Sender: TObject);
+begin
+   MDDef.RefVertExag := StrToFloat(RadioGroup3.Items[RadioGroup3.ItemIndex]);
+   Edit3.Text := RealToString(MDDef.RefVertExag,-8,-2);
    DrawPreview;
 end;
 
@@ -336,18 +353,11 @@ begin
   close;
 end;
 
-procedure TRefOptFM.UpDown1Click(Sender: TObject; Button: TUDBtnType);
-begin
-   {$IfDef RecordRefOp} WriteLineToDebugFile('TRefOptFM.UpDown1Click'); {$EndIf}
-   if (Button = btNext) then DEMGlb[MapOwner.MapDraw.DEMonMap].RefVertExag := DEMGlb[MapOwner.MapDraw.DEMonMap].RefVertExag + 1;
-   if (Button = btPrev) and (DEMGlb[MapOwner.MapDraw.DEMonMap].RefVertExag > 1.5) then DEMGlb[MapOwner.MapDraw.DEMonMap].RefVertExag := DEMGlb[MapOwner.MapDraw.DEMonMap].RefVertExag - 1;
-   Edit3.Text := RealToString(DEMGlb[MapOwner.MapDraw.DEMonMap].RefVertExag,-8,-2);
-end;
-
 procedure TRefOptFM.TrackBar1Change(Sender: TObject);
 begin
    MDDEF.MergeSat := TrackBar1.Position;
-   SetUpForm;
+   label5.Caption := 'Saturation: ' + IntToStr(MDDEF.MergeSat);
+   //SetUpForm;
 end;
 
 procedure TRefOptFM.BitBtn2Click(Sender: TObject);
@@ -381,11 +391,7 @@ end;
 
 procedure TRefOptFM.Edit3Change(Sender: TObject);
 begin
-   if (Sender <> UpDown1) then begin
-      CheckEditString(Edit3.Text,MDDef.RefVertExagLargeScaleDEM);
-      DEMGlb[MapOwner.MapDraw.DEMonMap].RefVertExag := MDDef.RefVertExagLargeScaleDEM;
-   end;
-   DrawPreview;
+   CheckEditString(Edit3.Text,MDdef.RefVertExag);
 end;
 
 procedure TRefOptFM.Edit4Change(Sender: TObject);

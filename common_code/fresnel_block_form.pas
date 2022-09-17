@@ -97,17 +97,12 @@ begin
 {$Else}
 var
    LosResult : tLOSResult;
-   Table : tMyData;
    fName : PathStr;
    Dist,Bearing : float64;
 begin
-   {$IfDef RecordFresnelProblems}
-   WriteLineToDebugFile('FresnelBlockage in');
-   {$EndIf}
+   {$IfDef RecordFresnelProblems} WriteLineToDebugFile('FresnelBlockage in');  {$EndIf}
     if (Fres_blockf = Nil) then begin
-      {$IfDef RecordFresnelProblems}
-      WriteLineToDebugFile('Create form');
-      {$EndIf}
+      {$IfDef RecordFresnelProblems} WriteLineToDebugFile('Create form'); {$EndIf}
        Fres_blockf := TFres_blockf.Create(Application);
        MDDef.wf.FanCurvAlg := vcRadioLineOfSight;
        Fres_blockf.BaseMap := Map;
@@ -136,14 +131,12 @@ begin
        GISdb[FresDB].MyData.Post;
     end
     else with Fres_blockf do begin
-       {$IfDef RecordFresnelProblems}
-       WriteLineToDebugFile('Second point');
-       {$EndIf}
+       {$IfDef RecordFresnelProblems} WriteLineToDebugFile('Second point'); {$EndIf}
        LastLat := Lat;
        LastLong := Long;
-       LOSResult := LOSComputeOnly(table,DEMGlb[Fres_blockf.BaseMap.MapDraw.DEMonMap],DEMGlb[Fres_blockf.BaseMap.MapDraw.DEMonMap].VegGrid[1],
-             AntLat,AntLong,Lat,Long,MDDef.ObsAboveGround,MDDef.TargetAboveGround);
-       Table.Destroy;
+       LOSResult := LOSComputeOnly(Fres_blockf.BaseMap.MapDraw.DEMonMap,DEMGlb[Fres_blockf.BaseMap.MapDraw.DEMonMap].VegGrid[1],
+             AntLat,AntLong,Lat,Long,MDDef.ObsAboveGround,MDDef.TargetAboveGround,Fres_blockf.FresDB);
+       //Table.Destroy;
        BaseMap.MapDraw.MapSymbolAtLatLongDegree(BaseMap.Image1.Canvas,Lat,Long,FilledBox,3,FresnelZoneColor(LosResult));
        Fres_blockf.Memo1.Lines.Add('  ' + LatLongDegreeToString(Lat,Long,MDDef.OutPutLatLongMethod) + '  ' + FresnelZoneResult(LosResult));
        GISdb[FresDB].MyData.Insert;
@@ -162,9 +155,7 @@ begin
 
        GISdb[FresDB].MyData.Post;
     end;
-   {$IfDef RecordFresnelProblems}
-   WriteLineToDebugFile('FresnelBlockage out');
-   {$EndIf}
+   {$IfDef RecordFresnelProblems} WriteLineToDebugFile('FresnelBlockage out'); {$EndIf}
 {$EndIf}
 end;
 
@@ -202,8 +193,8 @@ begin
       UpdateProgressBar(y/Bitmap.Height);
       for x := 0 to pred(Bitmap.Width) do begin
          Fres_blockf.BaseMap.MapDraw.ScreenToLatLongDegree(x,y,Lat,Long);
-         LOSResult := LOSComputeOnly(Table,DEMGlb[Fres_blockf.BaseMap.MapDraw.DEMonMap],DEMGlb[Fres_blockf.BaseMap.MapDraw.DEMonMap].VegGrid[1],
-             AntLat,AntLong,Lat,Long,MDDef.ObsAboveGround,MDDef.TargetAboveGround);
+         LOSResult := LOSComputeOnly(Fres_blockf.BaseMap.MapDraw.DEMonMap,DEMGlb[Fres_blockf.BaseMap.MapDraw.DEMonMap].VegGrid[1], AntLat,AntLong,Lat,Long,
+            MDDef.ObsAboveGround,MDDef.TargetAboveGround,Fres_blockf.FresDB);
          Table.Destroy;
          Bitmap.Canvas.Pixels[x,y] := ConvertPlatformColorToTColor(FresnelZoneColor(LosResult));
       end;

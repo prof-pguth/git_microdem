@@ -167,16 +167,16 @@ begin
    graphcolorsform.ColorBitButton(graphcolorsform.BitBtn7,4);
    graphcolorsform.ColorBitButton(graphcolorsform.BitBtn8,5);
    graphcolorsform.ColorBitButton(graphcolorsform.BitBtn9,6);
+   if inTheGraph.GraphDraw.GraphType = gtTwoVertAxes then begin
+      graphcolorsform.BitBtn6.Visible := false;
+      graphcolorsform.BitBtn7.Visible := false;
+      graphcolorsform.BitBtn8.Visible := false;
+      graphcolorsform.BitBtn9.Visible := false;
+   end;
+
    graphcolorsform.ShowModal;
 end;
 
-
-(*
-procedure Tgraphcolorsform.ShowSymbols;
-begin
-
-end;
-*)
 
 
 procedure Tgraphcolorsform.SymBitBtnClick(Sender: TObject);
