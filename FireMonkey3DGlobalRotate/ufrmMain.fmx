@@ -56,9 +56,9 @@ object frmMain: TfrmMain
     end
   end
   object btnResetCamera: TButton
-    Position.X = 16.000000000000000000
+    Position.X = 8.000000000000000000
     Position.Y = 16.000000000000000000
-    Size.Width = 97.000000000000000000
+    Size.Width = 120.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 2
@@ -98,5 +98,41 @@ object frmMain: TfrmMain
     TabOrder = 6
     Text = 'December solstice'
     OnClick = Button3Click
+  end
+  object Button4: TButton
+    Position.X = 8.000000000000000000
+    Position.Y = 200.000000000000000000
+    Size.Width = 120.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 8
+    Text = 'Stop'
+    OnClick = Button4Click
+  end
+  object Button5: TButton
+    Position.X = 8.000000000000000000
+    Position.Y = 232.000000000000000000
+    Size.Width = 120.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 9
+    Text = 'Start'
+    OnClick = Button5Click
+  end
+  object TrackBar1: TTrackBar
+    CanParentFocus = True
+    Max = 50.000000000000000000
+    Orientation = Horizontal
+    Position.X = 8.000000000000000000
+    Position.Y = 280.000000000000000000
+    TabOrder = 10
+    Value = 25.000000000000000000
+    OnChange = TrackBar1Change
+  end
+  object Label1: TLabel
+    Position.X = 24.000000000000000000
+    Position.Y = 299.000000000000000000
+    Text = 'Rotation speed'
+    TabOrder = 12
   end
 end

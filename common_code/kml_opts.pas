@@ -78,7 +78,7 @@ type
      IconFName : PathStr;
   end;
 
-procedure ConvertToKML(DBonTable : integer; ThumbNailDir : PathStr; kml : KML_Creator.tKMLCreator = Nil; SingleRecordOnly : boolean = false; SepExpField : ShortString = '');
+function ConvertToKML(DBonTable : integer; ThumbNailDir : PathStr; kml : KML_Creator.tKMLCreator = Nil; SingleRecordOnly : boolean = false; SepExpField : ShortString = '') : PathStr;
 
 procedure CleanHTMLFile(var TStrl : tStringList; RemoveLinks : boolean = false);
 
@@ -320,7 +320,7 @@ begin
 end;
 
 
-procedure ConvertToKML(DBonTable : integer; ThumbNailDir : PathStr; kml : KML_Creator.tKMLCreator = Nil; SingleRecordOnly : boolean = false; SepExpField : ShortString = '');
+function ConvertToKML(DBonTable : integer; ThumbNailDir : PathStr; kml : KML_Creator.tKMLCreator = Nil; SingleRecordOnly : boolean = false; SepExpField : ShortString = '') : PathStr;
 var
    kml_opts_fm: Tkml_opts_fm;
    fname : PathStr;
@@ -770,9 +770,9 @@ begin
 
   if LocalKML then begin
      if MDDef.KMLTopLevelFolder then KML.EndFolder;
-     fName := kml.KMLOutputPath + GISdb[DBonTable].dbName + '.KML';
-     {$IfDef KMLProblems}   WriteLinetoDebugFile('Start LocalKML Will save as=' + fName);   {$EndIf}
-     kml.CloseAndSaveFile(true,fName);
+     Result := kml.KMLOutputPath + GISdb[DBonTable].dbName + '.KML';
+     {$IfDef KMLProblems} WriteLinetoDebugFile('Start LocalKML Will save as=' + fName);   {$EndIf}
+     kml.CloseAndSaveFile(true,Result);
      kml.Destroy;
   end;
   GISdb[DBonTable].EmpSource.Enabled := true;

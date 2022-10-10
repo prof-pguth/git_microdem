@@ -1225,6 +1225,7 @@ end;
          begin
             if (InList.Count = 0) then Result := false
             else begin
+                PickedNum := 0;
                 PetList := TPetList.Create(Application);
                 PetList.Caption := InMessage + '  (' + IntToStr(InList.Count) + ' choices)';
                 PetList.ListBox1.ItemIndex := PickedNum;

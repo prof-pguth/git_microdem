@@ -186,8 +186,6 @@ begin
        MapDraw.MakeMapGrayscale := MDDef.DefGrayVectMap;
        MapDraw.SubdueBase := MDDef.DefSubdueVectMap;
        MapDraw.PrimMapProj := tMapProjection.Create('vect map prim proj');
-       //MapDraw.SecondaryMapProjection := tMapProjection.Create('vector map secondary projection');
-
        if (WantProjection <> undefinedProj) then begin
            SetProjection(WantProjection);
        end
@@ -197,7 +195,7 @@ begin
           end
           else begin
              case MDdef.DefaultVectorMapProjection of
-                dvmMercator{,dvmConusMerc} :  SetProjection(MercatorEllipsoid);
+                dvmMercator         :  SetProjection(MercatorEllipsoid);
                 dvmConicalArea      :  SetProjection(AlbersEqAreaConicalEllipsoid);
                 dvmConicalConformal :  SetProjection(LambertConformalConicEllipse);
              end;
@@ -206,7 +204,6 @@ begin
        {$IfDef RecordOpenVectorMap} (if ProjName <> '') then WriteLineToDebugFile('After setting, ProjName=' + ProjName); {$EndIf}
 
        Result.MapDraw.PrimMapProj.PName := MapDraw.PrimMapProj.PName;
-       //Result.MapDraw.SecondaryMapProjection.PName := MapDraw.PrimMapProj.PName;
        MapDraw.BaseTitle := MapDraw.PrimMapProj.GetProjectionName;
        MapDraw.AdjustProjectionForUTMZone('New vector map',MDDef.PreferPrimaryDatum,MDDef.DefaultUTMZone,MDDef.DefaultLatHemi);
        {$If Defined(RecordOpenVectorMap)} WriteLineToDebugFile('New vector map: ' + MapDraw.PrimMapProj.GetProjectionName); {$EndIf}
@@ -228,8 +225,6 @@ var
       var
          fName2,MPath : PathStr;
       begin
-         //if MDdef.DefDEMMap in [2] then MDdef.DefDEMMap := mtIHSReflect;
-
          if (not DEMGlb[DEM].ElevationDEM) then Result := mtElevRainbow
          else Result := MDdef.DefDEMMap;
 
@@ -250,7 +245,6 @@ var
          {$EndIf}
          else if DEMGlb[DEM].LandCoverGrid then begin
             Result := mtElevRainbow;
-            {$IfDef RecordOpenMap} writeLineToDebugFile('=LandCoverGrid'); {$EndIf}
          end
          else begin
             fName2 := UpperCase(DEMGlb[DEM].DEMFileName);
@@ -278,6 +272,7 @@ begin
       {$If Defined(RecordOpenMap) or Defined(RecordCreateSelectionMap)} writeLineToDebugFile('CreateDEMSelectionMap out,' + DEMGlb[DEM].SelectionMap.MapDraw.MapSizeString); {$EndIf}
    {$EndIf}
 end;
+
 
 function CreateANewDEMMapWindow(CurDEM : integer; DrawIt : boolean; mt : tMapType; MapCaption : ShortString) : tMapForm;
 begin
@@ -326,6 +321,14 @@ end;
 
 {$IfDef ExSat}
 {$Else}
+      procedure CreateNewSatWindow(inSatView : tSatView; var ResultMap : tMapForm; CurSat : integer; mt : tMapType; MapCaption : ShortString; Selection : boolean; UseDEM : integer = 0);
+      begin
+         {$IfDef RecordNewSatMap} WriteLineToDebugFile('CreateNewSatWindow image: ' + IntToStr(NewSatImage)); {$EndIf}
+         CreateNewSatSubsetWindow(inSatView, ResultMap,CurSat,mt,MapCaption,false,Selection,true,UseDEM);
+         {$IfDef RecordNewSatMap} WriteLineToDebugFile('out CreateNewSatWindow'); {$EndIf}
+      end;
+
+
       procedure CreateNewSatSubsetWindow(inSatView : tSatView; var ResultMap : tMapForm; CurSat : integer; mt : tMapType; MapCaption : ShortString; Roamable,Selection,ReallyDraw : boolean; UseDEM : integer = 0);
       var
          xg,yg : float64;
@@ -402,13 +405,6 @@ end;
          {$IfDef RecordNewSatMap} WriteLineToDebugFile('Out CreateNewSatSubsetWindow image: ' + IntToStr(NewSatImage)); {$EndIf}
       end;
 
-
-      procedure CreateNewSatWindow(inSatView : tSatView; var ResultMap : tMapForm; CurSat : integer; mt : tMapType; MapCaption : ShortString; Selection : boolean; UseDEM : integer = 0);
-      begin
-         {$IfDef RecordNewSatMap} WriteLineToDebugFile('CreateNewSatWindow image: ' + IntToStr(NewSatImage)); {$EndIf}
-         CreateNewSatSubsetWindow(inSatView, ResultMap,CurSat,mt,MapCaption,false,Selection,true,UseDEM);
-         {$IfDef RecordNewSatMap} WriteLineToDebugFile('out CreateNewSatWindow'); {$EndIf}
-      end;
 {$EndIf}
 
 

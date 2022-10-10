@@ -3,40 +3,35 @@ inherited ElevOptionsForm: TElevOptionsForm
   Top = 235
   Caption = 'Elevation map options'
   ClientHeight = 484
-  ClientWidth = 528
+  ClientWidth = 341
   FormStyle = fsStayOnTop
   Position = poDefaultSizeOnly
   OnClose = FormClose
   OnCreate = FormCreate
-  ExplicitWidth = 546
-  ExplicitHeight = 531
-  PixelsPerInch = 96
+  ExplicitLeft = 3
+  ExplicitTop = 3
+  ExplicitWidth = 353
+  ExplicitHeight = 522
   TextHeight = 20
   inherited Bevel1: TBevel
     Left = 0
     Top = -5
     Width = 337
-    Height = 441
+    Height = 450
     ExplicitLeft = 0
     ExplicitTop = -5
     ExplicitWidth = 337
-    ExplicitHeight = 441
+    ExplicitHeight = 450
   end
   object Image1: TImage [1]
-    Left = 200
+    Left = 222
     Top = 143
     Width = 100
     Height = 100
   end
-  object Image2: TImage [2]
-    Left = 343
-    Top = 8
-    Width = 35
-    Height = 265
-  end
-  object RedrawSpeedButton12: TSpeedButton [3]
-    Left = 256
-    Top = 442
+  object RedrawSpeedButton12: TSpeedButton [2]
+    Left = 275
+    Top = 451
     Width = 25
     Height = 25
     Hint = 'Force redraw'
@@ -52,21 +47,21 @@ inherited ElevOptionsForm: TElevOptionsForm
     OnClick = RedrawSpeedButton12Click
   end
   inherited OKBtn: TButton
-    Left = 4
-    Top = 442
+    Left = 23
+    Top = 451
     OnClick = OKBtnClick
-    ExplicitLeft = 4
-    ExplicitTop = 442
+    ExplicitLeft = 23
+    ExplicitTop = 451
   end
   inherited CancelBtn: TButton
-    Left = 85
-    Top = 442
-    ExplicitLeft = 85
-    ExplicitTop = 442
+    Left = 104
+    Top = 451
+    ExplicitLeft = 104
+    ExplicitTop = 451
   end
   object HelpBtn: TButton
-    Left = 166
-    Top = 442
+    Left = 185
+    Top = 451
     Width = 75
     Height = 25
     Caption = '&Help'
@@ -76,7 +71,7 @@ inherited ElevOptionsForm: TElevOptionsForm
   object RadioGroup1: TRadioGroup
     Left = 8
     Top = 3
-    Width = 186
+    Width = 208
     Height = 253
     Caption = 'Display colors'
     Items.Strings = (
@@ -95,7 +90,7 @@ inherited ElevOptionsForm: TElevOptionsForm
     OnClick = RadioGroup1Click
   end
   object CheckBox2: TCheckBox
-    Left = 200
+    Left = 222
     Top = 3
     Width = 113
     Height = 17
@@ -103,7 +98,7 @@ inherited ElevOptionsForm: TElevOptionsForm
     TabOrder = 4
   end
   object CheckBox3: TCheckBox
-    Left = 200
+    Left = 222
     Top = 26
     Width = 100
     Height = 17
@@ -111,7 +106,7 @@ inherited ElevOptionsForm: TElevOptionsForm
     TabOrder = 5
   end
   object Button1: TButton
-    Left = 200
+    Left = 222
     Top = 50
     Width = 75
     Height = 25
@@ -120,7 +115,7 @@ inherited ElevOptionsForm: TElevOptionsForm
     OnClick = Button1Click
   end
   object BitBtn1: TBitBtn
-    Left = 200
+    Left = 222
     Top = 81
     Width = 75
     Height = 25
@@ -137,30 +132,13 @@ inherited ElevOptionsForm: TElevOptionsForm
     OnChange = ComboBox1Change
   end
   object Button2: TButton
-    Left = 200
+    Left = 222
     Top = 112
     Width = 75
     Height = 25
     Caption = 'z Range'
     TabOrder = 9
     OnClick = Button2Click
-  end
-  object BitBtn4: TBitBtn
-    Left = 343
-    Top = 342
-    Width = 75
-    Height = 25
-    Caption = 'Show'
-    TabOrder = 10
-    OnClick = BitBtn4Click
-  end
-  object CheckBox1: TCheckBox
-    Left = 343
-    Top = 302
-    Width = 154
-    Height = 15
-    Caption = 'Tables > 256 colors'
-    TabOrder = 11
   end
   object RadioGroup3: TRadioGroup
     Left = 8
@@ -178,7 +156,7 @@ inherited ElevOptionsForm: TElevOptionsForm
       'C '
       'Y '
       'M')
-    TabOrder = 12
+    TabOrder = 10
     OnClick = RadioGroup3Click
   end
   object CheckBox4: TCheckBox
@@ -188,7 +166,7 @@ inherited ElevOptionsForm: TElevOptionsForm
     Height = 17
     Caption = 'Invert'
     Enabled = False
-    TabOrder = 13
+    TabOrder = 11
     OnClick = CheckBox4Click
   end
   object CheckBox5: TCheckBox
@@ -197,7 +175,7 @@ inherited ElevOptionsForm: TElevOptionsForm
     Width = 66
     Height = 17
     Caption = 'Log10'
-    TabOrder = 14
+    TabOrder = 12
     OnClick = CheckBox5Click
   end
   object CheckBox6: TCheckBox
@@ -206,7 +184,7 @@ inherited ElevOptionsForm: TElevOptionsForm
     Width = 158
     Height = 17
     Caption = 'Immediate redraws'
-    TabOrder = 15
+    TabOrder = 13
     OnClick = CheckBox6Click
   end
   object ComboBox2: TComboBox
@@ -214,7 +192,7 @@ inherited ElevOptionsForm: TElevOptionsForm
     Top = 262
     Width = 281
     Height = 28
-    TabOrder = 16
+    TabOrder = 14
     OnChange = ComboBox2Change
   end
 end

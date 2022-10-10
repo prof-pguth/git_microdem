@@ -123,6 +123,7 @@ type
     Button4: TButton;
     CheckBox6: TCheckBox;
     procedure FormMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Single);
+    procedure FormMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Single);
     procedure FormMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Single);
     procedure FormMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; var Handled: Boolean);
     procedure Layout3D1Render(Sender: TObject; Context: TContext3D);
@@ -166,6 +167,7 @@ type
     procedure Button2Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
     procedure CornerButton16Click(Sender: TObject);
+    //procedure Form3DMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Single);
     procedure CornerButton15Click(Sender: TObject);
     procedure Button4Click(Sender: TObject);
   private
@@ -174,7 +176,7 @@ type
      ve1,ye1,rMinX,rMaxX,rMinY,rMaxY : double;
      rMinZ,rMaxZ : float32;
      DrapeFile : array[1..MaxClouds] of shortstring;
-     FirstRun,LinkZScaling,Grayscale : boolean;
+     MouseIsDown,FirstRun,LinkZScaling,Grayscale : boolean;
      CurCloud,ExtraPoints : integer;
      NPtsUsed,NPtsAllocated  : array[1..MaxClouds] of integer;
      Material : array[1..MaxClouds] of TTextureMaterialSource;  // Texture to be used, probably need to make this an array as well
@@ -582,30 +584,31 @@ end;
 
 procedure TView3DForm.CheckBox2Change(Sender: TObject);
 begin
-   //Plane1.Visible := CheckBox2.IsChecked;
+   Plane1.Visible := CheckBox2.IsChecked;
    ShowCloud[1] := CheckBox2.IsChecked;
 end;
 
 procedure TView3DForm.CheckBox3Change(Sender: TObject);
 begin
-   //Plane2.Visible := CheckBox3.IsChecked;
+   Plane2.Visible := CheckBox3.IsChecked;
    ShowCloud[2] := CheckBox3.IsChecked;
 end;
 
 procedure TView3DForm.CheckBox4Change(Sender: TObject);
 begin
-   //Plane3.Visible := CheckBox4.IsChecked;
+   Plane3.Visible := CheckBox4.IsChecked;
    ShowCloud[3] := CheckBox4.IsChecked;
 end;
 
 procedure TView3DForm.CheckBox5Change(Sender: TObject);
 begin
-   // Plane4.Visible := CheckBox5.IsChecked;
+   Plane4.Visible := CheckBox5.IsChecked;
    ShowCloud[4] := CheckBox5.IsChecked;
 end;
 
 procedure TView3DForm.CheckBox6Change(Sender: TObject);
 begin
+   //Plane5.Visible := CheckBox6.IsChecked;  //currently there is not Plane5
    ShowCloud[5] := CheckBox6.IsChecked;
 end;
 
@@ -658,6 +661,7 @@ begin // y plane in real world coordinates
    if ComboBox1.ItemIndex = 3 then Plane4.Position.z := Plane4.Position.z + 1;
 end;
 
+
 procedure tView3DForm.ScaleViewToMapExtent(MapDraw : tMapDraw);
 var
    AvgElev : float32;
@@ -678,7 +682,12 @@ begin
    end;
 
 
-   DEMGlb[MapDraw.DEMonMap].BoxAreaExtremeElevations(MapDraw.MapAreaDEMGridLimits,rMinZ,rMaxZ,AvgElev);
+   if ValidDEM(MapDraw.DEMonMap) then DEMGlb[MapDraw.DEMonMap].BoxAreaExtremeElevations(MapDraw.MapAreaDEMGridLimits,rMinZ,rMaxZ,AvgElev)
+   else begin
+      //This is for Chirps                 
+      rMinZ := 0;
+      rMaxZ := 15;
+   end;
 
 
 (*
@@ -1123,6 +1132,7 @@ var
 begin
    CheckBox1.IsChecked := false;
    FirstRun := true;
+   MouseIsDown := false;
    LinkZScaling := true;
    MDDef.OGLDefs.MoveIncr := 7.5;
 
@@ -1158,12 +1168,19 @@ end;
 procedure TView3DForm.FormMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Single);
 begin
    Down := PointF(X, Y);
+   MouseIsDown := true;
+end;
+
+procedure TView3DForm.FormMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Single);
+begin
+   Down := PointF(X, Y);
+   MouseIsDown := false;
 end;
 
 
 procedure TView3DForm.FormMouseMove(Sender: TObject; Shift: TShiftState; X,Y: Single);
 begin
-   if (ssLeft in Shift) then begin
+   if false and MouseIsDown {(ssLeft in Shift))} then begin
       Layout3D1.RotationAngle.X := Layout3D1.RotationAngle.X - ((Y - Down.Y) * 0.3);
       Layout3D1.RotationAngle.Y := Layout3D1.RotationAngle.Y + ((X - Down.X) * 0.3);
       Down := PointF(X, Y);

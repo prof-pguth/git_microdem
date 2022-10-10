@@ -72,7 +72,7 @@ type
    end;
    tMomentVar = record
       NPts,Missing : int64;
-      MinZ,MaxZ,mean,adev,sdev,svar,skew,curt,median,rmse,mae,LE90,
+      MinZ,MaxZ,mean,avg_dev,sdev,svar,skew,curt,median,rmse,mae,LE90,
       Q1,Q3,
       PC1,PC2,PC5,PC95,PC98,PC99 : float64;
    end;
@@ -1851,7 +1851,7 @@ begin
    MomentVar.Maxz := -99e99;
    MomentVar.Missing := 0;
    MomentVar.mean := 0.0;
-   MomentVar.adev := 0.0;
+   MomentVar.avg_dev := 0.0;
    MomentVar.sdev := 0.0;
    MomentVar.svar := 0.0;
    MomentVar.skew := 0.0;
@@ -1862,7 +1862,7 @@ begin
 end;
 
 
-procedure moment(var data : array of float32; var MomentVar : tMomentVar; MomentStop : tMomentStop);  {after Press and others, 1986, Numerical Recipes, Cambridge University Press}
+procedure moment(var data : array of float32; var MomentVar : tMomentVar; MomentStop : tMomentStop);  {after Press and others, 1986, Numerical Recipes, Cambridge University Press, p.458, with additional computations}
 //msAll,msAfterMean,msAfterStdDev,msBeforeMedian
 VAR
    j: integer;
@@ -1881,7 +1881,7 @@ BEGIN
 
    FOR j := 0 to pred(MomentVar.Npts) do begin
       s := data[j]-MomentVar.Mean;
-      MomentVar.adev := MomentVar.adev+abs(s);
+      MomentVar.avg_dev := MomentVar.avg_dev+abs(s);
       p := s*s;
       MomentVar.svar := MomentVar.svar+p;
       p := p*s;
@@ -1896,7 +1896,7 @@ BEGIN
 
    MomentVar.rmse := sqrt(S2/MomentVar.Npts);
    MomentVar.mae := MomentVar.mae / MomentVar.Npts;
-   MomentVar.adev := MomentVar.adev / MomentVar.Npts;
+   MomentVar.avg_dev := MomentVar.avg_dev / MomentVar.Npts;
    IF abs(MomentVar.svar) > 0.000001 then begin
       MomentVar.skew := MomentVar.skew / (MomentVar.Npts*MomentVar.sdev*MomentVar.sdev*MomentVar.sdev);
       MomentVar.curt := MomentVar.curt / (MomentVar.Npts*sqr(MomentVar.svar))-3.0;
@@ -1922,7 +1922,7 @@ begin
    StringGrid.Cells[0,OnLine+1] := Variable + ' mean';
    StringGrid.Cells[OnColumn,OnLine+1] := RealToString(MomentVar.mean,-18,-2);
    StringGrid.Cells[0,OnLine+2] := Variable + ' avg dev';
-   StringGrid.Cells[OnColumn,OnLine+2] := RealToString(MomentVar.adev,-18,-2);
+   StringGrid.Cells[OnColumn,OnLine+2] := RealToString(MomentVar.avg_dev,-18,-2);
    StringGrid.Cells[0,OnLine+3] := Variable + ' std dev';
    StringGrid.Cells[OnColumn,OnLine+3] := RealToString(MomentVar.sdev,-18,-2);
    StringGrid.Cells[0,OnLine+4] := Variable + ' skewness';
@@ -1958,7 +1958,7 @@ begin
    Result := ',' + RealToString(MomentVar.MinZ,-18,-4) + ','  + RealToString(MomentVar.PC1,-18,-4) + ','  + RealToString(MomentVar.PC2,-18,-4) + ',' + RealToString(MomentVar.PC5,-18,-4) + ',' +
        RealToString(MomentVar.Q1,-18,-4) + ',' + RealToString(MomentVar.Median,-18,-4)  + ',' + RealToString(MomentVar.Mean,-18,-4)  + ',' + RealToString(MomentVar.Q3,-18,-4) + ',' +
        RealToString(MomentVar.PC95,-18,-4)  + ',' + RealToString(MomentVar.PC98,-18,-4) + ',' + RealToString(MomentVar.PC99,-18,-4) + ',' +  RealToString(MomentVar.MaxZ,-18,-4) + ',' +
-       RealToString(MomentVar.adev,-8,2) + ',' + RealToString(MomentVar.sdev,-8,2) + ',' + RealToString(MomentVar.skew,-18,-4) + ',' +  RealToString(MomentVar.curt,-18,-4) + ',' +
+       RealToString(MomentVar.avg_dev,-8,2) + ',' + RealToString(MomentVar.sdev,-8,2) + ',' + RealToString(MomentVar.skew,-18,-4) + ',' +  RealToString(MomentVar.curt,-18,-4) + ',' +
        IntToStr(MomentVar.NPts);
 end;
 

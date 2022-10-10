@@ -2,8 +2,8 @@ object wmdem: Twmdem
   Left = 0
   Top = 262
   Caption = 'GIS program loading'
-  ClientHeight = 1447
-  ClientWidth = 2246
+  ClientHeight = 1384
+  ClientWidth = 2204
   Color = clScrollBar
   DefaultMonitor = dmDesktop
   Font.Charset = DEFAULT_CHARSET
@@ -28,13 +28,13 @@ object wmdem: Twmdem
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 2246
-    Height = 29
+    Width = 2204
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34
     TabOrder = 0
     OnMouseDown = ToolBar1MouseDown
+    ExplicitWidth = 2198
     object SpeedButton2: TSpeedButton
       Left = 0
       Top = 0
@@ -1676,8 +1676,8 @@ object wmdem: Twmdem
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 1428
-    Width = 2246
+    Top = 1365
+    Width = 2204
     Height = 19
     Panels = <
       item
@@ -1696,6 +1696,8 @@ object wmdem: Twmdem
     Visible = False
     OnClick = StatusBar1Click
     OnDblClick = StatusBar1DblClick
+    ExplicitTop = 1356
+    ExplicitWidth = 2198
   end
   object MainMenu1: TMainMenu
     Left = 136
@@ -2211,6 +2213,10 @@ object wmdem: Twmdem
           Caption = 'Subsample compare thin/average'
           OnClick = Subsamplecomparethinaverage1Click
         end
+        object ACOLITEallopensatelliteimages1: TMenuItem
+          Caption = 'ACOLITE all open satellite images'
+          OnClick = ACOLITEallopensatelliteimages1Click
+        end
         object N35: TMenuItem
           Caption = '-'
         end
@@ -2234,6 +2240,13 @@ object wmdem: Twmdem
           Caption = 'DEMIX elevation histograms'
           OnClick = DEMIXelevationhistograms1Click
         end
+        object N36: TMenuItem
+          Caption = '-'
+        end
+        object DEMIXwinecontest1: TMenuItem
+          Caption = 'DEMIX wine contest criteria evaluation'
+          OnClick = DEMIXwinecontest1Click
+        end
         object DEMIXmergeCSVfiles1: TMenuItem
           Caption = 'DEMIX merge and transpose CSV files'
           OnClick = DEMIXmergeCSVfiles1Click
@@ -2241,14 +2254,6 @@ object wmdem: Twmdem
         object DEMIXmergeandtransposewithmeanmedian1: TMenuItem
           Caption = 'DEMIX merge and transpose with mean-median'
           OnClick = DEMIXmergeandtransposewithmeanmedian1Click
-        end
-        object DEMIXwinecontest1: TMenuItem
-          Caption = 'DEMIX wine contest criteria evaluation'
-          OnClick = DEMIXwinecontest1Click
-        end
-        object ACOLITEallopensatelliteimages1: TMenuItem
-          Caption = 'ACOLITE all open satellite images'
-          OnClick = ACOLITEallopensatelliteimages1Click
         end
         object N3: TMenuItem
           Caption = '-'

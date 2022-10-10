@@ -80,7 +80,6 @@ constructor tShapeFileCreation.Create(var inFromDatum : tMapProjection; fName : 
 
 begin
    {$IfDef RecordCreateShapeFile} inFromDatum.ShortProjInfo('tShapeFileCreation.Create in'); {$EndIf}
-   {$IfDef RecordCreateShapeFile} inFromDatum.TMdetails('tShapeFileCreation.Create in'); {$EndIf}
    AppendingShapeFile := inAppendingShapeFile;
    FromDatum := inFromDatum;
    DoSHP := inDoSHP;
@@ -99,11 +98,12 @@ begin
    if MakeDBase then begin
       Make_Tables.MakeBasicBoundingBoxTable(fName);
       Table := tMyData.Create(fName);
+      {$IfDef RecordCreateShapeFile} WriteLineToDebugFile('Set up new dbf ' + fName); {$EndIf}
    end
    else Table := nil;
 
    if (AppendingShapeFile = Nil) then begin
-       {$IfDef RecordCreateShapeFile} WriteLineToDebugFile('Set up new shape file ' + fName); {$EndIf}
+        {$IfDef RecordCreateShapeFile} WriteLineToDebugFile('Set up new shapefile ' + fName); {$EndIf}
         fName := ChangeFileExt(fName,'');
         ShapeFileDigitizing := fName + '.shp';
 
@@ -122,9 +122,10 @@ begin
         PtsInShapeStream := 0;
         RecsInShapeStream := 0;
         if (ShapeStreamCoords = Nil) then New(ShapeStreamCoords);
-       {$IfDef RecordCreateShapeFile} WriteLineToDebugFile('set up done'); {$EndIf}
+       {$IfDef RecordCreateShapeFile} WriteLineToDebugFile('shapefile set up done'); {$EndIf}
    end
    else begin
+      {$IfDef RecordCreateShapeFile} WriteLineToDebugFile('appending shapefile ' + fName); {$EndIf}
       glMainFileHeader := AppendingShapeFile.MainFileHeader;
 
       if DoSHP then begin

@@ -307,7 +307,6 @@ Uses
    {$IfDef VCL}
       Nevadia_Main,
       DEM_Indexes,
-      //Get_SPCS,
       Toggle_db_use,
       GetLatLn,
    {$EndIf}
@@ -539,7 +538,7 @@ end;
 
       function tSatImage.GraphHistogram(Desired : integer; WhichBand : integer) : TThisBaseGraph;
       var
-         Band{MaxRef} : integer;
+         Band : integer;
          rfile      : file;
          MaxCount : float32;
          v          : array[1..2] of float32;
@@ -551,14 +550,10 @@ end;
                   Factor : float32;
                begin
                     Factor := BandXSpace[1] / BandXSpace[Band] * BandYSpace[1] / BandYSpace[Band];
-                    //for j := 0 to MaxRefCount do begin
-                       //if Distrib[Band]^[j] / Factor > MaxCount then MaxCount := Distrib[Band]^[j] /;
-                    //end;
                     Result.GraphDraw.LegendList.Add(BandLongName[Band]);
                     Result.OpenDataFile(rfile);
                     for j := 0 to MaxRefCount do begin
                        if Distrib[Band]^[j] > 0 then begin
-                          //if j > MaxRef then MaxRef := j;
                           v[1] := j;
                           v[2] := Distrib[Band]^[j] / Factor;
                           if ((LandsatNumber <> 0) and (Band = 9)) or (IsSentinel2 and (Band = 11)) then begin
@@ -580,9 +575,6 @@ end;
             {$IfDef RecordHistogram} WriteLineToDebugFile('MaxCount found'); {$EndIf}
 
             Result := TThisBaseGraph.Create(Application);
-            //Result.ClientWidth := 450;
-            //Result.ClientHeight := 300;
-            //Result.GraphDraw.LeftMargin := 80;
             Result.GraphDraw.LegendList := tStringList.Create;
             with Result,GraphDraw do begin
                if Desired in [shAllBands,shRGBBands] then begin
@@ -844,6 +836,11 @@ begin
       NIRBand := 8;
       RedBand := 4;
       GreenBand := 3;
+   end
+   else if SatelliteName = 'PlanetScope8' then begin
+      NIRBand := 8;
+      RedBand := 6;
+      GreenBand := 4;
    end
    else if WV2Image then begin
       NIRBand := 8;
@@ -2219,23 +2216,25 @@ var
                   ReadTiffBand(Dir + Copy(SceneBaseName,1,27) + '4' + Copy(SceneBasename,29,6) + Ext,4,'VIS_NIR');
                end;
 
-               procedure OpenPlanet;
-               //this worked in early 2020, but has not been tested recently
+               procedure OpenPlanet(PlanetScope : boolean);
+               //8 band imagery added in Sept 2022
                var
                   bName : PathStr;
                   i : integer;
                begin
                   Data16Bit := true;
                   bName := ExtractFilePath(IndexFileName) + ExtractFileNameNoExt(IndexFileName);
-                  for i := 1 to 4 do begin
+                  if PlanetScope then begin
+                     if StrUtils.AnsiContainsText(UpperCase(IndexFileName),'_SR_8B_') then NumBands := 8
+                     else if StrUtils.AnsiContainsText(UpperCase(IndexFileName),'_3B_AnalyticMS') then NumBands := 4;
+                     SatelliteName := 'PlanetScope' + IntToStr(NumBands);
+                  end;
+                  for i := 1 to NumBands do begin
                      Delete(bName,length(bName),1);
                      bName := bName + IntToStr(i);
-                     ReadTiffBand(bName +  '.tif',i,'Planet');
+                     ReadTiffBand(bName +  '.tif',i,SatelliteName);
                   end;
-                  SatelliteName := 'Planet';
-                  NumBands := 4;
-                  Is4Band := true;
-                  ReadBandData('Planet',SatView);
+                  ReadBandData(SatelliteName,SatView);
                   MissingDataValue := 255;
                end;
 
@@ -2492,9 +2491,12 @@ var
                if IsThisSentinel2(IndexFileName) then OpenSentinel2
                else if StrUtils.AnsiContainsText(UpperCase(IndexFileName),'IKONOS') then OpenIkonos
                else if StrUtils.AnsiContainsText(UpperCase(IndexFileName),'SPOT') then OpenSpot
-               else if StrUtils.AnsiContainsText(UpperCase(IndexFileName),'PLANET') then OpenPlanet
-               else if StrUtils.AnsiContainsText(UpperCase(IndexFileName),'WV3-MS') {and StrUtils.AnsiContainsText(UpperCase(IndexFileName),'_MUL')} then OpenWorldView3('WV3-MS')
-               else if StrUtils.AnsiContainsText(UpperCase(IndexFileName),'WV3-SWIR') {and StrUtils.AnsiContainsText(UpperCase(IndexFileName),'_SWR')} then OpenWorldView3('WV3-SWIR')
+               else if StrUtils.AnsiContainsText(UpperCase(IndexFileName),'_SR_8B_') then OpenPlanet(true)
+               else if StrUtils.AnsiContainsText(UpperCase(IndexFileName),'_4B_') then OpenPlanet(true)
+               else if StrUtils.AnsiContainsText(UpperCase(IndexFileName),'_3B_') then OpenPlanet(true)
+               else if StrUtils.AnsiContainsText(UpperCase(IndexFileName),'PLANET') then OpenPlanet(false)
+               else if StrUtils.AnsiContainsText(UpperCase(IndexFileName),'WV3-MS') then OpenWorldView3('WV3-MS')
+               else if StrUtils.AnsiContainsText(UpperCase(IndexFileName),'WV3-SWIR') then OpenWorldView3('WV3-SWIR')
                else if (Files <> Nil) then OpenUserMultiband
                else begin
                   ReadOrdinaryGeoTiff;

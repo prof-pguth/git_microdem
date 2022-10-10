@@ -14,6 +14,7 @@
    {$IfDef RecordProblems}  //normally only defined for debugging specific problems
       //{$Define RecordCloseDB}
       {$Define RecordDEMIX}
+      //{$Define RecordDEMIXties}   //only enable for small test DB
       //{$Define RecordSymbolColor}
       //{$Define RecordRedistrict}
       //{$Define RecordDataBaseTiming}
@@ -175,15 +176,15 @@ const
                   'All files|*.*';
 
 const
-   dgMean = 1;
-   dgMedian = 2;
+   //dgMean = 1;
+   //dgMedian = 2;
    dgPick = 3;
    dgAllValues = 4;
    dgAllScores = 5;
    dgSimpleExample = 6;
    dgPercentBest = 7;
    dgArea = 8;
-   dgJust3Params = 9;
+   //dgJust3Params = 9;
    dg7Params = 10;
 
 type
@@ -525,7 +526,7 @@ type
 
      procedure ExportToXML(fName : PathStr);
      procedure ExportToSQLite;
-     procedure ExportToKML(Ask,Default : boolean; SepExpField : ShortString = '');
+     function ExportToKML(Ask,Default : boolean; SepExpField : ShortString = '') : PathStr;
 
      procedure MergeDataBases(FileNames : tStringList);
 
@@ -1378,13 +1379,13 @@ begin
 end;
 
 
-procedure TGISdataBaseModule.ExportToKML(Ask,Default : boolean; SepExpField : ShortString = '');
+function TGISdataBaseModule.ExportToKML(Ask,Default : boolean; SepExpField : ShortString = '') : PathStr;
 begin
    {$IfDef RecordKML} WriteLineToDebugFile('TGISdataBaseModule.ExportToKML in, MDDef.KMLImageOpts=' + IntToStr(MDDef.KMLImageOpts)); {$EndIf}
    SaveBackupDefaults;
    MDDef.AskAboutKMLExport := Ask;
    MDDef.KMLDefaultDB := Default;
-   KML_opts.ConvertToKML(DBNumber,'',Nil,false,SepExpField);
+   Result := KML_opts.ConvertToKML(DBNumber,'',Nil,false,SepExpField);
    dbIsUnsaved := false;
    RestoreBackupDefaults;
    ShowStatus;
@@ -2021,12 +2022,10 @@ end;
          procedure TGISdataBaseModule.SubsetShapeFile(var fName : PathStr; ThinFactor : integer = 1; BatchRun : boolean = false);
          var
             Count : int64;
-            //Table : tMyData;
             ShapeFileCreator : tShapeFileCreation;
          begin
             EmpSource.Enabled := true;   //needed to get columns.visible
             SaveCurrentDBaseSubset(fName,ThinFactor,BatchRun);
-            //Table := Nil;
             ShapeFileCreator := tShapeFileCreation.Create(WGS84DatumConstants,fName,false,ShapeFileType);
             MyData.First;
             Count := 0;
@@ -2233,7 +2232,7 @@ end;
                      GridForm.StringGrid1.Cells[Col,0] := FieldDesired;
                      if (MomentVar.Npts > 1) then begin
                         GridForm.StringGrid1.Cells[Col,1] := RealToString(MomentVar.mean,-18,-4);
-                        GridForm.StringGrid1.Cells[Col,2] := RealToString(MomentVar.adev,-18,-4);
+                        GridForm.StringGrid1.Cells[Col,2] := RealToString(MomentVar.avg_dev,-18,-4);
                         GridForm.StringGrid1.Cells[Col,3] := RealToString(MomentVar.sdev,-18,-4);
                         GridForm.StringGrid1.Cells[Col,4] := RealToString(MomentVar.skew,-18,-4);
                         GridForm.StringGrid1.Cells[Col,5] := RealToString(MomentVar.curt,-18,-4);
@@ -3687,7 +3686,7 @@ begin
 
    {$IfDef Android}
    {$Else}
-   MDiniFile.CloseMDiniFile;
+      MDiniFile.CloseMDiniFile;
    {$EndIf}
 
    {$IfDef RecordINIfiles} WriteLineToDebugFile('ProcessIniFile out'); {$EndIf}
@@ -5425,6 +5424,7 @@ begin
       if not MyData.FieldExists(MonthFieldName) then MonthFieldName := 'MONTH';
 
       if MDdef.AutoAssignNameField and (dbOpts.LabelField = '') then begin
+         AssignField(dbOpts.LabelField,'AREA');
          AssignField(dbOpts.LabelField,'PLACE');
          AssignField(dbOpts.LabelField,'FEATURE');
          AssignField(dbOpts.LabelField,'FENAME');

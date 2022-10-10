@@ -116,8 +116,6 @@ end;
 
 
 procedure TRangeCircleForm.FormCreate(Sender: TObject);
-//var
-   //i : integer;
 begin
    Petmar.PlaceFormAtMousePosition(Self);
    RadioGroup1.ItemIndex := ord(MDDef.RangeCircleUnit);

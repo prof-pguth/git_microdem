@@ -27,7 +27,7 @@ unit dem_manager;
       //{$Define RecordMenu}
       //{$Define RecordSatLoad}
       //{$Define RecordSimpleClose}
-      {$Define RecordSatDirOpen}
+      //{$Define RecordSatDirOpen}
    {$Else}
       {$Define TimeLoadDEM}
    {$EndIf}
@@ -1392,15 +1392,13 @@ procedure OpenDEMsToDebugFile(Why : shortstring);
 var
    i : integer;
 begin
-   for i := 1 to 2 do WriteLineToDebugFile('');
-   WriteLineToDebugFile(why);
+   HighlightLineToDebugFile(why);
    for i := 1 to MaxDEMDataSets do begin
       if ValidDEM(i) then begin
          //writeLineToDebugFile(IntegerToString(i,5) + '  ' + DEMGlb[i].AreaName);
          writeLineToDebugFile(IntegerToString(i,5) + '  ' + DEMGlb[i].AreaName + '  (' + DEMGlb[i].ColsRowsString + '  ' +  DEMGlb[i].DemSizeString + ')');
       end;
    end;
-   for i := 1 to 2 do WriteLineToDebugFile('');
 end;
 
 

@@ -2,8 +2,8 @@ object GridForm: TGridForm
   Left = 100
   Top = 261
   Caption = 'GridForm'
-  ClientHeight = 613
-  ClientWidth = 1059
+  ClientHeight = 541
+  ClientWidth = 1011
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -20,11 +20,13 @@ object GridForm: TGridForm
   object StringGrid1: TStringGrid
     Left = 0
     Top = 41
-    Width = 1059
-    Height = 572
+    Width = 1011
+    Height = 500
     Align = alClient
     DefaultColWidth = 100
     TabOrder = 0
+    ExplicitWidth = 1053
+    ExplicitHeight = 563
     ColWidths = (
       100
       100
@@ -41,10 +43,11 @@ object GridForm: TGridForm
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1059
+    Width = 1011
     Height = 41
     Align = alTop
     TabOrder = 1
+    ExplicitWidth = 1053
     object Label1: TLabel
       Left = 714
       Top = 22

@@ -193,7 +193,6 @@ type
             procedure PlotBoundingBox(MapForm : tMapForm);
             procedure PlotPointCloudOnMap(BaseMap : tMapForm; var Bitmap : tMyBitmap; MinAreaZ : float64 = 99; MaxAreaZ : float64 = -99; SymSize : integer = 2);
             procedure ScreenLocationOfPointRecord(MapForm : tMapDraw; RecNo : int32; var xpic,ypic : int32);
-            //procedure GetScreenLineCoords(MapForm : tMapDraw; RecNum : int32; var NumPts,NParts : int32; var PolyLinePoints : tPolyLinePts; var PartSize : tPartSize);
          {$EndIf}
 
          {$IfDef NoDBGrafs}
@@ -719,7 +718,6 @@ var
    InitVec,FinalVec : VectorType;
    Lat,Long : float64;
    fName2 : PathStr;
-   //Table2 : tMyData;
    ShapeFileCreator : tShapeFileCreation;
 begin
    if not PointShapeFile(MainFileHeader.ShapeType) then begin
@@ -730,7 +728,6 @@ begin
 
       for j := 1 to NumRecs do begin
          GetLineCoords(j);
-         //Table2.Insert;
          for k := 0 to pred(CurrentPolyLineHeader.NumPoints) do begin
             LatLongToCartesian(CurrentLineCoords^[k].Lat*DegToRad,CurrentLineCoords^[k].Long*DegToRad,InitVec);
             RotatePoint(RotationMatrix,InitVec,FinalVec);

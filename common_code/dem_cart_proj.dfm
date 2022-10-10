@@ -2,8 +2,8 @@ object ProjectionDemForm: TProjectionDemForm
   Left = 388
   Top = 175
   Caption = 'Map Projections'
-  ClientHeight = 562
-  ClientWidth = 475
+  ClientHeight = 553
+  ClientWidth = 469
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

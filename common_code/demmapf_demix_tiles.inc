@@ -13,7 +13,7 @@ var
    NewDEM,NewDEM2 : integer;
    fName : PathStr;
 begin
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('');  WriteLineToDebugFile('ResampleForDEMIX DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
+   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile(''); WriteLineToDebugFile('ResampleForDEMIX DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
    SaveBackupDefaults;
    MDDef.DefDEMMap := mtDEMBlank;
 
@@ -47,28 +47,27 @@ begin
    NewDEM := DEMGlb[DEM].ResampleByAveraging(true,false,fName);
 
    fName := OutPath + 'md_' + DEMGlb[DEM].AreaName + '_upsample_0.5sec_area.tif';
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX, ' + fName);  {$EndIf}
+   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX, ' + fName); {$EndIf}
    DEMGlb[NewDEM].ReinterpolateLatLongDEM(NewDEM2,0.5);
    DEMGlb[NewDEM2].SaveAsGeotiff(FName);
    CloseSingleDEM(newDEM2);
    CloseSingleDEM(newDEM);
 
-
    MDDef.LasDEMPixelIs := 2; //point
 
    fName := OutPath + 'md_' + DEMGlb[DEM].AreaName + '_1sec_point.tif';
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX, ' + fName);  {$EndIf}
+   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX, ' + fName); {$EndIf}
    NewDEM := DEMGlb[DEM].ResampleByAveraging(true,false,fName);
 
    fName := OutPath + 'md_' + DEMGlb[DEM].AreaName + '_upsample_0.5sec_point.tif';
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX, ' + fName);  {$EndIf}
+   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX, ' + fName); {$EndIf}
    DEMGlb[NewDEM].ReinterpolateLatLongDEM(NewDEM2,0.5);
    DEMGlb[NewDEM2].SaveAsGeotiff(FName);
    CloseSingleDEM(newDEM2);
    CloseSingleDEM(newDEM);
 
    RestoreBackupDefaults;
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('Out ResampleForDEMIX DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName);  {$EndIf}
+   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('Out ResampleForDEMIX DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
 end;
 
 
@@ -78,31 +77,31 @@ var
    NewDEM : integer;
    fName : PathStr;
 begin
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('');  WriteLineToDebugFile('ResampleForDEMIX DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
+   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile(''); WriteLineToDebugFile('ResampleForDEMIX DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
    SaveBackupDefaults;
    MDDef.DefDEMMap := mtDEMBlank;
    MDDef.LidarGridProjection := ArcSecDEM;
 
    if (OutPath = '') then OutPath := ExtractFilePath(DEMGlb[DEM].DEMFileName);
 
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX 1 sec area');  {$EndIf}
+   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX 1 sec area'); {$EndIf}
    MDdef.DefLidarGeoGridSizeX := 1;
    MDdef.DefLidarGeoGridSizeY := 1;
    MDDef.LasDEMPixelIs := 1; //area
 
    fName := OutPath + 'md_' + DEMGlb[DEM].AreaName + '_1sec_area.tif';
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX, ' + fName);  {$EndIf}
+   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX, ' + fName); {$EndIf}
    NewDEM := DEMGlb[DEM].ResampleByAveraging(true,false,fName);
    CloseSingleDEM(newDEM);
 
    MDDef.LasDEMPixelIs := 2; //point
    fName := OutPath + 'md_' + DEMGlb[DEM].AreaName + '_1sec_point.tif';
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX, ' + fName);  {$EndIf}
+   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX, ' + fName); {$EndIf}
    NewDEM := DEMGlb[DEM].ResampleByAveraging(false,false,fName);
    CloseSingleDEM(newDEM);
 
    if (DEMGlb[DEM].DEMSWcornerLat > 50) and (DEMGlb[DEM].DEMSWcornerLat < 60) then begin
-      {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX 1.5 sec point');  {$EndIf}
+      {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX 1.5 sec point'); {$EndIf}
       MDdef.DefLidarGeoGridSizeX := 1.5;
       MDdef.DefLidarGeoGridSizeY := 1;
       MDDef.LasDEMPixelIs := 2; //point
@@ -112,7 +111,7 @@ begin
    end;
 
    RestoreBackupDefaults;
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('Out ResampleForDEMIX DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName);  {$EndIf}
+   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('Out ResampleForDEMIX DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
 end;
 
 
@@ -144,12 +143,12 @@ var
    Full : float32;
    bb : sfBoundBox;
 begin
-   {$IfDef RecordDEMIX} writeLineToDebugFile('DEMIXtileFill in, DEM=' + IntToStr(DEM)); {$EndIf}
+   {$IfDef RecordDEMIXTiles} writeLineToDebugFile('DEMIXtileFill in, DEM=' + IntToStr(DEM)); {$EndIf}
    try
       StartProgress('DEMIX tiles');
       Result := DEMGlb[DEM].SelectionMap.LoadDEMIXtileOutlines(AreaBox,true);
       if (Result <> 0) then try
-         {$IfDef RecordDEMIX} writeLineToDebugFile('DEMIXtileFill, db created recs=' + IntToStr(GISdb[Result].MyData.TotRecsInDB)); {$EndIf}
+         {$IfDef RecordDEMIXTiles} writeLineToDebugFile('DEMIXtileFill, db created recs=' + IntToStr(GISdb[Result].MyData.TotRecsInDB)); {$EndIf}
          GISdb[Result].MyData.First;
          while not GISdb[Result].MyData.eof do begin
             Pts := 0;
@@ -169,7 +168,7 @@ begin
             GISdb[Result].MyData.Edit;
             Full := 100 * Valid / Pts;
             GISdb[Result].MyData.CarefullySetFloat32('GRID_FULL',Full,0.01);
-            {$IfDef RecordDEMIX} writeLineToDebugFile('File boundary, ' + GridLimitsToString(bbgrid) + RealToString(Full,8,2)); {$EndIf}
+            {$IfDef RecordDEMIXTiles} writeLineToDebugFile('File boundary, ' + GridLimitsToString(bbgrid) + RealToString(Full,8,2)); {$EndIf}
             GISdb[Result].MyData.Next;
          end;
       finally
@@ -178,7 +177,7 @@ begin
    finally
       EndProgress;
    end;
-   {$IfDef RecordDEMIX} writeLineToDebugFile('DEM contains parts of tiles=' + IntToStr(GISdb[Result].MyData.TotRecsInDB)); {$EndIf}
+   {$IfDef RecordDEMIXTiles} writeLineToDebugFile('DEM contains parts of tiles=' + IntToStr(GISdb[Result].MyData.TotRecsInDB)); {$EndIf}
 end;
 
 
@@ -191,7 +190,7 @@ var
    xch : integer;
    ShapeFileCreator : tShapeFileCreation;
 begin
-   {$If Defined(RecordCarto) or Defined(RecordDEMIX)} WriteLineToDebugFile('TMapForm.LoadDEMIXtileOutlines in ' + sfBoundBoxToString(WantBoundBoxGeo)); {$EndIf}
+   {$If Defined(RecordCartoFull)} WriteLineToDebugFile('TMapForm.LoadDEMIXtileOutlines in ' + sfBoundBoxToString(WantBoundBoxGeo)); {$EndIf}
    if (WantBoundBoxGeo.ymin < 0) then FirstLat := trunc(WantBoundBoxGeo.ymin - 1)
    else FirstLat := trunc(WantBoundBoxGeo.yMin);
    LastLat := trunc(WantBoundBoxGeo.yMax+1);
@@ -214,7 +213,7 @@ begin
    yt := 10;
    StartProgress('tiles');
    for Lat := FirstLat to LastLat do begin
-      {$If Defined(RecordCarto) or Defined(RecordDEMIX)} WriteLineToDebugFile('Lat=' + IntToStr(Lat)); {$EndIf}
+      {$If Defined(RecordCartoFull)} WriteLineToDebugFile('Lat=' + IntToStr(Lat)); {$EndIf}
       UpdateprogressBar((Lat-FirstLat)/(LastLat - FirstLat));
 
       xminutes := DEMIXXMinuteIncr(Lat) / 60;
@@ -224,7 +223,7 @@ begin
          HighLat := LowLat + yminutes;
          if ((HighLat > WantBoundBoxGeo.YMin) and (LowLat < WantBoundBoxGeo.YMax)) then begin
             for Long := FirstLong to LastLong do begin
-               {$If Defined(RecordCarto) or Defined(RecordDEMIX)} WriteLineToDebugFile('Long=' + IntToStr(Long)); {$EndIf}
+               {$If Defined(RecordCartoFull)} WriteLineToDebugFile('Long=' + IntToStr(Long)); {$EndIf}
                LongLow := Long;
                LongHi := Long + xminutes;
                xch := 0;
@@ -255,7 +254,7 @@ begin
    ShapeFileCreator.CloseShapeFiles;
    AddProjectionFile(Result);
    EndProgress;
-   {$If Defined(RecordCarto) or Defined(RecordDEMIX)} WriteLineToDebugFile('TMapForm.LoadDEMIXtileOutlines out'); {$EndIf}
+   {$If Defined(RecordCarto) or Defined(RecordDEMIXTiles)} WriteLineToDebugFile('TMapForm.LoadDEMIXtileOutlines out '+ sfBoundBoxToString(WantBoundBoxGeo)); {$EndIf}
 end;
 
 
@@ -380,11 +379,6 @@ begin
 end;
 
 
-procedure TMapForm.DEMIX10ktiles1Click(Sender: TObject);
-begin
-   if (MapDraw.DEMonMap <> 0) then DEMIXtileFill(MapDraw.DEMonMap, MapDraw.MapCorners.BoundBoxGeo)
-   else LoadDEMIXtileOutlines(MapDraw.MapCorners.BoundBoxGeo);
-end;
 
 
 

@@ -357,7 +357,7 @@ begin
                MainExtar(fName, OutPath);
                if DeleteTheFile then File2Trash(fName);
             end;
-            if DeleteTheFile then Memo1.Lines.Add('  done; original file deleted')
+            if DeleteTheFile then Memo1.Lines.Add('  done; original file recycled')
             else Memo1.Lines.Add('  done; original file unchanged');
             if WantOut then break;
          end;

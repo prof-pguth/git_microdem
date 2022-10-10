@@ -14,7 +14,7 @@ unit demlos_draw;
       //{$Define RecordLOSAlgorithm}
       //{$Define RecordPointClouds}
       //{$Define RecordUTMZones}
-      {$Define RecordLOS}
+      //{$Define RecordLOS}
       //{$Define RecordLOSPrettyDrawing}
       //{$Define RecordRandomProfiles}
       //{$Define RecordWaveLenghtHeight}

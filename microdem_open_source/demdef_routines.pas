@@ -23,8 +23,8 @@
       //{$Define RecordDirs}
       //{$Define RecordLoadDefault}
       //{$Define RecordFindUTM}
-      {$Define RecordGDAL}
-      {$Define RecordNaturalEarthFileNames}
+      //{$Define RecordGDAL}
+      //{$Define RecordNaturalEarthFileNames}
       //{$Define RecordInitialization}
       //{$IfDef RecordInitializationDetailed}
       //{$Define RecordINIfiles}
@@ -3216,7 +3216,7 @@ var
          AParameter('MapDraw','DefaultUTMGridSpacing',DefaultUTMGridSpacing,15);
          AParameter('MapDraw','UTMGridLineWidth',UTMGridLineWidth,1);
          AParameter('MapDraw','PanOverlap',PanOverlap,2);
-         AParameter('MapDraw','UseBigElevationColorTables',UseBigElevationColorTables,false);
+         //AParameter('MapDraw','UseBigElevationColorTables',UseBigElevationColorTables,false);
          AParameter('MapDraw','CartMovieSteps', CartMovieSteps,2);
          AParameter('MapDraw','InvertGrayScale',InvertGrayScale,false);
          AParameter('MapDraw','MonochromeColor',MonochromeColor,0);
@@ -4435,7 +4435,7 @@ begin
     LasRulesName := ProgramRootDir + 'las_codes_v4' + DefaultDBExt;
     TM_RGB_fname := ProgramRootDir + 'tm_rgb_v3' + DefaultDBExt;
     CSVImportRulesFName := ProgramRootDir + 'CSV_IMPORT_RULES_v4'+ DefaultDBExt;
-    SatBandNames := ProgramRootDir + 'sat_band_names_v17' + DefaultDBExt;
+    SatBandNames := ProgramRootDir + 'sat_band_names_v19' + DefaultDBExt;
     ColorBrewerName := ProgramRootDir + 'color_palettes_v11' + DefaultDBExt;
     HardLimitColorPaletteFName := ProgramRootDir + 'hard_limit_color_palettes' + DefaultDBExt;
     TableDefinitionsFileName := ProgramRootDir + 'MD_TABLE_DEF_v2' + DefaultDBExt;

@@ -13,6 +13,7 @@
    //{$Define RecordMaskDEMShapeFile}
    {$IfDef Debug}
        {$Define RecordDEMIX}
+       {$Define RecordDetailedDEMIX}
        //{$Define RecordDataBaseSaveFiles}
        //{$Define RecordDBPlot}
        //{$Define RecordCSVOut}
@@ -31,7 +32,7 @@
        //{$Define RecordHTML}
        //{$Define RecordGeostats}
        //{$Define RecordMapSizing}
-       //{$Define RecordExports}
+       {$Define RecordExports}
        //{$Define RecordFieldAdds}
        //{$Define RecordStatus}
        //{$Define RecordGraph}
@@ -103,7 +104,7 @@ uses
 
   {$IfDef ExFMX3D}
   {$Else}
-  FMX.Types3D,FMX.Objects3D,
+     FMX.Types3D,FMX.Objects3D,
   {$EndIf}
   BaseGraf, Petmar_types,PETMAR,DEMDefs;
 
@@ -315,8 +316,6 @@ type
     Listuniquevalues2: TMenuItem;
     Longeststring2: TMenuItem;
     Logoffield1: TMenuItem;
-    //NLCDcategories1: TMenuItem;
-    //AddNLCDcategory1: TMenuItem;
     DataDBFonlynogeometry1: TMenuItem;
     Layersymbology1: TMenuItem;
     ArcGISviewshedsensors1: TMenuItem;
@@ -820,7 +819,6 @@ type
     Allover1: TMenuItem;
     Allopengridselevationdifference1: TMenuItem;
     Selectfields1: TMenuItem;
-    //Createcostsurface1: TMenuItem;
     Accumulatedcostsurface1: TMenuItem;
     Exporttextdeliberate1: TMenuItem;
     N42: TMenuItem;
@@ -908,7 +906,6 @@ type
     Filltrackvoids1: TMenuItem;
     ExtractDEMIXtiles1: TMenuItem;
     DEMIX1: TMenuItem;
-    Pointstocheckverticaldatumshift1: TMenuItem;
     AddEGMfields1: TMenuItem;
     RMSE1: TMenuItem;
     DBGrid1: TDBGrid;
@@ -924,7 +921,6 @@ type
     Lattimecolors1: TMenuItem;
     Boxplot1: TMenuItem;
     ransposeforwinecontest1: TMenuItem;
-    //BestDEM1: TMenuItem;
     BestDEMbycategory1: TMenuItem;
     RankDEMs1: TMenuItem;
     N1degreetilestocoverrecordsintable1: TMenuItem;
@@ -932,8 +928,6 @@ type
     Graphavereagescoresbyterraincategories1: TMenuItem;
     Graphmeanmedianbyterraincategory1: TMenuItem;
     DEMIXtilesummary1: TMenuItem;
-    Keymeans1: TMenuItem;
-    Keymeans2: TMenuItem;
     PickParam1: TMenuItem;
     Filteroutsignedcriteriameanandmedian1: TMenuItem;
     Hide1: TMenuItem;
@@ -941,11 +935,17 @@ type
     Simpleexample1: TMenuItem;
     PercentageofcriteriawhereDEMisbest1: TMenuItem;
     Averageranksbyarea1: TMenuItem;
-    Key3params1: TMenuItem;
     COPoALOS1: TMenuItem;
     BestDEMpertilebycriteria1: TMenuItem;
     N7Elevationdifferencecriteria1: TMenuItem;
     FriedmanTest1: TMenuItem;
+    Exportsortedtable1: TMenuItem;
+    Ascending1: TMenuItem;
+    Descending1: TMenuItem;
+    N47: TMenuItem;
+    Alphabetize1: TMenuItem;
+    Createshapefilewithboundingboxforeachrecord1: TMenuItem;
+    CreateDBwithcornersandcenterofeveryrecord1: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
     procedure Shiftpointrecords1Click(Sender: TObject);
     procedure Creategrid1Click(Sender: TObject);
@@ -1295,7 +1295,6 @@ type
     procedure AddelevationfromDEMseries1Click(Sender: TObject);
     procedure Movie2Click(Sender: TObject);
     procedure Distancetootherrecords1Click(Sender: TObject);
-    //procedure Fillindrainagebasin1Click(Sender: TObject);
     procedure InsertJuliandate1Click(Sender: TObject);
     procedure TimefieldstodecJuliandays1Click(Sender: TObject);
     procedure DBGrid1TitleClick(Column: TColumn);
@@ -1627,7 +1626,6 @@ type
     procedure Removeduplicatepositions1Click(Sender: TObject);
     procedure Filltrackvoids1Click(Sender: TObject);
     procedure ExtractDEMIXtiles1Click(Sender: TObject);
-    procedure Pointstocheckverticaldatumshift1Click(Sender: TObject);
     procedure AddEGMfields1Click(Sender: TObject);
     procedure RMSE1Click(Sender: TObject);
     procedure AllpointsinlinewithXYZ1Click(Sender: TObject);
@@ -1641,15 +1639,12 @@ type
     procedure Boxplot1Click(Sender: TObject);
     procedure ransposeforwinecontest1Click(Sender: TObject);
     procedure Graphfortransposeddata1Click(Sender: TObject);
-    //procedure BestDEM1Click(Sender: TObject);
     procedure N1degreetilestocoverrecordsintable1Click(Sender: TObject);
     procedure BestDEMbycategory1Click(Sender: TObject);
     procedure RankDEMs1Click(Sender: TObject);
     procedure Sumscores1Click(Sender: TObject);
     procedure Graphavereagescoresbyterraincategories1Click(Sender: TObject);
     procedure DEMIXtilesummary1Click(Sender: TObject);
-    procedure Keymeans1Click(Sender: TObject);
-    procedure Keymeans2Click(Sender: TObject);
     procedure PickParam1Click(Sender: TObject);
     procedure Filteroutsignedcriteriameanandmedian1Click(Sender: TObject);
     procedure Hide1Click(Sender: TObject);
@@ -1657,11 +1652,16 @@ type
     procedure Simpleexample1Click(Sender: TObject);
     procedure PercentageofcriteriawhereDEMisbest1Click(Sender: TObject);
     procedure Averageranksbyarea1Click(Sender: TObject);
-    procedure Key3params1Click(Sender: TObject);
     procedure COPoALOS1Click(Sender: TObject);
     procedure BestDEMpertilebycriteria1Click(Sender: TObject);
     procedure N7Elevationdifferencecriteria1Click(Sender: TObject);
     procedure FriedmanTest1Click(Sender: TObject);
+    procedure Ascending1Click(Sender: TObject);
+    procedure Descending1Click(Sender: TObject);
+    procedure Alphabetize1Click(Sender: TObject);
+    procedure Createshapefilewithboundingboxforeachrecord1Click(
+      Sender: TObject);
+    procedure CreateDBwithcornersandcenterofeveryrecord1Click(Sender: TObject);
   private
     procedure PlotSingleFile(fName : PathStr; xoff,yoff : float64);
     procedure SetUpLinkGraph;
@@ -1889,12 +1889,100 @@ uses
 {End of the MDI parent declaration}
 
 var
-   HighlightCycle{,RecordBeingEditted} : integer;
+   HighlightCycle : integer;
    BroadCastingFilterChanges : boolean;
 
 
-type tPointInPolygon = (pipLabels,pipDelete,pipSetMask);
+procedure ZipShapefile(DBontable : integer; IncludeDebug,SHZit : boolean);
+var
+   TheFiles : tStringList;
+   fName : PathStr;
+   TStr : shortstring;
 
+   procedure DoFile(aName : PathStr);
+   begin
+      if FileExists(aName) then begin
+         CopyFile(aname,MDTempDir + ExtractFileName(aname));
+         TheFiles.Add(MDTempDir + ExtractFileName(aname));
+      end;
+   end;
+
+begin
+   {$If Defined( RecordSHZ) or Defined(RecordExports)} WriteLineToDebugFile('Zipshapefile in'); {$EndIf}
+   GISdb[DBonTable].SaveDataBaseStatus;
+   TheFiles := tStringList.Create;
+   DoFile(ChangeFileExt(GISdb[DBonTable].dbFullName,'.shp'));
+   DoFile(ChangeFileExt(GISdb[DBonTable].dbFullName,'.shx'));
+   DoFile(ChangeFileExt(GISdb[DBonTable].dbFullName,'.dbf'));
+   fName := ChangeFileExt(GISdb[DBonTable].DBfullName,'.prj');
+   if FileExists(fName) then DoFile(FName)
+   else if FileExists(WKT_GCS_Proj_fName) then begin
+      Petmar.CopyFile(WKT_GCS_Proj_fName,fName);
+      DoFile(fName);
+   end
+   else MessageToContinue('Missing projection file ' + fName);
+
+
+   if IncludeDebug and (GISdb[DBonTable].IniFileName <> '') and FileExists(GISdb[DBonTable].IniFileName) then begin
+      {$IfDef RecordSHZ} WriteLineToDebugFile('TdbTableF.Zipshapefile1Click db ini'); {$EndIf}
+      TheFiles.Add(GISdb[DBonTable].IniFileName);
+   end;
+
+   fName := GISdb[DBonTable].dbOpts.LinkTableName;
+   if (fName <> '') and FileExists(fName) then begin
+      {$IfDef RecordSHZ} WriteLineToDebugFile('TdbTableF.Zipshapefile1Click link table'); {$EndIf}
+      TheFiles.Add(fName);
+   end;
+   if IncludeDebug then begin
+      {$IfDef RecordSHZ} WriteLineToDebugFile('TdbTableF.Zipshapefile1Click debug log'); {$EndIf}
+      TheFiles.Add(DebugFileName);
+   end;
+   if SHZit then TStr := '_' + CurrentTimeForFileName else TStr := '';
+   fName := MDTempDir + ExtractFileNameNoExt(GISdb[DBonTable].dbFullName) + TStr + '.zip';
+
+    {$If Defined( RecordSHZ) or Defined(RecordExports)} WriteLineToDebugFile('TdbTableF.Zipshapefile1Click call zip, files=' + IntToStr(TheFiles.Count)); {$EndIf}
+   ZipMasterZipFiles(fName,TheFiles);
+   TheFiles.Free;
+   //DeleteShapeFile(FName);
+   if SHZit then SysUtils.RenameFile(fname,ChangeFileExt(fName,'.shz'));
+   {$If Defined( RecordSHZ) or Defined(RecordExports)}  WriteLineToDebugFile('Zipshapefile1Click'); {$EndIf}
+end;
+
+
+
+procedure SortDataBase(DBOnTable : integer; Ascending : boolean);
+var
+   GridForm : tGridForm;
+   Report : tStringList;
+   fName : PathStr;
+   aField,TStr : shortstring;
+   ft,col : integer;
+begin
+   aField := GISDB[DBonTable].PickField('field to sort on',[ftString,ftSmallInt,ftFloat,ftInteger]);
+   if GISDB[DBonTable].MyData.GetFieldType(aField) = ftString then ft := 0 else ft := 2;
+   GridForm := tGridForm.Create(Application);
+   GridForm.HideCorrelationControls;
+   GridForm.ShowSortingControls(true);
+   GridForm.Caption := 'Sorting';
+   Report := GISdb[DBonTable].ExtractDBtoCSV(1,',');
+   fName := NextFileNumber(MDtempDir,GISdb[DBonTable].dbName + '_sorted_','.csv');
+   Report.SaveToFile(fName);
+   Report.Free;
+   GridForm.ReadCSVFile(fName);
+
+   col := -1;
+   repeat
+      inc(Col);
+      TStr := GridForm.StringGrid1.Cells[Col,0];
+   until (TStr = aField);
+   SortGrid(GridForm.StringGrid1,pred(Col),ft,Ascending);
+
+   StringGridToCSVFile(fName,GridForm.StringGrid1,Nil);
+   if GISdb[DBonTable].theMapOwner <> nil then GISdb[DBonTable].theMapOwner.OpenDBonMap('',fName)
+   else OpenDataBase('',fName);
+end;
+
+type tPointInPolygon = (pipLabels,pipDelete,pipSetMask);
 
 procedure MarkPointInPolygon(PIP : tPointInPolygon; DB,MaskDB : integer; NameField,MaskFieldName : string10);
 var
@@ -1967,7 +2055,7 @@ var
    Speed,Time,Time2,Lat,Long,Lat2,Long2,Az,Dist,LatMid,LongMid : float64;
    fName : PathStr;
    rTable : tMyData;
-   i{,rc} : integer;
+   i      : integer;
    ID,LastID : shortstring;
 begin
    with GISdb[DBonTable] do begin
@@ -2022,7 +2110,7 @@ procedure Tdbtablef.AwayfromTIGERroads1Click(Sender: TObject);
 begin
    {$IfDef ExTiger}
    {$Else}
-   GISdb[DBonTable].TheMapOwner.TigerRoadMask(-99,false,DBonTable);
+      GISdb[DBonTable].TheMapOwner.TigerRoadMask(-99,false,DBonTable);
    {$EndIf}
 end;
 
@@ -2097,7 +2185,6 @@ begin
        if WantOut then break;
     end;
     fName := ExtractFilePath(GISdb[DBonTable].DBFullName) + 'Norm_' +  GISdb[DBonTable].dbName;
-    //Output.SaveToFile(ChangeFileExt(Name,'.csv'));
     GISdb[DBonTable].theMapOwner.StringListToLoadedDatabase(Output,fName);
    FieldsUsed.Free;
    ShowStatus;
@@ -2129,7 +2216,7 @@ var
         GeometryFName,ColorsFName : PathStr;
          Points : ^tPointXYZIArray;
          MemReq : int64;
-         i,{j,}Mult : integer;
+         i,Mult : integer;
          Outf : file;
      begin
         {$IfDef RecordOpenGL} WriteLineToDebugFile('OpenNew3Dform in'); {$EndIf}
@@ -2183,8 +2270,7 @@ begin
 
    ThinFactor := 1;
    Color := claLime;
-   GISdb[DBonTable].PickNumericFields(4, {GISdb[DBonTable].dbOpts.XField, GISdb[DBonTable].dbOpts.YField,
-        GISdb[DBonTable].dbOpts.ZField,StringColorField,NumericColorField,SizeField,}Color,ThinFactor,'X','Y','Z');
+   GISdb[DBonTable].PickNumericFields(4, Color,ThinFactor,'X','Y','Z');
 
    {$IfDef RecordOpenGL} WriteLineToDebugFile('Tdbtablef.N3Dgraph1Click picked'); {$EndIf}
 
@@ -2368,7 +2454,7 @@ procedure Tdbtablef.UnHideColumns;
 var
    j : integer;
 begin
-   if ValidDB(DBonTable) { <> 0) and (GISdb[DBonTable] <> Nil)} then begin
+   if ValidDB(DBonTable) then begin
       for j := 0 to pred(DBGrid1.Columns.Count) do
          if (j <= 100) then DBGrid1.Columns[j].Visible := true;
       AnyHiddenColumns := false;
@@ -2399,7 +2485,7 @@ procedure Tdbtablef.HideColumns;
 var
    j : integer;
 begin
-  if ValidDB(DBonTable) { <> 0) and (GISdb[DBonTable] <> Nil)} then begin
+  if ValidDB(DBonTable) then begin
       for j := 0 to pred(DBGrid1.Columns.Count) do
          if (j <= 100) then DBGrid1.Columns[j].Visible := GISdb[DBonTable].dbOpts.VisCols[j];
       AnyHiddenColumns := false;
@@ -2412,7 +2498,7 @@ procedure Tdbtablef.HideHouseKeepingColumns;
 var
    j : integer;
 begin
-   if ValidDB(DBonTable)  { <> 0) and (GISdb[DBonTable] <> Nil)} then begin
+   if ValidDB(DBonTable) then begin
       for j := 0 to pred(DBGrid1.Columns.Count) do begin
          if (j <= 100) then begin
             if (DBGrid1.Columns[j].FieldName = 'COLOR') or (DBGrid1.Columns[j].FieldName = RecNoFName) then begin
@@ -2430,7 +2516,7 @@ var
    j : integer;
    fName : ANSIstring;
 begin
-   if ValidDB(DBonTable)  { <> 0) and (GISdb[DBonTable] <> Nil)} then begin
+   if ValidDB(DBonTable) then begin
       GISdb[DBonTable].EmpSource.Enabled := false;
       StartProgress('Hiding');
       for j := 0 to pred(DBGrid1.Columns.Count) do begin
@@ -2878,7 +2964,7 @@ procedure Tdbtablef.woorthreefieldRGB1Click(Sender: TObject);
 begin
    {$IfDef ExAdvancedGIS}
    {$Else}
-   GISdb[DBonTable].GISProportionalSymbols(dbasMultiFieldRGB);
+      GISdb[DBonTable].GISProportionalSymbols(dbasMultiFieldRGB);
    {$EndIf}
 end;
 
@@ -2921,67 +3007,15 @@ begin
 end;
 
 procedure Tdbtablef.Zipshapefile1Click(Sender: TObject);
-var
-   TheFiles : tStringList;
-   fName : PathStr;
-
-   procedure DoFile(aName : PathStr);
-   begin
-      if FileExists(aName) then begin
-         CopyFile(aname,MDTempDir + ExtractFileName(aname));
-         TheFiles.Add(MDTempDir + ExtractFileName(aname));
-      end;
-   end;
-
 begin
-   {$IfDef RecordSHZ} WriteLineToDebugFile('TdbTableF.Zipshapefile1Click in'); {$EndIf}
-   GISdb[DBonTable].SaveDataBaseStatus;
-   TheFiles := tStringList.Create;
-   //GISdb[DBonTable].MyData.Destroy;
-   //if GISdb[DBonTable].ItsAShapeFile then begin
-      //GISdb[DBonTable].aShapeFile.CloseSHPandSHX;
-      DoFile(ChangeFileExt(GISdb[DBonTable].dbFullName,'.shp'));
-      DoFile(ChangeFileExt(GISdb[DBonTable].dbFullName,'.shx'));
-   ///end;
-   DoFile(ChangeFileExt(GISdb[DBonTable].dbFullName,'.dbf'));
-
-   if (GISdb[DBonTable].IniFileName <> '') and FileExists(GISdb[DBonTable].IniFileName) then begin
-      {$IfDef RecordSHZ} WriteLineToDebugFile('TdbTableF.Zipshapefile1Click db ini'); {$EndIf}
-      TheFiles.Add(GISdb[DBonTable].IniFileName);
-   end;
-
-   fName := GISdb[DBonTable].dbOpts.LinkTableName;
-   if (fName <> '') and FileExists(fName) then begin
-      {$IfDef RecordSHZ} WriteLineToDebugFile('TdbTableF.Zipshapefile1Click link table'); {$EndIf}
-      TheFiles.Add(fName);
-   end;
-   if (Sender = Includedebuglog1) then begin
-      {$IfDef RecordSHZ} WriteLineToDebugFile('TdbTableF.Zipshapefile1Click debug log'); {$EndIf}
-      TheFiles.Add(DebugFileName);
-   end;
-
-   //ame := GISdb[DBonTable].dbFullName;
-   fName := ExtractFilePath(GISdb[DBonTable].dbFullName) + ExtractFileNameNoExt(GISdb[DBonTable].dbFullName) + '_' + CurrentTimeForFileName + '.zip';
-
-   {$IfDef RecordSHZ} WriteLineToDebugFile('TdbTableF.Zipshapefile1Click call zip'); {$EndIf}
-   ZipMasterZipFiles(fName,TheFiles);
-   TheFiles.Free;
-   SysUtils.RenameFile(fname,ChangeFileExt(fName,'.shz'));
-   //GISdb[DBonTable].aShapeFile.OpenSHPandSHX;
-   //ame := ChangeFileExt(GISdb[DBonTable].dbFullName,'.dbf');
-   {$IfDef RecordSHZ} WriteLineToDebugFile('TdbTableF.Zipshapefile1Click reopen'); {$EndIf}
-   //GISdb[DBonTable].MyData := TMyData.Create(fName);
-   //GISdb[DBonTable].MyData.AssignEmpSource(GISdb[DBonTable].EmpSource);
-   {$IfDef RecordSHZ} WriteLineToDebugFile('TdbTableF.Zipshapefile1Click out'); {$EndIf}
+   ZipShapefile(DBontable,(Sender = Includedebuglog1),true);
 end;
-
 
 
 procedure Tdbtablef.Zoommaptorecord1Click(Sender: TObject);
 const
    Bitty = 0.05;
 var
-   //LatRange,LongRange,
    Bit : float64;
    bb : sfBoundBox;
 begin
@@ -3163,7 +3197,6 @@ begin
       EditPointSymbol1.Visible := ItsFanFile or ((ThisShapeType in [0,1,11]) and GISdb[DBonTable].PointSymbolFieldsPresent);
       Editlineweightandcolor1.Visible := ((ThisShapeType in [0,3,13]) and GISdb[DBonTable].LineColorPresent);
       Editfillpattern1.Visible :=  (ThisShapeType in [0,5,15]) and AreaFillPresent;
-      //Editlinegraphical1.Visible := false and ItsAShapeFile and LineShapeFile(ShapeFileType);
       Editpointlocation1.Visible := (LatLongFieldsPresent) or ItsFanFile{ or ItsSymbolFile};
       Monthlywinds1.Visible := (DBonTable = WindsDB) or StrUtils.AnsiContainsText(UpperCase(DBName),'WIND') ;
 
@@ -3288,7 +3321,6 @@ begin
 
              if GISdb[DBonTable].ItsAGroupingFile then ThisShapeType := GISdb[DBonTable].MyData.GetFieldByNameAsInteger('SHAPE_TYPE')
              else ThisShapeType := 0;
-             //Handled := false;
              if GISdb[DBonTable].IconPresent and ExpandIconName(GISdb[DBonTable].MyData,GISdb[DBonTable].dbOpts.IconField,fName) and FileExists(fName) then begin
                 Bitmap := PetImage.LoadBitmapFromFile(fName);
              end
@@ -3430,8 +3462,6 @@ end;
 
 
 procedure Tdbtablef.ToggleLayer(LayerOn : boolean);
-//var
-   //i : integer;
 begin
    if (DBonTable > 0) and (GISdb[DBonTable] <> Nil) then begin
       GISdb[DBonTable].ToggleLayer(LayerOn);
@@ -3492,7 +3522,6 @@ begin
    TrainingClassAvailable := false;
    Panel1.Visible := false;
    Panel3.Visible := false;
-   //GroupBox1.Visible := false;
    Panel7.Visible := false;
    Wavelengthmeanallclasses1.Enabled := false;
    WavelengthStdDevallclasses1.Enabled := false;
@@ -3517,7 +3546,6 @@ begin
    Top := 0;
    Left := wmdem.Width - Width - 20;
    TrackBar1.Position := MDDef.SecondGridOpacity;
-   //CloseMethod := 'file menu command';
    {$IfDef RecordDataBase} WriteLineToDebugFile('Tdbtablef.FormCreate out'); {$EndIf}
 end;
 
@@ -3843,11 +3871,10 @@ var
          {$IfDef CountUniqueValues} WriteLineToDebugFile('SetUpGridForm in'); {$EndIf}
          GridForm := tGridForm.Create(Application);
          GridForm.HideCorrelationControls;
-         GridForm.Caption := GISdb[DBonTable].dbName + '  ' + LongFilter +
-            ' (n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + ')' + '  unique entries=' + IntToStr(pred(Findings.Count));
+         GridForm.Caption := GISdb[DBonTable].dbName + '  ' + LongFilter + ' (n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + ')' + '  unique entries=' + IntToStr(pred(Findings.Count));
          GridForm.StringGrid1.FixedCols := 0;
          GridForm.StringGrid1.FixedRows := 1;
-         GridForm.HideSortingControls(true);
+         GridForm.ShowSortingControls(true);
          {$IfDef CountUniqueValues} WriteLineToDebugFile('SetUpGridForm out'); {$EndIf}
       end;
 
@@ -4033,8 +4060,8 @@ begin
            GISdb[DBonTable].AssembleGISFilter;
         end
         else begin
-            DisplayAndPurgeStringList(FieldsInDB,WantedFieldName + ' Unique values: ' + IntToStr(FieldsInDB.Count));
-            ShowStatus;
+           DisplayAndPurgeStringList(FieldsInDB,WantedFieldName + ' Unique values: ' + IntToStr(FieldsInDB.Count));
+           ShowStatus;
         end;
      end;
    end;
@@ -4554,6 +4581,7 @@ var
    Lat,Long : float64;
    SWcorners : tstringlist;
 begin
+   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('N1degreetilestocoverrecordsintable1Click in'); {$EndIf}
    GISdb[DBonTable].EmpSource.Enabled := false;
    ShowHourglassCursor;
    SWcorners := tstringlist.Create;
@@ -4567,6 +4595,7 @@ begin
    end;
    ShowInNotepadPlusPlus(SWcorners,'SW_corners_of_1_degree_tiles_needed_to_cover_the_database');
    ShowStatus;
+   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('N1degreetilestocoverrecordsintable1Click out'); {$EndIf}
 end;
 
 
@@ -6017,6 +6046,36 @@ begin
    Countuniquevalues1Click(Sender);
 end;
 
+procedure Tdbtablef.Alphabetize1Click(Sender: TObject);
+var
+   aString,ExtToAdd,Ext : ShortString;
+   i : integer;
+   Sorting : tStringList;
+begin
+   with GISdb[DBonTable] do begin
+      ShowHourglassCursor;
+      EmpSource.Enabled := false;
+      MyData.First;
+      while not MyData.eof do begin
+         aString := MyData.GetFieldByNameAsString(SelectedColumn);
+         if StrUtils.AnsiContainsText(astring,',') then begin
+            Sorting := tStringList.Create;
+            Sorting.Sorted := true;
+            repeat
+                Sorting.Add(BeforeSpecifiedCharacterANSI(aString,',',true,true));
+            until aString = '';
+            Astring := Sorting.Strings[0];
+            for i := 1 to pred(Sorting.Count) do astring := aString + ',' + Sorting.Strings[i];
+            Sorting.Destroy;
+            MyData.Edit;
+            MyData.SetFieldByNameAsString(SelectedColumn,aString);
+         end;
+         MyData.Next;
+      end;
+      ShowStatus;
+   end;
+end;
+
 procedure Tdbtablef.Singlefield2Click(Sender: TObject);
 var
    FieldDesired : ShortString;
@@ -6406,6 +6465,9 @@ procedure Tdbtablef.BitBtn12Click(Sender: TObject);
 begin
    with GISdb[DBonTable] do begin
       Shiftpointrecords1.Visible := ItsaPointDB;
+      Exportsortedtable1.Visible := ItsaPointDB;
+      Exportlatlongz1.Visible := ItsAPointDB;
+      Createlineshapefilefrompoints1.Visible := ItsAPointDB;
       DataDBFonlynogeometry1.Visible := LineOrAreaShapeFile(ShapeFileType);
       N11.Visible := LineOrAreaShapeFile(ShapeFileType);
       Coordinatestotextfile1.Visible := LineOrAreaShapeFile(ShapeFileType);
@@ -6413,11 +6475,9 @@ begin
       Createpointsinpolygons1.Visible := AreaShapeFile(ShapeFileType);
       Createpointsalonglines1.Visible := LineShapeFile(ShapeFileType);
       Createpointsalonglinesbyseparation1.Visible := LineShapeFile(ShapeFileType);
-      Createlineshapefilefrompoints1.Visible := ItsAPointDB;
       Createpointshapefile1.Visible := (ItsAPointDB or XYZFile) and MDDef.AdvancedDBops;
       Createpointshxindex1.Visible := (ItsAPointDB or XYZFile) and MDDef.AdvancedDBops;
       ArcGISviewshedsensors1.Visible := ItsFanFile;
-      Exportlatlongz1.Visible := ItsAPointDB;
       ExportXYZtriples1.Visible := ShapeFileType in [13,15,23,25];
       CreateXYZpointshapefile1.Visible :=  XYZFile;
       Earthquakefocalmechanisms1.Visible := FocalMechsPresent;
@@ -6469,7 +6529,7 @@ begin
          ReportOptionsForm.Free;
       end;
 
-      fName := ChangeFileExt(DBFullName,'.txt');
+      fName := ChangeFileExt(DBFullName,'.csv');
       if Petmar.GetFileNameDefaultExt('Text file export','CSV|*.csv|Text|*.txt',fName) then begin
          Report := ExtractDBtoCSV(tf,ch);
          Report.SaveToFile(fName);
@@ -7451,6 +7511,11 @@ begin
       GISdb[DBonTable].dbOpts.XField := GISdb[DBonTable].LongFieldName;
       GISdb[DBonTable].MakeGraph(dbgtbyLongitude2);
    {$EndIf}
+end;
+
+procedure Tdbtablef.Ascending1Click(Sender: TObject);
+begin
+   SortDataBase(DBOnTable,true);
 end;
 
 procedure Tdbtablef.Assignuniquecolors1Click(Sender: TObject);
@@ -8597,6 +8662,7 @@ begin
        bbox := GISdb[DBonTable].MyData.GetRecordBoundingBox;
     end
     else begin
+        GISdb[DBonTable].MyData.ValidLatLongFromTable(Lat,Long);
         bbox.YMax := Lat + extra;
         bbox.XMin := Long - extra;
         bbox.YMin := Lat - Extra;
@@ -8844,11 +8910,6 @@ begin
    end;
 end;
 
-procedure Tdbtablef.Key3params1Click(Sender: TObject);
-begin
-   DEMIXwineContestMeanMedianGraph(dgJust3Params,DBonTable);
-end;
-
 procedure Tdbtablef.Keyboardnewpointlocation1Click(Sender: TObject);
 var
    Lat,Long : float64;
@@ -8867,17 +8928,6 @@ begin
       ChangeLatLongLocation(Lat,Long);
       MyData.Post;
    end;
-end;
-
-
-procedure Tdbtablef.Keymeans1Click(Sender: TObject);
-begin
-   DEMIXwineContestMeanMedianGraph(dgMean,DBonTable);
-end;
-
-procedure Tdbtablef.Keymeans2Click(Sender: TObject);
-begin
-   DEMIXwineContestMeanMedianGraph(dgMedian,DBonTable);
 end;
 
 
@@ -10620,6 +10670,11 @@ begin
 end;
 
 
+procedure Tdbtablef.Descending1Click(Sender: TObject);
+begin
+   SortDataBase(DBOnTable,false);
+end;
+
 procedure Tdbtablef.Deadreckoning1Click(Sender: TObject);
 var
    Lat,Long,Speed,Heading,Distance,Time : float64;
@@ -11370,7 +11425,7 @@ var
    NumNeigh,i : integer;
    OldFilter : string;
 begin
-   if ValidDB(DBonTable) { <> 0) and (GISdb[DBonTable] <> Nil)} and (GISdb[DBonTable].theMapOwner <> Nil) then with GISdb[DBonTable] do begin
+   if ValidDB(DBonTable) and (GISdb[DBonTable].theMapOwner <> Nil) then with GISdb[DBonTable] do begin
       LinkValue := MyData.GetFieldByNameAsString(NeighborLinkField);
       OldFilter :=  MyData.Filter;
       NeighborTable.ApplyFilter( NeighborLinkField + '=' + QuotedStr(LinkValue));
@@ -11481,9 +11536,10 @@ var
 begin
    //with GISdb[DBonTable] do begin
       if LineOrAreaShapeFile(GISdb[DBonTable].ShapeFileType) then begin
-          bbox := GISdb[DBonTable].MyData.GetRecordBoundingBox;
+         bbox := GISdb[DBonTable].MyData.GetRecordBoundingBox;
       end
       else begin
+          GISdb[DBonTable].MyData.ValidLatLongFromTable(Lat,Long);
           bbox.YMax := Lat + extra;
           bbox.XMin := Long - extra;
           bbox.YMin := Lat - Extra;
@@ -12219,7 +12275,6 @@ begin
    DeleteFileIfExists(fName);
    fName := ChangeFileExt(fName,'.csv');
    DeleteFileIfExists(fName);
-   //NewGIS := Nil;
    if (Sender <> Centr1) then begin
        NewGIS := CopyDatabaseAndOpen(GISdb[DBonTable],false);
        {$IfDef FindNeighbors} WriteLineToDebugFile('Copied and opened'); {$EndIf}
@@ -13311,7 +13366,7 @@ begin
      MyData.First;
      while not MyData.EOF do begin
         TStr := MyData.GetFieldByNameAsString(SelectedColumn);
-        for I := 0 to length(TStr) do if (TStr[i] = '/') then TStr[i] := '\';
+        for I := 1 to length(TStr) do if (TStr[i] = '/') then TStr[i] := '\';
         TStr := ExtractFileName(TStr);
         MyData.Edit;
         MyData.SetFieldByNameAsString(SelectedColumn,TStr);
@@ -13586,6 +13641,11 @@ begin
    end;
 end;
 
+
+procedure Tdbtablef.CreateDBwithcornersandcenterofeveryrecord1Click(Sender: TObject);
+begin
+   xxx
+end;
 
 procedure Tdbtablef.CreateDEM1Click(Sender: TObject);
 var
@@ -13987,6 +14047,40 @@ begin
    GISdb[DBonTable].PointsForLineAreaDB(false,false,false);
 end;
 
+
+procedure Tdbtablef.Createshapefilewithboundingboxforeachrecord1Click(Sender: TObject);
+var
+   sfc : tShapeFileCreation;
+   fName,tile : PathStr;
+   db : integer;
+   Lat,Long : float64;
+   bb : sfBoundBox;
+begin
+   GISdb[DBonTable].MyData.First;
+   while not GISdb[DBonTable].MyData.eof do begin
+      bb := GISdb[DBonTable].MyData.GetRecordBoundingBox;
+      bb.XMax := bb.XMax - 0.025;
+      bb.XMin := bb.XMin + 0.025;
+      bb.YMax := bb.YMax - 0.025;
+      bb.YMin := bb.YMin + 0.025;
+      Tile := ExtractFileNameNoExt(GISdb[DBonTable].MyData.GetFieldByNameAsString('FILENAME')) ;
+      fName := MDTempDir +  Tile + '_bounding_box.dbf';
+      sfc := tShapeFileCreation.Create(WGS84DatumConstants,fName,true,5);
+      sfc.AddBoundBoxToShapeStream(bb);
+      sfc.CloseShapeFiles;
+      db := OpenDataBase('',fName,false);
+      SaveBackupDefaults;
+      MDDef.ZipKMLFiles := false;
+
+      fName := GISdb[DB].ExportToKML(true,true);
+      RestoreBackupDefaults;
+      Petmar.CopyFile(fName,MDTempDir + ExtractFileName(fName));
+      //ZipShapefile(DB,false,false);     //this won't work on the USGS web sites, which was the whole point of creating it
+      CloseAndNilNumberedDB(db);
+      GISdb[DBonTable].MyData.Next;
+   end;
+end;
+
 procedure Tdbtablef.Createuniticons1Click(Sender: TObject);
 {$IfDef ExMilIcons}
 begin
@@ -14285,30 +14379,6 @@ begin
    if GISdb[DBonTable].ValidLatLongFromTable(Lat,Long) then begin
       DEMGlb[GISdb[DBonTable].theMapOwner.MapDraw.DEMonMap].SlopeMethodsReportFromLatLong(lat,Long);
    end;
-end;
-
-procedure Tdbtablef.Pointstocheckverticaldatumshift1Click(Sender: TObject);
-var
-   sl : tStringList;
-   bb : sfBoundBox;
-   Name : shortstring;
-   fName : PathStr;
-begin
-   GISdb[DBonTable].MyData.First;
-   sl := tStringList.Create;
-   sl.add('LONG,LAT,Z,NAME');
-   while not GISdb[DBonTable].MyData.eof do begin
-      Name := GISdb[DBonTable].MyData.GetFieldByNameAsString('NAME');
-      bb := GISdb[DBonTable].MyData.GetRecordBoundingBox;
-      sl.add(RealToString(bb.XMin,-12,-6) + ',' + RealToString(bb.YMin,-12,-6) + ',0,' + Name);
-      sl.add(RealToString(bb.XMax,-12,-6) + ',' + RealToString(bb.YMin,-12,-6) + ',0,' + Name);
-      sl.add(RealToString(bb.XMax,-12,-6) + ',' + RealToString(bb.YMax,-12,-6) + ',0,' + Name);
-      sl.add(RealToString(bb.XMin,-12,-6) + ',' + RealToString(bb.YMax,-12,-6) + ',0,' + Name);
-      sl.add(RealToString(0.5 * (bb.XMin + bb.XMax),-12,-6) + ',' + RealToString(0.5 * (bb.YMin + bb.YMax),-12,-6) + ',0,' + Name);
-      GISdb[DBonTable].MyData.Next;
-   end;
-   fName := NextFileNumber(MDTempDir,'test_site_limits_','.csv');
-   GISdb[DBonTable].theMapOwner.StringListToLoadedDatabase(sl,fName);
 end;
 
 procedure Tdbtablef.PointsymbolsinDB1Click(Sender: TObject);

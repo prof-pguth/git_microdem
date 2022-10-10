@@ -25,7 +25,8 @@
 
    {$IFDEF DEBUG}
       //{$Define RawProjectInverse}  //must also be set in BaseMap
-      {$Define RecordDEMIX}
+      //{$Define RecordDEMIX}
+      //{$Define RecordDEMIXtiles}
       //{$Define RecordStreamModeDigitize}
       //{$Define RecordPickRoute}
       //{$Define RecordMapResize}
@@ -1541,7 +1542,6 @@ procedure GDALTRIRileyterrestrial1Click(Sender: TObject);
 procedure GDALTRIWilsonbathymetric1Click(Sender: TObject);
 procedure GDALwarpsubset1Click(Sender: TObject);
 
-procedure DEMIX10ktiles1Click(Sender: TObject);
 procedure CreateMedianDNgrid1Click(Sender: TObject);
 
 
@@ -2445,6 +2445,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure CreategeoatlasKMZ1Click(Sender: TObject);
     procedure Filtersizes1Click(Sender: TObject);
     procedure Mapboundingbox1Click(Sender: TObject);
+    procedure DEMIX10ktiles1Click(Sender: TObject);
     //procedure QuarterDEM1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
@@ -11139,6 +11140,12 @@ begin
 end;
 
 
+procedure TMapForm.DEMIX10ktiles1Click(Sender: TObject);
+begin
+   if (MapDraw.DEMonMap <> 0) then DEMIXtileFill(MapDraw.DEMonMap, MapDraw.MapCorners.BoundBoxGeo)
+   else LoadDEMIXtileOutlines(MapDraw.MapCorners.BoundBoxGeo);
+end;
+
 procedure TMapForm.DEMIX1secresamplebyaveraging1Click(Sender: TObject);
 begin
    {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} writeLineToDebugFile('TMapForm.DEMIX1secresamplebyaveraging1Click in, ' + DEMGlb[MapDraw.DEMonMap].DEMFileName); {$EndIf}
@@ -12616,7 +12623,7 @@ begin
    Copyimagecoordinatestoclipboard1.Visible := MapDraw.ValidSatOnMap;
    GridgraticluetoGoogleEarth1.Visible := MDDef.MapTicks <> tixNone;
    CopyVegprofiletoclipboard1.Visible := (VegGraph <> Nil);
-   Aspectoptions1.Visible := (MapDraw.DEMonMap <> 0) and ((MapDraw.MapType in [mtDEMAspect]) or (DEMGlb[MapDraw.DEMonMap].DEMheader.ElevUnits in [AspectDeg]));
+   Aspectoptions1.Visible := ValidDEM(MapDraw.DEMonMap) and ((MapDraw.MapType in [mtDEMAspect]) or (DEMGlb[MapDraw.DEMonMap].DEMheader.ElevUnits in [AspectDeg]));
 
    PLSSlocation1.Visible := MDDef.ShowPLSS;
    errainsunblocking1.Visible := (MapDraw.DEMonMap <> 0);
@@ -15423,11 +15430,7 @@ end;
 
 
 procedure TMapForm.DupeMapSpeedButton18Click(Sender: TObject);
-//var
-   //NewMap : tMapForm;
 begin
-   //NewMap := Nil;
-   //NewMap :=
    DuplicateMap(false);
 end;
 
@@ -15553,7 +15556,6 @@ procedure TMapForm.BandColor1Click(Sender: TObject);
 begin
    PickBandSpeedButton20Click(Nil);
 end;
-
 
 
 procedure TMapForm.Bandratio1Click(Sender: TObject);
@@ -16146,7 +16148,6 @@ begin
         VerifyingPoint,
         RoamBroadCast,
         PickToBroadcast                : NewTitle := '';
-        //LabelTIGERRoad                 : NewTitle := 'TIGER roads to label';
         InteractiveLOS                 : NewTitle := 'Interactive LOS';
         FirstPointSelectionAlgorithm   : NewTitle := FPF + 'selection algorithm';
         SecondPointSelectionAlgorithm  : NewTitle := SPF + 'selection algorithm';
@@ -16165,7 +16166,6 @@ begin
         StartAccumulatedCostSurface    : NewTitle := 'Start of accumulated cost surface';
         StartLeastCostPath             : NewTitle := 'Start of least cost path';
         RecolorShapeRecord             : NewTitle := 'Line to recolor';
-        //PointInterpolationAlgorithms   : NewTitle := 'Elevation interpolation';
         RadiusDBEdit                   : NewTitle := 'Center for radius restrictin of DB';
         NLCDBox                        : NewTitle := 'NLCD box';
         NLCDClassification             : NewTitle := 'NLCD classification';
@@ -16173,15 +16173,11 @@ begin
         GeodeticBearing                : NewTitle := 'Geodetic bearing';
         PlotNorthArrow                 : NewTitle := 'North arrow';
         PickDBRecsToMove               : NewTitle := 'Pick line/area to edit';
-       // PointParameters                : NewTitle := 'Point parameters';
         PickCenterAndScale             : NewTitle := 'Center new map';
         DigitizeContourPoint           : NewTitle := 'Digitize single point';
         DigitizeContourStream          : NewTitle := 'Stream points on contour line';
-        //CheckDirectionalSlopes         : NewTitle := 'Directional slopes';
         FindBlockHorizon               : NewTitle := 'Point, horizon blocking';
         PlottingPointElevations        : NewTitle := 'Point elevations';
-        //GetPointSlopeByAlgorithm       : NewTitle := 'Point to compare slope algorithms';
-        //DNsAtPoint                     : NewTitle := 'Point for DNs';
         PickTrainingBox                : NewTitle := 'Training box';
         PickTrainingPoints             : NewTitle := 'Training points';
         JustWandering                  : NewTitle := '';
@@ -16206,19 +16202,15 @@ begin
         SeekingFlyThroughRoute         : NewTitle := 'Route for fly through';
         ShowMagneticVariation          : NewTitle := PointFor + 'magnetic variation';
         TerrainBlowup                  : NewTitle := PointFor + 'Terrain Blowup';
-        //GetDEMGrid                     : NewTitle := PointsFor + 'DEM grid values';
         GetPointSymbols                : NewTitle := PointsFor + 'symbol overlay';
         RegionDNs                      : NewTitle :=  NWCornerStr + ' average reflectance';
         OpenMrSid                      : NewTitle :=  NWCornerStr + 'MrSid blowup';
-        //GetDTED                        : NewTitle :=  NWCornerStr + 'DEMs to load';
         NewCoverage,
         CornerEditBox,
-        //QueryLineStart,QueryLineEnd,
         GraphFilterDB                        : NewTitle := NWCornerStr;
         NewTrack                       : NewTitle := 'Track';
         StreamDistance                 : NewTitle := 'Route for distance';
         GetRGBValues                   : NewTitle := PointFor + 'RGB values';
-        //PointCoordinates               : NewTitle := PointFor + 'coortindates';
         GetGreatCircleRoute            : NewTitle := PointFor + 'great circle route';
         SeekingPerspective             : NewTitle := LocationFor + 'Viewer perspective';
         PlottingOffset                 : NewTitle := PointFor + 'offset';
@@ -20428,20 +20420,7 @@ begin
    if GetFileNameDefaultExt('Shape file for map outline',DBNameMask,FName,false) then begin
       sfc := tShapeFileCreation.Create(WGS84DatumConstants,fName,true,5);
       if Sender = MapBoundingBox1 then begin
-          sfc.AddBoundBoxToShapeStream(MapDraw.GetBoundBoxGeo);
-
-          (*
-          MapDraw.ScreenToLatLongDegree(x,Pred(MapDraw.MapYSize),Lat,Long);
-          sfc.AddPointToShapeStream(Lat,Long);
-          MapDraw.ScreenToLatLongDegree(Pred(MapDraw.MapXSize),Pred(MapDraw.MapYSize),Lat,Long);
-          sfc.AddPointToShapeStream(Lat,Long);
-          MapDraw.ScreenToLatLongDegree(Pred(MapDraw.MapXSize),0,Lat,Long);
-          sfc.AddPointToShapeStream(Lat,Long);
-          MapDraw.ScreenToLatLongDegree(0,0,Lat,Long);
-          sfc.AddPointToShapeStream(Lat,Long);
-          MapDraw.ScreenToLatLongDegree(0,Pred(MapDraw.MapYSize),Lat,Long);
-          sfc.AddPointToShapeStream(Lat,Long);
-          *)
+         sfc.AddBoundBoxToShapeStream(MapDraw.GetBoundBoxGeo);
       end
       else begin
          x := 0;

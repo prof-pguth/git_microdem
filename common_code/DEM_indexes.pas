@@ -269,7 +269,6 @@ begin
          end;
       end;
    finally
-      Result := false;
    end;
    {$IfDef RecordTileNameDecoding} WriteLineToDebugFile('Decode failure=' + fName); {$EndIf}
 end;
@@ -558,7 +557,7 @@ var
                        {$IfDef ListIndexFileName} Memo1.Lines.Add(fName); WriteLineToDebugFile(fName); {$EndIf}
                        Ext := UpperCase(ExtractFileExt(FName));
                        Where := AlreadyIndexed.IndexOf(fName);
-                       if  Where = -1 then begin
+                       if (Where = -1) then begin
                           {$IfDef ListIndexFileName} WriteLineToDebugFile(' file not indexed already'); {$EndIf}
 
                           {$ifDef ExSat}

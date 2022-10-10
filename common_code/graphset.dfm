@@ -4,8 +4,8 @@ object GraphSettingsForm: TGraphSettingsForm
   ActiveControl = OKBtn
   BorderStyle = bsDialog
   Caption = 'Graph Modifications'
-  ClientHeight = 533
-  ClientWidth = 682
+  ClientHeight = 447
+  ClientWidth = 567
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
@@ -54,29 +54,29 @@ object GraphSettingsForm: TGraphSettingsForm
     Visible = False
   end
   object Label5: TLabel
-    Left = 23
-    Top = 416
+    Left = 15
+    Top = 320
     Width = 64
     Height = 13
     Caption = 'Left margin'
   end
   object Label6: TLabel
-    Left = 103
-    Top = 416
+    Left = 95
+    Top = 320
     Width = 64
     Height = 13
     Caption = 'Top margin'
   end
   object Label7: TLabel
-    Left = 191
-    Top = 416
+    Left = 183
+    Top = 317
     Width = 81
     Height = 13
     Caption = 'Bottom margin'
   end
   object RedrawSpeedButton12: TSpeedButton
-    Left = 306
-    Top = 506
+    Left = 298
+    Top = 410
     Width = 37
     Height = 28
     Hint = 'Force redraw'
@@ -92,15 +92,15 @@ object GraphSettingsForm: TGraphSettingsForm
     OnClick = RedrawSpeedButton12Click
   end
   object Label8: TLabel
-    Left = 24
-    Top = 472
+    Left = 16
+    Top = 376
     Width = 122
     Height = 13
     Caption = 'Lower left corner text'
   end
   object OKBtn: TBitBtn
-    Left = 16
-    Top = 508
+    Left = 8
+    Top = 412
     Width = 77
     Height = 27
     Kind = bkOK
@@ -111,8 +111,8 @@ object GraphSettingsForm: TGraphSettingsForm
     IsControl = True
   end
   object CancelBtn: TBitBtn
-    Left = 123
-    Top = 508
+    Left = 115
+    Top = 412
     Width = 77
     Height = 27
     Kind = bkCancel
@@ -123,8 +123,8 @@ object GraphSettingsForm: TGraphSettingsForm
     IsControl = True
   end
   object HelpBtn: TBitBtn
-    Left = 223
-    Top = 508
+    Left = 215
+    Top = 412
     Width = 77
     Height = 27
     Kind = bkHelp
@@ -205,29 +205,29 @@ object GraphSettingsForm: TGraphSettingsForm
     Visible = False
   end
   object Edit7: TEdit
-    Left = 31
-    Top = 432
+    Left = 23
+    Top = 336
     Width = 65
     Height = 21
     TabOrder = 10
   end
   object Edit8: TEdit
-    Left = 111
-    Top = 432
+    Left = 103
+    Top = 336
     Width = 57
     Height = 21
     TabOrder = 11
   end
   object Edit9: TEdit
-    Left = 191
-    Top = 432
+    Left = 183
+    Top = 336
     Width = 57
     Height = 21
     TabOrder = 12
   end
   object BitBtn2: TBitBtn
-    Left = 284
-    Top = 430
+    Left = 276
+    Top = 334
     Width = 65
     Height = 25
     Caption = 'Font'
@@ -265,8 +265,8 @@ object GraphSettingsForm: TGraphSettingsForm
     TabOrder = 15
   end
   object Edit10: TEdit
-    Left = 152
-    Top = 469
+    Left = 144
+    Top = 373
     Width = 236
     Height = 21
     TabOrder = 16
@@ -310,8 +310,8 @@ object GraphSettingsForm: TGraphSettingsForm
     end
   end
   object CheckBox7: TCheckBox
-    Left = 432
-    Top = 432
+    Left = 424
+    Top = 336
     Width = 97
     Height = 17
     Caption = 'Scroll graph'
@@ -349,7 +349,7 @@ object GraphSettingsForm: TGraphSettingsForm
     Top = 8
     Width = 281
     Height = 185
-    ActivePage = TabSheet3
+    ActivePage = TabSheet1
     TabOrder = 22
     object TabSheet1: TTabSheet
       Caption = 'X axis'

@@ -26,6 +26,10 @@ type
     Button1: TButton;
     Button2: TButton;
     Button3: TButton;
+    Button4: TButton;
+    Button5: TButton;
+    TrackBar1: TTrackBar;
+    Label1: TLabel;
     procedure Viewport3D1MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Single);
     procedure Viewport3D1MouseMove(Sender: TObject; Shift: TShiftState; X,Y: Single);
     procedure Viewport3D1MouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; var Handled: Boolean);
@@ -37,6 +41,9 @@ type
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
+    procedure Button4Click(Sender: TObject);
+    procedure Button5Click(Sender: TObject);
+    procedure TrackBar1Change(Sender: TObject);
   private
     FMouseDown: TPointF;
     FLastDistance: Integer;
@@ -82,6 +89,16 @@ begin
    Dummy1.RotationAngle.X := 23.5;
 end;
 
+procedure TfrmMain.Button4Click(Sender: TObject);
+begin
+  FloatAnimation1.Enabled := false;
+end;
+
+procedure TfrmMain.Button5Click(Sender: TObject);
+begin
+   FloatAnimation1.Enabled := true;
+end;
+
 procedure TfrmMain.FormCreate(Sender: TObject);
 begin
   FOriginalRotationAngleX := Dummy1.RotationAngle.X;
@@ -97,6 +114,11 @@ end;
 procedure TfrmMain.SpeedButton3Click(Sender: TObject);
 begin
   Dummy1.RotationAngle.X := 23.5;
+end;
+
+procedure TfrmMain.TrackBar1Change(Sender: TObject);
+begin
+   FloatAnimation1.Duration := TrackBar1.Value;
 end;
 
 // ----------------------------------------------------------------------------

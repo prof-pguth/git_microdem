@@ -239,6 +239,7 @@ procedure TGraphSettingsForm.CheckSettings;
 var
    i : integer;
 begin
+   {$If Defined(RecordGrafSize)} WriteLineToDebugFile('TGraphSettingsForm.CheckSetting in Client size, ' + IntToStr(OwningGraph.ClientWidth) + 'x' + IntToStr(OwningGraph.ClientHeight) + ' ' +  OwningGraph.GraphDraw.AxisRange); {$EndIf}
    with OwningGraph, GraphDraw do begin
       AnnualCycle := CheckBox1.Checked;
       NormalCartesianX := not CheckBox5.Checked;
@@ -288,10 +289,18 @@ begin
        CheckEditString(Edit7.Text,LeftMargin);
        CheckEditString(Edit8.Text,TopMargin);
        CheckEditString(Edit9.Text,BottomMargin);
+       CheckEditString(Edit11.Text,GraphDraw.XWindowSize);
+       CheckEditString(Edit12.Text,GraphDraw.YWindowSize);
+       {$If Defined(RecordGrafSize)} WriteLineToDebugFile('TGraphSettingsForm.CheckSetting window, ' + IntToStr(XWindowSize) + 'x' + IntToStr(YWindowSize)); {$EndIf}
+       OwningGraph.ClientWidth := GraphDraw.XWindowSize;
+       OwningGraph.ClientHeight := GraphDraw.YWindowSize;
+
+       (*
        CheckEditString(Edit11.Text,i);
        OwningGraph.ClientWidth := i;  //XWindowSize);
        CheckEditString(Edit12.Text,i);
-       OwningGraph.ClientHeight := i;;  //YWindowSize);
+       OwningGraph.ClientHeight := i;  //YWindowSize);
+       *)
        {$If Defined(RecordGrafSize)} WriteLineToDebugFile('TGraphSettingsForm.CheckSetting out Client size, ' + IntToStr(OwningGraph.ClientWidth) + 'x' + IntToStr(OwningGraph.ClientHeight) + ' ' +  OwningGraph.GraphDraw.AxisRange); {$EndIf}
     end;
 end;

@@ -11,8 +11,8 @@ unit ChirpGrf;
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
     {$IfDef Debug}
        //{$Define RecordTraces}
-       //{$Define RecordChirpGraph}
-       //{$Define RecordChirpFence}
+       {$Define RecordChirpGraph}
+       {$Define RecordChirpFence}
     {$EndIf}
 {$EndIf}
 
@@ -229,6 +229,7 @@ type
     procedure Displayoptions1Click(Sender: TObject);
   private
     { Private declarations }
+    FormClosing : boolean;
     function JSFDepth(y : integer) : float64;
     function JSFTWTT(y : integer) : float64;
     procedure GraphChirpRecord;
@@ -377,10 +378,7 @@ end;
 
 procedure TChirpGraph.OpenChirpsFile(fName : PathStr);
 var
-   //SegTraceDataBlock : ^tNewTraceDataBlock;
-   //ChirpNum,   DepthFilterSize,
    PulseRecs : integer;
-   //First : boolean;
    dbFile : tMyData;
    f : file;
    Lat,Long,Lat2,Long2 : float64;
@@ -390,6 +388,7 @@ var
 
    procedure MakeTable;
    begin
+      {$IfDef RecordChirpGraph} HighlightLineToDebugFile('MakeTable in'); {$EndIf}
       Make_Tables.MakeSideScanRecordFile(DBFileName,false);
       dbfile := tMyData.Create(DBFileName);
       ShowHourglassCursor;
@@ -428,15 +427,20 @@ var
          MDdef.AddAzimuth := true;
          MDdef.AddDist := true;
          MDdef.AddCumDist := true;
+         {$IfDef RecordChirpGraph} WriteLineToDebugFile('Loading DB'); {$EndIf}
 
          TrackDB := ChirpMapOwner.LoadDataBaseFile(DBFileName);
          GISDB[TrackDB].AddSequentialIndex(RecNoFName,true);
+         {$IfDef RecordChirpGraph} WriteLineToDebugFile('call remove dupe positions'); {$EndIf}
          GISDB[TrackDB].RemoveDuplicatePositions;
+         {$IfDef RecordChirpGraph} WriteLineToDebugFile('call fill track voids'); {$EndIf}
          GISDB[TrackDB].FillTrackVoids;
+         {$IfDef RecordChirpGraph} WriteLineToDebugFile('call add nav fields'); {$EndIf}
          GISDB[TrackDB].AddNavFields;
          GISDB[TrackDB].SavePointShapeFile(false);
          ShowDefaultCursor;
       end;
+      {$IfDef RecordChirpGraph} WriteLineToDebugFile('MakeTable out'); {$EndIf}
    end;
 
 
@@ -500,7 +504,9 @@ end;
 
 procedure TChirpGraph.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
+  FormClosing := true;
   inherited;
+
   Action := caFree;
 end;
 
@@ -509,6 +515,7 @@ procedure TChirpGraph.FormCreate(Sender: TObject);
 begin
   {$IfDef RecordChirpGraph} WriteLineToDebugFile('TChirpGraph.FormCreate in'); {$EndIf}
   inherited;  //needed for base form
+   FormClosing := false;
    LatsSet := false;
    ChirpZdb := 0;
    ClientHeight := MDDef.ChirpReturnsToShow + 100;
@@ -563,22 +570,16 @@ end;
 
 procedure TChirpGraph.RedrawChirps;
 var
-   //SegTraceDataBlock : ^tNewTraceDataBlock;
    BitMap,Protractor : tMyBitmap;
    Inf               : file;
-   //Dir               : DirStr;
-   //bName             : NameStr;
-   //Ext               : ExtStr;
    jsfMessageHeader  : tjsfMessageHeader;
    MessageType80     : tMessageType80;
-   //nLeft,
    NP,
    FirstRec,LastRec,
-   //LastPlotX,IStart,
    Dupe,
-   i,{k,y2,OnRec,}x,y,xp : integer;
+   i,x,y,xp,yp : integer;
    xutm,yutm,z,Lat,Long,
-   VE{,   Bottom} : float64;
+   VE : float64;
    TStr : ShortString;
    DataPulse : array[0..48000] of SmallInt;
    rp,ip : array[0..8000] of float32;
@@ -711,8 +712,8 @@ begin
 
                    PingNum[xp] := MessageType80.PingNumber;
                    y := ValidByteRange(255 - round(sqrt(sqr(rp[i]) + sqr(ip[i])) * MDDef.ChirpGain * ( 1 + (MDDef.ChirpTVG-1) * (i/MDDef.ChirpReturnsToShow))));
-
-                   BMPMem.SetPixelRGB(xp,GraphDraw.TopMargin + i div YSkipSize,y,y,y);
+                   yp := GraphDraw.TopMargin + i div YSkipSize;
+                   if BMPMem.OnBitmap(xp,yp) then BMPMem.SetPixelRGB(xp,yp,y,y,y);
 
                    {$IfDef ExFMX3D}
                    {$Else}
@@ -816,6 +817,8 @@ procedure TChirpGraph.Image1MouseMove(Sender: TObject; Shift: TShiftState; X, Y:
 var
    j : integer;
 begin
+   if FormClosing then exit;
+
    if LatsSet then begin
       wmdem.StatusBar1.Panels[1].Text := ChirpMapOwner.MapDraw.PrimMapProj.PreferLocationString(Lats[x],Longs[x]);
       wmdem.StatusBar1.Panels[2].Text := 'Ping=' + IntToStr(PingNum[x]);
@@ -999,8 +1002,6 @@ end;
 procedure MakeChirpFence(var FirstForm : tChirpGraph);
 var
    i,ys,NP : integer;
-   //Bitmap : tMyBitmap;
-   //BMPMem : tBMPMemory;
    fName : PathStr;
 begin
   {$IfDef RecordChirpFence} WriteLineToDebugFile('MakeChirpFence in'); {$EndIf}

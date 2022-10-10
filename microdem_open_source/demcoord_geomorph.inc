@@ -1331,7 +1331,7 @@ begin
    MomentVar := ElevationMoments(FullDEMGridLimits);
    Mean := MomentVar.mean;
    Std := MomentVar.sdev;
-   AveDev := MomentVar.ADev;
+   AveDev := MomentVar.avg_dev;
 end;
 
 

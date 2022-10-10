@@ -13,10 +13,10 @@
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
       {$Define RecordDEMIX}
+      //{$Define RecordFullDEMIX}
       //{$Define RecordDEMIXLoops}
       //{$Define RecordDEMIXGridCompare}
       //{$Define TrackDEMIX_DEMs}
-      //{$Define RecordFullDEMIX}
       //{$Define RecordDEMIXLoad}
 
       //{$Define RecordMenu}
@@ -520,6 +520,7 @@ type
     DEMIXindexhighresreferenceDEMs1: TMenuItem;
     DEMIXreferencetilesurvey1: TMenuItem;
     Python1: TMenuItem;
+    N36: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -1356,12 +1357,12 @@ end;
 
 procedure Twmdem.DEMIXmergeandtransposewithmeanmedian1Click(Sender: TObject);
 begin
-   MergeDEMIXCSV(ProgramRootDir + 'demix_criteria_with_signed.txt');
+   MergeDEMIXCSV(DEMIXSettingsDir + 'demix_criteria_with_signed.txt');
 end;
 
 procedure Twmdem.DEMIXmergeCSVfiles1Click(Sender: TObject);
 begin
-   MergeDEMIXCSV(ProgramRootDir + 'demix_criteria.txt');
+   MergeDEMIXCSV(DEMIXSettingsDir + 'demix_criteria.txt');
 end;
 
 procedure Twmdem.DEMIXreferenceDEMcreation1Click(Sender: TObject);

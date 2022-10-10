@@ -5,6 +5,17 @@ unit demstringgrid;
 { PETMAR Trilobite Breeding Ranch }
 {_________________________________}
 
+
+
+{-----------------------------------------------------------------------------------------------------------------}
+{Copyright  © 2002-2005, Gary Darby, www.DelphiForFun.org                                                         }
+{Program may be used or modified for any non-commercial purpose so long as this original notice remains in place. }
+{All other rights are reserved                                                                                    }
+{-----------------------------------------------------------------------------------------------------------------}
+
+
+
+
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
@@ -21,7 +32,7 @@ uses
 
 const
    MaxMatrixSize = 250;
-     
+
 type
   TGridForm = class(TForm)
     StringGrid1: TStringGrid;
@@ -71,7 +82,7 @@ type
     Variety : shortString;
     NeedRs : boolean;
     procedure HideCorrelationControls(Show : boolean = false);
-    procedure HideSortingControls(Show : boolean = false);
+    procedure ShowSortingControls(Show : boolean = false);
     procedure SetFormSize;
     procedure AddRow(Name,Value : shortstring);
     procedure ReadCSVFile(fName : PathStr);
@@ -91,93 +102,90 @@ uses
    PetDBUtils,PetImage,BaseGraf, Petimage_form,nevadia_main;
 
 
-{------------------------------------------------------------------------------------------------------------------}
-{Copyright  © 2002-2005, Gary Darby, www.DelphiForFun.org Program may be used or modified for any non-commercial purpose so long as this original notice remains in place. All other rights are reserved  }
-
 procedure Mergesort(Grid:TStringgrid; var Vals: array of integer; sortcol,datatype : integer; ascending : boolean);
 var
    AVals : array of integer;
 
-  function compare(val1,val2:string):integer;
-  var
-    int1,int2:integer;
-    errcode:integer;
-    float1,float2:extended;
-  begin
-    case datatype of
-      0: result := ANSIComparetext(val1,val2);
-      1: begin
-           int1:=strtointdef(val1,0);
-           int2:=strtointdef(val2,0);
-           if (int1>int2) then result:=1
-           else if int1<int2 then result:=-1
-           else result := 0;
-         end;
+        function compare(val1,val2:string):integer;
+        var
+          int1,int2:integer;
+          errcode:integer;
+          float1,float2:extended;
+        begin
+          case datatype of
+            0: result := ANSIComparetext(val1,val2);
+            1: begin
+                 int1:=strtointdef(val1,0);
+                 int2:=strtointdef(val2,0);
+                 if (int1>int2) then result:=1
+                 else if int1<int2 then result:=-1
+                 else result := 0;
+               end;
 
-      2: begin
-           val(val1,float1,errcode);
-           if errcode<>0 then float1:=0;
-           val(val2,float2,errcode);
-           if errcode<>0 then float2:=0;
-           if float1>float2 then result:=1
-           else if float1<float2 then result:=-1
-           else result:=0;
-         end;
-       else result:=0;
-      end;{case}
-    end;
+            2: begin
+                 val(val1,float1,errcode);
+                 if errcode<>0 then float1:=0;
+                 val(val2,float2,errcode);
+                 if errcode<>0 then float2:=0;
+                 if float1>float2 then result:=1
+                 else if float1<float2 then result:=-1
+                 else result:=0;
+               end;
+             else result:=0;
+            end;{case}
+          end;
 
-  {---------- Merge -------------}
-  procedure Merge(ALo,AMid,AHi:Integer);
-     var
-        i,j,k,m,n:Integer;
-  begin
-    i:=0;
-    setlength(Avals,Amid-alo+1);
-    for j:=ALo to AMid do begin
-      {copy lower half of Vals into temporary array AVals}
-      AVals[i]:=Vals[j];
-      inc(i);
-    end;
+        {---------- Merge -------------}
+        procedure Merge(ALo,AMid,AHi:Integer);
+           var
+              i,j,k,m,n:Integer;
+        begin
+          i:=0;
+          setlength(Avals,Amid-alo+1);
+          for j:=ALo to AMid do begin
+            {copy lower half of Vals into temporary array AVals}
+            AVals[i]:=Vals[j];
+            inc(i);
+          end;
 
-    i:=0;
-    j:=AMid + 1;
-    k:=ALo;
-    while ((k < j) and (j <= AHi)) do begin
-      {Merge: Compare upper half to copied verasion of the lower half and move the appropriate value (smallest for ascending, largest for descending)
-          into the lower half positions, for equals use Avals to preserve original order}
-      with grid do
-      n:=compare(cells[sortcol,Vals[j]],cells[sortcol,Avals[i]]);
-      if ascending and (n>=0) or ((not ascending) and (n<=0)) then begin
-        Vals[k]:=AVals[i];
-        inc(i);inc(k);
-      end
-      else begin
-        Vals[k]:=Vals[j];
-        inc(k);inc(j);
-      end;
-    end;
+          i:=0;
+          j:=AMid + 1;
+          k:=ALo;
+          while ((k < j) and (j <= AHi)) do begin
+            {Merge: Compare upper half to copied verasion of the lower half and move the appropriate value (smallest for ascending, largest for descending)
+                into the lower half positions, for equals use Avals to preserve original order}
+            with grid do
+            n:=compare(cells[sortcol,Vals[j]],cells[sortcol,Avals[i]]);
+            if ascending and (n>=0) or ((not ascending) and (n<=0)) then begin
+              Vals[k]:=AVals[i];
+              inc(i);inc(k);
+            end
+            else begin
+              Vals[k]:=Vals[j];
+              inc(k);inc(j);
+            end;
+          end;
 
-    {copy any remaining, unsorted, elements}
-    for m:=k to j - 1 do begin
-      Vals[m]:=AVals[i];
-      inc(i);
-    end;
-  end;
+          {copy any remaining, unsorted, elements}
+          for m:=k to j - 1 do begin
+            Vals[m]:=AVals[i];
+            inc(i);
+          end;
+        end;
 
-  {------------ PerformMergeSort ------------}
-  procedure PerformMergeSort(ALo,AHi:Integer);
-  {recursively split the split the value into 2 pieces and merge them back together as we unwind the recursion}
-  var
-     AMid:Integer;
-  begin
-      if (ALo < AHi) then begin
-         AMid:=(ALo + AHi) shr 1;
-         PerformMergeSort(ALo,AMid);
-         PerformMergeSort(AMid + 1,AHi);
-         Merge(ALo,AMid,AHi);
-      end;
-  end;
+        {------------ PerformMergeSort ------------}
+        procedure PerformMergeSort(ALo,AHi:Integer);
+        {recursively split the split the value into 2 pieces and merge them back together as we unwind the recursion}
+        var
+           AMid:Integer;
+        begin
+            if (ALo < AHi) then begin
+               AMid:=(ALo + AHi) shr 1;
+               PerformMergeSort(ALo,AMid);
+               PerformMergeSort(AMid + 1,AHi);
+               Merge(ALo,AMid,AHi);
+            end;
+        end;
 
 begin
   PerformMergeSort(0,high(vals));
@@ -201,14 +209,14 @@ begin
 
    setlength(list,Grid.rowcount-Grid.fixedrows);
    for i:= Grid.fixedrows to Grid.rowcount-1 do begin
-   list[i-Grid.fixedrows]:=i;
-   tempgrid.rows[i].assign(grid.rows[i]);
+      list[i-Grid.fixedrows]:=i;
+      tempgrid.rows[i].assign(grid.rows[i]);
    end;
    {$IfDef StringGridSortProblems} WriteLineToDebugFile('call mergesort'); {$EndIf}
    MergeSort(Grid, list,sortcol+1,datatype, ascending);
    {$IfDef StringGridSortProblems} WriteLineToDebugFile('back from mergesort'); {$EndIf}
    for i:=0 to Grid.rowcount-Grid.fixedrows-1 do begin
-   Grid.rows[i+Grid.fixedrows].assign(tempgrid.rows[list[i]])
+      Grid.rows[i+Grid.fixedrows].assign(tempgrid.rows[list[i]])
    end;
    Grid.row:=Grid.fixedrows;
    {$IfDef StringGridSortProblems} WriteLineToDebugFile('Point 3'); {$EndIf}
@@ -255,7 +263,7 @@ procedure TGridForm.FormCreate(Sender: TObject);
 begin
    OutputHeader := Nil;
    AutoSizeCols := false;
-   HideSortingControls(false);
+   ShowSortingControls(false);
    NumDec := 4;
 end;
 
@@ -368,7 +376,7 @@ begin
 end;
 
 
-procedure TGridForm.HideSortingControls(Show: boolean);
+procedure TGridForm.ShowSortingControls(Show: boolean);
 begin
     BitBtn8.Visible := show;
     BitBtn9.Visible := show;
@@ -605,10 +613,10 @@ end;
 procedure TGridForm.BitBtn8Click(Sender: TObject);
 begin
    {$IfDef StringGridSortProblems} WriteLineToDebugFile('BitBtn8Click in'); {$EndIf}
-   if (Sender = BitBtn8) or (Sender = BitBtn9) then begin
+   if (Sender = BitBtn8) or (Sender = BitBtn9) then begin  //integer
       SortGrid(StringGrid1,0,1,Sender = BitBtn9);
    end
-   else begin
+   else begin     //string
       SortGrid(StringGrid1,-1,0,Sender = BitBtn20);
    end;
    {$IfDef StringGridSortProblems} WriteLineToDebugFile('BitBtn8Click out'); {$EndIf}

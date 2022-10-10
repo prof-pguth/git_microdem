@@ -14,8 +14,8 @@ unit BaseGraf;
        {$Define NoInLine}
        //{$Define RecordGraphMemoryAlocations}
        //{$Define RecordGrafProblems}
-       {$Define RecordScaling}
-       {$Define RecordGrafSize}
+       //{$Define RecordScaling}
+       //{$Define RecordGrafSize}
        //{$Define RecordFormResize}
        //{$Define RecordHistogram}
        //{$Define RecordSaveSeries}
@@ -131,7 +131,26 @@ type
          PointCloudPanorama,
          PointCloudSlice,
          NormalCartesianX,
-         NormalCartesianY : boolean;
+         NormalCartesianY,
+         UserSetVertCycles,
+         UserSetHorizCycles,
+         MonochromeBitmap,
+         CorrectScaling,
+         ForceNewSize,
+         ForcePrinterDPI,
+         LabelPointsAtop,
+         RainBowColors,
+         LLlegend,
+         RedGray,
+         HardColors,
+         ZColorLegend,
+         AutoPointDensity,
+         SkipDrawing,
+         ShowYears,
+         LabelXFromLog,
+         ShowHorizAxis0,
+         ShowVertAxis0,
+         GraphDrawn     : boolean;
          AxisColor : TColor;
          GraphAxes : AxesType;
 
@@ -141,23 +160,6 @@ type
 
          ThirdPlaneConstant,ThirdPlaneThickness : float32;
          TernaryGrid : tTernaryGrid;
-         UserSetVertCycles,
-         UserSetHorizCycles,
-         MonochromeBitmap,
-         CorrectScaling,
-         ForceNewSize,
-         ForcePrinterDPI,
-         LabelPointsAtop,
-         RainBowColors,
-         RedGray,
-         HardColors,
-         ZColorLegend,
-         AutoPointDensity,
-         SkipDrawing,
-         ShowYears,
-         LabelXFromLog,
-         ShowHorizAxis0,
-         GraphDrawn     : boolean;
          Symbol         : tSymbols15;
          ShowLine,
          ShowPoints     : array[1..50] of boolean;
@@ -2021,7 +2023,7 @@ var
       procedure HorizPartOfGraph(Min,Max,Inc : float32; First : boolean);   {x axis ticks and lines}
       var
          PerCen : float32;
-         x,LabelStart,LabelYStart,LabelWidth    : integer;
+         x,i,LabelStart,LabelYStart,LabelWidth    : integer;
 
             procedure DashLine(Max : float32);
             var
@@ -2088,6 +2090,12 @@ var
                    end;
                    PerCen := PerCen + Inc;
                 end {while};
+
+               if  (GraphDraw.GraphAxes in [PartGrid,XTimeYPartGrid]) then begin
+               //draws horizontal lines across the graph area for the major divisions
+                  x := GraphDraw.Graphx(Percen-inc);
+                  for i := GraphDraw.TopMargin to GraphDraw.yWindowSize-GraphDraw.BottomMargin do if (i mod GraphDraw.FullLineFraction = 0) then Bitmap.Canvas.Pixels[x,i] := GraphDraw.AxisColor;
+               end;
              end;
          end;
          if GraphDraw.ShowHorizAxis0 and (GraphDraw.MinHorizAxis < 0) and (GraphDraw.MaxHorizAxis > 0) then begin
@@ -2134,13 +2142,16 @@ var
 
                if  (GraphDraw.GraphAxes in [PartGrid,XTimeYPartGrid]) then begin
                //draws horizontal lines across the graph area for the major divisions
-                  y := GraphDraw.GraphY(Min);
-                  for i := GraphDraw.LeftMargin to GraphDraw.XWindowSize do if (i mod GraphDraw.FullLineFraction = 0) then Bitmap.Canvas.Pixels[i,y] := GraphDraw.AxisColor;
-                  y := GraphDraw.GraphY(Max);
+                  y := GraphDraw.GraphY(Percen-inc);
                   for i := GraphDraw.LeftMargin to GraphDraw.XWindowSize do if (i mod GraphDraw.FullLineFraction = 0) then Bitmap.Canvas.Pixels[i,y] := GraphDraw.AxisColor;
                end;
             end;
          end;
+
+         if GraphDraw.ShowVertAxis0 and (GraphDraw.MinVertAxis < 0) and (GraphDraw.MaxVertAxis > 0) then begin
+            DrawLine(Bitmap,GraphDraw.LeftMargin,GraphDraw.GraphY(0),GraphDraw.XWindowSize-GraphDraw.RightMargin,GraphDraw.GraphY(0));
+         end;
+
 
             if (not First) then begin
                TStr := RealToString(Min,-12,AxisDecimals);
@@ -2269,7 +2280,7 @@ begin {proc CreateGraphAxes}
 
       {$IfDef RecordGraf} WriteLineToDebugFile('tThisBaseGraph.WindowGraphAxes in,  xsize=' + IntToStr(xsize)); {$EndIf}
 
-      if (GraphDraw.GraphLeftLabels <> Nil) and GraphDraw.ShowGraphLeftLabels then begin
+      if (GraphDraw.GraphLeftLabels <> Nil) and (GraphDraw.GraphLeftLabels.Count > 0) and GraphDraw.ShowGraphLeftLabels then begin
          if StrUtils.AnsiContainsText(GraphDraw.GraphLeftLabels.Strings[0],',') then begin
             for I := 1 to GraphDraw.GraphLeftLabels.Count do begin
                TStr := GraphDraw.GraphLeftLabels.Strings[pred(i)];
@@ -2284,7 +2295,7 @@ begin {proc CreateGraphAxes}
          end;
       end;
 
-      if (GraphDraw.GraphBottomLabels <> Nil) and GraphDraw.ShowGraphBottomLabels then begin
+      if (GraphDraw.GraphBottomLabels <> Nil) and (GraphDraw.GraphBottomLabels.Count > 0) and GraphDraw.ShowGraphBottomLabels then begin
          for I := 1 to GraphDraw.GraphBottomLabels.Count do begin
             TStr := GraphDraw.GraphBottomLabels.Strings[pred(i)];
             x1 := StrToInt(BeforeSpecifiedCharacterANSI(Tstr,',',true,true));
@@ -2419,7 +2430,7 @@ var
    BitMap : tMyBitmap;
    w,h : integer;
 begin
-   {$IfDef RecordGraf} writeLineToDebugFile('TThisBaseGraph.SetUpGraphForm ' + intToStr(ClientWidth) + 'x' + intToStr(ClientHeight)); {$EndIf}
+   {$If Defined(RecordGraf) or Defined(RecordGrafSize)} writeLineToDebugFile('TThisBaseGraph.SetUpGraphForm ' + intToStr(ClientWidth) + 'x' + intToStr(ClientHeight)); {$EndIf}
    ScrollBox1.Enabled := true;
    if ScrollGraph then begin
       ScrollBox1.AutoScroll := true;
@@ -2439,14 +2450,14 @@ begin
    Bitmap.Canvas.Font := FontDialog1.Font;
    GetMyFontFromWindowsFont(MDDef.DefaultGraphFont,FontDialog1.Font);
    GraphDraw.SetMargins(Bitmap);
-   {$IfDef RecordGraf} WriteLineToDebugFile('Move to drawgraph'); {$EndIf}
+   {$If Defined(RecordGraf) or Defined(RecordGrafSize)}  WriteLineToDebugFile('Move to drawgraph'); {$EndIf}
    DrawGraph(BitMap);
    if GraphDraw.GraphDrawn and (not GraphDraw.SkipDrawing) then begin
       Image1.Picture.Graphic := Bitmap;
    end;
    Bitmap.Free;
    GraphDraw.GraphDrawn := true;
-   {$IfDef RecordGraf} WriteLineToDebugFile('TThisBaseGraph.SetUpGraphForm done'); {$EndIf}
+   {$If Defined(RecordGraf) or Defined(RecordGrafSize)}  WriteLineToDebugFile('TThisBaseGraph.SetUpGraphForm done'); {$EndIf}
 end;
 
 
@@ -2586,23 +2597,23 @@ var
    xs,ys : float32;
 begin
    if (not MouseIsDown) and (GraphDraw.ForceNewSize or ((not ScrollGraph) and (not SizingWindow))) then begin
-      {$IfDef RecordFormResize} WriteLinetoDebugFile('TThisBaseGraph.FormResize start ' + FormClientWidth(Self)); {$EndIf}
+      {$IfDef RecordFormResize} WriteLinetoDebugFile('TThisBaseGraph.FormResize start ' + FormClientSize(Self)); {$EndIf}
       if GraphDraw.ForceNewSize then begin
          ClientWidth := DefaultClientWidth;
          ClientHeight := DefaultClientHeight;
          GraphDraw.ForceNewSize := false;
-         {$IfDef RecordFormResize} writeLineToDebugFile('TThisBaseGraph.FormResize forced new size ' + FormClientWidth(Self)); {$EndIf}
+         {$IfDef RecordFormResize} writeLineToDebugFile('TThisBaseGraph.FormResize forced new size ' + FormClientSize(Self)); {$EndIf}
       end;
       if GraphDraw.CorrectScaling then begin
          SizingWindow := true;
-         xs := DefaultClientWidth - GraphDraw.LeftMargin;
-         ys := DefaultClientHeight - GraphDraw.BottomMargin - Panel1.Height;
+         xs := GraphDraw.XWindowSize - GraphDraw.LeftMargin;
+         ys := GraphDraw.YWindowSize - GraphDraw.BottomMargin - Panel1.Height;
          {$IfDef RecordFormResize} writeLineToDebugFile('GraphDraw.CorrectScaling,  Pixels on graph area: ' + intToStr(round(xs)) + 'x' + intToStr(round(ys))); {$EndIf}
-         xs := ( GraphDraw.MaxHorizAxis -  GraphDraw.MinHorizAxis) / xs;
-         ys := ( GraphDraw.MaxVertAxis -  GraphDraw.MinVertAxis) / ys;
+         xs := ( GraphDraw.MaxHorizAxis - GraphDraw.MinHorizAxis) / xs;
+         ys := ( GraphDraw.MaxVertAxis - GraphDraw.MinVertAxis) / ys;
          {$IfDef RecordFormResize} writeLineToDebugFile('Pixel dimensions: ' + RealToString(xs,-16,-4) + 'x' + RealToString(ys,-16,-4)); {$EndIf}
-         if (xs < ys) then ClientWidth := round( (GraphDraw.MaxHorizAxis -  GraphDraw.MinHorizAxis) / ys) +  GraphDraw.LeftMargin
-         else ClientHeight := round( (GraphDraw.MaxVertAxis -  GraphDraw.MinVertAxis) / xs * GraphDraw.VertExag) +  GraphDraw.BottomMargin;
+         if (xs > ys) then ClientWidth := round( (GraphDraw.MaxHorizAxis - GraphDraw.MinHorizAxis) / ys) +  GraphDraw.LeftMargin
+         else ClientHeight := round( (GraphDraw.MaxVertAxis - GraphDraw.MinVertAxis) / xs * GraphDraw.VertExag) +  GraphDraw.BottomMargin;
       end;
       if GraphDraw.GraphDrawn then RedrawDiagram11Click(Nil);
       SizingWindow := false;
@@ -3289,23 +3300,69 @@ begin
    GraphDraw.GraphDrawn := false;
    GraphDraw.LabelXFromLog := false;
    GraphDraw.ShowHorizAxis0 := false;
+   GraphDraw.ShowVertAxis0 := false;
+     GraphDraw.RedGray := false;
+     GraphDraw.ShowYears := true;
+     GraphDraw.TopLabel := '';
+     GraphDraw.ThirdLabel := '';
+     GraphDraw.VertLabel2 := '';
+     GraphDraw.UpperLeftText := '';
+     GraphDraw.MarginFreeboard := 25;
+     GraphDraw.GraphType := gtNormal;
+     GraphDraw.HardColors := false;
+     GraphDraw.RainBowColors := false;
+     GraphDraw.LabelPointsAtop := true;
+     GraphDraw.ZColorLegend := false;
+     GraphDraw.SkipDrawing := false;
+     GraphDraw.TernaryGrid := tgRegular;
+     for i := 1 to 255 do begin
+        GraphDraw.FileColors256[i] := ConvertTColorToPlatformColor(WinGraphColors[i mod 15]);
+        GraphDraw.LineSize256[i] := 3;
+     end;
+     for i := 1 to 15 do begin
+        GraphDraw.Symbol[i].DrawingSymbol := Box;
+        GraphDraw.Symbol[i].Color := ConvertTColorToPlatformColor(WinGraphColors[i]);
+        GraphDraw.Symbol[i].Size := 2;
+        GraphDraw.ShowPoints[i] := true;
+        GraphDraw.ShowLine[i] := false;
+     end;
+     GraphDraw.Symbol[1].DrawingSymbol := FilledBox;
+     GraphDraw.Symbol[2].DrawingSymbol := FilledUpTri;
+     GraphDraw.Symbol[3].DrawingSymbol := FilledDiamond;
+     DefaultGraphSettings(GraphDraw);
+     GraphDraw.CorrectScaling := false;
+
+     GraphDraw.DataFilesPlotted := tStringList.Create;
+     GraphDraw.XYZFilesPlotted := tStringList.Create;
+     GraphDraw.DBFLineFilesPlotted := tStringList.Create;
+     GraphDraw.DBFPointFilesPlotted := tStringList.Create;
+     GraphDraw.XYColorFilesPlotted := tStringList.Create;
+     GraphDraw.RawFilesPlotted := Nil;
+     GraphDraw.LegendList := Nil;
+     GraphDraw.GraphTopLabels := Nil;
+     GraphDraw.GraphLeftLabels := Nil;
+     GraphDraw.GraphBottomLabels := Nil;
+     GraphDraw.DataFilesPlottedTable := '';
+     GraphDraw.ForcePrinterDPI := false;
+     GraphDraw.UserSetVertCycles := false;
+     GraphDraw.UserSetHorizCycles := false;
+     GraphDraw.AnnualCycle := false;
+     GraphDraw.Draw1to1Line := false;
+     GraphDraw.DrawRegion := false;
+     GraphDraw.ShowGraphLeftLabels := true;
+     GraphDraw.ShowGraphBottomLabels := true;
+     GraphDraw.LLlegend := false;
+
 
      MapOwner := nil;
      RedrawNow := false;
      HighlightBox := false;
      BoxLineWidth := 2;
-     GraphDraw.RedGray := false;
-     GraphDraw.ShowYears := true;
      SaveGraphName := '';
      RangeGraphName := '';
      GraphFilter := '';
      LLcornerText := '';
      LRcornerText := '';
-
-     GraphDraw.TopLabel := '';
-     GraphDraw.ThirdLabel := '';
-     GraphDraw.VertLabel2 := '';
-     GraphDraw.UpperLeftText := '';
 
      MainMenu1.AutoMerge := Not SkipMenuUpdating;
 
@@ -3320,7 +3377,6 @@ begin
      DefaultClientWidth := MDDef.DefaultGraphXSize;
      DefaultClientHeight := MDDef.DefaultGraphYSize;
 
-     GraphDraw.MarginFreeboard := 25;
 
      if CreateSmallGraph then begin
         DefaultClientWidth := DefaultClientWidth div 2;
@@ -3340,7 +3396,6 @@ begin
 
      {$IfDef RecordGraf} writeLineToDebugFile('TThisBaseGraph.FormCreate 1 ' + intToStr(ClientWidth) + 'x' + intToStr(ClientHeight)); {$EndIf}
 
-     GraphDraw.GraphType := gtNormal;
      Image1.Stretch := true;             //Required for Delphi 6 "feature"
      ScrollBox1.AutoScroll := false;
      ASCIIXYZFile := '';
@@ -3351,30 +3406,10 @@ begin
      Panel1.Height := 0;
      SizingWindow := false;
      ScrollGraph := false;
-     GraphDraw.HardColors := false;
-     GraphDraw.RainBowColors := false;
-     GraphDraw.LabelPointsAtop := true;
-     GraphDraw.ZColorLegend := false;
-     GraphDraw.SkipDrawing := false;
-     GraphDraw.TernaryGrid := tgRegular;
 
      RoseData := Nil;
-     for i := 1 to 255 do begin
-        GraphDraw.FileColors256[i] := ConvertTColorToPlatformColor(WinGraphColors[i mod 15]);
-        GraphDraw.LineSize256[i] := 3;
-     end;
-     for i := 1 to 15 do begin
-        GraphDraw.Symbol[i].DrawingSymbol := Box;
-        GraphDraw.Symbol[i].Color := ConvertTColorToPlatformColor(WinGraphColors[i]);
-        GraphDraw.Symbol[i].Size := 2;
-        GraphDraw.ShowPoints[i] := true;
-        GraphDraw.ShowLine[i] := false;
-     end;
-     GraphDraw.Symbol[1].DrawingSymbol := FilledBox;
-     GraphDraw.Symbol[2].DrawingSymbol := FilledUpTri;
-     GraphDraw.Symbol[3].DrawingSymbol := FilledDiamond;
+
      RoseColor := clLime;
-     DefaultGraphSettings(GraphDraw);
      {$IfDef RecordGraf} writeLineToDebugFile('TThisBaseGraph.FormCreate 2 ' + intToStr(ClientWidth) + 'x' + intToStr(ClientHeight)); {$EndIf}
      GraphDraw.XWindowSize := pred(DefaultClientWidth);
      GraphDraw.YWindowSize := pred(DefaultClientHeight - Panel1.Height - ToolBar1.Height);
@@ -3384,29 +3419,8 @@ begin
      MinZ := 9e39;
      MaxZ := -9e39;
      CanCloseGraph := true;
-     GraphDraw.CorrectScaling := false;
-
-     GraphDraw.DataFilesPlotted := tStringList.Create;
-     GraphDraw.XYZFilesPlotted := tStringList.Create;
-     GraphDraw.DBFLineFilesPlotted := tStringList.Create;
-     GraphDraw.DBFPointFilesPlotted := tStringList.Create;
-     GraphDraw.XYColorFilesPlotted := tStringList.Create;
-     GraphDraw.RawFilesPlotted := Nil;
-     GraphDraw.LegendList := Nil;
-     GraphDraw.GraphTopLabels := Nil;
-     GraphDraw.GraphLeftLabels := Nil;
-     GraphDraw.GraphBottomLabels := Nil;
-     GraphDraw.DataFilesPlottedTable := '';
 
      FontDialog1.Font.Style := [fsBold];
-     GraphDraw.ForcePrinterDPI := false;
-     GraphDraw.UserSetVertCycles := false;
-     GraphDraw.UserSetHorizCycles := false;
-     GraphDraw.AnnualCycle := false;
-     GraphDraw.Draw1to1Line := false;
-     GraphDraw.DrawRegion := false;
-     GraphDraw.ShowGraphLeftLabels := true;
-     GraphDraw.ShowGraphBottomLabels := true;
 
      Petmar.CheckFormPlacement(Self);
      Toolbar1.Visible := true;   //ShowToolBars;
@@ -4559,7 +4573,7 @@ end;
 
 procedure TThisBaseGraph.RedrawDiagram11Click(Sender: TObject);
 var
-   BitMap : tMyBitmap;
+   BitMap,bmp : tMyBitmap;
    LastXi,LastYi,LastYi2,width,
    xi,yi,yi2,i,j,err,NumRead  : integer;
    x      : float32;
@@ -4788,6 +4802,13 @@ begin
           Bitmap.Canvas.Font.Color := clBlack;
           Bitmap.Canvas.TextOut(Bitmap.Width - 3 - Bitmap.Canvas.TextWidth(LRcornerText), Bitmap.Height - Bitmap.Canvas.TextHeight(LRcornerText), RemoveUnderScores(LRcornerText));
        end;
+
+       if GraphDraw.LLlegend then begin
+          bmp := MakeLegend(GraphDraw.LegendList,false);
+          Bitmap.Canvas.Draw(2,Bitmap.Height - 2 - Bmp.Height,bmp);
+          bmp.Free;
+       end;
+
 
       {$If Defined(RecordGrafSize) or Defined(RecordScaling)} WriteLineToDebugFile('RedrawDiagram11Click done, bitmap=' + BitmapSize(Bitmap)); {$EndIf}
 
@@ -5118,7 +5139,7 @@ var
    TStr : shortString;
 begin
    {$IfDef RecordGraphColors} WritelineToDebugFile('TThisBaseGraph.MakeLegend'); {$EndIf}
-   CreateBitmap(Result,1000,25*Flist.Count+5);
+   CreateBitmap(Result,1000,25*Flist.Count - 5);
    MaxLen := 0;
 
    for i := 1 to fList.Count do begin

@@ -1469,6 +1469,7 @@ begin
 
          SaveName := ImageDir;
          GetNewGraphicsFileName('saved image',SaveName);
+         ImageDir := ExtractFilePath(SaveName);
          UserInputName := true;
          {$IfDef RecordBitmapProblems} WriteLineToDebugFile('Selected  fname=' + SaveName);    {$EndIf}
       end;
@@ -1484,28 +1485,28 @@ begin
             if UserInputName then MDdef.DefaultSaveImageType := 4;
             {$IfDef ExGIF}
             {$Else}
-            GIF := TGIFImage.Create;
-            try
-               if MDDef.TransparentGIF then begin
-                  Bitmap.Canvas.Pen.Color := clWhite;
-                  Bitmap.Canvas.Pen.Width := 1;
-                  Bitmap.Canvas.Brush.Style := bsClear;
-                  Bitmap.Canvas.Rectangle(0,0,pred(Bitmap.Width),pred(Bitmap.Height));
-                  GIF.Transparent := true;
+               GIF := TGIFImage.Create;
+               try
+                  if MDDef.TransparentGIF then begin
+                     Bitmap.Canvas.Pen.Color := clWhite;
+                     Bitmap.Canvas.Pen.Width := 1;
+                     Bitmap.Canvas.Brush.Style := bsClear;
+                     Bitmap.Canvas.Rectangle(0,0,pred(Bitmap.Width),pred(Bitmap.Height));
+                     GIF.Transparent := true;
+                  end;
+                  GIF.Assign(Bitmap);
+                  if MDDef.TransparentGIF then begin
+                     i := 0;
+                     GifExt := TGIFGraphicControlExtension.Create(GIF.Images[i]);
+                     GifExt.Transparent := True;
+                     GifExt.TransparentColorIndex := GIF.Images[i].Pixels[0,0];
+                     GIF.Images[i].Extensions.Add(GifExt);
+                  end;
+                  {$IfDef RecordBitmapProblems} WriteLineToDebugFile('Save GIF=' + SaveName);  {$EndIf}
+                  GIF.SaveToFile(SaveName);
+               finally
+                  GIF.Free;
                end;
-               GIF.Assign(Bitmap);
-               if MDDef.TransparentGIF then begin
-                  i := 0;
-                  GifExt := TGIFGraphicControlExtension.Create(GIF.Images[i]);
-                  GifExt.Transparent := True;
-                  GifExt.TransparentColorIndex := GIF.Images[i].Pixels[0,0];
-                  GIF.Images[i].Extensions.Add(GifExt);
-               end;
-               {$IfDef RecordBitmapProblems} WriteLineToDebugFile('Save GIF=' + SaveName);  {$EndIf}
-               GIF.SaveToFile(SaveName);
-            finally
-               GIF.Free;
-            end;
             {$EndIf}
          end
          {$IfDef ExPNG}
@@ -1516,13 +1517,13 @@ begin
             MyPNG.Assign(Bitmap);
 
             {$IfDef RecordPNG}
-            case MyPNG.Header.ColorType of
-               COLOR_PALETTE : writeLineToDebugFile('PNG bitdepth = COLOR_PALETTE');
-               COLOR_RGB      : writeLineToDebugFile('PNG bitdepth = COLOR_RGB');
-               COLOR_RGBALPHA : writeLineToDebugFile('PNG bitdepth = COLOR_RGBALPHA');
-               else writeLineToDebugFile('PNG bitdepth = something else');
-            end;
-            writeLineToDebugFile('Color depth = ' + IntToStr(MyPNG.Header.BitDepth) + '  Compression level = ' + IntToStr(MyPNG.CompressionLevel));
+               case MyPNG.Header.ColorType of
+                  COLOR_PALETTE : writeLineToDebugFile('PNG bitdepth = COLOR_PALETTE');
+                  COLOR_RGB      : writeLineToDebugFile('PNG bitdepth = COLOR_RGB');
+                  COLOR_RGBALPHA : writeLineToDebugFile('PNG bitdepth = COLOR_RGBALPHA');
+                  else writeLineToDebugFile('PNG bitdepth = something else');
+               end;
+               writeLineToDebugFile('Color depth = ' + IntToStr(MyPNG.Header.BitDepth) + '  Compression level = ' + IntToStr(MyPNG.CompressionLevel));
             {$EndIf}
 
             if MDDef.TransparentPNG then begin
@@ -1544,17 +1545,16 @@ begin
             {$IfDef ExJPG}
             {$Else}
                MyJPEG := TJPEGImage.Create;
-            {$IfDef VCL}
-            if (MDdef.DefaultSaveImageType = 3) then begin
-               ReadDefault('Compression (1 [best compression] -- 100 [best image quality])',MDDef.JPEGQuality);
-            end;
-            {$EndIf}
-            MyJPEG.CompressionQuality := MDDef.JPEGQuality;
-            {$IfDef RecordJPEG} WriteLineToDebugFile('Compression=' + IntToStr(SaveQuality) + '  for ' + SaveName);  {$EndIf}
-
-            MyJPEG.Assign(Bitmap);
-            MyJPEG.SaveToFile(SaveName);
-            MyJPEG.Free;
+               {$IfDef VCL}
+               if (MDdef.DefaultSaveImageType = 3) then begin
+                  ReadDefault('Compression (1 [best compression] -- 100 [best image quality])',MDDef.JPEGQuality);
+               end;
+               {$EndIf}
+               MyJPEG.CompressionQuality := MDDef.JPEGQuality;
+               {$IfDef RecordJPEG} WriteLineToDebugFile('Compression=' + IntToStr(SaveQuality) + '  for ' + SaveName);  {$EndIf}
+               MyJPEG.Assign(Bitmap);
+               MyJPEG.SaveToFile(SaveName);
+               MyJPEG.Free;
             {$EndIf}
          end;
       end;

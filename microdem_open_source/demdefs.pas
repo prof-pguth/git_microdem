@@ -29,6 +29,12 @@ uses
    Petmar_types,petmar,PetMar_db,Petmath;
 
 const
+   DEMIXSettingsDir : PathStr = 'h:\wine_contest_settings\';
+   DEMIXresultsDir : PathStr = 'h:\wine_contest_results\';
+   DEMIXrefDataDir : PathStr = 'h:\wine_contest_reference_dems\';
+
+
+const
    WebProgramDownLoadDir = 'https://www.usna.edu/Users/oceano/pguth/microdem/win32/';
    WebDataDownLoadDir = 'https://www.usna.edu/Users/oceano/pguth/downloads/';
    GoogleAPIsURL = 'https://maps.googleapis.com/maps/api/geocode/xml?';   //need for geocoding
@@ -1878,7 +1884,7 @@ type
        MaskMapShow : byte;
        MaskOpacity : byte;
        CurveFlatVal : float32;
-       UseBigElevationColorTables : boolean;
+       //UseBigElevationColorTables : boolean;
        MissingDataBlocksLOS : boolean;
        AssumeNegativeValuesMissing : boolean;
        FilterAllTigerRoads : boolean;

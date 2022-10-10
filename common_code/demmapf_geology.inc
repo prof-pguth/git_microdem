@@ -413,10 +413,17 @@ begin
        PickRotationForm.Memo1.Lines.Insert(0,PickRotationForm.ModelComboBox.Text + '  ' + LatLongDegreeToString(Lat,Long,MDDef.OutPutLatLongMethod));
        if PickRotationForm.CheckBox1.Checked then begin
           PickRotationForm.ThisGraph := tThisBaseGraph.Create(Application);
-          PickRotationForm.ThisGraph.Caption := PickRotationForm.ModelComboBox.Text + ' Plate motions at ' + LatLongDegreeToString(Lat,Long,MDDef.OutPutLatLongMethod);
+          PickRotationForm.ThisGraph.ClientWidth := 1000;
+          PickRotationForm.ThisGraph.ClientHeight := 800;
+
+          PickRotationForm.ThisGraph.Caption := PickRotationForm.ModelComboBox.Text + ' Plate motions ' + LatLongDegreeToString(Lat,Long,VeryShortDegrees);
+          PickRotationForm.ThisGraph.LLCornerText := PickRotationForm.ThisGraph.Caption;
           PickRotationForm.ThisGraph.GraphDraw.CorrectScaling := true;
           PickRotationForm.ThisGraph.GraphDraw.HorizLabel := 'Ve (mm/yr)';
           PickRotationForm.ThisGraph.GraphDraw.VertLabel := 'Vn (mm/yr)';
+          PickRotationForm.ThisGraph.GraphDraw.ShowHorizAxis0 := true;
+          PickRotationForm.ThisGraph.GraphDraw.ShowVertAxis0 := true;
+
           Pts := tStringList.Create;
           Pts.Add('X_COORD,Y_COORD,NAME,SYM_TYPE,SYM_SIZE,SYM_COLOR');
        end;

@@ -9,7 +9,7 @@
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
-   //{$Define RecordPlateRotations}
+   {$Define RecordPlateRotations}
 {$EndIf}
 
 
@@ -335,7 +335,7 @@ var
    Bitmap : tMyBitmap;
    i : integer;
 begin
-   {$IfDef RecordPlateRotations} WriteLineToDebugFile('TPickRotationForm.BitBtn5Click in, cont=' + ContinentComboBox.Text + '  TheDB=' + GISdb[TheDB].MyData.TableName);  {$EndIf}
+   {$IfDef RecordPlateRotations} WriteLineToDebugFile('TPickRotationForm.BitBtn5Click in, cont=' + ContinentComboBox.Text + '  TheDB=' + GISdb[PlatesDB].MyData.TableName);  {$EndIf}
    if (ContinentComboBox.Text <> '') then begin
       MapForm.DoFastMapRedraw;
       ShowHourglassCursor;
@@ -515,8 +515,8 @@ procedure TPickRotationForm.RadioGroup1Click(Sender: TObject);
 begin
    Panel3.Visible := RadioGroup1.ItemIndex in [2];
    Panel4.Visible := RadioGroup1.ItemIndex in [4];
-   GroupBox2.Visible := RadioGroup1.ItemIndex in [1,2];
-   GroupBox3.Visible := RadioGroup1.ItemIndex in [0,3,4];
+   GroupBox2.Visible := RadioGroup1.ItemIndex in [1];
+   GroupBox3.Visible := RadioGroup1.ItemIndex in [0,2,3,4];
 
    ContinentComboBox.Enabled := RadioGroup1.ItemIndex in [1,2];
    ModelComboBox.Enabled := RadioGroup1.ItemIndex in [0,3,4];
@@ -807,9 +807,7 @@ begin
    end
    else begin
       GISdb[PoleTable].MyData.ApplyFilter('TIME = ' + QuotedStr(TimeComboBox.Text) + ' AND PLATE = ' + QuotedStr(Plate1ComboBox.Text));
-      {$IfDef RecordPlateRotations}
-      WriteLineToDebugFile(GISdb[PoleTable].MyData.Filter,true);
-      {$EndIf}
+      {$IfDef RecordPlateRotations} WriteLineToDebugFile(GISdb[PoleTable].MyData.Filter); {$EndIf}
       if (GISdb[PoleTable].MyData.RecordCount = 1) then SetUpValues(GISdb[PoleTable].MyData);
    end;
 end;
@@ -825,20 +823,16 @@ var
    begin
       Box.Items.Clear;
       for i := 0 to pred(DataThere.Count) do Box.Items.Add(DataThere.Strings[i]);
-      for i := 0 to pred(DataThere.Count) do if DataThere.Strings[i] = Box.Text then exit;
-      Box.Text := DataThere.Strings[Num];
+      for i := 0 to pred(DataThere.Count) do if (DataThere.Strings[i] = Box.Text) then exit;
+      Box.Text := '';
    end;
 
 begin
-   {$IfDef RecordPlateRotations}
-   WriteLineToDebugFile('TPickRotationForm.ModelComboBoxChange in ' + ModelComboBox.Text,true);
-   {$EndIf}
+    {$IfDef RecordPlateRotations} WriteLineToDebugFile('TPickRotationForm.ModelComboBoxChange in ' + ModelComboBox.Text); {$EndIf}
     MDDef.PlateModel := ModelComboBox.Text;
     GISdb[MotionTable].MyData.ApplyFilter( 'MODEL=' + QuotedStr(ModelComboBox.Text));
     DataThere := GISdb[MotionTable].MyData.UniqueEntriesInDB('PLATE_NAME');
-    {$IfDef RecordPlateRotations}
-    WriteLineToDebugFile(' continents in model= ' + IntToStr(DataThere.Count));
-    {$EndIf}
+    {$IfDef RecordPlateRotations}  WriteLineToDebugFile(' continents in model= ' + IntToStr(DataThere.Count));  {$EndIf}
     FillComboBox(Plate1ComboBox,0);
     FillComboBox(Plate2ComboBox,1);
     FillComboBox(Plate3ComboBox,2);
@@ -877,7 +871,5 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordPlateRotations}
-   WriteLineToDebugFile('RecordPlateRotations active in plate_rotate');
-   {$EndIf}
+   {$IfDef RecordPlateRotations} WriteLineToDebugFile('RecordPlateRotations active in plate_rotate'); {$EndIf}
 end.

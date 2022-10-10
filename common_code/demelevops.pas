@@ -32,9 +32,6 @@ type
     Image1: TImage;
     ComboBox1: TComboBox;
     Button2: TButton;
-    BitBtn4: TBitBtn;
-    Image2: TImage;
-    CheckBox1: TCheckBox;
     RadioGroup3: TRadioGroup;
     CheckBox4: TCheckBox;
     CheckBox5: TCheckBox;
@@ -122,7 +119,6 @@ begin
       ihsHue := Hue;
       ihsSat := Sat;
       ihsInt := Int;
-      //ihsUseRef := UseRef;
       SettingUp := false;
 
       if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevTerrain then RadioGroup1.ItemIndex := 0
@@ -140,24 +136,8 @@ begin
          RadioGroup1.ItemIndex := 1;
          MapOwner.DoFastMapRedraw;
       end;
-      //ElevOptionsForm.FormStyle := fsStayAtop;
       ElevOptionsForm.Show;
 
-      (*
-      if (ElevOptionsForm.ShowModal <> idCancel) then begin
-         {$IfDef RecordElevColorMapChanges} WriteLineToDebugFile('ElevOptionsForm.ShowModal <> idCancel'); {$EndIf}
-         MDdef.DefaultElevationColors := MapOwner.MapDraw.MapType;
-         MDdef.WaterCheck := CheckBox2.Checked;
-         MDdef.LakeCheck := CheckBox3.Checked;
-         MapOwner.MapDraw.Log10Elev := CheckBox5.Checked;
-         Hue := ihsHue;
-         Sat := ihsSat;
-         Int := ihsInt;
-         UseRef := ihsUseRef;
-         if MapOwner.MapDraw.NeedToRedraw then SetMapType;
-      end;
-      Free;
-      *)
    end;
    {$IfDef RecordElevColorMapChanges} WriteLineToDebugFile('ChangeElevationMap out'); {$EndIf}
 end;
@@ -298,9 +278,9 @@ end;
 
 procedure TElevOptionsForm.FormCreate(Sender: TObject);
 begin
-   Width := 320;
+  //Width := 320;
    Petmar.PlaceFormAtMousePosition(Self);
-   CheckBox1.Checked := MDDef.UseBigElevationColorTables;
+   //CheckBox1.Checked := MDDef.UseBigElevationColorTables;
    CheckBox6.Checked := MDDef.QuickMapRedraw;
    {$IfDef HideHelpButtons} HelpBtn.Visible := false; {$EndIf}
 end;

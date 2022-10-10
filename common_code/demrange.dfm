@@ -7,11 +7,8 @@ inherited RangeCircleForm: TRangeCircleForm
   ClientWidth = 406
   Position = poDefaultSizeOnly
   OnCreate = FormCreate
-  ExplicitLeft = 3
-  ExplicitTop = 3
-  ExplicitWidth = 424
-  ExplicitHeight = 301
-  PixelsPerInch = 96
+  ExplicitWidth = 418
+  ExplicitHeight = 292
   TextHeight = 20
   inherited Bevel1: TBevel
     Width = 185

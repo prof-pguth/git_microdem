@@ -11,8 +11,8 @@ unit dem_nlcd;
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    //{$Define RecordNLCDProblems}
    //{$Define RecordNLCDLegend}
-   {$Define RecordBatch}
-   {$Define RecordBarGraphsDetailed}
+   //{$Define RecordBatch}
+   //{$Define RecordBarGraphsDetailed}
    //{$Define RecordPaletteProblems}
 {$EndIf}
 
@@ -76,23 +76,26 @@ uses
 
 procedure LandCoverBarGraphs(UseTable : boolean; Legend : boolean = true; MaxCat : boolean = true);
 const
-   TopSize = 35;
+   TopSize = 40;
+   EntryHeight = 32;
+   AreaBlank = 12;
 var
    dbName : PathStr;
 
    procedure ASeries(LandCoverfName : PathStr; aTitle : shortstring);
    var
-      NumDrawn : integer;
-      j,x,top,Base : integer;
+      NumDrawn,AreaWidth,TileWidth,
+      j,x,top,NumAreas : integer;
       singleleg,legbmp,bmp : tMyBitmap;
       Table : tMyData;
+      Areas : tStringList;
 
          function DoOne(bbox : sfBoundBox; aLabel : shortstring) : boolean;
          var
             fName : PathStr;
-            NewDEM,NewDB : integer;
+            NewDEM,NewDB,zi: integer;
          begin
-            {$IfDef RecordBatch} WriteLineToDebugFile('Do series=' + aLabel); {$EndIf}
+            {$IfDef RecordBarGraphsDetailed} WriteLineToDebugFile('Do series=' + aLabel); {$EndIf}
             try
                Result := true;
                NewDEM := GDALsubsetimageandopen(bbox,true,LandCoverfName);
@@ -102,6 +105,7 @@ var
                   Result := false;
                end
                else begin
+                  //for (zi > 0) and (zi <= MaxNLCDCategories) and (DEMGlb[MapDraw.DEMonMap].NLCDCats^[zi].UseStat) then begin
                   NewDB := DEMGlb[NewDEM].SelectionMap.MakeNLCDLegend(aLabel);
                   {$IfDef RecordBarGraphsDetailed} WriteLineToDebugFile('Legend made'); {$EndIf}
                   inc(NumDrawn);  //outside loop in case nothing drawn
@@ -112,8 +116,7 @@ var
                   else begin
                      SingleLeg := GISDB[NewDB].BarGraphLegend(false,aLabel);
                      {$IfDef RecordBarGraphsDetailed} WriteLineToDebugFile('Bar graph legend made'); {$EndIf}
-                     bmp.Canvas.Draw(0,TopSize + NumDrawn * singleleg.Height,SingleLeg);
-                     Base := TopSize + NumDrawn * singleleg.Height;
+                     bmp.Canvas.Draw(AreaWidth + TileWidth,Top,SingleLeg);
                      SingleLeg.Destroy;
                      fName := GISDB[NewDB].dbFullName;
                   end;
@@ -126,37 +129,75 @@ var
             end;
          end;
 
-       procedure AddTitle;
+       procedure AddTitle(Xloc : integer = 0);
        begin
-          bmp.canvas.font.Size := 18;
+          bmp.canvas.font.Size := 20;
           bmp.canvas.font.Style := [fsBold];
-          bmp.Canvas.TextOut(5,5,aTitle);
+          bmp.Canvas.TextOut(5 + XLoc,0,aTitle);
+          bmp.Canvas.Font.Size := 14;
        end;
 
    var
       Name : shortstring;
+      ItsDEMIX : boolean;
+      i : integer;
    begin
        {$IfDef RecordBatch} HighLightLineToDebugFile('Do series=' + LandCoverfName); {$EndIf}
        NumDrawn := 0;
-      // NewDEM := 0;
        for j := 0 to MaxNLCDCategories do LandCoverCatsUsed[j] := false;
+
        if UseTable then begin
           Table := tMyData.Create(dbName);
-          CreateBitmap(bmp,1200,100 + Table.RecordCount * 60);
-          AddTitle;
-
-          if Table.FieldExists('DEMIX_TILE') then begin
-             {$IfDef RecordBatch} WriteLineToDebugFile('Start DEMIX tiles'); {$EndIf}
+          ItsDEMIX := Table.FieldExists('DEMIX_TILE') and Table.FieldExists('AREA');
+          Areas := tStringList.Create;
+          if ItsDEMIX then Areas.LoadFromFile(DEMIXSettingsDir +  'demix_areas_sorted_by_lat.txt');
+          CreateBitmap(bmp,2400,100 + (Table.RecordCount * EntryHeight) + pred(Areas.Count) * AreaBlank);
+          bmp.Canvas.Font.Size := 14;
+          {$IfDef RecordBatch} WriteLineToDebugFile('Create bitmap, ' + BitmapSize(bmp)); {$EndIf}
+          Top := TopSize;
+          if ItsDEMIX then begin
+             {$IfDef RecordBatch} WriteLineToDebugFile('Start DEMIX tiles, areas=' + IntToStr(Areas.Count) + '  tiles=' + IntToStr(Table.RecordCount)); {$EndIf}
+             AreaWidth := 0;
+             TileWidth := 0;
+             Table.First;
              while not Table.Eof do begin
-                Name := Table.GetFieldByNameAsString('DEMIX_TILE');
-                DoOne(DEMIXtileBoundingBox(Name),Name);
+                i := Bmp.Canvas.TextWidth(Table.GetFieldByNameAsString('AREA'));
+                if (i > AreaWidth) then AreaWidth := i + 10;
+                i := Bmp.Canvas.TextWidth(Table.GetFieldByNameAsString('DEMIX_TILE'));
+                if (i > TileWidth) then TileWidth := i + 10;
                 Table.Next;
              end;
+             {$IfDef RecordBatch} WriteLineToDebugFile('AreaWidth=' + IntToStr(AreaWidth) + '  TileWidth=' + IntToStr(TileWidth)); {$EndIf}
+
+             AddTitle(AreaWidth + TileWidth);
+
+             for i := 0 to pred(Areas.Count) do begin
+                WMDEM.SetPanelText(0,IntToStr(i) + '/' + IntToStr(Areas.Count) + ' ' + Areas.Strings[i] );
+                Table.ApplyFilter('AREA=' + QuotedStr(Areas.Strings[i]));
+                Name := RemoveUnderScores(Table.GetFieldByNameAsString('AREA'));
+                Bmp.Canvas.TextOut(5,Top + (Table.FiltRecsInDB div 2 * EntryHeight),Name);
+                while not Table.Eof do begin
+                   Name := Table.GetFieldByNameAsString('DEMIX_TILE');
+                   if DoOne(DEMIXtileBoundingBox(Name),'  ') then begin
+                   end
+                   else begin
+                      {$IfDef RecordBatch} HighLightLineToDebugFile('No land type ' + Name); {$EndIf}
+                   end;
+                   Bmp.Canvas.TextOut(AreaWidth + 5,Top,Name);
+                   Top := Top + EntryHeight;
+                   Table.Next;
+                end;
+
+                Top := Top + AreaBlank;
+             end;
+
              {$IfDef RecordBatch} WriteLineToDebugFile('End DEMIX tiles'); {$EndIf}
           end
           else begin
+             AddTitle;
+
              while not Table.Eof do begin
-                DoOne(Table.GetRecordBoundingBox,Table.GetFieldByNameAsString('NAME'));
+                if DoOne(Table.GetRecordBoundingBox,Table.GetFieldByNameAsString('NAME')) then Top := Top + EntryHeight;
                 Table.Next;
              end;
           end;
@@ -167,34 +208,13 @@ var
           AddTitle;
           for j := 1 to MaxDEMDataSets do begin
             if ValidDEM(j) then begin
-               DoOne(DEMGlb[j].SelectionMap.MapDraw.MapCorners.BoundBoxGeo,DEMGlb[j].AreaName);
+               if DoOne(DEMGlb[j].SelectionMap.MapDraw.MapCorners.BoundBoxGeo,DEMGlb[j].AreaName) then Top := Top + EntryHeight;
             end;
           end;
        end;
-
-       (*
-       if Legend then begin
-         CreateBitmap(legbmp,1200,1800);
-         legbmp.canvas.font.Size := 18;
-         legbmp.canvas.font.Style := [fsBold];
-         top := 0;
-         for x := 1 to MaxNLCDCategories do if LandCoverCatsUsed[x] then begin
-            legbmp.Canvas.Brush.Color := ConvertPlatformColorToTColor(DEMGlb[NewDEM].NLCDCats^[x].Color);
-            legbmp.Canvas.Brush.Style := bsSolid;
-            legbmp.Canvas.Rectangle(15,Top+5,35,Top+30);
-            legbmp.Canvas.Brush.Style := bsClear;
-            legbmp.Canvas.TextOut(55,Top+2,DEMGlb[NewDEM].NLCDCats^[x].LongName);
-            inc(Top,30);
-         end;
-         LegBMP.Height := top + TopSize;
-         if (NewDEM <> 0) then CloseSingleDEM(NewDEM);
-
-         Bmp.Height := BMP.Height + top + 25;
-         bmp.Canvas.Draw(0,Base + 20,LegBMP);
-         LegBMP.Destroy;
-       end;
-       *)
+      {$IfDef RecordBatch} WriteLineToDebugFile('Drawing done bitmap, ' + BitmapSize(bmp)); {$EndIf}
       GetImagePartOfBitmap(bmp);
+      {$IfDef RecordBatch} WriteLineToDebugFile('Got image part bitmap, ' + BitmapSize(bmp)); {$EndIf}
       DisplayBitmap(Bmp,'Land cover distribution');
    end;
 
@@ -202,8 +222,7 @@ begin
    {$IfDef RecordBatch} WriteLineToDebugFile('LandCoverBarGraphs in'); {$EndIf}
    try
       HeavyDutyProcessing := true;
-      if UseTable then
-         if not GetFileFromDirectory('bounding box data base','*.dbf',dbName) then exit;
+      if UseTable and (not GetFileFromDirectory('bounding box data base','*.dbf',dbName)) then exit;
       ASeries('h:\landcover\Geomorphon\geomorphon_1KMmaj_GMTEDmd.tif','Geomorphons');
       ASeries('h:\landcover\iwahashi\iwahashi.tif','Iwahashi and Pike');
       ASeries('h:\landcover\Meybeck\Meybeck_1km1.tif','Meybeck and others');

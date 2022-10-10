@@ -160,6 +160,7 @@ uses
    DEMDef_routines,
    DEMCoord,
    DEMeros,
+   Geotiff,
    PetDButils,
    DEM_Manager,
    DEMDataBase,
@@ -814,8 +815,16 @@ end;
          if GetMultipleFiles('Image for band extraction','TIFF|*.tif;*.tiff|IMG|*.img',FilesWanted,DefaultFilter) then begin
             for I := 0 to pred(FilesWanted.Count) do begin
                fName := FilesWanted.Strings[i];
-               NumBands := 84;
-               ReadDefault('bands to extract',NumBands);
+               Numbands := BandsInGeotiff(fName);
+               (*
+               if StrUtils.AnsiContainsText(UpperCase(fName),'_SR_8B_') then NumBands := 8
+               else if StrUtils.AnsiContainsText(UpperCase(fName),'_4B_') then NumBands := 4
+               else if StrUtils.AnsiContainsText(UpperCase(fName),'_3B_') then NumBands := 3
+               else begin
+                  NumBands := 84;
+                  ReadDefault('bands to extract',NumBands);
+               end;
+               *)
                {$IfDef RecordReformat} WriteLineToDebugFile(fName); {$EndIf}
                StartProgress('Extract');
                for j := 1 to NumBands do begin

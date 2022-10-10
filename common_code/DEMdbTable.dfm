@@ -2,8 +2,8 @@ object dbtablef: Tdbtablef
   Left = 62
   Top = 306
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1190
-  ClientWidth = 1406
+  ClientHeight = 1145
+  ClientWidth = 1376
   Color = clBtnFace
   ParentFont = True
   FormStyle = fsMDIChild
@@ -17,21 +17,24 @@ object dbtablef: Tdbtablef
   TextHeight = 20
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 1171
-    Width = 1406
+    Top = 1126
+    Width = 1376
     Height = 19
     Panels = <
       item
         Width = 250
       end>
+    ExplicitTop = 1117
+    ExplicitWidth = 1370
   end
   object Panel2: TPanel
     Left = 0
     Top = 41
-    Width = 1406
+    Width = 1376
     Height = 32
     Align = alTop
     TabOrder = 1
+    ExplicitWidth = 1370
     object BitBtn1: TBitBtn
       Left = 34
       Top = 1
@@ -212,10 +215,11 @@ object dbtablef: Tdbtablef
   object Panel3: TPanel
     Left = 0
     Top = 73
-    Width = 1406
+    Width = 1376
     Height = 41
     Align = alTop
     TabOrder = 2
+    ExplicitWidth = 1370
     object Label2: TLabel
       Left = 12
       Top = 12
@@ -262,10 +266,11 @@ object dbtablef: Tdbtablef
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1406
+    Width = 1376
     Height = 41
     Align = alTop
     TabOrder = 4
+    ExplicitWidth = 1370
     object LOSButton: TSpeedButton
       Left = 40
       Top = 6
@@ -524,10 +529,11 @@ object dbtablef: Tdbtablef
   object Panel7: TPanel
     Left = 0
     Top = 114
-    Width = 1406
+    Width = 1376
     Height = 41
     Align = alTop
     TabOrder = 3
+    ExplicitWidth = 1370
     object RadioGroup2: TRadioGroup
       Left = 20
       Top = 0
@@ -548,8 +554,8 @@ object dbtablef: Tdbtablef
   object DBGrid1: TDBGrid
     Left = 0
     Top = 155
-    Width = 1406
-    Height = 1016
+    Width = 1376
+    Height = 971
     Align = alClient
     TabOrder = 5
     TitleFont.Charset = DEFAULT_CHARSET
@@ -563,8 +569,8 @@ object dbtablef: Tdbtablef
     OnTitleClick = DBGrid1TitleClick
   end
   object StatsPopupMenu1: TPopupMenu
-    Left = 264
-    Top = 512
+    Left = 216
+    Top = 608
     object Countuniquevalues1: TMenuItem
       Caption = 'Count unique values'
       OnClick = Countuniquevalues1Click
@@ -1313,10 +1319,7 @@ object dbtablef: Tdbtablef
       end
       object N1degreetilestocoverrecordsintable1: TMenuItem
         Caption = '1 degree tiles to cover records in table'
-      end
-      object Pointstocheckverticaldatumshift1: TMenuItem
-        Caption = 'Points to check vertical datum shift'
-        OnClick = Pointstocheckverticaldatumshift1Click
+        OnClick = N1degreetilestocoverrecordsintable1Click
       end
       object ransposeforwinecontest1: TMenuItem
         Caption = 'Transpose for wine contest'
@@ -1324,22 +1327,6 @@ object dbtablef: Tdbtablef
       end
       object Graphmeanmedianbyterraincategory1: TMenuItem
         Caption = 'Graphs with various filters (experimental)'
-        object Keymeans1: TMenuItem
-          Caption = 'Key means'
-          OnClick = Keymeans1Click
-        end
-        object Keymeans2: TMenuItem
-          Caption = 'Key medians'
-          OnClick = Keymeans2Click
-        end
-        object Key3params1: TMenuItem
-          Caption = 'Key 3 criteria differences from reference DEM'
-          OnClick = Key3params1Click
-        end
-        object N7Elevationdifferencecriteria1: TMenuItem
-          Caption = '7 Elevation difference criteria'
-          OnClick = N7Elevationdifferencecriteria1Click
-        end
         object PickParam1: TMenuItem
           Caption = 'Pick criterion to see differences from reference DEM'
           OnClick = PickParam1Click
@@ -1365,29 +1352,36 @@ object dbtablef: Tdbtablef
         Caption = 'Graph avereage scores by terrain categories'
         OnClick = Graphavereagescoresbyterraincategories1Click
       end
-      object BestDEMbycategory1: TMenuItem
-        Caption = 'Calculate average score by criterion and filters (Best DEM)'
-        OnClick = BestDEMbycategory1Click
-      end
-      object RankDEMs1: TMenuItem
-        Caption = 'Rank DEMs and find best'
-        OnClick = RankDEMs1Click
+      object FriedmanTest1: TMenuItem
+        Caption = 'Friedman Test'
+        OnClick = FriedmanTest1Click
       end
       object Sumscores1: TMenuItem
         Caption = 'Sum scores based on active filters'
         OnClick = Sumscores1Click
+      end
+      object N47: TMenuItem
+        Caption = '-'
+      end
+      object RankDEMs1: TMenuItem
+        Caption = 'Rank DEMs and find best by criterion and tile'
+        OnClick = RankDEMs1Click
       end
       object COPoALOS1: TMenuItem
         Caption = 'COP or ALOS shootout'
         OnClick = COPoALOS1Click
       end
       object BestDEMpertilebycriteria1: TMenuItem
-        Caption = 'Best DEM per tile, by criteria'
+        Caption = 'Graphs best DEM per tile, by criteria'
         OnClick = BestDEMpertilebycriteria1Click
       end
-      object FriedmanTest1: TMenuItem
-        Caption = 'Friedman Test'
-        OnClick = FriedmanTest1Click
+      object BestDEMbycategory1: TMenuItem
+        Caption = 'Graph best DEM (average score) for criteria and filters '
+        OnClick = BestDEMbycategory1Click
+      end
+      object N7Elevationdifferencecriteria1: TMenuItem
+        Caption = 'Graph difference values by DEMIX tile'
+        OnClick = N7Elevationdifferencecriteria1Click
       end
     end
     object N13: TMenuItem
@@ -1407,7 +1401,7 @@ object dbtablef: Tdbtablef
   end
   object PlotPopupMenu2: TPopupMenu
     Left = 352
-    Top = 512
+    Top = 608
     object Colorcodebynumericfield1: TMenuItem
       Caption = 'Color code by DB numeric field'
       OnClick = Colorcodebynumericfield1Click
@@ -1772,6 +1766,17 @@ object dbtablef: Tdbtablef
     object N12: TMenuItem
       Caption = '-'
     end
+    object Exportsortedtable1: TMenuItem
+      Caption = 'Export sorted table'
+      object Ascending1: TMenuItem
+        Caption = 'Ascending'
+        OnClick = Ascending1Click
+      end
+      object Descending1: TMenuItem
+        Caption = 'Descending'
+        OnClick = Descending1Click
+      end
+    end
     object Shapefilesubset1: TMenuItem
       Caption = 'Export shape file'
       object Currentfilter1: TMenuItem
@@ -1824,6 +1829,14 @@ object dbtablef: Tdbtablef
     object Create1: TMenuItem
       Caption = 'Create shapefile with outline all databases'
       OnClick = Create1Click
+    end
+    object CreateDBwithcornersandcenterofeveryrecord1: TMenuItem
+      Caption = 'Create DB with corners and center of every record'
+      OnClick = CreateDBwithcornersandcenterofeveryrecord1Click
+    end
+    object Createshapefilewithboundingboxforeachrecord1: TMenuItem
+      Caption = 'Create KML with bounding box for each record'
+      OnClick = Createshapefilewithboundingboxforeachrecord1Click
     end
     object N15: TMenuItem
       Caption = '-'
@@ -3380,7 +3393,7 @@ object dbtablef: Tdbtablef
     Top = 384
   end
   object PopupMenu9: TPopupMenu
-    Left = 432
+    Left = 536
     Top = 384
     object Plotfanlocations1: TMenuItem
       Caption = 'Plot fan locations'
@@ -3544,6 +3557,10 @@ object dbtablef: Tdbtablef
           Caption = 'Retain first n characters'
           OnClick = Retainfirstncharacters1Click
         end
+        object Alphabetize1: TMenuItem
+          Caption = 'Alphabetize'
+          OnClick = Alphabetize1Click
+        end
         object Trimblanks1: TMenuItem
           Caption = 'Trim blanks'
           OnClick = Trimblanks1Click
@@ -3604,8 +3621,8 @@ object dbtablef: Tdbtablef
     end
   end
   object PopupMenu10: TPopupMenu
-    Left = 520
-    Top = 384
+    Left = 640
+    Top = 288
     object Picklineonmap1: TMenuItem
       Caption = 'Pick line on map'
       OnClick = Picklineonmap1Click
@@ -3639,8 +3656,8 @@ object dbtablef: Tdbtablef
     Top = 312
   end
   object PopupMenu3: TPopupMenu
-    Left = 600
-    Top = 376
+    Left = 512
+    Top = 288
     object ValuesfromDB1: TMenuItem
       Caption = 'Values from DB'
       OnClick = ValuesfromDB1Click

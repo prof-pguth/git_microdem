@@ -163,6 +163,7 @@ type
 
 
 procedure CaptureBMPInGeoTIFF(MapDraw : tMapDraw; FileName : PathStr; Image1 : tImage; MonoImage : boolean = false);
+function BandsInGeotiff(fName : PathStr) : integer;
 
 
 {$IfDef VCL}
@@ -209,6 +210,21 @@ var
    CurrentMissing : float32;
 const
    GeotiffDatumDefaultString = 'GeoTIFF save only works with NAD or WGS datums; default to WGS84';
+
+
+function BandsInGeotiff(fName : PathStr) : integer;
+var
+  TiffImage : tTiffImage;
+  Success : boolean;
+  MapProjection : tMapProjection;
+  RegVars : tRegVars;
+begin
+   TiffImage := tTiffImage.CreateGeotiff(MapProjection,RegVars,false,fName,success);
+   if Success then Result := TiffImage.TiffHeader.SamplesPerPixel
+   else Result := 0;
+   TiffImage.Destroy;
+end;
+
 
 
 function GeotiffTypeSize(ftype : integer) : integer;
@@ -1455,7 +1471,8 @@ var
                TStr := ASCIIStr;
                if StrUtils.AnsiContainsText(TStr,'mdz=') then begin
                   UTMString := TStr;
-                  BeforeSpecifiedCharacterANSI(UTMString,'=',true,true);
+                  TStr := BeforeSpecifiedCharacterANSI(UTMString,'=',true,true);
+                  TStr := BeforeSpecifiedCharacterANSI(UTMString,'=',true,true);
                   TiffHeader.MDZtype := StrToInt(trim(BeforeSpecifiedCharacterANSI(UTMString,'/',true,true)));
                   exit;
                end;
@@ -1691,6 +1708,7 @@ var
                          end;
                   1026 : TStr := ASCIIStr;
                   2048 : begin
+                             //horizontal datum
                              TStr := MapProjection.ProcessTiff2048(TiffOffset);
                              if (TStr <> '') and (TStr <> 'User defined') then begin
                                 DefineGCScoordinates;
@@ -1774,7 +1792,7 @@ var
                MapProjection.H_datumcode := 'NAD83';  //vmDatum := MapProjNAD83;
             end;
 
-            HaveRegistration := true;
+            //HaveRegistration := true;
 
             {$If Defined(RecordDefineDatum) or Defined(RecordPlateCaree)}
                WriteLineToDebugFile('Before (GeoASCIIParamsOffset <> 0) Datum code: ' + MapProjection.H_datumCode);
@@ -2181,14 +2199,14 @@ var
       TiffHeader.SMin := -9999;
       TiffHeader.MDZtype := 0;
       TiffHeader.OffsetArray := Nil;
-      MapProjection.H_datumCode := '';
       DatCode := -99;
 
-      if (MapProjection = Nil) then begin
+      //if (MapProjection = Nil) then begin
          MapProjection := BaseMap.tMapProjection.Create('geotiff');
          MapProjection.ProjCoordTransGeoKey := -99;
+         MapProjection.H_datumCode := '';
          {$If Defined(LongCent)} writeLineToDebugFile('Read Geotiff MapProjection created,  LongCent: ' + RadToDegString(MapProjection.Long0)); {$EndIf}
-      end;
+      //end;
    end;
 
 
@@ -2322,9 +2340,9 @@ begin
             if (not FileExists(HistogramLandsatName(TIFFFileName))) then begin
                GetHistogramDBF(BandNum);
                {$IfDef RecordMinMax}
-               for i := 1 to SamplesPerPixel do begin
-                  HeaderLogList.Add('Sample range after 16 bit histogram, Band ' + IntToStr(i)  + RealToString(MinSampleValue[i],12,-4) + RealToString(MaxSampleValue[i],12,-4));
-               end;
+                  for i := 1 to SamplesPerPixel do begin
+                     HeaderLogList.Add('Sample range after 16 bit histogram, Band ' + IntToStr(i)  + RealToString(MinSampleValue[i],12,-4) + RealToString(MaxSampleValue[i],12,-4));
+                  end;
                {$EndIf}
             end;
             {$IfDef RecordMinMax} WriteLineToDebugFile('Point 2  Min sample='+IntToStr(TiffHeader.MinSampleValue[1]) + ' Max sample=' + IntToStr(TiffHeader.MaxSampleValue[1]); {$EndIf}
@@ -2494,42 +2512,3 @@ end.
 
 
 
-
-https://docwiki.embarcadero.com/Libraries/Sydney/en/System.SysUtils.FileSeek
-https://docwiki.embarcadero.com/Libraries/Sydney/en/System.SysUtils.FileOpen
-
-
-
-https://codeverge.com/embarcadero.delphi.non-tech/i-o-error-131-when-trying-to-seek/1086393
-this was in the early 2010's
-
- var
-  fs: TFileStream;
-  binrecord : BIN_rec;
-  recpnt : int64;
-begin
-  fs := TFileStream.Create(binname, fmOpenRead or fmShareDenyWrite);
-  try
-    recpnt := 0;
-    while not (fs.position > fs.size) do
-         begin
-             fs.seek(recpnt*SizeOf(BIN_rec),soBeginning);
-             fs.readbuffer(binrecord, SizeOf(BIN_rec));
-             inc(recpnt);
-             // use binrecord
-         end;
-  finally
-    fs.free;
-  end;
-end;
-{code}
-Note that the TStream.Seek seeks number of bytes, not records(as seek for typed files does).
-In another post you said you can't avoid the seek function (you obviously sometimes jump back and
-forth during reading), therefore the offset calculation.
-
-Cheers
-Tom
-
---
-Tom Brunberg
-firstname.surname@welho.com

@@ -707,7 +707,7 @@ begin
          ColorTable.ApplyFilter('PALETTE=' + QuotedStr(ElevationFixedPalette));
          {$IfDef RecordElevColorFromTable} WriteLineToDebugFile('Table open'); {$EndIf}
          tf := 1;
-         if MDDef.UseBigElevationColorTables and (ColorTable.FiltRecsInDB > 256) then begin
+         if {MDDef.UseBigElevationColorTables and} (ColorTable.FiltRecsInDB > 256) then begin
             New(ZColorTable.ZBigTableValue);
             New(ZColorTable.ZBigTableColors);
          end
@@ -722,7 +722,7 @@ begin
          ZColorTable.ZTableEntries := 0;
          while not ColorTable.Eof do begin
             inc(ZColorTable.ZTableEntries);
-            if MDDef.UseBigElevationColorTables and (ColorTable.FiltRecsInDB > 256) then begin
+            if {MDDef.UseBigElevationColorTables and} (ColorTable.FiltRecsInDB > 256) then begin
                ZColorTable.zBigTableValue^[ZColorTable.ZTableEntries] := ColorTable.GetFieldByNameAsFloat('MAX');
                if (ZColorTable.zBigTableValue^[ZColorTable.ZTableEntries] >= MinMapElev) then begin
                   ZColorTable.zBigTableColors^[ZColorTable.ZTableEntries] := ColorTable.PlatformColorFromTable;

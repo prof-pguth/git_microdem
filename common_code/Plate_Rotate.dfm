@@ -17,7 +17,6 @@ object PickRotationForm: TPickRotationForm
   Visible = True
   OnClose = FormClose
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Memo1: TMemo
     Left = 0
@@ -27,6 +26,7 @@ object PickRotationForm: TPickRotationForm
     Align = alTop
     ScrollBars = ssVertical
     TabOrder = 0
+    ExplicitWidth = 266
   end
   object GroupBox3: TGroupBox
     Left = 0
@@ -36,6 +36,7 @@ object PickRotationForm: TPickRotationForm
     Align = alTop
     Caption = 'Spreading Rates'
     TabOrder = 1
+    ExplicitWidth = 266
     object Label13: TLabel
       Left = 136
       Top = 16
@@ -111,6 +112,7 @@ object PickRotationForm: TPickRotationForm
     Height = 41
     Align = alTop
     TabOrder = 2
+    ExplicitWidth = 266
     object BitBtn12: TBitBtn
       Left = 118
       Top = 3
@@ -143,6 +145,7 @@ object PickRotationForm: TPickRotationForm
     Align = alTop
     Alignment = taRightJustify
     TabOrder = 3
+    ExplicitWidth = 260
     object Label12: TLabel
       Left = 7
       Top = 120
@@ -272,6 +275,7 @@ object PickRotationForm: TPickRotationForm
     Align = alTop
     Alignment = taLeftJustify
     TabOrder = 4
+    ExplicitWidth = 266
     object Label1: TLabel
       Left = 8
       Top = 8
@@ -420,6 +424,7 @@ object PickRotationForm: TPickRotationForm
     Align = alTop
     Caption = 'Map'
     TabOrder = 5
+    ExplicitWidth = 260
     object BitBtn4: TBitBtn
       Left = 167
       Top = 12
@@ -488,6 +493,7 @@ object PickRotationForm: TPickRotationForm
     Color = clWhite
     ParentBackground = False
     TabOrder = 6
+    ExplicitWidth = 260
     object ComboBox6: TComboBox
       Left = 142
       Top = 13
@@ -665,6 +671,7 @@ object PickRotationForm: TPickRotationForm
     Align = alTop
     Caption = 'Total pole reconstruction'
     TabOrder = 7
+    ExplicitWidth = 266
     object Label6: TLabel
       Left = 130
       Top = 79

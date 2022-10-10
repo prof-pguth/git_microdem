@@ -19,19 +19,19 @@ uses
    Petmar_db,
    Data.DB,
    {$IfDef UseFireDacSQLlite}
-   FireDAC.Comp.Client, FireDAC.Comp.Dataset,FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteWrapper,
+      FireDAC.Comp.Client, FireDAC.Comp.Dataset,FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteWrapper,
    {$EndIf}
 
    {$IfDef UseBDETables}
-   dbTables,
+      dbTables,
    {$EndIf}
 
    {$IfDef UseTDBF}
-   dbf,
+      dbf,
    {$EndIf}
 
    {$IfDef UseTCLientDataSet}
-   DBClient,
+      DBClient,
    {$EndIf}
 //end for inline of the core DB functions
 
@@ -219,7 +219,5 @@ end;
 initialization
    Fres_blockf := Nil;
 finalization
-   {$IfDef RecordFresnelProblems}
-   WriteLineToDebugFile('RecordFresnelProblems active in Fresnel_block_form');
-   {$EndIf}
+   {$IfDef RecordFresnelProblems} WriteLineToDebugFile('RecordFresnelProblems active in Fresnel_block_form'); {$EndIf}
 end.

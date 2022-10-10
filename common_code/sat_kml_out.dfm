@@ -2,8 +2,8 @@ object KML_overlay_setup: TKML_overlay_setup
   Left = 0
   Top = 0
   Caption = 'KML Overlay setup'
-  ClientHeight = 218
-  ClientWidth = 382
+  ClientHeight = 191
+  ClientWidth = 364
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -11,7 +11,6 @@ object KML_overlay_setup: TKML_overlay_setup
   Font.Name = 'Tahoma'
   Font.Style = []
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Image1: TImage
     Left = 224

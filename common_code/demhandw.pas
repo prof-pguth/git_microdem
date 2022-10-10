@@ -3132,7 +3132,6 @@ begin
    FilesWanted := tStringList.Create;
    FilesWanted.Add(MainMapData);
    if GetMultipleFiles('Files to download','Text or csv*.txt;*.csv',FilesWanted,DefFilter) then begin
-   //GetFileFromDirectory('Files to download','*.txt;*.csv',InPut);
       for f := 0 to pred(FilesWanted.Count) do begin
          Input := FilesWanted.Strings[f];
          Memo1.Visible := true;
@@ -3143,8 +3142,6 @@ begin
             FileList.LoadFromFile(Input);
             OutPath := ExtractFilePath(Input) + ExtractFileNameNoExt(Input) + '\';
             SafeMakeDir(OutPath);
-            //OutPath := MainMapData;
-            //GetDosPath('Output',OutPath);
             Memo1.Visible := true;
             Memo1.Lines.Add(TimeToStr(Now) + ' start download, files= ' + IntToStr(FileList.Count));
             wmdem.SetPanelText(3,'Started: ' + TimeToStr(Now));
@@ -3227,11 +3224,7 @@ begin
       TheList := TStringList.Create;
       TheList.LoadFromFile(FName);
       fName := changeFileExt(fName,'.shp');
-      //Table := Nil;
-
       ShapeFileCreator := tShapeFileCreation.Create(WGS84DatumConstants,fName,true,15);
-      //ShapeFileCreator.OpenDataTableSL('PLATE,LAT_LOW,LAT_HI,LONG_LOW,LONG_HI');
-
       for i := 0 to pred(TheList.Count) do begin
          aline := trim(TheList.Strings[i]);
          if (length(aline) = 2) then begin
@@ -3245,7 +3238,6 @@ begin
          end;
       end;
       DoARecord;
-      //ShapeFileCreator.DataTableSL.SaveToFile('c:\temp\test.csv');
       ShapeFileCreator.CloseShapeFiles;
       TheList.Free;
       ShowDefaultCursor;
@@ -3258,10 +3250,6 @@ begin
    PrepOSMFiles;
 end;
 
-//procedure TDemHandForm.Quickclassification1Click(Sender: TObject);
-//begin
-   //{$IfDef Include2019datafusion} QuickClass(Memo1); {$EndIf}
-//end;
 
 procedure TDemHandForm.ToUTM1Click(Sender: TObject);
 begin
@@ -3453,9 +3441,6 @@ procedure TDemHandForm.LASGeotoUTM1Click(Sender: TObject);
                PickUTMzone(MDDef.DefaultUTMZone);
                if AnswerIsYes('Are elevations in feet') then elevparams := ' -elevation_feet';
             end;
-           // zone := MDDef.DefaultUTMZone;
-           // ch := MDDef.DefaultLatHemi;
-
             DefaultFilter := 1;
             fName := MainMapData;
 
@@ -3466,7 +3451,6 @@ procedure TDemHandForm.LASGeotoUTM1Click(Sender: TObject);
 
             if GetMultipleFiles('input LAS file','Lidar files|*.las;*.laz|*.laz|LAS files|*.las|LAZ files|*.laz',theFileNames,DefaultFilter) then begin
                DeleteOriginalFiles := AnswerIsYes('Delete original files');
-
 
                for I := 0 to pred(TheFileNames.Count) do begin
                   fName := theFileNames.Strings[i];
@@ -3623,7 +3607,6 @@ begin
    GetDOSPath('input DEMs with ' + TStr,DataPath);
    if (Sender = ASCfiles1) then OutPath := DataPath  //these will replace the ASC files
    else GetDOSPath('DEM output',OutPath);
-   //OutPath := DataPath;
 
    TheFiles := Nil;
    Memo1.Visible := true;
@@ -3738,10 +3721,10 @@ end;
 
 procedure TDemHandForm.ISOGravity1Click(Sender: TObject);
 begin
-{$IfDef ExGeology}
-{$Else}
-   ImportISOGravity;
-{$EndIf}
+   {$IfDef ExGeology}
+   {$Else}
+      ImportISOGravity;
+   {$EndIf}
 end;
 
 
@@ -3768,7 +3751,7 @@ begin
         end;
      end;
    end;
-   outf.SaveToFile('c:\temp\test.txt');
+   outf.SaveToFile(MDtempdir + 'vert_datums_test.txt');
    PetDButils.StringList2CSVtoDB(outF,MDtempdir + 'vert_datum_grids.dbf');
 end;
 
@@ -3895,6 +3878,7 @@ begin
    end;
    theFileNames.Free;
 end;
+
 
 procedure TDemHandForm.GeoJSONP1Click(Sender: TObject);
 begin
@@ -4052,7 +4036,6 @@ begin
       FileList.Free;
    end;
 end;
-
 
 
 procedure TDemHandForm.Icesat1Click(Sender: TObject);
@@ -4327,20 +4310,6 @@ var
    RetainHeader : boolean;
    NewList : tStringList;
    tfile : system.Text;
-
-      procedure CheckLine;
-      begin
-         if ( (i=0) and RetainHeader) then  NewList.Add(aLine)
-         else begin
-            if StrUtils.AnsiContainsText(UpperCase(aLine),UpperCase(SubString)) then begin
-               if (SecondString = '') or StrUtils.AnsiContainsText(UpperCase(aLine),UpperCase(SecondString)) then begin
-                  NewList.Add(aLine);
-                  inc(j);
-               end;
-            end;
-         end;
-      end;
-
 begin
    FName := MainMapData;
    if GetFileFromDirectory('ASCII find substring','*.*',FName) then begin
@@ -4357,7 +4326,15 @@ begin
       i := 0;
       while not eof(tFile) do begin
          readln(tfile,aLine);
-         CheckLine;
+         if ( (i=0) and RetainHeader) then  NewList.Add(aLine)
+         else begin
+            if StrUtils.AnsiContainsText(UpperCase(aLine),UpperCase(SubString)) then begin
+               if (SecondString = '') or StrUtils.AnsiContainsText(UpperCase(aLine),UpperCase(SecondString)) then begin
+                  NewList.Add(aLine);
+                  inc(j);
+               end;
+            end;
+         end;
          inc(i);
          if (i mod 1000 = 0) then begin
              StatusBar1.Panels[0].Text := 'Lines=' + IntToStr(i) + '  matches=' + IntToStr(j);

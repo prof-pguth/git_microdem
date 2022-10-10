@@ -22,7 +22,7 @@ unit demlosw;
       //{$Define RecordUTMZones}
       //{$Define RecordSlopeCalc}
       //{$Define RecordLOSLegend}
-      {$Define RecordLOSProblems}
+      //{$Define RecordLOSProblems}
       //{$Define RecordLOSPrettyDrawing}
       //{$Define RecordRandomProfiles}
       //{$Define RecordWaveLenghtHeightProblems}
