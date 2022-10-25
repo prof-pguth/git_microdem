@@ -1,11 +1,11 @@
 unit petmar;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of ianMICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch    }
-{ Released under the MIT Licences    }
-{ Copyright (c) 2015 Peter L. Guth   }
-{____________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2022 Peter L. Guth  }
+{___________________________________}
 
 
 {$I nevadia_defines.inc}
@@ -25,6 +25,7 @@ unit petmar;
       //{$Define RecordDialogs}
       //{$Define ShowProgressBarSize}
       //{$Define RecordFileDelection}
+
       //{$Define RecordHelp}
       //{$Define TrackFileDeletion}
       //{$Define RecordRandomize}
@@ -1249,8 +1250,6 @@ end;
                             Inlist.Delete(i);
                          end;
                       end;
-                   end
-                   else begin
                    end;
                end;
                PetList.Destroy;
@@ -3250,7 +3249,9 @@ begin
           Options := [fdoPickFolders];
           FileName := LastSubDir(Path);
           DefaultFolder := GetParentDirectory(Path);
-          if Execute then Path := FileName + '\'
+          if Execute then begin
+             if Path[length(Path)] <> '\' then Path := FileName + '\';
+          end
           else Path := '';
           Result := Path <> '';
         finally

@@ -4,7 +4,7 @@
 { Part of ianMICRODEM GIS Program    }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
-{ Copyright (c) 2016 Peter L. Guth   }
+{ Copyright (c) 2022 Peter L. Guth   }
 {____________________________________}
 
 
@@ -185,6 +185,8 @@ function MrSidEnabled : boolean;
 procedure SetGazDefaults;
 procedure SetGeologyOptions(Allow : boolean);
 procedure SetFlatProfile;
+
+procedure SetDEMIXdirs(Ask : boolean = false);
 
 procedure SetSmallGraphs;
 procedure SetDefaultDirectories;
@@ -1483,6 +1485,10 @@ var
             AParameter('Geomorph','ElevBinSize',ElevBinSize,1);
             AParameterShortFloat('Geomorph','HistBinSize',HistBinSize,1);
             AParameterShortFloat('Geomorph','BicubicSlope',BicubicSlope,1);
+
+            AParameterShortFloat('Geomorph','ElevHistBinSize',ElevHistBinSize,5);
+            AParameterShortFloat('Geomorph','SlopeHistBinSize',SlopeHistBinSize,2.5);
+
             AColorParameter('Geomorph','GrainColor',GrainColor,claRed);
 
             {$IfDef ExGeomorphGrids}
@@ -2356,6 +2362,9 @@ var
             AParameter('Files','LastOSMoverlay',LastOSMoverlay,'');
             AParameter('Files','MapLibDir',MapLibDir,'');
             AParameter('Files','DEMIX_criterion_tolerance_fName',DEMIX_criterion_tolerance_fName,'');
+            AParameter('Files','DEMIX_base_dir',DEMIX_base_dir,'');
+            AParameter('Files','DEMIX_xsize',DEMIX_xsize,900);
+            AParameter('Files','DEMIX_ysize',DEMIX_ysize,600);
 
             {$IfDef ExGDAL}
             {$Else}
@@ -3578,6 +3587,7 @@ begin
       AParameter('Buffers','ShapeLineBufferDist',ShapeLineBufferDist,250);
       AParameter('Buffers','ShapeAreaBufferDist',ShapeAreaBufferDist,250);
       AParameter('Buffers','TreatLineAsPolygon',TreatLineAsPolygon,false);
+      AParameter('Buffers','TreatPolygonAsLine',TreatPolygonAsLine,false);
 
       AColorParameter('Buffers','MapMaskColor',MapMaskColor,claRed);
       AParameter('Buffers','MaskOpacity',MaskOpacity,50);
@@ -4426,10 +4436,41 @@ end;
 {$EndIf}
 
 
+
+
+procedure SetDEMIXdirs(Ask : boolean = false);
+//the option to get a path failed with a root directory, and we have enough hard coded that we did not want to change
+var
+   Ch : ansichar;
+begin
+   if PathIsValid(DEMIXSettingsDir) and PathIsValid(DEMIXresultsDir) and PathIsValid(DEMIXrefDataDir) then exit;
+   ch := 'B';
+   repeat
+      inc(ch);
+      MDDef.DEMIX_base_dir := ch + ':\';
+      DEMIXSettingsDir := MDDef.DEMIX_base_dir + 'wine_contest_settings\';
+      DEMIXresultsDir := MDDef.DEMIX_base_dir + 'wine_contest_results\';
+      DEMIXrefDataDir := MDDef.DEMIX_base_dir +'wine_contest_reference_dems\';
+   until (ch = 'Z') or (PathIsValid(DEMIXSettingsDir) and PathIsValid(DEMIXresultsDir) and PathIsValid(DEMIXrefDataDir));
+   if (ch = 'Z') then MDDef.DEMIX_base_dir := 'DEMIX_MIA';
+
+(*
+   if Ask then GetDOSPath('DEMIX data',MDDef.DEMIX_base_dir);
+
+   if PathIsValid(MDDef.DEMIX_base_dir) then begin
+      DEMIXSettingsDir := MDDef.DEMIX_base_dir + 'wine_contest_settings\';
+      DEMIXresultsDir := MDDef.DEMIX_base_dir + 'wine_contest_results\';
+      DEMIXrefDataDir := MDDef.DEMIX_base_dir +'wine_contest_reference_dems\';
+      SafeMakeDir(DEMIXSettingsDir);
+      SafeMakeDir(DEMIXresultsDir);
+      SafeMakeDir(DEMIXrefDataDir);
+   end;
+*)
+end;
+
 procedure SetRootDirectoryFiles;
 begin
     {$IfDef RecordInitialization} WriteLineToDebugFile('SetRootDirectoryFiles in'); {$EndIf}
-
     GT_Datum_fName := ProgramRootDir + 'gt_datum' + DefaultDBExt;
     GT_Ellipse_fName := ProgramRootDir + 'gt_ellips' + DefaultDBExt;
     LasRulesName := ProgramRootDir + 'las_codes_v4' + DefaultDBExt;
@@ -4446,6 +4487,8 @@ begin
     if PathIsValid(ProgramRootDir + 'esri_proj') then begin
        RenameFile(ProgramRootDir + 'esri_proj', ExtractFilePath(WKT_GCS_Proj_fName));
     end;
+
+    SetDEMIXdirs;
 
     {$IfDef ExTIGER}
     {$Else}
@@ -4592,7 +4635,6 @@ begin
 
    //needed if map library is on an external drive and has changed
    if (MapLibDir <> '') and (not PathIsValid(MapLibDir)) then PickMapIndexLocation;
-   if (MDDef.DEMIX_criterion_tolerance_fName = '') then MDDef.DEMIX_criterion_tolerance_fName := ProgramRootDir + 'demix_criterion_tolerance.dbf';
 
    {$IfDef MessageStartupUnit} MessageToContinue('end demdefs setdefaultdirectories'); {$EndIf}
    {$IfDef RecordInitialization} WriteLineToDebugFile('SetDefaultDirectories in, MainMapData=' + MainMapData); {$EndIf}

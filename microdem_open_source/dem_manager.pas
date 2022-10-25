@@ -4,7 +4,7 @@ unit dem_manager;
 { Part of ianMICRODEM GIS Program    }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
-{ Copyright (c) 2015 Peter L. Guth   }
+{ Copyright (c) 2022 Peter L. Guth   }
 {____________________________________}
 
 {$I nevadia_defines.inc}
@@ -159,12 +159,12 @@ function GeotiffBBox(fName : PathStr) : sfBoundBox;
    function PickMap(WhatFor : shortstring) : integer;
    function PickADifferentMap(WhatFor,ThisMapCaption : shortstring) : integer;
 
-   function EditHeaderRecord(DEM : integer; AllowChangeType : boolean{; AllowChangeDatum : boolean = true}) : boolean;
+   function EditHeaderRecord(DEM : integer; AllowChangeType : boolean) : boolean;
    procedure ViewHeaderRecord(DEM : integer);
    procedure EditDEMHeader;
 
    procedure FastRedrawAllMaps;
-   function CreateNewGrid(DEMName : shortstring; What : tCreateGrid;  bb : sfBoundBox; Resolution : tDEMprecision = FloatingPointDEM; Spacing : float64 = -99) : integer;
+   function CreateNewGrid(DEMName : shortstring; What : tCreateGrid; bb : sfBoundBox; Resolution : tDEMprecision = FloatingPointDEM; Spacing : float64 = -99) : integer;
 
    function FileExistsErrorMessage(InName : PathStr) : boolean;
 

@@ -334,10 +334,12 @@ begin
       if DEMGLB[CurDEM].ElevationDEM then TStr := 'DEM' else TStr := 'Grid';
       BaseTitle := RemoveUnderscores(TStr + ': ' + DEMGLB[CurDEM].AreaName);
       DEMonMap := CurDEM;
+      (*'
       if DEMGLB[CurDEM].LandCoverGrid then begin
          MapType := mtLandCover;
       end
-      else begin
+      else *)
+      begin
          if (mt = mtDEMReflectElevMerge) then begin
             mt := mtGrayReflect;
             MapMerge := mmElevation;

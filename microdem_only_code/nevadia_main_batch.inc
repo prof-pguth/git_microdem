@@ -2,208 +2,146 @@
 { Part of ianMICRODEM GIS Program    }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
-{ Copyright (c) 2015 Peter L. Guth   }
+{ Copyright (c) 2022 Peter L. Guth   }
 {____________________________________}
 
 
 { include file for nevadia_main}
 
 
-procedure DEMIXreferenceDEMtiles;
-var
-   RefDataPath,DEMIXRefData,fName, RefDEMDir,RefDEMtiles : PathStr;
-   aTable : Petmar_db.tMyData;
-   Areas,FoundFiles : tStringList;
-   i,WantedDEM,db : integer;
-   TStr : shortstring;
-begin
-   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMtiles in'); {$EndIf}
-   HeavyDutyProcessing := true;
-   StopSplashing;
-   RefDataPath := 'H:\new_demix_reference_dems\';
-   RefDEMDir := RefDataPath+ '1sec_ref_dems\';
-   RefDEMtiles := RefDataPath+ '1sec_ref_demix_tiles\';
-   SafeMakeDir(RefDEMtiles);
-   FoundFiles := Nil;
-   Areas := tStringList.Create;
-   Areas.Add('AREA,REF_TYPE,DEMIX_TILE');
-
-   FindMatchingFiles(RefDEMDir,'*.tif',FoundFiles,2);
-   for I := 0 to pred(FoundFiles.Count) do begin
-      wmdem.SetPanelText(1, IntToStr(i) + '/' + IntToStr(FoundFiles.Count));
-      fName := FoundFiles.Strings[i];
-      WantedDEM := OpenNewDEM(fName);
-      //db := DEMGlb[WantedDEM].SelectionMap.LoadDEMIXtileOutlines(DEMGlb[WantedDEM].DEMBoundBoxGeo,true);
-      DB := DEMIXtileFill(WantedDEM,DEMGlb[WantedDEM].DEMBoundBoxGeo);
-      GISdb[db].SaveCurrentDBaseSubset(RefDEMtiles + DEMGlb[WantedDEM].AreaName + '_demix_tiles.dbf');
-      GISdb[db].ApplyGISFilter('GRID_FULL>=' + IntToStr(MDDef.DEMIX_Full));
-      if StrUtils.AnsiContainsText(DEMGlb[WantedDEM].AreaName,'_dsm') then TStr := 'DSM' else TStr := 'DTM';
-      TStr := DEMGlb[WantedDEM].AreaName + ',' + TStr + ',' + IntToStr(GISdb[DB].MyData.FiltRecsInDB);
-      Areas.Add(TStr);
-      {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMtiles, ' + Tstr); {$EndIf}
-      CloseSingleDEM(WantedDEM);
-   end;
-
-   StringList2CSVtoDB(Areas);
-   wmdem.SetPanelText(1,'');
-   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMtiles in'); {$EndIf}
-end;
+//this was experimental, and many of the options may not work any longer
 
 
-
-procedure DEMIXreferenceDEMs;
-var
-   RefDataPath,DEMIXRefData,fName, RefDEMDir : PathStr;
-   aTable : Petmar_db.tMyData;
-   Areas,FoundFiles : tStringList;
-   i,WantedDEM : integer;
-   TStr : shortstring;
-begin
-   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs in'); {$EndIf}
-   try
-      HeavyDutyProcessing := true;
-      StopSplashing;
-
-      RefDataPath := 'H:\new_demix_reference_dems\';
-      DEMIXRefData := RefDataPath + 'ref_dems.dbf';
-      aTable := Petmar_db.tMyData.Create(DEMIXRefData);
-      RefDEMDir := RefDataPath+ '1sec_ref_dems\';
-      SafeMakeDir(RefDEMDir);
-
-      Areas := aTable.UniqueEntriesInDB('SERIES');
-      for i := 0 to pred(Areas.Count) do begin
-         wmdem.SetPanelText(1, IntToStr(i) + '/' + IntToStr(FoundFiles.Count));
-         fName := RefDEMDir + 'md_' + Areas[i] + '_1sec_area.tif';
-         tstr := ', area=' + Areas.Strings[i] + '  ' + IntToStr(i) + '/' + IntToStr(Areas.Count);
-         if FileExists(fName) then begin
-            {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs alread done' + TStr); {$EndIf}
-         end
-         else begin
-            {$If Defined(RecordDEMIX)} HighlightLineToDebugFile('DEMIXreferenceDEMs' + Tstr); {$EndIf}
-            aTable.ApplyFilter('SERIES=' + QuotedStr(Areas.Strings[i]));
-            FoundFiles := aTable.UniqueEntriesInDB('FILENAME');
-            if (FoundFiles.Count > 0) then begin
-               {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs, area=' + Areas.Strings[i] + ' merge=' + IntToStr(FoundFiles.Count)); {$EndIf}
-               MergeMultipleDEMsHere(WantedDEM,FoundFiles,true,false);
-               if (WantedDEM <> 0) then begin
-                  {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs call resample'); {$EndIf}
-                  ResampleForDEMIXOneSecDEMs(WantedDEM,RefDEMDir);
-                  CloseSingleDEM(WantedDEM);
-               end;
-               CleanUpTempDirectory;  //might be many tiled or compressed DEMs expanded
-            end
-            else begin
-               {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs, area=' + Areas.Strings[i] + ' no dems'); {$EndIf}
-            end;
-         end;
-      end;
-   finally
-      Areas.Free;
-      aTable.Destroy;
-      HeavyDutyProcessing := false;
-      wmdem.SetPanelText(1, '');
-   end;
-   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs out'); {$EndIf}
-end;
-
-
-procedure IndexDEMIXreferenceDEMs;
-var
-   RefDataPath,DEMIXRefData,fName : PathStr;
-   aTable : Petmar_db.tMyData;
-   FoundFiles : tStringList;
-   i : integer;
-begin
-   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('IndexDEMIXreferenceDEMs in'); {$EndIf}
-   RefDataPath := 'H:\new_demix_reference_dems\';
-   DEMIXRefData := RefDataPath + 'ref_dems.dbf';
-   if not FileExists(DEMIXRefData) then CreateIntegratedDataBaseTable(DEMIXRefData);
-   aTable := Petmar_db.tMyData.Create(DEMIXRefData);
-   VerifyMapLibraryFilesExist(aTable);
-
-   FoundFiles := Nil;
-   FindMatchingFiles(RefDataPath,'*.*',FoundFiles,2);
-   for I := 0 to pred(FoundFiles.Count) do begin
-      wmdem.SetPanelText(1, IntToStr(i) + '/' + IntToStr(FoundFiles.Count));
-      fName := FoundFiles.Strings[i];
-      if StrUtils.AnsiContainsText(fName,'md_') and (StrUtils.AnsiContainsText(fName,'point') or StrUtils.AnsiContainsText(fName,'area')) then begin
-         //this is a reference 1" DEM
-      end
-      else begin
-         aTable.ApplyFilter('FILENAME=' + QuotedStr(fName));
-         if (aTable.FiltRecsInDB = 0) and ValidDEMExt(ExtractFileExt(fName)) then begin
-            {$If Defined(RecordDEMIX)} WriteLineToDebugFile(fName); {$EndIf}
-            CheckDEMFileForMapLibrary(aTable,LastSubDir(ExtractFilePath(fName)),fName);
-            CleanUpTempDirectory;
-         end;
-      end;
-   end;
-   wmdem.SetPanelText(1, '');
-   aTable.Destroy;
-   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('IndexDEMIXreferenceDEMs out'); {$EndIf}
-end;
-
-
-(*
-procedure DEMIXreferenceDEMs;
-var
-   DirsToProcess,DEMstoMerge : tStringList;
-   i,WantedDEM : integer;
-   fName,ThisDir,MergeDEMDir,MergeDEMName,MergefName : PathStr;
-begin
-   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs in'); {$EndIf}
-   try
-      HeavyDutyProcessing := true;
-      StopSplashing;
-      MergeDEMDir := 'H:\new_reference_dems\merged_ref_dems\';
-      DirsToProcess := tStringList.Create;
-      DirsToProcess.Add(MergeDEMDir);
-      if GetMultipleDirectories('High res DEMs',DirsToProcess) then begin
-         for i := 0 to pred(DirsToProcess.Count) do begin
-            ThisDir := DirsToProcess.Strings[i];
-            {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs process ' + ThisDir); {$EndIf}
-            MergeDEMName := LastSubDir(ThisDir);
-            MergefName := MergeDEMDir + MergeDEMname + '.dem';
-            if FileExists(MergefName) then begin
-               //WantedDEM := OpenNewDEM(MergefName);
-            end
-            else begin
-               DEMsToMerge := tStringList.Create;
-               FindMatchingFiles(ThisDir,'*.tif',DEMstoMerge,2);
-               if (DEMstoMerge.Count = 0) then FindMatchingFiles(ThisDir,'*.asc',DEMstoMerge,2);
-               {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs found dems=' + IntToStr(DEMstoMerge.Count)); {$EndIf}
-               if (DEMstoMerge.Count > 1) then begin
-                  MergeMultipleDEMsHere(WantedDEM,DEMsToMerge,true);
-                  {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs merged new dem=' + IntToStr(WantedDEM)); {$EndIf}
-                  DEMGlb[WantedDEM].AreaName := MergeDEMName;
-                  DEMGlb[WantedDEM].WriteNewFormatDEM(MergefName);
-               end;
-               //DEMstoMerge.Free;
-            end;
-            if (WantedDEM <> 0) then begin
-               {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs call resample'); {$EndIf}
-               ResampleForDEMIX(WantedDEM);
-               CloseSingleDEM(WantedDEM);
-            end;
-            CleanUpTempDirectory;  //might be many tiled or compressed DEMs expanded
-         end;
-      end;
-   finally
-      DirsToProcess.Free;
-      HeavyDutyProcessing := false;
-   end;
-   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs out'); {$EndIf}
-end;
-*)
-
-
-
-procedure MergeDEMIXCSV(CriteriaName : PathStr; FilesWanted : tStringList = Nil);
+procedure MergeDEMIXCSV;
 var
    fName : PathStr;
    i     : byte;
    DEM,db : integer;
+   FilesWanted : tStringList;
    Tiles,ElevDiff,SlopeDiff,RuffDiff,TransposeNames : tStringList;
+
+
+      function TransposeDEMIXcriteria(DBonTable : integer) : PathStr;
+      const
+         MaxDEMs = 10;
+         MaxCriteria = 50;
+      var
+         Headers,DEMs,Criteria,Output,Tiles : tStringList;
+         Line : ANSIString;
+         fName,CriteriaFile : PathStr;
+         value,ThisDEM,Missing : shortstring;
+         Cycles,Done,
+         i,j,  Tile, Ref, aLandType,DEM,Criterion : Integer;
+         Values : array[0..MaxDEMs,0..MaxCriteria] of shortstring;
+      begin
+         {$If Defined(RecordDEMIX)} WriteLineToDebugFile(''); WriteLineToDebugFile('TransposeDEMIXcriteria in, ' + GISdb[DBonTable].dbName); {$EndIf}
+         StopSplashing;
+         Headers := tStringList.Create;
+         Headers.LoadFromFile(DEMIXSettingsDir + 'demix_headers.txt');
+         DEMs := tStringList.Create;
+         DEMs.LoadFromFile(DEMIXSettingsDir + 'demix_dems.txt');
+
+         CriteriaFile := DEMIXSettingsDir + 'demix_criteria_with_signed.txt';
+         Criteria := tStringList.Create;
+         Criteria.LoadFromFile(CriteriaFile);
+
+         for Criterion := pred(Criteria.Count) downto 0 do begin
+            if not GISdb[DBonTable].MyData.FieldExists(Criteria.Strings[Criterion]) then begin
+               Criteria.Delete(Criterion);
+            end;
+         end;
+
+         Output := tStringList.Create;
+         Line := '';
+         for i := 0 to pred(Headers.Count) do Line := Line + Headers.Strings[i] + ',';
+         Line := Line + 'TOLERANCE,DEM_LOW_SC,COP_ALOS,';
+         for i := 0 to pred(DEMs.Count) do begin
+            Line := Line + DEMs.Strings[i] + '_SCR,';
+         end;
+         Line := Line + 'REC_ID,CRITERION,';
+         for i := 0 to pred(DEMs.Count) do begin
+            Line := Line + DEMs.Strings[i];
+            if i < pred(DEMs.Count) then Line := Line + ',';
+         end;
+         Output.Add(Line);
+
+         GISdb[DBonTable].ClearGISFilter;
+         Tiles := GISdb[DBonTable].MyData.UniqueEntriesInDB('DEMIX_TILE');
+         {$If Defined(RecordDEMIX)} WriteLineToDebugFile('TransposeDEMIXcriteria tiles=' + IntToStr(Tiles.Count)); {$EndIf}
+
+         Cycles := Tiles.Count * 2 * MaxLandType;
+         Done := 0;
+         StartProgress('Transposing ' + GISdb[DBontable].DBName);
+         for Tile := 0 to Pred(Tiles.Count) do begin
+            UpdateProgressBar(Done/Cycles);
+            for Ref := 1 to 2 do begin
+               Line := 'DEMIX_TILE=' + QuotedStr(Tiles[Tile]) + ' AND REF_TYPE=' + QuotedStr(RefType[Ref]);
+               GISdb[DBonTable].ApplyGISFilter(Line);
+               GISdb[DBonTable].EmpSource.Enabled := false;
+               if (GISdb[DBonTable].MyData.FiltRecsInDB > 0) then begin  //there are DSMs or DTMs for this tile
+                  for aLandType := 1 to MaxLandType do begin
+                     Line := 'DEMIX_TILE=' + QuotedStr(Tiles[Tile]) + ' AND REF_TYPE=' + QuotedStr(RefType[Ref])  + ' AND LAND_TYPE=' + QuotedStr(LandType[aLandType]);
+                     GISdb[DBonTable].ApplyGISFilter(Line);
+                     GISdb[DBonTable].EmpSource.Enabled := false;
+                     if (GISdb[DBonTable].MyData.FiltRecsInDB = DEMs.Count) then begin
+                        for i := 0 to MaxDems do
+                           for j := 0 to MaxCriteria do
+                               Values[i,j] := '-9999';
+
+                        while not GISdb[DBonTable].MyData.eof do begin
+                           GISdb[DBonTable].EmpSource.Enabled := false;
+                           ThisDEM := UpperCase(GISdb[DBonTable].MyData.GetFieldByNameAsString('DEM'));
+                           DEM := DEMs.IndexOf(ThisDEM);
+                           for Criterion := 0 to pred(Criteria.Count) do begin
+                              value := GISdb[DBonTable].MyData.GetFieldByNameAsString(Criteria[Criterion]);
+                              if (value <> '') then Values[DEM,Criterion] := value;
+                           end;
+                           GISdb[DBonTable].MyData.Next;
+                        end;
+
+                        for Criterion := 0 to pred(Criteria.Count) do begin
+                           Line := '';
+                           for i := 0 to pred(Headers.Count) do Line := Line + GISdb[DBonTable].MyData.GetFieldByNameAsString(Headers[i]) + ',';
+                           Line := Line + '99.99,Not_yet_done,Not4,';
+                           for DEM := 0 to pred(DEMs.Count) do Line := Line + '9.9,';
+                           Line := Line + '123456,' + Criteria[Criterion] + ',';
+
+                           for DEM := 0 to pred(DEMs.Count) do Line := Line + Values[DEM,Criterion] + ',';
+                           Delete(Line,Length(Line),1);
+                           Output.Add(Line);
+                        end;
+                     end
+                     else begin
+                        {$If Defined(RecordDEMIX)}  //this is to track down why some tiles do not have 6 records
+                           if (GISdb[DBonTable].MyData.FiltRecsInDB > 0) then begin  //if it was 0, it was something like CLIFF in the flatlands
+                              Missing := '  Present: ';
+                              GISdb[DBonTable].MyData.First;
+                              while not GISdb[DBonTable].MyData.eof do begin
+                                 Missing := Missing + GISdb[DBonTable].MyData.GetFieldByNameAsString('DEM') + ', ';
+                                 GISdb[DBonTable].MyData.Next;
+                              end;
+                              WriteLineToDebugFile('filter=' + GISdb[DBonTable].MyData.Filter + '   Matches=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + Missing);
+                           end;
+                        {$EndIf}
+                     end;
+                  end;
+               end;
+            end;
+         end;
+         EndProgress;
+         GISdb[DBonTable].ClearGISFilter;
+         Headers.Free;
+         Criteria.Free;
+         DEMs.Free;
+         Result := ChangeFileExt(GISdb[DBonTable].dbFullName, '_transpose_' + ExtractFileNameNoExt(CriteriaFile) + '.dbf');
+         DeleteFileIfExists(Result);
+         Result := ChangeFileExt(Result,'.csv');
+         OutPut.SaveToFile(Result);
+         OutPut.Free;
+         GISdb[DBonTable].ShowStatus;
+         {$If Defined(RecordDEMIX)} WriteLineToDebugFile('TransposeDEMIXcriteria out, created ' + Result); {$EndIf}
+      end;
+
 
 
    procedure MergeAndTranspose(var Diffs : tStringList; fName : PathStr);
@@ -216,12 +154,12 @@ var
          MergeCSVFiles(Diffs,fName);
          db := OpenDataBase('',fName);
          GISdb[db].AddSequentialIndex('REC_ID',false);
-         fName := TransposeDEMIXcriteria(DB,CriteriaName);
+         fName := TransposeDEMIXcriteria(DB);
          TransposeNames.Add(fName);
          CloseAndNilNumberedDB(db);
       end
       else begin
-         {$If Defined(RecordDEMIX)} WriteLineToDebugFile(' No MergeAndTranspose ' + fName + '  with regions=' + IntToStr(Diffs.Count)); {$EndIf}
+         {$If Defined(RecordDEMIX)} WriteLineToDebugFile('No MergeAndTranspose ' + fName + '  with regions=' + IntToStr(Diffs.Count)); {$EndIf}
          Diffs.Free;
       end;
    end;
@@ -229,12 +167,12 @@ var
 
 begin
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('MergeDEMIXCSV in'); {$EndIf}
-   if (FilesWanted = Nil) then begin
+   //if (FilesWanted = Nil) then begin
       FilesWanted := tStringList.Create;
       FilesWanted.Add(DEMIXresultsDir);
       i := 1;
       if not GetMultipleFiles('DEMIX CSV files to process','*.csv',FilesWanted,i) then exit;
-   end;
+   //end;
 
    try
       HeavyDutyProcessing := true;
@@ -576,7 +514,6 @@ end;
             end;
          end;
 
-
 *)
 
            procedure CheckVerticalDatumShift(var DEM : integer);
@@ -624,6 +561,7 @@ end;
 
 
             procedure LandCover(Lat,Long : float32; Difference : float32);
+            //this is hard coded for a particular land cover data set
             var
                z : float32;
             begin
@@ -644,7 +582,7 @@ end;
             end;
 
 
-            procedure SlopeCatDiff(Difference : float32);
+            procedure LandTypeDiff(Difference : float32);
             begin
                zs^[MomentVar.NPts] := Difference;
                inc(MomentVar.Npts);
@@ -741,7 +679,7 @@ end;
                         if DEMGlb[RefDEM].GetElevMetersOnGrid(xg,yg,zref) then begin
                            Difference := z-zref;
                            if DEMGlb[RefDEM].GetSlopeAndAspect(xg,yg,SlopeAsp) then begin
-                              SlopeCatDiff(Difference);
+                              LandTypeDiff(Difference);
                            end;
                            LandCover(Lat,long,Difference);
                         end;
@@ -765,7 +703,7 @@ end;
                         DEMGlb[DEM].DEMGridToLatLongDegree(col,row,lat,long);
                         if DEMGlb[RefDEM].GetSlopeAndAspectFromLatLong(Lat,Long,SlopeAsp) then begin
                            Difference := SlopeAspectTest.SlopePercent - SlopeAsp.SlopePercent;
-                           SlopeCatDiff(Difference);
+                           LandTypeDiff(Difference);
                            LandCover(Lat,Long,Difference);
                         end;
                      end;
@@ -788,7 +726,7 @@ end;
                         if DEMGlb[RefDEM].RoughnessFromSlopeSTD(xg,yg,MDDef.RoughnessBox,Ruff2) then begin
                            Difference := Ruff1 - Ruff2;
                            if DEMGlb[RefDEM].GetSlopeAndAspect(xg,yg,SlopeAsp) then begin
-                              SlopeCatDiff(Difference);
+                              LandTypeDiff(Difference);
                            end;
                            LandCover(Lat,long,Difference);
                         end;
@@ -1244,6 +1182,65 @@ end;
 end;
 
 
+procedure BatchResampleForDEMIX(FilesWanted : tStringList = Nil);
+//aggregates to 1" DEMs
+var
+   fName : PathStr;
+   i,DEM : integer;
+begin
+   {$If Defined(RecordIniMemoryOverwrite) or Defined(TimeLoadDEM)} IniMemOverwriteCheck('start OpenNewDEM'); {$EndIf}
+   if (FilesWanted = Nil) then begin
+      FilesWanted := tStringList.Create;
+      FilesWanted.Add(LastDEMName);
+      if not GetMultipleFiles('DEMs for aggregating',DEMFilterMasks,FilesWanted ,MDDef.DefaultDEMFilter) then exit;
+   end;
+
+   try
+      HeavyDutyProcessing := true;
+      StartSingleThreadTimer('Create DEMIX reference DEMs');
+      for i := 0 to pred(FilesWanted.Count) do begin
+        ThreadTimers.UpdateThreadStats(9, round(100 * (i / FilesWanted.Count)));
+        fName := FilesWanted.Strings[i];
+        LoadNewDEM(DEM,fName,true);
+        if ValidDEM(DEM) then begin
+            ResampleForDEMIXOneSecDEMs(DEM);
+            CloseSingleDEM(DEM);
+        end;
+      end;
+   finally
+      EndThreadTimers;
+      HeavyDutyProcessing := false;
+   end;
+end;
+
+
+
+procedure DEMIX_elevation_histograms;
+var
+   ElevFiles,LegendFiles : tStringList;
+   DefaultFilter : byte;
+   TStr : string;
+   i : integer;
+begin
+   {$IfDef RecordDEMIX} writeLineToDebugFile('Twmdem.DEMIXelevationhistograms1Click in'); {$EndIf}
+   StopSplashing;
+   ElevFiles := tStringList.Create;
+   ElevFiles.Add('H:\demix_wine_contest\wine_results\05-06-22--0904-50_elev_diffs\elev_diff_hists\');
+   DefaultFilter := 1;
+   if GetMultipleFiles('Files with elevation distributions','Files|*.z',ElevFiles,DefaultFilter) then begin
+      LegendFiles := tStringList.Create;
+      for I := 0 to pred(ElevFiles.Count) do begin
+         TStr := ExtractFileNameNoExt(ElevFiles[i]);
+         LegendFiles.Add(BeforeSpecifiedCharacter(TStr,'-'));
+         {$IfDef RecordDEMIX} writeLineToDebugFile('Twmdem.DEMIXelevationhistograms1Click ' + Tstr); {$EndIf}
+      end;
+      CreateMultipleHistograms(MDDef.CountHistograms,ElevFiles,LegendFiles,'Elevation difference','Elevation difference distribution');
+   end;
+   {$IfDef RecordDEMIX} writeLineToDebugFile('Twmdem.DEMIXelevationhistograms1Click out'); {$EndIf}
+end;
+
+
+
 //some of these have the file names hard coded
 //this was designed for a particular purpose, and might not be generally applicable
 
@@ -1301,6 +1298,10 @@ begin
    end;
 end;
 
+
+
+
+//from this point on, routines not likely to work fully or correctly
 
 
 procedure BatchGlobalDEMs;
@@ -1365,60 +1366,145 @@ begin
 end;
 
 
-procedure BatchResampleForDEMIX(FilesWanted : tStringList = Nil);
+
+
+
+procedure DEMIXreferenceDEMtiles;
 var
-   fName : PathStr;
-   i,DEM : integer;
+   RefDataPath,DEMIXRefData,fName, RefDEMDir,RefDEMtiles : PathStr;
+   aTable : Petmar_db.tMyData;
+   Areas,FoundFiles : tStringList;
+   i,WantedDEM,db : integer;
+   TStr : shortstring;
 begin
-   {$If Defined(RecordIniMemoryOverwrite) or Defined(TimeLoadDEM)} IniMemOverwriteCheck('start OpenNewDEM'); {$EndIf}
-   if (FilesWanted = Nil) then begin
-      FilesWanted := tStringList.Create;
-      FilesWanted.Add(LastDEMName);
-      if not GetMultipleFiles('DEMs for aggregating',DEMFilterMasks,FilesWanted ,MDDef.DefaultDEMFilter) then exit;
+   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMtiles in'); {$EndIf}
+   HeavyDutyProcessing := true;
+   StopSplashing;
+   RefDataPath := 'H:\new_demix_reference_dems\';
+   RefDEMDir := RefDataPath+ '1sec_ref_dems\';
+   RefDEMtiles := RefDataPath+ '1sec_ref_demix_tiles\';
+   SafeMakeDir(RefDEMtiles);
+   FoundFiles := Nil;
+   Areas := tStringList.Create;
+   Areas.Add('AREA,REF_TYPE,DEMIX_TILE');
+
+   FindMatchingFiles(RefDEMDir,'*.tif',FoundFiles,2);
+   for I := 0 to pred(FoundFiles.Count) do begin
+      wmdem.SetPanelText(1, IntToStr(i) + '/' + IntToStr(FoundFiles.Count));
+      fName := FoundFiles.Strings[i];
+      WantedDEM := OpenNewDEM(fName);
+      //db := DEMGlb[WantedDEM].SelectionMap.LoadDEMIXtileOutlines(DEMGlb[WantedDEM].DEMBoundBoxGeo,true);
+      DB := DEMIXtileFill(WantedDEM,DEMGlb[WantedDEM].DEMBoundBoxGeo);
+      GISdb[db].SaveCurrentDBaseSubset(RefDEMtiles + DEMGlb[WantedDEM].AreaName + '_demix_tiles.dbf');
+      GISdb[db].ApplyGISFilter('GRID_FULL>=' + IntToStr(MDDef.DEMIX_Full));
+      if StrUtils.AnsiContainsText(DEMGlb[WantedDEM].AreaName,'_dsm') then TStr := 'DSM' else TStr := 'DTM';
+      TStr := DEMGlb[WantedDEM].AreaName + ',' + TStr + ',' + IntToStr(GISdb[DB].MyData.FiltRecsInDB);
+      Areas.Add(TStr);
+      {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMtiles, ' + Tstr); {$EndIf}
+      CloseSingleDEM(WantedDEM);
    end;
 
+   StringList2CSVtoDB(Areas);
+   wmdem.SetPanelText(1,'');
+   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMtiles in'); {$EndIf}
+end;
+
+
+
+procedure DEMIXreferenceDEMs;
+var
+   RefDataPath,DEMIXRefData,fName, RefDEMDir : PathStr;
+   aTable : Petmar_db.tMyData;
+   Areas,FoundFiles : tStringList;
+   i,WantedDEM : integer;
+   TStr : shortstring;
+begin
+   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs in'); {$EndIf}
    try
       HeavyDutyProcessing := true;
-      StartSingleThreadTimer('Create DEMIX reference DEMs');
-      for i := 0 to pred(FilesWanted.Count) do begin
-        ThreadTimers.UpdateThreadStats(9, round(100 * (i / FilesWanted.Count)));
-        fName := FilesWanted.Strings[i];
-        LoadNewDEM(DEM,fName,true);
-        if ValidDEM(DEM) then begin
-            ResampleForDEMIXOneSecDEMs(DEM);
-            CloseSingleDEM(DEM);
-        end;
+      StopSplashing;
+
+      RefDataPath := 'H:\new_demix_reference_dems\';
+      DEMIXRefData := RefDataPath + 'ref_dems.dbf';
+      aTable := Petmar_db.tMyData.Create(DEMIXRefData);
+      RefDEMDir := RefDataPath+ '1sec_ref_dems\';
+      SafeMakeDir(RefDEMDir);
+
+      Areas := aTable.UniqueEntriesInDB('SERIES');
+      for i := 0 to pred(Areas.Count) do begin
+         wmdem.SetPanelText(1, IntToStr(i) + '/' + IntToStr(FoundFiles.Count));
+         fName := RefDEMDir + 'md_' + Areas[i] + '_1sec_area.tif';
+         tstr := ', area=' + Areas.Strings[i] + '  ' + IntToStr(i) + '/' + IntToStr(Areas.Count);
+         if FileExists(fName) then begin
+            {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs alread done' + TStr); {$EndIf}
+         end
+         else begin
+            {$If Defined(RecordDEMIX)} HighlightLineToDebugFile('DEMIXreferenceDEMs' + Tstr); {$EndIf}
+            aTable.ApplyFilter('SERIES=' + QuotedStr(Areas.Strings[i]));
+            FoundFiles := aTable.UniqueEntriesInDB('FILENAME');
+            if (FoundFiles.Count > 0) then begin
+               {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs, area=' + Areas.Strings[i] + ' merge=' + IntToStr(FoundFiles.Count)); {$EndIf}
+               MergeMultipleDEMsHere(WantedDEM,FoundFiles,true,false);
+               if (WantedDEM <> 0) then begin
+                  {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs call resample'); {$EndIf}
+                  ResampleForDEMIXOneSecDEMs(WantedDEM,RefDEMDir);
+                  CloseSingleDEM(WantedDEM);
+               end;
+               CleanUpTempDirectory;  //might be many tiled or compressed DEMs expanded
+            end
+            else begin
+               {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs, area=' + Areas.Strings[i] + ' no dems'); {$EndIf}
+            end;
+         end;
       end;
    finally
-      EndThreadTimers;
+      Areas.Free;
+      aTable.Destroy;
       HeavyDutyProcessing := false;
+      wmdem.SetPanelText(1, '');
    end;
+   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs out'); {$EndIf}
 end;
 
 
-procedure DEMIX_elevation_histograms;
+procedure IndexDEMIXreferenceDEMs;
 var
-   ElevFiles,LegendFiles : tStringList;
-   DefaultFilter : byte;
-   TStr : string;
+   RefDataPath,DEMIXRefData,fName : PathStr;
+   aTable : Petmar_db.tMyData;
+   FoundFiles : tStringList;
    i : integer;
 begin
-   {$IfDef RecordDEMIX} writeLineToDebugFile('Twmdem.DEMIXelevationhistograms1Click in'); {$EndIf}
-   StopSplashing;
-   ElevFiles := tStringList.Create;
-   ElevFiles.Add('H:\demix_wine_contest\wine_results\05-06-22--0904-50_elev_diffs\elev_diff_hists\');
-   DefaultFilter := 1;
-   if GetMultipleFiles('Files with elevation distributions','Files|*.z',ElevFiles,DefaultFilter) then begin
-      LegendFiles := tStringList.Create;
-      for I := 0 to pred(ElevFiles.Count) do begin
-         TStr := ExtractFileNameNoExt(ElevFiles[i]);
-         LegendFiles.Add(BeforeSpecifiedCharacter(TStr,'-'));
-         {$IfDef RecordDEMIX} writeLineToDebugFile('Twmdem.DEMIXelevationhistograms1Click ' + Tstr); {$EndIf}
+   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('IndexDEMIXreferenceDEMs in'); {$EndIf}
+   RefDataPath := 'H:\new_demix_reference_dems\';
+   DEMIXRefData := RefDataPath + 'ref_dems.dbf';
+   if not FileExists(DEMIXRefData) then CreateIntegratedDataBaseTable(DEMIXRefData);
+   aTable := Petmar_db.tMyData.Create(DEMIXRefData);
+   VerifyMapLibraryFilesExist(aTable);
+
+   FoundFiles := Nil;
+   FindMatchingFiles(RefDataPath,'*.*',FoundFiles,2);
+   for I := 0 to pred(FoundFiles.Count) do begin
+      wmdem.SetPanelText(1, IntToStr(i) + '/' + IntToStr(FoundFiles.Count));
+      fName := FoundFiles.Strings[i];
+      if StrUtils.AnsiContainsText(fName,'md_') and (StrUtils.AnsiContainsText(fName,'point') or StrUtils.AnsiContainsText(fName,'area')) then begin
+         //this is a reference 1" DEM
+      end
+      else begin
+         aTable.ApplyFilter('FILENAME=' + QuotedStr(fName));
+         if (aTable.FiltRecsInDB = 0) and ValidDEMExt(ExtractFileExt(fName)) then begin
+            {$If Defined(RecordDEMIX)} WriteLineToDebugFile(fName); {$EndIf}
+            CheckDEMFileForMapLibrary(aTable,LastSubDir(ExtractFilePath(fName)),fName);
+            CleanUpTempDirectory;
+         end;
       end;
-      CreateMultipleHistograms(MDDef.CountHistograms,ElevFiles,LegendFiles,'Elevation difference','Elevation difference distribution');
    end;
-   {$IfDef RecordDEMIX} writeLineToDebugFile('Twmdem.DEMIXelevationhistograms1Click out'); {$EndIf}
+   wmdem.SetPanelText(1, '');
+   aTable.Destroy;
+   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('IndexDEMIXreferenceDEMs out'); {$EndIf}
 end;
+
+
+
 
 
 (*
@@ -1587,6 +1673,58 @@ end;
 *)
 
 
+
+(*
+procedure DEMIXreferenceDEMs;
+var
+   DirsToProcess,DEMstoMerge : tStringList;
+   i,WantedDEM : integer;
+   fName,ThisDir,MergeDEMDir,MergeDEMName,MergefName : PathStr;
+begin
+   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs in'); {$EndIf}
+   try
+      HeavyDutyProcessing := true;
+      StopSplashing;
+      MergeDEMDir := 'H:\new_reference_dems\merged_ref_dems\';
+      DirsToProcess := tStringList.Create;
+      DirsToProcess.Add(MergeDEMDir);
+      if GetMultipleDirectories('High res DEMs',DirsToProcess) then begin
+         for i := 0 to pred(DirsToProcess.Count) do begin
+            ThisDir := DirsToProcess.Strings[i];
+            {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs process ' + ThisDir); {$EndIf}
+            MergeDEMName := LastSubDir(ThisDir);
+            MergefName := MergeDEMDir + MergeDEMname + '.dem';
+            if FileExists(MergefName) then begin
+               //WantedDEM := OpenNewDEM(MergefName);
+            end
+            else begin
+               DEMsToMerge := tStringList.Create;
+               FindMatchingFiles(ThisDir,'*.tif',DEMstoMerge,2);
+               if (DEMstoMerge.Count = 0) then FindMatchingFiles(ThisDir,'*.asc',DEMstoMerge,2);
+               {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs found dems=' + IntToStr(DEMstoMerge.Count)); {$EndIf}
+               if (DEMstoMerge.Count > 1) then begin
+                  MergeMultipleDEMsHere(WantedDEM,DEMsToMerge,true);
+                  {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs merged new dem=' + IntToStr(WantedDEM)); {$EndIf}
+                  DEMGlb[WantedDEM].AreaName := MergeDEMName;
+                  DEMGlb[WantedDEM].WriteNewFormatDEM(MergefName);
+               end;
+               //DEMstoMerge.Free;
+            end;
+            if (WantedDEM <> 0) then begin
+               {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs call resample'); {$EndIf}
+               ResampleForDEMIX(WantedDEM);
+               CloseSingleDEM(WantedDEM);
+            end;
+            CleanUpTempDirectory;  //might be many tiled or compressed DEMs expanded
+         end;
+      end;
+   finally
+      DirsToProcess.Free;
+      HeavyDutyProcessing := false;
+   end;
+   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs out'); {$EndIf}
+end;
+*)
 
 
 

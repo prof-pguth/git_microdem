@@ -8,21 +8,6 @@
 //include file for demdatbase
 
 
-const
-   MaxLandType = 8;
-   NumDEMIXDEM = 6;
-   RefType : array[1..2] of shortstring = ('DSM','DTM');
-   LandType : array[1..MaxLandType] of shortstring = ('ALL','CLIFF','STEEP','GENTLE','FLAT','URBAN','FOREST','BARREN');
-   DEMType : array[1..NumDEMIXDEM] of shortstring = ('FABDEM','COP','ALOS','NASA','SRTM','ASTER');
-
-   (*
-   MeanParams : array[1..3] of shortstring = ('ELVD_MEAN','SLPD_MEAN','RUFD_MEAN');
-   MedianParams : array[1..3] of shortstring = ('ELVD_MED','SLPD_MED','RUFD_MED');
-   SimpleParams : array[1..3] of shortstring = ('ELVD_RMSE','SLPD_MAE','RUFD_AVD');
-   Elev7Params : array[1..7] of shortstring = ('ELVD_AVD','ELVD_STD','ELVD_RMSE','ELVD_MAE','ELVD_LE90','ELVD_MEAN','ELVD_MED');
-   *)
-
-
 function CriterionTieTolerance(Criterion : shortstring) : float32;
 var
     TieToleranceTable : tMyData;
@@ -33,16 +18,34 @@ begin
    TieToleranceTable.Destroy;
 end;
 
+
 function SymbolFromDEMName(DEMName : shortstring) : tFullSymbolDeclaration;
 var
    DEM : integer;
 begin
    Result.Size := 4;
    DEMName := UpperCase(DEMName);
+   if DEMName = 'TIE' then Result.Color := claBrown;
+
+   if DEMName = 'ALOS' then Result.Color := RGBtrip(230,159,0)
+   else if DEMName = 'ASTER' then Result.Color := RGBtrip(0,114,178)
+   else if DEMName = 'COP' then Result.Color := RGBtrip(86,180,233)
+   else if DEMName = 'FABDEM' then Result.Color := RGBtrip(204,121,167)
+   else if DEMName = 'NASA' then Result.Color := RGBtrip(0,158,115)
+   else if DEMName = 'SRTM' then Result.Color := RGBtrip(213,94,0);
+
+   Result.DrawingSymbol := FilledBox;
+
+   (*
+ALOS    #E69F00     230,159,0
+ASTER   #0072B2     0,114,178
+COP     #56B4E9     86,180,233
+FAB     #CC79A7     204,121,167
+NASA    #009E73     0,158,115
+SRTM    #D55E00     213,94,0
    for DEM := 1 to NumDEMIXDEM do begin
       if DEMName = DEMType[DEM] then Result.Color := ConvertTColorToPlatformColor(WinGraphColors[DEM]);
    end;
-   if DEMName = 'TIE' then Result.Color := claBrown;
 
    if DEMName = 'FABDEM' then Result.DrawingSymbol := FilledBox
    else if DEMName = 'COP' then Result.DrawingSymbol := FilledCircle
@@ -51,6 +54,7 @@ begin
    else if DEMName = 'SRTM' then Result.DrawingSymbol := FilledUpTri
    else if DEMName = 'ASTER' then Result.DrawingSymbol := Box
    else Result.DrawingSymbol := FilledBox;
+   *)
 end;
 
 
@@ -220,13 +224,12 @@ end;
 
 
 
-procedure DEMIX_graph_best_in_Tile(DBonTable : integer);
+procedure DEMIX_graph_best_in_Tile(DBonTable : integer; SortByArea : boolean);
 var
    RefFilter : shortstring;
    CriteriaTable : tMyData;
    BigBMPFiles : tStringList;
-   fName : PathStr;
-   SortByArea : boolean;
+   fName,TileSortName : PathStr;
    ch : ANSIchar;
 
 
@@ -273,12 +276,14 @@ var
        if SortByArea then begin
           NumAreas := GISdb[DBonTable].MyData.NumUniqueEntriesInDB('AREA');
           GISdb[DBonTable].EmpSource.Enabled := false;
-          AreaList.LoadFromFile(DEMIXSettingsDir +  'demix_areas_sorted_by_lat.txt');
+          fName := DEMIXSettingsDir +  'demix_areas_sorted_by_lat.txt';
+          AreaList.LoadFromFile(fName);
        end
        else begin
           AreaList.Add('by sort');
           TileList := tStringList.Create;
-          TileList.LoadFromFile(DEMIXSettingsDir +  'demix_tile_list_sort_slope.txt');
+          fName := TileSortName;
+          TileList.LoadFromFile(fName);
           AreaFilter := '';
           NumAreas := 1;
        end;
@@ -302,10 +307,10 @@ var
       Graph.GraphDraw.GraphAxes := NoGrid;
       Graph.GraphDraw.MinHorizAxis := 0;
       Graph.GraphDraw.MaxHorizAxis := 20;
-      Graph.GraphDraw.MinVertAxis := 0;
       Graph.GraphDraw.MaxVertAxis := NumTiles + InterAreaSkip * NumAreas;
       Graph.GraphDraw.GraphLeftLabels := tStringList.Create;
       Graph.GraphDraw.GraphBottomLabels := tStringList.Create;
+      Graph.GraphDraw.TopLeftLabel := ExtractFileNameNoExt(fName);
 
       CriteriaTable.ApplyFilter('');
       while not CriteriaTable.eof do begin
@@ -349,30 +354,32 @@ var
                 {$If Defined(RecordDetailedDEMIX)} WriteLineToDebugFile(Criterion + '   ' + Best); {$EndIf}
 
                 CriteriaTable.ApplyFilter('CRITERION=' + QuotedStr(Criterion));
-                Center := CriteriaTable.GetFieldByNameAsInteger('AXIS_VALUE');
-                ch := 'X';
-                if StrUtils.AnsiContainsText(Best,',') then ch := ',';
-                if StrUtils.AnsiContainsText(Best,';') then ch := ';';
-                if StrUtils.AnsiContainsText(Best,'-') then ch := '-';
+                if CriteriaTable.FiltRecsInDB = 1 then begin
+                   Center := CriteriaTable.GetFieldByNameAsInteger('AXIS_VALUE');
+                   ch := 'X';
+                   if StrUtils.AnsiContainsText(Best,',') then ch := ',';
+                   if StrUtils.AnsiContainsText(Best,';') then ch := ';';
+                   if StrUtils.AnsiContainsText(Best,'-') then ch := '-';
 
-                if (ch in [',',';']) then begin //this is a tie for best
-                   NumTies := 0;
-                   repeat
-                      inc(NumTies);
-                      aDEM[NumTies] := BeforeSpecifiedCharacterANSI(Best,ch,true,true);
-                   until Best = '';
-                   for DEM := 1 to NumTies do begin
-                      LocateBest(aDEM[DEM],Center-0.3 + DEM * 0.15);
+                   if (ch in [',',';','-']) then begin //this is a tie for best
+                      NumTies := 0;
+                      repeat
+                         inc(NumTies);
+                         aDEM[NumTies] := BeforeSpecifiedCharacterANSI(Best,ch,true,true);
+                      until Best = '';
+                      for DEM := 1 to NumTies do begin
+                         LocateBest(aDEM[DEM],Center-0.3 + DEM * 0.15);
+                      end;
+                   end
+                   else begin //single best
+                      LocateBest(Best,Center);
                    end;
-                end
-                else begin //single best
-                    LocateBest(Best,Center);
                 end;
                 GISdb[DBonTable].MyData.Next;
              end;
           end;
 
-          dec(CurrentY,InterAreaSkip);  //add a blank line between areas
+          if (TileList.Count > 0) then dec(CurrentY,InterAreaSkip);  //add a blank line between areas, but only if this area had tiles
        end;
 
        for DEM := 1 to NumDEMIXDEM do begin
@@ -385,6 +392,7 @@ var
        Graph.GraphDraw.TopMargin := 50;
        Graph.Height := 1250;
        Graph.GraphDraw.LLlegend := true;
+       Graph.GraphDraw.MinVertAxis := CurrentY;
        Graph.RedrawDiagram11Click(Nil);
        fName := NextFileNumber(MDTempDir,'best_dem_graph_','.png');
        SaveImageAsBMP(Graph.Image1,fName);
@@ -399,9 +407,12 @@ begin
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_graph_best_in_Tile in'); {$EndIf}
    try
       SaveBackupDefaults;
-      SortByArea := true;
       fName := DEMIXSettingsDir + 'demix_criteria_order_with_gaps.dbf';
       CriteriaTable := tMyData.Create(fName);
+
+      if (not SortByArea) then begin
+         if (not GetExistingFileName('sorting order for tiles','*.txt',TileSortName)) then exit;
+      end;
 
       for i := 1 to 2 do begin
          BigBMPfiles := tStringList.Create;
@@ -543,8 +554,8 @@ begin
       end;
    finally
       Criteria.Destroy;
-      ShowDefaultCursor;
       GISdb[DBonTable].ApplyGISFilter('');
+      GISdb[DBonTable].ShowStatus;
    end;
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXisCOPorALOSbetter out'); {$EndIf}
 end;
@@ -565,133 +576,8 @@ begin
        aFilter := AddAndIfNeeded(aFilter) + 'CRITERION<>' + QuotedStr(MedianParams[i]);
     end;
     GISdb[DBOntable].ApplyGISFilter(aFilter);
+    GISdb[DBonTable].ShowStatus;
 end;
-
-
-function TransposeDEMIXcriteria(DBonTable : integer; CriteriaFile : PathStr = '') : PathStr;
-const
-   MaxDEMs = 10;
-   MaxCriteria = 50;
-var
-   Headers,DEMs,Criteria,Output,Tiles : tStringList;
-   Line : ANSIString;
-   fName : PathStr;
-   value,ThisDEM,Missing : shortstring;
-   Cycles,Done,
-   i,j,  Tile, Ref, aLandType,DEM,Criterion : Integer;
-   Values : array[0..MaxDEMs,0..MaxCriteria] of shortstring;
-begin
-   {$If Defined(RecordDEMIX)} WriteLineToDebugFile(''); WriteLineToDebugFile('TransposeDEMIXcriteria in, ' + GISdb[DBonTable].dbName); {$EndIf}
-   StopSplashing;
-
-   //GISdb[DBonTable].MyData.InsureFieldPresentAndAdded(ftString,'DEM_LOW_SC',48);
-
-   Headers := tStringList.Create;
-   Headers.LoadFromFile(DEMIXSettingsDir + 'demix_headers.txt');
-   DEMs := tStringList.Create;
-   DEMs.LoadFromFile(DEMIXSettingsDir + 'demix_dems.txt');
-
-   if not FileExists(CriteriaFile) then CriteriaFile := DEMIXSettingsDir + 'demix_criteria.txt';
-   Criteria := tStringList.Create;
-   Criteria.LoadFromFile(CriteriaFile);
-
-   for Criterion := pred(Criteria.Count) downto 0 do begin
-      if not GISdb[DBonTable].MyData.FieldExists(Criteria.Strings[Criterion]) then begin
-         Criteria.Delete(Criterion);
-      end;
-   end;
-
-   Output := tStringList.Create;
-   Line := '';
-   for i := 0 to pred(Headers.Count) do Line := Line + Headers.Strings[i] + ',';
-   Line := Line + 'TOLERANCE,DEM_LOW_SC,COP_ALOS,';
-   for i := 0 to pred(DEMs.Count) do begin
-      Line := Line + DEMs.Strings[i] + '_SCR,';
-   end;
-   Line := Line + 'REC_ID,CRITERION,';
-   for i := 0 to pred(DEMs.Count) do begin
-      Line := Line + DEMs.Strings[i];
-      if i < pred(DEMs.Count) then Line := Line + ',';
-   end;
-   Output.Add(Line);
-
-   GISdb[DBonTable].ClearGISFilter;
-   Tiles := GISdb[DBonTable].MyData.UniqueEntriesInDB('DEMIX_TILE');
-   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('TransposeDEMIXcriteria tiles=' + IntToStr(Tiles.Count)); {$EndIf}
-
-   Cycles := Tiles.Count * 2 * MaxLandType;
-   Done := 0;
-   StartProgress('Transposing ' + GISdb[DBontable].DBName);
-   for Tile := 0 to Pred(Tiles.Count) do begin
-      UpdateProgressBar(Done/Cycles);
-      for Ref := 1 to 2 do begin
-         Line := 'DEMIX_TILE=' + QuotedStr(Tiles[Tile]) + ' AND REF_TYPE=' + QuotedStr(RefType[Ref]);
-         GISdb[DBonTable].ApplyGISFilter(Line);
-         GISdb[DBonTable].EmpSource.Enabled := false;
-         if (GISdb[DBonTable].MyData.FiltRecsInDB > 0) then begin  //there are DSMs or DTMs for this tile
-            for aLandType := 1 to MaxLandType do begin
-               Line := 'DEMIX_TILE=' + QuotedStr(Tiles[Tile]) + ' AND REF_TYPE=' + QuotedStr(RefType[Ref])  + ' AND LAND_TYPE=' + QuotedStr(LandType[aLandType]);
-               GISdb[DBonTable].ApplyGISFilter(Line);
-               GISdb[DBonTable].EmpSource.Enabled := false;
-               if (GISdb[DBonTable].MyData.FiltRecsInDB = DEMs.Count) then begin
-                  for i := 0 to MaxDems do
-                     for j := 0 to MaxCriteria do
-                         Values[i,j] := '-9999';
-
-                  while not GISdb[DBonTable].MyData.eof do begin
-                     GISdb[DBonTable].EmpSource.Enabled := false;
-                     ThisDEM := UpperCase(GISdb[DBonTable].MyData.GetFieldByNameAsString('DEM'));
-                     DEM := DEMs.IndexOf(ThisDEM);
-                     for Criterion := 0 to pred(Criteria.Count) do begin
-                        value := GISdb[DBonTable].MyData.GetFieldByNameAsString(Criteria[Criterion]);
-                        if (value <> '') then Values[DEM,Criterion] := value;
-                     end;
-                     GISdb[DBonTable].MyData.Next;
-                  end;
-
-                  for Criterion := 0 to pred(Criteria.Count) do begin
-                     Line := '';
-                     for i := 0 to pred(Headers.Count) do Line := Line + GISdb[DBonTable].MyData.GetFieldByNameAsString(Headers[i]) + ',';
-                     Line := Line + '99.99,Not_yet_done,Not4,';
-                     for DEM := 0 to pred(DEMs.Count) do Line := Line + '9.9,';
-                     Line := Line + '123456,' + Criteria[Criterion] + ',';
-
-                     for DEM := 0 to pred(DEMs.Count) do Line := Line + Values[DEM,Criterion] + ',';
-                     Delete(Line,Length(Line),1);
-                     Output.Add(Line);
-                  end;
-               end
-               else begin
-                  {$If Defined(RecordDEMIX)}  //this is to track down why some tiles do not have 6 records
-                     if (GISdb[DBonTable].MyData.FiltRecsInDB > 0) then begin  //if it was 0, it was something like CLIFF in the flatlands
-                        Missing := '  Present: ';
-                        GISdb[DBonTable].MyData.First;
-                        while not GISdb[DBonTable].MyData.eof do begin
-                           Missing := Missing + GISdb[DBonTable].MyData.GetFieldByNameAsString('DEM') + ', ';
-                           GISdb[DBonTable].MyData.Next;
-                        end;
-                        WriteLineToDebugFile('filter=' + GISdb[DBonTable].MyData.Filter + '   Matches=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + Missing);
-                     end;
-                  {$EndIf}
-               end;
-            end;
-         end;
-      end;
-   end;
-   EndProgress;
-   GISdb[DBonTable].ClearGISFilter;
-   Headers.Free;
-   Criteria.Free;
-   DEMs.Free;
-   Result := ChangeFileExt(GISdb[DBonTable].dbFullName, '_transpose_' + ExtractFileNameNoExt(CriteriaFile) + '.dbf');
-   DeleteFileIfExists(Result);
-   Result := ChangeFileExt(Result,'.csv');
-   OutPut.SaveToFile(Result);
-   OutPut.Free;
-   GISdb[DBonTable].ShowStatus;
-   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('TransposeDEMIXcriteria out, created ' + Result); {$EndIf}
-end;
-
 
 
 procedure RankDEMS(DBonTable : integer);
@@ -708,7 +594,6 @@ var
    Results,Scoring : tStringList;
    TieToleranceTable : tMyData;
    GridForm : TGridForm;
-
 
        procedure FindTies(StartDEM : integer; var EndDEM : integer);
        var
@@ -762,7 +647,7 @@ begin
           Scoring.Add('DEM,VALUE,SCORE');
           for DEM := 0 to pred(DEMsRanked.Count) do begin
              aLine := DEMsRanked.Strings[DEM] + ',';
-             aLine := aLine + RealToString(GISdb[DBonTable].MyData.GetFieldByNameAsFloat(DEMsRanked.Strings[DEM]),-12,-2) + ',';
+             aLine := aLine + RealToString(abs(GISdb[DBonTable].MyData.GetFieldByNameAsFloat(DEMsRanked.Strings[DEM])),-12,-2) + ',';
              aLine := aLine + RealToString(GISdb[DBonTable].MyData.GetFieldByNameAsFloat(DEMsRanked.Strings[DEM] + '_SCR'),-12,-2);
              Scoring.Add(aline);
              {$If Defined(RecordDEMIXties)} WriteLineToDebugFile(aLine); {$EndIf}
@@ -781,7 +666,8 @@ begin
           end;
 
           TieToleranceTable.ApplyFilter('CRITERION=' + QuotedStr(GISdb[DBonTable].MyData.GetFieldByNameAsString('CRITERION')));
-          TieTolerance := TieToleranceTable.GetFieldByNameAsFloat('TOLERANCE');
+          if TieToleranceTable.FiltRecsInDB = 0 then TieTolerance := 0.25
+          else TieTolerance := TieToleranceTable.GetFieldByNameAsFloat('TOLERANCE');
 
           cop := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('COP');
           alos := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('ALOS');
@@ -802,7 +688,6 @@ begin
        end;
        GridForm.Destroy;
     end;
-    //DEMs.Destroy;
     DEMsRanked.Destroy;
     GISdb[DBonTable].ShowStatus;
     {$If Defined(RecordDEMIX)} WriteLineToDebugFile('RankDEMS out, ' + GISdb[DBonTable].dbName); {$EndIf}
@@ -954,7 +839,6 @@ begin
          DoOne(RefType[i] + ' ALL pixels  ' + Criteria.Strings[j],'CRITERION=' + QuotedStr(Criteria.Strings[j]) + RefFilter );
       end;
       //if i=1 then AverageScore.Add('SKIP');
-
 
       fName := NextFileNumber(MDTempDir,RefType[i] + '_average_scores_','.dbf');
       ScoresDB := StringList2CSVtoDB(AverageScore,fName);
@@ -1112,7 +996,7 @@ end;
 
 procedure DEMIXwineContestMeanMedianGraph(What,DBonTable : integer);
 const
-   SimpleTiles : array[1..4] of shortstring = ('N43PW002B','N37YW076F','N28VW018B','S24TW047D');
+   //SimpleTiles : array[1..4] of shortstring = ('N43PW002B','N37YW076F','N28VW018B','S24TW047D');
    InterAreaSkip = 4;
 var
    AreaList,AllTiles,AllCriteria,DEMsPresent,SlopesPresent,BigGraph : tstringList;
@@ -1156,14 +1040,6 @@ var
          begin
             {$If Defined(RecordDEMIX)} WriteLineToDebugFile('MakeGraphForFilter in, ' + Param + ' ' + Landtype + ' ' + DEMtype); {$EndIf}
             WMDEM.SetPanelText(1,Param + ' ' + Landtype + ' ' + DEMtype);
-            (*
-            if (What = dgSimpleExample) then begin
-               RefFilter := 'LAND_TYPE=' + QuotedStr(LandType) + ' AND REF_TYPE=' + QuotedStr(DEMType);
-               aFilter := '';
-               for I := 1 to 3 do aFilter := AddOrIfNeeded(aFilter) + 'CRITERION=' + QuotedStr(SimpleParams[i]);
-               RefFilter := RefFilter + ' AND (' + aFilter + ')';
-            end
-            else *)
             if (What in [dgAllValues,dgAllScores,dgPercentBest]) then begin
             end
             else if (What in [dgArea]) then begin
@@ -1207,23 +1083,10 @@ var
             end;
             Graph.GraphDraw.GraphAxes := XPartGridOnly;
 
-            (*
-            if What in [dg7Params] then begin
-               for i := 1 to 7 do begin
-                  Symbol.Size := 4;
-                  Symbol.DrawingSymbol := FilledBox;
-                  Symbol.Color := ConvertTColorToPlatformColor(WinGraphColors[i]);
-                  Graph.OpenPointFile(rfile[i],Symbol);
-                  Graph.GraphDraw.LegendList.Add(Elev7Params[i]);
-               end;
-            end
-            else *)
-            begin
-               for DEM := 1 to DEMsPresent.Count do begin
-                  Symbol := SymbolFromDEMName(DEMsPresent.Strings[Pred(DEM)]);
-                  Graph.OpenPointFile(rfile[DEM],Symbol);
-                  Graph.GraphDraw.LegendList.Add(DEMsPresent.Strings[Pred(DEM)]);
-               end;
+            for DEM := 1 to DEMsPresent.Count do begin
+               Symbol := SymbolFromDEMName(DEMsPresent.Strings[Pred(DEM)]);
+               Graph.OpenPointFile(rfile[DEM],Symbol);
+               Graph.GraphDraw.LegendList.Add(DEMsPresent.Strings[Pred(DEM)]);
             end;
 
             for i := 0 to pred(AreaList.Count) do begin
@@ -1276,48 +1139,12 @@ var
                         for i := 1 to AllCriteria.Count do OnePercentage('CRITERION=' + QuotedStr(AllCriteria.Strings[pred(i)]));
                         *)
                      end
-                     else if What in [dgSimpleExample] then begin
-                        (*
-                        Graph.GraphDraw.VertLabel := '';
-                        GISdb[DBonTable].MyData.First;
-                        while not GISdb[DBonTable].MyData.eof do begin
-                           GISdb[DBonTable].EmpSource.Enabled := false;
-                           inc(OnTile);
-                           Graph.GraphDraw.GraphLeftLabels.Add(GISdb[DBonTable].MyData.GetFieldByNameAsString('CRITERION') + '  ' + GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'));
-                           for DEM := 0 to pred(DEMsPresent.Count) do begin
-                              v[2] := Ontile;
-                              if WhatNow in [dgAllValues] then v[1] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(DEMsPresent.Strings[DEM])
-                              else v[1] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(DEMsPresent.Strings[DEM] + '_SCR');
-                              BlockWrite(rfile[succ(DEM)],v,1);
-                           end;
-                           GISdb[DBonTable].MyData.Next;
-                        end;
-                        *)
-                     end
-                     else if What in [dg7Params] then begin
+                     else if What in [dg7Params,dgPick] then begin
                         for DEM := 0 to pred(DEMsPresent.Count) do begin
                            v[2] := CurrentY;
                            v[1] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(DEMsPresent.Strings[DEM]);
                            BlockWrite(rfile[succ(DEM)],v,1);
                         end;
-
-
-                        (*
-                        GISdb[DBonTable].MyData.First;
-                        while not GISdb[DBonTable].MyData.eof do begin
-                           var TStr : shortstring;
-                           TStr := GISdb[DBonTable].MyData.GetFieldByNameAsString('CRITERION');
-                           for k := 1 to 7 do begin
-                              if (TStr = Elev7Params[k]) then begin
-                                 v[2] := CurrentY;
-                                 v[1] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(Param);
-                                 BlockWrite(rfile[k],v,1);
-                                 Break;
-                              end;
-                           end;
-                           GISdb[DBonTable].MyData.Next;
-                        end;
-                        *)
                      end
                      else begin
                         for DEM := 0 to pred(DEMsPresent.Count) do begin
@@ -1347,27 +1174,16 @@ var
                Graph.GraphDraw.MaxHorizAxis := 6.2;
             end;
 
-            (*
-            if (What in [dg7Params]) then begin
-               Graph.GraphDraw.HorizLabel := 'DEM=' + Param + ' ' + RefFilter;
-            end;
-            *)
-
             if (What in [dgPercentBest]) then begin
                Graph.GraphDraw.HorizLabel := 'Percentage of Criteria Where DEM is Best';
                Graph.GraphDraw.MinHorizAxis := 0;
                Graph.GraphDraw.MaxHorizAxis := 100;
             end;
 
-            if (What in [dgSimpleExample,dgAllValues]) then begin
+            if (What in [dgAllValues]) then begin
                if WhatNow in [dgAllValues] then begin
                   Graph.GraphDraw.HorizLabel := 'Criterion Difference';
                   Graph.GraphDraw.MinHorizAxis := 0;
-               end
-               else begin
-                  Graph.GraphDraw.HorizLabel := 'Criterion Ranking';
-                  Graph.GraphDraw.MinHorizAxis := 0.8;
-                  Graph.GraphDraw.MaxHorizAxis := 6.2;
                end;
                Graph.GraphDraw.HorizLabel := LandType + '  ' + DEMType + '  ' + Graph.GraphDraw.HorizLabel;
             end;
@@ -1407,9 +1223,14 @@ begin
       if not GetExistingFileName('criteria to plot','*.txt',fName) then exit;
       TheParams := tStringList.Create;
       TheParams.LoadFromFile(fName);
-    end;
-
-
+   end;
+   if (What = dgPick) then begin
+      AllCriteria := GISdb[DBonTable].MyData.UniqueEntriesInDB('CRITERION');
+      PickParam := GetFromList('Criterion to plot',AllCriteria);
+      TheParams := tStringList.Create;
+      TheParams.Add(PickParam);
+      AllCriteria.Free;
+   end;
 
    GISdb[DBonTable].EmpSource.Enabled := false;
    ColsInBigGraph := 3;
@@ -1420,13 +1241,9 @@ begin
 
    SlopesPresent := GISdb[DBonTable].MyData.UniqueEntriesInDB('LAND_TYPE');
    GISdb[DBonTable].EmpSource.Enabled := false;
-   AllCriteria := GISdb[DBonTable].MyData.UniqueEntriesInDB('CRITERION');
 
    GISdb[DBonTable].EmpSource.Enabled := false;
-   if (What = dgPick) then begin
-      //GISdb[DBonTable].EmpSource.Enabled := false;
-      PickParam := GetFromList('Criterion to plot',AllCriteria);
-   end;
+
    if What in [dgAllValues,dgAllScores] then begin
       AllTiles := GISdb[DBonTable].MyData.UniqueEntriesInDB('DEMIX_TILE');
       ThisTile := GetFromList('DEMIX tile to plot',AllTiles);
@@ -1435,36 +1252,12 @@ begin
 
    BigGraph := tstringList.Create;
    LegendfName := '';
-
-   (*
-   if What in [dgSimpleExample] then begin
-      WhatNow := dgAllValues;
-      MakeGraphForFilter('','ALL','DTM');
-      WhatNow := dgAllScores;
-      MakeGraphForFilter('','ALL','DTM');
-   end
-   else *)
    if What in [dgPercentBest] then begin
       MakeGraphForFilter('','','');
    end
    else begin
       for j := 1 to 2 do begin
-         (*
-         if (What = dgJust3Params) then begin
-            for k := 1 to 3 do MakeGraphForFilter(SimpleParams[k],LandType[1],RefType[j]);
-         end
-         else if (What = dgMean) then begin
-            for k := 1 to 3 do MakeGraphForFilter(MeanParams[k],LandType[1],RefType[j]);
-         end
-         else if (What = dgMedian) then begin
-            for k := 1 to 3 do MakeGraphForFilter(MedianParams[k],LandType[1],RefType[j]);
-         end
-         else if (What = dg7Params) then begin
-            MakeGraphForFilter('ALOS',LandType[1],RefType[j]);
-            MakeGraphForFilter('ASTER',LandType[1],RefType[j]);
-         end
-         else *)
-         if (What = dg7Params) then begin
+         if (What in [dgPick,dg7Params]) then begin
             for k := 0 to pred(TheParams.Count) do MakeGraphForFilter(TheParams.Strings[k],LandType[1],RefType[j]);
          end
          else if (What in [dgAllValues,dgAllScores]) then begin
@@ -1473,9 +1266,6 @@ begin
          end
          else if (What in [dgArea]) then begin
             MakeGraphForFilter('',LandType[1],RefType[j]);
-         end
-         else if (What = dgPick) then begin
-            MakeGraphForFilter(PickParam,LandType[1],RefType[j]);
          end;
       end;
    end;
@@ -1483,8 +1273,7 @@ begin
 
    DEMsPresent.Free;
    SlopesPresent.Free;
-   AllCriteria.Free;
-   if (What = dg7Params) then TheParams.Free;
+   if (What in [dgPick,dg7Params]) then TheParams.Free;
 
    //if (What = dg7Params) then ColsInBigGraph := 2;
 

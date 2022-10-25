@@ -244,10 +244,6 @@ END;
 {  End of "Numerical Recipes in Pascal" Includes       }
 {******************************************************}
 
-
-
-
-
 {==============================================================================================================================}
 
 function Friedman(DBonTable : integer; DEMs : tStringList; Alpha : float64 = 95) : boolean;

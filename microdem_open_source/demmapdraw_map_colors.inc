@@ -1021,14 +1021,15 @@ begin
    else if MDDef.ClipZColors and (zj < MinMapElev) then Result := MDdef.LowOffscaleColor
    else if MDDef.ClipZColors and (zj > MaxMapElev) then Result := MDdef.HighOffscaleColor
    else begin
-      if (DEMGlb[DEMonMap] <> Nil) and (DEMGlb[DEMonMap].LandCoverGrid) then Result := pPal[Round(zj)]
       {$IfDef VCL}
-      else if MapType in [mtDEMVATTable] then Result := VATColors[round(zj)]
+      if MapType in [mtDEMVATTable] then Result := VATColors[round(zj)]
       else if MapType in [mtElevFromTable,mtElevDefinedPalette] then Result := ColorFromZColorTable(ZColorTable,zj,i)
       else if (MapType = mtElevContrast) then begin
          Result := ConvertTColorToPlatformColor(WinGraphColors[(round(zj) mod 16)]);
       end
+      else
       {$EndIf}
+      if (DEMGlb[DEMonMap] <> Nil) and (DEMGlb[DEMonMap].LandCoverGrid) then Result := pPal[Round(zj)]
       else if (MapType = mtElevBands) then begin
          if Odd(round(zj / MapOverlays.ConInt)) then Result := pPal[1]
          else Result := pPal[2];

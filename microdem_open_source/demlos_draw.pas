@@ -14,7 +14,7 @@ unit demlos_draw;
       //{$Define RecordLOSAlgorithm}
       //{$Define RecordPointClouds}
       //{$Define RecordUTMZones}
-      //{$Define RecordLOS}
+      {$Define RecordLOS}
       //{$Define RecordLOSPrettyDrawing}
       //{$Define RecordRandomProfiles}
       //{$Define RecordWaveLenghtHeight}
@@ -30,7 +30,7 @@ interface
 
 
 uses
-  SysUtils,Classes, Math,System.UITypes,System.Types,  System.UIConsts,
+  SysUtils,Classes, Math,System.UITypes,System.Types,  System.UIConsts, StrUtils,
 
   {$IfDef VCL}
      Graphics,Windows,
@@ -102,10 +102,10 @@ type
         DEMOnView,ProfileDropDown,
         LOSProfileDB,FirstX,FirstY,MinAreaZ,MaxAreaZ : integer;
         ZoomedDiagram,CompareDensityAlongProfile,ShowSeaLevel,
-        EnvelopeDone   : boolean;
+        EnvelopeDone,FirstDraw   : boolean;
 
         ProfLats,ProfLongs : Petmath.bfarray32;
-        ShowProfile : array[1..MaxDEMDataSets] of boolean;
+        ShowProfile : tDEMbooleanArray;
         ProfileName : array[1..MaxDEMDataSets] of ShortString;
         TargetName,SensorName : shortstring;
         MultipleProfilesToShow : tStringList;
@@ -129,7 +129,7 @@ type
          destructor Destroy;
          procedure DrawCollar(var Bitmap : tMyBitmap);
          procedure LOSScreenLocation(Dist,Elev : float64; var xp,yp : integer);
-         procedure LOSExtremeElevationsAndScreenCoordinates;
+         procedure LOSExtremeElevationsAndScreenCoordinates(GetElevRange : boolean);
          procedure DrawTheProfile(var Bitmap : tMyBitmap; FieldName : ShortString; Color : tColor; Width : integer; SecondName : ShortString = ''; Mult : integer = 1);
          procedure DrawProfile(var bitmap : tMyBitmap);
          procedure RecalculateProfile;
@@ -228,23 +228,26 @@ end;
 
 procedure tLOSdraw.CreateProfileBMP(var Bitmap : tMyBitmap);
 var
-   i : integer;
+   i,j : integer;
+   fName : PathStr;
 begin
    {$IfDef RecordLOS} WriteLineToDebugFile('tLOSdraw.CreateProfileBMP in'); {$EndIf}
-
+   ShowHourglassCursor;
    {$IfDef VCL}
       LoadMyFontIntoWindowsFont(MDDef.LOSfont,Bitmap.Canvas.Font);
    {$EndIf}
 
    SetSize(Bitmap,Bitmap.Width,Bitmap.Height);
 
-   LOSExtremeElevationsAndScreenCoordinates;
+   LOSExtremeElevationsAndScreenCoordinates(FirstDraw);
+   FirstDraw := false;
    DrawCollar(Bitmap);
 
      if LOSVariety in [losSimpleOne,losVanilla] then begin
-       if DEMGlb[DEMonView].LatLongDegreeInDEM(LatLeft,LongLeft) and DEMGlb[DEMonView].LatLongDegreeInDEM(LatRight,LongRight) then begin
+        if DEMGlb[DEMonView].LatLongDegreeInDEM(LatLeft,LongLeft) and DEMGlb[DEMonView].LatLongDegreeInDEM(LatRight,LongRight) then begin
+           ShowHourglassCursor;
            DrawProfile(BitMap);
-       end;
+        end;
      end;
 
      if (LOSVariety in [losAllDEMs,losAllDEMDropDown]) and (MultipleProfilesToShow = Nil) then begin
@@ -255,6 +258,7 @@ begin
               DEMonView := i;
               if DEMGlb[i].LatLongDegreeInDEM(LatLeft,LongLeft) and DEMGlb[i].LatLongDegreeInDEM(LatRight,LongRight) then begin
                   {$IfDef RecordLOS} WriteLineToDebugFile('Recalculate profile, DEM=' + IntToStr(i)); {$EndIf}
+                  ShowHourglassCursor;
                   RecalculateProfile;
                   MultipleProfilesToShow.Add(GISdb[LOSProfileDB].DBFullName);
                   CloseAndNilNumberedDB(LOSProfileDB);
@@ -267,9 +271,18 @@ begin
         {$IfDef RecordLOS} WriteLineToDebugFile('(MultipleProfilesToShow <> Nil)  image size: ' + IntToStr(Bitmap.Width) + 'x' + IntToStr(Bitmap.Height)); {$EndIf}
         DrawCollar(Bitmap);
         for i := 1 to MultipleProfilesToShow.Count do begin
-           OpenNumberedGISDataBase(LOSProfileDB,MultipleProfilesToShow.Strings[pred(i)]);
-           DrawTheProfile(Bitmap,'ELEV_M',ConvertPlatformColorToTColor(LineColors256[i]),LineSize256[i]);
-           CloseAndNilNumberedDB(LOSProfileDB);
+           fName := MultipleProfilesToShow.Strings[pred(i)];
+
+           for j := 1 to MaxDEMDataSets do begin
+              if ShowProfile[j] and ValidDEM(j) then begin
+                 if StrUtils.AnsiContainsText(fName,DEMGlb[j].AreaName) then begin
+                    OpenNumberedGISDataBase(LOSProfileDB,fName);
+                    ShowHourglassCursor;
+                    DrawTheProfile(Bitmap,'ELEV_M',ConvertPlatformColorToTColor(LineColors256[i]),LineSize256[i]);
+                    CloseAndNilNumberedDB(LOSProfileDB);
+                 end;
+              end;
+           end;
         end;
      end;
      {$IfDef RecordLOS} WriteLineToDebugFile('Left side:  ' + LatLongDegreeToString(LatLeft,LongLeft)); {$EndIf}
@@ -361,6 +374,7 @@ var
    LOSCalculation : tLOSCalculation;
 begin
     {$IfDef RecordLOS} WriteLineToDebugFile('tLOSdraw.RecalculateProfile in'); {$EndIf}
+    ShowHourglassCursor;
     if LOSVariety in [losMagModel,losAllDEMs,losAllDEMDropDown,losSimpleMagModel,losSimpleOne] then begin
        CalculatingCurvature := false;
     end;
@@ -405,30 +419,21 @@ begin
                  DrawFresnel,
               {$EndIf}
               {$IFDef ExVegDensity}
-                 false,
+                 false,false,
               {$Else}
                  (DEMGlb[DEMonView].VegGrid[1] <> 0),
-              {$EndIf}
-
-              {$IfDef ExPointCloudMemory}
-                 false,
-              {$Else}
-                 (LOSMemoryPointCloud[1] <> Nil),
-              {$EndIf}
-              MDDef.DoGrazingFields,
-              false,
-
-              {$IFDef ExVegDensity}
-                 false,
-              {$Else}
                  (DEMGlb[DEMonView].VegGrid[2] <> 0),
               {$EndIf}
 
               {$IfDef ExPointCloudMemory}
-                 false,
+                 false,false,
               {$Else}
+                 (LOSMemoryPointCloud[1] <> Nil),
                  (LOSMemoryPointCloud[2] <> Nil),
               {$EndIf}
+              MDDef.DoGrazingFields,
+              false,
+
               {$IFDef ExVegDensity}
                  false,false );
               {$Else}
@@ -819,6 +824,7 @@ var
    xpic,ypic,xp,yp : integer;
    ColorFromDB : boolean;
 begin
+   ShowHourglassCursor;
    GISdb[LOSProfileDB].MyData.First;
    FirstPoint := true;
    ColorFromDB := (Color < 0);
@@ -865,9 +871,9 @@ begin
 end;
 
 
-procedure tLOSdraw.LOSExtremeElevationsAndScreenCoordinates;
+procedure tLOSdraw.LOSExtremeElevationsAndScreenCoordinates(GetElevRange : boolean);
 var
-   PointElev : float32;
+   z : float32;
    j : integer;
    dists : ^Petmath.bfarray32;
 
@@ -879,13 +885,9 @@ var
        DEMGlb[DEMonView].GetStraightRouteLatLongDegree(LatLeft,LongLeft,LatRight,LongRight,MDDef.wf.StraightAlgorithm,PixLong,ProfLats,ProfLongs,dists^);
        {$IfDef RecordLOS} WriteLineToDebugFile('OneProfile, start loop'); {$EndIf}
        For i := 0 to PixLong do begin
-          if DEMGlb[DEMonView].GetElevFromLatLongDegree(ProfLats[i],ProfLongs[i],PointElev) then begin
-             {$IfDef RecordAllLOS}
-                if (i mod 50 = 0) or (i = PixLong) then begin
-                   WriteLineToDebugFile( IntToStr(i) + '  ' + LatLongDegreeToString(ProfLats[i],ProfLongs[i]) + RealToString(PointElev,12,1));
-                end;
-             {$EndIf}
-             Petmath.CompareValueToExtremes(round(PointElev),MinAreaZ,MaxAreaZ);
+          if DEMGlb[DEMonView].GetElevFromLatLongDegree(ProfLats[i],ProfLongs[i],z) then begin
+             {$IfDef RecordAllLOS} if (i mod 50 = 0) or (i = PixLong) then WriteLineToDebugFile(IntToStr(i) + ' ' + LatLongDegreeToString(ProfLats[i],ProfLongs[i]) + RealToString(z,12,1)); {$EndIf}
+             Petmath.CompareValueToExtremes(round(z),MinAreaZ,MaxAreaZ);
           end;
        end;
        {$IfDef RecordLOS} WriteLineToDebugFile('Done OneProfile, DEM=' + IntToStr(DEMonView)); {$EndIf}
@@ -895,24 +897,28 @@ begin
    {$IfDef RecordLOS} WriteLineToDebugFile('TDEMLOSF.LOSExtremeElevationsAndScreenCoordinates,  DEM=' + IntToStr(DEMonView));   {$EndIf}
    VincentyCalculateDistanceBearing(LatLeft,LongLeft,LatRight,LongRight,FormSectLenMeters,LOSAzimuth);
    if (FormSectLenMeters > 25000) then MDDef.LOSHorizTickSpacing_KM := true;
-   new(Dists);
 
-     if (LOSVariety in [losAllDEMs,losAllDEMDropDown]) and (MultipleProfilesToShow = Nil) then begin
-         if (MinAreaZ > 32000) then begin
-            for j := 1 to MaxDEMDataSets do if ValidDEM(j) and ShowProfile[j] then begin
-               {$IfDef RecordLOS} WriteLineToDebugFile('Get elevations, DEM=' + IntToStr(j)); {$EndIf}
-               DEMonView := j;
-               OneProfile;
+   if GetElevRange then begin
+
+       new(Dists);
+       if (LOSVariety in [losAllDEMs,losAllDEMDropDown]) and (MultipleProfilesToShow = Nil) then begin
+            if (MinAreaZ > 32000) then begin
+               for j := 1 to MaxDEMDataSets do if ValidDEM(j) and ShowProfile[j] then begin
+                  {$IfDef RecordLOS} WriteLineToDebugFile('Get elevations, DEM=' + IntToStr(j)); {$EndIf}
+                  DEMonView := j;
+                  OneProfile;
+               end;
+               if LOSVariety in [losAllDEMDropDown] then MinAreaZ := MinAreaZ - pred(NumDEMDataSetsOpen) * MDDef.DropDownPerProfile;
             end;
-            if LOSVariety in [losAllDEMDropDown] then MinAreaZ := MinAreaZ - pred(NumDEMDataSetsOpen) * MDDef.DropDownPerProfile;
-         end;
-     end
-     else begin
-        OneProfile;
-     end;
+        end
+        else begin
+           OneProfile;
+        end;
+        MinAreaZ := MinAreaZ - 1;
+        MaxAreaZ := MaxAreaZ + 1;
+        Dispose(Dists);
+   end;
 
-   MinAreaZ := MinAreaZ - 1;
-   MaxAreaZ := MaxAreaZ + 1;
    Dropcurve := DropEarthCurve(FormSectLenMeters);
    FormScaleFac := 1.0 * (MaxAreaZ - MinAreaZ + Dropcurve) / PixelsHigh;
    FormVertExag := (FormSectLenMeters /PixLong)/ FormScaleFac;
@@ -920,7 +926,6 @@ begin
       WriteLineToDebugFile('PixLong=' + IntToStr(PixLong) + '  Dropcurve=' + RealToString(Dropcurve,-12,-2));
       WriteLineToDebugFile('FormVertExag=' + RealToString(FormVertExag,-12,-2) + ' FormScaleFac=' + RealToString(FormScaleFac,-12,-2 )+ ' FormSectLenMeters=' + RealToString(FormSectLenMeters,-12,-2));
    {$EndIf}
-   Dispose(Dists);
 end;
 
 
@@ -1120,9 +1125,8 @@ begin
    if ValidDEM(DEMonView) then begin
       if FresnelTable = -1 then begin
          fName := Petmar.NextFileNumber(MDTempDir, 'radio_los_',DefaultDBExt);
-         MakeTopoProfileTable(fName,true,(VegGrid <> 0),false,MDDef.DoGrazingFields,false,false,false,false,false);
+         MakeTopoProfileTable(fName,true,(VegGrid <> 0),false,false,false,MDDef.DoGrazingFields,false,false,false);
          FresnelTable := OpenDataBase('LOScompute',fName,false);
-         //UseData := tMyData.Create(fName);
       end;
 
       LOSCalculation := tLOSCalculation.Create;
@@ -1656,11 +1660,7 @@ end;
 
 constructor tLOSdraw.Create;
 var
-   whichdem : integer;
-   {$IfDef ExPointCloudMemory}
-   {$Else}
    j : integer;
-   {$EndIf}
 begin
    {$IfDef RecordLOS} WriteLineToDebugFile('tLOSdraw.Create'); {$EndIf}
    TargetName := '';
@@ -1670,6 +1670,7 @@ begin
    ZoomedDiagram := false;
    ShowSeaLevel := true;
    CompareDensityAlongProfile := false;
+   FirstDraw := true;
    //EraseFresnelDB := false;
    EnvelopeDone := false;
    ProfileDropDown := 0;
@@ -1678,17 +1679,17 @@ begin
    MaxAreaZ := -MaxSmallInt;
    TargetGroundElevLAS := -9999;
    ObsGroundElevLAS := -9999;
-   for WhichDEM := 1 to MaxDEMDataSets do ShowProfile[WhichDEM] := true;
+   for j := 1 to MaxDEMDataSets do ShowProfile[j] := true;
    {$IfDef ExPointCloudMemory}
    {$Else}
       PtCldInUse := 1;
       for j := 1 to 2 do LOSMemoryPointCloud[j] := Nil;
    {$EndIf}
-   for WhichDEM := 1 to NumDEMDataSetsOpen do begin
-      ProfileName[WhichDEM] := '';
-      if (DEMGlb[WhichDEM] <> Nil) then begin
-         {$IfDef RecordLOS} WriteLineToDebugFile(DEMGlb[WhichDEM].AreaName); {$EndIf}
-         ProfileName[WhichDEM] := RemoveUnderScores(DEMGlb[WhichDEM].AreaName)
+   for j := 1 to NumDEMDataSetsOpen do begin
+      ProfileName[j] := '';
+      if ValidDEM(j) then begin
+         {$IfDef RecordLOS} WriteLineToDebugFile(DEMGlb[j].AreaName); {$EndIf}
+         ProfileName[j] := RemoveUnderScores(DEMGlb[j].AreaName)
       end;
    end;
 end;

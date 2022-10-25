@@ -2,8 +2,8 @@ object wmdem: Twmdem
   Left = 0
   Top = 262
   Caption = 'GIS program loading'
-  ClientHeight = 1384
-  ClientWidth = 2204
+  ClientHeight = 1375
+  ClientWidth = 2198
   Color = clScrollBar
   DefaultMonitor = dmDesktop
   Font.Charset = DEFAULT_CHARSET
@@ -28,13 +28,13 @@ object wmdem: Twmdem
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 2204
+    Width = 2198
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34
     TabOrder = 0
     OnMouseDown = ToolBar1MouseDown
-    ExplicitWidth = 2198
+    ExplicitWidth = 2192
     object SpeedButton2: TSpeedButton
       Left = 0
       Top = 0
@@ -1676,8 +1676,8 @@ object wmdem: Twmdem
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 1365
-    Width = 2204
+    Top = 1356
+    Width = 2198
     Height = 19
     Panels = <
       item
@@ -1696,8 +1696,8 @@ object wmdem: Twmdem
     Visible = False
     OnClick = StatusBar1Click
     OnDblClick = StatusBar1DblClick
-    ExplicitTop = 1356
-    ExplicitWidth = 2198
+    ExplicitTop = 1347
+    ExplicitWidth = 2192
   end
   object MainMenu1: TMainMenu
     Left = 136
@@ -2248,12 +2248,8 @@ object wmdem: Twmdem
           OnClick = DEMIXwinecontest1Click
         end
         object DEMIXmergeCSVfiles1: TMenuItem
-          Caption = 'DEMIX merge and transpose CSV files'
+          Caption = 'DEMIX create database (merge and transpose CSV files)'
           OnClick = DEMIXmergeCSVfiles1Click
-        end
-        object DEMIXmergeandtransposewithmeanmedian1: TMenuItem
-          Caption = 'DEMIX merge and transpose with mean-median'
-          OnClick = DEMIXmergeandtransposewithmeanmedian1Click
         end
         object N3: TMenuItem
           Caption = '-'

@@ -165,9 +165,9 @@
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_MinorVer>10</VerInfo_MinorVer>
         <VerInfo_MajorVer>2022</VerInfo_MajorVer>
-        <VerInfo_Release>9</VerInfo_Release>
+        <VerInfo_Release>25</VerInfo_Release>
         <DCC_DcuOutput>C:\turbo\obj_files_64\</DCC_DcuOutput>
-        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2022.10.9.2;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2022.10.25.2;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
         <VerInfo_Build>2</VerInfo_Build>
         <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
@@ -956,6 +956,10 @@
         <DCCReference Include="..\python\simple_python.pas">
             <Form>PythonForm1</Form>
         </DCCReference>
+        <DCCReference Include="..\common_code\demix_filter.pas">
+            <Form>DemixFilterForm</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <None Include="nevadia_defines.inc"/>
         <None Include="..\common_code\demdatabase_maps.inc"/>
         <None Include="..\common_code\demdatabase_vcl.inc"/>
@@ -1318,63 +1322,195 @@
             <ModelSupport>False</ModelSupport>
             <Deployment Version="4">
                 <DeployFile LocalName="..\common_code\demcoord_edits.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\demcoord_edits.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\common_code\demcoord_edits.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demcoord_geomorph.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demcoord_geomorph.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demcoord_graphics.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\demcoord_graphics.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\common_code\demcoord_graphics.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demcoord_read_odd_dems.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\demcoord_read_odd_dems.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\common_code\demcoord_read_odd_dems.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demcoord_sso.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\demcoord_sso.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\common_code\demcoord_sso.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demcoord_straight.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\demcoord_straight.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\common_code\demcoord_straight.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demcoord_veg.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\demcoord_veg.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\common_code\demcoord_veg.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demcoord_vis.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\demcoord_vis.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\common_code\demcoord_vis.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demcoord_write_odd_dems.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\demcoord_write_odd_dems.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\common_code\demcoord_write_odd_dems.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demdatabase_geology.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\demdatabase_geology.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\common_code\demdatabase_geology.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\DEMDataBase_grafs.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\DEMDataBase_grafs.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demdatabase_maps.inc" Configuration="Debug" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\DEMDataBase_maps.inc" Configuration="Release" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\demdatabase_maps.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\common_code\demdatabase_maps.inc" Configuration="Release" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\DEMDataBase_maps.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\DEMDataBase_table.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demdatabase_table.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\demdatabase_table.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\common_code\demdatabase_table.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\DEMDataBase_table.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demdatabase_vcl.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\demdatabase_vcl.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\common_code\demdatabase_vcl.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demeros_vcl.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demeros_vcl.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\DEMESRIShapeFile_maps.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\DEMESRIShapeFile_maps.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demlos_crest_wavelength.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\demlos_crest_wavelength.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\common_code\demlos_crest_wavelength.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demlos_marine_mag.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\demlos_marine_mag.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\common_code\demlos_marine_mag.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demmapdraw_vcl.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demmapdraw_vcl.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demmapdraw_viewshed.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\demmapdraw_viewshed.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\common_code\demmapdraw_viewshed.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demmapdraw_viewshed_vcl.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demmapdraw_viewshed_vcl.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demmapf_demix_tiles.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\demmapf_demix_tiles.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\common_code\demmapf_gdal.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\demmapf_gdal.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\common_code\demmapf_gdal.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demmapf_geology.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\demmapf_geology.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\common_code\demmapf_geology.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demmapf_geostats.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demmapf_resize_map.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\demmapf_resize_map.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\common_code\demmapf_resize_map.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demmapf_set_up_new_windows.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\demmapf_set_up_new_windows.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\common_code\demmapf_set_up_new_windows.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demstat_global_dems.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\demstat_global_dems.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\common_code\demstat_global_dems.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demstat_grid_compare.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\demstat_grid_compare.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\common_code\demstat_grid_compare.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\DEMVAROP.PAS" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\DEMVAROP.PAS" Configuration="Release" Class="ProjectFile"/>
@@ -1394,8 +1530,20 @@
                 <DeployFile LocalName="..\common_code\PETDATE.PAS" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\PETDATE.PAS" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\petmar_types_vcl.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\petmar_types_vcl.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\common_code\petmar_types_vcl.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\petmar_vcl.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\petmar_vcl.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\common_code\petmar_vcl.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\SGP4SDP4.PAS" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\SGP4SDP4.PAS" Configuration="Release" Class="ProjectFile"/>
@@ -1414,70 +1562,274 @@
                 <DeployFile LocalName="..\common_code\SOLAR.PAS" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\SOLAR.PAS" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\las_lidar\create_las.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\las_lidar\create_las.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\las_lidar\create_las.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\las_lidar\reproject_las.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\las_lidar\reproject_las.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\las_lidar\reproject_las.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\las_lidar\subset_export_las.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\las_lidar\subset_export_las.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\las_lidar\subset_export_las.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_only_code\nevadia_main_batch.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_only_code\nevadia_main_batch.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\basemap_datum.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\basemap_datum.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\basemap_datum.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\basemap_vincenty.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\basemap_vincenty.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\basemap_vincenty.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\demcoord_edits.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\demcoord_edits.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\demcoord_edits.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\demcoord_elev_manip.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\demcoord_elev_manip.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\demcoord_elev_manip.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\demcoord_geomorph.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\demcoord_geomorph.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\demcoord_geomorph.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\demcoord_read_dem.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\demcoord_read_dem.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\demcoord_read_dem.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\demcoord_read_dted.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\demcoord_read_dted.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\demcoord_read_dted.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\demcoord_straight.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\demcoord_straight.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\demcoord_straight.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\demcoord_vis.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\demcoord_vis.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\demcoord_vis.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\demcoord_worldfile.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\demcoord_worldfile.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\demcoord_write_dem.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\demcoord_write_dem.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\demcoord_write_dem.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\demdatabase_drainage_basin.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\demdatabase_drainage_basin.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\demdatabase_drainage_basin.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\demdatabase_field_edits.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\demdatabase_field_edits.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\demdatabase_field_edits.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\demdatabase_geology.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\demdatabase_geology.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\demdatabase_geology.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\demdatabase_graph.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\demdatabase_graph.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\demdatabase_graph.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\demdatabase_legend.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\demdatabase_legend.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\demdatabase_legend.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\demdatabase_maps.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\demdatabase_maps.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\demdatabase_maps.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\demdatabase_special_cases.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\demdatabase_special_cases.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\demdatabase_special_cases.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\demeros_landsat.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\demeros_landsat.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\demeros_landsat.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\demmapdraw_coords.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\demmapdraw_coords.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\demmapdraw_coords.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\demmapdraw_grids.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\demmapdraw_grids.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\demmapdraw_grids.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\demmapdraw_map_colors.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\demmapdraw_map_colors.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\demmapdraw_map_colors.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\demmapdraw_map_sizing.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\demmapdraw_map_sizing.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\demmapdraw_map_sizing.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\demmapdraw_plot_dbs.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\demmapdraw_plot_dbs.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\demmapdraw_plot_dbs.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\demmapdraw_plot_vcl.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\demmapdraw_plot_vcl.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\demmapdraw_plot_vcl.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\demmapdraw_tissot.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\demmapdraw_tissot.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\demmapdraw_viewshed.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\demmapdraw_viewshed.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\demmapdraw_viewshed.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\dem_database_demix_ops.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\dem_database_demix_ops.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\petmar_types_db.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\petmar_types_db.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\shapefile_creation.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\shapefile_creation.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\shapefile_creation.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\stats_petmath.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\stats_petmath.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\opengl\ogl_GL.PAS" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\opengl\ogl_GL.PAS" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\stratcol\sc_COLENTER.PAS" Configuration="Debug" Class="ProjectFile"/>
@@ -1487,20 +1839,56 @@
                 <DeployFile LocalName="..\stratcol\sc_COLLABEL.PAS" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\stratcol\sc_COLLABEL.PAS" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\tdbf_current\dbf_common.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\tdbf_current\dbf_common.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\tdbf_current\dbf_common.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\tdbf_current\dbf_soundex.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\tdbf_current\dbf_soundex.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\tdbf_current\dbf_soundex.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\tdbf_current\dbf_str.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\tdbf_current\dbf_str.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\tdbf_current\dbf_str.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\tdbf_current\dbf_struct.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\tdbf_current\dbf_struct.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\tdbf_current\dbf_struct.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\TDbf_Delphi_XE2_v2\tdbf-code-507-trunk\src\dbf_common.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\TDbf_Delphi_XE2_v2\tdbf-code-507-trunk\src\dbf_str.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\TDbf_Delphi_XE2_v2\tdbf-code-507-trunk\src\dbf_struct.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\TDbf_Delphi_XE2_v2\tdbf-code-507-trunk\src\getstrfromint.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="C:\microdem\microdem.exe" Configuration="Debug" Class="ProjectOutput"/>
+                <DeployFile LocalName="C:\microdem\microdem.exe" Configuration="Debug" Class="ProjectOutput">
+                    <Platform Name="Win64">
+                        <RemoteName>microdem.exe</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="C:\microdem\microdem.exe" Configuration="Release" Class="ProjectOutput"/>
                 <DeployFile LocalName="nevadia_defines.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="nevadia_defines.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="nevadia_defines.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployClass Name="AdditionalDebugSymbols">
                     <Platform Name="iOSSimulator">

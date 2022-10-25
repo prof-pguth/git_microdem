@@ -184,7 +184,7 @@ const
 
 
 type
-   tNormal  = array[0..MaxElevArraySize] of VectorType;  {runs S->N}
+   tNormal  = array[0..MaxElevArraySize] of VectorType32;  {runs S->N}
    tNormalPointer = ^tNormal;
    tNormals = array[0..MaxColsInRAM] of tNormalPointer;
    tNormalsPointer = ^tNormals;
@@ -597,6 +597,9 @@ type
          function ZRange : ShortString;
 
          procedure TrackElevationRange(Where : shortstring);
+
+         function NormalAtPoint(Col,Row : integer; var n1,n2,n3 : float32) : boolean;
+
 
          procedure GetStraightRouteLatLongDegree(Lat1,Long1,Lat2,Long2 : float64; StraightAlgorithm : tStraightAlgorithm; var NumPoints : integer; var Lats,Longs,dists : Petmath.bfarray32);
          procedure GetStraightRouteDEMGrid(Lat1,Long1,Lat2,Long2 : float64; StraightAlgorithm : tStraightAlgorithm; var NumPoints : integer; var xgrids,ygrids,dists : Petmath.bfarray32);

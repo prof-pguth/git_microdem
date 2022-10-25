@@ -1,10 +1,11 @@
 ﻿unit nevadia_main;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{   file verified 5/13/2018       }
-{_________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2022 Peter L. Guth  }
+{___________________________________}
 
 
 {$I nevadia_defines.inc}
@@ -513,7 +514,6 @@ type
     listgeo1: TMenuItem;
     DEMIXelevationhistograms1: TMenuItem;
     DEMIXmergeCSVfiles1: TMenuItem;
-    DEMIXmergeandtransposewithmeanmedian1: TMenuItem;
     DEMIXtilesizebylatitude1: TMenuItem;
     DEMIXreferenceDEMcreation1: TMenuItem;
     N35: TMenuItem;
@@ -1357,12 +1357,12 @@ end;
 
 procedure Twmdem.DEMIXmergeandtransposewithmeanmedian1Click(Sender: TObject);
 begin
-   MergeDEMIXCSV(DEMIXSettingsDir + 'demix_criteria_with_signed.txt');
+   MergeDEMIXCSV;  //(DEMIXSettingsDir + 'demix_criteria_with_signed.txt');
 end;
 
 procedure Twmdem.DEMIXmergeCSVfiles1Click(Sender: TObject);
 begin
-   MergeDEMIXCSV(DEMIXSettingsDir + 'demix_criteria.txt');
+   MergeDEMIXCSV; // (DEMIXSettingsDir + 'demix_criteria.txt');
 end;
 
 procedure Twmdem.DEMIXreferenceDEMcreation1Click(Sender: TObject);
@@ -2230,7 +2230,7 @@ var
    fName,dName, pName : PathStr;
    db : integer;
 
-         procedure SetColors(fName : PathStr);
+         procedure SetColors(fName : PathStr; Zoom : boolean = false);
          var
             db : integer;
          begin
@@ -2242,6 +2242,7 @@ var
             GISdb[db].dbOpts.ZColorMin := -500;
             GISdb[db].dbOpts.ZColorMax := 500;
             DEMGlb[LastDEMLoaded].SelectionMap.MapDraw.AllowDataBaseDrawing := true;
+            if Zoom then GISdb[db].dbTableF.ZoomtoDBcoverage1Click(Nil);
          end;
 
 begin
@@ -2393,7 +2394,7 @@ begin
          dName := MainMapData + dName + '\';
 
          {$IfDef RecordLabs} WriteLineToDebugFile('Load shapefiles'); {$EndIf}
-         SetColors(dName + 'tula_fracture_zone.shp');
+         SetColors(dName + 'tula_fracture_zone.shp',true);
          SetColors(dName + 'WEST03MV_line.shp');
          SetColors(dName + 'MRTN06WT_line.shp');
          SetColors(dName + 'ELT19_line.shp');

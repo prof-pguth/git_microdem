@@ -612,8 +612,8 @@ end;
                           if MyData.FieldExists('NAME') then TStr := '  ' + MyData.GetFieldByNameAsString('NAME') else TStr := '';
                           WriteLineToDebugFile(IntToStr(MyData.RecNo) + RealToString(zs^[0],12,1) + RealToString(zs^[pred(NumPts)],12,1) + TStr);
                        {$EndIf}
-                       MyData.CarefullySetFloat32('FIRST_Z',aShapeFile.CurrentLineZs^[0], 0.01);
-                       MyData.CarefullySetFloat32('LAST_Z',aShapeFile.CurrentLineZs^[pred(aShapeFile.CurrentPolyLineHeader.NumPoints)],0.01);
+                       MyData.CarefullySetFloat('FIRST_Z',aShapeFile.CurrentLineZs^[0], 0.01);
+                       MyData.CarefullySetFloat('LAST_Z',aShapeFile.CurrentLineZs^[pred(aShapeFile.CurrentPolyLineHeader.NumPoints)],0.01);
                      end;
                      if (What = agNumPts) then begin
                         MyData.SetFieldByNameAsInteger('REC_PNTS',aShapeFile.CurrentPolyLineHeader.NumPoints);

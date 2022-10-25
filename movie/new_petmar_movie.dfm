@@ -3,8 +3,8 @@ object FormAnimate: TFormAnimate
   Top = 238
   BorderIcons = [biSystemMenu, biMinimize]
   Caption = 'Animated GIF '
-  ClientHeight = 704
-  ClientWidth = 1092
+  ClientHeight = 695
+  ClientWidth = 1086
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -17,7 +17,7 @@ object FormAnimate: TFormAnimate
   object ScrollBoxSource: TScrollBox
     Left = 0
     Top = 0
-    Width = 1092
+    Width = 1086
     Height = 93
     VertScrollBar.Visible = False
     Align = alTop
@@ -86,8 +86,8 @@ object FormAnimate: TFormAnimate
   object Panel1: TPanel
     Left = 0
     Top = 93
-    Width = 1092
-    Height = 592
+    Width = 1086
+    Height = 583
     Align = alClient
     BevelOuter = bvNone
     BorderWidth = 4
@@ -103,6 +103,8 @@ object FormAnimate: TFormAnimate
       BorderWidth = 2
       Caption = ' '
       TabOrder = 0
+      ExplicitWidth = 945
+      ExplicitHeight = 575
       object ImageAnimate: TImage
         Left = 3
         Top = 3
@@ -125,6 +127,7 @@ object FormAnimate: TFormAnimate
       BevelOuter = bvNone
       Caption = ' '
       TabOrder = 1
+      ExplicitHeight = 575
       object Label1: TLabel
         Left = 9
         Top = 112
@@ -265,8 +268,8 @@ object FormAnimate: TFormAnimate
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 685
-    Width = 1092
+    Top = 676
+    Width = 1086
     Height = 19
     Panels = <
       item

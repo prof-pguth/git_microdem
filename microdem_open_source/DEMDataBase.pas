@@ -1,10 +1,12 @@
 ﻿unit demdatabase;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Released under the MIT Licences    }
-{ Copyright (c) 2015 Peter L. Guth   }
-{   file verified 5/13/2018          }
-{____________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2022 Peter L. Guth  }
+{___________________________________}
+
 
 {$I nevadia_defines.inc}
 
@@ -181,7 +183,7 @@ const
    dgPick = 3;
    dgAllValues = 4;
    dgAllScores = 5;
-   dgSimpleExample = 6;
+   //dgSimpleExample = 6;
    dgPercentBest = 7;
    dgArea = 8;
    //dgJust3Params = 9;
@@ -750,7 +752,7 @@ function DoAShapeFile(fName : PathStr; Trim : boolean = false) : integer;
       procedure RankDEMS(DBonTable : integer);
       procedure SumsOfRankDEMS(DBonTable : integer);
       procedure BestDEMSbyCategory(DBonTable : integer);
-      function TransposeDEMIXcriteria(DBonTable : integer; CriteriaFile : PathStr = '') : PathStr;
+      //function TransposeDEMIXcriteria(DBonTable : integer) : PathStr;
       procedure TransposeDEMIXwinecontestGraph(DBonTable : integer);
       function DEMIXwineContestScoresGraph(DBonTable : integer; XScalelabel : shortstring; MinHoriz : float32 = 0.5; MaxHoriz : float32 = 5.5) : tThisBaseGraph;
       procedure DEMIXwineContestMeanMedianGraph(What,DBonTable : integer);
@@ -758,7 +760,8 @@ function DoAShapeFile(fName : PathStr; Trim : boolean = false) : integer;
       procedure FilterOutSignedCriteria(DBonTable : integer);
       procedure DEMIXisCOPorALOSbetter(DBonTable : integer);
       procedure ExtractTheDEMIXtiles(DBonTable : integer);
-      procedure DEMIX_graph_best_in_Tile(DBonTable : integer);
+      procedure DEMIX_graph_best_in_Tile(DBonTable : integer; SortByArea : boolean);
+      function SymbolFromDEMName(DEMName : shortstring) : tFullSymbolDeclaration;
 
 {$IfDef ExRiverNetworks}
 {$Else}
@@ -2885,7 +2888,10 @@ end;
                     MaskBMP.Canvas.Brush.Color := clBlack;
                     MaskBMP.Canvas.Brush.Style := bsSolid;
                     OldType := aShapeFile.MainFileHeader.ShapeType;
-                    if MDDef.TreatLineAsPolygon and (OldType <> 5) then aShapeFile.MainFileHeader.ShapeType := 5;
+                    if MDDef.TreatLineAsPolygon and (OldType = 3) then aShapeFile.MainFileHeader.ShapeType := 5;
+                    if MDDef.TreatLineAsPolygon and (OldType = 13) then aShapeFile.MainFileHeader.ShapeType := 15;
+                    if MDDef.TreatPolygonAsLine and (OldType = 5) then aShapeFile.MainFileHeader.ShapeType := 3;
+                    if MDDef.TreatPolygonAsLine and (OldType = 15) then aShapeFile.MainFileHeader.ShapeType := 13;
                     if (SingleRecord <> 0) then begin
                       {$IfDef RecordCurrentRecord} WriteLineToDebugFile('MaskDEMFromShapeFile, RecNo=' + IntToStr(SingleRecord)); {$EndIf}
                        aShapefile.PlotSingleRecordMap(TheMapOwner.MapDraw,MaskBMP,SingleRecord);

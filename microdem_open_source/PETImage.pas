@@ -4,7 +4,7 @@
 { Part of ianMICRODEM GIS Program    }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
-{ Copyright (c) 2015 Peter L. Guth   }
+{ Copyright (c) 2022 Peter L. Guth   }
 {____________________________________}
 
 
@@ -48,13 +48,13 @@ uses
      Buttons, ToolWin, ComCtrls,DB,  JPEG,
   {$EndIf}
 
-  {$IfDef FMX}
-     FMX.Graphics,FMX.Types,
-  {$EndIf}
-
   {$IfDef NoPatternFloodFill}
   {$Else}
      Zipatone,
+  {$EndIf}
+
+  {$IfDef FMX}
+     FMX.Graphics,FMX.Types,
   {$EndIf}
 
   {$IfDef RegisterPhoto}  //unclear if all the code for this is still available, and if it would run
@@ -75,7 +75,6 @@ type
 
    RecolorMethod = (NegativeMethod,NonBlackToWhite,NonWhiteToBlack,PickedColors,NoGrays,LeaveSingle,TurnRed,TurnGreen,TurnBlue,MakeGrayscale,TurnCyan,TurnMagenta,TurnYellow,StretchGrayscale,
                        MakeSubdued,DilateImage,ErodeImage,NoNonGrays,WhiteToNearWhite,SmoothFilterImage, BlueGrayscale,RedGrayscale,GreenGrayscale,TurnHLS_light,TurnHLS_sat,TurnHLS_hue);
-
 
 type
 

@@ -175,8 +175,8 @@ type
          function GetLineCoordsAndZsFromDEM(DEM, RecNum: int32): boolean;
 
          function OldGetLineCoords(RecNum : int32; var NumPts,NParts : int32; var Coords : tdCoords; var PartSize : tPartSize) : boolean;
-         function OldGetLineCoordsWithZs(RecNum : int32; var NumPts,NParts : int32; var Coords : tdCoords; var PartSize : tPartSize; GetZs : boolean; var zs : array of float32) : boolean;
-         function OldGetLineCoordsAndZsFromDEM(DEM, RecNum: int32; var NumPts,NParts: int32; var Coords: tdCoords; var PartSize: tPartSize; var zs: array of float32): boolean;
+         function OldGetLineCoordsWithZs(RecNum : int32; var NumPts,NParts : int32; var Coords : tdCoords; var PartSize : tPartSize; GetZs : boolean; var zs : array of float64) : boolean;
+         function OldGetLineCoordsAndZsFromDEM(DEM, RecNum: int32; var NumPts,NParts: int32; var Coords: tdCoords; var PartSize: tPartSize; var zs: array of float64): boolean;
 
          procedure DropInBucketIntoDEM(LastDEM : integer; MaxDEM : integer = 0; MinDEM : integer = 0; MeanDEM : integer = 0; DensityDEM : integer = 0);
          procedure RepairBoundingBoxInSHPandSHXfiles;
@@ -503,11 +503,7 @@ var
 begin
    {$IfDef RecordShapeFileLine} WriteLineToDebugFile('enter SafePolygonOrPolyline width=' + IntToStr(Bitmap.Canvas.Pen.Width) + ' color=' + IntToStr(Bitmap.Canvas.Pen.Color)); {$EndIf}
 
-   {$IfDef RecordLineCoords}
-      for I := 0 to pred(PtsPolyLine) do begin
-          writelinetodebugFile(IntegerToString(PolyLinePts[i].x,8) + IntegerToString(PolyLinePts[i].y,8));
-      end;
-   {$EndIf}
+   {$IfDef RecordLineCoords} for I := 0 to pred(PtsPolyLine) do writelinetodebugFile(IntegerToString(PolyLinePts[i].x,8) + IntegerToString(PolyLinePts[i].y,8)); {$EndIf}
 
    {$IfDef VCL}
       Bitmap.Canvas.Pixels[PolyLinePts[0].x,PolyLinePts[0].y] := Bitmap.Canvas.Pen.Color;
@@ -1397,23 +1393,29 @@ end;
 function tShapeFile.GetLineCoordsAndZsFromDEM(DEM,RecNum : int32) : boolean;
 var
    i : int32;
+   z : float32;
 begin
    result := GetLineCoords(RecNum);
    if Result then begin
       if (CurrentLineZs = Nil) then new(CurrentLineZs);
-      for i := 0 to pred(CurrentPolyLineHeader.NumPoints) do
-         DEMGlb[DEM].GetElevFromLatLongDegree(CurrentLineCoords^[i].Lat,CurrentLineCoords^[i].Long,CurrentLineZs^[i]);
+      for i := 0 to pred(CurrentPolyLineHeader.NumPoints) do begin
+         DEMGlb[DEM].GetElevFromLatLongDegree(CurrentLineCoords^[i].Lat,CurrentLineCoords^[i].Long,z);
+         CurrentLineZs^[i] := z;
+      end;
    end;
 end;
 
-function tShapeFile.OldGetLineCoordsAndZsFromDEM(DEM,RecNum : int32; var NumPts,NParts : int32; var Coords : tdCoords; var PartSize : tPartSize; var zs : array of float32) : boolean;
+function tShapeFile.OldGetLineCoordsAndZsFromDEM(DEM,RecNum : int32; var NumPts,NParts : int32; var Coords : tdCoords; var PartSize : tPartSize; var zs : array of float64) : boolean;
 var
    i : int32;
+   z : float32;
 begin
    result := OldGetLineCoordsWithZs(RecNum,NumPts,NParts,Coords,PartSize,false,zs);
    if Result then begin
-      for i := 0 to pred(NumPts) do
-         DEMGlb[DEM].GetElevFromLatLongDegree(Coords[i].Lat,Coords[i].Long,zs[i]);
+      for i := 0 to pred(NumPts) do begin
+         DEMGlb[DEM].GetElevFromLatLongDegree(Coords[i].Lat,Coords[i].Long,z);
+         zs[i] := z;
+      end;
    end;
 end;
 
@@ -1427,10 +1429,11 @@ end;
 function tShapeFile.GetLineCoords(RecNum : integer; GetZS : boolean = false) : boolean;
 var
    j,EndPt,i : int32;
+   z : float32;
 begin
    if LineOrAreaShapeFile(MainFileHeader.ShapeType) then begin
       Result := false;
-      if (CurrentLineRecNum = RecNum) and ((not GetZS) or CurrentLineHaveZs) then begin
+      if false and (CurrentLineRecNum = RecNum) and ((not GetZS) or CurrentLineHaveZs) then begin
          {$IfDef RecordGetLineCoords} writeLineToDebugFile('old rec=' + IntToStr(RecNum) + ' CurrentLinePartSize[1]=' + IntToStr(CurrentLinePartSize[1])); {$EndIf}
          Result := true;
       end
@@ -1482,7 +1485,8 @@ begin
             else begin
                if (ShapefileDEM <> 0) then begin
                   for i := 0 to pred(CurrentPolyLineHeader.NumPoints) do begin
-                     DEMGlb[ShapefileDEM].GetElevFromLatLongDegree(CurrentLineCoords^[i].Lat,CurrentLineCoords^[i].Long,CurrentLineZs^[i]);
+                     DEMGlb[ShapefileDEM].GetElevFromLatLongDegree(CurrentLineCoords^[i].Lat,CurrentLineCoords^[i].Long,z);
+                     CurrentLineZs^[i] := z;
                   end;
                end;
             end;
@@ -1499,7 +1503,7 @@ begin
 end;
 
 
-function tShapeFile.OldGetLineCoordsWithZs(RecNum : int32; var NumPts,NParts : int32; var Coords : tdCoords; var PartSize : tPartSize; GetZs : boolean; var zs : array of float32) : boolean;
+function tShapeFile.OldGetLineCoordsWithZs(RecNum : int32; var NumPts,NParts : int32; var Coords : tdCoords; var PartSize : tPartSize; GetZs : boolean; var zs : array of float64) : boolean;
 var
    PolyLineHeader  : sfPolyLineHeader;
    NumRead,NumToRead : int32;

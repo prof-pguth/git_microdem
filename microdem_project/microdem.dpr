@@ -37,7 +37,7 @@ uses
   BaseGraf in '..\common_code\BaseGraf.pas' {ThisBaseGraph},
   demoptions in '..\common_code\demoptions.pas' {OptionsForm},
   veg_density in '..\common_code\veg_density.pas',
-  Fresnel_block_form in '..\common_code\fresnel_block_form.pas' {Fres_blockf},
+  fresnel_block_form in '..\common_code\fresnel_block_form.pas' {Fres_blockf},
   DEMweapn in '..\common_code\DEMweapn.pas' {PickWeapon},
   drift_model in '..\common_code\drift_model.pas' {Drifting_form},
   lvis in '..\common_code\lvis.pas',
@@ -338,11 +338,12 @@ uses
   JpegDumpOutputFrame in '..\xif\JpegDumpOutputFrame.pas' {NewOutputFrame: TFrame},
   U_SolarPos2 in '..\SolarPosSource\U_SolarPos2.pas' {SolorPosForm1},
   ufrmMain in '..\FireMonkey3DGlobalRotate\ufrmMain.pas' {frmMain},
-  simple_python in '..\python\simple_python.pas' {PythonForm1};
+  simple_python in '..\python\simple_python.pas' {PythonForm1},
+  demix_filter in '..\common_code\demix_filter.pas' {DemixFilterForm};
 
 {$R *.RES}
 
-{$SetPEFlags IMAGE_FILE_LARGE_ADDRESS_AWARE} 
+{$SetPEFlags IMAGE_FILE_LARGE_ADDRESS_AWARE}
  
 
 var
@@ -363,7 +364,8 @@ begin
          Application.Title := '';
          Application.HelpFile := 'microdem.chm';
          Application.CreateForm(Twmdem, wmdem);
-         Application.Run;
+  Application.CreateForm(TDemixFilterForm, DemixFilterForm);
+  Application.Run;
       end;
     finally
        CloseHandle(FMutex);

@@ -868,11 +868,7 @@ begin
    inMapProjection.False_North := 0;
    if (inMapProjection.h_datumcode = '') then inMapProjection.h_datumcode := 'WGS84';
 
-   if inMapProjection.PName in [PlateCaree] then begin
-   end
-   else if inMapProjection.PName in [EquiDistantCylindrical,CylindricalEqualArea,MillerCylindrical,Mollweide,Cassini,HammerProj] then begin
-   end
-   else if (inMapProjection.PName in [UTMEllipsoidal]) then begin
+   if (inMapProjection.PName in [UTMEllipsoidal]) then begin
       inMapProjection.Long0  := (-183 + MDDef.DefaultUTMZone * 6) * Petmar_types.DegToRad;
       inMapProjection.false_east := 500000.00;
    end
@@ -893,7 +889,7 @@ begin
    else if inMapProjection.PName in [PolarStereographicEllipsoidal] then begin
       inMapProjection.Lat0 := 75 * Petmar_types.DegToRad; {lat cent is standard parallel}
    end
-   else if inMapProjection.PName in [EquiDistantCylindrical,WebMercator,Mercator,MercatorEllipsoid,MillerCylindrical] then begin
+   else if inMapProjection.PName in [PlateCaree,EquiDistantCylindrical,CylindricalEqualArea,MillerCylindrical,Mollweide,Cassini,HammerProj,EquiDistantCylindrical,WebMercator,Mercator,MercatorEllipsoid,MillerCylindrical] then begin
    end;
    {$IfDef RecordProjectionParameters} WriteLineToDebugFile('SetUpDefaultNewProjection out '  + inMapProjection.GetProjectionName); {$EndIf}
    {$If Defined(LongCent)} WriteLineToDebugFile('SetUpDefaultNewProjection Out,  LongCent: ' + RadToDegString(inMapProjection.long0)); {$EndIf}

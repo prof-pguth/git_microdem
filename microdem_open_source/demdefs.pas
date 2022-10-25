@@ -4,7 +4,7 @@
 { Part of ianMICRODEM GIS Program    }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
-{ Copyright (c) 2015 Peter L. Guth   }
+{ Copyright (c) 2022 Peter L. Guth   }
 {____________________________________}
 
 {$I nevadia_defines.inc}
@@ -16,23 +16,17 @@ interface
 
 uses
    {$IfDef VCL}
-   Windows,Graphics,
+      Windows,Graphics,
    {$EndIf}
 
    {$IfDef NoClustering}
    {$Else}
-   MVClusterClientDataSet,
+      MVClusterClientDataSet,
    {$EndIf}
 
    System.UITypes, System.UIConsts,System.Types,
    FMX.Types3D,FMX.Types,
    Petmar_types,petmar,PetMar_db,Petmath;
-
-const
-   DEMIXSettingsDir : PathStr = 'h:\wine_contest_settings\';
-   DEMIXresultsDir : PathStr = 'h:\wine_contest_results\';
-   DEMIXrefDataDir : PathStr = 'h:\wine_contest_reference_dems\';
-
 
 const
    WebProgramDownLoadDir = 'https://www.usna.edu/Users/oceano/pguth/microdem/win32/';
@@ -105,6 +99,15 @@ type
 
 const
    MaxThreadsAllowed = 24;
+
+
+const   //for DEMIX
+   MaxLandType = 8;
+   NumDEMIXDEM = 6;
+   RefType : array[1..2] of shortstring = ('DSM','DTM');
+   LandType : array[1..MaxLandType] of shortstring = ('ALL','CLIFF','STEEP','GENTLE','FLAT','URBAN','FOREST','BARREN');
+   DEMType : array[1..NumDEMIXDEM] of shortstring = ('FABDEM','COP','ALOS','NASA','SRTM','ASTER');
+
 
 //satellite imagery definitions
 const
@@ -1236,7 +1239,7 @@ type
       Long,Lat : float32;
    end;
    tdCoords = array[0..sfMaxPoints] of tDoubleCoords;
-   tdElevs = array[0..sfMaxPoints] of float32;
+   tdElevs = array[0..sfMaxPoints] of float64;
 
    tLogRegistration = record
       MapX,MapY           : array[1..3] of float64;
@@ -1818,7 +1821,9 @@ type
       WBDenoiseElevDiff  : float32;
 
       DEMIX_Full : byte;
+      DEMIX_base_dir,
       DEMIX_criterion_tolerance_fName : PathStr;
+      DEMIX_xsize,DEMIX_ysize : integer;
 
       SlopeFlatBoundary,
       SlopeGentleBoundary,
@@ -1949,6 +1954,7 @@ type
        ShapeLineBufferDist,
        ShapeAreaBufferDist : int16;
        TreatLineAsPolygon,
+       TreatPolygonAsLine,
        LOSShowPitch,
        TrackDatabaseRanges,
        DBRecShowToolbarTop,
@@ -2106,6 +2112,7 @@ type
        PeakPitPostings,
        ProgressTimeBins,
        WaveHtValuesNeeded : int16;
+       ElevHistBinSize,SlopeHistBinSize,
        ConvexCut,RoughnessCut,SlopeCut1,SlopeCut2,SlopeCut3 : float32;
        IwashPikeCats : byte;
        OpennessHt : byte;
@@ -2741,6 +2748,11 @@ var
    ShowSatProgress,
    AutoZoomDEMs,
    ShowDEMReadingProgress : boolean;
+
+
+   DEMIXSettingsDir,
+   DEMIXresultsDir,
+   DEMIXrefDataDir,
 
    MainMapData,
    LasRulesName,

@@ -1458,25 +1458,25 @@ begin
 end;
 
 
+function tDEMDataSet.NormalAtPoint(Col,Row : integer; var n1,n2,n3 : float32) : boolean;
+var
+  SlopAsp : tSlopeAspectRec;
+begin
+   Result := GetSlopeAndAspect(Col,Row,SlopAsp);
+   if Result then begin
+      if (SlopAsp.SlopeDegree < 0.0001) then SlopAsp.AspectDir := 0;
+      n1 := sinDeg(SlopAsp.SlopeDegree) * sinDeg(SlopAsp.AspectDir);
+      n2 := sinDeg(SlopAsp.SlopeDegree) * cosDeg(SlopAsp.AspectDir);
+      n3 := cosDeg(SlopAsp.SlopeDegree);
+   end;
+end;
+
+
+
 procedure tDEMDataSet.InitializeNormals(var NumPts : Integer);
 var
    j,Col,Row     : integer;
-   MissingVector : VectorType;
-
-
-         function NormalAtPoint(Col,Row : integer; var n1,n2,n3 : float64) : boolean;
-         var
-           SlopAsp : tSlopeAspectRec;
-         begin
-            Result := GetSlopeAndAspect(Col,Row,SlopAsp);
-            if Result then begin
-               if (SlopAsp.SlopeDegree < 0.0001) then SlopAsp.AspectDir := 0;
-               n1 := sinDeg(SlopAsp.SlopeDegree) * sinDeg(SlopAsp.AspectDir);
-               n2 := sinDeg(SlopAsp.SlopeDegree) * cosDeg(SlopAsp.AspectDir);
-               n3 := cosDeg(SlopAsp.SlopeDegree);
-            end;
-         end;
-
+   MissingVector : VectorType32;
 begin
    if (Normals = Nil) then begin
       {$If Defined(RecordDEMMemoryAllocations) or Defined(RecordNormalInit) or Defined(RecordSSO)} WriteLineToDebugFile('allocate tDEMDataSet.InitializeNormals, pointer size=' + IntToStr(DEMheader.NumRow * SizeOf(VectorType))); {$EndIf}
