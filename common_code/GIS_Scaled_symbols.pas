@@ -553,15 +553,13 @@ begin
    PanelDBASDefault.Visible := (GISdb[theDB].ItsAPointDB or GISdb[theDB].XYZfile) and (GISdb[theDB].dbOpts.dbAutoShow in [dbasDefault,dbasColorByString,dbasColorByNumeric,dbasKoppen]);
    GISdb[theDB].ColorButtonForSymbol(BitBtnPoint);
    CheckBox14.Enabled := GISdb[theDB].ItsAPointDB;
+
+   PanelLine.Visible := LineShapeFile(GISdb[theDB].ShapeFileType) and (GISdb[theDB].dbOpts.dbAutoShow in [dbasDefault,dbasZvalues]) ;
+   PanelPolygon.Visible := (GISdb[theDB].dbOpts.dbAutoShow = dbasDefault) and AreaShapeFile(GISdb[theDB].ShapeFileType);
+
    if (GISdb[theDB].dbOpts.dbAutoShow = dbasDefault) then begin
-      PanelLine.Visible := LineShapeFile(GISdb[theDB].ShapeFileType);
-      PanelPolygon.Visible := AreaShapeFile(GISdb[theDB].ShapeFileType);
       GISdb[theDB].ColorButtonForSymbol(BitBtn4);
       GISdb[theDB].ColorButtonForSymbol(BitBtn23);
-   end
-   else begin
-      PanelLine.Visible := false;
-      PanelPolygon.Visible := false;
    end;
 
    ColorLineWidthBitBtn(BitBtn24,GISdb[theDB].dbOpts.LineColor,GISdb[theDB].dbOpts.LineWidth);

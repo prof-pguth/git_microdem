@@ -1,10 +1,12 @@
 ﻿unit Demmapf;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{   file verified 1/18/2016       }
-{_________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2022 Peter L. Guth  }
+{___________________________________}
+
 
 
 {$I nevadia_defines.inc}
@@ -11270,7 +11272,7 @@ begin
       Panel3String := RealToString(sl,8,1) + '°  ' + SmartDistanceMetersFormat(Len);
    end;
 
-   if ((MapDraw.ValidDEMMap) or MapDraw.ValidDEMonMap) and (not LockStatusBar) then begin
+   if (MapDraw.ValidDEMMap) and (not LockStatusBar) then begin
       {$IfDef RecordAllMapRoam} WriteLineToDebugFile('Point 2.1'); {$EndIf}
       if not ((DEMGlb[MapDraw.DEMonMap].DEMheader.DigitizeDatum in [Rectangular])) then DEMGlb[MapDraw.DEMonMap].LatLongDegreeToDEMGrid(Lat,Long,XGrid,YGrid);
 

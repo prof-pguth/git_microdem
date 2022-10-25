@@ -249,6 +249,8 @@ uses
    Thread_timers,
    Make_tables,  basemap,
    DataBaseCreate,
+   DEM_Manager,
+   Toggle_DB_Use,
 
    {$IfDef ExPointCloud}
    {$Else}
@@ -451,8 +453,8 @@ procedure TDEMLOSF.Hideprofiles1Click(Sender: TObject);
 var
    i : integer;
 begin
-   for i := 1 to MaxDEMDataSets do if ValidDEM(i) then
-      LOSDraw.ShowProfile[i] := AnswerIsYes('Include profile for ' + DEMGlb[i].AreaName);
+   {$IfDef SupClassAuxGrids} WriteLineToDebugFile('TSupClassAuxGrids.BitBtn10Click (Pick open grids) in'); {$EndIf}
+   PickDEMsToUse(LOSDraw.ShowProfile,'DEMs to include in profile');
    FormResize(Nil);
 end;
 
@@ -1252,7 +1254,6 @@ procedure TDEMLOSF.WaveLengthHeight1Click(Sender: TObject);
 begin
    {$IfDef ExFresnel}
    {$Else}
-      //CrestComputationsOn := true;
       CloseAndNilNumberedDB(LOSDraw.LOSProfileDB);
       FormResize(Nil);
       DEMSSOCalc.DrawTopoGrainOverlay(Nil,Self,false,2);
@@ -1266,7 +1267,7 @@ begin
    if (Sender = Adjustrange1)or (Sender = BitBtn2) then GetDistance(LOSDraw.FormSectLenMeters,'LOS Range');
    BitBtn2.Caption := 'Dist:  ' + SmartDistanceMetersFormat(LOSDraw.FormSectLenMeters);
    VincentyPointAtDistanceBearing(LOSDraw.LatLeft,LOSDraw.LongLeft,LOSDraw.FormSectLenMeters,LOSDraw.LOSAzimuth,LOSDraw.LatRight,LOSDraw.LongRight);
-   LOSDraw.LOSExtremeElevationsAndScreenCoordinates;   //(DEMonView);
+   LOSDraw.LOSExtremeElevationsAndScreenCoordinates(false);   //(DEMonView);
    if (BaseMap <> Nil) then BaseMap.DoFastMapRedraw;
    CloseAndNilNumberedDB(LOSDraw.LOSProfileDB);
    FormResize(Nil);
@@ -1469,6 +1470,7 @@ begin
    if (BaseBMP = Nil) then CopyImageToBitmap(Image1,BaseBMP);
 end;
 
+
 procedure TDEMLOSF.Profiledropdown1Click(Sender: TObject);
 begin
    LOSdraw.MinAreaZ := LOSdraw.MinAreaZ + NumDEMDataSetsOpen * MDDef.DropDownPerProfile;
@@ -1482,7 +1484,7 @@ end;
 
 procedure TDEMLOSF.Profilelegends1Click(Sender: TObject);
 var
-   y,x,WhichDEM,ItemHigh,LegendItem : integer;
+   y,x,WhichDEM,ItemHigh,LegendItem,DEMshown : integer;
    LegBMP : tMyBitmap;
 begin
    {$If Defined(RecordLOSProblems) or Defined(RecordLOSLegend)} WriteLineToDebugFile('TDEMLOSF.Profilelegends1Click'); {$EndIf}
@@ -1492,9 +1494,11 @@ begin
    LegBMP.Canvas.Font.Style := [fsBold];
 
    y := 0;
+   DEMShown := 0;
    for WhichDEM := 1 to MaxDEMDataSets do begin
-      if ValidDEM(WhichDEM) then begin
+      if ValidDEM(WhichDEM) and LOSDraw.ShowProfile[WhichDEM] then begin
          {$IfDef RecordLOSProblems} WriteLineToDebugFile('DEM=' + IntToStr(WhichDEM) + '   ' + LOSDraw.ProfileName[WhichDEM]); {$EndIf}
+         inc(DEMShown);
          x := LegBMP.Canvas.TextWidth(LOSdraw.ProfileName[WhichDEM]);
          if (x > y) then y := x;
          ItemHigh := LegBMP.Canvas.TextHeight(LOSdraw.ProfileName[WhichDEM]);
@@ -1513,16 +1517,20 @@ begin
    LegBMP.Canvas.Brush.Style := bsClear;
 
    LegendItem := 0;
+   DEMShown := 0;
    for WhichDEM := 1 to MaxDEMDataSets do begin
       if ValidDEM(WhichDEM) then begin
-         inc(LegendItem);
-         {$If Defined(RecordLOSProblems) or Defined(RecordLOSLegend)}  WriteLineToDebugFile('Item=' + IntToStr(LegendItem) + ' ' +  LOSdraw.ProfileName[WhichDEM] + '  y=' + IntToStr(5+ItemHigh*pred(LegendItem))); {$EndIf}
-         LegBMP.Canvas.Pen.Color := ConvertPlatformColorToTColor(LineColors256[LegendItem]);
-         LegBMP.Canvas.Pen.Width := LineSize256[LegendItem];
-         LegBMP.Canvas.Font.Color := LegBMP.Canvas.Pen.Color;
-         LegBMP.Canvas.TextOut(35,5+ItemHigh*pred(LegendItem),LOSdraw.ProfileName[WhichDEM]);
-         LegBMP.Canvas.MoveTo(5,ItemHigh*pred(LegendItem) + ItemHigh div 2);
-         LegBMP.Canvas.LineTo(30,ItemHigh*pred(LegendItem) + ItemHigh div 2);
+         inc(DEMshown);
+         if LOSDraw.ShowProfile[WhichDEM] then begin
+            inc(LegendItem);
+            {$If Defined(RecordLOSProblems) or Defined(RecordLOSLegend)}  WriteLineToDebugFile('Item=' + IntToStr(DEMshown) + ' ' +  LOSdraw.ProfileName[WhichDEM] + '  y=' + IntToStr(5+ItemHigh*pred(LegendItem))); {$EndIf}
+            LegBMP.Canvas.Pen.Color := ConvertPlatformColorToTColor(LineColors256[DEMshown]);
+            LegBMP.Canvas.Pen.Width := LineSize256[DEMshown];
+            LegBMP.Canvas.Font.Color := LegBMP.Canvas.Pen.Color;
+            LegBMP.Canvas.TextOut(35,5+ItemHigh*pred(LegendItem),LOSdraw.ProfileName[WhichDEM]);
+            LegBMP.Canvas.MoveTo(5,ItemHigh*pred(LegendItem) + ItemHigh div 2);
+            LegBMP.Canvas.LineTo(30,ItemHigh*pred(LegendItem) + ItemHigh div 2);
+         end;
       end;
    end;
    PetImage_form.DisplayBitmap(LegBMP,'Profiles');

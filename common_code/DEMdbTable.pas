@@ -1,10 +1,11 @@
 ﻿unit demdbtable;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{   file verified 6/22/2011       }
-{_________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2022 Peter L. Guth  }
+{___________________________________}
 
 
 {$I nevadia_defines.inc}
@@ -920,7 +921,6 @@ type
     N46: TMenuItem;
     Lattimecolors1: TMenuItem;
     Boxplot1: TMenuItem;
-    ransposeforwinecontest1: TMenuItem;
     BestDEMbycategory1: TMenuItem;
     RankDEMs1: TMenuItem;
     N1degreetilestocoverrecordsintable1: TMenuItem;
@@ -932,7 +932,6 @@ type
     Filteroutsignedcriteriameanandmedian1: TMenuItem;
     Hide1: TMenuItem;
     Allcriteriavalues1: TMenuItem;
-    Simpleexample1: TMenuItem;
     PercentageofcriteriawhereDEMisbest1: TMenuItem;
     Averageranksbyarea1: TMenuItem;
     COPoALOS1: TMenuItem;
@@ -946,6 +945,8 @@ type
     Alphabetize1: TMenuItem;
     Createshapefilewithboundingboxforeachrecord1: TMenuItem;
     CreateDBwithcornersandcenterofeveryrecord1: TMenuItem;
+    GraphsbestDEMpertilebycriteriasortbytilecharacteristics1: TMenuItem;
+    Graphfilters1: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
     procedure Shiftpointrecords1Click(Sender: TObject);
     procedure Creategrid1Click(Sender: TObject);
@@ -1637,7 +1638,7 @@ type
     procedure Latprofiles2Click(Sender: TObject);
     procedure Lattimecolors1Click(Sender: TObject);
     procedure Boxplot1Click(Sender: TObject);
-    procedure ransposeforwinecontest1Click(Sender: TObject);
+    //procedure ransposeforwinecontest1Click(Sender: TObject);
     procedure Graphfortransposeddata1Click(Sender: TObject);
     procedure N1degreetilestocoverrecordsintable1Click(Sender: TObject);
     procedure BestDEMbycategory1Click(Sender: TObject);
@@ -1649,7 +1650,6 @@ type
     procedure Filteroutsignedcriteriameanandmedian1Click(Sender: TObject);
     procedure Hide1Click(Sender: TObject);
     procedure Allcriteriavalues1Click(Sender: TObject);
-    procedure Simpleexample1Click(Sender: TObject);
     procedure PercentageofcriteriawhereDEMisbest1Click(Sender: TObject);
     procedure Averageranksbyarea1Click(Sender: TObject);
     procedure COPoALOS1Click(Sender: TObject);
@@ -1662,6 +1662,9 @@ type
     procedure Createshapefilewithboundingboxforeachrecord1Click(
       Sender: TObject);
     procedure CreateDBwithcornersandcenterofeveryrecord1Click(Sender: TObject);
+    procedure GraphsbestDEMpertilebycriteriasortbytilecharacteristics1Click(
+      Sender: TObject);
+    procedure Graphfilters1Click(Sender: TObject);
   private
     procedure PlotSingleFile(fName : PathStr; xoff,yoff : float64);
     procedure SetUpLinkGraph;
@@ -1875,6 +1878,8 @@ uses
     {$Else}
        OCEANCAL, drift_model,
     {$EndIf}
+
+    DEMIX_filter,
 
    map_overlays,
    db_display_options,
@@ -2605,11 +2610,6 @@ begin
    Translatefromtable1Click(Nil);
 end;
 
-
-procedure Tdbtablef.ransposeforwinecontest1Click(Sender: TObject);
-begin
-   TransposeDEMIXcriteria(DBonTable);
-end;
 
 
 procedure Tdbtablef.Translatefromtable1Click(Sender: TObject);
@@ -4852,11 +4852,6 @@ end;
 procedure Tdbtablef.Sigmatheta1Click(Sender: TObject);
 begin
    Sigmatee1Click(Sender);
-end;
-
-procedure Tdbtablef.Simpleexample1Click(Sender: TObject);
-begin
-    DEMIXwineContestMeanMedianGraph(dgSimpleExample,DBonTable);
 end;
 
 procedure Tdbtablef.Singlefield1Click(Sender: TObject);
@@ -8575,7 +8570,7 @@ begin
                             'Upper right corner: ' + LatLongDegreeToString(BoundBox.YMax,BoundBox.XMax,MDDef.OutPutLatLongMethod),True);
          end
          else begin
-            aShapeFile.GetLineCoords(MyData.RecNo,ShapeFileType in [13,15,23,25]);
+            aShapeFile.GetLineCoords(GISdb[DBonTable].MyData.RecNo,GISdb[DBonTable].ShapeFileType in [13,15,23,25]);
 
             if AreaShapeFile(ShapeFileType) and (aShapeFile.CurrentPolyLineHeader.NumParts > 1) then begin
                aShapeFile.AreasCounterClockwise;
@@ -8603,7 +8598,7 @@ begin
                 if (Sender = RecordcoordinatesCSV1)  then textCoords.Add('LAT,LONG,Z');
                 Capt := '';
                 for i := 0 to pred(aShapeFile.CurrentPolyLineHeader.NumPoints) do begin
-                   if (ShapeFileType in [13,15,23,25]) then Capt := RealToString(aShapeFile.CurrentLineZs^[i],12,2);
+                   if (ShapeFileType in [13,15,23,25]) then Capt := RealToString(GISdb[DBonTable].aShapeFile.CurrentLineZs^[i],12,2);
                    Lat := aShapeFile.CurrentLineCoords^[i].Lat;
                    Long := aShapeFile.CurrentLineCoords^[i].Long;
                    if (Sender = RecordcoordinatesCSV1)  then textCoords.Add(RealToString(Lat,-18,-8) + ',' + RealToString(Long,-18,-8) + ',' + RealToString(aShapeFile.CurrentLineZs^[i],-18,-2))
@@ -9849,6 +9844,11 @@ begin
    DEMIXwineContestScoresGraph(DBonTable,'Average score');
 end;
 
+procedure Tdbtablef.Graphfilters1Click(Sender: TObject);
+begin
+   DoDEMIXFilter(DBonTable);
+end;
+
 procedure Tdbtablef.Graphfortransposeddata1Click(Sender: TObject);
 begin
    TransposeDEMIXwinecontestGraph(DBonTable);
@@ -9885,6 +9885,11 @@ begin
    DBEditting := DBonTable;
 end;
 
+
+procedure Tdbtablef.GraphsbestDEMpertilebycriteriasortbytilecharacteristics1Click(Sender: TObject);
+begin
+   DEMIX_graph_best_in_Tile(DBonTable,false);
+end;
 
 procedure Tdbtablef.Graphwithranges1Click(Sender: TObject);
 var
@@ -11367,7 +11372,7 @@ end;
 
 procedure Tdbtablef.BestDEMpertilebycriteria1Click(Sender: TObject);
 begin
-   DEMIX_graph_best_in_Tile(DBonTable);
+   DEMIX_graph_best_in_Tile(DBonTable,true);
 end;
 
 procedure Tdbtablef.Showarearecords1Click(Sender: TObject);
@@ -13643,8 +13648,27 @@ end;
 
 
 procedure Tdbtablef.CreateDBwithcornersandcenterofeveryrecord1Click(Sender: TObject);
+var
+   sl : tStringList;
+   bb : sfBoundBox;
+   Name : shortstring;
+   fName : PathStr;
 begin
-   xxx
+   GISdb[DBonTable].MyData.First;
+   sl := tStringList.Create;
+   sl.add('LONG,LAT,Z,NAME');
+   while not GISdb[DBonTable].MyData.eof do begin
+      Name := GISdb[DBonTable].MyData.GetFieldByNameAsString(GISdb[DBonTable].dbOpts.LabelField);
+      bb := GISdb[DBonTable].MyData.GetRecordBoundingBox;
+      sl.add(RealToString(bb.XMin,-12,-6) + ',' + RealToString(bb.YMin,-12,-6) + ',0,' + Name);
+      sl.add(RealToString(bb.XMax,-12,-6) + ',' + RealToString(bb.YMin,-12,-6) + ',0,' + Name);
+      sl.add(RealToString(bb.XMax,-12,-6) + ',' + RealToString(bb.YMax,-12,-6) + ',0,' + Name);
+      sl.add(RealToString(bb.XMin,-12,-6) + ',' + RealToString(bb.YMax,-12,-6) + ',0,' + Name);
+      sl.add(RealToString(0.5 * (bb.XMin + bb.XMax),-12,-6) + ',' + RealToString(0.5 * (bb.YMin + bb.YMax),-12,-6) + ',0,' + Name);
+      GISdb[DBonTable].MyData.Next;
+   end;
+   fName := NextFileNumber(MDTempDir,'test_site_limits_','.csv');
+   GISdb[DBonTable].theMapOwner.StringListToLoadedDatabase(sl,fName);
 end;
 
 procedure Tdbtablef.CreateDEM1Click(Sender: TObject);

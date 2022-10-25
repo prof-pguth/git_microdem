@@ -1,11 +1,11 @@
 unit mask_opts_form;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{   file verified 6/22/2011       }
-{_________________________________}
-
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2022 Peter L. Guth  }
+{___________________________________}
 
 {$I nevadia_defines.inc}
 
@@ -30,12 +30,14 @@ type
     BitBtn1: TBitBtn;
     CheckBox2: TCheckBox;
     CheckBox3: TCheckBox;
+    CheckBox4: TCheckBox;
     procedure OKBtnClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure BitBtn1Click(Sender: TObject);
     procedure HelpBtnClick(Sender: TObject);
     procedure CheckBox3Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure CheckBox4Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -60,6 +62,11 @@ begin
    MDDef.TreatLineAsPolygon := CheckBox3.Checked;
 end;
 
+procedure TMaskOptsForm.CheckBox4Click(Sender: TObject);
+begin
+   MDDef.TreatPolygonAsLine := CheckBox4.Checked;
+end;
+
 procedure TMaskOptsForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
    Action := caFree;
@@ -69,7 +76,7 @@ end;
 procedure TMaskOptsForm.FormCreate(Sender: TObject);
 begin
    CheckBox3.Checked := MDDef.TreatLineAsPolygon;
-
+   CheckBox4.Checked := MDDef.TreatPolygonAsLine;
 end;
 
 procedure TMaskOptsForm.HelpBtnClick(Sender: TObject);
@@ -85,5 +92,8 @@ begin
    MDDef.ShowMasks := CheckBox2.Checked;
    Close;
 end;
+
+
+
 
 end.

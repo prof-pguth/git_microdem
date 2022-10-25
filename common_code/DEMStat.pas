@@ -636,7 +636,7 @@ begin
          MakeSlopeMap(0);
       end;
    end;
-   CreateMultipleHistograms(MDDef.CountHistograms,ElevFiles,LegendFiles,'Slope','Slope distribution',-99,0,Trunc(MaxSlope + 0.99),0.5);
+   CreateMultipleHistograms(MDDef.CountHistograms,ElevFiles,LegendFiles,'Slope','Slope distribution',-99,0,Trunc(MaxSlope + 0.99),MDDef.SlopeHistBinSize);
 
    GridForm.StringGrid1.ColCount:= succ(RegionsDone);
    DEMDef_routines.RestoreBackupDefaults;  //restore slope algorithm
@@ -2137,10 +2137,10 @@ end;
 
 procedure ElevMomentReport(aTitle : shortstring; Memo1 : tMemo; SamplingCheck : boolean; GridLimits: tGridLimits; CurDEM : integer = 0);
 var
-   LegendFiles,ElevFiles,SlopeFiles,PlanCurvFiles,ProfCurvFiles : tStringList;
+   LegendFiles,ElevFiles,SlopeFiles,RoughFiles,PlanCurvFiles,ProfCurvFiles : tStringList;
    DEMsDone,OnLine : integer;
    GridForm : TGridForm;
-   MaxSlope,MinElev,MaxElev : float64;
+   MaxSlope,MinElev,MaxElev,MaxRough : float64;
    ElevDist,SlopeDist,RufDist : tStringList;
 
       procedure MomentReportForDEM(CurDEM : integer);
@@ -2171,7 +2171,7 @@ var
          if MDDef.ElevMoments then begin
             {$IfDef RecordElevMoment} WriteLineToDebugFile('Start elev'); {$EndIf}
             if (Memo1 <> Nil) then Memo1.Lines.Add(TimeToStr(Now) + ' start elev');
-            DEMGlb[CurDEM].ElevationMomentsWithArray({DEMGlb[CurDEM].FullDEM}GridLimits,MomentVar,zvs^);
+            DEMGlb[CurDEM].ElevationMomentsWithArray(GridLimits,MomentVar,zvs^);
             MinElev := MomentVar.MinZ;
             MaxElev := MomentVar.MaxZ;
             MomentsToStringGrid(GridForm.StringGrid1,OnLine,DEMsDone,'Elevation',MomentVar);
@@ -2183,7 +2183,7 @@ var
          if MDDef.SlopeMoments then begin
            {$IfDef RecordElevMoment} WriteLineToDebugFile('Start slope'); {$EndIf}
            if (Memo1 <> Nil) then Memo1.Lines.Add(TimeToStr(Now) + ' start slope');
-           DEMGlb[CurDEM].SlopeMomentsWithArray({DEMGlb[CurDEM].FullDEM}GridLimits, MomentVar,zvs^);
+           DEMGlb[CurDEM].SlopeMomentsWithArray(GridLimits, MomentVar,zvs^);
            MomentsToStringGrid(GridForm.StringGrid1,OnLine,DEMsDone,'Slope',MomentVar);
            inc(Online,11);
            if MomentVar.MaxZ > MaxSlope then MaxSlope := MomentVar.MaxZ;
@@ -2197,9 +2197,11 @@ var
            if (Memo1 <> Nil) then Memo1.Lines.Add(TimeToStr(Now) + ' start roughness');
            New(zvs);
            MomentVar.NPts := 0;
-           DEMGlb[CurDEM].RoughnessMomentsWithArray({DEMGlb[CurDEM].FullDEM}GridLimits, MomentVar,zvs^);
+           DEMGlb[CurDEM].RoughnessMomentsWithArray(GridLimits, MomentVar,zvs^);
            MomentsToStringGrid(GridForm.StringGrid1,OnLine,DEMsDone,'Roughness',MomentVar);
            inc(Online,11);
+           if MomentVar.MaxZ > MaxRough then MaxRough := MomentVar.MaxZ;
+           if MDDef.GraphsOfMoments then RoughFiles.Add(SaveSingleValueSeries(MomentVar.npts,zvs^));
            RufDist.Add(MomentResults);
          end;
 
@@ -2270,6 +2272,7 @@ begin
    if MDDef.GraphsOfMoments then begin
       ElevFiles := tStringList.Create;
       SlopeFiles := tStringList.Create;
+      RoughFiles := tStringList.Create;
       PlanCurvFiles := tStringList.Create;
       ProfCurvFiles := tStringList.Create;
       LegendFiles := tStringList.Create;
@@ -2279,6 +2282,7 @@ begin
 
    DEMsDone := 0;
    MaxSlope := -1;
+   MaxRough := -1;
    MaxElev := -99999;
    MinElev := 9999999;
 
@@ -2297,13 +2301,23 @@ begin
          if MDDef.GraphsOfMoments then LegendFiles.Add(DEMGlb[j].AreaName);
       end;
 
-      if RufDist.Count > 1 then RufDist.SaveToFile(NextFileNumber(MDTempDir,'roughness_raw_','.csv'));
-      if SlopeDist.Count > 1 then SlopeDist.SaveToFile(NextFileNumber(MDTempDir,'slope_raw_','.csv'));
-      if ElevDist.Count > 1 then ElevDist.SaveToFile(NextFileNumber(MDTempDir,'elev_raw_','.csv'));
+      if (RufDist.Count > 1) then begin
+         RufDist.SaveToFile(NextFileNumber(MDTempDir,'roughness_raw_','.csv'));
+         StringList2CSVtoDB(RufDist,NextFileNumber(MDTempDir,'roughness','.dbf'));
+      end
+      else RufDist.Free;
 
-      if RufDist.Count > 1 then StringList2CSVtoDB(RufDist,NextFileNumber(MDTempDir,'roughness','.dbf')) else RufDist.Free;
-      if SlopeDist.Count > 1 then StringList2CSVtoDB(SlopeDist,NextFileNumber(MDTempDir,'slope','.dbf')) else SlopeDist.Free;
-      if ElevDist.Count > 1 then StringList2CSVtoDB(ElevDist,NextFileNumber(MDTempDir,'elev','.dbf')) else ElevDist.Free;
+      if (SlopeDist.Count > 1) then begin
+         SlopeDist.SaveToFile(NextFileNumber(MDTempDir,'slope_raw_','.csv'));
+         StringList2CSVtoDB(SlopeDist,NextFileNumber(MDTempDir,'slope','.dbf'));
+      end
+      else SlopeDist.Free;
+
+      if (ElevDist.Count > 1) then begin
+         ElevDist.SaveToFile(NextFileNumber(MDTempDir,'elev_raw_','.csv'));
+         StringList2CSVtoDB(ElevDist,NextFileNumber(MDTempDir,'elev','.dbf'));
+      end
+      else ElevDist.Free;
 
       if (Memo1 <> Nil) then Memo1.Lines.Add(TimeToStr(Now) + ' Processing over');
 
@@ -2327,12 +2341,14 @@ begin
 
    if MDDef.GraphsOfMoments then begin
       {$IfDef RecordElevMoment} WriteLineToDebugFile('Start histograms'); {$EndIf}
-      if (ElevFiles.Count > 0) then CreateMultipleHistograms(MDDef.CountHistograms,ElevFiles,LegendFiles,'Elevation/grid','Elevation/grid distribution',-99,MinElev,MaxElev,0.5);
-      if (SlopeFiles.Count > 0) then CreateMultipleHistograms(MDDef.CountHistograms,SlopeFiles,LegendFiles,'Slope (%)','Slope distribution',-99,0,Trunc(MaxSlope + 0.99),0.5);
+      if (ElevFiles.Count > 0) then CreateMultipleHistograms(MDDef.CountHistograms,ElevFiles,LegendFiles,'Elevation/grid','Elevation/grid distribution',-99,MinElev,MaxElev,MDDef.ElevHistBinSize);
+      if (SlopeFiles.Count > 0) then CreateMultipleHistograms(MDDef.CountHistograms,SlopeFiles,LegendFiles,'Slope (%)','Slope distribution',-99,0,Trunc(MaxSlope + 0.99),MDDef.SlopeHistBinSize);
+      if (RoughFiles.Count > 0) then CreateMultipleHistograms(MDDef.CountHistograms,RoughFiles,LegendFiles,'Roughness (%)','Roughness distribution',-99,0,Trunc(MaxRough + 0.99),0.25);
       if (PlanCurvFiles.Count > 0) then CreateMultipleHistograms(MDDef.CountHistograms,PlanCurvFiles,LegendFiles,'Plan curvature','Plan curvature distribution',-99,-10,10,0.1);
       if (ProfCurvFiles.Count > 0) then CreateMultipleHistograms(MDDef.CountHistograms,ProfCurvFiles,LegendFiles,'Profile curvature','Profile curvature distribution',-99,-10,10,0.1);
       {$IfDef RecordElevMoment} WriteLineToDebugFile('Done histograms'); {$EndIf}
       SlopeFiles.Free;
+      RoughFiles.Free;
       PlanCurvFiles.Free;
       ProfCurvFiles.Free;
       LegendFiles.Free;

@@ -1,8 +1,8 @@
 object bargraphform: Tbargraphform
   Left = 0
   Top = 0
-  ClientHeight = 214
-  ClientWidth = 401
+  ClientHeight = 196
+  ClientWidth = 389
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

@@ -3,7 +3,10 @@ unit elev_color_range;
 {^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
 { Part of MICRODEM GIS Program    }
 { PETMAR Trilobite Breeding Ranch }
+{ Released under the MIT Licences }
+{   file verified 10/10/2022      }
 {_________________________________}
+
 
 {$I nevadia_defines.inc}
 

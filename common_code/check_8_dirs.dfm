@@ -4,18 +4,16 @@ object GetDir8: TGetDir8
   ActiveControl = OKBtn
   BorderStyle = bsDialog
   Caption = 'Directions to use'
-  ClientHeight = 241
-  ClientWidth = 280
+  ClientHeight = 223
+  ClientWidth = 268
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = [fsBold]
-  OldCreateOrder = True
   Position = poDefaultSizeOnly
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Bevel1: TBevel
     Left = 8

@@ -298,7 +298,7 @@ begin
       MapDraw.BaseTitle := MapCaption;
       MapDraw.UsePercentiles := UsePC;
       MapDraw.DefineNewDEMMap(CurDEM,mt);
-      {$If Defined(RecordSetup) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow DefineNewDEMMap over'); {$EndIf}
+      {$If Defined(RecordSetup) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow DefineNewDEMMap over, mt=' + IntToStr(mt)); {$EndIf}
       if MDDef.NEAutoDEM then AddOverlay(Self,ovoWorldOutlines);
       SetMapOverlays;
       MapDraw.ResetMarginalia;

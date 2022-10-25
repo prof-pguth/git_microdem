@@ -3,15 +3,14 @@ object AspectMapColors: TAspectMapColors
   Top = 0
   BorderIcons = []
   Caption = 'Aspect Map Colors'
-  ClientHeight = 322
-  ClientWidth = 249
+  ClientHeight = 313
+  ClientWidth = 243
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -12
   Font.Name = 'Segoe UI'
   Font.Style = []
-  PixelsPerInch = 96
   TextHeight = 15
   object RedrawSpeedButton12: TSpeedButton
     Left = 120

@@ -384,13 +384,15 @@ procedure MakeElevSlopeAspectDifferenceMap;
 var
    Col,Row  : integer;
    DEM1,DEM2,i : integer;
-   Diffs : array[1..3] of integer;
+   Diffs : array[1..4] of integer;
+   n11,n12,n13,n21,n22,n23,
+   dp,mag1,mag2,
    z1,z2 : float32;
    IdenticalGrids : boolean;
    ThisGraph : TThisBaseGraph;
    SlopeAspect1,SlopeAspect2 : tSlopeAspectRec;
 
-            function OpenOneResult(NewName : Shortstring) : integer;
+            function OpenOneResult(NewName : Shortstring; gt : tElevUnit) : integer;
             begin
                Result := 0;
                OpenDEMDataStructures(Result);
@@ -398,7 +400,7 @@ var
                DEMGlb[Result].DEMheader := DEMGlb[DEM1].DEMheader;
                DEMGlb[Result].DEMMapProjection := DEMGlb[DEM1].DEMMapProjection;
                DEMGlb[Result].DEMheader.DEMPrecision := FloatingPointDEM;
-               DEMGlb[Result].DEMheader.ElevUnits := Undefined;
+               DEMGlb[Result].DEMheader.ElevUnits := gt;
                DEMGlb[Result].DEMstatus := dsUnsaved;
                DEMGlb[Result].AllocateDEMMemory(InitDEMmissing);
             end;
@@ -408,9 +410,10 @@ begin
    GetTwoCompatibleGrids('Grids to compare, DEM2-DEM1',true,DEM2,DEM1,false,true);  // then begin
    IdenticalGrids := DEMGlb[DEM1].SecondGridIdentical(DEM2);
 
-   Diffs[1] := OpenOneResult( 'Elev_Diff_' + DEMGlb[DEM2].AreaName + '-' + DEMGlb[DEM1].AreaName);
-   Diffs[2] := OpenOneResult( 'Slope_Diff_' + DEMGlb[DEM2].AreaName + '-' + DEMGlb[DEM1].AreaName);
-   Diffs[3] := OpenOneResult( 'Aspect_Diff_' + DEMGlb[DEM2].AreaName + '-' + DEMGlb[DEM1].AreaName);
+   Diffs[1] := OpenOneResult( 'Elev_Diff_' + DEMGlb[DEM2].AreaName + '-' + DEMGlb[DEM1].AreaName,euMeters);
+   Diffs[2] := OpenOneResult( 'Slope_Diff_' + DEMGlb[DEM2].AreaName + '-' + DEMGlb[DEM1].AreaName,PercentSlope);
+   Diffs[3] := OpenOneResult( 'Aspect_Diff_' + DEMGlb[DEM2].AreaName + '-' + DEMGlb[DEM1].AreaName,zDegrees);
+   Diffs[4] := OpenOneResult( 'Normal_Diff_' + DEMGlb[DEM2].AreaName + '-' + DEMGlb[DEM1].AreaName,zDegrees);
    StartProgress('Diffs');
    for Col := 0 to pred(DEMGlb[DEM1].DEMheader.NumCol) do begin
       for Row := 0 to pred(DEMGlb[DEM1].DEMheader.NumRow) do begin
@@ -424,13 +427,23 @@ begin
                   else  if (z1 < -180) then z1 := z1 + 360;
                   DEMGlb[Diffs[3]].SetGridElevation(Col,Row,z1);
                end;
+               if DEMGlb[DEM1].NormalAtPoint(Col,Row, n11,n12,n13) and DEMGlb[DEM2].NormalAtPoint(Col,Row, n21,n22,n23) then begin
+                   dp := (n11 * n21 + n12 * n22 + n13 * n23);
+                   //because these are unit vectors, we can use just the dot product
+                   //mag1 := sqrt(sqr(n11) + sqr(n12) + sqr(n13));
+                   //mag2 := sqrt(sqr(n21) + sqr(n22) + sqr(n23));
+                   //z1 :=  dp / mag1 / mag2;
+                   //z1 := arccos(z1) / DegToRad;
+                   //DEMGlb[Diffs[4]].SetGridElevation(Col,Row,z1);
+                   DEMGlb[Diffs[4]].SetGridElevation(Col,Row,arccos(dp) / DegToRad);
+               end;
             end;
          end;
       end {for Row};
       if (Col mod 25 = 0) then UpdateProgressBar(Col / pred(DEMGlb[DEM1].DEMheader.NumCol));
    end {for Col};
    EndProgress;
-   for i := 1 to 3 do DEMGlb[Diffs[i]].SetUpMap(Diffs[i],true);
+   for i := 1 to 4 do DEMGlb[Diffs[i]].SetUpMap(Diffs[i],true);
    {$IfDef RecordDEMCompare} WriteLineToDebugFile('MakeDifferenceMap out'); {$EndIf}
 end;
 

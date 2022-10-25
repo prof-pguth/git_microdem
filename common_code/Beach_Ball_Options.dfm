@@ -3,18 +3,16 @@ object BeachBallForm: TBeachBallForm
   Top = 381
   BorderIcons = []
   BorderStyle = bsSingle
-  Caption = 'Focal Mechanisms'
-  ClientHeight = 346
-  ClientWidth = 437
+  Caption = 'Earthquake Focal Mechanisms'
+  ClientHeight = 359
+  ClientWidth = 418
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
-  OldCreateOrder = False
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
     Left = 239
@@ -38,8 +36,8 @@ object BeachBallForm: TBeachBallForm
     Caption = 'All'
   end
   object Label4: TLabel
-    Left = 136
-    Top = 268
+    Left = 119
+    Top = 277
     Width = 60
     Height = 13
     Caption = 'Pixel size (m)'
@@ -88,14 +86,14 @@ object BeachBallForm: TBeachBallForm
   end
   object Label11: TLabel
     Left = 296
-    Top = 268
+    Top = 277
     Width = 38
     Height = 13
     Caption = 'Label11'
   end
   object Label12: TLabel
-    Left = 248
-    Top = 304
+    Left = 238
+    Top = 317
     Width = 60
     Height = 13
     Caption = 'Max to show'
@@ -163,8 +161,8 @@ object BeachBallForm: TBeachBallForm
   object RadioGroup2: TRadioGroup
     Left = 8
     Top = 232
-    Width = 261
-    Height = 30
+    Width = 300
+    Height = 39
     Caption = 'Map plots'
     Columns = 3
     Items.Strings = (
@@ -176,7 +174,7 @@ object BeachBallForm: TBeachBallForm
   end
   object Edit4: TEdit
     Left = 202
-    Top = 268
+    Top = 277
     Width = 67
     Height = 21
     TabOrder = 7
@@ -239,8 +237,8 @@ object BeachBallForm: TBeachBallForm
     TabOrder = 14
   end
   object Edit9: TEdit
-    Left = 328
-    Top = 301
+    Left = 315
+    Top = 314
     Width = 73
     Height = 21
     TabOrder = 15

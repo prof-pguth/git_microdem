@@ -4,8 +4,8 @@ object ClusterOptsForm: TClusterOptsForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Clustering Options'
-  ClientHeight = 343
-  ClientWidth = 285
+  ClientHeight = 325
+  ClientWidth = 273
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -13,7 +13,6 @@ object ClusterOptsForm: TClusterOptsForm
   Font.Name = 'Tahoma'
   Font.Style = []
   Position = poMainFormCenter
-  PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
     Left = 119

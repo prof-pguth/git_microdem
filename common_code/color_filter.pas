@@ -1,5 +1,14 @@
 unit color_filter;
 
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2022 Peter L. Guth  }
+{___________________________________}
+
+
+
 interface
 
 uses

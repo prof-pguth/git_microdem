@@ -3,14 +3,11 @@ inherited C: TC
   Top = 327
   BorderIcons = []
   Caption = 'Chirps Options'
-  ClientHeight = 250
-  ClientWidth = 484
+  ClientHeight = 232
+  ClientWidth = 472
   OnClose = FormClose
-  ExplicitLeft = 3
-  ExplicitTop = 3
-  ExplicitWidth = 502
-  ExplicitHeight = 297
-  PixelsPerInch = 96
+  ExplicitWidth = 490
+  ExplicitHeight = 279
   TextHeight = 20
   inherited Bevel1: TBevel
     Left = 231

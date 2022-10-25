@@ -154,23 +154,43 @@ end;
 
 function CreateRoughnessSlopeStandardDeviationMap(DEM,Radius : integer) : integer;
 var
-   x,y : integer;
-   RoughNess : float32;
+   x,y,SlopeMap : integer;
+   i,j : integer;
+   Slope : float32;
+   fName : PathStr;
+   MomentVar : tMomentVar;
+   sl : array[1..100] of float32;
 begin
-   Result := DEMGlb[DEM].CloneAndOpenGrid(FloatingPointDEM,'md_slope_std_' + FilterSizeStr(Radius) + '_' + DEMGlb[DEM].AreaName,PercentSlope);  //,false,1);
-   StartProgressAbortOption('std dev grid');
-   for x := 0 to pred(DEMGlb[DEM].DEMheader.NumCol) do begin
+   SlopeMap := CreateSlopeMap(DEM,false);
+   fName := 'md_slope_std_' + FilterSizeStr(Radius) + '_' + DEMGlb[DEM].AreaName;
+   Result := DEMGlb[DEM].CloneAndOpenGrid(FloatingPointDEM,fName,PercentSlope);
+   Radius := Radius div 2;
+   StartProgressAbortOption(fName);
+   for x := Radius to pred(DEMGlb[DEM].DEMheader.NumCol - Radius) do begin
       UpdateProgressBar(x/DEMGlb[DEM].DEMheader.NumCol);
-      for y := 0 to pred(DEMGlb[DEM].DEMheader.NumRow) do begin
-         if DEMglb[DEM].RoughnessFromSlopeSTD(x,y,Radius,Roughness) then begin
-            DEMglb[Result].SetGridElevation(x,y,Roughness);
+      for y := Radius to pred(DEMGlb[DEM].DEMheader.NumRow - Radius) do begin
+         MomentVar.Npts := 0;
+         for I := x-Radius to x+Radius do begin
+            for J := y-Radius to y+Radius do begin
+               if DEMGlb[SlopeMap].GetElevMetersOnGrid(i,j,Slope) then begin
+                  inc(MomentVar.Npts);
+                  sl[MomentVar.Npts] := Slope;
+               end;
+            end;
+         end;
+         if MomentVar.NPts > 5 then begin
+            moment(sl,MomentVar,msAfterStdDev);
+            DEMglb[Result].SetGridElevation(x,y,MomentVar.sdev);
          end;
       end;
    end;
    DEMglb[Result].CheckMaxMinElev;
    DEMglb[Result].SetUpMap(Result,true,mtElevSpectrum);
+   CloseSingleDEM(SlopeMap);
    {$IfDef RecordCreateGeomorphMaps} WriteLineToDebugFile('CreateRoughnessMap2, NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProjection.ProjDebugName); {$EndIf}
 end;
+
+
 
 function CreateRoughnessMapAvgVector(WhichDEM : integer; OpenMap : boolean = true) : integer;
 begin

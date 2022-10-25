@@ -4,17 +4,15 @@ object CartMovieOptsForm: TCartMovieOptsForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Rotation Movie Options'
-  ClientHeight = 197
-  ClientWidth = 281
+  ClientHeight = 179
+  ClientWidth = 269
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = False
   Position = poMainFormCenter
-  PixelsPerInch = 96
   TextHeight = 13
   object RadioGroup1: TRadioGroup
     Left = 8

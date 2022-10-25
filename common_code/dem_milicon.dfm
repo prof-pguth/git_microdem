@@ -3,8 +3,8 @@ object MilIconsForm: TMilIconsForm
   Top = 281
   BorderIcons = [biSystemMenu]
   Caption = 'MICRODEM Icon Composer'
-  ClientHeight = 694
-  ClientWidth = 978
+  ClientHeight = 685
+  ClientWidth = 972
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,16 +19,16 @@ object MilIconsForm: TMilIconsForm
   object TabControl1: TTabControl
     Left = 0
     Top = 0
-    Width = 758
-    Height = 694
+    Width = 752
+    Height = 685
     Align = alClient
     TabOrder = 0
     OnChange = TabControl1Change
     object ScrollBox1: TScrollBox
       Left = 4
       Top = 6
-      Width = 750
-      Height = 684
+      Width = 744
+      Height = 675
       Align = alClient
       TabOrder = 0
       object Image1: TImage
@@ -46,10 +46,10 @@ object MilIconsForm: TMilIconsForm
     end
   end
   object Panel1: TPanel
-    Left = 758
+    Left = 752
     Top = 0
     Width = 220
-    Height = 694
+    Height = 685
     Align = alRight
     TabOrder = 1
     object Image2: TImage

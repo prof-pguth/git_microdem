@@ -3,8 +3,8 @@ object Dted_save_form: TDted_save_form
   Top = 128
   BorderStyle = bsDialog
   Caption = 'DTED save parameters'
-  ClientHeight = 250
-  ClientWidth = 590
+  ClientHeight = 241
+  ClientWidth = 584
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -12,11 +12,9 @@ object Dted_save_form: TDted_save_form
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   FormStyle = fsStayOnTop
-  OldCreateOrder = False
   Position = poDefaultSizeOnly
   OnClose = FormClose
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
     Left = 16

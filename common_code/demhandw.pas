@@ -1,10 +1,11 @@
 ﻿unit Demhandw;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{   file verified 6/22/2011       }
-{_________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2022 Peter L. Guth  }
+{___________________________________}
 
 {$I nevadia_defines.inc}
 
@@ -59,9 +60,6 @@ uses
   BaseGraf,DEMdefs,Petmar_types,PETMAR;
 
 type
-   //tProcessOrder = (LRD,LRU,DUR,UDR,RLD);
-   //tDEMFormat = (dfASCII,dfBinary16BitInt,dfBinary32BitInt);
-
   TDemHandForm = class(TForm)
     MainMenu1: TMainMenu;
     File1: TMenuItem;
@@ -310,7 +308,6 @@ type
     procedure ASCIIinsertlinenumbers1Click(Sender: TObject);
     procedure Bynumberoflines1Click(Sender: TObject);
     procedure Bynumberoffiles1Click(Sender: TObject);
-    //procedure ASCIIXYZto3Dshape1Click(Sender: TObject);
     procedure ASCIIfindlineswithsubstring1Click(Sender: TObject);
     procedure ASCIIremoveafterdelimiter1Click(Sender: TObject);
     procedure ASCIIinsertheaderline1Click(Sender: TObject);
@@ -366,7 +363,6 @@ type
     procedure ASCfiles1Click(Sender: TObject);
     procedure PrepOSMfiles1Click(Sender: TObject);
     procedure CreateSHXfilesforDBFfiles1Click(Sender: TObject);
-    //procedure Shapefileindex1Click(Sender: TObject);
     procedure HTMLextractlinks1Click(Sender: TObject);
     procedure AssignprojectionUTM1Click(Sender: TObject);
     procedure ReprojectSpecifiedtoGeo1Click(Sender: TObject);
@@ -462,7 +458,6 @@ uses
       Geotiff,
    {$EndIf}
 
-
    {$IfDef MSTSidescan}
       MST_format,
    {$EndIf}
@@ -532,7 +527,7 @@ var
 {$Else}
    procedure ImportGazetteer(NGAversion : boolean);
    var
-      k{,LastDBOpened} : integer;
+      k  : integer;
       DefaultFilter : byte;
       FilesWanted : tstringlist;
       GazWant :tCSVImport;
@@ -559,13 +554,6 @@ var
             {$IfDef RecordGAZProblems} WriteLineToDebugFile('file=' + fName); {$EndIf}
             gName := ChangeFileExt(fName,DefaultDBExt);
             fName := DoCSVFileImport(fName,GazWant);
-            (*
-            if (not NGAVersion) then begin
-               LastDBOpened := OpenGazFile(gname);
-               ShowHourglassCursor;
-               GISdb[LastDBOpened].dbtablef.Trimblanksallstringfields1Click(nil);
-            end;
-            *)
          end;
       end;
       FilesWanted.Free;
@@ -1117,9 +1105,9 @@ begin
       else if (FileExtEquals(FileName,DefaultDBExt)) then MessageToContinue('Convert ' + FileName + ' to shapefile first')
       else if ItsAShapeFile(FileName,NoDBF) then begin
          {$IfDef RecordShapeFileContents}
-         ShapeFileDump(FileName,ShapeSummaries);
-         WriteStringListToDebugFile(ShapeSummaries);
-         FreeAndNil(ShapeSummaries);
+            ShapeFileDump(FileName,ShapeSummaries);
+            WriteStringListToDebugFile(ShapeSummaries);
+            FreeAndNil(ShapeSummaries);
          {$EndIf}
          if BatchMode and (i=0) then begin
             ShapeFileNewLeader := 'll-';
@@ -1430,10 +1418,6 @@ begin
    end;
 end;
 
-//procedure TDemHandForm.LoadDBintoslicer1Click(Sender: TObject);
-//begin
-   //{$IfDef Include2019datafusion}  LoadDBIntoSlicer; {$EndIf}
-//end;
 
 procedure TDemHandForm.FormCreate(Sender: TObject);
 begin
@@ -1531,8 +1515,6 @@ begin
 end;
 
 
-
-
 procedure TDemHandForm.Close1Click(Sender: TObject);
 begin
    Close;
@@ -1619,28 +1601,11 @@ begin
 end;
 
 
-//procedure TDemHandForm.CloudCompare2Click(Sender: TObject);
-//begin
-   //{$IfDef Include2019datafusion} AddRoughCurvFromCloudCompare; {$EndIf}
-//end;
-
-
-//procedure TDemHandForm.CloudCompareASCIIfile1Click(Sender: TObject);
-//begin
-   //{$IfDef Include2019datafusion} CloudCompare(true); {$EndIf}
-//end;
-
-
 procedure TDemHandForm.Help1Click(Sender: TObject);
 begin
    DisplayHTMLTopic('html\tbme83sn.htm');
 end;
 
-
-//procedure TDemHandForm.Histogramsbyclass1Click(Sender: TObject);
-//begin
-   //{$IfDef Include2019datafusion} GetHistogramsByClass; {$EndIf}
-//end;
 
 procedure TDemHandForm.HTMLcleanup1Click(Sender: TObject);
 {$IfDef ExKML}
@@ -1882,103 +1847,6 @@ begin
    EditDEMHeader;
 end;
 
-(*
-procedure TDemHandForm.ASCIIZvaluesImport(Order : tProcessOrder; ItsASCII : tDEMFormat = dfASCII);
-var
-   FileName,fName      : PathStr;
-   MissingValue,WantedDEM,
-   Col,Row,zi    : integer;
-   Count         : LongInt;
-   Infile        : System.text;
-   Dir           : DirStr;
-   Name          : NameStr;
-   Ext           : ExtStr;
-   z             : float64;
-   BinFile       : file;
-   s1,s2         : ShortString;
-   Invals        : tElevColPointer;
-   zcol          : tElevCol32BitPointer;
-   ByteSwap      : boolean;
-
-      procedure DoValue(Col,Row : integer);
-      begin
-         read(Infile,z);
-         inc(Count);
-         if (Count mod 1000 = 0) then StatusBar1.Panels[0].Text := 'Process:' + IntegerToString(Count,12);
-         if (round(z) <> MissingValue) then DEMGlb[1].SetGridElevation(Col,Row,z);
-      end;
-
-begin
-   MissingValue := MaxSmallInt;
-   FileName := ExtractFilePath(LastDEMName);
-   if (ItsASCII = dfASCII) then begin
-      s1 := 'ASCII z data';
-      s2 := '*.z';
-   end
-   else begin
-      s1 := 'Binary z data';
-      s2 := '*.bin';
-      ByteSwap := AnswerIsYes('Byte swap wrong-endian data');
-   end;
-   if GetFileFromDirectory(s1,s2,FileName) then begin
-      WantedDEM := 0;
-      OpenDEMDataStructures(WantedDEM);
-      with DEMGlb[WantedDEM],DEMheader do begin
-         FSplit(FileName,Dir,Name,Ext);
-         AreaName := Name;
-         {$IfDef ExViewDEMHeader}
-         {$Else}
-            EditHeaderRecord(WantedDEM,true);
-         {$EndIf}
-         if not AllocateDEMMemory(InitDEMMissing) then exit;
-         if (ItsASCII = dfASCII) then begin
-            assignFile(InFile,FileName);
-            reset(InFile);
-            Count := 0;
-            reset(InFile);
-            case Order of
-               UDR : for Col := 0 to pred(NumCol) do for Row := pred(NumRow) downto 0 do DoValue(Col,Row);
-               DUR : for Col := 0 to pred(NumCol) do for Row := 0 to pred(NumRow) do DoValue(Col,Row);
-               LRD : for Row := pred(NumRow) downto 0 do for Col := 0 to pred(NumCol) do DoValue(Col,Row);
-               LRU : for Row := 0 to pred(NumRow) do for Col := 0 to pred(NumCol) do DoValue(Col,Row);
-               RLD : for Row := pred(NumRow) downto 0 do for Col := pred(NumCol) downto 0 do DoValue(Col,Row);
-            end {case};
-            closeFile(InFile);
-         end
-         else begin
-            assignFile(BinFile,FileName);
-            reset(BinFile,1);
-            if (ItsASCII = dfBinary16BitInt) then New(Invals)
-            else New(zCol);
-            for Row := pred(NumRow) downto 0 do begin
-               if (ItsASCII = dfBinary16BitInt) then begin
-                  BlockRead(BinFile,InVals^,2*NumCol);
-                  for Col := 0 to pred(NumCol) do begin
-                     if ByteSwap then InVals^[Col] := swap(InVals^[Col]);
-                     SetGridElevation(Col,Row,InVals^[Col]);
-                  end;
-               end
-               else if (ItsASCII = dfBinary32BitInt) then begin
-                  BlockRead(BinFile,zCol^,4*NumCol);
-                  for Col := 0 to pred(NumCol) do begin
-                     zi := zCol^[Col];
-                     if ByteSwap then Int4Swap(zi);
-                     SetGridElevation(Col,Row,zi);
-                  end;
-               end;
-            end;
-            closeFile(BinFile);
-            if (ItsASCII = dfBinary16BitInt) then Dispose(InVals)
-            else Dispose(zCol);
-         end;
-         fName := DEMDefs.WriteDEMDir + AreaName + '.dem';
-         DEMGlb[1].WriteNewFormatDEM(fName);
-      end {with};
-      StatusBar1.Panels[0].Text := '';
-      CloseSingleDEM(WantedDEM);
-   end;
-end;
-*)
 
 procedure TDemHandForm.AssignbyEPSGandreprojecttoUTM1Click(Sender: TObject);
 begin
@@ -1996,10 +1864,6 @@ begin
     LASGeotoUTM1Click(Sender);
 end;
 
-//procedure TDemHandForm.BatchCSFdemo1Click(Sender: TObject);
-//begin
-   //{$IfDef Include2019datafusion} BatchCSFDemo(Memo1); {$EndIf}
-//end;
 
 procedure TDemHandForm.BILdirectorytoMDDEM1Click(Sender: TObject);
 begin
@@ -2222,11 +2086,6 @@ begin
    end;
 end;
 
-
-//procedure TDemHandForm.Extractclassification1Click(Sender: TObject);
-//begin
-   //{$IfDef Include2019datafusion} ExtractClassificatio(Memo1); {$EndIf}
-//end;
 
 procedure TDemHandForm.ExtractXYZfromDXFfile1Click(Sender: TObject);
 var
@@ -2732,33 +2591,6 @@ begin
    end;
 end;
 
-(*
-procedure TDemHandForm.Shapefileindex1Click(Sender: TObject);
-var
-   DefaultFilter : byte;
-   FileNames,Output : tStringList;
-   GISNum,i : integer;
-   fName : PathStr;
-begin
-   output := tStringList.Create;
-   Output.Add('FILENAME,LAT_LOW,LAT_HI,LONG_LOW,LONG_HI');
-   FileNames := tStringList.Create;
-   FileNames.Add('');
-   if GetMultipleFiles('dBase file','dBase file|*.dbf',FileNames,DefaultFilter) then begin
-      for i := 0 to pred(FileNames.Count) do begin
-         fname := FileNames.Strings[i];
-         if OpenNumberedGISDataBase(GISNum,fName) then begin
-            if not FileExists(ChangeFileExt(fName,'.shx')) then GISdb[GISnum].SavePointShapeFile(false);
-            Output.Add(fName + ',' + RealToString(GISdb[GISnum].dbBoundBox.yMin,-12,-6) + ',' + RealToString(GISdb[GISnum].dbBoundBox.yMax,-12,-6) + ',' +  RealToString(GISdb[GISnum].dbBoundBox.xMin,-12,-6) + ',' + RealToString(GISdb[GISnum].dbBoundBox.xMax,-12,-6));
-            CloseAndNilNumberedDB(GISnum);
-         end;
-      end;
-   end;
-   FileNames.Destroy;
-   fName := ExtractFilePath(fName) + 'shape_file_extents.dbf';
-   StringList2CSVtoDB(output,fName,true);
-end;
-*)
 
 procedure TDemHandForm.ASCIIsortremoveduplicates1Click(Sender: TObject);
 const
@@ -2828,21 +2660,11 @@ begin
    StatusBar1.Panels[0].Text := '';
 end;
 
-//procedure TDemHandForm.MergeCSVfiles1Click(Sender: TObject);
-//begin
-   //{$IfDef Include2019datafusion} MergeCSVPairedFiles(Memo1); {$EndIf}
-//end;
-
 
 procedure TDemHandForm.Specifyshift1Click(Sender: TObject);
 begin
    Conictolatlong1Click(Sender);
 end;
-
-//procedure TDemHandForm.Statsbyclass1Click(Sender: TObject);
-//begin
-   //{$IfDef Include2019datafusion} GetStatsByClass(Memo1); {$EndIf}
-//end;
 
 procedure TDemHandForm.AddlengthfieldtoDBFfile1Click(Sender: TObject);
 begin
@@ -2917,10 +2739,6 @@ begin
    Bynumberoffiles1Click(Sender);
 end;
 
-//procedure TDemHandForm.Coloredmaps1Click(Sender: TObject);
-//begin
-   //{$IfDef Include2019datafusion} ColoredMaps(Memo1); {$EndIf}
-//end;
 
 procedure TDemHandForm.Compressuncompress1Click(Sender: TObject);
 begin

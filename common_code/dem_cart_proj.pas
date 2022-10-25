@@ -229,6 +229,8 @@ var
            if (fName = '') then begin
               if CheckBox21.Checked then begin
                  VectorMap[LastVectorMap].MapDraw.PrimMapProj.Lat0 := LatC;
+              end;
+           if  CheckBox21.Checked or CheckBox4.Checked or CheckBox17.Checked or CheckBox27.Checked then begin
                  VectorMap[LastVectorMap].MapDraw.PrimMapProj.Long0 := LongC;
                  {$IfDef RecordNewVectorMap} WriteLineToDebugFile('New Map reset long cent=' + RadToDegString(VectorMap[LastVectorMap].MapDraw.PrimMapProj.long0)); {$EndIf}
               end;
@@ -334,7 +336,7 @@ end;
 
 procedure TProjectionDemForm.CheckBox21Click(Sender: TObject);
 begin
-   Edit1.Enabled := CheckBox21.Checked;
+   Edit1.Enabled := CheckBox21.Checked or CheckBox4.Checked or CheckBox17.Checked or CheckBox27.Checked;
    Edit2.Enabled := CheckBox21.Checked;
    Label1.Enabled := CheckBox21.Checked;
    Label2.Enabled := CheckBox21.Checked;

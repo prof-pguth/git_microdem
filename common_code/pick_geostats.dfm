@@ -2,8 +2,8 @@ object PickGeoStat: TPickGeoStat
   Left = 0
   Top = 0
   Caption = 'Geomorphometry statstistics'
-  ClientHeight = 350
-  ClientWidth = 521
+  ClientHeight = 341
+  ClientWidth = 515
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -23,13 +23,11 @@ object PickGeoStat: TPickGeoStat
   end
   object Panel1: TPanel
     Left = 0
-    Top = 273
-    Width = 521
+    Top = 264
+    Width = 515
     Height = 77
     Align = alBottom
     TabOrder = 0
-    ExplicitTop = 264
-    ExplicitWidth = 515
     object Label1: TLabel
       Left = 247
       Top = 25
@@ -95,14 +93,12 @@ object PickGeoStat: TPickGeoStat
   object PageControl1: TPageControl
     Left = 0
     Top = 0
-    Width = 336
-    Height = 273
-    ActivePage = TabSheet2
+    Width = 330
+    Height = 264
+    ActivePage = TabSheet7
     Align = alClient
     MultiLine = True
     TabOrder = 1
-    ExplicitWidth = 330
-    ExplicitHeight = 264
     object TabSheet1: TTabSheet
       Caption = 'Basic'
       object Button6: TButton
@@ -458,6 +454,20 @@ object PickGeoStat: TPickGeoStat
         Height = 13
         Caption = 'Label2'
       end
+      object Label5: TLabel
+        Left = 24
+        Top = 168
+        Width = 154
+        Height = 13
+        Caption = 'Elevation histogram bin size (m) '
+      end
+      object Label6: TLabel
+        Left = 24
+        Top = 192
+        Width = 136
+        Height = 13
+        Caption = 'Slope histogram bin size (%)'
+      end
       object Button11: TButton
         Left = 16
         Top = 120
@@ -503,16 +513,32 @@ object PickGeoStat: TPickGeoStat
         TabOrder = 4
         OnClick = CheckBox3Click
       end
+      object Edit3: TEdit
+        Left = 184
+        Top = 165
+        Width = 73
+        Height = 21
+        TabOrder = 5
+        Text = 'Edit3'
+        OnChange = Edit3Change
+      end
+      object Edit4: TEdit
+        Left = 184
+        Top = 192
+        Width = 73
+        Height = 21
+        TabOrder = 6
+        Text = 'Edit4'
+        OnChange = Edit4Change
+      end
     end
   end
   object Memo1: TMemo
-    Left = 336
+    Left = 330
     Top = 0
     Width = 185
-    Height = 273
+    Height = 264
     Align = alRight
     TabOrder = 2
-    ExplicitLeft = 330
-    ExplicitHeight = 264
   end
 end

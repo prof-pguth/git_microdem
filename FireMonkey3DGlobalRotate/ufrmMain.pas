@@ -1,6 +1,15 @@
 unit ufrmMain;
 
 
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2022 Peter L. Guth  }
+{___________________________________}
+
+
+//Derived from
 //https://github.com/BruceMcGee/Simple-FireMonkey-3D
 //https://glooscapsoftware.blogspot.com/2021/01/simple-firemonkey-3d.html
 
@@ -170,5 +179,6 @@ begin
 end;
 
 
-
+initialization
+finalization
 end.

@@ -2,8 +2,8 @@ object ToggleDBfieldsForm: TToggleDBfieldsForm
   Left = 262
   Top = 116
   Caption = 'Select '
-  ClientHeight = 393
-  ClientWidth = 404
+  ClientHeight = 386
+  ClientWidth = 416
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
@@ -18,34 +18,39 @@ object ToggleDBfieldsForm: TToggleDBfieldsForm
     Left = 0
     Top = 35
     Width = 202
-    Height = 309
+    Height = 302
     Align = alLeft
     Color = clGray
     ItemHeight = 13
     Sorted = True
     TabOrder = 0
     OnClick = ListBox1Click
+    ExplicitHeight = 282
   end
   object ListBox2: TListBox
-    Left = 203
+    Left = 215
     Top = 35
     Width = 201
-    Height = 309
+    Height = 302
     Align = alRight
     ItemHeight = 13
     Sorted = True
     TabOrder = 1
     OnClick = ListBox2Click
+    ExplicitLeft = 185
+    ExplicitHeight = 282
   end
   object Panel1: TPanel
     Left = 0
-    Top = 344
-    Width = 404
+    Top = 337
+    Width = 416
     Height = 49
     Align = alBottom
     TabOrder = 2
+    ExplicitTop = 317
+    ExplicitWidth = 386
     object OKBtn: TBitBtn
-      Left = 32
+      Left = 8
       Top = 14
       Width = 77
       Height = 27
@@ -58,7 +63,7 @@ object ToggleDBfieldsForm: TToggleDBfieldsForm
       IsControl = True
     end
     object CancelBtn: TBitBtn
-      Left = 115
+      Left = 99
       Top = 14
       Width = 77
       Height = 27
@@ -71,7 +76,7 @@ object ToggleDBfieldsForm: TToggleDBfieldsForm
       IsControl = True
     end
     object HelpBtn: TBitBtn
-      Left = 198
+      Left = 182
       Top = 14
       Width = 76
       Height = 27
@@ -84,7 +89,7 @@ object ToggleDBfieldsForm: TToggleDBfieldsForm
       IsControl = True
     end
     object Button1: TButton
-      Left = 289
+      Left = 264
       Top = 15
       Width = 53
       Height = 26
@@ -99,7 +104,7 @@ object ToggleDBfieldsForm: TToggleDBfieldsForm
       OnClick = Button1Click
     end
     object Button2: TButton
-      Left = 348
+      Left = 323
       Top = 15
       Width = 53
       Height = 26
@@ -117,10 +122,11 @@ object ToggleDBfieldsForm: TToggleDBfieldsForm
   object Panel2: TPanel
     Left = 0
     Top = 0
-    Width = 404
+    Width = 416
     Height = 35
     Align = alTop
     TabOrder = 3
+    ExplicitWidth = 386
     object Label2: TLabel
       Left = 32
       Top = 14

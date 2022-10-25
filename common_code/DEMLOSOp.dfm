@@ -144,7 +144,7 @@ object LOSOption: TLOSOption
     Top = 0
     Width = 631
     Height = 341
-    ActivePage = TabSheet2
+    ActivePage = TabSheet1
     Align = alTop
     TabOrder = 8
     ExplicitWidth = 625

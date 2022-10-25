@@ -2,7 +2,7 @@ object ProjectionDemForm: TProjectionDemForm
   Left = 388
   Top = 175
   Caption = 'Map Projections'
-  ClientHeight = 553
+  ClientHeight = 580
   ClientWidth = 469
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -212,7 +212,7 @@ object ProjectionDemForm: TProjectionDemForm
     object CheckBox27: TCheckBox
       Left = 8
       Top = 128
-      Width = 97
+      Width = 145
       Height = 17
       Caption = 'Web Mercator (T) '
       TabOrder = 7

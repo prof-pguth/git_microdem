@@ -92,6 +92,10 @@ type
     BitBtn21: TBitBtn;
     CheckBox3: TCheckBox;
     BitBtn22: TBitBtn;
+    Label5: TLabel;
+    Label6: TLabel;
+    Edit3: TEdit;
+    Edit4: TEdit;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure BitBtn1Click(Sender: TObject);
     procedure Radiogroup1Click(Sender: TObject);
@@ -136,6 +140,8 @@ type
     procedure BitBtn21Click(Sender: TObject);
     procedure BitBtn22Click(Sender: TObject);
     procedure CheckBox3Click(Sender: TObject);
+    procedure Edit3Change(Sender: TObject);
+    procedure Edit4Change(Sender: TObject);
   private
     //procedure GetBatchRegionSize;
     procedure NeedSingleDEM;
@@ -750,6 +756,16 @@ begin
    CheckEditString(Edit2.Text,MDDef.NetDef.MaxContourConcentration);
 end;
 
+procedure TPickGeoStat.Edit3Change(Sender: TObject);
+begin
+   CheckEditString(Edit3.Text,MDDef.ElevHistBinSize);
+end;
+
+procedure TPickGeoStat.Edit4Change(Sender: TObject);
+begin
+   CheckEditString(Edit4.Text,MDDef.SlopeHistBinSize);
+end;
+
 procedure TPickGeoStat.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
    if not Closing then begin
@@ -793,6 +809,8 @@ begin
    StringGrid1.Cells[0,3] := IntToStr(MDDef.BatchRegionSize[3]);  //'500';
    StringGrid1.Cells[0,4] := IntToStr(MDDef.BatchRegionSize[4]);  //'750';
    StringGrid1.Cells[0,5] := IntToStr(MDDef.BatchRegionSize[5]);  //'1000';
+   Edit3.Text := RealToString(MDDef.ElevHistBinSize,-8,-2);
+   Edit4.Text := RealToString(MDDef.SlopeHistBinSize,-8,-2);
    wmdem.FormPlacementInCorner(Self);
 end;
 

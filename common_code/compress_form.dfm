@@ -3,8 +3,8 @@ object petcompressform: Tpetcompressform
   Top = 244
   BorderIcons = [biSystemMenu]
   Caption = 'Compress/Decompress'
-  ClientHeight = 390
-  ClientWidth = 870
+  ClientHeight = 372
+  ClientWidth = 858
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,8 +19,8 @@ object petcompressform: Tpetcompressform
   object Memo1: TMemo
     Left = 0
     Top = 0
-    Width = 870
-    Height = 371
+    Width = 858
+    Height = 353
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -30,13 +30,13 @@ object petcompressform: Tpetcompressform
     ParentFont = False
     ScrollBars = ssVertical
     TabOrder = 0
-    ExplicitWidth = 894
-    ExplicitHeight = 407
+    ExplicitWidth = 864
+    ExplicitHeight = 362
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 371
-    Width = 870
+    Top = 353
+    Width = 858
     Height = 19
     Panels = <
       item
@@ -45,8 +45,8 @@ object petcompressform: Tpetcompressform
       item
         Width = 250
       end>
-    ExplicitTop = 407
-    ExplicitWidth = 894
+    ExplicitTop = 362
+    ExplicitWidth = 864
   end
   object MainMenu1: TMainMenu
     Left = 24

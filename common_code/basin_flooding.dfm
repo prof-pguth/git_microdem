@@ -4,8 +4,8 @@ object FloodingForm: TFloodingForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Basin Flooding'
-  ClientHeight = 445
-  ClientWidth = 479
+  ClientHeight = 427
+  ClientWidth = 467
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -20,12 +20,14 @@ object FloodingForm: TFloodingForm
   object StringGrid1: TStringGrid
     Left = 225
     Top = 0
-    Width = 254
-    Height = 426
+    Width = 242
+    Height = 408
     Align = alClient
     FixedCols = 0
     ScrollBars = ssVertical
     TabOrder = 0
+    ExplicitWidth = 248
+    ExplicitHeight = 417
     ColWidths = (
       64
       64
@@ -41,21 +43,24 @@ object FloodingForm: TFloodingForm
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 426
-    Width = 479
+    Top = 408
+    Width = 467
     Height = 19
     Panels = <
       item
         Width = 50
       end>
+    ExplicitTop = 417
+    ExplicitWidth = 473
   end
   object Panel1: TPanel
     Left = 0
     Top = 0
     Width = 225
-    Height = 426
+    Height = 408
     Align = alLeft
     TabOrder = 2
+    ExplicitHeight = 417
     object Label1: TLabel
       Left = 8
       Top = 8

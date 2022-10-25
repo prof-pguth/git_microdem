@@ -4,8 +4,8 @@ object drain_opt_form: Tdrain_opt_form
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Drainage flow path options'
-  ClientHeight = 439
-  ClientWidth = 306
+  ClientHeight = 430
+  ClientWidth = 300
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -13,11 +13,9 @@ object drain_opt_form: Tdrain_opt_form
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   FormStyle = fsStayOnTop
-  OldCreateOrder = False
   Position = poMainFormCenter
   OnClose = FormClose
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Label2: TLabel
     Left = 94

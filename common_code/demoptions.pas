@@ -630,6 +630,7 @@ var
    BlowUpDEM,
    BlowUpVeg,
    FWT,
+   DEMIXbase,
    TauDEM : integer;
 
 
@@ -835,6 +836,7 @@ begin
       DrawRow(FWT,'GDAL',GDALtools_Dir);
    {$EndIf}
 
+   DrawRow(DEMIXbase,'DEMIX',MDDef.Demix_base_dir);
    DrawRow(TauDEM,'TauDEM',TauDEMDir);
 
    StringGrid1.RowCount := TauDEM + 1;
@@ -858,11 +860,12 @@ begin
       if Arow = VectorMap then GetFileFromDirectory('Vector map name','*.prj',VectorMapName);
       {$IfDef ExGDAL}
       {$Else}
-         if Arow = FWT then begin
+         if (Arow = FWT) then begin
             GDALtools_Dir := '';
             GetGDALFileNames;
          end;
       {$EndIf}
+      if Arow = DEMIXbase then SetDEMIXdirs(true);
       if Arow = TauDEM then GetDOSPath('TauDEM',TauDEMDir);
    end;
    LabelDirectories;

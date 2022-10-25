@@ -2,8 +2,8 @@ object dbtablef: Tdbtablef
   Left = 62
   Top = 306
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1145
-  ClientWidth = 1376
+  ClientHeight = 1127
+  ClientWidth = 1364
   Color = clBtnFace
   ParentFont = True
   FormStyle = fsMDIChild
@@ -17,24 +17,24 @@ object dbtablef: Tdbtablef
   TextHeight = 20
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 1126
-    Width = 1376
+    Top = 1108
+    Width = 1364
     Height = 19
     Panels = <
       item
         Width = 250
       end>
-    ExplicitTop = 1117
-    ExplicitWidth = 1370
+    ExplicitTop = 1099
+    ExplicitWidth = 1358
   end
   object Panel2: TPanel
     Left = 0
     Top = 41
-    Width = 1376
+    Width = 1364
     Height = 32
     Align = alTop
     TabOrder = 1
-    ExplicitWidth = 1370
+    ExplicitWidth = 1358
     object BitBtn1: TBitBtn
       Left = 34
       Top = 1
@@ -215,11 +215,11 @@ object dbtablef: Tdbtablef
   object Panel3: TPanel
     Left = 0
     Top = 73
-    Width = 1376
+    Width = 1364
     Height = 41
     Align = alTop
     TabOrder = 2
-    ExplicitWidth = 1370
+    ExplicitWidth = 1358
     object Label2: TLabel
       Left = 12
       Top = 12
@@ -266,11 +266,11 @@ object dbtablef: Tdbtablef
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1376
+    Width = 1364
     Height = 41
     Align = alTop
     TabOrder = 4
-    ExplicitWidth = 1370
+    ExplicitWidth = 1358
     object LOSButton: TSpeedButton
       Left = 40
       Top = 6
@@ -529,11 +529,11 @@ object dbtablef: Tdbtablef
   object Panel7: TPanel
     Left = 0
     Top = 114
-    Width = 1376
+    Width = 1364
     Height = 41
     Align = alTop
     TabOrder = 3
-    ExplicitWidth = 1370
+    ExplicitWidth = 1358
     object RadioGroup2: TRadioGroup
       Left = 20
       Top = 0
@@ -554,8 +554,8 @@ object dbtablef: Tdbtablef
   object DBGrid1: TDBGrid
     Left = 0
     Top = 155
-    Width = 1376
-    Height = 971
+    Width = 1364
+    Height = 953
     Align = alClient
     TabOrder = 5
     TitleFont.Charset = DEFAULT_CHARSET
@@ -1321,10 +1321,6 @@ object dbtablef: Tdbtablef
         Caption = '1 degree tiles to cover records in table'
         OnClick = N1degreetilestocoverrecordsintable1Click
       end
-      object ransposeforwinecontest1: TMenuItem
-        Caption = 'Transpose for wine contest'
-        OnClick = ransposeforwinecontest1Click
-      end
       object Graphmeanmedianbyterraincategory1: TMenuItem
         Caption = 'Graphs with various filters (experimental)'
         object PickParam1: TMenuItem
@@ -1334,10 +1330,6 @@ object dbtablef: Tdbtablef
         object Allcriteriavalues1: TMenuItem
           Caption = 'Single tile, all criteria, values'
           OnClick = Allcriteriavalues1Click
-        end
-        object Simpleexample1: TMenuItem
-          Caption = 'Simple example'
-          OnClick = Simpleexample1Click
         end
         object PercentageofcriteriawhereDEMisbest1: TMenuItem
           Caption = 'Percentage of criteria where DEM is best'
@@ -1363,17 +1355,27 @@ object dbtablef: Tdbtablef
       object N47: TMenuItem
         Caption = '-'
       end
+      object Graphfilters1: TMenuItem
+        Caption = 'Graph filters'
+        OnClick = Graphfilters1Click
+      end
       object RankDEMs1: TMenuItem
         Caption = 'Rank DEMs and find best by criterion and tile'
         OnClick = RankDEMs1Click
       end
       object COPoALOS1: TMenuItem
-        Caption = 'COP or ALOS shootout'
+        Caption = 'Winning percentages and shootouts'
         OnClick = COPoALOS1Click
       end
       object BestDEMpertilebycriteria1: TMenuItem
-        Caption = 'Graphs best DEM per tile, by criteria'
+        Caption = 'Graphs best DEM per tile, by criteria (sort by area)'
         OnClick = BestDEMpertilebycriteria1Click
+      end
+      object GraphsbestDEMpertilebycriteriasortbytilecharacteristics1: TMenuItem
+        Caption = 
+          'Graphs best DEM per tile, by criteria (sort by tile characterist' +
+          'ics)'
+        OnClick = GraphsbestDEMpertilebycriteriasortbytilecharacteristics1Click
       end
       object BestDEMbycategory1: TMenuItem
         Caption = 'Graph best DEM (average score) for criteria and filters '

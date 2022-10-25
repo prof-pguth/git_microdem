@@ -1555,9 +1555,9 @@ object gis_scaled_form: Tgis_scaled_form
         TabOrder = 7
       end
       object RadioGroup2: TRadioGroup
-        Left = 194
-        Top = 119
-        Width = 92
+        Left = 171
+        Top = 111
+        Width = 115
         Height = 35
         Caption = 'Filter'
         Columns = 2

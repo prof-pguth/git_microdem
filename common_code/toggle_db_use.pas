@@ -44,6 +44,7 @@ uses
 
 
    Windows, Classes, Graphics, Forms, Controls, Buttons, StdCtrls, ExtCtrls,SysUtils,
+   DEMDefs,
    PetDBUtils,Petmar_types,PetMAR;
 
 type
@@ -83,8 +84,8 @@ type
 function VerifyRecordsToUse(var Table : tMyData; FieldShownUser : ShortString; aCaption : shortstring = ''; FieldToToggle : ShortString = 'USE'; SecondaryField : ShortString = ''; LimitField : ShortString = '') : boolean; overload;
 
 function VerifyRecordsToUse(fName : PathStr; FieldShownUser : ShortString; aCaption : shortstring = ''; FieldToToggle : ShortString = 'USE'; SecondaryField : ShortString = ''; LimitField : ShortString = '') : boolean; overload;
-
 procedure PickSomeFromStringList(var SL : tStringList; aCaption : ShortString);
+procedure PickDEMsToUse(var DEMs : tDEMbooleanArray; aCaption : ShortString);
 
 
 implementation
@@ -92,7 +93,42 @@ implementation
 {$R *.DFM}
 
 uses
-   Make_Tables;
+   Make_Tables,
+   DEMCoord;
+
+
+procedure PickDEMsToUse(var DEMs : tDEMbooleanArray; aCaption : ShortString);
+var
+   fName : PathStr;
+   table : tMyData;
+   i : integer;
+   ch : char;
+begin
+   {$IfDef ShowToggle} WriteLineToDebugFile('PickSomeFromStringList in'); {$EndIf}
+   fName := MDTempDir + 'merge.dbf';
+   MakePickUseTable(fName);
+   Table := tMyData.Create(fName);
+   for i := 1 to MaxDEMDataSets do begin
+     if ValidDEM(i) then begin
+        Table.Insert;
+        Table.SetFieldByNameAsString('MENU_OPTS',IntToStr(i) + '-' + DEMGlb[i].AreaName);
+        if DEMs[i] then ch := 'Y' else ch := 'N';
+        Table.SetFieldByNameAsString('USE',ch);
+     end;
+   end;
+   VerifyRecordsToUse(Table,'MENU_OPTS',aCaption);
+   {$IfDef ShowToggle} WriteLineToDebugFile('VerifyRecordsToUse success'); {$EndIf}
+   Table.First;
+   while not Table.eof do begin
+      i := StrToInt(Petmar_Types.BeforeSpecifiedString(Table.GetFieldByNameAsString('MENU_OPTS'),'-'));
+      DEMs[i] := Table.GetFieldByNameAsString('USE') = 'Y';
+      Table.Next;
+   end;
+   Table.Destroy;
+   {$IfDef ShowToggle} WriteLineToDebugFile('PickSomeFromStringList out'); {$EndIf}
+end;
+
+
 
 
 procedure PickSomeFromStringList(var SL : tStringList; aCaption : ShortString);
@@ -259,7 +295,7 @@ begin
       TStr := ListBox1.Items[ListBox1.ItemIndex];
    end;
    if (Sender = ListBox2) then begin
-     {$IfDef ShowToggle} WriteLineToDebugFile('Toggle list box 2'); {$EndIf}
+      {$IfDef ShowToggle} WriteLineToDebugFile('Toggle list box 2'); {$EndIf}
       TStr := ListBox2.Items[ListBox2.ItemIndex];
    end;
    if (SecondField <> '') then begin

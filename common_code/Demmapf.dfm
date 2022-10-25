@@ -2,8 +2,8 @@ object MapForm: TMapForm
   Left = 45
   Top = 303
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1204
-  ClientWidth = 1873
+  ClientHeight = 1168
+  ClientWidth = 1849
   Color = clBtnHighlight
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -40,8 +40,8 @@ object MapForm: TMapForm
   object ScrollBox1: TScrollBox
     Left = 0
     Top = 27
-    Width = 1873
-    Height = 1177
+    Width = 1849
+    Height = 1141
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clRed
@@ -51,8 +51,8 @@ object MapForm: TMapForm
     ParentFont = False
     TabOrder = 0
     OnClick = ScrollBox1Click
-    ExplicitWidth = 1867
-    ExplicitHeight = 1168
+    ExplicitWidth = 1861
+    ExplicitHeight = 1159
     object Image1: TImage
       Left = 3
       Top = -247
@@ -209,13 +209,13 @@ object MapForm: TMapForm
     end
     object BlendPanel: TPanel
       Left = 0
-      Top = 1132
-      Width = 1869
+      Top = 1123
+      Width = 1863
       Height = 41
       Align = alBottom
       TabOrder = 8
-      ExplicitTop = 1123
-      ExplicitWidth = 1863
+      ExplicitTop = 1114
+      ExplicitWidth = 1857
       object TrackBar2: TTrackBar
         Left = 289
         Top = 1
@@ -334,12 +334,11 @@ object MapForm: TMapForm
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1873
+    Width = 1849
     Height = 27
     Align = alTop
     TabOrder = 1
     OnMouseDown = Panel1MouseDown
-    ExplicitWidth = 1867
     object AnnotateSpeedButton1: TSpeedButton
       Left = 31
       Top = -4

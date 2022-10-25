@@ -4,8 +4,8 @@ object CVSExportForm: TCVSExportForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Export CSV Grid'
-  ClientHeight = 411
-  ClientWidth = 305
+  ClientHeight = 393
+  ClientWidth = 293
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -15,7 +15,6 @@ object CVSExportForm: TCVSExportForm
   Position = poDefaultSizeOnly
   OnClose = FormClose
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
     Left = 152
@@ -156,11 +155,13 @@ object CVSExportForm: TCVSExportForm
   end
   object ProgressBar1: TProgressBar
     Left = 0
-    Top = 395
-    Width = 305
+    Top = 377
+    Width = 293
     Height = 16
     Align = alBottom
     TabOrder = 12
+    ExplicitTop = 386
+    ExplicitWidth = 299
   end
   object CheckBox2: TCheckBox
     Left = 16

@@ -1,10 +1,12 @@
 unit BaseGraf;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{   file verified 6/22/2011       }
-{_________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2022 Peter L. Guth  }
+{___________________________________}
+
 
 
 {$I nevadia_defines.inc}
@@ -87,7 +89,7 @@ type
    tGraphType = (gtTernary,gtRose,gtNormal,gtTadpole,gtTwoVertAxes,gtBoxPlot);
    tTernaryGrid = (tgNone,tgRegular,tgShepSed);
    RealToRealFunction = function(x : float32) : float32;
-   AxesType = (FullGrid,PartGrid,NoGrid,XFullGridOnly,XPartGridOnly,XTimeYFullGrid,XTimeYPartGrid);
+   AxesType = (FullGrid,PartGrid,NoGrid,XFullGridOnly,XPartGridOnly,YFullGridOnly,XTimeYFullGrid,XTimeYPartGrid);
    tAxisFunction = (LinearAxis,Log10Axis,ShortCumNormalAxis,CumulativeNormalAxis,LongCumulativeNormalAxis,LongerCumulativeNormalAxis);
    ColorFunctionType = Function(Z : float32) : TColor;
    tCycleCut = array[1..MaxCycles] of VectorType;   {with each, the order is min, max, increment}
@@ -122,7 +124,7 @@ type
          NumHorizCycles,NumVertCycles,
          Day1,Month1,Year1,Day2,Month2,Year2 : int32;
          HorizCycleCuts,VertCycleCuts : tCycleCut;
-         TopLabel,HorizLabel,VertLabel,ThirdLabel,VertLabel2,UpperLeftText : ShortString;
+         TopLeftLabel,TopLabel,HorizLabel,VertLabel,ThirdLabel,VertLabel2,UpperLeftText : ShortString;
          AnnualCycle,
          Draw1to1Line,
          DrawRegion,
@@ -150,6 +152,7 @@ type
          LabelXFromLog,
          ShowHorizAxis0,
          ShowVertAxis0,
+         VertGraphBottomLabels,
          GraphDrawn     : boolean;
          AxisColor : TColor;
          GraphAxes : AxesType;
@@ -196,7 +199,7 @@ type
           procedure DefaultAxisFit(AxisFunctionType : tAxisFunction; NumPoints : integer; var x : array of float32; var CycleCuts : tCycleCut; var NumCycles : integer; var Min,Max : float32; PixelsHigh,TickSpacing : integer);
           procedure ManualAxisFit(var CycleCuts : tCycleCut; var NumCycles : integer; var Min,Max : float32; Message : shortstring; PixelsHigh,TickSpacing : integer);
           procedure ForceAxisFit(AxisFunctionType : tAxisFunction; var CycleCuts : tCycleCut; var NumCycles : integer; var Min,Max : float32; PixelsHigh,TickSpacing : integer);
-          procedure SetShowAllLines(setting : boolean);
+          procedure SetShowAllLines(setting : boolean; LineWidth : integer = 2);
           procedure SetShowAllPoints(setting : boolean);
    end;
 
@@ -1039,7 +1042,6 @@ var
             inf : file;
             i,j,ax,ay : integer;
          begin
-            //LoadSeries(fName);
             NumVals := GetFileSize(fName) div SizeOf(float32);
             AssignFile(inf,fName);
             reset(inf,sizeOf(float32));
@@ -2224,7 +2226,7 @@ begin {proc CreateGraphAxes}
       Bitmap.Canvas.Brush.Style := bsClear;
 
       Bitmap.Canvas.Rectangle(LeftMargin,TopMargin,XWindowSize-RightMargin,succ(YWindowSize - BottomMargin));
-      if (GraphDraw.GraphAxes <> NoGrid) then begin
+      if (not (GraphDraw.GraphAxes in [NoGrid,YFullGridOnly])) then begin
          for i := 1 to NumHorizCycles do HorizPartOfGraph(HorizCycleCuts[i,1],HorizCycleCuts[i,2],HorizCycleCuts[i,3],i=1);
       end;
 
@@ -2263,7 +2265,7 @@ begin {proc CreateGraphAxes}
       if YWindowSize - BottomMargin > Bitmap.Canvas.TextWidth(VertLabel) then y1 := YWindowSize - BottomMargin - ((YWindowSize - BottomMargin - Bitmap.Canvas.TextWidth(VertLabel)) div 2)
       else y1 := YWindowSize - ((YWindowSize - Bitmap.Canvas.TextWidth(VertLabel)) div 2);
 
-      if VertLabel = 'POTET/Precip (mm)' then begin
+      if (VertLabel = 'POTET/Precip (mm)') then begin
          Bitmap.Canvas.Font.Color := clRed;
          TextOutVertical(Bitmap.Canvas,3,y1,'POTET');
          y1 := y1 - Bitmap.Canvas.TextWidth('POTET');
@@ -2297,11 +2299,16 @@ begin {proc CreateGraphAxes}
 
       if (GraphDraw.GraphBottomLabels <> Nil) and (GraphDraw.GraphBottomLabels.Count > 0) and GraphDraw.ShowGraphBottomLabels then begin
          for I := 1 to GraphDraw.GraphBottomLabels.Count do begin
-            TStr := GraphDraw.GraphBottomLabels.Strings[pred(i)];
-            x1 := StrToInt(BeforeSpecifiedCharacterANSI(Tstr,',',true,true));
-            x1 := GraphX(x1)-Bitmap.Canvas.TextHeight(TStr) div 2;
-            y1 := Bitmap.Height - 5;
-            TextOutVertical(Bitmap.Canvas,x1,y1,RemoveUnderScores(TStr));
+            TStr := RemoveUnderScores(GraphDraw.GraphBottomLabels.Strings[pred(i)]);
+            x1 := GraphX(StrToInt(BeforeSpecifiedCharacterANSI(Tstr,',',true,true)));
+            if GraphDraw.VertGraphBottomLabels then begin
+               x1 := x1-Bitmap.Canvas.TextHeight(TStr) div 2;
+               y1 := Bitmap.Height - 5;
+               TextOutVertical(Bitmap.Canvas,x1,y1,TStr);
+            end
+            else begin
+               Bitmap.Canvas.TextOut(x1-Bitmap.Canvas.TextWidth(Tstr) div 2, GraphDraw.YWindowSize - GraphDraw.BottomMargin + 6, TStr);
+            end;
          end;
       end;
 
@@ -2397,11 +2404,12 @@ begin
    end;
 end;
 
-procedure tGraphDraw.SetShowAllLines(setting: boolean);
+procedure tGraphDraw.SetShowAllLines(setting: boolean; LineWidth : integer = 2);
 var
    i : integer;
 begin
    for i := 1 to 15 do ShowLine[i] := setting;
+
 end;
 
 procedure tGraphDraw.SetShowAllPoints(setting: boolean);
@@ -3301,9 +3309,11 @@ begin
    GraphDraw.LabelXFromLog := false;
    GraphDraw.ShowHorizAxis0 := false;
    GraphDraw.ShowVertAxis0 := false;
+   GraphDraw.VertGraphBottomLabels := true;
      GraphDraw.RedGray := false;
      GraphDraw.ShowYears := true;
      GraphDraw.TopLabel := '';
+     GraphDraw.TopLeftLabel := '';
      GraphDraw.ThirdLabel := '';
      GraphDraw.VertLabel2 := '';
      GraphDraw.UpperLeftText := '';
@@ -4794,6 +4804,9 @@ begin
        if (GraphDraw.TopLabel <> '') then begin
           Bitmap.Canvas.TextOut((Bitmap.Width-Bitmap.Canvas.TextWidth(GraphDraw.TopLabel)) div 2, 5, RemoveUnderScores(GraphDraw.TopLabel));
        end;
+       if (GraphDraw.TopLeftLabel <> '') then begin
+          Bitmap.Canvas.TextOut(0, 5, RemoveUnderScores(GraphDraw.TopLeftLabel));
+       end;
        if (LLcornerText <> '') then begin
           Bitmap.Canvas.Font.Color := clBlack;
           Bitmap.Canvas.TextOut(1, Bitmap.Height - Bitmap.Canvas.TextHeight(LLcornerText), RemoveUnderScores(LLcornerText));
@@ -5288,7 +5301,7 @@ begin
    Petmar.PickLineSizeAndColor('Best fit line',Nil,BestFitLineColor,BestFitLineWidth);
 end;
 
-procedure  InitializeBaseGraf;
+procedure InitializeBaseGraf;
 begin
    {$IfDef MessageStartupUnit}  MessageToContinue('Startup BaseGraf'); {$EndIf}
    FilterTerms := 11;

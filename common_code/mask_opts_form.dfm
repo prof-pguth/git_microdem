@@ -4,19 +4,17 @@ object MaskOptsForm: TMaskOptsForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Masking Options'
-  ClientHeight = 219
-  ClientWidth = 217
+  ClientHeight = 220
+  ClientWidth = 222
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = False
   Position = poMainFormCenter
   OnClose = FormClose
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
     Left = 16
@@ -45,7 +43,7 @@ object MaskOptsForm: TMaskOptsForm
   end
   object OKBtn: TBitBtn
     Left = 8
-    Top = 184
+    Top = 221
     Width = 77
     Height = 27
     Caption = 'OK'
@@ -76,8 +74,8 @@ object MaskOptsForm: TMaskOptsForm
     IsControl = True
   end
   object HelpBtn: TBitBtn
-    Left = 112
-    Top = 184
+    Left = 100
+    Top = 221
     Width = 77
     Height = 27
     Kind = bkHelp
@@ -107,7 +105,7 @@ object MaskOptsForm: TMaskOptsForm
   end
   object CheckBox2: TCheckBox
     Left = 16
-    Top = 161
+    Top = 185
     Width = 97
     Height = 17
     Caption = 'Show mask'
@@ -121,5 +119,14 @@ object MaskOptsForm: TMaskOptsForm
     Caption = 'Treat lines as polygons'
     TabOrder = 7
     OnClick = CheckBox3Click
+  end
+  object CheckBox4: TCheckBox
+    Left = 16
+    Top = 163
+    Width = 201
+    Height = 17
+    Caption = 'Treat polygons as lines (perimeter)'
+    TabOrder = 8
+    OnClick = CheckBox4Click
   end
 end
