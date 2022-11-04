@@ -1538,11 +1538,9 @@ begin
    {$IfDef UseFireDacSQLlite}
       if (fdTable <> Nil) then fdTable.FieldByName(FieldName).AsInteger := value;
    {$EndIf}
-    {$IfDef UseFDMemTable}
-       if (FDMemTable <> nil) then begin
-          fdMemTable.FieldByName(FieldName).AsInteger := value;
-       end;
-    {$EndIf}
+   {$IfDef UseFDMemTable}
+       if (FDMemTable <> nil) then fdMemTable.FieldByName(FieldName).AsInteger := value;
+   {$EndIf}
 
    {$IfDef UseTCLientDataSet}
       if (TheClientDataSet <> Nil) then TheClientDataSet.FieldByName(FieldName).AsInteger := value;
@@ -2666,6 +2664,7 @@ finalization
    {$IfDef RecordSQLite} WriteLineToDebugFile('RecordSQLite active in petmar_db'); {$EndIf}
    {$IfDef TrackCDStiming} WriteLineToDebugFile('TrackCDStiming active in petmar_db'); {$EndIf}
 end.
+
 
 
 

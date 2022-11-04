@@ -1,11 +1,13 @@
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of ianMICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch    }
-{ Released under the MIT Licences    }
-{ Copyright (c) 2019 Peter L. Guth   }
-{                                    }
-{ include file for demdatabase       }
-{____________________________________}
+
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2022 Peter L. Guth  }
+{___________________________________}
+{                                   }
+{ include file for demdatabase      }
+{___________________________________}
 
 
 function TGISdataBaseModule.ActuallyDrawGraph(Graphtype : tdbGraphType) : TThisbasegraph;
@@ -298,32 +300,32 @@ function TGISdataBaseModule.MakeGraph(Graphtype : tdbGraphType; Ask : boolean = 
 var
     i : integer;
 begin
-     if ( GraphType in [dbgtCluster1,dbgtMultiplegraphmatrix1,dbgtPlot]) then begin
+     if (GraphType in [dbgtCluster1,dbgtMultiplegraphmatrix1,dbgtPlot]) then begin
      end
      else if (GraphType in [dbgtN2Dgraphsimplelines1,dbgtN2Dgraph1]) then begin
-        if Ask then PickNumericFields(2,'X axis variable','Y axis variable','')
+        if Ask then PickNumericFields(GraphType,2,'X axis variable','Y axis variable','')
      end
      else if (GraphType in [dbgtByLatitude1,dbgtByLongitude1,dbgtByLatitude2,dbgtByLongitude2]) then begin
         dbOpts.YField := 'DEPTH';
         dbOpts.ZField := 'MECH';
      end
      else if (GraphType = dbgtN2Dgraph2series1) then begin
-        if Ask then PickNumericFields(3,'X axis variable','Y axis series 1','Y axis series 2')
+        if Ask then PickNumericFields(GraphType,3,'X axis variable','Y axis series 1','Y axis series 2')
      end
      else if (GraphType = dbgtN2Dgraph2yaxes1) then begin
-        if Ask then PickNumericFields(3,'X axis variable','Y axis left axis','Y axis right series');
+        if Ask then PickNumericFields(GraphType,3,'X axis variable','Y axis left axis','Y axis right series');
      end
      else if (GraphType in [dbgtPlot1series1,dbgtPlotforsubsamples1]) then begin
-        if Ask then PickNumericFields(1,'time series variable','','');
+        if Ask then PickNumericFields(GraphType,1,'time series variable','','');
      end
      else if (GraphType = dbgtN2Dgraphcolorcodetext1) then begin
         if Ask then begin
-           PickNumericFields(3,'X axis variable','Y axis variable','',true);
+           PickNumericFields(GraphType,3,'X axis variable','Y axis variable','',true);
         end;
      end
      else begin
         if (GraphType = dbgtN2Dgraphcolorcoded1) then i := 3 else i := 2;
-        if Ask then PickNumericFields(i,'X axis variable','Y axis variable','color coding variable');
+        if Ask then PickNumericFields(GraphType,i,'X axis variable','Y axis variable','color coding variable');
      end;
      Result := ActuallyDrawGraph(Graphtype);
 end;

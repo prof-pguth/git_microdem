@@ -1,10 +1,12 @@
 unit toggle_db_use;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{   file verified 6/22/2011       }
-{_________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2022 Peter L. Guth  }
+{___________________________________}
+
 
 
 {$I nevadia_defines.inc}
@@ -85,7 +87,6 @@ function VerifyRecordsToUse(var Table : tMyData; FieldShownUser : ShortString; a
 
 function VerifyRecordsToUse(fName : PathStr; FieldShownUser : ShortString; aCaption : shortstring = ''; FieldToToggle : ShortString = 'USE'; SecondaryField : ShortString = ''; LimitField : ShortString = '') : boolean; overload;
 procedure PickSomeFromStringList(var SL : tStringList; aCaption : ShortString);
-procedure PickDEMsToUse(var DEMs : tDEMbooleanArray; aCaption : ShortString);
 
 
 implementation
@@ -95,39 +96,6 @@ implementation
 uses
    Make_Tables,
    DEMCoord;
-
-
-procedure PickDEMsToUse(var DEMs : tDEMbooleanArray; aCaption : ShortString);
-var
-   fName : PathStr;
-   table : tMyData;
-   i : integer;
-   ch : char;
-begin
-   {$IfDef ShowToggle} WriteLineToDebugFile('PickSomeFromStringList in'); {$EndIf}
-   fName := MDTempDir + 'merge.dbf';
-   MakePickUseTable(fName);
-   Table := tMyData.Create(fName);
-   for i := 1 to MaxDEMDataSets do begin
-     if ValidDEM(i) then begin
-        Table.Insert;
-        Table.SetFieldByNameAsString('MENU_OPTS',IntToStr(i) + '-' + DEMGlb[i].AreaName);
-        if DEMs[i] then ch := 'Y' else ch := 'N';
-        Table.SetFieldByNameAsString('USE',ch);
-     end;
-   end;
-   VerifyRecordsToUse(Table,'MENU_OPTS',aCaption);
-   {$IfDef ShowToggle} WriteLineToDebugFile('VerifyRecordsToUse success'); {$EndIf}
-   Table.First;
-   while not Table.eof do begin
-      i := StrToInt(Petmar_Types.BeforeSpecifiedString(Table.GetFieldByNameAsString('MENU_OPTS'),'-'));
-      DEMs[i] := Table.GetFieldByNameAsString('USE') = 'Y';
-      Table.Next;
-   end;
-   Table.Destroy;
-   {$IfDef ShowToggle} WriteLineToDebugFile('PickSomeFromStringList out'); {$EndIf}
-end;
-
 
 
 

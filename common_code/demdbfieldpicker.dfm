@@ -12,9 +12,7 @@ object FieldPicker: TFieldPicker
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
-  OldCreateOrder = False
   Position = poMainFormCenter
-  PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
     Left = 8
@@ -36,13 +34,6 @@ object FieldPicker: TFieldPicker
     Width = 3
     Height = 13
     Caption = ' '
-  end
-  object Label4: TLabel
-    Left = 240
-    Top = 136
-    Width = 51
-    Height = 13
-    Caption = 'Thin factor'
   end
   object Label5: TLabel
     Left = 8
@@ -107,60 +98,34 @@ object FieldPicker: TFieldPicker
     Caption = 'Reverse Z values'
     TabOrder = 4
   end
-  object BitBtn1: TBitBtn
-    Left = 120
-    Top = 158
-    Width = 89
-    Height = 25
-    Caption = 'Color'
-    TabOrder = 5
-    OnClick = BitBtn1Click
-  end
-  object Edit1: TEdit
-    Left = 303
-    Top = 134
-    Width = 49
-    Height = 21
-    TabOrder = 6
-    Text = 'Edit1'
-    OnChange = Edit1Change
-  end
-  object UpDown1: TUpDown
-    Left = 368
-    Top = 128
-    Width = 17
-    Height = 25
-    TabOrder = 7
-    OnClick = UpDown1Click
-  end
   object ComboBox4: TComboBox
     Left = 8
     Top = 96
     Width = 129
     Height = 21
-    TabOrder = 8
+    TabOrder = 5
   end
   object ComboBox5: TComboBox
     Left = 162
     Top = 96
     Width = 129
     Height = 21
-    TabOrder = 9
+    TabOrder = 6
   end
   object ComboBox6: TComboBox
     Left = 313
     Top = 96
     Width = 129
     Height = 21
-    TabOrder = 10
+    TabOrder = 7
   end
   object CheckBox2: TCheckBox
-    Left = 48
-    Top = 128
+    Left = 208
+    Top = 161
     Width = 97
     Height = 17
     Caption = 'Flip histogram'
-    TabOrder = 11
+    TabOrder = 8
     OnClick = CheckBox2Click
   end
 end

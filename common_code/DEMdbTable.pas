@@ -1980,6 +1980,7 @@ begin
       inc(Col);
       TStr := GridForm.StringGrid1.Cells[Col,0];
    until (TStr = aField);
+   GridForm.SetFormSize;
    SortGrid(GridForm.StringGrid1,pred(Col),ft,Ascending);
 
    StringGridToCSVFile(fName,GridForm.StringGrid1,Nil);
@@ -2212,7 +2213,7 @@ var
   MinColor,MaxColor : float64;
   StringColorField,NumericColorField{,SizeField} : ShortString;
   DataThere : tStringList;
-  Color : tPlatformColor;
+  acolor : tPlatformColor;
 
      procedure OpenNew3Dform;
      var
@@ -2274,8 +2275,7 @@ begin
    DataThere := Nil;
 
    ThinFactor := 1;
-   Color := claLime;
-   GISdb[DBonTable].PickNumericFields(4, Color,ThinFactor,'X','Y','Z');
+   GISdb[DBonTable].PickNumericFields(dbgtUnspecified,4,'X','Y','Z');
 
    {$IfDef RecordOpenGL} WriteLineToDebugFile('Tdbtablef.N3Dgraph1Click picked'); {$EndIf}
 
@@ -4164,7 +4164,7 @@ begin
        dbOpts.YField := '';
        if (Sender = SumTwoFields1) then Sign := 1 else Sign := -1;
 
-       PickNumericFields(i,l1,l2,'');
+       PickNumericFields(dbgtUnspecified,i,l1,l2,'');
        SumName := SumName + '_' + dbOpts.XField;
 
        SumName := GetFieldNameForDB('New Field',True,SumName);
@@ -4642,7 +4642,7 @@ begin
    {$IfDef RecordGraph} WriteLineToDebugFile('Tdbtablef.N2Dgraphallopendatabases1Click in'); {$EndIf}
    with GISdb[DBonTable] do begin
      if (Sender = N2Dgraphallopendatabases1) or (Sender = N2Dgraphallopendatabaseslines1) then begin
-        PickNumericFields(2,'X axis variable','Y axis variable','');
+        PickNumericFields(dbgtUnspecified,2,'X axis variable','Y axis variable','');
      end;
 
      ThisGraph := TThisbasegraph.Create(Application);
@@ -5464,12 +5464,11 @@ end;
 
 procedure Tdbtablef.Addspeedfromxyoruvcomponents1Click(Sender: TObject);
 var
-   //zf : ShortString;
    x,y : float64;
    i,rc : integer;
 begin
    with GISdb[DBonTable] do begin
-      PickNumericFields(2,{dbOpts.MagField,dbOpts.DirField,zf,}'x component','y component','');
+      PickNumericFields(dbgtUnspecified,2,'x component','y component','');
       dbOpts.MagField := dbOpts.XField;
       dbOpts.DirField := dbOpts.YField;
       AddFieldToDataBase(ftFloat,'SPEED',8,3);
@@ -6285,7 +6284,7 @@ var
   ThisGraph : TThisbasegraph;
 begin
    with GISdb[DBonTable] do begin
-      PickNumericFields(3,'Time','Magnitude','Direction');
+      PickNumericFields(dbgtUnspecified,3,'Time','Magnitude','Direction');
       dbOpts.TimeField := dbOpts.XField;
       dbOpts.MagField := dbOpts.YField;
       dbOpts.DirField := dbOpts.ZField;
@@ -6422,7 +6421,7 @@ procedure Tdbtablef.N3series1Click(Sender: TObject);
 begin
    {$IfDef NoDBGrafs}
    {$Else}
-      GISdb[DBonTable].PickNumericFields(3,{GISdb[DBonTable].dbOpts.XField,GISdb[DBonTable].dbOpts.YField,GISdb[DBonTable].dbOpts.ZField,}'First histogram','Second Histogram','Third histogram');
+      GISdb[DBonTable].PickNumericFields(dbgtUnspecified,3,'First histogram','Second Histogram','Third histogram');
       GISdb[DBonTable].OldCreateHistogramFromDataBase(true,GISdb[DBonTable].dbOpts.XField,GISdb[DBonTable].dbOpts.YField,GISdb[DBonTable].dbOpts.ZField,false);
    {$EndIf}
 end;
@@ -6450,7 +6449,7 @@ procedure Tdbtablef.N2series1Click(Sender: TObject);
 begin
    {$IfDef NoDBGrafs}
    {$Else}
-      GISdb[DBonTable].PickNumericFields(2,{GISdb[DBonTable].dbOpts.XField,GISdb[DBonTable].dbOpts.YField,GISdb[DBonTable].dbOpts.ZField,}'First histogram','Second Histogram','Third histogram');
+      GISdb[DBonTable].PickNumericFields(dbgtUnspecified,2,'First histogram','Second Histogram','Third histogram');
       GISdb[DBonTable].OldCreateHistogramFromDataBase(true,GISdb[DBonTable].dbOpts.XField,GISdb[DBonTable].dbOpts.YField,'',false);
    {$EndIf}
 end;
@@ -9365,9 +9364,6 @@ procedure Tdbtablef.rendsurface1Click(Sender: TObject);
 begin
 {$Else}
 var
-   ThinFactor : integer;
-   //StringColorField,NumericColorField,SizeField : ShortString;
-   Color : tPlatformColor;
    GridLimits : tGridLimits;
 begin
    GetReadyForGeologyGeometry;
@@ -9378,7 +9374,7 @@ begin
           dbOpts.ZField := 'Z';
        end
        else begin
-          GISdb[DBonTable].PickNumericFields(3,{dbOpts.XField,dbOpts.YField,dbOpts.ZField,StringColorField,NumericColorField,SizeField,}Color,ThinFactor,'X','Y','Z');
+          GISdb[DBonTable].PickNumericFields(dbgtUnspecified,3,'X','Y','Z');
        end;
    end;
    if GISdb[DBonTable].theMapOwner.MapDraw.DEMonMap <> 0 then begin
@@ -9611,7 +9607,7 @@ begin
       if not AssignField(dbOpts.YField,'SAND') then AssignField(dbOpts.YField,'SAND_PCT');
       if not AssignField(dbOpts.ZField,'SILT') then AssignField(dbOpts.ZField,'SILT_PCT');
 
-      if (Sender <> Nil) then GISdb[DBonTable].PickNumericFields(3,{dbOpts.XField,dbOpts.YField,dbOpts.ZField,}'Top corner','Lower left corner','Lower right corner');
+      if (Sender <> Nil) then GISdb[DBonTable].PickNumericFields(dbgtUnspecified,3,'Top corner','Lower left corner','Lower right corner');
       {$IfDef RecordDataBase} WriteLineToDebugFile('Ternary: ' + dbOpts.XField + '/' + dbOpts.YField + '/' + dbOpts.ZField); {$EndIf}
       TernaryPlotUp := true;
       theMapOwner.DoFastMapRedraw;
@@ -9938,7 +9934,6 @@ begin
    end;
 {$EndIf}
 end;
-
 
 
 procedure Tdbtablef.Gridstatistics1Click(Sender: TObject);
@@ -13876,7 +13871,7 @@ begin
             EndProgress;
             fName := ExtractFilePath(GISdb[DBonTable].dbFullName) + FieldsUsed.Strings[j] + '.dem';
             DEMGlb[NewDEM].WriteNewFormatDEM(fName);
-            DEMGlb[NewDEM].SetUpMap(NewDEM,false,mtElevRainbow,DEMGlb[NewDEM].AreaName);
+            DEMGlb[NewDEM].SetUpMap(NewDEM,false,mtElevRainbow);
          end;
       end;
       ShowStatus;

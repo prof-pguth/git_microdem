@@ -491,11 +491,11 @@ end;
              Lat,Long,xg,yg : float64;
              z : float32;
              pUse : tRGBTriple;
+             BMPMemory : tBMPMemory;
              {$IfDef NoParallelFor}
              {$Else}
                 Limits : tGridLimitsArray;
-            {$EndIf}
-              BMPMemory : tBMPMemory;
+             {$EndIf}
           begin
              {$If Defined(RecordDrawSecondGrid) or Defined(RecordMapDraw) or Defined(RecordMapLayers)} WriteLineToDebugFile('TMapDraw.MapLayerFromSecondGrid, dem=' + IntToStr(DEM2onMap)); {$EndIf}
                 CreateBitmap(Result,MapXSize,MapYSize);
@@ -529,12 +529,12 @@ end;
                            ScreenToLatLongDegree(x,y,Lat,Long);
                            if DEMGlb[DEM2onMap].GetElevFromLatLongDegree(Lat,Long,z) then begin
                               DEMGlb[DEM2onMap].LatLongDegreeToDEMGrid(Lat,Long,xg,yg);
-                              if DEM2onMap = LasClassGrid then begin
+                              if (DEM2onMap = LasClassGrid) then begin
                                  if GetClassColor(xg,yg,puse) then begin
                                     BMPMemory.SetPixelColor(x,y,pUse);
                                  end;
                               end
-                              else if DEM2onMap = FeatureGrid then begin
+                              else if (DEM2onMap = FeatureGrid) then begin
                                  pUse := DEMGlb[DEM2onMap].SelectionMap.MapDraw.GetElevColor(xg,yg);
                                  BMPMemory.SetPixelColor(x,y,pUse);
                               end
@@ -955,6 +955,7 @@ begin
             exit;
         end
        else Result := MDdef.MissingDataColor;
+       exit;
      end
   {$EndIf}
   {$IfDef ExPointCloud}

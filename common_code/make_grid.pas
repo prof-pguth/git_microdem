@@ -91,6 +91,7 @@ function CreateRoughnessMapAvgVector(WhichDEM : integer; OpenMap : boolean = tru
 function CreateRoughnessSlopeStandardDeviationMap(DEM,Radius : integer) : integer;
 procedure MakeGammaGrids(CurDEM,BoxSize : integer);
 
+function AirBallDirtBallMap(DEMonMap,DSM,DTM : integer) : integer;
 
 
 {$IfDef ExExoticMaps}
@@ -115,6 +116,63 @@ uses
 var
    CountInStrips : integer;
 
+
+function AirBallDirtBallMap(DEMonMap,DSM,DTM : integer) : integer;
+const
+   Tolerance = 0.51;
+   HighTolerance = 2.51;
+var
+   AirBalls,i : integer;
+   z1,z2,z3,What : float32;
+   Lat,Long : float64;
+   x,y : integer;
+   VAT : tStringList;
+   fName2 : PathStr;
+   Hist : array[1..5] of int64;
+begin
+   if (DSM <> 0) and (not ValidDEM(DSM)) then GetDEM(DSM,true,'DSM');
+   if not ValidDEM(DTM) then GetDEM(DTM,true,'DTM');
+   Result := 0;
+   if ((DSM = 0) or ValidDEM(DSM)) and ValidDEM(DTM)then begin
+      for i := 1 to 5 do Hist[i] := 0;
+      fName2 := 'air_dirt_' + DEMGlb[DEMonMap].AreaName;
+      AirBalls := DEMGlb[DEMonMap].CloneAndOpenGrid(ByteDEM,fName2,euIntCode);
+      DEMglb[Airballs].SetEntireGridMissing;
+      StartProgressAbortOption('Air or dirt');
+      for x := 0 to pred(DEMGlb[DEMonMap].DEMheader.NumCol) do begin
+         UpdateProgressBar(x/DEMGlb[DEMonMap].DEMheader.NumCol);
+         for y := 0 to pred(DEMGlb[DEMonMap].DEMheader.NumRow) do begin
+            if DEMGlb[DEMonMap].GetElevMetersOnGrid(x,y,z2) then begin
+               DEMGlb[DEMonMap].DEMGridToLatLongDegree(x,y,Lat,Long);
+                  if ((DSM = 0) or DEMGlb[DSM].GetElevFromLatLongDegree(Lat,Long,z3)) and DEMGlb[DTM].GetElevFromLatLongDegree(Lat,Long,z1) then begin
+                     if DSM = 0 then z3 := z1;
+                     if z2 > z3 + HighTolerance then What := 5
+                     else if z2 > z3 + Tolerance then What := 4
+                     else if z2 > z1 - Tolerance then What := 3
+                     else if z2 > z1 - HighTolerance then What := 2
+                     else What := 1;
+                     DEMglb[Airballs].SetGridElevation(x,y,what);
+                     inc(Hist[round(what)]);
+                  end;
+            end;
+         end;
+      end;
+      Vat := tStringList.Create;
+      Vat.add('VALUE,NAME,N,USE,COLOR');
+      if (Hist[5] > 0) then Vat.add('5,High Air ball,' + IntToStr(Hist[5]) + ',Y,' + IntToStr(clBlue));
+      if (Hist[4] > 0) then Vat.add('4,Low Air ball + ' + RealToString(HighTolerance,-5,1) + ',' + IntToStr(Hist[4]) + ',Y,' + IntToStr(RGB(0,255,255)));
+      if (Hist[3] > 0) then Vat.add('3,Canopy ± ' + RealToString(Tolerance,-5,1) + ',' + IntToStr(Hist[3]) + ',Y,' + IntToStr(clLime));
+      if (Hist[2] > 0) then Vat.add('2,Shallow Ground ball -' + RealToString(HighTolerance,-5,1) + ',' + IntToStr(Hist[2]) + ',Y,' + IntToStr(RGB(240,134,80)));
+      if (Hist[1] > 0) then Vat.add('1,Deep Ground ball,' + IntToStr(Hist[1]) + ',Y,' + IntToStr(RGB(238,138,248)));
+
+      fName2 := MDTempDir + fName2 + '.vat.dbf';
+      StringList2CSVtoDB(vat,fName2,true);
+      DEMGlb[AirBalls].VATFileName := fName2;
+      DEMglb[AirBalls].CheckMaxMinElev;
+      DEMglb[AirBalls].SetUpMap(AirBalls,true,mtDEMVATTable);
+      Result := AirBalls;
+   end;
+end;
 
 
 function CreateStandardDeviationMap(DEM,Radius : integer) : integer;
@@ -282,7 +340,7 @@ begin
       end;
    end;
    EndProgress;
-   DEMGlb[NewDEM].SetUpMap(NewDEM,true,mtRGB,DEMGlb[NewDEM].AreaName);
+   DEMGlb[NewDEM].SetUpMap(NewDEM,true,mtRGB);
 end;
 
 
@@ -326,7 +384,7 @@ begin
       end;
    end;
    EndProgress;
-   DEMGlb[NewDEM].SetUpMap(NewDEM,true,mtElevSpectrum,DEMGlb[NewDEM].AreaName);
+   DEMGlb[NewDEM].SetUpMap(NewDEM,true,mtElevSpectrum);
 end;
 
 
@@ -417,7 +475,7 @@ begin
    end;
    EndProgress;
    for i := 1 to 4 do
-      DEMGlb[NewDEM[i]].SetUpMap(NewDEM[i],true,mtElevSpectrum,DEMGlb[i].AreaName);
+      DEMGlb[NewDEM[i]].SetUpMap(NewDEM[i],true,mtElevSpectrum);
 end;
 
 
@@ -734,15 +792,19 @@ begin
     for i := 1 to MaxGrids do begin
        if ValidDEM(MomentDEMs[i]) then begin
           DEMGlb[MomentDEMs[i]].CheckMaxMinElev;
+          fName := MDTempDir + DEMGlb[MomentDEMs[i]].AreaName + '.dem';
+          DEMGlb[MomentDEMs[i]].WriteNewFormatDEM(fName,'difference map');
+          CloseSingleDEM(MomentDEMs[i]);
+          MomentDEMs[i] := OpenNewDEM(fName,false);
+
           if OpenMaps then begin
              {$IfDef RecordCreateGeomorphMaps} WriteLineToDebugFile('Create map for DEM ' + IntToStr(MomentDEMs[i]) + ' ' + DEMGlb[MomentDEMs[i]].KeyDEMParams); {$EndIf}
-             DEMGlb[MomentDEMs[i]].SetUpMap(MomentDEMs[i],true,WantMapType,DEMGlb[MomentDEMs[i]].AreaName,What in ['A','C','F']);
-
+             DEMGlb[MomentDEMs[i]].SetUpMap(MomentDEMs[i],true,WantMapType,What in ['A','C','F']);
+             DEMGlb[MomentDEMs[i]].SelectionMap.MapDraw.PrimMapProj.ProjectionSharedWithDataset := true;
              //CreateDEMSelectionMap(MomentDEMs[i],true,true,WantMapType);
              MatchAnotherDEMMap(MomentDEMs[i],CurDEM);
              {$IfDef RecordCreateGeomorphMaps} DEMGlb[CurDEM].SelectionMap.MapDraw.PrimMapProj.ProjectionParamsToDebugFile('Original grid',true); {$EndIf}
              {$IfDef RecordCreateGeomorphMaps} DEMGlb[MomentDEMs[i]].SelectionMap.MapDraw.PrimMapProj.ProjectionParamsToDebugFile('New grid',true); {$EndIf}
-
           end;
        end;
     end;
@@ -962,8 +1024,8 @@ begin
             GetSampleBoxSize(CurDEM,MDDef.GeomorphBoxSizeMeters);
             SampleBoxSize := MDDef.GeomorphBoxSizeMeters;
          end;
-         if ch = 'i' then SampleBoxSize := round(2 * DEMGlb[CurDEM].AverageSpace);
-         if ch = 'B' then begin
+         if (ch = 'i') then SampleBoxSize := round(2 * DEMGlb[CurDEM].AverageSpace);
+         if (ch = 'B') then begin
             ReadDefault('Minimum height (m)',MDDef.BuildingMinHeight);
             ReadDefault('Sampling interval ',MDDef.StatSampleIncr);
          end;
@@ -1093,7 +1155,7 @@ begin
              end
              else mt := MDdef.DefDEMMap;
 
-             DEMGlb[Result].SetUpMap(Result,true,mt,DEMGlb[Result].AreaName,UsePC);
+             DEMGlb[Result].SetUpMap(Result,true,mt,UsePC);
 
              if DEMGlb[CurDEM].SelectionMap.FullMapSpeedButton.Enabled and MDDef.GeomorphMapsFullDEM then begin
                 DEMGlb[Result].SelectionMap.MapDraw.NoDrawingNow := true;

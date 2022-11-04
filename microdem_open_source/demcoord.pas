@@ -3,12 +3,13 @@
 
 unit DEMCoord;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of ianMICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch    }
-{ Released under the MIT Licences    }
-{ Copyright (c) 2015 Peter L. Guth   }
-{____________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2022 Peter L. Guth  }
+{___________________________________}
+
 
 
 {$I nevadia_defines.inc}
@@ -414,6 +415,7 @@ type
          function GetElevFromLatLongDegree(Lat,Long : float64; var z : float32) : boolean;
 
          function GetElevMetersFromSecondDEM(IdenticalGrids : boolean; Dem2,Col,Row : integer; var z  : float32) : boolean;
+         function GetElevMetersFromThisAndSecondDEM(Dem2,Col,Row : integer; var z1,z2  : float32) : boolean;
          function GetSlopeAspectFromSecondDEM(Dem2 : integer; Col,Row : int32; var SlopeAspectRec : tSlopeAspectRec) : boolean;
 
          function GetElevSquareMeters(XGrid,YGrid : float64; var Elev : tElevFloatArray) : boolean; inline;
@@ -450,7 +452,6 @@ type
          procedure ReclassifyRange(MinRange, MaxRange, NewZ : float64);
          procedure ShiftGlobalDEM(NewLeftLong : float64);
 
-
          procedure CheckUK_OS;
          function RGBfromLongWord(x,y : integer; var r,g,b : byte) : boolean;
          procedure RoundToByteRange;
@@ -470,7 +471,7 @@ type
          function IsSurroundedPoint(Col,Row : integer) : boolean;
          function SurroundedPointElevs(Col,Row : integer; var znw,zw,zsw,zn,z,zs,zne,ze,zse : float32; RegionSize : integer = 1) : boolean; {determines point can be safely interpolated, surrounded by valid data points and not missing values}
 
-         procedure SetUpMap(DEMNumber : integer; CheckElevs : boolean; inMapType : tMapType = mtDEMBlank; Caption : shortString = ''; UsePC : boolean = true);
+         procedure SetUpMap(DEMNumber : integer; CheckElevs : boolean; inMapType : tMapType = mtDEMBlank; UsePC : boolean = true);
 
          {$IfDef VCL}
             procedure CreateVATforDEM(OptionToCopy : boolean = true);
@@ -545,6 +546,7 @@ type
          procedure WriteNewFormatDEM(var FileName : PathStr; WhatFor : shortstring = '');  overload;
          procedure WriteNewFormatDEM(Limits : tGridLimits; var FileName : PathStr; WhatFor : shortstring = '');  overload;
          procedure SavePartOfDEMWithData(var FileName : PathStr);
+         procedure SaveSpecifiedPartOfDEM(var FileName : PathStr; Limits : tGridLimits);
 
          {$IfDef ExGeotiffWrite}
          {$Else}
@@ -570,7 +572,7 @@ type
             procedure SaveAsDTED(OutLatInterval,OutLongInterval : integer; OutName : PathStr = ''; ShowProgress : boolean = false);
          {$EndIf}
 
-         function CloneAndOpenGrid(NewPrecision : tDEMprecision; Gridname : shortstring; ElevUnits : tElevUnit{; AllSetToZero : boolean = false; ThinFactor : integer = 0}) : integer;
+         function CloneAndOpenGrid(NewPrecision : tDEMprecision; Gridname : shortstring; ElevUnits : tElevUnit) : integer;
 
          procedure ThinThisDEM(var ThinDEM : integer; ThinFactor : integer = 0; DoItByAveraging : boolean = false);
          procedure AverageResampleThisDEM(var ThinDEM : integer; ThinFactor : integer = 0);
@@ -1102,6 +1104,7 @@ begin
    Result := 0;
    if OpenAndZeroNewDEM(true,NewHeadRecs,Result,Gridname,InitDEMMissing,0) then begin
       AssignProjectionFromDEM(DEMGlb[Result].DEMMapProjection,'DEM=' + IntToStr(Result));
+      DEMGlb[Result].DEMMapProjection.ProjectionSharedWithDataset := true;
    end;
   {$IfDef RecordCreateNewDEM} WriteLineToDebugFile('tDEMDataSet.CloneAndOpenGrid out'); {$EndIf}
 end;
@@ -1686,15 +1689,6 @@ begin
       DEMMetadata := nil;
    end;
 
-   (*
-   if (DEMMapProjection <> Nil) then try
-      DEMMapProjection.Destroy;
-   finally
-      DEMMapProjection := Nil;
-   end;
-   *)
-   FreeAndNil(DEMMapProjection);
-
    {$IfDef NoMapOptions}
    {$Else}
        if Assigned(SelectionMap) then try
@@ -1707,6 +1701,7 @@ begin
        end;
    {$EndIf}
 
+   if not DEMMapProjection.ProjectionSharedWithDataset then FreeAndNil(DEMMapProjection);
    FreeDEMMemory;
 
    {$IfDef ExVegDensity}
@@ -1780,6 +1775,19 @@ begin
       else if GetElevMetersOnGrid(Col,Row,Z) then begin
          SetGridElevation(Col,Row,Succ(round(z)));
       end;
+   end;
+end;
+
+
+function tDEMDataSet.GetElevMetersFromThisAndSecondDEM(Dem2,Col,Row : integer; var z1,z2  : float32) : boolean;
+//added 30 Oct 22 when GetElevMetersFromSecondDEM ran much too slowly for one DEM in a series
+var
+   Lat,Long : float64;
+begin
+   Result := GetElevMeters(Col,Row,z1);
+   if Result then begin
+      DEMGridToLatLongDegree(Col,Row,Lat,Long);
+      Result := DEMGlb[DEM2].GetElevFromLatLongDegree(Lat,Long, z2);
    end;
 end;
 
@@ -1940,8 +1948,9 @@ function tDEMDataSet.GetElevFromLatLongDegree(Lat,Long : float64; var z : float3
 var
    xg,yg : float64;
 begin
-   LatLongDegreeToDEMGrid(Lat,Long,xg,yg);
-   Result := GetElevMeters(xg,yg,z);
+   Result := LatLongDegreeToDEMGrid(Lat,Long,xg,yg);
+   if Result then Result := GetElevMeters(xg,yg,z)
+   else z := 0;
 end;
 
 function tDEMDataSet.GetElevFromUTM(x,y : float64; var z : float32) : boolean;
@@ -1962,7 +1971,6 @@ begin
   if (ShortFloatElevations[XGrid] <> Nil) and (XGrid >= 0) and (XGrid <= pred(DEMheader.NumCol)) then
      Move(ShortFloatElevations[XGrid]^,z^,BytesPerColumn);
 end {proc GetElevCol};
-
 
 
 function tDEMDataSet.PartOfDEMonMap(BaseMap : tMapForm) : sfBoundBox;
@@ -1999,10 +2007,10 @@ end;
 
 
 procedure tDEMDataSet.ResaveNewResolution(FilterCategory : tFilterCat; var NewDEM : integer);
-const
-   MaxSize = 1000;
+//const
+   //MaxSize = 1000;
 var
-   Col,Row,Removed : integer;
+   Col,Row{,Removed} : integer;
    z1 : float32;
    Title         : Shortstring;
    NewHeadRecs   : tDEMheader;
@@ -2031,7 +2039,7 @@ begin
 
    DEMGlb[NewDEM].CheckMaxMinElev;
    EndProgress;
-   if (Removed > 0) then MessageToContinue('Points removed: ' + IntToStr(Removed));
+   //if (Removed > 0) then MessageToContinue('Points removed: ' + IntToStr(Removed));
 end;
 
 
@@ -3330,7 +3338,7 @@ begin
 end;
 
 
-procedure tDEMDataSet.SetUpMap(DEMNumber : integer; CheckElevs : boolean; inMapType : tMapType = mtDEMBlank; Caption : shortString = ''; UsePC : boolean = true);
+procedure tDEMDataSet.SetUpMap(DEMNumber : integer; CheckElevs : boolean; inMapType : tMapType = mtDEMBlank; UsePC : boolean = true);
 begin
    {$IfDef RecordSetup} WriteLineToDebugFile(AreaName + ' tDEMDataSet.SetUpMap, maptype=' + IntToStr(ord(inMapType)) + '  DEM=' + IntToStr(DEMNumber)); {$EndIf}
    if CheckElevs then CheckMaxMinElev;

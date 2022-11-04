@@ -15,6 +15,7 @@ unit dem_indexes;
      //{$Define RecordMultipleFilesInBoundingBox}
      //{$Define RecordLoadMapLibraryBox}
      //{$Define MergeSummary}
+     {$Define LoadLibrary}
      //{$Define RecordAutoZoom}
      //{$Define RecordImageIndex}
      //{$Define RecordIndex}
@@ -1155,7 +1156,7 @@ var
    i : integer;
    fName : PathStr;
 begin
-   {$If Defined(RecordIndex) or Defined(RecordImageIndex)} WriteLineToDebugFile('Enter LoadMapLibraryBox'); {$EndIf}
+   {$If Defined(RecordIndex) or Defined(RecordImageIndex) or Defined(LoadLibrary)} WriteLineToDebugFile('Enter LoadMapLibraryBox, display=' + TrueOrFalse(DisplayIt)); {$EndIf}
    try
       LoadingFromMapLibrary := true;
       ShowHourglassCursor;

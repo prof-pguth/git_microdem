@@ -2,11 +2,13 @@
 
 unit DEMStat;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{   file verified 6/22/2011       }
-{_________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2022 Peter L. Guth  }
+{___________________________________}
+
 
 
 {$I nevadia_defines.inc}
@@ -15,6 +17,7 @@ unit DEMStat;
    {$IfDef Debug}
       {$Define NoParallelFor}
       //{$Define RecordLag}
+      {$Define RecordDiffMap}
       //{$Define RecordStdDef}
       //{$Define RecordElevationSlopePlot}
       //{$Define RecordSSO}
@@ -87,7 +90,7 @@ type
 
   {$IfDef ExGeoStats}
   {$Else}
-      procedure ElevMomentReport(aTitle : shortstring; Memo1 : tMemo; SamplingCheck : boolean; GridLimits: tGridLimits; CurDEM : integer = 0);
+      procedure ElevMomentReport(DEMSWanted : tDEMbooleanArray; aTitle : shortstring; Memo1 : tMemo; SamplingCheck : boolean; GridLimits: tGridLimits; CurDEM : integer = 0);
       procedure AspectDistributionBySlope(WhichDEM : Integer; GridLimits : tGridLimits);
       procedure AspectDistributionByAlgorithm(WhichDEM : Integer; GridLimits : tGridLimits);
 
@@ -157,6 +160,9 @@ type
    procedure ElevationSlopePlotCompareDEMs;
    procedure LandCoverSummary;
    procedure AddEGMfields(dbOnTable : integer);
+
+
+
    procedure GridsByRegionSize(CurDEM : integer; GridCh : char);
 
    procedure AllAspects;
@@ -639,6 +645,8 @@ begin
    CreateMultipleHistograms(MDDef.CountHistograms,ElevFiles,LegendFiles,'Slope','Slope distribution',-99,0,Trunc(MaxSlope + 0.99),MDDef.SlopeHistBinSize);
 
    GridForm.StringGrid1.ColCount:= succ(RegionsDone);
+   GridForm.SetFormSize;
+
    DEMDef_routines.RestoreBackupDefaults;  //restore slope algorithm
 end;
 
@@ -1273,7 +1281,7 @@ begin
    DEMGlb[Result].WriteNewFormatDEM(DEMGlb[Result].DEMFileName );
 
    DEMGlb[Result].CreateVATforDEM(false);
-   DEMGlb[Result].SetUpMap(Result,true,mtDEMVATTable,DEMGlb[Result].AreaName);
+   DEMGlb[Result].SetUpMap(Result,true,mtDEMVATTable);
    db := DEMGlb[Result].SelectionMap.LoadDataBaseFile(ChangeFileExt(DEMGlb[Result].DEMFileName,'.vat.dbf'));
    {$IfDef RecordClustering}
       GISdb[db].MyData.First;
@@ -1562,7 +1570,7 @@ begin
                DEMGlb[NewDEM].WriteNewFormatDEM(fName);
                if MDDef.LoadPCBands then begin
                   DEMGlb[NewDEM].AreaName := ExtractFileNameNoExt(fName);
-                  DEMGlb[NewDEM].SetUpMap(NewDEM,false,mtElevGray,DEMGlb[NewDEM].AreaName);
+                  DEMGlb[NewDEM].SetUpMap(NewDEM,false,mtElevGray);
                end
                else CloseSingleDEM(NewDEM);
             end;
@@ -2135,7 +2143,7 @@ begin
 end;
 
 
-procedure ElevMomentReport(aTitle : shortstring; Memo1 : tMemo; SamplingCheck : boolean; GridLimits: tGridLimits; CurDEM : integer = 0);
+procedure ElevMomentReport(DEMSWanted : tDEMbooleanArray; aTitle : shortstring; Memo1 : tMemo; SamplingCheck : boolean; GridLimits: tGridLimits; CurDEM : integer = 0);
 var
    LegendFiles,ElevFiles,SlopeFiles,RoughFiles,PlanCurvFiles,ProfCurvFiles : tStringList;
    DEMsDone,OnLine : integer;
@@ -2174,7 +2182,8 @@ var
             DEMGlb[CurDEM].ElevationMomentsWithArray(GridLimits,MomentVar,zvs^);
             MinElev := MomentVar.MinZ;
             MaxElev := MomentVar.MaxZ;
-            MomentsToStringGrid(GridForm.StringGrid1,OnLine,DEMsDone,'Elevation',MomentVar);
+
+            MomentsToStringGrid(GridForm.StringGrid1,OnLine,DEMsDone,ZUnitCategory(DEMGlb[CurDEM].DEMHeader.ElevUnits),MomentVar);
             inc(Online,11);
             if MDDef.GraphsOfMoments then ElevFiles.Add(SaveSingleValueSeries(MomentVar.npts,zvs^));
             ElevDist.Add(MomentResults);
@@ -2249,10 +2258,10 @@ var
          GridForm.StringGrid1.Cells[0,0] := 'DEM';
          GridForm.StringGrid1.Cells[0,1] := 'Avg Grid Space';
          GridForm.StringGrid1.Cells[0,2] := 'Sampling';
-         ShowDefaultCursor;
          GridForm.StringGrid1.ColCount:= succ(DEMsDone);
          GridForm.StringGrid1.RowCount := OnLine;
          GridForm.Caption := aTitle + ' Moment report';
+         ShowDefaultCursor;
       end;
 
 
@@ -2286,15 +2295,16 @@ begin
    MaxElev := -99999;
    MinElev := 9999999;
 
-   if (CurDEM = 0) then begin
-     SlopeDist := tStringList.Create;
-     SlopeDist.Add(MomentStr);
      ElevDist := tStringList.Create;
      ElevDist.Add(MomentStr);
+     SlopeDist := tStringList.Create;
+     SlopeDist.Add(MomentStr);
      RufDist := tStringList.Create;
      RufDist.Add(MomentStr);
 
-      for j := 1 to MaxDEMDataSets do if ValidDEM(j) then begin
+
+   if (CurDEM = 0) then begin
+      for j := 1 to MaxDEMDataSets do if DEMsWanted[j] then begin
          {$IfDef RecordElevMoment} WriteLineToDebugFile('Start DEM=' + IntToStr(j)); {$EndIf}
          GridLimits := DEMGlb[j].SelectionMap.MapDraw.MapAreaDEMGridLimits;
          MomentReportForDEM(j);
@@ -2354,6 +2364,8 @@ begin
       LegendFiles.Free;
       ElevFiles.Free;
    end;
+   GridForm.SetFormSize;
+
 
    RestoreBackupDefaults;
    {$IfDef RecordElevMoment} WriteLineToDebugFile('ElevMomentReport out'); {$EndIf}

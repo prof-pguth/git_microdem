@@ -1,10 +1,12 @@
 unit pick_geostats;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{   file verified 6/22/2011       }
-{_________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2022 Peter L. Guth  }
+{___________________________________}
+
 
 
 {$I nevadia_defines.inc}
@@ -96,6 +98,7 @@ type
     Label6: TLabel;
     Edit3: TEdit;
     Edit4: TEdit;
+    BitBtn23: TBitBtn;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure BitBtn1Click(Sender: TObject);
     procedure Radiogroup1Click(Sender: TObject);
@@ -142,6 +145,7 @@ type
     procedure CheckBox3Click(Sender: TObject);
     procedure Edit3Change(Sender: TObject);
     procedure Edit4Change(Sender: TObject);
+    procedure BitBtn23Click(Sender: TObject);
   private
     //procedure GetBatchRegionSize;
     procedure NeedSingleDEM;
@@ -149,6 +153,7 @@ type
   public
     { Public declarations }
      CurDEM : integer;
+     DEMsWanted : tDEMbooleanArray;
      Closing : boolean;
      GroupTitle : shortstring;
      GridLimits : tGridLimits;
@@ -199,10 +204,16 @@ end;
 
 
 procedure DoGeoStatAnalysis;
+var
+   i : integer;
 begin
    {$IfDef RecordGeostats} WriteLineToDebugFile('DoGeoStatAnalysis in'); {$EndIf}
    PickGeoStat := TPickGeoStat.Create(Application);
    PickGeoStat.CurDEM := 0;
+   for i := 1 to MaxDEMDataSets do begin
+      PickGeoStat.DEMsWanted[i] := ValidDEM(i) and (not DEMGlb[i].HiddenGrid);
+   end;
+
    PickGeoStat.RadioGroup1.ItemIndex := 1;
    PickGeoStat.Edit1.Text := IntToStr(MDDef.StatSampleIncr);
    PickGeoStat.Radiogroup1Click(Nil);
@@ -240,7 +251,7 @@ var
    j : integer;
 begin
    if CheckBox2.Checked then begin
-      for j := 1 to MaxDEMDataSets do if ValidDEM(j) then SingleDEMHistogram(j);
+      for j := 1 to MaxDEMDataSets do if DEMsWanted[j] then SingleDEMHistogram(j);
    end
    else begin
       SingleDEMHistogram(CurDEM);
@@ -313,7 +324,7 @@ procedure TPickGeoStat.BitBtn16Click(Sender: TObject);
 begin
    if (CurDEM = 0) then GetDEM(CurDEM,true,'single DEM geomorphometry');
    Radiogroup1Click(Sender);
-   GetTrendOptions(0,CurDEM,GridLimits,  DEMGlb[CurDEM].SelectionMap);
+   GetTrendOptions(0,CurDEM,GridLimits, DEMGlb[CurDEM].SelectionMap);
    //DEMTrendOpt.ComputeTrendSurface(0,CurDEM,GridLimits,  DEMGlb[CurDEM].SelectionMap);
 end;
 
@@ -473,8 +484,6 @@ end;
 
 
 procedure TPickGeoStat.BitBtn22Click(Sender: TObject);
-//var
-   //Radius,Box : integer;
 begin
    if (CurDEM = 0) then GetDEM(CurDEM,true,'single DEM geomorphometry');
    HeavyDutyProcessing := true;
@@ -492,6 +501,11 @@ begin
    HeavyDutyProcessing := false;
 end;
 
+
+procedure TPickGeoStat.BitBtn23Click(Sender: TObject);
+begin
+   GetMultipleDEMsFromList('Geomorphometry',DEMsWanted);
+end;
 
 procedure TPickGeoStat.BitBtn2Click(Sender: TObject);
 {$IfDef ExGeostats}
@@ -513,7 +527,7 @@ begin
       SemiVariogramOptions;
       if (CurDEM = 0) then begin
          var j : integer;
-         for j := 1 to MaxDEMDataSets do if ValidDEM(j) then begin
+         for j := 1 to MaxDEMDataSets do if DEMsWanted[j] then begin
             DEMStat.SemiVariogram(j,DEMGlb[j].FullDEMGridLimits);
          end;
       end
@@ -564,7 +578,7 @@ begin
           end {for Row};
      end {for Col};
      EndProgress;
-     DEMGlb[DeltaSlope].SetUpMap(DeltaSlope,true,mtElevRainbow,'Slope differences: ' + SlopeMethodName(SlopeMethod1) + ' vs ' + SlopeMethodName(SlopeMethod2));
+     DEMGlb[DeltaSlope].SetUpMap(DeltaSlope,true,mtElevRainbow);
      DEMGlb[DeltaSlope].SelectionMap.Closable := false;
    end;
    SlopeCompareOptions.Free;
@@ -577,7 +591,7 @@ begin
    {$IfDef ExGeostats}
    {$Else}
       MDDef.CountHistograms:= false;
-      ElevMomentReport(GroupTitle,Memo1,False,GridLimits,CurDEM);
+      ElevMomentReport(DEMSWanted,GroupTitle,Memo1,False,GridLimits,CurDEM);
    {$EndIf}
 end;
 
@@ -629,7 +643,7 @@ procedure TPickGeoStat.Button13Click(Sender: TObject);
 begin
    {$IfDef ExGeostats}
    {$Else}
-      ElevMomentReport('',Memo1,true,GridLimits,CurDEM);
+      ElevMomentReport(DEMSWanted,'',Memo1,true,GridLimits,CurDEM);
    {$EndIf}
 end;
 
@@ -773,17 +787,6 @@ begin
       CloseGeoStatAnalysis;
    end;
 end;
-
-(*      removed 6/16/2022
-procedure TPickGeoStat.GetBatchRegionSize;
-var
-   i : integer;
-begin
-   for I := 1 to 5 do begin
-      MDDef.BatchRegionSize[i] := StrToInt(StringGrid1.Cells[0,i]);
-   end;
-end;
-*)
 
 
 procedure TPickGeoStat.FormCreate(Sender: TObject);

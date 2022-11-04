@@ -1,12 +1,13 @@
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of ianMICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch    }
-{ Released under the MIT Licences    }
-{ Copyright (c) 2019 Peter L. Guth   }
-{                                    }
-{ include file for demmapdraw        }
-{____________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2022 Peter L. Guth  }
+{___________________________________}
+{                                   }
+{ include file for demmapdraw       }
+{___________________________________}
 
 
       procedure TMapDraw.FanBitmap(Lat,Long : float64; var Bitmap : tMyBitmap);

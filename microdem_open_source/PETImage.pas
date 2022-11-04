@@ -17,6 +17,7 @@
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$IfDef Debug}
       {$Define BMPMemInline}
+      {$Define RecordBigBitmap}
       //{$Define RecordImageOverlayProblems}
       //{$Define RecordImageResize}
       //{$Define RecordBlendBitmaps}
@@ -670,6 +671,7 @@ var
    AskCols : boolean;
    ImageForm : TImageDisplayForm;
 begin
+   {$IfDef RecordBigBitmap}  WriteLineToDebugFile('MakeBigBitmap in'); {$EndIf}
    if (TheFiles.Count > 0) then begin
      AskCols := Cols < 0;
      if AskCols then begin
@@ -677,6 +679,7 @@ begin
      end;
      BigBMP := CombineBitmaps(Cols, theFiles, Capt);
      if (SaveName <> '') then begin
+         {$IfDef RecordBigBitmap} WriteLineToDebugFile('MakeBigBitmap save in ' + SaveName); {$EndIf}
          SaveBitmap(BigBmp,SaveName);
          Bigbmp.Free;
       end
@@ -691,6 +694,10 @@ begin
          if AskCols then ImageForm.Changecolumns1Click(nil)
          else ImageForm.RedrawSpeedButton12Click(Nil);
       end;
+      {$IfDef RecordBigBitmap}  WriteLineToDebugFile('MakeBigBitmap out'); {$EndIf}
+   end
+   else begin
+      {$IfDef RecordBigBitmap}  WriteLineToDebugFile('Nothing in string list'); {$EndIf}
    end;
    theFiles.Destroy;
 end;

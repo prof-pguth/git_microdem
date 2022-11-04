@@ -500,6 +500,8 @@ type
            function TerrainCategoryLegend : tMyBitmap;
         {$EndIf}
 
+        function MakeVATLegend : tMyBitmap;
+
         function SizeOfPixel(x,y : integer) : float64;
 
         function DrawScaleBarOnBitmap(PixelSize : float64 = -1) : tMyBitmap;
@@ -823,6 +825,120 @@ begin
       end;
    end;
 end;
+
+
+function tMapDraw.MakeVATLegend : tMyBitmap;
+var
+   i,Cat,x,y,z,Cats,Total,Needed : integer;
+   xg,fTotal : float64;
+   zf : float32;
+   fName : PathStr;
+   Table : tMyData;
+   CatPCforLegend : float64;
+   aColor : tColor;
+   aField,NameField,CodeField : ShortString;
+   Hist : array[MinVATValue..MaxVatCats] of integer;
+begin
+   fName := DEMGlb[DEMOnMap].VATFileName;
+   if FileExists(fName) then begin
+      {$IfDef RecordVAT} WriteLineToDebugFile('TMapForm.GridVATlegend1Click found=' + fName); {$EndIf}
+   end
+   else begin
+      fName := DEMGlb[DEMOnMap].DEMFileName + '.vat.dbf';
+      if not FileExists(fName) then fName := ChangeFileExt(DEMGlb[DEMOnMap].DEMFileName,'.vat.dbf');
+      if not FileExists(fName) then fName := DEMGlb[DEMOnMap].DEMFileName + '.vat.csv';
+      if not FileExists(fName) then exit;
+      DEMGlb[DEMOnMap].VATFileName := fName;
+      {$IfDef RecordVAT} WriteLineToDebugFile('TMapForm.GridVATlegend1Click defined=' + fName); {$EndIf}
+   end;
+   Table := tMyData.Create(fName);
+   if (Table.FiltRecsInDB > 16) then begin
+      CatPCforLegend := 2;
+      ReadDefault('Min category percentage for legend',CatPCforLegend);
+   end
+   else CatPCforLegend := 0;
+
+   if Table.FieldExists('CODE') then CodeField := 'CODE' else CodeField := 'VALUE';
+
+   ShowHourglassCursor;
+   for x := MinVATValue to MaxVATCats do Hist[x] := 0;
+
+   Total := 0;
+   fTotal := 0;
+   if Table.FieldExists('NAME') then NameField := 'NAME'
+   else begin
+      NameField := OrigPickField(Table,'Label',[ftString]);
+   end;
+
+(*
+   if FullMapSpeedButton.Enabled and Table.FieldExists('N_SUB') then begin
+      for y := round(MapCorners.BoundBoxDataGrid.ymin) to round(MapCorners.BoundBoxDataGrid.ymax) do begin
+         for x := round(MapCorners.BoundBoxDataGrid.xmin) to round(MapCorners.BoundBoxDataGrid.xmax) do begin
+            if DEMGlb[DEMonMap].GetElevMetersOnGrid(x,y,zf) then begin
+               z := round(zf);
+               if (z >= MinVATValue) and (z <= MaxVatCats) then begin
+                  Inc(Hist[z]);
+                  Inc(Total);
+               end;
+            end;
+         end;
+      end;
+      fTotal := Total;
+      AField := 'N_SUB';
+      Table.First;
+      while not Table.eof do begin
+         i := Table.GetFieldByNameAsInteger(CodeField);
+         Table.Edit;
+         if (i >= 0) and (i <= MaxVATCats) then Table.SetFieldByNameAsInteger('N_SUB',Hist[i])
+         else Table.SetFieldByNameAsInteger('N_SUB',0);
+         Table.Next;
+      end;
+   end
+   else begin
+*)
+      AField := Table.NCountField;
+      while not Table.eof do begin
+         fTotal := fTotal + Table.GetFieldByNameAsInteger(aField);
+         Table.Next;
+      end;
+//   end;
+
+   Needed := round(0.01 * CatPCforLegend * fTotal);
+   Table.ApplyFilter(aField + ' > ' + IntToStr(Needed));
+   Cats := Table.FiltRecsInDB;
+
+   Cat := 0;
+   CreateBitmap(Result,1200,25*succ(Cats) + 4);
+
+   ClearBitmap(Result,clNearWhite);
+   Result.Canvas.Font.Size := 12;
+   Result.Canvas.Font.Style := [fsBold];
+
+   Result.Canvas.TextOut(5,1,'    % Area     Category');
+   while not Table.eof do begin
+      xg := 100.0*Table.GetFieldByNameAsInteger(aField)/fTotal;
+      inc(Cat);
+      aColor := Table.tColorFromTable;
+      Result.Canvas.Pen.Color := aColor;
+      Result.Canvas.Brush.Color := aColor;
+      Result.Canvas.Brush.Style := bsSolid;
+      Result.Canvas.Rectangle(5,(Cat)*25,25,succ(Cat)*25);
+      Result.Canvas.Brush.Style := bsClear;
+      Result.Canvas.TextOut(30,Cat*25 + 4, RealToString(xg,10,2) + '  ' + Table.GetFieldByNameAsString(NameField));
+      Table.Next;
+   end;
+   Result.Height := succ(Cats)*25 + 4;
+   PetImage.GetImagePartOfBitmap(Result);
+   Result.Canvas.Pen.Color := clBlack;
+   Result.Canvas.Pen.Width := 0;
+   Result.Canvas.Brush.Style := bsClear;
+   Result.Canvas.Rectangle(0,0,Result.Width,Result.height);
+
+   ShowDefaultCursor;
+   Table.Destroy;
+end;
+
+
 
 
 function tMapDraw.ColsDisplayed : integer;

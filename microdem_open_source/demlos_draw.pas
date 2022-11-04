@@ -1,11 +1,13 @@
 unit demlos_draw;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of ianMICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch    }
-{ Released under the MIT Licences    }
-{ Copyright (c) 2015 Peter L. Guth   }
-{____________________________________}
+
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2022 Peter L. Guth  }
+{___________________________________}
+
 
 {$I nevadia_defines.inc}
 
@@ -1299,94 +1301,78 @@ begin
          GISdb[ProfileDB].MyData.SetFieldByNameAsFloat('LOS_HT_M',LOSHt);
          GISdb[ProfileDB].MyData.SetFieldByNameAsFloat('LAT',Lat);
          GISdb[ProfileDB].MyData.SetFieldByNameAsFloat('LONG',Long);
-         if (elevs^[j] < 32000) then begin
-            GISdb[ProfileDB].MyData.SetFieldByNameAsFloat('ELEV_M',elevs^[j]);
-            if (LOSHt < elevs^[j]) then begin
-               ch := 'Y';
-               GISdb[ProfileDB].MyData.SetFieldByNameAsString('BLOCK_TERR',ch);
-            end;
-         end;
-
          GISdb[ProfileDB].MyData.SetFieldByNameAsFloat('RANGE_KM',0.001 * dists^[j]);
 
-         if MDDef.ShowMaskedAirspace then begin
-            if NeedZ^[j] > 0.01 then begin
-               GISdb[ProfileDB].MyData.SetFieldByNameAsFloat('MASK_AIR',NeedZ^[j] + elevs^[j]);
-            end;
-         end;
+         if (elevs^[j] < 32000) then begin
+            GISdb[ProfileDB].MyData.SetFieldByNameAsFloat('ELEV_M',elevs^[j]);
+            if (LOSHt < elevs^[j]) then GISdb[ProfileDB].MyData.SetFieldByNameAsString('BLOCK_TERR','Y');
 
-         {$IFDef ExVegDensity}
-         {$Else}
-            if (DEMglb[DEMonView].VegDensityLayers[1] <> Nil) then PointFromDensityLayer(1,j,'VPTS_AROUND','VPTS_ABOVE');
-            if (DEMglb[DEMonView].VegDensityLayers[2] <> Nil) then PointFromDensityLayer(2,j,'VPT2_AROUND','VPT2_ABOVE');
-         {$EndIf}
+            if MDDef.ShowMaskedAirspace and (NeedZ^[j] > 0.01) then GISdb[ProfileDB].MyData.SetFieldByNameAsFloat('MASK_AIR',NeedZ^[j] + elevs^[j]);
 
-         {$IFDef ExVegDensity}
-            NeedToCheckPointCloud := false;
-         {$Else}
-            if (DEMglb[DEMonView].VegGrid[1] <> 0) then begin
-               if (DEMglb[DEMonView].VegGrid[2] <> 0) then begin
-                   DEMGlb[DEMglb[DEMonView].VegGrid[2]].GetJustVegHeight(xgrids^[j],ygrids^[j],veght);
-                   if (VegHt < 32000) then begin
-                      GISdb[ProfileDB].MyData.SetFieldByNameAsFloat('VEG2_HT',VegHt);
-                      if (elevs^[j] < 32000) then begin
-                         if (LOSHt < elevs^[j] + VegHt) then begin
-                            GISdb[ProfileDB].MyData.SetFieldByNameAsString('BLOCK_VEG2','Y');
-                            NeedToCheckPointCloud := true;
-                         end;
-                     end;
-                   end;
-                end;
-               DEMGlb[DEMglb[DEMonView].VegGrid[1]].GetJustVegHeight(xgrids^[j],ygrids^[j],veght);
+            {$IFDef ExVegDensity}
                NeedToCheckPointCloud := false;
-               if (VegHt < 32000) then begin
-                  GISdb[ProfileDB].MyData.SetFieldByNameAsFloat('VEG_HT',VegHt);
-                  if (elevs^[j] < 32000) then begin
-                     if (LOSHt < elevs^[j] + VegHt) then begin
-                        ch := 'Y';
-                        GISdb[ProfileDB].MyData.SetFieldByNameAsString('BLOCK_VEG',ch);
-                        NeedToCheckPointCloud := true;
-                     end;
-                 end;
+            {$Else}
+               if (DEMglb[DEMonView].VegDensityLayers[1] <> Nil) then PointFromDensityLayer(1,j,'VPTS_AROUND','VPTS_ABOVE');
+               if (DEMglb[DEMonView].VegDensityLayers[2] <> Nil) then PointFromDensityLayer(2,j,'VPT2_AROUND','VPT2_ABOVE');
+               if (DEMglb[DEMonView].VegGrid[1] <> 0) then begin
+                  if (DEMglb[DEMonView].VegGrid[2] <> 0) then begin
+                      DEMGlb[DEMglb[DEMonView].VegGrid[2]].GetJustVegHeight(xgrids^[j],ygrids^[j],veght);
+                      if (VegHt < 32000) then begin
+                         GISdb[ProfileDB].MyData.SetFieldByNameAsFloat('VEG2_HT',VegHt);
+                         if (elevs^[j] < 32000) then begin
+                            if (LOSHt < elevs^[j] + VegHt) then begin
+                               GISdb[ProfileDB].MyData.SetFieldByNameAsString('BLOCK_VEG2','Y');
+                               NeedToCheckPointCloud := true;
+                            end;
+                        end;
+                      end;
+                  end;
+                  DEMGlb[DEMglb[DEMonView].VegGrid[1]].GetJustVegHeight(xgrids^[j],ygrids^[j],veght);
+                  NeedToCheckPointCloud := false;
+                  if (VegHt < 32000) then begin
+                     GISdb[ProfileDB].MyData.SetFieldByNameAsFloat('VEG_HT',VegHt);
+                     if (elevs^[j] < 32000) then begin
+                        if (LOSHt < elevs^[j] + VegHt) then begin
+                           ch := 'Y';
+                           GISdb[ProfileDB].MyData.SetFieldByNameAsString('BLOCK_VEG',ch);
+                           NeedToCheckPointCloud := true;
+                        end;
+                    end;
+                  end;
+               end
+               else NeedToCheckPointCloud := true;
+            {$EndIf}
+
+            {$IfDef ExPointCloudMemory}
+            {$Else}
+               if NeedToCheckPointCloud and ((pc1 <> Nil) or (pc2 <> Nil)) then begin
+                   if (LosHt > elevs^[j]) and (LosHt < elevs^[j] + MDDef.MaxVegHeight) then begin
+                      if (pc1 <> Nil) then begin
+                         pc1.GetNumPointsNearAndAboveLocation(dists^[j],LosHt,NumPts,NumPts2);
+                         if (NumPts > 0) then GISdb[ProfileDB].MyData.SetFieldByNameAsInteger('PTS_AROUND',NumPts);
+                         if (NumPts2 > 0) then GISdb[ProfileDB].MyData.SetFieldByNameAsInteger('PTS_ABOVE',NumPts2);
+                      end;
+                      if (pc2 <> Nil) then begin
+                         pc2.GetNumPointsNearAndAboveLocation(dists^[j],LosHt,NumPts,NumPts2);
+                         if (NumPts > 0) then GISdb[ProfileDB].MyData.SetFieldByNameAsInteger('PTS2_AROUND',NumPts);
+                         if (NumPts2 > 0) then GISdb[ProfileDB].MyData.SetFieldByNameAsInteger('PTS2_ABOVE',NumPts2);
+                      end;
+                   end;
                end;
-            end
-            else NeedToCheckPointCloud := true;
-         {$EndIf}
+            {$EndIf}
 
-         {$IfDef ExPointCloudMemory}
-         {$Else}
-            if NeedToCheckPointCloud and ((pc1 <> Nil) or (pc2 <> Nil)) then begin
-                if (LosHt > elevs^[j]) and (LosHt < elevs^[j] + MDDef.MaxVegHeight) then begin
-                   if (pc1 <> Nil) then begin
-                      pc1.GetNumPointsNearAndAboveLocation(dists^[j],LosHt,NumPts,NumPts2);
-                      if (NumPts > 0) then GISdb[ProfileDB].MyData.SetFieldByNameAsInteger('PTS_AROUND',NumPts);
-                      if (NumPts2 > 0) then GISdb[ProfileDB].MyData.SetFieldByNameAsInteger('PTS_ABOVE',NumPts2);
-                   end;
-                   if (pc2 <> Nil) then begin
-                      pc2.GetNumPointsNearAndAboveLocation(dists^[j],LosHt,NumPts,NumPts2);
-                      if (NumPts > 0) then GISdb[ProfileDB].MyData.SetFieldByNameAsInteger('PTS2_AROUND',NumPts);
-                      if (NumPts2 > 0) then GISdb[ProfileDB].MyData.SetFieldByNameAsInteger('PTS2_ABOVE',NumPts2);
-                   end;
+            {$IfDef ExFresnel}
+            {$Else}
+                if (MDdef.CurvAlg = vcRadioLineOfSight) and MDdef.DrawFresnel then begin
+                  Fresnel2 := 17.31 * 5 * sqrt(0.001 * dists^[j] * (LOSLen - dists^[j]) / MDdef.FresnelFreq / LOSLen);
+                  GISdb[ProfileDB].MyData.CarefullySetFloat('FRESNEL2_M',Fresnel2,0.1);
+                  Fresnel1 := 17.31 * sqrt(0.001 * dists^[j] * (LOSLen - dists^[j]) / MDdef.FresnelFreq / LOSLen);
+                  GISdb[ProfileDB].MyData.CarefullySetFloat('FRESNEL1_M',Fresnel1,0.1);
                 end;
-            end;
-         {$EndIf}
+            {$EndIf}
 
-         {$IfDef ExFresnel}
-         {$Else}
-             if (MDdef.CurvAlg = vcRadioLineOfSight) and MDdef.DrawFresnel then begin
-               Fresnel2 := 17.31 * 5 * sqrt(0.001 * dists^[j] * (LOSLen - dists^[j]) / MDdef.FresnelFreq / LOSLen);
-               GISdb[ProfileDB].MyData.CarefullySetFloat('FRESNEL2_M',Fresnel2,0.1);
-               Fresnel1 := 17.31 * sqrt(0.001 * dists^[j] * (LOSLen - dists^[j]) / MDdef.FresnelFreq / LOSLen);
-               GISdb[ProfileDB].MyData.CarefullySetFloat('FRESNEL1_M',Fresnel1,0.1);
-             end;
-         {$EndIf}
-
-          if MDDef.ForceCrestComputations then begin
-             IsPeak[j] := false;
-             IsPit[j] := false;
-          end;
-
-          if (Elevs^[j] < 32000) then begin
+              if (MDDef.LosVisible and VisPoints[j]) then Color := MDDef.FanColor else Color := MDDef.MaskColor;
+              GISdb[ProfileDB].MyData.SetColorFromPlatformColor(Color);
 
              {$IfDef ExWaveLengthHeight}
              {$Else}
@@ -1403,10 +1389,6 @@ begin
                    end;
                 end;
             {$EndIf}
-
-              if (MDDef.LosVisible and VisPoints[j]) then Color := MDDef.FanColor else Color := MDDef.MaskColor;
-
-              GISdb[ProfileDB].MyData.SetColorFromPlatformColor(Color);
 
               if MDDef.DoGrazingFields then begin
                  if (j > 0) then begin
@@ -1455,11 +1437,17 @@ begin
                     else Intrudepc := 100 * (elevs^[j] - (LOSHt - Fresnel1)) / Fresnel1;
                     GISdb[ProfileDB].MyData.SetFieldByNameAsFloat('INTRUDE_pc',Intrudepc);
                  end;
-              {$EndIf}
-
-              GISdb[ProfileDB].MyData.Post;
+             {$EndIf}
          end
          else begin
+            {$IfDef ExWaveLengthHeight}
+            {$Else}
+                if MDDef.ForceCrestComputations then begin
+                   IsPeak[j] := false;
+                   IsPit[j] := false;
+                end;
+            {$EndIf}
+
             {$IfDef ExFresnel}
             {$Else}
                if ((dists^[j] < 1000)  or (dists^[j] > LosLen - 1000)) and (Intrudepc > 0.001) then begin
@@ -1474,8 +1462,11 @@ begin
                end;
             {$EndIf}
          end;
+         GISdb[ProfileDB].MyData.Post;
          lz := elevs^[j];
       end;
+     {$IfDef RecordLOS} WriteLineToDebugFile('Loop done'); {$EndIf}
+
 
       if (not VisPoints[ComputePoints]) then begin
          Result := losBlockByTerrain;

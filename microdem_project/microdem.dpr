@@ -339,7 +339,8 @@ uses
   U_SolarPos2 in '..\SolarPosSource\U_SolarPos2.pas' {SolorPosForm1},
   ufrmMain in '..\FireMonkey3DGlobalRotate\ufrmMain.pas' {frmMain},
   simple_python in '..\python\simple_python.pas' {PythonForm1},
-  demix_filter in '..\common_code\demix_filter.pas' {DemixFilterForm};
+  demix_filter in '..\common_code\demix_filter.pas' {DemixFilterForm},
+  demix_control in '..\demix\demix_control.pas';
 
 {$R *.RES}
 

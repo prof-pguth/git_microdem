@@ -112,6 +112,8 @@
             {$Define UseTCLientDataSet}
              {$Define ExOpenGL}
 
+            {$Define ExWaveRefraction}
+
          {$Define ExOSM}
          {$Define ExGeology}
          {$Define NoSatelliteForms}
@@ -206,7 +208,6 @@
          {$Define ExVariableOpaques}
          {$Define ExVegGrid}
          {$Define ExVegDensity}
-         {$Define ExWaveRerfraction}
          {$Define ExZipatone}
          {$Define NoClustering}
 {$EndIf}

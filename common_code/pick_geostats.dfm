@@ -28,16 +28,18 @@ object PickGeoStat: TPickGeoStat
     Height = 77
     Align = alBottom
     TabOrder = 0
+    ExplicitTop = 255
+    ExplicitWidth = 509
     object Label1: TLabel
-      Left = 247
-      Top = 25
+      Left = 256
+      Top = 17
       Width = 67
       Height = 13
       Caption = 'Stat sampling '
     end
     object Edit1: TEdit
-      Left = 320
-      Top = 25
+      Left = 329
+      Top = 21
       Width = 56
       Height = 21
       TabOrder = 0
@@ -89,16 +91,27 @@ object PickGeoStat: TPickGeoStat
       TabOrder = 4
       OnClick = Button15Click
     end
+    object BitBtn23: TBitBtn
+      Left = 248
+      Top = 48
+      Width = 75
+      Height = 25
+      Caption = 'Pick DEMs'
+      TabOrder = 5
+      OnClick = BitBtn23Click
+    end
   end
   object PageControl1: TPageControl
     Left = 0
     Top = 0
     Width = 330
     Height = 264
-    ActivePage = TabSheet7
+    ActivePage = TabSheet1
     Align = alClient
     MultiLine = True
     TabOrder = 1
+    ExplicitWidth = 324
+    ExplicitHeight = 255
     object TabSheet1: TTabSheet
       Caption = 'Basic'
       object Button6: TButton
@@ -540,5 +553,7 @@ object PickGeoStat: TPickGeoStat
     Height = 264
     Align = alRight
     TabOrder = 2
+    ExplicitLeft = 324
+    ExplicitHeight = 255
   end
 end

@@ -343,8 +343,8 @@ begin
           end;
        end;
        EndProgress;
-       SetUpMap(NewDEM,true,mtElevSpectrum,DEMGlb[NewDEM].AreaName);
-       SetUpMap(OccupiedLayersDEM,true,mtElevSpectrum,DEMGlb[OccupiedLayersDEM].AreaName);
+       SetUpMap(NewDEM,true,mtElevSpectrum);
+       SetUpMap(OccupiedLayersDEM,true,mtElevSpectrum);
 
        if (Memo1 <> Nil) then begin
           Memo1.Lines.Add('Occupied voxel: ' + IntToStr(NumOccupiedVoxels));

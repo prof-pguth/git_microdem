@@ -33,6 +33,12 @@ begin
 end;
 
 
+procedure tDEMDataSet.SaveSpecifiedPartOfDEM(var FileName : PathStr; Limits : tGridLimits);
+begin
+   WriteNewFormatDEM(Limits,FileName);
+end;
+
+
 procedure tDEMDataSet.SavePartOfDEMWithData(var FileName : PathStr);
 var
    Limits : tGridLimits;

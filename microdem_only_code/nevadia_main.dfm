@@ -2240,6 +2240,10 @@ object wmdem: Twmdem
           Caption = 'DEMIX elevation histograms'
           OnClick = DEMIXelevationhistograms1Click
         end
+        object OpenDEMIXarea1: TMenuItem
+          Caption = 'Open DEMIX area'
+          OnClick = OpenDEMIXarea1Click
+        end
         object N36: TMenuItem
           Caption = '-'
         end

@@ -1,11 +1,13 @@
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of ianMICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch    }
-{ Released under the MIT Licences    }
-{ Copyright (c) 2019 Peter L. Guth   }
-{                                    }
-{ include file for demeros           }
-{____________________________________}
+
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2022 Peter L. Guth  }
+{___________________________________}
+{                                   }
+{ include file for demeros          }
+{___________________________________}
 
 
 function IsLandsat(fName : PathStr; var MPath : PathStr) : boolean;

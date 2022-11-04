@@ -1,10 +1,9 @@
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of ianMICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch    }
-{ Released under the MIT Licences    }
-{ Copyright (c) 2015 Peter L. Guth   }
-{____________________________________}
-
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2022 Peter L. Guth  }
+{___________________________________}
 
 { include file for basemap }
 
@@ -1217,13 +1216,10 @@ procedure tMapProjection.ProtectedDefineDatum(DatumCode : ShortString; Why : sho
          Table : tMyData;
       begin
          {$If Defined(RecordDefineDatum) or Defined(RecordLong0) or Defined(LongCent)} WriteLineToDebugFile(ProjDebugName + ' SafeDefineDatum in, ' + KeyDatumParams); {$EndIf}
+         DefineWGS84;
          {$IfDef FMX}
-           DefineWGS84;
          {$Else}
-            if WGSEquivalentDatum(DatumCode) then begin
-               DefineWGS84;
-            end
-            else begin
+            if not WGSEquivalentDatum(DatumCode) then begin
               if FileExists(GT_Datum_fName) and FileExists(GT_Ellipse_fName) then begin
                   h_DatumCode := ptTrim(h_DatumCode);
                   for i := length(h_DatumCode) downto 1 do if not (h_DatumCode[i] in ['A'..'Z','0'..'9','-','-']) then Delete(H_DatumCode,i,1);
@@ -1245,7 +1241,6 @@ procedure tMapProjection.ProtectedDefineDatum(DatumCode : ShortString; Why : sho
                  {$If Defined(RecordDefineDatum)} WriteLineToDebugFile('SafeDefineDatum after table lookup, ' + KeyDatumParams); {$EndIf}
               end
               else begin
-                 DefineWGS84;
                  TStr := 'Projection files missing: ' + GT_Datum_fName + ' and ' + GT_Ellipse_fName;
                  MessageToContinue(TStr);
                  {$IfDef RecordProblems} WriteLineToDebugFile(TStr); {$EndIf}
@@ -1415,7 +1410,7 @@ begin
    if (Pname = UTMellipsoidal) then begin
       if LatHemi = 'N' then false_north := 0 else false_north := 10000000;
    end;
-   {$If Defined(RecordShortDefineDatum) or Defined(RecordDefineDatum)} WriteLineToDebugFile(ProjectionDebugName + ' out DefineDatumFromUTMZone=' + KeyDatumParams + ' ' + Why); {$EndIf}
+   {$If Defined(RecordShortDefineDatum) or Defined(RecordDefineDatum)} WriteLineToDebugFile(ProjDebugName + ' out DefineDatumFromUTMZone=' + KeyDatumParams + ' ' + Why); {$EndIf}
    {$If Defined(RecordLong0) or Defined(LongCent)} ShortProjInfo(ProjDebugName + ' tMapProjection.DefineDatumFromUTMZone out'); {$EndIf}
 end;
 

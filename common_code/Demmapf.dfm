@@ -51,8 +51,8 @@ object MapForm: TMapForm
     ParentFont = False
     TabOrder = 0
     OnClick = ScrollBox1Click
-    ExplicitWidth = 1861
-    ExplicitHeight = 1159
+    ExplicitWidth = 1843
+    ExplicitHeight = 1132
     object Image1: TImage
       Left = 3
       Top = -247
@@ -209,13 +209,13 @@ object MapForm: TMapForm
     end
     object BlendPanel: TPanel
       Left = 0
-      Top = 1123
-      Width = 1863
+      Top = 1096
+      Width = 1845
       Height = 41
       Align = alBottom
       TabOrder = 8
-      ExplicitTop = 1114
-      ExplicitWidth = 1857
+      ExplicitTop = 1087
+      ExplicitWidth = 1839
       object TrackBar2: TTrackBar
         Left = 289
         Top = 1
@@ -339,6 +339,7 @@ object MapForm: TMapForm
     Align = alTop
     TabOrder = 1
     OnMouseDown = Panel1MouseDown
+    ExplicitWidth = 1843
     object AnnotateSpeedButton1: TSpeedButton
       Left = 31
       Top = -4
@@ -2635,6 +2636,11 @@ object MapForm: TMapForm
         GroupIndex = 1
         OnClick = Horizontalshift1Click
       end
+      object ClipDEMtoregionwithdata1: TMenuItem
+        Caption = 'Clip DEM to region with data'
+        GroupIndex = 1
+        OnClick = ClipDEMtoregionwithdata1Click
+      end
       object Erodedilate1: TMenuItem
         Caption = 'Erode/dilate'
         GroupIndex = 1
@@ -3794,6 +3800,10 @@ object MapForm: TMapForm
         object Changemap1: TMenuItem
           Caption = 'Change map'
           OnClick = Changemap1Click
+        end
+        object Airballdirtball1: TMenuItem
+          Caption = 'Air ball, dirt ball'
+          OnClick = Airballdirtball1Click
         end
         object Differenceelevationslopeaspectmaps1: TMenuItem
           Caption = 'Difference elevation, slope, aspect maps'

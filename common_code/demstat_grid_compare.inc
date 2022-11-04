@@ -1,10 +1,12 @@
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{   file verified 4/20/2020       }
-{                                 }
-{ include file for demstat        }
-{_________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2022 Peter L. Guth  }
+{___________________________________}
+{                                   }
+{ include file for demstat          }
+{___________________________________}
 
 type
    tIntVector256 = array[0..255] of integer;
@@ -260,7 +262,7 @@ begin
       SetGridDiffernceProperties;
       if EntireDEM then RegionUsed := DEMGlb[DEM1].FullDEMGridLimits
       else RegionUsed := DEMGlb[DEM1].SelectionMap.MapDraw.MapAreaDEMGridLimits;
-      MakeDifferenceMapOfBoxRegion(DEM1,DEM2,RegionUsed,MDDef.ShowGridDiffMap,MDDef.ShowGridDiffHistogram,MDDef.ShowScatterPlot,DEMGlb[DEM1].AreaName);
+      MakeDifferenceMapOfBoxRegion(DEM1,DEM2,RegionUsed,MDDef.ShowGridDiffMap,MDDef.ShowGridDiffHistogram,MDDef.ShowScatterPlot);
       {$IfDef RecordDEMCompare} WriteLineToDebugFile('GridDifference out'); {$EndIf}
    end
    else begin
@@ -272,6 +274,78 @@ end;
 function MakeDifferenceMap(Map1,Map2 : integer; ShowMap,ShowHistogram,ShowScatterPlot : boolean; TheAreaName : ShortString = '') : integer;
 begin
    Result := MakeDifferenceMapOfBoxRegion(Map1,Map2,DEMGlb[Map1].FullDEMGridLimits,ShowMap,ShowHistogram,ShowScatterplot,TheAreaName);
+end;
+
+
+function MakeDifferenceMapOfBoxRegion(Map1,Map2 : integer; GridLimits: tGridLimits; ShowMap,ShowHistogram,ShowScatterplot : boolean; TheAreaName : ShortString = '') : integer;
+var
+   Col,Row  : integer;
+   z1,z2 : float32;
+   fName : PathStr;
+   ThisGraph : TThisBaseGraph;
+   IdenticalGrids : boolean;
+   rFile : file;
+begin
+   {$If Defined(RecordDEMCompare) or Defined(RecordDiffMap)} WriteLineToDebugFile('MakeDifferenceMapOfBoxRegion in, DEMs = ' + IntToStr(Map1) + '/' + IntToStr(Map2)); {$EndIf}
+   Result := 0;
+   OpenDEMDataStructures(Result);
+   if (TheAreaName = '') then DEMGlb[Result].AreaName := 'Elev_Diff_' + DEMGlb[Map2].AreaName + '-' + DEMGlb[Map1].AreaName
+   else DEMGlb[Result].AreaName := TheAreaName;
+   DEMGlb[Result].DEMheader := DEMGlb[Map1].DEMheader;
+   DEMGlb[Result].DEMMapProjection := DEMGlb[Map1].DEMMapProjection;
+   DEMGlb[Result].DEMMapProjection.ProjectionSharedWithDataset := true;
+   if DEMGlb[Result].DEMheader.DEMPrecision = ByteDEM then DEMGlb[Result].DEMheader.DEMPrecision := SmallIntDEM;
+   //DEMGlb[Result].DEMheader.ElevUnits := Undefined;
+   DEMGlb[Result].DEMstatus := dsUnsaved;
+
+   if not DEMGlb[Result].AllocateDEMMemory(InitDEMMissing) then exit;
+
+   if ShowScatterPlot then begin
+      ThisGraph := TThisBaseGraph.Create(Application);
+      ThisGraph.SetUpGraphForm;
+      ThisGraph.Caption := 'Grid comparison';
+      ThisGraph.OpenPointFile(rfile,ThisGraph.Symbol);
+      ThisGraph.GraphDraw.HorizLabel := DEMGlb[Map1].AreaName;
+      ThisGraph.GraphDraw.VertLabel := DEMGlb[Map2].AreaName;
+   end;
+   IdenticalGrids := DEMGlb[Map1].SecondGridIdentical(Map2);
+
+   StartProgress('Grid Differences');
+   for Col := GridLimits.XGridLow to GridLimits.XGridHigh do begin
+      if (Col mod 25 = 0) then UpdateProgressBar(Col / pred(DEMGlb[Map1].DEMheader.NumCol));
+      {$If Defined(RecordDEMCompare) or Defined(RecordDiffMap)} if (Col mod 50 = 0) then WriteLineToDebugFile('Col=' + IntToStr(Col)); {$EndIf}
+      for Row := GridLimits.YGridLow to GridLimits.YGridHigh do begin
+         if DEMGlb[Map1].GetElevMetersFromThisAndSecondDEM(Map2,Col,Row,z1,z2) then begin
+            DEMGlb[Result].SetGridElevation(Col,Row,z2 - z1);
+            if ShowScatterPlot then ThisGraph.AddPointToDataBuffer(rfile,z1,z2);
+         end;
+      end {for Row};
+   end {for Col};
+   EndProgress;
+   DEMGlb[Result].CheckMaxMinElev;
+   fName := MDTempDir + DEMGlb[Result].AreaName + '.dem';
+   DEMGlb[Result].WriteNewFormatDEM(fName,'difference map');
+   CloseSingleDEM(Result);
+   Result := OpenNewDEM(fName,false);
+
+   {$IfDef RecordDEMCompare}
+      WriteLineToDebugFile('');  WriteLineToDebugFile('DEM1: ' + DEMGlb[Map1].FullDEMParams);
+      WriteLineToDebugFile('');  WriteLineToDebugFile('DEM2: ' + DEMGlb[Map2].FullDEMParams);
+      WriteLineToDebugFile('');  WriteLineToDebugFile('Diff: ' + DEMGlb[Result].FullDEMParams);
+      WriteLineToDebugFile('');
+   {$EndIf}
+
+   if ShowMap then begin
+      {$If Defined(RecordDEMCompare) or Defined(RecordDiffMap)} WriteLineToDebugFile('MakeDifferenceMap call setupmap'); {$EndIf}
+      DEMGlb[Result].SetUpMap(Result,true,mtElevSpectrum);
+   end;
+
+   if ShowScatterPlot then begin
+      CloseFile(rfile);
+      ThisGraph.AutoScaleAndRedrawDiagram;
+   end;
+   if ShowHistogram then SingleDEMHistogram(Result);
+   {$If Defined(RecordDEMCompare) or Defined(RecordDiffMap)} WriteLineToDebugFile('MakeDifferenceMap out'); {$EndIf}
 end;
 
 
@@ -448,70 +522,4 @@ begin
 end;
 
 
-
-function MakeDifferenceMapOfBoxRegion(Map1,Map2 : integer; GridLimits: tGridLimits; ShowMap,ShowHistogram,ShowScatterplot : boolean; TheAreaName : ShortString = '') : integer;
-var
-   Col,Row  : integer;
-   z1,z2 : float32;
-   ThisGraph : TThisBaseGraph;
-   IdenticalGrids,OK : boolean;
-   rFile : file;
-begin
-   {$IfDef RecordDEMCompare} WriteLineToDebugFile('MakeDifferenceMapOfBoxRegion in'); {$EndIf}
-   Result := 0;
-   OpenDEMDataStructures(Result);
-   DEMGlb[Result].AreaName := 'Elev_Diff_' + DEMGlb[Map2].AreaName + '-' + DEMGlb[Map1].AreaName;
-   DEMGlb[Result].DEMheader := DEMGlb[Map1].DEMheader;
-   DEMGlb[Result].DEMMapProjection := DEMGlb[Map1].DEMMapProjection;
-   if DEMGlb[Result].DEMheader.DEMPrecision = ByteDEM then DEMGlb[Result].DEMheader.DEMPrecision := SmallIntDEM;
-   DEMGlb[Result].DEMheader.ElevUnits := Undefined;
-   DEMGlb[Result].DEMstatus := dsUnsaved;
-
-   if not DEMGlb[Result].AllocateDEMMemory(InitDEMMissing) then exit;
-
-   if ShowScatterPlot then begin
-      ThisGraph := TThisBaseGraph.Create(Application);
-      ThisGraph.SetUpGraphForm;
-      ThisGraph.Caption := 'Grid comparison';
-      ThisGraph.OpenPointFile(rfile,ThisGraph.Symbol);
-      ThisGraph.GraphDraw.HorizLabel := DEMGlb[Map1].AreaName;
-      ThisGraph.GraphDraw.VertLabel := DEMGlb[Map2].AreaName;
-   end;
-   IdenticalGrids := DEMGlb[Map1].SecondGridIdentical(Map2);
-
-   StartProgress('Grid Differences');
-   for Col := GridLimits.XGridLow to GridLimits.XGridHigh do begin
-      {$IfDef RecordDEMCompare} if Col mod 200 = 0 then WriteLineToDebugFile('Col=' + IntToStr(Col)); {$EndIf}
-      for Row := GridLimits.YGridLow to GridLimits.YGridHigh do begin
-         if ((GridMaskDEM = 0) or MaskValidPoint(Col,Row)) then begin
-            if DEMGlb[Map1].GetElevMeters(Col,Row,z1) then begin
-               OK := DEMGlb[Map1].GetElevMetersFromSecondDEM(IdenticalGrids,Map2,Col,Row,z2);
-               if OK then begin
-                  DEMGlb[Result].SetGridElevation(Col,Row,z2 - z1);
-                  if ShowScatterPlot then ThisGraph.AddPointToDataBuffer(rfile,z1,z2);
-               end;
-            end;
-         end;
-      end {for Row};
-      if (Col mod 25 = 0) then UpdateProgressBar(Col / pred(DEMGlb[Map1].DEMheader.NumCol));
-   end {for Col};
-   EndProgress;
-
-   {$IfDef RecordDEMCompare}
-      DEMGlb[Result].CheckMaxMinElev;
-      WriteLineToDebugFile('');  WriteLineToDebugFile('DEM1: ' + DEMGlb[Map1].FullDEMParams);
-      WriteLineToDebugFile('');  WriteLineToDebugFile('DEM2: ' + DEMGlb[Map2].FullDEMParams);
-      WriteLineToDebugFile('');  WriteLineToDebugFile('Diff: ' + DEMGlb[Result].FullDEMParams);
-      WriteLineToDebugFile('');
-   {$EndIf}
-
-   if ShowMap then DEMGlb[Result].SetUpMap(Result,true,mtElevSpectrum);
-
-   if ShowScatterPlot then begin
-      CloseFile(rfile);
-      ThisGraph.AutoScaleAndRedrawDiagram;
-   end;
-   if ShowHistogram then SingleDEMHistogram(Result);
-   {$IfDef RecordDEMCompare} WriteLineToDebugFile('MakeDifferenceMap out'); {$EndIf}
-end;
 

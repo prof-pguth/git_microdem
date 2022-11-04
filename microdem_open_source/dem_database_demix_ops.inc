@@ -19,44 +19,6 @@ begin
 end;
 
 
-function SymbolFromDEMName(DEMName : shortstring) : tFullSymbolDeclaration;
-var
-   DEM : integer;
-begin
-   Result.Size := 4;
-   DEMName := UpperCase(DEMName);
-   if DEMName = 'TIE' then Result.Color := claBrown;
-
-   if DEMName = 'ALOS' then Result.Color := RGBtrip(230,159,0)
-   else if DEMName = 'ASTER' then Result.Color := RGBtrip(0,114,178)
-   else if DEMName = 'COP' then Result.Color := RGBtrip(86,180,233)
-   else if DEMName = 'FABDEM' then Result.Color := RGBtrip(204,121,167)
-   else if DEMName = 'NASA' then Result.Color := RGBtrip(0,158,115)
-   else if DEMName = 'SRTM' then Result.Color := RGBtrip(213,94,0);
-
-   Result.DrawingSymbol := FilledBox;
-
-   (*
-ALOS    #E69F00     230,159,0
-ASTER   #0072B2     0,114,178
-COP     #56B4E9     86,180,233
-FAB     #CC79A7     204,121,167
-NASA    #009E73     0,158,115
-SRTM    #D55E00     213,94,0
-   for DEM := 1 to NumDEMIXDEM do begin
-      if DEMName = DEMType[DEM] then Result.Color := ConvertTColorToPlatformColor(WinGraphColors[DEM]);
-   end;
-
-   if DEMName = 'FABDEM' then Result.DrawingSymbol := FilledBox
-   else if DEMName = 'COP' then Result.DrawingSymbol := FilledCircle
-   else if DEMName = 'ALOS' then Result.DrawingSymbol := FilledDiamond
-   else if DEMName = 'NASA' then Result.DrawingSymbol := FilledDownTri
-   else if DEMName = 'SRTM' then Result.DrawingSymbol := FilledUpTri
-   else if DEMName = 'ASTER' then Result.DrawingSymbol := Box
-   else Result.DrawingSymbol := FilledBox;
-   *)
-end;
-
 
 procedure GetFilterAndHeader(i,j : integer; var aHeader,aFilter : shortString);
 var
@@ -996,7 +958,6 @@ end;
 
 procedure DEMIXwineContestMeanMedianGraph(What,DBonTable : integer);
 const
-   //SimpleTiles : array[1..4] of shortstring = ('N43PW002B','N37YW076F','N28VW018B','S24TW047D');
    InterAreaSkip = 4;
 var
    AreaList,AllTiles,AllCriteria,DEMsPresent,SlopesPresent,BigGraph : tstringList;

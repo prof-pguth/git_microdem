@@ -533,7 +533,7 @@ begin
 
     {$IfDef NoMapOptions}
     {$Else}
-    DEMGlb[Result].SetUpMap(Result,false,MDDef.DefDEMMap,DEMGlb[Result].AreaName);
+    DEMGlb[Result].SetUpMap(Result,false,MDDef.DefDEMMap);
     {$EndIf}
 
     ShowDefaultCursor;

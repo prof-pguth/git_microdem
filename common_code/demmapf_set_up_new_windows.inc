@@ -267,9 +267,9 @@ begin
       {$If Defined(track_f)} DEMGlb[DEM].SelectionMap.MapDraw.PrimMapProj.ShortProjInfo('CreateDEMSelectionMap, map'); {$EndIf}
       if (inMapType = mtDEMBlank) then mt := GetWantedMapType
       else mt := inMapType;
-      {$If Defined(RecordOpenMap) or Defined(RecordCreateSelectionMap)} writeLineToDebugFile('CreateDEMSelectionMap call SetUpNewDEMMapWindow'); {$EndIf}
+      {$If Defined(RecordOpenMap) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('CreateDEMSelectionMap call SetUpNewDEMMapWindow'); {$EndIf}
       DEMGlb[DEM].SelectionMap.SetUpNewDEMMapWindow(DEM,mt,DEMGlb[DEM].AreaName,true,DrawIt,UsePC);
-      {$If Defined(RecordOpenMap) or Defined(RecordCreateSelectionMap)} writeLineToDebugFile('CreateDEMSelectionMap out,' + DEMGlb[DEM].SelectionMap.MapDraw.MapSizeString); {$EndIf}
+      {$If Defined(RecordOpenMap) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('CreateDEMSelectionMap out,' + DEMGlb[DEM].SelectionMap.MapDraw.MapSizeString); {$EndIf}
    {$EndIf}
 end;
 
@@ -302,6 +302,7 @@ begin
       if MDDef.NEAutoDEM then AddOverlay(Self,ovoWorldOutlines);
       SetMapOverlays;
       MapDraw.ResetMarginalia;
+      MapDraw.PrimMapProj.ProjectionSharedWithDataset := true;
       if DrawIt then begin
          try
             {$If Defined(RecordSetup) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow Drawing'); {$EndIf}

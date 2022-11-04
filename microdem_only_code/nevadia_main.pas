@@ -521,6 +521,7 @@ type
     DEMIXreferencetilesurvey1: TMenuItem;
     Python1: TMenuItem;
     N36: TMenuItem;
+    OpenDEMIXarea1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -886,6 +887,7 @@ type
     procedure DEMIXindexhighresreferenceDEMs1Click(Sender: TObject);
     procedure DEMIXreferencetilesurvey1Click(Sender: TObject);
     procedure Python1Click(Sender: TObject);
+    procedure OpenDEMIXarea1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1118,6 +1120,7 @@ uses
    {$EndIf}
 
    Simple_Python,
+   DEMIX_control,
 
    ufrmMain,
 
@@ -2115,6 +2118,11 @@ begin
    {$If Defined(RecordFormResize) or Defined(TrackFormCreate)} WriteLineToDebugFile('Twmdem.FormActivate set menu versions'); {$EndIf}
    SeeIfThereAreDebugThingsToDo;
    Self.Visible := true;
+
+
+   //OpenDEMIXArea('G:\wine_contest_reference_dems\pyrenees.dbf');
+
+
    {$If Defined(RecordFormResize) or Defined(TrackFormCreate)} WriteLineToDebugFile('Twmdem.FormActivate end, width=' + IntToStr(Width) + '  & height=' + IntToStr(Height)); {$EndIf}
 end;
 
@@ -2443,7 +2451,7 @@ end;
 procedure Twmdem.Allgraphsononeimage1Click(Sender: TObject);
 var
    BottomMargin,
-   i{,DEM} : integer;
+   i : integer;
    Findings : tStringlist;
    fName : PathStr;
    Bitmap : tMyBitmap;
@@ -2454,22 +2462,6 @@ begin
       if WMDEM.MDIChildren[i] is TThisBaseGraph then begin
          CopyImageToBitmap((WMDEM.MDIChildren[i] as TThisBaseGraph).Image1,Bitmap);
          Bitmap.Height := Bitmap.Height + BottomMargin;
-         (*
-         Bitmap.Canvas.Brush.Style := bsClear;
-         Bitmap.Canvas.Pen.Width := 2;
-         Bitmap.Canvas.Pen.Color := clBlack;
-         Bitmap.Canvas.Rectangle(0,0,pred(Bitmap.Width),pred(Bitmap.Height));
-         Bitmap.Canvas.Pen.Width := 2;
-         Bitmap.Canvas.Pen.Color := clWhite;
-         Bitmap.Canvas.Brush.Style := bsSolid;
-         Bitmap.Canvas.Brush.Color := clWhite;
-         Bitmap.Canvas.Rectangle(0,Bitmap.Height-BottomMargin,Bitmap.Width,Bitmap.Height);
-         Bitmap.Canvas.Brush.Style := bsClear;
-         Bitmap.Canvas.Font.Size := 24;
-
-         DEM := (WMDEM.MDIChildren[i] as TMapForm).MapDraw.DEMonMap;
-         if (DEM <> 0) then Bitmap.Canvas.TextOut(5, Bitmap.Height - (BottomMargin -5), RemoveUnderScores(DEMGLB[DEM].AreaName) + '  ' + DEMGLB[DEM].HorizontalDEMSpacing(true));
-         *)
          fName := NextFileNumber(MDtempDir,'graph_4_biggie_','.bmp');
          Bitmap.SaveToFile(fName);
          Findings.Add(fName);
@@ -3941,10 +3933,17 @@ begin
    Newarea1Click(Sender);
 end;
 
+procedure Twmdem.OpenDEMIXarea1Click(Sender: TObject);
+begin
+   OpenDEMIXArea;
+end;
+
+
 procedure Twmdem.OpenDEMwithoutmap1Click(Sender: TObject);
 begin
    OpenNewDEM('',false);
 end;
+
 
 procedure Twmdem.OGRinfo1Click(Sender: TObject);
 begin
@@ -3992,7 +3991,7 @@ begin
    VectorMapButtonClick(Sender);
    fName := DBDir + 'somali_piracy_jan_2016_v2' + DefaultDBExt;
    if not FileExists(FName) then begin
-       DownloadFileFromWeb(WebDataDownLoadDir + ExtractFileName(FName),FName);
+      DownloadFileFromWeb(WebDataDownLoadDir + ExtractFileName(FName),FName);
    end;
    VectorMap[LastVectorMap].OpenDBonMap('',FName,true,true);
    VectorMap[LastVectorMap].Globalmonthlywinds1Click(nil);
@@ -4977,7 +4976,7 @@ begin
       end
       else begin
          PredAgesDEM := OpenNewDEM(PredAgesFile,false);
-         if (PredAgesDEM <> 0) then DEMGlb[PredAgesDEM].SetUpMap(PredAgesDEM,false,mtElevSpectrum,DEMGlb[LastDEMLoaded].AreaName);
+         if (PredAgesDEM <> 0) then DEMGlb[PredAgesDEM].SetUpMap(PredAgesDEM,false,mtElevSpectrum);
       end;
    {$EndIf}
 end;
@@ -5062,7 +5061,7 @@ begin
          GeologyGetData;
          //if not FileExists(SedThickFile) then DownloadFileFromWeb(WebDataDownLoadDir + ExtractFileName(SedThickFile),SedThickFile);
          SedThickDEM := OpenNewDEM(SedThickFile,false);
-         if (SedThickDEM <> 0) then DEMGlb[LastDEMLoaded].SetUpMap(LastDEMLoaded,false,mtElevSpectrum,DEMGlb[LastDEMLoaded].AreaName);
+         if (SedThickDEM <> 0) then DEMGlb[LastDEMLoaded].SetUpMap(LastDEMLoaded,false,mtElevSpectrum);
       end;
    {$EndIf}
 end;

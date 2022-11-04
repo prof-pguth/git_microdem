@@ -1,11 +1,11 @@
 unit basemap;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of ianMICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch    }
-{ Released under the MIT Licences    }
-{ Copyright (c) 2015 Peter L. Guth   }
-{____________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2022 Peter L. Guth  }
+{___________________________________}
 
 
 {$I nevadia_defines.inc}
@@ -28,7 +28,7 @@ unit basemap;
       //{$Define LongCent}
       //{$Define RecordProjectionParameters}
       //{$Define DetailedProjParams}
-      //{$Define RecordMapProjCreateDestroy}
+      {$Define RecordMapProjCreateDestroy}
       //{$Define RecordDatumProblems}
       //{$Define RecordDefineDatum}
       //{$Define RecordShortDefineDatum}
@@ -117,17 +117,15 @@ type
           procedure TransverseMercatorInverseProjectionRadians(X,Y : float64; var Lat,Long : float64);
           procedure TransverseMercatorForwardProjectionRadians(Lat,Long : float64; var X,Y : float64);
           function M_3_21(LatRadians : float64) : float64;  //equation 3-21 of Synder, p.17
-          procedure InitializeProjectionParameters;
       public
+         PName   : tProjectType;
+         ProjectionfName : PathStr;
+         ProjectionSharedWithDataset : boolean;
+
          pNameModifier,
          ProjDebugName : shortstring;
          ProjectionGeoBox : sfBoundBox;
          GeoKeys : tGeoKeys;
-         wktString : ANSIstring;
-         ThisIsUTMFile,
-         VertFeet,
-         FullWorld : boolean;
-         ProjectionfName : PathStr;
          ModelType : SmallInt;
          MultFactorForFeet : float64;
          ProjLinearUnitsGeoKey,
@@ -135,13 +133,28 @@ type
          ProjCoordTransGeoKey,
          VerticalCSTypeGeoKey,
          ProjectedCSTypeGeoKey : int16;
-       //These are the basic floating point parameters for the projection
+
+         wktString : ANSIstring;
+         ThisIsUTMFile,
+         VertFeet,
+         FullWorld : boolean;
+
+       //datum definitions
+         projUTMZone  : int16;
+         LatHemi      : Ansichar;
+         h_DatumCode  : ShortString;
+         h_EllipsCode : ShortString;
+         h_XDat,
+         h_YDat,
+         h_ZDat       : int16;
+
+       //Basic floating point parameters for the projection
          Lat0,    {in radians}
          Long0,   {central meridian in radians}
          false_east,false_north,ProjMapScale,a,e,h_f,
          Phi1,Phi2,TM_Phi2,
 
-       //These are the derived floating point parameters for the projection
+       //Derived floating point parameters for the projection
          E2,      {eccentricity squared}
          EP2,     { E2 / (1 - E2) }
          n,c,rho0,nalbers,n_lcc,k0,
@@ -151,15 +164,7 @@ type
          tc,mc,
          UTM_S1,S2,S4,S6,
          M0,M1,M2     : float64;
-         projUTMZone  : int16;
-         LatHemi      : Ansichar;
-         h_DatumCode  : ShortString;
-         h_EllipsCode : ShortString;
-         h_XDat,
-         h_YDat,
-         h_ZDat       : int16;
 
-         PName   : tProjectType;
 
          constructor Create(DebugName : shortstring = '');
          destructor Destroy; override;
@@ -951,28 +956,45 @@ begin
 end;
 
 
+
 destructor tMapProjection.Destroy;
 begin
-   {$If Defined(RecordMapProjCreateDestroy)} WriteLineToDebugFile('tMapProjection.Destroy in, ' + ProjDebugName); {$EndIf}
-   try
-      inherited;
-   except
-      on Exception do begin end;
+   if ProjectionSharedWithDataset then begin
+      {$If Defined(RecordMapProjCreateDestroy)} WriteLineToDebugFile('tMapProjection.Destroy shared projection in, ' + ProjDebugName); {$EndIf}
+   end
+   else begin
+      {$If Defined(RecordMapProjCreateDestroy)} WriteLineToDebugFile('tMapProjection.Destroy in, ' + ProjDebugName); {$EndIf}
+      try
+         inherited;
+      except
+         on Exception do begin end;
+      end;
    end;
    {$If Defined(RecordMapProjCreateDestroy)} WriteLineToDebugFile('tMapProjection.Destroy out, ' + ProjDebugName); {$EndIf}
 end;
 
 
-procedure tMapProjection.InitializeProjectionParameters;
+
+constructor tMapProjection.Create;
 begin
+   {$If Defined(RecordProjectionParameters) or Defined(RecordMapProjCreateDestroy)} WriteLineToDebugFile('tMapProjection.Create in, ' + DebugName); {$EndIf}
+   ProjDebugName := DebugName;
+   ProjectionSharedWithDataset := false;
+
+   FullWorld := true;
    GeoKeys.NumKeys := 0;
    GeoKeys.Code3075 := 0;
    ProjUTMZone := -99;
    H_datumCode := '';
    ProjMapScale := 1;
    wktString := '';
+   PName := UndefinedProj;
+   LatHemi := MDDef.DefaultLatHemi;
+   ThisIsUTMFile := false;
+   MultFactorForFeet := 1;
+   pNameModifier := '';
 
-    //Basic floating point parameters for the projection
+    //Basic floating point parameters for projection
       Lat0 := 0;
       Long0 := 0;
       false_east := 0;
@@ -983,24 +1005,8 @@ begin
       Phi1 := NaN;
       Phi2 := NaN;
 
-   PName := UndefinedProj;
-   LatHemi := MDDef.DefaultLatHemi;
-
-   ThisIsUTMFile := false;
-   MultFactorForFeet := 1;
-end;
-
-
-
-constructor tMapProjection.Create;
-begin
-   {$If Defined(RecordProjectionParameters) or Defined(RecordMapProjCreateDestroy)} WriteLineToDebugFile('tMapProjection.Create in, ' + DebugName); {$EndIf}
-   H_datumcode := 'WGS84';
    DefineWGS84;
-   ProjDebugName := DebugName;
-   FullWorld := true;
-   InitializeProjectionParameters;
-   pNameModifier := '';
+
    {$If Defined(LongCent) or Defined(track_f)} ShortProjInfo('tMapProjection.Create Out'); {$EndIf}
 end;
 

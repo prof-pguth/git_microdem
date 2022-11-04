@@ -85,13 +85,14 @@ begin
    CheckEditString(Edit3.Text,DEMLOSW.BlockIntensity);
    DEMLOSW.MagTimeScale := CheckBox1.Checked;
    DEMLOSW.MagAnomNames := CheckBox2.Checked;
+   Edit4.Text := RealToString(SpreadRidge,6,1);
    LOSForm.MarineMagneticAnomalies;
 end;
 
 
 procedure TPickMagProfVars.BitBtn3Click(Sender: TObject);
 begin
-  DisplayHTMLTopic('html\model_mag_anom_prof.htm');
+   DisplayHTMLTopic('html\model_mag_anom_prof.htm');
 end;
 
 

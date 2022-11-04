@@ -334,18 +334,11 @@ begin
       if DEMGLB[CurDEM].ElevationDEM then TStr := 'DEM' else TStr := 'Grid';
       BaseTitle := RemoveUnderscores(TStr + ': ' + DEMGLB[CurDEM].AreaName);
       DEMonMap := CurDEM;
-      (*'
-      if DEMGLB[CurDEM].LandCoverGrid then begin
-         MapType := mtLandCover;
-      end
-      else *)
-      begin
-         if (mt = mtDEMReflectElevMerge) then begin
-            mt := mtGrayReflect;
-            MapMerge := mmElevation;
-         end;
-         MapType := mt;
+      if (mt = mtDEMReflectElevMerge) then begin
+         mt := mtGrayReflect;
+         MapMerge := mmElevation;
       end;
+      MapType := mt;
       AdjustProjectionForUTMZone('DefineNewDEMMap mid',MDDef.PreferPrimaryDatum,DEMGLB[CurDEM].DEMheader.UTMZone,DEMGLB[CurDEM].DEMheader.LatHemi);
       SetFullMapCoverage;
       {$If Defined(ShowProjectedLimits) or Defined(ShowUTMZone)} WriteLineToDebugFile('TMapDraw.DefineNewDEMMap out, UTM=' + PrimMapProj.UTMZoneString); {$EndIf}

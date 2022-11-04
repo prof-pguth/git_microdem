@@ -1699,7 +1699,7 @@ end;
 
 procedure tMultiGridArray.DisplayNewGrid(NewDEM : integer);
 begin
-   DEMGlb[NewDEM].SetUpMap(NewDEM,true,mtElevSpectrum,DEMGlb[NewDEM].AreaName);
+   DEMGlb[NewDEM].SetUpMap(NewDEM,true,mtElevSpectrum);
 end;
 
 

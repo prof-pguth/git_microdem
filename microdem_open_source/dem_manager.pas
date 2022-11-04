@@ -11,7 +11,7 @@ unit dem_manager;
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
-      //{$Define RecordCloseDEM}
+      {$Define RecordCloseDEM}
       //{$Define ShortRecordCloseDEM}
       //{$Define RecordClosingData}
       //{$Define RecordNewMaps}
@@ -261,6 +261,8 @@ uses
       MD_use_tools,
       gdal_tools,
    {$EndIf}
+
+   toggle_db_use,
 
    Make_Tables,
    Map_overlays,
@@ -770,6 +772,7 @@ end;
 
 
    procedure GetMultipleDEMsFromList(TheMessage : shortstring; var DEMsWanted : tDEMbooleanArray);
+(*
    var
       PetList : TPetList;
       i,DEMWanted,err     : integer;
@@ -792,6 +795,35 @@ end;
          end;
       end;
       PetList.Destroy;
+*)
+   var
+      fName : PathStr;
+      table : tMyData;
+      i : integer;
+      ch : char;
+   begin
+      {$IfDef ShowToggle} WriteLineToDebugFile('PickSomeFromStringList in'); {$EndIf}
+      fName := MDTempDir + 'merge.dbf';
+      MakePickUseTable(fName);
+      Table := tMyData.Create(fName);
+      for i := 1 to MaxDEMDataSets do begin
+        if ValidDEM(i) and (not DEMGlb[i].HiddenGrid) then begin
+           Table.Insert;
+           Table.SetFieldByNameAsString('MENU_OPTS',IntToStr(i) + '-' + DEMGlb[i].AreaName);
+           if DEMsWanted[i] then ch := 'Y' else ch := 'N';
+           Table.SetFieldByNameAsString('USE',ch);
+        end;
+      end;
+      VerifyRecordsToUse(Table,'MENU_OPTS',TheMessage);
+      {$IfDef ShowToggle} WriteLineToDebugFile('VerifyRecordsToUse success'); {$EndIf}
+      Table.First;
+      while not Table.eof do begin
+         i := StrToInt(Petmar_Types.BeforeSpecifiedString(Table.GetFieldByNameAsString('MENU_OPTS'),'-'));
+         DEMsWanted[i] := Table.GetFieldByNameAsString('USE') = 'Y';
+         Table.Next;
+      end;
+      Table.Destroy;
+      {$IfDef ShowToggle} WriteLineToDebugFile('PickSomeFromStringList out'); {$EndIf}
    end;
 
 

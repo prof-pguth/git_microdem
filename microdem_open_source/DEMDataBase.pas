@@ -193,7 +193,7 @@ type
   tHowRestrict = (resNone);
   tAddDEM = (adPickNearest,adElevDiff,adElevInterp,adElevNearest,adSlope,adElevAllGrids,adDeltaAllGrids,adElevNearestInt);
   tdbGraphType = (dbgtN2Dgraph1,dbgtN2Dgraphsimplelines1, dbgtCluster1,dbgtMultiplegraphmatrix1, dbgtByLatitude1,dbgtByLongitude1,dbgtByLatitude,dbgtByLongitude2,dbgtN2Dgraph2series1,
-     N2Dgraph2yaxes1,dbgtPlot1series1,dbgtPlotforsubsamples1,dbgtN2Dgraphcolorcodetext1, dbgtN2Dgraphcolorcoded1,dbgtByLatitude2,dbgtN2Dgraph2yaxes1,dbgtN2DgraphCOLORfield1,dbgtPlot);
+     N2Dgraph2yaxes1,dbgtPlot1series1,dbgtPlotforsubsamples1,dbgtN2Dgraphcolorcodetext1, dbgtN2Dgraphcolorcoded1,dbgtByLatitude2,dbgtN2Dgraph2yaxes1,dbgtN2DgraphCOLORfield1,dbgtPlot,dbgtUnspecified);
 
   tDBSaveOptions = record
      LinkFieldThisDB,LinkFieldOtherDB,
@@ -459,8 +459,8 @@ type
 
      function ImageForTable : boolean;
 
-      procedure PickNumericFields(NFields : integer; l1 : shortstring; l2 : shortstring; l3 : shortstring; StringColor : boolean = false); overload;
-      procedure PickNumericFields(NFields : integer; var inColor : tPlatformColor; var ThinFactor : integer; l1 : shortstring; l2 : shortstring; l3 : shortstring; StringColor : boolean = false); overload;
+      procedure PickNumericFields(GraphType :  tdbGraphType; NFields : integer; l1 : shortstring; l2 : shortstring; l3 : shortstring; StringColor : boolean = false); overload;
+      //procedure OldPickNumericFields(NFields : integer; var inColor : tPlatformColor; var ThinFactor : integer; l1 : shortstring; l2 : shortstring; l3 : shortstring; StringColor : boolean = false); overload;
 
       function GetFloat32FromTableLinkPossible(FieldDesired : shortstring; var Value : float32) : boolean;
       function GetStringFromTableLink(FieldDesired : ShortString) : ShortString;
@@ -761,7 +761,7 @@ function DoAShapeFile(fName : PathStr; Trim : boolean = false) : integer;
       procedure DEMIXisCOPorALOSbetter(DBonTable : integer);
       procedure ExtractTheDEMIXtiles(DBonTable : integer);
       procedure DEMIX_graph_best_in_Tile(DBonTable : integer; SortByArea : boolean);
-      function SymbolFromDEMName(DEMName : shortstring) : tFullSymbolDeclaration;
+      //function SymbolFromDEMName(DEMName : shortstring) : tFullSymbolDeclaration;
 
 {$IfDef ExRiverNetworks}
 {$Else}
@@ -886,6 +886,8 @@ uses
    {$EndIf}
 
    DP_control,Dragon_Plot_init,
+
+   DEMIX_control,
 
    Make_Tables,
    GPS_strings,
@@ -1162,23 +1164,7 @@ begin
    Result := ptTrim(Result);
 end;
 
-procedure TGISdataBaseModule.PickNumericFields(NFields : integer; {var XField,YField,ZField : ShortString;} l1 : shortstring; l2 : shortstring; l3 : shortstring; StringColor : boolean = false);
-{$IfDef FMX}
-begin
-{$EndIf}
-{$IfDef VCL}
-var
-   Color : tPlatformColor;
-   ThinFactor : integer;
-begin
-   ThinFactor := -1;
-   PickNumericFields(NFields,Color,ThinFactor,l1,l2,l3,StringColor);
-{$EndIf}
-end;
-
-
-procedure TGISdataBaseModule.PickNumericFields(NFields : integer; { var XField,YField,ZField,StringColorField,NumericColorField,SizeField : ShortString;}
-   var inColor : tPlatformColor; var ThinFactor : integer; l1 : shortstring; l2 : shortstring; l3 : shortstring; StringColor : boolean = false);
+procedure TGISdataBaseModule.PickNumericFields(GraphType :  tdbGraphType; NFields : integer; l1 : shortstring; l2 : shortstring; l3 : shortstring; StringColor : boolean = false);
 {$IfDef FMX}
 begin
 {$EndIf}
@@ -1192,11 +1178,6 @@ var
 begin
    FieldPicker := TFieldPicker.Create(Application);
    if (dbOpts.StringColorField = '') and (NFields < 4) then FieldPicker.HideAdvancedOptions;
-   if (ThinFactor = -1) then begin
-      FieldPicker.Label4.Visible := false;
-      FieldPicker.Edit1.Visible := false;
-      FieldPicker.UpDown1.Visible := false;
-   end;
    NumerFields := Nil;
    PetdbUtils.GetFields(MyData,dbopts.VisCols,NumericFieldTypes,NumerFields);
    if StringColor then PetdbUtils.GetFields(MyData,dbopts.VisCols,[ftString,ftInteger,ftSmallInt],StringIntFields);
@@ -1207,23 +1188,13 @@ begin
       NumFields2.Free;
    end;
    with FieldPicker do begin
-      ColorBitBtn(BitBtn1,inColor);
-      col := inColor;
-      tf := ThinFactor;
-      if (ThinFactor > 0) then begin
-         Edit1.Text := IntToStr(tf);
-      end
-      else begin
-         Label4.Visible := false;
-         Edit1.Visible := false;
-         UpDown1.Visible := false;
-      end;
       Label1.Caption := l1;
       Label2.Caption := l2;
       Label3.Caption := l3;
-      ComboBox2.Visible := (NFields > 1);
+
       CheckBox1.Checked := MDDef.ReverseZFields;
       CheckBox1.Visible := (NFields >= 3);
+      ComboBox2.Visible := (NFields > 1);
       for i := 0 to pred(NumerFields.Count) do begin
          ComboBox1.Items.Add(NumerFields.Strings[i]);
          ComboBox2.Items.Add(NumerFields.Strings[i]);
@@ -1233,6 +1204,10 @@ begin
       end;
       if (DbOpts.XField = '') then ComboBox1.Text := NumerFields.Strings[0] else ComboBox1.Text := DbOpts.XField;
       if (DbOpts.YField = '') then ComboBox2.Text := NumerFields.Strings[1] else ComboBox2.Text := DbOpts.YField;
+      if (DbOpts.StringColorField = '') then ComboBox4.Text := StringIntFields[0] else  ComboBox4.Text := DbOpts.StringColorField;
+      ComboBox5.Text := DbOpts.NumericColorField;
+      ComboBox6.Text := DbOpts.SizeField;
+
       if (NumerFields.Count < 3) or (NFields < 3) then begin
          ComboBox3.Visible := false;
          ComboBox3.Text := '';
@@ -1242,6 +1217,7 @@ begin
          if (NFields = 3) and StringColor then begin
             Label5.Visible := true;
             ComboBox4.Visible := true;
+            ComboBox3.Visible := false;
             for i := 0 to pred(StringIntFields.Count) do ComboBox4.Items.Add(StringIntFields.Strings[i]);
          end
          else if (NFields = 3) and (DbOpts.ZField = '') then ComboBox3.Text := NumerFields.Strings[2] else ComboBox3.Text := DbOpts.ZField;
@@ -1250,6 +1226,14 @@ begin
 
       PetdbUtils.GetFields(LinkTable,dbOpts.VisCols,[ftString,ftInteger,ftSmallInt],NumerFields);
       for i := 0 to pred(NumerFields.Count) do ComboBox4.Items.Add(NumerFields.Strings[i]);
+
+
+      if (GraphType = dbgtN2Dgraphcolorcodetext1) then begin
+         ComboBox5.Visible := false;
+         ComboBox6.Visible := false;
+         Label6.Visible := false;
+         Label7.Visible := false;
+      end;
 
       ShowModal;
 
@@ -1260,8 +1244,6 @@ begin
       DbOpts.StringColorField := ComboBox4.Text;
       DbOpts.NumericColorField := ComboBox5.Text;
       DbOpts.SizeField := ComboBox6.Text;
-      ThinFactor := tf;
-      inColor := Col;
       Free;
    end;
    NumerFields.Free;

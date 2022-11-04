@@ -359,9 +359,6 @@ const  //map display modes, for particular data types and desired look
    mtGGRReflect = 46;
    mtSatTrueColor = 47;
    mtSatFalseColor = 48;
-   //mtSatTruePanSharp = 49;
-   //mtSatFalsePanSharp = 50;
-   //mtSatPickPanSharp = 51;
    mtSatPickColor = 52;
    mtUnenhancedRGB = 53;
    mtLandCover = 54;
@@ -2753,6 +2750,7 @@ var
    DEMIXSettingsDir,
    DEMIXresultsDir,
    DEMIXrefDataDir,
+   DEMIXtempfiles,
 
    MainMapData,
    LasRulesName,

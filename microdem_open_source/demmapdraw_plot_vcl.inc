@@ -908,6 +908,10 @@
                end;
             end;
 
+            if (MapType = mtDEMVATTable) then begin
+               Result := MakeVATLegend;
+            end;
+
             if isElevationMap(MapType) or (MapType in [mtIHSReflect]) then begin
                if (MapType = mtElevFromTable) then begin
                   if OpenNumberedGISDataBase(LegendGIS,HardLimitColorPaletteFName) then begin

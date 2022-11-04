@@ -286,6 +286,7 @@ begin
    FinishGridSetup;
 end;
 
+
 procedure TSupClassAuxGrids.FillInDEMinGrid(DEM,Row : integer);
 begin
     StringGrid1.RowCount := Row + 1;

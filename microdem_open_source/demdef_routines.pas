@@ -315,6 +315,7 @@ function BoundBoxToGridLimits(bb : sfBoundBox) : tGridLimits;
 function SWcornerString(Lat,Long : float64; TileSize : integer) : shortString;
 function NWcornerString(Lat,Long : float64; TileSize : integer) : shortString;
 
+function ZUnitCategory (Zunit : tElevUnit) : shortstring;
 function RecycleCompressFile : boolean;
 
 var
@@ -371,6 +372,15 @@ uses
    Make_Tables,
    DEM_indexes,
    DataBaseCreate;
+
+
+
+function ZUnitCategory (Zunit : tElevUnit) : shortstring;
+begin
+   if zunit in [euMeters,Decimeters,Feet,DeciFeet,Centimeters] then Result := 'Elevation'
+   else if zunit in [PercentSlope] then Result := 'Slope'
+   else Result := 'Grid';
+end;
 
 
 function DEMGridString(xgrid,ygrid : float32) : shortstring;
@@ -4451,8 +4461,15 @@ begin
       DEMIXSettingsDir := MDDef.DEMIX_base_dir + 'wine_contest_settings\';
       DEMIXresultsDir := MDDef.DEMIX_base_dir + 'wine_contest_results\';
       DEMIXrefDataDir := MDDef.DEMIX_base_dir +'wine_contest_reference_dems\';
+      DEMIXTempFiles := MDDef.DEMIX_base_dir +'wine_contest_temp_files\';
    until (ch = 'Z') or (PathIsValid(DEMIXSettingsDir) and PathIsValid(DEMIXresultsDir) and PathIsValid(DEMIXrefDataDir));
-   if (ch = 'Z') then MDDef.DEMIX_base_dir := 'DEMIX_MIA';
+   if (ch = 'Z') then MDDef.DEMIX_base_dir := 'DEMIX_MIA'
+   else begin
+      SafeMakeDir(DEMIXTempFiles);
+      SafeMakeDir(DEMIXSettingsDir);
+      SafeMakeDir(DEMIXresultsDir);
+      SafeMakeDir(DEMIXrefDataDir);
+   end;
 
 (*
    if Ask then GetDOSPath('DEMIX data',MDDef.DEMIX_base_dir);

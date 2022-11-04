@@ -3250,6 +3250,7 @@ begin
           FileName := LastSubDir(Path);
           DefaultFolder := GetParentDirectory(Path);
           if Execute then begin
+             Path := FileName;
              if Path[length(Path)] <> '\' then Path := FileName + '\';
           end
           else Path := '';

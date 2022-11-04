@@ -454,7 +454,8 @@ var
    i : integer;
 begin
    {$IfDef SupClassAuxGrids} WriteLineToDebugFile('TSupClassAuxGrids.BitBtn10Click (Pick open grids) in'); {$EndIf}
-   PickDEMsToUse(LOSDraw.ShowProfile,'DEMs to include in profile');
+   //PickDEMsToUse(LOSDraw.ShowProfile,'DEMs to include in profile');
+   GetMultipleDEMsFromList('DEMs to include in profile',LOSDraw.ShowProfile);
    FormResize(Nil);
 end;
 

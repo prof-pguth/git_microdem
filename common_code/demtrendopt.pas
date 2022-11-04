@@ -604,13 +604,13 @@ begin
 
    if (CurDEM <> 0) then begin
       if MDDef.TrendOpenMaps and MDDef.TrendMapDev then begin
-         DEMGlb[DevDEM].SetUpMap(DevDEM,true,mtElevRainbow,'Deviations from Trend Surface ' + IntToStr(CurrentOrderTrendSurface));
+         DEMGlb[DevDEM].SetUpMap(DevDEM,true,mtElevRainbow);
          DEMGlb[DevDEM].SelectionMap.MapDraw.ScaleMapElevationsToDEM;
          DEMGlb[DevDEM].SelectionMap.DoCompleteMapRedraw;
       end;
 
       if MDDef.TrendOpenMaps and MDDef.TrendSurfMap then begin
-         DEMGlb[TrendDEM].SetUpMap(TrendDEM,true,mtElevRainbow,'Order ' + IntToStr(CurrentOrderTrendSurface) + ' Trend Surface');
+         DEMGlb[TrendDEM].SetUpMap(TrendDEM,true,mtElevRainbow);
          DEMGlb[TrendDEM].SelectionMap.MapDraw.ScaleMapElevationsToDEM;
          DEMGlb[TrendDEM].SelectionMap.DoCompleteMapRedraw;
       end;

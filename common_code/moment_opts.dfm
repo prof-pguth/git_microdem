@@ -46,7 +46,7 @@ object MomentOptsForm: TMomentOptsForm
   end
   object OKBtn: TBitBtn
     Left = 8
-    Top = 147
+    Top = 168
     Width = 77
     Height = 27
     Caption = 'OK'
@@ -78,7 +78,7 @@ object MomentOptsForm: TMomentOptsForm
   end
   object HelpBtn: TBitBtn
     Left = 91
-    Top = 147
+    Top = 168
     Width = 77
     Height = 27
     Kind = bkHelp
@@ -91,7 +91,7 @@ object MomentOptsForm: TMomentOptsForm
   end
   object CheckBox6: TCheckBox
     Left = 8
-    Top = 88
+    Top = 129
     Width = 97
     Height = 17
     Caption = 'Graphs'
@@ -110,7 +110,7 @@ object MomentOptsForm: TMomentOptsForm
   end
   object CheckBox1: TCheckBox
     Left = 8
-    Top = 112
+    Top = 95
     Width = 129
     Height = 17
     Caption = 'Roughness moments'

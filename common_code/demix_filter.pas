@@ -76,7 +76,8 @@ implementation
 uses
    Petmar,Petmar_types,Petmar_db,PetMath,PetImage,PetImage_form,
    DEMDatabase,DEMDbTable,DEMdef_routines,DEMDefs,
-   BaseGraf;
+   BaseGraf,
+   DEMIX_control;
 
 
 procedure TDemixFilterForm.BitBtn2Click(Sender: TObject);
@@ -134,12 +135,14 @@ begin
                while not GISdb[db].MyData.eof do begin
                   DEMstr := GISdb[db].MyData.GetFieldByNameAsString('DEM');
                   DEM := CandidateDEMsUsing.IndexOf(DEMstr);
-                  for m := 0 to pred(CriteriaUsing.Count) do begin
-                     Graph.GraphDraw.GraphBottomLabels.Add(IntToStr(m) + ',' + CriteriaUsing[m]);
-                     v[1] := m;
-                     v[2] := GISdb[db].MyData.GetFieldByNameAsFloat(CriteriaUsing[m]);
-                     CompareValueToExtremes(v[2],Graph.GraphDraw.MinVertAxis,Graph.GraphDraw.MaxVertAxis);
-                     BlockWrite(rfile[DEM],v,1);
+                  if DEM <> -1 then begin
+                     for m := 0 to pred(CriteriaUsing.Count) do begin
+                        Graph.GraphDraw.GraphBottomLabels.Add(IntToStr(m) + ',' + CriteriaUsing[m]);
+                        v[1] := m;
+                        v[2] := GISdb[db].MyData.GetFieldByNameAsFloat(CriteriaUsing[m]);
+                        CompareValueToExtremes(v[2],Graph.GraphDraw.MinVertAxis,Graph.GraphDraw.MaxVertAxis);
+                        BlockWrite(rfile[DEM],v,1);
+                     end;
                   end;
                   GISdb[db].MyData.Next;
                end;
