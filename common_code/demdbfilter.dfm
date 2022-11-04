@@ -22,6 +22,8 @@ object dbFilterCreation: TdbFilterCreation
     Height = 103
     Align = alBottom
     TabOrder = 0
+    ExplicitTop = 255
+    ExplicitWidth = 527
     object BitBtn8: TBitBtn
       Left = 120
       Top = 38
@@ -135,6 +137,8 @@ object dbFilterCreation: TdbFilterCreation
     ActivePage = TabSheet1
     Align = alClient
     TabOrder = 1
+    ExplicitWidth = 527
+    ExplicitHeight = 255
     object TabSheet1: TTabSheet
       Caption = 'Main filter'
       object Panel2: TPanel
@@ -144,6 +148,7 @@ object dbFilterCreation: TdbFilterCreation
         Height = 90
         Align = alTop
         TabOrder = 0
+        ExplicitWidth = 519
         object Label2: TLabel
           Left = 208
           Top = 20
@@ -294,6 +299,7 @@ object dbFilterCreation: TdbFilterCreation
         TabOrder = 1
         WordWrap = False
         OnChange = Memo1Change
+        ExplicitWidth = 519
       end
       object CheckBox1: TCheckBox
         Left = 3

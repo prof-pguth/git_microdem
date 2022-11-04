@@ -14,7 +14,6 @@ object StructureOptions: TStructureOptions
   Font.Style = [fsBold]
   Position = poScreenCenter
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Bevel1: TBevel
     Left = 8

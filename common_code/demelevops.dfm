@@ -8,8 +8,6 @@ inherited ElevOptionsForm: TElevOptionsForm
   Position = poDefaultSizeOnly
   OnClose = FormClose
   OnCreate = FormCreate
-  ExplicitLeft = 3
-  ExplicitTop = 3
   ExplicitWidth = 353
   ExplicitHeight = 522
   TextHeight = 20

@@ -18,7 +18,6 @@ object DEMeditForm: TDEMeditForm
   Visible = True
   OnClose = FormClose
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object StringGrid1: TStringGrid
     Left = 0
@@ -34,6 +33,8 @@ object DEMeditForm: TDEMeditForm
     OnDblClick = StringGrid1DblClick
     OnGetEditText = StringGrid1GetEditText
     OnMouseMove = StringGrid1MouseMove
+    ExplicitWidth = 626
+    ExplicitHeight = 423
     ColWidths = (
       64
       64
@@ -96,6 +97,8 @@ object DEMeditForm: TDEMeditForm
     Height = 41
     Align = alBottom
     TabOrder = 1
+    ExplicitTop = 423
+    ExplicitWidth = 626
     object Label1: TLabel
       Left = 33
       Top = 16

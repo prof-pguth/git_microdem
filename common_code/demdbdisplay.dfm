@@ -12,7 +12,6 @@ object dblimit: Tdblimit
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   Position = poMainFormCenter
-  PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
     Left = 208
@@ -49,6 +48,7 @@ object dblimit: Tdblimit
     HorzScrollBar.Visible = False
     Align = alLeft
     TabOrder = 1
+    ExplicitHeight = 367
     object Image1: TImage
       Left = 0
       Top = 0

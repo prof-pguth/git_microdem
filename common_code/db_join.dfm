@@ -10,7 +10,6 @@ object dbjoinform2: Tdbjoinform2
   Font.Name = 'Tahoma'
   Font.Style = []
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Label2: TLabel
     Left = 8

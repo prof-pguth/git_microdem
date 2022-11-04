@@ -14,7 +14,6 @@ object PickAmbushParams: TPickAmbushParams
   Font.Style = [fsBold]
   Position = poScreenCenter
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Label5: TLabel
     Left = 16
