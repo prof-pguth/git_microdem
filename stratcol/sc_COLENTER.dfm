@@ -4,8 +4,8 @@ object FullUnitEntryDlg: TFullUnitEntryDlg
   ActiveControl = OKBtn
   BorderStyle = bsDialog
   Caption = 'Next Stratigraphic Unit'
-  ClientHeight = 383
-  ClientWidth = 673
+  ClientHeight = 374
+  ClientWidth = 667
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
@@ -15,7 +15,6 @@ object FullUnitEntryDlg: TFullUnitEntryDlg
   Position = poScreenCenter
   OnCreate = FormCreate
   OnPaint = FormPaint
-  PixelsPerInch = 96
   TextHeight = 13
   object Bevel1: TBevel
     Left = 0

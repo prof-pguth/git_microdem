@@ -1,10 +1,11 @@
 ﻿unit demmapdraw;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ PETMAR Trilobite Breeding Ranch    }
-{ Released under the MIT Licences    }
-{ Copyright (c) 2015 Peter L. Guth   }
-{____________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2022 Peter L. Guth  }
+{___________________________________}
 
 
 {$I nevadia_defines.inc}
@@ -199,8 +200,6 @@ type
       {$EndIf}
 
       function LoadExistingBaseMap(var SavedLayer : tMyBitmap; var fName : PathStr) : boolean;
-      //function PolarStereoGraphicMap : boolean;
-
       procedure DrawSlopeMap(var Bitmap : tMyBitmap);
       procedure DrawOpennessMap(var Bitmap : tMyBitmap);
       procedure DrawSlopeMapStrip(Limits : tGridLimits; var BMPMemory :  tBMPMemory);
@@ -303,7 +302,7 @@ type
 
      PrimMapProj,SecondaryMapProj : tMapProjection;
      MapOverlays     : tMapOverlays;
-     OldMapCorners,
+     //OldMapCorners,
      MapCorners : CurScreenMapType;
      CurrentZoomLevel : integer;
      MapXSize,MapYSize : int32;

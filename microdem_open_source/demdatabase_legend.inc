@@ -249,6 +249,7 @@ end;
             function TGISdataBaseModule.StringFieldLegend : tMyBitmap;
             var
                i,tl,l,fHi : integer;
+               TStr : shortstring;
             begin
                {$IfDef RecordLegend} WriteLineToDebugFile('Tgis_scaled_form.MakeStringFieldLegend'); {$EndIf}
                EmpSource.Enabled := false;
@@ -272,8 +273,9 @@ end;
 
                for i := 0 to pred(StringCategories.Count) do begin
                   {$IfDef RecordLegend} WriteLineToDebugFile(StringCategories.Strings[i]); {$EndIf}
-                  Result.Canvas.TextOut(50,i*fHi,StringCategories.Strings[i]);
-                  l := Result.Canvas.TextWidth(StringCategories.Strings[i]);
+                  TStr := StringCategories.Strings[i];
+                  Result.Canvas.TextOut(50,i*fHi,TStr);
+                  l := Result.Canvas.TextWidth(TStr);
                   if (l + 50 > tl) then tl := l + 50;
                end;
                Result.Canvas.Brush.Style := bsClear;

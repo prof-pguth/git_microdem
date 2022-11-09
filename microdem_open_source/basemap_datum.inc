@@ -1151,10 +1151,6 @@ begin
    Long := (DD - NewC1 + Long) / cosPhi2;
    Long := (Long0 + Long);
    {$IfDef RawProjectInverse} if DebugRawProjectInverse then WriteLineToDebugFile('Answer out:  ' + LatLongDegreeToString(Lat/DegToRad,Long/DegToRad)); {$EndIf}
-// WriteLineToDebugFile('***');
-
-
-
 end;
 
 

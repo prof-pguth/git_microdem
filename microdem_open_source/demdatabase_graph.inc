@@ -152,6 +152,7 @@ begin
 
         else TStr := '';
         Result.Caption := RemoveUnderscores(dbOpts.XField) + ' vs ' + RemoveUnderscores(dbOpts.YField) + TStr + ' from ' + dbName + ' ' + dbOpts.MainFilter;
+        Result.GraphDraw.SetAllDrawingSymbols(FilledBox);
      end;
      if ( GraphType = dbgtByLatitude1) or ( GraphType = dbgtByLongitude1) then begin
         Result.GraphDraw.HardColors := true;
@@ -197,9 +198,6 @@ begin
               if (GraphType = dbgtN2Dgraph2yaxes1) then begin
                  GoodPoint := GetFloat32FromTableLinkPossible(dbOpts.ZField,v[3]);
               end
-              //else if (GraphType = dbgtN2Dgraphcolorcoded1) or (GraphType = dbgtN2Dgraphcolorcodetext1) then begin
-                 //GoodPoint := (MyData.GetFieldByNameAsString(dbOpts.ZField) <> '');
-              //end
               else GoodPoint := true;
               if GoodPoint then begin
                  if (GraphType = dbgtCluster1) or ( GraphType = dbgtN2DgraphCOLORfield1) then v[3] := MyData.TColorFromTable;
@@ -265,21 +263,27 @@ begin
     {$IfDef RecordDBGraphs} WriteLineToDebugFile('Graph draw over'); {$EndIf}
 
      if (GraphType = dbgtN2Dgraphcolorcodetext1) then begin
-        CreateBitmap(bmp,400,20*DataThere.Count);
-        XLen := 0;
+        //DBFieldUniqueEntries(dbOpts.StringColorField,DataThere);
+        Result.GraphDraw.LegendList := tStringList.Create;
+        //CreateBitmap(bmp,400,20*DataThere.Count);
+        //XLen := 0;
         for k := 0 to pred(DataThere.Count) do begin
-           bmp.Canvas.Brush.Color := ConvertPlatformColorToTColor(Result.GraphDraw.FileColors256[succ(k Mod 255)]);
-           bmp.Canvas.Brush.Style := bsSolid;
-           bmp.Canvas.Rectangle(5,2 + k*20,25,k*20+16);
-           bmp.Canvas.Brush.Style := bsClear;
-           TStr := dbOpts.ZField + '=' + DataThere.Strings[k] + ' (n=' + IntToStr(Hist[k]) + ')';
-           bmp.Canvas.TextOut(30,k*20+1,TStr);
-           i := bmp.Canvas.TextWidth(TStr);
-           if i > xLen then XLen := i;
+           //bmp.Canvas.Brush.Color := ConvertPlatformColorToTColor(Result.GraphDraw.FileColors256[succ(k Mod 255)]);
+           //bmp.Canvas.Brush.Style := bsSolid;
+           //bmp.Canvas.Rectangle(5,2 + k*20,25,k*20+16);
+           //bmp.Canvas.Brush.Style := bsClear;
+           TStr := dbOpts.StringColorField + '=' + DataThere.Strings[k] + ' (n=' + IntToStr(Hist[k]) + ')';
+           //bmp.Canvas.TextOut(30,k*20+1,TStr);
+           //i := bmp.Canvas.TextWidth(TStr);
+           //if i > xLen then XLen := i;
+           Result.GraphDraw.LegendList.Add(Tstr);
         end;
-        Bmp.Width := 30 + xLen + 5;
-        Bmp.Canvas.Rectangle(0,0,pred(bmp.Width),pred(bmp.Height));
-        PetImage_form.DisplayBitmap(bmp,'Legend');
+        Result.SetMenus;
+        //Bmp.Width := 30 + xLen + 5;
+        //Bmp.Canvas.Rectangle(0,0,pred(bmp.Width),pred(bmp.Height));
+        //FreeAndNil(DataThere);
+
+        //PetImage_form.DisplayBitmap(bmp,'Legend');
      end;
 
      if (GraphType = dbgtCluster1) or ( GraphType = dbgtMultiplegraphmatrix1) then begin

@@ -655,7 +655,7 @@ begin
     PName := UTMEllipsoidal;
     ThisIsUTMFile := true;
     projUTMZone := UTMZone;
-    if LatHemi = 'S' then ProjectedCSTypeGeoKey := 32700 + projUTMZone
+    if (LatHemi = 'S') then ProjectedCSTypeGeoKey := 32700 + projUTMZone
     else ProjectedCSTypeGeoKey := 26900 + projUTMZone;
     Long0 := DegToRad * (-183 + 6*projUTMZone);
     GetProjectParameters;

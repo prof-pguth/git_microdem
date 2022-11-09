@@ -487,7 +487,8 @@ var
            end;
            if MDdef.ShowPrimaryGrid then begin
               {$IfDef RecordDrawGridLines} PrimMapProj.ShortProjInfo('MDdef.ShowPrimaryGrid UTM'); {$EndIf}
-              DrawUTMGrid(PrimMapProj,MDdef.MapGridColor,MDdef.UTMGridLineWidth);
+              RedefineWGS84DatumConstants(MapCorners.BoundBoxGeo.xmin, PrimMapProj.LatHemi);
+              DrawUTMGrid(WGS84DatumConstants,MDdef.MapGridColor,MDdef.UTMGridLineWidth);
            end;
            {$IfDef VCL}
            GridOverlay.Canvas.Pen.Width := 1;
@@ -496,7 +497,7 @@ var
         else begin
            {$IfDef RecordDrawGridLines} WriteLineToDebugFile('UTMTicksAsNeeded skipped, ScreenPixelSize=' + RealToString(ScreenPixelSize,-12,-2) + ' only draw at=' + RealToString(MDDef.UTMGridMaxPixelSize,-12,-2)); {$EndIf}
         end;
-        {$IfDef RecordDrawGridLines} WriteLineToDebugFile('UTMTicksAsNeeded out');  {$EndIf}
+        {$IfDef RecordDrawGridLines} WriteLineToDebugFile('UTMTicksAsNeeded out'); {$EndIf}
       end;
 
 
@@ -541,7 +542,7 @@ begin {DrawGridLines}
       GridOverlayFName := NextFileNumber(MDTempDir, 'Grid_overlay', OverlayFExt);
       GridOverlay.SaveToFile(GridOverlayFName);
    end;
-   DrawOverlayNoDelete(inBitmap,GridOverlay,100,0,0);   //,true);
+   DrawOverlayNoDelete(inBitmap,GridOverlay,100,0,0);
    GridOverlay.Free;
 end {DrawGridLines};
 
@@ -617,7 +618,7 @@ end {DrawGridLines};
             yc := 0;
             xmin := 9999;
             xmax := -9999;
-            for i := 0 to 4*inc do {with PolyLinePoints[i] do} begin
+            for i := 0 to 4*inc do begin
                xc := xc + PolyLinePoints[i].x;
                yc := yc + PolyLinePoints[i].y;
                if (PolyLinePoints[i].x > xmax) then xmax := PolyLinePoints[i].x;
@@ -651,18 +652,18 @@ end {DrawGridLines};
                dx := (Long2-Long1) / inc;
                dy := (Lat2-Lat1) / inc;
                for i := 0 to inc do begin
-                  {with PolyLinePoints[i] do} LatLongDegreeToScreen(Lat1 + i * dy,Long1,PolyLinePoints[i].x,PolyLinePoints[i].y);
+                  LatLongDegreeToScreen(Lat1 + i * dy,Long1,PolyLinePoints[i].x,PolyLinePoints[i].y);
                   if (i > 0) then begin
-                     {with PolyLinePoints[i+inc] do} LatLongDegreeToScreen(Lat2,Long1+i*dx,PolyLinePoints[i+inc].x,PolyLinePoints[i+inc].y);
-                     {with PolyLinePoints[i+2*inc] do} LatLongDegreeToScreen(Lat2-i*dy,Long2,PolyLinePoints[i+2*inc].x,PolyLinePoints[i+2*inc].y);
-                     {with PolyLinePoints[i+3*inc] do} LatLongDegreeToScreen(Lat1,Long2-i*dx,PolyLinePoints[i+3*inc].x,PolyLinePoints[i+3*inc].y);
+                     LatLongDegreeToScreen(Lat2,Long1+i*dx,PolyLinePoints[i+inc].x,PolyLinePoints[i+inc].y);
+                     LatLongDegreeToScreen(Lat2-i*dy,Long2,PolyLinePoints[i+2*inc].x,PolyLinePoints[i+2*inc].y);
+                     LatLongDegreeToScreen(Lat1,Long2-i*dx,PolyLinePoints[i+3*inc].x,PolyLinePoints[i+3*inc].y);
                   end;
                end;
                if Fill then Bitmap.Canvas.Polygon(slice(PolyLinePoints,succ(4*inc)))
                else Bitmap.Canvas.PolyLine(slice(PolyLinePoints,succ(4*inc)));
                xc := 0;
                yc := 0;
-               for i := 0 to 4*inc do {with PolyLinePoints[i] do} begin
+               for i := 0 to 4*inc do begin
                   xc := xc + PolyLinePoints[i].x;
                   yc := yc + PolyLinePoints[i].y;
                end;
