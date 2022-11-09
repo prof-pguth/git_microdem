@@ -1,10 +1,11 @@
 unit three_point_problem;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{   file verified 6/22/2011       }
-{_________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2022 Peter L. Guth  }
+{___________________________________}
 
 
 {$I nevadia_defines.inc}
@@ -218,9 +219,11 @@ end;
 
 procedure TThreePointer.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-   ThreePointNet.nd.Closable := true;
+   if ThreePointNet <> nil then begin
+      ThreePointNet.nd.Closable := true;
+      ThreePointNet.Close;
+   end;
    Action := caFree;
-   ThreePointNet.Close;
 end;
 
 

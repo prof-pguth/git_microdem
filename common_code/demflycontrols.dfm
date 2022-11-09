@@ -4,8 +4,8 @@ object FlightControlForm: TFlightControlForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Flight Controls'
-  ClientHeight = 254
-  ClientWidth = 373
+  ClientHeight = 245
+  ClientWidth = 367
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -14,13 +14,11 @@ object FlightControlForm: TFlightControlForm
   Font.Style = []
   FormStyle = fsMDIChild
   KeyPreview = True
-  OldCreateOrder = False
   Position = poDefault
   Visible = True
   OnCreate = FormCreate
   OnKeyDown = FormKeyDown
   OnKeyPress = FormKeyPress
-  PixelsPerInch = 96
   TextHeight = 13
   object Speed: TLabel
     Left = 24

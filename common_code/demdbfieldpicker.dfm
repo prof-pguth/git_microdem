@@ -4,8 +4,8 @@ object FieldPicker: TFieldPicker
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Pick fields from data base'
-  ClientHeight = 182
-  ClientWidth = 444
+  ClientHeight = 176
+  ClientWidth = 438
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -79,7 +79,7 @@ object FieldPicker: TFieldPicker
   end
   object BitBtn4: TBitBtn
     Left = 8
-    Top = 156
+    Top = 140
     Width = 73
     Height = 27
     Kind = bkOK
@@ -121,7 +121,7 @@ object FieldPicker: TFieldPicker
   end
   object CheckBox2: TCheckBox
     Left = 208
-    Top = 161
+    Top = 145
     Width = 97
     Height = 17
     Caption = 'Flip histogram'

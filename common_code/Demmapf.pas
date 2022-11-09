@@ -31,6 +31,7 @@
       //{$Define RecordDEMIXtiles}
       //{$Define RecordStreamModeDigitize}
       //{$Define RecordPickRoute}
+      {$Define RecordFocalPlanes}
       //{$Define RecordMapResize}
       //{$Define RecordCreateGeomorphMaps}
       //{$Define RecordGeomorphometry}
@@ -13088,7 +13089,7 @@ begin
          DEM := (WMDEM.MDIChildren[i] as TMapForm).MapDraw.DEMonMap;
          if (DEM <> 0) then Bitmap.Canvas.TextOut(5, Bitmap.Height - (BottomMargin -5), RemoveUnderScores(DEMGLB[DEM].AreaName) + '  ' + DEMGLB[DEM].HorizontalDEMSpacing(true));
 
-         fName := NextFileNumber(MDtempDir,'map_4_biggie_','.bmp');
+         fName := NextFileNumber(MDtempDir,(WMDEM.MDIChildren[i] as TMapForm).Caption + '_','.bmp');
          Bitmap.SaveToFile(fName);
          Findings.Add(fName);
       end;
@@ -16332,7 +16333,7 @@ begin
          //DrawColoredMap1Click(Nil);
       end
       else begin
-         MapCorners := OldMapCorners;
+         //MapCorners := OldMapCorners;
          if MapDraw.DEMMap then begin
             SizeIsCorrectThankYou := false;
             CheckAndDrawNewCorners;
@@ -18726,8 +18727,11 @@ begin
 var
    TerrainCategory : tTerrainCatDefinition;
 begin
+   {$IfDef RecordFocalPlanes} WriteLineToDebugFile('TMapForm.Focalplaneanalysis1Click in'); {$EndIf}
    DEMGlb[MapDraw.DEMonMap].InitializeTerrainCategory(TerrainCategory);
+   {$IfDef RecordFocalPlanes} WriteLineToDebugFile('TMapForm.Focalplaneanalysis1Click mid'); {$EndIf}
    GetTerrainCategory(tcTwoAspects,Self,MapDraw.DEMonMap,TerrainCategory,false);
+   {$IfDef RecordFocalPlanes} WriteLineToDebugFile('TMapForm.Focalplaneanalysis1Click out'); {$EndIf}
 {$EndIf}
 end;
 

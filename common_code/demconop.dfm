@@ -4,8 +4,8 @@ object ContourOptions: TContourOptions
   ActiveControl = OKBtn
   BorderStyle = bsDialog
   Caption = 'Contour Map Options'
-  ClientHeight = 391
-  ClientWidth = 355
+  ClientHeight = 382
+  ClientWidth = 349
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack

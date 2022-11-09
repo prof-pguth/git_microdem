@@ -4,8 +4,8 @@ object FabricOptions: TFabricOptions
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Fabric by Region Size'
-  ClientHeight = 321
-  ClientWidth = 361
+  ClientHeight = 312
+  ClientWidth = 355
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

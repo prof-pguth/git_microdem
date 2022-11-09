@@ -4,8 +4,8 @@ object ThreePointer: TThreePointer
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Structural Geology'
-  ClientHeight = 280
-  ClientWidth = 400
+  ClientHeight = 271
+  ClientWidth = 394
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -17,7 +17,6 @@ object ThreePointer: TThreePointer
   Visible = True
   OnClose = FormClose
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Strike: TLabel
     Left = 8

@@ -4,19 +4,17 @@ object GazOptsForm: TGazOptsForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Gazetteer Label Options'
-  ClientHeight = 152
-  ClientWidth = 301
+  ClientHeight = 143
+  ClientWidth = 295
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
-  OldCreateOrder = False
   Position = poDefaultSizeOnly
   OnClose = FormClose
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
     Left = 47

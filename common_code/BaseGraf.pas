@@ -193,6 +193,8 @@ type
           function AxisRange : shortstring;
           procedure SetMargins(Bitmap : tMyBitmap);
 
+          procedure SetAllDrawingSymbols(DrawingSymbol : tDrawingSymbol);
+
           function InvGraphY(y : integer) : float32;
           function InvGraphX(x : integer) : float32;
           function PtOnGraph(x,y : float32) : boolean; overload;  inline;
@@ -398,7 +400,6 @@ type
     { Private declarations }
      procedure WindowACCORD(Canvas : TCanvas; ContInterval,NumContourLines,NumDataPoints : integer; Pnt : tPointerPnt; XMin,YMin,ZMin,DataX : float32; ColorFunction : ColorFunctionType; SaveTIN : PathStr = '');
      procedure SetMyBitmapColors(var Bitmap : tMyBitmap; i : integer);
-     procedure SetMenus;
      procedure MakePointDensityGraph(DensityShow : tDensityShow);
      procedure FilterDBatCurrentPoint;
      procedure ShowSatelliteBands(Bitmap : tMyBitmap);
@@ -448,6 +449,7 @@ type
      procedure AddPointToDataBuffer(var rfile : file; x,y : float32); overload;
      procedure ClosePointDataFile(var rfile : file);
      procedure ClearDataOnGraph;
+     procedure SetMenus;
 
      procedure PlotAFile(Bitmap : tMyBitmap; inf : PathStr; Count : integer);
      procedure PlotPointFile(Bitmap : tMyBitmap; inf : PathStr; Symbol : tFullSymbolDeclaration);
@@ -1214,6 +1216,9 @@ end;
 procedure TThisBaseGraph.SetMenus;
 begin
    Legend1.Visible := (GraphDraw.DBFLineFilesPlotted.Count > 0) or (GraphDraw.LegendList <> Nil) and (GraphDraw.GraphType <> gtRose);
+   Zcolorrange1.Visible := (GraphDraw.XYZFilesPlotted <> Nil) and (GraphDraw.XYZFilesPlotted.Count > 0);
+   Legend2.Visible := Legend1.Visible or Zcolorrange1.Visible;
+   LegendSpeedButton.Visible := Legend1.Visible;
    SpeedButton6.Visible := (GraphDraw.GraphType <> gtRose);
    SpeedButton9.Visible := (GraphDraw.GraphType <> gtRose);
    SpeedButton10.Visible := (GraphDraw.GraphType <> gtRose);
@@ -1221,9 +1226,6 @@ begin
    SpeedButton12.Visible := (GraphDraw.GraphType <> gtRose);
    SpeedButton13.Visible := (GraphDraw.GraphType <> gtRose);
 
-   Zcolorrange1.Visible := (GraphDraw.XYZFilesPlotted <> Nil) and (GraphDraw.XYZFilesPlotted.Count > 0);
-   Legend2.Visible := Legend1.Visible or Zcolorrange1.Visible;
-   LegendSpeedButton.Visible := Legend1.Visible;
    CrossCorrelation1.Visible := (GraphDraw.DataFilesPlotted.Count > 1);
    Labelpointsatopprofile1.Visible := (GraphDraw.GraphTopLabels <> Nil);
    MonthlyAverage1.Visible := GraphDraw.GraphAxes in [XTimeYFullGrid,XTimeYPartGrid];
@@ -2386,6 +2388,13 @@ begin
    end;
    if NormalCartesianX then GraphX := LeftMargin + round((x - ScrMinHorizAxis) / (ScrHorizRange) * (XWindowSize - LeftMargin- RightMargin))
    else GraphX := LeftMargin + round((ScrMaxHorizAxis - x) / (ScrHorizRange) * (XWindowSize - LeftMargin-RightMargin))
+end;
+
+procedure tGraphDraw.SetAllDrawingSymbols(DrawingSymbol: tDrawingSymbol);
+var
+   i : integer;
+begin
+   for i := 1 to 15 do Symbol[i].DrawingSymbol := DrawingSymbol;
 end;
 
 procedure tGraphDraw.SetMargins(Bitmap : tMyBitmap);

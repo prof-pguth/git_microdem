@@ -4,18 +4,16 @@ object GetLatLongDlg: TGetLatLongDlg
   ActiveControl = OKBtn
   BorderStyle = bsDialog
   Caption = 'Dialog'
-  ClientHeight = 209
-  ClientWidth = 376
+  ClientHeight = 200
+  ClientWidth = 370
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = [fsBold]
-  OldCreateOrder = True
   Position = poDefaultSizeOnly
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object OKBtn: TBitBtn
     Left = 8

@@ -4,8 +4,8 @@ object GraphSettingsForm: TGraphSettingsForm
   ActiveControl = OKBtn
   BorderStyle = bsDialog
   Caption = 'Graph Modifications'
-  ClientHeight = 447
-  ClientWidth = 567
+  ClientHeight = 438
+  ClientWidth = 561
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack

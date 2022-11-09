@@ -4,8 +4,8 @@ object StructureOptions: TStructureOptions
   ActiveControl = OKBtn
   BorderStyle = bsDialog
   Caption = 'Structural Geology Overlay Options'
-  ClientHeight = 212
-  ClientWidth = 313
+  ClientHeight = 203
+  ClientWidth = 307
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack

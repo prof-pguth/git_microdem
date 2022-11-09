@@ -4,8 +4,8 @@ object CoordConverter: TCoordConverter
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Coordinate Converter'
-  ClientHeight = 461
-  ClientWidth = 624
+  ClientHeight = 452
+  ClientWidth = 618
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack

@@ -1,8 +1,8 @@
 object Drifting_form: TDrifting_form
   Left = 0
   Top = 0
-  ClientHeight = 141
-  ClientWidth = 556
+  ClientHeight = 132
+  ClientWidth = 550
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -15,12 +15,14 @@ object Drifting_form: TDrifting_form
   TextHeight = 13
   object Panel2: TPanel
     Left = 0
-    Top = -1
-    Width = 556
+    Top = -10
+    Width = 550
     Height = 142
     Align = alBottom
     Caption = 'Panel2'
     TabOrder = 0
+    ExplicitTop = -1
+    ExplicitWidth = 556
     object PageControl1: TPageControl
       Left = 103
       Top = 1

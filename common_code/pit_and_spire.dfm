@@ -3,8 +3,8 @@ object PitSpireForm: TPitSpireForm
   Top = 0
   BorderIcons = [biMaximize]
   Caption = 'Feature detection'
-  ClientHeight = 552
-  ClientWidth = 810
+  ClientHeight = 543
+  ClientWidth = 804
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,19 +19,22 @@ object PitSpireForm: TPitSpireForm
   object Memo1: TMemo
     Left = 300
     Top = 0
-    Width = 510
-    Height = 552
+    Width = 504
+    Height = 543
     Align = alClient
     ScrollBars = ssVertical
     TabOrder = 0
+    ExplicitWidth = 510
+    ExplicitHeight = 552
   end
   object Panel1: TPanel
     Left = 0
     Top = 0
     Width = 300
-    Height = 552
+    Height = 543
     Align = alLeft
     TabOrder = 1
+    ExplicitHeight = 552
     object Label27: TLabel
       Left = 48
       Top = 264

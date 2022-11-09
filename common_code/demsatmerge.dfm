@@ -7,11 +7,8 @@ inherited IHSMergeForm: TIHSMergeForm
   Position = poDefaultSizeOnly
   OnClose = FormClose
   OnCreate = FormCreate
-  ExplicitLeft = 3
-  ExplicitTop = 3
-  ExplicitWidth = 384
-  ExplicitHeight = 342
-  PixelsPerInch = 96
+  ExplicitWidth = 378
+  ExplicitHeight = 333
   TextHeight = 20
   inherited Bevel1: TBevel
     Width = 345

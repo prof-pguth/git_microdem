@@ -3,8 +3,8 @@ object db_display_opts: Tdb_display_opts
   Top = 0
   BorderIcons = [biSystemMenu]
   Caption = 'Database display options'
-  ClientHeight = 559
-  ClientWidth = 297
+  ClientHeight = 550
+  ClientWidth = 351
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -14,17 +14,17 @@ object db_display_opts: Tdb_display_opts
   Position = poMainFormCenter
   OnClose = FormClose
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object BottomPanel: TPanel
     Left = 0
-    Top = 518
-    Width = 297
+    Top = 509
+    Width = 351
     Height = 41
     Align = alBottom
     TabOrder = 0
+    ExplicitWidth = 291
     object SpeedButton16: TSpeedButton
-      Left = 277
+      Left = 285
       Top = 8
       Width = 31
       Height = 25
@@ -64,7 +64,7 @@ object db_display_opts: Tdb_display_opts
       IsControl = True
     end
     object HelpBtn: TBitBtn
-      Left = 71
+      Left = 61
       Top = 6
       Width = 58
       Height = 27
@@ -77,7 +77,7 @@ object db_display_opts: Tdb_display_opts
       IsControl = True
     end
     object BitBtn31: TBitBtn
-      Left = 136
+      Left = 129
       Top = 8
       Width = 64
       Height = 25

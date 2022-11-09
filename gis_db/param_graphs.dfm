@@ -2,8 +2,8 @@ object ParamGraphForm: TParamGraphForm
   Left = 0
   Top = 0
   Caption = 'ParamGraphForm'
-  ClientHeight = 157
-  ClientWidth = 473
+  ClientHeight = 148
+  ClientWidth = 467
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -11,7 +11,6 @@ object ParamGraphForm: TParamGraphForm
   Font.Name = 'Tahoma'
   Font.Style = []
   FormStyle = fsStayOnTop
-  PixelsPerInch = 96
   TextHeight = 13
   object Image1: TImage
     Left = 200

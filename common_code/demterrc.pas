@@ -1,15 +1,16 @@
 unit Demterrc;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{   file verified 6/22/2011       }
-{_________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2022 Peter L. Guth  }
+{___________________________________}
 
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
-   //{$Define RecordTerrCats}
+   {$Define RecordTerrCats}
 {$EndIf}
 
 
@@ -159,6 +160,117 @@ uses
    DEMCoord, demdef_routines;
 
 
+
+function GetTerrainCategory;
+var
+  GetTerrC: TGetTerrC;
+begin
+   {$IfDef RecordTerrCats} WriteLineToDebugFile('GetTerrainCategory in=' + DEMGlb[inDEM].TerrainCategoryLabel(inTerrainCategory)); {$EndIf}
+   GetTerrC := tGetTerrC.Create(Application);
+   GetTerrC.FullOptions := FullOptions;
+   {$IfDef RecordTerrCats} WriteLineToDebugFile('GetTerrainCategory form created'); {$EndIf}
+   with GetTerrC do begin
+      MapOwner := theMap;
+      DEMUsed := inDEM;
+      CatDoing := inCatDoing;
+      TerrainCategory := inTerrainCategory;
+      SymbolOnButton(BitBtn3,MapOwner.DrSymbol);
+      Label3.Caption := 'Z value: ' + ElevUnitsAre[DEMGlb[DEMUsed].DEMheader.ElevUnits];
+      Label8.Visible := DEMGlb[DEMUsed].DEMheader.ElevUnits = euMeters;
+      Label9.Visible := Label8.Visible;
+      Label10.Visible := Label8.Visible;
+
+      if not FullOptions then begin
+         Edit3.Visible := false;
+         Edit4.Visible := false;
+         Edit5.Visible := false;
+         Edit6.Visible := false;
+         Edit7.Visible := false;
+         Edit8.Visible := false;
+         Edit9.Visible := false;
+         Label1.Visible := false;
+         Label2.Visible := false;
+         Label4.Visible := false;
+         Label5.Visible := false;
+         Label7.Visible := false;
+         Label8.Visible := false;
+         Label9.Visible := false;
+         Label10.Visible := false;
+         Label11.Visible := false;
+         GroupBox1.Visible := false;
+      end;
+      BitBtn1.Enabled := (CatDoing in [tcNormal]);
+      BitBtn10.Enabled := (CatDoing = tcElevOnly) or (TerrainCategory.UseElevation and (not TerrainCategory.UseRelief) and (not TerrainCategory.UseSlope) and (not TerrainCategory.UseAspect));
+      BitBtn3.Enabled := (CatDoing in [tcElevOnly,tcSlopeOnly]);
+      BitBtn4.Enabled := (CatDoing <> tcTwoAspects);
+      SizeForm;
+      {$IfDef RecordTerrCats} WriteLineToDebugFile('GetTerrainCategory form sized'); {$EndIf}
+
+      CheckBox13.Checked := TerrainCategory.UseElevation and (CatDoing <> tcTwoAspects);
+      CheckBox14.Checked := TerrainCategory.UseRelief and (CatDoing <> tcTwoAspects);
+      CheckBox15.Checked := TerrainCategory.UseSlope and (CatDoing <> tcTwoAspects);
+      CheckBox16.Checked := TerrainCategory.UseAspect and (CatDoing <> tcTwoAspects);
+      CheckBox17.Checked := (CatDoing = tcTwoAspects);
+
+      Edit1.Text := RealToString(TerrainCategory.CatMinElev,-12,-4);
+      Edit2.Text := RealToString(TerrainCategory.CatMaxElev,-12,-4);
+      Edit3.Text := RealToString(TerrainCategory.CatMinSlope,-12,-2);
+      Edit4.Text := RealToString(TerrainCategory.CatMaxSlope,-12,-2);
+      Edit5.Text := IntegerToString(TerrainCategory.CatMinRelief,-12);
+      Edit6.Text := IntegerToString(TerrainCategory.CatMaxRelief,-12);
+      Edit7.Text := IntegerToString(TerrainCategory.CatReliefRadius,-12);
+      Edit8.Text := RealToString(ArcTan(0.01 * TerrainCategory.CatMinSlope) / DegToRad,-8,-1);
+      Edit9.Text := RealToString(ArcTan(0.01 * TerrainCategory.CatMaxSlope) / DegToRad,-8,-1);
+      Label9.Caption := RealToString(TerrainCategory.CatMinElev / FeetToMeters,-8,-1);
+      Label10.Caption := RealToString(TerrainCategory.CatMaxElev / FeetToMeters,-8,-1);
+      CheckBox10.Checked := MDDef.IHSTerrainCategory;
+      CheckBox10.Enabled := (CatDoing in [tcNormal,tcTwoAspects,tcSlopeOnly]);
+
+      ColorBitBtn(BitBtn1,TerrainCategory.CatColor);
+
+      if (CatDoing = tcTwoAspects) then begin
+         {$IfDef ExGeology}
+         {$Else}
+            Edit10.Text := MDDef.FPMinAsp1.ToString;
+            Edit11.Text := MDDef.FPMaxAsp1.ToString;
+            Edit12.Text := MDDef.FPMinAsp2.ToString;
+            Edit13.Text := MDDef.FPMaxAsp2.ToString;
+            Edit14.Text := MDDef.FPMinSlope1.ToString;
+            Edit15.Text := MDDef.FPMinSlope2.ToString;
+            Edit16.Text := MDDef.FPMaxSlope1.ToString;
+            Edit17.Text := MDDef.FPMaxSlope2.ToString;
+         {$EndIf}
+
+         BitBtn4.Visible := false;
+         BitBtn7.Visible := false;
+         BitBtn8.Visible := false;
+         BitBtn9.Visible := false;
+         BitBtn10.Visible := false;
+
+         GetTerrC.Caption := 'Identify focal planes';
+         ColorBitBtn(BitBtn5,MDDef.ColorFP1);
+         ColorBitBtn(BitBtn6,MDDef.ColorFP2);
+         {$IfDef RecordTerrCats} WriteLineToDebugFile('GetTerrainCategory FP colored'); {$EndIf}
+      end;
+      if (CatDoing = tcSlopeOnly) then begin
+         Edit4.Enabled := false;
+         Edit9.Enabled := false;
+         GetTerrC.Caption := 'Excessive slopes';
+      end;
+      if (CatDoing in [tcTwoAspects,tcSlopeOnly]) then OKBtn.Visible := false;
+
+       if (CatDoing in [tcNormal]) then begin
+         inTerrainCategory := TerrainCategory;
+       end;
+       Petmar.PlaceFormAtMousePosition(GetTerrC);
+       GetTerrC.FormStyle := fsStayOnTop;
+       GetTerrC.Show;
+      {$IfDef RecordTerrCats} WriteLineToDebugFile('GetTerrainCategory out=' + DEMGlb[inDEM].TerrainCategoryLabel(TerrainCategory)); {$EndIf}
+   end;
+end;
+
+
+
 procedure TGetTerrC.SizeForm;
 var
    Top : integer;
@@ -204,117 +316,6 @@ begin
    Panel5.Top := Top;
    ClientHeight := Top + Panel5.Height;
 end;
-
-
-function GetTerrainCategory;
-var
-  GetTerrC: TGetTerrC;
-begin
-   {$IfDef RecordTerrCats} WriteLineToDebugFile('GetTerrainCategory in=' + DEMGlb[DEMUsed].TerrainCategoryLabel(inTerrainCategory)); {$EndIf}
-   GetTerrC := tGetTerrC.Create(Application);
-   GetTerrC.FullOptions := FullOptions;
-   with GetTerrC,TerrainCategory do begin
-      MapOwner := theMap;
-      DEMUsed := inDEM;
-      CatDoing := inCatDoing;
-      TerrainCategory := inTerrainCategory;
-      SymbolOnButton(BitBtn3,MapOwner.DrSymbol);
-      Label3.Caption := 'Z value: ' + ElevUnitsAre[DEMGlb[DEMUsed].DEMheader.ElevUnits];
-      Label8.Visible := DEMGlb[DEMUsed].DEMheader.ElevUnits = euMeters;
-      Label9.Visible := Label8.Visible;
-      Label10.Visible := Label8.Visible;
-
-      if not FullOptions then begin
-         Edit3.Visible := false;
-         Edit4.Visible := false;
-         Edit5.Visible := false;
-         Edit6.Visible := false;
-         Edit7.Visible := false;
-         Edit8.Visible := false;
-         Edit9.Visible := false;
-         Label1.Visible := false;
-         Label2.Visible := false;
-         Label4.Visible := false;
-         Label5.Visible := false;
-         Label7.Visible := false;
-         Label8.Visible := false;
-         Label9.Visible := false;
-         Label10.Visible := false;
-         Label11.Visible := false;
-         GroupBox1.Visible := false;
-      end;
-      BitBtn1.Enabled := (CatDoing in [tcNormal]);
-      BitBtn10.Enabled := (CatDoing = tcElevOnly) or (UseElevation and (not UseRelief) and (not UseSlope) and (not UseAspect));
-      BitBtn3.Enabled := (CatDoing in [tcElevOnly,tcSlopeOnly]);
-      BitBtn4.Enabled := (CatDoing <> tcTwoAspects);
-      SizeForm;
-
-      CheckBox13.Checked := UseElevation and (CatDoing <> tcTwoAspects);
-      CheckBox14.Checked := UseRelief and (CatDoing <> tcTwoAspects);
-      CheckBox15.Checked := UseSlope and (CatDoing <> tcTwoAspects);
-      CheckBox16.Checked := UseAspect and (CatDoing <> tcTwoAspects);
-      CheckBox17.Checked := (CatDoing = tcTwoAspects);
-
-      Edit1.Text := RealToString(CatMinElev,-12,-4);
-      Edit2.Text := RealToString(CatMaxElev,-12,-4);
-      Edit3.Text := RealToString(CatMinSlope,-12,-2);
-      Edit4.Text := RealToString(CatMaxSlope,-12,-2);
-      Edit5.Text := IntegerToString(CatMinRelief,-12);
-      Edit6.Text := IntegerToString(CatMaxRelief,-12);
-      Edit7.Text := IntegerToString(CatReliefRadius,-12);
-      Edit8.Text := RealToString(ArcTan(0.01 * CatMinSlope) / DegToRad,-8,-1);
-      Edit9.Text := RealToString(ArcTan(0.01 * CatMaxSlope) / DegToRad,-8,-1);
-      Label9.Caption := RealToString(CatMinElev / FeetToMeters,-8,-1);
-      Label10.Caption := RealToString(CatMaxElev / FeetToMeters,-8,-1);
-      CheckBox10.Checked := MDDef.IHSTerrainCategory;
-      CheckBox10.Enabled := (CatDoing in [tcNormal,tcTwoAspects,tcSlopeOnly]);
-
-      ColorBitBtn(BitBtn1,TerrainCategory.CatColor);
-
-      {$IfDef ExGeology}
-      {$Else}
-         ColorBitBtn(BitBtn5,MDDef.ColorFP1);
-         ColorBitBtn(BitBtn6,MDDef.ColorFP2);
-      {$EndIf}
-
-      if (CatDoing = tcTwoAspects) then begin
-         {$IfDef ExGeology}
-         {$Else}
-            Edit10.Text := MDDef.FPMinAsp1.ToString;
-            Edit11.Text := MDDef.FPMaxAsp1.ToString;
-            Edit12.Text := MDDef.FPMinAsp2.ToString;
-            Edit13.Text := MDDef.FPMaxAsp2.ToString;
-            Edit14.Text := MDDef.FPMinSlope1.ToString;
-            Edit15.Text := MDDef.FPMinSlope2.ToString;
-            Edit16.Text := MDDef.FPMaxSlope1.ToString;
-            Edit17.Text := MDDef.FPMaxSlope2.ToString;
-         {$EndIf}
-
-         BitBtn4.Visible := false;
-         BitBtn7.Visible := false;
-         BitBtn8.Visible := false;
-         BitBtn9.Visible := false;
-         BitBtn10.Visible := false;
-
-         GetTerrC.Caption := 'Identify focal planes';
-      end;
-      if (CatDoing = tcSlopeOnly) then begin
-         Edit4.Enabled := false;
-         Edit9.Enabled := false;
-         GetTerrC.Caption := 'Excessive slopes';
-      end;
-      if (CatDoing in [tcTwoAspects,tcSlopeOnly]) then OKBtn.Visible := false;
-
-       if (CatDoing in [tcNormal]) then begin
-         inTerrainCategory := TerrainCategory;
-       end;
-       Petmar.PlaceFormAtMousePosition(GetTerrC);
-       GetTerrC.FormStyle := fsStayOnTop;
-       GetTerrC.Show;
-      {$IfDef RecordTerrCats} WriteLineToDebugFile('GetTerrainCategory out=' + DEMGlb[DEMUsed].TerrainCategoryLabel(TerrainCategory)); {$EndIf}
-   end;
-end;
-
 
 procedure TGetTerrC.CheckAvailable;
 begin
@@ -404,12 +405,14 @@ end;
 
 procedure TGetTerrC.HelpBtnClick(Sender: TObject);
 begin
-   DisplayHTMLTopic('html\tbme2515.htm');
+   if (CatDoing in [tcTwoAspects]) then DisplayHTMLTopic('html\id_focal.htm')
+   else DisplayHTMLTopic('html\tbme2515.htm');
 end;
 
 
 procedure TGetTerrC.OKBtnClick(Sender: TObject);
 begin
+   {$IfDef RecordTerrCats} WriteLineToDebugFile('TGetTerrC.OKBtnClick'); {$EndIf}
    DefineTerrainCategory;
    MapOwner.MapDraw.MapOverlays.ovTerrainCat.Add(DEMDef_routines.TerrainCategoryToString(TerrainCategory));
    Close;
@@ -609,6 +612,7 @@ var
 var
    Bitmap,cbmp : tMyBitmap;
 begin
+   {$IfDef RecordTerrCats} WriteLineToDebugFile('BitBtn2Click entered'); {$EndIf}
    MapOwner.InsureGrayScaleReflectanceMap;
    MapOwner.DoFastMapRedraw;
 
@@ -685,6 +689,8 @@ begin
      end;
    end;
    MapOwner.CheckThatLegendsAreOnTop;
+   {$IfDef RecordTerrCats} WriteLineToDebugFile('BitBtn2Click out'); {$EndIf}
+
 {$EndIf}
 end;
 
@@ -775,6 +781,7 @@ end;
 
 procedure TGetTerrC.CancelBtnClick(Sender: TObject);
 begin
+   {$IfDef RecordTerrCats} WriteLineToDebugFile('TGetTerrC.CancelBtnClick'); {$EndIf}
    MapOwner.MapDraw.MapOverlays.ovTerrainCat.Clear;
    MapOwner.DoFastMapRedraw;
    Close;
