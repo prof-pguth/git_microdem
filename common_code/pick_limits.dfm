@@ -4,8 +4,8 @@ object picklimitsForm: TpicklimitsForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Pick limits'
-  ClientHeight = 264
-  ClientWidth = 363
+  ClientHeight = 255
+  ClientWidth = 357
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -14,7 +14,6 @@ object picklimitsForm: TpicklimitsForm
   Font.Style = []
   Position = poOwnerFormCenter
   OnClose = FormClose
-  PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
     Left = 144

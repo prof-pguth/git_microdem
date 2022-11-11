@@ -2,8 +2,8 @@ object MemForm: TMemForm
   Left = 797
   Top = 202
   Caption = 'MEM Power spectrum options'
-  ClientHeight = 191
-  ClientWidth = 227
+  ClientHeight = 182
+  ClientWidth = 221
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -11,7 +11,6 @@ object MemForm: TMemForm
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   OnClose = FormClose
-  PixelsPerInch = 96
   TextHeight = 13
   object Profiles: TLabel
     Left = 64

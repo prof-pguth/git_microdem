@@ -4,8 +4,8 @@ object MapScaledForm: TMapScaledForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Scaled map'
-  ClientHeight = 188
-  ClientWidth = 242
+  ClientHeight = 179
+  ClientWidth = 236
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -14,7 +14,6 @@ object MapScaledForm: TMapScaledForm
   Font.Style = []
   Position = poMainFormCenter
   ShowHint = True
-  PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
     Left = 16

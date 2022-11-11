@@ -4,8 +4,8 @@ object GridDiffForm: TGridDiffForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Grid Differences '
-  ClientHeight = 115
-  ClientWidth = 206
+  ClientHeight = 106
+  ClientWidth = 200
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -15,7 +15,6 @@ object GridDiffForm: TGridDiffForm
   Position = poDefaultSizeOnly
   OnClose = FormClose
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object CheckBox1: TCheckBox
     Left = 24

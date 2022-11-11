@@ -14,7 +14,6 @@ object PickDatumParams: TPickDatumParams
   Font.Style = []
   Position = poDefaultSizeOnly
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
     Left = 22

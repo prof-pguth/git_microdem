@@ -3,8 +3,8 @@ inherited SlopeCategoryEditor: TSlopeCategoryEditor
   Top = 317
   BorderIcons = [biSystemMenu]
   Caption = 'Set Slope Categories'
-  ClientHeight = 429
-  ClientWidth = 474
+  ClientHeight = 420
+  ClientWidth = 468
   Icon.Data = {
     0000010001002020100000000000E80200001600000028000000200000004000
     0000010004000000000080020000000000000000000000000000000000000000
@@ -30,8 +30,8 @@ inherited SlopeCategoryEditor: TSlopeCategoryEditor
     0000000000000000000000000000000000000000000000000000000000000000
     0000000000000000000000000000000000000000000000000000000000000000
     000000000000000000000000000000000000000000000000000000000000}
-  ExplicitWidth = 492
-  ExplicitHeight = 476
+  ExplicitWidth = 486
+  ExplicitHeight = 467
   TextHeight = 20
   inherited Bevel1: TBevel
     Width = 265

@@ -2,8 +2,8 @@ object NetForm: TNetForm
   Left = 201
   Top = 120
   Caption = 'NetForm'
-  ClientHeight = 485
-  ClientWidth = 400
+  ClientHeight = 451
+  ClientWidth = 394
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -42,25 +42,27 @@ object NetForm: TNetForm
   OnClose = FormClose
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 16
   object Image1: TImage
     Left = 0
     Top = 0
-    Width = 400
-    Height = 444
+    Width = 394
+    Height = 410
     Align = alClient
     OnMouseDown = Image1MouseDown
+    ExplicitWidth = 400
     ExplicitHeight = 340
   end
   object Panel1: TPanel
     Left = 0
-    Top = 444
-    Width = 400
+    Top = 410
+    Width = 394
     Height = 41
     Align = alBottom
     Caption = ' '
     TabOrder = 0
+    ExplicitTop = 444
+    ExplicitWidth = 400
   end
   object MainMenu1: TMainMenu
     Left = 8

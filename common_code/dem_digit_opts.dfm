@@ -4,8 +4,8 @@ object DEMDigitOptions: TDEMDigitOptions
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Digitizing Options'
-  ClientHeight = 174
-  ClientWidth = 210
+  ClientHeight = 165
+  ClientWidth = 204
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -14,7 +14,6 @@ object DEMDigitOptions: TDEMDigitOptions
   Font.Style = []
   Position = poDefaultSizeOnly
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Label25: TLabel
     Left = 16

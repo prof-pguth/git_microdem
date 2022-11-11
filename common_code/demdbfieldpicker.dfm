@@ -4,8 +4,8 @@ object FieldPicker: TFieldPicker
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Pick fields from data base'
-  ClientHeight = 176
-  ClientWidth = 438
+  ClientHeight = 178
+  ClientWidth = 469
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

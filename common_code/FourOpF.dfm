@@ -2,49 +2,52 @@ inherited FourierOptionsForm: TFourierOptionsForm
   Left = 519
   Top = 324
   Caption = 'Fourier Transform Options'
-  ClientHeight = 295
-  ClientWidth = 331
-  ExplicitWidth = 337
-  ExplicitHeight = 324
-  PixelsPerInch = 96
-  TextHeight = 13
+  ClientHeight = 302
+  ClientWidth = 427
+  ExplicitLeft = 3
+  ExplicitTop = 3
+  ExplicitWidth = 439
+  ExplicitHeight = 340
+  TextHeight = 20
   inherited Bevel1: TBevel
     Left = 16
     Top = 16
-    Height = 217
+    Width = 403
+    Height = 241
     ExplicitLeft = 16
     ExplicitTop = 16
-    ExplicitHeight = 217
+    ExplicitWidth = 403
+    ExplicitHeight = 241
   end
   object Label1: TLabel [1]
-    Left = 40
-    Top = 200
-    Width = 19
-    Height = 13
+    Left = 34
+    Top = 216
+    Width = 27
+    Height = 20
     Caption = 'Bins'
   end
   object Label2: TLabel [2]
-    Left = 168
-    Top = 200
-    Width = 24
-    Height = 13
+    Left = 162
+    Top = 216
+    Width = 33
+    Height = 20
     Caption = 'Units'
   end
   inherited OKBtn: TButton
-    Left = 54
-    Top = 252
-    ExplicitLeft = 54
-    ExplicitTop = 252
+    Left = 61
+    Top = 263
+    ExplicitLeft = 61
+    ExplicitTop = 263
   end
   inherited CancelBtn: TButton
     Left = 142
-    Top = 252
+    Top = 263
     ExplicitLeft = 142
-    ExplicitTop = 252
+    ExplicitTop = 263
   end
   object HelpBtn: TButton
-    Left = 230
-    Top = 252
+    Left = 223
+    Top = 263
     Width = 75
     Height = 25
     Caption = '&Help'
@@ -55,7 +58,7 @@ inherited FourierOptionsForm: TFourierOptionsForm
     Left = 32
     Top = 24
     Width = 89
-    Height = 73
+    Height = 81
     Caption = 'Window'
     TabOrder = 3
     object RadioButton1: TRadioButton
@@ -84,25 +87,25 @@ inherited FourierOptionsForm: TFourierOptionsForm
     end
   end
   object CheckBox4: TCheckBox
-    Left = 32
-    Top = 120
-    Width = 137
+    Left = 34
+    Top = 136
+    Width = 161
     Height = 17
     Caption = 'Overlap segments'
     TabOrder = 4
   end
   object CheckBox5: TCheckBox
-    Left = 32
-    Top = 144
-    Width = 145
+    Left = 34
+    Top = 168
+    Width = 183
     Height = 17
     Caption = 'Zero pad end series'
     TabOrder = 5
   end
   object GroupBox2: TGroupBox
     Left = 152
-    Top = 24
-    Width = 129
+    Top = 25
+    Width = 137
     Height = 105
     Caption = 'Segment Size'
     TabOrder = 6
@@ -180,14 +183,14 @@ inherited FourierOptionsForm: TFourierOptionsForm
     end
   end
   object GroupBox3: TGroupBox
-    Left = 168
-    Top = 136
+    Left = 295
+    Top = 34
     Width = 105
-    Height = 57
+    Height = 65
     Caption = 'X Graph Axis'
     TabOrder = 7
     object RadioButton14: TRadioButton
-      Left = 8
+      Left = 3
       Top = 16
       Width = 81
       Height = 17
@@ -195,8 +198,8 @@ inherited FourierOptionsForm: TFourierOptionsForm
       TabOrder = 0
     end
     object RadioButton15: TRadioButton
-      Left = 8
-      Top = 32
+      Left = 3
+      Top = 39
       Width = 89
       Height = 17
       Caption = 'Frequency'
@@ -204,17 +207,17 @@ inherited FourierOptionsForm: TFourierOptionsForm
     end
   end
   object Edit1: TEdit
-    Left = 80
-    Top = 200
+    Left = 74
+    Top = 216
     Width = 65
-    Height = 21
+    Height = 28
     TabOrder = 8
   end
   object Edit2: TEdit
-    Left = 198
-    Top = 199
+    Left = 224
+    Top = 215
     Width = 57
-    Height = 21
+    Height = 28
     TabOrder = 9
   end
 end

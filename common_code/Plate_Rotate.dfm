@@ -4,8 +4,8 @@ object PickRotationForm: TPickRotationForm
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = 'Plate rotations'
-  ClientHeight = 985
-  ClientWidth = 272
+  ClientHeight = 976
+  ClientWidth = 266
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -21,22 +21,20 @@ object PickRotationForm: TPickRotationForm
   object Memo1: TMemo
     Left = 0
     Top = 321
-    Width = 272
+    Width = 266
     Height = 76
     Align = alTop
     ScrollBars = ssVertical
     TabOrder = 0
-    ExplicitWidth = 266
   end
   object GroupBox3: TGroupBox
     Left = 0
     Top = 584
-    Width = 272
+    Width = 266
     Height = 106
     Align = alTop
     Caption = 'Spreading Rates'
     TabOrder = 1
-    ExplicitWidth = 266
     object Label13: TLabel
       Left = 136
       Top = 16
@@ -108,11 +106,10 @@ object PickRotationForm: TPickRotationForm
   object Panel1: TPanel
     Left = 0
     Top = 905
-    Width = 272
+    Width = 266
     Height = 41
     Align = alTop
     TabOrder = 2
-    ExplicitWidth = 266
     object BitBtn12: TBitBtn
       Left = 118
       Top = 3
@@ -140,12 +137,11 @@ object PickRotationForm: TPickRotationForm
     AlignWithMargins = True
     Left = 3
     Top = 3
-    Width = 266
+    Width = 260
     Height = 155
     Align = alTop
     Alignment = taRightJustify
     TabOrder = 3
-    ExplicitWidth = 260
     object Label12: TLabel
       Left = 7
       Top = 120
@@ -270,12 +266,11 @@ object PickRotationForm: TPickRotationForm
   object Panel3: TPanel
     Left = 0
     Top = 161
-    Width = 272
+    Width = 266
     Height = 160
     Align = alTop
     Alignment = taLeftJustify
     TabOrder = 4
-    ExplicitWidth = 266
     object Label1: TLabel
       Left = 8
       Top = 8
@@ -419,12 +414,11 @@ object PickRotationForm: TPickRotationForm
     AlignWithMargins = True
     Left = 3
     Top = 823
-    Width = 266
+    Width = 260
     Height = 79
     Align = alTop
     Caption = 'Map'
     TabOrder = 5
-    ExplicitWidth = 260
     object BitBtn4: TBitBtn
       Left = 167
       Top = 12
@@ -486,14 +480,13 @@ object PickRotationForm: TPickRotationForm
     AlignWithMargins = True
     Left = 3
     Top = 400
-    Width = 266
+    Width = 260
     Height = 181
     Align = alTop
     Alignment = taRightJustify
     Color = clWhite
     ParentBackground = False
     TabOrder = 6
-    ExplicitWidth = 260
     object ComboBox6: TComboBox
       Left = 142
       Top = 13
@@ -666,12 +659,11 @@ object PickRotationForm: TPickRotationForm
   object GroupBox2: TGroupBox
     Left = 0
     Top = 690
-    Width = 272
+    Width = 266
     Height = 130
     Align = alTop
     Caption = 'Total pole reconstruction'
     TabOrder = 7
-    ExplicitWidth = 266
     object Label6: TLabel
       Left = 130
       Top = 79

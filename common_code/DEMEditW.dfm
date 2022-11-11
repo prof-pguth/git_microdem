@@ -4,8 +4,8 @@ object DEMeditForm: TDEMeditForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'DEM Edit Window'
-  ClientHeight = 464
-  ClientWidth = 626
+  ClientHeight = 430
+  ClientWidth = 620
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
@@ -22,8 +22,8 @@ object DEMeditForm: TDEMeditForm
   object StringGrid1: TStringGrid
     Left = 0
     Top = 0
-    Width = 626
-    Height = 423
+    Width = 620
+    Height = 389
     Align = alClient
     ColCount = 26
     RowCount = 26
@@ -33,6 +33,8 @@ object DEMeditForm: TDEMeditForm
     OnDblClick = StringGrid1DblClick
     OnGetEditText = StringGrid1GetEditText
     OnMouseMove = StringGrid1MouseMove
+    ExplicitWidth = 626
+    ExplicitHeight = 423
     ColWidths = (
       64
       64
@@ -90,11 +92,13 @@ object DEMeditForm: TDEMeditForm
   end
   object Panel1: TPanel
     Left = 0
-    Top = 423
-    Width = 626
+    Top = 389
+    Width = 620
     Height = 41
     Align = alBottom
     TabOrder = 1
+    ExplicitTop = 423
+    ExplicitWidth = 626
     object Label1: TLabel
       Left = 33
       Top = 16

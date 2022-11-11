@@ -17,7 +17,6 @@ object sideimage: Tsideimage
   OnClose = FormClose
   OnCreate = FormCreate
   OnResize = FormResize
-  PixelsPerInch = 96
   TextHeight = 16
   object ScrollBox1: TScrollBox
     Left = 0
@@ -26,6 +25,8 @@ object sideimage: Tsideimage
     Height = 552
     Align = alClient
     TabOrder = 0
+    ExplicitWidth = 725
+    ExplicitHeight = 518
     object Image1: TImage
       Left = 0
       Top = 2
@@ -45,6 +46,7 @@ object sideimage: Tsideimage
     ButtonHeight = 25
     Caption = 'ToolBar1'
     TabOrder = 1
+    ExplicitWidth = 725
     object SpeedButton4: TSpeedButton
       Left = 0
       Top = 0

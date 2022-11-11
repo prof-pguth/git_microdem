@@ -4,16 +4,14 @@ object FlightControlSensitivity: TFlightControlSensitivity
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Flight Control Sensitivity'
-  ClientHeight = 122
-  ClientWidth = 189
+  ClientHeight = 113
+  ClientWidth = 183
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
-  OldCreateOrder = False
-  PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
     Left = 24

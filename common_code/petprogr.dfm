@@ -4,8 +4,8 @@ object PetProgF: TPetProgF
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Progress'
-  ClientHeight = 114
-  ClientWidth = 239
+  ClientHeight = 105
+  ClientWidth = 233
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -18,7 +18,6 @@ object PetProgF: TPetProgF
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnDblClick = FormDblClick
-  PixelsPerInch = 96
   TextHeight = 16
   object Gauge1: TGauge
     Left = 14

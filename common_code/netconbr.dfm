@@ -4,17 +4,15 @@ object InputArrays: TInputArrays
   ActiveControl = OKBtn
   BorderStyle = bsDialog
   Caption = 'Contour Boundaries'
-  ClientHeight = 303
-  ClientWidth = 314
+  ClientHeight = 294
+  ClientWidth = 308
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = [fsBold]
-  OldCreateOrder = True
   Position = poScreenCenter
-  PixelsPerInch = 96
   TextHeight = 13
   object Bevel1: TBevel
     Left = 8

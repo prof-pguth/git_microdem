@@ -3,18 +3,16 @@ object XYZformatform: TXYZformatform
   Top = 356
   BorderStyle = bsDialog
   Caption = 'ASCII export options'
-  ClientHeight = 284
-  ClientWidth = 302
+  ClientHeight = 275
+  ClientWidth = 296
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
-  OldCreateOrder = False
   Position = poOwnerFormCenter
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
     Left = 8

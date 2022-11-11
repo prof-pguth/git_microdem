@@ -4,18 +4,16 @@ object NetOptFm: TNetOptFm
   ActiveControl = OKBtn
   BorderStyle = bsDialog
   Caption = 'Stereo Net Options'
-  ClientHeight = 268
-  ClientWidth = 525
+  ClientHeight = 259
+  ClientWidth = 519
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = [fsBold]
-  OldCreateOrder = True
   Position = poDefaultSizeOnly
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Bevel1: TBevel
     Left = 8

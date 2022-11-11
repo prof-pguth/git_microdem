@@ -2,8 +2,8 @@ object NetEntryForm: TNetEntryForm
   Left = 0
   Top = 0
   Caption = 'Stereo net entry'
-  ClientHeight = 229
-  ClientWidth = 364
+  ClientHeight = 220
+  ClientWidth = 358
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -11,7 +11,6 @@ object NetEntryForm: TNetEntryForm
   Font.Name = 'Tahoma'
   Font.Style = []
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
     Left = 8

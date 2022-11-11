@@ -3,8 +3,8 @@ object Mask_mult_form: TMask_mult_form
   Top = 0
   BorderIcons = []
   Caption = 'Mask grid by specified values'
-  ClientHeight = 299
-  ClientWidth = 493
+  ClientHeight = 290
+  ClientWidth = 487
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -12,7 +12,6 @@ object Mask_mult_form: TMask_mult_form
   Font.Name = 'Tahoma'
   Font.Style = []
   FormStyle = fsStayOnTop
-  PixelsPerInch = 96
   TextHeight = 13
   object Memo1: TMemo
     Left = 16

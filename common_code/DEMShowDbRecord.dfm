@@ -3,8 +3,8 @@ object showrecordform: Tshowrecordform
   Top = 220
   BorderIcons = [biSystemMenu]
   Caption = 'Data Base Record'
-  ClientHeight = 552
-  ClientWidth = 1191
+  ClientHeight = 543
+  ClientWidth = 1185
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -18,20 +18,23 @@ object showrecordform: Tshowrecordform
   TextHeight = 13
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 533
-    Width = 1191
+    Top = 524
+    Width = 1185
     Height = 19
     Panels = <>
     SimplePanel = True
+    ExplicitTop = 533
+    ExplicitWidth = 1191
   end
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 1191
+    Width = 1185
     Height = 29
     ButtonHeight = 21
     Caption = 'ToolBar1'
     TabOrder = 1
+    ExplicitWidth = 1191
     object BitBtn1: TBitBtn
       Left = 0
       Top = 0
@@ -271,11 +274,13 @@ object showrecordform: Tshowrecordform
   object PageControl1: TPageControl
     Left = 0
     Top = 29
-    Width = 1191
-    Height = 504
+    Width = 1185
+    Height = 495
     ActivePage = TabSheet1
     Align = alClient
     TabOrder = 2
+    ExplicitWidth = 1191
+    ExplicitHeight = 504
     object TabSheet1: TTabSheet
       Caption = 'Database'
       object StringGrid1: TStringGrid

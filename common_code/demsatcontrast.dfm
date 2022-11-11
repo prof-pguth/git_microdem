@@ -2,14 +2,14 @@ inherited EROSContrastForm: TEROSContrastForm
   Left = 634
   Top = 251
   Caption = 'Image Contrast Enhancement'
-  ClientHeight = 315
-  ClientWidth = 575
+  ClientHeight = 306
+  ClientWidth = 569
   FormStyle = fsStayOnTop
   Position = poDefaultSizeOnly
   OnClose = FormClose
   OnCreate = FormCreate
-  ExplicitWidth = 593
-  ExplicitHeight = 362
+  ExplicitWidth = 587
+  ExplicitHeight = 353
   TextHeight = 20
   inherited Bevel1: TBevel
     Width = 409

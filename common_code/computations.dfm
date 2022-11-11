@@ -12,7 +12,6 @@ object CompForm: TCompForm
   Font.Style = []
   FormStyle = fsStayOnTop
   OnClose = FormClose
-  PixelsPerInch = 96
   TextHeight = 13
   object Memo1: TMemo
     Left = 0
@@ -24,6 +23,8 @@ object CompForm: TCompForm
       '')
     ScrollBars = ssVertical
     TabOrder = 0
+    ExplicitWidth = 515
+    ExplicitHeight = 212
   end
   object Panel1: TPanel
     Left = 0
@@ -32,6 +33,7 @@ object CompForm: TCompForm
     Height = 145
     Align = alTop
     TabOrder = 1
+    ExplicitWidth = 515
     object Label3: TLabel
       Left = 182
       Top = 85

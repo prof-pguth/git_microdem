@@ -2,8 +2,8 @@ object KoppenGraph: TKoppenGraph
   Left = 407
   Top = 333
   Caption = 'KoppenGraph'
-  ClientHeight = 363
-  ClientWidth = 591
+  ClientHeight = 329
+  ClientWidth = 585
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -22,10 +22,11 @@ object KoppenGraph: TKoppenGraph
   object Image1: TImage
     Left = 0
     Top = 0
-    Width = 591
-    Height = 363
+    Width = 585
+    Height = 329
     Align = alClient
     OnMouseDown = Image1MouseDown
+    ExplicitWidth = 591
     ExplicitHeight = 304
   end
   object MainMenu1: TMainMenu

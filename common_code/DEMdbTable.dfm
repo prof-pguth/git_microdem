@@ -2,8 +2,8 @@ object dbtablef: Tdbtablef
   Left = 62
   Top = 306
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1118
-  ClientWidth = 1358
+  ClientHeight = 1109
+  ClientWidth = 1352
   Color = clBtnFace
   ParentFont = True
   FormStyle = fsMDIChild
@@ -17,21 +17,24 @@ object dbtablef: Tdbtablef
   TextHeight = 20
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 1099
-    Width = 1358
+    Top = 1090
+    Width = 1352
     Height = 19
     Panels = <
       item
         Width = 250
       end>
+    ExplicitTop = 1099
+    ExplicitWidth = 1358
   end
   object Panel2: TPanel
     Left = 0
     Top = 41
-    Width = 1358
+    Width = 1352
     Height = 32
     Align = alTop
     TabOrder = 1
+    ExplicitWidth = 1358
     object BitBtn1: TBitBtn
       Left = 34
       Top = 1
@@ -212,10 +215,11 @@ object dbtablef: Tdbtablef
   object Panel3: TPanel
     Left = 0
     Top = 73
-    Width = 1358
+    Width = 1352
     Height = 41
     Align = alTop
     TabOrder = 2
+    ExplicitWidth = 1358
     object Label2: TLabel
       Left = 12
       Top = 12
@@ -262,10 +266,11 @@ object dbtablef: Tdbtablef
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1358
+    Width = 1352
     Height = 41
     Align = alTop
     TabOrder = 4
+    ExplicitWidth = 1358
     object LOSButton: TSpeedButton
       Left = 40
       Top = 6
@@ -524,11 +529,11 @@ object dbtablef: Tdbtablef
   object Panel7: TPanel
     Left = 0
     Top = 114
-    Width = 1358
+    Width = 1352
     Height = 41
     Align = alTop
     TabOrder = 3
-    ExplicitWidth = 1364
+    ExplicitWidth = 1358
     object RadioGroup2: TRadioGroup
       Left = 20
       Top = 0
@@ -549,8 +554,8 @@ object dbtablef: Tdbtablef
   object DBGrid1: TDBGrid
     Left = 0
     Top = 155
-    Width = 1358
-    Height = 944
+    Width = 1352
+    Height = 935
     Align = alClient
     TabOrder = 5
     TitleFont.Charset = DEFAULT_CHARSET

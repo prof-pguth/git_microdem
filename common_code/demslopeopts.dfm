@@ -5,8 +5,8 @@ object SlopeOptForm: TSlopeOptForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Slope Map Options'
-  ClientHeight = 320
-  ClientWidth = 337
+  ClientHeight = 311
+  ClientWidth = 331
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack

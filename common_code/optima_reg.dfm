@@ -4,18 +4,16 @@ object RegOptsForm: TRegOptsForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Optima in region options'
-  ClientHeight = 254
-  ClientWidth = 294
+  ClientHeight = 245
+  ClientWidth = 288
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = False
   Position = poMainFormCenter
   OnClose = FormClose
-  PixelsPerInch = 96
   TextHeight = 13
   object Grid: TLabel
     Left = 8

@@ -2,22 +2,23 @@ inherited VariogramOptions: TVariogramOptions
   Left = 234
   Top = 421
   Caption = 'Variogram options'
-  ClientHeight = 276
+  ClientHeight = 220
   ClientWidth = 492
   OnCreate = FormCreate
-  ExplicitWidth = 510
-  ExplicitHeight = 323
-  PixelsPerInch = 96
+  ExplicitLeft = 3
+  ExplicitTop = 3
+  ExplicitWidth = 504
+  ExplicitHeight = 258
   TextHeight = 20
   inherited Bevel1: TBevel
     Left = 0
     Top = 4
     Width = 390
-    Height = 225
+    Height = 205
     ExplicitLeft = 0
     ExplicitTop = 4
     ExplicitWidth = 390
-    ExplicitHeight = 225
+    ExplicitHeight = 205
   end
   object Label1: TLabel [1]
     Left = 24

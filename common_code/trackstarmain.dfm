@@ -2,8 +2,8 @@ object SatTractForm: TSatTractForm
   Left = 143
   Top = 242
   Caption = 'Satellite tracking'
-  ClientHeight = 351
-  ClientWidth = 378
+  ClientHeight = 342
+  ClientWidth = 372
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -15,15 +15,15 @@ object SatTractForm: TSatTractForm
   OnClose = FormClose
   OnCreate = FormCreate
   OnResize = FormResize
-  PixelsPerInch = 96
   TextHeight = 13
   object Panel2: TPanel
     Left = 0
     Top = 0
-    Width = 378
+    Width = 372
     Height = 78
     Align = alTop
     TabOrder = 0
+    ExplicitWidth = 378
     object Label2: TLabel
       Left = 8
       Top = 8
@@ -96,11 +96,13 @@ object SatTractForm: TSatTractForm
   object StringGrid1: TStringGrid
     Left = 0
     Top = 78
-    Width = 378
-    Height = 273
+    Width = 372
+    Height = 264
     Align = alClient
     FixedCols = 0
     TabOrder = 1
+    ExplicitWidth = 378
+    ExplicitHeight = 273
     ColWidths = (
       64
       64

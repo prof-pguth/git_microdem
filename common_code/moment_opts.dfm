@@ -2,8 +2,8 @@ object MomentOptsForm: TMomentOptsForm
   Left = 0
   Top = 0
   Caption = 'Moment distribution options'
-  ClientHeight = 194
-  ClientWidth = 286
+  ClientHeight = 222
+  ClientWidth = 304
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -46,7 +46,7 @@ object MomentOptsForm: TMomentOptsForm
   end
   object OKBtn: TBitBtn
     Left = 8
-    Top = 168
+    Top = 187
     Width = 77
     Height = 27
     Caption = 'OK'
@@ -78,7 +78,7 @@ object MomentOptsForm: TMomentOptsForm
   end
   object HelpBtn: TBitBtn
     Left = 91
-    Top = 168
+    Top = 187
     Width = 77
     Height = 27
     Kind = bkHelp
@@ -116,5 +116,13 @@ object MomentOptsForm: TMomentOptsForm
     Caption = 'Roughness moments'
     TabOrder = 8
     OnClick = CheckBox1Click
+  end
+  object CheckBox7: TCheckBox
+    Left = 8
+    Top = 152
+    Width = 169
+    Height = 17
+    Caption = 'Long version statistics'
+    TabOrder = 9
   end
 end

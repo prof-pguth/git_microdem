@@ -2,8 +2,8 @@ object NetQuizForm: TNetQuizForm
   Left = 0
   Top = 0
   Caption = 'Stereo net quiz'
-  ClientHeight = 229
-  ClientWidth = 439
+  ClientHeight = 220
+  ClientWidth = 433
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -11,7 +11,6 @@ object NetQuizForm: TNetQuizForm
   Font.Name = 'Tahoma'
   Font.Style = []
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
     Left = 8
@@ -88,12 +87,14 @@ object NetQuizForm: TNetQuizForm
     OnClick = BitBtn2Click
   end
   object Memo1: TMemo
-    Left = 192
+    Left = 186
     Top = 0
     Width = 247
-    Height = 229
+    Height = 220
     Align = alRight
     TabOrder = 4
+    ExplicitLeft = 192
+    ExplicitHeight = 229
   end
   object BitBtn3: TBitBtn
     Left = 84

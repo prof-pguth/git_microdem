@@ -3,8 +3,8 @@ object RefractionForm: TRefractionForm
   Top = 0
   BorderIcons = []
   Caption = 'Refraction Model'
-  ClientHeight = 251
-  ClientWidth = 323
+  ClientHeight = 242
+  ClientWidth = 317
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -14,7 +14,6 @@ object RefractionForm: TRefractionForm
   FormStyle = fsStayOnTop
   OnClose = FormClose
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
     Left = 8

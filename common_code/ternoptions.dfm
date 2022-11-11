@@ -3,16 +3,14 @@ object TernOptForm: TTernOptForm
   Top = 273
   BorderIcons = []
   Caption = 'Ternary Options'
-  ClientHeight = 217
-  ClientWidth = 163
+  ClientHeight = 208
+  ClientWidth = 157
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
-  OldCreateOrder = False
-  PixelsPerInch = 96
   TextHeight = 13
   object RadioGroup1: TRadioGroup
     Left = 8

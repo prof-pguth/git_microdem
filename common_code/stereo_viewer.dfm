@@ -13,7 +13,6 @@ object StereoViewerForm: TStereoViewerForm
   Menu = MainMenu1
   WindowState = wsMaximized
   OnResize = FormResize
-  PixelsPerInch = 96
   TextHeight = 13
   object Image1: TImage
     Left = 40

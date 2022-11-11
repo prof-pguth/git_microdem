@@ -1,25 +1,23 @@
 object pickcounty: Tpickcounty
   Left = 598
   Top = 435
-  ClientHeight = 361
-  ClientWidth = 533
+  ClientHeight = 352
+  ClientWidth = 527
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
-  OldCreateOrder = False
   Position = poDefaultSizeOnly
   OnActivate = FormActivate
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object DBGrid1: TDBGrid
     Left = 0
     Top = 41
-    Width = 533
-    Height = 286
+    Width = 527
+    Height = 277
     Align = alClient
     DataSource = DataSource1
     TabOrder = 1
@@ -33,13 +31,14 @@ object pickcounty: Tpickcounty
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 533
+    Width = 527
     Height = 41
     ButtonHeight = 21
     Caption = 'ToolBar1'
     TabOrder = 0
+    ExplicitWidth = 533
     DesignSize = (
-      533
+      527
       41)
     object OKBtn: TBitBtn
       Left = 0
@@ -96,11 +95,13 @@ object pickcounty: Tpickcounty
   end
   object Panel1: TPanel
     Left = 0
-    Top = 327
-    Width = 533
+    Top = 318
+    Width = 527
     Height = 34
     Align = alBottom
     TabOrder = 2
+    ExplicitTop = 327
+    ExplicitWidth = 533
     object CheckBox1: TCheckBox
       Left = 11
       Top = 2

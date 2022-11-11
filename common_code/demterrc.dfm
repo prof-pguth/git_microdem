@@ -3,8 +3,8 @@ object GetTerrC: TGetTerrC
   Top = 247
   BorderStyle = bsDialog
   Caption = 'Terrain Category Parameters'
-  ClientHeight = 858
-  ClientWidth = 324
+  ClientHeight = 849
+  ClientWidth = 318
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack

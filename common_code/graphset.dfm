@@ -4,8 +4,8 @@ object GraphSettingsForm: TGraphSettingsForm
   ActiveControl = OKBtn
   BorderStyle = bsDialog
   Caption = 'Graph Modifications'
-  ClientHeight = 438
-  ClientWidth = 561
+  ClientHeight = 452
+  ClientWidth = 586
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
@@ -28,30 +28,6 @@ object GraphSettingsForm: TGraphSettingsForm
     Width = 31
     Height = 13
     Caption = 'Year '
-  end
-  object Colors: TLabel
-    Left = 24
-    Top = 200
-    Width = 36
-    Height = 13
-    Caption = 'Colors'
-    Visible = False
-  end
-  object Label1: TLabel
-    Left = 80
-    Top = 200
-    Width = 31
-    Height = 13
-    Caption = 'Min z'
-    Visible = False
-  end
-  object Label4: TLabel
-    Left = 200
-    Top = 200
-    Width = 34
-    Height = 13
-    Caption = 'Max z'
-    Visible = False
   end
   object Label5: TLabel
     Left = 15
@@ -188,42 +164,26 @@ object GraphSettingsForm: TGraphSettingsForm
     TabOrder = 7
     Visible = False
   end
-  object Edit5: TEdit
-    Left = 128
-    Top = 200
-    Width = 57
-    Height = 21
-    TabOrder = 8
-    Visible = False
-  end
-  object Edit6: TEdit
-    Left = 240
-    Top = 200
-    Width = 57
-    Height = 21
-    TabOrder = 9
-    Visible = False
-  end
   object Edit7: TEdit
     Left = 23
     Top = 336
     Width = 65
     Height = 21
-    TabOrder = 10
+    TabOrder = 8
   end
   object Edit8: TEdit
     Left = 103
     Top = 336
     Width = 57
     Height = 21
-    TabOrder = 11
+    TabOrder = 9
   end
   object Edit9: TEdit
     Left = 183
     Top = 336
     Width = 57
     Height = 21
-    TabOrder = 12
+    TabOrder = 10
   end
   object BitBtn2: TBitBtn
     Left = 276
@@ -245,7 +205,7 @@ object GraphSettingsForm: TGraphSettingsForm
       3333333333377333333333333333033333333333333733333333333333333333
       3333333333333333333333333333333333333333333333333333}
     NumGlyphs = 2
-    TabOrder = 13
+    TabOrder = 11
     OnClick = BitBtn2Click
   end
   object CheckBox3: TCheckBox
@@ -254,7 +214,7 @@ object GraphSettingsForm: TGraphSettingsForm
     Width = 97
     Height = 17
     Caption = '1:1 line'
-    TabOrder = 14
+    TabOrder = 12
   end
   object CheckBox6: TCheckBox
     Left = 432
@@ -262,14 +222,14 @@ object GraphSettingsForm: TGraphSettingsForm
     Width = 133
     Height = 17
     Caption = '1:1 x-y axis scaling'
-    TabOrder = 15
+    TabOrder = 13
   end
   object Edit10: TEdit
     Left = 144
     Top = 373
     Width = 236
     Height = 21
-    TabOrder = 16
+    TabOrder = 14
   end
   object GroupBox1: TGroupBox
     Left = 16
@@ -277,7 +237,7 @@ object GraphSettingsForm: TGraphSettingsForm
     Width = 169
     Height = 73
     Caption = 'Form size'
-    TabOrder = 17
+    TabOrder = 15
     object Label9: TLabel
       Left = 16
       Top = 24
@@ -315,7 +275,7 @@ object GraphSettingsForm: TGraphSettingsForm
     Width = 97
     Height = 17
     Caption = 'Scroll graph'
-    TabOrder = 18
+    TabOrder = 16
     OnClick = CheckBox7Click
   end
   object Edit1: TEdit
@@ -323,7 +283,7 @@ object GraphSettingsForm: TGraphSettingsForm
     Top = 40
     Width = 55
     Height = 21
-    TabOrder = 19
+    TabOrder = 17
     Text = 'Edit1'
   end
   object BitBtn3: TBitBtn
@@ -332,7 +292,7 @@ object GraphSettingsForm: TGraphSettingsForm
     Width = 153
     Height = 25
     Caption = 'Bigger point symbols'
-    TabOrder = 20
+    TabOrder = 18
     OnClick = BitBtn3Click
   end
   object BitBtn4: TBitBtn
@@ -341,16 +301,16 @@ object GraphSettingsForm: TGraphSettingsForm
     Width = 153
     Height = 25
     Caption = 'Smaller point symbols'
-    TabOrder = 21
+    TabOrder = 19
     OnClick = BitBtn4Click
   end
   object PageControl1: TPageControl
     Left = 8
     Top = 8
-    Width = 281
+    Width = 313
     Height = 185
     ActivePage = TabSheet1
-    TabOrder = 22
+    TabOrder = 20
     object TabSheet1: TTabSheet
       Caption = 'X axis'
       object XMinLabel: TLabel
@@ -523,13 +483,49 @@ object GraphSettingsForm: TGraphSettingsForm
         TabOrder = 2
       end
     end
+    object TabSheet4: TTabSheet
+      Caption = 'Colors'
+      ImageIndex = 3
+      object Label4: TLabel
+        Left = 28
+        Top = 3
+        Width = 34
+        Height = 13
+        Caption = 'Max z'
+        Visible = False
+      end
+      object Label1: TLabel
+        Left = 23
+        Top = 30
+        Width = 31
+        Height = 13
+        Caption = 'Min z'
+        Visible = False
+      end
+      object Edit6: TEdit
+        Left = 68
+        Top = 0
+        Width = 57
+        Height = 21
+        TabOrder = 0
+        Visible = False
+      end
+      object Edit5: TEdit
+        Left = 68
+        Top = 27
+        Width = 57
+        Height = 21
+        TabOrder = 1
+        Visible = False
+      end
+    end
   end
   object ComboBox1: TComboBox
     Left = 364
     Top = 171
     Width = 145
     Height = 21
-    TabOrder = 23
+    TabOrder = 21
     Items.Strings = (
       'Full Grid'
       'Part Grid'

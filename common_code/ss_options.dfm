@@ -4,8 +4,8 @@ object SS_opts_form: TSS_opts_form
   BorderIcons = [biMinimize]
   BorderStyle = bsDialog
   Caption = 'Sidescan Options'
-  ClientHeight = 374
-  ClientWidth = 656
+  ClientHeight = 365
+  ClientWidth = 650
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -13,10 +13,8 @@ object SS_opts_form: TSS_opts_form
   Font.Name = 'Tahoma'
   Font.Style = []
   FormStyle = fsStayOnTop
-  OldCreateOrder = False
   OnClose = FormClose
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Label7: TLabel
     Left = 104

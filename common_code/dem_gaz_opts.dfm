@@ -4,8 +4,8 @@ object GazOptsForm: TGazOptsForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Gazetteer Label Options'
-  ClientHeight = 143
-  ClientWidth = 295
+  ClientHeight = 134
+  ClientWidth = 289
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
