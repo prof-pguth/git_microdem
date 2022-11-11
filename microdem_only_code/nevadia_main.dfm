@@ -2,8 +2,8 @@ object wmdem: Twmdem
   Left = 0
   Top = 262
   Caption = 'GIS program loading'
-  ClientHeight = 1366
-  ClientWidth = 2192
+  ClientHeight = 1348
+  ClientWidth = 2180
   Color = clScrollBar
   DefaultMonitor = dmDesktop
   Font.Charset = DEFAULT_CHARSET
@@ -28,13 +28,14 @@ object wmdem: Twmdem
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 2192
+    Width = 2180
     Height = 29
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34
     TabOrder = 0
     OnMouseDown = ToolBar1MouseDown
+    ExplicitWidth = 2192
     object SpeedButton2: TSpeedButton
       Left = 0
       Top = 0
@@ -1676,8 +1677,8 @@ object wmdem: Twmdem
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 1347
-    Width = 2192
+    Top = 1329
+    Width = 2180
     Height = 19
     Panels = <
       item
@@ -1696,6 +1697,8 @@ object wmdem: Twmdem
     Visible = False
     OnClick = StatusBar1Click
     OnDblClick = StatusBar1DblClick
+    ExplicitTop = 1347
+    ExplicitWidth = 2192
   end
   object MainMenu1: TMainMenu
     Left = 136

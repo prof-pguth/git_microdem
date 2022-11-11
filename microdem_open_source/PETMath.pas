@@ -168,7 +168,7 @@ const
 
 procedure Moment(var data : array of float32; var MomentVar : tMomentVar; MomentStop : tMomentStop);
 procedure InitializeMomentVar(var MomentVar : tMomentVar);
-procedure MomentsToStringGrid(StringGrid : tStringGrid; OnLine,OnColumn : integer; Variable : shortString; MomentVar : tMomentVar);
+procedure MomentsToStringGrid(StringGrid : tStringGrid; var OnLine,OnColumn : integer; Variable : shortString; MomentVar : tMomentVar; LongVersion : boolean = false);
 procedure MomentReport(Variable : shortString; var data : Petmath.bfarray32; n : integer; {DoHist : boolean = false;} Title : ShortString = ''; StringGrid : tStringGrid = nil; OnLine : integer = -99; OnCol : integer = -99);
 function MomentResultsToString(MomentVar : tMomentVar) : shortstring;
 
@@ -1917,30 +1917,43 @@ end;
 
 
 
-procedure MomentsToStringGrid(StringGrid : tStringGrid; OnLine,OnColumn : integer; Variable : shortString; MomentVar : tMomentVar);
+procedure MomentsToStringGrid(StringGrid : tStringGrid; var OnLine,OnColumn : integer; Variable : shortString; MomentVar : tMomentVar; LongVersion : boolean = false);
 begin
    StringGrid.Cells[0,OnLine] := Variable + ' n';
    StringGrid.Cells[OnColumn,OnLine] := IntToStr(MomentVar.NPts);
-   StringGrid.Cells[0,OnLine+1] := Variable + ' mean';
-   StringGrid.Cells[OnColumn,OnLine+1] := RealToString(MomentVar.mean,-18,-2);
-   StringGrid.Cells[0,OnLine+2] := Variable + ' avg dev';
-   StringGrid.Cells[OnColumn,OnLine+2] := RealToString(MomentVar.avg_dev,-18,-2);
-   StringGrid.Cells[0,OnLine+3] := Variable + ' std dev';
-   StringGrid.Cells[OnColumn,OnLine+3] := RealToString(MomentVar.sdev,-18,-2);
-   StringGrid.Cells[0,OnLine+4] := Variable + ' skewness';
-   StringGrid.Cells[OnColumn,OnLine+4] := RealToString(MomentVar.skew,-18,-4);
-   StringGrid.Cells[0,OnLine+5] := Variable + ' kurtosis';
-   StringGrid.Cells[OnColumn,OnLine+5] := RealToString(MomentVar.curt,-18,-4);
-   StringGrid.Cells[0,OnLine+6] := Variable + ' min';
-   StringGrid.Cells[OnColumn,OnLine+6] := RealToString(MomentVar.minz,-18,-2);
-   StringGrid.Cells[0,OnLine+7] := Variable + ' max';
-   StringGrid.Cells[OnColumn,OnLine+7] := RealToString(MomentVar.maxz,-18,-2);
-   StringGrid.Cells[0,OnLine+8] := Variable + ' median';
-   StringGrid.Cells[OnColumn,OnLine+8] := RealToString(MomentVar.median,-18,-2);
-   StringGrid.Cells[0,OnLine+9] := Variable + ' Q1';
-   StringGrid.Cells[OnColumn,OnLine+9] := RealToString(MomentVar.Q1,-18,-2);
-   StringGrid.Cells[0,OnLine+10] := Variable + ' Q3';
-   StringGrid.Cells[OnColumn,OnLine+10] := RealToString(MomentVar.Q3,-18,-2);
+   inc(OnLine);
+   StringGrid.Cells[0,OnLine] := Variable + ' mean';
+   StringGrid.Cells[OnColumn,OnLine] := RealToString(MomentVar.mean,-18,-2);
+   inc(OnLine);
+   StringGrid.Cells[0,OnLine] := Variable + ' std dev';
+   StringGrid.Cells[OnColumn,OnLine] := RealToString(MomentVar.sdev,-18,-2);
+   inc(OnLine);
+   StringGrid.Cells[0,OnLine] := Variable + ' skewness';
+   StringGrid.Cells[OnColumn,OnLine] := RealToString(MomentVar.skew,-18,-4);
+   inc(OnLine);
+   StringGrid.Cells[0,OnLine] := Variable + ' kurtosis';
+   StringGrid.Cells[OnColumn,OnLine] := RealToString(MomentVar.curt,-18,-4);
+   inc(OnLine);
+   StringGrid.Cells[0,OnLine] := Variable + ' min';
+   StringGrid.Cells[OnColumn,OnLine] := RealToString(MomentVar.minz,-18,-2);
+   inc(OnLine);
+   StringGrid.Cells[0,OnLine] := Variable + ' max';
+   StringGrid.Cells[OnColumn,OnLine] := RealToString(MomentVar.maxz,-18,-2);
+   inc(OnLine);
+   StringGrid.Cells[0,OnLine] := Variable + ' median';
+   StringGrid.Cells[OnColumn,OnLine] := RealToString(MomentVar.median,-18,-2);
+   inc(OnLine);
+   if LongVersion then begin
+      StringGrid.Cells[0,OnLine+8] := Variable + ' avg dev';
+      StringGrid.Cells[OnColumn,OnLine+2] := RealToString(MomentVar.avg_dev,-18,-2);
+      inc(OnLine);
+      StringGrid.Cells[0,OnLine+9] := Variable + ' Q1';
+      StringGrid.Cells[OnColumn,OnLine+9] := RealToString(MomentVar.Q1,-18,-2);
+      inc(OnLine);
+      StringGrid.Cells[0,OnLine+10] := Variable + ' Q3';
+      StringGrid.Cells[OnColumn,OnLine+10] := RealToString(MomentVar.Q3,-18,-2);
+      inc(OnLine);
+   end;
 end;
 
 

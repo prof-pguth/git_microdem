@@ -1164,11 +1164,18 @@ begin
    Result := ptTrim(Result);
 end;
 
+
 procedure TGISdataBaseModule.PickNumericFields(GraphType :  tdbGraphType; NFields : integer; l1 : shortstring; l2 : shortstring; l3 : shortstring; StringColor : boolean = false);
 {$IfDef FMX}
 begin
 {$EndIf}
 {$IfDef VCL}
+
+//  tdbGraphType = (dbgtN2Dgraph1,dbgtN2Dgraphsimplelines1, dbgtCluster1,dbgtMultiplegraphmatrix1, dbgtByLatitude1,
+//                 dbgtByLongitude1,dbgtByLatitude,dbgtByLongitude2,dbgtN2Dgraph2series1,
+//                 N2Dgraph2yaxes1,dbgtPlot1series1,dbgtPlotforsubsamples1,dbgtN2Dgraphcolorcodetext1,
+//                 dbgtN2Dgraphcolorcoded1,dbgtByLatitude2,dbgtN2Dgraph2yaxes1,dbgtN2DgraphCOLORfield1,dbgtPlot,dbgtUnspecified);
+
 var
    FieldPicker : TFieldPicker;
    NumFields2,
@@ -1180,8 +1187,6 @@ begin
    if (dbOpts.StringColorField = '') and (NFields < 4) then FieldPicker.HideAdvancedOptions;
    NumerFields := Nil;
    PetdbUtils.GetFields(MyData,dbopts.VisCols,NumericFieldTypes,NumerFields);
-   if StringColor then PetdbUtils.GetFields(MyData,dbopts.VisCols,[ftString,ftInteger,ftSmallInt],StringIntFields);
-
    if (LinkTable <> Nil) then begin
       PetdbUtils.GetFields(LinkTable,AllVis,NumericFieldTypes,NumFields2);
       for I := 0 to pred(NumFields2.Count) do NumerFields.Add('LINK-' + NumFields2.Strings[i]);
@@ -1204,7 +1209,11 @@ begin
       end;
       if (DbOpts.XField = '') then ComboBox1.Text := NumerFields.Strings[0] else ComboBox1.Text := DbOpts.XField;
       if (DbOpts.YField = '') then ComboBox2.Text := NumerFields.Strings[1] else ComboBox2.Text := DbOpts.YField;
-      if (DbOpts.StringColorField = '') then ComboBox4.Text := StringIntFields[0] else  ComboBox4.Text := DbOpts.StringColorField;
+      if StringColor then begin
+         PetdbUtils.GetFields(MyData,dbopts.VisCols,[ftString,ftInteger,ftSmallInt],StringIntFields);
+         if (DbOpts.StringColorField = '') then ComboBox4.Text := StringIntFields[0] else ComboBox4.Text := DbOpts.StringColorField;
+         StringIntFields.Free;
+      end;
       ComboBox5.Text := DbOpts.NumericColorField;
       ComboBox6.Text := DbOpts.SizeField;
 
@@ -1227,12 +1236,16 @@ begin
       PetdbUtils.GetFields(LinkTable,dbOpts.VisCols,[ftString,ftInteger,ftSmallInt],NumerFields);
       for i := 0 to pred(NumerFields.Count) do ComboBox4.Items.Add(NumerFields.Strings[i]);
 
-
-      if (GraphType = dbgtN2Dgraphcolorcodetext1) then begin
+      if (GraphType in [dbgtN2Dgraphcolorcodetext1,dbgtN2Dgraph1,dbgtN2Dgraphsimplelines1]) then begin
          ComboBox5.Visible := false;
          ComboBox6.Visible := false;
          Label6.Visible := false;
          Label7.Visible := false;
+      end;
+
+      if (GraphType in [dbgtN2Dgraph1,dbgtN2Dgraphsimplelines1]) then begin
+         ComboBox4.Visible := false;
+         Label5.Visible := false;
       end;
 
       ShowModal;

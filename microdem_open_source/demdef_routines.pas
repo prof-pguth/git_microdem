@@ -1596,6 +1596,7 @@ var
             AParameter('Geomorph','PlanCurvMoments',PlanCurvMoments,false);
             AParameter('Geomorph','SlopeCurvMoments',SlopeCurvMoments,false);
             AParameter('Geomorph','GraphsOfMoments',GraphsOfMoments,true);
+            AParameter('Geomorph','LongMoments',LongMoments,false);
             AParameter('Geomorph','CountHistograms',CountHistograms,true);
             AParameter('Geomorph','WavelengthCompDist',WavelengthCompDist,10000);
             AParameter('Geomorph','ShowElevFreq',ShowElevFreq,true);

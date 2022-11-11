@@ -1510,6 +1510,7 @@ type
            ShowNormalHistogram,
            ShowHistogramText,
            GraphsOfMoments,
+           LongMoments,
            CountHistograms,
            CumFreqNormAxis : boolean;
 

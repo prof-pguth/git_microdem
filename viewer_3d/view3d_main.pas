@@ -1,5 +1,14 @@
 unit view3d_main;
 
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2022 Peter L. Guth  }
+{___________________________________}
+
+
+
 {------------------------------------------------------------------------------
 Original code
    Visualizing mathematical functions by generating custom meshes using FireMonkey
@@ -328,7 +337,6 @@ var
             end;
          end;
 
-
 begin
    {$If Defined(Record3D) or Defined(ShortRecord)} writeLineToDebugFile('FMX3dViewer in ' + ExtractFileName(GridName1)); {$EndIf}
    View3DForm := TView3DForm.Create(Application);
@@ -480,7 +488,6 @@ begin
       MovieName := MovieDir + 'oglmovie.mov';
       MovieFiles.SaveToFile(MovieName);
       MovieFiles.Free;
-      //Petimage.MakeMovie(ExtractFileName(MovieName));
       CreateNewMovie(MovieName);
    {$EndIf}
 end;
@@ -546,7 +553,6 @@ begin
       MovieName := MovieDir + 'oglmovie2.mov';
       MovieFiles.SaveToFile(MovieName);
       MovieFiles.Free;
-      //Petimage.MakeMovie(ExtractFileName(MovieName));
       CreateNewMovie(MovieName);
    {$EndIf}
 end;

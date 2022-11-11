@@ -1,6 +1,14 @@
 unit new_petmar_movie;
 
 
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2022 Peter L. Guth  }
+{___________________________________}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // Adpated from                                                               //
 // Project:	TGIFImage demo application.                                       //
@@ -9,12 +17,6 @@ unit new_petmar_movie;
 //		All rights reserved.                                                    //
 //  http://melander.dk/articles/gifanimate/                                   //
 ////////////////////////////////////////////////////////////////////////////////
-
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{   file verified 6/22/2011       }
-{_________________________________}
 
 
 {$I nevadia_defines.inc}

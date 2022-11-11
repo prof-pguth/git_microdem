@@ -177,6 +177,12 @@ begin
           end;
        end;
        CloseFile(FFile);
+
+       if FileExists(VATFileName) then begin
+         FileName := ChangeFileExt(FileName,'.vat.dbf');
+         CopyFile(VATFileName,FileName);
+       end;
+
     finally
        EndProgress;
        DEMstatus := dsSaved;
