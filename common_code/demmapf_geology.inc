@@ -246,21 +246,11 @@ var
                      end;
                      if (GISdb[i].FocalMechsPresent) then begin
                         GISdb[i].IdentifyRecord(LastX,LastY,Lat,Long,RecsFound,False,false,TStr);
-                        if (DEMNowDoing in [ProjectFocalMechToSurface])then begin
-                        end
-                        else begin
+                        if (DEMNowDoing in [EarthquakeFocalMech])then begin
                            FocalRad := GISdb[i].QuakeRadius;
                            GISdb[i].QuakeFocalMechs(LastX,LastY,Lat,Long,RecsFound,FocalMechBMP,FocalRad);
                            Image1.Canvas.Brush.Style := bsClear;
-                           //Image1.Canvas.GlobalO := 50;
-                           //Image1.Canvas.CopyMode := cmSrcAnd;   //so white overwrites
                            Image1.Canvas.Draw(LastX-FocalMechBMP.Width div 2, LastY-FocalMechBMP.Height div 2, FocalMechBMP);
-                           (*
-                           if (SavedMapImage = Nil) then FreeAndNil(SavedMapImage);
-                           CopyImageToBitmap(Image1,SavedMapImage);
-                           MapScreenX1 := LastX;
-                           MapScreenY1 := LastY;
-                           *)
                         end;
                      end;
                  end;
@@ -286,8 +276,8 @@ var
 
           procedure ExpandVertAxis;
           begin
-             PickRotationForm.ThisGraph.GraphDraw.MinVertAxis  := PickRotationForm.ThisGraph.GraphDraw.MinVertAxis - 25;
-             PickRotationForm.ThisGraph.GraphDraw.MaxVertAxis  := PickRotationForm.ThisGraph.GraphDraw.MaxVertAxis + 25;
+             PickRotationForm.ThisGraph.GraphDraw.MinVertAxis := PickRotationForm.ThisGraph.GraphDraw.MinVertAxis - 25;
+             PickRotationForm.ThisGraph.GraphDraw.MaxVertAxis := PickRotationForm.ThisGraph.GraphDraw.MaxVertAxis + 25;
           end;
 
 
@@ -339,7 +329,7 @@ var
        Bitmap : tMyBitmap;
        TStr : shortstring;
     begin
-       {$IfDef RecordFullDrift} WriteLineToDebugFile('Plot vector: ' + RealToString(v,-8,-1) + '@' + RealToString(Azimuth,-8,-1));  {$EndIf}
+       {$IfDef RecordFullDrift} WriteLineToDebugFile('Plot vector: ' + RealToString(v,-8,-1) + '@' + RealToString(Azimuth,-8,-1)); {$EndIf}
        MapDraw.LatLongDegreeToScreen(Lat,Long,xp,yp);
        {$IfDef RecordFullDrift} WriteLineToDebugFile('At ' + LatLongDegreeToString(Lat,Long) + '  screen x=' + IntToStr(xp) + '  y=' + IntToStr(yp)); {$EndIf}
        if StartArrowFromPoint then f := 2 else f := 1;
@@ -352,7 +342,7 @@ var
 
        x2 := round(Xp + f * VelocityVectorLength(v) * SinDeg(Azimuth));
        y2 := round(Yp - f * VelocityVectorLength(v) * CosDeg(Azimuth));
-       {$IfDef RecordFullDrift} WriteLineToDebugFile('Vector Label End, x=' + IntToStr(x2) + ' y=' + IntToStr(y2));  {$EndIf}
+       {$IfDef RecordFullDrift} WriteLineToDebugFile('Vector Label End, x=' + IntToStr(x2) + ' y=' + IntToStr(y2)); {$EndIf}
        if MDDef.PlateLabelVectors then begin
           f := round(azimuth);
           if (PLabel <> '') then Plabel := Plabel + '=';
@@ -432,14 +422,14 @@ begin
 
        if (PickRotationForm.RadioGroup1.ItemIndex = 3) then begin
           if (P1Name = P2Name) then begin
-             MessageToContinue('Must use two different plates');
+             MessageToContinue('Requires different plates');
              exit;
           end;
        end
        else begin
           P3Name := PickRotationForm.Plate3ComboBox.Text;
           if (P1Name = P2Name) or (P1Name = P3Name) or (P2Name = P3Name) then begin
-             MessageToContinue('Must use three different plates at triple junction');
+             MessageToContinue('Requires different plates');
              exit;
           end;
        end;
@@ -573,7 +563,7 @@ procedure TMapForm.ThreadCheckPlane(GetOrientation: boolean ; xg1,yg1 : float64;
 var
    Bitmap : tMyBitmap;
 begin
-   {$IfDef RecordThreadCheckPlane} WriteLineToDebugFile('TMapForm.ThreadCheckPlane in  Map=' + Caption);  {$EndIf}
+   {$IfDef RecordThreadCheckPlane} WriteLineToDebugFile('TMapForm.ThreadCheckPlane in  Map=' + Caption); {$EndIf}
    if ClosingMapNow or (MapDraw.DEMonMap = 0) or (Not DEMGlb[MapDraw.DEMonMap].GridInDataSet(xg1,yg1)) then exit;
    repeat
        if GetOrientation then begin

@@ -25,25 +25,25 @@ begin
    MDdef.DefLidarGeoGridSizeX := 0.5;
    MDdef.DefLidarGeoGridSizeY := 0.5;
 
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX 0.5 sec area');  {$EndIf}
+   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX 0.5 sec area'); {$EndIf}
    MDDef.LasDEMPixelIs := 1; //area
    fName := OutPath + 'md_' + DEMGlb[DEM].AreaName + '_0.5sec_area.tif';
    NewDEM := DEMGlb[DEM].ResampleByAveraging(true,false,fName);
    CloseSingleDEM(newDEM);
 
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX 0.5 sec point');  {$EndIf}
+   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX 0.5 sec point'); {$EndIf}
    MDDef.LasDEMPixelIs := 2; //point
    fName := OutPath + 'md_' + DEMGlb[DEM].AreaName + '_0.5sec_point.tif';
    NewDEM := DEMGlb[DEM].ResampleByAveraging(true,false,fName);
    CloseSingleDEM(newDEM);
 
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX 1 sec area');  {$EndIf}
+   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX 1 sec area'); {$EndIf}
    MDdef.DefLidarGeoGridSizeX := 1;
    MDdef.DefLidarGeoGridSizeY := 1;
    MDDef.LasDEMPixelIs := 1; //area
 
    fName := OutPath + 'md_' + DEMGlb[DEM].AreaName + '_1sec_area.tif';
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX, ' + fName);  {$EndIf}
+   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX, ' + fName); {$EndIf}
    NewDEM := DEMGlb[DEM].ResampleByAveraging(true,false,fName);
 
    fName := OutPath + 'md_' + DEMGlb[DEM].AreaName + '_upsample_0.5sec_area.tif';

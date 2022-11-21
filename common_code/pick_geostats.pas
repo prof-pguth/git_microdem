@@ -21,6 +21,7 @@ unit pick_geostats;
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IfDef Debug}
       //{$Define RecordGeostats}
+      {$Define RecordMoments}
       //{$Define RecordMapMaking}
    {$EndIf}
 {$EndIf}
@@ -374,7 +375,7 @@ procedure TPickGeoStat.BitBtn20Click(Sender: TObject);
 var
    Radius,Box,DEM : integer;
 begin
-   {$IfDef RecordMapMaking} WriteLineToDebugFile('TPickGeoStat.BitBtn20Click in');  {$EndIf}
+   {$IfDef RecordMapMaking} WriteLineToDebugFile('TPickGeoStat.BitBtn20Click in'); {$EndIf}
    try
       if (CurDEM = 0) then GetDEM(CurDEM,true,'single DEM geomorphometry');
       HeavyDutyProcessing := true;
@@ -388,25 +389,25 @@ begin
       SaveDEM(DEM);
       DEM := CreateRoughnessMapAvgVector(CurDEM,true);
       SaveDEM(DEM);
-      {$IfDef RecordMapMaking} WriteLineToDebugFile('TPickGeoStat.BitBtn20Click singles done, start loop');  {$EndIf}
+      {$IfDef RecordMapMaking} WriteLineToDebugFile('TPickGeoStat.BitBtn20Click singles done, start loop'); {$EndIf}
 
       for Radius := 1 to 4 do begin
          Box := succ(2*Radius);
          DEM := CreateRoughnessSlopeStandardDeviationMap(CurDEM,Box);
-         {$IfDef RecordMapMaking} WriteLineToDebugFile('TPickGeoStat.BitBtn20Click CreateRoughnessSlopeStandardDeviationMap done');  {$EndIf}
+         {$IfDef RecordMapMaking} WriteLineToDebugFile('TPickGeoStat.BitBtn20Click CreateRoughnessSlopeStandardDeviationMap done'); {$EndIf}
          SaveDEM(DEM);
-         {$IfDef RecordMapMaking} WriteLineToDebugFile('TPickGeoStat.BitBtn20Click DEM saved');  {$EndIf}
+         {$IfDef RecordMapMaking} WriteLineToDebugFile('TPickGeoStat.BitBtn20Click DEM saved'); {$EndIf}
          WhiteBox_AverageNormalVectorAngularDeviation(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap,Box);
          WhiteBox_CircularVarianceOfAspect(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap,Box);
          SagaVectorRuggednessMap(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap,Box);
          GrassVectorRuggedness(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap,Box);
-         {$IfDef RecordMapMaking} WriteLineToDebugFile('TPickGeoStat.BitBtn20Click loope done, radius=' + IntToStr(Radius));  {$EndIf}
+         {$IfDef RecordMapMaking} WriteLineToDebugFile('TPickGeoStat.BitBtn20Click loope done, radius=' + IntToStr(Radius)); {$EndIf}
       end;
    finally
       HeavyDutyProcessing := false;
    end;
 
-   {$IfDef RecordMapMaking} WriteLineToDebugFile('TPickGeoStat.BitBtn20Click out');  {$EndIf}
+   {$IfDef RecordMapMaking} WriteLineToDebugFile('TPickGeoStat.BitBtn20Click out'); {$EndIf}
 
 (*
 var
@@ -588,11 +589,9 @@ end;
 
 procedure TPickGeoStat.DifferenClick(Sender: TObject);
 begin
-   {$IfDef ExGeostats}
-   {$Else}
-      MDDef.CountHistograms:= false;
-      ElevMomentReport(DEMSWanted,GroupTitle,Memo1,False,GridLimits,CurDEM);
-   {$EndIf}
+   {$IfDef RecordMoments} WriteLineToDebugFile('TPickGeoStat.DifferenClick, moments'); {$EndIf}
+   MDDef.CountHistograms:= false;
+   ElevMomentReport(DEMSWanted,GroupTitle,Memo1,False,GridLimits,CurDEM);
 end;
 
 procedure TPickGeoStat.BitBtn6Click(Sender: TObject);
@@ -610,7 +609,7 @@ end;
 
 procedure TPickGeoStat.BitBtn8Click(Sender: TObject);
 begin
-   {$IfDef RecordGeostats} WriteLineToDebugFile('TPickGeoStat.BitBtn8Click in');  {$EndIf}
+   {$IfDef RecordGeostats} WriteLineToDebugFile('TPickGeoStat.BitBtn8Click in'); {$EndIf}
    MDDef.SSObyPole := (Sender = BitBtn8);
    if CheckBox2.Checked then DoAnSSODiagram(0,GridLimits)
    else DoAnSSODiagram(CurDEM,GridLimits);
@@ -635,6 +634,7 @@ end;
 
 procedure TPickGeoStat.Button12Click(Sender: TObject);
 begin
+   {$IfDef RecordMoments} WriteLineToDebugFile('TPickGeoStat.Button12Click, moments with optons'); {$EndIf}
    Moment_Opts.SetMomentOptions;
    DifferenClick(Sender);
 end;
@@ -839,7 +839,7 @@ var
          end;
 
 begin
-   {$IfDef RecordGeostats} WriteLineToDebugFile('TPickGeoStat.GeClick in');  {$EndIf}
+   {$IfDef RecordGeostats} WriteLineToDebugFile('TPickGeoStat.GeClick in'); {$EndIf}
    GetGeomorphBlockOpts(gbDB,CurDEM,GridLimits);
    {$IfDef NoParallelFor}
       MakeTables(1);

@@ -1,10 +1,13 @@
 unit trackstarmain;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{   file verified 6/22/2011       }
-{_________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2022 Peter L. Guth  }
+{___________________________________}
+
+
 
 {$I nevadia_defines.inc}
 
@@ -24,8 +27,6 @@ type
   TSatTractForm = class(TForm)
     Timer1: TTimer;
     Panel2: TPanel;
-    Edit1: TEdit;
-    Label2: TLabel;
     BitBtn1: TBitBtn;
     BitBtn2: TBitBtn;
     CheckBox1: TCheckBox;
@@ -33,23 +34,27 @@ type
     BitBtn4: TBitBtn;
     BitBtn5: TBitBtn;
     StringGrid1: TStringGrid;
+    RadioGroup1: TRadioGroup;
+    RedrawSpeedButton12: TSpeedButton;
     procedure FormCreate(Sender: TObject);
-    procedure Button1Click(Sender: TObject);
+    //procedure Button1Click(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure Timer1Timer(Sender: TObject);
-    procedure Edit1Change(Sender: TObject);
     procedure BitBtn1Click(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
     procedure BitBtn4Click(Sender: TObject);
     procedure BitBtn5Click(Sender: TObject);
     procedure FormResize(Sender: TObject);
+    procedure RadioGroup1Click(Sender: TObject);
+    procedure RedrawSpeedButton12Click(Sender: TObject);
   private
     { Private declarations }
      NetBMP : tMyBitmap;
+     procedure ResetBaseMap;
   public
     { Public declarations }
      fn1        : PathStr;
-     MinApart   : integer;
+     //MinApart   : integer;
      MapOwner   : tMapForm;
      NetForm    : tNetForm;
      ObsLat,ObsLong,ObsElev : float64;
@@ -85,6 +90,7 @@ var
   jtime1,dt  : double;
 
 
+  (*
 procedure TSatTractForm.Button1Click(Sender: TObject);
 var
    wYear,wmonth,wDay : word;
@@ -106,6 +112,20 @@ begin
       Close;
    end;
 end;
+*)
+
+
+procedure TSatTractForm.RedrawSpeedButton12Click(Sender: TObject);
+begin
+   ResetBaseMap;
+end;
+
+procedure TSatTractForm.ResetBaseMap;
+begin
+   MapOwner.DoFastMapRedraw;
+   FreeAndNil(BaseBitmap);
+   PetImage.CopyImagetoBitmap(MapOwner.Image1,BaseBitmap);
+end;
 
 
 procedure TSatTractForm.FormClose(Sender: TObject;  var Action: TCloseAction);
@@ -126,6 +146,7 @@ begin
    fn1 := ProgramRootDir + 'gps-ops.txt';
    NetForm := Nil;
    NetBMP := Nil;
+   BaseBitmap := Nil;
    ObsLat := -9999;
    ObsLong := -9999;
    ObsElev  := -9999;
@@ -138,6 +159,11 @@ begin
 end;
 
 
+procedure TSatTractForm.RadioGroup1Click(Sender: TObject);
+begin
+   dt := StrToInt(RadioGroup1.Items[RadioGroup1.ItemIndex]) / 60 / 24;
+end;
+
 procedure TSatTractForm.Timer1Timer(Sender: TObject);
 var
    Passes,i,j,xpic,ypic,Month,Day,Year,xd,yd,k : integer;
@@ -147,9 +173,7 @@ var
    TStr : ShortString;
    aSymbol : tFullSymbolDeclaration;
 begin
-{$IfDef RecordSatTrack}
-   WriteLineToDebugFile('TSatTractForm.Timer1Timer in');
-{$EndIf}
+   {$IfDef RecordSatTrack} WriteLineToDebugFile('TSatTractForm.Timer1Timer in'); {$EndIf}
     if CheckBox1.Checked then Passes := 2 else Passes := 1;
     CloneBitmap(BaseBitmap,NewBitmap);
     NewBitmap.Canvas.Draw(0,0,BaseBitmap);
@@ -165,13 +189,9 @@ begin
     StringGrid1.Cells[5,0] := 'PITCH';
     k := 1;
     for j := 1 to Passes do begin
-       {$IfDef RecordSatTrack}
-       WriteLineToDebugFile('j=' + IntToStr(j),true);
-       {$EndIf}
+       {$IfDef RecordSatTrack}  WriteLineToDebugFile('j=' + IntToStr(j)); {$EndIf}
        for i := 1 to nr_sats do begin
-          {$IfDef RecordSatTrack}
-          WriteLineToDebugFile('i=' + IntToStr(i) + '/' + IntToStr(nr_sats));
-          {$EndIf}
+          {$IfDef RecordSatTrack} WriteLineToDebugFile('i=' + IntToStr(i) + '/' + IntToStr(nr_sats)); {$EndIf}
            Convert_Satellite_Data(i);
            SGP(jtime1,sat_pos,sat_vel);
            Convert_Sat_State(sat_pos,sat_vel);
@@ -215,9 +235,7 @@ begin
            end
            else ScreenSymbol(BaseBitmap.Canvas,XPic,YPic,Box,2,claSilver);
         end;
-        {$IfDef RecordSatTrack}
-        WriteLineToDebugFile('done i loop');
-        {$EndIf}
+        {$IfDef RecordSatTrack}  WriteLineToDebugFile('done i loop'); {$EndIf}
      end;
      StringGrid1.RowCount := k;
      StringGrid1.ColCount := 6;
@@ -225,22 +243,13 @@ begin
      MapOwner.Image1.Picture.Graphic := NewBitmap;
      NewBitmap.Free;
      CalDat(Trunc(Jtime1),Month,Day,Year);
-     //Hours := 24 * Frac(JTime1 + 0.000045);
-     //TStr := IntegerToString(Trunc(Hours),2) + IntegerToString(round(Frac(Hours) * 60),2);
-     for i := 1 to 3 do if TStr[i] = ' ' then TStr[i] := '0';
-     Label1.Caption := IntToStr(Month) + '/' + IntToStr(Day) + '/' + IntToStr(Year) + '  ' + TStr + ' UTC';
+     TStr := RealToString((JTime1 - Trunc(Jtime1)) * 24,-8,2) + ' hrs UTC';
+     //for i := 1 to 3 do if TStr[i] = ' ' then TStr[i] := '0';
+     Label1.Caption := IntToStr(Month) + '/' + IntToStr(Day) + '/' + IntToStr(Year) + '  ' + TStr;
      jtime1 := jtime1 + dt;
-{$IfDef RecordSatTrack}
-   WriteLineToDebugFile('TSatTractForm.Timer1Timer out');
-{$EndIf}
+   {$IfDef RecordSatTrack} WriteLineToDebugFile('TSatTractForm.Timer1Timer out'); {$EndIf}
 end;
 
-
-procedure TSatTractForm.Edit1Change(Sender: TObject);
-begin
-    CheckEditString(Edit1.Text,MinApart);
-    dt := MinApart / 60 / 24;
-end;
 
 procedure TSatTractForm.BitBtn1Click(Sender: TObject);
 begin
@@ -259,14 +268,28 @@ end;
 
 
 procedure TSatTractForm.BitBtn4Click(Sender: TObject);
+var
+   wYear,wmonth,wDay : word;
 begin
    BitBtn1Click(nil);
-   Petmar.GetFileFromDirectory('satellite orbital elements','*.txt',fn1);
-   MapOwner.DoFastMapRedraw;
-   FreeAndNil(BaseBitmap);
-   PetImage.CopyImagetoBitmap(MapOwner.Image1,BaseBitmap);
-   Button1Click(nil);
-   BitBtn2Click(nil);
+   if Petmar.GetFileFromDirectory('satellite orbital elements','*.txt',fn1) then begin
+      ResetBaseMap;
+
+      nr_sats := Input_Satellite_Data(fn1);
+      DecodeDate(now,wYear,wmonth,wDay);
+
+      jtime1 := PETMath.JulDay(wMonth,wDay,wYear);
+      RadioGroup1Click(Sender);
+
+      PetImage.CopyImagetoBitmap(MapOwner.Image1,BaseBitmap);
+      if (Sender = Nil) then Timer1Timer(Sender)
+      else Timer1.Enabled := true;
+      BitBtn2Click(nil);
+   end
+   else begin
+      MessageToContinue('Missing ephemeris');
+      Close;
+   end;
 end;
 
 
@@ -281,8 +304,5 @@ end;
 
 initialization
 finalization
-{$IfDef RecordSatTrack}
-   WriteLineToDebugFile('RecordSatTrack active in trackstarmain');
-{$EndIf}
-
+   {$IfDef RecordSatTrack} WriteLineToDebugFile('RecordSatTrack active in trackstarmain'); {$EndIf}
 end.

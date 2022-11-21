@@ -1,10 +1,12 @@
 unit petimage_form;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{   file verified 5/21/2013       }
-{_________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2022 Peter L. Guth  }
+{___________________________________}
+
 
 
 {$I nevadia_defines.inc}
@@ -597,7 +599,7 @@ begin
       end;
       bmp1.Free;
       bmp2.Free;
-      {$IfDef RecordProblems} WriteLineToDebugFile('DifferenceTwoBitmaps out');    {$EndIf}
+      {$IfDef RecordProblems} WriteLineToDebugFile('DifferenceTwoBitmaps out'); {$EndIf}
    end;
 end;
 
@@ -1225,10 +1227,10 @@ end;
 
 procedure TImageDisplayForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-   {$IfDef RecordClosing} WriteLineToDebugFile('TImageFm.FormClose in');   {$EndIf}
+   {$IfDef RecordClosing} WriteLineToDebugFile('TImageFm.FormClose in'); {$EndIf}
    Action := caFree;
    CancelBtnClick(Sender);
-   {$IfDef RecordClosing} WriteLineToDebugFile('TImageFm.FormClose CancelBtnClicked');   {$EndIf}
+   {$IfDef RecordClosing} WriteLineToDebugFile('TImageFm.FormClose CancelBtnClicked'); {$EndIf}
 
    if (TopBitmap <> Nil) then TopBitmap.Free;
    if (BaseTopBitmap <> Nil) then BaseTopBitmap.Free;
@@ -1236,7 +1238,7 @@ begin
    {$IfDef ExImageOverlays}
    {$Else}
       if (Overlays <> Nil) then begin
-         {$IfDef RecordClosing} WriteLineToDebugFile('TImageFm.FormClose overlays start');   {$EndIf}
+         {$IfDef RecordClosing} WriteLineToDebugFile('TImageFm.FormClose overlays start'); {$EndIf}
          Overlays.ApplyFilter('');
          Overlays.First;
          while not Overlays.eof do begin
@@ -1247,7 +1249,7 @@ begin
          SysUtils.DeleteFile(MDTempDir + 'imageoverlay' + DefaultDBExt);
       end;
    {$EndIf}
-   {$IfDef RecordClosing} WriteLineToDebugFile('TImageFm.FormClose out');   {$EndIf}
+   {$IfDef RecordClosing} WriteLineToDebugFile('TImageFm.FormClose out'); {$EndIf}
 end;
 
 
@@ -2145,8 +2147,8 @@ procedure TImageDisplayForm.CancelBtnClick(Sender: TObject);
 begin
   {$IfDef ExOpacity}
   {$Else}
-      if BaseTopBitmap <> Nil then FreeAndNil(BaseTopBitmap);
-      if TopBitmap <> Nil then FreeAndNil(TopBitmap);
+      if (BaseTopBitmap <> Nil) then FreeAndNil(BaseTopBitmap);
+      if (TopBitmap <> Nil) then FreeAndNil(TopBitmap);
       Panel2.Height := 0;
       BaseTopBitmap := Nil;
       TopBitmap := Nil;
@@ -2194,12 +2196,12 @@ begin
 
    {$IfDef ExImageOverlays}
    {$Else}
-      if (Overlays <> NIL) then begin
+      if (Overlays <> Nil) then begin
          Overlays.ApplyFilter('');
          {$IfDef RecordImageOverlayProblems} WriteLineToDebugFile('Overlay records: ' + IntToStr(Overlays.RecordCount));      {$EndIf}
 
          Overlays.ApplyFilter('(X < ' + IntToStr(x) + ') AND (WIDTH > ' + IntToStr(x) + ') AND (Y < ' + IntToStr(y) + ') AND (HEIGHT > ' + IntToStr(y) + ')');
-         {$IfDef RecordImageOverlayProblems} WriteLineToDebugFile('Overlay filter: ' + Overlays.Filter + '  Found: ' + IntToStr(Overlays.RecordCount));    {$EndIf}
+         {$IfDef RecordImageOverlayProblems} WriteLineToDebugFile('Overlay filter: ' + Overlays.Filter + '  Found: ' + IntToStr(Overlays.RecordCount)); {$EndIf}
          if (Overlays.RecordCount > 0) then begin
             ImageDoingWhat := DraggingBMP;
             XBMPSize := Overlays.GetFieldByNameAsInteger('WIDTH') - Overlays.GetFieldByNameAsInteger('X');
@@ -2275,7 +2277,7 @@ end;
 
 procedure TImageDisplayForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
-   {$IfDef RecordClosing} WriteLineToDebugFile('TImageFm.FormCloseQuery in');   {$EndIf}
+   {$IfDef RecordClosing} WriteLineToDebugFile('TImageFm.FormCloseQuery in'); {$EndIf}
    CanClose := CanCloseItself;
 end;
 
@@ -2424,7 +2426,7 @@ end;
 procedure TImageDisplayForm.SpeedButton7Click(Sender: TObject);
 begin
    {$IfDef RegisterPhoto}
-   ImageDoingWhat := LocatePoints;
+      ImageDoingWhat := LocatePoints;
    {$EndIf}
 end;
 

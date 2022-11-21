@@ -295,7 +295,6 @@ begin
    DEMGlb[Result].DEMMapProjection := DEMGlb[Map1].DEMMapProjection;
    DEMGlb[Result].DEMMapProjection.ProjectionSharedWithDataset := true;
    if DEMGlb[Result].DEMheader.DEMPrecision = ByteDEM then DEMGlb[Result].DEMheader.DEMPrecision := SmallIntDEM;
-   //DEMGlb[Result].DEMheader.ElevUnits := Undefined;
    DEMGlb[Result].DEMstatus := dsUnsaved;
 
    if not DEMGlb[Result].AllocateDEMMemory(InitDEMMissing) then exit;
@@ -372,6 +371,39 @@ begin
       DEMGlb[DiffMap].SetUpMap(Diffmap,true);
    end;
    {$IfDef RecordDEMCompare} WriteLineToDebugFile('GridMinimum out'); {$EndIf}
+end;
+
+
+function PercentDifferentTwoGrids(RefDEM,TestDEM : integer; fName : PathStr) : integer;
+var
+   Col,Row  : integer;
+   zRef,z1 : float32;
+   NewHeader : tDEMheader;
+   IdenticalGrids : boolean;
+begin
+   {$IfDef RecordDEMCompare} WriteLineToDebugFile('PercentDifferentTwoGrids in'); {$EndIf}
+   //GetTwoCompatibleGrids('grid ratio=DEM1/DEM2',true,Map1Num,Map2Den,false,true);
+   IdenticalGrids := DEMGlb[RefDEM].SecondGridIdentical(TestDEM);
+
+   NewHeader := DEMGlb[RefDEM].DEMheader;
+   NewHeader.ElevUnits := Undefined;
+   NewHeader.DEMPrecision := FloatingPointDEM;
+   if OpenAndZeroNewDEM(true,NewHeader,Result,fName,InitDEMmissing) then begin
+      StartProgress('Percent difference');
+       for Col := 0 to pred(DEMGlb[RefDEM].DEMheader.NumCol) do begin
+          for Row := 0 to pred(DEMGlb[RefDEM].DEMheader.NumRow) do begin
+             if DEMGlb[RefDEM].GetElevMeters(Col,Row,zref) and (abs(zref) > 0.000001) then begin
+                if DEMGlb[RefDEM].GetElevMetersFromSecondDEM(IdenticalGrids,TestDEM,Col,Row,z1) then begin
+                   DEMGlb[Result].SetGridElevation(Col,Row,(z1-zref)/zRef);
+                end;
+             end;
+          end {for Row};
+          UpdateProgressBar(Col/ pred(DEMGlb[RefDEM].DEMheader.NumCol));
+       end {for Col};
+      {$IfDef RecordDEMCompare} WriteLineToDebugFile('Diff DEM: ' + DEMGlb[DiffMap].AreaName + '  ' + DEMGlb[DiffMap].KeyDEMParams); {$EndIf}
+      DEMGlb[Result].SetUpMap(Result,true);
+   end;
+   {$IfDef RecordDEMCompare} WriteLineToDebugFile('PercentDifferentTwoGrids out'); {$EndIf}
 end;
 
 

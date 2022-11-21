@@ -168,7 +168,7 @@ var
             GISdb[DB].ShowStatus;
          end
          else begin
-            {$IfDef RecordGlobalDEM} WriteLineToDebugFile('Fail, no land cover in, ' + GISdb[DB].DBName);   {$EndIf}
+            {$IfDef RecordGlobalDEM} WriteLineToDebugFile('Fail, no land cover in, ' + GISdb[DB].DBName); {$EndIf}
          end;
       end;
 
@@ -288,7 +288,7 @@ var
          fName := Petmar.NextFileNumber(MDTempDir,'elev_Slope_','.bmp');
          SaveImageAsBMP(Result.Image1,fName);
          sl.Add(fName);
-         {$IfDef RecordGlobalDEM} WriteLineToDebugFile('GraphPlot out, db=' + IntToStr(DB));   {$EndIf}
+         {$IfDef RecordGlobalDEM} WriteLineToDebugFile('GraphPlot out, db=' + IntToStr(DB)); {$EndIf}
       end;
 
 
@@ -423,7 +423,7 @@ var
         Bitmap : tMyBitmap;
         fName : PathStr;
       begin
-         {$IfDef RecordGlobalDEM} WriteLineToDebugFile('DirtAndAirShots DoOne=' + GISdb[DBonTable].dbName);   {$EndIf}
+         {$IfDef RecordGlobalDEM} WriteLineToDebugFile('DirtAndAirShots DoOne=' + GISdb[DBonTable].dbName); {$EndIf}
          ShowHourglassCursor;
          GISdb[DBonTable].ApplyGISFilter(TheFilter);
          Title := RemoveUnderScores(GISdb[DBonTable].dbName) + ' n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB);
@@ -613,7 +613,7 @@ var
          bmp : tMyBitmap;
          HistFields : tStringList;
       begin
-         {$IfDef RecordGlobalDEM} WriteLineToDebugFile('DoOne=' + GISdb[theDB].dbName);   {$EndIf}
+         {$IfDef RecordGlobalDEM} WriteLineToDebugFile('DoOne=' + GISdb[theDB].dbName); {$EndIf}
          TStr := GISdb[thedb].dbName;
          GISdb[theDB].ApplyGISFilter(TheFilter);
          if (TheTitle = '') then TheTitle := BeforeSpecifiedCharacter(TStr,'_');

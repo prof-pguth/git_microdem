@@ -86,7 +86,7 @@ begin
    if (VATFileName = '') then fName := ChangeFileExt(DEMFileName,'.vat.dbf')
    else fName := VATFileName;
    if not FileExists(fName) then begin
-      {$IfDef RecordVAT} WriteLineToDebugFile('tDEMDataSet.LoadColorVATTable, could not find  VAT' + fName);   {$EndIf}
+      {$IfDef RecordVAT} WriteLineToDebugFile('tDEMDataSet.LoadColorVATTable, could not find  VAT' + fName); {$EndIf}
       exit;
    end;
 
@@ -225,7 +225,7 @@ begin
   if not FileExists(fName) then fName := ChangeFileExt(DEMFileName,'.vat.dbf');
   NewFile := false;
   if FileExists(fName) then begin
-     {$IfDef RecordVAT} WriteLineToDebugFile('Found VAT, ' + fName);   {$EndIf}
+     {$IfDef RecordVAT} WriteLineToDebugFile('Found VAT, ' + fName); {$EndIf}
      VATFileName := fName;
      Table := tMyData.Create(fName);
      CountFieldName := Table.NCountField;
@@ -352,7 +352,7 @@ begin
    ShowHourglassCursor;
    fName := ChangeFileExt(DEMFileName,'.json');
    if FileExists(fName) then begin
-      {$IfDef RecordWriteDEM} WriteLineToDebugFile('JSON existed');   {$EndIf}
+      {$IfDef RecordWriteDEM} WriteLineToDebugFile('JSON existed'); {$EndIf}
    end
    else begin
        JSONString := '{"v":"GeoJSON-G 0.1"' +

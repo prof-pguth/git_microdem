@@ -270,7 +270,7 @@ begin
       AreaName := bName;
       DataFile := tStringList.Create;
       DataFile.LoadFromFile(Dir + bName + '.hdr');
-      {$IfDef RecordReadDEM}  WriteLineToDebugFile('hdr file');  WriteStringListToDebugFile(DataFile);  {$EndIf}
+      {$IfDef RecordReadDEM}  WriteLineToDebugFile('hdr file');  WriteStringListToDebugFile(DataFile); {$EndIf}
       DEMUsed := ArcSecDEM;
       DigitizeDatum := NAD83d;
       DataSpacing := SpaceDegrees;
@@ -300,7 +300,7 @@ begin
          if (DataFile.Count > 9) then NoData := ReadValue(DataFile.Strings[9]);
 
          DataFile.LoadFromFile(Dir + bName + '.blw');
-         {$IfDef RecordReadDEM} WriteLineToDebugFile('blw file'); WriteStringListToDebugFile(DataFile);  {$EndIf}
+         {$IfDef RecordReadDEM} WriteLineToDebugFile('blw file'); WriteStringListToDebugFile(DataFile); {$EndIf}
          Val(ptTrim(DataFile.Strings[0]),DEMxSpacing,err);
          Val(ptTrim(DataFile.Strings[3]),DEMySpacing,err);
          Val(ptTrim(DataFile.Strings[4]),DEMSWCornerX,err);

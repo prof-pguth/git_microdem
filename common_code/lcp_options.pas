@@ -123,7 +123,7 @@ var
    fName : PathStr;
    AccumCostDEMs : array[1..100] of integer;
 begin
-   {$IfDef RecordLCP} WritelineToDebugFile('Enter TLCP_form.CreateRouteCostBitBtn7Click');  {$EndIf}
+   {$IfDef RecordLCP} WritelineToDebugFile('Enter TLCP_form.CreateRouteCostBitBtn7Click'); {$EndIf}
    CheckLCPSettings;
    CloseAllDEMs;
    if not FileExists(MDDef.LCPStartfName) then RouteStartBitBtn4Click(Sender);
@@ -185,7 +185,7 @@ begin
       CloseAndNilNumberedDB(GISend);
       StatusBar1.Panels[0].Text := '';
    end;
-   {$IfDef RecordLCP} WritelineToDebugFile('Exit TLCP_form.CreateRouteCostBitBtn7Click');  {$EndIf}
+   {$IfDef RecordLCP} WritelineToDebugFile('Exit TLCP_form.CreateRouteCostBitBtn7Click'); {$EndIf}
 end;
 
 

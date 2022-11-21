@@ -31,6 +31,7 @@ type
     CheckBox6: TCheckBox;
     RadioGroup1: TRadioGroup;
     CheckBox1: TCheckBox;
+    CheckBox7: TCheckBox;
     procedure HelpBtnClick(Sender: TObject);
     procedure OKBtnClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -79,6 +80,7 @@ begin
    CheckBox4.Checked := MDDef.PlanCurvMoments;
    CheckBox5.Checked := MDDef.SlopeCurvMoments;
    CheckBox6.Checked := MDDef.GraphsOfMoments;
+   CheckBox7.Checked := MDDef.LongMoments;
    if MDDef.CountHistograms then RadioGroup1.ItemIndex := 0
    else RadioGroup1.ItemIndex := 1;
 end;
@@ -96,6 +98,7 @@ begin
    MDDef.PlanCurvMoments := CheckBox4.Checked;
    MDDef.SlopeCurvMoments := CheckBox5.Checked;
    MDDef.GraphsOfMoments := CheckBox6.Checked;
+   MDDef.LongMoments := CheckBox7.Checked;
    MDDef.CountHistograms := RadioGroup1.ItemIndex = 0;
    Close;
 end;

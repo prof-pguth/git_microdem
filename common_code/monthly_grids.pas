@@ -129,9 +129,9 @@ procedure StartMontlyTimeSeries;
 
 
 begin
-   {$IfDef RecordMultiGrids} WriteLineToDebugFile('StartMontlyTimeSeries in');  {$EndIf}
+   {$IfDef RecordMultiGrids} WriteLineToDebugFile('StartMontlyTimeSeries in'); {$EndIf}
    if (GridTimeSeriesControlForm = Nil) then begin
-      {$IfDef RecordMultiGrids} WriteLineToDebugFile('StartMontlyTimeSeries form created');  {$EndIf}
+      {$IfDef RecordMultiGrids} WriteLineToDebugFile('StartMontlyTimeSeries form created'); {$EndIf}
       GridTimeSeriesControlForm := TGridTimeSeriesControlForm.Create(Application);
    end;
    EnableCheckBox(GridTimeSeriesControlForm.CheckBox1,1);
@@ -145,7 +145,7 @@ begin
    GridTimeSeriesControlForm.Show;
    GridTimeSeriesControlForm.RadioGroup8Click(nil);
    UpdateMenusForAllMaps;
-   {$IfDef RecordMultiGrids} WriteLineToDebugFile('StartMontlyTimeSeries out');  {$EndIf}
+   {$IfDef RecordMultiGrids} WriteLineToDebugFile('StartMontlyTimeSeries out'); {$EndIf}
 end;
 
 

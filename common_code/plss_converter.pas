@@ -52,7 +52,7 @@ uses
    DEM_PLSS,Get_PLss,DEM_indexes,DEMDefs,Petmath,Petmar,GetLatLn,BaseMap,US_properties,
    {$IfDef ExSats}
    {$Else}
-   DEMEros,
+      DEMEros,
    {$EndIf}
    Nevadia_Main,
    Petmar_types,
@@ -83,13 +83,11 @@ var
 begin
    {$IfDef ExSats}
    {$Else}
-   CloseAllImagery;
+      CloseAllImagery;
    {$EndIf}
    Self.Visible := false;
    if GetPLSSLocation(PLSSString,Lat,Long,DEMGlb[1].SelectionMap) then begin
-      {$IfDef RecordPLSSProblems}
-      WriteLineToDebugFile('TPLSSConvertForm.BitBtn1Click: '  + PLSSString + '   ' + LatLongDegreeToString(Lat,Long,MDDef.OutPutLatLongMethod));
-      {$EndIf}
+      {$IfDef RecordPLSSProblems} WriteLineToDebugFile('TPLSSConvertForm.BitBtn1Click: '  + PLSSString + '   ' + LatLongDegreeToString(Lat,Long,MDDef.OutPutLatLongMethod)); {$EndIf}
       Memo1.Lines.Add(PLSSString + ' = ' + LatLongDegreeToString(Lat,Long,MDDef.OutPutLatLongMethod));
       if US_properties.GetCounty(Lat,Long,GeoName) then Memo1.Lines.Add(GeoName);
       Memo1.Lines.Add('');
@@ -106,14 +104,12 @@ var
 begin
    {$IfDef ExSats}
    {$Else}
-   CloseAllImagery;
+      CloseAllImagery;
    {$EndIf}
    Self.Visible := false;
    GetLatLong(WGS84DatumConstants,'to convert', Lat,Long);
    ShowHourglassCursor;
-   {$IfDef RecordPLSSProblems}
-   WriteLineToDebugFile('TPLSSConvertForm.BitBtn2Click: ' + LatLongDegreeToString(Lat,Long,MDDef.OutPutLatLongMethod));
-   {$EndIf}
+   {$IfDef RecordPLSSProblems} WriteLineToDebugFile('TPLSSConvertForm.BitBtn2Click: ' + LatLongDegreeToString(Lat,Long,MDDef.OutPutLatLongMethod)); {$EndIf}
 
    Memo1.Lines.Add(LatLongDegreeToString(Lat,Long,MDDef.OutPutLatLongMethod) + ' = ' + PLSSLocation(Lat,Long));
    if US_properties.GetCounty(Lat,Long,GeoName) then Memo1.Lines.Add(GeoName);
@@ -136,15 +132,7 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordClosingProblems}
-   WriteLineToDebugFile('Closing plss_converter in', true);
-   {$EndIf}
-
-   {$IfDef RecordPLSSProblems}
-   WriteLineToDebugFile('RecordPLSSProblems active in plss_converter');
-   {$EndIf}
-
-   {$IfDef RecordClosingProblems}
-   WriteLineToDebugFile('Closing plss_converter out');
-   {$EndIf}
+   {$IfDef RecordClosingProblems} WriteLineToDebugFile('Closing plss_converter in'); {$EndIf}
+   {$IfDef RecordPLSSProblems} WriteLineToDebugFile('RecordPLSSProblems active in plss_converter'); {$EndIf}
+   {$IfDef RecordClosingProblems} WriteLineToDebugFile('Closing plss_converter out'); {$EndIf}
 end.

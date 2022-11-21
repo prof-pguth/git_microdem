@@ -1,9 +1,11 @@
 unit Petcorrl;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{_________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2022 Peter L. Guth  }
+{___________________________________}
 
 interface
 
@@ -12,7 +14,6 @@ uses
    StdCtrls, ExtCtrls,SysUtils,
    PETMAR,Petmar_types, Menus;
 
-  
 const
    MaxVars = 36;
 
@@ -64,8 +65,6 @@ implementation
 
 uses
    BaseGraf,PETMath;
-
-
 
 procedure GetBins(MaxMax,MinMin : float64; var BinSize,StartIndex : float64);
 var

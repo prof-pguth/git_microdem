@@ -1,10 +1,11 @@
 unit NetMainW;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{   file verified 6/22/2011       }
-{_________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2022 Peter L. Guth  }
+{___________________________________}
 
 
 {$I nevadia_defines.inc}
@@ -996,7 +997,7 @@ begin {proc ContourPoles}
          else WorkingBitmap.Width := 200 * round(NetScreenMult) + 2 * NetOffset;
       end;
       DrawNetGrid;
-      {$IfDef ContourNet} WriteLineToDebugFile('Net created: ' + IntToStr(Bitmap.Width) + 'x' + IntToStr(Bitmap.Height)); {$EndIf}
+      {$IfDef ContourNet} WriteLineToDebugFile('Net created:' + BitmapSizeString(Bitmap)); {$EndIf}
 
       StartProgress('Contour');
       if (MDDef.NetDef.NetContourColors in [ContrastBW,GrayDither]) and (MDDef.NetDef.NetScreenMult = 2) then begin
@@ -1155,9 +1156,7 @@ begin
    if (LLcornerText <> '') then WorkingBitmap.Canvas.TextOut(1, WorkingBitmap.Height - WorkingBitmap.Canvas.TextHeight(LLcornerText), LLcornerText);
    DrawNetGrid;
    //Image1.Picture.Graphic := Bitmap;
-   {$IfDef NetDraw}
-   WriteLineToDebugFile('TNetForm.NewNet, size x=' + IntToStr(Bitmap.Width) + '   y=' + IntToStr(Bitmap.Height),true);
-   {$EndIf}
+   {$IfDef NetDraw} WriteLineToDebugFile('TNetForm.NewNet,' +  BitmapSizeString(Bitmap)); {$EndIf}
 end {proc NewNet};
 
 {--------------------- Routines to Plot On Net ----------------------}

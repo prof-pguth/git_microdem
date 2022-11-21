@@ -1,10 +1,12 @@
 unit Graphset;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{   file verified 4/3/2016        }
-{_________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2022 Peter L. Guth  }
+{___________________________________}
+
 
 {$I nevadia_defines.inc}
 
@@ -35,11 +37,6 @@ type
     Edit4: TEdit;
     BitBtn1: TBitBtn;
     CheckBox1: TCheckBox;
-    Edit5: TEdit;
-    Edit6: TEdit;
-    Colors: TLabel;
-    Label1: TLabel;
-    Label4: TLabel;
     Edit7: TEdit;
     Edit8: TEdit;
     Edit9: TEdit;
@@ -87,6 +84,11 @@ type
     ComboBox1: TComboBox;
     ComboBox3: TComboBox;
     CheckBox8: TCheckBox;
+    TabSheet4: TTabSheet;
+    Edit6: TEdit;
+    Label4: TLabel;
+    Edit5: TEdit;
+    Label1: TLabel;
     procedure BitBtn1Click(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -154,7 +156,7 @@ begin
             MyTable.Destroy;
          end;
          if (XYZFilesPlotted.Count > 0) then begin
-            Colors.Visible := true;
+            //Colors.Visible := true;
             Label1.Visible := true;
             Label4.Visible := true;
             Edit5.Visible := true;

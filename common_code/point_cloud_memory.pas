@@ -76,7 +76,7 @@ type
    tMemoryPointCloud = class
       private
          {$IfDef RecordPointCloudLimits}
-         procedure ShowXYLimits(Where : ShortString);
+            procedure ShowXYLimits(Where : ShortString);
          {$EndIf}
          procedure ZeroXLimits;
          procedure ZeroYLimits;
@@ -412,7 +412,6 @@ begin
    xutm := xyPts^[i,1];
    yutm := xyPts^[i,2];
 end;
-
 
 
 procedure tMemoryPointCloud.HowHighUp;
