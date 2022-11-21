@@ -10,7 +10,7 @@
 
 procedure tDEMDataSet.GetStraightRouteLatLongDegree(Lat1,Long1,Lat2,Long2 : float64; StraightAlgorithm : tStraightAlgorithm; var NumPoints : integer; var Lats,Longs,dists : Petmath.bfarray32);
 begin
-   {$IfDef RecordLOSAlgorithm} WriteLineToDebugFile('tDEMDataSet.GetStraightRouteLatLongDegree');  {$EndIf}
+   {$IfDef RecordLOSAlgorithm} WriteLineToDebugFile('tDEMDataSet.GetStraightRouteLatLongDegree'); {$EndIf}
    GetStraightRoute(true,Lat1,Long1,Lat2,Long2,StraightAlgorithm,NumPoints,Longs,Lats,dists);
 end;
 
@@ -35,7 +35,7 @@ var
 begin
    {$IfDef RecordLOSAlgorithm} WriteLineToDebugFile('tDEMDataSet.GetStraightRouteDEMGrid enter'); {$EndIf}
    if MDDef.wf.LOSAlgorithm in [losMicrodemFractional,losMicrodemConstant] then begin
-      {$IfDef RecordLOSAlgorithm} WriteLineToDebugFile('tDEMDataSet.GetStraightRouteDEMGrid, losMICRODEM');  {$EndIf}
+      {$IfDef RecordLOSAlgorithm} WriteLineToDebugFile('tDEMDataSet.GetStraightRouteDEMGrid, losMICRODEM'); {$EndIf}
       GetStraightRoute(false,Lat1,Long1,Lat2,Long2,StraightAlgorithm,NumPoints,xgrids,ygrids,dists);
    end
    else begin
@@ -130,7 +130,7 @@ var
    dx,dy,dLat,dLong,x,y,
    dDistance,FullDistance,Bearing : float64;
 begin
-   {$IfDef RecordLOSAlgorithm} WriteLineToDebugFile('tDEMDataSet.GetStraightRoute enter');  {$EndIf}
+   {$IfDef RecordLOSAlgorithm} WriteLineToDebugFile('tDEMDataSet.GetStraightRoute enter'); {$EndIf}
 
    VincentyCalculateDistanceBearing(Lat1,Long1,Lat2,Long2,FullDistance,Bearing);
    dDistance := FullDistance / NumPoints;

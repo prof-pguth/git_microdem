@@ -122,7 +122,7 @@ var
 
        ReadHeader;
 
-       {$IfDef RecordReadMDDEM} WriteLineToDebugFile('Recognition string=' + Magic);  {$EndIf}
+       {$IfDef RecordReadMDDEM} WriteLineToDebugFile('Recognition string=' + Magic); {$EndIf}
 
        if GoodMagic(Magic) then begin
           {$If Defined(RecordReadMDDEM)} WriteLineToDebugFile('Acceptable MD DEM'); {$EndIf}
@@ -479,7 +479,7 @@ begin
     end;
     OpenAndZeroNewDEM(false,NewHeader,NewDEM,'DEM to match maps',InitDEMmissing);
     {$IfDef RecordUKOS} WriteLineToDebugFile('OpenAndZeroNewDEM done'); {$EndIf}
-    {$IfDef VCL} StartProgress('Reinterpolate ' + DEMGlb[BigDEM].AreaName);  {$EndIf}
+    {$IfDef VCL} StartProgress('Reinterpolate ' + DEMGlb[BigDEM].AreaName); {$EndIf}
     for Col := 0 to pred(NewHeader.NumCol) do begin
        {$IfDef VCL} if (col mod 10 = 0) then UpDateProgressBar(Col/NewHeader.NumCol); {$EndIf}
        for Row := 0 to pred(NewHeader.NumCol) do begin
@@ -915,7 +915,7 @@ begin
    finally
       OpeningNewGrid := false;
    end;
-   {$IfDef RecordCreateNewDEM} WritelineToDebugFile('Depart with DEMHeader.WKTString=' + DEMGlb[WantedDEM].DEMHeader.WKTString);  {$EndIf}
+   {$IfDef RecordCreateNewDEM} WritelineToDebugFile('Depart with DEMHeader.WKTString=' + DEMGlb[WantedDEM].DEMHeader.WKTString); {$EndIf}
 end;
 
 

@@ -974,6 +974,7 @@ var
             rfile : array[1..10] of file;
             TileList : tStringList;
             v : array[1..2] of float32;
+            Max : float32;
             aMinVal,aMaxVal : float64;
             RefFilter,aFilter : shortstring;
             bmp : tMyBitmap;
@@ -1006,7 +1007,7 @@ var
             else if (What in [dgArea]) then begin
                RefFilter := 'LAND_TYPE=' + QuotedStr(LandType) + ' AND REF_TYPE=' + QuotedStr(DEMType);
             end
-            else if (What in [dgPick,dg7Params]) then begin
+            else if (What in [dgPick,dg7Params,dgNormalizedDiff ]) then begin
                RefFilter := 'CRITERION=' + QuotedStr(Param)  + ' AND LAND_TYPE=' + QuotedStr(LandType) + ' AND REF_TYPE=' + QuotedStr(DEMType);
             end;
 
@@ -1051,6 +1052,7 @@ var
             end;
 
             for i := 0 to pred(AreaList.Count) do begin
+             GISdb[DBonTable].EmpSource.Enabled := false;
                 GISdb[DBonTable].ApplyGISFilter(RefFilter + ' AND AREA=' + QuotedStr(AreaList.Strings[i]));
                 WMDEM.SetPanelText(0,IntToStr(i) + '/' + IntToStr(AreaList.Count) );
                 WMDEM.SetPanelText(1,RefFilter);
@@ -1100,10 +1102,18 @@ var
                         for i := 1 to AllCriteria.Count do OnePercentage('CRITERION=' + QuotedStr(AllCriteria.Strings[pred(i)]));
                         *)
                      end
-                     else if What in [dg7Params,dgPick] then begin
+                     else if (What in [dg7Params,dgPick,dgNormalizedDiff]) then begin
+                        if  (What in [dgNormalizedDiff]) then begin
+                           Max := 0;
+                           for DEM := 0 to pred(DEMsPresent.Count) do begin
+                              v[1] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(DEMsPresent.Strings[DEM]);
+                              if v[1] > Max then Max := v[1];
+                           end;
+                        end
+                        else Max := 1;
                         for DEM := 0 to pred(DEMsPresent.Count) do begin
                            v[2] := CurrentY;
-                           v[1] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(DEMsPresent.Strings[DEM]);
+                           v[1] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(DEMsPresent.Strings[DEM]) / Max;
                            BlockWrite(rfile[succ(DEM)],v,1);
                         end;
                      end
@@ -1126,7 +1136,7 @@ var
             {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Call Graph.AutoScaleAndRedrawDiagram'); {$EndIf}
             Graph.AutoScaleAndRedrawDiagram(false,false,false,false);
             Graph.Width := 1200;
-            Graph.Height := 1400;
+            Graph.Height := 2400;
             Graph.GraphDraw.BottomMargin := 75;
 
             if What in [dgArea] then begin
@@ -1149,8 +1159,12 @@ var
                Graph.GraphDraw.HorizLabel := LandType + '  ' + DEMType + '  ' + Graph.GraphDraw.HorizLabel;
             end;
 
-            if What in [dgPick,dg7Params] then begin
+            if What in [dgPick,dg7Params,dgNormalizedDiff] then begin
                Graph.GraphDraw.HorizLabel := RefFilter;
+               if What in [dgNormalizedDiff] then begin
+                  Graph.GraphDraw.MinHorizAxis := 0;
+                  Graph.GraphDraw.MaxHorizAxis := 1.1;
+               end;
             end
             else if What in [dgAllValues] then begin
                Graph.GraphDraw.HorizLabel := ThisTile + ' Criterion Difference';
@@ -1179,19 +1193,22 @@ var
 begin
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXwineContestMeanMedianGraph in, table=' + IntToStr(DBontable)); {$EndIf}
 
-   if (What = dg7Params) then begin
+   if (What in [dg7Params,dgNormalizedDiff,dgPick]) then begin
       fName := DEMIXSettingsDir;
       if not GetExistingFileName('criteria to plot','*.txt',fName) then exit;
       TheParams := tStringList.Create;
       TheParams.LoadFromFile(fName);
    end;
+   (*
    if (What = dgPick) then begin
+      GISdb[DBonTable].EmpSource.Enabled := false;
       AllCriteria := GISdb[DBonTable].MyData.UniqueEntriesInDB('CRITERION');
       PickParam := GetFromList('Criterion to plot',AllCriteria);
       TheParams := tStringList.Create;
       TheParams.Add(PickParam);
       AllCriteria.Free;
    end;
+   *)
 
    GISdb[DBonTable].EmpSource.Enabled := false;
    ColsInBigGraph := 3;
@@ -1218,7 +1235,7 @@ begin
    end
    else begin
       for j := 1 to 2 do begin
-         if (What in [dgPick,dg7Params]) then begin
+         if (What in [dgPick,dg7Params,dgNormalizedDiff]) then begin
             for k := 0 to pred(TheParams.Count) do MakeGraphForFilter(TheParams.Strings[k],LandType[1],RefType[j]);
          end
          else if (What in [dgAllValues,dgAllScores]) then begin
@@ -1234,14 +1251,11 @@ begin
 
    DEMsPresent.Free;
    SlopesPresent.Free;
-   if (What in [dgPick,dg7Params]) then TheParams.Free;
+   if (What in [dgPick,dg7Params,dgNormalizedDiff]) then TheParams.Free;
 
-   //if (What = dg7Params) then ColsInBigGraph := 2;
-
-   BigGraph.Add(LegendfName);
+   if (LegendFName <> '') then BigGraph.Add(LegendfName);
    fName := NextFileNumber(MDtempDir,'demix_big_graph_','.png');
-   MakeBigBitmap(BigGraph,'',fName,ColsInBigGraph);
-   DisplayBitmap(fName,'');
+   if MakeBigBitmap(BigGraph,'',fName,ColsInBigGraph) then  DisplayBitmap(fName,'');
 
    WMDEm.SetPanelText(1,'');
    GISdb[DBonTable].ClearGISFilter;

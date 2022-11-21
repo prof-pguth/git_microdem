@@ -261,7 +261,7 @@
                procedure RecordBitmap(Bitmap : tMyBitmap; Name : shortstring);
                begin
                   if (Bitmap = Nil) then WriteLineToDebugFile('   ' + Name + '=NIL')
-                  else WriteLineToDebugFile('   ' + Name + '=' + IntToStr(Bitmap.Width) + 'x' + IntToStr(Bitmap.Height));
+                  else WriteLineToDebugFile('   ' + Name + '=' +  BitmapSizeString(Bitmap));
                end;
          {$EndIf}
 
@@ -340,7 +340,7 @@ var
    Fan1 : tDrawFan;
    VisName,MaskName,MergeName : PathStr;
 begin
-    {$If Defined(RecordFan) or Defined(AndroidProgress) or Defined(RecordTime)}
+    {$If Defined(RecordFan) {or Defined(AndroidProgress)} or Defined(RecordTime)}
        Stopwatch := TStopwatch.StartNew;
        WriteLineToDebugFile('TMapDraw.DrawRadialFan in, DEM=' + IntToStr(Self.DEMonMap));
     {$EndIf}
@@ -365,6 +365,7 @@ begin
     {$IfDef RecordFan} writeLineToDebugFile('TMapDraw.DrawRadialFan setup over'); {$EndIf}
     if (not FileExists(ShowName)) or (not FileExists(CoverName)) then begin
        {$IfDef RecordFan} writeLineToDebugFile('TMapDraw.DrawRadialFan Fan1 creating ' + ShowName); {$EndIf}
+       RedefineWGS84DatumConstants(WeaponsFan.W_Lat,WeaponsFan.W_Long);
        Fan1 := TDrawFan.Create(MDDef.UseVegInFans,self,WeaponsFan,VisName,MaskName,MergeName,CoverName);
        Fan1.ExecuteFan;
        Fan1.Free;
@@ -386,14 +387,14 @@ procedure tMapDraw.InsureAllFansDrawn(Table : tMyData; var SummaryBitmap : tMyBi
 var
    i : integer;
    fName,VisName,MaskName,CoverName,ShowName : PathStr;
-   NormalTermination : boolean;
+   //NormalTermination : boolean;
    wf : tWeaponsFan;
    Results : tStringList;
    TStr : shortstring;
 begin
    {$IfDef RecordFan} WriteLineToDebugFile('tMapDraw.InsureAllFansDrawn in  Filter=' + Table.Filter + '  Write fans to ' + SaveViewshedDir); {$EndIf}
 
-   NormalTermination := true;
+   //NormalTermination := true;
    ShowHourglassCursor;
    Table.First;
    I := 0;
@@ -418,15 +419,17 @@ begin
    until (Table.eof);
    {$IfDef RecordFan} WriteLineToDebugFile('tMapDraw.InsureAllFansDrawn all fans created'); {$EndIf}
 
-   if NormalTermination and (SummaryBitmap <> Nil) then begin
+   if {NormalTermination and} (SummaryBitmap <> Nil) then begin
+      {$IfDef FanDrawProblems} WriteLineToDebugFile('SummaryBitmap <> Nil, ' + DEMGlb[DEMonMap].KeyDEMParams(True)); {$EndIf}
       ShowHourglassCursor;
       Table.First;
       ShowSatProgress := false;
       I := 0;
       repeat
          inc(i);
-         if (Memo1 <> Nil) then Memo1.Lines.Add(TimeToStr(Now) + ' Merge viewshed for tower ' + IntToStr(i));
+         if (Memo1 <> Nil) then Memo1.Lines.Add(TimeToStr(Now) + ' Merge viewshed ' + IntToStr(i));
          fName := Table.GetFieldByNameAsString('IMAGE');
+         {$IfDef FanDrawProblems} WriteLineToDebugFile('tMapDraw.InsureAllFansDrawn Overlay ' + fname + BitmapSizeString(SummaryBitmap)); {$EndIf}
          DrawWorldFileImageOnMap(SummaryBitmap,fName);
          CoverName := ChangeFileExt(fName,'.txt');
          if FileExists(CoverName) then begin
@@ -446,7 +449,7 @@ begin
    end;
    ShowDefaultCursor;
    if (Memo1 <> Nil) then Memo1.Lines.Add(TimeToStr(Now) + ' Composite viewshed complete');
-   {$IfDef RecordFan} WriteLineToDebugFile('tMapDraw.InsureAllFansDrawn out'); {$EndIf}
+   {$IfDef RecordFan} WriteLineToDebugFile('tMapDraw.InsureAllFansDrawn out, ' + BitmapSizeString(SummaryBitmap)); {$EndIf}
 end;
 
 
@@ -470,7 +473,7 @@ begin
       DrawOverlayNoDelete(MapBitmap,SummaryBitmap,MDDef.FanOpacity);
       EndProgress;
    end;
-   {$IfDef RecordFan} WriteLineToDebugFile('tMapDraw.DrawAllFans out, opacity=' + IntToStr(MDDef.FanOpacity)); {$EndIf}
+   {$IfDef RecordFan} WriteLineToDebugFile('tMapDraw.DrawAllFans out, opacity=' + IntToStr(MDDef.FanOpacity) + BitmapSizeString(MapBitmap) ); {$EndIf}
 end;
 
 

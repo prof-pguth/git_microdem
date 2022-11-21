@@ -195,12 +195,12 @@ var
 
 
       begin
-         {$IfDef RecordDrawGridLines} FromDatum.ShortProjInfo('DrawGraticule in');   {$EndIf}
+         {$IfDef RecordDrawGridLines} FromDatum.ShortProjInfo('DrawGraticule in'); {$EndIf}
 
          {$IfDef VCL}
             GridOverlay.Canvas.Pen.Color := ConvertPlatformColorToTColor(Color);
             GridOverlay.Canvas.Pen.Width := Width;
-            {$IfDef RecordDrawGridLines} writeLineToDebugFile('Lat long Grid lines ' + ColorString(GridOverlay.Canvas.Pen.Color));   {$EndIf}
+            {$IfDef RecordDrawGridLines} writeLineToDebugFile('Lat long Grid lines ' + ColorString(GridOverlay.Canvas.Pen.Color)); {$EndIf}
          {$EndIf}
 
          if (VectorIndex <> 0) and (PrimMapProj.Pname in [Gnomonic,HammerProj,LamAzEqArea,Mollweide,OrthoProj,SinusProj,SinusEllipsoidal,OldStereographic,VanDerGrinten,SphericalStereographic,UndefinedProj,EqualEarth]) then begin
@@ -411,7 +411,7 @@ var
 
 
             begin
-               {$If Defined(track_f) or Defined(RecordDrawGridLines)} FromDatum.ShortProjInfo('UTMTicksAsNeeded in');  {$EndIf}
+               {$If Defined(track_f) or Defined(RecordDrawGridLines)} FromDatum.ShortProjInfo('UTMTicksAsNeeded in'); {$EndIf}
                if AFullWorldMap or ((MapCorners.BoundBoxGeo.xmax - MapCorners.BoundBoxGeo.xmin) > 10) then exit;
                Convert := not (WGSEquivalentDatum(FromDatum.h_DatumCode) );
                SetUTMTickInt(UTMTickInt);
@@ -482,7 +482,7 @@ var
         {$IfDef RecordDrawGridLines} WriteLineToDebugFile('UTMTicksAsNeeded enter'); {$EndIf}
         if (ScreenPixelSize < MDDef.UTMGridMaxPixelSize) then begin
            if MDdef.ShowSecondaryGrid and (MDDef.PreferSecondaryDatum <> MDdef.PreferPrimaryDatum) then begin
-              {$IfDef RecordDrawGridLines} SecondaryMapProjection.ShortProjInfo('MDdef.ShowSecondaryGrid UTM');  {$EndIf}
+              {$IfDef RecordDrawGridLines} SecondaryMapProjection.ShortProjInfo('MDdef.ShowSecondaryGrid UTM'); {$EndIf}
               DrawUTMGrid(SecondaryMapProj,MDdef.SecondaryUTMColor,MDDef.UTMSecGridLineWidth);
            end;
            if MDdef.ShowPrimaryGrid then begin

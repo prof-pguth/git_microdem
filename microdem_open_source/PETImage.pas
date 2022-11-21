@@ -177,7 +177,8 @@ function ExtractPartOfImage(var Image1 : tImage; Left,Right,Top,Bottom : integer
 
       procedure SetRedrawMode(Image1 : tImage);  inline;
 
-      procedure MakeBigBitmap(var theFiles : tStringList; Capt : shortstring; SaveName : PathStr = ''; Cols : integer = -1);
+      function MakeBigBitmap(var theFiles : tStringList; Capt : shortstring; SaveName : PathStr = ''; Cols : integer = -1) : boolean;
+
       procedure RestoreBigCompositeBitmap(fName : PathStr);
 
       procedure Drehen90Grad(Bitmap : tMyBitmap);
@@ -509,7 +510,7 @@ end;
 
 function BitmapSize(bmp : tMyBitmap) : shortstring;
 begin
-  Result := IntToStr(bmp.Width) + 'x' + IntToStr(bmp.Height);
+   Result := IntToStr(bmp.Width) + 'x' + IntToStr(bmp.Height);
 end;
 
 
@@ -616,6 +617,7 @@ var
    Left,Right,Top,Bottom,
    n,nr : integer;
 begin
+   Result := nil;
    if (TheFiles.Count > 0) then begin
       nr := theFiles.Count div nc;
       if (nr = 0) or ((theFiles.Count mod nc) > 0) then inc(nr);
@@ -624,10 +626,10 @@ begin
             bmp := LoadBitmapFromFile(theFiles.Strings[n]);
             FindImagePartOfBitmap(Bmp,Left,Right,Top,Bottom);
             //bmp.SaveToFile(MDTempDir + 'bmp-' + IntToStr(n) + '.bmp');
-            if (n=0) then begin
+            if (Result = nil) then begin
                SingleWide := bmp.Width + 25;
                SingleHigh := bmp.Height + 25;
-               CreateBitmap(Result,nc * SingleWide + 10,nr * SingleHigh + 60);
+               if Result = nil then CreateBitmap(Result,nc * SingleWide + 10,nr * SingleHigh + 60);
                //Result.SaveToFile(MDTempDir + 'step-0.bmp');
             end;
             Result.Canvas.Draw( 5 + (n mod nc) * SingleWide, (n div nc) * SingleHigh + 15,bmp);
@@ -635,10 +637,12 @@ begin
             bmp.Free;
          end;
       end;
-      Result.Canvas.Font.Size := 14;
-      Result.Canvas.TextOut(25,Result.Height - 40,Capt);
+      if Result <> nil then begin
+         Result.Canvas.Font.Size := 14;
+         Result.Canvas.TextOut(25,Result.Height - 40,Capt);
 
-      GetImagePartOfBitmap(Result);
+         GetImagePartOfBitmap(Result);
+      end;
       //GetImagePartOfBitmap(Result);
    end;
 end;
@@ -664,7 +668,7 @@ begin
 end;
 
 
-procedure MakeBigBitmap(var theFiles : tStringList; Capt : shortstring; SaveName : PathStr = ''; Cols : integer = -1);
+function MakeBigBitmap(var theFiles : tStringList; Capt : shortstring; SaveName : PathStr = ''; Cols : integer = -1) : boolean;
 var
    bigbmp : tMyBitmap;
    fName : PathStr;
@@ -672,29 +676,33 @@ var
    ImageForm : TImageDisplayForm;
 begin
    {$IfDef RecordBigBitmap}  WriteLineToDebugFile('MakeBigBitmap in'); {$EndIf}
+   Result := false;
    if (TheFiles.Count > 0) then begin
      AskCols := Cols < 0;
      if AskCols then begin
         Cols := MDDef.BigBM_nc;
      end;
      BigBMP := CombineBitmaps(Cols, theFiles, Capt);
-     if (SaveName <> '') then begin
-         {$IfDef RecordBigBitmap} WriteLineToDebugFile('MakeBigBitmap save in ' + SaveName); {$EndIf}
-         SaveBitmap(BigBmp,SaveName);
-         Bigbmp.Free;
-      end
-      else begin
-         ImageForm := TImageDisplayForm.Create(Application);
-         ImageForm.LoadImage(BigBmp,true);
-         fName := Petmar.NextFileNumber(MDtempDir,'big_bmp_files_','.txt');
-         theFiles.SaveToFile(fName);
-         ImageForm.BigBM_Capt := Capt;
-         ImageForm.BigBM_files := fName;
-         ImageForm.ChangeColumns1.Visible := true;
-         if AskCols then ImageForm.Changecolumns1Click(nil)
-         else ImageForm.RedrawSpeedButton12Click(Nil);
+     if (BigBMP <> nil) then begin
+        if (SaveName <> '') then begin
+            {$IfDef RecordBigBitmap} WriteLineToDebugFile('MakeBigBitmap save in ' + SaveName); {$EndIf}
+            SaveBitmap(BigBmp,SaveName);
+            Bigbmp.Free;
+            Result := true;
+         end
+         else begin
+            ImageForm := TImageDisplayForm.Create(Application);
+            ImageForm.LoadImage(BigBmp,true);
+            fName := Petmar.NextFileNumber(MDtempDir,'big_bmp_files_','.txt');
+            theFiles.SaveToFile(fName);
+            ImageForm.BigBM_Capt := Capt;
+            ImageForm.BigBM_files := fName;
+            ImageForm.ChangeColumns1.Visible := true;
+            if AskCols then ImageForm.Changecolumns1Click(nil)
+            else ImageForm.RedrawSpeedButton12Click(Nil);
+         end;
+         {$IfDef RecordBigBitmap}  WriteLineToDebugFile('MakeBigBitmap out'); {$EndIf}
       end;
-      {$IfDef RecordBigBitmap}  WriteLineToDebugFile('MakeBigBitmap out'); {$EndIf}
    end
    else begin
       {$IfDef RecordBigBitmap}  WriteLineToDebugFile('Nothing in string list'); {$EndIf}
@@ -1457,10 +1465,10 @@ var
    {$EndIf}
 begin
    if (Bitmap = Nil) or (Bitmap.Width = 0) or (Bitmap.Height = 0) then begin
-      {$IfDef RecordBitmapProblems} WriteLineToDebugFile(' problem in for SaveImageAsBMP fname=' + SaveName);   {$EndIf}
+      {$IfDef RecordBitmapProblems} WriteLineToDebugFile(' problem in for SaveImageAsBMP fname=' + SaveName); {$EndIf}
       exit;
    end;
-   {$If Defined(RecordBitmapProblems) or Defined(RecordBitmapExt)} WriteLineToDebugFile('in for SaveImageAsBMP ' + IntToStr(Bitmap.Width) + 'x' + IntToStr(Bitmap.Height) + '  fname=' + SaveName + ' ext=' + IntToStr(MDdef.DefaultSaveImageType));  {$EndIf}
+   {$If Defined(RecordBitmapProblems) or Defined(RecordBitmapExt)} WriteLineToDebugFile('in for SaveImageAsBMP ' +  BitmapSizeString(Bitmap) + '  fname=' + SaveName + ' ext=' + IntToStr(MDdef.DefaultSaveImageType));  {$EndIf}
 
    {$IfDef FMX}
       FixFileNameBackslashes(SaveName);
@@ -1533,7 +1541,7 @@ begin
             {$EndIf}
 
             if MDDef.TransparentPNG then begin
-               {$IfDef RecordPNG} WriteLineToDebugFile('PNG transparent = ' + IntToStr(MDDef.TransparentLevel));   {$EndIf}
+               {$IfDef RecordPNG} WriteLineToDebugFile('PNG transparent = ' + IntToStr(MDDef.TransparentLevel)); {$EndIf}
                MyPNG.CreateAlpha;
                for j := 0 to pred(MyPNG.Header.Height) do begin
                   for i := 0 to pred(MyPNG.Header.Width) do begin
@@ -1803,7 +1811,7 @@ var
    Done : boolean;
    BMPMemory : tBMPMemory;
 begin
-   {$IfDef RecordGetImagePartOfBitmap} WriteLineToDebugFile('FindImagePartOfBitmap out, old Bitmap size=' + IntToStr(Bitmap.width) + 'x' + IntToStr(Bitmap.height)); {$EndIf}
+   {$IfDef RecordGetImagePartOfBitmap} WriteLineToDebugFile('FindImagePartOfBitmap out, old ' + BitmapSizeString(Bitmap)); {$EndIf}
    BMPMemory := tBMPMemory.Create(Bitmap);
 
    Left := 0;
@@ -1859,7 +1867,7 @@ begin
    BMPMemory.Destroy;
 
    {$IfDef RecordGetImagePartOfBitmap}
-      WriteLineToDebugFile('new Bitmap size=' + IntToStr(Bitmap.width) + 'x' + IntToStr(Bitmap.height));
+      WriteLineToDebugFile('new ' + BitmapSizeString(Bitmap)t));
       WriteLineToDebugFile('top=' + IntToStr(Top) + '   bottom=' + IntToStr(Bottom));
       WriteLineToDebugFile('left=' + IntToStr(Left) + '   right=' + IntToStr(Right));
       WriteLineToDebugFile('FindImagePartOfBitmap');
@@ -2155,7 +2163,7 @@ begin
          NewBitmap.Free;
       end;
    end;
-   {$IfDef RecordGetImagePartOfBitmap} WriteLineToDebugFile('Final Bitmap size=' + IntToStr(Bitmap.width) + 'x' + IntToStr(Bitmap.height)); {$EndIf}
+   {$IfDef RecordGetImagePartOfBitmap} WriteLineToDebugFile('Final' + BitmapSizeString(Bitmap)); {$EndIf}
 end;
 
 {start of image rotation}
@@ -2537,7 +2545,7 @@ begin
    end;
    MemBase.Destroy;
    MemOverlay.Destroy;
-   {$IfDef RecordBlendBitmaps} src1.SaveToFile(MDtempDir + 'blend_result.bmp');   {$EndIf}
+   {$IfDef RecordBlendBitmaps} src1.SaveToFile(MDtempDir + 'blend_result.bmp'); {$EndIf}
 end;
 
 

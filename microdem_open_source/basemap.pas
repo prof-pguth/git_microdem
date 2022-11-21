@@ -28,7 +28,7 @@ unit basemap;
       //{$Define LongCent}
       //{$Define RecordProjectionParameters}
       //{$Define DetailedProjParams}
-      {$Define RecordMapProjCreateDestroy}
+      //{$Define RecordMapProjCreateDestroy}
       //{$Define RecordDatumProblems}
       //{$Define RecordDefineDatum}
       //{$Define RecordShortDefineDatum}
@@ -191,9 +191,6 @@ type
 
          procedure ShortProjInfo(Why : shortstring);
 
-         procedure LatLongDegreetoUTM(Lat,Long : float64; var XUTM,YUTM : float64);
-         procedure UTMtoLatLongDegree(XUTM,YUTM : float64; var Lat,Long : float64);
-
          procedure ForwardProjectDegrees(Lat,Long : float64; var x,y : float64; Check : boolean = true);
          procedure ForwardProjectRadians(Lat,Long : float64; var x,y : float64; Check : boolean = true);
          procedure InverseProjectDegrees(x,y : float64; var Lat,Long : float64);
@@ -202,6 +199,9 @@ type
 
          function MGRStoLatLong(MGRS : ShortString; var Lat,Long : float64) : boolean;
          procedure GetHundredKMeterSquareID(var SquareID : ShortString; XUTM,YUTM : float64); {calculates two digit 100,000 m square ID from longitude, easting and northing, and spheroid in use}
+
+         procedure LatLongDegreetoUTM(Lat,Long : float64; var XUTM,YUTM : float64);
+         procedure UTMtoLatLongDegree(XUTM,YUTM : float64; var Lat,Long : float64);
 
          function UTMStringFromLatLongDegree(Lat,Long : float64; IncludeDatum : boolean = true) : shortString;
          function CalculateMGRS(X,Y : float64; UTMLen : byte) : shortstring;
@@ -264,7 +264,8 @@ function DistanceInKMHaversine(Lat1,Long1,Lat2, Long2 : float64) : float64;
 
 procedure MolodenskiyTransformation(InLat,InLong : float64; var OutLat,OutLong : float64; FromMap,ToMap: tMapProjection);
 
-procedure RedefineWGS84DatumConstants(NewLong : float64; LatHemi : ANSIchar = 'N');
+procedure RedefineWGS84DatumConstants(NewLong : float64; LatHemi : ANSIchar = 'N'); overload;
+procedure RedefineWGS84DatumConstants(NewLat,NewLong : float64); overload;
 
 function BuildMGRSstring(GridZo : ShortString; x,y : float64; UTMLen : integer) : shortstring;
 function GetUTMZone(Long : float64) : integer;
@@ -317,7 +318,7 @@ implementation
 uses
    {$IfDef VCL}
       PetDBUtils,
-      Proj_Params,
+      {Proj_Params,}
       Nevadia_Main,
    {$EndIf}
    DEMPickDatum,
@@ -368,7 +369,7 @@ end;
 
 function FindSingleWKTinDirectory(thePath : PathStr) : PathStr;
 var
-   fName : PathStr;
+   //fName : PathStr;
    TheFiles : tStringList;
 begin
    TheFiles := tStringList.Create;

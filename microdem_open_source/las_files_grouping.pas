@@ -635,7 +635,7 @@ var
          var
             fName : PathStr;
          begin
-            {$IfDef RecordLASHist} WriteLineToDebugFile('Read Existing ' + IndexTableName);   {$EndIf}
+            {$IfDef RecordLASHist} WriteLineToDebugFile('Read Existing ' + IndexTableName); {$EndIf}
             fName := IndexTableName;
             IndexTable := tMyData.Create(fName);
             if MDDef.LASPC99 then begin
@@ -695,7 +695,7 @@ var
             HasScanAngle := IndexTable.FieldHasChar('HAS_CLASS','Y');
             HasReturnNumbers := IndexTable.FieldHasChar('HAS_CLASS','Y');
             IndexTable.Destroy;
-            {$IfDef RecordLASHist} WriteLineToDebugFile('Done Existing ' + IndexTableName);   {$EndIf}
+            {$IfDef RecordLASHist} WriteLineToDebugFile('Done Existing ' + IndexTableName); {$EndIf}
          end;
 
 
@@ -1211,7 +1211,7 @@ begin
    {$IfDef VCL} StartThreadTimers('Clear fields',1,true); {$EndIf}
    NewLas := Nil;
    for k := 0 to pred(Las_fNames.Count) do begin
-      {$IfDef VCL} ThreadTimers.OverallGauge9.Progress := round(100 * k / LAS_fnames.Count);   {$EndIf}
+      {$IfDef VCL} ThreadTimers.OverallGauge9.Progress := round(100 * k / LAS_fnames.Count); {$EndIf}
       fName := Las_fNames.Strings[k];
       {$IfDef RecordListFilesProcessed} WriteLineToDebugFile('file=' + fName); {$EndIf}
        lf := tLAS_data.Create(fName);

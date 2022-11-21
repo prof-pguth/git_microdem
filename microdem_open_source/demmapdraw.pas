@@ -26,6 +26,11 @@
    //{$Define RecordKeyMap}         //don't use if there will be a lot of map drawing
 
    {$IfDef Debug}
+      //{$Define RecordFan}
+      //{$Define FanDrawProblems)
+      //{$Define WorldFileOverlay}
+      //{$Define RecordStretchBitmap}
+
       //{$Define RecordDrawGridLines}
       //{$Define RecordSat}
       //{$Define AspectCheck}
@@ -34,7 +39,6 @@
       //{$Define Track_f}
       //{$Define RecordMapResize}
       //{$Define RecordTissot}
-      //{$Define RecordFan}
       //{$Define RecordTargetAreasCoverage}
       //{$Define RecordMapDrawCreation}
       //{$Define RecordPlatCarree}
@@ -87,7 +91,6 @@
       //{$Define RecordMapMargin}
       //{$Define RecordTerrCatOverlays}
       //{$Define RecordMapLimits}
-      //{$Define RecordStretchBitmap}
       //{$Define RecordElevColorFromTable}
       //{$Define RecordNLCD}
       //{$Define RecordPrinter}
@@ -828,9 +831,10 @@ end;
 
 function tMapDraw.MakeVATLegend : tMyBitmap;
 var
-   i,Cat,x,y,z,Cats,Total,Needed : integer;
+   //i,y,z,
+   Cat,x,Cats,Total,Needed : integer;
    xg,fTotal : float64;
-   zf : float32;
+   //zf : float32;
    fName : PathStr;
    Table : tMyData;
    CatPCforLegend : float64;
@@ -1200,6 +1204,7 @@ begin
          FSplit(fName,Dir,bName,Ext);
          fName2 := Dir + bName + '_dtm' + Ext;
          if FileExists(fName2) then begin
+            {$If Defined(WorldFileOverlay)} WriteLineToDebugFile('tMapDraw.DrawWorldFileImageOnMap stretching with' + fName2); {$EndIf}
             StretchWorldFileMap(FanBMP,fName2,ClGreen);
             SummaryBitmap.Canvas.CopyMode := cmSrcAnd;
             SummaryBitmap.Canvas.Draw(0,0,FanBMP);
@@ -1207,12 +1212,14 @@ begin
             StretchWorldFileMap(FanBMP,fName,clRed);
          end
          else begin
+            {$If Defined(WorldFileOverlay)} WriteLineToDebugFile('tMapDraw.DrawWorldFileImageOnMap stretching ' + fName); {$EndIf}
             SummaryBitmap.Canvas.CopyMode := cmSrcAnd;
             StretchWorldFileMap(FanBMP,fName);
          end;
 
          SummaryBitmap.Canvas.Draw(0,0,FanBMP);
          if Exagerrate then begin
+            {$If Defined(WorldFileOverlay)} WriteLineToDebugFile('tMapDraw.DrawWorldFileImageOnMap exaggerate'); {$EndIf}
             for i := -1 to 1 do
                for j := -1 to 1 do
                   SummaryBitmap.Canvas.Draw(i,j,FanBMP);
@@ -1226,7 +1233,7 @@ begin
       FreeAndNil(FanBMP);
    end
    else begin
-      {$If Defined(RecordFan) or Defined(RecordOverlays)} WriteLineToDebugFile('File missing in tMapDraw.DrawWorldFileImageOnMap=' + fName); {$EndIf}
+      {$If Defined(WorldFileOverlay) or Defined(RecordFan) or Defined(RecordOverlays)} WriteLineToDebugFile('File missing in tMapDraw.DrawWorldFileImageOnMap=' + fName); {$EndIf}
    end;
 end;
 
@@ -2602,7 +2609,7 @@ end;
 procedure tMapDraw.StretchWorldFileMap(var StretchBitmap : tMyBitmap; fName : PathStr; Color : integer = -99);
 var
    {$IfDef FMX}
-   FromRegion,ToRegion : tRectF;
+      FromRegion,ToRegion : tRectF;
    {$EndIf}
    x1,y1,x2,y2,i : integer;
    Bitmap : tMyBitmap;
@@ -2689,7 +2696,7 @@ begin
                  Bitmap := PetImage.LoadBitmapFromFile(fName);
                  PetImage.BitmapWhiteToNearWhite(Bitmap);
                  FoundGroundOverlay := false;
-                 {$IfDef RecordStretchBitmap} WriteLineToDebugFile('loaded ' + fName + '  Size=' + IntToStr(Bitmap.Width) + 'x' + IntToStr(Bitmap.Height)); {$EndIf}
+                 {$IfDef RecordStretchBitmap} WriteLineToDebugFile('loaded ' + fName +  BitmapSizeString(Bitmap)); {$EndIf}
                  {$IfDef RecordOverlays}  PetImage.SaveBitmap(Bitmap,MDTempDir + 'kml_overlay.bmp'); {$EndIf}
              end;
              CheckLine('<north>',UpLeftY,false);
@@ -2698,7 +2705,7 @@ begin
              CheckLine('<west>',UpLeftX,true);
          end;
          KMLFile.Free;
-         {$IfDef RecordStretchBitmap} WriteLineToDebugFile('KML done');{$EndIf}
+         {$IfDef RecordStretchBitmap} WriteLineToDebugFile('KML done'); {$EndIf}
       end
       else begin
          {$IfDef RecordStretchBitmap} WriteLineToDebugFile('tMapDraw.StretchWorldFileMap,  Map size: ' + IntToStr(MapXSize) + 'x' + IntToStr(MapYSize)); {$EndIf}
@@ -2726,7 +2733,7 @@ begin
          {$IfDef VCL}
             if (Color >= 0) then PetImage.RecolorBitmap(Bitmap,ConvertTColorToPlatformColor(Color));
          {$EndIf}
-         {$IfDef RecordStretchBitmap} WriteLineToDebugFile('World file map size: ' + IntToStr(Bitmap.Width) + 'x' + IntToStr(Bitmap.Height));         {$EndIf}
+         {$IfDef RecordStretchBitmap} WriteLineToDebugFile('World file map' +  BitmapSizeString(Bitmap)); {$EndIf}
       end;
       LoadImage;
    end;

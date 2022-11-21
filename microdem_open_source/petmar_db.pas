@@ -390,7 +390,7 @@ function tMyData.InsureFieldPresentAndAdded(ft : TFieldType; FieldName : ANSIStr
    var
       fName,Oldname : PathStr;
       CreateDataBase : tCreateDataBase;
-      {$IfDef RecordFullOpenDB}  Output : tStringList;  {$EndIf}
+      {$IfDef RecordFullOpenDB}  Output : tStringList; {$EndIf}
    begin
       {$IfDef BDELikeTables}
          if (TheBDEdata <> Nil) then begin
@@ -487,7 +487,7 @@ function tMyData.InsureFieldPresentAndAdded(ft : TFieldType; FieldName : ANSIStr
 begin
    FieldName := UpperCase(FieldName);
    if FieldExists(FieldName) then begin
-      {$IfDef RecordFieldPresent} WriteLineToDebugFile('InsureFieldPresentAndAdded, field already present ' + FieldName + ' in ' + ExtractFileName(TableName));      {$EndIf}
+      {$IfDef RecordFieldPresent} WriteLineToDebugFile('InsureFieldPresentAndAdded, field already present ' + FieldName + ' in ' + ExtractFileName(TableName)); {$EndIf}
       Result := false;
    end
    else begin
@@ -624,7 +624,7 @@ begin
    end;
 
    if TableThere and (fdTable = Nil) then begin
-      {$IfDef RecordMyDataCreation} WriteLineToDebugFile('Opening fdTable ' + fName);   {$EndIf}
+      {$IfDef RecordMyDataCreation} WriteLineToDebugFile('Opening fdTable ' + fName); {$EndIf}
 
       {$IfDef VCL}
       fdTable := tfdTable.Create(Application);
@@ -709,6 +709,9 @@ end;
 
 
 function tMyData.TColorFromTable : tColor;
+begin
+   Result := ConvertPlatformColorToTColor(PlatformColorFromTable);
+(*
 var
    i : integer;
 begin
@@ -717,9 +720,10 @@ begin
       Result := i;
    end
    else if FieldExists('RED') then begin
-      if IsFloatField('RED') then Result := RGB(round(255 * GetFieldByNameAsInteger('RED')),round(255 *GetFieldByNameAsInteger('GREEN')),round(255 *GetFieldByNameAsInteger('BLUE')))
+      if IsFloatField('RED') then Result := RGB(round(255 * GetFieldByNameAsFloat('RED')),round(255 *GetFieldByNameAsFloat('GREEN')),round(255 *GetFieldByNameAsFloat('BLUE')))
       else Result := RGB(GetFieldByNameAsInteger('RED'),GetFieldByNameAsInteger('GREEN'),GetFieldByNameAsInteger('BLUE'));
    end;
+*)
 end;
 
 
@@ -733,21 +737,28 @@ function tMyData.PlatformColorFromTable : tPlatformColor;
             if FieldExists(fName) then begin
                if CarefullyGetFieldByNameAsInteger(fName,i) then begin
                   PlatformColorFromTable := ConvertTColorToPlatformColor(i);
-                   CheckColorField := true;
+                  CheckColorField := true;
                end;
             end;
          end;
 
+         function CheckRGBFields(rf,gf,bf : shortstring) : boolean;
+         begin
+
+            Result := FieldExists(rf);
+            if Result then begin
+               if IsFloatField(rf) then
+                  PlatformColorFromTable := RGBtrip(round(255 * GetFieldByNameAsFloat(rf)),round(255 *GetFieldByNameAsFloat(gf)),round(255 *GetFieldByNameAsFloat(bf)))
+               else PlatformColorFromTable := RGBtrip(GetFieldByNameAsInteger(rf),GetFieldByNameAsInteger(gf),GetFieldByNameAsInteger(bf));
+            end;
+
+         end;
+
 begin
    {$IfDef VCL}
-      PlatformColorFromTable := claWhite;
-      if CheckColorField('COLOR') then exit;
-      if CheckColorField('LINE_COLOR') then exit;
-      if FieldExists('RED') then begin
-         if IsFloatField('RED') then
-            Result := RGBtrip(round(255 * GetFieldByNameAsInteger('RED')),round(255 *GetFieldByNameAsInteger('GREEN')),round(255 *GetFieldByNameAsInteger('BLUE')))
-         else Result := RGBtrip(GetFieldByNameAsInteger('RED'),GetFieldByNameAsInteger('GREEN'),GetFieldByNameAsInteger('BLUE'));
-      end;
+      if CheckColorField('COLOR') or CheckColorField('LINE_COLOR') or CheckRGBFields('RED','GREEN','BLUE') or CheckRGBFields('r','g','b') then begin
+      end
+      else PlatformColorFromTable := claWhite;
    {$EndIf}
 end;
 
@@ -1525,8 +1536,28 @@ begin
 end;
 
 procedure tMyData.SetColorFromTColor(Color : tColor);
+var
+   red,green,Blue : byte;
+
+   procedure SetFields(RedName,BlueName,GreenName : shortstring);
+   begin
+      if IsFloatField(RedName) then begin
+         SetFieldByNameAsFloat(RedName,255*Red);
+         SetFieldByNameAsFloat(BlueName,255*Green);
+         SetFieldByNameAsFloat(GreenName,255*Blue);
+      end
+      else begin
+         SetFieldByNameAsInteger(RedName,Red);
+         SetFieldByNameAsInteger(BlueName,Green);
+         SetFieldByNameAsInteger(GreenName,Blue);
+      end;
+   end;
+
 begin
-   SetFieldByNameAsInteger('COLOR',Color);
+   GetRGBfromTColor(Color,red,green,blue);
+   if FieldExists('COLOR') then SetFieldByNameAsInteger('COLOR',Color);
+   if FieldExists('RED') then SetFields('RED','GREEN','BLUE');
+   if FieldExists('R') then SetFields('R','G','B');
 end;
 
 
@@ -1708,7 +1739,7 @@ begin
            BlockRead(f, TableFieldDescriptor, SizeOf(tTableFieldDescriptor));
            theName := '';
            for j := 0 to 10 do begin
-              if TableFieldDescriptor.FieldName[j] = #0 then break
+              if (TableFieldDescriptor.FieldName[j] = #0) then break
               else theName := theName +  TableFieldDescriptor.FieldName[j];
            end;
 
@@ -1736,7 +1767,6 @@ begin
       assignFile(f,FullTableName);
       reset(f,1);
       BlockRead(f, DBaseIIITableFileHeader, SizeOf(tDBaseIIITableFileHeader));
-      //NumFields := (DBaseIIITableFileHeader.BytesInHeader-33) div 32;
       for i2 := 0 to i do begin
         BlockRead(f, TableFieldDescriptor, SizeOf(tTableFieldDescriptor));
       end;
@@ -1861,26 +1891,26 @@ var
 begin
    Result := tStringList.Create;
    {$IfDef BDELikeTables}
-   if (TheBDEdata <> Nil) then begin
-      for i := 0 to pred(FieldCount) do Result.Add(TheBDEdata.Fields[i].FieldName);
-   end;
+      if (TheBDEdata <> Nil) then begin
+         for i := 0 to pred(FieldCount) do Result.Add(TheBDEdata.Fields[i].FieldName);
+      end;
    {$EndIf}
    {$IfDef UseFireDacSQLlite}
-   if (fdTable <> Nil) then begin
-      for i := 0 to pred(FieldCount) do Result.Add(fdTable.Fields[i].FieldName);
-   end;
+      if (fdTable <> Nil) then begin
+         for i := 0 to pred(FieldCount) do Result.Add(fdTable.Fields[i].FieldName);
+      end;
    {$EndIf}
 
     {$IfDef UseFDMemTable}
-    if (FDMemTable <> nil) then begin
-        for i := 0 to pred(FieldCount) do Result.Add(fdMemTable.Fields[i].FieldName);
-    end;
+       if (FDMemTable <> nil) then begin
+           for i := 0 to pred(FieldCount) do Result.Add(fdMemTable.Fields[i].FieldName);
+       end;
     {$EndIf}
 
    {$IfDef UseTCLientDataSet}
-   if (TheClientDataSet <> Nil) then with TheClientDataSet do  begin
-      for i := 0 to pred(FieldCount) do Result.Add(Fields[i].FieldName);
-   end;
+      if (TheClientDataSet <> Nil) then with TheClientDataSet do  begin
+         for i := 0 to pred(FieldCount) do Result.Add(Fields[i].FieldName);
+      end;
    {$EndIf}
 end;
 
@@ -1891,46 +1921,46 @@ var
 begin
    Result := -1;
    {$IfDef BDELikeTables}
-   if (TheBDEdata <> Nil) then  begin
-       for i := 0 to pred(FieldCount) do begin
-          if (TheBDEdata.Fields[i].FieldName = WantFieldName) then begin
-             Result := TheBDEdata.Fields[i].DataSize;
-             exit;
+      if (TheBDEdata <> Nil) then  begin
+          for i := 0 to pred(FieldCount) do begin
+             if (TheBDEdata.Fields[i].FieldName = WantFieldName) then begin
+                Result := TheBDEdata.Fields[i].DataSize;
+                exit;
+             end;
           end;
-       end;
-   end;
+      end;
    {$EndIf}
 
    {$IfDef UseFireDacSQLlite}
-   if (fdTable <> Nil) then begin
-       for i := 0 to pred(FieldCount) do begin
-          if (fdTable.Fields[i].FieldName = WantFieldName) then begin
-             Result := fdTable.Fields[i].DataSize;
-             exit;
+      if (fdTable <> Nil) then begin
+          for i := 0 to pred(FieldCount) do begin
+             if (fdTable.Fields[i].FieldName = WantFieldName) then begin
+                Result := fdTable.Fields[i].DataSize;
+                exit;
+             end;
           end;
-       end;
-   end;
+      end;
    {$EndIf}
     {$IfDef UseFDMemTable}
-    if (FDMemTable <> nil) then  begin
-       for i := 0 to pred(FieldCount) do begin
-          if (fdMemTable.Fields[i].FieldName = WantFieldName) then  begin
-             Result := fdMemTable.Fields[i].DataSize;
-             exit;
+       if (FDMemTable <> nil) then  begin
+          for i := 0 to pred(FieldCount) do begin
+             if (fdMemTable.Fields[i].FieldName = WantFieldName) then  begin
+                Result := fdMemTable.Fields[i].DataSize;
+                exit;
+             end;
           end;
        end;
-    end;
     {$EndIf}
 
    {$IfDef UseTCLientDataSet}
-   if (TheClientDataSet <> Nil) then with TheClientDataSet do begin
-       for i := 0 to pred(FieldCount) do begin
-          if (Fields[i].FieldName = WantFieldName) then begin
-             Result := Fields[i].DataSize;
-             exit;
+      if (TheClientDataSet <> Nil) then with TheClientDataSet do begin
+          for i := 0 to pred(FieldCount) do begin
+             if (Fields[i].FieldName = WantFieldName) then begin
+                Result := Fields[i].DataSize;
+                exit;
+             end;
           end;
-       end;
-   end;
+      end;
    {$EndIf}
 end;
 
@@ -2204,7 +2234,7 @@ begin
       end;
    end
    else begin
-      {$IfDef RecordProblems} WriteLineToDebugFile('Image file missing: ' + fName);      {$EndIf}
+      {$IfDef RecordProblems} WriteLineToDebugFile('Image file missing: ' + fName); {$EndIf}
    end;
 end;
 

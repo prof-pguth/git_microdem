@@ -194,8 +194,6 @@ function FontInstalled(Const FontName:String) : Boolean;
    procedure ScreenSymbol(Canvas : TCanvas; x,y : integer; Sym : tDrawingSymbol; size: integer; color : TPlatformColor); overload;
    procedure ScreenSymbol(Canvas : TCanvas; x,y : integer; Symbol : tFullSymbolDeclaration); overload;
 
-
-
       procedure StartCount(Title : ShortString);
       procedure UpdateCount(HowFar : LongInt);
       procedure EndCount;
@@ -485,6 +483,7 @@ function FindFloatFieldInStringList(Header : tStringList; FieldName : ANSIstring
 
 function UpdateRate(NumRecs : integer) : integer;
 function TrueOrFalse(BoolVar : boolean) : shortstring;
+function BitmapSizeString(Bitmap : tMyBitmap) : shortstring;
 
 
 {$IfDef ExCompress}
@@ -542,11 +541,16 @@ uses
       {$EndIf}
   {$EndIf}
   PetImage,
- //util_download,
   PETMath;      {math library}
 
 var
    TerrainCuts : array[0..4,1..3] of integer;
+
+
+function BitmapSizeString(Bitmap : tMyBitmap) : shortstring;
+begin
+   Result := ' Bitmap size: ' + BitmapSize(Bitmap);
+end;
 
 
 function FileTimeFromFileName(fName : PathStr) : ShortString;
@@ -2144,8 +2148,6 @@ end;
            tmpRGB := ColorToRGB(DColor) ;
            Result:= Format('#%.2x%.2x%.2x',[GetRValue(tmpRGB),GetGValue(tmpRGB),GetBValue(tmpRGB)]) ;
          end; {function ColorToHtml}
-
-
 
 
          function HLStoTcolor(H,L,S : float64) : tcolor;

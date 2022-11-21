@@ -1316,6 +1316,22 @@ begin
 end;
 
 
+procedure RedefineWGS84DatumConstants(NewLat,NewLong : float64); overload;
+var
+   NewZone : integer;
+   LatHemi : ANSIChar;
+begin
+   NewZone := GetUTMZone(NewLong);
+   if NewLat > 0 then LatHemi := 'N' else LatHemi := 'S';
+   
+   if (NewZone <> WGS84DatumConstants.projUTMZone) then begin
+      WGS84DatumConstants.DefineDatumFromUTMZone('WGS84',NewZone,LatHemi,'RedefineWGS84DatumConstants');
+   end;
+   WGS84DatumConstants.StartUTMProjection(NewZone);
+   {$If Defined(RecordWGS84Projection)} WriteLineToDebugFile('RedefineWGS84DatumConstants, lat=' + RealToString(NewLong,-8,2) + '  utmzone=' + IntToStr(NewZone)); {$EndIf}
+end;
+
+
 procedure MolodenskiyTransformation(InLat,InLong : float64; var OutLat,OutLong : float64; FromMap,ToMap : tMapProjection);
 {Refs: chap. 2 DMA TM 8358.1;    chap. 7 DMA TR 8350.2 2d Ed.;    MADTRAN program}
 const

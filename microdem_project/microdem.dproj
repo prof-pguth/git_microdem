@@ -165,11 +165,11 @@
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_MinorVer>11</VerInfo_MinorVer>
         <VerInfo_MajorVer>2022</VerInfo_MajorVer>
-        <VerInfo_Release>10</VerInfo_Release>
+        <VerInfo_Release>21</VerInfo_Release>
         <DCC_DcuOutput>C:\turbo\obj_files_64\</DCC_DcuOutput>
-        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2022.11.10.5;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2022.11.21.2;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
-        <VerInfo_Build>5</VerInfo_Build>
+        <VerInfo_Build>2</VerInfo_Build>
         <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
         <DCC_OutputDRCFile>false</DCC_OutputDRCFile>
         <DCC_RangeChecking>true</DCC_RangeChecking>
@@ -292,9 +292,6 @@
         </DCCReference>
         <DCCReference Include="..\common_code\Demperop.pas">
             <Form>PerspOptions</Form>
-        </DCCReference>
-        <DCCReference Include="..\common_code\refraction_model.pas">
-            <Form>RefractionForm</Form>
         </DCCReference>
         <DCCReference Include="..\common_code\hyp_display.pas">
             <Form>HyperspectralForm</Form>
@@ -736,11 +733,6 @@
         <DCCReference Include="..\common_code\Sgp_init.pas"/>
         <DCCReference Include="..\common_code\SGP_MATH.PAS"/>
         <DCCReference Include="..\common_code\Support.pas"/>
-        <DCCReference Include="..\common_code\proj_params.pas">
-            <Form>ProjParamForm</Form>
-        </DCCReference>
-        <DCCReference Include="..\common_code\pk3DConnexion.pas"/>
-        <DCCReference Include="..\common_code\TDxInput_TLB.pas"/>
         <DCCReference Include="..\common_code\contouroptsform.pas">
             <Form>SimpleContourOptions</Form>
         </DCCReference>
@@ -958,7 +950,6 @@
         </DCCReference>
         <DCCReference Include="..\common_code\demix_filter.pas">
             <Form>DemixFilterForm</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="..\demix\demix_control.pas"/>
         <None Include="nevadia_defines.inc"/>

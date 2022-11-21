@@ -1163,7 +1163,7 @@ uses
    toggle_db_use, map_overlays, U_SolarPos2;
 
 
-   {$I nevadia_main_batch.inc}
+{$I nevadia_main_batch.inc}
 
 
 
@@ -1380,7 +1380,7 @@ end;
 
 procedure Twmdem.DEMIXtiles1Click(Sender: TObject);
 begin
-   DEMIXtilesStats;
+   //DEMIXtilesStats;
 end;
 
 
@@ -2313,12 +2313,12 @@ begin
       GISdb[db].dbTablef.Legend1Click(nil);
 
       LastDEMLoaded := OpenNewDEM(MainMapData + dName + '\noaa_coastal\merge_gom_crm_v1.dem');
-      {$IfDef RecordLabs} WriteLineToDebugFile('all data loaded');    {$EndIf}
+      {$IfDef RecordLabs} WriteLineToDebugFile('all data loaded'); {$EndIf}
       MDDef.DBsOnAllMaps := true;
       DEMGlb[LastDEMLoaded].SelectionMap.DoFastMapRedraw;
       DEMGlb[LastDEMLoaded].SelectionMap.SpeedButton8Click(nil);
       DisplayHTMLTopic('geology_course\labs\gloria_gom.htm');
-      {$IfDef RecordLabs} WriteLineToDebugFile('finished');    {$EndIf}
+      {$IfDef RecordLabs} WriteLineToDebugFile('finished'); {$EndIf}
    end;
 
    if (Sender = Californiaoffshore1) then begin
@@ -4295,10 +4295,10 @@ begin
        SatTractForm := TSatTractForm.Create(Application);
        wmdem.Vectormap1Click(Sender);
        VectorMap[LastVectorMap].Closable := false;
-       VectorMap[LastVectorMap].Caption := 'GPS satellite predictions';
+       VectorMap[LastVectorMap].Caption := 'Satellite predictions';
        SatTractForm.MapOwner := VectorMap[LastVectorMap];
        SatTractForm.BitBtn5.Enabled := false;
-       SatTractForm.Button1Click(Sender);
+       SatTractForm.BitBtn4Click(Sender);
     {$EndIf}
 end;
 
@@ -6222,7 +6222,7 @@ finalization
    {$IfDef FullDrainageBasinStats} WriteLineToDebugFile('FullDrainageBasinStats active in Wmaindem'); {$EndIf}
    {$IfDef DrainageBasinStats} WriteLineToDebugFile('DrainageBasinStats active in Wmaindem'); {$EndIf}
    {$IfDef RecordUpdate} WriteLineToDebugFile('RecordUpdateProblem active in WMainDEM');   {$EndIf}
-   {$IfDef DrainageBasinStreamsInBasins} writeLineToDebugFile('DrainageBasinStreamsInBasins active in WMainDEM');    {$EndIf}
+   {$IfDef DrainageBasinStreamsInBasins} writeLineToDebugFile('DrainageBasinStreamsInBasins active in WMainDEM'); {$EndIf}
    {$IfDef RecordButton} WriteLineToDebugFile('RecordButtonProblems active in WMainDEM'); {$EndIf}
    {$IfDef RecordOpenVectorMap} writeLineToDebugFile('RecordOpenVectorMap active in WMainDEM'); {$EndIf}
    {$IfDef RecordHelp} WriteLineToDebugFile('RecordHelp active in WMainDEM'); {$EndIf}

@@ -270,7 +270,7 @@ begin
      end;
 
      if (MultipleProfilesToShow <> Nil) then begin
-        {$IfDef RecordLOS} WriteLineToDebugFile('(MultipleProfilesToShow <> Nil)  image size: ' + IntToStr(Bitmap.Width) + 'x' + IntToStr(Bitmap.Height)); {$EndIf}
+        {$IfDef RecordLOS} WriteLineToDebugFile('(MultipleProfilesToShow <> Nil)  image: ' +  BitmapSizeString(Bitmap)); {$EndIf}
         DrawCollar(Bitmap);
         for i := 1 to MultipleProfilesToShow.Count do begin
            fName := MultipleProfilesToShow.Strings[pred(i)];
@@ -412,7 +412,7 @@ begin
             fName := NextFileNumber(MDTempDir,'topo_los_',DefaultDBExt);
          {$EndIf}
 
-         {$IfDef RecordLOS} WriteLineToDebugFile('Create=' + fName);   {$EndIf}
+         {$IfDef RecordLOS} WriteLineToDebugFile('Create=' + fName); {$EndIf}
 
          MakeTopoProfileTable(fName,
               {$IfDef ExFresnel}
@@ -896,7 +896,7 @@ var
    end;
 
 begin
-   {$IfDef RecordLOS} WriteLineToDebugFile('TDEMLOSF.LOSExtremeElevationsAndScreenCoordinates,  DEM=' + IntToStr(DEMonView));   {$EndIf}
+   {$IfDef RecordLOS} WriteLineToDebugFile('TDEMLOSF.LOSExtremeElevationsAndScreenCoordinates,  DEM=' + IntToStr(DEMonView)); {$EndIf}
    VincentyCalculateDistanceBearing(LatLeft,LongLeft,LatRight,LongRight,FormSectLenMeters,LOSAzimuth);
    if (FormSectLenMeters > 25000) then MDDef.LOSHorizTickSpacing_KM := true;
 
@@ -953,7 +953,7 @@ var
    TStr,TStr2 : shortString;
    First : boolean;
 begin
-   {$IfDef RecordLOSPrettyDrawing} WriteLineToDebugFile('TDEMLOSF.DrawCollar, bitmap size= ' + IntToStr(Bitmap.Width) + 'x' + IntToStr(Bitmap.Height)); {$EndIf}
+   {$IfDef RecordLOSPrettyDrawing} WriteLineToDebugFile('TDEMLOSF.DrawCollar, ' + BitmapSizeString(Bitmap)); {$EndIf}
 
    if MDdef.ElevDisplayMeters then Factor := 1
    else Factor := 1 / FeetToMeters;
@@ -1697,10 +1697,10 @@ finalization
    {$IfDef RecordClosing} WriteLineToDebugFile('RecordClosingProblems active in DEMLOSW'); {$EndIf}
    {$IfDef RecordLOSAlgorithm} WriteLineToDebugFile('RecordLOSAlgorithm active in DEMLOSW'); {$EndIf}
    {$IfDef RecordWaveLenghtHeight} WriteLineToDebugFile('RecordWaveLenghtHeightProblems active in DEMLOSW');    {$EndIf}
-   {$IfDef RecordNearestCrest} WriteLineToDebugFile('RecordNearestCrest active in DEMLOSW');   {$EndIf}
-   {$IfDef RecordThreadCrest} WriteLineToDebugFile('RecordThreadCrest active in DEMLOSW');   {$EndIf}
-   {$IfDef RecordPointClouds} WriteLineToDebugFile('RecordPointClouds active in DEMLOSW');   {$EndIf}
-   {$IfDef RecordMGT} WriteLineToDebugFile('RecordMGTProblems active in DEMLOSW');   {$EndIf}
-   {$IfDef RecordLOSPrettyDrawing} WriteLineToDebugFile('RecordLOSPrettyDrawing active in DEMLOSW');   {$EndIf}
-   {$IfDef RecordClosing} WriteLineToDebugFile('Closing demlosw out');   {$EndIf}
+   {$IfDef RecordNearestCrest} WriteLineToDebugFile('RecordNearestCrest active in DEMLOSW'); {$EndIf}
+   {$IfDef RecordThreadCrest} WriteLineToDebugFile('RecordThreadCrest active in DEMLOSW'); {$EndIf}
+   {$IfDef RecordPointClouds} WriteLineToDebugFile('RecordPointClouds active in DEMLOSW'); {$EndIf}
+   {$IfDef RecordMGT} WriteLineToDebugFile('RecordMGTProblems active in DEMLOSW'); {$EndIf}
+   {$IfDef RecordLOSPrettyDrawing} WriteLineToDebugFile('RecordLOSPrettyDrawing active in DEMLOSW'); {$EndIf}
+   {$IfDef RecordClosing} WriteLineToDebugFile('Closing demlosw out'); {$EndIf}
 end.

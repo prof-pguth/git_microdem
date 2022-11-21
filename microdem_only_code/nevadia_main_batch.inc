@@ -223,18 +223,17 @@ var
    NumPits,NumPeaks : array[1..MaxRefStore] of integer;
    DEMIXtileDB,
 
-   LandCoverGrid,
-   WantImage,NewDEM : integer;
+   LandCoverGrid{,WantImage,NewDEM} : integer;
    bbgrid : tGridLimits;
 
    GeodeticFName,LandCoverFName,
 
    cfName,fName,IceSatFName,OutputDir : PathStr;
-   IndexSeriesTable : tMyData;
-   TestAreaName,WantSeries,DEMIXtile,LandTypeMask,TileHeader : shortstring;
+   //IndexSeriesTable : tMyData;
+   TestAreaName,{WantSeries,}DEMIXtile,LandTypeMask,TileHeader : shortstring;
    LatCent,LongCent,
    GridFull,Lat,Long : float64;
-   zRef,z,z2 : float32;
+   zRef{,z,z2} : float32;
    TileStats,
    ICESatStats,
    LagStats,
@@ -709,7 +708,7 @@ end;
                end;
 
                {$IfDef RecordDEMIX}  WriteLineToDebugFile(TestAreaName + '   ' + DEMIXTile + '  ' + RefType + '  elev=' + IntToStr(NumElev) +  '  slope=' + IntToStr(NumSlope) +  '  ruff=' + IntToStr(NumRuff)  +
-                     '  total=' + IntToStr(NumElev+NumSlope+NumRuff));  {$EndIf}
+                     '  total=' + IntToStr(NumElev+NumSlope+NumRuff)); {$EndIf}
             end;
 
 
@@ -812,8 +811,10 @@ end;
 
 
    var
-      WantDEM,Ser,i,j,UseDSM,UseDTM : integer;
-      AllDEMs,TStr : shortstring;
+     // WantDEM,j,
+      Ser,i,UseDSM,UseDTM : integer;
+      //AllDEMs,
+      TStr : shortstring;
       NoneMissing : boolean;
    begin
       {$If Defined(RecordDEMIXFull)} HighlightLineToDebugFile('ProcessDEMIXtestarea in ' + TestAreaName); {$EndIf}
@@ -847,7 +848,7 @@ end;
             if (GeodeticFName <> '') then GeodeticTable := tMyData.Create(GeodeticFName);
         *)
 
-            {$If Defined(RecordFullDEMIX) or Defined(TrackDEMIX_DEMs)} OpenDEMsToDebugFile('DEMs start loading');  {$EndIf}
+            {$If Defined(RecordFullDEMIX) or Defined(TrackDEMIX_DEMs)} OpenDEMsToDebugFile('DEMs start loading'); {$EndIf}
 
             DoReferenceCriteria;
             GISdb[DEMIXtileDB].MyData.First;  //placed here to see where in the tile processing the program is at
@@ -942,7 +943,7 @@ end;
          {$If Defined(RecordDEMIX)} HighlightLineToDebugFile(TestAreaName + ',  did not load reference data'); {$EndIf}
       end;
       ReportErrors := true;
-      {$If Defined(RecordFullDEMIX) or Defined(TrackDEMIX_DEMs)} OpenDEMsToDebugFile('closing all DEMs');  {$EndIf}
+      {$If Defined(RecordFullDEMIX) or Defined(TrackDEMIX_DEMs)} OpenDEMsToDebugFile('closing all DEMs'); {$EndIf}
       CloseAllDEMs;
     end;
 
@@ -1135,6 +1136,10 @@ end;
 //this was designed for a particular purpose, and might not be generally applicable
 
 procedure DEMIXtilesStats;
+//  11-18-22 removed since it does not appear very useful
+//used DEM=1 to mask all other open DEMs (say loaded from indexed map library)
+//found all DEMIX tiles, and did moments report
+//each tile and DEM in a separate window
 var
    DEMIXtiles,i,Valid : integer;
    bb : sfBoundBox;
@@ -1161,9 +1166,7 @@ begin
       while not GISdb[DemixTiles].MyData.eof do begin
          bb := GISdb[DemixTiles].MyData.GetRecordBoundingBox;
          PickGeoStat.GroupTitle := GISdb[DemixTiles].MyData.GetFieldByNameAsString('NAME');
-
-         {$IfDef RecordBatch} Valid := DEMGlb[1].ValidElevsInDEM; WriteLineToDebugFile(IntToStr(1) + '  full DEM valid=' + IntToStr(Valid)); {$EndIf}
-
+         {$IfDef RecordBatch} Valid := DEMGlb[1].ValidElevsInDEM; WriteLineToDebugFile(IntToStr(1) + ' full DEM valid=' + IntToStr(Valid)); {$EndIf}
          DEMGlb[1].CutOutGeoBox(bb);
          DEMGlb[1].SelectionMap.RespondToChangedDEM;
          Valid := DEMGlb[1].ValidElevsInDEM;
@@ -1176,7 +1179,6 @@ begin
                DEMGlb[i].SelectionMap.BringToFront;
             end;
             PickGeoStat.DifferenClick(Nil);
-
             for i := 2 to MaxDEMDataSets do if ValidDEM(i) then begin
                DEMGlb[i].SelectionMap.ReloadDEMClick(Nil);
             end;

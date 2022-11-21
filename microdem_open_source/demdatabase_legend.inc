@@ -27,7 +27,7 @@ begin
     MaxPC := 0;
     while not MyData.eof do begin
        Percent := MyData.GetFieldByNameAsFloat('PERCENT');
-       if Percent > MaxPC then begin
+       if (Percent > MaxPC) then begin
           MaxPC := Percent;
           MaxStr := RealToString(MaxPC,6,1) + '% ' + MyData.GetFieldByNameAsString('NAME');
        end;

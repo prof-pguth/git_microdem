@@ -188,6 +188,7 @@ const
    dgArea = 8;
    //dgJust3Params = 9;
    dg7Params = 10;
+   dgNormalizedDiff = 11;
 
 type
   tHowRestrict = (resNone);
@@ -1086,7 +1087,7 @@ begin
    {$IfDef VCL} if WantShowProgress and ShowSatProgress then StartProgress('Range Compute ' + FieldDesired); {$EndIf}
    repeat
       if WantShowProgress and ShowSatProgress and (Num mod trc = 0) then begin
-         {$IfDef VCL} UpdateProgressBar(Num*Skip/trc);   {$EndIf}
+         {$IfDef VCL} UpdateProgressBar(Num*Skip/trc); {$EndIf}
          if (EmpSource <> Nil) then EmpSource.Enabled := false;
       end;
       inc(Num);
@@ -1581,7 +1582,7 @@ begin
                 MyData.SetFieldByNameAsFloat(f3,Distance);
              end;
           end;
-          {$IfDef RecordDistance} WriteLineToDebugFile(LatLongDegreeToString(Lat,Long) + '  ' + LatLongDegreeToString(Lat2,Long2) + RealToString(0.001 * Distance,12,2));   {$EndIf}
+          {$IfDef RecordDistance} WriteLineToDebugFile(LatLongDegreeToString(Lat,Long) + '  ' + LatLongDegreeToString(Lat2,Long2) + RealToString(0.001 * Distance,12,2)); {$EndIf}
        end;
        MyData.Next;
     end;
@@ -2591,7 +2592,7 @@ end;
                eName : ShortString;
                SlopeAspectRec : tSlopeAspectRec;
             begin
-               {$IfDef FieldFromDEM} WriteLineToDebugFile('TGISdataBaseModule.AddAndFillFieldFromDEM in, opt=' + IntToStr(Ord(AddDEM)));   {$EndIf}
+               {$IfDef FieldFromDEM} WriteLineToDebugFile('TGISdataBaseModule.AddAndFillFieldFromDEM in, opt=' + IntToStr(Ord(AddDEM))); {$EndIf}
                 if (AddDEM in [adElevDiff,adElevNearest,adElevNearestInt,adElevInterp,adSlope]) then begin
                    if not GetDEM(UseDEM, true,'Add field from') then exit;
                 end;
@@ -2627,7 +2628,7 @@ end;
                   if not MyData.FieldExists(fName) then begin
                      AddFieldToDataBase(ftFloat,fName,14,6);
                   end;
-                  {$IfDef FieldFromDEM} WriteLineToDebugFile('new field=' + fName);   {$EndIf}
+                  {$IfDef FieldFromDEM} WriteLineToDebugFile('new field=' + fName); {$EndIf}
                end;
 
                if (AddDEM = adSlope) then begin
@@ -2814,7 +2815,7 @@ end;
 
 
             begin
-              {$IfDef RecordMaskDEMShapeFile} WriteLineToDebugFile('MaskDEMfromshapefile in , mask=' + RealToString(MaskingDistance,-12,-2));   {$EndIf}
+              {$IfDef RecordMaskDEMShapeFile} WriteLineToDebugFile('MaskDEMfromshapefile in , mask=' + RealToString(MaskingDistance,-12,-2)); {$EndIf}
                with GISdb[DBonTable] do begin
                  oldDBSaveOptions := dbOpts;
                  DEMDef_routines.SaveBackupDefaults;
@@ -2829,7 +2830,7 @@ end;
 
                  {$IfDef RecordMaskDEMShapeFileBMP} PetImage.SaveBitmap(MaskBMP,MDTempDir + 'cloned' + OverlayFExt); {$EndIf}
                  EmpSource.Enabled := false;
-                 {$IfDef RecordMaskDEMShapeFile} WriteLineToDebugFile('MaskDEMfromshapefile prelims over');   {$EndIf}
+                 {$IfDef RecordMaskDEMShapeFile} WriteLineToDebugFile('MaskDEMfromshapefile prelims over'); {$EndIf}
 
                  if SimplePointFile then begin
                     MaskBMP.Canvas.Brush.Style := bsSolid;
@@ -2876,7 +2877,7 @@ end;
                     end;
                  end
                  else begin
-                    {$IfDef RecordMaskDEMShapeFile} WriteLineToDebugFile('MaskDEMfromshapefile1Click not point shape file');   {$EndIf}
+                    {$IfDef RecordMaskDEMShapeFile} WriteLineToDebugFile('MaskDEMfromshapefile1Click not point shape file'); {$EndIf}
                     GetLineSize;
                     MaskBMP.Canvas.Pen.Color := clBlack;
                     MaskBMP.Canvas.Pen.Width := MaskSize;
@@ -2937,7 +2938,7 @@ end;
                  (*
                  end
                  else begin
-                    {$IfDef RecordMaskDEMShapeFile} WriteLineToDebugFile('MaskDEMfromshapefile1Click MapZoomFactor > 0.99');   {$EndIf}
+                    {$IfDef RecordMaskDEMShapeFile} WriteLineToDebugFile('MaskDEMfromshapefile1Click MapZoomFactor > 0.99'); {$EndIf}
                      for y := 0 to pred(MaskBMP.Height) do begin
                         if MaskShapesAreIn then Color := RGBTripleWhite
                         else Color := RGBTripleBlack;
@@ -2954,7 +2955,7 @@ end;
                  *)
 
                   EndProgress;
-                  {$IfDef RecordMaskDEMShapeFile} WriteLineToDebugFile('MaskDEMfromshapefile1Click masking over');   {$EndIf}
+                  {$IfDef RecordMaskDEMShapeFile} WriteLineToDebugFile('MaskDEMfromshapefile1Click masking over'); {$EndIf}
 
                   {$IfDef RecordMaskDEMShapeFileBMP} PetImage.SaveBitmap(MaskBMP,MDTempDir + 'final_Mask.bmp'); {$EndIf}
 
@@ -2966,7 +2967,7 @@ end;
                   DEMGlb[DEM].DEMstatus := dsUnsaved;
                   DEMGlb[DEM].SelectionMap.DoBaseMapRedraw;
                end;
-               {$IfDef RecordMaskDEMShapeFile} WriteLineToDebugFile('MaskDEMfromshapefile1Click out');   {$EndIf}
+               {$IfDef RecordMaskDEMShapeFile} WriteLineToDebugFile('MaskDEMfromshapefile1Click out'); {$EndIf}
             end;
 
 
@@ -3865,7 +3866,7 @@ var
    LocalName : ShortString;
    LocalField,LinkField : boolean;
 begin
-   {$IfDef RecordDefineDBColorTable} WriteLineToDebugFile('TGISdataBaseModule.DefineColorTable in');   {$EndIf}
+   {$IfDef RecordDefineDBColorTable} WriteLineToDebugFile('TGISdataBaseModule.DefineColorTable in'); {$EndIf}
    LocalField := (MyData.FieldExists(dbOpts.FloatColorField));
    LocalName := dbOpts.FloatColorField;
    if not LocalField then begin
@@ -3979,7 +3980,7 @@ begin
             Dist := aShapeFile.LineLength(MyData.RecNo);
             NPts := trunc(Dist / DistApart);
          end;
-         {$IfDef RecordPointInArea} WriteLineToDebugFile('  NPTs=' + IntToStr(NPts));   {$EndIf}
+         {$IfDef RecordPointInArea} WriteLineToDebugFile('  NPTs=' + IntToStr(NPts)); {$EndIf}
          if (Npts > 0) then begin
             if MyData.FieldExists('NAME') then aName := MyData.GetFieldByNameAsString('NAME');
             if AreaShapeFile(ShapeFileType) then begin
@@ -4548,9 +4549,9 @@ begin
     {$IfDef VCL} StartProgress('Merge'); {$EndIf}
     for j := 0 to pred(FileNames.Count) do begin
       EmpSource.Enabled := false;
-      {$IfDef VCL} UpdateProgressBar(j/FileNames.Count);    {$EndIf}
+      {$IfDef VCL} UpdateProgressBar(j/FileNames.Count); {$EndIf}
       fName := FileNames.Strings[j];
-      {$IfDef RecordMergeDB} WriteLineToDebugFile(fName);    {$EndIf}
+      {$IfDef RecordMergeDB} WriteLineToDebugFile(fName); {$EndIf}
       if (upperCase(fName) <> UpperCase(MyData.TableName)) then begin
           MergingTable := tMyData.Create(fName);
           while not MergingTable.EOF do begin
@@ -4594,7 +4595,7 @@ begin
       while not EOF do begin
          EmpSource.Enabled := false;
          inc(i);
-         {$IfDef VCL} if (i mod 500 = 0) then UpdateProgressBar(i/rc);   {$EndIf}
+         {$IfDef VCL} if (i mod 500 = 0) then UpdateProgressBar(i/rc); {$EndIf}
 
          Edit;
          Year := GetFieldByNameAsInteger('YEAR');
@@ -4687,7 +4688,7 @@ end;
 procedure TGISdataBaseModule.ClearFieldRange(aField : shortstring);
 begin
    if MDDef.TrackDatabaseRanges and (not DoNotTrackDBSettings) and (RangeTable <> Nil) then begin
-      {$IfDef RecordRangeTable} WriteLineToDebugFile('TGISdataBaseModule.ClearFieldRange for ' + aField);   {$EndIf}
+      {$IfDef RecordRangeTable} WriteLineToDebugFile('TGISdataBaseModule.ClearFieldRange for ' + aField); {$EndIf}
       RangeTable.ApplyFilter('FIELD_NAME=' + QuotedStr(aField));
       if (RangeTable.RecordCount = 1) then begin
          RangeTable.Edit;
@@ -5292,7 +5293,7 @@ begin
         if {$IfDef ExOSM} {$Else}(ItsOSMShapeFile and MDDef.OSMtoCDS) or {$EndIf} (ItsTigerShapeFile and MDDef.TigertoCDS) then begin
            if (DesiredDBMode <> dbmForceDefault) then DesiredDBMode := dbmCDS;
         end;
-        {$IfDef RecordFullOpenDB} WriteLineToDebugFile('TGISDataBase.InitializeTheData Data calling tMyData.Create, Mode=' + IntToStr(ord(DesiredDBMode)) + '  filewanted=' + dbFullName);   {$EndIf}
+        {$IfDef RecordFullOpenDB} WriteLineToDebugFile('TGISDataBase.InitializeTheData Data calling tMyData.Create, Mode=' + IntToStr(ord(DesiredDBMode)) + '  filewanted=' + dbFullName); {$EndIf}
         if not MDDef.AllowDBstoRAM then DesiredDBMode := dbmDefault;
      {$EndIf}
 
@@ -5803,7 +5804,7 @@ begin
    dbOpts.MainFilter := fString;
    MyData.ApplyFilter(fString);
    EmpSource.Enabled := false;
-   //ShowStatus;
+   ShowStatus;
    //ApplicationProcessMessages;
 end;
 
@@ -5832,7 +5833,7 @@ begin
       dbOpts.LinkFieldOtherDB := '';
    end;
    if (LinkTable <> Nil) then begin
-      {$IfDef RecordLinkTable} WriteLineToDebugFile('TGISdataBaseModule.ClearLinkTable destroyed the Link Table');   {$EndIf}
+      {$IfDef RecordLinkTable} WriteLineToDebugFile('TGISdataBaseModule.ClearLinkTable destroyed the Link Table'); {$EndIf}
       LinkTable.Destroy;
       LinkTable := Nil;
    end;
@@ -5864,7 +5865,7 @@ begin
        end
        else if LatLongFieldsPresent then dbOpts.GeoFilter := PetDBUtils.MakePointGeoFilter(LatFieldName,LongFieldName,HiLat,LowLong,LowLat,HighLong);
 
-       {$IfDef RecordQueryGeoBox} WriteLineToDebugFile('GeoFilter length= ' + IntToStr(length(dbOpts.GeoFilter)) + '  GeoFilter: ' + dbOpts.GeoFilter);    {$EndIf}
+       {$IfDef RecordQueryGeoBox} WriteLineToDebugFile('GeoFilter length= ' + IntToStr(length(dbOpts.GeoFilter)) + '  GeoFilter: ' + dbOpts.GeoFilter); {$EndIf}
        EmpSource.Enabled := false;
        AssembleGISFilter;
        if MyData.Filtered then begin
@@ -5893,7 +5894,7 @@ begin
 
          {$IfDef VCL}
             if DisplayOnTable and (dbTablef <> Nil) then begin
-               {$IfDef RecordQueryGeoBox} WriteLineToDebugFile('TGISDataBase.QueryGeoBox plot with filter=' + MyData.Filter);    {$EndIf}
+               {$IfDef RecordQueryGeoBox} WriteLineToDebugFile('TGISDataBase.QueryGeoBox plot with filter=' + MyData.Filter); {$EndIf}
                RedrawLayerOnMap;
             end;
          {$EndIf}
@@ -5949,10 +5950,10 @@ var
 
 
 begin
-   {$IfDef RecordSym} WriteLineToDebugFile('TGISdataBaseModule.FieldRange in, field=' + Field);   {$EndIf}
+   {$IfDef RecordSym} WriteLineToDebugFile('TGISdataBaseModule.FieldRange in, field=' + Field); {$EndIf}
    ShortName := Field;
    Linked := LinkedField(ShortName) and (LinkRangeTable <> Nil);
-   {$IfDef RecordSym} if Linked and MDDef.TrackDatabaseRanges and (LinkRangeTable <> Nil) then WriteLineToDebugFile('Required link range table is NIL');   {$EndIf}
+   {$IfDef RecordSym} if Linked and MDDef.TrackDatabaseRanges and (LinkRangeTable <> Nil) then WriteLineToDebugFile('Required link range table is NIL'); {$EndIf}
 
    if (not ForceCompute) then begin
       if Linked then begin
@@ -5962,7 +5963,7 @@ begin
          if MinMaxExists(RangeTable,field) then exit;
       end;
    end;
-   {$IfDef RecordSym} WriteLineToDebugFile('TGISdataBaseModule.FieldRange need to use PetDBUtils.FindFieldRangeLinkPossible');   {$EndIf}
+   {$IfDef RecordSym} WriteLineToDebugFile('TGISdataBaseModule.FieldRange need to use PetDBUtils.FindFieldRangeLinkPossible'); {$EndIf}
    EmpSource.Enabled := false;
    FindFieldRangeLinkPossible(Field,Num,Valid,Sum,Min,Max);
    if (MyData.Filter = '') and MDDef.TrackDatabaseRanges then begin
@@ -5971,7 +5972,7 @@ begin
       else if (RangeTable <> Nil) then MinMaxAdd(RangeTable,Field);
    end;
    EmpSource.Enabled := true;
-   {$IfDef RecordSym} WriteLineToDebugFile('TGISdataBaseModule.FieldRange out, field=' + Field + '  min=' + RealToString(Min,-12,-2) + ' to ' + '  max=' + RealToString(Max,-12,-2));   {$EndIf}
+   {$IfDef RecordSym} WriteLineToDebugFile('TGISdataBaseModule.FieldRange out, field=' + Field + '  min=' + RealToString(Min,-12,-2) + ' to ' + '  max=' + RealToString(Max,-12,-2)); {$EndIf}
 end;
 
 
@@ -5992,34 +5993,34 @@ finalization
    {$IfDef RecordOpenDataBase} WriteLineToDebugFile('RecordOpenDataBaseProblems active in demdatabase'); {$EndIf}
    {$IfDef RecordPointInArea} WriteLineToDebugFile('RecordPointInAreaProblems active in demdatabase'); {$EndIf}
    {$IfDef RecordBeachBall} WriteLineToDebugFile('RecordBeachBallProblems active in demdatabase'); {$EndIf}
-   {$IfDef RecordMaskDEMShapeFile} WriteLineToDebugFile('RecordMaskDEMShapeFile active in demdatabase');   {$EndIf}
-   {$IfDef RecordFilterDataBase} WriteLineToDebugFile('RecordFilterDataBase active in demdatabase');   {$EndIf}
-   {$IfDef RecordLinkTable} WriteLineToDebugFile('RecordLinkTable active in demdatabase');   {$EndIf}
-   {$IfDef RecordShapeFileGroup} WriteLineToDebugFile('RecordShapeFileGroup active in demdatabase');   {$EndIf}
-   {$IfDef RecordQueryGeoBox} WriteLineToDebugFile('RecordQueryGeoBox active in demdatabase');   {$EndIf}
-   {$IfDef RecordValidScreenPosition} WriteLineToDebugFile('RecordValidScreenPosition active in demdatabase');   {$EndIf}
-   {$IfDef RecordDataBaseLabels} WriteLineToDebugFile('RecordDataBaseLabels active in demdatabase');   {$EndIf}
-   {$IfDef RecordDataSaveStatus} WriteLineToDebugFile('RecordDataSaveStatus active in demdatabase');   {$EndIf}
-   {$IfDef RecordGAZ} WriteLineToDebugFile('RecordGAZProblems active in demdatabase');   {$EndIf}
-   {$IfDef RecordDipStrike} WriteLineToDebugFile('RecordDipStrike active in demdatabase');   {$EndIf}
-   {$IfDef RecordNetworkends} WriteLineToDebugFile('RecordNetworkends active in demdatabase');   {$EndIf}
-   {$IfDef RecordFan} WriteLineToDebugFile('RecordFanProblems active in demdatabase');   {$EndIf}
-   {$IfDef RecordNetworkNodes} WriteLineToDebugFile('RecordNetworkNodes active in demdatabase');   {$EndIf}
-   {$IfDef RecordDBindexes} WriteLineToDebugFile('RecordDBindexes active in demdatabase');   {$EndIf}
-   {$IfDef RecordMergeDB} WriteLineToDebugFile('RecordMergeDB active in demdatabase');   {$EndIf}
+   {$IfDef RecordMaskDEMShapeFile} WriteLineToDebugFile('RecordMaskDEMShapeFile active in demdatabase'); {$EndIf}
+   {$IfDef RecordFilterDataBase} WriteLineToDebugFile('RecordFilterDataBase active in demdatabase'); {$EndIf}
+   {$IfDef RecordLinkTable} WriteLineToDebugFile('RecordLinkTable active in demdatabase'); {$EndIf}
+   {$IfDef RecordShapeFileGroup} WriteLineToDebugFile('RecordShapeFileGroup active in demdatabase'); {$EndIf}
+   {$IfDef RecordQueryGeoBox} WriteLineToDebugFile('RecordQueryGeoBox active in demdatabase'); {$EndIf}
+   {$IfDef RecordValidScreenPosition} WriteLineToDebugFile('RecordValidScreenPosition active in demdatabase'); {$EndIf}
+   {$IfDef RecordDataBaseLabels} WriteLineToDebugFile('RecordDataBaseLabels active in demdatabase'); {$EndIf}
+   {$IfDef RecordDataSaveStatus} WriteLineToDebugFile('RecordDataSaveStatus active in demdatabase'); {$EndIf}
+   {$IfDef RecordGAZ} WriteLineToDebugFile('RecordGAZProblems active in demdatabase'); {$EndIf}
+   {$IfDef RecordDipStrike} WriteLineToDebugFile('RecordDipStrike active in demdatabase'); {$EndIf}
+   {$IfDef RecordNetworkends} WriteLineToDebugFile('RecordNetworkends active in demdatabase'); {$EndIf}
+   {$IfDef RecordFan} WriteLineToDebugFile('RecordFanProblems active in demdatabase'); {$EndIf}
+   {$IfDef RecordNetworkNodes} WriteLineToDebugFile('RecordNetworkNodes active in demdatabase'); {$EndIf}
+   {$IfDef RecordDBindexes} WriteLineToDebugFile('RecordDBindexes active in demdatabase'); {$EndIf}
+   {$IfDef RecordMergeDB} WriteLineToDebugFile('RecordMergeDB active in demdatabase'); {$EndIf}
    {$IfDef ShowOtherDBsWithSameFilter} WriteLineToDebugFile('ShowOtherDBsWithSameFilter active in demdatabase'); {$EndIf}
-   {$IfDef RecordBasinBreakdown} WriteLineToDebugFile('RecordBasinBreakdown active in demdatabase');   {$EndIf}
-   {$IfDef RecordAddField} WriteLineToDebugFile('RecordAddField active in demdatabase');   {$EndIf}
-   {$IfDef RecordEveryDataBaseLabel} WriteLineToDebugFile('RecordEveryDataBaseLabel active in demdatabase');   {$EndIf}
-   {$IfDef RecordGISvectors} WriteLineToDebugFile('RecordGISvectors active in demdatabase');   {$EndIf}
-   {$IfDef RecordCurrentRecord} WriteLineToDebugFile('RecordCurrentRecord active in demdatabase');   {$EndIf}
-   {$IfDef RecordIcons} WriteLineToDebugFile('RecordIcons active in demdatabase');   {$EndIf}
-   {$IfDef RecordDataBaseText} WriteLineToDebugFile('RecordDataBaseText active in demdatabase');   {$EndIf}
-   {$IfDef RecordOpenDataBaseStructure} WriteLineToDebugFile('RecordOpenDataBaseStructure active in demdatabase');   {$EndIf}
-   {$IfDef RecordDataBaseSaveFiles} WriteLineToDebugFile('RecordDataBaseSaveFiles active in demdatabase');   {$EndIf}
-   {$IfDef RecordFullShapeFileGroup} WriteLineToDebugFile('RecordFullShapeFileGroup active in demdatabase');   {$EndIf}
-   {$IfDef RecordStationTimeSeries} WriteLineToDebugFile('RecordStationTimeSeries active in demdatabase');   {$EndIf}
-   {$IfDef RecordMonthlyFilter} WriteLineToDebugFile('RecordMonthlyFilter active in demdatabase');   {$EndIf}
+   {$IfDef RecordBasinBreakdown} WriteLineToDebugFile('RecordBasinBreakdown active in demdatabase'); {$EndIf}
+   {$IfDef RecordAddField} WriteLineToDebugFile('RecordAddField active in demdatabase'); {$EndIf}
+   {$IfDef RecordEveryDataBaseLabel} WriteLineToDebugFile('RecordEveryDataBaseLabel active in demdatabase'); {$EndIf}
+   {$IfDef RecordGISvectors} WriteLineToDebugFile('RecordGISvectors active in demdatabase'); {$EndIf}
+   {$IfDef RecordCurrentRecord} WriteLineToDebugFile('RecordCurrentRecord active in demdatabase'); {$EndIf}
+   {$IfDef RecordIcons} WriteLineToDebugFile('RecordIcons active in demdatabase'); {$EndIf}
+   {$IfDef RecordDataBaseText} WriteLineToDebugFile('RecordDataBaseText active in demdatabase'); {$EndIf}
+   {$IfDef RecordOpenDataBaseStructure} WriteLineToDebugFile('RecordOpenDataBaseStructure active in demdatabase'); {$EndIf}
+   {$IfDef RecordDataBaseSaveFiles} WriteLineToDebugFile('RecordDataBaseSaveFiles active in demdatabase'); {$EndIf}
+   {$IfDef RecordFullShapeFileGroup} WriteLineToDebugFile('RecordFullShapeFileGroup active in demdatabase'); {$EndIf}
+   {$IfDef RecordStationTimeSeries} WriteLineToDebugFile('RecordStationTimeSeries active in demdatabase'); {$EndIf}
+   {$IfDef RecordMonthlyFilter} WriteLineToDebugFile('RecordMonthlyFilter active in demdatabase'); {$EndIf}
    {$IfDef RecordRedistrict} WriteLineToDebugFile('RecordRedistrict active in demdatabase'); {$EndIf}
    {$IfDef RecordDBPlotDetailed} WriteLineToDebugFile('RecordDBPlotDetailed active in demdatabase'); {$EndIf}
    {$IfDef RecordDBCount} WriteLineToDebugFile('RecordDBCount active in demdatabase'); {$EndIf}

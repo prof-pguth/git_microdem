@@ -54,8 +54,8 @@ begin
 
 function tDEMDataSet.DetrendDEM(Normalize : boolean = true; FilterRadius : integer = 2) : integer;
 var
-   x,y,i,j,NPts : integer;
-   Sum,zt,
+   x,y{,i,j,NPts} : integer;
+   Sum,{zt,}
    znw,zw,zsw,zn,z,zs,zne,ze,zse,
    FactorNS,FactorEW,FactorDiag : float32;
 

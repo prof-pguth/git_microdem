@@ -11,7 +11,7 @@ unit dem_manager;
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
-      {$Define RecordCloseDEM}
+      //{$Define RecordCloseDEM}
       //{$Define ShortRecordCloseDEM}
       //{$Define RecordClosingData}
       //{$Define RecordNewMaps}
@@ -845,7 +845,7 @@ end;
            FilesWanted := tStringList.Create;
            FilesWanted.Add(LastDEMName);
            if GetMultipleFiles('DEM ' + WhatFor,DEMFilterMasks,FilesWanted ,MDDef.DefaultDEMFilter) then begin
-              {$If Defined(TimeLoadDEM))} WriteLineToDebugFile('Files picked ' + IntToStr(FilesWanted.Count));   {$EndIf}
+              {$If Defined(TimeLoadDEM))} WriteLineToDebugFile('Files picked ' + IntToStr(FilesWanted.Count)); {$EndIf}
               for i := 0 to pred(FilesWanted.Count) do begin
                  fName := FilesWanted.Strings[i];
                  {$If Defined(TimeLoadDEM))} WriteLineToDebugFile('User pick DEM: ' + IntToStr(i) + '  ' + fName); {$EndIf}
@@ -881,7 +881,7 @@ end;
       {$IfDef ExMultiGrid}
       {$Else}
          else if (MDdef.AutoOpen = aoMultigrid) then begin
-            {$If Defined(RecordStartup) or Defined(RecordProjects)} WriteLineToDebugFile('MDdef.AutoOpen = aoMultigrid');   {$EndIf}
+            {$If Defined(RecordStartup) or Defined(RecordProjects)} WriteLineToDebugFile('MDdef.AutoOpen = aoMultigrid'); {$EndIf}
             if (LastMultigrid1 <> '') then OpenTheMultigrid(1,GetParentDirectory(LastMultigrid1));
             if (LastMultigrid2 <> '') then OpenTheMultigrid(2,GetParentDirectory(LastMultigrid2));
             if (LastMultigrid3 <> '') then OpenTheMultigrid(3,GetParentDirectory(LastMultigrid3));
@@ -934,7 +934,7 @@ end;
       begin
          if WarnAboutSpaces(LastSatDir) then exit;
 
-         {$If Defined(RecordSatLoad) or Defined(RecordSatDirOpen)} WriteLineToDebugFile('OpenSatImageFromDirectory in, ' + LastSatDir);   {$EndIf}
+         {$If Defined(RecordSatLoad) or Defined(RecordSatDirOpen)} WriteLineToDebugFile('OpenSatImageFromDirectory in, ' + LastSatDir); {$EndIf}
          TheFiles := Nil;
          FindMatchingFiles(LastSatDir,'*.tif',TheFiles,6);
          if (TheFiles.Count = 0) then begin
@@ -947,7 +947,7 @@ end;
                 TheFiles.Free;
                 exit;
             end;
-            {$If Defined(RecordSatLoad) or Defined(RecordSatDirOpen)} WriteLineToDebugFile('OpenSatImageFromDirectory, jp2 files=' + IntToStr(TheFiles.Count));   {$EndIf}
+            {$If Defined(RecordSatLoad) or Defined(RecordSatDirOpen)} WriteLineToDebugFile('OpenSatImageFromDirectory, jp2 files=' + IntToStr(TheFiles.Count)); {$EndIf}
             for I := 0 to pred(TheFiles.Count) do begin
                if AnsiContainsText(TheFiles.Strings[i],'IMG_DATA') then begin
                   wmdem.SetPanelText(0,'Convert JP2: ' + IntToStr(succ(i)) + '/' + IntToStr(TheFiles.Count));
@@ -977,14 +977,14 @@ end;
             end;
          end;
 
-         {$If Defined(RecordSatLoad) or Defined(RecordSatDirOpen)} WriteLineToDebugFile('OpenSatImageFromDirectory, TIF files=' + IntToStr(TheFiles.Count));   {$EndIf}
+         {$If Defined(RecordSatLoad) or Defined(RecordSatDirOpen)} WriteLineToDebugFile('OpenSatImageFromDirectory, TIF files=' + IntToStr(TheFiles.Count)); {$EndIf}
          if (TheFiles.Count > 0) then begin
             if (TheFiles.Count = 1) then i := 0 else i := 1;      //for Sentinel-2, where band 1 is low resolution
             OpenAndDisplayNewScene(Nil,TheFiles.Strings[i],true,true,true);
          end;
          TheFiles.Free;
          UpdateMenusForAllMaps;
-         {$If Defined(RecordSatLoad) or Defined(RecordSatDirOpen)} WriteLineToDebugFile('OpenSatImageFromDirectory out');   {$EndIf}
+         {$If Defined(RecordSatLoad) or Defined(RecordSatDirOpen)} WriteLineToDebugFile('OpenSatImageFromDirectory out'); {$EndIf}
       end;
 
 
@@ -993,13 +993,13 @@ end;
          Paths : tStringList;
          i : integer;
       begin
-         {$If Defined(RecordSatLoad) or Defined(RecordSatDirOpen)} WriteLineToDebugFile('PickSatDirToOpen in');   {$EndIf}
+         {$If Defined(RecordSatLoad) or Defined(RecordSatDirOpen)} WriteLineToDebugFile('PickSatDirToOpen in'); {$EndIf}
          Paths := tStringList.Create;
          Paths.Add(LastSatDir);
          if GetMultipleDirectories('Landsat or Sentinel-2 image',Paths) then begin
             for i := 0 to pred(Paths.Count) do begin
                LastSatDir := Paths[i];
-               {$If Defined(RecordSatLoad) or Defined(RecordSatDirOpen)} WriteLineToDebugFile('call OpenSatImageFromDirectory, ' + LastSatDir);   {$EndIf}
+               {$If Defined(RecordSatLoad) or Defined(RecordSatDirOpen)} WriteLineToDebugFile('call OpenSatImageFromDirectory, ' + LastSatDir); {$EndIf}
                OpenSatImageFromDirectory(LastSatDir);
             end;
          end
@@ -1076,7 +1076,7 @@ end;
       procedure CloseSingleSatelliteImage(var j : integer);
       begin
          if ValidSatImage(j) then begin
-            {$IfDef RecordClosingData} WriteLineToDebugFile('CloseSingleSatelliteImage in, j=' + IntToStr(j));   {$EndIf}
+            {$IfDef RecordClosingData} WriteLineToDebugFile('CloseSingleSatelliteImage in, j=' + IntToStr(j)); {$EndIf}
             {$IfDef VCL} SkipMenuUpdating := true; {$EndIf}
             FreeAndNil(SatImage[j]);
             {$IfDef VCL} SkipMenuUpdating := false; {$EndIf}

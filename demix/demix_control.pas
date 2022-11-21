@@ -100,20 +100,20 @@ var
    UseDSM,UseDTM : integer;
    DSMElevFiles,DSMLegendFiles,DTMElevFiles,DTMLegendFiles : tStringList;
 
-   procedure ModifyGraph(Graph : tThisBaseGraph);
-   var
-      I : integer;
-   begin
-      for I := 1 to Graph.GraphDraw.LegendList.Count do begin
-         Graph.GraphDraw.FileColors256[i] := DEMIXColorFromDEMName(Graph.GraphDraw.LegendList[pred(i)]);
+      procedure ModifyGraph(Graph : tThisBaseGraph);
+      var
+         I : integer;
+      begin
+         for I := 1 to Graph.GraphDraw.LegendList.Count do begin
+            Graph.GraphDraw.FileColors256[i] := DEMIXColorFromDEMName(Graph.GraphDraw.LegendList[pred(i)]);
+         end;
+         Graph.RedrawDiagram11Click(Nil);
+         Graph.Image1.Canvas.Draw(Graph.GraphDraw.LeftMargin+15,Graph.GraphDraw.TopMargin+10,Graph.MakeLegend(Graph.GraphDraw.LegendList,false));
       end;
-      Graph.RedrawDiagram11Click(Nil);
-      Graph.Image1.Canvas.Draw(Graph.GraphDraw.LeftMargin+15,Graph.GraphDraw.TopMargin+10,Graph.MakeLegend(Graph.GraphDraw.LegendList,false));
-   end;
 
 
 
-  procedure MakeDifferenceGrid(RefGrid : integer; RefType : shortstring; LegendFiles,ElevFiles : tStringList);
+     procedure MakeDifferenceGrid(RefGrid : integer; RefType : shortstring; LegendFiles,ElevFiles : tStringList);
 
             function SaveValuesFromGrid(DEM : integer; What : shortstring) : ShortString;
             var
@@ -139,21 +139,25 @@ var
                Dispose(zs);
             end;
 
-  var
-     DiffGrid : integer;
-  begin
-      DiffGrid := MakeDifferenceMap(RefGrid,TestGrid,true,false,false);
-      DEMglb[DiffGrid].AreaName := AreaName + '_' + TestSeries[i] + '_' + ShortName + '_' + RefType;
-      fName := DEMIXtempfiles + DEMglb[DiffGrid].AreaName + '.dem';
-      DEMglb[DiffGrid].WriteNewFormatDEM(fName);
-      ElevFiles.Add(SaveValuesFromGrid(DiffGrid,ShortName + '_' + RefType + '_'));
-      LegendFiles.Add(TestSeries[i]);
-      CloseSingleDEM(DiffGrid);
-      if (ShortName <> 'elvd') then begin
-         CloseSingleDEM(RefGrid);
-      end;
-  end;
-
+     var
+        DiffGrid : integer;
+        fName : PathStr;
+     begin
+         DiffGrid := MakeDifferenceMap(RefGrid,TestGrid,true,false,false);
+         DEMglb[DiffGrid].AreaName := AreaName + '_' + TestSeries[i] + '_' + ShortName + '_' + RefType;
+         fName := DEMIXtempfiles + DEMglb[DiffGrid].AreaName + '.dem';
+         DEMglb[DiffGrid].WriteNewFormatDEM(fName);
+         ElevFiles.Add(SaveValuesFromGrid(DiffGrid,ShortName + '_' + RefType + '_'));
+         LegendFiles.Add(TestSeries[i]);
+         CloseSingleDEM(DiffGrid);
+         if (ShortName <> 'elvd') then begin
+            fName := AreaName + '_percent_diff_' + TestSeries[i] + '_' + ShortName + '_' + RefType;
+            DiffGrid := PercentDifferentTwoGrids(RefGrid,TestGrid,fName);
+            fName := DEMIXtempfiles + fName + '.dem';
+            DEMglb[DiffGrid].WriteNewFormatDEM(fName);
+            CloseSingleDEM(RefGrid);
+         end;
+     end;
 
 
 
@@ -315,8 +319,7 @@ begin
                end;
                if (BigMap.Count > 0) then begin
                   fName := NextFileNumber(DEMIXtempFiles,AreaName + '_difference_histograms_','.png');
-                  //BigMap.SaveToFile(fName);
-                  if RefDSMArea = 0 then Cols := 1 else Cols := 2;
+                  if (RefDSMArea = 0) then Cols := 1 else Cols := 2;
                   MakeBigBitmap(BigMap,'',fName,Cols);
                   DisplayBitmap(fName);
                end

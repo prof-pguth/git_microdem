@@ -3893,7 +3893,7 @@ end;
 
 procedure tAspectStats.FillFromGrid(GridLimits : tGridLimits);
 var
-   x,y,zi : integer;
+   x,y : integer;
    SlopeAspectRec: tSlopeAspectRec;
   z : float32;
 begin

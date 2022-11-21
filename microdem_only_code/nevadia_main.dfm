@@ -2,8 +2,8 @@ object wmdem: Twmdem
   Left = 0
   Top = 262
   Caption = 'GIS program loading'
-  ClientHeight = 1348
-  ClientWidth = 2180
+  ClientHeight = 1357
+  ClientWidth = 2186
   Color = clScrollBar
   DefaultMonitor = dmDesktop
   Font.Charset = DEFAULT_CHARSET
@@ -28,14 +28,13 @@ object wmdem: Twmdem
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 2180
-    Height = 29
+    Width = 2186
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34
     TabOrder = 0
     OnMouseDown = ToolBar1MouseDown
-    ExplicitWidth = 2192
+    ExplicitWidth = 2180
     object SpeedButton2: TSpeedButton
       Left = 0
       Top = 0
@@ -1677,8 +1676,8 @@ object wmdem: Twmdem
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 1329
-    Width = 2180
+    Top = 1338
+    Width = 2186
     Height = 19
     Panels = <
       item
@@ -1697,8 +1696,8 @@ object wmdem: Twmdem
     Visible = False
     OnClick = StatusBar1Click
     OnDblClick = StatusBar1DblClick
-    ExplicitTop = 1347
-    ExplicitWidth = 2192
+    ExplicitTop = 1329
+    ExplicitWidth = 2180
   end
   object MainMenu1: TMainMenu
     Left = 136
@@ -2206,10 +2205,6 @@ object wmdem: Twmdem
           Caption = 'Categories from all open DEMs'
           OnClick = CategoriesfromallopenDEMs1Click
         end
-        object Categoriesfromdatabase1: TMenuItem
-          Caption = 'Categories from data base'
-          OnClick = Categoriesfromdatabase1Click
-        end
         object Subsamplecomparethinaverage1: TMenuItem
           Caption = 'Subsample compare thin/average'
           OnClick = Subsamplecomparethinaverage1Click
@@ -2235,11 +2230,16 @@ object wmdem: Twmdem
         end
         object DEMIXtiles1: TMenuItem
           Caption = 'DEMIX tiles geostats'
+          Enabled = False
           OnClick = DEMIXtiles1Click
         end
         object DEMIXelevationhistograms1: TMenuItem
           Caption = 'DEMIX elevation histograms'
           OnClick = DEMIXelevationhistograms1Click
+        end
+        object Categoriesfromdatabase1: TMenuItem
+          Caption = 'Landform categories from data base'
+          OnClick = Categoriesfromdatabase1Click
         end
         object OpenDEMIXarea1: TMenuItem
           Caption = 'Open DEMIX area'

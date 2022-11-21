@@ -264,7 +264,7 @@ begin
    View3D.MaxPitch := Depress + 0.5 * VFOV;
    View3D.MaxRange := Depth;
    View3D.MinRange := 0;
-   {$IfDef RecordSetUpPanoramaView} WriteLineToDebugFile('OpenPanoramaView before SetAzimuthLimits,' + View3D.FieldOfView);   {$EndIf}
+   {$IfDef RecordSetUpPanoramaView} WriteLineToDebugFile('OpenPanoramaView before SetAzimuthLimits,' + View3D.FieldOfView); {$EndIf}
    View3D.SetAzimuthLimits;
    {$IfDef RecordSetUpPanoramaView} WriteLineToDebugFile('OpenPanoramaView after InitializeViewParameters,  Viewer: ' + LatLongDegreeToString(Lat,Long) + ' ' + View3D.VertAngleRange + View3D.FieldOfView); {$EndIf}
 
@@ -273,12 +273,12 @@ begin
    View3D.DEMonView := DEMUsed;
 
    View3D.SetSize(Depress,false);
-   {$IfDef RecordSetUpPanoramaView} WriteLineToDebugFile('OpenPanoramaView After setsize,' + View3D.FieldOfView);   {$EndIf}
+   {$IfDef RecordSetUpPanoramaView} WriteLineToDebugFile('OpenPanoramaView After setsize,' + View3D.FieldOfView); {$EndIf}
    View3D.PersOpts.WhichPerspective := ReflectancePerspective;
    View3D.ViewDepth := Depth;
    View3D.ForceElevAngle := true;
    View3D.ViewWithInData(false,false,false);
-   {$IfDef RecordSetUpPanoramaView} WriteLineToDebugFile('OpenPanoramaView exit,' + View3D.FieldOfView);   {$EndIf}
+   {$IfDef RecordSetUpPanoramaView} WriteLineToDebugFile('OpenPanoramaView exit,' + View3D.FieldOfView); {$EndIf}
 end;
 
 
@@ -344,7 +344,7 @@ begin {func ViewWithInData}
    for i := 0 to 2 do begin
       RadialPointSpacing[i] := (DEMGlb[DEMonView].AverageXSpace);
       {$IfDef ExAdvancedSats}
-      {$Else} if (i > 0) and (DrapingMaps[i] <> Nil) and IsSatelliteMap(DrapingMaps[i].MapDraw.MapType) then RadialPointSpacing[i] := (SatImage[DrapingMaps[i].MapDraw.SatOnMap].MetersPerPixel);   {$EndIf}
+      {$Else} if (i > 0) and (DrapingMaps[i] <> Nil) and IsSatelliteMap(DrapingMaps[i].MapDraw.MapType) then RadialPointSpacing[i] := (SatImage[DrapingMaps[i].MapDraw.SatOnMap].MetersPerPixel); {$EndIf}
       NumPointsOnRay[i] := round(ViewDepth / RadialPointSpacing[i]);
       if (NumPointsOnRay[i] < 150) then NumPointsOnRay[i] := 150;
    end {for i};
@@ -397,7 +397,7 @@ procedure tView3D.SetAzimuthLimits;
 begin
    LeftAzimuth := ViewAzimuth - (0.5 * ViewHFOV);
    RightAzimuth := ViewAzimuth + (0.5 * ViewHFOV);
-   {$IfDef RecordSetUpPanoramaView} WriteLineToDebugFile('tView3D.SetAzimuthLimits, az range: ' + RealToString(LeftAzimuth,8,0) + RealToString(RightAzimuth,8,0) + ' HFOV: ' + RealToString(ViewHFOV,8,0) + ' VFOV: ' + RealToString(ViewVFOV,8,0));   {$EndIf}
+   {$IfDef RecordSetUpPanoramaView} WriteLineToDebugFile('tView3D.SetAzimuthLimits, az range: ' + RealToString(LeftAzimuth,8,0) + RealToString(RightAzimuth,8,0) + ' HFOV: ' + RealToString(ViewHFOV,8,0) + ' VFOV: ' + RealToString(ViewVFOV,8,0)); {$EndIf}
 end;
 
 
@@ -1060,7 +1060,7 @@ var
          else Str(Az,TStr);
          PetImage.DrawLine(Bitmap,x,0,x,8);
          TStr := TStr + DegSym;
-         {$IfDef RecordPerspLabel} WriteLineToDebugFile('x=' + IntToStr(x) + '  '  + 'Az=' + RealToString(Az,-12,1) + '  ' + TStr);   {$EndIf}
+         {$IfDef RecordPerspLabel} WriteLineToDebugFile('x=' + IntToStr(x) + '  '  + 'Az=' + RealToString(Az,-12,1) + '  ' + TStr); {$EndIf}
          if (x > 12) and (x > (LastX + Bitmap.Canvas.TextWidth(TStr))) then begin
             BitmapTextOut(Bitmap,x-8,7,TStr);
             LastX := x + round(Bitmap.Canvas.TextWidth(TStr));
@@ -1391,7 +1391,7 @@ begin
        MaxShift := MDdef.PerspOpts.PerspAnaglyphShift;
     end;
 
-    {$IfDef RecordPerspectiveProgress} WriteLineToDebugFile('DrawPerspective pt 2');   {$EndIf}
+    {$IfDef RecordPerspectiveProgress} WriteLineToDebugFile('DrawPerspective pt 2'); {$EndIf}
 
     for Runs := 1 to NumRuns do begin
        CreateBitmap(Bitmap, ViewportWidth,ViewportHeight);
@@ -1544,7 +1544,7 @@ initialization
    GetRadial := false;
    MovieList := Nil;
 finalization
-   {$IfDef RecordClosing} WriteLineToDebugFile('Closing DEMPERSW in');   {$EndIf}
+   {$IfDef RecordClosing} WriteLineToDebugFile('Closing DEMPERSW in'); {$EndIf}
 
    {$IfDef RecordPerspective} WriteLineToDebugFile('RecordPerspectiveProblems active in DEM_3d_view'); {$EndIf}
    {$IfDef RecordInnerLoopPerspective} WriteLineToDebugFile('RecordInnerLoopPerspectiveProblems active in DEM_3d_view'); {$EndIf}

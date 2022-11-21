@@ -4471,19 +4471,6 @@ begin
       SafeMakeDir(DEMIXresultsDir);
       SafeMakeDir(DEMIXrefDataDir);
    end;
-
-(*
-   if Ask then GetDOSPath('DEMIX data',MDDef.DEMIX_base_dir);
-
-   if PathIsValid(MDDef.DEMIX_base_dir) then begin
-      DEMIXSettingsDir := MDDef.DEMIX_base_dir + 'wine_contest_settings\';
-      DEMIXresultsDir := MDDef.DEMIX_base_dir + 'wine_contest_results\';
-      DEMIXrefDataDir := MDDef.DEMIX_base_dir +'wine_contest_reference_dems\';
-      SafeMakeDir(DEMIXSettingsDir);
-      SafeMakeDir(DEMIXresultsDir);
-      SafeMakeDir(DEMIXrefDataDir);
-   end;
-*)
 end;
 
 procedure SetRootDirectoryFiles;
@@ -4495,7 +4482,7 @@ begin
     TM_RGB_fname := ProgramRootDir + 'tm_rgb_v3' + DefaultDBExt;
     CSVImportRulesFName := ProgramRootDir + 'CSV_IMPORT_RULES_v4'+ DefaultDBExt;
     SatBandNames := ProgramRootDir + 'sat_band_names_v19' + DefaultDBExt;
-    ColorBrewerName := ProgramRootDir + 'color_palettes_v11' + DefaultDBExt;
+    ColorBrewerName := ProgramRootDir + 'color_palettes_v12' + DefaultDBExt;
     HardLimitColorPaletteFName := ProgramRootDir + 'hard_limit_color_palettes' + DefaultDBExt;
     TableDefinitionsFileName := ProgramRootDir + 'MD_TABLE_DEF_v2' + DefaultDBExt;
     GazOptFName := ProgramRootDir + 'gaz_symbols_v3' + DefaultDBExt;
@@ -4508,6 +4495,15 @@ begin
 
     SetDEMIXdirs;
 
+    {$IfDef ExMagVar}
+    {$Else}
+       www_mag_mod_fName  := ProgramRootDir + 'wmm_2020.cof';
+    {$EndIf}
+
+    {$IfDef ExPLSS}
+    {$Else}
+       PLSSMerfName := ProgramRootDir + 'plss_meridians' + DefaultDBExt;
+    {$EndIf}
     {$IfDef ExTIGER}
     {$Else}
        TigerShapeRules := ProgramRootDir + 'tiger_rules_v6' + DefaultDBExt;
@@ -4522,16 +4518,6 @@ begin
     {$IfDef ExWMS}
     {$Else}
        WMS_servers_fName := ProgramRootDir + 'wms_servers_v8' + DefaultDBExt;
-    {$EndIf}
-
-    {$IfDef ExMagVar}
-    {$Else}
-       www_mag_mod_fName  := ProgramRootDir + 'wmm_2020.cof';
-    {$EndIf}
-
-    {$IfDef ExPLSS}
-    {$Else}
-       PLSSMerfName := ProgramRootDir + 'plss_meridians' + DefaultDBExt;
     {$EndIf}
     RecordDirs('end SetRootDirectoryFiles');
     {$IfDef RecordInitialization} WriteLineToDebugFile('SetRootDirectoryFiles out'); {$EndIf}
@@ -5189,7 +5175,7 @@ begin
       TrySettingDefaultFName(MrSIDDecodeName,ProgramRootDir + 'mrsid\bin\mrsidgeodecode.exe');
       TrySettingDefaultDir(TauDEMDir,ProgramRootDir + 'taudem\');
       TrySettingDefaultDir(GADMDir,MainMapData + 'GADM\');
-      if (SaveViewshedDir = '') or (not PathIsValid(SaveViewshedDir)) then SaveViewshedDir := MainMapData + 'temp\';
+      if (not PathIsValid(SaveViewshedDir)) then SaveViewshedDir := MDTempDir;
       if not FileExists(LastDesktop) then begin
         {$IfDef RecordProjects} WriteLineToDebugFile('LoadMDdefaults, cannot find LastDESKtop=' + LastDesktop); {$EndIf}
          LastDesktop := ProjectDir;

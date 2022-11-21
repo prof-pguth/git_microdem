@@ -310,7 +310,7 @@ begin
    {$IfDef RecordMoments} WriteLineToDebugFile('tDEMDataSet.GetElevationsInLongArray in'); {$EndIf}
    Incr := GetSamplingSize(GridLimits);
    Incr := Incr * MDDef.StatSampleIncr;
-   {$IfDef RecordMoments} WriteLineToDebugFile('tDEMDataSet.GetElevationsInLongArray, incr=' + IntToStr(incr));  {$EndIf}
+   {$IfDef RecordMoments} WriteLineToDebugFile('tDEMDataSet.GetElevationsInLongArray, incr=' + IntToStr(incr)); {$EndIf}
    NPts := 0;
    ShowHourglassCursor;
    Col := GridLimits.XGridLow;
@@ -327,7 +327,7 @@ begin
       end;
       inc(Col,Incr);
    end;
-   {$IfDef RecordMoments} WriteLineToDebugFile('tDEMDataSet.GetElevationsInLongArray out');  {$EndIf}
+   {$IfDef RecordMoments} WriteLineToDebugFile('tDEMDataSet.GetElevationsInLongArray out'); {$EndIf}
 end;
 
 

@@ -1748,7 +1748,11 @@
                    {$EndIf}
                    {$IfDef ExViewshed}
                    {$Else}
-                      ovoFans     : if (CurrentFansTable <> 0) and (GISdb[CurrentFansTable] <> Nil) then DrawAllFans(GISdb[CurrentFansTable].MyData,inBitmap);
+                      ovoFans     : if (CurrentFansTable <> 0) and (GISdb[CurrentFansTable] <> Nil) then begin
+                                       {$IfDef FanDrawProblems} SaveBitmap(inBitmap,MDTempDir + 'aa_before_fans.png');  {$EndIf}
+                                       DrawAllFans(GISdb[CurrentFansTable].MyData,inBitmap);
+                                       {$IfDef FanDrawProblems} SaveBitmap(inBitmap,MDTempDir + 'aa_after_fans.png');  {$EndIf}
+                                    end;
                    {$EndIf}
                end {case};
                ApplicationProcessMessages;

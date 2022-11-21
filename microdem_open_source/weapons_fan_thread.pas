@@ -20,13 +20,15 @@ unit weapons_fan_thread;
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
+      //{$Define RecordFanProblems}
+
       //{$Define RecordThreadProgress}
       //{$Define RecordThreadTiming}
       //{$Define RecordFanRadialsInMetadata}
       //{$Define RecordMainThreadProgress}
       //{$Define RecordFanMetadata}
       //{$Define RecordFanSaveBitmap}
-      //{$Define RecordFanProblems}
+      //{$Define RecordVisiblePoints}
       //{$Define RecordFanSaveRadials}
       //{$Define RecordFanRadials}       //moderate slowdown
       //{$Define AllowFanCoverageDEM}
@@ -142,7 +144,7 @@ var
    fName : PathStr;
    bmp   : tMyBitmap;
 begin
-   {$IfDef RecordFanProblems} WriteLineToDebugFile('tFanThread.SaveFanBitmaps in');   {$EndIf}
+   {$IfDef RecordFanProblems} WriteLineToDebugFile('tFanThread.SaveFanBitmaps in'); {$EndIf}
    try
       {$IfDef VCL}
          if (MergeName <> '') then begin
@@ -160,13 +162,13 @@ begin
          PetImage.SaveBitmap(VisBitmap,VisName);
          aNewMapDraw.WriteMapsWorldFile(VisName);
          CoverName := ChangeFileExt(VisName,'.txt');
-         {$IfDef RecordFanProblems} WriteLineToDebugFile('saved ' + VisName);         {$EndIf}
+         {$IfDef RecordFanProblems} WriteLineToDebugFile('saved ' + VisName); {$EndIf}
       end;
 
       if (MaskName <> '') then begin
          PetImage.SaveBitmap(MaskedBitmap,MaskName);
          aNewMapDraw.WriteMapsWorldFile(MaskName);
-         {$IfDef RecordFanProblems} WriteLineToDebugFile('saved ' + MaskName);         {$EndIf}
+         {$IfDef RecordFanProblems} WriteLineToDebugFile('saved ' + MaskName); {$EndIf}
       end;
 
       if (CoverName <> '') then begin
@@ -174,14 +176,14 @@ begin
          with WeaponsFan do Results.Add(RealToString(PercentCoverage,8,2));
          Results.SaveToFile(CoverName);
          Results.Free;
-         {$IfDef RecordFanProblems} WriteLineToDebugFile('saved ' + CoverName);         {$EndIf}
+         {$IfDef RecordFanProblems} WriteLineToDebugFile('saved ' + CoverName); {$EndIf}
       end;
 
       if (FanMetaData <> Nil) then begin
          fName := ChangeFileExt(VisName,'.met');
          FanMetadata.SaveToFile(fName);
          FanMetaData.Free;
-         {$IfDef RecordFanProblems} WriteLineToDebugFile('saved ' + fName);         {$EndIf}
+         {$IfDef RecordFanProblems} WriteLineToDebugFile('saved ' + fName); {$EndIf}
       end;
       {$IfDef MSWindows}
       DEMESRIShapeFile.AddProjectionFile(VisName);
@@ -210,32 +212,32 @@ end;
      end;
 
 
-      procedure TDrawFan.DoRadial(Alpha : float64);
-      var
-         PointOnRay,RayVis,RayMask,OffMap,x,y : integer;
-         xgrids,ygrids,dists : tRayArray64;
-         elevs : tRayArray32;
-         VisPoints : array[0..MaxOnRay] of boolean;
-         Lat2,Long2 : float64;
+procedure TDrawFan.DoRadial(Alpha : float64);
+var
+   PointOnRay,RayVis,RayMask,OffMap,x,y : integer;
+   xgrids,ygrids,dists : tRayArray64;
+   elevs : tRayArray32;
+   VisPoints : array[0..MaxOnRay] of boolean;
+   Lat2,Long2 : float64;
 
-            {$IfDef VCL}
-               procedure SaveRadial(Alpha : float64);
-               var
-                  PointOnRay : integer;
-                  fName : PathStr;
-                  RadialsList : tStringList;
-               begin
-                  if (WeaponsFan.Fan_Name = '') then WeaponsFan.Fan_Name := 'fan';
-                  fName := SavedRadialPath + WeaponsFan.Fan_Name +  '-' + RealToString(Alpha,-8,2) + '.PRO';
-                  {$IfDef RecordFanSaveRadials} if (RadialsSaved mod 25 = 0) or (RadialsSaved < 10) then WriteLineToDebugFile('Save radial=' + fName); {$EndIf}
-                  RadialsList := tStringList.Create;
-                  RadialsList.Add('meters');
-                  For PointOnRay := 0 to PointsPerRay do if (Elevs[PointOnRay] < 32000) then
-                      RadialsList.Add(RealToString(dists[PointOnRay],12,2) + RealToString(Elevs[PointOnRay],9,1));
-                  RadialsList.SaveToFile(fName);
-                  RadialsList.Free;
-               end;
-            {$EndIf}
+      {$IfDef VCL}
+         procedure SaveRadial(Alpha : float64);
+         var
+            PointOnRay : integer;
+            fName : PathStr;
+            RadialsList : tStringList;
+         begin
+            if (WeaponsFan.Fan_Name = '') then WeaponsFan.Fan_Name := 'fan';
+            fName := SavedRadialPath + WeaponsFan.Fan_Name +  '-' + RealToString(Alpha,-8,2) + '.PRO';
+            {$IfDef RecordFanSaveRadials} if (RadialsSaved mod 25 = 0) or (RadialsSaved < 10) then WriteLineToDebugFile('Save radial=' + fName); {$EndIf}
+            RadialsList := tStringList.Create;
+            RadialsList.Add('meters');
+            For PointOnRay := 0 to PointsPerRay do if (Elevs[PointOnRay] < 32000) then
+                RadialsList.Add(RealToString(dists[PointOnRay],12,2) + RealToString(Elevs[PointOnRay],9,1));
+            RadialsList.SaveToFile(fName);
+            RadialsList.Free;
+         end;
+      {$EndIf}
 
 
       procedure RadialStraightRoute(LatLong : boolean; Lat1,Long1,Lat2,Long2 : float64; StraightAlgorithm : tStraightAlgorithm; var NumPoints : integer);
@@ -251,8 +253,8 @@ end;
                var
                   i : integer;
                begin
-                  DEMGLB[aNewMapDraw.DEMonMap].LatLongDegreeToUTM(Lat1,Long1,XUTM1,YUTM1);
-                  DEMGLB[aNewMapDraw.DEMonMap].LatLongDegreeToUTM(Lat2,Long2,XUTM2,YUTM2);
+                  WGS84DatumConstants.LatLongDegreeToUTM(Lat1,Long1,XUTM1,YUTM1);
+                  WGS84DatumConstants.LatLongDegreeToUTM(Lat2,Long2,XUTM2,YUTM2);
                   dx := (xutm2-xutm1) / NumPoints;
                   dy := (yutm2-yutm1) / NumPoints;
                   dDistance := sqrt( sqr(xutm2-xutm1) + sqr(yutm2-yutm1)) / NumPoints;
@@ -260,7 +262,7 @@ end;
                   for i := 0 to NumPoints do begin
                      x := xutm1 + i * dx;
                      y := yutm1 + i * dy;
-                     if LatLong then aNewMapDraw.UTMtoLatLongDegree(x,y,ygrids[i],xgrids[i])
+                     if LatLong then WGS84DatumConstants.UTMtoLatLongDegree(x,y,ygrids[i],xgrids[i])
                      else DEMGLB[aNewMapDraw.DEMonMap].UTMtoDEMGrid(x,y,xgrids[i],ygrids[i],InBounds);
                      Dists[i] := i * dDistance;
                   end;
@@ -319,6 +321,8 @@ end;
                   Dists[i] := i * dDistance;
                end;
             end
+            else ComputeVersion2;
+(*
             else if (StraightAlgorithm = saUTM) or ((StraightAlgorithm = saSmart) and (FullDistance < MDDef.wf.SmartSwitchOver) and (Lat1 > 0) and (Lat2 > 0))
                   or ((StraightAlgorithm = saDEMGrid) and (DEMGLB[aNewMapDraw.DEMonMap].DEMheader.DEMUsed = UTMBasedDEM)) then begin
                ComputeVersion1;
@@ -326,6 +330,7 @@ end;
             else if (StraightAlgorithm = saVincenty) or ( (StraightAlgorithm = saSmart) and ((FullDistance > MDDef.wf.SmartSwitchOver) or (Lat1 < 0) or (Lat2 < 0))) then begin
                ComputeVersion2;
             end;
+*)
          {$EndIf}
       end;
 
@@ -337,6 +342,10 @@ end;
          PointOnRay : integer;
          AboveVeg : boolean;
       begin
+         {$IfDef RecordVisiblePoints} WriteLineToDebugFile('NowGetVisiblePoints, DEM=' + IntToStr(aNewMapDraw.DEMonMap) +
+              ' point 0, x=' + RealToString(xgrids[0],-12,-2) + ' y=' + RealToString(ygrids[0],-12,-2) +
+              ' last point 0, x=' + RealToString(xgrids[0],-12,-2) + ' y=' + RealToString(ygrids[0],-12,-2) );
+         {$EndIf}
          MaxTanAngle := -999;
          DEMGLB[aNewMapDraw.DEMonMap].GetElevMeters(xgrids[0],ygrids[0],elevs[0]);
          VisPoints[0] := true;
@@ -383,8 +392,8 @@ end;
       end;
 
 
-begin {procedure RadialStraightRoute}
-   {$IfDef RecordFanProblems} if (RadialsSaved mod 25 = 0) or (RadialsSaved < 10) then WriteLineToDebugFile('Do radial in, alpha=' + RealToString(Alpha,-12,-2)); {$EndIf}
+begin
+   {$IfDef RecordFanRadials} if (RadialsSaved mod 25 = 0) or (RadialsSaved < 10) then WriteLineToDebugFile('Do radial in, alpha=' + RealToString(Alpha,-12,-2)); {$EndIf}
 
    VincentyPointAtDistanceBearing(WeaponsFan.W_Lat,WeaponsFan.W_Long,FanDistOut,Alpha,Lat2,Long2);
    RadialStraightRoute(false,WeaponsFan.W_Lat,WeaponsFan.W_Long,Lat2,Long2,MDDef.wf.StraightAlgorithm,PointsPerRay);
@@ -431,7 +440,6 @@ begin {procedure RadialStraightRoute}
 
    {$IfDef VCL}
       TInterlocked.Add(VisPts,RayVis);
-      //TInterlocked.Add(VisPts,RayVis);
       TInterlocked.Increment(RadialsDone);
       if (RadialsDone mod 100 = 0) and ShowSatProgress then begin
           UpdateProgressBar(RadialsDone/TotalRadials);
@@ -463,9 +471,7 @@ end;
 
 constructor TDrawFan.Create;
 begin
-   {$If Defined(RecordFanSaveRadials) or Defined(RecordFanProblems)}
-      RadialsSaved := 0;
-   {$EndIf}
+   {$If Defined(RecordFanSaveRadials) or Defined(RecordFanProblems)} RadialsSaved := 0; {$EndIf}
 
   BaseMapDraw := inMap;
   WeaponsFan := inWeaponsFan;
@@ -475,7 +481,7 @@ begin
   MergeName := inMergeName;
   CoverName := inCoverName;
   ComputeFanMetadata := true;
-  WriteLineToDebugFile('TDrawFan.Create out');
+  {$IfDef RecordFanProblems} WriteLineToDebugFile('TDrawFan.Create out'); {$EndIf}
 end;
 
 
@@ -516,12 +522,10 @@ end;
 procedure tDrawFan.ExecuteFan;
 var
    x,y, FanX,FanY,FanSize,
-   //UseThreads,
    BMPVis,BMPMasked,BMPMixed,
    XStart,YStart,XEnd,YEnd,
    PointsPerRay2 : integer;
    HorizDist,Distance,
-   //Angle1,
    XGrid,YGrid,LeftLimit,RightLimit,
    Alpha,Beta,Lat2,Long2,FanGX,FanGY,xu,yu,Heading,BlockDist : float64;
    Inbounds : boolean;
@@ -575,51 +579,53 @@ var
 
 
       {$IfDef VCL}
-      procedure ComputeFullIntervisibity;
-      var
-         x,y : integer;
-      begin
-         aNewMapDraw.LatLongDegreetoScreen(WeaponsFan.W_Lat,WeaponsFan.W_Long,FanX,FanY);
-         FanSize := round(WeaponsFan.W_Range / aNewMapDraw.ScreenPixelSize);
-         XStart := FanX - FanSize;
-         XEnd := FanX + FanSize;
-         YStart := FanY - FanSize;
-         YEnd := FanY + FanSize;
-         DEMGlb[aNewMapDraw.DEMonMap].ClipDEMGrid(XStart,Ystart);
-         DEMGlb[aNewMapDraw.DEMonMap].ClipDEMGrid(XEnd,YEnd);
+         procedure ComputeFullIntervisibity;
+         var
+            x,y : integer;
+         begin
+            aNewMapDraw.LatLongDegreetoScreen(WeaponsFan.W_Lat,WeaponsFan.W_Long,FanX,FanY);
+            FanSize := round(WeaponsFan.W_Range / aNewMapDraw.ScreenPixelSize);
+            XStart := FanX - FanSize;
+            XEnd := FanX + FanSize;
+            YStart := FanY - FanSize;
+            YEnd := FanY + FanSize;
+            DEMGlb[aNewMapDraw.DEMonMap].ClipDEMGrid(XStart,Ystart);
+            DEMGlb[aNewMapDraw.DEMonMap].ClipDEMGrid(XEnd,YEnd);
 
-         {$IfDef RecordFanProblems}
-            WriteLineToDebugFile(' Angle: ' + IntToStr(round(LeftLimit)) + '--' + IntToStr(round(RightLimit)) + '  Xs: ' + IntToStr(xstart) + '--' + IntToStr(xend) + '  Ys: ' + IntToStr(ystart) + '--' + IntToStr(yend));
-         {$EndIf}
+            {$IfDef RecordFanProblems}
+               WriteLineToDebugFile(' Angle: ' + IntToStr(round(LeftLimit)) + '--' + IntToStr(round(RightLimit)) + '  Xs: ' + IntToStr(xstart) + '--' + IntToStr(xend) +
+                  '  Ys: ' + IntToStr(ystart) + '--' + IntToStr(yend));
+            {$EndIf}
 
-         {for each point on the screen, compute intervisibility}
-         for y := YStart to YEnd do begin
-            for x := XStart to XEnd do begin
-               aNewMapDraw.ScreenToUTM(x,y,xu,yu);
-               DEMGlb[aNewMapDraw.DEMonMap].UTMtoDEMGrid(xu,yu,xgrid,ygrid,Inbounds);
-               if MDDef.wf.FanTargetMustBeGrid then begin
-                  xgrid := Round(Xgrid);
-                  ygrid := Round(Ygrid);
-               end;
-               if Inbounds and (DEMGlb[aNewMapDraw.DEMonMap].DistanceMetersBetweenPoints(FanGX,FanGY,xgrid,ygrid,Heading) <= WeaponsFan.W_Range) then begin
-                  Heading := HeadingOfLine(xgrid-Fangx,ygrid-Fangy);
-                  if ((Heading >= LeftLimit) and (Heading <= RightLimit)) or ((LeftLimit > RightLimit) and ((Heading <= RightLimit)) or
-                     (LeftLimit > RightLimit) and (Heading >= LeftLimit)) then begin
-                        if DEMGlb[aNewMapDraw.DEMonMap].GetElevMeters(xgrid,ygrid,z) then begin
-                           if WeaponsFan.noUseSensorNoTerrainBlock or (DEMGlb[aNewMapDraw.DEMonMap].GridPointsIntervisible(FanGX,FanGY,WeaponsFan.W_TargetUp,xgrid,ygrid,WeaponsFan.W_TargetUp,Distance,BlockDist) and DistanceOK(Distance)) then begin
-                              Inc(VisPts);
-                              BMPMemVis.SetPixelColor(x,y, WeaponsFan.ThisFanColor);
-                           end
-                           else begin
-                              Inc(MaskedPts);
-                              BMPMemMask.SetPixelColor(x,y, MaskRGB);
+            {for each point on the screen, compute intervisibility}
+            for y := YStart to YEnd do begin
+               for x := XStart to XEnd do begin
+                  aNewMapDraw.ScreenToUTM(x,y,xu,yu);
+                  DEMGlb[aNewMapDraw.DEMonMap].UTMtoDEMGrid(xu,yu,xgrid,ygrid,Inbounds);
+                  if MDDef.wf.FanTargetMustBeGrid then begin
+                     xgrid := Round(Xgrid);
+                     ygrid := Round(Ygrid);
+                  end;
+                  if Inbounds and (DEMGlb[aNewMapDraw.DEMonMap].DistanceMetersBetweenPoints(FanGX,FanGY,xgrid,ygrid,Heading) <= WeaponsFan.W_Range) then begin
+                     Heading := HeadingOfLine(xgrid-Fangx,ygrid-Fangy);
+                     if ((Heading >= LeftLimit) and (Heading <= RightLimit)) or ((LeftLimit > RightLimit) and ((Heading <= RightLimit)) or
+                        (LeftLimit > RightLimit) and (Heading >= LeftLimit)) then begin
+                           if DEMGlb[aNewMapDraw.DEMonMap].GetElevMeters(xgrid,ygrid,z) then begin
+                              if WeaponsFan.noUseSensorNoTerrainBlock or (DEMGlb[aNewMapDraw.DEMonMap].GridPointsIntervisible(FanGX,FanGY,WeaponsFan.W_TargetUp,xgrid,ygrid,
+                                         WeaponsFan.W_TargetUp,Distance,BlockDist) and DistanceOK(Distance)) then begin
+                                 Inc(VisPts);
+                                 BMPMemVis.SetPixelColor(x,y, WeaponsFan.ThisFanColor);
+                              end
+                              else begin
+                                 Inc(MaskedPts);
+                                 BMPMemMask.SetPixelColor(x,y, MaskRGB);
+                              end;
                            end;
-                        end;
+                     end;
                   end;
                end;
             end;
          end;
-      end;
       {$EndIf}
 
 
@@ -674,7 +680,7 @@ begin
              {$EndIf}
           end
           else with aNewMapDraw do begin  //radial method
-             {$IfDef RecordFanProblems} WriteLineToDebugFile('(MDDef.wf.FanMethod is a radial one)'); {$EndIf}
+             {$IfDef RecordFanProblems} WriteLineToDebugFile('(MDDef.wf.FanMethod radial)'); {$EndIf}
              {$IfDef AllowFanCoverageDEM}
                 if MDDef.DisplayFanPointCoverage then begin
                    FanCoverageDEM := 0;
@@ -747,10 +753,10 @@ begin
 
              RadialsDone := 0;
              if (MDDef.wf.FanMethod = fmRadialIHS) then begin
-                {$IfDef RecordFanProblems} WriteLineToDebugFile('MDDef.wf.FanMethod = fmRadialIHS'); {$EndIf}
-                 TotalRadials := 2 * pred(VisBitmap.Width) + 2 * pred(VisBitmap.Height);
+                TotalRadials := 2 * pred(VisBitmap.Width) + 2 * pred(VisBitmap.Height);
+                {$IfDef RecordFanProblems} WriteLineToDebugFile('MDDef.wf.FanMethod = fmRadialIHS, TotalRadials=' + IntToStr(TotalRadials)); {$EndIf}
                 {$IfDef NoParallelFor}
-                    {$IfDef RecordFanProblems} WriteLineToDebugFile('threads are disabled'); {$EndIf}
+                    {$IfDef RecordFanProblems} WriteLineToDebugFile('threads disabled'); {$EndIf}
                     UnthreadsSidesLoop;
                     {$IfDef RecordFanProblems} WriteLineToDebugFile('Fan drawn'); {$EndIf}
                 {$Else}

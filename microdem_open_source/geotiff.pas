@@ -274,7 +274,7 @@ end;
       WriteWord(TIFFFile,TypeField);
       WriteLongInt(TIFFFile,Length);
       WriteLongInt(TIFFFile,Offset);
-      {$IfDef GeotiffSave} writeLineToDebugFile('tag=' + IntegerToString(Tag,5) + '  type=' + TiffTypeName(TypeField) + '  Length=' + IntegerToString(Length,4) + '  Value=' + IntToStr(Offset));    {$EndIf}
+      {$IfDef GeotiffSave} writeLineToDebugFile('tag=' + IntegerToString(Tag,5) + '  type=' + TiffTypeName(TypeField) + '  Length=' + IntegerToString(Length,4) + '  Value=' + IntToStr(Offset)); {$EndIf}
    end;
 
    procedure WriteWordFieldEntry(var TIFFFile : File; Tag,TypeField,Length,Offset : word);
@@ -283,7 +283,7 @@ end;
       WriteWord(TIFFFile,TypeField);
       WriteWord(TiffFile,Length);
       WriteWord(TIFFFile,Offset);
-      {$IfDef GeotiffSave} writeLineToDebugFile('tag=' + IntegerToString(Tag,5) + '  type=' + TiffTypeName(TypeField) + '  Length=' + IntegerToString(Length,4) + '  Value=' + IntToStr(Offset));    {$EndIf}
+      {$IfDef GeotiffSave} writeLineToDebugFile('tag=' + IntegerToString(Tag,5) + '  type=' + TiffTypeName(TypeField) + '  Length=' + IntegerToString(Length,4) + '  Value=' + IntToStr(Offset)); {$EndIf}
    end;
 
    procedure WriteFieldEntryIncrementOffset(var TIFFFile : File; Tag,TypeField : word; Length : longint; var Offset : LongInt);
@@ -435,7 +435,7 @@ begin
          dy := (Lat - Lat2) / pred(MapDraw.MapYSize);
       end;
 
-      {$IfDef RecordGeotiff} WriteLineToDebugFile('x space: ' +  RealToString(dx,-12,6) + '   y space: ' +  RealToString(dy,-12,6));   {$EndIf}
+      {$IfDef RecordGeotiff} WriteLineToDebugFile('x space: ' +  RealToString(dx,-12,6) + '   y space: ' +  RealToString(dy,-12,6)); {$EndIf}
 
       BlockWrite(TiffFile,dx,SizeOf(Double));
       BlockWrite(TiffFile,dy,SizeOf(Double));
@@ -452,7 +452,7 @@ begin
          MapDraw.ScreenToUTM(0,0,xutm,yutm);
          BlockWrite(TiffFile,xutm,SizeOf(Double));
          BlockWrite(TiffFile,yutm,SizeOf(Double));
-         {$IfDef RecordGeotiff} WriteLineToDebugFile('UTM, NW corner x=' + RealToString(xutm,-12,0) + '   & y=' + RealToString(yutm,-12,0));    {$EndIf}
+         {$IfDef RecordGeotiff} WriteLineToDebugFile('UTM, NW corner x=' + RealToString(xutm,-12,0) + '   & y=' + RealToString(yutm,-12,0)); {$EndIf}
       end
       else begin
          BlockWrite(TiffFile,Long,SizeOf(Double));
@@ -893,7 +893,7 @@ begin
       end;
       EndProgress;
       {$IfDef NoCSVImports} {$Else} StringList2CSVtoDB(Results,fName1,true); {$EndIf}
-      {$IfDef RecordGeotiffHistogram} writeLineToDebugFile('tTIFFImage.GetHistogramDBF written');   {$EndIf}
+      {$IfDef RecordGeotiffHistogram} writeLineToDebugFile('tTIFFImage.GetHistogramDBF written'); {$EndIf}
       for I := 1 to TiffHeader.SamplesPerPixel do Dispose(Hist[i]);
    end;
   {$IfDef RecordGeotiffHistogram} WriteLineToDebugFile('tTIFFImage.GetHistogramDBF exit') {$EndIf}
@@ -914,7 +914,7 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
                begin
                   {$IfDef ExNLCD}
                   {$Else}
-                     {$IfDef RecordNLCD} WriteLineToDebugFile('Geotiff DEM with NLCD=' + LandCover);   {$EndIf}
+                     {$IfDef RecordNLCD} WriteLineToDebugFile('Geotiff DEM with NLCD=' + LandCover); {$EndIf}
                      LandCover := UpperCase(LandCover);
                      if (LandCover = 'NLCD-CHANGE') then WantDEM.DEMheader.ElevUnits := NLCD_Change;
                      if (LandCover = 'CCI-LC') then WantDEM.DEMheader.ElevUnits := CCI_LC;
@@ -941,7 +941,7 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
 
          begin
             {$If Defined(RecordInitializeDEM)  or Defined(RecordDEMMapProjection)} WantDEM.DEMMapProjection.ShortProjInfo('tTIFFImage.InitializeDEM in ' + WantDEM.DEMMapProjection.GetProjectionName); {$EndIf}
-            {$IfDef TrackA} writeLineToDebugFile('tTIFFImage.CreateTiffDEM out, a=' + RealToString(WantDEM.DEMMapProjection.a,-18,-2));   {$EndIf}
+            {$IfDef TrackA} writeLineToDebugFile('tTIFFImage.CreateTiffDEM out, a=' + RealToString(WantDEM.DEMMapProjection.a,-18,-2)); {$EndIf}
 
                NLCD := IsThisLandCover(TIFFFileName,LandCover);
 
@@ -954,7 +954,7 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
                WantDEM.DEMheader.NumRow := TiffHeader.ImageLength;
                WantDEM.DEMheader.DigitizeDatum := DatumCodeFromString(WantDEM.DEMmapProjection.h_DatumCode);
                WantDEM.DEMHeader.RasterPixelIsGeoKey1025 := TiffHeader.RasterPixelIs;
-              {$IfDef RecordInitializeDEM} WriteLineToDebugFile('WantDEM.DEMHeader.RasterPixelIsGeoKey1025=' + IntToStr(WantDEM.DEMHeader.RasterPixelIsGeoKey1025) );   {$EndIf}
+              {$IfDef RecordInitializeDEM} WriteLineToDebugFile('WantDEM.DEMHeader.RasterPixelIsGeoKey1025=' + IntToStr(WantDEM.DEMHeader.RasterPixelIsGeoKey1025) ); {$EndIf}
 
                if ForceType then begin
                   WantDEM.DEMheader.DEMPrecision := TypeWanted;
@@ -1495,7 +1495,7 @@ var
                      else begin
                         if StrUtils.AnsiContainsText(TStr,'Plate Carree')  then begin
                            MapProjection.PName := PlateCaree;
-                           {$IfDef RecordPlateCaree} WriteLineToDebugFile('PlateCaree, from ASCII string');   {$EndIf}
+                           {$IfDef RecordPlateCaree} WriteLineToDebugFile('PlateCaree, from ASCII string'); {$EndIf}
                         end;
 
                         if FindUTMZone(TStr,MapProjection.projUTMZone,MapProjection.LatHemi) then begin
@@ -1628,7 +1628,7 @@ var
                if GeoLatLong then TiffHeader.ModelType := 2;
                (*
                if (MapProjection.ZoneName <> '') then begin
-                  {$IfDef RecordSPCSReading} writeLineToDebugFile('Just got SPCS zone=' + MapProjection.ZoneName);   {$EndIf}
+                  {$IfDef RecordSPCSReading} writeLineToDebugFile('Just got SPCS zone=' + MapProjection.ZoneName); {$EndIf}
                   MapProjection.FIPSZone := FIPSZoneFromASCIIName(MapProjection.ZoneName);
                   MapProjection.State := MapProjection.ZoneName;
                   MapProjection.H_datumCode := 'WGS84';
@@ -1798,7 +1798,7 @@ var
                WriteLineToDebugFile('Before (GeoASCIIParamsOffset <> 0) Datum code: ' + MapProjection.H_datumCode);
                WriteLineToDebugFile('Projection=' + MapProjection.GetProjectionName);
             {$EndIf}
-            {$IfDef TrackA} writeLineToDebugFile('Geotiff tags read out, a=' + RealToString(MapProjection.a,-18,-2) + '  datum=' + MapProjection.H_datumCode);   {$EndIf}
+            {$IfDef TrackA} writeLineToDebugFile('Geotiff tags read out, a=' + RealToString(MapProjection.a,-18,-2) + '  datum=' + MapProjection.H_datumCode); {$EndIf}
 
             if (ASCIIstr <> '') and (Not HaveRegistration) then ProcessASCIIstringForProjection(ASCIIStr);
 
@@ -1921,7 +1921,7 @@ var
                            TStr := IntToStr(BitsPerSample);
                         end;
                         TiffHeader.BytesPerSample := BitsPerSample div 8;
-                        {$IfDef RecordBitPerPixel} writeLineToDebugFile('Read from offsets, BitsPerSample=' + IntToStr(BitsPerSample));   {$EndIf}
+                        {$IfDef RecordBitPerPixel} writeLineToDebugFile('Read from offsets, BitsPerSample=' + IntToStr(BitsPerSample)); {$EndIf}
                      end;
                259 : begin
                         Compression := TiffKeys[j].KeyOffset;
@@ -2089,7 +2089,7 @@ var
                          TStr := LogASCIIdata(TiffKeys[j].KeyOffset,TiffKeys[j].LengthIm);
                          if StrUtils.AnsiContainsText(UpperCase(inFileName),'PLATE CARREE') then begin
                             TiffHeader.ModelType := 2;
-                            {$IfDef RecordPlateCaree} WriteLineToDebugFile('PlateCaree, from 34453');   {$EndIf}
+                            {$IfDef RecordPlateCaree} WriteLineToDebugFile('PlateCaree, from 34453'); {$EndIf}
                          end;
                          HaveRegistration := true;
                       end;
@@ -2130,12 +2130,12 @@ var
                              HaveRegistration := true;
                           end
                           else if StrUtils.AnsiContainsText(UpperCase(TStr),'GCS_WGS_1984') then begin
-                              {$IfDef RecordPlateCaree} WriteLineToDebugFile('GCS, from 34737');   {$EndIf}
+                              {$IfDef RecordPlateCaree} WriteLineToDebugFile('GCS, from 34737'); {$EndIf}
                               DefineGCScoordinates;
 							         HaveRegistration := true;
                           end
                           else if StrUtils.AnsiContainsText(UpperCase(TStr),'UTM') then begin
-                              {$IfDef RecordPlateCaree} WriteLineToDebugFile('UTM, from 34737');   {$EndIf}
+                              {$IfDef RecordPlateCaree} WriteLineToDebugFile('UTM, from 34737'); {$EndIf}
                               ProcessASCIIstringForProjection(TStr);
 							         HaveRegistration := true;
                           end
@@ -2164,7 +2164,7 @@ var
       //HaveRegistration := true;
      {$IfDef RecordInitializeDEM} writeLineToDebugFile('ReadTiffTags out, ModelX=' + RealToString(TiffHeader.ModelX,-18,-6) + ' ModelY=' + RealToString(TiffHeader.ModelY,-18,-6) ); {$EndIf}
      {$IfDef RecordPlateCaree} writeLineToDebugFile('ReadTiffTags out, '  + MapProjection.GetProjectionName); {$EndIf}
-     {$IfDef RecordBitPerPixel} writeLineToDebugFile('ReadTiffTags out, BitsPerSample=' + IntToStr(TiffHeader.BitsPerSample));   {$EndIf}
+     {$IfDef RecordBitPerPixel} writeLineToDebugFile('ReadTiffTags out, BitsPerSample=' + IntToStr(TiffHeader.BitsPerSample)); {$EndIf}
      {$If Defined(RecordDefineDatum) or Defined(RecordGeotiffProjection)} WriteLineToDebugFile('ReadTiffTags out, Projection=' + MapProjection.GetProjectionName); {$EndIf}
    end;
 
@@ -2278,7 +2278,7 @@ begin
    if (TiffHeader.StripOffsets = 0) and (TileOffsets <> 0) then TiffHeader.StripOffsets := TileOffsets;
 
    {$If Defined(LongCent)} writeLineToDebugFile('ReadTIFFtags done, LongCent: ' + RadToDegString(MapProjection.Long0)); {$EndIf}
-   {$IfDef TrackModelType} WriteLineToDebugFile('ReadTIFFtags done, TiffHeader.ModelType=' + IntToStr(TiffHeader.ModelType) );   {$EndIf}
+   {$IfDef TrackModelType} WriteLineToDebugFile('ReadTIFFtags done, TiffHeader.ModelType=' + IntToStr(TiffHeader.ModelType) ); {$EndIf}
 
    if TiledImage or (TiffHeader.Compression <> 1) then begin
       HeaderLogList.Insert(1,'Problem image');
@@ -2309,7 +2309,7 @@ begin
 
 
   SkipThumbnail:;
-     {$IfDef TrackModelType} WriteLineToDebugFile('Done J loop, TiffHeader.ModelType=' + IntToStr(TiffHeader.ModelType) );   {$EndIf}
+     {$IfDef TrackModelType} WriteLineToDebugFile('Done J loop, TiffHeader.ModelType=' + IntToStr(TiffHeader.ModelType) ); {$EndIf}
      {$IfDef RecordFullGeotiff} writeLineToDebugFile('Done J loop, skipthumbnail'); {$EndIf}
       if not FirstImage then begin
          MenuStr := 'Multiple images in the file; all but the first ignored';
@@ -2357,7 +2357,7 @@ begin
           {$If Defined(RecordFullGeotiff) or Defined(RecordModelType)} WriteLineToDebugFile('GEOTIFF image keys problem found'); {$EndIf}
        end;
 
-      {$IfDef TrackModelType} WriteLineToDebugFile('Time for projection TiffHeader.ModelType=' + IntToStr(TiffHeader.ModelType) );   {$EndIf}
+      {$IfDef TrackModelType} WriteLineToDebugFile('Time for projection TiffHeader.ModelType=' + IntToStr(TiffHeader.ModelType) ); {$EndIf}
 
 
 	if (not NoGeo) and NeedToLoadGeoTiffProjection then begin
@@ -2454,7 +2454,7 @@ begin
 
    {$IfDef RecordGeotiff} writeStringListToDebugFile(HeaderLogList); {$EndIf}
    {$IfDef RecordBitPerPixel} WriteLineToDebugFile('leaving read Geotiff, BitsPerSample=' + IntToStr(TiffHeader.BitsPerSample) + ' bytes=' + IntToStr(TiffHeader.BytesPerSample) + 'can enhance=' + TrueOrFalse(CanEnhance)); {$EndIf}
-   {$IfDef TrackA} writeLineToDebugFile('read Geotiff out, a=' + RealToString(MapProjection.a,-18,-2) + '  f=' + RealToString(MapProjection.h_f,-18,-6) + '  datum=' + MapProjection.H_datumCode);   {$EndIf}
+   {$IfDef TrackA} writeLineToDebugFile('read Geotiff out, a=' + RealToString(MapProjection.a,-18,-2) + '  f=' + RealToString(MapProjection.h_f,-18,-6) + '  datum=' + MapProjection.H_datumCode); {$EndIf}
    {$IfDef TrackProjection} MapProjection.ProjectionParamsToDebugFile('ReadGeotiffTags out'); {$EndIf}
 
    {$IfDef ExPETMARUserInput}
@@ -2491,22 +2491,22 @@ initialization
    NeedToLoadGeotiffProjection := true;
    TemporaryNewGeotiff := true;
 finalization
-   {$IfDef RecordGeotiff} WriteLineToDebugFile('RecordGeotiffy active in geotiff');   {$EndIf}
-   {$IfDef RecordGeotiffRow} WriteLineToDebugFile('RecordGeotiffRowProblems active in geotiff');   {$EndIf}
-   {$IfDef RecordGeotiffPalette} WriteLineToDebugFile('RecordGeotiffPaletteProblems active in geotiff');   {$EndIf}
-   {$IfDef RecordSPCSReading} writeLineToDebugFile('RecordSPCSReading active in geotiff');   {$EndIf}
-   {$IfDef RecordDefineDatum} writeLineToDebugFile('RecordGeotiffDatumProblems active in geotiff');   {$EndIf}
-   {$IfDef RecordDEMMapProjection} WriteLineToDebugFile('RecordDEMMapProjectionProblems active in geotiff');   {$EndIf}
-   {$IfDef RecordBitPerPixel} writeLineToDebugFile('RecordBitPerPixel active in geotiff');   {$EndIf}
-   {$IfDef RecordMultiGrids} writeLineToDebugFile('RecordMultiGrids active in geotiff');   {$EndIf}
-   {$IfDef RecordMinMax} writeLineToDebugFile('RecordMinMax active in geotiff');   {$EndIf}
-   {$IfDef RecordInitializeDEM} writeLineToDebugFile('RecordInitializeDEM active in geotiff');   {$EndIf}
+   {$IfDef RecordGeotiff} WriteLineToDebugFile('RecordGeotiffy active in geotiff'); {$EndIf}
+   {$IfDef RecordGeotiffRow} WriteLineToDebugFile('RecordGeotiffRowProblems active in geotiff'); {$EndIf}
+   {$IfDef RecordGeotiffPalette} WriteLineToDebugFile('RecordGeotiffPaletteProblems active in geotiff'); {$EndIf}
+   {$IfDef RecordSPCSReading} writeLineToDebugFile('RecordSPCSReading active in geotiff'); {$EndIf}
+   {$IfDef RecordDefineDatum} writeLineToDebugFile('RecordGeotiffDatumProblems active in geotiff'); {$EndIf}
+   {$IfDef RecordDEMMapProjection} WriteLineToDebugFile('RecordDEMMapProjectionProblems active in geotiff'); {$EndIf}
+   {$IfDef RecordBitPerPixel} writeLineToDebugFile('RecordBitPerPixel active in geotiff'); {$EndIf}
+   {$IfDef RecordMultiGrids} writeLineToDebugFile('RecordMultiGrids active in geotiff'); {$EndIf}
+   {$IfDef RecordMinMax} writeLineToDebugFile('RecordMinMax active in geotiff'); {$EndIf}
+   {$IfDef RecordInitializeDEM} writeLineToDebugFile('RecordInitializeDEM active in geotiff'); {$EndIf}
 
-   {$IfDef RecordNLCD} writeLineToDebugFile('RecordNLCD active in geotiff');   {$EndIf}
-   {$IfDef RecordWhileProcessingHeader} writeLineToDebugFile('RecordWhileProcessingHeader active in geotiff');   {$EndIf}
-   {$IfDef Record3076} writeLineToDebugFile('Record3076 active in geotiff');   {$EndIf}
+   {$IfDef RecordNLCD} writeLineToDebugFile('RecordNLCD active in geotiff'); {$EndIf}
+   {$IfDef RecordWhileProcessingHeader} writeLineToDebugFile('RecordWhileProcessingHeader active in geotiff'); {$EndIf}
+   {$IfDef Record3076} writeLineToDebugFile('Record3076 active in geotiff'); {$EndIf}
 
-   {$IfDef RecordClosing} WriteLineToDebugFile('Closing geotiff out');   {$EndIf}
+   {$IfDef RecordClosing} WriteLineToDebugFile('Closing geotiff out'); {$EndIf}
 end.
 
 

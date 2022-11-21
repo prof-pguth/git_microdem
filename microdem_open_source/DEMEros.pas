@@ -811,7 +811,7 @@ var
       end;
 
 begin
-   {$IfDef RecordNewSat} WriteLineToDebugFile('tSatImage.MakeNewBand ' + SceneTitle);   {$EndIf}
+   {$IfDef RecordNewSat} WriteLineToDebugFile('tSatImage.MakeNewBand ' + SceneTitle); {$EndIf}
    Result := 0;
    LoadHistogram;
    Band1 := 1;
@@ -2037,22 +2037,22 @@ var
          {$IfDef RecordSatRegistration} WriteLineToDebugFile('Pixel size: ' + RealToString(RegVars.Pr_DeltaX,-12,-6) + 'x' + RealToString(RegVars.Pr_DeltaY,-12,-6)); {$EndIf}
 
          if (ImageMapProjection.pName = PlateCaree) then begin
-            {$IfDef RecordSatRegistration} WriteLineToDebugFile('lat/long sat registration start');   {$EndIf}
+            {$IfDef RecordSatRegistration} WriteLineToDebugFile('lat/long sat registration start'); {$EndIf}
             LatSizeMap := pred(NumSatRow)*RegVars.pr_DeltaY;
             LongSizeMap := pred(NumSatCol)*RegVars.Pr_DeltaX;
-            {$IfDef RecordSatRegistration} WriteLineToDebugFile('Deg in image, lat=' + RealToString(LatSizeMap,-12,-2) + '  long=' + RealToString(LongSizeMap,-12,-2));   {$EndIf}
+            {$IfDef RecordSatRegistration} WriteLineToDebugFile('Deg in image, lat=' + RealToString(LatSizeMap,-12,-2) + '  long=' + RealToString(LongSizeMap,-12,-2)); {$EndIf}
             {$IfDef Android}
                // because CalculateDistanceBearing crashes
                YMetersPerPixel := abs(LatSizeMap * 111000 / pred(NumSatRow));
                XMetersPerPixel := abs(LongSizeMap * 111000 / pred(NumSatCol) * CosDeg(RegVars.UpLeftY-0.5*NumSatRow*RegVars.pr_DeltaY));
             {$Else}
                if (LatSizeMap > 15) or (GetUTMZone(RegVars.UpLeftX) <> GetUTMZone(RegVars.UpLeftX + LongSizeMap)) then begin
-                  {$IfDef RecordSatRegistration} WriteLineToDebugFile('110000 formula');   {$EndIf}
+                  {$IfDef RecordSatRegistration} WriteLineToDebugFile('110000 formula'); {$EndIf}
                   YMetersPerPixel := abs(LatSizeMap * 111000 / pred(NumSatRow));
                   XMetersPerPixel := abs(LongSizeMap * 111000 / pred(NumSatCol) * CosDeg(RegVars.UpLeftY-0.5*NumSatRow*RegVars.pr_DeltaY));
                end
                else begin
-                  {$IfDef RecordSatRegistration} WriteLineToDebugFile('Vincenty');   {$EndIf}
+                  {$IfDef RecordSatRegistration} WriteLineToDebugFile('Vincenty'); {$EndIf}
                   VincentyCalculateDistanceBearing(RegVars.UpLeftY-0.5*NumSatRow*RegVars.pr_DeltaY,RegVars.UpLeftX,RegVars.UpLeftY-0.5*NumSatRow*RegVars.pr_DeltaY,RegVars.UpLeftX+pred(NumSatCol)*RegVars.pr_DeltaX,XMetersPerPixel,Az);
                   XMetersPerPixel := XMetersPerPixel / pred(NumSatCol);
                   VincentyCalculateDistanceBearing(RegVars.UpLeftY,RegVars.UpLeftX,RegVars.UpLeftY-pred(NumSatRow)*RegVars.pr_DeltaY,RegVars.UpLeftX,YMetersPerPixel,Az);
@@ -2352,7 +2352,7 @@ var
                 else if (Ext[length(Ext)] = 'W') then Registered := ReadWorldFile(ImageMapProjection,DigitizeDatum,IndexFileName,RegVars);
              end;
 
-             {$IfDef RecordLoadSat} WriteLineToDebugFile('Start Open image');   {$EndIf}
+             {$IfDef RecordLoadSat} WriteLineToDebugFile('Start Open image'); {$EndIf}
              ShowHourglassCursor;
 
              if (Ext = '.JGW') or (Ext = '.JPW') or (Ext = '.JPG') or (Ext = '.HTM') then begin
@@ -2375,7 +2375,7 @@ var
                 Bitmap.LoadFromFile(BMPFileName);
                 if (Bitmap.PixelFormat <> pf24Bit) then MessageToContinue('Non 24 bit image may not work.');
              end;
-             {$IfDef RecordLoadSat} WriteLineToDebugFile('End Open image');   {$EndIf}
+             {$IfDef RecordLoadSat} WriteLineToDebugFile('End Open image'); {$EndIf}
              if Registered then begin
                 {$IfDef RecordLoadSat} WriteLineToDebugFile('World file worked'); {$EndIf}
                 BandColumns[1] := Bitmap.Width;
@@ -2596,7 +2596,7 @@ begin
    ShowHourglassCursor;
    if (Files <> Nil) then begin
       ReadFileName := Files[0];
-      {$If Defined(RecordKeyDraw) or Defined(RecordLoadSat)} WriteLineToDebugFile('Loading sat file list, count=' + IntToStr(Files.Count));   {$EndIf}
+      {$If Defined(RecordKeyDraw) or Defined(RecordLoadSat)} WriteLineToDebugFile('Loading sat file list, count=' + IntToStr(Files.Count)); {$EndIf}
       OriginalFileName := ReadFileName;
    end
    else begin
@@ -2779,7 +2779,7 @@ begin
    if (ImageMapProjection <> Nil) then FreeAndNil(ImageMapProjection);
    dec(NumSatImageOpen);
    inherited;
-   {$IfDef RecordSat} WriteLineToDebugFile('Closed image ' + SceneBaseName);   {$EndIf}
+   {$IfDef RecordSat} WriteLineToDebugFile('Closed image ' + SceneBaseName); {$EndIf}
 end;
 
 
@@ -2840,10 +2840,10 @@ finalization
    {$IfDef RecordSatFrame} WriteLineToDebugFile('RecordSatFrameProblems active in DEMeros'); {$EndIf}
    {$IfDef RecordLoadSat} WriteLineToDebugFile('RecordLoadSatProblems active in DEMeros'); {$EndIf}
    {$IfDef RecordTMSat} WriteLineToDebugFile('RecordTMSatProblems active in DEMeros'); {$EndIf}
-   {$IfDef RecordSatRegistration} WriteLineToDebugFile('RecordSatRegistrationProblems active in DEMeros');   {$EndIf}
+   {$IfDef RecordSatRegistration} WriteLineToDebugFile('RecordSatRegistrationProblems active in DEMeros'); {$EndIf}
    {$IfDef RecordSatTimeSeries} WriteLineToDebugFile('RecordSatTimeSeries active in DEMeros'); {$EndIf}
    {$IfDef RecordGDAL} WriteLineToDebugFile('RecordGDAL active in DEMeros'); {$EndIf}
-   {$IfDef RecordSpectralLibraryGraph} WriteLineToDebugFile('RecordSpectralLibraryGraph active in DEMeros');   {$EndIf}
+   {$IfDef RecordSpectralLibraryGraph} WriteLineToDebugFile('RecordSpectralLibraryGraph active in DEMeros'); {$EndIf}
    {$IfDef RecordScattergram} WriteLineToDebugFile('RecordSpectralLibraryGraph active in DEMeros'); {$EndIf}
    {$IfDef RecordLoadClass} WriteLineToDebugFile('RecordLoadClassProblems active in DEMeros'); {$EndIf}
    {$IfDef RecordClosing} WriteLineToDebugFile('RecordClosingProblems active in DEMeros'); {$EndIf}

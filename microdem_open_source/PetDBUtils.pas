@@ -1552,7 +1552,7 @@ end;
 function OrigPickField(Table : tMyData; Mess: ShortString; TypesAllowed : tSetFieldType) : ShortString;
 var
   FieldsInDB : tStringList;
-  WantField,i  : integer;
+  WantField  : integer;
 begin
    with Table do begin
       GetFields(Table,AllVis,TypesAllowed,FieldsInDB,false);

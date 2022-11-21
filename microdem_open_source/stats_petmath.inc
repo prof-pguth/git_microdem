@@ -77,11 +77,11 @@ TYPE
    barray = ARRAY [1..10] of extended;
    bExtArray = array of extended;
    //bint64array = array of int64;
-VAR
-   glinext,glinextp : integer;
-   glma : ARRAY [1..55] OF extended;
-   chsq, chsq64, df, prob, prob64, x : extended;
-   ibin,idum : integer;
+//VAR
+   //glinext,glinextp : integer;
+   //glma : ARRAY [1..55] OF extended;
+   //chsq, chsq64, df, prob, prob64, x : extended;
+   //ibin,idum : integer;
 
 {******************************************************}
 {      "Numerical Recipes in Pascal" Includes          }
