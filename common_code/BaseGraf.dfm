@@ -54,13 +54,13 @@ object ThisBaseGraph: TThisBaseGraph
     Height = 241
     Align = alClient
     TabOrder = 0
-    ExplicitWidth = 873
-    ExplicitHeight = 343
+    ExplicitWidth = 849
+    ExplicitHeight = 207
     object Image1: TImage
       Left = 0
       Top = 0
-      Width = 875
-      Height = 373
+      Width = 851
+      Height = 237
       Hint = 'Legend'
       Align = alClient
       OnDblClick = Image1DblClick
@@ -87,8 +87,8 @@ object ThisBaseGraph: TThisBaseGraph
     Font.Style = [fsBold]
     ParentFont = False
     TabOrder = 1
-    ExplicitTop = 371
-    ExplicitWidth = 873
+    ExplicitTop = 235
+    ExplicitWidth = 849
   end
   object ToolBar1: TToolBar
     Left = 0
@@ -96,7 +96,7 @@ object ThisBaseGraph: TThisBaseGraph
     Width = 855
     Height = 28
     TabOrder = 2
-    ExplicitWidth = 873
+    ExplicitWidth = 849
     object SpeedButton2: TSpeedButton
       Left = 0
       Top = 0

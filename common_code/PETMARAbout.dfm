@@ -4,17 +4,15 @@ object PetmarAboutBox: TPetmarAboutBox
   ActiveControl = OKButton
   BorderStyle = bsDialog
   Caption = 'About'
-  ClientHeight = 231
-  ClientWidth = 466
+  ClientHeight = 222
+  ClientWidth = 460
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -13
   Font.Name = 'System'
   Font.Style = []
-  OldCreateOrder = True
   Position = poScreenCenter
-  PixelsPerInch = 96
   TextHeight = 16
   object Panel1: TPanel
     Left = 8

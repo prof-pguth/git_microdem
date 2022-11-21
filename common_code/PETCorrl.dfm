@@ -5,8 +5,8 @@ object CorrelationForm: TCorrelationForm
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Variable Correlations'
-  ClientHeight = 288
-  ClientWidth = 341
+  ClientHeight = 243
+  ClientWidth = 331
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
@@ -14,12 +14,10 @@ object CorrelationForm: TCorrelationForm
   Font.Name = 'MS Sans Serif'
   Font.Style = [fsBold]
   Menu = MainMenu1
-  OldCreateOrder = True
   Position = poDefault
   Visible = True
   OnClose = FormClose
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Bevel1: TBevel
     Left = 8

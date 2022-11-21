@@ -4,19 +4,17 @@ object sunrisepicker: Tsunrisepicker
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Sunrise options'
-  ClientHeight = 355
-  ClientWidth = 176
+  ClientHeight = 346
+  ClientWidth = 170
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = False
   Position = poMainFormCenter
   OnClose = FormClose
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
     Left = 16

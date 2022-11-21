@@ -4,17 +4,15 @@ object GridMaskOptForm: TGridMaskOptForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Grid mask options'
-  ClientHeight = 267
-  ClientWidth = 272
+  ClientHeight = 258
+  ClientWidth = 266
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = False
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Label3: TLabel
     Left = 31

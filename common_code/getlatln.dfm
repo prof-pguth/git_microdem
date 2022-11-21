@@ -4,7 +4,7 @@ object GetLatLongDlg: TGetLatLongDlg
   ActiveControl = OKBtn
   BorderStyle = bsDialog
   Caption = 'Dialog'
-  ClientHeight = 200
+  ClientHeight = 244
   ClientWidth = 370
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -16,8 +16,8 @@ object GetLatLongDlg: TGetLatLongDlg
   OnCreate = FormCreate
   TextHeight = 13
   object OKBtn: TBitBtn
-    Left = 8
-    Top = 175
+    Left = 10
+    Top = 210
     Width = 61
     Height = 27
     Kind = bkOK
@@ -29,8 +29,8 @@ object GetLatLongDlg: TGetLatLongDlg
     IsControl = True
   end
   object HelpBtn: TBitBtn
-    Left = 75
-    Top = 174
+    Left = 77
+    Top = 209
     Width = 61
     Height = 27
     Kind = bkHelp
@@ -185,8 +185,6 @@ object GetLatLongDlg: TGetLatLongDlg
       Left = 4
       Top = 24
       Caption = 'MGRS'
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Label5: TLabel
         Left = 48
         Top = 16
@@ -256,8 +254,6 @@ object GetLatLongDlg: TGetLatLongDlg
       Left = 4
       Top = 24
       Caption = 'UTM'
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Label1: TLabel
         Left = 8
         Top = 56
@@ -318,7 +314,7 @@ object GetLatLongDlg: TGetLatLongDlg
     end
   end
   object CheckBox4: TCheckBox
-    Left = 142
+    Left = 27
     Top = 175
     Width = 170
     Height = 17
@@ -326,8 +322,8 @@ object GetLatLongDlg: TGetLatLongDlg
     TabOrder = 3
   end
   object BitBtn1: TBitBtn
-    Left = 307
-    Top = 176
+    Left = 292
+    Top = 211
     Width = 61
     Height = 25
     Hint = 'Paste from clipboard'

@@ -2,19 +2,17 @@ object get_angle_form: Tget_angle_form
   Left = 306
   Top = 174
   Caption = 'GMT gridding options'
-  ClientHeight = 135
-  ClientWidth = 176
+  ClientHeight = 126
+  ClientWidth = 170
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
-  OldCreateOrder = False
   Position = poDefaultSizeOnly
   OnClose = FormClose
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Edit5: TEdit
     Left = 8

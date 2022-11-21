@@ -2,10 +2,8 @@ inherited FourierOptionsForm: TFourierOptionsForm
   Left = 519
   Top = 324
   Caption = 'Fourier Transform Options'
-  ClientHeight = 302
-  ClientWidth = 427
-  ExplicitLeft = 3
-  ExplicitTop = 3
+  ClientHeight = 293
+  ClientWidth = 421
   ExplicitWidth = 439
   ExplicitHeight = 340
   TextHeight = 20

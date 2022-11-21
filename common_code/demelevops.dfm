@@ -2,14 +2,16 @@ inherited ElevOptionsForm: TElevOptionsForm
   Left = 663
   Top = 235
   Caption = 'Elevation map options'
-  ClientHeight = 466
-  ClientWidth = 329
+  ClientHeight = 509
+  ClientWidth = 345
   FormStyle = fsStayOnTop
   Position = poDefaultSizeOnly
   OnClose = FormClose
   OnCreate = FormCreate
-  ExplicitWidth = 347
-  ExplicitHeight = 513
+  ExplicitLeft = 3
+  ExplicitTop = 3
+  ExplicitWidth = 357
+  ExplicitHeight = 547
   TextHeight = 20
   inherited Bevel1: TBevel
     Left = 0
@@ -159,7 +161,7 @@ inherited ElevOptionsForm: TElevOptionsForm
   end
   object CheckBox4: TCheckBox
     Left = 256
-    Top = 383
+    Top = 367
     Width = 66
     Height = 17
     Caption = 'Invert'

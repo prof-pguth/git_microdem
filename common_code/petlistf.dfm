@@ -3,8 +3,8 @@ object PetList: TPetList
   Top = 310
   BorderIcons = []
   Caption = 'D'
-  ClientHeight = 316
-  ClientWidth = 517
+  ClientHeight = 307
+  ClientWidth = 511
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
@@ -16,12 +16,11 @@ object PetList: TPetList
   TextHeight = 13
   object Panel1: TPanel
     Left = 0
-    Top = 275
-    Width = 517
+    Top = 266
+    Width = 511
     Height = 41
     Align = alBottom
     TabOrder = 0
-    ExplicitWidth = 502
     object CancelBtn: TBitBtn
       Left = 124
       Top = 6
@@ -66,16 +65,15 @@ object PetList: TPetList
   object Panel2: TPanel
     Left = 0
     Top = 0
-    Width = 517
-    Height = 275
+    Width = 511
+    Height = 266
     Align = alClient
     TabOrder = 1
-    ExplicitWidth = 502
     object ListBox1: TListBox
       Left = 1
       Top = 42
-      Width = 515
-      Height = 232
+      Width = 509
+      Height = 223
       Align = alClient
       ItemHeight = 13
       TabOrder = 0
@@ -85,11 +83,10 @@ object PetList: TPetList
     object Panel3: TPanel
       Left = 1
       Top = 1
-      Width = 515
+      Width = 509
       Height = 41
       Align = alTop
       TabOrder = 1
-      ExplicitWidth = 500
     end
   end
 end

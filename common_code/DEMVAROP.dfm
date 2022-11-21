@@ -2,11 +2,9 @@ inherited VariogramOptions: TVariogramOptions
   Left = 234
   Top = 421
   Caption = 'Variogram options'
-  ClientHeight = 220
-  ClientWidth = 492
+  ClientHeight = 211
+  ClientWidth = 486
   OnCreate = FormCreate
-  ExplicitLeft = 3
-  ExplicitTop = 3
   ExplicitWidth = 504
   ExplicitHeight = 258
   TextHeight = 20

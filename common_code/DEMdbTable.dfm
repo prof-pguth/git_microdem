@@ -2,8 +2,8 @@ object dbtablef: Tdbtablef
   Left = 62
   Top = 306
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1109
-  ClientWidth = 1352
+  ClientHeight = 1100
+  ClientWidth = 1346
   Color = clBtnFace
   ParentFont = True
   FormStyle = fsMDIChild
@@ -17,24 +17,24 @@ object dbtablef: Tdbtablef
   TextHeight = 20
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 1090
-    Width = 1352
+    Top = 1081
+    Width = 1346
     Height = 19
     Panels = <
       item
         Width = 250
       end>
-    ExplicitTop = 1099
-    ExplicitWidth = 1358
+    ExplicitTop = 1072
+    ExplicitWidth = 1340
   end
   object Panel2: TPanel
     Left = 0
     Top = 41
-    Width = 1352
+    Width = 1346
     Height = 32
     Align = alTop
     TabOrder = 1
-    ExplicitWidth = 1358
+    ExplicitWidth = 1340
     object BitBtn1: TBitBtn
       Left = 34
       Top = 1
@@ -215,11 +215,11 @@ object dbtablef: Tdbtablef
   object Panel3: TPanel
     Left = 0
     Top = 73
-    Width = 1352
+    Width = 1346
     Height = 41
     Align = alTop
     TabOrder = 2
-    ExplicitWidth = 1358
+    ExplicitWidth = 1340
     object Label2: TLabel
       Left = 12
       Top = 12
@@ -266,11 +266,11 @@ object dbtablef: Tdbtablef
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1352
+    Width = 1346
     Height = 41
     Align = alTop
     TabOrder = 4
-    ExplicitWidth = 1358
+    ExplicitWidth = 1340
     object LOSButton: TSpeedButton
       Left = 40
       Top = 6
@@ -529,11 +529,11 @@ object dbtablef: Tdbtablef
   object Panel7: TPanel
     Left = 0
     Top = 114
-    Width = 1352
+    Width = 1346
     Height = 41
     Align = alTop
     TabOrder = 3
-    ExplicitWidth = 1358
+    ExplicitWidth = 1340
     object RadioGroup2: TRadioGroup
       Left = 20
       Top = 0
@@ -554,8 +554,8 @@ object dbtablef: Tdbtablef
   object DBGrid1: TDBGrid
     Left = 0
     Top = 155
-    Width = 1352
-    Height = 935
+    Width = 1346
+    Height = 926
     Align = alClient
     TabOrder = 5
     TitleFont.Charset = DEFAULT_CHARSET
@@ -1309,6 +1309,10 @@ object dbtablef: Tdbtablef
         Caption = 'Filter out signed criteria (mean and median)'
         OnClick = Filteroutsignedcriteriameanandmedian1Click
       end
+      object FilterforDEMIXtiles1: TMenuItem
+        Caption = 'Filter for DEMIX tiles'
+        OnClick = FilterforDEMIXtiles1Click
+      end
       object ExtractDEMIXtiles1: TMenuItem
         Caption = 'Extract DEMIX tile DEMs'
         OnClick = ExtractDEMIXtiles1Click
@@ -1323,16 +1327,13 @@ object dbtablef: Tdbtablef
       end
       object Graphmeanmedianbyterraincategory1: TMenuItem
         Caption = 'Graphs with various filters (experimental)'
-        object PickParam1: TMenuItem
-          Caption = 'Pick criterion to see differences from reference DEM'
-          OnClick = PickParam1Click
-        end
         object Allcriteriavalues1: TMenuItem
           Caption = 'Single tile, all criteria, values'
           OnClick = Allcriteriavalues1Click
         end
         object PercentageofcriteriawhereDEMisbest1: TMenuItem
           Caption = 'Percentage of criteria where DEM is best'
+          Enabled = False
           OnClick = PercentageofcriteriawhereDEMisbest1Click
         end
         object Averageranksbyarea1: TMenuItem
@@ -1358,6 +1359,14 @@ object dbtablef: Tdbtablef
       object Graphfilters1: TMenuItem
         Caption = 'Graph filters'
         OnClick = Graphfilters1Click
+      end
+      object PickParam1: TMenuItem
+        Caption = 'Absolute differences from reference DEM by tile'
+        OnClick = PickParam1Click
+      end
+      object NormalizeddifferencesfromreferenceDEM1: TMenuItem
+        Caption = 'Normalized differences from reference DEM by tile'
+        OnClick = NormalizeddifferencesfromreferenceDEM1Click
       end
       object RankDEMs1: TMenuItem
         Caption = 'Rank DEMs and find best by criterion and tile'

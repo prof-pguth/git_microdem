@@ -3,19 +3,17 @@ object leg_opts_form: Tleg_opts_form
   Top = 0
   BorderIcons = []
   BorderStyle = bsDialog
-  ClientHeight = 258
-  ClientWidth = 305
+  ClientHeight = 249
+  ClientWidth = 299
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = False
   Position = poDefaultSizeOnly
   OnClose = FormClose
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
     Left = 56

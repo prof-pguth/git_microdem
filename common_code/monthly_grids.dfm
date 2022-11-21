@@ -3,8 +3,8 @@ object GridTimeSeriesControlForm: TGridTimeSeriesControlForm
   Top = 0
   BorderIcons = [biSystemMenu]
   Caption = 'Monthly series'
-  ClientHeight = 282
-  ClientWidth = 490
+  ClientHeight = 273
+  ClientWidth = 484
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -14,7 +14,6 @@ object GridTimeSeriesControlForm: TGridTimeSeriesControlForm
   FormStyle = fsStayOnTop
   OnClose = FormClose
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
     Left = 255

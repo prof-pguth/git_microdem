@@ -2,14 +2,14 @@ inherited ImportParamsDialog: TImportParamsDialog
   Left = 496
   Top = 193
   Caption = 'ASCII XYZ Import Parameters'
-  ClientHeight = 340
-  ClientWidth = 532
+  ClientHeight = 331
+  ClientWidth = 526
   Position = poDefaultSizeOnly
   Visible = True
   OnClose = FormClose
   OnCreate = FormCreate
-  ExplicitWidth = 550
-  ExplicitHeight = 387
+  ExplicitWidth = 544
+  ExplicitHeight = 378
   TextHeight = 20
   inherited Bevel1: TBevel
     Left = 7

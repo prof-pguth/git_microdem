@@ -2,19 +2,17 @@ object lineparamsform: Tlineparamsform
   Left = 678
   Top = 491
   Caption = 'Line Parameters'
-  ClientHeight = 106
-  ClientWidth = 246
+  ClientHeight = 97
+  ClientWidth = 240
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
-  OldCreateOrder = False
   Position = poDefaultSizeOnly
   OnActivate = FormActivate
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Image1: TImage
     Left = 24

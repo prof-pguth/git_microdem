@@ -2,8 +2,8 @@ object lvis_form1: Tlvis_form1
   Left = 0
   Top = 0
   Caption = 'LVIS'
-  ClientHeight = 224
-  ClientWidth = 396
+  ClientHeight = 215
+  ClientWidth = 390
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -11,9 +11,7 @@ object lvis_form1: Tlvis_form1
   Font.Name = 'Tahoma'
   Font.Style = []
   FormStyle = fsStayOnTop
-  OldCreateOrder = False
   OnClose = FormClose
-  PixelsPerInch = 96
   TextHeight = 13
   object BitBtn1: TBitBtn
     Left = 32
@@ -81,7 +79,7 @@ object lvis_form1: Tlvis_form1
   object Memo1: TMemo
     Left = 0
     Top = 0
-    Width = 396
+    Width = 390
     Height = 74
     Align = alTop
     ScrollBars = ssVertical

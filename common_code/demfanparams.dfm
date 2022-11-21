@@ -4,18 +4,16 @@ object PickFanParams: TPickFanParams
   ActiveControl = OKBtn
   BorderStyle = bsDialog
   Caption = 'Fan Drawing Options'
-  ClientHeight = 296
-  ClientWidth = 455
+  ClientHeight = 298
+  ClientWidth = 449
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = [fsBold]
-  OldCreateOrder = True
   Position = poDefaultSizeOnly
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
     Left = 16
