@@ -476,7 +476,7 @@ var
 
       procedure IntegratedIndex(var TheTable : tMyData);
       var
-         Dirs,TheDEMs,RawData : TStringList;
+         Dirs,{TheDEMs,}RawData : TStringList;
          fName : PathStr;
          Series : ShortString;
          Ext : ExtStr;
@@ -894,10 +894,10 @@ var
    xmin,xmax,ymin,ymax,Lat,Long  : float64;
    NewHeader   : tDEMheader;
    Inbounds,UTMDEMs : boolean;
-   MergeUTMzone,MergeCol,MergeRow,i,Col,Row,TileX,TileY : int32;
-   CurDEM,NPts     : integer;
-   aName,ProjName,MergefName,OldDEMName,OutVRT     : PathStr;
-   MenuStr,cmd  : ShortString;
+   MergeUTMzone,{MergeCol,MergeRow,i,Col,Row,}TileX,TileY : int32;
+   CurDEM{,NPts}     : integer;
+   aName,ProjName,MergefName,OldDEMName{,OutVRT}     : PathStr;
+   MenuStr{,cmd } : ShortString;
 
       procedure OldMICRODEMmerge;
       var

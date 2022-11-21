@@ -947,6 +947,8 @@ type
     CreateDBwithcornersandcenterofeveryrecord1: TMenuItem;
     GraphsbestDEMpertilebycriteriasortbytilecharacteristics1: TMenuItem;
     Graphfilters1: TMenuItem;
+    FilterforDEMIXtiles1: TMenuItem;
+    NormalizeddifferencesfromreferenceDEM1: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
     procedure Shiftpointrecords1Click(Sender: TObject);
     procedure Creategrid1Click(Sender: TObject);
@@ -1665,6 +1667,8 @@ type
     procedure GraphsbestDEMpertilebycriteriasortbytilecharacteristics1Click(
       Sender: TObject);
     procedure Graphfilters1Click(Sender: TObject);
+    procedure FilterforDEMIXtiles1Click(Sender: TObject);
+    procedure NormalizeddifferencesfromreferenceDEM1Click(Sender: TObject);
   private
     procedure PlotSingleFile(fName : PathStr; xoff,yoff : float64);
     procedure SetUpLinkGraph;
@@ -2124,6 +2128,11 @@ end;
 procedure Tdbtablef.Normalizedbasinprofile1Click(Sender: TObject);
 begin
    DEMTerrainprofile1Click(Sender);
+end;
+
+procedure Tdbtablef.NormalizeddifferencesfromreferenceDEM1Click(Sender: TObject);
+begin
+   DEMIXwineContestMeanMedianGraph(dgNormalizedDiff,DBonTable);
 end;
 
 procedure Tdbtablef.Normalizefield1Click(Sender: TObject);
@@ -2854,12 +2863,13 @@ begin
    while not GISdb[DBonTable].MyData.EOF do begin
       GISdb[DBonTable].MyData.Edit;
       TStr := GISdb[DBonTable].MyData.GetFieldByNameAsString('TIME_UTC');
-      while Length(TStr) < 9 do TStr := '0' + TStr;
+      while (Length(TStr) < 9) do TStr := '0' + TStr;
       GISdb[DBonTable].MyData.SetFieldByNameAsString('TIME_STR',Copy(TStr,1,2) + ':' + Copy(TStr,3,2) + ':' + Copy(TStr,5,2));
       GISdb[DBonTable].MyData.Next;
    end;
    ShowStatus;
 end;
+
 
 procedure Tdbtablef.TimefieldHHMMSStohours1Click(Sender: TObject);
 var
@@ -2881,13 +2891,13 @@ begin
          if (Sender = TimefieldHHMMSStohours1) then begin
             TStr := UpperCase(MyData.GetFieldByNameAsString('TIME'));
             if ANSIContainsText(TStr,':') then begin
-               if TStr[2] = ':' then Tstr := '0' + TStr;
+               if (TStr[2] = ':') then Tstr := '0' + TStr;
                Hours := 1.0 * StrToInt(Copy(TStr,1,2)) + StrToInt(Copy(TStr,4,2)) / 60 + StrToInt(Copy(TStr,7,2)) / 3600;
                if (Length(TStr) > 8) and ANSIContainsText(TStr,'PM') then Hours := Hours + 12;
             end
             else begin
                TStr := MyData.GetFieldByNameAsString('TIME');
-               while length(TStr) < 6 do Tstr := '0' + TStr;
+               while (length(TStr) < 6) do Tstr := '0' + TStr;
                Hours := 1.0 * StrToInt(Copy(TStr,1,2)) + StrToInt(Copy(TStr,3,2)) / 60 + StrToInt(Copy(TStr,5,2)) / 3600;
             end;
             MyData.SetFieldByNameAsFloat('DEC_HOURS',Hours);
@@ -13486,6 +13496,12 @@ begin
       end;
       ShowStatus;
    end;
+end;
+
+procedure Tdbtablef.FilterforDEMIXtiles1Click(Sender: TObject);
+begin
+   GISdb[DBonTable].ApplyGISFilter('REF_TYPE=' + QuotedStr('DTM') + ' AND LAND_TYPE=' + QuotedStr('ALL') + ' AND CRITERION=' + QuotedStr('ELVD_AVD'));
+   //ShowStatus;
 end;
 
 procedure Tdbtablef.Filteroutsignedcriteriameanandmedian1Click(Sender: TObject);

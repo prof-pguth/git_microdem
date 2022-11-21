@@ -642,7 +642,7 @@ begin
          Bitmap.Free;
       {$EndIf}
       fName := MainMapData + 'tins\tin-dem.dem';
-      {$IfDef RecordTINProblems} WriteLineToDebugFile('writing');  {$EndIf}
+      {$IfDef RecordTINProblems} WriteLineToDebugFile('writing'); {$EndIf}
       WriteNewFormatDEM(fName);
       DEMGlb[NewDEM].SetUpMap(NewDEM,true);
       SelectionMap.Panel1.Visible := false;
@@ -747,11 +747,11 @@ begin
    Result := MaxSmallInt;
    if not TinTable.FieldExists('Z1') then exit;
 
-   {$IfDef RecordTINRoamProblems} WriteLineToDebugFile('Unfiltered: ' + IntToStr(Tintable.RecordCount));  {$EndIf}
+   {$IfDef RecordTINRoamProblems} WriteLineToDebugFile('Unfiltered: ' + IntToStr(Tintable.RecordCount)); {$EndIf}
 
    Tintable.ApplyFilter( 'X_LOW < ' + RealToString(x+extra,-18,-8) + ' AND X_HI > ' + RealToString(x-extra,-18,-8) + ' AND ' +
                       'Y_LOW < ' + RealToString(y+extra,-18,-8) + ' AND Y_HI > ' + RealToString(y-extra,-18,-8));
-   {$IfDef RecordTINRoamProblems} WriteLineToDebugFile('Filter: ' + Tintable.Filter +   'recs=' + IntToStr(Tintable.RecordCount));  {$EndIf}
+   {$IfDef RecordTINRoamProblems} WriteLineToDebugFile('Filter: ' + Tintable.Filter +   'recs=' + IntToStr(Tintable.RecordCount)); {$EndIf}
 
    while not TinTable.EOF do begin
       if ElevInTriangle(x,y,z) then begin
@@ -773,7 +773,7 @@ var
    xi,yi : integer;
 begin
    Result := false;
-   {$IfDef RecordTINRoamProblems} WriteLineToDebugFile('Unfiltered: ' + IntToStr(Tintable.RecordCount));  {$EndIf}
+   {$IfDef RecordTINRoamProblems} WriteLineToDebugFile('Unfiltered: ' + IntToStr(Tintable.RecordCount)); {$EndIf}
    xi := round(x);
    yi := round(Y);
 
@@ -851,8 +851,8 @@ begin
    PetImage.CloneImageToBitmap(Map.Image1,Bitmap);
    FillScanlineAddresses(Bitmap,P0);
    {$IfDef RecordInterpolateImage}
-      WriteLineToDebugFile('Create Bitmap size: ' + IntToStr(Bitmap.Width) +  'x' + intToStr(Bitmap.Width));
-      WriteLineToDebugFile('Source Bitmap size: ' + IntToStr(Bitmap2.Width) +  'x' + intToStr(Bitmap2.Width));
+      WriteLineToDebugFile('Create : ' +  BitmapSizeString(Bitmap));
+      WriteLineToDebugFile('Source : ' +  BitmapSizeString(Bitmap2));
    {$EndIf}
 
    StartProgress('Image ' + Progress);

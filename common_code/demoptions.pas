@@ -1,10 +1,11 @@
 unit demoptions;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{   file verified 6/22/2011       }
-{_________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of ianMICRODEM GIS Program    }
+{ PETMAR Trilobite Breeding Ranch    }
+{ Released under the MIT Licences    }
+{ Copyright (c) 2022 Peter L. Guth   }
+{____________________________________}
 
 
 {$I nevadia_defines.inc}
@@ -22,8 +23,8 @@ interface
 uses
    Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.ComCtrls,
    SysUtils, Windows,Classes, Graphics, Forms, Controls,
-   Buttons,  OkCancl2,  Tabnotbk, Dialogs,
-   DEMMapf, DEMDefs,Grids,Petmar_types;
+   Buttons,  {OkCancl2,}  Tabnotbk, Dialogs,
+   DEMMapf, DEMDefs,Grids,Petmar_types, OKCANCL2;
 
 type
   TOptionsForm = class(TOKRightDlg)
@@ -31,7 +32,6 @@ type
     TabSheet1: TTabSheet;
     RadioGroup7: TRadioGroup;
     CheckBox4: TCheckBox;
-    //CheckBox6: TCheckBox;
     TabSheet3: TTabSheet;
     TabSheet4: TTabSheet;
     Label8: TLabel;

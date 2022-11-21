@@ -18,7 +18,7 @@ unit BaseGraf;
        //{$Define RecordGrafProblems}
        //{$Define RecordScaling}
        //{$Define RecordGrafSize}
-       {$Define RecordGrafAxes}
+       //{$Define RecordGrafAxes}
        //{$Define RecordFormResize}
        {$Define RecordHistogram}
        //{$Define RecordSaveSeries}

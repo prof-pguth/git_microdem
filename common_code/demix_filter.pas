@@ -1,6 +1,5 @@
 unit demix_filter;
 
-
 {^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
@@ -210,6 +209,8 @@ begin
    DemixFilterForm.LandTypesUsing := tStringList.Create;
    DemixFilterForm.CriteriaUsing := tStringList.Create;
    DemixFilterForm.CandidateDEMsUsing := tStringList.Create;
+
+   DemixFilterForm.BitBtn1.Enabled := GISdb[db].MyData.FieldExists('DEM');
 
    DemixFilterForm.Show;
 end;

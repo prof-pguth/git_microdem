@@ -11,6 +11,7 @@ unit dem_nlcd;
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    //{$Define RecordNLCDProblems}
    //{$Define RecordNLCDLegend}
+   {$Define RecordBarGraphs}
    //{$Define RecordBatch}
    //{$Define RecordBarGraphsDetailed}
    //{$Define RecordPaletteProblems}
@@ -79,8 +80,12 @@ const
    TopSize = 40;
    EntryHeight = 32;
    AreaBlank = 12;
+   IncludeTileName : boolean = false;
+   IncludeLegend : boolean = false;
+   IncludeAreaName : boolean = true;
 var
    dbName : PathStr;
+
 
    procedure ASeries(LandCoverfName : PathStr; aTitle : shortstring);
    var
@@ -90,10 +95,11 @@ var
       Table : tMyData;
       Areas : tStringList;
 
+
          function DoOne(bbox : sfBoundBox; aLabel : shortstring) : boolean;
          var
             fName : PathStr;
-            NewDEM,NewDB,zi: integer;
+            NewDEM,NewDB{,zi} : integer;
          begin
             {$IfDef RecordBarGraphsDetailed} WriteLineToDebugFile('Do series=' + aLabel); {$EndIf}
             try
@@ -114,6 +120,8 @@ var
                      fName := '';
                   end
                   else begin
+                     if not IncludeLegend then aLabel := '';
+
                      SingleLeg := GISDB[NewDB].BarGraphLegend(false,aLabel);
                      {$IfDef RecordBarGraphsDetailed} WriteLineToDebugFile('Bar graph legend made'); {$EndIf}
                      bmp.Canvas.Draw(AreaWidth + TileWidth,Top,SingleLeg);
@@ -138,7 +146,7 @@ var
        end;
 
    var
-      Name : shortstring;
+      Name,Area,LastArea : shortstring;
       ItsDEMIX : boolean;
       i : integer;
    begin
@@ -150,7 +158,16 @@ var
           Table := tMyData.Create(dbName);
           ItsDEMIX := Table.FieldExists('DEMIX_TILE') and Table.FieldExists('AREA');
           Areas := tStringList.Create;
-          if ItsDEMIX then Areas.LoadFromFile(DEMIXSettingsDir +  'demix_areas_sorted_by_lat.txt');
+          Table.First;
+          LastArea := '';
+          while not Table.eof do begin
+              Area := Table.GetFieldByNameAsString('AREA');
+              if (Area <> LastArea) then Areas.Add(Area);
+              LastArea := Area;
+              Table.Next;
+          end;
+          //if ItsDEMIX then Areas.LoadFromFile(DEMIXSettingsDir +  'demix_areas_sorted_by_lat.txt');
+
           CreateBitmap(bmp,2400,100 + (Table.RecordCount * EntryHeight) + pred(Areas.Count) * AreaBlank);
           bmp.Canvas.Font.Size := 14;
           {$IfDef RecordBatch} WriteLineToDebugFile('Create bitmap, ' + BitmapSize(bmp)); {$EndIf}
@@ -161,21 +178,29 @@ var
              TileWidth := 0;
              Table.First;
              while not Table.Eof do begin
-                i := Bmp.Canvas.TextWidth(Table.GetFieldByNameAsString('AREA'));
-                if (i > AreaWidth) then AreaWidth := i + 10;
-                i := Bmp.Canvas.TextWidth(Table.GetFieldByNameAsString('DEMIX_TILE'));
-                if (i > TileWidth) then TileWidth := i + 10;
+                if IncludeAreaName then begin
+                   i := Bmp.Canvas.TextWidth(Table.GetFieldByNameAsString('AREA'));
+                   if (i > AreaWidth) then AreaWidth := i;
+                end;
+                if IncludeTileName then begin
+                   i := Bmp.Canvas.TextWidth(Table.GetFieldByNameAsString('DEMIX_TILE'));
+                   if (i > TileWidth) then TileWidth := i;
+                end;
                 Table.Next;
              end;
+             AreaWidth := AreaWidth + 10;
+             TileWidth := TileWidth + 10;
+
              {$IfDef RecordBatch} WriteLineToDebugFile('AreaWidth=' + IntToStr(AreaWidth) + '  TileWidth=' + IntToStr(TileWidth)); {$EndIf}
 
              AddTitle(AreaWidth + TileWidth);
 
              for i := 0 to pred(Areas.Count) do begin
-                WMDEM.SetPanelText(0,IntToStr(i) + '/' + IntToStr(Areas.Count) + ' ' + Areas.Strings[i] );
+                WMDEM.SetPanelText(1,IntToStr(i) + '/' + IntToStr(Areas.Count) + ' ' + Areas.Strings[i] );
                 Table.ApplyFilter('AREA=' + QuotedStr(Areas.Strings[i]));
                 Name := RemoveUnderScores(Table.GetFieldByNameAsString('AREA'));
-                Bmp.Canvas.TextOut(5,Top + (Table.FiltRecsInDB div 2 * EntryHeight),Name);
+                {$IfDef RecordBarGraphs} WriteLineToDebugFile('Area=' + Name + ' at x=' + IntToStr(5)); {$EndIf}
+                if IncludeAreaName then Bmp.Canvas.TextOut(5,Top + round(Table.FiltRecsInDB / 2 * EntryHeight),Name);
                 while not Table.Eof do begin
                    Name := Table.GetFieldByNameAsString('DEMIX_TILE');
                    if DoOne(DEMIXtileBoundingBox(Name),'  ') then begin
@@ -183,7 +208,8 @@ var
                    else begin
                       {$IfDef RecordBatch} HighLightLineToDebugFile('No land type ' + Name); {$EndIf}
                    end;
-                   Bmp.Canvas.TextOut(AreaWidth + 5,Top,Name);
+                   {$IfDef RecordBarGraphs} WriteLineToDebugFile('Tile=' + Name + ' at x=' + IntToStr(AreaWidth + 5)); {$EndIf}
+                   if IncludeTileName then Bmp.Canvas.TextOut(AreaWidth + 5,Top,Name);
                    Top := Top + EntryHeight;
                    Table.Next;
                 end;
@@ -195,7 +221,6 @@ var
           end
           else begin
              AddTitle;
-
              while not Table.Eof do begin
                 if DoOne(Table.GetRecordBoundingBox,Table.GetFieldByNameAsString('NAME')) then Top := Top + EntryHeight;
                 Table.Next;
@@ -223,10 +248,12 @@ begin
    try
       HeavyDutyProcessing := true;
       if UseTable and (not GetFileFromDirectory('bounding box data base','*.dbf',dbName)) then exit;
-      ASeries('h:\landcover\Geomorphon\geomorphon_1KMmaj_GMTEDmd.tif','Geomorphons');
-      ASeries('h:\landcover\iwahashi\iwahashi.tif','Iwahashi and Pike');
-      ASeries('h:\landcover\Meybeck\Meybeck_1km1.tif','Meybeck and others');
-      ASeries('h:\landcover\lccs_300m\ESACCI-LC-L4-LCCS-Map-300m-P1Y-2015-v2.0.7.tif','LCCS 300 m 2015');
+      ASeries('g:\landcover\lccs_300m\ESACCI-LC-L4-LCCS-Map-300m-P1Y-2015-v2.0.7.tif','LCCS 300 m 2015');
+      IncludeAreaName := false;
+
+      ASeries('g:\landcover\iwahashi\iwahashi.tif','Iwahashi and Pike');
+      ASeries('g:\landcover\Meybeck\Meybeck_1km1.tif','Meybeck and others');
+      ASeries('g:\landcover\Geomorphon\geomorphon_1KMmaj_GMTEDmd.tif','Geomorphons');
    finally
       CloseAllDatabases;
       HeavyDutyProcessing := false;

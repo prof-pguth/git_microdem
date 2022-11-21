@@ -12,10 +12,8 @@ object PLSSConvertForm: TPLSSConvertForm
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   FormStyle = fsStayOnTop
-  OldCreateOrder = False
   OnClose = FormClose
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Memo1: TMemo
     Left = 0
@@ -25,6 +23,8 @@ object PLSSConvertForm: TPLSSConvertForm
     Align = alBottom
     ScrollBars = ssVertical
     TabOrder = 0
+    ExplicitTop = 85
+    ExplicitWidth = 564
   end
   object BitBtn1: TBitBtn
     Left = 8

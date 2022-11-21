@@ -26,12 +26,17 @@
 
 
    {$IFDEF DEBUG}
+      //{$Define RecordFan}
+      //{$Define FanDrawProblems}
+
+
       //{$Define RawProjectInverse}  //must also be set in BaseMap
       //{$Define RecordDEMIX}
       //{$Define RecordDEMIXtiles}
       //{$Define RecordStreamModeDigitize}
       //{$Define RecordPickRoute}
-      {$Define RecordFocalPlanes}
+      //{$Define RecordFocalPlanes}
+      //{$Define RecordRangeCircle}
       //{$Define RecordMapResize}
       //{$Define RecordCreateGeomorphMaps}
       //{$Define RecordGeomorphometry}
@@ -88,7 +93,6 @@
       //{$Define RecordKMLexport}
       //{$Define RecordClosing}
       //{$Define RecordVAT}
-      //{$Define RecordFan}
       //{$Define RecordCollarMapMargins}
       //{$Define RecordPitsSpires}
       //{$Define RecordFresnel}
@@ -2490,7 +2494,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure PointInterpolationReport(Lat,Long : float64);
 
     procedure Loadvegetationlayer(i: integer; mItem : tMenuItem);
-    procedure PlotFilteredTable(Table: tMyData; Filter: ANSIString; Sym: tDrawingSymbol; size: byte; Color: tPlatformColor);
+    //procedure PlotFilteredTable(Table: tMyData; Filter: ANSIString; Sym: tDrawingSymbol; size: byte; Color: tPlatformColor);
     procedure FillHoles(ModeWanted: tHoleFill);
     procedure DropinthebucketfromGrids;
 
@@ -3107,7 +3111,7 @@ uses
 
    {$IfDef ExWaveRefraction}
    {$Else}
-      refraction_model,
+      //refraction_model,
    {$EndIf}
 
 
@@ -4837,11 +4841,11 @@ begin
       end;
 
       if (DEMNowDoing = SecondFresnelPoint) then begin
-         {$IfDef RecordFresnel} WriteLineToDebugFile('Starting (DEMNowDoing = SecondFresnelPoint');    {$EndIf}
+         {$IfDef RecordFresnel} WriteLineToDebugFile('Starting (DEMNowDoing = SecondFresnelPoint'); {$EndIf}
          CheckThisPoint(LastX,LastY,xDEMg1,yDEMg1,xSATg1,ySATg1,CheckReasonable);
          DEMGlb[MapDraw.DEMonMap].DEMGridToLatLongDegree(xDEMg1,yDEMg1,Lat,Long);
          Fresnel_Block_Form.FresnelBlockage(Self,False,Lat,Long);
-         {$IfDef RecordFresnel} WriteLineToDebugFile('done (DEMNowDoing = SecondFresnelPoint');    {$EndIf}
+         {$IfDef RecordFresnel} WriteLineToDebugFile('done (DEMNowDoing = SecondFresnelPoint'); {$EndIf}
          exit;
       end;
    {$EndIf}
@@ -4872,6 +4876,15 @@ begin
          end;
          FirstFan := false;
       end;
+
+      {$IfDef FanDrawProblems}
+          MDdef.BlankMapColor := claWhite;
+          MDDef.FanOpacity := 100;
+          MDDef.wf.MaskRaySpacingDeg := 2;
+          WeaponsFan.W_Up := 25;
+          if MapDraw.DEMMap then MapDraw.MapType := mtDEMBlank else MapDraw.MapType := mtSatBlank;
+          DoCompleteMapRedraw;
+      {$EndIf}
 
       if DEMNowDoing in [CompareFanAlgorithms] then DrawMultipleFanMethods(WeaponsFan)
       else if DEMNowDoing in [FanSensitivity] then CompareFanSensitivityAnalysis(WeaponsFan)
@@ -5845,115 +5858,116 @@ var
    Table : tMyData;
 
 
-   procedure DoPoint(Lat,Long : float32);
-   var
-      Graph : TNetForm;
-   begin
-      MDDef.SunlightSingleDay := 2;
-      Graph := SunAndHorizon(Nil,0,Lat,Long,false,true);
-      fName := Petmar.NextFileNumber(MDTempDir,'atlas_image_','.png');
-      SaveImageAsBMP(Graph.Image1,fName);
-      Results.Add(RealToString(Lat,-8,-2) + ',' + RealToString(Long,-8,-2) + ',' + fName);
-      Graph.Destroy;
-   end;
-
-   Procedure DoLatRow(Lat : float32);
-   begin
-      DoPoint(Lat,-100);
-      DoPoint(Lat,0);
-      DoPoint(Lat,100);
-   end;
-
-   procedure DoSunPosition;
-   begin
-      DoLatRow(75);
-      DoLatRow(66.5);
-      DoLatRow(50);
-      DoLatRow(40);
-      DoLatRow(23.5);
-      DoLatRow(10);
-      DoLatRow(0);
-      DoLatRow(-23.5);
-      DoLatRow(-40);
-      DoLatRow(-66.5);
-      DoLatRow(-75);
-   end;
-
-   procedure MakeGraph(Which : integer; Lat,Long : float32);
-   var
-      Graph : TThisBaseGraph;
-      kg  : TKoppenGraph;
-      Net : tNetForm;
-      aName : shortstring;
-   begin
-      fName := Petmar.NextFileNumber(MDTempDir,'atlas_image_','.png');
-      aName := Table.GetFieldByNameAsString('NAME');
-      if (Which = 1) then begin
-         kg := MakeKoppenClimograph(MapDraw.DEMonMap,Lat,Long);
-         if (kg <> Nil) then begin
-            SaveImageAsBMP(kg.Image1,fName);
-            kg.Destroy;
-            Results.Add(RealToString(Lat,-12,-6) + ',' + RealToString(Long,-12,-6) + ',' + aName + ',' + fName);
-            wmdem.Closeallgraphs1Click(Sender);
-            CloseAllDataBases;
-         end;
-      end;
-      if (Which in [2,3]) then begin
-         if Which = 2 then Graph := MakePOTETgraph(MapDraw.DEMonMap,Lat,Long);
-         if Which = 3 then Graph := MonthlyInsolationGraph(MapDraw.DEMonMap,Lat,Long);
-         if (Graph <> Nil) then begin
+         procedure DoPoint(Lat,Long : float32);
+         var
+            Graph : TNetForm;
+         begin
+            MDDef.SunlightSingleDay := 2;
+            Graph := SunAndHorizon(Nil,0,Lat,Long,false,true);
+            fName := Petmar.NextFileNumber(MDTempDir,'atlas_image_','.png');
             SaveImageAsBMP(Graph.Image1,fName);
+            Results.Add(RealToString(Lat,-8,-2) + ',' + RealToString(Long,-8,-2) + ',' + fName);
             Graph.Destroy;
-            Results.Add(RealToString(Lat,-12,-6) + ',' + RealToString(Long,-12,-6) + ',' + aName + ',' + fName);
-            wmdem.Closeallgraphs1Click(Sender);
-            CloseAllDataBases;
          end;
-      end;
 
-      if Which = 4 then begin
-         MDDef.SunlightSingleDay := 2;
-         Net := SunAndHorizon(Nil,0,Lat,Long,false,true);
-         if (Net <> Nil) then begin
-            SaveImageAsBMP(Net.Image1,fName);
-            Results.Add(RealToString(Lat,-12,-6) + ',' + RealToString(Long,-12,-6) + ',' + aName + ',' + fName);
-            Net.Destroy;
+         Procedure DoLatRow(Lat : float32);
+         begin
+            DoPoint(Lat,-100);
+            DoPoint(Lat,0);
+            DoPoint(Lat,100);
          end;
-      end;
-   end;
 
-    procedure MakeAtlasPage(Which : integer; aName : shortstring);
-    var
-       iLat,iLong,dLong,db : integer;
-       Lat,Long : float64;
-    begin
-       Results := tStringList.Create;
-       Results.Add('Lat,Long,NAME,IMAGE');
+         procedure DoSunPosition;
+         begin
+            DoLatRow(75);
+            DoLatRow(66.5);
+            DoLatRow(50);
+            DoLatRow(40);
+            DoLatRow(23.5);
+            DoLatRow(10);
+            DoLatRow(0);
+            DoLatRow(-23.5);
+            DoLatRow(-40);
+            DoLatRow(-66.5);
+            DoLatRow(-75);
+         end;
 
-       Table.First;
-       while not Table.eof do begin
-          if Table.ValidLatLongFromTable(Lat,Long) then MakeGraph(Which,Lat,Long);
-          Table.Next;
-       end;
-       (*
-       iLat := 70;
-       while iLat > -80 do begin
-          iLong := -160;
+         procedure MakeGraph(Which : integer; Lat,Long : float32);
+         var
+            Graph : TThisBaseGraph;
+            kg  : TKoppenGraph;
+            Net : tNetForm;
+            aName : shortstring;
+         begin
+            fName := Petmar.NextFileNumber(MDTempDir,'atlas_image_','.png');
+            aName := Table.GetFieldByNameAsString('NAME');
+            if (Which = 1) then begin
+               kg := MakeKoppenClimograph(MapDraw.DEMonMap,Lat,Long);
+               if (kg <> Nil) then begin
+                  SaveImageAsBMP(kg.Image1,fName);
+                  kg.Destroy;
+                  Results.Add(RealToString(Lat,-12,-6) + ',' + RealToString(Long,-12,-6) + ',' + aName + ',' + fName);
+                  wmdem.Closeallgraphs1Click(Sender);
+                  CloseAllDataBases;
+               end;
+            end;
+            if (Which in [2,3]) then begin
+               if Which = 2 then Graph := MakePOTETgraph(MapDraw.DEMonMap,Lat,Long);
+               if Which = 3 then Graph := MonthlyInsolationGraph(MapDraw.DEMonMap,Lat,Long);
+               if (Graph <> Nil) then begin
+                  SaveImageAsBMP(Graph.Image1,fName);
+                  Graph.Destroy;
+                  Results.Add(RealToString(Lat,-12,-6) + ',' + RealToString(Long,-12,-6) + ',' + aName + ',' + fName);
+                  wmdem.Closeallgraphs1Click(Sender);
+                  CloseAllDataBases;
+               end;
+            end;
 
-          if abs(ilat) in [0..40] then dLong := 3
-          else if abs(ilat) in [41..50] then dLong := 4
-          else if abs(ilat) in [50..61] then dlong := 6
-          else dlong := 10;
-          while iLong < 170 do begin
-             MakeGraph(1,iLat,iLong);
-             iLong := iLong + dlong;
+            if Which = 4 then begin
+               MDDef.SunlightSingleDay := 2;
+               Net := SunAndHorizon(Nil,0,Lat,Long,false,true);
+               if (Net <> Nil) then begin
+                  SaveImageAsBMP(Net.Image1,fName);
+                  Results.Add(RealToString(Lat,-12,-6) + ',' + RealToString(Long,-12,-6) + ',' + aName + ',' + fName);
+                  Net.Destroy;
+               end;
+            end;
+         end;
+
+          procedure MakeAtlasPage(Which : integer; aName : shortstring);
+          var
+             iLat,iLong,dLong,
+             db : integer;
+             Lat,Long : float64;
+          begin
+             Results := tStringList.Create;
+             Results.Add('Lat,Long,NAME,IMAGE');
+
+             Table.First;
+             while not Table.eof do begin
+                if Table.ValidLatLongFromTable(Lat,Long) then MakeGraph(Which,Lat,Long);
+                Table.Next;
+             end;
+             (*
+             iLat := 70;
+             while iLat > -80 do begin
+                iLong := -160;
+
+                if abs(ilat) in [0..40] then dLong := 3
+                else if abs(ilat) in [41..50] then dLong := 4
+                else if abs(ilat) in [50..61] then dlong := 6
+                else dlong := 10;
+                while iLong < 170 do begin
+                   MakeGraph(1,iLat,iLong);
+                   iLong := iLong + dlong;
+                end;
+                iLat := iLat - 5;
+             end;
+             *)
+             fName := Petmar.NextFileNumber(MDTempDir,aName + '_','.dbf');
+             db := StringListToLoadedDatabase(Results, fName);
+             GISdb[db].ExportToKML(true,true);
           end;
-          iLat := iLat - 5;
-       end;
-       *)
-       fName := Petmar.NextFileNumber(MDTempDir,aName + '_','.dbf');
-       db := StringListToLoadedDatabase(Results, fName);
-       GISdb[db].ExportToKML(true,true);
-    end;
 
 begin
    fName := 'C:\mydocs\website\so262\google_earth_exercises\las_vegas\vegas.dbf';
@@ -6339,12 +6353,32 @@ var
 
    procedure ResultsForDEM(DEM,x,y : integer);
    var
-      WavelengthMean,WavelengthMedian,WavelengthStdDev,HeightMean,HeightMedian,HeightStd,//,Distance,Relief,
-      s1s2,s2s3,Trend,rf,lat1,long1,lat2,long2 : float64;
+      {$IfDef ExWaveLengthHeight}
+      {$Else}
+         WavelengthMean,WavelengthMedian,WavelengthStdDev,HeightMean,HeightMedian,HeightStd,//,Distance,Relief,
+      {$EndIf}
+      s1s2,s2s3,Trend,rf{,lat1,long1,lat2,long2} : float64;
       z : float32;
       xp,yp : integer;
       //ProfileData : tMyData;
       Bitmap : tMyBitmap;
+
+         {$IfDef ExWaveLengthHeight}
+         {$Else}
+            procedure PlotFilteredTable(Table : tMyData; Filter : ANSIString; Sym : tDrawingSymbol; size : byte; Color : tPlatformColor);
+            var
+               Lat, Long : float64;
+            begin
+               Table.ApplyFilter(Filter);
+               while not Table.Eof do begin
+                   Lat := Table.GetFieldByNameAsFloat('LAT');
+                   Long := Table.GetFieldByNameAsFloat('LONG');
+                   MapDraw.MapSymbolAtLatLongDegree(Image1.Canvas,Lat,Long,Sym,Size,Color);
+                   Table.Next;
+               end;
+            end;
+         {$EndIf}
+
    begin
       {$IfDef RecordGetFabricAtPoint}  WriteLineToDebugFile('DEM=' + DEMGlb[DEM].AreaName);   {$EndIf}
       if DEMGlb[DEM].GetElevMetersOnGrid(x,y,z) and DEMGlb[DEM].SimplePointSSOComputations(true,x,y,MDDef.SSOBoxSizeMeters,s1s2,s2s3,Trend,rf) then begin
@@ -9749,7 +9783,7 @@ var
    Color,LineWidth : integer;
    cName : ShortString;
 begin
-   {$IfDef RecordFan} WriteLineToDebugFile('TMapForm.AddRangeCirclesAtLocation in'); {$EndIf}
+   {$IfDef RecordRangeCircle} WriteLineToDebugFile('TMapForm.AddRangeCirclesAtLocation in'); {$EndIf}
    if (MapDraw.RangeCirclesFName = '') then begin
       MapDraw.RangeCirclesFName := NextFileNumber(MDTempDir, 'Range_circles', DefaultDBExt);
       Make_Tables.MakeRangeCircleTable(MapDraw.RangeCirclesFName);
@@ -9761,17 +9795,17 @@ begin
    Table := tMyData.Create(RangeCircleSizesfName);
    Table.ApplyFilter('USE=' + QuotedStr('Y'));
    if (Table.FiltRecsInDB = 0) then begin
-      {$IfDef RecordFan} WriteLineToDebugFile('TMapForm.AddRangeCirclesAtLocation but no ranges selected'); {$EndIf}
+      {$IfDef RecordRangeCircle} WriteLineToDebugFile('TMapForm.AddRangeCirclesAtLocation but no ranges selected'); {$EndIf}
    end
    else begin
-      {$IfDef RecordFan} WriteLineToDebugFile('add range circles=' + IntToStr(Table.FiltRecsInDB)); {$EndIf}
+      {$IfDef RecordRangeCircle} WriteLineToDebugFile('add range circles=' + IntToStr(Table.FiltRecsInDB)); {$EndIf}
       while (not Table.eof) do begin
-         {$IfDef RecordFan} WriteLineToDebugFile('Add another range circle'); {$EndIf}
+         {$IfDef RecordRangeCircle} WriteLineToDebugFile('Add another range circle'); {$EndIf}
          Range := Table.GetFieldByNameAsFloat('RANGE');
          Color := Table.GetFieldByNameAsInteger('COLOR');
          LineWidth := Table.GetFieldByNameAsInteger('LINE_WIDTH');
          cName := Table.GetFieldByNameAsString('NAME');
-         {$IfDef RecordFan} WriteLineToDebugFile('Params read'); {$EndIf}
+         {$IfDef RecordRangeCircle} WriteLineToDebugFile('Params read'); {$EndIf}
          MapRangeCircleTable.Insert;
          MapRangeCircleTable.SetFieldByNameAsFloat('LAT',Lat);
          MapRangeCircleTable.SetFieldByNameAsFloat('LONG',Long);
@@ -9781,14 +9815,14 @@ begin
          MapRangeCircleTable.SetFieldByNameAsString('NAME',cName);
          MapRangeCircleTable.Post;
          Table.Next;
-         {$IfDef RecordFan} WriteLineToDebugFile('Params set'); {$EndIf}
+         {$IfDef RecordRangeCircle} WriteLineToDebugFile('Params set'); {$EndIf}
       end;
       DoFastMapRedraw;
-      {$IfDef RecordFan} WriteLineToDebugFile('work over (range circles)'); {$EndIf}
+      {$IfDef RecordRangeCircle} WriteLineToDebugFile('work over (range circles)'); {$EndIf}
    end;
    Table.Destroy;
    MapRangeCircleTable.Destroy;
-   {$IfDef RecordFan} WriteLineToDebugFile('TMapForm.AddRangeCirclesAtLocation out'); {$EndIf}
+   {$IfDef RecordRangeCircle} WriteLineToDebugFile('TMapForm.AddRangeCirclesAtLocation out'); {$EndIf}
 end;
 
 
@@ -10347,7 +10381,7 @@ begin
           SatTractForm.ObsLong := Long;
           SatTractForm.ObsElev := z;
           SatTractForm.BitBtn5Click(Nil);
-          SatTractForm.Button1Click(Nil);
+          SatTractForm.BitBtn4Click(Nil);
        end;
     {$EndIf}
 
@@ -13227,7 +13261,7 @@ var
 begin
    {$IfDef RecordKMLexport} WriteLineToDebugFile('ExportMapToGoogleEarth in, ' + Caption + ' MergeAll=' + TrueOrFalse(MergeAll) + ' KMLCompat=' + TrueOrFalse(MapDraw.KMLcompatibleMap)); {$EndIf}
    if MergeAll and MapDraw.KMLcompatibleMap then begin
-      {$IfDef RecordKMLexport} WriteLineToDebugFile('(Sender <> Mergeallimages1) and MapDraw.KMLcompatibleMap');    {$EndIf}
+      {$IfDef RecordKMLexport} WriteLineToDebugFile('(Sender <> Mergeallimages1) and MapDraw.KMLcompatibleMap'); {$EndIf}
       LoadMapInGoogleEarth(Caption,Self);
    end
    else begin
@@ -14792,7 +14826,7 @@ begin
    FindWhiteMarginAndMakeBitmap;
 
    if (MapDraw.BasicProjection in [bpUTM,bpLatLong]) or (MapDraw.ZoomableVectorMap) then begin
-      {$IfDef RecordCollarMapMargins} WriteLineToDebugFile('Bitmap2 size: ' + IntToStr(Bitmap2.Width) + 'x' + IntToStr(Bitmap2.Height));    {$EndIf}
+      {$IfDef RecordCollarMapMargins} WriteLineToDebugFile('Bitmap2 size: ' + IntToStr(Bitmap2.Width) + 'x' + IntToStr(Bitmap2.Height)); {$EndIf}
        Bitmap2.Canvas.Pen.Width := 1;
        Bitmap2.Canvas.Brush.Color := clBlack;
        Bitmap2.Canvas.Pen.Color := clBlack;
@@ -14967,7 +15001,7 @@ end;
 
 procedure TMapForm.WeaponFanSpeedButton8Click(Sender: TObject);
 begin
-   {$IfDef RecordFan}WriteLineToDebugFile('WeaponFanSpeedButton8Click',true);   {$EndIf}
+   {$IfDef RecordFan} WriteLineToDebugFile('WeaponFanSpeedButton8Click');   {$EndIf}
    FirstFan := true;
    ChangeDEMNowDoing(QuickWeaponsFan);
 end;
@@ -15406,7 +15440,7 @@ var
    bb : sfBoundBox;
    i : integer;
    z : float32;
-   Lat,Long,xlow,ylow,xHigh,yHigh : float64;
+   Lat,Long{,xlow,ylow,xHigh,yHigh} : float64;
    Results : tStringList;
    gl : tGridLimits;
    mv : tMomentVar;
@@ -15668,19 +15702,6 @@ begin
    ExportMapToGoogleEarth(false);
 end;
 
-
-procedure TMapForm.PlotFilteredTable(Table : tMyData; Filter : ANSIString; Sym : tDrawingSymbol; size : byte; Color : tPlatformColor);
-var
-   Lat, Long : float64;
-begin
-   Table.ApplyFilter(Filter);
-   while not Table.Eof do begin
-       Lat := Table.GetFieldByNameAsFloat('LAT');
-       Long := Table.GetFieldByNameAsFloat('LONG');
-       MapDraw.MapSymbolAtLatLongDegree(Image1.Canvas,Lat,Long,Sym,Size,Color);
-       Table.Next;
-   end;
-end;
 
 
 procedure TMapForm.Colors2Click(Sender: TObject);
@@ -17387,7 +17408,7 @@ procedure TMapForm.Waverefraction1Click(Sender: TObject);
 begin
    {$IfDef ExWaveRefraction}
    {$Else}
-      Refraction_model.CreateWaveRefraction(self);
+      //Refraction_model.CreateWaveRefraction(self);
    {$EndIf}
 end;
 
@@ -20581,7 +20602,7 @@ procedure TMapForm.Globalmonthlywinds1Click(Sender: TObject);
 begin
 {$Else}
 begin
-   {$IfDef RecordGISDB} WriteLineToDebugFile('TMapForm.Globalmonthlywinds1Click in');    {$EndIf}
+   {$IfDef RecordGISDB} WriteLineToDebugFile('TMapForm.Globalmonthlywinds1Click in'); {$EndIf}
    if MDDef.MoveGeographyDBMemory then DesiredDBMode := dbmCDS;
    WindsDB := OpenDBonMap('',GlobalWindsFName,true,(Sender <> Nil));
    {$IfDef RecordGISDB} WriteLineToDebugFile('WindsDB opened'); {$EndIf}
@@ -20802,7 +20823,7 @@ begin
       end;
       EndProgress;
 
-      if Total = 0 then begin
+      if (Total = 0) then begin
          Result := 0;
       end
       else begin
@@ -23832,7 +23853,7 @@ begin
    MapDraw.CopyMapParams(DrapeForm.MapDraw,CopyOverlays);
    DrapeForm.Closable := false;
    if Invisible or HiddenDrape then begin
-      {$IfDef RecordDrape} WriteLineToDebugFile('Hidden drape');    {$EndIf}
+      {$IfDef RecordDrape} WriteLineToDebugFile('Hidden drape'); {$EndIf}
       DrapeForm.MapDraw.BaseTitle := 'Draped map for 3D view';
       DrapeForm.FormStyle := fsNormal;
       DrapeForm.Visible := false;
@@ -23937,7 +23958,7 @@ finalization
    {$IfDef RecordSolarPosition} WriteLineToDebugFile('RecordSolarPosition active in DEMMapF'); {$EndIf}
    {$IfDef RecordGeology} WriteLineToDebugFile('RecordGeology active in DEMMapF'); {$EndIf}
    {$IfDef RecordWeaponsFanTests} WriteLineToDebugFile('RecordWeaponsFanTests active in DEMMapF'); {$EndIf}
-   {$IfDef RecordFlyRoute} WriteLineToDebugFile('RecordFlyRoute active in DEMMapF');    {$EndIf}
+   {$IfDef RecordFlyRoute} WriteLineToDebugFile('RecordFlyRoute active in DEMMapF'); {$EndIf}
    {$IfDef RecordDoubleClick} WriteLineToDebugFile('RecordDoubleClick active in DEMMapF'); {$EndIf}
    {$IfDef MouseMoving} WriteLineToDebugFile('MouseMoving active in DEMMapF'); {$EndIf}
    {$IfDef RecordReqAnt} WriteLineToDebugFile('RecordReqAnt active in DEMMapF'); {$EndIf}

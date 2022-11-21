@@ -1,10 +1,12 @@
 unit FourOpF;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{   file verified 7/7/2015        }
-{_________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2022 Peter L. Guth  }
+{___________________________________}
+
 
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems

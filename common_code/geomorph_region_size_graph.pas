@@ -255,10 +255,12 @@ begin
             for y := NewMinY to pred(MinY) do
                for x := NewMinX to NewMaxX do PerformPointComputations(x,y);
          end;
+         (*
          Minx := NewMinX;
          MaxX := NewMaxX;
          MinY := NewMinY;
          MaxY := NewMaxY;
+         *)
       end;
 
       if (MomentVar.NPts > 0) then begin

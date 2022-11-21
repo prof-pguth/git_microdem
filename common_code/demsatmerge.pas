@@ -53,7 +53,7 @@ type
   end;
 
 
-function GetIHSparameters(var I,H,S : SmallInt; {var UseReflectance : boolean;} HueSatOnly : boolean = false; BackBMP : tMyBitmap = Nil) : boolean;
+function GetIHSparameters(var I,H,S : SmallInt; HueSatOnly : boolean = false; BackBMP : tMyBitmap = Nil) : boolean;
 
 
 implementation
