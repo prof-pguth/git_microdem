@@ -121,7 +121,7 @@ function SagaTRIMap(InName : PathStr) : integer;
 function SagaTPIMap(InName : PathStr) : integer;
 function SagaVectorRuggednessMap(InName : PathStr; Radius : integer) : integer;
 
-procedure TauDEMOp(DEM : integer; TauDEM : tTauDEM);
+//procedure TauDEMOp(DEM : integer); //TauDEM : tTauDEM);
 
 procedure RVTgrids(DEM : integer);
 
@@ -849,8 +849,8 @@ begin
 end;
 
 
-
-procedure TauDEMOp(DEM : integer; TauDEM : tTauDEM);
+(*
+procedure TauDEMOp(DEM : integer); //TauDEM : tTauDEM);
 var
    NewDEMName,NewDir : PathStr;
    bfile : tStringList;
@@ -878,6 +878,7 @@ begin
    end
    else MessageToContinue('Requires ' + TauDEMDir);
 end;
+*)
 
 
 procedure RVTgrids(DEM : integer);

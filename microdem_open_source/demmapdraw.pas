@@ -31,6 +31,8 @@
       //{$Define WorldFileOverlay}
       //{$Define RecordStretchBitmap}
 
+      {$Define RecordLegendDraw}
+
       //{$Define RecordDrawGridLines}
       //{$Define RecordSat}
       //{$Define AspectCheck}
@@ -503,6 +505,10 @@ type
         {$EndIf}
 
         function MakeVATLegend : tMyBitmap;
+        function DrawLegendOnBitmap : tMyBitmap;
+        procedure DrawLegendsOnMap(var Bitmap : tMyBitmap);
+        procedure GazetteerLegend(var Bitmap : tMyBitmap);
+        procedure PlotDataBaseLegends(var Bitmap : tMyBitmap);
 
         function SizeOfPixel(x,y : integer) : float64;
 
@@ -510,8 +516,6 @@ type
         procedure DrawScaleBar(Canvas : tCanvas; xstart,Ystart : integer);
 
         procedure DrawDeclinationDiagramOnBitmap(var Bitmap : tMyBitmap);
-        function DrawLegendOnBitmap : tMyBitmap;
-        procedure DrawLegendsOnMap(var Bitmap : tMyBitmap);
         function MapSymbolAtLatLongDegree(Canvas : tCanvas; Lat,Long : float64; Sym : tDrawingSymbol; Size : integer; Color : tPlatformColor) : boolean; overload;
         function MapSymbolAtLatLongDegree(Canvas : tCanvas; Lat,Long : float64; Symbol : tFullSymbolDeclaration) : boolean; overload;
 
@@ -520,15 +524,11 @@ type
 
         procedure PlotAnIcon(Bitmap : tMyBitmap; Table : tMyData; LatFieldName,LongFieldName : ShortString; FieldName : ShortString = 'ICONNAME'; ScalingFactor : byte = 100); overload;
         procedure PlotAnIcon(Bitmap : tMyBitmap; Lat,Long : float64; fName : PathStr; ScalingFactor : byte = 100); overload;
-        //procedure DrawRoute(Bitmap : tMyBitmap; StreamProfileResults : tStringList);
         procedure PlotDataBases(var Bitmap : tMyBitmap);
-        procedure PlotDataBaseLegends(var Bitmap : tMyBitmap);
-        //procedure DrawRouteFromFile(Bitmap : tMyBitmap; fName : PathStr);
 
         procedure ComputeDatumShifts(Canvas : tCanvas; Lat,Long : float64; var TotalShiftUTM,TotalShiftGeo : float64; Mark : tMarkShift = msNone);
 
         procedure LabelGazetteerFeatures(var inBitmap : tMyBitmap);
-        procedure GazetteerLegend(var Bitmap : tMyBitmap);
 
         procedure UTMBox(Bitmap : tMyBitmap; LowLong,HighLong : float64; x1,y1,x2,y2,inc : integer; var xc,yc,xr : integer; UseDatum : tMapProjection);
         procedure LatLongBox(Bitmap : tMyBitmap; Lat1,Long1,Lat2,Long2 : float64; {SW corner first, then NE corner} inc : integer; var xc,yc : integer; Fill : boolean = false);
@@ -831,15 +831,15 @@ end;
 
 function tMapDraw.MakeVATLegend : tMyBitmap;
 var
-   //i,y,z,
-   Cat,x,Cats,Total,Needed : integer;
+   Cat,x,y,Cats,Total,Needed,z,i : integer;
    xg,fTotal : float64;
-   //zf : float32;
    fName : PathStr;
    Table : tMyData;
    CatPCforLegend : float64;
+   zf : float32;
    aColor : tColor;
-   aField,NameField,CodeField : ShortString;
+   //aField,
+   NameField,CodeField : ShortString;
    Hist : array[MinVATValue..MaxVatCats] of integer;
 begin
    fName := DEMGlb[DEMOnMap].VATFileName;
@@ -873,8 +873,7 @@ begin
       NameField := OrigPickField(Table,'Label',[ftString]);
    end;
 
-(*
-   if FullMapSpeedButton.Enabled and Table.FieldExists('N_SUB') then begin
+   if true then begin
       for y := round(MapCorners.BoundBoxDataGrid.ymin) to round(MapCorners.BoundBoxDataGrid.ymax) do begin
          for x := round(MapCorners.BoundBoxDataGrid.xmin) to round(MapCorners.BoundBoxDataGrid.xmax) do begin
             if DEMGlb[DEMonMap].GetElevMetersOnGrid(x,y,zf) then begin
@@ -887,27 +886,26 @@ begin
          end;
       end;
       fTotal := Total;
-      AField := 'N_SUB';
+      //AField := 'N_SUB';
       Table.First;
       while not Table.eof do begin
          i := Table.GetFieldByNameAsInteger(CodeField);
          Table.Edit;
-         if (i >= 0) and (i <= MaxVATCats) then Table.SetFieldByNameAsInteger('N_SUB',Hist[i])
-         else Table.SetFieldByNameAsInteger('N_SUB',0);
+         if (i >= 0) and (i <= MaxVATCats) then Table.SetFieldByNameAsInteger(Table.NCountField,Hist[i])
+         else Table.SetFieldByNameAsInteger(Table.NCountField,0);
          Table.Next;
       end;
    end
    else begin
-*)
-      AField := Table.NCountField;
+      //AField := Table.NCountField;
       while not Table.eof do begin
-         fTotal := fTotal + Table.GetFieldByNameAsInteger(aField);
+         fTotal := fTotal + Table.GetFieldByNameAsInteger(Table.NCountField);
          Table.Next;
       end;
-//   end;
+   end;
 
    Needed := round(0.01 * CatPCforLegend * fTotal);
-   Table.ApplyFilter(aField + ' > ' + IntToStr(Needed));
+   Table.ApplyFilter(Table.NCountField + ' > ' + IntToStr(Needed));
    Cats := Table.FiltRecsInDB;
 
    Cat := 0;
@@ -919,7 +917,7 @@ begin
 
    Result.Canvas.TextOut(5,1,'    % Area     Category');
    while not Table.eof do begin
-      xg := 100.0*Table.GetFieldByNameAsInteger(aField)/fTotal;
+      xg := 100.0*Table.GetFieldByNameAsInteger(Table.NCountField)/fTotal;
       inc(Cat);
       aColor := Table.tColorFromTable;
       Result.Canvas.Pen.Color := aColor;

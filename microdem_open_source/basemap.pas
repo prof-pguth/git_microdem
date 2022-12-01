@@ -800,6 +800,10 @@ begin
 
       if not TrySpheroid('SPHEROID') then TrySpheroid('ELLIPSOID');
 
+       if ParameterInString('NAD') and ParameterInString('83') then begin
+          h_datumcode := 'NAD83';  //vmDatum := MapProjNAD83;
+       end;
+
        if ParameterInString('AzimuthalEquidistant') then begin
           pName := AzimuthalEquidistantEllipsoidal;
        end
@@ -826,25 +830,19 @@ begin
        end
        else if ParameterInString('LambertConformalConic') then  begin
           PName := LambertConformalConicEllipse;
-          h_datumcode := 'NAD83';
           if ParameterInString('UNIT["FOOT",') then begin
              ftf := FloatFromParameter(TheProjectionString,'"FOOT"',0,']');
              false_east := ftf * false_east;
              false_north := ftf * false_north;
           end;
        end
+       else if ParameterInString('UTM') then begin
+          PName := UTMEllipsoidal;
+          ProjUTMZone := GetUTMZone(Long0 / DegToRad);
+       end
        else begin
-          if ParameterInString('UTM') then begin
-             PName := UTMEllipsoidal;
-             if Copy(TheProjectionString,9,18) = 'NAD_1983_UTM_Zone_' then begin
-                h_datumcode := 'NAD83';  //vmDatum := MapProjNAD83;
-                ProjUTMZone := StrToInt(Copy(TheProjectionString,27,2));
-              end;
-          end
-          else begin
-             PName := GeneralTransverseMercator;
-          end;
-      end;
+          PName := GeneralTransverseMercator;
+       end;
       TheProjectionString := AfterSpecifiedString(TheProjectionString,'VertCS');
       VertFeet := StrUtils.AnsiContainsText(TheProjectionString,'9003');
       {$IfDef RecordWKT} ShortProjInfo('finished WKT read'); {$EndIf}

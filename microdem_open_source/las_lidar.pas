@@ -430,7 +430,6 @@ function LidarPointTypeRecordBaseLength(LidarPointType : byte) : int64;
 {$EndIf}
 
 var
-   //FudgeLidarCoords : boolean;
    LasColorsDone,AllowNoProjectionLAS : boolean;
 
 implementation
@@ -488,10 +487,10 @@ uses
         Result := XRangeString(LASHeader) + YRangeString(LASHeader) + ZRangeString(LASHeader);
       end;
 
-    function AllFactorsString(LasHeader : tLasHeader)  : shortstring;
-    begin
-       Result := AllRangeString(LasHeader) + OffsetString(LasHeader)  + ' ' + ScaleFactorsString(LasHeader);
-    end;
+      function AllFactorsString(LasHeader : tLasHeader)  : shortstring;
+      begin
+         Result := AllRangeString(LasHeader) + OffsetString(LasHeader)  + ' ' + ScaleFactorsString(LasHeader);
+      end;
 
 
 procedure ZeroLidarPointType0(lp0 : tLidarPointType0);
@@ -592,11 +591,7 @@ begin
          MessageToContinue(LasRulesName + ' missing');
       end;
 
-      {$IfDef ExportColors}
-         WriteLineToDebugFile('las_red = ' + rs + ']');
-         WriteLineToDebugFile('las_green = ' + gs + ']');
-         WriteLineToDebugFile('las_blue = ' + bs + ']');
-      {$EndIf}
+      {$IfDef ExportColors} WriteLineToDebugFile('las_red = ' + rs + ']'); WriteLineToDebugFile('las_green = ' + gs + ']'); WriteLineToDebugFile('las_blue = ' + bs + ']'); {$EndIf}
 
       Las_ret_colors[1] := ConvertTColorToPlatformColor(clLime);
       Las_ret_colors[2] := ConvertTColorToPlatformColor(clRed);
@@ -869,10 +864,6 @@ function tLAS_data.OverlapPoint(ShotNumber : integer) : boolean;
 begin
    if (LidarPointType in [0..5]) then Result := (LidarPoints0^[ShotNumber].Classification mod 32) = 12;
    if (LidarPointType in [6..8]) then Result := (LidarPoints6^[ShotNumber].ClassificationFlags and 00010000) = 00010000;
-(*
-   if (LidarPointType in [0..5]) then Result := (LidarPoints6^[ShotNumber].ClassificationFlags and 00010000) = 00010000;
-   if (LidarPointType in [6..8]) then Result := LASclassification(ShotNumber) = 12;
-*)
 end;
 
 

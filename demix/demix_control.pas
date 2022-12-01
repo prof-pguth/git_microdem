@@ -246,9 +246,10 @@ procedure OpenDEMIXArea(fName : PathStr = '');
 const
    DoCHM = false;
    DoAirOrDirt = false;
-   DoElevationDifference = true;
-   DoSlopeDifference = true;
-   DoRoughnessDifference = true;
+   DoElevationDifference = false;
+   DoSlopeDifference = false;
+   DoRoughnessDifference = false;
+   DoHalfSecondDEMs = true;
 var
    AreaName : shortstring;
    UseDSM,UseDTM,
@@ -268,6 +269,17 @@ var
             BigMap.Add(fName);
          end;
 
+         procedure MakeHalfSecond(DEM : integer);
+         var
+            NewDEM : integer;
+            fName : PathStr;
+         begin
+            if ValidDEM(DEM) then begin
+               fName := MDDef.DEMIX_base_dir + 'wine_contest_half_second\' + DEMGlb[DEM].AreaName + '_geo_reint_0.5sec.dem';
+               DEMGlb[DEM].ReinterpolateLatLongDEM(NewDEM,0.5,fName);
+            end;
+         end;
+
 
 begin
    if FileExists(fName) or GetFileFromDirectory('DEMIX area database','*.dbf',fName) then begin
@@ -277,7 +289,16 @@ begin
       MDDef.MapNameLocation.DrawItem := true;
       AreaName := ExtractFileNameNoExt(fName);
       if LoadDEMIXarea(fName) then begin
+         {$IfDef RecordDEMIX} writeLineToDebugFile('LoadDEMIXarea complete'); {$EndIf}
          if LoadDEMIXReferenceDEMs(DEMIXRefDEM) then begin
+            {$IfDef RecordDEMIX} writeLineToDebugFile('LoadDEMIXReferenceDEMs complete'); {$EndIf}
+            if DoHalfSecondDEMs then begin
+               MakeHalfSecond(RefDTMPoint);
+               MakeHalfSecond(RefDSMpoint);
+               MakeHalfSecond(RefDTMarea);
+               MakeHalfSecond(RefDSMarea);
+            end;
+
             if DoCHM then begin
                if ValidDEM(RefDTMpoint) and ValidDEM(RefDSMpoint) then begin
                   MakeDifferenceMapOfBoxRegion(RefDTMPoint,RefDSMpoint,DEMGlb[RefDSMPoint].FullDEMGridLimits,true,false,false,AreaName + '_points_chm');
@@ -286,6 +307,7 @@ begin
                   MakeDifferenceMapOfBoxRegion(RefDTMarea,RefDSMarea,DEMGlb[RefDSMarea].FullDEMGridLimits,true,false,false,AreaName + '_areas_chm');
                end;
             end;
+
             if LoadDEMIXCandidateDEMs(DEMIXRefDEM,true) then begin
                if DoAirOrDirt then begin
                   BigMap := tStringList.Create;

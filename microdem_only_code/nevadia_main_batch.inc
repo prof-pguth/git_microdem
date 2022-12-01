@@ -508,7 +508,6 @@ end;
                GeodeticStats.Add(LineHeader(DEM,0) + MomentStatsString(MomentVar) + ',' + RealToString(MedianAbs,-8,2));
             end;
          end;
-
 *)
 
 
@@ -1131,7 +1130,6 @@ begin
 end;
 
 
-
 //some of these have the file names hard coded
 //this was designed for a particular purpose, and might not be generally applicable
 
@@ -1256,9 +1254,6 @@ begin
    end;
    {$IfDef LidarGlobalDEMs} WriteLineToDebugFile('Twmdem.CreateDEMsfromlidar1Click out'); {$EndIf}
 end;
-
-
-
 
 
 procedure DEMIXreferenceDEMtiles;

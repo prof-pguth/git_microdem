@@ -318,6 +318,8 @@ function NWcornerString(Lat,Long : float64; TileSize : integer) : shortString;
 function ZUnitCategory (Zunit : tElevUnit) : shortstring;
 function RecycleCompressFile : boolean;
 
+function AspectDir8FromAspect(AspectDir : float32) : tCompassDirection;  inline;
+
 var
    VegDenstColors : array[0..255] of tPlatformColor;
 
@@ -372,6 +374,19 @@ uses
    Make_Tables,
    DEM_indexes,
    DataBaseCreate;
+
+function AspectDir8FromAspect(AspectDir : float32) : tCompassDirection;  inline;
+begin
+   if (AspectDir < 22.5) or (AspectDir > 337.5) then Result := cdN
+   else if (AspectDir < 67.5) then Result :=cdNE
+   else if (AspectDir < 112.5) then Result :=cdE
+   else if (AspectDir < 157.5) then Result :=cdSE
+   else if (AspectDir < 202.5) then Result :=cdS
+   else if (AspectDir < 247.5) then Result :=cdSW
+   else if (AspectDir < 292.5) then Result :=cdW
+   else Result :=cdNW;
+end;
+
 
 
 
@@ -2398,7 +2413,7 @@ var
             {$EndIf}
 
             {$IfDef MSWindows}
-               AParameter('Files','TauDEMDir',TauDEMDir,'');
+               //AParameter('Files','TauDEMDir',TauDEMDir,'');
                AParameter('Files','mcc_lidarFName',mcc_lidarFName,'');
                AParameter('Files','SmallScaleWorldOutlines',SmallScaleWorldOutlines,'');
                AParameter('Files','MedScaleWorldOutlines',MedScaleWorldOutlines,'');
@@ -5173,7 +5188,7 @@ begin
    {$IfDef MSWindows}
       TrySettingDefaultFName(MrSidInfoName,ProgramRootDir + 'mrsid\bin\mrsidgeoinfo.exe');
       TrySettingDefaultFName(MrSIDDecodeName,ProgramRootDir + 'mrsid\bin\mrsidgeodecode.exe');
-      TrySettingDefaultDir(TauDEMDir,ProgramRootDir + 'taudem\');
+      //TrySettingDefaultDir(TauDEMDir,ProgramRootDir + 'taudem\');
       TrySettingDefaultDir(GADMDir,MainMapData + 'GADM\');
       if (not PathIsValid(SaveViewshedDir)) then SaveViewshedDir := MDTempDir;
       if not FileExists(LastDesktop) then begin

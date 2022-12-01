@@ -879,7 +879,6 @@ var
                   (SlopeAsp.z < SlopeAsp.zw) and (SlopeAsp.z < SlopeAsp.zse) and (SlopeAsp.z < SlopeAsp.zsw) and (SlopeAsp.z < SlopeAsp.zs);
          end;
 
-
          procedure GetAspect(var SlopeAsp : tSlopeAspectRec); //inline;
          begin
             if (abs(SlopeAsp.dzdx) < 0.001) and (abs(SlopeAsp.dzdy) < 0.001) then begin
@@ -903,6 +902,7 @@ var
                   SlopeAsp.Dir := cdPit;
                end
                else begin
+                  (*
                   if (SlopeAsp.AspectDir < 22.5) or (SlopeAsp.AspectDir > 337.5) then SlopeAsp.Dir := cdN
                   else if (SlopeAsp.AspectDir < 67.5) then SlopeAsp.Dir := cdNE
                   else if (SlopeAsp.AspectDir < 112.5) then SlopeAsp.Dir := cdE
@@ -911,6 +911,8 @@ var
                   else if (SlopeAsp.AspectDir < 247.5) then SlopeAsp.Dir := cdSW
                   else if (SlopeAsp.AspectDir < 292.5) then SlopeAsp.Dir := cdW
                   else SlopeAsp.Dir := cdNW;
+                  *)
+                  SlopeAsp.Dir := AspectDir8FromAspect(SlopeAsp.AspectDir);
                end;
             end;
          end;

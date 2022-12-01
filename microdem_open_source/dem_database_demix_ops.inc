@@ -19,7 +19,6 @@ begin
 end;
 
 
-
 procedure GetFilterAndHeader(i,j : integer; var aHeader,aFilter : shortString);
 var
    RefFilter : shortstring;

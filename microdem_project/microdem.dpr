@@ -54,7 +54,6 @@ uses
   getlatln in '..\common_code\getlatln.pas' {GetLatLongDlg},
   geomorph_point_class in '..\common_code\geomorph_point_class.pas' {PointClassForm},
   Demperop in '..\common_code\Demperop.pas' {PerspOptions},
-  //refraction_model in '..\common_code\refraction_model.pas' {RefractionForm},
   hyp_display in '..\common_code\hyp_display.pas' {HyperspectralForm},
   demprintpreview in '..\common_code\demprintpreview.pas' {PrintPreviewForm},
   kml_creator in '..\common_code\kml_creator.pas',
@@ -170,7 +169,6 @@ uses
   text_report_options in '..\common_code\text_report_options.pas' {ReportOptionsForm},
   fan_sens_opts in '..\common_code\fan_sens_opts.pas' {fan_sens_form},
   get_db_coloring in '..\common_code\get_db_coloring.pas' {DBColorForm},
-  sat_kml_out in '..\common_code\sat_kml_out.pas' {KML_overlay_setup},
   MrSidImagery in '..\common_code\MrSidImagery.pas',
   FitFourier in '..\common_code\FitFourier.pas' {FitFourierForm},
   crosscor in '..\common_code\crosscor.pas' {CrossCorrelationForm},
@@ -221,9 +219,6 @@ uses
   Sgp_init in '..\common_code\Sgp_init.pas',
   SGP_MATH in '..\common_code\SGP_MATH.PAS',
   Support in '..\common_code\Support.pas',
-  //proj_params in '..\common_code\proj_params.pas' {ProjParamForm},
-  //pk3DConnexion in '..\common_code\pk3DConnexion.pas',
-  //TDxInput_TLB in '..\common_code\TDxInput_TLB.pas',
   contouroptsform in '..\common_code\contouroptsform.pas' {SimpleContourOptions},
   FourOpF in '..\common_code\FourOpF.pas' {FourierOptionsForm},
   dem_fan_compare in '..\common_code\dem_fan_compare.pas' {FanCompareForm},
@@ -365,8 +360,7 @@ begin
          Application.Title := '';
          Application.HelpFile := 'microdem.chm';
          Application.CreateForm(Twmdem, wmdem);
-  Application.CreateForm(TDemixFilterForm, DemixFilterForm);
-  Application.Run;
+         Application.Run;
       end;
     finally
        CloseHandle(FMutex);

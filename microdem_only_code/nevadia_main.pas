@@ -2118,11 +2118,6 @@ begin
    {$If Defined(RecordFormResize) or Defined(TrackFormCreate)} WriteLineToDebugFile('Twmdem.FormActivate set menu versions'); {$EndIf}
    SeeIfThereAreDebugThingsToDo;
    Self.Visible := true;
-
-
-   //OpenDEMIXArea('G:\wine_contest_reference_dems\pyrenees.dbf');
-
-
    {$If Defined(RecordFormResize) or Defined(TrackFormCreate)} WriteLineToDebugFile('Twmdem.FormActivate end, width=' + IntToStr(Width) + '  & height=' + IntToStr(Height)); {$EndIf}
 end;
 
@@ -2309,8 +2304,8 @@ begin
       DEMGlb[LastDEMLoaded].SelectionMap.LoadDataBaseFile(MainMapData + dName + '\oil\deepwater_horizon.dbf');
       DEMGlb[LastDEMLoaded].SelectionMap.LoadDataBaseFile(MainMapData + dName + '\oil\Platform.dbf');
       DEMGlb[LastDEMLoaded].SelectionMap.LoadDataBaseFile(MainMapData + dName + '\oil\ppl_arcs.dbf');
-      DEMGlb[LastDEMLoaded].SelectionMap.LoadDataBaseFile(MainMapData + dName + '\geology_maps\gloria_geology_nad83.shp');
-      GISdb[db].dbTablef.Legend1Click(nil);
+      db := DEMGlb[LastDEMLoaded].SelectionMap.LoadDataBaseFile(MainMapData + dName + '\geology_maps\gloria_geology_nad83.shp');
+      //if (db <> 0) then GISdb[db].dbTablef.Legend1Click(nil);
 
       LastDEMLoaded := OpenNewDEM(MainMapData + dName + '\noaa_coastal\merge_gom_crm_v1.dem');
       {$IfDef RecordLabs} WriteLineToDebugFile('all data loaded'); {$EndIf}
@@ -4009,56 +4004,8 @@ end;
 
 
 procedure Twmdem.Slidesorter1Click(Sender: TObject);
-var
-   TheFiles : tStringList;
-   fName,fName2 : PathStr;
-
-   procedure FindFiles;
-   var
-      i : integer;
-   begin
-      TheFiles := Nil;
-      Petmar.FindMatchingFiles(PhotoDir,'*.*',TheFiles,6);
-      for i := Pred(TheFiles.Count) downto 0 do begin
-          if (not PetImage.ValidImageFileName(TheFiles.Strings[i])) then TheFiles.Delete(i);
-      end;
-   end;
-
-
-
 begin
-   if (PhotoDir = '') then PhotoDir := MainMapData;
-   
-   if GetDosPath('Photo directory',PhotoDir) then begin
-      FindFiles;
-      if (TheFiles.Count > 0) then begin
-         fName := UpperCase(ExtractFileNameNoExt(TheFiles.Strings[0]));
-         if (length(Fname) = 8) then begin
-            if StrUtils.AnsiContainsText(ExtractFileNameNoExt(fName),'DSC') then begin
-               RenamePhotoJPEGS(PhotoDir,'DSC');
-               TheFiles.Free;
-               FindFiles;
-            end;
-            if StrUtils.AnsiContainsText(ExtractFileNameNoExt(fName),'P') then begin
-               RenamePhotoJPEGS(PhotoDir,'P');
-               TheFiles.Free;
-               FindFiles;
-            end;
-         end;
-         TheFiles.SaveToFile(MDTempDir + 'slide_sorter.txt');
-         fName2 := PhotoDir + 'photo_index' + DefaultDBExt;
-         if not FileExists(fName2) then MakePhotoDB(PhotoDir);
-         if (SlideSorterForm = Nil) then begin
-            SlideSorterForm := TSlideSorterForm.Create(Application);
-            SlideSorterForm.Show;
-            SlideSorterForm.WindowState := TWindowState.wsMaximized;
-         end;
-         SlideSorterForm.PhotoDB := tMyData.Create(fName2);
-         SlideSorterForm.LoadPictures;
-         SlideSorterForm.Caption := SlideSorterForm.Caption + '  ' + PhotoDir;
-      end;
-      TheFiles.Free;
-   end;
+   StartSlideSorter;
 end;
 
 

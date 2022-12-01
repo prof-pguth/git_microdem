@@ -865,7 +865,8 @@
          function TMapDraw.DrawLegendOnBitmap : tMyBitmap;
          var
             Colors : tColors256;
-            Radius,x,i,l : integer;
+            Radius,x,i,l,rad,SlopeBin : integer;
+            AspectBin : integer;
             Hue : float64;
             Values      : array[0..255] of float64;
             SlopeBands,
@@ -955,26 +956,52 @@
                end;
             end;
 
-            if (MapType in [mtDEMaspect,mtFlowDir360]) or (DEMGlb[DEMonMap].DEMHeader.ElevUnits = AspectDeg) then begin
-               Radius := 22 * MDDef.GridLegendLocation.LegendSize;
+            if (MapType in [mtDEMaspect,mtFlowDir360,mtDEMAspectSlope]) or (DEMGlb[DEMonMap].DEMHeader.ElevUnits = AspectDeg) then begin
+               if (MapType in [mtDEMAspectSlope]) then TStr := 'Slope/aspect' else TStr := 'Aspect';
+               Radius := 50 * MDDef.GridLegendLocation.LegendSize;
                CreateBitmap(Result,2*Radius+15,2*Radius+15);
                LoadMyFontIntoWindowsFont(MDDef.LegendFont,Result.Canvas.Font);
-               Result.Height := 2 * Radius + 15 + Result.Canvas.TextHeight('Aspect');
+               while Result.Canvas.TextWidth(TStr) > Result.Width do Result.Canvas.Font.Size := Result.Canvas.Font.Size - 1;
+
+               Result.Height := 2 * Radius + 15 + Result.Canvas.TextHeight(TStr);
                ClearBitmap(Result,clNearWhite);
                xc := 5+Radius;
                yc := 5+Radius;
-               for i := 1 to 360 do begin
-                  x := xc + round(Radius * SinDeg(i));
-                  y := yc - round(Radius * CosDeg(i));
-                  Color := ConvertPlatformColorToTColor(AspColor[i]);
-                  Result.Canvas.Pen.Color := Color;
-                  Result.Canvas.Pen.Width := 2;
-                  Result.Canvas.MoveTo(xc,yc);
-                  Result.Canvas.LineTo(x,y);
+               if (MapType in [mtDEMAspectSlope]) then begin
+                  for i := 1 to 360 do begin
+                     AspectBin := succ(ord(AspectDir8FromAspect(i)));
+                     //two times multiple to avoid holes
+                     for rad := 0 to 2 * Radius do begin
+                        if (Rad > 3 * 2 * Radius div 4) then Color := Rgb(161,161,161)
+                        else begin
+                           if (Rad < 2 * Radius div 4) then SlopeBin := 3
+                           else if (Rad < 2 * Radius div 2) then SlopeBin := 2
+                           else if (Rad < 3 * 2 * Radius div 4) then SlopeBin := 1;
+                           Color := SlopeAspectColor[SlopeBin,AspectBin];
+                        end;
+                        x := xc + round(Rad * SinDeg(i)) div 2;
+                        y := yc - round(Rad * CosDeg(i)) div 2;
+                        Result.Canvas.Pixels[x,y] := Color;
+                     end;
+                  end;
+               end
+               else begin
+                  for i := 1 to 360 do begin
+                     x := xc + round(Radius * SinDeg(i));
+                     y := yc - round(Radius * CosDeg(i));
+                     Color := ConvertPlatformColorToTColor(AspColor[i]);
+                     Result.Canvas.Pen.Color := Color;
+                     Result.Canvas.Pen.Width := 2;
+                     Result.Canvas.MoveTo(xc,yc);
+                     Result.Canvas.LineTo(x,y);
+                  end;
                end;
                Result.Canvas.Brush.Color := ClWhite;
                Result.Canvas.Brush.Style := bsClear;
-               Result.Canvas.TextOut(10,2*Radius+8,'Aspect');
+               Result.Canvas.TextOut(5,2*Radius+8,TStr);
+               {$IfDef RecordLegendDraw} Result.SaveToFile(MDTempDir + 'legend_step_1.bmp'); {$EndIf}
+               PutBitmapInBox(Result);
+               {$IfDef RecordLegendDraw} Result.SaveToFile(MDTempDir + 'legend_step_2.bmp'); {$EndIf}
             end
             else if isSlopemap(MapType) or (MapMerge in [mmSlope]) then begin
                {$IfDef RecordMapDraw} WriteLineToDebugFile('Slope legend'); {$EndIf}

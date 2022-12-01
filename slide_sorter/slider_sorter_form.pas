@@ -15,7 +15,7 @@ unit slider_sorter_form;
 interface
 
 uses
-  System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
+  System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants, StrUtils,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs,
   FMX.Controls.Presentation, FMX.StdCtrls, FMX.Layouts, FMX.ExtCtrls, FMX.Menus,
   Petmar_db;
@@ -145,8 +145,9 @@ type
     procedure DeleteAFile(Num : integer);
   end;
 
-var
-  SlideSorterForm : TSlideSorterForm;
+
+procedure StartSlideSorter;
+
 
 implementation
 
@@ -160,11 +161,66 @@ uses
    JpegDumpForm,
    Nevadia_main;
 
+
+
+procedure StartSlideSorter;
+var
+  SlideSorterForm : TSlideSorterForm;
+   TheFiles : tStringList;
+   fName,fName2 : PathStr;
+
+   procedure FindFiles;
+   var
+      i : integer;
+   begin
+      TheFiles := Nil;
+      Petmar.FindMatchingFiles(PhotoDir,'*.*',TheFiles,6);
+      for i := Pred(TheFiles.Count) downto 0 do begin
+          if (not PetImage.ValidImageFileName(TheFiles.Strings[i])) then TheFiles.Delete(i);
+      end;
+   end;
+
+
+begin
+   if (PhotoDir = '') then PhotoDir := MainMapData;
+
+   if GetDosPath('Photo directory',PhotoDir) then begin
+      FindFiles;
+      if (TheFiles.Count > 0) then begin
+         fName := UpperCase(ExtractFileNameNoExt(TheFiles.Strings[0]));
+         if (length(Fname) = 8) then begin
+            if StrUtils.AnsiContainsText(ExtractFileNameNoExt(fName),'DSC') then begin
+               RenamePhotoJPEGS(PhotoDir,'DSC');
+               TheFiles.Free;
+               FindFiles;
+            end;
+            if StrUtils.AnsiContainsText(ExtractFileNameNoExt(fName),'P') then begin
+               RenamePhotoJPEGS(PhotoDir,'P');
+               TheFiles.Free;
+               FindFiles;
+            end;
+         end;
+         TheFiles.SaveToFile(MDTempDir + 'slide_sorter.txt');
+         fName2 := PhotoDir + 'photo_index' + DefaultDBExt;
+         if not FileExists(fName2) then MakePhotoDB(PhotoDir);
+         SlideSorterForm := TSlideSorterForm.Create(Application);
+         SlideSorterForm.Show;
+         SlideSorterForm.WindowState := TWindowState.wsMaximized;
+         SlideSorterForm.PhotoDB := tMyData.Create(fName2);
+         SlideSorterForm.LoadPictures;
+         SlideSorterForm.Caption := SlideSorterForm.Caption + '  ' + PhotoDir;
+      end;
+      TheFiles.Free;
+   end;
+end;
+
+
+
 procedure TSlideSorterForm.DeleteAFile(Num : integer);
 var
    FileName : string;
 begin
-   if Num < FileNames.Count then begin
+   if (Num < FileNames.Count) then begin
       FileName := FileNames[Num];
       File2Trash(FileName);
    end;
@@ -298,7 +354,8 @@ end;
 procedure TSlideSorterForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
     Action :=  TCloseAction.caFree;
-    SlideSorterForm := Nil;
+    FileNames.Destroy;
+    PhotoDB.Destroy;
 end;
 
 procedure TSlideSorterForm.FormCreate(Sender: TObject);
@@ -621,7 +678,6 @@ end;
 
 
 initialization
-   SlideSorterForm := nil;
 finalization
    {$IfDef LogSlideSorter}   WriteLineToDebugFile('LogSlideSorter active in slider_sorter_form');   {$EndIf}
 end.

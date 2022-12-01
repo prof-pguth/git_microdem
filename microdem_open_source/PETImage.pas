@@ -269,6 +269,7 @@ procedure RGBtoXYFloat(r,g,b : byte; var x,y : float64);  inline;
 function SetAlphaColor(rgbTriple : tRGBTriple) : TAlphaColor;  inline;
 procedure HSIfromRGBTrip(RGB : tPlatformColor; var H,S,I : float32);
 function CombineBitmaps(nc : integer; theFiles : tStringList; Capt : shortstring) : tMyBitmap;
+procedure PutBitmapInBox(var BMP : tMyBitmap);
 
 
 {$IfDef NoPatternFloodFill}
@@ -356,11 +357,6 @@ uses
       Las_Lidar,
    {$EndIf}
 
-   {$IfDef ExMovies}
-   {$Else}
-      //PetMovie,
-   {$EndIf}
-
    {$IfDef MICRODEM}
       DEMDefs,
    {$EndIf}
@@ -381,6 +377,27 @@ type
          Result.Canvas.CopyRect(Rect(0,0,Result.Width,Result.Height),bmp.Canvas,Rect(Left,Top,Right,Bottom));
          bmp.Free;
       end;
+
+procedure PutBitmapInBox(var BMP : tMyBitmap);
+var
+   sbmp : tMyBitmap;
+begin
+   GetImagePartOfBitmap(BMP);
+   CloneBitmap(bmp,sbmp);
+   sbmp.Canvas.CopyMode := cmSrcAnd;
+   sBMP.Canvas.Draw(0,0,bmp);
+   BMP.Width := BMP.Width + 10;
+   BMP.Height := BMP.Height + 10;
+   RecolorBitmap(bmp,claWhite);
+   bmp.Canvas.Pen.Color := clBlack;
+   bmp.Canvas.Pen.width := 2;
+
+   bmp.Canvas.Rectangle(2,2,BMP.Width-2,BMP.Height-2);
+   bmp.Canvas.CopyMode := cmSrcAnd;
+   BMP.Canvas.Draw(5,5,sbmp);
+   sBMP.Free;
+end;
+
 
 
 {$IfDef MSWindows}

@@ -109,7 +109,7 @@ uses
    function GDAL_Roughness(InName : PathStr; sf : shortstring = ''; outname : shortstring = '') : integer;
 
    procedure GDAL_Fill_Holes(InName : PathStr);
-   procedure GDAL_Upsample_DEM(DEM : integer);
+   procedure GDAL_Upsample_DEM(DEM : integer; Spacing : float32 = -99);
    function GDAL_downsample_DEM_1sec(DEM : integer; OutName : PathStr) : integer;
    procedure GDALGeotiffToWKT(fName : PathStr);
 
@@ -540,7 +540,8 @@ begin
    //gdalwarp -t_srs EPSG:4326 -tr 0.3125 0.25 -r near -te 71.40625 24.875 84.21875 34.375 -te_srs EPSG:4326 -of GTiff foo.tiff bar.tiff
 end;
 
-procedure GDAL_upsample_DEM(DEM : integer);
+
+procedure GDAL_upsample_DEM(DEM : integer; Spacing : float32 = -99);
 var
    OutName : PathStr;
    SpaceStr : shortString;
@@ -548,11 +549,15 @@ var
 begin
    {$If Defined(RecordSave) or Defined(RecordGDAL)} WriteLineToDebugFile('GDALresamplethin1Click'); {$EndIf}
    if IsGDALFilePresent(GDAL_Warp_Name) then begin
-      ReadDefault('upsample factor (multiple spacing)',MDDef.GDALThinFactor);
-      OutName := MDTempDir + DEMGlb[DEM].AreaName + '_upsample_linear.tif';
-      GDAL_warp_DEM(DEM,OutName,MDDef.GDALThinFactor * DEMGlb[DEM].DEMheader.DEMxSpacing,MDDef.GDALThinFactor * DEMGlb[DEM].DEMheader.DEMxSpacing,' -r bilinear ');
-      OutName := MDTempDir + DEMGlb[DEM].AreaName + '_upsample_cubic.tif';
-      GDAL_warp_DEM(DEM,OutName,MDDef.GDALThinFactor * DEMGlb[DEM].DEMheader.DEMxSpacing,MDDef.GDALThinFactor * DEMGlb[DEM].DEMheader.DEMxSpacing,' -r cubic ');
+      if (Spacing < 0) then begin
+         ReadDefault('upsample factor (multiple spacing)',MDDef.GDALThinFactor);
+         Spacing := MDDef.GDALThinFactor * DEMGlb[DEM].DEMheader.DEMxSpacing;
+      end;
+      if DEMGlb[DEM].DEMheader.DEMUsed = ArcSecDEM then SpaceStr := RealToString(3600 * Spacing,-8,-2) + '_sec' else SpaceStr := RealToString(Spacing,-8,-2) + '_m';
+      OutName := MDTempDir + DEMGlb[DEM].AreaName + '_upsample_linear_' + SpaceStr + '.tif';
+      GDAL_warp_DEM(DEM,OutName,Spacing,Spacing,' -r bilinear ');
+      OutName := MDTempDir + DEMGlb[DEM].AreaName + '_upsample_cubic_' + SpaceStr + '.tif';
+      GDAL_warp_DEM(DEM,OutName,Spacing,Spacing,' -r cubic ');
    end;
 end;
 

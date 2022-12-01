@@ -253,7 +253,7 @@ type
          procedure SatSceneStatistics(var n : integer; var Correlations,VarCoVar : tTrendMatrix; var Mean,Min,Max,StdDev : tMaxBandsArray);
 
          {$IfDef VCL}
-            procedure ShowPreview(SatView : tSatView; Image1 : tImage);
+            //procedure ShowPreview(SatView : tSatView; Image1 : tImage);
             procedure PickBand(aMessage : ShortString; var WantedBand : integer);
             procedure PickMultipleBands(aMessage : ShortString; var UseBands : tUseBands);
             procedure OptimumIndexFactor;
@@ -347,9 +347,11 @@ Uses
 
 
 function IsThisSentinel2(fName : PathStr) : boolean;
+//  S2B_MSIL1C_20220602T082559_N0400_R021_T37TCN_20220602T121719.SAFE
+//  L1C_T37TCN_A027360_20220602T082807           {inside granule folder}
 begin
-   Result := StrUtils.AnsiContainsText(UpperCase(fName),'SENTINEL') or (StrUtils.AnsiContainsText(fName,'_B') and (StrUtils.AnsiContainsText(fName,'L1C_T') or StrUtils.AnsiContainsText(fName,'L 1C_'))) or
-      StrUtils.AnsiContainsText(UpperCase(fName),'S2A_MSI_') or StrUtils.AnsiContainsText(UpperCase(fName),'S2B_MSI_');
+   Result := StrUtils.AnsiContainsText(UpperCase(fName),'SENTINEL') or (StrUtils.AnsiContainsText(fName,'_B') and (StrUtils.AnsiContainsText(fName,'L1C_T') or
+      StrUtils.AnsiContainsText(fName,'L 1C_'))) or StrUtils.AnsiContainsText(UpperCase(fName),'S2A_MSI_') or StrUtils.AnsiContainsText(UpperCase(fName),'S2B_MSI_');
 end;
 
 function ValidSatImage(i : integer) : boolean;
@@ -399,7 +401,6 @@ begin
       NumSatRow := BandRows[BandForSize];
       ProjectedCoordsToDataGrid(MapCorners.BoundBoxProj.xmin,MapCorners.BoundBoxProj.ymin,MapCorners.BoundBoxDataGrid.xmin,MapCorners.BoundBoxDataGrid.ymax);
       ProjectedCoordsToDataGrid(MapCorners.BoundBoxProj.xmax,MapCorners.BoundBoxProj.ymax,MapCorners.BoundBoxDataGrid.xmax,MapCorners.BoundBoxDataGrid.ymin);
-      //SatViewFromBoundBoxDataGrid(SatView,MapCorners.BoundBoxDataGrid);
       {$If Defined(RecordPickBand) or Defined(RecordPixelSize)}
          WriteLineToDebugFile(' new projected limits,  ' + sfBoundBoxToString(MapCorners.BoundBoxProj,1));
          WriteLineToDebugFile(' new data grid limits,  ' + sfBoundBoxToString(MapCorners.BoundBoxDataGrid,1));
@@ -512,6 +513,7 @@ begin
 end;
 
 
+{
 procedure tSatImage.ShowPreview;
 var
    Bitmap : tMyBitmap;
@@ -532,7 +534,7 @@ begin
    ShowDefaultCursor;
 *)
 end;
-
+}
 
 {$IfDef NoDBGrafs}
 {$Else}
@@ -694,7 +696,7 @@ end;
       begin
          {$IfDef RecordSat} WriteLineToDebugFile('tSatImage.SatHistograms in'); {$EndIf}
          InitializeHistogramDistributions;
-         {if (not RealHistogram) then} LoadHistogram;
+         LoadHistogram;
 
          for i := 1 to NumBands do begin
             {$IfDef RecordSat} WriteLineToDebugFile('Histogram band: ' + IntToStr(i));      {$EndIf}
@@ -1202,14 +1204,11 @@ end;
 
 function tSatImage.FindTMBand(TMBandName : integer; var BandPresent : integer) : boolean;
 var
-  TStr : ShortString;
   i : integer;
 begin
-   TStr := 'BAND ' + IntToStr(TMBandName);
-   {$IfDef RecordSat} WriteLineToDebugFile('Seek: ' + TStr); {$EndIf}
    for i := 1 to NumBands do begin
-      {$IfDef RecordSat} WriteLineToDebugFile('   check: ' + Copy(Bandtitle[i],1,6)); {$EndIf}
-      if TStr = UpperCase(Copy(BandLongName[i],1,6)) then begin
+      {$IfDef RecordFindTMBand} WriteLineToDebugFile(' check: ' + Copy(Bandtitle[i],1,6)); {$EndIf}
+      if ('BAND ' + IntToStr(TMBandName)) = UpperCase(Copy(BandLongName[i],1,6)) then begin
          BandPresent := i;
          Result := true;
          exit;
@@ -1811,8 +1810,7 @@ begin
          Dispose(Row16Bit);
       end
       else if (TIFFImage[Band] <> Nil) then begin
-         {if (TiffImage[Band] = Nil) then TiffImage[1].GetTiffRow(Band,Row,TheRow)
-         else} TiffImage[Band].GetTiffRow(Band,Row,TheRow);
+         TiffImage[Band].GetTiffRow(Band,Row,TheRow);
       end
      {$IfDef NoBMPFileImagery}
      {$Else}

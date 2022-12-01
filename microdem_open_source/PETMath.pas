@@ -1958,14 +1958,13 @@ end;
 
 
 
-procedure MomentReport(Variable : shortString; var data : Petmath.bfarray32; n : integer; {DoHist : boolean = false;} Title : ShortString = ''; StringGrid : tStringGrid = nil; OnLine : integer = -99; OnCol : integer = -99);
+procedure MomentReport(Variable : shortString; var data : Petmath.bfarray32; n : integer; Title : ShortString = ''; StringGrid : tStringGrid = nil; OnLine : integer = -99; OnCol : integer = -99);
 var
    MomentVar : tMomentVar;
 begin
    MomentVar.Npts := n;
    Moment(data,MomentVar,msAll);
    if (StringGrid <> Nil) then MomentsToStringGrid(StringGrid,OnLine,OnCol,Variable,MomentVar);
-   //if DoHist then DeprecatedCreateHistogram(True,N,Data,Title,Title);
 end;
 
 function MomentResultsToString(MomentVar : tMomentVar) : shortstring;

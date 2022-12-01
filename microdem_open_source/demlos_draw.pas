@@ -16,7 +16,8 @@ unit demlos_draw;
       //{$Define RecordLOSAlgorithm}
       //{$Define RecordPointClouds}
       //{$Define RecordUTMZones}
-      {$Define RecordLOS}
+      {$Define RecordLOSDraw}
+      //{$Define RecordLOS}
       //{$Define RecordLOSPrettyDrawing}
       //{$Define RecordRandomProfiles}
       //{$Define RecordWaveLenghtHeight}
@@ -233,7 +234,7 @@ var
    i,j : integer;
    fName : PathStr;
 begin
-   {$IfDef RecordLOS} WriteLineToDebugFile('tLOSdraw.CreateProfileBMP in'); {$EndIf}
+   {$If Defined(RecordLOS) or Defined(RecordLOSDraw)} WriteLineToDebugFile('tLOSdraw.CreateProfileBMP in'); {$EndIf}
    ShowHourglassCursor;
    {$IfDef VCL}
       LoadMyFontIntoWindowsFont(MDDef.LOSfont,Bitmap.Canvas.Font);
@@ -253,13 +254,13 @@ begin
      end;
 
      if (LOSVariety in [losAllDEMs,losAllDEMDropDown]) and (MultipleProfilesToShow = Nil) then begin
-        {$IfDef RecordLOS} WriteLineToDebugFile('Set up multiple profiles'); {$EndIf}
+        {$If Defined(RecordLOS) or Defined(RecordLOSDraw)} WriteLineToDebugFile('Set up multiple profiles'); {$EndIf}
         MultipleProfilesToShow := tStringList.Create;
         for i := 1 to MaxDEMDataSets do begin
            if ValidDEM(i) and ShowProfile[i] then begin
               DEMonView := i;
               if DEMGlb[i].LatLongDegreeInDEM(LatLeft,LongLeft) and DEMGlb[i].LatLongDegreeInDEM(LatRight,LongRight) then begin
-                  {$IfDef RecordLOS} WriteLineToDebugFile('Recalculate profile, DEM=' + IntToStr(i)); {$EndIf}
+                  {$If Defined(RecordLOS) or Defined(RecordLOSDraw)}  WriteLineToDebugFile('Recalculate profile, DEM=' + IntToStr(i)); {$EndIf}
                   ShowHourglassCursor;
                   RecalculateProfile;
                   MultipleProfilesToShow.Add(GISdb[LOSProfileDB].DBFullName);
@@ -270,7 +271,7 @@ begin
      end;
 
      if (MultipleProfilesToShow <> Nil) then begin
-        {$IfDef RecordLOS} WriteLineToDebugFile('(MultipleProfilesToShow <> Nil)  image: ' +  BitmapSizeString(Bitmap)); {$EndIf}
+        {$If Defined(RecordLOS) or Defined(RecordLOSDraw)}  WriteLineToDebugFile('(MultipleProfilesToShow <> Nil)  image: ' +  BitmapSizeString(Bitmap)); {$EndIf}
         DrawCollar(Bitmap);
         for i := 1 to MultipleProfilesToShow.Count do begin
            fName := MultipleProfilesToShow.Strings[pred(i)];
@@ -278,6 +279,7 @@ begin
            for j := 1 to MaxDEMDataSets do begin
               if ShowProfile[j] and ValidDEM(j) then begin
                  if StrUtils.AnsiContainsText(fName,DEMGlb[j].AreaName) then begin
+                    {$If Defined(RecordLOS) or Defined(RecordLOSDraw)} WriteLineToDebugFile('Draw profile ' + fName); {$EndIf}
                     OpenNumberedGISDataBase(LOSProfileDB,fName);
                     ShowHourglassCursor;
                     DrawTheProfile(Bitmap,'ELEV_M',ConvertPlatformColorToTColor(LineColors256[i]),LineSize256[i]);
@@ -287,7 +289,7 @@ begin
            end;
         end;
      end;
-     {$IfDef RecordLOS} WriteLineToDebugFile('Left side:  ' + LatLongDegreeToString(LatLeft,LongLeft)); {$EndIf}
+    {$If Defined(RecordLOS) or Defined(RecordLOSDraw)} WriteLineToDebugFile('Left side:  ' + LatLongDegreeToString(LatLeft,LongLeft)); {$EndIf}
 end;
 
 
@@ -375,7 +377,7 @@ var
    fName : PathStr;
    LOSCalculation : tLOSCalculation;
 begin
-    {$IfDef RecordLOS} WriteLineToDebugFile('tLOSdraw.RecalculateProfile in'); {$EndIf}
+    {$If Defined(RecordLOS) or Defined(RecordLOSDraw)} WriteLineToDebugFile('tLOSdraw.RecalculateProfile in'); {$EndIf}
     ShowHourglassCursor;
     if LOSVariety in [losMagModel,losAllDEMs,losAllDEMDropDown,losSimpleMagModel,losSimpleOne] then begin
        CalculatingCurvature := false;
@@ -404,7 +406,6 @@ begin
          CloseAndNilNumberedDB(LOSProfileDB);
       end;
       LOSProfileDB := 0;
-     // if DrawFresnel then begin
 
          {$IfDef VCL}
             fName := NextFileNumber(MDTempDir, DEMGlb[DEMonView].AreaName + '_los_',DefaultDBExt);
@@ -412,7 +413,7 @@ begin
             fName := NextFileNumber(MDTempDir,'topo_los_',DefaultDBExt);
          {$EndIf}
 
-         {$IfDef RecordLOS} WriteLineToDebugFile('Create=' + fName); {$EndIf}
+         {$If Defined(RecordLOS) or Defined(RecordLOSDraw)} WriteLineToDebugFile('Create=' + fName); {$EndIf}
 
          MakeTopoProfileTable(fName,
               {$IfDef ExFresnel}
@@ -450,10 +451,10 @@ begin
 
       if ValidDB(LOSProfileDB) then GISdb[LOSProfileDB].LayerIsOn := false;
 
-      {$IfDef RecordLOS} WriteLineToDebugFile('try LOSCalculation := tLOSCalculation.Create, db=' + IntToStr(LOSProfileDB)); {$EndIf}
+      {$If Defined(RecordLOS) or Defined(RecordLOSDraw)} WriteLineToDebugFile('try LOSCalculation := tLOSCalculation.Create, db=' + IntToStr(LOSProfileDB)); {$EndIf}
       LOSCalculation := tLOSCalculation.Create;
       LosCalculation.Execute(DEMonView,LatLeft,LongLeft,LatRight,LongRight,MDDef.ObsAboveGround, MDDef.TargetAboveGround,LOSProfileDB
-         {$IfDef ExPointCloudMemory}{$Else},LOSMemoryPointCloud[1],LOSMemoryPointCloud[2] {$EndIf}    );
+         {$IfDef ExPointCloudMemory}{$Else},LOSMemoryPointCloud[1],LOSMemoryPointCloud[2] {$EndIf} );
       LosCalculation.Destroy;
 
       GISdb[LOSProfileDB].MyData.First;
@@ -461,7 +462,7 @@ begin
       GISdb[LOSProfileDB].MyData.Last;
       TargetGroundElev := GISdb[LOSProfileDB].MyData.GetFieldByNameAsFloat('ELEV_M');
       CalculatingCurvature := true;
-    {$IfDef RecordLOS} WriteLineToDebugFile('tLOSdraw.RecalculateProfile out'); {$EndIf}
+      {$If Defined(RecordLOS) or Defined(RecordLOSDraw)} WriteLineToDebugFile('tLOSdraw.RecalculateProfile out'); {$EndIf}
 end;
 
 
@@ -1205,7 +1206,6 @@ var
    NeedToCheckPointCloud : boolean;
    NeedZ,xgrids,ygrids,dists,elevs : ^Petmath.bfarray32;
    SlopeAspectRec : tSlopeAspectRec;
-   //UseData : tMyData;
 
 
     procedure RemoveNeighbors(var IsWhat : tBooleans);
@@ -1256,7 +1256,7 @@ var
 
 
 begin
-   {$IfDef RecordLOS} WriteLineToDebugFile('tLOSCalculation.Execute in, DEM average space=' + RealToString(DEMglb[DEMonView].AverageSpace,-18,2)); {$EndIf}
+   {$If Defined(RecordLOS) or Defined(RecordLOSDraw)} WriteLineToDebugFile('tLOSCalculation.Execute in, DEM average space=' + RealToString(DEMglb[DEMonView].AverageSpace,-18,2)); {$EndIf}
      //if ValidDB(ProfileDB) then UseData := GISdb[ProfileDB].MyData
      //else UseData := nil;
 
@@ -1280,21 +1280,19 @@ begin
 
      DEMglb[DEMonView].GetStraightRoute(false,LatLeft,LongLeft,LatRight,LongRight,MDDef.wf.StraightAlgorithm,ComputePoints,xgrids^,ygrids^,dists^);
      DropCurve := DropEarthCurve(LOSLen);
-     {$IfDef RecordLOS} WriteLineToDebugFile('end GetStraightRouteLatLongDegree'); {$EndIf}
+     {$If Defined(RecordLOS) or Defined(RecordLOSDraw)} WriteLineToDebugFile('end GetStraightRouteLatLongDegree'); {$EndIf}
 
      DEMglb[DEMonView].GetVisiblePoints(LeftObsUp,RightObsUp,-89,89,true,true,ComputePoints,xgrids^,ygrids^,dists^,elevs^,VisPoints);
      if MDDef.ShowMaskedAirspace then DEMglb[DEMonView].LatLongDegreePointsRequiredAntenna(ComputePoints,LatLeft,LongLeft,MDDef.ObsAboveGround,LatRight,LongRight,xgrids^,ygrids^,dists^,NeedZ^);
 
-      ObsElev := elevs^[0] + LeftObsUp;
-      zTarget := elevs^[ComputePoints] + RightObsUp;
-      Pitch := arcTan( -(ObsElev - (zTarget - DropCurve)) / LOSLen) / DegToRad;
+     ObsElev := elevs^[0] + LeftObsUp;
+     zTarget := elevs^[ComputePoints] + RightObsUp;
+     Pitch := arcTan( -(ObsElev - (zTarget - DropCurve)) / LOSLen) / DegToRad;
 
-      {$IfDef RecordLOS} WriteLineToDebugFile('end GetVisiblePoints, start computepoints=' + IntToStr(ComputePoints)); {$EndIf}
+     {$If Defined(RecordLOS) or Defined(RecordLOSDraw)} WriteLineToDebugFile('end GetVisiblePoints, start computepoints=' + IntToStr(ComputePoints)); {$EndIf}
 
       for j := 0 to ComputePoints do begin
          GISdb[ProfileDB].MyData.Insert;
-         EarthCurve := DropEarthCurve(dists^[j]);
-         GISdb[ProfileDB].MyData.CarefullySetFloat('CURV_M',EarthCurve,0.01);
          LOSHt := ObsElev + TanDeg(Pitch) * dists^[j];
          DEMglb[DEMonView].DEMGridToLatLongDegree(xgrids^[j],ygrids^[j],Lat,Long);
 
@@ -1305,9 +1303,13 @@ begin
 
          if (elevs^[j] < 32000) then begin
             GISdb[ProfileDB].MyData.SetFieldByNameAsFloat('ELEV_M',elevs^[j]);
-            if (LOSHt < elevs^[j]) then GISdb[ProfileDB].MyData.SetFieldByNameAsString('BLOCK_TERR','Y');
 
+            EarthCurve := DropEarthCurve(dists^[j]);
+            GISdb[ProfileDB].MyData.CarefullySetFloat('CURV_M',EarthCurve,0.01);
+            if (LOSHt < elevs^[j]) then GISdb[ProfileDB].MyData.SetFieldByNameAsString('BLOCK_TERR','Y');
             if MDDef.ShowMaskedAirspace and (NeedZ^[j] > 0.01) then GISdb[ProfileDB].MyData.SetFieldByNameAsFloat('MASK_AIR',NeedZ^[j] + elevs^[j]);
+            if (MDDef.LosVisible and VisPoints[j]) then Color := MDDef.FanColor else Color := MDDef.MaskColor;
+            GISdb[ProfileDB].MyData.SetColorFromPlatformColor(Color);
 
             {$IFDef ExVegDensity}
                NeedToCheckPointCloud := false;
@@ -1368,11 +1370,12 @@ begin
                   GISdb[ProfileDB].MyData.CarefullySetFloat('FRESNEL2_M',Fresnel2,0.1);
                   Fresnel1 := 17.31 * sqrt(0.001 * dists^[j] * (LOSLen - dists^[j]) / MDdef.FresnelFreq / LOSLen);
                   GISdb[ProfileDB].MyData.CarefullySetFloat('FRESNEL1_M',Fresnel1,0.1);
+                  if (LOSHt < elevs^[j]) then Intrudepc := 100
+                  else if (LOSHt > elevs^[j] + Fresnel1) then Intrudepc := 0
+                  else Intrudepc := 100 * (elevs^[j] - (LOSHt - Fresnel1)) / Fresnel1;
+                  GISdb[ProfileDB].MyData.SetFieldByNameAsFloat('INTRUDE_pc',Intrudepc);
                 end;
-            {$EndIf}
-
-              if (MDDef.LosVisible and VisPoints[j]) then Color := MDDef.FanColor else Color := MDDef.MaskColor;
-              GISdb[ProfileDB].MyData.SetColorFromPlatformColor(Color);
+             {$EndIf}
 
              {$IfDef ExWaveLengthHeight}
              {$Else}
@@ -1429,15 +1432,6 @@ begin
                   end;
               end;
 
-             {$IfDef ExFresnel}
-             {$Else}
-                 if (MDdef.CurvAlg = vcRadioLineOfSight) and MDdef.DrawFresnel then begin
-                    if (LOSHt < elevs^[j]) then Intrudepc := 100
-                    else if (LOSHt > elevs^[j] + Fresnel1) then Intrudepc := 0
-                    else Intrudepc := 100 * (elevs^[j] - (LOSHt - Fresnel1)) / Fresnel1;
-                    GISdb[ProfileDB].MyData.SetFieldByNameAsFloat('INTRUDE_pc',Intrudepc);
-                 end;
-             {$EndIf}
          end
          else begin
             {$IfDef ExWaveLengthHeight}
@@ -1465,7 +1459,7 @@ begin
          GISdb[ProfileDB].MyData.Post;
          lz := elevs^[j];
       end;
-     {$IfDef RecordLOS} WriteLineToDebugFile('Loop done'); {$EndIf}
+     {$If Defined(RecordLOS) or Defined(RecordLOSDraw)} WriteLineToDebugFile('Loop done'); {$EndIf}
 
 
       if (not VisPoints[ComputePoints]) then begin
@@ -1497,7 +1491,7 @@ begin
       {$IfDef ExFresnel}
       {$Else}
          if (GISdb[ProfileDB].MyData <> Nil) then begin
-           {$IfDef RecordLOS} WriteLineToDebugFile('Start VisComp'); {$EndIf}
+           {$If Defined(RecordLOS) or Defined(RecordLOSDraw)} WriteLineToDebugFile('Start VisComp'); {$EndIf}
 
              if VisPoints[ComputePoints] then begin
                 if MDdef.DrawFresnel then begin
@@ -1529,7 +1523,7 @@ begin
   Dispose(dists);
   Dispose(elevs);
   if MDDef.ShowMaskedAirspace then Dispose(NeedZ);
-  {$IfDef RecordLOS} WriteLineToDebugFile('tLOSCalculation.Execute out'); {$EndIf}
+  {$If Defined(RecordLOS) or Defined(RecordLOSDraw)}WriteLineToDebugFile('tLOSCalculation.Execute out'); {$EndIf}
 end;
 
 

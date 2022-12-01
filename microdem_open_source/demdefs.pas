@@ -839,7 +839,7 @@ type
    tFieldsToAdd = (afBoundingBox,afLineMerge,afXYZ,afLatLong);
    tPartSize = packed array[1..sfMaxParts] of int32;
 
-   tTauDEM = (tdPitRemove,tdD8Flow,tdDinfFlow,tdD8ContArea,tdDInfContArea,tdGridNet,tdPeukerDouglas,tdStreamReachAndWatershed);
+   //tTauDEM = (tdPitRemove,tdD8Flow,tdDinfFlow,tdD8ContArea,tdDInfContArea,tdGridNet,tdPeukerDouglas,tdStreamReachAndWatershed);
    tImageType = (itSat,itDRG);
 
 const
@@ -2950,7 +2950,7 @@ var
       VectorMapName,
       MapLibDir,
       GADMDir,
-      TauDEMDir,
+      //TauDEMDir,
       mcc_lidarFName,
       MrSIDDecodeName,
       MrSidInfoName,

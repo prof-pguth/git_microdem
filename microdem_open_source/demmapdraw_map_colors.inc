@@ -207,7 +207,6 @@ end {proc ColorTintedElevationMap};
 
 
 procedure TMapDraw.DrawSlopeMapStrip(Limits : tGridLimits; var BMPMemory :  tBMPMemory);
-//   SlopeAspectColor : array[1..3, 1..8] of tColor
 var
    SlopeVal,i,j,xg,yg,SlopeBin,AspectBin : integer;
    GrayRange : integer;
@@ -227,8 +226,8 @@ begin
             else if DEMGlb[DEMonMap].GetSlopeAndAspect(xg,yg,SlopeAspectRec) then begin
                if (MapType in [mtDEMaspectSlope]) then begin
                   Color := Rgb(161,161,161);
-                  if SlopeAspectRec.SlopePercent > 5 then begin
-                     if SlopeAspectRec.SlopePercent < 20 then SlopeBin := 1
+                  if (SlopeAspectRec.SlopePercent > 5) then begin
+                     if (SlopeAspectRec.SlopePercent < 20) then SlopeBin := 1
                      else if SlopeAspectRec.SlopePercent < 40 then SlopeBin := 2
                      else SlopeBin := 3;
                      AspectBin := succ(ord(SlopeAspectRec.Dir));
@@ -936,48 +935,28 @@ var
    zj : float32;
    z : integer;
 begin
-  if (MapType in [mtFlowDir360,mtFlowDirArc,mtFlowDirTau]) then begin
-     Result :=  pPal[255];
+  if (MapType in [mtFlowDir360,mtFlowDirArc,mtFlowDirTau,mtDEMVATTable,mtLASClass]) or (DEMGlb[DEMonMap].LandCoverGrid) then begin
      if DEMGlb[DEMonMap].GetElevMeters(round(x),round(y),zj) then begin
         z := round(zj);
-        if (MapType in [mtFlowDirArc,mtFlowDirTau]) then begin
+        if (MapType in [mtLASclass]) then begin
+            Result := Las_rgb_colors[z];
+        end
+        else if (DEMGlb[DEMonMap].LandCoverGrid) then begin
+           Result := pPal[z];
+        end
+        else if (MapType in [mtDEMVATTable]) then begin
+           Result := VATColors[z];
+        end
+        else if (MapType in [mtFlowDirArc,mtFlowDirTau]) then begin
            if (z in [1..128]) then Result := pPal[z];
         end
         else begin
            if (z >= 0) and (z <= 360) then Result := AspColor[z];
         end;
-     end;
+     end
+     else Result := MDdef.MissingDataColor;
+     exit;
   end
-  {$IfDef VCL}
-     else if (MapType in [mtDEMVATTable]) then begin
-        if DEMGlb[DEMonMap].GetElevMeters(round(x),round(y),zj) then begin
-            Result := VATColors[round(zj)];
-            exit;
-        end
-       else Result := MDdef.MissingDataColor;
-       exit;
-     end
-  {$EndIf}
-  {$IfDef ExPointCloud}
-  {$Else}
-     else if (MapType in [mtLASclass]) then begin
-        if DEMGlb[DEMonMap].GetElevMeters(round(x),round(y),zj) then begin
-            Result := Las_rgb_colors[round(zj)];
-            exit;
-        end
-       else Result := MDdef.MissingDataColor;
-     end
-  {$EndIf}
-   {$IfDef ExNLCD}
-   {$Else}
-      else if (DEMGlb[DEMonMap].LandCoverGrid) then begin
-         if DEMGlb[DEMonMap].GetElevMeters(round(x),round(y),zj) then begin
-            z := ValidByteRange(round(zj));
-            Result := pPal[z];
-         end
-         else Result := MDdef.MissingDataColor;
-      end
-   {$EndIf}
    else begin
       if DEMGlb[DEMonMap].GetElevMeters(x,Y,zj) then begin
          Result := MaskColor;
@@ -987,6 +966,7 @@ begin
          exit;
       end;
    end;
+
 
    if (MaxMapElev - MinMapElev) < 0.001 then begin
       Result := RGBTrip(0,0,125);
