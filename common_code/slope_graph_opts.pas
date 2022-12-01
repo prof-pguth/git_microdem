@@ -90,7 +90,6 @@ begin
    MDDef.ShowColorLegend := CheckBox8.Checked;
    MDDef.ShowSDonElevSlope := CheckBox9.Checked;
    CheckEditString(Edit1.Text,MDDef.ElevBinSize);
-
    Close;
 end;
 
