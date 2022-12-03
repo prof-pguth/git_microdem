@@ -1021,11 +1021,14 @@ end;
                   end;
                until (FirstTick > Max) or (i = 255);
             end;
+            PutBitmapInBox(Result);
+            (*
             GetImagePartOfBitmap(Result);
             Result.Canvas.Pen.Color := clBlack;
             Result.Canvas.Pen.Width := 0;
             Result.Canvas.Brush.Style := bsClear;
             Result.Canvas.Rectangle(0,0,Result.Width,Result.height);
+            *)
          end;
 
 

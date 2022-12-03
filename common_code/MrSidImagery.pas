@@ -1,10 +1,12 @@
 
 unit MrSidImagery;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{_________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2022 Peter L. Guth  }
+{___________________________________}
 
 {$I nevadia_defines.inc}
 
@@ -195,10 +197,7 @@ begin
 
    SidInfo := FillMrSidInfoRec(fName);
 
-   {$IfDef RecordOpenMrSid}
-      WriteLineToDebugFile('SubsetTiffFromSID ' + fName);
-      WriteStringListToDebugFile(GetMrSidInfo(fName));
-   {$EndIf}
+   {$IfDef RecordOpenMrSid}  WriteLineToDebugFile('SubsetTiffFromSID ' + fName); WriteStringListToDebugFile(GetMrSidInfo(fName)); {$EndIf}
 
    Result := NextFileNumber(MDTempDir, ExtractFileNameNoExt(fName) + '_sid_','.tif');
 

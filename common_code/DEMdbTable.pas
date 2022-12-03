@@ -6584,17 +6584,17 @@ var
    Sum,Hours,StartHours : float64;
    Amp,Phase,Speed : array[1..MaxComp] of float64;
 begin
-  with GISdb[DBonTable] do begin
+  //with GISdb[DBonTable] do begin
      Results := tStringList.Create;
      Results.Add('Hour  Day  Year  Predict');
      NComp := 0;
-     MyData.First;
-     while not MyData.EOF do begin
+     GISdb[DBonTable].MyData.First;
+     while not GISdb[DBonTable].MyData.EOF do begin
         inc(NComp);
-        Amp[NComp] := MyData.GetFieldByNameAsFloat('AMPLITUDE');
-        Phase[NComp] := MyData.GetFieldByNameAsFloat('PHASE');
-        Speed[NComp] := MyData.GetFieldByNameAsFloat('SPEED');
-        MyData.Next;
+        Amp[NComp] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('AMPLITUDE');
+        Phase[NComp] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('PHASE');
+        Speed[NComp] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('SPEED');
+        GISdb[DBonTable].MyData.Next;
      end;
      i := 0;
      Interval := 2;
@@ -6617,7 +6617,7 @@ begin
         Hours := Hours + Interval;
         inc(i,Interval);
      end;
-  end;
+//  end;
   Results.SaveToFile(ExtractFilePath(GISdb[DBonTable].dbFullName) + 'tides.csv');
 end;
 
@@ -10445,7 +10445,7 @@ var
    Lat,Long : float64;
 begin
    if GISdb[DBonTable].ValidLatLongFromTable(Lat,Long) then begin
-      for i := 1 to MaxDEMDataSets do if (DEMGlb[i] <> Nil) then begin
+      for i := 1 to MaxDEMDataSets do if ValidDEM(i) then begin
          if DEMGlb[i].SelectionMap.MapDraw.LatLongOnScreen(Lat,Long) then begin
             DEMGlb[i].SelectionMap.MapDraw.LatLongDegreeToScreen(Lat,Long,xpic,ypic);
             DEMGlb[i].SelectionMap.LastX := xpic;

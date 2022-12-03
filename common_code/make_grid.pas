@@ -1,9 +1,11 @@
 unit make_grid;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program    }
-{   file verified 3/5/2014        }
-{_________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2022 Peter L. Guth  }
+{___________________________________}
 
 
 {$I nevadia_defines.inc}
@@ -488,7 +490,7 @@ var
    x,y : integer;
    Limits : tGridLimits;
    SlopeDeg,SlopeCurvature,PlanCurvature,crossc,MaxCurve,MinCurve,
-   Upward,Downward{,s1s2,s2s3,Trend,rf} : float64;
+   Upward,Downward : float64;
    MaxBox,MaxDir,
    MaxOrg,ElevStdDev,PCLower, zr,zsummit,zbase,Dropoff,GeoRelief,AvgElev,Elev_relief,Relief,TPI : float32;
    MomentVar : tMomentVar;
@@ -643,8 +645,6 @@ begin
        if WantOut then break;
     end;
 end;
-
-
 
 
 function MakeMomentsGrid(CurDEM : integer; What : char; BoxSizeRadiusMeters : integer = -99; OpenMaps : boolean = true) : integer;

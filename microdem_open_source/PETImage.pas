@@ -378,6 +378,7 @@ type
          bmp.Free;
       end;
 
+
 procedure PutBitmapInBox(var BMP : tMyBitmap);
 var
    sbmp : tMyBitmap;

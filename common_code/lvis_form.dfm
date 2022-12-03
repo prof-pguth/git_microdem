@@ -2,7 +2,7 @@ object lvis_form1: Tlvis_form1
   Left = 0
   Top = 0
   Caption = 'LVIS'
-  ClientHeight = 215
+  ClientHeight = 229
   ClientWidth = 390
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -84,6 +84,7 @@ object lvis_form1: Tlvis_form1
     Align = alTop
     ScrollBars = ssVertical
     TabOrder = 7
+    ExplicitWidth = 384
   end
   object BitBtn8: TBitBtn
     Left = 280

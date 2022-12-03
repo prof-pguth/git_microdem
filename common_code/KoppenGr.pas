@@ -386,7 +386,8 @@ begin
          Result.Canvas.TextOut(30,I*20+2,TStr);
       end;
    end;
-   PetImage.GetImagePartOfBitmap(Result);
+   PutBitmapInBox(Result);
+   //PetImage.GetImagePartOfBitmap(Result);
 end;
 
 

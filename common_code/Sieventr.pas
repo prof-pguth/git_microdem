@@ -9,8 +9,6 @@
 
 {$I nevadia_defines.inc}
 
-
-
 interface
 
 uses
@@ -95,7 +93,7 @@ var
             x := x - y;
             StringGrid1.Cells[3,Row] := RealToString(x,-8,-4);
             if x < -0.0001 then begin
-               MessageToContinue('Negative weight for sand highly unlikely.');
+               MessageToContinue('Negative sand weight highly unlikely.');
             end;
          end;
       end;

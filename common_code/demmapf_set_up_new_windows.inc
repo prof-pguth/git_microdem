@@ -324,7 +324,7 @@ end;
 {$Else}
       procedure CreateNewSatWindow(inSatView : tSatView; var ResultMap : tMapForm; CurSat : integer; mt : tMapType; MapCaption : ShortString; Selection : boolean; UseDEM : integer = 0);
       begin
-         {$IfDef RecordNewSatMap} WriteLineToDebugFile('CreateNewSatWindow image: ' + IntToStr(NewSatImage)); {$EndIf}
+         {$IfDef RecordNewSatMap} WriteLineToDebugFile('CreateNewSatWindow image: ' + IntToStr(CurSat)); {$EndIf}
          CreateNewSatSubsetWindow(inSatView, ResultMap,CurSat,mt,MapCaption,false,Selection,true,UseDEM);
          {$IfDef RecordNewSatMap} WriteLineToDebugFile('out CreateNewSatWindow'); {$EndIf}
       end;
@@ -385,7 +385,7 @@ end;
          end;
 
       begin
-         {$IfDef RecordNewSatMap} WriteLineToDebugFile('In CreateNewSatSubsetWindow image: ' + IntToStr(NewSatImage)); {$EndIf}
+         {$IfDef RecordNewSatMap} WriteLineToDebugFile('In CreateNewSatSubsetWindow image: ' + IntToStr(CurSat)); {$EndIf}
          if (ResultMap = Nil) then begin
             ResultMap := TMapForm.Create(Application);
             {$IfDef RecordNewSatMap} WriteLineToDebugFile('New form created'); {$EndIf}
@@ -403,7 +403,7 @@ end;
 
          SetUpTheNewMap(ResultMap);
          ResultMap.CheckProperTix;
-         {$IfDef RecordNewSatMap} WriteLineToDebugFile('Out CreateNewSatSubsetWindow image: ' + IntToStr(NewSatImage)); {$EndIf}
+         {$IfDef RecordNewSatMap} WriteLineToDebugFile('Out CreateNewSatSubsetWindow image: ' + IntToStr(CurSat)); {$EndIf}
       end;
 
 {$EndIf}

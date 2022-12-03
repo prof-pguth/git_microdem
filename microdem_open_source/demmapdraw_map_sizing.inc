@@ -137,6 +137,7 @@ var
    D1,D2,Bear1,Bear2,Lat,Long : float64;
 begin
    if (BasicProjection = bpLatLong) then begin
+       {$If Defined(AspectCheck)} WriteLineToDebugFile('tMapDraw.GetMapAspectRatio in, geo box=' + sfBoundBoxToString(MapCorners.BoundBoxProj)); {$EndIf}
        Long := MapCorners.BoundBoxProj.XMin + 0.5*(MapCorners.BoundBoxProj.XMax - MapCorners.BoundBoxProj.XMin);  //center of the map
        Lat := MapCorners.BoundBoxProj.YMin + 0.5*(MapCorners.BoundBoxProj.YMax - MapCorners.BoundBoxProj.YMin);  //center of the map
        VincentyCalculateDistanceBearing(Lat,Long,Lat,MapCorners.BoundBoxProj.XMax,D1,Bear1);
@@ -351,14 +352,17 @@ end;
 {$IfDef ExSat}
 {$Else}
    procedure tMapDraw.DefineSatMap(CurSat : integer; mt : tMapType);
+   var
+      Lat : float32;
    begin
       {$IfDef RecordSat} WriteLineToDebugFile('tMapDraw.DefineSatMap enter, datum=' + SatImage[CurSat].ImageMapProjection.h_DatumCode); {$EndIf}
       SATonMap := CurSat;
       MapType := mt;
       PrimMapProj := SatImage[CurSat].ImageMapProjection;
-      if (SatImage[CurSat].ImageMapProjection.PName = PlateCaree) then
-         SatImage[CurSat].ImageMapProjection.DefineDatumFromUTMZone(MDdef.PreferPrimaryDatum,GetUTMZone(SatImage[CurSat].RegVars.UpLeftX + (MapCorners.BoundBoxDataGrid.xmin + ColsDisplayed div 2) * SatImage[CurSat].BandXSpace[SatImage[CurSat].BandForSize]),
-           SatImage[CurSat].ImageMapProjection.LatHemi,'definesatmap');
+      if (SatImage[CurSat].ImageMapProjection.PName = PlateCaree) then begin
+         Lat := SatImage[CurSat].RegVars.UpLeftX + (MapCorners.BoundBoxDataGrid.xmin + ColsDisplayed div 2) * SatImage[CurSat].BandXSpace[SatImage[CurSat].BandForSize];
+         SatImage[CurSat].ImageMapProjection.DefineDatumFromUTMZone(MDdef.PreferPrimaryDatum,GetUTMZone(Lat),SatImage[CurSat].ImageMapProjection.LatHemi,'definesatmap');
+      end;
       SetFullMapCoverage;
       {$IfDef RecordSat} WriteLineToDebugFile('tMapDraw.DefineSatMap out'); {$EndIf}
    end;

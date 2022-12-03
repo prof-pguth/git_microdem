@@ -12,7 +12,6 @@ object mess_cont_form: Tmess_cont_form
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   Position = poOwnerFormCenter
-  PixelsPerInch = 96
   TextHeight = 13
   object Panel1: TPanel
     Left = 0
@@ -21,6 +20,8 @@ object mess_cont_form: Tmess_cont_form
     Height = 41
     Align = alBottom
     TabOrder = 0
+    ExplicitTop = 231
+    ExplicitWidth = 464
     object OKBtn: TBitBtn
       Left = 56
       Top = 6
@@ -48,5 +49,7 @@ object mess_cont_form: Tmess_cont_form
     Font.Style = [fsBold]
     ParentFont = False
     TabOrder = 1
+    ExplicitWidth = 464
+    ExplicitHeight = 231
   end
 end

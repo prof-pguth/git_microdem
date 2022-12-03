@@ -84,7 +84,6 @@ type
     procedure IFfromzip1Click(Sender: TObject);
     procedure LandsatGeotiffsfromunixtar1Click(Sender: TObject);
     procedure Verylargezipusing7Zip1Click(Sender: TObject);
-    //procedure Sentinel2overlylongfilename1Click(Sender: TObject);
   private
     procedure ExtractUnixFiles(ExtMode: integer);
     { Private declarations }

@@ -1,8 +1,12 @@
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of ianMICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch    }
-{ Copyright (c) 2016 Peter L. Guth   }
-{____________________________________}
+
+unit monthly_grids;
+
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2022 Peter L. Guth  }
+{___________________________________}
 
 
 {$I nevadia_defines.inc}
@@ -12,8 +16,6 @@
    //{$Define MultiGridMapSize}
    //{$Define RecordMultiGrids}
 {$EndIf}
-
-unit monthly_grids;
 
 interface
 

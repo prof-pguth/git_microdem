@@ -35,7 +35,7 @@
 
       //{$Define RecordDrawGridLines}
       //{$Define RecordSat}
-      //{$Define AspectCheck}
+      {$Define AspectCheck}
       //{$Define RecordShapeFileGroup}
       //{$Define RecordWorldOutline}
       //{$Define Track_f}
@@ -838,7 +838,6 @@ var
    CatPCforLegend : float64;
    zf : float32;
    aColor : tColor;
-   //aField,
    NameField,CodeField : ShortString;
    Hist : array[MinVATValue..MaxVatCats] of integer;
 begin
@@ -929,11 +928,15 @@ begin
       Table.Next;
    end;
    Result.Height := succ(Cats)*25 + 4;
+   PutBitmapInBox(Result);
+
+   (*
    PetImage.GetImagePartOfBitmap(Result);
    Result.Canvas.Pen.Color := clBlack;
    Result.Canvas.Pen.Width := 0;
    Result.Canvas.Brush.Style := bsClear;
    Result.Canvas.Rectangle(0,0,Result.Width,Result.height);
+   *)
 
    ShowDefaultCursor;
    Table.Destroy;

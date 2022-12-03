@@ -1737,12 +1737,10 @@ object MapForm: TMapForm
           object ReinterpolateUTM1: TMenuItem
             Caption = 'Reinterpolate, UTM '
             GroupIndex = 1
-            OnClick = ReinterpolateUTM1Click
           end
           object ReinterpolateLatLong1: TMenuItem
             Caption = 'Reinterpolate, Lat/Long'
             GroupIndex = 1
-            OnClick = ReinterpolateLatLong1Click
           end
           object ConvertUKOSDEM1: TMenuItem
             Caption = 'Convert UKOS DEM'
@@ -1766,6 +1764,7 @@ object MapForm: TMapForm
           object GDALupsample1: TMenuItem
             Caption = 'GDAL upsample, bllinear/bicubic'
             GroupIndex = 1
+            OnClick = GDALupsample1Click
           end
           object GDALbilinearbicubictoUTM1: TMenuItem
             Caption = 'GDAL bilinear/bicubic to UTM'
@@ -3995,7 +3994,6 @@ object MapForm: TMapForm
         end
         object auDEMtools1: TMenuItem
           Caption = 'TauDEM tools'
-          OnClick = auDEMtools1Click
         end
         object RVTgridcreation1: TMenuItem
           Caption = 'RVT grid creation'

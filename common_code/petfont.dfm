@@ -5,8 +5,8 @@ object FontDlg: TFontDlg
   BorderIcons = [biHelp]
   BorderStyle = bsDialog
   Caption = 'Font Overlay'
-  ClientHeight = 193
-  ClientWidth = 310
+  ClientHeight = 213
+  ClientWidth = 294
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
@@ -16,7 +16,6 @@ object FontDlg: TFontDlg
   Position = poScreenCenter
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Label3: TLabel
     Left = 12

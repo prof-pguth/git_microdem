@@ -344,7 +344,6 @@ begin
      if GISDb[DBShown].MyData.FieldExists('LOCATION') then LabelField := 'LOCATION';
   end;
   if (LabelField <> '') then TStr := TStr + '  ' + LabelField + '=' + GISDb[DBShown].MyData.GetFieldByNameAsString(LabelField);
-  //HasOrient := GISDb[DBShown].MyData.FieldExists('ORIENT');
   Caption := CaptBase + ' Record ' + Tstr;
   with GISDb[DBShown].MyData do begin
       StringGrid1.Cells[0,0] := 'Field';
@@ -402,7 +401,7 @@ begin
       if MDDef.DB_ID_grids and (not LineOrAreaShapefile(GISdb[dbShown].ShapeFileType)) then begin
           if GISDb[DBShown].ValidLatLongFromTable(Lat,Long) then begin
             for I := 1 to MaxDEMDataSets do begin
-               if (DEMGlb[i] <> Nil) then begin
+               if ValidDEM(i) then begin
                   StringGrid1.Cells[0,k] := DEMGlb[i].AreaName;
                   DEMGlb[i].LatLongDegreeToDEMGrid(Lat,Long,xg1,yg1);
                   DEMGlb[i].DEMGridToLatLongDegree(round(xg1),round(yg1),Lat,Long);
@@ -469,9 +468,6 @@ begin
             bmp.Width := bmp.Width + bmp2.Width + bmp3.Width + 4;
             if (Bmp2.Height > bmp.height) then bmp.height := bmp2.Height;
             if (Bmp3.Height > bmp.height) then bmp.height := bmp3.Height;
-
-            //WriteLineToDebugFile('Result: ' + IntToStr(Bmp.width) + 'x' + IntToStr(bmp.height));
-
             bmp.Canvas.Draw(i + 2,0,bmp2);
             bmp.Canvas.Draw(bmp.width - bmp3.Width,0,bmp3);
             Image3.Picture.Graphic := bmp;

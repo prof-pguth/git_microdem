@@ -1164,7 +1164,7 @@ begin
 
       FieldsUsed := 0;
       for i := StartingGrid to EndingGrid do begin
-          if (DEMGlb[i] <> Nil) then begin
+          if ValidDEM(i) then begin
              MVClusterClientDataSet.FieldDefs.Add('DEM_' + IntToStr(i),ftFloat, 0, False);
              inc(FieldsUsed);
              FieldsToUse[FieldsUsed] := 'DEM_' + IntToStr(i);
@@ -1181,13 +1181,13 @@ begin
          UpdateProgressBar((y-Limits.YGridLow)/(Limits.YGridHigh-Limits.YGridLow));
          x := Limits.XGridLow;
          while x <= Limits.XGridHigh do begin
-            for i := StartingGrid to EndingGrid do if (DEMGlb[i] <> Nil) then begin
+            for i := StartingGrid to EndingGrid do if ValidDEM(i) then begin
                if (not DEMGlb[i].GetElevMeters(x,y,z[i])) then goto MissingData;
             end;
 
             MVClusterClientDataSet.Insert;
             for i := StartingGrid to EndingGrid do begin
-               if (DEMGlb[i] <> Nil) then begin
+               if ValidDEM(i) then begin
                   MVClusterClientDataSet.FieldByName('DEM_' + IntToStr(i)).AsFloat := VariableWeightings[i] * (z[i] - Mean[i]) / std[i];
                end;
             end;
@@ -1228,14 +1228,14 @@ begin
               if (y mod 100 = 0) then UpdateProgressBar(y/NumRow);
 
               for x := 0 to pred(NumCol) do begin
-                 for i := StartingGrid to EndingGrid do if (DEMGlb[i] <> Nil) and (i <> Result) then begin
+                 for i := StartingGrid to EndingGrid do if ValidDEM(i) and (i <> Result) then begin
                     if (DEMGlb[i].GetElevMeters(x,y,z[i])) then z[i] := VariableWeightings[i] * (z[i] - Mean[i]) / std[i]
                     else goto MissingData2;
                  end;
 
                  for j := 1 to MVClusterClientDataSet.NClusters do begin
                     DistArr[j] := 0;
-                    for i := StartingGrid to EndingGrid do if (DEMGlb[i] <> Nil) and (i <> Result) then
+                    for i := StartingGrid to EndingGrid do if ValidDEM(i) and (i <> Result) then
                        DistArr[j] := DistArr[j] + Power(abs(z[i] - MVClusterClientDataSet.ClsCenters[j,i]),MDDef.ClassDistancePower);
                  end; {for j}
 
@@ -2173,7 +2173,7 @@ var
 
 
       begin
-         {$IfDef RecordElevMoment} WriteLineToDebugFile('Start DEM=' + IntToStr(CurDEM) + '  ' + DEMGlb[CurDEM].AreaName); {$EndIf}
+         {$IfDef RecordElevMoment} WriteLineToDebugFile('Start DEM=' + DEMGlb[CurDEM].AreaName); {$EndIf}
          New(zvs);
          inc(DEMsDone);
          ShowHourglassCursor;
@@ -2222,6 +2222,7 @@ var
          Incr := DEMGlb[CurDEM].GetSamplingSize(GridLimits);
          Incr := Incr * MDDef.StatSampleIncr;
          GridForm.StringGrid1.Cells[DEMsDone,2] := IntToStr(Incr);
+
          if MDDef.PlanCurvMoments or MDDef.SlopeCurvMoments then begin
              {$IfDef RecordElevMoment} WriteLineToDebugFile('Start curvature'); {$EndIf}
              MomentVar.Npts := 0;
@@ -2271,14 +2272,14 @@ var
 
       procedure DoOne(Incr : integer);
       begin
-         if Memo1 <> Nil then Memo1.Lines.Add(TimeToStr(Now) + ' start ' + IntToStr(Incr));
+         if (Memo1 <> Nil) then Memo1.Lines.Add(TimeToStr(Now) + ' start ' + IntToStr(Incr));
          LegendFiles.Add('Sampling=' + IntToStr(Incr));
          MDDef.StatSampleIncr := Incr;
          MomentReportForDEM(CurDEM);
       end;
 
 var
-   j : integer;
+   j,Done,ToDo : integer;
 begin
    {$IfDef RecordElevMoment} WriteLineToDebugFile('ElevMomentReport in'); {$EndIf}
    SaveBackupDefaults;
@@ -2306,9 +2307,14 @@ begin
    RufDist := tStringList.Create;
    RufDist.Add(MomentStr);
 
-
    if (CurDEM = 0) then begin
+      Done := 0;
+      ToDo := 0;
+      for j := 1 to MaxDEMDataSets do if DEMsWanted[j] then inc(ToDo);
+
       for j := 1 to MaxDEMDataSets do if DEMsWanted[j] then begin
+         inc(Done);
+         if (Memo1 <> Nil) then Memo1.Lines.Add('DEM ' + IntToStr(Done) + '/' + IntToStr(ToDo) );
          GridLimits := DEMGlb[j].SelectionMap.MapDraw.MapAreaDEMGridLimits;
          MomentReportForDEM(j);
          if MDDef.GraphsOfMoments then LegendFiles.Add(DEMGlb[j].AreaName);
@@ -2356,15 +2362,17 @@ begin
       if (ElevFiles.Count > 0) then CreateMultipleHistograms(MDDef.CountHistograms,ElevFiles,LegendFiles,'Elevation/grid','Elevation/grid distribution',200,MinElev,MaxElev,MDDef.ElevHistBinSize);
       if (SlopeFiles.Count > 0) then CreateMultipleHistograms(MDDef.CountHistograms,SlopeFiles,LegendFiles,'Slope (%)','Slope distribution',200,0,Trunc(MaxSlope + 0.99),MDDef.SlopeHistBinSize);
       if (RoughFiles.Count > 0) then CreateMultipleHistograms(MDDef.CountHistograms,RoughFiles,LegendFiles,'Roughness (%)','Roughness distribution',200,0,Trunc(MaxRough + 0.99),0.25);
-      if (PlanCurvFiles.Count > 0) then CreateMultipleHistograms(MDDef.CountHistograms,PlanCurvFiles,LegendFiles,'Plan curvature','Plan curvature distribution',200,-10,10,0.1);
-      if (ProfCurvFiles.Count > 0) then CreateMultipleHistograms(MDDef.CountHistograms,ProfCurvFiles,LegendFiles,'Profile curvature','Profile curvature distribution',200,-10,10,0.1);
-      {$IfDef RecordElevMoment} WriteLineToDebugFile('Done histograms'); {$EndIf}
       SlopeFiles.Free;
       RoughFiles.Free;
+      ElevFiles.Free;
+
+      if (PlanCurvFiles.Count > 0) then CreateMultipleHistograms(MDDef.CountHistograms,PlanCurvFiles,LegendFiles,'Plan curvature','Plan curvature distribution',200,-10,10,0.1);
+      if (ProfCurvFiles.Count > 0) then CreateMultipleHistograms(MDDef.CountHistograms,ProfCurvFiles,LegendFiles,'Profile curvature','Profile curvature distribution',200,-10,10,0.1);
       PlanCurvFiles.Free;
       ProfCurvFiles.Free;
+
       LegendFiles.Free;
-      ElevFiles.Free;
+      {$IfDef RecordElevMoment} WriteLineToDebugFile('Done histograms'); {$EndIf}
    end;
    GridForm.SetFormSize;
    RestoreBackupDefaults;

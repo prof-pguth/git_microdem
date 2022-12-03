@@ -954,10 +954,12 @@ begin
                Bitmap.Canvas.TextOut(30,5 + i*20,DEMGlb[CompareDEMIndexes[i]].AreaName);
             end;
          end;
-         GetImagePartOfBitmap(Bitmap,true,10);
+         (*GetImagePartOfBitmap(Bitmap,true,10);
          Bitmap.Canvas.Pen.Color := clBlack;
          Bitmap.Canvas.Brush.Style := bsClear;
          Bitmap.Canvas.Rectangle(5,5,Bitmap.Width - 5, Bitmap.Height - 5);
+         *)
+         PutBitmapInBox(Bitmap);
          DisplayBitmap(Bitmap,'Global DEMs',true);
          Bitmap.Free;
          NeedLegend := false;

@@ -1368,7 +1368,7 @@ procedure TDragonPlotForm.BitBtn9Click(Sender: TObject);
 var
    i : integer;
 begin
-   for i := 1 to NumDEMDataSetsOpen do if (DEMGlb[i] <> Nil) then DEMGlb[i].SelectionMap.DoCompleteMapRedraw;
+   for i := 1 to NumDEMDataSetsOpen do if ValidDEM(i) then DEMGlb[i].SelectionMap.DoCompleteMapRedraw;
 end;
 
 

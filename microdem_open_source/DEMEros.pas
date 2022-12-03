@@ -22,7 +22,7 @@
       //{$Define RecordKeyDraw}
       //{$Define RecordTMSat}
       //{$Define RecordDrawSatOnMap}
-      //{$Define RecordSatRegistration}
+      {$Define RecordSatRegistration}
       //{$Define RecordSatColor}
       //{$Define RecordByteLookup}
       //{$Define RecordTMSatFull}

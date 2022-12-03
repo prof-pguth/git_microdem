@@ -255,9 +255,9 @@ begin
       end;
 
       for i := 1 to NumDataPoints do begin
-            v[1] := x[i];
-            v[2] := y[i];
-            BlockWrite(rfile,v,1)
+         v[1] := x[i];
+         v[2] := y[i];
+         BlockWrite(rfile,v,1)
       end;
       CloseFile(rfile);
       with GraphDraw.DataFilesPlotted do PlotAFile(Bitmap,Strings[pred(Count)],1);
@@ -426,18 +426,18 @@ var
    Phi : float32;
    Bitmap : tMyBitmap;
 begin
-   if ThisGraph <> Nil then begin
-   ReadDefault('Percentage',Percentage);
-   with ThisGraph do begin
-      CopyImageToBitmap(Image1,Bitmap);
-      Bitmap.Canvas.Pen.Color := clRed;
-      Bitmap.Canvas.Pen.Width := 3;
-      with GraphDraw.DataFilesPlotted do PlotAFile(Bitmap,Strings[pred(Count)],1);
-      Image1.Picture.Graphic := Bitmap;
-      Bitmap.Free;
-      FindPhi(Percentage,clRed,Phi);
-   end;
-   MessageToContinue('Phi =' + RealToString(Percentage,8,-2) + ' is ' +  RealToString(Phi,5,2));
+   if (ThisGraph <> Nil) then begin
+      ReadDefault('Percentage',Percentage);
+      with ThisGraph do begin
+         CopyImageToBitmap(Image1,Bitmap);
+         Bitmap.Canvas.Pen.Color := clRed;
+         Bitmap.Canvas.Pen.Width := 3;
+         with GraphDraw.DataFilesPlotted do PlotAFile(Bitmap,Strings[pred(Count)],1);
+         Image1.Picture.Graphic := Bitmap;
+         Bitmap.Free;
+         FindPhi(Percentage,clRed,Phi);
+      end;
+      MessageToContinue('Phi =' + RealToString(Percentage,8,-2) + ' is ' +  RealToString(Phi,5,2));
    end;
 end;
 

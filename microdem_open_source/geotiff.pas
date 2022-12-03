@@ -24,9 +24,9 @@ unit GeoTiff;
    //{$Define RecordGeotiffFailures}
 
    {$IFDEF DEBUG}
-      //{$Define RecordGeotiff}
+      {$Define RecordGeotiff}
       //{$Define RecordGeotiffFailures}
-      //{$Define RecordGeotiffProjection}
+      {$Define RecordGeotiffProjection}
       //{$Define RecordDefineDatum}
       //{$Define TrackProjection}
       //{$Define RecordDEMMapProjection}

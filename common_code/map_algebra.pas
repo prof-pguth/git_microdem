@@ -1,10 +1,12 @@
 unit map_algebra;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{   file verified 4/3/2016        }
-{_________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2022 Peter L. Guth  }
+{___________________________________}
+
 
 {$I nevadia_defines.inc}
 
@@ -71,7 +73,7 @@ var
 begin
    NumDemsUsed := 0;
    for i := 1 to MaxDEMDataSets do begin
-      if (DEMGlb[i] <> Nil) then begin
+      if ValidDEM(i) then begin
          ListBox1.Items.Add(DEMGlb[i].AreaName);
       end {if};
    end {for i};
@@ -98,7 +100,7 @@ var
 begin
    for i := 1 to MaxDEMDataSets do Merge[i] := false;
    FirstDEM := 0;
-   for I := 1 to MaxDEMDataSets do if (DEMGlb[i] <> Nil) then begin
+   for I := 1 to MaxDEMDataSets do if ValidDEM(i) then begin
       for j := 1 to NumDEMsUsed do begin
          if (DEMGlb[i].AreaName = DEMsUsed[j]) then begin
             Merge[i] := true;

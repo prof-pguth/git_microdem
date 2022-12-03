@@ -151,12 +151,9 @@ end;
 
 procedure ThreeGridRGBMap(aMapForm : tMapForm);
 var
-   //FirstDEM,
    i : Integer;
 begin
-   {$IfDef RecordRGBIssues}
-   WriteLineToDebugFile('ThreeGridRGBMap in');
-   {$EndIf}
+   {$IfDef RecordRGBIssues} WriteLineToDebugFile('ThreeGridRGBMap in'); {$EndIf}
    RGB_form := TRGB_form.Create(Application);
    with RGB_form do begin
       MapForm := aMapForm;
@@ -164,7 +161,7 @@ begin
       PetImage.CloneImageToBitmap(MapForm.Image1,GreenBMP,true);
       PetImage.CloneImageToBitmap(MapForm.Image1,BlueBMP,true);
       //FirstDEM := 0;
-      for i := 1 to MaxDEMDataSets do if (DEMGlb[i] <> Nil) then begin
+      for i := 1 to MaxDEMDataSets do if ValidDEM(i) then begin
          //if True or (FirstDEM = 0) or (DEMGlb[FirstDEM].SecondGridIdentical(i)) then begin
             ComboBox1.Items.Add(DEMGlb[i].AreaName);
             ComboBox2.Items.Add(DEMGlb[i].AreaName);
@@ -175,14 +172,6 @@ begin
                     '  ' + RealToString(DEMGlb[i].HeadRecs.hdfSWCornerX,-12,-6) + '  ' + RealToString(DEMGlb[i].HeadRecs.hdfSWCornerY,-12,-6) +
                     '  ' + RealToString(DEMGlb[i].HeadRecs.fLongInterval,-12,-6) + '  ' + RealToString(DEMGlb[i].HeadRecs.fLatInterval,-12,-6));
             {$EndIf}
-         //end
-         //else begin
-            {$IfDef RecordRGBIssues}
-            //WriteLineToDebugFile('Rejected: ' + DEMGlb[i].AreaName + '  ' + IntToStr(DEMGlb[i].HeadRecs.NumCol) + 'x' + IntToStr(DEMGlb[i].HeadRecs.NumRow)  +
-            //        '  ' + RealToString(DEMGlb[i].HeadRecs.hdfSWCornerX,-12,-6) + '  ' + RealToString(DEMGlb[i].HeadRecs.hdfSWCornerY,-12,-6) +
-            //        '  ' + RealToString(DEMGlb[i].HeadRecs.fLongInterval,-12,-6) + '  ' + RealToString(DEMGlb[i].HeadRecs.fLatInterval,-12,-6));
-            {$EndIf}
-         //end;
       end;
       Edit7.Text := RealToString(MDDef.MinPercentile,-12,-1);
       Edit8.Text := RealToString(MDDef.MaxPercentile,-12,-1);
@@ -197,9 +186,7 @@ begin
       BitBtn1Click(Nil);
       Show;
    end;
-   {$IfDef RecordRGBIssues}
-   WriteLineToDebugFile('ThreeGridRGBMap out');
-   {$EndIf}
+   {$IfDef RecordRGBIssues} WriteLineToDebugFile('ThreeGridRGBMap out'); {$EndIf}
 end;
 
 
@@ -212,7 +199,7 @@ procedure TRGB_form.CheckComboBox(ComboBox : tComboBox; MinEdit,MaxEdit : tEdit;
 var
     i,chan : integer;
 begin
-   for i := 1 to MaxDEMDataSets do if (DEMGlb[i] <> Nil) then begin
+   for i := 1 to MaxDEMDataSets do if ValidDEM(i) then begin
       if ComboBox.Text = DEMGlb[i].AreaName then begin
          DEM := i;
 
@@ -249,9 +236,7 @@ var
    Found,IdenticalGrids : boolean;
    BMPMem : tBMPMemory;
 begin
-   {$IfDef RecordRGBIssues}
-   WriteLineToDebugFile(' TRGB_form.DrawGridRGBMap in, DEM=' + IntToStr(DEM) + ' channel=' + IntToStr(Channel));
-   {$EndIf}
+   {$IfDef RecordRGBIssues} WriteLineToDebugFile(' TRGB_form.DrawGridRGBMap in, DEM=' + IntToStr(DEM) + ' channel=' + IntToStr(Channel)); {$EndIf}
    StartProgress('RGB map ' + IntToStr(DEM));
    ClearBitmap(Bitmap,clBlack);
    BMPMem := tBMPMemory.Create(Bitmap);
@@ -278,9 +263,7 @@ begin
    end;
    BMPMem.Destroy;
    EndProgress;
-   {$IfDef RecordRGBIssues}
-   WriteLineToDebugFile(' TRGB_form.DrawGridRGBMap out, DEM=' + IntToStr(DEM) + ' channel=' + IntToStr(Channel));
-   {$EndIf}
+   {$IfDef RecordRGBIssues}  WriteLineToDebugFile(' TRGB_form.DrawGridRGBMap out, DEM=' + IntToStr(DEM) + ' channel=' + IntToStr(Channel)); {$EndIf}
 end;
 
 procedure TRGB_form.ResetChannels;
@@ -300,9 +283,7 @@ var
    r,g,b : byte;
    Composite,Red,Green,Blue : tBMPMemory;
 begin
-   {$IfDef RecordRGBIssues}
-   WriteLineToDebugFile('TRGB_form.BitBtn1Click in');
-   {$EndIf}
+   {$IfDef RecordRGBIssues} WriteLineToDebugFile('TRGB_form.BitBtn1Click in'); {$EndIf}
    if (RedBMP.Height <> MapForm.Image1.ClientHeight) or (RedBMP.Width <> MapForm.Image1.ClientWidth) then begin
       RedChanged := true;
       BlueChanged := true;
@@ -346,9 +327,7 @@ begin
    RadioGroup2.Enabled := true;
    RadioGroup2.ItemIndex := 0;
    RadioGroup2Click(Sender);
-   {$IfDef RecordRGBIssues}
-   WriteLineToDebugFile('TRGB_form.BitBtn1Click out');
-   {$EndIf}
+   {$IfDef RecordRGBIssues} WriteLineToDebugFile('TRGB_form.BitBtn1Click out'); {$EndIf}
 end;
 
 procedure TRGB_form.BitBtn2Click(Sender: TObject);
@@ -453,6 +432,14 @@ begin
    MDDef.DefElevsPercentile := RadioGroup1.ItemIndex = 1;
    Edit7.Enabled := MDDef.DefElevsPercentile;
    Edit8.Enabled := MDDef.DefElevsPercentile;
+
+   CheckComboBox(ComboBox1,Edit2,Edit1,RedDEM,MinRedRange,MaxRedRange,RedBMP);
+   RedChanged := false;
+   CheckComboBox(ComboBox2,Edit4,Edit3,GreenDEM,MinGreenRange,MaxGreenRange,GreenBMP);
+   GreenChanged := false;
+   CheckComboBox(ComboBox3,Edit6,Edit5,BlueDEM,MinBlueRange,MaxBlueRange,BlueBMP);
+   BlueChanged := false;
+   BitBtn1Click(Sender);
 end;
 
 procedure TRGB_form.RadioGroup2Click(Sender: TObject);
@@ -482,11 +469,6 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordRGBIssues}
-   WriteLineToDebugFile('RecordRGBIssues active in rgb_colors_three_params');
-   {$EndIf}
-
-   {$IfDef RecordClosingProblems}
-   WriteLineToDebugFile('Closing rgb_colors_three_params');
-   {$EndIf}
+   {$IfDef RecordRGBIssues} WriteLineToDebugFile('RecordRGBIssues active in rgb_colors_three_params'); {$EndIf}
+   {$IfDef RecordClosingProblems} WriteLineToDebugFile('Closing rgb_colors_three_params'); {$EndIf}
 end.

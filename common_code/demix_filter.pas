@@ -62,8 +62,8 @@ type
 
   end;
 
-var
-  DemixFilterForm: TDemixFilterForm;
+//var
+  //DemixFilterForm: TDemixFilterForm;
 
 procedure DoDEMIXFilter(DB : integer);
 
@@ -77,6 +77,30 @@ uses
    DEMDatabase,DEMDbTable,DEMdef_routines,DEMDefs,
    BaseGraf,
    DEMIX_control;
+
+procedure DoDEMIXFilter(DB : integer);
+var
+  DemixFilterForm: TDemixFilterForm;
+  i: Integer;
+begin
+   DemixFilterForm := TDemixFilterForm.Create(Application);
+   DemixFilterForm.db := db;
+   for i := pred(DemixFilterForm.Memo4.Lines.Count) downto 0 do begin
+      if not GISdb[db].MyData.FieldExists(DemixFilterForm.Memo4.Lines[i]) then DemixFilterForm.Memo4.Lines.Delete(i);
+   end;
+   DemixFilterForm.Memo6.Lines.LoadFromFile(DEMIXSettingsDir + 'demix_areas_sorted_by_lat.txt');
+   DemixFilterForm.DEMsTypeUsing := tStringList.Create;
+   DemixFilterForm.TilesUsing := tStringList.Create;
+
+   DemixFilterForm.LandTypesUsing := tStringList.Create;
+   DemixFilterForm.CriteriaUsing := tStringList.Create;
+   DemixFilterForm.CandidateDEMsUsing := tStringList.Create;
+
+   DemixFilterForm.BitBtn1.Enabled := GISdb[db].MyData.FieldExists('DEM');
+
+   DemixFilterForm.Show;
+end;
+
 
 
 procedure TDemixFilterForm.BitBtn2Click(Sender: TObject);
@@ -191,30 +215,6 @@ begin
    Edit1.Text := IntToStr(MDDef.DEMIX_xsize);
    Edit2.Text := IntToStr(MDDef.DEMIX_ysize);
 end;
-
-procedure DoDEMIXFilter(DB : integer);
-var
-  DemixFilterForm: TDemixFilterForm;
-  i: Integer;
-begin
-   DemixFilterForm := TDemixFilterForm.Create(Application);
-   DemixFilterForm.db := db;
-   for i := pred(DemixFilterForm.Memo4.Lines.Count) downto 0 do begin
-      if not GISdb[db].MyData.FieldExists(DemixFilterForm.Memo4.Lines[i]) then DemixFilterForm.Memo4.Lines.Delete(i);
-   end;
-   DemixFilterForm.Memo6.Lines.LoadFromFile(DEMIXSettingsDir + 'demix_areas_sorted_by_lat.txt');
-   DemixFilterForm.DEMsTypeUsing := tStringList.Create;
-   DemixFilterForm.TilesUsing := tStringList.Create;
-
-   DemixFilterForm.LandTypesUsing := tStringList.Create;
-   DemixFilterForm.CriteriaUsing := tStringList.Create;
-   DemixFilterForm.CandidateDEMsUsing := tStringList.Create;
-
-   DemixFilterForm.BitBtn1.Enabled := GISdb[db].MyData.FieldExists('DEM');
-
-   DemixFilterForm.Show;
-end;
-
 
 
 procedure TDemixFilterForm.BitBtn1Click(Sender: TObject);

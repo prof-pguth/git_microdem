@@ -3,8 +3,8 @@ object TernOptForm: TTernOptForm
   Top = 273
   BorderIcons = []
   Caption = 'Ternary Options'
-  ClientHeight = 208
-  ClientWidth = 157
+  ClientHeight = 222
+  ClientWidth = 161
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

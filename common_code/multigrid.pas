@@ -165,7 +165,7 @@ type
 
 const
    MaxMontlyDBArray = 3;
-   MaxLMG = 3;                   //for lidar
+   MaxLMG = 3;   //for lidar
    TempMG : integer = 0;
    MinTempMG : integer = 0;
    MaxTempMG : integer = 0;
@@ -179,7 +179,7 @@ const
 var
    MultiGridArray : array[1..MaxMultiGrid] of tMultiGridArray;
    MonthlyDBArray : array[1..MaxMontlyDBArray] of tMonthlyDBArray;
-   lmg : array[1..MaxLMG] of  tLidarMatchedGrids;
+   lmg : array[1..MaxLMG] of tLidarMatchedGrids;
 
 procedure OpenEGMgrids;
 
@@ -204,12 +204,11 @@ function NumOpenMonthlyDBArray : integer;
 function OpenMonthlyMultiGrids(Parameter : shortstring = ''; OpenMaps : boolean = true) : integer;
 function MultipleMultigridsAnnualParamrGraph(MG1,MG2,MG3 : integer; Lat,Long: float64; Extra : shortstring = '') : TThisbasegraph;
 function ValidLMG(i : integer) : boolean;
-function ValidMG(i : integer) : boolean;
+function ValidMultiGrid(i : integer) : boolean;
 
 procedure OpenTempPrecipEvap(OpenMaps : boolean = true);
 procedure OpenDailyTemps(OpenMaps : boolean = true);
 procedure OpenSolarRad(OpenMaps : boolean = true);
-function ValidMultiGrid(i : integer) : boolean;
 
 
 implementation
@@ -312,7 +311,7 @@ end;
 procedure OpenSolarRad;
 begin
    if (PathIsValid(WorldClimate2Dir)) then begin
-      if not ValidMG(SolarRad) then SolarRad := OpenMonthlyMultiGrids('Solar radiation (entire earth)',OpenMaps);
+      if not ValidMultiGrid(SolarRad) then SolarRad := OpenMonthlyMultiGrids('Solar radiation (entire earth)',OpenMaps);
    end
    else MessageToContinue('Missing World Climate 2 data');
 end;
@@ -348,11 +347,6 @@ begin
 end;
 
 
-function ValidMG(i : integer) : boolean;
-begin
-   Result := (i > 0) and (i <= MaxMultiGrid);
-end;
-
 
 { tMonthlyDBArray }
 
@@ -364,8 +358,9 @@ end;
 
 destructor tMonthlyDBArray.Destroy;
 begin
-    inherited;
+   inherited;
 end;
+
 
 procedure tMonthlyDBArray.LoadMonthlyDBs(fList : tStringList);
 var

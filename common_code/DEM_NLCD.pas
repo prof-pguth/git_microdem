@@ -238,7 +238,7 @@ var
           end;
        end;
       {$IfDef RecordBatch} WriteLineToDebugFile('Drawing done bitmap, ' + BitmapSize(bmp)); {$EndIf}
-      GetImagePartOfBitmap(bmp);
+      PutBitmapInBox(bmp);
       {$IfDef RecordBatch} WriteLineToDebugFile('Got image part bitmap, ' + BitmapSize(bmp)); {$EndIf}
       DisplayBitmap(Bmp,'Land cover distribution');
    end;

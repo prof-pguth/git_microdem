@@ -6,8 +6,8 @@ object DragonPlotForm: TDragonPlotForm
   BorderIcons = []
   BorderStyle = bsSingle
   Caption = 'Fire Tower Information'
-  ClientHeight = 550
-  ClientWidth = 426
+  ClientHeight = 541
+  ClientWidth = 420
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -24,11 +24,13 @@ object DragonPlotForm: TDragonPlotForm
   TextHeight = 13
   object Panel1: TPanel
     Left = 0
-    Top = 510
-    Width = 426
+    Top = 501
+    Width = 420
     Height = 40
     Align = alBottom
     TabOrder = 0
+    ExplicitTop = 510
+    ExplicitWidth = 426
     object BitBtn3: TBitBtn
       Left = 130
       Top = 6
@@ -1022,10 +1024,11 @@ object DragonPlotForm: TDragonPlotForm
   object Panel3: TPanel
     Left = 0
     Top = 0
-    Width = 426
+    Width = 420
     Height = 24
     Align = alTop
     TabOrder = 2
+    ExplicitWidth = 426
   end
   object Memo1: TMemo
     Left = 2

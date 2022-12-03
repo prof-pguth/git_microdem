@@ -15,7 +15,6 @@ object MapOverlayForm: TMapOverlayForm
   FormStyle = fsStayOnTop
   Position = poDefaultSizeOnly
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Panel1: TPanel
     Left = 1
@@ -358,6 +357,8 @@ object MapOverlayForm: TMapOverlayForm
     Height = 41
     Align = alBottom
     TabOrder = 6
+    ExplicitTop = 594
+    ExplicitWidth = 254
     object OKBtn: TBitBtn
       Left = 3
       Top = 6

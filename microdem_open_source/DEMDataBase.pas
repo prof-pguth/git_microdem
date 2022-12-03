@@ -612,7 +612,7 @@ type
          procedure SubsetShapeFile(var fName: PathStr; ThinFactor : integer = 1; BatchRun : boolean = false);
          procedure DisplayTable(fString : AnsiString = 'NONE'; CompleteFilter : boolean = false);
          procedure IrregularFilterDB;
-         procedure InsureSensorsNamed;
+         //procedure InsureSensorsNamed;
          procedure SetGazTableOptions;
          function GetMaskFieldName : string10;
          procedure RenameField(OldName, NewName: ShortString);
@@ -1936,6 +1936,7 @@ end;
          end;
 
 
+         (*
          procedure TGISdataBaseModule.InsureSensorsNamed;
          var
             SensorBaseName : ShortString;
@@ -1953,7 +1954,7 @@ end;
             end;
             ClearGISFilter;
          end;
-
+         *)
 
          procedure TGISdataBaseModule.FillComboBoxFromField(var ComboBox : tComboBox; Field : shortstring);
          var
@@ -2612,7 +2613,7 @@ end;
                end;
                if (AddDEM = adElevAllGrids) or (AddDEM = adDeltaAllGrids) then begin
                   for i := 1 to MaxDEMDataSets do begin
-                     if (DEMGlb[i] <> Nil) then begin
+                     if ValidDEM(i) then begin
                         fName := 'Z_' + DEMGlb[i].AreaName;
                         if length(fName) > 10 then fName := Copy(fName,1,10);
                         AddFieldToDataBase(ftFloat,fName,14,DecimalsToUse);

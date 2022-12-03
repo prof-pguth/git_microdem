@@ -250,7 +250,7 @@ begin
             end;
          {$EndIf}
          for i := 1 to MaxDEMDataSets do begin
-            if (DEMGlb[i] <> Nil) and (DEMGlb[i].SelectionMap.Handle <> Map.Handle) and (DEMGlb[i].SelectionMap.MapDraw.KMLcompatibleMap ) then begin
+            if ValidDEM(i) and (DEMGlb[i].SelectionMap.Handle <> Map.Handle) and (DEMGlb[i].SelectionMap.MapDraw.KMLcompatibleMap ) then begin
                fName := NextFileNumber(KML.KMLOutputPath, (DEMGlb[i].AreaName), Ext);
                PetImage.SaveImageAsBMP(DEMGlb[i].SelectionMap.Image1,fname);
                KML.AddGroundOverlay(DEMGlb[i].AreaName,DEMGlb[i].SelectionMap,fName);

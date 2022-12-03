@@ -14,7 +14,6 @@ object TMapOptsForm: TTMapOptsForm
   Font.Style = []
   Position = poDefaultSizeOnly
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object RedrawSpeedButton12: TSpeedButton
     Left = 22

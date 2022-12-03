@@ -3,8 +3,8 @@ object PetEditf: TPetEditf
   Top = 225
   BorderIcons = [biSystemMenu, biMinimize]
   Caption = ' '
-  ClientHeight = 271
-  ClientWidth = 468
+  ClientHeight = 323
+  ClientWidth = 493
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -42,7 +42,6 @@ object PetEditf: TPetEditf
   Visible = True
   OnClose = FormClose
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 16
   object SpeedButton2: TSpeedButton
     Left = 25
@@ -87,11 +86,12 @@ object PetEditf: TPetEditf
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 468
+    Width = 493
     Height = 28
     ParentShowHint = False
     ShowHint = True
     TabOrder = 0
+    ExplicitWidth = 462
     object SpeedButton5: TSpeedButton
       Left = 0
       Top = 0
@@ -162,8 +162,8 @@ object PetEditf: TPetEditf
   object RichEdit1: TRichEdit
     Left = 0
     Top = 28
-    Width = 468
-    Height = 243
+    Width = 493
+    Height = 295
     Align = alClient
     Font.Charset = ANSI_CHARSET
     Font.Color = clWindowText
@@ -174,6 +174,8 @@ object PetEditf: TPetEditf
     PlainText = True
     ScrollBars = ssBoth
     TabOrder = 1
+    ExplicitWidth = 462
+    ExplicitHeight = 209
   end
   object MainMenu1: TMainMenu
     Left = 73

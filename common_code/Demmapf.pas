@@ -84,7 +84,7 @@
       //{$Define RecordNewMaps}
       //{$Define RecordNewWKT}
       //{$Define RecordNewWKTFull}
-      //{$Define RecordNewSatMap}
+      {$Define RecordNewSatMap}
       //{$Define RecordMessages}
       //{$Define RecordGlobeRotation}
       //{$Define RecordThreadCheckPlane}
@@ -464,8 +464,8 @@ type
     Pointmodedigitizing1: TMenuItem;
     Streamdigitizing1: TMenuItem;
     N16bitBSQ1: TMenuItem;
-    ReinterpolateUTM1: TMenuItem;
-    ReinterpolateLatLong1: TMenuItem;
+    //ReinterpolateUTM1: TMenuItem;
+    //ReinterpolateLatLong1: TMenuItem;
     Savemapasimage1: TMenuItem;
     RasterGIS1: TMenuItem;
     Viewshed1: TMenuItem;
@@ -969,7 +969,7 @@ type
     Radianstodegrees1: TMenuItem;
     Tangentradians1: TMenuItem;
     Tangentdegrees1: TMenuItem;
-    auDEMtools1: TMenuItem;
+    //auDEMtools1: TMenuItem;
     Locationsonly1: TMenuItem;
     Values1: TMenuItem;
     Profiles1: TMenuItem;
@@ -1703,8 +1703,6 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Pointmodedigitizing1Click(Sender: TObject);
     procedure Streamdigitizing1Click(Sender: TObject);
     procedure N16bitBSQ1Click(Sender: TObject);
-    procedure ReinterpolateUTM1Click(Sender: TObject);
-    procedure ReinterpolateLatLong1Click(Sender: TObject);
     procedure Viewshed1Click(Sender: TObject);
     procedure Derivativegrid2Click(Sender: TObject);
     procedure Histogram2Click(Sender: TObject);
@@ -2222,7 +2220,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
    // procedure GDALwarpsubset1Click(Sender: TObject);
    // procedure Bandcorrelation1Click(Sender: TObject);
     //procedure Falsecolorpansharpen1Click(Sender: TObject);
-    procedure auDEMtools1Click(Sender: TObject);
+    //procedure auDEMtools1Click(Sender: TObject);
     procedure RVTgridcreation1Click(Sender: TObject);
     procedure Aspectdifference1Click(Sender: TObject);
     procedure CurrentsubsetGeotiff1Click(Sender: TObject);
@@ -3252,7 +3250,7 @@ begin
    {$IfDef ExMultigrid}
    {$Else}
       OpenSolarRad(false);
-      if ValidMG(SolarRad) then begin
+      if ValidMultiGrid(SolarRad) then begin
          if (DEM <> 0) and DEMGlb[DEM].GetElevFromLatLongDegree(Lat,Long,z) then TStr := RealToString(z,-8,0) + ' m' else TStr := '';
          Result := MultiGridArray[SolarRad].AnnualParameterGraph(Lat,Long,TStr);
          if (Result <> Nil) then begin
@@ -3281,7 +3279,7 @@ var
 begin
    {$IfDef RecordGeography} WriteLineToDebugFile('TMapForm.Evapotranspirationprecipitationwaterbudget1Click'); {$EndIf}
    OpenTempPrecipEvap(false);
-   if ValidMG(ETOMG) and ValidMG(PrecipMG) then begin
+   if ValidMultiGrid(ETOMG) and ValidMultiGrid(PrecipMG) then begin
       TStr := '';
       if (DEM <> 0) and DEMGlb[DEM].GetElevFromLatLongDegree(Lat,Long,z) then TStr := RealToString(z,-8,0) + ' m';
       Result := MultipleMultigridsAnnualParamrGraph(ETOMG,PrecipMG,0,Lat,Long,TStr);
@@ -3309,7 +3307,7 @@ var
 begin
    {$IfDef RecordGeography} WriteLineToDebugFile('TMapForm.Koppenclimographfromclimategrids1Click'); {$EndIf}
    OpenTempPrecipEvap(false);
-   if ValidMG(TempMG) and ValidMG(PrecipMG) then begin
+   if ValidMultiGrid(TempMG) and ValidMultiGrid(PrecipMG) then begin
       ClimateData.Lat := Lat;
       ClimateData.Long := Long;
       ClimateData.Elevation := -9999;
@@ -3481,7 +3479,7 @@ begin
    end;
    NumClass := 0;
    for i := 2 to MaxDEMDataSets do begin
-      if (DEMGlb[i] <> Nil) then begin
+      if ValidDEM(i) then begin
          inc(NumClass);
          if DEMGlb[i].GetElevFromLatLongDegree(Lat,Long,z) then begin
            c := round(z);
@@ -3493,7 +3491,7 @@ begin
               ClassCat[cat] := ClassCat[cat] + prob;
            end {for cat loop};
          end {if good z};
-      end {if (DEMGlb[i] <> Nil)};
+      end {if ValidDEM(i)};
    end {for};
    MaxProb := 0;
    for c := 1 to 7 do begin
@@ -3512,7 +3510,7 @@ var
    aFilter : ANSIString;
 begin
    for i := 1 to MaxDEMDataSets do begin
-      if (DEMGlb[i] <> Nil) then begin
+      if ValidDEM(i) then begin
          aFilter := 'GRID_NAME=' + QuotedStr(ptTrim(DEMGlb[i].AreaName));
          GISDB[EnsembleClassDB].MyData.ApplyFilter(aFilter);
          if GISDB[EnsembleClassDB].MyData.FiltRecsInDB > 0 then begin
@@ -4285,7 +4283,7 @@ var
             {$IfDef RecordDrape} WriteLineToDebugFile('MDdef.NumFlyDrapes = 2'); {$EndIf}
             OpenData := tStringList.Create;
             for i := 1 to MaxDEMDataSets do
-               if (DEMGlb[i] <> Nil) then OpenData.Add('DEM' + IntegerToString(i,5) + '  ' + DEMGlb[i].AreaName);
+               if ValidDEM(i) then OpenData.Add('DEM' + IntegerToString(i,5) + '  ' + DEMGlb[i].AreaName);
             {$IfDef ExSat}
             {$Else}
             for i := 1 to MaxSatAllowed do
@@ -5535,14 +5533,6 @@ begin
   {$IfDef RecordMapDraw} WriteLineToDebugFile('TMapForm.auDEMcode181Click out'); {$EndIf}
 end;
 
-procedure TMapForm.auDEMtools1Click(Sender: TObject);
-begin
-   {$IfDef NoExternalPrograms}
-   {$Else}
-      TauDEMOp(MapDraw.DEMonMap,tdPitRemove);
-   {$EndIf}
-end;
-
 
 procedure TMapForm.Buildingedges1Click(Sender: TObject);
 begin
@@ -6436,7 +6426,7 @@ begin
       Results.Add(DEMGlb[MapDraw.DEMonMap].DEMLocationString(x,y));
       ResultsForDEM(MapDraw.DEMOnMap,x,y);
       for I := 1 to NumDEMDataSetsOpen do begin
-         if (DEMGLB[i] <> Nil) and (I <> MapDraw.DEMonMap) then begin
+         if ValidDEM(i) and (I <> MapDraw.DEMonMap) then begin
             DEMGLB[i].LatLongDegreeToDEMGridInteger(Lat,Long,xp,yp);
             ResultsForDEM(i,xp,yp);
          end;
@@ -8096,8 +8086,8 @@ begin
       LineOfSight1.Visible := ExpertDEMVersion;
       Horizontalearthcurvature1.Visible := ExpertDEMVersion;
       Missingdatatosealevel1.Visible := ExpertDEMVersion;
-      ReinterpolateUTM1.Visible := ExpertDEMVersion;
-      ReinterpolateLatLong1.Visible := ExpertDEMVersion;
+      //ReinterpolateUTM1.Visible := ExpertDEMVersion;
+      //ReinterpolateLatLong1.Visible := ExpertDEMVersion;
       ThinDEM1.Visible := ExpertDEMVersion;
       Volume1.Visible := ExpertDEMVersion;
       Mapshadingoptions1.Visible := ExpertDEMVersion;
@@ -11364,7 +11354,7 @@ begin
       {$IfDef RecordAllMapRoam} WriteLineToDebugFile('Point 2.3'); {$EndIf}
    end;
 
-      if ValidMG(TempMG) and ValidMG(PrecipMG) then begin
+      if ValidMultiGrid(TempMG) and ValidMultiGrid(PrecipMG) then begin
          ClimateData.Lat := Lat;
          ClimateData.Long := Long;
          LoadClimateData(ClimateData);
@@ -11827,6 +11817,7 @@ begin
       end;
    end;
    EndProgress;
+
    fName := ExtractFilePath(DEMGlb[MapDraw.DEMonMap].DEMFileName) + ExtractFileNameNoExt(DEMGlb[MapDraw.DEMonMap].DEMFileName) + '_features.dem';
    Histy := tStringList.Create;
    if FindCentroid then TStr := ',LAT,LONG' else TStr := '';
@@ -11862,9 +11853,8 @@ begin
 
    DEMGlb[NewDEM].SetUpMap(NewDEM,true,mtElevSpectrum);
    DEMGlb[NewDEM].WriteNewFormatDEM(fName);
-   fName := ChangeFileExt(fName,'.vat.dbf');
-   FeaturesDB := DEMGlb[NewDEM].SelectionMap.StringListToLoadedDatabase(Histy, fName);
-   DEMGlb[NewDEM].VATFileName := fName;
+   DEMGlb[NewDEM].VATFileName := ChangeFileExt(fName,'.vat.dbf');
+   FeaturesDB := DEMGlb[NewDEM].SelectionMap.StringListToLoadedDatabase(Histy, DEMGlb[NewDEM].VATFileName);
 
    if (Culled > 0) then MessageToContinue('Small regions culled: ' + IntToStr(Culled));
 
@@ -16607,7 +16597,7 @@ var
 
       function ComputingDEM(i : integer) : boolean;
       begin
-         Result := (DEMGlb[i] <> Nil) and (i <> MeanDEM) and (i <> NptsDEM) and (i <> STDDEM) and (I <> MedDEM) and (i <> FloorDEM) and (i <> CeilingDEM) and (i <> EnvDEM) and (I <> MaxDEM) and (I <> MinDEM);
+         Result := ValidDEM(i) and (i <> MeanDEM) and (i <> NptsDEM) and (i <> STDDEM) and (I <> MedDEM) and (i <> FloorDEM) and (i <> CeilingDEM) and (i <> EnvDEM) and (I <> MaxDEM) and (I <> MinDEM);
       end;
 
 
@@ -16640,7 +16630,7 @@ begin
          if MDDef.doNPtsDEM then OpenAndZeroNewDEM(true,NewHeadRecs,NPTsDEM,'',InitDEMmissing);
 
          for I := 1 to MaxDEMDataSets do begin
-            if (DEMGlb[i] <> Nil) then LargestAssignedDEM := i;
+            if ValidDEM(i) then LargestAssignedDEM := i;
          end;
 
          StartProgress('Multigrid stats');
@@ -16904,17 +16894,16 @@ var
    Spacing : float32;
    NewDEM1,NewDEM2 : integer;
 begin
-   Spacing := 0.1 * DEMGlb[MapDraw.DEMonMap].DEMheader.DEMxSpacing;
+   //Spacing := 0.1 * DEMGlb[MapDraw.DEMonMap].DEMheader.DEMxSpacing;
    if DEMGlb[MapDraw.DEMonMap].DEMheader.DEMUsed = ArcSecDEM  then begin
-        Spacing := 3600 * Spacing;  //since it has to be in arc seconds for the reinterpolation routine
+        Spacing := 3600 * 0.1 * DEMGlb[MapDraw.DEMonMap].DEMheader.DEMxSpacing;  //since it has to be in arc seconds for the reinterpolation routine
         MDDef.wf.ElevInterpolation := piBicubic;
-        DEMGlb[MapDraw.DEMonMap].ReinterpolateLatLongDEM(NewDEM1,Spacing,MDTEMPDir + DEMGlb[MapDraw.DEMonMap].AreaName + '_bicubic.dem');
+        DEMGlb[MapDraw.DEMonMap].ReinterpolateLatLongDEM(NewDEM1,Spacing,MDTempDir + DEMGlb[MapDraw.DEMonMap].AreaName + '_bicubic.dem');
         MDDef.wf.ElevInterpolation := piBilinear;
-        DEMGlb[MapDraw.DEMonMap].ReinterpolateLatLongDEM(NewDEM2,Spacing,MDTEMPDir + DEMGlb[MapDraw.DEMonMap].AreaName + '_biliear.dem');
+        DEMGlb[MapDraw.DEMonMap].ReinterpolateLatLongDEM(NewDEM2,Spacing,MDTempDir + DEMGlb[MapDraw.DEMonMap].AreaName + '_biliear.dem');
    end;
    DEMGlb[NewDEM1].SetUpMap(NewDEM1,true,MapDraw.MapType);
    DEMGlb[NewDEM2].SetUpMap(NewDEM2,true,MapDraw.MapType);
-     // ReinterpolateUTMDEM(var NewDEM : integer; FloatSpacing : float64; UTMzone : int16 = -99; fName : PathStr = ''; AddCaption : shortstring = '');
 end;
 
 procedure TMapForm.Database1Click(Sender: TObject);
@@ -22591,7 +22580,7 @@ procedure TMapForm.Koppenclimographfromclimategrids1Click(Sender: TObject);
       begin
          {$IfDef RecordGeography} WriteLineToDebugFile('TMapForm.Koppenclimographfromclimategrids1Click'); {$EndIf}
          OpenTempPrecipEvap(false);
-         if ValidMG(TempMG) and ValidMG(PrecipMG) then begin
+         if ValidMultiGrid(TempMG) and ValidMultiGrid(PrecipMG) then begin
             ClimateData.Lat := Lat;
             ClimateData.Long := Long;
             ClimateData.Elevation := -9999;
@@ -23501,6 +23490,11 @@ begin
    NakedMapOptions;   //which calls SaveBackupDefaults;
    DEMNowDoing := Calculating;
    NewDEM := 0;
+
+   //if (Sender = ReinterpolateUTM1) then DEMGlb[MapDraw.DEMonMap].ReinterpolateUTMDEM(NewDEM,-1);
+   //if (Sender = ReinterpolateLatLong1) then DEMGlb[MapDraw.DEMonMap].ReinterpolateLatLongDEM(NewDEM,-1);
+
+
    if (Sender = ThinDEM1) then DEMGlb[MapDraw.DEMonMap].ThinThisDEM(NewDEM);
    if (Sender = Filter1) or (Sender = PickFilter1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcFilFile,NewDEM);
    if (Sender = Numberimmediateneighbors1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcNumNeigh,NewDEM);
@@ -23521,8 +23515,6 @@ begin
    if (Sender = Integer161) then DEMGlb[MapDraw.DEMonMap].ResaveNewResolution(fcSaveSmallInt,NewDEM);
    if (Sender = Word1) then DEMGlb[MapDraw.DEMonMap].ResaveNewResolution(fcSaveWord,NewDEM);
    if (Sender = FloatingPoint1) then DEMGlb[MapDraw.DEMonMap].ResaveNewResolution(fcSaveFloatingPoint,NewDEM);
-   if (Sender = ReinterpolateUTM1) then DEMGlb[MapDraw.DEMonMap].ReinterpolateUTMDEM(NewDEM,-1);
-   if (Sender = ReinterpolateLatLong1) then DEMGlb[MapDraw.DEMonMap].ReinterpolateLatLongDEM(NewDEM,-1);
    if (Sender = Western1) then DEMGlb[MapDraw.DEMonMap].FindEdgeThisDEM(NewDEM,cdW);
    if (Sender = Eastern1) then DEMGlb[MapDraw.DEMonMap].FindEdgeThisDEM(NewDEM,cdE);
    if (Sender = SouthWestern1) then DEMGlb[MapDraw.DEMonMap].FindEdgeThisDEM(NewDEM,cdSW);
@@ -23579,10 +23571,6 @@ begin
    StringListToLoadedDatabase(Findings,Petmar.NextFileNumber(MDTempDir, 'filter_size_',DefaultDBExt));
 end;
 
-procedure TMapForm.ReinterpolateUTM1Click(Sender: TObject);
-begin
-   ThinDEM1Click(Sender);
-end;
 
 procedure TMapForm.Reinterpolatealltosameresolution1Click(Sender: TObject);
 begin
@@ -23590,11 +23578,6 @@ begin
    {$Else}
       MultiGridArray[MapDraw.MultiGridOnMap].ReinterpolateAllToSameResolution;
    {$EndIf}
-end;
-
-procedure TMapForm.ReinterpolateLatLong1Click(Sender: TObject);
-begin
-   ThinDEM1Click(Sender);
 end;
 
 procedure TMapForm.Reinterpolatepickprojection1Click(Sender: TObject);
@@ -23747,7 +23730,6 @@ begin
 var
     NewMap : tMapForm;
 begin
-    //NewMap := Nil;
     NewMap := DuplicateMap(false);
     ThreeGridRGBMap(NewMap);
 {$EndIf}

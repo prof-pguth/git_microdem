@@ -8,7 +8,6 @@ unit lvis;
 {____________________________________}
 
 
-
 {$I nevadia_defines.inc}
 
 
@@ -150,7 +149,7 @@ implementation
 
 uses
    Petmar,PetMath,PetImage,
-  BaseMap;
+   BaseMap;
 
 
 { tLVIS_Dataset }
@@ -303,7 +302,6 @@ begin
    fname := MDTempDir + ExtractFileNameNoExt(lceFName) + '_shots.csv';
    MapOwner.DisplayAndPurgeStringListDB(Findings,fName);
 end;
-
 
 
 procedure tLVIS_Dataset.GraphReturn(var Graph: tThisBaseGraph; ReturnNumber: integer);

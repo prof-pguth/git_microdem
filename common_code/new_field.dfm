@@ -12,9 +12,7 @@ object NewFieldForm: TNewFieldForm
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
-  OldCreateOrder = True
   Position = poMainFormCenter
-  PixelsPerInch = 96
   TextHeight = 13
   object Label2: TLabel
     Left = 18

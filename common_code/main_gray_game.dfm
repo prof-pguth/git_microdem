@@ -10,9 +10,7 @@ object GrayGameForm: TGrayGameForm
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
-  OldCreateOrder = False
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object PageControl1: TPageControl
     Left = 0
@@ -23,6 +21,8 @@ object GrayGameForm: TGrayGameForm
     Align = alClient
     TabOrder = 0
     OnEnter = PageControl1Enter
+    ExplicitWidth = 560
+    ExplicitHeight = 518
     object TabSheet1: TTabSheet
       Caption = 'Grayscale game'
       object Label1: TLabel

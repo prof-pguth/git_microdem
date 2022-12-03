@@ -175,7 +175,7 @@ end;
                       CreateBitmap(Result,BitmapMaxWidth,20*FieldsInDB.Count+5);
                       Petmar.LoadMyFontIntoWindowsFont(MDDef.DefGISLegendFont,Result.Canvas.Font);
                       ItemHeight := Result.Canvas.TextHeight('My') + 5;
-                      Result.Height := ItemHeight*FieldsInDB.Count+5;
+                      Result.Height := ItemHeight * FieldsInDB.Count + 5;
 
                       for I := 0 to pred(FieldsInDB.Count) do begin
                          MyData.ApplyFilter(UseFilter + dbOpts.LabelField + '=' + QuotedStr(FieldsInDB.Strings[i]));
@@ -189,10 +189,13 @@ end;
                       MyData.ApplyFilter(BaseFilter);
                    end;
                    if (Result <> Nil) then begin
+                      (*
                       PetImage.GetImagePartOfBitmap(Result);
                       Result.Canvas.Pen.Color := clBlack;
                       Result.Canvas.Brush.Style := bsClear;
                       Result.Canvas.Rectangle(0,0,pred(Result.Width),pred(Result.Height));
+                      *)
+                      PutBitmapInBox(Result);
                    end;
                    RestoreFilterStatus;
                    EmpSource.Enabled := true;

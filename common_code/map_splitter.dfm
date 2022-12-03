@@ -14,7 +14,6 @@ object splitter_form: Tsplitter_form
   FormStyle = fsMDIChild
   Visible = True
   OnClose = FormClose
-  PixelsPerInch = 96
   TextHeight = 13
   object Image1: TImage
     Left = 0

@@ -15,7 +15,6 @@ object RGB_form: TRGB_form
   OnClose = FormClose
   OnCreate = FormCreate
   OnResize = FormResize
-  PixelsPerInch = 96
   TextHeight = 13
   object Panel1: TPanel
     Left = 0
@@ -24,6 +23,8 @@ object RGB_form: TRGB_form
     Height = 130
     Align = alBottom
     TabOrder = 0
+    ExplicitTop = 106
+    ExplicitWidth = 594
     object Label11: TLabel
       Left = 277
       Top = 69
@@ -149,6 +150,7 @@ object RGB_form: TRGB_form
     Align = alLeft
     Caption = ' '
     TabOrder = 1
+    ExplicitHeight = 106
     object Label5: TLabel
       Left = 8
       Top = 88
@@ -204,6 +206,8 @@ object RGB_form: TRGB_form
     Align = alClient
     Caption = ' '
     TabOrder = 2
+    ExplicitWidth = 186
+    ExplicitHeight = 106
     object Label13: TLabel
       Left = 24
       Top = 54
@@ -241,6 +245,7 @@ object RGB_form: TRGB_form
       Align = alTop
       TabOrder = 1
       OnChange = ComboBox2Change
+      ExplicitWidth = 184
     end
     object Edit4: TEdit
       Left = 50
@@ -259,6 +264,8 @@ object RGB_form: TRGB_form
     Align = alRight
     Caption = ' '
     TabOrder = 3
+    ExplicitLeft = 393
+    ExplicitHeight = 106
     object Label9: TLabel
       Left = 23
       Top = 88

@@ -21,7 +21,6 @@ begin
 
    MDDef.LidarGridProjection := ArcSecDEM;
 
-
    MDdef.DefLidarGeoGridSizeX := 0.5;
    MDdef.DefLidarGeoGridSizeY := 0.5;
 

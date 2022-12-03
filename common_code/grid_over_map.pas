@@ -243,7 +243,7 @@ var
    i : integer;
 begin
    for I := 2 to LastDEMtoUse do begin
-      if (DEMGlb[i] <> Nil) and (DEMGlb[i].AreaName = MDDef.GeomorphNameModifier + fName) then begin
+      if ValidDEM(i) and (DEMGlb[i].AreaName = MDDef.GeomorphNameModifier + fName) then begin
          Result := i;
          exit;
       end;
@@ -259,7 +259,7 @@ begin
    InitialSetupOver := false;
    if UseGrids then begin
       for I := 2 to LastDEMtoUse do begin
-         if (DEMGlb[i] <> Nil) and (DEMGlb[i].AreaName = MDDef.GeomorphNameModifier + TheBox.Text) then begin
+         if ValidDEM(i) and (DEMGlb[i].AreaName = MDDef.GeomorphNameModifier + TheBox.Text) then begin
             TheDEM := i;
             if (HS = '') then HS := RealToString(DEMGlb[i].DEMheader.MaxElev,-12,-2);
             if (LS = '') then LS := RealToString(DEMGlb[i].DEMheader.MinElev,-12,-2);
@@ -1189,7 +1189,7 @@ begin
    AtlasDefTable.ApplyFilter('PARAMETER=' + QuotedStr(ComboBox6.Text));
    if UseGrids then begin
       for I := 2 to MaxDEMDataSets do begin
-         if (DEMGlb[i] <> Nil) and (DEMGlb[i].AreaName = MDDef.GeomorphNameModifier + ComboBox6.Text) then begin
+         if ValidDEM(i) and (DEMGlb[i].AreaName = MDDef.GeomorphNameModifier + ComboBox6.Text) then begin
             BaseMap.MapDraw.AssignSecondDEM(i);
             UpdateAtlasDefTable;
             AtlasDefTable.ApplyFilter('PARAMETER=' + QuotedStr(ComboBox6.Text));

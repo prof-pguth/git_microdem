@@ -17,6 +17,7 @@ unit demlosw;
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$IfDef Debug}
       //{$Define RecordLOSAlgorithm}
+      {$Define RecordLOSDraw}
       //{$Define RecordPointClouds}
       //{$Define RecordClosing}
       //{$Define RecordUTMZones}
@@ -454,7 +455,6 @@ var
    i : integer;
 begin
    {$IfDef SupClassAuxGrids} WriteLineToDebugFile('TSupClassAuxGrids.BitBtn10Click (Pick open grids) in'); {$EndIf}
-   //PickDEMsToUse(LOSDraw.ShowProfile,'DEMs to include in profile');
    GetMultipleDEMsFromList('DEMs to include in profile',LOSDraw.ShowProfile);
    FormResize(Nil);
 end;
@@ -1057,8 +1057,6 @@ begin
          {$EndIf}
       {$EndIf}
 
-
-
       if (MDdef.ProgramOption = DragonPlotProgram) then begin
          Intervisibilitysummary1.Visible := false;
          Protractor1.Visible := false;
@@ -1459,7 +1457,7 @@ var
    i : integer;
 begin
    for i := 1 to MaxDEMDataSets do begin
-       if (DEMGlb[i] <> Nil) and ((LOSDraw.LOSVariety = losAllDEMs) or (I <> LOSDraw.DEMonView)) then begin
+       if ValidDEM(i) and ((LOSDraw.LOSVariety = losAllDEMs) or (I <> LOSDraw.DEMonView)) then begin
           StartLOS(true,JustWandering,i,LOSDraw.LatLeft,LOSDraw.LongLeft,LOSDraw.LatRight,LOSDraw.LongRight,DEMGlb[i].SelectionMap);
        end;
    end;
@@ -1662,7 +1660,7 @@ var
    Bitmap : tMyBitmap;
    TStr : shortstring;
 begin
-  {$IfDef RecordLOSProblems} WriteLineToDebugFile('enter TDEMLOSF.LineOfSightFromLatLong  ' + FormClientSize(Self) ); {$EndIf}
+  {$If Defined(RecordLOSProblems) or Defined(RecordLOSDraw)} WriteLineToDebugFile('enter TDEMLOSF.LineOfSightFromLatLong  ' + FormClientSize(Self) ); {$EndIf}
 
    CreateBitmap(Bitmap,Image1.ClientWidth,Image1.ClientHeight);
    LOSDraw.SetSize(Bitmap,ClientWidth,ClientHeight);
@@ -1693,7 +1691,7 @@ begin
    BitBtn2.Caption := 'Dist:  ' + SmartDistanceMetersFormat(LOSDraw.FormSectLenMeters);
    ShowDefaultCursor;
 
-  {$IfDef RecordLOSProblems} WriteLineToDebugFile('exit TDEMLOSF.LineOfSightFromLatLong'); {$EndIf}
+  {$If Defined(RecordLOSProblems) or Defined(RecordLOSDraw)}  WriteLineToDebugFile('exit TDEMLOSF.LineOfSightFromLatLong'); {$EndIf}
 end;
 
 

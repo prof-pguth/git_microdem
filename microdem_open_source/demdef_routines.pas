@@ -2954,10 +2954,10 @@ var
          AParameter('Menus','ShowIcesat',ShowIcesat,false);
          AParameter('Menus','ShowDataBase',ShowDataBase,true);
          AParameter('Menus','ShowIntDB',ShowIntDB,true);
-         AParameter('Menus','ShowTINs',ShowTINs,true);
-         AParameter('Menus','ShowStereoNet',ShowStereoNet,true);
-         AParameter('Menus','ShowStratCol',ShowStratCol,true);
-         AParameter('Menus','ShowTernary',ShowTernary,true);
+         AParameter('Menus','ShowTINs',ShowTINs,false);
+         AParameter('Menus','ShowStereoNet',ShowStereoNet,false);
+         AParameter('Menus','ShowStratCol',ShowStratCol,false);
+         AParameter('Menus','ShowTernary',ShowTernary,false);
          AParameter('Menus','ShowMarineGeology',ShowMarineGeology,true);
          AParameter('Menus','AlwaysShowMapCoordinates',AlwaysShowMapCoordinates,false);
          AParameter('Menus','ShowOceanModels',ShowOceanModels,true);
@@ -3080,7 +3080,7 @@ var
          AParameter('Geology','ResultantPlateVectors',ResultantPlateVectors,true);
          AParameter('Geology','ShowContactsOnStereoNet',ShowContactsOnStereoNet,true);
          AParameter('Geology','ShowPlateRotation',ShowPlateRotation,true);
-         AParameter('Geology','ShowSieve',ShowSieve,true);
+         AParameter('Geology','ShowSieve',ShowSieve,false);
          AParameter('Geology','AutoIncGeoColor',AutoIncGeoColor,true);
          AColorParameter('Geology','MapGeoSymColor', MapGeoSymColor,claBlack);
          AParameter('Geology','PlateTectonicVelocity', PlateTectonicVelocity,true);
@@ -4765,13 +4765,15 @@ end;
 procedure SetGeologyOptions(Allow : boolean);
 begin
    {$IfDef VCL}
+      (*  //these must now be deliberately enabled, since they have not been tested in a log time and are not used much
       MDdef.ShowStratCol := Allow;
       MDdef.ShowTernary := Allow;
       MDdef.ShowStereoNet := Allow;
+      MDdef.ShowSieve := Allow;
+      *)
       MDdef.ShowMarineGeology := Allow;
       MDdef.ShowGeomorphometry := Allow;
       MDdef.ShowMarineGeology := Allow;
-      MDdef.ShowSieve := Allow;
       MDdef.ShowPlateRotation := Allow;
       MDdef.ShowGeologyOptions := Allow;
    {$EndIf}

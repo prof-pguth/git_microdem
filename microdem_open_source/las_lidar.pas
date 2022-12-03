@@ -8,8 +8,6 @@
 {___________________________________}
 
 
-
-
 {$I nevadia_defines.inc}
 
 //{$Define NoInLine}   {use this to be able to trace calls into these routines}
