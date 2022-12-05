@@ -153,7 +153,7 @@ uses
    procedure UseGDAL_VRT_to_merge(var MergefName : PathStr; OutNames : tStringList; Added : ShortString = '');
    procedure UseGDAL_Warp_to_merge(var MergefName : PathStr; OutNames : tStringList);
 
-   procedure ResampleSentinel_1(Paths : tStringList);
+   procedure ResampleSentinel_1(Path : PathStr; Recycle : boolean = false);
 
 
 
@@ -183,10 +183,11 @@ const
 
 
 
-procedure ResampleSentinel_1(Paths : tStringList);
+procedure ResampleSentinel_1(Path : PathStr; Recycle : boolean = false);
 // based on https://asf.alaska.edu/how-to/data-recipes/geocode-sentinel-1-with-gdal/
 var
-   SatDir,fName,fName2,outName : PathStr;
+   //SatDir,
+   fName,fName2,outName : PathStr;
    DefaultFilter : byte;
    BatchFile,TheFiles: tStringList;
    UTMspace : float32;
@@ -204,10 +205,10 @@ begin
    TStr2 := ' ' + RealToString(UTMSpace,-12,-2);
    StartGDALbatchFile(BatchFile);
    RecycleList := tStringList.Create;
-   for i := 0 to pred(Paths.Count) do begin
-      SatDir := Paths[i];
+   //for i := 0 to pred(Paths.Count) do begin
+      //SatDir := Paths  //[i];
       TheFiles := Nil;
-      FindMatchingFiles(SatDir,'*.tiff',TheFiles,6);
+      FindMatchingFiles(Path,'*.tiff',TheFiles,6);
       for j := 0 to pred(TheFiles.Count) do begin
          fName := TheFiles.Strings[j];
          if StrUtils.AnsiContainsText(UpperCase(fName),'GRD') and (not StrUtils.AnsiContainsText(UpperCase(fName),'utm')) then begin
@@ -223,10 +224,11 @@ begin
          end;
       end;
       TheFiles.Free;
-   end;
-   Paths.Free;
+   //end;
+   //Paths.Free;
    EndBatchFile(MDTempDir + 'warp_sentinel-1.bat',batchfile,true);
-   for i := 0 to pred(RecycleList.Count) do File2Trash(RecycleList.Strings[i]);
+   if Recycle then for i := 0 to pred(RecycleList.Count) do File2Trash(RecycleList.Strings[i]);
+   RecycleList.Free;
 end;
 
 

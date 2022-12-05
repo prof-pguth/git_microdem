@@ -77,6 +77,16 @@ uses
    Petmar_types;
 
 const
+   {$IfDef dBase_DefaultDBs}
+      DefaultDBExt = '.dbf';
+      DefaultDBMask = '*.dbf';
+      DBNameMask = 'dBase|*.dbf';
+   {$EndIf}
+
+   {$IfDef UseTDBF}
+      DBdriver = 'tDBF';
+   {$EndIf}
+
    {$IfDef SQLiteDefaultDBs}
       DefaultDBExt = '.db';
       DefaultDBMask = '*.db';
@@ -89,16 +99,6 @@ const
       DefaultDBMask = '*.cds';
       DBNameMask = 'CDS|*.cds';
       DBdriver = 'client data set';
-   {$EndIf}
-
-   {$IfDef dBase_DefaultDBs}
-      DefaultDBExt = '.dbf';
-      DefaultDBMask = '*.dbf';
-      DBNameMask = 'dBase|*.dbf';
-   {$EndIf}
-
-   {$IfDef UseTDBF}
-      DBdriver = 'tDBF';
    {$EndIf}
 
 type
@@ -2631,19 +2631,17 @@ end;
       OK,FirstError : boolean;
       Ext : ExtStr;
    begin
-      {$If Defined(ListOpenDB) or Defined(RecordOpenDBProblems)}
-      if (UpperCase(ExtractFilePath(fName)) <> UpperCase(MDTempDir))then WriteLineToDebugFile('CreateAndOpenTable:  ' + fName);
-      {$EndIf}
+      {$If Defined(ListOpenDB) or Defined(RecordOpenDBProblems)} if (UpperCase(ExtractFilePath(fName)) <> UpperCase(MDTempDir))then WriteLineToDebugFile('CreateAndOpenTable:  ' + fName); {$EndIf}
       Result := false;
 
       if FileExists(fName) then begin
          Ext := UpperCase(ExtractFileExt(fName));
          {$IfDef NoCSVImports}
          {$Else}
-         if ExtEquals(Ext,'.CSV') then begin
-             DoCSVFileImport(fName);
-             fName := ChangeFileExt(fName,DefaultDBExt);
-         end;
+            if ExtEquals(Ext,'.CSV') then begin
+                DoCSVFileImport(fName);
+                fName := ChangeFileExt(fName,DefaultDBExt);
+            end;
          {$EndIf}
 
          if ExtEquals(Ext,DefaultDBExt) then begin
@@ -2658,11 +2656,7 @@ end;
                try
                   TheData.Open;
                except
-                  //{$IfDef UseBDETables}
-                  //on DBTables.EDBEngineError do begin
-                  //{$Else}
                   on Exception do begin
-                  //{$EndIf}
                      TheData.Destroy;
                      OK := false;
                      if FirstError then begin
@@ -2680,7 +2674,6 @@ end;
 
          if MDDef.DBfilterCaseInSensitive then TheData.FilterOptions := [foCaseInsensitive]
          else TheData.FilterOptions := [];
-
          Result := true;
       end;
    end;
@@ -2694,6 +2687,7 @@ finalization
    {$IfDef RecordSQLite} WriteLineToDebugFile('RecordSQLite active in petmar_db'); {$EndIf}
    {$IfDef TrackCDStiming} WriteLineToDebugFile('TrackCDStiming active in petmar_db'); {$EndIf}
 end.
+
 
 
 

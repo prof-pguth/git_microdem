@@ -169,7 +169,7 @@ uses
   text_report_options in '..\common_code\text_report_options.pas' {ReportOptionsForm},
   fan_sens_opts in '..\common_code\fan_sens_opts.pas' {fan_sens_form},
   get_db_coloring in '..\common_code\get_db_coloring.pas' {DBColorForm},
-  MrSidImagery in '..\common_code\MrSidImagery.pas',
+  //MrSidImagery in '..\common_code\MrSidImagery.pas',
   FitFourier in '..\common_code\FitFourier.pas' {FitFourierForm},
   crosscor in '..\common_code\crosscor.pas' {CrossCorrelationForm},
   get_thumbnails in '..\common_code\get_thumbnails.pas' {ThumbnailForm},

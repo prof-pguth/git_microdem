@@ -319,7 +319,7 @@ Uses
 
    {$IfDef ExAdvancedSats}
    {$Else}
-      MrSidImagery,
+      //MrSidImagery,
       DEMSatContrast,
       Petimage_form,
    {$EndIf}

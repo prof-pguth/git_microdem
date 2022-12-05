@@ -240,14 +240,13 @@ function ExtractPartOfImage(var Image1 : tImage; Left,Right,Top,Bottom : integer
       function GetGraphicsFileName(WhatFor : shortstring; var fName : PathStr) : boolean;
       function GetNewGraphicsFileName(WhatFor : shortstring; var fName : PathStr) : boolean;
       function GetNew3DGraphicsFileName(WhatFor : shortstring; var fName : PathStr) : boolean;
+      procedure RenamePhotoJPEGS(PhotoDir : PathStr = ''; NameContains : shortString = '');
 
       //these functions take the top window, and are designed for the case where the top window is an FMX form in a VCL project.
       //They probably do not currently work in FireMonkey
       function GetScreenCapture(JustWindow : Boolean = false) : TMyBitmap;
       procedure SaveScreenCapture(RightMarginToClip : integer; var fName : PathStr; AskName : boolean = false; JustWindow : boolean = false);
-
       procedure CopyToWindowToClipBoard(RightMarginToClip : integer);
-      procedure RenamePhotoJPEGS(PhotoDir : PathStr = ''; NameContains : shortString = '');
 {$EndIf}
 
 
@@ -3187,14 +3186,14 @@ end;
 function tBMPMemory.RedChannel(x,y : integer) : byte;
 begin
    {$IfDef VCL}
-   Result := p1[y]^[x].rgbtRed;
+      Result := p1[y]^[x].rgbtRed;
    {$EndIf}
 end;
 
 function tBMPMemory.GreenChannel(x,y : integer) : byte;
 begin
    {$IfDef VCL}
-   Result := p1[y]^[x].rgbtGreen;
+      Result := p1[y]^[x].rgbtGreen;
    {$EndIf}
 end;
 

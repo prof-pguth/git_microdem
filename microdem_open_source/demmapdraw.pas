@@ -30,12 +30,10 @@
       //{$Define FanDrawProblems)
       //{$Define WorldFileOverlay}
       //{$Define RecordStretchBitmap}
-
-      {$Define RecordLegendDraw}
-
+      //{$Define RecordLegendDraw}
       //{$Define RecordDrawGridLines}
       //{$Define RecordSat}
-      {$Define AspectCheck}
+      //{$Define AspectCheck}
       //{$Define RecordShapeFileGroup}
       //{$Define RecordWorldOutline}
       //{$Define Track_f}

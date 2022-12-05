@@ -2387,10 +2387,6 @@ var
             AParameter('Files','LastLidarMult',LastLidarMulti,'');
             AParameter('Files','LastOSMoverlay',LastOSMoverlay,'');
             AParameter('Files','MapLibDir',MapLibDir,'');
-            AParameter('Files','DEMIX_criterion_tolerance_fName',DEMIX_criterion_tolerance_fName,'');
-            AParameter('Files','DEMIX_base_dir',DEMIX_base_dir,'');
-            AParameter('Files','DEMIX_xsize',DEMIX_xsize,900);
-            AParameter('Files','DEMIX_ysize',DEMIX_ysize,600);
 
             {$IfDef ExGDAL}
             {$Else}
@@ -2400,6 +2396,18 @@ var
                AParameter('GDAL','RouteGeotiffExportGDAL',RouteGeotiffExportGDAL,true);
                AParameterShortFloat('GDAL','GDALThinFactor',GDALThinFactor,0.1);
             {$EndIf}
+
+            AParameter('DEMIX','DEMIX_criterion_tolerance_fName',DEMIX_criterion_tolerance_fName,'');
+            AParameter('DEMIX','DEMIX_base_dir',DEMIX_base_dir,'');
+            AParameter('DEMIX','DEMIX_xsize',DEMIX_xsize,900);
+            AParameter('DEMIX','DEMIX_ysize',DEMIX_ysize,600);
+
+            AParameter('DEMIX','DEMIX_DoCHM',DEMIX_DoCHM,true);
+            AParameter('DEMIX','DEMIX_DoAirOrDirt',DEMIX_DoAirOrDirt,true);
+            AParameter('DEMIX','DEMIX_DoElevDiff',DEMIX_DoElevDiff,true);
+            AParameter('DEMIX','DEMIX_DoSlopeDiff',DEMIX_DoSlopeDiff,true);
+            AParameter('DEMIX','DEMIX_DoRuffDiff',DEMIX_DoRuffDiff,true);
+            AParameter('DEMIX','DEMIX_DoHalfSecDEMs',DEMIX_DoHalfSecDEMs,true);
 
             {$IfDef ExMrSID}
             {$Else}
@@ -2580,7 +2588,7 @@ var
          AParameter('Misc','PictureMode',PictureMode,1);
 
          AParameter('Misc','VerifyAllWorldFiles',VerifyAllWorldFiles,false);
-         AParameter('Misc','HydrologyEnforceProfile',HydrologyEnforceProfile,true);
+         //AParameter('Misc','HydrologyEnforceProfile',HydrologyEnforceProfile,true);
          AParameter('Misc','tnHeight',tnHeight,150);
          AParameter('Misc','tnQuality',tnQuality,95);
          AParameter('Misc','AutoCloseIndexMaps',AutoCloseIndexMaps,false);

@@ -31,6 +31,7 @@
 {$Define ExDRGimport}
 {$Define ExGeoPDF}
 {$Define ExWMS}
+{$Define ExMrSID}
 {$Define ExLandsatQA}
 
 {$Define MICRODEM}

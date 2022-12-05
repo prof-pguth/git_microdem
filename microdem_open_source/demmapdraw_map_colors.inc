@@ -413,10 +413,10 @@ var
 begin
    for y := Limits.YGridLow to Limits.YgridHigh do begin
       {$IfDef VCL}
-      TInterlocked.Increment(BMPMemory.NumDone);
-      if (CountInStrips mod 100 = 0) and ShowSatProgress then begin
-         UpdateProgressBar(BMPMemory.NumDone/BMPMemory.NumToDo);
-      end;
+         TInterlocked.Increment(BMPMemory.NumDone);
+         if (CountInStrips mod 100 = 0) and ShowSatProgress then begin
+            UpdateProgressBar(BMPMemory.NumDone/BMPMemory.NumToDo);
+         end;
       {$EndIf}
 
       for x := Limits.XGridLow to Limits.XGridHigh do begin
@@ -537,13 +537,13 @@ end;
                                  pUse := DEMGlb[DEM2onMap].SelectionMap.MapDraw.GetElevColor(xg,yg);
                                  BMPMemory.SetPixelColor(x,y,pUse);
                               end
-                              else if DEM2onMap = CHMGrid then begin
+                              else if (DEM2onMap = CHMGrid) then begin
                                   if DEMGlb[DEM2onMap].GetElevMeters(xg,yg,z) and (z > 2) then begin
                                      pUse.rgbtGreen := ValidByteRange(100 + round(155 * (z-2) / (25-2)));
                                      BMPMemory.SetPixelColor(x,y,pUse);
                                   end;
                               end
-                              else if DEM2onMap = ChangeGrid then begin
+                              else if (DEM2onMap = ChangeGrid) then begin
                                   if ChangeColor(xg,yg,pUse) then begin
                                      BMPMemory.SetPixelColor(x,y,pUse);
                                   end;
@@ -558,7 +558,7 @@ end;
                    end;
                 end;
                 BMPMemory.Destroy;
-                {$IfDef RecordDrawSecondGrid}  Result.SaveToFile(MDtempDir + 'drawsecondgrid.bmp'); {$EndIf}
+                {$IfDef RecordDrawSecondGrid} Result.SaveToFile(MDtempDir + 'drawsecondgrid.bmp'); {$EndIf}
           end;
 
           procedure ColorizeInPlace;

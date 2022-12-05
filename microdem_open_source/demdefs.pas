@@ -1822,6 +1822,13 @@ type
       DEMIX_base_dir,
       DEMIX_criterion_tolerance_fName : PathStr;
       DEMIX_xsize,DEMIX_ysize : integer;
+      DEMIX_DoCHM,
+      DEMIX_DoAirOrDirt,
+      DEMIX_DoElevDiff,
+      DEMIX_DoSlopeDiff,
+      DEMIX_DoRuffDiff,
+      DEMIX_DoHalfSecDEMs : boolean;
+
 
       SlopeFlatBoundary,
       SlopeGentleBoundary,
@@ -2148,7 +2155,7 @@ type
        AutoSaveGeomorphGrids,
        IncludeBasinID : boolean;
        WavelengthCompDist : SmallInt;
-       HydrologyEnforceProfile,
+       //HydrologyEnforceProfile,
        NoDEMInterpolations,
        DoEarthCurvature : boolean;
        MakePCFloor,MakePCCeiling,
@@ -2638,7 +2645,7 @@ type
        TransparentIcons : boolean;
        ConPtsColor : tPlatformColor;
        ConPtsWidth : byte;
-       SmoothThalwegs : boolean;
+       //SmoothThalwegs : boolean;
        LegendBarWidth,
        LegendTickSize : byte;
        tnHeight,tnQuality,
