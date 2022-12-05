@@ -122,7 +122,6 @@ uses
    {$EndIf}
    {$IfDef ExSat}
    {$Else}
-      MrSidImagery,
       DEMEROS,
    {$EndIf}
 

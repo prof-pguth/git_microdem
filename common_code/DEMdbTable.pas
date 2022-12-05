@@ -10505,6 +10505,7 @@ var
                   Long2 := Long;
                end {for i};
 
+               (*
                if MDDef.SmoothThalwegs then begin
                    if z[0] < z[pred(aShapeFile.CurrentPolyLineHeader.NumPoints)] then begin
                       LastZ := z[pred(aShapeFile.CurrentPolyLineHeader.NumPoints)];
@@ -10525,6 +10526,7 @@ var
                       end;
                    end;
                end;
+               *)
 
                for i := 0 to pred(aShapeFile.CurrentPolyLineHeader.NumPoints) do begin
                   v[1] := y[i];

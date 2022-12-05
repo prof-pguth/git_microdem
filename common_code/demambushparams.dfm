@@ -4,7 +4,7 @@ object PickAmbushParams: TPickAmbushParams
   ActiveControl = OKBtn
   BorderStyle = bsDialog
   Caption = 'T'
-  ClientHeight = 217
+  ClientHeight = 254
   ClientWidth = 315
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET

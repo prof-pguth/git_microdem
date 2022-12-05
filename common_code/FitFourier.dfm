@@ -11,8 +11,8 @@ inherited FitFourierForm: TFitFourierForm
   Visible = True
   OnClose = FormClose
   OnCreate = FormCreate
-  ExplicitWidth = 390
-  ExplicitHeight = 255
+  ExplicitWidth = 380
+  ExplicitHeight = 235
   TextHeight = 20
   inherited Bevel1: TBevel
     Left = 288
@@ -53,6 +53,7 @@ inherited FitFourierForm: TFitFourierForm
     PlainText = True
     ScrollBars = ssVertical
     TabOrder = 3
+    ExplicitHeight = 147
   end
   object Panel1: TPanel
     Left = 0
@@ -61,20 +62,20 @@ inherited FitFourierForm: TFitFourierForm
     Height = 41
     Align = alBottom
     TabOrder = 4
-    ExplicitTop = 187
-    ExplicitWidth = 382
+    ExplicitTop = 147
+    ExplicitWidth = 362
     object Button1: TButton
       Left = 8
       Top = 8
-      Width = 89
+      Width = 130
       Height = 25
       Caption = 'Show Harmonics'
       TabOrder = 0
       OnClick = Button1Click
     end
     object Button2: TButton
-      Left = 120
-      Top = 8
+      Left = 144
+      Top = 6
       Width = 75
       Height = 25
       Caption = '# of terms'

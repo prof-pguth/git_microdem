@@ -603,7 +603,6 @@ type
     MaskGrid1: TMenuItem;
     ReplacevalueswithreferenceDEM1: TMenuItem;
     Labelboth1: TMenuItem;
-    GeotifffromMrSid1: TMenuItem;
     Multiplyzvalues1: TMenuItem;
     Raiselowerzvalues1: TMenuItem;
     Interpolateacrossholessmooth1: TMenuItem;
@@ -1775,7 +1774,6 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Accumulatedcostsurface1Click(Sender: TObject);
     procedure Leastcostpath1Click(Sender: TObject);
     procedure Labelboth1Click(Sender: TObject);
-    procedure GeotifffromMrSid1Click(Sender: TObject);
     procedure Multiplyzvalues1Click(Sender: TObject);
     procedure Raiselowerzvalues1Click(Sender: TObject);
     procedure Interpolateacrossholessmooth1Click(Sender: TObject);
@@ -2986,7 +2984,7 @@ uses
       DEM_NLCD,
       demsatcontrast,
       DEMEROS,
-      MrSidImagery,
+      //MrSidImagery,
       rgb_colors_three_params,
    {$EndIf}
 
@@ -7866,7 +7864,7 @@ begin
          Newband1.Visible := MapDraw.ValidSatOnMap and (SatImage[MapDraw.SATonMap] <> Nil);
          NLCD1.Visible := false;
          MrSidSpeedButton.Visible := MapDraw.ValidSatOnMap and (SatImage[MapDraw.SatOnMap].CurrentSidName <> '');
-         GeotifffromMrSid1.Visible := MrSidSpeedButton.Visible;
+         //GeotifffromMrSid1.Visible := MrSidSpeedButton.Visible;
          Satellitehistograms1.Visible := MapDraw.ValidSatOnMap and  SatImage[MapDraw.SatOnMap].CanEnhance;
          Allmapsmatchthiscoveragearea1.Visible := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]) and ((NumOpenMaps > 1) or (WMDEM.MDIChildCount > 1));
          NLCDLegend1.Visible := (MDDef.ProgramOption in [ExpertProgram,GeographyProgram,RemoteSensingProgram]) and (MapDraw.ValidDEMonMap and (DEMGlb[MapDraw.DEMonMap].LandCoverGrid));
@@ -12300,6 +12298,8 @@ begin
              end;
           {$EndIf}
 
+         {$IfDef ExMrSID}
+         {$Else}
           if (DEMNowDoing = OpenMrSid) and MapDraw.ValidSatOnMap then begin
              {$IfDef RecordMrSID} WriteLineToDebugFile('Image1MouseUp (DEMNowDoing = OpenMrSid)'); {$EndIf}
              if (SatImage[MapDraw.SatOnMap].RegVars.Registration = RegProjection) then begin
@@ -12318,6 +12318,7 @@ begin
              BackToWandering;
              exit;
           end;
+          {$EndIf}
 
           if DEMNowDoing in [GraphFilterDB] then begin
              if ValidDB(DBEditting) then GISDB[DBEditting].QueryGeoBox(LatHigh,LongLow,LatLow,LongHigh,true);
@@ -13041,7 +13042,7 @@ begin
             BestDiff := 99999;
             BestDEM := 0;
             for DEM := 1 to MaxDEMDataSets do begin
-               if (DEM <> MapDraw.DEMonMap) and (DEM <> NewDEM) and ValidDEM(DEM) then begin
+               if ValidDEM(DEM) and (DEM <> MapDraw.DEMonMap) and (DEM <> NewDEM) then begin
                   DEMGlb[DEM].GetElevFromLatLongDegree(Lat,Long,z2);
                   if abs(z-z2) < BestDiff then begin
                      BestDiff := abs(z-z2);
@@ -23776,22 +23777,6 @@ begin
       DrawColoredMap1Click(Nil);
    {$EndIf}
 end;
-
-procedure TMapForm.GeotifffromMrSid1Click(Sender: TObject);
-{$IfDef ExSat}
-begin
-{$Else}
-var
-   fName : PathStr;
-begin
-   fName := DEMDefs.WriteSatDir;
-   if Petmar.GetFileNameDefaultExt('Geotiff from MrSID','TIFF file|*.tif',fName) then begin
-      CopyFile(SatImage[MapDraw.SatonMap].IndexFileName,fName);
-      CopyFile(ChangeFileExt(SatImage[MapDraw.SatonMap].IndexFileName,'.tfw'),ChangeFileExt(fName,'.tfw'));
-   end;
-{$EndIf}
-end;
-
 
 procedure TMapForm.ReloadDEMClick(Sender: TObject);
 begin

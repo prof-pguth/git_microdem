@@ -95,7 +95,7 @@ object RGB_form: TRGB_form
     end
     object BitBtn2: TBitBtn
       Left = 89
-      Top = 96
+      Top = 91
       Width = 118
       Height = 25
       Caption = 'Color range'

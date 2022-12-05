@@ -29,8 +29,6 @@ type
     CheckBox4: TCheckBox;
     CheckBox5: TCheckBox;
     RadioGroup1: TRadioGroup;
-    RadioGroup2: TRadioGroup;
-    RadioGroup3: TRadioGroup;
     Edit1: TEdit;
     Label1: TLabel;
     procedure HelpBtnClick(Sender: TObject);
@@ -88,7 +86,7 @@ begin
    MDDef.ShowStrahlerHistogram := CheckBox4.Checked;
    MDDef.ShowHistogramText := CheckBox5.Checked;
    MDDef.CountHistograms := RadioGroup1.ItemIndex = 1;
-   MDDef.GeomorphAllDEMs := RadioGroup2.ItemIndex = 1;
+   //MDDef.GeomorphAllDEMs := RadioGroup2.ItemIndex = 1;
    Action := caFree;
 end;
 
@@ -100,9 +98,9 @@ begin
    CheckBox4.Checked := MDDef.ShowStrahlerHistogram;
    CheckBox5.Checked := MDDef.ShowHistogramText;
    Edit1.Text := RealToString(MDDef.HistBinSize,-12,-2);
-   if MDDef.GeomorphAllDEMs then RadioGroup2.ItemIndex := 1 else  RadioGroup2.ItemIndex := 0;
+   //if MDDef.GeomorphAllDEMs then RadioGroup2.ItemIndex := 1 else  RadioGroup2.ItemIndex := 0;
    if MDDef.CountHistograms then RadioGroup1.ItemIndex := 1 else  RadioGroup1.ItemIndex := 0;
-   if MDDef.GeomorphMapsFullDEM then RadioGroup3.ItemIndex := 0 else RadioGroup3.ItemIndex := 1;
+   //if MDDef.GeomorphMapsFullDEM then RadioGroup3.ItemIndex := 0 else RadioGroup3.ItemIndex := 1;
 end;
 
 procedure THistOptForm.HelpBtnClick(Sender: TObject);

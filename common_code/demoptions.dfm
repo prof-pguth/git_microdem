@@ -9,8 +9,8 @@ inherited OptionsForm: TOptionsForm
   OnClose = FormClose
   OnCreate = FormCreate
   OnResize = FormResize
-  ExplicitWidth = 862
-  ExplicitHeight = 599
+  ExplicitWidth = 856
+  ExplicitHeight = 590
   TextHeight = 20
   inherited Bevel1: TBevel
     Left = 0
@@ -47,12 +47,12 @@ inherited OptionsForm: TOptionsForm
     Top = 0
     Width = 844
     Height = 494
-    ActivePage = TabSheet3
+    ActivePage = TabSheet11
     Align = alClient
     MultiLine = True
     TabOrder = 2
-    ExplicitWidth = 856
-    ExplicitHeight = 512
+    ExplicitWidth = 838
+    ExplicitHeight = 485
     object TabSheet1: TTabSheet
       Caption = 'Program'
       object RadioGroup7: TRadioGroup
@@ -130,8 +130,8 @@ inherited OptionsForm: TOptionsForm
       object StringGrid1: TStringGrid
         Left = 0
         Top = 0
-        Width = 854
-        Height = 461
+        Width = 836
+        Height = 434
         Align = alClient
         ColCount = 2
         ScrollBars = ssVertical
@@ -1664,13 +1664,6 @@ inherited OptionsForm: TOptionsForm
         Height = 20
         Caption = 'Label23'
       end
-      object DTfilllabel: TLabel
-        Left = 264
-        Top = 376
-        Width = 151
-        Height = 20
-        Caption = 'DEMIX tile fill required'
-      end
       object UpDown1: TUpDown
         Left = 16
         Top = 120
@@ -1775,30 +1768,14 @@ inherited OptionsForm: TOptionsForm
         TabOrder = 8
         OnClick = BitBtn19Click
       end
-      object CheckBox25: TCheckBox
-        Left = 272
-        Top = 48
-        Width = 235
-        Height = 17
-        Caption = 'Hydrology enforce profiles'
-        TabOrder = 9
-      end
       object BitBtn20: TBitBtn
         Left = 16
         Top = 72
         Width = 75
         Height = 25
         Caption = 'Slope'
-        TabOrder = 10
+        TabOrder = 9
         OnClick = BitBtn20Click
-      end
-      object CheckBox44: TCheckBox
-        Left = 8
-        Top = 32
-        Width = 170
-        Height = 17
-        Caption = 'Smooth thalwegs'
-        TabOrder = 11
       end
       object Button3: TButton
         Left = 264
@@ -1806,7 +1783,7 @@ inherited OptionsForm: TOptionsForm
         Width = 137
         Height = 25
         Caption = 'Terrain blouw up'
-        TabOrder = 12
+        TabOrder = 10
         OnClick = Button3Click
       end
       object CheckBox149: TCheckBox
@@ -1815,7 +1792,7 @@ inherited OptionsForm: TOptionsForm
         Width = 369
         Height = 17
         Caption = 'Cumulative frequency on normal probability axis'
-        TabOrder = 13
+        TabOrder = 11
       end
       object CheckBox150: TCheckBox
         Left = 264
@@ -1823,11 +1800,11 @@ inherited OptionsForm: TOptionsForm
         Width = 243
         Height = 17
         Caption = 'Quantile ranges (not 1 std dev)'
-        TabOrder = 14
+        TabOrder = 12
       end
       object RadioGroup30: TRadioGroup
         Left = 3
-        Top = 272
+        Top = 279
         Width = 152
         Height = 49
         Caption = 'SSO trend quadrants'
@@ -1836,7 +1813,7 @@ inherited OptionsForm: TOptionsForm
           '1'
           '2'
           '4')
-        TabOrder = 15
+        TabOrder = 13
       end
       object CheckBox152: TCheckBox
         Left = 264
@@ -1844,7 +1821,7 @@ inherited OptionsForm: TOptionsForm
         Width = 266
         Height = 17
         Caption = 'Geomorph grids full coverage'
-        TabOrder = 16
+        TabOrder = 14
       end
       object CheckBox155: TCheckBox
         Left = 16
@@ -1852,7 +1829,7 @@ inherited OptionsForm: TOptionsForm
         Width = 177
         Height = 17
         Caption = 'Deliberate histograms'
-        TabOrder = 17
+        TabOrder = 15
       end
       object BitBtn30: TBitBtn
         Left = 264
@@ -1860,16 +1837,79 @@ inherited OptionsForm: TOptionsForm
         Width = 121
         Height = 25
         Caption = 'Least cost path'
-        TabOrder = 18
+        TabOrder = 16
         OnClick = BitBtn30Click
       end
-      object Edit12: TEdit
-        Left = 449
-        Top = 373
-        Width = 121
-        Height = 28
-        TabOrder = 19
-        Text = 'Edit12'
+      object GroupBox18: TGroupBox
+        Left = 584
+        Top = 8
+        Width = 225
+        Height = 251
+        Caption = 'DEMIX'
+        TabOrder = 17
+        object DTfilllabel: TLabel
+          Left = 10
+          Top = 21
+          Width = 131
+          Height = 20
+          Caption = 'Tile fill required (%)'
+        end
+        object Edit12: TEdit
+          Left = 64
+          Top = 47
+          Width = 121
+          Height = 28
+          TabOrder = 0
+          Text = 'Edit12'
+        end
+        object CheckBox5: TCheckBox
+          Left = 16
+          Top = 88
+          Width = 137
+          Height = 17
+          Caption = 'Do CHMs'
+          TabOrder = 1
+        end
+        object CheckBox154: TCheckBox
+          Left = 16
+          Top = 111
+          Width = 169
+          Height = 17
+          Caption = 'Do air or dirt maps'
+          TabOrder = 2
+        end
+        object CheckBox158: TCheckBox
+          Left = 16
+          Top = 134
+          Width = 185
+          Height = 17
+          Caption = 'Do elevation differences'
+          TabOrder = 3
+        end
+        object CheckBox162: TCheckBox
+          Left = 16
+          Top = 157
+          Width = 169
+          Height = 17
+          Caption = 'Do slope differences'
+          TabOrder = 4
+        end
+        object CheckBox169: TCheckBox
+          Left = 16
+          Top = 180
+          Width = 193
+          Height = 17
+          Caption = 'Do roughness differences'
+          TabOrder = 5
+        end
+        object CheckBox180: TCheckBox
+          Left = 16
+          Top = 203
+          Width = 193
+          Height = 17
+          Caption = 'Do half second DEMs'
+          TabOrder = 6
+        end
       end
     end
     object TabSheet13: TTabSheet
@@ -2388,13 +2428,6 @@ inherited OptionsForm: TOptionsForm
     object TabSheet16: TTabSheet
       Caption = 'Imagery'
       ImageIndex = 15
-      object Label12: TLabel
-        Left = 24
-        Top = 19
-        Width = 181
-        Height = 20
-        Caption = 'Max Mr Sid extraction size: '
-      end
       object CheckBox40: TCheckBox
         Left = 24
         Top = 161
@@ -2411,28 +2444,13 @@ inherited OptionsForm: TOptionsForm
         Caption = 'Ignore Zero in histograms'
         TabOrder = 1
       end
-      object Edit3: TEdit
-        Left = 154
-        Top = 38
-        Width = 79
-        Height = 28
-        TabOrder = 2
-      end
-      object CheckBox5: TCheckBox
-        Left = 24
-        Top = 72
-        Width = 193
-        Height = 17
-        Caption = 'Ask about Mr Sid Extraction level'
-        TabOrder = 3
-      end
       object CheckBox139: TCheckBox
         Left = 24
         Top = 221
         Width = 205
         Height = 17
         Caption = 'Multibands to grids'
-        TabOrder = 4
+        TabOrder = 2
       end
       object CheckBox140: TCheckBox
         Left = 24
@@ -2440,7 +2458,7 @@ inherited OptionsForm: TOptionsForm
         Width = 229
         Height = 17
         Caption = 'Multibands true color'
-        TabOrder = 5
+        TabOrder = 3
       end
       object CheckBox141: TCheckBox
         Left = 24
@@ -2448,7 +2466,7 @@ inherited OptionsForm: TOptionsForm
         Width = 293
         Height = 17
         Caption = 'Multibands normalize spectra'
-        TabOrder = 6
+        TabOrder = 4
       end
       object CheckBox143: TCheckBox
         Left = 24
@@ -2456,7 +2474,7 @@ inherited OptionsForm: TOptionsForm
         Width = 245
         Height = 17
         Caption = 'Bands by wavelength'
-        TabOrder = 7
+        TabOrder = 5
       end
       object RadioGroup8: TRadioGroup
         Left = 300
@@ -2469,7 +2487,7 @@ inherited OptionsForm: TOptionsForm
           'Radiance'
           'Reflectance'
           'Reflectance w/sun elevation')
-        TabOrder = 8
+        TabOrder = 6
       end
       object CheckBox70: TCheckBox
         Left = 24
@@ -2477,7 +2495,7 @@ inherited OptionsForm: TOptionsForm
         Width = 209
         Height = 17
         Caption = 'Icon open imagery via directories'
-        TabOrder = 9
+        TabOrder = 7
       end
       object CheckBox102: TCheckBox
         Left = 24
@@ -2485,7 +2503,7 @@ inherited OptionsForm: TOptionsForm
         Width = 270
         Height = 17
         Caption = 'Delete JP2 after import to Geotiff'
-        TabOrder = 10
+        TabOrder = 8
       end
       object GroupBox17: TGroupBox
         Left = 300
@@ -2493,7 +2511,7 @@ inherited OptionsForm: TOptionsForm
         Width = 381
         Height = 240
         Caption = 'ACOLITE'
-        TabOrder = 11
+        TabOrder = 9
         object Label10: TLabel
           Left = 16
           Top = 118
@@ -3029,7 +3047,7 @@ inherited OptionsForm: TOptionsForm
         object CheckBox113: TCheckBox
           Left = 16
           Top = 17
-          Width = 114
+          Width = 169
           Height = 17
           Caption = 'Global topography'
           TabOrder = 0
@@ -3037,7 +3055,7 @@ inherited OptionsForm: TOptionsForm
         object CheckBox114: TCheckBox
           Left = 16
           Top = 40
-          Width = 129
+          Width = 166
           Height = 17
           Caption = 'Blue marble imagery'
           TabOrder = 1
@@ -3093,7 +3111,7 @@ inherited OptionsForm: TOptionsForm
         object CheckBox15: TCheckBox
           Left = 16
           Top = 166
-          Width = 97
+          Width = 129
           Height = 17
           Caption = 'Plate rotations'
           TabOrder = 5
@@ -3188,8 +3206,8 @@ inherited OptionsForm: TOptionsForm
     Height = 58
     Align = alBottom
     TabOrder = 3
-    ExplicitTop = 512
-    ExplicitWidth = 856
+    ExplicitTop = 485
+    ExplicitWidth = 838
     object BitBtn3: TBitBtn
       Left = 178
       Top = 6

@@ -20,6 +20,7 @@ object DbaddRecForm: TDbaddRecForm
     Height = 41
     Align = alTop
     TabOrder = 0
+    ExplicitWidth = 468
     object Button1: TButton
       Left = 9
       Top = 10

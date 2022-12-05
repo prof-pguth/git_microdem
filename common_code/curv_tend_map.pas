@@ -108,7 +108,6 @@ var
                   if j mod 25 = 0 then UpDateProgressBar(j/MapYSize);
                   for i := 0 to pred(MapXSize) do begin
                      ScreenToDEMGrid(i,j,XG,yg);
-                     //if DEMGlb[DEMonMap].GetCurvature(xg,yg,PlanC,ProfC) then begin
                      if DEMGlb[DEMonMap].GetEvansParams(xg,yg,MDDef.WoodRegionSize,MaxSlp,ProfC,PlanC,crossc,MaxCurve,MinCurve) then begin
                         ProfIndex := GetIndex(ProfC);
                         PlanIndex := GetIndex(PlanC);
@@ -154,30 +153,28 @@ var
 
 
 begin
-   //with TheMap do begin
-      TheMap.DoFastMapRedraw;
-      CloneImageToBitmap(TheMap.Image1,Bmp);
-      if FileExists(fName) then begin
-         BMP.LoadFromFile(fName);
-      end
-      else begin
-         DrawCurveCatMap(Bmp);
-         BMP.SaveToFile(fName);
-      end;
-      CreateBitmap(Bitmap1,1,1);
-      Bitmap1.LoadFromFile(backName);
-      CreateBitmap(Bitmap2,1,1);
-      Bitmap2.LoadFromFile(frontName);
-      if RadioGroup1.ItemIndex = 1 then begin
-         IHSMergePurgeBitmaps(Bitmap1,Bitmap2);
-      end
-      else begin
-         DrawAndDeleteOverlay(Bitmap1,Bitmap2,TrackBar1.Position);
-      end;
-      Self.Image1.Picture.Graphic := Bitmap1;
-      FreeAndNil(Bitmap1);
-      TheMap.IHSmergeOntoMap(bmp,RadioGroup1.ItemIndex = 1,TrackBar1.Position);
-   //end;
+   TheMap.DoFastMapRedraw;
+   CloneImageToBitmap(TheMap.Image1,Bmp);
+   if FileExists(fName) then begin
+      BMP.LoadFromFile(fName);
+   end
+   else begin
+      DrawCurveCatMap(Bmp);
+      BMP.SaveToFile(fName);
+   end;
+   CreateBitmap(Bitmap1,1,1);
+   Bitmap1.LoadFromFile(backName);
+   CreateBitmap(Bitmap2,1,1);
+   Bitmap2.LoadFromFile(frontName);
+   if RadioGroup1.ItemIndex = 1 then begin
+      IHSMergePurgeBitmaps(Bitmap1,Bitmap2);
+   end
+   else begin
+      DrawAndDeleteOverlay(Bitmap1,Bitmap2,TrackBar1.Position);
+   end;
+   Self.Image1.Picture.Graphic := Bitmap1;
+   FreeAndNil(Bitmap1);
+   TheMap.IHSmergeOntoMap(bmp,RadioGroup1.ItemIndex = 1,TrackBar1.Position);
 end;
 
 

@@ -11,9 +11,7 @@ object SpeedDistanceForm: TSpeedDistanceForm
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = False
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object CheckBox1: TCheckBox
     Left = 16
@@ -26,7 +24,7 @@ object SpeedDistanceForm: TSpeedDistanceForm
   object CheckBox2: TCheckBox
     Left = 16
     Top = 39
-    Width = 97
+    Width = 129
     Height = 17
     Caption = 'Compute speeds'
     TabOrder = 1

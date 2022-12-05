@@ -31,6 +31,7 @@ object Fres_blockf: TFres_blockf
       '')
     ScrollBars = ssVertical
     TabOrder = 0
+    ExplicitWidth = 356
   end
   object Sensor: TBitBtn
     Left = 232

@@ -1,14 +1,17 @@
 unit rgb_colors_three_params;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{_________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2022 Peter L. Guth  }
+{___________________________________}
+
 
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
-   //{$Define RecordRGBIssues}
+   {$Define RecordRGBIssues}
 {$EndIf}
 
 interface
@@ -167,11 +170,7 @@ begin
             ComboBox2.Items.Add(DEMGlb[i].AreaName);
             ComboBox3.Items.Add(DEMGlb[i].AreaName);
             //FirstDEM := i;
-            {$IfDef RecordRGBIssues}
-            WriteLineToDebugFile('Accepted: ' + DEMGlb[i].AreaName + '  ' + IntToStr(DEMGlb[i].HeadRecs.NumCol) + 'x' + IntToStr(DEMGlb[i].HeadRecs.NumRow)  +
-                    '  ' + RealToString(DEMGlb[i].HeadRecs.hdfSWCornerX,-12,-6) + '  ' + RealToString(DEMGlb[i].HeadRecs.hdfSWCornerY,-12,-6) +
-                    '  ' + RealToString(DEMGlb[i].HeadRecs.fLongInterval,-12,-6) + '  ' + RealToString(DEMGlb[i].HeadRecs.fLatInterval,-12,-6));
-            {$EndIf}
+            {$IfDef RecordRGBIssues} WriteLineToDebugFile('Accepted: ' + DEMGlb[i].FullDEMParams); {$EndIf}
       end;
       Edit7.Text := RealToString(MDDef.MinPercentile,-12,-1);
       Edit8.Text := RealToString(MDDef.MaxPercentile,-12,-1);
@@ -199,6 +198,7 @@ procedure TRGB_form.CheckComboBox(ComboBox : tComboBox; MinEdit,MaxEdit : tEdit;
 var
     i,chan : integer;
 begin
+   {$IfDef RecordRGBIssues} WriteLineToDebugFile('TRGB_form.CheckComboBox. DEM=' + IntToStr(DEM)); {$EndIf}
    for i := 1 to MaxDEMDataSets do if ValidDEM(i) then begin
       if ComboBox.Text = DEMGlb[i].AreaName then begin
          DEM := i;
@@ -208,9 +208,10 @@ begin
             Max := DEMGlb[DEM].FindPercentileElevation(MDDef.MaxPercentile);
          end
          else begin
-            Min := DEMGlb[DEM].SelectionMap.MapDraw.MinMapElev;
-            Max := DEMGlb[DEM].SelectionMap.MapDraw.MaxMapElev;
+            Min := DEMGlb[DEM].DEMHeader.MinElev;  //SelectionMap.MapDraw.MinMapElev;
+            Max := DEMGlb[DEM].DEMHeader.MaxElev;  //SelectionMap.MapDraw.MaxMapElev;
          end;
+         {$IfDef RecordRGBIssues} WriteLineToDebugFile('Min=' + RealToString(Min,-12,-2) + ' Max=' + RealToString(Max,-12,-2) ); {$EndIf}
 
          MinEdit.Text := RealToString(Min,-18,-4);
          MaxEdit.Text := RealToString(Max,-18,-4);

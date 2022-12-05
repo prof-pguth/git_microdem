@@ -519,8 +519,9 @@ function SaveSingleValueSeries(NumVals : integer; var zs : Petmath.bfarray32; fN
 function CreateMultipleHistograms(GraphNumbers : boolean; FileList,LegendList : tStringList; ParamName,TitleBar : ShortString;
     NumBins : integer = 100; Min : float32 = 1; Max : float32 = -1; BinSize : float32 =  -99) : TThisBaseGraph;
 
-function DeprecatedCreateHistogram(GraphNumbers : boolean; NumVals : integer; var values : Petmath.bfarray32;
-    ParamName,TitleBar : ShortString; NumBins : integer = 100; Min : float32 = 1; Max : float32 = -1; BinSize : float32 =  -99; Color1 : tColor = 0) : TThisBaseGraph;
+//function DeprecatedCreateHistogram(GraphNumbers : boolean; NumVals : integer; var values : Petmath.bfarray32;
+  //  ParamName,TitleBar : ShortString; NumBins : integer = 100; Min : float32 = 1; Max : float32 = -1; BinSize : float32 =  -99; Color1 : tColor = 0) : TThisBaseGraph;
+function DeprecatedCreateHistogram(GraphNumbers : boolean; NumVals : integer; var values : Petmath.bfarray32; ParamName,TitleBar : ShortString) : TThisBaseGraph;
 
 procedure CreateQuantileQuantilePlot(var ThisGraph : TThisBaseGraph; NumVals : integer; var values : array of float32; Mean,Std : float32; ParamName,TitleBar : ShortString);
 function CreateCumProbabilityFromFile(fNames : tStringList; ParamName,TitleBar : ShortString) : TThisBaseGraph;
@@ -769,7 +770,7 @@ end;
 
 procedure TThisBaseGraph.MakePointDensityGraph(DensityShow : tDensityShow);
 type
-   tCounter = array[0..2400,0..1800] of SmallInt;
+   tCounter = array[0..2400,0..1800] of Int64;
 var
    NumRead,Max,
    nsx,nsy,i,j,x,y : integer;
@@ -1137,19 +1138,19 @@ begin
          ReadDefault('Maximum value',Max);
          ReadDefault('Number of bins',NumBins);
       end
-      else NumBins := succ(Round((Max-Min)/BinSize));
+      else begin
+         if (BinSize > 0) then NumBins := succ(Round((Max-Min)/BinSize));
+      end;
       if (NumBins > MaxBins) then NumBins := MaxBins;
       BinSize := (Max-Min) / NumBins;
       Range := Max-Min;
-      if abs(Range) < 0.00001 then begin
+      if (abs(Range) < 0.00001) then begin
          MessageToContinue('Only one value in data set');
          Result.Close;
          goto Cleanup;
       end;
 
-      if (Range > 0.001) and (Range < 100000) then begin
-         if Range < 0.01 then Incr :=  0.005
-      end;
+      if (Range > 0.001) and (Range < 0.01) then Incr := 0.005;
 
    {$IfDef RecordHistogram} writeLineToDebugFile('CreateMultipleHistograms settings over, NumBins=' + IntToStr(NumBins) + '  ' + Result.GraphDraw.AxisRange); {$EndIf}
    for I := 0 to pred(FileList.Count) do begin
@@ -1171,8 +1172,7 @@ CleanUp:;
 end;
 
 
-function DeprecatedCreateHistogram(GraphNumbers : boolean; NumVals : integer; var values : Petmath.bfarray32; ParamName,TitleBar : ShortString;
-    NumBins : integer = 100; Min : float32 = 1; Max : float32 = -1; BinSize : float32 =  -99; Color1 : tColor = 0) : TThisBaseGraph;
+function DeprecatedCreateHistogram(GraphNumbers : boolean; NumVals : integer; var values : Petmath.bfarray32; ParamName,TitleBar : ShortString) : TThisBaseGraph;
 var
    FileList : tStringList;
 begin

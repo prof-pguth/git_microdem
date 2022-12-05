@@ -167,12 +167,10 @@ var
 
 begin
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('MergeDEMIXCSV in'); {$EndIf}
-   //if (FilesWanted = Nil) then begin
-      FilesWanted := tStringList.Create;
-      FilesWanted.Add(DEMIXresultsDir);
-      i := 1;
-      if not GetMultipleFiles('DEMIX CSV files to process','*.csv',FilesWanted,i) then exit;
-   //end;
+   FilesWanted := tStringList.Create;
+   FilesWanted.Add(DEMIXresultsDir);
+   i := 1;
+   if not GetMultipleFiles('DEMIX CSV files to process','*.csv',FilesWanted,i) then exit;
 
    try
       HeavyDutyProcessing := true;
@@ -223,13 +221,12 @@ var
    NumPits,NumPeaks : array[1..MaxRefStore] of integer;
    DEMIXtileDB,
 
-   LandCoverGrid{,WantImage,NewDEM} : integer;
+   LandCoverGrid : integer;
    bbgrid : tGridLimits;
 
    GeodeticFName,LandCoverFName,
 
    cfName,fName,IceSatFName,OutputDir : PathStr;
-   //IndexSeriesTable : tMyData;
    TestAreaName,{WantSeries,}DEMIXtile,LandTypeMask,TileHeader : shortstring;
    LatCent,LongCent,
    GridFull,Lat,Long : float64;

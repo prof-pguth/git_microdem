@@ -1,3 +1,5 @@
+unit map_splitter;
+
 {^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
@@ -11,8 +13,6 @@
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
 {$EndIf}
 
-
-unit map_splitter;
 
 interface
 
@@ -56,17 +56,11 @@ begin
    if FileExists(fName1) and FileExists(fName2) then begin
       splitter_form := Tsplitter_form.Create(Application);
       splitter_form.Caption := ExtractFileNameNoExt(fName1) + '  |||||  ' + ExtractFileNameNoExt(fName2);
-      //splitter_form.RightBMP := tBitmap.Create;
-      //splitter_form.RightBMP.LoadFromFile(fName2);
-
       splitter_form.RightBMP := LoadBitmapFromFile(fName2);
-
       splitter_form.ClientHeight := splitter_form.RightBMP.height;
       splitter_form.ClientWidth := splitter_form.RightBMP.Width;
-
       splitter_form.Image1.Picture.LoadFromFile(fName1);
       splitter_form.LoadRight;
-   //splitter_form.Image2.Picture.LoadFromFile(fName2);
    end;
 end;
 

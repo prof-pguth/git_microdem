@@ -407,34 +407,34 @@ begin
 end;
 
 
-procedure GridRatio;
+function GridRatio(Map1Num : integer = 0; Map2Den : integer = 0; inMapType : tMapType = mtDEMBlank) : integer;
 var
-   Map1Num,Map2Den,Col,Row,DiffMap  : integer;
+   Col,Row : integer;
    z2Den,z1Num : float32;
    NewHeader : tDEMheader;
    IdenticalGrids : boolean;
 begin
    {$IfDef RecordDEMCompare} WriteLineToDebugFile('GridRatio in'); {$EndIf}
-   GetTwoCompatibleGrids('grid ratio=DEM1/DEM2',true,Map1Num,Map2Den,false,true);
+   if not (ValidDEM(Map1Num) and ValidDEM( Map2Den)) then GetTwoCompatibleGrids('grid ratio=DEM1/DEM2',true,Map1Num,Map2Den,false,true);
    IdenticalGrids := DEMGlb[Map1Num].SecondGridIdentical(Map2Den);
 
    NewHeader := DEMGlb[Map2Den].DEMheader;
    NewHeader.ElevUnits := Undefined;
    NewHeader.DEMPrecision := FloatingPointDEM;
-   if OpenAndZeroNewDEM(true,NewHeader,DiffMap,'Ratio: ' + DEMGlb[Map1Num].AreaName + ' / ' + DEMGlb[Map2Den].AreaName,InitDEMmissing) then begin
+   if OpenAndZeroNewDEM(true,NewHeader,Result,'Ratio: ' + DEMGlb[Map1Num].AreaName + ' / ' + DEMGlb[Map2Den].AreaName,InitDEMmissing) then begin
       StartProgress('Ratio');
        for Col := 0 to pred(DEMGlb[Map2Den].DEMheader.NumCol) do begin
           for Row := 0 to pred(DEMGlb[Map2Den].DEMheader.NumRow) do begin
              if DEMGlb[Map2Den].GetElevMeters(Col,Row,z2Den) and (abs(z2Den) > 0.000001) then begin
                 if DEMGlb[Map2Den].GetElevMetersFromSecondDEM(IdenticalGrids,Map1Num,Col,Row,z1Num) then begin
-                   DEMGlb[DiffMap].SetGridElevation(Col,Row,z1Num/z2Den);
+                   DEMGlb[Result].SetGridElevation(Col,Row,z1Num/z2Den);
                 end;
              end;
           end {for Row};
           UpdateProgressBar(Col/ pred(DEMGlb[Map2Den].DEMheader.NumCol));
        end {for Col};
       {$IfDef RecordDEMCompare} WriteLineToDebugFile('Diff DEM: ' + DEMGlb[DiffMap].AreaName + '  ' + DEMGlb[DiffMap].KeyDEMParams); {$EndIf}
-      DEMGlb[DiffMap].SetUpMap(Diffmap,true);
+      DEMGlb[Result].SetUpMap(Result,true,inMapType);
    end;
    {$IfDef RecordDEMCompare} WriteLineToDebugFile('GridRatio out'); {$EndIf}
 end;

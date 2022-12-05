@@ -4,9 +4,9 @@
 { Released under the MIT Licences   }
 { Copyright (c) 2022 Peter L. Guth  }
 {___________________________________}
-{                                 }
-{ include file for demcoord       }
-{_________________________________}
+{                                   }
+{ include file for demcoord         }
+{___________________________________}
 
 
    procedure ReadNGDCGRD98file(DEMFileName : PathStr; var Error : boolean);

@@ -115,37 +115,12 @@ object HistOptForm: THistOptForm
       'Arithmetic')
     TabOrder = 7
   end
-  object RadioGroup2: TRadioGroup
-    Left = 24
-    Top = 0
-    Width = 185
-    Height = 38
-    Caption = 'Histogram for'
-    Columns = 2
-    Items.Strings = (
-      'Pick DEM'
-      'All DEMs')
-    TabOrder = 8
-  end
-  object RadioGroup3: TRadioGroup
-    Left = 8
-    Top = 131
-    Width = 233
-    Height = 39
-    Caption = 'Analysis region'
-    Columns = 2
-    Items.Strings = (
-      'Entire DEM'
-      'Current map area')
-    TabOrder = 9
-    OnClick = RadioGroup3Click
-  end
   object Edit1: TEdit
     Left = 88
     Top = 215
     Width = 121
     Height = 21
-    TabOrder = 10
+    TabOrder = 8
     Text = 'Edit1'
     OnChange = Edit1Change
   end

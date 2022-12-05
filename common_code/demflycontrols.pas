@@ -9,7 +9,6 @@ unit demflycontrols;
 
 
 
-
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    //{$Define RecordChangeFlyControls}
 {$EndIf}

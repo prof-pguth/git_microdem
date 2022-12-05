@@ -4,8 +4,8 @@ object GetGridForm: TGetGridForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Units for DEM Grid'
-  ClientHeight = 143
-  ClientWidth = 276
+  ClientHeight = 154
+  ClientWidth = 294
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -78,9 +78,9 @@ object GetGridForm: TGetGridForm
     OnChange = Edit6Change
   end
   object RadioGroup1: TRadioGroup
-    Left = 80
+    Left = 61
     Top = 67
-    Width = 193
+    Width = 212
     Height = 33
     Caption = 'Units'
     Columns = 3

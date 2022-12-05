@@ -533,6 +533,7 @@ object dbtablef: Tdbtablef
     Height = 41
     Align = alTop
     TabOrder = 3
+    ExplicitWidth = 1340
     object RadioGroup2: TRadioGroup
       Left = 20
       Top = 0

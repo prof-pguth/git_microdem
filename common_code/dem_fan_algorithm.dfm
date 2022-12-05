@@ -13,7 +13,6 @@ object FanAlgParams: TFanAlgParams
   Font.Style = [fsBold]
   Position = poDefaultSizeOnly
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Label6: TLabel
     Left = 191
@@ -117,6 +116,8 @@ object FanAlgParams: TFanAlgParams
     Height = 41
     Align = alBottom
     TabOrder = 6
+    ExplicitTop = 419
+    ExplicitWidth = 498
     object OKBtn: TBitBtn
       Left = 8
       Top = 6

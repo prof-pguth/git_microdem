@@ -97,7 +97,7 @@ type
       procedure StatsFromTwoGrids(iDEM,JDEM : integer; var r,covar : float64; Incr : integer = 1);
       procedure ElevationSlopePlot(WhichDEM : integer; DesiredBinSize : integer = 1);
       procedure DoAnSSODiagram(CurDEM : integer; GridLimits : tGridLimits);
-      procedure GridRatio;
+      function GridRatio(Map1Num : integer = 0; Map2Den : integer = 0; inMapType : tMapType = mtDEMBlank) : integer;
       function PercentDifferentTwoGrids(RefDEM,TestDEM : integer; fName : PathStr) : integer;
 
       procedure GridMinimum;

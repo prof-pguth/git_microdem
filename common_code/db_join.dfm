@@ -1,7 +1,7 @@
 object dbjoinform2: Tdbjoinform2
   Left = 0
   Top = 0
-  ClientHeight = 323
+  ClientHeight = 357
   ClientWidth = 366
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET

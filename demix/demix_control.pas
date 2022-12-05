@@ -243,13 +243,6 @@ end;
 
 
 procedure OpenDEMIXArea(fName : PathStr = '');
-const
-   DoCHM = false;
-   DoAirOrDirt = false;
-   DoElevationDifference = false;
-   DoSlopeDifference = false;
-   DoRoughnessDifference = false;
-   DoHalfSecondDEMs = true;
 var
    AreaName : shortstring;
    UseDSM,UseDTM,
@@ -292,14 +285,14 @@ begin
          {$IfDef RecordDEMIX} writeLineToDebugFile('LoadDEMIXarea complete'); {$EndIf}
          if LoadDEMIXReferenceDEMs(DEMIXRefDEM) then begin
             {$IfDef RecordDEMIX} writeLineToDebugFile('LoadDEMIXReferenceDEMs complete'); {$EndIf}
-            if DoHalfSecondDEMs then begin
+            if MDDef.DEMIX_DoHalfSecDEMs then begin
                MakeHalfSecond(RefDTMPoint);
                MakeHalfSecond(RefDSMpoint);
                MakeHalfSecond(RefDTMarea);
                MakeHalfSecond(RefDSMarea);
             end;
 
-            if DoCHM then begin
+            if MDDef.DEMIX_DoCHM then begin
                if ValidDEM(RefDTMpoint) and ValidDEM(RefDSMpoint) then begin
                   MakeDifferenceMapOfBoxRegion(RefDTMPoint,RefDSMpoint,DEMGlb[RefDSMPoint].FullDEMGridLimits,true,false,false,AreaName + '_points_chm');
                end;
@@ -308,44 +301,46 @@ begin
                end;
             end;
 
-            if LoadDEMIXCandidateDEMs(DEMIXRefDEM,true) then begin
-               if DoAirOrDirt then begin
-                  BigMap := tStringList.Create;
-                  BigMap.Add(DEMGlb[RefDTMPoint].SelectionMap.MapDraw.FullMapfName);
-                  for I := 1 to MaxTestDEM do begin
-                     if ValidDEM(TestDEM[i]) then begin
-                        GetReferenceDEMsForTestDEM(TestSeries[i],UseDSM,UseDTM);
-                        AirOrDirt := AirBallDirtBallMap(TestDEM[i],UseDSM,UseDTM);
-                        BigMap.Add(DEMGlb[AirOrDirt].SelectionMap.MapDraw.FullMapfName);
+            if  MDDef.DEMIX_DoAirOrDirt or MDDef.DEMIX_DoElevDiff or MDDef.DEMIX_DoSlopeDiff or MDDef.DEMIX_DoRuffDiff then begin
+               if LoadDEMIXCandidateDEMs(DEMIXRefDEM,true) then begin
+                  if MDDef.DEMIX_DoAirOrDirt then begin
+                     BigMap := tStringList.Create;
+                     BigMap.Add(DEMGlb[RefDTMPoint].SelectionMap.MapDraw.FullMapfName);
+                     for I := 1 to MaxTestDEM do begin
+                        if ValidDEM(TestDEM[i]) then begin
+                           GetReferenceDEMsForTestDEM(TestSeries[i],UseDSM,UseDTM);
+                           AirOrDirt := AirBallDirtBallMap(TestDEM[i],UseDSM,UseDTM);
+                           BigMap.Add(DEMGlb[AirOrDirt].SelectionMap.MapDraw.FullMapfName);
+                        end;
                      end;
+                     DEMGlb[TestDEM[1]].SelectionMap.Allsamepixelsizeasthismap1Click(Nil);
+                     MakeBigBitmap(BigMap,'');
                   end;
-                  DEMGlb[TestDEM[1]].SelectionMap.Allsamepixelsizeasthismap1Click(Nil);
-                  MakeBigBitmap(BigMap,'');
-               end;
 
-               BigMap := tStringList.Create;
-               if DoElevationDifference then begin
-                  DoDifferenceMaps(AreaName,'elvd','Elevation',Graph1,Graph2);
-                  AddImage(Graph1.Image1);
-                  if (Graph2 <> Nil) then AddImage(Graph2.Image1);
+                  BigMap := tStringList.Create;
+                  if MDDef.DEMIX_DoElevDiff then begin
+                     DoDifferenceMaps(AreaName,'elvd','Elevation',Graph1,Graph2);
+                     AddImage(Graph1.Image1);
+                     if (Graph2 <> Nil) then AddImage(Graph2.Image1);
+                  end;
+                  if MDDef.DEMIX_DoSlopeDiff then begin
+                     DoDifferenceMaps(AreaName,'slpd','Slope',Graph1,Graph2);
+                     AddImage(Graph1.Image1);
+                     if (Graph2 <> Nil) then AddImage(Graph2.Image1);
+                  end;
+                  if MDDef.DEMIX_DoRuffDiff then begin
+                     DoDifferenceMaps(AreaName,'rufd','Roughness',Graph1,Graph2);
+                     AddImage(Graph1.Image1);
+                     if (Graph2 <> Nil) then AddImage(Graph2.Image1);
+                  end;
+                  if (BigMap.Count > 0) then begin
+                     fName := NextFileNumber(DEMIXtempFiles,AreaName + '_difference_histograms_','.png');
+                     if (RefDSMArea = 0) then Cols := 1 else Cols := 2;
+                     MakeBigBitmap(BigMap,'',fName,Cols);
+                     DisplayBitmap(fName);
+                  end
+                  else BigMap.Free;
                end;
-               if DoSlopeDifference then begin
-                  DoDifferenceMaps(AreaName,'slpd','Slope',Graph1,Graph2);
-                  AddImage(Graph1.Image1);
-                  if (Graph2 <> Nil) then AddImage(Graph2.Image1);
-               end;
-               if DoRoughnessDifference then begin
-                  DoDifferenceMaps(AreaName,'rufd','Roughness',Graph1,Graph2);
-                  AddImage(Graph1.Image1);
-                  if (Graph2 <> Nil) then AddImage(Graph2.Image1);
-               end;
-               if (BigMap.Count > 0) then begin
-                  fName := NextFileNumber(DEMIXtempFiles,AreaName + '_difference_histograms_','.png');
-                  if (RefDSMArea = 0) then Cols := 1 else Cols := 2;
-                  MakeBigBitmap(BigMap,'',fName,Cols);
-                  DisplayBitmap(fName);
-               end
-               else BigMap.Free;
             end;
          end;
       end;

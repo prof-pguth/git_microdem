@@ -487,7 +487,7 @@ uses
        MD_use_tools,
    {$EndIf}
 
-   {$IfDef ExSat}
+   {$IfDef ExMrSID}
    {$Else}
       MrSIDImagery,
    {$EndIf}
@@ -1357,13 +1357,16 @@ end;
 procedure TDemHandForm.GDALwarpSentinel11Click(Sender: TObject);
 var
    Paths : tStringList;
+   i : integer;
 begin
    {$IfDef RecordGDAL} WriteLineToDebugFile('TDemHandForm.GDALwarpSentinel11Click in'); {$EndIf}
    if IsGDALFilePresent(GDAL_warp_name) then begin
       Paths := tStringList.Create;
       Paths.Add(LastSatDir);
       if GetMultipleDirectories('Directories with Sentinel-1 images to warp',Paths) then begin
-         ResampleSentinel_1(Paths);
+         for I := 0 to Paths.Count do
+
+         ResampleSentinel_1(Paths.Strings[i]);
       end;
    end;
 
@@ -1382,6 +1385,10 @@ end;
 
 procedure TDemHandForm.FormCreate(Sender: TObject);
 begin
+   {$IfDef ExMrSID}
+      MrSIDtotiff1.Visible := false;
+   {$EndIf}
+
    Petmar.CheckFormPlacement(Self);
    {$IfDef HideHelpButtons} Help1.Visible := false; {$EndIf}
    FileMode := 2;
@@ -1687,7 +1694,7 @@ var
 begin
    ThisFile := tStringList.Create;
    TheContents := tStringList.Create;
-   Dir := 'c:\mydocs\helpfile\wwwmicrodem\html\';
+   Dir := 'C:\mydocs\md_help\html\';
    GetDOSPath('directory',Dir);
    TheContents.Add(StartTableString);
    Links := tStringList.Create;
@@ -1919,7 +1926,10 @@ end;
 
 procedure TDemHandForm.MrSIDtotiff1Click(Sender: TObject);
 begin
-   ConvertsSIDsToTiff;
+   {$IfDef ExMrSID}
+   {$Else}
+      ConvertsSIDsToTiff;
+   {$EndIf}
 end;
 
 procedure TDemHandForm.ASCIIduplicates1Click(Sender: TObject);

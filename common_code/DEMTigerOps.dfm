@@ -4,8 +4,8 @@ object TigerOverlayOptions: TTigerOverlayOptions
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Tiger Overlay Options'
-  ClientHeight = 293
-  ClientWidth = 329
+  ClientHeight = 325
+  ClientWidth = 348
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -132,7 +132,7 @@ object TigerOverlayOptions: TTigerOverlayOptions
   object TabbedNotebook1: TTabbedNotebook
     Left = 0
     Top = 0
-    Width = 329
+    Width = 348
     Height = 209
     Align = alTop
     TabFont.Charset = DEFAULT_CHARSET
@@ -141,12 +141,12 @@ object TigerOverlayOptions: TTigerOverlayOptions
     TabFont.Name = 'MS Sans Serif'
     TabFont.Style = []
     TabOrder = 10
+    ExplicitWidth = 323
     object TTabPage
       Left = 4
       Top = 24
       Caption = 'Roads'
-      ExplicitWidth = 0
-      ExplicitHeight = 0
+      ExplicitWidth = 315
       object Label13: TLabel
         Left = 280
         Top = 160
@@ -287,8 +287,7 @@ object TigerOverlayOptions: TTigerOverlayOptions
       Left = 4
       Top = 24
       Caption = 'Boundaries'
-      ExplicitWidth = 0
-      ExplicitHeight = 0
+      ExplicitWidth = 315
       object CheckBox8: TCheckBox
         Left = 16
         Top = 16
@@ -311,8 +310,7 @@ object TigerOverlayOptions: TTigerOverlayOptions
       Left = 4
       Top = 24
       Caption = 'Others'
-      ExplicitWidth = 0
-      ExplicitHeight = 0
+      ExplicitWidth = 315
       object BitBtn9: TBitBtn
         Left = 160
         Top = 16
@@ -402,6 +400,7 @@ object TigerOverlayOptions: TTigerOverlayOptions
       Left = 4
       Top = 24
       Caption = 'Autoscaling'
+      ExplicitWidth = 315
       object Label1: TLabel
         Left = 0
         Top = 8
@@ -584,8 +583,7 @@ object TigerOverlayOptions: TTigerOverlayOptions
       Left = 4
       Top = 24
       Caption = 'Files'
-      ExplicitWidth = 0
-      ExplicitHeight = 0
+      ExplicitWidth = 315
       object Label12: TLabel
         Left = 12
         Top = 21

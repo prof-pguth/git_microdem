@@ -522,6 +522,7 @@ type
     Python1: TMenuItem;
     N36: TMenuItem;
     OpenDEMIXarea1: TMenuItem;
+    OpenSentinel1radarimagery1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -888,6 +889,7 @@ type
     procedure DEMIXreferencetilesurvey1Click(Sender: TObject);
     procedure Python1Click(Sender: TObject);
     procedure OpenDEMIXarea1Click(Sender: TObject);
+    procedure OpenSentinel1radarimagery1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -943,7 +945,7 @@ uses
    DEMEros,
    GEOTIFF,
    DEM_Sat_Header,
-   MrSidImagery,
+   //MrSidImagery,
    DEM_NLCD,
    {$IfDef ExHypImage}
    {$Else}
@@ -2197,6 +2199,8 @@ begin
       if (GetScreenColorDepth < 24) then MessageToContinue('Problems likely w/ < 24 bit color');
    end;
 
+   {$IfDef ExMrSIDSat} MrSidimagery1.Visible := false; {$EndIf}
+
    {$If Defined(TrackFormCreate)} MessageToContinue('FormCreate out'); {$EndIf}
    {$IfDef RecordFormResize} WriteLineToDebugFile('Twmdem.FormCreate out, width=' + IntToStr(Width) + '  & height=' + IntToStr(Height)); {$EndIf}
 end;
@@ -2959,10 +2963,10 @@ end;
 
 procedure Twmdem.MrSidimagery1Click(Sender: TObject);
 begin
-{$IfDef ExSat}
-{$Else}
-   MrSidImagery.MrSidInfo(LastImageName);
-{$EndIf}
+   {$IfDef ExMrSID}
+   {$Else}
+      MrSidImagery.MrSidInfo(LastImageName);
+   {$EndIf}
 end;
 
 
@@ -5729,6 +5733,11 @@ begin
    PickAndOpenImagery(itDRG);
 end;
 
+
+procedure Twmdem.OpenSentinel1radarimagery1Click(Sender: TObject);
+begin
+   OpenSentinel1Radar;
+end;
 
 procedure Twmdem.OpenSentinen2image1Click(Sender: TObject);
 begin

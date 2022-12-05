@@ -126,9 +126,6 @@ type
     BitBtn13: TBitBtn;
     Label11: TLabel;
     CheckBox107: TCheckBox;
-    Label12: TLabel;
-    Edit3: TEdit;
-    CheckBox5: TCheckBox;
     CheckBox123: TCheckBox;
     Koppen: TBitBtn;
     CheckBox91: TCheckBox;
@@ -191,7 +188,6 @@ type
     BitBtn18: TBitBtn;
     CheckBox22: TCheckBox;
     BitBtn19: TBitBtn;
-    CheckBox25: TCheckBox;
     BitBtn20: TBitBtn;
     RadioGroup19: TRadioGroup;
     CheckBox39: TCheckBox;
@@ -199,7 +195,6 @@ type
     CheckBox42: TCheckBox;
     RadioGroup25: TRadioGroup;
     CheckBox43: TCheckBox;
-    CheckBox44: TCheckBox;
     RadioGroup26: TRadioGroup;
     TabSheet2: TTabSheet;
     CheckBox48: TCheckBox;
@@ -397,13 +392,20 @@ type
     CheckBox116: TCheckBox;
     CheckBox145: TCheckBox;
     CheckBox146: TCheckBox;
-    Edit12: TEdit;
-    DTfilllabel: TLabel;
     BitBtn39: TBitBtn;
     BitBtn40: TBitBtn;
     Label20: TLabel;
     BitBtn41: TBitBtn;
     BitBtn42: TBitBtn;
+    GroupBox18: TGroupBox;
+    Edit12: TEdit;
+    DTfilllabel: TLabel;
+    CheckBox5: TCheckBox;
+    CheckBox154: TCheckBox;
+    CheckBox158: TCheckBox;
+    CheckBox162: TCheckBox;
+    CheckBox169: TCheckBox;
+    CheckBox180: TCheckBox;
     procedure BitBtn32Click(Sender: TObject);
     procedure BitBtn13Click(Sender: TObject);
     procedure HelpBtnClick(Sender: TObject);
@@ -553,22 +555,22 @@ uses
 
    {$IfDef ExDrainage}
    {$Else}
-   Drainage_opts,
+      Drainage_opts,
    {$EndIf}
 
    {$IfDef ExPers}
    {$Else}
-   DEMPersW,DEMPerOp,
+      DEMPersW,DEMPerOp,
    {$EndIf}
 
    {$IfDef ExGeography}
    {$Else}
-   koppen_opts,
+      koppen_opts,
    {$EndIf}
 
    {$IfDef ExKML}
    {$Else}
-   kml_overlay,
+      kml_overlay,
    {$EndIf}
 
    {$IfDef ExComplexGeoStats}
@@ -615,7 +617,6 @@ uses
    Speed_dist_form,
    DEMCoord,Demdef_routines,
    point_cloud_options,
-  // Read_DEM,
    NE_Outlines,
    USOutlines,
    PETMAR,PETMath,PETGraphColors, Petmar_ini_file,
@@ -837,9 +838,9 @@ begin
    {$EndIf}
 
    DrawRow(DEMIXbase,'DEMIX',MDDef.Demix_base_dir);
-   DrawRow(TauDEM,'TauDEM',TauDEMDir);
+   //DrawRow(TauDEM,'TauDEM',TauDEMDir);
 
-   StringGrid1.RowCount := TauDEM + 1;
+   StringGrid1.RowCount := OnRow + 1;
    StringGrid1.ColWidths[0] := 120;
 
    GroupBox7.Enabled := CheckBox88.Checked;
@@ -866,7 +867,7 @@ begin
          end;
       {$EndIf}
       if Arow = DEMIXbase then SetDEMIXdirs(true);
-      if Arow = TauDEM then GetDOSPath('TauDEM',TauDEMDir);
+      //if Arow = TauDEM then GetDOSPath('TauDEM',TauDEMDir);
    end;
    LabelDirectories;
 end;
@@ -969,7 +970,7 @@ begin
 
    Edit10.Text := IntToStr(MDDef.NumMasksToAdd);
    Edit2.Text := IntToStr(MDDef.BlowUpExtraMargin);
-   Edit3.Text := IntToStr(MDdef.MaxMrSidImageSize);
+   //Edit3.Text := IntToStr(MDdef.MaxMrSidImageSize);
    Edit4.Text := RealToString(MDdef.ScalebarDistortionTolerable,-8,-2);
    Edit5.Text := RealToString(MDDef.HistogramTailClipSize,-18,-4);
    Edit6.Text := RealToString(MDdef.MercShiftLongLimit,-12,-4);
@@ -1046,7 +1047,7 @@ begin
       CheckBox23.Checked := MDDef.RouteGeotiffExportGDAL;
    {$EndIf}
 
-   CheckBox25.Checked := Mddef.HydrologyEnforceProfile;
+   //CheckBox25.Checked := Mddef.HydrologyEnforceProfile;
    CheckBox26.Checked := MDdef.WrapETOPO;
    //CheckBox27.Checked := MDdef.BothDatumsWhileRoam;
    CheckBox29.Checked := MDdef.AutoAssignNameField;
@@ -1073,7 +1074,7 @@ begin
    CheckBox41.Checked := MDdef.WorldOutlinesOnGlobalBlueMarble;
    CheckBox42.Checked := MDDef.ModalDBDisplay;
    CheckBox43.Checked := MDDef.TransparentIcons;
-   CheckBox44.Checked := MDDef.SmoothThalwegs;
+   //CheckBox44.Checked := MDDef.SmoothThalwegs;
 
    CheckBox45.Checked := MDdef.IgnoreHistogramZero;
    CheckBox46.Checked := MDdef.ShowClimateStationDB;
@@ -1201,9 +1202,9 @@ begin
       PageControl1.Pages[18].TabVisible := false;
       GroupBox4.Visible := false;
    {$Else}
-   CheckBox105.Checked := MDDef.ShowOceanographyOptions;
-   CheckBox111.Checked := MDDef.ShowSidescan;
-   CheckBox112.Checked := MDDef.ShowSubbottom;
+      CheckBox105.Checked := MDDef.ShowOceanographyOptions;
+      CheckBox111.Checked := MDDef.ShowSidescan;
+      CheckBox112.Checked := MDDef.ShowSubbottom;
    {$EndIf}
 
    {$IfDef ExPointCloud}
@@ -1241,6 +1242,14 @@ begin
          CheckBox101.Visible := false;
       end;
    {$EndIf}
+
+   CheckBox5.Checked := MDDef.DEMIX_DoCHM;
+   CheckBox154.Checked := MDDef.DEMIX_DoAirOrDirt;
+   CheckBox158.Checked := MDDef.DEMIX_DoElevDiff;
+   CheckBox162.Checked := MDDef.DEMIX_DoSlopeDiff;
+   CheckBox169.Checked := MDDef.DEMIX_DoRuffDiff;
+   CheckBox180.Checked := MDDef.DEMIX_DoHalfSecDEMs;
+
    if MdDEF.DefaultUTMZone in [1..60] then Label1.Caption := IntToStr(MdDEF.DefaultUTMZone) + '  (' + UTMZoneExtent(MdDEF.DefaultUTMZone) + ')';
    Label6.Caption := 'Windows reports processors=' + IntToStr(GetNumberProcessors);
    Label5.Caption := DatumName(MDDef.PreferPrimaryDatum);
@@ -1447,10 +1456,9 @@ begin
    MDdef.MissingToSeaLevel := CheckBox20.Checked;
    MDdef.DeleteAuxTiffFiles := CheckBox21.Checked;
 
-
    MDdef.DefaultEditDBsInGrid := CheckBox22.Checked;
 
-   Mddef.HydrologyEnforceProfile := CheckBox25.Checked;
+   //Mddef.HydrologyEnforceProfile := CheckBox25.Checked;
    MDdef.WrapETOPO := CheckBox26.Checked;
    //MDdef.BothDatumsWhileRoam := CheckBox27.Checked;
 
@@ -1471,7 +1479,7 @@ begin
    MDdef.WorldOutlinesOnGlobalBlueMarble := CheckBox41.Checked;
    MDDef.ModalDBDisplay := CheckBox42.Checked;
    MDDef.TransparentIcons := CheckBox43.Checked;
-   MDDef.SmoothThalwegs := CheckBox44.Checked;
+   //MDDef.SmoothThalwegs := CheckBox44.Checked;
 
    MDdef.AverageImageReadings := CheckBox40.Checked;
    MDDef.AspectBoxRegion := CheckBox49.Checked;
@@ -1603,13 +1611,21 @@ begin
    MDDef.MapLimitDB := CheckBox159.Checked;
    MDDef.AutoGrayScaleReflectance := CheckBox160.Checked;
 
+
+   MDDef.DEMIX_DoCHM := CheckBox5.Checked;
+   MDDef.DEMIX_DoAirOrDirt := CheckBox154.Checked;
+   MDDef.DEMIX_DoElevDiff  := CheckBox158.Checked;
+   MDDef.DEMIX_DoSlopeDiff := CheckBox162.Checked;
+   MDDef.DEMIX_DoRuffDiff := CheckBox169.Checked;
+   MDDef.DEMIX_DoHalfSecDEMs := CheckBox180.Checked;
+
    MDdef.StatSampleIncr := UpDown1.Position;
 
    CheckEditString(Edit19.Text,MDDef.LOSSliceBuffer);
    MDDef.GoogleAPIkey := Edit1.Text;
 
    CheckEditString(Edit2.Text,MDDef.BlowUpExtraMargin);
-   CheckEditString(Edit3.Text,MDdef.MaxMrSidImageSize);
+   //CheckEditString(Edit3.Text,MDdef.MaxMrSidImageSize);
    CheckEditString(Edit4.Text,MDdef.ScalebarDistortionTolerable);
    CheckEditString(Edit5.Text,MDDef.HistogramTailClipSize);
    CheckEditString(Edit6.Text,MDdef.MercShiftLongLimit);

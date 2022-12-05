@@ -11,7 +11,6 @@ object FeatureMigrationForm: TFeatureMigrationForm
   Font.Style = []
   FormStyle = fsStayOnTop
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
     Left = 32
@@ -88,6 +87,8 @@ object FeatureMigrationForm: TFeatureMigrationForm
     Lines.Strings = (
       'Memo1')
     TabOrder = 5
+    ExplicitLeft = 402
+    ExplicitHeight = 332
   end
   object BitBtn1: TBitBtn
     Left = 24

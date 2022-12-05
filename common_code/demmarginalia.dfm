@@ -11,10 +11,8 @@ object DemMarginaliaForm: TDemMarginaliaForm
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
-  OldCreateOrder = False
   Position = poOwnerFormCenter
   OnClose = FormClose
-  PixelsPerInch = 96
   TextHeight = 13
   object Image2: TImage
     Left = 0
@@ -35,7 +33,8 @@ object DemMarginaliaForm: TDemMarginaliaForm
     Width = 588
     Height = 19
     Panels = <>
-    ExplicitWidth = 542
+    ExplicitTop = 378
+    ExplicitWidth = 582
   end
   object Panel1: TPanel
     Left = 424
@@ -44,6 +43,8 @@ object DemMarginaliaForm: TDemMarginaliaForm
     Height = 387
     Align = alRight
     TabOrder = 1
+    ExplicitLeft = 418
+    ExplicitHeight = 378
     object Label4: TLabel
       Left = 14
       Top = 204
@@ -63,7 +64,7 @@ object DemMarginaliaForm: TDemMarginaliaForm
     object Label2: TLabel
       Left = 8
       Top = 162
-      Width = 97
+      Width = 32
       Height = 13
       Caption = 'Label2'
     end

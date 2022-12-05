@@ -15,6 +15,7 @@ unit multigrid;
    {$IFDEF DEBUG}
       //{$Define RecordMultiGrids}
       //{$Define RecordHyperion}
+      {$Define RecordSentinel1}
       //{$Define RecordMultiGridsDetailed}
       //{$Define RecordCloseMultiGrids}
       //{$Define RecordSatClass}
@@ -183,6 +184,8 @@ var
 
 procedure OpenEGMgrids;
 
+procedure OpenSentinel1Radar;
+
 function OpenMultigridByDirectory : integer;
 function OpenMultigridByStringList(sl : tStringList) : integer;
 
@@ -222,23 +225,130 @@ uses
 
 
    PetDBUtils,
+   PetImage,
    DEM_Manager,
    Map_Overlays,
    Hyp_display,
+   gdal_tools,
    DataBaseCreate,
 
    Monthly_grids,
 
    DEMDatabase,DEMEros,
    lidar_multiple_grid_display,
+   rgb_colors_three_params,
    Nevadia_Main;
+
+
+procedure OpenSentinel1Radar;
+var
+   ThisOne,i,j,k,x,y,NumPts : integer;
+   Paths,Tiffs : tStringList;
+   fName,mgName : PathStr;
+   bmp : array[1..3] of tMyBitmap;
+   mem : array[1..3] of tBmpMemory;
+
+
+          procedure LoadOne(j : integer; fName : PathStr);
+          begin
+              {$If Defined(RecordSentinel1)} WriteLineToDebugFile('Load one=' + IntToStr(j) + '  ' + fName); {$EndIf}
+              LoadNewDEM(MultiGridArray[ThisOne].Grids[j],fName,false);
+              if (ExtractFileExt(fName) = '.tif') then begin
+                 DEMGlb[MultiGridArray[ThisOne].Grids[j]].DEMheader.ElevUnits := euImagery;
+                 DEMGlb[MultiGridArray[ThisOne].Grids[j]].MarkInRangeMissing(0,0,NumPts);
+                 DEMGlb[MultiGridArray[ThisOne].Grids[j]].CheckMaxMinElev;
+                 File2Trash(fName);
+                 fName := ChangeFileExt(fName,'.dem');
+                 {$If Defined(RecordSentinel1)} WriteLineToDebugFile('Resave one=' + fName); {$EndIf}
+                 DEMGlb[MultiGridArray[ThisOne].Grids[j]].WriteNewFormatDEM(fName);
+                 DEMGlb[MultiGridArray[ThisOne].Grids[j]].DEMFileName := fName;
+                 //DEMGlb[MultiGridArray[ThisOne].Grids[j]].SelectionMap.DoCompleteMapRedraw;
+              end;
+              {$If Defined(RecordSentinel1)} WriteLineToDebugFile('Create selection map'); {$EndIf}
+              CreateDEMSelectionMap(MultiGridArray[ThisOne].Grids[j],true,false,mtElevGray);
+              {$If Defined(RecordSentinel1)} WriteLineToDebugFile('Load one out=' + fName); {$EndIf}
+          end;
+
+
+begin
+   {$If Defined(RecordMultiGrids) or Defined(RecordSentinel1)} WriteLineToDebugFile('OpenSentinel1Radar'); {$EndIf}
+   try
+      HeavyDutyProcessing := true;
+      Paths := tStringList.Create;
+      Paths.Add(LastSatDir);
+      if GetMultipleDirectories('Directories with Sentinel-1 images to warp',Paths) then begin
+         for I := 0 to pred(Paths.Count) do begin
+            fName := Paths.Strings[i];
+            {$If Defined(RecordSentinel1)} WriteLineToDebugFile('Path=' + fName); {$EndIf}
+
+            Tiffs := Nil;
+            FindMatchingFiles(fName,'*.dem',Tiffs,6);
+            if (Tiffs.Count = 0) then begin
+               {$If Defined(RecordMultiGrids) or Defined(RecordSentinel1)} WriteLineToDebugFile('No DEMs'); {$EndIf}
+               FreeAndNil(Tiffs);
+               FindMatchingFiles(fName,'*.tiff',Tiffs,6);
+               if (Tiffs.Count > 0) then begin
+                  {$If Defined(RecordSentinel1)} WriteLineToDebugFile('No tifs, call ResampleSentinel_1 ' + fName); {$EndIf}
+                  //FreeAndNil(Tiffs);
+                  //FindMatchingFiles(fName,'*.tiff',Tiffs,6);
+                  //if (Tiffs.Count > 0) then begin
+                     ResampleSentinel_1(fName);
+                     FreeAndNil(Tiffs);
+                     FindMatchingFiles(fName,'*.tif',Tiffs,6);
+                  //end;
+               end;
+            end;
+
+            if (Tiffs.Count >= 2) then begin
+               if FindOpenMultigrid(ThisOne) then begin
+                  MultiGridArray[ThisOne] := tMultiGridArray.Create;
+                  MultiGridArray[ThisOne].BasePath := Paths[i];
+                  MultiGridArray[ThisOne].MG_Name := 'Sentinel-1: ' + LastSubDir(Paths[i]);
+                  for j := 1 to Tiffs.Count do begin
+                    fName := Tiffs.Strings[pred(j)];
+                    LoadOne(j,fName);
+                  end;
+                  MultiGridArray[ThisOne].Grids[3] := GridRatio(MultiGridArray[ThisOne].Grids[2],MultiGridArray[ThisOne].Grids[1],mtElevGray);
+
+                  if CopyImageToBitmap(DEMGlb[MultiGridArray[ThisOne].Grids[3]].SelectionMap.Image1,bmp[3]) and CopyImageToBitmap(DEMGlb[MultiGridArray[ThisOne].Grids[2]].SelectionMap.Image1,bmp[2]) and
+                      CopyImageToBitmap(DEMGlb[MultiGridArray[ThisOne].Grids[1]].SelectionMap.Image1,bmp[1]) then begin
+                         for k := 1 to 3 do Mem[k] := tBMPMemory.Create(bmp[k]);
+                           for y := 1 to pred(pred(Bmp[1].Height)) do begin
+                              for x := 1 to pred(pred(bmp[1].Width)) do begin           //vv/vh for blue
+                                 mem[3].SetRedChannel(x,y,mem[2].RedChannel(x,y));      //vh
+                                 mem[3].SetGreenChannel(x,y,mem[1].GreenChannel(x,y));  //vv
+                              end;
+                           end;
+                           DEMGlb[MultiGridArray[ThisOne].Grids[3]].SelectionMap.Image1.Picture.Graphic := bmp[3];
+                          for k := 1 to 3 do begin
+                             Mem[k].Destroy;
+                             BMP[k].Destroy;
+                          end;
+                  end;
+               end
+               else begin
+                  {$If Defined(RecordMultiGrids) or Defined(RecordSentinel1)} WriteLineToDebugFile('No open multigrid'); {$EndIf}
+               end;
+            end
+            else begin
+               {$If Defined(RecordMultiGrids) or Defined(RecordSentinel1)} WriteLineToDebugFile('No files at all'); {$EndIf}
+            end;
+            Tiffs.Destroy;
+         end;
+      end;
+      Paths.Destroy;
+   finally
+      HeavyDutyProcessing := false;
+   end;
+end;
+
 
 
 procedure OpenEGMgrids;
 begin
-   if EGM96_grid = 0 then EGM96_grid := OpenNewDEM(Geoid96FName,false);
-   if EGM2008_grid = 0 then EGM2008_grid := OpenNewDEM(Geoid2008FName,false);
-   if EGMdiff_grid = 0 then EGMdiff_grid := OpenNewDEM(GeoidDiffFName,false);
+   if not ValidDEM(EGM96_grid) then EGM96_grid := OpenNewDEM(Geoid96FName,false);
+   if not ValidDEM(EGM2008_grid) then EGM2008_grid := OpenNewDEM(Geoid2008FName,false);
+   if not ValidDEM(EGMdiff_grid) then EGMdiff_grid := OpenNewDEM(GeoidDiffFName,false);
 end;
 
 
@@ -577,8 +687,9 @@ begin
       end;
    end;
    Result := false;
-   MessageToContinue('Cannot load another');
+   MessageToContinue('Cannot load another multgrid, already loaded = ' + IntToStr(MaxMultiGrid));
 end;
+
 
 function FindOpenMonthlyDBArray(var ThisOne : integer) : boolean;
 var
@@ -1136,9 +1247,8 @@ var
    function LoadBand(i : integer) : boolean;
    begin
        Result := false;
-       if (SatImage[SatImageIndex].LandsatNumber in [4..8]) then begin
+       if (SatImage[SatImageIndex].LandsatNumber in [4..9]) then begin
           if (i = 8) then exit;   //pan band
-
           if LoadAll then begin
              Result := true;
           end
@@ -1147,7 +1257,7 @@ var
           end;
        end
        else if SatImage[SatImageIndex].IsSentinel2 then begin
-          Result := i <> 11;
+          Result := (i <> 11);
        end;
    end;
 

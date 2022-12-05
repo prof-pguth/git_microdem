@@ -156,7 +156,7 @@ object PickFanParams: TPickFanParams
     Left = 328
     Top = 128
     Width = 89
-    Height = 65
+    Height = 81
     Caption = 'Fan format'
     Items.Strings = (
       'PNG'

@@ -34,7 +34,6 @@ object wmdem: Twmdem
     ButtonWidth = 34
     TabOrder = 0
     OnMouseDown = ToolBar1MouseDown
-    ExplicitWidth = 2180
     object SpeedButton2: TSpeedButton
       Left = 0
       Top = 0
@@ -1696,8 +1695,6 @@ object wmdem: Twmdem
     Visible = False
     OnClick = StatusBar1Click
     OnDblClick = StatusBar1DblClick
-    ExplicitTop = 1329
-    ExplicitWidth = 2180
   end
   object MainMenu1: TMainMenu
     Left = 136
@@ -2542,8 +2539,8 @@ object wmdem: Twmdem
     end
   end
   object MetadataPopupMenu: TPopupMenu
-    Left = 296
-    Top = 320
+    Left = 360
+    Top = 336
     object ESRIshapefile1: TMenuItem
       Caption = 'ESRI shapefile'
       OnClick = ESRIshapefile1Click
@@ -2839,6 +2836,11 @@ object wmdem: Twmdem
       GroupIndex = 6
       OnClick = Openlidarmatchedgrids1Click
     end
+    object OpenSentinel1radarimagery1: TMenuItem
+      Caption = 'Open Sentinel-1 radar imagery'
+      GroupIndex = 6
+      OnClick = OpenSentinel1radarimagery1Click
+    end
     object N14: TMenuItem
       Caption = '-'
       GroupIndex = 6
@@ -2871,8 +2873,8 @@ object wmdem: Twmdem
     end
   end
   object ToolsPopupMenu3: TPopupMenu
-    Left = 296
-    Top = 192
+    Left = 352
+    Top = 200
     object CompressDecompress1: TMenuItem
       Caption = 'Compress/Decompress'
       OnClick = CompressDecompress1Click
@@ -3194,8 +3196,8 @@ object wmdem: Twmdem
     end
   end
   object GeographyPopupMenu: TPopupMenu
-    Left = 296
-    Top = 256
+    Left = 360
+    Top = 272
     object Mapprojectionsanddistortion1: TMenuItem
       Caption = 'Map projections and distortion'
       object Planarprojections1: TMenuItem

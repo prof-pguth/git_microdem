@@ -4,8 +4,8 @@ object PerspOptions: TPerspOptions
   ActiveControl = OKBtn
   BorderStyle = bsDialog
   Caption = 'Perspective Options'
-  ClientHeight = 530
-  ClientWidth = 465
+  ClientHeight = 561
+  ClientWidth = 476
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack

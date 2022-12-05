@@ -1814,11 +1814,6 @@ object MapForm: TMapForm
       object Savesatelliteimage1: TMenuItem
         Caption = 'Save satellite image'
         GroupIndex = 1
-        object GeotifffromMrSid1: TMenuItem
-          Caption = 'Geotiff from MrSid'
-          GroupIndex = 1
-          OnClick = GeotifffromMrSid1Click
-        end
         object AllbandsasGeotiffs1: TMenuItem
           Caption = 'All bands as Geotiffs at current resolution'
           GroupIndex = 1

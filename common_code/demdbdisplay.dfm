@@ -3,8 +3,8 @@ object dblimit: Tdblimit
   Top = 503
   BorderIcons = []
   Caption = 'Table Columns'
-  ClientHeight = 358
-  ClientWidth = 275
+  ClientHeight = 417
+  ClientWidth = 307
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -44,11 +44,11 @@ object dblimit: Tdblimit
     Left = 0
     Top = 0
     Width = 200
-    Height = 358
+    Height = 417
     HorzScrollBar.Visible = False
     Align = alLeft
     TabOrder = 1
-    ExplicitHeight = 367
+    ExplicitHeight = 349
     object Image1: TImage
       Left = 0
       Top = 0
