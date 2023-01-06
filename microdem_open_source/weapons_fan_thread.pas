@@ -530,6 +530,12 @@ var
    Alpha,Beta,Lat2,Long2,FanGX,FanGY,xu,yu,Heading,BlockDist : float64;
    Inbounds : boolean;
    ObsElev,z,FanZ : float32;
+    {$IfDef NoParallelFor}
+    {$Else}
+       UseThreads : integer;
+       Angle1 : float32;
+    {$EndIf}
+
 
       {$IfDef VCL}
       procedure CheckRadialSaving;

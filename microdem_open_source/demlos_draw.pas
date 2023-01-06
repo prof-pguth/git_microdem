@@ -1,6 +1,3 @@
-unit demlos_draw;
-
-
 {^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
@@ -8,6 +5,7 @@ unit demlos_draw;
 { Copyright (c) 2022 Peter L. Guth  }
 {___________________________________}
 
+unit demlos_draw;
 
 {$I nevadia_defines.inc}
 
@@ -16,7 +14,7 @@ unit demlos_draw;
       //{$Define RecordLOSAlgorithm}
       //{$Define RecordPointClouds}
       //{$Define RecordUTMZones}
-      {$Define RecordLOSDraw}
+      //{$Define RecordLOSDraw}
       //{$Define RecordLOS}
       //{$Define RecordLOSPrettyDrawing}
       //{$Define RecordRandomProfiles}

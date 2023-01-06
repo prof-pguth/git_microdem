@@ -294,6 +294,7 @@ type
    tJustify = (LeftJustify,RightJustify);
 
 const
+   lpNone = 0;
    lpNWMap = 1;
    lpSWMap = 2;
    lpNMap = 3;

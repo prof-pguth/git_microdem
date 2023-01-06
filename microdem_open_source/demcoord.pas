@@ -273,7 +273,6 @@ type
          SmallIntElevations    : pSmallIntElevations;
          ShortFloatElevations  : pShortFloatElevations;
          Normals               : tNormalsPointer;
-         Zpercens              : ^floatarray1000;
          RefMinElev,RefMaxElev : float64;
          DEMDatumShiftDone     : boolean;
          BytesPerElevation : int32;
@@ -294,6 +293,7 @@ type
          VATFileName       : PathStr;
          GeotiffImageDesc : shortstring;
          LongWordElevations : pLongWordElevations;
+         Zpercens              : ^floatarray1000;
 
          LatSizeMap,               {size of area in latitude, in degrees}
          LongSizeMap,              {size of area in longitude, in degrees}
@@ -542,7 +542,6 @@ type
          procedure ReinterpolateUTMDEM(var NewDEM : integer; FloatSpacingMeters : float64; UTMzone : int16 = -99; fName : PathStr = ''); //AddCaption : shortstring = '');
          function ResampleByAveraging(OpenMap : boolean; SaveCountGrid : boolean = true; SaveName : PathStr = '') : integer;
 
-
          procedure WriteNewFormatDEM(var FileName : PathStr; WhatFor : shortstring = '');  overload;
          procedure WriteNewFormatDEM(Limits : tGridLimits; var FileName : PathStr; WhatFor : shortstring = '');  overload;
          procedure SavePartOfDEMWithData(var FileName : PathStr);
@@ -713,7 +712,7 @@ type
                procedure InitializeNormals(var NumPts : Integer);
                procedure DisposeNormals;
                function FigureEntropy : float64;
-               procedure ComputeVariogram(GridLimits: tGridLimits; SkipDrawing : boolean);
+               procedure ComputeVariogram(GridLimits: tGridLimits); //SkipDrawing : boolean);
                procedure VariogramGamma(GridLimits: tGridLimits; var EastWest,NorthSouth,NESW,NWSE : float32);
             {$EndIf}
         {$EndIf}

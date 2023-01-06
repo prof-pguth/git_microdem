@@ -2391,23 +2391,25 @@ var
             {$IfDef ExGDAL}
             {$Else}
                AParameter('GDAL','GDALtools_Dir',GDALtools_Dir,'');
-               //AParameter('GDAL','GDALtools_Data',GDALtools_Data,'');
                AParameter('GDAL','DontBugMeAboutGDAL',DontBugMeAboutGDAL,true);
                AParameter('GDAL','RouteGeotiffExportGDAL',RouteGeotiffExportGDAL,true);
                AParameterShortFloat('GDAL','GDALThinFactor',GDALThinFactor,0.1);
             {$EndIf}
 
+            AParameter('Files','SagaCMD',SagaCMD,'H:\gis_software\saga-8.2.1_x64\saga_cmd.exe');
+            AParameter('Files','WhiteBoxFName',WhiteBoxFName,'');
+
             AParameter('DEMIX','DEMIX_criterion_tolerance_fName',DEMIX_criterion_tolerance_fName,'');
             AParameter('DEMIX','DEMIX_base_dir',DEMIX_base_dir,'');
             AParameter('DEMIX','DEMIX_xsize',DEMIX_xsize,900);
             AParameter('DEMIX','DEMIX_ysize',DEMIX_ysize,600);
-
             AParameter('DEMIX','DEMIX_DoCHM',DEMIX_DoCHM,true);
             AParameter('DEMIX','DEMIX_DoAirOrDirt',DEMIX_DoAirOrDirt,true);
             AParameter('DEMIX','DEMIX_DoElevDiff',DEMIX_DoElevDiff,true);
             AParameter('DEMIX','DEMIX_DoSlopeDiff',DEMIX_DoSlopeDiff,true);
             AParameter('DEMIX','DEMIX_DoRuffDiff',DEMIX_DoRuffDiff,true);
             AParameter('DEMIX','DEMIX_DoHalfSecDEMs',DEMIX_DoHalfSecDEMs,true);
+            AParameter('DEMIX','DEMIX_DoElevParamGraphs',DEMIX_DoElevParamGraphs,true);
 
             {$IfDef ExMrSID}
             {$Else}
@@ -2421,7 +2423,6 @@ var
             {$EndIf}
 
             {$IfDef MSWindows}
-               //AParameter('Files','TauDEMDir',TauDEMDir,'');
                AParameter('Files','mcc_lidarFName',mcc_lidarFName,'');
                AParameter('Files','SmallScaleWorldOutlines',SmallScaleWorldOutlines,'');
                AParameter('Files','MedScaleWorldOutlines',MedScaleWorldOutlines,'');
@@ -2447,7 +2448,6 @@ var
                AParameter('Files','WorldFileOverlay',LastWorldFileOverlay,'');
                AParameter('Files','ETOPO_DEM', ETOPODEMName,'');
                AParameter('Files','BlueMarbleFName', BlueMarbleFName,'');
-               //AParameter('Files','WarnFileNameSpace',WarnFileNameSpace,true);
                AParameter('Files','LastFanTable',LastFanTable,'');
                AParameter('Files','CloudBitmap',CloudBitmapName,'');
                AParameter('Files','LastDesktop',LastDesktop,'');
@@ -2461,7 +2461,6 @@ var
                AParameter('Files','VasaArtDBfName',VasaArtDBfName,'');
                AParameter('Files','VasaArtefactsFName',VasaArtefactsFName,'');
                AParameter('Files','GeoidDiffFName',GeoidDiffFName,'');
-               AParameter('Files','SagaCMD',SagaCMD,'H:\gis_software\saga-8.2.1_x64\saga_cmd.exe');
 
                {$IfDef ExTIN}
                {$Else}
@@ -2514,9 +2513,9 @@ var
 
                {$IfDef ExMultiGrid}
                {$Else}
-               AParameter('Files','LastMultigrid1',LastMultigrid1,'');
-               AParameter('Files','LastMultigrid2',LastMultigrid2,'');
-               AParameter('Files','LastMultigrid3',LastMultigrid3,'');
+                  AParameter('Files','LastMultigrid1',LastMultigrid1,'');
+                  AParameter('Files','LastMultigrid2',LastMultigrid2,'');
+                  AParameter('Files','LastMultigrid3',LastMultigrid3,'');
                {$EndIf}
 
               {$IfDef ExPLSS}
@@ -2531,12 +2530,12 @@ var
 
                {$IfDef ExStratcol}
                {$Else}
-               AParameter('Files','LastStratcol',LastStratColFile,'');
-               AParameter('Files','LithFileName',LithFileName,'');
+                  AParameter('Files','LastStratcol',LastStratColFile,'');
+                  AParameter('Files','LithFileName',LithFileName,'');
                {$EndIf}
 
                {$IfDef SQLiteDefaultDBs}
-               AParameter('Files','ForceOverwriteDB',ForceOverwriteDB,true);
+                  AParameter('Files','ForceOverwriteDB',ForceOverwriteDB,true);
                {$EndIf}
            {$EndIf}
       {$IfDef RecordINIfiles} WriteLineToDebugFile('ProcessIniFile after Files'); {$EndIf}
@@ -3670,8 +3669,7 @@ begin
       AParameter('Graph','GIFDefaultDelay',GIFDefaultDelay,500);
       AParameter('Graph','GIFDefaultSize',GIFFontSize,18);
       AParameter('Graph','GIFfileLabels',GIFfileLabels,false);
-
-
+      AParameter('Graph','DefMarginLegend',DefMarginLegend,0);
 
       AParameter('Graph','JPEGQuality',JPEGQuality,50);
       AParameter('Graph','DefaultGraphXSize',DefaultGraphXSize,600);

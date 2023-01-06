@@ -3,8 +3,8 @@ object NewfrmJpegDump: TNewfrmJpegDump
   Top = 81
   BorderWidth = 4
   Caption = 'Jpeg Header Dump'
-  ClientHeight = 528
-  ClientWidth = 1054
+  ClientHeight = 510
+  ClientWidth = 1042
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,14 +19,14 @@ object NewfrmJpegDump: TNewfrmJpegDump
   TextHeight = 13
   object panBtns: TPanel
     Left = 0
-    Top = 492
-    Width = 1054
+    Top = 474
+    Width = 1042
     Height = 36
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 0
-    ExplicitTop = 471
-    ExplicitWidth = 1031
+    ExplicitTop = 465
+    ExplicitWidth = 1036
     object btnOpen: TBitBtn
       Left = 100
       Top = 0
@@ -142,6 +142,8 @@ object NewfrmJpegDump: TNewfrmJpegDump
       Height = 36
       Align = alLeft
       Caption = 'Full file names'
+      Checked = True
+      State = cbChecked
       TabOrder = 5
     end
     object CheckBox3: TCheckBox
@@ -166,13 +168,13 @@ object NewfrmJpegDump: TNewfrmJpegDump
   object PageControl: TPageControl
     Left = 0
     Top = 0
-    Width = 1054
-    Height = 492
+    Width = 1042
+    Height = 474
     ActivePage = tabOriginal
     Align = alClient
     TabOrder = 1
-    ExplicitWidth = 1031
-    ExplicitHeight = 471
+    ExplicitWidth = 1036
+    ExplicitHeight = 465
     object tabOriginal: TTabSheet
       Caption = 'Original'
     end

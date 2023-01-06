@@ -105,7 +105,6 @@ uses
    Petmar_types;
 
 procedure InitializePetmar;
-//procedure ClearMessages;
 procedure Delay(ms : Cardinal);
 function FileCanBeOpened(fName : PathStr) : boolean;
 
@@ -166,14 +165,13 @@ procedure PickPattern(WhatFor : shortString; var Style : tBrushStyle; var FillCo
       procedure DrawPatternOnBitmap(var Bitmap : tMyBitmap; FillColor,SymbolLineBorderColor : tPlatformColor; SymbolFill :  tBrushStyle; SymbolLineBorderSize : integer);
 
       procedure ColorLineWidthBitBtn(var BitBtn : tBitBtn; Color : tPlatformColor; Size : integer);
-      //procedure ColorLineWidthBitBtnFloat(var BitBtn : tBitBtn; Color : tPlatformColor; Size : shortfloat);
-      {$IfDef VCL}
-      procedure ColorBitBtn(var BitBtn : tBitBtn; Color : tPlatformColor);  overload;
-      procedure ColorBitBtn(var BitBtn : tBitBtn; Color : tColor);          overload;
-      {$EndIf}
       procedure SymbolOnButton(var BitBtn : tBitBtn; Symbol : tDrawingSymbol; SymbolSize : integer; SymbolColor : tPlatformColor); Overload;
       procedure SymbolOnButton(var BitBtn : tBitBtn; Symbol : tFullSymbolDeclaration); Overload;
       procedure FillPatternOnBitBtn(BitBtn : tBitBtn; FillColor,SymbolLineBorderColor : tPlatformColor; SymbolFill :  tBrushStyle; SymbolLineBorderSize : integer);
+      {$IfDef VCL}
+         procedure ColorBitBtn(var BitBtn : tBitBtn; Color : tPlatformColor);  overload;
+         procedure ColorBitBtn(var BitBtn : tBitBtn; Color : tColor);          overload;
+      {$EndIf}
 
 
 procedure TextOutVertical(Canvas : TCanvas; x,y : integer; Words : ShortString; ClearBack : boolean = false);
@@ -207,7 +205,6 @@ function GetFromList(InMessage : ANSIstring; InList : TStringList; CanCancel : b
 function GetMultipleFromList(InMessage : ANSIstring; var PickedNum : integer; var InList : TStringList; CanCancel : boolean = false) : boolean;
 
 procedure GetString(Prompt : ShortString; var Input : ShortString; ForceCaps : boolean; ValidChars : characters);
-   {input variable is used as default for entry}
 procedure GetValidDBfieldname(var fName2 : shortstring);
 
 procedure QueryTColor(var Color : tColor); overload;
@@ -215,7 +212,6 @@ procedure QueryColor(var Color : tPlatformColor); overload;
 procedure QueryColor(BitBtn : tBitBtn; var Color : tPlatformColor); overload;
 procedure QueryTColor(BitBtn : tBitBtn; var Color : Tcolor); overload;
 procedure FillComboBoxWithColorPalettes(fName : PathStr; ComboBox1 : tComboBox);
-//procedure GetDirection(var DirString : string10;  var Direction : integer);
 procedure GetAngleInRadians(Message : shortstring; var Angle : float64);
 procedure GetAngle(Mess : shortstring; var theAngle : float64; var AngleMeasure : tAngleMeasure);
 
@@ -273,7 +269,7 @@ function CurrentTimeForFileName : PathStr;
 
 
 procedure DisplayHTMLTopic(Name : AnsiString);
-function DownloadFileFromWeb(WebName,LocalName : ANSIstring) : boolean;
+function DownloadFileFromWeb(WebName,LocalName : ANSIstring; ShowFailure : boolean = true) : boolean;
 
 procedure GetSeparationCharacter(MenuStr : ANSIstring; var SepChar : ANSIchar);
 procedure GetSeparationCharacterUnicode(MenuStr : string; var SepChar : char);
@@ -294,7 +290,6 @@ function RemoveNumbers(k1 : ShortString) : shortString;
 function ValidByteRange(value : integer) : integer; inline;
 function ValidByteRange254(value : integer) : integer; inline;
 
-
 procedure DragDirections;
 
 function MakeLongInt(v1,v2,v3,v4 : byte; BigEndian : boolean) : LongInt;
@@ -309,7 +304,6 @@ function GetFloatFromRequest(InString : ANSIstring; WantField : shortstring) : f
 function GetIntegerFromRequest(InString : ANSIstring; WantField : shortstring) : integer;
 
 function ReadFilter(var Filter : FilterType; var FilterSize,FilterLap,Sum : integer; var FilterName : PathStr; DisplayFilter : boolean = true) : boolean;
-
 
 procedure ReadDefault(Prompt : ShortString; var IntVal : byte); overload;
 procedure ReadDefault(Prompt : ShortString; var IntVal : int16); overload;
@@ -2914,7 +2908,7 @@ begin
 end;
 
 
-function DownloadFileFromWeb(WebName,LocalName : ANSIstring) : boolean;
+function DownloadFileFromWeb(WebName,LocalName : ANSIstring; ShowFailure : boolean = true) : boolean;
 begin
    DeleteFileIfExists(LocalName);
    {$IfDef RecordWebDownloads} WriteLineToDebugFile('DownloadFileFromWeb ' + WebName + ' to ' + LocalName); {$EndIf}
@@ -2927,7 +2921,7 @@ begin
       if Result then WriteLineToDebugFile('DownloadFileFromWeb success out')
       else begin
          WriteLineToDebugFile('DownloadFileFromWeb failure, ' + WebName);
-         MessageToContinue('DownloadFileFromWeb failure, ' + WebName);
+         if ShowFailure then MessageToContinue('DownloadFileFromWeb failure, ' + WebName);
       end;
    {$EndIf}
 end;

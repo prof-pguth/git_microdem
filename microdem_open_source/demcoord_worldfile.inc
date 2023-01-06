@@ -5,8 +5,8 @@
 { Released under the MIT Licences    }
 { Copyright (c) 2022 Peter L. Guth   }
 {____________________________________}
-
-//include file for demcoord
+{include file for demcoord.pas       }
+{____________________________________}
 
 procedure GetDefaultWorldFile(var ReadFileName : PathStr);
 var

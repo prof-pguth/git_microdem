@@ -76,52 +76,64 @@ uses
    procedure OTB_PanSharpen(PanName,OrthoName, OutName : PathStr);
 {$EndIf}
 
+{$IfDef ExLAStools}
+{$Else}
 
-function lastools_txt2las_cmd(inName : PathStr; UTMzone : shortString; ParseVals : shortstring = '') : shortstring;
-procedure BlastTinCreate(InName,OutName : PathStr; GridSize : float64);
-procedure CallLasInfo;
-procedure LAStoolsTextToLAS;
-procedure Lastools_DEMToLAZ(InName,OutName : PathStr; Extra : shortString = '');
-
-function WhiteBoxPresent : boolean;
-function WhiteBoxGroundClassify(InName,OutName : PathStr) : shortString;
-function WhiteBoxLidarSegmentationBasedFilter(InName,OutName : PathStr) : shortString;
-procedure WBIDWCreate(InName,OutName : PathStr; GridSize : float64);
-procedure WhiteBoxPennockLandformClass(InName : PathStr; SmoothFirst : boolean);
-procedure WhiteBoxGeomorphons(InName : PathStr);
-procedure WhiteBoxGridFillMissingData(InName : PathStr; TheElevUnits : tElevUnit);
-procedure WBNearNeighCreate(InName,OutName : PathStr; GridSize : float64);
-function WhiteBoxDeNoise(InName,OutName : PathStr) : shortString;
-procedure WhiteBoxGeotiffMetadata(InName : PathStr);
-function WhiteBoxSlopeMap(InName : PathStr) : integer;
-procedure WhiteBoxAspectMap(InName : PathStr);
-procedure WhiteBoxMultiscaleRoughness(InName : PathStr);
-function WhiteBoxProfileCurvature(InName : PathStr): integer;
-function WhiteBoxTangentialCurvature(InName : PathStr): integer;
-function WhiteBoxMinimalCurvature(InName : PathStr): integer;
-function WhiteBoxMaximalCurvature(InName : PathStr): integer;
-function WhiteBoxMeanCurvature(InName : PathStr): integer;
-function WhiteBoxGaussianCurvature(InName : PathStr): integer;
-function WhiteBox_TRI(InName : PathStr; GeoFactor : Float32) : integer;
-function WhiteBox_AverageNormalVectorAngularDeviation(InName : PathStr; filtersize : integer) : integer;
-function WhiteBox_CircularVarianceOfAspect(InName : PathStr; filtersize : integer) : integer;
+   function lastools_txt2las_cmd(inName : PathStr; UTMzone : shortString; ParseVals : shortstring = '') : shortstring;
+   procedure BlastTinCreate(InName,OutName : PathStr; GridSize : float64);
+   procedure CallLasInfo;
+   procedure LAStoolsTextToLAS;
+   procedure Lastools_DEMToLAZ(InName,OutName : PathStr; Extra : shortString = '');
+{$EndIf}
 
 
-procedure GetGrassExtensionsNow(InName : PathStr);
-function GrassSlopeMap(InName : PathStr) : integer;
-function GrassAspectMap(InName : PathStr) : integer;
-function GrassVectorRuggedness(InName : PathStr; WindowSize : integer) : integer;
-function GrassProfileCurvatureMap(InName : PathStr) : integer;
-function GrassTangentialCurvatureMap(InName : PathStr) : integer;
-function GrassTRIMap(InName : PathStr) : integer;
-function GrassTPIMap(InName : PathStr) : integer;
+{$IfDef ExWhiteBox}
+{$Else}
+   function WhiteBoxPresent : boolean;
+   function WhiteBoxGroundClassify(InName,OutName : PathStr) : shortString;
+   function WhiteBoxLidarSegmentationBasedFilter(InName,OutName : PathStr) : shortString;
+   procedure WBIDWCreate(InName,OutName : PathStr; GridSize : float64);
+   procedure WhiteBoxPennockLandformClass(InName : PathStr; SmoothFirst : boolean);
+   procedure WhiteBoxGeomorphons(InName : PathStr);
+   procedure WhiteBoxGridFillMissingData(InName : PathStr; TheElevUnits : tElevUnit);
+   procedure WBNearNeighCreate(InName,OutName : PathStr; GridSize : float64);
+   function WhiteBoxDeNoise(InName,OutName : PathStr) : shortString;
+   procedure WhiteBoxGeotiffMetadata(InName : PathStr);
+   function WhiteBoxSlopeMap(InName : PathStr) : integer;
+   procedure WhiteBoxAspectMap(InName : PathStr);
+   procedure WhiteBoxMultiscaleRoughness(InName : PathStr);
+   function WhiteBoxProfileCurvature(InName : PathStr): integer;
+   function WhiteBoxTangentialCurvature(InName : PathStr): integer;
+   function WhiteBoxMinimalCurvature(InName : PathStr): integer;
+   function WhiteBoxMaximalCurvature(InName : PathStr): integer;
+   function WhiteBoxMeanCurvature(InName : PathStr): integer;
+   function WhiteBoxGaussianCurvature(InName : PathStr): integer;
+   function WhiteBox_TRI(InName : PathStr) : integer;
+   function WhiteBox_AverageNormalVectorAngularDeviation(InName : PathStr; filtersize : integer) : integer;
+   function WhiteBox_CircularVarianceOfAspect(InName : PathStr; filtersize : integer) : integer;
+{$EndIf}
 
 
-function SagaTRIMap(InName : PathStr) : integer;
-function SagaTPIMap(InName : PathStr) : integer;
-function SagaVectorRuggednessMap(InName : PathStr; Radius : integer) : integer;
+{$IfDef ExGRASS}
+{$Else}
+   procedure GetGrassExtensionsNow(InName : PathStr);
+   function GrassSlopeMap(InName : PathStr) : integer;
+   function GrassAspectMap(InName : PathStr) : integer;
+   function GrassVectorRuggedness(InName : PathStr; WindowSize : integer) : integer;
+   function GrassProfileCurvatureMap(InName : PathStr) : integer;
+   function GrassTangentialCurvatureMap(InName : PathStr) : integer;
+   function GrassTRIMap(InName : PathStr) : integer;
+   function GrassTPIMap(InName : PathStr) : integer;
+{$EndIf}
 
-//procedure TauDEMOp(DEM : integer); //TauDEM : tTauDEM);
+
+{$IfDef ExSAGA}
+{$Else}
+   function SagaTRIMap(InName : PathStr) : integer;
+   function SagaTPIMap(InName : PathStr) : integer;
+   function SagaVectorRuggednessMap(InName : PathStr; Radius : integer) : integer;
+{$EndIf}
+
 
 procedure RVTgrids(DEM : integer);
 
@@ -274,6 +286,91 @@ end;
 
 
 
+procedure FusionTinCreate(InName,OutName : PathStr; GridSize : float64; GridZone : integer; HemiChar : ansichar);
+var
+   cmd : ansistring;
+   tName : PathStr;
+   ext : ExtStr;
+begin
+  {$IfDef RecordUseOtherPrograms} WriteLineToDebugFile('FusionTinCreate, infile=' + InName + '  outfile=' + OutName); {$EndIf}
+
+   tName := NextFileNumber(MDtempDir,'fusion_int_dem_', '.dtm');
+   cmd := ProgramRootDir + 'fusion\tinsurfacecreate ' + tName + ' ' + RealToString(GridSize,-12,-2) + ' m m 1 ' +  IntToStr(GridZone) + ' 2 2 ' + InName;
+   WinExecAndWait32(cmd);
+
+   if FileExists(tName) then begin
+      OpenNewDEM(tName);
+      if (OutName <> '') then begin
+         Ext := UpperCase(ExtractFileExt(OutName));
+         if (Ext = '.TIF') then DEMGlb[LastDEMLoaded].SaveAsGeotiff(OutName)
+         else DEMGlb[LastDEMLoaded].WriteNewFormatDEM(OutName);
+      end;
+   end
+   else begin
+      MessageToContinue('Fusion failed (out of memory?)');
+   end;
+end;
+
+
+procedure laslibReproject(ask : boolean);
+var
+   FilesWanted : tStringList;
+   DefaultFilter : byte;
+   fName : PathStr;
+   i : integer;
+begin
+   {$IfDef RecordReformat} WriteLineToDebugFile('laslibReproject'); {$EndIf}
+   if Ask then begin
+      ReadDefault('Assign (Source) EPSG',MDDef.a_epsg);
+      ReadDefault('Target EPSG',MDDef.t_epsg);
+   end
+   else begin
+      MDDef.a_epsg := 27700;
+      MDDef.t_epsg := 32630;
+   end;
+   FilesWanted := tStringList.Create;
+   FilesWanted.Add(MainMapData);
+   DefaultFilter := 1;
+   if GetMultipleFiles('lidar files for lablib reprojection','LAZ|*.laz;*.las',FilesWanted,DefaultFilter) then begin
+      for I := 0 to pred(FilesWanted.Count) do begin
+         fName := FilesWanted.Strings[i];
+         {$IfDef RecordReformat} WriteLineToDebugFile(fName); {$EndIf}
+         GDALreprojectLASfile(fName,MDDef.t_epsg,MDDef.a_epsg);
+      end;
+   end;
+   {$IfDef RecordReformat} WriteLineToDebugFile('laslibReproject out'); {$EndIf}
+end;
+
+
+
+procedure GPSBabel_fit2gpx(inname,outname : PathStr);
+var
+   GPSBabelEXEName : PathStr;
+begin
+   GPSBabelEXEName := 'C:\Program Files (x86)\GPSBabel\gpsbabel.exe';
+   if FileExists(GPSBabelExeName) then begin
+      WinExecAndWait32('"' + GPSBabelExeName + '" -i garmin_fit -o gpx -f ' + inName + ' -F ' + OutName);
+      if MDDef.DeleteFIT and FileExists(OutName) then File2Trash(InName);
+   end
+   else begin
+      MessageToContinue('Failure, Missing: ' + GPSBabelExeName);
+   end;
+end;
+
+
+function MCC_lidarPresent : boolean;
+begin
+   Result := true;
+   if (mcc_lidarFName = '') or (not FileExists(mcc_lidarFName)) then begin
+      mcc_lidarFName := 'C:\microdem\mcc_lidar\bin\mcc-lidar.exe';
+      if not GetFileFromDirectory('mcc_lidar.exe','mcc_lidar.exe',mcc_lidarFName) then begin
+         MessageToContinue('Cannot find mcc-lidar.exe');
+         Result := false;
+      end;
+   end;
+end;
+
+
 procedure ACOLITEprocessing(MapOwner : tMapForm; OpenMaps : boolean = true);
 const
    s2res : array[0..2] of integer = (10,20,60);
@@ -295,7 +392,6 @@ var
          DEMGlb[Result].SelectionMap.DoBaseMapRedraw;
       end;
    end;
-
 
 
 begin
@@ -386,13 +482,15 @@ end;
 const
    GrassEXE = 'grass78';
    //GrassPath = 'H:\gis_software\grass_gis_8.2\';        only needed for 8.2
+   GetGrassExtensions : boolean = false;
+
 
 procedure StartGrassBatchFile(var BatchFile : tStringList; InName : PathStr);
 begin
    BatchFile := tStringList.Create;
    BatchFile.Add(ClearGrassDirectory);
 
-   if GrassEXE = 'grass78' then begin
+   if (GrassEXE = 'grass78') then begin
       BatchFile.Add('call "C:\OSGeo4W\bin\o4w_env.bat"');
       BatchFile.Add(SetGDALdataStr);
       BatchFile.Add('set USE_PATH_FOR_GDAL_PYTHON=YES');
@@ -424,9 +522,6 @@ begin
 end;
 
 
-
-const
-   GetGrassExtensions : boolean = false;
 
 function AssembleGrassCommand(InName : PathStr; GridName,CommandName,NewLayer,BatchName : ShortString; eu : tElevUnit; mt : tMapType; TypeStr : shortstring = '32') : integer;
 var
@@ -520,39 +615,15 @@ begin
 end;
 
 
-procedure GPSBabel_fit2gpx(inname,outname : PathStr);
-var
-   GPSBabelEXEName : PathStr;
-begin
-   GPSBabelEXEName := 'C:\Program Files (x86)\GPSBabel\gpsbabel.exe';
-   if FileExists(GPSBabelExeName) then begin
-      WinExecAndWait32('"' + GPSBabelExeName + '" -i garmin_fit -o gpx -f ' + inName + ' -F ' + OutName);
-      if MDDef.DeleteFIT and FileExists(OutName) then File2Trash(InName);
-   end
-   else begin
-      MessageToContinue('Failure, Missing: ' + GPSBabelExeName);
-   end;
-end;
-
-
-function MCC_lidarPresent : boolean;
-begin
-   Result := true;
-   if (mcc_lidarFName = '') or (not FileExists(mcc_lidarFName)) then begin
-      mcc_lidarFName := 'C:\microdem\mcc_lidar\bin\mcc-lidar.exe';
-      if not GetFileFromDirectory('mcc_lidar.exe','mcc_lidar.exe',mcc_lidarFName) then begin
-         MessageToContinue('Cannot find mcc-lidar.exe');
-         Result := false;
-      end;
-   end;
-end;
-
 
 function WhiteBoxPresent : boolean;
 begin
-   WhiteBoxfName := ProgramRootDir + 'wbt\whitebox_tools.exe';
+   if (WhiteBoxfName) = '' then WhiteBoxfName := ProgramRootDir + 'wbt\whitebox_tools.exe';
    Result := FileExists(WhiteBoxfName);
-   if Not Result then MessageToContinue(WhiteBoxfName + ' missing');
+   if Not Result then begin
+      Result := GetExistingFileName('whitebox_tools.exe','*.exe',WhiteBoxfName);
+      if Not Result then MessageToContinue('WhiteBoxTools exe missing');
+   end;
 end;
 
 
@@ -619,16 +690,14 @@ begin
 end;
 
 
-function WhiteBox_TRI(InName : PathStr; GeoFactor : Float32) : integer;
+function WhiteBox_TRI(InName : PathStr) : integer;
 var
    cmd : ansistring;
    OutName : PathStr;
 begin
   if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
      OutName := MDTempDir + 'WB_TRI_' + ExtractFileNameNoExt(InName) + '.tif';
-     //cannot get zfactor to work (so geographic DEMs does not create output
-     cmd := WhiteBoxfName + WBNoCompress + '-r=RuggednessIndex -v --dem=' + InName + ' -o=' + OutName;  // + ' --zfactor=' + RealToString(GeoFactor,-18,-8);                       //' --units="meters"';
-     Result := ExecuteWBandOpenMap(cmd,OutName,euMeters,mtElevSpectrum);
+     cmd := WhiteBoxfName + WBNoCompress + '-r=RuggednessIndex -v --dem=' + InName + ' -o=' + OutName;
   end;
 end;
 
@@ -742,6 +811,7 @@ begin
   end;
 end;
 
+
 function WhiteBoxTangentialCurvature(InName : PathStr) : integer;
 var
    cmd : ansistring;
@@ -753,6 +823,7 @@ begin
      ExecuteWBandOpenMap(cmd,OutName,euPerMeter);
   end;
 end;
+
 
 function WhiteBoxMinimalCurvature(InName : PathStr) : integer;
 var
@@ -847,38 +918,6 @@ begin
   end;
   {$IfDef RecordUseOtherPrograms} WriteLineToDebugFile('WhiteBoxPennockLandformClass out'); {$EndIf}
 end;
-
-
-(*
-procedure TauDEMOp(DEM : integer); //TauDEM : tTauDEM);
-var
-   NewDEMName,NewDir : PathStr;
-   bfile : tStringList;
-begin
-   {$IfDef RecordSaveProblems} WriteLineToDebugFile('TauDEMOp in'); {$EndIf}
-
-   TaudemDir := 'C:\Program Files\TauDEM\TauDEM5Exe\';
-   if PathIsValid(TauDEMDir) then begin
-      NewDir := ExtractFilePath(DEMGlb[DEM].DEMFileName) + 'taudem\';
-      SafeMakeDir(NewDir);
-      NewDEMName := NewDir + ExtractFileNameNoExt(DEMGlb[DEM].DEMFileName) + '.tif';
-      DEMGlb[DEM].SaveAsGeotiff(NewDEMName);
-      bfile := tStringList.Create;
-      bFile.Add(ExtractShortPathName(TauDEMDir + 'PitRemove.exe') + ' ' + NewDEMName);
-      bFile.Add(ExtractShortPathName(TauDEMDir + 'D8FlowDir.exe') + ' ' +  NewDEMName);
-      bFile.Add(ExtractShortPathName(TauDEMDir + 'DInfFlowDir.exe') + ' ' +  NewDEMName);
-      bFile.Add(ExtractShortPathName(TauDEMDir + 'AreaD8.exe') + ' ' +  NewDEMName);
-      bFile.Add(ExtractShortPathName(TauDEMDir + 'AreaDInf.exe') + ' ' +  NewDEMName);
-      bFile.Add(ExtractShortPathName(TauDEMDir + 'Gridnet.exe') + ' ' +  NewDEMName);
-      bFile.Add(ExtractShortPathName(TauDEMDir + 'PeukerDouglas.exe') + ' ' + NewDEMName);
-      //not working yet
-      //bFile.Add(ExtractShortPathName(TauDEMDir + 'streamnet.exe') + ' ' + NewDEMName);
-      bFile.Add(ExtractShortPathName(TauDEMDir + 'TWI.exe') + ' ' + NewDEMName);
-      EndBatchFile(MDTempDir + 'taudem.bat',bfile);
-   end
-   else MessageToContinue('Requires ' + TauDEMDir);
-end;
-*)
 
 
 procedure RVTgrids(DEM : integer);
@@ -1079,63 +1118,6 @@ begin
 end;
 
 
-procedure FusionTinCreate(InName,OutName : PathStr; GridSize : float64; GridZone : integer; HemiChar : ansichar);
-var
-   cmd : ansistring;
-   tName : PathStr;
-   ext : ExtStr;
-begin
-  {$IfDef RecordUseOtherPrograms} WriteLineToDebugFile('FusionTinCreate, infile=' + InName + '  outfile=' + OutName); {$EndIf}
-
-   tName := NextFileNumber(MDtempDir,'fusion_int_dem_', '.dtm');
-   cmd := ProgramRootDir + 'fusion\tinsurfacecreate ' + tName + ' ' + RealToString(GridSize,-12,-2) + ' m m 1 ' +  IntToStr(GridZone) + ' 2 2 ' + InName;
-   WinExecAndWait32(cmd);
-
-   if FileExists(tName) then begin
-      OpenNewDEM(tName);
-      if (OutName <> '') then begin
-         Ext := UpperCase(ExtractFileExt(OutName));
-         if (Ext = '.TIF') then DEMGlb[LastDEMLoaded].SaveAsGeotiff(OutName)
-         else DEMGlb[LastDEMLoaded].WriteNewFormatDEM(OutName);
-      end;
-   end
-   else begin
-      MessageToContinue('Fusion failed (out of memory?)');
-   end;
-end;
-
-
-procedure laslibReproject(ask : boolean);
-var
-   FilesWanted : tStringList;
-   DefaultFilter : byte;
-   fName : PathStr;
-   i : integer;
-begin
-   {$IfDef RecordReformat} WriteLineToDebugFile('laslibReproject'); {$EndIf}
-   if Ask then begin
-      ReadDefault('Assign (Source) EPSG',MDDef.a_epsg);
-      ReadDefault('Target EPSG',MDDef.t_epsg);
-   end
-   else begin
-      MDDef.a_epsg := 27700;
-      MDDef.t_epsg := 32630;
-   end;
-   FilesWanted := tStringList.Create;
-   FilesWanted.Add(MainMapData);
-   DefaultFilter := 1;
-   if GetMultipleFiles('lidar files for lablib reprojection','LAZ|*.laz;*.las',FilesWanted,DefaultFilter) then begin
-      for I := 0 to pred(FilesWanted.Count) do begin
-         fName := FilesWanted.Strings[i];
-         {$IfDef RecordReformat} WriteLineToDebugFile(fName); {$EndIf}
-         GDALreprojectLASfile(fName,MDDef.t_epsg,MDDef.a_epsg);
-      end;
-   end;
-   {$IfDef RecordReformat} WriteLineToDebugFile('laslibReproject out'); {$EndIf}
-end;
-
-
-
 
 initialization
 finalization
@@ -1146,5 +1128,39 @@ finalization
   {$IfDef RecordReformat} WriteLineToDebugFile('RecordReformat active in md_use_tools'); {$EndIf}
   {$IfDef RecordSaveProblems} WriteLineToDebugFile('RecordSaveProblems active in md_use_tools'); {$EndIf}
 end.
+
+
+
+
+(*
+procedure TauDEMOp(DEM : integer); //TauDEM : tTauDEM);
+var
+   NewDEMName,NewDir : PathStr;
+   bfile : tStringList;
+begin
+   {$IfDef RecordSaveProblems} WriteLineToDebugFile('TauDEMOp in'); {$EndIf}
+
+   TaudemDir := 'C:\Program Files\TauDEM\TauDEM5Exe\';
+   if PathIsValid(TauDEMDir) then begin
+      NewDir := ExtractFilePath(DEMGlb[DEM].DEMFileName) + 'taudem\';
+      SafeMakeDir(NewDir);
+      NewDEMName := NewDir + ExtractFileNameNoExt(DEMGlb[DEM].DEMFileName) + '.tif';
+      DEMGlb[DEM].SaveAsGeotiff(NewDEMName);
+      bfile := tStringList.Create;
+      bFile.Add(ExtractShortPathName(TauDEMDir + 'PitRemove.exe') + ' ' + NewDEMName);
+      bFile.Add(ExtractShortPathName(TauDEMDir + 'D8FlowDir.exe') + ' ' +  NewDEMName);
+      bFile.Add(ExtractShortPathName(TauDEMDir + 'DInfFlowDir.exe') + ' ' +  NewDEMName);
+      bFile.Add(ExtractShortPathName(TauDEMDir + 'AreaD8.exe') + ' ' +  NewDEMName);
+      bFile.Add(ExtractShortPathName(TauDEMDir + 'AreaDInf.exe') + ' ' +  NewDEMName);
+      bFile.Add(ExtractShortPathName(TauDEMDir + 'Gridnet.exe') + ' ' +  NewDEMName);
+      bFile.Add(ExtractShortPathName(TauDEMDir + 'PeukerDouglas.exe') + ' ' + NewDEMName);
+      //not working yet
+      //bFile.Add(ExtractShortPathName(TauDEMDir + 'streamnet.exe') + ' ' + NewDEMName);
+      bFile.Add(ExtractShortPathName(TauDEMDir + 'TWI.exe') + ' ' + NewDEMName);
+      EndBatchFile(MDTempDir + 'taudem.bat',bfile);
+   end
+   else MessageToContinue('Requires ' + TauDEMDir);
+end;
+*)
 
 

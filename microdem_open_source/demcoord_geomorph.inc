@@ -1638,7 +1638,7 @@ begin
     try
       try
          Graph := TThisBaseGraph.Create(Application);
-         Graph.GraphDraw.SkipDrawing := SkipDraw;
+         //Graph.GraphDraw.SkipDrawing := SkipDraw;
          if DoResults then begin
             Results := tStringList.Create;
             Results.Add('Triangular prism fractal dimension, ' + AreaName);
@@ -1746,7 +1746,7 @@ begin
 end;
 
 
-procedure tDEMDataSet.ComputeVariogram(GridLimits: tGridLimits;  SkipDrawing : boolean);
+procedure tDEMDataSet.ComputeVariogram(GridLimits: tGridLimits);  //SkipDrawing : boolean);
 const
    MaxDist = 5000;
 type
@@ -1856,7 +1856,7 @@ begin
       end {for j};
       {$IfDef RecordVariogram} WriteLineToDebugFile('tDEMDataSet.ComputeVariogram graph'); {$EndIf}
       ThisGraph := TThisBaseGraph.Create(Application);
-      ThisGraph.GraphDraw.SkipDrawing := SkipDrawing;
+      //ThisGraph.GraphDraw.SkipDrawing := SkipDrawing;
       TStr := AreaName;
       ThisGraph.GraphDraw.VertLabel := 'Variance (m)';
       if SemiVar then ThisGraph.GraphDraw.VertLabel := 'Semi ' + ThisGraph.GraphDraw.VertLabel;

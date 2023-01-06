@@ -2,10 +2,10 @@
 { Part of ianMICRODEM GIS Program    }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
-{ Copyright (c) 2015 Peter L. Guth   }
+{ Copyright (c) 2022 Peter L. Guth   }
 {____________________________________}
-
-{include file for demcoord.pas}
+{include file for demcoord.pas       }
+{____________________________________}
 
 
 

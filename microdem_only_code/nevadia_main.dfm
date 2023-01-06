@@ -2,8 +2,8 @@ object wmdem: Twmdem
   Left = 0
   Top = 262
   Caption = 'GIS program loading'
-  ClientHeight = 1357
-  ClientWidth = 2186
+  ClientHeight = 1348
+  ClientWidth = 2180
   Color = clScrollBar
   DefaultMonitor = dmDesktop
   Font.Charset = DEFAULT_CHARSET
@@ -28,12 +28,13 @@ object wmdem: Twmdem
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 2186
+    Width = 2180
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34
     TabOrder = 0
     OnMouseDown = ToolBar1MouseDown
+    ExplicitWidth = 2174
     object SpeedButton2: TSpeedButton
       Left = 0
       Top = 0
@@ -1675,8 +1676,8 @@ object wmdem: Twmdem
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 1338
-    Width = 2186
+    Top = 1329
+    Width = 2180
     Height = 19
     Panels = <
       item
@@ -1695,6 +1696,8 @@ object wmdem: Twmdem
     Visible = False
     OnClick = StatusBar1Click
     OnDblClick = StatusBar1DblClick
+    ExplicitTop = 1320
+    ExplicitWidth = 2174
   end
   object MainMenu1: TMainMenu
     Left = 136
@@ -1722,7 +1725,7 @@ object wmdem: Twmdem
         Caption = 'Introductory tutorials'
         GroupIndex = 6
         object GISdatasampler1: TMenuItem
-          Caption = 'Annapolis GIS data sampler (2 GB)'
+          Caption = 'Annapolis GIS data sampler (100 MB)'
           GroupIndex = 6
           OnClick = GISdatasampler1Click
         end
@@ -1732,7 +1735,7 @@ object wmdem: Twmdem
           OnClick = AnnapolisTM8scene1Click
         end
         object Annapolislidar1: TMenuItem
-          Caption = 'Annapolis lidar (2 GB)'
+          Caption = 'Annapolis lidar (8 GB)'
           GroupIndex = 6
           OnClick = Annapolislidar1Click
         end
@@ -1786,14 +1789,6 @@ object wmdem: Twmdem
         object Duckbeachsurveys1: TMenuItem
           Caption = 'Duck beach surveys'
           OnClick = Duckbeachsurveys1Click
-        end
-        object Sensorcoverage1: TMenuItem
-          Caption = 'Sensor coverage'
-          OnClick = Sensorcoverage1Click
-        end
-        object Landsattimeseries1: TMenuItem
-          Caption = 'Landsat time series'
-          OnClick = Landsattimeseries1Click
         end
       end
       object Remotesensinglabs1: TMenuItem
@@ -2210,49 +2205,6 @@ object wmdem: Twmdem
           Caption = 'ACOLITE all open satellite images'
           OnClick = ACOLITEallopensatelliteimages1Click
         end
-        object N35: TMenuItem
-          Caption = '-'
-        end
-        object DEMIXindexhighresreferenceDEMs1: TMenuItem
-          Caption = 'DEMIX index high res reference DEMs'
-          OnClick = DEMIXindexhighresreferenceDEMs1Click
-        end
-        object DEMIXreferenceDEMcreation1: TMenuItem
-          Caption = 'DEMIX 1 second reference DEM creation'
-          OnClick = DEMIXreferenceDEMcreation1Click
-        end
-        object DEMIXreferencetilesurvey1: TMenuItem
-          Caption = 'DEMIX reference tile survey'
-          OnClick = DEMIXreferencetilesurvey1Click
-        end
-        object DEMIXtiles1: TMenuItem
-          Caption = 'DEMIX tiles geostats'
-          Enabled = False
-          OnClick = DEMIXtiles1Click
-        end
-        object DEMIXelevationhistograms1: TMenuItem
-          Caption = 'DEMIX elevation histograms'
-          OnClick = DEMIXelevationhistograms1Click
-        end
-        object Categoriesfromdatabase1: TMenuItem
-          Caption = 'Landform categories from data base'
-          OnClick = Categoriesfromdatabase1Click
-        end
-        object OpenDEMIXarea1: TMenuItem
-          Caption = 'Open DEMIX area'
-          OnClick = OpenDEMIXarea1Click
-        end
-        object N36: TMenuItem
-          Caption = '-'
-        end
-        object DEMIXwinecontest1: TMenuItem
-          Caption = 'DEMIX wine contest criteria evaluation'
-          OnClick = DEMIXwinecontest1Click
-        end
-        object DEMIXmergeCSVfiles1: TMenuItem
-          Caption = 'DEMIX create database (merge and transpose CSV files)'
-          OnClick = DEMIXmergeCSVfiles1Click
-        end
         object N3: TMenuItem
           Caption = '-'
         end
@@ -2260,6 +2212,11 @@ object wmdem: Twmdem
           Caption = 'Time cores'
           OnClick = imecores1Click
         end
+      end
+      object DEMIX1: TMenuItem
+        Caption = 'DEMIX'
+        GroupIndex = 2
+        OnClick = DEMIX1Click
       end
       object netcdf1: TMenuItem
         Caption = 'netcdf'
@@ -3436,6 +3393,50 @@ object wmdem: Twmdem
       Caption = 'Italy focal mechs'
       GroupIndex = 6
       OnClick = Italyfocalmechs1Click
+    end
+  end
+  object DemixAnalysisPopupMenu: TPopupMenu
+    Left = 712
+    Top = 336
+    object DEMIXindexhighresreferenceDEMs1: TMenuItem
+      Caption = 'DEMIX index high res reference DEMs'
+      OnClick = DEMIXindexhighresreferenceDEMs1Click
+    end
+    object DEMIXreferenceDEMcreation1: TMenuItem
+      Caption = 'DEMIX 1 second reference DEM creation'
+      OnClick = DEMIXreferenceDEMcreation1Click
+    end
+    object DEMIXreferencetilesurvey1: TMenuItem
+      Caption = 'DEMIX reference tile survey'
+      OnClick = DEMIXreferencetilesurvey1Click
+    end
+    object DEMIXtiles1: TMenuItem
+      Caption = 'DEMIX tiles geostats'
+      Enabled = False
+      OnClick = DEMIXtiles1Click
+    end
+    object DEMIXelevationhistograms1: TMenuItem
+      Caption = 'DEMIX elevation histograms'
+      OnClick = DEMIXelevationhistograms1Click
+    end
+    object Categoriesfromdatabase1: TMenuItem
+      Caption = 'Landform categories from data base'
+      OnClick = Categoriesfromdatabase1Click
+    end
+    object OpenDEMIXarea1: TMenuItem
+      Caption = 'Open DEMIX area'
+      OnClick = OpenDEMIXarea1Click
+    end
+    object N36: TMenuItem
+      Caption = '-'
+    end
+    object DEMIXwinecontest1: TMenuItem
+      Caption = 'DEMIX wine contest criteria evaluation'
+      OnClick = DEMIXwinecontest1Click
+    end
+    object DEMIXmergeCSVfiles1: TMenuItem
+      Caption = 'DEMIX create database (merge and transpose CSV files)'
+      OnClick = DEMIXmergeCSVfiles1Click
     end
   end
 end

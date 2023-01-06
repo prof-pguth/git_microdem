@@ -26,7 +26,7 @@ uses
 
 
 function LoadDEMIXReferenceDEMs(var RefDEM : integer) : boolean;
-function LoadDEMIXCandidateDEMs(RefDEM : integer; OpenMaps : boolean = false) : boolean;
+function LoadDEMIXCandidateDEMs(RefDEM : integer; OpenMaps : boolean = false; AllCandidates : boolean = true) : boolean;
 function LoadDEMIXarea(cfName : pathStr) : boolean;
 procedure GetReferenceDEMsForTestDEM(TestSeries : shortstring; var UseDSM,UseDTM : integer);
 procedure OpenDEMIXArea(fName : PathStr = '');
@@ -245,7 +245,7 @@ end;
 procedure OpenDEMIXArea(fName : PathStr = '');
 var
    AreaName : shortstring;
-   UseDSM,UseDTM,
+   UseDSM,UseDTM,chm,
    i,AirOrDirt,Cols : integer;
    BigMap : tStringList;
    Graph1,Graph2 : tThisBaseGraph;
@@ -294,15 +294,17 @@ begin
 
             if MDDef.DEMIX_DoCHM then begin
                if ValidDEM(RefDTMpoint) and ValidDEM(RefDSMpoint) then begin
-                  MakeDifferenceMapOfBoxRegion(RefDTMPoint,RefDSMpoint,DEMGlb[RefDSMPoint].FullDEMGridLimits,true,false,false,AreaName + '_points_chm');
+                  chm := MakeDifferenceMapOfBoxRegion(RefDTMPoint,RefDSMpoint,DEMGlb[RefDSMPoint].FullDEMGridLimits,true,false,false,AreaName + '_points_chm');
+                  DEMglb[chm].SelectionMap.Elevationpercentiles1Click(Nil);
                end;
                if ValidDEM(RefDTMarea) and ValidDEM(RefDSMarea) then begin
                   MakeDifferenceMapOfBoxRegion(RefDTMarea,RefDSMarea,DEMGlb[RefDSMarea].FullDEMGridLimits,true,false,false,AreaName + '_areas_chm');
+                  DEMglb[chm].SelectionMap.Elevationpercentiles1Click(Nil);
                end;
             end;
 
-            if  MDDef.DEMIX_DoAirOrDirt or MDDef.DEMIX_DoElevDiff or MDDef.DEMIX_DoSlopeDiff or MDDef.DEMIX_DoRuffDiff then begin
-               if LoadDEMIXCandidateDEMs(DEMIXRefDEM,true) then begin
+            if MDDef.DEMIX_DoElevParamGraphs or MDDef.DEMIX_DoAirOrDirt or MDDef.DEMIX_DoElevDiff or MDDef.DEMIX_DoSlopeDiff or MDDef.DEMIX_DoRuffDiff then begin
+               if LoadDEMIXCandidateDEMs(DEMIXRefDEM,true,false) then begin
                   if MDDef.DEMIX_DoAirOrDirt then begin
                      BigMap := tStringList.Create;
                      BigMap.Add(DEMGlb[RefDTMPoint].SelectionMap.MapDraw.FullMapfName);
@@ -317,29 +319,33 @@ begin
                      MakeBigBitmap(BigMap,'');
                   end;
 
-                  BigMap := tStringList.Create;
-                  if MDDef.DEMIX_DoElevDiff then begin
-                     DoDifferenceMaps(AreaName,'elvd','Elevation',Graph1,Graph2);
-                     AddImage(Graph1.Image1);
-                     if (Graph2 <> Nil) then AddImage(Graph2.Image1);
+                  if MDDef.DEMIX_DoElevParamGraphs then ElevationSlopePlot(0);
+
+                  if MDDef.DEMIX_DoElevDiff or MDDef.DEMIX_DoSlopeDiff or MDDef.DEMIX_DoRuffDiff then begin
+                     BigMap := tStringList.Create;
+                     if MDDef.DEMIX_DoElevDiff then begin
+                        DoDifferenceMaps(AreaName,'elvd','Elevation',Graph1,Graph2);
+                        AddImage(Graph1.Image1);
+                        if (Graph2 <> Nil) then AddImage(Graph2.Image1);
+                     end;
+                     if MDDef.DEMIX_DoSlopeDiff then begin
+                        DoDifferenceMaps(AreaName,'slpd','Slope',Graph1,Graph2);
+                        AddImage(Graph1.Image1);
+                        if (Graph2 <> Nil) then AddImage(Graph2.Image1);
+                     end;
+                     if MDDef.DEMIX_DoRuffDiff then begin
+                        DoDifferenceMaps(AreaName,'rufd','Roughness',Graph1,Graph2);
+                        AddImage(Graph1.Image1);
+                        if (Graph2 <> Nil) then AddImage(Graph2.Image1);
+                     end;
+                     if (BigMap.Count > 0) then begin
+                        fName := NextFileNumber(DEMIXtempFiles,AreaName + '_difference_histograms_','.png');
+                        if (RefDSMArea = 0) then Cols := 1 else Cols := 2;
+                        MakeBigBitmap(BigMap,'',fName,Cols);
+                        DisplayBitmap(fName);
+                     end
+                     else BigMap.Free;
                   end;
-                  if MDDef.DEMIX_DoSlopeDiff then begin
-                     DoDifferenceMaps(AreaName,'slpd','Slope',Graph1,Graph2);
-                     AddImage(Graph1.Image1);
-                     if (Graph2 <> Nil) then AddImage(Graph2.Image1);
-                  end;
-                  if MDDef.DEMIX_DoRuffDiff then begin
-                     DoDifferenceMaps(AreaName,'rufd','Roughness',Graph1,Graph2);
-                     AddImage(Graph1.Image1);
-                     if (Graph2 <> Nil) then AddImage(Graph2.Image1);
-                  end;
-                  if (BigMap.Count > 0) then begin
-                     fName := NextFileNumber(DEMIXtempFiles,AreaName + '_difference_histograms_','.png');
-                     if (RefDSMArea = 0) then Cols := 1 else Cols := 2;
-                     MakeBigBitmap(BigMap,'',fName,Cols);
-                     DisplayBitmap(fName);
-                  end
-                  else BigMap.Free;
                end;
             end;
          end;
@@ -450,13 +456,14 @@ end;
 
 
 
-function LoadDEMIXCandidateDEMs(RefDEM : integer; OpenMaps : boolean = false) : boolean;
+function LoadDEMIXCandidateDEMs(RefDEM : integer; OpenMaps : boolean = false; AllCandidates : boolean = true) : boolean;
 var
-   AllDEMs,WantSeries : shortstring;
+   AllDEMs,WantSeries,ShortName : shortstring;
    IndexSeriesTable : tMyData;
    WantDEM,WantImage,Ser,i : integer;
 begin
    {$IfDef RecordDEMIXLoad} writeLineToDebugFile('LoadDEMIXCandidateDEMs in'); {$EndIf}
+   Result := false;
    AllDEMs := '';
    for I := 1 to MaxTestDEM do begin
       TestDEM[i] := 0;
@@ -466,29 +473,31 @@ begin
    OpenIndexedSeriesTable(IndexSeriesTable);
    IndexSeriesTable.ApplyFilter('USE=' + QuotedStr('Y'));
    Ser := 0;
-   Result := true;
    while not IndexSeriesTable.eof do begin
       WantSeries := IndexSeriesTable.GetFieldByNameAsString('SERIES');
-      {$If Defined(RecordFullDEMIX)} writeLineToDebugFile('Try ' + WantSeries + ' ' + IntToStr(Ser) + '/' + IntToStr(IndexSeriesTable.FiltRecsInDB)); {$EndIf}
-      wmdem.SetPanelText(0,WantSeries);
-      {$If Defined(RecordFullDEMIX)} writeLineToDebugFile('Ref DEM=' + DEMGlb[RefDEM].AreaName + '  ' + sfBoundBoxToString(DEMGlb[RefDEM].DEMBoundBoxGeo,6)); {$EndIf}
-      if LoadMapLibraryBox(WantDEM,WantImage,true,DEMGlb[DEMIXRefDEM].DEMBoundBoxGeo,WantSeries,OpenMaps) and ValidDEM(WantDEM) then begin
-         inc(Ser);
-         TestDEM[Ser] := WantDEM;
-         TestSeries[Ser] := IndexSeriesTable.GetFieldByNameAsString('SHORT_NAME');
-         if not AllOfBoxInAnotherBox(DEMGlb[DEMIXRefDEM].DEMBoundBoxGeo,DEMGlb[WantDEM].DEMBoundBoxGeo) then begin
-            AllDEMs := AllDEMs + TestSeries[Ser] + ' (partial  ' + sfBoundBoxToString(DEMGlb[DEMIXRefDEM].DEMBoundBoxGeo) + ')   ';
-         end;
-         DEMGlb[WantDEM].AreaName := TestSeries[Ser];
-         DEMGlb[WantDEM].DEMFileName := NextFileNumber(MDTempDir, DEMGlb[TestDEM[Ser]].AreaName + '_', '.dem');
+      ShortName := IndexSeriesTable.GetFieldByNameAsString('SHORT_NAME');
+      if AllCandidates or (ShortName = 'COP') or (ShortName = 'ALOS') then begin
+         {$If Defined(RecordFullDEMIX)} writeLineToDebugFile('Try ' + WantSeries + ' ' + IntToStr(Ser) + '/' + IntToStr(IndexSeriesTable.FiltRecsInDB)); {$EndIf}
+         wmdem.SetPanelText(0,WantSeries);
+         {$If Defined(RecordFullDEMIX)} writeLineToDebugFile('Ref DEM=' + DEMGlb[RefDEM].AreaName + '  ' + sfBoundBoxToString(DEMGlb[RefDEM].DEMBoundBoxGeo,6)); {$EndIf}
+         if LoadMapLibraryBox(WantDEM,WantImage,true,DEMGlb[DEMIXRefDEM].DEMBoundBoxGeo,WantSeries,OpenMaps) and ValidDEM(WantDEM) then begin
+            inc(Ser);
+            TestDEM[Ser] := WantDEM;
+            TestSeries[Ser] := ShortName;
+            if not AllOfBoxInAnotherBox(DEMGlb[DEMIXRefDEM].DEMBoundBoxGeo,DEMGlb[WantDEM].DEMBoundBoxGeo) then begin
+               AllDEMs := AllDEMs + TestSeries[Ser] + ' (partial  ' + sfBoundBoxToString(DEMGlb[DEMIXRefDEM].DEMBoundBoxGeo) + ')   ';
+            end;
+            DEMGlb[WantDEM].AreaName := TestSeries[Ser];
+            DEMGlb[WantDEM].DEMFileName := NextFileNumber(MDTempDir, DEMGlb[TestDEM[Ser]].AreaName + '_', '.dem');
 
-         {$IfDef RecordDEMIXLoad} writeLineToDebugFile('Opened:' + WantSeries + '  DEM=' + IntToStr(WantDEM)); {$EndIf}
-         if (RefDEM <> 0) then DEMGlb[TestDEM[Ser]].SelectionMap.ClipDEMtoregion(DEMGlb[RefDEM].DEMBoundBoxGeo);
-         CheckVerticalDatumShift(TestDEM[Ser],IndexSeriesTable.GetFieldByNameAsString('VERT_DATUM'));
-      end
-      else begin
-         AllDEMs := AllDEMs + WantSeries + ' (missing)  ';
-         Result := false;
+            {$IfDef RecordDEMIXLoad} writeLineToDebugFile('Opened:' + WantSeries + '  DEM=' + IntToStr(WantDEM)); {$EndIf}
+            if (RefDEM <> 0) then DEMGlb[TestDEM[Ser]].SelectionMap.ClipDEMtoregion(DEMGlb[RefDEM].DEMBoundBoxGeo);
+            CheckVerticalDatumShift(TestDEM[Ser],IndexSeriesTable.GetFieldByNameAsString('VERT_DATUM'));
+            Result := true;
+         end
+         else begin
+            AllDEMs := AllDEMs + WantSeries + ' (missing)  ';
+         end;
       end;
       IndexSeriesTable.Next;
    end;

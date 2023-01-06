@@ -1,10 +1,12 @@
 unit slider_sorter_form;
 
 {^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of ianMICRODEM GIS Program    }
+{ PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
-{ Copyright (c) 2015 Peter L. Guth   }
-{   file verified 11/30/2019         }
+{ Copyright (c) 2022 Peter L. Guth   }
 {____________________________________}
+
 
 {$I nevadia_defines.inc}
 
@@ -169,16 +171,31 @@ var
    TheFiles : tStringList;
    fName,fName2 : PathStr;
 
-   procedure FindFiles;
-   var
-      i : integer;
-   begin
-      TheFiles := Nil;
-      Petmar.FindMatchingFiles(PhotoDir,'*.*',TheFiles,6);
-      for i := Pred(TheFiles.Count) downto 0 do begin
-          if (not PetImage.ValidImageFileName(TheFiles.Strings[i])) then TheFiles.Delete(i);
+         procedure FindFiles;
+         var
+            i : integer;
+         begin
+            TheFiles := Nil;
+            Petmar.FindMatchingFiles(PhotoDir,'*.*',TheFiles,6);
+            for i := Pred(TheFiles.Count) downto 0 do begin
+                if (not PetImage.ValidImageFileName(TheFiles.Strings[i])) then TheFiles.Delete(i);
+            end;
+         end;
+
+      procedure CheckType(Key : shortstring);
+      var
+         I : Integer;
+      begin
+         for I := 0 to pred(TheFiles.Count) do begin
+            fName := UpperCase(ExtractFileNameNoExt(TheFiles.Strings[i]));
+            if (length(Fname) = 8) and StrUtils.AnsiContainsText(ExtractFileNameNoExt(fName),Key) then begin
+               RenamePhotoJPEGS(PhotoDir,Key);
+               TheFiles.Free;
+               FindFiles;
+               exit;
+            end;
+         end;
       end;
-   end;
 
 
 begin
@@ -187,19 +204,8 @@ begin
    if GetDosPath('Photo directory',PhotoDir) then begin
       FindFiles;
       if (TheFiles.Count > 0) then begin
-         fName := UpperCase(ExtractFileNameNoExt(TheFiles.Strings[0]));
-         if (length(Fname) = 8) then begin
-            if StrUtils.AnsiContainsText(ExtractFileNameNoExt(fName),'DSC') then begin
-               RenamePhotoJPEGS(PhotoDir,'DSC');
-               TheFiles.Free;
-               FindFiles;
-            end;
-            if StrUtils.AnsiContainsText(ExtractFileNameNoExt(fName),'P') then begin
-               RenamePhotoJPEGS(PhotoDir,'P');
-               TheFiles.Free;
-               FindFiles;
-            end;
-         end;
+         CheckType('DCS');
+         CheckType('P');
          TheFiles.SaveToFile(MDTempDir + 'slide_sorter.txt');
          fName2 := PhotoDir + 'photo_index' + DefaultDBExt;
          if not FileExists(fName2) then MakePhotoDB(PhotoDir);
@@ -547,7 +553,7 @@ procedure TSlideSorterForm.LoadPictures;
                   Bitmap := LoadBitmapFromFile(FileNames[SlideNum]);
                   theLabel.width := ClientWidth;
 
-                  PhotoDB.ApplyFilter('IMAGE=' + QuotedStr(ExtractFileName(FileNames[SlideNum])));
+                  PhotoDB.ApplyFilter('IMAGE=' + QuotedStr(FileNames[SlideNum]));
                   if (PhotoDB.RecordCount = 1) then begin
                      TStr := '  ' + PhotoDB.GetFieldByNameAsString('CAMERA') +'  focal=' + PhotoDB.GetFieldByNameAsString('FOCAL_LEN') + '  35mm=' + PhotoDB.GetFieldByNameAsString('FOCAL_35') +
                              '  ISO=' + PhotoDB.GetFieldByNameAsString('ISO') + '  f_stop=' + PhotoDB.GetFieldByNameAsString('F_STOP') +  '  shutter=' + PhotoDB.GetFieldByNameAsString('SHUTTER') +

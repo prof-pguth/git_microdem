@@ -1827,6 +1827,7 @@ type
       DEMIX_DoElevDiff,
       DEMIX_DoSlopeDiff,
       DEMIX_DoRuffDiff,
+      DEMIX_DoElevParamGraphs,
       DEMIX_DoHalfSecDEMs : boolean;
 
 
@@ -2381,7 +2382,7 @@ type
       DBfilterCaseInSensitive : boolean;
       FilterGridsToEdge : boolean;
       RecNumToShowDBProgress : int16;
-
+      DefMarginLegend : byte;
       DefaultGraphXSize,DefaultGraphYSize : int32;
       NoHistFreqLabels : boolean;
       FrameLineWidth : byte;
@@ -2957,7 +2958,6 @@ var
       VectorMapName,
       MapLibDir,
       GADMDir,
-      //TauDEMDir,
       mcc_lidarFName,
       MrSIDDecodeName,
       MrSidInfoName,

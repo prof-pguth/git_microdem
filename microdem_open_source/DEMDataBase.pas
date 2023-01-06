@@ -16,6 +16,7 @@
    {$IfDef RecordProblems}  //normally only defined for debugging specific problems
       //{$Define RecordCloseDB}
       {$Define RecordDEMIX}
+      {$Define RecordDEMIXFull}
       //{$Define RecordDEMIXties}   //only enable for small test DB
       //{$Define RecordSymbolColor}
       //{$Define RecordRedistrict}
@@ -424,68 +425,43 @@ type
      procedure ShowStatus;
 
      //filtering
-     function AssembleGISFilter : AnsiString;
-     procedure ClearGISFilter;
-     procedure SaveFilterStatus(RemoveFilter : boolean);
-     procedure RestoreFilterStatus;
-     procedure ApplyGISFilter(fString : AnsiString);
-     procedure FilterDBByUseAndDisable(Used : boolean);
-     procedure FilterForUseField(Use : boolean = true);
-     procedure QueryGeoBox(HiLat,LowLong,LowLat,HighLong : float64; DisplayOnTable : boolean);  overload;
-     procedure QueryGeoBox(bb : sfBoundBox; DisplayOnTable : boolean); overload;
+        function AssembleGISFilter : AnsiString;
+        procedure ClearGISFilter;
+        procedure SaveFilterStatus(RemoveFilter : boolean);
+        procedure RestoreFilterStatus;
+        procedure ApplyGISFilter(fString : AnsiString);
+        procedure FilterDBByUseAndDisable(Used : boolean);
+        procedure FilterForUseField(Use : boolean = true);
+        procedure QueryGeoBox(HiLat,LowLong,LowLat,HighLong : float64; DisplayOnTable : boolean);  overload;
+        procedure QueryGeoBox(bb : sfBoundBox; DisplayOnTable : boolean); overload;
 
      //coordinates
-     function LatLongCornersPresent : boolean;
-     function LatLongFieldsPresent : boolean;
-     function ValidScreenPositionFromTable(var x,y : integer) : boolean;
+        function LatLongCornersPresent : boolean;
+        function LatLongFieldsPresent : boolean;
+        function ValidScreenPositionFromTable(var x,y : integer) : boolean;
+        procedure LoadPointCoords;
+        procedure DisposePointCoords;
 
-     procedure LoadPointCoords;
-     procedure DisposePointCoords;
+     //db operations
+        function NumericFieldLinkPossible(fName : ShortString) : boolean;
+        function StringFieldLinkPossible(fName : ShortString) : boolean;
+        function AssignField(var TheValue : ShortString; TheName : ShortString) : boolean;
+        procedure FieldRange(Field : shortstring; var Min,Max : float64; Filtered : boolean = false; ForceCompute : boolean = false);
+        procedure FieldRange32(Field : shortstring; var Min,Max : float32; Filtered : boolean = false; ForceCompute : boolean = false);
+        procedure ClearFieldRange(aField: shortstring);
+        function GetFloat32FromTableLinkPossible(FieldDesired : shortstring; var Value : float32) : boolean;
+        function GetStringFromTableLink(FieldDesired : ShortString) : ShortString;
+        function GetStringFromTableLinkPossible(FieldDesired : ShortString) : ShortString;
 
-     function NumericFieldLinkPossible(fName : ShortString) : boolean;
-     function StringFieldLinkPossible(fName : ShortString) : boolean;
-     function AssignField(var TheValue : ShortString; TheName : ShortString) : boolean;
+         function GetIntegerFromTableLink(FieldDesired : ShortString; var Value : integer) : boolean;
+         function GetFloatFromTableLink(FieldDesired : shortstring; var Value : float64) : boolean;
 
-     procedure AssignSymbol(aSymbol : tFullSymbolDeclaration);
-     procedure AddSymbolToDB;
-     procedure AddSymbolizationToLayerTable(Caption : shortstring);
+         function FindFieldRangeLinkPossible(FieldDesired : shortString; var aMinVal,aMaxVal : float64) : boolean;  overload;
+         function FindFieldRangeLinkPossible(FieldDesired : shortString; var Num,Valid  : integer; var Sum,aMinVal,aMaxVal : float64) : boolean; overload;
+         function FindValidJoin(TheFilter : string) : boolean;
 
-     procedure DefineColorTable;
-     function ComputeColorFromRecord(var Color : tColor) : boolean;
-     procedure SetColorsFromDB(TheIndex : tMyData);
-
-     procedure FieldRange(Field : shortstring; var Min,Max : float64; Filtered : boolean = false; ForceCompute : boolean = false);
-     procedure FieldRange32(Field : shortstring; var Min,Max : float32; Filtered : boolean = false; ForceCompute : boolean = false);
-     procedure ClearFieldRange(aField: shortstring);
-
-     function ImageForTable : boolean;
-
-      procedure PickNumericFields(GraphType :  tdbGraphType; NFields : integer; l1 : shortstring; l2 : shortstring; l3 : shortstring; StringColor : boolean = false); overload;
-      //procedure OldPickNumericFields(NFields : integer; var inColor : tPlatformColor; var ThinFactor : integer; l1 : shortstring; l2 : shortstring; l3 : shortstring; StringColor : boolean = false); overload;
-
-      function GetFloat32FromTableLinkPossible(FieldDesired : shortstring; var Value : float32) : boolean;
-      function GetStringFromTableLink(FieldDesired : ShortString) : ShortString;
-      function GetStringFromTableLinkPossible(FieldDesired : ShortString) : ShortString;
-
-      function GetIntegerFromTableLink(FieldDesired : ShortString; var Value : integer) : boolean;
-      function GetFloatFromTableLink(FieldDesired : shortstring; var Value : float64) : boolean;
-
-      function FindFieldRangeLinkPossible(FieldDesired : shortString; var aMinVal,aMaxVal : float64) : boolean;  overload;
-      function FindFieldRangeLinkPossible(FieldDesired : shortString; var Num,Valid  : integer; var Sum,aMinVal,aMaxVal : float64) : boolean; overload;
-      function FindValidJoin(TheFilter : string) : boolean;
-
-     procedure ClearLinkTable(ZeroNames : boolean);
-     function FieldSum(FieldDesired : shortstring; ReEnable : boolean = true) : float64;
-
-     procedure FindClosestRecord(Lat, Long: float64; var ClosestRecNo: integer; var MinD : float64);
-
-     procedure WriteDisplaySymbology(TheData : tMyData);
-     procedure ClearImage;
-
-     procedure PointsForLineAreaDB(AddFirst,AddLast,AddTurns : boolean; DistApart : float64 = -99);
-     procedure ExtractPointsFromLineAndAddXYZ;
-     function GetFullImageName(var fName : PathStr) : boolean;
-     function GetRotatedImage(var bmp : tMyBitmap; var fName : PathStr) : boolean;
+        procedure ClearLinkTable(ZeroNames : boolean);
+        function FieldSum(FieldDesired : shortstring; ReEnable : boolean = true) : float64;
 
   //add fields
      procedure AddSequentialIndex(fName : shortstring; Fill : boolean = true);
@@ -500,6 +476,32 @@ type
      procedure AddNavFields;
      procedure AddNavFieldDefinitions;
      procedure LimitFieldDecimals(SelectedColumn : shortstring; NumDec : integer);
+
+
+     procedure AssignSymbol(aSymbol : tFullSymbolDeclaration);
+     procedure AddSymbolToDB;
+     procedure AddSymbolizationToLayerTable(Caption : shortstring);
+
+     procedure DefineColorTable;
+     function ComputeColorFromRecord(var Color : tColor) : boolean;
+     procedure SetColorsFromDB(TheIndex : tMyData);
+
+
+     function ImageForTable : boolean;
+
+      procedure PickNumericFields(GraphType :  tdbGraphType; NFields : integer; l1 : shortstring; l2 : shortstring; l3 : shortstring; StringColor : boolean = false); overload;
+
+
+     procedure FindClosestRecord(Lat, Long: float64; var ClosestRecNo: integer; var MinD : float64);
+
+     procedure WriteDisplaySymbology(TheData : tMyData);
+     procedure ClearImage;
+
+     procedure PointsForLineAreaDB(AddFirst,AddLast,AddTurns : boolean; DistApart : float64 = -99);
+     procedure ExtractPointsFromLineAndAddXYZ;
+     function GetFullImageName(var fName : PathStr) : boolean;
+     function GetRotatedImage(var bmp : tMyBitmap; var fName : PathStr) : boolean;
+
 
 
      {$IfDef VCL}
@@ -612,7 +614,6 @@ type
          procedure SubsetShapeFile(var fName: PathStr; ThinFactor : integer = 1; BatchRun : boolean = false);
          procedure DisplayTable(fString : AnsiString = 'NONE'; CompleteFilter : boolean = false);
          procedure IrregularFilterDB;
-         //procedure InsureSensorsNamed;
          procedure SetGazTableOptions;
          function GetMaskFieldName : string10;
          procedure RenameField(OldName, NewName: ShortString);

@@ -231,7 +231,6 @@ var
    fList : tStringList;
    LabelIt,
    TryLabels,
-   //OK,
    PlotIt : boolean;
    inTheData : tMyData;
    GISNum : integer;
@@ -270,13 +269,7 @@ begin
                  end;
                  {$IfDef RecordFullShapeFileGroup} WriteLineToDebugFile('Opening GIS module for ' + fName2); {$EndIf}
 
-                 //GISdb := TGISdataBaseModule.Create(Application);
-                 //OK := GISdb.InitializeTheTable('',fName2);
-                 //GISDB.ClearGISFilter;
-                 //if OK then begin
-
                  if OpenNumberedGISDataBase(GISNum,fName2) then begin
-
                      if inTheData.FieldExists('FILTER') and (inTheData.GetFieldByNameAsString('FILTER') <> '') then begin
                          GISDB[GISNum].MyData.ApplyFilter(inTheData.GetFieldByNameAsString('FILTER'));
                         {$IfDef RecordFullShapeFileGroup} WriteLineToDebugFile('Filter: ' +  GISDB[GISNum].MyData.Filter + '  recs=' + IntToStr( GISDB[GISNum].MyData.FiltRecsInDB)); {$EndIf}

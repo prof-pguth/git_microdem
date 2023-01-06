@@ -1186,7 +1186,7 @@ end;
 
 procedure TView3DForm.FormMouseMove(Sender: TObject; Shift: TShiftState; X,Y: Single);
 begin
-   if false and MouseIsDown {(ssLeft in Shift))} then begin
+   if {false and} MouseIsDown {(ssLeft in Shift))} then begin
       Layout3D1.RotationAngle.X := Layout3D1.RotationAngle.X - ((Y - Down.Y) * 0.3);
       Layout3D1.RotationAngle.Y := Layout3D1.RotationAngle.Y + ((X - Down.X) * 0.3);
       Down := PointF(X, Y);

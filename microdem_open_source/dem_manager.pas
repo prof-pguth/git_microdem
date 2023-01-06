@@ -17,7 +17,7 @@ unit dem_manager;
       //{$Define RecordNewMaps}
       //{$Define LoadDEMsCovering}
       //{$Define RecordProjects}
-      //{$Define RecordDownload}
+      {$Define RecordDownload}
       //{$Define RecordGet2DEMs}
       //{$Define RecordWhatsOpen}
       //{$Define RecordStartup}
@@ -1295,31 +1295,23 @@ begin
       exit;
    end;
 
-   pName2 := pName + '.zip';
-   if not DownloadFileFromWeb(WebDataDownLoadDir + pName2,MainMapData + pName2) then begin
-      pName2 := pName + '.7z';
-      DownloadFileFromWeb(WebDataDownLoadDir + pName2,MainMapData + pName2);
+   pName2 := pName + '.7z';
+   {$IfDef RecordDownload} WriteLineToDebugFile('Try 7z'); {$EndIf}
+   if not DownloadFileFromWeb(WebDataDownLoadDir + pName2,MainMapData + pName2,false) then begin
+      {$IfDef RecordDownload} WriteLineToDebugFile('Try zip'); {$EndIf}
+      pName2 := pName + '.zip';
+      DownloadFileFromWeb(WebDataDownLoadDir + pName2,MainMapData + pName2,false);
    end;
-
-(*
+   pName2 := MainMapData + pName2;
    if FileExists(pName2) then begin
-      if AnswerIsYes('Try unzipping previous download instead of downloading again') then begin
-         {$IfDef RecordDownload} WriteLineToDebugFile('DownloadandUnzipDataFileIfNotPresent, unzipping existing ZIP'); {$EndIf}
-      end
-      else begin
-         {$IfDef RecordDownload} WriteLineToDebugFile('DownloadandUnzipDataFileIfNotPresent, download ZIP'); {$EndIf}
-         DeleteFile(MainMapData + pName2);
-         DownloadFileFromWeb(WebDataDownLoadDir + pName2,MainMapData + pName2);
-      end;
+      UnzipSingleFile(pName2);
+      File2Trash(pName2);
+      {$IfDef RecordDownload} WriteLineToDebugFile('success DownloadandUnzipDataFileIfNotPresent for ' + PName); {$EndIf}
    end
    else begin
-      {$IfDef RecordDownload} WriteLineToDebugFile('DownloadandUnzipDataFileIfNotPresent, force overwrite directory'); {$EndIf}
-      DownloadFileFromWeb(WebDataDownLoadDir + pName2,MainMapData + pName2);
+      {$IfDef RecordDownload} WriteLineToDebugFile('failure DownloadandUnzipDataFileIfNotPresent for ' + PName); {$EndIf}
+      MessageToContinue('Download fail, ' + pName);
    end;
-*)
-   pName2 := MainMapData + pName2;
-   UnzipSingleFile(pName2);
-   File2Trash(pName2);
 end;
 
 
@@ -1635,7 +1627,7 @@ begin
 
                {$IfDef ExPointCloud}
                {$Else}
-                  if (What = 'PC1') or (What = 'PC2') or (What = 'PC3') or (What = 'PC4') then begin
+                  if (What = 'PC1') or (What = 'PC2') or (What = 'PC3') or (What = 'PC4') or (What = 'PC5') then begin
                      if (pt_cloud_opts_fm = Nil) then begin
                         pt_cloud_opts_fm := Tpt_cloud_opts_fm.Create(Application);
                         pt_cloud_opts_fm.Show;
@@ -1711,13 +1703,13 @@ begin
 
          {$IfDef ExPointCloud}
          {$Else}
-               if (pt_cloud_opts_fm <> Nil) then begin
-                  for k := 1 to 5 do begin
-                     if (pt_cloud_opts_fm .LasFiles[k] <> Nil) then begin
-                        AddLine('PC' + IntToStr(k),pt_cloud_opts_fm.LasFiles[k].CloudDir ,Nil);
-                     end;
+            if (pt_cloud_opts_fm <> Nil) then begin
+               for k := 1 to 5 do begin
+                  if (pt_cloud_opts_fm .LasFiles[k] <> Nil) then begin
+                     AddLine('PC' + IntToStr(k),pt_cloud_opts_fm.LasFiles[k].CloudDir ,Nil);
                   end;
                end;
+            end;
          {$EndIf}
 
       end;

@@ -362,7 +362,7 @@ begin
           MaxY := -9999;
           MaxX := -9999;
           Hists[j] := OldCreateHistogramFromDataBase(true,WantXField,'','',false);
-          Hists[j].LLcornerText := MyData.Filter + '  n=' + IntToStr(MyData.FiltRecsInDB);
+          Hists[j].GraphDraw.LLcornerText := MyData.Filter + '  n=' + IntToStr(MyData.FiltRecsInDB);
           if (Hists[j].GraphDraw.MaxVertAxis > MaxY) then MaxY := Hists[j].GraphDraw.MaxVertAxis;
           if (Hists[j].GraphDraw.MaxHorizAxis > MaxX) then MaxX := Hists[j].GraphDraw.MaxHorizAxis;
           if Summary <> Nil then Summary.Add(ExtractFileNameNoExt(DBFullName) + ',' + ValuesToFilter[j] + ',' + WantXField + ',' +
@@ -466,7 +466,7 @@ begin
    v[2] := HeadingOfLine(xc,yc);
    BlockWrite(rfile,v,1);
    CloseFile(rfile);
-   ThisGraph.LLcornerText := LatLongDegreeToString(Lat,Long,VeryShortDegrees);
+   ThisGraph.GraphDraw.LLcornerText := LatLongDegreeToString(Lat,Long,VeryShortDegrees);
    ThisGraph.InitializeTadpole('Monthly winds at ' + LatLongDegreeToString(Lat,Long,NearestMinute),-2,18,MaxRange);
    ShowStatus;
 end;

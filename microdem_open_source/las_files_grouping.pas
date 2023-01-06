@@ -1,13 +1,11 @@
-unit las_files_grouping;
-
-
 {^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
 { Part of ianMICRODEM GIS Program    }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
-{ Copyright (c) 2015 Peter L. Guth   }
+{ Copyright (c) 2022 Peter L. Guth   }
 {____________________________________}
 
+unit las_files_grouping;
 
 {$I nevadia_defines.inc}
 
@@ -166,8 +164,9 @@ uses
 
 function tLas_files.IndexTableName : PathStr;
 begin
-   Result :=  ExtractFilePath(LAS_fNames[0]) + LastSubDir(ExtractFilePath(LAS_fNames[0])) + '_lidar_index.dbf';
+   Result :=  ExtractFilePath(LAS_fNames[0]) + LastSubDir(ExtractFilePath(LAS_fNames[0])) + '_lidar_tile_index.dbf';
 end;
+
 
 {$IfDef VCL}
 function tLas_files.MergeLasPoints(MergeLas : tMergeLas; BaseMap : tMapForm; var NewName : PathStr; Mask : tMyBitmap = Nil) : boolean;
@@ -487,22 +486,21 @@ type
    tIntArray = array[0..MaxIntensity] of integer;
    tElevArray = array[LowElev..HighElev] of integer;
 var
-  WithHeldPoints,OverlapPoints,z1,z99,
-  I,j,k,RecsRead,z,First,Last,Total,TotalPoints,ThisReturn,AirPoints : Integer;
-  CenterLat,CenterLong : float64;
-  ze : float64;
-  r,g,b,n : word;
-  LasData : tLas_Data;
-  PointCat : tLASClassificationCategory;
-  Elevs : tElevArray;
-  HasNIR : boolean;
-  ThisGraph,ThisGraph2 : TThisBaseGraph;
-  rFile : file;
-  v : tGraphPoint32;
-  fName : PathStr;
-  //IndexTableName : PathStr;
-  IndexTable : tMyData;
-  NumCats,Category,Int : integer;
+   WithHeldPoints,OverlapPoints,z1,z99,
+   I,j,k,RecsRead,z,First,Last,Total,TotalPoints,ThisReturn,AirPoints : Integer;
+   CenterLat,CenterLong : float64;
+   ze : float64;
+   r,g,b,n : word;
+   LasData : tLas_Data;
+   PointCat : tLASClassificationCategory;
+   Elevs : tElevArray;
+   HasNIR : boolean;
+   ThisGraph,ThisGraph2 : TThisBaseGraph;
+   rFile : file;
+   v : tGraphPoint32;
+   fName : PathStr;
+   IndexTable : tMyData;
+   NumCats,Category,Int : integer;
    Coding : array[0..MaxLasCat] of integer;
    Return : array[0..MaxLASreturns] of integer;
    ScanAngleHist : array[-128..127] of integer;
@@ -635,8 +633,8 @@ var
          var
             fName : PathStr;
          begin
-            {$IfDef RecordLASHist} WriteLineToDebugFile('Read Existing ' + IndexTableName); {$EndIf}
             fName := IndexTableName;
+            {$IfDef RecordLASHist} WriteLineToDebugFile('Read Existing ' + fName); {$EndIf}
             IndexTable := tMyData.Create(fName);
             if MDDef.LASPC99 then begin
                MaxZ := IndexTable.FindFieldMax('ELEV_99');
@@ -695,7 +693,7 @@ var
             HasScanAngle := IndexTable.FieldHasChar('HAS_CLASS','Y');
             HasReturnNumbers := IndexTable.FieldHasChar('HAS_CLASS','Y');
             IndexTable.Destroy;
-            {$IfDef RecordLASHist} WriteLineToDebugFile('Done Existing ' + IndexTableName); {$EndIf}
+            {$IfDef RecordLASHist} WriteLineToDebugFile('Done Existing ' + fName); {$EndIf}
          end;
 
 
@@ -858,10 +856,16 @@ var
                  end;
 
 
+                  procedure AddPresence(Feature  : boolean);
+                  var
+                     ch : char;
+                  begin
+                     if Feature then ch := 'Y' else ch := 'N';
+                     TileStr := TileStr + ',' + ch;
+                  end;
+
+
          begin {DoResults}
-            {Tiles.Add('LAT,LONG,TILE,POINTS,DENSITY,MAX_ELEV,MIN_ELEV,ELEV_1,ELEV_99,MAX_TIME,MIN_TIME,' +
-                   'MIN_INTEN,MAX_INTEN,INTEN_1,INTEN_99,MIN_RED,MAX_RED,RED_1,RED_99,MIN_GREEN,MAX_GREEN,GREEN_1,GREEN_99,MIN_BLUE,MAX_BLUE,BLUE_1,BLUE_99,MIN_NIR,MAX_NIR,NIR_1,NIR_99,' +
-                   'HAS_CLASS,HAS_RGB,HAS_INTEN,HAS_TIME,HAS_PTID,HAS_USRDAT,HAS_SCAN,HAS_RET,HAS_NIR');}
             Cats.Add('LAS, files=' + IntToStr(LAS_fnames.Count));
             Cats.Add('First file=' + LAS_fnames.Strings[0]);
             Cats.Add('');
@@ -873,7 +877,7 @@ var
 
             TileStr := RealToString(CenterLat,-18,-7) + ',' +
                        RealToString(CenterLong,-18,-7) + ',' +
-                       ExtractFileNameNoExt(fName) + ',' +
+                       ExtractFileName(fName) + ',' +
                        IntToStr(LasData.NumPointRecs) + ',' +
                        RealToString(LasData.SingleFilePointDensity,-12,2) + ',' +
                        RealToString(LasData.LasHeader.MaxZ,-12,2)  + ',' +
@@ -887,6 +891,18 @@ var
             TimeForPointCats;
             TimeForScanAngles;
 
+            AddPresence(HasClassification);
+            AddPresence(HasRGB);
+            AddPresence(HasIntensity);
+            AddPresence(HasTime);
+            AddPresence(HasPointID);
+            AddPresence(HasUserData);
+            AddPresence(HasScanAngle);
+            AddPresence(HasReturnNumbers);
+            AddPresence(HasNIR);
+
+
+             (*
              if HasClassification then TileStr := TileStr + ',Y'  else TileStr := TileStr + ',N';
              if HasRGB then TileStr := TileStr + ',Y'             else TileStr := TileStr + ',N';
              if HasIntensity then TileStr := TileStr + ',Y'       else TileStr := TileStr + ',N';
@@ -896,6 +912,7 @@ var
              if HasScanAngle then TileStr := TileStr + ',Y'       else TileStr := TileStr + ',N';
              if HasReturnNumbers then TileStr := TileStr + ',Y'   else TileStr := TileStr + ',N';
              if HasNIR then TileStr := TileStr + ',Y'             else TileStr := TileStr + ',N';
+             *)
              TileStr := TileStr + ',' + IntToStr(LasData.LidarPointType);
              Tiles.Add(TileStr);
          end;

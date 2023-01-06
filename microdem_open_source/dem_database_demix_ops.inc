@@ -1280,6 +1280,8 @@ begin
    LandTypesPresent := GISdb[DBonTable].MyData.UniqueEntriesInDB('LAND_TYPE');
    GISdb[DBonTable].EmpSource.Enabled := false;
    CriteriaPresent := GISdb[DBonTable].MyData.UniqueEntriesInDB('CRITERION');
+   {$If Defined(RecordDEMIXFull)} WriteLineToDebugFile('Land_Types present=' + IntToStr(LandTypesPresent.Count)); {$EndIf}
+   {$If Defined(RecordDEMIXFull)} WriteLineToDebugFile('Criteria present=' + IntToStr(CriteriaPresent.Count)); {$EndIf}
 
    Report := tStringList.Create;
    aline := 'REF_TYPE,AREA,DEMIX_TILE';
@@ -1299,8 +1301,8 @@ begin
          GISdb[DBonTable].EmpSource.Enabled := false;
          GISdb[DBonTable].ApplyGISFilter('REF_TYPE=' + QuotedStr(RefType[j]) + ' AND LAND_TYPE=' + QuotedStr(LandTypesPresent[k]));
          aLine := aline + ',' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB div CriteriaPresent.Count);
-         {$If Defined(RecordDEMIXFull)} WriteLineToDebugFile('DEMIXTileSummary ' + aline); {$EndIf}
       end;
+      {$If Defined(RecordDEMIXFull)} WriteLineToDebugFile('DEMIXTileSummary ' + aline); {$EndIf}
       Report.Add(aline);
    end;
 
