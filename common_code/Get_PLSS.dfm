@@ -3,8 +3,8 @@ object getplssf: Tgetplssf
   Top = 172
   BorderIcons = [biSystemMenu]
   Caption = 'Get PLSS Position'
-  ClientHeight = 360
-  ClientWidth = 511
+  ClientHeight = 351
+  ClientWidth = 505
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

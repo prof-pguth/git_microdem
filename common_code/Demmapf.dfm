@@ -2,8 +2,8 @@ object MapForm: TMapForm
   Left = 45
   Top = 303
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1141
-  ClientWidth = 1831
+  ClientHeight = 1148
+  ClientWidth = 1819
   Color = clBtnHighlight
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -40,8 +40,8 @@ object MapForm: TMapForm
   object ScrollBox1: TScrollBox
     Left = 0
     Top = 27
-    Width = 1831
-    Height = 1114
+    Width = 1819
+    Height = 1121
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clRed
@@ -52,7 +52,7 @@ object MapForm: TMapForm
     TabOrder = 0
     OnClick = ScrollBox1Click
     ExplicitWidth = 1825
-    ExplicitHeight = 1105
+    ExplicitHeight = 1130
     object Image1: TImage
       Left = 3
       Top = -247
@@ -209,12 +209,12 @@ object MapForm: TMapForm
     end
     object BlendPanel: TPanel
       Left = 0
-      Top = 1069
+      Top = 1094
       Width = 1827
       Height = 41
       Align = alBottom
       TabOrder = 8
-      ExplicitTop = 1060
+      ExplicitTop = 1085
       ExplicitWidth = 1821
       object TrackBar2: TTrackBar
         Left = 289
@@ -334,12 +334,11 @@ object MapForm: TMapForm
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1831
+    Width = 1819
     Height = 27
     Align = alTop
     TabOrder = 1
     OnMouseDown = Panel1MouseDown
-    ExplicitWidth = 1825
     object AnnotateSpeedButton1: TSpeedButton
       Left = 31
       Top = -4
@@ -3637,6 +3636,10 @@ object MapForm: TMapForm
         Caption = 'DEM/grid Histogram '
         OnClick = Histogram2Click
       end
+      object Elevationpercentiles1: TMenuItem
+        Caption = 'Elevation percentiles'
+        OnClick = Elevationpercentiles1Click
+      end
       object Fixedpalettestats1: TMenuItem
         Caption = 'Fixed palette stats'
         OnClick = Fixedpalettestats1Click
@@ -3915,10 +3918,6 @@ object MapForm: TMapForm
           Caption = 'Grass tangential curvature'
           OnClick = Grasstangentialcurvature1Click
         end
-        object GRASSvectorruggedness1: TMenuItem
-          Caption = 'GRASS vector ruggedness'
-          OnClick = GRASSvectorruggedness1Click
-        end
         object GRASSTRI1: TMenuItem
           Caption = 'GRASS TRI'
           OnClick = GRASSTRI1Click
@@ -3926,6 +3925,10 @@ object MapForm: TMapForm
         object GRASSTPI1: TMenuItem
           Caption = 'GRASS TPI'
           OnClick = GRASSTPI1Click
+        end
+        object GRASSvectorruggedness1: TMenuItem
+          Caption = 'GRASS vector ruggedness'
+          OnClick = GRASSvectorruggedness1Click
         end
         object N45: TMenuItem
           Caption = '-'

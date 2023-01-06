@@ -2,13 +2,13 @@ inherited IHSMergeForm: TIHSMergeForm
   Left = 537
   Top = 153
   Caption = 'IHS DEM/Image Merge'
-  ClientHeight = 286
-  ClientWidth = 360
+  ClientHeight = 277
+  ClientWidth = 354
   Position = poDefaultSizeOnly
   OnClose = FormClose
   OnCreate = FormCreate
-  ExplicitWidth = 378
-  ExplicitHeight = 333
+  ExplicitWidth = 372
+  ExplicitHeight = 324
   TextHeight = 20
   inherited Bevel1: TBevel
     Width = 345

@@ -2,8 +2,8 @@ object FanCompareForm: TFanCompareForm
   Left = 380
   Top = 290
   Caption = 'Fan Algorithm Comparison'
-  ClientHeight = 255
-  ClientWidth = 417
+  ClientHeight = 246
+  ClientWidth = 411
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -15,8 +15,8 @@ object FanCompareForm: TFanCompareForm
   object StringGrid1: TStringGrid
     Left = 0
     Top = 0
-    Width = 417
-    Height = 182
+    Width = 411
+    Height = 173
     Align = alClient
     ColCount = 1
     FixedCols = 0
@@ -36,8 +36,8 @@ object FanCompareForm: TFanCompareForm
   end
   object Panel1: TPanel
     Left = 0
-    Top = 182
-    Width = 417
+    Top = 173
+    Width = 411
     Height = 73
     Align = alBottom
     TabOrder = 1

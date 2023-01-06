@@ -2,16 +2,16 @@ inherited ChirpGraph: TChirpGraph
   Left = 181
   Top = 201
   Caption = 'ChirpGraph'
-  ClientHeight = 464
-  ClientWidth = 1200
-  ExplicitWidth = 1218
-  ExplicitHeight = 536
+  ClientHeight = 396
+  ClientWidth = 1188
+  ExplicitWidth = 1206
+  ExplicitHeight = 468
   TextHeight = 16
   inherited ScrollBox1: TScrollBox
-    Width = 1200
-    Height = 386
-    ExplicitWidth = 1200
-    ExplicitHeight = 386
+    Width = 1188
+    Height = 318
+    ExplicitWidth = 1194
+    ExplicitHeight = 352
     inherited Image1: TImage
       Width = 1196
       Height = 382
@@ -21,14 +21,14 @@ inherited ChirpGraph: TChirpGraph
     end
   end
   inherited Panel1: TPanel
-    Top = 414
-    Width = 1200
+    Top = 346
+    Width = 1188
     Height = 50
     Caption = ''
     Font.Color = clBlack
     Font.Height = -16
-    ExplicitTop = 414
-    ExplicitWidth = 1200
+    ExplicitTop = 380
+    ExplicitWidth = 1194
     ExplicitHeight = 50
     object Label1: TLabel
       Left = 105
@@ -333,8 +333,8 @@ inherited ChirpGraph: TChirpGraph
     end
   end
   inherited ToolBar1: TToolBar
-    Width = 1200
-    ExplicitWidth = 1200
+    Width = 1188
+    ExplicitWidth = 1194
   end
   inherited MainMenu1: TMainMenu
     inherited Option1: TMenuItem

@@ -2,12 +2,10 @@ inherited PanoramaOps: TPanoramaOps
   Left = 428
   Top = 292
   Caption = 'Panorama Options'
-  ClientHeight = 214
-  ClientWidth = 422
+  ClientHeight = 205
+  ClientWidth = 416
   Position = poDefaultSizeOnly
   OnCreate = FormCreate
-  ExplicitLeft = 3
-  ExplicitTop = 3
   ExplicitWidth = 434
   ExplicitHeight = 252
   TextHeight = 20

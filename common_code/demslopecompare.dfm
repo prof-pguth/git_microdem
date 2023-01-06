@@ -4,8 +4,8 @@ object SlopeCompareOptions: TSlopeCompareOptions
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Slope Compare Options'
-  ClientHeight = 236
-  ClientWidth = 333
+  ClientHeight = 239
+  ClientWidth = 327
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

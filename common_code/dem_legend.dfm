@@ -2,8 +2,8 @@ object SetUpLegendForm: TSetUpLegendForm
   Left = 568
   Top = 260
   Caption = 'Legend elements'
-  ClientHeight = 203
-  ClientWidth = 464
+  ClientHeight = 185
+  ClientWidth = 452
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

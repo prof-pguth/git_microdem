@@ -4,8 +4,8 @@ object GetDipStrike: TGetDipStrike
   ActiveControl = OKBtn
   BorderStyle = bsDialog
   Caption = 'Structural Geology Overlay Options'
-  ClientHeight = 244
-  ClientWidth = 248
+  ClientHeight = 235
+  ClientWidth = 242
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack

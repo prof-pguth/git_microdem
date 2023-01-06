@@ -2,14 +2,12 @@ inherited ImportParamsDialog: TImportParamsDialog
   Left = 496
   Top = 193
   Caption = 'ASCII XYZ Import Parameters'
-  ClientHeight = 352
-  ClientWidth = 539
+  ClientHeight = 343
+  ClientWidth = 533
   Position = poDefaultSizeOnly
   Visible = True
   OnClose = FormClose
   OnCreate = FormCreate
-  ExplicitLeft = 3
-  ExplicitTop = 3
   ExplicitWidth = 551
   ExplicitHeight = 390
   TextHeight = 20

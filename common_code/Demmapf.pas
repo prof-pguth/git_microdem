@@ -1419,6 +1419,7 @@ type
     N20: TMenuItem;
     Airballdirtball1: TMenuItem;
     ClipDEMtoregionwithdata1: TMenuItem;
+    Elevationpercentiles1: TMenuItem;
     //procedure HiresintervisibilityDEM1Click(Sender: TObject);
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
@@ -2453,6 +2454,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure DEMIX10ktiles1Click(Sender: TObject);
     procedure Airballdirtball1Click(Sender: TObject);
     procedure ClipDEMtoregionwithdata1Click(Sender: TObject);
+    procedure Elevationpercentiles1Click(Sender: TObject);
     //procedure QuarterDEM1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
@@ -6480,6 +6482,31 @@ begin
 end;
 
 
+procedure TMapForm.Elevationpercentiles1Click(Sender: TObject);
+var
+   i,db : integer;
+   fName : PathStr;
+   TStr : shortstring;
+   results : tStringList;
+   Graph : tThisBaseGraph;
+begin
+   if (DEMGlb[MapDraw.DEMonMap].ZPercens = Nil) then begin
+      DEMGlb[MapDraw.DEMonMap].GetElevPercentiles(DEMGlb[MapDraw.DEMonMap].FullDEMGridLimits);
+   end;
+   results := tStringList.Create;
+   Results.Add('PERCENTILE,VALUE');
+   for I := 1 to 999 do begin
+      Tstr := RealToString(0.1 * i,-12,-3) + ',' + RealToString(DEMGlb[MapDraw.DEMonMap].zPercens^[i],-12,-3);   //temp variable for debugging
+      Results.Add(TStr );
+   end;
+   Fname := Petmar.NextFileNumber(MDTempDir,DEMGlb[MapDraw.DEMonMap].AreaName + '_percentiles_',DefaultDBExt);
+   db := StringListToLoadedDatabase(Results,fName);
+   Graph := GISdb[db].CreateScatterGram('PERCENTILE','VALUE',true);
+   Graph.GraphDraw.LLcornerText := DEMGlb[MapDraw.DEMonMap].AreaName;
+   Graph.RedrawDiagram11Click(Nil);
+end;
+
+
 procedure TMapForm.Walls1Click(Sender: TObject);
 begin
    {$IfDef ExGeostats}
@@ -6487,6 +6514,7 @@ begin
       PitSpireDefaults(Self,4);
    {$EndIf}
 end;
+
 
 procedure TMapForm.Rugosity1Click(Sender: TObject);
 begin
@@ -8017,7 +8045,7 @@ begin
          ViewExifimages1.Visible := (MDdef.ProgramOption = ExpertProgram);
       {$EndIf}
 
-{$If Defined(RecordCheckProperTix)} WriteLineToDebugFile('CheckProperTix start point clouds'); {$EndIf}
+      {$If Defined(RecordCheckProperTix)} WriteLineToDebugFile('CheckProperTix start point clouds'); {$EndIf}
 
       {$IfDef ExPointCloud}
          PointCloud1.Visible := false;
@@ -8084,8 +8112,6 @@ begin
       LineOfSight1.Visible := ExpertDEMVersion;
       Horizontalearthcurvature1.Visible := ExpertDEMVersion;
       Missingdatatosealevel1.Visible := ExpertDEMVersion;
-      //ReinterpolateUTM1.Visible := ExpertDEMVersion;
-      //ReinterpolateLatLong1.Visible := ExpertDEMVersion;
       ThinDEM1.Visible := ExpertDEMVersion;
       Volume1.Visible := ExpertDEMVersion;
       Mapshadingoptions1.Visible := ExpertDEMVersion;
@@ -8101,7 +8127,6 @@ begin
 
       SaveasPixelispoint1.Visible := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]) and MapDraw.DEMMap and (DEMGlb[MapDraw.DEMonMap].DEMHeader.RasterPixelIsGeoKey1025 in [1]);
       SaveasPixelisArea1.Visible := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]) and MapDraw.DEMMap and (DEMGlb[MapDraw.DEMonMap].DEMHeader.RasterPixelIsGeoKey1025 in [2]);
-
 
       PickcornersMDDEM1.Visible := (MDDef.ProgramOption in [ExpertProgram]);
       PortionofDEMwithdata1.Visible := (MDDef.ProgramOption in [ExpertProgram,GeographyProgram,GeologyProgram,RemoteSensingProgram]);
@@ -8145,14 +8170,7 @@ begin
       Quickrotatemap1.Visible := (MapDraw.VectorIndex <> 0) and (MapDraw.PrimMapProj.PName in [OldStereographic,LamAzEqArea,OrthoProj]);
       MDDEM1.Visible := MapDraw.ValidDEMonMap;
 
-{$If Defined(RecordCheckProperTix)} WriteLineToDebugFile('CheckProperTix tissot'); {$EndIf}
-      {$IfDef ExTissot}
-         Mapdistortion1.Visible := false;
-         TissotIndicatrix1.Visible := false;
-      {$Else}
-         Mapdistortion1.Visible := (MDDef.ProgramOption = ExpertProgram) and MapDraw.PrimMapProj.TissotEnabled;
-         TissotIndicatrix1.Visible := Mapdistortion1.Visible;
-      {$EndIf}
+      {$If Defined(RecordCheckProperTix)} WriteLineToDebugFile('CheckProperTix tissot'); {$EndIf}
 
       TerrainCategories1.Visible := MapDraw.ValidDEMonMap and ((MDDef.ProgramOption in [ExpertProgram,GeologyProgram]) or (MDDef.ShowConversionAndAnalyze));
       TerrainCategories2.Visible := TerrainCategories1.Visible;
@@ -8177,7 +8195,8 @@ begin
       Reflectance1.Visible := IsReflectanceMap(MapDraw.MapType);
 
       SaveMapAsImage1.Visible := (MDdef.ProgramOption in [ExpertProgram,RemoteSensingProgram]) and (MapDraw.PrimMapProj.PName in [UTMEllipsoidal,PlateCaree]);
-{$If Defined(RecordCheckProperTix)} WriteLineToDebugFile('CheckProperTix weapons fans'); {$EndIf}
+
+      {$If Defined(RecordCheckProperTix)} WriteLineToDebugFile('CheckProperTix weapons fans'); {$EndIf}
 
       Loadweaponsfans1.Visible := ExpertDEMVersion and MDDef.ShowIntervisibility;
       EditWeaponsFan1.Visible := (MDdef.ProgramOption = ExpertProgram) and (MapDraw.CurrentFansTable <> 0) and MDDef.ShowIntervisibility;
@@ -8201,41 +8220,23 @@ begin
 
       SpeedButton5.Visible := ExpertDEMVersion;
 
-{$If Defined(RecordCheckProperTix)} WriteLineToDebugFile('CheckProperTix geography'); {$EndIf}
-      {$IfDef ExGeography}
-         KoppenSpeedButton.Visible := False;
-         KoppenLegend2.Visible := false;
-         Climograph1.Visible := false;
-         Weather2.Visible := false;
-         Physicalgeographylabs1.Visible := false;
-         Evapotranspirationprecipitationwaterbudget1.Visible := false;
-         Koppenclimographfromclimategrids1.Visible := false;
-      {$Else}
-         Physicalgeographylabs1.Visible := (MDDef.ProgramOption = GeographyProgram) or MDDef.ShowLabs or MDDef.ShowClimateAndLight;
-         KoppenSpeedButton.Visible := (MDDef.ProgramOption = GeographyProgram) or MDDef.ShowLabs or MDDef.ShowClimateAndLight;
-         Weather2.Visible := (MDDef.ProgramOption = GeographyProgram) or MDDef.ShowLabs or MDDef.ShowClimateAndLight;
-         Climograph1.Visible := ((MDDef.ProgramOption = GeographyProgram) or MDDef.ShowLabs or MDDef.ShowClimateAndLight) and (ClimateStationDB <> 0);
-      {$EndIf}
-
-{$If Defined(RecordCheckProperTix)} WriteLineToDebugFile('CheckProperTix done geography'); {$EndIf}
+      {$If Defined(RecordCheckProperTix)} WriteLineToDebugFile('CheckProperTix geography'); {$EndIf}
 
       Convertcoordinates1.Visible := (MapDraw.VectorIndex <> 0) and (MDdef.ProgramOption = ExpertProgram) or (MapDraw.DEMMap and (DEMGlb[MapDraw.DEMonMap].DEMMapProjection <> Nil));
 
-{$If Defined(RecordCheckProperTix)} WriteLineToDebugFile('CheckProperTix coords vis'); {$EndIf}
+      {$If Defined(RecordCheckProperTix)} WriteLineToDebugFile('CheckProperTix coords vis'); {$EndIf}
 
-      //Flightcoverage2.Visible := False;
       SetDEMwithmap1.Visible := (NumDEMDataSetsOpen > 0) and (not MapDraw.DEMMap);
       SetsecondDEMonmap1.Visible := (NumDEMDataSetsOpen > 1) and (not MapDraw.DEMMap) and (MapDraw.DEMonMap <> 1);
 
-{$If Defined(RecordCheckProperTix)} WriteLineToDebugFile('CheckProperTix plss start'); {$EndIf}
-      {$IfDef ExPLSS}
-         MDDef.ShowPLSS := false;
-      {$EndIf}
+      {$If Defined(RecordCheckProperTix)} WriteLineToDebugFile('CheckProperTix plss start'); {$EndIf}
+
       PLSSposition1.Enabled := PathIsValid(PLSSFile[1]);
       PLSSposition1.Visible := (MDDef.ShowPLSS) and (MDdef.ProgramOption = ExpertProgram);
       PLSS1.Visible := (MDDef.ShowPLSS) and (MDdef.ProgramOption = ExpertProgram);
       PLSSlocation1.Visible := (MDDef.ShowPLSS) and (MDdef.ProgramOption = ExpertProgram);
-{$If Defined(RecordCheckProperTix)} WriteLineToDebugFile('CheckProperTix done plss'); {$EndIf}
+
+      {$If Defined(RecordCheckProperTix)} WriteLineToDebugFile('CheckProperTix done plss'); {$EndIf}
 
       IDSpeedButton.Visible := (MapDraw.MapOwner in [moMapDatabase]) or AllowMapLibraryLoads;
       FennemanProvinces1.Visible := FileExists(FennemanGISFileName);
@@ -8244,7 +8245,8 @@ begin
       KoppenLegend2.Visible := false;
       Koppenclimograph1.Visible := false;
 
-{$If Defined(RecordCheckProperTix)} WriteLineToDebugFile('CheckProperTix start dbs'); {$EndIf}
+      {$If Defined(RecordCheckProperTix)} WriteLineToDebugFile('CheckProperTix start dbs'); {$EndIf}
+
       for i := 1 to MaxDataBase do begin
          if ValidDB(i) and ((GISdb[i].theMapOwner = Self) or (MDDef.DBsOnAllMaps)) then begin
             IDSpeedButton.Visible := true;
@@ -8264,12 +8266,6 @@ begin
          end;
       end;
 
-      {$IfDef ExGeology}
-         StratcolButton.Visible := false;
-         FocalMechsButton.Visible := false;
-         FocalPlaneAnalysis1.Visible := false;
-      {$EndIf}
-
       if (MapDraw.CartoGroupShapesUp <> '') then IDSpeedButton.Visible := true;
 
       Agefromdepth1.Visible := (MDdef.ProgramOption in [GeologyProgram,GeographyProgram]);
@@ -8282,27 +8278,10 @@ begin
       Import1.Visible := (MDdef.ProgramOption = ExpertProgram);
 
       if (MDdef.ProgramOption = DragonPlotProgram) then begin
-         Profiles1.Visible := false;
-         DEMGridarea1.Visible := false;
-         Maxmeanmingridsfrompointdata1.Visible := false;
-         SpeedButton3.Visible := false;
-         KeyLatitudes1.Visible := false;
-         Twomaps1.Visible := false;
-         //ContoursShapefile1.Visible := false;
-         LoadOSMoverlay1.Visible := false;
-         MergemultipleCSVTXTfiles1.Visible := false;
-         QuickStats1.Visible := false;
-         Geomorphometry1.Visible := false;
-         TimeMaps1.Visible := false;
-         Cartography1.Visible := false;
-         GeologySpeedButton1.Visible := false;
-         Calculate1.Visible := false;
-         Cartography1.Visible := false;
       end
       else begin
          QuickStats1.Visible := (MDdef.ProgramOption = ExpertProgram);
          Geomorphometry1.Visible := (MDdef.ProgramOption = ExpertProgram);
-         //ContoursShapefile1.Visible := (MDdef.ProgramOption = ExpertProgram);
          TimeMaps1.Visible := (MDdef.ProgramOption = ExpertProgram);
       end;
 
@@ -8321,6 +8300,7 @@ begin
       end;
 
      {$If Defined(RecordCheckProperTix)} WriteLineToDebugFile('CheckProperTix start map owner types'); {$EndIf}
+
       if MapDraw.MapOwner in [moIndexMap,moMapDatabase,moEditMap] then begin
          GeologySpeedButton1.Visible := false;
          PrintSpeedButton.Visible := false;
@@ -8340,7 +8320,6 @@ begin
          KoppenSpeedButton.Visible := false;
          SideScanButton.Visible := false;
          SubbottomSpeedButton.Visible := false;
-         //DEMSpeedButton25.Visible := (MapDraw.MapOwner in [moIndexMap]);
          AnnotateSpeedButton1.Visible := false;
          Savemapwithworldfile1.Visible := false;
          Replayflightroute1.Visible := false;
@@ -8363,23 +8342,6 @@ begin
          else GDALinfo1.Visible := false;
       {$EndIf}
 
-      HideUndesiredOptions;
-
-      if (ClientWidth < 700) then begin
-         ClipboardSpeedButton.Visible := false;
-         GridSpeedButton15.Visible := false;
-      end;
-      if (ClientWidth < 650) then begin
-         PickBandSpeedButton20.Visible := false;
-      end;
-      if (ClientWidth < 600) then begin
-         SaveSpeedButton.Visible := false;
-      end;
-
-      {$If Defined(RecordCheckProperTix)} WriteLineToDebugFile('CheckProperTix start arrange buttons'); {$EndIf}
-      ArrangeButtons;
-      SetPanButtons;
-
       if (not MDDef.ShowMenus) or (not ShowAMenu) then begin
          File1.Visible := false;
          Edit1.Visible := false;
@@ -8396,7 +8358,25 @@ begin
          Cartography1.Visible := false;
          ImageAnalysis1.Visible := false;
       end;
-   //end;
+
+      HideUndesiredOptions;
+
+      if (ClientWidth < 700) then begin
+         ClipboardSpeedButton.Visible := false;
+         GridSpeedButton15.Visible := false;
+      end;
+      if (ClientWidth < 650) then begin
+         PickBandSpeedButton20.Visible := false;
+      end;
+      if (ClientWidth < 600) then begin
+         SaveSpeedButton.Visible := false;
+      end;
+
+      {$If Defined(RecordCheckProperTix)} WriteLineToDebugFile('CheckProperTix start arrange buttons'); {$EndIf}
+
+      ArrangeButtons;
+      SetPanButtons;
+
    ShowDefaultCursor;
    if (FormStyle = fsNormal) and (not CreateHiddenMap) then begin
       FormStyle := fsMDIChild;
@@ -8553,9 +8533,7 @@ begin
        UndoSpeedButton.Visible := false;
        DuplicateMapWindow1.Visible := false;
        TerrainCategories1.Visible := false;
-       //SectorOutlines1.Visible := false;
        WorldFileImages1.Visible := false;
-       //CurvatureCategories2.Visible := false;
        Volume1.Visible := false;
        Slopes1.Visible := false;
        Elevations1.Visible := false;
@@ -8592,6 +8570,21 @@ begin
        ShiftDEM1.Visible := false;
        GADM1.Visible := false;
        SaveProject1.Visible := false;
+       Profiles1.Visible := false;
+       DEMGridarea1.Visible := false;
+       Maxmeanmingridsfrompointdata1.Visible := false;
+       SpeedButton3.Visible := false;
+       KeyLatitudes1.Visible := false;
+       Twomaps1.Visible := false;
+       LoadOSMoverlay1.Visible := false;
+       MergemultipleCSVTXTfiles1.Visible := false;
+       QuickStats1.Visible := false;
+       Geomorphometry1.Visible := false;
+       TimeMaps1.Visible := false;
+       Cartography1.Visible := false;
+       GeologySpeedButton1.Visible := false;
+       Calculate1.Visible := false;
+       Cartography1.Visible := false;
     end;
 
     {$IfDef ExWaveRefraction}
@@ -8620,6 +8613,9 @@ begin
        DEMGrid1.Visible := false;
        Fabricatpoint1.Visible := false;
        Geology1.Visible := false;
+       StratcolButton.Visible := false;
+       FocalMechsButton.Visible := false;
+       FocalPlaneAnalysis1.Visible := false;
     {$Else}
        Geology1.Visible := MDDef.ShowGeologyOptions or (MDDef.ProgramOption = GeographyProgram);
        GeologySpeedButton1.Visible := Geology1.Visible;
@@ -8636,11 +8632,42 @@ begin
         SubbottomSpeedButton.Visible := MDDef.ShowSubBottom;
      {$EndIf}
 
+
    {$IfDef ExCartography}
       Cartography1.Visible := false;
    {$Else}
       Cartography1.Visible := MDDef.ShowCartography;
    {$EndIf}
+
+      {$IfDef ExTissot}
+         Mapdistortion1.Visible := false;
+         TissotIndicatrix1.Visible := false;
+      {$Else}
+         Mapdistortion1.Visible := (MDDef.ProgramOption = ExpertProgram) and MapDraw.PrimMapProj.TissotEnabled;
+         TissotIndicatrix1.Visible := Mapdistortion1.Visible;
+      {$EndIf}
+
+      {$IfDef ExGeography}
+         KoppenSpeedButton.Visible := False;
+         KoppenLegend2.Visible := false;
+         Climograph1.Visible := false;
+         Weather2.Visible := false;
+         Physicalgeographylabs1.Visible := false;
+         Evapotranspirationprecipitationwaterbudget1.Visible := false;
+         Koppenclimographfromclimategrids1.Visible := false;
+      {$Else}
+         Physicalgeographylabs1.Visible := (MDDef.ProgramOption = GeographyProgram) or MDDef.ShowLabs or MDDef.ShowClimateAndLight;
+         KoppenSpeedButton.Visible := (MDDef.ProgramOption = GeographyProgram) or MDDef.ShowLabs or MDDef.ShowClimateAndLight;
+         Weather2.Visible := (MDDef.ProgramOption = GeographyProgram) or MDDef.ShowLabs or MDDef.ShowClimateAndLight;
+         Climograph1.Visible := ((MDDef.ProgramOption = GeographyProgram) or MDDef.ShowLabs or MDDef.ShowClimateAndLight) and (ClimateStationDB <> 0);
+      {$EndIf}
+
+      {$IfDef ExPLSS}
+         MDDef.ShowPLSS := false;
+      {$EndIf}
+
+
+
 end;
 
 procedure TMapForm.Vegetationdensitymovie1Click(Sender: TObject);
@@ -9014,7 +9041,7 @@ begin
    if (MapDraw.MultiGridOnMap <> 0) then begin
       DEMGlb[MultiGridArray[MapDraw.MultiGridOnMap].IndexBand].LatLongDegreeToDEMGrid(RightClickLat,RightClickLong,xg1,yg1);
       graph := MultiGridArray[MapDraw.MultiGridOnMap].CreateAverageReflectanceGraph(round(xg1),round(yg1),round(xg1),round(yg1));
-      graph.LLcornerText := LatLongDegreeToString(RightClickLat,RightClickLong);
+      graph.GraphDraw.LLcornerText := LatLongDegreeToString(RightClickLat,RightClickLong);
       Graph.RedrawDiagram11Click(Nil);
    end
    else SatDNsatPoint(LastX,LastY);
@@ -9201,10 +9228,7 @@ begin
    ClosingMapNow := false;
    PointCloudBase := false;
    Blending := false;
-   //ADuplicateMap := false;
    MapSubsetAllowed := true;
-
-   HideUndesiredOptions;
    MapDraw := tMapDraw.Create;
 
    {$IfDef ExWMS}
@@ -18719,7 +18743,7 @@ end;
 
 procedure TMapForm.WhiteboxTRI1Click(Sender: TObject);
 begin
-   WhiteBox_TRI(GeotiffDEMNameOfMap,DEMGlb[MapDraw.DEMonMap].Geo_Z_Factor);
+   WhiteBox_TRI(GeotiffDEMNameOfMap);
 end;
 
 procedure TMapForm.FocalMechsButtonClick(Sender: TObject);

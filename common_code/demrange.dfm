@@ -3,12 +3,10 @@ inherited RangeCircleForm: TRangeCircleForm
   Top = 131
   BorderIcons = []
   Caption = 'Select Range Circles (Meters)'
-  ClientHeight = 259
-  ClientWidth = 400
+  ClientHeight = 250
+  ClientWidth = 394
   Position = poDefaultSizeOnly
   OnCreate = FormCreate
-  ExplicitLeft = 3
-  ExplicitTop = 3
   ExplicitWidth = 412
   ExplicitHeight = 297
   TextHeight = 20

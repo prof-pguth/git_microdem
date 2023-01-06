@@ -1901,6 +1901,21 @@ var
    HighlightCycle : integer;
    BroadCastingFilterChanges : boolean;
 
+var
+  SavedHiddenColumns : Array100Boolean;
+
+procedure SaveHiddenColumns(DBonTable : integer);
+begin
+   SavedHiddenColumns := GISdb[DBonTable].dbOpts.VisCols;
+end;
+
+procedure RestoreHiddenColumns(DBonTable : integer);
+begin
+   GISdb[DBonTable].dbOpts.VisCols := SavedHiddenColumns;
+   GISdb[DBonTable].dbTableF.HideColumns;
+   GISdb[DBonTable].dbTableF.ShowStatus;
+end;
+
 
 procedure ZipShapefile(DBontable : integer; IncludeDebug,SHZit : boolean);
 var
@@ -2487,7 +2502,7 @@ var
    j : integer;
 begin
    for j := 0 to pred(DBGrid1.Columns.Count) do begin
-      if SelectedColumn = trim(DBGrid1.Columns[j].FieldName) then begin
+      if (SelectedColumn = trim(DBGrid1.Columns[j].FieldName)) then begin
          DBGrid1.Columns[j].Visible := false;
          GISdb[DBonTable].dbOpts.VisCols[j] := false;
          exit;
@@ -11915,6 +11930,7 @@ var
        {$IfDef RecordClustering} WriteLineToDebugFile('Start K Means Clustering'); {$EndIf}
       wmDEM.SetPanelText(0,'K Means Clustering');
       MVClusterClientDataSet.KMeansClustering(FieldsToUse, FieldsUsed, MDTempDir + 'Cluster_Results.HTML');
+      SaveHiddenColumns(DBonTable);
       UnHideColumns;
 
        {$IfDef RecordClustering} WriteLineToDebugFile('Update DB with clusters'); {$EndIf}
@@ -12065,6 +12081,7 @@ var
 
          if MDDef.ShowClusterResults then Petmar.QuickOpenEditWindow(MDTempDir + 'Clster_Results.HTML','Cluster results');
          wmDEM.SetPanelText(0,'');
+         RestoreHiddenColumns(DBonTable);
       //end;
    end;
 
@@ -12185,6 +12202,7 @@ begin
    with GISdb[DBonTable] do  begin
       if MyData.Filtered then MessageToContinue('Results apply to entire database');
       GISdb[DBonTable].ClearGISFilter;
+      SaveHiddenColumns(DBonTable);
       UnHideColumns;
       GISdb[DBonTable].EmpSource.Enabled := false;
       MyData.FindFieldRange('CLUSTER',MinX,MaxX);
@@ -12212,6 +12230,7 @@ begin
       theMapOwner.StringListToLoadedDatabase(Results,fName);
    end;
    GISdb[DBonTable].ClearGISFilter;
+   RestoreHiddenColumns(DBonTable);
    ShowStatus;
 end;
 

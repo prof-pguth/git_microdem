@@ -3,20 +3,20 @@ inherited OptionsForm: TOptionsForm
   Top = 230
   BorderStyle = bsSizeable
   Caption = ''
-  ClientHeight = 552
-  ClientWidth = 844
+  ClientHeight = 578
+  ClientWidth = 835
   Position = poDefaultPosOnly
   OnClose = FormClose
   OnCreate = FormCreate
   OnResize = FormResize
-  ExplicitWidth = 856
-  ExplicitHeight = 590
+  ExplicitWidth = 847
+  ExplicitHeight = 616
   TextHeight = 20
   inherited Bevel1: TBevel
     Left = 0
     Top = 0
-    Width = 844
-    Height = 494
+    Width = 835
+    Height = 520
     Align = alClient
     ExplicitLeft = 0
     ExplicitTop = 1
@@ -45,14 +45,14 @@ inherited OptionsForm: TOptionsForm
   object PageControl1: TPageControl
     Left = 0
     Top = 0
-    Width = 844
-    Height = 494
+    Width = 835
+    Height = 520
     ActivePage = TabSheet11
     Align = alClient
     MultiLine = True
     TabOrder = 2
-    ExplicitWidth = 838
-    ExplicitHeight = 485
+    ExplicitWidth = 829
+    ExplicitHeight = 511
     object TabSheet1: TTabSheet
       Caption = 'Program'
       object RadioGroup7: TRadioGroup
@@ -130,8 +130,8 @@ inherited OptionsForm: TOptionsForm
       object StringGrid1: TStringGrid
         Left = 0
         Top = 0
-        Width = 836
-        Height = 434
+        Width = 827
+        Height = 460
         Align = alClient
         ColCount = 2
         ScrollBars = ssVertical
@@ -1910,6 +1910,14 @@ inherited OptionsForm: TOptionsForm
           Caption = 'Do half second DEMs'
           TabOrder = 6
         end
+        object CheckBox25: TCheckBox
+          Left = 16
+          Top = 226
+          Width = 209
+          Height = 17
+          Caption = 'Elevation parmeter graphs'
+          TabOrder = 7
+        end
       end
     end
     object TabSheet13: TTabSheet
@@ -3201,13 +3209,13 @@ inherited OptionsForm: TOptionsForm
   end
   object Panel1: TPanel
     Left = 0
-    Top = 494
-    Width = 844
+    Top = 520
+    Width = 835
     Height = 58
     Align = alBottom
     TabOrder = 3
-    ExplicitTop = 485
-    ExplicitWidth = 838
+    ExplicitTop = 511
+    ExplicitWidth = 829
     object BitBtn3: TBitBtn
       Left = 178
       Top = 6
@@ -3313,7 +3321,7 @@ inherited OptionsForm: TOptionsForm
     object BitBtn11: TBitBtn
       Left = 366
       Top = 6
-      Width = 123
+      Width = 131
       Height = 25
       Caption = 'Restore defaults'
       TabOrder = 5

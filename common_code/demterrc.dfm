@@ -3,8 +3,8 @@ object GetTerrC: TGetTerrC
   Top = 247
   BorderStyle = bsDialog
   Caption = 'Terrain Category Parameters'
-  ClientHeight = 849
-  ClientWidth = 318
+  ClientHeight = 840
+  ClientWidth = 303
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
@@ -399,13 +399,13 @@ object GetTerrC: TGetTerrC
     TabOrder = 5
   end
   object Panel5: TPanel
-    Left = 0
+    Left = 1
     Top = 682
     Width = 303
     Height = 161
     TabOrder = 6
     object BitBtn3: TBitBtn
-      Left = 85
+      Left = 98
       Top = 32
       Width = 78
       Height = 25
@@ -414,7 +414,7 @@ object GetTerrC: TGetTerrC
       OnClick = BitBtn3Click
     end
     object BitBtn1: TBitBtn
-      Left = 1
+      Left = 14
       Top = 32
       Width = 75
       Height = 25
@@ -423,7 +423,7 @@ object GetTerrC: TGetTerrC
       OnClick = BitBtn1Click
     end
     object CheckBox10: TCheckBox
-      Left = 129
+      Left = 142
       Top = 9
       Width = 81
       Height = 17
@@ -432,7 +432,7 @@ object GetTerrC: TGetTerrC
       OnClick = CheckBox10Click
     end
     object OKBtn: TBitBtn
-      Left = -1
+      Left = 12
       Top = 125
       Width = 77
       Height = 27
@@ -464,7 +464,7 @@ object GetTerrC: TGetTerrC
       IsControl = True
     end
     object BitBtn2: TBitBtn
-      Left = 1
+      Left = 14
       Top = 63
       Width = 75
       Height = 25
@@ -473,7 +473,7 @@ object GetTerrC: TGetTerrC
       OnClick = BitBtn2Click
     end
     object CancelBtn: TBitBtn
-      Left = 82
+      Left = 95
       Top = 125
       Width = 87
       Height = 27
@@ -486,7 +486,7 @@ object GetTerrC: TGetTerrC
       IsControl = True
     end
     object HelpBtn: TBitBtn
-      Left = 175
+      Left = 188
       Top = 126
       Width = 77
       Height = 27
@@ -499,7 +499,7 @@ object GetTerrC: TGetTerrC
       IsControl = True
     end
     object BitBtn4: TBitBtn
-      Left = 169
+      Left = 182
       Top = 32
       Width = 84
       Height = 25
@@ -508,7 +508,7 @@ object GetTerrC: TGetTerrC
       OnClick = BitBtn4Click
     end
     object BitBtn7: TBitBtn
-      Left = 88
+      Left = 101
       Top = 63
       Width = 75
       Height = 25
@@ -517,7 +517,7 @@ object GetTerrC: TGetTerrC
       OnClick = BitBtn7Click
     end
     object BitBtn8: TBitBtn
-      Left = -2
+      Left = 11
       Top = 94
       Width = 78
       Height = 25
@@ -526,7 +526,7 @@ object GetTerrC: TGetTerrC
       OnClick = BitBtn8Click
     end
     object BitBtn9: TBitBtn
-      Left = 82
+      Left = 95
       Top = 95
       Width = 87
       Height = 25
@@ -535,7 +535,7 @@ object GetTerrC: TGetTerrC
       OnClick = BitBtn9Click
     end
     object BitBtn10: TBitBtn
-      Left = 169
+      Left = 182
       Top = 64
       Width = 75
       Height = 25
@@ -544,7 +544,7 @@ object GetTerrC: TGetTerrC
       OnClick = BitBtn10Click
     end
     object CheckBox18: TCheckBox
-      Left = 26
+      Left = 39
       Top = 9
       Width = 97
       Height = 17

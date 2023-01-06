@@ -4,8 +4,8 @@ object HistOptForm: THistOptForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'DEM Histogram Options'
-  ClientHeight = 275
-  ClientWidth = 231
+  ClientHeight = 266
+  ClientWidth = 225
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

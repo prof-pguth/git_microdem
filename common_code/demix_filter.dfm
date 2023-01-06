@@ -2,8 +2,8 @@ object DemixFilterForm: TDemixFilterForm
   Left = 0
   Top = 0
   Caption = 'DemixFilterForm'
-  ClientHeight = 403
-  ClientWidth = 513
+  ClientHeight = 394
+  ClientWidth = 507
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

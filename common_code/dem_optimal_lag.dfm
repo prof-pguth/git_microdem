@@ -2,8 +2,8 @@ object LagOptionsForm: TLagOptionsForm
   Left = 73
   Top = 256
   Caption = 'Grid shift/migration'
-  ClientHeight = 369
-  ClientWidth = 499
+  ClientHeight = 360
+  ClientWidth = 493
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -18,8 +18,8 @@ object LagOptionsForm: TLagOptionsForm
   object Memo1: TMemo
     Left = 217
     Top = 0
-    Width = 282
-    Height = 369
+    Width = 276
+    Height = 360
     Align = alClient
     Font.Charset = ANSI_CHARSET
     Font.Color = clWindowText
@@ -36,7 +36,7 @@ object LagOptionsForm: TLagOptionsForm
     Left = 0
     Top = 0
     Width = 217
-    Height = 369
+    Height = 360
     Align = alLeft
     TabOrder = 1
     ExplicitHeight = 337

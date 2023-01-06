@@ -4,8 +4,8 @@ object PickFanParams: TPickFanParams
   ActiveControl = OKBtn
   BorderStyle = bsDialog
   Caption = 'Fan Drawing Options'
-  ClientHeight = 298
-  ClientWidth = 449
+  ClientHeight = 289
+  ClientWidth = 443
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack

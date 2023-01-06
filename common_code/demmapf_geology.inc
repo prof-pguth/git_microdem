@@ -407,7 +407,7 @@ begin
           PickRotationForm.ThisGraph.ClientHeight := 800;
 
           PickRotationForm.ThisGraph.Caption := PickRotationForm.ModelComboBox.Text + ' Plate motions ' + LatLongDegreeToString(Lat,Long,VeryShortDegrees);
-          PickRotationForm.ThisGraph.LLCornerText := PickRotationForm.ThisGraph.Caption;
+          PickRotationForm.ThisGraph.GraphDraw.LLCornerText := PickRotationForm.ThisGraph.Caption;
           PickRotationForm.ThisGraph.GraphDraw.CorrectScaling := true;
           PickRotationForm.ThisGraph.GraphDraw.HorizLabel := 'Ve (mm/yr)';
           PickRotationForm.ThisGraph.GraphDraw.VertLabel := 'Vn (mm/yr)';

@@ -4,8 +4,8 @@ object GetLatLongDlg: TGetLatLongDlg
   ActiveControl = OKBtn
   BorderStyle = bsDialog
   Caption = 'Dialog'
-  ClientHeight = 244
-  ClientWidth = 370
+  ClientHeight = 235
+  ClientWidth = 364
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
@@ -185,6 +185,8 @@ object GetLatLongDlg: TGetLatLongDlg
       Left = 4
       Top = 24
       Caption = 'MGRS'
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Label5: TLabel
         Left = 48
         Top = 16
@@ -254,6 +256,8 @@ object GetLatLongDlg: TGetLatLongDlg
       Left = 4
       Top = 24
       Caption = 'UTM'
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Label1: TLabel
         Left = 8
         Top = 56

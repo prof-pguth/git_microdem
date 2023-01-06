@@ -578,7 +578,7 @@ begin
    StringList2CSVtoDB(Findings,TStr);
    Graph := GISDB[db].CreateScatterGram('DIST_M','SLOPE_PC',true,'Slopes by region at ' + Location);
    Graph.GraphDraw.MinVertAxis := 0;
-   Graph.LLCornerText := Location;
+   Graph.GraphDraw.LLCornerText := Location;
    Graph.RedrawDiagram11Click(Nil);
    DEMDef_routines.RestoreBackupDefaults;
 end;
@@ -1654,7 +1654,7 @@ const
 type
    TheArrayType = array[MinSlopeValue..MaxSlopeValue] of float64;
    CountType    = array[MinSlopeValue..MaxSlopeValue] of LongInt;
-   GraphType    = (ElevFreq,SlopeFreq,ElevSlope,AspectFreq,CumSlope,AspectRose,ElevSlopeDeg);
+   GraphType    = (ElevFreq,SlopeFreq,ElevSlope,AspectFreq,CumSlope,AspectRose,ElevSlopeDeg,ElevRuff);
 var
    Graph : GraphType;
    BinSize,StartIndex,Bin,
@@ -1664,6 +1664,7 @@ var
    j,x,which : LongInt;
    MaxCount,MaxSlopeCount,
    Cum,MinElevZ,MaxElevZ,MaxSlope : float64;
+   Ruff1,MaxRuff : float32;
    NumBins  : array[1..MaxDEMDataSets] of integer;
    TotalDEM : array[1..MaxDEMDataSets] of LongInt;
    SlopeTotal,
@@ -1674,6 +1675,7 @@ var
    SumSquares,
    BinElev,
    SlopeHist,
+   Ruffs,
    Slopes   : array[1..MaxDEMDataSets] of ^TheArrayType;
    PointCount : array[tCompassDirection] of int32;
    ThisGraph : TThisBaseGraph;
@@ -1694,9 +1696,10 @@ var
          else begin
              Result := TThisBaseGraph.Create(Application);
              case Graph of
+                ElevRuff  : TStr := ' Elevation vs Roughness (%), bin size=' + IntToStr(BinSize) + ' m';
+                ElevSlope  : TStr := ' Elevation vs Slope (%), bin size=' + IntToStr(BinSize) + ' m';
                 ElevFreq   : Tstr := ' Elevation Frequency, bin size=' + IntToStr(BinSize) + ' m';
                 ElevSlopeDeg : TStr := ' Elevation vs Slope (°), bin size=' + IntToStr(BinSize) + ' m';
-                ElevSlope  : TStr := ' Elevation vs Slope (%), bin size=' + IntToStr(BinSize) + ' m';
                 SlopeFreq  : TStr := ' Slope Frequency';
                 AspectFreq : TStr := ' Aspect Frequency';
                 CumSlope   : TStr := ' Cumulative Slope Distribution';
@@ -1712,8 +1715,12 @@ var
              if (not BaseGraf.CreateGraphHidden) then Result.Caption := TStr;
              case Graph of
                ElevFreq  : Result.GraphDraw.MaxHorizAxis := MaxCount;
+               ElevRuff : begin
+                              Result.GraphDraw.MaxHorizAxis := MaxRuff + 5;
+                              Result.GraphDraw.HorizLabel := 'Avg Roughness (' + IntToStr(MDDef.RoughnessBox) + 'x' + IntToStr(MDDef.RoughnessBox) + ' window std dev slope, %)';
+                           end;
                ElevSlope : begin
-                              Result.GraphDraw.MaxHorizAxis := MaxSlope;
+                              Result.GraphDraw.MaxHorizAxis := MaxSlope + 5;
                               Result.GraphDraw.HorizLabel := 'Avg Slope ' + SlopeMethodName(MdDef.SlopeAlg)+' (%)';
                            end;
                ElevSlopeDeg : begin
@@ -1742,7 +1749,7 @@ var
             for Which := StartDEM to EndDEM do if ValidDEM(Which) then begin
                Result.GraphDraw.LegendList.Add(DEMGlb[Which].AreaName);
                Result.OpenDataFile(rfile);
-               if (Graph in [ElevSlope,ElevSlopeDeg])  then begin
+               if (Graph in [ElevSlope,ElevSlopeDeg,ElevRuff])  then begin
                   Result.GraphDraw.ShowLine[Result.GraphDraw.DataFilesPlotted.Count] := true;
                end;
                if (Graph in [ElevSlope,ElevSlopeDeg]) and (StartDEM = EndDEM) and (MDdef.ShowSDonElevSlope) and (MDdef.ShowGeomorphometry) then begin
@@ -1765,6 +1772,16 @@ var
                      v[1] := SlopeHist[Which]^[x];
                      v[2] := x;
                      BlockWrite(Rfile,v,1);
+                  end;
+               end
+               else if Graph in [ElevRuff] then begin
+                  if (StartDEM = EndDEM) then Result.GraphDraw.FileColors256[1] := claBlue;
+                  Result.Image1.Canvas.Pen.Width := 3;
+                  for x := 0 to NumBins[Which] do if Count[Which]^[x] > 0 then begin
+                     v[1] := Ruffs[Which]^[x];
+                     v[2] := BinElev[Which]^[x];
+                     {$IfDef RecordStdDef} WriteLineToDebugFile('bin: ' + RealToString(v[2],-12,-1) + '  slope: ' + RealToString(v[1],-12,-1)); {$EndIf}
+                     BlockWrite(rfile,v,1);
                   end;
                end
                else if Graph in [ElevSlope,ElevSlopeDeg] then begin
@@ -1831,6 +1848,7 @@ begin {proc ElevationSlopePlot}
    {$IfDef RecordElevationSlopePlot} WriteLineToDebugFile('ElevationSlopePlot in'); {$EndIf}
    MaxCount := 0;
    MaxSlope := 0;
+   MaxRuff := 0;
    MinElevZ := MaxSmallInt;
    MaxElevZ := -MaxSmallInt;
    Graph := ElevSlope;
@@ -1855,7 +1873,7 @@ begin {proc ElevationSlopePlot}
    end;
 
    GetBins(MaxMax,MinMin,BinSize,StartIndex);
-   if BinSize < DesiredBinSize then BinSize := DesiredBinSize;
+   if (BinSize < DesiredBinSize) then BinSize := DesiredBinSize;
 
    StartIndex := MinMin div BinSize;
 
@@ -1881,6 +1899,7 @@ begin {proc ElevationSlopePlot}
       New(SumSquares[WhichDEM]);
       New(BinElev[WhichDEM]);
       New(Slopes[WhichDEM]);
+      New(Ruffs[WhichDEM]);
       New(SlopeHist[WhichDEM]);
       for Dir := Low(Dir) to High(Dir) do PointCount[Dir] := 0;
 
@@ -1889,6 +1908,7 @@ begin {proc ElevationSlopePlot}
 
       for x := MinSlopeValue to MaxSlopeValue do begin
          Slopes[WhichDEM]^[x] := 0;
+         Ruffs[WhichDEM]^[x] := 0;
          SumSquares[WhichDEM]^[x] := 0;
          Count[WhichDEM]^[x] := -0.0000001;
       end {for x};
@@ -1905,7 +1925,7 @@ begin {proc ElevationSlopePlot}
          {$IfDef RecordElevationSlopePlotAll} WriteLineToDebugFile('x=' + IntToStr(x)); {$EndIf}
          j := 1;
          while j <= (DEMGlb[WhichDEM].DEMheader.NumRow - 2) do begin
-            if DEMGlb[WhichDEM].GetSlopeAndAspect(x,j,SlopeAspectRec) then begin
+            if DEMGlb[WhichDEM].GetSlopeAndAspect(x,j,SlopeAspectRec) and DEMGlb[WhichDEM].RoughnessFromSlopeSTD(x,j,MDDef.RoughnessBox,Ruff1) then begin
                if (MDDef.UseSealevel) or (abs(SlopeAspectRec.z) > 0.001) then begin
                   AspectStats.AddPoint(SlopeAspectRec);
                end;
@@ -1919,6 +1939,7 @@ begin {proc ElevationSlopePlot}
                   SlopeSqrTotal[WhichDEM] := SlopeSqrTotal[WhichDEM] + sqr(SlopeAspectRec.Slope);
                   inc(PointCount[Dir]);
                   Slopes[WhichDEM]^[Bin] := Slopes[WhichDEM]^[Bin] + SlopeAspectRec.Slope;
+                  Ruffs[WhichDEM]^[Bin] := Ruffs[WhichDEM]^[Bin] + Ruff1;
                   SumSquares[WhichDEM]^[Bin] := SumSquares[WhichDEM]^[Bin] + sqr(SlopeAspectRec.Slope);
                   IntSlope := round(SlopeAspectRec.SlopePercent);
                   if (IntSlope <= MaxSlopeValue) then begin
@@ -1940,6 +1961,8 @@ begin {proc ElevationSlopePlot}
          if Count[WhichDEM]^[x] > 0.5 then begin
             if Count[WhichDEM]^[x]  < 2.5 then SumSquares[WhichDEM]^[x] := 0
             else SumSquares[WhichDEM]^[x] := 100.0 * sqrt(1.0 * (SumSquares[WhichDEM]^[x] * Count[WhichDEM]^[x] - sqr(1.0 * Slopes[WhichDEM]^[x])) / (sqr(1.0 * Count[WhichDEM]^[x])));
+            Ruffs[WhichDEM]^[x] := Ruffs[WhichDEM]^[x] / Count[WhichDEM]^[x];
+            if Ruffs[WhichDEM]^[x] > MaxRuff then MaxRuff := Ruffs[WhichDEM]^[x];
             Slopes[WhichDEM]^[x] := 100 * Slopes[WhichDEM]^[x] / Count[WhichDEM]^[x];
             if Slopes[WhichDEM]^[x] > MaxSlope then MaxSlope := Slopes[WhichDEM]^[x];
             if 100 * Count[WhichDEM]^[x] / TotalCount[WhichDEM] > MaxCount then MaxCount := 100 * Count[WhichDEM]^[x] / TotalCount[WhichDEM];
@@ -1987,6 +2010,7 @@ begin {proc ElevationSlopePlot}
       if MDDef.ShowElevSlope then GraphPlot(ElevSlope);
       if MDDef.ShowCumSlope then GraphPlot(CumSlope);
       if MDDef.ShowElevSlopeDeg then GraphPlot(ElevSlopeDeg);
+      GraphPlot(ElevRuff);
    finally
       ShowDefaultCursor;
    end;
@@ -2784,7 +2808,7 @@ var
                   Double := false;
                   PowerTables := false;
                   ShowProgress := false;
-                  SkipDrawing := CloseGraphs;
+                  //SkipDrawing := CloseGraphs;
                   BinTime := AverageSpace;
                   BinUnits := ' (' + ElevUnitsAre[DEMGlb[WantedDEM].DEMheader.ElevUnits] + ')';
                end;
@@ -2862,10 +2886,11 @@ begin
    end;
 end;
 
+
 procedure SemiVariogram(DEMtoUse : integer; GridLimits: tGridLimits);
 begin
    {$IfDef RecordGridScatterGram} WriteLineToDebugFile('SemiVariogram for DEM=' + intToStr(DEMtoUse) + '  ' + DEMGlb[DEMToUse].AreaName); {$EndIf}
-   DEMGlb[DEMToUse].ComputeVariogram(GridLimits,false);
+   DEMGlb[DEMToUse].ComputeVariogram(GridLimits);  //,false);
    {$IfDef RecordGridScatterGram} WriteLineToDebugFile('SemiVariogram for DEM=' + intToStr(DEMtoUse) + ' out'); {$EndIf}
 end {proc SemiVariogram};
 {$EndIf}

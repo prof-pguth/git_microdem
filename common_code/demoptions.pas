@@ -406,6 +406,7 @@ type
     CheckBox162: TCheckBox;
     CheckBox169: TCheckBox;
     CheckBox180: TCheckBox;
+    CheckBox25: TCheckBox;
     procedure BitBtn32Click(Sender: TObject);
     procedure BitBtn13Click(Sender: TObject);
     procedure HelpBtnClick(Sender: TObject);
@@ -1000,7 +1001,6 @@ begin
    Edit26.Text := RealToString(MDDef.OpennessHowHigh,-12,-2);
    Edit28.Text := RealToString(MDDef.VegGridRandomizationDistance,-12,2);
    Edit29.Text := IntToStr(MDDef.DbMinIntFieldSize);
-  //Edit31.Text := IntToStr(MDdef.OGLDefs.MaxOpenGLPoints);
    Edit32.Text := IntToStr(MDDef.CloudOpenGLThinFactor);
    Edit33.Text := RealToString(MDDef.MinMaxGridTolerance,-12,-2);
    Edit37.Text := IntToStr(MDDef.UpdateDelay);
@@ -1047,9 +1047,8 @@ begin
       CheckBox23.Checked := MDDef.RouteGeotiffExportGDAL;
    {$EndIf}
 
-   //CheckBox25.Checked := Mddef.HydrologyEnforceProfile;
+   CheckBox25.Checked := MDDef.DEMIX_DoElevParamGraphs;
    CheckBox26.Checked := MDdef.WrapETOPO;
-   //CheckBox27.Checked := MDdef.BothDatumsWhileRoam;
    CheckBox29.Checked := MDdef.AutoAssignNameField;
    CheckBox30.Checked := MDdef.MGRSandLatLongWhileRoam;
 
@@ -1065,7 +1064,6 @@ begin
    CheckBox35.Checked := MDdef.AllowDBsToRAM;
    CheckBox36.Checked := MDdef.AddFitNav;
 
-
    CheckBox37.Checked := MDdef.AllowMemoryLinkDB;
    CheckBox38.Checked := MDdef.DupeImportsAllowed;
 
@@ -1074,7 +1072,6 @@ begin
    CheckBox41.Checked := MDdef.WorldOutlinesOnGlobalBlueMarble;
    CheckBox42.Checked := MDDef.ModalDBDisplay;
    CheckBox43.Checked := MDDef.TransparentIcons;
-   //CheckBox44.Checked := MDDef.SmoothThalwegs;
 
    CheckBox45.Checked := MDdef.IgnoreHistogramZero;
    CheckBox46.Checked := MDdef.ShowClimateStationDB;
@@ -1115,9 +1112,9 @@ begin
 
    CheckBox91.Checked := MDDef.AssumeNegativeValuesMissing;
 
-  {$IfDef ExSidescan}
-  {$Else}
-   CheckBox93.Checked := MDDef.SonarMapDef.CustomPalette;
+   {$IfDef ExSidescan}
+   {$Else}
+      CheckBox93.Checked := MDDef.SonarMapDef.CustomPalette;
    {$EndIf}
 
    CheckBox94.Checked := MDDef.VegDensityRandomizePoints;
@@ -1171,7 +1168,7 @@ begin
    CheckBox146.Checked := MDDef.ShowProjectedCoordinates;
 
    {$IfDef AllowGeomorphometry}
-   CheckBox149.Checked := MDDef.CumFreqNormAxis;
+      CheckBox149.Checked := MDDef.CumFreqNormAxis;
    {$EndIf}
 
    CheckBox150.Checked := MDDef.QuantileRanges;
@@ -1182,7 +1179,6 @@ begin
    CheckBox156.Checked := MDDef.AdvancedDBops;
 
    CheckBox157.Checked := MDDef.ShowWinExec;
-   //CheckBox158.Checked := MDDef.AspectContinuous;
    CheckBox159.Checked := MDDef.MapLimitDB;
    CheckBox161.Checked := MDDef.TigertoCDS;
    CheckBox300.Checked := MDDef.SeaLevelToMissing;
@@ -1394,7 +1390,7 @@ begin
 
    {$IfDef ExFly}
    {$Else}
-   CheckEditString(Edit17.Text,MDdef.FlyOptions.LiveFlyDelay);
+      CheckEditString(Edit17.Text,MDdef.FlyOptions.LiveFlyDelay);
    {$EndIf}
 
     {$IfDef ExACOLITE}
@@ -1444,7 +1440,6 @@ begin
    MDDef.AskAboutSIDLevel := CheckBox5.Checked;
    MDDef.RoamAllZ := CheckBox6.Checked;
    MDdef.ShowSHPButton:= CheckBox9.Checked;
-   //MDdef.AutoEnhanceShapeFiles := CheckBox10.Checked;
    MDdef.StatGrafReverseYAxis := CheckBox12.Checked;
    MDdef.FilterGridsToEdge := CheckBox13.Checked;
 
@@ -1457,11 +1452,9 @@ begin
    MDdef.DeleteAuxTiffFiles := CheckBox21.Checked;
 
    MDdef.DefaultEditDBsInGrid := CheckBox22.Checked;
+   MDDef.DEMIX_DoElevParamGraphs := CheckBox25.Checked;
 
-   //Mddef.HydrologyEnforceProfile := CheckBox25.Checked;
    MDdef.WrapETOPO := CheckBox26.Checked;
-   //MDdef.BothDatumsWhileRoam := CheckBox27.Checked;
-
    MDDef.ShowPLSS := CheckBox28.Checked;
 
    MDdef.AutoAssignNameField := CheckBox29.Checked;
@@ -1479,7 +1472,6 @@ begin
    MDdef.WorldOutlinesOnGlobalBlueMarble := CheckBox41.Checked;
    MDDef.ModalDBDisplay := CheckBox42.Checked;
    MDDef.TransparentIcons := CheckBox43.Checked;
-   //MDDef.SmoothThalwegs := CheckBox44.Checked;
 
    MDdef.AverageImageReadings := CheckBox40.Checked;
    MDDef.AspectBoxRegion := CheckBox49.Checked;
@@ -1582,7 +1574,6 @@ begin
    MDdef.doDEMwithMax := CheckBox148.Checked;
 
    MDdef.AnyNoDataMeansNoData := CheckBox77.Checked;
-   //MDDef.RecordWMSrequests :=  CheckBox80.Checked;
 
    MDDef.AutoLoadVegGrid := CheckBox24.Checked;
    MDDef.AutoLoadVegDensityGrids := CheckBox78.Checked;

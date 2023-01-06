@@ -318,7 +318,6 @@ end;
 
 
 
-
 function FiveSeriesGraph(DB : integer; Lat,Long,Tolerance : float64; DirField : shortstring) : TThisbasegraph;
 // if lat/long not defined, graph uses a filter set before calling, to get a desired profile along ICESat profile
 // if lat/long defined, show an EW or NS profile through the lidar point cloud
@@ -353,19 +352,19 @@ function FiveSeriesGraph(DB : integer; Lat,Long,Tolerance : float64; DirField : 
 
            if (DirField = LatFieldName) then begin
               Result.GraphDraw.HorizLabel := 'Latitude';
-              if Lat < -91 then Result.LLcornerText := MyData.Filter
-              else Result.LLcornerText := 'Long ' + ConvertToDegreesString(Long,DecDegrees,true) + '±' + RealToString(Tolerance,-8,-2) + '"';
+              if Lat < -91 then Result.GraphDraw.LLcornerText := MyData.Filter
+              else Result.GraphDraw.LLcornerText := 'Long ' + ConvertToDegreesString(Long,DecDegrees,true) + '±' + RealToString(Tolerance,-8,-2) + '"';
            end
            else begin
               Result.GraphDraw.HorizLabel := 'Longitude';
-              if Lat < -91 then Result.LLcornerText := MyData.Filter
-              else Result.LLcornerText := 'Lat ' + ConvertToDegreesString(Lat,DecDegrees,true) + '±' + RealToString(Tolerance,-8,-2) + '"';
+              if Lat < -91 then Result.GraphDraw.LLcornerText := MyData.Filter
+              else Result.GraphDraw.LLcornerText := 'Lat ' + ConvertToDegreesString(Lat,DecDegrees,true) + '±' + RealToString(Tolerance,-8,-2) + '"';
            end;
-           Result.LLcornerText := Result.LLcornerText + '  n=' + IntToStr(MyData.FiltRecsInDB);
+           Result.GraphDraw.LLcornerText := Result.GraphDraw.LLcornerText + '  n=' + IntToStr(MyData.FiltRecsInDB);
            if d = 0 then Result.GraphDraw.VertLabel := 'Elevation (m)'
            else if d = 1 then Result.GraphDraw.VertLabel := 'Ground level (m)'
            else if d = 2 then Result.GraphDraw.VertLabel := 'Top Canopy (m)';
-           Result.Caption :=  Result.LLcornerText;
+           Result.Caption :=  Result.GraphDraw.LLcornerText;
            MyData.First;
            while not MyData.eof do begin
               if GetFloat32FromTableLinkPossible(DirField,v[1]) then begin
@@ -392,13 +391,11 @@ function FiveSeriesGraph(DB : integer; Lat,Long,Tolerance : float64; DirField : 
 
 var
    d : integer;
-   graph : array[0..2] of TThisbasegraph;
+   graph : array[0..0] of TThisbasegraph;
 begin
-   //for d := 0 to 2 do graph[d] := OnHorizontalDatum(d);
    OnHorizontalDatum(0);
    Result := graph[0];
    GISdb[db].LastGraph := Result;
-   //GISdb[db].LastGraphType := GraphType;
 end;
 
 

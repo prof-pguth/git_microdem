@@ -4,8 +4,8 @@ object PickDatumParams: TPickDatumParams
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Pick Projection Parameters'
-  ClientHeight = 235
-  ClientWidth = 305
+  ClientHeight = 226
+  ClientWidth = 299
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

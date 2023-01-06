@@ -9,7 +9,7 @@
 
 {$I nevadia_defines.inc}
 
-{$Define MST_Sidescan}
+//{$Define MST_Sidescan}
 
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
    {$IfDef Debug}

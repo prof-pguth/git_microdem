@@ -2,8 +2,8 @@ object CurvMapForm: TCurvMapForm
   Left = 0
   Top = 0
   Caption = 'Curvature Categories'
-  ClientHeight = 314
-  ClientWidth = 510
+  ClientHeight = 305
+  ClientWidth = 504
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

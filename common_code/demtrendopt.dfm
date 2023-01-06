@@ -3,8 +3,8 @@ object TrendPick: TTrendPick
   Top = 487
   BorderIcons = []
   Caption = 'Trend Surface Options'
-  ClientHeight = 221
-  ClientWidth = 295
+  ClientHeight = 212
+  ClientWidth = 289
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

@@ -21,6 +21,7 @@ unit BaseGraf;
        //{$Define RecordGrafAxes}
        //{$Define RecordFormResize}
        {$Define RecordHistogram}
+       {$Define RecordLegends}
        //{$Define RecordSaveSeries}
        //{$Define RecordGrafAxis}
        //{$Define RecordHistogram}
@@ -125,6 +126,7 @@ type
          NumHorizCycles,NumVertCycles,
          Day1,Month1,Year1,Day2,Month2,Year2 : int32;
          HorizCycleCuts,VertCycleCuts : tCycleCut;
+         LLcornerText,LRcornerText,
          TopLeftLabel,TopLabel,HorizLabel,VertLabel,ThirdLabel,VertLabel2,UpperLeftText : ShortString;
          AnnualCycle,
          Draw1to1Line,
@@ -148,13 +150,14 @@ type
          HardColors,
          ZColorLegend,
          AutoPointDensity,
-         SkipDrawing,
+         //SkipDrawing,
          ShowYears,
          LabelXFromLog,
          ShowHorizAxis0,
          ShowVertAxis0,
          VertGraphBottomLabels,
          GraphDrawn     : boolean;
+         InsideMarginLegend : byte;
          AxisColor : TColor;
          GraphAxes : AxesType;
 
@@ -432,7 +435,6 @@ type
      SaveGraphName,
      RangeGraphName,
      ASCIIXYZFile        : PathStr;
-     LLcornerText,LRcornerText,
      BaseCaption,
      RoseLegend,
      DBFXFieldName,DBFYFieldName,
@@ -899,7 +901,7 @@ begin
          end;
          Dispose(NeighborHood);
 
-      if (not GraphDraw.SkipDrawing) then Image1.Picture.Graphic := Bitmap;
+      {if (not GraphDraw.SkipDrawing) then} Image1.Picture.Graphic := Bitmap;
       Bitmap.Free;
       Dispose(Counter);
    end;
@@ -1442,13 +1444,13 @@ end;
 
 procedure TThisBaseGraph.extinlowerleftcorner1Click(Sender: TObject);
 begin
-   GetString('Text in lower left corner',LLcornerText,false,ReasonableTextChars);
+   GetString('Text in lower left corner',GraphDraw.LLcornerText,false,ReasonableTextChars);
    RedrawDiagram11Click(Nil);
 end;
 
 procedure TThisBaseGraph.extinlowerrightcorner1Click(Sender: TObject);
 begin
-   GetString('Text in lower right corner',LRcornerText,false,ReasonableTextChars);
+   GetString('Text in lower right corner',GraphDraw.LRcornerText,false,ReasonableTextChars);
    RedrawDiagram11Click(Nil);
 end;
 
@@ -2485,7 +2487,7 @@ begin
    GraphDraw.SetMargins(Bitmap);
    {$If Defined(RecordGraf) or Defined(RecordGrafSize)}  WriteLineToDebugFile('Move to drawgraph  ' +  GraphDraw.AxisRange); {$EndIf}
    DrawGraph(BitMap);
-   if GraphDraw.GraphDrawn and (not GraphDraw.SkipDrawing) then begin
+   if GraphDraw.GraphDrawn {and (not GraphDraw.SkipDrawing)} then begin
       Image1.Picture.Graphic := Bitmap;
    end;
    Bitmap.Free;
@@ -3348,7 +3350,7 @@ begin
      GraphDraw.RainBowColors := false;
      GraphDraw.LabelPointsAtop := true;
      GraphDraw.ZColorLegend := false;
-     GraphDraw.SkipDrawing := false;
+     //GraphDraw.SkipDrawing := false;
      GraphDraw.TernaryGrid := tgRegular;
      for i := 1 to 255 do begin
         GraphDraw.FileColors256[i] := ConvertTColorToPlatformColor(WinGraphColors[i mod 15]);
@@ -3387,7 +3389,7 @@ begin
      GraphDraw.ShowGraphLeftLabels := true;
      GraphDraw.ShowGraphBottomLabels := true;
      GraphDraw.LLlegend := false;
-
+     GraphDraw.InsideMarginLegend := MDDef.DefMarginLegend;
 
      MapOwner := nil;
      RedrawNow := false;
@@ -3396,8 +3398,8 @@ begin
      SaveGraphName := '';
      RangeGraphName := '';
      GraphFilter := '';
-     LLcornerText := '';
-     LRcornerText := '';
+     GraphDraw.LLcornerText := '';
+     GraphDraw.LRcornerText := '';
 
      MainMenu1.AutoMerge := Not SkipMenuUpdating;
 
@@ -3449,7 +3451,7 @@ begin
      GraphDraw.XWindowSize := pred(DefaultClientWidth);
      GraphDraw.YWindowSize := pred(DefaultClientHeight - Panel1.Height - ToolBar1.Height);
      CreateBitmap(Bitmap,succ(GraphDraw.XWindowSize),Succ(GraphDraw.YWindowSize));
-     if (not GraphDraw.SkipDrawing) then Image1.Picture.Graphic := Bitmap;
+     (*if (not GraphDraw.SkipDrawing) then*) Image1.Picture.Graphic := Bitmap;
      Bitmap.Free;
      MinZ := 9e39;
      MaxZ := -9e39;
@@ -4008,7 +4010,7 @@ begin
          ang := ang + BinSize;
       end;
    end;
-   if (not GraphDraw.SkipDrawing) then Image1.Picture.Graphic := Bitmap;
+   {if (not GraphDraw.SkipDrawing) then} Image1.Picture.Graphic := Bitmap;
    Bitmap.Free;
    ShowDefaultCursor;
 end;
@@ -4812,16 +4814,16 @@ begin
 
 
    //this is where we clean up outside the graph margins
-             Bitmap.Canvas.Pen.Color := clWhite;
-             Bitmap.Canvas.Brush.Color := clWhite;
-             Bitmap.Canvas.Brush.Style := bsSolid;
-             Bitmap.Canvas.Rectangle(0,0,GraphDraw.LeftMargin,Bitmap.Height);
-             Bitmap.Canvas.Rectangle(Bitmap.Width-GraphDraw.RightMargin,0,Bitmap.Width,Bitmap.Height);
+       Bitmap.Canvas.Pen.Color := clWhite;
+       Bitmap.Canvas.Brush.Color := clWhite;
+       Bitmap.Canvas.Brush.Style := bsSolid;
+       Bitmap.Canvas.Rectangle(0,0,GraphDraw.LeftMargin,Bitmap.Height);
+       Bitmap.Canvas.Rectangle(Bitmap.Width-GraphDraw.RightMargin,0,Bitmap.Width,Bitmap.Height);
 
-             Bitmap.Canvas.Rectangle(0,Bitmap.Height-GraphDraw.BottomMargin,Bitmap.Width,Bitmap.Height);
-             DrawGraph(BitMap,false);
+       Bitmap.Canvas.Rectangle(0,Bitmap.Height-GraphDraw.BottomMargin,Bitmap.Width,Bitmap.Height);
+       DrawGraph(BitMap,false);
 
-             ReDrawNow := true;
+       ReDrawNow := true;
 
        if (GraphDraw.UpperLeftText <> '') then begin
           Bitmap.Canvas.TextOut(GraphDraw.LeftMargin + 12, GraphDraw.TopMargin + 8, RemoveUnderScores(GraphDraw.UpperLeftText));
@@ -4832,25 +4834,36 @@ begin
        if (GraphDraw.TopLeftLabel <> '') then begin
           Bitmap.Canvas.TextOut(0, 5, RemoveUnderScores(GraphDraw.TopLeftLabel));
        end;
-       if (LLcornerText <> '') then begin
+       if (GraphDraw.LLcornerText <> '') then begin
           Bitmap.Canvas.Font.Color := clBlack;
-          Bitmap.Canvas.TextOut(1, Bitmap.Height - Bitmap.Canvas.TextHeight(LLcornerText), RemoveUnderScores(LLcornerText));
+          Bitmap.Canvas.TextOut(1, Bitmap.Height - Bitmap.Canvas.TextHeight(GraphDraw.LLcornerText), RemoveUnderScores(GraphDraw.LLcornerText));
        end;
-       if (LRcornerText <> '') then begin
+       if (GraphDraw.LRcornerText <> '') then begin
           Bitmap.Canvas.Font.Color := clBlack;
-          Bitmap.Canvas.TextOut(Bitmap.Width - 3 - Bitmap.Canvas.TextWidth(LRcornerText), Bitmap.Height - Bitmap.Canvas.TextHeight(LRcornerText), RemoveUnderScores(LRcornerText));
+          Bitmap.Canvas.TextOut(Bitmap.Width - 3 - Bitmap.Canvas.TextWidth(GraphDraw.LRcornerText), Bitmap.Height - Bitmap.Canvas.TextHeight(GraphDraw.LRcornerText), RemoveUnderScores(GraphDraw.LRcornerText));
        end;
 
-       if GraphDraw.LLlegend then begin
-          bmp := MakeLegend(GraphDraw.LegendList,false);
-          Bitmap.Canvas.Draw(2,Bitmap.Height - 2 - Bmp.Height,bmp);
+       if GraphDraw.LLlegend or (GraphDraw.InsideMarginLegend in [lpSWMap,lpSEMap,lpNEMap,lpNWMap]) then begin
+          if GraphDraw.LLlegend then begin
+             bmp := MakeLegend(GraphDraw.LegendList,false);
+             xi := 2;
+             yi := Bitmap.Height - 2 - Bmp.Height;
+          end
+          else begin
+             if (GraphDraw.DBFLineFilesPlotted.Count > 0) then  bmp := MakeLegend(GraphDraw.DBFLineFilesPlotted,true)
+             else if (GraphDraw.LegendList <> Nil) then bmp := MakeLegend(GraphDraw.LegendList,false);
+             if GraphDraw.InsideMarginLegend in [lpSWMap,lpSEMap] then yi := GraphDraw.YWindowSize - GraphDraw.BottomMargin - bmp.Height else yi := GraphDraw.TopMargin;
+             if GraphDraw.InsideMarginLegend in [lpNWMap,lpSWMap] then xi := GraphDraw.LeftMargin else xi := GraphDraw.XWindowSize - GraphDraw.RightMargin - bmp.Width;
+          end;
+          {$If Defined(RecordLegends)} WritelineToDebugFile('Draw legend inside graph, at x=' + IntToStr(xi) + '  y=' + IntToStr(yi)); bmp.SaveToFile(MDtempDir + 'legend.bmp'); {$EndIf}
+
+          Bitmap.Canvas.Draw(xi,yi,bmp);
           bmp.Free;
        end;
 
-
       {$If Defined(RecordGrafSize) or Defined(RecordScaling)} WriteLineToDebugFile('RedrawDiagram11Click done, bitmap=' + BitmapSize(Bitmap)); {$EndIf}
 
-       if (not GraphDraw.SkipDrawing) then Image1.Picture.Graphic := Bitmap;
+       {if (not GraphDraw.SkipDrawing) then} Image1.Picture.Graphic := Bitmap;
        BitMap.Free;
        if (BaseCaption <> '') then with GraphDraw do begin
           Caption := BaseCaption + '   V.E.= ' + RealToString( ( YWindowSize / (MaxVertAxis - MinVertAxis)  / ( XWindowSize / (MaxHorizAxis - MinHorizAxis) * VertCompare)  ),-12,-2) ;
@@ -5176,13 +5189,13 @@ var
    MaxLen,Len,i : integer;
    TStr : shortString;
 begin
-   {$IfDef RecordGraphColors} WritelineToDebugFile('TThisBaseGraph.MakeLegend'); {$EndIf}
-   CreateBitmap(Result,1000,25*Flist.Count - 5);
+   {$If Defined(RecordGraphColors) or Defined(RecordLegends)} WritelineToDebugFile('TThisBaseGraph.MakeLegend'); {$EndIf}
+   CreateBitmap(Result,1000,ItemHigh*Flist.Count+4);
    MaxLen := 0;
 
    for i := 1 to fList.Count do begin
        SetMyBitmapColors(Result,i);
-      {$IfDef RecordGraphColors} WritelineToDebugFile(IntToStr(i) + '   ' + fList.Strings[pred(i)]+ '  = '+ IntToStr(Result.Canvas.Font.Color)); {$EndIf}
+       {$If Defined(RecordGraphColors) or Defined(RecordLegends)} WritelineToDebugFile(IntToStr(i) + '   ' + fList.Strings[pred(i)]+ '  = '+ IntToStr(Result.Canvas.Font.Color)); {$EndIf}
        Result.Canvas.Font.Style := [fsBold];
        Result.Canvas.Font.Name := FontDialog1.Font.Name;
        Result.Canvas.Font.Size := FontDialog1.Font.Size;
@@ -5202,13 +5215,14 @@ begin
        Len := Result.Canvas.TextWidth(TStr);
        if (Len > MaxLen) then MaxLen := Len;
 
-       Result.Canvas.TextOut(50,5+ pred(i) * ItemHigh, TStr);
+       Result.Canvas.TextOut(50,pred(i) * ItemHigh, TStr);
    end;
    Result.Width := 60 + MaxLen;
    Result.Canvas.Pen.Width := 1;
    Result.Canvas.Pen.Color := clBlack;
    Result.Canvas.Brush.Style := bsClear;
    Result.Canvas.Rectangle(0,0,pred(Result.Width),pred(Result.Height));
+   {$If Defined(RecordGraphColors) or Defined(RecordLegends)} WritelineToDebugFile('Legend created, ' + BitmapSizeString(Result)); {$EndIf}
 end;
 
 

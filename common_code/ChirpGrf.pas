@@ -121,37 +121,6 @@ type
       UserDefined : array[1..60] of byte;
    end;
 
-   //tCorrelatedReturn = packed array[1..4200] of SmallInt;
-
-   tNewTraceDataBlock = packed record
-      TraceNum : LongInt;                        //0, 1
-      Dummy1   : array[2..35] of SmallInt;
-      NMEALongSec,                               //36,37
-      NMEALatSec,                                //38,39
-      NMEALongMin,                               //40,41
-      NMEALatMin : LongInt;                      //42,43
-      Dummy2   : array[44..53] of SmallInt;
-      ADCDelay : SmallInt;
-      Dummy21   : array[55..56] of SmallInt;
-      NumSamples,ADSampleInterval,Dummy59,GainProgramAmp : SmallInt;                     //57
-      Dummy3   : array[61..62] of SmallInt;
-      StartFreq,EndFreq,FreqLenMS : SmallInt;
-      Dummy4   : array[66..77] of SmallInt;
-      Year,Day,Hour,Minute,Second : SmallInt;    //78,79,80,81,82
-      TimeBasis : smallInt;
-      MoreDummy :  array[84..90] of SmallInt;
-      Trigger,MarkNumber,
-      NMEAHour,NMEAMinute,NMEASeconds,NMEACourse,
-      NMEASpeedTenthKnot,NMEADay,NMEAYear : SmallInt;
-      TraceScaleFactor : float32;
-      VehicleID : SmallInt;
-      SoftwareVersion : array[1..6] of AnsiChar;
-      Annotation : array[1..24] of AnsiChar;         //108,119
-      CorrelatedReturn : array[1..3200] of SmallInt;
-      TrailingZeros    : array[1..776] of SmallInt;
-   end;
-
-
 type
   tFreqDisplay = (LowFreq,HighFreq,ColorMerge);
   tTraceGrafs = (tgIntensity,tgGrayscale,tgBoth);
@@ -325,24 +294,24 @@ var
    FilesWanted : TStringList;
    DefaultFilter : byte;
 
-   procedure OpenFile(fName : PathStr);
-   begin
-      {$IfDef RecordChirpGraph} WriteLineToDebugFile('OpenFile in ' + fName); {$EndIf}
-      ChirpDataPath := ExtractFilePath(fName);
-      ChirpDisplayForm := TChirpGraph.Create(Application);
-      ChirpDisplayForm.ChirpMapOwner := MapOwner;
-      ChirpDisplayForm.OpenChirpsFile(fName);
-      NumRec := GISdb[ChirpDisplayForm.TrackDB].MyData.RecordCount;
+      procedure OpenFile(fName : PathStr);
+      begin
+         {$IfDef RecordChirpGraph} WriteLineToDebugFile('OpenFile in ' + fName); {$EndIf}
+         ChirpDataPath := ExtractFilePath(fName);
+         ChirpDisplayForm := TChirpGraph.Create(Application);
+         ChirpDisplayForm.ChirpMapOwner := MapOwner;
+         ChirpDisplayForm.OpenChirpsFile(fName);
+         NumRec := GISdb[ChirpDisplayForm.TrackDB].MyData.RecordCount;
 
-      ChirpDisplayForm.ChirpFileName := FName;
-      ChirpDisplayForm.GraphDraw.YWindowSize := ChirpDisplayForm.ClientHeight - ChirpDisplayForm.Panel1.Height - ChirpDisplayForm.GraphDraw.BottomMargin;
-      if (ChirpDisplayForm.LineBearing > 135) and (ChirpDisplayForm.LineBearing < 215) then begin
-         ChirpDisplayForm.CheckBox1.Checked := true;
-         ChirpDisplayForm.ReverseLine := ChirpDisplayForm.CheckBox1.Checked;
+         ChirpDisplayForm.ChirpFileName := FName;
+         ChirpDisplayForm.GraphDraw.YWindowSize := ChirpDisplayForm.ClientHeight - ChirpDisplayForm.Panel1.Height - ChirpDisplayForm.GraphDraw.BottomMargin;
+         if (ChirpDisplayForm.LineBearing > 135) and (ChirpDisplayForm.LineBearing < 215) then begin
+            ChirpDisplayForm.CheckBox1.Checked := true;
+            ChirpDisplayForm.ReverseLine := ChirpDisplayForm.CheckBox1.Checked;
+         end;
+         ChirpDisplayForm.RedrawChirps;
+         {$IfDef RecordChirpGraph} WriteLineToDebugFile('Openfile out'); {$EndIf}
       end;
-      ChirpDisplayForm.RedrawChirps;
-      {$IfDef RecordChirpGraph} WriteLineToDebugFile('Openfile out'); {$EndIf}
-   end;
 
 
 begin
@@ -488,11 +457,10 @@ begin
       GISDB[TrackDB].MyData.Next;
    end;
 
-   //VincentyCalculateDistanceBearing(Lat,Long,Lat2,Long2,LineLength,LineBearing);
    WGS84DatumConstants.DefineDatumFromUTMZone('WGS84',GetUTMZone(Long2),HemiFromLat(Lat2),'Chirp');
 
    RestoreBackupDefaults;
-   {$IfDef RecordChirpGraph} WriteLineToDebugFile('File: ' + fName + '  Recs: ' + IntToStr(NumSubbottomRecords)+'  Length: ' + RealToString(LineLength,-12,-2) + 'Heading: ' + RealToString(LineBearing,-12,-2)); {$EndIf}
+   {$IfDef RecordChirpGraph} WriteLineToDebugFile('File: ' + fName + '  Recs: ' + IntToStr(NumSubbottomRecords)); {$EndIf}
 end;
 
 
@@ -624,8 +592,6 @@ begin
 
    ScrollGraph := true;
    ScrollBox1.AutoScroll := true;
-   //Image1.AutoSize := false;
-   //Image1.Align := alNone;
    GraphDraw.TopMargin := 36;
    Panel1.Height := 50;
 
@@ -659,7 +625,6 @@ begin
    GraphDraw.NormalCartesianY := false;
    GraphDraw.HorizLabel := 'Distance (m)';
    SetUpGraphForm;
-   //FormResize(nil);
 
    {$IfDef RecordChirpGraph} WriteLineToDebugFile('after setupgraph, GraphDraw.WindowSize=' + IntToStr(GraphDraw.XWindowSize) + 'x' + IntToStr(GraphDraw.YWindowSize) );{$EndIf}
    {$IfDef RecordChirpGraph} WriteLineToDebugFile('Created ImageSize=' + ImageSize(Image1) );{$EndIf}
@@ -697,7 +662,7 @@ begin
              BlockRead(inf,MessageType80,SizeOf(MessageType80));
              GISDB[TrackDB].MyData.ValidLatLongFromTable(Lat,Long);
              GISDB[TrackDB].MyData.Next;
-             BlockRead(inf,DataPulse,jsfMessageHeader.SizeToFollow - 240);   //DataSamplesInPacket*2);
+             BlockRead(inf,DataPulse,jsfMessageHeader.SizeToFollow - 240);
              for I := 0 to pred(MessageType80.PulseInfo.DataSamplesInPacket) do begin
                 rp[i] := DataPulse[i*2] * Math.Power(2,-MessageType80.WeightFactor);
                 ip[i] := DataPulse[succ(i*2)] * Math.Power(2,-MessageType80.WeightFactor);
@@ -901,9 +866,7 @@ procedure TChirpGraph.Subset1Click(Sender: TObject);
 var
    x,Segment : integer;
    OutName : PathStr;
-   //SegTraceDataBlock : ^tNewTraceDataBlock;
    f : file;
-   //bs : integer;
    jsfMessageHeader : tjsfMessageHeader;
    MessageType80 : tMessageType80;
    DataPulse : array[0..48000] of SmallInt;
@@ -938,7 +901,7 @@ begin
                if (jsfMessageHeader.MessageType = 80) then begin
                   BlockRead(inf,MessageType80,SizeOf(MessageType80));
                   with MessageType80 do begin
-                     BlockRead(inf,DataPulse,jsfMessageHeader.SizeToFollow - 240);   //DataSamplesInPacket*2);
+                     BlockRead(inf,DataPulse,jsfMessageHeader.SizeToFollow - 240);
                      if (PingNumber >= FirstRec) and (PingNumber <= LastRec) then begin
                         BlockWrite(f,jsfMessageHeader,16);
                         BlockWrite(f,MessageType80,SizeOf(MessageType80));
@@ -948,7 +911,7 @@ begin
                   inc(x);
                end
                else begin
-                  BlockRead(inf,DataPulse,jsfMessageHeader.SizeToFollow);   //DataSamplesInPacket*2);
+                  BlockRead(inf,DataPulse,jsfMessageHeader.SizeToFollow);
                end;
             end;
          end;
@@ -1045,6 +1008,7 @@ begin
 end;
 {$EndIf}
 
+
 procedure TChirpGraph.BitBtn1Click(Sender: TObject);
 begin
    {$IfDef ExFMX3D}
@@ -1137,6 +1101,7 @@ begin
   ReadDefault('Returns to show',MDDef.ChirpReturnsToShow);
 end;
 
+
 var
    topdepthvalue : float64;
 
@@ -1161,7 +1126,7 @@ var
 
 begin
     if (GraphDoingWhat = SegmentProfile) then begin
-       {$IfDef RecordChirpGraph}   WriteLineToDebugFile('TChirpGraph.Image1DblClick,  (GraphDoingWhat = SegmentProfile) in  segment=' + IntToStr(OnSegment));   {$EndIf}
+       {$IfDef RecordChirpGraph} WriteLineToDebugFile('TChirpGraph.Image1DblClick, (GraphDoingWhat = SegmentProfile) in  segment=' + IntToStr(OnSegment)); {$EndIf}
        Image1.Canvas.Pen.Width := 3;
        Image1.Canvas.Pen.Color := clRed;
        Image1.Canvas.MoveTo(LastXM,0);
@@ -1227,73 +1192,6 @@ end;
 procedure TChirpGraph.GraphChirpRecord;
 var
    Chirp : integer;
-
-      (*
-      procedure DoIt(Series : integer);
-      var
-         i : integer;
-         SegTraceDataBlock : ^tNewTraceDataBlock;
-         aGraph,agraph2 : tThisBaseGraph;
-         inf,rfile,rfile2,rfile3,rfile4 : file;
-         v : tGraphPoint32;
-      begin
-         if TraceGrafs in [tgIntensity,tgBoth] then begin
-            aGraph := tThisBaseGraph.Create(Application);
-            aGraph.Caption := 'Chirp ' + IntToStr(Chirp);
-            aGraph.GraphDraw.HorizLabel := 'Return Intensity';
-            aGraph.GraphDraw.VertLabel := 'Time (depth)';
-            aGraph.GraphDraw.NormalCartesianY := false;
-            aGraph.SetUpGraphForm;
-            aGraph.OpenDataFile(rfile);
-            if (Series = 2) then aGraph.OpenDataFile(rfile2);
-        end;
-        if TraceGrafs in [tgGrayscale,tgBoth] then begin
-            aGraph2 := tThisBaseGraph.Create(Application);
-            aGraph2.Caption := 'Chirp ' + IntToStr(Chirp);
-            aGraph2.GraphDraw.HorizLabel := 'Grayscale';
-            aGraph2.GraphDraw.VertLabel := 'Time (depth)';
-            aGraph2.GraphDraw.NormalCartesianY := false;
-            aGraph2.SetUpGraphForm;
-            aGraph2.OpenDataFile(rfile3);
-            if (Series = 2) then aGraph2.OpenDataFile(rfile4);
-        end;
-
-        InsureFileIsNotReadOnly(ChirpFileName);
-        assignFile(inf,ChirpFileName);
-        reset(Inf,BlockSize);
-        seek(inf,Chirp);
-        New(SegTraceDataBlock);
-        BlockRead(inf,SegTraceDataBlock^,1);
-
-        with SegTraceDataBlock^ do begin
-          for i := 1 to 3200 do begin
-             v[2] := i;
-             v[1] := CorrelatedReturn[i];
-             if TraceGrafs in [tgIntensity,tgBoth] then begin
-                if (Series = 2) and Odd(i) then BlockWrite(rfile2,v,1)
-                else BlockWrite(rfile,v,1);
-             end;
-             if TraceGrafs in [tgGrayscale,tgBoth] then begin
-                v[1] := Intensity(CorrelatedReturn[i]);
-                if (Series = 2) and Odd(i) then BlockWrite(rfile4,v,1)
-                else BlockWrite(rfile3,v,1);
-             end;
-          end;
-          if TraceGrafs in [tgIntensity,tgBoth] then begin
-             closeFile(Rfile);
-             if Series = 2 then  closeFile(Rfile2);
-          end;
-          if TraceGrafs in [tgGrayscale,tgBoth] then begin
-             closeFile(Rfile3);
-             if Series = 2 then  closeFile(Rfile4);
-          end;
-        end;
-        closeFile(inf);
-        Dispose(SegTraceDataBlock);
-        if TraceGrafs in [tgIntensity,tgBoth] then aGraph.AutoScaleAndRedrawDiagram;
-        if TraceGrafs in [tgGrayscale,tgBoth] then aGraph2.AutoScaleAndRedrawDiagram;
-     end;
-     *)
 
       procedure JSFGraph;
       var
