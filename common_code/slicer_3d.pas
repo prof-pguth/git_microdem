@@ -67,8 +67,8 @@ uses
   demdatabase,BaseGraf,Petmar_types,DEMMapf, DEMLOSW,point_cloud_memory,DEMDefs;
 
 const
-   MaxGISGraph = 4;
-   MaxClouds = 4;
+   MaxGISGraph = 5;
+   MaxSliceClouds = 5;
 type
    tSliceGraph = record
       GISGraf : tThisBaseGraph;
@@ -114,6 +114,7 @@ type
     BitBtn44: TBitBtn;
     BitBtn45: TBitBtn;
     CheckBoxCorrectScaling1: TCheckBox;
+    CheckBoxCloud5: TCheckBox;
     procedure BitBtn1Click(Sender: TObject);
     procedure Edit1Change(Sender: TObject);
     procedure RadioGroup1Click(Sender: TObject);
@@ -140,6 +141,7 @@ type
     procedure BitBtn44Click(Sender: TObject);
     procedure BitBtn45Click(Sender: TObject);
     procedure CheckBoxCorrectScaling1Click(Sender: TObject);
+    procedure CheckBoxCloud5Click(Sender: TObject);
   private
     { Private declarations }
     procedure ChangeSliceCenter(Redraw : boolean);
@@ -185,9 +187,9 @@ type
     OpenGLAllPoints,SingleDBFFile,ReadyToRoll : boolean;
     EditGISDBs : array[1..15] of integer;
 
-    MemoryPointCloud : array[1..MaxClouds] of Point_Cloud_Memory.tMemoryPointCloud;
-    CloudUsed : array[1..MaxClouds] of boolean;
-    CloudColorOpt : array[1..MaxClouds] of tSliceColorOpt;
+    MemoryPointCloud : array[1..MaxSliceClouds] of Point_Cloud_Memory.tMemoryPointCloud;
+    CloudUsed : array[1..MaxSliceClouds] of boolean;
+    CloudColorOpt : array[1..MaxSliceClouds] of tSliceColorOpt;
 
     procedure ZShift(NewX, NewZ: float64);
     procedure LoadMemoryPointCloud(Cloud : integer; fName : PathStr; XField : shortstring = 'X'; YField : shortstring = 'Y'; ZField : shortstring = 'Z'; InCloudName : shortstring = ''; inStayLatLong : boolean = false);
@@ -589,6 +591,7 @@ begin
       if (Cloud = 2) then SetCheckBox(2,CheckBoxCloud2);
       if (Cloud = 3) then SetCheckBox(3,CheckBoxCloud3);
       if (Cloud = 4) then SetCheckBox(4,CheckBoxCloud4);
+      if (Cloud = 5) then SetCheckBox(5,CheckBoxCloud5);
    end;
    {$IfDef Slicer} WriteLinetoDebugFile('TSlicerForm.LoadMemoryPointCloud, cloud loaded'); {$EndIf}
    ArrangeControls;
@@ -1044,7 +1047,7 @@ begin
    {$IfDef CloseSlicer} WriteLinetoDebugFile('TSlicerForm.FormClose in'); {$EndIf}
    CloseAndNilNumberedDB(XYZGIS);
    CloseAndNilNumberedDB(BoxOutlineGIS);
-   for i := 1 to MaxClouds do begin
+   for i := 1 to MaxSliceClouds do begin
       if (MemoryPointCloud[i] <> nil) then begin
          MemoryPointCloud[i].Destroy;
          {$IfDef CloseSlicer} WriteLineToDebugFile('TSlicerForm.FormClose closed cloud=' + IntToStr(i)); {$EndIf}
@@ -1079,9 +1082,9 @@ begin
    EditTable := Nil;
    LOSOwner := Nil;
    CurSlice := 1;
-   for i := 1 to MaxClouds do MemoryPointCloud[i] := Nil;
-   for i := 1 to MaxClouds do CloudUsed[i] := false;
-   for I := 1 to MaxClouds do CloudColorOpt[i] := MDDef.SliceColorOpt;
+   for i := 1 to MaxSliceClouds do MemoryPointCloud[i] := Nil;
+   for i := 1 to MaxSliceClouds do CloudUsed[i] := false;
+   for I := 1 to MaxSliceClouds do CloudColorOpt[i] := MDDef.SliceColorOpt;
    for I := 1 to MaxGISGraph do SliceGraph[i].GISGraf := Nil;
 
    if (MDDef.ClouderXSize > wmDEM.ClientWidth - 100) then MDDef.ClouderXSize := wmDEM.ClientWidth - 100;
@@ -1109,6 +1112,7 @@ begin
    CheckBoxCloud2.Visible := false;
    CheckBoxCloud3.Visible := false;
    CheckBoxCloud4.Visible := false;
+   CheckBoxCloud5.Visible := false;
    CheckBoxCorrectScaling1.Checked := MDDef.SlicerUseCorrectScaling;
 
    ThisProject := DEMDefs.VasaProjectFName;
@@ -1412,7 +1416,7 @@ begin
    BMPMemory := tBMPMemory.Create(bmp);
    if (MemoryPointCloud[CloudInUse] <> Nil) then begin
      {$IfDef SlicerDetailedDraw} WriteLineToDebugFile('(MemoryPointCloud[CloudInUse] <> Nil) or ExtEquals(Ext, .LAS)'); {$EndIf}
-      for Cloud := MaxClouds downto 1 do begin
+      for Cloud := MaxSliceClouds downto 1 do begin
          if CloudUsed[Cloud] then begin
             StartThreadTimers('Draw slice',1,True);
             MemoryPointCloud[Cloud].PlotSlice(Cloud,BMPMemory,SliceGraph[CurSlice].GISGraf,SliceGraph[CurSlice].GISGraf.GraphDraw.c1,SliceGraph[CurSlice].GISGraf.GraphDraw.c2,
@@ -1501,7 +1505,7 @@ begin
       if (SlicerMapOwner <> Nil) then SlicerMapOwner.DoFastMapRedraw;
       First := true;
 
-      for Cloud := MaxClouds downto 1 do begin
+      for Cloud := MaxSliceClouds downto 1 do begin
          if CloudUsed[Cloud] then begin
             CloudInUse := Cloud;
             inc(NumUsed);
@@ -1552,6 +1556,12 @@ end;
 procedure TSlicerForm.CheckBoxCorrectScaling1Click(Sender: TObject);
 begin
    MDDef.SlicerUseCorrectScaling := CheckBoxCorrectScaling1.Checked;
+end;
+
+procedure TSlicerForm.CheckBoxCloud5Click(Sender: TObject);
+begin
+   CloudUsed[5] := CheckBoxCloud5.Checked;
+   RedrawClouds;
 end;
 
 procedure TSlicerForm.CheckBoxCloud1Click(Sender: TObject);

@@ -4,8 +4,8 @@ object GraphSettingsForm: TGraphSettingsForm
   ActiveControl = OKBtn
   BorderStyle = bsDialog
   Caption = 'Graph Modifications'
-  ClientHeight = 452
-  ClientWidth = 586
+  ClientHeight = 434
+  ClientWidth = 574
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
@@ -186,8 +186,8 @@ object GraphSettingsForm: TGraphSettingsForm
     TabOrder = 10
   end
   object BitBtn2: TBitBtn
-    Left = 276
-    Top = 334
+    Left = 403
+    Top = 371
     Width = 65
     Height = 25
     Caption = 'Font'
@@ -232,11 +232,11 @@ object GraphSettingsForm: TGraphSettingsForm
     TabOrder = 14
   end
   object GroupBox1: TGroupBox
-    Left = 16
-    Top = 230
-    Width = 169
+    Left = 8
+    Top = 206
+    Width = 144
     Height = 73
-    Caption = 'Form size'
+    Caption = 'Graph size (pixels)'
     TabOrder = 15
     object Label9: TLabel
       Left = 16
@@ -255,7 +255,7 @@ object GraphSettingsForm: TGraphSettingsForm
     object Edit11: TEdit
       Left = 72
       Top = 16
-      Width = 78
+      Width = 56
       Height = 21
       TabOrder = 0
       Text = 'Edit11'
@@ -263,7 +263,7 @@ object GraphSettingsForm: TGraphSettingsForm
     object Edit12: TEdit
       Left = 72
       Top = 43
-      Width = 77
+      Width = 56
       Height = 21
       TabOrder = 1
       Text = 'Edit12'
@@ -534,5 +534,37 @@ object GraphSettingsForm: TGraphSettingsForm
       'X Part Grid Only'
       'X Time, Y Full Grid '
       'X Time, Y Part Grid ')
+  end
+  object RadioGroup1: TRadioGroup
+    Left = 208
+    Top = 199
+    Width = 127
+    Height = 112
+    Caption = 'Automatic legend'
+    Items.Strings = (
+      'None'
+      'Upper left'
+      'Upper right'
+      'Lower left'
+      'Lower right')
+    TabOrder = 22
+    OnClick = RadioGroup1Click
+  end
+  object ScrollBar1: TScrollBar
+    Left = 320
+    Top = 295
+    Width = 0
+    Height = 1
+    PageSize = 0
+    TabOrder = 23
+  end
+  object BitBtn5: TBitBtn
+    Left = 280
+    Top = 317
+    Width = 89
+    Height = 25
+    Caption = 'Make default'
+    TabOrder = 24
+    OnClick = BitBtn5Click
   end
 end

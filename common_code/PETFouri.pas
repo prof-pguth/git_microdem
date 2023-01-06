@@ -93,7 +93,7 @@ var
   FFTGraph : TFFTGraph;
 
 procedure PowerSpectrumByMaximumEntropy(MEMPowerDefaults : tMEMPowerDefaults;  var Slope : float32; var FFTGraph : TFFTGraph; Title : ShortString;
-    DataFNames : tStringList; NumRecs : integer; BinTime : float32; SkipDrawing : boolean = false);
+    DataFNames : tStringList; NumRecs : integer; BinTime : float32); //SkipDrawing : boolean = false);
 
 
 implementation
@@ -172,7 +172,7 @@ END;
 
 
 procedure PowerSpectrumByMaximumEntropy(MEMPowerDefaults : tMEMPowerDefaults; var Slope : float32; var FFTGraph : TFFTGraph; Title : ShortString;
-    DataFNames : tStringList; NumRecs : integer; BinTime : float32; SkipDrawing : boolean = false);
+    DataFNames : tStringList; NumRecs : integer; BinTime : float32); //SkipDrawing : boolean = false);
 type
    bfArray = array[0..12000] of float32;
 var
@@ -187,13 +187,13 @@ var
    Slopes : bfarray32;  //array[0..100] of float32;
    DataArray : ^bfArray;
    Results : tStringList;
-   DoResults : boolean;
+   //DoResults : boolean;
 begin
    MaxPower := -9999;
    MaxPeriod := NumRecs * BinTime;
    New(DataArray);
    FFTGraph := TFFTGraph.Create(Application);
-   FFTGraph.GraphDraw.SkipDrawing := SkipDrawing;
+   //FFTGraph.GraphDraw.SkipDrawing := SkipDrawing;
    with FFTGraph,GraphDraw,MEMPowerDefaults do begin
       if LogLogPlot then begin
          MinVertAxis := log10(0.01);
@@ -218,16 +218,16 @@ begin
    {$IfDef MemProblems}
       DoResults := true;
    {$Else}
-      DoResults := (not SkipDrawing);
+      //DoResults := (not SkipDrawing);
    {$EndIf}
 
-   if DoResults then begin
+   //if DoResults then begin
       Results := tStringList.Create;
       Results.Add(Title);
       Results.Add('');
       Results.Add('  slope     r');
       Results.Add('=================');
-   end;
+   //end;
 
    for j := 0 to pred(DataFNames.Count) do begin
       DataFName := DataFNames.Strings[j];
@@ -269,28 +269,30 @@ begin
       for i := 0 to pred(GraphDraw.DataFilesPlotted.Count) do begin
          FitGraph(true,2,GraphDraw.DataFilesPlotted.Strings[i], a,b,r,n);
          if (abs(b) > 0.01) and (abs(b) < 10) then begin
-            if (not SkipDrawing) then Results.Add(RealToString(b,8,3)+ RealToString(r,8,3));
+            {if (not SkipDrawing) then} Results.Add(RealToString(b,8,3)+ RealToString(r,8,3));
             Slopes[MomentVar.NPts] := b;
             Inc(MomentVar.NPts);
          end;
       end;
    end;
    Moment(Slopes,MomentVar,msAll);
-   if DoResults then begin
+   //if DoResults then begin
       Results.Add('');
       Results.Add('Average slope: ' + RealToString(MomentVar.mean,-18,-3));
       Results.Add('Median slope:  ' + RealToString(MomentVar.Median,-18,-3));
       Results.Add('');
       Results.Add('Fractal dimension: ' + RealToString(FracDimFromSlope2(Slope),-18,-3));
-      if (not SkipDrawing)then
-         Petmar.DisplayAndPurgeStringList(Results,'MEM Power Spectrum Slopes')
+      //if (not SkipDrawing)then
+         Petmar.DisplayAndPurgeStringList(Results,'MEM Power Spectrum Slopes');
+      (*
       else begin
          {$IfDef MemProblems}
             WriteStringListToDebugFile(Results);
             Results.Free;
          {$EndIf}
       end;
-   end;
+      *)
+   //end;
    Dispose(DataArray);
 end;
 

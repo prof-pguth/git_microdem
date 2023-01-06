@@ -5,8 +5,8 @@ object CorrelationForm: TCorrelationForm
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Variable Correlations'
-  ClientHeight = 290
-  ClientWidth = 347
+  ClientHeight = 245
+  ClientWidth = 337
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack

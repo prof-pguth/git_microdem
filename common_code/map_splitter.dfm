@@ -3,8 +3,8 @@ object splitter_form: Tsplitter_form
   Top = 0
   BorderStyle = bsSingle
   Caption = 'splitter_form'
-  ClientHeight = 652
-  ClientWidth = 993
+  ClientHeight = 643
+  ClientWidth = 987
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,7 +19,7 @@ object splitter_form: Tsplitter_form
     Left = 0
     Top = 0
     Width = 105
-    Height = 652
+    Height = 643
     Align = alLeft
     ExplicitLeft = 8
     ExplicitTop = 24
@@ -28,7 +28,7 @@ object splitter_form: Tsplitter_form
   object Splitter1: TSplitter
     Left = 105
     Top = 0
-    Height = 652
+    Height = 643
     OnMoved = Splitter1Moved
     ExplicitLeft = 112
     ExplicitTop = 120
@@ -37,8 +37,8 @@ object splitter_form: Tsplitter_form
   object Image2: TImage
     Left = 108
     Top = 0
-    Width = 885
-    Height = 652
+    Width = 879
+    Height = 643
     Align = alClient
     ExplicitLeft = 111
     ExplicitWidth = 875

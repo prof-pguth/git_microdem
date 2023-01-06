@@ -4,8 +4,8 @@ object MapMaskForm: TMapMaskForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Map Masking'
-  ClientHeight = 667
-  ClientWidth = 296
+  ClientHeight = 658
+  ClientWidth = 290
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

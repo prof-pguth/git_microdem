@@ -3,8 +3,8 @@ object leg_opts_form: Tleg_opts_form
   Top = 0
   BorderIcons = []
   BorderStyle = bsDialog
-  ClientHeight = 267
-  ClientWidth = 299
+  ClientHeight = 258
+  ClientWidth = 293
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

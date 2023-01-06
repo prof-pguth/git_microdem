@@ -4,8 +4,8 @@ object GridMaskOptForm: TGridMaskOptForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Grid mask options'
-  ClientHeight = 258
-  ClientWidth = 266
+  ClientHeight = 249
+  ClientWidth = 260
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

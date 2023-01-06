@@ -66,6 +66,8 @@ const
 type
    tFreqUp = (LowSideScanFreq,HighSideScanFreq,MergeFreq);
 
+   //XTF file format description at https://www.ecagroup.com/en/xtf-file-format#:~:text=Developed%20by%20Triton%20Imaging%2C%20Inc,echo%20sounders%20and%20navigation%20systems.
+
    tChanInfo = packed record
       TypeOfChannel,
       SubchannelNumber : byte;
@@ -243,7 +245,6 @@ type
     N1: TMenuItem;
     Copytoclipboard1: TMenuItem;
     Saveimage2: TMenuItem;
-    //Exportasregisteredimage1: TMenuItem;
     Makethisthefirstrecord1: TMenuItem;
     Makethisthelastrecorddisplayed1: TMenuItem;
     Entirerecord1: TMenuItem;
@@ -341,17 +342,17 @@ type
     XTFPingChanHeader :  tXTFPingChanHeader;
     DataRecByte : packed array[0..MaxBytesRecord] of byte;
     DataRecInt16 : packed array[0..MaxBytesRecord] of int16;
-{$ifDef KleinIntegers}
-    DataRecInt32,DataRecInt32_2 : packed array[0..MaxBytesRecord] of int32;   //single;
-{$Else}
-    DataRecInt32,DataRecInt32_2 : packed array[0..MaxBytesRecord] of single;
-{$EndIf}
+   {$ifDef KleinIntegers}
+       DataRecInt32,DataRecInt32_2 : packed array[0..MaxBytesRecord] of int32;   //single;
+   {$Else}
+       DataRecInt32,DataRecInt32_2 : packed array[0..MaxBytesRecord] of single;
+   {$EndIf}
     dbFile  : tMyData;
     TargetGIS : integer;
     {$IfDef UseMemStream}
-    MemStream : tMemoryStream;
-    procedure LoadMemStreamAndReadFileHeader;
-    procedure CloseMemStream;
+       MemStream : tMemoryStream;
+       procedure LoadMemStreamAndReadFileHeader;
+       procedure CloseMemStream;
     {$EndIf}
     procedure SplitBigFile;
     procedure Subset(StartRecord,EndRecord : integer; xshift : float64 = 0; yshift : float64 = 0);
@@ -417,10 +418,7 @@ uses
    BaseMap,
    KML_opts,KML_creator,
    DEMDefs,DEMCoord,PetDBUtils, Make_tables,
-
-{Main program MDI window for different programs that use this module}
    Nevadia_Main, toggle_db_use;
-{End of the MDI parent declaration}
 
 
 type
@@ -1361,7 +1359,7 @@ begin
    if (MemStream.Position < MemStream.Size - 256) then begin
       repeat
         MemStream.Read(XTFPingHeader,256);
-        if (XTFPingHeader.MagicNumber = 64206) {and (I < NumRead + 128)} then begin
+        if (XTFPingHeader.MagicNumber = 64206) then begin
            if (Found <> Nil) then Found.Add(IntegerToString(MemStream.Position,12) + '   ' + IntegerToString(XTFPingHeader.HeaderType,5) + '   ' + IntToStr(XTFPingHeader.NumBytesThisRecord));
            if (ZeroOnly and (XTFPingHeader.HeaderType in [0])) or ((not ZeroOnly) and (XTFPingHeader.HeaderType in [0,200])) then begin
               with XTFPingHeader do
@@ -1611,7 +1609,7 @@ begin
    TargetGIS := 0;
    MapOwner := nil;
    Petmar.CheckFormPlacement(Self);
-   Image1.Stretch := true;             //Required for Delphi 6 "feature"
+   Image1.Stretch := true;   //Required for Delphi 6 "feature"
    FileMode := 2;
    AnOverViewImage := false;
    MouseIsDown := false;
@@ -1777,7 +1775,6 @@ begin
       fName := ExtractFilePath(DataFileName) + 'targets' + DefaultDBExt;
       if not FileExists(fName) then MakeSideScanTargetFile(fName);
       TargetGIS := MapOwner.LoadDataBaseFile(fName);
-      //TargetGIS := LastDBLoaded;
    end;
 
    with GISdb[TargetGIS] do begin
@@ -2001,8 +1998,8 @@ begin
    if (ClientWidth > Image1.Width + 5) then ClientWidth := Image1.Width + 5;
    if (ClientHeight > Image1.Height + Toolbar1.Height + 12) then ClientHeight:= Image1.Height + Toolbar1.Height + 12;
 
-   ScrollBox1.HorzScrollBar.Visible := true;  //ImageXSize  > ClientWidth;
-   ScrollBox1.VertScrollBar.Visible := true;  //ImageYSize > ClientHeight;
+   ScrollBox1.HorzScrollBar.Visible := true;
+   ScrollBox1.VertScrollBar.Visible := true;
    if (Width > wmdem.ClientWidth - 50) then begin
       Width := wmdem.ClientWidth - 50;
       Left := 5;

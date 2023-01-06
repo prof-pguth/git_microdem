@@ -117,7 +117,6 @@ begin
 end;
 
 
-
 function MoonPositionStereoNet(Lat,Long : float32; iyear,imonth,iday : integer) : tNetForm;
 var
    URL : shortstring;
@@ -160,9 +159,6 @@ begin
       Result := Nil;
    end;
 end;
-
-
-
 
 
 function GetSunriseSunSet(Latitude,Longitude : float64; tz,day : integer; var az,alt,sunrise,sunset,sunappears,sundisappears,DurationDayLight : float64; var BlockAngles : tBlockAngles) : boolean;
@@ -221,7 +217,7 @@ begin
    {$IfDef TimeSunlightMaps} WriteLineToDebugFile('GetBlockAngles out'); {$EndIf}
 end;
 
-
+(*
 procedure SolarZenithAndAzimuth(JDay : integer; Hours,Lat,Long : float64; var SolarZenith,SolarAzimuth : float64);
 {Peddle, D.R., White, H.P., Soffer, R.J., Miller, J.R., and LeDraw, E.F., 2001, Reflectance processing of remote sensing spectroradiometer data: Computers & Geosciences, vo.27, no.2, p.203-213.}
 var
@@ -249,7 +245,7 @@ begin
    SolarZenith := a * cosDeg( (sinDeg(Dec_Z) * SinDeg(Dec_theta)) + CosDeg(Dec_Z) * CosDeg(Dec_theta) * CosDeg( (Raz - RA_theta) * 15));
    SolarAzimuth :=  a * SinDeg(SinDeg( (Raz - RA_theta) * 15) * CosDeg(Dec_theta) / SinDeg(SolarZenith));
 end;
-
+*)
 
 procedure SunCalculate(Lat,Long,z : float64; N : integer; Rising : boolean;  var UT : float64);
 var
@@ -319,7 +315,7 @@ function ComputeSunPosition(lat,long, hrtime, tz : float64; day : integer; var a
 
  var
     lontz : float64;   { time zone longitude}
-    e : float64;       { Time                         }
+    e : float64;       { Time               }
     phi : float64;     {altitude }
     gs,cws, ws,civilcws,
     x, EqOfTimeMinutes,sunriseangle, sunsetangle, civilsunrise,  civilSunset,
@@ -541,8 +537,6 @@ var
             Graph1.ClosePointDataFile(rfile);
          end;
 
-
-
 begin
    ShowHourglassCursor;
    if (MapForm.MapDraw.DEMonMap = 0) then exit;
@@ -639,7 +633,7 @@ begin
    TheGraph.GraphDraw.MinVertAxis := -15;
    TheGraph.GraphDraw.MaxHorizAxis := 365;
    TheGraph.SettingsChanged := true;
-   TheGraph.LLcornerText := LatLongDegreeToString(Latitude,Longitude,VeryShortDegrees);
+   TheGraph.GraphDraw.LLcornerText := LatLongDegreeToString(Latitude,Longitude,VeryShortDegrees);
    TheGraph.RedrawDiagram11Click(Nil);
    if (MDdef.ProgramOption <> ExpertProgram) then CloseAndNilNumberedDB(db);
 end;
@@ -656,9 +650,9 @@ var
    wMonth,wDay,wYear : word;
    NDays,D,i,j,Month,Day,
    Ns,Year,DifGren     : integer;
-   UT                       : float64;
+   UT               : float64;
    JDay             : LongInt;
-   OutF                                   : Text;
+   OutF             : Text;
 
          procedure DrawBaseGraph;
          begin
@@ -865,7 +859,7 @@ begin
    TheGraph.GraphDraw.MinVertAxis := 0;
    TheGraph.GraphDraw.MaxHorizAxis := 365;
    TheGraph.SettingsChanged := true;
-   TheGraph.LLcornerText := LatLongDegreeToString(Latitude,Longitude,VeryShortDegrees);
+   TheGraph.GraphDraw.LLcornerText := LatLongDegreeToString(Latitude,Longitude,VeryShortDegrees);
    TheGraph.RedrawDiagram11Click(Nil);
    if AddSunriseSunset then begin
       GISdb[db].AddSeriesToScatterGram(TheGraph,clLime,'JULIAN_DAY','SUNRISE_F');
@@ -1036,7 +1030,7 @@ begin
       TheGraph.GraphDraw.MinVertAxis := 0;
       TheGraph.GraphDraw.MaxHorizAxis := 365;
       TheGraph.SettingsChanged := true;
-      TheGraph.LLcornerText := LatLongDegreeToString(Latitude,Longitude,VeryShortDegrees);
+      TheGraph.GraphDraw.LLcornerText := LatLongDegreeToString(Latitude,Longitude,VeryShortDegrees);
       {$IfDef RecordHorizon} WriteLineToDebugFile('Graph created'); {$EndIf}
       GISdb[db].AddSeriesToScatterGram(TheGraph,clLime,'JULIAN_DAY','DIRECT_ILL');
       GISdb[db].AddSeriesToScatterGram(TheGraph,clBlue,'JULIAN_DAY','TERR_MASK');
@@ -1058,7 +1052,7 @@ initialization
 finalization
     {$IfDef RecordSolarPosition} WriteLineToDebugFile('RecordSolarPosition active in sun_position');{$EndIf}
     {$IfDef RecordGetSunriseSet} WriteLineToDebugFile('RecordGetSunriseSet active in sun_position');{$EndIf}
-    {$IfDef RecordSunlightMaps}  WriteLineToDebugFile('RecordSunlightMaps active in sun_position');{$EndIf}
+    {$IfDef RecordSunlightMaps} WriteLineToDebugFile('RecordSunlightMaps active in sun_position');{$EndIf}
     {$IfDef RecordBlockAngleDifference} WriteLineToDebugFile('RecordBlockAngleDifference active in sun_position  (major slowdown)');{$EndIf}
     {$IfDef RecordFullSunlightMaps} WriteLineToDebugFile('RecordFullSunlightMaps active in sun_position (major slowdown)');{$EndIf}
     {$IfDef TimeSunlightMap} WriteLineToDebugFile('TimeSunlightMap active in sun_position');{$EndIf}

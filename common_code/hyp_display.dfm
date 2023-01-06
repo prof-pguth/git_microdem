@@ -2,8 +2,8 @@ object HyperspectralForm: THyperspectralForm
   Left = 0
   Top = 0
   Caption = 'HyperspectralForm'
-  ClientHeight = 459
-  ClientWidth = 896
+  ClientHeight = 441
+  ClientWidth = 884
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,9 +19,10 @@ object HyperspectralForm: THyperspectralForm
     Left = 265
     Top = 0
     Width = 285
-    Height = 459
+    Height = 441
     Align = alLeft
     TabOrder = 0
+    ExplicitHeight = 459
     object Label1: TLabel
       Left = 40
       Top = 40
@@ -178,9 +179,10 @@ object HyperspectralForm: THyperspectralForm
     Left = 0
     Top = 0
     Width = 265
-    Height = 459
+    Height = 441
     Align = alLeft
     TabOrder = 1
+    ExplicitHeight = 459
     object Image1: TImage
       Left = 0
       Top = -2

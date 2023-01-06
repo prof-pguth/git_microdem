@@ -28,6 +28,8 @@ object PickGeoStat: TPickGeoStat
     Height = 77
     Align = alBottom
     TabOrder = 0
+    ExplicitTop = 228
+    ExplicitWidth = 533
     object Label1: TLabel
       Left = 256
       Top = 17
@@ -104,10 +106,12 @@ object PickGeoStat: TPickGeoStat
     Top = 0
     Width = 354
     Height = 237
-    ActivePage = TabSheet1
+    ActivePage = TabSheet3
     Align = alClient
     MultiLine = True
     TabOrder = 1
+    ExplicitWidth = 348
+    ExplicitHeight = 228
     object TabSheet1: TTabSheet
       Caption = 'Basic'
       object Button6: TButton
@@ -549,5 +553,7 @@ object PickGeoStat: TPickGeoStat
     Height = 237
     Align = alRight
     TabOrder = 2
+    ExplicitLeft = 348
+    ExplicitHeight = 228
   end
 end

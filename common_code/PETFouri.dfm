@@ -1,10 +1,13 @@
 inherited FFTGraph: TFFTGraph
-  ClientHeight = 626
-  ExplicitWidth = 867
-  ExplicitHeight = 664
+  ClientHeight = 490
+  ClientWidth = 831
+  ExplicitWidth = 849
+  ExplicitHeight = 562
   TextHeight = 16
   inherited ScrollBox1: TScrollBox
-    Height = 568
+    Width = 831
+    Height = 432
+    ExplicitWidth = 837
     ExplicitHeight = 534
     inherited Image1: TImage
       Height = 564
@@ -12,10 +15,14 @@ inherited FFTGraph: TFFTGraph
     end
   end
   inherited Panel1: TPanel
-    Top = 596
+    Top = 460
+    Width = 831
     ExplicitTop = 562
+    ExplicitWidth = 837
   end
   inherited ToolBar1: TToolBar
+    Width = 831
+    ExplicitWidth = 837
     object SeekPeakButton: TSpeedButton
       Left = 353
       Top = 0

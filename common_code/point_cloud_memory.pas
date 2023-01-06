@@ -642,14 +642,9 @@ begin
          for i := 1 to MaxCompare do begin
             if (CompareDEMIndexes[i] <> 0) then DEMPercentile(CompareDEMIndexes[i],CompareDEMNames[i]);
          end;
-         (*
-         DEMPercentile(SRTMDEM,'SRTM');
-         DEMPercentile(AsterDEM,'Aster');
-         DEMPercentile(ALOSDEM,'ALOS');
-         *)
 
          MDDef.FlipHistogram := true;
-         Histogram := DeprecatedCreateHistogram(true,MomentVar.NPts,zvs^,'Elevations','Distribution at ' + LatLongDegreeToString(Lat,Long),round(MomentVar.MinZ),round(MomentVar.MaxZ),1,clSilver);
+         Histogram := DeprecatedCreateHistogram(true,MomentVar.NPts,zvs^,'Elevations','Distribution at ' + LatLongDegreeToString(Lat,Long) ); //,round(MomentVar.MinZ),round(MomentVar.MaxZ),1,clSilver);
          Histogram.GraphDraw.LegendList := tStringList.Create;
          Histogram.GraphDraw.LegendList.Add('Point cloud');
          for i := 1 to MaxCompare do begin
@@ -658,16 +653,7 @@ begin
                DEMSymbol(CompareDEMIndexes[i],ConvertTColorToPlatformColor(WinGraphColors[i]));
             end;
          end;
-         Histogram.LLcornerText := LatLongDegreeToString(Lat,Long);
-
-         (*
-         Histogram.GraphDraw.LegendList.Add('SRTM');
-         Histogram.GraphDraw.LegendList.Add('ASTER');
-         Histogram.GraphDraw.LegendList.Add('ALOS');
-         DEMSymbol(SRTMDEM,ConvertTColorToPlatformColor(WinGraphColors[1]));
-         DEMSymbol(AsterDEM,ConvertTColorToPlatformColor(WinGraphColors[2]));
-         DEMSymbol(ALOSDEM,ConvertTColorToPlatformColor(WinGraphColors[3]));
-         *)
+         Histogram.GraphDraw.LLcornerText := LatLongDegreeToString(Lat,Long);
       end;
       Dispose(zvs);
       fName := MDTempDir + 'pt_location_.csv';
@@ -854,7 +840,7 @@ begin
       Petmath.CompareValueToExtremes(xypts^[i,1],pcMinX,pcMaxX);
       Petmath.CompareValueToExtremes(xypts^[i,2],pcMinY,pcMaxY);
    end;
-   {$IfDef RecordPointCloudLimits}  ShowXYLimits('After rotation'); {$EndIf}
+   {$IfDef RecordPointCloudLimits} ShowXYLimits('After rotation'); {$EndIf}
    {$IfDef RecordPointCloudmemory} WriteLinetoDebugFile('tMemoryPointCloud.RotateXY out'); {$EndIf}
 end;
 
@@ -865,7 +851,7 @@ var
   sine,cosine,oldx,oldz : float64;
 begin
    {$IfDef RecordPointCloudmemory} WriteLinetoDebugFile('tMemoryPointCloud.TranslateAndRotate in'); {$EndIf}
-   {$IfDef RecordPointCloudLimits}  ShowXYLimits('Before rotation'); {$EndIf}
+   {$IfDef RecordPointCloudLimits} ShowXYLimits('Before rotation'); {$EndIf}
 
    sine := sinDeg(Angle);
    cosine := CosDeg(Angle);
@@ -891,7 +877,7 @@ var
   I : Integer;
   sine,cosine,OldY,OldZ : float64;
 begin
-   {$If Defined(RecordPointCloudmemory) or Defined(RecordPointCloudLimits)}  ShowXYLimits('Before rotation'); {$EndIf}
+   {$If Defined(RecordPointCloudmemory) or Defined(RecordPointCloudLimits)} ShowXYLimits('Before rotation'); {$EndIf}
    sine := sinDeg(Angle);
    cosine := CosDeg(Angle);
    ZeroYLimits;
@@ -904,7 +890,7 @@ begin
       Petmath.CompareValueToExtremes(xypts^[i,2],pcMinY,pcMaxY);
       Petmath.CompareValueToExtremes(zpts^[i],pcMinZ,pcMaxZ);
    end;
-   {$If Defined(RecordPointCloudmemory) or Defined(RecordPointCloudLimits)}  ShowXYLimits('After rotation'); {$EndIf}
+   {$If Defined(RecordPointCloudmemory) or Defined(RecordPointCloudLimits)} ShowXYLimits('After rotation'); {$EndIf}
 end;
 
 
@@ -932,10 +918,10 @@ begin
       Petmath.CompareValueToExtremes(xypts^[i,1],pcMinX,pcMaxX);
       Petmath.CompareValueToExtremes(xypts^[i,2],pcMinY,pcMaxY);
    end;
-   {$IfDef RecordPointCloudLimits}  ShowXYLimits('After translation'); {$EndIf}
+   {$IfDef RecordPointCloudLimits} ShowXYLimits('After translation'); {$EndIf}
    if abs(Angle) > 0.001 then begin
       RotateXY(Angle);
-      {$IfDef RecordPointCloudLimits}  ShowXYLimits('After rotation');   {$EndIf}
+      {$IfDef RecordPointCloudLimits} ShowXYLimits('After rotation'); {$EndIf}
    end;
    {$IfDef RecordPointCloudmemory} WriteLinetoDebugFile('tMemoryPointCloud.TranslateAndRotate out'); {$EndIf}
 end;
@@ -950,11 +936,11 @@ var
    xc,yc : float64;
 begin
    if not FileExists(fName) then begin
-      {$IfDef RecordPointCloudMemory} WriteLinetoDebugFile('tMemoryPointCloud.LoadFromLASFile missing ' +  ExtractFileNameNoExt(fName));   {$EndIf}
+      {$IfDef RecordPointCloudMemory} WriteLinetoDebugFile('tMemoryPointCloud.LoadFromLASFile missing ' +  ExtractFileNameNoExt(fName)); {$EndIf}
       exit;
    end
    else begin
-      {$IfDef RecordPointCloudmemory} WriteLinetoDebugFile('tMemoryPointCloud.LoadFromLASFile in ' +  ExtractFileNameNoExt(fName));    {$EndIf}
+      {$IfDef RecordPointCloudmemory} WriteLinetoDebugFile('tMemoryPointCloud.LoadFromLASFile in ' +  ExtractFileNameNoExt(fName)); {$EndIf}
    end;
    {$IfDef RecordPointCloudLimits} ShowXYLimits('Before LASLoad'); {$EndIf}
    LASsourceName := fName;
@@ -1081,9 +1067,7 @@ var
                    sf := tShapeFile.Create(Name1,Success);
                    Result := sf.NumRecs;
                end;
-               {$IfDef RecordPointCloudmemory}
-               WriteLinetoDebugFile('GetPointsInFile, ' + ExtractFileName(Name1) + ' recs= ' + IntToStr(Result));
-               {$EndIf}
+               {$IfDef RecordPointCloudmemory} WriteLinetoDebugFile('GetPointsInFile, ' + ExtractFileName(Name1) + ' recs= ' + IntToStr(Result)); {$EndIf}
             end;
          end;
 
@@ -1270,8 +1254,8 @@ end;
 
 initialization
 finalization
-   {$IfDef NoInLine} WriteLineToDebugFile('NoInLine active in point_cloud_memory');   {$EndIf}
-   {$IfDef RecordPointCloudMemory} WriteLineToDebugFile('RecordPointCloudmemory active in point_cloud_memory');   {$EndIf}
-   {$IfDef RecordPointCloudLimits} WriteLineToDebugFile('RecordPointCloudLimits active in point_cloud_memory');   {$EndIf}
-   {$IfDef RecordMemoryAllocations} WriteLineToDebugFile('RecordMemoryAlocations active in point_cloud_memory');   {$EndIf}
+   {$IfDef NoInLine} WriteLineToDebugFile('NoInLine active in point_cloud_memory'); {$EndIf}
+   {$IfDef RecordPointCloudMemory} WriteLineToDebugFile('RecordPointCloudmemory active in point_cloud_memory'); {$EndIf}
+   {$IfDef RecordPointCloudLimits} WriteLineToDebugFile('RecordPointCloudLimits active in point_cloud_memory'); {$EndIf}
+   {$IfDef RecordMemoryAllocations} WriteLineToDebugFile('RecordMemoryAlocations active in point_cloud_memory'); {$EndIf}
 end.

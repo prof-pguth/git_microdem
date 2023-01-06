@@ -371,7 +371,6 @@ procedure TPickGeoStat.BitBtn20Click(Sender: TObject);
          //DEMGlb[DEM].SaveAsGeotiff(MDTempDir + DEMGlb[DEM].AreaName + '.tif');
       end;
 
-
 var
    Radius,Box,DEM : integer;
 begin
@@ -408,20 +407,6 @@ begin
    end;
 
    {$IfDef RecordMapMaking} WriteLineToDebugFile('TPickGeoStat.BitBtn20Click out'); {$EndIf}
-
-(*
-var
-   j : integer;
-begin
-   if CheckBox2.Checked then begin
-      for j := 0 to pred(InitialDEMs.Count) do begin
-         CreateRoughnessMap2(StrToInt(InitialDEMs.Strings[j]),true,false);
-      end;
-   end
-   else begin
-      CreateRoughnessMap2(CurDEM,true,false);
-   end;
-*)
 end;
 
 
@@ -494,7 +479,7 @@ begin
    GDAL_TRI_Riley(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
    GDAL_TRI_Wilson(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
    GDAL_TPI(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
-   Whitebox_TRI(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap,DEMGlb[CurDEM].Geo_Z_Factor);
+   Whitebox_TRI(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
    SagaTRIMap(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
    SagaTPIMap(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
    GRASSTRIMap(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);

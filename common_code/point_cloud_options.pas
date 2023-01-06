@@ -325,6 +325,7 @@ type
     BitBtn60: TBitBtn;
     CheckBox99: TCheckBox;
     Minintensity1: TMenuItem;
+    BitBtn61: TBitBtn;
     procedure BitBtn14Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure RadioGroup1Click(Sender: TObject);
@@ -507,6 +508,7 @@ type
     procedure BitBtn60Click(Sender: TObject);
     procedure CheckBox99Click(Sender: TObject);
     procedure Minintensity1Click(Sender: TObject);
+    procedure BitBtn61Click(Sender: TObject);
   private
     { Private declarations }
     MinAreaZ,MaxAreaZ : float64;
@@ -1742,6 +1744,10 @@ end;
 
 
 procedure OvelayPointClouds(inBaseMap : tMapForm; DirOpen : PathStr = '');
+var
+   Paths : tStringList;
+   i : integer;
+   fName : PathStr;
 begin
    {$If  Defined(RecordLASfiles) or Defined(RecordLASopen)} WriteLineToDebugFile('OvelayPointCloud in'); {$EndIf}
    MDDef.ShiftMercToUTM := true;
@@ -1758,7 +1764,20 @@ begin
    end
    else pt_cloud_opts_fm.CanAutoZoom := true;
    pt_cloud_opts_fm.Show;
-   if (DirOpen = '') then pt_cloud_opts_fm.GetFilesForPointCloud(1,LastLidarDirectory)
+   if (DirOpen = '') then begin
+      Paths := tStringList.Create;
+      Paths.Add(LastLidarDirectory);
+      if MDDef.PickLASDirs and GetMultipleDirectories('Lidar point clouds',Paths) then begin
+         for i := 1 to Paths.Count do begin
+            fName := Paths.Strings[pred(i)];
+            pt_cloud_opts_fm.GetFilesForPointCloud(i,fName,true);
+         end;
+      end
+      else begin
+         pt_cloud_opts_fm.GetFilesForPointCloud(1,LastLidarDirectory);
+      end;
+      Paths.Destroy;
+   end
    else pt_cloud_opts_fm.GetFilesForPointCloud(1,DirOpen,true);
    {$If  Defined(RecordLASfiles) or Defined(RecordLASopen)} WriteLineToDebugFile('OvelayPointCloud out'); {$EndIf}
 end;
@@ -2295,7 +2314,7 @@ begin
    if (MDDef.ProgramOption = ExpertProgram) and MDDef.ShowIcesat then GetIcesatFilter;
    SaveBackupDefaults;
    if (MemPtCloud = Nil) then begin
-      {$IfDef RecordPointCloudViewing} WriteLineToDebugFile('Tpt_cloud_opts_fm.BitBtn21Click (MemPtCloud = Nil)'); {$EndIf}
+       {$IfDef RecordPointCloudViewing} WriteLineToDebugFile('Tpt_cloud_opts_fm.BitBtn21Click (MemPtCloud = Nil)'); {$EndIf}
        FirstFile := true;
        NewName := '';
        for i := MaxClouds downto 1 do begin
@@ -2884,6 +2903,23 @@ begin
    end;
 end;
 
+procedure Tpt_cloud_opts_fm.BitBtn61Click(Sender: TObject);
+var
+   Cloud,Tile : integer;
+   NewDir : PathStr;
+begin
+   StartProgress('Copy files');
+   for Cloud := 1 to MaxClouds do if UsePC[Cloud] and (LasFiles[Cloud] <> Nil) then begin
+      UpdateProgressBar(Cloud/MaxClouds);
+      GetDOSPath('path for cloud ' + LasFiles[Cloud].CloudName,NewDir);
+
+      for Tile := 0 to pred(LasFiles[Cloud].LAS_fnames.Count) do begin
+         CopyFile(LasFiles[Cloud].LAS_fnames.Strings[Tile],NewDir + ExtractFileName(LasFiles[Cloud].LAS_fnames.Strings[Tile]));
+      end;
+   end;
+   EndProgress;
+end;
+
 procedure Tpt_cloud_opts_fm.BitBtn6Click(Sender: TObject);
 begin
    {$If Defined(PointCloudMap)} WriteLineToDebugFile('Tpt_cloud_opts_fm.BitBtn6Click in'); {$EndIf}
@@ -3383,6 +3419,7 @@ begin
    MakeGrid(pcgmGrndPtDTM);
 end;
 
+
 procedure Tpt_cloud_opts_fm.DTMrangescalesfromgroundpoints1Click(Sender: TObject);
 var
    i,NewDEM : integer;
@@ -3390,20 +3427,11 @@ var
    NewName : shortstring;
    aTable : Petmar_db.tMyData;
 begin
-   WriteLineToDebugFile(''); WriteLineToDebugFile('Tpt_cloud_opts_fm.DTMrangescalesfromgroundpoints1Click start');
-
+   //WriteLineToDebugFile(''); WriteLineToDebugFile('Tpt_cloud_opts_fm.DTMrangescalesfromgroundpoints1Click start');
    fName := ProgramRootDir;
    if Petmar.GetExistingFileName('DTM creation parameters','*.dbf',fName) then begin
       GetDosPath('saved grids',SaveDir);
       aTable := tMyData.Create(fName);
-(*
-resolution,units,pixel_is,DEM,Calc
-1,sec,area,DTM,Mean
-1,sec,point,DTM,Mean
-30,m,area,DTM,Mean
-30,m,point,DTM,Mean
-*)
-
       while not aTable.eof do begin
          SetGridFromTable(atable);
          NewName := TheCloudName + '_' + aTable.GetFieldByNameAsString('RESOLUTION')  + '_' + aTable.GetFieldByNameAsString('UNITS') + '_' +
@@ -3425,7 +3453,7 @@ resolution,units,pixel_is,DEM,Calc
       aTable.Destroy;
    end;
    wmDEM.SetPanelText(0,'');
-   WriteLineToDebugFile('Tpt_cloud_opts_fm.DTMrangescalesfromgroundpoints1Click done');
+   //WriteLineToDebugFile('Tpt_cloud_opts_fm.DTMrangescalesfromgroundpoints1Click done');
 end;
 
 
@@ -3635,7 +3663,6 @@ begin
    end;
    CloseOverlayPointClouds;
    Action := caFree;
-   //pt_cloud_opts_fm_Close;
 end;
 
 
@@ -3668,7 +3695,6 @@ begin
    CheckBox12.Checked := MDDef.ls.FirstReturnsOnly;
    CheckBox13.Checked := MDDef.ls.LastReturnsOnly;
    CheckBox20.Checked := MDDef.ls.UserDataRecordFiltered;
-
    RadioGroup1.ItemIndex := ord(MDdef.ls.ColorCoding);
 end;
 

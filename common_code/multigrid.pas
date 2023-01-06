@@ -646,7 +646,7 @@ begin
    if GoodData then NewDataFile(MG3);
    if GoodData then begin
       Result.SetUpGraphForm;
-      Result.LLcornerText := LatLongDegreeToString(Lat,Long,VeryShortDegrees) + ' ' + Extra;
+      Result.GraphDraw.LLcornerText := LatLongDegreeToString(Lat,Long,VeryShortDegrees) + ' ' + Extra;
       Result.Caption := LatLongDegreeToString(Lat,Long,VeryShortDegrees);
    end
    else begin
@@ -822,7 +822,7 @@ begin
 
       {$IfDef RecordMultiGrids} WriteLineToDebugFile('tMultiGridArray.AnnualParameterGraph db loaded'); {$EndIf}
       Result := GISdb[db].CreateScatterGram(GISdb[db].MonthFieldName,'PARAMETER',true,MG_Name + ' at ' + LatLongDegreeToString(Lat,Long,VeryShortDegrees),'Month',MG_Name);
-      Result.LLcornerText := LatLongDegreeToString(Lat,Long,VeryShortDegrees) + ' ' + Tstr;
+      Result.GraphDraw.LLcornerText := LatLongDegreeToString(Lat,Long,VeryShortDegrees) + ' ' + Tstr;
       Result.GraphDraw.ShowLine[1] := true;
       Result.RedrawDiagram11Click(Nil);
       {$IfDef RecordMultiGrids} WriteLineToDebugFile('tMultiGridArray.AnnualParameterGraph scattergram created'); {$EndIf}

@@ -2,8 +2,8 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
   Left = 0
   Top = 0
   Caption = 'Point Cloud Options'
-  ClientHeight = 458
-  ClientWidth = 504
+  ClientHeight = 440
+  ClientWidth = 492
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -30,12 +30,11 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
   end
   object Panel1: TPanel
     Left = 0
-    Top = 417
-    Width = 504
+    Top = 399
+    Width = 492
     Height = 41
     Align = alBottom
     TabOrder = 0
-    ExplicitWidth = 464
     object CancelBtn: TBitBtn
       Left = 290
       Top = 6
@@ -109,12 +108,11 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
   object PageControl1: TPageControl
     Left = 0
     Top = 0
-    Width = 504
-    Height = 248
+    Width = 492
+    Height = 230
     ActivePage = TabSheet1
     Align = alClient
     TabOrder = 1
-    ExplicitWidth = 464
     object General: TTabSheet
       Caption = 'General'
       object Label6: TLabel
@@ -247,11 +245,12 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
       object Panel2: TPanel
         Left = 0
         Top = 0
-        Width = 496
-        Height = 220
+        Width = 490
+        Height = 211
         Align = alClient
         TabOrder = 0
-        ExplicitWidth = 456
+        ExplicitWidth = 484
+        ExplicitHeight = 202
         object Label1: TLabel
           Left = 296
           Top = 16
@@ -535,6 +534,15 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
         Caption = 'lasview'
         TabOrder = 7
         OnClick = LasClick
+      end
+      object BitBtn61: TBitBtn
+        Left = 210
+        Top = 128
+        Width = 106
+        Height = 25
+        Caption = 'Copy tiles on map'
+        TabOrder = 8
+        OnClick = BitBtn61Click
       end
     end
     object TabSheet3: TTabSheet
@@ -1621,12 +1629,11 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
   end
   object Panel3: TPanel
     Left = 0
-    Top = 248
-    Width = 504
+    Top = 230
+    Width = 492
     Height = 169
     Align = alBottom
     TabOrder = 2
-    ExplicitWidth = 464
     object RadioGroup1: TRadioGroup
       Left = 10
       Top = 2

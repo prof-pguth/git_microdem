@@ -2,8 +2,8 @@ object sideimage: Tsideimage
   Left = 202
   Top = 316
   Caption = 'XTF Side Scan Sonar Imagery'
-  ClientHeight = 581
-  ClientWidth = 731
+  ClientHeight = 513
+  ClientWidth = 719
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -21,8 +21,8 @@ object sideimage: Tsideimage
   object ScrollBox1: TScrollBox
     Left = 0
     Top = 29
-    Width = 731
-    Height = 552
+    Width = 719
+    Height = 484
     Align = alClient
     TabOrder = 0
     ExplicitWidth = 725
@@ -41,12 +41,11 @@ object sideimage: Tsideimage
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 731
+    Width = 719
     Height = 29
     ButtonHeight = 25
     Caption = 'ToolBar1'
     TabOrder = 1
-    ExplicitWidth = 725
     object SpeedButton4: TSpeedButton
       Left = 0
       Top = 0

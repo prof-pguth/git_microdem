@@ -3,8 +3,8 @@ object PetEditf: TPetEditf
   Top = 225
   BorderIcons = [biSystemMenu, biMinimize]
   Caption = ' '
-  ClientHeight = 323
-  ClientWidth = 493
+  ClientHeight = 289
+  ClientWidth = 487
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -86,7 +86,7 @@ object PetEditf: TPetEditf
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 493
+    Width = 487
     Height = 28
     ParentShowHint = False
     ShowHint = True
@@ -162,8 +162,8 @@ object PetEditf: TPetEditf
   object RichEdit1: TRichEdit
     Left = 0
     Top = 28
-    Width = 493
-    Height = 295
+    Width = 487
+    Height = 261
     Align = alClient
     Font.Charset = ANSI_CHARSET
     Font.Color = clWindowText
@@ -174,8 +174,6 @@ object PetEditf: TPetEditf
     PlainText = True
     ScrollBars = ssBoth
     TabOrder = 1
-    ExplicitWidth = 462
-    ExplicitHeight = 209
   end
   object MainMenu1: TMainMenu
     Left = 73

@@ -89,6 +89,9 @@ type
     Label4: TLabel;
     Edit5: TEdit;
     Label1: TLabel;
+    RadioGroup1: TRadioGroup;
+    ScrollBar1: TScrollBar;
+    BitBtn5: TBitBtn;
     procedure BitBtn1Click(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -99,6 +102,8 @@ type
     procedure CheckBox8Click(Sender: TObject);
     procedure BitBtn3Click(Sender: TObject);
     procedure BitBtn4Click(Sender: TObject);
+    procedure RadioGroup1Click(Sender: TObject);
+    procedure BitBtn5Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -113,7 +118,7 @@ implementation
 {$R *.DFM}
 
 uses
-   Petmath,Petmar_types,Petmar_db,Petdbutils;
+   Petmath,Petmar_types,Petmar_db,Petdbutils,DEMdefs;
 
 
 procedure TGraphSettingsForm.InitializeSettings;
@@ -184,6 +189,12 @@ begin
          else begin
             TabSheet3.TabVisible := false;
          end;
+
+         if OwningGraph.GraphDraw.InsideMarginLegend = lpNone then RadioGroup1.ItemIndex := 0;
+         if OwningGraph.GraphDraw.InsideMarginLegend = lpNWMap then RadioGroup1.ItemIndex := 1;
+         if OwningGraph.GraphDraw.InsideMarginLegend = lpNEMap then RadioGroup1.ItemIndex := 2;
+         if OwningGraph.GraphDraw.InsideMarginLegend = lpSWMap then RadioGroup1.ItemIndex := 3;
+         if OwningGraph.GraphDraw.InsideMarginLegend = lpSEMap then RadioGroup1.ItemIndex := 4;
     end;
 
     YMinEdit.Text := RealToString(OwningGraph.GraphDraw.MinVertAxis,-18,-6);
@@ -342,6 +353,11 @@ begin
    RedrawSpeedButton12Click(Sender);
 end;
 
+procedure TGraphSettingsForm.BitBtn5Click(Sender: TObject);
+begin
+   MDDef.DefMarginLegend := OwningGraph.GraphDraw.InsideMarginLegend;
+end;
+
 procedure TGraphSettingsForm.FormCreate(Sender: TObject);
 begin
    OwningGraph := Nil;
@@ -351,6 +367,18 @@ end;
 procedure TGraphSettingsForm.HelpBtnClick(Sender: TObject);
 begin
    DisplayHTMLTopic('html\graph_options.htm');
+end;
+
+procedure TGraphSettingsForm.RadioGroup1Click(Sender: TObject);
+begin
+   case RadioGroup1.ItemIndex of
+       0 : OwningGraph.GraphDraw.InsideMarginLegend := lpNone;
+       1 : OwningGraph.GraphDraw.InsideMarginLegend := lpNWMap;
+       2 : OwningGraph.GraphDraw.InsideMarginLegend := lpNEMap;
+       3 : OwningGraph.GraphDraw.InsideMarginLegend := lpSWMap;
+       4 : OwningGraph.GraphDraw.InsideMarginLegend := lpSEMap;
+   end;
+   OwningGraph.RedrawDiagram11Click(Nil);
 end;
 
 procedure TGraphSettingsForm.RedrawSpeedButton12Click(Sender: TObject);

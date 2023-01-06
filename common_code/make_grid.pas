@@ -123,6 +123,7 @@ function AirBallDirtBallMap(DEMonMap,DSM,DTM : integer) : integer;
 const
    Tolerance = 0.51;
    HighTolerance = 2.51;
+   SimpleTolerance = 0.51;
 var
    AirBalls,i : integer;
    z1,z2,z3,What : float32;
@@ -147,12 +148,18 @@ begin
             if DEMGlb[DEMonMap].GetElevMetersOnGrid(x,y,z2) then begin
                DEMGlb[DEMonMap].DEMGridToLatLongDegree(x,y,Lat,Long);
                   if ((DSM = 0) or DEMGlb[DSM].GetElevFromLatLongDegree(Lat,Long,z3)) and DEMGlb[DTM].GetElevFromLatLongDegree(Lat,Long,z1) then begin
-                     if DSM = 0 then z3 := z1;
+                     if (DSM = 0) then z3 := z1;
+
+                     if z2 > z3 + SimpleTolerance then What := 5
+                     else if z2 < z1 - SimpleTolerance then What := 1
+                     else What := 3;
+                     (*
                      if z2 > z3 + HighTolerance then What := 5
                      else if z2 > z3 + Tolerance then What := 4
                      else if z2 > z1 - Tolerance then What := 3
                      else if z2 > z1 - HighTolerance then What := 2
                      else What := 1;
+                     *)
                      DEMglb[Airballs].SetGridElevation(x,y,what);
                      inc(Hist[round(what)]);
                   end;
@@ -161,12 +168,18 @@ begin
       end;
       Vat := tStringList.Create;
       Vat.add('VALUE,NAME,N,USE,COLOR');
+
+      if (Hist[5] > 0) then Vat.add('5,Air ball,' + IntToStr(Hist[5]) + ',Y,' + IntToStr(clBlue));
+      if (Hist[3] > 0) then Vat.add('3,Canopy' + ',' + IntToStr(Hist[3]) + ',Y,' + IntToStr(clLime));
+      if (Hist[1] > 0) then Vat.add('1,Ground ball,' + IntToStr(Hist[1]) + ',Y,' + IntToStr(clBrown));  //238,138,248)));
+
+      (*
       if (Hist[5] > 0) then Vat.add('5,High Air ball,' + IntToStr(Hist[5]) + ',Y,' + IntToStr(clBlue));
       if (Hist[4] > 0) then Vat.add('4,Low Air ball + ' + RealToString(HighTolerance,-5,1) + ',' + IntToStr(Hist[4]) + ',Y,' + IntToStr(RGB(0,255,255)));
       if (Hist[3] > 0) then Vat.add('3,Canopy ± ' + RealToString(Tolerance,-5,1) + ',' + IntToStr(Hist[3]) + ',Y,' + IntToStr(clLime));
       if (Hist[2] > 0) then Vat.add('2,Shallow Ground ball -' + RealToString(HighTolerance,-5,1) + ',' + IntToStr(Hist[2]) + ',Y,' + IntToStr(RGB(240,134,80)));
       if (Hist[1] > 0) then Vat.add('1,Deep Ground ball,' + IntToStr(Hist[1]) + ',Y,' + IntToStr(RGB(238,138,248)));
-
+      *)
       fName2 := MDTempDir + fName2 + '.vat.dbf';
       StringList2CSVtoDB(vat,fName2,true);
       DEMGlb[AirBalls].VATFileName := fName2;

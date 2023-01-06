@@ -3,8 +3,8 @@ object mess_cont_form: Tmess_cont_form
   Top = 345
   BorderIcons = []
   BorderStyle = bsDialog
-  ClientHeight = 281
-  ClientWidth = 470
+  ClientHeight = 272
+  ClientWidth = 464
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -15,13 +15,11 @@ object mess_cont_form: Tmess_cont_form
   TextHeight = 13
   object Panel1: TPanel
     Left = 0
-    Top = 240
-    Width = 470
+    Top = 231
+    Width = 464
     Height = 41
     Align = alBottom
     TabOrder = 0
-    ExplicitTop = 231
-    ExplicitWidth = 464
     object OKBtn: TBitBtn
       Left = 56
       Top = 6
@@ -39,8 +37,8 @@ object mess_cont_form: Tmess_cont_form
   object Memo1: TMemo
     Left = 0
     Top = 0
-    Width = 470
-    Height = 240
+    Width = 464
+    Height = 231
     Align = alClient
     Font.Charset = ANSI_CHARSET
     Font.Color = clWindowText
@@ -49,7 +47,5 @@ object mess_cont_form: Tmess_cont_form
     Font.Style = [fsBold]
     ParentFont = False
     TabOrder = 1
-    ExplicitWidth = 464
-    ExplicitHeight = 231
   end
 end

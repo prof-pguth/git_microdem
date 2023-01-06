@@ -1,8 +1,8 @@
 object SlicerForm: TSlicerForm
   Left = 0
   Top = 0
-  ClientHeight = 194
-  ClientWidth = 831
+  ClientHeight = 217
+  ClientWidth = 813
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -15,7 +15,7 @@ object SlicerForm: TSlicerForm
   TextHeight = 13
   object BitBtn1: TBitBtn
     Left = 8
-    Top = 135
+    Top = 153
     Width = 38
     Height = 25
     Glyph.Data = {
@@ -46,7 +46,7 @@ object SlicerForm: TSlicerForm
   end
   object BitBtn2: TBitBtn
     Left = 52
-    Top = 136
+    Top = 154
     Width = 50
     Height = 25
     Glyph.Data = {
@@ -60,7 +60,7 @@ object SlicerForm: TSlicerForm
   end
   object HelpBtn: TBitBtn
     Left = 222
-    Top = 135
+    Top = 153
     Width = 48
     Height = 27
     Kind = bkHelp
@@ -87,7 +87,7 @@ object SlicerForm: TSlicerForm
   end
   object BitBtn16: TBitBtn
     Left = 108
-    Top = 135
+    Top = 153
     Width = 61
     Height = 25
     Caption = 'Map pick'
@@ -96,7 +96,7 @@ object SlicerForm: TSlicerForm
   end
   object BitBtn11: TBitBtn
     Left = 492
-    Top = 175
+    Top = 193
     Width = 70
     Height = 25
     Caption = 'Trans && Rot'
@@ -105,7 +105,7 @@ object SlicerForm: TSlicerForm
   end
   object RadioGroup4: TRadioGroup
     Left = 286
-    Top = 128
+    Top = 145
     Width = 181
     Height = 33
     Caption = 'Slice thinning'
@@ -124,7 +124,7 @@ object SlicerForm: TSlicerForm
     Left = 239
     Top = 8
     Width = 210
-    Height = 106
+    Height = 131
     Caption = 'Cloud'
     TabOrder = 8
     object CheckBoxCloud1: TCheckBox
@@ -176,7 +176,7 @@ object SlicerForm: TSlicerForm
       Left = 11
       Top = 84
       Width = 166
-      Height = 17
+      Height = 19
       Caption = 'CheckBoxCloud4'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clMaroon
@@ -186,6 +186,15 @@ object SlicerForm: TSlicerForm
       ParentFont = False
       TabOrder = 3
       OnClick = CheckBoxCloud4Click
+    end
+    object CheckBoxCloud5: TCheckBox
+      Left = 11
+      Top = 109
+      Width = 126
+      Height = 17
+      Caption = 'CheckBoxCloud5'
+      TabOrder = 4
+      OnClick = CheckBoxCloud5Click
     end
   end
   object GroupBox1: TGroupBox
@@ -364,7 +373,7 @@ object SlicerForm: TSlicerForm
   end
   object BitBtn42: TBitBtn
     Left = 175
-    Top = 135
+    Top = 153
     Width = 41
     Height = 25
     Caption = 'Polar '
@@ -373,7 +382,7 @@ object SlicerForm: TSlicerForm
   end
   object BitBtn43: TBitBtn
     Left = 249
-    Top = 175
+    Top = 193
     Width = 75
     Height = 25
     Caption = 'Box stats'
@@ -382,7 +391,7 @@ object SlicerForm: TSlicerForm
   end
   object BitBtn44: TBitBtn
     Left = 330
-    Top = 175
+    Top = 193
     Width = 75
     Height = 25
     Caption = 'Canopy'
@@ -391,7 +400,7 @@ object SlicerForm: TSlicerForm
   end
   object BitBtn45: TBitBtn
     Left = 411
-    Top = 175
+    Top = 193
     Width = 75
     Height = 25
     Caption = 'Global DEMs'
