@@ -20,8 +20,8 @@ unit BaseGraf;
        //{$Define RecordGrafSize}
        //{$Define RecordGrafAxes}
        //{$Define RecordFormResize}
-       {$Define RecordHistogram}
-       {$Define RecordLegends}
+       //{$Define RecordHistogram}
+       //{$Define RecordLegends}
        //{$Define RecordSaveSeries}
        //{$Define RecordGrafAxis}
        //{$Define RecordHistogram}
@@ -4311,8 +4311,7 @@ const
    BinName : shortString = '';
    BinZ : float32 = 0;
 
-   {$IfDef ExSlicer3D}
-   {$Else}
+   {$IfDef IncludeVASAgis}
       procedure DoIt;
       begin
          PetMath.MinOfPairFirst(FirstX,LastX);
@@ -4336,11 +4335,11 @@ const
 var
    xv,yv : float32;
 begin
-   {$IfDef ExSlicer3D}
-   {$Else}
+   {$IfDef IncludeVASAgis}
       if (GraphDoing = gdGraphDBBoxFilter) and MouseIsDown then begin
          SlicerForm.MaskBoxPoints(GraphDraw.InvGraphX(FirstX),GraphDraw.InvGraphX(LastX),GraphDraw.InvGraphY(LastY),GraphDraw.InvGraphY(FirstY));
       end;
+
       if (GraphDoing = gdBoxOutlineAdd) and MouseIsDown then begin
          ReadDefault('Bin z',BinZ);
          GISdb[SlicerForm.BoxOutlineGIS].MyData.Edit;

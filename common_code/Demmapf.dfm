@@ -51,8 +51,8 @@ object MapForm: TMapForm
     ParentFont = False
     TabOrder = 0
     OnClick = ScrollBox1Click
-    ExplicitWidth = 1825
-    ExplicitHeight = 1130
+    ExplicitWidth = 1813
+    ExplicitHeight = 1112
     object Image1: TImage
       Left = 3
       Top = -247
@@ -209,13 +209,13 @@ object MapForm: TMapForm
     end
     object BlendPanel: TPanel
       Left = 0
-      Top = 1094
-      Width = 1827
+      Top = 1076
+      Width = 1815
       Height = 41
       Align = alBottom
       TabOrder = 8
-      ExplicitTop = 1085
-      ExplicitWidth = 1821
+      ExplicitTop = 1067
+      ExplicitWidth = 1809
       object TrackBar2: TTrackBar
         Left = 289
         Top = 1
@@ -339,6 +339,7 @@ object MapForm: TMapForm
     Align = alTop
     TabOrder = 1
     OnMouseDown = Panel1MouseDown
+    ExplicitWidth = 1813
     object AnnotateSpeedButton1: TSpeedButton
       Left = 31
       Top = -4
@@ -1732,14 +1733,6 @@ object MapForm: TMapForm
           object Reinterpolatepickprojection1: TMenuItem
             Caption = 'Reinterpolate, pick projection'
             OnClick = Reinterpolatepickprojection1Click
-          end
-          object ReinterpolateUTM1: TMenuItem
-            Caption = 'Reinterpolate, UTM '
-            GroupIndex = 1
-          end
-          object ReinterpolateLatLong1: TMenuItem
-            Caption = 'Reinterpolate, Lat/Long'
-            GroupIndex = 1
           end
           object ConvertUKOSDEM1: TMenuItem
             Caption = 'Convert UKOS DEM'

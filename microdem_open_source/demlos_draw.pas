@@ -1030,7 +1030,7 @@ begin
       if MDdef.ElevDisplayMeters then TStr := 'meters'
       else TStr := 'feet';
    end
-   else TStr := LabelElevUnits[DEMGlb[DEMOnView].DEMheader.ElevUnits];
+   else TStr := ElevUnitsAre[DEMGlb[DEMOnView].DEMheader.ElevUnits];
 
    BitmapTextOut(Bitmap,StartLOSLeft + PixLong + 20,StartLOSDown-20,TStr);
 

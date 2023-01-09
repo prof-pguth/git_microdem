@@ -500,7 +500,6 @@ type
     ACOLITEallopensatelliteimages1: TMenuItem;
     Fatfingers1: TMenuItem;
     DEMIXwinecontest1: TMenuItem;
-    UpdateEurekaValleyDEM1: TMenuItem;
     Closeprogramgetdebugversionoftheprogram7MB1: TMenuItem;
     KangarooIslandadditionalscenes1: TMenuItem;
     Openrecyclebin1: TMenuItem;
@@ -522,6 +521,9 @@ type
     OpenSentinel1radarimagery1: TMenuItem;
     DEMIX1: TMenuItem;
     DemixAnalysisPopupMenu: TPopupMenu;
+    N35: TMenuItem;
+    BatchNDVI: TMenuItem;
+    Annapolislidar8GB1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -867,7 +869,6 @@ type
     procedure Datadownloadpicksubset1Click(Sender: TObject);
     procedure Datadownload25GB1Click(Sender: TObject);
     procedure DEMIXwinecontest1Click(Sender: TObject);
-    procedure UpdateEurekaValleyDEM1Click(Sender: TObject);
     procedure Closeprogramgetdebugversionoftheprogram7MB1Click(Sender: TObject);
     procedure KangarooIslandadditionalscenes1Click(Sender: TObject);
     procedure Openrecyclebin1Click(Sender: TObject);
@@ -888,6 +889,8 @@ type
     procedure OpenDEMIXarea1Click(Sender: TObject);
     procedure OpenSentinel1radarimagery1Click(Sender: TObject);
     procedure DEMIX1Click(Sender: TObject);
+    procedure BatchNDVIClick(Sender: TObject);
+    procedure Annapolislidar8GB1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1119,7 +1122,9 @@ uses
       Make_grid,
    {$EndIf}
 
-   Simple_Python,
+   {$IfDef IncludePython}
+      Simple_Python,
+   {$EndIf}
    DEMIX_control,
 
    ufrmMain,
@@ -2135,6 +2140,7 @@ end;
 
 procedure Twmdem.SeeIfThereAreDebugThingsToDo;
 
+      (*
       procedure CheckSnyder;
       var
          Lat,Long,xutm,yutm : float64;
@@ -2150,10 +2156,12 @@ procedure Twmdem.SeeIfThereAreDebugThingsToDo;
          WriteLineToDebugFile('  should be 40.5, -73.5');
          Viewdebuglog1Click(Nil);
       end;
-
+      *)
 
 begin
-   //CheckSnyder;
+   if TrilobiteComputer then begin
+      OpenDEMIXArea('H:\wine_contest_reference_dems\uruguay.dbf');
+   end;
 end;
 
 function GetLanguageCaption(aTable : tMyData; Text,Language : shortstring) : shortstring;
@@ -2520,9 +2528,19 @@ begin
 
    MDdef.AutoZoomOpenLAS := true;
    GISdatasampler1Click(Sender);
-   if (LastDEMLoaded <> 0) then DEMGlb[LastDEMLoaded].SelectionMap.PointCloudSpeedButtonClick(Sender);
+   if (LastDEMLoaded <> 0) then begin
+
+      LastDEMLoaded := DEMGlb[LastDEMLoaded].ReinterpolateUTMDEM(2);
+
+      DEMGlb[LastDEMLoaded].SelectionMap.PointCloudSpeedButtonClick(Sender);
+   end;
 end;
 
+
+procedure Twmdem.Annapolislidar8GB1Click(Sender: TObject);
+begin
+   Annapolislidar1Click(Sender);
+end;
 
 procedure Twmdem.Annapolisredistricting1Click(Sender: TObject);
 {$IfDef ExRedistrict}
@@ -2564,6 +2582,12 @@ end;
 procedure Twmdem.ArcsecondspacingDTEDDGED1Click(Sender: TObject);
 begin
    MakeDTEDTable;
+end;
+
+
+procedure Twmdem.BatchNDVIClick(Sender: TObject);
+begin
+   Sentinel2BatchOps;
 end;
 
 
@@ -2611,7 +2635,7 @@ begin
    {$IfDef RecordClosing} WriteLineToDebugFile('Defaults saved ' + '  dbfn=' + DebugFileName); {$EndIf}
    DEM_Manager.CloseAllWindowsAndData;
    {$IfDef RecordClosing} WriteLineToDebugFile('Windows closed ' + '  dbfn=' + DebugFileName); {$EndIf}
-   if AskForDebugUpdateNow or AskForNewUpdateNow then begin
+  if AskForDebugUpdateNow or AskForNewUpdateNow then begin
       if MDDef.BackupEXEbeforeUpdate then BackupprogramEXE1Click(Sender);
       DeleteFileIfExists(ProgramRootDir + 'backup\microdem.exe');
       if AskForNewUpdateNow then DownloadFileFromWeb(WebProgramDownLoadDir + 'microdem_update.exe',MDTempDir + 'microdem_update.exe')
@@ -2906,19 +2930,6 @@ begin
    FormUnicode := TFormUnicode.Create(Application);
 end;
 
-
-procedure Twmdem.UpdateEurekaValleyDEM1Click(Sender: TObject);
-var
-   dName,fName : PathStr;
-begin
-   DownloadandUnzipDataFileIfNotPresent('New_ned_last_chance_range');
-   fName := MainMapData + 'New_ned_last_chance_range.tif';
-   if FileExists(fName) then begin
-      dName := MainMapData + 'eureka_valley_landslide\dem\New_ned_last_chance_range.tif';
-      Petmar.MoveFile(fName,dName);
-      OpenNewDEM(dName);
-   end;
-end;
 
 procedure Twmdem.Updatehelpfile1Click(Sender: TObject);
 var

@@ -407,6 +407,8 @@ type
     CheckBox169: TCheckBox;
     CheckBox180: TCheckBox;
     CheckBox25: TCheckBox;
+    CheckBox44: TCheckBox;
+    CheckBox181: TCheckBox;
     procedure BitBtn32Click(Sender: TObject);
     procedure BitBtn13Click(Sender: TObject);
     procedure HelpBtnClick(Sender: TObject);
@@ -1072,6 +1074,7 @@ begin
    CheckBox41.Checked := MDdef.WorldOutlinesOnGlobalBlueMarble;
    CheckBox42.Checked := MDDef.ModalDBDisplay;
    CheckBox43.Checked := MDDef.TransparentIcons;
+   CheckBox44.Checked := MDDef.ExperimentalSliceOptions;
 
    CheckBox45.Checked := MDdef.IgnoreHistogramZero;
    CheckBox46.Checked := MDdef.ShowClimateStationDB;
@@ -1181,6 +1184,8 @@ begin
    CheckBox157.Checked := MDDef.ShowWinExec;
    CheckBox159.Checked := MDDef.MapLimitDB;
    CheckBox161.Checked := MDDef.TigertoCDS;
+   CheckBox181.Checked := MDDef.DEMIXCompositeImage;
+
    CheckBox300.Checked := MDDef.SeaLevelToMissing;
 
    {$IfDef ExOSM}
@@ -1472,7 +1477,7 @@ begin
    MDdef.WorldOutlinesOnGlobalBlueMarble := CheckBox41.Checked;
    MDDef.ModalDBDisplay := CheckBox42.Checked;
    MDDef.TransparentIcons := CheckBox43.Checked;
-
+   MDDef.ExperimentalSliceOptions := CheckBox44.Checked;
    MDdef.AverageImageReadings := CheckBox40.Checked;
    MDDef.AspectBoxRegion := CheckBox49.Checked;
    MDDef.UseMapPanButtons := CheckBox51.Checked;
@@ -1609,6 +1614,7 @@ begin
    MDDef.DEMIX_DoSlopeDiff := CheckBox162.Checked;
    MDDef.DEMIX_DoRuffDiff := CheckBox169.Checked;
    MDDef.DEMIX_DoHalfSecDEMs := CheckBox180.Checked;
+   MDDef.DEMIXCompositeImage := CheckBox181.Checked;
 
    MDdef.StatSampleIncr := UpDown1.Position;
 

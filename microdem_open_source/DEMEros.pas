@@ -22,7 +22,7 @@
       //{$Define RecordKeyDraw}
       //{$Define RecordTMSat}
       //{$Define RecordDrawSatOnMap}
-      {$Define RecordSatRegistration}
+      //{$Define RecordSatRegistration}
       //{$Define RecordSatColor}
       //{$Define RecordByteLookup}
       //{$Define RecordTMSatFull}
@@ -1028,7 +1028,9 @@ begin
    NewHeadRecs.LatHemi := ImageMapProjection.LatHemi;
    OpenAndZeroNewDEM(true,NewHeadRecs,Result,NewBandTitle,InitDEMmissing);
 
-   DEMGlb[Result].DEMheader.ElevUnits := Undefined;
+   if (NewBand = nsbNDVI) then DEMGlb[Result].DEMheader.ElevUnits := euNDVI
+   else if (NewBand = nsbNBRNormalizedburnindex) then DEMGlb[Result].DEMheader.ElevUnits := euNBR
+   else DEMGlb[Result].DEMheader.ElevUnits := Undefined;
 
    {$IfDef RecordNewSat} WriteLineToDebugFile('band1=' + IntToStr(Band1) + '  band2=' + IntToStr(Band2) + '  band3=' + IntToStr(Band3)); {$EndIf}
 
@@ -1086,12 +1088,14 @@ begin
 
    {$IfDef VCL}
       if OpenMap then begin
-         CreateDEMSelectionMap(Result,(NewBand <> nsbNDVI),false,mtElevGray);
-         if (NewBand = nsbNDVI) then begin
+         CreateDEMSelectionMap(Result,true,true,mtDEMBlank);
+         (*
+         if (DEMGlb[Result].DEMheader.ElevUnits = euNDVI) then begin
             DEMGlb[Result].SelectionMap.MapDraw.MapType := mtElevFromTable;
             ElevationFixedPalette := 'ndvi-3';
             DEMGlb[Result].SelectionMap.DoBaseMapRedraw;
          end;
+         *)
       end;
    {$EndIf}
     WmDem.SetMenusForVersion;

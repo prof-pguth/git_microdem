@@ -333,7 +333,7 @@ uses
   JpegDumpOutputFrame in '..\xif\JpegDumpOutputFrame.pas' {NewOutputFrame: TFrame},
   U_SolarPos2 in '..\SolarPosSource\U_SolarPos2.pas' {SolorPosForm1},
   ufrmMain in '..\FireMonkey3DGlobalRotate\ufrmMain.pas' {frmMain},
-  simple_python in '..\python\simple_python.pas' {PythonForm1},
+  {$IfDef IncludePython} simple_python in '..\python\simple_python.pas' {PythonForm1}, {$EndIf}
   demix_filter in '..\common_code\demix_filter.pas' {DemixFilterForm},
   demix_control in '..\demix\demix_control.pas';
 

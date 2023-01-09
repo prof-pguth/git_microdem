@@ -1974,6 +1974,7 @@ var
          AParameter('PointCloud','SliceShapeWide',SliceShapeWide,2);
          AParameter('PointCloud','ClouderXSize',ClouderXSize,-99);
          AParameter('PointCloud','AutoSliceMore',AutoSliceMore,false);
+         AParameter('PointCloud','ExperimentalSliceOptions',ExperimentalSliceOptions,false);
          AParameter('PointCloud','ClouderYSize',ClouderYSize,-99);
          AParameter('PointCloud','CloudMemoryThinFactor',CloudMemoryThinFactor,1);
          AParameter('PointCloud','CloudSliceThinFactor',CloudSliceThinFactor,1);
@@ -2410,6 +2411,7 @@ var
             AParameter('DEMIX','DEMIX_DoRuffDiff',DEMIX_DoRuffDiff,true);
             AParameter('DEMIX','DEMIX_DoHalfSecDEMs',DEMIX_DoHalfSecDEMs,true);
             AParameter('DEMIX','DEMIX_DoElevParamGraphs',DEMIX_DoElevParamGraphs,true);
+            AParameter('DEMIX','DEMIXCompositeImage',DEMIXCompositeImage,true);
 
             {$IfDef ExMrSID}
             {$Else}

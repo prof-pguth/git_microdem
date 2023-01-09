@@ -2472,7 +2472,6 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     function ValidDifferentDEM(i : integer) : boolean; inline;
 
     procedure SetMapOverlays;
-    function NewSatWindow(nsb : tNewSatBand) : integer;
     procedure RestoreFullMap;
     procedure MakePanButtonsVisible(ButtonsVisible : boolean);
     function FindDBsOnMap : integer;
@@ -2658,6 +2657,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
 
     procedure MatchMapToThisOne(var DrapeMap : tMapForm);
     function DrawSlopeMask(Color : tColor; maxSlope : float64; DisplayAndPurge : boolean) : tMyBitmap;
+    function NewSatWindow(nsb : tNewSatBand) : integer;
 
     function DisplayAndPurgeStringListDB(var TheList : tStringList; fname : PathStr; OpenTable : boolean = true) : integer;
 
@@ -16923,9 +16923,9 @@ begin
    if DEMGlb[MapDraw.DEMonMap].DEMheader.DEMUsed = ArcSecDEM  then begin
         Spacing := 3600 * 0.1 * DEMGlb[MapDraw.DEMonMap].DEMheader.DEMxSpacing;  //since it has to be in arc seconds for the reinterpolation routine
         MDDef.wf.ElevInterpolation := piBicubic;
-        DEMGlb[MapDraw.DEMonMap].ReinterpolateLatLongDEM(NewDEM1,Spacing,MDTempDir + DEMGlb[MapDraw.DEMonMap].AreaName + '_bicubic.dem');
+        NewDEM1 := DEMGlb[MapDraw.DEMonMap].ReinterpolateLatLongDEM(Spacing,MDTempDir + DEMGlb[MapDraw.DEMonMap].AreaName + '_bicubic.dem');
         MDDef.wf.ElevInterpolation := piBilinear;
-        DEMGlb[MapDraw.DEMonMap].ReinterpolateLatLongDEM(NewDEM2,Spacing,MDTempDir + DEMGlb[MapDraw.DEMonMap].AreaName + '_biliear.dem');
+        NewDEM2 := DEMGlb[MapDraw.DEMonMap].ReinterpolateLatLongDEM(Spacing,MDTempDir + DEMGlb[MapDraw.DEMonMap].AreaName + '_biliear.dem');
    end;
    DEMGlb[NewDEM1].SetUpMap(NewDEM1,true,MapDraw.MapType);
    DEMGlb[NewDEM2].SetUpMap(NewDEM2,true,MapDraw.MapType);
@@ -17814,14 +17814,14 @@ var
       if What = 1 then begin
          DEMGlb[MapDraw.DEMonMap].LatLongDegreeToDEMGrid(RightClickLat,RightClickLong,xgf,ygf);
          if (MapDraw.DEMonMap <> 0) and DEMGlb[MapDraw.DEMonMap].GetElevFromLatLongDegree(RightClickLat,RightClickLong,z) then begin
-            sl.Add(RealToString(z,12,4) + ' ' + LabelElevUnits[DEMGlb[MapDraw.DEMonMap].DEMHeader.ElevUnits] + '   ' + DEMGlb[MapDraw.DEMonMap].AreaName + '  ' + DEMGridString(xgf,ygf));
+            sl.Add(RealToString(z,12,4) + ' ' + ElevUnitsAre[DEMGlb[MapDraw.DEMonMap].DEMHeader.ElevUnits] + '   ' + DEMGlb[MapDraw.DEMonMap].AreaName + '  ' + DEMGridString(xgf,ygf));
          end;
 
          for i := 1 to MaxDEMDataSets do begin
             if ValidDEM(i) and (i <> MapDraw.DEMonMap) then begin
                DEMGlb[i].LatLongDegreeToDEMGrid(RightClickLat,RightClickLong,xgf,ygf);
                if DEMGlb[i].GetElevFromLatLongDegree(RightClickLat,RightClickLong,z) then begin
-                  sl.Add(RealToString(z,12,4)+ ' ' + LabelElevUnits[DEMGlb[i].DEMHeader.ElevUnits] + '   ' + DEMGlb[i].AreaName + '  ' + DEMGridString(xgf,ygf));
+                  sl.Add(RealToString(z,12,4)+ ' ' + ElevUnitsAre[DEMGlb[i].DEMHeader.ElevUnits] + '   ' + DEMGlb[i].AreaName + '  ' + DEMGridString(xgf,ygf));
                end;
             end;
          end;
@@ -17829,14 +17829,14 @@ var
       else begin
          DEMGlb[MapDraw.DEMonMap].LatLongDegreeToDEMGridInteger(RightClickLat,RightClickLong,xg,yg);
          if (MapDraw.DEMonMap <> 0) and DEMGlb[MapDraw.DEMonMap].GetElevMetersOnGrid(xg,yg,z) then begin
-            sl.Add(RealToString(z,12,4) + ' ' + LabelElevUnits[DEMGlb[MapDraw.DEMonMap].DEMHeader.ElevUnits] + '   ' + DEMGlb[MapDraw.DEMonMap].AreaName + '  ' + DEMGridString(xg,yg));
+            sl.Add(RealToString(z,12,4) + ' ' + ElevUnitsAre[DEMGlb[MapDraw.DEMonMap].DEMHeader.ElevUnits] + '   ' + DEMGlb[MapDraw.DEMonMap].AreaName + '  ' + DEMGridString(xg,yg));
          end;
 
          for i := 1 to MaxDEMDataSets do begin
             if ValidDEM(i) and (i <> MapDraw.DEMonMap) then begin
                DEMGlb[i].LatLongDegreeToDEMGridInteger(RightClickLat,RightClickLong,xg,yg);
                if DEMGlb[i].GetElevMetersOnGrid(xg,yg,z) then begin
-                  sl.Add(RealToString(z,12,4)+ ' ' + LabelElevUnits[DEMGlb[i].DEMHeader.ElevUnits] + '   ' + DEMGlb[i].AreaName + '  ' + DEMGridString(xg,yg));
+                  sl.Add(RealToString(z,12,4)+ ' ' + ElevUnitsAre[DEMGlb[i].DEMHeader.ElevUnits] + '   ' + DEMGlb[i].AreaName + '  ' + DEMGridString(xg,yg));
                end;
             end;
          end;
@@ -19508,8 +19508,8 @@ begin
       MapHouseKeeping(DownDEM[i]);
 
       //upsample DEM by reinterpolation
-      if DEMGlb[DownDEM[i]].DEMheader.DEMUsed = UTMbasedDEM then DEMGlb[DownDEM[i]].ReinterpolateUTMDEM(UpDEM[i], 0.5 * DEMGlb[DownDEM[i]].DEMheader.DEMySpacing)
-      else DEMGlb[DownDEM[i]].ReinterpolateLatLongDEM(UpDEM[i], 0.5 * 3600 * DEMGlb[DownDEM[i]].DEMheader.DEMySpacing);
+      if DEMGlb[DownDEM[i]].DEMheader.DEMUsed = UTMbasedDEM then UpDEM[i] := DEMGlb[DownDEM[i]].ReinterpolateUTMDEM( 0.5 * DEMGlb[DownDEM[i]].DEMheader.DEMySpacing)
+      else UpDEM[i] := DEMGlb[DownDEM[i]].ReinterpolateLatLongDEM(0.5 * 3600 * DEMGlb[DownDEM[i]].DEMheader.DEMySpacing);
 
       DEMGlb[UpDEM[i]].AreaName := 'up_' + IntToStr(pred(i));
       MapHouseKeeping(UpDEM[i]);
@@ -20852,7 +20852,7 @@ begin
             Results.Add(Title);
             {$IfDef TrackNLCD} WriteLineToDebugFile(Title); {$EndIf}
          end;
-         Title := LabelElevUnits[DEMGlb[MapDraw.DEMonMap].DEMheader.ElevUnits] + '_' + DEMGlb[MapDraw.DEMonMap].AreaName;
+         Title := ElevUnitsAre[DEMGlb[MapDraw.DEMonMap].DEMheader.ElevUnits] + '_' + DEMGlb[MapDraw.DEMonMap].AreaName;
          fName := Petmar.NextFileNumber(MDTempDir, Title + '_','.dbf');
          Result := StringList2CSVtoDB(Results,fName);
       end;
@@ -23515,11 +23515,6 @@ begin
    NakedMapOptions;   //which calls SaveBackupDefaults;
    DEMNowDoing := Calculating;
    NewDEM := 0;
-
-   //if (Sender = ReinterpolateUTM1) then DEMGlb[MapDraw.DEMonMap].ReinterpolateUTMDEM(NewDEM,-1);
-   //if (Sender = ReinterpolateLatLong1) then DEMGlb[MapDraw.DEMonMap].ReinterpolateLatLongDEM(NewDEM,-1);
-
-
    if (Sender = ThinDEM1) then DEMGlb[MapDraw.DEMonMap].ThinThisDEM(NewDEM);
    if (Sender = Filter1) or (Sender = PickFilter1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcFilFile,NewDEM);
    if (Sender = Numberimmediateneighbors1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcNumNeigh,NewDEM);
@@ -23536,10 +23531,10 @@ begin
    if (Sender = StdDevinbox1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcSTD,NewDEM);
    if (Sender = Parametricisotropicsmoothing1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcParamIsotrop,NewDEM);
    if (Sender = RemoveTooFewSimilarNeighbors1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcDissimilarNeighbors,NewDEM);
-   if (Sender = Bytes1) then DEMGlb[MapDraw.DEMonMap].ResaveNewResolution(fcSaveByte,NewDEM);
-   if (Sender = Integer161) then DEMGlb[MapDraw.DEMonMap].ResaveNewResolution(fcSaveSmallInt,NewDEM);
-   if (Sender = Word1) then DEMGlb[MapDraw.DEMonMap].ResaveNewResolution(fcSaveWord,NewDEM);
-   if (Sender = FloatingPoint1) then DEMGlb[MapDraw.DEMonMap].ResaveNewResolution(fcSaveFloatingPoint,NewDEM);
+   if (Sender = Bytes1) then NewDEM := DEMGlb[MapDraw.DEMonMap].ResaveNewResolution(fcSaveByte);
+   if (Sender = Integer161) then NewDEM := DEMGlb[MapDraw.DEMonMap].ResaveNewResolution(fcSaveSmallInt);
+   if (Sender = Word1) then NewDEM := DEMGlb[MapDraw.DEMonMap].ResaveNewResolution(fcSaveWord);
+   if (Sender = FloatingPoint1) then NewDEM := DEMGlb[MapDraw.DEMonMap].ResaveNewResolution(fcSaveFloatingPoint);
    if (Sender = Western1) then DEMGlb[MapDraw.DEMonMap].FindEdgeThisDEM(NewDEM,cdW);
    if (Sender = Eastern1) then DEMGlb[MapDraw.DEMonMap].FindEdgeThisDEM(NewDEM,cdE);
    if (Sender = SouthWestern1) then DEMGlb[MapDraw.DEMonMap].FindEdgeThisDEM(NewDEM,cdSW);

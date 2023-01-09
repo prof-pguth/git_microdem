@@ -1801,13 +1801,13 @@ object wmdem: Twmdem
         object N19: TMenuItem
           Caption = '-'
         end
+        object Annapolislidar8GB1: TMenuItem
+          Caption = 'Annapolis lidar (8 GB)'
+          OnClick = Annapolislidar8GB1Click
+        end
         object Datadownload25GB1: TMenuItem
           Caption = 'Eureka Valley data download'
           OnClick = Datadownload25GB1Click
-        end
-        object UpdateEurekaValleyDEM1: TMenuItem
-          Caption = 'Update Eureka Valley DEM'
-          OnClick = UpdateEurekaValleyDEM1Click
         end
         object Datadownloadpicksubset1: TMenuItem
           Caption = 'Kangaroo Island data download'
@@ -2204,6 +2204,13 @@ object wmdem: Twmdem
         object ACOLITEallopensatelliteimages1: TMenuItem
           Caption = 'ACOLITE all open satellite images'
           OnClick = ACOLITEallopensatelliteimages1Click
+        end
+        object N35: TMenuItem
+          Caption = '-'
+        end
+        object BatchNDVI: TMenuItem
+          Caption = 'Sentinel-2 NBR and NDVI'
+          OnClick = BatchNDVIClick
         end
         object N3: TMenuItem
           Caption = '-'

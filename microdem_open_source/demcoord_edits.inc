@@ -328,7 +328,7 @@ var
    Lat,Long,xg,yg  : float64;
    z,z2,z3,z4 : float32;
 begin
-   {$IfDef RecordDEMEdits} WriteLineToDebugFile('tDEMDataSet.FillHolesSelectedBoxFromReferenceDEM in'); {$EndIf}
+   {$IfDef RecordDEMEdits} WriteLineToDebugFile('tDEMDataSet.FillHolesSelectedBoxFromReferenceDEM in, DEM=' + AreaName + ' fill from ' + DEMGlb[RefDEM].AreaName); {$EndIf}
    if (RefDEM = 0) then exit;
    if ShowSatProgress then StartProgress('Fill grid ' + AreaName);
    Changed := 0;
@@ -351,9 +351,10 @@ begin
              if DEMGLB[RefDEM].GetElevMeters(pred(x),pred(y),z) and  (abs(z) < 0.0001) and DEMGLB[RefDEM].GetElevMeters(pred(x),y,z2) and (abs(z2) < 0.0001) and
                 DEMGLB[RefDEM].GetElevMeters(x,pred(y),z3) and (abs(z3) < 0.0001) and DEMGLB[RefDEM].GetElevMeters(x,y,z4) and (abs(z4) < 0.0001) then begin
                    SetGridElevation(Col,Row,0);
+                   inc(Changed);
              end;
           end;
-          if (MissingDataInGrid(Col,Row) and (HoleFill = hfOnlyHole)) or (HoleFill = hfEverything) or (GetElevMeters(Col,Row,z2) and (HoleFill = hfOnlyValid)) then begin
+          if (HoleFill = hfOnlyHole) and (MissingDataInGrid(Col,Row)) or (HoleFill = hfEverything) or ((HoleFill = hfOnlyValid) and GetElevMeters(Col,Row,z2)) then begin
              if SameGrids then begin
                 if DEMGLB[RefDEM].GetElevMeters(Col,Row,z) then begin
                    SetGridElevation(Col,Row,z);

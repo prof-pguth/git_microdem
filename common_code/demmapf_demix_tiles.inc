@@ -47,7 +47,7 @@ begin
 
    fName := OutPath + 'md_' + DEMGlb[DEM].AreaName + '_upsample_0.5sec_area.tif';
    {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX, ' + fName); {$EndIf}
-   DEMGlb[NewDEM].ReinterpolateLatLongDEM(NewDEM2,0.5);
+   NewDEM2 := DEMGlb[NewDEM].ReinterpolateLatLongDEM(0.5);
    DEMGlb[NewDEM2].SaveAsGeotiff(FName);
    CloseSingleDEM(newDEM2);
    CloseSingleDEM(newDEM);
@@ -60,7 +60,7 @@ begin
 
    fName := OutPath + 'md_' + DEMGlb[DEM].AreaName + '_upsample_0.5sec_point.tif';
    {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX, ' + fName); {$EndIf}
-   DEMGlb[NewDEM].ReinterpolateLatLongDEM(NewDEM2,0.5);
+   NewDEM2 := DEMGlb[NewDEM].ReinterpolateLatLongDEM(0.5);
    DEMGlb[NewDEM2].SaveAsGeotiff(FName);
    CloseSingleDEM(newDEM2);
    CloseSingleDEM(newDEM);

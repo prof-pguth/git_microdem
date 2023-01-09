@@ -1791,7 +1791,7 @@ inherited OptionsForm: TOptionsForm
         Top = 265
         Width = 369
         Height = 17
-        Caption = 'Cumulative frequency on normal probability axis'
+        Caption = 'Cumulative freq on normal prob axis'
         TabOrder = 11
       end
       object CheckBox150: TCheckBox
@@ -1844,7 +1844,7 @@ inherited OptionsForm: TOptionsForm
         Left = 584
         Top = 8
         Width = 225
-        Height = 251
+        Height = 337
         Caption = 'DEMIX'
         TabOrder = 17
         object DTfilllabel: TLabel
@@ -1917,6 +1917,14 @@ inherited OptionsForm: TOptionsForm
           Height = 17
           Caption = 'Elevation parmeter graphs'
           TabOrder = 7
+        end
+        object CheckBox181: TCheckBox
+          Left = 24
+          Top = 272
+          Width = 161
+          Height = 17
+          Caption = 'Composite images'
+          TabOrder = 8
         end
       end
     end
@@ -3053,16 +3061,16 @@ inherited OptionsForm: TOptionsForm
         Caption = 'Data sets'
         TabOrder = 1
         object CheckBox113: TCheckBox
-          Left = 16
-          Top = 17
+          Left = 11
+          Top = 33
           Width = 169
           Height = 17
           Caption = 'Global topography'
           TabOrder = 0
         end
         object CheckBox114: TCheckBox
-          Left = 16
-          Top = 40
+          Left = 11
+          Top = 56
           Width = 166
           Height = 17
           Caption = 'Blue marble imagery'
@@ -3135,7 +3143,7 @@ inherited OptionsForm: TOptionsForm
         object CheckBox138: TCheckBox
           Left = 16
           Top = 47
-          Width = 119
+          Width = 149
           Height = 17
           Caption = 'Geomorphometry'
           TabOrder = 7
@@ -3204,6 +3212,14 @@ inherited OptionsForm: TOptionsForm
         Height = 17
         Caption = 'Point clouds'
         TabOrder = 10
+      end
+      object CheckBox44: TCheckBox
+        Left = 360
+        Top = 366
+        Width = 233
+        Height = 17
+        Caption = 'Experimental slice options'
+        TabOrder = 11
       end
     end
   end

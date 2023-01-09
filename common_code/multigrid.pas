@@ -15,7 +15,7 @@ unit multigrid;
    {$IFDEF DEBUG}
       //{$Define RecordMultiGrids}
       //{$Define RecordHyperion}
-      {$Define RecordSentinel1}
+      //{$Define RecordSentinel1}
       //{$Define RecordMultiGridsDetailed}
       //{$Define RecordCloseMultiGrids}
       //{$Define RecordSatClass}
@@ -1833,7 +1833,7 @@ begin
             {$IfDef RecordMultiGridsDetailed} WriteLineToDebugFile('Resolution good on  ' + ExtractFileName(DEMGlb[Grids[Band]].DEMFileName)); {$EndIf}
          end
          else begin
-            DEMGlb[Grids[Band]].ReinterpolateUTMDEM(NewGrid,Resolution,-99,DEMGlb[Grids[Band]].DEMFileName);
+            NewGrid := DEMGlb[Grids[Band]].ReinterpolateUTMDEM(Resolution,-99,DEMGlb[Grids[Band]].DEMFileName);
             DEMGlb[Grids[Band]].FreeDEMMemory;
             DEMGlb[Grids[Band]].ReloadDEM(true);
             {$IfDef RecordMultiGridsDetailed} WriteLineToDebugFile('Reinterpolated ' + ExtractFileName(DEMGlb[Grids[Band]].DEMFileName)); {$EndIf}

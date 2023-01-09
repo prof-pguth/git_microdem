@@ -11,8 +11,8 @@ unit ChirpGrf;
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
     {$IfDef Debug}
        //{$Define RecordTraces}
-       {$Define RecordChirpGraph}
-       {$Define RecordChirpFence}
+       //{$Define RecordChirpGraph}
+       //{$Define RecordChirpFence}
     {$EndIf}
 {$EndIf}
 

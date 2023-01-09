@@ -101,7 +101,6 @@ type
          LasExportThinFactor,
          UTMZone : integer;
          TotalCloudPts : int64;
-         //RGBPresent,
          ShowLASProgress,
          HasIntensity,
          HasClassification,
@@ -901,7 +900,6 @@ var
             AddPresence(HasReturnNumbers);
             AddPresence(HasNIR);
 
-
              (*
              if HasClassification then TileStr := TileStr + ',Y'  else TileStr := TileStr + ',N';
              if HasRGB then TileStr := TileStr + ',Y'             else TileStr := TileStr + ',N';
@@ -927,8 +925,7 @@ var
 
             for i := 0 to LasData.ReadsRequired do begin
                {$IfDef RecordLASHistFull}
-                  WriteLineToDebugFile('Read ' + IntToStr(i) + '/' + IntToStr(LasData.ReadsRequired));
-                  WmDEM.SetPanelText(0,'Read ' + IntToStr(i) + '/' + IntToStr(LasData.ReadsRequired));
+                  WriteLineToDebugFile('Read ' + IntToStr(i) + '/' + IntToStr(LasData.ReadsRequired)); WmDEM.SetPanelText(0,'Read ' + IntToStr(i) + '/' + IntToStr(LasData.ReadsRequired));
                {$EndIf}
                 ThreadTimers.Gauge1.Progress := round(100 * i/LasData.ReadsRequired);
                 LasData.ReadPoints(RecsRead);
@@ -1024,7 +1021,6 @@ begin
       if TileTable then begin
          {$IfDef RecordLASHist} WriteLineToDebugFile('tLas_files.CloudStatistics TileTable'); {$EndIf}
          fName := ChangeFileExt(IndexTableName,'.csv');
-         //Tiles.SaveToFile(MDTempDir + 'tiles.csv');
          PetDBUtils.StringList2CSVtoDB(Tiles,fName,true);
          Cats.Free;
          ReadPointCloudPropertiesFromTable;
@@ -1058,7 +1054,6 @@ begin
         if (NewName = '') then NewName := Petmar.NextFileNumber(MDTempDir, CloudName + '_','.las');
         Result := MergeLasPoints(mlOnMask,BaseMap,NewName,Mask);
       end;
-      //DEMDefs.VasaProjectFName := NewName;
    end;
 end;
 
@@ -1119,7 +1114,6 @@ begin
                    end {if Nofilter};
                 end {for j};
              end {for i};
-            //lf.FreeLASRecordMemory;
           end;
           lf.Destroy;
       end;
@@ -1329,7 +1323,6 @@ begin
              NewLas := tCreateLasFile.Create;
              NewLas.NewLasHeader := lf.LasHeader;
              NewLAS.CreateNewLASfile(NewName,lf.lasProjectionDefinition,lf.LasHeader);
-             //NewLas.InitializeOutputBuffer;
           end;
           for i := 0 to lf.ReadsRequired do begin
              lf.ReadPoints(RecsRead);

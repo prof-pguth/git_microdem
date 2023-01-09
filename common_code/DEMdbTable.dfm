@@ -24,6 +24,8 @@ object dbtablef: Tdbtablef
       item
         Width = 250
       end>
+    ExplicitTop = 1063
+    ExplicitWidth = 1334
   end
   object Panel2: TPanel
     Left = 0
@@ -32,6 +34,7 @@ object dbtablef: Tdbtablef
     Height = 32
     Align = alTop
     TabOrder = 1
+    ExplicitWidth = 1334
     object BitBtn1: TBitBtn
       Left = 34
       Top = 1
@@ -216,6 +219,7 @@ object dbtablef: Tdbtablef
     Height = 41
     Align = alTop
     TabOrder = 2
+    ExplicitWidth = 1334
     object Label2: TLabel
       Left = 12
       Top = 12
@@ -224,15 +228,15 @@ object dbtablef: Tdbtablef
       Caption = 'Find:'
     end
     object Edit1: TEdit
-      Left = 42
-      Top = 12
+      Left = 56
+      Top = 7
       Width = 145
       Height = 28
       TabOrder = 0
       OnChange = Edit1Change
     end
     object BitBtn11: TBitBtn
-      Left = 199
+      Left = 207
       Top = 10
       Width = 102
       Height = 25
@@ -241,8 +245,8 @@ object dbtablef: Tdbtablef
       OnClick = BitBtn11Click
     end
     object BitBtn22: TBitBtn
-      Left = 432
-      Top = 6
+      Left = 447
+      Top = 10
       Width = 81
       Height = 25
       Caption = 'Gaz Opts'
@@ -250,9 +254,9 @@ object dbtablef: Tdbtablef
       OnClick = BitBtn22Click
     end
     object Features: TCheckBox
-      Left = 307
+      Left = 315
       Top = 6
-      Width = 102
+      Width = 126
       Height = 17
       Caption = 'Label Features'
       TabOrder = 3
@@ -266,6 +270,7 @@ object dbtablef: Tdbtablef
     Height = 41
     Align = alTop
     TabOrder = 4
+    ExplicitWidth = 1334
     object LOSButton: TSpeedButton
       Left = 40
       Top = 6
@@ -528,7 +533,7 @@ object dbtablef: Tdbtablef
     Height = 41
     Align = alTop
     TabOrder = 3
-    ExplicitWidth = 1346
+    ExplicitWidth = 1334
     object RadioGroup2: TRadioGroup
       Left = 20
       Top = 0

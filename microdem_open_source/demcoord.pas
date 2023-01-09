@@ -538,8 +538,8 @@ type
 
          procedure ResetPrimaryDatumZone(NewLong : float64);
 
-         procedure ReinterpolateLatLongDEM(var NewDEM : integer; SpacingArcSec : float64; fName : PathStr = ''); //AddCaption : shortstring = '');
-         procedure ReinterpolateUTMDEM(var NewDEM : integer; FloatSpacingMeters : float64; UTMzone : int16 = -99; fName : PathStr = ''); //AddCaption : shortstring = '');
+         function ReinterpolateLatLongDEM(SpacingArcSec : float64; fName : PathStr = '') : integer;
+         function ReinterpolateUTMDEM(FloatSpacingMeters : float64; UTMzone : int16 = -99; fName : PathStr = '') : integer; //AddCaption : shortstring = '');
          function ResampleByAveraging(OpenMap : boolean; SaveCountGrid : boolean = true; SaveName : PathStr = '') : integer;
 
          procedure WriteNewFormatDEM(var FileName : PathStr; WhatFor : shortstring = '');  overload;
@@ -577,7 +577,7 @@ type
          procedure AverageResampleThisDEM(var ThinDEM : integer; ThinFactor : integer = 0);
          procedure FilterThisDEM(FilterCategory : tFilterCat; var NewDEM : integer; BoxSize : integer = 0; FilterName : PathStr = '');
          function DetrendDEM(Normalize : boolean = true; FilterRadius : integer = 2) : integer;
-         procedure ResaveNewResolution(FilterCategory : tFilterCat; var NewDEM : integer);
+         function ResaveNewResolution(FilterCategory : tFilterCat) : integer;
 
          function RectangleSubsetDEM(GridLimits : tGridLimits; FileName : PathStr = '') : PathStr; overload;
          function RectangleSubsetDEM(GridLimits : tGridLimits; OpenMaps : boolean) : integer; overload;
@@ -1476,7 +1476,7 @@ var
    Dec : integer;
 begin
    if ElevationDEM then Dec := 1 else Dec := 6;
-   Result := 'z range: ' + RealToString(DEMheader.MinElev,-18,-Dec) + ' to ' + RealToString(DEMheader.MaxElev,-18,-Dec) + ' ' + LabelElevUnits[DEMheader.ElevUnits];
+   Result := 'z range: ' + RealToString(DEMheader.MinElev,-18,-Dec) + ' to ' + RealToString(DEMheader.MaxElev,-18,-Dec) + ' ' + ElevUnitsAre[DEMheader.ElevUnits];
 end;
 
 function tDEMDataSet.ColsRowsString : ShortString;
@@ -2005,7 +2005,7 @@ begin
 end;
 
 
-procedure tDEMDataSet.ResaveNewResolution(FilterCategory : tFilterCat; var NewDEM : integer);
+function tDEMDataSet.ResaveNewResolution(FilterCategory : tFilterCat) : integer;
 //const
    //MaxSize = 1000;
 var
@@ -2027,16 +2027,16 @@ begin
       fcSaveFloatingPoint : Title  := 'float32';
    end;
 
-   OpenAndZeroNewDEM(true,NewHeadRecs,NewDEM,Title + '_' + AreaName,InitDEMmissing);
-   StartProgress(DEMGlb[NewDEM].AreaName);
-   for Row := 0 to pred(DEMGlb[NewDEM].DEMheader.NumRow) do begin
-      if (Col mod 100 = 0) then UpdateProgressBar(Col / pred(DEMGlb[NewDEM].DEMheader.NumRow));
-      for Col := 0 to pred(DEMGlb[NewDEM].DEMheader.NumCol) do begin
-         if GetElevMeters(Col,Row,z1) then DEMGlb[NewDEM].SetGridElevation(Col,Row,z1);
+   OpenAndZeroNewDEM(true,NewHeadRecs,Result,Title + '_' + AreaName,InitDEMmissing);
+   StartProgress(DEMGlb[Result].AreaName);
+   for Row := 0 to pred(DEMGlb[Result].DEMheader.NumRow) do begin
+      if (Col mod 100 = 0) then UpdateProgressBar(Col / pred(DEMGlb[Result].DEMheader.NumRow));
+      for Col := 0 to pred(DEMGlb[Result].DEMheader.NumCol) do begin
+         if GetElevMeters(Col,Row,z1) then DEMGlb[Result].SetGridElevation(Col,Row,z1);
       end;
    end {for};
 
-   DEMGlb[NewDEM].CheckMaxMinElev;
+   DEMGlb[Result].CheckMaxMinElev;
    EndProgress;
    //if (Removed > 0) then MessageToContinue('Points removed: ' + IntToStr(Removed));
 end;
@@ -3421,7 +3421,7 @@ end;
 
 procedure tDEMDataSet.SetNewDEM(var NewDEM : integer);
 begin
-   {$IfDef RecordCreateNewDEM} WriteLineToDebugFile('enter tDEMDataSet.SetNewDEM=' + IntToStr(NewDEM)); {$EndIf}
+   {$IfDef RecordCreateNewDEM} WriteLineToDebugFile('enter tDEMDataSet.SetNewDEM'); {$EndIf}
    NewDEM := 0;
    OpenDEMDataStructures(NewDEM);
    DEMGlb[NewDEM].DEMheader := DEMheader;
@@ -3432,11 +3432,11 @@ begin
    DEMGlb[NewDEM].DEMheader.DigitizeDatum := WGS84d;
    DEMGlb[NewDEM].DefineDEMVariables(true);
    DEMGlb[NewDEM].AllocateDEMMemory(InitDEMmissing);
-   {$If Defined(RecordCreateNewDEM) or Defined(RecordResample)} WriteLineToDebugFile('exit tDEMDataSet.SetNewDEM=' + IntToStr(NewDEM)); {$EndIf}
+   {$If Defined(RecordCreateNewDEM) or Defined(RecordResample)} WriteLineToDebugFile('exit tDEMDataSet.SetNewDEM, NewDEM=' + IntToStr(NewDEM)); {$EndIf}
 end;
 
 
-procedure tDEMDataSet.ReinterpolateUTMDEM(var NewDEM : integer; FloatSpacingMeters : float64;  UTMzone : int16 = -99; fName : PathStr = ''); //fName : PathStr = ''; AddCaption : shortstring = '');
+function tDEMDataSet.ReinterpolateUTMDEM(FloatSpacingMeters : float64;  UTMzone : int16 = -99; fName : PathStr = '') : integer; //fName : PathStr = ''; AddCaption : shortstring = '');
 begin
    {$IfDef RecordResample} WriteLineToDebugFile('tDEMDataSet.ReinterpolateUTMDEM in'); {$EndIf}
 
@@ -3446,38 +3446,38 @@ begin
    end;
 
    if (UTMZone < 0) then begin
-      MDdef.DefaultUTMZone := DEMMapProjection.projUTMZone;
-      ReadDefault('UTM zone',MDdef.DefaultUTMZone);
+      //MDdef.DefaultUTMZone := DEMMapProjection.projUTMZone;
+      //ReadDefault('UTM zone',MDdef.DefaultUTMZone);
+      MDdef.DefaultUTMZone := DEMHeader.UTMzone;
    end
    else MDdef.DefaultUTMZone := UTMzone;
-   NewDEM := SelectionMap.CreateGridToMatchMap(cgUTM,false,FloatingPointDEM,FloatSpacingMeters,FloatSpacingMeters,MDdef.DefaultUTMZone,MDDef.LasDEMPixelIs);
-   DEMGlb[NewDEM].FillHolesSelectedBoxFromReferenceDEM(DEMGlb[NewDEM].FullDEMGridLimits,SelectionMap.MapDraw.DEMonMap,hfOnlyHole);
-   if (fName = '') then DEMGlb[NewDEM].AreaName := AreaName + '_utm_reint_' + RealToString(FloatSpacingMeters,-8,-2)
-   else begin
-      DEMGlb[NewDEM].AreaName := ExtractFileNameNoExt(fName);
-      DEMGlb[NewDEM].WriteNewFormatDEM(fName);
+   Result := SelectionMap.CreateGridToMatchMap(cgUTM,false,FloatingPointDEM,FloatSpacingMeters,FloatSpacingMeters,MDdef.DefaultUTMZone,MDDef.LasDEMPixelIs);
+   DEMGlb[Result].AreaName := AreaName + '_utm_reint_' + RealToString(FloatSpacingMeters,-8,-2);
+   DEMGlb[Result].FillHolesSelectedBoxFromReferenceDEM(DEMGlb[Result].FullDEMGridLimits,ThisDEM,hfEverything);
+   if (fName <> '') then begin
+      DEMGlb[Result].AreaName := ExtractFileNameNoExt(fName);
+      DEMGlb[Result].WriteNewFormatDEM(fName);
    end;
-   {$IfDef RecordResample} WriteLineToDebugFile('tDEMDataSet.ReinterpolateUTMDEM out, New DEM=' + IntToStr(NewDEM)); {$EndIf}
+   {$IfDef RecordResample} WriteLineToDebugFile('tDEMDataSet.ReinterpolateUTMDEM out, New DEM=' + IntToStr(Result)); {$EndIf}
 end;
 
 
-procedure tDEMDataSet.ReinterpolateLatLongDEM(var NewDEM : integer; SpacingArcSec : float64; fName : PathStr = '');  //; AddCaption : shortstring = '');
+function tDEMDataSet.ReinterpolateLatLongDEM(SpacingArcSec : float64; fName : PathStr = '') : integer;  //; AddCaption : shortstring = '');
 begin
    if (SpacingArcSec < 0) then begin
       SpacingArcSec := 1;
       ReadDefault('Spacing for new DEM (sec)',SpacingArcSec);
    end;
-   {$IfDef RecordResample} WriteLineToDebugFile('Resample Lat/Long,  Spacing sec=' + RealToString(SpacingArcSec,-8,2)); {$EndIf}
-   NewDEM := SelectionMap.CreateGridToMatchMap(cgLatLong,false,FloatingPointDEM,SpacingArcSec,SpacingArcSec,MDdef.DefaultUTMZone,MDDef.LasDEMPixelIs);
 
-   DEMGlb[NewDEM].FillHolesSelectedBoxFromReferenceDEM(DEMGlb[NewDEM].FullDEMGridLimits,SelectionMap.MapDraw.DEMonMap,hfOnlyHole);
-   if (fName = '') then DEMGlb[NewDEM].AreaName := AreaName + '_geo_reint_' + RealToString(SpacingArcSec,-8,-2)
+   {$IfDef RecordResample} WriteLineToDebugFile('Resample ' + AreaName + ' Lat/Long,  Spacing sec=' + RealToString(SpacingArcSec,-8,2) + '  ' + KeyDEMParams(true)); {$EndIf}
+   Result := SelectionMap.CreateGridToMatchMap(cgLatLong,false,FloatingPointDEM,SpacingArcSec,SpacingArcSec,MDdef.DefaultUTMZone,MDDef.LasDEMPixelIs);
+   DEMGlb[Result].FillHolesSelectedBoxFromReferenceDEM(DEMGlb[Result].FullDEMGridLimits,ThisDEM,hfEverything);
+   if (fName = '') then DEMGlb[Result].AreaName := AreaName + '_geo_reint_' + RealToString(SpacingArcSec,-8,-2)
    else begin
-      DEMGlb[NewDEM].AreaName := ExtractFileNameNoExt(fName);
-      DEMGlb[NewDEM].WriteNewFormatDEM(fName);
-      {$IfDef RecordResample} WriteLineToDebugFile('Resample Lat/Long, saved to ' + fName); {$EndIf}
+      DEMGlb[Result].AreaName := ExtractFileNameNoExt(fName);
+      DEMGlb[Result].WriteNewFormatDEM(fName);
+      {$IfDef RecordResample} WriteLineToDebugFile('Resample Lat/Long, saved to ' + fName + '   '  + DEMGlb[Result].KeyDEMParams(true)); {$EndIf}
    end;
-
 end;
 
 

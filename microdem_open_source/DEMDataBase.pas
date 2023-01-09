@@ -16,7 +16,7 @@
    {$IfDef RecordProblems}  //normally only defined for debugging specific problems
       //{$Define RecordCloseDB}
       {$Define RecordDEMIX}
-      {$Define RecordDEMIXFull}
+      //{$Define RecordDEMIXFull}
       //{$Define RecordDEMIXties}   //only enable for small test DB
       //{$Define RecordSymbolColor}
       //{$Define RecordRedistrict}
@@ -2785,7 +2785,6 @@ end;
             end;
 
 
-
             procedure MaskDEMFromShapeFile(DEM,DBonTable : integer; UseShapeFile,MaskShapesAreIn : boolean; SingleRecord  : integer; MaskingDistance : float64; ProgressCount : shortstring = '');
             var
                oldDBSaveOptions : tDBSaveOptions;
@@ -2818,7 +2817,7 @@ end;
 
             begin
               {$IfDef RecordMaskDEMShapeFile} WriteLineToDebugFile('MaskDEMfromshapefile in , mask=' + RealToString(MaskingDistance,-12,-2)); {$EndIf}
-               with GISdb[DBonTable] do begin
+               if DBonTable <> 0 then with GISdb[DBonTable] do begin
                  oldDBSaveOptions := dbOpts;
                  DEMDef_routines.SaveBackupDefaults;
                  SetOptionsForMapWithNoMarginalia;
@@ -2830,8 +2829,8 @@ end;
                  CopyImageToBitmap(DEMGlb[DEM].SelectionMap.Image1,MapBMP);
                  CloneImageToBitmap(DEMGlb[DEM].SelectionMap.Image1,MaskBMP);
 
-                 {$IfDef RecordMaskDEMShapeFileBMP} PetImage.SaveBitmap(MaskBMP,MDTempDir + 'cloned' + OverlayFExt); {$EndIf}
                  EmpSource.Enabled := false;
+                 {$IfDef RecordMaskDEMShapeFileBMP} PetImage.SaveBitmap(MaskBMP,MDTempDir + 'cloned' + OverlayFExt); {$EndIf}
                  {$IfDef RecordMaskDEMShapeFile} WriteLineToDebugFile('MaskDEMfromshapefile prelims over'); {$EndIf}
 
                  if SimplePointFile then begin
@@ -2916,7 +2915,6 @@ end;
                        WriteLineToDebugFile('MapCorners.BoundBoxDataGrid:  ' + sfBoundBoxToString(TheMapOwner.MapDraw.MapCorners.BoundBoxDataGrid));
                     {$EndIf}
 
-
                     BMPMemory := tBMPMemory.Create(MaskBMP);
                     StartProgress('Mask ' + ProgressCount);
                     for Col := 0 to pred(DEMGlb[DEM].DEMheader.NumCol) do begin
@@ -2936,29 +2934,8 @@ end;
                     end;
                     BMPMemory.Destroy;
 
-
-                 (*
-                 end
-                 else begin
-                    {$IfDef RecordMaskDEMShapeFile} WriteLineToDebugFile('MaskDEMfromshapefile1Click MapZoomFactor > 0.99'); {$EndIf}
-                     for y := 0 to pred(MaskBMP.Height) do begin
-                        if MaskShapesAreIn then Color := RGBTripleWhite
-                        else Color := RGBTripleBlack;
-                        p1 := MaskBMP.ScanLine[y];
-                        if (y mod 25 = 0) then UpDateProgressBar(y/MaskBMP.Height);
-                        for x := 0 to pred(MaskBMP.Width) do begin
-                           if SameColor(p1[x],Color) then begin
-                              TheMapOwner.MapDraw.ScreenToDEMGrid(x,y,xg,yg);
-                              DEMGlb[DEM].SetGridMissing(xg,yg);
-                           end;
-                        end;
-                     end;
-                  end;
-                 *)
-
                   EndProgress;
                   {$IfDef RecordMaskDEMShapeFile} WriteLineToDebugFile('MaskDEMfromshapefile1Click masking over'); {$EndIf}
-
                   {$IfDef RecordMaskDEMShapeFileBMP} PetImage.SaveBitmap(MaskBMP,MDTempDir + 'final_Mask.bmp'); {$EndIf}
 
                   FreeAndNil(MaskBMP);

@@ -17,7 +17,7 @@ unit dem_manager;
       //{$Define RecordNewMaps}
       //{$Define LoadDEMsCovering}
       //{$Define RecordProjects}
-      {$Define RecordDownload}
+      //{$Define RecordDownload}
       //{$Define RecordGet2DEMs}
       //{$Define RecordWhatsOpen}
       //{$Define RecordStartup}
@@ -133,7 +133,9 @@ procedure CheckGeoidNames;
 {$Else}
    procedure CloseAllImagery;
    procedure CloseSingleSatelliteImage(var j : integer);
-   procedure OpenSatImageFromDirectory(LastSatDir : PathStr);
+   //procedure OpenSatImageFromDirectory(LastSatDir : PathStr);
+   function OpenSatImageFromDirectory(LastSatDir : PathStr) : integer;
+
    {$IfDef VCL}
       procedure PickAndOpenImagery(ImageType : tImageType);
       procedure PickSatDirToOpen;
@@ -263,6 +265,7 @@ uses
    {$EndIf}
 
    toggle_db_use,
+   DEMIX_Control,
 
    Make_Tables,
    Map_overlays,
@@ -619,19 +622,19 @@ end;
 procedure CloseSingleDEM(var DEMtoClose : integer; ResetMenus : boolean = true);
 
 
-      procedure CloseYeDEM(i : integer);
+      procedure CloseYeDEM(DEMnowClosing : integer);
       begin
-         if ValidDEM(i) then try
+         if ValidDEM(DEMnowClosing) then try
             try
                {$IfDef RecordCloseDEM} WriteLineToDebugFile('Destroy DEMGlb=' + IntToStr(i) + '  ' + DEMGlb[i].AreaName); {$EndIf}
-               DEMGlb[i].Destroy;
+               DEMGlb[DEMnowClosing].Destroy;
                {$IfDef RecordCloseDEM} WriteLineToDebugFile('Destroy OK for DEMGlb=' + IntToStr(i)); {$EndIf}
             except
-                  on Exception do ;
+                on Exception do ;
             end
          finally
             {$IfDef RecordCloseDEM} WriteLineToDebugFile('Have to Nil DEMGlb=' + IntToStr(i)); {$EndIf}
-            DEMGlb[i] := Nil;
+            DEMGlb[DEMnowClosing] := Nil;
          end;
       end;
 
@@ -644,22 +647,29 @@ begin
       ClosingIsHappening := true;
       if ValidDEM(DEMtoClose) then begin
          CloseString := 'CloseSingleDEM, dem=' + IntToStr(DEMtoClose) + '   ' + DEMGlb[DEMtoClose].AreaName;
-         {$If Defined(RecordCloseDEM)} WriteLineToDebugFile('In ' + CloseString); {$EndIf}
-         if (DEMtoClose = PredAgesDEM) then PredAgesDEM := 0;
-         if (DEMtoClose = SedThickDEM) then SedThickDEM := 0;
-         if (DEMtoClose = SedTypeDEM) then SedTypeDEM := 0;
+         {$If Defined(RecordCloseDEM) or Defined(ShortRecordCloseDEM)} WriteLineToDebugFile('In ' + CloseString + '  Open DEMs=, ' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
 
          j := DEMtoClose;
-         DEMtoClose := 0;
          CloseYeDEM(j);
          ApplicationProcessMessages;
          {$IfDef VCL}
             if ResetMenus and (not SkipMenuUpdating) then WmDem.SetMenusForVersion;
          {$EndIf}
-         {$If Defined(RecordCloseDEM) or Defined(RecordSimpleClose)} WriteLineToDebugFile('CloseSingleDEM out OK ' + CloseString); {$EndIf}
+
+         if (DEMtoClose = PredAgesDEM) then PredAgesDEM := 0;
+         if (DEMtoClose = SedThickDEM) then SedThickDEM := 0;
+         if (DEMtoClose = SedTypeDEM) then SedTypeDEM := 0;
+
+         for j := 1 to MaxTestDEM do begin
+            if TestDEM[j] = DEMtoClose then TestDEM[j] := 0;
+         end;
+
+         DEMtoClose := 0;
+
+         {$If Defined(RecordCloseDEM) or Defined(RecordSimpleClose) or Defined(ShortRecordCloseDEM)} WriteLineToDebugFile('CloseSingleDEM out OK ' + CloseString + '  Open DEMs=, ' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
       end
       else begin
-         {$IfDef RecordCloseDEM} WriteLineToDebugFile('No DEM to close, i=' + IntToStr(DEMtoClose)); {$EndIf}
+         {$If Defined(RecordCloseDEM) or Defined(ShortRecordCloseDEM)}WriteLineToDebugFile('No DEM to close, i=' + IntToStr(DEMtoClose)); {$EndIf}
       end;
    finally
       ClosingIsHappening := false;
@@ -926,12 +936,13 @@ end;
 {$IfDef ExSat}
 {$Else}
 
-      procedure OpenSatImageFromDirectory(LastSatDir : PathStr);
+      function OpenSatImageFromDirectory(LastSatDir : PathStr) : integer;
       var
          fName : PathStr;
-         i,NewSatImage : integer;
+         i{,NewSatImage} : integer;
          TheFiles,Files2 : tStringList;
       begin
+         Result := 0;
          if WarnAboutSpaces(LastSatDir) then exit;
 
          {$If Defined(RecordSatLoad) or Defined(RecordSatDirOpen)} WriteLineToDebugFile('OpenSatImageFromDirectory in, ' + LastSatDir); {$EndIf}
@@ -980,7 +991,7 @@ end;
          {$If Defined(RecordSatLoad) or Defined(RecordSatDirOpen)} WriteLineToDebugFile('OpenSatImageFromDirectory, TIF files=' + IntToStr(TheFiles.Count)); {$EndIf}
          if (TheFiles.Count > 0) then begin
             if (TheFiles.Count = 1) then i := 0 else i := 1;      //for Sentinel-2, where band 1 is low resolution
-            OpenAndDisplayNewScene(Nil,TheFiles.Strings[i],true,true,true);
+            Result := OpenAndDisplayNewScene(Nil,TheFiles.Strings[i],true,true,true);
          end;
          TheFiles.Free;
          UpdateMenusForAllMaps;
@@ -1463,7 +1474,7 @@ begin
       Result.Add('DEMs/grids open');
       for i := 1 to MaxDEMDataSets do begin
          if ValidDEM(i) then begin
-            Result.Add(IntegerToString(i,5) + '  ' + DEMGlb[i].AreaName + '  (' + DEMGlb[i].ColsRowsString + '  ' +  DEMGlb[i].DemSizeString + ')');
+            Result.Add(IntegerToString(i,5) + ' ' + DEMGlb[i].AreaName + ' (' + DEMGlb[i].ColsRowsString + ' ' +  DEMGlb[i].DemSizeString + ' ' + DEMGlb[i].zRange + DEMGlb[i].HorizontalDEMSpacing + ')');
          end;
       end;
    end;

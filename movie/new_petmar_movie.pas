@@ -290,8 +290,10 @@ begin
          Frames := 0;
          for i := 0 to MovieList.Count-1 do begin
             fName := MovieList.Strings[i];
-            if FileExists(MoviePath + fName) then Fname := MoviePath + fName
-            else Fname := MovieDir + fName;
+            if not FileExists(fName) then begin
+               if FileExists(MoviePath + fName) then Fname := MoviePath + fName
+               else Fname := MovieDir + fName;
+            end;
             if FileExists(fName) then begin
                inc(Frames);
 
@@ -309,7 +311,7 @@ begin
                {$IfDef RecordMovie} WriteLineToDebugFile('Missing file: ' + fName); {$EndIf}
             end;
          end;
-         if Frames > 0 then begin
+         if (Frames > 0) then begin
             // Calculate size of GIF before optimization
             Size := SizeOfGIF(GIF);
 

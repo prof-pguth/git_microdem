@@ -27,6 +27,7 @@
 
    {$IfDef Debug}
       //{$Define RecordFan}
+      //{$Define RecordVAT}
       //{$Define FanDrawProblems)
       //{$Define WorldFileOverlay}
       //{$Define RecordStretchBitmap}
@@ -34,7 +35,7 @@
       //{$Define RecordDrawGridLines}
       //{$Define RecordSat}
       //{$Define AspectCheck}
-      {$Define RecordShapeFileGroup}
+      //{$Define RecordShapeFileGroup}
       //{$Define RecordWorldOutline}
       //{$Define Track_f}
       //{$Define RecordMapResize}
@@ -58,7 +59,7 @@
       //{$Define RecordLegend}
       //{$Define RecordMapLayers}
       //{$Define ShowUTMZone}
-      {$Define RecordFullShapeFileGroup}
+      //{$Define RecordFullShapeFileGroup}
       //{$Define TigerTiming}
       //{$Define RecordTiming}
       //{$Define RecordLong0}
@@ -849,7 +850,6 @@ begin
       if not FileExists(fName) then fName := DEMGlb[DEMOnMap].DEMFileName + '.vat.csv';
       if not FileExists(fName) then exit;
       DEMGlb[DEMOnMap].VATFileName := fName;
-      {$IfDef RecordVAT} WriteLineToDebugFile('TMapForm.GridVATlegend1Click defined=' + fName); {$EndIf}
    end;
    Table := tMyData.Create(fName);
    if (Table.FiltRecsInDB > 16) then begin
@@ -927,17 +927,9 @@ begin
    end;
    Result.Height := succ(Cats)*25 + 4;
    PutBitmapInBox(Result);
-
-   (*
-   PetImage.GetImagePartOfBitmap(Result);
-   Result.Canvas.Pen.Color := clBlack;
-   Result.Canvas.Pen.Width := 0;
-   Result.Canvas.Brush.Style := bsClear;
-   Result.Canvas.Rectangle(0,0,Result.Width,Result.height);
-   *)
-
    ShowDefaultCursor;
    Table.Destroy;
+   {$IfDef RecordVAT} WriteLineToDebugFile('TMapForm.GridVATlegend1Click created=' + fName); {$EndIf}
 end;
 
 

@@ -15,7 +15,7 @@ unit gdal_tools;
 
 
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
-   {$Define RecordGDALOpen}
+   //{$Define RecordGDALOpen}
    //{$Define RecordSubsetOpen}
 
    {$IFDEF DEBUG}

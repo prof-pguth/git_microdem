@@ -262,6 +262,9 @@ const
    opAboveGround = 1;
    opConstantHeight = 2;
 
+   PixelIsArea = 1;
+   PixelIsPoint = 2;
+
 type
    tMDVersion = (mdMicrodem,mdWhitebox,mdGDAL,mdListGeo);
 
@@ -664,8 +667,9 @@ type   //for DEM Header record
                   Unused3,Unused4,Unused5,Unused6,Unused7,
                   NLCD2001up,LandFire,Nanotesla,NLCD1992,
                   euIntCode,unused8,unused9,GLOBCOVER,GLC2000,euImagery,euMM,euMetersPerSec,zMperM,euKM,CCAP,euLASclass13,
-                  euLASclass14,euRGB,euMonth,CCI_LC,S2GLC,NLCD_Change,GLCS_LC100,Meybeck,Geomorphon,Iwahashi,ESRI2020,AspectDeg,euPennock,euPerMeter,WorldCover10m);
+                  euLASclass14,euRGB,euMonth,CCI_LC,S2GLC,NLCD_Change,GLCS_LC100,Meybeck,Geomorphon,Iwahashi,ESRI2020,AspectDeg,euPennock,euPerMeter,WorldCover10m,euNDVI,euNBR);
 const
+   (*
    ElevUnitsAre : array[tElevUnit] of string16 =
         (' meters',' feet',' 0.1 mgal',' mgal',' 0.1 gam',
         ' decim',' gamma',' 0.01 mgal',' 0.1 ft',' cm',
@@ -674,15 +678,17 @@ const
         '0.01 %','tenth','0.01°',' tens',' hundreds',
         ' thousands',' NLCD',' LandFire',' nT',' NLCD 1992',
         ' Integer code','','','GlobCover','GLC2000',' Imagery',' mm',' m/s',' m/m',' km',' C-CAP',' LAS1.3',' LAS1.4',
-        'RGB',' month','CCI-LC','S2GLC','NLCD_change','GLCS_LC100','Meybeck','Geomorphon','Iwahashi','ESRI2020','°','Pennock','/m','WorldCover 10m');
-   LabelElevUnits : array[tElevUnit] of string10 =
+        'RGB',' month','CCI-LC','S2GLC','NLCD_change','GLCS_LC100','Meybeck','Geomorphon','Iwahashi','ESRI2020','°','Pennock','/m','WorldCover 10m',NDVI','NBR');
+   *)
+   ElevUnitsAre : array[tElevUnit] of string10 =
        (' m',' m',' mgal',' mgal',' gamma',
         ' m',' gamma',' mgal',' m',' m',
         '',' Ma','%','','°',
         '','ln(z)','log(z)','°','',
         '%','','°','','',
         '',' NLCD',' LandFire',' nT','NLCD 1992',
-        'code','','','GlobCover','GLC2000',' Imagery',' mm',' m/s',' m/m',' km',' C-CAP',' LAS1.3',' LAS1.4',' RGB',' month',' CCI-LC','S2GLC','dNLCD','GLCS_LC100','Meybeck','Geomorphon','Iwahashi','ESRI2020','°','Pennock','/m','WorldCover 10m');
+        'code','','','GlobCover','GLC2000',' Imagery',' mm',' m/s',' m/m',' km',' C-CAP',' LAS1.3',' LAS1.4',' RGB',' month',
+        ' CCI-LC','S2GLC','dNLCD','GLCS_LC100','Meybeck','Geomorphon','Iwahashi','ESRI2020','°','Pennock','/m','WorldCover 10m','NDVI','NBR');
 
    VertCSEGM96 = 5773;
    VertCSEGM2008 = 3855;
@@ -1822,6 +1828,7 @@ type
       DEMIX_base_dir,
       DEMIX_criterion_tolerance_fName : PathStr;
       DEMIX_xsize,DEMIX_ysize : integer;
+      DEMIXCompositeImage,
       DEMIX_DoCHM,
       DEMIX_DoAirOrDirt,
       DEMIX_DoElevDiff,
@@ -2096,6 +2103,7 @@ type
        CloudSliceJump : float32;
        NeedViewer3Dversion2,
        AutoSliceMore,
+       ExperimentalSliceOptions,
        DifferentFloorSliceThickness : boolean;
 
        FavDEMSeries1,

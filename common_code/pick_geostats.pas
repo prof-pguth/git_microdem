@@ -21,7 +21,7 @@ unit pick_geostats;
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IfDef Debug}
       //{$Define RecordGeostats}
-      {$Define RecordMoments}
+      //{$Define RecordMoments}
       //{$Define RecordMapMaking}
    {$EndIf}
 {$EndIf}
@@ -372,7 +372,7 @@ procedure TPickGeoStat.BitBtn20Click(Sender: TObject);
       end;
 
 var
-   Radius,Box,DEM : integer;
+   Radius,Box,DEM,NoSlopeMap : integer;
 begin
    {$IfDef RecordMapMaking} WriteLineToDebugFile('TPickGeoStat.BitBtn20Click in'); {$EndIf}
    try

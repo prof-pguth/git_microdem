@@ -15,7 +15,7 @@ unit dem_indexes;
      //{$Define RecordMultipleFilesInBoundingBox}
      //{$Define RecordLoadMapLibraryBox}
      //{$Define MergeSummary}
-     {$Define LoadLibrary}
+     //{$Define LoadLibrary}
      //{$Define RecordAutoZoom}
      //{$Define RecordImageIndex}
      //{$Define RecordIndex}
@@ -1155,7 +1155,7 @@ var
    i : integer;
    fName : PathStr;
 begin
-   {$If Defined(RecordIndex) or Defined(RecordImageIndex) or Defined(LoadLibrary)} WriteLineToDebugFile('Enter LoadMapLibraryBox, display=' + TrueOrFalse(DisplayIt)); {$EndIf}
+   {$If Defined(RecordIndex) or Defined(RecordImageIndex) or Defined(LoadLibrary)} WriteLineToDebugFile('Enter LoadMapLibraryBox, display=' + TrueOrFalse(DisplayIt) + '  Open DEMs=, ' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
    try
       LoadingFromMapLibrary := true;
       ShowHourglassCursor;
@@ -1201,7 +1201,7 @@ begin
    finally
       LoadingFromMapLibrary := false;
    end;
-   {$If Defined(RecordIndex) or Defined(RecordImageIndex)} WriteLineToDebugFile('Out LoadMapLibraryBox'); {$EndIf}
+   {$If Defined(RecordIndex) or Defined(RecordImageIndex) or Defined(LoadLibrary)} WriteLineToDebugFile('Out LoadMapLibraryBox; Open DEMs=, ' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
 end;
 
 

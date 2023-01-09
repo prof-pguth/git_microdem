@@ -899,7 +899,7 @@
                   Colors[i] := ConvertPlatformColorToTColor(RGBtripFromHSI(Hue,MDDef.MergeSat,MDDef.MergeInt));
                end;
                if isSlopeMap(MapType) then TStr := '%'
-               else TStr := LabelElevUnits[DEMGlb[DEMOnMap].DEMheader.ElevUnits];
+               else TStr := ElevUnitsAre[DEMGlb[DEMOnMap].DEMheader.ElevUnits];
 
                {$IfDef RecordMapDraw} WriteLineToDebugFile('Going to draw legend, case 1'); {$EndIf}
                if MDDef.GridLegendLocation.HorizontalLegend then begin
@@ -930,7 +930,7 @@
                    if (MapType = mtElevIHS) then begin
                       for i := 0 to 255 do Colors[i] := ConvertPlatformColorToTColor(RGBtripFromHSI(TheHue(MDDef.MergeHue,i),MDDef.MergeSat,MDDef.MergeInt));
                    end;
-                   TStr := LabelElevUnits[DEMGlb[DEMOnMap].DEMheader.ElevUnits];
+                   TStr := ElevUnitsAre[DEMGlb[DEMOnMap].DEMheader.ElevUnits];
                    if Log10Elev then TStr := 'log10(' + TStr + ')';
                    if (MapType = mtElevLandSea) then begin
                       for i := 0 to 255 do begin

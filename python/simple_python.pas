@@ -1,10 +1,12 @@
 unit simple_python;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{   file verified 1/18/2016       }
-{_________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2022 Peter L. Guth  }
+{___________________________________}
+
 
 
 {$I nevadia_defines.inc}
@@ -35,7 +37,6 @@ unit simple_python;
       OpenDialog1: TOpenDialog;
       SaveDialog1: TSaveDialog;
       Memo2: TMemo;
-    PythonEngine1: TPythonEngine;
       procedure Button1Click(Sender: TObject);
       procedure Button2Click(Sender: TObject);
       procedure Button3Click(Sender: TObject);

@@ -963,16 +963,17 @@ end;
       i : integer;
       TStr : string10;
    begin
-      if OKwriteDebugLog {and (HeaderLog <> Nil)} then
-      try
-         for i := 0 to pred(HeaderLog.Count) do begin
-            if LineNumbers then TStr := IntegerToString(i,7) + ':  '
-            else TStr := '     ';
-            TheDebugLog.Add(TStr + HeaderLog.Strings[i]);
+      if OKwriteDebugLog then begin
+         try
+            for i := 0 to pred(HeaderLog.Count) do begin
+               if LineNumbers then TStr := IntegerToString(i,7) + ':  '
+               else TStr := '     ';
+               TheDebugLog.Add(TStr + HeaderLog.Strings[i]);
+            end;
+            TheDebugLog.SaveToFile(DebugFilename);
+            ApplicationProcessMessages;
+         finally
          end;
-         TheDebugLog.SaveToFile(DebugFilename);
-         ApplicationProcessMessages;
-      finally
       end;
    end;
 
@@ -982,7 +983,7 @@ end;
       i : integer;
       TStr : string10;
    begin
-      if OKwriteDebugLog {and (HeaderLog <> Nil)} then try
+      if OKwriteDebugLog then try
          for i := 0 to pred(HeaderLog.Count) do begin
             if LineNumbers then TStr := IntegerToString(i,7) + ':  '
             else TStr := '';

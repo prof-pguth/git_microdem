@@ -11,7 +11,7 @@ unit dem_nlcd;
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    //{$Define RecordNLCDProblems}
    //{$Define RecordNLCDLegend}
-   {$Define RecordBarGraphs}
+   //{$Define RecordBarGraphs}
    //{$Define RecordBatch}
    //{$Define RecordBarGraphsDetailed}
    //{$Define RecordPaletteProblems}

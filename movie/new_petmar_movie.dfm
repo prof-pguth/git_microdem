@@ -22,7 +22,7 @@ object FormAnimate: TFormAnimate
     VertScrollBar.Visible = False
     Align = alTop
     TabOrder = 0
-    ExplicitWidth = 1086
+    ExplicitWidth = 1074
     object Image1: TImage
       Left = 0
       Top = 0
@@ -94,43 +94,45 @@ object FormAnimate: TFormAnimate
     BorderWidth = 4
     Caption = ' '
     TabOrder = 1
-    ExplicitWidth = 1086
-    ExplicitHeight = 583
+    ExplicitWidth = 1074
+    ExplicitHeight = 565
     object PanelPreview: TPanel
       Left = 137
       Top = 4
-      Width = 951
-      Height = 584
+      Width = 939
+      Height = 566
       Align = alClient
       BevelOuter = bvLowered
       BorderWidth = 2
       Caption = ' '
       TabOrder = 0
-      ExplicitWidth = 945
-      ExplicitHeight = 575
+      ExplicitWidth = 933
+      ExplicitHeight = 557
       object ImageAnimate: TImage
         Left = 3
         Top = 3
-        Width = 945
-        Height = 578
+        Width = 933
+        Height = 560
         Align = alClient
         Center = True
         Proportional = True
         Transparent = True
         ExplicitLeft = 6
         ExplicitTop = 4
+        ExplicitWidth = 945
+        ExplicitHeight = 578
       end
     end
     object Panel3: TPanel
       Left = 4
       Top = 4
       Width = 133
-      Height = 584
+      Height = 566
       Align = alLeft
       BevelOuter = bvNone
       Caption = ' '
       TabOrder = 1
-      ExplicitHeight = 575
+      ExplicitHeight = 557
       object Label1: TLabel
         Left = 9
         Top = 112
@@ -252,9 +254,9 @@ object FormAnimate: TFormAnimate
       object CheckBox1: TCheckBox
         Left = 8
         Top = 360
-        Width = 97
+        Width = 122
         Height = 17
-        Caption = 'Labels from file name'
+        Caption = 'Label file name'
         TabOrder = 8
         OnClick = CheckBox1Click
       end
@@ -287,14 +289,14 @@ object FormAnimate: TFormAnimate
         Alignment = taCenter
         Width = 120
       end>
-    ExplicitTop = 676
-    ExplicitWidth = 1086
+    ExplicitTop = 658
+    ExplicitWidth = 1074
   end
   object SaveDialog: TSaveDialog
     DefaultExt = 'gif'
     Options = [ofOverwritePrompt, ofHideReadOnly, ofPathMustExist, ofNoReadOnlyReturn]
     Title = 'Save animated GIF'
     Left = 29
-    Top = 418
+    Top = 554
   end
 end

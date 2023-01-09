@@ -9,7 +9,40 @@
 { include file for nevadia_main}
 
 
-//this was experimental, and many of the options may not work any longer
+procedure Sentinel2BatchOps;
+var
+   Paths : tStringList;
+   fName,sName : PathStr;
+   i,Sat,NDVIgrid,NBRgrid,db : integer;
+begin
+   Paths := tStringList.Create;
+   Paths.Add(LastSatDir);
+   fName := 'H:\mid_projects\debuse\calwood.shp';
+   if GetMultipleDirectories('Landsat or Sentinel-2 image',Paths) then begin
+      for i := 0 to pred(Paths.Count) do begin
+         LastSatDir := Paths[i];
+         Sat := OpenSatImageFromDirectory(LastSatDir);
+         db := SatImage[Sat].SelectionMap.LoadDataBaseFile(fName, false,true);
+         NDVIgrid := SatImage[Sat].SelectionMap.NewSatWindow(nsbNDVI);
+         MaskDEMFromShapeFile(NDVIgrid,db,true,true,0,MDDef.MaskDistance);
+         sName := GetParentDirectory(LastSatDir) + 'ndvi\';
+         SafeMakeDir(sName);
+         sName := sName + SatImage[Sat].SceneBaseName + '_ndvi.dem';
+         DEMGlb[NDVIgrid].SavePartOfDEMWithData(sName);
+
+         NBRgrid := SatImage[Sat].SelectionMap.NewSatWindow(nsbNBRNormalizedBurnIndex);
+         MaskDEMFromShapeFile(NBRgrid,db,true,true,0,MDDef.MaskDistance);
+         sName := GetParentDirectory(LastSatDir) + 'nbr\';
+         SafeMakeDir(sName);
+         sName := sName + SatImage[Sat].SceneBaseName + '_nbr.dem';
+         DEMGlb[NDVIgrid].SavePartOfDEMWithData(sName);
+
+         CloseSingleSatelliteImage(Sat);
+      end;
+   end;
+   Paths.Free;
+end;
+
 
 
 procedure MergeDEMIXCSV;
@@ -1188,7 +1221,7 @@ end;
 
 
 
-//from this point on, routines not likely to work fully or correctly
+//from this point on, experimental routines not likely to work fully or correctly
 
 
 procedure BatchGlobalDEMs;
@@ -1292,7 +1325,6 @@ begin
    wmdem.SetPanelText(1,'');
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMtiles in'); {$EndIf}
 end;
-
 
 
 procedure DEMIXreferenceDEMs;

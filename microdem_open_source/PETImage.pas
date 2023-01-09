@@ -16,8 +16,8 @@
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$IfDef Debug}
-      {$Define BMPMemInline}
-      {$Define RecordBigBitmap}
+      //{$Define BMPMemInline}
+      //{$Define RecordBigBitmap}
       //{$Define RecordImageOverlayProblems}
       //{$Define RecordImageResize}
       //{$Define RecordBlendBitmaps}

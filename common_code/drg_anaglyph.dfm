@@ -3,8 +3,8 @@ object DRGAnaglyphForm: TDRGAnaglyphForm
   Top = 126
   BorderIcons = []
   Caption = 'Stereo Map Options'
-  ClientHeight = 283
-  ClientWidth = 262
+  ClientHeight = 286
+  ClientWidth = 256
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -23,8 +23,8 @@ object DRGAnaglyphForm: TDRGAnaglyphForm
     Caption = 'Max displace'
   end
   object RedrawSpeedButton12: TSpeedButton
-    Left = 39
-    Top = 225
+    Left = 18
+    Top = 249
     Width = 25
     Height = 25
     Hint = 'Force redraw'

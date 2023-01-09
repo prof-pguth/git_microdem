@@ -145,24 +145,21 @@ type
   private
     { Private declarations }
     procedure ChangeSliceCenter(Redraw : boolean);
-    //procedure RecordBoxOutline(bmp : tMyBitmap);
     procedure SetSliceSettings;
     procedure GetRangesInXYZ;
     procedure CreateNewGraph;
     procedure SymbolXZPlane(x, z: float64; Color: tPlatformColor);
-   // procedure LineYDirection(fName: PathStr; Color: tPlatformColor; Width: integer);
     procedure SingleYLine(x : float64; Color : tPlatformColor; Width : integer);
-   // procedure PlotShapeFileOnSlice(fName: PathStr);
-   // procedure GraphDBFFile(DbNum : integer;  bmp : tBitmap; Symbol : tFullSymbolDeclaration);
-    procedure TryToGraphDatabase(bmp : tBitmap; i : integer);
+    {$IfDef IncludeVASAgis}
+       procedure TryToGraphDatabase(bmp : tBitmap; i : integer);
+    {$EndIf}
     procedure Set3DFilter(db : integer; xlo,xhi,ylo,yhi : float64);
     procedure DrawOneCloud(var bmp : tMyBitmap);
     procedure SetColorOptions;
     procedure ArrangeControls;
     procedure AdjustForLatLong;
-    //procedure GetCloudSymbol(Cloud : integer; BitBtn : tBitBtn);
    {$IfDef SlicerRange}
-   procedure ShowDataRanges;
+      procedure ShowDataRanges;
    {$EndIf}
 
   public
@@ -172,20 +169,23 @@ type
     CoordDec,
     CurSlice,CloudInUse : integer;
     xlo,ylo,zlo,xhi,yhi,zhi : float64;
-    GIS : TGISdataBaseModule;
     ThisProject : PathStr;
     SlicerMapOwner : tMapForm;
     EditTable,Edit2Table : tMyData;
     EditResults : tStringList;
     EditName,Edit2Name : ShortString;
     LOSOwner : TDEMLOSF;
-    XYZGIS,BoxOutlineGIS,ArtefactGIS : integer;
+    XYZGIS : integer;
+    {$IfDef IncludeVASAgis}
+       GIS : TGISdataBaseModule;
+       BoxOutlineGIS,ArtefactGIS : integer;
+       EditGISDBs : array[1..15] of integer;
+    {$EndIf}
     BaseName : shortString;
     SliceLoc : string[2];
     SlicePlane : string[3];
     LatLongCoords,NeedLegend,MatchMapSize,
     OpenGLAllPoints,SingleDBFFile,ReadyToRoll : boolean;
-    EditGISDBs : array[1..15] of integer;
 
     MemoryPointCloud : array[1..MaxSliceClouds] of Point_Cloud_Memory.tMemoryPointCloud;
     CloudUsed : array[1..MaxSliceClouds] of boolean;
@@ -317,18 +317,18 @@ var
 begin
    {$IfDef Slicer} WriteLinetoDebugFile('DB_3dSlices in ' + DEMDefs.VasaProjectFName); {$EndIf}
    SlicerForm := TSlicerForm.Create(Application);
-
-   if (GIS <> Nil) then begin
-      SlicerForm.Gis := GIS;
-      GIS.EmpSource.Enabled := false;
-      SlicerForm.BaseName := GIS.dbName;
-   end;
+   {$IfDef IncludeVASAgis}
+      if (GIS <> Nil) then begin
+         SlicerForm.Gis := GIS;
+         GIS.EmpSource.Enabled := false;
+         SlicerForm.BaseName := GIS.dbName;
+      end;
+   {$EndIf}
 
    with SlicerForm do begin
      {$IfDef Slicer} WriteLinetoDebugFile('ThisProject=' + SlicerForm.ThisProject); {$EndIf}
       SlicerMapOwner := inMap;
       BitBtn16.Enabled := (inMap <> Nil);
-      //BitBtn17.Enabled := (inMap <> Nil);
       LOSOwner := inLOS;
       SlicerForm.LatLongCoords := InLatLong;
 
@@ -364,7 +364,6 @@ begin
 
    if MDDef.AutoShowSlice then begin
       SlicerForm.RadioGroup2.ItemIndex := 0;
-      //SlicerForm.BitBtn1Click(Nil);
    end;
    SlicerForm.AdjustForLatLong;
    {$IfDef Slicer} WriteLineToDebugFile('DB_3dSlices out'); {$EndIf}
@@ -611,11 +610,11 @@ begin
    SliceGraph[CurSlice].GISGraf.GraphDraw.PointCloudSlice := true;
    if LatLongCoords then SliceGraph[CurSlice].SliceThickness := MDDef.CloudSliceThick/ 3600
    else SliceGraph[CurSlice].SliceThickness := MDDef.CloudSliceThick;
-   //CheckEditString(Edit6.Text,SliceGraph[CurSlice].GISGraf.GraphDraw.VertExag);
    SetSliceSettings;
 end;
 
 
+{$IfDef IncludeVASAgis}
 procedure TSlicerForm.TryToGraphDatabase(bmp : tBitmap; i : integer);
 
      procedure DrawPoint(xf,yf : ShortString; ItsLineTo : boolean);
@@ -671,6 +670,7 @@ begin
       if (GISdb[i].DBTablef <> Nil) then GISdb[i].DBTablef.ShowStatus;
    end;
 end;
+{$EndIf}
 
 
 {$IfDef SlicerRange}
@@ -957,11 +957,6 @@ begin
                Bitmap.Canvas.TextOut(30,5 + i*20,DEMGlb[CompareDEMIndexes[i]].AreaName);
             end;
          end;
-         (*GetImagePartOfBitmap(Bitmap,true,10);
-         Bitmap.Canvas.Pen.Color := clBlack;
-         Bitmap.Canvas.Brush.Style := bsClear;
-         Bitmap.Canvas.Rectangle(5,5,Bitmap.Width - 5, Bitmap.Height - 5);
-         *)
          PutBitmapInBox(Bitmap);
          DisplayBitmap(Bitmap,'Global DEMs',true);
          Bitmap.Free;
@@ -1019,7 +1014,6 @@ procedure TSlicerForm.Edit10Change(Sender: TObject);
 begin
    CheckEditString(Edit10.Text,MDDef.CloudSliceJump);
    if LatLongCoords then MDDef.CloudSliceJump := MDDef.CloudSliceJump / 3600;
-   //SliceGraph[CurSlice].SliceThickness := MDDef.CloudSliceInterval;
 end;
 
 procedure TSlicerForm.Edit1Change(Sender: TObject);
@@ -1046,7 +1040,9 @@ var
 begin
    {$IfDef CloseSlicer} WriteLinetoDebugFile('TSlicerForm.FormClose in'); {$EndIf}
    CloseAndNilNumberedDB(XYZGIS);
-   CloseAndNilNumberedDB(BoxOutlineGIS);
+   {$IfDef IncludeVASAgis}
+      CloseAndNilNumberedDB(BoxOutlineGIS);
+   {$EndIf}
    for i := 1 to MaxSliceClouds do begin
       if (MemoryPointCloud[i] <> nil) then begin
          MemoryPointCloud[i].Destroy;
@@ -1071,13 +1067,16 @@ begin
    {$IfDef Slicer} WriteLinetoDebugFile('TSlicerForm.FormCreate in'); {$EndIf}
    CloudInUse := 0;
    XYZGIS := 0;
-   BoxOutlineGIS := 0;
-   ArtefactGIS := 0;
-   Height := 200;
+   {$IfDef IncludeVASAgis}
+      BoxOutlineGIS := 0;
+      ArtefactGIS := 0;
+      GIS := Nil;
+   {$EndIf}
+   //Height := 200;
    SingleDBFFile := false;
    ReadyToRoll := false;
    NeedLegend := true;
-   GIS := Nil;
+
    SlicerMapOwner := Nil;
    EditTable := Nil;
    LOSOwner := Nil;
@@ -1115,6 +1114,12 @@ begin
    CheckBoxCloud5.Visible := false;
    CheckBoxCorrectScaling1.Checked := MDDef.SlicerUseCorrectScaling;
 
+   BitBtn11.Visible := MDDef.ExperimentalSliceOptions;
+   BitBtn43.Visible := MDDef.ExperimentalSliceOptions;
+   BitBtn44.Visible := MDDef.ExperimentalSliceOptions;
+   BitBtn45.Visible := MDDef.ExperimentalSliceOptions;
+
+
    ThisProject := DEMDefs.VasaProjectFName;
    FormStyle := fsStayOnTop;
    wmDEM.FormPlacementInCorner(self);
@@ -1135,7 +1140,7 @@ begin
   end
   else begin
       {$IfDef SlicerRange} WriteLinetoDebugFile('TSlicerForm.SetSliceSettings in'); {$EndIf}
-      with SliceGraph[CurSlice]{, GISGraf} do begin
+      with SliceGraph[CurSlice] do begin
          if GISGraf.GraphDraw.GraphPlane in [0,1] then begin
             gxlo := xlo;
             gxhi := xhi;
@@ -1209,17 +1214,19 @@ end;
 
 procedure TSlicerForm.RadioGroup2Click(Sender: TObject);
 begin
-   if (ArtefactGIS <> 0) then begin
-      SliceGraph[CurSlice].ArtDBFilter := GISdb[ArtefactGIS].dbOpts.MainFilter;
-      SliceGraph[CurSlice].ArtDBShow := GISdb[ArtefactGIS].dbOpts.DBAutoShow;
-   end;
+   {$IfDef IncludeVASAgis}
+      if (ArtefactGIS <> 0) then begin
+         SliceGraph[CurSlice].ArtDBFilter := GISdb[ArtefactGIS].dbOpts.MainFilter;
+         SliceGraph[CurSlice].ArtDBShow := GISdb[ArtefactGIS].dbOpts.DBAutoShow;
+      end;
 
-   CurSlice := succ(RadioGroup2.ItemIndex);
+      CurSlice := succ(RadioGroup2.ItemIndex);
 
-   if (ArtefactGIS <> 0) then begin
-      GISdb[ArtefactGIS].dbOpts.MainFilter := SliceGraph[CurSlice].ArtDBFilter;
-      GISdb[ArtefactGIS].dbOpts.DBAutoShow := SliceGraph[CurSlice].ArtDBShow;
-   end;
+      if (ArtefactGIS <> 0) then begin
+         GISdb[ArtefactGIS].dbOpts.MainFilter := SliceGraph[CurSlice].ArtDBFilter;
+         GISdb[ArtefactGIS].dbOpts.DBAutoShow := SliceGraph[CurSlice].ArtDBShow;
+      end;
+   {$EndIf}
 
    if (SliceGraph[CurSlice].GISGraf = Nil) then begin
       CreateNewGraph;
@@ -1310,8 +1317,6 @@ var
                end;
                fName := ExpandFileName(fName);
                {$IfDef SlicerDetailedDraw} WriteLineToDebugFile('file=' + ExtractFileName(fName)); {$EndIf}
-               //if CheckBox5.Checked and (ProjectTable.GetFieldByNameAsString('TYPE') = 'geometry') then Color := clGray
-               //else
                Color := ProjectTable.GetFieldByNameAsInteger('COLOR');
 
                MDDef.CloudSymbol[CloudInUse].Color := ConvertTColorToPlatformColor(Color);
@@ -1345,7 +1350,9 @@ begin
    {$If Defined(SlicerProblems) or Defined(SlicerDetailedDraw)} WriteLinetoDebugFile('BitBtn1Click (draw slice) in, cloud=' + IntToStr(CloudInUse)); {$EndIf}
    if not ReadyToRoll then exit;
    ReadyToRoll := false;
-   if (GIS <> Nil) then GIS.EmpSource.Enabled := false;
+   {$IfDef IncludeVASAgis}
+       if (GIS <> Nil) then GIS.EmpSource.Enabled := false;\
+   {$EndIf}
    {$IfDef SlicerRange} ShowDataRanges; {$EndIf}
 
    CheckEditString(Edit2.Text,MDDef.ClouderXSize);
@@ -1433,27 +1440,31 @@ begin
    else if (ThisProject <> '') then begin
       PlotThisProject;
    end
-   else if (GIS <> Nil) then begin
-     {$IfDef SlicerDetailedDraw} WriteLineToDebugFile('(GIS <> Nil)'); {$EndIf}
-      if (not GIS.MyData.Filtered) and GIS.ItsAShapeFile and (GIS.ShapeFileType = 11) then begin
-         GraphShapeFile(GIS.aShapeFile);
-      end
-      else begin
-         if not GIS.MyData.Filtered  then begin
-            GIS.MyData.ApplyFilter( 'y>=' + RealToString(SliceGraph[CurSlice].SliceLo,-12,-2) + ' AND y<=' + RealToString(SliceGraph[CurSlice].SliceHi,-12,-2));
-            NPts := GIS.MyData.RecordCount;
-         end;
+   else begin
+      {$IfDef IncludeVASAgis}
+         if (GIS <> Nil) then begin
+           {$IfDef SlicerDetailedDraw} WriteLineToDebugFile('(GIS <> Nil)'); {$EndIf}
+            if (not GIS.MyData.Filtered) and GIS.ItsAShapeFile and (GIS.ShapeFileType = 11) then begin
+               GraphShapeFile(GIS.aShapeFile);
+            end
+            else begin
+               if not GIS.MyData.Filtered  then begin
+                  GIS.MyData.ApplyFilter( 'y>=' + RealToString(SliceGraph[CurSlice].SliceLo,-12,-2) + ' AND y<=' + RealToString(SliceGraph[CurSlice].SliceHi,-12,-2));
+                  NPts := GIS.MyData.RecordCount;
+               end;
 
-         while not GIS.MyData.EOF do begin
-            x := GIS.MyData.GetFieldByNameAsFloat('X');
-            y := GIS.MyData.GetFieldByNameAsFloat('Z');
-            if SliceGraph[CurSlice].GISGraf.GraphDraw.PtOnGraph(x,y) then begin
-               Petmar.ScreenSymbol(bmp.Canvas,SliceGraph[CurSlice].GISGraf.GraphDraw.GraphX(x),SliceGraph[CurSlice].GISGraf.GraphDraw.GraphY(Y), MDDef.CloudSymbol[CloudInUse]);
+               while not GIS.MyData.EOF do begin
+                  x := GIS.MyData.GetFieldByNameAsFloat('X');
+                  y := GIS.MyData.GetFieldByNameAsFloat('Z');
+                  if SliceGraph[CurSlice].GISGraf.GraphDraw.PtOnGraph(x,y) then begin
+                     Petmar.ScreenSymbol(bmp.Canvas,SliceGraph[CurSlice].GISGraf.GraphDraw.GraphX(x),SliceGraph[CurSlice].GISGraf.GraphDraw.GraphY(Y), MDDef.CloudSymbol[CloudInUse]);
+                  end;
+                  GIS.MyData.Next;
+               end;
             end;
-            GIS.MyData.Next;
+            GIS.EmpSource.Enabled := true;
          end;
-      end;
-      GIS.EmpSource.Enabled := true;
+      {$EndIf}
    end;
 
    if LatLongCoords then Dec := -5 else Dec := -1;
@@ -1463,26 +1474,29 @@ begin
    Edit9.Text := Petmar_types.RealToString(SliceGraph[CurSlice].SliceCenter,-12,-2);
 
    if CheckBox7.Checked then begin
-      //if SliceGraph[CurSlice].GISGraf.GraphDraw.GraphPlane in [Slice_xz,Slice_yz] then
       SliceGraph[CurSlice].GISGraf.Caption := SlicePlane + ' section ' + IntToStr(CurSlice) + ' at ' + SliceLoc + RealToString(SliceGraph[CurSlice].SliceCenter,-12,-2) + ' (thickness=' + Edit1.Text + ')';
    end
    else begin
       SliceGraph[CurSlice].GISGraf.Caption := '';
    end;
 
-   for i := 1 to MaxDataBase do begin
-      TryToGraphDatabase(bmp,i);
-   end;
+   {$IfDef IncludeVASAgis}
+      for i := 1 to MaxDataBase do begin
+         TryToGraphDatabase(bmp,i);
+      end;
+   {$EndIf}
 
    SliceGraph[CurSlice].GISGraf.Image1.Canvas.Font.Size := 14;
    SliceGraph[CurSlice].GISGraf.Image1.Canvas.Font.Color := clRed;
    SliceGraph[CurSlice].GISGraf.Image1.Canvas.Font.Style := [fsBold];
    SliceGraph[CurSlice].GISGraf.Image1.Canvas.TextOut(SliceGraph[CurSlice].GISGraf.GraphDraw.LeftMargin + 10,10, SliceGraph[CurSlice].GISGraf.Caption);
 
-   if CheckBox7.Checked and (ArtefactGIS <> 0) and (GISdb[ArtefactGIS] <> nil) and (GISdb[ArtefactGIS].dbOpts.MainFilter <> '') then begin
-      SliceGraph[CurSlice].GISGraf.Image1.Canvas.TextOut(SliceGraph[CurSlice].GISGraf.GraphDraw.LeftMargin + 10,
-          SliceGraph[CurSlice].GISGraf.GraphDraw.YWindowSize - SliceGraph[CurSlice].GISGraf.GraphDraw.BottomMargin - 25, GISdb[ArtefactGIS].dbOpts.MainFilter);
-   end;
+   {$IfDef IncludeVASAgis}
+      if CheckBox7.Checked and (ArtefactGIS <> 0) and (GISdb[ArtefactGIS] <> nil) and (GISdb[ArtefactGIS].dbOpts.MainFilter <> '') then begin
+         SliceGraph[CurSlice].GISGraf.Image1.Canvas.TextOut(SliceGraph[CurSlice].GISGraf.GraphDraw.LeftMargin + 10,
+             SliceGraph[CurSlice].GISGraf.GraphDraw.YWindowSize - SliceGraph[CurSlice].GISGraf.GraphDraw.BottomMargin - 25, GISdb[ArtefactGIS].dbOpts.MainFilter);
+      end;
+   {$EndIf}
 
    BitBtn16.Enabled := (MDDef.PtSlicerDefView > 0) and (SlicerMapOwner <> Nil);
    ShowDefaultCursor;
@@ -1613,8 +1627,6 @@ begin
    SliceGraph[CurSlice].SliceCenter := SliceGraph[CurSlice].SliceCenter + MDDef.CloudSliceJump;
    ChangeSliceCenter(true);
 end;
-
-
 
 
 initialization

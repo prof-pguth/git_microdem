@@ -4,7 +4,7 @@ object TMapOptsForm: TTMapOptsForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Advanced  map colors and shading '
-  ClientHeight = 316
+  ClientHeight = 340
   ClientWidth = 349
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -17,7 +17,7 @@ object TMapOptsForm: TTMapOptsForm
   TextHeight = 13
   object RedrawSpeedButton12: TSpeedButton
     Left = 22
-    Top = 266
+    Top = 297
     Width = 25
     Height = 25
     Hint = 'Force redraw'
@@ -61,7 +61,7 @@ object TMapOptsForm: TTMapOptsForm
     IsControl = True
   end
   object OKBtn: TBitBtn
-    Left = 22
+    Left = 73
     Top = 297
     Width = 57
     Height = 27

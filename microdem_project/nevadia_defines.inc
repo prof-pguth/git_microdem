@@ -22,11 +22,10 @@
 {$Define PlainMICRODEM}
 
 
-{$Define IncludePython}
+//{$Define IncludePython}
 
 //{$Define ExFresnel}
 {$Define ExWaveLengthHeight}
-
 
 {$Define ExDRGimport}
 {$Define ExGeoPDF}

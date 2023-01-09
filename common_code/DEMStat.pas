@@ -15,14 +15,14 @@ unit DEMStat;
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IfDef Debug}
-      {$Define NoParallelFor}
+      //{$Define NoParallelFor}
       //{$Define RecordLag}
-      {$Define RecordDiffMap}
+      //{$Define RecordDiffMap}
       //{$Define RecordStdDef}
       //{$Define RecordElevationSlopePlot}
       //{$Define RecordSSO}
       //{$Define RecordGlobalDEM}
-      {$Define RecordElevMoment}
+      //{$Define RecordElevMoment}
       //{$Define RecordElevationSlopePlotAll}
       //{$Define RecordDEMCompare}
       //{$Define RecordStat}
@@ -2724,11 +2724,11 @@ begin
    else TStr := 'Elevation ';
    if Quick or MDDef.ShowRegularHistogram then begin
       if MDDef.CountHistograms then GISDB[theDB].CreateScatterGram('CONCENT','Z',true,DEMGlb[WhichDEM].AreaName +  ' ' + TStr + ' Histogram',
-           'Concentration (Fraction of Uniform)',  TStr + '(' + LabelElevUnits[DEMGlb[WhichDEM].DEMheader.ElevUnits]  + ')')
+           'Concentration (Fraction of Uniform)',  TStr + '(' + ElevUnitsAre[DEMGlb[WhichDEM].DEMheader.ElevUnits]  + ')')
       else begin
          if (DEMGlb[WhichDEM].DEMheader.ElevUnits = euImagery) then
-              GISDB[theDB].CreateScatterGram('Z','NPTS',true,DEMGlb[WhichDEM].AreaName +  ' ' + TStr + 'Histogram', TStr + '(' + LabelElevUnits[DEMGlb[WhichDEM].DEMheader.ElevUnits]  + ')','Number of Points')
-         else GISDB[theDB].CreateScatterGram('NPTS','Z',true,DEMGlb[WhichDEM].AreaName +  ' ' + TStr + 'Histogram','Number of Points', TStr + '(' + LabelElevUnits[DEMGlb[WhichDEM].DEMheader.ElevUnits]  + ')');
+              GISDB[theDB].CreateScatterGram('Z','NPTS',true,DEMGlb[WhichDEM].AreaName +  ' ' + TStr + 'Histogram', TStr + '(' + ElevUnitsAre[DEMGlb[WhichDEM].DEMheader.ElevUnits]  + ')','Number of Points')
+         else GISDB[theDB].CreateScatterGram('NPTS','Z',true,DEMGlb[WhichDEM].AreaName +  ' ' + TStr + 'Histogram','Number of Points', TStr + '(' + ElevUnitsAre[DEMGlb[WhichDEM].DEMheader.ElevUnits]  + ')');
       end;
    end;
 
@@ -2737,14 +2737,14 @@ begin
    end
    else begin
       if MDDef.ShowCumulativeHistogram then GISDB[theDB].CreateScatterGram('CUM_PC','Z',true,DEMGlb[WhichDEM].AreaName +  ' Cumulative Elevation Distribution',
-          'Cumulative Percentage', 'Elevation (' + LabelElevUnits[DEMGlb[WhichDEM].DEMheader.ElevUnits]  + ')');
+          'Cumulative Percentage', 'Elevation (' + ElevUnitsAre[DEMGlb[WhichDEM].DEMheader.ElevUnits]  + ')');
 
       if MDDef.ShowStrahlerHistogram then GISDB[theDB].CreateScatterGram('PROP_AREA','PROP_HGT',true,DEMGlb[WhichDEM].AreaName +  ' Strahler Elevation Distribution',
        'Proportion of Area', 'Proportion of Basin Height');
 
        if MDDef.ShowNormalHistogram then begin
           GISDB[theDB].CreateScatterGram('Z','CUM_PC',true,DEMGlb[WhichDEM].AreaName +  ' Cumulative ' + TStr + 'Distribution',
-            TStr + '(' + LabelElevUnits[DEMGlb[WhichDEM].DEMheader.ElevUnits]  + ')','Cumulative Percentage',true);
+            TStr + '(' + ElevUnitsAre[DEMGlb[WhichDEM].DEMheader.ElevUnits]  + ')','Cumulative Percentage',true);
        end;
 
        if MDDef.ShowHistogramText then begin

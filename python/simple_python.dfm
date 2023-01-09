@@ -18,7 +18,7 @@ object PythonForm1: TPythonForm1
   object Splitter1: TSplitter
     Left = 0
     Top = 153
-    Width = 532
+    Width = 526
     Height = 3
     Cursor = crVSplit
     Align = alTop
@@ -29,8 +29,8 @@ object PythonForm1: TPythonForm1
   object Memo1: TMemo
     Left = 0
     Top = 156
-    Width = 532
-    Height = 137
+    Width = 526
+    Height = 128
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -43,19 +43,15 @@ object PythonForm1: TPythonForm1
     ParentFont = False
     ScrollBars = ssBoth
     TabOrder = 1
-    ExplicitWidth = 526
-    ExplicitHeight = 128
   end
   object Panel1: TPanel
     Left = 0
-    Top = 293
-    Width = 532
+    Top = 284
+    Width = 526
     Height = 44
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 0
-    ExplicitTop = 284
-    ExplicitWidth = 526
     object Button1: TButton
       Left = 6
       Top = 8
@@ -87,7 +83,7 @@ object PythonForm1: TPythonForm1
   object Memo2: TMemo
     Left = 0
     Top = 0
-    Width = 532
+    Width = 526
     Height = 153
     Align = alTop
     Font.Charset = DEFAULT_CHARSET
@@ -99,7 +95,6 @@ object PythonForm1: TPythonForm1
     ParentFont = False
     ScrollBars = ssBoth
     TabOrder = 2
-    ExplicitWidth = 526
   end
   object OpenDialog1: TOpenDialog
     DefaultExt = '*.py'
@@ -114,10 +109,5 @@ object PythonForm1: TPythonForm1
     Title = 'Save As'
     Left = 340
     Top = 8
-  end
-  object PythonEngine1: TPythonEngine
-    DllPath = 'C:\Users\pguth\anaconda3\'
-    Left = 128
-    Top = 56
   end
 end
