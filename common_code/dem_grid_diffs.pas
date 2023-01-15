@@ -25,10 +25,14 @@ type
     OKBtn: TBitBtn;
     HelpBtn: TBitBtn;
     CheckBox3: TCheckBox;
+    CheckBox4: TCheckBox;
+    Label1: TLabel;
+    Edit1: TEdit;
     procedure OKBtnClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure HelpBtnClick(Sender: TObject);
+    procedure CheckBox4Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -53,6 +57,8 @@ begin
    GridDiffForm.CheckBox3.Checked := MDDef.ShowScatterplot;
    GridDiffForm.CheckBox2.Checked := MDDef.ShowGridDiffMap;
    GridDiffForm.CheckBox1.Checked := MDDef.ShowGridDiffHistogram;
+   GridDiffForm.CheckBox4.Checked := MDDef.HighlightDiffMap;
+   GridDiffForm.Edit1.Text := RealToString(MDDef.TopCutLevel,-8,-2);
    PlaceFormInCorner(WMDEM,GridDiffForm,lpCenterMap);
    GridDiffForm.ShowModal;
 end;
@@ -63,7 +69,17 @@ begin
    MDDef.ShowGridDiffMap := CheckBox2.Checked;
    MDDef.ShowGridDiffHistogram := CheckBox1.Checked;
    MDDef.ShowScatterplot := CheckBox3.Checked;
+   CheckEditString(Edit1.Text,MDDef.TopCutLevel);
+   MDDef.BottomCutLevel := -MDDef.TopCutLevel;
    Close;
+end;
+
+
+procedure TGridDiffForm.CheckBox4Click(Sender: TObject);
+begin
+   MDDef.HighlightDiffMap := CheckBox4.Checked;
+   Label1.Enabled := MDDef.HighlightDiffMap;
+   Edit1.Enabled := MDDef.HighlightDiffMap;
 end;
 
 
@@ -71,6 +87,7 @@ procedure TGridDiffForm.FormClose(Sender: TObject;  var Action: TCloseAction);
 begin
    Action := caFree;
 end;
+
 
 procedure TGridDiffForm.FormCreate(Sender: TObject);
 begin

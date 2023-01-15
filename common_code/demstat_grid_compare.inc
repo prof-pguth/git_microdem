@@ -279,7 +279,7 @@ end;
 
 function MakeDifferenceMapOfBoxRegion(Map1,Map2 : integer; GridLimits: tGridLimits; ShowMap,ShowHistogram,ShowScatterplot : boolean; TheAreaName : ShortString = '') : integer;
 var
-   Col,Row  : integer;
+   Col,Row,mt  : integer;
    z1,z2 : float32;
    fName : PathStr;
    ThisGraph : TThisBaseGraph;
@@ -336,7 +336,10 @@ begin
 
    if ShowMap then begin
       {$If Defined(RecordDEMCompare) or Defined(RecordDiffMap)} WriteLineToDebugFile('MakeDifferenceMap call setupmap'); {$EndIf}
-      DEMGlb[Result].SetUpMap(Result,true,mtElevSpectrum);
+
+      if MDDef.HighlightDiffMap then mt := mtGGRReflect else mt := mtElevSpectrum;
+
+      DEMGlb[Result].SetUpMap(Result,true,mt);
    end;
 
    if ShowScatterPlot then begin

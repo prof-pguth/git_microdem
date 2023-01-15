@@ -32,6 +32,7 @@ unit DEMCoord;
 
    {$IFDEF DEBUG}
       {$Define RecordDEMIX}
+      {$Define RecordDEMEdits}
       //{$Define RecordGeotiff}
       //{$Define ShortDEMLoad}
       //{$Define RecordSaveAverageResampleDEMformat}
@@ -1476,7 +1477,7 @@ var
    Dec : integer;
 begin
    if ElevationDEM then Dec := 1 else Dec := 6;
-   Result := 'z range: ' + RealToString(DEMheader.MinElev,-18,-Dec) + ' to ' + RealToString(DEMheader.MaxElev,-18,-Dec) + ' ' + ElevUnitsAre[DEMheader.ElevUnits];
+   Result := 'z range: ' + RealToString(DEMheader.MinElev,-18,-Dec) + ' to ' + RealToString(DEMheader.MaxElev,-18,-Dec) + ' ' + ElevUnitsAre(DEMheader.ElevUnits);
 end;
 
 function tDEMDataSet.ColsRowsString : ShortString;

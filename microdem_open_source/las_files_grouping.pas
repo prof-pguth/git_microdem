@@ -94,9 +94,10 @@ type
          MaxPointDensity,
          AveragePointDensity,
          PointDensity,
-         MinGPStime,MaxGPSTime,TranslateX,TranslateY,TranslateZ,ScaleUp{,MinLat,MaxLat,MinLong,MaxLong} : float64;
-         INTEN_1,INTEN_99, NIR_1,NIR_99,RED_1,RED_99,GREEN_1,GREEN_99,BLUE_1,BLUE_99,
-         MIN_INTEN,MAX_INTEN,MIN_RED,MAX_RED,MIN_GREEN,MAX_GREEN,MIN_BLUE,MAX_BLUE,MIN_NIR,MAX_NIR : word;
+         MinGPStime,MaxGPSTime,TranslateX,TranslateY,TranslateZ,ScaleUp : float64;
+         MIN_INTEN,MAX_INTEN,INTEN_1,INTEN_99,
+         NIR_1,NIR_99,RED_1,RED_99,GREEN_1,GREEN_99,BLUE_1,BLUE_99,
+         MIN_RED,MAX_RED,MIN_GREEN,MAX_GREEN,MIN_BLUE,MAX_BLUE,MIN_NIR,MAX_NIR : word;
          LatHemi : ANSIchar;
          LasExportThinFactor,
          UTMZone : integer;
@@ -303,7 +304,7 @@ end;
 function tLas_files.CloudStats : shortstring;
 begin
     if (LAS_fnames.Count > 0) then begin
-       Result := CloudName + '; pts=' + SmartNumberPoints(TotalCloudPts) + ';  files=' + IntToStr(LAS_fnames.Count) + '; ' + RealToString(PointDensity,-12,1) + ' pts/m²; Elev ' + RealToString(MinZ,-12,-1) + ' to ' + RealToString(MaxZ,-12,-1);
+       Result := CloudName + '; pts=' + SmartNumberPoints(TotalCloudPts) + ';  files=' + IntToStr(LAS_fnames.Count) + '; ' + RealToString(PointDensity,-12,1) + ' pts/m²; Elev ' + RealToString(MinZ,-12,0) + '--' + RealToString(MaxZ,-12,0);
     end;
 end;
 
@@ -645,14 +646,12 @@ var
             end;
             HasIntensity := IndexTable.FieldHasChar('HAS_INTEN','Y');
             if HasIntensity then begin
-               if MDDef.LASPC99 then begin
-                  Max_Inten := round(IndexTable.FindFieldMax('INTEN_99'));
-                  Min_Inten := round(IndexTable.FindFieldMax('INTEN_1'));
-               end
-               else begin
-                  Max_Inten := round(IndexTable.FindFieldMax('MAX_INTEN'));
-                  Min_Inten := round(IndexTable.FindFieldMax('MIN_INTEN'));
-               end;
+               Inten_99 := round(IndexTable.FindFieldMax('INTEN_99'));
+               Inten_1 := round(IndexTable.FindFieldMax('INTEN_1'));
+               Max_Inten := round(IndexTable.FindFieldMax('MAX_INTEN'));
+               Min_Inten := round(IndexTable.FindFieldMax('MIN_INTEN'));
+
+               //if MDDef.LASPC99 then begin
             end;
 
             HasClassification := IndexTable.FieldHasChar('HAS_CLASS','Y');

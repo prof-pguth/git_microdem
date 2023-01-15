@@ -2547,11 +2547,9 @@ var
 begin
    if ValidDB(DBonTable) then begin
       GISdb[DBonTable].EmpSource.Enabled := false;
-      StartProgress('Hiding');
-      for j := 0 to pred(DBGrid1.Columns.Count) do begin
-         UpdateProgressBar(j/DBGrid1.Columns.Count);
+      for j := 0 to pred(GISdb[DBonTable].MyData.FieldCount) do begin
          if (j <= 100) then begin
-            fName := DBGrid1.Columns[j].FieldName;
+            fName := GISdb[DBonTable].MyData.GetFieldName(j);
             if GISdb[DBonTable].MyData.FieldAllBlanks(fName) or GISdb[DBonTable].MyData.FieldAllZeros(fName) then
                GISdb[DBonTable].dbOpts.VisCols[j] := false;
          end;
@@ -9865,10 +9863,12 @@ begin
    DEMIXwineContestScoresGraph(DBonTable,'Average score');
 end;
 
+
 procedure Tdbtablef.Graphfilters1Click(Sender: TObject);
 begin
    DoDEMIXFilter(DBonTable);
 end;
+
 
 procedure Tdbtablef.Graphfortransposeddata1Click(Sender: TObject);
 begin

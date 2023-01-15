@@ -170,7 +170,6 @@ type
     procedure CornerButton3Click(Sender: TObject);
     procedure CornerButton4Click(Sender: TObject);
     procedure CornerButton13Click(Sender: TObject);
-    procedure CheckBox6Change(Sender: TObject);
     procedure ListBox1Change(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
@@ -179,13 +178,15 @@ type
     //procedure Form3DMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Single);
     procedure CornerButton15Click(Sender: TObject);
     procedure Button4Click(Sender: TObject);
+    procedure CheckBox6Change(Sender: TObject);
   private
+     procedure UncheckAllIfNeeded;
   public
      xRange,yRange,zRange,
      ve1,ye1,rMinX,rMaxX,rMinY,rMaxY : double;
      rMinZ,rMaxZ : float32;
      DrapeFile : array[1..MaxClouds] of shortstring;
-     MouseIsDown,FirstRun,LinkZScaling,Grayscale : boolean;
+     MouseIsDown,FirstRun,LinkZScaling,Grayscale,JustSeeOne : boolean;
      CurCloud,ExtraPoints : integer;
      NPtsUsed,NPtsAllocated  : array[1..MaxClouds] of integer;
      Material : array[1..MaxClouds] of TTextureMaterialSource;  // Texture to be used, probably need to make this an array as well
@@ -237,64 +238,85 @@ var
   Down : TPointF;
 
 
-      procedure TView3DForm.DoMap(aMapDraw : tMapDraw);
-      var
-         x,y,Pts : integer;
-         Lat,Long,xu,yu,xgrid,ygrid : float64;
-         z : float32;
-         Good : boolean;
-      begin
-         if (CurCloud = MaxClouds) then begin
-            MessageToContinue('Limit is ' + IntToStr(MaxClouds));
-            exit;
-         end;
+procedure TView3DForm.UncheckAllIfNeeded;
+begin
+end;
 
-         {$IfDef VCL} StartProgress('Export '+ aMapDraw.BaseTitle); {$EndIf}
-         Pts := aMapDraw.MapXSize * aMapDraw.MapYSize + ExtraPoints;
-         if (Pts >= MaxPts) then Pts := MaxPts;
-         DrapeFile[succ(CurCloud)] := aMapDraw.FullMapfName;
-         Initialize(Pts);
 
-         for x := 0 to pred(aMapDraw.MapXSize) do begin
-            {$IfDef VCL} if (x mod 100 = 0) then UpDateProgressBar(x/aMapDraw.MapXSize); {$EndIf}
-            for y := 0 to pred(aMapDraw.MapYSize) do begin
-               if (aMapDraw.DEM2OnMap <> 0) then begin
-                  aMapDraw.ScreenToDEMGrid(x,y,xgrid,ygrid);
-                  DEMGlb[aMapDraw.DEMonMap].DEMGridToLatLongDegree(xgrid,ygrid,Lat,Long);
-                  Good := DEMGlb[aMapDraw.DEM2onMap].GetElevFromLatLongDegree(Lat,Long,z);
-               end
-               else begin
-                   Good := aMapDraw.ScreenToElev(x,y,z)
-               end;
-               if Good then begin
-                  aMapDraw.ScreenToUTM(x,y,xu,yu);
-                  AddPointWithTextureBitmap(xu,yu,z);
-               end;
-              if (NPtsUsed[CurCloud] >= NPtsAllocated[CurCloud]) then break;
-            end;
-         end;
-         {$IfDef VCL} EndProgress; {$EndIf}
-         if (CurCloud > 1) then begin
-            ShowDataSetsToPickGroupBox2.Visible := true;
-            Button3.Visible := true;
-            CheckBox2.Visible := true;
-            CheckBox3.Visible := CurCloud >= 2;
-            CheckBox4.Visible := CurCloud >= 3;
-            CheckBox5.Visible := CurCloud >= 4;
-            CheckBox6.Visible := CurCloud >= 5;
-         end;
-         case CurCloud of
-            1 : CheckBox2.Text := aMapDraw.BaseTitle;
-            2 : CheckBox3.Text := aMapDraw.BaseTitle;
-            3 : CheckBox4.Text := aMapDraw.BaseTitle;
-            4 : CheckBox5.Text := aMapDraw.BaseTitle;
-            5 : CheckBox6.Text := aMapDraw.BaseTitle;
-         end;
+procedure TView3DForm.CheckBox6Change(Sender: TObject);
+begin
+   if JustSeeOne then begin
+      CheckBox2.IsChecked := false;
+      CheckBox3.IsChecked := false;
+      CheckBox4.IsChecked := false;
+      CheckBox5.IsChecked := false;
+   end;
+   //Plane5.Visible := CheckBox6.IsChecked;  not yet implemented
+   ShowCloud[5] := CheckBox6.IsChecked;
 
-         ArrangePanels;
-         Show;
-         {$IfDef Record3d} WriteLineToDebugFile('TView3DForm DoMap, CurCloud=' + IntToStr(CurCloud) + '  ' + aMapDraw.BaseTitle); {$EndIf}
+end;
+
+
+procedure TView3DForm.DoMap(aMapDraw : tMapDraw);
+var
+   x,y,Pts : integer;
+   Lat,Long,xu,yu,xgrid,ygrid : float64;
+   z : float32;
+   Good : boolean;
+begin
+   if (CurCloud = MaxClouds) then begin
+      MessageToContinue('Limit is ' + IntToStr(MaxClouds));
+      exit;
+   end;
+
+   {$IfDef VCL} StartProgress('Export '+ aMapDraw.BaseTitle); {$EndIf}
+   Pts := aMapDraw.MapXSize * aMapDraw.MapYSize + ExtraPoints;
+   if (Pts >= MaxPts) then Pts := MaxPts;
+   DrapeFile[succ(CurCloud)] := aMapDraw.FullMapfName;
+   Initialize(Pts);
+
+   for x := 0 to pred(aMapDraw.MapXSize) do begin
+      {$IfDef VCL} if (x mod 100 = 0) then UpDateProgressBar(x/aMapDraw.MapXSize); {$EndIf}
+      for y := 0 to pred(aMapDraw.MapYSize) do begin
+         if (aMapDraw.DEM2OnMap <> 0) then begin
+            aMapDraw.ScreenToDEMGrid(x,y,xgrid,ygrid);
+            DEMGlb[aMapDraw.DEMonMap].DEMGridToLatLongDegree(xgrid,ygrid,Lat,Long);
+            Good := DEMGlb[aMapDraw.DEM2onMap].GetElevFromLatLongDegree(Lat,Long,z);
+         end
+         else begin
+             Good := aMapDraw.ScreenToElev(x,y,z)
+         end;
+         if Good then begin
+            aMapDraw.ScreenToUTM(x,y,xu,yu);
+            AddPointWithTextureBitmap(xu,yu,z);
+         end;
+        if (NPtsUsed[CurCloud] >= NPtsAllocated[CurCloud]) then break;
       end;
+   end;
+   {$IfDef VCL} EndProgress; {$EndIf}
+
+   if (CurCloud > 1) then begin
+      ShowDataSetsToPickGroupBox2.Visible := true;
+      Button3.Visible := true;
+      CheckBox2.Visible := true;
+      CheckBox3.Visible := CurCloud >= 2;
+      CheckBox4.Visible := CurCloud >= 3;
+      CheckBox5.Visible := CurCloud >= 4;
+      CheckBox6.Visible := CurCloud >= 5;
+      JustSeeOne := true;
+   end;
+   case CurCloud of
+      1 : CheckBox2.Text := aMapDraw.BaseTitle;
+      2 : CheckBox3.Text := aMapDraw.BaseTitle;
+      3 : CheckBox4.Text := aMapDraw.BaseTitle;
+      4 : CheckBox5.Text := aMapDraw.BaseTitle;
+      5 : CheckBox6.Text := aMapDraw.BaseTitle;
+   end;
+
+   ArrangePanels;
+   Show;
+   {$IfDef Record3d} WriteLineToDebugFile('TView3DForm DoMap, CurCloud=' + IntToStr(CurCloud) + '  ' + aMapDraw.BaseTitle); {$EndIf}
+end;
 
 
 function MapTo3DView(MapDraw : tMapDraw;  ExtraPoints : integer = 0) : TView3DForm;
@@ -590,33 +612,52 @@ end;
 
 procedure TView3DForm.CheckBox2Change(Sender: TObject);
 begin
+   if JustSeeOne then begin
+      CheckBox3.IsChecked := false;
+      CheckBox4.IsChecked := false;
+      CheckBox5.IsChecked := false;
+      CheckBox6.IsChecked := false;
+   end;
    Plane1.Visible := CheckBox2.IsChecked;
    ShowCloud[1] := CheckBox2.IsChecked;
 end;
 
 procedure TView3DForm.CheckBox3Change(Sender: TObject);
 begin
+   if JustSeeOne then begin
+      CheckBox2.IsChecked := false;
+      CheckBox4.IsChecked := false;
+      CheckBox5.IsChecked := false;
+      CheckBox6.IsChecked := false;
+   end;
    Plane2.Visible := CheckBox3.IsChecked;
    ShowCloud[2] := CheckBox3.IsChecked;
 end;
 
 procedure TView3DForm.CheckBox4Change(Sender: TObject);
 begin
+   if JustSeeOne then begin
+      CheckBox2.IsChecked := false;
+      CheckBox3.IsChecked := false;
+      CheckBox5.IsChecked := false;
+      CheckBox6.IsChecked := false;
+   end;
    Plane3.Visible := CheckBox4.IsChecked;
    ShowCloud[3] := CheckBox4.IsChecked;
 end;
 
 procedure TView3DForm.CheckBox5Change(Sender: TObject);
 begin
+   if JustSeeOne then begin
+      CheckBox2.IsChecked := false;
+      CheckBox3.IsChecked := false;
+      CheckBox4.IsChecked := false;
+      CheckBox6.IsChecked := false;
+   end;
    Plane4.Visible := CheckBox5.IsChecked;
    ShowCloud[4] := CheckBox5.IsChecked;
 end;
 
-procedure TView3DForm.CheckBox6Change(Sender: TObject);
-begin
-   //Plane5.Visible := CheckBox6.IsChecked;  //currently there is not Plane5
-   ShowCloud[5] := CheckBox6.IsChecked;
-end;
 
 procedure TView3DForm.CornerButton11Click(Sender: TObject);
 begin  //y plane in real world coordinates
@@ -1139,6 +1180,7 @@ begin
    CheckBox1.IsChecked := false;
    FirstRun := true;
    MouseIsDown := false;
+   JustSeeOne := false;
    LinkZScaling := true;
    MDDef.OGLDefs.MoveIncr := 7.5;
 
@@ -1187,8 +1229,8 @@ end;
 procedure TView3DForm.FormMouseMove(Sender: TObject; Shift: TShiftState; X,Y: Single);
 begin
    if {false and} MouseIsDown {(ssLeft in Shift))} then begin
-      Layout3D1.RotationAngle.X := Layout3D1.RotationAngle.X - ((Y - Down.Y) * 0.3);
-      Layout3D1.RotationAngle.Y := Layout3D1.RotationAngle.Y + ((X - Down.X) * 0.3);
+      Layout3D1.RotationAngle.X := Layout3D1.RotationAngle.X - ((Y - Down.Y) * 0.1);      //was 0.3
+      Layout3D1.RotationAngle.Y := Layout3D1.RotationAngle.Y + ((X - Down.X) * 0.1);
       Down := PointF(X, Y);
    end;
 end;

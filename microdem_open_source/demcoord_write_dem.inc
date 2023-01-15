@@ -339,7 +339,7 @@ begin
 
    if (DEMheader.DEMUsed = UTMbasedDEM) then AsciiStr := ' UTM|'
    else AsciiStr := ' Geographic (Lat/Lon)|Units = dd|OK';
-   AsciiStr := MapFromMICRODEMstr + AsciiStr + '|mdz=' + IntToStr(ord(DEMheader.ElevUnits)) + '/' + ElevUnitsAre[DEMheader.ElevUnits] + #0;
+   AsciiStr := MapFromMICRODEMstr + AsciiStr + '|mdz=' + IntToStr(ord(DEMheader.ElevUnits)) + '/' + ElevUnitsAre(DEMheader.ElevUnits) + #0;
    ASCIIsize := length(AsciiStr);
 
    MissingStr := RealToString(MDDef.GeotiffMissingValue,-12,-2) + #0;
@@ -478,7 +478,7 @@ begin
    XYZformatform.RadioGroup1.ItemIndex := MDDef.ASCIIXYFormat;
    XYZformatform.RadioGroup1.ItemIndex := MDDef.ASCIIZUnits;
    if ElevationDEM then begin
-      XYZformatform.RadioGroup1.Items[0] := 'Integer default ' + ElevUnitsAre[DEMheader.ElevUnits];
+      XYZformatform.RadioGroup1.Items[0] := 'Integer default ' + ElevUnitsAre(DEMheader.ElevUnits);
       XYZformatform.ShowModal;
    end;
    MDDef.ASCIIXYFormat := XYZformatform.RadioGroup1.ItemIndex;

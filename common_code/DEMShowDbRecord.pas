@@ -1,12 +1,11 @@
 unit demshowdbrecord;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of ianMICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch    }
-{ Released under the MIT Licences    }
-{ Copyright (c) 2022 Peter L. Guth   }
-{____________________________________}
-
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2023 Peter L. Guth  }
+{___________________________________}
 
 {$I nevadia_defines.inc}
 
@@ -406,7 +405,7 @@ begin
                   DEMGlb[i].LatLongDegreeToDEMGrid(Lat,Long,xg1,yg1);
                   DEMGlb[i].DEMGridToLatLongDegree(round(xg1),round(yg1),Lat,Long);
                   if DEMGlb[i].GetElevFromLatLongDegree(Lat,Long,z) then begin
-                     StringGrid1.Cells[1,k] := RealToString(z,-12,-4)  + ' ' + ElevUnitsAre[DEMGlb[i].DEMheader.ElevUnits];
+                     StringGrid1.Cells[1,k] := RealToString(z,-12,-4)  + ' ' + ElevUnitsAre(DEMGlb[i].DEMheader.ElevUnits);
                   end;
                   inc(k);
                end;

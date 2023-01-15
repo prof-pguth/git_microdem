@@ -104,7 +104,7 @@ implementation
 
 uses
    PETMath,//Get_SPCS,
-   DEM_Manager,
+   DEM_Manager, DEMDef_routines,
    BaseMap,DEMCoord,GetLatLn;
 
 
@@ -156,7 +156,7 @@ end;
 procedure TDEMHeaderForm.SetUpDEMHeaderForm;
 var
    su : tSpacingUnit;
-   zu : tElevUnit;
+   zu : byte;
    TStr : shortstring;
 begin
    {$IfDef RecordEditProblems} WriteLineToDebugFile('TDEMHeaderForm.SetUpForm, DEM=' + IntToStr(DEM)); {$EndIf}
@@ -165,7 +165,10 @@ begin
    EditHeadRec := DEMGlb[DEM].DEMHeader;
    TStr := ByteArrayToString(EditHeadRec.DMAMapDefinition.h_DatumCode);
    Label6.Caption := DatumName(TStr);
-   for zu := Low(ElevUnitsAre) to High(ElevUnitsAre) do ComboBox3.Items.Add(ElevUnitsAre[zu]);
+   for zu := 0 to HighElevUnits do begin
+      TStr := ElevUnitsAre(zu);
+      if (TStr <> '') then ComboBox3.Items.Add(ElevUnitsAre(zu));
+   end;
    for su := SpaceMeters to SpaceUSFeet do ComboBox4.Items.Add(SpacingUnits[su]);
    ComboBox4.Text := ComboBox4.Items[ord(EditHeadRec.DataSpacing)];
    ComboBox2.Text := DatumName(TStr);                 //ComboBox2.Items[ord(EditHeadRec.DigitizeDatum)];

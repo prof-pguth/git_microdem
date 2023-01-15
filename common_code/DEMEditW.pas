@@ -84,7 +84,7 @@ uses
    Nevadia_Main,
 {End of the MDI parent declaration}
    PETMAR, Petmar_types,
-   DEMDefs,DEMCoord,DEMMapF;
+   DEMDefs,DEMDef_routines,DEMCoord,DEMMapF;
 
 
 var
@@ -120,7 +120,7 @@ var
    z : float32;
 begin
    with DEMGlb[EditDEM] do begin
-      Caption := 'DEM: ' + AreaName + ' ' + ElevUnitsAre[DEMheader.ElevUnits];
+      Caption := 'DEM: ' + AreaName + ' ' + ElevUnitsAre(DEMheader.ElevUnits);
 
       if (SubsetLeftCol < 0) then SubsetleftCol := 0;
       if (SubsetBottRow < 0) then SubsetBottRow := 0;

@@ -175,7 +175,7 @@ begin
       CatDoing := inCatDoing;
       TerrainCategory := inTerrainCategory;
       SymbolOnButton(BitBtn3,MapOwner.DrSymbol);
-      Label3.Caption := 'Z value: ' + ElevUnitsAre[DEMGlb[DEMUsed].DEMheader.ElevUnits];
+      Label3.Caption := 'Z value: ' + ElevUnitsAre(DEMGlb[DEMUsed].DEMheader.ElevUnits);
       Label8.Visible := DEMGlb[DEMUsed].DEMheader.ElevUnits = euMeters;
       Label9.Visible := Label8.Visible;
       Label10.Visible := Label8.Visible;

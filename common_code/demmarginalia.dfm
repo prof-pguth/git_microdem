@@ -3,8 +3,8 @@ object DemMarginaliaForm: TDemMarginaliaForm
   Top = 313
   BorderIcons = []
   Caption = 'Legends/Marginalia'
-  ClientHeight = 397
-  ClientWidth = 582
+  ClientHeight = 379
+  ClientWidth = 570
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -29,18 +29,22 @@ object DemMarginaliaForm: TDemMarginaliaForm
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 378
-    Width = 582
+    Top = 360
+    Width = 570
     Height = 19
     Panels = <>
+    ExplicitTop = 369
+    ExplicitWidth = 576
   end
   object Panel1: TPanel
-    Left = 418
+    Left = 406
     Top = 0
     Width = 164
-    Height = 378
+    Height = 360
     Align = alRight
     TabOrder = 1
+    ExplicitLeft = 412
+    ExplicitHeight = 369
     object Label4: TLabel
       Left = 14
       Top = 204
@@ -65,7 +69,7 @@ object DemMarginaliaForm: TDemMarginaliaForm
       Caption = 'Label2'
     end
     object El: TBitBtn
-      Left = 24
+      Left = 32
       Top = 7
       Width = 105
       Height = 25
@@ -74,7 +78,7 @@ object DemMarginaliaForm: TDemMarginaliaForm
       OnClick = ElClick
     end
     object BitBtn3: TBitBtn
-      Left = 24
+      Left = 32
       Top = 38
       Width = 105
       Height = 25
@@ -83,7 +87,7 @@ object DemMarginaliaForm: TDemMarginaliaForm
       OnClick = BitBtn3Click
     end
     object BitBtn5: TBitBtn
-      Left = 24
+      Left = 32
       Top = 69
       Width = 105
       Height = 25
@@ -199,7 +203,7 @@ object DemMarginaliaForm: TDemMarginaliaForm
       OnClick = BitBtn2Click
     end
     object BitBtn6: TBitBtn
-      Left = 24
+      Left = 32
       Top = 100
       Width = 105
       Height = 25
@@ -224,7 +228,7 @@ object DemMarginaliaForm: TDemMarginaliaForm
       OnClick = CheckBox6Click
     end
     object BitBtn7: TBitBtn
-      Left = 24
+      Left = 32
       Top = 131
       Width = 105
       Height = 25

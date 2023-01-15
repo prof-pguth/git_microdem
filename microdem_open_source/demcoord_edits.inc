@@ -328,7 +328,8 @@ var
    Lat,Long,xg,yg  : float64;
    z,z2,z3,z4 : float32;
 begin
-   {$IfDef RecordDEMEdits} WriteLineToDebugFile('tDEMDataSet.FillHolesSelectedBoxFromReferenceDEM in, DEM=' + AreaName + ' fill from ' + DEMGlb[RefDEM].AreaName); {$EndIf}
+   {$IfDef RecordDEMEdits} WriteLineToDebugFile('tDEMDataSet.FillHolesSelectedBoxFromReferenceDEM in, DEM=' + AreaName + '  ' + KeyDEMParams(true)); {$EndIf}
+   {$IfDef RecordDEMEdits} WriteLineToDebugFile(   ' fill from ' + DEMGlb[RefDEM].AreaName + '  ' + DEMGlb[RefDEM].KeyDEMParams(true)); {$EndIf}
    if (RefDEM = 0) then exit;
    if ShowSatProgress then StartProgress('Fill grid ' + AreaName);
    Changed := 0;

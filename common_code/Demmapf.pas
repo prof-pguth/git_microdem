@@ -28,8 +28,6 @@
    {$IFDEF DEBUG}
       //{$Define RecordFan}
       //{$Define FanDrawProblems}
-
-
       //{$Define RawProjectInverse}  //must also be set in BaseMap
       //{$Define RecordDEMIX}
       //{$Define RecordDEMIXtiles}
@@ -81,10 +79,10 @@
       //{$Define RecordSatClass}
       //{$Define RecordCheckProperTix}
       //{$Define RecordWMS}
-      //{$Define RecordNewMaps}
+      {$Define RecordNewMaps}
       //{$Define RecordNewWKT}
       //{$Define RecordNewWKTFull}
-      {$Define RecordNewSatMap}
+      //{$Define RecordNewSatMap}
       //{$Define RecordMessages}
       //{$Define RecordGlobeRotation}
       //{$Define RecordThreadCheckPlane}
@@ -10944,14 +10942,17 @@ end;
 procedure TMapForm.OpenGLwithallmaps1Click(Sender: TObject);
 var
    Viewer : TView3DForm;
-   i : integer;
+   i,Num : integer;
 begin
    AllMapsMatchThisCoverageArea1Click(Nil);
    Allsamepixelsizeasthismap1Click(Sender);
    Viewer := MapTo3DView(Self.MapDraw);
+   Num := 1;
    for i := 0 to pred(WMDEM.MDIChildCount) do begin
       if WMDEM.MDIChildren[i] is tMapForm and (WmDEM.MDIChildren[i].Handle <> Handle) then begin
+         inc(Num);
          Viewer.DoMap((WMDEM.MDIChildren[i] as TMapForm).MapDraw);
+         if Num >= MaxClouds then exit;
       end;
    end;
 end;
@@ -13507,7 +13508,7 @@ begin
    MDdef.DefaultContourInterval := MapDraw.MapOverlays.ConInt;
    ContourOptions := TContourOptions.Create(Application);
    ContourOptions.MapOwner := Self;
-   ContourOptions.Label4.Caption := ElevUnitsAre[DEMGLB[MapDraw.DEMonMap].DEMheader.ElevUnits];
+   ContourOptions.Label4.Caption := ElevUnitsAre(DEMGlb[MapDraw.DEMonMap].DEMheader.ElevUnits);
 
    if (ContourOptions.ShowModal <> idCancel) then begin
       case DEMGLB[MapDraw.DEMonMap].DEMheader.ElevUnits of
@@ -16958,7 +16959,7 @@ var
    HiMissing,LowMissing : ShortString;
 begin
    {$IfDef RecordEditsDEM} WritelineToDebugFile('TMapForm.Markasmissing1Click in'); {$EndIf}
-    LowMissing := ' z to mark missing (' + ptTrim(ElevUnitsAre[DEMGlb[MapDraw.DEMonMap].DEMheader.ElevUnits])  + ')';
+    LowMissing := ' z to mark missing (' + ptTrim(ElevUnitsAre(DEMGlb[MapDraw.DEMonMap].DEMheader.ElevUnits))  + ')';
     HiMissing := 'Hi' + LowMissing;
     LowMissing := 'Lo' + LowMissing;
     PN := 0;
@@ -17814,14 +17815,14 @@ var
       if What = 1 then begin
          DEMGlb[MapDraw.DEMonMap].LatLongDegreeToDEMGrid(RightClickLat,RightClickLong,xgf,ygf);
          if (MapDraw.DEMonMap <> 0) and DEMGlb[MapDraw.DEMonMap].GetElevFromLatLongDegree(RightClickLat,RightClickLong,z) then begin
-            sl.Add(RealToString(z,12,4) + ' ' + ElevUnitsAre[DEMGlb[MapDraw.DEMonMap].DEMHeader.ElevUnits] + '   ' + DEMGlb[MapDraw.DEMonMap].AreaName + '  ' + DEMGridString(xgf,ygf));
+            sl.Add(RealToString(z,12,4) + ' ' + ElevUnitsAre(DEMGlb[MapDraw.DEMonMap].DEMHeader.ElevUnits) + '   ' + DEMGlb[MapDraw.DEMonMap].AreaName + '  ' + DEMGridString(xgf,ygf));
          end;
 
          for i := 1 to MaxDEMDataSets do begin
             if ValidDEM(i) and (i <> MapDraw.DEMonMap) then begin
                DEMGlb[i].LatLongDegreeToDEMGrid(RightClickLat,RightClickLong,xgf,ygf);
                if DEMGlb[i].GetElevFromLatLongDegree(RightClickLat,RightClickLong,z) then begin
-                  sl.Add(RealToString(z,12,4)+ ' ' + ElevUnitsAre[DEMGlb[i].DEMHeader.ElevUnits] + '   ' + DEMGlb[i].AreaName + '  ' + DEMGridString(xgf,ygf));
+                  sl.Add(RealToString(z,12,4)+ ' ' + ElevUnitsAre(DEMGlb[i].DEMHeader.ElevUnits) + '   ' + DEMGlb[i].AreaName + '  ' + DEMGridString(xgf,ygf));
                end;
             end;
          end;
@@ -17829,14 +17830,14 @@ var
       else begin
          DEMGlb[MapDraw.DEMonMap].LatLongDegreeToDEMGridInteger(RightClickLat,RightClickLong,xg,yg);
          if (MapDraw.DEMonMap <> 0) and DEMGlb[MapDraw.DEMonMap].GetElevMetersOnGrid(xg,yg,z) then begin
-            sl.Add(RealToString(z,12,4) + ' ' + ElevUnitsAre[DEMGlb[MapDraw.DEMonMap].DEMHeader.ElevUnits] + '   ' + DEMGlb[MapDraw.DEMonMap].AreaName + '  ' + DEMGridString(xg,yg));
+            sl.Add(RealToString(z,12,4) + ' ' + ElevUnitsAre(DEMGlb[MapDraw.DEMonMap].DEMHeader.ElevUnits) + '   ' + DEMGlb[MapDraw.DEMonMap].AreaName + '  ' + DEMGridString(xg,yg));
          end;
 
          for i := 1 to MaxDEMDataSets do begin
             if ValidDEM(i) and (i <> MapDraw.DEMonMap) then begin
                DEMGlb[i].LatLongDegreeToDEMGridInteger(RightClickLat,RightClickLong,xg,yg);
                if DEMGlb[i].GetElevMetersOnGrid(xg,yg,z) then begin
-                  sl.Add(RealToString(z,12,4)+ ' ' + ElevUnitsAre[DEMGlb[i].DEMHeader.ElevUnits] + '   ' + DEMGlb[i].AreaName + '  ' + DEMGridString(xg,yg));
+                  sl.Add(RealToString(z,12,4)+ ' ' + ElevUnitsAre(DEMGlb[i].DEMHeader.ElevUnits)+ '   ' + DEMGlb[i].AreaName + '  ' + DEMGridString(xg,yg));
                end;
             end;
          end;
@@ -20852,7 +20853,7 @@ begin
             Results.Add(Title);
             {$IfDef TrackNLCD} WriteLineToDebugFile(Title); {$EndIf}
          end;
-         Title := ElevUnitsAre[DEMGlb[MapDraw.DEMonMap].DEMheader.ElevUnits] + '_' + DEMGlb[MapDraw.DEMonMap].AreaName;
+         Title := ElevUnitsAre(DEMGlb[MapDraw.DEMonMap].DEMheader.ElevUnits) + '_' + DEMGlb[MapDraw.DEMonMap].AreaName;
          fName := Petmar.NextFileNumber(MDTempDir, Title + '_','.dbf');
          Result := StringList2CSVtoDB(Results,fName);
       end;

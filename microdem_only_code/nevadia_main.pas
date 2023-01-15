@@ -2160,7 +2160,7 @@ procedure Twmdem.SeeIfThereAreDebugThingsToDo;
 
 begin
    if TrilobiteComputer then begin
-      OpenDEMIXArea('H:\wine_contest_reference_dems\uruguay.dbf');
+      //OpenDEMIXArea('H:\wine_contest_reference_dems\uruguay.dbf');
    end;
 end;
 
@@ -2509,15 +2509,19 @@ procedure Twmdem.Annapolislidar1Click(Sender: TObject);
    var
       Source,Dest : string;
    begin
+      {$IfDef RecordLabs} writeLineToDebugFile('TTwmdem.Annapolislidar1Click check ' + fname); {$EndIf}
       Dest := LastLidarDirectory + fname;
       if not PathIsValid(Dest) then begin
+         {$IfDef RecordLabs} writeLineToDebugFile('TTwmdem.Annapolislidar1Click downlaod ' + fname); {$EndIf}
          DownloadandUnzipDataFileIfNotPresent(fName,true);
          Source := MainMapData + fname;
          System.IOUtils.TDirectory.Move(Source,Dest);
+         {$IfDef RecordLabs} writeLineToDebugFile('TTwmdem.Annapolislidar1Click moved to ' + Dest); {$EndIf}
       end;
    end;
 
 begin
+   {$IfDef RecordLabs} writeLineToDebugFile('TTwmdem.Annapolislidar1Click in'); {$EndIf}
    LastLidarDirectory := MainMapData + 'annapolis_lidar\';
    SafeMakeDir(LastLidarDirectory);
    DealWithFile('las_2004_anne_arundel');
@@ -2529,11 +2533,10 @@ begin
    MDdef.AutoZoomOpenLAS := true;
    GISdatasampler1Click(Sender);
    if (LastDEMLoaded <> 0) then begin
-
       LastDEMLoaded := DEMGlb[LastDEMLoaded].ReinterpolateUTMDEM(2);
-
       DEMGlb[LastDEMLoaded].SelectionMap.PointCloudSpeedButtonClick(Sender);
    end;
+   {$IfDef RecordLabs} writeLineToDebugFile('TTwmdem.Annapolislidar1Click out'); {$EndIf}
 end;
 
 

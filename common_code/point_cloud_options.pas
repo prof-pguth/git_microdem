@@ -10,7 +10,7 @@
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
-      //{$Define RecordMakeGrid}
+      {$Define RecordMakeGrid}
       //{$Define RecordExtractPoints}
       //{$Define Slicer}
       //{$Define BulkGrids}
@@ -326,6 +326,9 @@ type
     CheckBox99: TCheckBox;
     Minintensity1: TMenuItem;
     BitBtn61: TBitBtn;
+    BitBtn62: TBitBtn;
+    BitBtn64: TBitBtn;
+    CheckBox34: TCheckBox;
     procedure BitBtn14Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure RadioGroup1Click(Sender: TObject);
@@ -509,6 +512,9 @@ type
     procedure CheckBox99Click(Sender: TObject);
     procedure Minintensity1Click(Sender: TObject);
     procedure BitBtn61Click(Sender: TObject);
+    procedure BitBtn62Click(Sender: TObject);
+    procedure BitBtn64Click(Sender: TObject);
+    procedure CheckBox34Click(Sender: TObject);
   private
     { Private declarations }
     MinAreaZ,MaxAreaZ : float64;
@@ -523,6 +529,7 @@ type
     HasScanAngle,
     HasReturnNumbers,
     CanAutoZoom,
+    InitialCloudDisplay,
     FirstLoad : boolean;
     MemPtCloud : tMemoryPointCloud;
     StatusBarShortMess : ShortString;
@@ -536,7 +543,7 @@ type
     procedure RedrawAllLayers;
     procedure UpdateColorOptions;
     procedure RunProcess(WhatProcess : tWhatProcess);
-    procedure UncheckAll;
+    procedure UncheckAll(setting : boolean = false);
     procedure Hideoptions;
     procedure LabelMemoryRequired;
     function FindDEMGridCellOfShot(LasData : Las_Lidar.tLAS_data; DEM,J : integer; var xgrid,ygrid : integer) : boolean;  {$If Defined(NoInline)} {$Else} inline; {$EndIf}
@@ -553,6 +560,7 @@ type
      procedure MapCallOutlineClouds;
      function  NumOpenClouds : integer;
      procedure HideForGridPick;
+    procedure BitBtn63Click(Sender: TObject);
   end;
 
 
@@ -940,9 +948,9 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
                  Result := What + TheCloudName;
               end;
 
-              procedure MissingDataGrid(var DEM : integer; GridName : ShortString);
+              procedure MissingDataGrid(var DEM : integer; GridName : ShortString; InitialValueMode : integer = InitDEMMissing);
               begin
-                 OpenAndZeroNewDEM(true,NewHeadRecs,DEM,GridName,InitDEMMissing);
+                 OpenAndZeroNewDEM(true,NewHeadRecs,DEM,GridName,InitialValueMode);
                  CheckDEM := DEM;
                  {$IfDef RecordMakeGrid} WriteLineToDebugFile('Missing data grid out, ' + DEMGlb[DEM].FullDEMParams); {$EndIf}
               end;
@@ -955,14 +963,14 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
              NewHeadRecs.DEMPrecision := LongWordDEM;
              NewHeadRecs.ElevUnits := Undefined;
 
-             if (PCGridMaker in [pcgmAllIntensity,pcgmClass,pcgmPointCount,pcgmThreeKeyDensities,pcgmMeanStd,pcgmMeanFirst]) then MissingDataGrid(NewDensity,NewGridname('Total_pt_density_'));
-             if (PCGridMaker = pcgmSingleRet) then MissingDataGrid(SingleReturnDEM,NewGridname('Single_return_density_'));
-             if (PCGridMaker = pcgmOverlap) then MissingDataGrid(OverlapDEM,NewGridname('Overlap_density_'));
-             if (PCGridMaker in [pcgmFirstRet,pcgmThreeKeyDensities]) then MissingDataGrid(NewFirstReturnDEM,NewGridname('First_return_density_'));
-             if (PCGridMaker = pcgmSecondRet) then MissingDataGrid(SecondReturnDEM,NewGridname('Second_return_density_'));
-             if (PCGridMaker in [pcgmThreeKeyDensities,pcgmGround,pcgmGrndPtDTM]) then MissingDataGrid(NewGroundDensity,NewGridname('Ground_return_density_'));
+             if (PCGridMaker in [pcgmAllIntensity,pcgmClass,pcgmPointCount,pcgmThreeKeyDensities,pcgmMeanStd,pcgmMeanFirst]) then MissingDataGrid(NewDensity,NewGridname('Total_pt_density_'),InitDEMzero);
+             if (PCGridMaker = pcgmSecondRet) then MissingDataGrid(SecondReturnDEM,NewGridname('Second_return_density_'),InitDEMzero);
+             if (PCGridMaker = pcgmSingleRet) then MissingDataGrid(SingleReturnDEM,NewGridname('Single_return_density_'),InitDEMzero);
+             if (PCGridMaker = pcgmOverlap) then MissingDataGrid(OverlapDEM,NewGridname('Overlap_density_'),InitDEMzero);
+             if (PCGridMaker in [pcgmFirstRet,pcgmThreeKeyDensities]) then MissingDataGrid(NewFirstReturnDEM,NewGridname('First_return_density_'),InitDEMzero);
+             if (PCGridMaker in [pcgmThreeKeyDensities,pcgmGround,pcgmGrndPtDTM]) then MissingDataGrid(NewGroundDensity,NewGridname('Ground_return_density_'),InitDEMzero);
+             if (PCGridMaker in [pcgmAirNonLastReturn]) then MissingDataGrid(AirReturnDEM,NewGridname('Non_last_return_density_'),InitDEMzero);
              if (PCGridMaker = pcgmBlank) then MissingDataGrid(BlankDEM,NewGridname('Blank_grid_'));
-             if (PCGridMaker in [pcgmAirNonLastReturn]) then MissingDataGrid(AirReturnDEM,NewGridname('Non_last_return_density_'));
 
              if (PCGridMaker in [pcgmRGB]) then begin
                 NewHeadRecs.ElevUnits := euRGB;
@@ -1111,9 +1119,6 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
                                    end;
                                 end
                                 else begin
-                                   if (NewGroundDensity <> 0) and (LasClass = 2) then begin
-                                      DEMGlb[NewGroundDensity].IncrementGridValue(xgrid,ygrid);
-                                   end;
                                    if (NewDensity <> 0) then DEMGlb[NewDensity].IncrementGridValue(xgrid,ygrid);
                                    if (NewFirstReturnDEM <> 0) and LasData.FirstReturn(j) then DEMGlb[NewFirstReturnDEM].IncrementGridValue(xgrid,ygrid);
                                    if (SingleReturnDEM <> 0) and (LasData.ReturnsInPulse(j) = 1) then DEMGlb[SingleReturnDEM].IncrementGridValue(xgrid,ygrid);
@@ -1138,6 +1143,7 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
                                    end;
                                     if (PCGridMaker in [pcgmGrndPtDTM]) then begin
                                         if LasData.GroundReturn(j) then begin
+                                           if (NewGroundDensity <> 0) then DEMGlb[NewGroundDensity].IncrementGridValue(xgrid,ygrid);
                                            if (NewGroundMean <> 0) then begin
                                               if (not DEMGlb[NewGroundMean].GetElevMetersOnGrid(xgrid,ygrid,zGrid)) then ZGrid := 0;
                                               DEMGlb[NewGroundMean].SetGridElevation(xgrid,ygrid,zShot+Zgrid);
@@ -1350,8 +1356,9 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
        end;
 
        ShowHourglassCursor;
+       //BaseMap.MapDraw.MapCorners.BoundBoxUTM := BaseMap.MapDraw.GetBoundBoxUTM;
        TempDEM := BaseMap.MakeTempGrid;
-       {$IfDef RecordMakeGrid} WriteLineToDebugFile('CreateGridToMatchMap done, TempDEM=' + IntToStr(TempDEM) + ' ' + DEMGlb[TempDEM].GridDefinition + ' ' + DEMGlb[TempDEM].DEMSizeString + ' ' + DEMGlb[TempDEM].ColsRowsString); {$EndIf}
+      {$IfDef RecordMakeGrid} WriteLineToDebugFile('CreateGridToMatchMap done, TempDEM=' + IntToStr(TempDEM) + ' ' + DEMGlb[TempDEM].GridDefinition + ' ' + DEMGlb[TempDEM].DEMSizeString + ' ' + DEMGlb[TempDEM].ColsRowsString); {$EndIf}
       AirReturnDEM := 0;
       BlankDEM := 0;
       ClassDEM := 0;
@@ -1749,12 +1756,13 @@ var
    i : integer;
    fName : PathStr;
 begin
-   {$If  Defined(RecordLASfiles) or Defined(RecordLASopen)} WriteLineToDebugFile('OvelayPointCloud in'); {$EndIf}
+   {$If Defined(RecordLASfiles) or Defined(RecordLASopen)} WriteLineToDebugFile('OvelayPointCloud in'); {$EndIf}
    MDDef.ShiftMercToUTM := true;
    pt_cloud_opts_fm := Tpt_cloud_opts_fm.Create(Application);
+   pt_cloud_opts_fm.InitialCloudDisplay := true;
    pt_cloud_opts_fm.BaseMap := InBaseMap;
    if (inBaseMap <> Nil) then begin
-      {$If  Defined(RecordLASfiles) or Defined(RecordLASopen)} WriteLineToDebugFile('OvelayPointCloud start map creationg'); {$EndIf}
+      {$If Defined(RecordLASfiles) or Defined(RecordLASopen)} WriteLineToDebugFile('OvelayPointCloud start map creationg'); {$EndIf}
       inBaseMap.MapDraw.DrawLegendsThisMap := false;
       pt_cloud_opts_fm.BaseMap.MapDraw.LasLayerOnMap := true;
       pt_cloud_opts_fm.Caption := 'Point clouds on ' + InBaseMap.Caption;
@@ -1769,6 +1777,7 @@ begin
       Paths.Add(LastLidarDirectory);
       if MDDef.PickLASDirs and GetMultipleDirectories('Lidar point clouds',Paths) then begin
          for i := 1 to Paths.Count do begin
+            if (i>1) then pt_cloud_opts_fm.InitialCloudDisplay := false;
             fName := Paths.Strings[pred(i)];
             pt_cloud_opts_fm.GetFilesForPointCloud(i,fName,true);
          end;
@@ -1779,7 +1788,9 @@ begin
       Paths.Destroy;
    end
    else pt_cloud_opts_fm.GetFilesForPointCloud(1,DirOpen,true);
-   {$If  Defined(RecordLASfiles) or Defined(RecordLASopen)} WriteLineToDebugFile('OvelayPointCloud out'); {$EndIf}
+   pt_cloud_opts_fm.UpdateColorOptions;
+   pt_cloud_opts_fm.InitialCloudDisplay := true;
+   {$If Defined(RecordLASfiles) or Defined(RecordLASopen)} WriteLineToDebugFile('OvelayPointCloud out'); {$EndIf}
 end;
 
 
@@ -2103,7 +2114,12 @@ begin
    if HasTime then RadioGroup1.Items.Add('GPS time');
    if HasPointID then RadioGroup1.Items.Add('Point ID');
    if HasUserData then RadioGroup1.Items.Add('User data');
-   if ActiveClouds > 1 then RadioGroup1.Items.Add('Cloud ID');
+   if (ActiveClouds > 1) then RadioGroup1.Items.Add('Cloud ID');
+
+   Edit4.Enabled := HasRGB;
+   Edit23.Enabled := HasRGB;
+   Label2.Enabled := HasRGB;
+   Label21.Enabled := HasRGB;
    RadioGroup1.ItemIndex := 0;
 end;
 
@@ -2238,7 +2254,7 @@ procedure Tpt_cloud_opts_fm.RedrawAllLayers;
          {$If Defined(RecordPointCloudViewing) or Defined(PointCloudMap)} WriteLineToDebugFile('Tpt_cloud_opts_fm.RedrawPointCloudLayer in ' + IntToStr(Layer)); {$EndIf}
          if (Layer in [1..MaxClouds]) and (LasFiles[Layer] <> Nil) and (LasFiles[Layer].LAS_fnames.Count > 0) then begin
             for i := 0 to MaxLASCat do LasCatUsed[i] := false;
-            {$IfDef RecordLASfilesRedraw} WriteLineToDebugFile('call BaseMap.PlotLASFilesOnMap');    {$EndIf}
+            {$IfDef RecordLASfilesRedraw} WriteLineToDebugFile('call BaseMap.PlotLASFilesOnMap'); {$EndIf}
             if NeedNewElevationLimits then GetElevationLimits(Layer);
             {$IfDef RecordLASfilesRedraw} WriteLineToDebugFile('Tpt_cloud_opts_fm.RedrawPointCloudLayer out ' +  IntToStr(Layer)); {$EndIf}
          end
@@ -2920,6 +2936,41 @@ begin
    EndProgress;
 end;
 
+procedure Tpt_cloud_opts_fm.BitBtn62Click(Sender: TObject);
+var
+   Intensities : tstringlist;
+   cloud : integer;
+   fName : PathStr;
+begin
+   Intensities := tstringlist.Create;
+   Intensities.Add('CLOUD,MIN_INTENS,INTENS_1,INTENS_99,MAX_INTENS');
+   for Cloud := 1 to MaxClouds do if (LasFiles[Cloud] <> Nil) then begin
+      Intensities.Add(LasFiles[Cloud].CloudName + ',' + IntToStr(LasFiles[Cloud].MIN_INTEN) + ',' + IntToStr(LasFiles[Cloud].INTEN_1) + ',' + IntToStr(LasFiles[Cloud].INTEN_99) + ',' + IntToStr(LasFiles[Cloud].MAX_INTEN));
+   end;
+   fName := NextFileNumber(MDTempDir,'Lidar_intensity_','.dbf');
+   StringList2CSVtoDB(Intensities,fName);
+end;
+
+procedure Tpt_cloud_opts_fm.BitBtn63Click(Sender: TObject);
+begin
+   //if (not UsePC[1]) then CheckBoxPC1Click(Sender);
+   (*
+   if (not CheckBoxPC2.Checked) then CheckBoxPC2Click(Sender);
+   if (not CheckBoxPC3.Checked) then CheckBoxPC3Click(Sender);
+   if (not CheckBoxPC4.Checked) then CheckBoxPC4Click(Sender);
+   if (not CheckBoxPC5.Checked) then CheckBoxPC5Click(Sender);
+   *)
+end;
+
+procedure Tpt_cloud_opts_fm.BitBtn64Click(Sender: TObject);
+begin
+   if (not CheckBoxPC1.Checked) then CheckBoxPC1.Checked := true;
+   if (not CheckBoxPC2.Checked) then CheckBoxPC2.Checked := true;
+   if (not CheckBoxPC3.Checked) then CheckBoxPC3.Checked := true;
+   if (not CheckBoxPC4.Checked) then CheckBoxPC4.Checked := true;
+   if (not CheckBoxPC5.Checked) then CheckBoxPC5.Checked := true;
+end;
+
 procedure Tpt_cloud_opts_fm.BitBtn6Click(Sender: TObject);
 begin
    {$If Defined(PointCloudMap)} WriteLineToDebugFile('Tpt_cloud_opts_fm.BitBtn6Click in'); {$EndIf}
@@ -2940,11 +2991,17 @@ end;
 function Tpt_cloud_opts_fm.GetFilesForPointCloud(CloudNum : integer; var BaseDir : PathStr; AutoLoad : boolean = false) : boolean;
 var
    DefFilter : byte;
-   DEMbase : integer;
+   DEMbase,i : integer;
+   Files : tStringList;
 begin
    {$If Defined(BasicOpens) or Defined(RecordPointCloudOptionsForm) or Defined(RecordLASOpen)} WriteLineToDebugFile('Tpt_cloud_opts_fm.GetFilesForPointCloud in, cloud=' + IntToStr(CloudNum)); {$EndIf}
    if (LasFiles[CloudNum] = Nil) then LasFiles[CloudNum] := tLas_files.Create
    else LasFiles[CloudNum].LAS_fnames.Clear;
+
+   Files := Nil;
+   Petmar.FindMatchingFiles(MDTempDir,'cloud_' + IntToStr(CloudNum) + '*.bmp',Files);
+   for i := 0 to pred(Files.Count) do DeleteFile(Files[i]);
+   Files.Free;
 
    if AutoLoad and PathIsValid(BaseDir) then begin
       Petmar.FindMatchingFiles(BaseDir,'*.las',LasFiles[CloudNum].LAS_fnames,6);
@@ -2982,12 +3039,9 @@ begin
          {$If Defined(RecordPointCloudOptionsForm)} WriteLineToDebugFile('GetFile CreateNewGrid out, map grid box:' + sfBoundBoxToString(DEMGlb[DEMBase].SelectionMap.MapDraw.MapCorners.BoundBoxDataGrid,2)); {$EndIf}
 
          BaseMap := DEMGlb[DemBase].SelectionMap;
-         BaseMap.MapDraw.BaseTitle := 'Cloud: ' + LasFiles[CloudNum].CloudName;
-         BaseMap.Caption := BaseMap.MapDraw.BaseTitle;
          BaseMap.MapDraw.DrawLegendsThisMap := false;
          BaseMap.MapDraw.LasLayerOnMap := true;
          BaseMap.Closable := true;
-         Caption := 'Point clouds on ' + BaseMap.Caption;
          BaseMap.PointCloudBase := true;
          BitBtn56.Visible := true;
          {$If Defined(RecordPointCloudOptionsForm)} WriteLineToDebugFile('GetFile BaseMap all created, map grid box:' + sfBoundBoxToString(DEMGlb[DEMBase].SelectionMap.MapDraw.MapCorners.BoundBoxDataGrid,2)); {$EndIf}
@@ -3025,45 +3079,55 @@ begin
              end;
              Edit5.Text := realToString(LasFiles[CloudNum].MaxZ,-12,-1);
              Edit6.Text := realToString(LasFiles[CloudNum].MinZ,-12,-1);
-             Edit33.Text := IntToStr(LasFiles[CloudNum].Max_Inten);
-             Edit34.Text := IntToStr(LasFiles[CloudNum].Min_Inten);
 
-             CheckBoxPC1.Checked := true;
+             if MDDef.LASPC99 then begin
+                Edit33.Text := IntToStr(LasFiles[CloudNum].Inten_99);
+                Edit34.Text := IntToStr(LasFiles[CloudNum].Inten_1);
+             end
+             else begin
+                Edit33.Text := IntToStr(LasFiles[CloudNum].Max_Inten);
+                Edit34.Text := IntToStr(LasFiles[CloudNum].Min_Inten);
+             end;
+
+             CheckBoxPC1.Checked := InitialCloudDisplay;
              CheckBoxPC1.Visible := true;
              SymbolPC1.Visible := true;
              SymbolOnbutton(SymbolPC1,MDDef.CloudMapSymbol[1]);
+             BaseMap.MapDraw.BaseTitle := 'Cloud: ' + LasFiles[CloudNum].CloudName;
+             BaseMap.Caption := BaseMap.MapDraw.BaseTitle;
+             Caption := 'Point clouds on ' + BaseMap.Caption;
          end
          else if (CloudNum = 2) then begin
             CheckBoxPC2.Caption := LasFiles[CloudNum].CloudName;
-            CheckBoxPC2.Checked := true;
+            CheckBoxPC2.Checked := InitialCloudDisplay;
             CheckBoxPC2.Visible := true;
             SymbolPC2.Visible := true;
             SymbolOnbutton(SymbolPC2,MDDef.CloudMapSymbol[2]);
          end
          else if (CloudNum = 3) then  begin
             CheckBoxPC3.Caption := LasFiles[CloudNum].CloudName;
-            CheckBoxPC3.Checked := true;
+            CheckBoxPC3.Checked := InitialCloudDisplay;
             CheckBoxPC3.Visible := true;
             SymbolPC3.Visible := true;
             SymbolOnbutton(SymbolPC3,MDDef.CloudMapSymbol[3]);
          end
          else if (CloudNum = 4) then  begin
             CheckBoxPC4.Caption := LasFiles[CloudNum].CloudName;
-            CheckBoxPC4.Checked := true;
+            CheckBoxPC4.Checked := InitialCloudDisplay;
             CheckBoxPC4.Visible := true;
             SymbolPC4.Visible := true;
             SymbolOnbutton(SymbolPC4,MDDef.CloudMapSymbol[4]);
          end
          else if (CloudNum = 5) then  begin
             CheckBoxPC5.Caption := LasFiles[CloudNum].CloudName;
-            CheckBoxPC5.Checked := true;
+            CheckBoxPC5.Checked := InitialCloudDisplay;
             CheckBoxPC5.Visible := true;
             SymbolPC5.Visible := true;
             SymbolOnbutton(SymbolPC5,MDDef.CloudMapSymbol[5]);
          end;
+         UsePC[CloudNum] := InitialCloudDisplay;
 
          Result := true;
-         UsePC[CloudNum] := true;
          NeedNewElevationLimits := true;
          UpdateColorOptions;
       end;
@@ -3282,21 +3346,21 @@ begin
    MDDef.UseNoise := CheckBox2.Checked;
 end;
 
-procedure Tpt_cloud_opts_fm.UncheckAll;
+procedure Tpt_cloud_opts_fm.UncheckAll(setting : boolean = false);
 var
    i : integer;
 begin
-   CheckBoxPC1.Checked := false;
-   CheckBoxPC2.Checked := false;
-   CheckBoxPC3.Checked := false;
-   CheckBoxPC4.Checked := false;
-   CheckBoxPC5.Checked := false;
-   SymbolPC1.Visible := false;
-   SymbolPC2.Visible := false;
-   SymbolPC3.Visible := false;
-   SymbolPC4.Visible := false;
-   SymbolPC5.Visible := false;
-   for i := 1 to MaxClouds do UsePC[i] := false;
+   CheckBoxPC1.Checked := Setting;
+   CheckBoxPC2.Checked := Setting;
+   CheckBoxPC3.Checked := Setting;
+   CheckBoxPC4.Checked := Setting;
+   CheckBoxPC5.Checked := Setting;
+   SymbolPC1.Visible := Setting;
+   SymbolPC2.Visible := Setting;
+   SymbolPC3.Visible := Setting;
+   SymbolPC4.Visible := Setting;
+   SymbolPC5.Visible := Setting;
+   for i := 1 to MaxClouds do UsePC[i] := Setting;
    if MDdef.AutoReDrawMapLAS then RedrawAllLayers;
 end;
 
@@ -3314,6 +3378,15 @@ end;
 procedure Tpt_cloud_opts_fm.CheckBox32Click(Sender: TObject);
 begin
    MDDef.AutoThinByBlock := CheckBox32.Checked;
+end;
+
+procedure Tpt_cloud_opts_fm.CheckBox34Click(Sender: TObject);
+begin
+   MdDef.ForceSquarePixels := CheckBox34.Checked;
+   Edit25.Enabled := not MdDef.ForceSquarePixels;
+   Edit32.Enabled := not MdDef.ForceSquarePixels;
+   Label20.Enabled := not MdDef.ForceSquarePixels;
+   Label33.Enabled := not MdDef.ForceSquarePixels;
 end;
 
 procedure Tpt_cloud_opts_fm.CheckBox3Click(Sender: TObject);
@@ -3369,30 +3442,35 @@ end;
 procedure Tpt_cloud_opts_fm.CheckBoxPC1Click(Sender: TObject);
 begin
    UsePC[1] := CheckBoxPC1.Checked;
+   UpdateColorOptions;
    if MDdef.AutoReDrawMapLAS then RedrawAllLayers;
 end;
 
 procedure Tpt_cloud_opts_fm.CheckBoxPC2Click(Sender: TObject);
 begin
    UsePC[2] := CheckBoxPC2.Checked;
+   UpdateColorOptions;
    if MDdef.AutoReDrawMapLAS then RedrawAllLayers;
 end;
 
 procedure Tpt_cloud_opts_fm.CheckBoxPC3Click(Sender: TObject);
 begin
    UsePC[3] := CheckBoxPC3.Checked;
+   UpdateColorOptions;
    if MDdef.AutoReDrawMapLAS then RedrawAllLayers;
 end;
 
 procedure Tpt_cloud_opts_fm.CheckBoxPC4Click(Sender: TObject);
 begin
    UsePC[4] := CheckBoxPC4.Checked;
+   UpdateColorOptions;
    if MDdef.AutoReDrawMapLAS then RedrawAllLayers;
 end;
 
 procedure Tpt_cloud_opts_fm.CheckBoxPC5Click(Sender: TObject);
 begin
    UsePC[5] := CheckBoxPC5.Checked;
+   UpdateColorOptions;
    if MDdef.AutoReDrawMapLAS then RedrawAllLayers;
 end;
 
@@ -3495,6 +3573,7 @@ end;
 procedure Tpt_cloud_opts_fm.Edit17Change(Sender: TObject);
 begin
    CheckEditString(Edit17.Text, MDdef.DefLidarXGridSize);
+   if MdDef.ForceSquarePixels then Edit32.Text := Edit17.Text;
 end;
 
 procedure Tpt_cloud_opts_fm.Edit18Change(Sender: TObject);
@@ -3521,6 +3600,7 @@ end;
 procedure Tpt_cloud_opts_fm.Edit21Change(Sender: TObject);
 begin
    CheckEditString(Edit21.Text, MDdef.DefLidarGeoGridSizeY);
+   if MdDef.ForceSquarePixels then Edit23.Text := Edit21.Text;
 end;
 
 procedure Tpt_cloud_opts_fm.Edit22Change(Sender: TObject);
@@ -3848,11 +3928,15 @@ begin
 
    RadioGroup7.ItemIndex := MDDef.LidarGridProjection;
 
-   if MDDef.WKTLidarProj <> '' then BitBtn45.Caption := ExtractFileNameNoExt(MDDef.WKTLidarProj);
+   if (MDDef.WKTLidarProj <> '') then BitBtn45.Caption := ExtractFileNameNoExt(MDDef.WKTLidarProj);
+   Label22.Enabled := MDDef.PCAutoFillHoles;
+   Edit24.Enabled := MDDef.PCAutoFillHoles;
+
 
    MemPtCloud := Nil;
    AutoSaveDir := '';
    DEMrulesFName := '';
+   InitialCloudDisplay := true;
    UncheckAll;
    HideOptions;
    ResyncFileList;
@@ -3931,6 +4015,7 @@ begin
    HideOptions;
 end;
 
+
 procedure Tpt_cloud_opts_fm.BitBtn8Click(Sender: TObject);
 var
    Cloud : integer;
@@ -3940,30 +4025,29 @@ var
    LasData : Las_Lidar.tLAS_data;
    i : Integer;
 
-   procedure ExportCloud(Cloud : integer; var fName,ColorName : PathStr; BaseName : PathStr; ExportFilter : tLASClassificationCategory = lccAll);
-   begin
-      if (LasFiles[Cloud] <> Nil) and (LasFiles[Cloud].LAS_fnames.Count > 0) then begin
-         wmdem.SetPanelText(0,'Export=' + IntToStr(Cloud) + ' ' + BaseName);
-         LasFiles[Cloud].ShowLASProgress := true;
-         {$If Defined(RecordPointCloudViewing) or Defined(OGLexport)} WriteLineToDebugFile('call OpenGLLasPoints, Cloud=' + IntToStr(Cloud) + ' ' + BaseName); {$EndIf}
-         if AlreadyLoaded then begin
-         end
-         else begin
-            fName := '';
-            if LasFiles[Cloud].OpenGLLasPoints(fName,BaseMap,Nil) then begin
-               {$If Defined(RecordPointCloudViewing) or Defined(OGLexport)} WriteLineToDebugFile('call Las_Lidar.tLAS_data.Create'); {$EndIf}
-               LasData := Las_Lidar.tLAS_data.Create(FName);
-               {$If Defined(RecordPointCloudViewing) or Defined(OGLexport)} WriteLineToDebugFile('call exportbinary'); {$EndIf}
-               FName := Petmar.NextFileNumber(MDTempDir, BaseName + '_','.xyzib');
-               if LasData.OldExportBinary(Cloud,FName,ColorName,ExportFilter) then OK := true
-               else fName := '';
-               //AlreadyLoaded := true;
-               if LASdestroy then LasData.Destroy;
-               {$If Defined(RecordPointCloudViewing) or Defined(OGLexport)} WriteLineToDebugFile(' cloud=' + IntToStr(Cloud) + '  ' + fName); {$EndIf}
+      procedure ExportCloud(Cloud : integer; var fName,ColorName : PathStr; BaseName : PathStr; ExportFilter : tLASClassificationCategory = lccAll);
+      begin
+         if (LasFiles[Cloud] <> Nil) and (LasFiles[Cloud].LAS_fnames.Count > 0) then begin
+            wmdem.SetPanelText(0,'Export=' + IntToStr(Cloud) + ' ' + BaseName);
+            LasFiles[Cloud].ShowLASProgress := true;
+            {$If Defined(RecordPointCloudViewing) or Defined(OGLexport)} WriteLineToDebugFile('call OpenGLLasPoints, Cloud=' + IntToStr(Cloud) + ' ' + BaseName); {$EndIf}
+            if AlreadyLoaded then begin
+            end
+            else begin
+               fName := '';
+               if LasFiles[Cloud].OpenGLLasPoints(fName,BaseMap,Nil) then begin
+                  {$If Defined(RecordPointCloudViewing) or Defined(OGLexport)} WriteLineToDebugFile('call Las_Lidar.tLAS_data.Create'); {$EndIf}
+                  LasData := Las_Lidar.tLAS_data.Create(FName);
+                  {$If Defined(RecordPointCloudViewing) or Defined(OGLexport)} WriteLineToDebugFile('call exportbinary'); {$EndIf}
+                  FName := Petmar.NextFileNumber(MDTempDir, BaseName + '_','.xyzib');
+                  if LasData.OldExportBinary(Cloud,FName,ColorName,ExportFilter) then OK := true
+                  else fName := '';
+                  if LASdestroy then LasData.Destroy;
+                  {$If Defined(RecordPointCloudViewing) or Defined(OGLexport)} WriteLineToDebugFile(' cloud=' + IntToStr(Cloud) + '  ' + fName); {$EndIf}
+               end;
             end;
          end;
       end;
-   end;
 
 begin
    {$If Defined(RecordPointCloudViewing) or Defined(OGLexport)} WriteLineToDebugFile('Tpt_cloud_opts_fm.BitBtn8Click (OGL)'); {$EndIf}
@@ -3976,6 +4060,8 @@ begin
    end;
    if (Sender = BitBtn20) or (Sender = BitBtn27) or (Sender = BitBtn8) then begin
       ExportDone := false;
+      ViewMultiple := (Sender = BitBtn27) or (Sender = BitBtn8) ;
+
       for Cloud := 1 to MaxClouds do begin
          if UsePC[Cloud] and (LasFiles[Cloud] <> Nil) then begin
            if (Sender = BitBtn8) then begin
@@ -3994,7 +4080,7 @@ begin
                      MDdef.ls.ColorCoding := lasccRGB;
                      ExportCloud(Cloud,fName[4],ColorsFName[4],'RGB');
                   end;
-                  ViewMultiple := false;
+                  //ViewMultiple := false;
                end;
                if (Sender = BitBtn27) then begin
                   MDdef.ls.ColorCoding := lasccClass;
@@ -4003,7 +4089,7 @@ begin
                   ExportCloud(1,fName[3],ColorsFName[3],'Buildings',lccBuilding);
                   ExportCloud(1,fName[4],ColorsFName[4],'Water',lccWater);
                   ExportCloud(1,fName[5],ColorsFName[5],'Unclassified',lccUnclass);
-                  ViewMultiple := true;
+                  //ViewMultiple := true;
                end;
                ExportDone := true;
                LasData.Destroy;

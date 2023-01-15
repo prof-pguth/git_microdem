@@ -319,6 +319,8 @@ function ZUnitCategory (Zunit : tElevUnit) : shortstring;
 function RecycleCompressFile : boolean;
 
 function AspectDir8FromAspect(AspectDir : float32) : tCompassDirection;  inline;
+function ElevUnitsAre(Code : byte) : shortstring;
+
 
 var
    VegDenstColors : array[0..255] of tPlatformColor;
@@ -374,6 +376,75 @@ uses
    Make_Tables,
    DEM_indexes,
    DataBaseCreate;
+
+
+
+function ElevUnitsAre(Code : byte) : shortstring;
+begin
+   case Code of
+      euMeters	 : Result := 	' m'	;
+      Feet	 : Result := 	' m'	;
+      TenthMgal	 : Result := 	' mgal'	;
+      Milligal	 : Result := 	' mgal'	;
+      TenthGamma	 : Result := 	' gamma'	;
+      Decimeters	 : Result := 	 ' m'	;
+      Gammas	 : Result := 	' gamma'	;
+      HundredthMGal	 : Result := 	' mgal'	;
+      DeciFeet	 : Result := 	' m'	;
+      Centimeters	 : Result := 	' m'	;
+      //Unused10	 : Result := 	''	;
+      HundredthMa	 : Result := 	' Ma'	;
+      PercentSlope	 : Result := 	'%'	;
+      Undefined	 : Result := 	''	;
+      zDegrees	 : Result := 	'°'	;
+      //Unused0	 : Result := 	''	;
+      lnElev	 : Result := 	'ln(z)'	;
+      LogElev	 : Result := 	'log(z)'	;
+      //Unused1	 : Result := 	'°'	;
+      //Unused2	 : Result := 	''	;
+      zPercent	 : Result := 	'%'	;
+      //Unused3	 : Result := 	''	;
+      //Unused4	 : Result := 	'°'	;
+      //Unused5	 : Result := 	''	;
+      //Unused6	 : Result := 	''	;
+      //Unused7	 : Result := 	''	;
+      NLCD2001up	 : Result := 	' NLCD'	;
+      LandFire	 : Result := 	' LandFire'	;
+      Nanotesla	 : Result := 	' nT'	;
+      NLCD1992	 : Result := 	'NLCD 1992'	;
+      euIntCode	 : Result := 	' code'	;
+      //unused8	 : Result := 	''	;
+      //unused9	 : Result := 	''	;
+      GLOBCOVER	 : Result := 	'GlobCover'	;
+      GLC2000	 : Result := 	'GLC2000'	;
+      euImagery	 : Result := 	' Imagery'	;
+      euMM	 : Result := 	' mm'	;
+      euMetersPerSec	 : Result := 	' m/s'	;
+      zMperM	 : Result := 	' m/m'	;
+      euKM	 : Result := 	' km'	;
+      CCAP	 : Result := 	' C-CAP'	;
+      euLASclass13	 : Result := 	' LAS13'	;
+      euLASclass14	 : Result := 	' LAS14'	;
+      euRGB	 : Result := 	' RGB'	;
+      euMonth	 : Result := 	' month'	;
+      CCI_LC	 : Result := 	 'CCI-LC'	;
+      S2GLC	 : Result := 	'S2GLC'	;
+      NLCD_Change	 : Result := 	'dNLCD'	;
+      GLCS_LC100	 : Result := 	'GLCS_LC100'	;
+      Meybeck	 : Result := 	'Meybeck'	;
+      Geomorphon	 : Result := 	'Geomorphon'	;
+      Iwahashi	 : Result := 	'Iwahashi'	;
+      ESRI2020	 : Result := 	'ESRI2020'	;
+      AspectDeg	 : Result := 	'°'	;
+      euPennock	 : Result := 	'Pennock'	;
+      euPerMeter	 : Result := 	'/m'	;
+      WorldCover10m	 : Result := 	'WorldCover 10m'	;
+      euNDVI	 : Result := 	'NDVI'	;
+      euNBR	 : Result := 	'NBR'	;
+      else Result := '';
+   end;
+end;
+
 
 function AspectDir8FromAspect(AspectDir : float32) : tCompassDirection;  inline;
 begin
@@ -2018,6 +2089,7 @@ var
          AParameter('PointCloud','BlueLow',BlueLow,160);
          AParameter('PointCloud','BlueHigh',BlueHigh,215);
          AParameter('PointCloud','LatLongSlices',LatLongSlices,false);
+         AParameter('PointCloud','ForceSquarePixels',ForceSquarePixels,true);
 
          AParameter('PointCloud','LVISGabonGraphs',LVISGabonGraphs,1);
          AParameterFloat('PointCloud','CloudFilterTolerance',CloudFilterTolerance,0.5);
@@ -2042,7 +2114,7 @@ var
          AParameterShortFloat('PointCloud','MCC_thresh',ls.MCC_thresh,0.3);
 
          ASymbol('PointCloud','CloudSym1',MDDef.CloudSymbol[1],FilledBox,claLime,3);
-         ASymbol('PointCloud','CloudSym2',MDDef.CloudSymbol[2],FilledBox,clared,3);
+         ASymbol('PointCloud','CloudSym2',MDDef.CloudSymbol[2],FilledBox,claRed,3);
          ASymbol('PointCloud','CloudSym3',MDDef.CloudSymbol[3],FilledBox,claBlue,3);
          ASymbol('PointCloud','CloudSym4',MDDef.CloudSymbol[4],FilledBox,claMaroon,3);
          ASymbol('PointCloud','CloudSym5',MDDef.CloudSymbol[5],FilledBox,claGreen,3);
@@ -2052,6 +2124,7 @@ var
          ASymbol('PointCloud','CloudMapSym3',MDDef.CloudMapSymbol[3],FilledBox,claBlue,1);
          ASymbol('PointCloud','CloudMapSym4',MDDef.CloudMapSymbol[4],FilledBox,claMaroon,1);
          ASymbol('PointCloud','CloudMapSym5',MDDef.CloudMapSymbol[5],FilledBox,claGreen,1);
+
          ASymbol('PointCloud','SlicerDigPtSym',SlicerDigPtSym,FilledBox,claRed,3);
          ASymbol('PointCloud','SlicePtSym',SlicePtSym,FilledBox,claRed,2);
          AColorParameter('PointCloud','SliceShapeColor',SliceShapeColor,claRed);
@@ -3285,6 +3358,8 @@ var
          AParameterShortFloat('MapDraw','BlowUpLongSize',BlowUpLongSize,0.075);
          AParameterShortFloat('MapDraw','BlowUpLatSize',BlowUpLatSize,0.05);
          AParameterShortFloat('MapDraw','LatLongCushion',LatLongCushion,0.025);
+
+         AParameter('MapDraw','HighlightDiffMap',HighlightDiffMap,true);
 
          //AParameter('MapDrawing','StereoMode',StereoMode,smAnaglyph);
          if (IniWhat = iniWrite) then IniFile.WriteInteger('MapDraw','StereoMode',ord(StereoMode));

@@ -3,20 +3,20 @@ inherited OptionsForm: TOptionsForm
   Top = 230
   BorderStyle = bsSizeable
   Caption = ''
-  ClientHeight = 578
-  ClientWidth = 835
+  ClientHeight = 551
+  ClientWidth = 817
   Position = poDefaultPosOnly
   OnClose = FormClose
   OnCreate = FormCreate
   OnResize = FormResize
-  ExplicitWidth = 847
-  ExplicitHeight = 616
+  ExplicitWidth = 835
+  ExplicitHeight = 598
   TextHeight = 20
   inherited Bevel1: TBevel
     Left = 0
     Top = 0
-    Width = 835
-    Height = 520
+    Width = 817
+    Height = 493
     Align = alClient
     ExplicitLeft = 0
     ExplicitTop = 1
@@ -45,9 +45,9 @@ inherited OptionsForm: TOptionsForm
   object PageControl1: TPageControl
     Left = 0
     Top = 0
-    Width = 835
-    Height = 520
-    ActivePage = TabSheet11
+    Width = 817
+    Height = 493
+    ActivePage = TabSheet4
     Align = alClient
     MultiLine = True
     TabOrder = 2
@@ -3225,8 +3225,8 @@ inherited OptionsForm: TOptionsForm
   end
   object Panel1: TPanel
     Left = 0
-    Top = 520
-    Width = 835
+    Top = 493
+    Width = 817
     Height = 58
     Align = alBottom
     TabOrder = 3

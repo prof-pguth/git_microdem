@@ -1842,119 +1842,116 @@ end;
 {$IfDef ExPointCloud}
 {$Else}
 
-         procedure tMapDraw.PlotALasFile(Cloud : integer; fName : PathStr; var BMPMemory : tBMPMemory);
-         var
-            LasData : Las_Lidar.tLAS_data;
-         begin
-            LasData := Las_Lidar.tLAS_data.Create(fName);
-            LasData.PlotTileOnMap(Cloud,self,BMPMemory,LasMinAreaZ,LasMaxAreaZ);
-            LasData.Destroy;
-         end;
+   procedure tMapDraw.PlotALasFile(Cloud : integer; fName : PathStr; var BMPMemory : tBMPMemory);
+   var
+      LasData : Las_Lidar.tLAS_data;
+   begin
+      LasData := Las_Lidar.tLAS_data.Create(fName);
+      LasData.PlotTileOnMap(Cloud,self,BMPMemory,LasMinAreaZ,LasMaxAreaZ);
+      LasData.Destroy;
+   end;
 
 
+   procedure tMapDraw.BackgroundPlotLASFilesOnMap(var inBitmap : tMyBitmap);
+   var
+      fName : PathStr;
+      bitmap,cbmp : tMyBitmap;
+      LayerName : PathStr;
+      Cloud : integer;
+      BMPMemory : tBMPMemory;
 
-procedure tMapDraw.BackgroundPlotLASFilesOnMap(var inBitmap : tMyBitmap);
-         var
-            fName : PathStr;
-            bitmap,cbmp : tMyBitmap;
-            LayerName : PathStr;
-            Cloud : integer;
-            BMPMemory : tBMPMemory;
-
-                  procedure PlotNoParallel;
-                  var
-                     i : integer;
-                  begin
-                     for i := 0 to pred(pt_cloud_opts_fm.LasFiles[Cloud].LAS_fnames.Count) do begin
-                         fName := pt_cloud_opts_fm.LasFiles[Cloud].LAS_fnames.Strings[i];
-                         {$IfDef RecordLAS} WriteLineToDebugFile('PlotNoParallel call LAS plot ' + ExtractFileName(fName)); {$EndIf}
-                         PlotALasFile(Cloud,fName,BMPMemory);
-                         if WantOut then break;
-                     end;
-                  end;
-
-         begin
-            {$If Defined(RecordOverlays) or Defined(RecordLAS)} WriteLineToDebugFile('tMapDraw.BackgroundPlotLASFilesOnMap in display=' + IntToStr(ord(MDDef.ls.ColorCoding))); {$EndIf}
-            CreateBitmap(cBMP,inBitmap.width,inBitmap.Height);
-            for Cloud := MaxClouds downto 1 do if (pt_cloud_opts_fm.LasFiles[Cloud] <> Nil) and pt_cloud_opts_fm.UsePC[Cloud] then begin
-               if MDDef.LasAutoThin then begin
-                  MDDef.CloudMapThinFactor := trunc(pt_cloud_opts_fm.LasFiles[Cloud].PointDensity * ScreenPixelSize / 2);
-                  if (MDDef.CloudMapThinFactor <= 0) then MDDef.CloudMapThinFactor := 1;
-                  if (MDDef.CloudMapThinFactor >500) then MDDef.CloudMapThinFactor := 500;
-                  if (pt_cloud_opts_fm <> Nil) then begin
-                     pt_cloud_opts_fm.Edit3.Text := IntToStr(MDDef.CloudMapThinFactor);
-                  end;
-               end
-               else begin
-                  MDDef.CloudMapThinFactor := MDDef.LasThinFactor;
+            procedure PlotNoParallel;
+            var
+               i : integer;
+            begin
+               for i := 0 to pred(pt_cloud_opts_fm.LasFiles[Cloud].LAS_fnames.Count) do begin
+                   fName := pt_cloud_opts_fm.LasFiles[Cloud].LAS_fnames.Strings[i];
+                   {$IfDef RecordLAS} WriteLineToDebugFile('PlotNoParallel call LAS plot ' + ExtractFileName(fName)); {$EndIf}
+                   PlotALasFile(Cloud,fName,BMPMemory);
+                   if WantOut then break;
                end;
-               {$If Defined(RecordOverlays) or Defined(RecordLAS)} WriteLineToDebugFile('Thin Factor =' + IntToStr(MDDef.CloudMapThinFactor)); {$EndIf}
-
-               (*
-               if (MDdef.ls.ColorCoding = lasccIntensity) then begin
-                  MDDef.MaxIntensity := pt_cloud_opts_fm.LasFiles[Cloud].Max_Inten;
-                  MDDef.MinIntensity := pt_cloud_opts_fm.LasFiles[Cloud].Min_Inten;
-               end;
-               *)
-
-                LayerName := MDTempDir + 'cloud_' + IntToStr(Cloud) + '_mode_' + IntToStr(ord(MDDef.ls.ColorCoding)) + '.bmp';
-                if FileExists(LayerName) then begin
-                   {$If Defined(RecordOverlays) or Defined(RecordLAS)} WriteLineToDebugFile('Found ' + LayerName); {$EndIf}
-                   Bitmap := PetImage.LoadBitmapFromFile(LayerName);
-                end
-                else begin
-                   CreateBitmap(Bitmap,inBitmap.width,inBitmap.Height);
-                   BMPMemory := tBMPMemory.Create(bitmap);
-                   ShowSatProgress := false;
-                   StartProgressAbortOption('Draw ' + pt_cloud_opts_fm.LASfiles[Cloud].CloudName);
-                   ThreadsNumDone := 0;
-                   ThreadsToDo := pt_cloud_opts_fm.LasFiles[Cloud].TotalCloudPts;
-
-                    if (pt_cloud_opts_fm.LasFiles[Cloud].LAS_fnames.Count = 1) then begin
-                       PlotNoParallel;
-                    end
-                    else begin
-                        {$If Defined(NoParallelFor) or Defined(NoParallelLAS)}
-                           PlotNoParallel;
-                       {$Else}
-                          BaseStart := 0;
-                          ThreadsWorking := true;
-                          while (BaseStart < pt_cloud_opts_fm.LasFiles[Cloud].LAS_fnames.Count) do begin
-                            TParallel.For(1,MDdef.MaxThreadsForPC,
-                                  procedure (Value: Integer)
-                                  begin
-                                     if ((BaseStart + Value) <= pt_cloud_opts_fm.LasFiles[Cloud].LAS_fnames.Count) then begin
-                                        fName := pt_cloud_opts_fm.LasFiles[Cloud].LAS_fnames.Strings[pred(BaseStart + Value)];
-                                        PlotALasFile(Cloud,fName,BMPMemory);
-                                     end;
-                                 end);
-                                 BaseStart := BaseStart + MDdef.MaxThreadsForPC;
-                          end;
-                          ThreadsWorking := false;
-                       {$EndIf}
-                    end;
-                   EndProgress;
-                   BMPMemory.Destroy;
-                   {$If Defined(RecordOverlays) or Defined(RecordLAS)} WriteLineToDebugFile('Saving ' + LayerName); {$EndIf}
-                   Bitmap.SaveToFile(LayerName);
-                end;
-                cBmp.Canvas.CopyMode := cmSrcAnd;
-                cBmp.Canvas.Draw(0,0,Bitmap);
-                Bitmap.Free;
             end;
 
-            {$If Defined(RecordOverlays) or Defined(RecordLAS)} WriteLineToDebugFile('tMapDraw.BackgroundPlotLASFilesOnMap mid'); {$EndIf}
+   begin
+      {$If Defined(RecordOverlays) or Defined(RecordLAS)} WriteLineToDebugFile('tMapDraw.BackgroundPlotLASFilesOnMap in display=' + IntToStr(ord(MDDef.ls.ColorCoding))); {$EndIf}
+      CreateBitmap(cBMP,inBitmap.width,inBitmap.Height);
+      for Cloud := MaxClouds downto 1 do if (pt_cloud_opts_fm.LasFiles[Cloud] <> Nil) and pt_cloud_opts_fm.UsePC[Cloud] then begin
+         if (MDDef.ls.ColorCoding = lasccIntensity)  and (not pt_cloud_opts_fm.LasFiles[Cloud].HasIntensity) then begin
 
-             if MDDef.SlicerIHSMerge then begin
-                DrawAndDeleteOverlay(inBitmap,cBMP,MDDef.LasOpacity);
+         end
+         else begin
+
+            if MDDef.LasAutoThin then begin
+               MDDef.CloudMapThinFactor := trunc(pt_cloud_opts_fm.LasFiles[Cloud].PointDensity * ScreenPixelSize / 2);
+               if (MDDef.CloudMapThinFactor <= 0) then MDDef.CloudMapThinFactor := 1;
+               if (MDDef.CloudMapThinFactor >500) then MDDef.CloudMapThinFactor := 500;
+               if (pt_cloud_opts_fm <> Nil) then begin
+                  pt_cloud_opts_fm.Edit3.Text := IntToStr(MDDef.CloudMapThinFactor);
+               end;
+            end
+            else begin
+               MDDef.CloudMapThinFactor := MDDef.LasThinFactor;
+            end;
+            {$If Defined(RecordOverlays) or Defined(RecordLAS)} WriteLineToDebugFile('Thin Factor =' + IntToStr(MDDef.CloudMapThinFactor)); {$EndIf}
+             LayerName := MDTempDir + 'cloud_' + IntToStr(Cloud) + '_mode_' + IntToStr(ord(MDDef.ls.ColorCoding)) + '.bmp';
+             if FileExists(LayerName) then begin
+                {$If Defined(RecordOverlays) or Defined(RecordLAS)} WriteLineToDebugFile('Found ' + LayerName); {$EndIf}
+                Bitmap := PetImage.LoadBitmapFromFile(LayerName);
              end
              else begin
-                inBitmap.Canvas.Draw(0,0,cBMP);
-                cBMP.Free;
-              end;
+                CreateBitmap(Bitmap,inBitmap.width,inBitmap.Height);
+                BMPMemory := tBMPMemory.Create(bitmap);
+                ShowSatProgress := false;
+                StartProgressAbortOption('Draw ' + pt_cloud_opts_fm.LASfiles[Cloud].CloudName);
+                ThreadsNumDone := 0;
+                ThreadsToDo := pt_cloud_opts_fm.LasFiles[Cloud].TotalCloudPts;
 
-            {$If Defined(RecordOverlays) or Defined(RecordLAS)} WriteLineToDebugFile('tMapDraw.BackgroundPlotLASFilesOnMap end'); {$EndIf}
+                 if (pt_cloud_opts_fm.LasFiles[Cloud].LAS_fnames.Count = 1) then begin
+                    PlotNoParallel;
+                 end
+                 else begin
+                     {$If Defined(NoParallelFor) or Defined(NoParallelLAS)}
+                        PlotNoParallel;
+                    {$Else}
+                       BaseStart := 0;
+                       ThreadsWorking := true;
+                       while (BaseStart < pt_cloud_opts_fm.LasFiles[Cloud].LAS_fnames.Count) do begin
+                         TParallel.For(1,MDdef.MaxThreadsForPC,
+                               procedure (Value: Integer)
+                               begin
+                                  if ((BaseStart + Value) <= pt_cloud_opts_fm.LasFiles[Cloud].LAS_fnames.Count) then begin
+                                     fName := pt_cloud_opts_fm.LasFiles[Cloud].LAS_fnames.Strings[pred(BaseStart + Value)];
+                                     PlotALasFile(Cloud,fName,BMPMemory);
+                                  end;
+                              end);
+                              BaseStart := BaseStart + MDdef.MaxThreadsForPC;
+                       end;
+                       ThreadsWorking := false;
+                    {$EndIf}
+                 end;
+                EndProgress;
+                BMPMemory.Destroy;
+                {$If Defined(RecordOverlays) or Defined(RecordLAS)} WriteLineToDebugFile('Saving ' + LayerName); {$EndIf}
+                Bitmap.SaveToFile(LayerName);
+             end;
+             cBmp.Canvas.CopyMode := cmSrcAnd;
+             cBmp.Canvas.Draw(0,0,Bitmap);
+             Bitmap.Free;
          end;
+      end;
+
+      {$If Defined(RecordOverlays) or Defined(RecordLAS)} WriteLineToDebugFile('tMapDraw.BackgroundPlotLASFilesOnMap mid'); {$EndIf}
+
+       if MDDef.SlicerIHSMerge then begin
+          DrawAndDeleteOverlay(inBitmap,cBMP,MDDef.LasOpacity);
+       end
+       else begin
+          inBitmap.Canvas.Draw(0,0,cBMP);
+          cBMP.Free;
+        end;
+
+      {$If Defined(RecordOverlays) or Defined(RecordLAS)} WriteLineToDebugFile('tMapDraw.BackgroundPlotLASFilesOnMap end'); {$EndIf}
+   end;
 {$EndIf}
 
 
@@ -2197,12 +2194,6 @@ begin
       DEMGlb[DEMonMap].LatLongDegreeToDEMGrid(Lat,Long,XGrid,YGrid);
    end;
    {$EndIf}
-   (*
-   if DEMMap and (DEM2OnMap <> 0) then begin
-      DEMGlb[DEMonMap].DEMGridToLatLongDegree(xgrid,ygrid,Lat,Long);
-      Result := DEMGlb[DEM2onMap].GetElevFromLatLongDegree(Lat,Long,z);
-   end
-   else *)
    Result := DEMGlb[DEMonMap].GetElevMeters(XGrid,YGrid,z);
 end;
 

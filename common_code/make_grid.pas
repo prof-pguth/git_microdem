@@ -18,6 +18,7 @@ unit make_grid;
       //{$Define RecordCreateGeomorphMaps}
       //{$Define RecordTimeGridCreate}
       //{$Define RecordPointClass}
+      //{$Define RecordDEMCompare}
    {$EndIf}
 {$ELSE}
     //{$Define NoParallelFor}
@@ -96,8 +97,8 @@ function CreateSlopeRoughnessSlopeStandardDeviationMap(DEM,RadiusMustBeOdd : int
 
 procedure MakeGammaGrids(CurDEM,BoxSize : integer);
 
-function AirBallDirtBallMap(DEMonMap,DSM,DTM : integer) : integer;
-function TwoDEMHighLowMap(DTM,DEM1,DEM2 : integer; DEMtype : shortstring) : integer;
+function AirBallDirtBallMap(DEMonMap,DSM,DTM : integer; fName : PathStr = '') : integer;
+function TwoDEMHighLowMap(RefDEM,DEM1,DEM2 : integer; DEMtype : shortstring; fName2 : PathStr = '') : integer;
 
 
 {$IfDef ExExoticMaps}
@@ -123,38 +124,38 @@ var
    CountInStrips : integer;
 
 
-function TwoDEMHighLowMap(DTM,DEM1,DEM2 : integer; DEMtype : shortstring) : integer;
+function TwoDEMHighLowMap(RefDEM,DEM1,DEM2 : integer; DEMtype : shortstring; fName2 : PathStr = '') : integer;
 const
    SimpleTolerance = 1.51;
 var
-   AirBalls,i : integer;
+   i : integer;
    z1,z2,z3,What : float32;
    Lat,Long : float64;
    x,y : integer;
    VAT : tStringList;
-   fName2 : PathStr;
    TStr : shortstring;
    Hist : array[1..6] of int64;
 begin
+   {$If Defined(RecordDEMCompare)} WriteLineToDebugFile('TwoDEMHighLowMap in');  {$EndIf}
    Result := 0;
-   if {((DSM = 0) or ValidDEM(DSM)) and} ValidDEM(DTM)then begin
-      for i := 1 to 5 do Hist[i] := 0;
-      fName2 := 'two_dems_to_ref_' + DEMGlb[DTM].AreaName;
-      AirBalls := DEMGlb[DTM].CloneAndOpenGrid(ByteDEM,fName2,euIntCode);
-      DEMglb[Airballs].SetEntireGridMissing;
+   if ValidDEM(RefDEM)then begin
+      for i := 1 to 6 do Hist[i] := 0;
+      if (fName2 = '') then fName2 := 'two_dems_to_ref_' + DEMGlb[RefDEM].AreaName;
+      Result := DEMGlb[RefDEM].CloneAndOpenGrid(ByteDEM,fName2,euIntCode);
+      DEMglb[Result].SetEntireGridMissing;
       StartProgressAbortOption('Air or dirt');
-      for x := 0 to pred(DEMGlb[DTM].DEMheader.NumCol) do begin
-         UpdateProgressBar(x/DEMGlb[DTM].DEMheader.NumCol);
-         for y := 0 to pred(DEMGlb[DTM].DEMheader.NumRow) do begin
-            if DEMGlb[DTM].GetElevMetersOnGrid(x,y,z2) then begin
-               DEMGlb[DTM].DEMGridToLatLongDegree(x,y,Lat,Long);
+      for x := 0 to pred(DEMGlb[RefDEM].DEMheader.NumCol) do begin
+         UpdateProgressBar(x/DEMGlb[RefDEM].DEMheader.NumCol);
+         for y := 0 to pred(DEMGlb[RefDEM].DEMheader.NumRow) do begin
+            if DEMGlb[RefDEM].GetElevMetersOnGrid(x,y,z2) then begin
+               DEMGlb[RefDEM].DEMGridToLatLongDegree(x,y,Lat,Long);
                   if DEMGlb[DEM1].GetElevFromLatLongDegree(Lat,Long,z3) and DEMGlb[DEM2].GetElevFromLatLongDegree(Lat,Long,z1) then begin
                      if (z3 > z2 + SimpleTolerance) and (z1 > z2 + SimpleTolerance) then What := 5
                      else if (z3 < z2 - SimpleTolerance) and (z3 < z2 - SimpleTolerance) then What := 1
                      else if (z3 < z2 + SimpleTolerance) and (z1 < z2 + SimpleTolerance) and (z3 > z2 - SimpleTolerance) and (z3 > z2 - SimpleTolerance) then What := 3
                      else What := 6;
                      if (What <> 0) then begin
-                        DEMglb[Airballs].SetGridElevation(x,y,what);
+                        DEMglb[Result].SetGridElevation(x,y,what);
                         inc(Hist[round(what)]);
                      end;
                   end;
@@ -168,18 +169,19 @@ begin
       if (Hist[3] > 0) then Vat.add('3,Both ' + DEMtype +' ± ' + RealToString(SimpleTolerance,-5,1) + ',' + IntToStr(Hist[3]) + ',Y,' + IntToStr(clLime));
       if (Hist[1] > 0) then Vat.add('1,Both low,' + IntToStr(Hist[1]) + ',Y,' + IntToStr(clBrown));
       if (Hist[6] > 0) then Vat.add('6,Complex,' + IntToStr(Hist[6]) + ',Y,' + IntToStr(clYellow));
+      {$If Defined(RecordDEMCompare)} WriteLineToDebugFile(''); WriteLineToDebugFile('TwoDEMHighLowMap VAT'); WriteStringListToDebugFile(VAT); WriteLineToDebugFile(''); {$EndIf}
       fName2 := MDTempDir + fName2 + '.vat.dbf';
       StringList2CSVtoDB(vat,fName2,true);
-      DEMGlb[AirBalls].VATFileName := fName2;
-      DEMglb[AirBalls].CheckMaxMinElev;
-      DEMglb[AirBalls].SetUpMap(AirBalls,true,mtDEMVATTable);
-      Result := AirBalls;
+      DEMGlb[Result].VATFileName := fName2;
+      DEMglb[Result].CheckMaxMinElev;
+      DEMglb[Result].SetUpMap(Result,true,mtDEMVATTable);
    end;
+   {$If Defined(RecordDEMCompare)} WriteLineToDebugFile('TwoDEMHighLowMap out');  {$EndIf}
 end;
 
 
 
-function AirBallDirtBallMap(DEMonMap,DSM,DTM : integer) : integer;
+function AirBallDirtBallMap(DEMonMap,DSM,DTM : integer; fName : PathStr = '') : integer;
 const
    Tolerance = 0.51;
    HighTolerance = 2.51;
@@ -190,17 +192,16 @@ var
    Lat,Long : float64;
    x,y : integer;
    VAT : tStringList;
-   fName2 : PathStr;
    TStr : shortstring;
    Hist : array[1..5] of int64;
 begin
    //if (DSM <> 0) and (not ValidDEM(DSM)) then GetDEM(DSM,true,'DSM');
    //if not ValidDEM(DTM) then GetDEM(DTM,true,'DTM');
    Result := 0;
-   if ((DSM = 0) or ValidDEM(DSM)) and ValidDEM(DTM)then begin
+   if {((DSM = 0) or} ValidDEM(DEMonMap) and ValidDEM(DSM) and ValidDEM(DTM) then begin
       for i := 1 to 5 do Hist[i] := 0;
-      fName2 := 'air_dirt_' + DEMGlb[DEMonMap].AreaName;
-      Result := DEMGlb[DEMonMap].CloneAndOpenGrid(ByteDEM,fName2,euIntCode);
+      if (fName = '') then fName := 'air_dirt_' + DEMGlb[DEMonMap].AreaName;
+      Result := DEMGlb[DEMonMap].CloneAndOpenGrid(ByteDEM,fName,euIntCode);
       DEMglb[Result].SetEntireGridMissing;
       StartProgressAbortOption('Air or dirt');
       for x := 0 to pred(DEMGlb[DEMonMap].DEMheader.NumCol) do begin
@@ -210,6 +211,7 @@ begin
                DEMGlb[DEMonMap].DEMGridToLatLongDegree(x,y,Lat,Long);
                   if ((DSM = 0) or DEMGlb[DSM].GetElevFromLatLongDegree(Lat,Long,z3)) and DEMGlb[DTM].GetElevFromLatLongDegree(Lat,Long,z1) then begin
                      if (DSM = 0) then z3 := z1;
+                     if (DTM = 0) then z1 := z3;
 
                      if z2 > z3 + SimpleTolerance then What := 5
                      else if z2 < z1 - SimpleTolerance then What := 1
@@ -230,7 +232,7 @@ begin
       Vat := tStringList.Create;
       Vat.add('VALUE,NAME,N,USE,COLOR');
 
-      if (DSM = 0) then TStr := 'DTM' else TStr := 'Canopy';
+      if (DSM = 0) then TStr := 'DTM' else if (DTM = 0) then TStr := 'DSM' else TStr := 'Canopy';
       if (Hist[5] > 0) then Vat.add('5,Air ball,' + IntToStr(Hist[5]) + ',Y,' + IntToStr(clBlue));
       if (Hist[3] > 0) then Vat.add('3,' + TStr + ' ± ' + RealToString(SimpleTolerance,-5,1)  + ',' + IntToStr(Hist[3]) + ',Y,' + IntToStr(clLime));
       if (Hist[1] > 0) then Vat.add('1,Ground ball,' + IntToStr(Hist[1]) + ',Y,' + IntToStr(clBrown));  //238,138,248)));
@@ -242,9 +244,9 @@ begin
       if (Hist[2] > 0) then Vat.add('2,Shallow Ground ball -' + RealToString(HighTolerance,-5,1) + ',' + IntToStr(Hist[2]) + ',Y,' + IntToStr(RGB(240,134,80)));
       if (Hist[1] > 0) then Vat.add('1,Deep Ground ball,' + IntToStr(Hist[1]) + ',Y,' + IntToStr(RGB(238,138,248)));
       *)
-      fName2 := MDTempDir + fName2 + '.vat.dbf';
-      StringList2CSVtoDB(vat,fName2,true);
-      DEMGlb[Result].VATFileName := fName2;
+      fName := MDTempDir + fName + '.vat.dbf';
+      StringList2CSVtoDB(vat,fName,true);
+      DEMGlb[Result].VATFileName := fName;
       DEMglb[Result].CheckMaxMinElev;
       DEMglb[Result].SetUpMap(Result,true,mtDEMVATTable);
    end;

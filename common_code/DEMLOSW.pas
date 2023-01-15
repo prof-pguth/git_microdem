@@ -601,7 +601,7 @@ begin
       else  begin
          DEMGlb[LOSdraw.DEMonView].GetElevFromLatLongDegree(LOSdraw.ProfLats[x-LOSdraw.StartLOSLeft],LOSdraw.ProfLongs[x-LOSdraw.StartLOSLeft],Elev);
          if (DEMGlb[LOSdraw.DEMonView].ElevationDEM) then CapStr := CapStr + '  z=' + RealToString(Elev,4,1) + ' m'
-         else CapStr := CapStr + '  z=' + RealToString(Elev,7,2) + ElevUnitsAre[DEMGlb[LOSdraw.DEMonView].DEMheader.ElevUnits];
+         else CapStr := CapStr + '  z=' + RealToString(Elev,7,2) + ElevUnitsAre(DEMGlb[LOSdraw.DEMonView].DEMheader.ElevUnits);
          if MDdef.DualElevs then CapStr := CapStr + '  (' + RealToString(Elev/Petmar_types.FeetToMeters,-5,0) + ' ft)';
 
          {$IFDef ExVegDensity}

@@ -35,6 +35,8 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
     Height = 41
     Align = alBottom
     TabOrder = 0
+    ExplicitTop = 390
+    ExplicitWidth = 486
     object CancelBtn: TBitBtn
       Left = 290
       Top = 6
@@ -110,9 +112,11 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
     Top = 0
     Width = 492
     Height = 230
-    ActivePage = TabSheet1
+    ActivePage = TabSheet8
     Align = alClient
     TabOrder = 1
+    ExplicitWidth = 486
+    ExplicitHeight = 221
     object General: TTabSheet
       Caption = 'General'
       object Label6: TLabel
@@ -245,12 +249,10 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
       object Panel2: TPanel
         Left = 0
         Top = 0
-        Width = 490
-        Height = 211
+        Width = 484
+        Height = 202
         Align = alClient
         TabOrder = 0
-        ExplicitWidth = 484
-        ExplicitHeight = 202
         object Label1: TLabel
           Left = 296
           Top = 16
@@ -643,15 +645,15 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
       Caption = 'Draw'
       ImageIndex = 5
       object Label5: TLabel
-        Left = 240
-        Top = 76
+        Left = 233
+        Top = 60
         Width = 24
         Height = 13
         Caption = 'Min z'
       end
       object Label4: TLabel
-        Left = 235
-        Top = 51
+        Left = 228
+        Top = 35
         Width = 28
         Height = 13
         Caption = 'Max z'
@@ -678,44 +680,44 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
         Caption = 'Opacity'
       end
       object Label2: TLabel
-        Left = 222
-        Top = 151
+        Left = 255
+        Top = 144
         Width = 43
         Height = 13
         Caption = 'Max RGB'
       end
       object Label21: TLabel
-        Left = 222
-        Top = 170
+        Left = 255
+        Top = 163
         Width = 39
         Height = 13
         Caption = 'Min RGB'
       end
       object Label34: TLabel
-        Left = 248
-        Top = 112
+        Left = 241
+        Top = 96
         Width = 64
         Height = 13
         Caption = 'Max intensity'
       end
       object Label35: TLabel
-        Left = 248
-        Top = 136
+        Left = 241
+        Top = 120
         Width = 60
         Height = 13
         Caption = 'Min intensity'
       end
       object Edit6: TEdit
-        Left = 270
-        Top = 75
+        Left = 263
+        Top = 59
         Width = 65
         Height = 21
         TabOrder = 0
         Text = '9999'
       end
       object Edit5: TEdit
-        Left = 269
-        Top = 48
+        Left = 262
+        Top = 32
         Width = 66
         Height = 21
         TabOrder = 1
@@ -749,8 +751,8 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
         OnChange = Edit11Change
       end
       object BitBtn31: TBitBtn
-        Left = 341
-        Top = 46
+        Left = 334
+        Top = 30
         Width = 65
         Height = 25
         Caption = 'Cloud Z'
@@ -769,8 +771,8 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
         OnClick = CheckBox3Click
       end
       object BitBtn56: TBitBtn
-        Left = 341
-        Top = 75
+        Left = 334
+        Top = 59
         Width = 65
         Height = 25
         Caption = 'DEM Z'
@@ -795,18 +797,18 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
         OnChange = Edit18Change
       end
       object Edit4: TEdit
-        Left = 286
-        Top = 175
-        Width = 47
+        Left = 319
+        Top = 168
+        Width = 80
         Height = 21
         TabOrder = 10
         Text = '0'
         OnChange = Edit4Change
       end
       object Edit23: TEdit
-        Left = 286
-        Top = 151
-        Width = 47
+        Left = 319
+        Top = 144
+        Width = 80
         Height = 21
         TabOrder = 11
         Text = '65535'
@@ -831,8 +833,8 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
         OnClick = BitBtn7Click
       end
       object Edit33: TEdit
-        Left = 326
-        Top = 106
+        Left = 319
+        Top = 90
         Width = 80
         Height = 21
         TabOrder = 14
@@ -840,13 +842,22 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
         OnChange = Edit33Change
       end
       object Edit34: TEdit
-        Left = 326
-        Top = 133
+        Left = 319
+        Top = 117
         Width = 78
         Height = 21
         TabOrder = 15
         Text = 'Edit34'
         OnChange = Edit34Change
+      end
+      object BitBtn62: TBitBtn
+        Left = 405
+        Top = 100
+        Width = 75
+        Height = 25
+        Caption = 'Intensity Dist'
+        TabOrder = 16
+        OnClick = BitBtn62Click
       end
     end
     object TabSheet6: TTabSheet
@@ -1082,29 +1093,29 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
       Caption = 'Grid params'
       ImageIndex = 9
       object Label22: TLabel
-        Left = 245
-        Top = 144
+        Left = 140
+        Top = 125
         Width = 96
         Height = 13
         Caption = 'Max  gap (grid cells)'
       end
       object Label31: TLabel
-        Left = 159
-        Top = 117
-        Width = 55
+        Left = 155
+        Top = 100
+        Width = 86
         Height = 13
-        Caption = 'Proj meters'
+        Caption = 'Proj meters (X+Y)'
       end
       object Label24: TLabel
         Left = 3
-        Top = 87
+        Top = 70
         Width = 72
         Height = 13
         Caption = 'Lat grid size (")'
       end
       object Label20: TLabel
         Left = 148
-        Top = 87
+        Top = 70
         Width = 80
         Height = 13
         Caption = 'Long grid size (")'
@@ -1124,21 +1135,21 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
         Caption = 'XGrid size (m)'
       end
       object Label19: TLabel
-        Left = 280
-        Top = 45
+        Left = 328
+        Top = 35
         Width = 3
         Height = 13
       end
       object Label33: TLabel
-        Left = 138
-        Top = 43
+        Left = 153
+        Top = 45
         Width = 65
         Height = 13
         Caption = 'YGrid size (m)'
       end
       object RadioGroup5: TRadioGroup
-        Left = 32
-        Top = 142
+        Left = 6
+        Top = 159
         Width = 103
         Height = 40
         Caption = 'Pixel Is'
@@ -1150,17 +1161,17 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
         OnClick = RadioGroup5Click
       end
       object Edit24: TEdit
-        Left = 347
-        Top = 138
-        Width = 67
+        Left = 247
+        Top = 124
+        Width = 54
         Height = 21
         TabOrder = 1
         Text = 'Edit24'
         OnChange = Edit24Change
       end
       object CheckBox9: TCheckBox
-        Left = 148
-        Top = 142
+        Left = 35
+        Top = 128
         Width = 99
         Height = 17
         Caption = 'Auto fill holes'
@@ -1168,8 +1179,8 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
         OnClick = CheckBox9Click
       end
       object Edit30: TEdit
-        Left = 220
-        Top = 114
+        Left = 247
+        Top = 97
         Width = 54
         Height = 21
         TabOrder = 3
@@ -1177,8 +1188,8 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
         OnChange = Edit30Change
       end
       object BitBtn45: TBitBtn
-        Left = -1
-        Top = 111
+        Left = 3
+        Top = 94
         Width = 143
         Height = 25
         Caption = 'wkt'
@@ -1186,23 +1197,23 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
         OnClick = BitBtn45Click
       end
       object Edit25: TEdit
-        Left = 234
-        Top = 87
-        Width = 49
+        Left = 247
+        Top = 70
+        Width = 54
         Height = 21
         TabOrder = 5
         OnChange = Edit25Change
       end
       object Edit21: TEdit
         Left = 81
-        Top = 84
-        Width = 49
+        Top = 67
+        Width = 51
         Height = 21
         TabOrder = 6
         OnChange = Edit21Change
       end
       object Edit17: TEdit
-        Left = 76
+        Left = 81
         Top = 43
         Width = 56
         Height = 21
@@ -1242,7 +1253,7 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
         OnClick = BitBtn58Click
       end
       object Edit32: TEdit
-        Left = 209
+        Left = 245
         Top = 43
         Width = 56
         Height = 21
@@ -1258,6 +1269,15 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
         Caption = 'Close'
         TabOrder = 12
         OnClick = BitBtn59Click
+      end
+      object CheckBox34: TCheckBox
+        Left = 328
+        Top = 54
+        Width = 153
+        Height = 17
+        Caption = 'Force equal  X + Y spacing'
+        TabOrder = 13
+        OnClick = CheckBox34Click
       end
     end
     object Filters: TTabSheet
@@ -1760,9 +1780,9 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
       OnClick = BitBtn20Click
     end
     object BitBtn32: TBitBtn
-      Left = 306
+      Left = 384
       Top = 138
-      Width = 97
+      Width = 89
       Height = 25
       Caption = 'Clear all clouds'
       TabOrder = 4
@@ -1776,6 +1796,15 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
       Caption = 'Lat/long slices'
       TabOrder = 5
       OnClick = CheckBox29Click
+    end
+    object BitBtn64: TBitBtn
+      Left = 296
+      Top = 138
+      Width = 82
+      Height = 25
+      Caption = 'Pick all clouds'
+      TabOrder = 6
+      OnClick = BitBtn64Click
     end
   end
   object PopupMenu2: TPopupMenu

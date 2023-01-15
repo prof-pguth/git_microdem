@@ -155,7 +155,7 @@ var
    ThisPoint : tLASClassificationCategory;
    Color : tPlatformColor;
 begin
-   {$IfDef RecordLASexport} writeLineToDebugFile('tLAS_data.OldExportBinary in, ' + ExtractFileNameNoExt(GeometryFName)); {$EndIf}
+   {$IfDef RecordLASexport} writeLineToDebugFile('tLAS_data.OldExportBinary in layer=' + IntToStr(Layer) + ', ' + ExtractFileNameNoExt(GeometryFName)); {$EndIf}
    Range := MDDef.MaxValidZinPointCloud - MDDef.LowValidZinPointCloud;
    New(Points);
    NPts := 0;
@@ -175,7 +175,8 @@ begin
                 Points^[NPTs].y := yutm;
                 Points^[NPTs].z := ExpandLAS_Z(j);
 
-                GetColor(j,LasHeader.MinZ,LasHeader.MaxZ,Color);
+                if MDdef.ls.ColorCoding = lasccCloudID then Color := MDDef.CloudMapSymbol[Layer].Color
+                else GetColor(j,LasHeader.MinZ,LasHeader.MaxZ,Color);
                 Points^[NPTs].Int := Color.rgbtRed;
                 Points^[NPTs].Int2 := Color.rgbtGreen;
                 Points^[NPTs].Int3 := Color.rgbtBlue;
@@ -183,13 +184,12 @@ begin
              end;
           end;
       end;
-      if (NPts >= MaxPts) then break;
+      //if (NPts >= MaxPts) then break;
    end;
    FreeLASRecordMemory;
    if (GeometryFName = '') then GeometryFName := Petmar.NextFileNumber(MDTempDir, 'cloud_slicer_','.xyzib');
    case MDdef.ls.ColorCoding of
          lasccIntensity : ColorsFName := Palette256Bitmap(p256Gray);
-         lasccCloudID,
          lasccPointSourceID,
          lasccUserData  : case Layer of
                              1 : ColorsFName := Palette256Bitmap(p256RedRamp);

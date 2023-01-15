@@ -200,7 +200,7 @@ object RefOptFM: TRefOptFM
   object RadioGroup1: TRadioGroup
     Left = 136
     Top = 141
-    Width = 114
+    Width = 131
     Height = 183
     Caption = 'Colors'
     Items.Strings = (

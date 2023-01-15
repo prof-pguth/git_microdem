@@ -656,6 +656,72 @@ type   //for DEM Header record
    tDEMAvailable = byte;
    tSpacingUnit = (SpaceMeters,oldSpaceSeconds,oldSpaceMinutes,SpaceKM,Space100m,SpaceFeet,SpaceKFeet,SpaceDegrees,DeadSpaceHundredthSecond,unusedMercProj100m,
         DeadOption,Space10m,DeadSpaceTenthSecond,DeadSpaceTenThousandthDegree,SpaceIntFeet,SpaceUSFeet);
+   tElevUnit = byte;
+const
+   //these were initially types, using these values
+   //over time some values were no longer used, and to keep the code simpler these were changed to constants
+   euMeters = 0;
+   Feet = 1;
+   TenthMgal = 2;
+   Milligal = 3;
+   TenthGamma = 4;
+   Decimeters = 5;
+   Gammas = 6;
+   HundredthMGal = 7;
+   DeciFeet = 8;
+   Centimeters = 9;
+   //Unused10 = 10;
+   HundredthMa = 11;
+   PercentSlope = 12;
+   Undefined = 13;
+   zDegrees = 14;
+   Unused0 = 15;
+   lnElev = 16;
+   LogElev = 17;
+   //Unused1 = 18;
+   //Unused2 = 19;
+   zPercent = 20;
+   //Unused3 = 21;
+   //Unused4 = 22;
+   //Unused5 = 23;
+   //Unused6 = 24;
+   //Unused7 = 25;
+   NLCD2001up = 26;
+   LandFire = 27;
+   Nanotesla = 28;
+   NLCD1992 = 29;
+   euIntCode = 30;
+   //unused8 = 31;
+   //unused9 = 32;
+   GLOBCOVER = 33;
+   GLC2000 = 34;
+   euImagery = 35;
+   euMM = 36;
+   euMetersPerSec = 37;
+   zMperM = 38;
+   euKM = 39;
+   CCAP = 40;
+   euLASclass13 = 41;
+   euLASclass14 = 42;
+   euRGB = 43;
+   euMonth = 44;
+   CCI_LC = 45;
+   S2GLC = 46;
+   NLCD_Change = 47;
+   GLCS_LC100 = 48;
+   Meybeck = 49;
+   Geomorphon = 50;
+   Iwahashi = 51;
+   ESRI2020 = 52;
+   AspectDeg = 53;
+   euPennock = 54;
+   euPerMeter = 55;
+   WorldCover10m = 56;
+   euNDVI = 57;
+   euNBR = 58;
+   HighElevUnits = 58;
+(*
+type
    tElevUnit = (euMeters,Feet,TenthMgal,Milligal,TenthGamma,
                   Decimeters,Gammas,HundredthMGal,DeciFeet,Centimeters,
                   Unused10,
@@ -669,7 +735,16 @@ type   //for DEM Header record
                   euIntCode,unused8,unused9,GLOBCOVER,GLC2000,euImagery,euMM,euMetersPerSec,zMperM,euKM,CCAP,euLASclass13,
                   euLASclass14,euRGB,euMonth,CCI_LC,S2GLC,NLCD_Change,GLCS_LC100,Meybeck,Geomorphon,Iwahashi,ESRI2020,AspectDeg,euPennock,euPerMeter,WorldCover10m,euNDVI,euNBR);
 const
-   (*
+   ElevUnitsAre : array[tElevUnit] of string10 =
+       (' m',' m',' mgal',' mgal',' gamma',
+        ' m',' gamma',' mgal',' m',' m',
+        '',' Ma','%','','°',
+        '','ln(z)','log(z)','°','',
+        '%','','°','','',
+        '',' NLCD',' LandFire',' nT','NLCD 1992',
+        'code','','','GlobCover','GLC2000',' Imagery',' mm',' m/s',' m/m',' km',' C-CAP',' LAS1.3',' LAS1.4',' RGB',' month',
+        ' CCI-LC','S2GLC','dNLCD','GLCS_LC100','Meybeck','Geomorphon','Iwahashi','ESRI2020','°','Pennock','/m','WorldCover 10m','NDVI','NBR');
+
    ElevUnitsAre : array[tElevUnit] of string16 =
         (' meters',' feet',' 0.1 mgal',' mgal',' 0.1 gam',
         ' decim',' gamma',' 0.01 mgal',' 0.1 ft',' cm',
@@ -680,15 +755,6 @@ const
         ' Integer code','','','GlobCover','GLC2000',' Imagery',' mm',' m/s',' m/m',' km',' C-CAP',' LAS1.3',' LAS1.4',
         'RGB',' month','CCI-LC','S2GLC','NLCD_change','GLCS_LC100','Meybeck','Geomorphon','Iwahashi','ESRI2020','°','Pennock','/m','WorldCover 10m',NDVI','NBR');
    *)
-   ElevUnitsAre : array[tElevUnit] of string10 =
-       (' m',' m',' mgal',' mgal',' gamma',
-        ' m',' gamma',' mgal',' m',' m',
-        '',' Ma','%','','°',
-        '','ln(z)','log(z)','°','',
-        '%','','°','','',
-        '',' NLCD',' LandFire',' nT','NLCD 1992',
-        'code','','','GlobCover','GLC2000',' Imagery',' mm',' m/s',' m/m',' km',' C-CAP',' LAS1.3',' LAS1.4',' RGB',' month',
-        ' CCI-LC','S2GLC','dNLCD','GLCS_LC100','Meybeck','Geomorphon','Iwahashi','ESRI2020','°','Pennock','/m','WorldCover 10m','NDVI','NBR');
 
    VertCSEGM96 = 5773;
    VertCSEGM2008 = 3855;
@@ -1703,6 +1769,7 @@ type
           DefLidarYGridSize : float32;
           DefLidarElevMap : tMapType;
           WKTLidarProj : PathStr;
+          ForceSquarePixels : boolean;
 
           LidarGridProjection,
           RedLow,RedHigh,GreenLow,GreenHigh,BlueLow,BlueHigh : byte;
@@ -1800,6 +1867,7 @@ type
        DefRefMap,
        DefSlopeMap,
        DefDEMMap             : tMapType;
+       HighlightDiffMap,
        QuickSlopeSpacings    : boolean;
        MapTicks              : tMapTick;
        InvertGrayScale       : boolean;

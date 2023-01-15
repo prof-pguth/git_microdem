@@ -18,12 +18,12 @@
 {                                                                                      }
 {**************************************************************************************}
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Modified as Part of ianMICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch                }
-{ Released under the MIT Licences                }
-{ Copyright (c) 2022 Peter L. Guth               }
-{________________________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2023 Peter L. Guth  }
+{___________________________________}
 
 unit JpegDumpForm;
 {
@@ -39,19 +39,19 @@ uses
    Petmar_db,
    Data.DB,
    {$IfDef UseFireDacSQLlite}
-   FireDAC.Comp.Client, FireDAC.Comp.Dataset,FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteWrapper,
+      FireDAC.Comp.Client, FireDAC.Comp.Dataset,FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteWrapper,
    {$EndIf}
 
    {$IfDef UseBDETables}
-   dbTables,
+      dbTables,
    {$EndIf}
 
    {$IfDef UseTDBF}
-   dbf,
+      dbf,
    {$EndIf}
 
    {$IfDef UseTCLientDataSet}
-   DBClient,
+      DBClient,
    {$EndIf}
 // end units for inline of the core DB functions
 
@@ -151,7 +151,6 @@ end;
 
 procedure TNewfrmJpegDump.FormCreate(Sender: TObject);
 begin
-  //PageControl.Visible := TestMode;
    FOriginalFrame := TNewOutputFrame.Create(Self);
    FOriginalFrame.Align := alClient;
    FOriginalFrame.Name := '';

@@ -41,12 +41,15 @@ type
     Edit2: TEdit;
     Label1: TLabel;
     Label2: TLabel;
+    BitBtn3: TBitBtn;
+    Label3: TLabel;
     procedure BitBtn1Click(Sender: TObject);
     procedure LoadClick(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure Edit1Change(Sender: TObject);
     procedure Edit2Change(Sender: TObject);
+    procedure BitBtn3Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -62,8 +65,6 @@ type
 
   end;
 
-//var
-  //DemixFilterForm: TDemixFilterForm;
 
 procedure DoDEMIXFilter(DB : integer);
 
@@ -113,6 +114,17 @@ begin
    end;
 end;
 
+procedure TDemixFilterForm.BitBtn3Click(Sender: TObject);
+var
+   fName : PathStr;
+begin
+   fName := DEMIXSettingsDir;
+   if GetExistingFileName('Area names','*.txt',fName) then begin
+      Memo6.Lines.LoadFromFile(fName);
+   end;
+end;
+
+
 procedure TDemixFilterForm.DoCriteriaGraph;
 var
    aFilter,DEMstr : shortstring;
@@ -132,7 +144,7 @@ begin
          for k :=  0 to pred(LandTypesUsing.Count) do begin
             aFilter := 'REF_TYPE=' + QuotedStr(DEMsTypeUsing[i]) + ' AND DEMIX_TILE=' + QuotedStr(TilesUsing[j])+ ' AND LAND_TYPE=' + QuotedStr(LandTypesUsing[k]);
             GISdb[db].ApplyGISFilter(aFilter);
-            if GISdb[db].MyData.FiltRecsInDB > 0 then begin
+            if (GISdb[db].MyData.FiltRecsInDB > 0) then begin
                {$IfDef RecordFullDEMIX} WriteLineToDebugFile(aFilter); {$EndIf}
                Graph := tThisBaseGraph.Create(Application);
 
@@ -223,17 +235,19 @@ begin
    DoCriteriaGraph;
 end;
 
+
 procedure TDemixFilterForm.GetUsingStringLists;
 
-   procedure DoOne(Memo : tMemo; var SL : tStringList);
-   var
-      i : integer;
-   begin
-      sl.Clear;
-      for i := 0 to pred(Memo.Lines.Count) do begin
-         if (Memo.Lines[i] <> '') then sl.Add(Memo.Lines[i]);
-      end;
-   end;
+
+         procedure DoOne(Memo : tMemo; var SL : tStringList);
+         var
+            i : integer;
+         begin
+            sl.Clear;
+            for i := 0 to pred(Memo.Lines.Count) do begin
+               if (Memo.Lines[i] <> '') then sl.Add(Memo.Lines[i]);
+            end;
+         end;
 
 
 begin
@@ -255,6 +269,7 @@ begin
       Memo2.Lines.LoadFromFile(fName);
    end;
 end;
+
 
 
 initialization

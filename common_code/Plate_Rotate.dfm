@@ -4,8 +4,8 @@ object PickRotationForm: TPickRotationForm
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = 'Plate rotations'
-  ClientHeight = 967
-  ClientWidth = 260
+  ClientHeight = 958
+  ClientWidth = 254
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -21,7 +21,7 @@ object PickRotationForm: TPickRotationForm
   object Memo1: TMemo
     Left = 0
     Top = 321
-    Width = 260
+    Width = 254
     Height = 76
     Align = alTop
     ScrollBars = ssVertical
@@ -31,7 +31,7 @@ object PickRotationForm: TPickRotationForm
   object GroupBox3: TGroupBox
     Left = 0
     Top = 584
-    Width = 260
+    Width = 254
     Height = 106
     Align = alTop
     Caption = 'Spreading Rates'
@@ -108,7 +108,7 @@ object PickRotationForm: TPickRotationForm
   object Panel1: TPanel
     Left = 0
     Top = 905
-    Width = 260
+    Width = 254
     Height = 41
     Align = alTop
     TabOrder = 2
@@ -140,7 +140,7 @@ object PickRotationForm: TPickRotationForm
     AlignWithMargins = True
     Left = 3
     Top = 3
-    Width = 254
+    Width = 248
     Height = 155
     Align = alTop
     Alignment = taRightJustify
@@ -270,7 +270,7 @@ object PickRotationForm: TPickRotationForm
   object Panel3: TPanel
     Left = 0
     Top = 161
-    Width = 260
+    Width = 254
     Height = 160
     Align = alTop
     Alignment = taLeftJustify
@@ -419,7 +419,7 @@ object PickRotationForm: TPickRotationForm
     AlignWithMargins = True
     Left = 3
     Top = 823
-    Width = 254
+    Width = 248
     Height = 79
     Align = alTop
     Caption = 'Map'
@@ -486,7 +486,7 @@ object PickRotationForm: TPickRotationForm
     AlignWithMargins = True
     Left = 3
     Top = 400
-    Width = 254
+    Width = 248
     Height = 181
     Align = alTop
     Alignment = taRightJustify
@@ -666,7 +666,7 @@ object PickRotationForm: TPickRotationForm
   object GroupBox2: TGroupBox
     Left = 0
     Top = 690
-    Width = 260
+    Width = 254
     Height = 130
     Align = alTop
     Caption = 'Total pole reconstruction'

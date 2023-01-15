@@ -1,9 +1,9 @@
 object DemixFilterForm: TDemixFilterForm
   Left = 0
   Top = 0
-  Caption = 'DemixFilterForm'
-  ClientHeight = 394
-  ClientWidth = 507
+  Caption = 'Demix Filter Pick Graphs'
+  ClientHeight = 385
+  ClientWidth = 529
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -14,18 +14,25 @@ object DemixFilterForm: TDemixFilterForm
   OnCreate = FormCreate
   TextHeight = 15
   object Label1: TLabel
-    Left = 360
-    Top = 88
+    Left = 352
+    Top = 128
     Width = 63
     Height = 15
     Caption = 'Graph x size'
   end
   object Label2: TLabel
-    Left = 360
-    Top = 123
+    Left = 352
+    Top = 157
     Width = 63
     Height = 15
     Caption = 'Graph y size'
+  end
+  object Label3: TLabel
+    Left = 368
+    Top = 48
+    Width = 149
+    Height = 15
+    Caption = 'DEM type, Tiles, Land Type'
   end
   object BitBtn1: TBitBtn
     Left = 347
@@ -55,10 +62,10 @@ object DemixFilterForm: TDemixFilterForm
     end
   end
   object GroupBox2: TGroupBox
-    Left = 135
+    Left = 167
     Top = 175
     Width = 121
-    Height = 186
+    Height = 191
     Caption = 'DEMIX tile'
     TabOrder = 2
     object Memo2: TMemo
@@ -108,10 +115,10 @@ object DemixFilterForm: TDemixFilterForm
     end
   end
   object GroupBox4: TGroupBox
-    Left = 262
+    Left = 294
     Top = 175
     Width = 129
-    Height = 186
+    Height = 191
     Caption = 'Criteria'
     TabOrder = 4
     object Memo4: TMemo
@@ -159,7 +166,7 @@ object DemixFilterForm: TDemixFilterForm
     Top = 8
     Width = 105
     Height = 153
-    Caption = 'Candidate DEM'#39
+    Caption = 'Candidate DEM'
     TabOrder = 5
     object Memo5: TMemo
       Left = 3
@@ -179,22 +186,31 @@ object DemixFilterForm: TDemixFilterForm
   object GroupBox6: TGroupBox
     Left = 8
     Top = 175
-    Width = 121
-    Height = 181
+    Width = 153
+    Height = 191
     Caption = 'Areas'
     TabOrder = 6
     object Memo6: TMemo
       Left = 3
       Top = 24
-      Width = 115
+      Width = 142
       Height = 129
       ScrollBars = ssVertical
       TabOrder = 0
     end
+    object BitBtn3: TBitBtn
+      Left = 11
+      Top = 156
+      Width = 75
+      Height = 25
+      Caption = 'Load'
+      TabOrder = 1
+      OnClick = BitBtn3Click
+    end
   end
   object Edit1: TEdit
-    Left = 440
-    Top = 80
+    Left = 432
+    Top = 125
     Width = 65
     Height = 23
     TabOrder = 7
@@ -202,8 +218,8 @@ object DemixFilterForm: TDemixFilterForm
     OnChange = Edit1Change
   end
   object Edit2: TEdit
-    Left = 440
-    Top = 120
+    Left = 432
+    Top = 154
     Width = 65
     Height = 23
     TabOrder = 8

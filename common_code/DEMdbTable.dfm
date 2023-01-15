@@ -2,8 +2,8 @@ object dbtablef: Tdbtablef
   Left = 62
   Top = 306
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1091
-  ClientWidth = 1340
+  ClientHeight = 1073
+  ClientWidth = 1328
   Color = clBtnFace
   ParentFont = True
   FormStyle = fsMDIChild
@@ -17,8 +17,8 @@ object dbtablef: Tdbtablef
   TextHeight = 20
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 1072
-    Width = 1340
+    Top = 1054
+    Width = 1328
     Height = 19
     Panels = <
       item
@@ -30,7 +30,7 @@ object dbtablef: Tdbtablef
   object Panel2: TPanel
     Left = 0
     Top = 41
-    Width = 1340
+    Width = 1328
     Height = 32
     Align = alTop
     TabOrder = 1
@@ -215,7 +215,7 @@ object dbtablef: Tdbtablef
   object Panel3: TPanel
     Left = 0
     Top = 73
-    Width = 1340
+    Width = 1328
     Height = 41
     Align = alTop
     TabOrder = 2
@@ -266,7 +266,7 @@ object dbtablef: Tdbtablef
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1340
+    Width = 1328
     Height = 41
     Align = alTop
     TabOrder = 4
@@ -529,7 +529,7 @@ object dbtablef: Tdbtablef
   object Panel7: TPanel
     Left = 0
     Top = 114
-    Width = 1340
+    Width = 1328
     Height = 41
     Align = alTop
     TabOrder = 3
@@ -554,8 +554,8 @@ object dbtablef: Tdbtablef
   object DBGrid1: TDBGrid
     Left = 0
     Top = 155
-    Width = 1340
-    Height = 917
+    Width = 1328
+    Height = 899
     Align = alClient
     TabOrder = 5
     TitleFont.Charset = DEFAULT_CHARSET

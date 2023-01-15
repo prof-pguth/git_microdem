@@ -313,6 +313,7 @@ type
     Sentinel21: TMenuItem;
     Sentinel22: TMenuItem;
     Spot51: TMenuItem;
+    Exportgraphdata1: TMenuItem;
     procedure IDSpeedButtonClick(Sender: TObject);
     procedure LegendSpeedButtonClick(Sender: TObject);
     procedure Bestfitlinecolor1Click(Sender: TObject);
@@ -420,6 +421,7 @@ type
      RedrawNow,
      SizingWindow,
      HighlightBox,
+     SlicerOverlay,
      MouseIsDown : boolean;
      Symbol : tFullSymbolDeclaration;
      VertCompare,UserContourInterval,MaxZ,MinZ,MinZShow   : float32;
@@ -431,10 +433,11 @@ type
      FirstX,FirstY,
      LastX,LastY : integer;
      RoseColor  : tColor;
-     RoseData         : ^CircleFreqType;
+     RoseData   : ^CircleFreqType;
      SaveGraphName,
      RangeGraphName,
      ASCIIXYZFile        : PathStr;
+     GraphName,
      BaseCaption,
      RoseLegend,
      DBFXFieldName,DBFYFieldName,
@@ -2388,7 +2391,7 @@ begin
       CalDat(Trunc(x),Month,Day,Year);
       x := JulDay(Month,Day,1996);
    end;
-   if NormalCartesianX then GraphX := LeftMargin + round((x - ScrMinHorizAxis) / (ScrHorizRange) * (XWindowSize - LeftMargin- RightMargin))
+   if NormalCartesianX then GraphX := LeftMargin + round((x - ScrMinHorizAxis) / (ScrHorizRange) * (XWindowSize - LeftMargin - RightMargin))
    else GraphX := LeftMargin + round((ScrMaxHorizAxis - x) / (ScrHorizRange) * (XWindowSize - LeftMargin-RightMargin))
 end;
 
@@ -3332,6 +3335,7 @@ begin
    end;
    MDDef.CreateGraphHidden := false;
 
+   DefaultGraphSettings(GraphDraw);
    GraphDraw.GraphDrawn := false;
    GraphDraw.LabelXFromLog := false;
    GraphDraw.ShowHorizAxis0 := false;
@@ -3350,6 +3354,7 @@ begin
      GraphDraw.RainBowColors := false;
      GraphDraw.LabelPointsAtop := true;
      GraphDraw.ZColorLegend := false;
+     GraphName := 'MD_graph_';
      //GraphDraw.SkipDrawing := false;
      GraphDraw.TernaryGrid := tgRegular;
      for i := 1 to 255 do begin
@@ -3366,7 +3371,6 @@ begin
      GraphDraw.Symbol[1].DrawingSymbol := FilledBox;
      GraphDraw.Symbol[2].DrawingSymbol := FilledUpTri;
      GraphDraw.Symbol[3].DrawingSymbol := FilledDiamond;
-     DefaultGraphSettings(GraphDraw);
      GraphDraw.CorrectScaling := false;
 
      GraphDraw.DataFilesPlotted := tStringList.Create;
@@ -3390,6 +3394,8 @@ begin
      GraphDraw.ShowGraphBottomLabels := true;
      GraphDraw.LLlegend := false;
      GraphDraw.InsideMarginLegend := MDDef.DefMarginLegend;
+     GraphDraw.LLcornerText := '';
+     GraphDraw.LRcornerText := '';
 
      MapOwner := nil;
      RedrawNow := false;
@@ -3398,8 +3404,7 @@ begin
      SaveGraphName := '';
      RangeGraphName := '';
      GraphFilter := '';
-     GraphDraw.LLcornerText := '';
-     GraphDraw.LRcornerText := '';
+     SlicerOverlay := false;
 
      MainMenu1.AutoMerge := Not SkipMenuUpdating;
 
@@ -4155,11 +4160,11 @@ begin
 end;
 
 procedure TThisBaseGraph.Viewdata1Click(Sender: TObject);
-{$IfDef VCL}
 var
    infile : file;
    Month,Day,Year,
    i      : integer;
+   fName : PathStr;
    TStr : shortString;
    Results : tStringList;
    v       : array[1..3] of float32;
@@ -4167,14 +4172,16 @@ var
       procedure DoFile(fName : PathStr);
       begin
          Results := tStringList.Create;
+         Results.Add('x,y,z');
          assignFile(infile,fName);
          reset(infile,3*SizeOf(float32));
          while not EOF(infile) do begin
             BlockRead(infile,v,1);
-            Results.Add( RealToString(v[1],18,8) + ' ' + RealToString(v[2],18,8) + ' ' + RealToString(v[3],18,8));
+            Results.Add( RealToString(v[1],-18,-8) + ',' + RealToString(v[2],-18,-8) + ',' + RealToString(v[3],-18,-8));
          end;
          CloseFile(InFile);
-         DisplayAndPurgeStringList(Results,'Data set ' + IntToStr(i) + ',   n=' + IntToStr(Results.Count));
+         fName := NextFileNumber(MDTempDir,GraphName + 'series_', '.dbf');
+         StringList2CSVtoDB(Results,fName);
       end;
 
 begin
@@ -4185,24 +4192,24 @@ begin
    end;
    for i := 1 to GraphDraw.DataFilesPlotted.Count do begin
        Results := tStringList.Create;
+       Results.Add('x,y');
        assignFile(infile,GraphDraw.DataFilesPlotted.Strings[pred(i)]);
        reset(infile,2*SizeOf(float32));
        while not EOF(infile) do begin
           BlockRead(infile,v,1);
           if GraphDraw.GraphAxes in [XTimeYFullGrid,XTimeYPartGrid] then begin
              CalDat(round(v[1]),Month,Day,Year);
-             Results.Add( IntegerToString(Month,2) + '/' + IntegerToString(Day,2) + '/' + IntegerToString(Year,4) + RealToString(v[2],18,8));
+             Results.Add( IntegerToString(Month,2) + '/' + IntegerToString(Day,2) + '/' + IntegerToString(Year,4) + ',' + RealToString(v[2],-18,-8));
           end
-          else Results.Add( RealToString(v[1],18,8) + ' ' + RealToString(v[2],18,8));
+          else Results.Add( RealToString(v[1],-18,-8) + ',' + RealToString(v[2],-18,-8));
        end;
        CloseFile(InFile);
-       if (GraphDraw.LegendList <> Nil) then TStr := ' (' + GraphDraw.LegendList.Strings[pred(i)] + ')'
-       else TStr := '';
-       DisplayAndPurgeStringList(Results,'Data set ' + IntToStr(i) + TStr + ',   n=' + IntToStr(Results.Count));
+       if (GraphDraw.LegendList <> Nil) then fName := NextFileNumber(MDTempDir,GraphName + GraphDraw.LegendList.Strings[pred(i)] + '_', '.dbf')
+       else fName := NextFileNumber(MDTempDir,GraphName + 'series_', '.dbf');
+       StringList2CSVtoDB(Results,fName);
    end;
    if (GraphDraw.XYZFilesPlotted <> Nil) then for i := 1 to GraphDraw. XYZFilesPlotted.Count do DoFile(GraphDraw.XYZFilesPlotted.Strings[pred(i)]);
    for i := 1 to GraphDraw.XYColorFilesPlotted.Count do DoFile(GraphDraw.XYColorFilesPlotted.Strings[pred(i)]);
-{$EndIf}
 end;
 
 procedure TThisBaseGraph.DragInXDirection1Click(Sender: TObject);
@@ -4867,6 +4874,14 @@ begin
        if (BaseCaption <> '') then with GraphDraw do begin
           Caption := BaseCaption + '   V.E.= ' + RealToString( ( YWindowSize / (MaxVertAxis - MinVertAxis)  / ( XWindowSize / (MaxHorizAxis - MinHorizAxis) * VertCompare)  ),-12,-2) ;
        end;
+
+       {$IfDef ExSlicer3D}
+       {$Else}
+          if SlicerOverlay and (SlicerForm <> Nil) then begin
+             SlicerForm.BitBtn1Click(Sender);
+          end;
+      {$EndIf}
+
     finally
       ShowDefaultCursor;
       RedrawingNow := false;

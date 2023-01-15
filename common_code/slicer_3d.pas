@@ -1,11 +1,11 @@
 unit slicer_3d;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of ianMICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch    }
-{ Released under the MIT Licences    }
-{ Copyright (c) 2022 Peter L. Guth   }
-{____________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2023 Peter L. Guth  }
+{___________________________________}
 
 
 {$I nevadia_defines.inc}
@@ -13,7 +13,6 @@ unit slicer_3d;
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$IfDef DEBUG}
-
       //{$Define NoSetColorOptions}
       //{$Define NoArrangeControls}
 
@@ -552,6 +551,7 @@ end;
 
 procedure TSlicerForm.LoadMemoryPointCloud(Cloud : integer; fName : PathStr;  XField : shortstring = 'X'; YField : shortstring = 'Y'; ZField : shortstring = 'Z'; InCloudName : shortstring = ''; inStayLatLong : boolean = false);
 
+
      procedure SetCheckBox(Cloud : integer; var CheckBox : tCheckBox);
      begin
        CheckBox.Visible := true;
@@ -559,6 +559,7 @@ procedure TSlicerForm.LoadMemoryPointCloud(Cloud : integer; fName : PathStr;  XF
        else CheckBox.Caption := InCloudName;
        CheckBox.Checked := true;
        CloudUsed[Cloud] := true;
+       CheckBox.Font.Color := ConvertPlatformColorToTColor(MDDef.CloudSymbol[Cloud].Color);
      end;
 
 
@@ -1285,7 +1286,7 @@ var
                   v[1] := ShapePoints^[i].x;
                   v[2] := ShapePoints^[i].y;
                   v[3] := ShapePoints^[i].z;
-                   {$IfDef SlicerProblemsFull} WriteLineToDebugFile(RealToString(v[1],12,2) + RealToString(v[2],12,2) + RealToString(v[3],12,2)); {$EndIf}
+                  {$IfDef SlicerProblemsFull} WriteLineToDebugFile(RealToString(v[1],12,2) + RealToString(v[2],12,2) + RealToString(v[3],12,2)); {$EndIf}
                   if (v[SliceGraph[CurSlice].GISGraf.GraphDraw.c3] >= SliceGraph[CurSlice].SliceLo) and (v[SliceGraph[CurSlice].GISGraf.GraphDraw.c3] <= SliceGraph[CurSlice].SliceHi) then begin
                      xi := SliceGraph[CurSlice].GISGraf.GraphDraw.GraphX(v[SliceGraph[CurSlice].GISGraf.GraphDraw.c1]);
                      yi := SliceGraph[CurSlice].GISGraf.GraphDraw.GraphY(v[SliceGraph[CurSlice].GISGraf.GraphDraw.c2]);
@@ -1368,6 +1369,7 @@ begin
    if (SliceGraph[CurSlice].GISGraf = Nil) then begin
       {$IfDef SlicerDetailedDraw} WriteLineToDebugFile('BitBtn1Click create new graph'); {$EndIf}
       CreateNewGraph;
+      SliceGraph[CurSlice].GISGraf.SlicerOverlay := true;
       SliceGraph[CurSlice].GISGraf.GraphDraw.MinHorizAxis := SliceGraph[CurSlice].gxlo;
       SliceGraph[CurSlice].GISGraf.GraphDraw.MaxHorizAxis := SliceGraph[CurSlice].gxhi;
       SliceGraph[CurSlice].GISGraf.GraphDraw.MinVertAxis := SliceGraph[CurSlice].gylo - 50;

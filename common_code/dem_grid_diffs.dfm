@@ -4,8 +4,8 @@ object GridDiffForm: TGridDiffForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Grid Differences '
-  ClientHeight = 117
-  ClientWidth = 194
+  ClientHeight = 160
+  ClientWidth = 283
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -16,6 +16,13 @@ object GridDiffForm: TGridDiffForm
   OnClose = FormClose
   OnCreate = FormCreate
   TextHeight = 13
+  object Label1: TLabel
+    Left = 72
+    Top = 96
+    Width = 89
+    Height = 13
+    Caption = 'Level to highlight'
+  end
   object CheckBox1: TCheckBox
     Left = 24
     Top = 23
@@ -34,7 +41,7 @@ object GridDiffForm: TGridDiffForm
   end
   object OKBtn: TBitBtn
     Left = 8
-    Top = 80
+    Top = 125
     Width = 77
     Height = 27
     Kind = bkOK
@@ -46,8 +53,8 @@ object GridDiffForm: TGridDiffForm
     IsControl = True
   end
   object HelpBtn: TBitBtn
-    Left = 107
-    Top = 80
+    Left = 109
+    Top = 125
     Width = 77
     Height = 27
     Kind = bkHelp
@@ -65,5 +72,22 @@ object GridDiffForm: TGridDiffForm
     Height = 17
     Caption = 'Scatter plot'
     TabOrder = 4
+  end
+  object CheckBox4: TCheckBox
+    Left = 24
+    Top = 69
+    Width = 217
+    Height = 17
+    Caption = 'Highlight significant change on map'
+    TabOrder = 5
+    OnClick = CheckBox4Click
+  end
+  object Edit1: TEdit
+    Left = 167
+    Top = 92
+    Width = 74
+    Height = 21
+    TabOrder = 6
+    Text = 'Edit1'
   end
 end

@@ -352,7 +352,7 @@ end;
 
 procedure TRefOptFM.OKBtnClick(Sender: TObject);
 begin
-  close;
+   close;
 end;
 
 procedure TRefOptFM.TrackBar1Change(Sender: TObject);
@@ -384,7 +384,6 @@ begin
    MDdef.LakeCheck := CheckBox3.Checked;
    DrawPreview;
 end;
-
 
 procedure TRefOptFM.CheckBox5Click(Sender: TObject);
 begin

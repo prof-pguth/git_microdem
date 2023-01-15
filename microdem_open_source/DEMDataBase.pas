@@ -754,16 +754,18 @@ function DoAShapeFile(fName : PathStr; Trim : boolean = false) : integer;
       procedure RankDEMS(DBonTable : integer);
       procedure SumsOfRankDEMS(DBonTable : integer);
       procedure BestDEMSbyCategory(DBonTable : integer);
-      //function TransposeDEMIXcriteria(DBonTable : integer) : PathStr;
       procedure TransposeDEMIXwinecontestGraph(DBonTable : integer);
       function DEMIXwineContestScoresGraph(DBonTable : integer; XScalelabel : shortstring; MinHoriz : float32 = 0.5; MaxHoriz : float32 = 5.5) : tThisBaseGraph;
-      procedure DEMIXwineContestMeanMedianGraph(What,DBonTable : integer);
+      //procedure DEMIXwineContestMeanMedianGraph(What,DBonTable : integer);
+      procedure DEMIXwineContestMeanMedianGraph(What,DBonTable : integer; AreaList : tStringList = nil; CriteriaUsed : tStringList = nil; LandTypePresent : tStringList = nil;
+           DEMsPresent : tStringList = nil);
+
       procedure DEMIXTileSummary(DBonTable : integer);
       procedure FilterOutSignedCriteria(DBonTable : integer);
       procedure DEMIXisCOPorALOSbetter(DBonTable : integer);
       procedure ExtractTheDEMIXtiles(DBonTable : integer);
       procedure DEMIX_graph_best_in_Tile(DBonTable : integer; SortByArea : boolean);
-      //function SymbolFromDEMName(DEMName : shortstring) : tFullSymbolDeclaration;
+
 
 {$IfDef ExRiverNetworks}
 {$Else}

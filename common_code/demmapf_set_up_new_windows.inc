@@ -25,6 +25,7 @@ begin
     end;
     WGS84DatumConstants.DefineDatumFromUTMZone('WGS84',UTMZone,LatCh,'LAS RedefineWGS84');
     if (MDDef.LidarGridProjection = UTMBasedDEM) then begin
+       {$IfDef RecordMakeGrid} WriteLineToDebugFile('MakeTempGrid UTM grid'); {$EndIf}
        Result := CreateGridToMatchMap(cgUTM,OpenMap,FloatingPointDEM,MDDef.DefLidarXGridSize,MDDef.DefLidarYGridSize,UTMZone,MDDef.LasDEMPixelIs);
     end
     else if (MDDef.LidarGridProjection = ArcSecDEM) then begin
@@ -35,7 +36,7 @@ begin
     end;
     DEMGlb[Result].DEMheader.ElevUnits := Undefined;
     DEMGlb[Result].AreaName := 'new_grid';
-   {$IfDef RecordMakeGrid} WriteLineToDebugFile('MakeTempGrid out'); {$EndIf}
+   {$IfDef RecordMakeGrid} WriteLineToDebugFile('MakeTempGrid out, TempDEM=' + IntToStr(Result) + ' ' + DEMGlb[Result.GridDefinition + ' ' + DEMGlb[Result].DEMSizeString + ' ' + DEMGlb[Result].ColsRowsString); {$EndIf}
 end;
 
 

@@ -17,7 +17,7 @@ unit dem_manager;
       //{$Define RecordNewMaps}
       //{$Define LoadDEMsCovering}
       //{$Define RecordProjects}
-      //{$Define RecordDownload}
+      {$Define RecordDownload}
       //{$Define RecordGet2DEMs}
       //{$Define RecordWhatsOpen}
       //{$Define RecordStartup}
@@ -651,10 +651,6 @@ begin
 
          j := DEMtoClose;
          CloseYeDEM(j);
-         ApplicationProcessMessages;
-         {$IfDef VCL}
-            if ResetMenus and (not SkipMenuUpdating) then WmDem.SetMenusForVersion;
-         {$EndIf}
 
          if (DEMtoClose = PredAgesDEM) then PredAgesDEM := 0;
          if (DEMtoClose = SedThickDEM) then SedThickDEM := 0;
@@ -672,6 +668,10 @@ begin
          {$If Defined(RecordCloseDEM) or Defined(ShortRecordCloseDEM)}WriteLineToDebugFile('No DEM to close, i=' + IntToStr(DEMtoClose)); {$EndIf}
       end;
    finally
+      ApplicationProcessMessages;
+      {$IfDef VCL}
+         if ResetMenus and (not SkipMenuUpdating) then WmDem.SetMenusForVersion;
+      {$EndIf}
       ClosingIsHappening := false;
    end;
 end;
