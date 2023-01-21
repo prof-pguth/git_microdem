@@ -1,9 +1,11 @@
 # git_microdem
  
-Last changes posted 15 Jan 2023
+Last changes posted 21 Jan 2023
 
 MICRODEM help file at https://www.usna.edu/Users/oceano/pguth/md_help/html/microdem.htm
 
 This is about 400,000 lines of Delphi code, going back to the first iteration of Turbo Pascal.  This can be compiled with the free community edition of Delphi.
 
 If you want to work with the code, I suggest you contact me. The code was not written with the intention of getting to where it is now, and I am working to refactor it to make the variables names more consistent, and to eliminate duplications of code.  Unless I know someone is working on parts of the code, I might make major "improvements" that could make your life difficult.
+
+The help file is too large to post here.  If you need it, it is online at https://www.usna.edu/Users/oceano/pguth/md_help/html/microdem.htm
