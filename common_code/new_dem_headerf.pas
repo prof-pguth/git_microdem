@@ -165,14 +165,16 @@ begin
    EditHeadRec := DEMGlb[DEM].DEMHeader;
    TStr := ByteArrayToString(EditHeadRec.DMAMapDefinition.h_DatumCode);
    Label6.Caption := DatumName(TStr);
+   ComboBox2.Text := DatumName(TStr);
    for zu := 0 to HighElevUnits do begin
       TStr := ElevUnitsAre(zu);
       if (TStr <> '') then ComboBox3.Items.Add(ElevUnitsAre(zu));
    end;
+   ComboBox3.Text := ElevUnitsAre(EditHeadRec.ElevUnits);
+
    for su := SpaceMeters to SpaceUSFeet do ComboBox4.Items.Add(SpacingUnits[su]);
    ComboBox4.Text := ComboBox4.Items[ord(EditHeadRec.DataSpacing)];
-   ComboBox2.Text := DatumName(TStr);                 //ComboBox2.Items[ord(EditHeadRec.DigitizeDatum)];
-   ComboBox3.Text := ComboBox3.Items[ord(EditHeadRec.ElevUnits)];
+
    RadioGroup1.ItemIndex := 0;
    RadioGroup3.ItemIndex := ord(EditHeadRec.DEMprecision);
    RadioGroup4.ItemIndex := EditHeadRec.RasterPixelIsGeoKey1025;

@@ -2,8 +2,8 @@ object wmdem: Twmdem
   Left = 0
   Top = 262
   Caption = 'GIS program loading'
-  ClientHeight = 1330
-  ClientWidth = 2168
+  ClientHeight = 1265
+  ClientWidth = 2142
   Color = clScrollBar
   DefaultMonitor = dmDesktop
   Font.Charset = DEFAULT_CHARSET
@@ -28,13 +28,14 @@ object wmdem: Twmdem
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 2168
+    Width = 2142
+    Height = 29
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34
     TabOrder = 0
     OnMouseDown = ToolBar1MouseDown
-    ExplicitWidth = 2162
+    ExplicitWidth = 2148
     object SpeedButton2: TSpeedButton
       Left = 0
       Top = 0
@@ -1676,8 +1677,8 @@ object wmdem: Twmdem
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 1311
-    Width = 2168
+    Top = 1246
+    Width = 2142
     Height = 19
     Panels = <
       item
@@ -1696,8 +1697,8 @@ object wmdem: Twmdem
     Visible = False
     OnClick = StatusBar1Click
     OnDblClick = StatusBar1DblClick
-    ExplicitTop = 1302
-    ExplicitWidth = 2162
+    ExplicitTop = 1255
+    ExplicitWidth = 2148
   end
   object MainMenu1: TMainMenu
     Left = 136
@@ -3421,6 +3422,10 @@ object wmdem: Twmdem
     object DEMIXelevationhistograms1: TMenuItem
       Caption = 'DEMIX elevation histograms'
       OnClick = DEMIXelevationhistograms1Click
+    end
+    object HistogramstoCSVfiles1: TMenuItem
+      Caption = 'Histograms to CSV files'
+      OnClick = HistogramstoCSVfiles1Click
     end
     object Categoriesfromdatabase1: TMenuItem
       Caption = 'Landform categories from data base'

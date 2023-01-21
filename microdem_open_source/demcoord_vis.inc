@@ -109,8 +109,8 @@ begin
 end;
 
 
-procedure tDEMDataSet.GetVisiblePoints(ObsElev,W_TargetUp,MinViewPort,MaxViewPort : float64; ObserverTerrainHug,TargetTerrainHug : boolean; PointsPerRay : integer; var xgrids,ygrids,dists,elevs : Petmath.bfarray32;
-   var VisPoints : array of boolean);
+procedure tDEMDataSet.GetVisiblePoints(ObsElev,W_TargetUp,MinViewPort,MaxViewPort : float64; ObserverTerrainHug,TargetTerrainHug : boolean; PointsPerRay : integer;
+   var xgrids,ygrids,dists,elevs : Petmath.bfarray32;  var VisPoints : array of boolean);
 var
    NewTanAngle,TanAngle,MaxTanAngle,zt,DeltaZ,TargetCushionUp : float64;
    PointOnRay : integer;

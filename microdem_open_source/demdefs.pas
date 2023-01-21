@@ -104,9 +104,9 @@ const
 const   //for DEMIX
    MaxLandType = 8;
    NumDEMIXDEM = 6;
-   RefType : array[1..2] of shortstring = ('DSM','DTM');
+   RefDEMType : array[1..2] of shortstring = ('DSM','DTM');
    LandType : array[1..MaxLandType] of shortstring = ('ALL','CLIFF','STEEP','GENTLE','FLAT','URBAN','FOREST','BARREN');
-   DEMType : array[1..NumDEMIXDEM] of shortstring = ('FABDEM','COP','ALOS','NASA','SRTM','ASTER');
+   DEMIXDEMType : array[1..NumDEMIXDEM] of shortstring = ('FABDEM','COP','ALOS','NASA','SRTM','ASTER');
 
 
 //satellite imagery definitions
@@ -367,6 +367,7 @@ const  //map display modes, for particular data types and desired look
    mtLandCover = 54;
    mtGrCyBlReflect = 55;
    mtDEMaspectSlope = 56;
+   //mtDifferenceMap = 57;
 
 type
    tMapType = byte;
@@ -719,7 +720,9 @@ const
    WorldCover10m = 56;
    euNDVI = 57;
    euNBR = 58;
-   HighElevUnits = 58;
+   euDifference = 59;
+   euElevDiff = 60;
+   HighElevUnits = 60;
 (*
 type
    tElevUnit = (euMeters,Feet,TenthMgal,Milligal,TenthGamma,
@@ -1905,7 +1908,6 @@ type
       DEMIX_DoElevParamGraphs,
       DEMIX_DoHalfSecDEMs : boolean;
 
-
       SlopeFlatBoundary,
       SlopeGentleBoundary,
       SlopeSteepBoundary : float32;
@@ -1950,7 +1952,6 @@ type
        ShowAlongTrackProfiles,ShowCrossTrackProfiles : boolean;
        OpennessDirs : tDirToUse;
        DefaultQuadSize : float32;
-       //WindMonth0based : byte;            //Jan is 0, Dec is 11
        ShowSDonElevSlope : boolean;
        GrayscaleChannels : boolean;
        MinRGBColor,MaxRGBColor,RangeRGBColor : byte;
@@ -2232,7 +2233,6 @@ type
        AutoSaveGeomorphGrids,
        IncludeBasinID : boolean;
        WavelengthCompDist : SmallInt;
-       //HydrologyEnforceProfile,
        NoDEMInterpolations,
        DoEarthCurvature : boolean;
        MakePCFloor,MakePCCeiling,
@@ -2323,7 +2323,6 @@ type
        DefaultVectorFilter : byte;
        EdgeFilterGap : byte;
 
-       //DefaultVMapXSize,DefaultVMapYSize,
        DefaultMapXSize,DefaultMapYSize,
        DefaultTerrainXSize,DefaultTerrainYSize,
        MaxDrapeXSize,
@@ -2386,7 +2385,6 @@ type
       WrapETOPO  : boolean;
       FillHoleRadius      : byte;
       RoamAllZ           : boolean;
-      //BothDatumsWhileRoam   : boolean;
 
       MGRSandLatLongWhileRoam,
       ShowProjectedCoordinates,
@@ -2436,7 +2434,6 @@ type
 
       MaxMapSize : int64;
       MaxEllipsoidalSpacing : byte;
-      //AutoEnhanceShapeFiles,
       LabelContours    : boolean;
       IndexContWidth : byte;
       ShowFanLocation : boolean;
@@ -2710,7 +2707,6 @@ type
        NumLOSParallelProfile : int16;
        DBColorScheme : tLegendColors;
        AutoGrayScaleReflectance,
-       //DiffuseReflection : boolean;
        AspectBoxRegion : boolean;
        XPixAspect,YPixAspect : int16;
        HistBinSize : float32;
@@ -2722,7 +2718,6 @@ type
        TransparentIcons : boolean;
        ConPtsColor : tPlatformColor;
        ConPtsWidth : byte;
-       //SmoothThalwegs : boolean;
        LegendBarWidth,
        LegendTickSize : byte;
        tnHeight,tnQuality,
@@ -2830,7 +2825,6 @@ var
    ShowSatProgress,
    AutoZoomDEMs,
    ShowDEMReadingProgress : boolean;
-
 
    DEMIXSettingsDir,
    DEMIXresultsDir,

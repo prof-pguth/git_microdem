@@ -4,8 +4,8 @@ object GridDiffForm: TGridDiffForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Grid Differences '
-  ClientHeight = 160
-  ClientWidth = 283
+  ClientHeight = 151
+  ClientWidth = 277
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,7 +19,7 @@ object GridDiffForm: TGridDiffForm
   object Label1: TLabel
     Left = 72
     Top = 96
-    Width = 89
+    Width = 80
     Height = 13
     Caption = 'Level to highlight'
   end

@@ -524,6 +524,7 @@ type
     N35: TMenuItem;
     BatchNDVI: TMenuItem;
     Annapolislidar8GB1: TMenuItem;
+    HistogramstoCSVfiles1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -891,6 +892,7 @@ type
     procedure DEMIX1Click(Sender: TObject);
     procedure BatchNDVIClick(Sender: TObject);
     procedure Annapolislidar8GB1Click(Sender: TObject);
+    procedure HistogramstoCSVfiles1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -2467,27 +2469,10 @@ begin
 end;
 
 procedure Twmdem.Allgraphsononeimage1Click(Sender: TObject);
-var
-   BottomMargin,
-   i : integer;
-   Findings : tStringlist;
-   fName : PathStr;
-   Bitmap : tMyBitmap;
 begin
-   Findings := tStringList.Create;
-   BottomMargin := 45;
-   for i := pred(WMDEM.MDIChildCount) downto 0 do begin
-      if WMDEM.MDIChildren[i] is TThisBaseGraph then begin
-         CopyImageToBitmap((WMDEM.MDIChildren[i] as TThisBaseGraph).Image1,Bitmap);
-         Bitmap.Height := Bitmap.Height + BottomMargin;
-         fName := NextFileNumber(MDtempDir,'graph_4_biggie_','.bmp');
-         Bitmap.SaveToFile(fName);
-         Findings.Add(fName);
-      end;
-   end;
-   if (Findings.Count > 0) then MakeBigBitmap(Findings,'')
-   else Findings.Free;
+   AllGraphsOneImage;
 end;
+
 
 procedure Twmdem.Allindividuallayers1Click(Sender: TObject);
 begin
@@ -2925,6 +2910,34 @@ begin
    {$Else}
       if (CurImage > 0) then DEM_sat_Header.ViewSatHeader(CurImage);
    {$EndIf}
+end;
+
+
+procedure Twmdem.HistogramstoCSVfiles1Click(Sender: TObject);
+var
+   ThePath,fName : PathStr;
+   //infile : file;
+   i : integer;
+   //v : array[1..2] of float32;
+   //Results,
+   TheFiles,zFiles : tStringList;
+   Graph : TThisBaseGraph;
+begin
+   ThePath := 'H:\demix_wine_contest\wine_results\results_archive\05-12-22-0603-32_dsm_dtm_pairs_histograms';
+   GetDOSPath('location of .z files',ThePath);
+   TheFiles := nil;
+   Petmar.FindMatchingFiles(ThePath,'*.z',TheFiles,5);
+   for i := 0 to pred(TheFiles.Count) do begin
+       fName := TheFiles.Strings[i];
+       zFiles := tStringList.Create;
+       zfiles.Add(fName);
+       HardCodeFileName := ChangeFileExt(fName, '.csv');
+       Graph := CreateMultipleHistograms(MDDef.CountHistograms,zFiles,nil,'','');
+       Graph.Viewdata1Click(Nil);
+       Graph.Destroy;
+       zFiles.Destroy;
+   end;
+   TheFiles.Free;
 end;
 
 

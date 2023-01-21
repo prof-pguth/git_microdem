@@ -260,92 +260,11 @@ end;
 function TMapForm.LoadDEMIXtileOutlines(WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false) : integer;
 var
    DEMIXFName : PathStr;
-   ShapeFileCreator : tShapeFileCreation;
+   //ShapeFileCreator : tShapeFileCreation;
 begin
    {$If Defined(RecordCarto) or Defined(RecordDEMIX)} WriteLineToDebugFile('TMapForm.LoadDEMIXtileOutlines in ' + sfBoundBoxToString(MapDraw.MapCorners.BoundBoxGeo)); {$EndIf}
    DEMIXFName := CreateDEMIXTileShapefile(WantBoundBoxGeo,AddGridFull,AddTileSize);
-
-
-(*
-   if MapDraw.AFullWorldMap and (not AddTileSize) then begin
-      WantBoundBoxGeo.XMin := -180;
-      WantBoundBoxGeo.XMax := 180;
-      WantBoundBoxGeo.YMin := -90;
-      WantBoundBoxGeo.YMax := 90;
-      FirstLat := -90;
-      LastLat := 89;
-      FirstLong := -180;
-      LastLong := 179;
-      DEMIXFName := MDTempDir + 'demix_tiles_24k_v0.8.dbf';
-   end
-   else begin
-      if (WantBoundBoxGeo.ymin < 0) then FirstLat := trunc(WantBoundBoxGeo.ymin - 1)
-      else FirstLat := trunc(WantBoundBoxGeo.yMin);
-      LastLat := trunc(WantBoundBoxGeo.yMax+1);
-      if (WantBoundBoxGeo.xMin < 0) then FirstLong := trunc(WantBoundBoxGeo.xMin - 1)
-      else FirstLong := trunc(WantBoundBoxGeo.xMin);
-      LastLong := trunc(WantBoundBoxGeo.xMax+1);
-      DEMIXFName := Petmar.NextFileNumber(MDTempDir, 'demix_tiles_' {+ MapDraw.BaseTitle  + '_'},DefaultDBExt);
-   end;
-
-   ShapeFileCreator := tShapeFileCreation.Create(WGS84DatumConstants,DEMIXFName,true,5);
-   ShapeFileCreator.Table.InsureFieldPresentAndAdded(ftString,'LETTERS',2);
-   if AddGridFull then ShapeFileCreator.Table.InsureFieldPresentAndAdded(ftFloat,'GRID_FULL',9,2);
-   if AddTileSize then begin
-      ShapeFileCreator.Table.InsureFieldPresentAndAdded(ftFloat,'TILE_WIDE',9,3);
-      ShapeFileCreator.Table.InsureFieldPresentAndAdded(ftFloat,'TILE_HIGH',9,3);
-      ShapeFileCreator.Table.InsureFieldPresentAndAdded(ftFloat,'TILE_KM2',9,3);
-   end;
-
-   NumTiles := 0;
-   yminutes := 6 / 60;
-   yt := 10;
-   StartProgress('tiles');
-   for Lat := FirstLat to LastLat do begin
-      {$IfDef RecordCartoFull} WriteLineToDebugFile('Lat=' + IntToStr(Lat)); {$EndIf}
-      UpdateprogressBar((Lat-FirstLat)/(LastLat - FirstLat));
-
-      xminutes := DEMIXXMinuteIncr(Lat) / 60;
-      xtiles := 60 div DEMIXXMinuteIncr(Lat);
-      for y := 0 to pred(yt) do begin
-         LowLat := Lat + Y * yminutes;
-         HighLat := LowLat + yminutes;
-         if (MapDraw.AFullWorldMap and (not AddTileSize)) or ((HighLat > WantBoundBoxGeo.YMin) and (LowLat < WantBoundBoxGeo.YMax)) then begin
-            for Long := FirstLong to LastLong do begin
-               {$IfDef RecordCartoFull} WriteLineToDebugFile('Long=' + IntToStr(Long)); {$EndIf}
-               LongLow := Long;
-               LongHi := Long + xminutes;
-               xch := 0;
-               for i := 0 to pred(xtiles) do  begin
-                  LongLow := Long + i * xminutes;
-                  LongHi := LongLow + xminutes;
-                  if (MapDraw.AFullWorldMap and (not AddTileSize)) or ((LongLow < WantBoundBoxGeo.xMax) and (LongHi > WantBoundBoxGeo.xMin)) then begin
-                     ShapeFileCreator.RecordName := LatToString3(Lat) + DEMIXLatLetters[y] + LongToString4(Long) + DEMIXLongLetters[xch];
-                     {$IfDef RecordCartoFull} WriteLineToDebugFile(ShapeFileCreator.RecordName); {$EndIf}
-                     ShapeFileCreator.AddBoxLatLongToShapeFile(LowLat,LongLow,HighLat,LongHi);
-                     ShapeFileCreator.Table.Edit;
-                     ShapeFileCreator.Table.SetFieldByNameAsString('LETTERS',DEMIXLongLetters[xch] + DEMIXLatLetters[y]);
-                     if AddTileSize then begin
-                        VincentyCalculateDistanceBearing(LowLat,0.5*(LongLow + LongHi),HighLat,0.5*(LongLow + LongHi), High,Bearing);
-                        VincentyCalculateDistanceBearing(0.5*(LowLat+HighLat),LongLow,0.5*(LowLat+HighLat),LongHi, Wide,Bearing);
-                        ShapeFileCreator.Table.SetFieldByNameAsFloat('TILE_WIDE',0.001 * Wide);
-                        ShapeFileCreator.Table.SetFieldByNameAsFloat('TILE_HIGH',0.001 * High);
-                        ShapeFileCreator.Table.SetFieldByNameAsFloat('TILE_KM2',0.001 * Wide * 0.001 * High);
-                     end;
-
-                     ShapeFileCreator.Table.Post;
-                     inc(NumTiles);
-                  end;
-                  inc(xch);
-               end;
-            end;
-         end;
-      end;
-   end;
-   ShapeFileCreator.CloseShapeFiles;
-*)
    Result := LoadDataBaseFile(DEMIXFName);
-   //EndProgress;
    {$If Defined(RecordCarto) or Defined(RecordDEMIX)} WriteLineToDebugFile('TMapForm.LoadDEMIXtileOutlines out'); {$EndIf}
 end;
 

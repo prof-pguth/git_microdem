@@ -487,27 +487,16 @@ var
               procedure CheckImageryFile(fName : PathStr);
               var
                  Success : boolean;
-                 LatLow,LongLow,LatHigh,LongHigh : float64;
                  SatView : tSatView;
                  bb : sfBoundBox;
               begin
                  {$IfDef RecordIndexFileNames} WriteLineToDebugFile(fName); {$EndIf}
-                  (*
-                  if ExtEquals(Ext,'.SID') then begin
-                     GetMrSidGeoLimits(fName,LatLow,LongLow,LatHigh,LongHigh);
-                     Success := true;
-                     InsertRecord(fName,Series,LatLow,LongLow,LatHigh,LongHigh);
-                  end
-                  else begin
-                  *)
                      SatImage[1] := tSatImage.Create(SatView,Nil,fName,False,Success);
                      if Success then begin
                         bb := SatImage[1].SatelliteBoundBoxGeo(1);
                         InsertMapLibraryRecord(TheTable,fName,Series,bb);  //bb.ymin,bb.XMin,bb.YMax,bb.xmax);
                         SatImage[1].Destroy;
                      end;
-                  //end;
-                  //if (SatImage[1] <> Nil) then SatImage[1].Destroy;
                 end;
              {$EndIf}
 
@@ -529,7 +518,7 @@ var
          procedure IndexMapLibraryDataType(DataType : ShortString);
          var
             i,k,Where : integer;
-            FullRedo : boolean;
+            //FullRedo : boolean;
             AlreadyIndexed : tStringList;
          begin
             {$IfDef RecordIndex} WriteLineToDebugFile('IndexMapLibraryDataType ' + DataType); {$EndIf}
@@ -547,7 +536,7 @@ var
               ReallyReadDEM := false;
               TheTable.ApplyFilter('SERIES=' + QuotedStr(Series));
               AlreadyIndexed := TheTable.UniqueEntriesInDB('FILENAME');
-              FullRedo := (TheTable.RecordCount = 0);
+              //FullRedo := (TheTable.RecordCount = 0);
               try
                  if (RawData.Count > TheTable.RecordCount) then begin
                     for i := 0 to pred(RawData.Count) do begin

@@ -249,6 +249,7 @@ object DEMHeaderForm: TDEMHeaderForm
       Top = 13
       Width = 201
       Height = 21
+      Enabled = False
       TabOrder = 0
       Text = ' '
       OnChange = ComboBox3Change

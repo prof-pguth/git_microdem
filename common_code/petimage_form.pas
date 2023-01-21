@@ -1655,6 +1655,8 @@ end;
 procedure TImageDisplayForm.LoadImage(var Bitmap : tMyBitmap; PickSize : boolean = false);
 begin
    Image1.Picture.Graphic := Bitmap;
+   LoadedFileName := NextFileNumber(MDTempDir,'loaded_image_','.bmp');
+   Bitmap.SaveToFile(LoadedFileName);
    XBMPSize := Bitmap.Width;
    YBMPSize := Bitmap.Height;
    Image1.Width := XBMPsize;

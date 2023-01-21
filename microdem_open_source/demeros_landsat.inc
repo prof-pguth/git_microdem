@@ -71,7 +71,7 @@ var
    Month,Day,i,j : integer;
    Mname,baseName,basePath : PathStr;
    MData : tStringList;
-   LSNum : byte;
+   //LSNum : byte;
    aLine : string;
    PostEqual : ANSIstring;
 begin

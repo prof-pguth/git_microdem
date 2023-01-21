@@ -235,7 +235,6 @@ end;
       StreamLongInt(TIFFFile,Offset);
       {$IfDef GeotiffSave} WriteLineToDebugFile('tag=' +  IntegerToString(Tag,5) + ' type=' + TiffTypeName(TypeField) + ' Length=' + IntegerToString(Length,4) + ' Offset=' + IntToStr(Offset) + '  Bytes=' + IntToStr(Length * GeotiffTypeSize(TypeField)));     {$EndIf}
       Offset := Offset + Length * GeotiffTypeSize(TypeField);
-      //{$IfDef GeotiffSave} WriteLineToDebugFile('    Offset increased to Offset=' + IntToStr(Offset)); {$EndIf}
    end;
 
 
@@ -391,7 +390,6 @@ begin
 
    {0 offset marking end} StreamLongInt(TIFFFile,0);
 
-
    {$IfDef GeotiffSave} WriteLineToDebugFile('starting DEM write, filepos=' + IntToStr(FilePos(TiffFile))); {$EndIf}
    WriteTheDEM;
    {$IfDef GeotiffSave} WriteLineToDebugFile('done DEM write, filepos=' + IntToStr(FilePos(TiffFile))); {$EndIf}
@@ -435,12 +433,6 @@ begin
 
    {$IfDef GeotiffSave} WriteLineToDebugFile('all done, filepos=' + IntToStr(FilePos(TiffFile))); {$EndIf}
    TiffFile.Free;
-
-   {$IfDef ExGDAL}
-   {$Else}
-      //if (MDDef.RouteGeotiffExportGDAL) then ResaveAsGDALgeotiff(SaveName);
-   {$EndIf}
-
    DEMstatus := dsSaved;
    {$IfDef GeotiffSave} WriteLineToDebugFile('tDEMDataSet.SaveAsGeotiff out'); {$EndIf}
 end;
@@ -532,7 +524,6 @@ begin
       Row := y1;
       while (Row <= y2) do begin
          if GetElevMeters(Col,Row,z) then begin
-            //if not ElevationDEM then ZStr := IntegerToString(Round(z),7)
             case OutputZFormat of
                0,
                1 : ZStr := RealToString(z,-7,0);

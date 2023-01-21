@@ -256,6 +256,7 @@ type
     GDALwarpSentinel11: TMenuItem;
     CSVmergefiles1: TMenuItem;
     OGRshapefilestoGKPG1: TMenuItem;
+    ASCIIremovelineswithoutsubstring1: TMenuItem;
     procedure ASCIIremovequotes1Click(Sender: TObject);
     procedure ASCII01Click(Sender: TObject);
     procedure HTMLcleanup1Click(Sender: TObject);
@@ -2461,17 +2462,27 @@ var
 
       procedure CheckLine;
       begin
-         if StrUtils.AnsiContainsText(UpperCase(aLine),UpperCase(SubString)) then begin
-            inc(j);
+         if (Sender = ASCIIremovelineswithoutsubstring1) then begin
+            if not StrUtils.AnsiContainsText(UpperCase(aLine),UpperCase(SubString)) then begin
+               inc(j);
+            end
+            else begin
+               NewList.Add(aLine);
+            end;
          end
          else begin
-            NewList.Add(aLine);
+            if StrUtils.AnsiContainsText(UpperCase(aLine),UpperCase(SubString)) then begin
+               inc(j);
+            end
+            else begin
+               NewList.Add(aLine);
+            end;
          end;
       end;
 
 begin
    FName := MainMapData;
-   if GetFileFromDirectory('ASCII remove lines with substring','*.*',FName) then begin
+   if GetFileFromDirectory('ASCII remove lines with or without substring','*.*',FName) then begin
       SubString := '';
       Petmar.GetString('substring to search for',SubString,false,ReasonableTextChars);
       NewList := TStringList.Create;
@@ -2954,8 +2965,9 @@ begin
                        inc(NumAlreadyDone);
                     end
                     else begin
-                       if DownloadFileFromWeb(InName,OutName) then begin
-                          TStr := TStr + ' success';
+                       TStr := ExtractFileName(Tstr);
+                       if DownloadFileFromWeb(InName,OutName,false) then begin
+                          TStr := TStr + '  ' + SmartMemorySizeBytes(GetFileSize(OutName)) +  ' success';
                           inc(NumSucc);
                        end
                        else begin
@@ -2974,7 +2986,7 @@ begin
               Memo1.Lines.Add('Done; downloads=' + intToStr(NumSucc) + '  failures=' + IntToStr(NumFail) + '  already done=' + IntToStr(NumAlreadyDone));
               Memo1.Lines.Add('');
               Memo1.Lines.Add('');
-              if NumFail = 0 then File2Trash(InName);
+              if (NumFail = 0) then File2Trash(InName);
             until Wantout or (NumFail = 0) or (not AnswerIsYes('Retry failures'));
             FileList.Free;
          end;

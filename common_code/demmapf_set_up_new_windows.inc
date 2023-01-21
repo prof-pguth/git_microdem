@@ -238,6 +238,11 @@ var
             ElevationFixedPalette := 'ndvi-3';
             //DEMGlb[Result].SelectionMap.DoBaseMapRedraw;
          end
+         else if (DEMGlb[DEM].DEMheader.ElevUnits in [euDifference,euElevDiff]) then begin
+            Result := mtGGRReflect;
+            MDDef.TopCutLevel := abs(MDDef.TopCutLevel);
+            MDDef.BottomCutLevel := -MDDef.TopCutLevel;
+         end
          else if IsThisSentinel2(DEMGlb[DEM].DEMFileName) or IsLandsat(DEMGlb[DEM].DEMFileName, MPath) or (DEMGlb[DEM].DEMheader.ElevUnits in [euImagery,euNBR]) then Result := mtElevGray
          else if (DEMGlb[DEM].DEMheader.ElevUnits in [euRGB]) then Result := mtRGB
          else if (DEMGlb[DEM].DEMheader.ElevUnits in [AspectDeg]) then Result := mtDEMaspect

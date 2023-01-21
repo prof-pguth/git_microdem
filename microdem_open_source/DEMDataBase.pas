@@ -765,6 +765,9 @@ function DoAShapeFile(fName : PathStr; Trim : boolean = false) : integer;
       procedure DEMIXisCOPorALOSbetter(DBonTable : integer);
       procedure ExtractTheDEMIXtiles(DBonTable : integer);
       procedure DEMIX_graph_best_in_Tile(DBonTable : integer; SortByArea : boolean);
+      function BestByParameterSorting(DBonTable : integer; TileParam,Criterion,DEMType : shortstring) : tThisBaseGraph;
+      procedure MultipleBestByParameters(DBonTable : integer);
+
 
 
 {$IfDef ExRiverNetworks}
@@ -1655,7 +1658,7 @@ end;
      NumFields2,FieldsInDB : tStringList;
      WantField,i  : integer;
    begin
-      with MyData do begin
+      //with MyData do begin
          GetFields(MyData,DbOpts.VisCols,TypesAllowed,FieldsInDB,AllFields);
          if (LinkTable <> Nil) then begin
             PetdbUtils.GetFields(LinkTable,AllVis,NumericFieldTypes,NumFields2);
@@ -1670,7 +1673,7 @@ end;
             end
             else Result := '';
          end;
-      end;
+      //end;
       FieldsInDB.Free;
    end;
 
@@ -1895,16 +1898,16 @@ end;
                end
                else begin
                   ThisPattern := ZipATone.PatternFromString(ZipPatName);
-                  with ThisPattern do begin
+                  //with ThisPattern do begin
                      Bitmap.Canvas.Brush.Bitmap := tMyBitmap.Create;  //have to go this way
                      Bitmap.Canvas.Brush.Bitmap.PixelFormat := pfDevice;
-                     Bitmap.Canvas.Brush.Bitmap.Height := NumCols;
-                     Bitmap.Canvas.Brush.Bitmap.Width := NumRows;
-                     for y := 0 to pred(NumRows) do
-                        for x := 0 to pred(NumCols) do
-                           if (PatternMasks[y div 8,x] and MaskBit[y mod 8]) > 0 then
-                              Bitmap.Canvas.Brush.Bitmap.Canvas.Pixels[x,y] := WinColor;
-                  end;
+                     Bitmap.Canvas.Brush.Bitmap.Height := ThisPattern.NumCols;
+                     Bitmap.Canvas.Brush.Bitmap.Width := ThisPattern.NumRows;
+                     for y := 0 to pred(ThisPattern.NumRows) do
+                        for x := 0 to pred(ThisPattern.NumCols) do
+                           if (ThisPattern.PatternMasks[y div 8,x] and MaskBit[y mod 8]) > 0 then
+                              Bitmap.Canvas.Brush.Bitmap.Canvas.Pixels[x,y] := ThisPattern.WinColor;
+                  //end;
                end;
             end
             else if SimplePointFile then begin
@@ -3248,8 +3251,8 @@ end;
                       end;
                       GISdb[i].SetGazTableOptions;
                       if (MapOwner <> Nil) then with MapOwner.MapDraw.MapCorners do begin
-                         if (BoundBoxGeo.ymax - BoundBoxGeo.ymin < 15) then with GISdb[i] do begin
-                            MyData.ApplyFilter(MakePointGeoFilter(LatFieldName,LongFieldName,BoundBoxGeo.ymax,BoundBoxGeo.xmin,BoundBoxGeo.ymin,BoundBoxGeo.xmax));
+                         if (BoundBoxGeo.ymax - BoundBoxGeo.ymin < 15) then {with GISdb[i] do} begin
+                            GISdb[i].MyData.ApplyFilter(MakePointGeoFilter(GISdb[i].LatFieldName,GISdb[i].LongFieldName,BoundBoxGeo.ymax,BoundBoxGeo.xmin,BoundBoxGeo.ymin,BoundBoxGeo.xmax));
                          end;
                          GISdb[i].ShowStatus;
                       end;
@@ -4566,10 +4569,10 @@ var
    i,rc,Year,Month,Day,Hour,Minute,ajd,YearLong : integer;
    MonthOnly : boolean;
 begin
-  with MyData do begin
+  //with MyData do begin
       AddFieldToDataBase(ftFloat,'DEC_YEAR',12,6);
       MonthOnly := not MyData.FieldExists('DAY');
-      First;
+      MyData.First;
       i := 0;
       rc := MyData.RecordCount;
       StartProgress('Dec year');
@@ -4578,26 +4581,26 @@ begin
          inc(i);
          {$IfDef VCL} if (i mod 500 = 0) then UpdateProgressBar(i/rc); {$EndIf}
 
-         Edit;
-         Year := GetFieldByNameAsInteger('YEAR');
-         Month := GetFieldByNameAsInteger(MonthFieldName);
+         MyData.Edit;
+         Year := MyData.GetFieldByNameAsInteger('YEAR');
+         Month := MyData.GetFieldByNameAsInteger(MonthFieldName);
          if MonthOnly then begin
-            SetFieldByNameAsFloat('DEC_YEAR',Year + (Month - 0.5) / 12);
+            MyData.SetFieldByNameAsFloat('DEC_YEAR',Year + (Month - 0.5) / 12);
          end
          else begin
-            Day := GetFieldByNameAsInteger('DAY');
+            Day := MyData.GetFieldByNameAsInteger('DAY');
             Hour := 12;
             Minute := 30;
-            if FieldExists('HOUR') then CarefullyGetFieldByNameAsInteger('HOUR',Hour);
-            if FieldExists('MINUTE') then CarefullyGetFieldByNameAsInteger('MINUTE',Minute);
+            if MyData.FieldExists('HOUR') then MyData.CarefullyGetFieldByNameAsInteger('HOUR',Hour);
+            if MyData.FieldExists('MINUTE') then MyData.CarefullyGetFieldByNameAsInteger('MINUTE',Minute);
             ajd := pred(AnnualJulianDay(Year,Month,Day));
             yearLong := AnnualJulianDay(Year,12,31);
-            SetFieldByNameAsFloat('DEC_YEAR',Year + (ajd + Hour / 24 + Minute / 24 / 60) / YearLong);
+            MyData.SetFieldByNameAsFloat('DEC_YEAR',Year + (ajd + Hour / 24 + Minute / 24 / 60) / YearLong);
          end;
-         Next;
+         MyData.Next;
       end;
       ShowStatus;
-   end;
+  // end;
 end;
 
 
@@ -5624,11 +5627,11 @@ begin
       WriteLineToDebugFile('TGISDataBase.MarkRecordsOnDEM, fName=' + FName);
       WriteLineToDebugFile('filter=' + MakeCornersGeoFilter(DEMGlb[DEM].DEMBoundBoxGeo) + ' AND ' + MyData.GetFieldByNameAsString(fName) + '=' + QuotedStr(''));
    {$EndIf}
-   with MyData do begin
+   //with MyData do begin
       MyData.ApplyFilter(MakeCornersGeoFilter(DEMGlb[DEM].DEMBoundBoxGeo));   // + ' AND ' + fName + '=' + QuotedStr(''));
       if LineShapeFile(ShapeFileType) then begin
-        First;
-        while not eof do begin
+        MyData.First;
+        while not MyData.eof do begin
           {$IfDef RecordMaskDEMShapeFile} WriteLineToDebugFile('TGISDataBase.MarkRecordsOnDEM, rec=' + IntToStr(MyData.RecNo)); {$EndIf}
            if ShapeFileType in [13,15,23,25] then
               aShapeFile.GetLineCoords(MyData.RecNo,true)
@@ -5647,7 +5650,7 @@ begin
         end;
       end
       else MessageToContinue('Currently only implemented for lines');
-   end;
+   //end;
 end;
 
 

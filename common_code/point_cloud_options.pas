@@ -270,7 +270,6 @@ type
     BitBtn27: TBitBtn;
     BitBtn20: TBitBtn;
     BitBtn32: TBitBtn;
-    CheckBox29: TCheckBox;
     TabSheet7: TTabSheet;
     GroupBox2: TGroupBox;
     Label28: TLabel;
@@ -329,6 +328,7 @@ type
     BitBtn62: TBitBtn;
     BitBtn64: TBitBtn;
     CheckBox34: TCheckBox;
+    CheckBox29: TCheckBox;
     procedure BitBtn14Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure RadioGroup1Click(Sender: TObject);
@@ -2077,17 +2077,19 @@ end;
 
 procedure Tpt_cloud_opts_fm.UpdateColorOptions;
 var
-   Layer,ActiveClouds : integer;
+   Layer,ActiveClouds,i : integer;
+   OldChosenOption : shortstring;
 begin
    HasIntensity := false;
    HasClassification := false;
    HasTime := false;
-   HasPointID:= false;
-   HasUserData:= false;
+   HasPointID := false;
+   HasUserData := false;
    HasRGB := false;
    HasScanAngle:= false;
    HasReturnNumbers := false;
    ActiveClouds := 0;
+   if RadioGroup1.ItemIndex > -1 then OldChosenOption := RadioGroup1.Items[RadioGroup1.ItemIndex];
 
    RadioGroup1.Items.Clear;
    RadioGroup1.Items.Add('Elevation');
@@ -2120,6 +2122,12 @@ begin
    Edit23.Enabled := HasRGB;
    Label2.Enabled := HasRGB;
    Label21.Enabled := HasRGB;
+   for I := 0 to pred(RadioGroup1.Items.Count) do begin
+      if OldChosenOption = RadioGroup1.Items[i] then begin
+         RadioGroup1.ItemIndex := i;
+         exit;
+      end;
+   end;
    RadioGroup1.ItemIndex := 0;
 end;
 
@@ -2162,6 +2170,32 @@ begin
              Result.Canvas.Pen.Color := clBlack;
              Result.Canvas.Pen.Width := 2;
              BitmapRectangle(Result,0,0,Pred(Result.Width),pred(Result.Height));
+          end
+          else if (MDDef.ls.ColorCoding = lasccCloudID) then begin
+             CreateBitmap(Result,500,MaxLasCat * 25);
+             ClearBitmap(Result,clNearWhite);
+             j := 0;
+             for I := 1 to MaxClouds do begin
+                if UsePC[i] and (LasFiles[i] <> Nil) then begin
+                   Result.Canvas.Brush.Color := ConvertPlatformColorToTColor(MDDef.CloudSymbol[i].Color);
+                   Result.Canvas.Brush.Style := bsSolid;
+                   BitmapRectangle(Result,2, 2 + j * 25,22,2 + j * 25 + 22);
+                   Result.Canvas.Brush.Style := bsClear;
+                   Result.Canvas.Font.Size := 14;
+                   BitmapTextOut(Result,28, 2 + j * 25 + 2,LasFiles[i].CloudName);
+                   inc(j);
+                end;
+             end;
+             if (j = 0) then begin
+                FreeAndNil(Result);
+             end
+             else begin
+                PetImage.GetImagePartOfBitmap(Result);
+                Result.Canvas.Brush.Style := bsClear;
+                Result.Canvas.Pen.Color := clBlack;
+                Result.Canvas.Pen.Width := 2;
+                BitmapRectangle(Result,0,0,Pred(Result.Width),pred(Result.Height));
+             end;
           end
           else if (MDDef.ls.ColorCoding = lasccClass) then begin
              CreateBitmap(Result,500,MaxLasCat * 25);
@@ -2266,6 +2300,7 @@ procedure Tpt_cloud_opts_fm.RedrawAllLayers;
 
 var
    Cloud : integer;
+   TStr : shortstring;
 begin
    if (NumOpenClouds > 0) then begin
       if (MDdef.ls.ColorCoding = lasccElevation) then begin
@@ -2285,6 +2320,11 @@ begin
        {$IfDef RecordPointCloudViewing} WriteLineToDebugFile('Tpt_cloud_opts_fm.RedrawAllLayers DoFastMapRedraw'); {$EndIf}
        BaseMap.MapDraw.DeleteSingleMapLayer(BaseMap.MapDraw.LegendOverlayfName);
        BaseMap.DoFastMapRedraw;
+       TStr := 'Point cloud display:';
+       for Cloud := 1 to MaxClouds do if UsePC[Cloud] and (LasFiles[Cloud] <> Nil) then TStr := TStr + ' ' + LasFiles[Cloud].CloudName;
+       BaseMap.Caption := TStr;
+       BaseMap.BringToFront;
+
        EndProgress;
        {$IfDef RecordPointCloudViewing} WriteLineToDebugFile('Tpt_cloud_opts_fm.RedrawAllLayers out'); {$EndIf}
    end;

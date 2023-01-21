@@ -109,8 +109,6 @@ function GetSatMaskList(ASatImage : boolean) : ANSIString;
 
 procedure CheckGeoidNames;
 
-
-
 //download data from USNA server
 
      procedure DownloadandUnzipDataFileIfNotPresent(pName : PathStr; Force : boolean = false);
@@ -133,7 +131,6 @@ procedure CheckGeoidNames;
 {$Else}
    procedure CloseAllImagery;
    procedure CloseSingleSatelliteImage(var j : integer);
-   //procedure OpenSatImageFromDirectory(LastSatDir : PathStr);
    function OpenSatImageFromDirectory(LastSatDir : PathStr) : integer;
 
    {$IfDef VCL}
@@ -154,12 +151,15 @@ function GeotiffBBox(fName : PathStr) : sfBoundBox;
 
 {$IfDef VCL}
    procedure GetMultipleDEMsFromList(TheMessage : shortstring; var DEMsWanted : tDEMbooleanArray);
+   function GetDEM(var DEMWanted : integer; CanCancel : boolean = false; TheMessage : ShortString = '') : boolean;
    function OpenNewDEM(fName : PathStr = ''; LoadMap : boolean = true; WhatFor : shortstring = '') : integer;
    function GetTwoCompatibleGrids(WhatFor : shortString; CheckUnits : boolean; var DEM1,DEM2 : integer; WarnIfIncompatible : boolean = true;  AlwaysAsk : boolean = false) : boolean;
-   function GetDEM(var DEMWanted : integer; CanCancel : boolean = false; TheMessage : ShortString = '') : boolean;
+
    procedure GetDEMorImage(DEM,Image : boolean; var DEMWanted,ImageWanted : integer; CanCancel : boolean = false; TheMessage : ShortString = ''; ExcludeDEM : integer = 0; ExcludeImage : integer = 0);
+
    function PickMap(WhatFor : shortstring) : integer;
    function PickADifferentMap(WhatFor,ThisMapCaption : shortstring) : integer;
+   procedure PickMaps(var Maps : tStringList; aCaption : ShortString);
 
    function EditHeaderRecord(DEM : integer; AllowChangeType : boolean) : boolean;
    procedure ViewHeaderRecord(DEM : integer);
@@ -174,6 +174,7 @@ function GeotiffBBox(fName : PathStr) : sfBoundBox;
    {$Else}
       procedure AutoOpenOptions;
    {$EndIf}
+
    {$IfDef ExSat}
    {$Else}
       function GetImage(var ImageWanted : integer; CanCancel : boolean = false; TheMessage : ShortString = '') : boolean;
@@ -782,47 +783,23 @@ end;
 
 
    procedure GetMultipleDEMsFromList(TheMessage : shortstring; var DEMsWanted : tDEMbooleanArray);
-(*
-   var
-      PetList : TPetList;
-      i,DEMWanted,err     : integer;
-   begin
-      PetList := TPetList.Create(Application);
-      with PetList do begin
-         Caption := theMessage;
-         for i := 1 to MaxDEMDataSets do DEMsWanted[i] := false;
-         for i := 1 to MaxDEMDataSets do if ValidDEM(i) and (not DEMGlb[i].HiddenGrid) then
-             ListBox1.Items.Add('DEM' + IntegerToString(i,4) +': ' + DEMGlb[i].AreaName);
-         CancelBtn.Enabled := true;
-         PetList.Width:= 400;
-         PetList.ListBox1.MultiSelect := true;
-         PetList.ShowModal;
-         for I := 0 to pred(ListBox1.Items.Count) do begin
-            if ListBox1.Selected[i] then begin
-               Val(Copy(ListBox1.Items[i],5,3),DEMWanted,err);
-               DEMsWanted[DEMWanted] := true;
-            end;
-         end;
-      end;
-      PetList.Destroy;
-*)
    var
       fName : PathStr;
       table : tMyData;
       i : integer;
       ch : char;
    begin
-      {$IfDef ShowToggle} WriteLineToDebugFile('PickSomeFromStringList in'); {$EndIf}
+      {$IfDef ShowToggle} WriteLineToDebugFile('GetMultipleDEMsFromList in'); {$EndIf}
       fName := MDTempDir + 'merge.dbf';
       MakePickUseTable(fName);
       Table := tMyData.Create(fName);
       for i := 1 to MaxDEMDataSets do begin
-        if ValidDEM(i) and (not DEMGlb[i].HiddenGrid) then begin
-           Table.Insert;
-           Table.SetFieldByNameAsString('MENU_OPTS',IntToStr(i) + '-' + DEMGlb[i].AreaName);
-           if DEMsWanted[i] then ch := 'Y' else ch := 'N';
-           Table.SetFieldByNameAsString('USE',ch);
-        end;
+           if ValidDEM(i) and (not DEMGlb[i].HiddenGrid) then begin
+              Table.Insert;
+              Table.SetFieldByNameAsString('MENU_OPTS',IntToStr(i) + '-' + DEMGlb[i].AreaName);
+              if DEMsWanted[i] then ch := 'Y' else ch := 'N';
+              Table.SetFieldByNameAsString('USE',ch);
+           end;
       end;
       VerifyRecordsToUse(Table,'MENU_OPTS',TheMessage);
       {$IfDef ShowToggle} WriteLineToDebugFile('VerifyRecordsToUse success'); {$EndIf}
@@ -833,7 +810,7 @@ end;
          Table.Next;
       end;
       Table.Destroy;
-      {$IfDef ShowToggle} WriteLineToDebugFile('PickSomeFromStringList out'); {$EndIf}
+      {$IfDef ShowToggle} WriteLineToDebugFile('GetMultipleDEMsFromList out'); {$EndIf}
    end;
 
 
@@ -1281,6 +1258,17 @@ end;
       end;
 
 
+      procedure PickMaps(var Maps : tStringList; aCaption : ShortString);
+      var
+         i : integer;
+      begin
+         Maps := tStringList.Create;
+         for i := 0 to pred(WMDEM.MDIChildCount) do
+            if (WMDEM.MDIChildren[i] is tMapForm) then Maps.Add(WMDEM.MDIChildren[i].Caption);
+         PickSomeFromStringList(Maps, aCaption);
+      end;
+
+
       function PickADifferentMap(WhatFor,ThisMapCaption : shortstring) : integer;
       var
          Maps : tStringList;
@@ -1430,7 +1418,6 @@ begin
    HighlightLineToDebugFile(why);
    for i := 1 to MaxDEMDataSets do begin
       if ValidDEM(i) then begin
-         //writeLineToDebugFile(IntegerToString(i,5) + '  ' + DEMGlb[i].AreaName);
          writeLineToDebugFile(IntegerToString(i,5) + '  ' + DEMGlb[i].AreaName + '  (' + DEMGlb[i].ColsRowsString + '  ' +  DEMGlb[i].DemSizeString + ')');
       end;
    end;

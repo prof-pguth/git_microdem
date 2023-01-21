@@ -287,7 +287,7 @@ type
          procedure FreeLASRecordMemory;
 
          function GetMetadata : tStringList;
-         procedure PlotTileOnMap(Cloud: integer; BaseMapDraw : tMapDraw; var BMPMemory :  tBMPMemory; MinAreaZ, MaxAreaZ : float64);
+         procedure PlotTileOnMap(Cloud: integer; BaseMapDraw : tMapDraw; var BMPMemory : tBMPMemory; MinAreaZ, MaxAreaZ : float64);
          function LASClassificationCategory(j: integer): tLASClassificationCategory;
 
          function FileOnMap(BaseMapDraw : tMapDraw) : boolean; {$IfDef NoInLine} {$Else} inline; {$EndIf}
@@ -391,7 +391,7 @@ type
 
 const
    MaxLasCat = 255;
-   MaxReturns = 5;
+   MaxReturns = 15;
 var
    Las_rgb_colors : array[0..MaxLasCat] of tPlatformColor;
    Las_ogl_colors : array[0..MaxLasCat] of tSFColorArray;
@@ -525,6 +525,8 @@ end;
 
 
 procedure InitializeLASColors(LAS_Versn : shortstring = '1.3');
+const
+   LidarTColor : array[1..15] of tColor = (clLime,clRed,clBlue,clGreen,clAqua,clNavy,clDkGray,clSilver,clFuchsia,clPurple,clTeal,clYellow,clOlive,clMaroon,ClBlack);
 var
    Table : tMyData;
    Code,i : Integer;
@@ -591,11 +593,7 @@ begin
 
       {$IfDef ExportColors} WriteLineToDebugFile('las_red = ' + rs + ']'); WriteLineToDebugFile('las_green = ' + gs + ']'); WriteLineToDebugFile('las_blue = ' + bs + ']'); {$EndIf}
 
-      Las_ret_colors[1] := ConvertTColorToPlatformColor(clLime);
-      Las_ret_colors[2] := ConvertTColorToPlatformColor(clRed);
-      Las_ret_colors[3] := ConvertTColorToPlatformColor(clBlue);
-      Las_ret_colors[4] := ConvertTColorToPlatformColor(clGreen);
-      Las_ret_colors[5] := ConvertTColorToPlatformColor(clAqua);
+      for i := 1 to 15 do Las_ret_colors[i] := ConvertTColorToPlatformColor(LidarTColor[i]);
 
       LasColorsDone := true;
       {$IfDef RecordLASColors}
@@ -643,11 +641,9 @@ begin
             end {while};
          end;
          if WantOut then break;
-
          {$IfDef VCL} if ShowSatProgress then ApplicationProcessMessages; {$EndIf}
       end {for i};
       FreeLASRecordMemory;
-
    {$IfDef RecordLASplot} WritelineToDebugFile('tLAS_data.PlotOnMap out, plot=' + IntToStr(pplot)); {$EndIf}
    end;
 end;
@@ -1239,7 +1235,7 @@ var
 begin
    if (LidarPointType in [0..5]) then rf := LidarPoints0^[j].Intensity;
    if (LidarPointType in [6..8]) then rf := LidarPoints6^[j].Intensity;
-   Result := ValidByteRange(round( 255 * (rf-MDDef.MinIntensity) / (MDDef.MaxIntensity-MDDef.MinIntensity)));
+   Result := ValidByteRange(round( 255 * (rf - MDDef.MinIntensity) / (MDDef.MaxIntensity - MDDef.MinIntensity)));
 end;
 
 procedure tLAS_data.GetShotCoordinatesLatLong(j : integer; var Lat,Long : float64);
@@ -1429,57 +1425,62 @@ var
    Category,rf,Return,Channel : integer;
    ze,ScanAngle : float64;
 begin
-    if (MDDef.ls.ColorCoding = lasccElevation) then begin
-       ze := ExpandLAS_Z(j);
-       Color := Petmar.TerrainRGBFunct(ze,MinAreaZ,MaxAreaZ);
-    end
-    else if (MDDef.ls.ColorCoding = lasccClass) then begin
-       Category := LASclassification(j);
-       LasCatUsed[Category] := true;
-       Color := LAS_RGB_colors[Category];
-    end
-    else if (MDDef.ls.ColorCoding = lasccIntensity) then begin
-       rf := GetShotIntensity(j);
-       Color := Petmar.GrayRGBtrip(rf);
-    end
-    else if (MDDef.ls.ColorCoding = lasccRGB) then begin
-       Color := GetRGBColor(j);
-    end
-    else if (MDDef.ls.ColorCoding = lasccReturnNumber) then begin
-       Return := ReturnNumber(j);
-       Color := LAS_Ret_colors[Return];
-    end
-    else if (MDDef.ls.ColorCoding = lasccReturnsPulse) then begin
-       Return := ReturnsInPulse(j);
-       Color := LAS_Ret_colors[Return];
-    end
-    else if (MDDef.ls.ColorCoding = lasccScanAngle) then begin
-       ScanAngle := GetScanAngle(j);
-       Color := Petmar.SpectrumRGBFunct(ScanAngle,-25,25);
-    end
-    else if (MDDef.ls.ColorCoding = lasccGPSTime) then begin
-       Color := Petmar.SpectrumRGBFunct(GetGPSTime(j),MinAreaZ,MaxAreaZ);
-    end
-    else if (MDDef.ls.ColorCoding = lasccCloudID) then begin
-       Color := MDDef.CloudSymbol[1].Color;
-    end
-    else if (MDDef.ls.ColorCoding = lasccPointSourceID) then begin
-       Channel := PointSourceID(j);
-       case Channel of
-          1 : Color := ConvertTColorToPlatformColor(clRed);
-          2 : Color := ConvertTColorToPlatformColor(clBlue);
-          3 : Color := ConvertTColorToPlatformColor(clLime);
-          else Color := ConvertTColorToPlatformColor(clGreen);
+    //Color := MDDef.MissingDataColor;
+    try
+       if (MDDef.ls.ColorCoding = lasccElevation) then begin
+          ze := ExpandLAS_Z(j);
+          Color := Petmar.TerrainRGBFunct(ze,MinAreaZ,MaxAreaZ);
+       end
+       else if (MDDef.ls.ColorCoding = lasccClass) then begin
+          Category := LASclassification(j);
+          LasCatUsed[Category] := true;
+          Color := LAS_RGB_colors[Category];
+       end
+       else if (MDDef.ls.ColorCoding = lasccIntensity) then begin
+          rf := GetShotIntensity(j);
+          Color := Petmar.GrayRGBtrip(rf);
+       end
+       else if (MDDef.ls.ColorCoding = lasccRGB) then begin
+          Color := GetRGBColor(j);
+       end
+       else if (MDDef.ls.ColorCoding = lasccReturnNumber) then begin
+          Return := ReturnNumber(j);
+         if (Return <> 0) then Color := LAS_Ret_colors[Return];
+       end
+       else if (MDDef.ls.ColorCoding = lasccReturnsPulse) then begin
+          Return := ReturnsInPulse(j);
+          if (Return <> 0) then Color := LAS_Ret_colors[Return];
+       end
+       else if (MDDef.ls.ColorCoding = lasccScanAngle) then begin
+          ScanAngle := GetScanAngle(j);
+          Color := Petmar.SpectrumRGBFunct(ScanAngle,-25,25);
+       end
+       else if (MDDef.ls.ColorCoding = lasccGPSTime) then begin
+          Color := Petmar.SpectrumRGBFunct(GetGPSTime(j),MinAreaZ,MaxAreaZ);
+       end
+       else if (MDDef.ls.ColorCoding = lasccCloudID) then begin
+          Color := MDDef.CloudSymbol[1].Color;
+       end
+       else if (MDDef.ls.ColorCoding = lasccPointSourceID) then begin
+          Channel := PointSourceID(j);
+          case Channel of
+             1 : Color := ConvertTColorToPlatformColor(clRed);
+             2 : Color := ConvertTColorToPlatformColor(clBlue);
+             3 : Color := ConvertTColorToPlatformColor(clLime);
+             else Color := ConvertTColorToPlatformColor(clGreen);
+          end;
+       end
+       else if (MDDef.ls.ColorCoding = lasccUserData) then begin
+          Channel := UserDataRec(j);
+          case Channel of
+             1 : Color := ConvertTColorToPlatformColor(clRed);
+             2 : Color := ConvertTColorToPlatformColor(clBlue);
+             3 : Color := ConvertTColorToPlatformColor(clLime);
+             else Color := ConvertTColorToPlatformColor(clGreen);
+          end;
        end;
-    end
-    else if (MDDef.ls.ColorCoding = lasccUserData) then begin
-       Channel := UserDataRec(j);
-       case Channel of
-          1 : Color := ConvertTColorToPlatformColor(clRed);
-          2 : Color := ConvertTColorToPlatformColor(clBlue);
-          3 : Color := ConvertTColorToPlatformColor(clLime);
-          else Color := ConvertTColorToPlatformColor(clGreen);
-       end;
+    except
+       on Exception do Color := MDDef.MissingDataColor;
     end;
 end;
 

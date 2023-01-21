@@ -241,6 +241,38 @@ begin
    {$IfDef RecordDEMIX} writeLineToDebugFile('done differences'); {$EndIf}
 end;
 
+procedure HistogramsFromVATDEM(DEMwithVAT,ElevMap,SlopeMap,RuffMap : integer);
+var
+   VAT : tMyData;
+   NumCodes : integer;
+   Codes : array[1..10] of integer;
+   Names : array[1..10] of shortstring;
+
+   procedure CreateDistribution();
+   var
+      Col,Row : integer;
+   begin
+      for Col := 0 to pred(DEMGlb[DEMwithVAT].DEMheader.NumCol) do begin
+         for Row := 0 to pred(DEMGlb[DEMwithVAT].DEMheader.NumRow) do begin
+
+         end;
+      end;
+
+   end;
+
+
+begin
+   VAT := tMyData.Create(DEMGlb[DEMwithVAT].VATFileName);
+   NumCodes := 0;
+   while not VAT.eof do begin
+      inc(NumCodes);
+      Codes[NumCodes] := VAT.GetFieldByNameAsInteger('CODE');
+      Names[NumCodes] := VAT.GetFieldByNameAsString('NAME');
+
+      VAT.Next;
+   end;
+   VAT.Destroy;
+end;
 
 
 procedure OpenDEMIXArea(fName : PathStr = '');
@@ -248,7 +280,7 @@ var
    AreaName : shortstring;
    HalfSec : array[1..10] of integer;
    UseDSM,UseDTM,chm,HalfSecRefDTM,HalfSecRefDSM,SlopeMap,RuffMap,
-   i,COP_ALOS,COP_ALOS2,Cols : integer;
+   i,COP_ALOS_DSM,COP_ALOS_DTM,Cols : integer;
    AirOrDirt,AirOrDirt2,AirOrDirt3 : array[1..10] of integer;
    BigMap,Movie : tStringList;
    Graph1,Graph2 : tThisBaseGraph;
@@ -295,18 +327,6 @@ var
             end;
          end;
 
-         (*
-         procedure MakeHalfSecond(DEM : integer);
-         var
-            NewDEM : integer;
-            fName : PathStr;
-         begin
-            if ValidDEM(DEM) then begin
-               fName := MDDef.DEMIX_base_dir + 'wine_contest_half_second\' + DEMGlb[DEM].AreaName + '_geo_reint_0.5sec.dem';
-               NewDEM := DEMGlb[DEM].ReinterpolateLatLongDEM(0.5,fName);
-            end;
-         end;
-         *)
 
 begin
    if FileExists(fName) or GetFileFromDirectory('DEMIX area database','*.dbf',fName) then begin
@@ -326,8 +346,8 @@ begin
       HalfSecRefDSM := 0;
       SlopeMap := 0;
       RuffMap := 0;
-      COP_ALOS := 0;
-      COP_ALOS2 := 0;
+      COP_ALOS_DSM := 0;
+      COP_ALOS_DTM := 0;
       CHM := 0;
       for I := 1 to 10 do begin
          HalfSec[i] := 0;
@@ -343,19 +363,11 @@ begin
          {$IfDef RecordDEMIX} writeLineToDebugFile('LoadDEMIXarea complete'); {$EndIf}
          if LoadDEMIXReferenceDEMs(DEMIXRefDEM) then begin
             {$IfDef RecordDEMIX} writeLineToDebugFile('LoadDEMIXReferenceDEMs complete; Open DEMs=, ' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
-
-            (*
             if MDDef.DEMIX_DoHalfSecDEMs then begin
-               MakeHalfSecond(RefDTMPoint);
-               MakeHalfSecond(RefDSMpoint);
-               MakeHalfSecond(RefDTMarea);
-               MakeHalfSecond(RefDSMarea);
+               HalfSecRefDSM := CreateHalfSecRefDEM(RefDSMPoint,RefDSMArea);
+               HalfSecRefDTM := CreateHalfSecRefDEM(RefDTMPoint,RefDTMArea);
+               {$IfDef RecordDEMIX} writeLineToDebugFile('Half sec ref dems created; Open DEMs=' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
             end;
-            *)
-
-            HalfSecRefDSM := CreateHalfSecRefDEM(RefDSMPoint,RefDSMArea);
-            HalfSecRefDTM := CreateHalfSecRefDEM(RefDTMPoint,RefDTMArea);
-            {$IfDef RecordDEMIX} writeLineToDebugFile('Half sec ref dems created; Open DEMs=' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
 
             SlopeMap := -1;   //forces creation of slope and roughness maps
             RuffMap := CreateSlopeRoughnessSlopeStandardDeviationMap(HalfSecRefDTM,3,SlopeMap);
@@ -363,7 +375,7 @@ begin
             DEMGlb[RuffMap].AreaName := 'ref_dtm_roughness_%';
             {$IfDef RecordDEMIX} writeLineToDebugFile('Slope and Ruff dems created; Open DEMs=' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
 
-            if true or (MDDef.DEMIX_DoCHM) then begin
+            if MDDef.DEMIX_DoHalfSecDEMs or (MDDef.DEMIX_DoCHM) then begin
                if ValidDEM(HalfSecRefDSM) and ValidDEM(HalfSecRefDTM) then begin
                   chm := MakeDifferenceMapOfBoxRegion(HalfSecRefDTM,HalfSecRefDSM,DEMGlb[HalfSecRefDTM].FullDEMGridLimits,true,false,false,AreaName + '_half_sec_chm');
                   //DEMglb[chm].SelectionMap.Elevationpercentiles1Click(Nil);
@@ -375,10 +387,10 @@ begin
 
             {$IfDef ShowDEMIXWhatsOpen} writeStringListToDebugFile(GetWhatsOpen); {$EndIf}
 
-            if true or MDDef.DEMIX_DoElevParamGraphs or MDDef.DEMIX_DoAirOrDirt or MDDef.DEMIX_DoElevDiff or MDDef.DEMIX_DoSlopeDiff or MDDef.DEMIX_DoRuffDiff then begin
+            if MDDef.DEMIX_DoHalfSecDEMs or MDDef.DEMIX_DoElevParamGraphs or MDDef.DEMIX_DoAirOrDirt or MDDef.DEMIX_DoElevDiff or MDDef.DEMIX_DoSlopeDiff or MDDef.DEMIX_DoRuffDiff then begin
                if LoadDEMIXCandidateDEMs(DEMIXRefDEM,true,false) then begin
                   {$IfDef ShowDEMIXWhatsOpen} writeLineToDebugFile('candidates loaded');  writeStringListToDebugFile(GetWhatsOpen); {$EndIf}
-                  if true then begin
+                  if MDDef.DEMIX_DoHalfSecDEMs then begin
                      {$IfDef RecordDEMIX} writeLineToDebugFile('Start creation Half sec dems; Open DEMs=, ' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
                      for I := 1 to MaxTestDEM do begin
                         if ValidDEM(TestDEM[i]) then begin
@@ -401,9 +413,13 @@ begin
                      {$IfDef RecordDEMIX} writeLineToDebugFile('Make difference map'); {$EndIf}
                      MakeDifferenceMap(TestDEM[1],TestDEM[2],true,false,false,'COP-ALOS_difference');
                      {$IfDef RecordDEMIX} writeLineToDebugFile('Try ref DSM COP-ALOS'); {$EndIf}
-                     COP_ALOS := TwoDEMHighLowMap(HalfSecRefDSM, TestDEM[1],TestDEM[2],'DSM','COP-ALOS_compare_DSM');
+                     COP_ALOS_DSM := TwoDEMHighLowMap(HalfSecRefDSM, TestDEM[1],TestDEM[2],'DSM','COP-ALOS_compare_DSM');
+                     HistogramsFromVATDEM(COP_ALOS_DSM,HalfSecRefDSM,SlopeMap,RuffMap);
+
                      {$IfDef RecordDEMIX} writeLineToDebugFile('Try ref DTM COP-ALOS'); {$EndIf}
-                     COP_ALOS2 := TwoDEMHighLowMap(HalfSecRefDTM, TestDEM[1],TestDEM[2],'DTM','COP-ALOS_compare_DTM');
+                     COP_ALOS_DTM := TwoDEMHighLowMap(HalfSecRefDTM, TestDEM[1],TestDEM[2],'DTM','COP-ALOS_compare_DTM');
+
+
                   end;
 
                   {$IfDef RecordDEMIX} writeLineToDebugFile('Half sec dems done; Open DEMs=' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
@@ -478,8 +494,8 @@ begin
 
          AddFrame(SlopeMap,'Ref slope');
          AddFrame(RuffMap,'Ref ruff');
-         AddFrame(COP_ALOS,'COP_ALOS');
-         AddFrame(COP_ALOS2,'COP_ALOS2');
+         AddFrame(COP_ALOS_DSM,'COP_ALOS_DSM');
+         AddFrame(COP_ALOS_DTM,'COP_ALOS_DTM');
 
          Movie.SaveToFile(fName);
          CreateNewMovie(fName);

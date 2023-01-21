@@ -295,6 +295,8 @@ begin
    DEMGlb[Result].DEMMapProjection := DEMGlb[Map1].DEMMapProjection;
    DEMGlb[Result].DEMMapProjection.ProjectionSharedWithDataset := true;
    if DEMGlb[Result].DEMheader.DEMPrecision = ByteDEM then DEMGlb[Result].DEMheader.DEMPrecision := SmallIntDEM;
+   if DEMGlb[Map1].ElevationGrid and DEMGlb[Map2].ElevationGrid then DEMGlb[Result].DEMheader.ElevUnits := euElevDiff else DEMGlb[Result].DEMheader.ElevUnits := euDifference;
+
    DEMGlb[Result].DEMstatus := dsUnsaved;
 
    if not DEMGlb[Result].AllocateDEMMemory(InitDEMMissing) then exit;

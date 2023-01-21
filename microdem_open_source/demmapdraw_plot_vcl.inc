@@ -1847,7 +1847,7 @@
                    {$Else}
                       if MDDef.LasLegend and LASlayerOnMap and (pt_cloud_opts_fm <> Nil) then begin
                          bmp := pt_cloud_opts_fm.LegendForPointCloudLayers;
-                         if bmp <> Nil then PositionBitmap(Overlay,bmp,lpNEMap);
+                         if (bmp <> Nil) then PositionBitmap(Overlay,bmp,lpNEMap);
                       end;
                    {$EndIf}
                    if MDDef.GridLegendLocation.DrawItem and DrawLegendsThisMap then begin

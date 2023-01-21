@@ -1876,11 +1876,14 @@ end;
       {$If Defined(RecordOverlays) or Defined(RecordLAS)} WriteLineToDebugFile('tMapDraw.BackgroundPlotLASFilesOnMap in display=' + IntToStr(ord(MDDef.ls.ColorCoding))); {$EndIf}
       CreateBitmap(cBMP,inBitmap.width,inBitmap.Height);
       for Cloud := MaxClouds downto 1 do if (pt_cloud_opts_fm.LasFiles[Cloud] <> Nil) and pt_cloud_opts_fm.UsePC[Cloud] then begin
-         if (MDDef.ls.ColorCoding = lasccIntensity)  and (not pt_cloud_opts_fm.LasFiles[Cloud].HasIntensity) then begin
+         if (MDDef.ls.ColorCoding = lasccIntensity) and (not pt_cloud_opts_fm.LasFiles[Cloud].HasIntensity) then begin
 
          end
          else begin
-
+            if (MDDef.ls.ColorCoding = lasccIntensity) then begin
+               MDDef.MaxIntensity := pt_cloud_opts_fm.LasFiles[Cloud].INTEN_99;
+               MDDef.MinIntensity := pt_cloud_opts_fm.LasFiles[Cloud].INTEN_1;
+            end;
             if MDDef.LasAutoThin then begin
                MDDef.CloudMapThinFactor := trunc(pt_cloud_opts_fm.LasFiles[Cloud].PointDensity * ScreenPixelSize / 2);
                if (MDDef.CloudMapThinFactor <= 0) then MDDef.CloudMapThinFactor := 1;

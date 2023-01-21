@@ -485,9 +485,7 @@ begin
    {$Else}
       ClearProtractorTool;
       if (LOSdraw.LOSProfileDB <> 0) then begin
-         {$IfDef RecordClosing}
-         WriteLineToDebugFile('Close Fresnel DB ' + IntToStr(LOSdraw.LOSProfileDB));
-         {$EndIf}
+         {$IfDef RecordClosing} WriteLineToDebugFile('Close Fresnel DB ' + IntToStr(LOSdraw.LOSProfileDB)); {$EndIf}
          CloseAndNilNumberedDB(LOSdraw.LOSProfileDB);
       end
       else begin
@@ -548,7 +546,7 @@ begin
 
    Panel2.Height := 0;
 
-   {$IfDef RecordLOSProblems}  ScreenDimensions('TDEMLOSF.FormCreate out');  {$EndIf}
+   {$IfDef RecordLOSProblems} ScreenDimensions('TDEMLOSF.FormCreate out');  {$EndIf}
 end;
 
 
@@ -796,7 +794,6 @@ procedure TDEMLOSF.Sensorobserversiteblowup1Click(Sender: TObject);
 begin
    DEMGlb[LOSDraw.DEMonView].SelectionMap.SiteContourMapBlowUp(LOSDraw.LatLeft,LOSDraw.LongLeft,1000,500,MDDef.DefaultContourInterval,'Sensor/observer location');
 end;
-
 
 
 procedure TDEMLOSF.ClearProtractorTool;

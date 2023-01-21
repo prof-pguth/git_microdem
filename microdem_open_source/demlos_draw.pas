@@ -76,6 +76,8 @@ type
          ComputePoints : integer;
          constructor Create;
          destructor Destroy;
+         function SimpleProfileExecuteDB(fName : PathStr; DEMonView : integer; LatLeft,LongLeft,LatRight,LongRight : float64) : integer;
+
          function Execute(DEMonView : integer; LatLeft,LongLeft,LatRight,LongRight,LeftObsUp,RightObsUp : float64; var ProfileDB : integer
               {$IfDef ExPointCloudMemory}
               ) :  tLOSResult;
@@ -405,11 +407,18 @@ begin
       end;
       LOSProfileDB := 0;
 
-         {$IfDef VCL}
-            fName := NextFileNumber(MDTempDir, DEMGlb[DEMonView].AreaName + '_los_',DefaultDBExt);
-         {$Else}
-            fName := NextFileNumber(MDTempDir,'topo_los_',DefaultDBExt);
-         {$EndIf}
+      {$IfDef VCL}
+         fName := NextFileNumber(MDTempDir, DEMGlb[DEMonView].AreaName + '_los_',DefaultDBExt);
+      {$Else}
+         fName := NextFileNumber(MDTempDir,'topo_los_',DefaultDBExt);
+      {$EndIf}
+
+   if (not MDdef.LOSVisible) and (not MDdef.DrawLOS) then begin
+      LOSCalculation := tLOSCalculation.Create;
+      LOSProfileDB := LosCalculation.SimpleProfileExecuteDB(fName,DEMonView,LatLeft,LongLeft,LatRight,LongRight);
+      LosCalculation.Destroy;
+   end
+   else begin;
 
          {$If Defined(RecordLOS) or Defined(RecordLOSDraw)} WriteLineToDebugFile('Create=' + fName); {$EndIf}
 
@@ -446,14 +455,14 @@ begin
          OpenNumberedGISDataBase(LOSProfileDB,fName,false);
 
       //end;
-
-      if ValidDB(LOSProfileDB) then GISdb[LOSProfileDB].LayerIsOn := false;
-
       {$If Defined(RecordLOS) or Defined(RecordLOSDraw)} WriteLineToDebugFile('try LOSCalculation := tLOSCalculation.Create, db=' + IntToStr(LOSProfileDB)); {$EndIf}
       LOSCalculation := tLOSCalculation.Create;
       LosCalculation.Execute(DEMonView,LatLeft,LongLeft,LatRight,LongRight,MDDef.ObsAboveGround, MDDef.TargetAboveGround,LOSProfileDB
          {$IfDef ExPointCloudMemory}{$Else},LOSMemoryPointCloud[1],LOSMemoryPointCloud[2] {$EndIf} );
       LosCalculation.Destroy;
+   end;
+
+      if ValidDB(LOSProfileDB) then GISdb[LOSProfileDB].LayerIsOn := false;
 
       GISdb[LOSProfileDB].MyData.First;
       ObsGroundElev := GISdb[LOSProfileDB].MyData.GetFieldByNameAsFloat('ELEV_M');
@@ -1178,6 +1187,8 @@ begin
    inherited;
 end;
 
+type
+   tBooleans = array[0..MaxScreenXMax] of boolean;
 
 function tLOSCalculation.Execute(DEMonView : integer; LatLeft,LongLeft,LatRight,LongRight,LeftObsUp,RightObsUp : float64; var ProfileDB : integer
      {$IfDef ExPointCloudMemory}
@@ -1187,8 +1198,6 @@ function tLOSCalculation.Execute(DEMonView : integer; LatLeft,LongLeft,LatRight,
      {$EndIf}
 label
    ExitNow;
-type
-   tBooleans = array[0..MaxScreenXMax] of boolean;
 var
    i,j,VegLayer,NumPts,NumPts2 : integer;
    LocalPitch,EarthCurve,KM_short_end,
@@ -1255,9 +1264,6 @@ var
 
 begin
    {$If Defined(RecordLOS) or Defined(RecordLOSDraw)} WriteLineToDebugFile('tLOSCalculation.Execute in, DEM average space=' + RealToString(DEMglb[DEMonView].AverageSpace,-18,2)); {$EndIf}
-     //if ValidDB(ProfileDB) then UseData := GISdb[ProfileDB].MyData
-     //else UseData := nil;
-
      new(xgrids);
      new(ygrids);
      new(dists);
@@ -1429,7 +1435,6 @@ begin
                      end;
                   end;
               end;
-
          end
          else begin
             {$IfDef ExWaveLengthHeight}
@@ -1521,6 +1526,59 @@ begin
   Dispose(dists);
   Dispose(elevs);
   if MDDef.ShowMaskedAirspace then Dispose(NeedZ);
+  {$If Defined(RecordLOS) or Defined(RecordLOSDraw)}WriteLineToDebugFile('tLOSCalculation.Execute out'); {$EndIf}
+end;
+
+
+
+
+function tLOSCalculation.SimpleProfileExecuteDB(fName : PathStr; DEMonView : integer; LatLeft,LongLeft,LatRight,LongRight : float64) : integer;
+var
+   i,j,VegLayer,NumPts,NumPts2 : integer;
+   LOSLen,LOSAzimuth,Lat,Long,DropCurve : float64;
+   NeedZ,xgrids,ygrids,dists,elevs : ^Petmath.bfarray32;
+   VisPoints : tBooleans;
+   Results : tStringList;
+begin
+   {$If Defined(RecordLOS) or Defined(RecordLOSDraw)} WriteLineToDebugFile('tLOSCalculation.Execute in, DEM average space=' + RealToString(DEMglb[DEMonView].AverageSpace,-18,2)); {$EndIf}
+     Results := tStringList.Create;
+     Results.Add('LAT,LONG,ELEV_M,RANGE_KM,CURV_M');
+     new(xgrids);
+     new(ygrids);
+     new(dists);
+     new(elevs);
+     {$IfDef RecordLOS} WriteLineToDebugFile('start GetStraightRouteLatLongDegree'); {$EndIf}
+
+     VincentyCalculateDistanceBearing(LatLeft,LongLeft,LatRight,LongRight,LOSLen,LOSAzimuth);
+     ComputePoints := round(2 * LOSLen / DEMglb[DEMonView].AverageSpace);
+
+     if ComputePoints > 2000 then begin
+        ComputePoints := 2000;
+        {$IfDef RecordLOS} WriteLineToDebugFile('Reduced ComputePoints=' + IntToStr(ComputePoints)); {$EndIf}
+     end
+     else begin
+        {$IfDef RecordLOS} WriteLineToDebugFile('ComputePoints=' + IntToStr(ComputePoints)); {$EndIf}
+     end;
+
+     DEMglb[DEMonView].GetStraightRoute(false,LatLeft,LongLeft,LatRight,LongRight,MDDef.wf.StraightAlgorithm,ComputePoints,xgrids^,ygrids^,dists^);
+     DEMglb[DEMonView].GetVisiblePoints(0,0,-89,89,true,true,ComputePoints,xgrids^,ygrids^,dists^,elevs^,VisPoints);
+
+     DropCurve := DropEarthCurve(LOSLen);
+     {$If Defined(RecordLOS) or Defined(RecordLOSDraw)} WriteLineToDebugFile('end GetStraightRouteLatLongDegree'); {$EndIf}
+
+      for j := 0 to ComputePoints do begin
+         DEMglb[DEMonView].DEMGridToLatLongDegree(xgrids^[j],ygrids^[j],Lat,Long);
+         if (elevs^[j] > 32000) then elevs^[j] := -9999;
+         Results.Add(RealToString(Lat,-18,-8) + ',' + RealToString(Long,-18,-8) + ',' +RealToString(elevs^[j],-18,-2) + ',' + RealToString(0.001 * dists^[j],-18,-4) + ',' +
+            RealToString(DropEarthCurve(dists^[j]),-10,-2));
+      end;
+
+      Result := StringList2CSVtoDB(Results,fName);
+
+  Dispose(xgrids);
+  Dispose(ygrids);
+  Dispose(dists);
+  Dispose(elevs);
   {$If Defined(RecordLOS) or Defined(RecordLOSDraw)}WriteLineToDebugFile('tLOSCalculation.Execute out'); {$EndIf}
 end;
 

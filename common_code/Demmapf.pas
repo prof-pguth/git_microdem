@@ -1418,6 +1418,8 @@ type
     Airballdirtball1: TMenuItem;
     ClipDEMtoregionwithdata1: TMenuItem;
     Elevationpercentiles1: TMenuItem;
+    Differencemap1: TMenuItem;
+    Dataheader2: TMenuItem;
     //procedure HiresintervisibilityDEM1Click(Sender: TObject);
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
@@ -2453,6 +2455,8 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Airballdirtball1Click(Sender: TObject);
     procedure ClipDEMtoregionwithdata1Click(Sender: TObject);
     procedure Elevationpercentiles1Click(Sender: TObject);
+    procedure Differencemap1Click(Sender: TObject);
+    procedure Dataheader2Click(Sender: TObject);
     //procedure QuarterDEM1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
@@ -3176,6 +3180,7 @@ uses
    {$EndIf}
 
    DEMIX_control,
+   DEM_sat_Header,
    ufrmMain,
    aspect_colors,
    DEMLOSW, DEMLOS_Draw,
@@ -5457,6 +5462,15 @@ begin
    Result := (i <> MapDraw.DEMonMap) and ValidDEM(i);
 end;
 
+procedure TMapForm.Differencemap1Click(Sender: TObject);
+begin
+   MapDraw.MapType := mtGGRReflect;
+   MDDef.TopCutLevel := abs(MDDef.TopCutLevel);
+   MDDef.BottomCutLevel := -MDDef.TopCutLevel;
+   DoBaseMapRedraw;
+end;
+
+
 procedure TMapForm.Differencemapsallotheropengrids1Click(Sender: TObject);
 {$IfDef ExComplexGeoStats}
 begin
@@ -5924,7 +5938,7 @@ var
 
           procedure MakeAtlasPage(Which : integer; aName : shortstring);
           var
-             iLat,iLong,dLong,
+             //iLat,iLong,dLong,
              db : integer;
              Lat,Long : float64;
           begin
@@ -7756,6 +7770,8 @@ begin
       GeologicAges1.Visible := (MapDraw.ValidDEMonMap) and (DEMGlb[MapDraw.DEMonMap].DEMheader.ElevUnits = HundredthMa);
       Saveallmapsasimage1.Visible := (MDDef.ProgramOption in [ExpertProgram]) and (NumOpenMaps > 1);
 
+      Dataheader2.Visible := ((MapDraw.DEMonMap > 0) or (MapDraw.SatOnMap > 0)) and (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]);
+
       ElevationsExtremes1.Checked := (ExtremeZDEM <> 0);
       Missingdatacolor1.Visible := (MapDraw.ValidDEMonMap) or (MapDraw.SatonMap <> 0);
       Lntransform1.Visible := ExpertDEMVersion and (DEMGlb[MapDraw.DEMonMap].DEMheader.MaxElev > 0);
@@ -7768,13 +7784,13 @@ begin
       Weather2.Visible := (MDDef.ProgramOption in [ExpertProgram,GeographyProgram]);
 
       Integercode1.Visible := ExpertDEMVersion and (DEMGlb[MapDraw.DEMonMap].DEMheader.DEMPrecision in [byteDEM,SmallIntDEM,WordDEM]);
-    {$If Defined(RecordCheckProperTix)} WriteLineToDebugFile('CheckProperTix start overlay menu'); {$EndIf}
 
 
      N3Drotatingglobe1.Visible := (MapDraw.PrimMapProj.PName in [PlateCaree]) and MapDraw.PrimMapProj.FullWorld and (not FullMapSpeedButton.Enabled);
 
      GetGRASSextensions1.Visible := ValidDEM(MapDraw.DEMonMap) and (MDDef.ProgramOption in [ExpertProgram]);
 
+    {$If Defined(RecordCheckProperTix)} WriteLineToDebugFile('CheckProperTix start overlay menu'); {$EndIf}
     //Overlay menu
       ValidPointsInSecondGrid1.Visible := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]);
       Contoursfromsecondgrid2.Visible := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]);
@@ -7830,7 +7846,6 @@ begin
       Gridoutlines1.Visible := ExpertDEMVersion;
       Fatfingers1.Visible := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]);
 
-      //Recenter1.Visible := MapSubsetAllowed;
       SubsetSpeedButton.Visible := MapSubsetAllowed;
 
      {$If Defined(RecordCheckProperTix)} WriteLineToDebugFile('CheckProperTix start VectorIndex <> 0'); {$EndIf}
@@ -7890,7 +7905,6 @@ begin
          Newband1.Visible := MapDraw.ValidSatOnMap and (SatImage[MapDraw.SATonMap] <> Nil);
          NLCD1.Visible := false;
          MrSidSpeedButton.Visible := MapDraw.ValidSatOnMap and (SatImage[MapDraw.SatOnMap].CurrentSidName <> '');
-         //GeotifffromMrSid1.Visible := MrSidSpeedButton.Visible;
          Satellitehistograms1.Visible := MapDraw.ValidSatOnMap and  SatImage[MapDraw.SatOnMap].CanEnhance;
          Allmapsmatchthiscoveragearea1.Visible := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]) and ((NumOpenMaps > 1) or (WMDEM.MDIChildCount > 1));
          NLCDLegend1.Visible := (MDDef.ProgramOption in [ExpertProgram,GeographyProgram,RemoteSensingProgram]) and (MapDraw.ValidDEMonMap and (DEMGlb[MapDraw.DEMonMap].LandCoverGrid));
@@ -9840,8 +9854,6 @@ end;
 
 procedure TMapForm.AddressGeocode(AskUser,SupplyLatLong : boolean; var Address : shortString; var Lat,Long : float64; ShowResults : boolean = false);
 
-
-
          function ExtractFloatFromString(TStr : ShortString) : float64;
          var
             i : integer;
@@ -9851,9 +9863,6 @@ procedure TMapForm.AddressGeocode(AskUser,SupplyLatLong : boolean; var Address :
             end;
             Result := StrToFloat(TStr);
          end;
-
-
-
 
 var
    cmd : ANSIstring;
@@ -9894,12 +9903,6 @@ begin
 
    fName := Petmar.NextFileNumber(MDTempDir,'geocode_','.xml');
    DownloadFileFromWeb(cmd,fName);
-
-   (*
-   repeat
-      Delay(100);
-   until (FileExists(fName));
-   *)
 
    OK := false;
    Results := tStringList.Create;
@@ -10070,7 +10073,7 @@ var
 
  begin
     if (SatImage[MapDraw.SATonMap].LandsatNumber = 0) then begin
-       MessageToContinue('Needs thermal bands; only works for Landsat');
+       MessageToContinue('Needs thermal bands (Landsat)');
     end
     else begin
     Capt := MapDraw.ScreenLocStr(LastX,LastY);
@@ -10116,7 +10119,6 @@ begin
 end;
 
 
-
 procedure TMapForm.PlotNorthArrowLegend(x,y : integer);
 var
    Lat,Long,Lat1,Lat2,Long1,Long2,Length : float64;
@@ -10141,7 +10143,6 @@ end;
  procedure TMapForm.PostPointCoordinates(Lat,Long : float64);
  var
     TStr,SecondaryLocation,Datumshiftstr,CheckString : shortString;
-    //Shift1,shift2,
     xp,yp,
     NewLat,NewLong : float64;
     z : float32;
@@ -10152,19 +10153,8 @@ end;
        TStr := '  z=' + RealToString(z,-8,1);
     end;
 
-   //MapDraw.AdjustProjectionForUTMZone('ppc',MapDraw.PrimMapProj.h_DatumCode,Lat,Long);
    DatumShiftStr := '';
    SecondaryLocation := '';
-   (*
-   if MDdef.BothDatumsWhileRoam and (MapDraw.PrimMapProj.h_DatumCode <> MapDraw.SecondaryMapProjection.h_DatumCode) then begin
-      MolodenskiyTransformation(Lat,Long,NewLat,NewLong, MapDraw.PrimMapProj, MapDraw.SecondaryMapProjection);
-      SecondaryLocation :=  MessLineBreak + MapDraw.SecondaryMapProjection.h_DatumCode + MessLineBreak +
-      LatLongDegreeToString(NewLat,NewLong,MDDef.OutPutLatLongMethod) + MessLineBreak + MapDraw.SecondaryMapProjection.UTMStringFromLatLongDegree(NewLat,NewLong) + MessLineBreak + '--------' + MessLineBreak;
-      MapDraw.ComputeDatumShifts(Image1.Canvas,Lat,Long,shift1,shift2,msNone);
-      DatumShiftStr := 'Datum shift, geo: ' + RealToString(shift2,-12,2) + ' m' + MessLineBreak + 'Datum shift, UTM: ' + RealToString(shift1,-12,2) + ' m' + MessLineBreak + '--------' + MessLineBreak;
-   end;
-   *)
-
    MapDraw.PrimMapProj.ForwardProjectDegrees(Lat,Long,xp,yp);
    MapDraw.PrimMapProj.InverseProjectDegrees(xp,yp,NewLat,NewLong);
    CheckString := 'Inverse project: ' + LatLongDegreeToString(NewLat,NewLong);
@@ -10225,11 +10215,9 @@ var
    xgrid,ygrid,Length,
    xutm1,yutm1,xutm2,yutm2,Slope,
    NextDec,
-   //Shift1,Shift2,
    Lat1,Long1,Lat2,Long2,Heading,Lat,Long,xf,yf,
    xe,ye,DEC,DIP,TI,GV   : float64;
    z : float32;
-   //x1,y1,{y2,Col,Row,}
    RecsFound,
    i,j,x,y     : integer;
    Bitmap      : tMyBitmap;
@@ -10942,19 +10930,28 @@ end;
 procedure TMapForm.OpenGLwithallmaps1Click(Sender: TObject);
 var
    Viewer : TView3DForm;
-   i,Num : integer;
+   Maps : tStringList;
+   i,j,Num : integer;
 begin
-   AllMapsMatchThisCoverageArea1Click(Nil);
-   Allsamepixelsizeasthismap1Click(Sender);
-   Viewer := MapTo3DView(Self.MapDraw);
-   Num := 1;
-   for i := 0 to pred(WMDEM.MDIChildCount) do begin
-      if WMDEM.MDIChildren[i] is tMapForm and (WmDEM.MDIChildren[i].Handle <> Handle) then begin
-         inc(Num);
-         Viewer.DoMap((WMDEM.MDIChildren[i] as TMapForm).MapDraw);
-         if Num >= MaxClouds then exit;
+   //Maps := tStringList.Create;
+   PickMaps(Maps,'Maps for 3D view (max ' + IntToStr(MaxClouds) + ')');
+   if (Maps.Count > 0) then begin
+      AllMapsMatchThisCoverageArea1Click(Nil);
+      Allsamepixelsizeasthismap1Click(Sender);
+      Viewer := MapTo3DView(Self.MapDraw);
+      Num := 1;
+      for i := 0 to pred(WMDEM.MDIChildCount) do begin
+         if WMDEM.MDIChildren[i] is tMapForm and (WmDEM.MDIChildren[i].Handle <> Handle) then begin
+            for j := 0 to pred(Maps.Count) do begin
+               if (Num < MaxClouds) and (Maps.Strings[j] = (WMDEM.MDIChildren[i] as TMapForm).Caption) then begin
+                  inc(Num);
+                  Viewer.DoMap((WMDEM.MDIChildren[i] as TMapForm).MapDraw);
+               end;
+            end;
+         end;
       end;
    end;
+   Maps.Free;
 end;
 
 
@@ -12205,11 +12202,11 @@ end;
 
 procedure TMapForm.Image1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
-   i,NewSatImage  : integer;
+   i{,NewSatImage}  : integer;
    xu,yu,yl,xg1,yg1,xg2,yg2,
    //Lat,Long,
    LatLow,LongLow,LatHigh,LongHigh : float64;
-   FName    : PathStr;
+   //FName    : PathStr;
    TStr : ShortString;
 begin
    if ClosingIsHappening or (MapDraw = Nil) or (MapDraw.MapOwner = moPointVerificationMap) or (DEMNowDoing = Calculating) or (DEMRequiredForOperation(MapDraw.DEMonMap) and (MapDraw.DEMonMap = 0)) then exit;
@@ -21576,6 +21573,16 @@ begin
    {$Else}
       DEM_Manager.ViewHeaderRecord(MapDraw.DEMonMap);
    {$EndIf}
+end;
+
+procedure TMapForm.Dataheader2Click(Sender: TObject);
+begin
+   if (MapDraw.DEMonMap > 0) then ViewHeaderRecord(MapDraw.DEMonMap );
+   {$IfDef ExSat}
+   {$Else}
+      if (MapDraw.SatOnMap > 0) then DEM_sat_Header.ViewSatHeader(MapDraw.SatOnMap);
+   {$EndIf}
+
 end;
 
 procedure TMapForm.Coastlines1Click(Sender: TObject);

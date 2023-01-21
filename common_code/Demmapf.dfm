@@ -2,8 +2,8 @@ object MapForm: TMapForm
   Left = 45
   Top = 303
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1130
-  ClientWidth = 1807
+  ClientHeight = 1074
+  ClientWidth = 1787
   Color = clBtnHighlight
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -40,8 +40,8 @@ object MapForm: TMapForm
   object ScrollBox1: TScrollBox
     Left = 0
     Top = 27
-    Width = 1807
-    Height = 1103
+    Width = 1787
+    Height = 1047
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clRed
@@ -51,8 +51,8 @@ object MapForm: TMapForm
     ParentFont = False
     TabOrder = 0
     OnClick = ScrollBox1Click
-    ExplicitWidth = 1801
-    ExplicitHeight = 1094
+    ExplicitWidth = 1793
+    ExplicitHeight = 1056
     object Image1: TImage
       Left = 3
       Top = -247
@@ -209,13 +209,13 @@ object MapForm: TMapForm
     end
     object BlendPanel: TPanel
       Left = 0
-      Top = 1058
-      Width = 1803
+      Top = 1020
+      Width = 1795
       Height = 41
       Align = alBottom
       TabOrder = 8
-      ExplicitTop = 1049
-      ExplicitWidth = 1797
+      ExplicitTop = 1011
+      ExplicitWidth = 1789
       object TrackBar2: TTrackBar
         Left = 289
         Top = 1
@@ -334,12 +334,11 @@ object MapForm: TMapForm
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1807
+    Width = 1787
     Height = 27
     Align = alTop
     TabOrder = 1
     OnMouseDown = Panel1MouseDown
-    ExplicitWidth = 1801
     object AnnotateSpeedButton1: TSpeedButton
       Left = 31
       Top = -4
@@ -4483,6 +4482,10 @@ object MapForm: TMapForm
         Caption = 'Sentinel-2 metadata'
         OnClick = Sentinel2metadata1Click
       end
+      object Dataheader2: TMenuItem
+        Caption = 'Data header'
+        OnClick = Dataheader2Click
+      end
     end
     object Database2: TMenuItem
       Caption = 'Data base'
@@ -4651,6 +4654,10 @@ object MapForm: TMapForm
     object Reflectance3: TMenuItem
       Caption = 'Hillshade/Reflectance'
       OnClick = Reflectance3Click
+    end
+    object Differencemap1: TMenuItem
+      Caption = 'Difference map'
+      OnClick = Differencemap1Click
     end
     object Openness1: TMenuItem
       Caption = 'Openness'

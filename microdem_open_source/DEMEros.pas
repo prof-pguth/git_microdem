@@ -129,7 +129,9 @@ type
          function YOffset(Band,y : integer) : LongInt;
          procedure AssignClusterColors(ShowClasses : integer; var Colors : tColors256);
          procedure ReadBandData(SatName: shortstring; var SatView : tSatView);
-         function ContrastName(SatView : tSatview) : shortstring;
+         {$If Defined(RecordSatColor) or Defined(RecordByteLookup)}
+            function ContrastName(SatView : tSatview) : shortstring;
+         {$EndIf}
          function BandRange(Band : integer) : shortstring;
          procedure DefineImageFromTiff(WhichOne: integer);
          procedure CloseTiffImages(SatView : tSatView);
@@ -1240,7 +1242,7 @@ end;
 procedure tSatImage.SetUpColors(MapDraw : tMapDraw; SatView : tSatView);
 var
    i,j : integer;
-   MinR,MaxR : integer;
+  // MinR,MaxR : integer;
 
       procedure SetByteLookUpTable(SatView : tSatView; Band : integer;  var SetColorChoices : tColorIndex);
       var
@@ -1483,7 +1485,7 @@ var
 
       procedure ColorAndDifferentSpacing;
       var
-         x,y,i,j1,j2,j3 : integer;
+         x,y,j1,j2,j3 : integer;
          BMPMem : tBMPMemory;
       begin
          {$If Defined(RecordDrawSatOnMap) or Defined(RecordKeyDraw)} WriteLineToDebugFile('Sat display start loop different spacing data grid: ' +  sfBoundBoxToString(MapDraw.MapCorners.BoundBoxDataGrid,1)); {$EndIf}
@@ -1511,7 +1513,7 @@ var
 
       procedure DrawPanSharpened(var IntensityResultBitmap : tMyBitmap);
       var
-         x,y,i,j1,j2,j3,j4 : integer;
+         x,y,j1,j2,j3,j4 : integer;
          H2,S2,l2 : float32;
          BMPMem : tBMPMemory;
       begin
@@ -2023,7 +2025,7 @@ var
    FName : PathStr;
    i     : integer;
    Bitmap : tMyBitmap;
-   TStr : ShortString;
+   //TStr : ShortString;
    LandCover : ShortString;
    ReadFailure : boolean;
 
@@ -2400,7 +2402,7 @@ var
                procedure OpenWorldView3(sName : shortstring);
                var
                   i,j : integer;
-                  BaseName : PathStr;
+                  //BaseName : PathStr;
                   fList : tStringList;
                   Flag,flag2 : shortstring;
                begin
@@ -2784,19 +2786,20 @@ begin
    {$IfDef RecordSat} WriteLineToDebugFile('Closed image ' + SceneBaseName); {$EndIf}
 end;
 
-
-function tSatImage.ContrastName(SatView : tSatview) : shortstring;
-begin
-   case SatView.WindowContrast of
-      NoEnhancement         : Result := 'none';
-      StraightLinearStretch : Result := 'linear';
-      TailLinearStretch     : Result := 'linear w/ tails at ' +  RealToString(Satview.WindowContrastLowTailSize,-12,-1) + '% and ' +  RealToString(Satview.WindowContrastHighTailSize,-2,-1) + '%';
-      HistogramEqualization : Result := 'hist eq';
-      Custom                : Result := 'custom';
-      CloudOnlyTailStretch  : Result := 'cloud tail at ' + RealToString(Satview.WindowContrastHighTailSize,-2,-1) + '%';
-      MaskRange             : Result := 'mask range';
+{$If Defined(RecordSatColor) or Defined(RecordByteLookup)}
+   function tSatImage.ContrastName(SatView : tSatview) : shortstring;
+   begin
+      case SatView.WindowContrast of
+         NoEnhancement         : Result := 'none';
+         StraightLinearStretch : Result := 'linear';
+         TailLinearStretch     : Result := 'linear w/ tails at ' +  RealToString(Satview.WindowContrastLowTailSize,-12,-1) + '% and ' +  RealToString(Satview.WindowContrastHighTailSize,-2,-1) + '%';
+         HistogramEqualization : Result := 'hist eq';
+         Custom                : Result := 'custom';
+         CloudOnlyTailStretch  : Result := 'cloud tail at ' + RealToString(Satview.WindowContrastHighTailSize,-2,-1) + '%';
+         MaskRange             : Result := 'mask range';
+      end;
    end;
-end;
+{$EndIf}
 
 function tSatImage.BandRange(Band : integer) : shortstring;
 begin

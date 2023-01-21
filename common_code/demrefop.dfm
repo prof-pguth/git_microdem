@@ -4,8 +4,8 @@ object RefOptFM: TRefOptFM
   ActiveControl = OKBtn
   BorderStyle = bsDialog
   Caption = 'Hillshade/Reflectance Map Options'
-  ClientHeight = 439
-  ClientWidth = 462
+  ClientHeight = 443
+  ClientWidth = 443
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
@@ -19,7 +19,7 @@ object RefOptFM: TRefOptFM
   object Bevel1: TBevel
     Left = 0
     Top = 0
-    Width = 462
+    Width = 443
     Height = 401
     Align = alTop
     Shape = bsFrame

@@ -3,8 +3,8 @@ object DemHandForm: TDemHandForm
   Top = 244
   BorderIcons = [biSystemMenu]
   Caption = 'Data Manipulation'
-  ClientHeight = 546
-  ClientWidth = 956
+  ClientHeight = 537
+  ClientWidth = 950
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,8 +19,8 @@ object DemHandForm: TDemHandForm
   object Memo1: TMemo
     Left = 0
     Top = 0
-    Width = 956
-    Height = 527
+    Width = 950
+    Height = 518
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -31,13 +31,11 @@ object DemHandForm: TDemHandForm
     ScrollBars = ssVertical
     TabOrder = 0
     Visible = False
-    ExplicitWidth = 974
-    ExplicitHeight = 554
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 527
-    Width = 956
+    Top = 518
+    Width = 950
     Height = 19
     Panels = <
       item
@@ -46,8 +44,6 @@ object DemHandForm: TDemHandForm
       item
         Width = 250
       end>
-    ExplicitTop = 554
-    ExplicitWidth = 974
   end
   object MainMenu1: TMainMenu
     Left = 24
@@ -631,6 +627,9 @@ object DemHandForm: TDemHandForm
         object ASCIIremovelineswithsubstring1: TMenuItem
           Caption = 'ASCII remove lines with substring'
           OnClick = ASCIIremovelineswithsubstring1Click
+        end
+        object ASCIIremovelineswithoutsubstring1: TMenuItem
+          Caption = 'ASCII remove lines without substring'
         end
       end
       object ASCIIheader1: TMenuItem

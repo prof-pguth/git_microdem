@@ -180,7 +180,7 @@ type
     procedure Button4Click(Sender: TObject);
     procedure CheckBox6Change(Sender: TObject);
   private
-     procedure UncheckAllIfNeeded;
+     //procedure UncheckAllIfNeeded;
   public
      xRange,yRange,zRange,
      ve1,ye1,rMinX,rMaxX,rMinY,rMaxY : double;
@@ -238,10 +238,6 @@ var
   Down : TPointF;
 
 
-procedure TView3DForm.UncheckAllIfNeeded;
-begin
-end;
-
 
 procedure TView3DForm.CheckBox6Change(Sender: TObject);
 begin
@@ -253,7 +249,6 @@ begin
    end;
    //Plane5.Visible := CheckBox6.IsChecked;  not yet implemented
    ShowCloud[5] := CheckBox6.IsChecked;
-
 end;
 
 

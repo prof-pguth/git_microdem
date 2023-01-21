@@ -94,8 +94,13 @@ type
       procedure AspectDistributionBySlope(WhichDEM : Integer; GridLimits : tGridLimits);
       procedure AspectDistributionByAlgorithm(WhichDEM : Integer; GridLimits : tGridLimits);
 
+      procedure GridDiffernces(EntireDEM : boolean);
+      function MakeDifferenceMap(Map1,Map2 : integer; ShowMap,ShowHistogram,ShowScatterPlot : boolean; TheAreaName : ShortString = '') : integer;
+      function MakeDifferenceMapOfBoxRegion(Map1,Map2 : integer; GridLimits: tGridLimits; ShowMap,ShowHistogram,ShowScatterplot : boolean; TheAreaName : ShortString = '') : integer;
+
       procedure StatsFromTwoGrids(iDEM,JDEM : integer; var r,covar : float64; Incr : integer = 1);
       procedure ElevationSlopePlot(WhichDEM : integer; DesiredBinSize : integer = 1);
+
       procedure DoAnSSODiagram(CurDEM : integer; GridLimits : tGridLimits);
       function GridRatio(Map1Num : integer = 0; Map2Den : integer = 0; inMapType : tMapType = mtDEMBlank) : integer;
       function PercentDifferentTwoGrids(RefDEM,TestDEM : integer; fName : PathStr) : integer;
@@ -109,8 +114,6 @@ type
       procedure DoElevationHistograms;
 
       procedure CalculateGrainProfile(MapForm : tMapForm; DEMonMap : integer; Lat1,Long1,Lat2,Long2 : float64);
-      function MakeDifferenceMap(Map1,Map2 : integer; ShowMap,ShowHistogram,ShowScatterPlot : boolean; TheAreaName : ShortString = '') : integer;
-      function MakeDifferenceMapOfBoxRegion(Map1,Map2 : integer; GridLimits: tGridLimits; ShowMap,ShowHistogram,ShowScatterplot : boolean; TheAreaName : ShortString = '') : integer;
       function IwashuriPikeColor(Slope,Convexity,Texture : float64; var TerClass : integer) : tPlatformColor;  //inline;
       function IwashuriPikeCat(Slope,Convexity,Texture : float64) : integer; //inline;
       procedure IandPLegend(pc : array of float64);
@@ -140,7 +143,7 @@ type
 
   {$IfDef ExCompare}
   {$Else}
-      procedure GridDiffernces(EntireDEM : boolean);
+      //procedure GridDiffernces(EntireDEM : boolean);
       procedure MissingPointsInGrids(DEM1 : integer = 0; DEM2 : integer = 0);
       function GridScatterGram(FullGrid : boolean; DEM1 : integer = 0; DEM2 : integer = 0) : TThisBaseGraph;
       procedure GridCoOccurrence(AutoFull : boolean = false; DEM1 : integer = 0; DEM2 : integer = 0; Percentages : boolean = true);

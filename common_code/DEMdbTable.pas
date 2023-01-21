@@ -949,6 +949,7 @@ type
     Graphfilters1: TMenuItem;
     FilterforDEMIXtiles1: TMenuItem;
     NormalizeddifferencesfromreferenceDEM1: TMenuItem;
+    Bestbysortedgeomorphometry1: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
     procedure Shiftpointrecords1Click(Sender: TObject);
     procedure Creategrid1Click(Sender: TObject);
@@ -1669,6 +1670,7 @@ type
     procedure Graphfilters1Click(Sender: TObject);
     procedure FilterforDEMIXtiles1Click(Sender: TObject);
     procedure NormalizeddifferencesfromreferenceDEM1Click(Sender: TObject);
+    procedure Bestbysortedgeomorphometry1Click(Sender: TObject);
   private
     procedure PlotSingleFile(fName : PathStr; xoff,yoff : float64);
     procedure SetUpLinkGraph;
@@ -11387,6 +11389,11 @@ end;
 
 
 
+procedure Tdbtablef.Bestbysortedgeomorphometry1Click(Sender: TObject);
+begin
+   MultipleBestByParameters(DBonTable);
+end;
+
 procedure Tdbtablef.BestDEMbycategory1Click(Sender: TObject);
 begin
    BestDEMSbyCategory(DBonTable);
@@ -11404,30 +11411,30 @@ var
    Lat,Long : float64;
    Sym : tDrawingSymbol;
 begin
-   with GISdb[DBonTable],TheMapOwner.MapDraw do begin
+   //with {GISdb[DBonTable]..TheMapOwner.MapDraw do begin
       Sym := FilledBox;
-      Petmar.GetSymbol(Sym,AreaRecordSize,dbOpts.FillColor,'Area centroids');
-      EmpSource.Enabled := false;
-      CopyImageToBitmap(theMapOwner.Image1,BitMap);
+      Petmar.GetSymbol(Sym,GISdb[DBonTable].AreaRecordSize,GISdb[DBonTable].dbOpts.FillColor,'Area centroids');
+      GISdb[DBonTable].EmpSource.Enabled := false;
+      CopyImageToBitmap(GISdb[DBonTable].theMapOwner.Image1,BitMap);
       StartProgress('Centroids');
       i := 0;
       rc := GISdb[DBonTable].MyData.RecordCount;
-      MyData.First;
-      while not MyData.EOF do begin
+      GISdb[DBonTable].MyData.First;
+      while not GISdb[DBonTable].MyData.EOF do begin
          inc(i);
          if i mod 100 = 0 then begin
             UpdateProgressBar(i/rc);
-            EmpSource.Enabled := false;
+            GISdb[DBonTable].EmpSource.Enabled := false;
          end;
-         GetLatLongToRepresentRecord(Lat,Long);
-         LatLongDegreeToScreen(Lat,Long,x,y);
-         Petmar.ScreenSymbol(Bitmap.Canvas,x,y,Sym,AreaRecordSize,dbOpts.FillColor);
-         MyData.Next;
+         GISdb[DBonTable].GetLatLongToRepresentRecord(Lat,Long);
+         GISdb[DBonTable].TheMapOwner.MapDraw.LatLongDegreeToScreen(Lat,Long,x,y);
+         Petmar.ScreenSymbol(Bitmap.Canvas,x,y,Sym,GISdb[DBonTable].AreaRecordSize,GISdb[DBonTable].dbOpts.FillColor);
+         GISdb[DBonTable].MyData.Next;
       end;
-      theMapOwner.Image1.Picture.Graphic := Bitmap;
+      GISdb[DBonTable].theMapOwner.Image1.Picture.Graphic := Bitmap;
       Bitmap.Free;
       ShowStatus;
-   end;
+   //end;
 end;
 
 

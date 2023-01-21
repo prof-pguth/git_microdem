@@ -17,7 +17,7 @@
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$IfDef Debug}
       //{$Define BMPMemInline}
-      //{$Define RecordBigBitmap}
+      {$Define RecordBigBitmap}
       //{$Define RecordImageOverlayProblems}
       //{$Define RecordImageResize}
       //{$Define RecordBlendBitmaps}
@@ -257,6 +257,9 @@ function ExtractPartOfImage(var Image1 : tImage; Left,Right,Top,Bottom : integer
    procedure MovieFromTwoBitmaps(BMP1,BMP2 : tMyBitmap; BMP3 : tMyBitmap = Nil; BMP4 : tMyBitmap = Nil); overload;
    procedure MovieFromTwoBitmaps(f1,f2 : PathStr); overload;
 {$EndIf}
+
+procedure AllGraphsOneImage(NumCols : integer = -99);
+
 
 type
    tPalette256 = (p256LasClass,p256Gray,p256Terrain,p256Spectrum,p256RedRamp,p256GreenRamp,p256BlueRamp);
@@ -654,15 +657,47 @@ begin
             bmp.Free;
          end;
       end;
-      if Result <> nil then begin
+      if (Result <> nil) then begin
          Result.Canvas.Font.Size := 14;
          Result.Canvas.TextOut(25,Result.Height - 40,Capt);
-
          GetImagePartOfBitmap(Result);
+         {$IfDef RecordBigBitmap}  WriteLineToDebugFile('CombineBitmaps out, bmp=' + BitmapSizeString(Result)); {$EndIf}
       end;
       //GetImagePartOfBitmap(Result);
    end;
 end;
+
+
+procedure AllGraphsOneImage(NumCols : integer = -99);
+var
+   BottomMargin,
+   i : integer;
+   Findings : tStringlist;
+   fName : PathStr;
+   Bitmap : tMyBitmap;
+begin
+   {$IfDef RecordBigBitmap}  WriteLineToDebugFile('AllGraphsOneImage in'); {$EndIf}
+   Findings := tStringList.Create;
+   BottomMargin := 45;
+   for i := pred(WMDEM.MDIChildCount) downto 0 do begin
+      if WMDEM.MDIChildren[i] is TThisBaseGraph then begin
+         CopyImageToBitmap((WMDEM.MDIChildren[i] as TThisBaseGraph).Image1,Bitmap);
+         Bitmap.Height := Bitmap.Height + BottomMargin;
+         fName := NextFileNumber(MDtempDir,'graph_4_biggie_','.bmp');
+         Bitmap.SaveToFile(fName);
+         Findings.Add(fName);
+      end;
+   end;
+   if (Findings.Count > 0) then begin
+      MakeBigBitmap(Findings,'','',NumCols);
+      {$IfDef RecordBigBitmap}  WriteLineToDebugFile('AllGraphsOneImage out'); {$EndIf}
+   end
+   else begin
+      Findings.Free;
+      {$IfDef RecordBigBitmap}  WriteLineToDebugFile('No graphs found, AllGraphsOneImage out'); {$EndIf}
+   end;
+end;
+
 
 
 procedure RestoreBigCompositeBitmap(fName : PathStr);
@@ -671,7 +706,7 @@ var
    ImageForm : TImageDisplayForm;
    theFiles : tStringList;
 begin
-   if fName = '' then Petmar.GetFileFromDirectory('images list','*.txt',fName);
+   if (fName = '') then Petmar.GetFileFromDirectory('images list','*.txt',fName);
    if FileExists(fName) then begin
       theFiles := tStringList.Create;
       theFiles.LoadFromFile(fName);
@@ -717,8 +752,8 @@ begin
             ImageForm.ChangeColumns1.Visible := true;
             if AskCols then ImageForm.Changecolumns1Click(nil)
             else ImageForm.RedrawSpeedButton12Click(Nil);
+            {$IfDef RecordBigBitmap}  WriteLineToDebugFile('MakeBigBitmap out, imageform created'); {$EndIf}
          end;
-         {$IfDef RecordBigBitmap}  WriteLineToDebugFile('MakeBigBitmap out'); {$EndIf}
       end;
    end
    else begin

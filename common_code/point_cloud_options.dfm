@@ -2,8 +2,8 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
   Left = 0
   Top = 0
   Caption = 'Point Cloud Options'
-  ClientHeight = 440
-  ClientWidth = 492
+  ClientHeight = 447
+  ClientWidth = 486
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -30,13 +30,13 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
   end
   object Panel1: TPanel
     Left = 0
-    Top = 399
-    Width = 492
+    Top = 406
+    Width = 486
     Height = 41
     Align = alBottom
     TabOrder = 0
-    ExplicitTop = 390
-    ExplicitWidth = 486
+    ExplicitTop = 381
+    ExplicitWidth = 480
     object CancelBtn: TBitBtn
       Left = 290
       Top = 6
@@ -110,13 +110,13 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
   object PageControl1: TPageControl
     Left = 0
     Top = 0
-    Width = 492
-    Height = 230
-    ActivePage = TabSheet8
+    Width = 486
+    Height = 237
+    ActivePage = TabSheet1
     Align = alClient
     TabOrder = 1
-    ExplicitWidth = 486
-    ExplicitHeight = 221
+    ExplicitWidth = 480
+    ExplicitHeight = 212
     object General: TTabSheet
       Caption = 'General'
       object Label6: TLabel
@@ -242,6 +242,15 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
         TabOrder = 10
         OnClick = CheckBox21Click
       end
+      object CheckBox29: TCheckBox
+        Left = 199
+        Top = 143
+        Width = 97
+        Height = 17
+        Caption = 'Lat/long slices'
+        TabOrder = 11
+        OnClick = CheckBox29Click
+      end
     end
     object TabSheet1: TTabSheet
       Caption = 'Files'
@@ -249,10 +258,11 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
       object Panel2: TPanel
         Left = 0
         Top = 0
-        Width = 484
-        Height = 202
+        Width = 478
+        Height = 209
         Align = alClient
         TabOrder = 0
+        ExplicitHeight = 193
         object Label1: TLabel
           Left = 296
           Top = 16
@@ -1649,11 +1659,13 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
   end
   object Panel3: TPanel
     Left = 0
-    Top = 230
-    Width = 492
+    Top = 237
+    Width = 486
     Height = 169
     Align = alBottom
     TabOrder = 2
+    ExplicitTop = 212
+    ExplicitWidth = 480
     object RadioGroup1: TRadioGroup
       Left = 10
       Top = 2
@@ -1780,7 +1792,7 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
       OnClick = BitBtn20Click
     end
     object BitBtn32: TBitBtn
-      Left = 384
+      Left = 361
       Top = 138
       Width = 89
       Height = 25
@@ -1788,22 +1800,13 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
       TabOrder = 4
       OnClick = BitBtn32Click
     end
-    object CheckBox29: TCheckBox
-      Left = 203
-      Top = 143
-      Width = 97
-      Height = 17
-      Caption = 'Lat/long slices'
-      TabOrder = 5
-      OnClick = CheckBox29Click
-    end
     object BitBtn64: TBitBtn
-      Left = 296
+      Left = 264
       Top = 138
       Width = 82
       Height = 25
       Caption = 'Pick all clouds'
-      TabOrder = 6
+      TabOrder = 5
       OnClick = BitBtn64Click
     end
   end

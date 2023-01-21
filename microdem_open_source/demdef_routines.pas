@@ -441,6 +441,8 @@ begin
       WorldCover10m	 : Result := 	'WorldCover 10m'	;
       euNDVI	 : Result := 	'NDVI'	;
       euNBR	 : Result := 	'NBR'	;
+      euDifference : Result := 'diff';
+      euElevDiff : Result := 'diff m';
       else Result := '';
    end;
 end;
@@ -2638,15 +2640,13 @@ var
          AParameterShortFloat('Misc','MaxPercentile',MaxPercentile,98);
 
          AParameterShortFloat('Misc','TideGaugeOffset',TideGaugeOffset,0.235);
-         AParameterShortFloat('Misc','TopCutLevel',TopCutLevel,2);
-         AParameterShortFloat('Misc','MaxPercentile',BottomCutLevel,1);
-         AParameterShortFloat('Misc','MaxPercentile',CurrentSeaLevel,0);
+         AParameterShortFloat('Misc','TopCutLevel',TopCutLevel,1);
+         AParameterShortFloat('Misc','BottomCutLevel',BottomCutLevel,-1);
 
          AParameter('Misc','DEMIX_Full',DEMIX_Full,100);
-         //AParameterShortFloat('Misc','DEMIXTieTolerance',DEMIXTieTolerance,0.011);
 
-         AParameterShortFloat('Misc','SlopeFlatBoundary',SlopeSteepBoundary,12.5);
-         AParameterShortFloat('Misc','SlopeGentleBoundary',SlopeSteepBoundary,25);
+         AParameterShortFloat('Misc','SlopeFlatBoundary',SlopeFlatBoundary,12.5);
+         AParameterShortFloat('Misc','SlopeGentleBoundary',SlopeGentleBoundary,25);
          AParameterShortFloat('Misc','SlopeSteepBoundary',SlopeSteepBoundary,50);
 
          AParameter('Misc','LandTypePointsNeeded',LandTypePointsNeeded,50);

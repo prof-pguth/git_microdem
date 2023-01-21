@@ -108,12 +108,12 @@ var
          for Tile := 0 to Pred(Tiles.Count) do begin
             UpdateProgressBar(Done/Cycles);
             for Ref := 1 to 2 do begin
-               Line := 'DEMIX_TILE=' + QuotedStr(Tiles[Tile]) + ' AND REF_TYPE=' + QuotedStr(RefType[Ref]);
+               Line := 'DEMIX_TILE=' + QuotedStr(Tiles[Tile]) + ' AND REF_TYPE=' + QuotedStr(RefDEMType[Ref]);
                GISdb[DBonTable].ApplyGISFilter(Line);
                GISdb[DBonTable].EmpSource.Enabled := false;
                if (GISdb[DBonTable].MyData.FiltRecsInDB > 0) then begin  //there are DSMs or DTMs for this tile
                   for aLandType := 1 to MaxLandType do begin
-                     Line := 'DEMIX_TILE=' + QuotedStr(Tiles[Tile]) + ' AND REF_TYPE=' + QuotedStr(RefType[Ref])  + ' AND LAND_TYPE=' + QuotedStr(LandType[aLandType]);
+                     Line := 'DEMIX_TILE=' + QuotedStr(Tiles[Tile]) + ' AND REF_TYPE=' + QuotedStr(RefDEMType[Ref])  + ' AND LAND_TYPE=' + QuotedStr(LandType[aLandType]);
                      GISdb[DBonTable].ApplyGISFilter(Line);
                      GISdb[DBonTable].EmpSource.Enabled := false;
                      if (GISdb[DBonTable].MyData.FiltRecsInDB = DEMs.Count) then begin
@@ -178,9 +178,9 @@ var
 
 
    procedure MergeAndTranspose(var Diffs : tStringList; fName : PathStr);
-   var
-      DEM : integer;
-      DEMs : tStringList;
+   //var
+      //DEM : integer;
+      //DEMs : tStringList;
    begin
       if (Diffs.Count > 0) then begin
          {$If Defined(RecordDEMIX)} WriteLineToDebugFile('MergeAndTranspose ' + fName + ' with regions=' + IntToStr(Diffs.Count)); {$EndIf}
@@ -381,8 +381,8 @@ end;
          procedure FinalizeStringLists(FinalSaveResults : boolean = true);
 
                procedure ProcessStringList(fName : PathStr; var sl : tStringList; DoStats : boolean = false);
-               var
-                  db : integer;
+               //var
+                  //db : integer;
                begin
                   {$IfDef RecordFullDEMIX} writeLineToDebugFile(fName + '  lines=' + IntToStr(sl.Count)); {$EndIf}
                   if (sl.count > 1) then begin
@@ -1132,7 +1132,6 @@ begin
       HeavyDutyProcessing := false;
    end;
 end;
-
 
 
 procedure DEMIX_elevation_histograms;
