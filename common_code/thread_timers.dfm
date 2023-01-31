@@ -3,8 +3,8 @@ object ThreadTimerForm: TThreadTimerForm
   Top = 0
   BorderIcons = []
   Caption = 'Thread progress'
-  ClientHeight = 280
-  ClientWidth = 295
+  ClientHeight = 296
+  ClientWidth = 329
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -12,10 +12,8 @@ object ThreadTimerForm: TThreadTimerForm
   Font.Name = 'Tahoma'
   Font.Style = []
   FormStyle = fsStayOnTop
-  OldCreateOrder = False
   OnClose = FormClose
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Gauge1: TGauge
     Left = 84
@@ -156,8 +154,8 @@ object ThreadTimerForm: TThreadTimerForm
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 261
-    Width = 295
+    Top = 277
+    Width = 329
     Height = 19
     Panels = <
       item
@@ -166,5 +164,7 @@ object ThreadTimerForm: TThreadTimerForm
       item
         Width = 250
       end>
+    ExplicitTop = 242
+    ExplicitWidth = 279
   end
 end

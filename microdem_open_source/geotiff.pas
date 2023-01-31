@@ -41,7 +41,7 @@ unit GeoTiff;
       //{$Define GeotiffSave}
       //{$Define RecordBitPerPixel}
       //{$Define TrackA}
-      //{$Define RecordKeys}
+      {$Define RecordKeys}
       //{$Define LongCent}
       //{$Define RecordEntryInGeotiff}
       //{$Define RecordPlateCaree}
@@ -1826,7 +1826,6 @@ var
             WriteLineToDebugFile(IntegerToString(j,5) + IntegerToString(TiffKeys[j].Tag,8) + IntegerToString(TiffKeys[j].ftype,8) + IntegerToString(TiffKeys[j].LengthIm,12) +IntegerToString(TiffKeys[j].KeyOffset,12));
          end;
      {$EndIf}
-
 
 
    begin

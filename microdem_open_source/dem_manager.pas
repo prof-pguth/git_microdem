@@ -107,7 +107,7 @@ function GetSatMaskList(ASatImage : boolean) : ANSIString;
    function GetCompareNames : integer;
 {$EndIf}
 
-procedure CheckGeoidNames;
+   procedure CheckGeoidNames;
 
 //download data from USNA server
 
@@ -155,7 +155,7 @@ function GeotiffBBox(fName : PathStr) : sfBoundBox;
    function OpenNewDEM(fName : PathStr = ''; LoadMap : boolean = true; WhatFor : shortstring = '') : integer;
    function GetTwoCompatibleGrids(WhatFor : shortString; CheckUnits : boolean; var DEM1,DEM2 : integer; WarnIfIncompatible : boolean = true;  AlwaysAsk : boolean = false) : boolean;
 
-   procedure GetDEMorImage(DEM,Image : boolean; var DEMWanted,ImageWanted : integer; CanCancel : boolean = false; TheMessage : ShortString = ''; ExcludeDEM : integer = 0; ExcludeImage : integer = 0);
+   //procedure GetDEMorImage(DEM,Image : boolean; var DEMWanted,ImageWanted : integer; CanCancel : boolean = false; TheMessage : ShortString = ''; ExcludeDEM : integer = 0; ExcludeImage : integer = 0);
 
    function PickMap(WhatFor : shortstring) : integer;
    function PickADifferentMap(WhatFor,ThisMapCaption : shortstring) : integer;
@@ -652,13 +652,14 @@ begin
 
          j := DEMtoClose;
          CloseYeDEM(j);
+         {$If Defined(RecordCloseDEM) or Defined(ShortRecordCloseDEM)} WriteLineToDebugFile('Back from CloseYeDEM'); {$EndIf}
 
          if (DEMtoClose = PredAgesDEM) then PredAgesDEM := 0;
          if (DEMtoClose = SedThickDEM) then SedThickDEM := 0;
          if (DEMtoClose = SedTypeDEM) then SedTypeDEM := 0;
 
          for j := 1 to MaxTestDEM do begin
-            if TestDEM[j] = DEMtoClose then TestDEM[j] := 0;
+            if (TestDEM[j] = DEMtoClose) then TestDEM[j] := 0;
          end;
 
          DEMtoClose := 0;
@@ -666,7 +667,7 @@ begin
          {$If Defined(RecordCloseDEM) or Defined(RecordSimpleClose) or Defined(ShortRecordCloseDEM)} WriteLineToDebugFile('CloseSingleDEM out OK ' + CloseString + '  Open DEMs=, ' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
       end
       else begin
-         {$If Defined(RecordCloseDEM) or Defined(ShortRecordCloseDEM)}WriteLineToDebugFile('No DEM to close, i=' + IntToStr(DEMtoClose)); {$EndIf}
+         {$If Defined(RecordCloseDEM) or Defined(ShortRecordCloseDEM)} WriteLineToDebugFile('No DEM to close, i=' + IntToStr(DEMtoClose)); {$EndIf}
       end;
    finally
       ApplicationProcessMessages;
@@ -774,7 +775,7 @@ end;
    var
       EditHeader : TDEMHeaderForm;
    begin
-      {$IfDef RecordEdit} WriteLineToDebugFile('ViewHeaderRecord in'); {$EndIf}
+      {$IfDef RecordEdit} WriteLineToDebugFile('ViewHeaderRecord in, DEM=' + IntToStr(DEM)); {$EndIf}
       EditHeader := TDEMHeaderForm.Create(Application);
       EditHeader.SetUpDEMHeaderForm(DEM);
       EditHeader.DisableEdits;
@@ -916,7 +917,7 @@ end;
       function OpenSatImageFromDirectory(LastSatDir : PathStr) : integer;
       var
          fName : PathStr;
-         i{,NewSatImage} : integer;
+         i : integer;
          TheFiles,Files2 : tStringList;
       begin
          Result := 0;
@@ -1089,11 +1090,35 @@ end;
 
       {$IfDef VCL}
          function GetImage(var ImageWanted : integer; CanCancel : boolean = false; TheMessage : ShortString = ''): boolean;
-         var
-            DEMWanted : integer;
+
+            procedure GetDEMorImage(DEM,Image : boolean; var ImageWanted : integer; CanCancel : boolean = false; TheMessage : ShortString = ''; ExcludeDEM : integer = 0; ExcludeImage : integer = 0);
+            var
+               TheList : tStringList;
+               i,Wanted,err  : integer;
+               TStr,TStr2 : ShortString;
+            begin
+               ImageWanted := 0;
+               Wanted := 0;
+               TheList := TStringList.Create;
+                     TStr2 := 'Image';
+                     for i := 1 to MaxSatAllowed do begin
+                        if (SatImage[i] <> Nil) and (ExcludeImage <> i) then
+                          TheList.Add('Image ' + IntToStr(i) +': ' + SatImage[i].SceneTitle + ' (' + SatImage[i].SceneBaseName + ')');
+                     end;
+               {$IfDef VCL}
+                  if (TheList.Count = 1) or GetFromListZeroBased(TStr2 + ' for ' + TheMessage,Wanted,TheList,CanCancel) then begin
+                     TStr := TheList.Strings[Wanted];
+                     Val(Copy(TStr,7,2),ImageWanted,err);
+                  end;
+               {$EndIf}
+               TheList.Free;
+            end;
+
          begin
             if (not CanCancel) and (NumSatImageOpen = 1) then ImageWanted := 1
-            else GetDEMorImage(false,true,DEMWanted,ImageWanted,CanCancel,TheMessage);
+            else begin
+               GetDEMorImage(false,true,ImageWanted,CanCancel,TheMessage);
+            end;
             Result := (ImageWanted <> 0);
          end;
       {$EndIf}
@@ -1197,51 +1222,24 @@ end;
 
       function GetDEM(var DEMWanted : integer; CanCancel : boolean = false; TheMessage : ShortString = '') : boolean;
       var
-         ImageWanted : integer;
-      begin
-         if (NumDEMDataSetsOpen = 1)  and ValidDEM(1) then DEMWanted := 1
-         else GetDEMorImage(true,false,DEMWanted,ImageWanted,CanCancel,TheMessage);
-         Result := (DEMWanted <> 0);
-      end;
-
-
-      procedure GetDEMorImage(DEM,Image : boolean; var DEMWanted,ImageWanted : integer; CanCancel : boolean = false; TheMessage : ShortString = ''; ExcludeDEM : integer = 0; ExcludeImage : integer = 0);
-      var
+         i,Wanted,err : integer;
          TheList : tStringList;
-         i,Wanted,err  : integer;
-         TStr,TStr2 : ShortString;
       begin
-         DEMWanted := 0;
-         ImageWanted := 0;
-         Wanted := 0;
-         TheList := TStringList.Create;
-         if DEM then begin
-            TStr2 := 'DEM';
-            for i := 1 to MaxDEMDataSets do if (ValidDEM(i)) and (not DEMGlb[i].HiddenGrid) and (ExcludeDEM <> i) then
-               TheList.Add('DEM' + IntegerToString(i,4) +': ' + DEMGlb[i].AreaName);
+         if (NumDEMDataSetsOpen = 1) and ValidDEM(1) then DEMWanted := 1
+         else begin
+            DEMWanted := 0;
+            Wanted := 0;
+            TheList := TStringList.Create;
+            for i := 1 to MaxDEMDataSets do if (ValidDEM(i)) and (not DEMGlb[i].HiddenGrid) {and (ExcludeDEM <> i} then
+                  TheList.Add('DEM' + IntegerToString(i,4) +': ' + DEMGlb[i].AreaName);
+            {$IfDef VCL}
+               if (TheList.Count = 1) or GetFromListZeroBased('DEM for ' + TheMessage,Wanted,TheList,CanCancel) then begin
+                  Val(Copy(theList.Strings[Wanted],5,3),DEMWanted,err);
+               end;
+            {$EndIf}
+            TheList.Free;
          end;
-         {$IfDef ExSat}
-         {$Else}
-            if Image then begin
-               TStr2 := 'Image';
-               for i := 1 to MaxSatAllowed do begin
-                  if (SatImage[i] <> Nil) and (ExcludeImage <> i) then
-                    TheList.Add('Image ' + IntToStr(i) +': ' + SatImage[i].SceneTitle + ' (' + SatImage[i].SceneBaseName + ')');
-               end;
-            end;
-         {$EndIf}
-         {$IfDef VCL}
-            if (TheList.Count = 1) or GetFromListZeroBased(TStr2 + ' for ' + TheMessage,Wanted,TheList,CanCancel) then begin
-               TStr := TheList.Strings[Wanted];
-               if Copy(TStr,1,3) = 'DEM' then begin
-                  Val(Copy(TStr,5,3),DEMWanted,err);
-               end
-               else begin
-                  Val(Copy(TStr,7,2),ImageWanted,err);
-               end;
-            end;
-         {$EndIf}
-         TheList.Free;
+         Result := (DEMWanted <> 0);
       end;
 
 
@@ -1394,7 +1392,7 @@ procedure CheckGeoidNames;
 begin
    Geoid2008FName := MainMapData + 'geoid\egm2008-2.5.tif';
    if not FileExists(Geoid2008FName) then Geoid2008FName := MainMapData + 'geoid\egm2008-5.tif';
-   Geoid96FName := MainMapData + 'geoid\egm96-15.tif';
+   Geoid96FName := MainMapData + 'geoid\us_nga_egm96_15.tif';
    GeoidDiffFName := MainMapData + 'geoid\egm96_to_egm2008.tif';
 end;
 
@@ -1551,6 +1549,7 @@ var
           if Table.FieldExists('LAT_HI') then begin
              bb := Table.GetRecordBoundingBox;
              MapOwner.MapDraw.MaximizeLatLongMapCoverage(bb);
+             MapOwner.FullMapSpeedButton.Enabled := true;
           end;
        end;
 
@@ -1648,11 +1647,32 @@ begin
       {$IfDef RecordProjects} WriteLineToDebugFile('RestoreSpecifiedDesktop processing done, LastDESKtop=' + LastDesktop); {$EndIf}
    finally
       HeavyDutyProcessing := false;
+      DEMNowDoing := JustWandering;
       wmDEM.SetMenusForVersion;
       wmDEM.Cascade;
       StopSplashing;
    end;
    {$IfDef RecordProjects} WriteLineToDebugFile('RestoreSpecifiedDesktop out, LastDESKtop=' + LastDesktop); {$EndIf}
+end;
+
+procedure RestoreMicrodemDesktop(fName : PathStr = ''; CloseAll : boolean = true);
+begin
+   try
+      HeavyDutyProcessing := true;
+      {$IfDef RecordProjects} WriteLineToDebugFile('RestoreMicrodemDesktop ' + fName); {$EndIf}
+      if (fName = '') then  begin
+         FName := LastDesktop;
+         if not GetFileFromDirectory('Project to restore',DefaultDBMask,fName) then exit;
+      end;
+      LastDesktop := fName;
+      {$IfDef RecordProjects} WriteLineToDebugFile('RestoreMicrodemDesktop, LastDesktop=' + LastDesktop); {$EndIf}
+      if CloseAll then CloseAllWindowsAndData;
+      {$IfDef RecordProjects} WriteLineToDebugFile('RestoreMicrodemDesktop moving on, LastDESKtop=' + LastDesktop); {$EndIf}
+      RestoreSpecifiedDesktop(LastDesktop);
+   finally
+      HeavyDutyProcessing := false;
+   end;
+   {$IfDef RecordProjects} WriteLineToDebugFile('RestoreMicrodemDesktop out, LastDESKtop=' + LastDesktop); {$EndIf}
 end;
 
 
@@ -1724,26 +1744,6 @@ begin
    end;
 end;
 
-
-procedure RestoreMicrodemDesktop(fName : PathStr = ''; CloseAll : boolean = true);
-begin
-   try
-      HeavyDutyProcessing := true;
-      {$IfDef RecordProjects} WriteLineToDebugFile('RestoreMicrodemDesktop ' + fName); {$EndIf}
-      if (fName = '') then  begin
-         FName := LastDesktop;
-         if not GetFileFromDirectory('Project to restore',DefaultDBMask,fName) then exit;
-      end;
-      LastDesktop := fName;
-      {$IfDef RecordProjects} WriteLineToDebugFile('RestoreMicrodemDesktop, LastDesktop=' + LastDesktop); {$EndIf}
-      if CloseAll then CloseAllWindowsAndData;
-      {$IfDef RecordProjects} WriteLineToDebugFile('RestoreMicrodemDesktop moving on, LastDESKtop=' + LastDesktop); {$EndIf}
-      RestoreSpecifiedDesktop(LastDesktop);
-   finally
-      HeavyDutyProcessing := false;
-   end;
-   {$IfDef RecordProjects} WriteLineToDebugFile('RestoreMicrodemDesktop out, LastDESKtop=' + LastDesktop); {$EndIf}
-end;
 
 
 procedure InitCompareDEMs;

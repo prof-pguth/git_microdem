@@ -151,7 +151,7 @@ var
 begin
    RefMap := IsReflectanceMap(MapType);
    for j := Limits.YGridLow to Limits.YGridHigh do begin
-      for i := Limits.XGridLow to Limits.XGridHigh do begin  //0 to pred(MapXSize) do begin
+      for i := Limits.XGridLow to Limits.XGridHigh do begin
          ScreenToDEMGrid(i,j,xr,yr);
          if DEMGlb[DEMonMap].GridInDataSet(xr,yr) then begin
             if RefMap then Color := DEMGlb[DEMonMap].RGBReflectanceColor(MapType,round(xr),round(yr))
@@ -704,9 +704,9 @@ begin
       if FileExists(HardLimitColorPaletteFName) then begin
          ColorTable := tMyData.Create(HardLimitColorPaletteFName);
          ColorTable.ApplyFilter('PALETTE=' + QuotedStr(ElevationFixedPalette));
-         {$IfDef RecordElevColorFromTable} WriteLineToDebugFile('Table open'); {$EndIf}
+         {$IfDef RecordElevColorFromTable} WriteLineToDebugFile('Table open, ' + ElevationFixedPalette); {$EndIf}
          tf := 1;
-         if {MDDef.UseBigElevationColorTables and} (ColorTable.FiltRecsInDB > 256) then begin
+         if (ColorTable.FiltRecsInDB > 256) then begin
             New(ZColorTable.ZBigTableValue);
             New(ZColorTable.ZBigTableColors);
          end
@@ -719,9 +719,9 @@ begin
          {$IfDef RecordElevColorFromTable} WriteLineToDebugFile('Parse table, recs=' + IntToStr(ColorTable.FiltRecordsInDB)); {$EndIf}
 
          ZColorTable.ZTableEntries := 0;
-         while not ColorTable.Eof do begin
+         while (not ColorTable.Eof) do begin
             inc(ZColorTable.ZTableEntries);
-            if {MDDef.UseBigElevationColorTables and} (ColorTable.FiltRecsInDB > 256) then begin
+            if (ColorTable.FiltRecsInDB > 256) then begin
                ZColorTable.zBigTableValue^[ZColorTable.ZTableEntries] := ColorTable.GetFieldByNameAsFloat('MAX');
                if (ZColorTable.zBigTableValue^[ZColorTable.ZTableEntries] >= MinMapElev) then begin
                   ZColorTable.zBigTableColors^[ZColorTable.ZTableEntries] := ColorTable.PlatformColorFromTable;

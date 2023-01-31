@@ -243,6 +243,7 @@ type
          function CreateRose(BaseLegend : shortstring = '') : tThisBaseGraph;
          function QueensAspect : float64;
          procedure AddPoint(SlopeAspectRec : tSlopeAspectRec);
+         procedure AddAspect(Aspect : float32);
          procedure VectorAverage;
          procedure FillFromGrid(GridLimits: tGridLimits);
    end;
@@ -309,6 +310,7 @@ type
          AverageYSpace      : float64;   {average spacing, in meters, in y direction}
          DiagSpaceByDEMrow,
          XSpaceByDEMrow     : ^tShortFloatCol;
+         VATrelatedGrid,
          FilterGrid,
          FilterGridValue,
          FanBlowUpDEM,
@@ -520,7 +522,7 @@ type
          function ReflectanceValue(x,y : integer) : integer;
          function RGBReflectanceColor(TintedReflectance : tMapType; Col,Row : integer) : tPlatformColor;
 
-         procedure GetReflectanceRGB(TintedReflectance : tMapType; zv : float64; var Red,Green,Blue : integer);
+         //procedure GetReflectanceRGB(TintedReflectance : tMapType; zv : float64; var Red,Green,Blue : integer);
          function ReflectanceValueFloat(x,y :  float64) : integer;
          procedure ReflectanceParams(Min : float64 = -9999; Max : float64 = -9999);
 
@@ -1559,6 +1561,7 @@ begin
    ElevationMultiple := 1;
    AverageGridTrue := 0;
    DSMGrid := 0;
+   VATrelatedGrid := 0;
    FanBlowUpDEM := 0;
    FilterGrid := 0;
    FilterGridValue := 0;
@@ -2007,10 +2010,8 @@ end;
 
 
 function tDEMDataSet.ResaveNewResolution(FilterCategory : tFilterCat) : integer;
-//const
-   //MaxSize = 1000;
 var
-   Col,Row{,Removed} : integer;
+   Col,Row : integer;
    z1 : float32;
    Title         : Shortstring;
    NewHeadRecs   : tDEMheader;
@@ -3022,6 +3023,8 @@ begin
 end;
 
 
+(*
+
 procedure tDEMDataSet.GetReflectanceRGB(TintedReflectance : tMapType; zv : float64; var Red,Green,Blue : integer);
 var
    zi : integer;
@@ -3032,7 +3035,7 @@ begin
     if zi in [1,2,3] then Green := 1 else Green := 0;
     if zi in [0,1,5,6] then Blue := 1 else Blue := 0;
 end;
-
+*)
 
 function tDEMDataSet.ReflectanceColor(TintedReflectance : tMapType; x,y : integer) : tcolor;
 begin
@@ -3044,100 +3047,114 @@ end;
 
 function tDEMDataSet.RGBReflectanceColor(TintedReflectance : tMapType; Col,Row : integer) : tPlatformColor;
 var
-   red,green,blue : integer;
-   r : integer;
+   red,green,blue,zi,r : integer;
    zv : float32;
 begin
    GetElevMeters(Col,Row,zv);
-   if (TintedReflectance = mtGrayReflect) then begin
-      if (MDdef.WaterCheck and (abs(zv) < 0.001)) or (MDdef.LakeCheck and LakePoint(Col,Row)) then begin
-         Result := MDdef.WaterColor;
-         exit;
-      end;
-   end;
-   R := ReflectanceValue(Col,Row);
-   if (R < MaxSmallInt) and (abs(RefMaxElev - RefMinElev) > 0.001) then begin
-      if (TintedReflectance in [mtGrayReflect]) then begin
-         Result := GrayRGBTrip(r);
-      end
-      else if (TintedReflectance in [mtIHSReflect]) then begin
-         if (zv > RefMaxElev) then zv := RefMaxElev;
-         if (zv < RefMinElev) then zv := RefMinElev;
-         Result := RGBtripFromHSI((360.0 - ((zv - RefMinElev) / (RefMaxElev - RefMinElev) * 360.0)),MDDef.MergeSat,R);
-       end
-      else if (TintedReflectance in [mtRefGrayColor]) then begin
-         if (zv < 0) then begin
-            Result := RainbowRGBFunct(zv,RefMinElev,0);
-         end
-         else begin
+   if (TintedReflectance = mtGrayReflect) and (MDdef.WaterCheck and (abs(zv) < 0.001)) or (MDdef.LakeCheck and LakePoint(Col,Row)) then begin
+      Result := MDdef.WaterColor;
+   end
+   else begin
+      R := ReflectanceValue(Col,Row);
+      if (R < MaxSmallInt) and (abs(RefMaxElev - RefMinElev) > 0.001) then begin
+         if (TintedReflectance in [mtGrayReflect]) then begin
             Result := GrayRGBTrip(r);
-         end;
-      end
-      else if (TintedReflectance in [mtRefColorGray]) then begin
-         if (zv > MDDef.CurrentSeaLevel) then begin
-            Result := RainbowRGBFunct(zv,0,RefMaxElev);
          end
-         else begin
-            Result := GrayRGBTrip(r);
-         end;
-      end
-      else if (TintedReflectance in [mtRefGrayBlue]) then begin
-         if (zv < MDDef.CurrentSeaLevel) then begin
-            Result := RGBTrip(0,0,r);
+         else if (TintedReflectance in [mtIHSReflect]) then begin
+            if (zv > RefMaxElev) then zv := RefMaxElev;
+            if (zv < RefMinElev) then zv := RefMinElev;
+            Result := RGBtripFromHSI((360.0 - ((zv - RefMinElev) / (RefMaxElev - RefMinElev) * 360.0)),MDDef.MergeSat,R);
          end
-         else begin
-            Result := GrayRGBTrip(r);
-         end;
-      end
-      else if (TintedReflectance = mtGYRReflect) then begin
-          if (zv > MDDef.TopCutLevel) then begin
-             Result := RGBTrip(0,r,0);
+         else if (TintedReflectance in [mtRefGrayColor]) then begin
+            if (zv < 0) then begin
+               Result := RainbowRGBFunct(zv,RefMinElev,0);
+            end
+            else begin
+               Result := GrayRGBTrip(r);
+            end;
+         end
+         else if (TintedReflectance in [mtRefColorGray]) then begin
+            if (zv > MDDef.CurrentSeaLevel) then begin
+               Result := RainbowRGBFunct(zv,0,RefMaxElev);
+            end
+            else begin
+               Result := GrayRGBTrip(r);
+            end;
+         end
+         else if (TintedReflectance in [mtRefGrayBlue]) then begin
+            if (zv < MDDef.CurrentSeaLevel) then begin
+               Result := RGBTrip(0,0,r);
+            end
+            else begin
+               Result := GrayRGBTrip(r);
+            end;
+         end
+         else if (TintedReflectance = mtGYRReflect) then begin
+             if (zv > MDDef.TopCutLevel) then begin
+                Result := RGBTrip(0,r,0);
+             end
+             else if (zv < MDDef.BottomCutLevel) then begin
+                Result := RGBTrip(r,0,0);
+             end
+             else begin
+                Result := RGBTrip(r,r,0);
+             end;
           end
-          else if (zv < MDDef.BottomCutLevel) then begin
-             Result := RGBTrip(r,0,0);
+         else if (TintedReflectance = mtGGRReflect) then begin
+             if (zv > MDDef.TopCutLevel) then begin
+                Result := RGBTrip(0,r,0);
+             end
+             else if (zv < MDDef.BottomCutLevel) then begin
+                Result := RGBTrip(r,0,0);
+             end
+             else begin
+                Result := RGBTrip(r,r,r);
+             end;
           end
-          else begin
-             Result := RGBTrip(r,r,0);
-          end;
-       end
-      else if (TintedReflectance = mtGGRReflect) then begin
-          if (zv > MDDef.TopCutLevel) then begin
-             Result := RGBTrip(0,r,0);
+          else if (TintedReflectance = mtGrCyBlReflect) then begin
+             if (zv > MDDef.TopCutLevel) then begin
+                Result := RGBTrip(0,r,0);
+             end
+             else if (zv < MDDef.BottomCutLevel) then begin
+                Result := RGBTrip(0,r,r);
+             end
+             else begin
+                Result := RGBTrip(0,0,r);
+             end;
           end
-          else if (zv < MDDef.BottomCutLevel) then begin
-             Result := RGBTrip(r,0,0);
+          else if (TintedReflectance = mtBlueGreenReflect) then begin
+             if (zv > MDDef.CurrentSeaLevel) then begin
+                Result := RGBTrip(0,r,0);
+             end
+             else begin
+                Result := RGBTrip(0,0,r);
+             end;
           end
-          else begin
-             Result := RGBTrip(r,r,r);
-          end;
-       end
-       else if (TintedReflectance = mtGrCyBlReflect) then begin
-          if (zv > MDDef.TopCutLevel) then begin
-             Result := RGBTrip(0,r,0);
+          else if (TintedReflectance = mt6ColorVAToverlay) then begin
+             if DEMglb[VATrelatedGrid].GetElevMeters(Col,Row,ZV) then begin
+                zi := pred(round(zv));
+                if zi in [3,4,5,6] then Red := 1 else Red := 0;
+                if zi in [1,2,3] then Green := 1 else Green := 0;
+                if zi in [0,1,5,6] then Blue := 1 else Blue := 0;
+                Result := RGBTrip(r*Red,r*Green,r*Blue);
+             end
+             else Result := RGBTrip(r,r,r);
           end
-          else if (zv < MDDef.BottomCutLevel) then begin
-             Result := RGBTrip(0,r,r);
-          end
-          else begin
-             Result := RGBTrip(0,0,r);
-          end;
-       end
-       else if (TintedReflectance = mtBlueGreenReflect) then begin
-          if (zv > MDDef.CurrentSeaLevel) then begin
-             Result := RGBTrip(0,r,0);
-          end
-          else begin
-             Result := RGBTrip(0,0,r);
+          else if (TintedReflectance = mt6ColorsReflect) then begin
+            // GetReflectanceRGB(TintedReflectance,zv,Red,Green,Blue);
+             zi := round(zv - RefMinElev) * 6 div round(RefMaxElev - RefMinElev);
+             { 0  : Blue}   { 1  : Cyan}  { 2  : Green} { 3  : Yellow}  { 4  : Red } { 5  : Magneta}
+             if zi in [3,4,5,6] then Red := 1 else Red := 0;
+             if zi in [1,2,3] then Green := 1 else Green := 0;
+             if zi in [0,1,5,6] then Blue := 1 else Blue := 0;
+
+             Result := RGBTrip(r*Red,r*Green,r*Blue);
           end;
        end
        else begin
-          GetReflectanceRGB(TintedReflectance,zv,Red,Green,Blue);
-          Result := RGBTrip(r*Red,r*Green,r*Blue);
+          Result := MissingColorRGBTriple(Col,Row);
        end;
-    end
-    else begin
-       Result := MissingColorRGBTriple(Col,Row);
-    end;
+   end;
 end;
 
 
@@ -3871,6 +3888,16 @@ begin
    AspectStats.Destroy;
 end;
 
+procedure tAspectStats.AddAspect(Aspect : float32);
+var
+   AspInt : integer;
+begin
+   AspInt := round(Aspect);
+   if (AspInt = 360) then AspInt := 0;
+   inc(AspectFreqValsGrid[AspInt]);
+   inc(Npts);
+end;
+
 
 procedure tAspectStats.AddPoint(SlopeAspectRec: tSlopeAspectRec);
 var
@@ -3888,6 +3915,7 @@ begin
       inc(Npts);
    end;
 end;
+
 
 constructor tAspectStats.Create(theDEM : integer);
 begin

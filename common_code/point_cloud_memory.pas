@@ -644,7 +644,7 @@ begin
          end;
 
          MDDef.FlipHistogram := true;
-         Histogram := DeprecatedCreateHistogram(true,MomentVar.NPts,zvs^,'Elevations','Distribution at ' + LatLongDegreeToString(Lat,Long) ); //,round(MomentVar.MinZ),round(MomentVar.MaxZ),1,clSilver);
+         Histogram := DeprecatedCreateHistogram(true,MomentVar.NPts,zvs^,'Elevations','Distribution at ' + LatLongDegreeToString(Lat,Long) );
          Histogram.GraphDraw.LegendList := tStringList.Create;
          Histogram.GraphDraw.LegendList.Add('Point cloud');
          for i := 1 to MaxCompare do begin

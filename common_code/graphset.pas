@@ -130,6 +130,7 @@ var
    VisCols : Array100Boolean;
 begin
     with OwningGraph,GraphDraw do begin
+         MarginsGood := true;
          Edit11.Text := IntToStr(Width);
          Edit12.Text := IntToStr(Height);
          XLabelEdit.Text := HorizLabel;
@@ -161,7 +162,6 @@ begin
             MyTable.Destroy;
          end;
          if (XYZFilesPlotted.Count > 0) then begin
-            //Colors.Visible := true;
             Label1.Visible := true;
             Label4.Visible := true;
             Edit5.Visible := true;
@@ -178,9 +178,6 @@ begin
             end;
          end;
          if GraphDraw.GraphType in [gtTwoVertAxes] then begin
-           // YLabelEdit.Visible := false;
-            //YMaxEdit.Visible := false;
-            //YMinEdit.Visible := false;
             YMaxLabel.Visible := false;
             YMinLabel.Visible := false;
             Edit14.Text := RealToString(OwningGraph.GraphDraw.MinVertAxis2,-18,-6);
@@ -200,39 +197,36 @@ begin
     YMinEdit.Text := RealToString(OwningGraph.GraphDraw.MinVertAxis,-18,-6);
     YMaxEdit.Text := RealToString(OwningGraph.GraphDraw.MaxVertAxis,-18,-6);
 
-
-         if OwningGraph.GraphDraw.GraphAxes in [XTimeYFullGrid,XTimeYPartGrid] then begin
-            XMinLabel.Caption := 'Ending';
-            XMaxLabel.Caption := 'Starting';
-            XLabelEdit.Visible := false;
-            //Day.Visible := true;
-            XMinEdit.Text := IntToStr(OwningGraph.GraphDraw.Day2);
-            XMaxEdit.Text := IntToStr(OwningGraph.GraphDraw.Day1);
-            Label2.Visible := true;
-            Label3.Visible := true;
-            Edit1.Text := IntToStr(OwningGraph.GraphDraw.Month1);
-            Edit2.Text := IntToStr(OwningGraph.GraphDraw.Month2);
-            Edit3.Text := IntToStr(OwningGraph.GraphDraw.Year1);
-            Edit4.Text := IntToStr(OwningGraph.GraphDraw.Year2);
-            Edit1.Visible := true;
-            Edit2.Visible := true;
-            Edit3.Visible := true;
-            Edit4.Visible := true;
-         end
-         else begin
-            Edit1.Visible := false;
-            Edit2.Visible := false;
-            Edit3.Visible := false;
-            Edit4.Visible := false;
-            Label2.Visible := false;
-            Label3.Visible := false;
-           // Day.Visible := false;
-            XMinLabel.Caption := 'Min x';
-            XMaxLabel.Caption := 'Max x';
-            XLabelEdit.Visible := true;
-            XMinEdit.Text := RealToString(OwningGraph.GraphDraw.MinHorizAxis,-18,-6);
-            XMaxEdit.Text := RealToString(OwningGraph.GraphDraw.MaxHorizAxis,-18,-6);
-         end;
+   if OwningGraph.GraphDraw.GraphAxes in [XTimeYFullGrid,XTimeYPartGrid] then begin
+      XMinLabel.Caption := 'Ending';
+      XMaxLabel.Caption := 'Starting';
+      XLabelEdit.Visible := false;
+      XMinEdit.Text := IntToStr(OwningGraph.GraphDraw.Day2);
+      XMaxEdit.Text := IntToStr(OwningGraph.GraphDraw.Day1);
+      Label2.Visible := true;
+      Label3.Visible := true;
+      Edit1.Text := IntToStr(OwningGraph.GraphDraw.Month1);
+      Edit2.Text := IntToStr(OwningGraph.GraphDraw.Month2);
+      Edit3.Text := IntToStr(OwningGraph.GraphDraw.Year1);
+      Edit4.Text := IntToStr(OwningGraph.GraphDraw.Year2);
+      Edit1.Visible := true;
+      Edit2.Visible := true;
+      Edit3.Visible := true;
+      Edit4.Visible := true;
+   end
+   else begin
+      Edit1.Visible := false;
+      Edit2.Visible := false;
+      Edit3.Visible := false;
+      Edit4.Visible := false;
+      Label2.Visible := false;
+      Label3.Visible := false;
+      XMinLabel.Caption := 'Min x';
+      XMaxLabel.Caption := 'Max x';
+      XLabelEdit.Visible := true;
+      XMinEdit.Text := RealToString(OwningGraph.GraphDraw.MinHorizAxis,-18,-6);
+      XMaxEdit.Text := RealToString(OwningGraph.GraphDraw.MaxHorizAxis,-18,-6);
+   end;
 
 end;
 
@@ -281,8 +275,8 @@ begin
       end
       else begin
           HorizLabel := XLabelEdit.Text;
-          CheckEditString(XMinEdit.Text,MinHorizAxis);
-          CheckEditString(XMaxEdit.Text,MaxHorizAxis);
+          CheckEditString(XMinEdit.Text,OwningGraph.GraphDraw.MinHorizAxis);
+          CheckEditString(XMaxEdit.Text,OwningGraph.GraphDraw.MaxHorizAxis);
        end;
        VertLabel := YLabelEdit.Text;
        VertLabel2 := Edit13.Text;
@@ -299,21 +293,14 @@ begin
        CheckEditString(Edit5.Text,MinZ);
        CheckEditString(Edit6.Text,MaxZ);
 
-       CheckEditString(Edit7.Text,LeftMargin);
-       CheckEditString(Edit8.Text,TopMargin);
-       CheckEditString(Edit9.Text,BottomMargin);
-       CheckEditString(Edit11.Text,GraphDraw.XWindowSize);
-       CheckEditString(Edit12.Text,GraphDraw.YWindowSize);
+       CheckEditString(Edit7.Text,OwningGraph.GraphDraw.LeftMargin);
+       CheckEditString(Edit8.Text,OwningGraph.GraphDraw.TopMargin);
+       CheckEditString(Edit9.Text,OwningGraph.GraphDraw.BottomMargin);
+       CheckEditString(Edit11.Text,OwningGraph.GraphDraw.XWindowSize);
+       CheckEditString(Edit12.Text,OwningGraph.GraphDraw.YWindowSize);
        {$If Defined(RecordGrafSize)} WriteLineToDebugFile('TGraphSettingsForm.CheckSetting window, ' + IntToStr(XWindowSize) + 'x' + IntToStr(YWindowSize)); {$EndIf}
-       OwningGraph.ClientWidth := GraphDraw.XWindowSize;
-       OwningGraph.ClientHeight := GraphDraw.YWindowSize;
-
-       (*
-       CheckEditString(Edit11.Text,i);
-       OwningGraph.ClientWidth := i;  //XWindowSize);
-       CheckEditString(Edit12.Text,i);
-       OwningGraph.ClientHeight := i;  //YWindowSize);
-       *)
+       OwningGraph.ClientWidth := OwningGraph.GraphDraw.XWindowSize;
+       OwningGraph.ClientHeight := OwningGraph.GraphDraw.YWindowSize;
        {$If Defined(RecordGrafSize)} WriteLineToDebugFile('TGraphSettingsForm.CheckSetting out Client size, ' + IntToStr(OwningGraph.ClientWidth) + 'x' + IntToStr(OwningGraph.ClientHeight) + ' ' +  OwningGraph.GraphDraw.AxisRange); {$EndIf}
     end;
 end;

@@ -995,7 +995,7 @@ end;
 
 function IsReflectanceMap(MapType : tMapType) : boolean;
 begin
-   Result := MapType in [mtGrayReflect,mtBlueGreenReflect,mtIHSReflect,mt6ColorsReflect,mtRefGrayBlue,mtRefGrayBlue,mtRefGrayColor,mtRefColorGray,mtGYRReflect,mtGGRReflect,mtGrCyBlReflect];
+   Result := MapType in [mtGrayReflect,mtBlueGreenReflect,mtIHSReflect,mt6ColorsReflect,mtRefGrayBlue,mtRefGrayBlue,mtRefGrayColor,mtRefColorGray,mtGYRReflect,mtGGRReflect,mtGrCyBlReflect,mt6ColorVAToverlay];
 end;
 
 function IsSlopeMap(MapType : tMapType) : boolean;

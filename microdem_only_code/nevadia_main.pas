@@ -13,6 +13,8 @@
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
+      {$Define RecordBatch}
+      {$Define RecordCommandLine}
       {$Define RecordDEMIX}
       //{$Define RecordFullDEMIX}
       //{$Define RecordDEMIXLoops}
@@ -28,10 +30,8 @@
       //{$Define RecordOpenVectorMap}
       //{$Define RecordShipwrecks}
       //{$Define Record3D}
-      //{$Define RecordLabs}
-      {$Define RecordBatch}
+      {$Define RecordLabs}
       //{$Define LidarGlobalDEMs}
-      {$Define RecordCommandLine}
       //{$Define RecordCartography}
       //{$Define RecordFormActivate}
       //{$Define RecordUpdate}
@@ -136,7 +136,7 @@ type
     Cancelpending1: TMenuItem;
     Tools1: TMenuItem;
     N9: TMenuItem;
-    Header1: TMenuItem;
+    //Header1: TMenuItem;
     N10: TMenuItem;
     DEMproperties1: TMenuItem;
     Flythrough1: TMenuItem;
@@ -466,7 +466,7 @@ type
     N18: TMenuItem;
     CloseallDBs1: TMenuItem;
     Remotesensinglabs1: TMenuItem;
-    Datadownload25GB1: TMenuItem;
+    EurekaValleyDownload: TMenuItem;
     CloseprogramupdateEXEnewversion7MBdownload1: TMenuItem;
     Spectrallibrary3: TMenuItem;
     N19: TMenuItem;
@@ -525,6 +525,13 @@ type
     BatchNDVI: TMenuItem;
     Annapolislidar8GB1: TMenuItem;
     HistogramstoCSVfiles1: TMenuItem;
+    Bringslicecontroltofront1: TMenuItem;
+    Bringpointcloudcontroltofront1: TMenuItem;
+    Viewlastexectiondebuglog1: TMenuItem;
+    GERDdownload1: TMenuItem;
+    N2020fillseason1: TMenuItem;
+    N2021fillseason: TMenuItem;
+    N2022fillseason1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -549,7 +556,7 @@ type
     procedure Magneticmodel1Click(Sender: TObject);
     procedure Cancelpending1Click(Sender: TObject);
     procedure TextEditor1Click(Sender: TObject);
-    procedure Header1Click(Sender: TObject);
+    //procedure Header1Click(Sender: TObject);
     //procedure ContourGhosts1Click(Sender: TObject);
     procedure Vectormap1Click(Sender: TObject);
     //procedure Shorttable2Click(Sender: TObject);
@@ -868,7 +875,7 @@ type
     procedure ACOLITEallopensatelliteimages1Click(Sender: TObject);
     procedure Fatfingers1Click(Sender: TObject);
     procedure Datadownloadpicksubset1Click(Sender: TObject);
-    procedure Datadownload25GB1Click(Sender: TObject);
+    procedure EurekaValleyDownloadClick(Sender: TObject);
     procedure DEMIXwinecontest1Click(Sender: TObject);
     procedure Closeprogramgetdebugversionoftheprogram7MB1Click(Sender: TObject);
     procedure KangarooIslandadditionalscenes1Click(Sender: TObject);
@@ -893,6 +900,12 @@ type
     procedure BatchNDVIClick(Sender: TObject);
     procedure Annapolislidar8GB1Click(Sender: TObject);
     procedure HistogramstoCSVfiles1Click(Sender: TObject);
+    procedure Bringslicecontroltofront1Click(Sender: TObject);
+    procedure Bringpointcloudcontroltofront1Click(Sender: TObject);
+    procedure Viewlastexectiondebuglog1Click(Sender: TObject);
+    procedure N2020fillseason1Click(Sender: TObject);
+    procedure N2021fillseasonClick(Sender: TObject);
+    procedure N2022fillseason1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1329,9 +1342,32 @@ begin
 end;
 
 
-procedure Twmdem.Datadownload25GB1Click(Sender: TObject);
+procedure Twmdem.EurekaValleyDownloadClick(Sender: TObject);
+
+   procedure DealWithFile(fName : PathStr);
+   var
+      Source,Dest : string;
+   begin
+      {$IfDef RecordLabs} writeLineToDebugFile('Twmdem.Datadownload25GB1Click check ' + fname); {$EndIf}
+      Dest := MainMapData + 'eureka_valley\' + fname;
+      if not PathIsValid(Dest) then begin
+         {$IfDef RecordLabs} writeLineToDebugFile('Twmdem.Datadownload25GB1Click downlaod ' + fname); {$EndIf}
+         DownloadandUnzipDataFileIfNotPresent(fName,true);
+         Source := MainMapData + fname;
+         System.IOUtils.TDirectory.Move(Source,Dest);
+         {$IfDef RecordLabs} writeLineToDebugFile('Twmdem.Datadownload25GB1Click moved to ' + Dest); {$EndIf}
+      end;
+   end;
+
 begin
-   DownloadandUnzipDataFileIfNotPresent('eureka_valley_landslide');
+   {$IfDef RecordLabs} writeLineToDebugFile('Twmdem.Datadownload25GB1Click in'); {$EndIf}
+   SafeMakeDir(MainMapData + 'eureka_valley\');
+   DealWithFile('naip_merge');
+   DealWithFile('LC08_L1TP_041034_20190615_20190620_01_T1');
+   DealWithFile('geologic_map');
+   DealWithFile('L1C_T11SMB_A011464_20170901T183959');
+   DealWithFile('dem');
+   {$IfDef RecordLabs} writeLineToDebugFile('Twmdem.Datadownload25GB1Click out'); {$EndIf}
 end;
 
 procedure Twmdem.Datadownloadpicksubset1Click(Sender: TObject);
@@ -1534,6 +1570,9 @@ begin
       OpenGL1tofront.Visible := (View3DForm <> nil) or (Map3D <> nil);
    {$EndIf}
 
+   Bringslicecontroltofront1.Visible := (SlicerForm <> Nil);
+   Bringpointcloudcontroltofront1.Visible := (pt_cloud_opts_fm <> Nil);
+
    CloseWindows1.Visible := (MDDef.ProgramOption <> DragonPlotProgram);
 
    {$IfDef RecordProblems}
@@ -1545,8 +1584,6 @@ begin
 
    Data1.Visible := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]) and MDDef.ShowDataManipulation;
    InOutButton.Visible := Data1.Visible;
-
-   Header1.Visible := (NumDEMDataSetsOpen > 0) or (NumSatImageOpen > 0);
 
    {$IfDef ExIndexes}
       IntDBSpeedButton.Visible := false;
@@ -2160,9 +2197,27 @@ procedure Twmdem.SeeIfThereAreDebugThingsToDo;
       end;
       *)
 
+      procedure Histies;
+      var
+         DEMwithVAT,ElevMap,SlopeMap,RuffMap,AspMap : integer;
+      begin
+         DEMwithVAT := OpenNewDEM('H:\aa_half_sec_test\COP-ALOS_compare_DTM.dem' );
+         ElevMap  := OpenNewDEM('H:\aa_half_sec_test\dtm_elev.dem' );
+         SlopeMap  := OpenNewDEM('H:\aa_half_sec_test\slope.dem' );
+         RuffMap := OpenNewDEM('H:\aa_half_sec_test\ruff.dem' );
+         AspMap := OpenNewDEM('H:\aa_half_sec_test\aspect.dem' );
+
+         DEMGlb[ElevMap].VATrelatedGrid := DEMwithVAT;
+         DEMGlb[ElevMap].SelectionMap.MapDraw.MapType := mt6ColorVAToverlay;
+         DEMGlb[ElevMap].SelectionMap.DoBaseMapRedraw;
+         HistogramsFromVATDEM(DEMwithVAT,ElevMap,SlopeMap,RuffMap,AspMap);
+      end;
+
+
 begin
    if TrilobiteComputer then begin
       //OpenDEMIXArea('H:\wine_contest_reference_dems\uruguay.dbf');
+     //Histies;
    end;
 end;
 
@@ -2579,6 +2634,66 @@ begin
 end;
 
 
+procedure Twmdem.Bringpointcloudcontroltofront1Click(Sender: TObject);
+begin
+   pt_cloud_opts_fm.BringToFront;
+   pt_cloud_opts_fm.Left := Self.Left + 10;
+   pt_cloud_opts_fm.Top := Self.Top + 10;
+end;
+
+procedure Twmdem.Bringslicecontroltofront1Click(Sender: TObject);
+begin
+   //if (SlicerForm.SliceGraph[1].GISGraph <> nil) then SlicerForm.SliceGraph[1].BringToFront;
+   SlicerForm.BringToFront;
+   SlicerForm.Left := Self.Left + 10;
+   SlicerForm.Top := Self.Top + 10;
+end;
+
+
+procedure GerdDownload(Year : integer);
+
+   procedure DealWithFile(fName : PathStr);
+   var
+      Source,Dest : string;
+   begin
+      {$IfDef RecordLabs} writeLineToDebugFile('Gerd check ' + fname); {$EndIf}
+      Dest := MainMapData + 'gerd\' + fname;
+      if not PathIsValid(Dest) then begin
+         {$IfDef RecordLabs} writeLineToDebugFile('Gerd downlaod ' + fname); {$EndIf}
+         DownloadandUnzipDataFileIfNotPresent(fName,true);
+         Source := MainMapData + fname;
+         System.IOUtils.TDirectory.Move(Source,Dest);
+         {$IfDef RecordLabs} writeLineToDebugFile('Gerd moved to ' + Dest); {$EndIf}
+      end;
+   end;
+
+begin
+   {$IfDef RecordLabs} writeLineToDebugFile('Gerd in'); {$EndIf}
+   SafeMakeDir(MainMapData + 'gerd\');
+   DealWithFile('S2A_MSIL1C_20200429T075611_N0209_R035_T36PYT_20200429T095912.SAFE');
+   if (Year = 2020) then DealWithFile('S2A_MSIL1C_20201016T075921_N0209_R035_T36PYT_20201016T093633.SAFE');
+   if (Year = 2021) then DealWithFile('S2A_MSIL1C_20210911T075611_N0301_R035_T36PYT_20210911T090843.SAFE');
+   if (Year = 2022) then DealWithFile('S2B_MSIL1C_20220911T075609_N0400_R035_T36PYT_20220911T095042.SAFE');
+   DealWithFile('cop_dem');
+   {$IfDef RecordLabs} writeLineToDebugFile('Gerd out'); {$EndIf}
+end;
+
+
+procedure Twmdem.N2020fillseason1Click(Sender: TObject);
+begin
+   GerdDownload(2020)
+end;
+
+procedure Twmdem.N2021fillseasonClick(Sender: TObject);
+begin
+   GerdDownload(2021)
+end;
+
+procedure Twmdem.N2022fillseason1Click(Sender: TObject);
+begin
+   GerdDownload(2022)
+end;
+
 procedure Twmdem.N81Sfileviewer1Click(Sender: TObject);
 begin
    {$IfDef ExSidescan}
@@ -2632,18 +2747,19 @@ begin
       BatFile := tStringList.Create;
       BatFile.Add('REM wait program close');
       BatFile.Add('ping 127.0.0.1 -n ' + IntToStr(MDDef.UpdateDelay) + ' > nul');
-      BatFile.Add('del microdem.exe /F');
       if AskForNewUpdateNow then begin
+         BatFile.Add('del c:\microdem\microdem.exe /F');
          BatFile.Add(MDTempDir + 'microdem_update.exe');
          BatFile.Add('c:\microdem\microdem.exe');
       end
       else begin
+         BatFile.Add('del c:\microdem\microdem_beta.exe /F');
          BatFile.Add(MDTempDir + 'microdem_beta_update.exe');
          BatFile.Add('c:\microdem\microdem_beta.exe');
       end;
       BatFile.SaveToFile(fName);
       BatFile.Free;
-      ExecuteFile(fName, '', ProgramRootDir);
+      ExecuteFile(fName,'', ProgramRootDir);
    end;
    Action := caFree;
    {$If Defined(RecordClosing) or Defined(RecordProblems)} writeLineToDebugFile('Twmdem.FormClose out, normal termination build ' + BuildString  + '  dbfn=' + DebugFileName); {$EndIf}
@@ -2898,28 +3014,10 @@ begin
 end;
 
 
-procedure Twmdem.Header1Click(Sender: TObject);
-var
-   CurDEM,CurImage : integer;
-begin
-   CurDEM := 1;
-   CurImage := 0;
-   GetDEMorImage(true,true,CurDEM,CurImage,true,'Header to display');
-   if (CurDEM > 0) then ViewHeaderRecord(CurDEM);
-   {$IfDef ExSat}
-   {$Else}
-      if (CurImage > 0) then DEM_sat_Header.ViewSatHeader(CurImage);
-   {$EndIf}
-end;
-
-
 procedure Twmdem.HistogramstoCSVfiles1Click(Sender: TObject);
 var
    ThePath,fName : PathStr;
-   //infile : file;
    i : integer;
-   //v : array[1..2] of float32;
-   //Results,
    TheFiles,zFiles : tStringList;
    Graph : TThisBaseGraph;
 begin
@@ -4593,8 +4691,6 @@ begin
    GeotiffMetadata(mdMicrodem,ExtractFilePath(LastImageName));
 end;
 
-
-
 procedure Twmdem.OpenGeoPDF1Click(Sender: TObject);
 begin
    {$If Defined(ExGDAL) or Defined(ExGeoPDF)}
@@ -5655,6 +5751,14 @@ begin
    {$IfDef RecordProblems}
       StopSplashing;
       if (TheDebugLog <> Nil) then ShowInNotepadPlusPlus(DebugFilename,'Debug log (' + IntToStr(TheDebugLog.Count) + ' lines)')
+   {$EndIf}
+end;
+
+procedure Twmdem.Viewlastexectiondebuglog1Click(Sender: TObject);
+begin
+   {$IfDef RecordProblems}
+      StopSplashing;
+      if (TheDebugLog <> Nil) then ShowInNotepadPlusPlus(ExtractFilePath(DebugFilename) + 'last_MD_debug_file.txt','Last execution debug log (' + IntToStr(TheDebugLog.Count) + ' lines)')
    {$EndIf}
 end;
 

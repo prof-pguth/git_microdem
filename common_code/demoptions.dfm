@@ -3,20 +3,20 @@ inherited OptionsForm: TOptionsForm
   Top = 230
   BorderStyle = bsSizeable
   Caption = ''
-  ClientHeight = 551
+  ClientHeight = 561
   ClientWidth = 817
   Position = poDefaultPosOnly
   OnClose = FormClose
   OnCreate = FormCreate
   OnResize = FormResize
-  ExplicitWidth = 835
-  ExplicitHeight = 598
+  ExplicitWidth = 829
+  ExplicitHeight = 599
   TextHeight = 20
   inherited Bevel1: TBevel
     Left = 0
     Top = 0
     Width = 817
-    Height = 493
+    Height = 503
     Align = alClient
     ExplicitLeft = 0
     ExplicitTop = 1
@@ -46,13 +46,13 @@ inherited OptionsForm: TOptionsForm
     Left = 0
     Top = 0
     Width = 817
-    Height = 493
-    ActivePage = TabSheet4
+    Height = 503
+    ActivePage = TabSheet16
     Align = alClient
     MultiLine = True
     TabOrder = 2
-    ExplicitWidth = 829
-    ExplicitHeight = 511
+    ExplicitWidth = 813
+    ExplicitHeight = 492
     object TabSheet1: TTabSheet
       Caption = 'Program'
       object RadioGroup7: TRadioGroup
@@ -130,8 +130,8 @@ inherited OptionsForm: TOptionsForm
       object StringGrid1: TStringGrid
         Left = 0
         Top = 0
-        Width = 827
-        Height = 460
+        Width = 809
+        Height = 443
         Align = alClient
         ColCount = 2
         ScrollBars = ssVertical
@@ -3225,13 +3225,13 @@ inherited OptionsForm: TOptionsForm
   end
   object Panel1: TPanel
     Left = 0
-    Top = 493
+    Top = 503
     Width = 817
     Height = 58
     Align = alBottom
     TabOrder = 3
-    ExplicitTop = 511
-    ExplicitWidth = 829
+    ExplicitTop = 492
+    ExplicitWidth = 813
     object BitBtn3: TBitBtn
       Left = 178
       Top = 6

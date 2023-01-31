@@ -34,6 +34,7 @@ unit DEMStat;
       //{$Define MapTraceCrests}
       //{$Define RecordDetailedTraceCrests}
       //{$Define RecordClustering}
+      {$Define RecordHistogramFromVAT}
       //{$Define RecordFFT}
       //{$Define RecordHistogram}
       //{$Define RecordGridScatterGram}
@@ -177,6 +178,9 @@ type
    procedure OneLag(MainDEM,SubDEM : integer; BoxLimits: tGridLimits; var BigResults : tStringList);
    procedure Lag_and_Shift(ColC,RowC : integer; MainDEM,SubDEM : integer; GridLimits : tGridLimits; var NPts,XWhereMaxR,YWhereMaxR : integer; var MaxR,NoLagR,ZRange,AvgSlope,BestA,BestB : float64; CorrelationMatrix : tStringList = Nil);
 
+procedure HistogramsFromVATDEM(DEMwithVAT,ElevMap,SlopeMap,RuffMap,AspMap : integer);
+
+
 var
    IPColor : array[1..16] of Graphics.tColor;
    ConvexityMeanCut,TextureMeanCut,
@@ -249,6 +253,141 @@ var
 {$Else}
    {$I demstat_grid_compare.inc}
 {$EndIf}
+
+
+procedure HistogramsFromVATDEM(DEMwithVAT,ElevMap,SlopeMap,RuffMap,AspMap : integer);
+const
+   MaxCodes = 10;
+Type
+   tDistCount = array[1..MaxCodes] of integer;
+   pbfarray32 = ^bfarray32;
+   tDistArray = array[1..MaxCodes] of pbfarray32;
+   tNames = array[1..MaxCodes] of shortstring;
+var
+   VAT : tMyData;
+   i,j,NumCodes : integer;
+   Codes : array[1..MaxCodes] of integer;
+   CodeLUT : array[0..255] of integer;
+   Names : tNames;
+   ElevDist,SlopeDist,RuffDist,AspDist : tDistArray;
+   ElevDistCount,SlopeDistCount,RuffDistCount,AspDistCount : tDistCount;
+
+   procedure CreateDistribution;
+   var
+      Col,Row,ThisCode : integer;
+      zf : float32;
+      Lat,Long : float64;
+
+            procedure MakeOneHistogram(DEM,BinSize : integer; Names : tNames; DistCount : tDistCount; Dist : tDistArray; aTitle : shortstring);
+            var
+               i : integer;
+               fName : PathStr;
+               ElevFiles,LegendFiles : tStringList;
+            begin
+               if ValidDEM(DEM) then begin
+                  {$IfDef RecordHistogramFromVAT} WriteLineToDebugFile('MakeOneHistogram in, dem=' + IntToStr(DEM)); {$EndIf}
+                  ElevFiles := tStringList.Create;
+                  LegendFiles := tStringList.Create;
+                  for i := 1 to MaxCodes do begin
+                     if (DistCount[i] > 0) then begin
+                        fName := NextFileNumber(MDTempDir,'dist_file_','.z');
+                        SaveSingleValueSeries(DistCount[i],Dist[i]^,fName);
+                        ElevFiles.Add(fName);
+                        LegendFiles.Add(Names[i]);
+                     end;
+                  end;
+                  CreateMultipleHistograms(MDDef.CountHistograms,ElevFiles,LegendFiles,BeforeSpecifiedCharacterANSI(aTitle,' '),aTitle,100,DEMglb[DEM].DEMheader.MinElev,DEMglb[DEM].DEMheader.MaxElev,BinSize);
+                  ElevFiles.Free;
+                  LegendFiles.Free;
+               end;
+            end;
+
+   begin
+      {$IfDef RecordHistogramFromVAT} WriteLineToDebugFile('Create Distribution in'); {$EndIf}
+      for Col := 0 to pred(DEMGlb[DEMwithVAT].DEMheader.NumCol) do begin
+         for Row := 0 to pred(DEMGlb[DEMwithVAT].DEMheader.NumRow) do begin
+            if DEMGlb[DEMwithVAT].GetElevMetersOnGrid(Col,Row,zf) then begin
+               ThisCode := CodeLUT[round(zf)];
+               DEMGlb[DEMwithVAT].DEMGridToLatLongDegree(Col,Row,Lat,Long);
+               if ValidDEM(ElevMap) and (DEMGlb[ElevMap].GetElevFromLatLongDegree(Lat,long,zf)) then begin
+                  inc(ElevDistCount[ThisCode]);
+                  ElevDist[ThisCode]^[ElevDistCount[ThisCode]] := zf;
+               end;
+               if ValidDEM(SlopeMap) and (DEMGlb[SlopeMap].GetElevFromLatLongDegree(Lat,long,zf)) then begin
+                  inc(SlopeDistCount[ThisCode]);
+                  SlopeDist[ThisCode]^[SlopeDistCount[ThisCode]] := zf;
+               end;
+               if ValidDEM(RuffMap) and (DEMGlb[RuffMap].GetElevFromLatLongDegree(Lat,long,zf)) then begin
+                  inc(RuffDistCount[ThisCode]);
+                  RuffDist[ThisCode]^[RuffDistCount[ThisCode]] := zf;
+               end;
+               if ValidDEM(AspMap) and (DEMGlb[AspMap].GetElevFromLatLongDegree(Lat,long,zf)) then begin
+                  inc(AspDistCount[ThisCode]);
+                  AspDist[ThisCode]^[AspDistCount[ThisCode]] := zf;
+               end;
+               (*
+               if (ElevMap > 0) and (DEMGlb[ElevMap].GetElevMetersOnGrid(Col,Row,zf)) then begin
+                  inc(ElevDistCount[ThisCode]);
+                  ElevDist[ThisCode]^[ElevDistCount[ThisCode]] := zf;
+               end;
+               if (SlopeMap > 0) and (DEMGlb[SlopeMap].GetElevMetersOnGrid(Col,Row,zf)) then begin
+                  inc(SlopeDistCount[ThisCode]);
+                  SlopeDist[ThisCode]^[SlopeDistCount[ThisCode]] := zf;
+               end;
+               if (RuffMap > 0) and (DEMGlb[RuffMap].GetElevMetersOnGrid(Col,Row,zf)) then begin
+                  inc(RuffDistCount[ThisCode]);
+                  RuffDist[ThisCode]^[RuffDistCount[ThisCode]] := zf;
+               end;
+               *)
+            end;
+         end;
+      end;
+      MakeOneHistogram(ElevMap,20,Names,ElevDistCount,ElevDist,'Elevation (m)');
+      MakeOneHistogram(SlopeMap,2,Names,SlopeDistCount,SlopeDist,'Slope (%)');
+      MakeOneHistogram(RuffMap,1,Names,RuffDistCount,RuffDist,'Roughness (%)');
+      MakeOneHistogram(AspMap,1,Names,AspDistCount,AspDist,'Aspect (' + DegSym + ')');
+   end;
+
+
+begin
+   {$IfDef RecordHistogramFromVAT} WriteLineToDebugFile('HistogramsFromVATDEM in, DEM=' + IntToStr(DEMwithVAT)); {$EndIf}
+   VAT := tMyData.Create(DEMGlb[DEMwithVAT].VATFileName);
+   NumCodes := 0;
+   while not VAT.eof do begin
+      if (NumCodes = MaxCodes) then begin
+         MessageToContinue('Reached number of codes limit=' + IntToStr(MaxCodes));
+         Break;
+      end;
+      inc(NumCodes);
+      Codes[NumCodes] := VAT.GetFieldByNameAsInteger('VALUE');
+      CodeLUT[Codes[NumCodes]] := NumCodes;
+      Names[NumCodes] := VAT.GetFieldByNameAsString('NAME');
+      VAT.Next;
+   end;
+   VAT.Destroy;
+
+   for i := 1 to MaxCodes do begin
+      if ValidDEM(ElevMap) then new(ElevDist[i]);
+      if ValidDEM(SlopeMap) then new(SlopeDist[i]);
+      if ValidDEM(RuffMap) then new(RuffDist[i]);
+      if ValidDEM(AspMap) then new(AspDist[i]);
+      ElevDistCount[i] := 0;
+      SlopeDistCount[i] := 0;
+      RuffDistCount[i] := 0;
+      AspDistCount[i] := 0;
+   end;
+
+   CreateDistribution;
+
+   for i := 1 to MaxCodes do begin
+      if ValidDEM(ElevMap) then Dispose(ElevDist[i]);
+      if ValidDEM(SlopeMap) then Dispose(SlopeDist[i]);
+      if ValidDEM(RuffMap) then Dispose(RuffDist[i]);
+      if ValidDEM(AspMap) then Dispose(AspDist[i]);
+   end;
+   {$IfDef RecordHistogramFromVAT} WriteLineToDebugFile('HistogramsFromVATDEM out'); {$EndIf}
+end;
+
 
 var
    NumDone,NumToDo : integer;
@@ -2405,6 +2544,110 @@ begin
    RestoreBackupDefaults;
    {$IfDef RecordElevMoment} WriteLineToDebugFile('ElevMomentReport out'); {$EndIf}
 end;
+
+
+procedure AspectDistributionByVATCategory(WhichDEM,AspDEM : Integer; GridLimits : tGridLimits);
+var
+   Col,Row,i,j,TotPts  : integer;
+   ThisGraph,ThisGraph2 : TThisBaseGraph;
+   RoseGraph : array[1..6] of TThisBaseGraph;
+   rfile,rfile2 : file;
+   v : tGraphPoint32;
+   theFiles : tstringlist;
+   MenuStr : shortstring;
+   fName : PathStr;
+   SlopeAspectRec : tSlopeAspectRec;
+   AspectStats : array[1..6] of tAspectStats;
+
+
+   procedure SetUpGraph(var ThisGraph : tThisBaseGraph; VertLabel : shortstring);
+   var
+      i : integer;
+   begin
+      ThisGraph := TThisBaseGraph.Create(Application);
+      ThisGraph.SetUpGraphForm;
+      ThisGraph.Caption := 'Aspect distribution ' + DEMGlb[WhichDEM].AreaName;
+      ThisGraph.GraphDraw.HorizLabel := 'Aspect direction';
+      ThisGraph.GraphDraw.VertLabel := VertLabel;
+      ThisGraph.GraphDraw.LegendList := tStringList.Create;
+      for i := 1 to 6 do ThisGraph.GraphDraw.FileColors256[i] := ConvertTColorToPlatformColor(WinGraphColors[i]);
+   end;
+
+   procedure FinishGraph(var ThisGraph : tThisBaseGraph);
+   begin
+      ThisGraph.AutoScaleAndRedrawDiagram;
+      ThisGraph.GraphDraw.SetShowAllLines(true);
+      ThisGraph.GraphDraw.SetShowAllPoints(false);
+      ThisGraph.GraphDraw.MaxHorizAxis := 360;
+      ThisGraph.RedrawDiagram11Click(Nil);
+   end;
+
+
+begin
+   theFiles := tstringlist.Create;
+   for i := 1 to 6 do AspectStats[i].Create(WhichDEM);
+   TotPts := 0;
+   StartProgress('Aspects');
+   for Row := GridLimits.YGridLow to GridLimits.YGridHigh do begin
+      if (Row mod 25 = 0) then UpdateProgressBar((Row-GridLimits.YGridLow)/(GridLimits.YGridHigh-GridLimits.YGridLow));
+      for Col := GridLimits.XGridLow to GridLimits.XGridHigh do begin
+          if DEMGlb[WhichDEM].GetSlopeAndAspect(Col,Row,SlopeAspectRec) then begin
+             if (MDDef.UseSealevel) or (abs(SlopeAspectRec.z) > 0.001) then begin
+                if SlopeAspectRec.SlopePercent < MdDef.GeomorphSlopeCut[1] then AspectStats[1].AddPoint(SlopeAspectRec)
+                else if SlopeAspectRec.SlopePercent < MdDef.GeomorphSlopeCut[2] then AspectStats[2].AddPoint(SlopeAspectRec)
+                else if SlopeAspectRec.SlopePercent < MdDef.GeomorphSlopeCut[3] then AspectStats[3].AddPoint(SlopeAspectRec)
+                else if SlopeAspectRec.SlopePercent < MdDef.GeomorphSlopeCut[4] then AspectStats[4].AddPoint(SlopeAspectRec)
+                else AspectStats[5].AddPoint(SlopeAspectRec);
+                AspectStats[6].AddPoint(SlopeAspectRec);
+                inc(TotPts);
+             end;
+          end;
+      end;
+   end;
+   EndProgress;
+
+   SetUpGraph(ThisGraph,'Concentration of values');
+   SetUpGraph(ThisGraph2,'Number of values');
+   for i := 1 to 6 do begin
+     ThisGraph.OpenDataFile(rfile);
+     ThisGraph2.OpenDataFile(rfile2);
+     for j := 0 to 359 do begin
+        v[1] := j;
+        v[2] := 360 * AspectStats[i].AspectFreqValsTrue[j] / AspectStats[i].NPts;
+        BlockWrite(rfile,v,1);
+        v[2] := AspectStats[i].AspectFreqValsTrue[j];
+        BlockWrite(rfile2,v,1);
+     end;
+     CloseFile(rfile);
+     CloseFile(rfile2);
+
+     case i of
+        1 : MenuStr := '0-' + RealToString(MdDef.GeomorphSlopeCut[1],-8,-2) + '%';
+        2 : MenuStr := RealToString(MdDef.GeomorphSlopeCut[1],-8,-2) + '-' + RealToString(MdDef.GeomorphSlopeCut[2],-8,-2) + '%';
+        3 : MenuStr := RealToString(MdDef.GeomorphSlopeCut[2],-8,-2) + '-' + RealToString(MdDef.GeomorphSlopeCut[3],-8,-2) + '%';
+        4 : MenuStr := RealToString(MdDef.GeomorphSlopeCut[3],-8,-2) + '-' + RealToString(MdDef.GeomorphSlopeCut[4],-8,-2) + '%';
+        5 : MenuStr := '>' + RealToString(MdDef.GeomorphSlopeCut[4],-8,-2) + '%';
+        6 : MenuStr := 'all points';
+     end;
+     MenuStr := ' Slope ' + MenuStr;
+     ThisGraph.GraphDraw.LegendList.Add(MenuStr);
+     ThisGraph2.GraphDraw.LegendList.Add(MenuStr);
+     RoseGraph[i] := AspectStats[i].CreateRose(MenuStr);
+     fName := MDtempDir + 'aspect_' + IntToStr(i) + '.bmp';
+     SaveImageAsBMP(RoseGraph[i].Image1,fName);
+     TheFiles.Add(fName);
+     RoseGraph[i].Close;
+     RoseGraph[i].Free;
+     AspectStats[i].Destroy;
+  end;
+
+  FinishGraph(ThisGraph);
+  FinishGraph(ThisGraph2);
+
+  MakeBigBitmap(theFiles,'Aspect: ' + DEMGlb[WhichDEM].AreaName);
+end;
+
+
 
 
 procedure AspectDistributionBySlope(WhichDEM : Integer; GridLimits : tGridLimits);

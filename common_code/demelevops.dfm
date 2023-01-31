@@ -8,9 +8,9 @@ inherited ElevOptionsForm: TElevOptionsForm
   Position = poDefaultSizeOnly
   OnClose = FormClose
   OnCreate = FormCreate
-  ExplicitWidth = 357
-  ExplicitHeight = 547
-  TextHeight = 20
+  ExplicitWidth = 351
+  ExplicitHeight = 538
+  TextHeight = 15
   inherited Bevel1: TBevel
     Left = 0
     Top = -5
@@ -125,7 +125,7 @@ inherited ElevOptionsForm: TElevOptionsForm
     Left = 8
     Top = 302
     Width = 281
-    Height = 28
+    Height = 23
     TabOrder = 8
     OnChange = ComboBox1Change
   end
@@ -189,7 +189,7 @@ inherited ElevOptionsForm: TElevOptionsForm
     Left = 8
     Top = 262
     Width = 281
-    Height = 28
+    Height = 23
     TabOrder = 14
     OnChange = ComboBox2Change
   end

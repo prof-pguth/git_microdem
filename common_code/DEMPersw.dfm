@@ -30,8 +30,8 @@ object ThreeDview: TThreeDview
     Height = 319
     Align = alClient
     TabOrder = 0
-    ExplicitWidth = 792
-    ExplicitHeight = 557
+    ExplicitWidth = 746
+    ExplicitHeight = 298
     object Image1: TImage
       Left = 0
       Top = 0
@@ -51,7 +51,7 @@ object ThreeDview: TThreeDview
     AutoSize = True
     ButtonHeight = 25
     TabOrder = 1
-    ExplicitWidth = 792
+    ExplicitWidth = 746
     object SpeedButton2: TSpeedButton
       Left = 0
       Top = 0
@@ -503,10 +503,10 @@ object ThreeDview: TThreeDview
     Height = 41
     Align = alBottom
     TabOrder = 2
-    ExplicitTop = 582
-    ExplicitWidth = 792
+    ExplicitTop = 323
+    ExplicitWidth = 746
     object TrackBar1: TTrackBar
-      Left = 204
+      Left = 162
       Top = 1
       Width = 587
       Height = 39
@@ -516,6 +516,7 @@ object ThreeDview: TThreeDview
       Position = 255
       TabOrder = 0
       OnChange = TrackBar1Change
+      ExplicitLeft = 158
     end
     object Panel2: TPanel
       Left = -6

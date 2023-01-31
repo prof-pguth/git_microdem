@@ -4,7 +4,7 @@ unit demix_control;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
 
@@ -13,8 +13,8 @@ unit demix_control;
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$Define RecordDEMIX}
    {$Define RecordDEMIXLoad}
-   //{$Define RecordDEMIXVDatum}
    {$Define RecordDEMIXMovies}
+   //{$Define RecordDEMIXVDatum}
    //{$Define RecordFullDEMIX}
    //{$Define ShowDEMIXWhatsOpen}
 {$EndIf}
@@ -241,45 +241,12 @@ begin
    {$IfDef RecordDEMIX} writeLineToDebugFile('done differences'); {$EndIf}
 end;
 
-procedure HistogramsFromVATDEM(DEMwithVAT,ElevMap,SlopeMap,RuffMap : integer);
-var
-   VAT : tMyData;
-   NumCodes : integer;
-   Codes : array[1..10] of integer;
-   Names : array[1..10] of shortstring;
-
-   procedure CreateDistribution();
-   var
-      Col,Row : integer;
-   begin
-      for Col := 0 to pred(DEMGlb[DEMwithVAT].DEMheader.NumCol) do begin
-         for Row := 0 to pred(DEMGlb[DEMwithVAT].DEMheader.NumRow) do begin
-
-         end;
-      end;
-
-   end;
-
-
-begin
-   VAT := tMyData.Create(DEMGlb[DEMwithVAT].VATFileName);
-   NumCodes := 0;
-   while not VAT.eof do begin
-      inc(NumCodes);
-      Codes[NumCodes] := VAT.GetFieldByNameAsInteger('CODE');
-      Names[NumCodes] := VAT.GetFieldByNameAsString('NAME');
-
-      VAT.Next;
-   end;
-   VAT.Destroy;
-end;
-
 
 procedure OpenDEMIXArea(fName : PathStr = '');
 var
    AreaName : shortstring;
    HalfSec : array[1..10] of integer;
-   UseDSM,UseDTM,chm,HalfSecRefDTM,HalfSecRefDSM,SlopeMap,RuffMap,
+   UseDSM,UseDTM,chm,HalfSecRefDTM,HalfSecRefDSM,SlopeMap,RuffMap,AspectMap,
    i,COP_ALOS_DSM,COP_ALOS_DTM,Cols : integer;
    AirOrDirt,AirOrDirt2,AirOrDirt3 : array[1..10] of integer;
    BigMap,Movie : tStringList;
@@ -373,6 +340,8 @@ begin
             RuffMap := CreateSlopeRoughnessSlopeStandardDeviationMap(HalfSecRefDTM,3,SlopeMap);
             DEMGlb[SlopeMap].AreaName := 'ref_dtm_slope_%';
             DEMGlb[RuffMap].AreaName := 'ref_dtm_roughness_%';
+            AspectMap := MakeAspectMap(HalfSecRefDTM);
+
             {$IfDef RecordDEMIX} writeLineToDebugFile('Slope and Ruff dems created; Open DEMs=' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
 
             if MDDef.DEMIX_DoHalfSecDEMs or (MDDef.DEMIX_DoCHM) then begin
@@ -406,7 +375,6 @@ begin
                            AirOrDirt2[i] := AirBallDirtBallMap(TestDEM[i],HalfSecRefDSM ,0,DEMGlb[TestDEM[i]].AreaName + '_dsm');     //compares to DSM
                            AirOrDirt3[i] := AirBallDirtBallMap(TestDEM[i],0,HalfSecRefDTM,DEMGlb[TestDEM[i]].AreaName + '_dsm');     //compares to DTM
 
-                           {$IfDef RecordDEMIX} writeLineToDebugFile('Half sec dem=' + IntToStr(HalfSec[i]) + '  ' + fName); {$EndIf}
                            {$IfDef RecordDEMIX} writeLineToDebugFile(DEMGlb[TestDEM[i]].AreaName + ' Half sec DEM=' + IntToStr(TestDEM[i]) + '  ' + DEMGlb[TestDEM[i]].KeyDEMParams(true)); {$EndIf}
                          end;
                      end;
@@ -414,12 +382,10 @@ begin
                      MakeDifferenceMap(TestDEM[1],TestDEM[2],true,false,false,'COP-ALOS_difference');
                      {$IfDef RecordDEMIX} writeLineToDebugFile('Try ref DSM COP-ALOS'); {$EndIf}
                      COP_ALOS_DSM := TwoDEMHighLowMap(HalfSecRefDSM, TestDEM[1],TestDEM[2],'DSM','COP-ALOS_compare_DSM');
-                     HistogramsFromVATDEM(COP_ALOS_DSM,HalfSecRefDSM,SlopeMap,RuffMap);
+                     HistogramsFromVATDEM(COP_ALOS_DSM,HalfSecRefDSM,SlopeMap,RuffMap,0);
 
                      {$IfDef RecordDEMIX} writeLineToDebugFile('Try ref DTM COP-ALOS'); {$EndIf}
                      COP_ALOS_DTM := TwoDEMHighLowMap(HalfSecRefDTM, TestDEM[1],TestDEM[2],'DTM','COP-ALOS_compare_DTM');
-
-
                   end;
 
                   {$IfDef RecordDEMIX} writeLineToDebugFile('Half sec dems done; Open DEMs=' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}

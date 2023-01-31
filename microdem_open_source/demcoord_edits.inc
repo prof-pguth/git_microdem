@@ -9,54 +9,10 @@
 {include file for demcoord.pas}
 
 
-(*
-   i,j,TPIGrid : integer;
-   GridLimits : tGridLimits;
-   znw,zw,zsw,zn,z,zs,zne,ze,zse : float32;
-   sum,FactorEW,FactorDiag : float64;
-   TStr : shortstring;
-begin
-    if Normalize then TStr := '_norm' else TStr := '';
-    Result := DEMGlb[CurDEM].CloneAndOpenGrid(FloatingPointDEM, 'MD_TRI' + TStr + '_' + DEMGlb[CurDem].AreaName,euMeters);
-
-    if DoTPI then TPIgrid := DEMGlb[CurDEM].CloneAndOpenGrid(FloatingPointDEM,'MD_TPI' + TStr + '_' + DEMGlb[CurDem].AreaName,euMeters);
-    GridLimits := TheDesiredLimits(CurDEM);
-    if ShowSatProgress then StartProgressAbortOption('TRI');
-    for j := GridLimits.YGridLow to GridLimits.YGridHigh do begin
-       if (j mod 25 = 0) and ShowSatProgress then UpdateProgressBar((j-GridLimits.YGridLow) / (GridLimits.YGridHigh-GridLimits.YGridLow));
-       if Normalize then begin
-          FactorEW := DEMGlb[CurDEM].AverageYSpace / DEMGlb[CurDEM].AverageXSpace;
-          FactorDiag := DEMGlb[CurDEM].AverageYSpace / DEMGlb[CurDEM].AverageDiaSpace;
-       end;
-       for i := GridLimits.XGridLow to GridLimits.XGridHigh do begin
-          if DEMGLB[CurDEM].SurroundedPointElevs(i,j, znw,zw,zsw,zn,z,zs,zne,ze,zse) then begin
-             if Normalize then begin
-                znw := z + (zNW-z) * FactorDiag;
-                zne := z + (zNE-z) * FactorDiag;
-                zsw := z + (zSW-z) * FactorDiag;
-                zse := z + (zSE-z) * FactorDiag;
-                ze := z + (ze-z) * FactorEW;
-                zw := z + (zw-z) * FactorEW;
-             end;
-             Sum := sqr(z-zn) + sqr(z-zne) + sqr(z-ze)+ sqr(z-zse)+ sqr(z-zs) + sqr(z-zsw)+ sqr(z-zw)+ sqr(z-znw);
-             //changed 9/18/21 to remove the averaging; now matches GDAL     changed back 4/22/2022 to match GRASS
-             sum := sqrt(sum/8);
-             DEMGlb[Result].SetGridElevation(i,j,sum);
-             if DoTPI then begin
-                Sum := z-(zn+zne+ze+zse+zs+zsw+zw+znw)/8;
-                DEMGlb[TPIGrid].SetGridElevation(i,j,sum);
-             end;
-          end;
-       end;
-    end;
-
-*)
-
 function tDEMDataSet.DetrendDEM(Normalize : boolean = true; FilterRadius : integer = 2) : integer;
 var
-   x,y{,i,j,NPts} : integer;
-   Sum,{zt,}
-   znw,zw,zsw,zn,z,zs,zne,ze,zse,
+   x,y : integer;
+   Sum,znw,zw,zsw,zn,z,zs,zne,ze,zse,
    FactorNS,FactorEW,FactorDiag : float32;
 
 begin
@@ -150,15 +106,6 @@ begin
    NewHeadRecs.ElevUnits := euMeters;
    OpenAndZeroNewDEM(true,NewHeadRecs,Result,MDTempDir + AreaName + '_down_sample_grid',InitDEMvalue,0);
    {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResample)} WriteLineToDebugFile('ResampleByAveraging, ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].KeyDEMParams); {$EndIf}
-
-   (*  7/13/22, removed since that should already be done
-   for x := 0 to pred(DEMGlb[CountGrid].DEMHeader.NumCol) do begin
-       for y := 0 to pred(DEMGlb[CountGrid].DEMHeader.NumRow) do begin
-          DEMGlb[CountGrid].SetGridElevation(x,y,0);
-          DEMGlb[Result].SetGridElevation(x,y,0);
-       end;
-   end;
-   *)
 
    StartProgress('Get z values ' + ExtractFileName(SaveName));
    for x := 0 to pred(DEMHeader.NumCol) do begin
@@ -642,7 +589,7 @@ var
    z : float32;
 begin
    for x := 0 to pred(DEMheader.NumCol) do begin
-      for y := 0 to pred(DEMheader.NumRow) do   begin
+      for y := 0 to pred(DEMheader.NumRow) do begin
          if GetElevMeters(x,y,z) then begin
             z := round(254 * (z - DEMHeader.MinElev) / (DEMHeader.MaxElev - DEMHeader.MinElev));
             SetGridElevation(x,y,ScaleZtoByte(z));

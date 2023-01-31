@@ -37,7 +37,6 @@ type
     RadioGroup1: TRadioGroup;
     RedrawSpeedButton12: TSpeedButton;
     procedure FormCreate(Sender: TObject);
-    //procedure Button1Click(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure Timer1Timer(Sender: TObject);
     procedure BitBtn1Click(Sender: TObject);
@@ -54,7 +53,6 @@ type
   public
     { Public declarations }
      fn1        : PathStr;
-     //MinApart   : integer;
      MapOwner   : tMapForm;
      NetForm    : tNetForm;
      ObsLat,ObsLong,ObsElev : float64;
@@ -88,31 +86,6 @@ uses
 var
   nr_sats : integer;
   jtime1,dt  : double;
-
-
-  (*
-procedure TSatTractForm.Button1Click(Sender: TObject);
-var
-   wYear,wmonth,wDay : word;
-begin
-  if FileExists(fn1) then begin
-     nr_sats := Input_Satellite_Data(fn1);
-     DecodeDate(now,wYear,wmonth,wDay);
-
-     jtime1 := PETMath.JulDay(wMonth,wDay,wYear);
-     MinApart := 15;
-     dt := MinApart / 60 / 24;
-
-     PetImage.CopyImagetoBitmap(MapOwner.Image1,BaseBitmap);
-     if (Sender = Nil) then Timer1Timer(Sender)
-     else Timer1.Enabled := true;
-   end
-   else begin
-      MessageToContinue('Missing ephemeris ' + fn1);
-      Close;
-   end;
-end;
-*)
 
 
 procedure TSatTractForm.RedrawSpeedButton12Click(Sender: TObject);
@@ -244,7 +217,6 @@ begin
      NewBitmap.Free;
      CalDat(Trunc(Jtime1),Month,Day,Year);
      TStr := RealToString((JTime1 - Trunc(Jtime1)) * 24,-8,2) + ' hrs UTC';
-     //for i := 1 to 3 do if TStr[i] = ' ' then TStr[i] := '0';
      Label1.Caption := IntToStr(Month) + '/' + IntToStr(Day) + '/' + IntToStr(Year) + '  ' + TStr;
      jtime1 := jtime1 + dt;
    {$IfDef RecordSatTrack} WriteLineToDebugFile('TSatTractForm.Timer1Timer out'); {$EndIf}

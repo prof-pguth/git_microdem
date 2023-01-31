@@ -80,6 +80,8 @@ function MakeMomentsGrid(CurDEM : integer; What : char; BoxSizeRadiusMeters : in
 
 function CreateProfileConvexityMap(WhichDEM : integer; OpenMap : boolean = true) : integer;
 function CreateSlopeMap(WhichDEM : integer; OpenMap : boolean = true; Components : boolean = false) : integer;
+function MakeAspectMap(ElevMap : integer) : integer;
+
 
 function CreateStandardDeviationMap(DEM,Radius : integer) : integer;
 
@@ -122,6 +124,16 @@ uses
 
 var
    CountInStrips : integer;
+
+
+function MakeAspectMap(ElevMap : integer) : integer;
+begin
+   SaveBackupDefaults;
+   SetAllSlopes(false);
+   MDDef.DoAspect := true;
+   Result := MakeMomentsGrid(ElevMap,'S');
+   RestoreBackupDefaults;
+end;
 
 
 function TwoDEMHighLowMap(RefDEM,DEM1,DEM2 : integer; DEMtype : shortstring; fName2 : PathStr = '') : integer;
@@ -180,7 +192,6 @@ begin
 end;
 
 
-
 function AirBallDirtBallMap(DEMonMap,DSM,DTM : integer; fName : PathStr = '') : integer;
 const
    Tolerance = 0.51;
@@ -195,8 +206,6 @@ var
    TStr : shortstring;
    Hist : array[1..5] of int64;
 begin
-   //if (DSM <> 0) and (not ValidDEM(DSM)) then GetDEM(DSM,true,'DSM');
-   //if not ValidDEM(DTM) then GetDEM(DTM,true,'DTM');
    Result := 0;
    if {((DSM = 0) or} ValidDEM(DEMonMap) and ValidDEM(DSM) and ValidDEM(DTM) then begin
       for i := 1 to 5 do Hist[i] := 0;
@@ -338,7 +347,6 @@ begin
    end;
    {$IfDef RecordCreateGeomorphMaps} WriteLineToDebugFile('CreateRoughnessMap2, NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProjection.ProjDebugName); {$EndIf}
 end;
-
 
 
 function CreateRoughnessMapAvgVector(WhichDEM : integer; OpenMap : boolean = true) : integer;
@@ -535,7 +543,6 @@ begin
     DEMGlb[Result].SetUpMap(Result,true,mtElevSpectrum);
     if DoTPI then DEMGlb[TPIGrid].SetUpMap(TPIGrid,true,mtElevSpectrum);
 end;
-
 
 
 procedure MakeGammaGrids(CurDEM,BoxSize : integer);

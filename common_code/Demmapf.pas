@@ -79,7 +79,7 @@
       //{$Define RecordSatClass}
       //{$Define RecordCheckProperTix}
       //{$Define RecordWMS}
-      {$Define RecordNewMaps}
+      //{$Define RecordNewMaps}
       //{$Define RecordNewWKT}
       //{$Define RecordNewWKTFull}
       //{$Define RecordNewSatMap}
@@ -121,7 +121,7 @@
       //{$Define RecordWeaponsFanTests}
       //{$Define RecordMasking}
       //{$Define RecordShapeFileEdits}
-      {$Define RecordEditsDEM}
+      //{$Define RecordEditsDEM}
       //{$Define RecordFlyRoute}
       //{$Define RecordSatCoords}
       //{$Define RecordDrift}
@@ -1420,6 +1420,12 @@ type
     Elevationpercentiles1: TMenuItem;
     Differencemap1: TMenuItem;
     Dataheader2: TMenuItem;
+    NumericgridwithVATtobytegridwithcodes1: TMenuItem;
+    Geomorphometrybycategories1: TMenuItem;
+    Area2: TMenuItem;
+    Volume2: TMenuItem;
+    Allvalidpixels1: TMenuItem;
+    Openbandforrasteranalysis1: TMenuItem;
     //procedure HiresintervisibilityDEM1Click(Sender: TObject);
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
@@ -2457,6 +2463,10 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Elevationpercentiles1Click(Sender: TObject);
     procedure Differencemap1Click(Sender: TObject);
     procedure Dataheader2Click(Sender: TObject);
+    procedure NumericgridwithVATtobytegridwithcodes1Click(Sender: TObject);
+    procedure Geomorphometrybycategories1Click(Sender: TObject);
+    procedure Allvalidpixels1Click(Sender: TObject);
+    procedure Openbandforrasteranalysis1Click(Sender: TObject);
     //procedure QuarterDEM1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
@@ -2486,7 +2496,9 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure RespondToRightMouseButton;
     procedure QuadSizeMap(LastX,LastY : integer);
 
-    function FindIslandArea(Lat,Long,z : float64; ShowOnMap : boolean) : float64;
+    {$IfDef IncludePeakIslandArea}
+         function FindIslandArea(Lat,Long,z : float64; ShowOnMap : boolean) : float64;
+    {$EndIf}
 
     function ExpertDEMVersion: boolean;
     procedure HideUndesiredOptions;
@@ -7002,6 +7014,73 @@ end;
 
 
 
+procedure TMapForm.NumericgridwithVATtobytegridwithcodes1Click(Sender: TObject);
+var
+   fName2 : PathStr;
+   i,x,y,Code,NewDEM : integer;
+   z : float32;
+   Color : tRGBTriple;
+   Vat : tStringList;
+   Hist : array[1..50] of int64;
+begin
+(*
+   fName := ProgramRootDir;
+
+               ZColorTable.zTableValue[ZColorTable.ZTableEntries] := ColorTable.GetFieldByNameAsFloat('MAX');
+               if (ZColorTable.zTableValue[ZColorTable.ZTableEntries] >= MinMapElev) then begin
+                  ZColorTable.zTableColors[ZColorTable.ZTableEntries] := ColorTable.PlatformColorFromTable;
+                  ZColorTable.zTableLabels[ZColorTable.ZTableEntries] := ColorTable.GetFieldByNameAsString('NAME');
+               end
+               else dec(ZColorTable.ZTableEntries);
+
+
+
+   //for i := 0 to 255 do LUT[i] := i;
+   //tn := OpenDBonMap('Reclassify lookup',fName,false,false);
+   //if tn <> 0  then begin
+      while not GISdb[tn].MyData.eof do begin
+         LUT[GISdb[tn].MyData.GetFieldByNameAsInteger('OLD_CODE')] := GISdb[tn].MyData.GetFieldByNameAsInteger('NEW_CODE');
+         GISdb[tn].MyData.Next;
+      end;
+   *)
+      for Code := 1 to 50 do Hist[Code] := 0;
+
+      StartProgress('Reclassify');
+      for x := 0 to pred(DEMGlb[MapDraw.DEMonMap].DEMheader.NumCol) do begin
+         if (x mod 50 = 0) then UpDateProgressBar(x/DEMGlb[MapDraw.DEMonMap].DEMheader.NumCol);
+         for y := 0 to pred(DEMGlb[MapDraw.DEMonMap].DEMheader.NumRow) do begin
+            if DEMGlb[MapDraw.DEMonMap].GetElevMetersOnGrid(x,y,z) then begin
+               Color := ColorFromZColorTable(MapDraw.ZColorTable,z, Code);
+               DEMGlb[MapDraw.DEMonMap].SetGridElevation(x,y,Code);
+               inc(Hist[Code]);
+            end;
+         end;
+      end;
+
+      NewDEM := DEMGlb[MapDraw.DEMonMap].ResaveNewResolution(fcSaveByte);
+      fName2 := MDTempDir + 'reclasify_' + DEMGlb[MapDraw.DEMonMap].AreaName + '.dem';
+      DEMGlb[NewDEM].WriteNewFormatDEM(fName2);
+
+      Vat := tStringList.Create;
+      Vat.add('VALUE,NAME,N,USE,COLOR');
+      for Code := 1 to 50 do
+         if Hist[Code] > 0 then begin
+            Vat.add(IntToStr(Code) + ',' + MapDraw.ZColorTable.zTableLabels[Code] + ',' + IntToStr(Hist[Code]) + ',Y,' +
+               IntToStr(ConvertPlatformColorToTColor(MapDraw.ZColorTable.zTableColors[Code])) );
+         end;
+
+      fName2 := ChangeFileExt(fName2,'.vat.dbf');
+      StringList2CSVtoDB(vat,fName2,true);
+      DEMGlb[NewDEM].VATFileName := fName2;
+      DEMglb[NewDEM].CheckMaxMinElev;
+      DEMglb[NewDEM].SetUpMap(NewDEM,true,mtDEMVATTable);
+
+      ReloadDEMClick(Sender);
+
+      //RespondToChangedDEM;
+   //end;
+end;
+
 procedure TMapForm.Geostationarysatellitevisibility1Click(Sender: TObject);
 begin
    SetHorizonOptions;
@@ -7712,7 +7791,7 @@ procedure TMapForm.CheckProperTix;
          {$EndIf}
 
          GridVATLegend1.Visible := MapDraw.MapType = mtDEMVATTable;
-         //DefinedCategories1.Visible := MapDraw.MapType = mtElevDefinedPalette;
+         NumericgridwithVATtobytegridwithcodes1.Visible := (MapDraw.ZColorTable.ZTableEntries > 0);
          Fixedpalettecategories1.Visible := MapDraw.MapType = mtElevFromTable;
          DataBaseLegend1.Visible := (NumOpenDatabaseThisMap(Self) > 0);
          GazetteerLegend1.Visible := OverlayUp(ovoGazetteer);
@@ -7721,7 +7800,6 @@ procedure TMapForm.CheckProperTix;
          LegendOptionsAvailable := 0;
 
          if Fixedpalettecategories1.Visible then inc(LegendOptionsAvailable);
-         //if DefinedCategories1.Visible then inc(LegendOptionsAvailable);
          if TigerVectorLegend1.Visible then inc(LegendOptionsAvailable);
          if KoppenLegend2.Visible then inc(LegendOptionsAvailable);
          if NLCDLegend1.Visible then inc(LegendOptionsAvailable);
@@ -7921,6 +7999,13 @@ begin
       {$Else}
          DTED1.Visible := (MDDef.ProgramOption in [ExpertProgram]);
       {$EndIf}
+
+      {$IfDef IncludePeakIslandArea}
+         Peakislandarea1.Visible := ExpertDEMVersion;
+      {$Else}
+         Peakislandarea1.Visible := false;
+      {$EndIf}
+
 
 
 {$If Defined(RecordCheckProperTix)} WriteLineToDebugFile('CheckProperTix finish sats'); {$EndIf}
@@ -8130,7 +8215,6 @@ begin
       SameElevationColors1.Visible := ExpertDEMVersion;
       Intervisibility1.visible := (MDDef.ProgramOption in [ExpertProgram]) and (MapDraw.ValidDEMonMap) and MDDef.ShowIntervisibility;
 
-      Peakislandarea1.Visible := ExpertDEMVersion;
       Ridges1.Visible := ExpertDEMVersion;
       Ridges.Visible := ExpertDEMVersion;
       RenameDEM1.Visible := ExpertDEMVersion and MDDef.ShowDataProperties;
@@ -8182,6 +8266,7 @@ begin
       Quickrotatemap1.Visible := (MapDraw.VectorIndex <> 0) and (MapDraw.PrimMapProj.PName in [OldStereographic,LamAzEqArea,OrthoProj]);
       MDDEM1.Visible := MapDraw.ValidDEMonMap;
 
+      Geomorphometrybycategories1.Visible := MapDraw.ValidDEMonMap and (DEMGlb[MapDraw.DEMonMap].VATfileName <> '');
       {$If Defined(RecordCheckProperTix)} WriteLineToDebugFile('CheckProperTix tissot'); {$EndIf}
 
       TerrainCategories1.Visible := MapDraw.ValidDEMonMap and ((MDDef.ProgramOption in [ExpertProgram,GeologyProgram]) or (MDDef.ShowConversionAndAnalyze));
@@ -8695,6 +8780,7 @@ begin
    Vegetationlayers1Click(Sender);
 end;
 
+
 procedure TMapForm.Vegetationlayers1Click(Sender: TObject);
 begin
   {$IfDef ExVegDensity}
@@ -8706,7 +8792,6 @@ begin
 end;
 
 
-
 procedure TMapForm.StartShapeFile(DEMNowDoing : tDEMDoingWhat);
 var
    FName : PathStr;
@@ -8716,7 +8801,7 @@ begin
    {$IfDef RecordShapeFileEdits} WriteLineToDebugFile('TMapForm.StartShapeFile in'); {$EndIf}
    FName := ExtractFilePath(LastDataBase);
    NoChoiceOnFields := DEMNowDoing in [OutlineDBIrregularMask,CalculateArea];
-   if (NoChoiceOnFields) or GetFileNameDefaultExt('Shape file',DBNameMask,FName,false) then begin
+   if (NoChoiceOnFields) or GetFileNameDefaultExt('New digitized shapefile',DBNameMask,FName,false) then begin
       if (DEMNowDoing in [OutlineDBIrregularMask,CalculateArea,ShapeFirstPolygon]) then ShapeTypeWanted := 5
       else if (DEMNowDoing in [ShapePoint,ShapePointsAlongFirstLine]) then ShapeTypeWanted := 1
       else if (DEMNowDoing in [ShapeXYZPoint,ShapeTrack]) then ShapeTypeWanted := 11
@@ -9757,48 +9842,51 @@ begin
 end;
 
 
-function TMapForm.FindIslandArea(Lat,Long,z : float64; ShowOnMap : boolean) : float64;
-var
-   Bitmap : tMyBitmap;
-   x,y,Pts : Integer;
-   p0 : prgb;
-   zt : float32;
-begin
-   if ShowOnMap then DoFastMapRedraw;
-   CloneImageToBitmap(Image1,Bitmap);
-   for y := 0 to pred(Bitmap.Height) do begin
-      p0 := Bitmap.ScanLine[y];
-      for x := 0 to pred(Bitmap.Width) do begin
-         if MapDraw.ScreenToElev(x,y,zt) and (zt >= z) then begin
-            p0[x] := RGBTripleBlack;
-         end;
-      end;
-   end;
-   MapDraw.LatLongDegreeToScreen(Lat,Long,x,y);
-   Bitmap.Canvas.Brush.Style := bsSolid;
-   Bitmap.Canvas.Brush.Color := clRed;
-   Bitmap.Canvas.FloodFill(x,y,clWhite,fsBorder);
-   Pts :=  0;
-   for y := 0 to pred(Bitmap.Height) do begin
-      p0 := Bitmap.ScanLine[y];
-      for x := 0 to pred(Bitmap.Width) do begin
-         if SameColor(p0[x],RGBTripleRed) then inc(Pts);
-      end;
-   end;
+{$IfDef IncludePeakIslandArea}
 
-   if ShowOnMap then begin
+   function TMapForm.FindIslandArea(Lat,Long,z : float64; ShowOnMap : boolean) : float64;
+   //removed Jan 2023; it did not work, was too specialized, and there are probably other ways to do this
+   var
+      Bitmap : tMyBitmap;
+      x,y,Pts : Integer;
+      p0 : prgb;
+      zt : float32;
+   begin
+      if ShowOnMap then DoFastMapRedraw;
+      CloneImageToBitmap(Image1,Bitmap);
       for y := 0 to pred(Bitmap.Height) do begin
          p0 := Bitmap.ScanLine[y];
          for x := 0 to pred(Bitmap.Width) do begin
-            if SameColor(p0[x],RGBTripleBlack) then p0[x] := RGBTripleWhite;
+            if MapDraw.ScreenToElev(x,y,zt) and (zt >= z) then begin
+               p0[x] := RGBTripleBlack;
+            end;
          end;
       end;
-      IHSmergeOntoMap(Bitmap);
-   end;
-   Bitmap.Free;
-   Result := Pts * sqr(MapDraw.ScreenPixelSize);
-end;
+      MapDraw.LatLongDegreeToScreen(Lat,Long,x,y);
+      Bitmap.Canvas.Brush.Style := bsSolid;
+      Bitmap.Canvas.Brush.Color := clRed;
+      Bitmap.Canvas.FloodFill(x,y,clWhite,fsBorder);
+      Pts :=  0;
+      for y := 0 to pred(Bitmap.Height) do begin
+         p0 := Bitmap.ScanLine[y];
+         for x := 0 to pred(Bitmap.Width) do begin
+            if SameColor(p0[x],RGBTripleRed) then inc(Pts);
+         end;
+      end;
 
+      if ShowOnMap then begin
+         for y := 0 to pred(Bitmap.Height) do begin
+            p0 := Bitmap.ScanLine[y];
+            for x := 0 to pred(Bitmap.Width) do begin
+               if SameColor(p0[x],RGBTripleBlack) then p0[x] := RGBTripleWhite;
+            end;
+         end;
+         IHSmergeOntoMap(Bitmap);
+      end;
+      Bitmap.Free;
+      Result := Pts * sqr(MapDraw.ScreenPixelSize);
+   end;
+{$EndIf}
 
 procedure TMapForm.AddRangeCirclesAtLocation(Lat,Long : float64);
 var
@@ -10004,13 +10092,12 @@ begin
           else refl_sun[i] := DN;
           x := SpectLibGraph.GraphDraw.Graphx(1000 * SatImage[MapDraw.SATonMap].BandWavelengths[i]);
           y := SpectLibGraph.GraphDraw.GraphY(100 * refl_sun[i]);
-
           color := ConvertTColorToPlatformColor(WinGraphColors[SpectLibGraph.CurrentOverlay]);
           ScreenSymbol(SpectLibGraph.Image1.Canvas,x,y,FilledBox,5,color);
        end;
     end;
     inc(SpectLibGraph.currentOverlay);
-    if SpectLibGraph.currentOverlay > 14 then SpectLibGraph.currentOverlay := 0;
+    if (SpectLibGraph.currentOverlay > 14) then SpectLibGraph.currentOverlay := 0;
 end;
 
 
@@ -10396,19 +10483,23 @@ begin
        end;
     {$EndIf}
 
-    if (DEMNowDoing = GetIslandArea) then begin
-       if DEMGlb[MapDraw.DEMonMap].GetElevFromLatLongDegree(Lat,Long,z) then begin
-           Findings := tStringList.Create;
-           Findings.Add('Sea level,area');
-           z := 5;
-           while (z >= -121) do begin
-              Findings.Add(RealToString(z,-5,0) + ',' + SmartAreaFormat(FindIslandArea(Lat,Long,z,false)));
-              z := z - 5;
-           end;
-           StringListToLoadedDatabase(Findings,MDTempDir + 'Island_area_over_time.csv');
-       end
-       else MessageToContinue('No elevation there');
-    end;
+
+    {$IfDef IncludePeakIslandArea}
+       if (DEMNowDoing = GetIslandArea) then begin
+          if DEMGlb[MapDraw.DEMonMap].GetElevFromLatLongDegree(Lat,Long,z) then begin
+              Findings := tStringList.Create;
+              Findings.Add('Sea level,area');
+              z := 5;
+              while (z >= -121) do begin
+                 Findings.Add(RealToString(z,-5,0) + ',' + SmartAreaFormat(FindIslandArea(Lat,Long,z,false)));
+                 z := z - 5;
+              end;
+              StringListToLoadedDatabase(Findings,MDTempDir + 'Island_area_over_time.csv');
+          end
+          else MessageToContinue('No elevation there');
+       end;
+    {$EndIf}
+
 
     if (DEMNowDoing = RadiusDBEdit) then begin
        x := LastX;
@@ -10860,6 +10951,14 @@ begin
    {$EndIf}
 end;
 
+
+procedure TMapForm.Openbandforrasteranalysis1Click(Sender: TObject);
+var
+   WantedBand : integer;
+begin
+   SatImage[MapDraw.SatOnMap].PickBand('Band for raster analysis', WantedBand);
+   OpenNewDEM(SatImage[MapDraw.SatOnMap].BFileName[WantedBand]);
+end;
 
 function TMapForm.OpenDBonMap(WhatFor : shortstring; DefaultFile : PathStr; DisplayNow : boolean = true; OpenTable : boolean = true; ThisMapOnly : boolean = false;
     ForceColor : tColor = -99; ForceLineWidth : byte = 0; HideFields : ShortString = '') : integer;
@@ -12202,11 +12301,9 @@ end;
 
 procedure TMapForm.Image1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
-   i{,NewSatImage}  : integer;
+   i : integer;
    xu,yu,yl,xg1,yg1,xg2,yg2,
-   //Lat,Long,
    LatLow,LongLow,LatHigh,LongHigh : float64;
-   //FName    : PathStr;
    TStr : ShortString;
 begin
    if ClosingIsHappening or (MapDraw = Nil) or (MapDraw.MapOwner = moPointVerificationMap) or (DEMNowDoing = Calculating) or (DEMRequiredForOperation(MapDraw.DEMonMap) and (MapDraw.DEMonMap = 0)) then exit;
@@ -14307,22 +14404,24 @@ end;
 
 procedure TMapForm.DEMGridarea1Click(Sender: TObject);
 var
-   x,y : integer;
+   x,y, Pixels : integer;
    RowArea,TotalArea : float64;
 begin
    with DEMGlb[MapDraw.DEMonMap] do begin
       TotalArea := 0;
+      Pixels := 0;
       for x := 0 to pred(DEMheader.NumCol) do begin
          RowArea := 0;
          for y := 0 to pred(DEMheader.NumRow) do begin
             if not MissingDataInGrid(x,y) then begin
                 RowArea := RowArea + AverageYSpace * XSpaceByDEMrow^[y];
+                Inc(Pixels);
             end;
          end;
          TotalArea := TotalArea + RowArea * 0.001 * 0.001;
       end;
    end;
-   MessageToContinue('Area: ' + RealToString(TotalArea,-18,-4) + ' km²');
+   MessageToContinue('Area: ' + RealToString(TotalArea,-18,-4) + ' km²' + MessLineBreak + 'Pixels: ' + IntToStr(Pixels));
 end;
 
 procedure TMapForm.DEMgridhistogram1Click(Sender: TObject);
@@ -15165,6 +15264,19 @@ begin
 end;
 
 
+
+procedure TMapForm.Geomorphometrybycategories1Click(Sender: TObject);
+var
+   ElevMap,SlopeMap,RuffMap,AspMap : integer;
+begin
+   GetDEM(ElevMap,true,'elevation histogram');
+   SlopeMap := 0;
+   RuffMap := 0;
+   SlopeMap := -1;   //forces creation of slope and roughness maps
+   RuffMap := CreateSlopeRoughnessSlopeStandardDeviationMap(ElevMap,3,SlopeMap);
+   AspMap := MakeAspectMap(ElevMap);
+   HistogramsFromVATDEM(MapDraw.DEMonMap,ElevMap,SlopeMap,RuffMap,AspMap);
+end;
 
 procedure TMapForm.Rastertovector1Click(Sender: TObject);
 begin
@@ -16409,7 +16521,7 @@ procedure TMapForm.Mergecolors1Click(Sender: TObject);
 begin
    {$IfDef ExSat}
    {$Else}
-      if GetIHSparameters(MDdef.MergeInt,MDdef.MergeHue,MDdef.MergeSat{,MergeUseReflectance}) then DrawColoredMap1Click(Nil);
+      if GetIHSparameters(MDdef.MergeInt,MDdef.MergeHue,MDdef.MergeSat) then DrawColoredMap1Click(Nil);
    {$EndIf}
 end;
 
@@ -18560,6 +18672,55 @@ end;
 
 
 
+procedure TMapForm.Allvalidpixels1Click(Sender: TObject);
+var
+   x,y, Pixels,PixelsAbove,PixelsBelow : integer;
+   RowVolumeAbove,TotalVolumeAbove,
+   RowVolumeBelow,TotalVolumeBelow,
+   //TotalVolumeBelow,TotalVolumeAbove,
+   RowArea,TotalArea,PixelArea : float64;
+   z,BaseZ : float32;
+begin
+   BaseZ := 0;
+   ReadDefault('Base elevation (m)',BaseZ);
+   with DEMGlb[MapDraw.DEMonMap] do begin
+      TotalArea := 0;
+      Pixels := 0;
+      PixelsAbove := 0;
+      PixelsBelow := 0;
+      TotalVolumeBelow := 0;
+      TotalVolumeAbove := 0;
+      for y := 0 to pred(DEMheader.NumRow) do begin
+         RowArea := 0;
+         RowVolumeAbove := 0;
+         RowVolumeBelow := 0;
+         PixelArea := AverageYSpace * XSpaceByDEMrow^[y];
+         for x := 0 to pred(DEMheader.NumCol) do begin
+            if GetElevMeters(x,y,z) then begin
+               RowArea := RowArea + PixelArea;
+               Inc(Pixels);
+               z := z - BaseZ;
+               if Z >= 0 then begin
+                  inc(PixelsAbove);
+                  RowVolumeAbove := RowVolumeAbove + z * PixelArea;
+               end
+               else begin
+                  inc(PixelsBelow);
+                  RowVolumeBelow := RowVolumeBelow + z * PixelArea;
+               end;
+            end;
+         end;
+         TotalArea := TotalArea + RowArea * 0.001 * 0.001;
+         TotalVolumeBelow := TotalVolumeBelow + RowVolumeBelow * 0.001 * 0.001 * 0.001;
+         TotalVolumeAbove := TotalVolumeAbove + RowVolumeAbove * 0.001 * 0.001 * 0.001;
+      end;
+   end;
+   MessageToContinue('Total Area: ' + RealToString(TotalArea,-18,-4) + ' km²' + '   Pixels: ' + IntToStr(Pixels)  + MessLineBreak +
+       'Volume above ' + RealToString(BaseZ,-12,-4) + ' m  ' + RealToString(TotalVolumeAbove,-18,-6) + ' km³' + '   Pixels: ' + IntToStr(PixelsAbove)  + MessLineBreak   +
+       'Volume below ' + RealToString(BaseZ,-12,-4) + ' m  ' + RealToString(TotalVolumeBelow,-18,-6) + ' km³' + '   Pixels: ' + IntToStr(PixelsBelow)   + MessLineBreak  );
+end;
+
+
 procedure TMapForm.Allvalidtosinglevalue1Click(Sender: TObject);
 begin
    Rangetosinglevalue1Click(Sender);
@@ -19834,7 +19995,6 @@ begin
       RespondToChangedDEM;
       MessageToContinue(IntToStr(NPts) + ' points reclassified');
    end;
-
 end;
 
 procedure TMapForm.Earthquakefocalmechanisms1Click(Sender: TObject);
@@ -20094,8 +20254,10 @@ var
          var
             z : float32;
          begin
-            DEMGlb[DEM].GetElevFromLatLongDegree(RightClickLat,RightClickLong,z);
-            Results.Add(RealToString(RightClickLat,-12,-6) + ',' +  RealToString(RightClickLong,-12,-6) + ',' + RealToString(z,-9,3));
+            if ValidDEM(DEM) then begin
+               DEMGlb[DEM].GetElevFromLatLongDegree(RightClickLat,RightClickLong,z);
+               Results.Add(RealToString(RightClickLat,-12,-6) + ',' +  RealToString(RightClickLong,-12,-6) + ',' + RealToString(z,-9,3));
+            end;
          end;
 
 begin
@@ -21370,7 +21532,7 @@ end;
 
 procedure TMapForm.Peakislandarea1Click(Sender: TObject);
 begin
-   ChangeDEMNowDoing(GetIslandArea);
+   {$IfDef IncludePeakIslandArea} ChangeDEMNowDoing(GetIslandArea); {$EndIf}
 end;
 
 function TMapForm.GeotiffDEMNameOfMap : PathStr;
@@ -22316,7 +22478,6 @@ var
    i : integer;
 begin
    {$IfDef MessageStartUpUnit} MessageToContinue('DEMMapf initialization'); {$EndIf}
-  // MergingDEMs := false;
    for i := 1 to MaxVectorMap do VectorMap[i] := Nil;
    VegGraph := Nil;
    EnsembleClassDB := 0;
@@ -22336,13 +22497,11 @@ begin
    ClipBoard_Line_Coords := Nil;
    ClipBoard_NumPts := 0;
    DatumShiftDB := 0;
-  //MergeUseReflectance := false;
    LocationLabel := true;
    LocationColor := clBlack;
    LocationSymSize := 2;
    LocationSymbol := Box;
    TargetFlyThrough  := false;
-   //MovingImage := false;
    gbLatStart := -999;
    VolumeRelativeToZ := 0;
    AmbushCountMyBitmap := Nil;

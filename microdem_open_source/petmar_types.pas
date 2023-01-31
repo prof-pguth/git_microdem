@@ -884,6 +884,7 @@ end;
    {$EndIf}
    var
       TStr : shortstring;
+      LastName : PathStr;
    begin
       TheDebugLog := tStringList.Create;
       TheDebugLog.Add(TimeToStr(Now,aFormat) + ' Opened Debug log: ' + DebugFileName);
@@ -917,6 +918,11 @@ end;
       {$EndIf}
 
       if (DebugFilename = '') then DebugFilename := 'c:\microdem\logs\microdem_debug.txt';
+
+      if FileExists(DebugFilename) then begin
+         LastName := ExtractFilePath(DebugFilename) + 'last_MD_debug_file.txt';
+         RenameFile(DebugFileName,LastName);
+      end;
 
       TheDebugLog.Add(TimeToStr(Now,aFormat) + ' GotHardware');
       TheDebugLog.SaveToFile(DebugFilename);

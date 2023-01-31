@@ -71,7 +71,6 @@ var
    Month,Day,i,j : integer;
    Mname,baseName,basePath : PathStr;
    MData : tStringList;
-   //LSNum : byte;
    aLine : string;
    PostEqual : ANSIstring;
 begin
@@ -80,8 +79,6 @@ begin
    if IsLandsat(fName,BaseName) then begin
       if (IsLandSatLook(fName)) then begin
       end
-      //else if IsMSS(fName) then begin
-      //end
       else begin
          fName := ExtractFileName(fName);
          //https://landsat.usgs.gov/what-are-naming-conventions-landsat-scene-identifiers
@@ -123,9 +120,6 @@ begin
          end;
 
          MName := BasePath + BaseName + 'MTL.txt';
-         //if not FileExists(MName) then MName := BasePath + BaseName +  '.meta';
-         //MName := GetLandsatMetadaName;
-
          if FileExists(MName) then begin
             {$IfDef RecordTMSat} WriteLineToDebugFile('Found metadata ' + MName); {$EndIf}
             Mdata := tStringList.Create;
@@ -175,74 +169,6 @@ begin
    end;
 end;
 
-
-function ShortLandsatName(fName : PathStr) : ShortString;
-var
-   Year,Month,Day,JDay : integer;
-   LName : shortString;
-begin
-   fName := ExtractFileName(fName);
-   if (fName[5] = '_') then begin //Landsat Product Identifier
-      Year := StrToInt( Copy(fName,18,4) );
-      Month := StrToInt( Copy(fName,22,2) );
-      Day := StrToInt( Copy(fName,24,2) );
-      JDay := AnnualJulianDay(Year,Month,Day);
-      LName := fName[1] + fName[4];
-      if FName[2] = 'M' then LName := LName + ' MSS'
-      else if FName[2] = 'T' then LName := LName + ' TM'
-      else if FName[2] = 'E' then LName := LName + ' ETM+'
-      else if FName[2] = 'C' then LName := LName + ' OLI';
-
-      Result := LName + '__' + IntToStr(Month) + '/' + IntToStr(Day) + '/' + IntToStr(Year);
-   end
-   else begin //Scene ID
-      Year := StrToInt( Copy(fName,10,4) );
-      JDay := StrToInt( Copy(fName,14,3));
-      LName := fName[1] + fName[3];
-      Result := LName + '___' + IntToStr(Year) + '_' + IntToStr(JDay);
-   end;
-end;
-
-
-function LandsatBand(fName : PathStr) : integer;
-begin
-   fName := ExtractFileNameNoExt(fName);
-   if  (StrUtils.AnsiContainsText(fName,'sr_band')) then begin
-(*
-LC08_L1TP_039035_20180918_20180928_01_T1_sr_band2.tif
-*)
-      Delete(fname,1,48);
-   end
-   else if (fName[5] = '_') then begin //Landsat Product Identifier
-(*
-LE07_L1GT_092074_20050605_20170114_01_T2_B5
-*)
-      Delete(fname,1,42);
-      if fname[2] = '_' then Delete(fname,2,pred(length(fname)));
-   end
-   else begin //Scene ID
-(*
-LC80150332015229LGN00_B1
-*)
-      Delete(fname,1,23);
-   end;
-   Result := StrToInt(fName);
-end;
-
-
-function HistogramLandsatName(fName : PathStr) : ShortString;
-var
-   MPath : PathStr;
-begin
-   if IsLandsat(fName,MPath) and (not IsLandsatLook(fName)) then begin
-      Result := ExtractFilePath(fName) + 'band_hist\' + ExtractFileNameNoExt(fName) + TMhistfName;
-   end
-   else begin
-      Result := fName + TMhistfName;
-   end;
-end;
-
-
 function LandsatSceneMetadata(fName : PathStr; var LandsatNumber : byte; var MPath : PathStr) : tStringList;
 //LC80410342013213LGN00
 var
@@ -287,6 +213,72 @@ begin
   {$IfDef RecordTMSat} WriteLineToDebugFile('LandsatSceneMetadata out, Landsat=' + IntToStr(LandsatNumber) + '   mpath=' + Mpath); {$EndIf}
 end;
 
+
+
+function ShortLandsatName(fName : PathStr) : ShortString;
+var
+   Year,Month,Day,JDay : integer;
+   LName : shortString;
+begin
+   fName := ExtractFileName(fName);
+   if (fName[5] = '_') then begin //Landsat Product Identifier
+      Year := StrToInt( Copy(fName,18,4) );
+      Month := StrToInt( Copy(fName,22,2) );
+      Day := StrToInt( Copy(fName,24,2) );
+      JDay := AnnualJulianDay(Year,Month,Day);
+      LName := fName[1] + fName[4];
+      if FName[2] = 'M' then LName := LName + ' MSS'
+      else if FName[2] = 'T' then LName := LName + ' TM'
+      else if FName[2] = 'E' then LName := LName + ' ETM+'
+      else if FName[2] = 'C' then LName := LName + ' OLI';
+      Result := LName + '_' + IntToStr(Month) + '-' + IntToStr(Day) + '-' + IntToStr(Year);
+   end
+   else begin //Scene ID
+      Year := StrToInt( Copy(fName,10,4) );
+      JDay := StrToInt( Copy(fName,14,3));
+      LName := fName[1] + fName[3];
+      Result := LName + '_' + IntToStr(Year) + '_' + IntToStr(JDay);
+   end;
+end;
+
+
+function LandsatBand(fName : PathStr) : integer;
+begin
+   fName := ExtractFileNameNoExt(fName);
+   if  (StrUtils.AnsiContainsText(fName,'sr_band')) then begin
+(*
+LC08_L1TP_039035_20180918_20180928_01_T1_sr_band2.tif
+*)
+      Delete(fname,1,48);
+   end
+   else if (fName[5] = '_') then begin //Landsat Product Identifier
+(*
+LE07_L1GT_092074_20050605_20170114_01_T2_B5
+*)
+      Delete(fname,1,42);
+      if fname[2] = '_' then Delete(fname,2,pred(length(fname)));
+   end
+   else begin //Scene ID
+(*
+LC80150332015229LGN00_B1
+*)
+      Delete(fname,1,23);
+   end;
+   Result := StrToInt(fName);
+end;
+
+
+function HistogramLandsatName(fName : PathStr) : ShortString;
+var
+   MPath : PathStr;
+begin
+   if IsLandsat(fName,MPath) and (not IsLandsatLook(fName)) then begin
+      Result := ExtractFilePath(fName) + 'band_hist\' + ExtractFileNameNoExt(fName) + TMhistfName;
+   end
+   else begin
+      Result := fName + TMhistfName;
+   end;
+end;
 
 
 {$IfDef ExLandsatQA}

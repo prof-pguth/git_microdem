@@ -5,15 +5,15 @@ var
   Reg: TRegistry;
 begin
   {$IfDef VCL}
-  CPUname := '';
-  Reg := TRegistry.Create;
-  try
-    Reg.RootKey := HKEY_LOCAL_MACHINE;
-    if Reg.OpenKeyReadOnly('Hardware\Description\System\CentralProcessor\0') then
-      CPUname := Reg.ReadString('Identifier');
-  finally
-    Reg.Free;
-  end;
+    CPUname := '';
+    Reg := TRegistry.Create;
+    try
+      Reg.RootKey := HKEY_LOCAL_MACHINE;
+      if Reg.OpenKeyReadOnly('Hardware\Description\System\CentralProcessor\0') then
+        CPUname := Reg.ReadString('Identifier');
+    finally
+      Reg.Free;
+    end;
   {$EndIf}
 end;
 
@@ -109,11 +109,9 @@ begin
 end;
 
 
-
 function HardwareString(IncludeIP : boolean = true) : AnsiString;
 var
-   MemStr,
-   TStr,TStr2,TStr3,TStr4     : ShortString;
+   MemStr,TStr,TStr2,TStr3,TStr4  : ShortString;
    i : integer;
    ch : ansichar;
    OSVersion : tOSVersion;
@@ -122,7 +120,8 @@ begin
    TStr := CPUName + MessLineBreak + GetCPUSpeed + MessLineBreak + 'Processors: ' + IntToStr(GetNumberProcessors) + MessLineBreak;
    TStr2 := 'Monitors: ' + IntToStr(Screen.MonitorCount) + '  Screen Resolution, Colors: ' + IntToStr(GetScreenColorDepth)+ ' bits' + MessLineBreak;
    for i := 0 to pred(Screen.MonitorCount) do begin
-       TStr2 := Tstr2 + 'Monitor ' + IntToStr(succ(i)) + ': ' + IntToStr(Screen.Monitors[i].Width) +  'x' + IntToStr(Screen.Monitors[i].Height);
+       TStr2 := Tstr2 + 'Monitor ' + IntToStr(succ(i)) + ': ' + IntToStr(Screen.Monitors[i].Width) +  'x' + IntToStr(Screen.Monitors[i].Height) + '   ' +
+          IntToStr(Screen.Monitors[i].PixelsPerInch) + ' dpi';
        if (Screen.MonitorCount > 0) then  TStr2 := Tstr2 + ' Left=' + IntToStr(Screen.Monitors[i].Left) + '  top=' + IntToStr(Screen.Monitors[i].Top);
        TStr2 := Tstr2 + MessLineBreak;
    end;
@@ -137,16 +136,12 @@ begin
    TStr3 := TStr3 + MessLineBreak;
    ch := UpCase(ProgramRootDir[1]);
    TStr4 := 'Computer name: ' + GetComputerNetName + MessLineBreak + 'Free disk space on ' + ch + ': ' + SmartMemorySizeBytes(DiskFree(ord(ch) - ord('A') + 1)) + MessLineBreak;
-   Result := MemStr +  TStr + TStr2 + TStr3 + TStr4;
+   Result := MemStr + TStr + TStr2 + TStr3 + TStr4;
 end;
-
 
 
 function GetVideoCardName(): String;
 // https://stackoverflow.com/questions/12966946/how-to-get-the-installed-video-card-delphi
-//begin
-   //Result := 'not available';    //12/7/2022, because failure
-//end;
 const
   WbemUser = '';
   WbemPassword = '';
@@ -161,7 +156,6 @@ var
   iValue: LongWord;
 begin
   Result := 'not available';
-
   try
     FSWbemLocator := CreateOleObject('WbemScripting.SWbemLocator');
     FWMIService := FSWbemLocator.ConnectServer(WbemComputer, 'root\CIMV2', WbemUser, WbemPassword);
@@ -172,7 +166,7 @@ begin
       FWbemObject := Unassigned;
     end;
   except
-    on E: Exception do begin end;   //ShowMessage(E.Classname + ':' + E.Message);
+    on E: Exception do begin end;
   end;
 end;
 
@@ -180,7 +174,7 @@ end;
 
 (*
   Unit allows Delphi application's Version Information to be dynamically  retrieved at run time; thus removing the need to manually update version
-  labels on splash screens and about boxes.
+     labels on splash screens and about boxes.
 
   Original code sourced from the Borland Delphi IDE newsgroup (author unknown).  A.Tippett, 11th January 2000
 

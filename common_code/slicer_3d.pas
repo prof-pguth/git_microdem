@@ -257,7 +257,7 @@ begin
    SlicerForm.LatLongCoords := SlicerForm.MemoryPointCloud[1].StayLatLong;
    SlicerForm.LoadMemoryPointCloud(1,'');
    {$IfDef Slicer} WriteLineToDebugFile('DB_3dSlices, point cloud loaded, center changed'); {$EndIf}
-   SlicerForm.Caption := ExtractFileNameNoExt(SlicerForm.ThisProject) + ' pts=' + SmartNumberPoints(SlicerForm.MemoryPointCloud[1].NumMemPts);
+   SlicerForm.Caption := 'Slice viewer point cloud: ' + ExtractFileNameNoExt(SlicerForm.ThisProject) + ' pts=' + SmartNumberPoints(SlicerForm.MemoryPointCloud[1].NumMemPts);
    SlicerForm.AdjustForLatLong;
    SlicerForm.Show;
    SlicerForm.ChangeSliceCenter(True);
@@ -292,22 +292,18 @@ var
             end;
          end
          else begin
-            ProjectTable := tMyData.Create(SlicerForm.ThisProject);
-            ProjectTable.ApplyFilter( 'USE=' + QuotedStr('Y') + ' AND TYPE=' + QuotedStr('geometry'));
-            while not ProjectTable.Eof do begin
-               ProjectTable.Next;
-            end;
             {$IfDef ExSat}
             {$Else}
+               ProjectTable := tMyData.Create(SlicerForm.ThisProject);
                ProjectTable.ApplyFilter( 'USE=' + QuotedStr('Y') + ' AND TYPE=' + QuotedStr('image'));
                while not ProjectTable.Eof do begin
                   OpenAndDisplayNewScene(Nil,ProjectTable.GetFieldByNameAsString('FILENAME'),true,false,true);
                   ProjectTable.Next;
                end;
+               FreeAndNil(ProjectTable);
             {$EndIf}
-            FreeAndNil(ProjectTable);
          end;
-         SlicerForm.Caption := 'Point cloud ' + SlicerForm.BaseName + ' pts=' + SmartNumberPoints(SlicerForm.MemoryPointCloud[1].NumMemPts);
+         SlicerForm.Caption := 'Slicer view: ' + SlicerForm.BaseName + ' pts=' + SmartNumberPoints(SlicerForm.MemoryPointCloud[1].NumMemPts);
          SlicerForm.BitBtn1Click(Nil);
          RestoreBackupDefaults;
       end;

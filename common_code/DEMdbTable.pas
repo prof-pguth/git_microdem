@@ -4,7 +4,7 @@
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
 
@@ -950,6 +950,9 @@ type
     FilterforDEMIXtiles1: TMenuItem;
     NormalizeddifferencesfromreferenceDEM1: TMenuItem;
     Bestbysortedgeomorphometry1: TMenuItem;
+    Stackedpercentages1: TMenuItem;
+    AlphabetizefieldwithCSVsubfields1: TMenuItem;
+    iesbyopinions1: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
     procedure Shiftpointrecords1Click(Sender: TObject);
     procedure Creategrid1Click(Sender: TObject);
@@ -1671,6 +1674,10 @@ type
     procedure FilterforDEMIXtiles1Click(Sender: TObject);
     procedure NormalizeddifferencesfromreferenceDEM1Click(Sender: TObject);
     procedure Bestbysortedgeomorphometry1Click(Sender: TObject);
+    procedure Stackedpercentages1Click(Sender: TObject);
+    procedure Deleterecord1Click(Sender: TObject);
+    procedure AlphabetizefieldwithCSVsubfields1Click(Sender: TObject);
+    procedure iesbyopinions1Click(Sender: TObject);
   private
     procedure PlotSingleFile(fName : PathStr; xoff,yoff : float64);
     procedure SetUpLinkGraph;
@@ -6095,6 +6102,35 @@ begin
    end;
 end;
 
+procedure Tdbtablef.AlphabetizefieldwithCSVsubfields1Click(Sender: TObject);
+var
+   entry : shortstring;
+   entries : tStringList;
+   i : integer;
+begin
+    SelectedColumn := GISdb[DBonTable].PickField('field to alphabetize',[ftString]);
+    GISdb[DBonTable].EmpSource.Enabled := false;
+    GISdb[DBonTable].MyData.First;
+    Entries := tStringList.Create;
+    Entries.Sorted := true;
+    while not GISdb[DBonTable].MyData.eof do begin
+       entry := GISdb[DBonTable].MyData.GetFieldByNameAsString(SelectedColumn);
+       entries.clear;
+       if ANSIContainsText(entry,',') then begin
+         repeat
+             Entries.Add(BeforeSpecifiedCharacterANSI(entry,',',true,true));
+         until entry = '';
+         entry := entries.Strings[0];
+         for i := 1 to pred(entries.count) do entry := entry + ',' + entries.Strings[i];
+         GISdb[DBonTable].MyData.Edit;
+         GISdb[DBonTable].MyData.SetFieldByNameAsString(SelectedColumn,entry);
+       end;
+       GISdb[DBonTable].MyData.Next;
+    end;
+    ShowStatus;
+end;
+
+
 procedure Tdbtablef.Singlefield2Click(Sender: TObject);
 var
    FieldDesired : ShortString;
@@ -6843,7 +6879,7 @@ begin
      sField := PickField('sort',[ftString]);
 
      Subs := nil;
-     subs := MyData.UniqueEntriesInDB(sField);
+     Subs := MyData.UniqueEntriesInDB(sField);
 
      EmpSource.Enabled := false;
 
@@ -10812,6 +10848,11 @@ begin
 end;
 
 
+procedure Tdbtablef.Deleterecord1Click(Sender: TObject);
+begin
+   GISdb[DBonTable].MyData.MarkRecordForDeletion;
+end;
+
 procedure Tdbtablef.Forceredrawofmap1Click(Sender: TObject);
 begin
    GISdb[DBonTable].theMapOwner.DoFastMapRedraw;
@@ -10887,6 +10928,46 @@ begin
    ShowStatus;
 end;
 
+
+procedure Tdbtablef.iesbyopinions1Click(Sender: TObject);
+var
+   entry : shortstring;
+   i,nTies : integer;
+
+   procedure DoOne(DEM : shortString);
+   var
+      n : integer;
+   begin
+      if ANSIcontainsStr(entry,DEM) then n := succ(nTies) else n := 0;
+      GISdb[DBonTable].MyData.SetFieldByNameAsInteger(DEM + '_TIE',n);
+   end;
+
+
+begin
+    GISdb[DBonTable].AddFieldToDataBase(ftInteger,'ALOS_TIE',2);
+    GISdb[DBonTable].AddFieldToDataBase(ftInteger,'ASTER_TIE',2);
+    GISdb[DBonTable].AddFieldToDataBase(ftInteger,'COP_TIE',2);
+    GISdb[DBonTable].AddFieldToDataBase(ftInteger,'SRTM_TIE',2);
+    GISdb[DBonTable].AddFieldToDataBase(ftInteger,'NASA_TIE',2);
+    GISdb[DBonTable].AddFieldToDataBase(ftInteger,'FABDEM_TIE',2);
+    GISdb[DBonTable].EmpSource.Enabled := false;
+    GISdb[DBonTable].MyData.First;
+    while not GISdb[DBonTable].MyData.eof do begin
+       entry := UpperCase(GISdb[DBonTable].MyData.GetFieldByNameAsString('TIES_ALPHA'));
+       GISdb[DBonTable].MyData.Edit;
+       GISdb[DBonTable].MyData.SetFieldByNameAsString('TIES_ALPHA',entry);
+       nTies := 0;
+       for i := 1 to Length(Entry) do if Entry[i] = ',' then inc(NTies);
+       DoOne('ASTER');
+       DoOne('ALOS');
+       DoOne('NASA');
+       DoOne('SRTM');
+       DoOne('COP');
+       DoOne('FABDEM');
+       GISdb[DBonTable].MyData.Next;
+    end;
+    ShowStatus;
+end;
 
 procedure Tdbtablef.Includedebuglog1Click(Sender: TObject);
 begin
@@ -13430,6 +13511,12 @@ begin
    {$IfDef RecordCopyFieldLinkDB} WriteLineToDebugFile('Fields picked, n=' + IntToStr(TheFields.Count)); {$EndIf}
    GISdb[DBonTable].FillFieldsFromJoinedTable(TheFields,false);
    ShowStatus;
+end;
+
+
+procedure Tdbtablef.Stackedpercentages1Click(Sender: TObject);
+begin
+    GetStackedHistogram(DBonTable);
 end;
 
 

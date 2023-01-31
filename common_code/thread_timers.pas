@@ -81,7 +81,6 @@ begin
       4 : Label4.Caption := Capt;
       5 : Label5.Caption := Capt;
    end;
-   //ApplicationProcessMessages;
 end;
 
 
@@ -110,9 +109,7 @@ begin
       9 : OverallGauge9.Progress := Done;
    end;
    if (ShortMess <> '') then StatusBar1.Panels[1].Text := ShortMess;
-   //ApplicationProcessMessages;
 end;
-
 
 initialization
 finalization

@@ -213,7 +213,6 @@ var
                    Top := Top + EntryHeight;
                    Table.Next;
                 end;
-
                 Top := Top + AreaBlank;
              end;
 
@@ -250,7 +249,6 @@ begin
       if UseTable and (not GetFileFromDirectory('bounding box data base','*.dbf',dbName)) then exit;
       ASeries('g:\landcover\lccs_300m\ESACCI-LC-L4-LCCS-Map-300m-P1Y-2015-v2.0.7.tif','LCCS 300 m 2015');
       IncludeAreaName := false;
-
       ASeries('g:\landcover\iwahashi\iwahashi.tif','Iwahashi and Pike');
       ASeries('g:\landcover\Meybeck\Meybeck_1km1.tif','Meybeck and others');
       ASeries('g:\landcover\Geomorphon\geomorphon_1KMmaj_GMTEDmd.tif','Geomorphons');

@@ -38,7 +38,6 @@ uses
    function GetUSGSQuadName(Lat,Long : float64; var GeoName : ShortString) : boolean;
 
    procedure FennemanOutlines(MapOwner : DEMMapF.tMapForm; var Bitmap : tMyBitmap);
-   //procedure CountyFloodFill(MapOwner : DEMMapF.tMapForm; var Bitmap : tMyBitmap);
 {$EndIf}
 
 function FennemanGISFileName : PathStr;

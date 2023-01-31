@@ -35,7 +35,7 @@ object wmdem: Twmdem
     ButtonWidth = 34
     TabOrder = 0
     OnMouseDown = ToolBar1MouseDown
-    ExplicitWidth = 2148
+    ExplicitWidth = 2138
     object SpeedButton2: TSpeedButton
       Left = 0
       Top = 0
@@ -1697,8 +1697,8 @@ object wmdem: Twmdem
     Visible = False
     OnClick = StatusBar1Click
     OnDblClick = StatusBar1DblClick
-    ExplicitTop = 1255
-    ExplicitWidth = 2148
+    ExplicitTop = 1245
+    ExplicitWidth = 2138
   end
   object MainMenu1: TMainMenu
     Left = 136
@@ -1806,9 +1806,24 @@ object wmdem: Twmdem
           Caption = 'Annapolis lidar (8 GB)'
           OnClick = Annapolislidar8GB1Click
         end
-        object Datadownload25GB1: TMenuItem
+        object EurekaValleyDownload: TMenuItem
           Caption = 'Eureka Valley data download'
-          OnClick = Datadownload25GB1Click
+          OnClick = EurekaValleyDownloadClick
+        end
+        object GERDdownload1: TMenuItem
+          Caption = 'GERD download'
+          object N2020fillseason1: TMenuItem
+            Caption = '2020 fill season'
+            OnClick = N2020fillseason1Click
+          end
+          object N2021fillseason: TMenuItem
+            Caption = '2021 fill season'
+            OnClick = N2021fillseasonClick
+          end
+          object N2022fillseason1: TMenuItem
+            Caption = '2022 fill season'
+            OnClick = N2022fillseason1Click
+          end
         end
         object Datadownloadpicksubset1: TMenuItem
           Caption = 'Kangaroo Island data download'
@@ -2086,7 +2101,6 @@ object wmdem: Twmdem
       end
       object Header1: TMenuItem
         Caption = '&Header'
-        OnClick = Header1Click
       end
       object MetaData1: TMenuItem
         Caption = 'File metadata'
@@ -2444,6 +2458,14 @@ object wmdem: Twmdem
         Visible = False
         OnClick = opengl1tofrontClick
       end
+      object Bringslicecontroltofront1: TMenuItem
+        Caption = 'Bring slice control to front'
+        OnClick = Bringslicecontroltofront1Click
+      end
+      object Bringpointcloudcontroltofront1: TMenuItem
+        Caption = 'Bring point cloud control to front'
+        OnClick = Bringpointcloudcontroltofront1Click
+      end
       object Closewindows1: TMenuItem
         Caption = 'Close windows'
         OnClick = Closewindows1Click
@@ -2475,6 +2497,10 @@ object wmdem: Twmdem
       object Viewdebuglog1: TMenuItem
         Caption = 'View debug log'
         OnClick = Viewdebuglog1Click
+      end
+      object Viewlastexectiondebuglog1: TMenuItem
+        Caption = 'View last exection debug log'
+        OnClick = Viewlastexectiondebuglog1Click
       end
       object Opendatasets1: TMenuItem
         Caption = 'What'#39's open'
@@ -3096,6 +3122,7 @@ object wmdem: Twmdem
     end
     object Closeprogramgetdebugversionoftheprogram7MB1: TMenuItem
       Caption = 'Close program, get debug version of the program (7 MB)'
+      Enabled = False
       OnClick = Closeprogramgetdebugversionoftheprogram7MB1Click
     end
     object CloseprogramupdateEXEnewversion7MBdownload1: TMenuItem

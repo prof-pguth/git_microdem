@@ -74,7 +74,6 @@ type
 var
    FabricOptions : TFabricOptions;
 
-
 implementation
 
 {$R *.DFM}

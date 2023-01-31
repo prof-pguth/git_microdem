@@ -11,6 +11,7 @@
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
       {$Define RecordMakeGrid}
+      {$Define TrackPointCloud}
       //{$Define RecordExtractPoints}
       //{$Define Slicer}
       //{$Define BulkGrids}
@@ -73,7 +74,6 @@ type
        pcgmSingleRet,pcgmMeanStd,pcgmVegVox,pcgmDensityVox,pcgmScanAngle,pcgmGrndPtDTM,pcgmGroundLowXYZ,pcgmLowXYZ,pcgmClassification,pcgmRGB,pcgmOverlap,pcgmPointSourceID,pcgmUserData,pcgmBlank,pcgmMinIntensity);
    tWhatProcess = (wpWBClass,wpFusionClass,wpMCCclass,wpLasToolsClass,wpWBSegClass,wpPDALsmrf,wpPDALpmf,wpAllClass,wpWBDenoise);
    tdbpcPointCloud = (dbpcDataBase,dbpcDSM,dbpcMidCloud,dbpcDTM);
-
 
 type
   Tpt_cloud_opts_fm = class(TForm)
@@ -1348,7 +1348,7 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
 
 
     begin
-       {$IfDef RecordMakeGrid} WriteLineToDebugFile(''); WriteLineToDebugFile('Tpt_cloud_opts_fm.BitBtn9Click (Make grid) in, ' + IntToStr(ord(PCGridMaker))); {$EndIf}
+       {$If Defined(RecordMakeGrid) or Defined(TrackPointCloud)} WriteLineToDebugFile(''); WriteLineToDebugFile('Tpt_cloud_opts_fm.BitBtn9Click (Make grid) in, ' + IntToStr(ord(PCGridMaker))); {$EndIf}
 
        if (PCGridMaker in [pcgmAboveBelow,pcgmLowXYZ, pcgmGroundLowXYZ]) then begin
           MessageToContinue('Option currentely disabled');
@@ -1398,7 +1398,7 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
 
        CreateNewGrids;
 
-        CloseSingleDEM(TempDEM);
+       CloseSingleDEM(TempDEM);
 
         if (PCGridMaker <> pcgmBlank) then begin
            StartThreadTimers('Point cloud',1,true);
@@ -1407,10 +1407,10 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
            EndThreadTimers;
         end;
 
-        {$IfDef RecordMakeGrid} WriteLineToDebugFile('Grid creation over'); {$EndIf}
-        MakeMapDisplays;
-        Result := CheckDEM;
-       {$IfDef RecordMakeGrid} WriteLineToDebugFile('MakeGridFromLidarCloud out'); {$EndIf}
+       {$If Defined(RecordMakeGrid) or Defined(TrackPointCloud)} WriteLineToDebugFile('Grid creation over'); {$EndIf}
+       MakeMapDisplays;
+       Result := CheckDEM;
+       {$If Defined(RecordMakeGrid) or Defined(TrackPointCloud)} WriteLineToDebugFile('MakeGridFromLidarCloud out'); {$EndIf}
     end;
 
 
@@ -1756,7 +1756,8 @@ var
    i : integer;
    fName : PathStr;
 begin
-   {$If Defined(RecordLASfiles) or Defined(RecordLASopen)} WriteLineToDebugFile('OvelayPointCloud in'); {$EndIf}
+
+   {$If Defined(RecordLASfiles) or Defined(RecordLASopen) or Defined(TrackPointCloud)} WriteLineToDebugFile('OvelayPointCloud in'); {$EndIf}
    MDDef.ShiftMercToUTM := true;
    pt_cloud_opts_fm := Tpt_cloud_opts_fm.Create(Application);
    pt_cloud_opts_fm.InitialCloudDisplay := true;
@@ -1790,7 +1791,7 @@ begin
    else pt_cloud_opts_fm.GetFilesForPointCloud(1,DirOpen,true);
    pt_cloud_opts_fm.UpdateColorOptions;
    pt_cloud_opts_fm.InitialCloudDisplay := true;
-   {$If Defined(RecordLASfiles) or Defined(RecordLASopen)} WriteLineToDebugFile('OvelayPointCloud out'); {$EndIf}
+   {$If Defined(RecordLASfiles) or Defined(RecordLASopen) or Defined(TrackPointCloud)} WriteLineToDebugFile('OvelayPointCloud out'); {$EndIf}
 end;
 
 
@@ -2310,11 +2311,11 @@ begin
        {$If Defined(RecordPointCloudViewing) or Defined(PointCloudMap)} WriteLineToDebugFile('Tpt_cloud_opts_fm.RedrawAllLayers in'); {$EndIf}
        for Cloud := MaxClouds downto 1 do begin
           if UsePC[Cloud] and (LasFiles[Cloud] <> Nil) then begin
-             {$If Defined(RecordPointCloudViewing) or Defined(PointCloudMap)} WriteLineToDebugFile('Tpt_cloud_opts_fm.BitBtn1Click (draw) Cloud=' + IntToStr(Cloud)); {$EndIf}
+             {$If Defined(RecordPointCloudViewing) or Defined(TrackPointCloud)} WriteLineToDebugFile('Tpt_cloud_opts_fm.BitBtn1Click (draw) Cloud=' + IntToStr(Cloud)); {$EndIf}
              RedrawPointCloudLayer(Cloud);
           end
           else if (LasFiles[Cloud] <> Nil) then begin
-             {$If Defined(RecordPointCloudViewing) or Defined(PointCloudMap)} WriteLineToDebugFile('Not drawing cloud=' + IntToStr(Cloud)); {$EndIf}
+             {$If Defined(RecordPointCloudViewing) or Defined(PointCloudMap) or Defined(TrackPointCloud)} WriteLineToDebugFile('Not drawing cloud=' + IntToStr(Cloud)); {$EndIf}
           end;
        end;
        {$IfDef RecordPointCloudViewing} WriteLineToDebugFile('Tpt_cloud_opts_fm.RedrawAllLayers DoFastMapRedraw'); {$EndIf}
@@ -2324,9 +2325,8 @@ begin
        for Cloud := 1 to MaxClouds do if UsePC[Cloud] and (LasFiles[Cloud] <> Nil) then TStr := TStr + ' ' + LasFiles[Cloud].CloudName;
        BaseMap.Caption := TStr;
        BaseMap.BringToFront;
-
        EndProgress;
-       {$IfDef RecordPointCloudViewing} WriteLineToDebugFile('Tpt_cloud_opts_fm.RedrawAllLayers out'); {$EndIf}
+       {$If Defined(RecordPointCloudViewing) or Defined(TrackPointCloud)} WriteLineToDebugFile('Tpt_cloud_opts_fm.RedrawAllLayers out'); {$EndIf}
    end;
 end;
 
@@ -3013,13 +3013,13 @@ end;
 
 procedure Tpt_cloud_opts_fm.BitBtn6Click(Sender: TObject);
 begin
-   {$If Defined(PointCloudMap)} WriteLineToDebugFile('Tpt_cloud_opts_fm.BitBtn6Click in'); {$EndIf}
+   {$If Defined(PointCloudMap) or Defined(TrackPointCloud)} WriteLineToDebugFile('Tpt_cloud_opts_fm.BitBtn6Click in'); {$EndIf}
    SaveBackupDefaults;
    MDdef.AutoRedrawMapLAS := true;
    BaseMap.MapDraw.DeleteMapSavedLasLayers;
    RedrawAllLayers;
    RestoreBackupDefaults;
-   {$If Defined(PointCloudMap)} WriteLineToDebugFile('Tpt_cloud_opts_fm.BitBtn6Click out'); {$EndIf}
+   {$If Defined(PointCloudMap) or Defined(TrackPointCloud)} WriteLineToDebugFile('Tpt_cloud_opts_fm.BitBtn6Click out'); {$EndIf}
 end;
 
 procedure Tpt_cloud_opts_fm.BitBtn7Click(Sender: TObject);
@@ -3034,7 +3034,7 @@ var
    DEMbase,i : integer;
    Files : tStringList;
 begin
-   {$If Defined(BasicOpens) or Defined(RecordPointCloudOptionsForm) or Defined(RecordLASOpen)} WriteLineToDebugFile('Tpt_cloud_opts_fm.GetFilesForPointCloud in, cloud=' + IntToStr(CloudNum)); {$EndIf}
+   {$If Defined(BasicOpens) or Defined(RecordPointCloudOptionsForm) or Defined(RecordLASOpen)  or Defined(TrackPointCloud)} WriteLineToDebugFile('Tpt_cloud_opts_fm.GetFilesForPointCloud in, cloud=' + IntToStr(CloudNum)); {$EndIf}
    if (LasFiles[CloudNum] = Nil) then LasFiles[CloudNum] := tLas_files.Create
    else LasFiles[CloudNum].LAS_fnames.Clear;
 
@@ -3174,7 +3174,7 @@ begin
    end;
 
    ShowDefaultCursor;
-   {$If Defined(BasicOpens) or Defined(RecordPointCloudOptionsForm) or Defined(RecordLASOpen)} WriteLineToDebugFile('Tpt_cloud_opts_fm.GetFilesForPointCloud out, ' + LasFiles[CloudNum].CloudStats); {$EndIf}
+   {$If Defined(BasicOpens) or Defined(RecordPointCloudOptionsForm) or Defined(RecordLASOpen) or Defined(TrackPointCloud)} WriteLineToDebugFile('Tpt_cloud_opts_fm.GetFilesForPointCloud out, ' + LasFiles[CloudNum].CloudStats); {$EndIf}
 end;
 
 

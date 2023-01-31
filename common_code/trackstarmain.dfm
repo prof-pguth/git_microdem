@@ -23,7 +23,7 @@ object SatTractForm: TSatTractForm
     Height = 78
     Align = alTop
     TabOrder = 0
-    ExplicitWidth = 366
+    ExplicitWidth = 462
     object Label1: TLabel
       Left = 360
       Top = 60
@@ -121,7 +121,8 @@ object SatTractForm: TSatTractForm
     Align = alClient
     FixedCols = 0
     TabOrder = 1
-    ExplicitWidth = 366
+    ExplicitWidth = 462
+    ExplicitHeight = 254
     ColWidths = (
       64
       64

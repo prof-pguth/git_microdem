@@ -178,9 +178,6 @@ var
 
 
    procedure MergeAndTranspose(var Diffs : tStringList; fName : PathStr);
-   //var
-      //DEM : integer;
-      //DEMs : tStringList;
    begin
       if (Diffs.Count > 0) then begin
          {$If Defined(RecordDEMIX)} WriteLineToDebugFile('MergeAndTranspose ' + fName + ' with regions=' + IntToStr(Diffs.Count)); {$EndIf}
@@ -381,8 +378,6 @@ end;
          procedure FinalizeStringLists(FinalSaveResults : boolean = true);
 
                procedure ProcessStringList(fName : PathStr; var sl : tStringList; DoStats : boolean = false);
-               //var
-                  //db : integer;
                begin
                   {$IfDef RecordFullDEMIX} writeLineToDebugFile(fName + '  lines=' + IntToStr(sl.Count)); {$EndIf}
                   if (sl.count > 1) then begin
@@ -840,9 +835,7 @@ end;
 
 
    var
-     // WantDEM,j,
       Ser,i,UseDSM,UseDTM : integer;
-      //AllDEMs,
       TStr : shortstring;
       NoneMissing : boolean;
    begin
@@ -883,7 +876,6 @@ end;
             GISdb[DEMIXtileDB].MyData.First;  //placed here to see where in the tile processing the program is at
 
             NoneMissing := LoadDEMIXCandidateDEMs(0);
-
 
             if NoneMissing then begin
                if (LandCoverFName <> '') then begin
@@ -1010,13 +1002,6 @@ try
 
    OutPutDir := DEMIXresultsDir;
    SafeMakeDir(OutputDir);
-
-   (*
-   TStr :=  DateToStr(now);  // + '-' + CurrentMilitaryTime(true);
-   for i := 1 to length(TStr) do if TStr[i] in ['/',':'] then TStr[i] := '-';
-   OutputDir := OutPutDir + TStr + '\';
-   SafeMakeDir(OutputDir);
-   *)
 
    if DoHorizontalShift then SafeMakeDir(OutputDir + 'lags\' );
    if ElevDiffHists then begin

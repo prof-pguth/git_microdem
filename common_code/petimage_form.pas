@@ -122,7 +122,6 @@ type
     RedrawSpeedButton12: TSpeedButton;
     SpeedButton7: TSpeedButton;
     SpeedButton8: TSpeedButton;
-    MakeRGBseparates1: TMenuItem;
     Zoom1: TMenuItem;
     PopupMenu1: TPopupMenu;
     Pastefromclipboard2: TMenuItem;
@@ -181,7 +180,6 @@ type
     Convertwhitetonearwhite1: TMenuItem;
     Smoothingfilter1: TMenuItem;
     ools1: TMenuItem;
-    MakeRGBgrayscales1: TMenuItem;
     Cyan1: TMenuItem;
     Yellow1: TMenuItem;
     Magenta1: TMenuItem;

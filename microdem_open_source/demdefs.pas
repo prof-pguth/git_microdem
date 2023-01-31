@@ -367,6 +367,7 @@ const  //map display modes, for particular data types and desired look
    mtLandCover = 54;
    mtGrCyBlReflect = 55;
    mtDEMaspectSlope = 56;
+   mt6ColorVAToverlay = 57;
    //mtDifferenceMap = 57;
 
 type
@@ -1139,75 +1140,73 @@ type
 
    {$IfDef ExTiger}
    {$Else}
-   tTigrDef = packed record
-      ShowTIGERButton,
-      ShowNeighborsOnTIGERCounty,
-      AutoTigerOnImages,
-      AutoTigerOnDEMs  : boolean;
-      MaxAutoTigerCounties : int16;
-      WaterColor1,
-      WaterColor2,
-      BoundaryColor,
-      MajorRoadColor,
-      RoadCat2Color,
-      RoadCat3Color,
-      RoadCat4Color,
-      RoadCat5Color,
-      RoadCat6Color,
-      RoadCat7Color,
-      RailroadColor,
-      PowerLineColor,
-      PipelineColor : tPlatformColor;
+      tTigrDef = packed record
+         ShowTIGERButton,
+         ShowNeighborsOnTIGERCounty,
+         AutoTigerOnImages,
+         AutoTigerOnDEMs  : boolean;
+         MaxAutoTigerCounties : int16;
+         WaterColor1,
+         WaterColor2,
+         BoundaryColor,
+         MajorRoadColor,
+         RoadCat2Color,
+         RoadCat3Color,
+         RoadCat4Color,
+         RoadCat5Color,
+         RoadCat6Color,
+         RoadCat7Color,
+         RailroadColor,
+         PowerLineColor,
+         PipelineColor : tPlatformColor;
 
-      WaterWidth1,
-      WaterWidth2,
-      BoundaryWidth,
-      MajorRoadWidth,
-      RoadCat2Width,
-      RoadCat3Width,
-      RoadCat4Width,
-      RoadCat5Width,
-      RoadCat6Width,
-      RoadCat7Width,
-      RailroadWidth,
-      PowerLineWidth,
-      PipelineWidth : Byte;
+         WaterWidth1,
+         WaterWidth2,
+         BoundaryWidth,
+         MajorRoadWidth,
+         RoadCat2Width,
+         RoadCat3Width,
+         RoadCat4Width,
+         RoadCat5Width,
+         RoadCat6Width,
+         RoadCat7Width,
+         RailroadWidth,
+         PowerLineWidth,
+         PipelineWidth : Byte;
 
-      AutoAppear,
-      DrawLabels,
-      DrawStreams,
-      DrawCoastline,
-      DrawBoundary,
-      DrawMajorRoad,
-      DrawRoadCat2,
-      DrawRoadCat3,
-      DrawRoadCat4,
-      DrawRoadCat5,
-      DrawRoadCat6,
-      DrawRoadCat7,
-      DrawRailroad,
-      DrawPowerLine,
-      DrawPipeline : boolean;
+         AutoAppear,
+         DrawLabels,
+         DrawStreams,
+         DrawCoastline,
+         DrawBoundary,
+         DrawMajorRoad,
+         DrawRoadCat2,
+         DrawRoadCat3,
+         DrawRoadCat4,
+         DrawRoadCat5,
+         DrawRoadCat6,
+         DrawRoadCat7,
+         DrawRailroad,
+         DrawPowerLine,
+         DrawPipeline : boolean;
 
-      AppearLabels,
-      AppearStream,
-      AppearCoast,
-      AppearPipeLine,
-      AppearPowerLine,
-      AppearMajorRoad,
-      AppearRoadCat2,
-      AppearRoadCat3,
-      AppearRoadCat4,
-      AppearRoadCat5,
-      AppearRoadCat6,
-      AppearRoadCat7 : int16;
-   end;
+         AppearLabels,
+         AppearStream,
+         AppearCoast,
+         AppearPipeLine,
+         AppearPowerLine,
+         AppearMajorRoad,
+         AppearRoadCat2,
+         AppearRoadCat3,
+         AppearRoadCat4,
+         AppearRoadCat5,
+         AppearRoadCat6,
+         AppearRoadCat7 : int16;
+      end;
    {$EndIf}
 
    tOGLDefs = packed record
       MoveIncr  : float64;
-      //MaxOpenGLPoints,
-      //MaxInitOpenGLTriangles : int32;
       OpenGLDefaultTopx,
       OpenGLDefaultTopY,
       OpenGLDefaultWidth,
@@ -3073,14 +3072,14 @@ var
 
    {$IfDef ExPointCloud}
    {$Else}
-   SlicerMaskField : shortstring;
+      SlicerMaskField : shortstring;
    {$EndIf}
 
    {$IfDef ExGeology}
    {$Else}
-   SedThickDEM,
-   SedTypeDEM,
-   PredAgesDEM : integer;
+      SedThickDEM,
+      SedTypeDEM,
+      PredAgesDEM : integer;
    {$EndIf}
 
    DEMStatsString : String;

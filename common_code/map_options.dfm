@@ -4,8 +4,8 @@ object TMapOptsForm: TTMapOptsForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Advanced  map colors and shading '
-  ClientHeight = 322
-  ClientWidth = 337
+  ClientHeight = 339
+  ClientWidth = 373
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -217,7 +217,7 @@ object TMapOptsForm: TTMapOptsForm
     end
     object CheckBox8: TCheckBox
       Left = 105
-      Top = 14
+      Top = 22
       Width = 66
       Height = 17
       Caption = 'Subdue'

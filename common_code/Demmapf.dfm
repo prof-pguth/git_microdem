@@ -2,8 +2,8 @@ object MapForm: TMapForm
   Left = 45
   Top = 303
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1074
-  ClientWidth = 1787
+  ClientHeight = 1073
+  ClientWidth = 1783
   Color = clBtnHighlight
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -40,8 +40,8 @@ object MapForm: TMapForm
   object ScrollBox1: TScrollBox
     Left = 0
     Top = 27
-    Width = 1787
-    Height = 1047
+    Width = 1783
+    Height = 1046
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clRed
@@ -51,8 +51,8 @@ object MapForm: TMapForm
     ParentFont = False
     TabOrder = 0
     OnClick = ScrollBox1Click
-    ExplicitWidth = 1793
-    ExplicitHeight = 1056
+    ExplicitWidth = 1779
+    ExplicitHeight = 1045
     object Image1: TImage
       Left = 3
       Top = -247
@@ -209,13 +209,13 @@ object MapForm: TMapForm
     end
     object BlendPanel: TPanel
       Left = 0
-      Top = 1020
-      Width = 1795
+      Top = 1001
+      Width = 1779
       Height = 41
       Align = alBottom
       TabOrder = 8
-      ExplicitTop = 1011
-      ExplicitWidth = 1789
+      ExplicitTop = 1000
+      ExplicitWidth = 1775
       object TrackBar2: TTrackBar
         Left = 289
         Top = 1
@@ -334,11 +334,12 @@ object MapForm: TMapForm
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1787
+    Width = 1783
     Height = 27
     Align = alTop
     TabOrder = 1
     OnMouseDown = Panel1MouseDown
+    ExplicitWidth = 1779
     object AnnotateSpeedButton1: TSpeedButton
       Left = 31
       Top = -4
@@ -1529,8 +1530,8 @@ object MapForm: TMapForm
     end
   end
   object MainMenu1: TMainMenu
-    Left = 287
-    Top = 58
+    Left = 159
+    Top = 42
     object File1: TMenuItem
       Caption = '&File'
       object Open1: TMenuItem
@@ -2402,6 +2403,10 @@ object MapForm: TMapForm
           Caption = 'From lookup table'
           OnClick = Fromllokuptable1Click
         end
+        object NumericgridwithVATtobytegridwithcodes1: TMenuItem
+          Caption = 'Numeric grid with VAT to byte grid with codes'
+          OnClick = NumericgridwithVATtobytegridwithcodes1Click
+        end
         object Replacefromsecondgrid1: TMenuItem
           Caption = 'Replace all possible values  from second grid'
           OnClick = Replacefromsecondgrid1Click
@@ -2465,7 +2470,7 @@ object MapForm: TMapForm
         end
       end
       object Singlegridarithmetic1: TMenuItem
-        Caption = 'Single grid arithmetic'
+        Caption = 'Single grid arithmetic (map algebra)'
         GroupIndex = 1
         object Rangeshifts1: TMenuItem
           Caption = 'Range shifts'
@@ -2604,7 +2609,7 @@ object MapForm: TMapForm
         Caption = 'Vertical datum shift'
         GroupIndex = 1
         object WGS84elllipsoidtoEGM200081: TMenuItem
-          Caption = 'WGS84 elllipsoid to EGM20008'
+          Caption = 'WGS84 elllipsoid to EGM2008'
           OnClick = WGS84elllipsoidtoEGM200081Click
         end
         object EGM2008toWGS84ellipsoid1: TMenuItem
@@ -3082,28 +3087,61 @@ object MapForm: TMapForm
       Caption = '&Calculate'
       GroupIndex = 1
       HelpContext = 24
-      object Area1: TMenuItem
-        Caption = 'Area'
-        OnClick = Area1Click
-      end
       object Distance1: TMenuItem
         Caption = '&Distance'
+        GroupIndex = 1
         OnClick = Distance1Click
       end
-      object Volume1: TMenuItem
+      object Area2: TMenuItem
+        Caption = 'Area'
+        GroupIndex = 1
+        object Area1: TMenuItem
+          Caption = 'Area (outline)'
+          OnClick = Area1Click
+        end
+        object Areaofsinglecolor1: TMenuItem
+          Caption = 'Area of single color'
+          GroupIndex = 1
+          OnClick = Areaofsinglecolor1Click
+        end
+        object DEMGridarea1: TMenuItem
+          Caption = 'DEM/Grid area (all valid pixels)'
+          GroupIndex = 1
+          OnClick = DEMGridarea1Click
+        end
+        object Peakislandarea1: TMenuItem
+          Caption = 'Peak/island area'
+          GroupIndex = 1
+          OnClick = Peakislandarea1Click
+        end
+      end
+      object Volume2: TMenuItem
         Caption = 'Volume'
-        OnClick = Volume1Click
+        GroupIndex = 1
+        object Volume1: TMenuItem
+          Caption = 'Volume (outline area)'
+          GroupIndex = 1
+          OnClick = Volume1Click
+        end
+        object Allvalidpixels1: TMenuItem
+          Caption = 'All valid pixels'
+          GroupIndex = 1
+          OnClick = Allvalidpixels1Click
+        end
       end
       object Geodeticbearing1: TMenuItem
         Caption = 'Geodetic bearing'
+        GroupIndex = 1
         OnClick = Geodeticbearing1Click
       end
       object Bearing1: TMenuItem
         Caption = '&Bearing'
+        GroupIndex = 1
         OnClick = Bearing1Click
       end
       object Slopes1: TMenuItem
         Caption = 'Slopes'
+        GroupIndex = 1
         object Slope2: TMenuItem
           Caption = 'Slope between two points'
           OnClick = Slope2Click
@@ -3126,6 +3164,7 @@ object MapForm: TMapForm
       end
       object Elevations1: TMenuItem
         Caption = 'Elevations/grid values'
+        GroupIndex = 1
         object Elevationsextremes1: TMenuItem
           Caption = 'Elevations--extremes'
           OnClick = Elevationsextremes1Click
@@ -3137,41 +3176,33 @@ object MapForm: TMapForm
       end
       object Ridges: TMenuItem
         Caption = 'Ridges/valleys'
+        GroupIndex = 1
         OnClick = RidgesClick
       end
       object Findpeaks1: TMenuItem
         Caption = 'Peaks, spires and pits'
+        GroupIndex = 1
         OnClick = Findpeaks1Click
       end
       object Roads1: TMenuItem
         Caption = 'Roads'
+        GroupIndex = 1
       end
       object Buildingedges1: TMenuItem
         Caption = 'Building edges/roofs'
+        GroupIndex = 1
       end
       object Walls1: TMenuItem
         Caption = 'Walls'
-      end
-      object Peakislandarea1: TMenuItem
-        Caption = 'Peak/island area'
-        OnClick = Peakislandarea1Click
+        GroupIndex = 1
       end
       object Profiles1: TMenuItem
         Caption = 'Profiles'
+        GroupIndex = 1
         object StreamProfile1: TMenuItem
           Caption = 'Stream'
           OnClick = StreamProfile1Click
         end
-      end
-      object Areaofsinglecolor1: TMenuItem
-        Caption = 'Area of single color'
-        GroupIndex = 1
-        OnClick = Areaofsinglecolor1Click
-      end
-      object DEMGridarea1: TMenuItem
-        Caption = 'DEM/Grid area'
-        GroupIndex = 1
-        OnClick = DEMGridarea1Click
       end
       object DEMgridhistogram1: TMenuItem
         Caption = 'DEM/grid histogram'
@@ -3636,6 +3667,10 @@ object MapForm: TMapForm
         Caption = 'Fixed palette stats'
         OnClick = Fixedpalettestats1Click
       end
+      object Geomorphometrybycategories1: TMenuItem
+        Caption = 'Geomorphometry by categories'
+        OnClick = Geomorphometrybycategories1Click
+      end
       object Filter2: TMenuItem
         Caption = 'Filter DEM/Grid'
         object Filter1: TMenuItem
@@ -4025,6 +4060,7 @@ object MapForm: TMapForm
         Caption = 'Feature geomorphometry'
         object Featuregeomorphometry1: TMenuItem
           Caption = 'Compute'
+          OnClick = Featuregeomorphometry1Click
         end
         object Creategrid1: TMenuItem
           Caption = 'Create grid'
@@ -4281,6 +4317,11 @@ object MapForm: TMapForm
           GroupIndex = 1
           OnClick = Setspecifiedvaluetomissingandresave1Click
         end
+      end
+      object Openbandforrasteranalysis1: TMenuItem
+        Caption = 'Open band for raster analysis'
+        GroupIndex = 1
+        OnClick = Openbandforrasteranalysis1Click
       end
       object Newband1: TMenuItem
         Caption = 'Create difference index, band ratio, new band'
@@ -4633,16 +4674,16 @@ object MapForm: TMapForm
       'ColorN=FFFFFFFF'
       'ColorO=FFFFFFFF'
       'ColorP=FFFFFFFF')
-    Left = 177
-    Top = 59
+    Left = 41
+    Top = 179
   end
   object PrintDialog1: TPrintDialog
     Left = 50
     Top = 102
   end
   object MapParameterPopupMenu1: TPopupMenu
-    Left = 258
-    Top = 262
+    Left = 194
+    Top = 254
     object Elevation3: TMenuItem
       Caption = 'Elevation/grid values'
       OnClick = Elevation3Click
@@ -4716,8 +4757,8 @@ object MapForm: TMapForm
     end
   end
   object RightClickPopupMenu3: TPopupMenu
-    Left = 114
-    Top = 254
+    Left = 186
+    Top = 182
     object Displayparameter1: TMenuItem
       Caption = 'Display parameter'
       OnClick = Displayparameter1Click
@@ -5313,8 +5354,8 @@ object MapForm: TMapForm
     end
   end
   object PopupMenu4: TPopupMenu
-    Left = 330
-    Top = 46
+    Left = 866
+    Top = 222
     object Endlengthmeasurement1: TMenuItem
       Caption = 'End length measurement'
       OnClick = Endlengthmeasurement1Click
@@ -5352,8 +5393,8 @@ object MapForm: TMapForm
     end
   end
   object PopupMenu5: TPopupMenu
-    Left = 418
-    Top = 46
+    Left = 738
+    Top = 214
     object Displaymap1: TMenuItem
       Caption = 'Display map'
     end
@@ -5374,8 +5415,8 @@ object MapForm: TMapForm
     end
   end
   object PopupMenu8: TPopupMenu
-    Left = 122
-    Top = 174
+    Left = 914
+    Top = 142
     object Newrouteobservation1: TMenuItem
       Caption = 'New route observation'
       OnClick = Newrouteobservation1Click
@@ -5386,8 +5427,8 @@ object MapForm: TMapForm
     end
   end
   object PopupMenu10: TPopupMenu
-    Left = 514
-    Top = 46
+    Left = 1010
+    Top = 230
     object ZoomIn1: TMenuItem
       Bitmap.Data = {
         66010000424D6601000000000000760000002800000016000000140000000100
@@ -5531,8 +5572,8 @@ object MapForm: TMapForm
     end
   end
   object PopupMenu9: TPopupMenu
-    Left = 216
-    Top = 176
+    Left = 1056
+    Top = 120
     object LabelLatLongdifference1: TMenuItem
       Caption = 'Label Lat/Long difference'
       OnClick = LabelLatLongdifference1Click
@@ -5551,8 +5592,8 @@ object MapForm: TMapForm
     end
   end
   object GeologyPopupMenu15: TPopupMenu
-    Left = 680
-    Top = 280
+    Left = 376
+    Top = 184
     object Globaltectonicsmap1: TMenuItem
       Caption = 'Global tectonics map'
       OnClick = Globaltectonicsmap1Click
@@ -5681,8 +5722,8 @@ object MapForm: TMapForm
     end
   end
   object DerivativeGridPopupMenu16: TPopupMenu
-    Left = 472
-    Top = 288
+    Left = 176
+    Top = 408
     object Multipleparameters1: TMenuItem
       Caption = 'Multiple parameters'
       OnClick = Multipleparameters1Click
@@ -5945,8 +5986,8 @@ object MapForm: TMapForm
     end
   end
   object NewBandPopupMenu7: TPopupMenu
-    Left = 1040
-    Top = 208
+    Left = 384
+    Top = 416
     object Addbands1: TMenuItem
       Caption = 'Add bands'
       OnClick = Addbands1Click
@@ -6100,8 +6141,8 @@ object MapForm: TMapForm
     end
   end
   object LegendPopupMenu14: TPopupMenu
-    Left = 400
-    Top = 192
+    Left = 184
+    Top = 328
     object Databaselegend1: TMenuItem
       Caption = 'All database legend'
       GroupIndex = 1
@@ -6167,8 +6208,8 @@ object MapForm: TMapForm
     end
   end
   object ClimatePopupMenu18: TPopupMenu
-    Left = 832
-    Top = 184
+    Left = 384
+    Top = 344
     object Koppengrid1: TMenuItem
       Caption = 'Koppen grid'
       OnClick = Koppengrid1Click
@@ -6246,8 +6287,8 @@ object MapForm: TMapForm
     end
   end
   object ModeFilterPopupMenu: TPopupMenu
-    Left = 848
-    Top = 291
+    Left = 392
+    Top = 267
     object Filterjustforvoids1: TMenuItem
       Caption = 'Filter just for voids'
       object N3x3neighborhood1: TMenuItem

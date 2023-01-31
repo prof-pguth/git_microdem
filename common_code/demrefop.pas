@@ -126,6 +126,7 @@ begin
    RefOptFm := TRefOptFm.Create(Application);
    DEMDef_routines.SaveBackupDefaults;
    RefOptFm.MapOwner := aMapOwner;
+   RefOptFm.Caption := 'Hillshade/reflectance options: ' + DEMGlb[RefOptFm.MapOwner.MapDraw.DEMonMap].AreaName;
    //RefOptFm.UpDown1.Position := round(DEMGlb[RefOptFm.MapOwner.MapDraw.DEMonMap].RefVertExag);
    RefOptFm.Edit3.Text := RealToString(MDDef.RefVertExag,-8,-2);
    RefOptFm.SetUpForm;

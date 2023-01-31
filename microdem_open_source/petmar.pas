@@ -672,14 +672,10 @@ end;
             if (TheForm.Top + TheForm.Height) > wmdem.Height then TheForm.Top := WMDEM.Height - TheForm.Height - 50;
          end;
 
-         procedure CheckFormPlacement(TheForm : Forms.tForm); //MonitorDesired : integer = 0);
+         procedure CheckFormPlacement(TheForm : Forms.tForm);
          begin
             PlaceFormInCorner(wmdem,TheForm,lpCenterMap);
-            {$IfDef TrackFormPlacement}
-               WriteLineToDebugFile(TheForm.Caption);
-               WriteLineToDebugFile('  Formsize: ' + IntToStr(TheForm.Width) + 'x' + IntToStr(TheForm.Height));
-               WriteLineToDebugFile('  Placement: ' + IntToStr(TheForm.Left) + 'x' + IntToStr(TheForm.Top));
-            {$EndIf}
+            {$IfDef TrackFormPlacement} WriteLineToDebugFile(TheForm.Caption + '  Formsize: ' + FormSize(TheForm) +'  Placement: ' + IntToStr(TheForm.Left) + 'x' + IntToStr(TheForm.Top));  {$EndIf}
          end;
 
          procedure PlaceFormAtMousePosition(TheForm : Forms.tForm);
@@ -702,7 +698,6 @@ procedure RemoveASCII0FromFile(fName : PathStr);
 var
     fName2 : PathStr;
     inf,outf : file;
-    //ch : ANSIChar;
     i,NumRead,NumWrite,TotalSize,TotalRead : integer;
     charray,outarray : array[1..32000] of ANSIChar;
 begin

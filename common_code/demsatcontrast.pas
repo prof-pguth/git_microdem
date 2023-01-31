@@ -207,7 +207,7 @@ begin
       {$If Defined(RecordPickBand) or Defined(RecordPixelSize)} WriteLineToDebugFile('ColorPreview out ' + BaseMap.MapDraw.CurrentSatelliteColors + ' pixels=' + RealToString(BaseMap.MapDraw.ScreenPixelSize,-12,-2) + ' m'); {$EndIf}
    end
    else begin
-      SatImage[Sat].ShowPreview(BaseMap.MapDraw.SatView,Self.Image1);
+      //SatImage[Sat].ShowPreview(BaseMap.MapDraw.SatView,Self.Image1);
    end;
 end;
 
@@ -227,7 +227,7 @@ begin
       Label1.Enabled := RadioGroup1.ItemIndex in [3];
       Label4.Enabled := RadioGroup1.ItemIndex in [3,4];
       GroupBox3.Visible := RadioGroup1.ItemIndex in [5];
-      SatImage[Sat].ShowPreview(BaseMap.MapDraw.SatView,Image1);
+      //SatImage[Sat].ShowPreview(BaseMap.MapDraw.SatView,Image1);
       if (MDDef.QuickMapRedraw) then begin
          {$If Defined(RecordContrast) or Defined(RecordPickBand) or Defined(RecordPixelSize)} WriteLineToDebugFile('tEROSContrastForm.ShowImageWithContrast start redraw'); {$EndIf}
          BaseMap.DoBaseMapRedraw;
@@ -368,12 +368,13 @@ begin
    ShowImageWithContrast;
 end;
 
-procedure TEROSContrastForm.FormClose(Sender: TObject;
-  var Action: TCloseAction);
+procedure TEROSContrastForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  inherited;
-  if g1 <> Nil then g1.destroy;
-  if g2 <> nil then g2.Destroy;
+   //inherited;
+   //if (g1 <> Nil) then g1.destroy;
+   //if (g2 <> nil) then g2.Destroy;
+   FreeAndNil(g1);
+   FreeAndNil(g2);
 end;
 
 procedure TEROSContrastForm.FormCreate(Sender: TObject);

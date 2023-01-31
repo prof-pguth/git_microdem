@@ -72,7 +72,7 @@ type
 
 
 
-procedure ChangeElevationMap(var Int,Hue,Sat : SmallInt; {var UseRef : boolean;} aMapOwner : tMapForm);
+procedure ChangeElevationMap(var Int,Hue,Sat : SmallInt; aMapOwner : tMapForm);
 
 
 implementation
@@ -102,6 +102,7 @@ begin
    with ElevOptionsForm do begin
       SettingUp := true;
       MapOwner := aMapOwner;
+      Caption := 'Elevation options: ' + DEMGlb[MapOwner.MapDraw.DEMonMap].AreaName;
       ColorBitBtn(BitBtn1,MDdef.MissingDataColor);
       RadioGroup3.ItemIndex := MDDef.MonochromeColor;
       FillComboBoxWithColorPalettes(ColorBrewerName,ComboBox1);

@@ -306,7 +306,6 @@ type
 
      PrimMapProj,SecondaryMapProj : tMapProjection;
      MapOverlays     : tMapOverlays;
-     //OldMapCorners,
      MapCorners : CurScreenMapType;
      CurrentZoomLevel : integer;
      MapXSize,MapYSize : int32;

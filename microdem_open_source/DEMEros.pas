@@ -255,7 +255,6 @@ type
          procedure SatSceneStatistics(var n : integer; var Correlations,VarCoVar : tTrendMatrix; var Mean,Min,Max,StdDev : tMaxBandsArray);
 
          {$IfDef VCL}
-            //procedure ShowPreview(SatView : tSatView; Image1 : tImage);
             procedure PickBand(aMessage : ShortString; var WantedBand : integer);
             procedure PickMultipleBands(aMessage : ShortString; var UseBands : tUseBands);
             procedure OptimumIndexFactor;
@@ -1609,13 +1608,16 @@ var
                   GetSatRow16bit(SatView.BandInWindow, DiffYOffset[1] + round(y/pred(Bitmap.Height)*pred(DiffRows[1])),SatRow[1]^);
                   for x := 0 to pred(Bitmap.Width) do begin
                      j := DiffXOffset[1] + round(x/pred(Bitmap.Width) * pred(DiffCols[1]));
-                     BMPMem.SetPixelColor(x,y,Grays[SatRow[1]^[j]]);
+                     if MDdef.IgnoreHistogramZero and (SatRow[1]^[j] = MissingDataValue) then begin
+                        TheRow^[j] := MDdef.MissingDataColor;
+                     end
+                     else begin
+                        BMPMem.SetPixelColor(x,y,Grays[SatRow[1]^[j]]);
+                     end;
                   end;
                end;
            end;
-
            CloseTiffImages(SatView);
-
            Dispose(TheRow);
            BMPMem.Destroy;
       end;
