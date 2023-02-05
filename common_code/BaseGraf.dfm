@@ -667,7 +667,7 @@ object ThisBaseGraph: TThisBaseGraph
     object DifferentSatellite1: TMenuItem
       Caption = 'Different satellite'
       object Landsat1: TMenuItem
-        Caption = 'Landsat 8'
+        Caption = 'Landsat 8/9'
         OnClick = Landsat1Click
       end
       object Landsat2: TMenuItem

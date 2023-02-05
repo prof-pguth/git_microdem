@@ -17,7 +17,7 @@ unit dem_manager;
       //{$Define RecordNewMaps}
       //{$Define LoadDEMsCovering}
       //{$Define RecordProjects}
-      {$Define RecordDownload}
+      //{$Define RecordDownload}
       //{$Define RecordGet2DEMs}
       //{$Define RecordWhatsOpen}
       //{$Define RecordStartup}
@@ -79,7 +79,7 @@ procedure SaveMicrodemDesktop;
 procedure RestoreSpecifiedDesktop(FName : PathStr);
 procedure RestoreMicrodemDesktop(fName : PathStr = ''; CloseAll : boolean = true);
 
-procedure CleanUpTempDirectory;
+procedure CleanUpTempDirectory(IncudeDirs : boolean = true);
 
 function GetWhatsOpen : tStringList;
 procedure OpenDEMsToDebugFile(Why : shortstring);
@@ -1504,7 +1504,7 @@ begin
 end;
 
 
-procedure CleanUpTempDirectory;
+procedure CleanUpTempDirectory(IncudeDirs : boolean = true);
 var
    bf : tstringlist;
 begin
@@ -1529,7 +1529,7 @@ begin
       DeleteMultipleFiles(MDTempDir + 'db_aux\', '*.*');
       DeleteMultipleFiles(MainMapData + 'Icons\','beach_ball_*.*');
       if MDDef.CleanKMLDirOnClosing then CleanOutDirectory(MainMapData + 'kml\');
-      CleanOutDirectory(MDTempDir);
+      if IncudeDirs  then CleanOutDirectory(MDTempDir);
    end;
    ShowDefaultCursor;
 end;

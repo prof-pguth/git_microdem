@@ -55,9 +55,11 @@ end;
 
 procedure TPetList.ListBox1DblClick(Sender: TObject);
 begin
-   Panel3.Caption := ListBox1.Items[ListBox1.ItemIndex];
-   Cancel := false;
-   Close;
+   if (ListBox1.ItemIndex >= 0) and (ListBox1.ItemIndex < ListBox1.Items.Count) then begin
+      Panel3.Caption := ListBox1.Items[ListBox1.ItemIndex];
+      Cancel := false;
+      Close;
+   end;
 end;
 
 procedure TPetList.CancelBtnClick(Sender: TObject);

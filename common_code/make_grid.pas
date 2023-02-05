@@ -15,10 +15,12 @@ unit make_grid;
    {$Define NoParallelMoments} // added 4/25/2022 to track down bug, removed 8/5/2022 but immediately returned since SSO normals might not be thread safe
 
    {$IfDef RecordProblems}   //normally only defined for debugging specific problems
-      //{$Define RecordCreateGeomorphMaps}
+      //$Define CreateAspectMap}
+      //{$Define CreateGeomorphMaps}
       //{$Define RecordTimeGridCreate}
       //{$Define RecordPointClass}
       //{$Define RecordDEMCompare}
+      //{$Define NewVATgrids}
    {$EndIf}
 {$ELSE}
     //{$Define NoParallelFor}
@@ -100,7 +102,7 @@ function CreateSlopeRoughnessSlopeStandardDeviationMap(DEM,RadiusMustBeOdd : int
 procedure MakeGammaGrids(CurDEM,BoxSize : integer);
 
 function AirBallDirtBallMap(DEMonMap,DSM,DTM : integer; fName : PathStr = '') : integer;
-function TwoDEMHighLowMap(RefDEM,DEM1,DEM2 : integer; DEMtype : shortstring; fName2 : PathStr = '') : integer;
+function TwoDEMHighLowMap(RefDEM,DEM1,DEM2 : integer; DEMtype : shortstring; FourCats : boolean; fName2 : PathStr = '') : integer;
 
 
 {$IfDef ExExoticMaps}
@@ -128,30 +130,40 @@ var
 
 function MakeAspectMap(ElevMap : integer) : integer;
 begin
+   {$If Defined(CreateGeomorphMaps) or Defined(CreateAspectMap)} WriteLineToDebugFile('MakeAspectMap in, dem=' + IntToStr(ElevMap)); {$EndIf}
    SaveBackupDefaults;
    SetAllSlopes(false);
    MDDef.DoAspect := true;
    Result := MakeMomentsGrid(ElevMap,'S');
    RestoreBackupDefaults;
+   {$If Defined(CreateGeomorphMaps) or Defined(CreateAspectMap)}  WriteLineToDebugFile('MakeAspectMap out, dem=' + IntToStr(ElevMap) + '  aspect map=' + IntToStr(Result)); {$EndIf}
 end;
 
 
-function TwoDEMHighLowMap(RefDEM,DEM1,DEM2 : integer; DEMtype : shortstring; fName2 : PathStr = '') : integer;
+function TwoDEMHighLowMap(RefDEM,DEM1,DEM2 : integer; DEMtype : shortstring; FourCats : boolean; fName2 : PathStr = '') : integer;
 const
    SimpleTolerance = 1.51;
+   MaxHist = 9;
+   LongCatName : array[1..9] of shortstring = ('Both high','ALOS high/COP good','ALOS high/COP low',
+                                                'ALOS good/COP high','Both good','ALOS good/COP low',
+                                                'ALOS low/COP high','ALOS low/COP good','Both low');
+   LongCatColor : array[1..9] of tColor = (clLime,clGreen,clBlue,
+                                                clAqua,clYellow,clTeal,
+                                                clPurple,clFuchsia,clRed);
 var
    i : integer;
-   z1,z2,z3,What : float32;
+   zDEM2,zRefDEM,zDEM1,What : float32;
    Lat,Long : float64;
    x,y : integer;
    VAT : tStringList;
    TStr : shortstring;
-   Hist : array[1..6] of int64;
+   Hist : array[1..MaxHist] of int64;
+   DEM1high, DEM1low, DEM1good, DEM2high, DEM2low, DEM2good : boolean;
 begin
-   {$If Defined(RecordDEMCompare)} WriteLineToDebugFile('TwoDEMHighLowMap in');  {$EndIf}
+   {$If Defined(RecordDEMCompare) or Defined(NewVATgrids)} WriteLineToDebugFile('TwoDEMHighLowMap in, REFDEM=' + IntToStr(RefDEM) + '   DEM1=' + IntToStr(DEM1) + ' and DEM2=' + IntToStr(DEM2));  {$EndIf}
    Result := 0;
    if ValidDEM(RefDEM)then begin
-      for i := 1 to 6 do Hist[i] := 0;
+      for i := 1 to MaxHist do Hist[i] := 0;
       if (fName2 = '') then fName2 := 'two_dems_to_ref_' + DEMGlb[RefDEM].AreaName;
       Result := DEMGlb[RefDEM].CloneAndOpenGrid(ByteDEM,fName2,euIntCode);
       DEMglb[Result].SetEntireGridMissing;
@@ -159,13 +171,40 @@ begin
       for x := 0 to pred(DEMGlb[RefDEM].DEMheader.NumCol) do begin
          UpdateProgressBar(x/DEMGlb[RefDEM].DEMheader.NumCol);
          for y := 0 to pred(DEMGlb[RefDEM].DEMheader.NumRow) do begin
-            if DEMGlb[RefDEM].GetElevMetersOnGrid(x,y,z2) then begin
+            if DEMGlb[RefDEM].GetElevMetersOnGrid(x,y,zRefDEM) then begin
                DEMGlb[RefDEM].DEMGridToLatLongDegree(x,y,Lat,Long);
-                  if DEMGlb[DEM1].GetElevFromLatLongDegree(Lat,Long,z3) and DEMGlb[DEM2].GetElevFromLatLongDegree(Lat,Long,z1) then begin
-                     if (z3 > z2 + SimpleTolerance) and (z1 > z2 + SimpleTolerance) then What := 5
-                     else if (z3 < z2 - SimpleTolerance) and (z3 < z2 - SimpleTolerance) then What := 1
-                     else if (z3 < z2 + SimpleTolerance) and (z1 < z2 + SimpleTolerance) and (z3 > z2 - SimpleTolerance) and (z3 > z2 - SimpleTolerance) then What := 3
-                     else What := 6;
+                  if DEMGlb[DEM1].GetElevFromLatLongDegree(Lat,Long,zDEM1) and DEMGlb[DEM2].GetElevFromLatLongDegree(Lat,Long,zDEM2) then begin
+                     DEM1high := (zDEM1 > zRefDEM + SimpleTolerance);
+                     DEM1low :=  (zDEM1 < zRefDEM - SimpleTolerance);
+                     DEM1good :=  (not DEM1high) and (not DEM1Low);
+                     DEM2high := (zDEM2 > zRefDEM + SimpleTolerance);
+                     DEM2low :=  (zDEM2 < zRefDEM - SimpleTolerance);
+                     DEM2good := (not DEM2high) and (not DEM2Low);
+
+                     if FourCats then begin
+                        if DEM1high and DEM2high then What := 5
+                        else if DEM1low and DEM2Low then What := 1
+                        else if DEM1good and DEM2good then What := 3
+                        else What := 6;
+                     end
+                     else begin
+                         if DEM1high then begin
+                            if DEM2high then What := 1
+                            else if DEM2good then What := 2
+                            else what := 3;
+                         end
+                         else if DEM1good then begin
+                            if DEM2high then What := 4
+                            else if DEM2good then What := 5
+                            else what := 6;
+                         end
+                         else if DEM1Low then begin
+                            if DEM2high then What := 7
+                            else if DEM2good then What := 8
+                            else what := 9;
+                         end;
+                     end;
+
                      if (What <> 0) then begin
                         DEMglb[Result].SetGridElevation(x,y,what);
                         inc(Hist[round(what)]);
@@ -176,19 +215,26 @@ begin
       end;
       Vat := tStringList.Create;
       Vat.add('VALUE,NAME,N,USE,COLOR');
-
-      if (Hist[5] > 0) then Vat.add('5,Both high,' + IntToStr(Hist[5]) + ',Y,' + IntToStr(clBlue));
-      if (Hist[3] > 0) then Vat.add('3,Both ' + DEMtype +' ± ' + RealToString(SimpleTolerance,-5,1) + ',' + IntToStr(Hist[3]) + ',Y,' + IntToStr(clLime));
-      if (Hist[1] > 0) then Vat.add('1,Both low,' + IntToStr(Hist[1]) + ',Y,' + IntToStr(clBrown));
-      if (Hist[6] > 0) then Vat.add('6,Complex,' + IntToStr(Hist[6]) + ',Y,' + IntToStr(clYellow));
-      {$If Defined(RecordDEMCompare)} WriteLineToDebugFile(''); WriteLineToDebugFile('TwoDEMHighLowMap VAT'); WriteStringListToDebugFile(VAT); WriteLineToDebugFile(''); {$EndIf}
+      if FourCats then begin
+         if (Hist[5] > 0) then Vat.add('5,Both high,' + IntToStr(Hist[5]) + ',Y,' + IntToStr(clBlue));
+         if (Hist[3] > 0) then Vat.add('3,Both ' + DEMtype +' ± ' + RealToString(SimpleTolerance,-5,1) + ',' + IntToStr(Hist[3]) + ',Y,' + IntToStr(clLime));
+         if (Hist[1] > 0) then Vat.add('1,Both low,' + IntToStr(Hist[1]) + ',Y,' + IntToStr(clBrown));
+         if (Hist[6] > 0) then Vat.add('6,Complex,' + IntToStr(Hist[6]) + ',Y,' + IntToStr(clYellow));
+      end
+      else begin
+         for i := 1 to 9 do if (Hist[i] > 0) then Vat.add(IntToStr(i) + ',' + LongCatName[i] + ',' + IntToStr(Hist[i]) + ',Y,' + IntToStr(LongCatColor[i]));
+      end;
+      //{$If Defined(RecordDEMCompare)} WriteLineToDebugFile(''); WriteLineToDebugFile('TwoDEMHighLowMap VAT'); WriteStringListToDebugFile(VAT); WriteLineToDebugFile(''); {$EndIf}
       fName2 := MDTempDir + fName2 + '.vat.dbf';
       StringList2CSVtoDB(vat,fName2,true);
       DEMGlb[Result].VATFileName := fName2;
       DEMglb[Result].CheckMaxMinElev;
       DEMglb[Result].SetUpMap(Result,true,mtDEMVATTable);
+      {$If Defined(RecordDEMCompare) or Defined(NewVATgrids)} WriteLineToDebugFile('TwoDEMHighLowMap out, new grid=' + IntToStr(Result));  {$EndIf}
+   end
+   else begin
+      {$If Defined(RecordDEMCompare) or Defined(NewVATgrids)} HighlightLineToDebugFile('TwoDEMHighLowMap invalid input, DEM=' + IntToStr(RefDEM));  {$EndIf}
    end;
-   {$If Defined(RecordDEMCompare)} WriteLineToDebugFile('TwoDEMHighLowMap out');  {$EndIf}
 end;
 
 
@@ -207,7 +253,7 @@ var
    Hist : array[1..5] of int64;
 begin
    Result := 0;
-   if {((DSM = 0) or} ValidDEM(DEMonMap) and ValidDEM(DSM) and ValidDEM(DTM) then begin
+   if ValidDEM(DEMonMap) and (ValidDEM(DSM) or ValidDEM(DTM)) then begin
       for i := 1 to 5 do Hist[i] := 0;
       if (fName = '') then fName := 'air_dirt_' + DEMGlb[DEMonMap].AreaName;
       Result := DEMGlb[DEMonMap].CloneAndOpenGrid(ByteDEM,fName,euIntCode);
@@ -293,7 +339,7 @@ begin
    end;
    DEMglb[Result].CheckMaxMinElev;
    DEMglb[Result].SetUpMap(Result,true,mtElevSpectrum);
-   {$IfDef RecordCreateGeomorphMaps} WriteLineToDebugFile('CreateRoughnessMap2, NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProjection.ProjDebugName); {$EndIf}
+   {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateRoughnessMap2, NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProjection.ProjDebugName); {$EndIf}
 end;
 
 
@@ -345,13 +391,13 @@ begin
       CloseSingleDEM(SlopeMap);
       SlopeMap := 0;
    end;
-   {$IfDef RecordCreateGeomorphMaps} WriteLineToDebugFile('CreateRoughnessMap2, NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProjection.ProjDebugName); {$EndIf}
+   {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateRoughnessMap2, NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProjection.ProjDebugName); {$EndIf}
 end;
 
 
 function CreateRoughnessMapAvgVector(WhichDEM : integer; OpenMap : boolean = true) : integer;
 begin
-   {$IfDef RecordCreateGeomorphMaps} WriteLineToDebugFile('CreateRoughness in'); {$EndIf}
+   {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateRoughness in'); {$EndIf}
    SaveBackupDefaults;
    SetAllOrganization(false);
    MDDef.FabricCalcThin := 1;
@@ -363,7 +409,7 @@ end;
 
 function CreateRoughnessMap(WhichDEM : integer; OpenMap : boolean = true) : integer;
 begin
-   {$IfDef RecordCreateGeomorphMaps} WriteLineToDebugFile('CreateRoughness in'); {$EndIf}
+   {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateRoughness in'); {$EndIf}
    SaveBackupDefaults;
    SetAllOrganization(false);
    MDDef.FabricCalcThin := 1;
@@ -398,7 +444,7 @@ begin
    DEMglb[Result].CheckMaxMinElev;
    if OpenMap then DEMglb[Result].SetUpMap(Result,OpenMap,mtElevSpectrum);
    if (not SaveSlopeMap) then CloseSingleDEM(SlopeGrid);
-   {$IfDef RecordCreateGeomorphMaps} WriteLineToDebugFile('CreateRoughnessMap2, NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProjection.ProjDebugName); {$EndIf}
+   {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateRoughnessMap2, NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProjection.ProjDebugName); {$EndIf}
 end;
 
 
@@ -757,12 +803,12 @@ var
        begin
           Petmar.ReplaceCharacter(GridName,' ','_');
           DEM := DEMGlb[CurDEM].CloneAndOpenGrid(FloatingPointDEM,'md_' + GridName + '_' + DEMGlb[CurDEM].AreaName,ElevUnits);
-          {$IfDef RecordCreateGeomorphMaps} WriteLineToDebugFile('Created DEM ' + IntToStr(DEM) + GridName + ' proj=' + DEMGlb[DEM].DEMMapProjection.ProjDebugName); {$EndIf}
+          {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('Created DEM ' + IntToStr(DEM) + GridName + ' proj=' + DEMGlb[DEM].DEMMapProjection.ProjDebugName); {$EndIf}
        end;
 
 
 begin
-   {$IfDef RecordCreateGeomorphMaps} WriteLineToDebugFile('MakeMomentsGrid in, dem=' + IntToStr(CurDEM) + '  what=' + what); {$EndIf}
+   {$If Defined(CreateGeomorphMaps) or Defined(CreateAspectMap)} WriteLineToDebugFile('MakeMomentsGrid in, dem=' + IntToStr(CurDEM) + '  what=' + what); {$EndIf}
 
    DEMGlb[CurDEM].GetBoxGridSizeDiameter(BoxSizeRadiusMeters,XBoxGridSize,YBoxGridSize,TStr);
 
@@ -841,7 +887,10 @@ begin
        if MDDef.DoSlopeMperM then NewGrid(MomentDEMs[10],ShortSlopeMethodName(MDDef.SlopeAlg) + '_m_per_m',zMperM);
        if MDDef.DoNSSlope then NewGrid(MomentDEMs[11],ShortSlopeMethodName(MDDef.SlopeAlg) + '_NS_comp',PercentSlope);
        if MDDef.DoEWSlope then NewGrid(MomentDEMs[12],ShortSlopeMethodName(MDDef.SlopeAlg) + '_EW_comp',PercentSlope);
-       Result := MomentDEMs[1];
+       for i := 1 to 12 do if ValidDEM(i) then begin
+          Result := MomentDEMs[i];
+          break;
+       end;
    end
    else begin
       ThinFactor := MDDef.MomentCalcThin;
@@ -858,19 +907,16 @@ begin
    end;
 
     if ShowSatProgress then StartProgressAbortOption('Multiple geomorphometry (' + What + ')');
-    {$IfDef RecordCreateGeomorphMaps}
-       WriteLineToDebugFile('MakeMomentsGrid compute');
-       for i := 1 to 12 do if ValidDEM(MomentDEMs[i]) then WriteLineToDebugFile(IntToStr(i) + '  ' + DEMGlb[MomentDEMs[i]].AreaName);
-    {$EndIf}
+    {$If Defined(CreateGeomorphMaps) or Defined(CreateAspectMap)} WriteLineToDebugFile('MakeMomentsGrid compute'); for i := 1 to 12 do if ValidDEM(MomentDEMs[i]) then WriteLineToDebugFile(IntToStr(i) + '  ' + DEMGlb[MomentDEMs[i]].AreaName); {$EndIf}
 
     CountInStrips := 0;
     {$IfDef RecordTimeGridCreate} Stopwatch1 := TStopwatch.StartNew; {$EndIf}
 
    {$If Defined(NoParallelFor) or Defined(NoParallelMoments)}
-       {$IfDef RecordCreateGeomorphMaps} WriteLineToDebugFile('No parallel moments');    {$EndIf}
+       {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('No parallel moments');    {$EndIf}
        MomentsGridStrip(DEMGlb[CurDEM].FullDEMGridLimits,What,ThinFactor,XBoxGridSize,YBoxGridSize,CurDEM,MomentDEMs);
    {$Else}
-      {$IfDef RecordCreateGeomorphMaps} WriteLineToDebugFile('Moments strips='+IntToStr(MDdef.MaxThreadsForPC)); {$EndIf}
+      {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('Moments strips='+IntToStr(MDdef.MaxThreadsForPC)); {$EndIf}
       PartLimits := GetLimitsForParallelLoops(DEMGlb[CurDEM].FullDEMGridLimits);
       TParallel.For(1,MDdef.MaxThreadsForPC,
          procedure (Value: Integer)
@@ -883,7 +929,7 @@ begin
     {$IfDef RecordTimeGridCreate} WriteLineToDebugFile('MakeMomentsGrid took ' + RealToString(Stopwatch1.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
     if ShowSatProgress then EndProgress;
 
-    {$IfDef RecordCreateGeomorphMaps} WriteLineToDebugFile('Open maps'); {$EndIf}
+    {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('Open maps'); {$EndIf}
 
     for i := 1 to MaxGrids do begin
        if ValidDEM(MomentDEMs[i]) then begin
@@ -894,19 +940,25 @@ begin
           MomentDEMs[i] := OpenNewDEM(fName,false);
 
           if OpenMaps then begin
-             {$IfDef RecordCreateGeomorphMaps} WriteLineToDebugFile('Create map for DEM ' + IntToStr(MomentDEMs[i]) + ' ' + DEMGlb[MomentDEMs[i]].KeyDEMParams); {$EndIf}
+             {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('Create map for DEM ' + IntToStr(MomentDEMs[i]) + ' ' + DEMGlb[MomentDEMs[i]].KeyDEMParams); {$EndIf}
              DEMGlb[MomentDEMs[i]].SetUpMap(MomentDEMs[i],true,WantMapType,What in ['A','C','F']);
              DEMGlb[MomentDEMs[i]].SelectionMap.MapDraw.PrimMapProj.ProjectionSharedWithDataset := true;
-             //CreateDEMSelectionMap(MomentDEMs[i],true,true,WantMapType);
              MatchAnotherDEMMap(MomentDEMs[i],CurDEM);
-             {$IfDef RecordCreateGeomorphMaps} DEMGlb[CurDEM].SelectionMap.MapDraw.PrimMapProj.ProjectionParamsToDebugFile('Original grid',true); {$EndIf}
-             {$IfDef RecordCreateGeomorphMaps} DEMGlb[MomentDEMs[i]].SelectionMap.MapDraw.PrimMapProj.ProjectionParamsToDebugFile('New grid',true); {$EndIf}
+             {$IfDef CreateGeomorphMaps} DEMGlb[CurDEM].SelectionMap.MapDraw.PrimMapProj.ProjectionParamsToDebugFile('Original grid',true); {$EndIf}
+             {$IfDef CreateGeomorphMaps} DEMGlb[MomentDEMs[i]].SelectionMap.MapDraw.PrimMapProj.ProjectionParamsToDebugFile('New grid',true); {$EndIf}
           end;
        end;
     end;
 
+   if (What = 'S') then begin
+       for i := 1 to 12 do if ValidDEM(MomentDEMs[i]) then begin
+          Result := MomentDEMs[i];
+          break;
+       end;
+   end;
+
     if MDDef.AutoSaveGeomorphGrids then begin
-       {$IfDef RecordCreateGeomorphMaps} WriteLineToDebugFile('Autosave'); {$EndIf}
+       {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('Autosave'); {$EndIf}
        pName := ExtractFilePath(DEMGlb[CurDEM].DEMFileName) + 'geomorph_grids\';
        SafeMakeDir(pName);
        for i := 1 to MaxGrids do if ValidDEM(MomentDEMs[i]) then begin
@@ -914,7 +966,7 @@ begin
           DEMGlb[MomentDEMs[i]].WriteNewFormatDEM(fName);
        end;
     end;
-    {$IfDef RecordCreateGeomorphMaps} WriteLineToDebugFile('MakeMomentsGrid out'); {$EndIf}
+    {$If Defined(CreateGeomorphMaps) or Defined(CreateAspectMap)}  WriteLineToDebugFile('MakeMomentsGrid out, Result=' + IntToStr(Result)); {$EndIf}
 end;
 
 {$EndIf}
@@ -1028,19 +1080,19 @@ end;
 
 function CreateProfileConvexityMap(WhichDEM : integer; OpenMap : boolean = true) : integer;
 begin
-   {$IfDef RecordCreateGeomorphMaps} WriteLineToDebugFile('CreateProfileConvexityMap in'); {$EndIf}
+   {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateProfileConvexityMap in'); {$EndIf}
    SaveBackupDefaults;
    SetAllCurvatures(false);
    MDDef.DoSlopeCurve := true;
    Result := MakeMomentsGrid(WhichDEM,'C',-99,OpenMap);
    RestoreBackupDefaults;
-   {$IfDef RecordCreateGeomorphMaps} WriteLineToDebugFile('CreateProfileConvexityMap, InGrid=' + IntToStr(WhichDEM) + '  NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProjection.ProjDebugName); {$EndIf}
+   {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateProfileConvexityMap, InGrid=' + IntToStr(WhichDEM) + '  NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProjection.ProjDebugName); {$EndIf}
 end;
 
 
 function CreateSlopeMap(WhichDEM : integer; OpenMap : boolean = true; Components : boolean = false) : integer;
 begin
-   {$IfDef RecordCreateGeomorphMaps} WriteLineToDebugFile('CreateSlopeMap in'); {$EndIf}
+   {$If Defined(CreateGeomorphMaps)} WriteLineToDebugFile('CreateSlopeMap in'); {$EndIf}
    SaveBackupDefaults;
    SetAllSlopes(false);
    MDDef.DoSlopePC := true;
@@ -1048,7 +1100,7 @@ begin
    MDDef.DoEWSlope := Components;
    Result := MakeMomentsGrid(WhichDEM,'S',-99,OpenMap);
    RestoreBackupDefaults;
-   {$IfDef RecordCreateGeomorphMaps} WriteLineToDebugFile('CreateSlopeMap, InGrid=' + IntToStr(WhichDEM) + '  NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProjection.ProjDebugName); {$EndIf}
+   {$IfDef  Defined(CreateGeomorphMaps)} WriteLineToDebugFile('CreateSlopeMap, InGrid=' + IntToStr(WhichDEM) + '  NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProjection.ProjDebugName); {$EndIf}
 end;
 
 
@@ -1057,7 +1109,7 @@ function CreateAnOrganizationMap(WhichDEM : integer; OpenMap : boolean = true) :
 begin
 {$Else}
 begin
-   {$IfDef RecordCreateGeomorphMaps} WriteLineToDebugFile('CreateAnOrganizationMap in'); {$EndIf}
+   {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateAnOrganizationMap in'); {$EndIf}
     Result := MakeMomentsGrid(WhichDEM,'F',MDDef.SSOBoxSizeMeters,OpenMap);
 {$EndIf}
 end;
@@ -1578,7 +1630,7 @@ end;
 
 initialization
 finalization
-    {$IfDef RecordCreateGeomorphMaps} WriteLineToDebugFile('RecordCreateGeomorphMaps active in make_grid'); {$EndIf}
+    {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateGeomorphMaps active in make_grid'); {$EndIf}
     {$IfDef RecordPointClass} WriteLineToDebugFile('RecordPointClass active in make_grid'); {$EndIf}
     {$IfDef NoParallelFor} WriteLineToDebugFile('NoParallelFor active in make_grid'); {$EndIf}
 end.

@@ -10,7 +10,7 @@ inherited EROSContrastForm: TEROSContrastForm
   OnCreate = FormCreate
   ExplicitWidth = 634
   ExplicitHeight = 378
-  TextHeight = 20
+  TextHeight = 15
   inherited Bevel1: TBevel
     Width = 409
     Height = 289
@@ -39,6 +39,23 @@ inherited EROSContrastForm: TEROSContrastForm
       CCFFFCCFFFFFFFCCCCFFFCCCFFFFFFCCCCCFFCCCFFFFFCCCCCCFFFCCCCCCCCCC
       FCCFFFCCCCCCCCCFFCCFFFFFFFFFFFFFFCCFFFFFFFFFFFFFFFFF}
     OnClick = RedrawSpeedButton12Click
+  end
+  object DupeMapSpeedButton18: TSpeedButton [3]
+    Left = 468
+    Top = 240
+    Width = 25
+    Height = 25
+    Hint = 'New map window'
+    Glyph.Data = {
+      F6000000424DF600000000000000760000002800000010000000100000000100
+      0400000000008000000000000000000000001000000010000000000000000000
+      80000080000000808000800000008000800080800000C0C0C000808080000000
+      FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00777777777777
+      7777777777000000000777777707777777077777770777777707777777079999
+      7707777777077799770770000007797977077077770797797707707777097777
+      7707707777900000000770777977707777777077977770777777707977777077
+      7777707777777077777770000000007777777777777777777777}
+    OnClick = DupeMapSpeedButton18Click
   end
   inherited OKBtn: TButton
     Left = 18
@@ -85,7 +102,7 @@ inherited EROSContrastForm: TEROSContrastForm
     Top = 18
     Width = 401
     Height = 267
-    ActivePage = TabSheet1
+    ActivePage = Contrast
     TabOrder = 5
     object TabSheet1: TTabSheet
       Caption = 'Satellite band'
@@ -100,7 +117,7 @@ inherited EROSContrastForm: TEROSContrastForm
           Left = 3
           Top = 30
           Width = 223
-          Height = 28
+          Height = 23
           TabOrder = 0
           Text = 'ComboBox1'
           OnChange = ComboBox4Change
@@ -178,7 +195,7 @@ inherited EROSContrastForm: TEROSContrastForm
           Left = 8
           Top = 36
           Width = 218
-          Height = 28
+          Height = 23
           TabOrder = 0
           Text = ' '
           OnChange = ComboBox1Change
@@ -187,7 +204,7 @@ inherited EROSContrastForm: TEROSContrastForm
           Left = 8
           Top = 84
           Width = 218
-          Height = 28
+          Height = 23
           TabOrder = 1
           Text = ' '
           OnChange = ComboBox2Change
@@ -196,7 +213,7 @@ inherited EROSContrastForm: TEROSContrastForm
           Left = 8
           Top = 132
           Width = 218
-          Height = 28
+          Height = 23
           TabOrder = 2
           OnChange = ComboBox3Change
         end
@@ -231,15 +248,15 @@ inherited EROSContrastForm: TEROSContrastForm
       object Label1: TLabel
         Left = 263
         Top = 73
-        Width = 107
-        Height = 20
+        Width = 84
+        Height = 15
         Caption = 'Low tail size (%)'
       end
       object Label4: TLabel
         Left = 263
         Top = 13
-        Width = 112
-        Height = 20
+        Width = 88
+        Height = 15
         Caption = 'High tail size (%)'
       end
       object RadioGroup1: TRadioGroup
@@ -262,7 +279,7 @@ inherited EROSContrastForm: TEROSContrastForm
         Left = 326
         Top = 99
         Width = 49
-        Height = 28
+        Height = 23
         TabOrder = 1
         Text = 'Edit1'
         OnChange = Edit1Change
@@ -271,7 +288,7 @@ inherited EROSContrastForm: TEROSContrastForm
         Left = 326
         Top = 39
         Width = 49
-        Height = 28
+        Height = 23
         TabOrder = 2
         Text = 'Edit4'
         OnChange = Edit4Change
@@ -286,22 +303,22 @@ inherited EROSContrastForm: TEROSContrastForm
         object Label3: TLabel
           Left = 17
           Top = 46
-          Width = 25
-          Height = 20
+          Width = 21
+          Height = 15
           Caption = 'Min'
         end
         object Label2: TLabel
           Left = 13
           Top = 19
-          Width = 28
-          Height = 20
+          Width = 23
+          Height = 15
           Caption = 'Max'
         end
         object Edit3: TEdit
           Left = 56
           Top = 43
           Width = 49
-          Height = 28
+          Height = 23
           TabOrder = 0
           Text = 'Edit2'
           OnChange = Edit3Change
@@ -310,7 +327,7 @@ inherited EROSContrastForm: TEROSContrastForm
           Left = 55
           Top = 16
           Width = 50
-          Height = 28
+          Height = 23
           TabOrder = 1
           Text = 'Edit2'
           OnChange = Edit2Change

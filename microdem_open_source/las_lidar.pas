@@ -24,7 +24,7 @@
       //{$Define RecordLASplot}
       //{$Define RecordListFilesProcessed}
       //{$Define RecordLASKML}
-      {$Define RecordLASexport}
+      //{$Define RecordLASexport}
       //{$Define RecordMergeLASfiles}
       //{$Define RecordCreateLASfiles}
       //{$Define RecordCreateEveryFile}

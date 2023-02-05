@@ -34,7 +34,7 @@ unit DEMStat;
       //{$Define MapTraceCrests}
       //{$Define RecordDetailedTraceCrests}
       //{$Define RecordClustering}
-      {$Define RecordHistogramFromVAT}
+      //{$Define RecordHistogramFromVAT}
       //{$Define RecordFFT}
       //{$Define RecordHistogram}
       //{$Define RecordGridScatterGram}
@@ -285,7 +285,7 @@ var
                ElevFiles,LegendFiles : tStringList;
             begin
                if ValidDEM(DEM) then begin
-                  {$IfDef RecordHistogramFromVAT} WriteLineToDebugFile('MakeOneHistogram in, dem=' + IntToStr(DEM)); {$EndIf}
+                  {$IfDef RecordHistogramFromVAT} HighlightLineToDebugFile(aTitle + '  MakeOneHistogram in, dem=' + IntToStr(DEM)); {$EndIf}
                   ElevFiles := tStringList.Create;
                   LegendFiles := tStringList.Create;
                   for i := 1 to MaxCodes do begin
@@ -325,20 +325,6 @@ var
                   inc(AspDistCount[ThisCode]);
                   AspDist[ThisCode]^[AspDistCount[ThisCode]] := zf;
                end;
-               (*
-               if (ElevMap > 0) and (DEMGlb[ElevMap].GetElevMetersOnGrid(Col,Row,zf)) then begin
-                  inc(ElevDistCount[ThisCode]);
-                  ElevDist[ThisCode]^[ElevDistCount[ThisCode]] := zf;
-               end;
-               if (SlopeMap > 0) and (DEMGlb[SlopeMap].GetElevMetersOnGrid(Col,Row,zf)) then begin
-                  inc(SlopeDistCount[ThisCode]);
-                  SlopeDist[ThisCode]^[SlopeDistCount[ThisCode]] := zf;
-               end;
-               if (RuffMap > 0) and (DEMGlb[RuffMap].GetElevMetersOnGrid(Col,Row,zf)) then begin
-                  inc(RuffDistCount[ThisCode]);
-                  RuffDist[ThisCode]^[RuffDistCount[ThisCode]] := zf;
-               end;
-               *)
             end;
          end;
       end;
@@ -351,6 +337,8 @@ var
 
 begin
    {$IfDef RecordHistogramFromVAT} WriteLineToDebugFile('HistogramsFromVATDEM in, DEM=' + IntToStr(DEMwithVAT)); {$EndIf}
+   if not ValidDEM(DEMwithVAT) then exit;
+
    VAT := tMyData.Create(DEMGlb[DEMwithVAT].VATFileName);
    NumCodes := 0;
    while not VAT.eof do begin

@@ -3747,7 +3747,7 @@ var
 begin
    ReadFilter := false;
    if (FilterName = '') then begin
-      FilterName := ProgramRootDir + 'filter\';
+      FilterName := ProgramRootDir + 'filters\';
       if not PathIsValid(FilterName)  then FilterName := ProgramRootDir;
       {$IfDef VCL}
          if not GetFileFromDirectory('Filter','*.FIL',FilterName) then exit;
@@ -4350,10 +4350,12 @@ begin
       fName := System.IOUtils.TPath.Combine(BaseDir, Subdirs.Strings[i] + '\');
       {$IfDef RecordFileDelection} WriteLineToDebugFile(' Deleting ' + fName); {$EndIf}
       DeleteMultipleFiles(fName,'*.*');
-      try
-         RmDir(fName);
-      except
-         on Exception do begin end;
+      if (fName <> '') and PathIsValid(fName) then begin
+         try
+            RmDir(fName);
+         except
+            on Exception do begin end;
+         end;
       end;
    end;
    Subdirs.Free;

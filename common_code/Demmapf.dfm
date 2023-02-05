@@ -4821,6 +4821,10 @@ object MapForm: TMapForm
       Caption = 'Hillshade/Reflectance options'
       OnClick = Reflectanceoptions1Click
     end
+    object Changemap2: TMenuItem
+      Caption = 'Change map'
+      OnClick = Changemap2Click
+    end
     object Aspectoptions1: TMenuItem
       Caption = 'Aspect options'
       OnClick = Aspectoptions1Click
@@ -6313,8 +6317,8 @@ object MapForm: TMapForm
     end
   end
   object MatchMapsPopupMenu: TPopupMenu
-    Left = 1268
-    Top = 372
+    Left = 556
+    Top = 428
     object Allmapsmatchthiscoveragearea1: TMenuItem
       Caption = 'This coverage area'
       GroupIndex = 1

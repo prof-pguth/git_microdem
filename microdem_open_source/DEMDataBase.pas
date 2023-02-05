@@ -802,6 +802,7 @@ var
    ThinToPlot,
    dbxpic,dbypic : integer;
    HighLightDBOnWorld,
+   AutoOverwriteDBF,
    ZeroRecordsAllowed : boolean;
    PreEditFilter : ANSIstring;
 
@@ -5216,7 +5217,7 @@ begin
              sl.Free;
           end;
           NewFile := Dir + bName + DefaultDBExt;
-          if (not FileExists(NewFile)) or AnswerIsYes(NewFile + ' already exists; overwrite') then begin
+          if AutoOverwriteDBF or (not FileExists(NewFile)) or AnswerIsYes(NewFile + ' already exists; overwrite') then begin
              DoCSVFileImport(FileWanted);
              WasCSVImport := true;
           end;
@@ -5963,6 +5964,7 @@ end;
 initialization
    ThinToPlot := 1;
    ZeroRecordsAllowed := false;
+   AutoOverwriteDBF := false;
 finalization
    {$IfDef RecordClosing} WriteLineToDebugFile('Closing demdatabase in'); {$EndIf}
    {$IfDef RecordZoomMap} WriteLineToDebugFile('RecordZoomMap active in demdatabase'); {$EndIf}

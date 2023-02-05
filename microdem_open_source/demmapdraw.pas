@@ -1125,7 +1125,8 @@ end;
 function TMapDraw.CurrentSatelliteColors : shortstring;
 begin
   if MapType in [mtSatTrueColor,mtSatFalseColor,mtSatPickColor] then begin
-     Result := RGBString(SatView.RedBand,SatView.GreenBand,SatView.BlueBand);
+     //Result := RGBString(SatView.RedBand,SatView.GreenBand,SatView.BlueBand);
+     Result := SatImage[SATonMap].BandShortName[SatView.RedBand] + '-' + SatImage[SATonMap].BandShortName[SatView.GreenBand] + '-' +  SatImage[SATonMap].BandShortName[SatView.BlueBand];
      if SatView.PanSharpenImage then Result := Result + ' (pan sharpen)';
   end
   else Result := SatImage[SATonMap].BandShortName[SatView.BandInWindow];

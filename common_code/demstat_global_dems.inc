@@ -352,19 +352,15 @@ function FiveSeriesGraph(DB : integer; Lat,Long,Tolerance : float64; DirField : 
 
            if (DirField = LatFieldName) then begin
               Result.GraphDraw.HorizLabel := 'Latitude';
-              if Lat < -91 then Result.GraphDraw.LLcornerText := MyData.Filter
-              else Result.GraphDraw.LLcornerText := 'Long ' + ConvertToDegreesString(Long,DecDegrees,true) + '±' + RealToString(Tolerance,-8,-2) + '"';
            end
            else begin
               Result.GraphDraw.HorizLabel := 'Longitude';
-              if Lat < -91 then Result.GraphDraw.LLcornerText := MyData.Filter
-              else Result.GraphDraw.LLcornerText := 'Lat ' + ConvertToDegreesString(Lat,DecDegrees,true) + '±' + RealToString(Tolerance,-8,-2) + '"';
            end;
-           Result.GraphDraw.LLcornerText := Result.GraphDraw.LLcornerText + '  n=' + IntToStr(MyData.FiltRecsInDB);
+           Result.GraphDraw.LLcornerText := GISdb[db].dbName + ' ' + MyData.Filter + '  n=' + IntToStr(MyData.FiltRecsInDB);
            if d = 0 then Result.GraphDraw.VertLabel := 'Elevation (m)'
            else if d = 1 then Result.GraphDraw.VertLabel := 'Ground level (m)'
            else if d = 2 then Result.GraphDraw.VertLabel := 'Top Canopy (m)';
-           Result.Caption :=  Result.GraphDraw.LLcornerText;
+           Result.Caption := Result.GraphDraw.LLcornerText;
            MyData.First;
            while not MyData.eof do begin
               if GetFloat32FromTableLinkPossible(DirField,v[1]) then begin

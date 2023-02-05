@@ -10,8 +10,8 @@
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
-      {$Define RecordMakeGrid}
-      {$Define TrackPointCloud}
+      //{$Define RecordMakeGrid}
+     //{$Define TrackPointCloud}
       //{$Define RecordExtractPoints}
       //{$Define Slicer}
       //{$Define BulkGrids}

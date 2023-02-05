@@ -18,9 +18,9 @@ unit BaseGraf;
        //{$Define RecordGrafProblems}
        //{$Define RecordScaling}
        //{$Define RecordGrafSize}
-       {$Define RecordGrafAxes}
+       //{$Define RecordGrafAxes}
        //{$Define RecordFormResize}
-       {$Define RecordHistogram}
+       //{$Define RecordHistogram}
        //{$Define RecordFullGrafAxes}
        //{$Define RecordLegends}
        //{$Define RecordSaveSeries}
@@ -465,7 +465,7 @@ type
      procedure PlotXYColorFile(Bitmap : tMyBitmap; inf : PathStr);
      procedure PlotLineDBFFile(Bitmap : tMyBitmap; inf : PathStr);
      procedure PlotPointDBFFile(Bitmap : tMyBitmap; inf : PathStr);
-
+     procedure PlotDataFilesPlotted(Bitmap : tMyBitmap; fName : PathStr; i : integer);
      procedure PlotPointOnGraph(x,y : float32; Symbol : tFullSymbolDeclaration);
 
      procedure SetUpGraphForm;
@@ -492,7 +492,7 @@ type
      procedure DrawTernaryAxis(Bitmap : tMyBitmap);
      procedure InitializeTadpole(Title : shortstring; MinX,MaxX,MaxRange : float32);
 
-     procedure SetUpStackedHistogram(FirstTime : boolean = false);
+     procedure SetUpStackedHistogram(Percentage : boolean; FirstTime : boolean = false);
 
      procedure HideToolbar(HideIt : boolean);
      procedure HideMenus;
@@ -542,7 +542,7 @@ function NumOpenGraphs : integer;
 
 procedure StartBoxPlot(DBonTable : integer);
 procedure SetReasonableGraphSize;
-function GetStackedHistogram(DBonTable : integer) : TThisBaseGraph;
+function StartStackedHistogram(DBonTable : integer; Percentage : boolean) : TThisBaseGraph;
 
 
 
@@ -617,13 +617,12 @@ var
    FilterTerms : integer;
 
 
-function GetStackedHistogram(DBonTable : integer) : TThisBaseGraph;
+function StartStackedHistogram(DBonTable : integer; Percentage : boolean) : TThisBaseGraph;
 var
    fName : shortstring;
    Min,Max : float64;
    x1,x2,dx,Cum : float32;
-   Bot,Top,Left,Right,
-   i,Series,Total : integer;
+   Bot,Top,Left,Right,i,Series,Total : integer;
    Count : array[1..10] of integer;
    PC    : array[1..10] of float32;
 begin
@@ -644,41 +643,44 @@ begin
    Result := TThisBaseGraph.Create(Application);
    Result.GraphDraw.GraphType := gtStackedHist;
    Result.DataBaseOnGraph := DBonTable;
-   Result.SetUpStackedHistogram(true);
+   Result.SetUpStackedHistogram(Percentage,true);
+   {$IfDef RecordHistogram} writeLineToDebugFile('GetStackedHistogram clear empty cells' + Result.GraphDraw.AxisRange); {$EndIf}
 end;
 
 
-procedure TThisBaseGraph.SetUpStackedHistogram(FirstTime : boolean = false);
+procedure TThisBaseGraph.SetUpStackedHistogram(Percentage : boolean; FirstTime : boolean = false);
 label
    FoundMax;
 var
    fName : shortstring;
    Graph : tThisBaseGraph;
-   Min,Max : float64;
+   y1,y2 : float64;
    x1,x2,dx,Cum : float32;
    Bot,Top,Left,Right,MaxCount,
    i,Series,Total : integer;
-   SeriesCount,CumCount,
-   Count : array[1..10] of integer;
+   SeriesCount,CumCount,Count : array[1..10] of integer;
    PC    : array[1..10] of float32;
 begin
+   {$IfDef RecordHistogram} HighlightLineToDebugFile('SetUpStackedHistogram graph enter, ' + GraphDraw.AxisRange); {$EndIf}
    Series := 0;
    while GISdb[DataBaseOnGraph].Mydata.FieldExists('SERIES_' + IntToStr(succ(Series))) do inc(Series);
    GISdb[DataBaseOnGraph].Mydata.First;
    fName := GISdb[DataBaseOnGraph].Mydata.GetFieldName(0);
    GISdb[DataBaseOnGraph].EmpSource.Enabled := false;
-   GISdb[DataBaseOnGraph].Mydata.FindFieldRange(fName,Min,Max);
+   GISdb[DataBaseOnGraph].Mydata.FindFieldRange(fName,y1,y2);
 
    GISdb[DataBaseOnGraph].Mydata.First;
    x1 := GISdb[DataBaseOnGraph].Mydata.GetFieldByNameAsFloat(fName);
-   GISdb[DataBaseOnGraph].Mydata.Next;
+   GISdb[DataBaseOnGraph].Mydata.Last;
    x2 := GISdb[DataBaseOnGraph].Mydata.GetFieldByNameAsFloat(fName);
    dx := 0.5 * (x2 - x1);
 
    if FirstTime then begin
-      Max := Max + dx;
-      GraphDraw.MinHorizAxis := Min - dx;
-      GraphDraw.MaxHorizAxis := Max;
+      GraphDraw.HorizLabel := fName;
+      x2 := x2 + dx;
+      GraphDraw.MinHorizAxis := x1 - dx;
+      GraphDraw.MaxHorizAxis := x2;
+      {$IfDef RecordHistogram} HighlightLineToDebugFile('SetUpStackedHistogram FirstTime set, ' + GraphDraw.AxisRange); {$EndIf}
 
 (*
       {$IfDef RecordHistogram} writeLineToDebugFile('GetStackedHistogram if out to tail, ' + GraphDraw.AxisRange); {$EndIf}
@@ -710,32 +712,53 @@ begin
       GraphDraw.MinHorizAxis := Min - dx;
       GraphDraw.MaxHorizAxis := Max;
 *)
-
-      GraphDraw.VertLabel := 'Percentage';
-      GraphDraw.HorizLabel := fName;
       GraphDraw.MinVertAxis := 0;
-      GraphDraw.MaxVertAxis := 100;
-      {$IfDef RecordHistogram} writeLineToDebugFile('GetStackedHistogram graph set up, ' + GraphDraw.AxisRange); {$EndIf}
+      if Percentage then begin
+         GraphDraw.VertLabel := 'Percentage';
+         GraphDraw.MaxVertAxis := 100;
+      end
+      else begin
+         GraphDraw.VertLabel := 'Count';
+         GraphDraw.MaxVertAxis := 0;
+         GISdb[DataBaseOnGraph].Mydata.First;
+         while not GISdb[DataBaseOnGraph].Mydata.eof do begin
+            Total := 0;
+            for i := 1 to Series do begin
+               Total := Total + GISdb[DataBaseOnGraph].Mydata.GetFieldByNameAsInteger('SERIES_' + IntToStr(i));
+            end;
+            if (Total > GraphDraw.MaxVertAxis) then GraphDraw.MaxVertAxis := Total;
+            GISdb[DataBaseOnGraph].Mydata.Next;
+         end;
+      end;
+      {$IfDef RecordHistogram} writeLineToDebugFile('SetUpStackedHistogram graph set up, ' + GraphDraw.AxisRange); {$EndIf}
    end;
    AutoScaleAndRedrawDiagram(false,false,false,false);
+   {$IfDef RecordHistogram} writeLineToDebugFile('SetUpStackedHistogram AutoScaleAndRedrawDiagram, ' + GraphDraw.AxisRange); {$EndIf}
 
    GISdb[DataBaseOnGraph].Mydata.First;
    while not GISdb[DataBaseOnGraph].Mydata.eof do begin
-      Total := 0;
-      for i := 1 to Series do begin
-         Count[i] := GISdb[DataBaseOnGraph].Mydata.GetFieldByNameAsInteger('SERIES_' + IntToStr(i));
-         Total := Total + Count[i];
+      if Percentage then begin
+         Total := 0;
+         for i := 1 to Series do begin
+            Count[i] := GISdb[DataBaseOnGraph].Mydata.GetFieldByNameAsInteger('SERIES_' + IntToStr(i));
+            Total := Total + Count[i];
+         end;
       end;
-      Cum := 0;
       Bot := GraphDraw.GraphY(0);
-      Top := 0;
+      //Top := 0;
       x1 := GISdb[DataBaseOnGraph].Mydata.GetFieldByNameAsFloat(fName);
       Left := GraphDraw.GraphX(x1-dx);
       Right := GraphDraw.GraphX(x1+dx);
 
+      Cum := 0;
       for i := 1 to Series do begin
-         PC[i] := 100 * Count[i] / Total;
-         Cum := Cum + PC[i];
+         if Percentage then begin
+            PC[i] := 100 * Count[i] / Total;
+            Cum := Cum + PC[i];
+         end
+         else begin
+            Cum := Cum + GISdb[DataBaseOnGraph].Mydata.GetFieldByNameAsInteger('SERIES_' + IntToStr(i));
+         end;
          Top := GraphDraw.GraphY(Cum);
          Image1.Canvas.Pen.Color := WinGraphColors[i];
          Image1.Canvas.Brush.Color := WinGraphColors[i];
@@ -746,7 +769,7 @@ begin
       GISdb[DataBaseOnGraph].Mydata.Next;
    end;
    GISdb[DataBaseOnGraph].ShowStatus;
-   {$IfDef RecordHistogram} writeLineToDebugFile('GetStackedHistogram out'); {$EndIf}
+   {$IfDef RecordHistogram} writeLineToDebugFile('SetUpStackedHistogram out, ' + GraphDraw.AxisRange); {$EndIf}
 end;
 
 procedure SetReasonableGraphSize;
@@ -1162,7 +1185,7 @@ var
   TStr : shortstring;
   fName : PathStr;
   StackedPercents : boolean;
-  Graph2 : TThisBaseGraph;
+  Graph2,Graph3 : TThisBaseGraph;
 
           procedure LoadSeries(fName : PathStr);
           var
@@ -1237,7 +1260,7 @@ var
 
 
 begin
-   {$IfDef RecordHistogram} WriteLineToDebugFile('CreateMultipleHistograms in '); {$EndIf}
+   {$IfDef RecordHistogram} WriteLineToDebugFile('CreateMultipleHistograms in ' + ParamName + '  ' + TitleBar); {$EndIf}
    StackedPercents := (FileList.Count > 1);
    if StackedPercents then Results := tstringlist.Create;
    New(Values);
@@ -1324,17 +1347,29 @@ begin
       Results.Insert(0,TStr);
       fName := NextFileNumber(MDTempDir,l1 + '_hist_','.dbf');
       db := StringList2CSVtoDB(Results,fName);
-      Graph2 := GetStackedHistogram(DB);
+
+      Graph3 := StartStackedHistogram(DB,true);
+      Graph3.GraphDraw.VertLabel := l1 + ' percentages';
+      Graph3.GraphDraw.LeftMargin := Result.GraphDraw.LeftMargin;
+      Graph3.GraphDraw.MarginsGood := true;
+      Graph3.Caption := l1 + ' Category percentages in histogram bins';
+      //Graph3.RedrawDiagram11Click(Nil);
+      {$If Defined(RecordHistogram)} HighlightLineToDebugFile('Stacked percents graph percentage: ' +  Graph3.GraphDraw.AxisRange); {$EndIf}
+
+      Graph2 := StartStackedHistogram(DB,false);
+      Graph2.GraphDraw.VertLabel := l1 + ' Counts';
       Graph2.GraphDraw.LeftMargin := Result.GraphDraw.LeftMargin;
       Graph2.GraphDraw.MarginsGood := true;
-      Graph2.RedrawDiagram11Click(Nil);
-      {$If Defined(RecordHistogram)} HighlightLineToDebugFile('Stacked percents graph: ' +  Graph2.GraphDraw.AxisRange); {$EndIf}
+      Graph2.Caption := l1 + ' Category percentages in histogram bins';
+      //Graph2.RedrawDiagram11Click(Nil);
+      {$If Defined(RecordHistogram)} HighlightLineToDebugFile('Stacked percents graph counts: ' +  Graph2.GraphDraw.AxisRange); {$EndIf}
 
-      Result.GraphDraw.MaxHorizAxis := Graph2.GraphDraw.MaxHorizAxis;
+
+      //Result.GraphDraw.MaxHorizAxis := Graph2.GraphDraw.MaxHorizAxis;
       {$If Defined(RecordHistogram)} WriteLineToDebugFile('Reset Hist: ' +  Result.GraphDraw.AxisRange); {$EndIf}
       Result.GraphDraw.MarginsGood := true;
       Result.RedrawDiagram11Click(Nil);
-      {$If Defined(RecordHistogram)} WriteLineToDebugFile('Done fStackedPercents, Redrawn Hist graph: ' +  Result.GraphDraw.AxisRange); {$EndIf}
+      {$If Defined(RecordHistogram)} WriteLineToDebugFile('Done StackedPercents, Redrawn Hist graph: ' +  Result.GraphDraw.AxisRange); {$EndIf}
    end;
 
 CleanUp:;
@@ -2866,7 +2901,7 @@ var
 begin
    {$IfDef RecordPlotFiles} WriteLineToDebugFile('TThisBaseGraph.PlotAFile in, ' + inf); {$EndIf}
    TotNum := GetFileSize(inf) div (2*SizeOf(float32));
-   if TotNum = 0 then exit;
+   if (TotNum = 0) then exit;
    assignFile(tf,inf);
    reset(tf,2*SizeOf(float32));
    new(Coords);
@@ -4800,6 +4835,24 @@ begin
 end;
 
 
+procedure TThisBaseGraph.PlotDataFilesPlotted(Bitmap : tMyBitmap; fName : PathStr; i : integer);
+var
+   J : integer;
+begin
+   SetMyBitmapColors(Bitmap,i);
+   fName := GraphDraw.DataFilesPlotted.Strings[pred(i)];
+   if GraphDraw.ShowLine[i] then begin
+      {$IfDef RecordGraphColors} writelineToDebugFile(IntToStr(i) + '   ' + GraphDraw.DataFilesPlotted.Strings[pred(i)] + '  = '+ IntToStr(Bitmap.Canvas.Font.Color)); {$EndIf}
+      PlotAFile(BitMap,fName,i);
+   end;
+   j := i;
+   if (j > 15) then j := succ(j mod 15);
+   if GraphDraw.ShowPoints[i] then begin
+      {$IfDef RecordGraphColors} writelineToDebugFile(IntToStr(i) + '   ' + GraphDraw.DataFilesPlotted.Strings[pred(i)] + '  = '+ IntToStr(Bitmap.Canvas.Font.Color)); {$EndIf}
+      PlotPointFile(BitMap,fName,GraphDraw.Symbol[j]);
+   end;
+end;
+
 procedure TThisBaseGraph.RedrawDiagram11Click(Sender: TObject);
 var
    BitMap,bmp : tMyBitmap;
@@ -4829,7 +4882,7 @@ begin
           exit;
        end;
        if GraphDraw.GraphType = gtStackedHist then begin;
-          SetUpStackedHistogram;
+          SetUpStackedHistogram(true);
           RedrawingNow := false;
           exit;
        end;
@@ -4965,18 +5018,7 @@ begin
                 end
                 else begin
                     for i := 1 to GraphDraw.DataFilesPlotted.Count do begin
-                        SetMyBitmapColors(Bitmap,i);
-                        fName := GraphDraw.DataFilesPlotted.Strings[pred(i)];
-                        if GraphDraw.ShowLine[i] then begin
-                           {$IfDef RecordGraphColors} writelineToDebugFile(IntToStr(i) + '   ' + GraphDraw.DataFilesPlotted.Strings[pred(i)] + '  = '+ IntToStr(Bitmap.Canvas.Font.Color)); {$EndIf}
-                           PlotAFile(BitMap,fName,i);
-                        end;
-                        j := i;
-                        if (j > 15) then j := succ(j mod 15);
-                        if GraphDraw.ShowPoints[i] then begin
-                           {$IfDef RecordGraphColors} writelineToDebugFile(IntToStr(i) + '   ' + GraphDraw.DataFilesPlotted.Strings[pred(i)] + '  = '+ IntToStr(Bitmap.Canvas.Font.Color)); {$EndIf}
-                           PlotPointFile(BitMap,fName,GraphDraw.Symbol[j]);
-                        end;
+                       PlotDataFilesPlotted(Bitmap,GraphDraw.DataFilesPlotted.Strings[pred(i)],i);
                     end;
                 end;
                 for i := 1 to GraphDraw.DBFPointFilesPlotted.Count do begin

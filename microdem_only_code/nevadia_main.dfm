@@ -29,7 +29,6 @@ object wmdem: Twmdem
     Left = 0
     Top = 0
     Width = 2142
-    Height = 29
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34
@@ -2099,9 +2098,6 @@ object wmdem: Twmdem
           OnClick = DEMcornerstable1Click
         end
       end
-      object Header1: TMenuItem
-        Caption = '&Header'
-      end
       object MetaData1: TMenuItem
         Caption = 'File metadata'
         OnClick = MetaData1Click
@@ -3457,6 +3453,10 @@ object wmdem: Twmdem
     object Categoriesfromdatabase1: TMenuItem
       Caption = 'Landform categories from data base'
       OnClick = Categoriesfromdatabase1Click
+    end
+    object COPALOScomparetoreference1: TMenuItem
+      Caption = 'COP/ALOS compare to reference'
+      OnClick = COPALOScomparetoreference1Click
     end
     object OpenDEMIXarea1: TMenuItem
       Caption = 'Open DEMIX area'

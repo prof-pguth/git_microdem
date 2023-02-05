@@ -169,6 +169,7 @@ begin
       exit;
    end;
    Locations.Destroy;
+   SaveMDdefaults;
 end;
 
 
@@ -303,6 +304,8 @@ procedure OpenIndexedSeriesTable(var IndexSeriesTable : tMyData);
 var
    fName : PathStr;
 begin
+   if not FileExists(SeriesIndexFileName) then PickMapIndexLocation;
+
    fName  := SeriesIndexFileName;
    IndexSeriesTable := tMyData.Create(fName);
    IndexSeriesTable.InsureFieldPresentAndAdded(ftInteger,'PIXEL_IS',2);

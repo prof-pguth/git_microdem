@@ -304,9 +304,6 @@ end;
 
 
 procedure DEMIX_graph_best_in_Tile(DBonTable : integer; SortByArea : boolean);
-
-    //AreaList : tStringList = nil; TileList : tStringList = nil; CriteriaUsed : tStringList = nil; LandTypePresent : tStringList = nil;  DEMsPresent : tStringList = nil);
-
 var
    RefFilter : shortstring;
    CriteriaTable : tMyData;

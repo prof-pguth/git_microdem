@@ -33,7 +33,7 @@ object DemMarginaliaForm: TDemMarginaliaForm
     Width = 570
     Height = 19
     Panels = <>
-    ExplicitTop = 359
+    ExplicitTop = 388
     ExplicitWidth = 566
   end
   object Panel1: TPanel
@@ -44,7 +44,7 @@ object DemMarginaliaForm: TDemMarginaliaForm
     Align = alRight
     TabOrder = 1
     ExplicitLeft = 402
-    ExplicitHeight = 359
+    ExplicitHeight = 388
     object Label4: TLabel
       Left = 14
       Top = 204

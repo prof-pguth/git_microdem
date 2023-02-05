@@ -57,6 +57,7 @@ type
     CheckBox2: TCheckBox;
     BitBtn1: TBitBtn;
     BitBtn2: TBitBtn;
+    DupeMapSpeedButton18: TSpeedButton;
     procedure HelpBtnClick(Sender: TObject);
     procedure RadioGroup1Click(Sender: TObject);
     procedure Edit1Change(Sender: TObject);
@@ -78,6 +79,7 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure BitBtn2Click(Sender: TObject);
     procedure CheckBox2Click(Sender: TObject);
+    procedure DupeMapSpeedButton18Click(Sender: TObject);
   private
     { Private declarations }
     procedure ColorPreview;
@@ -344,6 +346,11 @@ end;
 procedure TEROSContrastForm.ComboBox4Change(Sender: TObject);
 begin
   ColorPreview;
+end;
+
+procedure TEROSContrastForm.DupeMapSpeedButton18Click(Sender: TObject);
+begin
+   BaseMap.DuplicateMap(false);
 end;
 
 procedure TEROSContrastForm.Edit1Change(Sender: TObject);

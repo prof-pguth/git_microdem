@@ -1,7 +1,11 @@
 unit koppen_opts;
 
-
-
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2023 Peter L. Guth  }
+{___________________________________}
 
 
 

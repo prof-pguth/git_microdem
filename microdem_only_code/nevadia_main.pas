@@ -30,7 +30,7 @@
       //{$Define RecordOpenVectorMap}
       //{$Define RecordShipwrecks}
       //{$Define Record3D}
-      {$Define RecordLabs}
+      //{$Define RecordLabs}
       //{$Define LidarGlobalDEMs}
       //{$Define RecordCartography}
       //{$Define RecordFormActivate}
@@ -532,6 +532,7 @@ type
     N2020fillseason1: TMenuItem;
     N2021fillseason: TMenuItem;
     N2022fillseason1: TMenuItem;
+    COPALOScomparetoreference1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -906,6 +907,7 @@ type
     procedure N2020fillseason1Click(Sender: TObject);
     procedure N2021fillseasonClick(Sender: TObject);
     procedure N2022fillseason1Click(Sender: TObject);
+    procedure COPALOScomparetoreference1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1392,6 +1394,7 @@ end;
 
 procedure Twmdem.DEMIX1Click(Sender: TObject);
 begin
+   StopSplashing;
    DemixAnalysisPopUpMenu.Popup(Mouse.CursorPos.X,Mouse.CursorPos.Y);
 end;
 
@@ -2203,14 +2206,17 @@ procedure Twmdem.SeeIfThereAreDebugThingsToDo;
       begin
          DEMwithVAT := OpenNewDEM('H:\aa_half_sec_test\COP-ALOS_compare_DTM.dem' );
          ElevMap  := OpenNewDEM('H:\aa_half_sec_test\dtm_elev.dem' );
+         (*
          SlopeMap  := OpenNewDEM('H:\aa_half_sec_test\slope.dem' );
          RuffMap := OpenNewDEM('H:\aa_half_sec_test\ruff.dem' );
+         *)
          AspMap := OpenNewDEM('H:\aa_half_sec_test\aspect.dem' );
 
          DEMGlb[ElevMap].VATrelatedGrid := DEMwithVAT;
          DEMGlb[ElevMap].SelectionMap.MapDraw.MapType := mt6ColorVAToverlay;
          DEMGlb[ElevMap].SelectionMap.DoBaseMapRedraw;
-         HistogramsFromVATDEM(DEMwithVAT,ElevMap,SlopeMap,RuffMap,AspMap);
+         //HistogramsFromVATDEM(DEMwithVAT,ElevMap,SlopeMap,RuffMap,AspMap);
+         HistogramsFromVATDEM(DEMwithVAT,0,0,0,AspMap);
       end;
 
 
@@ -3430,6 +3436,11 @@ begin
 end;
 
 
+procedure Twmdem.COPALOScomparetoreference1Click(Sender: TObject);
+begin
+   CopAlosCompareReference;
+end;
+
 procedure Twmdem.CopyDBFstoXML1Click(Sender: TObject);
 var
    inDir,fName: PathStr;
@@ -4074,8 +4085,24 @@ begin
 end;
 
 procedure Twmdem.OpenDEMIXarea1Click(Sender: TObject);
+var
+   FilesWanted : tStringList;
+   i : integer;
 begin
-   OpenDEMIXArea;
+   {$IfDef RecordOpenDataBase} WriteLineToDebugFile('OpenADataBase in,fName=' + fName); {$EndIf}
+
+   FilesWanted := tStringList.Create;
+   FilesWanted.Add(ExtractFilePath(LastDataBase));
+   if GetMultipleFiles('DEMIX areas',DBMaskString,FilesWanted,MDdef.DefDBFilter) then begin
+      for I := 0 to pred(FilesWanted.Count) do begin
+         OpenDEMIXArea(FilesWanted.Strings[i]);
+         DEM_Manager.CloseAllWindowsAndData;
+         CleanUpTempDirectory(false);
+      end;
+      FilesWanted.Free;
+   end;
+
+   //OpenDEMIXArea;
 end;
 
 

@@ -83,7 +83,7 @@ unit DEMCoord;
       //{$Define RecordConversion}
       //{$Define RecordCloseDEM}
       //{$Define RecordClosing}
-      {$Define RecordResample}
+      //{$Define RecordResample}
       //{$Define RecordWriteDEM}
       //{$Define RecordDTEDHeader}
       //{$Define RecordDEMMapProjection}
@@ -980,119 +980,6 @@ begin
    DEMGlb[ThinDEM].CheckMaxMinElev;
    EndProgress;
 end;
-
-
-procedure tDEMDataSet.FilterStrip(NewDEM, FilterLap : integer; GridLimits : tGridLimits; FilterCategory : tFilterCat; Filter : FilterType);
-label
-   DataIsMissing;
-const
-   MaxFilterSize = 5000;
-var
-   ItsZ,znw,zw,zsw,zn,z,zs,zne,ze,zse,z1 : float32;
-   Col,Row,x,y,Removed,NumSame,i,j,fv,Margin,Missing : integer;
-   Sum, Min,Max,FilterValue,Mag     : float64;
-   MomentVar : tMomentVar;
-   Aspects : farray;
-   xs    : array[0..MaxFilterSize] of float32;
-begin
-   for Row := GridLimits.YGridLow to GridLimits.YGridHigh do begin
-      if (CountInStrips mod 50 = 0) and ShowSatProgress then begin
-         UpdateProgressBar(CountInStrips/DEMheader.NumRow);
-      end;
-      if ThreadsWorking then TInterlocked.Increment(CountInStrips)
-      else inc(CountInStrips);
-      if MDdef.FilterGridsToEdge then Margin := 0
-      else Margin := FilterLap;
-      if (Row >= Margin) and (Row <= pred(DEMGlb[NewDEM].DEMheader.NumRow)-Margin) then begin
-         for Col := GridLimits.XGridLow to GridLimits.XGridHigh do begin
-            if (Col >= Margin) and (Col <= pred(DEMGlb[NewDEM].DEMheader.NumCol)-Margin) then begin
-               if (FilterCategory = fcParamIsotrop) then begin
-                  if SurroundedPointElevs(Col,Row,znw,zw,zsw,zn,z,zs,zne,ze,zse) then begin
-                     DEMGlb[NewDEM].SetGridElevation(Col,Row,(zw + zn + ze + zs + 41 * z) / 45);
-                  end;
-               end
-               else if (FilterCategory = fcNumNeigh) then begin
-                  DEMGlb[NewDEM].SetGridElevation(Col,Row,ValidNeighborsInBox(Col,Row,FilterLap));
-               end
-               else if (FilterCategory = fcNeighbors) then begin
-                  if (ValidNeighborsInBox(Col,Row,FilterLap) >= MDDef.ExpandNeighborsRequired) then begin
-                     if GetElevMeters(Col,Row,z1) then DEMGlb[NewDEM].SetGridElevation(Col,Row,z1);
-                  end;
-               end
-               else if (FilterCategory = fcFilFile) then begin
-                  FilterValue := 0;
-                  Sum := 0;
-                  for i := -FilterLap to FilterLap do begin
-                     for j := -FilterLap to FilterLap do begin
-                        if MissingDataInGrid(Col+i,Row+j) then begin
-                           if (not MDdef.FilterGridsToEdge) then goto DataIsMissing;
-                        end
-                        else if GetElevMeters(Col+i,Row+j,z1) then begin
-                           fv := Filter[i+succ(FilterLap),j+Succ(FilterLap)];
-                           Sum := Sum + fv;
-                           GetElevMeters(Col+i,Row+j,z1);
-                           FilterValue := FilterValue + fv * z1;
-                        end;
-                     end;
-                  end;
-                  if (Sum > 0) then DEMGlb[NewDEM].SetGridElevation(Col,Row,FilterValue/Sum);
-                  DataIsMissing: ;
-               end
-               else begin
-                  MomentVar.NPts := 0;
-                  Sum := 0;
-                  Min := 9999999;
-                  Max := -9999999;
-                  NumSame := 0;
-                  Missing := 0;
-                  if (FilterCategory = fcDissimilarNeighbors) then GetElevMeters(Col,Row,ItsZ);
-                  for x := (Col-FilterLap) to (Col + FilterLap) do begin
-                     for y := (Row-FilterLap) to (Row + FilterLap) do begin
-                        if GetElevMeters(x,y,z1) then begin
-                           if FilterCategory in [fcSum] then Sum := Sum + z1
-                           else if (FilterCategory = fcDissimilarNeighbors) then begin
-                              if abs(ItsZ-z1) < 0.01 then inc(NumSame);
-                           end
-                           else if FilterCategory in [fcMedian,fcMean,fcSTD] then xs[MomentVar.NPts] := z1
-                           else if FilterCategory in [fcVectAvg] then begin
-                              Aspects[MomentVar.NPts] := z1;
-                           end
-                           else Petmath.CompareValueToExtremes(z1,Min,Max);
-                           inc(MomentVar.NPts);
-                        end
-                        else inc(Missing);
-                     end;
-                  end;
-
-                  if (MomentVar.NPts > 0) then begin
-                     if FilterCategory in [fcVectAvg] then begin
-                        z1 := VectorAverage(MomentVar.NPts,Aspects,Mag);
-                        if z1 > -90 then DEMGlb[NewDEM].SetGridElevation(Col,Row,z1);
-                     end
-                     else if (FilterCategory = fcDissimilarNeighbors) then begin
-                        if NumSame >= MDDef.ExpandNeighborsRequired then DEMGlb[NewDEM].SetGridElevation(Col,Row,ItsZ)
-                        else inc(Removed);
-                     end
-                     else if (FilterCategory = fcMedian) then begin
-                        if MomentVar.NPts > Missing then DEMGlb[NewDEM].SetGridElevation(Col,Row,Petmath.Median(xs,MomentVar.NPts))
-                        else DEMGlb[NewDEM].SetGridMissing(Col,Row);
-                     end
-                     else if (FilterCategory in [fcMean,fcSTD]) then begin
-                        Moment(xs,MomentVar,msAfterStdDev);
-                        if (FilterCategory in [fcMean]) then DEMGlb[NewDEM].SetGridElevation(Col,Row,MomentVar.mean)
-                        else DEMGlb[NewDEM].SetGridElevation(Col,Row,MomentVar.sdev);
-                     end
-                     else if (FilterCategory = fcSum) then DEMGlb[NewDEM].SetGridElevation(Col,Row,Sum)
-                     else if (FilterCategory = fcMin) then DEMGlb[NewDEM].SetGridElevation(Col,Row,Min)
-                     else if (FilterCategory = fcMax) then DEMGlb[NewDEM].SetGridElevation(Col,Row,Max);
-                  end;
-               end;
-            end;
-         end;
-      end;
-   end {for};
-end;
-
 
 function tDEMDataSet.CloneAndOpenGrid(NewPrecision : tDEMprecision; Gridname : shortstring; ElevUnits : tElevUnit) : integer;
 var

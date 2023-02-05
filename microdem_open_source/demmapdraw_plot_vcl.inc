@@ -1863,10 +1863,10 @@
 
                        if (SatOnMap <> 0) then begin
                            if (SatImage[SatonMap].LandsatNumber in [1..9]) or SatImage[SatonMap].LandsatLook then begin
-                              TStr := ShortLandsatName(SatImage[SatonMap].SceneBaseName);
+                              TStr := ShortLandsatName(SatImage[SatonMap].SceneBaseName) + '  ' + CurrentSatelliteColors;
                            end
                            else if SatImage[SatonMap].IsSentinel2 then begin
-                              TStr := 'Sentinel-2  ' + Copy(SatImage[SatonMap].SceneBaseName,12,2) + '/' + Copy(SatImage[SatonMap].SceneBaseName,14,2) +  '/' + Copy(SatImage[SatonMap].SceneBaseName,8,4);
+                              TStr := 'Sentinel-2  ' + Copy(SatImage[SatonMap].SceneBaseName,12,2) + '-' + Copy(SatImage[SatonMap].SceneBaseName,14,2) +  '-' + Copy(SatImage[SatonMap].SceneBaseName,8,4) + '  ' + CurrentSatelliteColors;
                            end
                            else begin
                               TStr := SatImage[SatonMap].SceneBaseName;

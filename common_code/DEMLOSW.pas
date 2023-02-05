@@ -17,7 +17,7 @@ unit demlosw;
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$IfDef Debug}
       //{$Define RecordLOSAlgorithm}
-      {$Define RecordLOSDraw}
+      //{$Define RecordLOSDraw}
       //{$Define RecordPointClouds}
       //{$Define RecordClosing}
       //{$Define RecordUTMZones}

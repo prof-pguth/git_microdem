@@ -33,7 +33,7 @@
        //{$Define RecordHTML}
        //{$Define RecordGeostats}
        //{$Define RecordMapSizing}
-       {$Define RecordExports}
+       //{$Define RecordExports}
        //{$Define RecordFieldAdds}
        //{$Define RecordStatus}
        //{$Define RecordGraph}
@@ -3760,8 +3760,7 @@ end;
 
 procedure Tdbtablef.BitBtn8Click(Sender: TObject);
 begin
-   if (GISdb[DBonTable] = Nil) then exit;
-   with GISdb[DBonTable] do begin
+   if ValidDB(DBonTable) then with GISdb[DBonTable] do begin
         Vectoraverageinbox1.Enabled := GISdb[DBonTable].DEMwithDBsMap and  (dbOpts.MagField <> '') and (dbOpts.DirField<> '');
 
         N3dGraph1.Visible := (NumericFields > 2);
@@ -10950,6 +10949,7 @@ begin
     GISdb[DBonTable].AddFieldToDataBase(ftInteger,'SRTM_TIE',2);
     GISdb[DBonTable].AddFieldToDataBase(ftInteger,'NASA_TIE',2);
     GISdb[DBonTable].AddFieldToDataBase(ftInteger,'FABDEM_TIE',2);
+    GISdb[DBonTable].AddFieldToDataBase(ftInteger,'TIES',2);
     GISdb[DBonTable].EmpSource.Enabled := false;
     GISdb[DBonTable].MyData.First;
     while not GISdb[DBonTable].MyData.eof do begin
@@ -10957,7 +10957,8 @@ begin
        GISdb[DBonTable].MyData.Edit;
        GISdb[DBonTable].MyData.SetFieldByNameAsString('TIES_ALPHA',entry);
        nTies := 0;
-       for i := 1 to Length(Entry) do if Entry[i] = ',' then inc(NTies);
+       for i := 1 to Length(Entry) do if (Entry[i] = ',') then inc(NTies);
+       GISdb[DBonTable].MyData.SetFieldByNameAsInteger('TIES',succ(nTies));
        DoOne('ASTER');
        DoOne('ALOS');
        DoOne('NASA');
@@ -11115,15 +11116,15 @@ procedure Tdbtablef.Insertdipdirectionsdipandstrike1Click(Sender: TObject);
 begin
 {$Else}
 
-   procedure Output(Plane : integer);
-   var
-      Dip,Strike : integer;
-   begin
-      Dip := GISdb[DBonTable].MyData.GetFieldByNameAsInteger('FP' + IntToStr(Plane) + '_DIP');
-      Strike := GISdb[DBonTable].MyData.GetFieldByNameAsInteger('FP' + IntToStr(Plane) + '_STRIKE');
-      GISdb[DBonTable].MyData.SetFieldByNameAsString('FP' + IntToStr(Plane) + '_DIPSTK',CreateStrikeAndDipString(Strike,Dip));
-      GISdb[DBonTable].MyData.SetFieldByNameAsInteger('FP' + IntToStr(Plane) + '_DIPDIR',Round(DipDirectionRHR(Strike)));
-   end;
+      procedure Output(Plane : integer);
+      var
+         Dip,Strike : integer;
+      begin
+         Dip := GISdb[DBonTable].MyData.GetFieldByNameAsInteger('FP' + IntToStr(Plane) + '_DIP');
+         Strike := GISdb[DBonTable].MyData.GetFieldByNameAsInteger('FP' + IntToStr(Plane) + '_STRIKE');
+         GISdb[DBonTable].MyData.SetFieldByNameAsString('FP' + IntToStr(Plane) + '_DIPSTK',CreateStrikeAndDipString(Strike,Dip));
+         GISdb[DBonTable].MyData.SetFieldByNameAsInteger('FP' + IntToStr(Plane) + '_DIPDIR',Round(DipDirectionRHR(Strike)));
+      end;
 
 
 begin
@@ -13516,7 +13517,7 @@ end;
 
 procedure Tdbtablef.Stackedpercentages1Click(Sender: TObject);
 begin
-    GetStackedHistogram(DBonTable);
+    StartStackedHistogram(DBonTable,true);
 end;
 
 

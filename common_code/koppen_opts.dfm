@@ -3,8 +3,8 @@ object Koppen_opt_f: TKoppen_opt_f
   Top = 0
   BorderStyle = bsDialog
   Caption = 'Geography Options'
-  ClientHeight = 208
-  ClientWidth = 290
+  ClientHeight = 232
+  ClientWidth = 337
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

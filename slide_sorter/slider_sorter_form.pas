@@ -204,7 +204,7 @@ begin
    if GetDosPath('Photo directory',PhotoDir) then begin
       FindFiles;
       if (TheFiles.Count > 0) then begin
-         CheckType('DCS');
+         CheckType('DSC');
          CheckType('P');
          TheFiles.SaveToFile(MDTempDir + 'slide_sorter.txt');
          fName2 := PhotoDir + 'photo_index' + DefaultDBExt;

@@ -999,7 +999,6 @@ try
       if not GetMultipleFiles('DEMIX control file','*.dbf:*.csv',FilesWanted,DefaultFilter) then exit;
    end;
 
-
    OutPutDir := DEMIXresultsDir;
    SafeMakeDir(OutputDir);
 
@@ -1020,7 +1019,6 @@ try
       end
       else begin
          InitializeStringLists;
-
          GeodeticFName := '';
          IceSatFName := '';
          LocalDatumAddFName := '';
@@ -1037,7 +1035,6 @@ try
          Rules := tMyData.Create(cfName);
          if Rules.FieldExists('DATA_PATH') then begin
             {$IfDef RecordDEMIXFull} writeLineToDebugFile('DATA_PATH option'); {$EndIf}
-
             while (not Rules.eof) do begin
                DataPath := Rules.GetFieldByNameAsString('DATA_PATH');
                RefDTMPointFName := DataPath + Rules.GetFieldByNameAsString('DTM_POINT');
@@ -1072,8 +1069,6 @@ try
              ProcessDEMIXtestarea;
          end;
          Rules.Destroy;
-
-
          FinalizeStringLists(false);
       end;
    end;

@@ -1426,6 +1426,7 @@ type
     Volume2: TMenuItem;
     Allvalidpixels1: TMenuItem;
     Openbandforrasteranalysis1: TMenuItem;
+    Changemap2: TMenuItem;
     //procedure HiresintervisibilityDEM1Click(Sender: TObject);
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
@@ -2467,6 +2468,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Geomorphometrybycategories1Click(Sender: TObject);
     procedure Allvalidpixels1Click(Sender: TObject);
     procedure Openbandforrasteranalysis1Click(Sender: TObject);
+    procedure Changemap2Click(Sender: TObject);
     //procedure QuarterDEM1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
@@ -6984,6 +6986,14 @@ begin
 end;
 
 
+procedure TMapForm.Changemap2Click(Sender: TObject);
+begin
+   ReadDefault('Tolerance level for highlights',MDDef.TopCutLevel);
+   MDDef.TopCutLevel := abs(MDDef.TopCutLevel);
+   MDDef.BottomCutLevel := -MDDef.TopCutLevel;
+   DoBaseMapRedraw;
+end;
+
 procedure TMapForm.N3Drotatingglobe1Click(Sender: TObject);
 begin
    StartEarthRotation(MapDraw.FullMapfName);
@@ -10959,6 +10969,7 @@ begin
    SatImage[MapDraw.SatOnMap].PickBand('Band for raster analysis', WantedBand);
    OpenNewDEM(SatImage[MapDraw.SatOnMap].BFileName[WantedBand]);
 end;
+
 
 function TMapForm.OpenDBonMap(WhatFor : shortstring; DefaultFile : PathStr; DisplayNow : boolean = true; OpenTable : boolean = true; ThisMapOnly : boolean = false;
     ForceColor : tColor = -99; ForceLineWidth : byte = 0; HideFields : ShortString = '') : integer;
@@ -15565,7 +15576,7 @@ var
    bb : sfBoundBox;
    i : integer;
    z : float32;
-   Lat,Long{,xlow,ylow,xHigh,yHigh} : float64;
+   Lat,Long : float64;
    Results : tStringList;
    gl : tGridLimits;
    mv : tMomentVar;
@@ -19116,6 +19127,7 @@ procedure TMapForm.NormalizedBurnIndex1Click(Sender: TObject);
 begin
    NewSatWindow(nsbNBRNormalizedBurnIndex);
 end;
+
 
 procedure TMapForm.Normalizeddifferencepickbands1Click(Sender: TObject);
 begin
@@ -23110,6 +23122,7 @@ begin
                 (WMDEM.MDIChildren[i] as TMapForm).SubsetAndZoomMapFromProjectedBounds(Sender <> Nil);
              end
              else (WMDEM.MDIChildren[i] as TMapForm).SubsetAndZoomMapFromGeographicBounds(MapDraw.MapCorners.BoundBoxGeo, Sender <> Nil);
+             (WMDEM.MDIChildren[i] as TMapForm).FullMapSpeedButton.Enabled := true;
           end;
       end;
 end;

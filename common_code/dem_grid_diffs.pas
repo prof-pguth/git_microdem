@@ -58,7 +58,7 @@ begin
    GridDiffForm.CheckBox2.Checked := MDDef.ShowGridDiffMap;
    GridDiffForm.CheckBox1.Checked := MDDef.ShowGridDiffHistogram;
    GridDiffForm.CheckBox4.Checked := MDDef.HighlightDiffMap;
-   GridDiffForm.Edit1.Text := RealToString(MDDef.TopCutLevel,-8,-2);
+   GridDiffForm.Edit1.Text := RealToString(abs(MDDef.TopCutLevel),-8,-2);
    PlaceFormInCorner(WMDEM,GridDiffForm,lpCenterMap);
    GridDiffForm.ShowModal;
 end;

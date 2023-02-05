@@ -292,8 +292,8 @@ begin
    Edit1.Text := RealToString(MDdef.RefPhi,-8,-2);
    Edit2.Text := RealToString(MDdef.RefTheta,-8,-2);
    Edit4.Text := RealToString(MDDef.CurrentSeaLevel,-8,-2);
-   Edit5.Text := RealToString(MDDef.BottomCutLevel,-8,-2);
-   Edit6.Text := RealToString(MDDef.TopCutLevel,-8,-2);
+   Edit6.Text := RealToString(MDDef.BottomCutLevel,-8,-2);
+   Edit5.Text := RealToString(MDDef.TopCutLevel,-8,-2);
    RadioGroup2.ItemIndex := pred(MDdef.UseRefDirs);
    CheckBox5.Checked := MDdef.QuickMapRedraw;
    CanChange := true;

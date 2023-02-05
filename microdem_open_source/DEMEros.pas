@@ -5,7 +5,7 @@
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
 
@@ -1090,13 +1090,6 @@ begin
    {$IfDef VCL}
       if OpenMap then begin
          CreateDEMSelectionMap(Result,true,true,mtDEMBlank);
-         (*
-         if (DEMGlb[Result].DEMheader.ElevUnits = euNDVI) then begin
-            DEMGlb[Result].SelectionMap.MapDraw.MapType := mtElevFromTable;
-            ElevationFixedPalette := 'ndvi-3';
-            DEMGlb[Result].SelectionMap.DoBaseMapRedraw;
-         end;
-         *)
       end;
    {$EndIf}
     WmDem.SetMenusForVersion;
@@ -2312,20 +2305,20 @@ var
                      LandsatDir := LastSatDir;
                      ReadBandData('Sentinel-2',SatView);
                      SingleTiff := false;
-                      SatelliteName := 'Sentinel-2';
-                      BaseName := ExtractFilePath(IndexFileName) + ExtractFileNameNoExt(IndexFileName);
-                      while (BaseName[length(BaseName)] <> '_') do Delete(BaseName,Length(BaseName),1);
-                      for i := 1 to NumBands do begin
-                         NeedToLoadGeoTiffProjection := true;
-                         bFileName[i] := BaseName + BandShortName[i] + '.tif';
-                         {$IfDef RecordTMSat} WriteLineToDebugFile('IndexFileName='+bFileName[i]); {$EndIf}
-                         ReadTiffBand(bFileName[i],i,SatelliteName);
-                      end;
-                      NumSatCol := BandColumns[2];
-                      NumSatRow := BandRows[2];
-                      RegVars.pr_deltaY  := BandYSpace[2];
-                      RegVars.pr_deltaX  := BandXSpace[2];
-                      NeedToLoadGeotiffProjection := true;
+                     SatelliteName := 'Sentinel-2';
+                     BaseName := ExtractFilePath(IndexFileName) + ExtractFileNameNoExt(IndexFileName);
+                     while (BaseName[length(BaseName)] <> '_') do Delete(BaseName,Length(BaseName),1);
+                     for i := 1 to NumBands do begin
+                        NeedToLoadGeoTiffProjection := true;
+                        bFileName[i] := BaseName + BandShortName[i] + '.tif';
+                        {$IfDef RecordTMSat} WriteLineToDebugFile('IndexFileName='+bFileName[i]); {$EndIf}
+                        ReadTiffBand(bFileName[i],i,SatelliteName);
+                     end;
+                     NumSatCol := BandColumns[2];
+                     NumSatRow := BandRows[2];
+                     RegVars.pr_deltaY  := BandYSpace[2];
+                     RegVars.pr_deltaX  := BandXSpace[2];
+                     NeedToLoadGeotiffProjection := true;
                  {$IfDef RecordTMSat} WriteLineToDebugFile('OpenSentinel2 out'); {$EndIf}
                end;
 

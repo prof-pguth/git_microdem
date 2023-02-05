@@ -13,7 +13,7 @@ unit demix_control;
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$Define RecordDEMIX}
    {$Define RecordDEMIXLoad}
-   {$Define RecordDEMIXMovies}
+   //{$Define RecordDEMIXMovies}
    //{$Define RecordDEMIXVDatum}
    //{$Define RecordFullDEMIX}
    //{$Define ShowDEMIXWhatsOpen}
@@ -36,6 +36,8 @@ procedure OpenDEMIXArea(fName : PathStr = '');
 function SymbolFromDEMName(DEMName : shortstring) : tFullSymbolDeclaration;
 function DEMIXColorFromDEMName(DEMName : shortstring) : tPlatformColor;
 
+procedure CopAlosCompareReference;
+
 const
    MaxTestDEM = 10;
 var
@@ -50,8 +52,54 @@ implementation
 
 uses
    Nevadia_Main,
-   DEMstat,Make_grid,PetImage,BaseGraf,PetImage_form,new_petmar_movie,
+   DEMstat,Make_grid,PetImage,BaseGraf,PetImage_form,new_petmar_movie,DEMdatabase,PetDButils,
    DEMCoord,DEMdefs,DEMMapf,DEMDef_routines,DEM_Manager,DEM_indexes,Petmar_db,PetMath;
+
+
+
+procedure CopAlosCompareReference;
+
+
+   procedure DoOne(VatName,OutName : PathStr; Cats : integer);
+   var
+      TheFiles,Results : tStringList;
+      i : Integer;
+      Table : tMyData;
+      Sum : float64;
+      Fname : PathStr;
+      aLine : shortstring;
+   begin
+      TheFiles := tStringList.Create;
+      Petmar.FindMatchingFiles('H:\aa_half_sec_test\',VATname,TheFiles,2);
+      Results := tStringList.Create;
+      if Cats = 4 then Results.Add('AREA,BOTH_HIGH,BOTH_CLOSE,BOTH_LOW,COMPLEX')
+      else Results.Add('area,HIGH_HIGH,HIGH_GOOD,HIGH_LOW,GOOD_HIGH,GOOD_GOOD,GOOD_LOW,LOW_HIGH,LOW_GOOD,LOW_LOW');
+      for i := 0 to pred(TheFiles.Count) do begin
+         fName := TheFiles.Strings[i];
+         Table := tMyData.Create(fName);
+         Sum := Table.FieldSum('N');
+         aline := LastSubDir(ExtractFilePath(fName));
+         Table.First;
+         while not Table.eof do begin
+            aline := aline + ',' + RealToString(Table.GetFieldByNameAsInteger('N') * 100 / Sum, -12,-2);
+            Table.Next;
+         end;
+         Results.Add(aline);
+         Table.Destroy;
+      end;
+      TheFiles.Free;
+      PetdbUtils.StringList2CSVtoDB(Results,OutName);
+   end;
+
+
+begin
+   DoOne('cop-alos-dtm4.vat.dbf',mdTempDir + 'dtm-4.dbf',4);
+   DoOne('cop-alos-dsm4.vat.dbf',mdTempDir + 'dsm-4.dbf',4);
+   DoOne('cop-alos-dtm9.vat.dbf',mdTempDir + 'dtm-9.dbf',9);
+   DoOne('cop-alos-dsm9.vat.dbf',mdTempDir + 'dsm-9.dbf',9);
+end;
+
+
 
 function DEMIXColorFromDEMName(DEMName : shortstring) : tPlatformColor;
 begin
@@ -243,14 +291,22 @@ end;
 
 
 procedure OpenDEMIXArea(fName : PathStr = '');
+const
+   DEMIX_Movie = false;
+   DEMIX_SaveDEMs = true;
+   DEMIX_HalfSecondCompareMaps = true;
+   DEMIX_GeomorphMaps = true;
+   DEMIXhistograms = false;
 var
    AreaName : shortstring;
    HalfSec : array[1..10] of integer;
-   UseDSM,UseDTM,chm,HalfSecRefDTM,HalfSecRefDSM,SlopeMap,RuffMap,AspectMap,
-   i,COP_ALOS_DSM,COP_ALOS_DTM,Cols : integer;
+   UseDSM,UseDTM,chm,HalfSecRefDTM,HalfSecRefDSM,SlopeMap,RuffMap,AspectMap,COP_ALOS_Diff,
+   COP_ALOS_DSM4,COP_ALOS_DTM4,COP_ALOS_DSM9,COP_ALOS_DTM9,
+   i,Cols : integer;
    AirOrDirt,AirOrDirt2,AirOrDirt3 : array[1..10] of integer;
    BigMap,Movie : tStringList;
    Graph1,Graph2 : tThisBaseGraph;
+   SaveDir : PathStr;
 
 
          procedure AddImage(GraphImage : tImage);
@@ -294,11 +350,29 @@ var
             end;
          end;
 
+         procedure SaveDEM(DEM : integer; fName : PathStr);
+         begin
+            if ValidDEM(DEM) then begin
+               if (not FileExists(fName)) then DEMGlb[DEM].WriteNewFormatDEM(fName);
+               fName := ChangeFileExt(fName,'.png');
+               SaveImageAsBMP(DEMGlb[DEM].SelectionMap.Image1,fName);
+            end;
+         end;
+
+
 
 begin
    if FileExists(fName) or GetFileFromDirectory('DEMIX area database','*.dbf',fName) then begin
       {$IfDef RecordDEMIX} writeLineToDebugFile('OpenDEMIXArea ' + fName); {$EndIf}
+      AreaName := ExtractFileNameNoExt(fName);
+      if DEMIX_SaveDEMs then begin
+         SaveDir := 'H:\aa_half_sec_test\' + AreaName + '\';
+         if PathIsValid(SaveDir) then exit;
+         SafeMakeDir(SaveDir);
+      end;
+try
       HeavyDutyProcessing := true;
+      AutoOverwriteDBF := true;
       NakedMapOptions;  //also does SaveBackupDefaults;
       MDDef.ScaleBarLocation.DrawItem := true;
       MDDef.GIFfileLabels := false;
@@ -313,8 +387,11 @@ begin
       HalfSecRefDSM := 0;
       SlopeMap := 0;
       RuffMap := 0;
-      COP_ALOS_DSM := 0;
-      COP_ALOS_DTM := 0;
+      COP_ALOS_DSM4 := 0;
+      COP_ALOS_DTM4 := 0;
+      COP_ALOS_DSM9 := 0;
+      COP_ALOS_DTM9 := 0;
+      COP_ALOS_Diff := 0;
       CHM := 0;
       for I := 1 to 10 do begin
          HalfSec[i] := 0;
@@ -325,26 +402,29 @@ begin
 
       MDDef.GridLegendLocation.DrawItem := true;
       MDDef.MapNameLocation.DrawItem := true;
-      AreaName := ExtractFileNameNoExt(fName);
       if LoadDEMIXarea(fName) then begin
          {$IfDef RecordDEMIX} writeLineToDebugFile('LoadDEMIXarea complete'); {$EndIf}
          if LoadDEMIXReferenceDEMs(DEMIXRefDEM) then begin
-            {$IfDef RecordDEMIX} writeLineToDebugFile('LoadDEMIXReferenceDEMs complete; Open DEMs=, ' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
+            {$IfDef RecordDEMIX} writeLineToDebugFile('LoadDEMIXReferenceDEMs complete; Open DEMs=, ' + IntToStr(NumDEMdatasetsOpen) + 'DEMIXRefDEM=' + IntToStr(DEMIXRefDEM)); {$EndIf}
+
             if MDDef.DEMIX_DoHalfSecDEMs then begin
                HalfSecRefDSM := CreateHalfSecRefDEM(RefDSMPoint,RefDSMArea);
                HalfSecRefDTM := CreateHalfSecRefDEM(RefDTMPoint,RefDTMArea);
+               DEMIXRefDEM := HalfSecRefDTM;
                {$IfDef RecordDEMIX} writeLineToDebugFile('Half sec ref dems created; Open DEMs=' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
             end;
 
-            SlopeMap := -1;   //forces creation of slope and roughness maps
-            RuffMap := CreateSlopeRoughnessSlopeStandardDeviationMap(HalfSecRefDTM,3,SlopeMap);
-            DEMGlb[SlopeMap].AreaName := 'ref_dtm_slope_%';
-            DEMGlb[RuffMap].AreaName := 'ref_dtm_roughness_%';
-            AspectMap := MakeAspectMap(HalfSecRefDTM);
+            if DEMIX_GeomorphMaps then begin
+               SlopeMap := -1;   //forces creation of slope and roughness maps
+               RuffMap := CreateSlopeRoughnessSlopeStandardDeviationMap(HalfSecRefDTM,3,SlopeMap);
+               DEMGlb[SlopeMap].AreaName := 'ref_dtm_slope_%';
+               DEMGlb[RuffMap].AreaName := 'ref_dtm_roughness_%';
+               AspectMap := MakeAspectMap(HalfSecRefDTM);
+            end;
 
             {$IfDef RecordDEMIX} writeLineToDebugFile('Slope and Ruff dems created; Open DEMs=' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
 
-            if MDDef.DEMIX_DoHalfSecDEMs or (MDDef.DEMIX_DoCHM) then begin
+            if (MDDef.DEMIX_DoCHM) then begin
                if ValidDEM(HalfSecRefDSM) and ValidDEM(HalfSecRefDTM) then begin
                   chm := MakeDifferenceMapOfBoxRegion(HalfSecRefDTM,HalfSecRefDSM,DEMGlb[HalfSecRefDTM].FullDEMGridLimits,true,false,false,AreaName + '_half_sec_chm');
                   //DEMglb[chm].SelectionMap.Elevationpercentiles1Click(Nil);
@@ -358,34 +438,47 @@ begin
 
             if MDDef.DEMIX_DoHalfSecDEMs or MDDef.DEMIX_DoElevParamGraphs or MDDef.DEMIX_DoAirOrDirt or MDDef.DEMIX_DoElevDiff or MDDef.DEMIX_DoSlopeDiff or MDDef.DEMIX_DoRuffDiff then begin
                if LoadDEMIXCandidateDEMs(DEMIXRefDEM,true,false) then begin
+                  {$IfDef RecordDEMIX} HighlightLineToDebugFile('Candidate DEMs loaded'); {$EndIf}
                   {$IfDef ShowDEMIXWhatsOpen} writeLineToDebugFile('candidates loaded');  writeStringListToDebugFile(GetWhatsOpen); {$EndIf}
                   if MDDef.DEMIX_DoHalfSecDEMs then begin
                      {$IfDef RecordDEMIX} writeLineToDebugFile('Start creation Half sec dems; Open DEMs=, ' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
                      for I := 1 to MaxTestDEM do begin
                         if ValidDEM(TestDEM[i]) then begin
                            {$IfDef RecordDEMIX} writeLineToDebugFile(DEMGlb[TestDEM[i]].AreaName + ' Initial DEM=' + IntToStr(TestDEM[i]) + '  ' + DEMGlb[TestDEM[i]].KeyDEMParams(true)); {$EndIf}
-                           fName := MDtempDir + DEMGlb[TestDEM[i]].AreaName;  // + '_geo_reint_0.5sec.dem';
+                           fName := MDtempDir + DEMGlb[TestDEM[i]].AreaName + '_geo_reint_0.5sec.dem';
                            HalfSec[i] := DEMGlb[TestDEM[i]].ReinterpolateLatLongDEM(0.5,fName);
+                           {$IfDef RecordDEMIX} writeLineToDebugFile(DEMGlb[HalfSec[i]].AreaName + ' new half second'); {$EndIf}
                            CloseSingleDEM(TestDEM[i]);
                            TestDEM[i] := HalfSec[i];
+                           {$IfDef RecordDEMIX} writeLineToDebugFile(DEMGlb[TestDEM[i]].AreaName + ' now TestDEM=' + IntToStr(TestDEM[i])); {$EndIf}
                            CreateDEMSelectionMap(TestDEM[i],true,true,mtIHSReflect);
-
-                           {$IfDef RecordDEMIX} writeLineToDebugFile('air or dirt'); {$EndIf}
-                           AirOrDirt[i] := AirBallDirtBallMap(TestDEM[i],HalfSecRefDSM ,HalfSecRefDTM, DEMGlb[TestDEM[i]].AreaName + '_canopy' ); //checks if point within canopy
-                           AirOrDirt2[i] := AirBallDirtBallMap(TestDEM[i],HalfSecRefDSM ,0,DEMGlb[TestDEM[i]].AreaName + '_dsm');     //compares to DSM
-                           AirOrDirt3[i] := AirBallDirtBallMap(TestDEM[i],0,HalfSecRefDTM,DEMGlb[TestDEM[i]].AreaName + '_dsm');     //compares to DTM
-
                            {$IfDef RecordDEMIX} writeLineToDebugFile(DEMGlb[TestDEM[i]].AreaName + ' Half sec DEM=' + IntToStr(TestDEM[i]) + '  ' + DEMGlb[TestDEM[i]].KeyDEMParams(true)); {$EndIf}
+                           if MDDef.DEMIX_DoAirOrDirt then begin
+                              AirOrDirt[i] := AirBallDirtBallMap(TestDEM[i],HalfSecRefDSM ,HalfSecRefDTM, DEMGlb[TestDEM[i]].AreaName + '_canopy' ); //checks if point within canopy
+                              AirOrDirt2[i] := AirBallDirtBallMap(TestDEM[i],HalfSecRefDSM ,0,DEMGlb[TestDEM[i]].AreaName + 'air_dirt_dsm');     //compares to DSM
+                              AirOrDirt3[i] := AirBallDirtBallMap(TestDEM[i],0,HalfSecRefDTM,DEMGlb[TestDEM[i]].AreaName + 'air_dirt_dtm');     //compares to DTM
+                              {$IfDef RecordDEMIX} writeLineToDebugFile('air or dirt done, canopy=' + IntToStr(AirOrDirt[i]) + '  dsm=' + IntToStr(AirOrDirt2[i])   + '  dtm=' + IntToStr(AirOrDirt3[i]) ); {$EndIf}
+                           end;
                          end;
                      end;
-                     {$IfDef RecordDEMIX} writeLineToDebugFile('Make difference map'); {$EndIf}
-                     MakeDifferenceMap(TestDEM[1],TestDEM[2],true,false,false,'COP-ALOS_difference');
-                     {$IfDef RecordDEMIX} writeLineToDebugFile('Try ref DSM COP-ALOS'); {$EndIf}
-                     COP_ALOS_DSM := TwoDEMHighLowMap(HalfSecRefDSM, TestDEM[1],TestDEM[2],'DSM','COP-ALOS_compare_DSM');
-                     HistogramsFromVATDEM(COP_ALOS_DSM,HalfSecRefDSM,SlopeMap,RuffMap,0);
 
-                     {$IfDef RecordDEMIX} writeLineToDebugFile('Try ref DTM COP-ALOS'); {$EndIf}
-                     COP_ALOS_DTM := TwoDEMHighLowMap(HalfSecRefDTM, TestDEM[1],TestDEM[2],'DTM','COP-ALOS_compare_DTM');
+                     if DEMIX_HalfSecondCompareMaps then begin
+                        {$IfDef RecordDEMIX} writeLineToDebugFile('Half sec candidates done, Make difference map'); {$EndIf}
+                        COP_ALOS_Diff := MakeDifferenceMap(TestDEM[1],TestDEM[2],true,false,false,'COP-ALOS_difference');
+
+                        {$IfDef RecordDEMIX} writeLineToDebugFile('Try ref DSM COP-ALOS'); {$EndIf}
+                        COP_ALOS_DSM4 := TwoDEMHighLowMap(HalfSecRefDSM, TestDEM[1],TestDEM[2],'DSM',true,'COP-ALOS_compare_DSM-4');
+                        COP_ALOS_DSM9 := TwoDEMHighLowMap(HalfSecRefDSM, TestDEM[1],TestDEM[2],'DSM',false,'COP-ALOS_compare_DSM-9');
+
+                        {$IfDef RecordDEMIX} writeLineToDebugFile('Try ref DTM COP-ALOS'); {$EndIf}
+                        COP_ALOS_DTM4 := TwoDEMHighLowMap(HalfSecRefDTM, TestDEM[1],TestDEM[2],'DTM',true,'COP-ALOS_compare_DTM-4');
+                        COP_ALOS_DTM9 := TwoDEMHighLowMap(HalfSecRefDTM, TestDEM[1],TestDEM[2],'DTM',false,'COP-ALOS_compare_DTM-9');
+
+                        if DEMIXhistograms then begin
+                           HistogramsFromVATDEM(COP_ALOS_DSM4,HalfSecRefDSM,SlopeMap,RuffMap,AspectMap);
+                           HistogramsFromVATDEM(COP_ALOS_DTM4,HalfSecRefDTM,SlopeMap,RuffMap,AspectMap);
+                        end;
+                     end;
                   end;
 
                   {$IfDef RecordDEMIX} writeLineToDebugFile('Half sec dems done; Open DEMs=' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
@@ -446,7 +539,7 @@ begin
 
       {$IfDef ShowDEMIXWhatsOpen} writeStringListToDebugFile(GetWhatsOpen); {$EndIf}
 
-      if true then begin
+      if DEMIX_Movie then begin
          Movie := tStringList.Create;
          fName := NextFileNumber(MDtempDir,'map_4_movie_','.mov');
          {$IfDef RecordDEMIXMovies} WriteLineToDebugFile('Making movie, ' + fName); {$EndIf}
@@ -460,16 +553,44 @@ begin
 
          AddFrame(SlopeMap,'Ref slope');
          AddFrame(RuffMap,'Ref ruff');
-         AddFrame(COP_ALOS_DSM,'COP_ALOS_DSM');
-         AddFrame(COP_ALOS_DTM,'COP_ALOS_DTM');
+         AddFrame(COP_ALOS_DSM4,'COP_ALOS_DSM4');
+         AddFrame(COP_ALOS_DTM4,'COP_ALOS_DTM4');
+         AddFrame(COP_ALOS_DSM9,'COP_ALOS_DSM9');
+         AddFrame(COP_ALOS_DTM9,'COP_ALOS_DTM9');
 
          Movie.SaveToFile(fName);
          CreateNewMovie(fName);
          Movie.Free;
       end;
 
+      if DEMIX_SaveDEMs then begin
+         {$IfDef RecordDEMIX} writeLineToDebugFile('OpenDEMIXArea start saving DEMs'); {$EndIf}
+         SaveDEM(TestDEM[1],SaveDir + 'alos.dem');
+         SaveDEM(TestDEM[2],SaveDir + 'cop.dem');
+
+         SaveDEM(HalfSecRefDSM,SaveDir + 'ref_dsm.dem');
+         SaveDEM(HalfSecRefDTM,SaveDir + 'ref_dtm.dem');
+
+         if DEMIX_HalfSecondCompareMaps then begin
+            SaveDEM(COP_ALOS_Diff,SaveDir + 'cop-alos-diff.dem');
+            SaveDEM(COP_ALOS_DSM4,SaveDir + 'cop-alos-dsm4.dem');
+            SaveDEM(COP_ALOS_DTM4,SaveDir + 'cop-alos-dtm4.dem');
+            SaveDEM(COP_ALOS_DSM9,SaveDir + 'cop-alos-dsm9.dem');
+            SaveDEM(COP_ALOS_DTM9,SaveDir + 'cop-alos-dtm9.dem');
+         end;
+
+         if DEMIX_GeomorphMaps then begin
+            SaveDEM(SlopeMap,SaveDir + 'slope_ref_dtm.dem');
+            SaveDEM(RuffMap,SaveDir + 'roughness_ref_dtm.dem');
+            SaveDEM(AspectMap,SaveDir + 'aspect_ref_dtm.dem');
+         end;
+      end;
+finally
       HeavyDutyProcessing := false;
+      AutoOverwriteDBF := false;
       RestoreBackupDefaults;
+      {$IfDef RecordDEMIX} writeLineToDebugFile('OpenDEMIXArea out'); {$EndIf}
+end;
    end;
 end;
 
@@ -511,8 +632,8 @@ end;
 
 function LoadDEMIXarea(cfName : pathStr) : boolean;
 var
-   Rules : tMyData;
    fName : PathStr;
+   db : integer;
 begin
    GeodeticFName := '';
    IceSatFName := '';
@@ -538,33 +659,34 @@ begin
    COPRefDSM := 0;
 
    {$IfDef RecordDEMIX} writeLineToDebugFile('File Read rules ' + cfName); {$EndIf}
-   Rules := tMyData.Create(cfName);
-   Result := Rules.FieldExists('DATA') and Rules.FieldExists('FILENAME');
+   //Rules := tMyData.Create(cfName);
+   db := OpenDataBase('DEMIX area rules',cfName, false);
+   Result := GISdb[db].MyData.FieldExists('DATA') and GISdb[db].MyData.FieldExists('FILENAME');
    if Result then begin
-      while (not Rules.eof) do begin
-         fName := Rules.GetFieldByNameAsString('FILENAME');
+      while (not GISdb[db].MyData.eof) do begin
+         fName := GISdb[db].MyData.GetFieldByNameAsString('FILENAME');
          if (fName <> '') then begin
             if Not FileExists(fName) then fName[1] := cfName[1];   //fix for external hard drive which moves around
-            if UpperCase(Rules.GetFieldByNameAsString('DATA')) = 'GEODETIC' then GeodeticFName := fName;
-            if UpperCase(Rules.GetFieldByNameAsString('DATA')) = 'ICESAT2' then IceSatFName := fName;
-            if UpperCase(Rules.GetFieldByNameAsString('DATA')) = 'REF_DTM_PIXEL_IS_POINT' then RefDTMPointFName := fName;
-            if UpperCase(Rules.GetFieldByNameAsString('DATA')) = 'REF_DTM_PIXEL_IS_AREA' then RefDTMareaFName := fName;
-            if UpperCase(Rules.GetFieldByNameAsString('DATA')) = 'REF_DSM_PIXEL_IS_POINT' then RefDSMPointFName := fName;
-            if UpperCase(Rules.GetFieldByNameAsString('DATA')) = 'REF_DSM_PIXEL_IS_AREA' then RefDSMareaFName := fName;
-            if UpperCase(Rules.GetFieldByNameAsString('DATA')) = 'COP_REF_DTM' then COPRefDTMFName := fName;
-            if UpperCase(Rules.GetFieldByNameAsString('DATA')) = 'COP_REF_DSM' then COPRefDSMFName := fName;
-            if UpperCase(Rules.GetFieldByNameAsString('DATA')) = 'LOCAL_DATUM_ADD' then LocalDatumAddFName := fName;
-            if UpperCase(Rules.GetFieldByNameAsString('DATA')) = 'LOCAL_DATUM_SUB' then LocalDatumSubFName := fName;
-            if UpperCase(Rules.GetFieldByNameAsString('DATA')) = 'LANDCOVER' then LandCoverFName := fName;
+            if UpperCase(GISdb[db].MyData.GetFieldByNameAsString('DATA')) = 'GEODETIC' then GeodeticFName := fName;
+            if UpperCase(GISdb[db].MyData.GetFieldByNameAsString('DATA')) = 'ICESAT2' then IceSatFName := fName;
+            if UpperCase(GISdb[db].MyData.GetFieldByNameAsString('DATA')) = 'REF_DTM_PIXEL_IS_POINT' then RefDTMPointFName := fName;
+            if UpperCase(GISdb[db].MyData.GetFieldByNameAsString('DATA')) = 'REF_DTM_PIXEL_IS_AREA' then RefDTMareaFName := fName;
+            if UpperCase(GISdb[db].MyData.GetFieldByNameAsString('DATA')) = 'REF_DSM_PIXEL_IS_POINT' then RefDSMPointFName := fName;
+            if UpperCase(GISdb[db].MyData.GetFieldByNameAsString('DATA')) = 'REF_DSM_PIXEL_IS_AREA' then RefDSMareaFName := fName;
+            if UpperCase(GISdb[db].MyData.GetFieldByNameAsString('DATA')) = 'COP_REF_DTM' then COPRefDTMFName := fName;
+            if UpperCase(GISdb[db].MyData.GetFieldByNameAsString('DATA')) = 'COP_REF_DSM' then COPRefDSMFName := fName;
+            if UpperCase(GISdb[db].MyData.GetFieldByNameAsString('DATA')) = 'LOCAL_DATUM_ADD' then LocalDatumAddFName := fName;
+            if UpperCase(GISdb[db].MyData.GetFieldByNameAsString('DATA')) = 'LOCAL_DATUM_SUB' then LocalDatumSubFName := fName;
+            if UpperCase(GISdb[db].MyData.GetFieldByNameAsString('DATA')) = 'LANDCOVER' then LandCoverFName := fName;
          end;
-         Rules.Next;
+         GISdb[db].MyData.Next;
       end;
       {$IfDef RecordDEMIXFull} writeLineToDebugFile('ProcessDEMIXtestarea in, rules read ' + ExtractFilePath(fName)); {$EndIf}
    end
    else begin
       MessageToContinue('Invalid file: ' + cfName);
    end;
-   Rules.Destroy;
+   CloseAndNilNumberedDB(db);
 end;
 
 
