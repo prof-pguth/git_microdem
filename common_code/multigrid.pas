@@ -391,7 +391,7 @@ end;
 
 procedure CloseAllMultigrids;
 var
-   i : integer;
+   i,j : integer;
 begin
    {$IfDef RecordMultiGrids} WriteLineToDebugFile('CloseAllMultigrids in'); {$EndIf}
    for i := 1 to MaxMultiGrid do begin
@@ -404,8 +404,9 @@ begin
    end;
 
    for i := 1 to MaxMontlyDBArray do begin
-      CloseSingleMonthlyDBArray(i);
-      MonthlyDBArray[i] := nil;
+      j := i;
+      CloseSingleMonthlyDBArray(j);
+      MonthlyDBArray[j] := nil;
    end;
 
    TempMG := 0;

@@ -557,6 +557,7 @@ var
    i                : integer;
    newBMP : tMyBitmap;
 begin
+   if DEMMergeInProgress or OpeningNewGrid or HeavyDutyProcessing or LoadingFromMapLibrary or ClosingIsHappening or (wmDEM = Nil) or WMDEM.ProgramClosing then exit;
    for i := 0 to 3 do WmDEM.StatusBar1.Panels[i].Text := '';
 
    if DragEdit then begin

@@ -807,7 +807,7 @@ begin
       fName := NextFileNumber(MDTempDir, 'solar_angles_','.csv');
       Outf.SaveToFile(fName);
       OutF.Destroy;
-      OpenDataBase('',fName);
+      OpenMultipleDataBases('',fName);
 
        {restore real values}
        sunpos(long,lat,Timepicker.time*24,tzHours, Julianday(datepicker.date), pos);

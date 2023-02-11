@@ -36,7 +36,7 @@ Could be added to the open source FMX version of MICRODEM
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
-      //{$Define Record3d}
+      {$Define Record3d}
       //{$Define ShortRecord}
       //{$Define RecordMoves}
       //{$Define Record3dDetailed}
@@ -709,14 +709,14 @@ var
    AvgElev : float32;
 begin
    if (MDdef.MercShiftLongLimit < MapDraw.MapCorners.BoundBoxGeo.xmax - MapDraw.MapCorners.BoundBoxGeo.xmin) then begin
-      {$If Defined(Record3D) or Defined(ShortRecord)} writeLineToDebugFile('tView3DForm.ScaleViewToMapExtent option 1'); {$EndIf}
+      {$If Defined(Record3D) or Defined(ShortRecord)} writeLineToDebugFile('tView3DForm.ScaleViewToMapExtent in, option 1'); {$EndIf}
       rMinX := MapDraw.MapCorners.BoundBoxProj.xmin;
       rMaxX := MapDraw.MapCorners.BoundBoxProj.xmax;
       rMinY := MapDraw.MapCorners.BoundBoxProj.ymin;
       rMaxY := MapDraw.MapCorners.BoundBoxProj.ymax;
    end
    else begin
-      {$If Defined(Record3D) or Defined(ShortRecord)} writeLineToDebugFile('tView3DForm.ScaleViewToMapExtent option 2'); {$EndIf}
+      {$If Defined(Record3D) or Defined(ShortRecord)} writeLineToDebugFile('tView3DForm.ScaleViewToMapExtent in, option 2'); {$EndIf}
       rMinX := MapDraw.MapCorners.BoundBoxUTM.xmin;
       rMaxX := MapDraw.MapCorners.BoundBoxUTM.xmax;
       rMinY := MapDraw.MapCorners.BoundBoxUTM.ymin;
@@ -730,18 +730,7 @@ begin
       rMinZ := 0;
       rMaxZ := 15;
    end;
-
-
-(*
-   if MapDraw.DEMMap then begin
-      rMinZ := MapDraw.MinMapElev;
-      rMaxZ := MapDraw.MaxMapElev;
-   end
-   else if (MapDraw.DEMonMap <> 0) then begin
-      rMinZ := DEMGlb[MapDraw.DEMonMap].DEMheader.MinElev;
-      rMaxZ := DEMGlb[MapDraw.DEMonMap].DEMheader.MaxElev;
-   end;
-   *)
+   {$If Defined(Record3D) or Defined(ShortRecord)} writeLineToDebugFile('tView3DForm.ScaleViewToMapExtent out'); {$EndIf}
 end;
 
 

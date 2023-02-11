@@ -3,8 +3,8 @@ object ImageDisplayForm: TImageDisplayForm
   Top = 250
   BorderIcons = [biSystemMenu, biMinimize]
   Caption = 'ImageDisplayForm'
-  ClientHeight = 435
-  ClientWidth = 879
+  ClientHeight = 414
+  ClientWidth = 875
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -22,10 +22,12 @@ object ImageDisplayForm: TImageDisplayForm
   object ScrollBox1: TScrollBox
     Left = 0
     Top = 26
-    Width = 879
-    Height = 368
+    Width = 875
+    Height = 347
     Align = alClient
     TabOrder = 0
+    ExplicitWidth = 879
+    ExplicitHeight = 368
     object Image1: TImage
       Left = -2
       Top = 3
@@ -40,17 +42,19 @@ object ImageDisplayForm: TImageDisplayForm
   end
   object Panel1: TPanel
     Left = 0
-    Top = 394
-    Width = 879
+    Top = 373
+    Width = 875
     Height = 0
     Align = alBottom
     Caption = 'Panel1'
     TabOrder = 1
+    ExplicitTop = 394
+    ExplicitWidth = 879
   end
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 879
+    Width = 875
     Height = 26
     ButtonHeight = 24
     ParentShowHint = False
@@ -347,8 +351,8 @@ object ImageDisplayForm: TImageDisplayForm
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 394
-    Width = 879
+    Top = 373
+    Width = 875
     Height = 0
     Panels = <
       item
@@ -357,14 +361,18 @@ object ImageDisplayForm: TImageDisplayForm
       item
         Width = 50
       end>
+    ExplicitTop = 394
+    ExplicitWidth = 879
   end
   object Panel2: TPanel
     Left = 0
-    Top = 394
-    Width = 879
+    Top = 373
+    Width = 875
     Height = 41
     Align = alBottom
     TabOrder = 4
+    ExplicitTop = 394
+    ExplicitWidth = 879
     object TrackBar1: TTrackBar
       Left = 240
       Top = 6

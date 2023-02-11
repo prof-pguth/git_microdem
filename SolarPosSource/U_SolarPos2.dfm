@@ -206,6 +206,7 @@ object SolorPosForm1: TSolorPosForm1
       Top = 188
       Width = 89
       Height = 21
+      Date = 44965.000000000000000000
       Time = 0.500000000000000000
       Kind = dtkTime
       TabOrder = 5
@@ -331,7 +332,6 @@ object SolorPosForm1: TSolorPosForm1
     ParentFont = False
     TabOrder = 5
     OnClick = StaticText1Click
-    ExplicitTop = 544
-    ExplicitWidth = 801
+    ExplicitWidth = 293
   end
 end

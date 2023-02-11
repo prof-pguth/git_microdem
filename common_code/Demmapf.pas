@@ -27,6 +27,7 @@
 
    {$IFDEF DEBUG}
       //{$Define RecordFan}
+     {$Define Record3d}
       //{$Define FanDrawProblems}
       //{$Define RawProjectInverse}  //must also be set in BaseMap
       //{$Define RecordDEMIX}
@@ -1427,6 +1428,9 @@ type
     Allvalidpixels1: TMenuItem;
     Openbandforrasteranalysis1: TMenuItem;
     Changemap2: TMenuItem;
+    PickseriesandloadDEMsfromlibrary1: TMenuItem;
+    N52: TMenuItem;
+    ComapreUTMvsgeographic1: TMenuItem;
     //procedure HiresintervisibilityDEM1Click(Sender: TObject);
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
@@ -2469,6 +2473,8 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Allvalidpixels1Click(Sender: TObject);
     procedure Openbandforrasteranalysis1Click(Sender: TObject);
     procedure Changemap2Click(Sender: TObject);
+    procedure PickseriesandloadDEMsfromlibrary1Click(Sender: TObject);
+    procedure ComapreUTMvsgeographic1Click(Sender: TObject);
     //procedure QuarterDEM1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
@@ -5014,6 +5020,16 @@ begin
 end;
 
 
+procedure TMapForm.ComapreUTMvsgeographic1Click(Sender: TObject);
+begin
+   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} writeLineToDebugFile('TMapForm.ComapreUTMvsgeographic1Clic in, ' + DEMGlb[MapDraw.DEMonMap].DEMFileName); {$EndIf}
+   if (DEMGlb[MapDraw.DEMonMap].DEMFileName = '') then begin
+      DEMGlb[MapDraw.DEMonMap].WriteNewFormatDEM(DEMGlb[MapDraw.DEMonMap].DEMFileName,' save DEM before resampling');
+   end;
+   ResampleForUTM_GeoComparison(MapDraw.DEMonMap);
+   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} writeLineToDebugFile('TMapForm.ComapreUTMvsgeographic1Click out'); {$EndIf}
+end;
+
 procedure TMapForm.CombinedMGRSpolygons1Click(Sender: TObject);
 begin
    UTM100Kzones1Click(Sender);
@@ -7086,9 +7102,6 @@ begin
       DEMglb[NewDEM].SetUpMap(NewDEM,true,mtDEMVATTable);
 
       ReloadDEMClick(Sender);
-
-      //RespondToChangedDEM;
-   //end;
 end;
 
 procedure TMapForm.Geostationarysatellitevisibility1Click(Sender: TObject);
@@ -15569,6 +15582,12 @@ begin
    ThinDEM1Click(Sender);
 end;
 
+procedure TMapForm.PickseriesandloadDEMsfromlibrary1Click(Sender: TObject);
+begin
+   AdjustIntegratedDataBaseSeries;
+   LoadDEMsCoveringBox(MapDraw.MapCorners.BoundBoxGeo,true);
+end;
+
 procedure TMapForm.Pixelextentandhighresaverage1Click(Sender: TObject);
 var
    xg, yg : double;
@@ -18612,8 +18631,8 @@ begin
       end;
    end;
    FileNames.Free;
-   fName := ExtractFilePath(fname) + 'merge_' + ExtractFileName(fName);
-   StringListToLoadedDatabase(s11,fName);
+   fName := ExtractFilePath(fname) + 'merge_' + ExtractFileNameNoExt(fName) + '.dbf';
+   if GetFileNameDefaultExt('Merged CSV files','*.dbf',FName) then StringListToLoadedDatabase(s11,fName);
    LastDataBase := fName;
    wmDEM.SetPanelText(0,'');
    EndProgress;
@@ -19176,17 +19195,22 @@ procedure TMapForm.OGL_speedbuttonClick(Sender: TObject);
 begin
    {$IfDef ExFMX3D}
    {$Else}
+      {$IfDef Record3d} WriteLineToDebugFile('TMapForm.OGL_speedbuttonClick in'); {$EndIf}
       MapDraw.MapCorners.BoundBoxUTM := MapDraw.GetBoundBoxUTM;
+      {$IfDef Record3d} WriteLineToDebugFile('TMapForm.OGL_speedbuttonClick got bound box'); {$EndIf}
       if MDDef.OpenGLCleanOverlays then begin
          SaveBackupDefaults;
          NakedMapOptions;
          DoFastMapRedraw;
       end;
+      {$IfDef Record3d} WriteLineToDebugFile('TMapForm.OGL_speedbuttonClick call Map3D'); {$EndIf}
       Map3d := MapTo3DView(Self.MapDraw);
+      {$IfDef Record3d} WriteLineToDebugFile('TMapForm.OGL_speedbuttonClick back Map3D'); {$EndIf}
       if MDDef.OpenGLCleanOverlays then begin
          RestoreBackupDefaults;
          DoFastMapRedraw;
       end;
+      {$IfDef Record3d} WriteLineToDebugFile('TMapForm.OGL_speedbuttonClick out'); {$EndIf}
    {$EndIf}
 end;
 
@@ -20261,25 +20285,32 @@ end;
 procedure TMapForm.Geoid1Click(Sender: TObject);
 var
    Results : tStringList;
+   aLine : shortstring;
+   Lat,Long : float32;
 
          procedure DoOne(DEM : integer);
          var
             z : float32;
          begin
             if ValidDEM(DEM) then begin
-               DEMGlb[DEM].GetElevFromLatLongDegree(RightClickLat,RightClickLong,z);
-               Results.Add(RealToString(RightClickLat,-12,-6) + ',' +  RealToString(RightClickLong,-12,-6) + ',' + RealToString(z,-9,3));
-            end;
+               DEMGlb[DEM].GetElevFromLatLongDegree(Lat,Long,z);
+               aLine := aline + ',' + RealToString(z,-9,3);
+            end
+            else aLine := ',-999';
          end;
 
 begin
    //ExecuteFile('https://geographiclib.sourceforge.io/cgi-bin/GeoidEval?input=' + RealToString(RightClickLat,-12,-4) + '+' + RealToString(RightClickLong,-12,-4)  + '&option=Submit', '', '');
+   Lat := RightClickLat;
+   Long := RightClickLong;
    OpenEGMgrids;
    Results := tStringList.Create;
    Results.Add('LAT,LONG,EGM96_GD,EGM2008_GD,DIFF_96_08');
+   aLine := RealToString(Lat,-12,-6) + ',' +  RealToString(Long,-12,-6);
    DoOne(EGM2008_grid);
    DoOne(EGM96_grid);
    DoOne(EGMdiff_grid);
+   Results.Add(aline);
    StringListToLoadedDatabase(Results,Petmar.NextFileNumber(MDTempDir,'egm_point_','.dbf'));
 end;
 
@@ -22481,6 +22512,7 @@ begin
    DEMGlb[MapDraw.DEMonMap].CloseElevPercentiles;
    MapDraw.ScaleMapElevationsToDEM;
    DEMGlb[MapDraw.DEMonMap].DEMStatus := dsUnsavedEdits;
+   CheckProperTix;
    DoBaseMapRedraw;
 end;
 
@@ -23642,7 +23674,6 @@ begin
    with SatImage[MapDraw.SATonMap],MapDraw,SatView do begin
        N11view1Click(Sender);
        WindowContrast := NoEnhancement;
-       //SatColorImage := false;
        for I := 1 to NumBands do begin
           BandInWindow := i;
           DoBaseMapRedraw;

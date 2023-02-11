@@ -182,7 +182,7 @@ var
       if (Diffs.Count > 0) then begin
          {$If Defined(RecordDEMIX)} WriteLineToDebugFile('MergeAndTranspose ' + fName + ' with regions=' + IntToStr(Diffs.Count)); {$EndIf}
          MergeCSVFiles(Diffs,fName);
-         db := OpenDataBase('',fName);
+         db := OpenMultipleDataBases('',fName);
          GISdb[db].AddSequentialIndex('REC_ID',false);
          fName := TransposeDEMIXcriteria(DB);
          TransposeNames.Add(fName);
@@ -227,7 +227,7 @@ begin
       fName := ExtractFilePath(fName) + 'all_merge_difference_ref_dem.csv';
 
       MergeCSVFiles(TransposeNames,fName);
-      db := OpenDataBase('',fName);
+      db := OpenMultipleDataBases('',fName);
 
       RankDEMS(DB);
       CloseAndNilNumberedDB(db);

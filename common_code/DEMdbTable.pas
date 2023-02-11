@@ -953,6 +953,7 @@ type
     Stackedpercentages1: TMenuItem;
     AlphabetizefieldwithCSVsubfields1: TMenuItem;
     iesbyopinions1: TMenuItem;
+    Wins1: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
     procedure Shiftpointrecords1Click(Sender: TObject);
     procedure Creategrid1Click(Sender: TObject);
@@ -1678,6 +1679,7 @@ type
     procedure Deleterecord1Click(Sender: TObject);
     procedure AlphabetizefieldwithCSVsubfields1Click(Sender: TObject);
     procedure iesbyopinions1Click(Sender: TObject);
+    procedure Wins1Click(Sender: TObject);
   private
     procedure PlotSingleFile(fName : PathStr; xoff,yoff : float64);
     procedure SetUpLinkGraph;
@@ -1895,6 +1897,7 @@ uses
     DEMIX_filter,
 
    map_overlays,
+   demix_control,
    db_display_options,
    gdal_tools,
    Least_cost_path,
@@ -2013,7 +2016,7 @@ begin
 
    StringGridToCSVFile(fName,GridForm.StringGrid1,Nil);
    if GISdb[DBonTable].theMapOwner <> nil then GISdb[DBonTable].theMapOwner.OpenDBonMap('',fName)
-   else OpenDataBase('',fName);
+   else OpenMultipleDataBases('',fName);
 end;
 
 type tPointInPolygon = (pipLabels,pipDelete,pipSetMask);
@@ -2992,6 +2995,11 @@ begin
    N2Dgraphallopendatabases1Click(Sender);
 end;
 
+procedure Tdbtablef.Wins1Click(Sender: TObject);
+begin
+   WinsAndTies(DBonTable);
+end;
+
 procedure Tdbtablef.woorthreefieldRGB1Click(Sender: TObject);
 begin
    {$IfDef ExAdvancedGIS}
@@ -3817,6 +3825,7 @@ begin
         Cluster2.Visible := MDDef.AdvancedDBops;
         LinkDataBase1.Visible := MDDef.AdvancedDBops;
         LVIS1.Visible := MyData.FieldExists('RH99');
+        ICESat21.Visible := GISdb[DBonTable].IsIcesat;
         PointcloudstoanalyzeglobalDEMs1.Visible := (MyData.FieldExists('BEAM') and MyData.FieldExists('TRACK_ID')) or (MyData.FieldExists('CLOUD_0_5') and MyData.FieldExists('CLOUD_995'));
 
         Graphavereagescoresbyterraincategories1.Visible := MyData.FieldExists('FILTER');
@@ -5010,7 +5019,7 @@ begin
    fName := Petmar.NextFileNumber(MDTempDir,'field_range_','.csv');
    Results.SaveToFile(fname);
    Results.Free;
-   OpenDataBase(fname);
+   OpenMultipleDataBases(fname);
 end;
 
 
@@ -9100,8 +9109,8 @@ procedure Tdbtablef.ShowStatus;
 var
    tstr : shortstring;
 begin
-   {$IfDef RecordShowStatus} WriteLineToDebugFile('ShowStatus in'); {$EndIf}
-   if (Closing <> true) and ValidDB(DBonTable) and (GISdb[DBonTable].MyData <> Nil) then begin
+   {$IfDef RecordShowStatus} WriteLineToDebugFile('ShowStatus in, db=' + IntToStr(dbOnTable)); {$EndIf}
+   if (Closing <> true) and ValidDB(DBonTable) then begin
       if GISdb[DBonTable].dbIsUnsaved then TStr := 'Unsaved--'
       else TStr := '';
       Caption := tstr + GISdb[DBonTable].dbName + ' data base';
@@ -10933,13 +10942,13 @@ var
    entry : shortstring;
    i,nTies : integer;
 
-   procedure DoOne(DEM : shortString);
-   var
-      n : integer;
-   begin
-      if ANSIcontainsStr(entry,DEM) then n := succ(nTies) else n := 0;
-      GISdb[DBonTable].MyData.SetFieldByNameAsInteger(DEM + '_TIE',n);
-   end;
+         procedure DoOne(DEM : shortString);
+         var
+            n : integer;
+         begin
+            if ANSIcontainsStr(entry,DEM) then n := succ(nTies) else n := 0;
+            GISdb[DBonTable].MyData.SetFieldByNameAsInteger(DEM + '_TIE',n);
+         end;
 
 
 begin
@@ -10950,6 +10959,7 @@ begin
     GISdb[DBonTable].AddFieldToDataBase(ftInteger,'NASA_TIE',2);
     GISdb[DBonTable].AddFieldToDataBase(ftInteger,'FABDEM_TIE',2);
     GISdb[DBonTable].AddFieldToDataBase(ftInteger,'TIES',2);
+    GISdb[DBonTable].AddFieldToDataBase(ftString,'CRIT_CAT',4);
     GISdb[DBonTable].EmpSource.Enabled := false;
     GISdb[DBonTable].MyData.First;
     while not GISdb[DBonTable].MyData.eof do begin
@@ -10959,6 +10969,7 @@ begin
        nTies := 0;
        for i := 1 to Length(Entry) do if (Entry[i] = ',') then inc(NTies);
        GISdb[DBonTable].MyData.SetFieldByNameAsInteger('TIES',succ(nTies));
+       GISdb[DBonTable].MyData.SetFieldByNameAsString('CRIT_CAT',Copy(GISdb[DBonTable].MyData.GetFieldByNameAsString('CRITERION'),1,4));
        DoOne('ASTER');
        DoOne('ALOS');
        DoOne('NASA');
@@ -11032,7 +11043,6 @@ begin
             until (Lat2 > 1);
          end;
          VincentyCalculateDistanceBearing(Lat,Long,Lat2,Long2,Dist,Heading);
-
          GISdb[SideIndexDB].MyData.Insert;
          GISdb[SideIndexDB].MyData.SetFieldByNameAsString('LINE_NAME',ExtractFileName(fName2));
          GISdb[SideIndexDB].MyData.SetFieldByNameAsString('FILENAME',fName2);
@@ -14219,7 +14229,7 @@ begin
       sfc := tShapeFileCreation.Create(WGS84DatumConstants,fName,true,5);
       sfc.AddBoundBoxToShapeStream(bb);
       sfc.CloseShapeFiles;
-      db := OpenDataBase('',fName,false);
+      db := OpenMultipleDataBases('',fName,false);
       SaveBackupDefaults;
       MDDef.ZipKMLFiles := false;
 

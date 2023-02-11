@@ -288,6 +288,9 @@ function LineOrAreaShapeFile(ShapeType : int32) : boolean;
 
 procedure LineKMLtoStringList(fName : PathStr);
 function IsItAShapefile(fName : PathStr) : boolean;
+procedure PrepOSMFiles(OSMPath : PathStr = '');
+
+function DoAShapeFile(fName : PathStr; Trim : boolean = false) : integer;
 
 
 var
@@ -323,7 +326,47 @@ uses
    DEMDef_routines,
    PetImage,
    Make_Tables,
+   Nevadia_Main,
    DataBaseCreate;
+
+
+function DoAShapeFile(fName : PathStr; Trim : boolean = false) : integer;
+begin
+   if OpenNumberedGISDataBase(Result,fName,false) then begin
+      GISdb[Result].AddSequentialIndex(RecNoFName,false);
+      GISdb[Result].EmpSource.Enabled := false;
+      if (GISDB[Result].ShapeFileType in [3,5,13,15]) then begin
+         if not GISdb[Result].LatLongCornersPresent then GISdb[Result].aShapefile.AddFields(afBoundingBox,GISdb[Result].MyData);
+      end
+      else begin
+         if not GISdb[Result].LatLongFieldsPresent then GISdb[Result].aShapefile.AddFields(afLatLong,GISdb[Result].MyData);
+      end;
+      if Trim then GISdb[Result].TrimAllStringFields;
+      CloseAndNilNumberedDB(Result);
+   end;
+end;
+
+procedure PrepOSMFiles(OSMPath : PathStr = '');
+var
+   TheFiles : tStringList;
+   fName : PathStr;
+   i : integer;
+begin
+   if (OSMPath = '') then GetDOSPath('OSM/Natural Earth/GADM shapefiles',OSMPath);
+   TheFiles := Nil;
+   FindMatchingFiles(OSMPath,'*.shp',TheFiles,6);
+   if TheFiles.Count > 0 then begin
+      for I := 1 to TheFiles.Count do begin
+         WMDEM.SetPanelText(0,'Shapefile ' + IntToStr(i) + '/' + IntToStr(TheFiles.Count));
+         fName := TheFiles.Strings[pred(i)];
+         DoAShapeFile(fName, true);
+      end;
+      WMDEM.SetPanelText(0,'');
+   end;
+   TheFiles.Free;
+end;
+
+
 
 type
   tPointsArray = array[0..sfMaxPoints] of DEMDefs.sfPoints;

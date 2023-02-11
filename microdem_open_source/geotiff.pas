@@ -1471,9 +1471,13 @@ var
                TStr := ASCIIStr;
                if StrUtils.AnsiContainsText(TStr,'mdz=') then begin
                   UTMString := TStr;
-                  TStr := BeforeSpecifiedCharacterANSI(UTMString,'=',true,true);
-                  TStr := BeforeSpecifiedCharacterANSI(UTMString,'=',true,true);
-                  TiffHeader.MDZtype := StrToInt(trim(BeforeSpecifiedCharacterANSI(UTMString,'/',true,true)));
+                  while Copy(TStr,1,4) <> 'mdz=' do Delete(TStr,1,1);
+
+                  //if StrUtils.AnsiContainsText(TStr,'dd=') then TStr := BeforeSpecifiedCharacterANSI(UTMString,'=',true,true);
+                  //TStr := BeforeSpecifiedCharacterANSI(UTMString,'=',true,true);
+                  //TStr := trim(BeforeSpecifiedCharacterANSI(UTMString,'/',true,true));
+                  TStr := TStr[5];
+                  TiffHeader.MDZtype := StrToInt(TStr);
                   exit;
                end;
 

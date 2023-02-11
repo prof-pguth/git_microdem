@@ -723,7 +723,7 @@ const
    euNBR = 58;
    euDifference = 59;
    euElevDiff = 60;
-   HighElevUnits = 60;
+   HighElevUnits = 60;  //same as last real one;  used only for loops through all the elevation units;
 (*
 type
    tElevUnit = (euMeters,Feet,TenthMgal,Milligal,TenthGamma,

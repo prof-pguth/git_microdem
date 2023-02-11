@@ -70,6 +70,47 @@ begin
 end;
 
 
+procedure ResampleForUTM_GeoComparison(DEM : integer; OutPath : PathStr = '');
+var
+   NewDEM1, NewDEM2, NewDEM3 : integer;
+   fName : PathStr;
+begin
+   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile(''); WriteLineToDebugFile('ResampleForDEMIX DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
+   SaveBackupDefaults;
+   MDDef.DefDEMMap := mtDEMBlank;
+   MDDef.LidarGridProjection := ArcSecDEM;
+   MDDef.LasDEMPixelIs := 2; //point
+
+   if (OutPath = '') then OutPath := ExtractFilePath(DEMGlb[DEM].DEMFileName);
+
+   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX 1 sec area'); {$EndIf}
+   MDdef.DefLidarGeoGridSizeX := 1;
+   MDdef.DefLidarGeoGridSizeY := 1;
+   fName := OutPath +  DEMGlb[DEM].AreaName + '_1sec.tif';
+   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX, ' + fName); {$EndIf}
+   NewDEM1 := DEMGlb[DEM].ResampleByAveraging(true,false,fName);
+
+   MDDef.LidarGridProjection := UTMbasedDEM;
+   MDdef.DefLidarXGridSize := 30;
+   MDdef.DefLidarYGridSize := 30;
+   fName := OutPath +  DEMGlb[DEM].AreaName + '_30m.tif';
+   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX, ' + fName); {$EndIf}
+   NewDEM2 := DEMGlb[DEM].ResampleByAveraging(true,false,fName);
+
+   MDDef.LidarGridProjection := UTMbasedDEM;
+   MDdef.DefLidarXGridSize := DEMGlb[NewDEM1].AverageSpace;
+   MDdef.DefLidarYGridSize := MDdef.DefLidarXGridSize;
+   fName := OutPath +  DEMGlb[DEM].AreaName + '_' + IntToStr(round(MDdef.DefLidarXGridSize)) + '_m.tif';
+   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX, ' + fName); {$EndIf}
+   NewDEM3 := DEMGlb[DEM].ResampleByAveraging(true,false,fName);
+
+
+   RestoreBackupDefaults;
+   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('Out ResampleForDEMIX DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
+end;
+
+
+
 
 procedure ResampleForDEMIXOneSecDEMs(DEM : integer; OutPath : PathStr = '');
 var

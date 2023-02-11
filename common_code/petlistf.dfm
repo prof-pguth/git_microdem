@@ -71,13 +71,11 @@ object PetList: TPetList
     Height = 265
     Align = alClient
     TabOrder = 1
-    ExplicitWidth = 511
-    ExplicitHeight = 266
     object ListBox1: TListBox
       Left = 1
       Top = 42
-      Width = 509
-      Height = 223
+      Width = 505
+      Height = 222
       Align = alClient
       ItemHeight = 13
       TabOrder = 0

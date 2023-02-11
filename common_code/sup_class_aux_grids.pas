@@ -859,7 +859,7 @@ var
    fName : PathStr;
 begin
    NeedRecalc := true;
-   db := OpenDataBase('List of grids','',false);
+   db := OpenMultipleDataBases('List of grids','',false);
    if (db <> 0) then begin
       CloseMaskingDEMs;
       Caption := GISdb[db].dbName;

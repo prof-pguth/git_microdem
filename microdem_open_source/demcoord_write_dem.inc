@@ -114,17 +114,17 @@ begin
     {$EndIf}
 
    {$IfDef VCL}
-   if (FileName = '') or (not FileExtEquals(FileName,'.DEM')) then begin
-      if (FileName = '') or (not PathIsValid(FileName)) then begin
-         FileName := AreaName;
-         StripInvalidPathNameChars(Filename);
-         FileName := DEMDefs.WriteDEMDir + FileName;
-      end;
-      if (WhatFor <> '') then WhatFor := ' for ' + WhatFor;
+      if (FileName = '') or (not FileExtEquals(FileName,'.DEM')) then begin
+         if (FileName = '') or (not PathIsValid(FileName)) then begin
+            FileName := AreaName;
+            StripInvalidPathNameChars(Filename);
+            FileName := DEMDefs.WriteDEMDir + FileName;
+         end;
+         if (WhatFor <> '') then WhatFor := ' for ' + WhatFor;
 
-      if not GetFileNameDefaultExt('New DEM' + WhatFor,'DEM|*.dem',FileName) then exit;
-      DEMDefs.WriteDEMDir := ExtractFilePath(FileName);
-   end;
+         if not GetFileNameDefaultExt('New DEM' + WhatFor,'DEM|*.dem',FileName) then exit;
+         DEMDefs.WriteDEMDir := ExtractFilePath(FileName);
+      end;
    {$EndIf}
 
    try
@@ -147,7 +147,7 @@ begin
       NewHeadRecs.MaxElev := MaxZ;
       NewHeadRecs.StoredMinElev := MinZ / ElevationMultiple;
       NewHeadRecs.StoredMaxElev := MaxZ / ElevationMultiple;
-
+      CleanUpFileName(FileName);
        assignFile(fFile,FileName);
        rewrite(fFile,1);
        FillChar(HeaderBytes,2049,0);

@@ -25,9 +25,11 @@
       //{$Define RecordFIT}
       //{$Define RecordKML}
       //{$Define RecordTiger}
+      {$Define LogModuleCreate}
+      {$Define RecordIcesat}
 
       //{$Define RecordFieldStatistics}
-      //{$Define RecordOpenDataBase}
+      {$Define RecordOpenDataBase}
 
       //{$Define FieldFromDEM}
       //{$Define RecordBoundBox}
@@ -268,6 +270,7 @@ type
      DBOldFilter : string;
      DBWasFiltered : boolean;
      PointCGMName : PathStr;
+     procedure InitializeDBValues;
 
      {$IfDef VCL}
         function FocalMechLegend: tMyBitmap;
@@ -276,7 +279,6 @@ type
      {$IfDef RecordDataSaveStatus}
         procedure WriteRecordDataSaveStatus(WhereAreWe : ShortString);
      {$EndIf}
-     procedure InitializeDBValues;
   public
     { Public declarations }
      MyData,LinkTable,NeighborTable,RangeTable,LinkRangeTable,LayerTable : TMyData;
@@ -403,6 +405,8 @@ type
         KoppenDisplay : tKoppenDisplay;
      {$EndIf}
 
+     //constructor Create;
+     //constructor Create(GISNum : integer; WhatDataBase : shortstring; FileWanted : PathStr = '');
      function InitializeTheTable(WhatDataBase : shortstring; FileWanted : PathStr = '') : boolean;
      function CloseDataBase : boolean;
 
@@ -411,6 +415,7 @@ type
      procedure SetUpRangeTable(BaseName : PathStr; var Table : tMyData; ForceNew : boolean = false);
      function DBhasMapOrGraph : boolean;
      function CanPlot : boolean;
+     function IsICESat : boolean;
 
      procedure RespondToChangedDB;
      procedure ToggleLayer(LayerOn : boolean);
@@ -486,11 +491,9 @@ type
      function ComputeColorFromRecord(var Color : tColor) : boolean;
      procedure SetColorsFromDB(TheIndex : tMyData);
 
-
      function ImageForTable : boolean;
 
       procedure PickNumericFields(GraphType :  tdbGraphType; NFields : integer; l1 : shortstring; l2 : shortstring; l3 : shortstring; StringColor : boolean = false); overload;
-
 
      procedure FindClosestRecord(Lat, Long: float64; var ClosestRecNo: integer; var MinD : float64);
 
@@ -501,21 +504,6 @@ type
      procedure ExtractPointsFromLineAndAddXYZ;
      function GetFullImageName(var fName : PathStr) : boolean;
      function GetRotatedImage(var bmp : tMyBitmap; var fName : PathStr) : boolean;
-
-
-
-     {$IfDef VCL}
-        procedure AddMultiFieldStats(WhatFor : shortstring; What : tMultiFieldStats; TheFields : tStringList = Nil; NewFName : shortstring = '');
-        procedure AddIcon(Fill : boolean = true);
-        procedure AddGeometry(What : tAddGeometry);
-        procedure AddBoundingBox;
-        procedure SavePointShapeFile(DoSHP : boolean = true; fName : PathStr = '');
-        procedure GetFieldValuesInArrayLinkPossible(FieldDesired : ShortString; var zs : bfarray32; var Npts,Missing : int64; var Min,Max : float64);
-        function ExtractDBtoCSV(ThinFactor : integer; SepChar : ANSIchar) : tStringList;
-        procedure ExtractXYZtoCSV(fName : PathStr; SepChar : ANSIchar);
-        procedure DefineDBColorTable;
-        function GetFieldPercentile(WantedField : ShortString; PC : float64) : float64;
-     {$EndIf}
 
   //edit fields
      procedure RemoveLeadingZerosInField(Table : tMyData; WantedFieldName : ShortString);
@@ -606,6 +594,16 @@ type
      {$EndIf}
 
      {$IfDef VCL}
+        procedure AddMultiFieldStats(WhatFor : shortstring; What : tMultiFieldStats; TheFields : tStringList = Nil; NewFName : shortstring = '');
+        procedure AddIcon(Fill : boolean = true);
+        procedure AddGeometry(What : tAddGeometry);
+        procedure AddBoundingBox;
+        procedure SavePointShapeFile(DoSHP : boolean = true; fName : PathStr = '');
+        procedure GetFieldValuesInArrayLinkPossible(FieldDesired : ShortString; var zs : bfarray32; var Npts,Missing : int64; var Min,Max : float64);
+        function ExtractDBtoCSV(ThinFactor : integer; SepChar : ANSIchar) : tStringList;
+        procedure ExtractXYZtoCSV(fName : PathStr; SepChar : ANSIchar);
+        procedure DefineDBColorTable;
+        function GetFieldPercentile(WantedField : ShortString; PC : float64) : float64;
          function PickField(Mess: ShortString; TypesAllowed : tSetFieldType; AllFields : boolean = false) : ShortString;
          function GetMultipleNumericFields(WhatFor : shortstring) : tStringList;
          procedure BitmapForDatabase(var sBitmap : tMyBitmap; Height : integer);
@@ -636,7 +634,6 @@ type
          function RGBColorFromThreeNumericFields : tColor;
          procedure CountFieldsWithSubstring(FieldName : shortString);
          procedure CloseDBtableF(Reopen : boolean = false);
-
      {$EndIf}
 
      {$IfDef NoDBGrafs}
@@ -709,6 +706,7 @@ type
 
 procedure InitializeDEMdbs;
 
+
 {$IfDef NoDBMaps}
 {$Else}
       procedure LoadShapeFileGroup(MapOwner : tMapForm; fName : PathStr = '');
@@ -727,7 +725,7 @@ function OpenNumberedGISDataBase(var GISNum : integer; fName : PathStr; ShowTabl
 
 {$IfDef VCL}
    function OpenNumberedGISDataBase(var GISNum : integer; fName : PathStr; ShowTable : boolean = false; LocalMapOnly : boolean = false; MapOwner : tMapForm = nil) : boolean;
-   function OpenDataBase(WhatFor : ANSIstring; fName : Pathstr = ''; ShowTable : boolean = true) : integer;
+   function OpenMultipleDataBases(WhatFor : ANSIstring; fName : Pathstr = ''; ShowTable : boolean = true) : integer;
    function TotalNumOpenDatabase : integer;
    function CopyDatabaseAndOpen(GIS : TGISdataBaseModule; OpenLink : boolean = true) : integer;
    procedure OpenDBForModalEdit(fName : PathStr);
@@ -747,26 +745,15 @@ function ValidDB(theDB : integer) : boolean;
 function ValidDBfName(fName : PathStr) : boolean;
 
 procedure AdjustGazFeatureName(var FeatureName : ShortString);
-procedure PrepOSMFiles(OSMPath : PathStr = '');
-function DoAShapeFile(fName : PathStr; Trim : boolean = false) : integer;
 
 //DEMIX wine contest procedures
       procedure RankDEMS(DBonTable : integer);
       procedure SumsOfRankDEMS(DBonTable : integer);
-      procedure BestDEMSbyCategory(DBonTable : integer);
       procedure TransposeDEMIXwinecontestGraph(DBonTable : integer);
-      function DEMIXwineContestScoresGraph(DBonTable : integer; XScalelabel : shortstring; MinHoriz : float32 = 0.5; MaxHoriz : float32 = 5.5) : tThisBaseGraph;
-      //procedure DEMIXwineContestMeanMedianGraph(What,DBonTable : integer);
-      procedure DEMIXwineContestMeanMedianGraph(What,DBonTable : integer; AreaList : tStringList = nil; CriteriaUsed : tStringList = nil; LandTypePresent : tStringList = nil;
-           DEMsPresent : tStringList = nil);
-
+      procedure DEMIXwineContestMeanMedianGraph(What,DBonTable : integer; AreaList : tStringList = nil; CriteriaUsed : tStringList = nil; LandTypePresent : tStringList = nil; DEMsPresent : tStringList = nil);
       procedure DEMIXTileSummary(DBonTable : integer);
       procedure FilterOutSignedCriteria(DBonTable : integer);
-      procedure DEMIXisCOPorALOSbetter(DBonTable : integer);
       procedure ExtractTheDEMIXtiles(DBonTable : integer);
-      procedure DEMIX_graph_best_in_Tile(DBonTable : integer; SortByArea : boolean);
-      function BestByParameterSorting(DBonTable : integer; TileParam,Criterion,DEMType : shortstring) : tThisBaseGraph;
-      procedure MultipleBestByParameters(DBonTable : integer);
 
 
 
@@ -815,11 +802,9 @@ implementation
 
 
 uses
-
    {$IfDef VCL}
       Nevadia_Main,
    {$EndIf}
-
 
 {$IfDef ExRedistrict}
 {$Else}
@@ -949,12 +934,16 @@ begin
              or (Ext = '.TXT')   or (Ext = '.XML')  or (Ext = '.KML')  or (Ext = '.CDS') or (Ext = '.XYZ') or (Ext = '.GPX');
 end;
 
-
 function ValidDB(theDB : integer) : boolean;
 begin
    Result := (theDB > 0) and (theDB <= MaxDataBase) and (GISdb[theDB] <> Nil) and (GISdb[theDB].MyData <> nil);
 end;
 
+
+function TGISdataBaseModule.IsICESat : boolean;
+begin
+    Result := MyData.FieldExists('H_CANOPY') and MyData.FieldExists('H_TE_BEST_') and MyData.FieldExists('H_TE_UNCER');
+end;
 
 procedure TGISdataBaseModule.CalculateAreaorCentroid(DoCentroid : boolean);
 var
@@ -978,25 +967,27 @@ var
    i,rc,nc : integer;
    Factor,Value : float64;
 begin
-   Factor := System.Math.Power(10,NumDec);
-   MyData.First;
-   StartProgress('Limit decimals, ' + SelectedColumn);
-   i := 0;
-   MyData.ProgressVars(rc,nc);
-   while not MyData.eof do begin
-      if (I mod nc = 0) then begin
-         EmpSource.Enabled := false;
-         UpdateProgressBar(i/rc);
+   if (MyData.GetFieldType(SelectedColumn) = ftFloat) and (MyData.GetFieldPrecision(SelectedColumn) > NumDec) then begin
+      Factor := System.Math.Power(10,NumDec);
+      MyData.First;
+      StartProgress('Limit decimals, ' + SelectedColumn);
+      i := 0;
+      MyData.ProgressVars(rc,nc);
+      while not MyData.eof do begin
+         if (I mod nc = 0) then begin
+            EmpSource.Enabled := false;
+            UpdateProgressBar(i/rc);
+         end;
+         inc(i);
+         MyData.Edit;
+         if MyData.CarefullyGetFieldByNameAsFloat64(SelectedColumn,Value) then begin
+            Value := round(Value * Factor) / Factor;
+            MyData.SetFieldByNameAsFloat(SelectedColumn,Value);
+         end;
+         MyData.Next;
       end;
-      inc(i);
-      MyData.Edit;
-      if MyData.CarefullyGetFieldByNameAsFloat64(SelectedColumn,Value) then begin
-         Value := round(Value * Factor) / Factor;
-         MyData.SetFieldByNameAsFloat(SelectedColumn,Value);
-      end;
-      MyData.Next;
+      ShowStatus;
    end;
-   ShowStatus;
 end;
 
 
@@ -1784,7 +1775,7 @@ end;
                TheMapOwner := MapForm;
                TheMapOwner.MapDraw := MapForm.MapDraw;
                TheMapOwner.MapDraw.DBonThisMap[DBNumber] := true;
-               if (dbTablef <> Nil) then dbTablef.ShowStatus;
+               //dbTablef.ShowStatus;
             end;
          end;
 
@@ -2956,7 +2947,7 @@ end;
             end;
 
 
-            function OpenDataBase(WhatFor : ANSIstring; fName : Pathstr = ''; ShowTable : boolean = true) : integer;
+            function OpenMultipleDataBases(WhatFor : ANSIstring; fName : Pathstr = ''; ShowTable : boolean = true) : integer;
             var
                FilesWanted : tStringList;
                i : integer;
@@ -2968,7 +2959,6 @@ end;
                   if GetMultipleFiles('DB for ' + WhatFor,DBMaskString,FilesWanted,MDdef.DefDBFilter) then begin
                      for I := 0 to pred(FilesWanted.Count) do begin
                         fName := FilesWanted.Strings[i];
-                        //LastDBLoaded := 0;
                         OpenNumberedGISDataBase(Result,fName,ShowTable);
                      end;
                      LastDataBase := FilesWanted.Strings[0];
@@ -2976,7 +2966,6 @@ end;
                   end;
                end
                else begin
-                  //LastDBLoaded := 0;
                   OpenNumberedGISDataBase(Result,fName,ShowTable);
                end;
                {$IfDef RecordOpenDataBase} WriteLineToDebugFile('OpenADataBase out,fName=' + fName); {$EndIf}
@@ -3240,19 +3229,12 @@ end;
                   if not DEM_Gaz_Opts.GetGazFileName(LastGazFile) then exit;
                end
                else LastGazFile := fName;
-
-               if FindOpenDataBase(i) and FileExists(LastGazFile) then begin
-                  {$IfDef RecordGAZ} WriteLineToDebugFile('OpenGazetteer=' + LastGazFile); {$EndIf}
-                   GISdb[i] := TGISdataBaseModule.Create(Application);
-                   if GISdb[i].InitializeTheTable('',LastGazFile) then begin
-                      GISdb[i].DBNumber := i;
-                      if (MapOwner <> Nil) then begin
-                         GISdb[i].theMapOwner := MapOwner;
-                         GISdb[i].TheMapOwner.MapDraw := MapOwner.MapDraw;
-                      end;
+               if FileExists(LastGazFile) {and FindOpenDataBase(i)} then begin
+                  if OpenNumberedGISDataBase(i,fname,false,false,MapOwner) then begin
+                     {$IfDef RecordGAZ} WriteLineToDebugFile('OpenGazetteer=' + LastGazFile); {$EndIf}
                       GISdb[i].SetGazTableOptions;
                       if (MapOwner <> Nil) then with MapOwner.MapDraw.MapCorners do begin
-                         if (BoundBoxGeo.ymax - BoundBoxGeo.ymin < 15) then {with GISdb[i] do} begin
+                         if (BoundBoxGeo.ymax - BoundBoxGeo.ymin < 15) then  begin
                             GISdb[i].MyData.ApplyFilter(MakePointGeoFilter(GISdb[i].LatFieldName,GISdb[i].LongFieldName,BoundBoxGeo.ymax,BoundBoxGeo.xmin,BoundBoxGeo.ymin,BoundBoxGeo.xmax));
                          end;
                          GISdb[i].ShowStatus;
@@ -3464,7 +3446,6 @@ end;
 
             procedure TGISdataBaseModule.AddMultiFieldStats(WhatFor : shortstring; What : tMultiFieldStats; TheFields : tStringList = Nil; NewFName : shortstring = '');
             var
-               //fName : shortstring;
                i,j,NPts : integer;
                value : float64;
                zs : ^bfarray32;
@@ -3680,43 +3661,6 @@ begin
 end;
 
 
-   function DoAShapeFile(fName : PathStr; Trim : boolean = false) : integer;
-   begin
-      if OpenNumberedGISDataBase(Result,fName,false) then begin
-         GISdb[Result].AddSequentialIndex(RecNoFName,false);
-         GISdb[Result].EmpSource.Enabled := false;
-         if (GISDB[Result].ShapeFileType in [3,5,13,15]) then begin
-            if not GISdb[Result].LatLongCornersPresent then GISdb[Result].aShapefile.AddFields(afBoundingBox,GISdb[Result].MyData);
-         end
-         else begin
-            if not GISdb[Result].LatLongFieldsPresent then GISdb[Result].aShapefile.AddFields(afLatLong,GISdb[Result].MyData);
-         end;
-         if Trim then GISdb[Result].TrimAllStringFields;
-         CloseAndNilNumberedDB(Result);
-      end;
-   end;
-
-
-procedure PrepOSMFiles(OSMPath : PathStr = '');
-var
-   TheFiles : tStringList;
-   fName : PathStr;
-   i : integer;
-begin
-   if (OSMPath = '') then GetDOSPath('OSM/Natural Earth/GADM shapefiles',OSMPath);
-   TheFiles := Nil;
-   FindMatchingFiles(OSMPath,'*.shp',TheFiles,6);
-   if TheFiles.Count > 0 then begin
-      for I := 1 to TheFiles.Count do begin
-         WMDEM.SetPanelText(0,'Shapefile ' + IntToStr(i) + '/' + IntToStr(TheFiles.Count));
-         fName := TheFiles.Strings[pred(i)];
-         DoAShapeFile(fName, true);
-      end;
-      WMDEM.SetPanelText(0,'');
-   end;
-   TheFiles.Free;
-end;
-
 
 function NumOpenDB : integer;
 var
@@ -3744,60 +3688,47 @@ begin
 end;
 
 
-{$IfDef FMX}
-    function OpenNumberedGISDataBase(var GISNum : integer; fName : PathStr; ShowTable : boolean = false; MapDraw : tMapDraw = nil) : boolean;
-{$EndIf}
-{$IfDef VCL}
-   function OpenNumberedGISDataBase(var GISNum : integer; fName : PathStr; ShowTable : boolean = false; LocalMapOnly : boolean = false; MapOwner : tMapForm = nil) : boolean;
-{$EndIf}
+function OpenNumberedGISDataBase(var GISNum : integer; fName : PathStr; ShowTable : boolean = false; LocalMapOnly : boolean = false; MapOwner : tMapForm = nil) : boolean;
 
-
-
-      {$IfDef FMX}
-      function OpenGISDataBase(GISNum : integer; WhatGIS : shortstring; fName : PathStr; ShowTable : boolean = false; MapDraw : tMapDraw = nil) : boolean;
-      {$EndIf}
-      {$IfDef VCL}
       function OpenGISDataBase(GISNum : integer; WhatGIS : shortstring; fName : PathStr; ShowTable : boolean = false; MapOwner : tMapForm = nil) : boolean;
-      {$EndIf}
       begin
-         {$IfDef RecordFullOpenDB} if (UpperCase(ExtractFilePath(fName)) <> UpperCase(MDTempDir)) then WriteLineToDebugFile('OpenGISDataBase in ' + fName); {$EndIf}
-         Result := true;
-         GISdb[GISNum] := TGISDataBaseModule.Create(nil);
-         GISdb[GISNum].DBNumber := GISNum;
-         if GISdb[GISNum].InitializeTheTable(WhatGIS,fName) then begin
-            {$IfDef VCL}
-               if (MapOwner <> Nil) then begin
+         {$If Defined(RecordFullOpenDB) or Defined(LogModuleCreate)} if (UpperCase(ExtractFilePath(fName)) <> UpperCase(MDTempDir)) then WriteLineToDebugFile('OpenGISDataBase in, GISNum=' + IntToStr(GISnum) + '   ' + fName); {$EndIf}
+         Result := false;
+         GISdb[GISNum] := TGISDataBaseModule.Create(Application);
+         {$If Defined(LogModuleCreate)} WriteLineToDebugFile('OpenGISDataBase fail, GISNum=' + IntToStr(GISnum) + '   ' + fName); {$EndIf}
+            GISdb[GISNum].DBNumber := GISNum;
+            if GISdb[GISNum].InitializeTheTable(WhatGIS,fName) then begin
+               {$IfDef FMX}
+                  if (MapDraw <> Nil) then begin
+                     GISdb[GISNum].TheMapOwner.MapDraw := MapDraw;
+                     MapDraw.DBonThisMap[GISNum] := true;
+                  end;
+               {$EndIf}
+               Result := true;
+            end;
+         {$IfDef RecordFullOpenDB} if (UpperCase(ExtractFilePath(fName)) <> UpperCase(MDTempDir)) then WriteLineToDebugFile('OpenGISDataBase out ' + fName); {$EndIf}
+      end;
+
+
+var
+   i : integer;
+begin
+   {$IfDef RecordOpenDataBase} if (UpperCase(ExtractFilePath(fName)) <> UpperCase(MDTempDir)) then WriteLineToDebugFile('OpenNumberedGISDataBase in ' + fName); {$EndIf}
+   Result := FileExists(fName) and FindOpenDataBase(GISNum);
+   if Result then begin
+      {$IfDef VCL}
+            Result := OpenGISDataBase(GISNum,'',fName,ShowTable,MapOwner);
+            if Result then begin
+               {$IfDef RecordOpenDataBase}  WriteLineToDebugFile('Opened db=' + IntToStr(GISNum)); {$EndIf}
+               GISdb[GISNum].ShowLocalMapOnly := LocalMapOnly;
+               if (MapOwner = nil) then GISdb[GISNum].DBPlotted := false
+               else begin
                   GISdb[GISNum].AssociateMap(MapOwner);
                   if (MDDef.MapLimitDB) and (GISdb[GISNum].TheMapOwner.MapDraw.DEMonMap <> 0) and (DEMGlb[GISdb[GISNum].TheMapOwner.MapDraw.DEMonMap].LongSizeMap < 30) then begin
                      GISdb[GISNum].LimitDBtoMapArea;
                   end;
                end;
-            {$EndIf}
-
-            {$IfDef FMX}
-               if (MapDraw <> Nil) then begin
-                  GISdb[GISNum].TheMapOwner.MapDraw := MapDraw;
-                  MapDraw.DBonThisMap[GISNum] := true;
-               end;
-            {$EndIf}
-         end
-         else begin
-            Result := false;
-         end;
-         {$IfDef RecordFullOpenDB} if (UpperCase(ExtractFilePath(fName)) <> UpperCase(MDTempDir)) then WriteLineToDebugFile('OpenGISDataBase out ' + fName); {$EndIf}
-      end;
-
-
-      {$IfDef VCL}
-         procedure VCLOpen;
-         var
-            i : integer;
-         begin
-            Result := OpenGISDataBase(GISNum,'',fName,ShowTable,MapOwner);
-            if Result then begin
-               GISdb[GISNum].ShowLocalMapOnly := LocalMapOnly;
-               if (MapOwner = nil) then GISdb[GISNum].DBPlotted := false;
-                if ShowTable and (not GISdb[GISNum].dbOpts.HideTable) then begin
+               if ShowTable and (not GISdb[GISNum].dbOpts.HideTable) then begin
                   {$IfDef RecordOpenDataBase} if (UpperCase(ExtractFilePath(fName)) <> UpperCase(MDTempDir)) then WriteLineToDebugFile('Call DisplayTable, GISNum=' + IntToStr(GISNum)); {$EndIf}
                   GISdb[GISNum].DisplayTable;
                   for i := 0 to pred(WMDEM.MDIChildCount) do begin
@@ -3806,21 +3737,10 @@ end;
                      end;
                   end;
                end;
+            end
+            else begin
+               {$IfDef RecordOpenDataBase}  WriteLineToDebugFile('Open failed'); {$EndIf}
             end;
-          end;
-      {$EndIf}
-
-
-
-begin
-   {$IfDef RecordOpenDataBase} if (UpperCase(ExtractFilePath(fName)) <> UpperCase(MDTempDir)) then WriteLineToDebugFile('OpenNumberedGISDataBase in ' + fName); {$EndIf}
-   Result := FileExists(fName) and FindOpenDataBase(GISNum);
-   if Result then begin
-      {$IfDef FMX}
-         Result := OpenGISDataBase(GISNum,'',fName,ShowTable,MapDraw);
-      {$EndIf}
-      {$IfDef VCL}
-         VCLOpen;
       {$EndIf}
    end;
    {$IfDef RecordOpenDataBase} if (UpperCase(ExtractFilePath(fName)) <> UpperCase(MDTempDir)) then WriteLineToDebugFile('OpenNumberedGISDataBase ' + IntToStr(GISNum) + ' out ' + fName); {$EndIf}
@@ -5097,6 +5017,8 @@ begin
 end;
 
 
+
+
 function TGISdataBaseModule.InitializeTheTable(WhatDataBase : shortstring; FileWanted : PathStr = '') : boolean;
 label
    Retry;
@@ -5111,6 +5033,10 @@ var
    sl,FieldsInDB : tStringList;
    glIndexFile : file;
    MainFileHeader : sfMainFileHeader;
+   {$IfDef RecordOpenDataBase}
+      TStr : shortstring;
+   {$EndIf}
+
 begin
     if not FileExists(FileWanted) then begin
        {$IfDef RecordOpenDataBase} WriteLineToDebugFile('TGISDataBase.InitializeTheData try open missing ' + ExtractFileName(FileWanted)); {$EndIf}
@@ -5308,6 +5234,8 @@ begin
      end;
      ZeroRecordsAllowed := false;
 
+
+
      {$IfDef VCL}
          if MyData.FieldExists('ORDER') then RenameField('ORDER','PLOT_ORDER');
      {$EndIf}
@@ -5316,6 +5244,11 @@ begin
         {$IfDef RecordFullOpenDB} WriteLineToDebugFile('TrimAllStringFields'); {$EndIf}
         ShowHourglassCursor;
         MyData.TrimAllStringFields;
+     end;
+     if IsIcesat and (not MyData.FieldExists('ICESAT_GRD')) and AnswerIsYes('Clean up ICESat-2 import') then begin
+        {$IfDef RecordIcesat} WriteLineToDebugFile('Call IcesatProcessCanopy'); {$EndIf}
+        IcesatProcessCanopy(DBnumber,false);
+        {$IfDef RecordIcesat} WriteLineToDebugFile('Return from IcesatProcessCanopy'); {$EndIf}
      end;
 
      MyData.AssignEmpSource(EmpSource);

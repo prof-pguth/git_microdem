@@ -6,7 +6,7 @@ unit DEMStat;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
 
@@ -26,7 +26,7 @@ unit DEMStat;
       //{$Define RecordElevationSlopePlotAll}
       //{$Define RecordDEMCompare}
       //{$Define RecordStat}
-      //{$Define RecordIceSat}
+      {$Define RecordIceSat}
       //{$Define RecordGeoStat}
       //{$Define FullRecordBlockGeostats}
       //{$Define RecordPC}
@@ -34,7 +34,7 @@ unit DEMStat;
       //{$Define MapTraceCrests}
       //{$Define RecordDetailedTraceCrests}
       //{$Define RecordClustering}
-      //{$Define RecordHistogramFromVAT}
+      {$Define RecordHistogramFromVAT}
       //{$Define RecordFFT}
       //{$Define RecordHistogram}
       //{$Define RecordGridScatterGram}

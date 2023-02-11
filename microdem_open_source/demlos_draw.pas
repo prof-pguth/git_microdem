@@ -1136,7 +1136,7 @@ begin
       if FresnelTable = -1 then begin
          fName := Petmar.NextFileNumber(MDTempDir, 'radio_los_',DefaultDBExt);
          MakeTopoProfileTable(fName,true,(VegGrid <> 0),false,false,false,MDDef.DoGrazingFields,false,false,false);
-         FresnelTable := OpenDataBase('LOScompute',fName,false);
+         FresnelTable := OpenMultipleDataBases('LOScompute',fName,false);
       end;
 
       LOSCalculation := tLOSCalculation.Create;

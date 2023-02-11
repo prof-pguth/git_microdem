@@ -24,7 +24,7 @@ object wmdem: Twmdem
   OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
   OnResize = FormResize
-  TextHeight = 20
+  TextHeight = 16
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
@@ -1828,10 +1828,6 @@ object wmdem: Twmdem
           Caption = 'Kangaroo Island data download'
           OnClick = Datadownloadpicksubset1Click
         end
-        object KangarooIslandadditionalscenes1: TMenuItem
-          Caption = 'Kangaroo Island additional scenes'
-          OnClick = KangarooIslandadditionalscenes1Click
-        end
       end
       object Physicalgeographylabs1: TMenuItem
         Caption = 'Physical geography labs'
@@ -3457,6 +3453,10 @@ object wmdem: Twmdem
     object COPALOScomparetoreference1: TMenuItem
       Caption = 'COP/ALOS compare to reference'
       OnClick = COPALOScomparetoreference1Click
+    end
+    object Pixelbypixelmapstatistics1: TMenuItem
+      Caption = 'Pixel by pixel map statistics'
+      OnClick = Pixelbypixelmapstatistics1Click
     end
     object OpenDEMIXarea1: TMenuItem
       Caption = 'Open DEMIX area'

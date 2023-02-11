@@ -910,6 +910,8 @@ var
 
 begin
    {$IfDef RecordIceSat} WriteLineToDebugFile('IcesatProcessCanopy in'); {$EndIf}
+   if ValidDB(dbOnTable) then begin
+
       GetGeoid;
       GeoidGrid := OpenNewDEM(Geoid2008FName,false,'ellipsoid/geoid shift');
       if (GeoidGrid = 0) then begin
@@ -922,11 +924,14 @@ begin
       GISdb[DBonTable].LimitFieldDecimals('H_TE_UNCER',2);
       GISdb[DBonTable].LimitFieldDecimals('H_CANOPY',2);
       GISdb[DBonTable].LimitFieldDecimals('H_CANOPY_U',2);
+      {$IfDef RecordIceSat} WriteLineToDebugFile('Decimals limited'); {$EndIf}
 
       GISdb[DBonTable].AddFieldToDataBase(ftFloat,'EGM2008_GD',9,2);
       GISdb[DBonTable].AddFieldToDataBase(ftFloat,'ICESAT_GRD',9,2);
       GISdb[DBonTable].AddFieldToDataBase(ftFloat,'ICESAT_CAN',9,2);
       GISdb[DBonTable].AddFieldToDataBase(ftString,'DATE',8);
+      {$IfDef RecordIceSat} WriteLineToDebugFile('Fields added'); {$EndIf}
+
       GISdb[DBonTable].MyData.First;
       StartProgress('Icesat-2 elevs');
       i := 0;
@@ -955,26 +960,26 @@ begin
                   end;
                end;
             end;
-            GISdb[DBonTable].MyData.Next;
          end;
+         GISdb[DBonTable].MyData.Next;
       end;
      {$IfDef RecordIceSat} WriteLineToDebugFile('IcesatProcessCanopy start cleanup'); {$EndIf}
       CloseSingleDEM(GeoidGrid);
-      GISdb[DBonTable].MyData.DeleteField('FILE_NAME');
+      //GISdb[DBonTable].MyData.DeleteField('FILE_NAME');
       GISdb[DBonTable].MyData.DeleteField('SEG_BEGIN');
       GISdb[DBonTable].MyData.DeleteField('SEG_END');
+     {$IfDef RecordIceSat} WriteLineToDebugFile('Fields deleted'); {$EndIf}
       if AddDEMs then AddGlobalDEMs(dbOnTable);
 
       fName := GISdb[DBonTable].DBFullName;
       Mapowner := GISdb[DBonTable].theMapOwner;
-      CloseAndNilNumberedDB(DBonTable);
-      OpenNumberedGISDataBase(dbOnTable,fName,true,false,MapOwner);
-
-
-
-      //GISdb[dbOnTable].CloseDBtableF(true);
-      //GISdb[dbOnTable].ShowStatus;
-   {$IfDef RecordIceSat} WriteLineToDebugFile('IcesatProcessCanopy out'); {$EndIf}
+      //CloseAndNilNumberedDB(DBonTable);
+      //OpenNumberedGISDataBase(dbOnTable,fName,true,false,MapOwner);
+      {$IfDef RecordIceSat} WriteLineToDebugFile('IcesatProcessCanopy out'); {$EndIf}
+   end
+   else begin
+      {$IfDef RecordIceSat} WriteLineToDebugFile('IcesatProcessCanopy invalide DB=' + IntToStr(dbOnTable)); {$EndIf}
+   end;
 end;
 
 

@@ -375,8 +375,7 @@ end;
             procedure LegendFromShapeFileGroup(MapOwner : tMapForm; FName : PathStr);
             var
                TheIndex : tMyData;
-               GISdb : TGISdataBaseModule;
-               x,MaxX, i,OnY : integer;
+               db,x,MaxX, i,OnY : integer;
                PlotIt : boolean;
                TStr : ShortString;
                Bitmap : tMyBitmap;
@@ -397,16 +396,16 @@ end;
                        else PlotIt := true;
 
                        if PlotIt then begin
-                          GISdb := TGISdataBaseModule.Create(Application);
-                          if GISdb.InitializeTheTable('',TheIndex.GetFieldByNameAsString('FILENAME')) then begin
+                          fName := TheIndex.GetFieldByNameAsString('FILENAME');
+                          if OpenNumberedGISDataBase(db,fName) then with GISdb[db] do begin
                               if TheIndex.FieldExists('FILTER') and (TheIndex.GetFieldByNameAsString('FILTER') <> '') then begin
-                                 GISDB.MyData.ApplyFilter(TheIndex.GetFieldByNameAsString('FILTER'));
+                                 GISdb[db].MyData.ApplyFilter(TheIndex.GetFieldByNameAsString('FILTER'));
                               end;
-                              if (GISdb.MyData.FiltRecsInDB > 0) then begin
-                                 GISdb.SetColorsFromDB(TheIndex);
-                                 GISdb.PrepColors(Bitmap);
+                              if (GISdb[db].MyData.FiltRecsInDB > 0) then begin
+                                 GISdb[db].SetColorsFromDB(TheIndex);
+                                 GISdb[db].PrepColors(Bitmap);
                                  case TheIndex.GetFieldByNameAsInteger('SHAPE_TYPE') of
-                                    1 : Petmar.ScreenSymbol(Bitmap.Canvas,MDDef.LegendGraphWidth div 2,OnY+ MDDef.LegendSingleHeight div 2,GISdb.dbOpts.Symbol);
+                                    1 : Petmar.ScreenSymbol(Bitmap.Canvas,MDDef.LegendGraphWidth div 2,OnY+ MDDef.LegendSingleHeight div 2,GISdb[db].dbOpts.Symbol);
                                     3 : PetImage.DrawLine(Bitmap,5,OnY + MDDef.LegendSingleHeight div 2,  MDDef.LegendGraphWidth-5,OnY + MDDef.LegendSingleHeight div 2);
                                     5 : Bitmap.Canvas.Rectangle(5,OnY+2,MDDef.LegendGraphWidth-5,OnY + MDDef.LegendSingleHeight-2);
                                  end;
@@ -414,12 +413,12 @@ end;
                                  TStr := TheIndex.GetFieldByNameAsString('CAPTION');
                                  Bitmap.Canvas.TextOut(MDDef.LegendGraphWidth,OnY+2,TStr);
                                  x := MDDef.LegendGraphWidth + Bitmap.Canvas.TextWidth(TStr);
-                                 if x > MaxX then MaxX := x;
+                                 if (x > MaxX) then MaxX := x;
 
                                  inc(onY,MDDef.LegendSingleHeight);
                               end;
                           end;
-                          if GISdb.CloseDataBase then GISdb.Free;
+                          if GISdb[db].CloseDataBase then CloseAndNilNumberedDB(db);
                        end;
                        TheIndex.Next;
                     end;

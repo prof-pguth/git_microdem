@@ -613,12 +613,12 @@ begin
       dbMain.Open;
 
       {$IfDef AllowMemoryDB}
-      if MemoryDB then begin
-         FDSQLiteBackup1.Database := fName;
-         FDSQLiteBackup1.DestDatabaseObj := dbMain.CliObj;
-         FDSQLiteBackup1.DestMode := smCreate;
-         FDSQLiteBackup1.Backup;
-      end;
+         if MemoryDB then begin
+            FDSQLiteBackup1.Database := fName;
+            FDSQLiteBackup1.DestDatabaseObj := dbMain.CliObj;
+            FDSQLiteBackup1.DestMode := smCreate;
+            FDSQLiteBackup1.Backup;
+         end;
       {$EndIf}
       {$IfDef RecordMyDataCreation} WriteLineToDebugFile('dbMain opened'); {$EndIf}
    end;
@@ -627,16 +627,14 @@ begin
       {$IfDef RecordMyDataCreation} WriteLineToDebugFile('Opening fdTable ' + fName); {$EndIf}
 
       {$IfDef VCL}
-      fdTable := tfdTable.Create(Application);
+         fdTable := tfdTable.Create(Application);
       {$EndIf}
 
       {$IfDef FMX}
-      fdTable := tfdTable.Create(nil);
+         fdTable := tfdTable.Create(nil);
       {$EndIf}
 
-      {$IfDef RecordMyDataCreation}
-      WriteLineToDebugFile('Created fdTable');
-      {$EndIf}
+      {$IfDef RecordMyDataCreation} WriteLineToDebugFile('Created fdTable'); {$EndIf}
 
       fdTable.Connection := dbMain;
       fdTable.TableName := ExtractFileNameNoExt(fName);
@@ -744,14 +742,12 @@ function tMyData.PlatformColorFromTable : tPlatformColor;
 
          function CheckRGBFields(rf,gf,bf : shortstring) : boolean;
          begin
-
             Result := FieldExists(rf);
             if Result then begin
                if IsFloatField(rf) then
                   PlatformColorFromTable := RGBtrip(round(255 * GetFieldByNameAsFloat(rf)),round(255 *GetFieldByNameAsFloat(gf)),round(255 *GetFieldByNameAsFloat(bf)))
                else PlatformColorFromTable := RGBtrip(GetFieldByNameAsInteger(rf),GetFieldByNameAsInteger(gf),GetFieldByNameAsInteger(bf));
             end;
-
          end;
 
 begin
@@ -765,21 +761,21 @@ end;
 
 procedure tMyData.First;
 begin
-  {$IfDef BDELikeTables}
-   if (TheBDEdata <> Nil) then TheBDEdata.First;
+   {$IfDef BDELikeTables}
+      if (TheBDEdata <> Nil) then TheBDEdata.First;
    {$EndIf}
    {$IfDef UseTCLientDataSet}
-   if (TheClientDataSet <> Nil) then TheClientDataSet.First;
+      if (TheClientDataSet <> Nil) then TheClientDataSet.First;
    {$EndIf}
    {$IfDef UseFireDacSQLlite}
-    if (fdTable <> Nil) then begin
-       fdTable.First;
-    end;
+       if (fdTable <> Nil) then begin
+          fdTable.First;
+       end;
     {$EndIf}
     {$IfDef UseFDMemTable}
-    if (FDMemTable <> nil) then begin
-       FDMemTable.First;
-    end;
+       if (FDMemTable <> nil) then begin
+          FDMemTable.First;
+       end;
     {$EndIf}
 end;
 
@@ -787,56 +783,56 @@ end;
 function tMyData.GetFieldName(i : integer) : ANSIString;
 begin
    {$IfDef BDELikeTables}
-   if (TheBDEdata <> Nil) then Result := TheBDEdata.Fields[i].FieldName;
+      if (TheBDEdata <> Nil) then Result := TheBDEdata.Fields[i].FieldName;
    {$EndIf}
    {$IfDef UseTCLientDataSet}
-   if (TheClientDataSet <> Nil) then Result := TheClientDataSet.Fields[i].FieldName;
+      if (TheClientDataSet <> Nil) then Result := TheClientDataSet.Fields[i].FieldName;
    {$EndIf}
 
    {$IfDef UseFireDacSQLlite}
-    if (fdTable <> Nil) then begin
-       Result := fdTable.Fields[i].FieldName;
-    end;
+       if (fdTable <> Nil) then begin
+          Result := fdTable.Fields[i].FieldName;
+       end;
     {$EndIf}
     {$IfDef UseFDMemTable}
-    if (FDMemTable <> nil) then begin
-       Result := fdMemTable.Fields[i].FieldName;
-    end;
+       if (FDMemTable <> nil) then begin
+          Result := fdMemTable.Fields[i].FieldName;
+       end;
     {$EndIf}
 end;
 
 
 function tMyData.GetFieldDataSize(I : integer) : integer;
 var
+   i2 : integer;
    f : file;
    {$IfDef BDELikeTables}
-   DBaseIIITableFileHeader : tDBaseIIITableFileHeader;
-   TableFieldDescriptor : tTableFieldDescriptor;
+      DBaseIIITableFileHeader : tDBaseIIITableFileHeader;
+      TableFieldDescriptor : tTableFieldDescriptor;
    {$EndIf}
-   i2 : integer;
 begin
    {$IfDef BDELikeTables}
-   if (TheBDEdata <> Nil) or DBFmovedToRAM then begin
-      assignFile(f,FullTableName);
-      reset(f,1);
-      BlockRead(f, DBaseIIITableFileHeader, SizeOf(tDBaseIIITableFileHeader));
-      for i2 := 0 to i do BlockRead(f, TableFieldDescriptor, SizeOf(tTableFieldDescriptor));
-      Result := TableFieldDescriptor.FieldLength;
-      CloseFile(f);
-   end;
+      if (TheBDEdata <> Nil) or DBFmovedToRAM then begin
+         assignFile(f,FullTableName);
+         reset(f,1);
+         BlockRead(f, DBaseIIITableFileHeader, SizeOf(tDBaseIIITableFileHeader));
+         for i2 := 0 to i do BlockRead(f, TableFieldDescriptor, SizeOf(tTableFieldDescriptor));
+         Result := TableFieldDescriptor.FieldLength;
+         CloseFile(f);
+      end;
    {$EndIf}
    {$IfDef UseFireDacSQLlite}
-    if (fdTable <> Nil) then begin
-       Result := fdTable.Fields[i].DataSize;
-    end;
+       if (fdTable <> Nil) then begin
+          Result := fdTable.Fields[i].DataSize;
+       end;
    {$EndIf}
    {$IfDef UseFDMemTable}
-   if (FDMemTable <> nil) then begin
-      Result := fdMemTable.Fields[i].DataSize;
-   end;
+      if (FDMemTable <> nil) then begin
+         Result := fdMemTable.Fields[i].DataSize;
+      end;
    {$EndIf}
    {$IfDef UseTCLientDataSet}
-   if (TheClientDataSet <> Nil) then Result := TheClientDataSet.Fields[i].DataSize;
+      if (TheClientDataSet <> Nil) then Result := TheClientDataSet.Fields[i].DataSize;
    {$EndIf}
 end;
 
@@ -1705,6 +1701,7 @@ begin
    end;
 end;
 
+
 function tMyData.FieldAllZeros(FieldName : ANSIString) : boolean;
 begin
    Result := true;
@@ -1744,7 +1741,7 @@ begin
            end;
 
            if (theName = fName) then begin
-              Result := TableFieldDescriptor.FieldDecimalCount;
+              Result := pred(TableFieldDescriptor.FieldDecimalCount - TableFieldDescriptor.FieldDecimalCount);
               Break;
            end;
         end;

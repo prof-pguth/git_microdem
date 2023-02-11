@@ -21,7 +21,7 @@ unit dem_manager;
       //{$Define RecordGet2DEMs}
       //{$Define RecordWhatsOpen}
       //{$Define RecordStartup}
-      //{$Define TimeLoadDEM}
+      {$Define TimeLoadDEM}
       //{$Define RecordEdit}
       //{$Define TimeSatLoad}
       //{$Define RecordMenu}
@@ -154,8 +154,6 @@ function GeotiffBBox(fName : PathStr) : sfBoundBox;
    function GetDEM(var DEMWanted : integer; CanCancel : boolean = false; TheMessage : ShortString = '') : boolean;
    function OpenNewDEM(fName : PathStr = ''; LoadMap : boolean = true; WhatFor : shortstring = '') : integer;
    function GetTwoCompatibleGrids(WhatFor : shortString; CheckUnits : boolean; var DEM1,DEM2 : integer; WarnIfIncompatible : boolean = true;  AlwaysAsk : boolean = false) : boolean;
-
-   //procedure GetDEMorImage(DEM,Image : boolean; var DEMWanted,ImageWanted : integer; CanCancel : boolean = false; TheMessage : ShortString = ''; ExcludeDEM : integer = 0; ExcludeImage : integer = 0);
 
    function PickMap(WhatFor : shortstring) : integer;
    function PickADifferentMap(WhatFor,ThisMapCaption : shortstring) : integer;
@@ -1393,6 +1391,7 @@ begin
    Geoid2008FName := MainMapData + 'geoid\egm2008-2.5.tif';
    if not FileExists(Geoid2008FName) then Geoid2008FName := MainMapData + 'geoid\egm2008-5.tif';
    Geoid96FName := MainMapData + 'geoid\us_nga_egm96_15.tif';
+   if not FileExists(Geoid96FName) then Geoid96FName := MainMapData + 'geoid\egm96-5-idl.tif';
    GeoidDiffFName := MainMapData + 'geoid\egm96_to_egm2008.tif';
 end;
 

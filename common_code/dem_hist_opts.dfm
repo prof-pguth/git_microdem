@@ -4,8 +4,8 @@ object HistOptForm: THistOptForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'DEM Histogram Options'
-  ClientHeight = 266
-  ClientWidth = 225
+  ClientHeight = 262
+  ClientWidth = 263
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -17,15 +17,15 @@ object HistOptForm: THistOptForm
   OnCreate = FormCreate
   TextHeight = 13
   object Label1: TLabel
-    Left = 24
-    Top = 218
+    Left = 32
+    Top = 186
     Width = 35
     Height = 13
     Caption = 'Bin size'
   end
   object HelpBtn: TBitBtn
-    Left = 105
-    Top = 258
+    Left = 113
+    Top = 226
     Width = 77
     Height = 27
     Kind = bkHelp
@@ -37,8 +37,8 @@ object HistOptForm: THistOptForm
     IsControl = True
   end
   object BitBtn1: TBitBtn
-    Left = 24
-    Top = 260
+    Left = 32
+    Top = 228
     Width = 75
     Height = 25
     Caption = 'OK'
@@ -105,7 +105,7 @@ object HistOptForm: THistOptForm
   end
   object RadioGroup1: TRadioGroup
     Left = 8
-    Top = 176
+    Top = 144
     Width = 233
     Height = 33
     Caption = 'Axis'
@@ -116,8 +116,8 @@ object HistOptForm: THistOptForm
     TabOrder = 7
   end
   object Edit1: TEdit
-    Left = 88
-    Top = 215
+    Left = 96
+    Top = 183
     Width = 121
     Height = 21
     TabOrder = 8

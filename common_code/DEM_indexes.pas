@@ -691,9 +691,9 @@ var
    TheGroupingIndex : tMyData;
    FilesToAdd : tStringList;
    DefaultFilter : byte;
-   fNum,i,Layer : integer;
+   fNum,i,Layer,db : integer;
    NumFieldColoring : boolean;
-   aGISdb : TGISdataBaseModule;
+   //aGISdb : TGISdataBaseModule;
    FieldsInDB : tStringList;
 begin
     CreateShapeFileGrouping(fName,TheGroupingIndex,true,0);
@@ -704,15 +704,14 @@ begin
        NumFieldColoring := AnswerIsYes('Allow coloring from numeric field');
        for i := 0 to pred(FilesToAdd.Count) do begin
           fName := FilesToAdd.Strings[i];
-          aGISdb := TGISdataBaseModule.Create(Application);
-          if aGISdb.InitializeTheTable('',fName) then with aGISdb,dbOpts do begin
+          if OpenNumberedGISDataBase(db,fName) then with GISdb[db] do begin
              TheGroupingIndex.Insert;
              TheGroupingIndex.SetFieldByNameAsString('FILENAME',fName);
              fName := ChangeFileExt(ExtractFileName(fName),'');
              Petmar.GetString('Label caption',fName,false,ReasonableTextChars);
              TheGroupingIndex.SetFieldByNameAsString('NAME',fName);
-             if (aGISDB.ShapeFileType = 0) then aGISDB.ShapeFileType := 1;
-             TheGroupingIndex.SetFieldByNameAsInteger('SHAPE_TYPE',aGISDB.ShapeFileType);
+             if (GISdb[db].ShapeFileType = 0) then GISdb[db].ShapeFileType := 1;
+             TheGroupingIndex.SetFieldByNameAsInteger('SHAPE_TYPE',GISdb[db].ShapeFileType);
              repeat
                 if (i < 10) then Layer := 9-i else Layer := 0;
                 ReadDefault('Layer [9 (top, last drawn) to 0 (bottom, first drawn)]',Layer);
@@ -721,37 +720,36 @@ begin
              TheGroupingIndex.SetFieldByNameAsInteger('PLOT_ORDER',Layer);
              TheGroupingIndex.SetFieldByNameAsString('PLOT','Y');
 
-             if NumFieldColoring and (aGISDB.NumericFields > 0) and AnswerIsYes('Color code from numeric field') then begin
-                PetdbUtils.GetFields(aGISDB.MyData,aGISDB.dbOpts.VisCols,NumericFieldTypes,FieldsInDB);
+             if NumFieldColoring and (GISdb[db].NumericFields > 0) and AnswerIsYes('Color code from numeric field') then begin
+                PetdbUtils.GetFields(GISdb[db].MyData,GISdb[db].dbOpts.VisCols,NumericFieldTypes,FieldsInDB);
                 fNum := 0;
                 Petmar.GetFromListZeroBased('field to color',fNum,FieldsInDB);
                 TheGroupingIndex.SetFieldByNameAsString('FIELD_NAME',FieldsInDB.Strings[fNum]);
              end
              else begin
-               if aGISdb.ItsAPointDB then begin
-                   Symbol.DrawingSymbol := FilledBox;
-                   Symbol.Color := ConvertTColorToPlatformColor(WinGraphColors[i mod 14]);
-                   Symbol.Size := 3;
-                   GetSymbol(Symbol.DrawingSymbol,Symbol.Size,Symbol.Color,fName);
+               if GISdb[db].ItsAPointDB then begin
+                   GISdb[db].dbOpts.Symbol.DrawingSymbol := FilledBox;
+                   GISdb[db].dbOpts.Symbol.Color := ConvertTColorToPlatformColor(WinGraphColors[i mod 14]);
+                   GISdb[db].dbOpts.Symbol.Size := 3;
+                   GetSymbol(GISdb[db].dbOpts.Symbol.DrawingSymbol,GISdb[db].dbOpts.Symbol.Size,GISdb[db].dbOpts.Symbol.Color,fName);
                end
-               else if LineShapeFile(aGISDB.ShapeFileType) then begin
-                   LineColor := ConvertTColorToPlatformColor(WinGraphColors[i mod 14]);
-                   LineWidth := 3;
-                   PickLineSizeAndColor(fName,Nil,LineColor,LineWidth);
+               else if LineShapeFile(GISdb[db].ShapeFileType) then begin
+                   GISdb[db].dbOpts.LineColor := ConvertTColorToPlatformColor(WinGraphColors[i mod 14]);
+                   GISdb[db].dbOpts.LineWidth := 3;
+                   PickLineSizeAndColor(fName,Nil,GISdb[db].dbOpts.LineColor,GISdb[db].dbOpts.LineWidth);
                end
-               else if AreaShapeFile(aGISDB.ShapeFileType) then begin
-                   FillColor := ConvertTColorToPlatformColor(WinGraphColors[i mod 14]);
-                   AreaSymbolFill := bsSolid;
-                   LineColor := claBlack;
-                   LineWidth := 1;
-                   PickPattern(fName + ' area fill',AreaSymbolFill,FillColor,LineColor,LineWidth);
+               else if AreaShapeFile(GISdb[db].ShapeFileType) then begin
+                   GISdb[db].dbOpts.FillColor := ConvertTColorToPlatformColor(WinGraphColors[i mod 14]);
+                   GISdb[db].dbOpts.AreaSymbolFill := bsSolid;
+                   GISdb[db].dbOpts.LineColor := claBlack;
+                   GISdb[db].dbOpts.LineWidth := 1;
+                   PickPattern(fName + ' area fill',GISdb[db].dbOpts.AreaSymbolFill,GISdb[db].dbOpts.FillColor,GISdb[db].dbOpts.LineColor,GISdb[db].dbOpts.LineWidth);
                end;
-               aGISDB.WriteDisplaySymbology(TheGroupingIndex);
+               GISdb[db].WriteDisplaySymbology(TheGroupingIndex);
              end;
              TheGroupingIndex.Post;
           end;
-          aGISdb.CloseDataBase;
-          aGISdb.Free;
+          CloseAndNilNumberedDB(db);
        end;
     end;
     TheGroupingIndex.Destroy;

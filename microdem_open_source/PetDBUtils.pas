@@ -227,22 +227,18 @@ begin
 end;
 
 
-
-
-
 procedure QuickGraphFromStringList(var sl : tStringList; xf,yf,Capt : shortstring);
 var
-    GIS   : TGISdataBaseModule;
     fName : PathStr;
+    db : integer;
 begin
     fName := NextFileNumber(MDTempDir,'qg_','.csv');
     sl.SaveToFile(fName);
-    GIS := TGISdataBaseModule.Create(Application);
-    if GIS.InitializeTheTable('',fName) then begin
-       GIS.CreateScatterGram(xf,yf,false,Capt);
+    if OpenNumberedGISDataBase(db,fName) then begin
+        GISdb[db].CreateScatterGram(xf,yf,false,Capt);
     end;
-    GIS.Destroy;
-    sl.Destroy;
+   CloseAndNilNumberedDB(db);
+   sl.Destroy;
 end;
 
 

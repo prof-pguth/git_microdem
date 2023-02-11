@@ -215,9 +215,9 @@ var
 begin
    {$IfDef RecordGeostats} WriteLineToDebugFile('TPickGeoStat.Statsfortrainingset1Click in');  {$EndIf}
    GetAtlasDirectories(dbfDir,GridDir);
-   GridsDB := OpenDataBase('',ExtractFilePath(GridDir) + 'param_stats.dbf');
+   GridsDB := OpenMultipleDataBases('',ExtractFilePath(GridDir) + 'param_stats.dbf');
 
-   db := OpenDataBase('training set points');
+   db := OpenMultipleDataBases('training set points');
    Classes := GISdb[db].MyData.UniqueEntriesInDB('NAME');
 
    TheFiles := Nil;

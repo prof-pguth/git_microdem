@@ -24,6 +24,8 @@ object dbtablef: Tdbtablef
       item
         Width = 250
       end>
+    ExplicitTop = 1000
+    ExplicitWidth = 1290
   end
   object Panel2: TPanel
     Left = 0
@@ -32,6 +34,7 @@ object dbtablef: Tdbtablef
     Height = 32
     Align = alTop
     TabOrder = 1
+    ExplicitWidth = 1290
     object BitBtn1: TBitBtn
       Left = 34
       Top = 1
@@ -216,6 +219,7 @@ object dbtablef: Tdbtablef
     Height = 41
     Align = alTop
     TabOrder = 2
+    ExplicitWidth = 1290
     object Label2: TLabel
       Left = 12
       Top = 12
@@ -266,6 +270,7 @@ object dbtablef: Tdbtablef
     Height = 41
     Align = alTop
     TabOrder = 4
+    ExplicitWidth = 1290
     object LOSButton: TSpeedButton
       Left = 40
       Top = 6
@@ -528,6 +533,7 @@ object dbtablef: Tdbtablef
     Height = 41
     Align = alTop
     TabOrder = 3
+    ExplicitWidth = 1290
     object RadioGroup2: TRadioGroup
       Left = 20
       Top = 0
@@ -1399,6 +1405,10 @@ object dbtablef: Tdbtablef
       object iesbyopinions1: TMenuItem
         Caption = 'Ties by opinions'
         OnClick = iesbyopinions1Click
+      end
+      object Wins1: TMenuItem
+        Caption = 'Wins and Ties'
+        OnClick = Wins1Click
       end
     end
     object N13: TMenuItem

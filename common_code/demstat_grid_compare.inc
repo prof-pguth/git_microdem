@@ -324,10 +324,17 @@ begin
    end {for Col};
    EndProgress;
    DEMGlb[Result].CheckMaxMinElev;
-   fName := MDTempDir + DEMGlb[Result].AreaName + '.dem';
+   //CreateDEMSelectionMap(Result);
+
+(*
+   fName := DEMGlb[Result].AreaName;
+   CleanUpFilename(fName);
+   fName := MDTempDir + fName + '.dem';
+
    DEMGlb[Result].WriteNewFormatDEM(fName,'difference map');
    CloseSingleDEM(Result);
    Result := OpenNewDEM(fName,false);
+*)
 
    {$IfDef RecordDEMCompare}
       WriteLineToDebugFile('');  WriteLineToDebugFile('DEM1: ' + DEMGlb[Map1].FullDEMParams);
@@ -338,9 +345,7 @@ begin
 
    if ShowMap then begin
       {$If Defined(RecordDEMCompare) or Defined(RecordDiffMap)} WriteLineToDebugFile('MakeDifferenceMap call setupmap'); {$EndIf}
-
       if MDDef.HighlightDiffMap then mt := mtGGRReflect else mt := mtElevSpectrum;
-
       DEMGlb[Result].SetUpMap(Result,true,mt);
    end;
 

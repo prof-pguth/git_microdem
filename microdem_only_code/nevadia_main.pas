@@ -27,7 +27,7 @@
       //{$Define RecordSatLoad}
       //{$Define RecordFileOps}
       //{$Define RecordGeoPDF}
-      //{$Define RecordOpenVectorMap}
+      {$Define RecordOpenVectorMap}
       //{$Define RecordShipwrecks}
       //{$Define Record3D}
       //{$Define RecordLabs}
@@ -37,7 +37,7 @@
       //{$Define RecordUpdate}
       //{$Define RecordFirstRun}
       //{$Define RecordOpenVectorMap}
-      //{$Define TimeLoadDEM}
+      {$Define TimeLoadDEM}
       //{$Define RecordClosing}
       //{$Define RecordMGT}
       //{$Define RecordHelp}
@@ -501,7 +501,6 @@ type
     Fatfingers1: TMenuItem;
     DEMIXwinecontest1: TMenuItem;
     Closeprogramgetdebugversionoftheprogram7MB1: TMenuItem;
-    KangarooIslandadditionalscenes1: TMenuItem;
     Openrecyclebin1: TMenuItem;
     Existingfile1: TMenuItem;
     Existingfile2: TMenuItem;
@@ -533,6 +532,7 @@ type
     N2021fillseason: TMenuItem;
     N2022fillseason1: TMenuItem;
     COPALOScomparetoreference1: TMenuItem;
+    Pixelbypixelmapstatistics1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -879,7 +879,6 @@ type
     procedure EurekaValleyDownloadClick(Sender: TObject);
     procedure DEMIXwinecontest1Click(Sender: TObject);
     procedure Closeprogramgetdebugversionoftheprogram7MB1Click(Sender: TObject);
-    procedure KangarooIslandadditionalscenes1Click(Sender: TObject);
     procedure Openrecyclebin1Click(Sender: TObject);
     procedure Existingfile1Click(Sender: TObject);
     procedure Existingfile2Click(Sender: TObject);
@@ -908,6 +907,7 @@ type
     procedure N2021fillseasonClick(Sender: TObject);
     procedure N2022fillseason1Click(Sender: TObject);
     procedure COPALOScomparetoreference1Click(Sender: TObject);
+    procedure Pixelbypixelmapstatistics1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -2182,41 +2182,26 @@ end;
 
 procedure Twmdem.SeeIfThereAreDebugThingsToDo;
 
-      (*
-      procedure CheckSnyder;
-      var
-         Lat,Long,xutm,yutm : float64;
-      begin
-         WGS84DatumConstants.DefineDatumFromUTMZone('NAD27',18,'N','check Snyder examples');
-         WriteLineToDebugFile('');
-         WGS84DatumConstants.ForwardProjectDegrees(40.5, -73.5, xutm,yutm);
-         WriteLineToDebugFile('Snyder example RawProjectDegrees to UTM, x= ' + RealToString(xutm,-12,-1) + '  y=' + RealToString(yutm,-12,-1));
-         WriteLineToDebugFile('  should be 627106.5,4484124.4');
-         WriteLineToDebugFile('');
-         WGS84DatumConstants.InverseProjectDegrees(627106.5,4484124.4,Lat,Long);
-         WriteLineToDebugFile('Snyder example InverseProjectDegrees ' + LatLongDegreeToString(Lat,Long));
-         WriteLineToDebugFile('  should be 40.5, -73.5');
-         Viewdebuglog1Click(Nil);
-      end;
-      *)
-
       procedure Histies;
       var
          DEMwithVAT,ElevMap,SlopeMap,RuffMap,AspMap : integer;
       begin
+         ElevMap := 0;
+         SlopeMap := 0;
+         RuffMap := 0;
+         AspMap := 0;
          DEMwithVAT := OpenNewDEM('H:\aa_half_sec_test\COP-ALOS_compare_DTM.dem' );
          ElevMap  := OpenNewDEM('H:\aa_half_sec_test\dtm_elev.dem' );
          (*
          SlopeMap  := OpenNewDEM('H:\aa_half_sec_test\slope.dem' );
          RuffMap := OpenNewDEM('H:\aa_half_sec_test\ruff.dem' );
          *)
-         AspMap := OpenNewDEM('H:\aa_half_sec_test\aspect.dem' );
+         //AspMap := OpenNewDEM('H:\aa_half_sec_test\aspect.dem' );
 
          DEMGlb[ElevMap].VATrelatedGrid := DEMwithVAT;
          DEMGlb[ElevMap].SelectionMap.MapDraw.MapType := mt6ColorVAToverlay;
          DEMGlb[ElevMap].SelectionMap.DoBaseMapRedraw;
-         //HistogramsFromVATDEM(DEMwithVAT,ElevMap,SlopeMap,RuffMap,AspMap);
-         HistogramsFromVATDEM(DEMwithVAT,0,0,0,AspMap);
+         HistogramsFromVATDEM(DEMwithVAT,ElevMap,SlopeMap,RuffMap,AspMap);
       end;
 
 
@@ -3465,7 +3450,7 @@ end;
 
 procedure CopyFiles(JustCopy : boolean);
 var
-   fName: PathStr;
+   SourceName, DestName : PathStr;
    NameMustHave : ShortString;
    Files : tStringList;
    i,NumCopied : integer;
@@ -3481,10 +3466,11 @@ begin
    Petmar.FindMatchingFiles(CopyFilesFromDir,'*.*',Files,6);
    for I := 0 to pred(Files.Count) do begin
      UpdateProgressBar(i/Files.Count);
-     fName := CopyFilesToDir + ExtractFileName(Files.Strings[i]);
-     if (StrUtils.AnsiContainsText(ExtractFileName(UpperCase(fName)),NameMustHave) or (NameMustHave = '')) and (not FileExists(fName)) then begin
-        if JustCopy then Petmar.CopyFile(Files.Strings[i],fName)
-        else Petmar.MoveFile(Files.Strings[i],fName);
+     SourceName := Files.Strings[i];
+     DestName := CopyFilesToDir + ExtractFileName(SourceName);
+     if (NameMustHave = '') or (StrUtils.AnsiContainsText(ExtractFileName(UpperCase(SourceName)),NameMustHave)) then begin
+        if JustCopy then Petmar.CopyFile(SourceName,DestName)
+        else Petmar.MoveFile(SourceName,DestName);
         inc(NumCopied);
      end;
      if WantOut then break;
@@ -3755,11 +3741,6 @@ begin
 end;
 
 
-procedure Twmdem.KangarooIslandadditionalscenes1Click(Sender: TObject);
-begin
-   DownloadandUnzipDataFileIfNotPresent('kangaroo_island_PA_new_scenes');
-end;
-
 procedure Twmdem.KMLKMZfile1Click(Sender: TObject);
 begin
    PickForNotePadPlusPlus(1);
@@ -3821,7 +3802,7 @@ begin
    {$IfDef RecordMenu} WriteLineToDebugFile('Twmdem.SpeedButton4Click in'); {$EndIf}
    StopSplashing;
    OutsideCSVImport := true;
-   OpenDataBase('');
+   OpenMultipleDataBases('');
    OutsideCSVImport := false;
    {$IfDef RecordMenu} writeLineToDebugFile('Twmdem.SpeedButton4Click out'); {$EndIf}
 end;
@@ -4090,19 +4071,18 @@ var
    i : integer;
 begin
    {$IfDef RecordOpenDataBase} WriteLineToDebugFile('OpenADataBase in,fName=' + fName); {$EndIf}
-
    FilesWanted := tStringList.Create;
    FilesWanted.Add(ExtractFilePath(LastDataBase));
    if GetMultipleFiles('DEMIX areas',DBMaskString,FilesWanted,MDdef.DefDBFilter) then begin
       for I := 0 to pred(FilesWanted.Count) do begin
          OpenDEMIXArea(FilesWanted.Strings[i]);
-         DEM_Manager.CloseAllWindowsAndData;
-         CleanUpTempDirectory(false);
+         if (FilesWanted.Count > 1) then begin
+            DEM_Manager.CloseAllWindowsAndData;
+            CleanUpTempDirectory(false);
+         end;
       end;
       FilesWanted.Free;
    end;
-
-   //OpenDEMIXArea;
 end;
 
 
@@ -4168,6 +4148,11 @@ begin
 {$EndIf}
 end;
 
+
+procedure Twmdem.Pixelbypixelmapstatistics1Click(Sender: TObject);
+begin
+   PixelByPixelCopAlos;
+end;
 
 procedure Twmdem.Perspective1Click(Sender: TObject);
 begin
@@ -5276,7 +5261,7 @@ begin
    Results := tStringList.Create;
    Results.Add('PARAM,MEAN,STD_DEV,MIN,MAX,MEDIAN,PERC_5,PERC_10,QUANT_25,QUANT_75,PERC_90,PERC_95,SKEWNESS,KURTOSIS');
 
-   db := OpenDataBase('training set points');
+   db := OpenMultipleDataBases('training set points');
    dbName := GISdb[db].dbFullName;
    CloseAndNilNumberedDB(db);
 
@@ -6230,7 +6215,7 @@ procedure Twmdem.OpenDatabase1Click(Sender: TObject);
 begin
    {$IfDef RecordMenu} WriteLineToDebugFile('Twmdem.OpenDatabase1Click in'); {$EndIf}
    StopSplashing;
-   OpenDataBase('');
+   OpenMultipleDataBases('');
    {$IfDef RecordMenu} WriteLineToDebugFile('Twmdem.OpenDatabase1Click out'); {$EndIf}
 end;
 

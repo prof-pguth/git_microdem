@@ -16,6 +16,7 @@ unit make_grid;
 
    {$IfDef RecordProblems}   //normally only defined for debugging specific problems
       //$Define CreateAspectMap}
+      {$Define DEMIXmaps}
       //{$Define CreateGeomorphMaps}
       //{$Define RecordTimeGridCreate}
       //{$Define RecordPointClass}
@@ -101,8 +102,11 @@ function CreateSlopeRoughnessSlopeStandardDeviationMap(DEM,RadiusMustBeOdd : int
 
 procedure MakeGammaGrids(CurDEM,BoxSize : integer);
 
+
+
 function AirBallDirtBallMap(DEMonMap,DSM,DTM : integer; fName : PathStr = '') : integer;
 function TwoDEMHighLowMap(RefDEM,DEM1,DEM2 : integer; DEMtype : shortstring; FourCats : boolean; fName2 : PathStr = '') : integer;
+function BestCopOrALOSmap(RefDEM,ALOS,Cop : integer; Tolerance : float32; AName : shortString) : integer;
 
 
 {$IfDef ExExoticMaps}
@@ -143,13 +147,14 @@ end;
 function TwoDEMHighLowMap(RefDEM,DEM1,DEM2 : integer; DEMtype : shortstring; FourCats : boolean; fName2 : PathStr = '') : integer;
 const
    SimpleTolerance = 1.51;
+   clBrown = 8732621;   //RGB(205,133,63);
    MaxHist = 9;
    LongCatName : array[1..9] of shortstring = ('Both high','ALOS high/COP good','ALOS high/COP low',
                                                 'ALOS good/COP high','Both good','ALOS good/COP low',
                                                 'ALOS low/COP high','ALOS low/COP good','Both low');
-   LongCatColor : array[1..9] of tColor = (clLime,clGreen,clBlue,
-                                                clAqua,clYellow,clTeal,
-                                                clPurple,clFuchsia,clRed);
+   LongCatColor : array[1..9] of tColor = (clBlue,clGreen,clAqua,
+                                           clYellow,clLime,clTeal,
+                                           clPurple,clFuchsia,clBrown);
 var
    i : integer;
    zDEM2,zRefDEM,zDEM1,What : float32;
@@ -306,6 +311,56 @@ begin
       DEMglb[Result].SetUpMap(Result,true,mtDEMVATTable);
    end;
 end;
+
+
+function BestCopOrALOSmap(RefDEM,ALOS,Cop : integer; Tolerance : float32; AName : shortString) : integer;
+var
+   i : integer;
+   RefZ,CopZ,ALOSZ,What : float32;
+   Lat,Long : float64;
+   x,y : integer;
+   VAT : tStringList;
+   TStr : shortstring;
+   Hist : array[1..3] of int64;
+begin
+   {$IfDef DEMIXmaps} WriteLineToDebugFile('BestCopOrALOSmap in'); {$EndIf}
+   for i := 1 to 3 do Hist[i] := 0;
+   Result := DEMGlb[RefDEM].CloneAndOpenGrid(ByteDEM,AName,euIntCode);
+   DEMglb[Result].SetEntireGridMissing;
+   StartProgressAbortOption('Best on map');
+   for x := 0 to pred(DEMGlb[RefDEM].DEMheader.NumCol) do begin
+      UpdateProgressBar(x/DEMGlb[RefDEM].DEMheader.NumCol);
+      for y := 0 to pred(DEMGlb[RefDEM].DEMheader.NumRow) do begin
+         if DEMGlb[RefDEM].GetElevMetersOnGrid(x,y,RefZ) then begin
+            DEMGlb[RefDEM].DEMGridToLatLongDegree(x,y,Lat,Long);
+               if DEMGlb[ALOS].GetElevFromLatLongDegree(Lat,Long,ALOSz) and DEMGlb[Cop].GetElevFromLatLongDegree(Lat,Long,CopZ) then begin
+                  ALOSz := abs(ALOSz - RefZ);
+                  Copz := abs(COPz - RefZ);
+                  if (ALOSZ <= Tolerance) and (COPz <= Tolerance) then What := 2
+                  else if ALOSZ < CopZ then What := 3
+                  else What := 1;
+                  DEMglb[Result].SetGridElevation(x,y,what);
+                  inc(Hist[round(what)]);
+               end;
+         end;
+      end;
+   end;
+   Vat := tStringList.Create;
+   Vat.add('VALUE,NAME,N,USE,COLOR');
+
+   if (Hist[3] > 0) then Vat.add('3,ALOS best,' + IntToStr(Hist[3]) + ',Y,' + IntToStr(clBlue));
+   if (Hist[2] > 0) then Vat.add('2,Both ± ' + RealToString(Tolerance,-5,1)  + ',' + IntToStr(Hist[2]) + ',Y,' + IntToStr(clYellow));
+   if (Hist[1] > 0) then Vat.add('1,COP best,' + IntToStr(Hist[1]) + ',Y,' + IntToStr(clLime));
+   {$IfDef DEMIXmaps} VAT.saveToFile(MDTempDir + 'results_' + aName + '.csv'); {$EndIf}
+
+   AName := MDTempDir + AName + '.vat.dbf';
+   StringList2CSVtoDB(vat,AName,true);
+   DEMGlb[Result].VATFileName := AName;
+   DEMglb[Result].CheckMaxMinElev;
+   DEMglb[Result].SetUpMap(Result,true,mtDEMVATTable);
+   {$IfDef DEMIXmaps} WriteLineToDebugFile('BestCopOrALOSmap out'); {$EndIf}
+end;
+
 
 
 function CreateStandardDeviationMap(DEM,Radius : integer) : integer;

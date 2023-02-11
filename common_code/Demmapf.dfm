@@ -776,7 +776,7 @@ object MapForm: TMapForm
       OnClick = DataBaseSpeedButton28Click
     end
     object IDSpeedButton: TSpeedButton
-      Left = 663
+      Left = 627
       Top = -4
       Width = 25
       Height = 25
@@ -1806,6 +1806,7 @@ object MapForm: TMapForm
       object Savesatelliteimage1: TMenuItem
         Caption = 'Save satellite image'
         GroupIndex = 1
+        Visible = False
         object AllbandsasGeotiffs1: TMenuItem
           Caption = 'All bands as Geotiffs at current resolution'
           GroupIndex = 1
@@ -1818,6 +1819,7 @@ object MapForm: TMapForm
         object GDALtranslatesubset1: TMenuItem
           Caption = 'GDAL translate, subset this scene to current map area'
           GroupIndex = 1
+          OnClick = GDALtranslatesubset1Click
         end
         object GDALwarpsubset1: TMenuItem
           Caption = 'GDAL warp, subset this scene to current map area'
@@ -3786,6 +3788,10 @@ object MapForm: TMapForm
           Enabled = False
           OnClick = DEMIX1secresamplewithGDAL1Click
         end
+        object ComapreUTMvsgeographic1: TMenuItem
+          Caption = 'Comapre UTM vs geographic'
+          OnClick = ComapreUTMvsgeographic1Click
+        end
         object DEMIXevaluatehalfsecondgrids1: TMenuItem
           Caption = 'Evaluate half second grids'
           OnClick = DEMIXevaluatehalfsecondgrids1Click
@@ -3796,7 +3802,7 @@ object MapForm: TMapForm
         OnClick = Derivativegrid2Click
       end
       object Multiplegridarithmetic1: TMenuItem
-        Caption = 'Multiple grid arithmetic'
+        Caption = 'Multiple grid arithmetic (map algebra)'
         object Differencebetweentwogrids2: TMenuItem
           Caption = 'Difference between two grids'
           OnClick = Differencebetweentwogrids2Click
@@ -4975,6 +4981,13 @@ object MapForm: TMapForm
       object Pointcloud1: TMenuItem
         Caption = 'Point cloud'
         OnClick = Pointcloud1Click
+      end
+      object N52: TMenuItem
+        Caption = '-'
+      end
+      object PickseriesandloadDEMsfromlibrary1: TMenuItem
+        Caption = 'Pick series and load DEMs from library'
+        OnClick = PickseriesandloadDEMsfromlibrary1Click
       end
       object DEMsfrommaplibrary1: TMenuItem
         Caption = 'DEMs from map library, this point'

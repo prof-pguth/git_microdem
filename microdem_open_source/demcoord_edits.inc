@@ -89,22 +89,25 @@ var
    Lat,Long : float64;
    z,z1 : float32;
    NewHeadRecs : tDEMheader;
+   NewAreaName : shortstring;
 begin
    {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResample)} writeLineToDebugFile('tDEMDataSet.ResampleByAveraging in, ' + AreaName + '  ' + KeyDEMParams); {$EndIf}
    NewGrid := SelectionMap.MakeTempGrid;
    {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResample)} WriteLineToDebugFile('ResampleByAveraging ' + DEMGlb[NewGrid].AreaName + '  ' + DEMGlb[NewGrid].KeyDEMParams); {$EndIf}
    NewHeadRecs := DEMGlb[NewGrid].DEMheader;
    CloseSingleDEM(NewGrid);
+   if SaveName = '' then NewAreaName := AreaName
+   else NewAreaName := ExtractFileNameNoExt(SaveName);
 
    NewHeadRecs.RasterPixelIsGeoKey1025 := MDDef.LasDEMPixelIs;
    NewHeadRecs.DEMPrecision := WordDEM;
    NewHeadRecs.ElevUnits := Undefined;
-   OpenAndZeroNewDEM(true,NewHeadRecs,CountGrid,MDTempDir + AreaName + '_resample_density',InitDEMvalue,0);
+   OpenAndZeroNewDEM(true,NewHeadRecs,CountGrid,MDTempDir + NewAreaName + '_resample_density',InitDEMvalue,0);
    {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResample)} WriteLineToDebugFile('ResampleByAveraging, ' + DEMGlb[CountGrid].AreaName + '  ' + DEMGlb[CountGrid].KeyDEMParams); {$EndIf}
 
    NewHeadRecs.DEMPrecision := FloatingPointDEM;
    NewHeadRecs.ElevUnits := euMeters;
-   OpenAndZeroNewDEM(true,NewHeadRecs,Result,MDTempDir + AreaName + '_down_sample_grid',InitDEMvalue,0);
+   OpenAndZeroNewDEM(true,NewHeadRecs,Result,MDTempDir + NewAreaName,InitDEMvalue,0);
    {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResample)} WriteLineToDebugFile('ResampleByAveraging, ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].KeyDEMParams); {$EndIf}
 
    StartProgress('Get z values ' + ExtractFileName(SaveName));
