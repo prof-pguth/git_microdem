@@ -92,6 +92,7 @@ type
     RadioGroup1: TRadioGroup;
     ScrollBar1: TScrollBar;
     BitBtn5: TBitBtn;
+    BitBtn6: TBitBtn;
     procedure BitBtn1Click(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -104,6 +105,7 @@ type
     procedure BitBtn4Click(Sender: TObject);
     procedure RadioGroup1Click(Sender: TObject);
     procedure BitBtn5Click(Sender: TObject);
+    procedure BitBtn6Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -343,6 +345,12 @@ end;
 procedure TGraphSettingsForm.BitBtn5Click(Sender: TObject);
 begin
    MDDef.DefMarginLegend := OwningGraph.GraphDraw.InsideMarginLegend;
+end;
+
+procedure TGraphSettingsForm.BitBtn6Click(Sender: TObject);
+begin
+   QueryTColor(OwningGraph.GraphDraw.GraphBackgroundColor);
+   OwningGraph.RedrawDiagram11Click(Nil);
 end;
 
 procedure TGraphSettingsForm.FormCreate(Sender: TObject);

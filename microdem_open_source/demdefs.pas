@@ -1907,6 +1907,15 @@ type
       DEMIX_DoElevParamGraphs,
       DEMIX_DoHalfSecDEMs : boolean;
 
+      HistElevBinSize,
+      HistSlopeBinSize,
+      HistRuffBinSize,
+      HistAspectBinSize : float32;
+      DoElevHist,
+      DoSlopeHist,
+      DoRuffHist,
+      DoAspectHist : boolean;
+
       SlopeFlatBoundary,
       SlopeGentleBoundary,
       SlopeSteepBoundary : float32;
@@ -1931,6 +1940,8 @@ type
       ChangeMaxRedValue,
       ChangeMinGreenValue,
       ChangeMaxGreenValue : int16;
+
+      MapOverlayOpacity : byte;
 
        MapNameLocation,
        GridLegendLocation,

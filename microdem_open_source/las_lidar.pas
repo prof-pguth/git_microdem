@@ -17,7 +17,7 @@
    {$IfDef Debug}
       //{$Define RecordLASMemoryAlocations}
       //{$Define RecordLASfiles}
-      //{$Define RecordWKT}
+      {$Define RecordWKT}
       //{$Define RecordVarLenRec}
       //{$Define RecordFirstPulse}
       //{$Define RecordReprojectLAS}

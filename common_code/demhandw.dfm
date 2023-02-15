@@ -31,6 +31,8 @@ object DemHandForm: TDemHandForm
     ScrollBars = ssVertical
     TabOrder = 0
     Visible = False
+    ExplicitWidth = 946
+    ExplicitHeight = 517
   end
   object StatusBar1: TStatusBar
     Left = 0
@@ -44,6 +46,8 @@ object DemHandForm: TDemHandForm
       item
         Width = 250
       end>
+    ExplicitTop = 517
+    ExplicitWidth = 946
   end
   object MainMenu1: TMainMenu
     Left = 24

@@ -465,7 +465,9 @@ begin
    DEMGlb[Result].AreaName := 'Change map: ' + DEMGlb[Map2].AreaName + ' to ' + DEMGlb[Map1].AreaName;
    DEMGlb[Result].DEMheader := DEMGlb[Map1].DEMheader;
    DEMGlb[Result].DEMheader.DEMPrecision := ByteDEM;
-   DEMGlb[Result].DEMheader.ElevUnits := euIntCode;
+   //DEMGlb[Result].DEMheader.ElevUnits := euIntCode;
+   if DEMGlb[Map1].ElevationGrid and DEMGlb[Map2].ElevationGrid then DEMGlb[Result].DEMheader.ElevUnits := euElevDiff else DEMGlb[Result].DEMheader.ElevUnits := euDifference;
+
    DEMGlb[Result].DEMstatus := dsUnsaved;
 
    if not DEMGlb[Result].AllocateDEMMemory(InitDEMMissing) then exit;

@@ -1548,17 +1548,22 @@ end;
 function OrigPickField(Table : tMyData; Mess: ShortString; TypesAllowed : tSetFieldType) : ShortString;
 var
   FieldsInDB : tStringList;
-  WantField  : integer;
+  WantField,i  : integer;
 begin
    with Table do begin
       GetFields(Table,AllVis,TypesAllowed,FieldsInDB,false);
       if (FieldsInDB.Count = 0) then Result := ''
       else begin
-         WantField := 0;
-         if GetFromListZeroBased('Database Field for ' + Mess,WantField,FieldsInDB,true) then begin
-            Result := FieldsInDB.Strings[WantField];
-         end
-         else Result := '';
+         for i := pred(FieldsInDB.Count) downto 0 do
+             if (UpperCase(FieldsInDB[i]) = 'USE') then FieldsInDB.Delete(i);
+         if (FieldsInDB.Count = 1) then Result := FieldsInDB.Strings[0]
+         else begin
+            WantField := 0;
+            if GetFromListZeroBased('Database Field for ' + Mess,WantField,FieldsInDB,true) then begin
+               Result := FieldsInDB.Strings[WantField];
+            end
+            else Result := '';
+         end;
       end;
    end;
    FieldsInDB.Free;

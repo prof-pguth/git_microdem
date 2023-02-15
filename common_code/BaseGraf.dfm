@@ -643,7 +643,14 @@ object ThisBaseGraph: TThisBaseGraph
     end
     object Legend2: TMenuItem
       Caption = 'Legend'
-      OnClick = Legend2Click
+      object Pasteontograph1: TMenuItem
+        Caption = 'Paste onto graph'
+        OnClick = Pasteontograph1Click
+      end
+      object Pasteontograph2: TMenuItem
+        Caption = 'New window'
+        OnClick = Pasteontograph2Click
+      end
     end
     object Grayscalegraph1: TMenuItem
       Caption = 'Grayscale graph'

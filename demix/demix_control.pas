@@ -38,6 +38,8 @@ function DEMIXColorFromDEMName(DEMName : shortstring) : tPlatformColor;
 
 procedure CopAlosCompareReference;
 procedure PixelByPixelCopAlos;
+procedure HighLowCopAlosGeomorphometry(fName : PathStr = '');
+
 
 
 //DEMIX wine contest procedures based on the database
@@ -132,8 +134,7 @@ var
    Dir : PathStr;
    Results,TheFiles : tStringList;
    Sum : float64;
-   i,j : integer;
-   Table : tMyData;
+   i,j,db : integer;
    fName : PathStr;
    aLine : shortstring;
 begin
@@ -145,15 +146,17 @@ begin
        FindMatchingFiles(Dir,Params[i],TheFiles,2);
        for j := 0 to pred(TheFiles.Count) do begin
           fName := TheFiles.Strings[j];
-          Table := tMyData.Create(fName);
-          sum := Table.FieldSum('N');
+          OpenNumberedGISDataBase(db,fName);
+          //Table := tMyData.Create(fName);
+          GISdb[db].RenameField('NAME',Names[i]);
+          sum := GISdb[db].MyData.FieldSum('N');
           aLine := LastSubDir(ExtractFilePath(fName)) + ',' + Names[i];
-          Table.First;
-          while not Table.eof do begin
-             aline := aline + ',' + RealToString(100 * Table.GetFieldByNameAsInteger('N') / Sum,-12,-2);
-             Table.Next;
+          GISdb[db].MyData.First;
+          while not GISdb[db].MyData.eof do begin
+             aline := aline + ',' + RealToString(100 * GISdb[db].MyData.GetFieldByNameAsInteger('N') / Sum,-12,-2);
+             GISdb[db].MyData.Next;
           end;
-          Table.Destroy;
+          //Table.Destroy;
           Results.Add(aline);
        end;
        TheFiles.Destroy;
@@ -1068,17 +1071,89 @@ begin
 end;
 
 
+const
+   ALOSHalfSecfName = 'alos.dem';
+   CopHalfSecfName = 'cop.dem';
+
+   HalfSecRefDSMfName = 'ref_dsm.dem';
+   HalfSecRefDTMfName = 'ref_dtm.dem';
+
+   COP_ALOS_DifffName = 'cop-alos-diff.dem';
+   COP_ALOS_DSM4fName = 'cop-alos-dsm4.dem';
+   COP_ALOS_DTM4fName = 'cop-alos-dtm4.dem';
+   COP_ALOS_DSM9fName = 'cop-alos-dsm9.dem';
+   COP_ALOS_DTM9fName = 'cop-alos-dtm9.dem';
+   SlopeMapfName = 'slope_ref_dtm.dem';
+   RuffMapfName = 'roughness_ref_dtm.dem';
+   AspectMapfName = 'aspect_ref_dtm.dem';
+   BestCOP_ALOS_slopefName = 'best_slope_ref_dtm.dem';
+   BestCOP_ALOS_rufffName = 'best_roughness_ref_dtm.dem';
+   BestCOP_ALOS_elevfName = 'best_elev_ref_dtm.dem';
+
+   DTMElevDiffMapALOSfName = 'elev_diff_dtm_alos.tif';
+   DTMElevDiffMapCOPfName = 'elev_diff_dtm_cop.tif';
+   DTMSlopeDiffMapALOSfName = 'slope_diff_dtm_alos.tif';
+   DTMSlopeDiffMapCOPfName = 'slope_diff_dtm_cop.tif';
+   DTMRuffDiffMapALOSfName = 'ruff_diff_dtm_alos.tif';
+   DTMRuffDiffMapCOPfName = 'ruff_diff_dtm_cop.tif';
+
+
+procedure HighLowCopAlosGeomorphometry(fName : PathStr = '');
+var
+   AreaName : shortString;
+   SaveDir : PathStr;
+   HalfSecRefDTM,SlopeMap,RuffMap,AspectMap,
+   DTMElevDiffMapALOS,DTMElevDiffMapCOP : integer;
+
+
+   procedure DifferenceStats(DEM,RefDEM : integer);
+   var
+      Diff5,Diff95 : float32;
+   begin
+       Diff5 := DEMGlb[DEM].FindPercentileElevation(5);
+       Diff95 := DEMGlb[DEM].FindPercentileElevation(95);
+   end;
+
+
+begin
+   if FileExists(fName) or GetFileFromDirectory('DEMIX area database','*.dbf',fName) then begin
+      {$IfDef RecordDEMIX} writeLineToDebugFile('HighLowCopAlosGeomorphometry ' + fName); {$EndIf}
+      AreaName := ExtractFileNameNoExt(fName);
+      SaveDir := 'H:\aa_half_sec_test\' + AreaName + '\';
+
+      DTMElevDiffMapALOS := OpenNewDEM(SaveDir + 'elev_diff_dtm_alos.tif');
+      DTMElevDiffMapCOP := OpenNewDEM(SaveDir + 'elev_diff_dtm_cop.tif');
+
+      HalfSecRefDTM := OpenNewDEM(SaveDir + 'ref_dtm.dem');
+      SlopeMap := OpenNewDEM(SaveDir + 'slope_ref_dtm.dem');
+      RuffMap := OpenNewDEM(SaveDir + 'roughness_ref_dtm.dem');
+      AspectMap := OpenNewDEM(SaveDir + 'aspect_ref_dtm.dem');
+
+      if FileExists(SaveDir + 'slope_ref_dtm.dem') then begin
+         SlopeMap := OpenNewDEM(SaveDir + 'slope_ref_dtm.dem');
+         RuffMap := OpenNewDEM(SaveDir + 'roughness_ref_dtm.dem');
+      end
+      else begin
+         SlopeMap := -1;   //forces creation of slope and roughness maps
+         RuffMap := CreateSlopeRoughnessSlopeStandardDeviationMap(HalfSecRefDTM,3,SlopeMap);
+         AspectMap := MakeAspectMap(HalfSecRefDTM);
+      end;
+   end;
+end;
+
+
+
 procedure OpenDEMIXArea(fName : PathStr = '');
 //these are currently hard wired in the code, but eventually might be options enabled at run time
 const
    DEMIX_Movie = false;
-   OverwriteFiles = true;
-   DEMIX_SaveDEMs = true;
+   OverwriteFiles = false;
+   DEMIX_SaveDEMs = false;
    DEMIX_HalfSecondCompareMaps = true;
-   DEMIX_GeomorphMapsBestDEM = true;
-   DEMIX_MakeDifferenceMaps = true;
+   DEMIX_GeomorphMapsBestDEM = false;
+   DEMIX_MakeDifferenceMaps = false;
    DEMIX_GeomorphMaps = false;
-   DEMIXhistograms = false;
+   DEMIXhistograms = true;
 var
    AreaName : shortstring;
    HalfSec : array[1..10] of integer;

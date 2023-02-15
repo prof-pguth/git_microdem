@@ -671,6 +671,7 @@ begin
    if (NumPts > 0) then CheckMaxMinElev;
 end;
 
+
 procedure tDEMDataSet.MarkBelowMissing(HighVal : float64; var NumPts : integer);
 var
    x, y : integer;

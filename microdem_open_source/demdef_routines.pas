@@ -1581,6 +1581,19 @@ var
             AParameter('Geomorph','BatchRegionSize4',BatchRegionSize[4],750);
             AParameter('Geomorph','BatchRegionSize5',BatchRegionSize[5],1000);
             AParameter('Geomorph','ElevBinSize',ElevBinSize,1);
+
+            AParameter('Geomorph','DoElevHist',DoElevHist,true);
+            AParameter('Geomorph','DoSlopeHist',DoSlopeHist,true);
+            AParameter('Geomorph','DoRuffHist',DoRuffHist,true);
+            AParameter('Geomorph','DoAspectHist',DoAspectHist,true);
+
+
+            AParameterShortFloat('Geomorph','HistElevBinSize',HistElevBinSize,20);
+            AParameterShortFloat('Geomorph','HistSlopeBinSize',HistSlopeBinSize,1);
+            AParameterShortFloat('Geomorph','HistRuffSlopeBinSize',HistRuffBinSize, 0.5);
+            AParameterShortFloat('Geomorph','HistAspectBinSize',HistAspectBinSize, 2);
+
+
             AParameterShortFloat('Geomorph','HistBinSize',HistBinSize,1);
             AParameterShortFloat('Geomorph','BicubicSlope',BicubicSlope,1);
 
@@ -2644,7 +2657,6 @@ var
          AParameterShortFloat('Misc','BottomCutLevel',BottomCutLevel,-1);
 
          AParameter('Misc','DEMIX_Full',DEMIX_Full,100);
-
          AParameterShortFloat('Misc','SlopeFlatBoundary',SlopeFlatBoundary,12.5);
          AParameterShortFloat('Misc','SlopeGentleBoundary',SlopeGentleBoundary,25);
          AParameterShortFloat('Misc','SlopeSteepBoundary',SlopeSteepBoundary,50);
@@ -3350,6 +3362,7 @@ var
 
          AParameter('MapDraw','t_epsg',t_epsg,32631);
          AParameter('MapDraw','a_epsg',a_epsg,28992);
+         AParameter('MapDraw','MapOverlayOpacity',MapOverlayOpacity,50);
 
          ASymbol('MapDraw','KeyLocationSymbol',KeyLocationSymbol,FilledBox,claRed,3);
          ASymbol('MapDraw','HighlightSymbol',HighlightSymbol,FilledBox,claBlack,3);

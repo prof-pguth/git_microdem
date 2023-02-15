@@ -222,11 +222,12 @@ begin
       Vat.add('VALUE,NAME,N,USE,COLOR');
       if FourCats then begin
          if (Hist[5] > 0) then Vat.add('5,Both high,' + IntToStr(Hist[5]) + ',Y,' + IntToStr(clBlue));
-         if (Hist[3] > 0) then Vat.add('3,Both ' + DEMtype +' ± ' + RealToString(SimpleTolerance,-5,1) + ',' + IntToStr(Hist[3]) + ',Y,' + IntToStr(clLime));
+         if (Hist[3] > 0) then Vat.add('3,Both ' + DEMtype + ' ± ' + RealToString(SimpleTolerance,-5,1) + ',' + IntToStr(Hist[3]) + ',Y,' + IntToStr(clLime));
          if (Hist[1] > 0) then Vat.add('1,Both low,' + IntToStr(Hist[1]) + ',Y,' + IntToStr(clBrown));
          if (Hist[6] > 0) then Vat.add('6,Complex,' + IntToStr(Hist[6]) + ',Y,' + IntToStr(clYellow));
       end
       else begin
+         LongCatName[5] := 'Both good ± ' + RealToString(SimpleTolerance,-5,1);
          for i := 1 to 9 do if (Hist[i] > 0) then Vat.add(IntToStr(i) + ',' + LongCatName[i] + ',' + IntToStr(Hist[i]) + ',Y,' + IntToStr(LongCatColor[i]));
       end;
       //{$If Defined(RecordDEMCompare)} WriteLineToDebugFile(''); WriteLineToDebugFile('TwoDEMHighLowMap VAT'); WriteStringListToDebugFile(VAT); WriteLineToDebugFile(''); {$EndIf}

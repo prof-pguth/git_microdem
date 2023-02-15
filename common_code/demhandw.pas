@@ -418,6 +418,7 @@ var
 
 function MakeGraphFromSOESTtides(fName : PathStr; var Lat,Long : float64; var Year1,Year2 : integer; var StationName : shortString) :  TThisBaseGraph;
 procedure JSONtoShapefile(fname : pathStr);
+procedure CopyFiles(JustCopyNotMove : boolean);
 
 
 implementation
@@ -522,6 +523,39 @@ type
 var
    LastCompressedFile,XYZName : PathStr;
 
+
+
+procedure CopyFiles(JustCopyNotMove : boolean);
+var
+   SourceName, DestName : PathStr;
+   NameMustHave : ShortString;
+   Files : tStringList;
+   i,NumCopied : integer;
+begin
+   GetDOSPath('input directory',CopyFilesFromDir);
+   GetDOSPath('output directory',CopyFilesToDir);
+   NameMustHave := 'dem';
+   PetMar.GetString('File name must contain',NameMustHave,false,ReasonableTextChars);
+   NameMustHave := UpperCase(NameMustHave);
+   NumCopied := 0;
+   StartProgressAbortOption('Copy');
+   Files := Nil;
+   Petmar.FindMatchingFiles(CopyFilesFromDir,'*.*',Files,6);
+   for I := 0 to pred(Files.Count) do begin
+     UpdateProgressBar(i/Files.Count);
+     SourceName := Files.Strings[i];
+     DestName := CopyFilesToDir + ExtractFileName(SourceName);
+     if (NameMustHave = '') or (StrUtils.AnsiContainsText(ExtractFileName(UpperCase(SourceName)),NameMustHave)) then begin
+        if JustCopyNotMove then Petmar.CopyFile(SourceName,DestName)
+        else Petmar.MoveFile(SourceName,DestName);
+        inc(NumCopied);
+     end;
+     if WantOut then break;
+   end;
+   Files.Free;
+   EndProgress;
+   MessageToContinue('Files copied: ' + IntToStr(NumCopied));
+end;
 
 
 {$IfDef ExAdvancedGIS}

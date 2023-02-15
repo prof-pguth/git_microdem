@@ -37,9 +37,10 @@ type
     { Private declarations }
   public
     { Public declarations }
+    AutoClose : boolean;
   end;
 
-procedure SetGridDiffernceProperties;
+procedure SetGridDiffernceProperties(inAutoClose : boolean = true);
 
 implementation
 
@@ -49,7 +50,7 @@ uses
    Petmar,petmar_types,DEMDefs, nevadia_main;
 
 
-procedure SetGridDiffernceProperties;
+procedure SetGridDiffernceProperties(inAutoClose : boolean = true);
 var
    GridDiffForm: TGridDiffForm;
 begin
@@ -60,6 +61,7 @@ begin
    GridDiffForm.CheckBox4.Checked := MDDef.HighlightDiffMap;
    GridDiffForm.Edit1.Text := RealToString(abs(MDDef.TopCutLevel),-8,-2);
    PlaceFormInCorner(WMDEM,GridDiffForm,lpCenterMap);
+   GridDiffForm.AutoClose := inAutoClose;
    GridDiffForm.ShowModal;
 end;
 
@@ -71,7 +73,7 @@ begin
    MDDef.ShowScatterplot := CheckBox3.Checked;
    CheckEditString(Edit1.Text,MDDef.TopCutLevel);
    MDDef.BottomCutLevel := -MDDef.TopCutLevel;
-   Close;
+   if AutoClose then Close;
 end;
 
 

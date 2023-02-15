@@ -144,7 +144,6 @@ type
 
   {$IfDef ExCompare}
   {$Else}
-      //procedure GridDiffernces(EntireDEM : boolean);
       procedure MissingPointsInGrids(DEM1 : integer = 0; DEM2 : integer = 0);
       function GridScatterGram(FullGrid : boolean; DEM1 : integer = 0; DEM2 : integer = 0) : TThisBaseGraph;
       procedure GridCoOccurrence(AutoFull : boolean = false; DEM1 : integer = 0; DEM2 : integer = 0; Percentages : boolean = true);
@@ -257,28 +256,29 @@ var
 
 procedure HistogramsFromVATDEM(DEMwithVAT,ElevMap,SlopeMap,RuffMap,AspMap : integer);
 const
-   MaxCodes = 10;
+   MaxCodes = 100;
 Type
    tDistCount = array[1..MaxCodes] of integer;
    pbfarray32 = ^bfarray32;
    tDistArray = array[1..MaxCodes] of pbfarray32;
    tNames = array[1..MaxCodes] of shortstring;
 var
-   VAT : tMyData;
+   VAT : integer;  //tMyData;
    i,j,NumCodes : integer;
    Codes : array[1..MaxCodes] of integer;
-   CodeLUT : array[0..255] of integer;
    Names : tNames;
+   Colors : tStringList;
+   CountField : shortstring;
    ElevDist,SlopeDist,RuffDist,AspDist : tDistArray;
    ElevDistCount,SlopeDistCount,RuffDistCount,AspDistCount : tDistCount;
 
    procedure CreateDistribution;
    var
-      Col,Row,ThisCode : integer;
+      Col,Row,ThisCode,i : integer;
       zf : float32;
       Lat,Long : float64;
 
-            procedure MakeOneHistogram(DEM,BinSize : integer; Names : tNames; DistCount : tDistCount; Dist : tDistArray; aTitle : shortstring);
+            procedure MakeOneHistogram(DEM : integer; BinSize : float32; Names : tNames;  DistCount : tDistCount; Dist : tDistArray; aTitle : shortstring);
             var
                i : integer;
                fName : PathStr;
@@ -288,15 +288,16 @@ var
                   {$IfDef RecordHistogramFromVAT} HighlightLineToDebugFile(aTitle + '  MakeOneHistogram in, dem=' + IntToStr(DEM)); {$EndIf}
                   ElevFiles := tStringList.Create;
                   LegendFiles := tStringList.Create;
-                  for i := 1 to MaxCodes do begin
+                  for i := 1 to NumCodes do begin
                      if (DistCount[i] > 0) then begin
                         fName := NextFileNumber(MDTempDir,'dist_file_','.z');
                         SaveSingleValueSeries(DistCount[i],Dist[i]^,fName);
                         ElevFiles.Add(fName);
                         LegendFiles.Add(Names[i]);
+                        {$IfDef RecordHistogramFromVAT} HighlightLineToDebugFile(Names[i] + '  ' + Colors[pred(i)] + '  ' + fName); {$EndIf}
                      end;
                   end;
-                  CreateMultipleHistograms(MDDef.CountHistograms,ElevFiles,LegendFiles,BeforeSpecifiedCharacterANSI(aTitle,' '),aTitle,100,DEMglb[DEM].DEMheader.MinElev,DEMglb[DEM].DEMheader.MaxElev,BinSize);
+                  CreateMultipleHistograms(MDDef.CountHistograms,ElevFiles,LegendFiles,BeforeSpecifiedCharacterANSI(aTitle,' '),aTitle,100,DEMglb[DEM].DEMheader.MinElev,DEMglb[DEM].DEMheader.MaxElev,BinSize,Colors);
                   ElevFiles.Free;
                   LegendFiles.Free;
                end;
@@ -307,71 +308,108 @@ var
       for Col := 0 to pred(DEMGlb[DEMwithVAT].DEMheader.NumCol) do begin
          for Row := 0 to pred(DEMGlb[DEMwithVAT].DEMheader.NumRow) do begin
             if DEMGlb[DEMwithVAT].GetElevMetersOnGrid(Col,Row,zf) then begin
-               ThisCode := CodeLUT[round(zf)];
-               DEMGlb[DEMwithVAT].DEMGridToLatLongDegree(Col,Row,Lat,Long);
-               if ValidDEM(ElevMap) and (DEMGlb[ElevMap].GetElevFromLatLongDegree(Lat,long,zf)) then begin
-                  inc(ElevDistCount[ThisCode]);
-                  ElevDist[ThisCode]^[ElevDistCount[ThisCode]] := zf;
+                //ThisCode := CodeLUT[round(zf)];
+
+              ThisCode := round(zf);
+               for I := 1 to succ(NumCodes) do begin
+                  if (i = succ(NumCodes)) then ThisCode := 0;
+                  
+                  if ThisCode = Codes[i] then begin
+                     ThisCode := i;
+                     break;
+                  end;
                end;
-               if ValidDEM(SlopeMap) and (DEMGlb[SlopeMap].GetElevFromLatLongDegree(Lat,long,zf)) then begin
-                  inc(SlopeDistCount[ThisCode]);
-                  SlopeDist[ThisCode]^[SlopeDistCount[ThisCode]] := zf;
-               end;
-               if ValidDEM(RuffMap) and (DEMGlb[RuffMap].GetElevFromLatLongDegree(Lat,long,zf)) then begin
-                  inc(RuffDistCount[ThisCode]);
-                  RuffDist[ThisCode]^[RuffDistCount[ThisCode]] := zf;
-               end;
-               if ValidDEM(AspMap) and (DEMGlb[AspMap].GetElevFromLatLongDegree(Lat,long,zf)) then begin
-                  inc(AspDistCount[ThisCode]);
-                  AspDist[ThisCode]^[AspDistCount[ThisCode]] := zf;
+
+               if (ThisCode > 0) then begin
+                  DEMGlb[DEMwithVAT].DEMGridToLatLongDegree(Col,Row,Lat,Long);
+                  if ValidDEM(ElevMap) and (DEMGlb[ElevMap].GetElevFromLatLongDegree(Lat,long,zf)) then begin
+                     inc(ElevDistCount[ThisCode]);
+                     ElevDist[ThisCode]^[ElevDistCount[ThisCode]] := zf;
+                  end;
+                  if ValidDEM(SlopeMap) and (DEMGlb[SlopeMap].GetElevFromLatLongDegree(Lat,long,zf)) then begin
+                     inc(SlopeDistCount[ThisCode]);
+                     SlopeDist[ThisCode]^[SlopeDistCount[ThisCode]] := zf;
+                  end;
+                  if ValidDEM(RuffMap) and (DEMGlb[RuffMap].GetElevFromLatLongDegree(Lat,long,zf)) then begin
+                     inc(RuffDistCount[ThisCode]);
+                     RuffDist[ThisCode]^[RuffDistCount[ThisCode]] := zf;
+                  end;
+                  if ValidDEM(AspMap) and (DEMGlb[AspMap].GetElevFromLatLongDegree(Lat,long,zf)) then begin
+                     inc(AspDistCount[ThisCode]);
+                     AspDist[ThisCode]^[AspDistCount[ThisCode]] := zf;
+                  end;
                end;
             end;
          end;
       end;
-      MakeOneHistogram(ElevMap,20,Names,ElevDistCount,ElevDist,'Elevation (m)');
-      MakeOneHistogram(SlopeMap,2,Names,SlopeDistCount,SlopeDist,'Slope (%)');
-      MakeOneHistogram(RuffMap,1,Names,RuffDistCount,RuffDist,'Roughness (%)');
-      MakeOneHistogram(AspMap,1,Names,AspDistCount,AspDist,'Aspect (' + DegSym + ')');
+
+      MDDef.HistElevBinSize := 20;
+      MDDef.HistSlopeBinSize := 1;
+      MDDef.HistRuffBinSize  := 0.5;
+      MDDef.HistAspectBinSize := 2;
+
+
+      MDDef.DoElevHist := true;
+      MDDef.DoSlopeHist := true;
+      MDDef.DoRuffHist := false;
+      MDDef.DoAspectHist := true;
+
+      if MDDef.DoElevHist then MakeOneHistogram(ElevMap,MDDef.HistElevBinSize,Names,ElevDistCount,ElevDist,'Elevation (m)');
+      if MDDef.DoSlopeHist then MakeOneHistogram(SlopeMap,MDDef.HistSlopeBinSize,Names,SlopeDistCount,SlopeDist,'Slope (%)');
+      if MDDef.DoRuffHist then MakeOneHistogram(RuffMap,MDDef.HistRuffBinSize,Names,RuffDistCount,RuffDist,'Roughness (%)');
+      if MDDef.DoAspectHist then MakeOneHistogram(AspMap,MDDef.HistAspectBinSize,Names,AspDistCount,AspDist,'Aspect (' + DegSym + ')');
    end;
 
-
+const
+   PtRequiredInCat = 2500;
+var
+   Sum : float64;
 begin
+
    {$IfDef RecordHistogramFromVAT} WriteLineToDebugFile('HistogramsFromVATDEM in, DEM=' + IntToStr(DEMwithVAT)); {$EndIf}
    if not ValidDEM(DEMwithVAT) then exit;
-
-   VAT := tMyData.Create(DEMGlb[DEMwithVAT].VATFileName);
-   NumCodes := 0;
-   while not VAT.eof do begin
-      if (NumCodes = MaxCodes) then begin
-         MessageToContinue('Reached number of codes limit=' + IntToStr(MaxCodes));
-         Break;
+   if OpenNumberedGISDataBase(VAT,DEMGlb[DEMwithVAT].VATFileName) then begin
+      if (not GISdb[VAT].MyData.FieldExists(GISdb[VAT].dbOpts.LabelField)) then GISdb[VAT].dbOpts.LabelField := GISdb[VAT].PickField('label field',[ftstring],true);
+      CountField := 'COUNT';
+      if (not GISdb[VAT].MyData.FieldExists(CountField)) then CountField := 'N';
+      Sum := GISdb[VAT].MyData.FieldSum(CountField);
+      GISdb[VAT].ApplyGISFilter(CountField + '>=' + IntToStr(PtRequiredInCat) );
+      NumCodes := 0;
+      Colors := tStringList.Create;
+      while not GISdb[VAT].MyData.eof do begin
+         inc(NumCodes);
+         Codes[NumCodes] := GISdb[VAT].MyData.GetFieldByNameAsInteger('VALUE');
+         Colors.Add(IntToStr(GISdb[VAT].MyData.TColorFromTable));
+         Names[NumCodes] := RealToString(100 * GISdb[VAT].MyData.GetFieldByNameAsInteger(CountField) / Sum, 8,2) + '%   ' + GISdb[VAT].MyData.GetFieldByNameAsString(GISdb[VAT].dbOpts.LabelField);
+        {$IfDef RecordHistogramFromVAT} WriteLineToDebugFile(IntToStr(NumCodes) + IntegerToString(Codes[NumCodes],8) + '  ' + Names[NumCodes]); {$EndIf}
+         GISdb[VAT].MyData.Next;
+         if (NumCodes >= MaxCodes) then begin
+            MessageToContinue('Reached number of codes limit=' + IntToStr(MaxCodes));
+            Break;
+         end;
       end;
-      inc(NumCodes);
-      Codes[NumCodes] := VAT.GetFieldByNameAsInteger('VALUE');
-      CodeLUT[Codes[NumCodes]] := NumCodes;
-      Names[NumCodes] := VAT.GetFieldByNameAsString('NAME');
-      VAT.Next;
-   end;
-   VAT.Destroy;
+      GISdb[VAT].MyData.Destroy;
 
-   for i := 1 to MaxCodes do begin
-      if ValidDEM(ElevMap) then new(ElevDist[i]);
-      if ValidDEM(SlopeMap) then new(SlopeDist[i]);
-      if ValidDEM(RuffMap) then new(RuffDist[i]);
-      if ValidDEM(AspMap) then new(AspDist[i]);
-      ElevDistCount[i] := 0;
-      SlopeDistCount[i] := 0;
-      RuffDistCount[i] := 0;
-      AspDistCount[i] := 0;
-   end;
+      for i := 1 to MaxCodes do begin
+         if ValidDEM(ElevMap) then new(ElevDist[i]);
+         if ValidDEM(SlopeMap) then new(SlopeDist[i]);
+         if ValidDEM(RuffMap) then new(RuffDist[i]);
+         if ValidDEM(AspMap) then new(AspDist[i]);
+         ElevDistCount[i] := 0;
+         SlopeDistCount[i] := 0;
+         RuffDistCount[i] := 0;
+         AspDistCount[i] := 0;
+      end;
 
-   CreateDistribution;
+      CreateDistribution;
 
-   for i := 1 to MaxCodes do begin
-      if ValidDEM(ElevMap) then Dispose(ElevDist[i]);
-      if ValidDEM(SlopeMap) then Dispose(SlopeDist[i]);
-      if ValidDEM(RuffMap) then Dispose(RuffDist[i]);
-      if ValidDEM(AspMap) then Dispose(AspDist[i]);
+      for i := 1 to MaxCodes do begin
+         if ValidDEM(ElevMap) then Dispose(ElevDist[i]);
+         if ValidDEM(SlopeMap) then Dispose(SlopeDist[i]);
+         if ValidDEM(RuffMap) then Dispose(RuffDist[i]);
+         if ValidDEM(AspMap) then Dispose(AspDist[i]);
+      end;
+      Colors.Destroy;
    end;
    {$IfDef RecordHistogramFromVAT} WriteLineToDebugFile('HistogramsFromVATDEM out'); {$EndIf}
 end;
@@ -379,7 +417,6 @@ end;
 
 var
    NumDone,NumToDo : integer;
-
 
 procedure Lag_and_Shift(ColC,RowC : integer; MainDEM,SubDEM : integer; GridLimits : tGridLimits; var NPts,XWhereMaxR,YWhereMaxR : integer; var MaxR,NoLagR,ZRange,AvgSlope,BestA,BestB : float64; CorrelationMatrix : tStringList = Nil);
 var

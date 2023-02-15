@@ -2162,9 +2162,9 @@ var
    files : tStringList;
    fName : PathStr;
 begin
-   ReadDefault('Number of Columns',MDDef.BigBM_Nc);
    files := tStringList.Create;
    Files.LoadFromFile(BigBM_files);
+   ReadDefault('Number of Columns (images to combine =' + IntToStr(files.Count) + ')',MDDef.BigBM_Nc);
    bmp := CombineBitmaps(MDDef.BigBM_Nc,files,BigBM_Capt);
    fName := NextFileNumber(MDTempDir,'new_cols_','.bmp');
    BMP.saveToFile(fName);

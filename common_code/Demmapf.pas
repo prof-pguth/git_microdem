@@ -1431,6 +1431,11 @@ type
     PickseriesandloadDEMsfromlibrary1: TMenuItem;
     N52: TMenuItem;
     ComapreUTMvsgeographic1: TMenuItem;
+    hiscoverageareaandsamepixelsize1: TMenuItem;
+    NDVI3: TMenuItem;
+    NBR1: TMenuItem;
+    Elevationdifference1: TMenuItem;
+    Genericdifference1: TMenuItem;
     //procedure HiresintervisibilityDEM1Click(Sender: TObject);
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
@@ -2475,6 +2480,11 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Changemap2Click(Sender: TObject);
     procedure PickseriesandloadDEMsfromlibrary1Click(Sender: TObject);
     procedure ComapreUTMvsgeographic1Click(Sender: TObject);
+    procedure hiscoverageareaandsamepixelsize1Click(Sender: TObject);
+    procedure NDVI3Click(Sender: TObject);
+    procedure NBR1Click(Sender: TObject);
+    procedure Elevationdifference1Click(Sender: TObject);
+    procedure Genericdifference1Click(Sender: TObject);
     //procedure QuarterDEM1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
@@ -2624,6 +2634,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
      DrSymbol   : tFullSymbolDeclaration;
 
      DEMeditForm : TDEMeditForm;
+     SliderDrapeMap,
      ZoomWindow  : tMapForm;
 
      {$IfDef ExGeology}
@@ -3200,6 +3211,7 @@ uses
    {$EndIf}
 
    DEMIX_control,
+   Monitor_Change_Form,
    DEM_sat_Header,
    ufrmMain,
    aspect_colors,
@@ -7004,10 +7016,7 @@ end;
 
 procedure TMapForm.Changemap2Click(Sender: TObject);
 begin
-   ReadDefault('Tolerance level for highlights',MDDef.TopCutLevel);
-   MDDef.TopCutLevel := abs(MDDef.TopCutLevel);
-   MDDef.BottomCutLevel := -MDDef.TopCutLevel;
-   DoBaseMapRedraw;
+   ModifyChangeMapSettings(Self);
 end;
 
 procedure TMapForm.N3Drotatingglobe1Click(Sender: TObject);
@@ -7885,7 +7894,6 @@ begin
       Weather2.Visible := (MDDef.ProgramOption in [ExpertProgram,GeographyProgram]);
 
       Integercode1.Visible := ExpertDEMVersion and (DEMGlb[MapDraw.DEMonMap].DEMheader.DEMPrecision in [byteDEM,SmallIntDEM,WordDEM]);
-
 
      N3Drotatingglobe1.Visible := (MapDraw.PrimMapProj.PName in [PlateCaree]) and MapDraw.PrimMapProj.FullWorld and (not FullMapSpeedButton.Enabled);
 
@@ -10087,6 +10095,11 @@ begin
    MakeTempGrid(true,true);
 end;
 
+procedure TMapForm.Genericdifference1Click(Sender: TObject);
+begin
+   ChangeElevUnits(euDifference);
+end;
+
 procedure TMapForm.Geocodeaddress1Click(Sender: TObject);
 var
    Lat,Long : float64;
@@ -11056,11 +11069,11 @@ var
    Maps : tStringList;
    i,j,Num : integer;
 begin
-   //Maps := tStringList.Create;
    PickMaps(Maps,'Maps for 3D view (max ' + IntToStr(MaxClouds) + ')');
    if (Maps.Count > 0) then begin
-      AllMapsMatchThisCoverageArea1Click(Nil);
-      Allsamepixelsizeasthismap1Click(Sender);
+      //AllMapsMatchThisCoverageArea1Click(Nil);
+      //Allsamepixelsizeasthismap1Click(Sender);
+      hiscoverageareaandsamepixelsize1Click(Sender);
       Viewer := MapTo3DView(Self.MapDraw);
       Num := 1;
       for i := 0 to pred(WMDEM.MDIChildCount) do begin
@@ -11181,7 +11194,7 @@ begin
    Self.Left := 0;
    CopyImageToBitmap(Image1,MapBaseBMP);
    BlendPanel.Height := 45;
-   TrackBar2.Position := 50;
+   TrackBar2.Position := MDDef.MapOverlayOpacity;
    SetClientHeight;
 end;
 
@@ -14168,6 +14181,12 @@ begin
    end;
 end;
 
+procedure TMapForm.hiscoverageareaandsamepixelsize1Click(Sender: TObject);
+begin
+   AllMapsMatchThisCoverageArea1Click(Sender);
+   Allsamepixelsizeasthismap1Click(Sender);
+end;
+
 procedure TMapForm.hismap1Click(Sender: TObject);
 begin
    if (MapDraw.ValidDEMonMap) then begin
@@ -16733,6 +16752,11 @@ begin
 end;
 
 
+procedure TMapForm.Elevationdifference1Click(Sender: TObject);
+begin
+   ChangeElevUnits(euElevDiff);
+end;
+
 procedure TMapForm.Elevation2Click(Sender: TObject);
 begin
    Elevationcolors1Click(Sender);
@@ -18542,27 +18566,26 @@ begin
 {$Else}
 var
    n1 : integer;
-   DrapeMap  : tMapForm;
 begin
    {$IfDef RecordMergecolorscene} WriteLineToDebugFile('TMapForm.Mergecolorscene1Click in'); {$EndIf}
    n1 := PickADifferentMap('map to overlay on ' + Self.Caption,Self.Caption);
-   DrapeMap := WMDEM.MDIChildren[n1] as tMapForm;
+   SliderDrapeMap := WMDEM.MDIChildren[n1] as tMapForm;
    {$IfDef RecordMergecolorscene} WriteLineToDebugFile('merge=' + DrapeMap.Caption); {$EndIf}
 
-   if (Self.MapDraw.BasicProjection <> DrapeMap.MapDraw.BasicProjection) then begin
+   if (Self.MapDraw.BasicProjection <> SliderDrapeMap.MapDraw.BasicProjection) then begin
       MessageToContinue(IncMapTypes);
       exit;
    end;
 
-   MatchMapToThisOne(DrapeMap);
+   MatchMapToThisOne(SliderDrapeMap);
 
    {$IfDef RecordMergecolorscene} WriteLineToDebugFile('TMapForm.Mergecolorscene1Click set up'); {$EndIf}
 
    if (Sender = Variableopaquemerge1) then begin
       {$IfDef RecordMergecolorscene} WriteLineToDebugFile('Sender = Variableopaquemerge1'); {$EndIf}
-      CopyImageToBitmap(DrapeMap.Image1,OverlayOpaqueBMP);
+      CopyImageToBitmap(SliderDrapeMap.Image1,OverlayOpaqueBMP);
       SetUpTopForm;
-      Caption := 'Opacity 0= ' + RemoveUnderscores(Self.MapDraw.BaseTitle) + ' ----- Opacity 100= ' + RemoveUnderscores(DrapeMap.MapDraw.BaseTitle);
+      Caption := 'Opacity 0= ' + RemoveUnderscores(Self.MapDraw.BaseTitle) + ' ----- Opacity 100= ' + RemoveUnderscores(SliderDrapeMap.MapDraw.BaseTitle);
    end;
 {$EndIf}
 end;
@@ -19811,6 +19834,7 @@ end;
 
 procedure TMapForm.Variableopaquemerge1Click(Sender: TObject);
 begin
+   hiscoverageareaandsamepixelsize1Click(Sender);
    MergeColorScene1Click(Sender);
 end;
 
@@ -19827,8 +19851,15 @@ var
    Bitmap : tMyBitmap;
 begin
     Bitmap := BlendBitmaps(MapBaseBMP,OverlayOpaqueBMP,0.01 * TrackBar2.Position);
+
+    if (SliderDrapeMap.MapDraw.LegendOverlayfName <> '') then begin
+                      //bmp := DrawLegendOnBitmap;
+       SliderDrapeMap.MapDraw.DrawLegendsOnMap(Bitmap);
+    end;
+
     Image1.Picture.Graphic := Bitmap;
     Bitmap.Free;
+    MDDef.MapOverlayOpacity := TrackBar2.Position;
 end;
 
 
@@ -19837,6 +19868,7 @@ begin
    NoMovingForm := false;
    FreeAndNil(OverlayOpaqueBMP);
    FreeAndNil(MapBaseBMP);
+   SliderDrapeMap := Nil;
    BlendPanel.Height := 0;
    Caption := Self.MapDraw.BaseTitle;
 
@@ -21435,6 +21467,11 @@ begin
    end;
 end;
 
+procedure TMapForm.NBR1Click(Sender: TObject);
+begin
+   ChangeElevUnits(euNBR);
+end;
+
 function TMapForm.NewSatWindow(nsb : tNewSatBand) : integer;
 begin
    {$IfDef ExSat}
@@ -21464,6 +21501,11 @@ end;
 procedure TMapForm.NDVI1Click(Sender: TObject);
 begin
    NewSatWindow(nsbNDVI);
+end;
+
+procedure TMapForm.NDVI3Click(Sender: TObject);
+begin
+   ChangeElevUnits(euNDVI);
 end;
 
 procedure TMapForm.NDVIofperenctilesmonthly1Click(Sender: TObject);
@@ -23148,7 +23190,6 @@ begin
    for i := 0 to pred(WMDEM.MDIChildCount) do
       if WMDEM.MDIChildren[i] is tMapForm then begin
           if (WmDEM.MDIChildren[i].Handle <> Handle) then begin
-            // if MapDraw.BasicProjection = (WMDEM.MDIChildren[i] as TMapForm).MapDraw.BasicProjection then begin
              if SameProjection(MapDraw, (WMDEM.MDIChildren[i] as TMapForm).MapDraw) then begin
                 (WMDEM.MDIChildren[i] as TMapForm).MapDraw.MapCorners.BoundBoxProj := MapDraw.MapCorners.BoundBoxProj;
                 (WMDEM.MDIChildren[i] as TMapForm).SubsetAndZoomMapFromProjectedBounds(Sender <> Nil);
@@ -23157,6 +23198,8 @@ begin
              (WMDEM.MDIChildren[i] as TMapForm).FullMapSpeedButton.Enabled := true;
           end;
       end;
+
+   UpdateMenusForAllMaps;
 end;
 
 
@@ -23626,7 +23669,7 @@ var
    i : integer;
 begin
    for i := 0 to pred(WMDEM.MDIChildCount) do
-      if WMDEM.MDIChildren[i] is tMapForm {and (WmDEM.MDIChildren[i].Handle <> Handle)} then begin
+      if WMDEM.MDIChildren[i] is tMapForm then begin
          (WMDEM.MDIChildren[i] as TMapForm).ResizeByPercentage(100);
       end;
 end;

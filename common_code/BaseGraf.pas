@@ -21,6 +21,7 @@ unit BaseGraf;
        //{$Define RecordGrafAxes}
        //{$Define RecordFormResize}
        {$Define RecordHistogram}
+       {$Define RecordHistogramColors}
        //{$Define RecordFullGrafAxes}
        //{$Define RecordLegends}
        //{$Define RecordSaveSeries}
@@ -317,6 +318,8 @@ type
     Sentinel22: TMenuItem;
     Spot51: TMenuItem;
     Exportgraphdata1: TMenuItem;
+    Pasteontograph1: TMenuItem;
+    Pasteontograph2: TMenuItem;
     procedure IDSpeedButtonClick(Sender: TObject);
     procedure LegendSpeedButtonClick(Sender: TObject);
     procedure Bestfitlinecolor1Click(Sender: TObject);
@@ -377,7 +380,6 @@ type
     procedure Alongyaxis2Click(Sender: TObject);
     procedure Blowupmap1Click(Sender: TObject);
     procedure Pastefromclipboard1Click(Sender: TObject);
-    procedure Legend2Click(Sender: TObject);
     procedure SpeedButton9Click(Sender: TObject);
     procedure SpeedButton10Click(Sender: TObject);
     procedure Zcolorrange1Click(Sender: TObject);
@@ -403,6 +405,8 @@ type
     procedure Sentinel21Click(Sender: TObject);
     procedure Sentinel22Click(Sender: TObject);
     procedure Spot51Click(Sender: TObject);
+    procedure Pasteontograph1Click(Sender: TObject);
+    procedure Pasteontograph2Click(Sender: TObject);
   private
     { Private declarations }
      procedure WindowACCORD(Canvas : TCanvas; ContInterval,NumContourLines,NumDataPoints : integer; Pnt : tPointerPnt; XMin,YMin,ZMin,DataX : float32; ColorFunction : ColorFunctionType; SaveTIN : PathStr = '');
@@ -528,7 +532,7 @@ function Linear(x : float32) : float32;
 function SaveSingleValueSeries(NumVals : integer; var zs : Petmath.bfarray32; fName : PathStr = '' {; First : integer = 0; Last : integer = -999}) : PathStr;
 
 function CreateMultipleHistograms(GraphNumbers : boolean; FileList,LegendList : tStringList; ParamName,TitleBar : ShortString;
-    NumBins : integer = 100; Min : float32 = 1; Max : float32 = -1; BinSize : float32 =  -99) : TThisBaseGraph;
+    NumBins : integer = 100; Min : float32 = 1; Max : float32 = -1; BinSize : float32 =  -99; TColorList : tStringList = Nil) : TThisBaseGraph;
 
 function DeprecatedCreateHistogram(GraphNumbers : boolean; NumVals : integer; var values : Petmath.bfarray32; ParamName,TitleBar : ShortString) : TThisBaseGraph;
 
@@ -656,7 +660,6 @@ label
 var
    fName : shortstring;
    Graph : tThisBaseGraph;
-   //y1,y2 : float64;
    x1,x2 : float64;
    dx,Cum : float32;
    Bot,Top,Left,Right,MaxCount,
@@ -781,7 +784,7 @@ end;
 
 
 function CreateMultipleHistograms(GraphNumbers : boolean; FileList,LegendList : tStringList; ParamName,TitleBar : ShortString;
-    NumBins : integer = 100; Min : float32 = 1; Max : float32 = -1; BinSize : float32 =  -99) : TThisBaseGraph;
+    NumBins : integer = 100; Min : float32 = 1; Max : float32 = -1; BinSize : float32 =  -99; TColorList : tStringList = Nil) : TThisBaseGraph;
 Label
    CleanUp;
 const
@@ -951,10 +954,25 @@ begin
    Result.GraphDraw.MinVertAxis := 0;
    Result.GraphDraw.MaxVertAxis := MaxCount;
 
+   if (TColorList <> Nil) then begin
+      for i := 1 to TColorList.Count do begin
+         {$IfDef RecordHistogramColors} writeLineToDebugFile(IntToStr(i) + '  ' + TcolorList.Strings[pred(i)]); {$EndIf}
+         if i <= 255 then begin
+            Result.GraphDraw.Symbol[i].Color := ConvertTColorToPlatformColor(StrToInt(TcolorList.Strings[pred(i)]));
+            Result.GraphDraw.FileColors256[i] := ConvertTColorToPlatformColor(StrToInt(TcolorList.Strings[pred(i)]));
+         end;
+      end;
+      for i := 1 to TColorList.Count do begin
+         if i <= 15 then Result.GraphDraw.Symbol[i].Color := ConvertTColorToPlatformColor(StrToInt(TcolorList.Strings[pred(i)]));
+      end;
+   end;
+
+
    {$IfDef RecordHistogram} writeLineToDebugFile('CreateMultipleHistograms ProcessSeries over, NumBins=' + IntToStr(NumBins) + '  ' + Result.GraphDraw.AxisRange); {$EndIf}
    Result.AutoScaleAndRedrawDiagram(false,false,false,false);
 
-   if StackedPercents then begin
+   if false and StackedPercents then begin
+   //2/23/2023, this is disable becauase Graph3 is crashing; Graph2 had not been working either; this needs to be looked at
       {$IfDef RecordHistogram} writeLineToDebugFile('Start StackedPercents'); {$EndIf}
       TStr := l1;
       for I := 0 to pred(FileList.Count) do TStr := TStr + ',' + 'SERIES_' + IntToStr(succ(i));
@@ -2906,6 +2924,20 @@ begin
       CopyImageToBitmap(Image1,SavedGraphImage);
       GraphDoing := gdDragEdit;
    end;
+end;
+
+procedure TThisBaseGraph.Pasteontograph1Click(Sender: TObject);
+begin
+   Legend1Click(Sender);
+end;
+
+procedure TThisBaseGraph.Pasteontograph2Click(Sender: TObject);
+var
+   bmp : tMyBitmap;
+begin
+   bmp := MakeLegend(GraphDraw.LegendList,false);
+   DisplayBitmap(bmp,'Legend',true,true);
+   bmp.Destroy;
 end;
 
 procedure TThisBaseGraph.PlotAFile(Bitmap : tMyBitmap; inf : PathStr; Count : integer);
@@ -5121,7 +5153,6 @@ begin
              if GraphDraw.InsideMarginLegend in [lpNWMap,lpSWMap] then xi := GraphDraw.LeftMargin else xi := GraphDraw.XWindowSize - GraphDraw.RightMargin - bmp.Width;
           end;
           {$If Defined(RecordLegends)} WritelineToDebugFile('Draw legend inside graph, at x=' + IntToStr(xi) + '  y=' + IntToStr(yi)); bmp.SaveToFile(MDtempDir + 'legend.bmp'); {$EndIf}
-
           Bitmap.Canvas.Draw(xi,yi,bmp);
           bmp.Free;
        end;
@@ -5463,7 +5494,9 @@ var
    TStr : shortString;
 begin
    {$If Defined(RecordGraphColors) or Defined(RecordLegends)} WritelineToDebugFile('TThisBaseGraph.MakeLegend'); {$EndIf}
-   CreateBitmap(Result,1000,ItemHigh*Flist.Count+4);
+   CreateBitmap(Result,1500,ItemHigh*Flist.Count+4);
+   ClearBitmap(Result,GraphDraw.GraphBackgroundColor);
+
    MaxLen := 0;
 
    for i := 1 to fList.Count do begin
@@ -5520,11 +5553,6 @@ begin
 {$EndIf}
 end;
 
-
-procedure TThisBaseGraph.Legend2Click(Sender: TObject);
-begin
-   Legend1Click(Sender);
-end;
 
 procedure TThisBaseGraph.Alongxaxis2Click(Sender: TObject);
 {$IfDef ExFourier}

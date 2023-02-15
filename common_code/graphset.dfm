@@ -309,7 +309,7 @@ object GraphSettingsForm: TGraphSettingsForm
     Top = 8
     Width = 313
     Height = 185
-    ActivePage = TabSheet1
+    ActivePage = TabSheet4
     TabOrder = 20
     object TabSheet1: TTabSheet
       Caption = 'X axis'
@@ -517,6 +517,15 @@ object GraphSettingsForm: TGraphSettingsForm
         Height = 21
         TabOrder = 1
         Visible = False
+      end
+      object BitBtn6: TBitBtn
+        Left = 28
+        Top = 76
+        Width = 141
+        Height = 25
+        Caption = 'Graph background'
+        TabOrder = 2
+        OnClick = BitBtn6Click
       end
     end
   end

@@ -100,6 +100,129 @@
 {$EndIf}
 
 
+
+function tMapDraw.MakeVATLegend : tMyBitmap;
+var
+   Cat,x,y,Cats,Total,Needed,z,i,CatHeight : integer;
+   xg,fTotal : float64;
+   fName : PathStr;
+   Table : tMyData;
+   CatPCforLegend : float64;
+   zf : float32;
+   aColor : tColor;
+   NameField,CodeField : ShortString;
+   Hist : array[MinVATValue..MaxVatCats] of integer;
+begin
+   fName := DEMGlb[DEMOnMap].VATFileName;
+   if FileExists(fName) then begin
+      {$IfDef RecordVAT} WriteLineToDebugFile('TMapForm.GridVATlegend1Click found=' + fName); {$EndIf}
+   end
+   else begin
+      fName := DEMGlb[DEMOnMap].DEMFileName + '.vat.dbf';
+      if not FileExists(fName) then fName := ChangeFileExt(DEMGlb[DEMOnMap].DEMFileName,'.vat.dbf');
+      if not FileExists(fName) then fName := DEMGlb[DEMOnMap].DEMFileName + '.vat.csv';
+      if not FileExists(fName) then exit;
+      DEMGlb[DEMOnMap].VATFileName := fName;
+   end;
+   Table := tMyData.Create(fName);
+   if (Table.FiltRecsInDB > 16) then begin
+      CatPCforLegend := 2;
+      ReadDefault('Min category percentage for legend',CatPCforLegend);
+   end
+   else CatPCforLegend := 0;
+
+   if Table.FieldExists('CODE') then CodeField := 'CODE' else CodeField := 'VALUE';
+
+   ShowHourglassCursor;
+   for x := MinVATValue to MaxVATCats do Hist[x] := 0;
+
+   Total := 0;
+   fTotal := 0;
+   if Table.FieldExists('NAME') then NameField := 'NAME'
+   else begin
+      NameField := OrigPickField(Table,'Label',[ftString]);
+   end;
+
+   if true then begin
+      for y := round(MapCorners.BoundBoxDataGrid.ymin) to round(MapCorners.BoundBoxDataGrid.ymax) do begin
+         for x := round(MapCorners.BoundBoxDataGrid.xmin) to round(MapCorners.BoundBoxDataGrid.xmax) do begin
+            if DEMGlb[DEMonMap].GetElevMetersOnGrid(x,y,zf) then begin
+               z := round(zf);
+               if (z >= MinVATValue) and (z <= MaxVatCats) then begin
+                  Inc(Hist[z]);
+                  Inc(Total);
+               end;
+            end;
+         end;
+      end;
+      fTotal := Total;
+      //AField := 'N_SUB';
+      Table.First;
+      while not Table.eof do begin
+         i := Table.GetFieldByNameAsInteger(CodeField);
+         Table.Edit;
+         if (i >= 0) and (i <= MaxVATCats) then Table.SetFieldByNameAsInteger(Table.NCountField,Hist[i])
+         else Table.SetFieldByNameAsInteger(Table.NCountField,0);
+         Table.Next;
+      end;
+   end
+   else begin
+      //AField := Table.NCountField;
+      while not Table.eof do begin
+         fTotal := fTotal + Table.GetFieldByNameAsInteger(Table.NCountField);
+         Table.Next;
+      end;
+   end;
+
+   Needed := round(0.01 * CatPCforLegend * fTotal);
+   Table.ApplyFilter(Table.NCountField + ' > ' + IntToStr(Needed));
+   if false then begin
+      CatHeight := 40;
+      //Result.Canvas.Font.Size := 22;
+   end
+   else begin
+      CatHeight := 25;
+      //Result.Canvas.Font.Size := 12;
+   end;
+
+   Cats := Table.FiltRecsInDB;
+   CreateBitmap(Result,1200,CatHeight*succ(Cats) + 4);
+
+   if false then begin
+      //CatHeight := 40;
+      Result.Canvas.Font.Size := 22;
+   end
+   else begin
+      //CatHeight := 25;
+      Result.Canvas.Font.Size := 12;
+   end;
+
+   Cat := 0;
+
+   ClearBitmap(Result,clNearWhite);
+   Result.Canvas.Font.Style := [fsBold];
+
+   Result.Canvas.TextOut(5,1,'    % Area     ' + NameField);
+   while not Table.eof do begin
+      xg := 100.0*Table.GetFieldByNameAsInteger(Table.NCountField)/fTotal;
+      inc(Cat);
+      aColor := Table.tColorFromTable;
+      Result.Canvas.Pen.Color := aColor;
+      Result.Canvas.Brush.Color := aColor;
+      Result.Canvas.Brush.Style := bsSolid;
+      Result.Canvas.Rectangle(5,(Cat)*CatHeight,25,succ(Cat)*CatHeight);
+      Result.Canvas.Brush.Style := bsClear;
+      Result.Canvas.TextOut(30,Cat*CatHeight + 4, RealToString(xg,10,2) + '  ' + Table.GetFieldByNameAsString(NameField));
+      Table.Next;
+   end;
+   //Result.Height := succ(Cats)*CatHeight + 4;
+   PutBitmapInBox(Result);
+   ShowDefaultCursor;
+   Table.Destroy;
+   {$IfDef RecordVAT} WriteLineToDebugFile('TMapForm.GridVATlegend1Click created=' + fName); {$EndIf}
+end;
+
+
 {$IfDef ExGazetteer}
 {$Else}
 
@@ -910,7 +1033,12 @@
                end;
             end;
 
-            if (MapType = mtDEMVATTable) then begin
+            if MapType = mtGGRReflect then begin
+               //MDDef.TopCutLevel := abs(MDDef.TopCutLevel);
+               //MDDef.BottomCutLevel := -MDDef.TopCutLevel;
+
+            end
+            else if (MapType = mtDEMVATTable) then begin
                Result := MakeVATLegend;
             end;
 

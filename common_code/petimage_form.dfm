@@ -26,8 +26,8 @@ object ImageDisplayForm: TImageDisplayForm
     Height = 347
     Align = alClient
     TabOrder = 0
-    ExplicitWidth = 879
-    ExplicitHeight = 368
+    ExplicitWidth = 871
+    ExplicitHeight = 326
     object Image1: TImage
       Left = -2
       Top = 3
@@ -48,8 +48,8 @@ object ImageDisplayForm: TImageDisplayForm
     Align = alBottom
     Caption = 'Panel1'
     TabOrder = 1
-    ExplicitTop = 394
-    ExplicitWidth = 879
+    ExplicitTop = 352
+    ExplicitWidth = 871
   end
   object ToolBar1: TToolBar
     Left = 0
@@ -60,6 +60,7 @@ object ImageDisplayForm: TImageDisplayForm
     ParentShowHint = False
     ShowHint = True
     TabOrder = 2
+    ExplicitWidth = 871
     object SpeedButton2: TSpeedButton
       Left = 0
       Top = 0
@@ -361,8 +362,8 @@ object ImageDisplayForm: TImageDisplayForm
       item
         Width = 50
       end>
-    ExplicitTop = 394
-    ExplicitWidth = 879
+    ExplicitTop = 352
+    ExplicitWidth = 871
   end
   object Panel2: TPanel
     Left = 0
@@ -371,8 +372,8 @@ object ImageDisplayForm: TImageDisplayForm
     Height = 41
     Align = alBottom
     TabOrder = 4
-    ExplicitTop = 394
-    ExplicitWidth = 879
+    ExplicitTop = 352
+    ExplicitWidth = 871
     object TrackBar1: TTrackBar
       Left = 240
       Top = 6
@@ -778,7 +779,7 @@ object ImageDisplayForm: TImageDisplayForm
     Top = 186
   end
   object ColorDialog2: TColorDialog
-    Left = 98
+    Left = 146
     Top = 186
   end
   object OpenPictureDialog1: TOpenPictureDialog

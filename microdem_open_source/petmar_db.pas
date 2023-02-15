@@ -353,36 +353,6 @@ end;
 
 
 
-(*
-procedure CleanAddField(MyData : tMyData; fName : PathStr; ft : TFieldType; FieldName : ANSIString; FieldLength : integer; FieldDecimals : integer = 0);
-   var
-      Oldname : PathStr;
-      NewFieldDefs : TDbfFieldDefs;
-      NewFieldDef : TDbfFieldDef;
-      CreateDataBase : tCreateDataBase;
-begin
-            //https://forum.lazarus.freepascal.org/index.php?topic=36670.0
-            MyData.Destroy;
-            // create new field list
-            NewFieldDefs := TDbfFieldDefs.Create(MyData);
-            // assign current list
-            NewFieldDefs.Assign (MyData);
-
-            // add a  field
-            NewFieldDef := NewFieldDefs. AddFieldDef;
-            NewFieldDef.FieldName := FieldName;
-            NewFieldDef.FieldType := ft;
-            NewFieldDef.Size := FieldLength;
-            NewFieldDef.Precision := FieldDecimals;
-            // restructure table and pack
-            MyData.RestructureTable( NewFieldDefs , true );
-            NewFieldDefs.Free;
-            //TheBDETable.Create(FullTableName);
-
-end;
-*)
-
-
 function tMyData.InsureFieldPresentAndAdded(ft : TFieldType; FieldName : ANSIString; FieldLength : integer; FieldDecimals : integer = 0) : boolean;
 
 
@@ -1962,7 +1932,6 @@ begin
 end;
 
 
-
 function tMyData.FieldTypeAndLength(WantFieldName : ANSIString) : Ansistring;
 var
    i : integer;
@@ -2684,6 +2653,7 @@ finalization
    {$IfDef RecordSQLite} WriteLineToDebugFile('RecordSQLite active in petmar_db'); {$EndIf}
    {$IfDef TrackCDStiming} WriteLineToDebugFile('TrackCDStiming active in petmar_db'); {$EndIf}
 end.
+
 
 
 

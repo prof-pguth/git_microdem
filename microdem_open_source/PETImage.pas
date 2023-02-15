@@ -645,15 +645,12 @@ begin
          if FileExists(theFiles.Strings[n]) then begin
             bmp := LoadBitmapFromFile(theFiles.Strings[n]);
             FindImagePartOfBitmap(Bmp,Left,Right,Top,Bottom);
-            //bmp.SaveToFile(MDTempDir + 'bmp-' + IntToStr(n) + '.bmp');
             if (Result = nil) then begin
                SingleWide := bmp.Width + 25;
                SingleHigh := bmp.Height + 25;
                if Result = nil then CreateBitmap(Result,nc * SingleWide + 10,nr * SingleHigh + 60);
-               //Result.SaveToFile(MDTempDir + 'step-0.bmp');
             end;
             Result.Canvas.Draw( 5 + (n mod nc) * SingleWide, (n div nc) * SingleHigh + 15,bmp);
-            //Result.SaveToFile(MDTempDir + 'step-' + IntToStr(n) + '.bmp');
             bmp.Free;
          end;
       end;
@@ -663,7 +660,6 @@ begin
          GetImagePartOfBitmap(Result);
          {$IfDef RecordBigBitmap}  WriteLineToDebugFile('CombineBitmaps out, bmp=' + BitmapSizeString(Result)); {$EndIf}
       end;
-      //GetImagePartOfBitmap(Result);
    end;
 end;
 
@@ -730,7 +726,7 @@ begin
    {$IfDef RecordBigBitmap}  WriteLineToDebugFile('MakeBigBitmap in'); {$EndIf}
    Result := false;
    if (TheFiles.Count > 0) then begin
-     AskCols := Cols < 0;
+     AskCols := (Cols < 0);
      if AskCols then begin
         Cols := MDDef.BigBM_nc;
      end;

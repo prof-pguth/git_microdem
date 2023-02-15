@@ -7,7 +7,7 @@ unit DEMCoord;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
 
@@ -2233,8 +2233,7 @@ var
             //DoDatumShift;
          end;
 
-         if DEMHeader.RasterPixelIsGeoKey1025 in [0,1] then begin
-            //area or undefined
+         if DEMHeader.RasterPixelIsGeoKey1025 in [0,1] then begin  //area or undefined
             ComputeSWCornerX := DEMHeader.DEMSWCornerX + 0.5 * DEMHeader.DEMxSpacing;
             ComputeSWCornerY := DEMHeader.DEMSWCornerY + 0.5 * DEMHeader.DEMySpacing;
             {$IfDef RecordHalfPixelShift} WriteLineToDebugFile('Half pixel shift applied for DEM=' + AreaName + '  X=' + RealToString(ComputeSWCornerX,-18,-6) + '  Y=' + RealToString(ComputeSWCornerY,-18,-6)); {$EndIf}
@@ -2259,8 +2258,7 @@ var
         UTMtoLatLongDegree(XUTM1,YUTM1,l1,l2);
         LatSizeMap := l1-DEMSWcornerLat;
         LongSizeMap := l2 - DEMSWcornerLong;;
-        for i := 0 to Pred(DEMheader.NumRow) do begin
-           //valid for UTM and other projected DEMs
+        for i := 0 to Pred(DEMheader.NumRow) do begin   //valid for UTM and other projected DEMs
            XSpaceByDEMrow^[i] := AverageXSpace;
            DiagSpaceByDEMrow^[i] := sqrt(sqr(AverageXSpace) + sqr(AverageYSpace));
         end;
@@ -2352,8 +2350,6 @@ begin {tDEMDataSet.DefineDEMVariables}
 
    GridSpacingDetails(DEMBoundBoxDataGrid,AverageXSpace,AverageYSpace,AverageSpace,AverageGridTrue);
    AverageDiaSpace := Sqrt(Sqr(AverageXSpace) + Sqr(AverageYSpace));
-  // RefVertExag := MDDef.RefVertExagLargeScaleDEM;
-
    {$If Defined(RecordReadDEM) or Defined(RecordDefineDatum) or Defined(RecordCreateNewDEM)} WriteLineToDebugFile('tDEMDataSet.DefineDEMVariables ' + AreaName + ' out, ' + DEMMapProjection.KeyDatumParams); {$EndIf}
    {$IfDef RecordDEMMapProjection} DEMMapProjection.ProjectionParamsToDebugFile('tDEMDataSet.DefineDEMVariables in'); {$EndIf}
    {$IfDef RecordCreateNewDEM} WriteLineToDebugFile('tDEMDataSet.DefineDEMVariables in, proj=' + DEMMapProjection.GetProjectionName); {$EndIf}
@@ -2847,8 +2843,8 @@ begin
       RefMaxElev := DEMheader.MaxElev;   //max elevation in DEM, meters
    end
    else begin
-      RefMinElev := Min;   //min elevation in DEM, meters
-      RefMaxElev := Max;   //max elevation in DEM, meters
+      RefMinElev := Min; //min elevation in DEM, meters
+      RefMaxElev := Max; //max elevation in DEM, meters
    end;
 end;
 
@@ -2909,20 +2905,6 @@ begin
    end;
 end;
 
-
-(*
-
-procedure tDEMDataSet.GetReflectanceRGB(TintedReflectance : tMapType; zv : float64; var Red,Green,Blue : integer);
-var
-   zi : integer;
-begin
-   zi := round(zv - RefMinElev) * 6 div round(RefMaxElev - RefMinElev);
-       { 0  : Blue}   { 1  : Cyan}  { 2  : Green} { 3  : Yellow}  { 4  : Red } { 5  : Magneta}
-    if zi in [3,4,5,6] then Red := 1 else Red := 0;
-    if zi in [1,2,3] then Green := 1 else Green := 0;
-    if zi in [0,1,5,6] then Blue := 1 else Blue := 0;
-end;
-*)
 
 function tDEMDataSet.ReflectanceColor(TintedReflectance : tMapType; x,y : integer) : tcolor;
 begin

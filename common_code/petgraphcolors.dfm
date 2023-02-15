@@ -2,7 +2,7 @@ object graphcolorsform: Tgraphcolorsform
   Left = 461
   Top = 306
   Caption = 'Graph Symbols and Lines'
-  ClientHeight = 188
+  ClientHeight = 195
   ClientWidth = 385
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET

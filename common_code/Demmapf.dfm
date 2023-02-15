@@ -1161,8 +1161,8 @@ object MapForm: TMapForm
       OnClick = MrSidSpeedButtonClick
     end
     object DEMSpeedButton25: TSpeedButton
-      Left = 1244
-      Top = 5
+      Left = 1238
+      Top = -4
       Width = 25
       Height = 25
       Caption = 'DEM'
@@ -1175,8 +1175,8 @@ object MapForm: TMapForm
       Visible = False
     end
     object AnaglyphSpeedButton: TSpeedButton
-      Left = 1269
-      Top = 5
+      Left = 1265
+      Top = 3
       Width = 25
       Height = 25
       Hint = 'Make map anaglyph'
@@ -2606,6 +2606,22 @@ object MapForm: TMapForm
           Caption = 'Imagery'
           OnClick = Imagery1Click
         end
+        object NDVI3: TMenuItem
+          Caption = 'NDVI'
+          OnClick = NDVI3Click
+        end
+        object NBR1: TMenuItem
+          Caption = 'NBR'
+          OnClick = NBR1Click
+        end
+        object Elevationdifference1: TMenuItem
+          Caption = 'Elevation difference'
+          OnClick = Elevationdifference1Click
+        end
+        object Genericdifference1: TMenuItem
+          Caption = 'Generic difference'
+          OnClick = Genericdifference1Click
+        end
       end
       object Verticaldatumshift1: TMenuItem
         Caption = 'Vertical datum shift'
@@ -3035,10 +3051,10 @@ object MapForm: TMapForm
           GroupIndex = 1
           OnClick = Flickermovie1Click
         end
-      end
-      object OpenGLdrapeonanotherDEM1: TMenuItem
-        Caption = 'OpenGL, drape on another DEM'
-        GroupIndex = 1
+        object OpenGLdrapeonanotherDEM1: TMenuItem
+          Caption = 'OpenGL, drape on another DEM'
+          GroupIndex = 1
+        end
       end
       object Overlaysvariableopaque1: TMenuItem
         Caption = 'Overlays variable opaque'
@@ -3804,7 +3820,7 @@ object MapForm: TMapForm
       object Multiplegridarithmetic1: TMenuItem
         Caption = 'Multiple grid arithmetic (map algebra)'
         object Differencebetweentwogrids2: TMenuItem
-          Caption = 'Difference between two grids'
+          Caption = 'Difference/change between two grids'
           OnClick = Differencebetweentwogrids2Click
         end
         object Dif: TMenuItem
@@ -4828,7 +4844,7 @@ object MapForm: TMapForm
       OnClick = Reflectanceoptions1Click
     end
     object Changemap2: TMenuItem
-      Caption = 'Change map'
+      Caption = 'Difference/Change map'
       OnClick = Changemap2Click
     end
     object Aspectoptions1: TMenuItem
@@ -6332,6 +6348,10 @@ object MapForm: TMapForm
   object MatchMapsPopupMenu: TPopupMenu
     Left = 556
     Top = 428
+    object hiscoverageareaandsamepixelsize1: TMenuItem
+      Caption = 'This coverage area and same pixel size'
+      OnClick = hiscoverageareaandsamepixelsize1Click
+    end
     object Allmapsmatchthiscoveragearea1: TMenuItem
       Caption = 'This coverage area'
       GroupIndex = 1

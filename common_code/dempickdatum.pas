@@ -94,8 +94,7 @@ begin
       UZ := MDDef.DefaultUTMZone;
    end;
    if MDdef.RememberUTM then MDDef.DefaultUTMZone := UZ;
-
-   Label2.Caption := UTMZoneExtent(Uz);
+   if UZ in [1..60] then Label2.Caption := UTMZoneExtent(Uz);
 end;
 
 

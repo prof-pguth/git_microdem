@@ -4,7 +4,7 @@
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
 
@@ -825,112 +825,6 @@ begin
       end;
    end;
 end;
-
-
-function tMapDraw.MakeVATLegend : tMyBitmap;
-var
-   Cat,x,y,Cats,Total,Needed,z,i : integer;
-   xg,fTotal : float64;
-   fName : PathStr;
-   Table : tMyData;
-   CatPCforLegend : float64;
-   zf : float32;
-   aColor : tColor;
-   NameField,CodeField : ShortString;
-   Hist : array[MinVATValue..MaxVatCats] of integer;
-begin
-   fName := DEMGlb[DEMOnMap].VATFileName;
-   if FileExists(fName) then begin
-      {$IfDef RecordVAT} WriteLineToDebugFile('TMapForm.GridVATlegend1Click found=' + fName); {$EndIf}
-   end
-   else begin
-      fName := DEMGlb[DEMOnMap].DEMFileName + '.vat.dbf';
-      if not FileExists(fName) then fName := ChangeFileExt(DEMGlb[DEMOnMap].DEMFileName,'.vat.dbf');
-      if not FileExists(fName) then fName := DEMGlb[DEMOnMap].DEMFileName + '.vat.csv';
-      if not FileExists(fName) then exit;
-      DEMGlb[DEMOnMap].VATFileName := fName;
-   end;
-   Table := tMyData.Create(fName);
-   if (Table.FiltRecsInDB > 16) then begin
-      CatPCforLegend := 2;
-      ReadDefault('Min category percentage for legend',CatPCforLegend);
-   end
-   else CatPCforLegend := 0;
-
-   if Table.FieldExists('CODE') then CodeField := 'CODE' else CodeField := 'VALUE';
-
-   ShowHourglassCursor;
-   for x := MinVATValue to MaxVATCats do Hist[x] := 0;
-
-   Total := 0;
-   fTotal := 0;
-   if Table.FieldExists('NAME') then NameField := 'NAME'
-   else begin
-      NameField := OrigPickField(Table,'Label',[ftString]);
-   end;
-
-   if true then begin
-      for y := round(MapCorners.BoundBoxDataGrid.ymin) to round(MapCorners.BoundBoxDataGrid.ymax) do begin
-         for x := round(MapCorners.BoundBoxDataGrid.xmin) to round(MapCorners.BoundBoxDataGrid.xmax) do begin
-            if DEMGlb[DEMonMap].GetElevMetersOnGrid(x,y,zf) then begin
-               z := round(zf);
-               if (z >= MinVATValue) and (z <= MaxVatCats) then begin
-                  Inc(Hist[z]);
-                  Inc(Total);
-               end;
-            end;
-         end;
-      end;
-      fTotal := Total;
-      //AField := 'N_SUB';
-      Table.First;
-      while not Table.eof do begin
-         i := Table.GetFieldByNameAsInteger(CodeField);
-         Table.Edit;
-         if (i >= 0) and (i <= MaxVATCats) then Table.SetFieldByNameAsInteger(Table.NCountField,Hist[i])
-         else Table.SetFieldByNameAsInteger(Table.NCountField,0);
-         Table.Next;
-      end;
-   end
-   else begin
-      //AField := Table.NCountField;
-      while not Table.eof do begin
-         fTotal := fTotal + Table.GetFieldByNameAsInteger(Table.NCountField);
-         Table.Next;
-      end;
-   end;
-
-   Needed := round(0.01 * CatPCforLegend * fTotal);
-   Table.ApplyFilter(Table.NCountField + ' > ' + IntToStr(Needed));
-   Cats := Table.FiltRecsInDB;
-
-   Cat := 0;
-   CreateBitmap(Result,1200,25*succ(Cats) + 4);
-
-   ClearBitmap(Result,clNearWhite);
-   Result.Canvas.Font.Size := 12;
-   Result.Canvas.Font.Style := [fsBold];
-
-   Result.Canvas.TextOut(5,1,'    % Area     Category');
-   while not Table.eof do begin
-      xg := 100.0*Table.GetFieldByNameAsInteger(Table.NCountField)/fTotal;
-      inc(Cat);
-      aColor := Table.tColorFromTable;
-      Result.Canvas.Pen.Color := aColor;
-      Result.Canvas.Brush.Color := aColor;
-      Result.Canvas.Brush.Style := bsSolid;
-      Result.Canvas.Rectangle(5,(Cat)*25,25,succ(Cat)*25);
-      Result.Canvas.Brush.Style := bsClear;
-      Result.Canvas.TextOut(30,Cat*25 + 4, RealToString(xg,10,2) + '  ' + Table.GetFieldByNameAsString(NameField));
-      Table.Next;
-   end;
-   Result.Height := succ(Cats)*25 + 4;
-   PutBitmapInBox(Result);
-   ShowDefaultCursor;
-   Table.Destroy;
-   {$IfDef RecordVAT} WriteLineToDebugFile('TMapForm.GridVATlegend1Click created=' + fName); {$EndIf}
-end;
-
 
 
 

@@ -533,6 +533,7 @@ type
     N2022fillseason1: TMenuItem;
     COPALOScomparetoreference1: TMenuItem;
     Pixelbypixelmapstatistics1: TMenuItem;
+    COPALOShighlowgeomorphometry1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -908,6 +909,7 @@ type
     procedure N2022fillseason1Click(Sender: TObject);
     procedure COPALOScomparetoreference1Click(Sender: TObject);
     procedure Pixelbypixelmapstatistics1Click(Sender: TObject);
+    procedure COPALOShighlowgeomorphometry1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -2185,18 +2187,20 @@ procedure Twmdem.SeeIfThereAreDebugThingsToDo;
       procedure Histies;
       var
          DEMwithVAT,ElevMap,SlopeMap,RuffMap,AspMap : integer;
+         Area : shortstring;
+         Dir : PathStr;
       begin
          ElevMap := 0;
          SlopeMap := 0;
          RuffMap := 0;
          AspMap := 0;
-         DEMwithVAT := OpenNewDEM('H:\aa_half_sec_test\COP-ALOS_compare_DTM.dem' );
-         ElevMap  := OpenNewDEM('H:\aa_half_sec_test\dtm_elev.dem' );
-         (*
-         SlopeMap  := OpenNewDEM('H:\aa_half_sec_test\slope.dem' );
-         RuffMap := OpenNewDEM('H:\aa_half_sec_test\ruff.dem' );
-         *)
-         //AspMap := OpenNewDEM('H:\aa_half_sec_test\aspect.dem' );
+         Area := 'canyon_range';
+         Dir := 'H:\aa_half_sec_test\' + Area + '\';
+         DEMwithVAT := OpenNewDEM(Dir + 'cop-alos-dtm4.dem' );
+         ElevMap  := OpenNewDEM(Dir + 'ref_dtm.dem' );
+         SlopeMap  := OpenNewDEM(Dir + 'cop-alos-dtm4.dem' );
+         RuffMap := OpenNewDEM(Dir + 'cop-alos-dtm4.dem');
+         AspMap := OpenNewDEM(Dir + 'cop-alos-dtm4.dem' );
 
          DEMGlb[ElevMap].VATrelatedGrid := DEMwithVAT;
          DEMGlb[ElevMap].SelectionMap.MapDraw.MapType := mt6ColorVAToverlay;
@@ -3426,6 +3430,11 @@ begin
    CopAlosCompareReference;
 end;
 
+procedure Twmdem.COPALOShighlowgeomorphometry1Click(Sender: TObject);
+begin
+   HighLowCopAlosGeomorphometry;
+end;
+
 procedure Twmdem.CopyDBFstoXML1Click(Sender: TObject);
 var
    inDir,fName: PathStr;
@@ -3445,39 +3454,6 @@ begin
       end;
    end;
    TheFiles.Free;
-end;
-
-
-procedure CopyFiles(JustCopy : boolean);
-var
-   SourceName, DestName : PathStr;
-   NameMustHave : ShortString;
-   Files : tStringList;
-   i,NumCopied : integer;
-begin
-   GetDOSPath('input directory',CopyFilesFromDir);
-   GetDOSPath('output directory',CopyFilesToDir);
-   NameMustHave := 'dem';
-   PetMar.GetString('File name must contain',NameMustHave,false,ReasonableTextChars);
-   NameMustHave := UpperCase(NameMustHave);
-   NumCopied := 0;
-   StartProgressAbortOption('Copy');
-   Files := Nil;
-   Petmar.FindMatchingFiles(CopyFilesFromDir,'*.*',Files,6);
-   for I := 0 to pred(Files.Count) do begin
-     UpdateProgressBar(i/Files.Count);
-     SourceName := Files.Strings[i];
-     DestName := CopyFilesToDir + ExtractFileName(SourceName);
-     if (NameMustHave = '') or (StrUtils.AnsiContainsText(ExtractFileName(UpperCase(SourceName)),NameMustHave)) then begin
-        if JustCopy then Petmar.CopyFile(SourceName,DestName)
-        else Petmar.MoveFile(SourceName,DestName);
-        inc(NumCopied);
-     end;
-     if WantOut then break;
-   end;
-   Files.Free;
-   EndProgress;
-   MessageToContinue('Files copied: ' + IntToStr(NumCopied));
 end;
 
 

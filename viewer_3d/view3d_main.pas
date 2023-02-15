@@ -4,7 +4,7 @@ unit view3d_main;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
 
@@ -21,12 +21,10 @@ Removed all references to a mesh       8th January 2016
 Works with no problems in DX Seattle   Peter Guth 8 Jan 2016
 Add import of random point cloud       Peter Guth 8 Jan 2016
 
-Remove functions, so it only displays GIS daa  Peter Guth 17 Jan 2017
-Accepts two command line parameters, so it works with VCL MICRODEM which creates
-     the data files and calls the FMX program
+Remove functions, so it only displays GIS data  Peter Guth 17 Jan 2017
+Accepts two command line parameters, so it works with VCL MICRODEM which creates the data files and calls the FMX program
 Takes two kinds of data; file extension tells program which it is dealing with:
-    1.  .XYZB: Any map in MICRODEM with an associated DEM, exported with XYZ points,
-           and a drape texture with 2D bitmap (this but not the next could use a mesh, which might not show holes when zooming in)
+    1.  .XYZB: Any map in MICRODEM with an associated DEM, exported with XYZ points, and a drape texture with 2D bitmap (this but not the next could use a mesh, which might not show holes when zooming in)
     2.  .XYXIB: Point cloud, with one 1D bitmap for lidar texture of classification or intensity
 
 Could be added to the open source FMX version of MICRODEM
@@ -175,12 +173,10 @@ type
     procedure Button2Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
     procedure CornerButton16Click(Sender: TObject);
-    //procedure Form3DMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Single);
     procedure CornerButton15Click(Sender: TObject);
     procedure Button4Click(Sender: TObject);
     procedure CheckBox6Change(Sender: TObject);
   private
-     //procedure UncheckAllIfNeeded;
   public
      xRange,yRange,zRange,
      ve1,ye1,rMinX,rMaxX,rMinY,rMaxY : double;
@@ -247,7 +243,6 @@ begin
       CheckBox4.IsChecked := false;
       CheckBox5.IsChecked := false;
    end;
-   //Plane5.Visible := CheckBox6.IsChecked;  not yet implemented
    ShowCloud[5] := CheckBox6.IsChecked;
 end;
 

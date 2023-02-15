@@ -648,10 +648,6 @@ begin
          CloseString := 'CloseSingleDEM, dem=' + IntToStr(DEMtoClose) + '   ' + DEMGlb[DEMtoClose].AreaName;
          {$If Defined(RecordCloseDEM) or Defined(ShortRecordCloseDEM)} WriteLineToDebugFile('In ' + CloseString + '  Open DEMs=, ' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
 
-         j := DEMtoClose;
-         CloseYeDEM(j);
-         {$If Defined(RecordCloseDEM) or Defined(ShortRecordCloseDEM)} WriteLineToDebugFile('Back from CloseYeDEM'); {$EndIf}
-
          if (DEMtoClose = PredAgesDEM) then PredAgesDEM := 0;
          if (DEMtoClose = SedThickDEM) then SedThickDEM := 0;
          if (DEMtoClose = SedTypeDEM) then SedTypeDEM := 0;
@@ -659,6 +655,10 @@ begin
          for j := 1 to MaxTestDEM do begin
             if (TestDEM[j] = DEMtoClose) then TestDEM[j] := 0;
          end;
+
+         j := DEMtoClose;
+         CloseYeDEM(j);
+         {$If Defined(RecordCloseDEM) or Defined(ShortRecordCloseDEM)} WriteLineToDebugFile('Back from CloseYeDEM'); {$EndIf}
 
          DEMtoClose := 0;
 
@@ -1268,13 +1268,22 @@ end;
       function PickADifferentMap(WhatFor,ThisMapCaption : shortstring) : integer;
       var
          Maps : tStringList;
-         i : integer;
+         i,j : integer;
       begin
          Maps := tStringList.Create;
          for i := 0 to pred(WMDEM.MDIChildCount) do
-            if (WMDEM.MDIChildren[i] is tMapForm) then Maps.Add(WMDEM.MDIChildren[i].Caption);
+            if (WMDEM.MDIChildren[i] is tMapForm) and (WMDEM.MDIChildren[i].Caption <> ThisMapCaption) then Maps.Add(WMDEM.MDIChildren[i].Caption);
          Result := 0;
-         Petmar.GetFromListZeroBased(WhatFor,Result,Maps);
+
+         if Maps.Count = 1 then begin
+            for i := 0 to pred(WMDEM.MDIChildCount) do
+               if (WMDEM.MDIChildren[i] is tMapForm) and (WMDEM.MDIChildren[i].Caption = Maps.Strings[0]) then Result := i;
+         end
+         else if (Maps.Count > 1) then begin
+            Petmar.GetFromListZeroBased(WhatFor,j,Maps);
+            for i := 0 to pred(WMDEM.MDIChildCount) do
+               if (WMDEM.MDIChildren[i] is tMapForm) and (WMDEM.MDIChildren[i].Caption = Maps.Strings[j]) then Result := i;
+         end;
       end;
 
 

@@ -21,8 +21,6 @@ uses
 type
   TPETMARCommonForm = class(TForm)
     OpenDialog1: TOpenDialog;
-    //PrintDialog1: TPrintDialog;
-    //BMPSaveDialog1: TSaveDialog;
     Edit1: TEdit;
     OKBtn: TBitBtn;
     SaveDialog1: TSaveDialog;
@@ -53,28 +51,6 @@ procedure TPETMARCommonForm.OKBtnClick(Sender: TObject);
 begin
    Close;
 end;
-
-(*
-function FindWindowExtd(partialTitle: string): HWND;
-var
-  hWndTemp: hWnd;
-  iLenText: Integer;
-  cTitletemp: array [0..254] of Char;
-  sTitleTemp: string;
-begin
-  hWndTemp := FindWindow(nil, nil);
-  while hWndTemp <> 0 do begin
-    iLenText := GetWindowText(hWndTemp, cTitletemp, 255);
-    sTitleTemp := cTitletemp;
-    sTitleTemp := UpperCase(copy( sTitleTemp, 1, iLenText));
-    partialTitle := UpperCase(partialTitle);
-    if pos( partialTitle, sTitleTemp ) <> 0 then
-      Break;
-    hWndTemp := GetWindow(hWndTemp, GW_HWNDNEXT);
-  end;
-  result := hWndTemp;
-end;
-*)
 
 
 procedure TPETMARCommonForm.FormActivate(Sender: TObject);

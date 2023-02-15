@@ -3454,6 +3454,10 @@ object wmdem: Twmdem
       Caption = 'COP/ALOS compare to reference'
       OnClick = COPALOScomparetoreference1Click
     end
+    object COPALOShighlowgeomorphometry1: TMenuItem
+      Caption = 'COP/ALOS high low geomorphometry'
+      OnClick = COPALOShighlowgeomorphometry1Click
+    end
     object Pixelbypixelmapstatistics1: TMenuItem
       Caption = 'Pixel by pixel map statistics'
       OnClick = Pixelbypixelmapstatistics1Click

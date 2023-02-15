@@ -169,7 +169,6 @@ uses
   text_report_options in '..\common_code\text_report_options.pas' {ReportOptionsForm},
   fan_sens_opts in '..\common_code\fan_sens_opts.pas' {fan_sens_form},
   get_db_coloring in '..\common_code\get_db_coloring.pas' {DBColorForm},
-  //MrSidImagery in '..\common_code\MrSidImagery.pas',
   FitFourier in '..\common_code\FitFourier.pas' {FitFourierForm},
   crosscor in '..\common_code\crosscor.pas' {CrossCorrelationForm},
   get_thumbnails in '..\common_code\get_thumbnails.pas' {ThumbnailForm},
@@ -333,9 +332,12 @@ uses
   JpegDumpOutputFrame in '..\xif\JpegDumpOutputFrame.pas' {NewOutputFrame: TFrame},
   U_SolarPos2 in '..\SolarPosSource\U_SolarPos2.pas' {SolorPosForm1},
   ufrmMain in '..\FireMonkey3DGlobalRotate\ufrmMain.pas' {frmMain},
-  {$IfDef IncludePython} simple_python in '..\python\simple_python.pas' {PythonForm1}, {$EndIf}
+  {$IfDef IncludePython}
+  simple_python in '..\python\simple_python.pas' {PythonForm1},
+  {$EndIf }
   demix_filter in '..\common_code\demix_filter.pas' {DemixFilterForm},
-  demix_control in '..\demix\demix_control.pas';
+  demix_control in '..\demix\demix_control.pas',
+  monitor_change_form in '..\common_code\monitor_change_form.pas' {ChangeMapForm};
 
 {$R *.RES}
 
