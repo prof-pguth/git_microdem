@@ -36,10 +36,8 @@ unit demESRIshapefile;
    //{$Define RecordShapeFileWrite}
    //{$Define RecordShapeFileWriteFull}
    //{$Define TrackShapeDigitization}
-   //{$Define RecordSPCS}
    //{$Define RecordShapefilesReprojection}
    //{$Define RecordPart}         //major degradation
-   //{$Define RecordFullSPCS}     //major degradation
    //{$Define RecordReproject}    //major degradation
    //{$Define RecordClosing}
    //{$Define RecordMemoryStream}
@@ -291,6 +289,7 @@ function IsItAShapefile(fName : PathStr) : boolean;
 procedure PrepOSMFiles(OSMPath : PathStr = '');
 
 function DoAShapeFile(fName : PathStr; Trim : boolean = false) : integer;
+procedure ZipShapefile(DBontable : integer; IncludeDebug,SHZit : boolean);
 
 
 var
@@ -328,6 +327,63 @@ uses
    Make_Tables,
    Nevadia_Main,
    DataBaseCreate;
+
+procedure ZipShapefile(DBontable : integer; IncludeDebug,SHZit : boolean);
+var
+   TheFiles : tStringList;
+   fName : PathStr;
+   TStr : shortstring;
+
+   procedure DoFile(aName : PathStr);
+   begin
+      if FileExists(aName) then begin
+         CopyFile(aname,MDTempDir + ExtractFileName(aname));
+         TheFiles.Add(MDTempDir + ExtractFileName(aname));
+      end;
+   end;
+
+begin
+   {$If Defined( RecordSHZ) or Defined(RecordExports)} WriteLineToDebugFile('Zipshapefile in'); {$EndIf}
+   GISdb[DBonTable].SaveDataBaseStatus;
+   TheFiles := tStringList.Create;
+   DoFile(ChangeFileExt(GISdb[DBonTable].dbFullName,'.shp'));
+   DoFile(ChangeFileExt(GISdb[DBonTable].dbFullName,'.shx'));
+   DoFile(ChangeFileExt(GISdb[DBonTable].dbFullName,'.dbf'));
+   fName := ChangeFileExt(GISdb[DBonTable].DBfullName,'.prj');
+   if FileExists(fName) then DoFile(FName)
+   else if FileExists(WKT_GCS_Proj_fName) then begin
+      Petmar.CopyFile(WKT_GCS_Proj_fName,fName);
+      DoFile(fName);
+   end
+   else MessageToContinue('Missing projection file ' + fName);
+
+
+   if IncludeDebug and (GISdb[DBonTable].IniFileName <> '') and FileExists(GISdb[DBonTable].IniFileName) then begin
+      {$IfDef RecordSHZ} WriteLineToDebugFile('TdbTableF.Zipshapefile1Click db ini'); {$EndIf}
+      TheFiles.Add(GISdb[DBonTable].IniFileName);
+   end;
+
+   fName := GISdb[DBonTable].dbOpts.LinkTableName;
+   if (fName <> '') and FileExists(fName) then begin
+      {$IfDef RecordSHZ} WriteLineToDebugFile('TdbTableF.Zipshapefile1Click link table'); {$EndIf}
+      TheFiles.Add(fName);
+   end;
+   if IncludeDebug then begin
+      {$IfDef RecordSHZ} WriteLineToDebugFile('TdbTableF.Zipshapefile1Click debug log'); {$EndIf}
+      TheFiles.Add(DebugFileName);
+   end;
+   if SHZit then TStr := '_' + CurrentTimeForFileName else TStr := '';
+   fName := MDTempDir + ExtractFileNameNoExt(GISdb[DBonTable].dbFullName) + TStr + '.zip';
+
+    {$If Defined( RecordSHZ) or Defined(RecordExports)} WriteLineToDebugFile('TdbTableF.Zipshapefile1Click call zip, files=' + IntToStr(TheFiles.Count)); {$EndIf}
+   ZipMasterZipFiles(fName,TheFiles);
+   TheFiles.Free;
+   //DeleteShapeFile(FName);
+   if SHZit then SysUtils.RenameFile(fname,ChangeFileExt(fName,'.shz'));
+   {$If Defined( RecordSHZ) or Defined(RecordExports)}  WriteLineToDebugFile('Zipshapefile1Click'); {$EndIf}
+end;
+
+
 
 
 function DoAShapeFile(fName : PathStr; Trim : boolean = false) : integer;
@@ -2267,7 +2323,6 @@ finalization
    {$IfDef RecordFindPoint} WriteLineToDebugFile('RecordFindPointProblems active in demesrishapefile'); {$EndIf}
    {$IfDef TrackShapeDigitization} WriteLineToDebugFile('TrackShapeDigitization active in demesrishapefile'); {$EndIf}
    {$IfDef RecordShapefilesReprojection} WriteLineToDebugFile('RecordShapefilesReprojection active in demesrishapefile'); {$EndIf}
-   {$IfDef RecordSPCS} WriteLineToDebugFile('RecordSPCSProblems active in demesrishapefile'); {$EndIf}
    {$IfDef RecordShapeFileWriteFull} WriteLineToDebugFile('RecordShapeFileWriteFullProblems active in demesrishapefile'); {$EndIf}
    {$IfDef RecordShapeFileWrite} WriteLineToDebugFile('RecordShapeFileWrite active in demesrishapefile'); {$EndIf}
    {$IfDef RecordMemoryStream} WriteLineToDebugFile('RecordMemoryStreamProblems active in demesrishapefile'); {$EndIf}

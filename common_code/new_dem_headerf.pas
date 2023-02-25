@@ -4,7 +4,7 @@ unit new_dem_headerf;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
 {$I nevadia_defines.inc}
@@ -103,7 +103,7 @@ implementation
 {$R *.dfm}
 
 uses
-   PETMath,//Get_SPCS,
+   PETMath,
    DEM_Manager, DEMDef_routines,
    BaseMap,DEMCoord,GetLatLn;
 

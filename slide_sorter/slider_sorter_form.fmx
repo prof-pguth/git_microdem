@@ -3,7 +3,7 @@ object SlideSorterForm: TSlideSorterForm
   Top = 0
   Caption = 'PETMAR Trilobites slide sorter'
   ClientHeight = 868
-  ClientWidth = 2370
+  ClientWidth = 2372
   FormFactor.Width = 320
   FormFactor.Height = 480
   FormFactor.Devices = [Desktop]
@@ -79,7 +79,7 @@ object SlideSorterForm: TSlideSorterForm
   end
   object RightPanel2: TPanel
     Align = Right
-    Position.X = 1170.000000000000000000
+    Position.X = 1172.000000000000000000
     Size.Width = 600.000000000000000000
     Size.Height = 868.000000000000000000
     Size.PlatformDefault = False
@@ -161,7 +161,7 @@ object SlideSorterForm: TSlideSorterForm
   end
   object CenterPanel3: TPanel
     Align = HorzCenter
-    Position.X = 585.000000000000000000
+    Position.X = 586.000000000000000000
     Size.Width = 400.000000000000000000
     Size.Height = 868.000000000000000000
     Size.PlatformDefault = False
@@ -274,6 +274,13 @@ object SlideSorterForm: TSlideSorterForm
       Text = 'Large central image'
       OnClick = MenuItem5Click
     end
+    object MenuItem16: TMenuItem
+      Text = '-'
+    end
+    object MenuItem15: TMenuItem
+      Text = 'Movie'
+      OnClick = MenuItem15Click
+    end
     object MenuItem9: TMenuItem
       Text = '-'
     end
@@ -299,7 +306,7 @@ object SlideSorterForm: TSlideSorterForm
   end
   object FarRightPanel1: TPanel
     Align = Right
-    Position.X = 1770.000000000000000000
+    Position.X = 1772.000000000000000000
     Size.Width = 600.000000000000000000
     Size.Height = 868.000000000000000000
     Size.PlatformDefault = False

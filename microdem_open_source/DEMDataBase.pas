@@ -4,7 +4,7 @@
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
 
@@ -83,7 +83,6 @@
       //{$Define RecordDataBase}
       //{$Define RecordGAZ}
       //{$Define RecordFilterDataBase}
-      //{$Define RecordSPCS}
       //{$Define RecordID}
       //{$Define RecordPointInArea}
       //{$Define RecordDipStrike}
@@ -337,7 +336,7 @@ type
      DipAndStrikeFieldsExist,
      CameraOrientationExists,
      FontFieldExists,
-     TMIndex,
+     //TMIndex,
      FocalMechsPresent,
      PhotoLocationsPresent,
      StratcolPresent,
@@ -397,7 +396,7 @@ type
 
      {$IfDef ExSidescan}
      {$Else}
-        SideScanIndex : boolean;
+        //SideScanIndex : boolean;
      {$EndIf}
      {$IfDef ExGeography}
      {$Else}
@@ -666,8 +665,8 @@ type
 
      {$IfDef ExSidescan}
      {$Else}
-        procedure PlotSideScanCoverage(Bitmap : tMyBitmap);
-        procedure PlotSingleSideScanLeg(Bitmap : tMyBitmap);
+        //procedure PlotSideScanCoverage(Bitmap : tMyBitmap);
+        //procedure PlotSingleSideScanLeg(Bitmap : tMyBitmap);
      {$EndIf}
 
      {$IfDef ExRiverNetworks}
@@ -771,7 +770,7 @@ procedure AdjustGazFeatureName(var FeatureName : ShortString);
 
 {$IfDef ExSidescan}
 {$Else}
-   procedure GetCoverageCorners(theData : tMyData; var CornerLats,CornerLongs: array of float64);
+  // procedure GetCoverageCorners(theData : tMyData; var CornerLats,CornerLongs: array of float64);
 {$EndIf}
 
 const
@@ -2462,9 +2461,9 @@ end;
                dbTablef.Restrictbymapscale1.Checked := MDDef.UsePixelSizeRules;
 
                {$IfDef ExSidescan}
-                  dbTablef.BitBtn17.Visible := false;
+                 // dbTablef.BitBtn17.Visible := false;
                {$Else}
-                  dbTablef.BitBtn17.Visible := SideScanIndex;
+                  //dbTablef.BitBtn17.Visible := SideScanIndex;
                {$EndIf}
                if MDDef.DBMinimizeOnOpen then dbTablef.WindowState := wsMinimized;
 
@@ -5401,7 +5400,7 @@ begin
       PointSymbolFieldsPresent := MyData.FieldExists('SYM_TYPE') and MyData.FieldExists('SYM_SIZE') and MyData.FieldExists('SYM_COLOR');
       LineColorPresent := MyData.FieldExists('LINE_WIDTH') and  MyData.FieldExists('LINE_COLOR');
       AreaFillPresent := MyData.FieldExists('FILL_PAT') and  MyData.FieldExists('FILL_COLOR') and LineColorPresent;
-      TMIndex := MyData.FieldExists('TM') and MyData.FieldExists('SENSOR');
+      //TMIndex := MyData.FieldExists('TM') and MyData.FieldExists('SENSOR');
       FocalMechsPresent := MyData.FieldExists('FP1_STRIKE') and MyData.FieldExists('FP2_STRIKE');
       VelNECompPresent  := (MyData.FieldExists('VN') and MyData.FieldExists('VE')) or (MyData.FieldExists('VBAR') and MyData.FieldExists('UBAR'));
       if VelNECompPresent then begin
@@ -5436,7 +5435,7 @@ begin
 
      {$IfDef ExSidescan}
      {$Else}
-        SideScanIndex := MyData.FieldExists('LINE_NAME');
+        //SideScanIndex := MyData.FieldExists('LINE_NAME');
      {$EndIf}
 
      {$IfDef ExGeology}

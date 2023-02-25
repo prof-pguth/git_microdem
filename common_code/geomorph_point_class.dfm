@@ -1,10 +1,11 @@
 object PointClassForm: TPointClassForm
+  AlignWithMargins = True
   Left = 699
   Top = 401
   BorderIcons = []
   Caption = 'Point classification map'
-  ClientHeight = 518
-  ClientWidth = 494
+  ClientHeight = 553
+  ClientWidth = 516
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -17,104 +18,30 @@ object PointClassForm: TPointClassForm
   OnClose = FormClose
   OnCreate = FormCreate
   TextHeight = 13
-  object Label7: TLabel
-    Left = 32
-    Top = 408
-    Width = 53
-    Height = 13
-    Caption = 'Opacity (%)'
-  end
-  object RedrawSpeedButton12: TSpeedButton
-    Left = 185
-    Top = 402
-    Width = 25
-    Height = 25
-    Hint = 'Force redraw'
-    Glyph.Data = {
-      F6000000424DF600000000000000760000002800000010000000100000000100
-      0400000000008000000000000000000000001000000010000000000000000000
-      80000080000000808000800000008000800080800000C0C0C000808080000000
-      FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00FFFFFFFFFFFF
-      FFFFFFFFCFFFFFFFFFFFFFFCCFFFFFFFFFFFFCCCCFFFFFFFFFFFFCCCFFFFFFFF
-      FFFFFCCFFFFFFFFFFFFFFCCFFFFFCCCCCCFFFCCFFFCCCCCCCCFFFCCFFFCCCCCC
-      CCFFFCCFFFFFFFCCCCFFFCCCFFFFFFCCCCCFFCCCFFFFFCCCCCCFFFCCCCCCCCCC
-      FCCFFFCCCCCCCCCFFCCFFFFFFFFFFFFFFCCFFFFFFFFFFFFFFFFF}
-    OnClick = RedrawSpeedButton12Click
-  end
   object Memo1: TMemo
-    Left = 301
+    Left = 323
     Top = 0
     Width = 193
-    Height = 518
+    Height = 553
     Align = alRight
     ScrollBars = ssVertical
     TabOrder = 0
-    ExplicitLeft = 304
-    ExplicitHeight = 501
-  end
-  object HelpBtn: TBitBtn
-    Left = 139
-    Top = 490
-    Width = 71
-    Height = 25
-    Kind = bkHelp
-    Margin = 2
-    NumGlyphs = 2
-    Spacing = -1
-    TabOrder = 1
-    OnClick = HelpBtnClick
-    IsControl = True
-  end
-  object CancelBtn: TBitBtn
-    Left = 8
-    Top = 488
-    Width = 77
-    Height = 27
-    Caption = 'Close'
-    Kind = bkCancel
-    Margin = 2
-    NumGlyphs = 2
-    Spacing = -1
-    TabOrder = 2
-    OnClick = CancelBtnClick
-    IsControl = True
-  end
-  object RadioGroup4: TRadioGroup
-    Left = 24
-    Top = 433
-    Width = 199
-    Height = 49
-    Caption = 'Mask map'
-    Columns = 3
-    ItemIndex = 1
-    Items.Strings = (
-      'Separate'
-      'Overlaid'
-      'Both')
-    TabOrder = 3
-    OnClick = RadioGroup4Click
-  end
-  object Edit7: TEdit
-    Left = 104
-    Top = 406
-    Width = 58
-    Height = 21
-    TabOrder = 4
-    Text = 'Edit7'
-    OnChange = Edit7Change
+    ExplicitLeft = 291
+    ExplicitHeight = 508
   end
   object PageControl1: TPageControl
-    Left = -3
+    Left = 0
     Top = 0
-    Width = 313
-    Height = 393
-    ActivePage = Tabsheet2
-    TabOrder = 5
+    Width = 312
+    Height = 416
+    ActivePage = TabSheet1
+    TabOrder = 1
     object TabSheet1: TTabSheet
+      AlignWithMargins = True
       Caption = 'Simple point classifications'
       object Label5: TLabel
         Left = 139
-        Top = 325
+        Top = 341
         Width = 74
         Height = 13
         Caption = 'Mask radius (m)'
@@ -155,10 +82,10 @@ object PointClassForm: TPointClassForm
         Caption = 'Slope tolerance '
       end
       object RadioGroup2: TRadioGroup
-        Left = 8
-        Top = 184
-        Width = 206
-        Height = 32
+        Left = 2
+        Top = 188
+        Width = 211
+        Height = 43
         Caption = 'Ridge/valley tolerance'
         Columns = 3
         Items.Strings = (
@@ -169,7 +96,7 @@ object PointClassForm: TPointClassForm
       end
       object CheckBox1: TCheckBox
         Left = 7
-        Top = 348
+        Top = 364
         Width = 76
         Height = 17
         Caption = 'Invert mask'
@@ -177,7 +104,7 @@ object PointClassForm: TPointClassForm
       end
       object CheckBox3: TCheckBox
         Left = 89
-        Top = 348
+        Top = 364
         Width = 105
         Height = 17
         Caption = 'Exaggerate points'
@@ -185,7 +112,7 @@ object PointClassForm: TPointClassForm
       end
       object CheckBox4: TCheckBox
         Left = 200
-        Top = 348
+        Top = 364
         Width = 65
         Height = 17
         Caption = 'Clear'
@@ -194,14 +121,14 @@ object PointClassForm: TPointClassForm
       end
       object Edit5: TEdit
         Left = 219
-        Top = 322
+        Top = 338
         Width = 46
         Height = 21
         TabOrder = 4
       end
       object RadioGroup3: TRadioGroup
-        Left = 8
-        Top = 284
+        Left = 3
+        Top = 298
         Width = 183
         Height = 37
         Caption = 'Analysis region'
@@ -214,8 +141,8 @@ object PointClassForm: TPointClassForm
         OnClick = RadioGroup3Click
       end
       object BitBtn6: TBitBtn
-        Left = 168
-        Top = 222
+        Left = 160
+        Top = 238
         Width = 73
         Height = 25
         Caption = 'All point map'
@@ -223,8 +150,8 @@ object PointClassForm: TPointClassForm
         OnClick = BitBtn6Click
       end
       object BitBtn3: TBitBtn
-        Left = 88
-        Top = 222
+        Left = 80
+        Top = 238
         Width = 74
         Height = 25
         Caption = 'Valley map'
@@ -232,8 +159,8 @@ object PointClassForm: TPointClassForm
         OnClick = BitBtn3Click
       end
       object BitBtn5: TBitBtn
-        Left = 88
-        Top = 253
+        Left = 80
+        Top = 269
         Width = 74
         Height = 25
         Caption = 'Valley mask'
@@ -241,8 +168,8 @@ object PointClassForm: TPointClassForm
         OnClick = BitBtn2Click
       end
       object BitBtn2: TBitBtn
-        Left = 8
-        Top = 252
+        Left = 0
+        Top = 268
         Width = 74
         Height = 25
         Caption = 'Ridge mask'
@@ -250,8 +177,8 @@ object PointClassForm: TPointClassForm
         OnClick = BitBtn2Click
       end
       object BitBtn4: TBitBtn
-        Left = 8
-        Top = 221
+        Left = 0
+        Top = 237
         Width = 74
         Height = 25
         Caption = 'Ridge map'
@@ -259,10 +186,10 @@ object PointClassForm: TPointClassForm
         OnClick = BitBtn4Click
       end
       object RadioGroup1: TRadioGroup
-        Left = 8
-        Top = 144
-        Width = 206
-        Height = 32
+        Left = 0
+        Top = 139
+        Width = 213
+        Height = 43
         Caption = 'Algorithm'
         Columns = 3
         ItemIndex = 0
@@ -434,8 +361,7 @@ object PointClassForm: TPointClassForm
         ItemIndex = 0
         Items.Strings = (
           'Slope std dev'
-          'Directional cosines'
-          '')
+          'Directional cosines')
         TabOrder = 8
         OnClick = RadioGroup6Click
       end
@@ -460,6 +386,89 @@ object PointClassForm: TPointClassForm
         TabOrder = 1
         OnClick = BitBtn7Click
       end
+    end
+  end
+  object Panel1: TPanel
+    AlignWithMargins = True
+    Left = 0
+    Top = 415
+    Width = 312
+    Height = 138
+    TabOrder = 2
+    object SpeedButton1: TSpeedButton
+      Left = 194
+      Top = 14
+      Width = 25
+      Height = 25
+      Hint = 'Force redraw'
+      Glyph.Data = {
+        F6000000424DF600000000000000760000002800000010000000100000000100
+        0400000000008000000000000000000000001000000010000000000000000000
+        80000080000000808000800000008000800080800000C0C0C000808080000000
+        FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00FFFFFFFFFFFF
+        FFFFFFFFCFFFFFFFFFFFFFFCCFFFFFFFFFFFFCCCCFFFFFFFFFFFFCCCFFFFFFFF
+        FFFFFCCFFFFFFFFFFFFFFCCFFFFFCCCCCCFFFCCFFFCCCCCCCCFFFCCFFFCCCCCC
+        CCFFFCCFFFFFFFCCCCFFFCCCFFFFFFCCCCCFFCCCFFFFFCCCCCCFFFCCCCCCCCCC
+        FCCFFFCCCCCCCCCFFCCFFFFFFFFFFFFFFCCFFFFFFFFFFFFFFFFF}
+      OnClick = RedrawSpeedButton12Click
+    end
+    object Label9: TLabel
+      Left = 41
+      Top = 20
+      Width = 53
+      Height = 13
+      Caption = 'Opacity (%)'
+    end
+    object BitBtn8: TBitBtn
+      Left = 148
+      Top = 102
+      Width = 71
+      Height = 25
+      Kind = bkHelp
+      Margin = 2
+      NumGlyphs = 2
+      Spacing = -1
+      TabOrder = 0
+      OnClick = HelpBtnClick
+      IsControl = True
+    end
+    object BitBtn9: TBitBtn
+      Left = 17
+      Top = 100
+      Width = 77
+      Height = 27
+      Caption = 'Close'
+      Kind = bkCancel
+      Margin = 2
+      NumGlyphs = 2
+      Spacing = -1
+      TabOrder = 1
+      OnClick = CancelBtnClick
+      IsControl = True
+    end
+    object RadioGroup4: TRadioGroup
+      Left = 17
+      Top = 45
+      Width = 226
+      Height = 49
+      Caption = 'Mask map'
+      Columns = 3
+      ItemIndex = 1
+      Items.Strings = (
+        'Separate'
+        'Overlaid'
+        'Both')
+      TabOrder = 2
+      OnClick = RadioGroup4Click
+    end
+    object Edit7: TEdit
+      Left = 113
+      Top = 18
+      Width = 58
+      Height = 21
+      TabOrder = 3
+      Text = 'Edit7'
+      OnChange = Edit7Change
     end
   end
 end

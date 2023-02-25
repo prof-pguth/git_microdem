@@ -9,10 +9,8 @@ object SatHeaderForm: TSatHeaderForm
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
-  OldCreateOrder = False
   OnClose = FormClose
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object StringGrid1: TStringGrid
     Left = 0
@@ -22,9 +20,8 @@ object SatHeaderForm: TSatHeaderForm
     Align = alClient
     ColCount = 3
     TabOrder = 0
-    ExplicitTop = 495
-    ExplicitWidth = 449
-    ExplicitHeight = 120
+    ExplicitWidth = 527
+    ExplicitHeight = 179
   end
   object Panel1: TPanel
     Left = 0
@@ -33,8 +30,8 @@ object SatHeaderForm: TSatHeaderForm
     Height = 41
     Align = alBottom
     TabOrder = 1
-    ExplicitTop = 624
-    ExplicitWidth = 185
+    ExplicitTop = 284
+    ExplicitWidth = 527
     object OKBtn: TBitBtn
       Left = 192
       Top = 6
@@ -56,7 +53,7 @@ object SatHeaderForm: TSatHeaderForm
     Height = 105
     Align = alTop
     TabOrder = 2
-    ExplicitWidth = 718
+    ExplicitWidth = 527
     object Label5: TLabel
       Left = 8
       Top = 72

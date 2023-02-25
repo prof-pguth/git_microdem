@@ -5,7 +5,9 @@
 { Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
+
 {include file for demcoord.pas}
+
 
 function GetNIMADTEDHeader(var InputFile : file) : tStringList;
 var
@@ -99,7 +101,6 @@ end;
             for i := StartRow to EndRow do begin
                j := i - StartRow;
                if (Lo(DataColumn^[i+5]) = 255) and (Hi(DataColumn^[i+5]) = 255) then begin
-                  //missing data, added to DTED specs for SRTM data, check added 5/12/2003
                   BigZ^[j] := MaxSmallInt;
                end
                else begin
@@ -116,7 +117,6 @@ end;
             end {for i};
          end {with};
       end;
-
 
       procedure DTEDHeaderCalculations;
       begin
@@ -260,7 +260,7 @@ end;
 
       Dispose(BigZ);
       Dispose(DataColumn);
-      {$IfDef RecordDTED} WriteLineToDebugFile('Final Read DTED Spacing: ' + HorizontalDEMSpacing);{$EndIf}
+      {$IfDef RecordDTED} WriteLineToDebugFile('Final Read DTED Spacing: ' + HorizontalDEMSpacing); {$EndIf}
    end {proc ReadDMADTED};
 
 

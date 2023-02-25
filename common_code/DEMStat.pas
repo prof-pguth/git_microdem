@@ -351,7 +351,7 @@ var
 
       MDDef.DoElevHist := true;
       MDDef.DoSlopeHist := true;
-      MDDef.DoRuffHist := false;
+      MDDef.DoRuffHist := true;
       MDDef.DoAspectHist := true;
 
       if MDDef.DoElevHist then MakeOneHistogram(ElevMap,MDDef.HistElevBinSize,Names,ElevDistCount,ElevDist,'Elevation (m)');
@@ -1716,7 +1716,7 @@ begin
          for k := 1 to MDDef.MaxPCBands do begin
             if (K <= MG.NumGrids) and (pc[k] > MDdef.MinPCToShow) then begin
                FName := MGPath + '_pc_' + IntToStr(k) + '.dem';
-               NewDEM := DEMGLB[MG.Grids[1]].CloneAndOpenGrid(FloatingPointDEM,fName,DEMGLB[MG.Grids[1]].DEMheader.ElevUnits);
+               NewDEM := DEMGLB[MG.Grids[1]].CloneAndOpenGridSetMissing(FloatingPointDEM,fName,DEMGLB[MG.Grids[1]].DEMheader.ElevUnits);
                {$IfDef RecordPC} WriteLineToDebugFile('Create grid: ' + fName); {$EndIf}
 
                StartProgress('Compute PC ' + IntToStr(k));

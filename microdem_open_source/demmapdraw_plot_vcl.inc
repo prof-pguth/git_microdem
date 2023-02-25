@@ -2,10 +2,10 @@
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 {                                   }
-{ include file for demmapdraw       }
+{   include file for demmapdraw     }
 {___________________________________}
 
 
@@ -45,21 +45,14 @@
          if (TigerNames.Count > 0) then begin
             if (TigerNames.Count <= MDdef.TigrDef.MaxAutoTigerCounties) or AllTIGEROK or AnswerIsYes('Map includes ' + IntToStr(TigerNames.Count) + ' counties;' + MessLineBreak + 'Continue with Tiger overlay') then begin
                if (TigerNames.Count > MDdef.TigrDef.MaxAutoTigerCounties) then AllTigerOK := true;
-               //StartProgress('TIGER counties');
                StartThreadTimers('TIGER counties',0,true);
-
                for i := 0 to pred(TigerNames.Count) do begin
-                  //UpdateProgressBar(i/TigerNames.Count);
                   ThreadTimers.OverallGauge9.Progress := round(100 * i/TigerNames.Count);
                   {$IfDef RecordTIGERFull} WriteLineToDebugFile(' ' + TigerNames.Strings[i]); {$EndIf}
-                  //MessageToContinue('done');
-                  //if (wmDEM <> Nil) then wmdem.SetPanelText(0, 'Tiger: ' + IntToStr(succ(i)) + '/' + IntToStr(TigerNames.Count));
                   if FileExists(TigerNames.Strings[i]) then QuietPlotTIGERShapeFileOnMap(TigerNames.Strings[i],TigerOverlay,RoadsOnly,RoadMaskWidth,StreamsOnly);
                   if WantOut then break;
                end;
-               //EndProgress;
                EndThreadTimers;
-               //i := TigerNames.Count;
                TigerNames.Free;
                MDDef.TigrDef.AutoAppear := SaveRoadAutoAppear;
                TigerOverlayFName := NextFileNumber(MDTempDir, 'tiger_ovelay', OverlayFExt);
@@ -156,7 +149,6 @@ begin
          end;
       end;
       fTotal := Total;
-      //AField := 'N_SUB';
       Table.First;
       while not Table.eof do begin
          i := Table.GetFieldByNameAsInteger(CodeField);
@@ -167,7 +159,6 @@ begin
       end;
    end
    else begin
-      //AField := Table.NCountField;
       while not Table.eof do begin
          fTotal := fTotal + Table.GetFieldByNameAsInteger(Table.NCountField);
          Table.Next;
@@ -178,22 +169,18 @@ begin
    Table.ApplyFilter(Table.NCountField + ' > ' + IntToStr(Needed));
    if false then begin
       CatHeight := 40;
-      //Result.Canvas.Font.Size := 22;
    end
    else begin
       CatHeight := 25;
-      //Result.Canvas.Font.Size := 12;
    end;
 
    Cats := Table.FiltRecsInDB;
    CreateBitmap(Result,1200,CatHeight*succ(Cats) + 4);
 
    if false then begin
-      //CatHeight := 40;
       Result.Canvas.Font.Size := 22;
    end
    else begin
-      //CatHeight := 25;
       Result.Canvas.Font.Size := 12;
    end;
 
@@ -215,7 +202,6 @@ begin
       Result.Canvas.TextOut(30,Cat*CatHeight + 4, RealToString(xg,10,2) + '  ' + Table.GetFieldByNameAsString(NameField));
       Table.Next;
    end;
-   //Result.Height := succ(Cats)*CatHeight + 4;
    PutBitmapInBox(Result);
    ShowDefaultCursor;
    Table.Destroy;
@@ -366,27 +352,6 @@ end;
          end;
 
 
-         (*
-         procedure TMapDraw.DrawRoute(Bitmap : tMyBitmap; StreamProfileResults : tStringList);
-         var
-            FirstPoint,j : integer;
-            Lat,Long : float64;
-         begin
-           if (StreamProfileResults <> Nil) and (StreamProfileResults.Count > 3) then begin
-              FirstPoint := 2;
-              for j := FirstPoint to pred(StreamProfileResults.Count) do begin
-                  ReadCoordsLatLongFromStreamProfileResults(StreamProfileResults,j,Lat,Long);
-                  LatLongDegreetoScreen(Lat,Long,MapScreenX1,MapScreenY1);
-                  if j = FirstPoint then Bitmap.Canvas.MoveTo(MapScreenX1,MapScreenY1)
-                  else begin
-                     Bitmap.Canvas.Pen.Color := clRed;
-                     Bitmap.Canvas.Pen.Width := 2;
-                     Bitmap.Canvas.LineTo(MapScreenX1,MapScreenY1)
-                  end;
-              end;
-           end;
-         end;
-         *)
 
          procedure TMapDraw.ComputeDatumShifts(Canvas : tCanvas; Lat,Long : float64; var TotalShiftUTM,TotalShiftGeo : float64; Mark : tMarkShift = msNone);
          var
@@ -401,7 +366,8 @@ end;
             begin
                //if the same lat/long were reported on the second datum where would it be on the current datum
                MolodenskiyTransformation(Lat,Long,Lat1,Long1,SecondaryMapProj,PrimMapProj);
-               {$If Defined(RecordDatum) or Defined(RecordDatumShift)} WriteLineToDebugFile('Geo Primary datum: ' + LatLongDegreeToString(Lat,Long) + '  Secondary datum: ' + LatLongDegreeToString(Lat1,Long1));    {$EndIf}             //get distance between the two
+               {$If Defined(RecordDatum) or Defined(RecordDatumShift)} WriteLineToDebugFile('Geo Primary datum: ' + LatLongDegreeToString(Lat,Long) + '  Secondary datum: ' + LatLongDegreeToString(Lat1,Long1)); {$EndIf}
+               //get distance between the two
                VincentyCalculateDistanceBearing(Lat,Long,Lat1,Long1,TotalShiftGeo,Bearing);
                EastingShiftGeo := TotalShiftGeo * CosDeg(Bearing);
                NorthingShiftGeo := TotalShiftGeo * SinDeg(Bearing);
@@ -426,7 +392,7 @@ end;
 
 
          begin
-            if SecondaryMapProj = nil then begin
+            if (SecondaryMapProj = nil) then begin
                MessageToContinue('Secondary projection not set');
                exit;
             end;
@@ -618,9 +584,6 @@ end;
          end;
 
 
-
-
-
          procedure TMapDraw.OverlaySRTMWaterBodies(Bitmap : tMyBitmap; WaterMask : boolean = false);
 
                function SRTMWaterBodyFileName(Lat,Long : integer) : PathStr;
@@ -645,7 +608,6 @@ end;
                   Result := '';
                end;
 
-
          var
             fName : PathStr;
             Dir   : DirStr;
@@ -654,8 +616,6 @@ end;
             Lat,Long,
             Lat1,Long1,Lat2,Long2 : integer;
          begin
-            {$IfDef ExZip}
-            {$Else}
                HighLightDBOnWorld := false;
                Lat1 := trunc(MapCorners.BoundBoxGeo.ymin + 0.01);
                if (Lat1 < 0) then dec(lat1);
@@ -683,7 +643,6 @@ end;
                end;
                HighLightDBOnWorld := true;
                if ShowSatProgress then EndProgress;
-            {$EndIf}
          end;
 
 

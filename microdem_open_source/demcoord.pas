@@ -11,7 +11,6 @@ unit DEMCoord;
 {___________________________________}
 
 
-
 {$I nevadia_defines.inc}
 
 
@@ -33,6 +32,7 @@ unit DEMCoord;
    {$IFDEF DEBUG}
       {$Define RecordDEMIX}
       {$Define RecordDEMEdits}
+      {$Define RecordClone}
       //{$Define RecordGeotiff}
       //{$Define ShortDEMLoad}
       //{$Define RecordSaveAverageResampleDEMformat}
@@ -76,7 +76,6 @@ unit DEMCoord;
       //{$Define RecordHiResDEM}
       //{$Define TriPrismErrors}
       //{$Define TriPrismResults}
-      //{$Define SPCS}
       //{$Define UKOS}
       //{$Define RecordLOS}
       //{$Define RecordLOSAlgorithm}
@@ -574,7 +573,7 @@ type
             procedure SaveAsDTED(OutLatInterval,OutLongInterval : integer; OutName : PathStr = ''; ShowProgress : boolean = false);
          {$EndIf}
 
-         function CloneAndOpenGrid(NewPrecision : tDEMprecision; Gridname : shortstring; ElevUnits : tElevUnit) : integer;
+         function CloneAndOpenGridSetMissing(NewPrecision : tDEMprecision; Gridname : shortstring; ElevUnits : tElevUnit) : integer;
 
          procedure ThinThisDEM(var ThinDEM : integer; ThinFactor : integer = 0; DoItByAveraging : boolean = false);
          procedure AverageResampleThisDEM(var ThinDEM : integer; ThinFactor : integer = 0);
@@ -711,7 +710,6 @@ type
                procedure EntireDEMFractalBox;
                function CreateWholeDEMHistogram : TThisBaseGraph;
                function CreatePartDEMHistogram(GridLimits: tGridLimits) : TThisBaseGraph;
-               //function NormalAtPoint(Col,Row : integer; var n1,n2,n3 : float64) : boolean;   inline;
                procedure InitializeNormals(var NumPts : Integer);
                procedure DisposeNormals;
                function FigureEntropy : float64;
@@ -938,7 +936,8 @@ var
 begin
    if (ThinFactor = 0) then begin
       ThinFactor := 2;
-      ReadDefault('Thin factor',ThinFactor);
+      if DoItByAveraging then ReadDefault('Average NxN pixel region to use',ThinFactor)
+      else ReadDefault('Decimation thin factor',ThinFactor);
    end;
 
    NewHeadRecs := DEMheader;
@@ -981,11 +980,11 @@ begin
    EndProgress;
 end;
 
-function tDEMDataSet.CloneAndOpenGrid(NewPrecision : tDEMprecision; Gridname : shortstring; ElevUnits : tElevUnit) : integer;
+function tDEMDataSet.CloneAndOpenGridSetMissing(NewPrecision : tDEMprecision; Gridname : shortstring; ElevUnits : tElevUnit) : integer;
 var
    NewHeadRecs : tDEMheader;
 begin
-  {$IfDef RecordCreateNewDEM} WriteLineToDebugFile('tDEMDataSet.CloneAndOpenGrid in'); {$EndIf}
+   {$If Defined(RecordCreateNewDEM) or Defined(RecordClone)} WriteLineToDebugFile('tDEMDataSet.CloneAndOpenGrid in, ElevUnits=' + IntToStr(ElevUnits)); {$EndIf}
    NewHeadRecs := DEMheader;
    NewHeadRecs.DEMPrecision := NewPrecision;
    NewHeadRecs.ElevUnits := ElevUnits;
@@ -995,7 +994,7 @@ begin
       AssignProjectionFromDEM(DEMGlb[Result].DEMMapProjection,'DEM=' + IntToStr(Result));
       DEMGlb[Result].DEMMapProjection.ProjectionSharedWithDataset := true;
    end;
-  {$IfDef RecordCreateNewDEM} WriteLineToDebugFile('tDEMDataSet.CloneAndOpenGrid out'); {$EndIf}
+  {$If Defined(RecordCreateNewDEM) or Defined(RecordClone)} WriteLineToDebugFile('tDEMDataSet.CloneAndOpenGrid out, ElevUnits=' + ElevUnitsAre(ElevUnits)); {$EndIf}
 end;
 
 
@@ -1992,7 +1991,7 @@ begin
    end;
    {$IfDef RecordFilter} WriteLineToDebugFile('tDEMDataSet.FindEdgeThisDEM in, dir=' + TStr);   {$EndIf}
 
-   NewDEM := CloneAndOpenGrid(ByteDEM,AreaName + TStr + '_edge',Undefined);
+   NewDEM := CloneAndOpenGridSetMissing(ByteDEM,AreaName + TStr + '_edge',Undefined);
 
    DEMGlb[NewDEM].AreaName := TStr + ' edge (gap size = ' + IntToStr(MDDef.EdgeFilterGap) + ') ' + AreaName;
    StartProgress('Edge filter');
@@ -2513,11 +2512,13 @@ end {proc Subset};
 
 procedure tDEMDataSet.SetEntireGridMissing;
 var
-   Col,Row : integer;
+   Col,Row,nc : integer;
 begin
    StartProgress('Initialize grid ' + AreaName);
+   nc := (DEMheader.NumCol div 100);
+   if nc = 0 then nc := 1;
    for Col := 0 to pred(DEMheader.NumCol) do begin
-      if Col mod (DEMheader.NumCol div 100) = 0 then UpdateProgressBar(Col/DEMheader.NumCol);
+      if Col mod nc = 0 then UpdateProgressBar(Col/DEMheader.NumCol);
       for Row := 0 to pred(DEMheader.NumRow) do SetGridElevation(Col,Row,ThisDEMMissingValue);
    end;
    EndProgress;
@@ -3888,7 +3889,6 @@ finalization
    {$IfDef RecordFullStraightRoute} WriteLineToDebugFile('RecordFullStraightRoute in demcoord  (performance degrader)'); {$EndIf}
    {$IfDef RecordGetUTMStraightRoute} WriteLineToDebugFile('RecordGetUTMStraightRoute in demcoord  (performance degrader)'); {$EndIf}
    {$IfDef RecordDEMHeader} WriteLineToDebugFile('RecordDEMHeader in demcoord'); {$EndIf}
-   {$IfDef SPCS} WriteLineToDebugFile('SPCS in demcoord'); {$EndIf}
    {$IfDef Filter} WriteLineToDebugFile('Filter in demcoord  (big slowdown)'); {$EndIf}
    {$IfDef RecordDEMMapProjection} WriteLineToDebugFile('RecordDEMMapProjectionProblems in demcoord'); {$EndIf}
    {$IfDef RecordVariogram} WriteLineToDebugFile('RecordVariogram in demcoord'); {$EndIf}

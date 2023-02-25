@@ -4,7 +4,7 @@ unit demsatcontrast;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
 
@@ -49,15 +49,14 @@ type
     ComboBox3: TComboBox;
     RadioGroup2: TRadioGroup;
     RedrawSpeedButton12: TSpeedButton;
-    GroupBox3: TGroupBox;
-    Edit3: TEdit;
-    Edit2: TEdit;
-    Label3: TLabel;
-    Label2: TLabel;
     CheckBox2: TCheckBox;
     BitBtn1: TBitBtn;
     BitBtn2: TBitBtn;
     DupeMapSpeedButton18: TSpeedButton;
+    Edit2: TEdit;
+    Label2: TLabel;
+    Label3: TLabel;
+    Edit3: TEdit;
     procedure HelpBtnClick(Sender: TObject);
     procedure RadioGroup1Click(Sender: TObject);
     procedure Edit1Change(Sender: TObject);
@@ -127,8 +126,8 @@ begin
 
    Result.Edit1.Text := RealToString(Result.BaseMap.MapDraw.SatView.WindowContrastLowTailSize,-12,-2);
    Result.Edit4.Text := RealToString(Result.BaseMap.MapDraw.SatView.WindowContrastHighTailSize,-12,-2);
-   Result.Edit2.Text := IntToStr(MDdef.MaxSatRange);
-   Result.Edit3.Text := IntToStr(MDdef.MinSatRange);
+   Result.Edit3.Text := IntToStr(MDdef.MaxSatRange);
+   Result.Edit2.Text := IntToStr(MDdef.MinSatRange);
 
    Result.CheckBox1.Checked := MDdef.IgnoreHistogramZero;
    Result.CheckBox3.Checked := MDDef.QuickMapRedraw;
@@ -207,9 +206,6 @@ begin
       end;
       ShowImageWithContrast;
       {$If Defined(RecordPickBand) or Defined(RecordPixelSize)} WriteLineToDebugFile('ColorPreview out ' + BaseMap.MapDraw.CurrentSatelliteColors + ' pixels=' + RealToString(BaseMap.MapDraw.ScreenPixelSize,-12,-2) + ' m'); {$EndIf}
-   end
-   else begin
-      //SatImage[Sat].ShowPreview(BaseMap.MapDraw.SatView,Self.Image1);
    end;
 end;
 
@@ -222,14 +218,20 @@ begin
       MDdef.IgnoreHistogramZero := CheckBox1.Checked;
       CheckEditString(Edit1.Text,BaseMap.MapDraw.SatView.WindowContrastLowTailSize);
       CheckEditString(Edit4.Text,BaseMap.MapDraw.SatView.WindowContrastHighTailSize);
-      CheckEditString(Edit2.Text,MDdef.MaxSatRange);
-      CheckEditString(Edit3.Text,MDdef.MinSatRange);
+
+      //CheckEditString(Edit2.Text,MDdef.MaxSatRange);
+      //CheckEditString(Edit3.Text,MDdef.MinSatRange);
+
       Edit1.Enabled := RadioGroup1.ItemIndex in [3];
       Edit4.Enabled := RadioGroup1.ItemIndex in [3,4];
       Label1.Enabled := RadioGroup1.ItemIndex in [3];
       Label4.Enabled := RadioGroup1.ItemIndex in [3,4];
-      GroupBox3.Visible := RadioGroup1.ItemIndex in [5];
-      //SatImage[Sat].ShowPreview(BaseMap.MapDraw.SatView,Image1);
+
+      Edit2.Enabled := RadioGroup1.ItemIndex in [5];
+      Edit3.Enabled := RadioGroup1.ItemIndex in [5];
+      Label2.Enabled := RadioGroup1.ItemIndex in [5];
+      Label3.Enabled := RadioGroup1.ItemIndex in [5];
+      //GroupBox3.Visible := RadioGroup1.ItemIndex in [5];
       if (MDDef.QuickMapRedraw) then begin
          {$If Defined(RecordContrast) or Defined(RecordPickBand) or Defined(RecordPixelSize)} WriteLineToDebugFile('tEROSContrastForm.ShowImageWithContrast start redraw'); {$EndIf}
          BaseMap.DoBaseMapRedraw;
@@ -243,7 +245,7 @@ end;
 procedure TEROSContrastForm.UpDown1Click(Sender: TObject; Button: TUDBtnType);
 begin
    {$IfDef RecordPickBand} WriteLineToDebugFile('TPickThreeBandForm.UpDown1Click in UpDown1.Position=' + IntToStr(UpDown1.Position) + '  UpDown1.Min=' + IntToStr(UpDown1.Min)+ '  UpDown1.Max=' + IntToStr(UpDown1.Max)); {$EndIf}
-   ComboBox4.Text := ComboBox4.Items[pred(UpDown1.Position)];
+   if ComboBox4.Items[pred(UpDown1.Position)] <> '' then ComboBox4.Text := ComboBox4.Items[pred(UpDown1.Position)];
    ColorPreview;
 end;
 
@@ -361,12 +363,12 @@ end;
 
 procedure TEROSContrastForm.Edit2Change(Sender: TObject);
 begin
-   ShowImageWithContrast;
+   CheckEditString(Edit2.Text,MDdef.MinSatRange);
 end;
 
 procedure TEROSContrastForm.Edit3Change(Sender: TObject);
 begin
-   ShowImageWithContrast;
+   CheckEditString(Edit3.Text,MDdef.MaxSatRange);
 end;
 
 
@@ -377,9 +379,6 @@ end;
 
 procedure TEROSContrastForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-   //inherited;
-   //if (g1 <> Nil) then g1.destroy;
-   //if (g2 <> nil) then g2.Destroy;
    FreeAndNil(g1);
    FreeAndNil(g2);
 end;

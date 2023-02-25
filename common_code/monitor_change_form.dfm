@@ -32,14 +32,14 @@ object ChangeMapForm: TChangeMapForm
   object Label2: TLabel
     Left = 40
     Top = 120
-    Width = 169
+    Width = 34
     Height = 15
     Caption = 'Label2'
   end
   object Label3: TLabel
     Left = 40
     Top = 144
-    Width = 180
+    Width = 34
     Height = 15
     Caption = 'Label3'
   end
@@ -61,6 +61,7 @@ object ChangeMapForm: TChangeMapForm
     Height = 25
     Caption = '&Help'
     TabOrder = 1
+    OnClick = HelpBtnClick
   end
   object PageControl1: TPageControl
     Left = 8
@@ -160,5 +161,14 @@ object ChangeMapForm: TChangeMapForm
         OnChange = Edit5Change
       end
     end
+  end
+  object BitBtn1: TBitBtn
+    Left = 298
+    Top = 163
+    Width = 124
+    Height = 25
+    Caption = 'Change category map'
+    TabOrder = 3
+    OnClick = BitBtn1Click
   end
 end

@@ -18,7 +18,7 @@
       //{$Define RecordLASMemoryAlocations}
       //{$Define RecordLASfiles}
       {$Define RecordWKT}
-      //{$Define RecordVarLenRec}
+      {$Define RecordVarLenRec}
       //{$Define RecordFirstPulse}
       //{$Define RecordReprojectLAS}
       //{$Define RecordLASplot}
@@ -80,7 +80,6 @@ const
    LASLatLong = 2;
 
 type
-   tLASClassificationCategory = (lccUnclass,lccGround,lccVeg,lccBuilding,lccOther,lccWater,lccAll);
    tLASAsciiOutput = (lasascXYYonly,lasascClassInt,lasascRGB);
    tLASHeader = packed record
       FileSignature : array[1..4] of ANSIchar;
@@ -913,7 +912,7 @@ var
    GeoKeys : array[0..MaxGeoKeys,1..4] of word;
    ProjData : tStringList;
    ASCIIStr  : AnsiString;
-   SPCSZone : ShortString;
+   //SPCSZone : ShortString;
    Junk,
    GeotiffDoubles,
    GeotiffASCII  : array[1..MaxInRec] of byte;
@@ -965,12 +964,46 @@ var
             LAS_LatLong_Box.xmin := LasHeader.MinX;
          end;
 
+         procedure GetUTMboxFromLatLongBox;
+         begin
+            RedefineWGS84DatumConstants(0.5*(LAS_LatLong_Box.XMax + LAS_LatLong_Box.XMin),lasProjectionDefinition.LasProjection.LatHemi);
+            WGS84DatumConstants.LatLongDegreetoUTM(LAS_LatLong_Box.YMax,LAS_LatLong_Box.XMax,LAS_UTM_Box.xmax,LAS_UTM_Box.ymax);
+            WGS84DatumConstants.LatLongDegreetoUTM(LAS_LatLong_Box.YMin,LAS_LatLong_Box.XMin,LAS_UTM_Box.xmin,LAS_UTM_Box.ymin);
+         end;
+
+         procedure DoWKTfromVariableLengthRecord;
+         begin
+            if lasProjectionDefinition.LasProjection.DecodeWKTProjectionFromString(ASCIIProjectionData) then begin
+               lasProjectionDefinition.LasProjection.InverseProjectDegrees(LasHeader.MaxX,LasHeader.MaxY,LAS_LatLong_Box.ymax,LAS_LatLong_Box.xmax);
+               lasProjectionDefinition.LasProjection.InverseProjectDegrees(LasHeader.MinX,LasHeader.MinY,LAS_LatLong_Box.ymin,LAS_LatLong_Box.xmin);
+               {$If Defined(RecordWKT)} WriteLineToDebugFile('DoWKTfromVariableLengthRecord geobox=' + sfBoundBoxToString(LAS_LatLong_Box)); {$EndIf}
+
+               //if lasProjectionDefinition.LasProjection.VertFeet then begin
+                  //MeterZscaleFac := LasHeader.ZscaleFac * lasProjectionDefinition.LasProjection.VertFootFactor;
+                  LasHeader.ZscaleFac := LasHeader.ZscaleFac * lasProjectionDefinition.LasProjection.VertFootFactor;
+                  LasHeader.MaxZ := LasHeader.MaxZ * lasProjectionDefinition.LasProjection.VertFootFactor;
+                  LasHeader.MinZ := LasHeader.MinZ * lasProjectionDefinition.LasProjection.VertFootFactor;
+                  LAS_Z_range := LasHeader.MaxZ - LasHeader.MinZ;
+               //end;
+               if lasProjectionDefinition.LasProjection.Pname = UTMEllipsoidal then SetLasUTMBox
+               else begin
+                  GetUTMboxFromLatLongBox;
+               end;
+
+               UTMZone := GetUTMZone(0.5 * (LAS_LatLong_Box.xmax + LAS_LatLong_Box.xmin));
+               if LAS_LatLong_Box.ymin > 0 then lasProjectionDefinition.LASProjection.LatHemi := 'N'
+               else lasProjectionDefinition.LASProjection.LatHemi := 'S';
+
+               Area := (LasHeader.MaxX - LasHeader.MinX) * (LasHeader.MaxY - LasHeader.MinY);
+            end;
+         end;
+
 
 var
    NumRead : integer;
    Hemi : ANSIchar;
 begin
-   {$If Defined(RecordCreateEveryFile) or Defined(RecordWKT)}   WriteLineToDebugFile('tLAS_data.Create for ' + FileName); {$EndIf}
+   {$If Defined(RecordCreateEveryFile) or Defined(RecordWKT)} WriteLineToDebugFile('tLAS_data.Create for ' + FileName); {$EndIf}
    if FileExists(FileName) then begin
       CheckFileNameForSpaces(FileName);
       NilRecordMemory;
@@ -1039,29 +1072,17 @@ begin
             ASCIIProjectionData := ASCIIProjectionData + chr(GeotiffASCII[j]);
          end;
          {$If Defined(RecordCreateEveryFile) or Defined(RecordWKT)} WriteLineToDebugFile('WKT, ASCIIProjectionData= ' + ASCIIProjectionData);    {$EndIf}
-
-         lasProjectionDefinition.LasProjection.DecodeWKTProjectionFromString(ASCIIProjectionData);
-         lasProjectionDefinition.LasProjection.InverseProjectDegrees(LasHeader.MaxX,LasHeader.MaxY,LAS_LatLong_Box.ymax,LAS_LatLong_Box.xmax);
-         lasProjectionDefinition.LasProjection.InverseProjectDegrees(LasHeader.MinX,LasHeader.MinY,LAS_LatLong_Box.ymin,LAS_LatLong_Box.xmin);
-
-         if lasProjectionDefinition.LasProjection.VertFeet then begin
-            MeterZscaleFac := LasHeader.ZscaleFac * 0.3048006096012192;
-            LasHeader.MaxZ := LasHeader.MaxZ * 0.3048006096012192;
-            LasHeader.MinZ := LasHeader.MinZ * 0.3048006096012192;
-            LAS_Z_range := LasHeader.MaxZ - LasHeader.MinZ;
-         end;
-         SetLasUTMBox;
-         Area := (LasHeader.MaxX - LasHeader.MinX) * (LasHeader.MaxY - LasHeader.MinY);
+         DoWKTfromVariableLengthRecord;
       end
       else begin
-         {$If Defined(RecordCreateEveryFile) or Defined(RecordWKT)} writeLineToDebugFile('No WKT'); {$EndIf}
+         {$If Defined(RecordCreateEveryFile) or Defined(RecordWKT)} writeLineToDebugFile('No WKT in ELVR'); {$EndIf}
          lasProjectionDefinition.RawXYZFile := FileExists(ExtractFilePath(FileName) + 'xyz_files.txt') or FileExists(ExtractFilePath(FileName) + 'rawxy.txt');
          if LasProjectionDefinition.RawXYZFile then begin
             SetLASGeoBox;
             Area := (LasHeader.MaxX - LasHeader.MinX) * (LasHeader.MaxY - LasHeader.MinY);
          end;
          LasFileName := FileName;
-         {$IfDef RecordCreateEveryFile} WriteLineToDebugFile('LasHeader.NumVarLenRecs=' + IntToStr(LasHeader.NumVarLenRecs)); {$EndIf}
+         {$If Defined(RecordCreateEveryFile) or Defined(RecordWKT)}  WriteLineToDebugFile('LasHeader.NumVarLenRecs=' + IntToStr(LasHeader.NumVarLenRecs)); {$EndIf}
          for i := 1 to LasHeader.NumVarLenRecs do begin
             BlockRead(LasFile,VarLenRecHeader[i],SizeOf(tVarLenRecHeader));
             {$IfDef RecordVarLenRec}
@@ -1090,6 +1111,7 @@ begin
                   with FileGeoKeys[j] do begin
                      wKeyID := GeoKeys[j,1];
                      wValueOffset := GeoKeys[j,4];
+                     {$If Defined(RecordCreateEveryFile) or Defined(RecordWKT)}  writeLineToDebugFile(IntegerToString(j,4) + IntegerToString(wKeyID,8) + IntegerToString(wValueOffset,12)); {$EndIf}
                      if (wKeyID = 1024) then lasProjectionDefinition.LASProjection.ModelType := wValueOffset;
                      if (wKeyID = 2048) then lasProjectionDefinition.LasProjection.ProcessTiff2048(wValueOffset);
                     //if (wKeyID = 2054) then begin end; //GeogAngularUnitsGeoKey
@@ -1119,15 +1141,15 @@ begin
                for J := 1 to VarLenRecHeader[i].RecLenAfterHeader do begin
                   if (GeotiffASCII[j] <> 0) then ASCIIProjectionData := ASCIIProjectionData + chr(GeotiffASCII[j]);
                end;
-               {$IfDef RecordCreateEveryFile} writeLineToDebugFile(ASCIIProjectionData); {$EndIf}
+               {$If Defined(RecordCreateEveryFile) or Defined(RecordWKT)}  writeLineToDebugFile(ASCIIProjectionData); {$EndIf}
                if FindUTMZone(ASCIIProjectionData,UTMzone,Hemi) then begin
-                  {$IfDef RecordCreateEveryFile} WriteLineToDebugFile('34737, UTM and not already defined'); {$EndIf}
+                  {$If Defined(RecordCreateEveryFile) or Defined(RecordWKT)} WriteLineToDebugFile('34737, UTM and not already defined'); {$EndIf}
                   lasProjectionDefinition.LASProjection.h_datumcode := 'NAD83';
                   if (Hemi = 'S') then lasProjectionDefinition.LASProjection.LatHemi := 'S';
-
                   lasProjectionDefinition.LASProjection.StartUTMProjection(UTMZone);
-               end;
-               {$IfDef RecordCreateEveryFile} writeLineToDebugFile('34737  ASCII projection data=' + ASCIIProjectionData); {$EndIf}
+               end
+               else DoWKTfromVariableLengthRecord;
+               {$If Defined(RecordCreateEveryFile) or Defined(RecordWKT)}  writeLineToDebugFile('34737  ASCII projection data=' + ASCIIProjectionData); {$EndIf}
             end;
          end;
       end;
@@ -1154,9 +1176,7 @@ begin
             SetLasGeoBox;
             UTMZone := GetUTMZone(0.5*(LAS_LatLong_Box.XMax + LAS_LatLong_Box.XMin));
             if (LAS_LatLong_Box.YMax > 0) then lasProjectionDefinition.LasProjection.LatHemi := 'N' else lasProjectionDefinition.LasProjection.LatHemi := 'S';
-            RedefineWGS84DatumConstants(0.5*(LAS_LatLong_Box.XMax + LAS_LatLong_Box.XMin),lasProjectionDefinition.LasProjection.LatHemi);
-            WGS84DatumConstants.LatLongDegreetoUTM(LAS_LatLong_Box.YMax,LAS_LatLong_Box.XMax,LAS_UTM_Box.xmax,LAS_UTM_Box.ymax);
-            WGS84DatumConstants.LatLongDegreetoUTM(LAS_LatLong_Box.YMin,LAS_LatLong_Box.XMin,LAS_UTM_Box.xmin,LAS_UTM_Box.ymin);
+            GetUTMboxFromLatLongBox;
          end
          else begin
             {$IfDef RecordCreateEveryFile} WriteLineToDebugFile('Set up UTM-like projection'); {$EndIf}

@@ -2,7 +2,7 @@
 { Part of ianMICRODEM GIS Program    }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
-{ Copyright (c) 2022 Peter L. Guth   }
+{ Copyright (c) 2023 Peter L. Guth   }
 {____________________________________}
 
 
@@ -570,28 +570,28 @@ var
 begin
    {$IfDef RecordProblems} WriteLineToDebugFile('tDEMDataSet.CarlosLopezSlopeMaps in'); {$EndIf}
 
-   Slope3x3Grid := CloneAndOpenGrid(FloatingPointDEM,AreaName + '_slope3x3',PercentSlope);
-   slope5x5Grid := CloneAndOpenGrid(FloatingPointDEM,AreaName + '_slope5x5',PercentSlope);
-   slope7x7Grid := CloneAndOpenGrid(FloatingPointDEM,AreaName + '_slope7x7',PercentSlope);
-   Slope4thGrid := CloneAndOpenGrid(FloatingPointDEM,AreaName + '_slope_4th',PercentSlope);
-   Slope6thGrid := CloneAndOpenGrid(FloatingPointDEM,AreaName + '_slope_6th',PercentSlope);
-   SlopeErrorBoundGrid := CloneAndOpenGrid(FloatingPointDEM,AreaName + '_slope_error',PercentSlope);
-   SlopeUncertaintyGrid := CloneAndOpenGrid(FloatingPointDEM,AreaName + '_slope_uncertainty',PercentSlope);
-   TruncationErrorGrid := CloneAndOpenGrid(FloatingPointDEM,AreaName + '_truncation_error',Undefined);
+   Slope3x3Grid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_slope3x3',PercentSlope);
+   slope5x5Grid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_slope5x5',PercentSlope);
+   slope7x7Grid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_slope7x7',PercentSlope);
+   Slope4thGrid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_slope_4th',PercentSlope);
+   Slope6thGrid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_slope_6th',PercentSlope);
+   SlopeErrorBoundGrid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_slope_error',PercentSlope);
+   SlopeUncertaintyGrid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_slope_uncertainty',PercentSlope);
+   TruncationErrorGrid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_truncation_error',Undefined);
 
-   Aspect_3x3Grid := CloneAndOpenGrid(FloatingPointDEM,AreaName + '_aspect3x3',AspectDeg);
-   Aspect_5x5Grid := CloneAndOpenGrid(FloatingPointDEM,AreaName + '_aspect5x5',AspectDeg);
-   Aspect4thGrid := CloneAndOpenGrid(FloatingPointDEM,AreaName + '_aspect_4th',AspectDeg);
-   Aspect_7x7grid := CloneAndOpenGrid(FloatingPointDEM,AreaName + '_aspect7x7',AspectDeg);
-   Aspect6thGrid := CloneAndOpenGrid(FloatingPointDEM,AreaName + '_aspect_6th',AspectDeg);
+   Aspect_3x3Grid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_aspect3x3',AspectDeg);
+   Aspect_5x5Grid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_aspect5x5',AspectDeg);
+   Aspect4thGrid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_aspect_4th',AspectDeg);
+   Aspect_7x7grid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_aspect7x7',AspectDeg);
+   Aspect6thGrid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_aspect_6th',AspectDeg);
 
    {$IfDef MakePartialGrids}
-      dxGrid := CloneAndOpenGrid(FloatingPointDEM,AreaName + '_dzdx3x3',PercentSlope);
-      dyGrid := CloneAndOpenGrid(FloatingPointDEM,AreaName + '_dzdy3x3',PercentSlope);
-      dx2Grid := CloneAndOpenGrid(FloatingPointDEM,AreaName + '_dzdx5x5',PercentSlope);
-      dy2Grid := CloneAndOpenGrid(FloatingPointDEM,AreaName + '_dzdy5x5',PercentSlope);
-      dx3Grid := CloneAndOpenGrid(FloatingPointDEM,AreaName + '_dzdx7x7',PercentSlope);
-      dy3Grid := CloneAndOpenGrid(FloatingPointDEM,AreaName + '_dzdy7x7',PercentSlope);
+      dxGrid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_dzdx3x3',PercentSlope);
+      dyGrid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_dzdy3x3',PercentSlope);
+      dx2Grid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_dzdx5x5',PercentSlope);
+      dy2Grid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_dzdy5x5',PercentSlope);
+      dx3Grid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_dzdx7x7',PercentSlope);
+      dy3Grid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_dzdy7x7',PercentSlope);
    {$EndIf}
 
    //grid containing DEM is zero based, 0,0 at the SW corner

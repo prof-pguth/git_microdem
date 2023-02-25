@@ -3,7 +3,7 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
   Top = 0
   Caption = 'Point Cloud Options'
   ClientHeight = 446
-  ClientWidth = 482
+  ClientWidth = 501
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -31,12 +31,12 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
   object Panel1: TPanel
     Left = 0
     Top = 405
-    Width = 482
+    Width = 501
     Height = 41
     Align = alBottom
     TabOrder = 0
     ExplicitTop = 404
-    ExplicitWidth = 478
+    ExplicitWidth = 497
     object CancelBtn: TBitBtn
       Left = 290
       Top = 6
@@ -110,12 +110,12 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
   object PageControl1: TPageControl
     Left = 0
     Top = 0
-    Width = 482
+    Width = 501
     Height = 236
-    ActivePage = TabSheet8
+    ActivePage = TabSheet5
     Align = alClient
     TabOrder = 1
-    ExplicitWidth = 478
+    ExplicitWidth = 497
     ExplicitHeight = 235
     object General: TTabSheet
       Caption = 'General'
@@ -258,10 +258,12 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
       object Panel2: TPanel
         Left = 0
         Top = 0
-        Width = 474
+        Width = 493
         Height = 208
         Align = alClient
         TabOrder = 0
+        ExplicitWidth = 489
+        ExplicitHeight = 207
         object Label1: TLabel
           Left = 296
           Top = 16
@@ -756,7 +758,7 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
         Width = 58
         Height = 21
         TabOrder = 4
-        Text = 'Edit11'
+        Text = '1'
         OnChange = Edit11Change
       end
       object BitBtn31: TBitBtn
@@ -847,7 +849,7 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
         Width = 80
         Height = 21
         TabOrder = 14
-        Text = 'Edit33'
+        Text = '32000'
         OnChange = Edit33Change
       end
       object Edit34: TEdit
@@ -856,7 +858,7 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
         Width = 78
         Height = 21
         TabOrder = 15
-        Text = 'Edit34'
+        Text = '0'
         OnChange = Edit34Change
       end
       object BitBtn62: TBitBtn
@@ -1659,12 +1661,12 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
   object Panel3: TPanel
     Left = 0
     Top = 236
-    Width = 482
+    Width = 501
     Height = 169
     Align = alBottom
     TabOrder = 2
     ExplicitTop = 235
-    ExplicitWidth = 478
+    ExplicitWidth = 497
     object RadioGroup1: TRadioGroup
       Left = 10
       Top = 2

@@ -12,7 +12,6 @@
 
 //  https://stackoverflow.com/questions/50394952/code-for-chi-square-distribution-function-in-delphi
 
-
          function LnGamma(x : float64) : float64;
          const
            a0 =  0.083333333096;

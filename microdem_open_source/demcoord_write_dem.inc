@@ -2,9 +2,9 @@
 { Part of ianMICRODEM GIS Program    }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
-{ Copyright (c) 2022 Peter L. Guth   }
+{ Copyright (c) 2023 Peter L. Guth   }
 {____________________________________}
-{include file for demcoord.pas       }
+{  include file for demcoord.pas     }
 {____________________________________}
 
 
@@ -90,6 +90,14 @@ procedure tDEMDataSet.WriteNewFormatDEM(Limits : tGridLimits; var FileName : Pat
           Result := Result + '*END' + #13;
       end;
 
+    procedure CheckVAT;
+    begin
+       if FileExists(VATFileName) then begin
+         FileName := ChangeFileExt(FileName,'.vat.dbf');
+         CopyFile(VATFileName,FileName);
+       end;
+    end;
+
 
 var
    fFile : file;
@@ -105,13 +113,11 @@ var
 begin
    {$If Defined(RecordWriteDEM) or Defined(RecordZRange)} WriteLineToDebugFile('WriteNewFormatDEM Elev range: ' + ZRange); {$EndIf}
 
-    {$IfDef ExGeotiffWrite}
-    {$Else}
-       if (FileExtEquals(FileName,'.TIF')) then begin
-          SaveAsGeotiff(FileName);
-          exit;
-       end;
-    {$EndIf}
+    if (FileExtEquals(FileName,'.TIF')) then begin
+       SaveAsGeotiff(FileName);
+       CheckVAT;
+       exit;
+    end;
 
    {$IfDef VCL}
       if (FileName = '') or (not FileExtEquals(FileName,'.DEM')) then begin
@@ -178,11 +184,7 @@ begin
        end;
        CloseFile(FFile);
 
-       if FileExists(VATFileName) then begin
-         FileName := ChangeFileExt(FileName,'.vat.dbf');
-         CopyFile(VATFileName,FileName);
-       end;
-
+       CheckVAT;
     finally
        EndProgress;
        DEMstatus := dsSaved;

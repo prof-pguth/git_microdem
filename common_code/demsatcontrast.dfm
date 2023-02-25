@@ -259,11 +259,25 @@ inherited EROSContrastForm: TEROSContrastForm
         Height = 15
         Caption = 'High tail size (%)'
       end
+      object Label2: TLabel
+        Left = 272
+        Top = 144
+        Width = 22
+        Height = 15
+        Caption = 'Low'
+      end
+      object Label3: TLabel
+        Left = 272
+        Top = 172
+        Width = 26
+        Height = 15
+        Caption = 'High'
+      end
       object RadioGroup1: TRadioGroup
         Left = 0
         Top = 3
         Width = 257
-        Height = 138
+        Height = 159
         Caption = 'Enhancement'
         Items.Strings = (
           'None'
@@ -271,7 +285,7 @@ inherited EROSContrastForm: TEROSContrastForm
           'Linear stretch'
           'Linear stretch, exclude tails'
           'Linear stretch, exclude cloud tail'
-          'Range masking')
+          'Linear stretch, defined')
         TabOrder = 0
         OnClick = RadioGroup1Click
       end
@@ -293,54 +307,32 @@ inherited EROSContrastForm: TEROSContrastForm
         Text = 'Edit4'
         OnChange = Edit4Change
       end
-      object GroupBox3: TGroupBox
-        Left = 225
-        Top = 144
-        Width = 145
-        Height = 85
-        Caption = 'Range masking'
-        TabOrder = 3
-        object Label3: TLabel
-          Left = 17
-          Top = 46
-          Width = 21
-          Height = 15
-          Caption = 'Min'
-        end
-        object Label2: TLabel
-          Left = 13
-          Top = 19
-          Width = 23
-          Height = 15
-          Caption = 'Max'
-        end
-        object Edit3: TEdit
-          Left = 56
-          Top = 43
-          Width = 49
-          Height = 23
-          TabOrder = 0
-          Text = 'Edit2'
-          OnChange = Edit3Change
-        end
-        object Edit2: TEdit
-          Left = 55
-          Top = 16
-          Width = 50
-          Height = 23
-          TabOrder = 1
-          Text = 'Edit2'
-          OnChange = Edit2Change
-        end
-      end
       object BitBtn1: TBitBtn
-        Left = 6
-        Top = 160
+        Left = 3
+        Top = 168
         Width = 119
         Height = 25
         Caption = 'Enhancement'
-        TabOrder = 4
+        TabOrder = 3
         OnClick = BitBtn1Click
+      end
+      object Edit2: TEdit
+        Left = 326
+        Top = 144
+        Width = 49
+        Height = 23
+        TabOrder = 4
+        Text = '0'
+        OnChange = Edit2Change
+      end
+      object Edit3: TEdit
+        Left = 326
+        Top = 173
+        Width = 49
+        Height = 23
+        TabOrder = 5
+        Text = 'Edit3'
+        OnChange = Edit3Change
       end
     end
   end

@@ -48,7 +48,6 @@ unit GeoTiff;
       //{$Define RecordInitializeDEM}
       //{$Define FullDEMinit}         //potential major slowdown
       //{$Define RecordGeotiffHistogram}
-      //{$Define RecordSPCSReading}
       //{$Define Record3076}
       //{$Define RecordWhileProcessingHeader}
       //{$Define RecordGeotiffPalette}
@@ -1507,6 +1506,7 @@ var
                            ProjectionDefined := true;
                         end;
 
+                        (*
                         if IDProjectionMagic(TStr,'TM35FIN')  then begin
                            MapProjection.StartUTMProjection(35);
                            ProjectionDefined := true;
@@ -1524,8 +1524,10 @@ var
                               Long0 := DegToRad * 10;
                            end;
                         end;
+                        *)
                      end;
 
+                     (*
                      if StrUtils.AnsiContainsText(TStr,'New Zealand Geodetic Datum 2000') then begin
                         MapProjection.PName := GeneralTransverseMercator;
                         with MapProjection do begin
@@ -1557,6 +1559,7 @@ var
                         if (MapProjection.H_datumCode = '') then MapProjection.H_datumCode := MDDef.DefaultDigitizeDatum;
                         {$IfDef RecordDefineDatum} writeLineToDebugFile('just utm zone: ' + IntToStr(MapProjection.projUTMZone)); {$EndIf}
                      end;
+                     *)
                   end;
                end;
 
@@ -1630,15 +1633,6 @@ var
                   {$EndIf}
                end;
                if GeoLatLong then TiffHeader.ModelType := 2;
-               (*
-               if (MapProjection.ZoneName <> '') then begin
-                  {$IfDef RecordSPCSReading} writeLineToDebugFile('Just got SPCS zone=' + MapProjection.ZoneName); {$EndIf}
-                  MapProjection.FIPSZone := FIPSZoneFromASCIIName(MapProjection.ZoneName);
-                  MapProjection.State := MapProjection.ZoneName;
-                  MapProjection.H_datumCode := 'WGS84';
-                  {$IfDef RecordSPCSReading} writeLineToDebugFile('SPCS projection'); {$EndIf}
-               end;
-               *)
                if (TiffHeader.HemiChar = 'N') then Hemi := 45 else Hemi := -45;
                MapProjection.projUTMZone := Zone;
             end
@@ -1719,6 +1713,7 @@ var
                                 TStr := MapProjection.H_datumCode;
                              end;
                          end;
+                  2049 : TStr := ASCIIStr;
                   2050 : begin
                             case TiffOffset of
                                6326 : MapProjection.H_datumCode := 'WGS84';
@@ -2497,7 +2492,6 @@ finalization
    {$IfDef RecordGeotiff} WriteLineToDebugFile('RecordGeotiffy active in geotiff'); {$EndIf}
    {$IfDef RecordGeotiffRow} WriteLineToDebugFile('RecordGeotiffRowProblems active in geotiff'); {$EndIf}
    {$IfDef RecordGeotiffPalette} WriteLineToDebugFile('RecordGeotiffPaletteProblems active in geotiff'); {$EndIf}
-   {$IfDef RecordSPCSReading} writeLineToDebugFile('RecordSPCSReading active in geotiff'); {$EndIf}
    {$IfDef RecordDefineDatum} writeLineToDebugFile('RecordGeotiffDatumProblems active in geotiff'); {$EndIf}
    {$IfDef RecordDEMMapProjection} WriteLineToDebugFile('RecordDEMMapProjectionProblems active in geotiff'); {$EndIf}
    {$IfDef RecordBitPerPixel} writeLineToDebugFile('RecordBitPerPixel active in geotiff'); {$EndIf}

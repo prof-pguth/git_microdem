@@ -4,7 +4,7 @@ unit pit_and_spire;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
 
@@ -244,11 +244,9 @@ begin
       if (WallResults.Count > 1) then begin
          fName := MDTempDir + DEMGlb[MapOwner.MapDraw.DEMonMap].AreaName + '_walls'+'.csv';
          WallDB := MapOwner.DisplayAndPurgeStringListDB(WallResults,fName,true);
-         //WallDB := LastDBLoaded;
          GISdb[Walldb].AssignSymbol(MDdef.WallSymbol);
       end
       else WallResults.Free;
-   //end;
    {$IfDef RecordPitsSpires} WriteLineToDebugFile('TMapForm.DrawWalls out');{$EndIf}
 end;
 
@@ -270,7 +268,7 @@ begin
    if (RoadNeighGrid <> 0) then CloseSingleDEM(RoadNeighGrid);
    UpdateValues;
 
-   RoadNeighGrid := DEMGlb[MapOwner.MapDraw.DEMonMap].CloneAndOpenGrid(ByteDEM,'Road neighbors',Undefined);
+   RoadNeighGrid := DEMGlb[MapOwner.MapDraw.DEMonMap].CloneAndOpenGridSetMissing(ByteDEM,'Road neighbors',Undefined);
 
    XBoxSize := round(MDDef.RoadTrendRegion / 2 / DEMGlb[RoadNeighGrid].AverageXSpace);
    YBoxSize := round(MDDef.RoadTrendRegion / 2 / DEMGlb[RoadNeighGrid].AverageYSpace);
@@ -312,7 +310,7 @@ begin
    UpdateValues;
    CheckEditString(Edit26.Text,PixWide);
 
-   RoadNeighGrid := DEMGlb[MapOwner.MapDraw.DEMonMap].CloneAndOpenGrid(SmallIntDEM,'Road neighbors',Undefined);
+   RoadNeighGrid := DEMGlb[MapOwner.MapDraw.DEMonMap].CloneAndOpenGridSetMissing(SmallIntDEM,'Road neighbors',Undefined);
    if RoadNeighGrid <> 0 then begin
       XBoxSize := round(MDDef.RoadTrendRegion / 2 / DEMGlb[RoadNeighGrid].AverageXSpace);
       YBoxSize := round(MDDef.RoadTrendRegion / 2 / DEMGlb[RoadNeighGrid].AverageYSpace);
@@ -434,7 +432,7 @@ begin
    if RadioGroup3.ItemIndex in [0,2] then begin
       if (Sender = Flatroadbtn) then TStr := 'Flat road neighbors'
       else TStr := 'Peak roof neighbors';
-      PeakRoofGrid := DEMGlb[MapOwner.MapDraw.DEMonMap].CloneAndOpenGrid(ByteDEM,TStr,euIntCode);
+      PeakRoofGrid := DEMGlb[MapOwner.MapDraw.DEMonMap].CloneAndOpenGridSetMissing(ByteDEM,TStr,euIntCode);
   end;
 
    if RadioGroup3.ItemIndex in [1,2] then begin
@@ -500,7 +498,6 @@ begin
     if RadioGroup3.ItemIndex in [1,2] then  begin
        fName := NextFileNumber(MDTempDir, 'Peak_roofs','.csv');
        PeakedDB := DEMGlb[MapOwner.MapDraw.DEMonMap].SelectionMap.DisplayAndPurgeStringListDB(SpireResults,fName);
-       //PeakedDB := LastDBLoaded;
     end;
 
     Memo1.Lines.Add('');
@@ -653,8 +650,7 @@ begin
         for x := 1 to dx do begin
            if DEMGlb[MapOwner.MapDraw.DEMonMap].IsSpire(Col,Row,x,x,SpireHeightM,NumLower) then begin
               DEMGlb[MapOwner.MapDraw.DEMonMap].DEMGridToLatLongDegree(Col,Row,Lat,Long);
-              SpireResults.Add(RealToString(Lat,-18,8) + ',' + RealToString(Long,-18,8) + ',' + RealToString(SpireHeightM,-18,-2) + ',' +
-                  RealToString(x* DEMGlb[MapOwner.MapDraw.DEMonMap].AverageXSpace,-12,-2) + ',' + IntToStr(NumLower));
+              SpireResults.Add(RealToString(Lat,-18,8) + ',' + RealToString(Long,-18,8) + ',' + RealToString(SpireHeightM,-18,-2) + ',' + RealToString(x* DEMGlb[MapOwner.MapDraw.DEMonMap].AverageXSpace,-12,-2) + ',' + IntToStr(NumLower));
               inc(SpiresOnmap);
               break;
            end;
@@ -698,7 +694,7 @@ var
    var
       x,y : integer;
       s1 : float64;
-      TheMinElev,TheMaxElev,{s2,}avgZ : float32;
+      TheMinElev,TheMaxElev,avgZ : float32;
       zb  : array[1..4] of float32;
       Limits : tGridLimits;
       SlpAsp : tSlopeAspectRec;
@@ -812,7 +808,7 @@ var
       Col,Row,N : integer;
       Slope,Aspect : float32;
    begin
-      GridCand := DEMGlb[MapOwner.MapDraw.DEMonMap].CloneAndOpenGrid(ByteDEM,'Roof_class',euIntCode);
+      GridCand := DEMGlb[MapOwner.MapDraw.DEMonMap].CloneAndOpenGridSetMissing(ByteDEM,'Roof_class',euIntCode);
       DEMGlb[GridCand].ElevationMultiple := 1;
        Col := GridLimits.XGridLow;
        StartProgress('Roofs');
@@ -858,7 +854,7 @@ begin
          if (PeakRoofGrid <> 0) then CloseSingleDEM(PeakRoofGrid);
       end;
 
-      PeakRoofGrid := DEMGlb[MapOwner.MapDraw.DEMonMap].CloneAndOpenGrid(ByteDEM,'Roofs', euIntCode);
+      PeakRoofGrid := DEMGlb[MapOwner.MapDraw.DEMonMap].CloneAndOpenGridSetMissing(ByteDEM,'Roofs', euIntCode);
       MakeCandidateGrid(220,320,40,140);
       StartProgress('Roofs EW');
       Row := GridLimits.YGridLow;
@@ -884,13 +880,13 @@ begin
                       repeat
                          inc(x);
                          if DEMGlb[DropOffGrid].GetElevMeters(x,Row,Dropoff) then begin
-                             if DropOff < MDDef.BuildingMinHeight then goto OnGround;
+                             if (DropOff < MDDef.BuildingMinHeight) then goto OnGround;
                          end;
                       until ((succ(x)-sg) * DEMGlb[GridCand].AverageXSpace > MDDef.MinBldgSize) or (x > GridLimits.XGridHigh);
 
                       bs := (Col-sg) * DEMGlb[GridCand].AverageXSpace;
                       if (bs >= MDDef.MinBldgSize) and (bs <= MDDef.MaxBldgSize) then begin
-                            for x := sg to Col do DEMGlb[PeakRoofGrid].SetGridElevation(x,Row,1);
+                         for x := sg to Col do DEMGlb[PeakRoofGrid].SetGridElevation(x,Row,1);
                       end;
                   until (round(Aspect) in [3,5]) or (Col > GridLimits.XGridHigh);
                end;
@@ -924,9 +920,8 @@ begin
                          inc(Row);
                          if DEMGlb[GridCand].GetElevMeters(Col,Row,Aspect) then begin
                             inc(NumTotal);
-                            if Aspect = 1 then inc(NumGoodSlope);
+                            if (Aspect = 1) then inc(NumGoodSlope);
                          end;
-
                       until (round(Aspect) in [3,5]) or (Row > GridLimits.YGridHigh);
                       y := sg;
                       repeat
@@ -1118,25 +1113,6 @@ begin
       //EdgeDB := LastDBLoaded;
    end {with};
 end;
-
-
-
-(*
-procedure TPitSpireForm.DrawPitsSpires(DoPeaks : boolean);
-var
-   i : integer;
-begin
-   UpdateValues;
-   if CheckBox2.Checked then begin
-      for i := 1 to MaxDEMDataSets do begin
-         if ValidDEM(i) then begin
-            FindPeaks(Memo1,i,GridLimits,MapOwner,DoPeaks);
-         end;
-      end;
-   end
-   else FindPeaks(Memo1,MapOwner.MapDraw.DEMonMap,GridLimits,MapOwner,DoPeaks);
-end;
-*)
 
 
 procedure TPitSpireForm.Edit21Change(Sender: TObject);

@@ -1,9 +1,12 @@
 unit sup_class;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{_________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2022 Peter L. Guth  }
+{___________________________________}
+
 
 {$I nevadia_defines.inc}
 
@@ -385,7 +388,7 @@ begin
    ClassName := ExtractFileNameNoExt(fName2);
    {$IfDef RecordUnsupClass} WriteLineToDebugFile('Directory created'); {$EndIf}
    ApplicationProcessMessages;
-   ClassDEM := DEMGlb[MultiGridArray[MGUsed].Grids[MultiGridArray[MGUsed].FirstValidGrid]].CloneAndOpenGrid(byteDEM,ClassName,UnDefined);
+   ClassDEM := DEMGlb[MultiGridArray[MGUsed].Grids[MultiGridArray[MGUsed].FirstValidGrid]].CloneAndOpenGridSetMissing(byteDEM,ClassName,UnDefined);
 
    {$IfDef RecordUnsupClass} WriteLineToDebugFile('New grid created'); {$EndIf}
 
@@ -723,7 +726,7 @@ begin
 
    fName2 := NextFileNumber(MultiGridArray[UseMG].SupClassDir, 'sc_' ,'.dem');
    //ClassName := MultiGridArray[UseMG].MG_Name + '_' + ExtractFileNameNoExt(fName2);
-   ClassDEM := DEMGlb[MultiGridArray[UseMG].Grids[1]].CloneAndOpenGrid(byteDEM,ClassName,Undefined);
+   ClassDEM := DEMGlb[MultiGridArray[UseMG].Grids[1]].CloneAndOpenGridSetMissing(byteDEM,ClassName,Undefined);
 
    try
       {$IfDef RecordSatTrainProblems} WriteLineToDebugFile('DisplayClassifiedBand 2'); {$EndIf}

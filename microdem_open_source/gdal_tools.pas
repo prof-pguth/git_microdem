@@ -4,7 +4,7 @@ unit gdal_tools;
 { Part of ianMICRODEM GIS Program    }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
-{ Copyright (c) 2022 Peter L. Guth   }
+{ Copyright (c) 2023 Peter L. Guth   }
 {____________________________________}
 
 
@@ -23,7 +23,7 @@ unit gdal_tools;
       //{$Define RecordGDALOpen}
       //{$Define RecordUseOtherPrograms}
       //{$Define RecordSaveProblems}
-      //{$Define RecordGDAL}
+      {$Define RecordGDAL}
       //{$Define RecordWBT}
       //{$Define RecordOGR}
       //{$Define RecordGeoPDF}
@@ -137,10 +137,8 @@ uses
    procedure GDALConvertImagesToGeotiff(fName : PathStr = ''; Recycle : boolean = true);
    function GDAL_Translate_2_geotiff(fName : PathStr; OutName : PathStr = ''; ExtraOptions : ANSIString = ''; TrashOriginal : boolean = true) : PathStr;
    function GDAL_warp(var fName : PathStr) : PathStr;
-   {$IfDef ExGeoPDF}
-   {$Else}
-      procedure GDALconvertGeoPDF(Option : tGDALGeoPDF);
-   {$EndIf}
+   function GDAL_warp_Multiple(var theFiles : tStringList) : PathStr;
+
    procedure GDALregister(LatLong : boolean; GISNum : Integer; ImageName : PathStr; LatHemi : AnsiChar);
 
    procedure GDALreprojectLASfile(fName : PathStr; T_EPSG,a_EPSG : integer);
@@ -155,6 +153,10 @@ uses
 
    procedure ResampleSentinel_1(Path : PathStr; Recycle : boolean = false);
 
+   {$IfDef ExGeoPDF}
+   {$Else}
+      procedure GDALconvertGeoPDF(Option : tGDALGeoPDF);
+   {$EndIf}
 
 
 implementation
@@ -273,44 +275,30 @@ label
 begin
    {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} HighlightLineToDebugFile('GetGDALFileNames in'); {$EndIf}
 
-   if PathIsValid(GDALtools_Dir) {and PathIsValid(GDALtools_Data)} and SetRest then begin
+   if PathIsValid(GDALtools_Dir) and SetRest then begin
       {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('GDAL valid, ' + GDALtools_Dir + '  ' + GetGDALversion); {$EndIf}
       exit;
    end;
 
-   if not PathIsValid('C:\OSGeo4W\') then begin
-      {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('No default GDAL dir'); {$EndIf}
-      if not AnswerIsYes('No default GDAL installation present.  If you downloaded, do you want to try to find GDAL') then begin
-         {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('User stopped GDAL manual search'); {$EndIf}
-         goto NoMoreBugging;
-      end
+   GDALtools_Dir := 'C:\OSGeo4W\bin\';
+   if PathIsValid(GDALtools_Dir) and SetRest then begin
+      {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('GDAL valid, ' + GDALtools_Dir + '  ' + GetGDALversion); {$EndIf}
+      exit;
    end;
 
-   if not PathIsValid(GDALtools_Dir) then begin
-      {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('GDAL problem tools dir, ' + GDALtools_Dir); {$EndIf}
-      GDALtools_Dir := 'C:\OSGeo4W\bin\';
-      GetDOSPath('GDAL binary directory, something like ' +  GDALtools_Dir,GDALtools_Dir);
-      {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('User pick GDAL tools dir: ' + GDALtools_Dir); {$EndIf}
+   if not AnswerIsYes('No default GDAL installation present.  If you downloaded, do you want to try to find GDAL') then begin
+      {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('User stopped GDAL manual search'); {$EndIf}
+      goto NoMoreBugging;
    end;
 
-   (*
-   if not PathIsValid(GDALtools_Data) then begin
-      {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('GDAL problem data dir, ' + GDALtools_Data); {$EndIf}
-      GDALtools_Data := 'c:\OSGeo4W\share\gdal\';
-      if not PathIsValid(GDALtools_Data) then GetDOSPath('GDAL tools data directory, something like ' + GDALtools_Data,GDALtools_Data);
-      {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('User pick GDAL data dir: ' + GDALtools_Dir); {$EndIf}
-   end;
-   *)
+   GetDOSPath('GDAL binary directory, something like ' +  GDALtools_Dir,GDALtools_Dir);
+   {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('User pick GDAL tools dir: ' + GDALtools_Dir); {$EndIf}
 
-   if PathIsValid(GDALtools_Dir) {and PathIsValid(GDALtools_Data)} and SetRest then begin
+   if PathIsValid(GDALtools_Dir) and SetRest then begin
       {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('User picked GDAL valid, ' + GDALtools_Dir + '  ' + GetGDALversion); {$EndIf}
       exit;
    end;
 
-   {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)}
-      if not PathIsValid(GDALtools_Dir) then WriteLineToDebugFile('Invalid: ' + GDALtools_Dir);
-      //if not PathIsValid(GDALtools_Data) then WriteLineToDebugFile('Invalid: ' + GDALtools_Data);
-   {$EndIf}
 
   NoMoreBugging:;
    MDdef.DontBugMeAboutGDAL := not AnswerIsYes('Do you want to be reminded about GDAL problems in the future');
@@ -744,10 +732,45 @@ end;
                cmd := GDAL_warp_name + ' -of Gtiff ' + inProj + OutProj + ' ' + fName + ' ' + Result;
                BatchFile.Add(cmd);
                EndBatchFile(MDTempDir + 'r2v.bat',batchfile);
-               //File2Trash(fName);
                {$IfDef RecordGDAL} WriteLineToDebugFile('GDAL_warp GetGDALinfo out, cmd=' + cmd); {$EndIf}
             end;
          end;
+      end;
+
+      function GDAL_warp_Multiple(var theFiles : tStringList) : PathStr;
+      var
+         BatchFile : tStringList;
+         cmd,InProj,outProj : shortString;
+         GDALinfo : tGDALinfo;
+         //Ext : ExtStr;
+         fName : PathStr;
+         i : integer;
+      begin
+         if IsGDALFilePresent(GDAL_warp_name) then begin
+            {$IfDef RecordGDAL} WriteLineToDebugFile('GDAL_warp_Multiple, files=' + IntToStr(theFiles.Count)); {$EndIf}
+            inProj := '';
+            StartGDALbatchFile(BatchFile);
+            for i := 0 to pred(theFiles.Count) do begin
+               fName := TheFiles.Strings[i];
+               //Ext := UpperCase(ExtractFileExt(fName));
+               Result := ChangeFileExt(fName,'.tif');
+               if not FileExists(Result) then begin
+                  if inProj = '' then begin
+                     GetGDALinfo(fName,GDALinfo);
+                     {$IfDef RecordGDAL} WriteLineToDebugFile('GDAL_warp GetGDALinfo done'); {$EndIf}
+                     inProj := ' -s_srs EPSG:' + IntToStr(GDALinfo.inEPSG);
+                     OutProj := ' -t_srs EPSG:' + IntToStr(GDALinfo.utmEPSG);
+                  end;
+                  cmd := GDAL_warp_name + ' -of Gtiff ' + inProj + OutProj + ' ' + fName + ' ' + Result;
+                  BatchFile.Add('REM ' + IntToStr(succ(i)) + '/' + IntToStr(theFiles.Count));
+                  BatchFile.Add(cmd);
+               end;
+            end;
+            fName := NextFileNumber(MDTempDir,'gdw_mult_','.bat');
+            EndBatchFile(fName,batchfile);
+            {$IfDef RecordGDAL} WriteLineToDebugFile('GDAL_warp GetGDALinfo out, cmd=' + fName); {$EndIf}
+         end;
+         FreeAndNil(theFiles);
       end;
 
 

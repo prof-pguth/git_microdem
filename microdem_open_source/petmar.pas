@@ -4,7 +4,7 @@ unit petmar;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
 
@@ -447,11 +447,13 @@ function ArrayOfCharToString(LenArray : integer; var Chars : array of ANSIchar) 
 
 const
    QuietActions : boolean = false;
+   clBrown = 8732621;   //RGB(205,133,63);
+   clMagenta = 255*256*256 + 255;
+
 var
    RGBTripleNearWhite,RGBTripleWhite,RGBtripleAlmostBlack,RGBtripleBlack,RGBTripleRed,claBrown : tPlatformColor;
    clNearWhite,
    clNearKMLWhite,
-   clBrown,
    clAlmostBlack : tColor;
    HeavyDutyProcessing,
    LoadingFromMapLibrary,
@@ -675,7 +677,7 @@ end;
          procedure CheckFormPlacement(TheForm : Forms.tForm);
          begin
             PlaceFormInCorner(wmdem,TheForm,lpCenterMap);
-            {$IfDef TrackFormPlacement} WriteLineToDebugFile(TheForm.Caption + '  Formsize: ' + FormSize(TheForm) +'  Placement: ' + IntToStr(TheForm.Left) + 'x' + IntToStr(TheForm.Top));  {$EndIf}
+            {$IfDef TrackFormPlacement} WriteLineToDebugFile(TheForm.Caption + '  ' + FormSize(TheForm) +'  Placement: ' + IntToStr(TheForm.Left) + 'x' + IntToStr(TheForm.Top));  {$EndIf}
          end;
 
          procedure PlaceFormAtMousePosition(TheForm : Forms.tForm);
@@ -2773,7 +2775,6 @@ begin
    {$IfDef MSWindows}
       clNearKMLWhite := RGB(250,250,250);
       clAlmostBlack := RGB(1,1,1);
-      ClBrown := RGB(205,133,63);
 
       {$IfDef VCL}
       for i := 0 to 14 do RGBColorArray[i] := ConvertTColorToPlatformColor(ElevColors[i]);

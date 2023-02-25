@@ -16,7 +16,7 @@ var
    FactorNS,FactorEW,FactorDiag : float32;
 
 begin
-   Result := CloneAndOpenGrid(FloatingPointDEM,AreaName + '_detrend_residual',DEMHeader.ElevUnits);
+   Result := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_detrend_residual',DEMHeader.ElevUnits);
 
    Normalize := AnswerIsYes('Normal distances to the y dimension pixel spacing');
 

@@ -20,6 +20,7 @@ unit las_files_grouping;
       //{$Define RecordLASMemoryAlocations}
       //{$Define RecordLASfiles}
       //{$Define RecordLASplot}
+      {$Define RecordLASexport}
       //{$Define RecordListFilesProcessed}
       //{$Define BasicOpens}
       //{$Define RecordLASKML}
@@ -98,9 +99,9 @@ type
          MIN_INTEN,MAX_INTEN,INTEN_1,INTEN_99,
          NIR_1,NIR_99,RED_1,RED_99,GREEN_1,GREEN_99,BLUE_1,BLUE_99,
          MIN_RED,MAX_RED,MIN_GREEN,MAX_GREEN,MIN_BLUE,MAX_BLUE,MIN_NIR,MAX_NIR : word;
-         LatHemi : ANSIchar;
          LasExportThinFactor,
          UTMZone : integer;
+         LatHemi : ANSIchar;
          TotalCloudPts : int64;
          ShowLASProgress,
          HasIntensity,
@@ -135,6 +136,8 @@ type
             procedure CloudStatistics(TileTable : boolean; CloudStats : tCloudStats; DoText : boolean = true; DoGraph : boolean = true);
             function MergeLasPoints(MergeLas : tMergeLas; BaseMap : tMapForm; var NewName : PathStr; Mask : tMyBitmap = Nil) : boolean;
             function OpenGLLasPoints(var NewName : PathStr; BaseMap : tMapForm; Mask : tMyBitmap = Nil) : boolean;
+            function ExportBinary(MergeLas : tMergeLas; BaseMap : tMapForm; Layer : integer; var GeometryFName,ColorsFName : PathStr; ExportFilter : tLASClassificationCategory = lccAll) : boolean;
+
             procedure KMLLasPoints(InBoundBox : sfBoundBox;  ExportMode : tExportMode; NewName : PathStr = '');
             procedure ExtractGroundPoints(var NewName : PathStr);
          {$EndIf}
@@ -166,6 +169,182 @@ function tLas_files.IndexTableName : PathStr;
 begin
    Result :=  ExtractFilePath(LAS_fNames[0]) + LastSubDir(ExtractFilePath(LAS_fNames[0])) + '_lidar_tile_index.dbf';
 end;
+
+
+
+(*
+function tLAS_data.OldExportBinary(Layer : integer; var GeometryFName,ColorsFName : PathStr; ExportFilter : tLASClassificationCategory = lccAll) : boolean;
+//exports LAS point cloud to binary files for use in FMX viewer
+var
+   Points : ^tPointXYZIArray;
+   i,j,last,xc,yc,RecsRead,NPts : integer;
+   Outf : file;
+   z,xutm,yutm : float64;
+   bmp : tMyBitmap;
+   Range : float64;
+   ThisPoint : tLASClassificationCategory;
+   Color : tPlatformColor;
+begin
+   {$IfDef RecordLASexport} writeLineToDebugFile('tLAS_data.OldExportBinary in layer=' + IntToStr(Layer) + ', ' + ExtractFileNameNoExt(GeometryFName)); {$EndIf}
+   Range := MDDef.MaxValidZinPointCloud - MDDef.LowValidZinPointCloud;
+   New(Points);
+   NPts := 0;
+   StartProgress('LAS export, ' + ExtractFileNameNoExt(GeometryFName) + ' pts=' + IntToStr(Self.NumPointRecs));
+   PrepDataRead;
+   for i := 0 to ReadsRequired do begin
+       UpdateProgressBar(i/ReadsRequired);
+       ReadPoints(RecsRead);
+       for j := 1 to RecsRead do begin
+          z := ExpandLAS_Z(j);
+          if (not MDDef.LasElevChecks) or ((z >= MDDef.LowValidZinPointCloud) and (z <= MDDef.MaxValidZinPointCloud)) then begin
+             ThisPoint := LASClassificationCategory(j);
+             if (ExportFilter = lccAll) or (ThisPoint = ExportFilter) then begin
+                inc(NPts);
+                GetShotCoordinatesUTM(j,xutm, yutm);
+                Points^[NPTs].x := xutm;
+                Points^[NPTs].y := yutm;
+                Points^[NPTs].z := ExpandLAS_Z(j);
+
+                if MDdef.ls.ColorCoding = lasccCloudID then Color := MDDef.CloudMapSymbol[Layer].Color
+                else GetColor(j,LasHeader.MinZ,LasHeader.MaxZ,Color);
+                Points^[NPTs].Int := Color.rgbtRed;
+                Points^[NPTs].Int2 := Color.rgbtGreen;
+                Points^[NPTs].Int3 := Color.rgbtBlue;
+                if (NPts >= MaxPts) then break;
+             end;
+          end;
+      end;
+      //if (NPts >= MaxPts) then break;
+   end;
+   FreeLASRecordMemory;
+   if (GeometryFName = '') then GeometryFName := Petmar.NextFileNumber(MDTempDir, 'cloud_slicer_','.xyzib');
+   case MDdef.ls.ColorCoding of
+         lasccIntensity : ColorsFName := Palette256Bitmap(p256Gray);
+         lasccPointSourceID,
+         lasccUserData  : case Layer of
+                             1 : ColorsFName := Palette256Bitmap(p256RedRamp);
+                             2 : ColorsFName := Palette256Bitmap(p256GreenRamp);
+                             3 : ColorsFName := Palette256Bitmap(p256BlueRamp);
+                             else ColorsFName := Palette256Bitmap(p256Gray);
+                          end;
+         else ColorsFName := FullPaletteBitmap;
+   end;
+
+   result := (NPts > 0);
+   if Result then begin
+      AssignFile(Outf,GeometryFName);
+      rewrite(Outf,1);
+      BlockWrite(OutF,Points^,NPTs * SizeOf(tPointXYZI));
+      CloseFile(outf);
+   end;
+   Dispose(Points);
+   ShowDefaultCursor;
+   EndProgress;
+   {$IfDef RecordLASexport} writeLineToDebugFile('tLAS_data.OldExportBinary out pts done, NPTs=' + IntToStr(Npts)); {$EndIf}
+end;
+*)
+
+
+function tLas_files.ExportBinary(MergeLas : tMergeLas; BaseMap : tMapForm; Layer : integer; var GeometryFName,ColorsFName : PathStr; ExportFilter : tLASClassificationCategory = lccAll) : boolean;
+label
+   MaxPoints;
+var
+   I,j,k,RecsRead,x,y,NPts : integer;
+   NoFilter : boolean;
+   lf : tLAS_data;
+   fName : PathStr;
+   Points : ^tPointXYZIArray;
+   last,xc,yc : integer;
+   Outf : file;
+   zf,z,xutm,yutm : float64;
+   bmp : tMyBitmap;
+   Range : float64;
+   ThisPoint : tLASClassificationCategory;
+   Color : tPlatformColor;
+begin
+   {$If Defined(RecordMergeLASfiles) or Defined(TimeMergeLAS) or Defined(RecordLASexport)} WriteLineToDebugFile('tLas_files.ExportBinary in'); {$EndIf}
+   NPts := 0;
+
+   Range := MDDef.MaxValidZinPointCloud - MDDef.LowValidZinPointCloud;
+   New(Points);
+
+   ShowHourglassCursor;
+   StartThreadTimers('Extract '+ CloudName,1,true);
+   for k := 0 to pred(Las_fNames.Count) do begin
+      ThreadTimers.OverallGauge9.Progress := round(100 * k / LAS_fnames.Count);
+      fName := Las_fNames.Strings[k];
+       {$IfDef RecordListFilesProcessed} WriteLineToDebugFile('file=' + fName); {$EndIf}
+       lf := tLAS_data.Create(fName);
+       if lf.FileOnMap(BaseMap.MapDraw) then begin
+          NoFilter := NoFilterWanted;
+          lf.PrepDataRead;
+          for i := 0 to lf.ReadsRequired do begin
+             lf.ReadPoints(RecsRead);
+             ThreadTimers.Gauge1.Progress := round(100 * i/lf.ReadsRequired);
+             j := 1;
+             while j <= RecsRead do begin
+                if NoFilter or (lf.MeetsFilter(j)) then begin
+                   lf.GetShotScreenCoordinatesAppropriate(BaseMap.MapDraw,j, x,y);
+                   if BaseMap.MapDraw.OnScreen(x,y) then begin
+                      ThisPoint := lf.LASClassificationCategory(j);
+                      if (ExportFilter = lccAll) or (ThisPoint = ExportFilter) then begin
+                         inc(NPts);
+                         lf.GetShotCoordinatesUTM(j,xutm, yutm);
+                         Points^[NPTs].x := xutm;
+                         Points^[NPTs].y := yutm;
+                         Points^[NPTs].z := lf.ExpandLAS_Z(j);
+
+                         if MDdef.ls.ColorCoding = lasccCloudID then Color := MDDef.CloudMapSymbol[Layer].Color
+                         else lf.GetColor(j,BaseMap.MapDraw.LasMinAreaZ,BaseMap.MapDraw.LasMaxAreaZ,Color);
+                         Points^[NPTs].Int := Color.rgbtRed;
+                         Points^[NPTs].Int2 := Color.rgbtGreen;
+                         Points^[NPTs].Int3 := Color.rgbtBlue;
+                         if (NPts >= MaxPts) then begin
+                            {$IfDef RecordMergeLASfiles} WriteLineToDebugFile('Hit points limit'); {$EndIf}
+                            goto MaxPoints;
+                         end;
+                      end;
+                   end;
+                end;
+                inc(j,LasExportThinFactor);
+             end;
+          end;
+         {$IfDef RecordMergeLASfiles} WriteLineToDebugFile('after file ' + IntToStr(k) + '  Pts=' + SmartNumberPoints(PointsOut)); {$EndIf}
+        MaxPoints:;
+         lf.FreeLASRecordMemory;
+         lf.Destroy;
+       end;
+   end;
+   Result := (NPts > 0);
+   if Result then begin
+      if (GeometryFName = '') then GeometryFName := Petmar.NextFileNumber(MDTempDir, 'cloud_slicer_','.xyzib');
+      case MDdef.ls.ColorCoding of
+         lasccIntensity : ColorsFName := Palette256Bitmap(p256Gray);
+         lasccPointSourceID,
+         lasccUserData  : case Layer of
+                             1 : ColorsFName := Palette256Bitmap(p256RedRamp);
+                             2 : ColorsFName := Palette256Bitmap(p256GreenRamp);
+                             3 : ColorsFName := Palette256Bitmap(p256BlueRamp);
+                             else ColorsFName := Palette256Bitmap(p256Gray);
+                          end;
+         else ColorsFName := FullPaletteBitmap;
+      end;
+
+
+      {$If Defined(RecordLASexport)} WriteLineToDebugFile('tLas_files.ExportBinary out, PointsOut=' + SmartNumberPoints(NPts) + '  write to ' + GeometryFName); {$EndIf}
+      AssignFile(Outf,GeometryFName);
+      rewrite(Outf,1);
+      BlockWrite(OutF,Points^,NPTs * SizeOf(tPointXYZI));
+      CloseFile(outf);
+   end;
+
+   EndThreadTimers;
+   LasExportThinFactor := 1;
+   Dispose(Points);
+   ShowDefaultCursor;
+   {$If Defined(RecordMergeLASfiles) or Defined(TimeMergeLAS) or Defined(RecordLASexport)} WriteLineToDebugFile('tLas_files.ExportBinary out, PointsOut=' + SmartNumberPoints(NPts)); {$EndIf}
+end;
+
 
 
 {$IfDef VCL}
@@ -258,7 +437,6 @@ begin
                        xf := lf.ExpandLAS_X(j);
                        yf := lf.ExpandLAS_Y(j);
                        zf := lf.ExpandLAS_Z(j);
-
                        if (MergeLas = mlTranslate) then begin
                           xf := xf + TranslateX;
                           yf := yf + TranslateY;
@@ -1378,7 +1556,7 @@ begin
       lf := tLAS_data.Create(fName);
       if (not lf.HasProjection) then begin
          WriteLineToDebugFile('No projection: ' + fName);
-         BaseDir := ExtractFilePath(fName) + 'problems\';
+         BaseDir := ExtractFilePath(fName) + 'problem_tiles\';
          SafeMakeDir(BaseDir);
          MoveFile(fName, BaseDir + ExtractFileName(fName));
          LAS_fnames.Delete(k);

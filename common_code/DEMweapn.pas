@@ -4,14 +4,14 @@ unit Demweapn;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
 
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
-  // {$Define RecordFanOptions}
+   {$Define RecordFanOptions}
 {$EndIf}
 
 
@@ -114,7 +114,7 @@ var
    xg,yg    : float64;
    PickWeapon: TPickWeapon;
 begin
-   {$IfDef RecordLOSProblems} WriteLineToDebugFile('GetWeaponParameters in'); {$EndIf}
+   {$If Defined(RecordLOSProblems) or Defined(RecordFanOptions)} WriteLineToDebugFile('GetWeaponParameters in, fan at ' + LatLongDegreeToString(inWeaponsFan.W_Lat,inWeaponsFan.W_Long)); {$EndIf}
 
    GetWeaponParameters := false;
    if (DEMonMap = 0) then exit;
@@ -236,7 +236,7 @@ begin
          inWeaponsFan := WeaponsFan;
       end;
    end;
-   {$IfDef RecordLOSProblems} WriteLineToDebugFile('GetWeaponParameters in'); {$EndIf}
+   {$If Defined(RecordLOSProblems) or Defined(RecordFanOptions)} WriteLineToDebugFile('GetWeaponParameters out, fan at ' + LatLongDegreeToString(inWeaponsFan.W_Lat,inWeaponsFan.W_Long)); {$EndIf}
 end;
 
 

@@ -4,7 +4,7 @@
 { Part of ianMICRODEM GIS Program    }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
-{ Copyright (c) 2022 Peter L. Guth   }
+{ Copyright (c) 2023 Peter L. Guth   }
 {____________________________________}
 
 
@@ -18,7 +18,7 @@
    {$IFDEF DEBUG}
       //{$Define RecordParallelLoops}
       //{$Define RecordUseOtherPrograms}
-      //{$Define RecordFan}
+      {$Define RecordFan}
       //{$Define RecordUpdate}
       //{$Define RecordDirs}
       //{$Define RecordLoadDefault}
@@ -161,7 +161,7 @@ procedure ResetStratColDefaults;
 
 procedure SetGeomorphDefaults;
 
-function MrSidEnabled : boolean;
+//function MrSidEnabled : boolean;
 
 {$IfDef ExGeomorphGrids}
 {$Else}
@@ -292,7 +292,7 @@ procedure QuadTickNearestHere(var Lat,Long : float64; QuadTickSize : float64);  
 function FindUTMZone(ASCIIProjectionData :  ANSIString; var UTMzone : int16; var Hemi : ANSIchar) : boolean;
 function GetLimitsForParallelLoops(GridLimits : tGridLimits; ReqMult : integer = 1) : tGridLimitsArray;
 procedure SimpleProfiles;
-procedure CheckFileNameForSpaces(var fName : PathStr);
+function CheckFileNameForSpaces(var fName : PathStr) : boolean;
 function WarnAboutSpaces(fName : PathStr) : boolean;
 function AskUserAboutMemory(MemNeed : int64) : boolean;
 function GridLimitsString(GridLimits : tGridLimits) : shortstring;
@@ -711,7 +711,7 @@ begin
    else Result := false;
 end;
 
-procedure CheckFileNameForSpaces(var fName : PathStr);
+function CheckFileNameForSpaces(var fName : PathStr) : boolean;
 var
    OldName,Path : PathStr;
 begin
@@ -724,7 +724,7 @@ begin
             SysUtils.ReNameFile(OldName,fName);
          end;
       end;
-      WarnAboutSpaces(fName);
+      Result := WarnAboutSpaces(fName);
    end;
 end;
 
@@ -1280,8 +1280,6 @@ begin
       end
       else begin
          {$IfDef RecordUpdate} WriteLineToDebugFile('CheckRequiredFiles in'); {$EndIf}
-         //CheckFile(ExtractFileName(spcs_tm_fName));
-         //CheckFile(ExtractFileName(spcs_lcc_fName));
          CheckFile(ExtractFileName(TableDefinitionsFileName));
          CheckFile(ExtractFileName(CSVImportRulesFName));
          CheckFile(ExtractFileName(GazOptFName));
@@ -2500,11 +2498,12 @@ var
             AParameter('DEMIX','DEMIX_DoHalfSecDEMs',DEMIX_DoHalfSecDEMs,true);
             AParameter('DEMIX','DEMIX_DoElevParamGraphs',DEMIX_DoElevParamGraphs,true);
             AParameter('DEMIX','DEMIXCompositeImage',DEMIXCompositeImage,true);
+            AParameterShortFloat('DEMIX','DEMIXSimpleTolerance',DEMIXSimpleTolerance,2.0);
 
             {$IfDef ExMrSID}
             {$Else}
-              AParameter('Files','MrSIDDecode',MrSIDDecodeName,'');
-              AParameter('Files','MrSIDInfo',MrSidInfoName,'');
+              //AParameter('Files','MrSIDDecode',MrSIDDecodeName,'');
+              //AParameter('Files','MrSIDInfo',MrSidInfoName,'');
             {$EndIf}
 
             {$IfDef ExWMS}
@@ -2958,10 +2957,6 @@ var
          if (IniWhat = iniWrite) then IniFile.WriteInteger('DatumProjection','DefaultVectorMapProjection',ord(MDDef.DefaultVectorMapProjection));
          if (IniWhat = iniRead) then MDDef.DefaultVectorMapProjection := tDefaultVectorMapProject(IniFile.ReadInteger('DatumProjection','DefaultVectorMapProjection',ord(MDDef.DefaultVectorMapProjection)));
          if (iniWhat = iniInit) then MDDef.DefaultVectorMapProjection := dvmMercator;
-
-         //if (IniWhat = iniWrite) then IniFile.WriteInteger('DatumProjection','spcsSurveyUnits',ord(spcsMeters));
-         //if (IniWhat = iniRead) then spcsSurveyUnits := tSPCSUnits(IniFile.ReadInteger('DatumProjection','spcsSurveyUnits',ord(spcsMeters)));
-         //if (iniWhat = iniInit) then spcsSurveyUnits := spcsMeters;
       end;
    end;
 
@@ -4443,17 +4438,21 @@ end;
 
 
 function WeaponsTableBasicParametersToFan(PrimaryMapDatum : tMapProjection; WeaponsTable : tMyData) : tWeaponsFan;
+var
+   Lat,Long : float32;
 begin
    with WeaponsTable do begin
       InitializeWeaponsFan(Result);
-      MolodenskiyTransformation(GetFieldByNameAsFloat('LAT'),GetFieldByNameAsFloat('LONG'),Result.W_Lat,Result.W_Long,WGS84DatumConstants,PrimaryMapDatum);
+      Lat := WeaponsTable.GetFieldByNameAsFloat('LAT');
+      Long := GetFieldByNameAsFloat('LONG');
+      MolodenskiyTransformation(Lat,Long,Result.W_Lat,Result.W_Long,WGS84DatumConstants,PrimaryMapDatum);
 
       {$IfDef RecordFan}
-         WriteLineToDebugFile('Fan location in file (WGS84): ' + LatLongDegreeToString(GetFieldByNameAsFloat('LAT'),GetFieldByNameAsFloat('LONG')));
-         WriteLineToDebugFile('Fan location for map: ' + LatLongDegreeToString(W_Lat,W_Long));
+         WriteLineToDebugFile('Fan location in file (WGS84): ' + LatLongDegreeToString(Lat,Long));
+         WriteLineToDebugFile('Fan location for map: ' + LatLongDegreeToString(Result.W_Lat,Result.W_Long));
       {$EndIf}
 
-      if WeaponsTable.FieldExists('NAME') then Result.Fan_Name   := GetFieldByNameAsString('NAME')
+      if WeaponsTable.FieldExists('NAME') then Result.Fan_Name := GetFieldByNameAsString('NAME')
       else Result.Fan_Name := 'Sensor';
       if WeaponsTable.FieldExists('IMAGE') then Result.FanFileName := GetFieldByNameAsString('IMAGE')
       else Result.FanFileName := '';
@@ -4478,14 +4477,13 @@ begin
   {$IfDef RecordFan} WriteLineToDebugFile('WeaponsTableToFan enter'); {$EndIf}
    with WeaponsTable do begin
       Result := WeaponsTableBasicParametersToFan(PrimaryMapDatum,WeaponsTable);
-
       if WeaponsTable.FieldExists('TERR_HUG') then Result.TargetTerrainHug := GetFieldByNameAsString('TERR_HUG') = 'Y';
       if WeaponsTable.FieldExists('OBS_HUG') then Result.ObserverTerrainHug := GetFieldByNameAsString('OBS_HUG') = 'Y';
       if WeaponsTable.FieldExists('NO_TERR_BL') then Result.noUseSensorNoTerrainBlock := GetFieldByNameAsString('NO_TERR_BL') = 'Y';
       Result.ThisFanColor := ConvertTColorToPlatformColor(GetFieldByNameAsInteger('VIS_COLOR'));
       Result.FanShowWhat := tFanshow(GetFieldByNameAsInteger('FAN_TYPE'));
    end;
-  {$IfDef RecordFan} WriteLineToDebugFile('WeaponsTableToFan exit'); {$EndIf}
+  {$IfDef RecordFan} WriteLineToDebugFile('WeaponsTableToFan exit, fan at ' + LatLongDegreeToString(Result.W_Lat,Result.W_Long)); {$EndIf}
 end;
 
 
@@ -4510,17 +4508,17 @@ end;
 
 
 procedure AddFanToWeaponsTable(PrimaryMapDatum : tMapProjection; EditIt,AddBasicParameters : boolean; var WeaponsTable : tMyData; WeaponsFan : tWeaponsFan);
+var
+   Lat,Long : float64;
 begin
-   {$IfDef RecordFan} WriteLineToDebugFile('AddFanToWeaponsTable in'); {$EndIf}
+   {$IfDef RecordFan} WriteLineToDebugFile('AddFanToWeaponsTable in, Fan location on map: ' + LatLongDegreeToString(WeaponsFan.w_Lat,WeaponsFan.w_Long)); {$EndIf}
    if EditIt then WeaponsTable.Edit else WeaponsTable.Insert;
-
-   {$IfDef RecordFan} WriteLineToDebugFile('Fan location on map: ' + LatLongDegreeToString(w_Lat,w_Long)); {$EndIf}
    RedefineWGS84DatumConstants(WeaponsFan.w_Long);
-   MolodenskiyTransformation(WeaponsFan.w_Lat,WeaponsFan.w_Long,WeaponsFan.w_Lat,WeaponsFan.W_Long,PrimaryMapDatum,WGS84DatumConstants);
-   {$IfDef RecordFan} WriteLineToDebugFile('Fan location in file (WGS84): ' + LatLongDegreeToStringWeaponsFan.(w_Lat,WeaponsFan.w_Long)); {$EndIf}
+   MolodenskiyTransformation(WeaponsFan.w_Lat,WeaponsFan.w_Long,Lat,Long,PrimaryMapDatum,WGS84DatumConstants);
+   {$IfDef RecordFan} WriteLineToDebugFile('Fan location in file (WGS84): ' + LatLongDegreeToString(Lat,Long)); {$EndIf}
 
-   WeaponsTable.SetFieldByNameAsFloat('LAT',WeaponsFan.w_Lat);
-   WeaponsTable.SetFieldByNameAsFloat('LONG',WeaponsFan.w_Long);
+   WeaponsTable.SetFieldByNameAsFloat('LAT',Lat);
+   WeaponsTable.SetFieldByNameAsFloat('LONG',Long);
 
    WeaponsTable.SetFieldByNameAsString('USE','Y');
    if (WeaponsFan.Fan_Name = '') then WeaponsFan.Fan_Name := 'S_' + IntToStr(WeaponsTable.RecordCount);
@@ -4592,7 +4590,7 @@ begin
     LasRulesName := ProgramRootDir + 'las_codes_v4' + DefaultDBExt;
     TM_RGB_fname := ProgramRootDir + 'tm_rgb_v3' + DefaultDBExt;
     CSVImportRulesFName := ProgramRootDir + 'CSV_IMPORT_RULES_v4'+ DefaultDBExt;
-    SatBandNames := ProgramRootDir + 'sat_band_names_v19' + DefaultDBExt;
+    SatBandNames := ProgramRootDir + 'sat_band_names_v20' + DefaultDBExt;
     ColorBrewerName := ProgramRootDir + 'color_palettes_v12' + DefaultDBExt;
     HardLimitColorPaletteFName := ProgramRootDir + 'hard_limit_color_palettes' + DefaultDBExt;
     TableDefinitionsFileName := ProgramRootDir + 'MD_TABLE_DEF_v2' + DefaultDBExt;
@@ -5192,11 +5190,12 @@ begin
 end;
 
 
+(*
 function MrSidEnabled :boolean;
 begin
    Result := FileExists(MrSidDecodeName) and FileExists(MrSidInfoName);
 end;
-
+*)
 
 procedure LoadMDdefaults;
 
@@ -5284,8 +5283,8 @@ begin
    {$EndIf}
 
    {$IfDef MSWindows}
-      TrySettingDefaultFName(MrSidInfoName,ProgramRootDir + 'mrsid\bin\mrsidgeoinfo.exe');
-      TrySettingDefaultFName(MrSIDDecodeName,ProgramRootDir + 'mrsid\bin\mrsidgeodecode.exe');
+      //TrySettingDefaultFName(MrSidInfoName,ProgramRootDir + 'mrsid\bin\mrsidgeoinfo.exe');
+      //TrySettingDefaultFName(MrSIDDecodeName,ProgramRootDir + 'mrsid\bin\mrsidgeodecode.exe');
       //TrySettingDefaultDir(TauDEMDir,ProgramRootDir + 'taudem\');
       TrySettingDefaultDir(GADMDir,MainMapData + 'GADM\');
       if (not PathIsValid(SaveViewshedDir)) then SaveViewshedDir := MDTempDir;

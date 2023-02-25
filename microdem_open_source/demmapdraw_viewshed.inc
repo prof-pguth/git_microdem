@@ -320,12 +320,12 @@ begin
       PutFanInTable;
 
       {$IfDef VCL}
-      if (DEMGlb[DEMonMap].FanBlowUpDEM <> 0) then begin
-         CopyImageToBitmap(DEMGlb[DEMGlb[DEMonMap].FanBlowUpDEM].SelectionMap.Image1,SummaryBitmap);
-         DEMGlb[DEMGlb[DEMonMap].FanBlowUpDEM].SelectionMap.MapDraw.DrawWorldFileImageOnMap(SummaryBitmap,WeaponsFan.FanFileName);
-         DEMGlb[DEMGlb[DEMonMap].FanBlowUpDEM].SelectionMap.Image1.Picture.Graphic := SummaryBitmap;
-         SummaryBitmap.Free;
-      end;
+         if (DEMGlb[DEMonMap].FanBlowUpDEM <> 0) then begin
+            CopyImageToBitmap(DEMGlb[DEMGlb[DEMonMap].FanBlowUpDEM].SelectionMap.Image1,SummaryBitmap);
+            DEMGlb[DEMGlb[DEMonMap].FanBlowUpDEM].SelectionMap.MapDraw.DrawWorldFileImageOnMap(SummaryBitmap,WeaponsFan.FanFileName);
+            DEMGlb[DEMGlb[DEMonMap].FanBlowUpDEM].SelectionMap.Image1.Picture.Graphic := SummaryBitmap;
+            SummaryBitmap.Free;
+         end;
       {$EndIf}
    end
    else PutFanInTable;
@@ -342,7 +342,7 @@ var
 begin
     {$If Defined(RecordFan) {or Defined(AndroidProgress)} or Defined(RecordTime)}
        Stopwatch := TStopwatch.StartNew;
-       WriteLineToDebugFile('TMapDraw.DrawRadialFan in, DEM=' + IntToStr(Self.DEMonMap));
+       WriteLineToDebugFile('TMapDraw.DrawRadialFan in, DEM=' + IntToStr(Self.DEMonMap) + ' fan at ' + LatLongDegreeToString(WeaponsFan.W_Lat,WeaponsFan.W_Long));
     {$EndIf}
 
     if (WeaponsFan.Fan_Name <> '') then begin

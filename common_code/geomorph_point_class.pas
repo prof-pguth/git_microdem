@@ -11,7 +11,7 @@ unit geomorph_point_class;
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
-   //{$Define RecordPointClass}
+   {$Define RecordPointClass}
    //{$Define RecordClosePointClass}
 {$EndIf}
 
@@ -26,11 +26,6 @@ uses
 type
   TPointClassForm = class(TForm)
     Memo1: TMemo;
-    HelpBtn: TBitBtn;
-    CancelBtn: TBitBtn;
-    RadioGroup4: TRadioGroup;
-    Edit7: TEdit;
-    Label7: TLabel;
     PageControl1: TPageControl;
     TabSheet1: TTabSheet;
     RadioGroup2: TRadioGroup;
@@ -69,13 +64,19 @@ type
     Label21: TLabel;
     RadioGroup5: TRadioGroup;
     BitBtn1: TBitBtn;
-    RedrawSpeedButton12: TSpeedButton;
     Edit8: TEdit;
     Label8: TLabel;
     TabSheet3: TTabSheet;
     CheckBox2: TCheckBox;
     BitBtn7: TBitBtn;
     RadioGroup6: TRadioGroup;
+    Panel1: TPanel;
+    BitBtn8: TBitBtn;
+    BitBtn9: TBitBtn;
+    RadioGroup4: TRadioGroup;
+    SpeedButton1: TSpeedButton;
+    Label9: TLabel;
+    Edit7: TEdit;
     procedure FormCreate(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
     procedure BitBtn3Click(Sender: TObject);
@@ -139,10 +140,11 @@ begin
       PointClassForm.Visible := false;
       PointClassForm.ShowModal;
    end;
+   {$If Defined(RecordPointClass)} WriteLineToDebugFile('PointClassification out  ' + FormSize(PointClassForm)); {$EndIf}
 end;
 
 
-procedure IwashishiandPikeclassificationMap(CurDEM : integer);  //,SlopeGrid,RoughGrid,ConvexGrid : integer);
+procedure IwashishiandPikeclassificationMap(CurDEM : integer);
 var
    PointClassForm : TPointClassForm;
 begin
@@ -174,6 +176,7 @@ end;
 
 procedure TPointClassForm.FormCreate(Sender: TObject);
 begin
+   {$If Defined(RecordPointClass)} WriteLineToDebugFile('TPointClassForm  ' + FormSize(Self)); {$EndIf}
    Edit1.Text := RealToString(MDDef.SlopeClassTolerance,-18,-2);
    Edit2.Text := RealToString(MDDef.ConvexClassTolerance,-18,-2);
    Edit3.Text := IntToStr(MDDef.WoodRegionSize);
@@ -203,8 +206,8 @@ begin
    Edit15.Text := RealToString(MDDef.SlopeCut3,-12,-1);
    Edit16.Text := RealToString(MDDef.ConvexCut,-12,-1);
    Edit17.Text := RealToString(MDDef.RoughnessCut,-12,-1);
-   if MDDef.IwashPikeCats = 8 then RadioGroup5.ItemIndex := 0
-   else if MDDef.IwashPikeCats = 12 then RadioGroup5.ItemIndex := 1
+   if (MDDef.IwashPikeCats = 8) then RadioGroup5.ItemIndex := 0
+   else if (MDDef.IwashPikeCats = 12) then RadioGroup5.ItemIndex := 1
    else RadioGroup5.ItemIndex := 2;
 
    LastDEMCreated := 0;
@@ -212,15 +215,14 @@ begin
    RoughGrid := 0;
    ConvexGrid := 0;
    wmDEM.FormPlacementInCorner(self,lpNEMap);
+   {$If Defined(RecordPointClass)} WriteLineToDebugFile('TPointClassForm  ' + FormSize(Self)); {$EndIf}
 end;
 
 
 procedure TPointClassForm.BitBtn1Click(Sender: TObject);
 begin
    {$If Defined(RecordPointClass)} WriteLineToDebugFile('TPointClassForm.BitBtn1Click in (I&P grid)'); {$EndIf}
-
    CheckValues;
-
    if (RoughGrid = 0) then begin
       if RadioGroup6.ItemIndex = 0 then RoughGrid := CreateRoughnessMap2(CurDEM,false,true)
       else RoughGrid := CreateRoughnessMap(CurDEM,false);
@@ -285,7 +287,6 @@ procedure TPointClassForm.BitBtn7Click(Sender: TObject);
 begin
    WhiteBoxPennockLandformClass(MapOwner.GeotiffDEMNameOfMap,CheckBox2.Checked);
 end;
-
 
 
 procedure TPointClassForm.CancelBtnClick(Sender: TObject);

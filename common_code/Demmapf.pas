@@ -4,7 +4,7 @@
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
 
@@ -26,8 +26,8 @@
 
 
    {$IFDEF DEBUG}
-      //{$Define RecordFan}
-     {$Define Record3d}
+      {$Define RecordFan}
+      {$Define Record3d}
       //{$Define FanDrawProblems}
       //{$Define RawProjectInverse}  //must also be set in BaseMap
       //{$Define RecordDEMIX}
@@ -1109,7 +1109,7 @@ type
     Segmentation1: TMenuItem;
     LCCstandardparallels1: TMenuItem;
     Mapprojectionzones1: TMenuItem;
-    USSPCS1: TMenuItem;
+    //USSPCS1: TMenuItem;
     MGRSUSNG6x8zones1: TMenuItem;
     UTM100Kzones1: TMenuItem;
     Maximizeforscreen1: TMenuItem;
@@ -1436,6 +1436,13 @@ type
     NBR1: TMenuItem;
     Elevationdifference1: TMenuItem;
     Genericdifference1: TMenuItem;
+    Entiregrid1: TMenuItem;
+    CurrentMapArea2: TMenuItem;
+    N53: TMenuItem;
+    AspectDifference1: TMenuItem;
+    COPALOSbestlocations1: TMenuItem;
+    COPALOScategories1: TMenuItem;
+    COPALOS9categories1: TMenuItem;
     //procedure HiresintervisibilityDEM1Click(Sender: TObject);
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
@@ -1721,7 +1728,6 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure N16bitBSQ1Click(Sender: TObject);
     procedure Viewshed1Click(Sender: TObject);
     procedure Derivativegrid2Click(Sender: TObject);
-    procedure Histogram2Click(Sender: TObject);
     procedure Addgrids1Click(Sender: TObject);
     procedure Terraincategories2Click(Sender: TObject);
     procedure Requiredantennaheight2Click(Sender: TObject);
@@ -2226,7 +2232,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Kmeansclustering1Click(Sender: TObject);
     procedure Segmentation1Click(Sender: TObject);
     procedure LCCstandardparallels1Click(Sender: TObject);
-    procedure USSPCS1Click(Sender: TObject);
+    //procedure USSPCS1Click(Sender: TObject);
     procedure MGRSUSNG6x8zones1Click(Sender: TObject);
     procedure UTM100Kzones1Click(Sender: TObject);
     procedure Maximizeforscreen1Click(Sender: TObject);
@@ -2485,6 +2491,11 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure NBR1Click(Sender: TObject);
     procedure Elevationdifference1Click(Sender: TObject);
     procedure Genericdifference1Click(Sender: TObject);
+    procedure Entiregrid1Click(Sender: TObject);
+    procedure CurrentMapArea2Click(Sender: TObject);
+    procedure COPALOSbestlocations1Click(Sender: TObject);
+    procedure COPALOScategories1Click(Sender: TObject);
+    procedure COPALOS9categories1Click(Sender: TObject);
     //procedure QuarterDEM1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
@@ -3210,7 +3221,7 @@ uses
       MD_use_tools,
    {$EndIf}
 
-   DEMIX_control,
+   DEMIX_control, pick_several_dems ,
    Monitor_Change_Form,
    DEM_sat_Header,
    ufrmMain,
@@ -3568,8 +3579,8 @@ var
    z : float32;
    Agreement,Lat,Long : float64;
 begin
-   ProbDEM := DEMGlb[1].CloneAndOpenGrid(ByteDEM,'Ensemble probability',Undefined);
-   ClassDEM := DEMGlb[1].CloneAndOpenGrid(ByteDEM,'Ensemble classification',Undefined);
+   ProbDEM := DEMGlb[1].CloneAndOpenGridSetMissing(ByteDEM,'Ensemble probability',Undefined);
+   ClassDEM := DEMGlb[1].CloneAndOpenGridSetMissing(ByteDEM,'Ensemble classification',Undefined);
    StartProgress('Ensemble classify');
    for x := 0 to pred(DEMGlb[1].DEMheader.NumCol) do begin
      UpdateProgressBar(x/DEMGlb[1].DEMheader.NumCol);
@@ -4735,10 +4746,7 @@ begin
 
        CloneImageToBitmap(Image1,Bitmap);
        ExpandRoute(MapDraw.DEMonMap,StreamProfileResults,MDDef.WeaponRouteSeparation,true,true,false);
-       {$IfDef RecordAmbush}
-       WriteLineToDebugFile('TMapForm.SetUpAmbush after expand route',true);
-       WriteStringListToDebugFile(StreamProfileResults);
-       {$EndIf}
+       {$IfDef RecordAmbush} WriteLineToDebugFile('TMapForm.SetUpAmbush after expand route'); WriteStringListToDebugFile(StreamProfileResults); {$EndIf}
        fName := NextFileNumber(SaveViewshedDir, 'ambush',DefaultDBExt);
        CreateTableOfType(fName,'WeaponsFan');
        AmbushFansTable := tMyData.Create(fName);
@@ -4927,18 +4935,18 @@ begin
             CreateTableOfType(fName,'WeaponsFan');
             ZeroRecordsAllowed := true;
             OpenNumberedGISDataBase(MapDraw.CurrentFansTable,fName,false,false,Self);
-            {$IfDef RecordFan} WriteLineToDebugFile('Opened new fan table=' + fName);      {$EndIf}
+            {$IfDef RecordFan} WriteLineToDebugFile('CheckViewShedMapDblClick Opened new fan table=' + fName);      {$EndIf}
          end;
          MapDraw.AddFanToMap(WeaponsFan);
+         {$IfDef RecordFan} WriteLineToDebugFile('CheckViewShedMapDblClick added to map at ' + LatLongDegreeToString(WeaponsFan.W_Lat,WeaponsFan.W_Long)); {$EndIf}
          if MDDef.DrawRangeCircles then begin
             {$IfDef RecordFan} WriteLineToDebugFile('Drawing range circles'); {$EndIf}
             AddRangeCirclesAtLocation(WeaponsFan.W_Lat,WeaponsFan.W_Long);
          end;
-
          AddOrSubtractOverlay(Self,ovoFans,true);
          DoFastMapRedraw;
+         {$IfDef RecordFan} WriteLineToDebugFile('CheckViewShedMapDblClick Map redrawn, at ' + LatLongDegreeToString(WeaponsFan.W_Lat,WeaponsFan.W_Long)); {$EndIf}
       end;
-
       CheckProperTix;
       exit;
    end;
@@ -5440,18 +5448,18 @@ begin
    FlyDEM := 0;
 
    if MDDef.DoEarthCurvature then  begin
-      CurveDEM := DEMGlb[CurDEM].CloneAndOpenGrid(FloatingPointDEM,'Earth curvature (m)',Undefined);
+      CurveDEM := DEMGlb[CurDEM].CloneAndOpenGridSetMissing(FloatingPointDEM,'Earth curvature (m)',Undefined);
    end;
 
    if MDDef.DoReqAntHigh then begin
-      AntDEM := DEMGlb[CurDEM].CloneAndOpenGrid(FloatingPointDEM,'Antenna required (m)',euMeters);
+      AntDEM := DEMGlb[CurDEM].CloneAndOpenGridSetMissing(FloatingPointDEM,'Antenna required (m)',euMeters);
       Result := AntDEM;
    end;
 
-   if MDDef.DoReqFlyHigh then FlyDEM  := DEMGlb[CurDEM].CloneAndOpenGrid(FloatingPointDEM,'Flying height (m)',euMeters);
+   if MDDef.DoReqFlyHigh then FlyDEM  := DEMGlb[CurDEM].CloneAndOpenGridSetMissing(FloatingPointDEM,'Flying height (m)',euMeters);
 
    if MDDef.DoGrazingAngle then begin
-      GrazeDEM := DEMGlb[CurDEM].CloneAndOpenGrid(FloatingPointDEM, 'Grazing angle (' + DegSym + ')',zDegrees);
+      GrazeDEM := DEMGlb[CurDEM].CloneAndOpenGridSetMissing(FloatingPointDEM, 'Grazing angle (' + DegSym + ')',zDegrees);
    end;
 
     StartProgress(ProgTitle + ' Cols (1/2)');
@@ -5608,9 +5616,10 @@ procedure TMapForm.Aspect2Click(Sender: TObject);
 begin
    {$IfDef ExGeoStats}
    {$Else}
-      SetAllSlopes(false);
-      MDDef.DoAspect := true;
-      MakeMomentsGrid(MapDraw.DEMonMap,'S');
+      //SetAllSlopes(false);
+      //MDDef.DoAspect := true;
+      //MakeMomentsGrid(MapDraw.DEMonMap,'S');
+      MakeAspectMap(MapDraw.DEMonMap);
    {$EndIf}
 end;
 
@@ -5622,9 +5631,11 @@ begin
 var
    AspectDEM : integer;
 begin
-   Aspect2Click(Sender);
-   AspectDEM := LastDEMloaded;
-   AspectDifferenceMap(AspectDEM,DEMGlb[AspectDEM].FullDEMGridLimits);
+   //Aspect2Click(Sender);
+   AspectDEM := MakeAspectMap(MapDraw.DEMonMap);
+   AspectDifferenceMap(AspectDEM,1,DEMGlb[AspectDEM].FullDEMGridLimits);
+   AspectDifferenceMap(AspectDEM,2,DEMGlb[AspectDEM].FullDEMGridLimits);
+   AspectDifferenceMap(AspectDEM,3,DEMGlb[AspectDEM].FullDEMGridLimits);
 {$EndIf}
 end;
 
@@ -6045,7 +6056,7 @@ begin
    if (DEMGlb[MapDraw.DEMonMap].SelectionMap.MapDraw.FeatureGrid = 0) then UseDEM := MapDraw.DEMonMap
    else UseDEM := DEMGlb[MapDraw.DEMonMap].SelectionMap.MapDraw.FeatureGrid;
 
-   NewDEM := DEMGlb[UseDEM].CloneAndOpenGrid(FloatingPointDEM,WantedField,Undefined);
+   NewDEM := DEMGlb[UseDEM].CloneAndOpenGridSetMissing(FloatingPointDEM,WantedField,Undefined);
    i := 0;
    StartProgress('Features');
    GISdb[FeaturesDB].MyData.First;
@@ -6322,7 +6333,7 @@ begin
    end;
 
    mName := ptTrim(DEMGlb[Map1].AreaName) + '_to_' + ptTrim(DEMGlb[Map2].AreaName) + '_' + TStr + '_migration';
-   NewDEM := DEMGlb[Map1].CloneAndOpenGrid(FloatingPointDEM,mName,euMeters);
+   NewDEM := DEMGlb[Map1].CloneAndOpenGridSetMissing(FloatingPointDEM,mName,euMeters);
 
    if ShowSatProgress then StartProgress('Migration');
    for Col := 0 to pred(DEMGlb[Map1].DEMheader.NumCol) do begin
@@ -6898,15 +6909,6 @@ end;
 procedure TMapForm.Lntransform1Click(Sender: TObject);
 begin
     Multiplyzvalues1Click(Sender);
-end;
-
-
-procedure TMapForm.Histogram2Click(Sender: TObject);
-begin
-   {$IfDef ExComplexGeoStats}
-   {$Else}
-       DEMGlb[MapDraw.DEMonMap].CreateWholeDEMHistogram;
-   {$EndIf}
 end;
 
 
@@ -8227,6 +8229,9 @@ begin
          Word1.Enabled := not (DEMGlb[MapDraw.DEMonMap].DEMheader.DEMPrecision = WordDEM);
          FloatingPoint1.Enabled := not (DEMGlb[MapDraw.DEMonMap].DEMheader.DEMPrecision = FloatingPointDEM);
       end;
+
+      ChangeMap2.Visible := (MapDraw.MapType = mtGGRReflect) and (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]);
+      DifferenceMap1.Visible := (MapDraw.DEMmap) and (DEMGlb[MapDraw.DEMonMap].DEMHeader.ElevUnits in [euDifference,euElevDiff]) and (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]);
 
       Drainage1.Visible := ExpertDEMVersion;
 
@@ -9782,6 +9787,11 @@ begin
 {$EndIf}
 end;
 
+procedure TMapForm.CurrentMapArea2Click(Sender: TObject);
+begin
+   DEMGlb[MapDraw.DEMonMap].CreatePartDEMHistogram(MapDraw.MapAreaDEMGridLimits);
+end;
+
 function TMapForm.CurrentMapImage : tImage;
 begin
    Result := Image1;
@@ -10990,10 +11000,11 @@ end;
 
 procedure TMapForm.Openbandforrasteranalysis1Click(Sender: TObject);
 var
-   WantedBand : integer;
+   WantedBand,DEM : integer;
 begin
    SatImage[MapDraw.SatOnMap].PickBand('Band for raster analysis', WantedBand);
-   OpenNewDEM(SatImage[MapDraw.SatOnMap].BFileName[WantedBand]);
+   DEM := OpenNewDEM(SatImage[MapDraw.SatOnMap].BFileName[WantedBand]);
+   DEMGlb[DEM].DEMHeader.ElevUnits := euImagery;
 end;
 
 
@@ -11961,7 +11972,7 @@ begin
     MDDef.MinRegionPoints := 250;
     ReadDefault('Minimum points for region',MDDef.MinRegionPoints);
 
-   NewDem := DEMGlb[MapDraw.DEMonMap].CloneAndOpenGrid(WordDEM,DEMGlb[MapDraw.DEMonMap].AreaName  + '_features',euIntCode);
+   NewDem := DEMGlb[MapDraw.DEMonMap].CloneAndOpenGridSetMissing(WordDEM,DEMGlb[MapDraw.DEMonMap].AreaName  + '_features',euIntCode);
    CreateBitmap(Bitmap,DEMGlb[NewDEM].DEMheader.NumCol,DEMGlb[NewDEM].DEMheader.NumRow);
 
    StartProgress('Zero');
@@ -14469,7 +14480,7 @@ end;
 
 procedure TMapForm.DEMgridhistogram1Click(Sender: TObject);
 begin
-   Histogram2Click(Sender);
+   DEMGlb[MapDraw.DEMonMap].CreateWholeDEMHistogram;
 end;
 
 procedure TMapForm.Fulldataset1Click(Sender: TObject);
@@ -15375,7 +15386,6 @@ begin
 end;
 
 
-
 procedure TMapForm.GridVATlegend1Click(Sender: TObject);
 begin
    Petimage_form.DisplayBitmap(MapDraw.MakeVATLegend,DEMGlb[MapDraw.DEMOnMap].AreaName + ' Legend');
@@ -16208,6 +16218,11 @@ procedure TMapForm.Ensembleclassification1Click(Sender: TObject);
 begin
    Loadsummarymultipleclassifications1Click(Sender);
    EnsembleClassify;
+end;
+
+procedure TMapForm.Entiregrid1Click(Sender: TObject);
+begin
+    DEMGlb[MapDraw.DEMonMap].CreateWholeDEMHistogram;
 end;
 
 procedure TMapForm.Epochs1Click(Sender: TObject);
@@ -20787,11 +20802,6 @@ begin
 end;
 
 
-procedure TMapForm.USSPCS1Click(Sender: TObject);
-begin
-   LoadDataBaseFileWithMissingMessage(DBDir + 'carto\us_spcs\us_spcs_zones' + DefaultDBExt);
-end;
-
 procedure TMapForm.UStornadoes1Click(Sender: TObject);
 begin
    {$IfDef ExGeography}
@@ -22228,6 +22238,23 @@ begin
    ConvertUKOSDEMtoUTM(MapDraw.DEMonMap,true);
 end;
 
+
+procedure TMapForm.COPALOS9categories1Click(Sender: TObject);
+begin
+   COP_ALOS_compare(ca9Cat);
+end;
+
+procedure TMapForm.COPALOSbestlocations1Click(Sender: TObject);
+begin
+   COP_ALOS_compare(caBest);
+end;
+
+procedure TMapForm.COPALOScategories1Click(Sender: TObject);
+begin
+   COP_ALOS_compare(ca4Cat);
+end;
+
+
 procedure TMapForm.ASCIIArcGrid1Click(Sender: TObject);
 begin
    {$IfDef ExOddballDEMexports}
@@ -23473,7 +23500,8 @@ begin
    {$IfDef ExSat}
    {$Else}
       DEMGlb[MapDraw.DEMonMap].DEMheader.ElevUnits := Units;
-      DEMGlb[MapDraw.DEMonMap].DEMStatus := dsUnsavedEdits;
+      //DEMGlb[MapDraw.DEMonMap].DEMStatus := dsUnsavedEdits;
+      DEMGlb[MapDraw.DEMonMap].WriteNewFormatDEM(DEMGlb[MapDraw.DEMonMap].DEMFileName);
       DEMGlb[MapDraw.DEMonMap].CheckForLandCover;
       DoBaseMapRedraw;
    {$EndIf}

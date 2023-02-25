@@ -47,6 +47,7 @@ type
          procedure AParameter(Section,Keyword : shortString; var NewValue : int16; ParamDefValue : int16); overload;
          procedure AParameter(Section,Keyword : shortString; var NewValue : int32; ParamDefValue : int32); overload;
          procedure AParameter(Section,Keyword : shortString; var NewValue : int64; ParamDefValue : int64); overload;
+         procedure AParameter(Section,Keyword : shortString; var NewValue : word; ParamDefValue : word); overload;
          procedure AColorParameter(Section,Keyword : shortString; var NewValue : tPlatformColor; ParamDefValue : tPlatformColor);  overload;
          procedure AParameter(Section,Keyword : shortString; var NewValue : byte; ParamDefValue : byte);  overload;
          procedure AParameter(Section,Keyword : shortString; var NewValue : boolean; ParamDefValue : boolean); overload;
@@ -98,6 +99,13 @@ begin
 end;
 
 procedure tMDiniFile.AParameter(Section,Keyword : shortString; var NewValue : int64; ParamDefValue : int64);
+begin
+   if (IniWhat = iniRead) then NewValue := IniFile.ReadInteger(Section,KeyWord,ParamDefValue);
+   if (iniWhat = iniWrite) then IniFile.WriteInteger(Section,KeyWord,NewValue);
+   if (iniWhat = iniInit) and RestoreDefault(Section) then NewValue := ParamDefValue;
+end;
+
+procedure tMDiniFile.AParameter(Section,Keyword : shortString; var NewValue : word; ParamDefValue : word);
 begin
    if (IniWhat = iniRead) then NewValue := IniFile.ReadInteger(Section,KeyWord,ParamDefValue);
    if (iniWhat = iniWrite) then IniFile.WriteInteger(Section,KeyWord,NewValue);

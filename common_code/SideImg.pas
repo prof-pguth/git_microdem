@@ -852,6 +852,7 @@ begin
 
          {$IfDef LogSidescanFileInfo} WriteLineToDebugFile('Loaded LoadMemStream'); {$EndIf}
 
+          (*
           if FileExists(SidescanIndexFName) then begin
              IndexTable := tMyData.Create(SidescanIndexFName);
              IndexTable.ApplyFilter( 'FILENAME=' + QuotedStr(InName));
@@ -864,7 +865,8 @@ begin
              end;
              FreeAndNil(IndexTable);
           end
-          else SidescanRange := -99;
+          else *)
+          SidescanRange := -99;
 
           First := true;
           NumSSRecords := 0;

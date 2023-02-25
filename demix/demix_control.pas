@@ -13,6 +13,7 @@ unit demix_control;
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$Define RecordDEMIX}
    {$Define RecordDEMIXLoad}
+   {$Define RecordDEMIXsave}
    //{$Define RecordDEMIXMovies}
    //{$Define RecordDEMIXVDatum}
    //{$Define RecordFullDEMIX}
@@ -40,6 +41,12 @@ procedure CopAlosCompareReference;
 procedure PixelByPixelCopAlos;
 procedure HighLowCopAlosGeomorphometry(fName : PathStr = '');
 
+const
+   caBest = 1;
+   ca4cat = 2;
+   ca9cat = 3;
+
+procedure COP_ALOS_compare(What : integer);
 
 
 //DEMIX wine contest procedures based on the database
@@ -66,7 +73,7 @@ implementation
 
 uses
    Nevadia_Main,
-   DEMstat,Make_grid,PetImage,PetImage_form,new_petmar_movie,DEMdatabase,PetDButils,
+   DEMstat,Make_grid,PetImage,PetImage_form,new_petmar_movie,DEMdatabase,PetDButils,Pick_several_dems,
    DEMCoord,DEMdefs,DEMMapf,DEMDef_routines,DEM_Manager,DEM_indexes,Petmar_db,PetMath;
 
 
@@ -126,6 +133,21 @@ begin
 end;
 
 
+procedure COP_ALOS_compare(What : integer);
+var
+   RefDEM,ALOS,Cop,DEM4 : integer;
+begin
+   PickSeveralExistingDEMs('Reference DEM','ALOS','COPDEM','', RefDEM,ALOS,Cop,DEM4);
+   ReadDefault('Tolerance',MDDef.DEMIXSimpleTolerance);
+   case What of
+      caBest : BestCopOrALOSmap(RefDEM,ALOS,Cop,MDDef.DEMIXSimpleTolerance,'ALOS-COP-better');
+      ca4Cat : TwoDEMHighLowMap(RefDEM,ALOS,COP,'Ref DEM',MDDef.DEMIXSimpleTolerance,true);
+      ca9Cat : TwoDEMHighLowMap(RefDEM,ALOS,COP,'Ref DEM',MDDef.DEMIXSimpleTolerance,false);
+   end;
+end;
+
+
+
 procedure PixelByPixelCopAlos;
 const
    Params : array[1..3] of shortstring = ('best_elev_ref_dtm.vat.dbf','best_slope_ref_dtm.vat.dbf','best_roughness_ref_dtm.vat.dbf');
@@ -147,7 +169,6 @@ begin
        for j := 0 to pred(TheFiles.Count) do begin
           fName := TheFiles.Strings[j];
           OpenNumberedGISDataBase(db,fName);
-          //Table := tMyData.Create(fName);
           GISdb[db].RenameField('NAME',Names[i]);
           sum := GISdb[db].MyData.FieldSum('N');
           aLine := LastSubDir(ExtractFilePath(fName)) + ',' + Names[i];
@@ -156,7 +177,6 @@ begin
              aline := aline + ',' + RealToString(100 * GISdb[db].MyData.GetFieldByNameAsInteger('N') / Sum,-12,-2);
              GISdb[db].MyData.Next;
           end;
-          //Table.Destroy;
           Results.Add(aline);
        end;
        TheFiles.Destroy;
@@ -922,13 +942,14 @@ end;
 
 
 
-procedure DoDifferenceMaps(AreaName,ShortName,LongName : shortString; var Graph1,Graph2 : tThisBaseGraph);
+procedure DoDEMIX_DifferenceMaps(AreaName,ShortName,LongName : shortString; var Graph1,Graph2 : tThisBaseGraph);
 var
    TestGrid,DSMgrid,DTMGrid,DiffGrid,
    i,NoSlopeMap,UseDSM,UseDTM : integer;
    fName : PathStr;
    Min,Max,BinSize : float32;
    DSMElevFiles,DSMLegendFiles,DTMElevFiles,DTMLegendFiles : tStringList;
+
 
       procedure ModifyGraph(Graph : tThisBaseGraph);
       var
@@ -1039,22 +1060,22 @@ begin
       end;
    end;
    {$IfDef RecordDEMIX} WriteLineToDebugFile('start graphs'); {$EndIf}
-      if ShortName = 'elvd' then begin
-         Min := -50;
-         Max := 50;
-         BinSize := 0.25;
-      end;
+   if ShortName = 'elvd' then begin
+      Min := -50;
+      Max := 50;
+      BinSize := 0.25;
+   end;
 
-      if ShortName = 'slpd' then begin
-         Min := -50;
-         Max := 50;
-         BinSize := 0.25;
-      end;
-      if ShortName = 'rufd' then begin
-         Min := -20;
-         Max := 20;
-         BinSize := 0.15;
-      end;
+   if ShortName = 'slpd' then begin
+      Min := -50;
+      Max := 50;
+      BinSize := 0.25;
+   end;
+   if ShortName = 'rufd' then begin
+      Min := -20;
+      Max := 20;
+      BinSize := 0.15;
+   end;
 
    Graph1 := CreateMultipleHistograms(MDDef.CountHistograms,DTMElevFiles,DTMLegendFiles,AreaName + ' DTM ' + LongName + ' difference','DTM ' + LongName + ' difference distribution',100,Min,Max,BinSize);
    ModifyGraph(Graph1);
@@ -1072,23 +1093,23 @@ end;
 
 
 const
-   ALOSHalfSecfName = 'alos.dem';
-   CopHalfSecfName = 'cop.dem';
+   ALOSHalfSecfName = 'alos.tif';
+   CopHalfSecfName = 'cop.tif';
 
-   HalfSecRefDSMfName = 'ref_dsm.dem';
-   HalfSecRefDTMfName = 'ref_dtm.dem';
+   HalfSecRefDSMfName = 'ref_dsm.tif';
 
-   COP_ALOS_DifffName = 'cop-alos-diff.dem';
-   COP_ALOS_DSM4fName = 'cop-alos-dsm4.dem';
-   COP_ALOS_DTM4fName = 'cop-alos-dtm4.dem';
-   COP_ALOS_DSM9fName = 'cop-alos-dsm9.dem';
-   COP_ALOS_DTM9fName = 'cop-alos-dtm9.dem';
-   SlopeMapfName = 'slope_ref_dtm.dem';
-   RuffMapfName = 'roughness_ref_dtm.dem';
-   AspectMapfName = 'aspect_ref_dtm.dem';
-   BestCOP_ALOS_slopefName = 'best_slope_ref_dtm.dem';
-   BestCOP_ALOS_rufffName = 'best_roughness_ref_dtm.dem';
-   BestCOP_ALOS_elevfName = 'best_elev_ref_dtm.dem';
+   HalfSecRefDTMfName = 'ref_dtm.tif';
+   COP_ALOS_DifffName = 'cop-alos-diff.tif';
+   COP_ALOS_DSM4fName = 'cop-alos-dsm4.tif';
+   COP_ALOS_DTM4fName = 'cop-alos-dtm4.tif';
+   COP_ALOS_DSM9fName = 'cop-alos-dsm9.tif';
+   COP_ALOS_DTM9fName = 'cop-alos-dtm9.tif';
+   SlopeMapfName = 'slope_ref_dtm.tif';
+   RuffMapfName = 'roughness_ref_dtm.tif';
+   AspectMapfName = 'aspect_ref_dtm.tif';
+   BestCOP_ALOS_slopefName = 'best_slope_ref_dtm.tif';
+   BestCOP_ALOS_rufffName = 'best_roughness_ref_dtm.tif';
+   BestCOP_ALOS_elevfName = 'best_elev_ref_dtm.tif';
 
    DTMElevDiffMapALOSfName = 'elev_diff_dtm_alos.tif';
    DTMElevDiffMapCOPfName = 'elev_diff_dtm_cop.tif';
@@ -1096,6 +1117,7 @@ const
    DTMSlopeDiffMapCOPfName = 'slope_diff_dtm_cop.tif';
    DTMRuffDiffMapALOSfName = 'ruff_diff_dtm_alos.tif';
    DTMRuffDiffMapCOPfName = 'ruff_diff_dtm_cop.tif';
+
 
 
 procedure HighLowCopAlosGeomorphometry(fName : PathStr = '');
@@ -1124,14 +1146,14 @@ begin
       DTMElevDiffMapALOS := OpenNewDEM(SaveDir + 'elev_diff_dtm_alos.tif');
       DTMElevDiffMapCOP := OpenNewDEM(SaveDir + 'elev_diff_dtm_cop.tif');
 
-      HalfSecRefDTM := OpenNewDEM(SaveDir + 'ref_dtm.dem');
-      SlopeMap := OpenNewDEM(SaveDir + 'slope_ref_dtm.dem');
-      RuffMap := OpenNewDEM(SaveDir + 'roughness_ref_dtm.dem');
-      AspectMap := OpenNewDEM(SaveDir + 'aspect_ref_dtm.dem');
+      HalfSecRefDTM := OpenNewDEM(SaveDir + 'ref_dtm.tif');
+      SlopeMap := OpenNewDEM(SaveDir + 'slope_ref_dtm.tif');
+      RuffMap := OpenNewDEM(SaveDir + 'roughness_ref_dtm.tif');
+      AspectMap := OpenNewDEM(SaveDir + 'aspect_ref_dtm.tif');
 
-      if FileExists(SaveDir + 'slope_ref_dtm.dem') then begin
-         SlopeMap := OpenNewDEM(SaveDir + 'slope_ref_dtm.dem');
-         RuffMap := OpenNewDEM(SaveDir + 'roughness_ref_dtm.dem');
+      if FileExists(SaveDir + 'slope_ref_dtm.tif') then begin
+         SlopeMap := OpenNewDEM(SaveDir + 'slope_ref_dtm.tif');
+         RuffMap := OpenNewDEM(SaveDir + 'roughness_ref_dtm.tif');
       end
       else begin
          SlopeMap := -1;   //forces creation of slope and roughness maps
@@ -1148,16 +1170,16 @@ procedure OpenDEMIXArea(fName : PathStr = '');
 const
    DEMIX_Movie = false;
    OverwriteFiles = false;
-   DEMIX_SaveDEMs = false;
+   DEMIXhistograms = false;
+   DEMIX_SaveDEMs = true;
    DEMIX_HalfSecondCompareMaps = true;
-   DEMIX_GeomorphMapsBestDEM = false;
-   DEMIX_MakeDifferenceMaps = false;
-   DEMIX_GeomorphMaps = false;
-   DEMIXhistograms = true;
+   DEMIX_GeomorphMapsBestDEM = true;
+   DEMIX_MakeDifferenceMaps = true;
+   DEMIX_GeomorphMaps = true;
 var
    AreaName : shortstring;
    HalfSec : array[1..10] of integer;
-   UseDSM,UseDTM,chm,HalfSecRefDTM,HalfSecRefDSM,SlopeMap,RuffMap,AspectMap,
+   UseDSM,UseDTM,chm,HalfSecRefDTM,HalfSecRefDSM,RefSlopeMap,RefRuffMap,RefAspectMap,
    COP_ALOS_Diff,CopSlope,CopRuff,ALOSslope,ALOSruff,
    BestCOP_ALOS_elev, BestCOP_ALOS_slope,BestCOP_ALOS_ruff,
    COP_ALOS_DSM4,COP_ALOS_DTM4,COP_ALOS_DSM9,COP_ALOS_DTM9,
@@ -1176,8 +1198,8 @@ var
          UseDTM := 0;
          HalfSecRefDTM := 0;
          HalfSecRefDSM := 0;
-         SlopeMap := 0;
-         RuffMap := 0;
+         RefSlopeMap := 0;
+         RefRuffMap := 0;
          COP_ALOS_DSM4 := 0;
          COP_ALOS_DTM4 := 0;
          COP_ALOS_DSM9 := 0;
@@ -1252,7 +1274,10 @@ var
          procedure SaveDEM(DEM : integer; fName : PathStr);
          begin
             if ValidDEM(DEM) then begin
-               if OverwriteFiles or (not FileExists(fName)) then DEMGlb[DEM].WriteNewFormatDEM(fName);
+               if OverwriteFiles or (not FileExists(fName)) then begin
+                  {$IfDef RecordDEMIXsave} writeLineToDebugFile('Save ' + fName + ' elev units=' + ElevUnitsAre(DEMGlb[DEM].DEMheader.ElevUnits)); {$EndIf}
+                  DEMGlb[DEM].WriteNewFormatDEM(fName);
+               end;
                fName := ChangeFileExt(fName,'.png');
                SaveImageAsBMP(DEMGlb[DEM].SelectionMap.Image1,fName);
             end;
@@ -1264,7 +1289,7 @@ begin
       {$IfDef RecordDEMIX} writeLineToDebugFile('OpenDEMIXArea ' + fName); {$EndIf}
       AreaName := ExtractFileNameNoExt(fName);
       if DEMIX_SaveDEMs then begin
-         SaveDir := 'H:\aa_half_sec_test\' + AreaName + '\';
+         SaveDir := fName[1] + ':\aa_half_sec_test\' + AreaName + '\';
          //if PathIsValid(SaveDir) then exit;
          SafeMakeDir(SaveDir);
       end;
@@ -1288,19 +1313,47 @@ begin
             if LoadDEMIXReferenceDEMs(DEMIXRefDEM) then begin
                {$IfDef RecordDEMIX} writeLineToDebugFile('LoadDEMIXReferenceDEMs complete; Open DEMs=, ' + IntToStr(NumDEMdatasetsOpen) + 'DEMIXRefDEM=' + IntToStr(DEMIXRefDEM)); {$EndIf}
 
+(*
+   ALOSHalfSecfName = 'alos.dem';
+   CopHalfSecfName = 'cop.dem';
+
+   COP_ALOS_DifffName = 'cop-alos-diff.dem';
+   COP_ALOS_DSM4fName = 'cop-alos-dsm4.dem';
+   COP_ALOS_DTM4fName = 'cop-alos-dtm4.dem';
+   COP_ALOS_DSM9fName = 'cop-alos-dsm9.dem';
+   COP_ALOS_DTM9fName = 'cop-alos-dtm9.dem';
+
+   BestCOP_ALOS_slopefName = 'best_slope_ref_dtm.dem';
+   BestCOP_ALOS_rufffName = 'best_roughness_ref_dtm.dem';
+   BestCOP_ALOS_elevfName = 'best_elev_ref_dtm.dem';
+
+   DTMElevDiffMapALOSfName = 'elev_diff_dtm_alos.tif';
+   DTMElevDiffMapCOPfName = 'elev_diff_dtm_cop.tif';
+   DTMSlopeDiffMapALOSfName = 'slope_diff_dtm_alos.tif';
+   DTMSlopeDiffMapCOPfName = 'slope_diff_dtm_cop.tif';
+   DTMRuffDiffMapALOSfName = 'ruff_diff_dtm_alos.tif';
+   DTMRuffDiffMapCOPfName = 'ruff_diff_dtm_cop.tif';
+*)
+
                if MDDef.DEMIX_DoHalfSecDEMs then begin
-                  HalfSecRefDSM := CreateHalfSecRefDEM(RefDSMPoint,RefDSMArea);
-                  HalfSecRefDTM := CreateHalfSecRefDEM(RefDTMPoint,RefDTMArea);
+                  if FileExists(HalfSecRefDSMfName) then HalfSecRefDSM := OpenNewDEM(HalfSecRefDSMfName) else HalfSecRefDSM := CreateHalfSecRefDEM(RefDSMPoint,RefDSMArea);
+                  if FileExists(HalfSecRefDTMfName) then HalfSecRefDTM := OpenNewDEM(HalfSecRefDSMfName) else HalfSecRefDTM := CreateHalfSecRefDEM(RefDTMPoint,RefDTMArea);
                   DEMIXRefDEM := HalfSecRefDTM;
                   {$IfDef RecordDEMIX} writeLineToDebugFile('Half sec ref dems created; Open DEMs=' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
                end;
 
                if DEMIX_GeomorphMaps or DEMIX_GeomorphMapsBestDEM then begin
-                  SlopeMap := -1;   //forces creation of slope and roughness maps
-                  RuffMap := CreateSlopeRoughnessSlopeStandardDeviationMap(HalfSecRefDTM,3,SlopeMap);
-                  DEMGlb[SlopeMap].AreaName := 'ref_dtm_slope_%';
-                  DEMGlb[RuffMap].AreaName := 'ref_dtm_roughness_%';
-                  AspectMap := MakeAspectMap(HalfSecRefDTM);
+                  if FileExists(RuffMapfName) then begin
+                     RefSlopeMap := OpenNewDEM(SlopeMapfName);
+                     RefRuffMap := OpenNewDEM(RuffMapfName);
+                  end
+                  else begin
+                     RefSlopeMap := -1;   //forces creation of slope and roughness maps
+                     RefRuffMap := CreateSlopeRoughnessSlopeStandardDeviationMap(HalfSecRefDTM,3,RefSlopeMap);
+                  end;
+                  DEMGlb[RefSlopeMap].AreaName := 'ref_dtm_slope_%';
+                  DEMGlb[RefRuffMap].AreaName := 'ref_dtm_roughness_%';
+                  if FileExists(AspectMapfName) then HalfSecRefDSM := OpenNewDEM(AspectMapfName) else RefAspectMap := MakeAspectMap(HalfSecRefDTM);
                end;
 
                {$IfDef RecordDEMIX} writeLineToDebugFile('Slope and Ruff dems created; Open DEMs=' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
@@ -1357,16 +1410,16 @@ begin
                            DEMGlb[COPRuff].AreaName := 'cop_roughness_%';
 
                            BestCOP_ALOS_elev := BestCopOrALOSmap(HalfSecRefDTM,TestDEM[1],TestDEM[2],1.5,'best_dem_elevation');
-                           BestCOP_ALOS_slope := BestCopOrALOSmap(SlopeMap,ALOSslope,COPslope,1.5,'best_dem_slope');
-                           BestCOP_ALOS_ruff := BestCopOrALOSmap(RuffMap,ALOSruff,COPruff,1.5,'best_dem_roughness');
+                           BestCOP_ALOS_slope := BestCopOrALOSmap(RefSlopeMap,ALOSslope,COPslope,1.5,'best_dem_slope');
+                           BestCOP_ALOS_ruff := BestCopOrALOSmap(RefRuffMap,ALOSruff,COPruff,1.5,'best_dem_roughness');
 
                            if DEMIX_MakeDifferenceMaps then begin
                               DTMElevDiffMapALOS := MakeDifferenceMap(HalfSecRefDTM,TestDEM[1],true,false,false);
                               DTMElevDiffMapCOP := MakeDifferenceMap(HalfSecRefDTM,TestDEM[2],true,false,false);
-                              DTMSlopeDiffMapALOS := MakeDifferenceMap(SlopeMap,ALOSslope,true,false,false);
-                              DTMSlopeDiffMapCOP := MakeDifferenceMap(SlopeMap,COPSlope,true,false,false);
-                              DTMRuffDiffMapALOS := MakeDifferenceMap(RuffMap,ALOSRuff,true,false,false);
-                              DTMRuffDiffMapCOP := MakeDifferenceMap(RuffMap,COPRuff,true,false,false);
+                              DTMSlopeDiffMapALOS := MakeDifferenceMap(RefSlopeMap,ALOSslope,true,false,false);
+                              DTMSlopeDiffMapCOP := MakeDifferenceMap(RefSlopeMap,COPSlope,true,false,false);
+                              DTMRuffDiffMapALOS := MakeDifferenceMap(RefRuffMap,ALOSRuff,true,false,false);
+                              DTMRuffDiffMapCOP := MakeDifferenceMap(RefRuffMap,COPRuff,true,false,false);
                            end;
 
                            {$IfDef RecordDEMIX} writeLineToDebugFile('DEMIX_GeomorphMapsBestDEM done'); {$EndIf}
@@ -1377,16 +1430,16 @@ begin
                            COP_ALOS_Diff := MakeDifferenceMap(TestDEM[1],TestDEM[2],true,false,false,'COP-ALOS_difference');
 
                            {$IfDef RecordDEMIX} writeLineToDebugFile('Try ref DSM COP-ALOS'); {$EndIf}
-                           COP_ALOS_DSM4 := TwoDEMHighLowMap(HalfSecRefDSM, TestDEM[1],TestDEM[2],'DSM',true,'COP-ALOS_compare_DSM-4');
-                           COP_ALOS_DSM9 := TwoDEMHighLowMap(HalfSecRefDSM, TestDEM[1],TestDEM[2],'DSM',false,'COP-ALOS_compare_DSM-9');
+                           COP_ALOS_DSM4 := TwoDEMHighLowMap(HalfSecRefDSM, TestDEM[1],TestDEM[2],'DSM',MDDef.DEMIXSimpleTolerance,true,'COP-ALOS_compare_DSM-4');
+                           COP_ALOS_DSM9 := TwoDEMHighLowMap(HalfSecRefDSM, TestDEM[1],TestDEM[2],'DSM',MDDef.DEMIXSimpleTolerance,false,'COP-ALOS_compare_DSM-9');
 
                            {$IfDef RecordDEMIX} writeLineToDebugFile('Try ref DTM COP-ALOS'); {$EndIf}
-                           COP_ALOS_DTM4 := TwoDEMHighLowMap(HalfSecRefDTM, TestDEM[1],TestDEM[2],'DTM',true,'COP-ALOS_compare_DTM-4');
-                           COP_ALOS_DTM9 := TwoDEMHighLowMap(HalfSecRefDTM, TestDEM[1],TestDEM[2],'DTM',false,'COP-ALOS_compare_DTM-9');
+                           COP_ALOS_DTM4 := TwoDEMHighLowMap(HalfSecRefDTM, TestDEM[1],TestDEM[2],'DTM',MDDef.DEMIXSimpleTolerance,true,'COP-ALOS_compare_DTM-4');
+                           COP_ALOS_DTM9 := TwoDEMHighLowMap(HalfSecRefDTM, TestDEM[1],TestDEM[2],'DTM',MDDef.DEMIXSimpleTolerance,false,'COP-ALOS_compare_DTM-9');
 
                            if DEMIXhistograms then begin
-                              HistogramsFromVATDEM(COP_ALOS_DSM4,HalfSecRefDSM,SlopeMap,RuffMap,AspectMap);
-                              HistogramsFromVATDEM(COP_ALOS_DTM4,HalfSecRefDTM,SlopeMap,RuffMap,AspectMap);
+                              HistogramsFromVATDEM(COP_ALOS_DSM4,HalfSecRefDSM,RefSlopeMap,RefRuffMap,RefAspectMap);
+                              HistogramsFromVATDEM(COP_ALOS_DTM4,HalfSecRefDTM,RefSlopeMap,RefRuffMap,RefAspectMap);
                            end;
                         end;
                      end;
@@ -1418,17 +1471,17 @@ begin
                      if MDDef.DEMIX_DoElevDiff or MDDef.DEMIX_DoSlopeDiff or MDDef.DEMIX_DoRuffDiff then begin
                         if MDDef.DEMIXCompositeImage then BigMap := tStringList.Create;    //actually this will be graphs, not maps
                         if MDDef.DEMIX_DoElevDiff then begin
-                           DoDifferenceMaps(AreaName,'elvd','Elevation',Graph1,Graph2);
+                           DoDEMIX_DifferenceMaps(AreaName,'elvd','Elevation',Graph1,Graph2);
                            AddImage(Graph1.Image1);
                            if (Graph2 <> Nil) then AddImage(Graph2.Image1);
                         end;
                         if MDDef.DEMIX_DoSlopeDiff then begin
-                           DoDifferenceMaps(AreaName,'slpd','Slope',Graph1,Graph2);
+                           DoDEMIX_DifferenceMaps(AreaName,'slpd','Slope',Graph1,Graph2);
                            AddImage(Graph1.Image1);
                            if (Graph2 <> Nil) then AddImage(Graph2.Image1);
                         end;
                         if MDDef.DEMIX_DoRuffDiff then begin
-                           DoDifferenceMaps(AreaName,'rufd','Roughness',Graph1,Graph2);
+                           DoDEMIX_DifferenceMaps(AreaName,'rufd','Roughness',Graph1,Graph2);
                            AddImage(Graph1.Image1);
                            if (Graph2 <> Nil) then AddImage(Graph2.Image1);
                         end;
@@ -1461,8 +1514,8 @@ begin
                AddFrame(AirOrDirt3[i],'AirDirt3');
             end;
 
-            AddFrame(SlopeMap,'Ref slope');
-            AddFrame(RuffMap,'Ref ruff');
+            AddFrame(RefSlopeMap,'Ref slope');
+            AddFrame(RefRuffMap,'Ref ruff');
             AddFrame(COP_ALOS_DSM4,'COP_ALOS_DSM4');
             AddFrame(COP_ALOS_DTM4,'COP_ALOS_DTM4');
             AddFrame(COP_ALOS_DSM9,'COP_ALOS_DSM9');
@@ -1475,38 +1528,38 @@ begin
 
          if DEMIX_SaveDEMs then begin
             {$IfDef RecordDEMIX} writeLineToDebugFile('OpenDEMIXArea start saving DEMs'); {$EndIf}
-            SaveDEM(TestDEM[1],SaveDir + 'alos.dem');
-            SaveDEM(TestDEM[2],SaveDir + 'cop.dem');
+            SaveDEM(TestDEM[1],SaveDir + ALOSHalfSecfName);
+            SaveDEM(TestDEM[2],SaveDir + CopHalfSecfName);
 
-            SaveDEM(HalfSecRefDSM,SaveDir + 'ref_dsm.dem');
-            SaveDEM(HalfSecRefDTM,SaveDir + 'ref_dtm.dem');
+            SaveDEM(HalfSecRefDSM,SaveDir + HalfSecRefDSMfName);
+            SaveDEM(HalfSecRefDTM,SaveDir + HalfSecRefDTMfName);
 
             if DEMIX_HalfSecondCompareMaps then begin
-               SaveDEM(COP_ALOS_Diff,SaveDir + 'cop-alos-diff.dem');
-               SaveDEM(COP_ALOS_DSM4,SaveDir + 'cop-alos-dsm4.dem');
-               SaveDEM(COP_ALOS_DTM4,SaveDir + 'cop-alos-dtm4.dem');
-               SaveDEM(COP_ALOS_DSM9,SaveDir + 'cop-alos-dsm9.dem');
-               SaveDEM(COP_ALOS_DTM9,SaveDir + 'cop-alos-dtm9.dem');
+               SaveDEM(COP_ALOS_Diff,SaveDir + COP_ALOS_DifffName);
+               SaveDEM(COP_ALOS_DSM4,SaveDir + COP_ALOS_DSM4fName);
+               SaveDEM(COP_ALOS_DTM4,SaveDir + COP_ALOS_DTM4fName);
+               SaveDEM(COP_ALOS_DSM9,SaveDir + COP_ALOS_DSM9fName);
+               SaveDEM(COP_ALOS_DTM9,SaveDir + COP_ALOS_DTM9fName);
             end;
 
             if DEMIX_GeomorphMaps then begin
-               SaveDEM(SlopeMap,SaveDir + 'slope_ref_dtm.dem');
-               SaveDEM(RuffMap,SaveDir + 'roughness_ref_dtm.dem');
-               SaveDEM(AspectMap,SaveDir + 'aspect_ref_dtm.dem');
+               SaveDEM(RefSlopeMap,SaveDir + SlopeMapfName);
+               SaveDEM(RefRuffMap,SaveDir + RuffMapfName);
+               SaveDEM(RefAspectMap,SaveDir + AspectMapfName);
             end;
 
             if DEMIX_GeomorphMapsBestDEM then begin
-               SaveDEM(BestCOP_ALOS_slope,SaveDir + 'best_slope_ref_dtm.dem');
-               SaveDEM(BestCOP_ALOS_ruff,SaveDir + 'best_roughness_ref_dtm.dem');
-               SaveDEM(BestCOP_ALOS_elev,SaveDir + 'best_elev_ref_dtm.dem');
+               SaveDEM(BestCOP_ALOS_slope,SaveDir + BestCOP_ALOS_slopefName);
+               SaveDEM(BestCOP_ALOS_ruff,SaveDir + BestCOP_ALOS_rufffName);
+               SaveDEM(BestCOP_ALOS_elev,SaveDir + BestCOP_ALOS_elevfName);
 
                if DEMIX_MakeDifferenceMaps then begin
-                  SaveDEM(DTMElevDiffMapALOS,SaveDir + 'elev_diff_dtm_alos.tif');
-                  SaveDEM(DTMElevDiffMapCOP,SaveDir + 'elev_diff_dtm_cop.tif');
-                  SaveDEM(DTMSlopeDiffMapALOS,SaveDir + 'slope_diff_dtm_alos.tif');
-                  SaveDEM(DTMSlopeDiffMapCOP,SaveDir + 'slope_diff_dtm_cop.tif');
-                  SaveDEM(DTMRuffDiffMapALOS,SaveDir + 'ruff_diff_dtm_alos.tif');
-                  SaveDEM(DTMRuffDiffMapCOP,SaveDir + 'ruff_diff_dtm_cop.tif');
+                  SaveDEM(DTMElevDiffMapALOS,SaveDir + DTMElevDiffMapALOSfName);
+                  SaveDEM(DTMElevDiffMapCOP,SaveDir + DTMElevDiffMapCOPfName);
+                  SaveDEM(DTMSlopeDiffMapALOS,SaveDir + DTMSlopeDiffMapALOSfName);
+                  SaveDEM(DTMSlopeDiffMapCOP,SaveDir +  DTMSlopeDiffMapCOPfName );
+                  SaveDEM(DTMRuffDiffMapALOS,SaveDir + DTMRuffDiffMapALOSfName);
+                  SaveDEM(DTMRuffDiffMapCOP,SaveDir + DTMRuffDiffMapCOPfName);
                end;
             end;
 

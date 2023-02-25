@@ -11,7 +11,7 @@
 
 {$IfDef ExSidescan}
 {$Else}
-
+(*
       procedure GetCoverageCorners(theData : tMyData; var CornerLats,CornerLongs: array of float64);
       var
          SidescanRunlength ,Lat,Long,Lat2,Long2,Layback,LineHeading,Range : float64;
@@ -60,6 +60,7 @@
             MyData.Next;
          end;
       end;
+*)
 {$EndIf}
 
 

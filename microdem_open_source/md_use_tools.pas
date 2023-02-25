@@ -4,7 +4,7 @@ unit md_use_tools;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
 
@@ -78,7 +78,6 @@ uses
 
 {$IfDef ExLAStools}
 {$Else}
-
    function lastools_txt2las_cmd(inName : PathStr; UTMzone : shortString; ParseVals : shortstring = '') : shortstring;
    procedure BlastTinCreate(InName,OutName : PathStr; GridSize : float64);
    procedure CallLasInfo;

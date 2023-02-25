@@ -4,7 +4,7 @@ unit dempickdatum;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
 
@@ -34,7 +34,6 @@ type
     RadioGroup2: TRadioGroup;
     BitBtn3: TBitBtn;
     OKBtn: TBitBtn;
-    HelpBtn: TBitBtn;
     Button2: TButton;
     CheckBox2: TCheckBox;
     procedure Button1Click(Sender: TObject);
@@ -43,7 +42,6 @@ type
     procedure RadioGroup2Click(Sender: TObject);
     procedure BitBtn3Click(Sender: TObject);
     procedure OKBtnClick(Sender: TObject);
-    procedure HelpBtnClick(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure CheckBox2Click(Sender: TObject);
   private
@@ -109,11 +107,6 @@ begin
    BringToFront;
 end;
 
-
-procedure TPickDatumParams.HelpBtnClick(Sender: TObject);
-begin
-   DisplayHTMLTopic('html\spcs.htm');
-end;
 
 procedure TPickDatumParams.OKBtnClick(Sender: TObject);
 begin

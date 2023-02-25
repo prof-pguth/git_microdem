@@ -4,7 +4,7 @@
 { Released under the MIT Licences    }
 { Copyright (c) 2022 Peter L. Guth   }
 {____________________________________}
-{ include file for demdatabase       }
+{   include file for demdatabase     }
 {____________________________________}
 
 
@@ -66,7 +66,6 @@
                   ShowStatus;
                end;
             end;
-
 
 
             procedure TGISdataBaseModule.ConnectTwoPointsInSameRecord(var Bitmap : tMyBitmap);

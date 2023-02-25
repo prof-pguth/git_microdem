@@ -4,7 +4,7 @@ unit dem_manager;
 { Part of ianMICRODEM GIS Program    }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
-{ Copyright (c) 2022 Peter L. Guth   }
+{ Copyright (c) 2023 Peter L. Guth   }
 {____________________________________}
 
 {$I nevadia_defines.inc}
@@ -27,7 +27,7 @@ unit dem_manager;
       //{$Define RecordMenu}
       //{$Define RecordSatLoad}
       //{$Define RecordSimpleClose}
-      //{$Define RecordSatDirOpen}
+      {$Define RecordSatDirOpen}
    {$Else}
       {$Define TimeLoadDEM}
    {$EndIf}
@@ -85,10 +85,7 @@ function GetWhatsOpen : tStringList;
 procedure OpenDEMsToDebugFile(Why : shortstring);
 function GetSatMaskList(ASatImage : boolean) : ANSIString;
 
-{$IfDef Exgis}
-{$Else}
-   function OpenDBString : shortstring;
-{$EndIf}
+function OpenDBString : shortstring;
 
 
 {$IfDef ExIndexes}
@@ -699,7 +696,7 @@ var
    TStr : ShortString;
 begin
     TStr :=  'All files|*.*|GEOTIFF|*.tif;*.tiff|' + 'Imagery with world files|*.jgw;*.tfw;*.tifw;*.gfw;*.pnw;*.sdw;*.bpw|' + 'BMP/JPEG/PNG, 3 pt reg|*.xy|JPEG2000|*.jp2|ECW|*.ecw|IMG|*.img|' + 'GeoPDF|*.pdf';
-    if MrSidEnabled then TStr := TStr + 'MrSID|*.sid|';
+    //if MrSidEnabled then TStr := TStr + 'MrSID|*.sid|';
     if ASatImage then begin
        Result := '|Landsat Look true color|*T1.TIF|Landsat Look TIR|*TIR.TIF|Likely images|*.tif;*.sid|' + 'Imagery|*.bmp;*.jpg;*.jpeg;*.png;*.gif|' + 'BIP file|*.BIP|';
        Result := TStr + Result;
@@ -793,12 +790,12 @@ end;
       MakePickUseTable(fName);
       Table := tMyData.Create(fName);
       for i := 1 to MaxDEMDataSets do begin
-           if ValidDEM(i) and (not DEMGlb[i].HiddenGrid) then begin
-              Table.Insert;
-              Table.SetFieldByNameAsString('MENU_OPTS',IntToStr(i) + '-' + DEMGlb[i].AreaName);
-              if DEMsWanted[i] then ch := 'Y' else ch := 'N';
-              Table.SetFieldByNameAsString('USE',ch);
-           end;
+         if ValidDEM(i) and (not DEMGlb[i].HiddenGrid) then begin
+            Table.Insert;
+            Table.SetFieldByNameAsString('MENU_OPTS',IntToStr(i) + '-' + DEMGlb[i].AreaName);
+            if DEMsWanted[i] then ch := 'Y' else ch := 'N';
+            Table.SetFieldByNameAsString('USE',ch);
+         end;
       end;
       VerifyRecordsToUse(Table,'MENU_OPTS',TheMessage);
       {$IfDef ShowToggle} WriteLineToDebugFile('VerifyRecordsToUse success'); {$EndIf}
@@ -935,27 +932,28 @@ end;
                 exit;
             end;
             {$If Defined(RecordSatLoad) or Defined(RecordSatDirOpen)} WriteLineToDebugFile('OpenSatImageFromDirectory, jp2 files=' + IntToStr(TheFiles.Count)); {$EndIf}
-            for I := 0 to pred(TheFiles.Count) do begin
+            for I := pred(TheFiles.Count) downto 0 do begin
                if AnsiContainsText(TheFiles.Strings[i],'IMG_DATA') then begin
-                  wmdem.SetPanelText(0,'Convert JP2: ' + IntToStr(succ(i)) + '/' + IntToStr(TheFiles.Count));
-                  fName := TheFiles.Strings[i];
-                  GDAL_warp(fName);
-                  if MDDef.DeleteJP2 then File2Trash(fName);
+
+               end
+               else begin
+                  TheFiles.Delete(i);
                end;
             end;
-            FreeAndNil(TheFiles);
+            GDAL_warp_multiple(TheFiles);
             wmdem.SetPanelText(0,'');
             FindMatchingFiles(LastSatDir,'*.tif',TheFiles,6);
-         end
-         else begin
+         end;
+         //else begin
             //already have TIFFs, but maybe need to delete JP2 that were not originally deleted
             if MDDef.DeleteJP2 then begin
+               {$If Defined(RecordSatLoad) or Defined(RecordSatDirOpen)} WriteLineToDebugFile('check JP2 delete'); {$EndIf}
                Files2 := Nil;
                FindMatchingFiles(LastSatDir,'*.jp2',Files2,8);
                for I := 0 to pred(Files2.Count) do DeleteFile(Files2.Strings[i]);
                Files2.Free;
             end;
-         end;
+        // end;
 
          if IsThisSentinel2(TheFiles.Strings[0]) then begin
             //there might be metadata or other TIFFS we don't want to open
@@ -967,6 +965,7 @@ end;
          {$If Defined(RecordSatLoad) or Defined(RecordSatDirOpen)} WriteLineToDebugFile('OpenSatImageFromDirectory, TIF files=' + IntToStr(TheFiles.Count)); {$EndIf}
          if (TheFiles.Count > 0) then begin
             if (TheFiles.Count = 1) then i := 0 else i := 1;      //for Sentinel-2, where band 1 is low resolution
+            {$If Defined(RecordSatLoad) or Defined(RecordSatDirOpen)} WriteLineToDebugFile('Open=' + TheFiles.Strings[i]); {$EndIf}
             Result := OpenAndDisplayNewScene(Nil,TheFiles.Strings[i],true,true,true);
          end;
          TheFiles.Free;
@@ -1088,34 +1087,28 @@ end;
 
       {$IfDef VCL}
          function GetImage(var ImageWanted : integer; CanCancel : boolean = false; TheMessage : ShortString = ''): boolean;
-
-            procedure GetDEMorImage(DEM,Image : boolean; var ImageWanted : integer; CanCancel : boolean = false; TheMessage : ShortString = ''; ExcludeDEM : integer = 0; ExcludeImage : integer = 0);
-            var
-               TheList : tStringList;
-               i,Wanted,err  : integer;
-               TStr,TStr2 : ShortString;
-            begin
+         var
+            TheList : tStringList;
+            i,Wanted,err  : integer;
+            TStr{,TStr2} : ShortString;
+         begin
+            if (not CanCancel) and (NumSatImageOpen = 1) then ImageWanted := 1
+            else begin
                ImageWanted := 0;
                Wanted := 0;
                TheList := TStringList.Create;
-                     TStr2 := 'Image';
-                     for i := 1 to MaxSatAllowed do begin
-                        if (SatImage[i] <> Nil) and (ExcludeImage <> i) then
-                          TheList.Add('Image ' + IntToStr(i) +': ' + SatImage[i].SceneTitle + ' (' + SatImage[i].SceneBaseName + ')');
-                     end;
+               //TStr2 := 'Image';
+               for i := 1 to MaxSatAllowed do begin
+                  if (SatImage[i] <> Nil) then
+                    TheList.Add('Image ' + IntToStr(i) +': ' + SatImage[i].SceneTitle + ' (' + SatImage[i].SceneBaseName + ')');
+               end;
                {$IfDef VCL}
-                  if (TheList.Count = 1) or GetFromListZeroBased(TStr2 + ' for ' + TheMessage,Wanted,TheList,CanCancel) then begin
+                  if (TheList.Count = 1) or GetFromListZeroBased('Image for ' + TheMessage,Wanted,TheList,CanCancel) then begin
                      TStr := TheList.Strings[Wanted];
                      Val(Copy(TStr,7,2),ImageWanted,err);
                   end;
                {$EndIf}
                TheList.Free;
-            end;
-
-         begin
-            if (not CanCancel) and (NumSatImageOpen = 1) then ImageWanted := 1
-            else begin
-               GetDEMorImage(false,true,ImageWanted,CanCancel,TheMessage);
             end;
             Result := (ImageWanted <> 0);
          end;
@@ -1144,6 +1137,7 @@ end;
 procedure CloseEverything;
 begin
     {$IfDef RecordClosingData} WriteLineToDebugFile('CloseEverything in'); {$EndIf}
+    CloseAllMultigrids;
     CloseAllDEMs;
     {$IfDef ExSat}
     {$Else}
@@ -1161,7 +1155,6 @@ var
 {$EndIf}
 begin
    {$IfDef RecordClosingData} WriteLineToDebugFile('DEM_Manager.CloseAllWindowsAndData enter'); {$EndIf}
-   CloseAllMultigrids;
    CloseEverything;
 
    {$IfDef VCL}

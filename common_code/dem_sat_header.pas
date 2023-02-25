@@ -1,9 +1,13 @@
 unit dem_sat_header;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM                }
-{ PETMAR Trilobite Breeding Ranch }
-{_________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of ianMICRODEM GIS Program    }
+{ PETMAR Trilobite Breeding Ranch    }
+{ Released under the MIT Licences    }
+{ Copyright (c) 2023 Peter L. Guth   }
+{____________________________________}
+
+{$I nevadia_defines.inc}
 
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems

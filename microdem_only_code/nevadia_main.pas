@@ -4,7 +4,7 @@
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
 
@@ -208,7 +208,7 @@ type
     Setupserver1: TMenuItem;
     IntDBSpeedButton: TSpeedButton;
     HypImageSpeedButton: TSpeedButton;
-    MrSidimagery1: TMenuItem;
+   //MrSidimagery1: TMenuItem;
     N7: TMenuItem;
     Geostatisticalanalysis1: TMenuItem;
     QuickVectorMapSpeedButton: TSpeedButton;
@@ -534,6 +534,7 @@ type
     COPALOScomparetoreference1: TMenuItem;
     Pixelbypixelmapstatistics1: TMenuItem;
     COPALOShighlowgeomorphometry1: TMenuItem;
+    Metadata2: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -628,7 +629,7 @@ type
     procedure StatusBar1DblClick(Sender: TObject);
     procedure OpenDatabase1Click(Sender: TObject);
     procedure Openshapefilemap1Click(Sender: TObject);
-    procedure MrSidimagery1Click(Sender: TObject);
+    //procedure MrSidimagery1Click(Sender: TObject);
     procedure Geostatisticalanalysis1Click(Sender: TObject);
     procedure Computations1Click(Sender: TObject);
     procedure LandCoverSpeedButtonClick(Sender: TObject);
@@ -910,6 +911,7 @@ type
     procedure COPALOScomparetoreference1Click(Sender: TObject);
     procedure Pixelbypixelmapstatistics1Click(Sender: TObject);
     procedure COPALOShighlowgeomorphometry1Click(Sender: TObject);
+    procedure Metadata2Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1413,12 +1415,12 @@ end;
 
 procedure Twmdem.DEMIXmergeandtransposewithmeanmedian1Click(Sender: TObject);
 begin
-   MergeDEMIXCSV;  //(DEMIXSettingsDir + 'demix_criteria_with_signed.txt');
+   MergeDEMIXCSV;
 end;
 
 procedure Twmdem.DEMIXmergeCSVfiles1Click(Sender: TObject);
 begin
-   MergeDEMIXCSV; // (DEMIXSettingsDir + 'demix_criteria.txt');
+   MergeDEMIXCSV;
 end;
 
 procedure Twmdem.DEMIXreferenceDEMcreation1Click(Sender: TObject);
@@ -2268,7 +2270,7 @@ begin
       if (GetScreenColorDepth < 24) then MessageToContinue('Problems likely w/ < 24 bit color');
    end;
 
-   {$IfDef ExMrSIDSat} MrSidimagery1.Visible := false; {$EndIf}
+   //{$IfDef ExMrSIDSat} MrSidimagery1.Visible := false; {$EndIf}
 
    {$If Defined(TrackFormCreate)} MessageToContinue('FormCreate out'); {$EndIf}
    {$IfDef RecordFormResize} WriteLineToDebugFile('Twmdem.FormCreate out, width=' + IntToStr(Width) + '  & height=' + IntToStr(Height)); {$EndIf}
@@ -3094,15 +3096,6 @@ begin
    VectorMap[LastVectorMap].Globalmonthlywinds1Click(Sender);
    DisplayHTMLTopic('microdemtutorials/Phys_geography/wind_climate.htm');
    StopSplashing;
-end;
-
-
-procedure Twmdem.MrSidimagery1Click(Sender: TObject);
-begin
-   {$IfDef ExMrSID}
-   {$Else}
-      MrSidImagery.MrSidInfo(LastImageName);
-   {$EndIf}
 end;
 
 
@@ -4044,14 +4037,17 @@ end;
 procedure Twmdem.OpenDEMIXarea1Click(Sender: TObject);
 var
    FilesWanted : tStringList;
+   fName : PathStr;
    i : integer;
 begin
-   {$IfDef RecordOpenDataBase} WriteLineToDebugFile('OpenADataBase in,fName=' + fName); {$EndIf}
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('OpenDEMIXarea1Click in'); {$EndIf}
    FilesWanted := tStringList.Create;
    FilesWanted.Add(ExtractFilePath(LastDataBase));
    if GetMultipleFiles('DEMIX areas',DBMaskString,FilesWanted,MDdef.DefDBFilter) then begin
       for I := 0 to pred(FilesWanted.Count) do begin
-         OpenDEMIXArea(FilesWanted.Strings[i]);
+         fName := FilesWanted.Strings[i];
+         {$IfDef RecordDEMIX} WriteLineToDebugFile('OpenDEMIXarea1Click picked ' + fName); {$EndIf}
+         OpenDEMIXArea(fName);
          if (FilesWanted.Count > 1) then begin
             DEM_Manager.CloseAllWindowsAndData;
             CleanUpTempDirectory(false);
@@ -4059,6 +4055,7 @@ begin
       end;
       FilesWanted.Free;
    end;
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('OpenDEMIXarea1Click in'); {$EndIf}
 end;
 
 
@@ -4555,10 +4552,15 @@ end;
 procedure Twmdem.MetaData1Click(Sender: TObject);
 begin
    StopSplashing;
-   MrSidImagery1.Visible := MrSidEnabled;
+  // MrSidImagery1.Visible := MrSidEnabled;
    MetaDataPopupMenu.PopUp(Mouse.CursorPos.X,Mouse.CursorPos.Y);
 end;
 
+
+procedure Twmdem.Metadata2Click(Sender: TObject);
+begin
+   MetaData1Click(Sender);
+end;
 
 procedure Twmdem.GDALslopesarcsecondDEMs1Click(Sender: TObject);
 var

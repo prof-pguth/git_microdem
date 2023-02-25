@@ -655,7 +655,7 @@ var
    Hemi : ANSIchar;
    MenuStr : ShortString;
    DatCode : ShortString;
-   SPCSZone : shortstring;
+   //SPCSZone : shortstring;
    PName :  tProjectType;
    llCornerCoords,GeoLatLong : boolean;
 

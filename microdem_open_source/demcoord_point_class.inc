@@ -2,7 +2,7 @@
 { Part of ianMICRODEM GIS Program    }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
-{ Copyright (c) 2015 Peter L. Guth   }
+{ Copyright (c) 2023 Peter L. Guth   }
 {____________________________________}
 
 {include file for demcoord.pas}
@@ -79,8 +79,8 @@ begin
          if (z > zse + MDDef.MinDeltaZToClassify)then inc(Lower);
          if (z > zw + MDDef.MinDeltaZToClassify) then inc(Lower);
          if (z > ze + MDDef.MinDeltaZToClassify) then inc(Lower);
-         if Higher = 8 then Result := PitPoint
-         else if Lower = 8 then Result := PeakPoint
+         if (Higher = 8) then Result := PitPoint
+         else if (Lower = 8) then Result := PeakPoint
          else if (Higher = 0) and (Lower = 0) then Result := FlatPoint
          else if (Higher >= MDDef.ValleyRidgeThreshold) then Result := ValleyPoint
          else if (Lower >= MDDef.ValleyRidgeThreshold) then Result := RidgePoint
@@ -112,11 +112,11 @@ begin
       end;
    end
    else begin
-
       if MissingDataInGrid(Col,Row) then Result := MissingPoint
-      else   Result := EdgePoint;
+      else Result := EdgePoint;
    end;
 end;
+
 
 procedure tDEMDataSet.InitializeTerrainCategory(var TerrainCat : tTerrainCatDefinition);
 begin

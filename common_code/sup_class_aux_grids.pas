@@ -670,7 +670,7 @@ begin
        end;
 
 
-       LastMask := DEMGlb[ClassDEMs[1]].CloneAndOpenGrid(ByteDEM,'Mask',euIntCode);
+       LastMask := DEMGlb[ClassDEMs[1]].CloneAndOpenGridSetMissing(ByteDEM,'Mask',euIntCode);
 
        for n := 1 to MaxGeomorpFilters do Hist[n] := 0;
        {$IfDef SupClassAuxGrids} WriteLineToDebugFile('Mask setup over');{$EndIf}

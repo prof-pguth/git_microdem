@@ -173,8 +173,8 @@ begin
    {$IfDef RecordBasicsAccumPath} WritelineToDebugFile('Start buffer CreateCostPathSurface');   {$EndIf}
    StatusBar1.Panels[0].Text := 'Buffering';
    for I := 1 to MDDef.BufferRounds do begin
-      if MDDef.LCP_LeastCost then BufferDEM := DEMGlb[NewDEM].CloneAndOpenGrid(SmallIntDEM,'Buffered',Undefined);
-      if MDDef.LCP_ShortestDistance then Buffer2DEM := DEMGlb[NewDEM].CloneAndOpenGrid(SmallIntDEM,'Buffered',Undefined);
+      if MDDef.LCP_LeastCost then BufferDEM := DEMGlb[NewDEM].CloneAndOpenGridSetMissing(SmallIntDEM,'Buffered',Undefined);
+      if MDDef.LCP_ShortestDistance then Buffer2DEM := DEMGlb[NewDEM].CloneAndOpenGridSetMissing(SmallIntDEM,'Buffered',Undefined);
       StartProgress('Buffer cost surface');
       for x := 0 to pred(DEMGlb[NewDEM].DEMHeader.NumCol) do begin
          if (x mod 50 = 0) then UpDateProgressBar(x/DEMGlb[NewDEM].DEMHeader.NumCol);

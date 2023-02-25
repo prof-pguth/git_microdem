@@ -142,7 +142,6 @@ begin
 end;
 
 
-
 function tLAS_data.OldExportBinary(Layer : integer; var GeometryFName,ColorsFName : PathStr; ExportFilter : tLASClassificationCategory = lccAll) : boolean;
 //exports LAS point cloud to binary files for use in FMX viewer
 var
@@ -272,7 +271,7 @@ var
    Lat,Long,xutm,yutm : float64;
    Table : tMyData;
 begin
-  {$IfDef RecordLASexport} WriteLineToDebugFile('tLAS_data.ExportXYZ in'); {$EndIf}
+   {$IfDef RecordLASexport} WriteLineToDebugFile('tLAS_data.ExportXYZ in'); {$EndIf}
    StartProgress('LAS export to DB');
    NPts := 0;
    if LatLong then CreateLatLongTable(fName)

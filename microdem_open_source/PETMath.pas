@@ -6,7 +6,7 @@ unit PETMATH;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
 
@@ -1957,7 +1957,6 @@ begin
 end;
 
 
-
 procedure MomentReport(Variable : shortString; var data : Petmath.bfarray32; n : integer; Title : ShortString = ''; StringGrid : tStringGrid = nil; OnLine : integer = -99; OnCol : integer = -99);
 var
    MomentVar : tMomentVar;
@@ -1996,6 +1995,8 @@ finalization
    {$IfDef RecordMatrixOps} WriteLineToDebugFile('RecordMatrixOps active in petmath'); {$EndIf}
    {$IfDef RecordFitProblems} WriteLineToDebugFile('RecordFitProblems active in petmath'); {$EndIf}
 end {unit}.
+
+
 
 
 

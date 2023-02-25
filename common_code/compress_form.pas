@@ -671,23 +671,31 @@ begin
           j := 0;
           for i := 0 to pred(FilesWanted.Count) do begin
              fName := FilesWanted.Strings[i];
-             ResultingFName := ChangeFileExt(fName,NewExt);
-             if FileExists(ResultingFName) then begin
-                inc(j);
+             if CheckFileNameForSpaces(fName) then begin
+                Memo1.Lines.Add('File has spaces in full name and path: ' + fName);
              end
              else begin
-                cmd := LazName + ' ' + fName;
-                bfile.Add('REM ' + IntToStr(succ(i)) + '/' + IntToStr(FilesWanted.Count));
-                bfile.Add(cmd);
+                ResultingFName := ChangeFileExt(fName,NewExt);
+                if FileExists(ResultingFName) then begin
+                   inc(j);
+                end
+                else begin
+                   cmd := LazName + ' ' + fName;
+                   bfile.Add('REM ' + IntToStr(succ(i)) + '/' + IntToStr(FilesWanted.Count));
+                   bfile.Add(cmd);
+                end;
+                if DeleteFiles then bFile.Add('del ' + fName);
              end;
-             if DeleteFiles then bFile.Add('del ' + fName);
           end;
-          if j > 0 then Memo1.Lines.Add('Files skipped that already existed: ' + IntToStr(j));
+          if (j > 0) then Memo1.Lines.Add('Files skipped that already existed: ' + IntToStr(j));
           if (bfile.Count = 0) then Bfile.Destroy
-          else EndBatchFile(MDtempDir + 'laz_work_' + IntToStr(i) + '.bat',bfile,false);
-          {$IfDef RecordCompressionProblems} WriteLinetoDebugFile('Tpetcompressform.CompressLASretain1Click Done work'); {$EndIf}
+          else begin
+             EndBatchFile(MDtempDir + 'laz_work_' + IntToStr(i) + '.bat',bfile,false);
+             {$IfDef RecordCompressionProblems} WriteLinetoDebugFile('Tpetcompressform.CompressLASretain1Click Done work'); {$EndIf}
+             Memo1.Lines.Add('You can work while laszip works in the background');
+             Memo1.Lines.Add('laszip will be done with black command prompt window closes');
+          end;
        end;
-       Memo1.Lines.Add('You can work while laszip works in the background');
        FilesWanted.Free;
        ShowDefaultCursor;
    end

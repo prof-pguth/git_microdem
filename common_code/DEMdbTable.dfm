@@ -2,8 +2,8 @@ object dbtablef: Tdbtablef
   Left = 62
   Top = 306
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1020
-  ClientWidth = 1294
+  ClientHeight = 1019
+  ClientWidth = 1290
   Color = clBtnFace
   ParentFont = True
   FormStyle = fsMDIChild
@@ -17,24 +17,24 @@ object dbtablef: Tdbtablef
   TextHeight = 15
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 1001
-    Width = 1294
+    Top = 1000
+    Width = 1290
     Height = 19
     Panels = <
       item
         Width = 250
       end>
-    ExplicitTop = 1000
-    ExplicitWidth = 1290
+    ExplicitTop = 999
+    ExplicitWidth = 1286
   end
   object Panel2: TPanel
     Left = 0
     Top = 41
-    Width = 1294
+    Width = 1290
     Height = 32
     Align = alTop
     TabOrder = 1
-    ExplicitWidth = 1290
+    ExplicitWidth = 1286
     object BitBtn1: TBitBtn
       Left = 34
       Top = 1
@@ -215,11 +215,11 @@ object dbtablef: Tdbtablef
   object Panel3: TPanel
     Left = 0
     Top = 73
-    Width = 1294
+    Width = 1290
     Height = 41
     Align = alTop
     TabOrder = 2
-    ExplicitWidth = 1290
+    ExplicitWidth = 1286
     object Label2: TLabel
       Left = 12
       Top = 12
@@ -266,11 +266,11 @@ object dbtablef: Tdbtablef
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1294
+    Width = 1290
     Height = 41
     Align = alTop
     TabOrder = 4
-    ExplicitWidth = 1290
+    ExplicitWidth = 1286
     object LOSButton: TSpeedButton
       Left = 40
       Top = 6
@@ -529,11 +529,11 @@ object dbtablef: Tdbtablef
   object Panel7: TPanel
     Left = 0
     Top = 114
-    Width = 1294
+    Width = 1290
     Height = 41
     Align = alTop
     TabOrder = 3
-    ExplicitWidth = 1290
+    ExplicitWidth = 1286
     object RadioGroup2: TRadioGroup
       Left = 20
       Top = 0
@@ -554,8 +554,8 @@ object dbtablef: Tdbtablef
   object DBGrid1: TDBGrid
     Left = 0
     Top = 155
-    Width = 1294
-    Height = 846
+    Width = 1290
+    Height = 845
     Align = alClient
     TabOrder = 5
     TitleFont.Charset = DEFAULT_CHARSET
@@ -2256,13 +2256,9 @@ object dbtablef: Tdbtablef
         Caption = 'Load from map library'
         OnClick = Loadfrommaplibrary1Click
       end
-      object Loadsidescanimage1: TMenuItem
-        Caption = 'Load sidescan image'
-        OnClick = Loadsidescanimage1Click
-      end
-      object LoadTMscene1: TMenuItem
-        Caption = 'Load TM scene'
-        OnClick = LoadTMscene1Click
+      object LoadthisDEM1: TMenuItem
+        Caption = 'Load this DEM'
+        OnClick = LoadthisDEM1Click
       end
       object GDALsubsettomatchthisrecord1: TMenuItem
         Caption = 'GDAL subset to match this record'

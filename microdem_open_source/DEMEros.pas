@@ -282,7 +282,7 @@ var
 
 function ValidSatImage(i : integer) : boolean;
 
-procedure BandStats(NumPts : LongInt; Count : tDistFreq; var Avg,StdDev : float64);
+//procedure BandStats(NumPts : LongInt; Count : tDistFreq; var Avg,StdDev : float64);
 procedure InitializeSatView(var SatView : tSatView);
 
 function LandsatSceneMetadata(fName : PathStr; var LandsatNumber : byte; var MPath : PathStr) : tStringList;
@@ -1234,7 +1234,6 @@ end;
 procedure tSatImage.SetUpColors(MapDraw : tMapDraw; SatView : tSatView);
 var
    i,j : integer;
-  // MinR,MaxR : integer;
 
       procedure SetByteLookUpTable(SatView : tSatView; Band : integer;  var SetColorChoices : tColorIndex);
       var
@@ -1252,7 +1251,7 @@ var
                for i := MinUsed to MaxUsed do SetColorChoices[i] := round(255.0 * (i - MinUsed) / (MaxUsed - MinUsed));
             end;
          end
-         else if SatView.WindowContrast in [StraightLinearStretch,TailLinearStretch,CloudOnlyTailStretch] then begin
+         else if SatView.WindowContrast in [StraightLinearStretch,TailLinearStretch,CloudOnlyTailStretch,DefinedLinearStretch] then begin
             if SatView.WindowContrast in [TailLinearStretch,CloudOnlyTailStretch] then begin
                {ignore % fringe for low reflectances, not used for cloud only}
                if SatView.WindowContrast in [TailLinearStretch] then begin
@@ -1271,6 +1270,10 @@ var
                   inc(Tot,Distrib[band]^[MaxUsed]);
                   dec(MaxUsed);
                end;
+            end
+            else if SatView.WindowContrast in [DefinedLinearStretch] then begin
+               MinUsed := MDDef.MinSatRange;
+               MaxUsed := MDDef.MaxSatRange;
             end;
 
             if (MinUsed = MaxUsed) then begin
@@ -1898,9 +1901,7 @@ var
                         Table.Next;
                      end;
                     MaxRef[Band+BandOffset] := dn;
-                    {$If Defined(RecordKeyDraw) or Defined(RecordHistogram)}
-                       WriteLineToDebugFile('band=' + IntToStr(Band+BandOffset) + ' minref=' + IntToStr(MinRef[Band+BandOffset]) + '   maxref=' + IntToStr(MaxRef[Band+BandOffset]));
-                    {$EndIf}
+                    {$If Defined(RecordKeyDraw) or Defined(RecordHistogram)} WriteLineToDebugFile('band=' + IntToStr(Band+BandOffset) + ' minref=' + IntToStr(MinRef[Band+BandOffset]) + '   maxref=' + IntToStr(MaxRef[Band+BandOffset])); {$EndIf}
 
                     for x := MinRef[Band+BandOffset] to MaxRef[Band+BandOffset] do begin
                        Distrib[Band+BandOffset]^[x] := Hist[x];
@@ -1994,8 +1995,7 @@ begin
 
    BandNames.Destroy;
    BandNamesRead := true;
-   {$IfDef RecordTMSat} WriteLineToDebugFile('tSatImage.ReadBandData out, true color ' + RGBString(DefRedTrue,DefGreenTrue,DefBlueTrue) + ', false color ' + RGBString(DefRedFalse,DefGreenFalse,DefBlueFalse) +
-      ' NumBands=' + IntToStr(NumBands)); {$EndIf}
+   {$IfDef RecordTMSat} WriteLineToDebugFile('tSatImage.ReadBandData out, true color ' + RGBString(DefRedTrue,DefGreenTrue,DefBlueTrue) + ', false color ' + RGBString(DefRedFalse,DefGreenFalse,DefBlueFalse) + ' NumBands=' + IntToStr(NumBands)); {$EndIf}
 end;
 
 
@@ -2020,7 +2020,6 @@ var
    FName : PathStr;
    i     : integer;
    Bitmap : tMyBitmap;
-   //TStr : ShortString;
    LandCover : ShortString;
    ReadFailure : boolean;
 
@@ -2397,7 +2396,6 @@ var
                procedure OpenWorldView3(sName : shortstring);
                var
                   i,j : integer;
-                  //BaseName : PathStr;
                   fList : tStringList;
                   Flag,flag2 : shortstring;
                begin
@@ -2482,10 +2480,6 @@ var
                   end;
                end;
                MissingBands := OpenLandsat;
-               if (MissingBands > 0) {and (NumBands - MissingBands < 3)} then begin
-                  //LoadErrorMessage := SceneBaseName + ' Landsat bands missing: ' + IntToStr(MissingBands);
-                  //ReadFailure := true;
-               end;
             end
             else begin
                if IsThisSentinel2(IndexFileName) then OpenSentinel2
@@ -2799,20 +2793,6 @@ end;
 function tSatImage.BandRange(Band : integer) : shortstring;
 begin
    Result :=  'min=' + IntToStr(MinRef[band]) + '   max=' + IntToStr(MaxRef[band]);
-end;
-
-
-procedure BandStats(NumPts : LongInt; Count : tDistFreq; var Avg,StdDev : float64);
-var
-   Sumfj : extended;
-   i : LongInt;
-begin
-   Sumfj := 0;
-   for i := 0 to MaxRefCount do Sumfj := Sumfj + 1.0 * Count[i] * i;
-   Avg := Sumfj / NumPts;
-   StdDev := 0;
-   for i := 0 to MaxRefCount do StdDev := StdDev + (1.0 * Count[i] * sqr((i - Avg)));
-   StdDev := sqrt(StdDev / NumPts);
 end;
 
 

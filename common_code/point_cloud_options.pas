@@ -602,6 +602,56 @@ uses
 
 {$R *.dfm}
 
+
+
+procedure OvelayPointClouds(inBaseMap : tMapForm; DirOpen : PathStr = '');
+var
+   Paths : tStringList;
+   i : integer;
+   fName : PathStr;
+begin
+   {$If Defined(RecordLASfiles) or Defined(RecordLASopen) or Defined(TrackPointCloud)} WriteLineToDebugFile('OvelayPointCloud in'); {$EndIf}
+   MDDef.ShiftMercToUTM := true;
+   pt_cloud_opts_fm := Tpt_cloud_opts_fm.Create(Application);
+   pt_cloud_opts_fm.InitialCloudDisplay := true;
+   pt_cloud_opts_fm.BaseMap := InBaseMap;
+   if (inBaseMap <> Nil) then begin
+      {$If Defined(RecordLASfiles) or Defined(RecordLASopen)} WriteLineToDebugFile('OvelayPointCloud start map creationg'); {$EndIf}
+      inBaseMap.MapDraw.DrawLegendsThisMap := false;
+      pt_cloud_opts_fm.BaseMap.MapDraw.LasLayerOnMap := true;
+      pt_cloud_opts_fm.Caption := 'Point clouds on ' + InBaseMap.Caption;
+      InBaseMap.PointCloudBase := true;
+      pt_cloud_opts_fm.BitBtn56.Visible := (InBaseMap.MapDraw.DEMonMap <> 0);
+      pt_cloud_opts_fm.CanAutoZoom := false;
+   end
+   else pt_cloud_opts_fm.CanAutoZoom := true;
+   pt_cloud_opts_fm.Show;
+   if (DirOpen = '') then begin
+      Paths := tStringList.Create;
+      Paths.Add(LastLidarDirectory);
+      if MDDef.PickLASDirs and GetMultipleDirectories('Lidar point clouds',Paths) then begin
+         for i := 1 to Paths.Count do begin
+            if (i < MaxClouds) then begin
+               if (i>1) then pt_cloud_opts_fm.InitialCloudDisplay := false;
+               fName := Paths.Strings[pred(i)];
+               pt_cloud_opts_fm.GetFilesForPointCloud(i,fName,true);
+            end;
+         end;
+      end
+      else begin
+         pt_cloud_opts_fm.GetFilesForPointCloud(1,LastLidarDirectory);
+      end;
+      Paths.Destroy;
+   end
+   else pt_cloud_opts_fm.GetFilesForPointCloud(1,DirOpen,true);
+   pt_cloud_opts_fm.UpdateColorOptions;
+   pt_cloud_opts_fm.InitialCloudDisplay := true;
+   {$If Defined(RecordLASfiles) or Defined(RecordLASopen) or Defined(TrackPointCloud)} WriteLineToDebugFile('OvelayPointCloud out'); {$EndIf}
+end;
+
+
+
+
 procedure pt_cloud_opts_fm_Close;
 begin
    if (pt_cloud_opts_fm <> Nil) then pt_cloud_opts_fm.Close;
@@ -616,8 +666,6 @@ begin
    pt_cloud_opts_fm.HideForGridPick;
    pt_cloud_opts_fm.Caption := 'Set grid parameters';
    pt_cloud_opts_fm.ShowModal;
-   //pt_cloud_opts_fm.Destroy;
-   //pt_cloud_opts_fm_Close;
    {$IfDef RecordMakeGrid} WriteLineToDebugFile('GetGridParameters out'); {$EndIf}
 end;
 
@@ -1747,51 +1795,6 @@ end;
 procedure CloseOverlayPointClouds;
 begin
     pt_cloud_opts_fm := nil;
-end;
-
-
-procedure OvelayPointClouds(inBaseMap : tMapForm; DirOpen : PathStr = '');
-var
-   Paths : tStringList;
-   i : integer;
-   fName : PathStr;
-begin
-
-   {$If Defined(RecordLASfiles) or Defined(RecordLASopen) or Defined(TrackPointCloud)} WriteLineToDebugFile('OvelayPointCloud in'); {$EndIf}
-   MDDef.ShiftMercToUTM := true;
-   pt_cloud_opts_fm := Tpt_cloud_opts_fm.Create(Application);
-   pt_cloud_opts_fm.InitialCloudDisplay := true;
-   pt_cloud_opts_fm.BaseMap := InBaseMap;
-   if (inBaseMap <> Nil) then begin
-      {$If Defined(RecordLASfiles) or Defined(RecordLASopen)} WriteLineToDebugFile('OvelayPointCloud start map creationg'); {$EndIf}
-      inBaseMap.MapDraw.DrawLegendsThisMap := false;
-      pt_cloud_opts_fm.BaseMap.MapDraw.LasLayerOnMap := true;
-      pt_cloud_opts_fm.Caption := 'Point clouds on ' + InBaseMap.Caption;
-      InBaseMap.PointCloudBase := true;
-      pt_cloud_opts_fm.BitBtn56.Visible := (InBaseMap.MapDraw.DEMonMap <> 0);
-      pt_cloud_opts_fm.CanAutoZoom := false;
-   end
-   else pt_cloud_opts_fm.CanAutoZoom := true;
-   pt_cloud_opts_fm.Show;
-   if (DirOpen = '') then begin
-      Paths := tStringList.Create;
-      Paths.Add(LastLidarDirectory);
-      if MDDef.PickLASDirs and GetMultipleDirectories('Lidar point clouds',Paths) then begin
-         for i := 1 to Paths.Count do begin
-            if (i>1) then pt_cloud_opts_fm.InitialCloudDisplay := false;
-            fName := Paths.Strings[pred(i)];
-            pt_cloud_opts_fm.GetFilesForPointCloud(i,fName,true);
-         end;
-      end
-      else begin
-         pt_cloud_opts_fm.GetFilesForPointCloud(1,LastLidarDirectory);
-      end;
-      Paths.Destroy;
-   end
-   else pt_cloud_opts_fm.GetFilesForPointCloud(1,DirOpen,true);
-   pt_cloud_opts_fm.UpdateColorOptions;
-   pt_cloud_opts_fm.InitialCloudDisplay := true;
-   {$If Defined(RecordLASfiles) or Defined(RecordLASopen) or Defined(TrackPointCloud)} WriteLineToDebugFile('OvelayPointCloud out'); {$EndIf}
 end;
 
 
@@ -3075,10 +3078,19 @@ begin
          MDDef.DefaultUTMZone := LasFiles[CloudNum].UTMZone;
          MDDef.DefaultLatHemi := LasFiles[CloudNum].LatHemi;
          {$If Defined(RecordPointCloudOptionsForm) or Defined(RecordLASOpen)} WriteLineToDebugFile('GetFiles Create cloud basemap, UTM=' + IntToStr(MDDef.DefaultUTMZone) + MDDef.DefaultLatHemi); {$EndIf}
-         DEMBase := CreateNewGrid(LasFiles[CloudNum].CloudName + '_cloud',cgUTM,LasFiles[CloudNum].UTMBBox,FloatingPointDEM,5);
-         {$If Defined(RecordPointCloudOptionsForm)} WriteLineToDebugFile('GetFile CreateNewGrid out, map grid box:' + sfBoundBoxToString(DEMGlb[DEMBase].SelectionMap.MapDraw.MapCorners.BoundBoxDataGrid,2)); {$EndIf}
 
+         DEMBase := CreateNewGrid(LasFiles[CloudNum].CloudName + '_cloud',cgLatLong,LasFiles[CloudNum].GeoBBox,FloatingPointDEM,1/5000);
+         {$If Defined(RecordPointCloudOptionsForm)} WriteLineToDebugFile('GetFile CreateNewGrid out, map grid box:' + sfBoundBoxToString(DEMGlb[DEMBase].SelectionMap.MapDraw.MapCorners.BoundBoxDataGrid,2)); {$EndIf}
          BaseMap := DEMGlb[DemBase].SelectionMap;
+
+         //DEMBase := CreateNewGrid(LasFiles[CloudNum].CloudName + '_cloud',cgUTM,LasFiles[CloudNum].UTMBBox,FloatingPointDEM,5);
+         //{$If Defined(RecordPointCloudOptionsForm)} WriteLineToDebugFile('GetFile CreateNewGrid out, map grid box:' + sfBoundBoxToString(DEMGlb[DEMBase].SelectionMap.MapDraw.MapCorners.BoundBoxDataGrid,2)); {$EndIf}
+         //BaseMap := DEMGlb[DemBase].SelectionMap;
+
+         //LastVectorMap := SetUpVectorMap(true,false);
+         //BaseMap := VectorMap[LastVectorMap];
+         //BaseMap.SubsetAndZoomMapFromGeographicBounds(LasFiles[CloudNum].GeoBBox);
+
          BaseMap.MapDraw.DrawLegendsThisMap := false;
          BaseMap.MapDraw.LasLayerOnMap := true;
          BaseMap.Closable := true;
@@ -4068,24 +4080,25 @@ var
       procedure ExportCloud(Cloud : integer; var fName,ColorName : PathStr; BaseName : PathStr; ExportFilter : tLASClassificationCategory = lccAll);
       begin
          if (LasFiles[Cloud] <> Nil) and (LasFiles[Cloud].LAS_fnames.Count > 0) then begin
+            if AlreadyLoaded then exit;
+            FName := Petmar.NextFileNumber(MDTempDir, BaseName + '_','.xyzib');
+            OK := LasFiles[Cloud].ExportBinary(mlOnMask,BaseMap,Cloud,FName,ColorName,ExportFilter);
+            (*
             wmdem.SetPanelText(0,'Export=' + IntToStr(Cloud) + ' ' + BaseName);
             LasFiles[Cloud].ShowLASProgress := true;
             {$If Defined(RecordPointCloudViewing) or Defined(OGLexport)} WriteLineToDebugFile('call OpenGLLasPoints, Cloud=' + IntToStr(Cloud) + ' ' + BaseName); {$EndIf}
-            if AlreadyLoaded then begin
-            end
-            else begin
-               fName := '';
-               if LasFiles[Cloud].OpenGLLasPoints(fName,BaseMap,Nil) then begin
-                  {$If Defined(RecordPointCloudViewing) or Defined(OGLexport)} WriteLineToDebugFile('call Las_Lidar.tLAS_data.Create'); {$EndIf}
-                  LasData := Las_Lidar.tLAS_data.Create(FName);
-                  {$If Defined(RecordPointCloudViewing) or Defined(OGLexport)} WriteLineToDebugFile('call exportbinary'); {$EndIf}
-                  FName := Petmar.NextFileNumber(MDTempDir, BaseName + '_','.xyzib');
-                  if LasData.OldExportBinary(Cloud,FName,ColorName,ExportFilter) then OK := true
-                  else fName := '';
-                  if LASdestroy then LasData.Destroy;
-                  {$If Defined(RecordPointCloudViewing) or Defined(OGLexport)} WriteLineToDebugFile(' cloud=' + IntToStr(Cloud) + '  ' + fName); {$EndIf}
-               end;
+            fName := '';
+            if LasFiles[Cloud].OpenGLLasPoints(fName,BaseMap,Nil) then begin
+               {$If Defined(RecordPointCloudViewing) or Defined(OGLexport)} WriteLineToDebugFile('call Las_Lidar.tLAS_data.Create'); {$EndIf}
+               LasData := Las_Lidar.tLAS_data.Create(FName);
+               {$If Defined(RecordPointCloudViewing) or Defined(OGLexport)} WriteLineToDebugFile('call exportbinary'); {$EndIf}
+               FName := Petmar.NextFileNumber(MDTempDir, BaseName + '_','.xyzib');
+               if LasData.OldExportBinary(Cloud,FName,ColorName,ExportFilter) then OK := true
+               else fName := '';
+               if LASdestroy then LasData.Destroy;
+               {$If Defined(RecordPointCloudViewing) or Defined(OGLexport)} WriteLineToDebugFile(' cloud=' + IntToStr(Cloud) + '  ' + fName); {$EndIf}
             end;
+            *)
          end;
       end;
 
@@ -4100,12 +4113,12 @@ begin
    end;
    if (Sender = BitBtn20) or (Sender = BitBtn27) or (Sender = BitBtn8) then begin
       ExportDone := false;
-      ViewMultiple := (Sender = BitBtn27) or (Sender = BitBtn8) ;
+      ViewMultiple := (Sender = BitBtn27) or (Sender = BitBtn8);
 
       for Cloud := 1 to MaxClouds do begin
          if UsePC[Cloud] and (LasFiles[Cloud] <> Nil) then begin
            if (Sender = BitBtn8) then begin
-              ExportCloud(Cloud,fName[Cloud],ColorsFName[Cloud],LasFiles[Cloud].CloudName );
+              ExportCloud(Cloud,fName[Cloud],ColorsFName[Cloud],LasFiles[Cloud].CloudName);
            end
            else begin
                LASdestroy := false;
@@ -4120,7 +4133,6 @@ begin
                      MDdef.ls.ColorCoding := lasccRGB;
                      ExportCloud(Cloud,fName[4],ColorsFName[4],'RGB');
                   end;
-                  //ViewMultiple := false;
                end;
                if (Sender = BitBtn27) then begin
                   MDdef.ls.ColorCoding := lasccClass;
@@ -4129,10 +4141,8 @@ begin
                   ExportCloud(1,fName[3],ColorsFName[3],'Buildings',lccBuilding);
                   ExportCloud(1,fName[4],ColorsFName[4],'Water',lccWater);
                   ExportCloud(1,fName[5],ColorsFName[5],'Unclassified',lccUnclass);
-                  //ViewMultiple := true;
                end;
                ExportDone := true;
-               LasData.Destroy;
            end;
          end;
       end;

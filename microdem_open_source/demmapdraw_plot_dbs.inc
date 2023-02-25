@@ -156,7 +156,7 @@ begin
 
         {$IfDef ExSidescan}
         {$Else}
-            if SideScanIndex then PlotSideScanCoverage(Bitmap);
+           // if SideScanIndex then PlotSideScanCoverage(Bitmap);
         {$EndIf}
       end;
       ShowStatus;

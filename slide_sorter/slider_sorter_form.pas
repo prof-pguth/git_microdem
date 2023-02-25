@@ -81,6 +81,8 @@ type
     MenuItem12: TMenuItem;
     MenuItem13: TMenuItem;
     MenuItem14: TMenuItem;
+    MenuItem15: TMenuItem;
+    MenuItem16: TMenuItem;
     procedure FormResize(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure Button7Click(Sender: TObject);
@@ -125,6 +127,7 @@ type
     procedure ImageViewer3DblClick(Sender: TObject);
     procedure ImageViewer4DblClick(Sender: TObject);
     procedure MenuItem14Click(Sender: TObject);
+    procedure MenuItem15Click(Sender: TObject);
   private
     { Private declarations }
     LastMouseX,LastMouseY,
@@ -622,6 +625,19 @@ end;
 procedure TSlideSorterForm.MenuItem14Click(Sender: TObject);
 begin
    OpenZoom := not OpenZoom;
+end;
+
+procedure TSlideSorterForm.MenuItem15Click(Sender: TObject);
+begin
+   MDDef.PictureMode := pmThreeBig;
+   FormResize(Nil);
+   OnSlide := -1;
+   repeat
+      inc(OnSlide);
+      LoadPictures;
+      Delay(250);
+   until Onslide =  FileNames.Count - 2;
+
 end;
 
 procedure TSlideSorterForm.MenuItem1Click(Sender: TObject);

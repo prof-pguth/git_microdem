@@ -230,16 +230,16 @@ end;
 procedure MakeGMTfile(fName : PathStr; GMTfile : boolean);
 begin
    CreateDataBase := tCreateDataBase.Create(fName);
-   with CreateDataBase do begin
+   //with CreateDataBase do begin
       if GMTfile then begin
-         AddAField('F_TYPE',ftString,9,0);
-         AddAField('F_NAME',ftString,48,0);
+         CreateDataBase.AddAField('F_TYPE',ftString,9,0);
+         CreateDataBase.AddAField('F_NAME',ftString,48,0);
       end
       else begin
-         AddAField('NAME',ftString,48,0);
+         CreateDataBase.AddAField('NAME',ftString,48,0);
       end;
-      WriteCorrectHeader;
-   end;
+      CreateDataBase.WriteCorrectHeader;
+   //end;
 end;
 
 

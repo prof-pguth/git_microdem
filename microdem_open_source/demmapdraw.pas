@@ -26,7 +26,7 @@
    //{$Define RecordKeyMap}         //don't use if there will be a lot of map drawing
 
    {$IfDef Debug}
-      //{$Define RecordFan}
+      {$Define RecordFan}
       //{$Define RecordVAT}
       //{$Define FanDrawProblems)
       //{$Define WorldFileOverlay}

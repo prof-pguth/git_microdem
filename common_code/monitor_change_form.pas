@@ -44,6 +44,7 @@ type
     Edit4: TEdit;
     Edit5: TEdit;
     Label7: TLabel;
+    BitBtn1: TBitBtn;
     procedure OKBtnClick(Sender: TObject);
     procedure Edit1Change(Sender: TObject);
     procedure RedrawSpeedButton12Click(Sender: TObject);
@@ -51,6 +52,8 @@ type
     procedure Edit5Change(Sender: TObject);
     procedure Edit2Change(Sender: TObject);
     procedure Edit3Change(Sender: TObject);
+    procedure HelpBtnClick(Sender: TObject);
+    procedure BitBtn1Click(Sender: TObject);
   private
     { Private declarations }
      procedure Captions;
@@ -69,7 +72,7 @@ implementation
 
 
 uses
-   Nevadia_Main,
+   Nevadia_Main, Make_grid,
    Petmar,PETMar_types,DEMDefs,DEMCoord;
 
 
@@ -124,10 +127,24 @@ begin
    Changed := true;
 end;
 
+procedure TChangeMapForm.HelpBtnClick(Sender: TObject);
+begin
+    DisplayHTMLTopic('html\change_map_display.html');
+end;
+
+
 procedure TChangeMapForm.OKBtnClick(Sender: TObject);
 begin
    if Changed then RedrawSpeedButton12Click(Sender);
    close;
+end;
+
+procedure TChangeMapForm.BitBtn1Click(Sender: TObject);
+var
+   fName : PathStr;
+begin
+   fName := 'temp.dem';
+   DifferenceCategoryMap(MapOwner.MapDraw.DEMonMap, fName);
 end;
 
 procedure TChangeMapForm.Captions;

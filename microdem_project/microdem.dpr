@@ -1,11 +1,13 @@
 ﻿program microdem;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{_________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of ianMICRODEM GIS Program    }
+{ PETMAR Trilobite Breeding Ranch    }
+{ Released under the MIT Licences    }
+{ Copyright (c) 2023 Peter L. Guth   }
+{____________________________________}
 
-{$I nevadia_defines.inc}     
+{$I nevadia_defines.inc}
 
 uses
   Forms,
@@ -337,7 +339,8 @@ uses
   {$EndIf }
   demix_filter in '..\common_code\demix_filter.pas' {DemixFilterForm},
   demix_control in '..\demix\demix_control.pas',
-  monitor_change_form in '..\common_code\monitor_change_form.pas' {ChangeMapForm};
+  monitor_change_form in '..\common_code\monitor_change_form.pas' {ChangeMapForm},
+  pick_several_dems in '..\common_code\pick_several_dems.pas' {tPickGridsForm};
 
 {$R *.RES}
 
@@ -362,7 +365,7 @@ begin
          Application.Title := '';
          Application.HelpFile := 'microdem.chm';
          Application.CreateForm(Twmdem, wmdem);
-         Application.Run;
+  Application.Run;
       end;
     finally
        CloseHandle(FMutex);

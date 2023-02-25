@@ -4,7 +4,7 @@
 { Part of ianMICRODEM GIS Program    }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
-{ Copyright (c) 2022 Peter L. Guth   }
+{ Copyright (c) 2023 Peter L. Guth   }
 {____________________________________}
 
 {$I nevadia_defines.inc}
@@ -168,6 +168,7 @@ type
 {$IfDef ExPointCloud}
 {$Else}
    type
+      tLASClassificationCategory = (lccUnclass,lccGround,lccVeg,lccBuilding,lccOther,lccWater,lccAll);
       tLasColorCoding = (lasccClass,lasccIntensity,lasccElevation,lasccReturnNumber,lasccReturnsPulse,lasccScanAngle,lasccGPSTime,lasccRGB,lasccPointSourceID,lasccUserData,lasccCloudID);
       tLidarDataSettings = packed record
        DiscardLowPointsNoise,
@@ -278,7 +279,6 @@ type
    tVATColors = array[MinVATValue..MaxVatCats] of TRGBTriple;
    tXYZImport = (xyzUTM,xyzRect,xyzLatLong,xyzLongLat,xyzDDMMSSS);
    tElevStretch = (esNone,esPercentile,esSD);
-   //tSPCSUnits = (spcsMeters,spcsIntFeet,spcsUSFeet);
    tStraightAlgorithm = (saDEMGrid,saUTM,saLatLong,saVincenty,saSmart);
    tHoleFill = (hfSeaLevel,hfOnlyHole,hfEverything,hfOnlyValid);
    tDTMoption = byte;
@@ -1325,6 +1325,7 @@ const
    LayerName : array[tOverlayOrder] of ShortString = ('Unused','Tiger','Gazetteer','Contours','Grids','PLSS','Databases','SRTMWater',
        'CartoDB','Fans','ContoursDEM2','WorldOutlines','USOutlines','Tissot indicatrices','Second DEM/grid','Vectors','OSM');
 const
+   FirstSlopeMethod = 0;
    smEightNeighborsUnweighted = 0;
    smEightNeighborsWeighted = 1;
    smEightNeighborsWeightedByDistance = 2;
@@ -1336,9 +1337,8 @@ const
    smSteepestNeighbor = 8;
    smAverageNeighbor = 9;
    smMaxDownHillSlope = 10;
+   LastSlopeMethod = 10;
 const
-    FirstSlopeMethod = smEightNeighborsUnweighted;
-    LastSlopeMethod = smMaxDownHillSlope;
     tixUTM = 0;
     tixLatLong = 1;
     tixBoth = 2;
@@ -1350,7 +1350,7 @@ type
    tAutoOpen     = (aoNothing,aoProject,aoDEM,aoImage,aoHyper,aoMultigrid,aoLastPointCloud,aoShapeFile,aoVector,aoLastLidarMulti);
    tBeachBallMap = (bbmColor,bbmFocal,bbmSwitch);
    tCheckPoint = (CheckNothing,CheckReasonable,CheckAll);
-   tContrastEnhancement = (NoEnhancement,HistogramEqualization,StraightLinearStretch,TailLinearStretch,CloudOnlyTailStretch,MaskRange,Custom);
+   tContrastEnhancement = (NoEnhancement,HistogramEqualization,StraightLinearStretch,TailLinearStretch,CloudOnlyTailStretch,DefinedLinearStretch,MaskRange);   //,Custom);    2/16/23 removed, not used
    tMovieFormat = (mfBMP,mfJPEG,mfGeoTiff,mfBMPworld,mfJPEGworld);
    tStereoMode = (smNone,smAnaglyph,smPair);
    tDigitizeMode = (dmStream,dmPoint);
@@ -1906,6 +1906,7 @@ type
       DEMIX_DoRuffDiff,
       DEMIX_DoElevParamGraphs,
       DEMIX_DoHalfSecDEMs : boolean;
+      DEMIXSimpleTolerance : float32;
 
       HistElevBinSize,
       HistSlopeBinSize,
@@ -2192,7 +2193,7 @@ type
        GemorphAtlasFilterSize,
        GemorphAtlasMatchNeed : int16;
        MaxSatRange,
-       MinSatRange  : byte;
+       MinSatRange  : word;
        ShowEnhancementGraphs : boolean;
        AzToSat,
        ElevToSat : float32;
@@ -2706,7 +2707,6 @@ type
        FigureCoverageOfRoads : boolean;
        RangeCircleUnit   : tRangeCircleUnit;
        AvoidTextOverprints : boolean;
-       //spcsSurveyUnits : tSPCSUnits;
        AssumeMinus32767Missing,
        AssumeMinus99Missing,
        AssumeMinus999Missing,
@@ -2821,7 +2821,7 @@ type
 var
    MDdef            : tDefaultRecord;
    BackupMDDef      : ^tDefaultRecord;
-   MrSidEnabled       : boolean;
+   //MrSidEnabled       : boolean;
    LineColors10 : array[0..10] of tPlatformColor;
 
    {$IfDef VCL}
@@ -3039,8 +3039,8 @@ var
       MapLibDir,
       GADMDir,
       mcc_lidarFName,
-      MrSIDDecodeName,
-      MrSidInfoName,
+      //MrSIDDecodeName,
+      //MrSidInfoName,
 
       PreferFilter,
       VasaProjectFName,

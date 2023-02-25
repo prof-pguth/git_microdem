@@ -6,7 +6,7 @@ unit petmar_db;
 { Part of ianMICRODEM GIS Program    }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
-{ Copyright (c) 2022 Peter L. Guth   }
+{ Copyright (c) 2023 Peter L. Guth   }
 {____________________________________}
 
 
@@ -1703,19 +1703,20 @@ begin
          BlockRead(f, DBaseIIITableFileHeader, SizeOf(tDBaseIIITableFileHeader));
          NumFields := (DBaseIIITableFileHeader.BytesInHeader-33) div 32;
          for i := 0 to pred(NumFields) do begin
-           BlockRead(f, TableFieldDescriptor, SizeOf(tTableFieldDescriptor));
-           theName := '';
-           for j := 0 to 10 do begin
-              if (TableFieldDescriptor.FieldName[j] = #0) then break
-              else theName := theName +  TableFieldDescriptor.FieldName[j];
-           end;
+            BlockRead(f, TableFieldDescriptor, SizeOf(tTableFieldDescriptor));
+            theName := '';
+            for j := 0 to 10 do begin
+               if (TableFieldDescriptor.FieldName[j] = #0) then break
+               else theName := theName + TableFieldDescriptor.FieldName[j];
+            end;
 
-           if (theName = fName) then begin
-              Result := pred(TableFieldDescriptor.FieldDecimalCount - TableFieldDescriptor.FieldDecimalCount);
-              Break;
-           end;
-        end;
-        CloseFile(f);
+            if (theName = fName) then begin
+               //Result := pred(TableFieldDescriptor.FieldDecimalCount - TableFieldDescriptor.FieldDecimalCount);
+               Result := TableFieldDescriptor.FieldDecimalCount;
+               Break;
+            end;
+         end;
+         CloseFile(f);
       end;
    {$EndIf}
 end;
@@ -1728,18 +1729,18 @@ var
    TableFieldDescriptor : tTableFieldDescriptor;
    i2 : integer;
 begin
-    Result := 0;
+   Result := 0;
    {$IfDef BDELikeTables}
-   if (TheBDEdata <> Nil)  or DBFmovedToRAM then begin
-      assignFile(f,FullTableName);
-      reset(f,1);
-      BlockRead(f, DBaseIIITableFileHeader, SizeOf(tDBaseIIITableFileHeader));
-      for i2 := 0 to i do begin
-        BlockRead(f, TableFieldDescriptor, SizeOf(tTableFieldDescriptor));
+      if (TheBDEdata <> Nil) or DBFmovedToRAM then begin
+         assignFile(f,FullTableName);
+         reset(f,1);
+         BlockRead(f, DBaseIIITableFileHeader, SizeOf(tDBaseIIITableFileHeader));
+         for i2 := 0 to i do begin
+            BlockRead(f, TableFieldDescriptor, SizeOf(tTableFieldDescriptor));
+         end;
+         Result := TableFieldDescriptor.FieldDecimalCount;
+         CloseFile(f);
       end;
-      Result := TableFieldDescriptor.FieldDecimalCount;
-     CloseFile(f);
-   end;
    {$EndIf}
 end;
 
@@ -2653,6 +2654,8 @@ finalization
    {$IfDef RecordSQLite} WriteLineToDebugFile('RecordSQLite active in petmar_db'); {$EndIf}
    {$IfDef TrackCDStiming} WriteLineToDebugFile('TrackCDStiming active in petmar_db'); {$EndIf}
 end.
+
+
 
 
 

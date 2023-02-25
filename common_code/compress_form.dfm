@@ -30,6 +30,8 @@ object petcompressform: Tpetcompressform
     ParentFont = False
     ScrollBars = ssVertical
     TabOrder = 0
+    ExplicitWidth = 848
+    ExplicitHeight = 343
   end
   object StatusBar1: TStatusBar
     Left = 0
@@ -43,6 +45,8 @@ object petcompressform: Tpetcompressform
       item
         Width = 250
       end>
+    ExplicitTop = 343
+    ExplicitWidth = 848
   end
   object MainMenu1: TMainMenu
     Left = 24
@@ -145,7 +149,7 @@ object petcompressform: Tpetcompressform
           OnClick = UncompressLAZPurge1Click
         end
         object FilesinallsubdirectoriespurgeLAZ1: TMenuItem
-          Caption = 'Files in all subdirectories, purge LAZ'
+          Caption = 'Files in all subdirectories, recycle LAZ'
           OnClick = FilesinallsubdirectoriespurgeLAZ1Click
         end
       end

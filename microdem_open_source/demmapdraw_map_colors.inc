@@ -956,7 +956,7 @@ begin
      end
      else Result := MDdef.MissingDataColor;
      exit;
-  end
+   end
    else begin
       if DEMGlb[DEMonMap].GetElevMeters(x,Y,zj) then begin
          Result := MaskColor;

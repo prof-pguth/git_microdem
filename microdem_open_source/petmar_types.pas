@@ -1075,6 +1075,7 @@ end;
    procedure VCLinit;
    begin
       clNearWhite := RGB(254,254,254);
+
       claCyan := ConvertTColorToPlatFormColor(RGB(0,255,255));
       claRed := ConvertTColorToPlatFormColor(clRed);
       claWhite := ConvertTColorToPlatFormColor(clWhite);

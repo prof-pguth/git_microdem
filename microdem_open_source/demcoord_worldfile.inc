@@ -178,8 +178,7 @@ var
    xrot,yrot : float64;
    tFile : textFile;
    HaveToAsk,GeoLatLong : boolean;
-   TStr{,SPCSZone} : shortstring;
-   //SPCSUnits : tSPCSUnits;
+   TStr : shortstring;
    PName :    tProjectType;
    vmProjection : tMapProjection;
    fName3,fName2,fName, DatumFName : PathStr;
@@ -306,11 +305,8 @@ begin
              end;
 
              if HaveToAsk or MDDef.VerifyAllWorldFiles then begin
-                {$IfDef ExSPCS}
-                {$Else}
-                   {$IfDef RecordWorldFile} WriteLineToDebugFile('Have to ask'); {$EndIf}
-                   GetMapParametersSPCSOption(fName,LatHemi,projUtmZone,h_DatumCode,PName,GeoLatLong,false,TStr);
-                {$EndIf}
+                 {$IfDef RecordWorldFile} WriteLineToDebugFile('Have to ask'); {$EndIf}
+                 GetMapParametersSPCSOption(fName,LatHemi,projUtmZone,h_DatumCode,PName,GeoLatLong,false,TStr);
              end;
 
              DatumFile := TStringList.Create;

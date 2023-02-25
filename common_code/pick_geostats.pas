@@ -546,7 +546,7 @@ begin
    SlopeCompareOptions := TSlopeCompareOptions.Create(Application);
    with SlopeCompareOptions do begin
      SlopeCompareOptions.ShowModal;
-     DeltaSlope := DEMGlb[CurDEM].CloneAndOpenGrid(FloatingPointDEM,DEMGlb[CurDEM].AreaName + ' Slope Algorithm Difference',PercentSlope);
+     DeltaSlope := DEMGlb[CurDEM].CloneAndOpenGridSetMissing(FloatingPointDEM,DEMGlb[CurDEM].AreaName + ' Slope Algorithm Difference',PercentSlope);
 
      StartProgress('Differences');
      for Col := 0 to pred(DEMGlb[1].DEMheader.NumCol) do begin

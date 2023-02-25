@@ -4,8 +4,8 @@ object PickDatumParams: TPickDatumParams
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Pick Projection Parameters'
-  ClientHeight = 226
-  ClientWidth = 299
+  ClientHeight = 241
+  ClientWidth = 295
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -93,8 +93,8 @@ object PickDatumParams: TPickDatumParams
     OnClick = BitBtn3Click
   end
   object OKBtn: TBitBtn
-    Left = 22
-    Top = 200
+    Left = 94
+    Top = 192
     Width = 77
     Height = 27
     Caption = 'OK'
@@ -124,26 +124,13 @@ object PickDatumParams: TPickDatumParams
     OnClick = OKBtnClick
     IsControl = True
   end
-  object HelpBtn: TBitBtn
-    Left = 128
-    Top = 200
-    Width = 77
-    Height = 27
-    Kind = bkHelp
-    Margin = 2
-    NumGlyphs = 2
-    Spacing = -1
-    TabOrder = 6
-    OnClick = HelpBtnClick
-    IsControl = True
-  end
   object Button2: TButton
     Left = 208
     Top = 96
     Width = 75
     Height = 25
     Caption = 'Geo (lat/long)'
-    TabOrder = 7
+    TabOrder = 6
     OnClick = Button2Click
   end
   object CheckBox2: TCheckBox
@@ -152,7 +139,7 @@ object PickDatumParams: TPickDatumParams
     Width = 59
     Height = 17
     Caption = 'Default'
-    TabOrder = 8
+    TabOrder = 7
     OnClick = CheckBox2Click
   end
 end

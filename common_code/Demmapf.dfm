@@ -2,8 +2,8 @@ object MapForm: TMapForm
   Left = 45
   Top = 303
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1073
-  ClientWidth = 1783
+  ClientHeight = 1041
+  ClientWidth = 1779
   Color = clBtnHighlight
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -40,8 +40,8 @@ object MapForm: TMapForm
   object ScrollBox1: TScrollBox
     Left = 0
     Top = 27
-    Width = 1783
-    Height = 1046
+    Width = 1779
+    Height = 1014
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clRed
@@ -51,8 +51,6 @@ object MapForm: TMapForm
     ParentFont = False
     TabOrder = 0
     OnClick = ScrollBox1Click
-    ExplicitWidth = 1779
-    ExplicitHeight = 1045
     object Image1: TImage
       Left = 3
       Top = -247
@@ -209,12 +207,12 @@ object MapForm: TMapForm
     end
     object BlendPanel: TPanel
       Left = 0
-      Top = 1001
+      Top = 970
       Width = 1779
       Height = 41
       Align = alBottom
       TabOrder = 8
-      ExplicitTop = 1000
+      ExplicitTop = 969
       ExplicitWidth = 1775
       object TrackBar2: TTrackBar
         Left = 289
@@ -334,12 +332,11 @@ object MapForm: TMapForm
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1783
+    Width = 1779
     Height = 27
     Align = alTop
     TabOrder = 1
     OnMouseDown = Panel1MouseDown
-    ExplicitWidth = 1779
     object AnnotateSpeedButton1: TSpeedButton
       Left = 31
       Top = -4
@@ -2580,7 +2577,7 @@ object MapForm: TMapForm
         end
       end
       object Setzunits1: TMenuItem
-        Caption = 'Set z units'
+        Caption = 'Set z units and save grid'
         GroupIndex = 1
         object Undefined1: TMenuItem
           Caption = 'Undefined'
@@ -3610,7 +3607,6 @@ object MapForm: TMapForm
         end
         object USSPCS1: TMenuItem
           Caption = 'US SPCS'
-          OnClick = USSPCS1Click
         end
         object DEMIX10ktiles1: TMenuItem
           Caption = 'DEMIX 10k tiles'
@@ -3675,7 +3671,14 @@ object MapForm: TMapForm
       GroupIndex = 1
       object Histogram2: TMenuItem
         Caption = 'DEM/grid Histogram '
-        OnClick = Histogram2Click
+        object Entiregrid1: TMenuItem
+          Caption = 'Entire grid'
+          OnClick = Entiregrid1Click
+        end
+        object CurrentMapArea2: TMenuItem
+          Caption = 'Current Map Area'
+          OnClick = CurrentMapArea2Click
+        end
       end
       object Elevationpercentiles1: TMenuItem
         Caption = 'Elevation percentiles'
@@ -4209,6 +4212,18 @@ object MapForm: TMapForm
           Caption = 'Best global DEM'
           OnClick = BestglobalDEM1Click
         end
+        object COPALOSbestlocations1: TMenuItem
+          Caption = 'COP/ALOS best locations'
+          OnClick = COPALOSbestlocations1Click
+        end
+        object COPALOScategories1: TMenuItem
+          Caption = 'COP/ALOS 4 categories'
+          OnClick = COPALOScategories1Click
+        end
+        object COPALOS9categories1: TMenuItem
+          Caption = 'COP/ALOS 9 categories'
+          OnClick = COPALOS9categories1Click
+        end
       end
     end
     object Imageanalysis1: TMenuItem
@@ -4719,7 +4734,7 @@ object MapForm: TMapForm
       OnClick = Reflectance3Click
     end
     object Differencemap1: TMenuItem
-      Caption = 'Difference map'
+      Caption = 'Difference/change map'
       OnClick = Differencemap1Click
     end
     object Openness1: TMenuItem
@@ -5849,6 +5864,13 @@ object MapForm: TMapForm
       object EWcomponent1: TMenuItem
         Caption = 'EW component'
         OnClick = EWcomponent1Click
+      end
+      object N53: TMenuItem
+        Caption = '-'
+      end
+      object AspectDifference1: TMenuItem
+        Caption = 'Aspect difference'
+        OnClick = AspectDifference1Click
       end
     end
     object Curvature1: TMenuItem

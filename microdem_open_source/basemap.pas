@@ -4,7 +4,7 @@ unit basemap;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
 
@@ -23,6 +23,7 @@ unit basemap;
       //{$Define Track_f}
       //{$Define RawProject}
       //{$Define ProjectionInfoAllowed}
+
       //{$Define RecordTMParameters}
       //{$Define RecordFalse}
       //{$Define LongCent}
@@ -35,7 +36,7 @@ unit basemap;
       //{$Define RecordMapRoamProblems}
       //{$Define RecordPickDatum}
       //{$Define RecordWGS84Projection}
-      //{$Define RecordWKT}
+      {$Define RecordWKT}
       //{$Define RecordWKTFull}
       //{$Define RecordProjection}
       //{$Define RecordM}
@@ -127,6 +128,7 @@ type
          ProjectionGeoBox : sfBoundBox;
          GeoKeys : tGeoKeys;
          ModelType : SmallInt;
+         VertFootFactor,
          MultFactorForFeet : float64;
          ProjLinearUnitsGeoKey,
          VerticalUnitsGeoKey,
@@ -136,7 +138,7 @@ type
 
          wktString : ANSIstring;
          ThisIsUTMFile,
-         VertFeet,
+         //VertFeet,
          FullWorld : boolean;
 
        //datum definitions
@@ -605,7 +607,7 @@ begin
           end
           else if (tCode = 269) or (tCode = 321) then begin  //US state plane, NAD83
              H_DatumCode := 'NAD83';
-             MessageToContinue('SPCS not supported');
+             {$IfDef RecordProblems} HighlightLineToDebugFile('SPCS only supported with WKT'); {$EndIf}  //Message, since there might also be good WKT in the file
           end
           else begin
              {$IfDef RecordOpenFromTiff3072} WriteLineToDebugFile('OpenFromTiff3072 Unhandled Code ' + IntToStr(FIPS_Zone)); {$EndIf}
@@ -613,7 +615,6 @@ begin
       end;
       Result := GetProjectionName;
       if projUTMZone = -99 then ProjUTMzone := 0;
-
    end;
    {$If Defined(RecordGeotiffCodes) or Defined(RecordOpenFromTiff3072) or Defined(RecordProjection)} WriteLineToDebugFile('tMapProjection.RecordOpenFromTiff3072 out, Projection=' + Result); {$EndIf}
    {$If Defined(LongCent)} WriteLineToDebugFile('tMapProjection.RecordOpenFromTiff3072 Out,  LongCent: ' + RadToDegString(Long0)); {$EndIf}
@@ -712,7 +713,6 @@ var
           te : ANSIChar;
           i : integer;
        begin
-          {$IfDef RecordWKTFull} WriteLineToDebugFile('Check for ' + ParamName); {$EndIf}
           ParamName := UpperCase(ParamName);
           if StrUtils.AnsiContainsText(UpperCase(pjString),UpperCase(ParamName)) then begin
               PrepPJstring(pjString,ParamName,Skip);
@@ -727,6 +727,7 @@ var
               Result := StrToFloat(Petmar_types.BeforeSpecifiedCharacterANSI(pjString,te,true,true));
           end
           else Result := NaN;
+          {$IfDef RecordWKTFull} WriteLineToDebugFile('Check for ' + ParamName + '=' + FloatToStr(Result)); {$EndIf}
        end;
 
 
@@ -745,7 +746,6 @@ var
 
        function TryDatum(Name : shortstring) : boolean;
        begin
-          //Name := UpperCase(Name);
           Result := StrUtils.AnsiContainsText(TheProjectionString,Name);
           if Result then begin
              h_DatumCode := StringFromParameter(TheProjectionString,Name,0,',');
@@ -754,10 +754,8 @@ var
 
        function TrySpheroid(Name : shortstring) : boolean;
        begin
-          //Name := UpperCase(Name);
           Result := StrUtils.AnsiContainsText(TheProjectionString,Name);
           if Result then begin
-             //h_DatumCode := StringFromParameter(TheProjectionString,Name,0,',');
              a := FloatFromParameter(TheProjectionString,Name,1,',');
              h_f := FloatFromParameter(TheProjectionString,Name,2,']');
              e2 := 2 * 1 / h_f- sqr(1 / h_f);
@@ -769,8 +767,24 @@ var
           Result := StrUtils.AnsiContainsText(TheProjectionString,UpperCase(Name));
        end;
 
+
+(*
+WKTProjectionFromString: COMPD_CS["NAD83(2011) / Illinois East (ftUS) + NAVD88 height - Geoid12B (ftUS)",PROJCS["NAD83(2011) / Illinois East (ftUS)",GEOGCS["NAD83(2011)",DATUM["NAD83_National_Spatial_Reference_System_2011",
+   SPHEROID["GRS 1980",6378137,298.257222101,AUTHORITY["EPSG","7019"]],AUTHORITY["EPSG","1116"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","6318"]],
+
+
+PROJECTION["Transverse_Mercator"],PARAMETER["latitude_of_origin",36.66666666666666],PARAMETER["central_meridian",-88.33333333333333],PARAMETER["scale_factor",0.999975],PARAMETER["false_easting",984250.0000000002],
+   PARAMETER["false_northing",0],UNIT["US survey foot",0.3048006096012192,AUTHORITY["EPSG","9003"]],AXIS["X",EAST],AXIS["Y",NORTH],AUTHORITY["EPSG","6455"]],
+
+
+VERT_CS["NAVD88 height - Geoid12B (ftUS)",VERT_DATUM["North American Vertical Datum 1988",2005,AUTHORITY["EPSG","5103"]],UNIT["US survey foot",0.3048006096012192,AUTHORITY["EPSG","9003"]],AXIS["Gravity-related height",UP],AUTHORITY["EPSG","6360"]]]
+*)
+
+var
+   HorizWKT,VertWKT : ANSIstring;
+   i : integer;
 begin
-   {$IfDef RecordWKT} WriteLineToDebugFile('WKTProjectionFromString: ' + TheProjectionString);{$EndIf}
+   {$IfDef RecordWKT} WriteLineToDebugFile('WKTProjectionFromString: ' + TheProjectionString); {$EndIf}
    Result := StrUtils.AnsiContainsText(TheProjectionString,'PROJCS') or StrUtils.AnsiContainsText(TheProjectionString,'PROJCRS') or StrUtils.AnsiContainsText(TheProjectionString,'GEOGCRS') or StrUtils.AnsiContainsText(TheProjectionString,'GEOGGCS');
    if Result then begin
       WKTString := TheProjectionString;
@@ -778,23 +792,38 @@ begin
       StripCharacter(TheProjectionString,' ');
       StripCharacter(TheProjectionString,'_');
 
-      if ParameterInString('LATITUDEOFORIGIN') then Lat0 := DegToRad * FloatFromParameter(TheProjectionString,'"LATITUDEOFORIGIN"',0,']')
-      else if ParameterInString('Latitudeofnaturalorigin') then Lat0 := DegToRad * FloatFromParameter(TheProjectionString,'"Latitudeofnaturalorigin"',0,']')
-      else if ParameterInString('latitudeofcenter') then Lat0 := DegToRad * FloatFromParameter(TheProjectionString,'"latitudeofcenter"',0,']')
-      else if ParameterInString('Latitudeofstandardparallel') then Lat0 := DegToRad * FloatFromParameter(TheProjectionString,'"Latitudeofstandardparallel"',0,']');
+      for i := 1 to Length(TheProjectionString) - 6 do begin
+         if Copy(TheProjectionString,i,6) = 'VERTCS' then begin
+            HorizWKT := Copy(TheProjectionString,1,pred(i));
+            VertWKT :=  Copy(TheProjectionString,i,Length(TheProjectionString) - i);
+            break;
+         end;
+      end;
+      TheProjectionString := HorizWKT;
 
-      if ParameterInString('CentralMeridian') then Long0 := DegToRad * FloatFromParameter(TheProjectionString,'"CentralMeridian"',0,']')
-      else if ParameterInString('Longitudeofnaturalorigin') then Long0 := DegToRad * FloatFromParameter(TheProjectionString,'"Longitudeofnaturalorigin"',0,']')
-      else if ParameterInString('longitudeofcenter') then Long0 := DegToRad * FloatFromParameter(TheProjectionString,'"longitudeofcenter"',0,']')
-      else if ParameterInString('Longitudeoforigin') then Long0 := DegToRad * FloatFromParameter(TheProjectionString,'"Longitudeoforigin"',0,']');
+      if ParameterInString('LATITUDEOFORIGIN') then Lat0 := DegToRad * FloatFromParameter(HorizWKT,'"LATITUDEOFORIGIN"',0,']')
+      else if ParameterInString('Latitudeofnaturalorigin') then Lat0 := DegToRad * FloatFromParameter(HorizWKT,'"Latitudeofnaturalorigin"',0,']')
+      else if ParameterInString('latitudeofcenter') then Lat0 := DegToRad * FloatFromParameter(HorizWKT,'"latitudeofcenter"',0,']')
+      else if ParameterInString('Latitudeofstandardparallel') then Lat0 := DegToRad * FloatFromParameter(HorizWKT,'"Latitudeofstandardparallel"',0,']');
 
-      if ParameterInString('FALSEEASTING') then false_east := FloatFromParameter(TheProjectionString,'"FALSEEASTING"',0,']');
-      if ParameterInString('FALSENORTHING') then false_north := FloatFromParameter(TheProjectionString,'"FALSENORTHING"',0,']');
+      if ParameterInString('CentralMeridian') then Long0 := DegToRad * FloatFromParameter(HorizWKT,'"CentralMeridian"',0,']')
+      else if ParameterInString('Longitudeofnaturalorigin') then Long0 := DegToRad * FloatFromParameter(HorizWKT,'"Longitudeofnaturalorigin"',0,']')
+      else if ParameterInString('longitudeofcenter') then Long0 := DegToRad * FloatFromParameter(HorizWKT,'"longitudeofcenter"',0,']')
+      else if ParameterInString('Longitudeoforigin') then Long0 := DegToRad * FloatFromParameter(HorizWKT,'"Longitudeoforigin"',0,']');
 
-      if ParameterInString('StandardParallel1') then phi1 := DegToRad * FloatFromParameter(TheProjectionString,'"StandardParallel1"',0,']');
-      if ParameterInString('StandardParallel2') then phi2 := DegToRad * FloatFromParameter(TheProjectionString,'"StandardParallel2"',0,']');
+      if ParameterInString('FALSEEASTING') then false_east := FloatFromParameter(HorizWKT,'"FALSEEASTING"',0,']');
+      if ParameterInString('FALSENORTHING') then false_north := FloatFromParameter(HorizWKT,'"FALSENORTHING"',0,']');
 
-      ProjMapScale := FloatFromParameter(TheProjectionString,'"ScaleFactor"',0,']');
+      if ParameterInString('StandardParallel1') then phi1 := DegToRad * FloatFromParameter(HorizWKT,'"StandardParallel1"',0,']');
+      if ParameterInString('StandardParallel2') then phi2 := DegToRad * FloatFromParameter(HorizWKT,'"StandardParallel2"',0,']');
+
+      ProjMapScale := FloatFromParameter(HorizWKT,'"ScaleFactor"',0,']');
+      if ParameterInString('UNIT["FOOT",') or ParameterInString('USSURVEYFOOT') then begin
+          if ParameterInString('UNIT["FOOT",') then ftf := FloatFromParameter(HorizWKT,'"FOOT"',0,']')
+          else ftf := FloatFromParameter(HorizWKT,'"USSURVEYFOOT"',0,']');
+          false_east := ftf * false_east;
+          false_north := ftf * false_north;
+      end;
 
       TryDatum('DATUM');
 
@@ -810,10 +839,13 @@ begin
        else if ParameterInString('LAEA') then begin
           PName := LamAzEqAreaEllipsoidal;
        end
-       else if ParameterInString('AntarcticPolarStereographic') or StrUtils.AnsiContainsText(TheProjectionString,'StereographicNorthPole') then begin
+       else if ParameterInString('AntarcticPolarStereographic') or StrUtils.AnsiContainsText(HorizWKT,'StereographicNorthPole') then begin
           PName := PolarStereographicEllipsoidal;
        end
-       else if ParameterInString('GCS_OSGB_1936') or ParameterInString('OSGB1936') then begin
+       else if ParameterInString('ALBERSCONICEQUALAREA') or  ParameterInString('CONUSALBERS')  then begin
+          PName := AlbersEqAreaConicalEllipsoid;
+       end
+       else if ParameterInString('GCSOSGB1936') or ParameterInString('OSGB1936') then begin
           PName := UK_OS;
        end
        else if ParameterInString('54008') then begin
@@ -823,18 +855,13 @@ begin
        else if ParameterInString('54009') then begin
           PName := SinusEllipsoidal;
        end
-       else if ParameterInString('LambertConformalConic1SP') then  begin
+       else if ParameterInString('LambertConformalConic1SP') then begin
           PName := LambertConformalConicEllipse;
           phi2 := Lat0;
           phi1 := Lat0;
        end
-       else if ParameterInString('LambertConformalConic') then  begin
+       else if ParameterInString('LambertConformalConic') then begin
           PName := LambertConformalConicEllipse;
-          if ParameterInString('UNIT["FOOT",') then begin
-             ftf := FloatFromParameter(TheProjectionString,'"FOOT"',0,']');
-             false_east := ftf * false_east;
-             false_north := ftf * false_north;
-          end;
        end
        else if ParameterInString('UTM') then begin
           PName := UTMEllipsoidal;
@@ -843,12 +870,20 @@ begin
        else begin
           PName := GeneralTransverseMercator;
        end;
-      TheProjectionString := AfterSpecifiedString(TheProjectionString,'VertCS');
-      VertFeet := StrUtils.AnsiContainsText(TheProjectionString,'9003');
+      //HorizWKT := AfterSpecifiedString(HorizWKT,'VertCS');
+
+      TheProjectionString := VertWKT;
+      //VertFeet := StrUtils.AnsiContainsText(VertWKT,'9003');
+      //if VertFeet then begin
+         if ParameterInString('UNIT["FOOT",') or ParameterInString('USSURVEYFOOT') then begin
+             if ParameterInString('UNIT["FOOT",') then VertFootFactor := FloatFromParameter(HorizWKT,'"FOOT"',0,']')
+             else VertFootFactor := FloatFromParameter(HorizWKT,'"USSURVEYFOOT"',0,']');
+         end
+         else VertFootFactor := 1;
+
       {$IfDef RecordWKT} ShortProjInfo('finished WKT read'); {$EndIf}
       GetProjectParameters;
       {$IfDef RecordWKT} ShortProjInfo('finished GetProjectParameters'); {$EndIf}
-      //{$IfDef RecordWKT} WriteProjectionParametersToDebugFile('Final Projection from WKT file', true); {$EndIf}
    end
    else begin
       {$IfDef RecordWKT} WriteLineToDebugFile('WKTProjectionFromString failure'); {$EndIf}
@@ -1102,11 +1137,11 @@ begin
       if PName in [UTMEllipsoidal,UK_OS,Finn_GK,GeneralTransverseMercator,IrishGrid] then begin
         {$IfDef RecordProjectionParameters} WriteLineToDebugFile('Transerve Mercator'); {$EndIf}
          FullWorld := false;
-         Lat0 := 0;
-         false_north := 0;
+         if (Lat0 = NaN) then Lat0 := 0;
+         if (false_north = NaN) then false_north := 0;
          if (PName = UTMEllipsoidal) then begin
             {$IfDef RecordProjectionParameters} WriteLineToDebugFile('UTMEllipsoidal'); {$EndIf}
-            ProjMapScale := 0.9996;
+            if (ProjMapScale = NaN) then ProjMapScale := 0.9996;
             false_east := 500000;
             if (LatHemi = 'S') then false_north := 10000000;
          end
@@ -1117,7 +1152,6 @@ begin
             Long0 := -2 * Petmar_types.DegToRad;
             false_east := 400000;
             false_north := -100000;
-            //h_datumcode  := 'Airy';
             h_datumcode  := 'OGB-M';
          end
          else if (PName = IrishGrid) then begin

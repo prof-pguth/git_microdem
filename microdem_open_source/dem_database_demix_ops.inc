@@ -183,9 +183,6 @@ begin
 end;
 
 
-
-
-
 procedure TransposeDEMIXwinecontestGraph(DBonTable : integer);
 var
    BaseFilter,BaseFilterAnd : shortstring;

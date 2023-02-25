@@ -5,7 +5,7 @@
 { Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 {                                   }
-{ include file for demdatabase      }
+{   include file for demdatabase    }
 {___________________________________}
 
 

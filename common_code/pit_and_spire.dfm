@@ -3,8 +3,8 @@ object PitSpireForm: TPitSpireForm
   Top = 0
   BorderIcons = [biMaximize]
   Caption = 'Feature detection'
-  ClientHeight = 543
-  ClientWidth = 804
+  ClientHeight = 542
+  ClientWidth = 800
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,22 +19,22 @@ object PitSpireForm: TPitSpireForm
   object Memo1: TMemo
     Left = 300
     Top = 0
-    Width = 504
-    Height = 543
+    Width = 500
+    Height = 542
     Align = alClient
     ScrollBars = ssVertical
     TabOrder = 0
-    ExplicitWidth = 510
-    ExplicitHeight = 552
+    ExplicitWidth = 496
+    ExplicitHeight = 541
   end
   object Panel1: TPanel
     Left = 0
     Top = 0
     Width = 300
-    Height = 543
+    Height = 542
     Align = alLeft
     TabOrder = 1
-    ExplicitHeight = 552
+    ExplicitHeight = 541
     object Label27: TLabel
       Left = 48
       Top = 264
@@ -86,7 +86,7 @@ object PitSpireForm: TPitSpireForm
       Top = 1
       Width = 298
       Height = 377
-      ActivePage = TabSheet1
+      ActivePage = TabSheet6
       Align = alTop
       TabOrder = 3
       object TabSheet1: TTabSheet
@@ -595,7 +595,7 @@ object PitSpireForm: TPitSpireForm
           TabOrder = 6
         end
         object BitBtn18: TBitBtn
-          Left = 80
+          Left = 83
           Top = 280
           Width = 110
           Height = 25
@@ -662,9 +662,9 @@ object PitSpireForm: TPitSpireForm
           OnClick = BitBtn6Click
         end
         object BitBtn14: TBitBtn
-          Left = 56
+          Left = 48
           Top = 200
-          Width = 75
+          Width = 83
           Height = 25
           Caption = 'Find walls'
           TabOrder = 4

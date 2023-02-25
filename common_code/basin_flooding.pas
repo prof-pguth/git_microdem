@@ -181,7 +181,7 @@ begin
       end;
    end
    else begin
-      BasinDEM := DEMGlb[MapForm.MapDraw.DEMonMap].CloneAndOpenGrid(ByteDEM,DEMGlb[MapForm.MapDraw.DEMonMap].AreaName + ' flooding',Undefined);
+      BasinDEM := DEMGlb[MapForm.MapDraw.DEMonMap].CloneAndOpenGridSetMissing(ByteDEM,DEMGlb[MapForm.MapDraw.DEMonMap].AreaName + ' flooding',Undefined);
    end;
    {$IfDef RecordFloodingProblems} WriteLineToDebugFile('Initializaiton over ');  {$EndIf}
 

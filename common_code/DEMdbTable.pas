@@ -335,7 +335,6 @@ type
     Legend2: TMenuItem;
     Editfont1: TMenuItem;
     ClearDBsettings1: TMenuItem;
-    Loadsidescanimage1: TMenuItem;
     BitBtn17: TBitBtn;
     PopupMenu10: TPopupMenu;
     Picklineonmap1: TMenuItem;
@@ -715,7 +714,6 @@ type
     byLongitude2: TMenuItem;
     Addspeedfromxyoruvcomponents1: TMenuItem;
     Cumulative1: TMenuItem;
-    LoadTMscene1: TMenuItem;
     SplitdatefieldYYYYMMDD1: TMenuItem;
     Horizonblocking1: TMenuItem;
     Hideunusedfields1: TMenuItem;
@@ -954,6 +952,7 @@ type
     AlphabetizefieldwithCSVsubfields1: TMenuItem;
     iesbyopinions1: TMenuItem;
     Wins1: TMenuItem;
+    LoadthisDEM1: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
     procedure Shiftpointrecords1Click(Sender: TObject);
     procedure Creategrid1Click(Sender: TObject);
@@ -969,7 +968,6 @@ type
     procedure Picklineonmap1Click(Sender: TObject);
     procedure Picklinefromfile1Click(Sender: TObject);
     procedure BitBtn17Click(Sender: TObject);
-    procedure Loadsidescanimage1Click(Sender: TObject);
     procedure Asymmetric1Click(Sender: TObject);
     procedure Symmetric1Click(Sender: TObject);
     procedure Earthquakefocalmechanisms3D1Click(Sender: TObject);
@@ -1464,8 +1462,6 @@ type
     procedure Addspeedfromxyoruvcomponents1Click(Sender: TObject);
     procedure Cumulative1Click(Sender: TObject);
     procedure SplitdatefieldYYYYMMDD1Click(Sender: TObject);
-
-    procedure LoadTMscene1Click(Sender: TObject);
     procedure Horizonblocking1Click(Sender: TObject);
     procedure Hideunusedfields1Click(Sender: TObject);
     procedure Rosediagram01801Click(Sender: TObject);
@@ -1680,6 +1676,7 @@ type
     procedure AlphabetizefieldwithCSVsubfields1Click(Sender: TObject);
     procedure iesbyopinions1Click(Sender: TObject);
     procedure Wins1Click(Sender: TObject);
+    procedure LoadthisDEM1Click(Sender: TObject);
   private
     procedure PlotSingleFile(fName : PathStr; xoff,yoff : float64);
     procedure SetUpLinkGraph;
@@ -1927,63 +1924,6 @@ begin
    GISdb[DBonTable].dbTableF.HideColumns;
    GISdb[DBonTable].dbTableF.ShowStatus;
 end;
-
-
-procedure ZipShapefile(DBontable : integer; IncludeDebug,SHZit : boolean);
-var
-   TheFiles : tStringList;
-   fName : PathStr;
-   TStr : shortstring;
-
-   procedure DoFile(aName : PathStr);
-   begin
-      if FileExists(aName) then begin
-         CopyFile(aname,MDTempDir + ExtractFileName(aname));
-         TheFiles.Add(MDTempDir + ExtractFileName(aname));
-      end;
-   end;
-
-begin
-   {$If Defined( RecordSHZ) or Defined(RecordExports)} WriteLineToDebugFile('Zipshapefile in'); {$EndIf}
-   GISdb[DBonTable].SaveDataBaseStatus;
-   TheFiles := tStringList.Create;
-   DoFile(ChangeFileExt(GISdb[DBonTable].dbFullName,'.shp'));
-   DoFile(ChangeFileExt(GISdb[DBonTable].dbFullName,'.shx'));
-   DoFile(ChangeFileExt(GISdb[DBonTable].dbFullName,'.dbf'));
-   fName := ChangeFileExt(GISdb[DBonTable].DBfullName,'.prj');
-   if FileExists(fName) then DoFile(FName)
-   else if FileExists(WKT_GCS_Proj_fName) then begin
-      Petmar.CopyFile(WKT_GCS_Proj_fName,fName);
-      DoFile(fName);
-   end
-   else MessageToContinue('Missing projection file ' + fName);
-
-
-   if IncludeDebug and (GISdb[DBonTable].IniFileName <> '') and FileExists(GISdb[DBonTable].IniFileName) then begin
-      {$IfDef RecordSHZ} WriteLineToDebugFile('TdbTableF.Zipshapefile1Click db ini'); {$EndIf}
-      TheFiles.Add(GISdb[DBonTable].IniFileName);
-   end;
-
-   fName := GISdb[DBonTable].dbOpts.LinkTableName;
-   if (fName <> '') and FileExists(fName) then begin
-      {$IfDef RecordSHZ} WriteLineToDebugFile('TdbTableF.Zipshapefile1Click link table'); {$EndIf}
-      TheFiles.Add(fName);
-   end;
-   if IncludeDebug then begin
-      {$IfDef RecordSHZ} WriteLineToDebugFile('TdbTableF.Zipshapefile1Click debug log'); {$EndIf}
-      TheFiles.Add(DebugFileName);
-   end;
-   if SHZit then TStr := '_' + CurrentTimeForFileName else TStr := '';
-   fName := MDTempDir + ExtractFileNameNoExt(GISdb[DBonTable].dbFullName) + TStr + '.zip';
-
-    {$If Defined( RecordSHZ) or Defined(RecordExports)} WriteLineToDebugFile('TdbTableF.Zipshapefile1Click call zip, files=' + IntToStr(TheFiles.Count)); {$EndIf}
-   ZipMasterZipFiles(fName,TheFiles);
-   TheFiles.Free;
-   //DeleteShapeFile(FName);
-   if SHZit then SysUtils.RenameFile(fname,ChangeFileExt(fName,'.shz'));
-   {$If Defined( RecordSHZ) or Defined(RecordExports)}  WriteLineToDebugFile('Zipshapefile1Click'); {$EndIf}
-end;
-
 
 
 procedure SortDataBase(DBOnTable : integer; Ascending : boolean);
@@ -2751,8 +2691,8 @@ begin
 
         {$IfDef ExSidescan}
         {$Else}
-        if SideScanIndex then PlotSingleSideScanLeg(Bitmap)
-        else
+        //if SideScanIndex then PlotSingleSideScanLeg(Bitmap)
+        //else
         {$EndIf}
 
         if JustCurrent then ShowOne
@@ -3243,7 +3183,6 @@ begin
       Map1.Visible := (TheMapOwner <> Nil);
       RecenterMapOnRecord1.Visible := (theMapOwner <> Nil);
       Highlightrecordonmap1.Visible := (theMapOwner <> Nil);
-      LoadTMScene1.Visible := TMIndex;
       Horizonblocking1.Visible := (theMapOwner <> Nil) and (TheMapOwner.MapDraw.DEMonMap <> 0);
       Movie1.Visible := MyData.FieldExists('MOVIE') and (MyData.GetFieldByNameAsString('MOVIE') <> '');
       Movie2.Visible := Movie1.Visible;
@@ -3294,9 +3233,9 @@ begin
       CompareshapefileandDEMprofiles1.Visible := (ShapeFileType in [13,15,23,25]) and ((TheMapOwner <> Nil) and (TheMapOwner.MapDraw.DEMonMap <> 0));
       LidarWaveform1.Visible := MyData.FieldExists('RH100');
       {$IfDef ExSidescan}
-         Loadsidescanimage1.Visible := false;
+         //Loadsidescanimage1.Visible := false;
       {$Else}
-         Loadsidescanimage1.Visible := SideScanIndex;
+         //Loadsidescanimage1.Visible := SideScanIndex;
       {$EndIf}
 
       RangeCircles1.Visible:= ItsaPointDB;
@@ -5148,8 +5087,7 @@ begin
    if (OtherDB <> 0) then begin
       WantedFieldName := GISdb[OtherDB].PickField('Field add',[ftString,ftInteger,ftFloat]);
       if WantedFieldName <> '' then begin
-         GISdb[DBonTable].AddFieldToDataBase(GISdb[OtherDB].MyData.GetFieldType(WantedFieldName),
-                 WantedFieldName,GISdb[OtherDB].MyData.GetFieldLength(WantedFieldName),GISdb[OtherDB].MyData.GetFieldPrecision(WantedFieldName));
+         GISdb[DBonTable].AddFieldToDataBase(GISdb[OtherDB].MyData.GetFieldType(WantedFieldName),WantedFieldName,GISdb[OtherDB].MyData.GetFieldLength(WantedFieldName),GISdb[OtherDB].MyData.GetFieldPrecision(WantedFieldName));
          StartProgressAbortOption(WantedFieldName);
          i := 0;
          GISdb[DBonTable].EmpSource.Enabled := false;
@@ -7738,10 +7676,8 @@ begin
    with GISdb[DBonTable] do begin
       WantedFieldName := PickField('FFTs',[ftFloat,ftInteger,ftSmallInt]);
       FFTGraph := TFFTGraph.Create(Application);
-      //  with FFTGraph do begin
-         FFTGraph.BinTime := 1;
-         FFTGraph.BinUnits := '';
-      //end;
+      FFTGraph.BinTime := 1;
+      FFTGraph.BinUnits := '';
       FFTGraph.fftfilename := NextFileNumber(MDTempDir, WantedFieldName,'');
       FFTGraph.TotalNumberPoints := 0;
       AssignFile(dFile,FFTGraph.fftfilename);
@@ -11660,19 +11596,17 @@ var
    Lat,Long : float64;
    bbox : sfBoundBox;
 begin
-   //with GISdb[DBonTable] do begin
-      if LineOrAreaShapeFile(GISdb[DBonTable].ShapeFileType) then begin
-         bbox := GISdb[DBonTable].MyData.GetRecordBoundingBox;
-      end
-      else begin
-          GISdb[DBonTable].MyData.ValidLatLongFromTable(Lat,Long);
-          bbox.YMax := Lat + extra;
-          bbox.XMin := Long - extra;
-          bbox.YMin := Lat - Extra;
-          bbox.XMax := Long + extra;
-      end;
-      LoadMapLibraryBox(WantDEM,WantImage,true, bbox.YMax,bbox.XMin,bbox.YMin,bbox.YMax);
-   //end;
+   if LineOrAreaShapeFile(GISdb[DBonTable].ShapeFileType) then begin
+      bbox := GISdb[DBonTable].MyData.GetRecordBoundingBox;
+   end
+   else begin
+       GISdb[DBonTable].MyData.ValidLatLongFromTable(Lat,Long);
+       bbox.YMax := Lat + extra;
+       bbox.XMin := Long - extra;
+       bbox.YMin := Lat - Extra;
+       bbox.XMax := Long + extra;
+   end;
+   LoadMapLibraryBox(WantDEM,WantImage,true, bbox.YMax,bbox.XMin,bbox.YMin,bbox.YMax);
 end;
 
 procedure Tdbtablef.LoadMSTfiles1Click(Sender: TObject);
@@ -11700,27 +11634,9 @@ begin
 {$EndIf}
 end;
 
-procedure Tdbtablef.Loadsidescanimage1Click(Sender: TObject);
+procedure Tdbtablef.LoadthisDEM1Click(Sender: TObject);
 begin
-{$IfDef ExSideScan}
-{$Else}
-   if GISdb[DBonTable].MyData.GetFullFileName(InputSideScanFileName) then
-       GISdb[DBonTable].TheMapOwner.SideScanButtonClick(Sender);
-{$EndIf}
-end;
-
-procedure Tdbtablef.LoadTMscene1Click(Sender: TObject);
-{$IfDef ExSat}
-begin
-{$Else}
-var
-   fName : PathStr;
-begin
-   fName := GISdb[DBonTable].MyData.GetFieldByNameAsString('IMAGE');
-   fName := ExtractFilePath(fName) + copy(ExtractFileName(fName),1,21) +  '_B1.TIF';
-
-   OpenAndDisplayNewScene(Nil,fName,true,true,true);
-{$EndIf}
+   OpenNewDEM(GISdb[DBonTable].MyData.GetFieldByNameAsString('FILENAME'));
 end;
 
 procedure Tdbtablef.Logoffield1Click(Sender: TObject);
@@ -13325,20 +13241,12 @@ begin
    {$Else}
       GISdb[DBonTable].dbOpts.dbAutoShow := dbasTerrainFabric;
       GISdb[DBonTable].RedrawLayerOnMap;
-
-(*
-      xxxx
-      GISdb[DBonTable].TheMapOwner.MapDraw.DeleteSingleMapLayer(GISdb[DBonTable].TheMapOwner.MapDraw.DBOverlayfName[DBonTable]);
-      GISdb[DBonTable].TheMapOwner.DoFastMapRedraw;
-      DEMSSOcalc.DrawTopoGrainOverlay(GISdb[DBonTable].theMapOwner, Nil,false,1,dbOnTable);
-*)
    {$EndIf}
 end;
 
 procedure Tdbtablef.Exportlatlongz1Click(Sender: TObject);
 var
    Output : tStringList;
-   //zFieldName : ShortString;
    fName : PathStr;
    DefExt : integer;
 begin
