@@ -617,6 +617,7 @@ type
          function MaxHorizonAngle(Lat,Long,LeftAzimuthTrue,RightAzimuthTrue,AzIncrement,DistanceToGoOut,ObsUp : float64; StraightAlgorithm : DemDefs.tStraightAlgorithm) : float64;
 
          procedure InterpolateAcrossHoles(ShowResults : boolean);
+         procedure SpecialInterpolateAcrossHoles;
          procedure FillHolesSelectedBoxFromReferenceDEM(GridLimits : tGridLimits; RefDEM : integer; HoleFill : tHoleFill);
 
          procedure MissingDataToSeaLevel(SeaLevel : float64 = 0);
@@ -673,6 +674,7 @@ type
             function AmbiguosRidgeValley(SWCol,SWRow : integer; var CouldKnow : boolean) : boolean;
             procedure InitializeTerrainCategory(var TerrainCat : tTerrainCatDefinition);
             function ClassifyAPoint(Col,Row : integer) : tPointType;
+            function HighLowPointNeighbors(Col,Row,Region : integer; Tolerance : float32; var Higher,Lower : integer) : boolean;  inline;
 
             function GDAL_ScaleFactorString : shortstring;
 

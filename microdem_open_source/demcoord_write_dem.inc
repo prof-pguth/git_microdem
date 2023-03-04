@@ -118,7 +118,6 @@ begin
        CheckVAT;
        exit;
     end;
-
    {$IfDef VCL}
       if (FileName = '') or (not FileExtEquals(FileName,'.DEM')) then begin
          if (FileName = '') or (not PathIsValid(FileName)) then begin
@@ -127,13 +126,14 @@ begin
             FileName := DEMDefs.WriteDEMDir + FileName;
          end;
          if (WhatFor <> '') then WhatFor := ' for ' + WhatFor;
-
          if not GetFileNameDefaultExt('New DEM' + WhatFor,'DEM|*.dem',FileName) then exit;
          DEMDefs.WriteDEMDir := ExtractFilePath(FileName);
       end;
    {$EndIf}
 
    try
+      HeavyDutyProcessing := true;
+      ShowHourglassCursor;
       ClosingMapNotAllowed := true;
       FSplit(FileName,Dir,Name,Ext);
       SafeMakeDir(Dir);
@@ -186,6 +186,7 @@ begin
 
        CheckVAT;
     finally
+       HeavyDutyProcessing := false;
        EndProgress;
        DEMstatus := dsSaved;
        ClosingMapNotAllowed := false;
@@ -309,6 +310,8 @@ begin
       {$EndIf}
    end;
    {$IfDef GeotiffSave} WriteLineToDebugFile('tDEMDataSet.SaveAsGeotiff in, ' + SaveName); {$EndIf}
+   HeavyDutyProcessing := true;
+   ShowHourglassCursor;
 
    case DEMheader.DEMPrecision of
       ByteDEM             : TiffHeader.BitsPerSample := 8;
@@ -436,6 +439,9 @@ begin
    {$IfDef GeotiffSave} WriteLineToDebugFile('all done, filepos=' + IntToStr(FilePos(TiffFile))); {$EndIf}
    TiffFile.Free;
    DEMstatus := dsSaved;
+   HeavyDutyProcessing := false;
+   ShowDefaultCursor;
+
    {$IfDef GeotiffSave} WriteLineToDebugFile('tDEMDataSet.SaveAsGeotiff out'); {$EndIf}
 end;
 

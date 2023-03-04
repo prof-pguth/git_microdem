@@ -21,7 +21,7 @@ unit GeoTiff;
 
 {$IfDef Recordproblems}  //normally only defined for debugging specific problems
 
-   //{$Define RecordGeotiffFailures}
+   {$Define RecordGeotiffFailures}
 
    {$IFDEF DEBUG}
       //{$Define RecordGeotiff}
@@ -2233,10 +2233,13 @@ begin
    if (B[3] = 43) or (B[4] = 43) then BigTiff := true
    else if (B[3] = 42) or (B[4] = 42) then BigTiff := false
    else begin
-      Success := false;
-      CloseTiffFile;
       {$IfDef RecordGeotiffFailures} WriteLineToDebugFile('Header ' + IntToStr(B[1]) + '/' +IntToStr(B[2]) + '/' + IntToStr(B[3]) + '/' + IntToStr(B[4]) + ' is Not TIFF ' + inFileName); {$EndIf}
-      exit;
+      if false then begin
+         Success := false;
+         CloseTiffFile;
+         exit;
+      end;
+      BigTiff := true;
    end;
 
    BigEndian := (b[1] = 77);

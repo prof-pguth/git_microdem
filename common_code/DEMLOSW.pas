@@ -1,10 +1,12 @@
 unit demlosw;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM freeware GIS   }
-{ PETMAR Trilobite Breeding Ranch }
-{    verified 7/30/2104           }
-{_________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2023 Peter L. Guth  }
+{___________________________________}
+
 
 {$I nevadia_defines.inc}
 
@@ -22,7 +24,7 @@ unit demlosw;
       //{$Define RecordClosing}
       //{$Define RecordUTMZones}
       //{$Define RecordSlopeCalc}
-      //{$Define RecordLOSLegend}
+      {$Define RecordLOSLegend}
       //{$Define RecordLOSProblems}
       //{$Define RecordLOSPrettyDrawing}
       //{$Define RecordRandomProfiles}
@@ -1481,7 +1483,7 @@ end;
 
 procedure TDEMLOSF.Profilelegends1Click(Sender: TObject);
 var
-   y,x,WhichDEM,ItemHigh,LegendItem,DEMshown : integer;
+   y,x,WhichDEM,ItemHigh,ItemWidth,LegendItem,DEMshown : integer;
    LegBMP : tMyBitmap;
 begin
    {$If Defined(RecordLOSProblems) or Defined(RecordLOSLegend)} WriteLineToDebugFile('TDEMLOSF.Profilelegends1Click'); {$EndIf}
@@ -1490,20 +1492,21 @@ begin
    LegBMP.Canvas.Font.Size := MDDef.DefaultGraphFont.Size;
    LegBMP.Canvas.Font.Style := [fsBold];
 
-   y := 0;
+   ItemWidth := 40;
+   ItemHigh := 0;
    DEMShown := 0;
    for WhichDEM := 1 to MaxDEMDataSets do begin
       if ValidDEM(WhichDEM) and LOSDraw.ShowProfile[WhichDEM] then begin
-         {$IfDef RecordLOSProblems} WriteLineToDebugFile('DEM=' + IntToStr(WhichDEM) + '   ' + LOSDraw.ProfileName[WhichDEM]); {$EndIf}
+         {$If Defined(RecordLOSProblems) or Defined(RecordLOSLegend)} WriteLineToDebugFile('DEM=' + IntToStr(WhichDEM) + '   ' + LOSDraw.ProfileName[WhichDEM]); {$EndIf}
          inc(DEMShown);
          x := LegBMP.Canvas.TextWidth(LOSdraw.ProfileName[WhichDEM]);
-         if (x > y) then y := x;
-         ItemHigh := LegBMP.Canvas.TextHeight(LOSdraw.ProfileName[WhichDEM]);
+         if (x > ItemWidth) then ItemWidth := x + 40;
+         x := LegBMP.Canvas.TextHeight(LOSdraw.ProfileName[WhichDEM]);
+         if x > ItemHigh then ItemHigh := x + 10;
       end;
    end;
-   ItemHigh := ItemHigh + 10;
-   LegBMP.Width := 40+y;
-   LegBMP.Height := 15 + NumDEMDataSetsOpen*(ItemHigh);
+   LegBMP.Width := ItemWidth;
+   LegBMP.Height := 15 + DEMShown * ItemHigh;
    {$If Defined(RecordLOSProblems) or Defined(RecordLOSLegend)}  WriteLineToDebugFile('Legend size: ' + IntToStr(LegBMP.Width) + 'x' + IntToStr(LegBMP.Height) ); {$EndIf}
 
    LegBMP.Canvas.Brush.Color := clWhite;

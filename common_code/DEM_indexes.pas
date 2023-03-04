@@ -1018,7 +1018,7 @@ begin
          if FileExtEquals(aName,'.ASC') then begin //Spanish DEMs have no projection in the ASC files, and user must put WKT file in directory
             {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('ASC reprojection'); {$EndIf}
             ProjName := FindSingleWKTinDirectory(ExtractFilePath(aName));
-            if (ProjName <> '') then ProjName := 'a_srs ' + ProjName;
+            if (ProjName <> '') then ProjName := '-a_srs ' + ProjName;
          end;
 
        //option 2 was about three times faster than option 1

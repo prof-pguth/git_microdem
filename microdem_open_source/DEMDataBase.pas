@@ -232,6 +232,7 @@ type
      OutlinePolygons,
      GISVectorsByMaxSpeed,
      HideTable,ReverseColorTable : boolean;
+     CatPCforLegend,
      VectorLineMult  : float32;
      zColorMin,zColorMax,
      SizeMin,SizeMax,
@@ -615,6 +616,8 @@ type
          function GetMaskFieldName : string10;
          procedure RenameField(OldName, NewName: ShortString);
          procedure ChangeFieldType(OldName : ShortString; NewType : ANSIchar);
+         procedure ChangeFieldDecimals(OldName : ShortString; NewDecimals : byte);
+
          procedure LinkSecondaryTable(var FileWanted : PathStr);
          function CreateDataBaseLegend(SimpleLegend : boolean = false) : tMyBitmap;
          procedure CreatePopupLegend;
@@ -985,6 +988,7 @@ begin
          end;
          MyData.Next;
       end;
+      ChangeFieldDecimals(SelectedColumn,NumDec);
       ShowStatus;
    end;
 end;
@@ -3634,6 +3638,7 @@ begin
    MDIniFile.AParameterFloat('db','SizeMin',dbOpts.SizeMin,99);
    MDIniFile.AParameterFloat('db','SizeMax',dbOpts.SizeMax,-99);
    MDIniFile.AParameterShortFloat('db','VectorLineMult',dbOpts.VectorLineMult, 10);
+   MDIniFile.AParameterShortFloat('db','CatPCforLegend',dbOpts.CatPCforLegend, 2);
 
    MDIniFile.ASymbol('db','Symbol',dbOpts.Symbol,FilledBox,claRed,3);
 
@@ -4836,7 +4841,6 @@ var
 begin
    EmpSource.Enabled := false;
    ClosestRecNo := 0;
-   //i := 0;
    jump := 0.005;
    repeat
        MyData.ApplyFilter( MakePointGeoFilter(LatFieldName,LongFieldName,Lat+jump,Long-Jump,Lat-Jump,Long+Jump) );
@@ -5343,6 +5347,7 @@ begin
       if not MyData.FieldExists(MonthFieldName) then MonthFieldName := 'MONTH';
 
       if MDdef.AutoAssignNameField and (dbOpts.LabelField = '') then begin
+         AssignField(dbOpts.LabelField,'EVT_NAME');
          AssignField(dbOpts.LabelField,'AREA');
          AssignField(dbOpts.LabelField,'PLACE');
          AssignField(dbOpts.LabelField,'FEATURE');

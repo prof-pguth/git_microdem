@@ -108,7 +108,7 @@ var
                   if j mod 25 = 0 then UpDateProgressBar(j/MapYSize);
                   for i := 0 to pred(MapXSize) do begin
                      ScreenToDEMGrid(i,j,XG,yg);
-                     if DEMGlb[DEMonMap].GetEvansParams(xg,yg,MDDef.WoodRegionSize,MaxSlp,ProfC,PlanC,crossc,MaxCurve,MinCurve) then begin
+                     if DEMGlb[DEMonMap].GetEvansParams(xg,yg,MDDef.WoodRegionRadiusPixels,MaxSlp,ProfC,PlanC,crossc,MaxCurve,MinCurve) then begin
                         ProfIndex := GetIndex(ProfC);
                         PlanIndex := GetIndex(PlanC);
                         Pixels[i,j] := Colors[ProfIndex,PlanIndex];

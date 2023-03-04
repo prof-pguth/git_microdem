@@ -399,49 +399,77 @@ begin
    Changed := 0;
    SameGrids := SecondGridIdentical(RefDEM);
 
-   for Col := GridLimits.XGridLow to GridLimits.XGridHigh do begin
-      if ShowSatProgress and (Col mod 10 = 0) then UpdateProgressBar((Col-GridLimits.XGridLow)/(GridLimits.XGridHigh-GridLimits.XGridLow));
-      for Row := GridLimits.YGridLow to GridLimits.YGridHigh do begin
-          if SameGrids then begin
-             x := Col;
-             y := Row;
-          end
-          else DEMGridToLatLongDegree(Col,Row,Lat,Long);
-          if (HoleFill = hfSeaLevel) then begin
-             if not SameGrids then begin
-                DEMGLB[RefDEM].LatLongDegreeToDEMGrid(Lat,Long,xg,yg);
-                x := round(xg);
-                y := round(yg);
+   if HoleFill = hfJustReferencePostings then begin
+      for Col := 0 to pred(DEMGlb[RefDEM].DEMHeader.NumCol) do begin
+         if ShowSatProgress and (Col mod 10 = 0) then UpdateProgressBar(Col/DEMGlb[RefDEM].DEMHeader.NumCol);
+         for Row := 0 to pred(DEMGlb[RefDEM].DEMHeader.NumRow) do begin
+             if DEMGLB[RefDEM].GetElevMeters(Col,Row,z2) then begin
+                DEMGLB[RefDEM].DEMGridToLatLongDegree(Col,Row,Lat,Long);
+                LatLongDegreeToDEMGrid(Lat,Long,xg,yg);
+                SetGridElevation(Round(xg),round(yg),z2);
+                inc(Changed);
              end;
-             if DEMGLB[RefDEM].GetElevMeters(pred(x),pred(y),z) and  (abs(z) < 0.0001) and DEMGLB[RefDEM].GetElevMeters(pred(x),y,z2) and (abs(z2) < 0.0001) and
-                DEMGLB[RefDEM].GetElevMeters(x,pred(y),z3) and (abs(z3) < 0.0001) and DEMGLB[RefDEM].GetElevMeters(x,y,z4) and (abs(z4) < 0.0001) then begin
-                   SetGridElevation(Col,Row,0);
-                   inc(Changed);
-             end;
-          end;
-          if (HoleFill = hfOnlyHole) and (MissingDataInGrid(Col,Row)) or (HoleFill = hfEverything) or ((HoleFill = hfOnlyValid) and GetElevMeters(Col,Row,z2)) then begin
-             if SameGrids then begin
-                if DEMGLB[RefDEM].GetElevMeters(Col,Row,z) then begin
-                   SetGridElevation(Col,Row,z);
-                   inc(Changed);
+         end;
+      end;
+   end
+   else begin
+      for Col := GridLimits.XGridLow to GridLimits.XGridHigh do begin
+         if ShowSatProgress and (Col mod 10 = 0) then UpdateProgressBar((Col-GridLimits.XGridLow)/(GridLimits.XGridHigh-GridLimits.XGridLow));
+         for Row := GridLimits.YGridLow to GridLimits.YGridHigh do begin
+             if (not SameGrids) then DEMGridToLatLongDegree(Col,Row,Lat,Long);
+             if (HoleFill = hfSeaLevel) then begin
+                if SameGrids then begin
+                   x := Col;
+                   y := Row;
+                end
+                else begin
+                   DEMGLB[RefDEM].LatLongDegreeToDEMGrid(Lat,Long,xg,yg);
+                   x := round(xg);
+                   y := round(yg);
                 end;
-             end
-             else begin
-                if DEMGLB[RefDEM].GetElevFromLatLongDegree(Lat,Long,z) then begin
-                   SetGridElevation(Col,Row,z);
-                   inc(Changed);
+                if DEMGLB[RefDEM].GetElevMeters(pred(x),pred(y),z) and  (abs(z) < 0.0001) and DEMGLB[RefDEM].GetElevMeters(pred(x),y,z2) and (abs(z2) < 0.0001) and
+                   DEMGLB[RefDEM].GetElevMeters(x,pred(y),z3) and (abs(z3) < 0.0001) and DEMGLB[RefDEM].GetElevMeters(x,y,z4) and (abs(z4) < 0.0001) then begin
+                      SetGridElevation(Col,Row,0);
+                      inc(Changed);
                 end;
              end;
-          end;
+             if (HoleFill = hfEverything) then begin
+                if SameGrids then begin
+                   if DEMGLB[RefDEM].GetElevMeters(Col,Row,z) then begin
+                      SetGridElevation(Col,Row,z);
+                      inc(Changed);
+                   end;
+                end
+                else begin
+                   if DEMGLB[RefDEM].GetElevFromLatLongDegree(Lat,Long,z) then begin
+                      SetGridElevation(Col,Row,z);
+                      inc(Changed);
+                   end;
+                end;
+             end;
+             if (HoleFill = hfOnlyHole) and (MissingDataInGrid(Col,Row)) or ((HoleFill = hfOnlyValid) and GetElevMeters(Col,Row,z2)) then begin
+                if SameGrids then begin
+                   if DEMGLB[RefDEM].GetElevMeters(Col,Row,z) then begin
+                      SetGridElevation(Col,Row,z);
+                      inc(Changed);
+                   end;
+                end
+                else begin
+                   if DEMGLB[RefDEM].GetElevFromLatLongDegree(Lat,Long,z) then begin
+                      SetGridElevation(Col,Row,z);
+                      inc(Changed);
+                   end;
+                end;
+             end;
+         end;
       end;
    end;
-
+   CheckMaxMinElev;
    if ShowSatProgress then EndProgress;
    {$IfDef RecordDEMEdits} WriteLineToDebugFile('Points changed=' + IntToStr(Changed));  {$EndIf}
 end;
 
 
-procedure tDEMDataSet.InterpolateAcrossHoles(ShowResults : boolean);
 const
    N=1;
    S=2;
@@ -451,6 +479,61 @@ const
    SW=6;
    SE=7;
    NW=8;
+
+procedure tDEMDataSet.SpecialInterpolateAcrossHoles;
+var
+   HolesFilled,TotalHoles : int64;
+   //NewDEM,
+   n,Col,Row,i,x,y,xc,yc : integer;
+   ThisWeight,Sum : float64;
+   zs,zn,ze,zw : float32;
+   Found : array[1..8] of boolean;
+begin
+   StartProgressAbortOption('Fill holes ' + AreaName);
+   HolesFilled := 0;
+   TotalHoles := 0;
+   for Col := 1 to (DEMheader.NumCol-2) do begin
+      if (Col mod 25 = 0) then UpdateProgressBar(Col/DEMheader.NumCol);
+      for Row := (DEMheader.NumRow-2) downto 1 do begin
+         if MissingDataInGrid(Col,Row) then begin
+            inc(TotalHoles);
+            Sum := 0;
+            n := 0;
+
+            if GetElevMeters(Col,pred(Row),zs) then begin
+               inc(n);
+               Sum := Sum + zs;
+            end;
+            if GetElevMeters(pred(Col),Row,zw) then begin
+               inc(n);
+               Sum := Sum + zw;
+            end;
+            if GetElevMeters(succ(Col),Row,ze) then begin
+               inc(n);
+               Sum := Sum + ze;
+            end;
+            if GetElevMeters(Col,succ(Row),zn) then begin
+               inc(n);
+               Sum := Sum + zn;
+            end;
+            if n > 0 then SetGridElevation(Col,Row,Sum / n);
+         end;
+      end;
+      if WantOut then break;
+   end;
+   CheckMaxMinElev;
+   EndProgress;
+   (*
+   if ShowResults then begin
+      MessageToContinue('Total holes: ' + IntToStr(TotalHoles) + MessLineBreak + 'Filled: ' + IntToStr(HolesFilled) + '  (' + RealToString(100.0*HolesFilled/TotalHoles,-8,2) + '%)',true);
+   end;
+   *)
+end;
+
+
+
+
+procedure tDEMDataSet.InterpolateAcrossHoles(ShowResults : boolean);
 var
    HolesFilled,TotalHoles : int64;
    NewDEM,i,x,y,xc,yc : integer;
@@ -561,7 +644,7 @@ begin
             end;
 
             if (MDDef.LooseFillHoles and ((Found[N] and Found[S]) or (Found[E] and Found[W])) or (Found[NE] and Found[SW]) or (Found[NW] and Found[SE]))
-                  or ( (Found[N] or Found[NE]) and (Found[E] or Found[SE]) or  (Found[S] or Found[SW]) and (Found[W] or Found[NW])) then begin
+                  or ( (Found[N] or Found[NE]) and (Found[E] or Found[SE]) or (Found[S] or Found[SW]) and (Found[W] or Found[NW])) then begin
                DEMGlb[NewDEM].SetGridElevation(x,y,Sum / Weights);
                {$IfDef RecordProblems} inc(HolesFilled); {$EndIf}
             end;
@@ -579,6 +662,7 @@ begin
       end;
    end;
    CloseSingleDEM(NewDEM);
+   CheckMaxMinElev;
    EndProgress;
    if ShowResults then begin
       MessageToContinue('Total holes: ' + IntToStr(TotalHoles) + MessLineBreak + 'Filled: ' + IntToStr(HolesFilled) + '  (' + RealToString(100.0*HolesFilled/TotalHoles,-8,2) + '%)',true);

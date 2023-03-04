@@ -3,8 +3,8 @@ object ThumbnailForm: TThumbnailForm
   Top = 0
   BorderIcons = []
   Caption = 'Thumbnail options'
-  ClientHeight = 183
-  ClientWidth = 378
+  ClientHeight = 182
+  ClientWidth = 374
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -12,7 +12,6 @@ object ThumbnailForm: TThumbnailForm
   Font.Name = 'Tahoma'
   Font.Style = []
   OnClose = FormClose
-  PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
     Left = 136

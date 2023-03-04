@@ -14,6 +14,7 @@ unit demix_control;
    {$Define RecordDEMIX}
    {$Define RecordDEMIXLoad}
    {$Define RecordDEMIXsave}
+   {$Define RecordCreateHalfSec}
    //{$Define RecordDEMIXMovies}
    //{$Define RecordDEMIXVDatum}
    //{$Define RecordFullDEMIX}
@@ -24,29 +25,32 @@ unit demix_control;
 interface
 
 uses
-    System.SysUtils,System.Classes,StrUtils,VCL.ExtCtrls,VCL.Forms, WinAPI.Windows,
+    System.SysUtils,System.Classes,StrUtils,VCL.ExtCtrls,VCL.Forms, VCL.Graphics, WinAPI.Windows,
     Petmar,Petmar_types,BaseGraf;
-
-
-function LoadDEMIXReferenceDEMs(var RefDEM : integer) : boolean;
-function LoadDEMIXCandidateDEMs(RefDEM : integer; OpenMaps : boolean = false; AllCandidates : boolean = true) : boolean;
-function LoadDEMIXarea(cfName : pathStr) : boolean;
-procedure GetReferenceDEMsForTestDEM(TestSeries : shortstring; var UseDSM,UseDTM : integer);
-procedure OpenDEMIXArea(fName : PathStr = '');
-
-function SymbolFromDEMName(DEMName : shortstring) : tFullSymbolDeclaration;
-function DEMIXColorFromDEMName(DEMName : shortstring) : tPlatformColor;
-
-procedure CopAlosCompareReference;
-procedure PixelByPixelCopAlos;
-procedure HighLowCopAlosGeomorphometry(fName : PathStr = '');
 
 const
    caBest = 1;
    ca4cat = 2;
    ca9cat = 3;
 
-procedure COP_ALOS_compare(What : integer);
+//service functions and procedures
+   function LoadDEMIXReferenceDEMs(var RefDEM : integer) : boolean;
+   function LoadDEMIXCandidateDEMs(RefDEM : integer; OpenMaps : boolean = false; AllCandidates : boolean = true) : boolean;
+   function LoadDEMIXarea(cfName : pathStr) : boolean;
+   procedure GetReferenceDEMsForTestDEM(TestSeries : shortstring; var UseDSM,UseDTM : integer);
+   function SymbolFromDEMName(DEMName : shortstring) : tFullSymbolDeclaration;
+   function DEMIXColorFromDEMName(DEMName : shortstring) : tPlatformColor;
+   procedure OpenDEMIXArea(fName : PathStr = '');
+
+
+//map comparisons
+   procedure CopAlosCompareReference;
+   procedure PixelByPixelCopAlos;
+   procedure HighLowCopAlosGeomorphometry(fName : PathStr = '');
+   procedure COP_ALOS_compare(What : integer);
+   procedure OpenDEMIXRidges(fName : PathStr = '');
+   procedure HillshadesForWineContest(fName : PathStr = '');
+
 
 
 //DEMIX wine contest procedures based on the database
@@ -77,6 +81,71 @@ uses
    DEMCoord,DEMdefs,DEMMapf,DEMDef_routines,DEM_Manager,DEM_indexes,Petmar_db,PetMath;
 
 
+function CreateHalfSecRefDEM(RefPoint,RefArea : integer; CloseInputs : boolean = true) : integer;
+//intended for two DEMs covering the same area with different pixel-is-what geometries, such at COP and ALOS
+//places the elevations from both at the correct locations in a 1/2 sec grid, and then linearly interpolates to fill voids
+//can also be used for a single DEM
+var
+   fName : PathStr;
+
+   function Case1 : integer;
+   begin
+       Result := DEMGlb[RefPoint].SelectionMap.CreateGridToMatchMap(cgLatLong,false,FloatingPointDEM,0.5,0.5,MDdef.DefaultUTMZone,PixelIsPoint);
+       if (RefPoint <> 0) then begin
+          DEMGlb[Result].FillHolesSelectedBoxFromReferenceDEM(DEMGlb[Result].FullDEMGridLimits,RefPoint,hfJustReferencePostings);
+          {$If Defined(RecordCreateHalfSec)} fName := MDTempDir + 'HalfSecAddFirst.dem'; DEMGlb[Result].WriteNewFormatDEM(fName); {$EndIf}
+       end;
+
+       if (RefArea <> 0) then begin
+          DEMGlb[Result].FillHolesSelectedBoxFromReferenceDEM(DEMGlb[Result].FullDEMGridLimits,RefArea,hfJustReferencePostings);
+          {$If Defined(RecordCreateHalfSec)} fName := MDTempDir + 'HalfSecAddSecond.dem'; DEMGlb[Result].WriteNewFormatDEM(fName); {$EndIf}
+       end;
+       //DEMGlb[Result].InterpolateAcrossHoles(false);   //did not work, and this routine might require adjustment
+       DEMGlb[Result].SpecialInterpolateAcrossHoles;     //gives spikey results
+       {$If Defined(RecordCreateHalfSec)} fName := MDTempDir + 'HalfSecInterpolated_case1.dem'; DEMGlb[Result].WriteNewFormatDEM(fName); {$EndIf}
+       DEMGlb[Result].AreaName := DEMGlb[RefPoint].AreaName + '_half_sec';
+       CreateDEMSelectionMap(Result,true,true,mtIHSReflect);
+   end;
+
+
+   function Case2 : integer;
+   var
+      x,y : integer;
+      Lat,Long : float64;
+      z1,z2 : float32;
+   begin
+      if (RefPoint <> 0) and  (RefArea <> 0) then begin
+          Result := DEMGlb[RefPoint].SelectionMap.CreateGridToMatchMap(cgLatLong,false,FloatingPointDEM,0.5,0.5,MDdef.DefaultUTMZone,PixelIsPoint);
+          DEMGlb[Result].AreaName := DEMGlb[RefPoint].AreaName + '_half_sec_double_average_intepolation';
+          for x := 0 to pred(DEMGlb[Result].DEMHeader.NumCol) do begin
+             for y := 0 to pred(DEMGlb[Result].DEMHeader.NumRow) do begin
+                 DEMGlb[Result].DEMgridToLatLongDegree(x,y,Lat,Long);
+                 if DEMGlb[RefPoint].GetElevFromLatLongDegree(Lat,Long,z1) and  DEMGlb[RefArea].GetElevFromLatLongDegree(Lat,Long,z2) then
+                    DEMGlb[Result].SetGridElevation(x,y,0.5 * (z1 + z2));
+             end;
+          end;
+          DEMGlb[Result].CheckMaxMinElev;
+          {$If Defined(RecordCreateHalfSec)} fName := MDTempDir + DEMGlb[Result].AreaName + '.dem'; DEMGlb[Result].WriteNewFormatDEM(fName); {$EndIf}
+          CreateDEMSelectionMap(Result,true,true,mtIHSReflect);
+      end;
+   end;
+
+
+
+begin
+    Result := 0;
+    if (RefPoint <> 0) or (RefArea <> 0) then begin
+       Case1;
+       Case2;
+
+       if CloseInputs then begin
+          CloseSingleDEM(RefPoint);
+          CloseSingleDEM(RefArea);
+       end;
+    end;
+end;
+
+
 function CriterionTieTolerance(Criterion : shortstring) : float32;
 var
     TieToleranceTable : tMyData;
@@ -86,6 +155,7 @@ begin
    Result := TieToleranceTable.GetFieldByNameAsFloat('TOLERANCE');
    TieToleranceTable.Destroy;
 end;
+
 
 procedure GetFilterAndHeader(i,j : integer; var aHeader,aFilter : shortString);
 var
@@ -1165,6 +1235,141 @@ end;
 
 
 
+var
+   UseDSM,UseDTM,chm,
+   HalfSecRefDTM,HalfSecRefDSM,HalfSecDTM,HalfSecALOS,HalfSecCOP,
+   RefSlopeMap,RefRuffMap,RefAspectMap,
+   COP_ALOS_Diff,CopSlope,CopRuff,ALOSslope,ALOSruff,
+   BestCOP_ALOS_elev, BestCOP_ALOS_slope,BestCOP_ALOS_ruff,
+   COP_ALOS_DSM4,COP_ALOS_DTM4,COP_ALOS_DSM9,COP_ALOS_DTM9,
+   DTMElevDiffMapALOS,DTMElevDiffMapCOP,DTMSlopeDiffMapALOS, DTMSlopeDiffMapCOP,DTMRuffDiffMapALOS,DTMRuffDiffMapCOP : integer;
+   HalfSec,AirOrDirt,AirOrDirt2,AirOrDirt3 : array[1..10] of integer;
+
+procedure ZeroDEMs;
+var
+   i : integer;
+begin
+   UseDSM := 0;
+   UseDTM := 0;
+   HalfSecRefDSM := 0;
+   HalfSecRefDTM := 0;
+   HalfSecALOS := 0;
+   HalfSecCOP := 0;
+   RefSlopeMap := 0;
+   RefRuffMap := 0;
+   COP_ALOS_DSM4 := 0;
+   COP_ALOS_DTM4 := 0;
+   COP_ALOS_DSM9 := 0;
+   COP_ALOS_DTM9 := 0;
+   COP_ALOS_Diff := 0;
+
+   CopSlope := 0;
+   CopRuff := 0;
+   ALOSslope := 0;
+   ALOSruff := 0;
+
+   BestCOP_ALOS_elev := 0;
+   BestCOP_ALOS_slope := 0;
+   BestCOP_ALOS_ruff := 0;
+   DTMElevDiffMapALOS := 0;
+   DTMElevDiffMapCOP := 0;
+   DTMSlopeDiffMapALOS := 0;
+   DTMSlopeDiffMapCOP := 0;
+   DTMRuffDiffMapALOS := 0;
+   DTMRuffDiffMapCOP := 0;
+
+   CHM := 0;
+   for I := 1 to 10 do begin
+      HalfSec[i] := 0;
+      AirOrDirt[i] := 0;
+      AirOrDirt2[i] := 0;
+      AirOrDirt3[i] := 0;
+   end;
+end;
+
+
+procedure HillshadesForWineContest(fName : PathStr = '');
+var
+   AreaName : shortstring;
+   RefDEM : integer;
+begin
+ (*
+   if FileExists(fName) or GetFileFromDirectory('DEMIX area database','*.dbf',fName) then begin
+      AreaName := ExtractFileNameNoExt(fName);
+   if LoadDEMIXReferenceDEMs(RefDEM) then begin
+   if LoadDEMIXCandidateDEMs(RefDEM,true,true)
+   then begin
+
+*)
+end;
+
+
+
+procedure OpenDEMIXRidges(fName : PathStr = '');
+const
+   CatName : array[1..7] of shortstring = ('Ref','ALOS','ALOS+Ref', 'COP','Cop+Ref','ALOS+COP','ALOS+Cop+Ref');
+   CatColor : array[1..7] of tColor = (clBlue,clGreen,clAqua,clLime,clTeal,clPurple,clBrown);
+var
+   AreaName : shortstring;
+   SaveDir : PathStr;
+   Fixed,i,x,y,SumDEM : integer;
+   z : float32;
+   Higher,Lower : array[1..3] of integer;
+   Hist : array[1..7] of int64;
+   Merge : tDEMbooleans;
+   VAT : tStringList;
+begin
+   if FileExists(fName) or GetFileFromDirectory('DEMIX area database','*.dbf',fName) then begin
+      {$IfDef RecordDEMIX} writeLineToDebugFile('OpenDEMIXRidges ' + fName); {$EndIf}
+      AreaName := ExtractFileNameNoExt(fName);
+      SaveDir := fName[1] + ':\aa_half_sec_test\' + AreaName + '\';
+      ZeroDEMs;
+      HalfSecRefDTM := OpenNewDEM(SaveDir + HalfSecRefDTMfName);
+      HalfSecALOS := OpenNewDEM(SaveDir + ALOSHalfSecfName);
+      HalfSecCOP := OpenNewDEM(SaveDir + CopHalfSecfName);
+
+      NumHighLowNeighborsMaps(HalfSecRefDTM,MDDef.WoodRegionRadiusPixels,MDdef.MinDeltaZToClassify, Higher[1],Lower[1]);
+      NumHighLowNeighborsMaps(HalfSecALOS,MDDef.WoodRegionRadiusPixels,MDdef.MinDeltaZToClassify, Higher[2],Lower[2]);
+      NumHighLowNeighborsMaps(HalfSecCOP,MDDef.WoodRegionRadiusPixels,MDdef.MinDeltaZToClassify, Higher[3],Lower[3]);
+      ShowHourglassCursor;
+      for I := 1 to 3 do DEMGlb[Lower[i]].MarkBelowMissing(4.5,Fixed);
+      DEMGlb[Lower[1]].ReclassifyRange(1,8,1);
+      DEMGlb[Lower[2]].ReclassifyRange(1,8,2);
+      DEMGlb[Lower[3]].ReclassifyRange(1,8,4);
+
+
+      for i := 1 to MaxDEMDataSets do Merge[i] := false;
+      for I := 1 to 3 do Merge[Lower[i]] := true;
+      ShowHourglassCursor;
+      SumDEM := SumDEMs(Lower[1],Merge,AreaName + '_ridges',false,false);
+      DEMGlb[SumDEM].MarkBelowMissing(0.5,Fixed);
+
+      for i := 1 to 7 do Hist[i] := 0;
+      ShowHourglassCursor;
+
+      for x := 0 to pred(DEMGlb[SumDEM].DEMheader.NumCol) do begin
+         for y := 0 to pred(DEMGlb[SumDEM].DEMheader.NumRow) do begin
+            if DEMGlb[SumDEM].GetElevMetersOnGrid(x,y,z) then begin
+               inc(Hist[round(z)]);
+            end;
+         end;
+      end;
+
+      Vat := tStringList.Create;
+      Vat.add('VALUE,NAME,N,USE,COLOR');
+      for i := 7 downto 1 do if (Hist[i] > 0) then Vat.add(IntToStr(i) + ',' + CatName[i] + ',' + IntToStr(Hist[i]) + ',Y,' + IntToStr(CatColor[i]));
+
+      fName := MDTempDir + AreaName + '.vat.dbf';
+      StringList2CSVtoDB(vat,fName,true);
+      DEMGlb[SumDEM].VATFileName := fName;
+      DEMglb[SumDEM].CheckMaxMinElev;
+      DEMglb[SumDEM].SetUpMap(SumDEM,true,mtDEMVATTable);
+
+
+   end;
+end;
+
+
 procedure OpenDEMIXArea(fName : PathStr = '');
 //these are currently hard wired in the code, but eventually might be options enabled at run time
 const
@@ -1178,57 +1383,12 @@ const
    DEMIX_GeomorphMaps = true;
 var
    AreaName : shortstring;
-   HalfSec : array[1..10] of integer;
-   UseDSM,UseDTM,chm,HalfSecRefDTM,HalfSecRefDSM,RefSlopeMap,RefRuffMap,RefAspectMap,
-   COP_ALOS_Diff,CopSlope,CopRuff,ALOSslope,ALOSruff,
-   BestCOP_ALOS_elev, BestCOP_ALOS_slope,BestCOP_ALOS_ruff,
-   COP_ALOS_DSM4,COP_ALOS_DTM4,COP_ALOS_DSM9,COP_ALOS_DTM9,
-   DTMElevDiffMapALOS,DTMElevDiffMapCOP,DTMSlopeDiffMapALOS, DTMSlopeDiffMapCOP,DTMRuffDiffMapALOS,DTMRuffDiffMapCOP,
+   HalfSec,AirOrDirt,AirOrDirt2,AirOrDirt3 : array[1..10] of integer;
    i,Cols : integer;
-   AirOrDirt,AirOrDirt2,AirOrDirt3 : array[1..10] of integer;
    BigMap,Movie : tStringList;
    Graph1,Graph2 : tThisBaseGraph;
    SaveDir : PathStr;
 
-      procedure ZeroDEMs;
-      var
-         i : integer;
-      begin
-         UseDSM := 0;
-         UseDTM := 0;
-         HalfSecRefDTM := 0;
-         HalfSecRefDSM := 0;
-         RefSlopeMap := 0;
-         RefRuffMap := 0;
-         COP_ALOS_DSM4 := 0;
-         COP_ALOS_DTM4 := 0;
-         COP_ALOS_DSM9 := 0;
-         COP_ALOS_DTM9 := 0;
-         COP_ALOS_Diff := 0;
-
-         CopSlope := 0;
-         CopRuff := 0;
-         ALOSslope := 0;
-         ALOSruff := 0;
-
-         BestCOP_ALOS_elev := 0;
-         BestCOP_ALOS_slope := 0;
-         BestCOP_ALOS_ruff := 0;
-         DTMElevDiffMapALOS := 0;
-         DTMElevDiffMapCOP := 0;
-         DTMSlopeDiffMapALOS := 0;
-         DTMSlopeDiffMapCOP := 0;
-         DTMRuffDiffMapALOS := 0;
-         DTMRuffDiffMapCOP := 0;
-
-         CHM := 0;
-         for I := 1 to 10 do begin
-            HalfSec[i] := 0;
-            AirOrDirt[i] := 0;
-            AirOrDirt2[i] := 0;
-            AirOrDirt3[i] := 0;
-         end;
-      end;
 
          procedure AddImage(GraphImage : tImage);
          var
@@ -1243,22 +1403,6 @@ var
             end;
          end;
 
-         function CreateHalfSecRefDEM(RefPoint,RefArea : integer) : integer;
-         begin
-             if (RefPoint <> 0) and (RefArea <> 0) then begin
-                Result := DEMGlb[RefPoint].SelectionMap.CreateGridToMatchMap(cgLatLong,false,FloatingPointDEM,0.5,0.5,MDdef.DefaultUTMZone,PixelIsPoint);
-                DEMGlb[Result].FillHolesSelectedBoxFromReferenceDEM(DEMGlb[Result].FullDEMGridLimits,RefPoint,hfOnlyHole);
-                DEMGlb[Result].FillHolesSelectedBoxFromReferenceDEM(DEMGlb[Result].FullDEMGridLimits,RefArea,hfOnlyHole);
-                DEMGlb[Result].InterpolateAcrossHoles(false);
-                DEMGlb[Result].AreaName := DEMGlb[RefPoint].AreaName + '_half_sec';
-                CreateDEMSelectionMap(Result,true,true,mtIHSReflect);
-                CloseSingleDEM(RefPoint);
-                CloseSingleDEM(RefArea);
-             end
-             else begin
-                Result := 0;
-             end;
-         end;
 
          procedure AddFrame(DEM : integer; What : ShortString);
          begin
@@ -1301,10 +1445,10 @@ begin
          MDDef.GIFfileLabels := false;
          MDdef.DefaultMapXSize := 1000;
          MDdef.DefaultMapYSize := 1000;
+         MDDef.MapNameLocation.DrawItem := true;
          MDDef.MapNameLocation.MapPosition := lpNEmap;
          MDDef.MapNameLocation.DrawItem := true;
          MDDef.GridLegendLocation.DrawItem := true;
-         MDDef.MapNameLocation.DrawItem := true;
 
          ZeroDEMs;
 
@@ -1313,31 +1457,14 @@ begin
             if LoadDEMIXReferenceDEMs(DEMIXRefDEM) then begin
                {$IfDef RecordDEMIX} writeLineToDebugFile('LoadDEMIXReferenceDEMs complete; Open DEMs=, ' + IntToStr(NumDEMdatasetsOpen) + 'DEMIXRefDEM=' + IntToStr(DEMIXRefDEM)); {$EndIf}
 
-(*
-   ALOSHalfSecfName = 'alos.dem';
-   CopHalfSecfName = 'cop.dem';
-
-   COP_ALOS_DifffName = 'cop-alos-diff.dem';
-   COP_ALOS_DSM4fName = 'cop-alos-dsm4.dem';
-   COP_ALOS_DTM4fName = 'cop-alos-dtm4.dem';
-   COP_ALOS_DSM9fName = 'cop-alos-dsm9.dem';
-   COP_ALOS_DTM9fName = 'cop-alos-dtm9.dem';
-
-   BestCOP_ALOS_slopefName = 'best_slope_ref_dtm.dem';
-   BestCOP_ALOS_rufffName = 'best_roughness_ref_dtm.dem';
-   BestCOP_ALOS_elevfName = 'best_elev_ref_dtm.dem';
-
-   DTMElevDiffMapALOSfName = 'elev_diff_dtm_alos.tif';
-   DTMElevDiffMapCOPfName = 'elev_diff_dtm_cop.tif';
-   DTMSlopeDiffMapALOSfName = 'slope_diff_dtm_alos.tif';
-   DTMSlopeDiffMapCOPfName = 'slope_diff_dtm_cop.tif';
-   DTMRuffDiffMapALOSfName = 'ruff_diff_dtm_alos.tif';
-   DTMRuffDiffMapCOPfName = 'ruff_diff_dtm_cop.tif';
-*)
-
                if MDDef.DEMIX_DoHalfSecDEMs then begin
-                  if FileExists(HalfSecRefDSMfName) then HalfSecRefDSM := OpenNewDEM(HalfSecRefDSMfName) else HalfSecRefDSM := CreateHalfSecRefDEM(RefDSMPoint,RefDSMArea);
-                  if FileExists(HalfSecRefDTMfName) then HalfSecRefDTM := OpenNewDEM(HalfSecRefDSMfName) else HalfSecRefDTM := CreateHalfSecRefDEM(RefDTMPoint,RefDTMArea);
+                  //HalfSecRefDSM := CreateHalfSecRefDEM(RefDSMPoint,RefDSMArea);
+                  HalfSecRefDTM := CreateHalfSecRefDEM(RefDTMPoint,RefDTMArea);
+                  exit;
+
+
+                  //if FileExists(HalfSecRefDSMfName) then HalfSecRefDSM := OpenNewDEM(HalfSecRefDSMfName) else HalfSecRefDSM := CreateHalfSecRefDEM(RefDSMPoint,RefDSMArea);
+                  //if FileExists(HalfSecRefDTMfName) then HalfSecRefDTM := OpenNewDEM(HalfSecRefDTMfName) else HalfSecRefDTM := CreateHalfSecRefDEM(RefDTMPoint,RefDTMArea);
                   DEMIXRefDEM := HalfSecRefDTM;
                   {$IfDef RecordDEMIX} writeLineToDebugFile('Half sec ref dems created; Open DEMs=' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
                end;
@@ -1381,7 +1508,6 @@ begin
                               {$IfDef RecordDEMIX} writeLineToDebugFile(DEMGlb[TestDEM[i]].AreaName + ' Initial DEM=' + IntToStr(TestDEM[i]) + '  ' + DEMGlb[TestDEM[i]].KeyDEMParams(true)); {$EndIf}
                               fName := MDtempDir + DEMGlb[TestDEM[i]].AreaName + '_0.5sec.dem';
                               HalfSec[i] := DEMGlb[TestDEM[i]].ReinterpolateLatLongDEM(0.5,fName);
-                              {$IfDef RecordDEMIX} writeLineToDebugFile(DEMGlb[HalfSec[i]].AreaName + ' new half second'); {$EndIf}
                               //CloseSingleDEM(TestDEM[i]);
                               TestDEM[i] := HalfSec[i];
                               {$IfDef RecordDEMIX} writeLineToDebugFile(DEMGlb[TestDEM[i]].AreaName + ' now TestDEM=' + IntToStr(TestDEM[i])); {$EndIf}

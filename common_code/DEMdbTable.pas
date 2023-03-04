@@ -953,6 +953,7 @@ type
     iesbyopinions1: TMenuItem;
     Wins1: TMenuItem;
     LoadthisDEM1: TMenuItem;
+    Updatestatus1: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
     procedure Shiftpointrecords1Click(Sender: TObject);
     procedure Creategrid1Click(Sender: TObject);
@@ -1677,6 +1678,7 @@ type
     procedure iesbyopinions1Click(Sender: TObject);
     procedure Wins1Click(Sender: TObject);
     procedure LoadthisDEM1Click(Sender: TObject);
+    procedure Updatestatus1Click(Sender: TObject);
   private
     procedure PlotSingleFile(fName : PathStr; xoff,yoff : float64);
     procedure SetUpLinkGraph;
@@ -2448,6 +2450,11 @@ begin
    GISdb[DBonTable].AddSequentialIndex(SelectedColumn);
 end;
 
+
+procedure Tdbtablef.Updatestatus1Click(Sender: TObject);
+begin
+   ShowStatus;
+end;
 
 procedure Tdbtablef.Hide1Click(Sender: TObject);
 var

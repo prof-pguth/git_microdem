@@ -150,7 +150,7 @@ type
       procedure DBCoOccurrence(Table : tMyData; EmpSource: TDataSource; Field1,Field2 : ShortString; Percentages : boolean);
   {$EndIf}
 
-   function SumDEMs(FirstDEM : integer; Merge : tDEMbooleans; NewName : shortstring) : integer;
+   function SumDEMs(FirstDEM : integer; Merge : tDEMbooleans; NewName : shortstring; OpenMap : boolean = true; AllGridsValidZ : boolean = true) : integer;
    function MakeChangeMap(Map1,Map2 : integer; GridLimits: tGridLimits) : integer;
    procedure GridCorrelationMatrix(Incr : integer = 1);
 
@@ -1224,7 +1224,7 @@ end;
 {$EndIf}
 
 
-function SumDEMs(FirstDEM : integer; Merge : tDEMbooleans; NewName : shortstring) : integer;
+function SumDEMs(FirstDEM : integer; Merge : tDEMbooleans; NewName : shortstring; OpenMap : boolean = true; AllGridsValidZ : boolean = true) : integer;
 label
    MissingData;
 var
@@ -1241,12 +1241,12 @@ begin
             for i := 1 to MaxDEMDataSets do if Merge[i] then begin
                if DEMGlb[FirstDEM].SecondGridIdentical(i) then begin
                   if DEMGlb[i].GetElevMeters(Col,Row,z2) then z := z + z2
-                  else GoTo MissingData;
+                  else if AllGridsValidZ then GoTo MissingData;
                end
                else begin
                   DEMGlb[FirstDEM].DEMGridToLatLongDegree(Col,Row,Lat,Long);
                   if DEMGlb[i].GetElevFromLatLongDegree(Lat,Long,z2) then z := z + z2
-                  else Goto MissingData;;
+                  else if AllGridsValidZ then Goto MissingData;;
                end;
             end;
             DEMGlb[Result].SetGridElevation(Col,Row,z);
@@ -1254,7 +1254,7 @@ begin
          end;
       end;
       EndProgress;
-      DEMGlb[Result].SetUpMap(Result,true,DEMGlb[FirstDEM].SelectionMap.MapDraw.MapType);
+      if OpenMap then DEMGlb[Result].SetUpMap(Result,true,DEMGlb[FirstDEM].SelectionMap.MapDraw.MapType);
    end;
 end;
 

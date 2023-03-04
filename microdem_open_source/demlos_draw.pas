@@ -1727,11 +1727,11 @@ begin
       for j := 1 to 2 do LOSMemoryPointCloud[j] := Nil;
    {$EndIf}
    for j := 1 to NumDEMDataSetsOpen do begin
-      ProfileName[j] := '';
       if ValidDEM(j) then begin
          {$IfDef RecordLOS} WriteLineToDebugFile(DEMGlb[j].AreaName); {$EndIf}
          ProfileName[j] := RemoveUnderScores(DEMGlb[j].AreaName)
-      end;
+      end
+      else ProfileName[j] := '';
    end;
 end;
 

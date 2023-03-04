@@ -685,7 +685,6 @@ begin
 end;
 
 
-
 function GridLimitsString(GridLimits : tGridLimits) : shortstring;
 begin
    Result := 'Left:  ' + IntToStr(GridLimits.XGridLow) + ' Right: ' + IntToStr(GridLimits.XGridHigh) + ' Top:  ' + IntToStr(GridLimits.YGridHigh) + ' Bottom: ' + IntToStr(GridLimits.YGridLow);
@@ -1166,7 +1165,7 @@ begin
      raSimple2 : Result := 'Simple2 (t=' + IntToStr(MDDef.ValleyRidgeThreshold) + ')';
      raSimple  : Result := 'Simple';
    end;
-   Result := Result + ' (r=' + IntToStr(MdDef.WoodRegionSize) + ' posts)';
+   Result := Result + ' (r=' + IntToStr(MdDef.WoodRegionRadiusPixels) + ' posts)';
 end;
 
 function ClassBoxName : string;
@@ -1534,7 +1533,7 @@ var
             AParameter('Geomorph','ShiftHighX',ShiftHighX,25);
             AParameter('Geomorph','ShiftLoY',ShiftLoY,0);
             AParameter('Geomorph','ShiftHighY',ShiftHighY,15);
-            AParameter('Geomorph','WoodRegionSize',WoodRegionSize,1);
+            AParameter('Geomorph','WoodRegionRadiusPixels',WoodRegionRadiusPixels,1);
             AParameter('Geomorph','SSOSampleIncr',SSOSampleIncr,1);
             AParameter('Geomorph','MapSampleIncr',MapSampleIncr,1);
             AParameter('Geomorph','ShowRegularHistogram',ShowRegularHistogram,true);
@@ -2474,6 +2473,7 @@ var
             AParameter('Files','LastLidarMult',LastLidarMulti,'');
             AParameter('Files','LastOSMoverlay',LastOSMoverlay,'');
             AParameter('Files','MapLibDir',MapLibDir,'');
+            AParameter('Files','lastools_bindir',lastools_bindir,'');
 
             {$IfDef ExGDAL}
             {$Else}

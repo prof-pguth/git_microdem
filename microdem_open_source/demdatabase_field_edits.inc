@@ -389,6 +389,18 @@ end;
             else MessageToContinue(NotAllowedDBtype);
          end;
 
+         procedure TGISdataBaseModule.ChangeFieldDecimals(OldName : ShortString; NewDecimals : byte);
+         begin
+            if (MyData <> Nil) then begin
+               EmpSource.Enabled := false;
+               MyData.Destroy;
+               ApplicationProcessMessages;
+               ChangeDBaseFieldDecimals(dbFullName,OldName,NewDecimals);
+               MyData := TMyData.Create(dbFullName);
+               MyData.AssignEmpSource(EmpSource);
+            end
+            else MessageToContinue(NotAllowedDBtype);
+         end;
 
          procedure TGISdataBaseModule.AddIcon(Fill : boolean = true);
          var

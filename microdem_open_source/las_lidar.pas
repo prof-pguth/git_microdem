@@ -16,9 +16,10 @@
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IfDef Debug}
       //{$Define RecordLASMemoryAlocations}
+      {$Define RecordTilePlotSummary}
       //{$Define RecordLASfiles}
-      {$Define RecordWKT}
-      {$Define RecordVarLenRec}
+      //{$Define RecordWKT}
+      //{$Define RecordVarLenRec}
       //{$Define RecordFirstPulse}
       //{$Define RecordReprojectLAS}
       //{$Define RecordLASplot}
@@ -263,6 +264,7 @@ type
          MeterXscaleFac,MeterYscaleFac,MeterZscaleFac,
          LAS_x_range,LAS_y_range,LAS_Z_range : float64;
          LAS_UTM_Box,
+         LAS_Proj_Box,
          LAS_LatLong_Box : sfboundBox;
          ASCIIProjectionData : shortString;
          UTMZone  : int16;
@@ -289,7 +291,7 @@ type
          procedure PlotTileOnMap(Cloud: integer; BaseMapDraw : tMapDraw; var BMPMemory : tBMPMemory; MinAreaZ, MaxAreaZ : float64);
          function LASClassificationCategory(j: integer): tLASClassificationCategory;
 
-         function FileOnMap(BaseMapDraw : tMapDraw) : boolean; {$IfDef NoInLine} {$Else} inline; {$EndIf}
+         function LASFileOnMap(BaseMapDraw : tMapDraw) : boolean; {$IfDef NoInLine} {$Else} inline; {$EndIf}
          function InBoundBoxGeo(BoundBox : sfBoundBox): boolean; {$IfDef NoInLine} {$Else} inline; {$EndIf}
          function InBoundBoxUTM(BoundBox : sfBoundBox): boolean; {$IfDef NoInLine} {$Else} inline; {$EndIf}
          function FileOnDEM(DEM: integer): boolean; inline;
@@ -591,9 +593,7 @@ begin
       end;
 
       {$IfDef ExportColors} WriteLineToDebugFile('las_red = ' + rs + ']'); WriteLineToDebugFile('las_green = ' + gs + ']'); WriteLineToDebugFile('las_blue = ' + bs + ']'); {$EndIf}
-
       for i := 1 to 15 do Las_ret_colors[i] := ConvertTColorToPlatformColor(LidarTColor[i]);
-
       LasColorsDone := true;
       {$IfDef RecordLASColors}
          writelineToDebugFile('Colors in initial definition');
@@ -611,8 +611,8 @@ var
    NoFilter : boolean;
    ColorRGB : tPlatformColor;
 begin
-   if FileOnMap(BaseMapDraw) then begin
-      {$IfDef RecordLASplot} writelineToDebugFile('tLAS_data.PlotOnMap ' + ExtractFileNameNoExt(LasFileName) + '   mode=' + IntToStr(Ord(MDDef.ls.ColorCoding))); {$EndIf}
+   if true or LASFileOnMap(BaseMapDraw) then begin
+      {$If Defined(RecordLASplot)} writelineToDebugFile('tLAS_data.PlotOnMap ' + ExtractFileNameNoExt(LasFileName) + '   mode=' + IntToStr(Ord(MDDef.ls.ColorCoding))); {$EndIf}
       NoFilter := NoFilterWanted;
       pplot := 0;
       if (MDDef.ls.ColorCoding = lasccCloudID) then begin
@@ -632,7 +632,7 @@ begin
                    GetShotScreenCoordinatesAppropriate(BaseMapDraw,j, x,y);
                    if BaseMapDraw.OnScreen(x,y) then begin
                       if (MDDef.ls.ColorCoding <> lasccCloudID) then GetColor(j,MinAreaZ,MaxAreaZ,ColorRGB);
-                      {$IfDef RecordLASplot} inc(pplot); {$EndIf}
+                      {$If Defined(RecordLASplot) or Defined(RecordTilePlotSummary)} inc(pplot); {$EndIf}
                       BMPMemory.SetPixelColorSize(x,y,MDDef.CloudMapSymbol[Cloud].Size,ColorRGB);
                   end;
                 end;
@@ -643,7 +643,10 @@ begin
          {$IfDef VCL} if ShowSatProgress then ApplicationProcessMessages; {$EndIf}
       end {for i};
       FreeLASRecordMemory;
-   {$IfDef RecordLASplot} WritelineToDebugFile('tLAS_data.PlotOnMap out, plot=' + IntToStr(pplot)); {$EndIf}
+      {$If Defined(RecordLASplot) or Defined(RecordTilePlotSummary)}  WritelineToDebugFile('tLAS_data.PlotOnMap out ' + ExtractFileNameNoExt(LasFileName) + '   mode=' + IntToStr(Ord(MDDef.ls.ColorCoding)) + '   pts plot=' + IntToStr(pplot)); {$EndIf}
+   end
+   else begin
+      {$If Defined(RecordLASplot) or Defined(RecordTilePlotSummary)} writelineToDebugFile('tLAS_data.PlotOnMap ' + ExtractFileNameNoExt(LasFileName)+ ' not on map'); {$EndIf}
    end;
 end;
 
@@ -907,12 +910,11 @@ constructor tLAS_data.Create;
 const
    MaxInRec = MaxWord;
 var
-   GeoASCIIParamsOffset,GeoASCIIParamsSize,i,{FIPS_Zone}j{,tCode} : integer;
+   GeoASCIIParamsOffset,GeoASCIIParamsSize,i,j : integer;
    WidthMeters,az,HeightMeters,vFactor,hfactor, Area : float64;
    GeoKeys : array[0..MaxGeoKeys,1..4] of word;
    ProjData : tStringList;
    ASCIIStr  : AnsiString;
-   //SPCSZone : ShortString;
    Junk,
    GeotiffDoubles,
    GeotiffASCII  : array[1..MaxInRec] of byte;
@@ -937,7 +939,6 @@ var
             end
             else Result := true;
          end;
-
 
          function MakeDouble(offset : integer) : Double;
          var
@@ -964,30 +965,47 @@ var
             LAS_LatLong_Box.xmin := LasHeader.MinX;
          end;
 
+         procedure SetLasProjBox;
+         begin
+            LAS_Proj_Box.ymax := LasHeader.MaxY;
+            LAS_Proj_Box.xmax := LasHeader.MaxX;
+            LAS_Proj_Box.ymin := LasHeader.MinY;
+            LAS_Proj_Box.xmin := LasHeader.MinX;
+         end;
+
+
+         (*
          procedure GetUTMboxFromLatLongBox;
          begin
             RedefineWGS84DatumConstants(0.5*(LAS_LatLong_Box.XMax + LAS_LatLong_Box.XMin),lasProjectionDefinition.LasProjection.LatHemi);
             WGS84DatumConstants.LatLongDegreetoUTM(LAS_LatLong_Box.YMax,LAS_LatLong_Box.XMax,LAS_UTM_Box.xmax,LAS_UTM_Box.ymax);
             WGS84DatumConstants.LatLongDegreetoUTM(LAS_LatLong_Box.YMin,LAS_LatLong_Box.XMin,LAS_UTM_Box.xmin,LAS_UTM_Box.ymin);
          end;
+         *)
 
          procedure DoWKTfromVariableLengthRecord;
          begin
             if lasProjectionDefinition.LasProjection.DecodeWKTProjectionFromString(ASCIIProjectionData) then begin
-               lasProjectionDefinition.LasProjection.InverseProjectDegrees(LasHeader.MaxX,LasHeader.MaxY,LAS_LatLong_Box.ymax,LAS_LatLong_Box.xmax);
-               lasProjectionDefinition.LasProjection.InverseProjectDegrees(LasHeader.MinX,LasHeader.MinY,LAS_LatLong_Box.ymin,LAS_LatLong_Box.xmin);
+               SetLasProjBox;
+               LAS_LatLong_Box := lasProjectionDefinition.LasProjection.ConvertProjectedBoundBoxToGeoBoundBox(LAS_Proj_Box);
+
+               //lasProjectionDefinition.LasProjection.InverseProjectDegrees(LasHeader.MaxX,LasHeader.MaxY,LAS_LatLong_Box.ymax,LAS_LatLong_Box.xmax);
+               //lasProjectionDefinition.LasProjection.InverseProjectDegrees(LasHeader.MinX,LasHeader.MinY,LAS_LatLong_Box.ymin,LAS_LatLong_Box.xmin);
                {$If Defined(RecordWKT)} WriteLineToDebugFile('DoWKTfromVariableLengthRecord geobox=' + sfBoundBoxToString(LAS_LatLong_Box)); {$EndIf}
 
-               //if lasProjectionDefinition.LasProjection.VertFeet then begin
-                  //MeterZscaleFac := LasHeader.ZscaleFac * lasProjectionDefinition.LasProjection.VertFootFactor;
-                  LasHeader.ZscaleFac := LasHeader.ZscaleFac * lasProjectionDefinition.LasProjection.VertFootFactor;
-                  LasHeader.MaxZ := LasHeader.MaxZ * lasProjectionDefinition.LasProjection.VertFootFactor;
-                  LasHeader.MinZ := LasHeader.MinZ * lasProjectionDefinition.LasProjection.VertFootFactor;
-                  LAS_Z_range := LasHeader.MaxZ - LasHeader.MinZ;
-               //end;
-               if lasProjectionDefinition.LasProjection.Pname = UTMEllipsoidal then SetLasUTMBox
+               LasHeader.ZscaleFac := LasHeader.ZscaleFac * lasProjectionDefinition.LasProjection.VertFootFactor;
+               LasHeader.MaxZ := LasHeader.MaxZ * lasProjectionDefinition.LasProjection.VertFootFactor;
+               LasHeader.MinZ := LasHeader.MinZ * lasProjectionDefinition.LasProjection.VertFootFactor;
+               LAS_Z_range := LasHeader.MaxZ - LasHeader.MinZ;
+
+               if lasProjectionDefinition.LasProjection.Pname = UTMEllipsoidal then begin
+                  SetLasUTMBox;
+                  LAS_LatLong_Box := lasProjectionDefinition.LasProjection.ConvertUTMBoundBoxToGeoBoundBox(LAS_UTM_Box);
+               end
                else begin
-                  GetUTMboxFromLatLongBox;
+                  //GetUTMboxFromLatLongBox;
+                  //lasProjectionDefinition.LasProjection.ConvertUTMBoundBoxToGeoBoundBox(
+                  LAS_UTM_Box := lasProjectionDefinition.LasProjection.ConvertGeoBoundBoxToUTMBoundBox(LAS_LatLong_Box);
                end;
 
                UTMZone := GetUTMZone(0.5 * (LAS_LatLong_Box.xmax + LAS_LatLong_Box.xmin));
@@ -1162,7 +1180,7 @@ begin
       LasHeader.MaxY := LasHeader.MaxY * hFactor;
       LasHeader.MinY := LasHeader.MinY * hFactor;
 
-      if not lasProjectionDefinition.RawXYZFile then begin
+      if (not lasProjectionDefinition.RawXYZFile) then begin
          if (lasProjectionDefinition.LasProjection.H_DatumCode = '') then begin
             if ThisIsETRS89(ASCIIProjectionData) then lasProjectionDefinition.LasProjection.H_DatumCode := 'ETR89'
             else if ThisIsWGS84(ASCIIProjectionData) then lasProjectionDefinition.LasProjection.H_DatumCode := 'WGS84'
@@ -1183,8 +1201,10 @@ begin
             if (lasProjectionDefinition.LASProjection.PName = UTMEllipsoidal) then begin
                lasProjectionDefinition.LasProjection.StartUTMProjection(lasProjectionDefinition.LasProjection.projUTMZone);
                UTMZone := lasProjectionDefinition.LasProjection.projUTMZone;
+            end
+            else begin
+               lasProjectionDefinition.LasProjection.GetProjectParameters;
             end;
-            lasProjectionDefinition.LasProjection.GetProjectParameters;
             {$IfDef RecordCreateEveryFile}
                WriteLineToDebugFile('Got lasProjectionDefinition.LasProjection.GetProjectParameters');
                WriteStringListToDebugFile(lasProjectionDefinition.LasProjection.ProjectionParametersList);
@@ -1196,23 +1216,21 @@ begin
          end;
       end;
 
-      if (not WKT) then begin
-         if (NumGeotiffKeys = 0) or (lasProjectionDefinition.LasProjection = Nil) and (not (lasProjectionDefinition.LASProjection.ModelType = LasLatLong)) then begin
-            {$IfDef RecordCreateEveryFile} WriteLineToDebugFile('No luck on projection'); {$EndIf}
-            FileName := ExtractFilePath(LASFileName) + 'all.prj';
-            if FileExists(fileName) then begin
-               lasProjectionDefinition.LASProjection.InitializeProjectionFromWKT(fileName);
-            end
-            else begin
-               if not CheckProjectionFile then exit;
-            end;
-         end;
-      end;
+       if (not WKT) and (NumGeotiffKeys = 0) or (lasProjectionDefinition.LasProjection = Nil) and (not (lasProjectionDefinition.LASProjection.ModelType = LasLatLong)) then begin
+          {$IfDef RecordCreateEveryFile} WriteLineToDebugFile('No luck on projection'); {$EndIf}
+          FileName := ExtractFilePath(LASFileName) + 'all.prj';
+          if FileExists(fileName) then begin
+             lasProjectionDefinition.LASProjection.InitializeProjectionFromWKT(fileName);
+          end
+          else begin
+             if not CheckProjectionFile then exit;
+          end;
+       end;
 
       SingleFilePointDensity := NumPointRecs / Area;
 
       //in case LAS files has no breakdown by return (e.g. OpenTopography Pleiades)
-      if LasHeader.NumPtsByReturn[1] = 0 then SingleFilePulseDensity := SingleFilePointDensity;
+      if (LasHeader.NumPtsByReturn[1] = 0) then SingleFilePulseDensity := SingleFilePointDensity;
       Seek(LasFile,LasHeader.OffsetToData);
 
        {$IfDef RecordCreateEveryFile}
@@ -1294,7 +1312,7 @@ procedure tLAS_data.GetShotScreenCoordinatesAppropriate(BaseMapDraw : tMapDraw; 
 var
    Lat,Long : float64;
 begin
-   if BaseMapDraw.BasicProjection = bpUTM then GetShotScreenCoordinatesUTM(BaseMapDraw, j, x,y)
+   if (BaseMapDraw.BasicProjection = bpUTM) then GetShotScreenCoordinatesUTM(BaseMapDraw, j, x,y)
    else begin
        GetShotCoordinatesLatLong(j,Lat,Long);
        BaseMapDraw.LatLongDegreeToScreen(Lat,Long,x,y);
@@ -1321,29 +1339,27 @@ var
    x1,y1,x2,y2,x,y : integer;
    TStr : shortstring;
 begin
-   BaseMap.MapDraw.LatLongDegreeToScreen(LAS_LatLong_Box.ymax,LAS_LatLong_Box.xmin,x1,y1);
-   BaseMap.MapDraw.LatLongDegreeToScreen(LAS_LatLong_Box.ymin,LAS_LatLong_Box.xmax,x2,y2);
-   if (x1=x2) or (y1=y2) then begin
-      Petmar.ScreenSymbol(BaseMap.Image1.Canvas,x1,y1,Box,2,ConvertTColorToPlatformColor(clRed));
-   end
-   else begin
-      BaseMap.Image1.Canvas.Rectangle(x1,y1,x2,y2);
-      if MDDef.LabelLAStiles then begin
-         x := (x1 + x2) div 2;
-         y := (y1 + y2) div 2;
-         if BaseMap.MapDraw.OnScreen(x,y) then begin
-            TStr := ExtractFileNameNoExt(LasFileName);
-            BaseMap.Image1.Canvas.TextOut(x - BaseMap.Image1.Canvas.TextWidth(TStr) div 2,y,TStr);
-         end;
-      end;
-   end;
+   BaseMap.OutlineGeoBox(LAS_LatLong_Box,clRed,2);
+   BaseMap.OutlineUTMBox(LAS_UTM_Box,clLime,2);
+
+    if MDDef.LabelLAStiles then begin
+       BaseMap.MapDraw.LatLongDegreeToScreen(LAS_LatLong_Box.ymax,LAS_LatLong_Box.xmin,x1,y1);
+       BaseMap.MapDraw.LatLongDegreeToScreen(LAS_LatLong_Box.ymin,LAS_LatLong_Box.xmax,x2,y2);
+       x := (x1 + x2) div 2;
+       y := (y1 + y2) div 2;
+       if BaseMap.MapDraw.OnScreen(x,y) then begin
+          TStr := ExtractFileNameNoExt(LasFileName);
+          BaseMap.Image1.Canvas.TextOut(x - BaseMap.Image1.Canvas.TextWidth(TStr) div 2,y,TStr);
+       end;
+    end;
 end;
 {$EndIf}
 
 
-function tLAS_data.FileOnMap(BaseMapDraw : tMapDraw): boolean;
+function tLAS_data.LASFileOnMap(BaseMapDraw : tMapDraw): boolean;
 begin
-   Result := BaseMapDraw.AFullWorldMap or AtLeastPartOfBoxInAnotherBox(LAS_LatLong_Box,BaseMapDraw.MapCorners.BoundBoxGeo);
+   Result := {True or} BaseMapDraw.AFullWorldMap or AtLeastPartOfBoxInAnotherBox(LAS_LatLong_Box,BaseMapDraw.MapCorners.BoundBoxGeo);
+   {$If Defined(RecordTilePlotSummary)} if (not Result) then writelineToDebugFile('tLAS_data.FileOnMap fail, LAS bb=' + sfBoundBoxToString(LAS_LatLong_Box,6) + ' map bb=' + sfBoundBoxToString(BaseMapDraw.MapCorners.BoundBoxGeo,6)); {$EndIf}
 end;
 
 
@@ -1715,6 +1731,17 @@ begin
       Result.Add('');
       Result.Add('SW corner: ' + LatLongDegreeToString(LAS_LatLong_Box.ymin,LAS_LatLong_Box.xmin) + ' NE corner: ' + LatLongDegreeToString(LAS_LatLong_Box.ymax,LAS_LatLong_Box.xmax));
       Result.Add('');
+
+      Result.Add('');
+      Result.Add(RealToString(LAS_LatLong_Box.ymax,20,6));
+      Result.Add(RealToString(LAS_LatLong_Box.xmin,12,6) + RealToString(LAS_LatLong_Box.xmax,18,6));
+      Result.Add(RealToString(LAS_LatLong_Box.ymin,20,6));
+      Result.Add('');
+      Result.Add(RealToString(LAS_UTM_Box.ymax,20,2));
+      Result.Add(RealToString(LAS_UTM_Box.xmin,12,2) + RealToString(LAS_UTM_Box.xmax,18,2));
+      Result.Add(RealToString(LAS_UTM_Box.ymin,20,2));
+      Result.Add('');
+
       TStr := Nil;
       TStr := lasProjectionDefinition.LasProjection.ProjectionParametersList;
       for j := 0 to pred(TStr.Count) do Result.Add(TStr.Strings[j]);
@@ -1733,7 +1760,6 @@ end;
 
 initialization
     LasColorsDone := false;
-    //FudgeLidarCoords := false;
     AllowNoProjectionLAS := false;
 finalization
    {$IfDef NoInLine} writeLineToDebugFile('NoInLine active in las_lidar'); {$EndIf}

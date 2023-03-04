@@ -109,8 +109,8 @@ begin
              Colors[i] := Table.PlatformColorFromTable;
           end;
           Table.Next;
-     end;
-     Result := true;
+       end;
+       Result := true;
    end;
    Table.Destroy;
 end;
@@ -152,7 +152,7 @@ end;
 
 procedure tDEMDataSet.RoundZRangeByPercentileToByte;
 var
-   x,y       : integer;
+   x,y   : integer;
    NewzLo,NewzHi,
    zHi,zLo,z,nz : float32;
 begin

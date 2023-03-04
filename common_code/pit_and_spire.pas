@@ -7,7 +7,7 @@ unit pit_and_spire;
 { Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
-
+//PLG note, 2/25/2023: other than pit and spire, the other routines have not been recently tested and may not work well.  Use at your own risk
 
 {$I nevadia_defines.inc}
 
@@ -1084,7 +1084,7 @@ begin
             while (Row <= GridLimits.YGridHigh) do begin
               if SurroundedPointElevs(Col,Row, znw,zw,zsw,zn,z,zs,zne,ze,zse) then begin
                  NumLower := 0;
-                 if (z - znw > MDDef.BuildingMinHeight)and (z - znw < MDDef.BuildingMaxHeight) then inc(NumLower);
+                 if (z - znw > MDDef.BuildingMinHeight) and (z - znw < MDDef.BuildingMaxHeight) then inc(NumLower);
                  if (z - zw > MDDef.BuildingMinHeight) and (z - zw < MDDef.BuildingMaxHeight) then inc(NumLower);
                  if (z - zne > MDDef.BuildingMinHeight) and (z - zne < MDDef.BuildingMaxHeight) then inc(NumLower);
                  if (z - ze > MDDef.BuildingMinHeight) and (z - ze < MDDef.BuildingMaxHeight) then inc(NumLower);

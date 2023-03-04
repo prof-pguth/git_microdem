@@ -77,6 +77,7 @@ type
     SpeedButton1: TSpeedButton;
     Label9: TLabel;
     Edit7: TEdit;
+    BitBtn10: TBitBtn;
     procedure FormCreate(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
     procedure BitBtn3Click(Sender: TObject);
@@ -96,6 +97,9 @@ type
     procedure Edit8Change(Sender: TObject);
     procedure BitBtn7Click(Sender: TObject);
     procedure RadioGroup6Click(Sender: TObject);
+    procedure BitBtn10Click(Sender: TObject);
+    procedure Edit6Change(Sender: TObject);
+    procedure Edit3Change(Sender: TObject);
   private
     { Private declarations }
     procedure CheckValues;
@@ -164,6 +168,16 @@ begin
 end;
 
 
+procedure TPointClassForm.Edit3Change(Sender: TObject);
+begin
+   CheckEditString(Edit3.Text,MDDef.WoodRegionRadiusPixels);
+end;
+
+procedure TPointClassForm.Edit6Change(Sender: TObject);
+begin
+   CheckEditString(Edit6.Text,MDdef.MinDeltaZToClassify);
+end;
+
 procedure TPointClassForm.Edit7Change(Sender: TObject);
 begin
    CheckEditString(Edit7.Text,MDDef.SecondGridOpacity);
@@ -179,7 +193,7 @@ begin
    {$If Defined(RecordPointClass)} WriteLineToDebugFile('TPointClassForm  ' + FormSize(Self)); {$EndIf}
    Edit1.Text := RealToString(MDDef.SlopeClassTolerance,-18,-2);
    Edit2.Text := RealToString(MDDef.ConvexClassTolerance,-18,-2);
-   Edit3.Text := IntToStr(MDDef.WoodRegionSize);
+   Edit3.Text := IntToStr(MDDef.WoodRegionRadiusPixels);
    Edit4.Text := RealToString(MDDef.MinSlopeToClassify,-18,-2);
    Edit5.Text := IntToStr(MDDef.RidgeMaskRadius);
    Edit6.Text := RealToString(MDDef.MinDeltaZToClassify,-18,-2);
@@ -218,6 +232,13 @@ begin
    {$If Defined(RecordPointClass)} WriteLineToDebugFile('TPointClassForm  ' + FormSize(Self)); {$EndIf}
 end;
 
+
+procedure TPointClassForm.BitBtn10Click(Sender: TObject);
+var
+   n1,n2 : integer;
+begin
+   Make_grid.NumHighLowNeighborsMaps(CurDEM,MDDef.WoodRegionRadiusPixels,MDdef.MinDeltaZToClassify,n1,n2);
+end;
 
 procedure TPointClassForm.BitBtn1Click(Sender: TObject);
 begin
@@ -305,10 +326,8 @@ procedure TPointClassForm.CheckValues;
 begin
    CheckEditString(Edit1.Text,MDDef.SlopeClassTolerance);
    CheckEditString(Edit2.Text,MDDef.ConvexClassTolerance);
-   CheckEditString(Edit3.Text,MDDef.WoodRegionSize);
    CheckEditString(Edit4.Text,MDDef.MinSlopeToClassify);
    CheckEditString(Edit5.Text,MDDef.RidgeMaskRadius);
-   CheckEditString(Edit6.Text,MDdef.MinDeltaZToClassify);
 
    MDDef.RidgePointClassify := tRidgeAlgorithm(RadioGroup1.ItemIndex);
    MDDef.InvertRidgeMask := CheckBox1.Checked;

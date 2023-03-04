@@ -255,7 +255,6 @@ begin
 end {proc GetElev};
 
 
-
 function tDEMDataSet.MissingElevation(z : float32) : boolean;
 begin
    Result := abs(z - ThisDEMMissingValue) < 0.001;

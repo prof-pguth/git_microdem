@@ -78,6 +78,7 @@ uses
 
 {$IfDef ExLAStools}
 {$Else}
+   function GetLASToolsFileName(var fName : PathStr) : boolean;
    function lastools_txt2las_cmd(inName : PathStr; UTMzone : shortString; ParseVals : shortstring = '') : shortstring;
    procedure BlastTinCreate(InName,OutName : PathStr; GridSize : float64);
    procedure CallLasInfo;
@@ -1012,6 +1013,31 @@ end;
 {$EndIf}
 
 
+function GetLASToolsFileName(var fName : PathStr) : boolean;
+var
+   BaseName : PathStr;
+begin
+   {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} HighlightLineToDebugFile('GetGDALFileNames in'); {$EndIf}
+   Result := true;
+   //if (LAStools_BinDir = '') then
+   if not FileExists(fName) then begin
+      BaseName := ExtractFileName(fName);
+      LAStools_BinDir := ProgramRootDir + 'lastools\bin\';
+      fName := LAStools_BinDir + BaseName;
+      if not FileExists(fName) then begin
+         if GetDOSPath('LAStools binary directory, something like ' +  LAStools_BinDir,LAStools_BinDir) then begin
+            fName := LAStools_BinDir + BaseName;
+            if not FileExists(fName) then begin
+              MessageToContinue('Could not find ' + fName);
+            end;
+         end
+         else begin
+              Result := false;
+         end;
+      end;
+   end;
+end;
+
 
 procedure LAStoolsTextToLAS;
 var
@@ -1023,8 +1049,8 @@ var
    Ext : extstr;
    theFileNames,bf : tStringList;
 begin
-   pName := ProgramRootDir + 'lastools\bin\txt2las.exe';
-   if FileExists(pName) then begin
+   pName := LAStools_BinDir + 'txt2las.exe';
+   if GetLASToolsFileName(pName) then begin
       DefaultFilter := 1;
       theFileNames := tStringList.Create;
       theFileNames.Add(MainMapData);
@@ -1048,9 +1074,6 @@ begin
          EndBatchFile(MDTempDir + 'lastools_txt2las.bat',bf);
       end;
       TheFileNames.Free;
-   end
-   else begin
-      MessageToContinue('Missing ' + pName);
    end;
 end;
 
@@ -1058,32 +1081,45 @@ end;
 procedure BlastTinCreate(InName,OutName : PathStr; GridSize : float64);
 var
    cmd : ansistring;
+   pName : PathStr;
 begin
   {$IfDef RecordUseOtherPrograms} WriteLineToDebugFile('BlastTinCreate, infile=' + InName + '  outfile=' + OutName); {$EndIf}
    OutName :=  ChangeFileExt(OutName,'.asc');
-   cmd := ProgramRootDir + 'lastools\bin\blast2dem -step ' + RealToString(GridSize,-12,-2) + ' -i ' +InName + ' -o ' + OutName;
-   WinExecAndWait32(cmd);
-   OpenNewDEM(OutName);
+   pName := LAStools_BinDir + 'txt2las.exe';
+   if GetLASToolsFileName(pName) then begin
+      cmd := pName + ' -step ' + RealToString(GridSize,-12,-2) + ' -i ' +InName + ' -o ' + OutName;
+      WinExecAndWait32(cmd);
+      OpenNewDEM(OutName);
+   end;
 end;
 
 
 procedure Lastools_DEMToLAZ(InName,OutName : PathStr; Extra : shortString = '');
 var
    cmd : ansistring;
+   pName : PathStr;
 begin
-   cmd := ProgramRootDir + 'lastools\bin\demzip -i ' + InName + ' -o ' + OutName  + Extra;
-   WinExecAndWait32(cmd);
+   pName := LAStools_BinDir + 'demzip.exe';
+   if GetLASToolsFileName(pName) then begin
+      cmd := pName + ' -i ' + InName + ' -o ' + OutName  + Extra;
+      WinExecAndWait32(cmd);
+   end;
 end;
 
 
 function lastools_txt2las_cmd(inName : PathStr; UTMzone : shortString; ParseVals : shortstring = '') : shortstring;
+var
+   pName : PathStr;
 begin
-   if ParseVals = '' then begin
-      ParseVals := LowerCase(ExtractFileExt(inName));
-      Delete(ParseVals,1,1);
+   pName := LAStools_BinDir + 'txt2las.exe';
+   if GetLASToolsFileName(pName) then begin
+     if ParseVals = '' then begin
+        ParseVals := LowerCase(ExtractFileExt(inName));
+        Delete(ParseVals,1,1);
+     end;
+     if (UTMZone <> '') then UTMZone := ' -utm ' + UTMzone;
+     Result := pName + ' -parse ' + ParseVals + UTMZone + ' -v  -i ' + inName;
    end;
-   if (UTMZone <> '') then UTMZone := ' -utm ' + UTMzone;
-   Result := ProgramRootDir + 'lastools\bin\txt2las.exe' +  ' -parse ' + ParseVals + UTMZone + ' -v  -i ' + inName;
 end;
 
 
@@ -1095,8 +1131,8 @@ var
    DefaultFilter : byte;
    theFileNames : tStringList;
 begin
-   pName := ProgramRootDir + 'lastools\bin\lasinfo.exe';
-   if FileExists(pName) then begin
+   pName := LAStools_BinDir + '\lasinfo.exe';
+   if GetLASToolsFileName(pName) then begin
       DefaultFilter := 1;
       theFileNames := tStringList.Create;
       theFileNames.Add(LastLidarDirectory);
@@ -1110,12 +1146,8 @@ begin
         end;
       end;
       TheFileNames.Free;
-   end
-   else begin
-      MessageToContinue('Option requires ' + pName);
    end;
 end;
-
 
 
 initialization

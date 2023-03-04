@@ -1940,6 +1940,10 @@ object dbtablef: Tdbtablef
       Caption = 'Clear field  ranges'
       OnClick = Clearfieldranges1Click
     end
+    object Updatestatus1: TMenuItem
+      Caption = 'Update status'
+      OnClick = Updatestatus1Click
+    end
   end
   object QueryPopupMenu5: TPopupMenu
     Left = 160

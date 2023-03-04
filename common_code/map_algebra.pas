@@ -4,7 +4,7 @@ unit map_algebra;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
 
@@ -95,7 +95,7 @@ end;
 
 procedure TMapAlgebraForm.OKBtnClick(Sender: TObject);
 var
-   FirstDEM,{SumDEM,}i,j : integer;
+   FirstDEM,i,j : integer;
    Merge : tDEMBooleans;
 begin
    for i := 1 to MaxDEMDataSets do Merge[i] := false;

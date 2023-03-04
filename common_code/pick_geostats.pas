@@ -474,8 +474,9 @@ begin
    if (CurDEM = 0) then GetDEM(CurDEM,true,'single DEM geomorphometry');
    HeavyDutyProcessing := true;
    CreateSlopeMap(CurDEM);
-   MakeTRIGrid(CurDEM,true,true);
-   MakeTRIGrid(CurDEM,false,true);
+   MakeTRIGrid(CurDEM,nmEastWest,true);
+   MakeTRIGrid(CurDEM,nmNorthSouth,true);
+   MakeTRIGrid(CurDEM,nmNone,true);
    GDAL_TRI_Riley(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
    GDAL_TRI_Wilson(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
    GDAL_TPI(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);

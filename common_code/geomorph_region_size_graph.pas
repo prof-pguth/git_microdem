@@ -1,10 +1,12 @@
 unit geomorph_region_size_graph;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{   file verified 11/27/2015      }
-{_________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2022 Peter L. Guth  }
+{___________________________________}
+
 
 
 {$I nevadia_defines.inc}
@@ -45,7 +47,6 @@ type
     { Private declarations }
   public
     { Public declarations }
-    //GridLimits : tGridLimits;
     Param : tRegionSizeParameter;
     CurDEM : integer;
     Lat,Long : float64;
@@ -104,8 +105,7 @@ var
                 end
                 else if DEMGlb[CurDEM].IsSurroundedPoint(Col,Row) then  begin
                     Result := true;
-                    //DEMGlb[CurDEM].GetCurvature(Col,Row,PlanCurvature,SlopeCurvature);
-                    if DEMGlb[CurDEM].GetEvansParams(Col,Row,MDDef.WoodRegionSize,MaxSlp,SlopeCurvature,PlanCurvature,crossc,MaxCurve,MinCurve) then begin
+                    if DEMGlb[CurDEM].GetEvansParams(Col,Row,MDDef.WoodRegionRadiusPixels,MaxSlp,SlopeCurvature,PlanCurvature,crossc,MaxCurve,MinCurve) then begin
                        if Param in [rsPlanCurveMoment] then z := PlanCurvature;
                        if Param in [rsProfCurveMoment] then z := SlopeCurvature;
                     end;

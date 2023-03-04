@@ -280,7 +280,7 @@ type
    tXYZImport = (xyzUTM,xyzRect,xyzLatLong,xyzLongLat,xyzDDMMSSS);
    tElevStretch = (esNone,esPercentile,esSD);
    tStraightAlgorithm = (saDEMGrid,saUTM,saLatLong,saVincenty,saSmart);
-   tHoleFill = (hfSeaLevel,hfOnlyHole,hfEverything,hfOnlyValid);
+   tHoleFill = (hfSeaLevel,hfOnlyHole,hfEverything,hfOnlyValid,hfJustReferencePostings);
    tDTMoption = byte;
 
    tAngUnits = (auRadian,auDegree,auArcMin,auArcSec);
@@ -2550,7 +2550,7 @@ type
 
        SlopeClassTolerance,
        ConvexClassTolerance : float32;
-       WoodRegionSize : int16;
+       WoodRegionRadiusPixels : int16;
        MinDeltaZToClassify,
        MinSlopeToClassify : float32;
        RidgePointClassify : tRidgeAlgorithm;
@@ -3023,6 +3023,8 @@ var
    {$Else}
        OTB_dir,
    {$EndIf}
+
+   lastools_bindir,
 
    CloudCompareFName,
    WhiteBoxFName,

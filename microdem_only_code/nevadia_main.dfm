@@ -29,12 +29,12 @@ object wmdem: Twmdem
     Left = 0
     Top = 0
     Width = 2138
-    Height = 29
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34
     TabOrder = 0
     OnMouseDown = ToolBar1MouseDown
+    ExplicitWidth = 2134
     object SpeedButton2: TSpeedButton
       Left = 0
       Top = 0
@@ -1696,6 +1696,8 @@ object wmdem: Twmdem
     Visible = False
     OnClick = StatusBar1Click
     OnDblClick = StatusBar1DblClick
+    ExplicitTop = 1244
+    ExplicitWidth = 2134
   end
   object MainMenu1: TMainMenu
     Left = 136
@@ -3463,6 +3465,10 @@ object wmdem: Twmdem
     object OpenDEMIXarea1: TMenuItem
       Caption = 'Open DEMIX area'
       OnClick = OpenDEMIXarea1Click
+    end
+    object OpenDEMIXridges1: TMenuItem
+      Caption = 'Open DEMIX ridges'
+      OnClick = OpenDEMIXridges1Click
     end
     object N36: TMenuItem
       Caption = '-'

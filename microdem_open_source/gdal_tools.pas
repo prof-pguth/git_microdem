@@ -75,7 +75,7 @@ uses
    var
       SetGDALdataStr : ANSIString;
 
-   procedure GetGDALFileNames;
+   function GetGDALFileNames : boolean;
    function GetGDALversion : ANSIstring;
 
    function IsGDALFilePresent(fName : PathStr) : boolean;
@@ -249,7 +249,7 @@ begin
 end;
 
 
-procedure GetGDALFileNames;
+function GetGDALFileNames : boolean;
 label
    NoMoreBugging;
 
@@ -274,7 +274,7 @@ label
 
 begin
    {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} HighlightLineToDebugFile('GetGDALFileNames in'); {$EndIf}
-
+   Result := true;
    if PathIsValid(GDALtools_Dir) and SetRest then begin
       {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('GDAL valid, ' + GDALtools_Dir + '  ' + GetGDALversion); {$EndIf}
       exit;
@@ -301,7 +301,8 @@ begin
 
 
   NoMoreBugging:;
-   MDdef.DontBugMeAboutGDAL := not AnswerIsYes('Do you want to be reminded about GDAL problems in the future');
+  Result := false;
+  MDdef.DontBugMeAboutGDAL := not AnswerIsYes('Do you want to be reminded about GDAL problems in the future');
 
    if MDdef.DontBugMeAboutGDAL then begin
       {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('choose no more GDAL problem messages'); {$EndIf}
@@ -1342,9 +1343,11 @@ end;
       function IsGDALFilePresent(fName : PathStr) : boolean;
       begin
          Result := FileExists(fName);
-         if (not Result) and (fName <> '') then begin
-            MessageToContinue('Missing GDAL file required ' + fName);
-          end;
+         if (not Result) then begin
+            if AnswerIsYes('Missing GDAL file required ' + fName  + '  Locate it how') then begin
+               Result := GetGDALFileNames;
+            end;
+         end;
       end;
 
 

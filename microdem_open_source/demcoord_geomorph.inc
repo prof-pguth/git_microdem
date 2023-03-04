@@ -1979,9 +1979,9 @@ begin
 
    {$IfDef ExGeostats}
    {$Else}
-      if GetEvansParams(round(xgrid),round(ygrid),MDDef.WoodRegionSize,MaxSlp,SlopeCurvature,PlanCurvature,crossc,MaxCurve,MinCurve) then begin
+      if GetEvansParams(round(xgrid),round(ygrid),MDDef.WoodRegionRadiusPixels,MaxSlp,SlopeCurvature,PlanCurvature,crossc,MaxCurve,MinCurve) then begin
          Results.Add('');
-         Results.Add('Evans curvature (Region size=' + IntToStr(MDDef.WoodRegionSize) + '):');
+         Results.Add('Evans curvature (Region size=' + IntToStr(MDDef.WoodRegionRadiusPixels) + '):');
          Results.Add('   Plan curvature: ' + RealToString(PlanCurvature,13,6));
          Results.Add('   Slope curvature:' + RealToString(SlopeCurvature,12,6));
          Results.Add('   Cross curvature:' + RealToString(CrossC,12,6));

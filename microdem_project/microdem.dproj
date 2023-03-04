@@ -163,13 +163,13 @@
         <Icon_MainIcon>..\icons\md_logo.ico</Icon_MainIcon>
         <DCC_ExeOutput>C:\microdem\</DCC_ExeOutput>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-        <VerInfo_MinorVer>2</VerInfo_MinorVer>
+        <VerInfo_MinorVer>3</VerInfo_MinorVer>
         <VerInfo_MajorVer>2023</VerInfo_MajorVer>
-        <VerInfo_Release>24</VerInfo_Release>
+        <VerInfo_Release>3</VerInfo_Release>
         <DCC_DcuOutput>C:\turbo\obj_files_64\</DCC_DcuOutput>
-        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2023.2.24.1;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2023.3.3.3;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
-        <VerInfo_Build>1</VerInfo_Build>
+        <VerInfo_Build>3</VerInfo_Build>
         <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
         <DCC_OutputDRCFile>false</DCC_OutputDRCFile>
         <DCC_RangeChecking>true</DCC_RangeChecking>
@@ -1318,6 +1318,50 @@
             </Platforms>
             <ModelSupport>False</ModelSupport>
             <Deployment Version="4">
+                <DeployFile LocalName="..\TDbf_Delphi_XE2_v2\tdbf-code-507-trunk\src\dbf_common.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\TDbf_Delphi_XE2_v2\tdbf-code-507-trunk\src\dbf_str.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\TDbf_Delphi_XE2_v2\tdbf-code-507-trunk\src\dbf_struct.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\TDbf_Delphi_XE2_v2\tdbf-code-507-trunk\src\getstrfromint.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\DEMDataBase_grafs.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\DEMDataBase_grafs.inc" Configuration="Release" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\DEMDataBase_maps.inc" Configuration="Release" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\DEMDataBase_table.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\DEMDataBase_table.inc" Configuration="Release" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\DEMESRIShapeFile_maps.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\DEMESRIShapeFile_maps.inc" Configuration="Release" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\DEMVAROP.PAS" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\DEMVAROP.PAS" Configuration="Release" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\MINMAX.PAS" Configuration="Release" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\NETOPTS.PAS" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\NETOPTS.PAS" Configuration="Release" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\OCEANCAL.PAS" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\OCEANCAL.PAS" Configuration="Release" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\OKCANCL1.PAS" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\OKCANCL1.PAS" Configuration="Release" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\OKCANCL2.PAS" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\OKCANCL2.PAS" Configuration="Release" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\OKCNHLP1.PAS" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\OKCNHLP1.PAS" Configuration="Release" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\OKCNHLP2.PAS" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\OKCNHLP2.PAS" Configuration="Release" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\PETDATE.PAS" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\PETDATE.PAS" Configuration="Release" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\SGP4SDP4.PAS" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\SGP4SDP4.PAS" Configuration="Release" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\SGP_CONV.PAS" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\SGP_CONV.PAS" Configuration="Release" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\SGP_INTF.PAS" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\SGP_INTF.PAS" Configuration="Release" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\SGP_MATH.PAS" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\SGP_MATH.PAS" Configuration="Release" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\SGP_OBS.PAS" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\SGP_OBS.PAS" Configuration="Release" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\SGP_OUT.PAS" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\SGP_OUT.PAS" Configuration="Release" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\SGP_TIME.PAS" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\SGP_TIME.PAS" Configuration="Release" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\SOLAR.PAS" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\SOLAR.PAS" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demcoord_edits.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demcoord_edits.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
@@ -1392,8 +1436,6 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="..\common_code\demdatabase_geology.inc" Configuration="Release" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\DEMDataBase_grafs.inc" Configuration="Debug" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\DEMDataBase_grafs.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demdatabase_maps.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demdatabase_maps.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
@@ -1401,9 +1443,7 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="..\common_code\DEMDataBase_maps.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demdatabase_maps.inc" Configuration="Release" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\DEMDataBase_table.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demdatabase_table.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demdatabase_table.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
@@ -1412,7 +1452,6 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="..\common_code\demdatabase_table.inc" Configuration="Release" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\DEMDataBase_table.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demdatabase_vcl.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demdatabase_vcl.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
@@ -1423,8 +1462,6 @@
                 <DeployFile LocalName="..\common_code\demdatabase_vcl.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demeros_vcl.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demeros_vcl.inc" Configuration="Release" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\DEMESRIShapeFile_maps.inc" Configuration="Debug" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\DEMESRIShapeFile_maps.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demlos_crest_wavelength.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demlos_crest_wavelength.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
@@ -1509,23 +1546,6 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="..\common_code\demstat_grid_compare.inc" Configuration="Release" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\DEMVAROP.PAS" Configuration="Debug" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\DEMVAROP.PAS" Configuration="Release" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\MINMAX.PAS" Configuration="Release" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\NETOPTS.PAS" Configuration="Debug" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\NETOPTS.PAS" Configuration="Release" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\OCEANCAL.PAS" Configuration="Debug" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\OCEANCAL.PAS" Configuration="Release" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\OKCANCL1.PAS" Configuration="Debug" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\OKCANCL1.PAS" Configuration="Release" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\OKCANCL2.PAS" Configuration="Debug" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\OKCANCL2.PAS" Configuration="Release" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\OKCNHLP1.PAS" Configuration="Debug" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\OKCNHLP1.PAS" Configuration="Release" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\OKCNHLP2.PAS" Configuration="Debug" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\OKCNHLP2.PAS" Configuration="Release" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\PETDATE.PAS" Configuration="Debug" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\PETDATE.PAS" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\petmar_types_vcl.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\petmar_types_vcl.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
@@ -1542,22 +1562,6 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="..\common_code\petmar_vcl.inc" Configuration="Release" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\SGP4SDP4.PAS" Configuration="Debug" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\SGP4SDP4.PAS" Configuration="Release" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\SGP_CONV.PAS" Configuration="Debug" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\SGP_CONV.PAS" Configuration="Release" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\SGP_INTF.PAS" Configuration="Debug" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\SGP_INTF.PAS" Configuration="Release" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\SGP_MATH.PAS" Configuration="Debug" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\SGP_MATH.PAS" Configuration="Release" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\SGP_OBS.PAS" Configuration="Debug" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\SGP_OBS.PAS" Configuration="Release" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\SGP_OUT.PAS" Configuration="Debug" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\SGP_OUT.PAS" Configuration="Release" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\SGP_TIME.PAS" Configuration="Debug" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\SGP_TIME.PAS" Configuration="Release" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\SOLAR.PAS" Configuration="Debug" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\SOLAR.PAS" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\las_lidar\create_las.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\las_lidar\create_las.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
@@ -1605,6 +1609,13 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\basemap_vincenty.inc" Configuration="Release" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\dem_database_demix_ops.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\dem_database_demix_ops.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\demcoord_edits.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\demcoord_edits.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
@@ -1809,13 +1820,6 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\demmapdraw_viewshed.inc" Configuration="Release" Class="ProjectFile"/>
-                <DeployFile LocalName="..\microdem_open_source\dem_database_demix_ops.inc" Configuration="Debug" Class="ProjectFile"/>
-                <DeployFile LocalName="..\microdem_open_source\dem_database_demix_ops.inc" Configuration="Debug" Class="ProjectFile">
-                    <Platform Name="Win64">
-                        <RemoteDir>.\</RemoteDir>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\petmar_types_db.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\petmar_types_db.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\shapefile_creation.inc" Configuration="Debug" Class="ProjectFile"/>
@@ -1873,10 +1877,6 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="..\tdbf_current\dbf_struct.inc" Configuration="Release" Class="ProjectFile"/>
-                <DeployFile LocalName="..\TDbf_Delphi_XE2_v2\tdbf-code-507-trunk\src\dbf_common.inc" Configuration="Debug" Class="ProjectFile"/>
-                <DeployFile LocalName="..\TDbf_Delphi_XE2_v2\tdbf-code-507-trunk\src\dbf_str.inc" Configuration="Debug" Class="ProjectFile"/>
-                <DeployFile LocalName="..\TDbf_Delphi_XE2_v2\tdbf-code-507-trunk\src\dbf_struct.inc" Configuration="Debug" Class="ProjectFile"/>
-                <DeployFile LocalName="..\TDbf_Delphi_XE2_v2\tdbf-code-507-trunk\src\getstrfromint.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="C:\microdem\microdem.exe" Configuration="Debug" Class="ProjectOutput"/>
                 <DeployFile LocalName="C:\microdem\microdem.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win64">
@@ -2313,6 +2313,197 @@
                         <Operation>0</Operation>
                     </Platform>
                 </DeployClass>
+                <DeployClass Name="ProjectAndroidManifest">
+                    <Platform Name="Android">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="Android64">
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="ProjectOSXDebug">
+                    <Platform Name="OSX64">
+                        <RemoteDir>..\$(PROJECTNAME).app.dSYM\Contents\Resources\DWARF</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="OSXARM64">
+                        <RemoteDir>..\$(PROJECTNAME).app.dSYM\Contents\Resources\DWARF</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="ProjectOSXEntitlements">
+                    <Platform Name="OSX32">
+                        <RemoteDir>..\</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="OSX64">
+                        <RemoteDir>..\</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="OSXARM64">
+                        <RemoteDir>..\</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="ProjectOSXInfoPList">
+                    <Platform Name="OSX32">
+                        <RemoteDir>Contents</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="OSX64">
+                        <RemoteDir>Contents</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="OSXARM64">
+                        <RemoteDir>Contents</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="ProjectOSXResource">
+                    <Platform Name="OSX32">
+                        <RemoteDir>Contents\Resources</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="OSX64">
+                        <RemoteDir>Contents\Resources</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="OSXARM64">
+                        <RemoteDir>Contents\Resources</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Required="true" Name="ProjectOutput">
+                    <Platform Name="Android">
+                        <RemoteDir>library\lib\armeabi-v7a</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="Android64">
+                        <RemoteDir>library\lib\arm64-v8a</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSDevice32">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSDevice64">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimARM64">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="Linux64">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="OSX32">
+                        <RemoteDir>Contents\MacOS</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="OSX64">
+                        <RemoteDir>Contents\MacOS</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="OSXARM64">
+                        <RemoteDir>Contents\MacOS</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="Win32">
+                        <Operation>0</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="ProjectOutput_Android32">
+                    <Platform Name="Android64">
+                        <RemoteDir>library\lib\armeabi-v7a</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="ProjectUWPManifest">
+                    <Platform Name="Win32">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="Win64">
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="ProjectiOSDeviceDebug">
+                    <Platform Name="iOSDevice32">
+                        <RemoteDir>..\$(PROJECTNAME).app.dSYM\Contents\Resources\DWARF</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSDevice64">
+                        <RemoteDir>..\$(PROJECTNAME).app.dSYM\Contents\Resources\DWARF</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimARM64">
+                        <RemoteDir>..\$(PROJECTNAME).app.dSYM\Contents\Resources\DWARF</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="ProjectiOSEntitlements">
+                    <Platform Name="iOSDevice32">
+                        <RemoteDir>..\</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSDevice64">
+                        <RemoteDir>..\</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimARM64">
+                        <RemoteDir>..\</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="ProjectiOSInfoPList">
+                    <Platform Name="iOSDevice32">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSDevice64">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimARM64">
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="ProjectiOSLaunchScreen">
+                    <Platform Name="iOSDevice64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen</RemoteDir>
+                        <Operation>64</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimARM64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen</RemoteDir>
+                        <Operation>64</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="ProjectiOSResource">
+                    <Platform Name="iOSDevice32">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSDevice64">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimARM64">
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="UWP_DelphiLogo150">
+                    <Platform Name="Win32">
+                        <RemoteDir>Assets</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="Win64">
+                        <RemoteDir>Assets</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="UWP_DelphiLogo44">
+                    <Platform Name="Win32">
+                        <RemoteDir>Assets</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="Win64">
+                        <RemoteDir>Assets</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
                 <DeployClass Name="iOS_AppStore1024">
                     <Platform Name="iOSDevice64">
                         <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
@@ -2510,197 +2701,6 @@
                     </Platform>
                     <Platform Name="iOSSimARM64">
                         <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="ProjectAndroidManifest">
-                    <Platform Name="Android">
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="Android64">
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="ProjectiOSDeviceDebug">
-                    <Platform Name="iOSDevice32">
-                        <RemoteDir>..\$(PROJECTNAME).app.dSYM\Contents\Resources\DWARF</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSDevice64">
-                        <RemoteDir>..\$(PROJECTNAME).app.dSYM\Contents\Resources\DWARF</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSSimARM64">
-                        <RemoteDir>..\$(PROJECTNAME).app.dSYM\Contents\Resources\DWARF</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="ProjectiOSEntitlements">
-                    <Platform Name="iOSDevice32">
-                        <RemoteDir>..\</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSDevice64">
-                        <RemoteDir>..\</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSSimARM64">
-                        <RemoteDir>..\</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="ProjectiOSInfoPList">
-                    <Platform Name="iOSDevice32">
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSDevice64">
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSSimARM64">
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="ProjectiOSLaunchScreen">
-                    <Platform Name="iOSDevice64">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen</RemoteDir>
-                        <Operation>64</Operation>
-                    </Platform>
-                    <Platform Name="iOSSimARM64">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen</RemoteDir>
-                        <Operation>64</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="ProjectiOSResource">
-                    <Platform Name="iOSDevice32">
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSDevice64">
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSSimARM64">
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="ProjectOSXDebug">
-                    <Platform Name="OSX64">
-                        <RemoteDir>..\$(PROJECTNAME).app.dSYM\Contents\Resources\DWARF</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="OSXARM64">
-                        <RemoteDir>..\$(PROJECTNAME).app.dSYM\Contents\Resources\DWARF</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="ProjectOSXEntitlements">
-                    <Platform Name="OSX32">
-                        <RemoteDir>..\</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="OSX64">
-                        <RemoteDir>..\</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="OSXARM64">
-                        <RemoteDir>..\</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="ProjectOSXInfoPList">
-                    <Platform Name="OSX32">
-                        <RemoteDir>Contents</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="OSX64">
-                        <RemoteDir>Contents</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="OSXARM64">
-                        <RemoteDir>Contents</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="ProjectOSXResource">
-                    <Platform Name="OSX32">
-                        <RemoteDir>Contents\Resources</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="OSX64">
-                        <RemoteDir>Contents\Resources</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="OSXARM64">
-                        <RemoteDir>Contents\Resources</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Required="true" Name="ProjectOutput">
-                    <Platform Name="Android">
-                        <RemoteDir>library\lib\armeabi-v7a</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="Android64">
-                        <RemoteDir>library\lib\arm64-v8a</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSDevice32">
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSDevice64">
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSSimARM64">
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="Linux64">
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="OSX32">
-                        <RemoteDir>Contents\MacOS</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="OSX64">
-                        <RemoteDir>Contents\MacOS</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="OSXARM64">
-                        <RemoteDir>Contents\MacOS</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="Win32">
-                        <Operation>0</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="ProjectOutput_Android32">
-                    <Platform Name="Android64">
-                        <RemoteDir>library\lib\armeabi-v7a</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="ProjectUWPManifest">
-                    <Platform Name="Win32">
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="Win64">
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="UWP_DelphiLogo150">
-                    <Platform Name="Win32">
-                        <RemoteDir>Assets</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="Win64">
-                        <RemoteDir>Assets</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="UWP_DelphiLogo44">
-                    <Platform Name="Win32">
-                        <RemoteDir>Assets</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="Win64">
-                        <RemoteDir>Assets</RemoteDir>
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>

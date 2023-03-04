@@ -51,6 +51,8 @@ object MapForm: TMapForm
     ParentFont = False
     TabOrder = 0
     OnClick = ScrollBox1Click
+    ExplicitWidth = 1775
+    ExplicitHeight = 1013
     object Image1: TImage
       Left = 3
       Top = -247
@@ -207,13 +209,13 @@ object MapForm: TMapForm
     end
     object BlendPanel: TPanel
       Left = 0
-      Top = 970
-      Width = 1779
+      Top = 969
+      Width = 1775
       Height = 41
       Align = alBottom
       TabOrder = 8
-      ExplicitTop = 969
-      ExplicitWidth = 1775
+      ExplicitTop = 968
+      ExplicitWidth = 1771
       object TrackBar2: TTrackBar
         Left = 289
         Top = 1
@@ -337,6 +339,7 @@ object MapForm: TMapForm
     Align = alTop
     TabOrder = 1
     OnMouseDown = Panel1MouseDown
+    ExplicitWidth = 1775
     object AnnotateSpeedButton1: TSpeedButton
       Left = 31
       Top = -4
@@ -2340,6 +2343,11 @@ object MapForm: TMapForm
             Caption = 'Grid in file'
             OnClick = Gridinfile1Click
           end
+        end
+        object InsertpostingsfromreferenceDEM1: TMenuItem
+          Caption = 'Insert postings from reference DEM'
+          GroupIndex = 1
+          OnClick = InsertpostingsfromreferenceDEM1Click
         end
         object Mergegridstakelowestvalue1: TMenuItem
           Caption = 'Merge grids, take lowest value'
@@ -5932,7 +5940,22 @@ object MapForm: TMapForm
     end
     object opographicruggednessindex1: TMenuItem
       Caption = 'Topographic ruggedness and position index (TRI and TPI)'
-      OnClick = opographicruggednessindex1Click
+      object Normalizeeastwest1: TMenuItem
+        Caption = 'Normalize east-west'
+        OnClick = Normalizeeastwest1Click
+      end
+      object Normalizenorthsouth1: TMenuItem
+        Caption = 'Normalize north-south'
+        OnClick = Normalizenorthsouth1Click
+      end
+      object Nonormalization1: TMenuItem
+        Caption = 'No normalization'
+        OnClick = Nonormalization1Click
+      end
+      object Alolthreenormalizations1: TMenuItem
+        Caption = 'All three TRI normalizations'
+        OnClick = Alolthreenormalizations1Click
+      end
     end
     object Terrainorganizationmaps1: TMenuItem
       Caption = 'Terrain organization maps'

@@ -3,7 +3,7 @@
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 {                                   }
 { include file for demmapdraw       }
@@ -96,7 +96,6 @@ begin
       if ValidSatOnMap then begin
          MapCorners.BoundBoxDataGrid := SatImage[SatOnMap].SatelliteBoundBoxDataGrid(SatImage[SatOnMap].BandForSize);
          MapCorners.BoundBoxProj := SatImage[SatOnMap].SatelliteBoundBoxProj(SatImage[SatOnMap].BandForSize);
-         //SatImage[SatOnMap].SatViewFromBoundBoxDataGrid(SatView,MapCorners.BoundBoxDataGrid);
       end;
    {$EndIf}
    MapAspectCheck;
@@ -104,7 +103,6 @@ begin
    {$IfDef ShowProjectedLimits} if (VectorIndex = 0) then WriteLineToDebugFile('SetFullMapCoverage, data grid limits: ' +  sfBoundBoxToString(MapCorners.BoundBoxDataGrid)); {$EndIf}
    {$If Defined(ShowProjectedLimits) or Defined(RecordOpenVectorMap)} WriteLineToDebugFile('SetFullMapCoverage, projected limits: ' +  sfBoundBoxToString(MapCorners.BoundBoxProj)); {$EndIf}
    {$If Defined(ShowProjectedLimits) or Defined(RecordOpenVectorMap)} WriteLineToDebugFile('SetFullMapCoverage, Map geo limits: ' +  sfBoundBoxToString(MapCorners.BoundBoxGeo,4)); {$EndIf}
-   {$If Defined(ShowUTMZone)} WriteLineToDebugFile('TMapDraw.SetFullMapCoverage mid, UTM=' + PrimMapProj.UTMZoneString); {$EndIf}
    {$If Defined(ShowUTMZone)} WriteLineToDebugFile('TMapDraw.SetFullMapCoverage out, UTM=' + PrimMapProj.UTMZoneString); {$EndIf}
 end;
 

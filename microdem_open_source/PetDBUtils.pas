@@ -4,7 +4,7 @@ unit petdbutils;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
 
@@ -144,6 +144,7 @@ procedure QuickGraphFromStringList(var sl : tStringList; xf,yf,Capt : shortstrin
    procedure RepairDBaseFieldNames(fName : PathStr);
    procedure RenameDBaseField(fName : PathStr; OldName,NewName : ShortString);
    procedure ChangeDBaseFieldType(fName : PathStr; OldName : ShortString; NewType : ANSIchar);
+   procedure ChangeDBaseFieldDecimals(fName : PathStr; OldName : ShortString; NewDecimals : byte);
 {$EndIf}
 
 {$IfDef VCL}
@@ -1269,12 +1270,11 @@ end;
          TableFieldDescriptor : tTableFieldDescriptor;
       begin
          if FileExists(fName) then begin
-            {$IfDef RecordDBF} writeLineToDebugFile('ChangeDBaseFieldType' + fname,true); {$EndIf}
+            {$IfDef RecordDBF} writeLineToDebugFile('ChangeDBaseFieldType' + fname); {$EndIf}
             InsureFileIsNotReadOnly(fName);
             assignFile(inf,fName);
             reset(inf,1);
             BlockRead(inf, DBaseIIITableFileHeader, SizeOf(tDBaseIIITableFileHeader));
-            {$IfDef RecordDBF} writeLineToDebugFile('Rec size 1=' +IntToStr(DBaseIIITableFileHeader.BytesInRecord)); {$EndIf}
 
             DBaseIIITableFileHeader.LastUpdate[1] := 0;
             DBaseIIITableFileHeader.LastUpdate[2] := 1;
@@ -1282,8 +1282,6 @@ end;
 
             seek(inf,0);
             BlockWrite(inf, DBaseIIITableFileHeader, SizeOf(tDBaseIIITableFileHeader));
-
-            {$IfDef RecordDBF} WriteLineToDebugFile('Rec size 2=' +IntToStr(DBaseIIITableFileHeader.BytesInRecord)); {$EndIf}
 
             NumFields := (DBaseIIITableFileHeader.BytesInHeader-33) div 32;
             for i := 1 to NumFields do begin
@@ -1298,10 +1296,49 @@ end;
                seek(inf,Offset);
                BlockWrite(inf, TableFieldDescriptor, SizeOf(tTableFieldDescriptor));
             end;
-            {$IfDef RecordDBF} writeLineToDebugFile('Rec size 3=' +IntToStr(DBaseIIITableFileHeader.BytesInRecord)); {$EndIf}
             CloseFile(inf);
          end;
       end;
+
+      procedure ChangeDBaseFieldDecimals(fName : PathStr; OldName : ShortString; NewDecimals : byte);
+      var
+         i,Offset,NumFields : integer;
+         inf : file;
+         DBaseIIITableFileHeader : tDBaseIIITableFileHeader;
+         TableFieldDescriptor : tTableFieldDescriptor;
+      begin
+         if FileExists(fName) then begin
+            {$IfDef RecordDBF} writeLineToDebugFile('ChangeDBaseFieldType' + fname); {$EndIf}
+            InsureFileIsNotReadOnly(fName);
+            assignFile(inf,fName);
+            reset(inf,1);
+            BlockRead(inf, DBaseIIITableFileHeader, SizeOf(tDBaseIIITableFileHeader));
+
+            DBaseIIITableFileHeader.LastUpdate[1] := 0;
+            DBaseIIITableFileHeader.LastUpdate[2] := 1;
+            DBaseIIITableFileHeader.LastUpdate[3] := 17;
+
+            seek(inf,0);
+            BlockWrite(inf, DBaseIIITableFileHeader, SizeOf(tDBaseIIITableFileHeader));
+
+            NumFields := (DBaseIIITableFileHeader.BytesInHeader-33) div 32;
+            for i := 1 to NumFields do begin
+               Offset := SizeOf(tDBaseIIITableFileHeader) + pred(I) * SizeOf(tTableFieldDescriptor);
+               seek(inf,Offset);
+
+               BlockRead(inf, TableFieldDescriptor, SizeOf(tTableFieldDescriptor));
+               if (Uppercase(ptTrim(TableFieldDescriptor.FieldName)) = OldName) then begin
+                  TableFieldDescriptor.FieldDecimalCount := NewDecimals;
+               end;
+
+               seek(inf,Offset);
+               BlockWrite(inf, TableFieldDescriptor, SizeOf(tTableFieldDescriptor));
+            end;
+            CloseFile(inf);
+         end;
+      end;
+
+
 
 {$EndIf}
 

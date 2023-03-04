@@ -965,10 +965,9 @@ var
 
    procedure AddPoint(x,y : integer);
    var
-      xutm,yutm{,Lat,Long} : float64;
+      xutm,yutm : float64;
    begin
-      ScreenToUTM(x,y,xutm,yutm);   //Lat,Long);
-      //WGS84DatumConstants.LatLongDegreeToUTM(Lat,Long,xutm,yutm);
+      ScreenToUTM(x,y,xutm,yutm);
       {$If Defined(ShowUTMZone)} WriteLineToDebugFile('bbutm: ' + IntToStr(x) + ' ' + IntToStr(y) + ' ' + UTMString(xutm,yutm)); {$EndIf}
       CompareValueToExtremes(yutm,Result.ymin,Result.ymax);
       CompareValueToExtremes(xutm,Result.xmin,Result.xmax);

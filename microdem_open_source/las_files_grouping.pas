@@ -2,7 +2,7 @@
 { Part of ianMICRODEM GIS Program    }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
-{ Copyright (c) 2022 Peter L. Guth   }
+{ Copyright (c) 2023 Peter L. Guth   }
 {____________________________________}
 
 unit las_files_grouping;
@@ -20,8 +20,8 @@ unit las_files_grouping;
       //{$Define RecordLASMemoryAlocations}
       //{$Define RecordLASfiles}
       //{$Define RecordLASplot}
-      {$Define RecordLASexport}
-      //{$Define RecordListFilesProcessed}
+      //{$Define RecordLASexport}
+      {$Define RecordListFilesProcessed}
       //{$Define BasicOpens}
       //{$Define RecordLASKML}
       //{$Define RecordLASexport}
@@ -103,6 +103,7 @@ type
          UTMZone : integer;
          LatHemi : ANSIchar;
          TotalCloudPts : int64;
+         UTMfiles,
          ShowLASProgress,
          HasIntensity,
          HasClassification,
@@ -171,80 +172,6 @@ begin
 end;
 
 
-
-(*
-function tLAS_data.OldExportBinary(Layer : integer; var GeometryFName,ColorsFName : PathStr; ExportFilter : tLASClassificationCategory = lccAll) : boolean;
-//exports LAS point cloud to binary files for use in FMX viewer
-var
-   Points : ^tPointXYZIArray;
-   i,j,last,xc,yc,RecsRead,NPts : integer;
-   Outf : file;
-   z,xutm,yutm : float64;
-   bmp : tMyBitmap;
-   Range : float64;
-   ThisPoint : tLASClassificationCategory;
-   Color : tPlatformColor;
-begin
-   {$IfDef RecordLASexport} writeLineToDebugFile('tLAS_data.OldExportBinary in layer=' + IntToStr(Layer) + ', ' + ExtractFileNameNoExt(GeometryFName)); {$EndIf}
-   Range := MDDef.MaxValidZinPointCloud - MDDef.LowValidZinPointCloud;
-   New(Points);
-   NPts := 0;
-   StartProgress('LAS export, ' + ExtractFileNameNoExt(GeometryFName) + ' pts=' + IntToStr(Self.NumPointRecs));
-   PrepDataRead;
-   for i := 0 to ReadsRequired do begin
-       UpdateProgressBar(i/ReadsRequired);
-       ReadPoints(RecsRead);
-       for j := 1 to RecsRead do begin
-          z := ExpandLAS_Z(j);
-          if (not MDDef.LasElevChecks) or ((z >= MDDef.LowValidZinPointCloud) and (z <= MDDef.MaxValidZinPointCloud)) then begin
-             ThisPoint := LASClassificationCategory(j);
-             if (ExportFilter = lccAll) or (ThisPoint = ExportFilter) then begin
-                inc(NPts);
-                GetShotCoordinatesUTM(j,xutm, yutm);
-                Points^[NPTs].x := xutm;
-                Points^[NPTs].y := yutm;
-                Points^[NPTs].z := ExpandLAS_Z(j);
-
-                if MDdef.ls.ColorCoding = lasccCloudID then Color := MDDef.CloudMapSymbol[Layer].Color
-                else GetColor(j,LasHeader.MinZ,LasHeader.MaxZ,Color);
-                Points^[NPTs].Int := Color.rgbtRed;
-                Points^[NPTs].Int2 := Color.rgbtGreen;
-                Points^[NPTs].Int3 := Color.rgbtBlue;
-                if (NPts >= MaxPts) then break;
-             end;
-          end;
-      end;
-      //if (NPts >= MaxPts) then break;
-   end;
-   FreeLASRecordMemory;
-   if (GeometryFName = '') then GeometryFName := Petmar.NextFileNumber(MDTempDir, 'cloud_slicer_','.xyzib');
-   case MDdef.ls.ColorCoding of
-         lasccIntensity : ColorsFName := Palette256Bitmap(p256Gray);
-         lasccPointSourceID,
-         lasccUserData  : case Layer of
-                             1 : ColorsFName := Palette256Bitmap(p256RedRamp);
-                             2 : ColorsFName := Palette256Bitmap(p256GreenRamp);
-                             3 : ColorsFName := Palette256Bitmap(p256BlueRamp);
-                             else ColorsFName := Palette256Bitmap(p256Gray);
-                          end;
-         else ColorsFName := FullPaletteBitmap;
-   end;
-
-   result := (NPts > 0);
-   if Result then begin
-      AssignFile(Outf,GeometryFName);
-      rewrite(Outf,1);
-      BlockWrite(OutF,Points^,NPTs * SizeOf(tPointXYZI));
-      CloseFile(outf);
-   end;
-   Dispose(Points);
-   ShowDefaultCursor;
-   EndProgress;
-   {$IfDef RecordLASexport} writeLineToDebugFile('tLAS_data.OldExportBinary out pts done, NPTs=' + IntToStr(Npts)); {$EndIf}
-end;
-*)
-
-
 function tLas_files.ExportBinary(MergeLas : tMergeLas; BaseMap : tMapForm; Layer : integer; var GeometryFName,ColorsFName : PathStr; ExportFilter : tLASClassificationCategory = lccAll) : boolean;
 label
    MaxPoints;
@@ -275,7 +202,7 @@ begin
       fName := Las_fNames.Strings[k];
        {$IfDef RecordListFilesProcessed} WriteLineToDebugFile('file=' + fName); {$EndIf}
        lf := tLAS_data.Create(fName);
-       if lf.FileOnMap(BaseMap.MapDraw) then begin
+       if lf.LASFileOnMap(BaseMap.MapDraw) then begin
           NoFilter := NoFilterWanted;
           lf.PrepDataRead;
           for i := 0 to lf.ReadsRequired do begin
@@ -385,7 +312,7 @@ begin
 
       {$IfDef RecordListFilesProcessed} WriteLineToDebugFile('file=' + fName); {$EndIf}
        lf := tLAS_data.Create(fName);
-       if lf.FileOnMap(BaseMap.MapDraw) then begin
+       if lf.LASFileOnMap(BaseMap.MapDraw) then begin
           if (NewLAS = Nil) then begin
              {$IfDef RecordMergeLASfiles} WriteLineToDebugFile('Create new LAS file'); {$EndIf}
              CreateNewLasFromOldHeader(NewName,NewLas,lf);
@@ -589,7 +516,6 @@ begin
 end;
 
 
-{$IfDef VCL}
 
 procedure tLas_files.ElevationHistogram;
 const
@@ -814,6 +740,18 @@ var
             fName := IndexTableName;
             {$IfDef RecordLASHist} WriteLineToDebugFile('Read Existing ' + fName); {$EndIf}
             IndexTable := tMyData.Create(fName);
+
+            if IndexTable.FieldExists('LONG_HI') then begin
+               GeoBBox.xmax := IndexTable.FindFieldMax('LONG_HI');
+               GeoBBox.xmin := IndexTable.FindFieldMin('LONG_LOW');
+               GeoBBox.ymax := IndexTable.FindFieldMax('LAT_HI');
+               GeoBBox.ymin := IndexTable.FindFieldMin('LAT_LOW');
+               {$IfDef RecordListFilesProcessed} WriteLineToDebugFile('ReadPointCloudPropertiesFromTable, cloud geo box ' + sfBoundBoxToString(GeoBBox,6)); {$EndIf}
+               WGS84DatumConstants.LatLongDegreetoUTM(GeoBBox.YMax,GeoBBox.XMax,UTMBBox.xmax,UTMBBox.ymax);
+               WGS84DatumConstants.LatLongDegreetoUTM(GeoBBox.YMin,GeoBBox.XMin,UTMBBox.xmin,UTMBBox.ymin);
+               {$IfDef RecordListFilesProcessed} WriteLineToDebugFile('ReadPointCloudPropertiesFromTable, cloud utm box ' + sfBoundBoxToString(UTMBBox,1)); {$EndIf}
+            end;
+
             if MDDef.LASPC99 then begin
                MaxZ := IndexTable.FindFieldMax('ELEV_99');
                MinZ := IndexTable.FindFieldMin('ELEV_1');
@@ -828,7 +766,6 @@ var
                Inten_1 := round(IndexTable.FindFieldMax('INTEN_1'));
                Max_Inten := round(IndexTable.FindFieldMax('MAX_INTEN'));
                Min_Inten := round(IndexTable.FindFieldMax('MIN_INTEN'));
-
                //if MDDef.LASPC99 then begin
             end;
 
@@ -1053,9 +990,16 @@ var
 
             TileStr := RealToString(CenterLat,-18,-7) + ',' +
                        RealToString(CenterLong,-18,-7) + ',' +
+
                        ExtractFileName(fName) + ',' +
                        IntToStr(LasData.NumPointRecs) + ',' +
                        RealToString(LasData.SingleFilePointDensity,-12,2) + ',' +
+
+                      RealToString(LasData.LAS_LatLong_Box.ymax,-18,-7) + ',' +
+                      RealToString(LasData.LAS_LatLong_Box.ymin,-18,-7) + ',' +
+                      RealToString(LasData.LAS_LatLong_Box.xmax,-18,-7) + ',' +
+                      RealToString(LasData.LAS_LatLong_Box.xmin,-18,-7) + ',' +
+
                        RealToString(LasData.LasHeader.MaxZ,-12,2)  + ',' +
                        RealToString(LasData.LasHeader.MinZ,-12,2)  + ',' +
                        RealToString(z1,-12,2)  + ',' +
@@ -1160,7 +1104,7 @@ begin
    end
    else begin
       Tiles := tStringList.Create;
-      Tiles.Add('LAT,LONG,TILE,POINTS,DENSITY,MAX_ELEV,MIN_ELEV,ELEV_1,ELEV_99,MAX_TIME,MIN_TIME,' +
+      Tiles.Add('LAT,LONG,TILE,POINTS,DENSITY,LAT_HI,LAT_LOW,LONG_HI,LONG_LOW,MAX_ELEV,MIN_ELEV,ELEV_1,ELEV_99,MAX_TIME,MIN_TIME,' +
                 'MIN_INTEN,MAX_INTEN,INTEN_1,INTEN_99,MIN_RED,MAX_RED,RED_1,RED_99,MIN_GREEN,MAX_GREEN,GREEN_1,GREEN_99,MIN_BLUE,MAX_BLUE,BLUE_1,BLUE_99,MIN_NIR,MAX_NIR,NIR_1,NIR_99,' +
                 'HAS_CLASS,HAS_RGB,HAS_INTEN,HAS_TIME,HAS_PTID,HAS_USRDAT,HAS_SCAN,HAS_RET,HAS_NIR,LAS_PT_TYPE');
 
@@ -1379,7 +1323,7 @@ end;
 
 procedure tLas_files.ZeroLessUsefulFields;
 var
-   Simple,Aggressive,VeryAggressive{,RemoveOffsets} : boolean;
+   Simple,Aggressive,VeryAggressive : boolean;
    NewLAS : tCreateLasFile;
    I,j,k,RecsRead,Reads : integer;
    lf : tLAS_data;
@@ -1516,7 +1460,7 @@ begin
    end;
    EndThreadTimers;
 end;
-{$EndIf}
+//{$EndIf}
 
 
 procedure ExtendBoundingBox(var MainBox : sfBoundBox; NewBox : sfBoundBox);
@@ -1548,42 +1492,46 @@ begin
    i := 0;
    InitializeBoundingBox(GeoBBox);
    InitializeBoundingBox(UTMBBox);
+   {$IfDef RecordListFilesProcessed} if (BaseMapDraw <> Nil) then HighlightLineToDebugFile('Remove tiles, Map geo limits=' + sfBoundBoxToString(BaseMapDraw.MapCorners.BoundBoxGeo,6)
+               + '   utm limits=' + sfBoundBoxToString(BaseMapDraw.MapCorners.BoundBoxUTM,1));  {$EndIf}
    ToDo := Las_fNames.Count;
    for k := pred(Las_fNames.Count) downto 0 do begin
       inc(i);
       UpdateProgressBar(i/ToDo);
       fName := Las_fNames.Strings[k];
       lf := tLAS_data.Create(fName);
-      if (not lf.HasProjection) then begin
-         WriteLineToDebugFile('No projection: ' + fName);
-         BaseDir := ExtractFilePath(fName) + 'problem_tiles\';
-         SafeMakeDir(BaseDir);
-         MoveFile(fName, BaseDir + ExtractFileName(fName));
-         LAS_fnames.Delete(k);
-      end
-      else begin
-         if (BaseMapDraw <> Nil) and (not lf.FileOnMap(BaseMapDraw)) then begin
-            {$IfDef RecordListFilesProcessed} WriteLineToDebugFile('Not on map: ' + fName); {$EndIf}
+      if lf.HasProjection then begin
+         if (BaseMapDraw <> Nil) and (not lf.LASFileOnMap(BaseMapDraw)) then begin
+            {$IfDef RecordListFilesProcessed} WriteLineToDebugFile('Not on map: ' + fName + ' LAS geo limits ' + sfBoundBoxToString(lf.LAS_LatLong_Box,6) + '  map geo limits=' + sfBoundBoxToString(BaseMapDraw.MapCorners.BoundBoxGeo,6)); {$EndIf}
             Las_fNames.Delete(k);
          end
          else begin
-            {$IfDef RecordListFilesProcessed} WriteLineToDebugFile('On map: ' + fName); {$EndIf}
+            UTMfiles := lf.lasProjectionDefinition.LASProjection.pName = UTMEllipsoidal;
             ExtendBoundingBox(GeoBBox,lf.LAS_LatLong_Box);
             ExtendBoundingBox(UTMBBox,lf.LAS_UTM_Box);
             if (lf.SingleFilePointDensity > MaxPointDensity) then MaxPointDensity := lf.SingleFilePointDensity;
             if (lf.SingleFilePointDensity < MinPointDensity) then MinPointDensity := lf.SingleFilePointDensity;
             AveragePointDensity := AveragePointDensity + lf.SingleFilePointDensity;
             TotalCloudPts := TotalCloudPts + lf.NumPointRecs;
-            if MinZ > lf.LasHeader.MinZ then MinZ := lf.LasHeader.MinZ;
-            if MaxZ < lf.LasHeader.MaxZ then MaxZ := lf.LasHeader.MaxZ;
+            if (MinZ > lf.LasHeader.MinZ) then MinZ := lf.LasHeader.MinZ;
+            if (MaxZ < lf.LasHeader.MaxZ) then MaxZ := lf.LasHeader.MaxZ;
             UTMZone := lf.UTMZone;
             LatHemi := lf.lasProjectionDefinition.LASProjection.LatHemi;
          end;
          {$IfDef RecordListFilesProcessed}
-            WriteLineToDebugFile('geo limits=' + sfBoundBoxToString(lf.LAS_LatLong_Box,6));
-            WriteLineToDebugFile('z range=' + RealToString(lf.LasHeader.MinZ,-12,-2) + ' to ' + RealToString(lf.LasHeader.MaxZ,-12,-2) + '  Density=' + RealToString(lf.SingleFilePointDensity,-12,-2));
+            WriteLineToDebugFile('On map: ' + fName + ' geo limits ' + sfBoundBoxToString(lf.LAS_LatLong_Box,6) + ' utm limits ' + sfBoundBoxToString(lf.LAS_UTM_Box,1) +
+               '  z range=' + RealToString(lf.LasHeader.MinZ,-12,-2) + ' to ' + RealToString(lf.LasHeader.MaxZ,-12,-2) + '  Density=' + RealToString(lf.SingleFilePointDensity,-12,-2));
+            WriteLineToDebugFile('Cloud limits now,  geo ' + sfBoundBoxToString(GeoBBox,6) + ' utm limits ' + sfBoundBoxToString(UTMBBox,1) +
+               '  z range=' + RealToString(lf.LasHeader.MinZ,-12,-2) + ' to ' + RealToString(lf.LasHeader.MaxZ,-12,-2) + '  Density=' + RealToString(lf.SingleFilePointDensity,-12,-2));
          {$EndIf}
          if lf.RGBPresent then HasRGB := true;
+      end
+      else begin
+         WriteLineToDebugFile('No projection: ' + fName);
+         BaseDir := ExtractFilePath(fName) + 'problem_tiles\';
+         SafeMakeDir(BaseDir);
+         MoveFile(fName, BaseDir + ExtractFileName(fName));
+         LAS_fnames.Delete(k);
       end;
       lf.Destroy;
    end;
@@ -1612,7 +1560,7 @@ begin
    for k := 0 to pred(Las_fNames.Count) do begin
       fName := Las_fNames.Strings[k];
        lf := tLAS_data.Create(fName);
-       if lf.FileOnMap(BaseMapDraw) then begin
+       if lf.LASFileOnMap(BaseMapDraw) then begin
           if (lf.LasHeader.MaxZ > MaxZ) then MaxZ := lf.LasHeader.MaxZ;
           if (lf.LasHeader.MinZ < MinZ) then MinZ := lf.LasHeader.MinZ;
        end;

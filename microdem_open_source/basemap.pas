@@ -138,7 +138,6 @@ type
 
          wktString : ANSIstring;
          ThisIsUTMFile,
-         //VertFeet,
          FullWorld : boolean;
 
        //datum definitions
@@ -225,6 +224,11 @@ type
          function SeriousWorkingProjection : boolean;
 
          function TissotEnabled : boolean;
+
+         function ConvertUTMBoundBoxToGeoBoundBox(utmBox : sfBoundbox) : sfBoundBox;
+         function ConvertGeoBoundBoxToUTMBoundBox(geoBox : sfBoundbox) : sfBoundBox;
+         function ConvertProjectedBoundBoxToGeoBoundBox(projBox : sfBoundbox) : sfBoundBox;
+
 
          {$If Defined(RecordDefineDatum) or Defined(ProjectionInfoAllowed)}
             procedure LogDatumInfo(Why : shortstring);
@@ -333,6 +337,67 @@ const
 {$I basemap_datum.inc}
 
 {$I basemap_vincenty.inc}
+
+
+function tMapProjection.ConvertGeoBoundBoxToUTMBoundBox(geoBox : sfBoundbox) : sfBoundBox;
+
+   procedure AddPoint(Long,Lat : float64);
+   var
+      xutm,yutm : float64;
+   begin
+      LatLongDegreetoUTM(Lat,Long,xutm,yutm);
+      CompareValueToExtremes(yutm,Result.ymin,Result.ymax);
+      CompareValueToExtremes(xutm,Result.xmin,Result.xmax);
+   end;
+
+begin
+   InitializeBoundBox(Result);
+   AddPoint(geobox.xmin,geobox.ymin);
+   AddPoint(geobox.xmax,geobox.ymin);
+   AddPoint(geobox.xmin,geobox.ymax);
+   AddPoint(geobox.xmax,geobox.ymax);
+end;
+
+
+
+function tMapProjection.ConvertUTMBoundBoxToGeoBoundBox(utmBox : sfBoundbox) : sfBoundBox;
+
+   procedure AddPoint(xutm,yutm : float64);
+   var
+      Lat,Long : float64;
+   begin
+      UTMtoLatLongDegree(xutm,yutm,Lat,Long);
+      CompareValueToExtremes(yutm,Result.ymin,Result.ymax);
+      CompareValueToExtremes(xutm,Result.xmin,Result.xmax);
+   end;
+
+begin
+   InitializeBoundBox(Result);
+   AddPoint(utmBox.xmin,utmBox.ymin);
+   AddPoint(utmBox.xmax,utmBox.ymin);
+   AddPoint(utmBox.xmin,utmBox.ymax);
+   AddPoint(utmBox.xmax,utmBox.ymax);
+end;
+
+
+function tMapProjection.ConvertProjectedBoundBoxToGeoBoundBox(projBox : sfBoundbox) : sfBoundBox;
+
+   procedure AddPoint(xproj,yproj : float64);
+   var
+      Lat,Long : float64;
+   begin
+      InverseProjectDegrees(xproj,yproj,Lat,Long);
+      CompareValueToExtremes(Lat,Result.ymin,Result.ymax);
+      CompareValueToExtremes(Long,Result.xmin,Result.xmax);
+   end;
+
+begin
+   InitializeBoundBox(Result);
+   AddPoint(projBox.xmin,projBox.ymin);
+   AddPoint(projBox.xmax,projBox.ymin);
+   AddPoint(projBox.xmin,projBox.ymax);
+   AddPoint(projBox.xmax,projBox.ymax);
+end;
 
 
 procedure MetersPerDegree(Lat,Long : float64; var Distance1,Distance2,Distance3 : float64);

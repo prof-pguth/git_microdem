@@ -1688,36 +1688,24 @@ end;
 
 function tMyData.GetFieldPrecision(fName : ANSIString) : integer;
 var
-   f : file;
-   DBaseIIITableFileHeader : tDBaseIIITableFileHeader;
-   TableFieldDescriptor : tTableFieldDescriptor;
-   NumFields,i,j : integer;
-   theName : ANSIString;
+   //f : file;
+   //DBaseIIITableFileHeader : tDBaseIIITableFileHeader;
+   //TableFieldDescriptor : tTableFieldDescriptor;
+   //NumFields,
+   i : integer;
+   //theName : ANSIString;
 begin
    Result := 0;
    {$IfDef BDELikeTables}
       if (TheBDEdata <> Nil) or DBFmovedToRAM then begin
-         Result := 0;
-         assignFile(f,FullTableName);
-         reset(f,1);
-         BlockRead(f, DBaseIIITableFileHeader, SizeOf(tDBaseIIITableFileHeader));
-         NumFields := (DBaseIIITableFileHeader.BytesInHeader-33) div 32;
-         for i := 0 to pred(NumFields) do begin
-            BlockRead(f, TableFieldDescriptor, SizeOf(tTableFieldDescriptor));
-            theName := '';
-            for j := 0 to 10 do begin
-               if (TableFieldDescriptor.FieldName[j] = #0) then break
-               else theName := theName + TableFieldDescriptor.FieldName[j];
-            end;
-
-            if (theName = fName) then begin
-               //Result := pred(TableFieldDescriptor.FieldDecimalCount - TableFieldDescriptor.FieldDecimalCount);
-               Result := TableFieldDescriptor.FieldDecimalCount;
-               Break;
+         for i := 0 to pred(FieldCount) do begin
+            if (TheBDEdata.Fields[i].FieldName = fName) then begin
+               Result := GetFieldPrecision(i);
+               exit;
             end;
          end;
-         CloseFile(f);
       end;
+
    {$EndIf}
 end;
 
@@ -2654,6 +2642,7 @@ finalization
    {$IfDef RecordSQLite} WriteLineToDebugFile('RecordSQLite active in petmar_db'); {$EndIf}
    {$IfDef TrackCDStiming} WriteLineToDebugFile('TrackCDStiming active in petmar_db'); {$EndIf}
 end.
+
 
 
 

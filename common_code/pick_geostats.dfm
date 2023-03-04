@@ -2,8 +2,8 @@ object PickGeoStat: TPickGeoStat
   Left = 0
   Top = 0
   Caption = 'Geomorphometry statstistics'
-  ClientHeight = 348
-  ClientWidth = 517
+  ClientHeight = 347
+  ClientWidth = 513
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -23,12 +23,13 @@ object PickGeoStat: TPickGeoStat
   end
   object Panel1: TPanel
     Left = 0
-    Top = 271
-    Width = 517
+    Top = 270
+    Width = 513
     Height = 77
     Align = alBottom
     TabOrder = 0
     ExplicitTop = 209
+    ExplicitWidth = 517
     object Label1: TLabel
       Left = 256
       Top = 17
@@ -103,12 +104,13 @@ object PickGeoStat: TPickGeoStat
   object PageControl1: TPageControl
     Left = 0
     Top = 0
-    Width = 332
-    Height = 271
+    Width = 328
+    Height = 270
     ActivePage = TabSheet2
     Align = alClient
     MultiLine = True
     TabOrder = 1
+    ExplicitWidth = 332
     ExplicitHeight = 209
     object TabSheet1: TTabSheet
       Caption = 'Basic'
@@ -545,12 +547,13 @@ object PickGeoStat: TPickGeoStat
     end
   end
   object Memo1: TMemo
-    Left = 332
+    Left = 328
     Top = 0
     Width = 185
-    Height = 271
+    Height = 270
     Align = alRight
     TabOrder = 2
+    ExplicitLeft = 332
     ExplicitHeight = 209
   end
 end

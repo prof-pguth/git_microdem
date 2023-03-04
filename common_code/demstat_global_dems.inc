@@ -2,7 +2,7 @@
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 {                                   }
 {   include file for demstat        }
@@ -911,7 +911,6 @@ var
 begin
    {$IfDef RecordIceSat} WriteLineToDebugFile('IcesatProcessCanopy in'); {$EndIf}
    if ValidDB(dbOnTable) then begin
-
       GetGeoid;
       GeoidGrid := OpenNewDEM(Geoid2008FName,false,'ellipsoid/geoid shift');
       if (GeoidGrid = 0) then begin
@@ -932,6 +931,7 @@ begin
       GISdb[DBonTable].AddFieldToDataBase(ftString,'DATE',8);
       {$IfDef RecordIceSat} WriteLineToDebugFile('Fields added'); {$EndIf}
 
+      //GISdb[DBonTable].MyData.SimplePointFile := true;
       GISdb[DBonTable].MyData.First;
       StartProgress('Icesat-2 elevs');
       i := 0;
@@ -943,7 +943,7 @@ begin
             UpdateProgressBar(i/rc);
          end;
          inc(i);
-         if GISdb[DBonTable].ValidLatLongFromTable(Lat,Long) then begin
+         if GISdb[DBonTable].MyData.ValidLatLongFromTable(Lat,Long) then begin
             if DEMGlb[GeoidGrid].GetElevFromLatLongDegree(Lat,Long,zgeoid) then begin
                GISdb[DBonTable].MyData.Edit;
                if GISdb[DBonTable].MyData.FieldExists('FILE_NAME') then begin
@@ -968,17 +968,15 @@ begin
       //GISdb[DBonTable].MyData.DeleteField('FILE_NAME');
       GISdb[DBonTable].MyData.DeleteField('SEG_BEGIN');
       GISdb[DBonTable].MyData.DeleteField('SEG_END');
-     {$IfDef RecordIceSat} WriteLineToDebugFile('Fields deleted'); {$EndIf}
+      {$IfDef RecordIceSat} WriteLineToDebugFile('Fields deleted'); {$EndIf}
       if AddDEMs then AddGlobalDEMs(dbOnTable);
 
       fName := GISdb[DBonTable].DBFullName;
       Mapowner := GISdb[DBonTable].theMapOwner;
-      //CloseAndNilNumberedDB(DBonTable);
-      //OpenNumberedGISDataBase(dbOnTable,fName,true,false,MapOwner);
       {$IfDef RecordIceSat} WriteLineToDebugFile('IcesatProcessCanopy out'); {$EndIf}
    end
    else begin
-      {$IfDef RecordIceSat} WriteLineToDebugFile('IcesatProcessCanopy invalide DB=' + IntToStr(dbOnTable)); {$EndIf}
+      {$IfDef RecordIceSat} WriteLineToDebugFile('IcesatProcessCanopy invalid DB=' + IntToStr(dbOnTable)); {$EndIf}
    end;
 end;
 

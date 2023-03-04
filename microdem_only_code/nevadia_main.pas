@@ -535,6 +535,7 @@ type
     Pixelbypixelmapstatistics1: TMenuItem;
     COPALOShighlowgeomorphometry1: TMenuItem;
     Metadata2: TMenuItem;
+    OpenDEMIXridges1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -912,6 +913,7 @@ type
     procedure Pixelbypixelmapstatistics1Click(Sender: TObject);
     procedure COPALOShighlowgeomorphometry1Click(Sender: TObject);
     procedure Metadata2Click(Sender: TObject);
+    procedure OpenDEMIXridges1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -4059,6 +4061,11 @@ begin
 end;
 
 
+procedure Twmdem.OpenDEMIXridges1Click(Sender: TObject);
+begin
+   OpenDEMIXRidges;
+end;
+
 procedure Twmdem.OpenDEMwithoutmap1Click(Sender: TObject);
 begin
    OpenNewDEM('',false);
@@ -6153,7 +6160,7 @@ begin
    DEMList.Add(LastDEMName);
    if Petmar.GetMultipleFiles('DEMs to merge',DEMFilterMasks,DEMList,MDDef.DefaultDEMFilter) then begin
       {$IfDef RecordMenu} WriteStringListToDebugFile(DEMList); {$EndIf}
-      if (DEMList.Count = 1) then begin
+      if (DEMList.Count = 1) and (UpperCase(ExtractFileExt(DEMList.Strings[0])) <> '.ASC') then begin
          OpenNewDEM(DEMList.Strings[0]);
          DEMList.Destroy;
       end

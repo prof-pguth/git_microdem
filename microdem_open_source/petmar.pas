@@ -2955,10 +2955,12 @@ end;
 procedure ShowDefaultCursor;
 begin
    {$IfDef VCL}
-      try
-         Forms.Screen.Cursor := crDefault;
-      except
-         on Exception do begin end;
+      if not HeavyDutyProcessing then begin
+        try
+           Forms.Screen.Cursor := crDefault;
+        except
+           on Exception do begin end;
+        end;
       end;
    {$EndIf}
 end;
@@ -3890,7 +3892,6 @@ end;
 procedure ConvertToDegMinSecString(Value : float64; OutPutMethod : tLatLongMethod; var DegString,MinString,SecString : string10; HighAccuracy : boolean = true);
 var
    DegVal,
-   //MinVal,SecVal,
    DegDec,MinDec,DecSec : integer;
    SecValue, MinValue : float64;
 begin
@@ -4018,12 +4019,9 @@ var
 begin
    LongHemi := 'E';
    LongitudeAngleInRange(Long);
-   {$IfDef MICRODEM}
-      if MDdef.UseLongsto360 then begin
-         while (Long < 0) do Long := Long + 360;
-      end;
-   {$Else}
-   {$EndIf}
+    if MDdef.UseLongsto360 then begin
+       while (Long < 0) do Long := Long + 360;
+    end;
    if (Long < 0) then LongHemi := 'W';
    LongToString := LongHemi + ConvertToDegreesString(abs(Long),OutPutLatLongMethod);
 end {funct LatLongToString};

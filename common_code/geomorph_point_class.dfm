@@ -26,8 +26,8 @@ object PointClassForm: TPointClassForm
     Align = alRight
     ScrollBars = ssVertical
     TabOrder = 0
-    ExplicitLeft = 291
-    ExplicitHeight = 508
+    ExplicitLeft = 319
+    ExplicitHeight = 552
   end
   object PageControl1: TPageControl
     Left = 0
@@ -54,11 +54,11 @@ object PointClassForm: TPointClassForm
         Caption = 'Elev tol (m)'
       end
       object Label3: TLabel
-        Left = 41
-        Top = 83
-        Width = 60
+        Left = 15
+        Top = 84
+        Width = 105
         Height = 13
-        Caption = 'Window size'
+        Caption = 'Window radius (pixels)'
       end
       object Label4: TLabel
         Left = 8
@@ -223,10 +223,11 @@ object PointClassForm: TPointClassForm
       end
       object Edit3: TEdit
         Left = 126
-        Top = 83
+        Top = 84
         Width = 65
         Height = 21
         TabOrder = 15
+        OnChange = Edit3Change
       end
       object Edit6: TEdit
         Left = 128
@@ -234,6 +235,16 @@ object PointClassForm: TPointClassForm
         Width = 63
         Height = 21
         TabOrder = 16
+        OnChange = Edit6Change
+      end
+      object BitBtn10: TBitBtn
+        Left = 192
+        Top = 269
+        Width = 103
+        Height = 25
+        Caption = 'Hi/low neighbors'
+        TabOrder = 17
+        OnClick = BitBtn10Click
       end
     end
     object Tabsheet2: TTabSheet

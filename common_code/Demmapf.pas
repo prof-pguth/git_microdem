@@ -40,7 +40,7 @@
       //{$Define RecordCreateGeomorphMaps}
       //{$Define RecordGeomorphometry}
       //{$Define RecordGeography}
-      //{$Define RecordMakeGrid}
+      {$Define RecordMakeGrid}
       //{$Define RecordGDAL}
       //{$Define TrackTigerOrOS}
       //{$Define Track_f}
@@ -1443,6 +1443,11 @@ type
     COPALOSbestlocations1: TMenuItem;
     COPALOScategories1: TMenuItem;
     COPALOS9categories1: TMenuItem;
+    Normalizeeastwest1: TMenuItem;
+    Normalizenorthsouth1: TMenuItem;
+    Nonormalization1: TMenuItem;
+    Alolthreenormalizations1: TMenuItem;
+    InsertpostingsfromreferenceDEM1: TMenuItem;
     //procedure HiresintervisibilityDEM1Click(Sender: TObject);
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
@@ -2202,7 +2207,6 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Createdatabase2Click(Sender: TObject);
     procedure Loaddatabase1Click(Sender: TObject);
     procedure BitmapandXYZBfile1Click(Sender: TObject);
-    procedure opographicruggednessindex1Click(Sender: TObject);
     procedure Quadtickpoints1Click(Sender: TObject);
     procedure Verticalswipecompare1Click(Sender: TObject);
     procedure TestMD1Click(Sender: TObject);
@@ -2496,6 +2500,11 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure COPALOSbestlocations1Click(Sender: TObject);
     procedure COPALOScategories1Click(Sender: TObject);
     procedure COPALOS9categories1Click(Sender: TObject);
+    procedure Normalizeeastwest1Click(Sender: TObject);
+    procedure Normalizenorthsouth1Click(Sender: TObject);
+    procedure Nonormalization1Click(Sender: TObject);
+    procedure Alolthreenormalizations1Click(Sender: TObject);
+    procedure InsertpostingsfromreferenceDEM1Click(Sender: TObject);
     //procedure QuarterDEM1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
@@ -2602,7 +2611,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     {$EndIf}
 
     {$IfDef RecordFormResize}
-    procedure RecordFormSize(Title : shortString);
+       procedure RecordFormSize(Title : shortString);
     {$EndIf}
 
  public
@@ -6861,14 +6870,6 @@ begin
    {$EndIf}
 end;
 
-
-procedure TMapForm.opographicruggednessindex1Click(Sender: TObject);
-begin
-   {$IfDef ExGeostats}
-   {$Else}
-      MakeTRIGrid(MapDraw.DEMonMap);
-   {$EndIf}
-end;
 
 procedure TMapForm.Featuremigration2Click(Sender: TObject);
 begin
@@ -11193,7 +11194,7 @@ procedure TMapForm.Opengrid2Click(Sender: TObject);
 var
    MergeDEM : integer;
 begin
-   if GetDEM(MergeDEM,true,'replace all holes in ' + DEMGlb[MapDraw.DEMonMap].AreaName) then begin
+   if GetDEM(MergeDEM,true,'to replace all holes in ' + DEMGlb[MapDraw.DEMonMap].AreaName) then begin
       DEMGlb[MapDraw.DEMonMap].FillHolesSelectedBoxFromReferenceDEM(DEMGlb[MapDraw.DEMonMap].FullDEMGridLimits,MergeDEM,hfOnlyHole);
       RespondToChangedDEM;
    end;
@@ -13724,8 +13725,7 @@ var
    xg,yg,StartLat,StartLong,Lat,Long,
    SegLen,CumDist          : float64;
    rfile     : file;
-   xpic,ypic,FirstPoint,//,TotalPoints,
-   NumPoints,i,j,db           : integer;
+   xpic,ypic,FirstPoint,NumPoints,i,j,db           : integer;
    v                        : array[1..2] of float32;
    PointSeparation, Bearing,EndLat,EndLong : float64;
    Lats,Longs,dists : ^bfarray32;
@@ -15095,6 +15095,17 @@ end;
 procedure TMapForm.InfoSpeedButton6Click(Sender: TObject);
 begin
    Map2Click(Sender);
+end;
+
+
+procedure TMapForm.InsertpostingsfromreferenceDEM1Click(Sender: TObject);
+var
+   MergeDEM : integer;
+begin
+   if GetDEM(MergeDEM,true,'to insert elevations into ' + DEMGlb[MapDraw.DEMonMap].AreaName) then begin
+      DEMGlb[MapDraw.DEMonMap].FillHolesSelectedBoxFromReferenceDEM(DEMGlb[MapDraw.DEMonMap].FullDEMGridLimits,MergeDEM,hfJustReferencePostings);
+      RespondToChangedDEM;
+   end;
 end;
 
 
@@ -18668,11 +18679,13 @@ begin
           slt.Free;
       end;
    end;
+   if (FileNames.Count > 0) then begin
+      fName := ExtractFilePath(fname) + 'merge_' + ExtractFileNameNoExt(fName) + '.dbf';
+      if GetFileNameDefaultExt('Merged CSV files','*.dbf',FName) then StringListToLoadedDatabase(s11,fName);
+      LastDataBase := fName;
+      wmDEM.SetPanelText(0,'');
+   end;
    FileNames.Free;
-   fName := ExtractFilePath(fname) + 'merge_' + ExtractFileNameNoExt(fName) + '.dbf';
-   if GetFileNameDefaultExt('Merged CSV files','*.dbf',FName) then StringListToLoadedDatabase(s11,fName);
-   LastDataBase := fName;
-   wmDEM.SetPanelText(0,'');
    EndProgress;
 end;
 
@@ -18794,6 +18807,18 @@ begin
    Rangetosinglevalue1Click(Sender);
 end;
 
+procedure TMapForm.Alolthreenormalizations1Click(Sender: TObject);
+var
+   TRI_ew,TRI_ns,TRI_none : integer;
+begin
+   {$IfDef ExGeostats}
+   {$Else}
+      TRI_ew := MakeTRIGrid(MapDraw.DEMonMap,nmEastWest);
+      TRI_ns := MakeTRIGrid(MapDraw.DEMonMap,nmNorthSouth);
+      TRI_none := MakeTRIGrid(MapDraw.DEMonMap,nmNone);
+   {$EndIf}
+end;
+
 procedure TMapForm.Copytoclipboard1Click(Sender: TObject);
 begin
    ClipboardSpeedButtonClick(Sender);
@@ -18837,7 +18862,6 @@ begin
       ClimatePopupMenu18.Popup(Mouse.CursorPos.X,Mouse.CursorPos.Y);
    {$EndIf}
 end;
-
 
 
 procedure TMapForm.Militaryicons1Click(Sender: TObject);
@@ -19174,6 +19198,14 @@ begin
    LabelDatumShift := msNone;
 end;
 
+procedure TMapForm.Nonormalization1Click(Sender: TObject);
+begin
+   {$IfDef ExGeostats}
+   {$Else}
+      MakeTRIGrid(MapDraw.DEMonMap,nmNone);
+   {$EndIf}
+end;
+
 procedure TMapForm.Labelboth1Click(Sender: TObject);
 begin
    LabelDatumShift := msBoth;
@@ -19191,6 +19223,22 @@ begin
    NewSatWindow(nsbPickEm);
 end;
 
+
+procedure TMapForm.Normalizeeastwest1Click(Sender: TObject);
+begin
+   {$IfDef ExGeostats}
+   {$Else}
+      MakeTRIGrid(MapDraw.DEMonMap,nmEastWest);
+   {$EndIf}
+end;
+
+procedure TMapForm.Normalizenorthsouth1Click(Sender: TObject);
+begin
+   {$IfDef ExGeostats}
+   {$Else}
+      MakeTRIGrid(MapDraw.DEMonMap,nmNorthSouth);
+   {$EndIf}
+end;
 
 procedure TMapForm.Normalizie1Click(Sender: TObject);
 begin
@@ -19849,7 +19897,7 @@ end;
 
 procedure TMapForm.Variableopaquemerge1Click(Sender: TObject);
 begin
-   hiscoverageareaandsamepixelsize1Click(Sender);
+   //hiscoverageareaandsamepixelsize1Click(Sender);
    MergeColorScene1Click(Sender);
 end;
 
@@ -20672,8 +20720,6 @@ begin
 end;
 
 
-
-
 procedure TMapForm.Outlineothermaps1Click(Sender: TObject);
 var
    Bitmap : tMyBitmap;
@@ -20686,10 +20732,8 @@ var
 
 begin
    CopyImageToBitmap(Image1,Bitmap);
-
    Bitmap.Canvas.Pen.Color := clRed;
    Bitmap.Canvas.Pen.Width := 3;
-
    for i := 0 to pred(WMDEM.MDIChildCount) do
       if WMDEM.MDIChildren[i] is tMapForm then begin
          if (WmDEM.MDIChildren[i].Handle <> Handle) then begin

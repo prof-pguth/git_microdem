@@ -4,7 +4,7 @@ unit compress_form;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
 {$I nevadia_defines.inc}
@@ -103,6 +103,7 @@ uses
    DEM_indexes,
    DEMDef_routines,
    Make_Tables,
+   MD_Use_Tools,
 
 {Main program MDI window for different programs that use this module}
    Nevadia_Main;
@@ -642,8 +643,8 @@ var
    DeCompressing,DeleteFiles : boolean;
 begin
    {$IfDef RecordCompressionProblems} WriteLinetoDebugFile('Tpetcompressform.CompressLASretain1Click in'); {$EndIf}
-   LazName := ProgramRootDir + 'lastools\bin\laszip.exe';
-   if FileExists(LazName) then begin
+   LazName := LAStools_BinDir+ 'laszip.exe';
+   if GetLASToolsFileName(LazName) then begin
        FilesWanted := tStringList.Create;
        DefaultFilter := 1;
        DeleteFiles := (Sender = CompressLASPurge1) or (Sender = UncompressLAZPurge1) or ((Sender = FilesinallsubdirectoriespurgeLAZ1));
@@ -692,14 +693,13 @@ begin
           else begin
              EndBatchFile(MDtempDir + 'laz_work_' + IntToStr(i) + '.bat',bfile,false);
              {$IfDef RecordCompressionProblems} WriteLinetoDebugFile('Tpetcompressform.CompressLASretain1Click Done work'); {$EndIf}
-             Memo1.Lines.Add('You can work while laszip works in the background');
-             Memo1.Lines.Add('laszip will be done with black command prompt window closes');
+             Memo1.Lines.Add('You can work in MICRODEM while laszip works in the background');
+             Memo1.Lines.Add('laszip will be done when black command prompt window closes');
           end;
        end;
        FilesWanted.Free;
        ShowDefaultCursor;
-   end
-   else MessageToContinue(LazName + ' missing');
+   end;
 {$EndIf}
 end;
 

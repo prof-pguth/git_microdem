@@ -67,6 +67,7 @@ const
 
 type
    tListOfDEMs = array[1..MaxGrids] of integer;
+   tNormalMethod = (nmNone,nmEastWest,nmNorthSouth);
 
 
 function ShortDerivativeMapName(ch : AnsiChar; SampleBoxSize : integer = 0) : ShortString;
@@ -85,13 +86,15 @@ function CreateProfileConvexityMap(WhichDEM : integer; OpenMap : boolean = true)
 function CreateSlopeMap(WhichDEM : integer; OpenMap : boolean = true; Components : boolean = false) : integer;
 function MakeAspectMap(ElevMap : integer) : integer;
 
+procedure NumHighLowNeighborsMaps(DEM,Radius : integer; Tolerance : float32; var HighNeigh,LowNeigh : integer);
+
 
 function CreateStandardDeviationMap(DEM,Radius : integer) : integer;
 
 procedure ModeFilterDEM(DEM,BufferSize : integer; JustDoHoles : boolean);
 procedure RGBFilterDEM(DEM,BufferSize : integer; JustDoHoles : boolean);
 
-function MakeTRIGrid(CurDEM : integer; Normalize : boolean = false; DoTPI : boolean = true) : integer;
+function MakeTRIGrid(CurDEM : integer; Normalize : tNormalMethod; DoTPI : boolean = true) : integer;
 
 function CreateRoughnessMap(WhichDEM : integer; OpenMap : boolean = true) : integer;
 function CreateRoughnessMap2(DEM : integer; OpenMap : boolean = true; SaveSlopeMap : boolean = true) : integer;
@@ -144,6 +147,73 @@ begin
 end;
 
 
+
+procedure NumHighLowNeighborsMaps(DEM,Radius : integer; Tolerance : float32; var HighNeigh,LowNeigh : integer);
+type
+   tHist = array[0..8] of int64;
+const
+   Colors : array[0..8] of tColor = (clBlue,clGreen,clAqua,
+                                           clYellow,clLime,clTeal,
+                                           clPurple,clFuchsia,clBrown);
+ var
+   i,Higher,Lower : integer;
+   zDEM2,zRefDEM,zDEM1,What : float32;
+   Lat,Long : float64;
+   x,y : integer;
+   TStr : shortstring;
+   HighHist,LowHist : tHist;
+   DEM1high, DEM1low, DEM1good, DEM2high, DEM2low, DEM2good : boolean;
+
+
+         procedure Finalize(Neigh : integer; Hist : tHist; aLabel : shortstring; ReverseColors : boolean);
+         var
+            VAT : tStringList;
+            fName2 : PathStr;
+            i : integer;
+            aColor : tColor;
+         begin
+            Vat := tStringList.Create;
+            Vat.add('VALUE,NAME,N,USE,COLOR');
+            for i := 8 downto 0 do if (Hist[i] > 0) then begin
+               if ReverseColors then aColor := Colors[8-i] else aColor := Colors[i];
+               Vat.add(IntToStr(i) + ',' + IntToStr(i) + aLabel + ',' + IntToStr(Hist[i]) + ',Y,' + IntToStr(aColor));
+            end;
+            fName2 := NextFileNumber(MDTempDir,DEMGlb[Neigh].AreaName,'.vat.dbf');
+            StringList2CSVtoDB(vat,fName2,true);
+            DEMGlb[Neigh].VATFileName := fName2;
+            DEMglb[Neigh].CheckMaxMinElev;
+            DEMglb[Neigh].SetUpMap(Neigh,true,mtDEMVATTable);
+         end;
+
+
+begin
+   {$If Defined(RecordDEMCompare) or Defined(NewVATgrids)} WriteLineToDebugFile('TwoDEMHighLowMap in, DEM=' + IntToStr(DEM));  {$EndIf}
+   if ValidDEM(DEM)then begin
+      for i := 0 to 8 do begin
+          HighHist[i] := 0;
+          LowHist[i] := 0;
+      end;
+      HighNeigh := DEMGlb[DEM].CloneAndOpenGridSetMissing(ByteDEM,'higher_neighors_' + DEMGlb[DEM].AreaName + '_rad='+ IntToStr(Radius) + '_tol=' + RealToString(Tolerance,-4,-1),euIntCode);
+      LowNeigh := DEMGlb[DEM].CloneAndOpenGridSetMissing(ByteDEM,'lower_neighors_' + DEMGlb[DEM].AreaName+ '_rad='+ IntToStr(Radius) + '_tol=' + RealToString(Tolerance,-4,-1),euIntCode);
+      StartProgressAbortOption('High/low neighbors');
+      for x := 0 to pred(DEMGlb[DEM].DEMheader.NumCol) do begin
+         UpdateProgressBar(x/DEMGlb[DEM].DEMheader.NumCol);
+         for y := 0 to pred(DEMGlb[DEM].DEMheader.NumRow) do begin
+            if DEMGlb[DEM].HighLowPointNeighbors(x,y,Radius,Tolerance,Higher,Lower) then begin
+               DEMglb[HighNeigh].SetGridElevation(x,y,Higher);
+               inc(HighHist[Higher]);
+               DEMglb[LowNeigh].SetGridElevation(x,y,Lower);
+               inc(LowHist[Lower]);
+            end;
+         end;
+      end;
+      Finalize(HighNeigh,HighHist,' higher neighbors',True);
+      Finalize(LowNeigh,LowHist,' lower neighbors',false);
+      EndProgress;
+   end;
+end;
+
+
 function TwoDEMHighLowMap(RefDEM,ALOS,COP : integer; DEMtype : shortstring; SimpleTolerance : float32; FourCats : boolean; fName2 : PathStr = '') : integer;
 const
    MaxHist = 9;
@@ -169,7 +239,7 @@ begin
       for i := 1 to MaxHist do Hist[i] := 0;
       if (fName2 = '') then fName2 := 'two_dems_to_ref_' + DEMGlb[RefDEM].AreaName;
       Result := DEMGlb[RefDEM].CloneAndOpenGridSetMissing(ByteDEM,fName2,euIntCode);
-      StartProgressAbortOption('Air or dirt');
+      StartProgressAbortOption('DEMs high/low');
       for x := 0 to pred(DEMGlb[RefDEM].DEMheader.NumCol) do begin
          UpdateProgressBar(x/DEMGlb[RefDEM].DEMheader.NumCol);
          for y := 0 to pred(DEMGlb[RefDEM].DEMheader.NumRow) do begin
@@ -263,7 +333,7 @@ begin
       for i := 1 to 7 do Hist[i] := 0;
       if (fName = '') then fName := 'high_low_' + DEMGlb[DEMonMap].AreaName;
       Result := DEMGlb[DEMonMap].CloneAndOpenGridSetMissing(ByteDEM,fName,euIntCode);
-      StartProgressAbortOption('Difference category');
+      StartProgressAbortOption('DEM Difference category');
       for x := 0 to pred(DEMGlb[DEMonMap].DEMheader.NumCol) do begin
          UpdateProgressBar(x/DEMGlb[DEMonMap].DEMheader.NumCol);
          for y := 0 to pred(DEMGlb[DEMonMap].DEMheader.NumRow) do begin
@@ -554,7 +624,6 @@ begin
    SlopeGrid := CreateSlopeMap(DEM,OpenMap);
    Result := DEMGlb[DEM].CloneAndOpenGridSetMissing(FloatingPointDEM,'md_roughness_elev_std_3x3_' + DEMGlb[DEM].AreaName,DEMGlb[DEM].DEMheader.ElevUnits);  //,false,1);
    MomentVar.Npts := 9;
-
    StartProgressAbortOption('roughness');
    for x := 0 to pred(DEMGlb[DEM].DEMheader.NumCol) do begin
       UpdateProgressBar(x/DEMGlb[DEM].DEMheader.NumCol);
@@ -669,38 +738,55 @@ end;
    end;
 
 
-function MakeTRIGrid(CurDEM : integer; Normalize : boolean = false; DoTPI : boolean = true) : integer;
+function MakeTRIGrid(CurDEM : integer; Normalize : tNormalMethod; DoTPI : boolean = true) : integer;
 var
    i,j,TPIGrid : integer;
    GridLimits : tGridLimits;
    znw,zw,zsw,zn,z,zs,zne,ze,zse : float32;
-   sum,FactorEW,FactorDiag : float64;
+   sum,FactorEW,FactorDiag,FactorNS,DiagonalSpace : float64;
    TStr : shortstring;
 begin
-    if Normalize then TStr := '_norm' else TStr := '';
+    if (Normalize = nmNorthSouth) then TStr := '_norm_NS'
+    else if (Normalize = nmEastWest) then TStr := '_norm_EW'
+    else TStr := '_no_norm';
     Result := DEMGlb[CurDEM].CloneAndOpenGridSetMissing(FloatingPointDEM, 'MD_TRI' + TStr + '_' + DEMGlb[CurDem].AreaName,euMeters);
 
     if DoTPI then TPIgrid := DEMGlb[CurDEM].CloneAndOpenGridSetMissing(FloatingPointDEM,'MD_TPI' + TStr + '_' + DEMGlb[CurDem].AreaName,euMeters);
     GridLimits := TheDesiredLimits(CurDEM);
     if ShowSatProgress then StartProgressAbortOption('TRI');
+
+    //you could set the normalization factors here, using the average diagonal spacing
+    //it would not be much faster, and the approximation would be increasingly in error as the latitude increased
+
     for j := GridLimits.YGridLow to GridLimits.YGridHigh do begin
        if (j mod 25 = 0) and ShowSatProgress then UpdateProgressBar((j-GridLimits.YGridLow) / (GridLimits.YGridHigh-GridLimits.YGridLow));
-       if Normalize then begin
-          FactorEW := DEMGlb[CurDEM].AverageYSpace / DEMGlb[CurDEM].AverageXSpace;
-          FactorDiag := DEMGlb[CurDEM].AverageYSpace / DEMGlb[CurDEM].AverageDiaSpace;
+       DiagonalSpace := sqrt(sqr(DEMGlb[CurDEM].XSpaceByDEMrow[j]) + sqr(DEMGlb[CurDEM].AverageYSpace));
+       if (Normalize = nmNorthSouth) then begin
+          FactorNS := 1;
+          FactorEW := DEMGlb[CurDEM].AverageYSpace / DEMGlb[CurDEM].XSpaceByDEMrow[j];
+          FactorDiag := DEMGlb[CurDEM].AverageYSpace / DiagonalSpace;
        end;
+       if (Normalize = nmEastWest) then begin
+          FactorNS := DEMGlb[CurDEM].XSpaceByDEMrow[j] / DEMGlb[CurDEM].AverageYSpace;
+          FactorEW := 1;
+          FactorDiag := DEMGlb[CurDEM].XSpaceByDEMrow[j] / DiagonalSpace;
+       end;
+
        for i := GridLimits.XGridLow to GridLimits.XGridHigh do begin
           if DEMGLB[CurDEM].SurroundedPointElevs(i,j, znw,zw,zsw,zn,z,zs,zne,ze,zse) then begin
-             if Normalize then begin
+             if (Normalize in [nmNorthSouth,nmEastWest]) then begin
+                //calculate the elevation in the direction of the neighbor, assuming linear slope in that direction
                 znw := z + (zNW-z) * FactorDiag;
                 zne := z + (zNE-z) * FactorDiag;
                 zsw := z + (zSW-z) * FactorDiag;
                 zse := z + (zSE-z) * FactorDiag;
                 ze := z + (ze-z) * FactorEW;
                 zw := z + (zw-z) * FactorEW;
+                zn := z + (zn-z) * FactorNS;
+                zs := z + (zs-z) * FactorNS;
              end;
              Sum := sqr(z-zn) + sqr(z-zne) + sqr(z-ze)+ sqr(z-zse)+ sqr(z-zs) + sqr(z-zsw)+ sqr(z-zw)+ sqr(z-znw);
-             //changed 9/18/21 to remove the averaging; now matches GDAL     changed back 4/22/2022 to match GRASS
+             //changed 9/18/21 to remove the averaging and match GDAL;     changed back 4/22/2022 to match GRASS
              sum := sqrt(sum/8);
              DEMGlb[Result].SetGridElevation(i,j,sum);
              if DoTPI then begin
@@ -810,7 +896,7 @@ begin
           end
           {$EndIf}
           else if (What = 'C') then  begin
-             if DEMGlb[CurDEM].GetEvansParams(x,y,MDDef.WoodRegionSize,SlopeDeg,SlopeCurvature,PlanCurvature,CrossC,MaxCurve,MinCurve) then  begin
+             if DEMGlb[CurDEM].GetEvansParams(x,y,MDDef.WoodRegionRadiusPixels,SlopeDeg,SlopeCurvature,PlanCurvature,CrossC,MaxCurve,MinCurve) then  begin
                 PostResults(DEMs[1],x,y,Gridinc,SlopeCurvature);
                 PostResults(DEMs[2],x,y,Gridinc,PlanCurvature);
                 PostResults(DEMs[3],x,y,Gridinc,CrossC);
@@ -1306,11 +1392,11 @@ begin
          GridLimits := TheDesiredLimits(CurDEM);
 
          if (ch = 'C') then begin
-            MDDef.WoodRegionSize := round(SampleBoxSize / DEMGlb[CurDEM].AverageSpace);
-            if (MDDef.WoodRegionSize  < 1) then MDDef.WoodRegionSize := 1;
+            MDDef.WoodRegionRadiusPixels := round(SampleBoxSize / DEMGlb[CurDEM].AverageSpace);
+            if (MDDef.WoodRegionRadiusPixels  < 1) then MDDef.WoodRegionRadiusPixels := 1;
          end;
 
-         if (ch in ['1','2','o','s','+','-']) then MDDef.WoodRegionSize := 1;
+         if (ch in ['1','2','o','s','+','-']) then MDDef.WoodRegionRadiusPixels := 1;
 
          if (ch = 'E') then DEMGlb[Result].DEMheader.ElevUnits := LnElev
          else if (ch = 'L') then DEMGlb[Result].DEMheader.ElevUnits := LogElev

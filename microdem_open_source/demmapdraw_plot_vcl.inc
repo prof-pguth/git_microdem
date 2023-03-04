@@ -96,14 +96,14 @@
 
 function tMapDraw.MakeVATLegend : tMyBitmap;
 var
-   Cat,x,y,Cats,Total,Needed,z,i,CatHeight : integer;
+   db,Cat,x,y,Cats,Total,Needed,z,i,CatHeight : integer;
    xg,fTotal : float64;
    fName : PathStr;
-   Table : tMyData;
-   CatPCforLegend : float64;
+   //Table : tMyData;
+   //CatPCforLegend : float64;
    zf : float32;
    aColor : tColor;
-   NameField,CodeField : ShortString;
+   CodeField : ShortString;
    Hist : array[MinVATValue..MaxVatCats] of integer;
 begin
    fName := DEMGlb[DEMOnMap].VATFileName;
@@ -117,23 +117,26 @@ begin
       if not FileExists(fName) then exit;
       DEMGlb[DEMOnMap].VATFileName := fName;
    end;
-   Table := tMyData.Create(fName);
-   if (Table.FiltRecsInDB > 16) then begin
+   //Table := tMyData.Create(fName);
+   OpenNumberedGISDataBase(db, fName);
+
+   (*
+   if (GISdb[db].MyData.FiltRecsInDB > 16) then begin
       CatPCforLegend := 2;
       ReadDefault('Min category percentage for legend',CatPCforLegend);
    end
    else CatPCforLegend := 0;
+   *)
 
-   if Table.FieldExists('CODE') then CodeField := 'CODE' else CodeField := 'VALUE';
+   if GISdb[db].MyData.FieldExists('CODE') then CodeField := 'CODE' else CodeField := 'VALUE';
 
    ShowHourglassCursor;
    for x := MinVATValue to MaxVATCats do Hist[x] := 0;
 
    Total := 0;
    fTotal := 0;
-   if Table.FieldExists('NAME') then NameField := 'NAME'
-   else begin
-      NameField := OrigPickField(Table,'Label',[ftString]);
+   if not GISdb[db].MyData.FieldExists(GISdb[db].dbOpts.LabelField) then begin
+      GISdb[db].dbOpts.LabelField := OrigPickField(GISdb[db].MyData,'Label',[ftString]);
    end;
 
    if true then begin
@@ -149,24 +152,24 @@ begin
          end;
       end;
       fTotal := Total;
-      Table.First;
-      while not Table.eof do begin
-         i := Table.GetFieldByNameAsInteger(CodeField);
-         Table.Edit;
-         if (i >= 0) and (i <= MaxVATCats) then Table.SetFieldByNameAsInteger(Table.NCountField,Hist[i])
-         else Table.SetFieldByNameAsInteger(Table.NCountField,0);
-         Table.Next;
+      GISdb[db].MyData.First;
+      while not GISdb[db].MyData.eof do begin
+         i := GISdb[db].MyData.GetFieldByNameAsInteger(CodeField);
+         GISdb[db].MyData.Edit;
+         if (i >= 0) and (i <= MaxVATCats) then GISdb[db].MyData.SetFieldByNameAsInteger(GISdb[db].MyData.NCountField,Hist[i])
+         else GISdb[db].MyData.SetFieldByNameAsInteger(GISdb[db].MyData.NCountField,0);
+         GISdb[db].MyData.Next;
       end;
    end
    else begin
-      while not Table.eof do begin
-         fTotal := fTotal + Table.GetFieldByNameAsInteger(Table.NCountField);
-         Table.Next;
+      while not GISdb[db].MyData.eof do begin
+         fTotal := fTotal + GISdb[db].MyData.GetFieldByNameAsInteger(GISdb[db].MyData.NCountField);
+         GISdb[db].MyData.Next;
       end;
    end;
 
-   Needed := round(0.01 * CatPCforLegend * fTotal);
-   Table.ApplyFilter(Table.NCountField + ' > ' + IntToStr(Needed));
+   Needed := round(0.01 * GISdb[db].dbOpts.CatPCforLegend * fTotal);
+   GISdb[db].MyData.ApplyFilter(GISdb[db].MyData.NCountField + ' > ' + IntToStr(Needed));
    if false then begin
       CatHeight := 40;
    end
@@ -174,7 +177,7 @@ begin
       CatHeight := 25;
    end;
 
-   Cats := Table.FiltRecsInDB;
+   Cats := GISdb[db].MyData.FiltRecsInDB;
    CreateBitmap(Result,1200,CatHeight*succ(Cats) + 4);
 
    if false then begin
@@ -189,22 +192,22 @@ begin
    ClearBitmap(Result,clNearWhite);
    Result.Canvas.Font.Style := [fsBold];
 
-   Result.Canvas.TextOut(5,1,'    % Area     ' + NameField);
-   while not Table.eof do begin
-      xg := 100.0*Table.GetFieldByNameAsInteger(Table.NCountField)/fTotal;
+   Result.Canvas.TextOut(5,1,'    % Area     ' + GISdb[db].dbOpts.LabelField);
+   while not GISdb[db].MyData.eof do begin
+      xg := 100.0*GISdb[db].MyData.GetFieldByNameAsInteger(GISdb[db].MyData.NCountField)/fTotal;
       inc(Cat);
-      aColor := Table.tColorFromTable;
+      aColor := GISdb[db].MyData.tColorFromTable;
       Result.Canvas.Pen.Color := aColor;
       Result.Canvas.Brush.Color := aColor;
       Result.Canvas.Brush.Style := bsSolid;
       Result.Canvas.Rectangle(5,(Cat)*CatHeight,25,succ(Cat)*CatHeight);
       Result.Canvas.Brush.Style := bsClear;
-      Result.Canvas.TextOut(30,Cat*CatHeight + 4, RealToString(xg,10,2) + '  ' + Table.GetFieldByNameAsString(NameField));
-      Table.Next;
+      Result.Canvas.TextOut(30,Cat*CatHeight + 4, RealToString(xg,10,2) + '  ' + GISdb[db].MyData.GetFieldByNameAsString(GISdb[db].dbOpts.LabelField));
+      GISdb[db].MyData.Next;
    end;
    PutBitmapInBox(Result);
    ShowDefaultCursor;
-   Table.Destroy;
+   CloseAndNilNumberedDB(db);
    {$IfDef RecordVAT} WriteLineToDebugFile('TMapForm.GridVATlegend1Click created=' + fName); {$EndIf}
 end;
 

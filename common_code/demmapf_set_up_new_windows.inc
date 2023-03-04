@@ -1,27 +1,29 @@
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{   file verified 7/30/2014       }
-{                                 }
-{ include file for demmapf        }
-{_________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2023 Peter L. Guth  }
+{___________________________________}
+{                                   }
+{ include file for demmapf          }
+{___________________________________}
 
 
 
 function TMapForm.MakeTempGrid(OpenMap : boolean = false; GetParameters : boolean = false) : integer;
 var
    UTMzone : integer;
-   Latch : ANSIchar;
+   LatCh : ANSIchar;
 begin
    {$IfDef RecordMakeGrid} WriteLineToDebugFile('MakeTempGrid in'); {$EndIf}
     if GetParameters then begin
        GetGridParameters;
        UTMzone := MDdef.DefaultUTMZone;
-       Latch := MDdef.DefaultLatHemi;
+       LatCh := MDdef.DefaultLatHemi;
     end
     else begin
        UTMzone := MapDraw.PrimMapProj.projUTMZone;
-       Latch := MapDraw.PrimMapProj.LatHemi;
+       LatCh := MapDraw.PrimMapProj.LatHemi;
     end;
     WGS84DatumConstants.DefineDatumFromUTMZone('WGS84',UTMZone,LatCh,'LAS RedefineWGS84');
     if (MDDef.LidarGridProjection = UTMBasedDEM) then begin
@@ -36,7 +38,7 @@ begin
     end;
     DEMGlb[Result].DEMheader.ElevUnits := Undefined;
     DEMGlb[Result].AreaName := 'new_grid';
-   {$IfDef RecordMakeGrid} WriteLineToDebugFile('MakeTempGrid out, TempDEM=' + IntToStr(Result) + ' ' + DEMGlb[Result.GridDefinition + ' ' + DEMGlb[Result].DEMSizeString + ' ' + DEMGlb[Result].ColsRowsString); {$EndIf}
+   {$IfDef RecordMakeGrid} WriteLineToDebugFile('MakeTempGrid out, TempDEM=' + IntToStr(Result) + ' ' + DEMGlb[Result].GridDefinition + ' ' + DEMGlb[Result].DEMSizeString + ' ' + DEMGlb[Result].ColsRowsString); {$EndIf}
 end;
 
 

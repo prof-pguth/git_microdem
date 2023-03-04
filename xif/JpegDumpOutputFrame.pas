@@ -333,9 +333,13 @@ begin
    if (TheStr <> '') then begin
       try
          if StrUtils.AnsiContainsText(TheStr,'/') then begin
-            Part1 := StrToFloat(petmar_types.BeforeSpecifiedCharacterANSI(TheStr,'/',true,true));
-            Part2 := StrToFloat(TheStr);
-            Result := Part1/Part2;
+            try
+               Part1 := StrToFloat(petmar_types.BeforeSpecifiedCharacterANSI(TheStr,'/',true,true));
+               Part2 := StrToFloat(TheStr);
+               Result := Part1/Part2;
+            except
+                on Exception do Result := 0;
+            end;
          end
          else begin
             Result := StrToFloat(TheStr);
