@@ -1995,6 +1995,11 @@ object MapForm: TMapForm
           GroupIndex = 1
           OnClick = Moviewithallmaps1Click
         end
+        object Winwcontestmaps1: TMenuItem
+          Caption = 'Wine contest hillshade maps'
+          GroupIndex = 1
+          OnClick = Winwcontestmaps1Click
+        end
         object N44: TMenuItem
           Caption = '-'
           GroupIndex = 1
@@ -5952,8 +5957,20 @@ object MapForm: TMapForm
         Caption = 'No normalization'
         OnClick = Nonormalization1Click
       end
+      object Normalizeto30m1: TMenuItem
+        Caption = 'Normalize to 30 m'
+        OnClick = Normalizeto30m1Click
+      end
+      object RIK1: TMenuItem
+        Caption = 'TRIK'
+        OnClick = RIK1Click
+      end
+      object RICK1: TMenuItem
+        Caption = 'TRICK'
+        OnClick = RICK1Click
+      end
       object Alolthreenormalizations1: TMenuItem
-        Caption = 'All three TRI normalizations'
+        Caption = 'All TRI normalizations'
         OnClick = Alolthreenormalizations1Click
       end
     end

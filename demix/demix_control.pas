@@ -1592,7 +1592,7 @@ begin
                         if MDDef.DEMIXCompositeImage and (BigMap.Count > 0) then MakeBigBitmap(BigMap,'');
                      end;
 
-                     if MDDef.DEMIX_DoElevParamGraphs then ElevationSlopePlot(0);
+                     if MDDef.DEMIX_DoElevParamGraphs then ElevationSlopePlot(DEMListForAllOpenDEM);
 
                      if MDDef.DEMIX_DoElevDiff or MDDef.DEMIX_DoSlopeDiff or MDDef.DEMIX_DoRuffDiff then begin
                         if MDDef.DEMIXCompositeImage then BigMap := tStringList.Create;    //actually this will be graphs, not maps

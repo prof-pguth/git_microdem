@@ -993,6 +993,7 @@ begin
   {$IfDef RecordCreateNewDEM} WriteLineToDebugFile('tDEMDataSet.CloneAndOpenGrid off to OpenAndZero'); {$EndIf}
    Result := 0;
    if OpenAndZeroNewDEM(true,NewHeadRecs,Result,Gridname,InitDEMMissing,0) then begin
+      //DEMGlb[Result].AreaName := GridName;
       AssignProjectionFromDEM(DEMGlb[Result].DEMMapProjection,'DEM=' + IntToStr(Result));
       DEMGlb[Result].DEMMapProjection.ProjectionSharedWithDataset := true;
    end;

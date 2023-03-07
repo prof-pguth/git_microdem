@@ -180,6 +180,7 @@ uses
    {$EndIf}
    Make_tables,
    DEMDatabase,
+   DEM_Manager,
    BaseMap,
    DEMDef_Routines;
 
@@ -1720,7 +1721,8 @@ begin
    MaxAreaZ := -MaxSmallInt;
    TargetGroundElevLAS := -9999;
    ObsGroundElevLAS := -9999;
-   for j := 1 to MaxDEMDataSets do ShowProfile[j] := true;
+   //for j := 1 to MaxDEMDataSets do ShowProfile[j] := true;
+   InitializeDEMsWanted(ShowProfile,true);
    {$IfDef ExPointCloudMemory}
    {$Else}
       PtCldInUse := 1;

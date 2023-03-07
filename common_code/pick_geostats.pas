@@ -100,6 +100,11 @@ type
     Edit3: TEdit;
     Edit4: TEdit;
     BitBtn23: TBitBtn;
+    TabSheet8: TTabSheet;
+    BitBtn24: TBitBtn;
+    BitBtn25: TBitBtn;
+    BitBtn26: TBitBtn;
+    BitBtn27: TBitBtn;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure BitBtn1Click(Sender: TObject);
     procedure Radiogroup1Click(Sender: TObject);
@@ -147,8 +152,12 @@ type
     procedure Edit3Change(Sender: TObject);
     procedure Edit4Change(Sender: TObject);
     procedure BitBtn23Click(Sender: TObject);
+    procedure BitBtn25Click(Sender: TObject);
+    procedure BitBtn24Click(Sender: TObject);
+    procedure BitBtn26Click(Sender: TObject);
   private
     //procedure GetBatchRegionSize;
+    function DEMListToProcess :  tDEMBooleanArray;
     procedure NeedSingleDEM;
     { Private declarations }
   public
@@ -222,6 +231,11 @@ begin
    {$IfDef RecordGeostats} WriteLineToDebugFile('DoGeoStatAnalysis out'); {$EndIf}
 end;
 
+function TPickGeoStat.DEMListToProcess :  tDEMBooleanArray;
+begin
+   if (CurDEM = 0) then Result := DEMsWanted
+   else Result := DEMListForSingleDEM(CurDEM);
+end;
 
 procedure TPickGeoStat.Radiogroup1Click(Sender: TObject);
 begin
@@ -494,6 +508,45 @@ begin
    GetMultipleDEMsFromList('Geomorphometry',DEMsWanted);
 end;
 
+
+procedure TPickGeoStat.BitBtn24Click(Sender: TObject);
+var
+   j : integer;
+begin
+   if CheckBox2.Checked then begin
+      for j := 1 to MaxDEMDataSets do if DEMsWanted[j] then MakeAspectMap(j);
+   end
+   else begin
+      MakeAspectMap(CurDEM);
+   end;
+end;
+
+
+procedure TPickGeoStat.BitBtn25Click(Sender: TObject);
+var
+   j : integer;
+begin
+   if CheckBox2.Checked then begin
+      for j := 1 to MaxDEMDataSets do if DEMsWanted[j] then MakeTRIGrid(j,nmTRIK,false);
+   end
+   else begin
+      MakeTRIGrid(CurDEM,nmTRIK,false);
+   end;
+end;
+
+
+procedure TPickGeoStat.BitBtn26Click(Sender: TObject);
+var
+   j : integer;
+begin
+   if CheckBox2.Checked then begin
+      for j := 1 to MaxDEMDataSets do if DEMsWanted[j] then CreateSlopeMap(j);
+   end
+   else begin
+      CreateSlopeMap(CurDEM);
+   end;
+end;
+
 procedure TPickGeoStat.BitBtn2Click(Sender: TObject);
 {$IfDef ExGeostats}
 begin
@@ -644,7 +697,7 @@ begin
          MDDef.ShowElevSlope := false;
          MDDef.ShowCumSlope := false;
          MDDef.ShowElevSlopeDeg := false;
-         ElevationSlopePlot(CurDEM,MDDef.ElevBinSize);
+         ElevationSlopePlot(DEMListToProcess,MDDef.ElevBinSize);
          RestoreBackupDefaults;
       end
       else DEMGlb[CurDEM].CreateWholeDEMHistogram;
@@ -702,7 +755,7 @@ end;
 
 procedure TPickGeoStat.Button5Click(Sender: TObject);
 begin
-   ElevationSlopePlot(CurDEM,MDDef.ElevBinSize);
+   ElevationSlopePlot(DEMListToProcess,MDDef.ElevBinSize);
 end;
 
 procedure TPickGeoStat.Button6Click(Sender: TObject);

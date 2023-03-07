@@ -2,10 +2,10 @@
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 {                                   }
-{ include file for demcoord         }
+{     include file for demcoord     }
 {___________________________________}
 
 
@@ -27,11 +27,10 @@ var
               ValidPt : boolean;
            begin
                {$IfDef ExVegDensity}
+                  ValidPt := GetElevFromLatLongDegree(Lats[i],Longs[i],z);
                {$Else}
-               if UseVeg then ValidPt := GetElevMetersWithVegFromLatLong(Lats[i],Longs[i],z)
-               else ValidPt := GetElevFromLatLongDegree(Lats[i],Longs[i],z);
-               {$Else}
-               ValidPt := GetElevFromLatLongDegree(Lats[i],Longs[i],z);
+                  if UseVeg then ValidPt := GetElevMetersWithVegFromLatLong(Lats[i],Longs[i],z)
+                  else ValidPt := GetElevFromLatLongDegree(Lats[i],Longs[i],z);
                {$EndIf}
                if ValidPt then begin
                    v[1] := Mult * Dists[i];

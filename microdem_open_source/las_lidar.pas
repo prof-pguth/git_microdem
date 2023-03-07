@@ -949,6 +949,7 @@ var
             Move(Run,Result,8);
          end;
 
+(*
          procedure SetLasUTMBox;
          begin
             LAS_UTM_Box.ymax := LasHeader.MaxY;
@@ -957,20 +958,20 @@ var
             LAS_UTM_Box.xmin := LasHeader.MinX;
          end;
 
-         procedure SetLasGeoBox;
+         function SetLasGeoBox : sfBoundBox;
          begin
             LAS_LatLong_Box.ymax := LasHeader.MaxY;
             LAS_LatLong_Box.xmax := LasHeader.MaxX;
             LAS_LatLong_Box.ymin := LasHeader.MinY;
             LAS_LatLong_Box.xmin := LasHeader.MinX;
          end;
-
-         procedure SetLasProjBox;
+*)
+         function SetLasBoundBoxFromLasHeader : sfBoundBox;
          begin
-            LAS_Proj_Box.ymax := LasHeader.MaxY;
-            LAS_Proj_Box.xmax := LasHeader.MaxX;
-            LAS_Proj_Box.ymin := LasHeader.MinY;
-            LAS_Proj_Box.xmin := LasHeader.MinX;
+            Result.ymax := LasHeader.MaxY;
+            Result.xmax := LasHeader.MaxX;
+            Result.ymin := LasHeader.MinY;
+            Result.xmin := LasHeader.MinX;
          end;
 
 
@@ -986,7 +987,7 @@ var
          procedure DoWKTfromVariableLengthRecord;
          begin
             if lasProjectionDefinition.LasProjection.DecodeWKTProjectionFromString(ASCIIProjectionData) then begin
-               SetLasProjBox;
+               LAS_Proj_Box := SetLasBoundBoxFromLasHeader;
                LAS_LatLong_Box := lasProjectionDefinition.LasProjection.ConvertProjectedBoundBoxToGeoBoundBox(LAS_Proj_Box);
 
                //lasProjectionDefinition.LasProjection.InverseProjectDegrees(LasHeader.MaxX,LasHeader.MaxY,LAS_LatLong_Box.ymax,LAS_LatLong_Box.xmax);
@@ -999,8 +1000,9 @@ var
                LAS_Z_range := LasHeader.MaxZ - LasHeader.MinZ;
 
                if lasProjectionDefinition.LasProjection.Pname = UTMEllipsoidal then begin
-                  SetLasUTMBox;
-                  LAS_LatLong_Box := lasProjectionDefinition.LasProjection.ConvertUTMBoundBoxToGeoBoundBox(LAS_UTM_Box);
+                  LAS_UTM_Box := SetLasBoundBoxFromLasHeader;
+                  //SetLasUTMBox;
+                  //LAS_LatLong_Box := lasProjectionDefinition.LasProjection.ConvertUTMBoundBoxToGeoBoundBox(LAS_UTM_Box);
                end
                else begin
                   //GetUTMboxFromLatLongBox;
@@ -1096,7 +1098,7 @@ begin
          {$If Defined(RecordCreateEveryFile) or Defined(RecordWKT)} writeLineToDebugFile('No WKT in ELVR'); {$EndIf}
          lasProjectionDefinition.RawXYZFile := FileExists(ExtractFilePath(FileName) + 'xyz_files.txt') or FileExists(ExtractFilePath(FileName) + 'rawxy.txt');
          if LasProjectionDefinition.RawXYZFile then begin
-            SetLASGeoBox;
+            LAS_Proj_Box := SetLasBoundBoxFromLasHeader;
             Area := (LasHeader.MaxX - LasHeader.MinX) * (LasHeader.MaxY - LasHeader.MinY);
          end;
          LasFileName := FileName;
@@ -1191,28 +1193,33 @@ begin
             VincentyCalculateDistanceBearing(LasHeader.MaxY,LasHeader.MaxX,LasHeader.MaxY,LasHeader.MinX,WidthMeters,az);
             VincentyCalculateDistanceBearing(LasHeader.MaxY,LasHeader.MaxX,LasHeader.MinY,LasHeader.MaxX,HeightMeters,az);
             Area := WidthMeters * HeightMeters;
-            SetLasGeoBox;
+            LAS_LatLong_Box := SetLasBoundBoxFromLasHeader;
+            LAS_Proj_Box := SetLasBoundBoxFromLasHeader;
             UTMZone := GetUTMZone(0.5*(LAS_LatLong_Box.XMax + LAS_LatLong_Box.XMin));
             if (LAS_LatLong_Box.YMax > 0) then lasProjectionDefinition.LasProjection.LatHemi := 'N' else lasProjectionDefinition.LasProjection.LatHemi := 'S';
-            GetUTMboxFromLatLongBox;
+            LAS_UTM_Box := lasProjectionDefinition.LASProjection.ConvertGeoBoundBoxToUTMBoundBox(LAS_LatLong_Box);
          end
          else begin
             {$IfDef RecordCreateEveryFile} WriteLineToDebugFile('Set up UTM-like projection'); {$EndIf}
             if (lasProjectionDefinition.LASProjection.PName = UTMEllipsoidal) then begin
                lasProjectionDefinition.LasProjection.StartUTMProjection(lasProjectionDefinition.LasProjection.projUTMZone);
                UTMZone := lasProjectionDefinition.LasProjection.projUTMZone;
+               LAS_UTM_Box := SetLasBoundBoxFromLasHeader;
+               LAS_Proj_Box := SetLasBoundBoxFromLasHeader;
             end
             else begin
                lasProjectionDefinition.LasProjection.GetProjectParameters;
+               LAS_Proj_Box := SetLasBoundBoxFromLasHeader;
+               LAS_UTM_Box := lasProjectionDefinition.LASProjection.ConvertGeoBoundBoxToUTMBoundBox(LAS_LatLong_Box);
             end;
             {$IfDef RecordCreateEveryFile}
                WriteLineToDebugFile('Got lasProjectionDefinition.LasProjection.GetProjectParameters');
                WriteStringListToDebugFile(lasProjectionDefinition.LasProjection.ProjectionParametersList);
             {$EndIf}
-            SetLasUTMBox;
-            Area := (LasHeader.MaxX - LasHeader.MinX) * (LasHeader.MaxY - LasHeader.MinY);
-            lasProjectionDefinition.LasProjection.InverseProjectDegrees(LasHeader.MaxX,LasHeader.MaxY,LAS_LatLong_Box.ymax,LAS_LatLong_Box.xmax);
-            lasProjectionDefinition.LasProjection.InverseProjectDegrees(LasHeader.MinX,LasHeader.MinY,LAS_LatLong_Box.ymin,LAS_LatLong_Box.xmin);
+            LAS_LatLong_Box := lasProjectionDefinition.LasProjection.ConvertProjectedBoundBoxToGeoBoundBox(LAS_Proj_Box);
+            Area := (LAS_UTM_Box.xMax - LAS_UTM_Box.xMin) * (LAS_UTM_Box.yMax - LAS_UTM_Box.yMin);
+            //lasProjectionDefinition.LasProjection.InverseProjectDegrees(LasHeader.MaxX,LasHeader.MaxY,LAS_LatLong_Box.ymax,LAS_LatLong_Box.xmax);
+            //lasProjectionDefinition.LasProjection.InverseProjectDegrees(LasHeader.MinX,LasHeader.MinY,LAS_LatLong_Box.ymin,LAS_LatLong_Box.xmin);
          end;
       end;
 

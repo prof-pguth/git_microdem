@@ -3252,7 +3252,7 @@ begin
       end;
 
       Pick_Geostats.DoGeoStatAnalysis;
-      ElevationSlopePlot(0);
+      ElevationSlopePlot(DEMListForAllOpenDEM);
       exit;
 
       for graph := 1 to 5 do begin

@@ -28,8 +28,8 @@ object PickGeoStat: TPickGeoStat
     Height = 77
     Align = alBottom
     TabOrder = 0
-    ExplicitTop = 209
-    ExplicitWidth = 517
+    ExplicitTop = 269
+    ExplicitWidth = 509
     object Label1: TLabel
       Left = 256
       Top = 17
@@ -106,12 +106,10 @@ object PickGeoStat: TPickGeoStat
     Top = 0
     Width = 328
     Height = 270
-    ActivePage = TabSheet2
+    ActivePage = TabSheet1
     Align = alClient
     MultiLine = True
     TabOrder = 1
-    ExplicitWidth = 332
-    ExplicitHeight = 209
     object TabSheet1: TTabSheet
       Caption = 'Basic'
       object Button6: TButton
@@ -545,6 +543,46 @@ object PickGeoStat: TPickGeoStat
         OnChange = Edit4Change
       end
     end
+    object TabSheet8: TTabSheet
+      Caption = 'Maps'
+      ImageIndex = 7
+      object BitBtn24: TBitBtn
+        Left = 16
+        Top = 24
+        Width = 75
+        Height = 25
+        Caption = 'Aspect'
+        TabOrder = 0
+        OnClick = BitBtn24Click
+      end
+      object BitBtn25: TBitBtn
+        Left = 16
+        Top = 55
+        Width = 75
+        Height = 25
+        Caption = 'TRIK'
+        TabOrder = 1
+        OnClick = BitBtn25Click
+      end
+      object BitBtn26: TBitBtn
+        Left = 16
+        Top = 86
+        Width = 75
+        Height = 25
+        Caption = 'Slope'
+        TabOrder = 2
+        OnClick = BitBtn26Click
+      end
+      object BitBtn27: TBitBtn
+        Left = 16
+        Top = 120
+        Width = 75
+        Height = 25
+        Caption = 'Ruff-slope std'
+        Enabled = False
+        TabOrder = 3
+      end
+    end
   end
   object Memo1: TMemo
     Left = 328
@@ -553,7 +591,7 @@ object PickGeoStat: TPickGeoStat
     Height = 270
     Align = alRight
     TabOrder = 2
-    ExplicitLeft = 332
-    ExplicitHeight = 209
+    ExplicitLeft = 324
+    ExplicitHeight = 269
   end
 end

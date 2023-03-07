@@ -3079,9 +3079,8 @@ begin
          MDDef.DefaultUTMZone := LasFiles[CloudNum].UTMZone;
          MDDef.DefaultLatHemi := LasFiles[CloudNum].LatHemi;
          {$If Defined(RecordPointCloudOptionsForm) or Defined(RecordLASOpen)} WriteLineToDebugFile('GetFiles Create cloud basemap, UTM=' + IntToStr(MDDef.DefaultUTMZone) + MDDef.DefaultLatHemi); {$EndIf}
-
-
-         {$If Defined(RecordPointCloudOptionsForm) or Defined(RecordMakeBaseMap)} WriteLineToDebugFile('GetFile CreateNewGrid, cloud utm box:  ' + sfBoundBoxToString(LasFiles[CloudNum].UTMBBox,2)); {$EndIf}
+         {$If Defined(RecordPointCloudOptionsForm) or Defined(RecordMakeBaseMap)} WriteLineToDebugFile('GetFile CreateNewGrid, cloud utm box:  ' + sfBoundBoxToString(LasFiles[CloudNum].UTMBBox,1)); {$EndIf}
+         {$If Defined(RecordPointCloudOptionsForm) or Defined(RecordMakeBaseMap)} WriteLineToDebugFile('GetFile CreateNewGrid, cloud geo box:  ' + sfBoundBoxToString(LasFiles[CloudNum].GeoBBox,6)); {$EndIf}
          DEMBase := CreateNewGrid(LasFiles[CloudNum].CloudName + '_cloud',cgUTM,LasFiles[CloudNum].UTMBBox,FloatingPointDEM,2);
          {$If Defined(RecordPointCloudOptionsForm) or Defined(RecordMakeBaseMap)} WriteLineToDebugFile('GetFile CreateNewGrid UTM out, map utm box:  ' + sfBoundBoxToString(DEMGlb[DEMBase].SelectionMap.MapDraw.MapCorners.BoundBoxUTM,2)); {$EndIf}
          BaseMap := DEMGlb[DemBase].SelectionMap;
@@ -3104,8 +3103,9 @@ begin
          end;
          *)
 
+         {$If Defined(RecordMakeBaseMap)} WriteLineToDebugFile('Cloud Basemap UTM box:' + sfBoundBoxToString(BaseMap.MapDraw.MapCorners.BoundBoxUTM,1) ); {$EndIf}
          {$If Defined(RecordMakeBaseMap)} WriteLineToDebugFile('Cloud Basemap geo box:' + sfBoundBoxToString(BaseMap.MapDraw.MapCorners.BoundBoxGeo,6) ); {$EndIf}
-         {$If Defined(RecordMakeBaseMap)} WriteLineToDebugFile('Cloud Basemap projectedt box:' + sfBoundBoxToString(BaseMap.MapDraw.MapCorners.BoundBoxProj,6) + ' dx=' + RealToString(BaseMap.MapDraw.MapCorners.ProjDX,-12,-6) + ' dy=' + RealToString(BaseMap.MapDraw.MapCorners.ProjDY,-12,-6)); {$EndIf}
+         {$If Defined(RecordMakeBaseMap)} WriteLineToDebugFile('Cloud Basemap projected box:' + sfBoundBoxToString(BaseMap.MapDraw.MapCorners.BoundBoxProj,6) + ' dx=' + RealToString(BaseMap.MapDraw.MapCorners.ProjDX,-12,-6) + ' dy=' + RealToString(BaseMap.MapDraw.MapCorners.ProjDY,-12,-6)); {$EndIf}
 
 
          BaseMap.MapDraw.DrawLegendsThisMap := false;

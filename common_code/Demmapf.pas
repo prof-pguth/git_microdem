@@ -30,7 +30,7 @@
       {$Define Record3d}
       //{$Define FanDrawProblems}
       //{$Define RawProjectInverse}  //must also be set in BaseMap
-      //{$Define RecordDEMIX}
+      {$Define RecordDEMIX}
       //{$Define RecordDEMIXtiles}
       //{$Define RecordStreamModeDigitize}
       //{$Define RecordPickRoute}
@@ -1448,6 +1448,10 @@ type
     Nonormalization1: TMenuItem;
     Alolthreenormalizations1: TMenuItem;
     InsertpostingsfromreferenceDEM1: TMenuItem;
+    Normalizeto30m1: TMenuItem;
+    RIK1: TMenuItem;
+    RICK1: TMenuItem;
+    Winwcontestmaps1: TMenuItem;
     //procedure HiresintervisibilityDEM1Click(Sender: TObject);
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
@@ -2505,6 +2509,10 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Nonormalization1Click(Sender: TObject);
     procedure Alolthreenormalizations1Click(Sender: TObject);
     procedure InsertpostingsfromreferenceDEM1Click(Sender: TObject);
+    procedure Normalizeto30m1Click(Sender: TObject);
+    procedure RIK1Click(Sender: TObject);
+    procedure RICK1Click(Sender: TObject);
+    procedure Winwcontestmaps1Click(Sender: TObject);
     //procedure QuarterDEM1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
@@ -5506,6 +5514,8 @@ end;
 procedure TMapForm.Derivativegrid1Click(Sender: TObject);
 begin
    if (MapDraw.ValidDEMonMap) or (MapDraw.ValidSatOnMap) then begin
+      RIK1.Visible := TrilobiteComputer;
+      RICK1.Visible := TrilobiteComputer;
       DerivativeGridPopupMenu16.Popup(Mouse.CursorPos.X,Mouse.CursorPos.Y);
    end;
 end;
@@ -6624,6 +6634,11 @@ begin
    {$EndIf}
 end;
 
+
+procedure TMapForm.Normalizeto30m1Click(Sender: TObject);
+begin
+   MakeTRIGrid(MapDraw.DEMonMap,nm30m,false);
+end;
 
 procedure TMapForm.Excessiveslopes2Click(Sender: TObject);
 {$IfDef ExGeoStats}
@@ -16732,6 +16747,11 @@ begin
 end;
 
 
+procedure TMapForm.RIK1Click(Sender: TObject);
+begin
+   MakeTRIGrid(MapDraw.DEMonMap,nmTRIK,false);
+end;
+
 function TMapForm.GetSecondDEM(MustBeCompatible : boolean = true) : boolean;
 begin
    GetDEM(MapDraw.DEM2onMap);
@@ -18809,13 +18829,17 @@ end;
 
 procedure TMapForm.Alolthreenormalizations1Click(Sender: TObject);
 var
-   TRI_ew,TRI_ns,TRI_none : integer;
+   TRI_30m,TRI_ew,TRI_ns,TRI_none,TRI_interpolate : integer;
 begin
    {$IfDef ExGeostats}
    {$Else}
-      TRI_ew := MakeTRIGrid(MapDraw.DEMonMap,nmEastWest);
-      TRI_ns := MakeTRIGrid(MapDraw.DEMonMap,nmNorthSouth);
-      TRI_none := MakeTRIGrid(MapDraw.DEMonMap,nmNone);
+      TRI_ew := MakeTRIGrid(MapDraw.DEMonMap,nmEastWest,false);
+      TRI_ns := MakeTRIGrid(MapDraw.DEMonMap,nmNorthSouth,false);
+      TRI_none := MakeTRIGrid(MapDraw.DEMonMap,nmNone,false);
+      TRI_interpolate := MakeTRIGrid(MapDraw.DEMonMap,nmInterpolate,false);
+      TRI_30m := MakeTRIGrid(MapDraw.DEMonMap,nm30m,false);
+      MakeTRIGrid(MapDraw.DEMonMap,nmTRIK,false);
+      MakeTRIGrid(MapDraw.DEMonMap,nmTRICK,false);
    {$EndIf}
 end;
 
@@ -18996,6 +19020,54 @@ procedure TMapForm.WhiteboxTRI1Click(Sender: TObject);
 begin
    WhiteBox_TRI(GeotiffDEMNameOfMap);
 end;
+
+procedure TMapForm.Winwcontestmaps1Click(Sender: TObject);
+var
+   TheList,Findings : tStringList;
+   ch : ANSIchar;
+   i : integer;
+   Output,fName : PathStr;
+
+   procedure DoAMap(DEM : integer);
+   begin
+       if (DEM = 1) then DEMGlb[1].SelectionMap.MapDraw.BaseTitle := 'Reference DEM'
+       else DEMGlb[DEM].SelectionMap.MapDraw.BaseTitle := 'DEM ' + ch;
+       DEMGlb[DEM].SelectionMap.DoCompleteMapRedraw;
+       with DEMGlb[DEM].SelectionMap do begin
+           Image1.Canvas.Brush.Style := bsClear;
+           Image1.Canvas.Pen.Width := 3;
+           Image1.Canvas.Pen.Color := clBlack;
+           Image1.Canvas.Rectangle(0,0,pred(Image1.Width),pred(Image1.Height));
+       end;
+       fName := Output + DEMGlb[DEM].SelectionMap.MapDraw.BaseTitle + '--' + DEMGlb[DEM].AreaName + '.bmp';
+       PetImage.SaveImageAsBMP(DEMGlb[DEM].SelectionMap.Image1,fName);
+       Findings.Add(fName);
+   end;
+
+
+begin
+   {$If Defined(RecordDEMIX)} writeLineToDebugFile('TMapForm.Winwcontestmaps1Click in'); {$EndIf}
+   DEMGlb[1].SelectionMap.hiscoverageareaandsamepixelsize1Click(Sender);
+   Findings := tStringList.Create;
+   Output := 'c:\temp\';
+   TheList := tStringList.Create;
+   for ch := 'A' to 'F' do TheList.Add('DEM ' + ch);
+   {$If Defined(RecordDEMIX)} writeLineToDebugFile('In order:'); writeStringListToDebugFile(TheList); {$EndIf}
+   RandomizeStringList(TheList);
+   {$If Defined(RecordDEMIX)} writeLineToDebugFile('Randomized:'); writeStringListToDebugFile(TheList); {$EndIf}
+   for ch := 'A' to 'F' do begin
+       i := TheList.IndexOf('DEM ' + ch);
+       {$If Defined(RecordDEMIX)} writeLineToDebugFile(ch + IntegerToString(i)); {$EndIf}
+       DoAMap(i+2);
+       if (ch = 'D') then DoAMap(1);
+   end;
+   Findings.SaveToFile(Output + 'hillshade_wine_contest.txt');
+   {$If Defined(RecordDEMIX)} writeStringListToDebugFile(Findings); {$EndIf}
+   MakeBigBitmap(Findings,'',Output + 'hillshade.png',3);
+   {$If Defined(RecordDEMIX)} writeLineToDebugFile('TMapForm.Winwcontestmaps1Click out'); {$EndIf}
+end;
+
+
 
 procedure TMapForm.FocalMechsButtonClick(Sender: TObject);
 begin
@@ -19202,7 +19274,7 @@ procedure TMapForm.Nonormalization1Click(Sender: TObject);
 begin
    {$IfDef ExGeostats}
    {$Else}
-      MakeTRIGrid(MapDraw.DEMonMap,nmNone);
+      MakeTRIGrid(MapDraw.DEMonMap,nmNone,false);
    {$EndIf}
 end;
 
@@ -24084,6 +24156,11 @@ end;
 procedure TMapForm.RGBvalues1Click(Sender: TObject);
 begin
    ChangeDEMNowDoing(GetRGBValues);
+end;
+
+procedure TMapForm.RICK1Click(Sender: TObject);
+begin
+   MakeTRIGrid(MapDraw.DEMonMap,nmTRICK,false);
 end;
 
 procedure TMapForm.Mapshadingoptions1Click(Sender: TObject);

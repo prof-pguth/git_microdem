@@ -2,7 +2,7 @@
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 {                                   }
 { include file for demstat          }
@@ -254,15 +254,17 @@ procedure GridDiffernces(EntireDEM : boolean);
 var
    DEM1,DEM2 : integer;
    RegionUsed : tGridLimits;
+   aName : shortstring;
 begin
    {$IfDef RecordDEMCompare} WriteLineToDebugFile('GridDifference in'); {$EndIf}
    GetTwoCompatibleGrids('Result = DEM1 - DEM2)',true,DEM2,DEM1,false,true);
    if (DEM1 <> 0) and (DEM2 <> 0) then begin
-      {$IfDef RecordDEMCompare} WriteLineToDebugFile('DEM2=' + DEMGlb[DEM2].AreaName + '  and DEM1=' + DEMGlb[DEM1].AreaName); {$EndIf}
+      {$IfDef RecordDEMCompare} WriteLineToDebugFile('DEM1=' + DEMGlb[DEM1].AreaName + ' minus DEM2=' + DEMGlb[DEM2].AreaName); {$EndIf}
       SetGridDiffernceProperties;
       if EntireDEM then RegionUsed := DEMGlb[DEM1].FullDEMGridLimits
       else RegionUsed := DEMGlb[DEM1].SelectionMap.MapDraw.MapAreaDEMGridLimits;
-      MakeDifferenceMapOfBoxRegion(DEM1,DEM2,RegionUsed,MDDef.ShowGridDiffMap,MDDef.ShowGridDiffHistogram,MDDef.ShowScatterPlot);
+      aName := 'Difference_' + DEMGlb[DEM1].AreaName + '-' + DEMGlb[DEM2].AreaName;
+      MakeDifferenceMapOfBoxRegion(DEM1,DEM2,RegionUsed,MDDef.ShowGridDiffMap,MDDef.ShowGridDiffHistogram,MDDef.ShowScatterPlot,aName);
       {$IfDef RecordDEMCompare} WriteLineToDebugFile('GridDifference out'); {$EndIf}
    end
    else begin

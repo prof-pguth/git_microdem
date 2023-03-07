@@ -737,8 +737,8 @@ begin
             SaveBitmap(BigBmp,SaveName);
             Bigbmp.Free;
             Result := true;
-         end
-         else begin
+         end;
+         //else begin
             ImageForm := TImageDisplayForm.Create(Application);
             ImageForm.LoadImage(BigBmp,true);
             fName := Petmar.NextFileNumber(MDtempDir,'big_bmp_files_','.txt');
@@ -749,7 +749,7 @@ begin
             if AskCols then ImageForm.Changecolumns1Click(nil)
             else ImageForm.RedrawSpeedButton12Click(Nil);
             {$IfDef RecordBigBitmap}  WriteLineToDebugFile('MakeBigBitmap out, imageform created'); {$EndIf}
-         end;
+         //end;
       end;
    end
    else begin

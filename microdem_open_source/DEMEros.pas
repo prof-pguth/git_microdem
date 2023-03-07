@@ -282,7 +282,6 @@ var
 
 function ValidSatImage(i : integer) : boolean;
 
-//procedure BandStats(NumPts : LongInt; Count : tDistFreq; var Avg,StdDev : float64);
 procedure InitializeSatView(var SatView : tSatView);
 
 function LandsatSceneMetadata(fName : PathStr; var LandsatNumber : byte; var MPath : PathStr) : tStringList;
@@ -320,7 +319,6 @@ Uses
 
    {$IfDef ExAdvancedSats}
    {$Else}
-      //MrSidImagery,
       DEMSatContrast,
       Petimage_form,
    {$EndIf}
@@ -574,7 +572,6 @@ end;
          {$IfDef RecordHistogram} WriteLineToDebugFile('tSatImage.GraphHistogram enter ' + OriginalFileName); {$EndIf}
          InitializeHistogramDistributions;
             MaxCount := 0;
-            //MaxRef := 0;
             LoadHistogram;
             {$IfDef RecordHistogram} WriteLineToDebugFile('MaxCount found'); {$EndIf}
 
@@ -891,6 +888,10 @@ begin
          Band1 := 6;
          Band2 := 5;
       end
+      else if SatelliteName = 'Sentinel-2' then begin
+         Band1 := 12;  //11
+         Band2 := 9;   //8A
+      end
       else PickBands;
       NewBandTitle := 'NDSI (soil)' + RatName;
    end
@@ -921,7 +922,7 @@ begin
    else if (NewBand = nsbNDWI) then begin
       if (LandsatNumber in [4,5,6,7]) then begin
          Band1 := 2;  //red
-         Band2 := 5;   //NIR
+         Band2 := 5;  //NIR
       end
       else if (LandsatNumber in [8]) then begin
          Band1 := 3;    //red

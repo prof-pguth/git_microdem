@@ -87,6 +87,9 @@ function GetSatMaskList(ASatImage : boolean) : ANSIString;
 
 function OpenDBString : shortstring;
 
+procedure InitializeDEMsWanted(DEMList : tDEMBooleanArray; Setting : boolean);
+function DEMListForSingleDEM(CurDEM : integer) : tDEMBooleanArray;
+function DEMListForAllOpenDEM: tDEMBooleanArray;
 
 {$IfDef ExIndexes}
 {$Else}
@@ -274,6 +277,27 @@ uses
    DEMhandW,
    BaseMap;
 
+
+procedure InitializeDEMsWanted(DEMList : tDEMBooleanArray; Setting : boolean);
+var
+   j : integer;
+begin
+   for j := 1 to MaxDEMDataSets do DEMlist[j] := Setting;
+end;
+
+
+function DEMListForAllOpenDEM : tDEMBooleanArray;
+var
+   j : integer;
+begin
+   for j := 1 to MaxDEMDataSets do Result[j] := ValidDEM(j);
+end;
+
+function DEMListForSingleDEM(CurDEM : integer) : tDEMBooleanArray;
+begin
+   InitializeDEMsWanted(Result,false);
+   Result[CurDEM] := true;
+end;
 
 function ValidDEMExt(ext : extstr) : boolean;
 begin
@@ -944,7 +968,7 @@ end;
             wmdem.SetPanelText(0,'');
             FindMatchingFiles(LastSatDir,'*.tif',TheFiles,6);
          end;
-         //else begin
+
             //already have TIFFs, but maybe need to delete JP2 that were not originally deleted
             if MDDef.DeleteJP2 then begin
                {$If Defined(RecordSatLoad) or Defined(RecordSatDirOpen)} WriteLineToDebugFile('check JP2 delete'); {$EndIf}
@@ -953,7 +977,13 @@ end;
                for I := 0 to pred(Files2.Count) do DeleteFile(Files2.Strings[i]);
                Files2.Free;
             end;
-        // end;
+
+            //  3/6/23--originally import of tar Landsat kept the original compreesed tif files
+            //    at some point those were recycled, and the checking for them was deleted
+            //    this will take care of that legacy problem
+            Files2 := Nil;
+            FindMatchingFiles(LastSatDir,'ORIGINAL_*.tif',Files2,8);
+            for I := 0 to pred(Files2.Count) do DeleteFile(Files2.Strings[i]);
 
          if IsThisSentinel2(TheFiles.Strings[0]) then begin
             //there might be metadata or other TIFFS we don't want to open

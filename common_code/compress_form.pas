@@ -638,7 +638,7 @@ var
    i,j,lt : integer;
    DefaultFilter : byte;
    cmd : ANSIstring;
-   Filter : shortstring;
+   Filter,ft : shortstring;
    NewExt : ExtStr;
    DeCompressing,DeleteFiles : boolean;
 begin
@@ -656,9 +656,15 @@ begin
        end
        else begin
           FilesWanted.Add(LastLidarDirectory);
-          if (Sender = UncompressLAZRetain1) or (Sender = UncompressLAZPurge1) then Filter := 'LAZ|*.laz'
-          else Filter := 'LAS|*.las';
-          GetMultipleFiles('LAS files',Filter,FilesWanted,DefaultFilter)
+          if (Sender = UncompressLAZRetain1) or (Sender = UncompressLAZPurge1) then begin
+             Filter := 'LAZ|*.laz';
+             ft := 'LAZ';
+          end
+          else begin
+             Filter := 'LAS|*.las';
+             ft := 'LAS';
+          end;
+          GetMultipleFiles(ft + ' files',Filter,FilesWanted,DefaultFilter)
        end;
 
        if (FilesWanted.Count > 0) then begin

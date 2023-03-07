@@ -18,7 +18,7 @@ unit make_grid;
       //$Define CreateAspectMap}
       {$Define DEMIXmaps}
       //{$Define CreateGeomorphMaps}
-      //{$Define RecordTimeGridCreate}
+      {$Define RecordTimeGridCreate}
       //{$Define RecordPointClass}
       //{$Define RecordDEMCompare}
       {$Define NewVATgrids}
@@ -67,7 +67,7 @@ const
 
 type
    tListOfDEMs = array[1..MaxGrids] of integer;
-   tNormalMethod = (nmNone,nmEastWest,nmNorthSouth);
+   tNormalMethod = (nmNone,nmEastWest,nmNorthSouth,nmInterpolate,nm30m,nmTRIK,nmTRICK);
 
 
 function ShortDerivativeMapName(ch : AnsiChar; SampleBoxSize : integer = 0) : ShortString;
@@ -740,58 +740,124 @@ end;
 
 function MakeTRIGrid(CurDEM : integer; Normalize : tNormalMethod; DoTPI : boolean = true) : integer;
 var
-   i,j,TPIGrid : integer;
+   Col,Row,TPIGrid : integer;
    GridLimits : tGridLimits;
-   znw,zw,zsw,zn,z,zs,zne,ze,zse : float32;
+   znw,zw,zsw,zn,z,zs,zne,ze,zse,z1,z11,z21,z3,z23,z5,z15,z25 : float32;
    sum,FactorEW,FactorDiag,FactorNS,DiagonalSpace : float64;
    TStr : shortstring;
 begin
+    {$IfDef RecordTimeGridCreate} Stopwatch1 := TStopwatch.StartNew; {$EndIf}
     if (Normalize = nmNorthSouth) then TStr := '_norm_NS'
     else if (Normalize = nmEastWest) then TStr := '_norm_EW'
+    else if (Normalize = nmInterpolate) then TStr := '_norm_interpolate'
+    else if (Normalize = nm30m) then TStr := '_norm_30m'
+    else if (Normalize = nmTRIK) then TStr := '_K'
+    else if (Normalize = nmTRICK) then TStr := '_CK'
     else TStr := '_no_norm';
     Result := DEMGlb[CurDEM].CloneAndOpenGridSetMissing(FloatingPointDEM, 'MD_TRI' + TStr + '_' + DEMGlb[CurDem].AreaName,euMeters);
 
     if DoTPI then TPIgrid := DEMGlb[CurDEM].CloneAndOpenGridSetMissing(FloatingPointDEM,'MD_TPI' + TStr + '_' + DEMGlb[CurDem].AreaName,euMeters);
     GridLimits := TheDesiredLimits(CurDEM);
+    FactorNS := 1;
+    FactorEW := 1;
+    FactorDiag := 1;
+
     if ShowSatProgress then StartProgressAbortOption('TRI');
 
     //you could set the normalization factors here, using the average diagonal spacing
-    //it would not be much faster, and the approximation would be increasingly in error as the latitude increased
-
-    for j := GridLimits.YGridLow to GridLimits.YGridHigh do begin
-       if (j mod 25 = 0) and ShowSatProgress then UpdateProgressBar((j-GridLimits.YGridLow) / (GridLimits.YGridHigh-GridLimits.YGridLow));
-       DiagonalSpace := sqrt(sqr(DEMGlb[CurDEM].XSpaceByDEMrow[j]) + sqr(DEMGlb[CurDEM].AverageYSpace));
+    //it would not be much faster, and the approximation would be increasingly in error for geographic DEMs as the latitude or size of the DEM increased
+       (*
        if (Normalize = nmNorthSouth) then begin
           FactorNS := 1;
-          FactorEW := DEMGlb[CurDEM].AverageYSpace / DEMGlb[CurDEM].XSpaceByDEMrow[j];
-          FactorDiag := DEMGlb[CurDEM].AverageYSpace / DiagonalSpace;
+          FactorEW := DEMGlb[CurDEM].AverageYSpace / DEMGlb[CurDEM].AverageXSpace;
+          FactorDiag := DEMGlb[CurDEM].AverageYSpace / DEMGlb[CurDEM].AverageDiaSpace;
        end;
        if (Normalize = nmEastWest) then begin
-          FactorNS := DEMGlb[CurDEM].XSpaceByDEMrow[j] / DEMGlb[CurDEM].AverageYSpace;
+          FactorNS := DEMGlb[CurDEM].AverageXSpace / DEMGlb[CurDEM].AverageYSpace;
           FactorEW := 1;
-          FactorDiag := DEMGlb[CurDEM].XSpaceByDEMrow[j] / DiagonalSpace;
+          FactorDiag := DEMGlb[CurDEM].AverageXSpace / DEMGlb[CurDEM].AverageDiaSpace;
+       end;
+       if (Normalize = nmInterpolate) then begin
+          //you should get the idea
+       end;
+       *)
+    for Row := GridLimits.YGridLow to GridLimits.YGridHigh do begin
+       if (Row mod 25 = 0) and ShowSatProgress then UpdateProgressBar((Row-GridLimits.YGridLow) / (GridLimits.YGridHigh-GridLimits.YGridLow));
+
+       DiagonalSpace := sqrt(sqr(DEMGlb[CurDEM].XSpaceByDEMrow[Row]) + sqr(DEMGlb[CurDEM].AverageYSpace));
+       if (Normalize = nmNorthSouth) then begin
+          FactorNS := 1;
+          FactorEW := DEMGlb[CurDEM].AverageYSpace / DEMGlb[CurDEM].XSpaceByDEMrow[Row];
+          FactorDiag := DEMGlb[CurDEM].AverageYSpace / DiagonalSpace;
+       end
+       else if (Normalize in [nmEastWest,nmTRICK]) then begin
+          FactorNS := DEMGlb[CurDEM].XSpaceByDEMrow[Row] / DEMGlb[CurDEM].AverageYSpace;
+          FactorEW := 1;
+          FactorDiag := DEMGlb[CurDEM].XSpaceByDEMrow[Row] / DiagonalSpace;
+       end
+       else if (Normalize = nm30m) then begin
+          FactorNS := 30 / DEMGlb[CurDEM].AverageYSpace;
+          FactorEW := 30 / DEMGlb[CurDEM].XSpaceByDEMrow[Row];
+          FactorDiag := 30 / DiagonalSpace;
+       end
+       else if (Normalize in [nmNone,nmTRIK]) then begin
+          //Factors remain 1
        end;
 
-       for i := GridLimits.XGridLow to GridLimits.XGridHigh do begin
-          if DEMGLB[CurDEM].SurroundedPointElevs(i,j, znw,zw,zsw,zn,z,zs,zne,ze,zse) then begin
-             if (Normalize in [nmNorthSouth,nmEastWest]) then begin
-                //calculate the elevation in the direction of the neighbor, assuming linear slope in that direction
-                znw := z + (zNW-z) * FactorDiag;
-                zne := z + (zNE-z) * FactorDiag;
-                zsw := z + (zSW-z) * FactorDiag;
-                zse := z + (zSE-z) * FactorDiag;
-                ze := z + (ze-z) * FactorEW;
-                zw := z + (zw-z) * FactorEW;
-                zn := z + (zn-z) * FactorNS;
-                zs := z + (zs-z) * FactorNS;
-             end;
-             Sum := sqr(z-zn) + sqr(z-zne) + sqr(z-ze)+ sqr(z-zse)+ sqr(z-zs) + sqr(z-zsw)+ sqr(z-zw)+ sqr(z-znw);
-             //changed 9/18/21 to remove the averaging and match GDAL;     changed back 4/22/2022 to match GRASS
-             sum := sqrt(sum/8);
-             DEMGlb[Result].SetGridElevation(i,j,sum);
-             if DoTPI then begin
-                Sum := z-(zn+zne+ze+zse+zs+zsw+zw+znw)/8;
-                DEMGlb[TPIGrid].SetGridElevation(i,j,sum);
+       for Col := GridLimits.XGridLow to GridLimits.XGridHigh do begin
+          if DEMGLB[CurDEM].SurroundedPointElevs(Col,Row,znw,zw,zsw,zn,z,zs,zne,ze,zse) then begin
+             if (Normalize in [nmTRIK,nmTRICK]) then begin
+                if DEMGLB[CurDEM].GetElevMetersOnGrid(Col-2,Row+2,z1) and
+                   DEMGLB[CurDEM].GetElevMetersOnGrid(Col,Row+2,z11) and
+                   DEMGLB[CurDEM].GetElevMetersOnGrid(Col+2,Row+2,z21) and
+                   DEMGLB[CurDEM].GetElevMetersOnGrid(Col-2,Row,z3) and
+                   DEMGLB[CurDEM].GetElevMetersOnGrid(Col+2,Row,z23) and
+                   DEMGLB[CurDEM].GetElevMetersOnGrid(Col-2,Row-2,z5) and
+                   DEMGLB[CurDEM].GetElevMetersOnGrid(Col,Row-2,z15) and
+                   DEMGLB[CurDEM].GetElevMetersOnGrid(Col+2,Row-2,z25) then begin
+                      Sum := abs(-z1 + 2 * zNW - z) * FactorDiag +      //zNW=z7,z=z13
+                             abs(-z11 + 2 * zN - z) * FactorNS +        //zN=z12
+                             abs(-z21 + 2 * zNE - z) * FactorDiag +     //zNE=z17
+                             abs(-z23 + 2 * zE - z) * FactorEW +        //zE=z18
+                             abs(-z25 + 2 * zSE - z) * FactorDiag +     //zSE=z19
+                             abs(-z15 + 2 * zS - z) * FactorNS +        //zS=z14
+                             abs(-z5 + 2 * zSW - z) * FactorDiag +      //zSW=z9
+                             abs(-z3 + 2 * zW - z) * FactorEW +         //zW=z8
+                             abs(-zNW + 2 * z - zSE) * FactorDiag +     //zNW=z7,zSE=z19
+                             abs(-zN + 2 * z - zS) * FactorNS +         //zN=z12,zS=z14
+                             abs(-zNE + 2 * z - zSW) * FactorDiag +     //zNE=z17,zSW=z9
+                             abs(-zE + 2 * z - zW) * FactorEW;          //zE=z18,zW=z8
+                      DEMGlb[Result].SetGridElevation(Col,Row,sum/12);
+                end;
+             end
+             else begin
+                if (Normalize in [nmNorthSouth,nmEastWest,nm30m]) then begin
+                   //calculate the elevation in the direction of the neighbor, assuming linear slope in that direction
+                   znw := z + (zNW-z) * FactorDiag;
+                   zne := z + (zNE-z) * FactorDiag;
+                   zsw := z + (zSW-z) * FactorDiag;
+                   zse := z + (zSE-z) * FactorDiag;
+                   ze := z + (ze-z) * FactorEW;
+                   zw := z + (zw-z) * FactorEW;
+                   zn := z + (zn-z) * FactorNS;
+                   zs := z + (zs-z) * FactorNS;
+                end;
+                if (Normalize = nmInterpolate) then begin
+                   //this is precise only for UTM grids, but it's so close to the others it's not more getting more accurate so not worth adjusting for geo grids
+                   DEMGLB[CurDEM].GetElevMeters(Col-0.707,Row+0.707,znw);
+                   DEMGLB[CurDEM].GetElevMeters(Col+0.707,Row+0.707,zne);
+                   DEMGLB[CurDEM].GetElevMeters(Col-0.707,Row-0.707,zsw);
+                   DEMGLB[CurDEM].GetElevMeters(Col+0.707,Row-0.707,zse);
+                end;
+
+                Sum := sqr(z-zn) + sqr(z-zne) + sqr(z-ze)+ sqr(z-zse)+ sqr(z-zs) + sqr(z-zsw)+ sqr(z-zw)+ sqr(z-znw);
+                //changed 9/18/21 to remove the averaging and match GDAL;     changed back 4/22/2022 to match GRASS, which now matches GDAL
+                sum := sqrt(sum/8);
+                DEMGlb[Result].SetGridElevation(Col,Row,sum);
+                if DoTPI then begin
+                   Sum := z-(zn+zne+ze+zse+zs+zsw+zw+znw)/8;
+                   DEMGlb[TPIGrid].SetGridElevation(Col,Row,sum);
+                end;
              end;
           end;
        end;
@@ -799,6 +865,7 @@ begin
     if ShowSatProgress then EndProgress;
     DEMGlb[Result].SetUpMap(Result,true,mtElevSpectrum);
     if DoTPI then DEMGlb[TPIGrid].SetUpMap(TPIGrid,true,mtElevSpectrum);
+    {$IfDef RecordTimeGridCreate} WriteLineToDebugFile('Make TRIGrid took ' + RealToString(Stopwatch1.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
 end;
 
 

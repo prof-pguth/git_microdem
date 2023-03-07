@@ -2,10 +2,11 @@
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
+{___________________________________}
+{     include file for basemap      }
 {___________________________________}
 
-{ include file for basemap }
 
 {$If Defined(RecordDefineDatum) or Defined(ProjectionInfoAllowed)}
    procedure tMapProjection.LogDatumInfo(Why : shortstring);

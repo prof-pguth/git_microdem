@@ -616,13 +616,16 @@ end;
 
 
 
+
+
+
 function WhiteBoxPresent : boolean;
 begin
    if (WhiteBoxfName) = '' then WhiteBoxfName := ProgramRootDir + 'wbt\whitebox_tools.exe';
    Result := FileExists(WhiteBoxfName);
    if Not Result then begin
       Result := GetExistingFileName('whitebox_tools.exe','*.exe',WhiteBoxfName);
-      if Not Result then MessageToContinue('WhiteBoxTools exe missing');
+      if (Not Result) then MessageToContinue('WhiteBoxTools exe missing');
    end;
 end;
 
@@ -698,6 +701,7 @@ begin
   if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
      OutName := MDTempDir + 'WB_TRI_' + ExtractFileNameNoExt(InName) + '.tif';
      cmd := WhiteBoxfName + WBNoCompress + '-r=RuggednessIndex -v --dem=' + InName + ' -o=' + OutName;
+     Result := ExecuteWBandOpenMap(cmd,OutName,euMeters);
   end;
 end;
 

@@ -4,7 +4,7 @@
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
 {$I nevadia_defines.inc}
@@ -3255,7 +3255,7 @@ procedure TDemHandForm.LASGeotoUTM1Click(Sender: TObject);
          DeleteOriginalFiles : boolean;
          bf,theFileNames : tStringList;
       begin
-         pName := ProgramRootDir + 'lastools\bin\las2las.exe';
+         pName := lastools_bindir + 'las2las.exe';
 
          if FileExists(pName) then begin
             Params := '';
