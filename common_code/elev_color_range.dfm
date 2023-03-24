@@ -45,7 +45,7 @@ object ElevationRangeForm: TElevationRangeForm
   end
   object RedrawSpeedButton12: TSpeedButton
     Left = 158
-    Top = 282
+    Top = 273
     Width = 25
     Height = 25
     Hint = 'Force redraw'

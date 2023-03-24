@@ -2847,6 +2847,7 @@ procedure Tdbtablef.TimefieldHHMMSStohours1Click(Sender: TObject);
 var
    TStr : ShortString;
    Hours : float64;
+   i,rc : integer;
 begin
    {$If Defined(RecordEditsDone) or Defined(RecordEditDBProblems)} WriteLineToDebugFile('Tdbtablef.TimefieldHHMMSStohours1Click in ' + GISdb[DBonTable].dbName + ' Time field to decimal hours'); {$EndIf}
    with GISdb[DBonTable] do begin
@@ -2858,7 +2859,11 @@ begin
       EmpSource.Enabled := false;
       ShowHourglassCursor;
       GISdb[DBonTable].MyData.First;
+      rc := ProgressIncrement(MyData.FiltRecsInDB);
+      i := 0;
       while not MyData.EOF do begin
+         if (i mod rc = 0) then UpdateProgressBar(i/MyData.FiltRecsInDB);
+         inc(i);
          MyData.Edit;
          if (Sender = TimefieldHHMMSStohours1) then begin
             TStr := UpperCase(MyData.GetFieldByNameAsString('TIME'));
@@ -2890,40 +2895,37 @@ begin
    TimefieldHHMMSStohours1Click(Sender);
 end;
 
+
 procedure Tdbtablef.Timefieldstodecdays1Click(Sender: TObject);
 var
    t : float64;
    MinField,SecField : ShortString;
 begin
   with GISdb[DBonTable] do begin
-      GISdb[DBonTable].AddFieldToDataBase(ftFloat,'DEC_DAYS',12,6);
-      if not MyData.FieldExists('DAY') then begin
-         MessageToContinue('Requires field "DAY"');
-         exit;
-      end;
-      if not MyData.FieldExists('HOUR') then begin
-         MessageToContinue('Requires field "HOUR"');
-         exit;
-      end;
+      if MyData.FieldExists('DAY') and MyData.FieldExists('HOUR') then begin
+         GISdb[DBonTable].AddFieldToDataBase(ftFloat,'DEC_DAYS',12,6);
+         if MyData.FieldExists('MINUTE') then MinField := 'MINUTE'
+         else if MyData.FieldExists('MIN') then MinField := 'MIN'
+         else MinField := '';
+         if MyData.FieldExists('SECOND') then MinField := 'SECOND'
+         else if MyData.FieldExists('SEC') then MinField := 'SEC'
+         else SecField := '';
 
-      if MyData.FieldExists('MINUTE') then MinField := 'MINUTE'
-      else if MyData.FieldExists('MIN') then MinField := 'MIN'
-      else MinField := '';
-      if MyData.FieldExists('SECOND') then MinField := 'SECOND'
-      else if MyData.FieldExists('SEC') then MinField := 'SEC'
-      else SecField := '';
-
-      EmpSource.Enabled := false;
-      MyData.First;
-      while not MyData.EOF do begin
-         MyData.Edit;
-         t := MyData.GetFieldByNameAsInteger('DAY') + MyData.GetFieldByNameAsInteger('HOUR')/24;
-         if (MinField <> '') then t := t + MyData.GetFieldByNameAsInteger(MinField) /60/24;
-         if (SecField <> '') then t := t + MyData.GetFieldByNameAsInteger(SecField)/3600/24;
-         MyData.SetFieldByNameAsFloat('DEC_DAYS',t);
-         MyData.Next;
+         EmpSource.Enabled := false;
+         MyData.First;
+         while not MyData.EOF do begin
+            MyData.Edit;
+            t := MyData.GetFieldByNameAsInteger('DAY') + MyData.GetFieldByNameAsInteger('HOUR')/24;
+            if (MinField <> '') then t := t + MyData.GetFieldByNameAsInteger(MinField) /60/24;
+            if (SecField <> '') then t := t + MyData.GetFieldByNameAsInteger(SecField)/3600/24;
+            MyData.SetFieldByNameAsFloat('DEC_DAYS',t);
+            MyData.Next;
+         end;
+         ShowStatus;
+      end
+      else begin
+         MessageToContinue('Required "HOUR" and "DAY" fields');
       end;
-      ShowStatus;
    end;
 end;
 
@@ -3175,7 +3177,7 @@ begin
 
       {$IfDef RecordDataBaseImage} if ImagePresent then WriteLineToDebugFile('Image name: ' + GetFieldByNameAsString('IMAGE')) else WriteLineToDebugFile('Images not present'); {$EndIf}
       RecordDisplay1.Visible := Sender = DBGrid1;
-      Satelliteaddreflectance1.Visible := (TheMapOwner <> Nil) and (TheMapOwner.MapDraw.SATonMap <> 0);
+      Satelliteaddreflectance1.Visible := (TheMapOwner <> Nil) and ValidSatImage(TheMapOwner.MapDraw.SATonMap);
 
       ThisShapeType := 0;
       if ItsAGroupingFile then ThisShapeType := GISdb[DBonTable].MyData.GetFieldByNameAsInteger('SHAPE_TYPE');
@@ -4859,41 +4861,8 @@ var
 begin
    {$IfDef RecordNavigation} WriteLineToDebugFile('Tdbtablef.Addazimuthtotravelpath1Click in'); {$EndIf}
    with GISdb[DBonTable] do begin
-      if (Sender = Gradient1) then begin
-         f1 := PickField('Field for gradient',NumericFieldTypes);
-         f2 := f1 + 'GRAD';
-         GetString('new gradient field',f2,true,DBaseFieldNameChars);
-         AddFieldToDataBase(ftFloat,f2,12,4);
-         {$IfDef RecordNavigation} WriteLineToDebugFile('(Sender = Gradient1), f1=' + f1 + '   and f2=' + f2); {$EndIf}
-
-         EmpSource.Enabled := false;
-         MyData.First;
-         ValidLatLongFromTable(LastLat,LastLong);
-         RedefineWGS84DatumConstants(LastLong);
-         TStr := MyData.GetFieldByNameAsString(f1);
-         Last4grad := StrToFloat(TStr);
-
-         MyData.Next;
-         while not MyData.eof do begin
-            if ValidLatLongFromTable(Lat,Long) then begin
-               VincentyCalculateDistanceBearing(LastLat,LastLong,Lat,Long,Dist,Az);
-               MyData.Edit;
-               if (Abs(Dist) > 0.0001) and (abs(Az) < 360) then begin
-                  This4grad := MyData.GetFieldByNameAsFloat(f1);
-                  MyData.SetFieldByNameAsFloat(f2,(This4Grad - Last4Grad) / Dist);
-                  Last4Grad := This4grad;
-               end;
-               LastLat := Lat;
-               LastLong := Long;
-            end;
-            MyData.Next;
-         end;
-         ShowStatus;
-      end
-      else begin
-         GetSpeedDistOptions;
-         GISdb[DBonTable].AddNavFields;
-      end;
+      GetSpeedDistOptions;
+      GISdb[DBonTable].AddNavFields;
    end;
    {$IfDef RecordNavigation} WriteLineToDebugFile('Tdbtablef.Addazimuthtotravelpath1Click out'); {$EndIf}
 end;
@@ -6445,7 +6414,7 @@ end;
 procedure Tdbtablef.N45Click(Sender: TObject);
 begin
    {$IfDef RecordIceSat} WriteLineToDebugFile('ICESat2filecleanup1Click'); {$EndIf}
-   IcesatProcessCanopy(DBonTable,false);
+   IcesatProcessCanopy(DBonTable,false,true);
 end;
 
 procedure Tdbtablef.N7Elevationdifferencecriteria1Click(Sender: TObject);
@@ -7109,7 +7078,7 @@ begin
       Distancefrompoint1.Visible := (TheMapOwner <> Nil);
       DEM1.Visible := ((TheMapOwner <> Nil) and (TheMapOwner.MapDraw.DEMonMap <> 0)) or (NumDEMDataSetsOpen > 0);
       MaskDEMfromshapefile1.Visible := (NumDEMDataSetsOpen > 0);
-      Satelliteaddreflectance1.Visible := (TheMapOwner <> Nil) and (TheMapOwner.MapDraw.SatonMap <> 0);
+      Satelliteaddreflectance1.Visible := (TheMapOwner <> Nil) and ValidSatImage(TheMapOwner.MapDraw.SatonMap);
       Editrecordsingrid1.Visible := MDDef.AllowEditDBInGrid;
       Maskdatabasewithgazetteer1.Visible := GazDB and (TheMapOwner.MapDraw.DEMonMap <> 0);
       Networkends1.Visible := MDDef.ShowGeomorphometry;
@@ -9843,8 +9812,44 @@ begin
 end;
 
 procedure Tdbtablef.Gradient1Click(Sender: TObject);
+var
+   Last4Grad,This4Grad,Lat,Long,LastLat,LastLong,Az,Dist : float64;
+   f1,f2,TStr : ShortString;
 begin
-   Addazimuthtotravelpath1Click(Sender);
+   {$IfDef RecordNavigation} WriteLineToDebugFile('Tdbtablef.Gradient1Click in'); {$EndIf}
+   with GISdb[DBonTable] do begin
+      if (Sender = Gradient1) then begin
+         f1 := PickField('Field for gradient',NumericFieldTypes);
+         f2 := f1 + 'GRAD';
+         GetString('new gradient field',f2,true,DBaseFieldNameChars);
+         AddFieldToDataBase(ftFloat,f2,12,4);
+         {$IfDef RecordNavigation} WriteLineToDebugFile('(Sender = Gradient1), f1=' + f1 + '   and f2=' + f2); {$EndIf}
+
+         EmpSource.Enabled := false;
+         MyData.First;
+         ValidLatLongFromTable(LastLat,LastLong);
+         RedefineWGS84DatumConstants(LastLong);
+         TStr := MyData.GetFieldByNameAsString(f1);
+         Last4grad := StrToFloat(TStr);
+         ShowHourglassCursor;
+         MyData.Next;
+         while not MyData.eof do begin
+            if ValidLatLongFromTable(Lat,Long) then begin
+               VincentyCalculateDistanceBearing(LastLat,LastLong,Lat,Long,Dist,Az);
+               MyData.Edit;
+               if (Abs(Dist) > 0.0001) and (abs(Az) < 360) then begin
+                  This4grad := MyData.GetFieldByNameAsFloat(f1);
+                  MyData.SetFieldByNameAsFloat(f2,(This4Grad - Last4Grad) / Dist);
+                  Last4Grad := This4grad;
+               end;
+               LastLat := Lat;
+               LastLong := Long;
+            end;
+            MyData.Next;
+         end;
+         ShowStatus;
+      end;
+   end;
 end;
 
 procedure Tdbtablef.Graphavereagescoresbyterraincategories1Click(Sender: TObject);

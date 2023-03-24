@@ -3,7 +3,7 @@
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
 { Copyright (c) 2023 Peter L. Guth   }
-{____________________________________}
+{------------------------------------}
 {    include file for demcoord.pas   }
 {____________________________________}
 
@@ -204,7 +204,6 @@ begin
                         else if GetElevMeters(Col+i,Row+j,z1) then begin
                            fv := Filter[i+succ(FilterLap),j+Succ(FilterLap)];
                            Sum := Sum + fv;
-                           //GetElevMeters(Col+i,Row+j,z1);
                            FilterValue := FilterValue + fv * z1;
                         end;
                      end;
@@ -327,6 +326,8 @@ begin
    {$IfDef RecordDEMEdits} WriteLineToDebugFile('tDEMDataSet.FilterThisDEM setup done'); {$EndIf}
    OpenAndZeroNewDEM(true,NewHeadRecs,NewDEM,Title + '_filter_' + AreaName,InitDEMmissing);
    {$IfDef RecordDEMEdits} WriteLineToDebugFile('tDEMDataSet.FilterThisDEM OpenZero done'); {$EndIf}
+   EndProgress;
+   ShowHourglassCursor;
 
    MDdef.FilterGridsToEdge := true;
    StartProgress(DEMGlb[NewDEM].AreaName);
@@ -345,7 +346,6 @@ begin
          end);
       ThreadsWorking := false;
    {$EndIf}
-   EndProgress;
    DEMGlb[NewDEM].CheckMaxMinElev;
    RestoreBackupDefaults;
    {$IfDef RecordDEMEdits} WriteLineToDebugFile('tDEMDataSet.FilterThisDEM out'); {$EndIf}
@@ -829,17 +829,20 @@ begin
     CheckMaxMinElev;
 end;
 
+
 procedure tDEMDataSet.DeleteMissingDataPoints;
 var
    Col,Row : integer;
    z : float32;
 begin
-    if MDDef.AssumeMinus99Missing or MDDef.AssumeMinus999Missing or MDDef.AssumeMinus9999Missing or MDDef.AssumeNegativeValuesMissing then begin
+    if (MDDef.AssumeNegativeValuesMissing and (DEMHeader.MinElev < 0)) or (MDDef.AssumeMinus99Missing and (DEMHeader.MinElev < -98)) or
+       (MDDef.AssumeMinus999Missing and (DEMHeader.MinElev <-998)) or (MDDef.AssumeMinus9999Missing and (DEMHeader.MinElev <-99980)) then begin
        for Col := 0 to pred(DEMheader.NumCol) do begin
           for Row := 0 to pred(DEMheader.NumRow) do begin
              if GetElevMeters(Col,Row,z) and DEMDef_routines.MissingData(z) then SetGridMissing(Col,Row);
           end
        end;
+       CheckMaxMinElev;
     end;
 end;
 

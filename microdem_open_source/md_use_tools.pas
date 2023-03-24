@@ -7,8 +7,6 @@ unit md_use_tools;
 { Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
-
-
 {$I nevadia_defines.inc}
 
 
@@ -17,6 +15,7 @@ unit md_use_tools;
 
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
+      //{$Define OpenLasTools}
       //{$Define RecordACOLITE}
       //{$Define RecordSubsetOpen}
       //{$Define RecordUseOtherPrograms}
@@ -1003,7 +1002,6 @@ end;
        EndBatchFile(Otb_dir + 'otb_pan_sharpen.bat', BatchFile);
     end;
 
-
     procedure OTB_KMeansClassification(InName, OutName : PathStr);
     var
        BatchFile : tStringList;
@@ -1021,22 +1019,24 @@ function GetLASToolsFileName(var fName : PathStr) : boolean;
 var
    BaseName : PathStr;
 begin
-   {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} HighlightLineToDebugFile('GetGDALFileNames in'); {$EndIf}
    Result := true;
-   //if (LAStools_BinDir = '') then
    if not FileExists(fName) then begin
+      {$If Defined(RecordGDAL) or Defined(RecordGDALOpen) or Defined(OpenLasTools)} HighlightLineToDebugFile('GetGDALFileNames in, but not in ' + fName); {$EndIf}
       BaseName := ExtractFileName(fName);
       LAStools_BinDir := ProgramRootDir + 'lastools\bin\';
       fName := LAStools_BinDir + BaseName;
       if not FileExists(fName) then begin
+         {$If Defined(RecordGDAL) or Defined(RecordGDALOpen) or Defined(OpenLasTools)} HighlightLineToDebugFile('File not in ' + fName); {$EndIf}
          if GetDOSPath('LAStools binary directory, something like ' +  LAStools_BinDir,LAStools_BinDir) then begin
             fName := LAStools_BinDir + BaseName;
             if not FileExists(fName) then begin
-              MessageToContinue('Could not find ' + fName);
+               {$If Defined(RecordGDAL) or Defined(RecordGDALOpen) or Defined(OpenLasTools)} HighlightLineToDebugFile('After user said, but no go for  ' + fName); {$EndIf}
+               MessageToContinue('Could not find ' + fName);
+               Result := false;
             end;
          end
          else begin
-              Result := false;
+            Result := false;
          end;
       end;
    end;

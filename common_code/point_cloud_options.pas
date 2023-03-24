@@ -1,17 +1,19 @@
 ﻿unit point_cloud_options;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program       }
-{ PETMAR Trilobite Breeding Ranch    }
-{ Copyright (c) 2018 Peter L. Guth   }
-{____________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2023 Peter L. Guth  }
+{___________________________________}
+
 
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
-      {$Define RecordMakeGrid}
-      {$Define RecordMakeBaseMap}
+      //{$Define RecordMakeGrid}
+      //{$Define RecordMakeBaseMap}
       //{$Define TrackPointCloud}
       //{$Define RecordExtractPoints}
       //{$Define Slicer}
@@ -3035,8 +3037,10 @@ end;
 function Tpt_cloud_opts_fm.GetFilesForPointCloud(CloudNum : integer; var BaseDir : PathStr; AutoLoad : boolean = false) : boolean;
 var
    DefFilter : byte;
+   width,height,Aspect,DesiredAspect,NewHeight,NewWidth : float32;
    DEMbase,i : integer;
    Files : tStringList;
+   MakeBox : sfBoundBox;
 begin
    {$If Defined(BasicOpens) or Defined(RecordPointCloudOptionsForm) or Defined(RecordLASOpen)  or Defined(TrackPointCloud)} WriteLineToDebugFile('Tpt_cloud_opts_fm.GetFilesForPointCloud in, cloud=' + IntToStr(CloudNum)); {$EndIf}
    if (LasFiles[CloudNum] = Nil) then LasFiles[CloudNum] := tLas_files.Create
@@ -3081,27 +3085,28 @@ begin
          {$If Defined(RecordPointCloudOptionsForm) or Defined(RecordLASOpen)} WriteLineToDebugFile('GetFiles Create cloud basemap, UTM=' + IntToStr(MDDef.DefaultUTMZone) + MDDef.DefaultLatHemi); {$EndIf}
          {$If Defined(RecordPointCloudOptionsForm) or Defined(RecordMakeBaseMap)} WriteLineToDebugFile('GetFile CreateNewGrid, cloud utm box:  ' + sfBoundBoxToString(LasFiles[CloudNum].UTMBBox,1)); {$EndIf}
          {$If Defined(RecordPointCloudOptionsForm) or Defined(RecordMakeBaseMap)} WriteLineToDebugFile('GetFile CreateNewGrid, cloud geo box:  ' + sfBoundBoxToString(LasFiles[CloudNum].GeoBBox,6)); {$EndIf}
-         DEMBase := CreateNewGrid(LasFiles[CloudNum].CloudName + '_cloud',cgUTM,LasFiles[CloudNum].UTMBBox,FloatingPointDEM,2);
+
+         MakeBox := LasFiles[CloudNum].UTMBBox;
+         Width := MakeBox.XMax - MakeBox.XMin;
+         Height := MakeBox.yMax - MakeBox.yMin;
+         Aspect := Height / Width;
+         DesiredAspect := MDDef.DefaultMapYSize / MDDef.DefaultMapXSize;
+         if Aspect < DesiredAspect then begin
+            NewWidth := DesiredAspect * Height;
+            MakeBox.XMax := MakeBox.XMax + 0.5 * (NewWidth-Width);
+            MakeBox.XMin := MakeBox.XMin - 0.5 * (NewWidth-Width);
+         end
+         else begin
+            NewHeight := Width / DesiredAspect;
+            MakeBox.YMax := MakeBox.YMax + 0.5 * (NewHeight-Height);
+            MakeBox.YMin := MakeBox.YMin - 0.5 * (NewHeight-Height);
+         end;
+
+
+         DEMBase := CreateNewGrid(LasFiles[CloudNum].CloudName + '_cloud',cgUTM,MakeBox,FloatingPointDEM,2);
          {$If Defined(RecordPointCloudOptionsForm) or Defined(RecordMakeBaseMap)} WriteLineToDebugFile('GetFile CreateNewGrid UTM out, map utm box:  ' + sfBoundBoxToString(DEMGlb[DEMBase].SelectionMap.MapDraw.MapCorners.BoundBoxUTM,2)); {$EndIf}
          BaseMap := DEMGlb[DemBase].SelectionMap;
 
-         (*
-         LastVectorMap := SetUpVectorMap(true,false);
-         BaseMap := VectorMap[LastVectorMap];
-         BaseMap.SubsetAndZoomMapFromGeographicBounds(LasFiles[CloudNum].GeoBBox);
-
-         if LasFiles[CloudNum].UTMfiles then begin
-            {$If Defined(RecordPointCloudOptionsForm) or Defined(RecordMakeBaseMap)} WriteLineToDebugFile('GetFile CreateNewGrid, cloud utm box:  ' + sfBoundBoxToString(LasFiles[CloudNum].UTMBBox,2)); {$EndIf}
-            DEMBase := CreateNewGrid(LasFiles[CloudNum].CloudName + '_cloud',cgUTM,LasFiles[CloudNum].UTMBBox,FloatingPointDEM,2);
-            {$If Defined(RecordPointCloudOptionsForm) or Defined(RecordMakeBaseMap)} WriteLineToDebugFile('GetFile CreateNewGrid UTM out, map utm box:  ' + sfBoundBoxToString(DEMGlb[DEMBase].SelectionMap.MapDraw.MapCorners.BoundBoxUTM,2)); {$EndIf}
-            BaseMap := DEMGlb[DemBase].SelectionMap;
-         end
-         else begin
-            DEMBase := CreateNewGrid(LasFiles[CloudNum].CloudName + '_cloud',cgLatLong,LasFiles[CloudNum].GeoBBox,FloatingPointDEM,1/5000);
-            {$If Defined(RecordPointCloudOptionsForm) or Defined(RecordMakeBaseMap)} WriteLineToDebugFile('GetFile CreateNewGrid geo out, map grid box:  ' + sfBoundBoxToString(DEMGlb[DEMBase].SelectionMap.MapDraw.MapCorners.BoundBoxDataGrid,2)); {$EndIf}
-            BaseMap := DEMGlb[DemBase].SelectionMap;
-         end;
-         *)
 
          {$If Defined(RecordMakeBaseMap)} WriteLineToDebugFile('Cloud Basemap UTM box:' + sfBoundBoxToString(BaseMap.MapDraw.MapCorners.BoundBoxUTM,1) ); {$EndIf}
          {$If Defined(RecordMakeBaseMap)} WriteLineToDebugFile('Cloud Basemap geo box:' + sfBoundBoxToString(BaseMap.MapDraw.MapCorners.BoundBoxGeo,6) ); {$EndIf}

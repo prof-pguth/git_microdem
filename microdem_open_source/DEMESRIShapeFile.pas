@@ -19,6 +19,7 @@ unit demESRIshapefile;
 
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
    //{$Define RecordMissingPolygons}
+   //{$Define TimeShapefile}
    //{$Define TrackNoPlots}
    //{$Define RecordDonuts} //major slowdown
    //{$Define RecordShapeFileLine}   //major slowdown
@@ -78,7 +79,7 @@ uses
 //end
 
 
-   System.Types,System.UIConsts,System.UITypes,
+   System.Types,System.UIConsts,System.UITypes,System.Diagnostics,
    SysUtils,Classes,Math,StrUtils,
 
    {$IfDef MSWindows}
@@ -110,11 +111,16 @@ uses
    DEMCoord, BaseMap,
    Petmar_types,PETMAR,PETMath;
 
+
+
 type
    tShapeFile = class
       protected
       private
+         SHXindexArray :  pshxindexarray;
          function DrawDonuts(MapDraw : tMapDraw; var Bitmap : tMyBitmap; RecNum : int32) : boolean;  {$IfDef InlinePlots} inline; {$EndIf}
+         procedure ReadSHXindex;
+         procedure MoveToStartShapefile; inline;
       public
          ShapeFile,IndexFile : System.file;
          {$IfDef UseMemoryStream}
@@ -126,6 +132,7 @@ type
          NumRecs : int32;
          NotLatLongShapeFile,
          BadPointCheck,
+         ShapefileRandomAccess,
          NoDBFFile,
          DBFFileOnly : boolean;
          Symbol : PETMAR_types.tFullSymbolDeclaration;
@@ -168,6 +175,7 @@ type
          function ReadPointRecord(RecNo : int32; var PointsHeader : sfPointsWithHeader) : boolean;
          function ReadPointRecord3D(RecNo : int32; var PointsHeader : sfPointsZWithHeader) : boolean;
          function ReadPolyLineHeader(RecNum : int32; var PolyLineHeader : sfPolyLineHeader) : boolean; //overload;
+         function NextPolyLineHeader(var PolyLineHeader : sfPolyLineHeader) : boolean; inline;
 
          procedure WriteEditCurrentRecordPolyLine(RecNum : int32);
 
@@ -279,10 +287,10 @@ procedure CheckMainFileBoundingBox(var MainFileHeader : sfMainFileHeader; RecBou
 procedure CheckIfMainFileBoundingBoxIsOutside(MainFileHeader : sfMainFileHeader; var LatLow,LatHigh,LongLow,LongHigh : float64);
 procedure PutBoundBoxInTable(var MyTable : tMyData; BoundBox : sfBoundBox; Name : ShortString = '');
 
-function PointShapeFile(ShapeType : int32) : boolean;
-function LineShapeFile(ShapeType : int32) : boolean;
-function AreaShapeFile(ShapeType : int32) : boolean;
-function LineOrAreaShapeFile(ShapeType : int32) : boolean;
+function PointShapeFile(ShapeType : int32) : boolean;  inline;
+function LineShapeFile(ShapeType : int32) : boolean;   inline;
+function AreaShapeFile(ShapeType : int32) : boolean;   inline;
+function LineOrAreaShapeFile(ShapeType : int32) : boolean;  inline;
 
 procedure LineKMLtoStringList(fName : PathStr);
 function IsItAShapefile(fName : PathStr) : boolean;
@@ -382,7 +390,6 @@ begin
    if SHZit then SysUtils.RenameFile(fname,ChangeFileExt(fName,'.shz'));
    {$If Defined( RecordSHZ) or Defined(RecordExports)}  WriteLineToDebugFile('Zipshapefile1Click'); {$EndIf}
 end;
-
 
 
 
@@ -498,6 +505,20 @@ begin
          sf.Destroy;
       end;
    end;
+end;
+
+ procedure tShapeFile.MoveToStartShapefile;
+ begin
+      {$IfDef UseMemoryStream}
+         if (ShapeMemoryStream = Nil) then begin
+            seek(ShapeFile,SizeOf(sfMainFileHeader));
+         end
+         else begin
+            ShapeMemoryStream.Seek(Offset, soFromBeginning);
+         end;
+      {$Else}
+          seek(ShapeFile,SizeOf(sfMainFileHeader));
+      {$EndIf}
 end;
 
 
@@ -1621,8 +1642,8 @@ begin
          NumPts := PolyLineHeader.NumPoints;
          if (PolyLineHeader.NumParts <= sfMaxParts) then begin
              {$IfDef UseMemoryStream}
-                if (ShapeMemoryStream = Nil) then BlockRead(ShapeFile,PartSize[1],4*NumParts)
-                else ShapeMemoryStream.Read(PartSize[1],4*NumParts);
+                if (ShapeMemoryStream = Nil) then BlockRead(ShapeFile,PartSize[1],4*PolyLineHeader.NumParts)
+                else ShapeMemoryStream.Read(PartSize[1],4*PolyLineHeader.NumParts);
              {$Else}
                 BlockRead(ShapeFile,PartSize[1],4*PolyLineHeader.NumParts);
              {$EndIf}
@@ -1679,42 +1700,90 @@ begin
 end;
 
 
+
+procedure tShapeFile.ReadSHXindex;
+var
+   i : integer;
+begin
+   {$IfDef UseMemoryStream}
+   {$Else}
+      if (SHXindexArray = Nil) and (NumRecs <= MaxSHXinMemory) then begin
+         GetMem(SHXindexArray,8 * NumRecs);
+         FileMode := 0;
+         seek(IndexFile,SizeOf(sfMainFileHeader));
+         if EOF(IndexFile) then exit;
+         BlockRead(IndexFile,SHXindexArray^,8 * NumRecs);
+         for I := 1 to NumRecs do begin
+            Int4Swap(SHXindexArray^[i].Offset);
+            Int4Swap(SHXindexArray^[i].ContentLength);
+            SHXindexArray^[i].Offset := 2 * SHXindexArray^[i].Offset;
+         end;
+      end;
+  {$EndIf}
+end;
+
+
+function tShapeFile.NextPolyLineHeader(var PolyLineHeader : sfPolyLineHeader) : boolean;
+var
+   IndexRecord  : sfIndexRecord;
+begin
+   {$IfDef UseMemoryStream}
+      if (ShapeMemoryStream = Nil) then begin
+         BlockRead(ShapeFile,PolyLineHeader,SizeOf(PolyLineHeader));
+      end
+      else begin
+         ShapeMemoryStream.Read(PolyLineHeader,SizeOf(PolyLineHeader));
+      end;
+   {$Else}
+      BlockRead(ShapeFile,PolyLineHeader,SizeOf(PolyLineHeader));
+   {$EndIf}
+   Result := LineOrAreaShapeFile(PolyLineHeader.ShapeType);
+   {$IfDef RecordShapeFileLine} WriteLineToDebugFile('Polyline header: ' + IntToStr(RecNum) + '  Offset: ' + IntToStr(IndexRecord.Offset) + '   Content len: ' + IntToStr(IndexRecord.ContentLength)); {$EndIf}
+end;
+
+
+
 function tShapeFile.ReadPolyLineHeader(RecNum : int32; var PolyLineHeader : sfPolyLineHeader) : boolean;
 var
    Offset : int32;
    IndexRecord  : sfIndexRecord;
 begin
    result := false;
-   Offset := 8*pred(RecNum) + SizeOf(sfMainFileHeader);
-
-   {$IfDef UseMemoryStream}
-   if (IndexMemoryStream = Nil) then begin
-      FileMode := 0;
-      seek(IndexFile,Offset);
-      if EOF(IndexFile) then exit;
-      BlockRead(IndexFile,IndexRecord,8);
+   if SHXindexArray <> Nil then begin
+      Offset := SHXindexArray^[RecNum].Offset;
+      //   Int4Swap(SHXindexArray^[i].ContentLength);
    end
    else begin
-      if (Offset > IndexMemoryStream.Size) then exit;
-      IndexMemoryStream.Seek(Offset, soFromBeginning);
-      IndexMemoryStream.Read(IndexRecord,8);
-   end;
-   {$Else}
-    seek(IndexFile,Offset);
-    if EOF(IndexFile) then exit;
-    BlockRead(IndexFile,IndexRecord,8);
-   {$EndIf}
+      Offset := 8 * pred(RecNum) + SizeOf(sfMainFileHeader);
+      {$IfDef UseMemoryStream}
+         if (IndexMemoryStream = Nil) then begin
+            FileMode := 0;
+            seek(IndexFile,Offset);
+            if EOF(IndexFile) then exit;
+            BlockRead(IndexFile,IndexRecord,8);
+         end
+         else begin
+            if (Offset > IndexMemoryStream.Size) then exit;
+            IndexMemoryStream.Seek(Offset, soFromBeginning);
+            IndexMemoryStream.Read(IndexRecord,8);
+         end;
+      {$Else}
+          seek(IndexFile,Offset);
+          if EOF(IndexFile) then exit;
+          BlockRead(IndexFile,IndexRecord,8);
+      {$EndIf}
 
-   Int4Swap(IndexRecord.Offset);
-   Int4Swap(IndexRecord.ContentLength);
+      Int4Swap(IndexRecord.Offset);
+      Int4Swap(IndexRecord.ContentLength);
+      Offset := 2 * IndexRecord.Offset;
+   end;
 
    {$IfDef RecordMemoryStream} Panel1Message('Offset: ' + IntToStr(IndexRecord.Offset)); {$EndIf}
 
-   Offset := 2 * IndexRecord.Offset;
 
    {$IfDef UseMemoryStream}
       if (ShapeMemoryStream = Nil) then begin
-         seek(ShapeFile,Offset);
+         if ShapeFileRandomAccess then seek(ShapeFile,Offset);
          BlockRead(ShapeFile,PolyLineHeader,SizeOf(PolyLineHeader));
       end
       else begin
@@ -1722,7 +1791,7 @@ begin
          ShapeMemoryStream.Read(PolyLineHeader,SizeOf(PolyLineHeader));
       end;
    {$Else}
-      seek(ShapeFile,Offset);
+      if ShapeFileRandomAccess then seek(ShapeFile,Offset);
       BlockRead(ShapeFile,PolyLineHeader,SizeOf(PolyLineHeader));
    {$EndIf}
 
@@ -1890,8 +1959,10 @@ begin
    {$EndIf}
    DBFFileOnly := false;
    NoDBFFile := false;
+   ShapefileRandomAccess := true;
    CurrentLineCoords := Nil;
    CurrentLineZs := Nil;
+   SHXindexArray := Nil;
    CurrentLineRecNum := -999;
    CurrentCCWRecNum := -999;
    ShapefileDEM := 0;
@@ -1929,6 +2000,8 @@ begin
      {$IfDef RecordShapefile} writeLineToDebugFile('off to get header'); {$EndIf}
 
      GetShapeFileHeader(IndexFile,MainFileHeader,NumRecs);
+     ReadSHXindex;
+
      NotLatLongShapeFile := FileExists(ExtractFilePath(FileName) + 'xyz_files.txt') or (MainFileHeader.BoundBox.XMin < -720) or (MainFileHeader.BoundBox.XMax > 720) or
          (MainFileHeader.BoundBox.YMin < -180) or (MainFileHeader.BoundBox.YMax > 180);
      if LineOrAreaShapeFile(MainFileHeader.ShapeType) then begin
@@ -1951,11 +2024,12 @@ begin
      closeFile(Indexfile);
   end;
   if (CurrentLineCoords <> Nil) then Dispose(CurrentLineCoords);
-  if (CurrentLineZs <> Nil) then new(CurrentLineZs);
+  if (CurrentLineZs <> Nil) then Dispose(CurrentLineZs);
+  if (SHXindexArray <> Nil) then FreeMem(SHXindexArray,8 * NumRecs);;
 
   {$IfDef UseMemoryStream}
-  if (IndexMemoryStream <> Nil) then IndexMemoryStream.Free;
-  if (ShapeMemoryStream <> Nil) then ShapeMemoryStream.Free;
+     if (IndexMemoryStream <> Nil) then IndexMemoryStream.Free;
+     if (ShapeMemoryStream <> Nil) then ShapeMemoryStream.Free;
   {$EndIf}
   inherited;
 end;
@@ -2082,6 +2156,7 @@ begin
    end;
 end;
 
+
 procedure tShapeFile.AddFields;
 label
    BailOut;
@@ -2094,75 +2169,81 @@ var
    PointsHeader : sfPointsWithHeader;
    LatFieldName,LongFieldName : ShortString;
 begin
-   NewTable := (MyTable = Nil);
-   if NewTable then begin
-      fName := ChangeFileExt(ShapeFileName,'.dbf');
-      MyTable := tMyData.Create(fName);
-   end
-   else MyTable.ApplyFilter('');
+   {$IfDef TimeShapefile} Stopwatch1 := TStopwatch.StartNew; {$EndIf}
+   try
+      MoveToStartShapefile;
+      NewTable := (MyTable = Nil);
+      if NewTable then begin
+         fName := ChangeFileExt(ShapeFileName,'.dbf');
+         MyTable := tMyData.Create(fName);
+      end
+      else MyTable.ApplyFilter('');
 
-   LatFieldName := 'LAT';
-   LongFieldName := 'LONG';
+      LatFieldName := 'LAT';
+      LongFieldName := 'LONG';
 
-   if (WhatAdd = afBoundingBox) then begin
-      if not MyTable.BoundingBoxPresent then MyTable.AddBoundingBox;
-   end
-   else if (WhatAdd = afXYZ) then begin
-      MyTable.InsureFieldPresentAndAdded(ftFloat,'X',12,6);
-      MyTable.InsureFieldPresentAndAdded(ftFloat,'Y',12,6);
-      MyTable.InsureFieldPresentAndAdded(ftFloat,'Z',12,6);
-   end
-   else if (WhatAdd = afLatLong) then begin
-      MyTable.InsureFieldPresentAndAdded(ftFloat,'LAT',11,7);
-      MyTable.InsureFieldPresentAndAdded(ftFloat,'LONG',11,7);
-   end
-   else if (WhatAdd = afLineMerge) then begin
-      MyTable.InsureFieldPresentAndAdded(ftInteger,'X1',10,0);
-      MyTable.InsureFieldPresentAndAdded(ftInteger,'Y1',9,0);
-      MyTable.InsureFieldPresentAndAdded(ftInteger,'X2',10,0);
-      MyTable.InsureFieldPresentAndAdded(ftInteger,'Y2',9,0);
-      MyTable.InsureFieldPresentAndAdded(ftString,'DONE',1,0);
-   end;
-
-   MyTable.First;
-   RecNum := 0;
-   {$IfDef VCL} StartProgressAbortOption('Add fields ' + ExtractFileName(MyTable.FullTableName)); {$EndIf}
-   while not MyTable.EOF do begin
-      MyTable.Edit;
-      inc(RecNum);
-      {$IfDef VCL} if (RecNum mod 250 = 0) then UpdateProgressBar(RecNum/MyTable.RecordCount); {$EndIf}
-
-      if (WhatAdd = afXYZ) then begin
-         if ReadPointRecord3D(RecNum,PointsHeader3d) then begin
-            MyTable.SetFieldByNameAsFloat('X',PointsHeader3D.x);
-            MyTable.SetFieldByNameAsFloat('Y',PointsHeader3D.y);
-            MyTable.SetFieldByNameAsFloat('Z',PointsHeader3D.z);
-         end;
-      end;
-      if (WhatAdd = afLatLong) then begin
-         if ReadPointRecord(RecNum,PointsHeader) then begin
-            MyTable.SetFieldByNameAsFloat('LONG',PointsHeader.x);
-            MyTable.SetFieldByNameAsFloat('LAT',PointsHeader.y);
-         end;
-      end;
-      if (WhatAdd = afLineMerge) then begin
-         LineEndPoints(RecNum,x1,y1,x2,y2);
-         MyTable.SetFieldByNameAsInteger('X1',round(100000 * x1));
-         MyTable.SetFieldByNameAsInteger('Y1',round(100000 * y1));
-         MyTable.SetFieldByNameAsInteger('X2',round(100000 * x2));
-         MyTable.SetFieldByNameAsInteger('Y2',round(100000 * y2));
-         MyTable.SetFieldByNameAsString('DONE','N');
-      end;
       if (WhatAdd = afBoundingBox) then begin
-         if ReadPolyLineHeader(RecNum,LastRecPolyLineHeader) then begin
-            PutBoundBoxInTable(MyTable,LastRecPolyLineHeader.BoundBox);
-         end;
+         if not MyTable.BoundingBoxPresent then MyTable.AddBoundingBox;
+      end
+      else if (WhatAdd = afXYZ) then begin
+         MyTable.InsureFieldPresentAndAdded(ftFloat,'X',12,6);
+         MyTable.InsureFieldPresentAndAdded(ftFloat,'Y',12,6);
+         MyTable.InsureFieldPresentAndAdded(ftFloat,'Z',12,6);
+      end
+      else if (WhatAdd = afLatLong) then begin
+         MyTable.InsureFieldPresentAndAdded(ftFloat,'LAT',11,7);
+         MyTable.InsureFieldPresentAndAdded(ftFloat,'LONG',11,7);
+      end
+      else if (WhatAdd = afLineMerge) then begin
+         MyTable.InsureFieldPresentAndAdded(ftInteger,'X1',10,0);
+         MyTable.InsureFieldPresentAndAdded(ftInteger,'Y1',9,0);
+         MyTable.InsureFieldPresentAndAdded(ftInteger,'X2',10,0);
+         MyTable.InsureFieldPresentAndAdded(ftInteger,'Y2',9,0);
+         MyTable.InsureFieldPresentAndAdded(ftString,'DONE',1,0);
       end;
-      MyTable.Next;
-      if WantOut then break;
+
+      MyTable.First;
+      RecNum := 0;
+      {$IfDef VCL} StartProgressAbortOption('Add fields ' + ExtractFileName(MyTable.FullTableName)); {$EndIf}
+      while not MyTable.EOF do begin
+         MyTable.Edit;
+         inc(RecNum);
+         {$IfDef VCL} if (RecNum mod 250 = 0) then UpdateProgressBar(RecNum/MyTable.RecordCount); {$EndIf}
+
+         if (WhatAdd = afXYZ) then begin
+            if ReadPointRecord3D(RecNum,PointsHeader3d) then begin
+               MyTable.SetFieldByNameAsFloat('X',PointsHeader3D.x);
+               MyTable.SetFieldByNameAsFloat('Y',PointsHeader3D.y);
+               MyTable.SetFieldByNameAsFloat('Z',PointsHeader3D.z);
+            end;
+         end;
+         if (WhatAdd = afLatLong) then begin
+            if ReadPointRecord(RecNum,PointsHeader) then begin
+               MyTable.SetFieldByNameAsFloat('LONG',PointsHeader.x);
+               MyTable.SetFieldByNameAsFloat('LAT',PointsHeader.y);
+            end;
+         end;
+         if (WhatAdd = afLineMerge) then begin
+            LineEndPoints(RecNum,x1,y1,x2,y2);
+            MyTable.SetFieldByNameAsInteger('X1',round(100000 * x1));
+            MyTable.SetFieldByNameAsInteger('Y1',round(100000 * y1));
+            MyTable.SetFieldByNameAsInteger('X2',round(100000 * x2));
+            MyTable.SetFieldByNameAsInteger('Y2',round(100000 * y2));
+            MyTable.SetFieldByNameAsString('DONE','N');
+         end;
+         if (WhatAdd = afBoundingBox) then begin
+            if ReadPolyLineHeader(RecNum,LastRecPolyLineHeader) then begin
+               PutBoundBoxInTable(MyTable,LastRecPolyLineHeader.BoundBox);
+            end;
+         end;
+         MyTable.Next;
+         if WantOut then break;
+      end;
+      if NewTable then MyTable.Destroy;
+   finally
+      EndProgress;
    end;
-   if NewTable then MyTable.Destroy;
-   {$IfDef VCL} EndProgress;  {$EndIf}
+   {$IfDef TimeShapefile} WriteLineToDebugFile('Shapefile AddFields took ' + RealToString(Stopwatch1.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
 end;
 
 
@@ -2172,7 +2253,8 @@ var
    ShapePoints3D : ^tLotsOfPoints3D;
    ShapePoints : ^tLotsOfPoints;
 begin
-   {$IfDef TimeDBPlot} WriteLineToDebugFile('tShapeFile.PlotAllRecords in ' + ExtractFileName(ShapeFileName)); {$EndIf}
+   {$If Defined(TimeShapefile) or Defined(TimeDBPlot)}  WriteLineToDebugFile('tShapeFile.PlotAllRecords in ' + ExtractFileName(ShapeFileName)); {$EndIf}
+   {$If Defined(TimeShapefile) or Defined(TimeDBPlot)} Stopwatch1 := TStopwatch.StartNew; {$EndIf}
 
    {$IfDef VCL} if ShowSatProgress and (not ThreadsWorking) then StartProgressAbortOption('Plot ' + ExtractFileName(ShapeFileName)); {$EndIf}
 
@@ -2226,22 +2308,27 @@ begin
       {$IfDef TimeDBPlot} writeLineToDebugFile('Line/area DB    Pen color: ' + IntToStr(Bitmap.Canvas.Pen.Color) + '  Pen width ' + IntToStr(Bitmap.Canvas.Pen.Width) + '  Brush color ' + IntToStr(Bitmap.Canvas.Brush.Color)); {$EndIf}
        nDrawn := 0;
        Track:= UpdateRate(NumRecs);
+         MoveToStartShapefile;
+         try
+            ShapefileRandomAccess := false;
+             for i := 1 to NumRecs do begin
+                if PlotSingleRecordMap(MapDraw,Bitmap,i) then inc(NDrawn)
+                else begin
+                    {$IfDef TrackNoPlots} writeLineToDebugFile('tShapeFile.PlotAllRecords, fail to draw ' + IntToStr(i)); {$EndIf}
+                end;
+                //if DrawDonuts(MapDraw,Bitmap,i) then inc(NDrawn);
 
-       for i := 1 to NumRecs do begin
-          if PlotSingleRecordMap(MapDraw,Bitmap,i) then inc(NDrawn)
-          else begin
-              {$IfDef TrackNoPlots} writeLineToDebugFile('tShapeFile.PlotAllRecords, fail to draw ' + IntToStr(i)); {$EndIf}
+                if ShowSatProgress and (i mod Track = 0) and (not ThreadsWorking) then begin
+                   {$IfDef VCL} UpdateProgressBar(i/Numrecs); {$EndIf}
+                   if WantOut then Break;
+                end;
+             end;
+          finally
+            ShapefileRandomAccess := true;
           end;
-          //if DrawDonuts(MapDraw,Bitmap,i) then inc(NDrawn);
-
-          if ShowSatProgress and (i mod Track = 0) and (not ThreadsWorking) then begin
-             {$IfDef VCL} UpdateProgressBar(i/Numrecs); {$EndIf}
-             if WantOut then Break;
-          end;
-       end;
    end;
    {$IfDef VCL} if ShowSatProgress and (not ThreadsWorking) then EndProgress; {$EndIf}
-   {$IfDef TimeDBPlot} writeLineToDebugFile('  out, drawn=' + IntToStr(nDrawn)); {$EndIf}
+   {$If Defined(TimeShapefile) or Defined(TimeDBPlot)}  WriteLineToDebugFile('PlotAllRecords, n=' + IntToStr(nDrawn) + '  took ' + RealToString(Stopwatch1.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
 end;
 
 

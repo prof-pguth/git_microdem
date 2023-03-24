@@ -195,6 +195,7 @@ begin
    end;
 end;
 
+
 procedure GridCoOccurrence(AutoFull : boolean = false; DEM1 : integer = 0; DEM2 : integer = 0; Percentages : boolean = true);
 var
    Incr,Col,Row : integer;
@@ -259,11 +260,11 @@ begin
    {$IfDef RecordDEMCompare} WriteLineToDebugFile('GridDifference in'); {$EndIf}
    GetTwoCompatibleGrids('Result = DEM1 - DEM2)',true,DEM2,DEM1,false,true);
    if (DEM1 <> 0) and (DEM2 <> 0) then begin
-      {$IfDef RecordDEMCompare} WriteLineToDebugFile('DEM1=' + DEMGlb[DEM1].AreaName + ' minus DEM2=' + DEMGlb[DEM2].AreaName); {$EndIf}
+      aName := 'Difference_' + DEMGlb[DEM2].AreaName + '-' + DEMGlb[DEM1].AreaName;
+      {$IfDef RecordDEMCompare} WriteLineToDebugFile(aName); {$EndIf}
       SetGridDiffernceProperties;
       if EntireDEM then RegionUsed := DEMGlb[DEM1].FullDEMGridLimits
       else RegionUsed := DEMGlb[DEM1].SelectionMap.MapDraw.MapAreaDEMGridLimits;
-      aName := 'Difference_' + DEMGlb[DEM1].AreaName + '-' + DEMGlb[DEM2].AreaName;
       MakeDifferenceMapOfBoxRegion(DEM1,DEM2,RegionUsed,MDDef.ShowGridDiffMap,MDDef.ShowGridDiffHistogram,MDDef.ShowScatterPlot,aName);
       {$IfDef RecordDEMCompare} WriteLineToDebugFile('GridDifference out'); {$EndIf}
    end
@@ -326,18 +327,6 @@ begin
    end {for Col};
    EndProgress;
    DEMGlb[Result].CheckMaxMinElev;
-   //CreateDEMSelectionMap(Result);
-
-(*
-   fName := DEMGlb[Result].AreaName;
-   CleanUpFilename(fName);
-   fName := MDTempDir + fName + '.dem';
-
-   DEMGlb[Result].WriteNewFormatDEM(fName,'difference map');
-   CloseSingleDEM(Result);
-   Result := OpenNewDEM(fName,false);
-*)
-
    {$IfDef RecordDEMCompare}
       WriteLineToDebugFile('');  WriteLineToDebugFile('DEM1: ' + DEMGlb[Map1].FullDEMParams);
       WriteLineToDebugFile('');  WriteLineToDebugFile('DEM2: ' + DEMGlb[Map2].FullDEMParams);

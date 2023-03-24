@@ -18,10 +18,10 @@ unit make_grid;
       //$Define CreateAspectMap}
       {$Define DEMIXmaps}
       //{$Define CreateGeomorphMaps}
-      {$Define RecordTimeGridCreate}
+      //{$Define RecordTimeGridCreate}
       //{$Define RecordPointClass}
       //{$Define RecordDEMCompare}
-      {$Define NewVATgrids}
+      //{$Define NewVATgrids}
    {$EndIf}
 {$ELSE}
     //{$Define NoParallelFor}
@@ -67,7 +67,7 @@ const
 
 type
    tListOfDEMs = array[1..MaxGrids] of integer;
-   tNormalMethod = (nmNone,nmEastWest,nmNorthSouth,nmInterpolate,nm30m,nmTRIK,nmTRICK);
+   tNormalMethod = (nmNone,nmEastWest,nmNorthSouth,nmInterpolate,nm30m,nmTRIK,nmRRI);
 
 
 function ShortDerivativeMapName(ch : AnsiChar; SampleBoxSize : integer = 0) : ShortString;
@@ -747,14 +747,17 @@ var
    TStr : shortstring;
 begin
     {$IfDef RecordTimeGridCreate} Stopwatch1 := TStopwatch.StartNew; {$EndIf}
-    if (Normalize = nmNorthSouth) then TStr := '_norm_NS'
-    else if (Normalize = nmEastWest) then TStr := '_norm_EW'
-    else if (Normalize = nmInterpolate) then TStr := '_norm_interpolate'
-    else if (Normalize = nm30m) then TStr := '_norm_30m'
-    else if (Normalize = nmTRIK) then TStr := '_K'
-    else if (Normalize = nmTRICK) then TStr := '_CK'
+    if (Normalize = nmNorthSouth) then TStr := 'norm_NS'
+    else if (Normalize = nmEastWest) then TStr := 'norm_EW'
+    else if (Normalize = nmInterpolate) then TStr := 'norm_interpolate'
+    else if (Normalize = nm30m) then TStr := 'norm_30m'
+    else if (Normalize = nmTRIK) then TStr := 'K'
+    else if (Normalize = nmRRI) then TStr := '_RRI'
     else TStr := '_no_norm';
-    Result := DEMGlb[CurDEM].CloneAndOpenGridSetMissing(FloatingPointDEM, 'MD_TRI' + TStr + '_' + DEMGlb[CurDem].AreaName,euMeters);
+    if (Normalize = nmRRI) then TStr := 'RRI'
+    else TStr := 'TRI_' + TStr;
+
+    Result := DEMGlb[CurDEM].CloneAndOpenGridSetMissing(FloatingPointDEM, 'MD_' + TStr + '_' + DEMGlb[CurDem].AreaName,euMeters);
 
     if DoTPI then TPIgrid := DEMGlb[CurDEM].CloneAndOpenGridSetMissing(FloatingPointDEM,'MD_TPI' + TStr + '_' + DEMGlb[CurDem].AreaName,euMeters);
     GridLimits := TheDesiredLimits(CurDEM);
@@ -790,7 +793,7 @@ begin
           FactorEW := DEMGlb[CurDEM].AverageYSpace / DEMGlb[CurDEM].XSpaceByDEMrow[Row];
           FactorDiag := DEMGlb[CurDEM].AverageYSpace / DiagonalSpace;
        end
-       else if (Normalize in [nmEastWest,nmTRICK]) then begin
+       else if (Normalize in [nmEastWest,nmRRI]) then begin
           FactorNS := DEMGlb[CurDEM].XSpaceByDEMrow[Row] / DEMGlb[CurDEM].AverageYSpace;
           FactorEW := 1;
           FactorDiag := DEMGlb[CurDEM].XSpaceByDEMrow[Row] / DiagonalSpace;
@@ -806,7 +809,7 @@ begin
 
        for Col := GridLimits.XGridLow to GridLimits.XGridHigh do begin
           if DEMGLB[CurDEM].SurroundedPointElevs(Col,Row,znw,zw,zsw,zn,z,zs,zne,ze,zse) then begin
-             if (Normalize in [nmTRIK,nmTRICK]) then begin
+             if (Normalize in [nmTRIK,nmRRI]) then begin
                 if DEMGLB[CurDEM].GetElevMetersOnGrid(Col-2,Row+2,z1) and
                    DEMGLB[CurDEM].GetElevMetersOnGrid(Col,Row+2,z11) and
                    DEMGLB[CurDEM].GetElevMetersOnGrid(Col+2,Row+2,z21) and

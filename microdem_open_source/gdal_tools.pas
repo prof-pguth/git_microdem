@@ -23,7 +23,7 @@ unit gdal_tools;
       //{$Define RecordGDALOpen}
       //{$Define RecordUseOtherPrograms}
       //{$Define RecordSaveProblems}
-      {$Define RecordGDAL}
+      //{$Define RecordGDAL}
       //{$Define RecordWBT}
       //{$Define RecordOGR}
       //{$Define RecordGeoPDF}
@@ -934,10 +934,9 @@ end;
          OutPath : PathStr;
          xmin, ymin, xmax, ymax : float64;
 
-
              procedure AddBand(BandName : PathStr);
              begin
-                if GDAL_program = GDAL_warp_Name then bfile.Add(GDAL_program + ' -r near -te ' +  GDALextentBoxUTM(xmin,ymin,xmax,ymax)  + ' ' + BandName + ' ' +  OutPath + ExtractFileName(BandName))
+                if (GDAL_program = GDAL_warp_Name) then bfile.Add(GDAL_program + ' -r near -te ' +  GDALextentBoxUTM(xmin,ymin,xmax,ymax)  + ' ' + BandName + ' ' +  OutPath + ExtractFileName(BandName))
                 else bfile.Add(GDAL_program + ' -r near -projwin ' +  GDALextentBoxUTM(xmin,ymax,xmax,ymin) + ' ' + BandName + ' ' +  OutPath + ExtractFileName(BandName));
              end;
 
@@ -969,21 +968,19 @@ end;
          end;
       end;
 
+
+
       function GDALsubsetimageandopen(bb : sfBoundBox; LatLongBox : boolean; fName : PathStr; BaseOutPath : PathStr = '') : integer;
-      var
-         OutPath,OutName : PathStr;
-         LandCover,TStr,ExtentBoxString   : shortstring;
-         Imagebb : sfBoundBox;
-         GDALinfo : tGDALinfo;
-         Ext : ExtStr;
-      begin
-         if IsGDALFilePresent(GDAL_Translate_Name) then begin
-            if (fName <> '') and FileExists(fname) then begin
-            end
-            else begin
-               fName := ExtractFilePath(LastDataBase);
-               if not Petmar.GetExistingFileName('image to subset and import','image|*.tif;*.ecw',fName) then exit;
-            end;
+
+
+        procedure DoOneImage(fName : PathStr);
+        var
+           OutPath,OutName : PathStr;
+           LandCover,TStr,ExtentBoxString   : shortstring;
+           Imagebb : sfBoundBox;
+           GDALinfo : tGDALinfo;
+           Ext : ExtStr;
+         begin
             CheckFileNameForSpaces(fName);
             if (BaseOutPath = '') or (not PathIsValid(BaseOutPath)) then BaseOutPath := MDtempdir;
             OutPath := NextFilePath(BaseOutPath + ExtractFileNameNoExt(fName) + '_subset_');
@@ -1021,6 +1018,27 @@ end;
                   MessageToContinue('Map area is not covered by ' + ExtractFileNameNoExt(fName) + '  ' + sfBoundBoxToString(ImageBB,4));
                   {$IfDef RecordSubsetOpen} WriteLineToDebugFile('Not covered on map'); {$EndIf}
                end;
+            end;
+         end;
+      var
+         theFiles : tStringList;
+         DefaultFilter : byte;
+         i : integer;
+      begin
+         if IsGDALFilePresent(GDAL_Translate_Name) then begin
+            if (fName <> '') and FileExists(fname) then begin
+               DoOneImage(fName);
+            end
+            else begin
+               fName := ExtractFilePath(LastImageName);
+               //if not Petmar.GetExistingFileName('image to subset and import','image|*.tif;*.ecw',fName) then exit;
+               theFiles := tStringList.Create;
+               theFiles.Add(fName);
+               DefaultFilter := 1;
+               if GetMultipleFiles('image to subset and import','image|*.tif;*.ecw',theFiles,DefaultFilter) then begin
+                  for i := 0 to pred(TheFiles.Count) do DoOneImage(theFiles.Strings[i]);
+               end;
+               LastImageName := fName;
             end;
          end;
       end;

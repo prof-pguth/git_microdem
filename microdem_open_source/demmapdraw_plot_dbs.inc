@@ -256,7 +256,7 @@ begin
               if not FileExists(fName2) then begin
                  fList := nil;
                  Petmar.FindMatchingFiles(BaseDir,BaseName,fList,4);
-                 if flist.Count = 1 then fName2 := fList.Strings[0];
+                 if (flist.Count = 1) then fName2 := fList.Strings[0];
                  fList.Destroy;
               end;
               if FileExists(fName2) then begin
@@ -352,12 +352,17 @@ end;
       procedure TMapDraw.OSMthread(Layer : integer; fName : PathStr; var Bitmap : tMyBitmap);
       var
          adb : integer;
+         fList : tstringlist;
       begin
          if (Layer = 1) then begin
             PlotShapeFileGroupOnMap(OSMGroupRules,Bitmap,fName);
          end
          else begin
-            if OpenNumberedGISDataBase(adb,fName + 'roads.shp') then begin
+             fList := nil;
+             Petmar.FindMatchingFiles(fName,'roads.shp',fList,4);
+             if (flist.Count = 1) then fName := fList.Strings[0];
+             fList.Destroy;
+             if OpenNumberedGISDataBase(adb,fName) then begin
                {$IfDef RecordShapeFileGroup} WriteLineToDebugFile('start roads'); {$EndIf}
                if GISdb[aDB].ItsOSMShapeFile then GISdb[adb].aShapeFile.BadPointCheck := MDDef.OSMCheck;
                PlotDBOnMapFromRules(adb,Bitmap,OSMRoadRules);

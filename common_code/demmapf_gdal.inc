@@ -1,11 +1,12 @@
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{   file verified 7/30/2014       }
-{                                 }
-{ include file for demmapf        }
-{_________________________________}
-
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2023 Peter L. Guth  }
+{___________________________________}
+{                                   }
+{ include file for demmapf          }
+{___________________________________}
 
 procedure TMapForm.GDALinfo1Click(Sender: TObject);
 {$IfDef ExGDAL}
@@ -16,7 +17,7 @@ var
    fName    : PathStr;
 begin
      if MapDraw.DEMMap then fName := DEMGlb[Mapdraw.DEMonMap].DEMFileName
-     else if (MapDraw.SatOnMap <> 0) then fName := SatImage[MapDraw.SATonMap].IndexFileName
+     else if ValidSatImage(MapDraw.SatOnMap) then fName := SatImage[MapDraw.SATonMap].IndexFileName
      else exit;
      GetGDALinfo(fName, GDALinfo);
      ShowInNotepadPlusPlus(GDALinfoOutput(fname),'GDALinfo results ' + ExtractFileName(fName));

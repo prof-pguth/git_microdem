@@ -68,7 +68,7 @@ object ChangeMapForm: TChangeMapForm
     Top = 5
     Width = 393
     Height = 109
-    ActivePage = TabSheet1
+    ActivePage = Single
     TabOrder = 2
     object Single: TTabSheet
       Caption = 'Single cuttoff'

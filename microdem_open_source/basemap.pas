@@ -17,6 +17,9 @@ unit basemap;
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
+
+      {$Define RecordWKT}
+
       //{$Define RawProjectInverse}
       //{$Define ForwardProject}
       //{$Define RecordGridSize}
@@ -36,7 +39,6 @@ unit basemap;
       //{$Define RecordMapRoamProblems}
       //{$Define RecordPickDatum}
       //{$Define RecordWGS84Projection}
-      {$Define RecordWKT}
       //{$Define RecordWKTFull}
       //{$Define RecordProjection}
       //{$Define RecordM}

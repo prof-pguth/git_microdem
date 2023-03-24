@@ -295,6 +295,7 @@ end;
          var
             bmp : tMyBitmap;
          begin
+            {$IfDef RecordLegend} WriteLineToDebugFile('TGISdataBaseModule.CreatePopupLegend in'); {$EndIf}
             bmp := nil;
             EmpSource.Enabled := false;
             if (dbOpts.DBAutoShow = dbasColorByString) then begin
@@ -324,6 +325,7 @@ end;
                Colors : TColors256;
                LabelStr : shortstring;
             begin
+               {$IfDef RecordLegend} WriteLineToDebugFile('TGISdataBaseModule.DoTheLegend in'); {$EndIf}
                if (dbOpts.DBLegendLocation.DrawItem) and (theMapOwner <> nil) and (Bitmap <> Nil) then begin
                    {$IfDef RecordLegend} WriteLineToDebugFile('Legend for ' + dbName + ' on ' + TheMapOwner.Caption); {$EndIf}
 

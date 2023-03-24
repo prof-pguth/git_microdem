@@ -21,7 +21,7 @@ unit las_files_grouping;
       //{$Define RecordLASfiles}
       //{$Define RecordLASplot}
       //{$Define RecordLASexport}
-      {$Define RecordListFilesProcessed}
+      //{$Define RecordListFilesProcessed}
       //{$Define BasicOpens}
       //{$Define RecordLASKML}
       //{$Define RecordLASexport}

@@ -34,7 +34,7 @@ Could be added to the open source FMX version of MICRODEM
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
-      {$Define Record3d}
+      //{$Define Record3d}
       //{$Define ShortRecord}
       //{$Define RecordMoves}
       //{$Define Record3dDetailed}

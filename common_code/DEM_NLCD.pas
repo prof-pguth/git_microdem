@@ -267,7 +267,7 @@ begin
    Landcover := '';
    if (fName <> '') then begin
       fName := UpperCase(FName);
-      if StrUtils.AnsiContainsText(fName,'Change') and StrUtils.AnsiContainsText(fName,'NLCD') then LandCover := 'NLCD-change'
+      if StrUtils.AnsiContainsText(fName,'CHANGE') and StrUtils.AnsiContainsText(fName,'NLCD') then LandCover := 'NLCD-change'
       else if UpperCase(Copy(ExtractFileName(fName),1,7)) = 'NLCD_20' then LandCover := 'NLCD-2001up'
       else if StrUtils.AnsiContainsText(fName,'GLC-2000') then LandCover := 'GLC-2000'
       else if (StrUtils.AnsiContainsText(fName,'NLCD') and StrUtils.AnsiContainsText(fName,'1990')) then LandCover := 'NLCD-1990'

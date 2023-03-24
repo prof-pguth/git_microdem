@@ -26,11 +26,12 @@
 
 
    {$IFDEF DEBUG}
-      {$Define RecordFan}
-      {$Define Record3d}
+      //{$Define RecordFan}
+      //{$Define Record3d}
       //{$Define FanDrawProblems}
       //{$Define RawProjectInverse}  //must also be set in BaseMap
       {$Define RecordDEMIX}
+      {$Define RecordLegend}
       //{$Define RecordDEMIXtiles}
       //{$Define RecordStreamModeDigitize}
       //{$Define RecordPickRoute}
@@ -40,7 +41,7 @@
       //{$Define RecordCreateGeomorphMaps}
       //{$Define RecordGeomorphometry}
       //{$Define RecordGeography}
-      {$Define RecordMakeGrid}
+      //{$Define RecordMakeGrid}
       //{$Define RecordGDAL}
       //{$Define TrackTigerOrOS}
       //{$Define Track_f}
@@ -1452,6 +1453,8 @@ type
     RIK1: TMenuItem;
     RICK1: TMenuItem;
     Winwcontestmaps1: TMenuItem;
+    Likelymissingdatacodes1: TMenuItem;
+    Experimental2: TMenuItem;
     //procedure HiresintervisibilityDEM1Click(Sender: TObject);
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
@@ -2513,6 +2516,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure RIK1Click(Sender: TObject);
     procedure RICK1Click(Sender: TObject);
     procedure Winwcontestmaps1Click(Sender: TObject);
+    procedure Likelymissingdatacodes1Click(Sender: TObject);
     //procedure QuarterDEM1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
@@ -4067,7 +4071,7 @@ begin
 
    if (DEMNowDoing in [ShapePoint,ShapeXYZPoint,ShapeTrack]) then begin
       ScreenSymbol(Image1.Canvas,LastX,LastY,MDDef.DefGISSymbol);
-      if CreateTrainingSet and (MapDraw.SATonMap <> 0) then begin
+      if CreateTrainingSet and ValidSatImage(MapDraw.SATonMap) then begin
          MapDraw.ScreenToDataGrid(LastX,LastY,xg,yg) ;
          SatImage[MapDraw.SATonMap].SatGridToLatLongDegree(SatImage[MapDraw.SatOnMap].BandForSize,round(xg),round(yg),Lat,Long);
       end
@@ -7764,7 +7768,7 @@ begin
       {$IfDef RecordButton} WriteLineToDebugFile('ClientWidth=' + IntToStr(ClientWidth) + '  panel1.Width=' + IntToStr(panel1.Width)); {$EndIf}
       glLeftPos := 0;
 
-      ComboBox1.Visible := (MapDraw <> Nil) and (MapDraw.DEMMap or (MapDraw.SatOnMap <> 0));
+      ComboBox1.Visible := (MapDraw <> Nil) and MapDraw.DEMMap or ValidSatImage(MapDraw.SatOnMap);
       ZoomBitBtn.Visible := ComboBox1.Visible;
       if ComboBox1.Visible then begin
          ComboBox1.Left := 0;
@@ -7901,7 +7905,7 @@ begin
       Dataheader2.Visible := ((MapDraw.DEMonMap > 0) or (MapDraw.SatOnMap > 0)) and (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]);
 
       ElevationsExtremes1.Checked := (ExtremeZDEM <> 0);
-      Missingdatacolor1.Visible := (MapDraw.ValidDEMonMap) or (MapDraw.SatonMap <> 0);
+      Missingdatacolor1.Visible := (MapDraw.ValidDEMonMap) or ValidSatImage(MapDraw.SatonMap);
       Lntransform1.Visible := ExpertDEMVersion and (DEMGlb[MapDraw.DEMonMap].DEMheader.MaxElev > 0);
       Vectoraverage1.Visible := ExpertDEMVersion and (DEMGlb[MapDraw.DEMonMap].DEMheader.ElevUnits = zDegrees);
 
@@ -8487,7 +8491,7 @@ begin
          GDALinfo1.Visible := false;
       {$Else}
          if MapDraw.DEMMap then GDALinfo1.Visible := GDALGridFormat(ExtractFileExt(DEMGlb[MapDraw.DEMOnMap].DEMFileName))
-         else if (MapDraw.SatOnMap <> 0) then GDALinfo1.Visible := GDALImageFormat(ExtractFileExt(SatImage[MapDraw.SatOnMap].IndexFileName))
+         else if ValidSatImage(MapDraw.SatOnMap) then GDALinfo1.Visible := GDALImageFormat(ExtractFileExt(SatImage[MapDraw.SatOnMap].IndexFileName))
          else GDALinfo1.Visible := false;
       {$EndIf}
 
@@ -9041,7 +9045,7 @@ end;
 
 procedure TMapForm.LoadOSMoverlay1Click(Sender: TObject);
 begin
-   if (LastOSMoverlay = '') then LastOSMoverlay := MainMapData + 'openstreetmap\';
+   //if (LastOSMoverlay = '') then LastOSMoverlay := MainMapData + 'openstreetmap\';
    GetDOSPath('OSM shape files',LastOSMoverlay);
    if (LastOSMoverlay <> '') then begin
       SubtractOverlay(Self,ovoWorldOutlines);
@@ -10170,7 +10174,7 @@ end;
     Capt,TStr : shortstring;
     radiance,refl_sun : array[1..MaxBands] of float64;
  begin
-    if MapDraw.SATonMap <> 0 then begin
+    if ValidSatImage(MapDraw.SATonMap)then begin
        Capt := MapDraw.ScreenLocStr(LastX,LastY);
        Findings := tStringList.Create;
        Findings.Add(Capt);
@@ -11035,11 +11039,13 @@ var
           i : integer;
        begin
           {$IfDef RecordGISDB} WriteLineToDebugFile('Enter OpenSingleDataBase ' + DefaultFile); {$EndIf}
+          (*
           if CheckIfTigerOrOSM(DefaultFile) then begin
               {$If Defined(RecordGISDB) or Defined(TrackTigerOrOSM)} WriteLineToDebugFile('Tiger/OSM file ' + DefaultFile); {$EndIf}
               DesiredDBMode := dbmForceDefault;
               DoAShapeFile(DefaultFile);
           end;
+          *)
 
           if OpenNumberedGISDataBase(Result,DefaultFile,OpenTable,false,self) then begin
              if (ForceColor > -99) then begin
@@ -11322,7 +11328,7 @@ begin
    {$Else}
       if (not MapDraw.aDRGmap) and (not (MapDraw.MapOwner in [moIndexMap,moMapDatabase, moEditMap,moPointVerificationMap])) then begin
           if (MDdef.TigrDef.AutoTigerOnDEMs and MapDraw.DEMMap) or
-             (MDdef.TigrDef.AutoTigerOnImages and (MapDraw.SatOnMap <> 0)) then begin
+             (MDdef.TigrDef.AutoTigerOnImages and ValidSatImage(MapDraw.SatOnMap)) then begin
              AddOverlay(Self,ovoTiger);
           end;
       end;
@@ -12814,8 +12820,8 @@ begin
    Slopecategories2.Visible := isSlopeMap(MapDraw.MapType);
    ID2.Visible := IDSpeedButton.Visible;
    RemoteSensingPopupOptions.Visible := (MDdef.ProgramOption in [ExpertProgram,RemoteSensingProgram]);
-   LSTfromemissivity1.Visible := (MapDraw.SatOnmap <> 0) and (SatImage[MapDraw.SatOnmap].LandsatNumber <> 0);
-   RemoteSensingPopupOptions.Visible := (MapDraw.SatOnmap <> 0) or (MapDraw.MultiGridOnMap <> 0);
+   LSTfromemissivity1.Visible := ValidSatImage(MapDraw.SatOnMap) and (SatImage[MapDraw.SatOnmap].LandsatNumber <> 0);
+   RemoteSensingPopupOptions.Visible := ValidSatImage(MapDraw.SatOnMap) or (MapDraw.MultiGridOnMap <> 0);
 
    Gridmaskcolor1.Visible := MapDraw.MapType = mtDEMMask;
    Opennessoptions1.Visible := MapDraw.MapType = mtOpenness;
@@ -12995,7 +13001,7 @@ var
    OutName : PathStr;
    i : integer;
 begin
-   if (MapDraw.SatOnMap <> 0) then begin
+   if ValidSatImage(MapDraw.SatOnMap) then begin
       InNames := tStringList.Create;
       for i := 1 to SatImage[MapDraw.SatOnMap].NumBands do
          if SatImage[MapDraw.SatOnMap].IsLandsatImageAnalysisBand(i) then
@@ -14691,7 +14697,7 @@ begin
             else TStr := '';
             Result.Add(TStr + MessLineBreak + DashLine);
          end
-         else if (MapDraw.SatOnMap <> 0) then begin
+         else if ValidSatImage(MapDraw.SatOnMap) then begin
             {$IfDef ExSat}
             {$Else}
                Result.Add('Image: ' + SatImage[MapDraw.SatOnMap].SceneBaseName + MessLineBreak);
@@ -15620,7 +15626,7 @@ end;
 
 procedure TMapForm.PickBandSpeedButton20Click(Sender: TObject);
 begin
-   if (MapDraw.SatOnMap <> 0) then GetContrast(self);
+   if ValidSatImage(MapDraw.SatOnMap) then GetContrast(self);
 end;
 
 procedure TMapForm.PickcornersMDDEM1Click(Sender: TObject);
@@ -15803,7 +15809,7 @@ begin
    if MapDraw.DEMMap then begin
       if DEMGlb[MapDraw.DEMonMap] <> Nil then exit;
    end
-   else if (MapDraw.SatOnMap <> 0) then begin
+   else if ValidSatImage(MapDraw.SatOnMap) then begin
       if SatImage[MapDraw.SatOnMap] <> nil then exit;
    end
    else begin
@@ -16063,7 +16069,7 @@ var
 begin
    DilateErodeForm := TDilateErodeForm.Create(Application);
    DilateErodeForm.BaseMap := self;
-   if (MapDraw.SATonMap <> 0) then begin
+   if ValidSatImage(MapDraw.SatOnMap) then begin
      DilateErodeForm.Edit1.Text := IntToStr(MDDef.MaxSatRange);
      DilateErodeForm.Edit2.Text := IntToStr(MDDef.MinSatRange);
      if (MapDraw.Satview.WindowContrast <> MaskRange) then begin
@@ -17172,7 +17178,8 @@ begin
     HiMissing := 'Hi' + LowMissing;
     LowMissing := 'Lo' + LowMissing;
     PN := 0;
-    if (Sender = Bytedata0tomissing1) or (Sender = INForNAN1)then begin
+    if (Sender = Bytedata0tomissing1) or (Sender = INForNAN1) or  (Sender = Likelymissingdatacodes1) then begin
+       //Nothing to set
     end
     else if (Sender = Inf1) then begin
        ReadDefault('Replace +Inf with',zn);
@@ -17334,9 +17341,13 @@ begin
     else if (Sender = EverythingBelowCutoff1) then begin
        DEMGLb[MapDraw.DEMonMap].MarkBelowMissing(zHi,Fixed);
     end
+    else if (Sender = Likelymissingdatacodes1) then begin
+       DEMGLb[MapDraw.DEMonMap].DeleteMissingDataPoints;
+    end
     else begin
        DEMGLb[MapDraw.DEMonMap].MarkInRangeMissing(zlo,zhi,Fixed);
     end;
+
     if (Original = 0) then Original := DEMGLb[MapDraw.DEMonMap].DEMheader.NumCol * DEMGLb[MapDraw.DEMonMap].DEMheader.NumRow;
 
     RespondToChangedDEM;
@@ -17559,6 +17570,7 @@ end;
 
 procedure TMapForm.Legend1Click(Sender: TObject);
 begin
+    {$IfDef RecordLegend} WriteLineToDebugFile('TMapForm.Legend1Click in, LegendOptions=' + IntToStr(LegendOptionsAvailable) + '  MapType=' + IntToStr(MapDraw.MapType)); {$EndIf}
     if (LegendOptionsAvailable = 1) then begin
        if DatabaseLegend1.Visible then Databaselegend1Click(Sender);
        if GridVATLegend1.Visible then GridVATLegend1Click(Sender);
@@ -18839,7 +18851,7 @@ begin
       TRI_interpolate := MakeTRIGrid(MapDraw.DEMonMap,nmInterpolate,false);
       TRI_30m := MakeTRIGrid(MapDraw.DEMonMap,nm30m,false);
       MakeTRIGrid(MapDraw.DEMonMap,nmTRIK,false);
-      MakeTRIGrid(MapDraw.DEMonMap,nmTRICK,false);
+      MakeTRIGrid(MapDraw.DEMonMap,nmRRI,false);
    {$EndIf}
 end;
 
@@ -19030,24 +19042,27 @@ var
 
    procedure DoAMap(DEM : integer);
    begin
-       if (DEM = 1) then DEMGlb[1].SelectionMap.MapDraw.BaseTitle := 'Reference DEM'
-       else DEMGlb[DEM].SelectionMap.MapDraw.BaseTitle := 'DEM ' + ch;
-       DEMGlb[DEM].SelectionMap.DoCompleteMapRedraw;
-       with DEMGlb[DEM].SelectionMap do begin
-           Image1.Canvas.Brush.Style := bsClear;
-           Image1.Canvas.Pen.Width := 3;
-           Image1.Canvas.Pen.Color := clBlack;
-           Image1.Canvas.Rectangle(0,0,pred(Image1.Width),pred(Image1.Height));
-       end;
-       fName := Output + DEMGlb[DEM].SelectionMap.MapDraw.BaseTitle + '--' + DEMGlb[DEM].AreaName + '.bmp';
-       PetImage.SaveImageAsBMP(DEMGlb[DEM].SelectionMap.Image1,fName);
-       Findings.Add(fName);
+     if ValidDEM(DEM) then begin
+         if (DEM = 1) then DEMGlb[1].SelectionMap.MapDraw.BaseTitle := 'Reference DEM'
+         else DEMGlb[DEM].SelectionMap.MapDraw.BaseTitle := 'DEM ' + ch;
+         DEMGlb[DEM].SelectionMap.DoCompleteMapRedraw;
+         with DEMGlb[DEM].SelectionMap do begin
+             Image1.Canvas.Brush.Style := bsClear;
+             Image1.Canvas.Pen.Width := 3;
+             Image1.Canvas.Pen.Color := clBlack;
+             Image1.Canvas.Rectangle(0,0,pred(Image1.Width),pred(Image1.Height));
+         end;
+         fName := Output + DEMGlb[DEM].SelectionMap.MapDraw.BaseTitle + '--' + DEMGlb[DEM].AreaName + '.bmp';
+         PetImage.SaveImageAsBMP(DEMGlb[DEM].SelectionMap.Image1,fName);
+         Findings.Add(fName);
+     end;
    end;
 
 
 begin
    {$If Defined(RecordDEMIX)} writeLineToDebugFile('TMapForm.Winwcontestmaps1Click in'); {$EndIf}
    DEMGlb[1].SelectionMap.hiscoverageareaandsamepixelsize1Click(Sender);
+   DEMGlb[1].SelectionMap.SameElevationColors1Click(Sender);
    Findings := tStringList.Create;
    Output := 'c:\temp\';
    TheList := tStringList.Create;
@@ -19231,7 +19246,7 @@ var
 begin
    sl := MapInformationString;
    if MapDraw.DEMMap then sl.Insert(0,DEMGlb[MapDraw.DEMonMap].AreaName);
-   if (MapDraw.SatOnMap <> 0) then sl.Insert(0,SatImage[MapDraw.SatonMap].SceneBaseName);
+   if ValidSatImage(MapDraw.SatOnMap) then sl.Insert(0,SatImage[MapDraw.SatonMap].SceneBaseName);
 
    t1 := MapDraw.PrimMapProj.GetProjectionName;
    sl.add('Primary: ' +  t1);
@@ -19240,7 +19255,7 @@ begin
       sl.Add('DEM bounding box geographic: ' + sfBoundBoxToString(DEMGlb[MapDraw.DEMonMap].DEMBoundBoxGeo,6));
       sl.Add('DEM bounding box Proj: ' + sfBoundBoxToString(DEMGlb[MapDraw.DEMonMap].DEMBoundBoxProjected,1));
    end;
-   if (MapDraw.SatOnMap <> 0) then begin
+   if ValidSatImage(MapDraw.SatOnMap) then begin
       sl.add('------------------------------------');
       sl.Add('Image bounding box geographic: ' + sfBoundBoxToString(SatImage[MapDraw.SatonMap].SatelliteBoundBoxGeo(1),6));
       sl.Add('Image bounding box Proj: ' + sfBoundBoxToString(SatImage[MapDraw.SatonMap].SatelliteBoundBoxProj(1),1));
@@ -19657,6 +19672,11 @@ end;
 procedure TMapForm.LibSpeedButtonClick(Sender: TObject);
 begin
    Integrateddatabasesetup1Click(Sender);
+end;
+
+procedure TMapForm.Likelymissingdatacodes1Click(Sender: TObject);
+begin
+   Markasmissing1Click(Sender);
 end;
 
 procedure TMapForm.LinedetectionHoughtransform1Click(Sender: TObject);
@@ -22920,7 +22940,7 @@ var
    i,dbsonMap,y,MaxLen,Len,BoxSize : integer;
 begin
    dbsOnMap := FindDBsOnMap;
-   {$IfDef RecordGISDB} WriteLineToDebugFile('TMapForm.Databaselegend1Click in,  dbs on map=' + IntToStr(dbsOnMap)); {$EndIf}
+   {$If Defined(RecordLegend) or Defined(RecordGISDB)} WriteLineToDebugFile('TMapForm.Databaselegend1Click in,  dbs on map=' + IntToStr(dbsOnMap)); {$EndIf}
    CreateBitmap(Bitmap,1200,25*dbsOnMap);
    EditMyFont(MDDef.DefGisLabelFont1);
    LoadMyFontIntoWindowsFont(MDDef.DefGisLabelFont1,Bitmap.Canvas.Font);
@@ -24160,7 +24180,7 @@ end;
 
 procedure TMapForm.RICK1Click(Sender: TObject);
 begin
-   MakeTRIGrid(MapDraw.DEMonMap,nmTRICK,false);
+   MakeTRIGrid(MapDraw.DEMonMap,nmRRI,false);
 end;
 
 procedure TMapForm.Mapshadingoptions1Click(Sender: TObject);

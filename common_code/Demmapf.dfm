@@ -2,8 +2,8 @@ object MapForm: TMapForm
   Left = 45
   Top = 303
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1041
-  ClientWidth = 1779
+  ClientHeight = 1060
+  ClientWidth = 1775
   Color = clBtnHighlight
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -40,8 +40,8 @@ object MapForm: TMapForm
   object ScrollBox1: TScrollBox
     Left = 0
     Top = 27
-    Width = 1779
-    Height = 1014
+    Width = 1775
+    Height = 1033
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clRed
@@ -51,8 +51,8 @@ object MapForm: TMapForm
     ParentFont = False
     TabOrder = 0
     OnClick = ScrollBox1Click
-    ExplicitWidth = 1775
-    ExplicitHeight = 1013
+    ExplicitWidth = 1771
+    ExplicitHeight = 1012
     object Image1: TImage
       Left = 3
       Top = -247
@@ -209,13 +209,13 @@ object MapForm: TMapForm
     end
     object BlendPanel: TPanel
       Left = 0
-      Top = 969
-      Width = 1775
+      Top = 988
+      Width = 1771
       Height = 41
       Align = alBottom
       TabOrder = 8
-      ExplicitTop = 968
-      ExplicitWidth = 1771
+      ExplicitTop = 967
+      ExplicitWidth = 1767
       object TrackBar2: TTrackBar
         Left = 289
         Top = 1
@@ -334,12 +334,12 @@ object MapForm: TMapForm
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1779
+    Width = 1775
     Height = 27
     Align = alTop
     TabOrder = 1
     OnMouseDown = Panel1MouseDown
-    ExplicitWidth = 1775
+    ExplicitWidth = 1771
     object AnnotateSpeedButton1: TSpeedButton
       Left = 31
       Top = -4
@@ -2046,6 +2046,7 @@ object MapForm: TMapForm
         object Rasteraftersubsettomatchthismapextent1: TMenuItem
           Caption = 'GDAL Raster  subset to match this map'
           GroupIndex = 1
+          OnClick = Rasteraftersubsettomatchthismapextent1Click
         end
         object N10: TMenuItem
           Caption = '-'
@@ -2197,6 +2198,10 @@ object MapForm: TMapForm
         object Multiplevalues1: TMenuItem
           Caption = 'Multiple values'
           OnClick = Multiplevalues1Click
+        end
+        object Likelymissingdatacodes1: TMenuItem
+          Caption = 'Likely missing data codes'
+          OnClick = Likelymissingdatacodes1Click
         end
         object INForNAN1: TMenuItem
           Caption = 'INF or NAN'
@@ -4112,9 +4117,11 @@ object MapForm: TMapForm
         end
         object Percentages1: TMenuItem
           Caption = 'Co-occurrence, Percentages'
+          OnClick = Percentages1Click
         end
         object Counts1: TMenuItem
           Caption = 'Co-occurrence, Counts'
+          OnClick = Counts1Click
         end
         object Missingdata1: TMenuItem
           Caption = 'Missing data locations in one grid'
@@ -5945,33 +5952,36 @@ object MapForm: TMapForm
     end
     object opographicruggednessindex1: TMenuItem
       Caption = 'Topographic ruggedness and position index (TRI and TPI)'
-      object Normalizeeastwest1: TMenuItem
-        Caption = 'Normalize east-west'
-        OnClick = Normalizeeastwest1Click
-      end
-      object Normalizenorthsouth1: TMenuItem
-        Caption = 'Normalize north-south'
-        OnClick = Normalizenorthsouth1Click
-      end
-      object Nonormalization1: TMenuItem
-        Caption = 'No normalization'
-        OnClick = Nonormalization1Click
-      end
-      object Normalizeto30m1: TMenuItem
-        Caption = 'Normalize to 30 m'
-        OnClick = Normalizeto30m1Click
-      end
-      object RIK1: TMenuItem
-        Caption = 'TRIK'
-        OnClick = RIK1Click
-      end
       object RICK1: TMenuItem
-        Caption = 'TRICK'
+        Caption = 'RRI (radial roughness)'
         OnClick = RICK1Click
       end
-      object Alolthreenormalizations1: TMenuItem
-        Caption = 'All TRI normalizations'
-        OnClick = Alolthreenormalizations1Click
+      object Normalizeeastwest1: TMenuItem
+        Caption = 'TRI  normalize east-west'
+        OnClick = Normalizeeastwest1Click
+      end
+      object Nonormalization1: TMenuItem
+        Caption = 'TRI No normalization (really slope)'
+        OnClick = Nonormalization1Click
+      end
+      object Experimental2: TMenuItem
+        Caption = 'Experimental'
+        object Normalizenorthsouth1: TMenuItem
+          Caption = 'Normalize north-south'
+          OnClick = Normalizenorthsouth1Click
+        end
+        object Normalizeto30m1: TMenuItem
+          Caption = 'Normalize to 30 m'
+          OnClick = Normalizeto30m1Click
+        end
+        object RIK1: TMenuItem
+          Caption = 'TRIK'
+          OnClick = RIK1Click
+        end
+        object Alolthreenormalizations1: TMenuItem
+          Caption = 'All TRI normalizations'
+          OnClick = Alolthreenormalizations1Click
+        end
       end
     end
     object Terrainorganizationmaps1: TMenuItem
@@ -6467,8 +6477,6 @@ object MapForm: TMapForm
       Caption = 'Outline other map coverages on this map'
       GroupIndex = 1
       OnClick = Outlineothermaps1Click
-      object TMenuItem
-      end
     end
   end
 end

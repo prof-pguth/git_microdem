@@ -257,7 +257,7 @@ var
          end
          {$EndIf}
          else if DEMGlb[DEM].LandCoverGrid then begin
-            Result := mtElevRainbow;
+            Result := mtLandCover;
          end
          else begin
             fName2 := UpperCase(DEMGlb[DEM].DEMFileName);

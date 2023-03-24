@@ -26,7 +26,7 @@
    //{$Define RecordKeyMap}         //don't use if there will be a lot of map drawing
 
    {$IfDef Debug}
-      {$Define RecordFan}
+      //{$Define RecordFan}
       //{$Define RecordVAT}
       //{$Define FanDrawProblems)
       //{$Define WorldFileOverlay}
@@ -1206,7 +1206,7 @@ begin
          end;
          CreateBitmap(Bitmap,MapXSize,MapYSize);
 
-         if DEMmap or (SatOnMap <> 0) then ClearBitmap(Bitmap,ConvertPlatformColorToTColor(MDdef.MissingDataColor));
+         if DEMmap or ValidSatImage(SatOnMap) then ClearBitmap(Bitmap,ConvertPlatformColorToTColor(MDdef.MissingDataColor));
          if DrawBaseMap then begin
             {$If Defined(RecordFullMapDraw) or Defined(RecordPixelSize)} WriteLineToDebugFile('tMapDraw.DrawMapOnBMP DrawBaseMap ' + MapSizeString); {$EndIf}
 
@@ -2057,7 +2057,7 @@ begin
    {$IfDef ExSat}
       Result := false;
    {$Else}
-      Result := ((SatOnMap <> 0) and (SatImage[SatOnMap] <> Nil));
+      Result := ValidSatImage(SatOnMap);
    {$EndIf}
 end;
 
@@ -2085,7 +2085,7 @@ begin
    if (VectorIndex <> 0) then exit;
    {$IfDef ExSat}
    {$Else}
-   if (SatOnMap <> 0) then begin
+   if ValidSatImage(SatOnMap) then begin
       SatImage[SatOnMap].SatGridToLatLongDegree(SatImage[SatOnMap].BandForSize,XGrid,YGrid,Lat,Long);
       DEMGlb[DEMonMap].LatLongDegreeToDEMGrid(Lat,Long,XGrid,YGrid);
    end;

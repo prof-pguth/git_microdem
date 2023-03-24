@@ -16,6 +16,7 @@
    {$IfDef RecordProblems}  //normally only defined for debugging specific problems
       //{$Define RecordCloseDB}
       {$Define RecordDEMIX}
+      {$Define RecordLegend}
       //{$Define RecordDEMIXFull}
       //{$Define RecordDEMIXties}   //only enable for small test DB
       //{$Define RecordSymbolColor}
@@ -25,11 +26,11 @@
       //{$Define RecordFIT}
       //{$Define RecordKML}
       //{$Define RecordTiger}
-      {$Define LogModuleCreate}
-      {$Define RecordIcesat}
+      //{$Define LogModuleCreate}
+      //{$Define RecordIcesat}
 
       //{$Define RecordFieldStatistics}
-      {$Define RecordOpenDataBase}
+      //{$Define RecordOpenDataBase}
 
       //{$Define FieldFromDEM}
       //{$Define RecordBoundBox}
@@ -479,7 +480,7 @@ type
      procedure AddFieldGroupToTable(What : shortstring);
      procedure FillFieldsFromJoinedTable(var TheFields : tStringList; ForceOverWrite : boolean);
      procedure AddNavFields;
-     procedure AddNavFieldDefinitions;
+     function AddNavFieldDefinitions : boolean;
      procedure LimitFieldDecimals(SelectedColumn : shortstring; NumDec : integer);
 
 
@@ -3607,7 +3608,7 @@ begin
       MDIniFile.AParameter('db','LineSize',dbOpts.LineWidth,2);
    end;
 
-   if (IniWhat = iniInit) and (TheMapOwner <> Nil) and AreaShapeFile(ShapeFileType) and ((TheMapOwner.MapDraw.DEMonMap <> 0) or (TheMapOwner.MapDraw.SatonMap <> 0)) then begin
+   if (IniWhat = iniInit) and (TheMapOwner <> Nil) and AreaShapeFile(ShapeFileType) and ((TheMapOwner.MapDraw.DEMonMap <> 0) or ValidSatImage(TheMapOwner.MapDraw.SatonMap)) then begin
       dbOpts.Opacity := 50;
    end
    else MDIniFile.AParameter('db','Opacity',dbOpts.Opacity,100);
@@ -5237,8 +5238,6 @@ begin
      end;
      ZeroRecordsAllowed := false;
 
-
-
      {$IfDef VCL}
          if MyData.FieldExists('ORDER') then RenameField('ORDER','PLOT_ORDER');
      {$EndIf}
@@ -5293,14 +5292,14 @@ begin
      if ItsAShapeFile then begin
          dbBoundBox := aShapeFile.MainFileHeader.BoundBox;
          {$IfDef VCL}
-            if (MyData.TotRecsInDB < 25000) then begin
+            if (MyData.TotRecsInDB < 10000) then begin
                if LineOrAreaShapeFile(ShapeFileType) then begin
                   if not(LatLongCornersPresent) then AddBoundingBox;
                end
                else begin
                   if not (LatLongFieldsPresent) then aShapeFile.AddFields(afLatLong,MyData);
                end;
-               AddSequentialIndex(RecNoFName);
+               AddSequentialIndex(RecNoFName,false);
             end;
          {$EndIf}
      end
@@ -5437,11 +5436,6 @@ begin
 
       PhotoLocationsPresent := MyData.FieldExists('LAT') and MyData.FieldExists('LONG') and MyData.FieldExists('HFOV') and MyData.FieldExists('ELEV');
       CameraOrientationExists := MyData.FieldExists('HEIGHT') and MyData.FieldExists('AZIMUTH') and MyData.FieldExists('HFOV') and MyData.FieldExists('VFOV') and MyData.FieldExists('DEPTH') and MyData.FieldExists('PITCH');
-
-     {$IfDef ExSidescan}
-     {$Else}
-        //SideScanIndex := MyData.FieldExists('LINE_NAME');
-     {$EndIf}
 
      {$IfDef ExGeology}
      {$Else}

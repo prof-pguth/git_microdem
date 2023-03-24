@@ -20,8 +20,8 @@ unit BaseGraf;
        //{$Define RecordGrafSize}
        //{$Define RecordGrafAxes}
        //{$Define RecordFormResize}
-       {$Define RecordHistogram}
-       {$Define RecordHistogramColors}
+       //{$Define RecordHistogram}
+       //{$Define RecordHistogramColors}
        //{$Define RecordFullGrafAxes}
        //{$Define RecordLegends}
        //{$Define RecordSaveSeries}

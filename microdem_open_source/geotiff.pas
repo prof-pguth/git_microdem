@@ -24,11 +24,11 @@ unit GeoTiff;
    {$Define RecordGeotiffFailures}
 
    {$IFDEF DEBUG}
-      //{$Define RecordGeotiff}
+      {$Define RecordGeotiff}
       //{$Define RecordGeotiffFailures}
-      //{$Define RecordGeotiffProjection}
+      {$Define RecordGeotiffProjection}
       //{$Define RecordDefineDatum}
-      //{$Define TrackProjection}
+      {$Define TrackProjection}
       //{$Define RecordDEMMapProjection}
       //{$Define ShowKeyDEM}
       //{$Define TrackZ}
@@ -1018,6 +1018,12 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
                   WantDEM.DEMheader.LatHemi := WantDEM.DEMMapProjection.LatHemi;
                   if not WantDEM.DEMMapProjection.DecodeWKTProjectionFromString(WantDEM.DEMMapProjection.wktString) then MessageToContinue('Could not intialize projection from wkt: ' + WantDEM.DEMMapProjection.wktString);
                end
+               else if (WantDEM.DEMMapProjection.Pname in [AlbersEqAreaConicalEllipsoid,PolarStereographicEllipsoidal,LambertConformalConicEllipse,LamAzEqAreaEllipsoidal,CylindricalEqualAreaEllipsoidal,AzimuthalEquidistantEllipsoidal]) then begin
+                  WantDEM.DEMheader.DEMUsed := WKTDEM;
+                  WantDEM.DEMheader.DataSpacing := SpaceMeters;
+                  WantDEM.DEMheader.UTMZone := WantDEM.DEMMapProjection.projUTMZone;
+                  WantDEM.DEMheader.LatHemi := WantDEM.DEMMapProjection.LatHemi;
+               end
                else begin
                   WantDEM.DEMheader.DEMUsed := UTMBasedDEM;
                   WantDEM.DEMheader.DataSpacing := SpaceMeters;
@@ -1506,61 +1512,8 @@ var
                            ProjectionDefined := true;
                         end;
 
-                        (*
-                        if IDProjectionMagic(TStr,'TM35FIN')  then begin
-                           MapProjection.StartUTMProjection(35);
-                           ProjectionDefined := true;
-                        end;
-
-                        if IDProjectionMagic(TStr,'ETRS1989LAEA') or IDProjectionMagic(TStr,'ETRS89_ETRS_LAEA') then begin
-                           MapProjection.PName := LamAzEqAreaEllipsoidal;
-                           MapProjection.H_datumCode := 'ETR89';
-                           ProjectionDefined := true;
-                           with MapProjection do begin
-                              false_east  := 4321000.0;
-                              false_north := 3210000.0;
-                              ProjMapScale := 1.0;
-                              Lat0  := DegToRad * 52;
-                              Long0 := DegToRad * 10;
-                           end;
-                        end;
-                        *)
                      end;
-
-                     (*
-                     if StrUtils.AnsiContainsText(TStr,'New Zealand Geodetic Datum 2000') then begin
-                        MapProjection.PName := GeneralTransverseMercator;
-                        with MapProjection do begin
-                           H_datumCode := 'WGS84';
-                           false_east  :=  1600000.0;
-                           false_north := 10000000.0;
-                           ProjMapScale := 0.9996;
-                           Lat0 := DegToRad * 0;
-                           Long0 := DegToRad * 173;
-                           ProjectionDefined := true;
-                        end;
-                     end;
-
-                     if (MapProjection.projUTMZone = -99) and (ptCopy(TStr,1,17) = 'projection=us83tm') then begin
-                        UTMString := TStr;
-                        Delete(UTMString,1,17);
-                        Val(UTMString,MapProjection.projUTMZone,err);
-                        MapProjection.H_datumCode := MDDef.DefaultDigitizeDatum;
-                        {$IfDef RecordDefineDatum} WriteLineToDebugFile('projection=us83tm zone: ' + IntToStr(MapProjection.projUTMzone)); {$EndIf}
-                     end;
-
-                     if (MapProjection.projUTMZone = -99) and (ptCopy(TStr,1,3) = 'UTM') then begin
-                        UTMString := TStr;
-                        Delete(UTMString,1,3);
-                        while(not (UTMString[1] in ['0'..'9'])) do Delete(UTMString,1,1);
-                        Val(BeforeSpecifiedCharacterANSI(UTMString,' ',true,true),MapProjection.projUTMZone,err);
-                        ptTrim(UTMString);
-                        if UTMString[1] = 'S' then Hemi := -45 else Hemi := 45;
-                        if (MapProjection.H_datumCode = '') then MapProjection.H_datumCode := MDDef.DefaultDigitizeDatum;
-                        {$IfDef RecordDefineDatum} writeLineToDebugFile('just utm zone: ' + IntToStr(MapProjection.projUTMZone)); {$EndIf}
-                     end;
-                     *)
-                  end;
+                   end;
                end;
 
                if ProjectionDefined then begin
@@ -2297,7 +2250,7 @@ begin
          end
          else begin
             if TemporaryNewGeotiff then GDALConvertSingleImageToGeotiff(TIFFFileName)
-            else GDALConvertImagesToGeotiff(TIFFFileName,false);
+            else GDALConvertImagesToGeotiff(TIFFFileName,true);
          end;
          {$If Defined(RecordGeotiffFailures) or Defined(RecordGeotiffRestart)} writeLineToDebugFile('GDAL done; restart Geotiff'); {$EndIf}
          goto RestartGeotiff;

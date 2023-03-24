@@ -865,6 +865,17 @@ const  {for ESRI shapefiles}
    sfMaxParts = 25000;
    sfMaxPoints = 5000000;
 
+const
+   MaxSHXinMemory = 500000;
+type
+  tSHXindex = packed record
+     Offset,
+     ContentLength : int32;
+  end;
+  tshxindexarray = array[1..MaxSHXinMemory] of tSHXindex;
+  pshxindexarray = ^tshxindexarray;
+
+
 type   {for ESRI shapefiles}
    sfMainFileHeader = packed record
       FileCode : int32;
@@ -2275,7 +2286,7 @@ type
        BuildingMaxNumLower : int16;
        PCDefaultFilter : byte;
 
-       DeleteTarGZ : boolean;
+       //DeleteTarGZ : boolean;
        DefaultVectorMapProjection : tDefaultVectorMapProject;
        WorldOutlinesOnGlobalDEM,
        WorldOutlinesOnGlobalBlueMarble : boolean;

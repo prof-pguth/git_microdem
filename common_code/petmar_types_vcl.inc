@@ -1,4 +1,16 @@
 
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2023 Peter L. Guth  }
+{___________________________________}
+{                                   }
+{ include file for petmar_types     }
+{___________________________________}
+
+
+
 function CPUname : string;
 //http://delphi.cjcsoft.net/viewthread.php?tid=46937
 var

@@ -11,6 +11,7 @@ unit GIS_Scaled_symbols;
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    //{$Define RecordSym}
+   {$Define RecordLegend}
    //{$Define RecordQuickFilter}
    //{$Define RecordGISvectors}
    //{$Define RecordFormSetup}
@@ -568,6 +569,7 @@ begin
 
    CheckBox3.Checked := GISdb[theDB].dbOpts.LabelDBPlots;
    Panel7.Visible := GISdb[theDB].CanPlot and GISdb[theDB].dbOpts.LabelDBPlots;
+   {$IfDef RecordLegend} if Panel7.Visible then WriteLineToDebugFile('Tgis_scaled_form.SetPanels labels allowed, db=' + IntToStr(thedb)); {$EndIf}
    Panel8.Visible := GISdb[theDB].CanPlot and (GISdb[theDB].dbOpts.dbAutoShow in [dbasVector]);
    Panel9.Visible := GISdb[theDB].CanPlot and (GISdb[theDB].dbOpts.dbAutoShow in [dbasTTFontSymbol,dbasScaledSquares,dbasScaledCircles,dbasColorByNumeric]);
    Panel10.Visible := GISdb[theDB].CanPlot and (GISdb[theDB].dbOpts.dbAutoShow in [dbasAnimate]);
@@ -575,8 +577,8 @@ begin
    Panel12Icons.Visible := GISdb[theDB].CanPlot and (GISdb[theDB].dbOpts.dbAutoShow in [dbasIconField,dbasIconAll]);
 
    Panel13.Visible := GISdb[theDB].CanPlot and (GISdb[theDB].dbOpts.dbAutoShow = dbasMultiFieldRGB);
-   Panel14Legend.Visible := false;  //(GISdb[theDB].dbOpts.dbAutoShow in [dbasTTFontSymbol,dbasColorByString,dbasColorByNumeric,dbasAnimate]);
-   Panel15.Visible := false;   //(GISdb[theDB].GISWhatDraw = gisTimeSeq);
+   Panel14Legend.Visible := false;
+   Panel15.Visible := false;
 
    {$IfDef ExGeography}
       CheckBox9.Visible := false;

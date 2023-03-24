@@ -1,6 +1,5 @@
 {$F+}
 
-
 unit DEMCoord;
 
 {^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
@@ -31,8 +30,8 @@ unit DEMCoord;
 
    {$IFDEF DEBUG}
       {$Define RecordDEMIX}
-      {$Define RecordDEMEdits}
-      {$Define RecordClone}
+      //{$Define RecordDEMEdits}
+      //{$Define RecordClone}
       //{$Define RecordGeotiff}
       //{$Define ShortDEMLoad}
       //{$Define RecordSaveAverageResampleDEMformat}
@@ -60,7 +59,7 @@ unit DEMCoord;
       //{$Define RecordVariogram}
       //{$Define RecordElevPercentiles}
       //{$Define ShowFullDEMSSOCalc}  //big slowdown
-      //{$Define RecordVAT}
+      {$Define RecordVAT}
       //{$Define RecordNLCD}
       //{$Define RecordMoments}
       //{$Define RecordSetup}
@@ -68,7 +67,7 @@ unit DEMCoord;
       //{$Define RecordMapDraw}
       //{$Define RecordProjectionParameters}
       //{$Define GeotiffSave}
-      //{$Define TimeLoadDEM}
+      {$Define TimeLoadDEM}
       //{$Define RecordDefineDatum}
       //{$Define RecordDEMEdits}
       //{$Define RecordGridIdentical}

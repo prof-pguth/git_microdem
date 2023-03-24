@@ -99,8 +99,6 @@ var
    db,Cat,x,y,Cats,Total,Needed,z,i,CatHeight : integer;
    xg,fTotal : float64;
    fName : PathStr;
-   //Table : tMyData;
-   //CatPCforLegend : float64;
    zf : float32;
    aColor : tColor;
    CodeField : ShortString;
@@ -1951,7 +1949,7 @@ end;
                       bmp.Canvas.Brush.Style := bsSolid;
                       bmp.Canvas.Rectangle(0,0,bmp.Width,bmp.Height);
 
-                       if (SatOnMap <> 0) then begin
+                       if ValidSatImage(SatOnMap) then begin
                            if (SatImage[SatonMap].LandsatNumber in [1..9]) or SatImage[SatonMap].LandsatLook then begin
                               TStr := ShortLandsatName(SatImage[SatonMap].SceneBaseName) + '  ' + CurrentSatelliteColors;
                            end

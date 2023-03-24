@@ -304,7 +304,7 @@ procedure OpenIndexedSeriesTable(var IndexSeriesTable : tMyData);
 var
    fName : PathStr;
 begin
-   if not FileExists(SeriesIndexFileName) then PickMapIndexLocation;
+   if (not FileExists(SeriesIndexFileName)) then PickMapIndexLocation;
 
    fName  := SeriesIndexFileName;
    IndexSeriesTable := tMyData.Create(fName);
@@ -316,7 +316,7 @@ end;
 procedure AdjustIntegratedDataBaseSeries;
 begin
    {$IfDef RecordIndex} WriteLineToDebugFile('AdjustIntegratedDataBaseSeries in, ' + SeriesIndexFileName); {$EndIf}
-   Toggle_db_use.VerifyRecordsToUse(SeriesIndexFileName,'SERIES','Series to use index map','USE','DATA_TYPE','DATA_TYPE');
+   Toggle_db_use.VerifyRecordsToUse(SeriesIndexFileName,'SERIES','Use indexed series ' + SeriesIndexFileName,'USE','DATA_TYPE','DATA_TYPE');
 end;
 
 
@@ -663,7 +663,7 @@ begin
 
    IntegratedIndex(TheTable);
    TheTable.Destroy;
-   if (Memo1 <> Nil) then Memo1.Lines.Add('Update over');
+   if (Memo1 <> Nil) then Memo1.Lines.Add(TimeToStr(Now) + ' Update over');
    ReportErrors := true;
    {$IfDef RecordIndex} WriteLineToDebugFile('CreateMapLibrary out'); {$EndIf}
 end;

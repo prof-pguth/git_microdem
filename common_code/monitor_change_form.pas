@@ -109,7 +109,7 @@ end;
 
 procedure TChangeMapForm.Edit3Change(Sender: TObject);
 begin
-   CheckEditString(Edit5.Text,MDDef.BottomCutLevel);
+   CheckEditString(Edit3.Text,MDDef.BottomCutLevel);
    Changed := true;
 end;
 
@@ -159,6 +159,8 @@ begin
    Captions;
    Changed := false;
 end;
+
+
 
 initialization
 finalization

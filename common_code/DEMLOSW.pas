@@ -24,7 +24,7 @@ unit demlosw;
       //{$Define RecordClosing}
       //{$Define RecordUTMZones}
       //{$Define RecordSlopeCalc}
-      {$Define RecordLOSLegend}
+      //{$Define RecordLOSLegend}
       //{$Define RecordLOSProblems}
       //{$Define RecordLOSPrettyDrawing}
       //{$Define RecordRandomProfiles}

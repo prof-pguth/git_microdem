@@ -26,7 +26,7 @@ unit DEMStat;
       //{$Define RecordElevationSlopePlotAll}
       //{$Define RecordDEMCompare}
       //{$Define RecordStat}
-      {$Define RecordIceSat}
+      //{$Define RecordIceSat}
       //{$Define RecordGeoStat}
       //{$Define FullRecordBlockGeostats}
       //{$Define RecordPC}
@@ -34,7 +34,7 @@ unit DEMStat;
       //{$Define MapTraceCrests}
       //{$Define RecordDetailedTraceCrests}
       //{$Define RecordClustering}
-      {$Define RecordHistogramFromVAT}
+      //{$Define RecordHistogramFromVAT}
       //{$Define RecordFFT}
       //{$Define RecordHistogram}
       //{$Define RecordGridScatterGram}
@@ -158,14 +158,12 @@ type
    procedure DirtAndAirShots(DB : integer; Title : shortString);
    procedure CloudSummaryGlobalDEMs(DB : integer);
    function FiveSeriesGraph(DB : integer; Lat,Long,Tolerance : float64; DirField : shortstring) : TThisbasegraph;
-   procedure IcesatProcessCanopy(dbOnTable : integer; AddDEMs : boolean);
+   procedure IcesatProcessCanopy(dbOnTable : integer; AddDEMs : boolean; LimitDecimals : boolean = false);
    procedure IcesatPhotonConvert(Memo1 : tMemo);
    procedure AddGlobalDEMs(dbOnTable : integer);
    procedure ElevationSlopePlotCompareDEMs;
    procedure LandCoverSummary;
    procedure AddEGMfields(dbOnTable : integer);
-
-
 
    procedure GridsByRegionSize(CurDEM : integer; GridCh : char);
 

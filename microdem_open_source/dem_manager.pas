@@ -27,7 +27,7 @@ unit dem_manager;
       //{$Define RecordMenu}
       //{$Define RecordSatLoad}
       //{$Define RecordSimpleClose}
-      {$Define RecordSatDirOpen}
+      //{$Define RecordSatDirOpen}
    {$Else}
       {$Define TimeLoadDEM}
    {$EndIf}
@@ -1065,7 +1065,7 @@ end;
             ShowHourglassCursor;
             ShlObj.SHAddToRecentDocs(SHARD_PATH, PChar(TheFiles.Strings[i]));
             {$If Defined(RecordSatLoad) or Defined(RecordMenu) or Defined(TimeSatLoad)} WriteLineToDebugFile('call OpenAndDisplay ' + fName); {$EndIf}
-            NewSatImage := OpenAndDisplayNewScene(Nil,fName,true,(ImageType <> itDRG),(not GlobalDRGMap));
+            if not CheckFileNameForSpaces(fName) then NewSatImage := OpenAndDisplayNewScene(Nil,fName,true,(ImageType <> itDRG),(not GlobalDRGMap));
          end;
          if (ImageType = itDRG) then begin
             LastScanMapName := TheFiles.Strings[0];

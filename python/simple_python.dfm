@@ -18,7 +18,7 @@ object PythonForm1: TPythonForm1
   object Splitter1: TSplitter
     Left = 0
     Top = 153
-    Width = 526
+    Width = 528
     Height = 3
     Cursor = crVSplit
     Align = alTop
@@ -29,8 +29,8 @@ object PythonForm1: TPythonForm1
   object Memo1: TMemo
     Left = 0
     Top = 156
-    Width = 526
-    Height = 128
+    Width = 528
+    Height = 136
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -46,12 +46,14 @@ object PythonForm1: TPythonForm1
   end
   object Panel1: TPanel
     Left = 0
-    Top = 284
-    Width = 526
+    Top = 292
+    Width = 528
     Height = 44
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 0
+    ExplicitTop = 284
+    ExplicitWidth = 526
     object Button1: TButton
       Left = 6
       Top = 8
@@ -83,7 +85,7 @@ object PythonForm1: TPythonForm1
   object Memo2: TMemo
     Left = 0
     Top = 0
-    Width = 526
+    Width = 528
     Height = 153
     Align = alTop
     Font.Charset = DEFAULT_CHARSET
@@ -95,6 +97,7 @@ object PythonForm1: TPythonForm1
     ParentFont = False
     ScrollBars = ssBoth
     TabOrder = 2
+    ExplicitWidth = 526
   end
   object OpenDialog1: TOpenDialog
     DefaultExt = '*.py'

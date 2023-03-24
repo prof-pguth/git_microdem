@@ -16,7 +16,7 @@
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IfDef Debug}
       //{$Define RecordLASMemoryAlocations}
-      {$Define RecordTilePlotSummary}
+      //{$Define RecordTilePlotSummary}
       //{$Define RecordLASfiles}
       //{$Define RecordWKT}
       //{$Define RecordVarLenRec}
@@ -36,6 +36,7 @@
       //{$Define RecordLASHist}
       //{$Define RecordLAS_subset}
    {$Else}
+      {$Define RecordLASplot}
    {$EndIf}
 {$EndIf}
 

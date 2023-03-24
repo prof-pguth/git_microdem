@@ -6,9 +6,9 @@ inherited SSOCalcDlg: TSSOCalcDlg
   ClientWidth = 660
   Position = poDefaultSizeOnly
   OnCreate = FormCreate
-  ExplicitWidth = 678
-  ExplicitHeight = 508
-  TextHeight = 20
+  ExplicitWidth = 676
+  ExplicitHeight = 500
+  TextHeight = 15
   inherited Bevel1: TBevel
     Left = 252
     Top = 400
@@ -82,89 +82,89 @@ inherited SSOCalcDlg: TSSOCalcDlg
         object Label1: TLabel
           Left = 7
           Top = 5
-          Width = 136
-          Height = 20
+          Width = 109
+          Height = 15
           Caption = 'Point Separation (m)'
         end
         object Label2: TLabel
           Left = 7
           Top = 30
-          Width = 103
-          Height = 20
+          Width = 81
+          Height = 15
           Caption = 'Region size (m)'
         end
         object Label3: TLabel
           Left = 14
           Top = 193
-          Width = 104
-          Height = 20
+          Width = 84
+          Height = 15
           Caption = 'Length Multiple'
         end
         object Label5: TLabel
           Left = 14
           Top = 164
-          Width = 144
-          Height = 20
+          Width = 116
+          Height = 15
           Caption = 'Flatness cutoff, s1s2 <'
         end
         object Label4: TLabel
           Left = 7
           Top = 79
-          Width = 124
-          Height = 20
+          Width = 99
+          Height = 15
           Caption = 'Min points for SSO'
         end
         object Label6: TLabel
           Left = 228
           Top = 29
-          Width = 4
-          Height = 20
+          Width = 3
+          Height = 15
         end
         object Label7: TLabel
           Left = 228
           Top = 3
-          Width = 4
-          Height = 20
+          Width = 3
+          Height = 15
         end
         object Label12: TLabel
           Left = 14
           Top = 135
-          Width = 174
-          Height = 20
+          Width = 139
+          Height = 15
           Caption = 'Organization cutoff, s2s3>'
         end
         object Label17: TLabel
           Left = 6
           Top = 60
-          Width = 133
-          Height = 20
+          Width = 107
+          Height = 15
           Caption = 'Sampling increment'
         end
         object Label18: TLabel
           Left = 226
           Top = 56
-          Width = 4
-          Height = 20
+          Width = 3
+          Height = 15
         end
         object Label21: TLabel
           Left = 170
           Top = 224
-          Width = 25
-          Height = 20
+          Width = 21
+          Height = 15
           Caption = 'Min'
         end
         object Label23: TLabel
           Left = 257
           Top = 221
-          Width = 28
-          Height = 20
+          Width = 23
+          Height = 15
           Caption = 'Max'
         end
         object Label24: TLabel
           Left = 208
           Top = 195
-          Width = 77
-          Height = 20
+          Width = 61
+          Height = 15
           Caption = 'Thin to plot'
         end
         object RedrawSpeedButton12: TSpeedButton
@@ -337,56 +337,56 @@ inherited SSOCalcDlg: TSSOCalcDlg
         object Label8: TLabel
           Left = 76
           Top = 38
-          Width = 194
-          Height = 20
+          Width = 157
+          Height = 15
           Caption = 'Wavelength computation (m)'
         end
         object Label10: TLabel
           Left = 76
           Top = 68
-          Width = 98
-          Height = 20
+          Width = 80
+          Height = 15
           Caption = 'Min height (m)'
         end
         object Label11: TLabel
           Left = 76
           Top = 95
-          Width = 102
-          Height = 20
+          Width = 81
+          Height = 15
           Caption = 'Region (points)'
         end
         object Label22: TLabel
           Left = 76
           Top = 122
-          Width = 96
-          Height = 20
+          Width = 77
+          Height = 15
           Caption = 'Number peaks'
         end
         object Label9: TLabel
           Left = 15
           Top = 175
-          Width = 4
-          Height = 20
+          Width = 3
+          Height = 15
         end
         object Label16: TLabel
           Left = 76
           Top = 150
-          Width = 163
-          Height = 20
+          Width = 130
+          Height = 15
           Caption = 'Spacing along crests (m)'
         end
         object Label19: TLabel
           Left = 80
           Top = 179
-          Width = 180
-          Height = 20
+          Width = 144
+          Height = 15
           Caption = 'Dune sampling interval (m)'
         end
         object Label20: TLabel
           Left = 80
           Top = 200
-          Width = 149
-          Height = 20
+          Width = 119
+          Height = 15
           Caption = 'Max gap tracing crests'
         end
         object CheckBox3: TCheckBox
@@ -519,22 +519,22 @@ inherited SSOCalcDlg: TSSOCalcDlg
       object Label13: TLabel
         Left = 8
         Top = 16
-        Width = 99
-        Height = 20
+        Width = 80
+        Height = 15
         Caption = 'Min region (m)'
       end
       object Label14: TLabel
         Left = 8
         Top = 40
-        Width = 102
-        Height = 20
+        Width = 82
+        Height = 15
         Caption = 'Max region (m)'
       end
       object Label15: TLabel
         Left = 8
         Top = 64
-        Width = 161
-        Height = 20
+        Width = 126
+        Height = 15
         Caption = 'Saddle tolerance (posts)'
       end
       object Edit10: TEdit

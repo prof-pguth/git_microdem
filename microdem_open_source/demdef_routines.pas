@@ -18,7 +18,7 @@
    {$IFDEF DEBUG}
       //{$Define RecordParallelLoops}
       //{$Define RecordUseOtherPrograms}
-      {$Define RecordFan}
+      //{$Define RecordFan}
       //{$Define RecordUpdate}
       //{$Define RecordDirs}
       //{$Define RecordLoadDefault}
@@ -3740,7 +3740,7 @@ begin
       AParameter('Export','GeoJSONG_zdec',GeoJSONG_zdec,1);
       AParameter('Export','GeoJSONP_zdec',GeoJSONP_zdec,1);
       AParameter('Export','GeoJSONP_zdec',GeoJSONP_xydec,1);
-      AParameter('ImpExport','DeleteTarGZ',DeleteTarGZ,false);
+      //AParameter('ImpExport','DeleteTarGZ',DeleteTarGZ,false);
 
    {$If Defined(RecordINIfiles) or Defined(RecordINIfiles)} WriteLineToDebugFile('Breakpoint 5'); {$EndIf}
 
@@ -4595,7 +4595,7 @@ begin
     HardLimitColorPaletteFName := ProgramRootDir + 'hard_limit_color_palettes' + DefaultDBExt;
     TableDefinitionsFileName := ProgramRootDir + 'MD_TABLE_DEF_v2' + DefaultDBExt;
     GazOptFName := ProgramRootDir + 'gaz_symbols_v3' + DefaultDBExt;
-    LandCoverFName := ProgramRootDir + 'land_cover_18' + DefaultDBExt;
+    LandCoverFName := ProgramRootDir + 'land_cover_19' + DefaultDBExt;
     RangeCircleSizesfName := ProgramRootDir + 'range_circles' + DefaultDBExt;
     WKT_GCS_Proj_fName := ProgramRootDir + 'wkt_proj\gcs_wgs84.prj';
     if PathIsValid(ProgramRootDir + 'esri_proj') then begin
@@ -4621,7 +4621,7 @@ begin
     {$IfDef ExOSM}
     {$Else}
        OSMRoadRules := ProgramRootDir + 'osm_road_rules_v3' + DefaultDBExt;
-       OSMGroupRules := ProgramRootDir + 'osm_map_rules' + DefaultDBExt;
+       OSMGroupRules := ProgramRootDir + 'osm_map_rules_v2' + DefaultDBExt;
     {$EndIf}
 
     {$IfDef ExWMS}

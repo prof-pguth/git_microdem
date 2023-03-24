@@ -3,8 +3,9 @@
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
 { Copyright (c) 2023 Peter L. Guth  }
-{ include file for demdatabase       }
-{____________________________________}
+{-----------------------------------}
+{ include file for demdatabase      }
+{___________________________________}
 
 
 
@@ -197,7 +198,7 @@ begin
    ShowStatus;
 end;
 
-procedure TGISdataBaseModule.AddNavFieldDefinitions;
+function TGISdataBaseModule.AddNavFieldDefinitions : boolean;
 var
    f1,f2,f3,f4,TStr,zfield : ShortString;
    dd : integer;
@@ -228,7 +229,8 @@ begin
           end
        end
        else begin
-          MessageToContinue('DEC_HOURS or DAYS or YEAR required to compute speed');
+          Result := not AnswerIsYes('DEC_HOURS or DAYS or YEAR required to compute speed; do you want to fix that first');
+          if not Result then exit;
           MDdef.AddSpeed := false;
        end;
        AddFieldToDataBase(ftFloat,f3,12,2);
@@ -243,6 +245,7 @@ begin
        AddFieldToDataBase(ftFloat,'GAIN_M',8,2);
        AddFieldToDataBase(ftFloat,'DROP_M',8,2);
     end;
+    Result := true;
     {$IfDef RecordNavigation} WriteLineToDebugFile('Fields added'); {$EndIf}
 end;
 
@@ -252,10 +255,10 @@ var
    xutm,yutm,xutm2,yutm2,z,LastZ,
    Last4Grad,This4Grad,Lat,Long,LastLat,LastLong,Az,Dist,FirstAz,CumDist,CumDist3d,Factor,h1,h2,tf,dz : float64;
    f1,f2,f3,f4,TStr,zfield : ShortString;
-   dd : integer;
+   dd,i,rc : integer;
 begin
     {$IfDef RecordNavigation} WriteLineToDebugFile('TGISdataBaseModule.AddNavFields in'); {$EndIf}
-    AddNavFieldDefinitions;
+    if not AddNavFieldDefinitions then exit;
     if MDDef.UseMeters then begin
        f1 := 'DISTANCE_M';
        f2 := 'CUM_M';
@@ -287,7 +290,7 @@ begin
           end
        end
        else begin
-          MessageToContinue('DEC_HOURS or DAYS or YEAR required to compute speed');
+          if AnswerIsYes('DEC_HOURS or DAYS or YEAR required to compute speed; do you want to fix that first') then exit;
           MDdef.AddSpeed := false;
        end;
     end;
@@ -309,8 +312,13 @@ begin
       zField := GetElevationField(false);
       LastZ := MyData.GetFieldByNameAsFloat(zField);
    end;
+   StartProgress('Add nav');
+   i := 0;
+   rc := ProgressIncrement(MyData.FiltRecsInDB);
    MyData.Next;
    while not MyData.eof do begin
+      if (i mod rc = 0) then UpdateProgressBar(i/MyData.FiltRecsInDB);
+      inc(i);
       if ValidLatLongFromTable(Lat,Long) then begin
          VincentyCalculateDistanceBearing(LastLat,LastLong,Lat,Long,Dist,Az);
          if MDdef.AddSpeed then h2 := MyData.GetFieldByNameAsFloat(f4);
@@ -339,8 +347,8 @@ begin
                CumDist3d := CumDist3d + Dist;
                MyData.SetFieldByNameAsFloat('CUM_3D_M',CumDist3D);
                MyData.SetFieldByNameAsFloat('DZ_M',dz);
-               if dz > 0.001 then MyData.SetFieldByNameAsFloat('GAIN_M',dz);
-               if dz < -0.001 then MyData.SetFieldByNameAsFloat('DROP_M',dz);
+               if (dz > 0.001) then MyData.SetFieldByNameAsFloat('GAIN_M',dz);
+               if (dz < -0.001) then MyData.SetFieldByNameAsFloat('DROP_M',dz);
             end;
          end
          else begin
@@ -714,7 +722,6 @@ begin
 end;
 
 
-
 procedure tGISdataBaseModule.AddConcatenatedField(NewField,WantedFieldName,SecondFieldName,ThirdFieldName,Preceder,Separator,SecondSeparator,Follower  : shortstring);
 var
    i : integer;
@@ -732,12 +739,9 @@ begin
      inc(i);
      {$IfDef VCL} if (i mod 1000 = 0) then UpdateProgressBar(i/MyData.RecordCount); {$EndIf}
      MyData.Edit;
-     if (SecondFieldName <> '') then TStr := MyData.GetFieldByNameAsString(SecondFieldName)
-     else TStr := '';
-     if (ThirdFieldName <> '') then TStr2 := MyData.GetFieldByNameAsString(ThirdFieldName)
-     else TStr2 := '';
-     MyData.SetFieldByNameAsString(NewField,Preceder + MyData.GetFieldByNameAsString(WantedFieldName) + Separator + TStr +
-         SecondSeparator + TStr2 +  Follower);
+     if (SecondFieldName <> '') then TStr := MyData.GetFieldByNameAsString(SecondFieldName) else TStr := '';
+     if (ThirdFieldName <> '') then TStr2 := MyData.GetFieldByNameAsString(ThirdFieldName)  else TStr2 := '';
+     MyData.SetFieldByNameAsString(NewField,Preceder + MyData.GetFieldByNameAsString(WantedFieldName) + Separator + TStr + SecondSeparator + TStr2 +  Follower);
      MyData.Next;
    end;
    {$IfDef VCL} EndProgress; {$EndIf}
