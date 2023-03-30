@@ -1,8 +1,8 @@
 object FeatureMigrationForm: TFeatureMigrationForm
   Left = 0
   Top = 0
-  ClientHeight = 332
-  ClientWidth = 637
+  ClientHeight = 344
+  ClientWidth = 633
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -79,10 +79,10 @@ object FeatureMigrationForm: TFeatureMigrationForm
     OnChange = Edit5Change
   end
   object Memo1: TMemo
-    Left = 402
+    Left = 398
     Top = 0
     Width = 235
-    Height = 332
+    Height = 344
     Align = alRight
     Lines.Strings = (
       'Memo1')

@@ -1,9 +1,12 @@
 unit hyp_display;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{_________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2023 Peter L. Guth  }
+{___________________________________}
+
 
 {$I nevadia_defines.inc}
 
@@ -120,8 +123,8 @@ type
     { Public declarations }
      HypersectralImage : tHypersectralImage;
      MultiGridUsed,ClassDEM,
-     RedBandNum,GreenBandNum,BlueBandNum, GrayBandNum,
-     RedBandDEM,GreenBandDEM,BlueBandDEM, GrayBandDEM,
+     RedBandNum,GreenBandNum,BlueBandNum,GrayBandNum,
+     RedBandDEM,GreenBandDEM,BlueBandDEM,GrayBandDEM,
      LastX,LastY : integer;
      ThreeColor,
      HyperionImage : boolean;
@@ -156,7 +159,7 @@ var
    i : integer;
    TStr : shortstring;
 begin
-   {$IfDef RecordColorImage} WriteLineToDebugFile('THyperspectralForm.SetForHyperion in'); {$EndIf}
+    {$IfDef RecordColorImage} WriteLineToDebugFile('THyperspectralForm.SetForHyperion in'); {$EndIf}
     Panel2.Visible := true;
     Panel2.Left := 0;
     PageControl1.Left := 0;
@@ -169,8 +172,7 @@ begin
     BlueBandNum := 18;
     GrayBandNum := RedBandNum;  //NIR
 
-    if true or (MultiGridArray[MultiGridUsed].SatImageIndex = 0) then begin
-
+    //if (MultiGridArray[MultiGridUsed].SatImageIndex = 0) then begin
        CreateDEMSelectionMap(MultiGridArray[MultiGridUsed].Grids[GrayBandNum],false,false,mtElevGray);
        BaseMap := DEMGlb[MultiGridArray[MultiGridUsed].Grids[GrayBandNum]].SelectionMap;
        BaseMap.MapDraw.MultiGridOnMap := MultiGridUsed;
@@ -208,15 +210,14 @@ begin
             ComboBox4.Text := SatImage[MultiGridArray[MultiGridUsed].SatImageIndex].BandLongName[GrayBandNum];
 *)
          end;
-
-    end
-    else begin
-       BaseMap := SatImage[MultiGridArray[MultiGridUsed].SatImageIndex].SelectionMap;
-    end;
+    //end
+    //else begin
+       //BaseMap := SatImage[MultiGridArray[MultiGridUsed].SatImageIndex].SelectionMap;
+    //end;
     BitBtn10Click(Nil);
     wmDEM.FormPlacementInCorner(self);
     Show;
-   {$IfDef RecordColorImage} WriteLineToDebugFile('THyperspectralForm.SetForHyperion out'); {$EndIf}
+    {$IfDef RecordColorImage} WriteLineToDebugFile('THyperspectralForm.SetForHyperion out'); {$EndIf}
 end;
 
 
@@ -231,7 +232,7 @@ begin
    StopSplashing;
    Filter := 1;
    if AutoOpen or Petmar.GetDOSPath('hyperspectral imagery',LastHypFile) then begin
-      if StrUtils.AnsiContainsText(LastHypFile,'EO1H') or  FileExtEquals(LastHypFile,'.TIF') then begin
+      if StrUtils.AnsiContainsText(LastHypFile,'EO1H') or FileExtEquals(LastHypFile,'.TIF') then begin
          if FindOpenMultigrid(ThisOne) then begin
             if StrUtils.AnsiContainsText(LastHypFile,'EO1H') then begin
                OpenHyperionMultigrid(ThisOne,LastHypFile);
@@ -278,7 +279,7 @@ end;
 
 procedure THyperspectralForm.BitBtn10Click(Sender: TObject);
 begin
-   if MultiGridArray[MultiGridUsed].SatImageIndex = 0  then begin
+   if (MultiGridArray[MultiGridUsed].SatImageIndex = 0) then begin
       RedBandNum := 48;
       GreenBandNum := 32;
       BlueBandNum := 18;
@@ -342,7 +343,7 @@ end;
 
 procedure THyperspectralForm.BitBtn1Click(Sender: TObject);
 begin
-    SpectralLibraryGraph('');
+   SpectralLibraryGraph('');
 end;
 
 procedure THyperspectralForm.BitBtn2Click(Sender: TObject);
@@ -356,27 +357,27 @@ end;
 
 procedure THyperspectralForm.MakeScatterPlotsWithClasses;
 
-   function MakeGraph(xaxis,yaxis,colors : integer) : TThisbasegraph;
-   var
-      x,y : integer;
-      zx,zy,zc : float32;
-      rfile : file;
-      v : array[1..3] of float32;
-   begin
-      Result := TThisbasegraph.Create(Application);
-      Result.OpenXYColorFile(rfile);
+         function MakeGraph(xaxis,yaxis,colors : integer) : TThisbasegraph;
+         var
+            x,y : integer;
+            zx,zy,zc : float32;
+            rfile : file;
+            v : array[1..3] of float32;
+         begin
+            Result := TThisbasegraph.Create(Application);
+            Result.OpenXYColorFile(rfile);
 
-      for x := 0 to pred(DEMGlb[xaxis].DEMheader.NumCol) do begin
-         for y := 0 to pred(DEMGlb[xaxis].DEMheader.NumRow) do begin
-            if DEMGlb[xaxis].GetElevMetersOnGrid(x,y,v[1]) and DEMGlb[yaxis].GetElevMetersOnGrid(x,y,v[2]) and DEMGlb[Colors].GetElevMetersOnGrid(x,y,zc) then begin
-               v[3] := WingraphColors[round(zc) mod 15];
-               BlockWrite(Rfile,v,1);
+            for x := 0 to pred(DEMGlb[xaxis].DEMheader.NumCol) do begin
+               for y := 0 to pred(DEMGlb[xaxis].DEMheader.NumRow) do begin
+                  if DEMGlb[xaxis].GetElevMetersOnGrid(x,y,v[1]) and DEMGlb[yaxis].GetElevMetersOnGrid(x,y,v[2]) and DEMGlb[Colors].GetElevMetersOnGrid(x,y,zc) then begin
+                     v[3] := WingraphColors[round(zc) mod 15];
+                     BlockWrite(Rfile,v,1);
+                  end;
+                end;
             end;
-          end;
-      end;
-      Result.ClosePointDataFile(rfile);
-      Result.AutoScaleAndRedrawDiagram(true,true,false,false);
-   end;
+            Result.ClosePointDataFile(rfile);
+            Result.AutoScaleAndRedrawDiagram(true,true,false,false);
+         end;
 
 begin
    MakeGraph(RedBandDEM,BlueBandDEM,ClassDEM);

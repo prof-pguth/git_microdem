@@ -4,7 +4,7 @@ unit multigrid;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
 
@@ -14,7 +14,7 @@ unit multigrid;
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
       //{$Define RecordMultiGrids}
-      //{$Define RecordHyperion}
+      {$Define RecordHyperion}
       //{$Define RecordSentinel1}
       //{$Define RecordMultiGridsDetailed}
       //{$Define RecordCloseMultiGrids}
@@ -173,9 +173,6 @@ const
    PrecipMG : integer = 0;
    SolarRad : integer = 0;
    ETOMG : integer = 0;
-   EGM96_grid : integer = 0;
-   EGM2008_grid : integer = 0;
-   EGMdiff_grid : integer = 0;
 
 var
    MultiGridArray : array[1..MaxMultiGrid] of tMultiGridArray;
@@ -999,7 +996,7 @@ begin
    {$IfDef RecordMultiGrids} WriteLineToDebugFile('OpenHyperionMultigrid mid'); {$EndIf}
 
    HyperspectralForm := THyperspectralForm.Create(Application);
-   HyperspectralForm.GrayBandNum := 53;
+   //HyperspectralForm.GrayBandNum := 53;
    HyperspectralForm.HyperionImage := true;
    HyperspectralForm.MultiGridUsed := ThisOne;
    HyperspectralForm.SetForHyperion;
@@ -1327,7 +1324,7 @@ var
    i,NumPts : integer;
    SceneBaseName : ANSIstring;
    TStr : shortstring;
-   fName,HyperionDir,mgName,MGPath : PathStr;
+   fName,HyperionDir,mgName{,MGPath} : PathStr;
    Table : tMyData;
 begin
    {$If Defined(RecordHyperion) or Defined(RecordMultiGrids)} WriteLineToDebugFile('tMultiGridArray.LoadHyperion in ' + BasePath); {$EndIf}
@@ -1336,16 +1333,15 @@ begin
    {$EndIf}
 
    HyperionDir := ExtractFilePath(BasePath);
-   MGPath := HyperionDir + 'multi_grids\';
-   SafeMakeDir(MGPath);
    Table := tMyData.Create(SatBandNames);
    FirstValidGrid := 8;
    Petmar.FindMatchingFiles(HyperionDir,'*.tif',TheFiles);
 
    StartProgress('Load Hyperion');
    for i := 1 to 242 do begin
-      if (i mod 10 = 1) then UpdateProgressBar(i/242);
+      if (i mod 5 = 0) then UpdateProgressBar(i/242);
       Grids[i] := 0;
+
       if i in [1..7,58..76,225..242] then begin
           UseBand[i] := false;
       end
@@ -1355,47 +1351,26 @@ begin
          BandWavelengths[i] := Table.GetFieldByNameAsFloat('WAVE_NM');
          inc(NumGrids);
          inc(PossGrids);
-         mgName := MGPath + Table.GetFieldByNameAsString('SHORT_NAME') + '.dem';
-         wmdem.SetPanelText(1,ExtractFileName(mgName));
-(*
-         //270.275 sec
-             fName := TheFiles.Strings[i];
-             if FileExists(fName) then begin
-                {$IfDef RecordMultiGridsDetailed} WriteLineToDebugFile('Load ' + fName); {$EndIf}
-                LoadNewDEM(Grids[i],fName,false);
-                DEMGlb[Grids[i]].DEMheader.ElevUnits := euImagery;
-                DEMGlb[Grids[i]].MarkInRangeMissing(0,0,NumPts);
-                DEMGlb[Grids[i]].CheckMaxMinElev;
-             end;
-*)
+                       //EO1H0150332016005110KW_B223_L1GST
+         fName := BasePath + LastSubDir(BasePath) + '_B' + IntegerToString(i,3) +  '_L1GST.tif';
+         ReplaceCharacter(fName,' ','0');
          ShowDEMReadingProgress := false;
-         if FileExists(mgName) then begin
-            NewArea(True,Grids[i],'',mgName);
-         end
-         else begin
-             fName := TheFiles.Strings[i];
-             if FileExists(fName) then begin
-                {$IfDef RecordMultiGridsDetailed} WriteLineToDebugFile('Load ' + fName); {$EndIf}
-                LoadNewDEM(Grids[i],fName,false);
-                DEMGlb[Grids[i]].DEMheader.ElevUnits := euImagery;
-                DEMGlb[Grids[i]].MarkInRangeMissing(0,0,NumPts);
-                DEMGlb[Grids[i]].CheckMaxMinElev;
-                {$IfDef RecordMultiGridsDetailed} WriteLineToDebugFile('Save ' + mgName); {$EndIf}
-                DEMGlb[Grids[i]].WriteNewFormatDEM(mgName);
-             end
-             else begin
-               {$IfDef RecordMultiGridsDetailed} WriteLineToDebugFile('Skip ' + fName); {$EndIf}
-             end;
-         end;
-
-         if ValidDEM(Grids[i]) then DEMGlb[Grids[i]].AreaName := ExtractFileNameNoExt(mgName) + '  ' + RealToString(BandWavelengths[i],-8,-2);
+          if FileExists(fName) then begin
+             LoadNewDEM(Grids[i],fName,false);
+             DEMGlb[Grids[i]].DEMheader.ElevUnits := euImagery;
+             DEMGlb[Grids[i]].MarkInRangeMissing(0,0,NumPts);
+             DEMGlb[Grids[i]].CheckMaxMinElev;
+             DEMGlb[Grids[i]].AreaName := 'Band_' + IntToStr(i) + '_' + RealToString(BandWavelengths[i],-8,-2) + '_nm';
+          end
+          else begin
+              {$If Defined(RecordHyperion)}  WriteLineToDebugFile('Missing ' + fName); {$EndIf}
+          end;
       end;
       {$IfDef RecordMultiGridsDetailed} WriteLineToDebugFile('band ' + IntToStr(i) + '  in grid ' + IntToStr(Grids[i]) + '  ' + fName); {$EndIf}
    end;
    EndProgress;
    Table.Destroy;
    TheFiles.Free;
-   wmdem.SetPanelText(1,'');
    {$IfDef RecordHyperion}
       Elapsed := Stopwatch.Elapsed;
       WriteLineToDebugFile('Load Hyerion: ' + RealToString(Elapsed.TotalSeconds,-12,-4) + ' sec');

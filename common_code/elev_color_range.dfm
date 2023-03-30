@@ -195,4 +195,13 @@ object ElevationRangeForm: TElevationRangeForm
     TabOrder = 10
     OnClick = RadioGroup2Click
   end
+  object BitBtn3: TBitBtn
+    Left = 200
+    Top = 197
+    Width = 94
+    Height = 25
+    Caption = 'Mask to Z range'
+    TabOrder = 11
+    OnClick = BitBtn3Click
+  end
 end

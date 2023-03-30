@@ -59,7 +59,7 @@ unit DEMCoord;
       //{$Define RecordVariogram}
       //{$Define RecordElevPercentiles}
       //{$Define ShowFullDEMSSOCalc}  //big slowdown
-      {$Define RecordVAT}
+      //{$Define RecordVAT}
       //{$Define RecordNLCD}
       //{$Define RecordMoments}
       //{$Define RecordSetup}
@@ -67,7 +67,7 @@ unit DEMCoord;
       //{$Define RecordMapDraw}
       //{$Define RecordProjectionParameters}
       //{$Define GeotiffSave}
-      {$Define TimeLoadDEM}
+      //{$Define TimeLoadDEM}
       //{$Define RecordDefineDatum}
       //{$Define RecordDEMEdits}
       //{$Define RecordGridIdentical}
@@ -619,9 +619,10 @@ type
          procedure SpecialInterpolateAcrossHoles;
          procedure FillHolesSelectedBoxFromReferenceDEM(GridLimits : tGridLimits; RefDEM : integer; HoleFill : tHoleFill);
 
-         procedure MissingDataToSeaLevel(SeaLevel : float64 = 0);
+         procedure MissingDataToConstantVelue(SeaLevel : float64 = 0);
          procedure MarkElevationRangeAsConstant(var NumPts : integer);
          procedure MarkInRangeMissing(LowVal,HighVal : float64; var NumPts : integer);
+         procedure MarkOutsideRangeMissing(LowVal,HighVal : float64; var NumPts : integer);
          procedure MarkAboveMissing(LowVal : float64; var NumPts : integer);
          procedure MarkBelowMissing(HighVal : float64; var NumPts : integer);
 
@@ -2571,17 +2572,19 @@ begin
             ThisDEMMissingValue := MaxSmallInt;
          end;
 
-         StartProgress('Allocate DEM memory');
-         rc := ProgressIncrement(DEMheader.NumCol);
+         if ShowDEMReadingProgress then begin
+            StartProgress('Allocate DEM memory');
+            rc := ProgressIncrement(DEMheader.NumCol);
+         end;
          for Col := 0 to pred(DEMheader.NumCol) do begin
-            if Col mod rc = 0 then UpdateProgressBar(Col/DEMheader.NumCol);
+            if ShowDEMReadingProgress and (Col mod rc = 0) then UpdateProgressBar(Col/DEMheader.NumCol);
             if (DEMheader.DEMPrecision = FloatingPointDEM) then GetMem(ShortFloatElevations^[Col],BytesPerColumn)
             else if (DEMheader.DEMPrecision = LongWordDEM) then GetMem(LongWordElevations^[Col],BytesPerColumn)
             else if (DEMheader.DEMPrecision = WordDEM) then GetMem(WordElevations^[Col],BytesPerColumn)
             else if (DEMheader.DEMPrecision = ByteDEM) then GetMem(ByteElevations^[Col],BytesPerColumn)
             else GetMem(SmallIntElevations^[Col],BytesPerColumn);
          end;
-         EndProgress;
+         if ShowDEMReadingProgress then EndProgress;
       end;
       {$IfDef RecordDEMMemoryAllocations} WriteLineToDebugFile('tDEMDataSet.AllocateDEMMemory, allocated'); {$EndIf}
       if (InitDEM = InitDEMmissing) then SetEntireGridMissing

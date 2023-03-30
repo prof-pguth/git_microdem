@@ -24,11 +24,11 @@ unit GeoTiff;
    {$Define RecordGeotiffFailures}
 
    {$IFDEF DEBUG}
-      {$Define RecordGeotiff}
+      //{$Define RecordGeotiff}
       //{$Define RecordGeotiffFailures}
-      {$Define RecordGeotiffProjection}
+      //{$Define RecordGeotiffProjection}
       //{$Define RecordDefineDatum}
-      {$Define TrackProjection}
+      //{$Define TrackProjection}
       //{$Define RecordDEMMapProjection}
       //{$Define ShowKeyDEM}
       //{$Define TrackZ}
@@ -1037,7 +1037,7 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
                   NLCDOptions;
                end;
 
-               {$IfDef RecordInitializeDEM} writeLineToDebugFile('Call define DEM variables ' + WantDEM.AreaName + '  ' + sfBoundBoxToString(WantDEM.DEMBoundBoxProjected,4)); {$EndIf}
+               {$IfDef RecordInitializeDEM} WriteLineToDebugFile('Call define DEM variables ' + WantDEM.AreaName + '  ' + sfBoundBoxToString(WantDEM.DEMBoundBoxProjected,4)); {$EndIf}
                WantDEM.DefineDEMvariables(true);
                {$IfDef RecordInitializeDEM} WriteLineToDebugFile('Back from define DEM variables '  + WantDEM.AreaName + '  ' + sfBoundBoxToString(WantDEM.DEMBoundBoxProjected,4)); {$EndIf}
 

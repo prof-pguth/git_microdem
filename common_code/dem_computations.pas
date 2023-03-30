@@ -4,12 +4,10 @@ unit dem_computations;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
-
-
-{$I nevadia_defines.inc}
+ {$I nevadia_defines.inc}
 
 
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
@@ -100,6 +98,7 @@ var
             dy := WGS84DatumConstants.a * (1 - WGS84DatumConstants.e2) * (PixSizeSeconds / 3600) / System.Math.Power((1 - (WGS84DatumConstants.e2 * sqr(sinDeg(Lat)))), 1.5) * DegToRad;
          end;
 
+
          function DoPixelSize(Secs : integer) : shortString;
          var
             d0,d1,d2,Bearing,Rect,dx,dy : float64;
@@ -149,7 +148,7 @@ var
             UTM.UTMtoLatLongDegree(xutm,yutm+30,Lat2,Long2);
             VincentyCalculateDistanceBearing(Lat1,Long1,Lat2,Long2,Dist,GridTrueAngle);
             aLine := aLine + ',' + RealToString(Dist/2,-12,-3) + ',' + RealToString(GridTrueAngle,-8,-2);
-   end;
+         end;
 
 begin
    Results := tStringList.Create;
@@ -167,9 +166,9 @@ begin
       DoMeridian(LongE);
       Results.Add(aline);
    end;
-    fName := Petmar.NextFileNumber(MDTempDir,'UTM_spacing_',DefaultDBExt);
-    {$IfDef RecordHistogram} WriteLineToDebugFile('Convert and load table');    {$EndIf}
-    StringList2CSVtoDB(Results,fName);
+   fName := Petmar.NextFileNumber(MDTempDir,'UTM_spacing_',DefaultDBExt);
+   {$IfDef RecordHistogram} WriteLineToDebugFile('Convert and load table');    {$EndIf}
+   StringList2CSVtoDB(Results,fName);
 end;
 
 
@@ -182,7 +181,6 @@ var
 begin
    Results := tStringList.Create;
    Results.Add('Latitude,M_DEG_Y,M_DEG_X,M_DEG_AVG,M_SEC_Y,M_SEC_X,M_SEC_AVG');
-  //Lat := 0;
    Long := -100;
    for Lat := 85 downto 0 do begin
       MetersPerDegree(Lat,Long,Distance1,Distance2,Distance3);

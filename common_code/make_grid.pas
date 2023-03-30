@@ -317,8 +317,8 @@ const
    HighTolerance = 10.51;
    MediumTolerance = 5.51;
    SimpleTolerance = 2.51;
-   ThreeCat = false;
-   FiveCat = true;
+   ThreeCat = true;
+   FiveCat = false;
 var
    i : integer;
    z1,z2,z3,What : float32;
@@ -339,13 +339,13 @@ begin
          for y := 0 to pred(DEMGlb[DEMonMap].DEMheader.NumRow) do begin
             if DEMGlb[DEMonMap].GetElevMetersOnGrid(x,y,z2) then begin
                if ThreeCat then begin
-                  if z2 > SimpleTolerance then What := 5
-                  else if z2 < -SimpleTolerance then What := 1
+                  if z2 > MDDef.TopCutLevel then What := 5
+                  else if z2 < MDDef.BottomCutLevel then What := 1
                   else What := 3;
                end
                else if FiveCat then begin
-                  if z2 > MediumTolerance then What := 1
-                  else if z2 > SimpleTolerance then What := 2
+                  if z2 > HighTolerance then What := 1
+                  else if z2 > MediumTolerance then What := 2
                   else if z2 > -SimpleTolerance then What := 3
                   else if z2 > -MediumTolerance then What := 4
                   else What := 5;
@@ -364,11 +364,11 @@ begin
          if (Hist[1] > 0) then Vat.add('1,Low,' + IntToStr(Hist[1]) + ',Y,' + IntToStr(clRed));
       end
       else if FiveCat then begin
-         if (Hist[1] > 0) then Vat.add('1,High,' + IntToStr(Hist[1]) + ',Y,' + IntToStr(clGreen));
+         if (Hist[1] > 0) then Vat.add('1,High > ' + RealToString(HighTolerance,-5,-1) + ',' + IntToStr(Hist[1]) + ',Y,' + IntToStr(clGreen));
          if (Hist[2] > 0) then Vat.add('2,Medium High,' + IntToStr(Hist[2]) + ',Y,' + IntToStr(clYellow));
          if (Hist[3] > 0) then Vat.add('3,± ' + RealToString(SimpleTolerance,-5,1)  + ',' + IntToStr(Hist[3]) + ',Y,' + IntToStr(clWhite));
          if (Hist[4] > 0) then Vat.add('4,Medium Low,' + IntToStr(Hist[4]) + ',Y,' + IntToStr(clMagenta));
-         if (Hist[5] > 0) then Vat.add('5,Low,' + IntToStr(Hist[5]) + ',Y,' + IntToStr(clRed));
+         if (Hist[5] > 0) then Vat.add('5,Low < ' + RealToString(-HighTolerance,-6,-1) + ',' + IntToStr(Hist[5]) + ',Y,' + IntToStr(clRed));
       end;
       fName := MDTempDir + fName + '.vat.dbf';
       StringList2CSVtoDB(vat,fName,true);
@@ -744,22 +744,22 @@ var
    GridLimits : tGridLimits;
    znw,zw,zsw,zn,z,zs,zne,ze,zse,z1,z11,z21,z3,z23,z5,z15,z25 : float32;
    sum,FactorEW,FactorDiag,FactorNS,DiagonalSpace : float64;
-   TStr : shortstring;
+   TStr,NormStr : shortstring;
 begin
     {$IfDef RecordTimeGridCreate} Stopwatch1 := TStopwatch.StartNew; {$EndIf}
-    if (Normalize = nmNorthSouth) then TStr := 'norm_NS'
-    else if (Normalize = nmEastWest) then TStr := 'norm_EW'
-    else if (Normalize = nmInterpolate) then TStr := 'norm_interpolate'
-    else if (Normalize = nm30m) then TStr := 'norm_30m'
-    else if (Normalize = nmTRIK) then TStr := 'K'
-    else if (Normalize = nmRRI) then TStr := '_RRI'
-    else TStr := '_no_norm';
+    if (Normalize = nmNorthSouth) then NormStr := '_norm_NS'
+    else if (Normalize = nmEastWest) then NormStr := '_norm_EW'
+    else if (Normalize = nmInterpolate) then NormStr := '_norm_interpolate'
+    else if (Normalize = nm30m) then NormStr := '_norm_30m'
+    else if (Normalize = nmTRIK) then NormStr := 'K'
+    else NormStr := '_no_norm';
+
     if (Normalize = nmRRI) then TStr := 'RRI'
-    else TStr := 'TRI_' + TStr;
+    else TStr := 'TRI_' + NormStr;
 
     Result := DEMGlb[CurDEM].CloneAndOpenGridSetMissing(FloatingPointDEM, 'MD_' + TStr + '_' + DEMGlb[CurDem].AreaName,euMeters);
 
-    if DoTPI then TPIgrid := DEMGlb[CurDEM].CloneAndOpenGridSetMissing(FloatingPointDEM,'MD_TPI' + TStr + '_' + DEMGlb[CurDem].AreaName,euMeters);
+    if DoTPI then TPIgrid := DEMGlb[CurDEM].CloneAndOpenGridSetMissing(FloatingPointDEM,'MD_TPI' + NormStr + '_' + DEMGlb[CurDem].AreaName,euMeters);
     GridLimits := TheDesiredLimits(CurDEM);
     FactorNS := 1;
     FactorEW := 1;

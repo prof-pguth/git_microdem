@@ -4,7 +4,7 @@ unit feature_migration;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
 {$I nevadia_defines.inc}
@@ -87,7 +87,7 @@ implementation
 
 
 uses
-   Petmar,PetMath, SystemCriticalU,
+   Petmar,PetMath, //SystemCriticalU,
    BaseGraf,Thread_timers,
    DEM_Manager,
    Nevadia_main,

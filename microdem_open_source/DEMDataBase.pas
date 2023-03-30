@@ -839,7 +839,7 @@ uses
    {$IfDef VCL}
       DEMdbFieldPicker,
       DEMDbDisplay,
-      Tiger_address,
+      //Tiger_address,
       db_display_options,
       Get_db_coloring,
       Petimage_form,

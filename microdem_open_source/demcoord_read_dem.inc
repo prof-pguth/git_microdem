@@ -969,7 +969,7 @@ begin
    Result := DEMGlb[ImportingDEM].ReadDEMNow(tFile,TransformToNewDatum);
    {$If Defined(RecordReadDEM) or Defined(TimeLoadDEM)} if (not Result) then WriteLineToDebugFile('ReadDEM failure'); {$EndIf}
 
-   if MDdef.MissingToSeaLevel and DEMGlb[ImportingDEM].ElevationDEM then DEMGlb[ImportingDEM].MissingDataToSeaLevel;
+   if MDdef.MissingToSeaLevel and DEMGlb[ImportingDEM].ElevationDEM then DEMGlb[ImportingDEM].MissingDataToConstantVelue;
    if MDdef.SeaLevelToMissing and DEMGlb[ImportingDEM].ElevationDEM then DEMGlb[ImportingDEM].MarkInRangeMissing(-0.01,0.01,NumPts);
 
    if (ImportingDEM <> 0) and FileExists(DEMGlb[ImportingDEM].MetadataFileName) then DEMGlb[ImportingDEM].DEMmetadata.LoadFromFile(DEMGlb[ImportingDEM].MetadataFileName);

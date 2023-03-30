@@ -692,19 +692,28 @@ begin
    end;
 end;
 
-procedure tDEMDataSet.MissingDataToSeaLevel(SeaLevel : float64 = 0);
+procedure tDEMDataSet.MissingDataToConstantVelue(SeaLevel : float64 = 0);
 var
-   PartLimits :  tGridLimitsArray;
+   //PartLimits :  tGridLimitsArray;
+   x,y : integer;
 begin
-   PartLimits := GetLimitsForParallelLoops(FullDEMGridLimits);
+   //PartLimits := GetLimitsForParallelLoops(FullDEMGridLimits);
    ShowHourGlassCursor;
+   for x := 0 to pred(DEMheader.NumCol) do begin
+      for y := 0 to pred(DEMheader.NumRow) do begin
+         if MissingDataInGrid(x,y) then SetGridElevation(x,y,SeaLevel);
+      end;
+   end;
+
+   (*
    TParallel.For(1,MaxThreadsAllowed,
         procedure (Value: Integer)
         begin
           MissingDataToSeaLevelStrip(SeaLevel,PartLimits[Value]);
         end);
-   ShowDefaultCursor;
    ThreadsWorking := false;
+   *)
+   ShowDefaultCursor;
 end;
 
 
@@ -728,9 +737,34 @@ begin
          end;
       end;
    end;
-   EndProgress;
+   if ShowSatProgress and (DEMheader.NumCol > 1500) then EndProgress;
    if (NumPts > 0) then CheckMaxMinElev;
 end;
+
+procedure tDEMDataSet.MarkOutsideRangeMissing(LowVal,HighVal : float64; var NumPts : integer);
+var
+   x, y : integer;
+   z : float32;
+begin
+   LowVal := LowVal - 0.0000001;
+   HighVal := HighVal + 0.000001;
+   NumPts := 0;
+   if ShowSatProgress and (DEMheader.NumCol > 1500) then StartProgress('Mark missing ' + AreaName);
+   for x := 0 to pred(DEMheader.NumCol) do begin
+      if ShowSatProgress and (DEMheader.NumCol > 1500) and (x mod 100 = 0) then UpdateProgressBar(x/DEMheader.NumCol);
+      for y := 0 to pred(DEMheader.NumRow) do begin
+         if GetElevMeters(x,y,z) then begin
+            if (z <= LowVal) or (z >= HighVal) then begin
+               SetGridMissing(x,y);
+               inc(NumPts);
+            end;
+         end;
+      end;
+   end;
+   if ShowSatProgress and (DEMheader.NumCol > 1500) then EndProgress;
+   if (NumPts > 0) then CheckMaxMinElev;
+end;
+
 
 procedure tDEMDataSet.MarkAboveMissing(LowVal : float64; var NumPts : integer);
 var
@@ -750,7 +784,7 @@ begin
          end;
       end;
    end;
-   EndProgress;
+   if ShowSatProgress and (DEMheader.NumCol > 1500) then EndProgress;
    if (NumPts > 0) then CheckMaxMinElev;
 end;
 
@@ -773,7 +807,7 @@ begin
          end;
       end;
    end;
-   EndProgress;
+   if ShowSatProgress and (DEMheader.NumCol > 1500) then EndProgress;
    if (NumPts > 0) then CheckMaxMinElev;
 end;
 

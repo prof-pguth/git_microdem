@@ -27,7 +27,7 @@
 
    {$IfDef Debug}
       //{$Define RecordFan}
-      //{$Define RecordVAT}
+      {$Define RecordVAT}
       //{$Define FanDrawProblems)
       //{$Define WorldFileOverlay}
       //{$Define RecordStretchBitmap}

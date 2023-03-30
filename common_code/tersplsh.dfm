@@ -29,7 +29,6 @@ object TerBaseSplashForm: TTerBaseSplashForm
     Color = clMoneyGreen
     ParentBackground = False
     TabOrder = 0
-    ExplicitHeight = 225
     object Label1: TLabel
       Left = 76
       Top = 11

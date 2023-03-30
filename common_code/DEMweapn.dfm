@@ -3,8 +3,8 @@ object PickWeapon: TPickWeapon
   Top = 256
   BorderStyle = bsDialog
   Caption = 'Viewshed parameters'
-  ClientHeight = 465
-  ClientWidth = 394
+  ClientHeight = 464
+  ClientWidth = 390
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
@@ -16,8 +16,8 @@ object PickWeapon: TPickWeapon
   TextHeight = 13
   object Panel1: TPanel
     Left = 0
-    Top = 350
-    Width = 394
+    Top = 349
+    Width = 390
     Height = 74
     Align = alBottom
     TabOrder = 0
@@ -56,8 +56,8 @@ object PickWeapon: TPickWeapon
   end
   object Panel2: TPanel
     Left = 0
-    Top = 424
-    Width = 394
+    Top = 423
+    Width = 390
     Height = 41
     Align = alBottom
     TabOrder = 1

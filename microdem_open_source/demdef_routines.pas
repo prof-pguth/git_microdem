@@ -321,6 +321,7 @@ function RecycleCompressFile : boolean;
 function AspectDir8FromAspect(AspectDir : float32) : tCompassDirection;  inline;
 function ElevUnitsAre(Code : byte) : shortstring;
 
+procedure VerticalDatumShift(DEM : integer; vdShift : tvdShift);
 
 var
    VegDenstColors : array[0..255] of tPlatformColor;
@@ -375,7 +376,35 @@ uses
    PetDBUtils,
    Make_Tables,
    DEM_indexes,
+   DEMStat,
    DataBaseCreate;
+
+
+procedure VerticalDatumShift(DEM : integer; vdShift : tvdShift);
+var
+   i,geoidGrid : Integer;
+   Merge : tDEMbooleans;
+   fName : PathStr;
+   TheShift : shortString;
+begin
+   GetGeoid;
+   if (vdShift = vdEGM96toEGM2008) then fName := GeoidDiffFName
+   else fName := Geoid2008FName;
+   GeoidGrid := OpenNewDEM(fName,false);
+
+   case vdShift of
+      vdWGS84toEGM2008 : TheShift := 'gs84_to_egm2008';
+      vdEGM2008toWGS84 : TheShift := 'egm2008_to_wgs84';
+      vdEGM96toEGM2008 : TheShift := 'egm96_to_egm2008';
+   end;
+
+   if (vdShift = vdEGM2008toWGS84) then DEMGlb[GeoidGrid].MultiplyGridByConstant(-1);
+   for i := 1 to MaxDEMDataSets do Merge[i] := false;
+   Merge[DEM] := true;
+   Merge[GeoidGrid] := true;
+   SumDEMs(DEM, Merge,DEMGlb[DEM].AreaName + '_vdatum_shift_' + TheShift);
+   CloseSingleDEM(GeoidGrid);
+end;
 
 
 

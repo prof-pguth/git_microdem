@@ -294,7 +294,6 @@ type
     Edit35: TEdit;
     CheckBox23: TCheckBox;
     RadioGroup33: TRadioGroup;
-    CheckBox89: TCheckBox;
     Label48: TLabel;
     Edit37: TEdit;
     CheckBox156: TCheckBox;
@@ -476,6 +475,7 @@ type
     procedure BitBtn40Click(Sender: TObject);
     procedure BitBtn41Click(Sender: TObject);
     procedure BitBtn42Click(Sender: TObject);
+    //procedure CheckBox106Click(Sender: TObject);
   private
     { Private declarations }
       procedure labelDirectories;
@@ -1109,7 +1109,7 @@ begin
 
    CheckBox88.Checked := MDDef.EnableGridNetworkComputing;
 
-   CheckBox89.Checked := MDDef.DeleteTarGZ;
+   //CheckBox89.Checked := MDDef.DeleteTarGZ;
 
    CheckBox90.Checked := MDDef.VegDensityGroundPoints;
 
@@ -1520,7 +1520,7 @@ begin
 
    MDDef.EnableGridNetworkComputing := CheckBox88.Checked;
 
-   MDDef.DeleteTarGZ := CheckBox89.Checked;
+   //MDDef.DeleteTarGZ := CheckBox89.Checked;
 
    MDDef.VegDensityGroundPoints := CheckBox90.Checked;
    MDDef.AssumeNegativeValuesMissing := CheckBox91.Checked;
@@ -1985,6 +1985,13 @@ begin
    GetBlueMarble(true);
 end;
 
+(*
+procedure TOptionsForm.CheckBox106Click(Sender: TObject);
+begin
+  inherited;
+
+end;
+*)
 procedure TOptionsForm.CheckBox88Click(Sender: TObject);
 begin
    LabelDirectories;
@@ -2112,7 +2119,7 @@ begin
    {$IfDef OptionsProblems} WriteLineToDebugFile('TOptionsForm.BitBtn4Click in'); {$EndIf}
    fName := ProgramRootDir;
    if Petmar.GetFileFromDirectory('INI file','*.ini',fName) then begin
-      {$IfDef OptionsProblems} WriteLineToDebugFile('Picked ini=' + fName); {$EndIf}
+      {$If Defined(OptionsProblems) or Defined(RecordProblems)} WriteLineToDebugFile('Restore ini file, Picked=' + fName); {$EndIf}
       ProcessIniFile(iniRead,'',fName);
       FormCreate(nil);    //to renter all the restored settings from the INI file on this form
    end;
@@ -2127,17 +2134,15 @@ end;
 
 procedure TOptionsForm.BitBtn11Click(Sender: TObject);
 begin
+  {$If Defined(OptionsProblems) or Defined(RecordProblems)} WriteLineToDebugFile('Restore defaults to ini file'); {$EndIf}
   ProcessIniFile(iniInit);
 end;
 
 procedure TOptionsForm.BitBtn12Click(Sender: TObject);
 begin
-  {$IFDef ExPointCloud}
-  {$Else}
   inherited;
    OpenDBForModalEdit(LasRulesName);
    LAS_Lidar.InitializeLASColors;
-   {$EndIf}
 end;
 
 
@@ -2150,14 +2155,13 @@ end;
 
 
 initialization
-   {$IfDef MessageStartUpUnitProblems}   MessageToContinue('Startup demoptions'); {$EndIf}
+   {$IfDef MessageStartUpUnitProblems} MessageToContinue('Startup demoptions'); {$EndIf}
 finalization
-   {$IfDef RecordClosingProblems} WriteLineToDebugFile('Closing demoptions in');   {$EndIf}
-   {$IfDef ShowDirectories} WriteLineToDebugFile('ShowDirectories active in demoptions');   {$EndIf}
-   {$IfDef OptionsProblems} WriteLineToDebugFile('OptionsProblems active in DEMOptions');   {$EndIf}
-   {$IfDef ShowLocalOptima} WriteLineToDebugFile('ShowLocalOptima active in DEMOptions');   {$EndIf}
-   {$IfDef ShowDatumOptions} WriteLineToDebugFile('ShowDatumOptions active in DEMOptions');   {$EndIf}
-   {$IfDef RecordClosingProblems} WriteLineToDebugFile('Closing demoptions out');   {$EndIf}
+   {$IfDef RecordClosingProblems} WriteLineToDebugFile('Closing demoptions in'); {$EndIf}
+   {$IfDef ShowDirectories} WriteLineToDebugFile('ShowDirectories active in demoptions'); {$EndIf}
+   {$IfDef OptionsProblems} WriteLineToDebugFile('OptionsProblems active in DEMOptions'); {$EndIf}
+   {$IfDef ShowLocalOptima} WriteLineToDebugFile('ShowLocalOptima active in DEMOptions'); {$EndIf}
+   {$IfDef ShowDatumOptions} WriteLineToDebugFile('ShowDatumOptions active in DEMOptions'); {$EndIf}
 end.
 
 

@@ -2,8 +2,8 @@ object ParamGraphForm: TParamGraphForm
   Left = 0
   Top = 0
   Caption = 'ParamGraphForm'
-  ClientHeight = 148
-  ClientWidth = 467
+  ClientHeight = 147
+  ClientWidth = 463
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

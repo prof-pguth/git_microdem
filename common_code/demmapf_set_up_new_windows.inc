@@ -274,6 +274,8 @@ begin
    {$IfDef NoMapOptions}
    {$Else}
       {$If Defined(RecordOpenMap) or Defined(RecordCreateSelectionMap)} writeLineToDebugFile('CreateDEMSelectionMap in, DEM=' + IntToStr(DEM)); {$EndIf}
+      if not ValidDEM(DEM) then exit;
+
       DEMGlb[DEM].SelectionMap := TMapForm.Create(Application);
       DEMGlb[DEM].SelectionMap.MapDraw.PrimMapProj := DEMGlb[DEM].DEMMapProjection;
       {$If Defined(track_f)} DEMGlb[DEM].DEMMapProjection.ShortProjInfo('CreateDEMSelectionMap, DEM'); {$EndIf}

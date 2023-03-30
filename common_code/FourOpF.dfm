@@ -2,11 +2,11 @@ inherited FourierOptionsForm: TFourierOptionsForm
   Left = 519
   Top = 324
   Caption = 'Fourier Transform Options'
-  ClientHeight = 284
-  ClientWidth = 415
-  ExplicitWidth = 433
-  ExplicitHeight = 331
-  TextHeight = 20
+  ClientHeight = 283
+  ClientWidth = 411
+  ExplicitWidth = 427
+  ExplicitHeight = 322
+  TextHeight = 15
   inherited Bevel1: TBevel
     Left = 16
     Top = 16
@@ -20,15 +20,15 @@ inherited FourierOptionsForm: TFourierOptionsForm
   object Label1: TLabel [1]
     Left = 34
     Top = 216
-    Width = 27
-    Height = 20
+    Width = 22
+    Height = 15
     Caption = 'Bins'
   end
   object Label2: TLabel [2]
     Left = 162
     Top = 216
-    Width = 33
-    Height = 20
+    Width = 27
+    Height = 15
     Caption = 'Units'
   end
   inherited OKBtn: TButton

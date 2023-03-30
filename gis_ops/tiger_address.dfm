@@ -3,8 +3,8 @@ object TigerAddressForm: TTigerAddressForm
   Top = 0
   BorderStyle = bsToolWindow
   Caption = 'TIGER address'
-  ClientHeight = 80
-  ClientWidth = 505
+  ClientHeight = 68
+  ClientWidth = 497
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -16,11 +16,10 @@ object TigerAddressForm: TTigerAddressForm
   object Panel4: TPanel
     Left = 0
     Top = 0
-    Width = 505
+    Width = 497
     Height = 36
     Align = alTop
     TabOrder = 0
-    ExplicitWidth = 515
     object Label3: TLabel
       Left = 5
       Top = 5
@@ -132,8 +131,8 @@ object TigerAddressForm: TTigerAddressForm
   object Memo1: TMemo
     Left = 0
     Top = 36
-    Width = 505
-    Height = 44
+    Width = 497
+    Height = 32
     Align = alClient
     Lines.Strings = (
       '')

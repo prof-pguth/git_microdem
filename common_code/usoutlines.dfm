@@ -4,8 +4,8 @@ object USOutlineForm: TUSOutlineForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Smart US Outlines'
-  ClientHeight = 213
-  ClientWidth = 637
+  ClientHeight = 212
+  ClientWidth = 633
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

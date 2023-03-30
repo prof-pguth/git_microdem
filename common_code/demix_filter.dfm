@@ -2,8 +2,8 @@ object DemixFilterForm: TDemixFilterForm
   Left = 0
   Top = 0
   Caption = 'Demix Filter Pick Graphs'
-  ClientHeight = 385
-  ClientWidth = 529
+  ClientHeight = 384
+  ClientWidth = 525
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -30,7 +30,7 @@ object DemixFilterForm: TDemixFilterForm
   object Label3: TLabel
     Left = 368
     Top = 48
-    Width = 149
+    Width = 139
     Height = 15
     Caption = 'DEM type, Tiles, Land Type'
   end

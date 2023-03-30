@@ -21,7 +21,7 @@ unit dem_manager;
       //{$Define RecordGet2DEMs}
       //{$Define RecordWhatsOpen}
       //{$Define RecordStartup}
-      {$Define TimeLoadDEM}
+      //{$Define TimeLoadDEM}
       //{$Define RecordEdit}
       //{$Define TimeSatLoad}
       //{$Define RecordMenu}
@@ -179,11 +179,14 @@ function GeotiffBBox(fName : PathStr) : sfBoundBox;
    {$EndIf}
 {$EndIf}
 
-//procedure AddOpenDEMsToDebugLog(what : shortstring);
-
 
 function ValidDEMExt(ext : extstr) : boolean;
 function ValidImageryExt(ext : extstr) : boolean;
+
+const
+   EGM96_grid : integer = 0;
+   EGM2008_grid : integer = 0;
+   EGMdiff_grid : integer = 0;
 
 
 implementation
@@ -268,6 +271,7 @@ uses
 
    Make_Tables,
    Map_overlays,
+   DEM_NLCD,
    DEMdbTable,
    DEMCoord,
    Compress_form,
@@ -419,7 +423,7 @@ begin
       end;
    end
    else begin
-      if ReportErrors then MessageToContinue(SatImage[Result].LoadErrorMessage);   //IndexFileName + MessLineBreak + 'Unacceptable Image');
+      if ReportErrors then MessageToContinue(SatImage[Result].LoadErrorMessage);
       SatImage[Result].Destroy;
       SatImage[Result] := Nil;
       Result := 0;
@@ -1035,6 +1039,7 @@ end;
       TheFiles : tStringList;
       Prompt,Masks : ANSIString;
       Filter : byte;
+      LandCover : shortstring;
       fName : PathStr;
       i,NewSatImage : integer;
    begin
@@ -1058,14 +1063,19 @@ end;
       if GetMultipleFiles(Prompt,Masks,TheFiles,Filter) then begin
          for I := 0 to pred(TheFiles.Count) do begin
             fName := TheFiles.Strings[i];
-            if StrUtils.AnsiContainsText(Uppercase(fname),'DRG') then begin
-               GlobalDRGMap := true;
-               ImageType := itDRG;
+            if IsThisLandCover(fName,LandCover) and AnswerIsYes('This appears to be landcover (' + Landcover + '); do you want to open as grid') then begin
+                OpenNewDEM(fName);
+            end
+            else begin
+               if StrUtils.AnsiContainsText(Uppercase(fname),'DRG') then begin
+                  GlobalDRGMap := true;
+                  ImageType := itDRG;
+               end;
+               ShowHourglassCursor;
+               ShlObj.SHAddToRecentDocs(SHARD_PATH, PChar(TheFiles.Strings[i]));
+               {$If Defined(RecordSatLoad) or Defined(RecordMenu) or Defined(TimeSatLoad)} WriteLineToDebugFile('call OpenAndDisplay ' + fName); {$EndIf}
+               if not CheckFileNameForSpaces(fName) then NewSatImage := OpenAndDisplayNewScene(Nil,fName,true,(ImageType <> itDRG),(not GlobalDRGMap));
             end;
-            ShowHourglassCursor;
-            ShlObj.SHAddToRecentDocs(SHARD_PATH, PChar(TheFiles.Strings[i]));
-            {$If Defined(RecordSatLoad) or Defined(RecordMenu) or Defined(TimeSatLoad)} WriteLineToDebugFile('call OpenAndDisplay ' + fName); {$EndIf}
-            if not CheckFileNameForSpaces(fName) then NewSatImage := OpenAndDisplayNewScene(Nil,fName,true,(ImageType <> itDRG),(not GlobalDRGMap));
          end;
          if (ImageType = itDRG) then begin
             LastScanMapName := TheFiles.Strings[0];
@@ -1120,14 +1130,13 @@ end;
          var
             TheList : tStringList;
             i,Wanted,err  : integer;
-            TStr{,TStr2} : ShortString;
+            TStr : ShortString;
          begin
             if (not CanCancel) and (NumSatImageOpen = 1) then ImageWanted := 1
             else begin
                ImageWanted := 0;
                Wanted := 0;
                TheList := TStringList.Create;
-               //TStr2 := 'Image';
                for i := 1 to MaxSatAllowed do begin
                   if (SatImage[i] <> Nil) then
                     TheList.Add('Image ' + IntToStr(i) +': ' + SatImage[i].SceneTitle + ' (' + SatImage[i].SceneBaseName + ')');

@@ -1067,7 +1067,7 @@ begin
             {$If Defined(RecordMerge) or Defined(RecordTimeMerge)} WriteLineToDebugFile('Holes done'); {$EndIf}
          end;
          if MDdef.MissingToSeaLevel then begin
-            DEMGlb[WantedDEM].MissingDataToSeaLevel;
+            DEMGlb[WantedDEM].MissingDataToConstantVelue;
             {$If Defined(RecordMerge) or Defined(RecordTimeMerge) } WriteLineToDebugFile('Sea level done'); {$EndIf}
          end;
          SkipMenuUpdating := false;

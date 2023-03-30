@@ -2,8 +2,8 @@ object dbtablef: Tdbtablef
   Left = 62
   Top = 306
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1017
-  ClientWidth = 1282
+  ClientHeight = 1016
+  ClientWidth = 1320
   Color = clBtnFace
   ParentFont = True
   FormStyle = fsMDIChild
@@ -17,24 +17,24 @@ object dbtablef: Tdbtablef
   TextHeight = 15
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 998
-    Width = 1282
+    Top = 997
+    Width = 1320
     Height = 19
     Panels = <
       item
         Width = 250
       end>
-    ExplicitTop = 999
-    ExplicitWidth = 1286
+    ExplicitTop = 996
+    ExplicitWidth = 1274
   end
   object Panel2: TPanel
     Left = 0
     Top = 41
-    Width = 1282
+    Width = 1320
     Height = 32
     Align = alTop
     TabOrder = 1
-    ExplicitWidth = 1286
+    ExplicitWidth = 1274
     object BitBtn1: TBitBtn
       Left = 34
       Top = 1
@@ -215,11 +215,11 @@ object dbtablef: Tdbtablef
   object Panel3: TPanel
     Left = 0
     Top = 73
-    Width = 1282
+    Width = 1320
     Height = 41
     Align = alTop
     TabOrder = 2
-    ExplicitWidth = 1286
+    ExplicitWidth = 1274
     object Label2: TLabel
       Left = 12
       Top = 12
@@ -266,11 +266,11 @@ object dbtablef: Tdbtablef
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1282
+    Width = 1320
     Height = 41
     Align = alTop
     TabOrder = 4
-    ExplicitWidth = 1286
+    ExplicitWidth = 1274
     object LOSButton: TSpeedButton
       Left = 40
       Top = 6
@@ -529,11 +529,11 @@ object dbtablef: Tdbtablef
   object Panel7: TPanel
     Left = 0
     Top = 114
-    Width = 1282
+    Width = 1320
     Height = 41
     Align = alTop
     TabOrder = 3
-    ExplicitWidth = 1286
+    ExplicitWidth = 1274
     object RadioGroup2: TRadioGroup
       Left = 20
       Top = 0
@@ -554,8 +554,8 @@ object dbtablef: Tdbtablef
   object DBGrid1: TDBGrid
     Left = 0
     Top = 155
-    Width = 1282
-    Height = 843
+    Width = 1320
+    Height = 842
     Align = alClient
     TabOrder = 5
     TitleFont.Charset = DEFAULT_CHARSET
@@ -569,7 +569,7 @@ object dbtablef: Tdbtablef
     OnTitleClick = DBGrid1TitleClick
   end
   object StatsPopupMenu1: TPopupMenu
-    Left = 160
+    Left = 208
     Top = 168
     object Countuniquevalues1: TMenuItem
       Caption = 'Count unique values'
@@ -1423,11 +1423,11 @@ object dbtablef: Tdbtablef
     end
   end
   object ColorDialog1: TColorDialog
-    Left = 16
+    Left = 64
     Top = 288
   end
   object PlotPopupMenu2: TPopupMenu
-    Left = 352
+    Left = 400
     Top = 400
     object Colorcodebynumericfield1: TMenuItem
       Caption = 'Color code by DB numeric field'
@@ -1657,7 +1657,7 @@ object dbtablef: Tdbtablef
     end
   end
   object ReportPopupMenu4: TPopupMenu
-    Left = 160
+    Left = 208
     Top = 288
     object Text1: TMenuItem
       Caption = 'Export text (CSV)'
@@ -1946,7 +1946,7 @@ object dbtablef: Tdbtablef
     end
   end
   object QueryPopupMenu5: TPopupMenu
-    Left = 160
+    Left = 208
     Top = 232
     object Selectionregion1: TMenuItem
       Bitmap.Data = {
@@ -1995,7 +1995,7 @@ object dbtablef: Tdbtablef
     end
   end
   object GridCellPopupMenu6: TPopupMenu
-    Left = 160
+    Left = 208
     Top = 344
     object Columnoperations1: TMenuItem
       Caption = 'Column operations'
@@ -2347,7 +2347,7 @@ object dbtablef: Tdbtablef
     end
   end
   object EditPopupMenu8: TPopupMenu
-    Left = 160
+    Left = 208
     Top = 400
     object Color1: TMenuItem
       Caption = 'Color'
@@ -3421,11 +3421,11 @@ object dbtablef: Tdbtablef
     Enabled = False
     Interval = 500
     OnTimer = Timer1Timer
-    Left = 16
+    Left = 64
     Top = 232
   end
   object PopupMenu9: TPopupMenu
-    Left = 352
+    Left = 400
     Top = 288
     object Plotfanlocations1: TMenuItem
       Caption = 'Plot fan locations'
@@ -3445,7 +3445,7 @@ object dbtablef: Tdbtablef
     end
   end
   object FieldTitlePopupMenu7: TPopupMenu
-    Left = 160
+    Left = 208
     Top = 464
     object Plotwithcolorsfromthisfield1: TMenuItem
       Caption = 'Plot with colors from this field'
@@ -3653,7 +3653,7 @@ object dbtablef: Tdbtablef
     end
   end
   object PopupMenu10: TPopupMenu
-    Left = 352
+    Left = 400
     Top = 344
     object Picklineonmap1: TMenuItem
       Caption = 'Pick line on map'
@@ -3679,16 +3679,16 @@ object dbtablef: Tdbtablef
     Options = [frDown, frHideMatchCase, frHideWholeWord, frHideUpDown, frDisableUpDown, frDisableWholeWord]
     OnFind = ReplaceDialog1Find
     OnReplace = ReplaceDialog1Replace
-    Left = 16
+    Left = 64
     Top = 400
   end
   object FindDialog1: TFindDialog
     OnFind = FindDialog1Find
-    Left = 16
+    Left = 64
     Top = 344
   end
   object PopupMenu3: TPopupMenu
-    Left = 352
+    Left = 400
     Top = 232
     object ValuesfromDB1: TMenuItem
       Caption = 'Values from DB'

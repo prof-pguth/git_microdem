@@ -165,11 +165,11 @@
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_MinorVer>3</VerInfo_MinorVer>
         <VerInfo_MajorVer>2023</VerInfo_MajorVer>
-        <VerInfo_Release>24</VerInfo_Release>
+        <VerInfo_Release>30</VerInfo_Release>
         <DCC_DcuOutput>C:\turbo\obj_files_64\</DCC_DcuOutput>
-        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2023.3.24.2;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2023.3.30.1;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
-        <VerInfo_Build>2</VerInfo_Build>
+        <VerInfo_Build>1</VerInfo_Build>
         <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
         <DCC_OutputDRCFile>false</DCC_OutputDRCFile>
         <DCC_RangeChecking>true</DCC_RangeChecking>
@@ -654,9 +654,6 @@
         <DCCReference Include="..\common_code\grid_postings_form.pas">
             <Form>grid_posting_options</Form>
         </DCCReference>
-        <DCCReference Include="..\common_code\getgridunits.pas">
-            <Form>GetGridForm</Form>
-        </DCCReference>
         <DCCReference Include="..\common_code\dem_save_dted.pas">
             <Form>Dted_save_form</Form>
         </DCCReference>
@@ -766,7 +763,6 @@
         <DCCReference Include="..\common_code\feature_migration.pas">
             <Form>FeatureMigrationForm</Form>
         </DCCReference>
-        <DCCReference Include="..\common_code\SystemCriticalU.pas"/>
         <DCCReference Include="..\gis_db\param_graphs.pas">
             <Form>ParamGraphForm</Form>
         </DCCReference>
@@ -775,9 +771,6 @@
         </DCCReference>
         <DCCReference Include="..\common_code\demhandw.pas">
             <Form>DemHandForm</Form>
-        </DCCReference>
-        <DCCReference Include="..\gis_ops\tiger_address.pas">
-            <Form>TigerAddressForm</Form>
         </DCCReference>
         <DCCReference Include="..\common_code\usoutlines.pas">
             <Form>USOutlineForm</Form>
@@ -954,6 +947,10 @@
         </DCCReference>
         <DCCReference Include="..\common_code\pick_several_dems.pas">
             <Form>tPickGridsForm</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\gis_ops\tiger_address.pas">
+            <Form>TigerAddressForm</Form>
             <FormType>dfm</FormType>
         </DCCReference>
         <None Include="nevadia_defines.inc"/>

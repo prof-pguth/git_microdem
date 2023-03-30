@@ -302,6 +302,7 @@ function IsLandsat(fName : PathStr; var MPath : PathStr) : boolean;
    function SpectralLibraryGraph(fName : PathStr = ''; MaxVert : float64 = 100) : TThisBaseGraph;
 {$EndIf}
 
+
 implementation
 
 Uses
@@ -915,6 +916,10 @@ begin
       else if (LandsatNumber in [8]) then begin
          Band1 := 3;
          Band2 := 6;
+      end
+      else if SatelliteName = 'Sentinel-2' then begin
+         Band1 := 3;
+         Band2 := 12;
       end
       else PickBands;
       NewBandTitle := 'NDSI (snow)' + RatName;

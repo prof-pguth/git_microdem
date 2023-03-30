@@ -2,8 +2,8 @@ object regionsizeform: Tregionsizeform
   Left = 0
   Top = 0
   Caption = 'Region size graphs'
-  ClientHeight = 203
-  ClientWidth = 422
+  ClientHeight = 201
+  ClientWidth = 414
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

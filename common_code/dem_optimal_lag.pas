@@ -78,7 +78,7 @@ implementation
 {$R *.dfm}
 
 uses
-   Petmar,PetMath,SystemCriticalU,
+   Petmar,PetMath,// SystemCriticalU,
    BaseGraf,Thread_timers,
    Petmar_db,
    DEM_Manager,

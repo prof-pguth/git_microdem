@@ -176,10 +176,12 @@ var
    {$EndIf}
 begin
    {$If Defined(RecordElevationScaling)} WriteLineToDebugFile('TMapDraw.SetFullMapCoverage ' + MapZRangeString); {$EndIf}
+   (*
    if (MapZRange = 0) then begin
       {$If Defined(RecordTiming) or Defined(RecordKeyMap)} WriteLineToDebugFile('TMapDraw.ColorTintedElevationMap out for pancake grid'); {$EndIf}
       exit;
    end;
+   *)
    {$If Defined(RecordFullMapDraw) or Defined(RecordMapDraw) or Defined(RecordTiming) or Defined(RecordElevationScaling) or Defined(RecordMapLayers)}
       WriteLineToDebugFile('TMapDraw.ColorTintedElevationMap in, maptype=' + IntToStr(Ord(MapType)) + MapZRangeString + '  ' +  MapSizeString);
    {$EndIf}

@@ -163,17 +163,20 @@ var
    DEM  : integer;
    Findings : tStringList;
    fName : PathStr;
+   Sum,Average : float64;
 begin
     {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXScoreDEMs in, ' + GISdb[DBonTable].dbName); {$EndIf}
     StopSplashing;
     DEMs := tStringList.Create;
     DEMs.LoadFromFile(DEMIXSettingsDir + 'demix_dems.txt');
     Findings := tStringList.Create;
-    Findings.Add('DEM,SCORE_SUM');
+    Findings.Add('DEM,SCORE_SUM,SCORE_AVG');
     for DEM := 0 to pred(DEMs.Count) do begin
        GISdb[DBonTable].EmpSource.Enabled := false;
        GISdb[DBonTable].MyData.FieldSum(DEMs.Strings[DEM] + '_SCR');
-       Findings.Add(DEMs.Strings[DEM] + ',' + RealToString(GISdb[DBonTable].MyData.FieldSum(DEMs.Strings[DEM] + '_SCR'),12,-2));
+       Sum := GISdb[DBonTable].MyData.FieldSum(DEMs.Strings[DEM] + '_SCR');
+       Average := Sum / GISdb[DBonTable].MyData.FiltRecsInDB;
+       Findings.Add(DEMs.Strings[DEM] + ',' + RealToString(Sum,12,-2) + ',' + RealToString(Average,12,-2));
     end;
     DEMs.Destroy;
     GISdb[DBonTable].ShowStatus;

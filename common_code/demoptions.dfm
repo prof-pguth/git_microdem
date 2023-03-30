@@ -3,20 +3,20 @@ inherited OptionsForm: TOptionsForm
   Top = 230
   BorderStyle = bsSizeable
   Caption = ''
-  ClientHeight = 561
-  ClientWidth = 817
+  ClientHeight = 560
+  ClientWidth = 813
   Position = poDefaultPosOnly
   OnClose = FormClose
   OnCreate = FormCreate
   OnResize = FormResize
-  ExplicitWidth = 829
-  ExplicitHeight = 599
-  TextHeight = 20
+  ExplicitWidth = 825
+  ExplicitHeight = 598
+  TextHeight = 15
   inherited Bevel1: TBevel
     Left = 0
     Top = 0
-    Width = 817
-    Height = 503
+    Width = 813
+    Height = 502
     Align = alClient
     ExplicitLeft = 0
     ExplicitTop = 1
@@ -45,14 +45,14 @@ inherited OptionsForm: TOptionsForm
   object PageControl1: TPageControl
     Left = 0
     Top = 0
-    Width = 817
-    Height = 503
-    ActivePage = TabSheet16
+    Width = 813
+    Height = 502
+    ActivePage = TabSheet15
     Align = alClient
     MultiLine = True
     TabOrder = 2
-    ExplicitWidth = 813
-    ExplicitHeight = 492
+    ExplicitWidth = 809
+    ExplicitHeight = 501
     object TabSheet1: TTabSheet
       Caption = 'Program'
       object RadioGroup7: TRadioGroup
@@ -130,8 +130,8 @@ inherited OptionsForm: TOptionsForm
       object StringGrid1: TStringGrid
         Left = 0
         Top = 0
-        Width = 809
-        Height = 443
+        Width = 805
+        Height = 452
         Align = alClient
         ColCount = 2
         ScrollBars = ssVertical
@@ -154,55 +154,55 @@ inherited OptionsForm: TOptionsForm
       object Label8: TLabel
         Left = 312
         Top = 13
-        Width = 44
-        Height = 20
+        Width = 34
+        Height = 15
         Caption = 'Label8'
       end
       object Label34: TLabel
         Left = 215
         Top = 40
-        Width = 91
-        Height = 20
+        Width = 72
+        Height = 15
         Caption = 'Max map size'
       end
       object Label17: TLabel
         Left = 219
         Top = 66
-        Width = 166
-        Height = 20
+        Width = 135
+        Height = 15
         Caption = 'Map memory check (MB)'
       end
       object Label11: TLabel
         Left = 128
         Top = 224
-        Width = 4
-        Height = 20
+        Width = 3
+        Height = 15
       end
       object Label4: TLabel
         Left = 240
         Top = 120
-        Width = 173
-        Height = 20
+        Width = 138
+        Height = 15
         Caption = 'Blow up extra margin (m) '
       end
       object TLabel
         Left = 16
         Top = 312
-        Width = 4
-        Height = 20
+        Width = 3
+        Height = 15
       end
       object Label22: TLabel
         Left = 176
         Top = 284
-        Width = 99
-        Height = 20
+        Width = 78
+        Height = 15
         Caption = 'Label decimals'
       end
       object Label18: TLabel
         Left = 272
         Top = 376
-        Width = 269
-        Height = 20
+        Width = 212
+        Height = 15
         Caption = 'Max distortion tolerated for scalebar (%)'
       end
       object RadioGroup6: TRadioGroup
@@ -250,14 +250,14 @@ inherited OptionsForm: TOptionsForm
         Left = 376
         Top = 32
         Width = 73
-        Height = 28
+        Height = 23
         TabOrder = 4
       end
       object Edit18: TEdit
         Left = 391
         Top = 63
         Width = 49
-        Height = 28
+        Height = 23
         TabOrder = 5
       end
       object CheckBox59: TCheckBox
@@ -341,29 +341,29 @@ inherited OptionsForm: TOptionsForm
         object Label39: TLabel
           Left = 15
           Top = 28
-          Width = 24
-          Height = 20
+          Width = 19
+          Height = 15
           Caption = ' Lat'
         end
         object Label40: TLabel
           Left = 10
           Top = 47
-          Width = 33
-          Height = 20
+          Width = 27
+          Height = 15
           Caption = 'Long'
         end
         object Edit21: TEdit
           Left = 63
           Top = 20
           Width = 58
-          Height = 28
+          Height = 23
           TabOrder = 0
         end
         object Edit22: TEdit
           Left = 63
           Top = 47
           Width = 57
-          Height = 28
+          Height = 23
           TabOrder = 1
         end
       end
@@ -379,7 +379,7 @@ inherited OptionsForm: TOptionsForm
         Left = 425
         Top = 118
         Width = 40
-        Height = 28
+        Height = 23
         TabOrder = 16
       end
       object CheckBox43: TCheckBox
@@ -394,7 +394,7 @@ inherited OptionsForm: TOptionsForm
         Left = 281
         Top = 273
         Width = 51
-        Height = 28
+        Height = 23
         TabOrder = 18
       end
       object CheckBox97: TCheckBox
@@ -451,7 +451,7 @@ inherited OptionsForm: TOptionsForm
         Left = 547
         Top = 373
         Width = 48
-        Height = 28
+        Height = 23
         TabOrder = 24
         Text = 'Edit4'
       end
@@ -513,8 +513,8 @@ inherited OptionsForm: TOptionsForm
         object Label13: TLabel
           Left = 16
           Top = 40
-          Width = 112
-          Height = 20
+          Width = 89
+          Height = 15
           Caption = 'Long size to shift'
         end
         object CheckBox66: TCheckBox
@@ -529,7 +529,7 @@ inherited OptionsForm: TOptionsForm
           Left = 150
           Top = 39
           Width = 56
-          Height = 28
+          Height = 23
           TabOrder = 1
         end
         object CheckBox108: TCheckBox
@@ -613,8 +613,8 @@ inherited OptionsForm: TOptionsForm
       object Label14: TLabel
         Left = 32
         Top = 288
-        Width = 101
-        Height = 20
+        Width = 80
+        Height = 15
         Caption = 'Google API key'
       end
       object GroupBox7: TGroupBox
@@ -627,29 +627,29 @@ inherited OptionsForm: TOptionsForm
         object Label31: TLabel
           Left = 17
           Top = 16
-          Width = 26
-          Height = 20
+          Width = 21
+          Height = 15
           Caption = 'URL'
         end
         object Label32: TLabel
           Left = 16
           Top = 43
-          Width = 26
-          Height = 20
+          Width = 22
+          Height = 15
           Caption = 'Port'
         end
         object Edit13: TEdit
           Left = 56
           Top = 16
           Width = 121
-          Height = 28
+          Height = 23
           TabOrder = 0
         end
         object Edit14: TEdit
           Left = 56
           Top = 43
           Width = 121
-          Height = 28
+          Height = 23
           TabOrder = 1
         end
       end
@@ -707,7 +707,7 @@ inherited OptionsForm: TOptionsForm
         Left = 128
         Top = 288
         Width = 361
-        Height = 28
+        Height = 23
         TabOrder = 7
       end
     end
@@ -717,8 +717,8 @@ inherited OptionsForm: TOptionsForm
       object Label38: TLabel
         Left = 136
         Top = 104
-        Width = 4
-        Height = 20
+        Width = 3
+        Height = 15
       end
       object BitBtn8: TBitBtn
         Left = 16
@@ -932,8 +932,8 @@ inherited OptionsForm: TOptionsForm
       object Label30: TLabel
         Left = 24
         Top = 314
-        Width = 4
-        Height = 20
+        Width = 3
+        Height = 15
       end
       object CheckBox26: TCheckBox
         Left = 24
@@ -962,14 +962,14 @@ inherited OptionsForm: TOptionsForm
       end
       object CheckBox56: TCheckBox
         Left = 24
-        Top = 247
+        Top = 171
         Width = 265
         Height = 17
         Caption = 'Prompt to save new grids when created'
         TabOrder = 3
       end
       object CheckBox98: TCheckBox
-        Left = 294
+        Left = 279
         Top = 191
         Width = 210
         Height = 17
@@ -977,68 +977,60 @@ inherited OptionsForm: TOptionsForm
         TabOrder = 4
       end
       object CheckBox99: TCheckBox
-        Left = 295
-        Top = 213
+        Left = 279
+        Top = 208
         Width = 145
         Height = 17
         Caption = 'Assume -999 missing'
         TabOrder = 5
       end
       object CheckBox100: TCheckBox
-        Left = 295
+        Left = 279
         Top = 231
         Width = 189
         Height = 17
         Caption = 'Assume -9999 missing'
         TabOrder = 6
       end
-      object CheckBox106: TCheckBox
-        Left = 294
-        Top = 303
-        Width = 164
-        Height = 17
-        Caption = 'DTED accuracy set to NA'
-        TabOrder = 7
-      end
       object CheckBox91: TCheckBox
-        Left = 294
+        Left = 279
         Top = 168
         Width = 244
         Height = 17
         Caption = 'Assume negative values missing'
-        TabOrder = 8
+        TabOrder = 7
       end
       object CheckBox130: TCheckBox
         Left = 24
-        Top = 151
+        Top = 102
         Width = 153
         Height = 17
         Caption = 'Verify all world files'
-        TabOrder = 9
+        TabOrder = 8
       end
       object CheckBox122: TCheckBox
         Left = 24
-        Top = 174
+        Top = 125
         Width = 225
         Height = 17
         Caption = 'Open vegetation grid map'
-        TabOrder = 10
+        TabOrder = 9
       end
       object CheckBox55: TCheckBox
-        Left = 295
+        Left = 279
         Top = 247
         Width = 163
         Height = 17
         Caption = 'Assume -99999 missing'
-        TabOrder = 11
+        TabOrder = 10
       end
       object CheckBox64: TCheckBox
-        Left = 294
+        Left = 279
         Top = 263
         Width = 145
         Height = 17
         Caption = 'Assume -999999 missing'
-        TabOrder = 12
+        TabOrder = 11
       end
       object RadioGroup25: TRadioGroup
         Left = 42
@@ -1050,73 +1042,65 @@ inherited OptionsForm: TOptionsForm
         Items.Strings = (
           '1.5 times'
           '2 times')
-        TabOrder = 13
+        TabOrder = 12
       end
       object GroupBox12: TGroupBox
         Left = 257
         Top = 326
         Width = 227
-        Height = 123
+        Height = 115
         Caption = 'GeoJSON'
-        TabOrder = 14
+        TabOrder = 13
         object Label28: TLabel
           Left = 16
           Top = 21
-          Width = 121
-          Height = 20
+          Width = 98
+          Height = 15
           Caption = 'Points--z decimals'
         end
         object Label45: TLabel
           Left = 16
           Top = 43
-          Width = 123
-          Height = 20
+          Width = 99
+          Height = 15
           Caption = 'Grids--xy decimals'
         end
         object Label46: TLabel
           Left = 15
           Top = 72
-          Width = 116
-          Height = 20
+          Width = 92
+          Height = 15
           Caption = 'Grids--z decimals'
         end
         object Edit27: TEdit
           Left = 145
           Top = 14
           Width = 56
-          Height = 28
+          Height = 23
           TabOrder = 0
         end
         object Edit34: TEdit
           Left = 145
           Top = 48
           Width = 56
-          Height = 28
+          Height = 23
           TabOrder = 1
         end
         object Edit35: TEdit
           Left = 145
           Top = 82
           Width = 56
-          Height = 28
+          Height = 23
           TabOrder = 2
         end
       end
       object CheckBox23: TCheckBox
         Left = 24
-        Top = 208
+        Top = 148
         Width = 177
         Height = 17
         Caption = 'GDAL for Geotiff export'
-        TabOrder = 15
-      end
-      object CheckBox89: TCheckBox
-        Left = 536
-        Top = 254
-        Width = 317
-        Height = 17
-        Caption = 'Delete TAR/GZ files after decompresssion'
-        TabOrder = 16
+        TabOrder = 14
       end
       object GDAL: TBitBtn
         Left = 24
@@ -1124,7 +1108,7 @@ inherited OptionsForm: TOptionsForm
         Width = 75
         Height = 25
         Caption = 'GDAL'
-        TabOrder = 17
+        TabOrder = 15
         OnClick = GDALClick
       end
       object GroupBox15: TGroupBox
@@ -1133,7 +1117,7 @@ inherited OptionsForm: TOptionsForm
         Width = 225
         Height = 159
         Caption = 'GeoPDF'
-        TabOrder = 18
+        TabOrder = 16
         object CheckBox168: TCheckBox
           Left = 16
           Top = 16
@@ -1246,7 +1230,7 @@ inherited OptionsForm: TOptionsForm
         Width = 75
         Height = 25
         Caption = 'Nav Opts'
-        TabOrder = 19
+        TabOrder = 17
         OnClick = Button6Click
       end
       object CheckBox36: TCheckBox
@@ -1255,7 +1239,7 @@ inherited OptionsForm: TOptionsForm
         Width = 136
         Height = 17
         Caption = 'Nav with FIT loading'
-        TabOrder = 20
+        TabOrder = 18
       end
       object CheckBox79: TCheckBox
         Left = 536
@@ -1263,15 +1247,15 @@ inherited OptionsForm: TOptionsForm
         Width = 209
         Height = 17
         Caption = 'Delete FIT files after import'
-        TabOrder = 21
+        TabOrder = 19
       end
       object CheckBox54: TCheckBox
-        Left = 295
-        Top = 286
+        Left = 279
+        Top = 280
         Width = 148
         Height = 17
         Caption = 'Assume -32767 missing'
-        TabOrder = 22
+        TabOrder = 20
       end
       object BitBtn29: TBitBtn
         Left = 105
@@ -1279,7 +1263,7 @@ inherited OptionsForm: TOptionsForm
         Width = 112
         Height = 25
         Caption = 'Output grids'
-        TabOrder = 23
+        TabOrder = 21
         OnClick = BitBtn29Click
       end
       object CheckBox300: TCheckBox
@@ -1288,7 +1272,7 @@ inherited OptionsForm: TOptionsForm
         Width = 273
         Height = 17
         Caption = 'Sea level to missing on import'
-        TabOrder = 24
+        TabOrder = 22
       end
       object GroupBox16: TGroupBox
         Left = 544
@@ -1296,19 +1280,19 @@ inherited OptionsForm: TOptionsForm
         Width = 249
         Height = 105
         Caption = 'Hole filling'
-        TabOrder = 25
+        TabOrder = 23
         object Label24: TLabel
           Left = 29
           Top = 69
-          Width = 97
-          Height = 20
+          Width = 76
+          Height = 15
           Caption = 'Max gap to fill'
         end
         object Edit8: TEdit
           Left = 143
           Top = 66
           Width = 65
-          Height = 28
+          Height = 23
           TabOrder = 0
         end
         object CheckBox33: TCheckBox
@@ -1334,7 +1318,7 @@ inherited OptionsForm: TOptionsForm
         Width = 289
         Height = 17
         Caption = 'Delete metadada Geotiff DEM files'
-        TabOrder = 26
+        TabOrder = 24
       end
     end
     object TabSheet9: TTabSheet
@@ -1343,8 +1327,8 @@ inherited OptionsForm: TOptionsForm
       object Label3: TLabel
         Left = 11
         Top = 37
-        Width = 156
-        Height = 20
+        Width = 124
+        Height = 15
         Caption = 'Live fly extra delay (ms)'
       end
       object Button12: TButton
@@ -1369,7 +1353,7 @@ inherited OptionsForm: TOptionsForm
         Left = 173
         Top = 34
         Width = 54
-        Height = 28
+        Height = 23
         TabOrder = 2
         Text = ' '
       end
@@ -1435,29 +1419,29 @@ inherited OptionsForm: TOptionsForm
         object Label19: TLabel
           Left = 11
           Top = 20
-          Width = 133
-          Height = 20
+          Width = 106
+          Height = 15
           Caption = 'Max initial triangles,'
         end
         object Label42: TLabel
           Left = 16
           Top = 48
-          Width = 73
-          Height = 20
+          Width = 59
+          Height = 15
           Caption = 'Max points'
         end
         object Label43: TLabel
           Left = 16
           Top = 72
-          Width = 91
-          Height = 20
+          Width = 76
+          Height = 15
           Caption = 'Point thinning'
         end
         object Edit7: TEdit
           Left = 150
           Top = 17
           Width = 89
-          Height = 28
+          Height = 23
           TabOrder = 0
           Text = ' '
         end
@@ -1481,14 +1465,14 @@ inherited OptionsForm: TOptionsForm
           Left = 150
           Top = 44
           Width = 89
-          Height = 28
+          Height = 23
           TabOrder = 3
         end
         object Edit32: TEdit
           Left = 150
           Top = 70
           Width = 89
-          Height = 28
+          Height = 23
           TabOrder = 4
         end
         object CheckBox19: TCheckBox
@@ -1537,29 +1521,29 @@ inherited OptionsForm: TOptionsForm
       object Label33: TLabel
         Left = 11
         Top = 4
-        Width = 126
-        Height = 20
+        Width = 101
+        Height = 15
         Caption = 'Max Active threads'
       end
       object Label21: TLabel
         Left = 21
         Top = 169
-        Width = 82
-        Height = 20
+        Width = 66
+        Height = 15
         Caption = 'JPEG Quality'
       end
       object Label48: TLabel
         Left = 22
         Top = 199
-        Width = 124
-        Height = 20
+        Width = 97
+        Height = 15
         Caption = 'Update delay (sec)'
       end
       object Label6: TLabel
         Left = 280
         Top = 6
-        Width = 44
-        Height = 20
+        Width = 34
+        Height = 15
         Caption = 'Label6'
       end
       object CheckBox31: TCheckBox
@@ -1574,7 +1558,7 @@ inherited OptionsForm: TOptionsForm
         Left = 143
         Top = 3
         Width = 65
-        Height = 28
+        Height = 23
         TabOrder = 1
       end
       object BitBtn27: TBitBtn
@@ -1590,7 +1574,7 @@ inherited OptionsForm: TOptionsForm
         Left = 152
         Top = 169
         Width = 48
-        Height = 28
+        Height = 23
         TabOrder = 3
       end
       object CheckBox73: TCheckBox
@@ -1605,7 +1589,7 @@ inherited OptionsForm: TOptionsForm
         Left = 152
         Top = 203
         Width = 49
-        Height = 28
+        Height = 23
         TabOrder = 5
       end
       object CheckBox18: TCheckBox
@@ -1639,29 +1623,29 @@ inherited OptionsForm: TOptionsForm
       object Label36: TLabel
         Left = 97
         Top = 164
-        Width = 81
-        Height = 20
+        Width = 65
+        Height = 15
         Caption = 'Graph width'
       end
       object Label7: TLabel
         Left = 40
         Top = 128
-        Width = 44
-        Height = 20
+        Width = 34
+        Height = 15
         Caption = 'Label7'
       end
       object Label2: TLabel
         Left = 32
         Top = 248
-        Width = 52
-        Height = 20
+        Width = 42
+        Height = 15
         Caption = 'Clip (%)'
       end
       object Label23: TLabel
         Left = 416
         Top = 120
-        Width = 52
-        Height = 20
+        Width = 40
+        Height = 15
         Caption = 'Label23'
       end
       object UpDown1: TUpDown
@@ -1720,7 +1704,7 @@ inherited OptionsForm: TOptionsForm
         Left = 100
         Top = 245
         Width = 78
-        Height = 28
+        Height = 23
         TabOrder = 6
         Text = 'Edit5'
       end
@@ -1734,8 +1718,8 @@ inherited OptionsForm: TOptionsForm
         object Label26: TLabel
           Left = 176
           Top = 24
-          Width = 72
-          Height = 20
+          Width = 58
+          Height = 15
           Caption = 'Height (m)'
         end
         object RadioGroup9: TRadioGroup
@@ -1754,7 +1738,7 @@ inherited OptionsForm: TOptionsForm
           Left = 176
           Top = 50
           Width = 81
-          Height = 28
+          Height = 23
           TabOrder = 1
           Text = 'Edit26'
         end
@@ -1850,15 +1834,15 @@ inherited OptionsForm: TOptionsForm
         object DTfilllabel: TLabel
           Left = 10
           Top = 21
-          Width = 131
-          Height = 20
+          Width = 102
+          Height = 15
           Caption = 'Tile fill required (%)'
         end
         object Edit12: TEdit
           Left = 64
           Top = 47
           Width = 121
-          Height = 28
+          Height = 23
           TabOrder = 0
           Text = 'Edit12'
         end
@@ -2121,15 +2105,15 @@ inherited OptionsForm: TOptionsForm
       object Label15: TLabel
         Left = 48
         Top = 279
-        Width = 150
-        Height = 20
+        Width = 120
+        Height = 15
         Caption = 'Number of mask fields'
       end
       object Label37: TLabel
         Left = 319
         Top = 85
-        Width = 156
-        Height = 20
+        Width = 124
+        Height = 15
         Caption = 'Min integer field length'
       end
       object CheckBox69: TCheckBox
@@ -2212,7 +2196,7 @@ inherited OptionsForm: TOptionsForm
         Left = 204
         Top = 278
         Width = 65
-        Height = 28
+        Height = 23
         TabOrder = 9
       end
       object OutlineButton: TBitBtn
@@ -2301,7 +2285,7 @@ inherited OptionsForm: TOptionsForm
         Left = 495
         Top = 82
         Width = 46
-        Height = 28
+        Height = 23
         TabOrder = 20
       end
       object CheckBox115: TCheckBox
@@ -2531,8 +2515,8 @@ inherited OptionsForm: TOptionsForm
         object Label10: TLabel
           Left = 16
           Top = 118
-          Width = 82
-          Height = 20
+          Width = 65
+          Height = 15
           Caption = 'L2W params'
         end
         object RadioGroup15: TRadioGroup
@@ -2552,7 +2536,7 @@ inherited OptionsForm: TOptionsForm
           Left = 35
           Top = 144
           Width = 309
-          Height = 28
+          Height = 23
           TabOrder = 1
         end
         object CheckBox144: TCheckBox
@@ -2595,8 +2579,8 @@ inherited OptionsForm: TOptionsForm
       object Label20: TLabel
         Left = 184
         Top = 88
-        Width = 52
-        Height = 20
+        Width = 40
+        Height = 15
         Caption = 'Label20'
       end
       object CheckBox34: TCheckBox
@@ -2632,15 +2616,15 @@ inherited OptionsForm: TOptionsForm
       object Label1: TLabel
         Left = 112
         Top = 16
-        Width = 44
-        Height = 20
+        Width = 34
+        Height = 15
         Caption = 'Label1'
       end
       object Label5: TLabel
         Left = 136
         Top = 84
-        Width = 44
-        Height = 20
+        Width = 34
+        Height = 15
         Caption = 'Label5'
       end
       object Button1: TButton
@@ -2701,22 +2685,22 @@ inherited OptionsForm: TOptionsForm
       object Label9: TLabel
         Left = 9
         Top = 112
-        Width = 160
-        Height = 20
+        Width = 128
+        Height = 15
         Caption = 'Profile extract width (m)'
       end
       object Label16: TLabel
         Left = 4
         Top = 142
-        Width = 129
-        Height = 20
+        Width = 104
+        Height = 15
         Caption = 'Max pts to memory'
       end
       object Edit19: TEdit
         Left = 175
         Top = 109
         Width = 49
-        Height = 28
+        Height = 23
         TabOrder = 0
       end
       object BitBtn12: TBitBtn
@@ -2747,7 +2731,7 @@ inherited OptionsForm: TOptionsForm
         Left = 158
         Top = 138
         Width = 76
-        Height = 28
+        Height = 23
         TabOrder = 3
       end
       object RadioGroup35: TRadioGroup
@@ -2821,8 +2805,8 @@ inherited OptionsForm: TOptionsForm
       object Label44: TLabel
         Left = 286
         Top = 40
-        Width = 125
-        Height = 20
+        Width = 101
+        Height = 15
         Caption = 'Min/max tolerance'
       end
       object CheckBox77: TCheckBox
@@ -2917,7 +2901,7 @@ inherited OptionsForm: TOptionsForm
         Left = 440
         Top = 40
         Width = 121
-        Height = 28
+        Height = 23
         TabOrder = 2
       end
       object CheckBox13: TCheckBox
@@ -2935,8 +2919,8 @@ inherited OptionsForm: TOptionsForm
       object Label25: TLabel
         Left = 16
         Top = 120
-        Width = 208
-        Height = 20
+        Width = 165
+        Height = 15
         Caption = 'Max density for vertical profiles'
       end
       object CheckBox24: TCheckBox
@@ -2967,7 +2951,7 @@ inherited OptionsForm: TOptionsForm
         Left = 230
         Top = 117
         Width = 50
-        Height = 28
+        Height = 23
         TabOrder = 3
         OnChange = Edit25Change
       end
@@ -2981,8 +2965,8 @@ inherited OptionsForm: TOptionsForm
         object Label29: TLabel
           Left = 14
           Top = 87
-          Width = 106
-          Height = 20
+          Width = 86
+          Height = 15
           Caption = 'Location+/- (m)'
         end
         object CheckBox90: TCheckBox
@@ -3005,7 +2989,7 @@ inherited OptionsForm: TOptionsForm
           Left = 122
           Top = 83
           Width = 61
-          Height = 28
+          Height = 23
           TabOrder = 2
         end
         object CheckBox104: TCheckBox
@@ -3225,13 +3209,13 @@ inherited OptionsForm: TOptionsForm
   end
   object Panel1: TPanel
     Left = 0
-    Top = 503
-    Width = 817
+    Top = 502
+    Width = 813
     Height = 58
     Align = alBottom
     TabOrder = 3
-    ExplicitTop = 492
-    ExplicitWidth = 813
+    ExplicitTop = 501
+    ExplicitWidth = 809
     object BitBtn3: TBitBtn
       Left = 178
       Top = 6

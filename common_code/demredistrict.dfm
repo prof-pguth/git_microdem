@@ -3,8 +3,8 @@ object RedistrictForm: TRedistrictForm
   Top = 229
   BorderIcons = [biSystemMenu]
   Caption = 'Redistricting'
-  ClientHeight = 322
-  ClientWidth = 757
+  ClientHeight = 321
+  ClientWidth = 753
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -16,12 +16,11 @@ object RedistrictForm: TRedistrictForm
   OnClose = FormClose
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 757
+    Width = 753
     Height = 81
     Align = alTop
     TabOrder = 0
@@ -209,8 +208,8 @@ object RedistrictForm: TRedistrictForm
   object DBGrid1: TDBGrid
     Left = 57
     Top = 81
-    Width = 700
-    Height = 222
+    Width = 696
+    Height = 221
     Align = alClient
     DataSource = DataSource1
     TabOrder = 1
@@ -225,9 +224,10 @@ object RedistrictForm: TRedistrictForm
     Left = 0
     Top = 81
     Width = 57
-    Height = 222
+    Height = 221
     Align = alLeft
     TabOrder = 2
+    ExplicitHeight = 222
     object Image1: TImage
       Left = 1
       Top = 1
@@ -244,14 +244,16 @@ object RedistrictForm: TRedistrictForm
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 303
-    Width = 757
+    Top = 302
+    Width = 753
     Height = 19
     Panels = <
       item
         Text = 'rtest'
         Width = 50
       end>
+    ExplicitTop = 303
+    ExplicitWidth = 757
   end
   object ColorDialog1: TColorDialog
     Left = 88

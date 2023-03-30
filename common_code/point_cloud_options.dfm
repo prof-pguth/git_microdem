@@ -2,8 +2,8 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
   Left = 0
   Top = 0
   Caption = 'Point Cloud Options'
-  ClientHeight = 442
-  ClientWidth = 485
+  ClientHeight = 441
+  ClientWidth = 481
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -30,8 +30,8 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
   end
   object Panel1: TPanel
     Left = 0
-    Top = 401
-    Width = 485
+    Top = 400
+    Width = 481
     Height = 41
     Align = alBottom
     TabOrder = 0
@@ -110,8 +110,8 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
   object PageControl1: TPageControl
     Left = 0
     Top = 0
-    Width = 485
-    Height = 232
+    Width = 481
+    Height = 231
     ActivePage = TabSheet1
     Align = alClient
     TabOrder = 1
@@ -1660,8 +1660,8 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
   end
   object Panel3: TPanel
     Left = 0
-    Top = 232
-    Width = 485
+    Top = 231
+    Width = 481
     Height = 169
     Align = alBottom
     TabOrder = 2

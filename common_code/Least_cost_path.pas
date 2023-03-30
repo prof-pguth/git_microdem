@@ -476,7 +476,7 @@ begin
    end;
    DEMGlb[CostPassageDEM].SetGridElevation(StartX,StartY,0);
 
-   DEMGlb[CostPassageDEM].MissingDataToSeaLevel(MDDef.ImpossibleCost);
+   DEMGlb[CostPassageDEM].MissingDataToConstantVelue(MDDef.ImpossibleCost);
    {$IfDef RecordBasicsAccumPath} WritelineToDebugFile('Grid prepped'); {$EndIf}
 
    {$IfDef RecordBasicsAccumPath} WritelineToDebugFile('Create new grids ' + fName);   {$EndIf}

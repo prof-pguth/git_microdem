@@ -29,12 +29,12 @@ object wmdem: Twmdem
     Left = 0
     Top = 0
     Width = 2130
-    Height = 29
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34
     TabOrder = 0
     OnMouseDown = ToolBar1MouseDown
+    ExplicitWidth = 2126
     object SpeedButton2: TSpeedButton
       Left = 0
       Top = 0
@@ -1696,6 +1696,8 @@ object wmdem: Twmdem
     Visible = False
     OnClick = StatusBar1Click
     OnDblClick = StatusBar1DblClick
+    ExplicitTop = 1141
+    ExplicitWidth = 2126
   end
   object MainMenu1: TMainMenu
     Left = 136
@@ -3114,6 +3116,7 @@ object wmdem: Twmdem
     object Closeprogramgetdebugversionoftheprogram7MB1: TMenuItem
       Caption = 'Close program, get debug version of the program (7 MB)'
       Enabled = False
+      Visible = False
       OnClick = Closeprogramgetdebugversionoftheprogram7MB1Click
     end
     object CloseprogramupdateEXEnewversion7MBdownload1: TMenuItem

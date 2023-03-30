@@ -1,12 +1,11 @@
 unit elev_color_range;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{ Released under the MIT Licences }
-{   file verified 10/10/2022      }
-{_________________________________}
-
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2023 Peter L. Guth  }
+{___________________________________}
 
 {$I nevadia_defines.inc}
 
@@ -41,6 +40,7 @@ type
     RedrawSpeedButton12: TSpeedButton;
     CheckBox1: TCheckBox;
     RadioGroup2: TRadioGroup;
+    BitBtn3: TBitBtn;
     procedure HelpBtnClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure RadioGroup1Click(Sender: TObject);
@@ -54,6 +54,7 @@ type
     procedure Edit1Change(Sender: TObject);
     procedure Edit2Change(Sender: TObject);
     procedure RadioGroup2Click(Sender: TObject);
+    procedure BitBtn3Click(Sender: TObject);
   private
     { Private declarations }
     procedure DisplayValues;
@@ -104,6 +105,14 @@ end;
 procedure TElevationRangeForm.BitBtn2Click(Sender: TObject);
 begin
    QueryColor(BitBtn2,MDdef.LowOffscaleColor);
+end;
+
+procedure TElevationRangeForm.BitBtn3Click(Sender: TObject);
+var
+   NumPts : integer;
+begin
+   DEMGlb[MapOwner.MapDraw.DEMonMap].MarkOutsideRangeMissing(MapOwner.MapDraw.MinMapElev,MapOwner.MapDraw.MaxMapElev,NumPts);
+   if (NumPts > 0) then RedrawSpeedButton12Click(Sender);
 end;
 
 procedure TElevationRangeForm.CheckBox1Click(Sender: TObject);

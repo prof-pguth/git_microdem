@@ -52,7 +52,7 @@ object MapForm: TMapForm
     TabOrder = 0
     OnClick = ScrollBox1Click
     ExplicitWidth = 1771
-    ExplicitHeight = 1012
+    ExplicitHeight = 1032
     object Image1: TImage
       Left = 3
       Top = -247
@@ -214,7 +214,7 @@ object MapForm: TMapForm
       Height = 41
       Align = alBottom
       TabOrder = 8
-      ExplicitTop = 967
+      ExplicitTop = 987
       ExplicitWidth = 1767
       object TrackBar2: TTrackBar
         Left = 289
@@ -2306,6 +2306,10 @@ object MapForm: TMapForm
           Caption = 'Points from database'
           OnClick = Pointsfromdatabase1Click
         end
+        object Interactiveadjusment1: TMenuItem
+          Caption = 'Interactive adjusment'
+          OnClick = Interactiveadjusment1Click
+        end
         object N33: TMenuItem
           Caption = '-'
         end
@@ -2403,6 +2407,10 @@ object MapForm: TMapForm
         object Allvalidtosinglevalue1: TMenuItem
           Caption = 'All valid to single value'
           OnClick = Allvalidtosinglevalue1Click
+        end
+        object Allmissingtosinglevaluevalidsettomissing1: TMenuItem
+          Caption = 'All missing to single value, valid set to missing'
+          OnClick = Allmissingtosinglevaluevalidsettomissing1Click
         end
         object Inf1: TMenuItem
           Caption = '+Inf'

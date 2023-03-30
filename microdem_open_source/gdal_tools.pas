@@ -188,7 +188,6 @@ const
 procedure ResampleSentinel_1(Path : PathStr; Recycle : boolean = false);
 // based on https://asf.alaska.edu/how-to/data-recipes/geocode-sentinel-1-with-gdal/
 var
-   //SatDir,
    fName,fName2,outName : PathStr;
    DefaultFilter : byte;
    BatchFile,TheFiles: tStringList;
@@ -207,33 +206,24 @@ begin
    TStr2 := ' ' + RealToString(UTMSpace,-12,-2);
    StartGDALbatchFile(BatchFile);
    RecycleList := tStringList.Create;
-   //for i := 0 to pred(Paths.Count) do begin
-      //SatDir := Paths  //[i];
-      TheFiles := Nil;
-      FindMatchingFiles(Path,'*.tiff',TheFiles,6);
-      for j := 0 to pred(TheFiles.Count) do begin
-         fName := TheFiles.Strings[j];
-         if StrUtils.AnsiContainsText(UpperCase(fName),'GRD') and (not StrUtils.AnsiContainsText(UpperCase(fName),'utm')) then begin
-            //OutName := ExtractFilePath(fName) + ExtractFileNameNoExt(fName) + '_10m_utm.tif';
-            OutName := ExtractFilePath(fName) + ExtractFileNameNoExt(fName) + '_' + RealToString(UTMSpace,-8,-2) + '_m_utm.tif';
-            //if not FileExists(OutName) then begin
-               cmd := GDAL_warp_name + ' -tps -r bilinear -tr' + TStr2 + Tstr2 + ' -srcnodata 0 -dstnodata 0 -t_srs ' + OutEPSG + ' ' + fName + ' ' + Outname;
-               {$IfDef RecordGDAL} WriteLineToDebugFile(cmd); {$EndIf}
-               BatchFile.Add('REM   file ' + IntToStr(succ(i)) + '/' + IntToStr(TheFiles.Count));
-               BatchFile.Add(cmd);
-            //end;
-            RecycleList.Add(fName);
-         end;
+   TheFiles := Nil;
+   FindMatchingFiles(Path,'*.tiff',TheFiles,6);
+   for j := 0 to pred(TheFiles.Count) do begin
+      fName := TheFiles.Strings[j];
+      if StrUtils.AnsiContainsText(UpperCase(fName),'GRD') and (not StrUtils.AnsiContainsText(UpperCase(fName),'utm')) then begin
+         OutName := ExtractFilePath(fName) + ExtractFileNameNoExt(fName) + '_' + RealToString(UTMSpace,-8,-2) + '_m_utm.tif';
+         cmd := GDAL_warp_name + ' -tps -r bilinear -tr' + TStr2 + Tstr2 + ' -srcnodata 0 -dstnodata 0 -t_srs ' + OutEPSG + ' ' + fName + ' ' + Outname;
+         {$IfDef RecordGDAL} WriteLineToDebugFile(cmd); {$EndIf}
+         BatchFile.Add('REM   file ' + IntToStr(succ(i)) + '/' + IntToStr(TheFiles.Count));
+         BatchFile.Add(cmd);
+         RecycleList.Add(fName);
       end;
-      TheFiles.Free;
-   //end;
-   //Paths.Free;
+   end;
+   TheFiles.Free;
    EndBatchFile(MDTempDir + 'warp_sentinel-1.bat',batchfile,true);
    if Recycle then for i := 0 to pred(RecycleList.Count) do File2Trash(RecycleList.Strings[i]);
    RecycleList.Free;
 end;
-
-
 
 
 function GetGDALversion : ANSIstring;
@@ -412,18 +402,7 @@ begin
          OpenNewDEM(OutName);
       end
       else MessageToContinue('GDAL_Fill_Holes failure, to see error messages try batch file in DOS window: ' + bfile);
-  end;
-
-//QGIS command looks like this
-//C:\OSGeo4W64\bin\python3 C:\OSGeo4W64\apps\qgis\python\plugins\processing\algs\gdal\fillnodata.py -md 100 -si 2 -o c:\mapdata\temp\gdal_fill_holes_temp_dem.tif c:\mapdata\temp\temp_dem.tif
-
-//python3 -m gdal_fillnodata -md 500 -si 1 -b 1 -of GTiff H:\00-alaska-test-area\alaska_elevation_geographic.tif C:/temp/OUTPUT.tif
-
-(*
-gdal_fillnodata.py [-q] [-md max_distance] [-si smooth_iterations]
-                [-o name=value] [-b band]
-                srcfile [-nomask] [-mask filename] [-of format] [dstfile]
-*)
+   end;
 end;
 
 function GDAL_TRI_Wilson(InName : PathStr; sf : shortstring = ''; outname : shortstring = '') : integer;

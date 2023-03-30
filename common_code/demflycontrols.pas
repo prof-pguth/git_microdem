@@ -4,7 +4,7 @@ unit demflycontrols;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
 
@@ -163,17 +163,17 @@ end;
 
 procedure TFlightControlForm.FormCreate(Sender: TObject);
 begin
-{$IfDef RecordChangeFlyControls}   WriteLineToDebugFile('TFlightControlForm.FormCreate 1'); {$EndIf}
+   {$IfDef RecordChangeFlyControls}   WriteLineToDebugFile('TFlightControlForm.FormCreate 1'); {$EndIf}
    WantToEndFlying := false;
    CheckBox1.Checked := MDdef.FlyOptions.LiveFlyAutoNap;
    EditColors := false;
    EditControls := false;
    PitchUp := false;
    PitchDown := false;
-{$IfDef RecordChangeFlyControls}   WriteLineToDebugFile('TFlightControlForm.FormCreate 2'); {$EndIf}
+   {$IfDef RecordChangeFlyControls}   WriteLineToDebugFile('TFlightControlForm.FormCreate 2'); {$EndIf}
 
    Edit4.Text := IntToStr(MDdef.FlyOptions.LiveFlyDelay);
-{$IfDef RecordChangeFlyControls}    WriteLineToDebugFile('TFlightControlForm.FormCreate 3'); {$EndIf}
+   {$IfDef RecordChangeFlyControls}    WriteLineToDebugFile('TFlightControlForm.FormCreate 3'); {$EndIf}
 end;
 
 procedure TFlightControlForm.FormKeyPress(Sender: TObject; var Key: Char);

@@ -1902,7 +1902,8 @@ uses
    Least_cost_path,
    db_join,Insert_Point,Thread_timers,
    add_time_fields, db_field_concatenate, basemap, dem_gaz_opts, DEMShowDbRecord,
-   DEMTigerOps, Tiger_address,
+   DEMTigerOps,
+   Tiger_address,
 
 {Main program MDI window for different programs that use this module}
    Nevadia_Main;
@@ -13849,7 +13850,7 @@ begin
       Result := GISdb[DBOnTable].TheMapOwner.CreateGridToMatchMap(cgUTM,true,SmallIntDEM,GridSize);
       DEMGlb[Result].AreaName := GISdb[DBonTable].dbName + '_pt_density';
       DEMGlb[Result].DEMheader.ElevUnits := Undefined;
-      DEMGlb[Result].MissingDataToSeaLevel;
+      DEMGlb[Result].MissingDataToConstantVelue;
 
       StartProgress('Density');
       Num := 0;

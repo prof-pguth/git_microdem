@@ -23,7 +23,7 @@
 { Modified as Part of ianMICRODEM GIS Program    }
 { PETMAR Trilobite Breeding Ranch                }
 { Released under the MIT Licences                }
-{ Copyright (c) 2022 Peter L. Guth               }
+{ Copyright (c) 2023 Peter L. Guth               }
 {________________________________________________}
 
 
@@ -378,7 +378,7 @@ var
   GPSImgDirection,
   CameraFocalLength,
   LatStr,LongStr : ANSIString;
-  First,  //Second,
+  First,
   LatMult,LongMult : integer;
 begin
   DoDefault(Segment, 'Exif', False);
@@ -423,7 +423,7 @@ begin
           else if (Tag.ID = ttMakerNote) and (Section.Kind = esDetails) and (ExifData.MakerNote.Tags.Count <> 0) then S := '[Recognised - see below]'
           else S := Tag.AsString;
 
-          if TagIDToStr(Tag) <> 'MakerNote' then begin
+          if (TagIDToStr(Tag) <> 'MakerNote') then begin
              if Verbose or (Tag.ID = ttExposureTime) or (Tag.ID = ttFNumber) or (Tag.ID = ttISOSpeedRatings) or (Tag.ID = ttShutterSpeedValue) or (Tag.ID = ttFocalLength) or
               (Tag.ID = ttExifImageWidth) or (Tag.ID = ttExifImageHeight) or (Tag.ID = ttFocalLengthIn35mmFilm) or (Tag.ID = ttGPSLatitude) or (Tag.ID = ttGPSLongitude) or
               (Tag.ID = ttGPSAltitude) or (Tag.ID = ttGPSImgDirection)  or (Tag.ID = ttMake)  or (Tag.ID = ttModel) then begin
@@ -444,7 +444,7 @@ begin
           if TagIDToStr(Tag) = 'ExposureTime' then Exposure := 'Exp=' + s;
           //if TagIDToStr(Tag) = 'FNumber' then Fstop := 'f-stop=' + s;
 
-           if Tag.ID = ttExposureTime then begin
+           if (Tag.ID = ttExposureTime) then begin
               First := StrToInt(Petmar_types.BeforeSpecifiedCharacterANSI(s,'/',true,true));
               Shutter := '1/' + IntToStr(StrToint(s) div First);
               Speed := 1 / (StrToint(s) / First);
@@ -461,7 +461,7 @@ begin
    //PhotoAltitude := DecodePossibleFloat(GPSAltitude);
    //FocalLength := DecodePossibleFloat(CameraFocalLength);
 
-   if (LatStr <> '') and (LongStr <> '') and (LatStr[1] in ['0'..'9','-']) and (LongStr[1] in ['0'..'9','-']) then begin
+   if false and (LatStr <> '') and (LongStr <> '') and (LatStr[1] in ['0'..'9','-']) and (LongStr[1] in ['0'..'9','-']) then begin
       PhotoLat := LatMult * ParseStringToDegrees(LatStr);
       PhotoLong := LongMult * ParseStringToDegrees(LongStr);
    end

@@ -5,8 +5,8 @@ object NewBMPForm: TNewBMPForm
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsDialog
   Caption = 'Bitmap Dimensions'
-  ClientHeight = 121
-  ClientWidth = 219
+  ClientHeight = 120
+  ClientWidth = 215
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -14,20 +14,20 @@ object NewBMPForm: TNewBMPForm
   Font.Name = 'System'
   Font.Style = []
   Position = poScreenCenter
-  TextHeight = 20
+  TextHeight = 16
   object Label1: TLabel
     Left = 21
     Top = 13
-    Width = 45
-    Height = 20
+    Width = 38
+    Height = 16
     Caption = '&Width'
     FocusControl = WidthEdit
   end
   object Label2: TLabel
     Left = 21
     Top = 45
-    Width = 52
-    Height = 20
+    Width = 42
+    Height = 16
     Caption = '&Height'
     FocusControl = HeightEdit
   end

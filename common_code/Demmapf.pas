@@ -32,6 +32,8 @@
       //{$Define RawProjectInverse}  //must also be set in BaseMap
       {$Define RecordDEMIX}
       {$Define RecordLegend}
+      {$Define RecordVAT}
+      {$Define RecordCreateSelectionMap}
       //{$Define RecordDEMIXtiles}
       //{$Define RecordStreamModeDigitize}
       //{$Define RecordPickRoute}
@@ -46,7 +48,6 @@
       //{$Define TrackTigerOrOS}
       //{$Define Track_f}
       //{$Define RecordSubsetZoom}
-      //{$Define RecordCreateSelectionMap}
       //{$Define RecordMapIndex}
       //{$Define SatCoordsExtra}   //to track sat coords if here are bands with different resolution
       //{$Define RecordCarto}
@@ -92,7 +93,6 @@
       //{$Define RecordPrinter}
       //{$Define RecordKMLexport}
       //{$Define RecordClosing}
-      //{$Define RecordVAT}
       //{$Define RecordCollarMapMargins}
       //{$Define RecordPitsSpires}
       //{$Define RecordFresnel}
@@ -1455,6 +1455,8 @@ type
     Winwcontestmaps1: TMenuItem;
     Likelymissingdatacodes1: TMenuItem;
     Experimental2: TMenuItem;
+    Allmissingtosinglevaluevalidsettomissing1: TMenuItem;
+    Interactiveadjusment1: TMenuItem;
     //procedure HiresintervisibilityDEM1Click(Sender: TObject);
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
@@ -2517,6 +2519,8 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure RICK1Click(Sender: TObject);
     procedure Winwcontestmaps1Click(Sender: TObject);
     procedure Likelymissingdatacodes1Click(Sender: TObject);
+    procedure Allmissingtosinglevaluevalidsettomissing1Click(Sender: TObject);
+    procedure Interactiveadjusment1Click(Sender: TObject);
     //procedure QuarterDEM1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
@@ -2563,7 +2567,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure LoadDataBaseFileWithMissingMessage(fName : PathStr);
     procedure PostPointCoordinates(Lat,Long : float64);
 
-    procedure VerticalDatumShift(vdShift : tvdShift);
+    //procedure VerticalDatumShift(vdShift : tvdShift);
     procedure SetUpTopForm;
     procedure ChangeElevUnits(Units : tElevUnit);
 
@@ -2571,6 +2575,8 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     function ComputeRMSE : float64;
 
     procedure AddPointSpectralReflectance(LastX,LastY : integer);
+    function OtherMapSameSize(om : tMapForm) : boolean;
+    function OtherMapSameCoverage(om : tMapForm) : boolean;
 
 
     {$IfDef ReordMapResize}
@@ -3255,7 +3261,7 @@ uses
    US_Properties,
    DEMRange,
    Grayscale_shift,
-   SystemCriticalU,
+   //SystemCriticalU,
    DEM_computations,
    DEM_Manager,
    PETGraphColors,
@@ -3280,6 +3286,7 @@ uses
    csv_export,
    gdal_tools,
    New_petmar_movie,
+   Elev_color_range,
    GIS_Scaled_symbols, demstringgrid, fat_fingers;
 
 var
@@ -3665,6 +3672,19 @@ begin
 end;
 *)
 
+
+function TMapForm.OtherMapSameSize(om : tMapForm) : boolean;
+begin
+   Result := (MapDraw.MapXSize = Om.MapDraw.MapXSize) and (MapDraw.MapYSize = Om.MapDraw.MapYSize);
+end;
+
+function TMapForm.OtherMapSameCoverage(om : tMapForm) : boolean;
+begin
+   Result := (abs(MapDraw.MapCorners.BoundBoxGeo.XMin - OM.MapDraw.MapCorners.BoundBoxGeo.XMin) < 0.01) and
+             (abs(MapDraw.MapCorners.BoundBoxGeo.XMax - OM.MapDraw.MapCorners.BoundBoxGeo.XMax) < 0.01) and
+             (abs(MapDraw.MapCorners.BoundBoxGeo.yMin - OM.MapDraw.MapCorners.BoundBoxGeo.yMin) < 0.01) and
+             (abs(MapDraw.MapCorners.BoundBoxGeo.yMax - OM.MapDraw.MapCorners.BoundBoxGeo.yMax) < 0.01);
+end;
 
 
 procedure TMapForm.WMBroadcastLatLongMessage(var Msg : TMessage);
@@ -15218,40 +15238,9 @@ begin
 end;
 
 
-procedure TMapForm.VerticalDatumShift(vdShift : tvdShift);
-{$IfDef ExComplexGeoStats}
-begin
-{$Else}
-   var
-      i,geoidGrid : Integer;
-      Merge : tDEMbooleans;
-      fName : PathStr;
-      TheShift : shortString;
-   begin
-      GetGeoid;
-      if (vdShift = vdEGM96toEGM2008) then fName := GeoidDiffFName
-      else fName := Geoid2008FName;
-      GeoidGrid := OpenNewDEM(fName,false);
-
-      case vdShift of
-         vdWGS84toEGM2008 : TheShift := 'gs84_to_egm2008';
-         vdEGM2008toWGS84 : TheShift := 'egm2008_to_wgs84';
-         vdEGM96toEGM2008 : TheShift := 'egm96_to_egm2008';
-      end;
-
-      if (vdShift = vdEGM2008toWGS84) then DEMGlb[GeoidGrid].MultiplyGridByConstant(-1);
-      for i := 1 to MaxDEMDataSets do Merge[i] := false;
-      Merge[MapDraw.DEMonMap] := true;
-      Merge[GeoidGrid] := true;
-      SumDEMs(MapDraw.DEMonMap, Merge,DEMGlb[MapDraw.DEMonMap].AreaName + '_vdatum_shift_' + TheShift);
-      CloseSingleDEM(GeoidGrid);
-{$EndIf}
-end;
-
-
 procedure TMapForm.WGS84elllipsoidtoEGM200081Click(Sender: TObject);
 begin
-   VerticalDatumShift(vdWGS84toEGM2008);
+   VerticalDatumShift(MapDraw.DEMonMap,vdWGS84toEGM2008);
 end;
 
 
@@ -17745,7 +17734,7 @@ var
 begin
    z := 0;
    ReadDefault('Replace missing data with',z);
-   DEMGlb[MapDraw.DEMOnMap].MissingDataToSeaLevel(z);
+   DEMGlb[MapDraw.DEMOnMap].MissingDataToConstantVelue(z);
    RespondToChangedDEM;
 end;
 
@@ -18545,6 +18534,11 @@ begin
    CheckProperTix;
 end;
 
+procedure TMapForm.Interactiveadjusment1Click(Sender: TObject);
+begin
+   PickMapElevationRangeForColoring(self);
+end;
+
 procedure TMapForm.Interpolateacrossholessmooth1Click(Sender: TObject);
 begin
    DEMGlb[MapDraw.DEMonMap].InterpolateAcrossHoles(true);
@@ -19152,12 +19146,12 @@ end;
 
 procedure TMapForm.EGM1996toEGM20081Click(Sender: TObject);
 begin
-   VerticalDatumShift(vdEGM96toEGM2008);
+   VerticalDatumShift(MapDraw.DEMonMap,vdEGM96toEGM2008);
 end;
 
 procedure TMapForm.EGM2008toWGS84ellipsoid1Click(Sender: TObject);
 begin
-    VerticalDatumShift(vdEGM2008toWGS84);
+    VerticalDatumShift(MapDraw.DEMonMap,vdEGM2008toWGS84);
 end;
 
 procedure TMapForm.Editfan1Click(Sender: TObject);
@@ -19996,6 +19990,7 @@ end;
 
 procedure TMapForm.VATdisplay1Click(Sender: TObject);
 begin
+   {$IfDef RecordVAT} WriteLineToDebugFile('TMapForm.VATdisplay1Click'); {$EndIf}
    MapDraw.MapType := mtDEMVATTable;
    DEMGlb[MapDraw.DEMonMap].CreateVATforDEM;
    DoBaseMapRedraw;
@@ -23351,8 +23346,8 @@ var
    i : integer;
 begin
    for i := 0 to pred(WMDEM.MDIChildCount) do
-      if WMDEM.MDIChildren[i] is tMapForm then begin
-          if (WmDEM.MDIChildren[i].Handle <> Handle) then begin
+      if (WMDEM.MDIChildren[i] is tMapForm) and (WmDEM.MDIChildren[i].Handle <> Handle) then begin
+          if (not OtherMapSameSize(WMDEM.MDIChildren[i] as TMapForm)) and (not OtherMapSameCoverage(WMDEM.MDIChildren[i] as TMapForm)) then begin
              if SameProjection(MapDraw, (WMDEM.MDIChildren[i] as TMapForm).MapDraw) then begin
                 (WMDEM.MDIChildren[i] as TMapForm).MapDraw.MapCorners.BoundBoxProj := MapDraw.MapCorners.BoundBoxProj;
                 (WMDEM.MDIChildren[i] as TMapForm).SubsetAndZoomMapFromProjectedBounds(Sender <> Nil);
@@ -23363,6 +23358,22 @@ begin
       end;
 
    UpdateMenusForAllMaps;
+end;
+
+
+procedure TMapForm.Allmissingtosinglevaluevalidsettomissing1Click(Sender: TObject);
+var
+   NewZ : float64;
+   x,y : integer;
+begin
+   ReadDefault('Reclassified z value',NewZ);
+   for x := 0 to pred(DEMGlb[MapDraw.DEMonMap].DEMheader.NumCol) do begin
+      for y := 0 to pred(DEMGlb[MapDraw.DEMonMap].DEMheader.NumRow) do begin
+         if DEMGlb[MapDraw.DEMonMap].MissingDataInGrid(x,y) then DEMGlb[MapDraw.DEMonMap].SetGridElevation(x,y,NewZ)
+         else DEMGlb[MapDraw.DEMonMap].SetGridMissing(x,y);
+      end;
+   end;
+   RespondToChangedDEM;
 end;
 
 
@@ -23388,7 +23399,7 @@ end;
 
 procedure TMapForm.Allpoints1Click(Sender: TObject);
 begin
-   DEMGlb[MapDraw.DEMOnMap].MissingDataToSeaLevel;
+   DEMGlb[MapDraw.DEMOnMap].MissingDataToConstantVelue;
    RespondToChangedDEM;
 end;
 
@@ -23411,8 +23422,8 @@ var
    Aspect : float64;
 begin
    if GetNewBMPSize(MapDraw.MapXSize, MapDraw.MapYSize,'' ) then begin
-      for i := 0 to pred(WMDEM.MDIChildCount) do
-         if WMDEM.MDIChildren[i] is tMapForm then begin
+      for i := 0 to pred(WMDEM.MDIChildCount) do begin
+         if (WMDEM.MDIChildren[i] is tMapForm) then begin
             (WMDEM.MDIChildren[i] as TMapForm).MapDraw.MapDrawValid := false;
             Aspect := (WMDEM.MDIChildren[i] as TMapForm).MapDraw.GetMapAspectRatio;
             (WMDEM.MDIChildren[i] as TMapForm).MapDraw.MapXSize := MapDraw.MapXSize;
@@ -23421,6 +23432,7 @@ begin
             (WMDEM.MDIChildren[i] as TMapForm).FormResize(Nil);
             (WMDEM.MDIChildren[i] as TMapForm).DrawColoredMap1Click(Nil);
          end;
+      end;
    end;
 end;
 
@@ -23437,12 +23449,13 @@ procedure TMapForm.Allsamepixelsizeasthismap1Click(Sender: TObject);
 var
    i : integer;
 begin
-   for i := 0 to pred(WMDEM.MDIChildCount) do
-      if WMDEM.MDIChildren[i] is tMapForm then begin
-         if (WmDEM.MDIChildren[i].Handle <> Handle) then begin
+   for i := 0 to pred(WMDEM.MDIChildCount) do begin
+      if (WMDEM.MDIChildren[i] is tMapForm) and (WmDEM.MDIChildren[i].Handle <> Handle) then begin
+         if (not OtherMapSameSize(WMDEM.MDIChildren[i] as TMapForm)) and (not OtherMapSameCoverage(WMDEM.MDIChildren[i] as TMapForm)) then begin
             (WMDEM.MDIChildren[i] as TMapForm).SetMapPixelSize(MapDraw.ScreenPixelSize);
          end;
       end;
+   end;
 end;
 
 

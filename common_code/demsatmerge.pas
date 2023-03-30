@@ -4,9 +4,8 @@ unit demsatmerge;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
-
 
 
 {$I nevadia_defines.inc}
@@ -64,7 +63,7 @@ implementation
 uses
    PetImage;
 
-function GetIHSparameters(var I,H,S : SmallInt; {var UseReflectance : boolean;} HueSatOnly : boolean = false; BackBMP : tMyBitmap = Nil) : boolean;
+function GetIHSparameters(var I,H,S : SmallInt; HueSatOnly : boolean = false; BackBMP : tMyBitmap = Nil) : boolean;
 var
   IHSMergeForm: TIHSMergeForm;
 begin
@@ -87,8 +86,6 @@ begin
       Label3.Caption := IntToStr(i);
       Label4.Caption := IntToStr(h);
       Label5.Caption := IntToStr(s);
-      //CheckBox1.Checked := UseReflectance;
-      //Button1.Enabled := UseReflectance;
       ColorBar;
       if HueSatOnly then begin
          ScrollBar1.Enabled := false;
@@ -99,7 +96,6 @@ begin
          i := ScrollBar1.Position;
          h := ScrollBar2.Position;
          s := ScrollBar3.Position;
-         //UseReflectance := CheckBox1.Checked;
          Result := true;
       end
       else Result := false;

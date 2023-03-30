@@ -102,6 +102,7 @@ var
    zf : float32;
    aColor : tColor;
    CodeField : ShortString;
+   Missing : int64;
    Hist : array[MinVATValue..MaxVatCats] of integer;
 begin
    fName := DEMGlb[DEMOnMap].VATFileName;
@@ -115,7 +116,6 @@ begin
       if not FileExists(fName) then exit;
       DEMGlb[DEMOnMap].VATFileName := fName;
    end;
-   //Table := tMyData.Create(fName);
    OpenNumberedGISDataBase(db, fName);
 
    (*
@@ -130,7 +130,7 @@ begin
 
    ShowHourglassCursor;
    for x := MinVATValue to MaxVATCats do Hist[x] := 0;
-
+   Missing := 0;
    Total := 0;
    fTotal := 0;
    if not GISdb[db].MyData.FieldExists(GISdb[db].dbOpts.LabelField) then begin
@@ -146,7 +146,8 @@ begin
                   Inc(Hist[z]);
                   Inc(Total);
                end;
-            end;
+            end
+            else inc(Missing);
          end;
       end;
       fTotal := Total;
@@ -192,7 +193,7 @@ begin
 
    Result.Canvas.TextOut(5,1,'    % Area     ' + GISdb[db].dbOpts.LabelField);
    while not GISdb[db].MyData.eof do begin
-      xg := 100.0*GISdb[db].MyData.GetFieldByNameAsInteger(GISdb[db].MyData.NCountField)/fTotal;
+      xg := 100.0*GISdb[db].MyData.GetFieldByNameAsInteger(GISdb[db].MyData.NCountField) / fTotal;
       inc(Cat);
       aColor := GISdb[db].MyData.tColorFromTable;
       Result.Canvas.Pen.Color := aColor;
@@ -229,7 +230,7 @@ end;
          ShowHourglassCursor;
          CreateBitmap(Bitmap,150,25*GazColors.FiltRecsInDB);
          yi := 0;
-         while not GazColors.EOF do  begin
+         while not GazColors.EOF do begin
             GazColors.DefinePointSymbol(PlotSym,PlotSize,PlotColor);
             GazColors.DefineFontFromTable(Bitmap.Canvas.Font);
             Petmar.ScreenSymbol(Bitmap.Canvas,10,yi+5,PlotSym,PlotSize,PlotColor);
