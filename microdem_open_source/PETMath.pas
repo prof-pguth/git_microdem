@@ -34,8 +34,7 @@ uses
    Petmar_types;
 
 const
-   bfArrayMaxSize = 13000000;   // 12967201    6,400,000;    12,967,201
-
+   bfArrayMaxSize = 13000000;   
    MaxFArrayPts = 25000;
    MaxLongWord = 4294967295;
    MaxWord16 = 65535;
@@ -453,12 +452,12 @@ begin
    end;
    for i := (Winsize) to pred(NPts - Winsize) do begin
        Sum := 0;
-       k := 1;
+       k := 0;
        for j := (i - Winsize) to (i + WinSize) do begin
           Sum := Sum + Tvals^[j];
           inc(k);
        end;
-       Values[i] := Sum /k;
+       Values[i] := Sum / k;
    end;
    Dispose(TVals);
 end;
@@ -1995,6 +1994,7 @@ finalization
    {$IfDef RecordMatrixOps} WriteLineToDebugFile('RecordMatrixOps active in petmath'); {$EndIf}
    {$IfDef RecordFitProblems} WriteLineToDebugFile('RecordFitProblems active in petmath'); {$EndIf}
 end {unit}.
+
 
 
 

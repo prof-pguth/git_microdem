@@ -178,7 +178,7 @@ type
          ColorLookUp      : tColorLookUp;
          RegVars          : tRegVars;
          ImageMapProjection : tMapProjection;
-         DefRedTrue,DefGreenTrue,DefBlueTrue,
+         DefRedTrue,DefGreenTrue,DefBlueTrue,DefIR2,
          DefRedFalse,DefGreenFalse,DefBlueFalse,
          BandForSize,MissingDataValue,SatRecSize,
          NumSatRow,NumSatCol,NumBands : integer;
@@ -350,8 +350,10 @@ function IsThisSentinel2(fName : PathStr) : boolean;
 //  S2B_MSIL1C_20220602T082559_N0400_R021_T37TCN_20220602T121719.SAFE
 //  L1C_T37TCN_A027360_20220602T082807           {inside granule folder}
 begin
-   Result := StrUtils.AnsiContainsText(UpperCase(fName),'SENTINEL') or (StrUtils.AnsiContainsText(fName,'_B') and (StrUtils.AnsiContainsText(fName,'L1C_T') or
-      StrUtils.AnsiContainsText(fName,'L 1C_'))) or StrUtils.AnsiContainsText(UpperCase(fName),'S2A_MSI_') or StrUtils.AnsiContainsText(UpperCase(fName),'S2B_MSI_');
+   Result := StrUtils.AnsiContainsText(UpperCase(fName),'SENTINEL') or
+            (StrUtils.AnsiContainsText(fName,'_B') and (StrUtils.AnsiContainsText(fName,'L1C_T') or StrUtils.AnsiContainsText(fName,'L 1C_'))) or
+            StrUtils.AnsiContainsText(UpperCase(fName),'S2A_MSI_') or
+            StrUtils.AnsiContainsText(UpperCase(fName),'S2B_MSI_');
 end;
 
 function ValidSatImage(i : integer) : boolean;
@@ -793,7 +795,8 @@ end;
 
 function tSatImage.MakeNewBand(NewBand : tNewSatBand; OpenMap : boolean = true) : integer;
 var
-   NIRBand,RedBand,GreenBand,ThinFactor,
+   NIRBand,RedBand,GreenBand,IR2Band,SWIRBand,
+   ThinFactor,
    i,j,k,Band3,Band1,Band2  : integer;
    numvalsf,denvalsf,thirdvalsf,Emissivity,
    Ratio,FirstFactor,SecondFactor          : float64;
@@ -821,20 +824,28 @@ begin
    ThinFactor := 1;
 
    NIRBand := 0;
+   IR2Band := 0;
    RedBand := 0;
    GreenBand := 0;
+   SWIRBand := 0;
 
    if (LandsatNumber in [4,5,6,7]) or (StrUtils.AnsiContainsText(IndexFileName,'NAIP') and (NumBands = 4)) or Is4band then begin
       NIRBand := 4;
       RedBand := 3;
       GreenBand := 2;
+      IR2Band := 5;
+      SWIRBand := 7;
    end
    else if (LandsatNumber in [8,9]) then begin
+      IR2Band := 5;
       NIRBand := 5;
       RedBand := 4;
       GreenBand := 3;
+      SWIRBand := 7;
    end
    else if SatelliteName = 'Sentinel-2' then begin
+      SWIRBand := 13;  //Band 12
+      IR2Band := 12;  //Band 11
       NIRBand := 8;
       RedBand := 4;
       GreenBand := 3;
@@ -880,85 +891,30 @@ begin
       PickBands;
       NewBandTitle := RatName;
    end
-   else if (NewBand = nsbNDSIsoil) then begin
-      if (LandsatNumber in [4,5,6,7]) then begin
-         Band1 := 5;
-         Band2 := 4;
-      end
-      else if (LandsatNumber in [8]) then begin
-         Band1 := 6;
-         Band2 := 5;
-      end
-      else if SatelliteName = 'Sentinel-2' then begin
-         Band1 := 12;  //11
-         Band2 := 9;   //8A
-      end
-      else PickBands;
-      NewBandTitle := 'NDSI (soil)' + RatName;
-   end
-   else if (NewBand = nsbNDBIbuilding) then begin  //Dozier, 1989, Remote Sensing Environment
-      if (LandsatNumber in [4,5,6,7]) then begin
-         Band1 := 5;
-         Band2 := 4;
-      end
-      else if (LandsatNumber in [8]) then begin
-         Band1 := 6;
-         Band2 := 5;
-      end
-      else PickBands;
-      NewBandTitle := 'NDBI (building)' + RatName;
+   else if (NewBand = nsbNDSIsoil) or (NewBand = nsbNDBIbuilding) {Dozier, 1989, Remote Sensing Environment} then begin
+      Band1 := IR2Band;
+      Band2 := NIRBand;
+      if (Band1 = 0) or (Band2 = 0) then PickBands;
+      if (NewBand = nsbNDSIsoil) then NewBandTitle := 'NDSI (soil)' + RatName
+      else NewBandTitle := 'NDBI (building)' + RatName;
    end
    else if (NewBand = nsbNDSIsnow) then begin  //Dozier, 1989, Remote Sensing Environment
-      if (LandsatNumber in [4,5,6,7]) then begin
-         Band1 := 2;
-         Band2 := 5;
-      end
-      else if (LandsatNumber in [8]) then begin
-         Band1 := 3;
-         Band2 := 6;
-      end
-      else if SatelliteName = 'Sentinel-2' then begin
-         Band1 := 3;
-         Band2 := 12;
-      end
-      else PickBands;
+      Band1 := RedBand;
+      Band2 := IR2Band;
+      if (Band1 = 0) or (Band2 = 0) then PickBands;
       NewBandTitle := 'NDSI (snow)' + RatName;
    end
    else if (NewBand = nsbNDWI) then begin
-      if (LandsatNumber in [4,5,6,7]) then begin
-         Band1 := 2;  //red
-         Band2 := 5;  //NIR
-      end
-      else if (LandsatNumber in [8]) then begin
-         Band1 := 3;    //red
-         Band2 := 6;    //NIR
-      end
-      else if SatelliteName = 'Sentinel-2' then begin
-         Band1 := 3;
-         Band2 := 8;
-      end
-      else if WV2Image then begin
-         Band1 := 4;    //red
-         Band2 := 8;    //IR-2
-      end
-      else PickBands;
+      Band1 := GreenBand;
+      Band2 := NIRBand;
+      if (Band1 = 0) or (Band2 = 0) then PickBands;
       NewBandTitle := 'NDWI' + RatName;
    end
    else if (NewBand = nsbNBRNormalizedburnindex) then begin
-      if (LandsatNumber in [4,5,6,7]) then begin
-         Band1 := 4;
-         Band2 := 7;
-      end
-      else if (LandsatNumber in [8]) then begin
-         Band1 := 5;
-         Band2 := 7;
-      end
-      else if SatelliteName = 'Sentinel-2' then begin
-         Band1 := 9;
-         Band2 := 13;
-      end
-      else PickBands;
-      NewBandTitle := 'NBR ' + RatName;
+      Band1 := NIRBand;
+      Band2 := SWIRBand;
+      if (Band1 = 0) or (Band2 = 0) then PickBands;
+      NewBandTitle := 'NDWI' + RatName;
    end
    else if (NewBand = nsbSentinelReflectance) then begin
       PickBand('band for Sentinel reflectance',Band1);
@@ -1985,6 +1941,16 @@ begin
    DefRedFalse := GetBand('FALSE_CLR','R');
    DefGreenFalse := GetBand('FALSE_CLR','G');
    DefBlueFalse := GetBand('FALSE_CLR','B');
+
+   if (LandsatNumber in [4,5,6,7]) or (StrUtils.AnsiContainsText(IndexFileName,'NAIP') and (NumBands = 4)) or Is4band then begin
+      DefIR2 := 5;
+   end
+   else if (LandsatNumber in [8,9]) then begin
+      DefIR2 := 6;
+   end
+   else if SatelliteName = 'Sentinel-2' then begin
+      DefIR2 := 12;  //Band 11
+   end;
 
    if MDDef.SatMultiBandTrueColor then begin
       SatView.RedBand := DefRedTrue;

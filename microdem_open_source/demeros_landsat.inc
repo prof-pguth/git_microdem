@@ -43,7 +43,6 @@ begin
       or (StrUtils.AnsiContainsText(Uppercase(fName),'_RT_QB') ) or (StrUtils.AnsiContainsText(Uppercase(fName),'_RT_TIR') ) or (StrUtils.AnsiContainsText(Uppercase(fName),'_RT_REFL') )
 end;
 
-
 function tSatImage.GetLandsatBQAName : shortstring;
 begin
    if (LandsatNumber in [7]) then Result := LandSatDir + SceneBaseName + 'BQA.tif'

@@ -163,7 +163,7 @@
                ShortName : ShortString;
                UseLink,GotIt : boolean;
             begin
-               {$IfDef RecordDBPlot} WriteLineToDebugFile('PlotDBNumericField in, ' + dbName +  ' field=' + dbOpts.FloatColorField); {$EndIf}
+               {$If Defined(RecordDBPlot) or Defined(RecordDBNumericPlot)} WriteLineToDebugFile('PlotDBNumericField in, ' + dbName +  ' field=' + dbOpts.FloatColorField); {$EndIf}
                if (dbOpts.dbColorMode = dbcmFieldLog) then begin
                   if (dbOpts.ColorMin <= 0.000000001) then dbOpts.dbColorMode := dbcmFieldLinear
                   else begin
@@ -175,15 +175,15 @@
                ShortName := dbOpts.FloatColorField;
                UseLink := LinkedField(ShortName) and LinkTable.IsNumericField(ShortName);
                if UseLink or MyData.IsNumericField(dbOpts.FloatColorField) or (dbOpts.DBAutoShow in [dbasMultiFieldRGB,dbasColorPosNeg]) then begin
-                 {$IfDef RecordDBPlotDetailed} WriteLineToDebugFile('PlotDBNumericField begin plot'); {$EndIf}
+                 {$If Defined(RecordDBPlot) or Defined(RecordDBNumericPlot)} WriteLineToDebugFile('PlotDBNumericField begin plot'); {$EndIf}
                  PrepColors(Bitmap);
-                 {$IfDef RecordDBPlotDetailed} WriteLineToDebugFile('PlotDBNumericField colors prepped'); {$EndIf}
+                 {$If Defined(RecordDBPlot) or Defined(RecordDBNumericPlot)} WriteLineToDebugFile('PlotDBNumericField colors prepped'); {$EndIf}
                  Plotted := 0;
 
                  UpdateLevel := ProgressIncrement(MyData.FiltRecsInDB);
                  StartProgressAbortOption('Plot: ' + dbOpts.FloatColorField);
                  MyData.First;
-                 {$IfDef RecordDBPlotDetailed} WriteLineToDebugFile('PlotDBNumericField start loop'); {$EndIf}
+                 {$If Defined(RecordDBPlotDetailed) or Defined(RecordDBNumericPlot)} WriteLineToDebugFile('PlotDBNumericField start loop'); {$EndIf}
                  while not MyData.eof do begin
                     if ((Plotted mod UpdateLevel) = 0) then begin
                        UpDateProgressBar(Plotted/MyData.FiltRecsInDB);
@@ -235,7 +235,7 @@
                     for Skip := 1 to ThinToPlot do MyData.Next;
                     if WantOut then Break;
                  end;
-                 {$IfDef RecordDBPlot} WriteLineToDebugFile('PlotDBNumericField out, recs plotted = ' + IntToStr(Plotted)); {$EndIf}
+                 {$If Defined(RecordDBPlot) or Defined(RecordDBNumericPlot)} WriteLineToDebugFile('PlotDBNumericField out, recs plotted = ' + IntToStr(Plotted)); {$EndIf}
                end;
             end;
 
@@ -263,7 +263,7 @@
                   {$IfDef RecordDBPlot} WriteLineToDebugFile('strings in field=' + IntToStr(StringCategories.Count)); {$EndIf}
 
                   DefineColorTableValues(dbOpts.DBColorPaletteName,0,pred(StringCategories.Count),ColorDefTable);
-                   {$IfDef RecordColorPalette} ShowColorPalette('after string define'); {$EndIf}
+                  {$IfDef RecordColorPalette} ShowColorPalette('after string define'); {$EndIf}
 
                    OldFilter := MyData.Filter;
                    StartProgressAbortOption('Plot ' + dbName);

@@ -3472,6 +3472,10 @@ object wmdem: Twmdem
       Caption = 'Open DEMIX ridges'
       OnClick = OpenDEMIXridges1Click
     end
+    object LoadDEMIXareareferenceDEMs1: TMenuItem
+      Caption = 'Load DEMIX area reference DEMs in EGM2008'
+      OnClick = LoadDEMIXareareferenceDEMs1Click
+    end
     object N36: TMenuItem
       Caption = '-'
     end

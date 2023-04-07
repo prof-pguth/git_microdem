@@ -87,7 +87,7 @@ function GetSatMaskList(ASatImage : boolean) : ANSIString;
 
 function OpenDBString : shortstring;
 
-procedure InitializeDEMsWanted(DEMList : tDEMBooleanArray; Setting : boolean);
+procedure InitializeDEMsWanted(var DEMList : tDEMBooleanArray; Setting : boolean);
 function DEMListForSingleDEM(CurDEM : integer) : tDEMBooleanArray;
 function DEMListForAllOpenDEM: tDEMBooleanArray;
 
@@ -282,7 +282,7 @@ uses
    BaseMap;
 
 
-procedure InitializeDEMsWanted(DEMList : tDEMBooleanArray; Setting : boolean);
+procedure InitializeDEMsWanted(var DEMList : tDEMBooleanArray; Setting : boolean);
 var
    j : integer;
 begin
@@ -401,7 +401,10 @@ begin
             if (SatImage[Result].RegVars.Registration in [RegProjection]) or ((not SatImage[Result].CanEnhance)) then begin
                {$IfDef RecordSatLoad} WriteLineToDebugFile('Call CreateNewSatWindow'); {$EndIf}
 
-               if (SatImage[Result].LandsatNumber in [1..9]) or SatImage[Result].LandsatLook then TStr := ShortLandsatName(SatImage[Result].SceneBaseName)
+               if (SatImage[Result].LandsatNumber <> 0) or SatImage[Result].LandsatLook then TStr := ShortLandsatName(SatImage[Result].SceneBaseName)
+               else if SatImage[Result].IsSentinel2 then begin
+                  TStr := Copy(SatImage[Result].SceneBaseName,1,6) + ' ' + Copy(SatImage[Result].SceneBaseName,8,4) + '/' + Copy(SatImage[Result].SceneBaseName,12,2) + '/' + Copy(SatImage[Result].SceneBaseName,14,2);
+               end
                else TStr := SatImage[Result].SceneBaseName;
 
                if (SatImage[Result].NumBands < 3) then mt := mtSatImageGray
@@ -1751,8 +1754,8 @@ begin
          {$Else}
             if (DEMGlb[i].VegGrid[1] <> 0) then AddLine('VEG',DEMGlb[DEMGlb[i].VegGrid[1]].DEMFileName,Nil);
             if (DEMGlb[i].VegGrid[2] <> 0) then AddLine('VEG2',DEMGlb[DEMGlb[i].VegGrid[2]].DEMFileName,Nil);
-            if DEMGlb[i].VegDensityLayers[1] <> Nil then AddLine('VOX1',LastVegDensity1fName,Nil);
-            if DEMGlb[i].VegDensityLayers[2] <> Nil then AddLine('VOX2',LastVegDensity2fName,Nil);
+            if (DEMGlb[i].VegDensityLayers[1] <> Nil) then AddLine('VOX1',LastVegDensity1fName,Nil);
+            if (DEMGlb[i].VegDensityLayers[2] <> Nil) then AddLine('VOX2',LastVegDensity2fName,Nil);
          {$EndIf}
 
          for j := 1 to MaxDataBase do begin

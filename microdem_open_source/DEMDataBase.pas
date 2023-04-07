@@ -17,6 +17,7 @@
       //{$Define RecordCloseDB}
       {$Define RecordDEMIX}
       {$Define RecordLegend}
+      {$Define RecordDBNumericPlot}
       //{$Define RecordDEMIXFull}
       //{$Define RecordDEMIXties}   //only enable for small test DB
       //{$Define RecordSymbolColor}
@@ -435,7 +436,7 @@ type
         procedure ClearGISFilter;
         procedure SaveFilterStatus(RemoveFilter : boolean);
         procedure RestoreFilterStatus;
-        procedure ApplyGISFilter(fString : AnsiString);
+        procedure ApplyGISFilter(fString : AnsiString; DoShowStatus : boolean = true);
         procedure FilterDBByUseAndDisable(Used : boolean);
         procedure FilterForUseField(Use : boolean = true);
         procedure QueryGeoBox(HiLat,LowLong,LowLat,HighLong : float64; DisplayOnTable : boolean);  overload;
@@ -1732,7 +1733,7 @@ var
    Min,Max : float64;
    zs : ^bfarray32;
 begin
-   {$IfDef RecordDefineDBColorTable} WriteLineToDebugFile('TGISdataBaseModule.DefineDBColorTable in, dbAutoshow=' + IntToStr(dbasColorByString) + '  colorfield=' + dbOpts.FloatColorField); {$EndIf}
+   {$If Defined(RecordDefineDBColorTable) or Defined(RecordDBNumericPlot)} WriteLineToDebugFile('TGISdataBaseModule.DefineDBColorTable in, dbAutoshow=' + IntToStr(dbasColorByString) + '  colorfield=' + dbOpts.FloatColorField); {$EndIf}
    EmpSource.Enabled := false;
    if (dbOpts.dbAutoShow in [dbasColorByNumeric]) then begin
       if (dbOpts.DBColorScheme = LegChloropleth) and (dbOpts.dbColorMode = dbcmFieldQuantile) then begin
@@ -1750,13 +1751,13 @@ begin
          {$IfDef RecordQuantile} WriteLineToDebugFile('end quartile'); {$EndIf}
       end
       else begin
-         {$IfDef RecordDefineDBColorTable} WriteLineToDebugFile('start color ramp'); {$EndIf}
+         {$If Defined(RecordDefineDBColorTable) or Defined(RecordDBNumericPlot)} WriteLineToDebugFile('start color ramp'); {$EndIf}
          DefineColorTableValues(dbOpts.DBColorPaletteName,dbOpts.ColorMin,dbOpts.ColorMax,ColorDefTable,dbOpts.ReverseColorTable);
-         {$IfDef RecordDefineDBColorTable} WriteLineToDebugFile('end color ramp'); {$EndIf}
+         {$If Defined(RecordDefineDBColorTable) or Defined(RecordDBNumericPlot)} WriteLineToDebugFile('end color ramp'); {$EndIf}
       end;
    end;
    EmpSource.Enabled := true;
-  {$IfDef RecordDefineDBColorTable} WriteLineToDebugFile('TGISdataBaseModule.DefineDBColorTable out'); {$EndIf}
+   {$If Defined(RecordDefineDBColorTable) or Defined(RecordDBNumericPlot)} WriteLineToDebugFile('TGISdataBaseModule.DefineDBColorTable out'); {$EndIf}
 end;
 
 
@@ -3776,7 +3777,7 @@ var
    LocalName : ShortString;
    LocalField,LinkField : boolean;
 begin
-   {$IfDef RecordDefineDBColorTable} WriteLineToDebugFile('TGISdataBaseModule.DefineColorTable in'); {$EndIf}
+   {$If Defined(RecordDefineDBColorTable) or Defined(RecordDBNumericPlot)} WriteLineToDebugFile('TGISdataBaseModule.DefineColorTable in'); {$EndIf}
    LocalField := (MyData.FieldExists(dbOpts.FloatColorField));
    LocalName := dbOpts.FloatColorField;
    if not LocalField then begin
@@ -3789,6 +3790,7 @@ begin
         {$IfDef VCL}  DefineDBColorTable; {$EndIf}
       end;
    end;
+   {$If Defined(RecordDefineDBColorTable) or Defined(RecordDBNumericPlot)} WriteLineToDebugFile('TGISdataBaseModule.DefineColorTable out'); {$EndIf}
 end;
 
 
@@ -5346,13 +5348,7 @@ begin
       if not MyData.FieldExists(MonthFieldName) then MonthFieldName := 'MONTH';
 
       if MDdef.AutoAssignNameField and (dbOpts.LabelField = '') then begin
-         AssignField(dbOpts.LabelField,'EVT_NAME');
-         AssignField(dbOpts.LabelField,'AREA');
-         AssignField(dbOpts.LabelField,'PLACE');
-         AssignField(dbOpts.LabelField,'FEATURE');
-         AssignField(dbOpts.LabelField,'FENAME');
-         AssignField(dbOpts.LabelField,'BASIN_ID');
-         AssignField(dbOpts.LabelField,'NAME');
+         dbOpts.LabelField := MyData.AssignLabelName;
       end;
 
       {$IfDef RecordDataBaseLabels} WriteLineToDebugFile(DBName + ' Label Field: ' + DBOpts.LabelField); {$EndIf}
@@ -5714,13 +5710,13 @@ end;
 
 
 
-procedure TGISdataBaseModule.ApplyGISFilter(fString : AnsiString);
+procedure TGISdataBaseModule.ApplyGISFilter(fString : AnsiString; DoShowStatus : boolean = true);
 begin
    EmpSource.Enabled := false;
    dbOpts.MainFilter := fString;
    MyData.ApplyFilter(fString);
    EmpSource.Enabled := false;
-   ShowStatus;
+   if DoShowStatus then ShowStatus;
    //ApplicationProcessMessages;
 end;
 

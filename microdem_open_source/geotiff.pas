@@ -1308,7 +1308,7 @@ begin
       3089 : Result := 'ProjCenterLatGeoKey';
       3092 : Result := 'ProjScaleAtNatOriginGeoKey';
       3095 : Result := 'ProjStraightVertPoleLongGeoKey';
-      4096 : Result := 'VerticalCSTypeGeoKey (Section 6.3.4.1 codes )';
+      4096 : Result := 'VerticalCSTypeGeoKey (Section 6.3.4.1 codes)';
       4097 : Result := 'VerticalCitationGeoKey';
       4098 : Result := 'VerticalDatumGeoKey (Section 6.3.4.2 codes)';
       4099 : Result := 'VerticalUnitsGeoKey (Section 6.3.1.3 codes)';

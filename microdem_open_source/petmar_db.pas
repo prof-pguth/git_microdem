@@ -213,12 +213,14 @@ type
         function IsStringField(WantFieldName : ANSIString) : boolean;
 
         function FieldSum(FieldDesired : shortstring) : float64;
+        function FieldAverage(FieldDesired : shortstring) : float64;
         function FindFieldMax(FieldDesired : shortString) : float64;
         function FindFieldMin(FieldDesired : shortString) : float64;
         function FindFieldRange(FieldDesired : shortString; var aMinVal,aMaxVal : float64) : boolean;
 
         function MakeImageTag(ThumbnailDir : PathStr; FieldName : ANSIString) : ANSIString;
         function BoundingBoxPresent : boolean;
+        function AssignLabelName : shortstring;
 
         procedure LengthPointRecords(var CumDist,StraightDist,LineHeading : float64);
         function ValidLatLongFromTable(var Lat,Long : float64) : boolean;
@@ -351,7 +353,24 @@ begin
     end;
 end;
 
+function tMyData.AssignLabelName : shortstring;
 
+   function IsItThere(fName : shortstring) : shortstring;
+   begin
+      if FieldExists(fName) then result := fname
+      else Result := '';
+
+   end;
+
+begin
+   Result := IsItThere('EVT_NAME');
+   if Result = ''  then Result := IsItThere('AREA');
+   if Result = ''  then Result := IsItThere('PLACE');
+   if Result = ''  then Result := IsItThere('FEATURE');
+   if Result = ''  then Result := IsItThere('FENAME');
+   if Result = ''  then Result := IsItThere('BASIN_ID');
+   if Result = ''  then Result := IsItThere('NAME');
+end;
 
 function tMyData.InsureFieldPresentAndAdded(ft : TFieldType; FieldName : ANSIString; FieldLength : integer; FieldDecimals : integer = 0) : boolean;
 
@@ -2021,12 +2040,32 @@ function tMyData.FieldSum(FieldDesired : shortstring) : float64;
 var
    z : float64;
 begin
+   Result := 0;
    First;
    repeat
       if CarefullyGetFieldByNameAsFloat64(FieldDesired,z) then Result := Result + z;
       Next;
    until EOF;
 end;
+
+function tMyData.FieldAverage(FieldDesired : shortstring) : float64;
+var
+   z : float64;
+   n : integer;
+begin
+   Result := 0;
+   n := 0;
+   First;
+   repeat
+      if CarefullyGetFieldByNameAsFloat64(FieldDesired,z) then begin
+         Result := Result + z;
+         inc(n);
+      end;
+      Next;
+   until EOF;
+   if (N > 0) then Result := Result / n;
+end;
+
 
 
 function tMyData.IsNumericField(WantFieldName : ANSIString) : boolean;

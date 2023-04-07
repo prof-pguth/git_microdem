@@ -536,6 +536,7 @@ type
     COPALOShighlowgeomorphometry1: TMenuItem;
     Metadata2: TMenuItem;
     OpenDEMIXridges1: TMenuItem;
+    LoadDEMIXareareferenceDEMs1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -914,6 +915,7 @@ type
     procedure COPALOShighlowgeomorphometry1Click(Sender: TObject);
     procedure Metadata2Click(Sender: TObject);
     procedure OpenDEMIXridges1Click(Sender: TObject);
+    procedure LoadDEMIXareareferenceDEMs1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1468,11 +1470,11 @@ var
    TStr : shortstring;
 begin
    Results := tStringList.Create;
-   Results.Add('DEM,LAT,LONG,MIN_Z,MAX_Z,HOLES_PC,SW_CornerX,SW_CornerY,SW_Corner,DX,DY,NUM_COL,NUM_ROW,PIXEL_IS,AVG_X_M,AVG_Y_M,AVG_SP_M');
+   Results.Add('DEM,LAT,LONG,MIN_Z,MAX_Z,HOLES_PC,SW_CornerX,SW_CornerY,SW_Corner,DX,DY,NUM_COL,NUM_ROW,PIXEL_IS,VERT_DATUM,AVG_X_M,AVG_Y_M,AVG_SP_M');
    for i := 1 to MaxDEMDataSets do if ValidDEM(i) then begin
       DEMGlb[i].ComputeMissingData(Missing);
       if (DEMGlb[i].DEMheader.DEMUsed = UTMBasedDEM) then Decs := -2 else Decs := -8;
-      if DEMGlb[i].DEMheader.DEMUsed = UTMBasedDEM then TStr := ''
+      if (DEMGlb[i].DEMheader.DEMUsed = UTMBasedDEM) then TStr := ''
       else TStr := LatLongDegreeToString(DEMGlb[i].DEMheader.DEMSWCornerY, DEMGlb[i].DEMheader.DEMSWCornerX,DecSeconds);
 
       Results.Add(DEMGlb[i].AreaName + ',' + RealToString(DEMGlb[i].DEMSWcornerLat + 0.5 * DEMGlb[i].LatSizeMap,-12,-3) + ',' +
@@ -1481,13 +1483,39 @@ begin
           RealToString(Missing,-12,-3) + ',' +  RealToString(DEMGlb[i].DEMheader.DEMSWCornerX,-12,Decs)  + ',' +RealToString(DEMGlb[i].DEMheader.DEMSWCornerY,-12,Decs)  + ',' +
           TStr + ',' +
           RealToString(DEMGlb[i].DEMheader.DEMxSpacing,-12,Decs) + ',' + RealToString(DEMGlb[i].DEMheader.DEMySpacing,-12,Decs)  + ',' +
-          IntToStr(DEMGlb[i].DEMheader.NumCol) + ',' + IntToStr(DEMGlb[i].DEMheader.NumRow) + ',' + IntToStr(DEMGlb[i].DEMheader.RasterPixelIsGeoKey1025)
-          + ',' + RealToString(DEMGlb[i].AverageXSpace,-12,-2) + ',' + RealToString(DEMGlb[i].AverageYSpace,-12,-2)  + ',' + RealToString(DEMGlb[i].AverageSpace,-12,-2));
+          IntToStr(DEMGlb[i].DEMheader.NumCol) + ',' + IntToStr(DEMGlb[i].DEMheader.NumRow) + ',' + IntToStr(DEMGlb[i].DEMheader.RasterPixelIsGeoKey1025) + ',' +
+          IntToStr(DEMGlb[i].DEMheader.VerticalCSTypeGeoKey) + ',' +
+          RealToString(DEMGlb[i].AverageXSpace,-12,-2) + ',' + RealToString(DEMGlb[i].AverageYSpace,-12,-2)  + ',' + RealToString(DEMGlb[i].AverageSpace,-12,-2));
    end;
    fName := Petmar.NextFileNumber(MDTempDir,'dem_summary_','.csv');
    StringList2CSVtoDB(Results,fName);
 end;
 
+
+procedure Twmdem.LoadDEMIXareareferenceDEMs1Click(Sender: TObject);
+var
+   fName : PathStr;
+begin
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('Twmdem.LoadDEMIXareareferenceDEMs1Click in'); {$EndIf}
+   SetDEMIXdirs;
+   fName := DEMIXrefDataDir;
+   if GetFileFromDirectory('DEMIX area database','*.dbf',fName) then begin
+      if LoadDEMIXareaDefinitions(fName) then begin
+         if LoadDEMIXReferenceDEMs(DEMIXRefDEM) then begin
+            {$IfDef RecordDEMIX} writeLineToDebugFile('Twmdem.LoadDEMIXareareferenceDEMs1Click success'); {$EndIf}
+         end
+         else begin
+            {$IfDef RecordDEMIX} writeLineToDebugFile('Twmdem.LoadDEMIXareareferenceDEMs1Click LoadDEMIXReferenceDEMs fail'); {$EndIf}
+         end;
+      end
+      else begin
+         {$IfDef RecordDEMIX} writeLineToDebugFile('Twmdem.LoadDEMIXareareferenceDEMs1Click LoadDEMIXareaDefinitions fail'); {$EndIf}
+      end;
+   end
+   else begin
+      {$IfDef RecordDEMIX} writeLineToDebugFile('Twmdem.LoadDEMIXareareferenceDEMs1Click GetFileFromDirectory fail'); {$EndIf}
+   end;
+end;
 
 procedure Twmdem.Loadimage1Click(Sender: TObject);
 begin
@@ -3381,8 +3409,9 @@ end;
 procedure Twmdem.SpeedButton2Click(Sender: TObject);
 begin
    {$IfDef RecordOpenVectorMap} WriteLineToDebugFile('Twmdem.SpeedButton2Click in'); {$EndIf}
-   Openshapefilemap1Click(Sender);
+   LoadBlankVectorMapAndOverlay(false,false);
 end;
+
 
 procedure Twmdem.SpeedButton3Click(Sender: TObject);
 begin

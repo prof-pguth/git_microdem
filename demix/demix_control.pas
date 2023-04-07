@@ -16,7 +16,7 @@ unit demix_control;
    {$Define RecordDEMIXsave}
    {$Define RecordCreateHalfSec}
    //{$Define RecordDEMIXMovies}
-   //{$Define RecordDEMIXVDatum}
+   {$Define RecordDEMIXVDatum}
    //{$Define RecordFullDEMIX}
    //{$Define ShowDEMIXWhatsOpen}
 {$EndIf}
@@ -36,7 +36,7 @@ const
 //service functions and procedures
    function LoadDEMIXReferenceDEMs(var RefDEM : integer) : boolean;
    function LoadDEMIXCandidateDEMs(RefDEM : integer; OpenMaps : boolean = false; AllCandidates : boolean = true) : boolean;
-   function LoadDEMIXarea(cfName : pathStr) : boolean;
+   function LoadDEMIXareaDefinitions(cfName : pathStr = '') : boolean;
    procedure GetReferenceDEMsForTestDEM(TestSeries : shortstring; var UseDSM,UseDTM : integer);
    function SymbolFromDEMName(DEMName : shortstring) : tFullSymbolDeclaration;
    function DEMIXColorFromDEMName(DEMName : shortstring) : tPlatformColor;
@@ -68,7 +68,7 @@ const
 var
    TestDEM : array[1..MaxTestDEM] of integer;
    TestSeries : array[1..MaxTestDEM] of shortstring;
-   DEMIXRefDEM,AddLocalVDatum,SubLocalVDatum,RefDTMpoint,RefDTMarea,RefDSMpoint,RefDSMarea,GeoidGrid,  COPRefDTM, COPRefDSM : integer;
+   DEMIXRefDEM,AddLocalVDatum,SubLocalVDatum,RefDTMpoint,RefDTMarea,RefDSMpoint,RefDSMarea,{GeoidGrid,}  COPRefDTM, COPRefDSM : integer;
    GeodeticFName, IceSatFName, LandCoverFName,
    LocalDatumAddFName,LocalDatumSubFName,RefDSMPointFName,RefDSMareaFName,RefDTMPointFName,RefDTMareaFName, COPRefDTMFName,COPRefDSMFName : PathStr;
 
@@ -1299,7 +1299,6 @@ begin
    if LoadDEMIXReferenceDEMs(RefDEM) then begin
    if LoadDEMIXCandidateDEMs(RefDEM,true,true)
    then begin
-
 *)
 end;
 
@@ -1452,7 +1451,7 @@ begin
 
          ZeroDEMs;
 
-         if LoadDEMIXarea(fName) then begin
+         if LoadDEMIXareaDefinitions(fName) then begin
             {$IfDef RecordDEMIX} writeLineToDebugFile('LoadDEMIXarea complete'); {$EndIf}
             if LoadDEMIXReferenceDEMs(DEMIXRefDEM) then begin
                {$IfDef RecordDEMIX} writeLineToDebugFile('LoadDEMIXReferenceDEMs complete; Open DEMs=, ' + IntToStr(NumDEMdatasetsOpen) + 'DEMIXRefDEM=' + IntToStr(DEMIXRefDEM)); {$EndIf}
@@ -1460,9 +1459,7 @@ begin
                if MDDef.DEMIX_DoHalfSecDEMs then begin
                   //HalfSecRefDSM := CreateHalfSecRefDEM(RefDSMPoint,RefDSMArea);
                   HalfSecRefDTM := CreateHalfSecRefDEM(RefDTMPoint,RefDTMArea);
-                  exit;
-
-
+exit;
                   //if FileExists(HalfSecRefDSMfName) then HalfSecRefDSM := OpenNewDEM(HalfSecRefDSMfName) else HalfSecRefDSM := CreateHalfSecRefDEM(RefDSMPoint,RefDSMArea);
                   //if FileExists(HalfSecRefDTMfName) then HalfSecRefDTM := OpenNewDEM(HalfSecRefDTMfName) else HalfSecRefDTM := CreateHalfSecRefDEM(RefDTMPoint,RefDTMArea);
                   DEMIXRefDEM := HalfSecRefDTM;
@@ -1700,42 +1697,7 @@ begin
 end;
 
 
-procedure CheckVerticalDatumShift(var DEM : integer; VertDatum : ShortString);
-//Reproject vertical datum to EGM2008 if required because DEM is EGM96
-//we could not get this to run doing nothing for DEM already on EGM2008
-var
-  Col,Row,NewDEM : integer;
-  z,z2 : float32;
-  Lat,Long : float64;
-  DrawMap : boolean;
-begin
-   {$IfDef RecordDEMIXVDatum} writeLineToDebugFile('CheckVerticalDatumShift in, DEM=' + IntToStr(DEM)); {$EndIf}
-   DrawMap := (DEMGlb[DEM].SelectionMap <> Nil);
-   if ValidDEM(DEM) then begin
-      NewDEM := DEMGlb[DEM].ResaveNewResolution(fcSaveFloatingPoint); //have to resave because input DEMs are all integer resolution
-      DEMGlb[NewDEM].AreaName := DEMGlb[DEM].AreaName;  // + '_egm2008';
-      {$IfDef RecordDEMIXVDatum} writeLineToDebugFile('CheckVerticalDatumShift with shift ' + DEMGlb[DEM].AreaName); {$EndIf}
-      z2 := 0;
-      for Col := 0 to pred(DEMGlb[NewDEM].DEMHeader.NumCol) do begin
-         for Row := 0 to pred(DEMGlb[NewDEM].DEMHeader.NumRow) do begin
-             if DEMGlb[NewDEM].GetElevMetersOnGrid(Col,Row,z) then begin
-                DEMGlb[NewDEM].DEMGridToLatLongDegree(Col,Row,Lat,Long);
-                if (VertDatum <> '5773')or DEMGlb[GeoidGrid].GetElevFromLatLongDegree(Lat,Long,z2) then begin
-                   DEMGlb[NewDEM].SetGridElevation(Col,Row,z+z2);
-                end;
-             end;
-         end;
-      end;
-      DEMGlb[NewDEM].CheckMaxMinElev;
-      CloseSingleDEM(DEM);
-      DEM := NewDEM;
-      If Drawmap then CreateDEMSelectionMap(DEM,true,false,MDDef.DefDEMMap);
-   end;
-   {$IfDef RecordDEMIXVDatum} writeLineToDebugFile('CheckVerticalDatumShift out, DEM=' + IntToStr(DEM)); {$EndIf}
-end;
-
-
-function LoadDEMIXarea(cfName : pathStr) : boolean;
+function LoadDEMIXareaDefinitions(cfName : pathStr = '') : boolean;
 var
    fName : PathStr;
    db : integer;
@@ -1759,7 +1721,7 @@ begin
    RefDTMarea := 0;
    RefDSMpoint := 0;
    RefDSMarea := 0;
-   GeoidGrid := 0;
+   //GeoidGrid := 0;
    COPRefDTM := 0;
    COPRefDSM := 0;
 
@@ -1798,17 +1760,60 @@ end;
 
 function LoadDEMIXCandidateDEMs(RefDEM : integer; OpenMaps : boolean = false; AllCandidates : boolean = true) : boolean;
 var
-   AllDEMs,WantSeries,ShortName : shortstring;
+   {$IfDef RecordDEMIX} AllDEMs,  {$EndIf}
+   WantSeries,ShortName : shortstring;
    IndexSeriesTable : tMyData;
-   WantDEM,WantImage,Ser,i,NumPts : integer;
+   WantDEM,WantImage,Ser,i,NumPts,GeoidGrid : integer;
+   //DrawMap : boolean;
+
+
+         procedure MoveFromEGM96toEGM2008(var DEM : integer);
+         //Reproject vertical datum to EGM2008 if required because DEM is EGM96
+         //we could not get this to run doing nothing for DEM already on EGM2008
+         var
+           Col,Row,NewDEM : integer;
+           z,z2 : float32;
+           Lat,Long : float64;
+         begin
+            {$IfDef RecordDEMIXVDatum} writeLineToDebugFile('CheckVerticalDatumShift in, DEM=' + IntToStr(DEM) + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
+            if ValidDEM(DEM) and (DEMGlb[DEM].DEMHeader.VerticalCSTypeGeoKey = VertCSEGM96) then begin
+               NewDEM := DEMGlb[DEM].ResaveNewResolution(fcSaveFloatingPoint); //have to resave because input DEMs are all integer resolution
+               DEMGlb[NewDEM].AreaName := DEMGlb[DEM].AreaName;  // + '_egm2008';
+               DEMGlb[NewDEM].DEMHeader.VerticalCSTypeGeoKey := VertCSEGM2008;
+               {$IfDef RecordDEMIXVDatum} writeLineToDebugFile('CheckVerticalDatumShift with shift ' + DEMGlb[DEM].AreaName); {$EndIf}
+               z2 := 0;
+               for Col := 0 to pred(DEMGlb[NewDEM].DEMHeader.NumCol) do begin
+                  for Row := 0 to pred(DEMGlb[NewDEM].DEMHeader.NumRow) do begin
+                      if DEMGlb[NewDEM].GetElevMetersOnGrid(Col,Row,z) then begin
+                         DEMGlb[NewDEM].DEMGridToLatLongDegree(Col,Row,Lat,Long);
+                         if DEMGlb[GeoidGrid].GetElevFromLatLongDegree(Lat,Long,z2) then begin
+                            DEMGlb[NewDEM].SetGridElevation(Col,Row,z+z2);
+                         end;
+                      end;
+                  end;
+               end;
+               DEMGlb[NewDEM].CheckMaxMinElev;
+               CloseSingleDEM(DEM);
+               DEM := NewDEM;
+               {$IfDef RecordDEMIXVDatum} writeLineToDebugFile('CheckVerticalDatumShift out, DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
+            end
+            else begin
+               {$IfDef RecordDEMIXVDatum} writeLineToDebugFile('CheckVerticalDatumShift out, not EGM96, DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
+            end;
+         end;
+
+
+
 begin
    {$If Defined(RecordDEMIXLoad)} writeLineToDebugFile('LoadDEMIXCandidateDEMs in; Open DEMs=, ' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
    Result := false;
-   AllDEMs := '';
+   {$IfDef RecordDEMIX} AllDEMs := ''; {$EndIf}
    for I := 1 to MaxTestDEM do begin
       TestDEM[i] := 0;
       TestSeries[i] := '';
    end;
+   GeoidGrid := OpenNewDEM(GeoidDiffFName,false,'geoid difference from EGM96 to EGM2008');  //to move DEMs from EGM96 to EGM2008
+   GeoidDiffFName := DEMGlb[GeoidGrid].DEMFileName;
 
    OpenIndexedSeriesTable(IndexSeriesTable);
    IndexSeriesTable.ApplyFilter('USE=' + QuotedStr('Y'));
@@ -1820,27 +1825,36 @@ begin
          {$If Defined(RecordFullDEMIX) or Defined(RecordDEMIXLoad)} writeLineToDebugFile('Try ' + WantSeries + ' ' + ShortName + '  ' + IntToStr(Ser) + '/' + IntToStr(IndexSeriesTable.FiltRecsInDB)); {$EndIf}
          wmdem.SetPanelText(0,WantSeries);
          {$If Defined(RecordFullDEMIX)} writeLineToDebugFile('Ref DEM=' + DEMGlb[RefDEM].AreaName + '  ' + sfBoundBoxToString(DEMGlb[RefDEM].DEMBoundBoxGeo,6)); {$EndIf}
-         if LoadMapLibraryBox(WantDEM,WantImage,true,DEMGlb[DEMIXRefDEM].DEMBoundBoxGeo,WantSeries,OpenMaps) and ValidDEM(WantDEM) then begin
+         if LoadMapLibraryBox(WantDEM,WantImage,true,DEMGlb[DEMIXRefDEM].DEMBoundBoxGeo,WantSeries,false) and ValidDEM(WantDEM) then begin
             {$If Defined(RecordDEMIXLoad)} writeLineToDebugFile('LoadDEMIXCandidateDEMs done LoadMapLib; Open DEMs=, ' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
             inc(Ser);
             TestDEM[Ser] := WantDEM;
             TestSeries[Ser] := ShortName;
-            if not AllOfBoxInAnotherBox(DEMGlb[DEMIXRefDEM].DEMBoundBoxGeo,DEMGlb[WantDEM].DEMBoundBoxGeo) then begin
-               AllDEMs := AllDEMs + TestSeries[Ser] + ' (partial  ' + sfBoundBoxToString(DEMGlb[DEMIXRefDEM].DEMBoundBoxGeo) + ')  ';
-            end;
+            {$IfDef RecordDEMIX}
+               if not AllOfBoxInAnotherBox(DEMGlb[DEMIXRefDEM].DEMBoundBoxGeo,DEMGlb[WantDEM].DEMBoundBoxGeo) then begin
+                  AllDEMs := AllDEMs + TestSeries[Ser] + ' (partial  ' + sfBoundBoxToString(DEMGlb[DEMIXRefDEM].DEMBoundBoxGeo) + ')  ';
+               end;
+            {$EndIf}
             DEMGlb[TestDEM[Ser]].AreaName := TestSeries[Ser];
             DEMGlb[TestDEM[Ser]].DEMFileName := NextFileNumber(MDTempDir, DEMGlb[TestDEM[Ser]].AreaName + '_', '.dem');
 
             {$IfDef RecordDEMIXLoad} writeLineToDebugFile('Opened:' + WantSeries + '  Open DEMs=' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
-            DEMGlb[TestDEM[Ser]].SelectionMap.ClipDEMtoregion(DEMGlb[RefDEM].DEMBoundBoxGeo);
-            {$IfDef RecordDEMIXLoad} writeLineToDebugFile('Clipped:' + WantSeries + '  Open DEMs=' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
             if (DEMGlb[TestDEM[Ser]].DEMHeader.MinElev < 0.01) then DEMGlb[TestDEM[Ser]].MarkInRangeMissing(0,0,NumPts);
-            CheckVerticalDatumShift(TestDEM[Ser],IndexSeriesTable.GetFieldByNameAsString('VERT_DATUM'));
-            {$IfDef RecordDEMIXLoad} writeLineToDebugFile('Datum shift:' + WantSeries + '  Open DEMs=' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
+
+            //DrawMap := (DEMGlb[TestDEM[Ser]].SelectionMap <> Nil);
+            DEMGlb[TestDEM[Ser]].DEMHeader.VerticalCSTypeGeoKey := IndexSeriesTable.GetFieldByNameAsInteger('VERT_DATUM');
+            MoveFromEGM96toEGM2008(TestDEM[Ser]);
+            If OpenMaps then begin
+               CreateDEMSelectionMap(TestDEM[Ser],true,false,MDDef.DefDEMMap);
+               if ValidDEM(RefDEM) then begin
+                  DEMGlb[TestDEM[Ser]].SelectionMap.ClipDEMtoregion(DEMGlb[RefDEM].DEMBoundBoxGeo);
+                  {$IfDef RecordDEMIXLoad} writeLineToDebugFile('Clipped:' + WantSeries + '  Open DEMs=' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
+               end;
+            end;
             Result := true;
          end
          else begin
-            AllDEMs := AllDEMs + WantSeries + ' (missing)  ';
+            {$IfDef RecordDEMIX}  AllDEMs := AllDEMs + WantSeries + ' (missing)'; {$EndIf}
          end;
       end;
       IndexSeriesTable.Next;
@@ -1860,8 +1874,9 @@ function LoadDEMIXReferenceDEMs(var RefDEM : integer) : boolean;
                DEM := OpenNewDEM(FName);   //must load map for the DEMIX tile computation
                if (DEM <> 0) then begin
                   //move to EGM2008
-                  if AddLocalVDatum <> 0 then DEMGlb[DEM].AddaDEM(AddLocalVDatum);
-                  if SubLocalVDatum <> 0 then DEMGlb[DEM].SubtractaDEM(AddLocalVDatum);
+                  if (AddLocalVDatum <> 0) then DEMGlb[DEM].AddaDEM(AddLocalVDatum);
+                  if (SubLocalVDatum <> 0) then DEMGlb[DEM].SubtractaDEM(AddLocalVDatum);
+                  if (AddLocalVDatum <> 0) or (SubLocalVDatum <> 0) then DEMGlb[DEM].DEMHeader.VerticalCSTypeGeoKey := VertCSEGM2008;
                   if (RefDEM = 0) then RefDEM := DEM;
                end;
             end
@@ -1885,8 +1900,8 @@ begin
       if (AddLocalVDatum <> 0) then CloseSingleDEM(AddLocalVDatum);
       if (SubLocalVDatum <> 0) then CloseSingleDEM(SubLocalVDatum);
 
-      GeoidGrid := OpenNewDEM(GeoidDiffFName,false,'geoid difference from EGM96 to EGM2008');  //to move DEMs from EGM96 to EGM2008
-      GeoidDiffFName := DEMGlb[GeoidGrid].DEMFileName;
+      //GeoidGrid := OpenNewDEM(GeoidDiffFName,false,'geoid difference from EGM96 to EGM2008');  //to move DEMs from EGM96 to EGM2008
+      //GeoidDiffFName := DEMGlb[GeoidGrid].DEMFileName;
       {$If Defined(RecordFullDEMIX)} WriteLineToDebugFile('ProcessDEMIXtestarea in, geoid grid opened, REFDEM=' + IntToStr(RefDEM)); {$EndIf}
    end
    else begin

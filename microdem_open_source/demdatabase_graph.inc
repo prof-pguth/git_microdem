@@ -438,7 +438,7 @@ var
   MaxRange,xc,yc,Lat,Long : float64;
   i : integer;
   rFile : file;
-  v : array[1..3] of float64;
+  v : array[1..3] of float32;
   ThisGraph : TThisbasegraph;
 begin
    EmpSource.Enabled := false;

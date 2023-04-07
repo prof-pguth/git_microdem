@@ -169,8 +169,10 @@ var
    Aspects : farray;
    xs    : array[0..MaxFilterSize] of float32;
 begin
+   if (not ThreadsWorking) then StartProgress('Filtering');
+
    for Row := GridLimits.YGridLow to GridLimits.YGridHigh do begin
-      if (CountInStrips mod 50 = 0) and ShowSatProgress then begin
+      if (not ThreadsWorking) and (CountInStrips mod 50 = 0) and ShowSatProgress then begin
          UpdateProgressBar(CountInStrips/DEMheader.NumRow);
       end;
       if ThreadsWorking then TInterlocked.Increment(CountInStrips)
@@ -263,6 +265,7 @@ begin
             end;
          end;
       end;
+      if (not ThreadsWorking) and WantOut then exit;
    end {for};
 end;
 
@@ -330,12 +333,14 @@ begin
    ShowHourglassCursor;
 
    MDdef.FilterGridsToEdge := true;
-   StartProgress(DEMGlb[NewDEM].AreaName);
    CountInStrips := 0;
 
-   {$IfDef NoParallelFor}
+   //{$IfDef NoParallelFor}
+       StartProgressAbortOption('Filter ' + DEMGlb[NewDEM].AreaName);
        ThreadsWorking := false;
        FilterStrip(NewDEM,FilterLap,FullDEMGridLimits,FilterCategory,Filter);
+       EndProgress;
+   (*
    {$Else}
       PartLimits := GetLimitsForParallelLoops(FullDEMGridLimits);
       NewDEM1 := NewDEM;
@@ -346,6 +351,7 @@ begin
          end);
       ThreadsWorking := false;
    {$EndIf}
+   *)
    DEMGlb[NewDEM].CheckMaxMinElev;
    RestoreBackupDefaults;
    {$IfDef RecordDEMEdits} WriteLineToDebugFile('tDEMDataSet.FilterThisDEM out'); {$EndIf}

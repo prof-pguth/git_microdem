@@ -59,7 +59,7 @@ unit DEMCoord;
       //{$Define RecordVariogram}
       //{$Define RecordElevPercentiles}
       //{$Define ShowFullDEMSSOCalc}  //big slowdown
-      //{$Define RecordVAT}
+      {$Define RecordVAT}
       //{$Define RecordNLCD}
       //{$Define RecordMoments}
       //{$Define RecordSetup}
@@ -326,6 +326,7 @@ type
          UTMValidDEM        : boolean;
          cosDegSunAltitude,sinDegSunAltitude : float64;
          RefPhi : array[1..MaxRefDir] of float64;
+         VatLegendStrings : tStringList;
 
          {$IfDef VCL}
             SelectionMap       : TMapForm;
@@ -573,6 +574,8 @@ type
          {$EndIf}
 
          function CloneAndOpenGridSetMissing(NewPrecision : tDEMprecision; Gridname : shortstring; ElevUnits : tElevUnit) : integer;
+         function ThinAndOpenGridSetMissing(ThinFactor : integer; NewPrecision : tDEMprecision; Gridname : shortstring; ElevUnits : tElevUnit) : integer;
+
 
          procedure ThinThisDEM(var ThinDEM : integer; ThinFactor : integer = 0; DoItByAveraging : boolean = false);
          procedure AverageResampleThisDEM(var ThinDEM : integer; ThinFactor : integer = 0);
@@ -941,6 +944,7 @@ begin
       if DoItByAveraging then ReadDefault('Average NxN pixel region to use',ThinFactor)
       else ReadDefault('Decimation thin factor',ThinFactor);
    end;
+   //ThinDEM := ThinAndOpenGridSetMissing(NewPrecision : tDEMprecision; Gridname : shortstring; ElevUnits : tElevUnit) : integer;
 
    NewHeadRecs := DEMheader;
    NewHeadRecs.NumCol := DEMheader.NumCol div ThinFactor;
@@ -957,6 +961,7 @@ begin
    end;
 
    OpenAndZeroNewDEM(true,NewHeadRecs,ThinDEM,TStr + IntToStr(ThinFactor) + '_' + AreaName,InitDEMmissing);
+
 
    StartProgress(DEMGlb[ThinDEM].AreaName);
    for Col := 0 to pred(DEMGlb[ThinDEM].DEMheader.NumCol) do begin
@@ -981,6 +986,25 @@ begin
    DEMGlb[ThinDEM].CheckMaxMinElev;
    EndProgress;
 end;
+
+
+function tDEMDataSet.ThinAndOpenGridSetMissing(ThinFactor : integer; NewPrecision : tDEMprecision; Gridname : shortstring; ElevUnits : tElevUnit) : integer;
+var
+   Col,Row,x,y,Npts : integer;
+   z : float32;
+   Sum       : float64;
+   NewHeadRecs : tDEMheader;
+   TStr : shortstring;
+begin
+   NewHeadRecs := DEMheader;
+   NewHeadRecs.DEMPrecision := NewPrecision;
+   NewHeadRecs.NumCol := DEMheader.NumCol div ThinFactor;
+   NewHeadRecs.NumRow := DEMheader.NumRow div ThinFactor;
+   NewHeadRecs.DEMySpacing := DEMheader.DEMySpacing * ThinFactor;
+   NewHeadRecs.DEMxSpacing := DEMheader.DEMxSpacing * ThinFactor;
+   OpenAndZeroNewDEM(true,NewHeadRecs,Result,TStr + IntToStr(ThinFactor) + '_' + AreaName,InitDEMmissing);
+end;
+
 
 function tDEMDataSet.CloneAndOpenGridSetMissing(NewPrecision : tDEMprecision; Gridname : shortstring; ElevUnits : tElevUnit) : integer;
 var
@@ -1475,6 +1499,7 @@ begin
    DiagSpaceByDEMrow := Nil;
    Normals := Nil;
    DEMMemoryAlreadyAllocated := false;
+   VatLegendStrings := Nil;
 
    {$IfDef NoMapOptions}
    {$Else}
@@ -1595,7 +1620,7 @@ begin
 
    if not DEMMapProjection.ProjectionSharedWithDataset then FreeAndNil(DEMMapProjection);
    FreeDEMMemory;
-
+   FreeAndNil(VatLegendStrings);
    {$IfDef ExVegDensity}
    {$Else}
        CloseVegGrid(0);

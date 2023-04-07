@@ -1051,7 +1051,7 @@ end;
 
 function IsSatelliteColorImage(MapType : tMapType) : boolean;
 begin
-   Result := MapType in [mtSatTrueColor,mtSatFalseColor,mtSatPickColor,mtUnenhancedRGB];
+   Result := MapType in [mtSatTrueColor,mtSatFalseColor,mtSatPickColor,mtSatFalseVeg,mtUnenhancedRGB];
 end;
 
 

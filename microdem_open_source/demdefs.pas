@@ -368,6 +368,7 @@ const  //map display modes, for particular data types and desired look
    mtGrCyBlReflect = 55;
    mtDEMaspectSlope = 56;
    mt6ColorVAToverlay = 57;
+   mtSatFalseVeg = 58;
    //mtDifferenceMap = 57;
 
 type
