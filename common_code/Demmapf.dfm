@@ -2,8 +2,8 @@ object MapForm: TMapForm
   Left = 45
   Top = 303
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1060
-  ClientWidth = 1775
+  ClientHeight = 1059
+  ClientWidth = 1771
   Color = clBtnHighlight
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -40,8 +40,8 @@ object MapForm: TMapForm
   object ScrollBox1: TScrollBox
     Left = 0
     Top = 27
-    Width = 1775
-    Height = 1033
+    Width = 1771
+    Height = 1032
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clRed
@@ -51,8 +51,8 @@ object MapForm: TMapForm
     ParentFont = False
     TabOrder = 0
     OnClick = ScrollBox1Click
-    ExplicitWidth = 1771
-    ExplicitHeight = 1032
+    ExplicitWidth = 1767
+    ExplicitHeight = 1031
     object Image1: TImage
       Left = 3
       Top = -247
@@ -209,13 +209,13 @@ object MapForm: TMapForm
     end
     object BlendPanel: TPanel
       Left = 0
-      Top = 988
-      Width = 1771
+      Top = 987
+      Width = 1767
       Height = 41
       Align = alBottom
       TabOrder = 8
-      ExplicitTop = 987
-      ExplicitWidth = 1767
+      ExplicitTop = 986
+      ExplicitWidth = 1763
       object TrackBar2: TTrackBar
         Left = 289
         Top = 1
@@ -334,12 +334,12 @@ object MapForm: TMapForm
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1775
+    Width = 1771
     Height = 27
     Align = alTop
     TabOrder = 1
     OnMouseDown = Panel1MouseDown
-    ExplicitWidth = 1771
+    ExplicitWidth = 1767
     object AnnotateSpeedButton1: TSpeedButton
       Left = 31
       Top = -4
@@ -3077,6 +3077,7 @@ object MapForm: TMapForm
         object OpenGLdrapeonanotherDEM1: TMenuItem
           Caption = 'OpenGL, drape on another DEM'
           GroupIndex = 1
+          OnClick = OpenGLdrapeonanotherDEM1Click
         end
       end
       object Overlaysvariableopaque1: TMenuItem
@@ -5055,6 +5056,20 @@ object MapForm: TMapForm
       object DEMsfrommaplibrarymaparea1: TMenuItem
         Caption = 'DEMs from map library, map area'
         OnClick = DEMsfrommaplibrarymaparea1Click
+      end
+      object N54: TMenuItem
+        Caption = '-'
+      end
+      object N55: TMenuItem
+        Caption = 'DEMIX candidate DEMs in EGM2008'
+        object COPandALOS1: TMenuItem
+          Caption = 'COP and ALOS'
+          OnClick = COPandALOS1Click
+        end
+        object All61: TMenuItem
+          Caption = 'All 6'
+          OnClick = All61Click
+        end
       end
     end
     object Export1: TMenuItem

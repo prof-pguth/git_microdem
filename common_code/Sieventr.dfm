@@ -4,8 +4,8 @@ object SieveEntryForm: TSieveEntryForm
   ActiveControl = OKBtn
   BorderStyle = bsDialog
   Caption = 'Sieve Analysis Data Entry'
-  ClientHeight = 359
-  ClientWidth = 455
+  ClientHeight = 355
+  ClientWidth = 439
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack

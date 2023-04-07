@@ -4,8 +4,8 @@ object InputArrays: TInputArrays
   ActiveControl = OKBtn
   BorderStyle = bsDialog
   Caption = 'Contour Boundaries'
-  ClientHeight = 294
-  ClientWidth = 308
+  ClientHeight = 290
+  ClientWidth = 292
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack

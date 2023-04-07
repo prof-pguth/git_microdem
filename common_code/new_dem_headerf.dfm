@@ -3,8 +3,8 @@ object DEMHeaderForm: TDEMHeaderForm
   Top = 0
   BorderIcons = []
   Caption = 'DEMHeaderForm'
-  ClientHeight = 550
-  ClientWidth = 467
+  ClientHeight = 586
+  ClientWidth = 476
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -57,9 +57,16 @@ object DEMHeaderForm: TDEMHeaderForm
     Height = 13
     Caption = 'Digitizing Datum for DEM'
   end
+  object Label10: TLabel
+    Left = 24
+    Top = 448
+    Width = 68
+    Height = 13
+    Caption = 'Vertical datum'
+  end
   object HelpBitBtn8: TBitBtn
     Left = 170
-    Top = 519
+    Top = 553
     Width = 75
     Height = 25
     Caption = 'Help'
@@ -86,7 +93,7 @@ object DEMHeaderForm: TDEMHeaderForm
   end
   object BitBtn7: TBitBtn
     Left = 89
-    Top = 519
+    Top = 553
     Width = 75
     Height = 25
     Caption = 'Cancel'
@@ -113,7 +120,7 @@ object DEMHeaderForm: TDEMHeaderForm
   end
   object BitBtn6: TBitBtn
     Left = 8
-    Top = 517
+    Top = 551
     Width = 75
     Height = 25
     Caption = 'OK'
@@ -429,10 +436,19 @@ object DEMHeaderForm: TDEMHeaderForm
   end
   object Memo1: TMemo
     Left = 8
-    Top = 442
+    Top = 474
     Width = 433
     Height = 71
     ScrollBars = ssVertical
     TabOrder = 15
+  end
+  object Edit10: TEdit
+    Left = 104
+    Top = 442
+    Width = 81
+    Height = 21
+    Enabled = False
+    TabOrder = 16
+    Text = 'Edit10'
   end
 end

@@ -232,6 +232,7 @@ var
          else Result := MDdef.DefDEMMap;
 
          if FileExists(ChangeFileExt(DEMGlb[DEM].DEMFileName,'.vat.dbf')) or FileExists(DEMGlb[DEM].DEMFileName + '.vat.dbf') then begin
+            {$IfDef RecordVAT} WriteLineToDebugFile('CreateDEMSelectionMap, create VAT'); {$EndIf}
             DEMGlb[DEM].CreateVATforDEM;
             Result := mtDEMVATTable;
          end

@@ -17,6 +17,8 @@ unit DEMStat;
    {$IfDef Debug}
       //{$Define NoParallelFor}
       //{$Define RecordLag}
+      {$Define RecordPitsSpires}
+      {$Define RecordMapAlgebra}
       //{$Define RecordDiffMap}
       //{$Define RecordStdDef}
       //{$Define RecordElevationSlopePlot}
@@ -651,7 +653,9 @@ begin
       dx := round(MDDef.PeakRadius / AverageXSpace);
       dy := round(MDDef.PeakRadius / AverageYSpace);
       NumPeak := 0;
+      StartProgressAbortOption('Peaks');
       for Col := GridLimits.XGridLow to GridLimits.XGridHigh do begin
+         if Col mod 25 = 0 then UpdateProgressBar( (Col - GridLimits.XGridLow) / (GridLimits.XGridHigh - GridLimits.XGridLow));
          for Row := GridLimits.YGridLow to GridLimits.YGridHigh do begin
              if DEMGlb[DEM].GetElevMeters(Col,Row,MaxZ) then begin
                 MinZ := MaxZ;
@@ -675,8 +679,9 @@ begin
              end;
            NotPeak:;
          end {while row};
+         if WantOut then break;
       end {while col};
-
+      EndProgress;
       if (Memo1 <> nil) then begin
          Memo1.Lines.Add('');
          Memo1.Lines.Add(DEMGlb[DEM].AreaName);
@@ -686,8 +691,6 @@ begin
    Result := NumPeak;
    {$IfDef RecordPitsSpires} WriteLineToDebugFile('FindPeaks out'); {$EndIf}
 end;
-
-
 
 
 procedure AllAspects;
@@ -1230,10 +1233,14 @@ var
    Lat,Long : float64;
    z,z2 : float32;
 begin
-   StartProgress('Sum grids');
+   {$IfDef RecordMapAlgebra} WriteLineToDebugFile('SumDEMs in'); {$EndIf}
    if OpenAndZeroNewDEM(true,DEMGlb[FirstDEM].DEMheader,Result,NewName,InitDEMmissing) then begin
+      StartProgress('Sum grids');
       for Col := 0 to pred(DEMGlb[Result].DEMheader.NumCol) do begin
-         if (Col mod 100 = 0) then UpdateProgressBar(Col/DEMGlb[Result].DEMheader.NumCol);
+         if (Col mod 100 = 0) then begin
+            UpdateProgressBar(Col/DEMGlb[Result].DEMheader.NumCol);
+            {$IfDef RecordMapAlgebra} WriteLineToDebugFile('Col=' + IntToStr(Col)); {$EndIf}
+         end;
          for Row := 0 to pred(DEMGlb[Result].DEMheader.NumRow) do begin
             z := 0;
             for i := 1 to MaxDEMDataSets do if Merge[i] then begin
@@ -1244,7 +1251,7 @@ begin
                else begin
                   DEMGlb[FirstDEM].DEMGridToLatLongDegree(Col,Row,Lat,Long);
                   if DEMGlb[i].GetElevFromLatLongDegree(Lat,Long,z2) then z := z + z2
-                  else if AllGridsValidZ then Goto MissingData;;
+                  else if AllGridsValidZ then Goto MissingData;
                end;
             end;
             DEMGlb[Result].SetGridElevation(Col,Row,z);
@@ -1254,6 +1261,7 @@ begin
       EndProgress;
       if OpenMap then DEMGlb[Result].SetUpMap(Result,true,DEMGlb[FirstDEM].SelectionMap.MapDraw.MapType);
    end;
+   {$IfDef RecordMapAlgebra} WriteLineToDebugFile('SumDEMs out'); {$EndIf}
 end;
 
 

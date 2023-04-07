@@ -4,8 +4,8 @@ object fan_sens_form: Tfan_sens_form
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Fan Sensitivity Options'
-  ClientHeight = 218
-  ClientWidth = 286
+  ClientHeight = 214
+  ClientWidth = 270
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

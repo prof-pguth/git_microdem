@@ -4,7 +4,7 @@ unit demstringgrid;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
 
@@ -14,9 +14,6 @@ unit demstringgrid;
 {Program may be used or modified for any non-commercial purpose so long as this original notice remains in place. }
 {All other rights are reserved                                                                                    }
 {-----------------------------------------------------------------------------------------------------------------}
-
-
-
 
 {$I nevadia_defines.inc}
 
@@ -380,10 +377,10 @@ end;
 
 procedure TGridForm.ShowSortingControls(Show: boolean);
 begin
-    BitBtn8.Visible := show;
-    BitBtn9.Visible := show;
-    BitBtn19.Visible := show;
-    BitBtn20.Visible := show;
+   BitBtn8.Visible := show;
+   BitBtn9.Visible := show;
+   BitBtn19.Visible := show;
+   BitBtn20.Visible := show;
 end;
 
 
@@ -402,8 +399,7 @@ begin
    else begin
       dWidth := 100;
       CheckEditString(Edit2.Text,dwidth);
-      if (dWidth < ClientWidth div StringGrid1.ColCount) then
-         dWidth := ClientWidth div StringGrid1.ColCount;
+      if (dWidth < ClientWidth div StringGrid1.ColCount) then dWidth := ClientWidth div StringGrid1.ColCount;
    end;
    StringGrid1.DefaultColWidth := dWidth;
    StringGrid1.DefaultRowHeight := 2 * StringGrid1.Canvas.TextHeight('9');
@@ -476,7 +472,6 @@ var
    ShowHeader : boolean;
 begin
    {$IfDef StringGridProblems} WriteLineToDebugFile('TGridForm.BitBtn6Click in'); {$EndIf}
-
    if (fName = '') then fName := ProgramRootDir + 'correlations' + DefaultDBExt;
    if GetFileFromDirectory('Correlation color table',DefaultDBMask,fName) then
       Table := tMyData.Create(fName)
@@ -618,7 +613,7 @@ begin
    if (Sender = BitBtn8) or (Sender = BitBtn9) then begin  //integer
       SortGrid(StringGrid1,0,1,Sender = BitBtn9);
    end
-   else begin     //string
+   else begin  //string
       SortGrid(StringGrid1,-1,0,Sender = BitBtn20);
    end;
    {$IfDef StringGridSortProblems} WriteLineToDebugFile('BitBtn8Click out'); {$EndIf}

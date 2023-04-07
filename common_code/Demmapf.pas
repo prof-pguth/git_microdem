@@ -20,7 +20,6 @@
 
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
 
-
 //{$Define RecordMapResize}
 //{$Define RecordFormResize}
 
@@ -31,9 +30,9 @@
       //{$Define FanDrawProblems}
       //{$Define RawProjectInverse}  //must also be set in BaseMap
       {$Define RecordDEMIX}
-      {$Define RecordLegend}
-      {$Define RecordVAT}
-      {$Define RecordCreateSelectionMap}
+      //{$Define RecordLegend}
+      //{$Define RecordVAT}
+      //{$Define RecordCreateSelectionMap}
       //{$Define RecordDEMIXtiles}
       //{$Define RecordStreamModeDigitize}
       //{$Define RecordPickRoute}
@@ -1457,6 +1456,10 @@ type
     Experimental2: TMenuItem;
     Allmissingtosinglevaluevalidsettomissing1: TMenuItem;
     Interactiveadjusment1: TMenuItem;
+    N54: TMenuItem;
+    N55: TMenuItem;
+    COPandALOS1: TMenuItem;
+    All61: TMenuItem;
     //procedure HiresintervisibilityDEM1Click(Sender: TObject);
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
@@ -2521,6 +2524,9 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Likelymissingdatacodes1Click(Sender: TObject);
     procedure Allmissingtosinglevaluevalidsettomissing1Click(Sender: TObject);
     procedure Interactiveadjusment1Click(Sender: TObject);
+    procedure OpenGLdrapeonanotherDEM1Click(Sender: TObject);
+    procedure COPandALOS1Click(Sender: TObject);
+    procedure All61Click(Sender: TObject);
     //procedure QuarterDEM1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
@@ -5659,9 +5665,6 @@ procedure TMapForm.Aspect2Click(Sender: TObject);
 begin
    {$IfDef ExGeoStats}
    {$Else}
-      //SetAllSlopes(false);
-      //MDDef.DoAspect := true;
-      //MakeMomentsGrid(MapDraw.DEMonMap,'S');
       MakeAspectMap(MapDraw.DEMonMap);
    {$EndIf}
 end;
@@ -6156,7 +6159,8 @@ begin
 {$Else}
    {$IfDef RecordCreateGeomorphMaps} writeLineToDebugFile('TMapForm.Multipleparameters1Click in'); {$EndIf}
       GetGeomorphBlockOpts(gbGrid,Self.MapDraw.DEMonMap,DEMGlb[Self.MapDraw.DEMonMap].FullDEMGridLimits);
-   {$IfDef RecordCreateGeomorphMaps}   WriteLineToDebugFile('TMapForm.Multipleparameters1Click out'); {$EndIf}
+      hiscoverageareaandsamepixelsize1Click(Sender);
+   {$IfDef RecordCreateGeomorphMaps}  WriteLineToDebugFile('TMapForm.Multipleparameters1Click out'); {$EndIf}
 {$EndIf}
 end;
 
@@ -6164,7 +6168,7 @@ procedure TMapForm.Histogram1Click(Sender: TObject);
 begin
    {$IfDef ExGeoStats}
    {$Else}
-      SingleDEMHistogram(MapDraw.DEMonMap{,1});
+      SingleDEMHistogram(MapDraw.DEMonMap);
    {$EndIf}
 end;
 
@@ -6290,50 +6294,50 @@ var
    s1s2,s2s3,Trend,RoughnessFactor,DownDip : float64;
    z,MinZ,MaxZ : float32;
 begin
-  if (not FileExists(DEMGlb[MapDraw.DEMonMap].VATFileName)) or (FeaturesDB = 0) or (GISdb[FeaturesDB] = Nil) then exit;
-
-   GetDEM(ElevDEM,false,'elevation DEM');
-   if (ElevDEM <> 0) then begin
-      GISdb[FeaturesDB].AddFieldToDataBase(ftFloat,'RELIEF',10,2);
-      GISdb[FeaturesDB].AddFieldToDataBase(ftFloat,'S2S3',8,3);
-      GISdb[FeaturesDB].AddFieldToDataBase(ftFloat,'TREND',5,1);
-      GISdb[FeaturesDB].AddFieldToDataBase(ftFloat,'ROUGHNESS',8,3);
-      GISdb[FeaturesDB].AddFieldToDataBase(ftFloat,'DOWN_DIP',5,1);
-      i := 0;
-      StartProgress('Features');
-      while not GISdb[FeaturesDB].MyData.eof do begin
-         inc(i);
-         if (i mod 25 = 0) then UpdateProgressBar(i/GISdb[FeaturesDB].MyData.FiltRecsInDB);
-         fLoX := GISdb[FeaturesDB].MyData.GetFieldByNameAsInteger('BOUND_XMIN');
-         fHiX := GISdb[FeaturesDB].MyData.GetFieldByNameAsInteger('BOUND_XMAX');
-         fLoY := GISdb[FeaturesDB].MyData.GetFieldByNameAsInteger('BOUND_YMIN');
-         fHiY := GISdb[FeaturesDB].MyData.GetFieldByNameAsInteger('BOUND_YMAX');
-         ID := GISdb[FeaturesDB].MyData.GetFieldByNameAsInteger(RecNoFName);
-         MinZ := 99999;
-         MaxZ := -99999;
-         for x2 := fLoX to fHiX do begin
-           for y2 := fLoY to fHiY do begin
-                if DEMGLB[MapDraw.DEMonMap].GetElevMetersOnGrid(x2,y2,z) and (round(z) = ID) then begin
-                   if DEMGLB[ElevDEM].GetElevMetersOnGrid(x2,y2,z) then PetMath.CompareValueToExtremes(z,MinZ,MaxZ);
-                end;
-           end;
+  if FileExists(DEMGlb[MapDraw.DEMonMap].VATFileName) and ValidDB(FeaturesDB) then begin
+      GetDEM(ElevDEM,false,'elevation DEM');
+      if (ElevDEM <> 0) then begin
+         GISdb[FeaturesDB].AddFieldToDataBase(ftFloat,'RELIEF',10,2);
+         GISdb[FeaturesDB].AddFieldToDataBase(ftFloat,'S2S3',8,3);
+         GISdb[FeaturesDB].AddFieldToDataBase(ftFloat,'TREND',5,1);
+         GISdb[FeaturesDB].AddFieldToDataBase(ftFloat,'ROUGHNESS',8,3);
+         GISdb[FeaturesDB].AddFieldToDataBase(ftFloat,'DOWN_DIP',5,1);
+         i := 0;
+         StartProgress('Features');
+         while not GISdb[FeaturesDB].MyData.eof do begin
+            inc(i);
+            if (i mod 25 = 0) then UpdateProgressBar(i/GISdb[FeaturesDB].MyData.FiltRecsInDB);
+            fLoX := GISdb[FeaturesDB].MyData.GetFieldByNameAsInteger('BOUND_XMIN');
+            fHiX := GISdb[FeaturesDB].MyData.GetFieldByNameAsInteger('BOUND_XMAX');
+            fLoY := GISdb[FeaturesDB].MyData.GetFieldByNameAsInteger('BOUND_YMIN');
+            fHiY := GISdb[FeaturesDB].MyData.GetFieldByNameAsInteger('BOUND_YMAX');
+            ID := GISdb[FeaturesDB].MyData.GetFieldByNameAsInteger(RecNoFName);
+            MinZ := 99999;
+            MaxZ := -99999;
+            for x2 := fLoX to fHiX do begin
+              for y2 := fLoY to fHiY do begin
+                   if DEMGLB[MapDraw.DEMonMap].GetElevMetersOnGrid(x2,y2,z) and (round(z) = ID) then begin
+                      if DEMGLB[ElevDEM].GetElevMetersOnGrid(x2,y2,z) then PetMath.CompareValueToExtremes(z,MinZ,MaxZ);
+                   end;
+              end;
+            end;
+            z := MaxZ - MinZ;
+            if (z > 0) then begin
+               GISdb[FeaturesDB].MyData.Edit;
+               GISdb[FeaturesDB].MyData.SetFieldByNameAsFloat('RELIEF',z);
+            end;
+            if DEMGLB[ElevDEM].FeatureSSOComputations(MapDraw.DEMonMap,ID,fLoX,fLoY,fHiX,fHiY, s1s2,s2s3,Trend,RoughnessFactor,DownDip) then begin
+               GISdb[FeaturesDB].MyData.Edit;
+               GISdb[FeaturesDB].MyData.SetFieldByNameAsFloat('S2S3',s2s3);
+               GISdb[FeaturesDB].MyData.SetFieldByNameAsFloat('TREND',Trend);
+               GISdb[FeaturesDB].MyData.SetFieldByNameAsFloat('DOWN_DIP',DownDip);
+               GISdb[FeaturesDB].MyData.SetFieldByNameAsFloat('ROUGHNESS',RoughnessFactor);
+            end;
+            GISdb[FeaturesDB].MyData.Next;
          end;
-         z := MaxZ - MinZ;
-         if (z > 0) then begin
-            GISdb[FeaturesDB].MyData.Edit;
-            GISdb[FeaturesDB].MyData.SetFieldByNameAsFloat('RELIEF',z);
-         end;
-         if DEMGLB[ElevDEM].FeatureSSOComputations(MapDraw.DEMonMap,ID,fLoX,fLoY,fHiX,fHiY, s1s2,s2s3,Trend,RoughnessFactor,DownDip) then begin
-            GISdb[FeaturesDB].MyData.Edit;
-            GISdb[FeaturesDB].MyData.SetFieldByNameAsFloat('S2S3',s2s3);
-            GISdb[FeaturesDB].MyData.SetFieldByNameAsFloat('TREND',Trend);
-            GISdb[FeaturesDB].MyData.SetFieldByNameAsFloat('DOWN_DIP',DownDip);
-            GISdb[FeaturesDB].MyData.SetFieldByNameAsFloat('ROUGHNESS',RoughnessFactor);
-         end;
-         GISdb[FeaturesDB].MyData.Next;
+         EndProgress;
       end;
-      EndProgress;
-   end;
+  end;
 {$EndIf}
 end;
 
@@ -11116,6 +11120,13 @@ begin
 end;
 
 
+procedure TMapForm.OpenGLdrapeonanotherDEM1Click(Sender: TObject);
+begin
+   if GetSecondDEM(false) then begin
+       OGL_speedbuttonClick(Sender);
+   end;
+end;
+
 procedure TMapForm.OpenGLwithallmaps1Click(Sender: TObject);
 var
    Viewer : TView3DForm;
@@ -11124,8 +11135,6 @@ var
 begin
    PickMaps(Maps,'Maps for 3D view (max ' + IntToStr(MaxClouds) + ')');
    if (Maps.Count > 0) then begin
-      //AllMapsMatchThisCoverageArea1Click(Nil);
-      //Allsamepixelsizeasthismap1Click(Sender);
       hiscoverageareaandsamepixelsize1Click(Sender);
       Viewer := MapTo3DView(Self.MapDraw);
       Num := 1;
@@ -11446,7 +11455,12 @@ var
             Dec : integer;
          begin
              if (MapDraw.ValidDEMonMap) and (not DEMGlb[DEM].MissingElevation(Elev)) then begin
-                case DEMGlb[DEM].DEMheader.ElevUnits of
+
+                if (DEMGlb[DEM].VatLegendStrings <> Nil) then begin
+                   Result := ' ';  // +
+                   Panel3String := DEMGlb[DEM].VatLegendStrings.Strings[round(Elev)];
+                end
+                else case DEMGlb[DEM].DEMheader.ElevUnits of
                    Undefined,euImagery  : Result := ' z=' + RealToString(Elev,6,2);
                    euMM : Result := ' z=' + RealToString(Elev,6,2) + ' mm';
                    HundredthMa  : Result := ' z=' + RealToString(Elev,6,2) + ' Ma';
@@ -14180,9 +14194,7 @@ begin
        MapDraw.MaxMapElev := DEMheader.MaxElev;
        DEMGlb[MapDraw.DEMonMap].DEMstatus := dsUnsaved;
 
-       {$IfDef RecordElevationScaling}
-       WriteLineToDebugFile('TMapForm.Markasmissing1Click, min=' + RealToString(MapDraw.MinMapElev,-12,-2) + '  max=' + RealToString(MapDraw.MaxMapElev,-12,-2));
-       {$EndIf}
+       {$IfDef RecordElevationScaling} WriteLineToDebugFile('TMapForm.Markasmissing1Click, min=' + RealToString(MapDraw.MinMapElev,-12,-2) + '  max=' + RealToString(MapDraw.MaxMapElev,-12,-2)); {$EndIf}
        if ShowSatProgress and (DEMheader.NumCol > 1500) then EndProgress;
     end {with};
     DoBaseMapRedraw;
@@ -20003,7 +20015,6 @@ begin
     Bitmap := BlendBitmaps(MapBaseBMP,OverlayOpaqueBMP,0.01 * TrackBar2.Position);
 
     if (SliderDrapeMap.MapDraw.LegendOverlayfName <> '') then begin
-                      //bmp := DrawLegendOnBitmap;
        SliderDrapeMap.MapDraw.DrawLegendsOnMap(Bitmap);
     end;
 
@@ -21417,9 +21428,14 @@ end;
 
 
 procedure TMapForm.CurrentsubsetGeotiff1Click(Sender: TObject);
+var
+   fName : PathStr;
 begin
    {$IfDef RecordSave} WriteLineToDebugFile('TMapForm.CurrentsubsetGeotiff1Click'); {$EndIf}
-   DEMGlb[MapDraw.DEMonMap].SaveGridSubsetGeotiff(MapDraw.MapAreaDEMGridLimits,'');
+   fName := WriteDEMDir + 'sub-' + DEMGlb[MapDraw.DEMonMap].AreaName;
+   GetFileNameDefaultExt('subset DEM','DEM Tiff|*.tif',fName);
+   DEMGlb[MapDraw.DEMonMap].SaveGridSubsetGeotiff(MapDraw.MapAreaDEMGridLimits,fName);
+   if AnswerIsYes('Load subset ' + ExtractFilename(fName)) then OpenNewDEM(fName);
 end;
 
 
@@ -21434,15 +21450,9 @@ begin
      fName := WriteDEMDir + 'sub-' + DEMGlb[MapDraw.DEMonMap].AreaName;
      GetFileNameDefaultExt('subset DEM','DEM|*.dem',fName);
      DEMGlb[MapDraw.DEMonMap].WriteNewFormatDEM(MapDraw.MapAreaDEMGridLimits,fName);
+     if AnswerIsYes('Load subset ' + ExtractFilename(fName)) then OpenNewDEM(fName);
    end
    else begin
-     if AnswerIsYes('Load subset ' + ExtractFilename(fName)) then OpenNewDEM(fName);
-     {$IfDef ExVegDensity}
-     {$Else}
-     if (DEMGlb[MapDraw.DEMonMap].VegGrid[1] <> 0) and (DEMGlb[DEMGlb[MapDraw.DEMonMap].VegGrid[1]] <> Nil) and AnswerIsYes('Subset vegetation grid') then
-        DEMGlb[DEMGlb[MapDraw.DEMonMap].VegGrid[1]].RectangleSubsetDEM(DEMGlb[MapDraw.DEMonMap].SpecifyDEMGridLimits(MapDraw.MapCorners.BoundBoxDataGrid.xmin,MapDraw.MapCorners.BoundBoxDataGrid.ymin,
-              MapDraw.MapCorners.BoundBoxDataGrid.xmax,MapDraw.MapCorners.BoundBoxDataGrid.ymax));
-      {$EndIf}
       if AnswerIsYes('Lat/long grid') then What := cgLatLong else What := cgUTM;
       NewGrid := CreateGridToMatchMap(What);
       DEMGlb[NewGrid].FillHolesSelectedBoxFromReferenceDEM(DEMGlb[NewGrid].FullDEMGridLimits,MapDraw.DEMonMap,hfOnlyHole);
@@ -21618,6 +21628,8 @@ begin
    {$IfDef ExSat}
    {$Else}
       Result := SatImage[MapDraw.SATonMap].MakeNewBand(nsb);
+      if FullMapSpeedButton.Enabled then DEMGlb[Result].SelectionMap.SubsetAndZoomMapFromGeographicBounds(MapDraw.MapCorners.BoundBoxGeo);
+     //MatchMapToThisOne(DEMGlb[Result].SelectionMap);
    {$EndIf}
 end;
 
@@ -22385,6 +22397,11 @@ begin
    COP_ALOS_compare(ca4Cat);
 end;
 
+
+procedure TMapForm.COPandALOS1Click(Sender: TObject);
+begin
+   LoadDEMIXCandidateDEMs(MapDraw.DEMonMap,true,false);
+end;
 
 procedure TMapForm.ASCIIArcGrid1Click(Sender: TObject);
 begin
@@ -23878,6 +23895,11 @@ begin
    MDDef.SunlightSingleDay := 2;
    SunAndHorizon(Self,0,RightClickLat,RightClickLong);
    {$EndIf}
+end;
+
+procedure TMapForm.All61Click(Sender: TObject);
+begin
+   LoadDEMIXCandidateDEMs(MapDraw.DEMonMap,true,true);
 end;
 
 procedure TMapForm.AllbandsasGeotiffs1Click(Sender: TObject);

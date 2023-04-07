@@ -4,7 +4,7 @@ unit block_opts;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
 {$I nevadia_defines.inc}
@@ -194,18 +194,6 @@ begin
    GroupBox12.Visible := WhatFor in [gbPolygon];
    GroupBox13.Visible := false;
    aTop := 50;
-
-   //PositionGroupBox(GroupBox10);
-   //PositionGroupBox(GroupBox9);
-   //PositionGroupBox(GroupBox12);
-   //PositionGroupBox(GroupBox13);
-
-   //OKBtn.Top := atop;
-   //HelpBtn.Top := atop;
-   //atop := atop + HelpBtn.Height + 25;
-
-   //if atop < 350 then ClientHeight := 350
-   //else ClientHeight := atop;
 end;
 
 
@@ -514,7 +502,6 @@ begin
    MDDef.DoFabDir360 := CheckBox45.Checked;
    MDDef.DoRoughness := CheckBox32.Checked;
    MDDef.DoAvgVectStrength := CheckBox59.Checked;
-
 
    MDDef.DoSlopePC := CheckBox33.Checked;
    MDDef.DoSlopeDeg := CheckBox34.Checked;

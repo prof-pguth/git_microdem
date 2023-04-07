@@ -13,7 +13,7 @@ unit pit_and_spire;
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
-      //{$Define RecordPitsSpires}
+      {$Define RecordPitsSpires}
    {$EndIf}
 {$EndIf}
 
@@ -207,7 +207,7 @@ var
    WallResults : tStringList;
    fName : PathStr;
 begin
-   {$IfDef RecordPitsSpires} WriteLineToDebugFile('TMapForm.PeaksAndPits in'); {$EndIf}
+   {$IfDef RecordPitsSpires} WriteLineToDebugFile('TMapForm.DrawWalls in'); {$EndIf}
       if MDDef.OverWriteFeatureDBs then CloseAndNilNumberedDB(WallDB);
       WallResults := tStringList.Create;
       WallResults.Add('LAT,LONG');
@@ -363,6 +363,7 @@ var
    PeakResults : tStringList;
    gl : tGridLimits;
 begin
+   {$IfDef RecordPitsSpires} WriteLineToDebugFile('TPitSpireForm.BitBtn13Click (peaks) in'); {$EndIf}
    UpdateValues;
    Memo1.Lines.Add('');
    Memo1.Lines.Add('Peak radius: ' + RealToString(MDDef.PeakRadius,-8,-2) + ' m');
@@ -393,7 +394,7 @@ begin
       end;
       {$IfDef RecordPitsSpires} WriteLineToDebugFile('off to plot ' + fName); {$EndIf}
       GISdb[db].RedrawLayerOnMap;
-      {$IfDef RecordPitsSpires} WriteLineToDebugFile('end GIS display'); {$EndIf}
+      {$IfDef RecordPitsSpires} WriteLineToDebugFile('TPitSpireForm.BitBtn13Click end'); {$EndIf}
    end;
 end;
 

@@ -954,6 +954,7 @@ type
     Wins1: TMenuItem;
     LoadthisDEM1: TMenuItem;
     Updatestatus1: TMenuItem;
+    Averagebylatitude1: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
     procedure Shiftpointrecords1Click(Sender: TObject);
     procedure Creategrid1Click(Sender: TObject);
@@ -1679,6 +1680,7 @@ type
     procedure Wins1Click(Sender: TObject);
     procedure LoadthisDEM1Click(Sender: TObject);
     procedure Updatestatus1Click(Sender: TObject);
+    procedure Averagebylatitude1Click(Sender: TObject);
   private
     procedure PlotSingleFile(fName : PathStr; xoff,yoff : float64);
     procedure SetUpLinkGraph;
@@ -7918,9 +7920,57 @@ end;
 
 
 
+procedure Tdbtablef.Averagebylatitude1Click(Sender: TObject);
+var
+   aField : shortstring;
+   BinSize,Lat,Avg,Done,Value : float32;
+   GraphData : tStringList;
+   i,Bin : integer;
+   Sum : array[0..180] of float64;
+   Count : array[0..180] of int64;
+begin
+   with GISdb[DBonTable] do begin
+      aField := PickField('Field for rose diagram',NumericFieldTypes);
+      BinSize := 5;
+      ReadDefault('Lat bin size (degrees)',BinSize);
+      if BinSize < 1 then BinSize := 1;
+      for i := 0 to 180 do begin
+          Sum[i] := 0;
+          Count[i] := 0;
+      end;
+
+      GraphData := tStringList.Create;
+      GraphData.Add(aField + ',LAT');
+      EmpSource.Enabled := false;
+      StartProgress('Average');
+
+      i := 0;
+      MyData.First;
+      while not MyData.eof do begin
+         if (i mod 100 = 0) then UpdateProgressBar(i / MyData.FiltRecsInDB);
+         Lat := MyData.GetFieldByNameAsFloat(LatFieldName);
+         Value := MyData.GetFieldByNameAsFloat(aField);
+         Bin := round((180 - (Lat + 90)) / BinSize);
+         Sum[Bin] := Sum[Bin] + value;
+         inc(Count[Bin]);
+         inc(i);
+         MyData.Next;
+      end;
+      for i := 0 to 180 do begin
+          if Count[i]  > 0 then begin
+            GraphData.Add(RealToString(Sum[i]/Count[i],-9,-2) + ',' + RealToString((90 - (i+0.5) * BinSize),-8,-2) );
+          end;
+      end;
+      GraphFromCSVfile(GraphData,false,true);
+      ClearGISFilter;
+      EndProgress;
+      ShowStatus;
+   end;
+end;
+
 procedure Tdbtablef.Averageranksbyarea1Click(Sender: TObject);
 begin
-    DEMIXwineContestMeanMedianGraph(dgArea,DBonTable);
+   DEMIXwineContestMeanMedianGraph(dgArea,DBonTable);
 end;
 
 procedure Tdbtablef.AverageStandarddeviation1Click(Sender: TObject);
@@ -7938,7 +7988,6 @@ var
 begin
     with GISdb[DBonTable] do begin
       WantField := 'CLASS';
-
       FieldRange(WantField,MinV,MaxV);
       BasePath := ExtractFilePath(dbFullName) + '\class_stats\';
       SafeMakeDir(BasePath);
@@ -7973,7 +8022,6 @@ begin
                   RealToString(MomentVar.mean,-12,Decs) + ',' + RealToString(MomentVar.sdev,-12,Decs) + ',' +
                   RealToString(values[1],-12,Decs) + ',' + RealToString(values[MomentVar.NPts],-12,Decs) + ',' +
                   RealToString(MomentVar.Median,-12,Decs) + ',' +
-
                   RealToString(Quantile(5,Values,MomentVar.NPts,true),-12,Decs) + ',' +
                   RealToString(Quantile(10,Values,MomentVar.NPts,true),-12,Decs) + ',' +
                   RealToString(Quantile(25,Values,MomentVar.NPts,true),-12,Decs) + ',' +
@@ -8099,7 +8147,7 @@ procedure Tdbtablef.Plotforsubsamples1Click(Sender: TObject);
 begin
    {$IfDef NoDBGrafs}
    {$Else}
-   GISdb[DBonTable].MakeGraph(dbgtPlotforsubsamples1);
+      GISdb[DBonTable].MakeGraph(dbgtPlotforsubsamples1);
    {$EndIf}
 end;
 
@@ -8182,7 +8230,6 @@ begin
       while not MyData.Eof do begin
          inc(i);
          if (i mod 1000 = 0) then UpDateProgressBar(i/rc);
-
          MyData.Edit;
          m := MyData.GetFieldByNameAsInteger(MonthFieldName);
          d := MyData.GetFieldByNameAsInteger('DAY');
@@ -15098,6 +15145,7 @@ var
    i,FilterSize,WinSize,lNew,lPre : integer;
    Values : ^Petmath.bfarray32;
    NPts : int64;
+   z : float32;
 begin
    with GISdb[DBonTable],MyData do begin
       if Sender = Meanfilterfilter1 then begin
@@ -15113,7 +15161,7 @@ begin
       NewField := TStr2 + '_' + Field;
       NewField := GetFieldNameForDB(TStr + ' filtered field name',True,NewField);
       FilterSize := 5;
-      ReadDefault('Filter size',FilterSize);
+      ReadDefault('Full filter size (odd number)',FilterSize);
       WinSize := FilterSize div 2;
       lpre := MyData.GetFieldPrecision(Field);
       lnew := MyData.GetFieldLength(Field);
@@ -15130,22 +15178,15 @@ begin
 
       EmpSource.Enabled := false;
       First;
-      for i := 0 to WinSize do begin
+      StartProgress('Filter');
+      for i := 0 to pred(Npts) do begin
+         if i mod 25 = 0 then UpdateProgressBar(i/Npts);
          Edit;
-         SetFieldByNameAsString(NewField,'');
+         z := Values^[i];
+         if round(z) = MaxSmallInt then SetFieldByNameAsString(NewField,'')
+         else SetFieldByNameAsFloat(NewField,z);
          Next;
       end;
-      for i := 1 to (NPts - 2 * WinSize) do begin
-         Edit;
-         SetFieldByNameAsFloat(NewField,Values^[i + pred(WinSize)]);
-         Next;
-      end;
-      for i := 1 to WinSize do begin
-         Edit;
-         SetFieldByNameAsString(NewField,'');
-         Next;
-      end;
-
       Dispose(Values);
       ShowStatus;
    end;
@@ -15251,7 +15292,7 @@ procedure Tdbtablef.Monthlywinds1Click(Sender: TObject);
 begin
    {$If Defined(NoDBGrafs) or Defined(ExGeograph)}
    {$Else}
-   GISdb[DBonTable].MonthlyWindPlotCurrentPoint;
+      GISdb[DBonTable].MonthlyWindPlotCurrentPoint;
    {$EndIf}
 end;
 

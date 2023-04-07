@@ -82,4 +82,12 @@ object MapAlgebraForm: TMapAlgebraForm
     Height = 21
     TabOrder = 4
   end
+  object CheckBox1: TCheckBox
+    Left = 189
+    Top = 176
+    Width = 252
+    Height = 17
+    Caption = 'Missing data in any grid makes result missing'
+    TabOrder = 5
+  end
 end

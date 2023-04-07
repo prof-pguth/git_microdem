@@ -25,7 +25,7 @@ object dbtablef: Tdbtablef
         Width = 250
       end>
     ExplicitTop = 996
-    ExplicitWidth = 1274
+    ExplicitWidth = 1316
   end
   object Panel2: TPanel
     Left = 0
@@ -34,7 +34,7 @@ object dbtablef: Tdbtablef
     Height = 32
     Align = alTop
     TabOrder = 1
-    ExplicitWidth = 1274
+    ExplicitWidth = 1316
     object BitBtn1: TBitBtn
       Left = 34
       Top = 1
@@ -219,7 +219,7 @@ object dbtablef: Tdbtablef
     Height = 41
     Align = alTop
     TabOrder = 2
-    ExplicitWidth = 1274
+    ExplicitWidth = 1316
     object Label2: TLabel
       Left = 12
       Top = 12
@@ -270,7 +270,7 @@ object dbtablef: Tdbtablef
     Height = 41
     Align = alTop
     TabOrder = 4
-    ExplicitWidth = 1274
+    ExplicitWidth = 1316
     object LOSButton: TSpeedButton
       Left = 40
       Top = 6
@@ -533,7 +533,7 @@ object dbtablef: Tdbtablef
     Height = 41
     Align = alTop
     TabOrder = 3
-    ExplicitWidth = 1274
+    ExplicitWidth = 1316
     object RadioGroup2: TRadioGroup
       Left = 20
       Top = 0
@@ -963,6 +963,10 @@ object dbtablef: Tdbtablef
       object N2Dgraphallopendatabaseslines1: TMenuItem
         Caption = '2D graph, all open databases (lines)'
         OnClick = N2Dgraphallopendatabaseslines1Click
+      end
+      object Averagebylatitude1: TMenuItem
+        Caption = 'Average by latitude'
+        OnClick = Averagebylatitude1Click
       end
     end
     object N3Dgraph1: TMenuItem

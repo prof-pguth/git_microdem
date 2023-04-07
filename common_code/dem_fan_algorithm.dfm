@@ -3,8 +3,8 @@ object FanAlgParams: TFanAlgParams
   Top = 155
   BorderStyle = bsDialog
   Caption = 'LOS/Fan Algorithm Options'
-  ClientHeight = 460
-  ClientWidth = 498
+  ClientHeight = 459
+  ClientWidth = 494
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
@@ -111,11 +111,13 @@ object FanAlgParams: TFanAlgParams
   end
   object Panel1: TPanel
     Left = 0
-    Top = 419
-    Width = 498
+    Top = 418
+    Width = 494
     Height = 41
     Align = alBottom
     TabOrder = 6
+    ExplicitTop = 419
+    ExplicitWidth = 498
     object OKBtn: TBitBtn
       Left = 8
       Top = 6

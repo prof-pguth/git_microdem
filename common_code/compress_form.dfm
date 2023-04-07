@@ -3,8 +3,8 @@ object petcompressform: Tpetcompressform
   Top = 244
   BorderIcons = [biSystemMenu]
   Caption = 'Compress/Decompress'
-  ClientHeight = 363
-  ClientWidth = 852
+  ClientHeight = 360
+  ClientWidth = 840
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,8 +19,8 @@ object petcompressform: Tpetcompressform
   object Memo1: TMemo
     Left = 0
     Top = 0
-    Width = 852
-    Height = 344
+    Width = 840
+    Height = 341
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -30,13 +30,13 @@ object petcompressform: Tpetcompressform
     ParentFont = False
     ScrollBars = ssVertical
     TabOrder = 0
-    ExplicitWidth = 848
-    ExplicitHeight = 343
+    ExplicitWidth = 836
+    ExplicitHeight = 340
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 344
-    Width = 852
+    Top = 341
+    Width = 840
     Height = 19
     Panels = <
       item
@@ -45,8 +45,8 @@ object petcompressform: Tpetcompressform
       item
         Width = 250
       end>
-    ExplicitTop = 343
-    ExplicitWidth = 848
+    ExplicitTop = 340
+    ExplicitWidth = 836
   end
   object MainMenu1: TMainMenu
     Left = 24
@@ -61,8 +61,12 @@ object petcompressform: Tpetcompressform
     object Uncompress1: TMenuItem
       Caption = 'Uncompress'
       object UncompressZIPfile1: TMenuItem
-        Caption = 'ZIP file'
+        Caption = 'ZIP file (unzip to this diretory, e.g. for Sentinel-2)'
         OnClick = UncompressZIPfile1Click
+      end
+      object ZIPfileseachtoitsowndirectory1: TMenuItem
+        Caption = 'ZIP files (each to its own directory)'
+        OnClick = ZIPfileseachtoitsowndirectory1Click
       end
       object Allzipsindirsubdirs1: TMenuItem
         Caption = 'All zips in dir/subdirs'

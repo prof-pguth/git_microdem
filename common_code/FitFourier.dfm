@@ -5,15 +5,15 @@ inherited FitFourierForm: TFitFourierForm
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSizeToolWin
   Caption = 'Fit Fourier Curve'
-  ClientHeight = 188
-  ClientWidth = 362
+  ClientHeight = 176
+  ClientWidth = 354
   FormStyle = fsMDIChild
   Visible = True
   OnClose = FormClose
   OnCreate = FormCreate
-  ExplicitWidth = 380
-  ExplicitHeight = 235
-  TextHeight = 20
+  ExplicitWidth = 370
+  ExplicitHeight = 215
+  TextHeight = 15
   inherited Bevel1: TBevel
     Left = 288
     Top = 0
@@ -42,7 +42,7 @@ inherited FitFourierForm: TFitFourierForm
     Left = 0
     Top = 0
     Width = 289
-    Height = 147
+    Height = 135
     Align = alLeft
     Font.Charset = ANSI_CHARSET
     Font.Color = clWindowText
@@ -56,11 +56,13 @@ inherited FitFourierForm: TFitFourierForm
   end
   object Panel1: TPanel
     Left = 0
-    Top = 147
-    Width = 362
+    Top = 135
+    Width = 354
     Height = 41
     Align = alBottom
     TabOrder = 4
+    ExplicitTop = 147
+    ExplicitWidth = 362
     object Button1: TButton
       Left = 8
       Top = 8

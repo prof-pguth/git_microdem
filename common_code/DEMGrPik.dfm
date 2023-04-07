@@ -3,18 +3,18 @@ inherited PickGrid: TPickGrid
   Top = 214
   BorderIcons = [biSystemMenu]
   Caption = 'Grid Options'
-  ClientHeight = 487
-  ClientWidth = 411
+  ClientHeight = 486
+  ClientWidth = 407
   Position = poDefaultSizeOnly
   OnCreate = FormCreate
-  ExplicitWidth = 429
-  ExplicitHeight = 534
-  TextHeight = 20
+  ExplicitWidth = 423
+  ExplicitHeight = 525
+  TextHeight = 15
   inherited Bevel1: TBevel
     Left = 0
     Top = 0
-    Width = 411
-    Height = 487
+    Width = 407
+    Height = 486
     Align = alClient
     ExplicitLeft = 0
     ExplicitTop = 0
@@ -24,8 +24,8 @@ inherited PickGrid: TPickGrid
   object Label7: TLabel [1]
     Left = 32
     Top = 47
-    Width = 44
-    Height = 20
+    Width = 34
+    Height = 15
     Caption = 'Label7'
   end
   inherited OKBtn: TButton
@@ -100,7 +100,7 @@ inherited PickGrid: TPickGrid
     Left = 172
     Top = 233
     Width = 88
-    Height = 17
+    Height = 21
     Caption = 'Font'
     TabOrder = 7
     OnClick = BitBtn7Click
@@ -119,15 +119,15 @@ inherited PickGrid: TPickGrid
     Top = 267
     Width = 313
     Height = 134
-    ActivePage = TabSheet2
+    ActivePage = TabSheet1
     TabOrder = 9
     object TabSheet1: TTabSheet
       Caption = 'Primary datum'
       object Label3: TLabel
         Left = 14
         Top = 64
-        Width = 44
-        Height = 20
+        Width = 34
+        Height = 15
         Caption = 'Label3'
       end
       object BitBtn4: TBitBtn
@@ -155,8 +155,8 @@ inherited PickGrid: TPickGrid
       object Label4: TLabel
         Left = 20
         Top = 34
-        Width = 44
-        Height = 20
+        Width = 34
+        Height = 15
         Caption = 'Label4'
       end
       object Button1: TButton
@@ -193,8 +193,8 @@ inherited PickGrid: TPickGrid
       object Label5: TLabel
         Left = 21
         Top = 41
-        Width = 154
-        Height = 20
+        Width = 122
+        Height = 15
         Caption = 'Native grid interval (m)'
       end
       object Native: TBitBtn
@@ -210,7 +210,7 @@ inherited PickGrid: TPickGrid
         Left = 193
         Top = 40
         Width = 57
-        Height = 28
+        Height = 23
         TabOrder = 1
         Text = 'Edit3'
         OnChange = Edit3Change
@@ -236,29 +236,29 @@ inherited PickGrid: TPickGrid
     object Label2: TLabel
       Left = 10
       Top = 39
-      Width = 120
-      Height = 20
+      Width = 95
+      Height = 15
       Caption = 'Max pixel size (m)'
     end
     object Label1: TLabel
       Left = 15
       Top = 12
-      Width = 108
-      Height = 20
+      Width = 86
+      Height = 15
       Caption = 'Grid interval (m)'
     end
     object Label6: TLabel
       Left = 24
       Top = 72
-      Width = 67
-      Height = 20
+      Width = 53
+      Height = 15
       Caption = 'UTM zone'
     end
     object Edit2: TEdit
       Left = 132
       Top = 38
       Width = 49
-      Height = 28
+      Height = 23
       TabOrder = 0
       Text = 'Edit2'
       OnChange = Edit2Change
@@ -267,7 +267,7 @@ inherited PickGrid: TPickGrid
       Left = 129
       Top = 12
       Width = 52
-      Height = 28
+      Height = 23
       TabOrder = 1
       Text = 'Edit1'
       OnChange = Edit1Change
@@ -276,7 +276,7 @@ inherited PickGrid: TPickGrid
       Left = 129
       Top = 72
       Width = 52
-      Height = 28
+      Height = 23
       TabOrder = 2
       Text = 'Edit4'
       OnChange = Edit4Change

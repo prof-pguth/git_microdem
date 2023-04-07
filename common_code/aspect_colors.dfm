@@ -3,8 +3,8 @@ object AspectMapColors: TAspectMapColors
   Top = 0
   BorderIcons = []
   Caption = 'Aspect Map Colors'
-  ClientHeight = 313
-  ClientWidth = 243
+  ClientHeight = 309
+  ClientWidth = 227
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

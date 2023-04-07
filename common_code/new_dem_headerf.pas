@@ -61,6 +61,8 @@ type
     RadioGroup1: TRadioGroup;
     RadioGroup4: TRadioGroup;
     Memo1: TMemo;
+    Label10: TLabel;
+    Edit10: TEdit;
     procedure BitBtn6Click(Sender: TObject);
     procedure BitBtn7Click(Sender: TObject);
     procedure HelpBitBtn8Click(Sender: TObject);
@@ -190,6 +192,7 @@ begin
    Edit6.Text := IntToStr(EditHeadRec.NumCol);
    Edit7.Text := IntToStr(EditHeadRec.NumRow);
    Label11.Caption := UTMZoneExtent(EditHeadRec.UTMZone);
+   Edit10.Text := IntToStr(EditHeadRec.VerticalCSTypeGeoKey);
    UpdateChoices;
 end;
 

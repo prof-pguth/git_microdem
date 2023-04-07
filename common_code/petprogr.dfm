@@ -4,8 +4,8 @@ object PetProgF: TPetProgF
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Progress'
-  ClientHeight = 105
-  ClientWidth = 233
+  ClientHeight = 103
+  ClientWidth = 239
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

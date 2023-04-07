@@ -2,12 +2,12 @@ inherited VariogramOptions: TVariogramOptions
   Left = 234
   Top = 421
   Caption = 'Variogram options'
-  ClientHeight = 202
-  ClientWidth = 480
+  ClientHeight = 198
+  ClientWidth = 464
   OnCreate = FormCreate
-  ExplicitWidth = 498
-  ExplicitHeight = 249
-  TextHeight = 20
+  ExplicitWidth = 480
+  ExplicitHeight = 237
+  TextHeight = 15
   inherited Bevel1: TBevel
     Left = 0
     Top = 4
@@ -21,29 +21,29 @@ inherited VariogramOptions: TVariogramOptions
   object Label1: TLabel [1]
     Left = 24
     Top = 88
-    Width = 241
-    Height = 20
+    Width = 191
+    Height = 15
     Caption = 'Grid spacing between sample points'
   end
   object Label2: TLabel [2]
     Left = 32
     Top = 112
-    Width = 212
-    Height = 20
+    Width = 167
+    Height = 15
     Caption = 'Sampling interval along profiles'
   end
   object Label3: TLabel [3]
     Left = 32
     Top = 136
-    Width = 222
-    Height = 20
+    Width = 179
+    Height = 15
     Caption = 'Maximum  distance to go out (m)'
   end
   object Label4: TLabel [4]
     Left = 32
     Top = 160
-    Width = 168
-    Height = 20
+    Width = 135
+    Height = 15
     Caption = 'Points required to use bin'
   end
   inherited OKBtn: TButton

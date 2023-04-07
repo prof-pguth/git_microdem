@@ -201,9 +201,9 @@ var
    Table : tMyData;
    aColor : tColor;
    NewFile : boolean;
-   CodeField,
+   CodeField,NameField,
    CountFieldName : ShortString;
-   i,x,y,z,NumOutOfRange : integer;
+   i,x,y,z,NumOutOfRange,Max : integer;
    zf : float32;
    Hist : array[MinVATValue..MaxVATCats] of int64;
 
@@ -224,11 +224,28 @@ begin
   if not FileExists(fName) then fName := ChangeFileExt(DEMFileName,'.vat.dbf');
   NewFile := false;
   if FileExists(fName) then begin
-     {$IfDef RecordVAT} WriteLineToDebugFile('Found VAT, ' + fName); {$EndIf}
+     {$IfDef RecordVAT} WriteLineToDebugFile('tDEMDataSet.CreateVATforDEM Found VAT, ' + fName); {$EndIf}
      VATFileName := fName;
      Table := tMyData.Create(fName);
+     VatLegendStrings := tStringList.Create;
+     if Table.FieldExists('CODE') then CodeField := 'CODE' else CodeField := 'VALUE';
+     NameField := Table.AssignLabelName;
+     Max := 0;
+     while not Table.eof do begin
+        i := Table.GetFieldByNameAsInteger(CodeField);
+        if I > Max then Max := i;
+        Table.Next;
+     end;
+     for i := 0 to Max do VatLegendStrings.Add('');
+     Table.First;
+     while not Table.eof do begin
+        i := Table.GetFieldByNameAsInteger(CodeField);
+        VatLegendStrings.Strings[i] := Table.GetFieldByNameAsString(NameField);
+        Table.Next;
+     end;
+
      CountFieldName := Table.NCountField;
-     if CountFieldName = '' then begin
+     if (CountFieldName = '') then begin
         CountFieldName := 'COUNT';
         Table.InsureFieldPresentAndAdded(ftInteger,CountFieldName,12);
         NewFile := true;
@@ -241,9 +258,11 @@ begin
   else begin
      fName2 := LastDEMname;
      if OptionToCopy and AnswerIsYes('Copy VAT template') and Petmar.GetFileFromDirectory('VAT template',DefaultDBMask,fname2) then begin
+        {$IfDef RecordVAT} WriteLineToDebugFile('copy VAT in ' + fName2); {$EndIf}
         CopyFile(fName2,fname);
      end
      else begin
+        {$IfDef RecordVAT} WriteLineToDebugFile('create new VAT'); {$EndIf}
         NewFile := true;
         Make_tables.CreateTableForVATforDEM(fName);
      end;
@@ -256,6 +275,8 @@ begin
    NumOutOfRange := 0;
    if (Table.RecordCount = 0) then begin
       for x := MinVATValue to MaxVATCats do Hist[x] := 0;
+      {$IfDef RecordVAT} WriteLineToDebugFile('fill histogram'); {$EndIf}
+
       for y := 0 to pred(DEMheader.NumRow) do begin
          for x := 0 to pred(DEMheader.NumCol) do begin
             if GetElevMetersOnGrid(x,y,zf) then begin
@@ -299,11 +320,12 @@ begin
          i := 1;
          Table.First;
          while not Table.eof do begin
-            aColor := WinGraphColors[succ(i mod 14)];
+            aColor := WinGraphColors[i];
             Table.Edit;
             Table.SetFieldByNameAsInteger('COLOR',AColor);
             Table.Next;
             inc(i);
+            if (i > 14)  then i := 1;
          end;
       end;
    end;

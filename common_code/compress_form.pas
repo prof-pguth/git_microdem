@@ -60,6 +60,7 @@ type
     Verylargezipusing7Zip1: TMenuItem;
     N2: TMenuItem;
     N3: TMenuItem;
+    ZIPfileseachtoitsowndirectory1: TMenuItem;
     procedure Mutliplesinglefilearchives1Click(Sender: TObject);
     procedure Close1Click(Sender: TObject);
     procedure Help1Click(Sender: TObject);
@@ -84,6 +85,7 @@ type
     procedure IFfromzip1Click(Sender: TObject);
     procedure LandsatGeotiffsfromunixtar1Click(Sender: TObject);
     procedure Verylargezipusing7Zip1Click(Sender: TObject);
+    procedure ZIPfileseachtoitsowndirectory1Click(Sender: TObject);
   private
     procedure ExtractUnixFiles(ExtMode: integer);
     { Private declarations }
@@ -225,7 +227,7 @@ begin
       Paths := tStringList.Create;
       Paths.Add(MainMapData);
       if GetMultipleDirectories('Extract TIFF files from Tar',Paths) then begin
-         GetDOSPath('tiff files',OutDir);
+         GetDOSPath('output for tiff files',OutDir);
          bFile := tStringList.Create;
          K := 0;
          for j := 0 to pred(Paths.Count) do begin
@@ -332,7 +334,7 @@ begin
             ShowHourglassCursor;
             OutPath := ExtractFilePath(fName);
 
-            if ExtMode = 4 then begin
+            if (ExtMode = 4) then begin
                OutPath := copy(fname,1,length(fName)-3);
                SafeMakeDir(OutPath);
             end
@@ -400,8 +402,8 @@ begin
       else wmDEM.SetPanelText(2,IntToStr(i) + '/' + IntToStr(FilesWanted.Count));
       UnzipSingleFile(fName);
      {$IfDef VCL}
-     TInterlocked.Increment(NumDone);
-     UpDateProgressBar(NumDone /FilesWanted.Count);
+       TInterlocked.Increment(NumDone);
+       UpDateProgressBar(NumDone /FilesWanted.Count);
      {$EndIf}
    end;
 
@@ -427,7 +429,7 @@ begin
 {$Else}
 var
    FilesWanted : tStringList;
-   fName : PathStr;
+   fName,NewDir,NewName : PathStr;
    i : integer;
    DefaultFilter : byte;
 
@@ -462,6 +464,18 @@ begin
       GetMultipleFiles('Compressed files|*.zip;*.piz;*.kmx;*.shz;*.7z|ZIP file','ZIP file|*.ZIP|KMZ file|*.KMZ|SHZ file|*.shz|7Zip file|*.7z',FilesWanted,DefaultFilter);
    end;
    if (FilesWanted.Count > 0) then begin
+      if (Sender=ZIPfileseachtoitsowndirectory1) then begin
+        FilesWanted.Sorted := false;
+        for i := 0 to pred(FilesWanted.Count) do begin
+           fName := FilesWanted.Strings[i];
+           NewDir := ExtractFilePath(fName) + ExtractFileNameNoExt(fName) + '\';
+           NewName := NewDir + ExtractFileName(fName);
+           SafeMakeDir(NewDir);
+           PetMar.MoveFile(fName,NewName);
+           FilesWanted.Strings[i] := NewName;
+        end;
+     end;
+
       Memo1.Lines.Add('Unzipping '+ FilesWanted.Count.ToString + ' files from ' + ExtractFilepath(FilesWanted.Strings[0]));
       LastCompressedFile := FilesWanted.Strings[0];
       //ChDir(ExtractFilePath(LastCompressedFile));
@@ -589,6 +603,11 @@ begin
 end;
 
 
+procedure Tpetcompressform.ZIPfileseachtoitsowndirectory1Click(Sender: TObject);
+begin
+  UncompressZIPfile1Click(Sender);
+end;
+
 procedure Tpetcompressform.Mutliplesinglefilearchives1Click(Sender: TObject);
 {$IfDef ExUnixFiles}
 begin
@@ -604,7 +623,7 @@ begin
    TheFiles.Add(ProgramRootDir);
    DefaultFilter := 1;
    if GetMultipleFiles('to ZIP','*.ZIP',TheFiles,DefaultFilter) then begin
-      DeleteOriginals := RecycleCompressFile;  //AnswerIsYes('Recycle original files');
+      DeleteOriginals := RecycleCompressFile;
       StartProgress('Zip');
       for i := 0 to pred(TheFiles.Count) do begin
          UpdateProgressBar(i/TheFiles.Count);
@@ -614,7 +633,7 @@ begin
          ZipFiles.Add(RawName);
          ZipMasterZipFiles(ZipName,ZipFiles);
          ZipFiles.Free;
-         if DeleteOriginals then File2Trash(RawName);   //SysUtils.DeleteFile(RawName);
+         if DeleteOriginals then File2Trash(RawName);
       end;
       EndProgress;
    end;

@@ -4,8 +4,8 @@ object HorizonOptions: THorizonOptions
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Horizon Options'
-  ClientHeight = 433
-  ClientWidth = 605
+  ClientHeight = 420
+  ClientWidth = 583
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

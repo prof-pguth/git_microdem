@@ -711,7 +711,7 @@ end;
 
       procedure GetGeomorphBlockOpts(WhatFor : tGeomporphBlock; DEM : integer; GridLimits : tGridLimits);
       var
-        BlockOpsForm : TBlockOpsForm;
+         BlockOpsForm : TBlockOpsForm;
       begin
          {$IfDef OptionsProblems} WriteLineToDebugFile('GetGeomorphBlockOpts in'); {$EndIf}
          BlockOpsForm := TBlockOpsForm.Create(Application);

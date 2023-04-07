@@ -2,8 +2,8 @@ object XYZDisplayForm: TXYZDisplayForm
   Left = 614
   Top = 188
   Caption = 'XYZ data'
-  ClientHeight = 350
-  ClientWidth = 390
+  ClientHeight = 346
+  ClientWidth = 374
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -20,8 +20,8 @@ object XYZDisplayForm: TXYZDisplayForm
   object DBGrid1: TDBGrid
     Left = 0
     Top = 35
-    Width = 390
-    Height = 296
+    Width = 374
+    Height = 292
     Align = alClient
     DataSource = DataSource1
     TabOrder = 0
@@ -33,8 +33,8 @@ object XYZDisplayForm: TXYZDisplayForm
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 331
-    Width = 390
+    Top = 327
+    Width = 374
     Height = 19
     Panels = <
       item
@@ -46,7 +46,7 @@ object XYZDisplayForm: TXYZDisplayForm
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 390
+    Width = 374
     Height = 35
     Align = alTop
     TabOrder = 2

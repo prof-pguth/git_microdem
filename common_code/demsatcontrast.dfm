@@ -102,7 +102,7 @@ inherited EROSContrastForm: TEROSContrastForm
     Top = 18
     Width = 401
     Height = 267
-    ActivePage = Contrast
+    ActivePage = TabSheet1
     TabOrder = 5
     object TabSheet1: TTabSheet
       Caption = 'Satellite band'
@@ -228,6 +228,7 @@ inherited EROSContrastForm: TEROSContrastForm
           'Single band'
           'True color'
           'False color'
+          'False veg color'
           'Pick 3 band')
         TabOrder = 2
         OnClick = RadioGroup2Click

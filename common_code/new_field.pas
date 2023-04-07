@@ -4,7 +4,7 @@ unit new_field;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
 {$I nevadia_defines.inc}
@@ -75,7 +75,7 @@ begin
 
       NewFieldForm.ShowModal;
 
-      if not Abort then  begin
+      if (not Abort) then begin
         case RadioGroup1.ItemIndex of
            0 : aft := ftString;
            1 : aft := ftInteger;

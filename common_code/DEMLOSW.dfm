@@ -34,13 +34,13 @@ object DEMLOSF: TDEMLOSF
     VertScrollBar.Visible = False
     Align = alClient
     TabOrder = 0
-    ExplicitWidth = 527
-    ExplicitHeight = 141
+    ExplicitWidth = 511
+    ExplicitHeight = 57
     object Image1: TImage
       Left = 0
       Top = 0
-      Width = 527
-      Height = 158
+      Width = 511
+      Height = 74
       Align = alClient
       OnDblClick = Image1DblClick
       OnMouseDown = Image1MouseDown
@@ -59,8 +59,8 @@ object DEMLOSF: TDEMLOSF
     Align = alBottom
     Caption = ' '
     TabOrder = 1
-    ExplicitTop = 177
-    ExplicitWidth = 527
+    ExplicitTop = 93
+    ExplicitWidth = 511
   end
   object Panel2: TPanel
     Left = 0
@@ -69,8 +69,8 @@ object DEMLOSF: TDEMLOSF
     Height = 36
     Align = alBottom
     TabOrder = 2
-    ExplicitTop = 141
-    ExplicitWidth = 527
+    ExplicitTop = 57
+    ExplicitWidth = 511
     object Label1: TLabel
       Left = 16
       Top = 8

@@ -4,8 +4,8 @@ object GetDir8: TGetDir8
   ActiveControl = OKBtn
   BorderStyle = bsDialog
   Caption = 'Directions to use'
-  ClientHeight = 205
-  ClientWidth = 256
+  ClientHeight = 201
+  ClientWidth = 240
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack

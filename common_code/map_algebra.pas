@@ -11,6 +11,7 @@ unit map_algebra;
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
+   {$Define RecordMapAlgebra}
 {$EndIf}
 
 interface
@@ -26,6 +27,7 @@ type
     OKBtn: TBitBtn;
     BitBtn1: TBitBtn;
     Edit1: TEdit;
+    CheckBox1: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure ListBox1Click(Sender: TObject);
     procedure BitBtn1Click(Sender: TObject);
@@ -98,6 +100,7 @@ var
    FirstDEM,i,j : integer;
    Merge : tDEMBooleans;
 begin
+   {$IfDef RecordMapAlgebra} WriteLineToDebugFile('TMapAlgebraForm.OKBtnClick in'); {$EndIf}
    for i := 1 to MaxDEMDataSets do Merge[i] := false;
    FirstDEM := 0;
    for I := 1 to MaxDEMDataSets do if ValidDEM(i) then begin
@@ -108,8 +111,11 @@ begin
          end;
       end;
    end;
-   if (NumDEMsUsed > 1) then SumDEMs(FirstDEM,Merge,'DEM_sum');
+   if (NumDEMsUsed > 1) then begin
+      SumDEMs(FirstDEM,Merge,'DEM_sum',true,CheckBox1.Checked);
+   end;
    Close;
+   {$IfDef RecordMapAlgebra} WriteLineToDebugFile('TMapAlgebraForm.OKBtnClick out'); {$EndIf}
 end;
 
 

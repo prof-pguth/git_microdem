@@ -4,7 +4,7 @@ unit dem_fan_algorithm;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
 
@@ -111,7 +111,6 @@ begin
       Top := Mouse.CursorPos.Y;
       Left := Mouse.CursorPos.X;
       CheckBox3.Checked := MDDef.MissingDataBlocksLOS;
-      //CheckBox4.Checked := MDDef.RadialsFromZoomLevel;
       Edit5.Text := IntToStr(MDDef.FanMapZoom);
       iva := in_iva;
       for aElevInterpolation := piBilinear to piSWGrid do RadioGroup4.Items.Add(ElevInterpolationName[aElevInterpolation]);
@@ -119,9 +118,8 @@ begin
       LabelForm;
       Hide;
 
-      if (ShowModal = mrCancel) then Result := false
-      else begin
-         Result := true;
+      Result := (ShowModal = mrCancel);
+      if Result then begin
          CheckEditString(Edit1.Text,FanDEMSpaceMultiple);
          CheckEditString(Edit2.Text,FanMapSpaceMultiple);
          CheckEditString(Edit6.Text,MaskRaySpacingDeg);
@@ -193,11 +191,8 @@ end;
 
 procedure TFanAlgParams.BitBtn1Click(Sender: TObject);
 begin
-   {$IfDef ExViewshed}
-   {$Else}
-      ResetDefaultFanAlgorithm;
-      LabelForm;
-   {$EndIf}
+   ResetDefaultFanAlgorithm;
+   LabelForm;
 end;
 
 

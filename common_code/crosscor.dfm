@@ -2,28 +2,28 @@ inherited CrossCorrelationForm: TCrossCorrelationForm
   Left = 864
   Top = 235
   Caption = 'Cross Correlation Options'
-  ClientHeight = 293
-  ClientWidth = 444
+  ClientHeight = 289
+  ClientWidth = 428
   FormStyle = fsStayOnTop
   Visible = True
   OnClose = FormClose
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
-  ExplicitWidth = 462
-  ExplicitHeight = 340
-  TextHeight = 20
+  ExplicitWidth = 444
+  ExplicitHeight = 328
+  TextHeight = 15
   object Label1: TLabel [1]
     Left = 304
     Top = 112
-    Width = 44
-    Height = 20
+    Width = 34
+    Height = 15
     Caption = 'Label1'
   end
   object Label2: TLabel [2]
     Left = 304
     Top = 144
-    Width = 44
-    Height = 20
+    Width = 34
+    Height = 15
     Caption = 'Label2'
   end
   inherited OKBtn: TButton

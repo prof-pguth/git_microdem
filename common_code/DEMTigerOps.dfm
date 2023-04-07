@@ -4,8 +4,8 @@ object TigerOverlayOptions: TTigerOverlayOptions
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Tiger Overlay Options'
-  ClientHeight = 316
-  ClientWidth = 342
+  ClientHeight = 312
+  ClientWidth = 326
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -132,7 +132,7 @@ object TigerOverlayOptions: TTigerOverlayOptions
   object TabbedNotebook1: TTabbedNotebook
     Left = 0
     Top = 0
-    Width = 342
+    Width = 326
     Height = 209
     Align = alTop
     TabFont.Charset = DEFAULT_CHARSET

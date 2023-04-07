@@ -3,8 +3,8 @@ inherited SlopeCategoryEditor: TSlopeCategoryEditor
   Top = 317
   BorderIcons = [biSystemMenu]
   Caption = 'Set Slope Categories'
-  ClientHeight = 411
-  ClientWidth = 462
+  ClientHeight = 408
+  ClientWidth = 450
   Icon.Data = {
     0000010001002020100000000000E80200001600000028000000200000004000
     0000010004000000000080020000000000000000000000000000000000000000
@@ -30,9 +30,9 @@ inherited SlopeCategoryEditor: TSlopeCategoryEditor
     0000000000000000000000000000000000000000000000000000000000000000
     0000000000000000000000000000000000000000000000000000000000000000
     000000000000000000000000000000000000000000000000000000000000}
-  ExplicitWidth = 480
-  ExplicitHeight = 458
-  TextHeight = 20
+  ExplicitWidth = 466
+  ExplicitHeight = 447
+  TextHeight = 15
   inherited Bevel1: TBevel
     Width = 265
     Height = 425
@@ -50,8 +50,8 @@ inherited SlopeCategoryEditor: TSlopeCategoryEditor
   object Label1: TLabel [2]
     Left = 288
     Top = 312
-    Width = 71
-    Height = 20
+    Width = 56
+    Height = 15
     Caption = 'Categories'
   end
   inherited OKBtn: TButton
@@ -84,7 +84,7 @@ inherited SlopeCategoryEditor: TSlopeCategoryEditor
     Left = 288
     Top = 336
     Width = 57
-    Height = 28
+    Height = 23
     TabOrder = 4
     OnChange = Edit1Change
   end

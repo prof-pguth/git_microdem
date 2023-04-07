@@ -152,7 +152,8 @@ begin
             case Result.BaseMap.MapDraw.MapType of
                mtSatTrueColor  : RadioGroup2.ItemIndex := 1;
                mtSatFalseColor : RadioGroup2.ItemIndex := 2;
-               mtSatPickColor  : RadioGroup2.ItemIndex := 3;
+               mtSatFalseVeg   : RadioGroup2.ItemIndex := 3;
+               mtSatPickColor  : RadioGroup2.ItemIndex := 4;
             end;
          end
          else RadioGroup2.ItemIndex := 0;
@@ -187,8 +188,13 @@ begin
       ComboBox1.Text := SatImage[Sat].BandLongName[SatImage[Sat].DefRedFalse];
       ComboBox2.Text := SatImage[Sat].BandLongName[SatImage[Sat].DefGreenFalse];
       ComboBox3.Text := SatImage[Sat].BandLongName[SatImage[Sat].DefBlueFalse];
+   end
+   else if BaseMap.MapDraw.MapType in [mtSatFalseVeg] then begin
+      ComboBox1.Text := SatImage[Sat].BandLongName[SatImage[Sat].DefIR2];
+      ComboBox2.Text := SatImage[Sat].BandLongName[SatImage[Sat].DefRedFalse];
+      ComboBox3.Text := SatImage[Sat].BandLongName[SatImage[Sat].DefGreenFalse];
    end;
-   CheckBox2.Enabled := (BaseMap.MapDraw.MapType in [mtSatTrueColor,mtSatFalseColor,mtSatPickColor]) and (SatImage[BaseMap.MapDraw.SATonMap].LandsatNumber in [7,8,9]);
+   CheckBox2.Enabled := (BaseMap.MapDraw.MapType in [mtSatTrueColor,mtSatFalseColor,mtSatPickColor,mtSatFalseVeg]) and (SatImage[BaseMap.MapDraw.SATonMap].LandsatNumber in [7,8,9]);
 end;
 
 
@@ -276,7 +282,8 @@ begin
        0 : BaseMap.MapDraw.MapType := mtSatImageGray;
        1 : BaseMap.MapDraw.MapType := mtSatTrueColor;
        2 : BaseMap.MapDraw.MapType := mtSatFalseColor;
-       3 : BaseMap.MapDraw.MapType := mtSatPickColor;
+       3 : BaseMap.MapDraw.MapType := mtSatFalseVeg;
+       4 : BaseMap.MapDraw.MapType := mtSatPickColor;
    end;
    ToggleBands;
    ColorPreview;
