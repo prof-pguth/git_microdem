@@ -21,6 +21,24 @@ unit PETMATH;
 interface
 
 uses
+//needed for inline of the core DB functions
+   Petmar_db, Data.DB,
+   {$IfDef UseFireDacSQLlite}
+      FireDAC.Comp.Client, FireDAC.Comp.Dataset,FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteWrapper,
+   {$EndIf}
+
+   {$IfDef UseBDETables}
+      dbTables,
+   {$EndIf}
+
+   {$IfDef UseTDBF}
+      dbf,
+   {$EndIf}
+
+   {$IfDef UseTCLientDataSet}
+      DBClient,
+   {$EndIf}
+//end needed for inline of the core DB functions
    {$IfDef VCL}
       Graphics, VCL.Grids,
    {$EndIf}
@@ -229,6 +247,8 @@ function FilterSizeStr(i : integer) : shortstring;
 
 function Friedman(DBonTable : integer; DEMs : tStringList; Alpha : float64 = 95) : boolean;
 
+function bicuint(y,y1,y2,y12: tElevFloatarray; x1l,x1u,x2l,x2u : integer; x1,x2: float32;  VAR ansy,ansy1,ansy2: float32) : boolean;
+
 var
    ArrowEndX,ArrowEndY : Integer;
 
@@ -240,7 +260,6 @@ var
    procedure GetFile(Message : shortstring; var LengthShort : integer;  var Series1 : bfarray32; var ValueMin,ValueMax : float64; fName : PathStr = '');
 {$EndIf}
 
-procedure bcuint(y,y1,y2,y12: tElevFloatarray; x1l,x1u,x2l,x2u,x1,x2: float64;  VAR ansy,ansy1,ansy2: float64);
 function EnoughPoints(MomentVar : tMomentVar) : boolean;
 
 
@@ -281,39 +300,10 @@ begin
    Result := (MomentVar.NPts/(MomentVar.NPts + MomentVar.Missing)) < 0.5;
 end;
 
-//Numerical Recipes, bicubic interpolation (also a spline);
-
-//TYPE
-   //gl4array = ARRAY [1..4] OF float64;
 
 
-(*
 
-PROCEDURE bcucof(y,y1,y2,y12: gl4array; d1,d2: float64; VAR c: gl4by4);
-VAR
-BEGIN
-   d1d2 := d1*d2;
-   FOR i := 1 to 4 DO BEGIN
-      x[i] := y[i];
-      x[i+4] := y1[i]*d1;
-      x[i+8] := y2[i]*d2;
-      x[i+12] := y12[i]*d1d2
-   END;
-   FOR i := 1 to 16 DO BEGIN
-      xx := 0.0;
-      FOR k := 1 to 16 DO xx := xx+wt[i,k]*x[k];
-      cl[i] := xx
-   END;
-   l := 0;
-   FOR i := 1 to 4 DO
-      FOR j := 1 to 4 DO BEGIN
-          l := l+1;
-          c[i,j] := cl[l]
-      END
-END;
-*)
-
-PROCEDURE bcuint(y,y1,y2,y12: tElevFloatarray; x1l,x1u,x2l,x2u,x1,x2: float64;  VAR ansy,ansy1,ansy2: float64);
+function bicuint(y,y1,y2,y12: tElevFloatarray; x1l,x1u,x2l,x2u : integer; x1,x2: float32;  VAR ansy,ansy1,ansy2: float32) : boolean;
 // from Numerical Recipes, bicubic interpolation (also a spline);
 type
    gl4by4 = ARRAY [1..4,1..4] OF float64;
@@ -366,11 +356,7 @@ BEGIN
           c[i,j] := cl[l]
       END
    end;
-   (*
-   IF ((x1u = x1l) OR (x2u = x2l)) THEN BEGIN
-      writeln('pause in routine BCUINT - bad input'); readln
-   END;
-   *)
+   //IF ((x1u = x1l) OR (x2u = x2l)) THEN MessageToContinue('pause in routine BCUINT - bad input');
    t := (x1-x1l)/d1;
    u := (x2-x2l)/d2;
    ansy := 0.0;
@@ -382,7 +368,8 @@ BEGIN
       ansy1 := u*ansy1+(3.0*c[4,i]*t+2.0*c[3,i])*t+c[2,i];
    END;
    ansy1 := ansy1/d1;
-   ansy2 := ansy2/d2
+   ansy2 := ansy2/d2;
+   Result := true;
 END;
 
 
@@ -1994,6 +1981,8 @@ finalization
    {$IfDef RecordMatrixOps} WriteLineToDebugFile('RecordMatrixOps active in petmath'); {$EndIf}
    {$IfDef RecordFitProblems} WriteLineToDebugFile('RecordFitProblems active in petmath'); {$EndIf}
 end {unit}.
+
+
 
 
 

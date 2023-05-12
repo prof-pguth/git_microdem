@@ -18,6 +18,8 @@
       {$Define RecordDEMIX}
       {$Define RecordLegend}
       {$Define RecordDBNumericPlot}
+      {$Define RecordHyperion}
+
       //{$Define RecordDEMIXFull}
       //{$Define RecordDEMIXties}   //only enable for small test DB
       //{$Define RecordSymbolColor}
@@ -750,6 +752,8 @@ function ValidDBfName(fName : PathStr) : boolean;
 
 procedure AdjustGazFeatureName(var FeatureName : ShortString);
 
+procedure MakeLinesFromPoints(GISDataBase : TGISdataBaseModule; fName : PathStr = ''; ShapeTypeWanted : integer = -99; Thin : integer = -1);
+
 //DEMIX wine contest procedures
       procedure RankDEMS(DBonTable : integer);
       procedure SumsOfRankDEMS(DBonTable : integer);
@@ -840,7 +844,6 @@ uses
    {$IfDef VCL}
       DEMdbFieldPicker,
       DEMDbDisplay,
-      //Tiger_address,
       db_display_options,
       Get_db_coloring,
       Petimage_form,
@@ -864,23 +867,29 @@ uses
 
    {$IfDef ExPLSS}
    {$Else}
-   DEM_PLSS,
+      DEM_PLSS,
    {$EndIf}
 
    {$IfDef ExTiger}
    {$Else}
-   DEMTiger,
+      DEMTiger,
    {$EndIf}
 
    {$IfDef ExcludeExternalTools}
    {$Else}
-   MD_Use_tools,
+      MD_Use_tools,
    {$EndIf}
 
    {$IfDef ExGeoStats}
    {$Else}
       DEMStat,
    {$EndIf}
+
+   {$IfDef ExSidescan}
+   {$Else}
+      SideImg,
+   {$EndIf}
+
 
    DP_control,Dragon_Plot_init,
 
@@ -893,7 +902,7 @@ uses
    PetImage,
    gdal_tools,
    DataBaseCreate,
-   DEMDef_routines, SideImg;
+   DEMDef_routines;
 
 
 {$include demdatabase_special_cases.inc}
@@ -905,28 +914,174 @@ uses
    {$include demdatabase_field_edits.inc}
 {$Endif}
 
-
 {$IfDef NoDBMaps}
 {$Else}
    {$include demdatabase_maps.inc}
    {$include demdatabase_legend.inc}
 {$Endif}
 
-
 {$IfDef NoDBGrafs}
 {$Else}
    {$include demdatabase_graph.inc}
-{$EndIf}
-
-{$IfDef ExRiverNetworks}
-{$Else}
-   {$include demdatabase_drainage_basin.inc}
 {$EndIf}
 
 {$IfDef ExGeology}
 {$Else}
    {$include demdatabase_geology.inc}
 {$Endif}
+
+{$IfDef ExRiverNetworks}
+{$Else}
+   {$include demdatabase_drainage_basin.inc}
+{$EndIf}
+
+
+procedure MakeLinesFromPoints(GISDataBase : TGISdataBaseModule; fName : PathStr = ''; ShapeTypeWanted : integer = -99; Thin : integer = -1);
+var
+   i, fLength,fPrec : integer;
+   aft : tFieldType;
+   NewTable : tMyData;
+   ThreeD,MultipleLines,TimeField,LineEndPoints : boolean;
+   Field3D,MultipleField,TimeFName : ShortString;
+   MultipleValues : tStringList;
+   ShapeFileCreator : tShapeFileCreation;
+   LastLat,LastLong : float64;
+
+   procedure DoPoint;
+   var
+      Lat,Long : float64;
+   begin
+      with GISDataBase do begin
+           if GISDataBase.ValidLatLongFromTable(Lat,Long) then begin
+              if (abs(LastLat - Lat) > 0.00000001) or (abs(LastLong - Long) > 0.00000001) then begin
+                  if ThreeD then begin
+                     if (MyData.GetFieldByNameAsString(Field3D) <> '') then
+                        ShapeFileCreator.AddPointWithZToShapeStream(Lat,Long,MyData.GetFieldByNameAsFloat(Field3D));
+                  end
+                  else ShapeFileCreator.AddPointToShapeStream(Lat,Long);
+                  LastLat := Lat;
+                  LastLong := Long;
+              end;
+           end;
+      end;
+   end;
+
+     procedure DoALine(LineName : string35; RecNum : integer);
+     var
+        i : integer;
+        Lat1,Lat2,Long1,Long2 : float64;
+        Time1,Time2 : shortstring;
+      begin
+         with GISDataBase do begin
+            ShowHourglassCursor;
+            MyData.First;
+            GISDataBase.ValidLatLongFromTable(Lat1,Long1);
+            if (TimeField) then Time1 := GISDataBase.MyData.GetFieldByNameAsString(TimeFName);
+            EmpSource.Enabled := false;
+            while not MyData.eof do begin
+               DoPoint;                 //this will have the first point
+               for i := 1 to Thin do MyData.Next;
+            end;
+            if (Thin > 1) then DoPoint;   //insure the last point is included
+            GISDataBase.ValidLatLongFromTable(Lat2,Long2);
+            if (TimeField) then Time2 := GISDataBase.MyData.GetFieldByNameAsString(TimeFName);
+            if ShapeFileCreator.PtsInShapeStream > 0 then begin
+               NewTable.Insert;
+               NewTable.SetFieldByNameAsInteger(RecNoFName,RecNum);
+               NewTable.SetFieldByNameAsString('NAME',LineName);
+               if TimeField then begin
+                  NewTable.SetFieldByNameAsString('TIME_START',Time1);
+                  NewTable.SetFieldByNameAsString('TIME_END',Time2);
+               end;
+               if LineEndPoints then begin
+                  NewTable.SetFieldByNameAsFloat('LAT_START',Lat1);
+                  NewTable.SetFieldByNameAsFloat('LONG_START',Long1);
+                  NewTable.SetFieldByNameAsFloat('LAT_END',Lat2);
+                  NewTable.SetFieldByNameAsFloat('LONG_END',Long2);
+               end;
+               NewTable.Post;
+               ShapeFileCreator.ProcessShapeFileRecord;
+            end;
+         end;
+      end;
+
+
+begin
+   LastLat := 99;
+   LastLong := 999;
+   if (fName = '') then GetFileNameDefaultExt('New shape file',DBNameMask,FName,false);
+   if (fName <> '') then with GISDataBase do begin
+      {$IfDef RecordMakeLineArea} WriteLineToDebugFile('MakeLinesFromPoints new file: ' + fName); {$EndIf}
+      if (ShapeTypeWanted < 0) then begin
+         if AnswerIsYes('Area shape file') then ShapeTypeWanted := 5 else ShapeTypeWanted := 3;
+      end;
+
+      ThreeD := AnswerIsYes('3D shapefile');
+      if ThreeD then begin
+         Field3D := PickField('Three D values' ,[ftInteger,ftFloat]);
+         ShapeTypeWanted := ShapeTypeWanted + 10;
+      end;
+
+      MultipleLines := AnswerIsYes('Multiple records based on filter');
+      if MultipleLines then begin
+         MultipleField := PickField('Multiple lines',[ftInteger,ftString]);
+      end;
+
+      if (Thin < 0) then begin
+         Thin := 1;
+         ReadDefault('Thinning factor',Thin);
+      end;
+
+      TimeField := AnswerIsYes('Start/end times');
+      if TimeField then begin
+         TimeFName := PickField('Multiple lines' ,[ftInteger,ftString,ftFloat]);
+      end;
+
+      LineEndPoints := (ShapeTypeWanted in [3,13]) and AnswerIsYes('Line end points');
+
+      Make_tables.DefineAndCreateANewTable(FName,false,false,false,true,true);
+      NewTable := tMyData.Create(fName);
+      if TimeField then begin
+         aft := MyData.GetFieldType(TimeFName);
+         fLength := MyData.GetFieldLength(TimeFName);
+         fPrec := MyData.GetFieldPrecision(TimeFName);
+         NewTable.InsureFieldPresentAndAdded(aft,'TIME_START',fLength,fPrec);
+         NewTable.InsureFieldPresentAndAdded(aft,'TIME_END',fLength,fPrec);
+      end;
+      if LineEndPoints then begin
+         NewTable.InsureFieldPresentAndAdded(ftFloat,'LAT_START',11,7);
+         NewTable.InsureFieldPresentAndAdded(ftFloat,'LONG_START',12,7);
+         NewTable.InsureFieldPresentAndAdded(ftFloat,'LAT_END',11,7);
+         NewTable.InsureFieldPresentAndAdded(ftFloat,'LONG_END',12,7);
+      end;
+
+      System.Delete(Fname,Length(FName)-3,4);
+      MapScreenX1 := -9999;
+      MapScreenY1 := -9999;
+      {$IfDef RecordMakeLineArea} WriteLineToDebugFile('Calling SetUpShapeFiles'); {$EndIf}
+      ShapeFileCreator := tShapeFileCreation.Create(WGS84DatumConstants,fName,false,ShapeTypeWanted);
+      ShowHourglassCursor;
+      with GISDataBase do begin
+         if MultipleLines then begin
+           DBFieldUniqueEntries(MultipleField,MultipleValues);
+           for I := 0 to pred(MultipleValues.Count) do begin
+              EmpSource.Enabled := false;
+              MyData.ApplyFilter(MultipleField + '=' + QuotedStr(MultipleValues.Strings[i]));
+              DoALine(MultipleValues.Strings[i],succ(i));
+           end;
+           MultipleValues.Free;
+           ClearGISFilter;
+         end
+         else DoALine(DBName,1);
+         EmpSource.Enabled := true;
+      end;
+      {$IfDef RecordMakeLineArea} WriteLineToDebugFile('Closeing ShapeFile'); {$EndIf}
+      ShapeFileCreator.CloseShapeFiles;
+      GISDataBase.TheMapOwner.OpenDBonMap('',fName);
+   end;
+end;
+
+
 
 
 function ValidDBfName(fName : PathStr) : boolean;
@@ -1436,11 +1591,12 @@ begin
    if ItsAPointDB then begin
       yCent := MyData.GetFieldByNameAsFloat(LatFieldName);
       xCent := MyData.GetFieldByNameAsFloat(LongFieldName);
+      theMapOwner.CenterMapOnLatLong(ycent,xcent,hzFullZoom)
    end
    else begin
       aShapeFile.AreaAndCentroid(theMapOwner.MapDraw.PrimMapProj,MyData.RecNo,YCent,XCent);
+      theMapOwner.CenterMapOnLatLong(ycent,xcent,hzNoZoom)
    end;
-   theMapOwner.CenterMapOnLatLong(ycent,xcent,hzNoZoom)
 end;
 
 
@@ -3095,7 +3251,7 @@ end;
                   RedefineWGS84DatumConstants(Long);
                   MyData.SetFieldByNameAsString('MGRS',WGS84DatumConstants.LatLongToMGRS(Lat,Long));
                end;
-               if MyData.FieldExists('Z') and (TheMapOwner.MapDraw.DEMonMap <> 0) and DEMGlb[TheMapOwner.MapDraw.DEMonMap].GetElevFromLatLongDegree(Lat,Long,z) then begin
+               if MyData.FieldExists('Z') and ValidDEM(TheMapOwner.MapDraw.DEMonMap) and DEMGlb[TheMapOwner.MapDraw.DEMonMap].GetElevFromLatLongDegree(Lat,Long,z) then begin
                   MyData.SetFieldByNameAsFloat('Z',z);
                end;
                if ItsFanFile then begin
@@ -3609,7 +3765,7 @@ begin
       MDIniFile.AParameter('db','LineSize',dbOpts.LineWidth,2);
    end;
 
-   if (IniWhat = iniInit) and (TheMapOwner <> Nil) and AreaShapeFile(ShapeFileType) and ((TheMapOwner.MapDraw.DEMonMap <> 0) or ValidSatImage(TheMapOwner.MapDraw.SatonMap)) then begin
+   if (IniWhat = iniInit) and (TheMapOwner <> Nil) and AreaShapeFile(ShapeFileType) and (ValidDEM(TheMapOwner.MapDraw.DEMonMap) or ValidSatImage(TheMapOwner.MapDraw.SatonMap)) then begin
       dbOpts.Opacity := 50;
    end
    else MDIniFile.AParameter('db','Opacity',dbOpts.Opacity,100);
@@ -3730,7 +3886,7 @@ begin
                if (MapOwner = nil) then GISdb[GISNum].DBPlotted := false
                else begin
                   GISdb[GISNum].AssociateMap(MapOwner);
-                  if (MDDef.MapLimitDB) and (GISdb[GISNum].TheMapOwner.MapDraw.DEMonMap <> 0) and (DEMGlb[GISdb[GISNum].TheMapOwner.MapDraw.DEMonMap].LongSizeMap < 30) then begin
+                  if (MDDef.MapLimitDB) and ValidDEM(GISdb[GISNum].TheMapOwner.MapDraw.DEMonMap) and (DEMGlb[GISdb[GISNum].TheMapOwner.MapDraw.DEMonMap].LongSizeMap < 30) then begin
                      GISdb[GISNum].LimitDBtoMapArea;
                   end;
                end;
@@ -4930,7 +5086,7 @@ function TGISdataBaseModule.LatLongFieldsPresent : boolean;
 
       procedure GetlatLongFieldNames(Table : tMyData; var LatFieldName,LongFieldName : ShortString);
       begin
-         if Table.FieldExists('LONG',true,ftFloat) and Table.FieldExists('LAT',true,ftFloat) then begin
+         if Table.FieldExists('LONG') and Table.IsNumericField('LONG') and Table.FieldExists('LAT') and Table.IsNumericField('LAT') then begin
             LatFieldName := 'LAT';
             LongFieldName := 'LONG';
             exit;
@@ -5616,7 +5772,12 @@ begin
    if (DBNumber = ClimateStationDB) then ClimateStationDB := 0;
    if (DBNumber = WindsDB) then WindsDB := 0;
    if (DBNumber = PiratesDB) then PiratesDB := 0;
-   if (DBNumber = SideImg.SideIndexDB) then SideImg.SideIndexDB := 0;
+
+
+   {$IfDef ExSidescan}
+   {$Else}
+      if (DBNumber = SideImg.SideIndexDB) then SideImg.SideIndexDB := 0;
+   {$EndIf}
 
    if ItsFanFile and (Not FanCanClose) then  begin
       MessageToContinue('Cannot close until you close the DEM');

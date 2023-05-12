@@ -1133,7 +1133,7 @@ begin
          LegendFiles.Add(BeforeSpecifiedCharacter(TStr,'-'));
          {$IfDef RecordDEMIX} writeLineToDebugFile('Twmdem.DEMIXelevationhistograms1Click ' + Tstr); {$EndIf}
       end;
-      CreateMultipleHistograms(MDDef.CountHistograms,ElevFiles,LegendFiles,'Elevation difference','Elevation difference distribution');
+      CreateMultipleHistogram(MDDef.CountHistograms,ElevFiles,LegendFiles,'Elevation difference','Elevation difference distribution');
    end;
    {$IfDef RecordDEMIX} writeLineToDebugFile('Twmdem.DEMIXelevationhistograms1Click out'); {$EndIf}
 end;
@@ -1305,61 +1305,6 @@ begin
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMtiles in'); {$EndIf}
 end;
 
-
-procedure DEMIXreferenceDEMs;
-var
-   RefDataPath,DEMIXRefData,fName, RefDEMDir : PathStr;
-   aTable : Petmar_db.tMyData;
-   Areas,FoundFiles : tStringList;
-   i,WantedDEM : integer;
-   TStr : shortstring;
-begin
-   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs in'); {$EndIf}
-   try
-      HeavyDutyProcessing := true;
-      StopSplashing;
-
-      RefDataPath := 'H:\new_demix_reference_dems\';
-      DEMIXRefData := RefDataPath + 'ref_dems.dbf';
-      aTable := Petmar_db.tMyData.Create(DEMIXRefData);
-      RefDEMDir := RefDataPath+ '1sec_ref_dems\';
-      SafeMakeDir(RefDEMDir);
-
-      Areas := aTable.UniqueEntriesInDB('SERIES');
-      for i := 0 to pred(Areas.Count) do begin
-         wmdem.SetPanelText(1, IntToStr(i) + '/' + IntToStr(FoundFiles.Count));
-         fName := RefDEMDir + 'md_' + Areas[i] + '_1sec_area.tif';
-         tstr := ', area=' + Areas.Strings[i] + '  ' + IntToStr(i) + '/' + IntToStr(Areas.Count);
-         if FileExists(fName) then begin
-            {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs alread done' + TStr); {$EndIf}
-         end
-         else begin
-            {$If Defined(RecordDEMIX)} HighlightLineToDebugFile('DEMIXreferenceDEMs' + Tstr); {$EndIf}
-            aTable.ApplyFilter('SERIES=' + QuotedStr(Areas.Strings[i]));
-            FoundFiles := aTable.UniqueEntriesInDB('FILENAME');
-            if (FoundFiles.Count > 0) then begin
-               {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs, area=' + Areas.Strings[i] + ' merge=' + IntToStr(FoundFiles.Count)); {$EndIf}
-               MergeMultipleDEMsHere(WantedDEM,FoundFiles,true,false);
-               if (WantedDEM <> 0) then begin
-                  {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs call resample'); {$EndIf}
-                  ResampleForDEMIXOneSecDEMs(WantedDEM,RefDEMDir);
-                  CloseSingleDEM(WantedDEM);
-               end;
-               CleanUpTempDirectory;  //might be many tiled or compressed DEMs expanded
-            end
-            else begin
-               {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs, area=' + Areas.Strings[i] + ' no dems'); {$EndIf}
-            end;
-         end;
-      end;
-   finally
-      Areas.Free;
-      aTable.Destroy;
-      HeavyDutyProcessing := false;
-      wmdem.SetPanelText(1, '');
-   end;
-   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs out'); {$EndIf}
-end;
 
 
 procedure IndexDEMIXreferenceDEMs;

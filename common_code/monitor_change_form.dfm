@@ -2,8 +2,8 @@ object ChangeMapForm: TChangeMapForm
   Left = 0
   Top = 0
   Caption = 'Change Map'
-  ClientHeight = 237
-  ClientWidth = 426
+  ClientHeight = 307
+  ClientWidth = 415
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -13,8 +13,8 @@ object ChangeMapForm: TChangeMapForm
   FormStyle = fsStayOnTop
   TextHeight = 15
   object RedrawSpeedButton12: TSpeedButton
-    Left = 267
-    Top = 194
+    Left = 246
+    Top = 274
     Width = 25
     Height = 25
     Hint = 'Force redraw'
@@ -29,23 +29,15 @@ object ChangeMapForm: TChangeMapForm
       FCCFFFCCCCCCCCCFFCCFFFFFFFFFFFFFFCCFFFFFFFFFFFFFFFFF}
     OnClick = RedrawSpeedButton12Click
   end
-  object Label2: TLabel
-    Left = 40
+  object Image1: TImage
+    Left = 12
     Top = 120
-    Width = 34
-    Height = 15
-    Caption = 'Label2'
-  end
-  object Label3: TLabel
-    Left = 40
-    Top = 144
-    Width = 34
-    Height = 15
-    Caption = 'Label3'
+    Width = 385
+    Height = 105
   end
   object OKBtn: TButton
-    Left = 15
-    Top = 194
+    Left = 28
+    Top = 278
     Width = 75
     Height = 25
     Caption = 'OK'
@@ -55,8 +47,8 @@ object ChangeMapForm: TChangeMapForm
     OnClick = OKBtnClick
   end
   object HelpBtn: TButton
-    Left = 177
-    Top = 194
+    Left = 156
+    Top = 274
     Width = 75
     Height = 25
     Caption = '&Help'
@@ -68,7 +60,7 @@ object ChangeMapForm: TChangeMapForm
     Top = 5
     Width = 393
     Height = 109
-    ActivePage = Single
+    ActivePage = TabSheet1
     TabOrder = 2
     object Single: TTabSheet
       Caption = 'Single cuttoff'
@@ -112,7 +104,6 @@ object ChangeMapForm: TChangeMapForm
         Width = 121
         Height = 23
         TabOrder = 0
-        Text = 'Edit2'
         OnChange = Edit2Change
       end
       object Edit3: TEdit
@@ -121,7 +112,6 @@ object ChangeMapForm: TChangeMapForm
         Width = 121
         Height = 23
         TabOrder = 1
-        Text = 'Edit3'
         OnChange = Edit3Change
       end
     end
@@ -144,11 +134,10 @@ object ChangeMapForm: TChangeMapForm
       end
       object Edit4: TEdit
         Left = 16
-        Top = 3
+        Top = 6
         Width = 121
         Height = 23
         TabOrder = 0
-        Text = 'Edit2'
         OnChange = Edit4Change
       end
       object Edit5: TEdit
@@ -157,18 +146,26 @@ object ChangeMapForm: TChangeMapForm
         Width = 121
         Height = 23
         TabOrder = 1
-        Text = 'Edit3'
         OnChange = Edit5Change
       end
     end
   end
   object BitBtn1: TBitBtn
-    Left = 298
-    Top = 163
+    Left = 277
+    Top = 243
     Width = 124
     Height = 25
     Caption = 'Change category map'
     TabOrder = 3
     OnClick = BitBtn1Click
+  end
+  object BitBtn2: TBitBtn
+    Left = 28
+    Top = 243
+    Width = 75
+    Height = 25
+    Caption = 'Legend'
+    TabOrder = 4
+    OnClick = BitBtn2Click
   end
 end

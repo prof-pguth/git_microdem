@@ -11,6 +11,7 @@ unit dem_indexes;
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
+  //{$Define WarnMapIndexes}
   {$IFDEF DEBUG}
      //{$Define RecordMultipleFilesInBoundingBox}
      //{$Define RecordLoadMapLibraryBox}
@@ -82,7 +83,7 @@ procedure DefineShapeFileGrouping(fName : PathStr);
 procedure SetUpDataBaseForOperations(AllowNoDataMap : boolean = false);
 
 procedure CreateShapeFileGrouping(var fName : PathStr; var TheGroupingIndex : tMyData; Long : boolean; ShapeType : integer = 0);
-procedure MergeMultipleDEMsHere(var WantedDEM : integer; var DEMList : TStringList; DisplayIt,GDALversion : boolean);
+function MergeMultipleDEMsHere(var DEMList : TStringList; DisplayIt,GDALversion : boolean; MergefDir : PathStr = '') : integer;
 
 function DataTypeFileName : PathStr;
 function SeriesIndexFileName  : PathStr;
@@ -153,7 +154,7 @@ begin
       if PathIsValid(dir) then Locations.Add(Dir + '  (' + GetVolumeName(ch) + ')');
    end;
    if (Locations.Count = 0) then begin
-      MessageToContinue('No map indexes found');
+      {$IfDef WarnMapIndexes} MessageToContinue('No map indexes found'); {$EndIf}
    end
    else if (Locations.Count = 1) then begin
       Dir := Locations.Strings[0];
@@ -874,19 +875,20 @@ begin
 end;
 
 
-procedure MergeMultipleDEMsHere(var WantedDEM : integer; var DEMList : TStringList; DisplayIt,GDALversion : boolean);
+function MergeMultipleDEMsHere(var DEMList : TStringList; DisplayIt,GDALversion : boolean; MergefDir : PathStr = '') : integer;
 var
    FName : ShortString;
-   zf : float32;
+   xgrid,ygrid,zf : float32;
    XSpace,YSpace,tf,
-   xutm,yutm,xgrid,ygrid,
+   xutm,yutm,
    xmin,xmax,ymin,ymax,Lat,Long  : float64;
    NewHeader   : tDEMheader;
    Inbounds,UTMDEMs : boolean;
-   MergeUTMzone,{MergeCol,MergeRow,i,Col,Row,}TileX,TileY : int32;
-   CurDEM{,NPts}     : integer;
-   aName,ProjName,MergefName,OldDEMName{,OutVRT}     : PathStr;
-   MenuStr{,cmd } : ShortString;
+   MergeUTMzone,TileX,TileY : int32;
+   CurDEM     : integer;
+   aName,ProjName,OldDEMName  : PathStr;
+   MenuStr : ShortString;
+   SaveIt : boolean;
 
       procedure OldMICRODEMmerge;
       var
@@ -903,7 +905,7 @@ var
             WMDEM.StatusBar1.Panels[0].Text := 'Still Check ' + IntToStr(succ(I)) + '/' + IntToStr(DEMList.Count);;
             if FileExists(fName) then begin
                if NewArea(true,CurDEM,'',FName) then begin
-                  if not SubsequentDEM then begin
+                  if (not SubsequentDEM) then begin
                      NewHeader := DEMGlb[CurDEM].DEMheader;
                      xmin := DEMGlb[CurDEM].DEMheader.DEMSWCornerX;
                      ymin := DEMGlb[CurDEM].DEMheader.DEMSWCornerY;
@@ -924,7 +926,7 @@ var
                      else begin
                         if (DEMGlb[CurDEM].DEMheader.DEMSWCornerX < xmin) then xmin := DEMGlb[CurDEM].DEMheader.DEMSWCornerX;
                         tf := DEMGlb[CurDEM].DEMheader.DEMSWCornerX + pred(DEMGlb[CurDEM].DEMheader.NumCol) * DEMGlb[CurDEM].DEMheader.DEMxSpacing;
-                        if xMax < tf then xmax := tf;
+                        if (xMax < tf) then xmax := tf;
                         if (DEMGlb[CurDEM].DEMheader.DEMSWCornerY < ymin) then ymin := DEMGlb[CurDEM].DEMheader.DEMSWCornerY;
                         tf := DEMGlb[CurDEM].DEMheader.DEMSWCornerY + pred(DEMGlb[CurDEM].DEMheader.NumRow) * DEMGlb[CurDEM].DEMheader.DEMySpacing;
                         if (yMax < tf) then ymax := tf;
@@ -951,10 +953,10 @@ var
 
          {$If Defined(RecordMerge) or Defined(RecordTimeMerge) } WriteLineToDebugFile('done first pass in MD DEM Merge'); {$EndIf}
          NewHeader.ElevUnits := euMeters;
-         if OpenAndZeroNewDEM(false,NewHeader,WantedDEM,'Merge',InitDEMmissing) then begin
-            {$IfDef RecordMerge} WriteLineToDebugFile('New DEM ' + IntToStr(WantedDEM) + ' opened'); {$EndIf}
-            if (MergeSeriesName = '') then DEMGlb[WantedDEM].AreaName := LastSubDir(ExtractFilePath(DEMList.Strings[0]))
-            else DEMGlb[WantedDEM].AreaName := MergeSeriesName;
+         if OpenAndZeroNewDEM(false,NewHeader,Result,'Merge',InitDEMmissing) then begin
+            {$IfDef RecordMerge} WriteLineToDebugFile('New DEM ' + IntToStr(Result) + ' opened'); {$EndIf}
+            if (MergeSeriesName = '') then DEMGlb[Result].AreaName := LastSubDir(ExtractFilePath(DEMList.Strings[0]))
+            else DEMGlb[Result].AreaName := MergeSeriesName;
             ReallyReadDEM := true;
             for i := 0 to pred(DEMList.Count) do begin
                FName := DEMList.Strings[i];
@@ -962,7 +964,7 @@ var
                   if NewArea(true,CurDEM,'',FName) then begin
                      if UTMDEMs then begin
                         DEMGlb[CurDEM].DEMGridToUTM(0,0,xutm,yutm);
-                        DEMGlb[WantedDEM].UTMToDEMGrid(XUTM,YUTM,XGrid,YGrid,InBounds);
+                        DEMGlb[Result].UTMToDEMGrid(XUTM,YUTM,XGrid,YGrid,InBounds);
                         TileX := round(Xgrid);
                         TileY := round(Ygrid);
                      end;
@@ -979,14 +981,14 @@ var
                               if {false and} UTMDEMs then begin //added Aug 2022, but unclear if this was the cause of problems
                                 (*
                                 DEMGlb[CurDEM].DEMGridToUTM(Col,Row,xutm,yutm);
-                                DEMGlb[WantedDEM].UTMToDEMGrid(XUTM,YUTM,XGrid,YGrid,InBounds);
-                                if InBounds then DEMGlb[WantedDEM].SetGridElevation(round(xgrid),round(Ygrid),zf);
+                                DEMGlb[Result].UTMToDEMGrid(XUTM,YUTM,XGrid,YGrid,InBounds);
+                                if InBounds then DEMGlb[Result].SetGridElevation(round(xgrid),round(Ygrid),zf);
                                 *)
-                                DEMGlb[WantedDEM].SetGridElevation(Col + TileX,Row + TileY,zf);
+                                DEMGlb[Result].SetGridElevation(Col + TileX,Row + TileY,zf);
                               end
                               else begin
                                  DEMGlb[CurDEM].DEMGridToLatLongDegree(Col,Row,Lat,Long);
-                                 DEMGlb[WantedDEM].SetGridElevationLatLongDegree(Lat,Long,zf);
+                                 DEMGlb[Result].SetGridElevationLatLongDegree(Lat,Long,zf);
                               end;
                            end;
                         end {for Row};
@@ -998,7 +1000,8 @@ var
             end {for i};
             LastDEMName := OldDEMName;
             DEMList.Free;
-            {$If Defined(RecordMerge) or Defined(RecordTimeMerge) } WriteLineToDebugFile('MD merge done, DEM=' + IntToStr(WantedDEM)); {$EndIf}
+            if SaveIt then DEMGlb[Result].WriteNewFormatDEM(MergefDir,'merged DEM');
+            {$If Defined(RecordMerge) or Defined(RecordTimeMerge) } WriteLineToDebugFile('MD merge done, DEM=' + IntToStr(Result)); {$EndIf}
           end;
      end;
 
@@ -1010,10 +1013,12 @@ begin
    DEMMergeInProgress := true;
    try
       aName := DEMList.Strings[0];
+      SaveIt := (MergefDir <> '');
+      if (MergefDir = '') then MergefDir := MDTempDir;
+      MergefDir := Petmar.NextFileNumber(MergefDir,LastSubDir(ExtractFilePath(DEMList.Strings[0])) + '_','.tif');
 
       if GDALversion and GDALGridFormat(ExtractFileExt(aName),false) then begin
          {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('GDAL options for DEM'); {$EndIf}
-
          ProjName := '';
          if FileExtEquals(aName,'.ASC') then begin //Spanish DEMs have no projection in the ASC files, and user must put WKT file in directory
             {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('ASC reprojection'); {$EndIf}
@@ -1021,63 +1026,40 @@ begin
             if (ProjName <> '') then ProjName := '-a_srs ' + ProjName;
          end;
 
-       //option 2 was about three times faster than option 1
-         MergefName := Petmar.NextFileNumber(MDTempDir,'DEM_Merge_','.tif');
-         UseGDAL_VRT_to_merge(MergefName,DEMList,ProjName);
+       //GDAL_VRT was about three times faster than other options
+         UseGDAL_VRT_to_merge(MergefDir,DEMList,ProjName);
          {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('GDAL VRT over for DEM'); {$EndIf}
-
-         (*
-       //option 1
-         MergefName := MDTempDir + 'Merge-2.tif';
-         CallGDALMerge(MergefName,DEMList,-9999);
-         {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('GDAL merge over for DEM'); {$EndIf}
-
-       //option 3  did not work (could not get the list of input files to be acceptable
-         MergefName := MDTempDir + 'Merge-3.tif';
-         UseGDAL_Warp_to_merge(MergefName,DEMList);
-         {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('GDAL warp over for DEM'); {$EndIf}
-       *)
-
-        (*
-         if FileExtEquals(aName,'.ASC') then begin //Spanish DEMs have no projection in the ASC files, and user must put WKT file in directory
-            {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('ASC reprojection'); {$EndIf}
-            ProjName := FindSingleWKTinDirectory(ExtractFilePath(aName));
-             if (ProjName <> '') then GDALAssignDEMProjection(MergefName,ProjName);
-         end;
-        *)
-
          {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('open ' + MergeFName); {$EndIf}
-         if FileExists(MergefName) then begin
-            WantedDEM := OpenNewDEM(MergefName,false);
+         if FileExists(MergefDir) then begin
+            Result := OpenNewDEM(MergefDir,false);
          end
          else begin
-            WantedDEM := 0;
+            Result := 0;
          end;
-         {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('DEM=' + IntToStr(WantedDEM) + '  open ' + MergeFName); {$EndIf}
+         {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('DEM=' + IntToStr(Result) + '  open ' + MergeFName); {$EndIf}
       end
       else begin
          OldMICRODEMmerge;
       end;
 
-    if (WantedDEM <> 0) then begin
-         {$If Defined(RecordMerge) or Defined(RecordTimeMerge) } WriteLineToDebugFile('Merge set up, WantedDEM=' + IntToStr(WantedDEM)); {$EndIf}
-
+    if ValidDEM(Result) then begin
+         {$If Defined(RecordMerge) or Defined(RecordTimeMerge) } WriteLineToDebugFile('Merge set up, Result=' + IntToStr(Result)); {$EndIf}
          if MDdef.AutoFillHoles then begin
-            DEMGlb[WantedDEM].InterpolateAcrossHoles(false);
+            DEMGlb[Result].InterpolateAcrossHoles(false);
             {$If Defined(RecordMerge) or Defined(RecordTimeMerge)} WriteLineToDebugFile('Holes done'); {$EndIf}
          end;
          if MDdef.MissingToSeaLevel then begin
-            DEMGlb[WantedDEM].MissingDataToConstantVelue;
+            DEMGlb[Result].MissingDataToConstantVelue;
             {$If Defined(RecordMerge) or Defined(RecordTimeMerge) } WriteLineToDebugFile('Sea level done'); {$EndIf}
          end;
          SkipMenuUpdating := false;
-         DEMGlb[WantedDEM].CheckMaxMinElev;
-         DEMGlb[WantedDEM].DefineDEMVariables(True);
-         {$If Defined(RecordMerge) or Defined(RecordTimeMerge) } WriteLineToDebugFile('Elev check Merge: ' + DEMGlb[WantedDEM].ZRange); {$EndIf}
-         if DisplayIt then CreateDEMSelectionMap(WantedDEM,true,MDDef.DefElevsPercentile,MDdef.DefDEMMap);
+         DEMGlb[Result].CheckMaxMinElev;
+         DEMGlb[Result].DefineDEMVariables(True);
+         {$If Defined(RecordMerge) or Defined(RecordTimeMerge) } WriteLineToDebugFile('Elev check Merge: ' + DEMGlb[Result].ZRange); {$EndIf}
+         if DisplayIt then CreateDEMSelectionMap(Result,true,MDDef.DefElevsPercentile,MDdef.DefDEMMap);
       end
       else begin
-         {$If Defined(RecordMerge) or Defined(RecordTimeMerge) } WriteLineToDebugFile('Failed set up, WantedDEM=' + IntToStr(WantedDEM)); {$EndIf}
+         {$If Defined(RecordMerge) or Defined(RecordTimeMerge) } WriteLineToDebugFile('Failed set up, Result=' + IntToStr(Result)); {$EndIf}
       end;
    finally
       WMDEM.StatusBar1.Panels[0].Text := '';
@@ -1085,7 +1067,7 @@ begin
       DEMMergeInProgress := false;
       SubsequentDEM := false;
       {$If Defined(RecordMerge) or Defined(MergeSummary) or Defined(RecordTimeMerge)}
-          if WantedDEM <> 0 then WriteLineToDebugFile('MergeMultipleDEMsHere out, merged  ' + DEMGlb[WantedDEM].AreaName)
+          if Result <> 0 then WriteLineToDebugFile('MergeMultipleDEMsHere out, merged  ' + DEMGlb[Result].AreaName)
           else WriteLineToDebugFile('MergeMultipleDEMsHere out, failure');
       {$EndIf}
    end;
@@ -1123,7 +1105,7 @@ var
 
                 if (LoadList.Count > 1) then begin
                    {$IfDef RecordIndex} WriteLineToDebugFile('call MergeDEMs, count=' + IntToStr(LoadList.Count)); {$EndIf}
-                   MergeMultipleDEMsHere(WantDEM,LoadList,DisplayIt,true);
+                   WantDEM := MergeMultipleDEMsHere(LoadList,DisplayIt,true);
                    DEMGlb[WantDEM].DEMFileName := NextFileNumber(MDTempDir, MergeSeriesName + '_','.dem');
                    DEMGlb[WantDEM].WriteNewFormatDEM(DEMGlb[WantDEM].DEMFileName);
                 end
@@ -1291,6 +1273,7 @@ finalization
    {$IfDef RecordIndexFileNames} WriteLineToDebugFile('RecordIndexFileNames active in dem_indexes'); {$EndIf}
    {$IfDef RecordClosing} WriteLineToDebugFile('Closing dem_indexes'); {$EndIf}
 end.
+
 
 
 

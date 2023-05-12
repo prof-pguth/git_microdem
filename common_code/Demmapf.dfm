@@ -2,8 +2,8 @@ object MapForm: TMapForm
   Left = 45
   Top = 303
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1059
-  ClientWidth = 1771
+  ClientHeight = 1054
+  ClientWidth = 1751
   Color = clBtnHighlight
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -40,8 +40,8 @@ object MapForm: TMapForm
   object ScrollBox1: TScrollBox
     Left = 0
     Top = 27
-    Width = 1771
-    Height = 1032
+    Width = 1751
+    Height = 1027
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clRed
@@ -51,8 +51,8 @@ object MapForm: TMapForm
     ParentFont = False
     TabOrder = 0
     OnClick = ScrollBox1Click
-    ExplicitWidth = 1767
-    ExplicitHeight = 1031
+    ExplicitWidth = 1747
+    ExplicitHeight = 1026
     object Image1: TImage
       Left = 3
       Top = -247
@@ -209,13 +209,13 @@ object MapForm: TMapForm
     end
     object BlendPanel: TPanel
       Left = 0
-      Top = 987
-      Width = 1767
+      Top = 982
+      Width = 1747
       Height = 41
       Align = alBottom
       TabOrder = 8
-      ExplicitTop = 986
-      ExplicitWidth = 1763
+      ExplicitTop = 981
+      ExplicitWidth = 1743
       object TrackBar2: TTrackBar
         Left = 289
         Top = 1
@@ -334,12 +334,12 @@ object MapForm: TMapForm
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1771
+    Width = 1751
     Height = 27
     Align = alTop
     TabOrder = 1
     OnMouseDown = Panel1MouseDown
-    ExplicitWidth = 1767
+    ExplicitWidth = 1747
     object AnnotateSpeedButton1: TSpeedButton
       Left = 31
       Top = -4
@@ -1749,7 +1749,7 @@ object MapForm: TMapForm
             end
           end
           object MICRODEMupsamplebilinearbicubic1: TMenuItem
-            Caption = 'MICRODEM upsample, bilinear/bicubic'
+            Caption = 'MICRODEM upsample, bilinear/bicubic (experimental)'
             GroupIndex = 1
             OnClick = MICRODEMupsamplebilinearbicubic1Click
           end
@@ -2661,6 +2661,26 @@ object MapForm: TMapForm
           Caption = 'EGM96 to EGM2008'
           OnClick = EGM1996toEGM20081Click
         end
+        object LocaddatumtoEGM20081: TMenuItem
+          Caption = 'Locad datum to EGM2008'
+          OnClick = LocaddatumtoEGM20081Click
+        end
+      end
+      object Assignverticaldatum1: TMenuItem
+        Caption = 'Assign vertical datum'
+        GroupIndex = 1
+        object NAVD881: TMenuItem
+          Caption = 'NAVD88'
+          OnClick = NAVD881Click
+        end
+        object NAVD882: TMenuItem
+          Caption = 'EGM2008'
+          OnClick = NAVD882Click
+        end
+        object Other1: TMenuItem
+          Caption = 'Other'
+          OnClick = Other1Click
+        end
       end
       object Horizontalshift1: TMenuItem
         Caption = 'Horizontal shift (temporary)'
@@ -2706,6 +2726,11 @@ object MapForm: TMapForm
         Caption = 'Edit fans'
         GroupIndex = 1
         OnClick = Editfans1Click
+      end
+      object EditVATDBFcolorscategorynames1: TMenuItem
+        Caption = 'Edit VAT-DBF (colors, category names)'
+        GroupIndex = 1
+        OnClick = EditVATDBFcolorscategorynames1Click
       end
       object QuarterDEM1: TMenuItem
         Caption = 'Quarter DEM'
@@ -2877,7 +2902,7 @@ object MapForm: TMapForm
         OnClick = GridPosts2Click
       end
       object Gridoutlines1: TMenuItem
-        Caption = 'Cell outlines from selected grids'
+        Caption = 'Pixel/Cell outlines from selected grids'
         GroupIndex = 1
         OnClick = Gridoutlines1Click
       end
@@ -3060,9 +3085,14 @@ object MapForm: TMapForm
         Caption = 'Multiple map interactive comparisons'
         GroupIndex = 1
         object Variableopaquemerge1: TMenuItem
-          Caption = 'Variable opaque merge'
+          Caption = 'Variable opaque merge (interactive)'
           GroupIndex = 1
           OnClick = Variableopaquemerge1Click
+        end
+        object MergeanotherDEMhillshade1: TMenuItem
+          Caption = 'Merge another DEM hillshade (quick)'
+          GroupIndex = 1
+          OnClick = MergeanotherDEMhillshade1Click
         end
         object Verticalswipecompare1: TMenuItem
           Caption = 'Vertical swipe compare'
@@ -3617,6 +3647,10 @@ object MapForm: TMapForm
       object Northarrow1: TMenuItem
         Caption = 'North arrow'
         OnClick = Northarrow1Click
+      end
+      object Geoidgrids1: TMenuItem
+        Caption = 'Geoid grids'
+        OnClick = Geoidgrids1Click
       end
       object Mapprojectionzones1: TMenuItem
         Caption = 'Map projection zones'
@@ -4593,6 +4627,10 @@ object MapForm: TMapForm
         Caption = 'Data header'
         OnClick = Dataheader2Click
       end
+      object SummaryallopenDEMsGrids1: TMenuItem
+        Caption = 'Summary all open DEMs/Grids'
+        OnClick = SummaryallopenDEMsGrids1Click
+      end
     end
     object Database2: TMenuItem
       Caption = 'Data base'
@@ -4715,6 +4753,18 @@ object MapForm: TMapForm
       Caption = 'Test3d'
       GroupIndex = 1
       OnClick = TestMD1Click
+    end
+    object DEMIX1: TMenuItem
+      Caption = 'DEMIX'
+      GroupIndex = 1
+      object Datumshiftcomparison1: TMenuItem
+        Caption = 'Datum shift comparison'
+        OnClick = Datumshiftcomparison1Click
+      end
+      object Shiftfilecomparison1: TMenuItem
+        Caption = 'Shift file comparison'
+        OnClick = Shiftfilecomparison1Click
+      end
     end
   end
   object SaveDialog1: TSaveDialog
@@ -5560,6 +5610,10 @@ object MapForm: TMapForm
       Caption = 'Zoom Out'
       OnClick = ZoomOut2Click
     end
+    object Zoomfullresolution1: TMenuItem
+      Caption = 'Zoom full resolution'
+      OnClick = Zoomfullresolution1Click
+    end
     object N40: TMenuItem
       Caption = '-'
     end
@@ -5886,6 +5940,13 @@ object MapForm: TMapForm
         Caption = 'Roughness (from SSO)'
         OnClick = RoughnessfromSSO1Click
       end
+      object N56: TMenuItem
+        Caption = '-'
+      end
+      object Slopeandroughness1: TMenuItem
+        Caption = 'Slope and roughness'
+        OnClick = Slopeandroughness1Click
+      end
       object N15: TMenuItem
         Caption = '-'
       end
@@ -5974,9 +6035,9 @@ object MapForm: TMapForm
       OnClick = Convergenceindex1Click
     end
     object opographicruggednessindex1: TMenuItem
-      Caption = 'Topographic ruggedness and position index (TRI and TPI)'
+      Caption = 'Topographic ruggedness '
       object RICK1: TMenuItem
-        Caption = 'RRI (radial roughness)'
+        Caption = 'RRI (radial roughness index)'
         OnClick = RICK1Click
       end
       object Normalizeeastwest1: TMenuItem
@@ -5986,6 +6047,9 @@ object MapForm: TMapForm
       object Nonormalization1: TMenuItem
         Caption = 'TRI No normalization (really slope)'
         OnClick = Nonormalization1Click
+      end
+      object PI1: TMenuItem
+        Caption = 'TPI'
       end
       object Experimental2: TMenuItem
         Caption = 'Experimental'
@@ -6486,6 +6550,15 @@ object MapForm: TMapForm
       Caption = 'Mask other grids to match this one.'
       GroupIndex = 1
       OnClick = Maskothergridstomatchthisone1Click
+    end
+    object N57: TMenuItem
+      Caption = '-'
+      GroupIndex = 1
+    end
+    object Putshadingfromthismapunderselectedmaps1: TMenuItem
+      Caption = 'Put shading from this map under selected maps'
+      GroupIndex = 1
+      OnClick = Putshadingfromthismapunderselectedmaps1Click
     end
     object N42: TMenuItem
       Caption = '-'

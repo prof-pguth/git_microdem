@@ -19,6 +19,7 @@ unit basemap;
    {$IFDEF DEBUG}
 
       {$Define RecordWKT}
+      {$Define RecordUKOS}
 
       //{$Define RawProjectInverse}
       //{$Define ForwardProject}
@@ -124,7 +125,7 @@ type
          PName   : tProjectType;
          ProjectionfName : PathStr;
          ProjectionSharedWithDataset : boolean;
-
+         wktProjName,
          pNameModifier,
          ProjDebugName : shortstring;
          ProjectionGeoBox : sfBoundBox;
@@ -132,6 +133,7 @@ type
          ModelType : SmallInt;
          VertFootFactor,
          MultFactorForFeet : float64;
+         EPSGCode3072,
          ProjLinearUnitsGeoKey,
          VerticalUnitsGeoKey,
          ProjCoordTransGeoKey,
@@ -183,7 +185,7 @@ type
          procedure StartUTMProjection(UTMZone : integer);
 
          function ProcessTiff2048(TiffOffset : integer) : shortString;
-         function OpenFromTiff3072(FIPS_Zone : integer) : shortstring;
+         function OpenFromTiff3072(TiffOffset : integer) : shortstring;
          function ProcessTiff3075(TiffOffset : int16) : shortString;
          function ProcessTiff4096(TiffOffset : integer) : shortstring;
          procedure SetProjectionParameterFromGeotiffKey(Key : integer; Value : float64);
@@ -286,6 +288,8 @@ function DatumName(var DatumCode : ShortString) : ShortString;
 function EllipsoidName(EllipCode : ShortString) : ShortString;
 
 function DatumCodeFromString(DatString : ShortString) : tDigitizeDatum;
+//function SetDigitizeDatumFromH_datumcode(h_datumCode : integer) : byte;
+
 function StringFromDatumCode(Code : tDigitizeDatum) : ShortString;
 function WGSEquivalentDatum(StartDatum : shortstring) : boolean;
 function HemiFromLat(Lat : float64) : ANSIchar;
@@ -438,12 +442,11 @@ end;
 
 function FindSingleWKTinDirectory(thePath : PathStr) : PathStr;
 var
-   //fName : PathStr;
    TheFiles : tStringList;
 begin
    TheFiles := tStringList.Create;
    FindMatchingFiles(thePath,'*.wkt',TheFiles,0);
-   if TheFiles.Count = 1 then Result := TheFiles.Strings[0]
+   if (TheFiles.Count = 1) then Result := TheFiles.Strings[0]
    else Result := '';
    TheFiles.Free;
 end;
@@ -606,53 +609,58 @@ begin
 end;
 
 
-function tMapProjection.OpenFromTiff3072(FIPS_Zone : integer) : shortstring;
+function tMapProjection.OpenFromTiff3072(TiffOffset : integer) : shortstring;
 var
    tCode : integer;
 begin
    {$If Defined(RecordGeotiffCodes) or Defined(RecordOpenFromTiff3072)} WriteLineToDebugFile('OpenFromTiff3072 Code ' + IntToStr(FIPS_Zone)); {$EndIf}
-   if FIPS_Zone = 32767 then Result := 'User defined'
+   if (TiffOffset = 32767) then Result := 'User defined'
    else begin
+      EPSGCode3072 := TiffOffset;
       LatHemi := 'N';
-      if (FIPS_Zone = 27700) then begin
+      if (TiffOffset = 2193) then begin
+         InitializeProjectionFromWKT(ProgramRootDir + 'wkt_proj\nzgd2000_epsg_2193.wkt');
+         Result := wktProjName;
+      end
+      else if (TiffOffset = 27700) then begin
           PName := UK_OS;
       end
-      else if (FIPS_Zone = 0) or (FIPS_Zone = 32662)  then begin
+      else if (TiffOffset = 0) or (TiffOffset = 32662)  then begin
           PName := PlateCaree;
           H_datumCode := 'WGS84';
       end
-      else if ((FIPS_Zone = 3067)) then begin
+      else if ((TiffOffset = 3067)) then begin
           StartUTMProjection(35);
           H_DatumCode := 'ETR89';
       end
-      else if ((FIPS_Zone = 5070)) then begin
+      else if ((TiffOffset = 5070)) then begin
           PName := AlbersEqAreaConicalEllipsoid;
           H_datumCode := 'WGS84';
           GetProjectParameters;
       end
-      else if ((FIPS_Zone >= 3708) and (FIPS_Zone <= 3726))  then begin   //3747 is zone 17
-          StartUTMProjection(FIPS_Zone - 3707);
+      else if ((TiffOffset >= 3708) and (TiffOffset <= 3726))  then begin   //3747 is zone 17
+          StartUTMProjection(TiffOffset - 3707);
           H_DatumCode := 'NAD83';
       end
-      else if ((FIPS_Zone >= 3731) and (FIPS_Zone <= 3750)) then begin
-         StartUTMProjection(FIPS_Zone - 3730);
+      else if ((TiffOffset >= 3731) and (TiffOffset <= 3750)) then begin
+         StartUTMProjection(TiffOffset - 3730);
          H_DatumCode := 'NAD83';
       end
-      else if ((FIPS_Zone >= 6330) and (FIPS_Zone <= 6348)) then begin
+      else if ((TiffOffset >= 6330) and (TiffOffset <= 6348)) then begin
          //NAD83(2011)
-         StartUTMProjection(FIPS_Zone - 6329);
+         StartUTMProjection(TiffOffset - 6329);
          H_DatumCode := 'NAD83';
       end
-      else if (FIPS_Zone = 3294) then begin
+      else if (TiffOffset = 3294) then begin
          //http://www.gdal.org/gdalsrsinfo.html
       end
-      else if (FIPS_Zone = 8693) then begin  //Guam and Marianas NAD83(MA11) UTM zone 55
+      else if (TiffOffset = 8693) then begin  //Guam and Marianas NAD83(MA11) UTM zone 55
           StartUTMProjection(55);
           H_DatumCode := 'NAD83';     //really GRS1980, but that has to be verified and modified if necessary
       end
       else begin
-          tCode := FIPS_Zone div 100;
-          if ((tCode = 230) or (tCode = 267) or (tCode = 269) or (tCode = 326) or (tCode = 258)) and (FIPS_Zone mod 100 <= 60) then begin
+          tCode := TiffOffset div 100;
+          if ((tCode = 230) or (tCode = 267) or (tCode = 269) or (tCode = 326) or (tCode = 258)) and (TiffOffset mod 100 <= 60) then begin
              {$IfDef RecordOpenFromTiff3072} WriteLineToDebugFile('OpenFromTiff3072 UTM Code 258, 267, 269, 326'); {$EndIf}
              case tCode of
                 230 : H_DatumCode := 'EUR-A';
@@ -661,16 +669,16 @@ begin
                 269 : H_DatumCode := 'NAD83';
                 326 : H_DatumCode := 'WGS84';
              end;
-             StartUTMProjection(FIPS_zone mod 100);
+             StartUTMProjection(TiffOffset mod 100);
           end
-          else if (tCode = 323) or (tCode = 327) then begin
+          else if (tCode = 323) or (tCode = 327)  or (tCode=161) then begin
              //Hemi := -45;
              case tCode of
                 322..323 : H_datumCode := 'WGS72';
                 326..327 : H_datumCode := 'WGS84';
              end;
              LatHemi := 'S';
-             StartUTMProjection(FIPS_zone mod 100);
+             StartUTMProjection(TiffOffset mod 100);
           end
           else if (tCode = 269) or (tCode = 321) then begin  //US state plane, NAD83
              H_DatumCode := 'NAD83';
@@ -680,8 +688,8 @@ begin
              {$IfDef RecordOpenFromTiff3072} WriteLineToDebugFile('OpenFromTiff3072 Unhandled Code ' + IntToStr(FIPS_Zone)); {$EndIf}
           end;
       end;
-      Result := GetProjectionName;
-      if projUTMZone = -99 then ProjUTMzone := 0;
+      if Result = '' then Result := GetProjectionName;
+      if (projUTMZone = -99) then ProjUTMzone := 0;
    end;
    {$If Defined(RecordGeotiffCodes) or Defined(RecordOpenFromTiff3072) or Defined(RecordProjection)} WriteLineToDebugFile('tMapProjection.RecordOpenFromTiff3072 out, Projection=' + Result); {$EndIf}
    {$If Defined(LongCent)} WriteLineToDebugFile('tMapProjection.RecordOpenFromTiff3072 Out,  LongCent: ' + RadToDegString(Long0)); {$EndIf}
@@ -692,13 +700,17 @@ function tMapProjection.ProcessTiff4096(TiffOffset : integer) : shortstring;
 begin
    VerticalCSTypeGeoKey := TiffOffset;
    case TiffOffSet of
-     5030 : Result := 'VertCS_WGS_84_ellipsoid';
+     4096,
+     5030,
      5031 : Result := 'VertCS_WGS_84_ellipsoid';
      5032 : Result := 'VertCS_OSU86F_ellipsoid';
      5033 : Result := 'VertCS_OSU91A_ellipsoid';
-     5102 : Result := 'VertCS_North_American_Vertical_Datum_1988';
+     5102,
+     5703 : Result := 'VertCS_North_American_Vertical_Datum_1988';
      5714 : Result := 'msl';
-     else Result := 'other 6.3.4.1 code';
+     5773 : Result := 'Vert_CS_EGM96';
+     3855 : Result := 'Vert_CS_EGM2008';
+     else Result := 'other 6.3.4.1 code (' + IntToStr(TiffOffset) + ')';
    end;
 end;
 
@@ -855,6 +867,7 @@ begin
    Result := StrUtils.AnsiContainsText(TheProjectionString,'PROJCS') or StrUtils.AnsiContainsText(TheProjectionString,'PROJCRS') or StrUtils.AnsiContainsText(TheProjectionString,'GEOGCRS') or StrUtils.AnsiContainsText(TheProjectionString,'GEOGGCS');
    if Result then begin
       WKTString := TheProjectionString;
+      wktProjName := BeforeSpecifiedCharacterANSI(WKTString,',',false,false);
       TheProjectionString := UpperCase(TheProjectionString);
       StripCharacter(TheProjectionString,' ');
       StripCharacter(TheProjectionString,'_');
@@ -864,7 +877,8 @@ begin
             HorizWKT := Copy(TheProjectionString,1,pred(i));
             VertWKT :=  Copy(TheProjectionString,i,Length(TheProjectionString) - i);
             break;
-         end;
+         end
+         else HorizWKT := TheProjectionString;
       end;
       TheProjectionString := HorizWKT;
 
@@ -985,7 +999,8 @@ begin
        inMapProjection.Phi2 := 45 * Petmar_types.DegToRad;
    end
    else if inMapProjection.PName in [AlbersEqAreaConicalEllipsoid] then begin
-      if SetCenter then  inMapProjection.long0 := (-100) * Petmar_types.DegToRad;
+      if SetCenter then inMapProjection.long0 := (-96) * Petmar_types.DegToRad;
+      inMapProjection.lat0 := 23 * Petmar_types.DegToRad;
       inMapProjection.Phi1 := 29.5 * Petmar_types.DegToRad;
       inMapProjection.Phi2 := 45.5 * Petmar_types.DegToRad;
    end
@@ -1196,12 +1211,11 @@ end;
 procedure tMapProjection.GetProjectParameters;
 var
   q0 : float64;
-  //Table1 : tMyData;
 begin
    {$IfDef RecordProjectionParameters} ShortProjInfo(' GetProjectParameters in'); {$EndIf}
       if (a = NaN) then a := SphericalEarthAkm * 1000;
 
-      if PName in [UTMEllipsoidal,UK_OS,Finn_GK,GeneralTransverseMercator,IrishGrid] then begin
+      if PName in [UTMEllipsoidal,UK_OS,Finn_GK,GeneralTransverseMercator,IrishGrid,AlbersEqAreaConicalEllipsoid] then begin
         {$IfDef RecordProjectionParameters} WriteLineToDebugFile('Transerve Mercator'); {$EndIf}
          FullWorld := false;
          if (Lat0 = NaN) then Lat0 := 0;
@@ -1212,8 +1226,17 @@ begin
             false_east := 500000;
             if (LatHemi = 'S') then false_north := 10000000;
          end
+         else if (PName in [AlbersEqAreaConicalEllipsoid]) then begin
+//PROJCS["NAD83 / Conus Albers",GEOGCS["NAD83",DATUM["North_American_Datum_1983",SPHEROID["GRS 1980",6378137,298.257222101,AUTHORITY["EPSG","7019"]],
+//TOWGS84[0,0,0,0,0,0,0],AUTHORITY["EPSG","6269"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4269"]],
+//PROJECTION["Albers_Conic_Equal_Area"],PARAMETER["standard_parallel_1",29.5],PARAMETER["standard_parallel_2",45.5],PARAMETER["latitude_of_center",23],PARAMETER["longitude_of_center",-96],PARAMETER["false_easting",0],PARAMETER["false_northing",0],UNIT["metre",1,AUTHORITY["EPSG","9001"]],AXIS["X",EAST],AXIS["Y",NORTH],AUTHORITY["EPSG","5070"]]
+            lat0 := 23 * Petmar_types.DegToRad;
+            long0 := (-96) * Petmar_types.DegToRad;
+            Phi1 := 29.5 * Petmar_types.DegToRad;
+            Phi2 := 45.5 * Petmar_types.DegToRad;
+         end
          else if (PName = UK_OS) then begin
-            {$IfDef RecordProjectionParameters} WriteLineToDebugFile('UK_OS'); {$EndIf}
+            {$If Defined(RecordProjectionParameters) or Defined(RecordUKOS)} WriteLineToDebugFile('GetProjectParameters, UK_OS'); {$EndIf}
             ProjMapScale := 0.9996012717;
             Lat0 := 49 * Petmar_types.DegToRad;
             Long0 := -2 * Petmar_types.DegToRad;

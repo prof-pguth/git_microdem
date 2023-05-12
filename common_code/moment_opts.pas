@@ -4,7 +4,7 @@ unit moment_opts;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
 
@@ -77,8 +77,13 @@ begin
    CheckBox1.Checked := MDDef.RoughnessMoments;
    CheckBox2.Checked := MDDef.ElevMoments;
    CheckBox3.Checked := MDDef.SlopeMoments;
-   CheckBox4.Checked := MDDef.PlanCurvMoments;
-   CheckBox5.Checked := MDDef.SlopeCurvMoments;
+   {$IfDef AllowCurvatureStatistics}
+      CheckBox4.Checked := MDDef.PlanCurvMoments;
+      CheckBox5.Checked := MDDef.SlopeCurvMoments;
+   {$Else}
+      CheckBox4.Visible := false;
+      CheckBox5.Visible := false;
+   {$EndIf}
    CheckBox6.Checked := MDDef.GraphsOfMoments;
    CheckBox7.Checked := MDDef.LongMoments;
    if MDDef.CountHistograms then RadioGroup1.ItemIndex := 0
@@ -95,8 +100,10 @@ begin
    MDDef.RoughnessMoments := CheckBox1.Checked;
    MDDef.ElevMoments := CheckBox2.Checked;
    MDDef.SlopeMoments := CheckBox3.Checked;
-   MDDef.PlanCurvMoments := CheckBox4.Checked;
-   MDDef.SlopeCurvMoments := CheckBox5.Checked;
+   {$IfDef AllowCurvatureStatistics}
+      MDDef.PlanCurvMoments := CheckBox4.Checked;
+      MDDef.SlopeCurvMoments := CheckBox5.Checked;
+   {$EndIf}
    MDDef.GraphsOfMoments := CheckBox6.Checked;
    MDDef.LongMoments := CheckBox7.Checked;
    MDDef.CountHistograms := RadioGroup1.ItemIndex = 0;

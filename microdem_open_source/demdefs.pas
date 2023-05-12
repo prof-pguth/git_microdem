@@ -263,8 +263,10 @@ const
    opAboveGround = 1;
    opConstantHeight = 2;
 
+   PixelIsUndefined = 0;
    PixelIsArea = 1;
    PixelIsPoint = 2;
+   PixelIsName : array[0..2] of shortstring = ('Pixel-is-undefined','Pixel-is-area','Pixel-is-point');
 
 type
    tMDVersion = (mdMicrodem,mdWhitebox,mdGDAL,mdListGeo);
@@ -285,7 +287,7 @@ type
 
    tAngUnits = (auRadian,auDegree,auArcMin,auArcSec);
    tPointType = (EdgePoint,MissingPoint,FlatPoint,PitPoint,PeakPoint,RidgePoint,ValleyPoint,OtherPoint,PassPoint);
-   tElevInterpolation = (piBilinear,piBicubic,piTriangle,piWeightedR,piWeightedR2,piNearestGrid,piSWGrid);
+   tElevInterpolation = (piBilinear,piBicubicVT,piBicubicNR,piTriangle,piWeightedR,piWeightedR2,piNearestGrid,piSWGrid);
    tCompassDirection = (cdN,cdNE,cdE,cdSE,cdS,cdSW,cdW,cdNW,cdFlat,cdPit);
    tFilterCat =(fcMin,fcMax,fcMean,fcMedian,fcParamIsotrop,fcSum,fcSTD,fcNeighbors,fcNumNeigh,fcSaveByte,fcSaveSmallInt,fcSaveWord,fcSaveFloatingPoint,fcDissimilarNeighbors,fcFilFile,fcVectAvg);
    tSpeedUnit =(spMPS,spKPH,spMPH,spKnots);
@@ -438,7 +440,7 @@ type
    tAddGeometry = (agCentroid,agAreaKM2,agAreaM2,agPerimeter,agLength,agZStats,asSinuousity,agNumPts,agElevationDeltas,agDirection,agEndPoints,agCompact,agMeanWidth,agShapeNum,agSchwartz,agP2A);
    tMultiFieldStats = (mfsSum,mfsMean,mfsMedian,mfsMin,mfsMax);
 
-   tHowZoom = (hzNoZoom,hzZoomIn,hzZoomOut);
+   tHowZoom = (hzNoZoom,hzZoomIn,hzZoomOut,hzFullZoom);
    tMarkShift = (msNone,msUTM,msLatLong,msBoth);
    tBasicProjection = (bpUTM,bpLatLong,bpOther);
    tFanPickMode = (fpSingle,fpMultipleAsk,fpMultipleSame);
@@ -724,7 +726,8 @@ const
    euNBR = 58;
    euDifference = 59;
    euElevDiff = 60;
-   HighElevUnits = 60;  //same as last real one;  used only for loops through all the elevation units;
+   LCMAP = 61;
+   HighElevUnits = 61;  //same as last real one;  used only for loops through all the elevation units;
 (*
 type
    tElevUnit = (euMeters,Feet,TenthMgal,Milligal,TenthGamma,
@@ -766,6 +769,7 @@ const
    VertCSWGS84 = 4096;
    VertCSNAVD88 = 5703;
 
+
 {$IfDef MultipleCurvatureMethods}
    type
       tCurvatureMethod = (cmEvans,cmShary,cmHeerdegenAndBeran,cmZevenbergenAndThorne);
@@ -773,9 +777,29 @@ const
       CurvatureMethodName : array[tCurvatureMethod] of ShortString = ('Evans','Shary','Heer&Ber','Zev&Thor');
 {$EndIf}
 
+const
+   //these go back a long way, and a number are no longer used
+   //because they in the the DEM header, then numbering must be retained
+   WGS72d = 0;
+   WGS84d = 1;
+   NAD27d = 2;
+   NAD83d = 3;
+   Spherical = 4;
+   //UnusedddLocal = 5;
+   Rectangular = 6;
+   //unusedLamAzEqAreaSphere = 7;
+   //unusedSinusEllip = 8;
+   //unusedPRDd = 9;
+   UK_OS_grid = 10;
+   ddDefined = 11;
+   //unusedMarsD = 12;
+   //unusedVenusD = 13;
+   ETRs89d = 14;
+
+   DigitizeDatumName : array[0..14] of ShortString = ('WGS72','WGS84','NAD27','NAD83','Sphere','','Rect','','','','UK OS','Defined','','','ETRS89');
 
 type
-   tDigitizeDatum = (WGS72d,WGS84d,NAD27d,NAD83d,Spherical,UnusedddLocal,Rectangular,unusedLamAzEqAreaSphere,unusedSinusEllip,unusedPRDd,UK_OS_grid,ddDefined,unusedMarsD,unusedVenusD,ETRs89d);
+   tDigitizeDatum = byte;
 
    tDEMprecision = (SmallIntDEM,FloatingPointDEM,ByteDEM,WordDEM,LongWordDEM);
 
@@ -809,7 +833,7 @@ type
       DEMSWCornerY : float64;
       VerticalCSTypeGeoKey,
       UTMZone  : Int16;     {6 degree UTM Zone number, USGS/MGRS standard: 1 = W177, 60 = E177}
-      DMAMapDefinition  : tDMAMapRawDefinition;
+      DMAMapDefinition : tDMAMapRawDefinition;
       DigitizeDatum : tDigitizeDatum; {sets datum for DEM, and it is transformed to the desired local datum for use}
       LatHemi    : AnsiChar;       {N or S}
       NumCol,NumRow  : int32;
@@ -817,9 +841,11 @@ type
       WKTString : ANSIString;
    end;
 
+(*
 {$IfDef AllowV1V2V3DEMHeaders}
    {$I old_dem_headers.inc}
 {$EndIf}
+*)
 
    tPrinterLegend = packed record
       ShowTitle,
@@ -854,11 +880,11 @@ type
        HDatum : ANSIstring;
        NumCol,NumRow : integer;
        dx,dy,
+       xutm_low,yutm_high,xutm_hi,yutm_low,
        ulLat,ulLong,
        cLat,cLong : float64;
        inEPSG,utmEPSG : integer;
-       UTMZone,
-       FIPS : int16;
+       UTMZone,FIPS : int16;
        Hemi : ANSIchar;
    end;
 
@@ -932,8 +958,7 @@ type
 
 const
    StraightAlgorithmName : array[tStraightAlgorithm] of ShortString = ('DEM Grid','UTM','Lat/Long','Geodetic','Smart');
-   ElevInterpolationName : array[tElevInterpolation] of ShortString = ('Bilinear Interpolation','Bicubic interpolation','Grid triangle','1/R weighting','1/R² weighting','Nearest grid','SW grid');
-   DigitizeDatumName : array[tDigitizeDatum] of ShortString = ('WGS72','WGS84','NAD27','NAD83','Sphere','Local','Rect','LamAzSph','PUR','Sinus El','UK OS','Defined','MARS','Venus','ETRS89');
+   ElevInterpolationName : array[tElevInterpolation] of ShortString = ('Bilinear Interpolation','Bicubic interpolation VT','Bicubic interpolation NR','Grid triangle','1/R weighting','1/R² weighting','Nearest grid','SW grid');
    SpacingUnits : array[tSpacingUnit] of ShortString = (' m',' sec',' min',' km',' 100m',' ft','k ft',' deg','0.01 sec',' m(M)','100m(PS)','10m','0.1 sec','0.0001 deg',' Int Feet',' US feet');
 
 type //for MICRONET
@@ -1909,6 +1934,7 @@ type
       DEMIX_Full : byte;
       DEMIX_base_dir,
       DEMIX_criterion_tolerance_fName : PathStr;
+
       DEMIX_xsize,DEMIX_ysize : integer;
       DEMIXCompositeImage,
       DEMIX_DoCHM,
@@ -1918,7 +1944,10 @@ type
       DEMIX_DoRuffDiff,
       DEMIX_DoElevParamGraphs,
       DEMIX_DoHalfSecDEMs : boolean;
-      DEMIXSimpleTolerance : float32;
+
+      DEMIXSimpleTolerance,
+      DEMIXSlopeTolerance,
+      DEMIXRuffTolerance : float32;
 
       HistElevBinSize,
       HistSlopeBinSize,
@@ -2485,6 +2514,8 @@ type
       GraphDensityXBlock,
       GraphDensityYBlock : float32;
       BigBM_nc : byte;
+      MapNameBelowComposite : boolean;
+      DefaultGraphBackgroundColor : tPlatformColor;
 
       ExpandNeighborsRequired,
       ShrinkNeighborsRequired,
@@ -2912,6 +2943,7 @@ var
    Geoid2008FName,
    Geoid96FName,
    GeoidDiffFName,
+   GeoidWGS84ellipsoidToLocalVDatum,
 
    DBDir,
    TigerShapeRules,
@@ -3021,7 +3053,6 @@ var
    {$IfDef ExGDAL}
    {$Else}
       GDALtools_Dir,
-      //GDALtools_Data,
       GDAL_translate_name,
       GDAL_contour_name,
       GDAL_Warp_Name,
@@ -3037,7 +3068,6 @@ var
    {$EndIf}
 
    lastools_bindir,
-
    CloudCompareFName,
    WhiteBoxFName,
 
@@ -3053,8 +3083,6 @@ var
       MapLibDir,
       GADMDir,
       mcc_lidarFName,
-      //MrSIDDecodeName,
-      //MrSidInfoName,
 
       PreferFilter,
       VasaProjectFName,
@@ -3089,11 +3117,12 @@ var
       {$EndIf}
    {$EndIf}
 
+   DEMIXhalfSecDir,
    ProjectDir,
    PhotoDir,
-   SaveViewshedDir,
-   CopyFilesFromDir,
-   CopyFilesToDir    : PathStr;
+   SaveViewshedDir : PathStr;
+  // CopyFilesFromDir,
+  // CopyFilesToDir    : PathStr;
 
    {$IfDef ExPointCloud}
    {$Else}

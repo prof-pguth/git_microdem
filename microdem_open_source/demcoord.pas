@@ -30,6 +30,11 @@ unit DEMCoord;
 
    {$IFDEF DEBUG}
       {$Define RecordDEMIX}
+      {$Define RecordVertDatumShift}
+      {$Define RecordVAT}
+      {$Define TrackDEMCorners}
+      {$Define UKOS}
+      {$Define RecordHalfPixelShift}
       //{$Define RecordDEMEdits}
       //{$Define RecordClone}
       //{$Define RecordGeotiff}
@@ -50,7 +55,6 @@ unit DEMCoord;
       //{$Define RecordZRange}
       //{$Define RecordDEMMemoryAllocations}
       //{$Define RecordFilter}
-      //{$Define RecordHalfPixelShift}
       //{$Define RecordReadDEM}
       //{$Define RecordReadMDDEM}
       //{$Define RecordLatSpacingValues}
@@ -59,7 +63,6 @@ unit DEMCoord;
       //{$Define RecordVariogram}
       //{$Define RecordElevPercentiles}
       //{$Define ShowFullDEMSSOCalc}  //big slowdown
-      {$Define RecordVAT}
       //{$Define RecordNLCD}
       //{$Define RecordMoments}
       //{$Define RecordSetup}
@@ -75,7 +78,6 @@ unit DEMCoord;
       //{$Define RecordHiResDEM}
       //{$Define TriPrismErrors}
       //{$Define TriPrismResults}
-      //{$Define UKOS}
       //{$Define RecordLOS}
       //{$Define RecordLOSAlgorithm}
       //{$Define RecordConversion}
@@ -277,7 +279,8 @@ type
          DEMDatumShiftDone     : boolean;
          BytesPerElevation : int32;
          BytesPerColumn : int32;
-         function InterpolateBiCubic(xgrid,ygrid : float32; var z : float32) : boolean;
+         function InterpolateBiCubicVisioTerra(xgrid,ygrid : float32; var z : float32) : boolean;
+         function InterpolateBiCubicNumericalRecipes(xgrid,ygrid : float32; var z : float32) : boolean;
          function CheckForUTMZones : boolean;
          procedure MissingDataToSeaLevelStrip(SeaLevel : float64; PartLimits :  tGridLimits);
          procedure FilterStrip(NewDEM, FilterLap : integer; GridLimits : tGridLimits; FilterCategory : tFilterCat; Filter : FilterType);
@@ -297,10 +300,12 @@ type
 
          LatSizeMap,               {size of area in latitude, in degrees}
          LongSizeMap,              {size of area in longitude, in degrees}
-         DEMSWcornerLat,                  {local datum lat of lower left corner}
-         DEMSWcornerLong    : float64;   {local datum long of lower left corner}
+         DEMSWcornerLat,           {local datum lat of lower left corner}
+         DEMSWcornerLong,          {local datum long of lower left corner}
          ComputeSWCornerX,         //1/2 pixel shift for PixelIsArea
          ComputeSWCornerY,         //1/2 pixel shift for PixelIsArea
+         GeotiffNWCornerX,
+         GeotiffNWCornerY,
          AverageGridTrue,
          AverageDiaSpace,
          AverageSpace,
@@ -315,7 +320,6 @@ type
          DSMGrid            : integer;
          ThisDEMMissingValue : LongWord;
          Z_Mean,Z_Std : float32;
-         //RefVertExag,
          ElevationMultiple,
          Over30PercentSlope,
          Over50PercentSlope   : float64;
@@ -369,7 +373,7 @@ type
          function DEMBoundBoxDataGrid : sfBoundBox;
          function PixelBoundBoxGeo(Col,Row : integer) : sfBoundBox;
          function PixelBoundBoxUTM(Col,Row : integer) : sfBoundBox;
-         function PartOfDEMonMap(BaseMap : tMapForm) : sfBoundBox;
+         function bbDEMGridPartOfDEMonMap(BaseMap : tMapForm) : sfBoundBox;
 
          function GeotiffDEMName : PathStr;
 
@@ -393,8 +397,8 @@ type
          procedure DEMCenterPoint(var Lat,Long : float64);
 
          procedure UTMtoLatLongDegree(XUTM,YUTM : float64; var Lat,Long : float64);
-         procedure UTMToDEMGrid(XUTM,YUTM : float64;  var XGrid,YGrid : float64; var InBounds : boolean);
-         procedure DEMGridtoUTM(XGrid,YGrid : float64; var XUTM,YUTM : float64);
+         procedure UTMToDEMGrid(XUTM,YUTM : float64;  var XGrid,YGrid : float32; var InBounds : boolean);
+         procedure DEMGridtoUTM(XGrid,YGrid : float32; var XUTM,YUTM : float64);
          procedure DEMGridToLatLongDegree(XGrid,YGrid : float64; var Lat,Long : float64);
 
          procedure LatLongDegreetoUTM(Lat,Long : float64; var XUTM,YUTM : float64);
@@ -404,6 +408,7 @@ type
          function LatLongDegreeToDEMGridInteger(Lat,Long : float64; var XGrid,YGrid : int32) : boolean; {$IfDef NoInLine} {$Else} inline; {$EndIf}
 
          procedure ClipDEMGrid(var x,y : float64);  overload;
+         procedure ClipDEMGrid(var x,y : float32);  overload;
          procedure ClipDEMGrid(var x,y : int32);  overload;
 
          function GridInDataSet(XGrid,YGrid : int32) : boolean; overload; {$IfDef NoInLine} {$Else} inline; {$EndIf}
@@ -428,8 +433,7 @@ type
          function MaxElevAroundPoint(xgrid,ygrid : int32; var z : float32) : boolean;
          procedure GetElevationsInLongArray(GridLimits: tGridLimits; var NPts : int64; var Values : Petmath.bfarray32; IncludeSeaLevel : boolean = true);
 
-         procedure SubtractaDEM(AddDEM : integer);
-         procedure AddaDEM(AddDEM : integer; Mult : integer = 1);
+         procedure MoveToEGM2008(AddLocalVDatum,SubLocalVDatum : integer);
 
          function Geo_Z_Factor : float32;
 
@@ -479,7 +483,7 @@ type
             procedure CreateVATforDEM(OptionToCopy : boolean = true);
             function LoadColorVATTable(var Colors : tVATColors) : boolean;
             procedure VATLegend;
-            procedure VerifyDefaultPosition(Mess : AnsiString; var xg,yg,XUTM,YUTM : float64);
+            procedure VerifyDefaultPosition(Mess : AnsiString; var xg,yg : float32; var XUTM,YUTM : float64);
             function ExportASCII(x1,y1,x2,y2 : integer) : PathStr;
             procedure SaveAsGeoJSON;
             procedure ExpandSpecifiedZRange;
@@ -508,10 +512,12 @@ type
             procedure DrawCrossTrackProfile(var Graf : tThisBaseGraph; inLat,inLong,Azimuth,Distance,Spacing : float64);
          {$EndIf}
 
+         procedure SetRasterPixelIsGeoKey1025(DoHalfPixelShift : boolean);
 
          function LatLongDegreePointsIntervisible(Lat1,Long1,ObsUp,Lat2,Long2,TargetUp : float64; var Distance,BlockDistance : float64) : boolean;
          function GridPointsIntervisible(xg1,yg1,ObsUp,xg2,yg2,TargetUp : float64; var Distance,BlockDistance : float64) : boolean;
          procedure MultiplyGridByConstant(Aconst : float64);
+         procedure AddConstantToGrid(Aconst : float64);
 
          function MissingColorRGBTriple(x,y : float64) : tPlatformColor;
          procedure GetDEMPointsSum(var NPts : integer; var Sum : float64);
@@ -520,8 +526,6 @@ type
          function ReflectanceColor(TintedReflectance : tMapType; x,y : integer) : tcolor;
          function ReflectanceValue(x,y : integer) : integer;
          function RGBReflectanceColor(TintedReflectance : tMapType; Col,Row : integer) : tPlatformColor;
-
-         //procedure GetReflectanceRGB(TintedReflectance : tMapType; zv : float64; var Red,Green,Blue : integer);
          function ReflectanceValueFloat(x,y :  float64) : integer;
          procedure ReflectanceParams(Min : float64 = -9999; Max : float64 = -9999);
 
@@ -540,7 +544,7 @@ type
 
          procedure ResetPrimaryDatumZone(NewLong : float64);
 
-         function ReinterpolateLatLongDEM(SpacingArcSec : float64; fName : PathStr = '') : integer;
+         function ReinterpolateLatLongDEM(var SpacingArcSec : float32; fName : PathStr = '') : integer;
          function ReinterpolateUTMDEM(FloatSpacingMeters : float64; UTMzone : int16 = -99; fName : PathStr = '') : integer; //AddCaption : shortstring = '');
          function ResampleByAveraging(OpenMap : boolean; SaveCountGrid : boolean = true; SaveName : PathStr = '') : integer;
 
@@ -640,6 +644,10 @@ type
          function MetadataFileName : PathStr;
 
          function GetPerpendicularLineEnd(Lat,Long,SizeMeters,Trend : float64; var Lat1,Long1,Lat2,Long2 : float64; MustBeOnMap : boolean = false) : boolean;
+
+         {$IfDef TrackDEMCorners}
+            procedure WriteDEMCornersToDebugFile(Where : shortstring);
+         {$EndIf}
 
          {$IfDef ExVegDensity}
          {$Else}
@@ -896,15 +904,15 @@ var
 {$I demcoord_write_dem.inc}
 {$I demcoord_elev_manip.inc}
 
+{$IfDef ExDEMEdits}
+{$Else}
+   {$I demcoord_edits.inc}
+{$EndIf}
+
 {$IfDef ExGeostats}
 {$Else}
    {$I demcoord_point_class.inc}
    {$I demcoord_geomorph.inc}
-{$EndIf}
-
-{$IfDef ExDEMEdits}
-{$Else}
-   {$I demcoord_edits.inc}
 {$EndIf}
 
 {$IfDef VCL}
@@ -916,6 +924,36 @@ var
    {$I ..\common_code\demcoord_veg.inc}
 {$EndIf}
 
+
+{$IfDef TrackDEMCorners}
+   procedure tDEMDataSet.WriteDEMCornersToDebugFile(Where : shortstring);
+   begin
+      HighlightLineToDebugFile(Where + '  '  + AreaName + '  ' + PixelIsName[DEMHeader.RasterPixelIsGeoKey1025]);
+      WriteLineToDebugFile('Geotiff NW corner:       ' + RealToString(GeotiffNWCornerX,-18,-8) + '/' +  RealToString(GeotiffNWCornerY,-18,-8) );
+      WriteLineToDebugFile('DEM SW corner:           ' + RealToString(DEMHeader.DEMSWCornerX,-18,-8) + '/' +  RealToString(DEMHeader.DEMSWCornerY,-18,-8) );
+      WriteLineToDebugFile('Compute point SW corner: ' + RealToString(ComputeSWCornerX,-18,-8) + '/' +  RealToString(ComputeSWCornerY,-18,-8) );
+   end;
+{$EndIf}
+
+
+procedure tDEMDataSet.SetRasterPixelIsGeoKey1025(DoHalfPixelShift : boolean);
+var
+   TStr : shortstring;
+begin
+   ComputeSWCornerX := DEMHeader.DEMSWCornerX;
+   ComputeSWCornerY := DEMHeader.DEMSWCornerY;
+
+   if IsNan(GeotiffNWCornerX) then GeotiffNWCornerX := DEMHeader.DEMSWCornerX;
+   if IsNan(GeotiffNWCornerY) then GeotiffNWCornerY := DEMHeader.DEMSWCornerY + DEMHeader.DEMySpacing * pred(DEMHeader.NumRow);
+   TStr := '';
+   if DoHalfPixelShift and (DEMHeader.RasterPixelIsGeoKey1025 in [PixelIsUndefined,PixelIsArea]) then begin
+      ComputeSWCornerX := DEMHeader.DEMSWCornerX + 0.5 * DEMHeader.DEMxSpacing;
+      ComputeSWCornerY := DEMHeader.DEMSWCornerY + 0.5 * DEMHeader.DEMySpacing;
+      Tstr := ' half pixel shift applied';
+      {$IfDef RecordHalfPixelShift} WriteLineToDebugFile('Half pixel shift applied for DEM=' + AreaName + '  X=' + RealToString(ComputeSWCornerX,-18,-6) + '  Y=' + RealToString(ComputeSWCornerY,-18,-6)); {$EndIf}
+   end;
+   {$IfDef TrackDEMCorners} WriteDEMCornersToDebugFile('SetRasterPixelIsGeoKey1025' + TStr); {$EndIf}
+end;
 
 
 function tDEMDataSet.Geo_Z_Factor : float32;
@@ -1071,6 +1109,7 @@ begin
    AverageY := Median(dys,n);
    AverageSpacing := 0.5 * (AverageX + AverageY);
    AverageGridTrue := AverageGridTrue / n;
+   if IsNAN(AverageGridTrue) then AverageGridTrue := 0;
 end;
 
 
@@ -1487,6 +1526,9 @@ begin
    DEMMapProjection.PName := UndefinedProj;
    DEMMapProjection.h_DatumCode := MDdef.PreferPrimaryDatum;
 
+   GeotiffNWCornerX := NaN;
+   GeotiffNWCornerY := NaN;
+
    DEMDatumShiftDone := false;
    DEMAlreadyDefined := false;
    UTMValidDEM := true;
@@ -1610,7 +1652,7 @@ begin
    {$Else}
        if Assigned(SelectionMap) then try
           {$If Defined(RecordClosing) or Defined(RecordDEMClose)}  WriteLineToDebugFile('tDEMDataSet.Destroy has selection map');   {$EndIf}
-          SelectionMap.ClosingMapNow := true;
+          SelectionMap.MapDraw.ClosingMapNow := true;
           SelectionMap.Close;
        finally
           SelectionMap := Nil;
@@ -1728,7 +1770,8 @@ end;
 
 function tDEMDataSet.GetSlopeAspectFromSecondDEM(Dem2,Col,Row : integer; var SlopeAspectRec : tSlopeAspectRec) : boolean;
 var
-   Lat,Long,Colf,Rowf : float64;
+   Lat,Long : float64;
+   Colf,Rowf : float32;
 begin
    if SecondGridIdentical(DEM2) then Result := DEMGlb[DEM2].GetSlopeAndAspect(Col,Row,SlopeAspectRec)
    else begin
@@ -1823,16 +1866,16 @@ begin
    Result := SurroundedPointElevs(x,y,znw,zw,zsw,zn,z,zs,zne,ze,zse) and (z <> 0) and (z=znw) and (z=zw) and (z=zsw) and (z=zn) and (z=zs) and (z=zne) and (z=ze) and (z=zse);
 end;
 
+
 function tDEMDataSet.LandCoverGrid : boolean;
 begin
-   Result := DEMheader.ElevUnits in [NLCD2001up,LandFire,NLCD1992,GLOBCOVER,GLC2000,CCAP,CCI_LC,S2GLC,NLCD_Change,GLCS_LC100,Meybeck,Geomorphon,Iwahashi,ESRI2020,euPennock,WorldCover10m];
+   Result := DEMheader.ElevUnits in [NLCD2001up,LandFire,NLCD1992,GLOBCOVER,GLC2000,CCAP,CCI_LC,S2GLC,NLCD_Change,GLCS_LC100,Meybeck,Geomorphon,Iwahashi,ESRI2020,euPennock,WorldCover10m,LCMAP];
 end;
 
 function tDEMDataSet.ElevationGrid : boolean;
 begin
    Result := DEMheader.ElevUnits in [euMeters,Feet,Decimeters,DeciFeet,Centimeters];
 end;
-
 
 
 function tDEMDataSet.MinElevAroundPoint(xgrid,ygrid : integer; var z : float32) : boolean;
@@ -1863,7 +1906,7 @@ end;
 
 function tDEMDataSet.GetElevFromLatLongDegree(Lat,Long : float64; var z : float32) : boolean;
 var
-   xg,yg : float64;
+   xg,yg : float32;
 begin
    Result := LatLongDegreeToDEMGrid(Lat,Long,xg,yg);
    if Result then Result := GetElevMeters(xg,yg,z)
@@ -1890,7 +1933,7 @@ begin
 end {proc GetElevCol};
 
 
-function tDEMDataSet.PartOfDEMonMap(BaseMap : tMapForm) : sfBoundBox;
+function tDEMDataSet.bbDEMGridPartOfDEMonMap(BaseMap : tMapForm) : sfBoundBox;
 begin
    LatLongDegreeToDEMGrid(BaseMap.MapDraw.MapCorners.BoundBoxGeo.YMin,BaseMap.MapDraw.MapCorners.BoundBoxGeo.XMin,Result.XMin,Result.YMin);
    LatLongDegreeToDEMGrid(BaseMap.MapDraw.MapCorners.BoundBoxGeo.YMin,BaseMap.MapDraw.MapCorners.BoundBoxGeo.XMax,Result.XMax,Result.YMin);
@@ -1904,10 +1947,19 @@ var
    Lat,Long : float64;
 begin
    DEMGridToLatLongDegree(Col,Row,Lat,Long);
-   Result.xMax := Long + 0.5 * DEMHeader.DEMxSpacing;
-   Result.xMin := Long - 0.5 * DEMHeader.DEMxSpacing;
-   Result.yMax := Lat + 0.5 * DEMHeader.DEMySpacing;
-   Result.yMin := Lat - 0.5 * DEMHeader.DEMySpacing;
+   //if (DEMHeader.RasterPixelIsGeoKey1025 = PixelIsPoint) then begin
+      Result.xMax := Long + 0.5 * DEMHeader.DEMxSpacing;
+      Result.xMin := Long - 0.5 * DEMHeader.DEMxSpacing;
+      Result.yMax := Lat + 0.5 * DEMHeader.DEMySpacing;
+      Result.yMin := Lat - 0.5 * DEMHeader.DEMySpacing;
+   (*end
+   else begin
+      Result.xMax := Long + DEMHeader.DEMxSpacing;
+      Result.xMin := Long;
+      Result.yMax := Lat;
+      Result.yMin := Lat - DEMHeader.DEMySpacing;
+   end;
+   *)
 end;
 
 
@@ -2136,6 +2188,7 @@ begin
       else if (DEMheader.ElevUnits in [Iwahashi]) then TStr := 'IWAHASHI'
       else if (DEMheader.ElevUnits in [Geomorphon]) then TStr := 'GEOMORPHON'
       else if (DEMheader.ElevUnits in [euPennock]) then TStr := 'PENNOCK'
+      else if (DEMheader.ElevUnits in [LCMAP]) then TStr := 'LCMAP'
       else if (DEMheader.ElevUnits in [NLCD_Change]) then TStr := 'NLCD-Change'
       else TStr := 'LANDFIRE';                                               //this is in the DB for the filter
       //if not StrUtils.AnsiContainsText(UpperCase(AreaName),UpperCase(TStr)) then AreaName := AreaName + ' ' + TStr;
@@ -2223,7 +2276,7 @@ var
             DEMMapProjection.DecodeWKTProjectionFromString(DEMheader.WKTString);
             DEMMapProjection.InverseProjectDegrees(DEMheader.DEMSWCornerX,DEMheader.DEMSWCornerY,DEMSWcornerLat,DEMSWcornerLong);
          end
-         else if (DEMheader.DigitizeDatum in [Spherical,unusedLamAzEqAreaSphere]) then begin
+         else if (DEMheader.DigitizeDatum in [Spherical{,unusedLamAzEqAreaSphere}]) then begin
             Transform := false;
             if (DEMheader.DEMUsed = UTMBasedDEM) then begin
                UTMToLatLongDegree(DEMheader.DEMSWCornerX,DEMheader.DEMSWCornerY,DEMSWcornerLat,DEMSWcornerLong);
@@ -2256,20 +2309,10 @@ var
             end;
          end {if};
 
-         if Transform {and (DEMheader.DigitizeDatum <> ddLocal)} and (not DEMDatumShiftDone) then begin
+         if Transform and (not DEMDatumShiftDone) then begin
             //DoDatumShift;
          end;
-
-         if DEMHeader.RasterPixelIsGeoKey1025 in [0,1] then begin  //area or undefined
-            ComputeSWCornerX := DEMHeader.DEMSWCornerX + 0.5 * DEMHeader.DEMxSpacing;
-            ComputeSWCornerY := DEMHeader.DEMSWCornerY + 0.5 * DEMHeader.DEMySpacing;
-            {$IfDef RecordHalfPixelShift} WriteLineToDebugFile('Half pixel shift applied for DEM=' + AreaName + '  X=' + RealToString(ComputeSWCornerX,-18,-6) + '  Y=' + RealToString(ComputeSWCornerY,-18,-6)); {$EndIf}
-         end
-         else begin
-            ComputeSWCornerX := DEMHeader.DEMSWCornerX;
-            ComputeSWCornerY := DEMHeader.DEMSWCornerY;
-         end;
-
+         SetRasterPixelIsGeoKey1025(true);
          {$IfDef RecordDefineDatum} WriteLineToDebugFile('InitializeDatum exit, , proj=' + DEMMapProjection.GetProjectionName); {$EndIf}
       end {proc InitializeDatum};
 
@@ -2747,11 +2790,11 @@ begin
 end {proc GridToLatLong};
 
 
-procedure tDEMDataSet.DEMGridToUTM(XGrid,YGrid : float64; var XUTM,YUTM : float64);
+procedure tDEMDataSet.DEMGridToUTM(XGrid,YGrid : float32; var XUTM,YUTM : float64);
 var
    Lat,Long : float64;
 begin
-   if DEMMapProjection.Pname = UTMellipsoidal then begin
+   if (DEMHeader.DEMUsed = UTMBasedDEM) then begin //(DEMMapProjection.Pname = UTMellipsoidal) then begin    //changed May 9, 2023
       XUTM := XGrid * DEMheader.DEMxSpacing + ComputeSWCornerX;
       YUTM := YGrid * DEMheader.DEMySpacing + ComputeSWCornerY;
    end
@@ -2830,7 +2873,7 @@ begin
 end {proc GridInDataSet};
 
 
-procedure tDEMDataSet.UTMToDEMGrid(XUTM,YUTM : float64; var XGrid,YGrid : float64; var InBounds : boolean);
+procedure tDEMDataSet.UTMToDEMGrid(XUTM,YUTM : float64; var XGrid,YGrid : float32; var InBounds : boolean);
 var
    Lat,Long   : float64;
 begin
@@ -2887,17 +2930,19 @@ function tDEMDataSet.ReflectanceValue(x,y : integer) : integer;
 //Hillshade = 255.0 * ((cos(Zenith_rad) * cos(Slope_rad)) + (sin(Zenith_rad) * sin(Slope_rad) * cos(Azimuth_rad - Aspect_rad)))
 //Note that if the calculation of the hillshade value is < 0, the output cell value will be = 0.
 var
-   sum  : float64;
+   sum,value  : float64;
    i : integer;
    SlopeAsp : tSlopeAspectRec;
 begin
    Result := MaxSmallInt;
    if GetSlopeAndAspect(x,y,SlopeAsp) then begin
+      // (SlopeAsp.AspectDir <= 360) or (SlopeAsp.AspectDir >= 0) then SlopeAsp.AspectDir := 180;  //deal with the undefined case for flat pixel
       try
          Sum := 0;
          for I := 1 to MDdef.UseRefDirs do begin
             //allows multi-directions, which will all have the same sun alitutde and azimuths spread around the circle
-            Sum := sum + ValidByteRange(round(255.0 * ( (cosDegSunAltitude * cosDeg(MDDef.RefVertExag * SlopeAsp.SlopeDegree)) + (sinDegSunAltitude * sinDeg(MDDef.RefVertExag * SlopeAsp.SlopeDegree) * cosDeg(RefPhi[i] - SlopeAsp.AspectDir)))));
+            Value := 255.0 * ( (cosDegSunAltitude * cosDeg(MDDef.RefVertExag * SlopeAsp.SlopeDegree)) + (sinDegSunAltitude * sinDeg(MDDef.RefVertExag * SlopeAsp.SlopeDegree * cosDeg(RefPhi[i] - SlopeAsp.AspectDir))));
+            Sum := sum + ValidByteRange(round(Value));
          end;
          Result := round(Sum/MDdef.UseRefDirs);
       except
@@ -3354,7 +3399,7 @@ begin
 end;
 
 
-function tDEMDataSet.ReinterpolateUTMDEM(FloatSpacingMeters : float64;  UTMzone : int16 = -99; fName : PathStr = '') : integer; //fName : PathStr = ''; AddCaption : shortstring = '');
+function tDEMDataSet.ReinterpolateUTMDEM(FloatSpacingMeters : float64;  UTMzone : int16 = -99; fName : PathStr = '') : integer;
 begin
    {$IfDef RecordResample} WriteLineToDebugFile('tDEMDataSet.ReinterpolateUTMDEM in'); {$EndIf}
 
@@ -3369,7 +3414,11 @@ begin
       MDdef.DefaultUTMZone := DEMHeader.UTMzone;
    end
    else MDdef.DefaultUTMZone := UTMzone;
-   Result := SelectionMap.CreateGridToMatchMap(cgUTM,false,FloatingPointDEM,FloatSpacingMeters,FloatSpacingMeters,MDdef.DefaultUTMZone,MDDef.LasDEMPixelIs);
+   Result := SelectionMap.CreateGridToMatchMap(cgUTM,false,FloatingPointDEM,FloatSpacingMeters,FloatSpacingMeters,MDdef.DefaultUTMZone,PixelIsPoint);   //DEMHeader.RasterPixelIsGeoKey1025);
+
+   DEMGlb[Result].DEMheader.VerticalCSTypeGeoKey := DEMheader.VerticalCSTypeGeoKey;
+   DEMGlb[Result].DEMheader.ElevUnits := DEMheader.ElevUnits;
+
    DEMGlb[Result].AreaName := AreaName + '_utm_reint_' + RealToString(FloatSpacingMeters,-8,-2);
    DEMGlb[Result].FillHolesSelectedBoxFromReferenceDEM(DEMGlb[Result].FullDEMGridLimits,ThisDEM,hfEverything);
    if (fName <> '') then begin
@@ -3380,15 +3429,28 @@ begin
 end;
 
 
-function tDEMDataSet.ReinterpolateLatLongDEM(SpacingArcSec : float64; fName : PathStr = '') : integer;  //; AddCaption : shortstring = '');
+function tDEMDataSet.ReinterpolateLatLongDEM(var SpacingArcSec : float32; fName : PathStr = '') : integer;
 begin
    if (SpacingArcSec < 0) then begin
       SpacingArcSec := 1;
       ReadDefault('Spacing for new DEM (sec)',SpacingArcSec);
    end;
+(*
+   Result := ReinterpolateLatLongDEM(0.5,fName);
+   DEMGlb[Result].DEMheader.VerticalCSTypeGeoKey := DEMheader.VerticalCSTypeGeoKey;
+   DEMGlb[Result].DEMheader.ElevUnits := DEMheader.ElevUnits;
+   if (fName = '') then DEMGlb[Result].AreaName := AreaName + '_geo_reint_' + RealToString(SpacingArcSec,-8,-2)
+   else begin
+      DEMGlb[Result].AreaName := ExtractFileNameNoExt(fName);
+      DEMGlb[Result].WriteNewFormatDEM(fName);
+      {$IfDef RecordResample} WriteLineToDebugFile('Resample Lat/Long, saved to ' + fName + '   '  + DEMGlb[Result].KeyDEMParams(true)); {$EndIf}
+   end;
+*)
 
    {$IfDef RecordResample} WriteLineToDebugFile('Resample ' + AreaName + ' Lat/Long,  Spacing sec=' + RealToString(SpacingArcSec,-8,2) + '  ' + KeyDEMParams(true)); {$EndIf}
-   Result := SelectionMap.CreateGridToMatchMap(cgLatLong,false,FloatingPointDEM,SpacingArcSec,SpacingArcSec,MDdef.DefaultUTMZone,MDDef.LasDEMPixelIs);
+   Result := SelectionMap.CreateGridToMatchMap(cgLatLong,false,FloatingPointDEM,SpacingArcSec,SpacingArcSec,MDdef.DefaultUTMZone,PixelIsPoint);   //DEMHeader.RasterPixelIsGeoKey1025);
+   DEMGlb[Result].DEMheader.VerticalCSTypeGeoKey := DEMheader.VerticalCSTypeGeoKey;
+   DEMGlb[Result].DEMheader.ElevUnits := DEMheader.ElevUnits;
    DEMGlb[Result].FillHolesSelectedBoxFromReferenceDEM(DEMGlb[Result].FullDEMGridLimits,ThisDEM,hfEverything);
    if (fName = '') then DEMGlb[Result].AreaName := AreaName + '_geo_reint_' + RealToString(SpacingArcSec,-8,-2)
    else begin
@@ -3396,6 +3458,7 @@ begin
       DEMGlb[Result].WriteNewFormatDEM(fName);
       {$IfDef RecordResample} WriteLineToDebugFile('Resample Lat/Long, saved to ' + fName + '   '  + DEMGlb[Result].KeyDEMParams(true)); {$EndIf}
    end;
+
 end;
 
 
@@ -3641,6 +3704,12 @@ end;
 
 
 procedure tDEMDataSet.ClipDEMGrid(var x,y : float64);
+begin
+   if (x < 0) then x := 0 else if (x > pred(DEMheader.NumCol)) then x := pred(DEMheader.NumCol);
+   if (y < 0) then y := 0 else if (y > pred(DEMheader.NumRow)) then y := pred(DEMheader.NumRow);
+end;
+
+procedure tDEMDataSet.ClipDEMGrid(var x,y : float32);
 begin
    if (x < 0) then x := 0 else if (x > pred(DEMheader.NumCol)) then x := pred(DEMheader.NumCol);
    if (y < 0) then y := 0 else if (y > pred(DEMheader.NumRow)) then y := pred(DEMheader.NumRow);

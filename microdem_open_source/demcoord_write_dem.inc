@@ -134,7 +134,7 @@ begin
    try
       HeavyDutyProcessing := true;
       ShowHourglassCursor;
-      ClosingMapNotAllowed := true;
+      if SelectionMap <> Nil then SelectionMap.ClosingMapNotAllowed := true;
       FSplit(FileName,Dir,Name,Ext);
       SafeMakeDir(Dir);
 
@@ -189,7 +189,7 @@ begin
        HeavyDutyProcessing := false;
        EndProgress;
        DEMstatus := dsSaved;
-       ClosingMapNotAllowed := false;
+       if SelectionMap <> Nil then SelectionMap.ClosingMapNotAllowed := false;
     end;
    {$IfDef RecordWriteDEM} WriteLineToDebugFile('End DEM write'); {$EndIf}
 end;
@@ -334,7 +334,7 @@ begin
       NumEnt := NumEnt + 1;
    {$EndIf}
 
-   GeoKeyEntries := 5;
+   GeoKeyEntries := 6;  //changed from 5 4/9/2023, to record the vertical datum
    WidthImage := DEMheader.NumCol;
    HeightImage := DEMheader.NumRow;
    BytesPer := TiffHeader.BitsPerSample div 8;
@@ -414,19 +414,21 @@ begin
    BlockWriteDouble(0);
    BlockWriteDouble(0);
    BlockWriteDouble(0);
-   BlockWriteDouble(DEMheader.DEMSWCornerX);
-   BlockWriteDouble(DEMheader.DEMSWCornerY + DEMheader.NumRow * DEMheader.DEMySpacing);
+   BlockWriteDouble(GeotiffNWCornerX);
+   BlockWriteDouble(GeotiffNWCornerY);
    BlockWriteDouble(0);
 
    {$IfDef GeotiffSave} WriteLineToDebugFile('start 34735 Geotiff keys, filepos=' + IntToStr(FilePos(TiffFile))); {$EndIf}
    StreamWordFieldEntry(TIFFFile,1,1,0,pred(GeoKeyEntries));
    StreamWordFieldEntry(TIFFFile,1024,0,1,wField);  {1 is for projection coords, 2 for Lat/long}
-   StreamWordFieldEntry(TIFFFile,1025,0,1,DEMheader.RasterPixelIsGeoKey1025); {1 RasterPixelIsArea, 2=RasterPixelIsPoint}
+   StreamWordFieldEntry(TIFFFile,1025,0,1,DEMheader.RasterPixelIsGeoKey1025); {1=RasterPixelIsArea, 2=RasterPixelIsPoint}
    StreamWordFieldEntry(TIFFFile,1026,34737,12,0);
 
    if (DEMMapProjection <> Nil) and (DEMMapProjection.PName = UK_OS) then StreamWordFieldEntry(TIFFFile,3072,0,1,27700)
    else if (DEMheader.DEMUsed = UTMbasedDEM) then StreamWordFieldEntry(TIFFFile,3072,0,1,GetUTMDatumCode(DEMMapProjection))
    else StreamWordFieldEntry(TIFFFile,2048,0,1,GetGeoDatumCode(DEMMapProjection));
+
+   StreamWordFieldEntry(TIFFFile,4096,0,1,DEMheader.VerticalCSTypeGeoKey);
 
    {$IfDef GeotiffSave} WriteLineToDebugFile('start 34737 ASCII, ' + ASCIIstr + '  filepos=' + IntToStr(FilePos(TiffFile))); {$EndIf}
    TiffFile.Write(AsciiStr[1],ASCIIsize);

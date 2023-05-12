@@ -359,7 +359,6 @@ function tMyData.AssignLabelName : shortstring;
    begin
       if FieldExists(fName) then result := fname
       else Result := '';
-
    end;
 
 begin
@@ -369,8 +368,10 @@ begin
    if Result = ''  then Result := IsItThere('FEATURE');
    if Result = ''  then Result := IsItThere('FENAME');
    if Result = ''  then Result := IsItThere('BASIN_ID');
+   if Result = ''  then Result := IsItThere('CATEGORY');
    if Result = ''  then Result := IsItThere('NAME');
 end;
+
 
 function tMyData.InsureFieldPresentAndAdded(ft : TFieldType; FieldName : ANSIString; FieldLength : integer; FieldDecimals : integer = 0) : boolean;
 
@@ -1963,10 +1964,11 @@ var
    i : integer;
 begin
    Result := false;
+   if (FieldCount = 0) then exit;
+
    {$IfDef BDELikeTables}
       if (TheBDEdata <> Nil) then begin
           for i := 0 to pred(FieldCount) do begin
-             //WriteLineToDebugFile(IntToStr(i) + '  ' + TheBDEdata.Fields[i].FieldName);
              if (TheBDEdata.Fields[i].FieldName = WantFieldName) then begin
                 if NeedAType then begin
                    if (TheBDEdata.Fields[i].DataType = NeedType) then begin
@@ -2681,6 +2683,8 @@ finalization
    {$IfDef RecordSQLite} WriteLineToDebugFile('RecordSQLite active in petmar_db'); {$EndIf}
    {$IfDef TrackCDStiming} WriteLineToDebugFile('TrackCDStiming active in petmar_db'); {$EndIf}
 end.
+
+
 
 
 

@@ -2,8 +2,8 @@ object wmdem: Twmdem
   Left = 0
   Top = 262
   Caption = 'GIS program loading'
-  ClientHeight = 1161
-  ClientWidth = 2130
+  ClientHeight = 1151
+  ClientWidth = 2090
   Color = clScrollBar
   DefaultMonitor = dmDesktop
   Font.Charset = DEFAULT_CHARSET
@@ -28,13 +28,13 @@ object wmdem: Twmdem
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 2130
+    Width = 2090
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34
     TabOrder = 0
     OnMouseDown = ToolBar1MouseDown
-    ExplicitWidth = 2126
+    ExplicitWidth = 2086
     object SpeedButton2: TSpeedButton
       Left = 0
       Top = 0
@@ -1676,8 +1676,8 @@ object wmdem: Twmdem
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 1142
-    Width = 2130
+    Top = 1132
+    Width = 2090
     Height = 19
     Panels = <
       item
@@ -1696,8 +1696,8 @@ object wmdem: Twmdem
     Visible = False
     OnClick = StatusBar1Click
     OnDblClick = StatusBar1DblClick
-    ExplicitTop = 1141
-    ExplicitWidth = 2126
+    ExplicitTop = 1131
+    ExplicitWidth = 2086
   end
   object MainMenu1: TMainMenu
     Left = 136
@@ -2086,11 +2086,11 @@ object wmdem: Twmdem
           Caption = 'Geomorph params, all DEMs'
         end
         object DEMsummarytable1: TMenuItem
-          Caption = 'DEM summary table'
+          Caption = 'DEM/grid summary table'
           OnClick = DEMsummarytable1Click
         end
         object DEMcornerstable1: TMenuItem
-          Caption = 'DEM corner parameters table'
+          Caption = 'DEM/grid corner parameters table'
           OnClick = DEMcornerstable1Click
         end
       end
@@ -2679,8 +2679,12 @@ object wmdem: Twmdem
       OnClick = OpenDEM1Click
     end
     object OpenandmergeDEMs1: TMenuItem
-      Caption = 'Open and merge DEMs/grids'
+      Caption = 'Open and merge DEMs/grids (GDAL VRT)'
       OnClick = OpenandmergeDEMs1Click
+    end
+    object OpenandmergeDEMsgridsverylarge1: TMenuItem
+      Caption = 'Open and merge DEMs/grids (very large, MICRODEM)'
+      OnClick = OpenandmergeDEMsgridsverylarge1Click
     end
     object OpenandmergeDEMdirectories1: TMenuItem
       Caption = 'Open and merge DEM directories'
@@ -2963,7 +2967,6 @@ object wmdem: Twmdem
       end
       object GPS1: TMenuItem
         Caption = 'GPS'
-        OnClick = GPS1Click
       end
       object N20: TMenuItem
         Caption = '-'
@@ -3475,6 +3478,24 @@ object wmdem: Twmdem
     object LoadDEMIXareareferenceDEMs1: TMenuItem
       Caption = 'Load DEMIX area reference DEMs in EGM2008'
       OnClick = LoadDEMIXareareferenceDEMs1Click
+    end
+    object N37: TMenuItem
+      Caption = '-'
+    end
+    object Creatediffrencemaps1: TMenuItem
+      Caption = 'Create diference maps'
+      OnClick = Creatediffrencemaps1Click
+    end
+    object N38: TMenuItem
+      Caption = 'Load COP/ALOS map difference analysis'
+      object Pickdatadirectory1: TMenuItem
+        Caption = 'Pick data directory'
+        OnClick = Pickdatadirectory1Click
+      end
+      object N3OpenDEMs1: TMenuItem
+        Caption = '3 Open DEMs'
+        OnClick = N3OpenDEMs1Click
+      end
     end
     object N36: TMenuItem
       Caption = '-'

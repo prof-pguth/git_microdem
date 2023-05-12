@@ -125,9 +125,8 @@ var
    bmp : tMyBitmap;
    Color : tPlatFormColor;
    fName : PathStr;
-
 begin
-   {$IfDef RecordBasicsAccumPath} WritelineToDebugFile('Enter CreateCostPathSurface, ' + MDDef.LCPRoadfName);   {$EndIf}
+   {$IfDef RecordBasicsAccumPath} WritelineToDebugFile('Enter CreateCostPathSurface, ' + MDDef.LCPRoadfName); {$EndIf}
    StartMap := LoadBlankVectorMapAndOverlay(false,false,MDDef.LCPRoadfName);
 
    MDDef.ShiftMercToUTM := true;
@@ -170,7 +169,7 @@ begin
    BMPMemory.Destroy;
    BMP.Destroy;
 
-   {$IfDef RecordBasicsAccumPath} WritelineToDebugFile('Start buffer CreateCostPathSurface');   {$EndIf}
+   {$IfDef RecordBasicsAccumPath} WritelineToDebugFile('Start buffer CreateCostPathSurface'); {$EndIf}
    StatusBar1.Panels[0].Text := 'Buffering';
    for I := 1 to MDDef.BufferRounds do begin
       if MDDef.LCP_LeastCost then BufferDEM := DEMGlb[NewDEM].CloneAndOpenGridSetMissing(SmallIntDEM,'Buffered',Undefined);
@@ -210,7 +209,7 @@ begin
    CloseSingleDEM(NewDEM);
    CloseSingleVectorMap(StartMap);
    StatusBar1.Panels[0].Text := 'Exit CreateCostPathSurface';
-  {$IfDef RecordBasicsAccumPath} WritelineToDebugFile('Exit CreateCostPathSurface');   {$EndIf}
+  {$IfDef RecordBasicsAccumPath} WritelineToDebugFile('Exit CreateCostPathSurface'); {$EndIf}
 end;
 
 

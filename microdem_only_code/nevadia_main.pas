@@ -16,6 +16,7 @@
       {$Define RecordBatch}
       {$Define RecordCommandLine}
       {$Define RecordDEMIX}
+      {$Define RecordMerge}
       //{$Define RecordFullDEMIX}
       //{$Define RecordDEMIXLoops}
       //{$Define RecordDEMIXGridCompare}
@@ -27,7 +28,7 @@
       //{$Define RecordSatLoad}
       //{$Define RecordFileOps}
       //{$Define RecordGeoPDF}
-      {$Define RecordOpenVectorMap}
+      //{$Define RecordOpenVectorMap}
       //{$Define RecordShipwrecks}
       //{$Define Record3D}
       //{$Define RecordLabs}
@@ -37,7 +38,7 @@
       //{$Define RecordUpdate}
       //{$Define RecordFirstRun}
       //{$Define RecordOpenVectorMap}
-      {$Define TimeLoadDEM}
+      //{$Define TimeLoadDEM}
       //{$Define RecordClosing}
       //{$Define RecordMGT}
       //{$Define RecordHelp}
@@ -537,6 +538,12 @@ type
     Metadata2: TMenuItem;
     OpenDEMIXridges1: TMenuItem;
     LoadDEMIXareareferenceDEMs1: TMenuItem;
+    N37: TMenuItem;
+    N38: TMenuItem;
+    Pickdatadirectory1: TMenuItem;
+    N3OpenDEMs1: TMenuItem;
+    OpenandmergeDEMsgridsverylarge1: TMenuItem;
+    Creatediffrencemaps1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -856,7 +863,6 @@ type
     procedure RGBcolorlayers1Click(Sender: TObject);
     procedure GDALSRSinfo1Click(Sender: TObject);
     procedure WhiteboxGeotiff1Click(Sender: TObject);
-    procedure GPS1Click(Sender: TObject);
     procedure GDALslopesarcsecondDEMs1Click(Sender: TObject);
     procedure Mediansatellitedatacontest1Click(Sender: TObject);
     procedure Makelittletilescontest1Click(Sender: TObject);
@@ -916,6 +922,10 @@ type
     procedure Metadata2Click(Sender: TObject);
     procedure OpenDEMIXridges1Click(Sender: TObject);
     procedure LoadDEMIXareareferenceDEMs1Click(Sender: TObject);
+    procedure Pickdatadirectory1Click(Sender: TObject);
+    procedure N3OpenDEMs1Click(Sender: TObject);
+    procedure OpenandmergeDEMsgridsverylarge1Click(Sender: TObject);
+    procedure Creatediffrencemaps1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -925,7 +935,7 @@ type
     { Public declarations }
       ProgramClosing,NoAutoOpen,AskForDebugUpdateNow,AskForNewUpdateNow,ShowDragonPlot : boolean;
       procedure SetMenusForVersion;
-      procedure FormPlacementInCorner(TheForm : Forms.tForm; FormPosition :  byte = lpSEMap);
+      procedure FormPlacementInCorner(TheForm : Forms.tForm; FormPosition : byte = lpSEMap);
       procedure HandleThreadTerminate(Sender: TObject);
       procedure SetPanelText(PanelNum : integer; What : shortString);
       procedure StartSealevelrise(BaseMap : tMapForm);
@@ -957,7 +967,7 @@ uses
    DEM_indexes,
 {$EndIf}
 
-{$IfDef ExGeology}
+{$IfDef ExSieve}
 {$Else}
    sieve_main,
 {$EndIf}
@@ -965,13 +975,11 @@ uses
    PETImage,
    fat_fingers,
 
-
 {$IfDef ExSat}
 {$Else}
    DEMEros,
    GEOTIFF,
    DEM_Sat_Header,
-   //MrSidImagery,
    DEM_NLCD,
    {$IfDef ExHypImage}
    {$Else}
@@ -1057,7 +1065,6 @@ uses
 
    {$IfDef ExConvert}
    {$Else}
-      //SPCS_Converter,
       UK_OS_Converter,
       computations,
       DEM_computations,
@@ -1092,7 +1099,6 @@ uses
    {$Else}
       trackstarmain,
    {$EndIf}
-
 
    {$IfDef ExComplexGeoStats}
    {$Else}
@@ -1151,6 +1157,7 @@ uses
       Simple_Python,
    {$EndIf}
    DEMIX_control,
+   DEMIX_cop_alos,
 
    ufrmMain,
 
@@ -1181,7 +1188,6 @@ uses
    BaseMap,
    Thread_timers,
    PetEd32,
-   line_from_points,
    Demeditw,
    NE_outlines,
    map_splitter,
@@ -1429,7 +1435,7 @@ end;
 
 procedure Twmdem.DEMIXreferenceDEMcreation1Click(Sender: TObject);
 begin
-   DEMIXreferenceDEMs;
+   DEMIX_CreateReferenceDEMs;
 end;
 
 procedure Twmdem.DEMIXreferencetilesurvey1Click(Sender: TObject);
@@ -1462,33 +1468,8 @@ end;
 
 
 procedure Twmdem.DEMsummarytable1Click(Sender: TObject);
-var
-   Results : tStringList;
-   fName : PathStr;
-   Missing : float64;
-   i,Decs : integer;
-   TStr : shortstring;
 begin
-   Results := tStringList.Create;
-   Results.Add('DEM,LAT,LONG,MIN_Z,MAX_Z,HOLES_PC,SW_CornerX,SW_CornerY,SW_Corner,DX,DY,NUM_COL,NUM_ROW,PIXEL_IS,VERT_DATUM,AVG_X_M,AVG_Y_M,AVG_SP_M');
-   for i := 1 to MaxDEMDataSets do if ValidDEM(i) then begin
-      DEMGlb[i].ComputeMissingData(Missing);
-      if (DEMGlb[i].DEMheader.DEMUsed = UTMBasedDEM) then Decs := -2 else Decs := -8;
-      if (DEMGlb[i].DEMheader.DEMUsed = UTMBasedDEM) then TStr := ''
-      else TStr := LatLongDegreeToString(DEMGlb[i].DEMheader.DEMSWCornerY, DEMGlb[i].DEMheader.DEMSWCornerX,DecSeconds);
-
-      Results.Add(DEMGlb[i].AreaName + ',' + RealToString(DEMGlb[i].DEMSWcornerLat + 0.5 * DEMGlb[i].LatSizeMap,-12,-3) + ',' +
-          RealToString(DEMGlb[i].DEMSWcornerLong + 0.5 * DEMGlb[i].LongSizeMap,-12,-3)  + ',' +
-          RealToString(DEMGlb[i].DEMheader.MinElev,-12,-1)  + ',' +  RealToString(DEMGlb[i].DEMheader.MaxElev,-12,-1)  + ',' +
-          RealToString(Missing,-12,-3) + ',' +  RealToString(DEMGlb[i].DEMheader.DEMSWCornerX,-12,Decs)  + ',' +RealToString(DEMGlb[i].DEMheader.DEMSWCornerY,-12,Decs)  + ',' +
-          TStr + ',' +
-          RealToString(DEMGlb[i].DEMheader.DEMxSpacing,-12,Decs) + ',' + RealToString(DEMGlb[i].DEMheader.DEMySpacing,-12,Decs)  + ',' +
-          IntToStr(DEMGlb[i].DEMheader.NumCol) + ',' + IntToStr(DEMGlb[i].DEMheader.NumRow) + ',' + IntToStr(DEMGlb[i].DEMheader.RasterPixelIsGeoKey1025) + ',' +
-          IntToStr(DEMGlb[i].DEMheader.VerticalCSTypeGeoKey) + ',' +
-          RealToString(DEMGlb[i].AverageXSpace,-12,-2) + ',' + RealToString(DEMGlb[i].AverageYSpace,-12,-2)  + ',' + RealToString(DEMGlb[i].AverageSpace,-12,-2));
-   end;
-   fName := Petmar.NextFileNumber(MDTempDir,'dem_summary_','.csv');
-   StringList2CSVtoDB(Results,fName);
+   MakeDEMsummaryTable;
 end;
 
 
@@ -1601,11 +1582,6 @@ begin
    MultProfSpeedButton.Enabled := (NumDEMDataSetsOpen > 1);
 
    GISdatasampler1.Visible := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]);
-   {$IfDef ExOpenGL}
-      OpenGL1tofront.Visible := false;
-   {$Else}
-      OpenGL1tofront.Visible := (View3DForm <> nil) or (Map3D <> nil);
-   {$EndIf}
 
    Bringslicecontroltofront1.Visible := (SlicerForm <> Nil);
    Bringpointcloudcontroltofront1.Visible := (pt_cloud_opts_fm <> Nil);
@@ -1622,23 +1598,11 @@ begin
    Data1.Visible := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]) and MDDef.ShowDataManipulation;
    InOutButton.Visible := Data1.Visible;
 
-   {$IfDef ExIndexes}
-      IntDBSpeedButton.Visible := false;
-   {$Else}
-      IntDBSpeedButton.Visible := FileExists(MapLibraryFName) and MDDef.ShowIntDB;
-   {$EndIf}
-
    NewDEMButton.Visible := ShowLoadButtons;
 
    LandCoverSpeedButton.Visible := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]);
 
    XTFsidescan1.Visible := MDDef.ShowSidescan;
-
-   {$IfDef ExDP}
-      DragonPlot1.Visible := false;
-   {$Else}
-      DragonPlot1.Visible := (MDDef.ProgramOption = ExpertProgram) and ShowDragonPlot;
-   {$EndIf}
 
    Cascade1.Visible := (MDDef.ProgramOption <> DragonPlotProgram);
    Tile1.Visible := (MDDef.ProgramOption <> DragonPlotProgram);
@@ -1698,14 +1662,6 @@ begin
    Physicalgeographylabs1.Visible := (MDDef.ProgramOption = GeographyProgram) or MDDef.ShowLabs;
    GISlabs1.Visible := MDDef.ShowLabs;
 
-   {$IfDef IncludeGeologyLabs}
-      LabSpeedButton7.Visible := (MDDef.ProgramOption in [GeographyProgram,GeologyProgram]);
-      StructuralGeologylab1.Visible := (MDDef.ProgramOption in [GeologyProgram]) or MDDef.ShowLabs;
-   {$Else}
-      StructuralGeologylab1.Visible := false;
-      LabSpeedButton7.Visible := (MDDef.ProgramOption in [GeographyProgram]);
-   {$EndIf}
-
    SpeedButton5.Visible := Geostatisticalanalysis1.Visible;
 
    VectorMapButton.Visible := MDDef.ShowCartography;
@@ -1720,6 +1676,31 @@ begin
    Edit1.Visible := (MDDef.ProgramOption = ExpertProgram) and (NumDEMDataSetsOpen = 0);
    Photos1.Visible := (MDDef.ProgramOption = ExpertProgram);
 
+   {$IfDef ExDP}
+      DragonPlot1.Visible := false;
+   {$Else}
+      DragonPlot1.Visible := (MDDef.ProgramOption = ExpertProgram) and ShowDragonPlot;
+   {$EndIf}
+
+   {$IfDef ExIndexes}
+      IntDBSpeedButton.Visible := false;
+   {$Else}
+      IntDBSpeedButton.Visible := FileExists(MapLibraryFName) and MDDef.ShowIntDB;
+   {$EndIf}
+   {$IfDef ExOpenGL}
+      OpenGL1tofront.Visible := false;
+   {$Else}
+      OpenGL1tofront.Visible := (View3DForm <> nil) or (Map3D <> nil);
+   {$EndIf}
+
+   {$IfDef IncludeGeologyLabs}
+      LabSpeedButton7.Visible := (MDDef.ProgramOption in [GeographyProgram,GeologyProgram]);
+      StructuralGeologylab1.Visible := (MDDef.ProgramOption in [GeologyProgram]) or MDDef.ShowLabs;
+   {$Else}
+      StructuralGeologylab1.Visible := false;
+      LabSpeedButton7.Visible := (MDDef.ProgramOption in [GeographyProgram]);
+   {$EndIf}
+
    {$IfDef ExHypImage}
       HypImageSpeedButton.Visible := false;
       Openhyperspectralimagery1.Visible := false;
@@ -1733,7 +1714,6 @@ begin
    {$Else}
       PClouder1.Visible := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]) and MDDef.ShowPointClouds;
       Other3Dpointclouds1.Visible := (MDDef.ProgramOption in [ExpertProgram]) and MDDef.ShowPointClouds;
-      //FudgeLAScoordinates1.Visible := (MDDef.ProgramOption in [ExpertProgram]) and MDDef.ShowPointClouds;
    {$EndIf}
 
    {$IfDef ExTIN}
@@ -1790,6 +1770,11 @@ begin
       TernaryDiagram1.Visible := TernarySpeedButton.Visible;
       Stratcol2.Visible := StratColSpeedButton.Visible;
       Platereconstructions1.Visible := PlateRotateSpeedButton.Visible;
+   {$EndIf}
+
+   {$IfDef ExSieve}
+      Sieve1.Visible := false;
+   {$Else}
       Sieve1.Visible := MDDef.ShowSieve;
    {$EndIf}
 
@@ -2170,7 +2155,7 @@ begin
     {$IfDef RecordProblems} writeLineToDebugFile('MDdef.AutoOpen=' + IntToStr(ord(MDdef.AutoOpen)) + '  MDdef.ProgramOption=' + IntToStr(ord(MDdef.ProgramOption)) ); {$EndIf}
 
       if MDdef.ProgramOption in [GeologyProgram] then begin
-         {$IfDef ExGeology}
+         {$If Defined(ExGeology) or Defined(ExGeologyDownload)}
          {$Else}
             {$IfDef RecordProblems} writeLineToDebugFile('StructuralGeologyProgram, call GeologyGetData'); {$EndIf}
             GeologyGetData;
@@ -2216,6 +2201,7 @@ end;
 
 procedure Twmdem.SeeIfThereAreDebugThingsToDo;
 
+      (*
       procedure Histies;
       var
          DEMwithVAT,ElevMap,SlopeMap,RuffMap,AspMap : integer;
@@ -2239,12 +2225,22 @@ procedure Twmdem.SeeIfThereAreDebugThingsToDo;
          DEMGlb[ElevMap].SelectionMap.DoBaseMapRedraw;
          HistogramsFromVATDEM(DEMwithVAT,ElevMap,SlopeMap,RuffMap,AspMap);
       end;
-
+      *)
 
 begin
    if TrilobiteComputer then begin
-      //OpenDEMIXArea('H:\wine_contest_reference_dems\uruguay.dbf');
-     //Histies;
+      //Histies;
+      //OpenHalfSecCopALOS(true, 'J:\aa_new_half_sec_test\lake_powell\' );
+
+
+      //CreateDifferenceMaps('D:\aa_new_half_sec_test\stateline\');
+      //CreateDifferenceMaps('J:\aa_new_half_sec_test\stateline\');
+
+      //DEMIX_CreateReferenceDEMs;
+
+      //GDAL_Raster_Calculator('-A c:\temp\alos.tif -B c:\temp\3dep_2022.tif --extent intersect --outfile c:\temp\alos-3dep.tif --calc="A-B"');
+//gdal_calc.py -A input1.tif -B input2.tif -C input3.tif --outfile=result.tif --calc="A+B+C"
+
    end;
 end;
 
@@ -2536,7 +2532,7 @@ end;
 
 procedure Twmdem.All1Click(Sender: TObject);
 begin
-   {$IfDef ExGeology}
+   {$If Defined(ExGeology) or Defined(ExGeologyDownload)}
    {$Else}
       if AnswerIsYes('Several GB; proceed') then begin
          ClimateGetData(true);
@@ -2571,7 +2567,9 @@ end;
 
 
 procedure Twmdem.Annapolislidar1Click(Sender: TObject);
-
+{$If Defined(ExLabs) or Defined(ExLabDownloads)}
+begin
+{$Else}
    procedure DealWithFile(fName : PathStr);
    var
       Source,Dest : string;
@@ -2604,6 +2602,7 @@ begin
       DEMGlb[LastDEMLoaded].SelectionMap.PointCloudSpeedButtonClick(Sender);
    end;
    {$IfDef RecordLabs} writeLineToDebugFile('TTwmdem.Annapolislidar1Click out'); {$EndIf}
+{$EndIf}
 end;
 
 
@@ -2628,6 +2627,9 @@ end;
 
 
 procedure Twmdem.AnnapolisTM8scene1Click(Sender: TObject);
+{$If Defined(ExLabs) or Defined(ExLabDownloads)}
+begin
+{$Else}
 var
    pName : PathStr;
 begin
@@ -2640,6 +2642,7 @@ begin
    OpenAndDisplayNewScene(Nil,LastImageName,true,true,true);
    DisplayHTMLTopic('microdemtutorials/sat_imagery/satellite_imagery_tutorial.htm');
    {$IfDef RecordLabs} WriteLineToDebugFile('Twmdem.AnnapolisTM8scene1Click out'); {$EndIf}
+{$EndIf}
 end;
 
 
@@ -2719,6 +2722,11 @@ end;
 procedure Twmdem.N2022fillseason1Click(Sender: TObject);
 begin
    GerdDownload(2022)
+end;
+
+procedure Twmdem.N3OpenDEMs1Click(Sender: TObject);
+begin
+   OpenHalfSecCopALOS(false);
 end;
 
 procedure Twmdem.N81Sfileviewer1Click(Sender: TObject);
@@ -2807,7 +2815,7 @@ end;
 
 
 procedure Twmdem.HarpersFerryTerrainAnalysis1Click(Sender: TObject);
-{$IfDef ExPointCloud}
+{$If Defined(ExLabs) or Defined(ExLabDownloads)}
 begin
 {$Else}
 var
@@ -3056,11 +3064,9 @@ begin
        fName := TheFiles.Strings[i];
        zFiles := tStringList.Create;
        zfiles.Add(fName);
-       HardCodeFileName := ChangeFileExt(fName, '.csv');
-       Graph := CreateMultipleHistograms(MDDef.CountHistograms,zFiles,nil,'','');
-       Graph.Viewdata1Click(Nil);
+       Graph := CreateMultipleHistogram(MDDef.CountHistograms,zFiles,nil,'','');
+       Graph.ViewGraphData(ChangeFileExt(fName, '.csv'));
        Graph.Destroy;
-       zFiles.Destroy;
    end;
    TheFiles.Free;
 end;
@@ -3131,10 +3137,10 @@ end;
 
 procedure Twmdem.MSTsidescanimport1Click(Sender: TObject);
 begin
-{$IfDef ExSidescan}
-{$Else}
-   ImportMSTSidescan;
-{$EndIf}
+   {$IfDef ExSidescan}
+   {$Else}
+      ImportMSTSidescan;
+   {$EndIf}
 end;
 
 
@@ -3181,7 +3187,7 @@ begin
 end;
 
 procedure Twmdem.Sieve1Click(Sender: TObject);
-{$IfDef ExGeology}
+{$IfDef ExSieve}
 begin
 {$Else}
 var
@@ -3516,209 +3522,20 @@ begin
 end;
 
 
+procedure Twmdem.Creatediffrencemaps1Click(Sender: TObject);
+begin
+   CreateDifferenceMaps;
+end;
+
+
 procedure Twmdem.ImportCTDfile1Click(Sender: TObject);
-{$IfDef ExOceanography}
 begin
-{$Else}
-type
-   tProfInfo = record
-      No_seg : int32;
-      Prof_type : string[4];
-      Deep_Depth : int32;
-   end;
-var
-   fName : PathStr;
-   DataFileInMemory,Stations,SubFile,Points  : tStringList;
-   aLine,bLine : AnsiString;
-   TempLine,SalLine : array[1..5] of ANSIString;
-   TStr : shortstring;
-   MinSV,sofar_m,
-   LowDepth,HighDepth,
-   LowLat,HighLat,LowLong,HighLong,
-   aLat,aLong : float64;
-   ExtractSubset,IncludeXBT,StationsDB,DepthLimits,
-   InBox,CreatePoints : boolean;
-   Year,Month,Day,i,j,k,Start,
-   OnLine,No_Depths,OnDepth,OnDepth2,Mismatches,
-   No_prof : integer;
-   DTG,Stn_Num,CruiseID : ShortString;
-   ProfInfo : array[1..30] of tProfInfo;
-   sv,Depth,Temperature,Salinity : array[1..6000] of float64;
-begin
-   StopSplashing;
-   fName := '';
-   Petmar.GetFileFromDirectory('CTD data, MEDS format','*.*', fName);
-   {$IfDef RecordOceanography} WriteLineToDebugFile('Twmdem.ImportCTDfile1Click inf=' + fName); {$EndIf}
-   CreatePoints := AnswerIsYes('Create points DB');
-   StationsDB := AnswerIsYes('Create stations DB');
-   ExtractSubset := AnswerIsYes('Extract MEDS file');
-   IncludeXBT := AnswerIsYes('Include XBT stations');
-   DepthLimits := AnswerIsYes('Depth limits');
-
-   if ExtractSubset then begin
-      LowLat := -80;
-      HighLat := 80;
-      LowLong := -180;
-      HighLong := 180;
-      ReadDefault('Low lat',LowLat);
-      ReadDefault('High lat',HighLat);
-      ReadDefault('Low long',LowLong);
-      ReadDefault('High long',HighLong);
-   end;
-
-   if DepthLimits then begin
-      LowDepth := 495;
-      HighDepth := 505;
-      ReadDefault('Upper depth limit',LowDepth);
-      ReadDefault('Lower depth limit',HighDepth);
-   end
-   else begin
-      LowDepth := -1;
-      HighDepth := 9999;
-   end;
-
-   if CreatePoints then begin
-      Points := tStringList.Create;
-      Points.Add('LAT,LONG,DEPTH,TEMP_C,SALINITY,SOUND_VEL');
-   end;
-
-   ShowHourglassCursor;
-   if StationsDB then begin
-      Stations := tStringList.Create;
-      Stations.Add('DTG,CRUISEID,STATION,LAT,LONG,DEPTH,MAX_TEMP,MIN_TEMP,MAX_SAL,MIN_SAL,SOFAR_M,INSTRUMENT');
-   end;
-
-   DataFileInMemory := tStringList.Create;
-   DataFileInMemory.LoadFromFile(fName);
-
-   if ExtractSubset then begin
-      Subfile := tStringList.Create;
-   end;
-
-   OnLine := -1;
-   MisMatches := 0;
-
-   while online < pred(DataFileInMemory.Count) do begin
-      inc(Online);
-      if (Online mod 500 = 0) then SetPanelText(0,IntToStr(Online));
-
-      aLine := DataFileInMemory.Strings[OnLine];
-      aLat := StrToFloat(ptTrim(Copy(aline,63,8)));
-      aLong := -StrToFloat(ptTrim(Copy(aline,71,9)));
-      Year := StrToInt(Copy(aline,27,4));
-      Month := StrToInt(Copy(aline,31,2));
-      Day := StrToInt(Copy(aline,33,2));
-      No_prof := StrToInt(Copy(aline,122,2));
-
-      Stn_Num := copy(aline,41,12);
-      DTG := copy(aline,27,12);
-      CruiseID := copy(aline,17,10);
-
-      if ExtractSubset then begin
-         InBox := (aLat > LowLat) and (aLat < HighLat) and (aLong > LowLong) and (aLong < HighLong);
-      end
-      else InBox := true;
-
-      for I := 1 to No_Prof do  begin
-         Start := 130 + pred(i) * 14;
-         ProfInfo[i].No_seg := StrToInt(ptTrim(Copy(aline,Start+1,2)));
-         ProfInfo[i].Prof_Type := Copy(aline,Start+3,4);
-      end;
-
-      OnDepth := 0;
-      OnDepth2 := 0;
-      for i := 1 to No_Prof do begin
-         for j := 1 to ProfInfo[i].No_seg do begin
-            //Get next line from memory
-            inc(OnLine);
-            bLine := DataFileInMemory.Strings[OnLine];
-            //save line for export later
-            if ProfInfo[i].Prof_Type = 'TEMP' then TempLine[j] := bline
-            else SalLine[j] := bline;
-            //process the line
-            No_Depths := StrToInt(ptTrim(Copy(bline,59,4)));
-            for k := 1 to No_Depths do begin
-               if ProfInfo[i].Prof_Type = 'TEMP' then begin
-                  inc(OnDepth);
-                  Depth[OnDepth] := StrToFloat(ptTrim(Copy(bline,64 + pred(k) * 17,6)));
-                  Temperature[OnDepth] := StrToFloat(ptTrim(Copy(bline,64 + 8 + pred(k) * 17,9)));
-               end
-               else if ProfInfo[i].Prof_Type = 'PSAL' then begin
-                  inc(OnDepth2);
-                  Salinity[OnDepth2] := StrToFloat(ptTrim(Copy(bline,64 + 8 + pred(k) * 17,9)))
-               end;
-            end;
-         end;
-      end;
-
-      if (OnDepth = OnDepth2) then begin
-         if ExtractSubset and (OnDepth > 10) and InBox then begin
-            SubFile.Add(aline);
-            for i := 1 to ProfInfo[1].No_seg do SubFile.Add(TempLine[i]);
-            for i := 1 to ProfInfo[1].No_seg do SubFile.Add(SalLine[i]);
-         end;
-
-         MinSV := 9999;
-         if (No_Prof = 2) then begin
-            for i := 1 to OnDepth do begin
-               sv[i] := SoundVelocity(Temperature[i],Salinity[i],Depth[i]);
-               if sv[i] < MinSV then begin
-                  MinSv := sv[i];
-                  Sofar_m := Depth[i];
-               end;
-            end;
-
-            if InBox and CreatePoints then begin
-               for i := 1 to OnDepth do begin
-                  if (Salinity[i] > 0.1) and (Depth[i] > LowDepth) and (Depth[i] < HighDepth) then begin
-                     {$IfDef RecordFullOceanography} writeLineToDebugFile(aLine); {$EndIf}
-                     Points.Add(RealToString(aLat,-12,-4) + ',' +
-                                RealToString(aLong,-12,-2) + ',' +
-                                RealToString(Depth[i],-12,-2) + ',' +
-                                RealToString(Temperature[i],-12,-3) + ',' +
-                                RealToString(Salinity[i],-12,-4) + ',' +
-                                RealToString(sv[i],-12,-4));
-                  end;
-               end;
-            end;
-         end
-         else begin
-            TStr := '  ,  ,  ,XBT';
-         end;
-
-         if StationsDB and ((No_Prof = 2) or IncludeXBT) then begin
-            aLine := DTG + ',' + CruiseID + ',' + Stn_Num + ',' + RealToString(aLat,-12,-3) + ',' + RealToString(aLong,-12,-3) + ',' + RealToString(Depth[OnDepth],-12,-3) + ',' +
-                RealToString(PetMath.MaxInArray(OnDepth,Temperature),-12,-2) + ',' +
-                RealToString(PetMath.MinInArray(OnDepth,Temperature),-12,-2) + ',' +  TStr;
-            Stations.Add(aLine);
-         end;
-      end
-      else inc(MisMatches);
-
-   end;
-
-   if ExtractSubset then begin
-      SubFile.SaveToFile(ExtractFilePath(fName) + ExtractFileNameNoExt(fName ) + '_sub');
-   end;
-
-   DataFileInMemory.Destroy;
-   SetPanelText(0,'');
-
-   VectorMapButtonClick(Nil);
-   if StationsDB then begin
-      {$IfDef RecordOceanography} WriteLineToDebugFile('File had stations=' + IntToStr(Stations.Count)); {$EndIf}
-      fName := ChangeFileExt(fName,'.csv');
-      VectorMap[LastVectorMap].StringListToLoadedDatabase(Stations,fName);
-   end;
-
-   if CreatePoints then begin
-      ShowHourglassCursor;
-      Points.SaveToFile('c:\temp\pts.csv');
-      fName := ExtractFilePath(fName) + ExtractFileNameNoExt(fName ) + '_points.csv';
-      VectorMap[LastVectorMap].StringListToLoadedDatabase(Points,fName);
-   end;
+   {$IfDef ExOceanography}
+   {$Else}
+      OceanCal.ImportCTDfile;
    {$EndIf}
 end;
+
 
 
 
@@ -4137,6 +3954,11 @@ begin
    GeographyPopUpMenu.Popup(Mouse.CursorPos.X,Mouse.CursorPos.Y);
 end;
 
+procedure Twmdem.Pickdatadirectory1Click(Sender: TObject);
+begin
+   OpenHalfSecCopALOS(True);
+end;
+
 procedure Twmdem.Piracywindsandrain1Click(Sender: TObject);
 {$IfDef ExMultigrid}
 begin
@@ -4509,7 +4331,8 @@ var
 
       procedure DoPart(FirstDEM,LastDEM : integer);
       var
-         Lat,Long,xg,yg : float64;
+         Lat,Long : float64;
+         xg,yg : float32;
          fName : PathStr;
          i,j,Col,Row : integer;
       begin
@@ -4671,10 +4494,10 @@ end;
 
 procedure Twmdem.Geology2Click(Sender: TObject);
 begin
-{$IfDef ExGeology}
-{$Else}
-   GeologyGetData(true);
-{$EndIf}
+   {$If Defined(ExGeology) or Defined(ExGeologyDownload)}
+   {$Else}
+      GeologyGetData(true);
+   {$EndIf}
 end;
 
 procedure Twmdem.GeoPDF1Click(Sender: TObject);
@@ -4694,7 +4517,7 @@ begin
        BatchGDALinfo(FilesWanted,false,i);
        for i := 0 to pred(FilesWanted.Count) do begin
           fName := FilesWanted.Strings[i];
-          OutName := GDALinfoOutput(fName);
+          OutName := GDALinfoOutputFName(fName);
           ShowInNotepadPlusPlus(OutName,'GDALinfo results ' + ExtractFileName(fName));
        end;
       FilesWanted.Free;
@@ -4876,7 +4699,6 @@ procedure Twmdem.imecores1Click(Sender: TObject);
 begin
 {$Else}
 var
-   //SaveThreads,
    NewDEM : integer;
 
 
@@ -5082,6 +4904,7 @@ begin
    {$EndIf}
 end;
 
+
 procedure Twmdem.SeaFloorAgeSpeedButtonClick(Sender: TObject);
 begin
    {$IfDef ExGeology}
@@ -5143,17 +4966,17 @@ end;
 
 procedure Twmdem.Sedimenttypegrid1Click(Sender: TObject);
 begin
-   {$IfDef ExGeology}
-   {$Else}
-   if (SedTypeDEM <> 0) and (DEMGlb[SedTypeDEM] <> Nil) and (DEMGlb[SedTypeDEM].DEMFileName = SedTypeFile) then begin
-   end
-   else begin
-      GeologyGetData;
-      if FileExists(SedTypeFile) then begin
-         OpenNewDEM(SedTypeFile);
-         DEMGlb[LastDEMLoaded].VATLegend;
+   {$If Defined(ExGeology) or Defined(ExGeologyDownload)}
+  {$Else}
+      if (SedTypeDEM <> 0) and (DEMGlb[SedTypeDEM] <> Nil) and (DEMGlb[SedTypeDEM].DEMFileName = SedTypeFile) then begin
+      end
+      else begin
+         GeologyGetData;
+         if FileExists(SedTypeFile) then begin
+            OpenNewDEM(SedTypeFile);
+            DEMGlb[LastDEMLoaded].VATLegend;
+         end;
       end;
-   end;
    {$EndIf}
 end;
 
@@ -5169,7 +4992,7 @@ end;
 
 procedure Twmdem.SedThickButtonClick(Sender: TObject);
 begin
-   {$IfDef ExGeology}
+   {$If Defined(ExGeology) or Defined(ExGeologyDownload)}
    {$Else}
       if not ValidDEM(SedThickDEM) then begin
          GeologyGetData;
@@ -5738,7 +5561,7 @@ end;
 
 
 procedure Twmdem.GISdatasampler1Click(Sender: TObject);
-{$IfDef ExLabs}
+{$If Defined(ExLabs) or Defined(ExLabDownloads)}
 begin
 {$Else}
 var
@@ -5756,11 +5579,6 @@ begin
 {$EndIf}
 end;
 
-
-procedure Twmdem.GPS1Click(Sender: TObject);
-begin
-   //GPS_sensor.StartGPS;
-end;
 
 procedure Twmdem.Verticalearthcurvature1Click(Sender: TObject);
 begin
@@ -6020,7 +5838,7 @@ begin
 end;
 
 procedure Twmdem.LASlidarpointcloudsamples1Click(Sender: TObject);
-{$IfDef ExPointCloud}
+{$If Defined(ExLabs) or Defined(ExLabDownloads) or Defined(ExPointCloud)}
 begin
 {$Else}
 var
@@ -6153,52 +5971,69 @@ begin
    OpenPopUpMenu1.Popup(Mouse.CursorPos.X,Mouse.CursorPos.Y);
 end;
 
-procedure Twmdem.OpenandmergeDEMdirectories1Click(Sender: TObject);
+
+procedure MergeDEMs(Mode : integer);
 var
+   UseGDALvrt : boolean;
    DEMList,NewFiles : tStringList;
-   i,WantedDEM : integer;
+   i, NewDEM : integer;
    aPath : PathStr;
 begin
-   {$IfDef RecordMenu} WriteLineToDebugFile('OpenandmergeDEMdirectories1 in'); {$EndIf}
+   {$If Defined(RecordMenu) or Defined(RecordMerge)} WriteLineToDebugFile('Enter MergeDEMs, mode=' + IntToStr(Mode)); {$EndIf}
+   UseGDALvrt := Mode in [1,3];
    DEMList := tStringList.Create;
-   aPath := ExtractFilePath(LastDEMname);
-   repeat
-      GetDOSPath('Directory with DEMs to merge',aPath);
-      if (aPath <> '') then begin
-         NewFiles := Nil;
-         FindMatchingFiles(aPath,'*.*',NewFiles,1);
-         for i := 0 to pred(NewFiles.Count) do begin
-            DEMList.Add(NewFiles.Strings[i]);
+   if Mode in [1..2] then begin
+      DEMList.Add(LastDEMName);
+      if Petmar.GetMultipleFiles('DEMs to merge',DEMFilterMasks,DEMList,MDDef.DefaultDEMFilter) then begin
+         {$IfDef RecordMenu} WriteStringListToDebugFile(DEMList); {$EndIf}
+         if (DEMList.Count = 1) and (UpperCase(ExtractFileExt(DEMList.Strings[0])) <> '.ASC') then begin
+            NewDEM := OpenNewDEM(DEMList.Strings[0]);
+            DEMList.Destroy;
+         end
+         else begin
+            NewDEM := MergeMultipleDEMsHere(DEMList,true,UseGDALvrt);
          end;
-         {$IfDef RecordMenu} WriteLineToDebugFile('   add ' + IntToStr(NewFiles.Count) + ' from ' + aPath); {$EndIf}
-         NewFiles.Destroy;
       end;
-   until aPath = '';
-   if (DEMList.Count > 0) then begin
-      MergeMultipleDEMsHere(WantedDEM,DEMList,true,true);
+   end
+   else begin
+      aPath := ExtractFilePath(LastDEMname);
+      repeat
+         GetDOSPath('Directory with DEMs to merge',aPath);
+         if (aPath <> '') then begin
+            NewFiles := Nil;
+            FindMatchingFiles(aPath,'*.*',NewFiles,1);
+            for i := 0 to pred(NewFiles.Count) do begin
+               DEMList.Add(NewFiles.Strings[i]);
+            end;
+            {$IfDef RecordMenu} WriteLineToDebugFile('   add ' + IntToStr(NewFiles.Count) + ' from ' + aPath); {$EndIf}
+            NewFiles.Destroy;
+         end;
+      until (aPath = '');
+      if (DEMList.Count > 0) then begin
+         NewDEM := MergeMultipleDEMsHere(DEMList,true,UseGDALvrt);
+      end;
    end;
+   StopSplashing;
+   WMDEM.SetMenusForVersion;
+   {$IfDef TrackDEMCorners} DEMGlb[NewDEM].WriteDEMCornersToDebugFile('Merge DEMs, mode=' + IntToStr(Mode)); {$EndIf}
+   {$If Defined(RecordMenu) or Defined(RecordMerge)} WriteLineToDebugFile('Exit MergeDEMs, mode=' + IntToStr(Mode)); {$EndIf}
 end;
 
-procedure Twmdem.OpenandmergeDEMs1Click(Sender: TObject);
-var
-   DEMList : tStringList;
-   WantedDEM : integer;
+
+procedure Twmdem.OpenandmergeDEMdirectories1Click(Sender: TObject);
 begin
-   {$IfDef RecordMenu} WriteLineToDebugFile('Selected DEM Merge'); {$EndIf}
-   DEMList := tStringList.Create;
-   DEMList.Add(LastDEMName);
-   if Petmar.GetMultipleFiles('DEMs to merge',DEMFilterMasks,DEMList,MDDef.DefaultDEMFilter) then begin
-      {$IfDef RecordMenu} WriteStringListToDebugFile(DEMList); {$EndIf}
-      if (DEMList.Count = 1) and (UpperCase(ExtractFileExt(DEMList.Strings[0])) <> '.ASC') then begin
-         OpenNewDEM(DEMList.Strings[0]);
-         DEMList.Destroy;
-      end
-      else begin
-         MergeMultipleDEMsHere(WantedDEM,DEMList,true,true);
-      end;
-      StopSplashing;
-      SetMenusForVersion;
-   end;
+   MergeDEMs(3);
+end;
+
+
+procedure Twmdem.OpenandmergeDEMs1Click(Sender: TObject);
+begin
+   MergeDEMs(1);
+end;
+
+procedure Twmdem.OpenandmergeDEMsgridsverylarge1Click(Sender: TObject);
+begin
+   MergeDEMs(2);
 end;
 
 procedure Twmdem.OpenandmergeGeotiffs1Click(Sender: TObject);

@@ -85,7 +85,7 @@ begin
    if (VATFileName = '') then fName := ChangeFileExt(DEMFileName,'.vat.dbf')
    else fName := VATFileName;
    if not FileExists(fName) then begin
-      {$IfDef RecordVAT} WriteLineToDebugFile('tDEMDataSet.LoadColorVATTable, could not find  VAT' + fName); {$EndIf}
+      {$IfDef RecordVAT} WriteLineToDebugFile('tDEMDataSet.LoadColorVATTable, could not find VAT ' + fName); {$EndIf}
       exit;
    end;
 
@@ -219,21 +219,24 @@ var
 
 begin
   {$IfDef RecordVAT} WriteLineToDebugFile('tDEMDataSet.CreateVATforDEM, in ' + DEMFileName); {$EndIf}
-
+   if (DEMFileName = '') then begin
+      WriteNewFormatDEM(DEMFileName,' save DEM before vat creation');
+   end;
   fName := DEMFileName + '.vat.dbf';
   if not FileExists(fName) then fName := ChangeFileExt(DEMFileName,'.vat.dbf');
   NewFile := false;
   if FileExists(fName) then begin
-     {$IfDef RecordVAT} WriteLineToDebugFile('tDEMDataSet.CreateVATforDEM Found VAT, ' + fName); {$EndIf}
      VATFileName := fName;
      Table := tMyData.Create(fName);
+     {$IfDef RecordVAT} WriteLineToDebugFile('tDEMDataSet.CreateVATforDEM Found VAT, ' + fName + '  recs=' + IntToStr(Table.RecordCount)); {$EndIf}
+
      VatLegendStrings := tStringList.Create;
      if Table.FieldExists('CODE') then CodeField := 'CODE' else CodeField := 'VALUE';
      NameField := Table.AssignLabelName;
      Max := 0;
      while not Table.eof do begin
         i := Table.GetFieldByNameAsInteger(CodeField);
-        if I > Max then Max := i;
+        if (I > Max) then Max := i;
         Table.Next;
      end;
      for i := 0 to Max do VatLegendStrings.Add('');
@@ -257,7 +260,7 @@ begin
   end
   else begin
      fName2 := LastDEMname;
-     if OptionToCopy and AnswerIsYes('Copy VAT template') and Petmar.GetFileFromDirectory('VAT template',DefaultDBMask,fname2) then begin
+     if OptionToCopy and AnswerIsYes('Copy VAT template from another grid with same categories') and Petmar.GetFileFromDirectory('VAT template',DefaultDBMask,fname2) then begin
         {$IfDef RecordVAT} WriteLineToDebugFile('copy VAT in ' + fName2); {$EndIf}
         CopyFile(fName2,fname);
      end
@@ -272,11 +275,10 @@ begin
   end;
 
    Table.ApplyFilter(CountFieldName + '>0');
-   NumOutOfRange := 0;
    if (Table.RecordCount = 0) then begin
+      NumOutOfRange := 0;
       for x := MinVATValue to MaxVATCats do Hist[x] := 0;
       {$IfDef RecordVAT} WriteLineToDebugFile('fill histogram'); {$EndIf}
-
       for y := 0 to pred(DEMheader.NumRow) do begin
          for x := 0 to pred(DEMheader.NumCol) do begin
             if GetElevMetersOnGrid(x,y,zf) then begin
@@ -341,15 +343,13 @@ begin
       Pick_Limits.PickLimits(Self,SelectionMap,GridLimits );
    until (GridLimits.XGridHigh > GridLimits.XGridLow) and (GridLimits.YGridHigh > GridLimits.YGridLow);
    {$IfDef RecordGetGridLimits} WriteLineToDebugFile('left=' + intToStr(LeftGrid) + '  right=' + intToStr(RightGrid) + '  bottom=' + intToStr(BottGrid)+ '  top=' + intToStr(TopGrid)); {$EndIf}
-
    ClipDEMGrid(GridLimits.XGridLow,GridLimits.YGridHigh);
    ClipDEMGrid(GridLimits.XGridHigh,GridLimits.YGridLow);
    {$IfDef RecordGetGridLimits} WriteLineToDebugFile('out with left=' + intToStr(LeftGrid) + '  right=' + intToStr(RightGrid) + '  bottom=' + intToStr(BottGrid)+ '  top=' + intToStr(TopGrid)); {$EndIf}
 end;
 
 
-
-procedure tDEMDataSet.VerifyDefaultPosition(Mess : AnsiString; var xg,yg,XUTM,YUTM : float64);
+procedure tDEMDataSet.VerifyDefaultPosition(Mess : AnsiString; var xg,yg : float32; var XUTM,YUTM : float64);
 var
    lat,Long : float64;
 begin

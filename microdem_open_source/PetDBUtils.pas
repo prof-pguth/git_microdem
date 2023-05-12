@@ -138,6 +138,7 @@ function CornersFromBoundBoxGeo(bb : sfBoundBox) : shortString;
 
 procedure QuickGraphFromStringList(var sl : tStringList; xf,yf,Capt : shortstring);
 
+
 {$IfDef NoDBFManipulation}
 {$Else}
    procedure CheckDBaseIndexes(fName : PathStr);
@@ -194,6 +195,8 @@ uses
 
    DEMDataBase,
    PETImage;
+
+
 
 
 procedure MergeCSVFiles(var Fnames : tstringList; OutName : PathStr);

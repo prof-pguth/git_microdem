@@ -21,12 +21,17 @@ var
       var
          TiffImage : tTiffImage;
          RegVars : tRegVars;
+         i : integer;
       begin
          {$If Defined(RecordReadDEM) or Defined(RecordGeotiff)} WriteLineToDebugFile('tDEMDataSet.ReadDEMNow ReadTIFFDEM in'); {$EndIf}
          TiffImage := tTiffImage.CreateGeotiff(DEMMapProjection,RegVars,false,DEMFileName,Result,false,false);
+         DEMheader.DigitizeDatum := DatumCodeFromString(DEMMapProjection.h_datumCode);
+
+         {$IfDef TrackHorizontalDatum} WriteLineToDebugFile('ReadDEMNOw TiffImageCreated, DigitizeDatum=' + StringFromDatumCode(DEMheader.DigitizeDatum)); {$EndIf}
          if Result then begin
             {$If Defined(RecordReadDEM) or Defined(RecordGeotiff)} WriteLineToDebugFile('Call TiffImage.CreateTiffDEM'); {$EndIf}
             Result := TiffImage.CreateTiffDEM(Self);
+            {$IfDef TrackHorizontalDatum} WriteLineToDebugFile('ReadDEMNOw CreateTiffDEM out, DigitizeDatum=' + StringFromDatumCode(DEMheader.DigitizeDatum)); {$EndIf}
          end
          else begin
             {$If Defined(RecordReadDEM) or Defined(RecordGeotiff)} WriteLineToDebugFile('tDEMDataSet.ReadDEMNow ReadTIFFDEM error, ' + DEMFileName); {$EndIf}
@@ -59,7 +64,6 @@ var
    {$EndIf}
 
 
-
     function ReadNewMicroDEMFormat(DEMFileName : PathStr) : boolean;
     label
        CleanUp;
@@ -79,7 +83,7 @@ var
        aTstr : ANSIString;
 
              {$IfDef AllowV1V2V3DEMHeaders}
-                {$I read_old_md_headers.inc}
+                //{$I read_old_md_headers.inc}
              {$EndIf}
 
          function GoodMagic(Magic : string) : boolean;
@@ -180,7 +184,7 @@ var
           end
           else begin
              {$IfDef AllowV1V2V3DEMHeaders}
-                ReadThatOldHeader;
+                //ReadThatOldHeader;
             {$EndIf}
           end;
 
@@ -262,7 +266,7 @@ var
           if RewriteDEM then begin
              WriteNewFormatDEM(DEMFileName);
           end;
-
+          //{$IfDef TrackDEMCorners} WriteDEMCornersToDebugFile('Read MD format'); {$EndIf}
           {$IfDef RecordReadMDDEM} writeLineToDebugFile('Read DEM ' + AreaName + ' ' + DEMMapProjection.GetProjectionName); DEMMapProjection.ProjectionParamsToDebugFile('Ending read DEM'); {$EndIf}
           {$IfDef RecordDEMDigitizeDatum}  WriteLineToDebugFile('Leaving Read DEM Now, Digitize Datum=' + StringFromDatumCode(DEMheader.DigitizeDatum)); {$EndIf}
        end
@@ -288,7 +292,7 @@ var
 
       fs := GetFileSize(fName);
 
-      if fs > 1201 * 1201 * 4 then begin
+      if fs > (1201 * 1201 * 4) then begin
          DEMheader.NumCol := 3601;
          DEMheader.DEMySpacing := 1/3600;
       end
@@ -907,10 +911,10 @@ begin
       WantedDEM := 0;
       ShowHourglassCursor;
       OpenDEMDataStructures(WantedDEM);
+      if (DEMName <> '') then DEMGlb[WantedDEM].AreaName := DEMName;
       DEMGlb[WantedDEM].DEMheader := NewHeader;
       Result := DEMGlb[WantedDEM].AllocateDEMMemory(InitDEMmode,InitialValue);
       DEMGlb[WantedDEM].DefineDEMVariables(TransformToNewDatum);
-      if (DEMName <> '') then DEMGlb[WantedDEM].AreaName := DEMName;
       DEMGlb[WantedDEM].DEMstatus := dsUnsaved;
    finally
       OpeningNewGrid := false;

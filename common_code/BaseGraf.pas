@@ -20,6 +20,7 @@ unit BaseGraf;
        //{$Define RecordGrafSize}
        //{$Define RecordGrafAxes}
        //{$Define RecordFormResize}
+
        //{$Define RecordHistogram}
        //{$Define RecordHistogramColors}
        //{$Define RecordFullGrafAxes}
@@ -472,6 +473,8 @@ type
      procedure PlotDataFilesPlotted(Bitmap : tMyBitmap; fName : PathStr; i : integer);
      procedure PlotPointOnGraph(x,y : float32; Symbol : tFullSymbolDeclaration);
 
+     procedure ViewGraphData(infName : PathStr = '');
+
      procedure SetUpGraphForm;
      procedure AutoScaleAndRedrawDiagram(DoVert : boolean = true; DoHoriz : boolean = true; PadX : boolean = true; PadY : boolean = true);
      procedure DrawGraph(Bitmap : tMyBitmap; DrawInside : boolean = true);
@@ -506,7 +509,7 @@ type
      procedure WindowGraphAxes(Bitmap : tMyBitmap; DrawInsideLines : boolean = true);
   end;
 
-
+   //t4GraphArray = array[1..4] of TThisBaseGraph;
 var
    ForceCycleSize,ForceTickIncr : float32;
    DefaultClientHeight,
@@ -515,13 +518,14 @@ var
    GraphDoing : tGraphDoing;
    CreateSmallGraph,
    CreateGraphHidden : boolean;
-   HardCodeFileName : PathStr;
 const
    AddDelauneyZ : boolean = true;
    AddDelauneyImage : boolean = false;
+   DefGraphLLText : shortString = '';
+   DefMaxHorizAxis : float32 = 100;
 
 
-procedure DefaultGraphSettings(var GraphDraw : tGraphDraw);
+//procedure DefaultGraphSettings(var GraphDraw : tGraphDraw);
 
 procedure ComplicatedLocatePointOnGraph(Canvas : TCanvas;  GraphDraw : tGraphDraw;  x,y,sx,sy : integer);
 procedure LocatePointOnGraph(Canvas : TCanvas; GraphDraw : tGraphDraw; x,y : integer);
@@ -531,7 +535,7 @@ function Linear(x : float32) : float32;
 
 function SaveSingleValueSeries(NumVals : integer; var zs : Petmath.bfarray32; fName : PathStr = '' {; First : integer = 0; Last : integer = -999}) : PathStr;
 
-function CreateMultipleHistograms(GraphNumbers : boolean; FileList,LegendList : tStringList; ParamName,TitleBar : ShortString;
+function CreateMultipleHistogram(GraphNumbers : boolean; FileList,LegendList : tStringList; ParamName,TitleBar : ShortString;
     NumBins : integer = 100; Min : float32 = 1; Max : float32 = -1; BinSize : float32 =  -99; TColorList : tStringList = Nil) : TThisBaseGraph;
 
 function DeprecatedCreateHistogram(GraphNumbers : boolean; NumVals : integer; var values : Petmath.bfarray32; ParamName,TitleBar : ShortString) : TThisBaseGraph;
@@ -548,7 +552,7 @@ procedure StartBoxPlot(DBonTable : integer);
 procedure SetReasonableGraphSize;
 function StartStackedHistogram(DBonTable : integer; Percentage : boolean) : TThisBaseGraph;
 
-
+procedure ResetGraphVariables;
 
 implementation
 
@@ -620,6 +624,12 @@ var
    BestFitLineWidth : integer;
    FilterTerms : integer;
 
+
+procedure ResetGraphVariables;
+begin
+   DefGraphLLText := '';
+   DefMaxHorizAxis := 100;
+end;
 
 function StartStackedHistogram(DBonTable : integer; Percentage : boolean) : TThisBaseGraph;
 var
@@ -783,7 +793,7 @@ begin
 end;
 
 
-function CreateMultipleHistograms(GraphNumbers : boolean; FileList,LegendList : tStringList; ParamName,TitleBar : ShortString;
+function CreateMultipleHistogram(GraphNumbers : boolean; FileList,LegendList : tStringList; ParamName,TitleBar : ShortString;
     NumBins : integer = 100; Min : float32 = 1; Max : float32 = -1; BinSize : float32 =  -99; TColorList : tStringList = Nil) : TThisBaseGraph;
 Label
    CleanUp;
@@ -847,7 +857,7 @@ var
                   inc(Bins[j]);
                end;
                EndProgress;
-               CreateMultipleHistograms.OpenDataFile(rfile);
+               CreateMultipleHistogram.OpenDataFile(rfile);
                if MDDef.FlipHistogram then begin
                   ax := 2;
                   ay := 1;
@@ -878,144 +888,146 @@ var
 
 begin
    {$IfDef RecordHistogram} WriteLineToDebugFile('CreateMultipleHistograms in ' + ParamName + '  ' + TitleBar); {$EndIf}
-   StackedPercents := (FileList.Count > 1);
-   if StackedPercents then Results := tstringlist.Create;
-   New(Values);
-   AutoScale := (Min > Max);
-   MaxCount := 0;
-   Result := TThisBaseGraph.Create(Application);
-   if (LegendList <> Nil) then begin
-      Result.GraphDraw.LegendList := tStringList.Create;
-      for I := 0 to pred(LegendList.Count) do begin
-         Result.GraphDraw.LegendList.Add(LegendList.Strings[i]);
-         {$IfDef RecordHistogram} WriteLineToDebugFile(IntToStr(i) + ' ' + LegendList.Strings[i]); {$EndIf}
-      end;
-   end;
-   ShowHourglassCursor;
-   Result.Caption := TitleBar;
-   Result.GraphDraw.SetShowAllPoints(false);
-   Result.GraphDraw.ShowHorizAxis0 := true;
-
-   l1 := RemoveUnderscores(ParamName);
-   if MDDef.NoHistFreqLabels then l2 := ''
-   else begin
-      if GraphNumbers then l2 := 'Number of values'
-      else l2 := 'Concentration';
-   end;
-
-   if MDDef.FlipHistogram then begin
-      Result.GraphDraw.HorizLabel := l2;
-      Result.GraphDraw.VertLabel := l1;
-   end
-   else begin
-      Result.GraphDraw.HorizLabel := l1;
-      Result.GraphDraw.VertLabel := l2;
-   end;
-
-   if Autoscale then begin
-      Min := 99e39;
-      Max := -99e39;
-   end;
-   {$IfDef RecordHistogram} writeLineToDebugFile('Start file list processing'); {$EndIf}
-   for I := 0 to pred(FileList.Count) do begin
-      {$IfDef RecordHistogram} writeLineToDebugFile('Load series ' + IntToStr(i) + ' ' + FileList.Strings[i]); {$EndIf}
-      LoadSeries(FileList.Strings[i]);
-   end;
-
-   if MDDef.AskHistogramBins then begin
-      ReadDefault('Minimum value',Min);
-      ReadDefault('Maximum value',Max);
-      ReadDefault('Number of bins',NumBins);
-   end
-   else begin
-      if (BinSize > 0) then NumBins := succ(Round((Max-Min)/BinSize));
-   end;
-   if (NumBins > MaxBins) then NumBins := MaxBins;
-   BinSize := (Max-Min) / NumBins;
-   Range := Max-Min;
-   if (abs(Range) < 0.00001) then begin
-      MessageToContinue('Only one value in data set');
-      Result.Close;
-      goto Cleanup;
-   end;
-
-   if (Range > 0.001) and (Range < 0.01) then Incr := 0.005;
-
-   {$IfDef RecordHistogram} writeLineToDebugFile('CreateMultipleHistograms settings over, NumBins=' + IntToStr(NumBins) + '  ' + Result.GraphDraw.AxisRange); {$EndIf}
-   First := true;
-   for I := 0 to pred(FileList.Count) do begin
-      if ProcessSeries(FileList.Strings[i]) and (i < MaxGraphSeries) then begin
-         {$IfDef RecordHistogram} writeLineToDebugFile('Process series ' + IntToStr(i) + ' ' + FileList.Strings[i]); {$EndIf}
-         Result.GraphDraw.ShowLine[succ(i)] := true;
-      end;
-   end;
-   Result.GraphDraw.MinHorizAxis := Min;
-   Result.GraphDraw.MaxHorizAxis := Max;
-   Result.GraphDraw.MinVertAxis := 0;
-   Result.GraphDraw.MaxVertAxis := MaxCount;
-
-   if (TColorList <> Nil) then begin
-      for i := 1 to TColorList.Count do begin
-         {$IfDef RecordHistogramColors} writeLineToDebugFile(IntToStr(i) + '  ' + TcolorList.Strings[pred(i)]); {$EndIf}
-         if i <= 255 then begin
-            Result.GraphDraw.Symbol[i].Color := ConvertTColorToPlatformColor(StrToInt(TcolorList.Strings[pred(i)]));
-            Result.GraphDraw.FileColors256[i] := ConvertTColorToPlatformColor(StrToInt(TcolorList.Strings[pred(i)]));
+   if (FileList.Count > 0) then begin
+      StackedPercents := (FileList.Count > 1);
+      if StackedPercents then Results := tstringlist.Create;
+      New(Values);
+      AutoScale := (Min > Max);
+      MaxCount := 0;
+      Result := TThisBaseGraph.Create(Application);
+      if (LegendList <> Nil) then begin
+         Result.GraphDraw.LegendList := tStringList.Create;
+         for I := 0 to pred(LegendList.Count) do begin
+            Result.GraphDraw.LegendList.Add(LegendList.Strings[i]);
+            {$IfDef RecordHistogram} WriteLineToDebugFile(IntToStr(i) + ' ' + LegendList.Strings[i]); {$EndIf}
          end;
       end;
-      for i := 1 to TColorList.Count do begin
-         if i <= 15 then Result.GraphDraw.Symbol[i].Color := ConvertTColorToPlatformColor(StrToInt(TcolorList.Strings[pred(i)]));
+      ShowHourglassCursor;
+      Result.Caption := TitleBar;
+      Result.GraphDraw.SetShowAllPoints(false);
+      Result.GraphDraw.ShowHorizAxis0 := true;
+
+      l1 := RemoveUnderscores(ParamName);
+      if MDDef.NoHistFreqLabels then l2 := ''
+      else begin
+         if GraphNumbers then l2 := 'Number of values'
+         else l2 := 'Concentration';
+      end;
+
+      if MDDef.FlipHistogram then begin
+         Result.GraphDraw.HorizLabel := l2;
+         Result.GraphDraw.VertLabel := l1;
+      end
+      else begin
+         Result.GraphDraw.HorizLabel := l1;
+         Result.GraphDraw.VertLabel := l2;
+      end;
+
+      if Autoscale then begin
+         Min := 99e39;
+         Max := -99e39;
+      end;
+      {$IfDef RecordHistogram} writeLineToDebugFile('Start file list processing'); {$EndIf}
+      for I := 0 to pred(FileList.Count) do begin
+         {$IfDef RecordHistogram} writeLineToDebugFile('Load series ' + IntToStr(i) + ' ' + FileList.Strings[i]); {$EndIf}
+         LoadSeries(FileList.Strings[i]);
+      end;
+
+      if MDDef.AskHistogramBins then begin
+         ReadDefault('Minimum value',Min);
+         ReadDefault('Maximum value',Max);
+         ReadDefault('Number of bins',NumBins);
+      end
+      else begin
+         if (BinSize > 0) then NumBins := succ(Round((Max-Min)/BinSize));
+      end;
+      if (NumBins > MaxBins) then NumBins := MaxBins;
+      BinSize := (Max-Min) / NumBins;
+      Range := Max-Min;
+      if (abs(Range) < 0.00001) then begin
+         MessageToContinue('Only one value in data set');
+         Result.Close;
+         goto Cleanup;
+      end;
+
+      if (Range > 0.001) and (Range < 0.01) then Incr := 0.005;
+
+      {$IfDef RecordHistogram} writeLineToDebugFile('CreateMultipleHistograms settings over, NumBins=' + IntToStr(NumBins) + '  ' + Result.GraphDraw.AxisRange); {$EndIf}
+      First := true;
+      for I := 0 to pred(FileList.Count) do begin
+         if ProcessSeries(FileList.Strings[i]) and (i < MaxGraphSeries) then begin
+            {$IfDef RecordHistogram} writeLineToDebugFile('Process series ' + IntToStr(i) + ' ' + FileList.Strings[i]); {$EndIf}
+            Result.GraphDraw.ShowLine[succ(i)] := true;
+         end;
+      end;
+      Result.GraphDraw.MinHorizAxis := Min;
+      Result.GraphDraw.MaxHorizAxis := Max;
+      Result.GraphDraw.MinVertAxis := 0;
+      Result.GraphDraw.MaxVertAxis := MaxCount;
+
+      if (TColorList <> Nil) and (TColorList.Count > 0) then begin
+         for i := 1 to TColorList.Count do begin
+            {$IfDef RecordHistogramColors} writeLineToDebugFile(IntToStr(i) + '  ' + TcolorList.Strings[pred(i)]); {$EndIf}
+            if i in [0..255] then begin
+               Result.GraphDraw.Symbol[i].Color := ConvertTColorToPlatformColor(StrToInt(TcolorList.Strings[pred(i)]));
+               Result.GraphDraw.FileColors256[i] := ConvertTColorToPlatformColor(StrToInt(TcolorList.Strings[pred(i)]));
+            end;
+         end;
+         for i := 1 to TColorList.Count do begin
+            if i <= 15 then Result.GraphDraw.Symbol[i].Color := ConvertTColorToPlatformColor(StrToInt(TcolorList.Strings[pred(i)]));
+         end;
+      end;
+
+
+      {$IfDef RecordHistogram} writeLineToDebugFile('CreateMultipleHistograms ProcessSeries over, NumBins=' + IntToStr(NumBins) + '  ' + Result.GraphDraw.AxisRange); {$EndIf}
+      Result.AutoScaleAndRedrawDiagram(false,false,false,false);
+
+      if false and StackedPercents then begin
+      //2/23/2023, this is disable becauase Graph3 is crashing; Graph2 had not been working either; this needs to be looked at
+         {$IfDef RecordHistogram} writeLineToDebugFile('Start StackedPercents'); {$EndIf}
+         TStr := l1;
+         for I := 0 to pred(FileList.Count) do TStr := TStr + ',' + 'SERIES_' + IntToStr(succ(i));
+         Results.Insert(0,TStr);
+         fName := NextFileNumber(MDTempDir,l1 + '_hist_','.dbf');
+         db := StringList2CSVtoDB(Results,fName);
+         {$If Defined(RecordHistogram)} HighlightLineToDebugFile('Start Graph3, db=' + IntToStr(db)); {$EndIf}
+
+         Graph3 := StartStackedHistogram(DB,true);
+         Graph3.GraphDraw.VertLabel := l1 + ' percentages';
+         Graph3.GraphDraw.LeftMargin := Result.GraphDraw.LeftMargin;
+         Graph3.GraphDraw.MarginsGood := true;
+         Graph3.Caption := l1 + ' Category percentages in histogram bins';
+         {$If Defined(RecordHistogram)} HighlightLineToDebugFile('Stacked percents graph percentage call redraw: ' +  Graph3.GraphDraw.AxisRange); {$EndIf}
+         Graph3.RedrawDiagram11Click(Nil);
+         {$If Defined(RecordHistogram)} HighlightLineToDebugFile('Stacked percents graph percentage done: ' +  Graph3.GraphDraw.AxisRange); {$EndIf}
+
+
+         (*
+         Graph2 := StartStackedHistogram(DB,false);
+         Graph2.GraphDraw.VertLabel := l1 + ' Counts';
+         Graph2.GraphDraw.LeftMargin := Result.GraphDraw.LeftMargin;
+         Graph2.GraphDraw.MarginsGood := true;
+         Graph2.Caption := l1 + ' Category percentages in histogram bins';
+         Graph2.RedrawDiagram11Click(Nil);
+         {$If Defined(RecordHistogram)} HighlightLineToDebugFile('Stacked percents graph counts: ' +  Graph2.GraphDraw.AxisRange); {$EndIf}
+
+         //Result.GraphDraw.MaxHorizAxis := Graph2.GraphDraw.MaxHorizAxis;
+         {$If Defined(RecordHistogram)} WriteLineToDebugFile('Reset Hist: ' +  Result.GraphDraw.AxisRange); {$EndIf}
+         *)
+         (*
+         Result.GraphDraw.MarginsGood := true;
+         Result.RedrawDiagram11Click(Nil);
+         *)
+         {$If Defined(RecordHistogram)} WriteLineToDebugFile('Done StackedPercents, Redrawn Hist graph: ' +  Result.GraphDraw.AxisRange); {$EndIf}
       end;
    end;
-
-
-   {$IfDef RecordHistogram} writeLineToDebugFile('CreateMultipleHistograms ProcessSeries over, NumBins=' + IntToStr(NumBins) + '  ' + Result.GraphDraw.AxisRange); {$EndIf}
-   Result.AutoScaleAndRedrawDiagram(false,false,false,false);
-
-   if false and StackedPercents then begin
-   //2/23/2023, this is disable becauase Graph3 is crashing; Graph2 had not been working either; this needs to be looked at
-      {$IfDef RecordHistogram} writeLineToDebugFile('Start StackedPercents'); {$EndIf}
-      TStr := l1;
-      for I := 0 to pred(FileList.Count) do TStr := TStr + ',' + 'SERIES_' + IntToStr(succ(i));
-      Results.Insert(0,TStr);
-      fName := NextFileNumber(MDTempDir,l1 + '_hist_','.dbf');
-      db := StringList2CSVtoDB(Results,fName);
-      {$If Defined(RecordHistogram)} HighlightLineToDebugFile('Start Graph3, db=' + IntToStr(db)); {$EndIf}
-
-      Graph3 := StartStackedHistogram(DB,true);
-      //Graph3.GraphDraw.MinHorizAxis := Result.GraphDraw.MinHorizAxis;
-      //Graph3.GraphDraw.MaxHorizAxis := Result.GraphDraw.MaxHorizAxis;
-      Graph3.GraphDraw.VertLabel := l1 + ' percentages';
-      Graph3.GraphDraw.LeftMargin := Result.GraphDraw.LeftMargin;
-      Graph3.GraphDraw.MarginsGood := true;
-      Graph3.Caption := l1 + ' Category percentages in histogram bins';
-      {$If Defined(RecordHistogram)} HighlightLineToDebugFile('Stacked percents graph percentage call redraw: ' +  Graph3.GraphDraw.AxisRange); {$EndIf}
-      Graph3.RedrawDiagram11Click(Nil);
-      {$If Defined(RecordHistogram)} HighlightLineToDebugFile('Stacked percents graph percentage done: ' +  Graph3.GraphDraw.AxisRange); {$EndIf}
-
-
-      (*
-      Graph2 := StartStackedHistogram(DB,false);
-      Graph2.GraphDraw.VertLabel := l1 + ' Counts';
-      Graph2.GraphDraw.LeftMargin := Result.GraphDraw.LeftMargin;
-      Graph2.GraphDraw.MarginsGood := true;
-      Graph2.Caption := l1 + ' Category percentages in histogram bins';
-      Graph2.RedrawDiagram11Click(Nil);
-      {$If Defined(RecordHistogram)} HighlightLineToDebugFile('Stacked percents graph counts: ' +  Graph2.GraphDraw.AxisRange); {$EndIf}
-
-      //Result.GraphDraw.MaxHorizAxis := Graph2.GraphDraw.MaxHorizAxis;
-      {$If Defined(RecordHistogram)} WriteLineToDebugFile('Reset Hist: ' +  Result.GraphDraw.AxisRange); {$EndIf}
-      *)
-      (*
-      Result.GraphDraw.MarginsGood := true;
-      Result.RedrawDiagram11Click(Nil);
-      *)
-      {$If Defined(RecordHistogram)} WriteLineToDebugFile('Done StackedPercents, Redrawn Hist graph: ' +  Result.GraphDraw.AxisRange); {$EndIf}
-   end;
-
 CleanUp:;
    Dispose(Values);
    ShowDefaultCursor;
    MDDef.FlipHistogram := false;
+   FreeAndNil(LegendList);
+   FreeAndNil(FileList);
+
 end;
 
 
@@ -1423,7 +1435,7 @@ begin
    {$IfDef RecordGraphColors} WritelineToDebugFile('Create histogram, color1 = '+ IntToStr(Color1)); {$EndIf}
    FileList := tStringList.Create;
    FileList.Add(SaveSingleValueSeries(NumVals,Values));
-   Result := CreateMultipleHistograms(GraphNumbers,FileList,Nil,ParamName,TitleBar);
+   Result := CreateMultipleHistogram(GraphNumbers,FileList,Nil,ParamName,TitleBar);
 end;
 
 
@@ -3596,13 +3608,47 @@ begin
    end;
    MDDef.CreateGraphHidden := false;
 
-   DefaultGraphSettings(GraphDraw);
+
+
+   GraphDraw.LLcornerText := DefGraphLLText;
+   GraphDraw.MaxHorizAxis := DefMaxHorizAxis;
+
+
+   with GraphDraw do begin
+      AxisColor := clBlack;
+      TopMargin    := 0;
+      LeftMargin   := 65;
+      BottomMargin := 45;
+      RightMargin := 0;
+      FullLineFraction := 3;
+      NormalCartesianY := true;
+      NormalCartesianX := true;
+      GraphAxes := PartGrid;
+      HorizAxisFunct := Linear;
+      VertAxisFunct  := Linear;
+      HorizAxisFunctionType := LinearAxis;
+      VertAxisFunctionType := LinearAxis;
+      HorizLabel     := '';
+      VertLabel      := '';
+      MinHorizAxis := 0;
+      //MaxHorizAxis := 100;
+      MinVertAxis := 0;
+      MaxVertAxis := 100;
+      MinVertAxis2 := 0;
+      MaxVertAxis2 := 100;
+      ForceVertCycleSize := 0;
+      ForceVertTickIncr := 0;
+      ForceHorizCycleSize := 0;
+      ForceHorizTickIncr := 0;
+   end;
+
    GraphDraw.GraphDrawn := false;
    GraphDraw.LabelXFromLog := false;
    GraphDraw.ShowHorizAxis0 := false;
    GraphDraw.ShowVertAxis0 := false;
    GraphDraw.VertGraphBottomLabels := true;
-   GraphDraw.GraphBackgroundColor := clWhite;
+   GraphDraw.GraphBackgroundColor := ConvertPlatFormColorToTColor(MDDef.DefaultGraphBackgroundColor);
+
      GraphDraw.RedGray := false;
      GraphDraw.ShowYears := true;
      GraphDraw.TopLabel := '';
@@ -3617,7 +3663,6 @@ begin
      GraphDraw.LabelPointsAtop := true;
      GraphDraw.ZColorLegend := false;
      GraphName := 'MD_graph_';
-     //GraphDraw.SkipDrawing := false;
      GraphDraw.TernaryGrid := tgRegular;
      for i := 1 to 255 do begin
         GraphDraw.FileColors256[i] := ConvertTColorToPlatformColor(WinGraphColors[i mod 15]);
@@ -3656,7 +3701,6 @@ begin
      GraphDraw.ShowGraphBottomLabels := true;
      GraphDraw.LLlegend := false;
      GraphDraw.InsideMarginLegend := MDDef.DefMarginLegend;
-     GraphDraw.LLcornerText := '';
      GraphDraw.LRcornerText := '';
      GraphDraw.MarginsGood := false;
 
@@ -4392,40 +4436,13 @@ begin
 end;
 
 
-procedure DefaultGraphSettings(var GraphDraw : tGraphDraw);
+procedure TThisBaseGraph.Viewdata1Click(Sender: TObject);
 begin
-   with GraphDraw do begin
-      AxisColor := clBlack;
-      TopMargin    := 0;
-      LeftMargin   := 65;
-      BottomMargin := 45;
-      RightMargin := 0;
-      FullLineFraction := 3;
-      NormalCartesianY := true;
-      NormalCartesianX := true;
-      GraphAxes := PartGrid;
-      HorizAxisFunct := Linear;
-      VertAxisFunct  := Linear;
-      HorizAxisFunctionType := LinearAxis;
-      VertAxisFunctionType := LinearAxis;
-      HorizLabel     := '';
-      VertLabel      := '';
-      MinHorizAxis := 0;
-      MaxHorizAxis := 100;
-      MinVertAxis := 0;
-      MaxVertAxis := 100;
-      MinVertAxis2 := 0;
-      MaxVertAxis2 := 100;
-      ForceVertCycleSize := 0;
-      ForceVertTickIncr := 0;
-      ForceHorizCycleSize := 0;
-      ForceHorizTickIncr := 0;
-   end;
+   ViewGraphData;
 end;
 
 
-
-procedure TThisBaseGraph.Viewdata1Click(Sender: TObject);
+procedure TThisBaseGraph.ViewGraphData(infName : PathStr = '');
 var
    infile : file;
    Month,Day,Year,
@@ -4473,7 +4490,7 @@ begin
        end;
        CloseFile(InFile);
 
-       if (Sender = Nil) then Results.SaveToFile(HardCodeFileName)
+       if (fName <> '') then Results.SaveToFile(infName)
        else begin
           if (GraphDraw.LegendList <> Nil) then fName := NextFileNumber(MDTempDir,GraphName + GraphDraw.LegendList.Strings[pred(i)] + '_', '.dbf')
           else fName := NextFileNumber(MDTempDir,GraphName + 'series_', '.dbf');
@@ -5147,10 +5164,13 @@ begin
              yi := Bitmap.Height - 2 - Bmp.Height;
           end
           else begin
-             if (GraphDraw.DBFLineFilesPlotted.Count > 0) then  bmp := MakeLegend(GraphDraw.DBFLineFilesPlotted,true)
+             bmp := Nil;
+             if (GraphDraw.DBFLineFilesPlotted.Count > 0) then bmp := MakeLegend(GraphDraw.DBFLineFilesPlotted,true)
              else if (GraphDraw.LegendList <> Nil) then bmp := MakeLegend(GraphDraw.LegendList,false);
-             if GraphDraw.InsideMarginLegend in [lpSWMap,lpSEMap] then yi := GraphDraw.YWindowSize - GraphDraw.BottomMargin - bmp.Height else yi := GraphDraw.TopMargin;
-             if GraphDraw.InsideMarginLegend in [lpNWMap,lpSWMap] then xi := GraphDraw.LeftMargin else xi := GraphDraw.XWindowSize - GraphDraw.RightMargin - bmp.Width;
+             if BMP <> nil then begin
+                if GraphDraw.InsideMarginLegend in [lpSWMap,lpSEMap] then yi := GraphDraw.YWindowSize - GraphDraw.BottomMargin - bmp.Height else yi := GraphDraw.TopMargin;
+                if GraphDraw.InsideMarginLegend in [lpNWMap,lpSWMap] then xi := GraphDraw.LeftMargin else xi := GraphDraw.XWindowSize - GraphDraw.RightMargin - bmp.Width;
+             end;
           end;
           {$If Defined(RecordLegends)} WritelineToDebugFile('Draw legend inside graph, at x=' + IntToStr(xi) + '  y=' + IntToStr(yi)); bmp.SaveToFile(MDtempDir + 'legend.bmp'); {$EndIf}
           Bitmap.Canvas.Draw(xi,yi,bmp);

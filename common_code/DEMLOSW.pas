@@ -11,9 +11,7 @@ unit demlosw;
 {$I nevadia_defines.inc}
 
 
-
 //{$Define ExPointCloud}
-
 
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
@@ -25,6 +23,7 @@ unit demlosw;
       //{$Define RecordUTMZones}
       //{$Define RecordSlopeCalc}
       //{$Define RecordLOSLegend}
+      {$Define RecordHideProfiles}
       //{$Define RecordLOSProblems}
       //{$Define RecordLOSPrettyDrawing}
       //{$Define RecordRandomProfiles}
@@ -197,6 +196,9 @@ type
       {$IfDef RecordLOSProblems}
          procedure ScreenDimensions(Where : ANSIString);
       {$EndIf}
+      {$IfDef RecordHideProfiles}
+         procedure ShowThoseToDraw(Stage : shortstring);
+      {$EndIf}
   public
     { Public declarations }
      LOSdraw : tLOSDraw;
@@ -348,9 +350,25 @@ begin
    end
    else MessageToContinue(NoDEMCovers);
 
-   {$If Defined(RecordUTMZones) or Defined(RecordLOSProblems)} WriteLineToDebugFile('exit StartLOS, Map UTM zone=' + IntToStr(inBaseMap.MapDraw.PrimMapProj.projUTMZone));  {$EndIf}
+   {$If Defined(RecordUTMZones) or Defined(RecordLOSProblems)} WriteLineToDebugFile('exit StartLOS, Map UTM zone=' + IntToStr(inBaseMap.MapDraw.PrimMapProj.projUTMZone)); {$EndIf}
 end;
 
+
+{$IfDef RecordHideProfiles}
+   procedure TDEMLOSF.ShowThoseToDraw(Stage : shortstring);
+   var
+      i : integer;
+      TStr : shortstring;
+   begin
+        for i := 1 to MaxDEMDataSets do begin
+           if ValidDEM(i) then begin
+              if LOSDraw.ShowProfile[i] then TStr := 'show' else Tstr := 'hide';
+              HighlightLineToDebugFile(Stage);
+              WriteLineToDebugFile(IntToStr(i) + '  ' + DEMGlb[i].AreaName + ' ' + TStr);
+           end;
+        end;
+   end;
+{$EndIf}
 
 
 {$IfDef RecordLOSProblems}
@@ -457,7 +475,10 @@ var
    i : integer;
 begin
    {$IfDef SupClassAuxGrids} WriteLineToDebugFile('TSupClassAuxGrids.BitBtn10Click (Pick open grids) in'); {$EndIf}
+
+   {$IfDef RecordHideProfiles} ShowThoseToDraw('Enter TDEMLOSF.Hideprofiles1Click'); {$EndIf}
    GetMultipleDEMsFromList('DEMs to include in profile',LOSDraw.ShowProfile);
+   {$IfDef RecordHideProfiles} ShowThoseToDraw('Mid TDEMLOSF.Hideprofiles1Click'); {$EndIf}
    FormResize(Nil);
 end;
 
@@ -491,7 +512,7 @@ begin
          CloseAndNilNumberedDB(LOSdraw.LOSProfileDB);
       end
       else begin
-         {$IfDef RecordClosing} WriteLineToDebugFile('No Fresnel DB');   {$EndIf}
+         {$IfDef RecordClosing} WriteLineToDebugFile('No Fresnel DB'); {$EndIf}
       end;
 
       {$IFDef ExPointCloud}
@@ -512,7 +533,7 @@ end;
 
 procedure TDEMLOSF.FormCreate(Sender: TObject);
 begin
-   {$IfDef RecordLOSProblems} WriteLineToDebugFile('TDEMLOSF.FormCreate in');  {$EndIf}
+   {$IfDef RecordLOSProblems} WriteLineToDebugFile('TDEMLOSF.FormCreate in'); {$EndIf}
 
    LOSdraw := tLOSDraw.Create;
 
@@ -548,7 +569,7 @@ begin
 
    Panel2.Height := 0;
 
-   {$IfDef RecordLOSProblems} ScreenDimensions('TDEMLOSF.FormCreate out');  {$EndIf}
+   {$IfDef RecordLOSProblems} ScreenDimensions('TDEMLOSF.FormCreate out'); {$EndIf}
 end;
 
 
@@ -1276,7 +1297,8 @@ end;
 
 procedure TDEMLOSF.ShowOnMap;
 var
-   XGridLeft,YGridLeft,XGridRight,YGridRight,Distance,BlockDist : float64;
+   XGridLeft,YGridLeft,XGridRight,YGridRight : float32;
+   Distance,BlockDist : float64;
    x,y,Rad : integer;
 begin
 {this should just plot Fresnal DB}

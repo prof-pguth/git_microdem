@@ -2,8 +2,8 @@ object linePointForm: TlinePointForm
   Left = 0
   Top = 0
   Caption = 'linePointForm'
-  ClientHeight = 293
-  ClientWidth = 426
+  ClientHeight = 67
+  ClientWidth = 265
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

@@ -50,34 +50,21 @@ begin
 end;
 
 
-
-procedure tDEMDataSet.SubtractaDEM(AddDEM : integer);
+procedure tDEMDataSet.MoveToEGM2008(AddLocalVDatum,SubLocalVDatum : integer);
 begin
-   AddaDEM(AddDEM,-1);
-end;
-
-procedure tDEMDataSet.AddaDEM(AddDEM : integer; Mult : integer = 1);
-var
-   x,y  : integer;
-   Lat,Long : float64;
-   z,z2 : float32;
-begin
-    StartProgress('DEM math');
-    for x := 0 to pred(DEMheader.NumCol) do begin
-       if (x mod 50 = 0) then UpDateProgressBar(x/pred(DEMheader.NumCol));
-       for y := 0 to pred(DEMheader.NumRow) do
-          if GetElevMeters(x,y,z) then begin
-             DEMGridToLatLongDegree(x,y,Lat,Long);
-             if DEMGlb[AddDEM].GetElevFromLatLongDegree(Lat,Long,z2) then begin
-                SetGridElevation(x,y,z + Mult * z2);
-             end
-             else begin
-                SetGridMissing(x,y);
-             end;
-          end
-          else SetGridMissing(x,y);
-    end;
-    EndProgress;
+   {$If Defined(RecordVertDatumShift)} WriteLineToDebugFile('tDEMDataSet.MoveToEGM2008 in, ' + ZRange + '  ' + IntToStr(DEMHeader.VerticalCSTypeGeoKey)); {$EndIf}
+   if ValidDEM(AddLocalVDatum) then begin
+      AddaDEM(ThisDEM,AddLocalVDatum);
+      {$If Defined(RecordVertDatumShift)} WriteLineToDebugFile('MoveToEGM2008 add done, ' + ZRange); {$EndIf}
+   end;
+   if ValidDEM(SubLocalVDatum) then begin
+      AddaDEM(ThisDEM,SubLocalVDatum,-1);
+      {$If Defined(RecordVertDatumShift)} WriteLineToDebugFile('MoveToEGM2008 subtract done, ' + ZRange); {$EndIf}
+   end;
+   if ValidDEM(AddLocalVDatum) or ValidDEM(SubLocalVDatum) then begin
+      DEMHeader.VerticalCSTypeGeoKey := VertCSEGM2008;
+   end;
+   {$If Defined(RecordVertDatumShift)} WriteLineToDebugFile('MoveToEGM2008 out, ' + ZRange); {$EndIf}
 end;
 
 
@@ -95,7 +82,7 @@ begin
    {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResample)} WriteLineToDebugFile('ResampleByAveraging ' + DEMGlb[NewGrid].AreaName + '  ' + DEMGlb[NewGrid].KeyDEMParams); {$EndIf}
    NewHeadRecs := DEMGlb[NewGrid].DEMheader;
    CloseSingleDEM(NewGrid);
-   if SaveName = '' then NewAreaName := AreaName
+   if (SaveName = '') then NewAreaName := AreaName
    else NewAreaName := ExtractFileNameNoExt(SaveName);
 
    NewHeadRecs.RasterPixelIsGeoKey1025 := MDDef.LasDEMPixelIs;
@@ -105,11 +92,13 @@ begin
    {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResample)} WriteLineToDebugFile('ResampleByAveraging, ' + DEMGlb[CountGrid].AreaName + '  ' + DEMGlb[CountGrid].KeyDEMParams); {$EndIf}
 
    NewHeadRecs.DEMPrecision := FloatingPointDEM;
-   NewHeadRecs.ElevUnits := euMeters;
+   NewHeadRecs.ElevUnits := DEMheader.ElevUnits;
+   NewHeadRecs.VerticalCSTypeGeoKey := DEMheader.VerticalCSTypeGeoKey;
+
    OpenAndZeroNewDEM(true,NewHeadRecs,Result,MDTempDir + NewAreaName,InitDEMvalue,0);
    {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResample)} WriteLineToDebugFile('ResampleByAveraging, ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].KeyDEMParams); {$EndIf}
 
-   StartProgress('Get z values ' + ExtractFileName(SaveName));
+   StartProgress('Get z values ' + NewAreaName);
    for x := 0 to pred(DEMHeader.NumCol) do begin
        UpdateProgressBar(x/DEMHeader.NumCol);
        for y := 0 to pred(DEMHeader.NumRow) do begin
@@ -127,7 +116,7 @@ begin
        end;
    end;
 
-   StartProgress('Average values ' + ExtractFileName(SaveName));
+   StartProgress('Average values ' + NewAreaName);
    for x := 0 to pred(DEMGlb[Result].DEMHeader.NumCol) do begin
        UpdateProgressBar(x/DEMGlb[Result].DEMHeader.NumCol);
        for y := 0 to pred(DEMGlb[Result].DEMHeader.NumRow) do begin
@@ -141,7 +130,7 @@ begin
    end;
 
    if (SaveName <> '') then begin
-      DEMGlb[Result].SaveAsGeotiff(SaveName);
+      DEMGlb[Result].WriteNewFormatDEM(SaveName);
       {$IfDef RecordSaveAverageResampleDEMformat} SaveName := ChangeFileExt(SaveName,'.dem'); DEMGlb[Result].WriteNewFormatDEM(SaveName); {$EndIf}
    end;
    if SaveCountGrid then begin
@@ -152,7 +141,7 @@ begin
    end;
    if OpenMap then DEMGlb[Result].SetUpMap(Result,true,SelectionMap.MapDraw.MapType);
    EndProgress;
-   {$IfDef RecordCreateNewDEM} writeLineToDebugFile('TMapForm.Averagetonewprojection1Click grids out'); {$EndIf}
+   {$IfDef RecordCreateNewDEM} WriteLineToDebugFile('TMapForm.Averagetonewprojection1Click grids out'); {$EndIf}
 end;
 
 
@@ -376,6 +365,24 @@ begin
 end;
 
 
+procedure tDEMDataSet.AddConstantToGrid(Aconst : float64);
+var
+   x,y  : integer;
+   z : float32;
+begin
+    StartProgress('Multiply ' + AreaName);
+    for x := 0 to pred(DEMheader.NumCol) do begin
+       if (x mod 50 = 0) then UpDateProgressBar(x/pred(DEMheader.NumCol));
+       for y := 0 to pred(DEMheader.NumRow) do begin
+          if GetElevMeters(x,y,z) then begin
+             SetGridElevation(x,y,aConst + z);
+          end;
+       end;
+    end;
+    EndProgress;
+end;
+
+
 procedure tDEMDataSet.SetEntireGridToConstant(z : float64);
 var
    Col,Row,rc : integer;
@@ -394,7 +401,8 @@ procedure tDEMDataSet.FillHolesSelectedBoxFromReferenceDEM(GridLimits : tGridLim
 var
    Col,Row,x,y,Changed : integer;
    SameGrids : boolean;
-   Lat,Long,xg,yg  : float64;
+   Lat,Long : float64;
+   xg,yg : float32;
    z,z2,z3,z4 : float32;
 begin
    {$IfDef RecordDEMEdits} WriteLineToDebugFile('tDEMDataSet.FillHolesSelectedBoxFromReferenceDEM in, DEM=' + AreaName + '  ' + KeyDEMParams(true)); {$EndIf}
@@ -404,7 +412,7 @@ begin
    Changed := 0;
    SameGrids := SecondGridIdentical(RefDEM);
 
-   if HoleFill = hfJustReferencePostings then begin
+   if (HoleFill = hfJustReferencePostings) then begin
       for Col := 0 to pred(DEMGlb[RefDEM].DEMHeader.NumCol) do begin
          if ShowSatProgress and (Col mod 10 = 0) then UpdateProgressBar(Col/DEMGlb[RefDEM].DEMHeader.NumCol);
          for Row := 0 to pred(DEMGlb[RefDEM].DEMHeader.NumRow) do begin

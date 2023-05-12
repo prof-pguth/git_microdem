@@ -110,6 +110,8 @@ object PickGeoStat: TPickGeoStat
     Align = alClient
     MultiLine = True
     TabOrder = 1
+    ExplicitWidth = 324
+    ExplicitHeight = 269
     object TabSheet1: TTabSheet
       Caption = 'Basic'
       object Button6: TButton

@@ -36,7 +36,7 @@ unit DEMStat;
       //{$Define MapTraceCrests}
       //{$Define RecordDetailedTraceCrests}
       //{$Define RecordClustering}
-      //{$Define RecordHistogramFromVAT}
+      {$Define RecordHistogramFromVAT}
       //{$Define RecordFFT}
       //{$Define RecordHistogram}
       //{$Define RecordGridScatterGram}
@@ -153,6 +153,8 @@ type
   {$EndIf}
 
    function SumDEMs(FirstDEM : integer; Merge : tDEMbooleans; NewName : shortstring; OpenMap : boolean = true; AllGridsValidZ : boolean = true) : integer;
+   procedure AddaDEM(FirstDEM,AddDEM : integer; Mult : integer = 1);
+
    function MakeChangeMap(Map1,Map2 : integer; GridLimits: tGridLimits) : integer;
    procedure GridCorrelationMatrix(Incr : integer = 1);
 
@@ -177,7 +179,7 @@ type
    procedure OneLag(MainDEM,SubDEM : integer; BoxLimits: tGridLimits; var BigResults : tStringList);
    procedure Lag_and_Shift(ColC,RowC : integer; MainDEM,SubDEM : integer; GridLimits : tGridLimits; var NPts,XWhereMaxR,YWhereMaxR : integer; var MaxR,NoLagR,ZRange,AvgSlope,BestA,BestB : float64; CorrelationMatrix : tStringList = Nil);
 
-procedure HistogramsFromVATDEM(DEMwithVAT,ElevMap,SlopeMap,RuffMap,AspMap : integer);
+   procedure HistogramsFromVATDEM(DEMwithVAT,ElevMap,SlopeMap,RuffMap,AspMap : integer; var Graph1,Graph2,Graph3,Graph4 : tThisBaseGraph);
 
 
 var
@@ -254,7 +256,7 @@ var
 {$EndIf}
 
 
-procedure HistogramsFromVATDEM(DEMwithVAT,ElevMap,SlopeMap,RuffMap,AspMap : integer);
+procedure HistogramsFromVATDEM(DEMwithVAT,ElevMap,SlopeMap,RuffMap,AspMap : integer; var Graph1,Graph2,Graph3,Graph4 : tThisBaseGraph);
 const
    MaxCodes = 100;
 Type
@@ -278,7 +280,7 @@ var
       zf : float32;
       Lat,Long : float64;
 
-            procedure MakeOneHistogram(DEM : integer; BinSize : float32; Names : tNames;  DistCount : tDistCount; Dist : tDistArray; aTitle : shortstring);
+            function MakeOneHistogram(DEM : integer; BinSize : float32; Names : tNames;  DistCount : tDistCount; Dist : tDistArray; aTitle : shortstring; Max : float32) : tThisBaseGraph;
             var
                i : integer;
                fName : PathStr;
@@ -297,9 +299,9 @@ var
                         {$IfDef RecordHistogramFromVAT} HighlightLineToDebugFile(Names[i] + '  ' + Colors[pred(i)] + '  ' + fName); {$EndIf}
                      end;
                   end;
-                  CreateMultipleHistograms(MDDef.CountHistograms,ElevFiles,LegendFiles,BeforeSpecifiedCharacterANSI(aTitle,' '),aTitle,100,DEMglb[DEM].DEMheader.MinElev,DEMglb[DEM].DEMheader.MaxElev,BinSize,Colors);
-                  ElevFiles.Free;
-                  LegendFiles.Free;
+                  Result := CreateMultipleHistogram(MDDef.CountHistograms,ElevFiles,LegendFiles,BeforeSpecifiedCharacterANSI(aTitle,' '),aTitle,100,DEMglb[DEM].DEMheader.MinElev,Max,BinSize,Colors);
+                  //ElevFiles.Free;
+                  //LegendFiles.Free;
                end;
             end;
 
@@ -348,16 +350,15 @@ var
       MDDef.HistRuffBinSize  := 0.5;
       MDDef.HistAspectBinSize := 2;
 
-
       MDDef.DoElevHist := true;
       MDDef.DoSlopeHist := true;
       MDDef.DoRuffHist := true;
       MDDef.DoAspectHist := true;
 
-      if MDDef.DoElevHist then MakeOneHistogram(ElevMap,MDDef.HistElevBinSize,Names,ElevDistCount,ElevDist,'Elevation (m)');
-      if MDDef.DoSlopeHist then MakeOneHistogram(SlopeMap,MDDef.HistSlopeBinSize,Names,SlopeDistCount,SlopeDist,'Slope (%)');
-      if MDDef.DoRuffHist then MakeOneHistogram(RuffMap,MDDef.HistRuffBinSize,Names,RuffDistCount,RuffDist,'Roughness (%)');
-      if MDDef.DoAspectHist then MakeOneHistogram(AspMap,MDDef.HistAspectBinSize,Names,AspDistCount,AspDist,'Aspect (' + DegSym + ')');
+      if MDDef.DoElevHist then Graph1 := MakeOneHistogram(ElevMap,MDDef.HistElevBinSize,Names,ElevDistCount,ElevDist,'Elevation (m)',DEMglb[ElevMap].DEMheader.MaxElev);
+      if MDDef.DoSlopeHist then Graph2 := MakeOneHistogram(SlopeMap,MDDef.HistSlopeBinSize,Names,SlopeDistCount,SlopeDist,'Slope (%)',100);
+      if MDDef.DoRuffHist then Graph3 := MakeOneHistogram(RuffMap,MDDef.HistRuffBinSize,Names,RuffDistCount,RuffDist,'Roughness (%)',100);
+      if MDDef.DoAspectHist then Graph4 := MakeOneHistogram(AspMap,MDDef.HistAspectBinSize,Names,AspDistCount,AspDist,'Aspect (' + DegSym + ')',360);
    end;
 
 const
@@ -718,7 +719,7 @@ end;
 
 procedure PointSlopesByRegionSize(DEM : integer; RightClickLat,RightClickLong : float64);
 var
-   xDEMg1,yDEMg1 : float64;
+   xDEMg1,yDEMg1 : float32;
    Findings : tStringList;
    TStr,location : shortString;
    i,db : integer;
@@ -813,7 +814,7 @@ begin
          MakeSlopeMap(0);
       end;
    end;
-   CreateMultipleHistograms(MDDef.CountHistograms,ElevFiles,LegendFiles,'Slope','Slope distribution',-99,0,Trunc(MaxSlope + 0.99),MDDef.SlopeHistBinSize);
+   CreateMultipleHistogram(MDDef.CountHistograms,ElevFiles,LegendFiles,'Slope','Slope distribution',-99,0,Trunc(MaxSlope + 0.99),MDDef.SlopeHistBinSize);
 
    GridForm.StringGrid1.ColCount:= succ(RegionsDone);
    GridForm.SetFormSize;
@@ -1223,6 +1224,34 @@ begin
 end;
 
 {$EndIf}
+
+
+procedure AddaDEM(FirstDEM,AddDEM : integer; Mult : integer = 1);
+var
+   x,y  : integer;
+   Lat,Long : float64;
+   z,z2,nz : float32;
+begin
+    StartProgress('DEM add ' + DEMGlb[AddDEM].AreaName + ' to ' + DEMGlb[FirstDEM].AreaName);
+    for x := 0 to pred(DEMGlb[FirstDEM].DEMheader.NumCol) do begin
+       if (x mod 50 = 0) then UpDateProgressBar(x/pred(DEMGlb[FirstDEM].DEMheader.NumCol));
+       for y := 0 to pred(DEMGlb[FirstDEM].DEMheader.NumRow) do begin
+          if DEMGlb[FirstDEM].GetElevMeters(x,y,z) then begin
+             DEMGlb[FirstDEM].DEMGridToLatLongDegree(x,y,Lat,Long);
+             if DEMGlb[AddDEM].GetElevFromLatLongDegree(Lat,Long,z2) then begin
+                nz := z + (Mult * z2);
+                DEMGlb[FirstDEM].SetGridElevation(x,y,nz);
+             end
+             else begin
+                DEMGlb[FirstDEM].SetGridMissing(x,y);
+             end;
+          end
+          else DEMGlb[FirstDEM].SetGridMissing(x,y);
+       end;
+    end;
+    EndProgress;
+    DEMGlb[FirstDEM].CheckMaxMinElev;
+end;
 
 
 function SumDEMs(FirstDEM : integer; Merge : tDEMbooleans; NewName : shortstring; OpenMap : boolean = true; AllGridsValidZ : boolean = true) : integer;
@@ -1766,8 +1795,8 @@ procedure StatsFromTwoGrids(iDEM,JDEM : integer; var r,covar : float64; Incr : i
 var
    Col,Row : integer;
    NPts : int64;
-   z1,z2 : float32;
-   Lat,Long,XGrid,YGrid : float64;
+   z1,z2,XGrid,YGrid : float32;
+   Lat,Long : float64;
    IdenticalGrids : boolean;
    GridLimits : tGridLimits;
    x,y : ^bfarray32;
@@ -2210,14 +2239,15 @@ procedure CalculateGrainProfile(MapForm : tMapForm; DEMonMap : integer; Lat1,Lon
 const
    MaxBoxes = 10;
 var
-   xgrid,ygrid,Lat,Long,Distance,Bearing,CurDist,rf : float64;
+   xgrid,ygrid : float32;
+   Trend,s1s2,s2s3 : float64;
+   Lat,Long,Distance,Bearing,CurDist,rf : float64;
    f : array[1..MaxBoxes] of file;
    Size : array[1..MaxBoxes] of integer;
    BoxesWanted : tStringList;
    err,
    i,BoxesUsed : integer;
    ThisGraph : tThisBaseGraph;
-   Trend,s1s2,s2s3 : float64;
    Vals : tGraphPoint32;
 begin
    DEMOptions.GetFabricOptions(DEMonMap);
@@ -2352,7 +2382,8 @@ end;
 
 procedure ElevMomentReport(DEMSWanted : tDEMbooleanArray; aTitle : shortstring; Memo1 : tMemo; SamplingCheck : boolean; GridLimits: tGridLimits; CurDEM : integer = 0);
 var
-   LegendFiles,ElevFiles,SlopeFiles,RoughFiles,PlanCurvFiles,ProfCurvFiles : tStringList;
+   {$IfDef AllowCurvatureStatistics} PlanCurvFiles,ProfCurvFiles, {$EndIf}
+   LegendFiles,ElevFiles,SlopeFiles,RoughFiles : tStringList;
    DEMsDone,OnLine,LinesPer : integer;
    GridForm : TGridForm;
    MaxSlope,MinElev,MaxElev,MaxRough : float64;
@@ -2364,8 +2395,10 @@ var
       var
          Col,Row,Incr,RuffGrid  : integer;
          Ruff1 : float32;
-         Slope,SlopeCurvature,
-         PlanCurvature,crossc,MaxCurve,MinCurve : float64;
+         Slope : float64;
+         {$IfDef AllowCurvatureStatistics}
+            SlopeCurvature,PlanCurvature,crossc,MaxCurve,MinCurve : float64;
+         {$EndIf}
          MomentVar : tMomentVar;
          zvs,zvs2 : ^Petmath.bfarray32;
 
@@ -2386,8 +2419,8 @@ var
          if MDDef.ElevMoments then begin
             if (Memo1 <> Nil) then Memo1.Lines.Add(TimeToStr(Now) + ' start elev');
             DEMGlb[CurDEM].ElevationMomentsWithArray(GridLimits,MomentVar,zvs^);
-            if MinElev < MomentVar.MinZ then MinElev := MomentVar.MinZ;
-            if MaxElev < MomentVar.MaxZ then MaxElev := MomentVar.MaxZ;
+            if (MinElev < MomentVar.MinZ) then MinElev := MomentVar.MinZ;
+            if (MaxElev < MomentVar.MaxZ) then MaxElev := MomentVar.MaxZ;
             MomentsToStringGrid(GridForm.StringGrid1,OnLine,DEMsDone,ZUnitCategory(DEMGlb[CurDEM].DEMHeader.ElevUnits),MomentVar);
             if MDDef.GraphsOfMoments then ElevFiles.Add(SaveSingleValueSeries(MomentVar.npts,zvs^));
             ElevDist.Add(MomentResults);
@@ -2410,16 +2443,11 @@ var
            New(zvs);
            MomentVar.NPts := 0;
            DEMGlb[CurDEM].RoughnessMomentsWithArray(GridLimits, MomentVar,zvs^);
-           {  this turned out to be much slower}
-           //RuffGrid := CreateRoughnessSlopeStandardDeviationMap(CurDEM,3);
-           //DEMGlb[RuffGrid].RoughnessMomentsWithArray(GridLimits, MomentVar,zvs^);
-           //CloseSingleDEM(RuffGrid);
-
            MomentsToStringGrid(GridForm.StringGrid1,OnLine,DEMsDone,'Roughness',MomentVar);
            if (MomentVar.MaxZ > MaxRough) then MaxRough := MomentVar.MaxZ;
            if MDDef.GraphsOfMoments then RoughFiles.Add(SaveSingleValueSeries(MomentVar.npts,zvs^));
            RufDist.Add(MomentResults);
-            {$IfDef RecordElevMoment} WriteLineToDebugFile('Roughness done, max=' + RealToString(MomentVar.MaxZ,-12,1)); {$EndIf}
+           {$IfDef RecordElevMoment} WriteLineToDebugFile('Roughness done, max=' + RealToString(MomentVar.MaxZ,-12,1)); {$EndIf}
          end;
 
 
@@ -2427,39 +2455,43 @@ var
          Incr := Incr * MDDef.StatSampleIncr;
          GridForm.StringGrid1.Cells[DEMsDone,2] := IntToStr(Incr);
 
-         if MDDef.PlanCurvMoments or MDDef.SlopeCurvMoments then begin
-             {$IfDef RecordElevMoment} WriteLineToDebugFile('Start curvature'); {$EndIf}
-             MomentVar.Npts := 0;
-             New(zvs2);
-             StartProgress('Curvature');
-             Col := GridLimits.XGridLow;
-             while (Col <= GridLimits.XGridHigh) do begin
-                if (Col mod 25 = 0) then UpdateProgressBar(Col/DEMGlb[CurDEM].DEMheader.NumCol);
-                Row := GridLimits.YGridLow;
-                while (Row < GridLimits.YGridHigh) do begin
-                   if DEMGlb[CurDEM].GetEvansParams(Col,Row,1,Slope,SlopeCurvature,PlanCurvature,crossc,MaxCurve,MinCurve) then begin
-                      zvs^[MomentVar.Npts] := SlopeCurvature;
-                      zvs2^[MomentVar.Npts] := PlanCurvature;
-                      inc(MomentVar.NPts);
+         {$IfDef AllowCurvatureStatistics}
+            if MDDef.PlanCurvMoments or MDDef.SlopeCurvMoments then begin
+                {$IfDef RecordElevMoment} WriteLineToDebugFile('Start curvature'); {$EndIf}
+                MomentVar.Npts := 0;
+                New(zvs2);
+                StartProgress('Curvature');
+                Col := GridLimits.XGridLow;
+                while (Col <= GridLimits.XGridHigh) do begin
+                   if (Col mod 25 = 0) then UpdateProgressBar(Col/DEMGlb[CurDEM].DEMheader.NumCol);
+                   Row := GridLimits.YGridLow;
+                   while (Row < GridLimits.YGridHigh) do begin
+                      if DEMGlb[CurDEM].GetEvansParams(Col,Row,1,Slope,SlopeCurvature,PlanCurvature,crossc,MaxCurve,MinCurve) then begin
+                         zvs^[MomentVar.Npts] := SlopeCurvature;
+                         zvs2^[MomentVar.Npts] := PlanCurvature;
+                         inc(MomentVar.NPts);
+                      end;
+                      inc(Row,Incr);
                    end;
-                   inc(Row,Incr);
+                   inc(Col,Incr);
                 end;
-                inc(Col,Incr);
-             end;
-             EndProgress;
+                EndProgress;
 
-             if MDDef.SlopeCurvMoments then begin
-                MomentReport('Slope curvature',zvs^,MomentVar.npts,'',GridForm.StringGrid1,OnLine,DEMsDone);
-                if MDDef.GraphsOfMoments then ProfCurvFiles.Add(SaveSingleValueSeries(MomentVar.npts,zvs^));
-                inc(Online,LinesPer);
-             end;
-             if MDDef.PlanCurvMoments then begin
-                MomentReport('Plan curvature',zvs2^,MomentVar.npts,'',GridForm.StringGrid1,OnLine,DEMsDone);
-                if MDDef.GraphsOfMoments then PlanCurvFiles.Add(SaveSingleValueSeries(MomentVar.npts,zvs2^));
-                inc(Online,LinesPer);
-             end;
-             Dispose(zvs2);
-         end;
+                if MDDef.SlopeCurvMoments then begin
+                   MomentReport('Slope curvature',zvs^,MomentVar.npts,'',GridForm.StringGrid1,OnLine,DEMsDone);
+                   if MDDef.GraphsOfMoments then ProfCurvFiles.Add(SaveSingleValueSeries(MomentVar.npts,zvs^));
+                   inc(Online,LinesPer);
+                end;
+                if MDDef.PlanCurvMoments then begin
+                   MomentReport('Plan curvature',zvs2^,MomentVar.npts,'',GridForm.StringGrid1,OnLine,DEMsDone);
+                   if MDDef.GraphsOfMoments then PlanCurvFiles.Add(SaveSingleValueSeries(MomentVar.npts,zvs2^));
+                   inc(Online,LinesPer);
+                end;
+                Dispose(zvs2);
+            end;
+         {$EndIf}
+
+
          Dispose(zvs);
 
          GridForm.StringGrid1.Cells[DEMsDone,0] := DEMGlb[CurDEM].AreaName;
@@ -2491,9 +2523,11 @@ begin
       ElevFiles := tStringList.Create;
       SlopeFiles := tStringList.Create;
       RoughFiles := tStringList.Create;
-      PlanCurvFiles := tStringList.Create;
-      ProfCurvFiles := tStringList.Create;
       LegendFiles := tStringList.Create;
+      {$IfDef AllowCurvatureStatistics}
+         PlanCurvFiles := tStringList.Create;
+         ProfCurvFiles := tStringList.Create;
+      {$EndIf}
    end;
 
    GridForm := TGridForm.Create(Application);
@@ -2563,19 +2597,21 @@ begin
 
    if MDDef.GraphsOfMoments then begin
       {$IfDef RecordElevMoment} WriteLineToDebugFile('Start histograms'); {$EndIf}
-      if (ElevFiles.Count > 0) then CreateMultipleHistograms(MDDef.CountHistograms,ElevFiles,LegendFiles,'Elevation/grid','Elevation/grid distribution',200,MinElev,MaxElev,MDDef.ElevHistBinSize);
-      if (SlopeFiles.Count > 0) then CreateMultipleHistograms(MDDef.CountHistograms,SlopeFiles,LegendFiles,'Slope (%)','Slope distribution',200,0,Trunc(MaxSlope + 0.99),MDDef.SlopeHistBinSize);
-      if (RoughFiles.Count > 0) then CreateMultipleHistograms(MDDef.CountHistograms,RoughFiles,LegendFiles,'Roughness (%)','Roughness distribution',200,0,Trunc(MaxRough + 0.99),0.25);
-      SlopeFiles.Free;
-      RoughFiles.Free;
-      ElevFiles.Free;
+      CreateMultipleHistogram(MDDef.CountHistograms,ElevFiles,LegendFiles,'Elevation/grid','Elevation/grid distribution',200,MinElev,MaxElev,MDDef.ElevHistBinSize);
+      CreateMultipleHistogram(MDDef.CountHistograms,SlopeFiles,LegendFiles,'Slope (%)','Slope distribution',200,0,Trunc(MaxSlope + 0.99),MDDef.SlopeHistBinSize);
+      CreateMultipleHistogram(MDDef.CountHistograms,RoughFiles,LegendFiles,'Roughness (%)','Roughness distribution',200,0,Trunc(MaxRough + 0.99),0.25);
+      //SlopeFiles.Free;
+      //RoughFiles.Free;
+      //ElevFiles.Free;
 
-      if (PlanCurvFiles.Count > 0) then CreateMultipleHistograms(MDDef.CountHistograms,PlanCurvFiles,LegendFiles,'Plan curvature','Plan curvature distribution',200,-10,10,0.1);
-      if (ProfCurvFiles.Count > 0) then CreateMultipleHistograms(MDDef.CountHistograms,ProfCurvFiles,LegendFiles,'Profile curvature','Profile curvature distribution',200,-10,10,0.1);
-      PlanCurvFiles.Free;
-      ProfCurvFiles.Free;
+      {$IfDef AllowCurvatureStatistics}
+         if (PlanCurvFiles.Count > 0) then CreateMultipleHistograms(MDDef.CountHistograms,PlanCurvFiles,LegendFiles,'Plan curvature','Plan curvature distribution',200,-10,10,0.1);
+         if (ProfCurvFiles.Count > 0) then CreateMultipleHistograms(MDDef.CountHistograms,ProfCurvFiles,LegendFiles,'Profile curvature','Profile curvature distribution',200,-10,10,0.1);
+         PlanCurvFiles.Free;
+         ProfCurvFiles.Free;
+      {$EndIf}
 
-      LegendFiles.Free;
+      //LegendFiles.Free;
       {$IfDef RecordElevMoment} WriteLineToDebugFile('Done histograms'); {$EndIf}
    end;
    GridForm.SetFormSize;
@@ -3183,7 +3219,8 @@ end {proc SemiVariogram};
 function GridScatterGram(FullGrid : boolean; DEM1 : integer = 0; DEM2 : integer = 0) : TThisBaseGraph;
 var
    Incr,Col,Row,NPts,Prog : integer;
-   Lat,Long,XGrid,YGrid : float64;
+   Lat,Long : float64;
+   XGrid,YGrid : float32;
    rFile : file;
    v : tFloatPoint;
    IdenticalGrids : boolean;

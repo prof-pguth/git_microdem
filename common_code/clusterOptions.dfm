@@ -4,8 +4,8 @@ object ClusterOptsForm: TClusterOptsForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Clustering Options'
-  ClientHeight = 325
-  ClientWidth = 273
+  ClientHeight = 350
+  ClientWidth = 292
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

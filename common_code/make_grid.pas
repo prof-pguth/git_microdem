@@ -108,7 +108,7 @@ procedure MakeGammaGrids(CurDEM,BoxSize : integer);
 function DifferenceCategoryMap(DEMonMap : integer; fName : PathStr = '') : integer;
 
 function AirBallDirtBallMap(DEMonMap,DSM,DTM : integer; fName : PathStr = '') : integer;
-function TwoDEMHighLowMap(RefDEM,ALOS,COP : integer; DEMtype : shortstring; SimpleTolerance : float32; FourCats : boolean; fName2 : PathStr = '') : integer;
+function TwoDEMHighLowMap(RefDEM,ALOS,COP : integer; SimpleTolerance : float32; FourCats : boolean; fName2 : PathStr) : integer;
 function BestCopOrALOSmap(RefDEM,ALOS,Cop : integer; Tolerance : float32; AName : shortString) : integer;
 
 
@@ -214,7 +214,57 @@ begin
 end;
 
 
-function TwoDEMHighLowMap(RefDEM,ALOS,COP : integer; DEMtype : shortstring; SimpleTolerance : float32; FourCats : boolean; fName2 : PathStr = '') : integer;
+function BestCopOrALOSmap(RefDEM,ALOS,Cop : integer; Tolerance : float32; AName : shortString) : integer;
+var
+   i : integer;
+   RefZ,CopZ,ALOSZ,What : float32;
+   Lat,Long : float64;
+   x,y : integer;
+   VAT : tStringList;
+   TStr : shortstring;
+   Hist : array[1..3] of int64;
+begin
+   {$IfDef DEMIXmaps} WriteLineToDebugFile('BestCopOrALOSmap in'); {$EndIf}
+   for i := 1 to 3 do Hist[i] := 0;
+   Result := DEMGlb[RefDEM].CloneAndOpenGridSetMissing(ByteDEM,AName,euIntCode);
+   DEMglb[Result].SetEntireGridMissing;
+   DEMglb[Result].AreaName := aName;
+   StartProgressAbortOption('Best on map');
+   for x := 0 to pred(DEMGlb[RefDEM].DEMheader.NumCol) do begin
+      UpdateProgressBar(x/DEMGlb[RefDEM].DEMheader.NumCol);
+      for y := 0 to pred(DEMGlb[RefDEM].DEMheader.NumRow) do begin
+         if DEMGlb[RefDEM].GetElevMetersOnGrid(x,y,RefZ) then begin
+            DEMGlb[RefDEM].DEMGridToLatLongDegree(x,y,Lat,Long);
+            if DEMGlb[ALOS].GetElevFromLatLongDegree(Lat,Long,ALOSz) and DEMGlb[Cop].GetElevFromLatLongDegree(Lat,Long,CopZ) then begin
+               ALOSz := abs(ALOSz - RefZ);
+               Copz := abs(COPz - RefZ);
+               if (ALOSZ <= Tolerance) and (COPz <= Tolerance) then What := 2
+               else if ALOSZ < CopZ then What := 3
+               else What := 1;
+               DEMglb[Result].SetGridElevation(x,y,what);
+               inc(Hist[round(what)]);
+            end;
+         end;
+      end;
+   end;
+   Vat := tStringList.Create;
+   Vat.add('VALUE,NAME,N,USE,COLOR');
+
+   if (Hist[3] > 0) then Vat.add('3,ALOS best,' + IntToStr(Hist[3]) + ',Y,' + IntToStr(clBlue));
+   if (Hist[2] > 0) then Vat.add('2,Both ± ' + RealToString(Tolerance,-5,1)  + ',' + IntToStr(Hist[2]) + ',Y,' + IntToStr(clYellow));
+   if (Hist[1] > 0) then Vat.add('1,COP best,' + IntToStr(Hist[1]) + ',Y,' + IntToStr(clLime));
+   //{$IfDef DEMIXmaps} VAT.saveToFile(MDTempDir + 'results_' + aName + '.csv'); {$EndIf}
+
+   AName := MDTempDir + AName + '.vat.dbf';
+   StringList2CSVtoDB(vat,AName,true);
+   DEMGlb[Result].VATFileName := AName;
+   DEMglb[Result].CheckMaxMinElev;
+   DEMglb[Result].SetUpMap(Result,true,mtDEMVATTable);
+   {$IfDef DEMIXmaps} WriteLineToDebugFile('BestCopOrALOSmap out'); {$EndIf}
+end;
+
+
+function TwoDEMHighLowMap(RefDEM,ALOS,COP : integer; SimpleTolerance : float32; FourCats : boolean; fName2 : PathStr) : integer;
 const
    MaxHist = 9;
    LongCatName : array[1..9] of shortstring = ('Both high','ALOS high/COP good','ALOS high/COP low',
@@ -233,63 +283,63 @@ var
    Hist : array[1..MaxHist] of int64;
    DEM1high, DEM1low, DEM1good, DEM2high, DEM2low, DEM2good : boolean;
 begin
-   {$If Defined(RecordDEMCompare) or Defined(NewVATgrids)} WriteLineToDebugFile('TwoDEMHighLowMap in, REFDEM=' + IntToStr(RefDEM) + '   DEM1=' + IntToStr(ALOS) + ' and DEM2=' + IntToStr(COP));  {$EndIf}
+   {$If Defined(RecordDEMCompare) or Defined(NewVATgrids)} WriteLineToDebugFile('TwoDEMHighLowMap in, REFDEM=' + IntToStr(RefDEM) + ' DEM1=' + IntToStr(ALOS) + ' and DEM2=' + IntToStr(COP) + '  ' + fName2);  {$EndIf}
    Result := 0;
    if ValidDEM(RefDEM)then begin
       for i := 1 to MaxHist do Hist[i] := 0;
-      if (fName2 = '') then fName2 := 'two_dems_to_ref_' + DEMGlb[RefDEM].AreaName;
       Result := DEMGlb[RefDEM].CloneAndOpenGridSetMissing(ByteDEM,fName2,euIntCode);
+      DEMGlb[Result].AreaName := fName2;
       StartProgressAbortOption('DEMs high/low');
       for x := 0 to pred(DEMGlb[RefDEM].DEMheader.NumCol) do begin
          UpdateProgressBar(x/DEMGlb[RefDEM].DEMheader.NumCol);
          for y := 0 to pred(DEMGlb[RefDEM].DEMheader.NumRow) do begin
             if DEMGlb[RefDEM].GetElevMetersOnGrid(x,y,zRefDEM) then begin
                DEMGlb[RefDEM].DEMGridToLatLongDegree(x,y,Lat,Long);
-                  if DEMGlb[ALOS].GetElevFromLatLongDegree(Lat,Long,zDEM1) and DEMGlb[COP].GetElevFromLatLongDegree(Lat,Long,zDEM2) then begin
-                     DEM1high := (zDEM1 > zRefDEM + SimpleTolerance);
-                     DEM1low :=  (zDEM1 < zRefDEM - SimpleTolerance);
-                     DEM1good :=  (not DEM1high) and (not DEM1Low);
-                     DEM2high := (zDEM2 > zRefDEM + SimpleTolerance);
-                     DEM2low :=  (zDEM2 < zRefDEM - SimpleTolerance);
-                     DEM2good := (not DEM2high) and (not DEM2Low);
+               if DEMGlb[ALOS].GetElevFromLatLongDegree(Lat,Long,zDEM1) and DEMGlb[COP].GetElevFromLatLongDegree(Lat,Long,zDEM2) then begin
+                  DEM1high := (zDEM1 > zRefDEM + SimpleTolerance);
+                  DEM1low :=  (zDEM1 < zRefDEM - SimpleTolerance);
+                  DEM1good :=  (not DEM1high) and (not DEM1Low);
+                  DEM2high := (zDEM2 > zRefDEM + SimpleTolerance);
+                  DEM2low :=  (zDEM2 < zRefDEM - SimpleTolerance);
+                  DEM2good := (not DEM2high) and (not DEM2Low);
 
-                     if FourCats then begin
-                        if DEM1high and DEM2high then What := 5
-                        else if DEM1low and DEM2Low then What := 1
-                        else if DEM1good and DEM2good then What := 3
-                        else What := 6;
-                     end
-                     else begin
-                         if DEM1high then begin
-                            if DEM2high then What := 1
-                            else if DEM2good then What := 2
-                            else what := 3;
-                         end
-                         else if DEM1good then begin
-                            if DEM2high then What := 4
-                            else if DEM2good then What := 5
-                            else what := 6;
-                         end
-                         else if DEM1Low then begin
-                            if DEM2high then What := 7
-                            else if DEM2good then What := 8
-                            else what := 9;
-                         end;
-                     end;
-
-                     if (What <> 0) then begin
-                        DEMglb[Result].SetGridElevation(x,y,what);
-                        inc(Hist[round(what)]);
-                     end;
+                  if FourCats then begin
+                     if DEM1high and DEM2high then What := 5
+                     else if DEM1low and DEM2Low then What := 1
+                     else if DEM1good and DEM2good then What := 3
+                     else What := 6;
+                  end
+                  else begin
+                      if DEM1high then begin
+                         if DEM2high then What := 1
+                         else if DEM2good then What := 2
+                         else what := 3;
+                      end
+                      else if DEM1good then begin
+                         if DEM2high then What := 4
+                         else if DEM2good then What := 5
+                         else what := 6;
+                      end
+                      else if DEM1Low then begin
+                         if DEM2high then What := 7
+                         else if DEM2good then What := 8
+                         else what := 9;
+                      end;
                   end;
+
+                  if (What <> 0) then begin
+                     DEMglb[Result].SetGridElevation(x,y,what);
+                     inc(Hist[round(what)]);
+                  end;
+               end;
             end;
          end;
       end;
       Vat := tStringList.Create;
-      Vat.add('VALUE,NAME,N,USE,COLOR');
+      Vat.Add('VALUE,CATEGORY,N,USE,COLOR');
       if FourCats then begin
          if (Hist[5] > 0) then Vat.add('5,Both high,' + IntToStr(Hist[5]) + ',Y,' + IntToStr(clBlue));
-         if (Hist[3] > 0) then Vat.add('3,Both ' + DEMtype + ' ± ' + RealToString(SimpleTolerance,-5,1) + ',' + IntToStr(Hist[3]) + ',Y,' + IntToStr(clLime));
+         if (Hist[3] > 0) then Vat.add('3,Both reference ± ' + RealToString(SimpleTolerance,-5,1) + ',' + IntToStr(Hist[3]) + ',Y,' + IntToStr(clLime));
          if (Hist[1] > 0) then Vat.add('1,Both low,' + IntToStr(Hist[1]) + ',Y,' + IntToStr(clBrown));
          if (Hist[6] > 0) then Vat.add('6,Complex,' + IntToStr(Hist[6]) + ',Y,' + IntToStr(clYellow));
       end
@@ -297,13 +347,12 @@ begin
          LongCatName[5] := 'Both good ± ' + RealToString(SimpleTolerance,-5,1);
          for i := 1 to 9 do if (Hist[i] > 0) then Vat.add(IntToStr(i) + ',' + LongCatName[i] + ',' + IntToStr(Hist[i]) + ',Y,' + IntToStr(LongCatColor[i]));
       end;
-      //{$If Defined(RecordDEMCompare)} WriteLineToDebugFile(''); WriteLineToDebugFile('TwoDEMHighLowMap VAT'); WriteStringListToDebugFile(VAT); WriteLineToDebugFile(''); {$EndIf}
       fName2 := MDTempDir + fName2 + '.vat.dbf';
       StringList2CSVtoDB(vat,fName2,true);
       DEMGlb[Result].VATFileName := fName2;
       DEMglb[Result].CheckMaxMinElev;
       DEMglb[Result].SetUpMap(Result,true,mtDEMVATTable);
-      {$If Defined(RecordDEMCompare) or Defined(NewVATgrids)} WriteLineToDebugFile('TwoDEMHighLowMap out, new grid=' + IntToStr(Result));  {$EndIf}
+      {$If Defined(RecordDEMCompare) or Defined(NewVATgrids)} WriteLineToDebugFile('TwoDEMHighLowMap out, new grid=' + IntToStr(Result) + ' ' + fName2);  {$EndIf}
    end
    else begin
       {$If Defined(RecordDEMCompare) or Defined(NewVATgrids)} HighlightLineToDebugFile('TwoDEMHighLowMap invalid input, DEM=' + IntToStr(RefDEM));  {$EndIf}
@@ -325,7 +374,7 @@ var
    Lat,Long : float64;
    x,y : integer;
    VAT : tStringList;
-   TStr : shortstring;
+   //TStr : shortstring;
    Hist : array[1..7] of int64;
 begin
    Result := 0;
@@ -359,9 +408,13 @@ begin
       Vat.add('VALUE,NAME,N,USE,COLOR');
 
       if ThreeCat then begin
-         if (Hist[5] > 0) then Vat.add('5,High,' + IntToStr(Hist[5]) + ',Y,' + IntToStr(clGreen));
-         if (Hist[3] > 0) then Vat.add('3,' + TStr + ' ± ' + RealToString(SimpleTolerance,-5,1)  + ',' + IntToStr(Hist[3]) + ',Y,' + IntToStr(clWhite));
-         if (Hist[1] > 0) then Vat.add('1,Low,' + IntToStr(Hist[1]) + ',Y,' + IntToStr(clRed));
+         if (Hist[5] > 0) then Vat.add('5,>' + RealToString(MDDef.TopCutLevel,-8,-2) + ',' + IntToStr(Hist[5]) + ',Y,' + IntToStr(clGreen));
+         if (Hist[3] > 0) then begin
+            if abs(MDDef.TopCutLevel - MDDef.BottomCutLevel) < 0.001 then
+               Vat.add('3, ± ' + RealToString(MDDef.TopCutLevel,-8,2)  + ',' + IntToStr(Hist[3]) + ',Y,' + IntToStr(clWhite))
+            else Vat.add('3,[' + RealToString(MDDef.BottomCutLevel,-8,-2) + '..' + RealToString(MDDef.TopCutLevel,-8,2) + '],' + IntToStr(Hist[3]) + ',Y,' + IntToStr(clWhite));
+         end;
+         if (Hist[1] > 0) then Vat.add('1,<' + RealToString(MDDef.BottomCutLevel,-8,-2) + ',' + IntToStr(Hist[1]) + ',Y,' + IntToStr(clRed));
       end
       else if FiveCat then begin
          if (Hist[1] > 0) then Vat.add('1,High > ' + RealToString(HighTolerance,-5,-1) + ',' + IntToStr(Hist[1]) + ',Y,' + IntToStr(clGreen));
@@ -370,7 +423,7 @@ begin
          if (Hist[4] > 0) then Vat.add('4,Medium Low,' + IntToStr(Hist[4]) + ',Y,' + IntToStr(clMagenta));
          if (Hist[5] > 0) then Vat.add('5,Low < ' + RealToString(-HighTolerance,-6,-1) + ',' + IntToStr(Hist[5]) + ',Y,' + IntToStr(clRed));
       end;
-      fName := MDTempDir + fName + '.vat.dbf';
+      fName := NextFileNumber(MDTempDir,fName + '_','.vat.dbf');
       StringList2CSVtoDB(vat,fName,true);
       DEMGlb[Result].VATFileName := fName;
       DEMglb[Result].CheckMaxMinElev;
@@ -453,56 +506,6 @@ begin
 end;
 
 
-function BestCopOrALOSmap(RefDEM,ALOS,Cop : integer; Tolerance : float32; AName : shortString) : integer;
-var
-   i : integer;
-   RefZ,CopZ,ALOSZ,What : float32;
-   Lat,Long : float64;
-   x,y : integer;
-   VAT : tStringList;
-   TStr : shortstring;
-   Hist : array[1..3] of int64;
-begin
-   {$IfDef DEMIXmaps} WriteLineToDebugFile('BestCopOrALOSmap in'); {$EndIf}
-   for i := 1 to 3 do Hist[i] := 0;
-   Result := DEMGlb[RefDEM].CloneAndOpenGridSetMissing(ByteDEM,AName,euIntCode);
-   DEMglb[Result].SetEntireGridMissing;
-   StartProgressAbortOption('Best on map');
-   for x := 0 to pred(DEMGlb[RefDEM].DEMheader.NumCol) do begin
-      UpdateProgressBar(x/DEMGlb[RefDEM].DEMheader.NumCol);
-      for y := 0 to pred(DEMGlb[RefDEM].DEMheader.NumRow) do begin
-         if DEMGlb[RefDEM].GetElevMetersOnGrid(x,y,RefZ) then begin
-            DEMGlb[RefDEM].DEMGridToLatLongDegree(x,y,Lat,Long);
-            if DEMGlb[ALOS].GetElevFromLatLongDegree(Lat,Long,ALOSz) and DEMGlb[Cop].GetElevFromLatLongDegree(Lat,Long,CopZ) then begin
-               ALOSz := abs(ALOSz - RefZ);
-               Copz := abs(COPz - RefZ);
-               if (ALOSZ <= Tolerance) and (COPz <= Tolerance) then What := 2
-               else if ALOSZ < CopZ then What := 3
-               else What := 1;
-               DEMglb[Result].SetGridElevation(x,y,what);
-               inc(Hist[round(what)]);
-            end;
-         end;
-      end;
-   end;
-   Vat := tStringList.Create;
-   Vat.add('VALUE,NAME,N,USE,COLOR');
-
-   if (Hist[3] > 0) then Vat.add('3,ALOS best,' + IntToStr(Hist[3]) + ',Y,' + IntToStr(clBlue));
-   if (Hist[2] > 0) then Vat.add('2,Both ± ' + RealToString(Tolerance,-5,1)  + ',' + IntToStr(Hist[2]) + ',Y,' + IntToStr(clYellow));
-   if (Hist[1] > 0) then Vat.add('1,COP best,' + IntToStr(Hist[1]) + ',Y,' + IntToStr(clLime));
-   {$IfDef DEMIXmaps} VAT.saveToFile(MDTempDir + 'results_' + aName + '.csv'); {$EndIf}
-
-   AName := MDTempDir + AName + '.vat.dbf';
-   StringList2CSVtoDB(vat,AName,true);
-   DEMGlb[Result].VATFileName := AName;
-   DEMglb[Result].CheckMaxMinElev;
-   DEMglb[Result].SetUpMap(Result,true,mtDEMVATTable);
-   {$IfDef DEMIXmaps} WriteLineToDebugFile('BestCopOrALOSmap out'); {$EndIf}
-end;
-
-
-
 function CreateStandardDeviationMap(DEM,Radius : integer) : integer;
 var
    SlopeGrid,x,y,i,j : integer;
@@ -556,12 +559,12 @@ var
    ReturnSlopeMap : boolean;
    sl : array[1..100] of float32;
 begin
-   ReturnSlopeMap := (SlopeMap <> 0);
+   ReturnSlopeMap := (SlopeMap = 0);
    SlopeMap := CreateSlopeMap(DEM,ReturnSlopeMap);
    fName := 'md_ruff_slope_std_' + FilterSizeStr(RadiusMustBeOdd) + '_' + DEMGlb[DEM].AreaName;
    Result := DEMGlb[DEM].CloneAndOpenGridSetMissing(FloatingPointDEM,fName,PercentSlope);
    Radius := RadiusMustBeOdd div 2;
-   StartProgressAbortOption(fName);
+   StartProgressAbortOption('Slope and roughness');
    for x := Radius to pred(DEMGlb[DEM].DEMheader.NumCol - Radius) do begin
       UpdateProgressBar(x/DEMGlb[DEM].DEMheader.NumCol);
       for y := Radius to pred(DEMGlb[DEM].DEMheader.NumRow - Radius) do begin
@@ -582,7 +585,11 @@ begin
    end;
    DEMglb[Result].CheckMaxMinElev;
    DEMglb[Result].SetUpMap(Result,true,mtElevSpectrum);
-   if not ReturnSlopeMap then begin
+   if ReturnSlopeMap then begin
+      DEMglb[SlopeMap].CheckMaxMinElev;
+      DEMglb[SlopeMap].SetUpMap(Result,true,mtElevSpectrum);
+   end
+   else begin
       CloseSingleDEM(SlopeMap);
       SlopeMap := 0;
    end;

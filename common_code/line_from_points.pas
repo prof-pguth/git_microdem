@@ -4,7 +4,7 @@ unit line_from_points;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
 
@@ -21,6 +21,7 @@ uses
   Dialogs, StdCtrls, Buttons,DB,
   Petmar_Types,Petmar_db,DEMdataBase;
 
+
 type
   TlinePointForm = class(TForm)
     Next: TBitBtn;
@@ -29,10 +30,10 @@ type
   public
     { Public declarations }
      FormGISDB : TGISdataBaseModule;
-     MinRecsNeeded,
-     CurRec : integer;
+     MinRecsNeeded,CurRec : integer;
      BaseBitmap : tMyBitmap;
   end;
+
 
 procedure MakeLinesFromPoints(GISDataBase : TGISdataBaseModule; fName : PathStr = ''; ShapeTypeWanted : integer = -99; Thin : integer = -1);
 

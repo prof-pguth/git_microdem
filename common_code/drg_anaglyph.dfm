@@ -3,8 +3,8 @@ object DRGAnaglyphForm: TDRGAnaglyphForm
   Top = 126
   BorderIcons = []
   Caption = 'Stereo Map Options'
-  ClientHeight = 294
-  ClientWidth = 286
+  ClientHeight = 291
+  ClientWidth = 274
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

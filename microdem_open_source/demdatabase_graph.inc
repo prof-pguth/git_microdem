@@ -410,6 +410,8 @@ var
    GISNum : integer;
    fName : PathStr;
 begin
+   {$If Defined(RecordHyperion)} WriteLineToDebugFile('GraphFromCSVfile in, current maps=' + IntToStr(NumOpenMaps)); {$EndIf}
+
    if (sl.count < 2) then begin
       sl.free;
       exit;
@@ -430,6 +432,7 @@ begin
       end;
       if (not ShowTable) then CloseAndNilNumberedDB(GISNum);
    end;
+   {$If Defined(RecordHyperion)} WriteLineToDebugFile('GraphFromCSVfile out, current maps=' + IntToStr(NumOpenMaps)); {$EndIf}
 end;
 
 
@@ -729,9 +732,9 @@ begin
      end;
      {$IfDef RecordDataBaseTiming} WriteLineToDebugFile('TGISDataBase.CreateHistogram done prep'); {$EndIf}
 
-     Result := CreateMultipleHistograms(UseNumbers,FilesList,LegendList,MenuStr,'Histogram ' + MenuStr + TheDBName + ' ' + MyData.Filter,100,MinUse,MaxUse,BinSize);
-     FilesList.Free;
-     LegendList.Free;
+     Result := CreateMultipleHistogram(UseNumbers,FilesList,LegendList,MenuStr,'Histogram ' + MenuStr + TheDBName + ' ' + MyData.Filter,100,MinUse,MaxUse,BinSize);
+     //FilesList.Free;
+     //LegendList.Free;
      {$IfDef RecordDataBaseTiming} WriteLineToDebugFile('TGISDataBase.CreateHistogram out'); {$EndIf}
 end;
 
@@ -778,9 +781,9 @@ begin
 
   {$IfDef RecordDataBaseTiming} WriteLineToDebugFile('TGISDataBase.CreateHistogram done prep'); {$EndIf}
 
-  Result := CreateMultipleHistograms(True,FilesList,LegendList,'','Histogram ' +  MyData.Filter,100,MinUse,MaxUse,BinSize);
-  FilesList.Free;
-  LegendList.Free;
+  Result := CreateMultipleHistogram(True,FilesList,LegendList,'','Histogram ' +  MyData.Filter,100,MinUse,MaxUse,BinSize);
+  //FilesList.Free;
+  //LegendList.Free;
   {$IfDef RecordDataBaseTiming} WriteLineToDebugFile('TGISDataBase.CreateHistogram out'); {$EndIf}
 end;
 
@@ -828,10 +831,10 @@ begin
 
      {$IfDef RecordDataBaseTiming} writeLineToDebugFile('TGISDataBase.CreateHistogram done'); {$EndIf}
 
-     Result := CreateMultipleHistograms(True,FilesList,LegendList,WantXField,'Histogram');
+     Result := CreateMultipleHistogram(True,FilesList,LegendList,WantXField,'Histogram');
      Dispose(Values);
-     FilesList.Free;
-     LegendList.Free;
+     //FilesList.Free;
+     //LegendList.Free;
      MyData.ApplyFilter(OldFilter);
 end;
 

@@ -955,6 +955,8 @@ type
     LoadthisDEM1: TMenuItem;
     Updatestatus1: TMenuItem;
     Averagebylatitude1: TMenuItem;
+    Datumshift2: TMenuItem;
+    Latlongelevofrecordcorners1: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
     procedure Shiftpointrecords1Click(Sender: TObject);
     procedure Creategrid1Click(Sender: TObject);
@@ -1681,6 +1683,8 @@ type
     procedure LoadthisDEM1Click(Sender: TObject);
     procedure Updatestatus1Click(Sender: TObject);
     procedure Averagebylatitude1Click(Sender: TObject);
+    procedure Datumshift2Click(Sender: TObject);
+    procedure Latlongelevofrecordcorners1Click(Sender: TObject);
   private
     procedure PlotSingleFile(fName : PathStr; xoff,yoff : float64);
     procedure SetUpLinkGraph;
@@ -1763,7 +1767,7 @@ uses
    DEMCoord,
    DEMLOSW,
    DEMDef_routines,
-   Line_From_Points,
+  // Line_From_Points,
    Make_Tables,
    Text_report_options,
    DEMdbDisplay,
@@ -3195,7 +3199,7 @@ begin
       Map1.Visible := (TheMapOwner <> Nil);
       RecenterMapOnRecord1.Visible := (theMapOwner <> Nil);
       Highlightrecordonmap1.Visible := (theMapOwner <> Nil);
-      Horizonblocking1.Visible := (theMapOwner <> Nil) and (TheMapOwner.MapDraw.DEMonMap <> 0);
+      Horizonblocking1.Visible := (theMapOwner <> Nil) and ValidDEM(TheMapOwner.MapDraw.DEMonMap);
       Movie1.Visible := MyData.FieldExists('MOVIE') and (MyData.GetFieldByNameAsString('MOVIE') <> '');
       Movie2.Visible := Movie1.Visible;
       Deleterecord1.Visible := (CheckBox1.Checked) or ItsFanFile;
@@ -3213,7 +3217,7 @@ begin
 
       AssociateImage1.Visible := CheckBox1.Checked and ImagePresent;
       WWW1.Visible := WWWPresent and (MyData.GetFieldByNameAsString(WWWFieldNames[1]) <> '');
-      PerspectiveView1.Visible := CameraOrientationExists and ItsaPointDB and (TheMapOwner <> Nil) and (TheMapOwner.MapDraw.DEMonMap <> 0);
+      PerspectiveView1.Visible := CameraOrientationExists and ItsaPointDB and (TheMapOwner <> Nil) and ValidDEM(TheMapOwner.MapDraw.DEMonMap);
       PanoramaView1.Visible := ItsAPointDB and (TheMapOwner <> Nil) and (TheMapOwner.MapDraw.DEMonMap <> 0);
       PasteCoordinatesFromClipboard1.Visible := ItsAPointDB and ClipBoard_Coords;
 
@@ -3221,7 +3225,7 @@ begin
       CalculateArea1.Visible := ItsAShapeFile and AreaShapeFile(ShapeFileType);
       Pointinrecord1.Visible := ItsAShapeFile and AreaShapeFile(ShapeFileType);
       Calculateperimeter1.Visible := ItsAShapeFile and AreaShapeFile(ShapeFileType);
-      CalculateVolume1.Visible := ItsAShapeFile and AreaShapeFile(ShapeFileType) and ((theMapOwner <> Nil) and (TheMapOwner.MapDraw.DEMonMap <> 0));
+      CalculateVolume1.Visible := ItsAShapeFile and AreaShapeFile(ShapeFileType) and ((theMapOwner <> Nil) and ValidDEM(TheMapOwner.MapDraw.DEMonMap));
 
       RecordCoordinates1.Visible := ItsAPointDB or LatLongFieldsPresent or XYZFile or ItsAShapeFile;
       Recordboundingbox1.Visible := (ItsAShapeFile and LineOrAreaShapeFile(ShapeFileType));
@@ -3239,7 +3243,7 @@ begin
       N3Dshapefileprofile1.Visible := GISdb[DBonTable].ShapeFileType in [13,15,23,25];
       Pastecoordinatesfromclipboard1.Visible := ItsAPointDB and CheckBox1.Checked;
       LOSterrainprofile1.Visible := MyData.FieldExists('LONG') and MyData.FieldExists('LONG2');
-      DEMTerrainprofile1.Visible := (ShapeFileType in [13,15,23,25]) or (LineOrAreaShapeFile(ShapeFileType) and ((TheMapOwner <> Nil) and (TheMapOwner.MapDraw.DEMonMap <> 0)));
+      DEMTerrainprofile1.Visible := (ShapeFileType in [13,15,23,25]) or (LineOrAreaShapeFile(ShapeFileType) and ((TheMapOwner <> Nil) and ValidDEM(TheMapOwner.MapDraw.DEMonMap)));
       Normalizedbasinprofile1.Visible := (ShapeFileType in [3,13,23]);
       Exportlinetopointdatabase1.Visible := (ShapeFileType in [1,3,13,23]);
       CompareshapefileandDEMprofiles1.Visible := (ShapeFileType in [13,15,23,25]) and ((TheMapOwner <> Nil) and (TheMapOwner.MapDraw.DEMonMap <> 0));
@@ -3678,7 +3682,7 @@ begin
       Plotcoveragecircles1.Visible := GISdb[DBonTable].MyData.FieldExists('RANGE') and ItsaPointDB;
       Connectsequentialpoints1.Visible := CanPlot and ItsAPointDB;
       Showarearecords1.Visible := LatLongCornersPresent or CentroidPresent;
-      Creategrid1.Visible := (ShapeFileType in [13,15,23,25]) and (TheMapOwner.MapDraw.DEMonMap <> 0);
+      Creategrid1.Visible := (ShapeFileType in [13,15,23,25]) and ValidDEM(TheMapOwner.MapDraw.DEMonMap);
       Downhilluphillsegments1.Visible := (ShapeFileType in [13,15,23,25]);
       Photolocations1.Visible := PhotoLocationsPresent;
       TernaryDiagram1.Visible := MDDef.ShowTernary;
@@ -6560,40 +6564,38 @@ var
    Sum,Hours,StartHours : float64;
    Amp,Phase,Speed : array[1..MaxComp] of float64;
 begin
-  //with GISdb[DBonTable] do begin
-     Results := tStringList.Create;
-     Results.Add('Hour  Day  Year  Predict');
-     NComp := 0;
-     GISdb[DBonTable].MyData.First;
-     while not GISdb[DBonTable].MyData.EOF do begin
-        inc(NComp);
-        Amp[NComp] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('AMPLITUDE');
-        Phase[NComp] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('PHASE');
-        Speed[NComp] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('SPEED');
-        GISdb[DBonTable].MyData.Next;
+  Results := tStringList.Create;
+  Results.Add('Hour  Day  Year  Predict');
+  NComp := 0;
+  GISdb[DBonTable].MyData.First;
+  while not GISdb[DBonTable].MyData.EOF do begin
+     inc(NComp);
+     Amp[NComp] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('AMPLITUDE');
+     Phase[NComp] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('PHASE');
+     Speed[NComp] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('SPEED');
+     GISdb[DBonTable].MyData.Next;
+  end;
+  i := 0;
+  Interval := 2;
+  Numreadings := 500000;
+  ReadDefault('Hours for record',NumReadings);
+  ReadDefault('Interval (hours)',Interval);
+
+  StartHours := 24 * EncodeDate(1900,1,1);
+  Hours := 24 * EncodeDate(2011,1,1);
+
+  StartHours := 24 * JulDay(1,1,1900);
+  Hours := 24 * JulDay(1,1,2011);
+
+  while i < (NumReadings div interval) do begin
+     Sum := 0;
+     for j := 1 to NComp do begin
+        Sum := Sum + Amp[j] * SinDeg(Phase[j] + (Hours-StartHours) * Speed[j]);
      end;
-     i := 0;
-     Interval := 2;
-     Numreadings := 500000;
-     ReadDefault('Hours for record',NumReadings);
-     ReadDefault('Interval (hours)',Interval);
-
-     StartHours := 24 * EncodeDate(1900,1,1);
-     Hours := 24 * EncodeDate(2011,1,1);
-
-     StartHours := 24 * JulDay(1,1,1900);
-     Hours := 24 * JulDay(1,1,2011);
-
-     while i < (NumReadings div interval) do begin
-        Sum := 0;
-        for j := 1 to NComp do begin
-           Sum := Sum + Amp[j] * SinDeg(Phase[j] + (Hours-StartHours) * Speed[j]);
-        end;
-        Results.Add(IntToStr(i) + RealToString(Hours/24,18,4) + RealToString(Hours/24/365.25,24,8) + RealToString(Sum,12,4));
-        Hours := Hours + Interval;
-        inc(i,Interval);
-     end;
-//  end;
+     Results.Add(IntToStr(i) + RealToString(Hours/24,18,4) + RealToString(Hours/24/365.25,24,8) + RealToString(Sum,12,4));
+     Hours := Hours + Interval;
+     inc(i,Interval);
+  end;
   Results.SaveToFile(ExtractFilePath(GISdb[DBonTable].dbFullName) + 'tides.csv');
 end;
 
@@ -6638,7 +6640,8 @@ begin
 label
    OffImage;
 var
-   xg,yg, Lat,Long : float64;
+   xg,yg : float32;
+   Lat,Long : float64;
    i,j,Col,Row,DN,rc : integer;
    fName : ShortString;
 begin
@@ -7026,7 +7029,7 @@ end;
 procedure Tdbtablef.Lineshapefile1Click(Sender: TObject);
 begin
    {$IfDef RecordMakeLineArea} WriteLineToDebugFile('Tdbtablef.Createlineshapefilefrompoints1Click ' + GISDataBase[DBonTable].dbname); {$EndIf}
-   Line_From_Points.MakeLinesFromPoints(GISdb[DBonTable],'',3);
+   MakeLinesFromPoints(GISdb[DBonTable],'',3);
    ShowStatus;
 end;
 
@@ -7079,11 +7082,11 @@ begin
 
       ChangeFieldsUsed1.Visible := MyData.FieldExists('USE');
       Distancefrompoint1.Visible := (TheMapOwner <> Nil);
-      DEM1.Visible := ((TheMapOwner <> Nil) and (TheMapOwner.MapDraw.DEMonMap <> 0)) or (NumDEMDataSetsOpen > 0);
+      DEM1.Visible := ((TheMapOwner <> Nil) and ValidDEM(TheMapOwner.MapDraw.DEMonMap)) or (NumDEMDataSetsOpen > 0);
       MaskDEMfromshapefile1.Visible := (NumDEMDataSetsOpen > 0);
       Satelliteaddreflectance1.Visible := (TheMapOwner <> Nil) and ValidSatImage(TheMapOwner.MapDraw.SatonMap);
       Editrecordsingrid1.Visible := MDDef.AllowEditDBInGrid;
-      Maskdatabasewithgazetteer1.Visible := GazDB and (TheMapOwner.MapDraw.DEMonMap <> 0);
+      Maskdatabasewithgazetteer1.Visible := GazDB and ValidDEM(TheMapOwner.MapDraw.DEMonMap);
       Networkends1.Visible := MDDef.ShowGeomorphometry;
       Mapcoordinates1.Visible := (GISdb[DBonTable].CanPlot and GISdb[DBonTable].DBhasMapOrGraph) or MDDef.AlwaysShowMapCoordinates;
       AverageOfNeighbors2.Visible := (NeighborTable <> Nil);
@@ -8204,6 +8207,61 @@ begin
    PrimaryMapDatum.Destroy;
    NewMapDatum.Destroy;
    ShowStatus;
+end;
+
+
+procedure Tdbtablef.Datumshift2Click(Sender: TObject);
+var
+   Lat,Long,Lat2,Long2 : float64;
+   Distance,Bearing : float64;
+   zPresent,FileConvert : boolean;
+   LocalToWGS84,WGS84toEGM2008 : integer;
+   z,z2,AddZ,SubZ : float32;
+begin
+   with GISdb[DBonTable] do begin
+      AddFieldToDataBase(ftFloat,'VERT_SHIFT',8,2);
+      AddFieldToDataBase(ftFloat,'HORZ_SHIFT',8,2);
+      AddFieldToDataBase(ftFloat,'X_SHIFT',8,2);
+      AddFieldToDataBase(ftFloat,'Y_SHIFT',8,2);
+      AddFieldToDataBase(ftFloat,'HORIZ_AZ',8,2);
+      zPresent := MyData.FieldExists('ELEV') and MyData.FieldExists('ELEV2');
+      FileConvert := FileExists(GeoidWGS84ellipsoidToLocalVDatum) and FileExists(Geoid2008FName);
+      if FileConvert then begin
+         //LocalToWGS84 := OpenNewDEM(GeoidWGS84ellipsoidToLocalVDatum,false);
+         //WGS84toEGM2008 := OpenNewDEM(Geoid2008FName,false);
+         LoadDatumShiftGrids(LocalToWGS84,WGS84toEGM2008);
+         AddFieldToDataBase(ftFloat,'GRID_VERT',8,2);
+      end
+      else begin
+         LocalToWGS84 := 0;
+         WGS84toEGM2008 := 0;
+      end;
+
+      MyData.First;
+      while not MyData.EOF do begin
+         MyData.Edit;
+         if MyData.ValidLatLongFromTable(Lat,Long) and ValidLat2Long2FromTable(Lat2,Long2) then begin
+            VincentyCalculateDistanceBearing(Lat,Long,Lat2,Long2,Distance,Bearing);
+            MyData.SetFieldByNameAsFloat('HORZ_SHIFT',Distance);
+            MyData.SetFieldByNameAsFloat('X_SHIFT',Distance*CosDeg(Bearing));
+            MyData.SetFieldByNameAsFloat('Y_SHIFT',Distance*SinDeg(Bearing));
+            MyData.SetFieldByNameAsFloat('HORIZ_AZ',Bearing);
+            if zPresent then begin
+               z := MyData.GetFieldByNameAsFloat('ELEV');
+               z2 := MyData.GetFieldByNameAsFloat('ELEV2');
+               MyData.SetFieldByNameAsFloat('VERT_SHIFT',(z2-z));
+            end;
+            if FileConvert then begin
+               if DEMGlb[WGS84toEGM2008].GetElevFromLatLongDegree(Lat,Long,AddZ) and DEMGlb[LocalToWGS84].GetElevFromLatLongDegree(Lat,Long,SubZ) then begin
+                  MyData.SetFieldByNameAsFloat('GRID_VERT',(-SubZ+AddZ));
+               end;
+            end;
+         end;
+         MyData.Next;
+      end;
+   end;
+   CloseSingleDEM(LocalToWGS84);
+   CloseSingleDEM(WGS84toEGM2008);
 end;
 
 procedure Tdbtablef.DayofweekfromYRMonDay1Click(Sender: TObject);
@@ -9406,7 +9464,7 @@ begin
           GISdb[DBonTable].PickNumericFields(dbgtUnspecified,3,'X','Y','Z');
        end;
    end;
-   if GISdb[DBonTable].theMapOwner.MapDraw.DEMonMap <> 0 then begin
+   if ValidDEM(GISdb[DBonTable].theMapOwner.MapDraw.DEMonMap) then begin
       if MDDef.GeomorphMapsFullDEM then begin
          GridLimits := DEMGlb[GISdb[DBonTable].theMapOwner.MapDraw.DEMonMap].FullDEMGridLimits;
       end
@@ -9707,6 +9765,37 @@ end;
 procedure Tdbtablef.Landcoversummary1Click(Sender: TObject);
 begin
    LandCoverSummary;
+end;
+
+procedure Tdbtablef.Latlongelevofrecordcorners1Click(Sender: TObject);
+var
+   Results : tStringList;
+   bb : sfBoundBox;
+
+         procedure DoPoint(Lat,Long : float64);
+         var
+            z : float32;
+         begin
+            with GISdb[DBonTable] do begin
+               if DEMGlb[theMapOwner.MapDraw.DEMonMap].GetElevFromLatLongDegree(Lat,Long,z) then begin
+                  Results.Add(RealToString(Long,-12,-8) + ',' + RealToString(Lat,-12,-8) + ',' + RealToString(z,-12,-2));
+               end;
+            end;
+         end;
+
+begin
+   with GISdb[DBonTable] do begin
+      if LineOrAreaShapeFile(ShapeFileType) then begin
+         bb := MyData.GetRecordBoundingBox;
+         Results := tStringList.Create;
+         Results.Add('LONG,LAT,ELEV');
+         DoPoint(bb.ymax,bb.Xmin);
+         DoPoint(bb.ymax,bb.Xmax);
+         DoPoint(bb.ymin,bb.Xmin);
+         DoPoint(bb.ymin,bb.Xmax);
+      end;
+      theMapOwner.StringListToLoadedDatabase(Results,NextFileNumber(MDTempdir,'record_bounding_box_','.dbf'));
+   end;
 end;
 
 procedure Tdbtablef.Latlongfields1Click(Sender: TObject);
@@ -12740,7 +12829,8 @@ end;
 
 procedure Tdbtablef.PutpointsonDEMgridlocations1Click(Sender: TObject);
 var
-   Lat,Long,xg,yg : float64;
+   Lat,Long : float64;
+   xg,yg : float32;
 begin
    GISdb[DBonTable].EmpSource.Enabled := false;
    ShowHourglassCursor;
@@ -13725,7 +13815,7 @@ end;
 procedure Tdbtablef.Areashapefile1Click(Sender: TObject);
 begin
    {$IfDef RecordMakeLineArea} WriteLineToDebugFile('Tdbtablef.Createlineshapefilefrompoints1Click ' + GISDataBase[DBonTable].dbname); {$EndIf}
-   Line_From_Points.MakeLinesFromPoints(GISdb[DBonTable],'',5);
+   MakeLinesFromPoints(GISdb[DBonTable],'',5);
    ShowStatus;
 end;
 

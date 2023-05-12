@@ -408,6 +408,14 @@ type
     CheckBox25: TCheckBox;
     CheckBox44: TCheckBox;
     CheckBox181: TCheckBox;
+    GroupBox19: TGroupBox;
+    Label12: TLabel;
+    Label27: TLabel;
+    Label35: TLabel;
+    Edit3: TEdit;
+    Edit16: TEdit;
+    Edit30: TEdit;
+    CheckBox89: TCheckBox;
     procedure BitBtn32Click(Sender: TObject);
     procedure BitBtn13Click(Sender: TObject);
     procedure HelpBtnClick(Sender: TObject);
@@ -973,11 +981,9 @@ begin
 
    Edit10.Text := IntToStr(MDDef.NumMasksToAdd);
    Edit2.Text := IntToStr(MDDef.BlowUpExtraMargin);
-   //Edit3.Text := IntToStr(MDdef.MaxMrSidImageSize);
    Edit4.Text := RealToString(MDdef.ScalebarDistortionTolerable,-8,-2);
    Edit5.Text := RealToString(MDDef.HistogramTailClipSize,-18,-4);
    Edit6.Text := RealToString(MDdef.MercShiftLongLimit,-12,-4);
-   //Edit7.Text := IntToStr(MDdef.OGLDefs.MaxInitOpenGLTriangles);
    Edit8.Text := IntToStr(MDdef.FillHoleRadius);
    Edit11.Text := IntToStr(MDDef.JPEGQuality);
    Edit12.Text := IntToStr(MDDef.DEMIX_full);
@@ -1010,6 +1016,10 @@ begin
    Edit27.Text := IntToStr(MDDef.GeoJSONG_zdec);
    Edit34.Text := IntToStr(MDDef.GeoJSONP_xydec);
    Edit35.Text := IntToStr(MDDef.GeoJSONP_zdec);
+
+   Edit3.Text := RealToString(MDdef.DEMIXSimpleTolerance,-12,-2);
+   Edit16.Text := RealToString(MDdef.DEMIXSlopeTolerance,-12,-2);
+   Edit30.Text := RealToString(MDdef.DEMIXRuffTolerance,-12,-2);
 
    CheckBox6.Checked := MDDef.RoamAllZ;
    Label36.Caption := IntToStr(MDDef.DefaultGraphXSize) + 'x' + IntToStr(MDDef.DefaultGraphYSize);
@@ -1109,7 +1119,7 @@ begin
 
    CheckBox88.Checked := MDDef.EnableGridNetworkComputing;
 
-   //CheckBox89.Checked := MDDef.DeleteTarGZ;
+   CheckBox89.Checked := MDDef.MapNameBelowComposite;
 
    CheckBox90.Checked := MDDef.VegDensityGroundPoints;
 
@@ -1520,7 +1530,7 @@ begin
 
    MDDef.EnableGridNetworkComputing := CheckBox88.Checked;
 
-   //MDDef.DeleteTarGZ := CheckBox89.Checked;
+   MDDef.MapNameBelowComposite := CheckBox89.Checked;
 
    MDDef.VegDensityGroundPoints := CheckBox90.Checked;
    MDDef.AssumeNegativeValuesMissing := CheckBox91.Checked;
@@ -1636,6 +1646,9 @@ begin
    MDDef.DefaultServerIP := Edit13.Text;
    MDDef.DefaultServerPort := StrToInt(Edit14.Text);
 
+   CheckEditString(Edit3.Text,MDdef.DEMIXSimpleTolerance);
+   CheckEditString(Edit16.Text,MDdef.DEMIXSlopeTolerance);
+   CheckEditString(Edit30.Text,MDdef.DEMIXRuffTolerance);
    CheckEditString(Edit15.Text,MDdef.MaxMapSize);
    CheckEditString(Edit18.Text,MDDef.MapSizeToVerify);
    CheckEditString(Edit20.Text,MDDef.MemoryPointCloudMaxPts);
@@ -1678,8 +1691,11 @@ begin
       MDdef.ProgramOption := tProgramOption(RadioGroup7.ItemIndex);
       if (MDdef.ProgramOption = GeologyProgram) then begin
          SetStructuralGeologyDefaults;
-         GetNaturalEarthData;
-         GeologyGetData;
+         {$If Defined(ExGeology) or Defined(ExGeologyDownload)}
+         {$Else}
+            GetNaturalEarthData;
+            GeologyGetData;
+         {$EndIf}
       end;
       if (MDdef.ProgramOption = GeographyProgram) then begin
          SetPhysicalGeographyDefaults;
@@ -1973,7 +1989,7 @@ end;
 
 procedure TOptionsForm.BitBtn21Click(Sender: TObject);
 begin
-  {$IfDef ExGeology}
+  {$If Defined(ExGeology) or Defined(ExGeologyDownload)}
   {$Else}
      GeologyGetData(true);
   {$EndIf}

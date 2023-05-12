@@ -14,7 +14,47 @@ begin
 end;
 
 
-function tDEMDataSet.InterpolateBiCubic(xgrid,ygrid : float32; var z : float32) : boolean;
+
+function tDEMDataSet.InterpolateBiCubicNumericalRecipes(xgrid,ygrid : float32; var z : float32) : boolean;
+//uses code from Numerical Recipes
+var
+   Elev,xgrad,ygrad,crossgrad  : tElevFloatArray;
+
+
+       function FindGradients(Index,xg,yg : integer) : boolean;
+       var
+          znw,zw,zsw,zn,z,zs,zne,ze,zse : float32;
+       begin
+          Result := SurroundedPointElevs(xg,yg,znw,zw,zsw,zn,z,zs,zne,ze,zse);
+          if Result then begin
+             xgrad[Index] :=  (zw-ze) / (2 * XSpaceByDEMrow[yg]);
+             ygrad[Index] :=  (zn-zs) / (2 * AverageYSpace);
+             crossgrad[Index] := (zne-zsw + znw-zse) / sqr(2*DiagSpaceByDEMrow[yg]);
+          end
+       end;
+
+
+var
+   xg,yg : integer;
+   grad1,grad2 : float32;
+begin
+   //1, 4 go CCW from the SW corner
+   xg := trunc(xgrid);
+   yg := trunc(ygrid);
+   Result := false;
+   if (xg >= 1) and (yg >= 1) and (xg < DEMHeader.NumCol - 2) and (yg < DEMHeader.NumRow - 2) then begin
+     if FindGradients(1,xg,yg) and FindGradients(2,xg+1,yg) and FindGradients(3,xg+1,yg+1) and FindGradients(4,xg,yg+1) then begin
+        //function bicuint(y,y1,y2,y12: tElevFloatarray; x1l,x1u,x2l,x2u : integer; x1,x2: float32;  VAR ansy,ansy1,ansy2: float32) : boolean;
+
+        Result := bicuint(Elev,xgrad,ygrad,crossgrad,  xg,xg+1,yg,yg+1,  Xgrid,Ygrid,  z,grad1,grad2);
+     end;
+   end;
+end;
+
+
+
+
+function tDEMDataSet.InterpolateBiCubicVisioTerra(xgrid,ygrid : float32; var z : float32) : boolean;
 var
    Elev,xgrad,ygrad,crossgrad  : tElevFloatArray;
 
@@ -75,9 +115,9 @@ begin
             wx[2] := 1/2*(4-8*dx[2]+5*dx[2]*dx[2]-dx[2]*dx[2]*dx[2]);
 
             {$IfDef RecordBicubic}
-            WriteLineToDebugFile('x incr:' + RealToString(xincr,8,2));
-            WriteLineToDebugFile('dx: ' + RealToString(dx[-1],6,2 ) + RealToString(dx[0],6,2 ) + RealToString(dx[1],6,2 ) + RealToString(dx[2],6,2 ) );
-            WriteLineToDebugFile('wx: ' + RealToString(wx[-1],6,2 ) + RealToString(wx[0],6,2 ) + RealToString(wx[1],6,2 ) + RealToString(wx[2],6,2 ) );
+               WriteLineToDebugFile('x incr:' + RealToString(xincr,8,2));
+               WriteLineToDebugFile('dx: ' + RealToString(dx[-1],6,2 ) + RealToString(dx[0],6,2 ) + RealToString(dx[1],6,2 ) + RealToString(dx[2],6,2 ) );
+               WriteLineToDebugFile('wx: ' + RealToString(wx[-1],6,2 ) + RealToString(wx[0],6,2 ) + RealToString(wx[1],6,2 ) + RealToString(wx[2],6,2 ) );
             {$EndIf}
 
             wy[-1] := 1/2*(4-8*dy[-1]+5*dy[-1]*dy[-1]-dy[-1]*dy[-1]*dy[-1]);
@@ -86,9 +126,9 @@ begin
             wy[2] := 1/2*(4-8*dy[2]+5*dy[2]*dy[2]-dy[2]*dy[2]*dy[2]);
 
             {$IfDef RecordBicubic}
-            WriteLineToDebugFile('y incr:' + RealToString(yincr,8,2));
-            WriteLineToDebugFile('dy: ' + RealToString(dy[-1],6,2 ) + RealToString(dy[0],6,2 ) + RealToString(dy[1],6,2 ) + RealToString(dy[2],6,2 ) );
-            WriteLineToDebugFile('wy: ' + RealToString(wy[-1],6,2 ) + RealToString(wy[0],6,2 ) + RealToString(wy[1],6,2 ) + RealToString(wy[2],6,2 ) );
+               WriteLineToDebugFile('y incr:' + RealToString(yincr,8,2));
+               WriteLineToDebugFile('dy: ' + RealToString(dy[-1],6,2 ) + RealToString(dy[0],6,2 ) + RealToString(dy[1],6,2 ) + RealToString(dy[2],6,2 ) );
+               WriteLineToDebugFile('wy: ' + RealToString(wy[-1],6,2 ) + RealToString(wy[0],6,2 ) + RealToString(wy[1],6,2 ) + RealToString(wy[2],6,2 ) );
             {$EndIf}
 
 
@@ -116,40 +156,6 @@ begin
 end;
 
 
-
-(*
-procedure tDEMDataSet.InterpolateBiCubic(xgrid,ygrid : float64; var z : float32);
-var
-   Elev,xgrad,ygrad,crossgrad  : tElevFloatArray;
-
-
-       function FindGradients(Index,xg,yg : integer) : boolean;
-       var
-          znw,zw,zsw,zn,z,zs,zne,ze,zse : float32;
-       begin
-          Result := SurroundedPointElevs(xg,yg,znw,zw,zsw,zn,z,zs,zne,ze,zse);
-          if Result then begin
-             xgrad[Index] :=  (zw-ze) / (2 * XSpaceByDEMrow[yg]);
-             ygrad[Index] :=  (zn-zs) / (2 * AverageYSpace);
-             crossgrad[Index] := (zne-zsw + znw-zse) / sqr(2*DiagSpaceByDEMrow[yg]);
-          end
-       end;
-
-
-var
-   xg,yg : integer;
-   grad1,grad2 : float32;
-begin
-   //1, 4 go CCW from the SW corner
-   xg := trunc(xgrid);
-   yg := trunc(ygrid);
-   if (xg >= 1) and (yg >= 1) and (xg < DEMHeader.NumCol - 2) and (yg < DEMHeader.NumRow - 2) then begin
-     if FindGradients(1,xg,yg) and FindGradients(2,xg+1,yg) and FindGradients(3,xg+1,yg+1) and FindGradients(4,xg,yg+1) then begin
-        bcuint(Elev,xgrad,ygrad,crossgrad,xg,xg+1,yg,yg+1,Xgrid,Ygrid,z,grad1,grad2);
-     end;
-   end;
-end;
-*)
 
 
 
@@ -203,7 +209,11 @@ begin
       Result := GetElevMetersOnGrid(round(xgrid),round(ygrid),z);
    end
    else begin
-     if (MDDef.wf.ElevInterpolation = piBicubic) and InterpolateBiCubic(xgrid,ygrid,z) then begin
+     if (MDDef.wf.ElevInterpolation = piBicubicVT) and InterpolateBiCubicVisioTerra(round(xgrid),round(ygrid),z) then begin
+     //if InterpolateBiCubicNumericalRecipes(round(xgrid),round(ygrid),z) then begin
+
+     end
+     else if (MDDef.wf.ElevInterpolation = piBicubicNR) and InterpolateBiCubicNumericalRecipes(round(xgrid),round(ygrid),z) then begin
 
      end
      else if GetElevSquareMeters(XGrid,YGrid,Elev) then begin {elevations surrounding a point: 1=SW, 2=SE, 3=NE, 4=NW, 5=1=SW}

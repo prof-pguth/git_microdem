@@ -20,6 +20,18 @@
 
 {$Define PlainMICRODEM}
 
+//deleted 5/8/2023 in anticipation of USNA website going down
+   {$Define ExGeologyDownload}
+
+ //these were deleted 4/19/2023 to track down problems; they are not key options
+   {$Define ExSidescan}
+   {$Define ExOceanography}
+   {$Define ExDriftModel}
+   {$Define ExSieve}
+   //{$Define ExTIN}      //this will take some work to get out of the core program
+   {$Define ExLabDownloads}
+   {$Define ExRedistrict}
+
 
 //{$Define IncludePython}
 
@@ -31,6 +43,8 @@
 {$Define ExWMS}
 {$Define ExMrSID}
 {$Define ExLandsatQA}
+
+
 
 {$Define MICRODEM}
 {$Define VCL}
@@ -44,6 +58,10 @@
 {$EndIf}
 
 //{$Define BasicOpens}
+
+
+//{$Define AllowCurvatureStatistics}  //not recommended, and must be renabled here
+
 
 {$IfDef PlainMICRODEM}
    {$Define RecordTime}

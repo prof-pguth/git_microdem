@@ -41,6 +41,7 @@ type
     CheckBox1: TCheckBox;
     RadioGroup2: TRadioGroup;
     BitBtn3: TBitBtn;
+    BitBtn4: TBitBtn;
     procedure HelpBtnClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure RadioGroup1Click(Sender: TObject);
@@ -55,6 +56,7 @@ type
     procedure Edit2Change(Sender: TObject);
     procedure RadioGroup2Click(Sender: TObject);
     procedure BitBtn3Click(Sender: TObject);
+    procedure BitBtn4Click(Sender: TObject);
   private
     { Private declarations }
     procedure DisplayValues;
@@ -81,20 +83,21 @@ procedure PickMapElevationRangeForColoring(var MapForm : tMapForm);
 var
   ElevationRangeForm : TElevationRangeForm;
 begin
+   {$IfDef ElevColorChange} WriteLineToDebugFile(MapOwner.MapDraw.MapColorRange('TPickMapElevationRangeForColoring in')); {$EndIf}
+   MDDef.ClipZColors := true;
    ElevationRangeForm := TElevationRangeForm.Create(Application);
-   with ElevationRangeForm do begin
-      MapOwner := MapForm;
-      RadioGroup2.ItemIndex := ord(MapOwner.MapDraw.ElevStretch);
-      if MapOwner.MapDraw.UsePercentiles then RadioGroup1.ItemIndex := 5;
-      {$IfDef ElevColorChange} WriteLineToDebugFile(MapOwner.MapDraw.MapColorRange('TPickMapElevationRangeForColoring in')); {$EndIf}
-      DisplayValues;
-      ShowModal;
-      MapForm.MapDraw.LockZColors := false;
-      {$IfDef ElevColorChange} WriteLineToDebugFile(MapOwner.MapDraw.MapColorRange('TPickMapElevationRangeForColoring out')); {$EndIf}
-      Free;
-   end;
-end;
+   ElevationRangeForm.MapOwner := MapForm;
+   ElevationRangeForm.RadioGroup2.ItemIndex := ord(ElevationRangeForm.MapOwner.MapDraw.ElevStretch);
+   if ElevationRangeForm.MapOwner.MapDraw.UsePercentiles then ElevationRangeForm.RadioGroup1.ItemIndex := 5
+   else ElevationRangeForm.RadioGroup1.ItemIndex := 4;
 
+   //Turn on clip colorsSet contrasting colors for the highs and lowsSpecified for the z RangeMode the Max and Min
+   ElevationRangeForm.DisplayValues;
+   ElevationRangeForm.ShowModal;
+   MapForm.MapDraw.LockZColors := false;
+   ElevationRangeForm.Free;
+   {$IfDef ElevColorChange} WriteLineToDebugFile(MapOwner.MapDraw.MapColorRange('TPickMapElevationRangeForColoring out')); {$EndIf}
+end;
 
 
 procedure TElevationRangeForm.BitBtn1Click(Sender: TObject);
@@ -113,6 +116,11 @@ var
 begin
    DEMGlb[MapOwner.MapDraw.DEMonMap].MarkOutsideRangeMissing(MapOwner.MapDraw.MinMapElev,MapOwner.MapDraw.MaxMapElev,NumPts);
    if (NumPts > 0) then RedrawSpeedButton12Click(Sender);
+end;
+
+procedure TElevationRangeForm.BitBtn4Click(Sender: TObject);
+begin
+   QueryColor(BitBtn4,MDdef.MissingDataColor);
 end;
 
 procedure TElevationRangeForm.CheckBox1Click(Sender: TObject);
@@ -187,8 +195,8 @@ begin
              end;
       esPercentile : begin
                         DEMGlb[MapOwner.MapDraw.DEMOnMap].GetElevPercentiles(DEMGlb[MapOwner.MapDraw.DEMOnMap].FullDEMGridLimits);
-                        MapOwner.MapDraw.MinMapElev := MDDef.MinElevPercentile;  //DEMGlb[MapOwner.MapDraw.DEMonMap].PercentileOfElevation(MDDef.MinElevPercentile);
-                        MapOwner.MapDraw.MaxMapElev := MDDef.MaxElevPercentile;  //DEMGlb[MapOwner.MapDraw.DEMonMap].PercentileOfElevation(MDDef.MaxElevPercentile);
+                        MapOwner.MapDraw.MinMapElev := MDDef.MinElevPercentile;
+                        MapOwner.MapDraw.MaxMapElev := MDDef.MaxElevPercentile;
                      end;
    end;
    if MDdef.QuickMapRedraw then RedrawSpeedButton12Click(nil)
@@ -235,6 +243,7 @@ procedure TElevationRangeForm.FormCreate(Sender: TObject);
 begin
    ColorBitBtn(BitBtn1,MDdef.HighOffscaleColor);
    ColorBitBtn(BitBtn2,MDdef.LowOffscaleColor);
+   ColorBitBtn(BitBtn4,MDdef.MissingDataColor);
    CheckBox1.Checked := MDDef.ClipZColors;
    Petmar.PlaceFormAtMousePosition(Self);
 end;

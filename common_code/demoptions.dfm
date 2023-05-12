@@ -3,20 +3,20 @@ inherited OptionsForm: TOptionsForm
   Top = 230
   BorderStyle = bsSizeable
   Caption = ''
-  ClientHeight = 556
-  ClientWidth = 797
+  ClientHeight = 573
+  ClientWidth = 833
   Position = poDefaultPosOnly
   OnClose = FormClose
   OnCreate = FormCreate
   OnResize = FormResize
-  ExplicitWidth = 813
-  ExplicitHeight = 595
+  ExplicitWidth = 845
+  ExplicitHeight = 611
   TextHeight = 15
   inherited Bevel1: TBevel
     Left = 0
     Top = 0
-    Width = 797
-    Height = 498
+    Width = 833
+    Height = 515
     Align = alClient
     ExplicitLeft = 0
     ExplicitTop = 1
@@ -45,14 +45,14 @@ inherited OptionsForm: TOptionsForm
   object PageControl1: TPageControl
     Left = 0
     Top = 0
-    Width = 797
-    Height = 498
-    ActivePage = TabSheet15
+    Width = 833
+    Height = 515
+    ActivePage = TabSheet4
     Align = alClient
     MultiLine = True
     TabOrder = 2
-    ExplicitWidth = 809
-    ExplicitHeight = 501
+    ExplicitWidth = 829
+    ExplicitHeight = 514
     object TabSheet1: TTabSheet
       Caption = 'Program'
       object RadioGroup7: TRadioGroup
@@ -130,8 +130,8 @@ inherited OptionsForm: TOptionsForm
       object StringGrid1: TStringGrid
         Left = 0
         Top = 0
-        Width = 805
-        Height = 452
+        Width = 825
+        Height = 465
         Align = alClient
         ColCount = 2
         ScrollBars = ssVertical
@@ -325,7 +325,7 @@ inherited OptionsForm: TOptionsForm
       end
       object CheckBox124: TCheckBox
         Left = 266
-        Top = 402
+        Top = 349
         Width = 209
         Height = 17
         Caption = 'Allow scale bars, small scale maps'
@@ -441,7 +441,7 @@ inherited OptionsForm: TOptionsForm
       end
       object CheckBox160: TCheckBox
         Left = 266
-        Top = 342
+        Top = 326
         Width = 314
         Height = 17
         Caption = 'Grayscale reflectance map with overlay'
@@ -454,6 +454,14 @@ inherited OptionsForm: TOptionsForm
         Height = 23
         TabOrder = 24
         Text = 'Edit4'
+      end
+      object CheckBox89: TCheckBox
+        Left = 266
+        Top = 397
+        Width = 218
+        Height = 17
+        Caption = 'Map name below composite maps'
+        TabOrder = 25
       end
     end
     object TabSheet5: TTabSheet
@@ -1744,7 +1752,7 @@ inherited OptionsForm: TOptionsForm
         end
       end
       object BitBtn19: TBitBtn
-        Left = 273
+        Left = 264
         Top = 72
         Width = 195
         Height = 25
@@ -1827,8 +1835,8 @@ inherited OptionsForm: TOptionsForm
       object GroupBox18: TGroupBox
         Left = 584
         Top = 8
-        Width = 225
-        Height = 337
+        Width = 193
+        Height = 238
         Caption = 'DEMIX'
         TabOrder = 17
         object DTfilllabel: TLabel
@@ -1839,16 +1847,16 @@ inherited OptionsForm: TOptionsForm
           Caption = 'Tile fill required (%)'
         end
         object Edit12: TEdit
-          Left = 64
-          Top = 47
-          Width = 121
+          Left = 128
+          Top = 18
+          Width = 49
           Height = 23
           TabOrder = 0
           Text = 'Edit12'
         end
         object CheckBox5: TCheckBox
           Left = 16
-          Top = 88
+          Top = 47
           Width = 137
           Height = 17
           Caption = 'Do CHMs'
@@ -1856,7 +1864,7 @@ inherited OptionsForm: TOptionsForm
         end
         object CheckBox154: TCheckBox
           Left = 16
-          Top = 111
+          Top = 70
           Width = 169
           Height = 17
           Caption = 'Do air or dirt maps'
@@ -1864,7 +1872,7 @@ inherited OptionsForm: TOptionsForm
         end
         object CheckBox158: TCheckBox
           Left = 16
-          Top = 134
+          Top = 93
           Width = 185
           Height = 17
           Caption = 'Do elevation differences'
@@ -1872,7 +1880,7 @@ inherited OptionsForm: TOptionsForm
         end
         object CheckBox162: TCheckBox
           Left = 16
-          Top = 157
+          Top = 116
           Width = 169
           Height = 17
           Caption = 'Do slope differences'
@@ -1880,7 +1888,7 @@ inherited OptionsForm: TOptionsForm
         end
         object CheckBox169: TCheckBox
           Left = 16
-          Top = 180
+          Top = 139
           Width = 193
           Height = 17
           Caption = 'Do roughness differences'
@@ -1888,7 +1896,7 @@ inherited OptionsForm: TOptionsForm
         end
         object CheckBox180: TCheckBox
           Left = 16
-          Top = 203
+          Top = 162
           Width = 193
           Height = 17
           Caption = 'Do half second DEMs'
@@ -1896,19 +1904,72 @@ inherited OptionsForm: TOptionsForm
         end
         object CheckBox25: TCheckBox
           Left = 16
-          Top = 226
+          Top = 185
           Width = 209
           Height = 17
           Caption = 'Elevation parmeter graphs'
           TabOrder = 7
         end
         object CheckBox181: TCheckBox
-          Left = 24
-          Top = 272
+          Left = 16
+          Top = 208
           Width = 161
           Height = 17
           Caption = 'Composite images'
           TabOrder = 8
+        end
+      end
+      object GroupBox19: TGroupBox
+        Left = 584
+        Top = 256
+        Width = 185
+        Height = 105
+        Caption = 'DEMIX tolerances'
+        TabOrder = 18
+        object Label12: TLabel
+          Left = 8
+          Top = 24
+          Width = 70
+          Height = 15
+          Caption = 'Elevation (m)'
+        end
+        object Label27: TLabel
+          Left = 8
+          Top = 48
+          Width = 50
+          Height = 15
+          Caption = 'Slope (%)'
+        end
+        object Label35: TLabel
+          Left = 8
+          Top = 72
+          Width = 79
+          Height = 15
+          Caption = 'Roughness (%)'
+        end
+        object Edit3: TEdit
+          Left = 104
+          Top = 24
+          Width = 78
+          Height = 23
+          TabOrder = 0
+          Text = 'Edit3'
+        end
+        object Edit16: TEdit
+          Left = 104
+          Top = 48
+          Width = 78
+          Height = 23
+          TabOrder = 1
+          Text = 'Edit3'
+        end
+        object Edit30: TEdit
+          Left = 104
+          Top = 72
+          Width = 78
+          Height = 23
+          TabOrder = 2
+          Text = 'Edit3'
         end
       end
     end
@@ -2118,7 +2179,7 @@ inherited OptionsForm: TOptionsForm
       end
       object CheckBox69: TCheckBox
         Left = 16
-        Top = 392
+        Top = 371
         Width = 153
         Height = 17
         Caption = 'Save DB status'
@@ -2314,7 +2375,7 @@ inherited OptionsForm: TOptionsForm
       end
       object CheckBox153: TCheckBox
         Left = 16
-        Top = 349
+        Top = 328
         Width = 234
         Height = 17
         Caption = 'Include open grids in DB ID'
@@ -2338,7 +2399,7 @@ inherited OptionsForm: TOptionsForm
       end
       object CheckBox38: TCheckBox
         Left = 16
-        Top = 369
+        Top = 348
         Width = 234
         Height = 17
         Caption = 'Duplicate input lines allowed'
@@ -2346,7 +2407,7 @@ inherited OptionsForm: TOptionsForm
       end
       object CheckBox95: TCheckBox
         Left = 16
-        Top = 328
+        Top = 307
         Width = 249
         Height = 17
         Caption = 'Always show coordinate edits'
@@ -2354,7 +2415,7 @@ inherited OptionsForm: TOptionsForm
       end
       object CheckBox165: TCheckBox
         Left = 16
-        Top = 415
+        Top = 394
         Width = 153
         Height = 17
         Caption = 'Save DB Filter'
@@ -2364,7 +2425,7 @@ inherited OptionsForm: TOptionsForm
         Left = 311
         Top = 314
         Width = 314
-        Height = 145
+        Height = 135
         Caption = 'Speed up operations'
         TabOrder = 30
         object CheckBox37: TCheckBox
@@ -2410,7 +2471,7 @@ inherited OptionsForm: TOptionsForm
       end
       object CheckBox60: TCheckBox
         Left = 16
-        Top = 440
+        Top = 419
         Width = 234
         Height = 17
         Caption = 'Record display toolbar on top'
@@ -3209,13 +3270,13 @@ inherited OptionsForm: TOptionsForm
   end
   object Panel1: TPanel
     Left = 0
-    Top = 498
-    Width = 797
+    Top = 515
+    Width = 833
     Height = 58
     Align = alBottom
     TabOrder = 3
-    ExplicitTop = 501
-    ExplicitWidth = 809
+    ExplicitTop = 514
+    ExplicitWidth = 829
     object BitBtn3: TBitBtn
       Left = 178
       Top = 6

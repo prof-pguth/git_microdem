@@ -99,47 +99,44 @@ var
 begin
    {$IfDef RecordElevColorMapChanges} WriteLineToDebugFile('ChangeElevationMap in'); {$EndIf}
    ElevOptionsForm := TElevOptionsForm.Create(Application);
-   with ElevOptionsForm do begin
-      SettingUp := true;
-      MapOwner := aMapOwner;
-      Caption := 'Elevation options: ' + DEMGlb[MapOwner.MapDraw.DEMonMap].AreaName;
-      ColorBitBtn(BitBtn1,MDdef.MissingDataColor);
-      RadioGroup3.ItemIndex := MDDef.MonochromeColor;
-      FillComboBoxWithColorPalettes(ColorBrewerName,ComboBox1);
-      if (MDDef.ElevPalName = '') then ComboBox1.Text := ComboBox1.Items[0]
-      else ComboBox1.Text := MDDef.ElevPalName;
-      FillComboBoxWithColorPalettes(HardLimitColorPaletteFName,ComboBox2);
-      if (ElevationFixedPalette = '') then ComboBox2.Text := ComboBox2.Items[0]
-      else ComboBox2.Text := ElevationFixedPalette;
-      Button2.Visible := (MapOwner <> Nil);
+   ElevOptionsForm.SettingUp := true;
+   ElevOptionsForm.MapOwner := aMapOwner;
+   ElevOptionsForm.Caption := 'Elevation options: ' + DEMGlb[ElevOptionsForm.MapOwner.MapDraw.DEMonMap].AreaName;
+   ColorBitBtn(ElevOptionsForm.BitBtn1,MDdef.MissingDataColor);
+   ElevOptionsForm.RadioGroup3.ItemIndex := MDDef.MonochromeColor;
+   FillComboBoxWithColorPalettes(ColorBrewerName,ElevOptionsForm.ComboBox1);
+   if (MDDef.ElevPalName = '') then ElevOptionsForm.ComboBox1.Text := ElevOptionsForm.ComboBox1.Items[0]
+   else ElevOptionsForm.ComboBox1.Text := MDDef.ElevPalName;
+   FillComboBoxWithColorPalettes(HardLimitColorPaletteFName,ElevOptionsForm.ComboBox2);
+   if (ElevationFixedPalette = '') then ElevOptionsForm.ComboBox2.Text := ElevOptionsForm.ComboBox2.Items[0]
+   else ElevOptionsForm.ComboBox2.Text := ElevationFixedPalette;
+   ElevOptionsForm.Button2.Visible := (ElevOptionsForm.MapOwner <> Nil);
 
-      CheckBox2.Checked := MDdef.WaterCheck;
-      CheckBox3.Checked := MDdef.LakeCheck;
-      CheckBox4.Checked := MDdef.InvertGrayScale;
-      CheckBox5.Checked := MapOwner.MapDraw.Log10Elev;
-      ihsHue := Hue;
-      ihsSat := Sat;
-      ihsInt := Int;
-      SettingUp := false;
+   ElevOptionsForm.CheckBox2.Checked := MDdef.WaterCheck;
+   ElevOptionsForm.CheckBox3.Checked := MDdef.LakeCheck;
+   ElevOptionsForm.CheckBox4.Checked := MDdef.InvertGrayScale;
+   ElevOptionsForm.CheckBox5.Checked := ElevOptionsForm.MapOwner.MapDraw.Log10Elev;
+   ElevOptionsForm.ihsHue := Hue;
+   ElevOptionsForm.ihsSat := Sat;
+   ElevOptionsForm.ihsInt := Int;
+   ElevOptionsForm.SettingUp := false;
 
-      if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevTerrain then RadioGroup1.ItemIndex := 0
-      else if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevGray    then RadioGroup1.ItemIndex := 1
-      else if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevBands       then RadioGroup1.ItemIndex := 2
-      else if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevIHS         then RadioGroup1.ItemIndex := 3
-      else if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevLandSea     then RadioGroup1.ItemIndex := 4
-      else if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevSpectrum    then RadioGroup1.ItemIndex := 5
-      else if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevRainbow     then RadioGroup1.ItemIndex := 6
-      else if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevFromTable   then RadioGroup1.ItemIndex := 7
-      else if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevDefinedPalette then RadioGroup1.ItemIndex := 8
-      else if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevContrast then RadioGroup1.ItemIndex := 9
-      else if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevGrayReversed    then RadioGroup1.ItemIndex := 10
-      else begin
-         RadioGroup1.ItemIndex := 1;
-         MapOwner.DoFastMapRedraw;
-      end;
-      ElevOptionsForm.Show;
-
+   if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevTerrain then ElevOptionsForm.RadioGroup1.ItemIndex := 0
+   else if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevGray    then ElevOptionsForm.RadioGroup1.ItemIndex := 1
+   else if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevBands   then ElevOptionsForm.RadioGroup1.ItemIndex := 2
+   else if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevIHS     then ElevOptionsForm.RadioGroup1.ItemIndex := 3
+   else if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevLandSea then ElevOptionsForm.RadioGroup1.ItemIndex := 4
+   else if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevSpectrum then ElevOptionsForm.RadioGroup1.ItemIndex := 5
+   else if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevRainbow  then ElevOptionsForm.RadioGroup1.ItemIndex := 6
+   else if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevFromTable then ElevOptionsForm.RadioGroup1.ItemIndex := 7
+   else if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevDefinedPalette then ElevOptionsForm.RadioGroup1.ItemIndex := 8
+   else if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevContrast then ElevOptionsForm.RadioGroup1.ItemIndex := 9
+   else if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevGrayReversed then ElevOptionsForm.RadioGroup1.ItemIndex := 10
+   else begin
+      ElevOptionsForm.RadioGroup1.ItemIndex := 1;
+      ElevOptionsForm.MapOwner.DoFastMapRedraw;
    end;
+   ElevOptionsForm.Show;
    {$IfDef RecordElevColorMapChanges} WriteLineToDebugFile('ChangeElevationMap out'); {$EndIf}
 end;
 

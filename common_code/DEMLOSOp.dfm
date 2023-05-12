@@ -4,8 +4,8 @@ object LOSOption: TLOSOption
   ActiveControl = OKBtn
   BorderStyle = bsDialog
   Caption = 'Line Of Sight Options'
-  ClientHeight = 382
-  ClientWidth = 619
+  ClientHeight = 377
+  ClientWidth = 599
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
@@ -142,12 +142,12 @@ object LOSOption: TLOSOption
   object PageControl1: TPageControl
     Left = 0
     Top = 0
-    Width = 619
+    Width = 599
     Height = 341
     ActivePage = TabSheet1
     Align = alTop
     TabOrder = 8
-    ExplicitWidth = 625
+    ExplicitWidth = 615
     object TabSheet1: TTabSheet
       Caption = 'Profile'
       object Label13: TLabel

@@ -163,11 +163,11 @@
         <Icon_MainIcon>..\icons\md_logo.ico</Icon_MainIcon>
         <DCC_ExeOutput>C:\microdem\</DCC_ExeOutput>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-        <VerInfo_MinorVer>4</VerInfo_MinorVer>
+        <VerInfo_MinorVer>5</VerInfo_MinorVer>
         <VerInfo_MajorVer>2023</VerInfo_MajorVer>
-        <VerInfo_Release>7</VerInfo_Release>
+        <VerInfo_Release>11</VerInfo_Release>
         <DCC_DcuOutput>C:\turbo\obj_files_64\</DCC_DcuOutput>
-        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2023.4.7.3;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2023.5.11.3;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
         <VerInfo_Build>3</VerInfo_Build>
         <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
@@ -231,7 +231,6 @@
         <DCCReference Include="..\common_code\DEMLOSOp.pas">
             <Form>LOSOption</Form>
         </DCCReference>
-        <DCCReference Include="..\common_code\mst_format.pas"/>
         <DCCReference Include="..\common_code\DEM_indexes.pas"/>
         <DCCReference Include="..\common_code\dem_legend.pas">
             <Form>SetUpLegendForm</Form>
@@ -251,9 +250,6 @@
         </DCCReference>
         <DCCReference Include="..\common_code\DEMweapn.pas">
             <Form>PickWeapon</Form>
-        </DCCReference>
-        <DCCReference Include="..\common_code\drift_model.pas">
-            <Form>Drifting_form</Form>
         </DCCReference>
         <DCCReference Include="..\common_code\lvis.pas"/>
         <DCCReference Include="..\common_code\sup_class.pas">
@@ -302,9 +298,6 @@
         <DCCReference Include="..\common_code\kml_creator.pas"/>
         <DCCReference Include="..\common_code\demtrendopt.pas">
             <Form>TrendPick</Form>
-        </DCCReference>
-        <DCCReference Include="..\common_code\ss_options.pas">
-            <Form>SS_opts_form</Form>
         </DCCReference>
         <DCCReference Include="..\common_code\PETFouri.pas">
             <Form>FFTGraph</Form>
@@ -368,9 +361,6 @@
         </DCCReference>
         <DCCReference Include="..\common_code\map_masking.pas">
             <Form>MapMaskForm</Form>
-        </DCCReference>
-        <DCCReference Include="..\common_code\line_from_points.pas">
-            <Form>linePointForm</Form>
         </DCCReference>
         <DCCReference Include="..\common_code\plss_converter.pas">
             <Form>PLSSConvertForm</Form>
@@ -486,9 +476,6 @@
         <DCCReference Include="..\common_code\db_join.pas">
             <Form>dbjoinform2</Form>
         </DCCReference>
-        <DCCReference Include="..\common_code\ChirpGrf.pas">
-            <Form>ChirpGraph</Form>
-        </DCCReference>
         <DCCReference Include="..\common_code\altcommr.pas"/>
         <DCCReference Include="..\common_code\toggle_db_use.pas">
             <Form>ToggleDBfieldsForm</Form>
@@ -502,15 +489,9 @@
         <DCCReference Include="..\common_code\pick_geostats.pas">
             <Form>PickGeoStat</Form>
         </DCCReference>
-        <DCCReference Include="..\common_code\SideImg.pas">
-            <Form>sideimage</Form>
-        </DCCReference>
         <DCCReference Include="..\common_code\dem_tin.pas"/>
         <DCCReference Include="..\common_code\sup_class_aux_grids.pas">
             <Form>SupClassAuxGrids</Form>
-        </DCCReference>
-        <DCCReference Include="..\common_code\demredistrict.pas">
-            <Form>RedistrictForm</Form>
         </DCCReference>
         <DCCReference Include="..\common_code\drg_anaglyph.pas">
             <Form>DRGAnaglyphForm</Form>
@@ -533,9 +514,6 @@
             <Form>sunrisepicker</Form>
         </DCCReference>
         <DCCReference Include="..\common_code\SGP4SDP4.PAS"/>
-        <DCCReference Include="..\common_code\sieve_main.pas">
-            <Form>SieveMainForm</Form>
-        </DCCReference>
         <DCCReference Include="..\common_code\SGP_OUT.PAS"/>
         <DCCReference Include="..\common_code\DEMTigerOps.pas">
             <Form>TigerOverlayOptions</Form>
@@ -560,9 +538,6 @@
         </DCCReference>
         <DCCReference Include="..\common_code\check_8_dirs.pas">
             <Form>GetDir8</Form>
-        </DCCReference>
-        <DCCReference Include="..\common_code\Sieventr.pas">
-            <Form>SieveEntryForm</Form>
         </DCCReference>
         <DCCReference Include="..\common_code\petprogr.pas">
             <Form>PetProgF</Form>
@@ -864,9 +839,6 @@
             <Form>View3DForm</Form>
         </DCCReference>
         <DCCReference Include="..\microdem_open_source\las_files_grouping.pas"/>
-        <DCCReference Include="..\common_code\chirpopt.pas">
-            <Form>C</Form>
-        </DCCReference>
         <DCCReference Include="..\common_code\new_dem_headerf.pas">
             <Form>DEMHeaderForm</Form>
         </DCCReference>
@@ -934,25 +906,21 @@
         <DCCReference Include="..\FireMonkey3DGlobalRotate\ufrmMain.pas">
             <Form>frmMain</Form>
         </DCCReference>
-        <DCCReference Include="..\python\simple_python.pas">
-            <Form>PythonForm1</Form>
-        </DCCReference>
+        <DCCReference Include="..\python\simple_python.pas"/>
         <DCCReference Include="..\common_code\demix_filter.pas">
             <Form>DemixFilterForm</Form>
         </DCCReference>
         <DCCReference Include="..\demix\demix_control.pas"/>
         <DCCReference Include="..\common_code\monitor_change_form.pas">
             <Form>ChangeMapForm</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="..\common_code\pick_several_dems.pas">
             <Form>tPickGridsForm</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="..\gis_ops\tiger_address.pas">
             <Form>TigerAddressForm</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="..\demix\demix_cop_alos.pas"/>
         <None Include="nevadia_defines.inc"/>
         <None Include="..\common_code\demdatabase_maps.inc"/>
         <None Include="..\common_code\demdatabase_vcl.inc"/>

@@ -648,7 +648,7 @@ begin
             if (Result = nil) then begin
                SingleWide := bmp.Width + 25;
                SingleHigh := bmp.Height + 25;
-               if Result = nil then CreateBitmap(Result,nc * SingleWide + 10,nr * SingleHigh + 60);
+               if (Result = nil) then CreateBitmap(Result,nc * SingleWide + 10,nr * SingleHigh + 60);
             end;
             Result.Canvas.Draw( 5 + (n mod nc) * SingleWide, (n div nc) * SingleHigh + 15,bmp);
             bmp.Free;
@@ -672,7 +672,7 @@ var
    fName : PathStr;
    Bitmap : tMyBitmap;
 begin
-   {$IfDef RecordBigBitmap}  WriteLineToDebugFile('AllGraphsOneImage in'); {$EndIf}
+   {$IfDef RecordBigBitmap} WriteLineToDebugFile('AllGraphsOneImage in'); {$EndIf}
    Findings := tStringList.Create;
    BottomMargin := 45;
    for i := pred(WMDEM.MDIChildCount) downto 0 do begin
@@ -721,6 +721,7 @@ var
    bigbmp : tMyBitmap;
    fName : PathStr;
    AskCols : boolean;
+   x,y : integer;
    ImageForm : TImageDisplayForm;
 begin
    {$IfDef RecordBigBitmap}  WriteLineToDebugFile('MakeBigBitmap in'); {$EndIf}
@@ -732,24 +733,28 @@ begin
      end;
      BigBMP := CombineBitmaps(Cols, theFiles, Capt);
      if (BigBMP <> nil) then begin
+        if (Capt <> '') then begin
+           BigBmp.Canvas.Font.Size := 24;
+           BigBmp.Canvas.Font.Style := [fsBold];
+           x := BigBmp.Width - 10 - BigBmp.Canvas.TextWidth(Capt);
+           y := BigBmp.Height - 10 - BigBmp.Canvas.TextHeight(Capt);
+           BigBmp.Canvas.TextOut(x,y,Capt);
+        end;
         if (SaveName <> '') then begin
             {$IfDef RecordBigBitmap} WriteLineToDebugFile('MakeBigBitmap save in ' + SaveName); {$EndIf}
             SaveBitmap(BigBmp,SaveName);
-            Bigbmp.Free;
             Result := true;
          end;
-         //else begin
-            ImageForm := TImageDisplayForm.Create(Application);
-            ImageForm.LoadImage(BigBmp,true);
-            fName := Petmar.NextFileNumber(MDtempDir,'big_bmp_files_','.txt');
-            theFiles.SaveToFile(fName);
-            ImageForm.BigBM_Capt := Capt;
-            ImageForm.BigBM_files := fName;
-            ImageForm.ChangeColumns1.Visible := true;
-            if AskCols then ImageForm.Changecolumns1Click(nil)
-            else ImageForm.RedrawSpeedButton12Click(Nil);
-            {$IfDef RecordBigBitmap}  WriteLineToDebugFile('MakeBigBitmap out, imageform created'); {$EndIf}
-         //end;
+         ImageForm := TImageDisplayForm.Create(Application);
+         ImageForm.LoadImage(BigBmp,true);
+         fName := Petmar.NextFileNumber(MDtempDir,'big_bmp_files_','.txt');
+         theFiles.SaveToFile(fName);
+         ImageForm.BigBM_Capt := Capt;
+         ImageForm.BigBM_files := fName;
+         ImageForm.ChangeColumns1.Visible := true;
+         if AskCols then ImageForm.Changecolumns1Click(nil)
+         else ImageForm.RedrawSpeedButton12Click(Nil);
+         {$IfDef RecordBigBitmap}  WriteLineToDebugFile('MakeBigBitmap out, imageform created'); {$EndIf}
       end;
    end
    else begin
@@ -3376,6 +3381,8 @@ finalization
 
    {$IfDef MessageShutdownUnitProblems} MessageToContinue('Closing petimage'); {$EndIf}
 end.
+
+
 
 
 

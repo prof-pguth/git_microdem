@@ -472,6 +472,9 @@ var
 
 procedure RemoveASCII0FromFile(fName : PathStr);
 
+function FindDriveWithFile(var fName : PathStr) : boolean;
+function FindDriveWithPath(var aPath : PathStr) : boolean;
+
 
 function FindFieldInStringList(Header : tStringList; FieldName : ANSIstring; SepChar : ANSIchar) : ANSIstring;
 function FindIntegerFieldInStringList(Header : tStringList; FieldName : ANSIstring; SepChar : ANSIchar) : Integer;
@@ -505,16 +508,12 @@ implementation
 
 uses
 
-   {$IfDef VCL}
-       Nevadia_Main,
-       Thread_timers,
-       {$IfDef Microdem}
-          TerSplsh,
-       {$EndIf}
-   {$EndIf}
-
 
 {$IfDef VCL}
+   Nevadia_Main,
+   Thread_timers,
+   TerSplsh,
+
    Get_angle,
    PETEd32,      {form with editor, which also displays text results}
    PETBMPSize,   {form to change the size of the bitmap and the graph}
@@ -529,18 +528,58 @@ uses
    PETForm,      {form with common dialogs for use}
 {$EndIf}
 
-  {$ifDef MICRODEM}
-      DEMDefs,
-      {$IfDef ExGIS}
-      {$Else}
-         petdbutils,
-      {$EndIf}
-  {$EndIf}
-  PetImage,
-  PETMath;      {math library}
+   DEMDefs,
+   {$IfDef ExGIS}
+   {$Else}
+      petdbutils,
+   {$EndIf}
+   PetImage,
+   PETMath;      {math library}
 
 var
    TerrainCuts : array[0..4,1..3] of integer;
+
+
+
+function FindDriveWithPath(var aPath : PathStr) : boolean;
+//used for data files on external hard drive, which can have different drive letters when moved
+var
+   ch : ANSIchar;
+begin
+   Result := PathIsValid(aPath);
+   ch := 'a';
+   if not Result then begin
+      for ch := 'a' to 'z' do begin
+         aPath[1] := ch;
+         if PathIsValid(aPath) then begin
+            Result := true;
+            exit;
+         end;
+      end;
+      Result := false;
+   end;
+end;
+
+
+function FindDriveWithFile(var fName : PathStr) : boolean;
+//used for data files on external hard drive, which can have different drive letters when moved
+var
+   ch : ANSIchar;
+begin
+   Result := FileExists(fName);
+   ch := 'a';
+   if not Result then begin
+      for ch := 'a' to 'z' do begin
+         fName[1] := ch;
+         if FileExists(fName) then begin
+            Result := true;
+            exit;
+         end;
+      end;
+      Result := false;
+   end;
+end;
+
 
 
 function BitmapSizeString(Bitmap : tMyBitmap) : shortstring;
@@ -3118,7 +3157,7 @@ end;
                if (Outfile <> '') then ChDir(ExtractFilePath(OutFile))
                else ChDir(ExtractFilePath(fName));
                WinExecAndWait32(cmd);
-               if MDDef.DeleteTarGZ then File2Trash(fName);
+               //if MDDef.DeleteTarGZ then File2Trash(fName);
             end
             else Missing7ZipMessage;
          end;
@@ -3136,7 +3175,7 @@ end;
                end
                else ChDir(ExtractFilePath(fName));
                WinExecAndWait32(cmd);
-               if MDDef.DeleteTarGZ then File2Trash(fName);
+               //if MDDef.DeleteTarGZ then File2Trash(fName);
             end
             else Missing7ZipMessage;
          end;

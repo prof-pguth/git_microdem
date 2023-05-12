@@ -22,14 +22,19 @@ unit GeoTiff;
 {$IfDef Recordproblems}  //normally only defined for debugging specific problems
 
    {$Define RecordGeotiffFailures}
+   //{$Define ReportKey258}  //this happens with some Landsat, but does not appear to stop things
 
    {$IFDEF DEBUG}
       //{$Define RecordGeotiff}
       //{$Define RecordGeotiffFailures}
+      //{$Define RecordDEMMapProjection}
+      //{$Define RecordInitializeDEM}
       //{$Define RecordGeotiffProjection}
       //{$Define RecordDefineDatum}
+      //{$Define TrackHorizontalDatum}
+      //{$Define TrackDEMCorners}
+      //{$Define RecordUKOS}
       //{$Define TrackProjection}
-      //{$Define RecordDEMMapProjection}
       //{$Define ShowKeyDEM}
       //{$Define TrackZ}
       //{$Define RecordTiePoints}
@@ -45,7 +50,6 @@ unit GeoTiff;
       //{$Define LongCent}
       //{$Define RecordEntryInGeotiff}
       //{$Define RecordPlateCaree}
-      //{$Define RecordInitializeDEM}
       //{$Define FullDEMinit}         //potential major slowdown
       //{$Define RecordGeotiffHistogram}
       //{$Define Record3076}
@@ -79,17 +83,19 @@ type
    SingleBytes = packed array[1..4] of byte;
 
    tWordBigRow = array[0..pred(MaxSatCols)*MaxBands] of word;
-   tOffsetArray = array[0..pred(MaxSatCols)] of LongWord;
+   tOffsetArray = array[0..pred(MaxSatCols)] of int64;
+   tSmallOffsetArray = array[0..pred(MaxSatCols)] of int32;
 
     tTiffHeader = record
       SamplesPerPixel,BitsPerSample,BytesPerSample,
       xResolutionOffset,yResolutionOffset,
       Orientation,PlanarConfiguration,Compression,SubFileType,FillOrder,
       PhotometricInterpretation,ExtraSample,
-      Threshholding,CellWidth,CellLength,NumEnt,
-      Num,Den,NewSubfileType,
+      Threshholding,NumEnt,
+      Num,Den,NewSubfileType,VertDatum,
       RowsPerStrip,StripsPerImage,StripByteCounts,
-      FirstImageOffset,BitsPerSampleCount,MDZtype : int32;
+      BitsPerSampleCount,MDZtype : int32;
+      FirstImageOffset,CellWidth,CellLength,
       ImageWidth,ImageLength,StripOffsets : int64;
       SMin,SMax,Factor : float64;
       ResolutionUnit   : ResolutionUnitType;
@@ -129,7 +135,9 @@ type
          BigTiff,BigEndian,CanEnhance,
          TiffOpen,
          TIFFImageColorDefined  : boolean;
-         ImageBytesPerRow : integer;
+         OffsetByteSize : word;
+         OffsetArraySize : int64;
+         ImageBytesPerRow : int32;
          TiffHandle : THandle;
          TIFFFileName   : PathStr;
          TIFFImageColor : Petmar_types.TRGBLookUp;
@@ -658,7 +666,8 @@ end;
 
 procedure tTIFFImage.SeekFileOffset(Band,Row : int64);
 var
-   StripUsed,TheOffset,LinesNeeded : int64;
+   //StripUsed,
+   TheOffset,LinesNeeded : int64;
 begin
    OpenTiffFile;
    if (TiffHeader.PhotometricInterpretation = 2) then  begin  //color image
@@ -727,14 +736,14 @@ end;
 
 procedure tTIFFImage.GetTiffRow(Band,Row : integer; var TheRow : tImageRow);
 var
-   RunCount   : ShortInt;
+   //RunCount   : ShortInt;
    Buffer     : array[0..8191] of byte;
    BufLen,
    BufPos,
    NumRead,
-   LinesNeeded,
-   i,x,y,MemNeed        : integer;
-   b,bc         : byte;
+   //LinesNeeded, i,y,
+   x,MemNeed        : integer;
+   //b,bc         : byte;
 
          function GetNextByte : SmallInt;
          begin
@@ -801,7 +810,7 @@ var
    Row16Bit  : tWordRow16Bit;
    Row8Bit   : tImageRow;
    cum,PC : float64;
-   Hist      : array[1..MaxBands] of ^tWordValues;
+   Hist  : array[1..MaxBands] of ^tWordValues;
    Results : tStringList;
    fName1 : PathStr;
 begin
@@ -930,6 +939,7 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
                      if (LandCover = 'IWAHASHI') then WantDEM.DEMheader.ElevUnits := Iwahashi;
                      if (LandCover = 'GEOMORPHON') then WantDEM.DEMheader.ElevUnits := Geomorphon;
                      if (LandCover = 'PENNOCK') then WantDEM.DEMheader.ElevUnits := euPennock;
+                     if (LandCover = 'LCMAP') then WantDEM.DEMheader.ElevUnits := LCMAP;
                      if (LandCover = 'GLC2000') or (LandCover = 'GLC-2000')  then begin
                         WantDEM.DEMheader.DEMUsed := ArcSecDEM;
                         WantDEM.DEMheader.ElevUnits := GLC2000;
@@ -939,7 +949,10 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
                end;
 
          begin
-            {$If Defined(RecordInitializeDEM)  or Defined(RecordDEMMapProjection)} WantDEM.DEMMapProjection.ShortProjInfo('tTIFFImage.InitializeDEM in ' + WantDEM.DEMMapProjection.GetProjectionName); {$EndIf}
+            {$If Defined(RecordInitializeDEM)  or Defined(RecordDEMMapProjection)}
+               WantDEM.DEMMapProjection.ShortProjInfo('tTIFFImage.InitializeDEM in ' + WantDEM.DEMMapProjection.GetProjectionName);
+            {$EndIf}
+
             {$IfDef TrackA} writeLineToDebugFile('tTIFFImage.CreateTiffDEM out, a=' + RealToString(WantDEM.DEMMapProjection.a,-18,-2)); {$EndIf}
 
                NLCD := IsThisLandCover(TIFFFileName,LandCover);
@@ -951,9 +964,12 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
 
                WantDEM.DEMheader.NumCol := TiffHeader.ImageWidth;
                WantDEM.DEMheader.NumRow := TiffHeader.ImageLength;
-               WantDEM.DEMheader.DigitizeDatum := DatumCodeFromString(WantDEM.DEMmapProjection.h_DatumCode);
+               //WantDEM.DEMheader.DigitizeDatum := DatumCodeFromString(WantDEM.DEMheader.h_DatumCode);
+
                WantDEM.DEMHeader.RasterPixelIsGeoKey1025 := TiffHeader.RasterPixelIs;
-              {$IfDef RecordInitializeDEM} WriteLineToDebugFile('WantDEM.DEMHeader.RasterPixelIsGeoKey1025=' + IntToStr(WantDEM.DEMHeader.RasterPixelIsGeoKey1025) ); {$EndIf}
+               WantDEM.DEMheader.VerticalCSTypeGeoKey := TiffHeader.VertDatum;
+               {$IfDef RecordInitializeDEM} WriteLineToDebugFile('WantDEM.DEMHeader.RasterPixelIsGeoKey1025=' + IntToStr(WantDEM.DEMHeader.RasterPixelIsGeoKey1025) ); {$EndIf}
+               {$IfDef TrackHorizontalDatum} WriteLineToDebugFile('InitTiffDEM early WantDEM.DEMheader.DigitizeDatum=' + StringFromDatumCode(WantDEM.DEMheader.DigitizeDatum)); {$EndIf}
 
                if ForceType then begin
                   WantDEM.DEMheader.DEMPrecision := TypeWanted;
@@ -980,12 +996,29 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
               WantDEM.DEMheader.DEMSWCornerX := TiffHeader.ModelX;
               {$IfDef GeotiffCorner} WriteLineToDebugFile('Read Geotiff DEM,  NW Corner X=' + RealToString(TiffHeader.ModelX,-18,-6) + '  Y=' + RealToString(TiffHeader.ModelY,-18,-6)); {$EndIf}
 
+              WantDEM.GeotiffNWCornerX := TiffHeader.ModelX;
+              WantDEM.GeotiffNWCornerY := TiffHeader.ModelY;
+
               if (TiffHeader.Orientation in [1,4]) then begin
                  //as defined, it is the NW corner of the upper left cell; we want to transform to the SW corner of of the lower left cell
-                 WantDEM.DEMheader.DEMSWCornerY := TiffHeader.ModelY - (WantDEM.DEMheader.NumRow * WantDEM.DEMheader.DEMySpacing);
-                 if (TiffHeader.RasterPixelIs in [0,1]) then WantDEM.DEMheader.DEMSWCornerY := WantDEM.DEMheader.DEMSWCornerY - WantDEM.DEMheader.DEMySpacing;   //move to SW corner of pixel, for pixel-is-area or undefined
+                 WantDEM.DEMheader.DEMSWCornerY := TiffHeader.ModelY - (pred(WantDEM.DEMheader.NumRow) * WantDEM.DEMheader.DEMySpacing);
+                 //for pixel-is-area or undefined this makes the corner the SW corner of the pixel
+                 (*
+                 if (TiffHeader.RasterPixelIs in [PixelIsArea,PixelIsUndefined]) then begin
+                    //move to SW corner of pixel, for pixel-is-area or undefined
+                    WantDEM.DEMheader.DEMSWCornerY := WantDEM.DEMheader.DEMSWCornerY - WantDEM.DEMheader.DEMySpacing;
+                 end;
+                 *)
               end
-              else WantDEM.DEMheader.DEMSWCornerY := TiffHeader.ModelY;
+              else begin
+                 // this is probably not completely correct, but I don't think it ever happens
+                 WantDEM.DEMheader.DEMSWCornerY := TiffHeader.ModelY;
+              end;
+
+              {$IfDef TrackDEMCorners} WantDEM.WriteDEMCornersToDebugFile('Read the Geotiff'); {$EndIf}
+
+
+
 
               {$IfDef GeotiffCorner} WriteLineToDebugFile('Read Geotiff DEM,  SW corner  X=' + RealToString(WantDEM.DEMheader.DEMSWCornerX,-18,-6) + '  Y=' + RealToString(WantDEM.DEMheader.DEMSWCornerY,-18,-6)); {$EndIf}
 
@@ -993,16 +1026,25 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
               {$If Defined(RecordInitializeDEM)} WriteLineToDebugFile('tTIFFImage.CreateDEM Header set, ' + sfBoundBoxToString(WantDEM.DEMBoundBoxProjected,6)); {$EndIf}
 
                if (WantDEM.DEMMapProjection.PName = UK_OS) then begin
+                  {$IfDef RecordUKOS} WriteLineToDebugFile('CreateTiffDEM Loading WKT for osgb_1936'); {$EndIf}
                   sl := tStringList.Create;
                   sl.LoadFromFile(ProgramRootDir + 'wkt_proj\osgb_1936.wkt');
                   WantDEM.DEMheader.wktString := sl[0];
                   sl.Destroy;
+
                   WantDEM.DEMheader.DEMUsed := UTMBasedDEM;
                   WantDEM.DEMheader.DataSpacing := SpaceMeters;
                   WantDEM.DEMheader.DigitizeDatum := UK_OS_grid;
                end
+               else if (WantDEM.DEMMapProjection.EPSGCode3072 = 2193) then begin
+                  WantDEM.DEMMapProjection.InitializeProjectionFromWKT(ProgramRootDir + 'wkt_proj\nzgd2000_epsg_2193.wkt');
+                  WantDEM.DEMheader.DEMUsed := UTMBasedDEM;
+                  WantDEM.DEMheader.DataSpacing := SpaceMeters;
+                  WantDEM.DEMheader.DEMUsed := WKTDEM;
+               end
                else if (WantDEM.DEMMapProjection.PName = PlateCaree) or (TiffHeader.ModelType = 2) then begin
                   WantDEM.DEMheader.DEMUsed := ArcSecDEM;
+                  if (WantDEM.DEMheader.DEMSWCornerX > 180) then WantDEM.DEMheader.DEMSWCornerX := WantDEM.DEMheader.DEMSWCornerX - 360;
                   WantDEM.DEMheader.UTMZone := GetUTMZone(WantDEM.DEMheader.DEMSWCornerX + 0.5 * WantDEM.DEMheader.NumCol * WantDEM.DEMheader.DEMxSpacing);
                end
                else if (WantDEM.DEMMapProjection.PName = UTMEllipsoidal) then begin
@@ -1019,6 +1061,7 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
                   if not WantDEM.DEMMapProjection.DecodeWKTProjectionFromString(WantDEM.DEMMapProjection.wktString) then MessageToContinue('Could not intialize projection from wkt: ' + WantDEM.DEMMapProjection.wktString);
                end
                else if (WantDEM.DEMMapProjection.Pname in [AlbersEqAreaConicalEllipsoid,PolarStereographicEllipsoidal,LambertConformalConicEllipse,LamAzEqAreaEllipsoidal,CylindricalEqualAreaEllipsoidal,AzimuthalEquidistantEllipsoidal]) then begin
+                  WantDEM.DEMMapProjection.GetProjectParameters;
                   WantDEM.DEMheader.DEMUsed := WKTDEM;
                   WantDEM.DEMheader.DataSpacing := SpaceMeters;
                   WantDEM.DEMheader.UTMZone := WantDEM.DEMMapProjection.projUTMZone;
@@ -1029,7 +1072,7 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
                   WantDEM.DEMheader.DataSpacing := SpaceMeters;
                   WantDEM.DEMMapProjection.GetProjectParameters;
                   WantDEM.DEMheader.DigitizeDatum := ddDefined;
-                  {$IfDef RecordInitializeDEM} WriteLineToDebugFile('DEM SW Corner: ' + RealToString(WantDEM.DEMheader.DEMSWCornerX,-18,-6) + RealToString(WantDEM.DEMheader.DEMSWCornerY,18,-6) + '  UTM zone:' + IntToStr(WantDEM.DEMheader.UTMzone));         {$EndIf}
+                  {$IfDef RecordInitializeDEM} WriteLineToDebugFile('DEM SW Corner: ' + RealToString(WantDEM.DEMheader.DEMSWCornerX,-18,-6) + RealToString(WantDEM.DEMheader.DEMSWCornerY,18,-6) + '  UTM zone:' + IntToStr(WantDEM.DEMheader.UTMzone)); {$EndIf}
                end;
 
                WantDEM.DEMheader.ElevUnits := tElevUnit(TiffHeader.MDZtype);
@@ -1048,7 +1091,8 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
                end;
               {$IfDef TrackA} writeLineToDebugFile('tTIFFImage.CreateTiffDEM out, a=' + RealToString(WantDEM.DEMMapProjection.a,-18,-2)); {$EndIf}
               {$If Defined(RecordInitializeDEM) or Defined(RecordDEMMapProjection)} WantDEM.DEMMapProjection.ShortProjInfo('tTIFFImage.InitializeDEM in'); {$EndIf}
-              {$IfDef RecordNLCD} WriteLineToDebugFile('Initialize TIFF DEM out, ' + WantDEM.AreaName + '  data=' + ElevUnitsAre(WantDEM.DEMheader.ElevUnits); {$EndIf}
+              {$IfDef TrackHorizontalDatum} WriteLineToDebugFile('InitTiffDEM out, WantDEM.DEMheader.DigitizeDatum=' + StringFromDatumCode(WantDEM.DEMheader.DigitizeDatum)); {$EndIf}
+              {$IfDef RecordNLCD} WriteLineToDebugFile('Initialize TIFF DEM out, ' + WantDEM.AreaName + '  data=' + ElevUnitsAre(WantDEM.DEMheader.ElevUnits)); {$EndIf}
          end;
 
 
@@ -1073,7 +1117,9 @@ var
 begin
    {$If Defined(RecordGeotiff) or Defined(RecordInitializeDEM) or Defined(RecordModelType)} WriteLineToDebugFile('tTIFFImage.CreateDEM in, modelType=' + IntToStr(TiffHeader.ModelType)); {$EndIf}
 
-   {$If Defined(RecordDefineDatum) or Defined(RecordGeotiff) or Defined(RecordGeotiffProjection)} WriteLineToDebugFile('Create Geotiff DEM in, Projection=' + WantDEM.DEMMapProjection.GetProjectionName); {$EndIf}
+   {$If Defined(RecordDefineDatum) or Defined(RecordGeotiff) or Defined(RecordGeotiffProjection)}
+      WriteLineToDebugFile('Create Geotiff DEM in, Projection=' + WantDEM.DEMMapProjection.GetProjectionName);
+   {$EndIf}
    {$IfDef RecordInitializeDEM} WriteLineToDebugFile('ModelX=' + RealToString(TiffHeader.ModelX,-18,-6) + ' ModelY=' + RealToString(TiffHeader.ModelY,-18,-6) ); {$EndIf}
       if (TiffHeader.SamplesPerPixel > 1) then begin
          MessageToContinue('File has ' + IntToStr(TiffHeader.SamplesPerPixel) + ' bands and is not a DEM; open as an image');
@@ -1312,6 +1358,7 @@ begin
       4097 : Result := 'VerticalCitationGeoKey';
       4098 : Result := 'VerticalDatumGeoKey (Section 6.3.4.2 codes)';
       4099 : Result := 'VerticalUnitsGeoKey (Section 6.3.1.3 codes)';
+      5120 : Result := 'CoordinateEpochGeoKey';
       else Result := 'Unspecified';
    end {case};
 end;
@@ -1333,15 +1380,13 @@ var
    Ext    : ExtStr;
    Value, b  : SingleBytes;
    Zone : byte;
-   FileName,
-   ProjFileName : PathStr;
+   FileName,ProjFileName : PathStr;
    DatCode,Hemi,Err,TiePoints,l,
    TypeSize : integer;
    tf,f  : float64;
    off1 : int64;
    TFWFile,
    HeaderLogList    : tStringList;
-   ColorTable       : array[0..pred(256*6)] of byte;
    GeotiffDoubles : array[0..25] of double;
    ASCIIStr,UTMString  : AnsiString;
    GeoSuccess,AllGray,
@@ -1349,9 +1394,9 @@ var
    GeoLatLong,
    ProjectionDefined : boolean;
    HaveRegistration : boolean;
-   ColorTableEntries,
    StripOffsetsOffset,
-   GeoKeyDirectoryOffset,
+   GeoKeyDirectoryOffset : int64;
+   ColorTableEntries,
    GeoKeyDirectorySize,
    EntriesRead,
    TileWidth,TileHeight,
@@ -1361,7 +1406,7 @@ var
    ALine,TStr,MenuStr : AnsiString;
 
 
-        function LogASCIIdata(anOffset,aSize : integer) : ANSIString;
+        function LogASCIIdata(anOffset : int64; aSize : integer) : ANSIString;
         var
            I : integer;
            TheBytes : array[0..32000] of byte;
@@ -1376,7 +1421,7 @@ var
         end;
 
 
-         Procedure HandleTiePoints(ModelTiePointOffset,ModelTiePointSize : LongInt);
+         Procedure HandleTiePoints(ModelTiePointOffset,ModelTiePointSize : Int64);
          var
             i : integer;
             TieBoundBox : sfBoundBox;
@@ -1425,9 +1470,9 @@ var
          end;
 
       procedure DealWithColorTable(ColorTableOffset,ColorTableSize : LongInt);
-      {$IfDef VCL}
       var
          i : integer;
+         ColorTable  : array[0..pred(256*6)] of byte;
       begin
          ColorTableEntries := ColorTableSize div 3;
          FileSeek(TiffHandle,ColorTableOffset,0);
@@ -1460,10 +1505,8 @@ var
             TiffHeader.PhotometricInterpretation := 1;
          end
          else CanEnhance := false;
-      {$Else}
-      begin
-      {$EndIf}
       end;
+
 
             procedure ProcessASCIIstringForProjection(ASCIIStr : shortstring);
             var
@@ -1477,10 +1520,6 @@ var
                if StrUtils.AnsiContainsText(TStr,'mdz=') then begin
                   UTMString := TStr;
                   while Copy(TStr,1,4) <> 'mdz=' do Delete(TStr,1,1);
-
-                  //if StrUtils.AnsiContainsText(TStr,'dd=') then TStr := BeforeSpecifiedCharacterANSI(UTMString,'=',true,true);
-                  //TStr := BeforeSpecifiedCharacterANSI(UTMString,'=',true,true);
-                  //TStr := trim(BeforeSpecifiedCharacterANSI(UTMString,'/',true,true));
                   TStr := TStr[5];
                   TiffHeader.MDZtype := StrToInt(TStr);
                   exit;
@@ -1489,7 +1528,9 @@ var
                if StrUtils.AnsiContainsText(TStr,MapFromMICRODEMstr) then exit;
 
                if (DatCode = -99) or (DatCode = 32767) or (MapProjection.H_datumCode = '') then begin
+
                   if ThisIsETRS89(Tstr) or ThisIsWGS84(TStr) then begin
+                    {$IfDef RecordDefineDatum} writeLineToDebugFile('ETRS89 or WGS84'); {$EndIf}
                      if (MapProjection.H_datumCode = '') or (MapProjection.H_datumCode = 'rect') then begin
                         if ThisIsETRS89(Tstr) then MapProjection.H_datumCode := 'ETR89'
                         else if ThisIsWGS84(TStr) then MapProjection.H_datumCode := 'WGS84'
@@ -1511,13 +1552,17 @@ var
                            MapProjection.StartUTMProjection(MapProjection.projUTMZone);
                            ProjectionDefined := true;
                         end;
-
                      end;
+                   end
+                   else begin
+                       if StrUtils.AnsiContainsText(TStr,'OSGB') and StrUtils.AnsiContainsText(TStr,'1936') then MapProjection.H_datumCode := 'OGB-M';
                    end;
                end;
 
                if ProjectionDefined then begin
+                  {$If Defined(RecordDefineDatum) or Defined(LongCent)} MapProjection.ShortProjInfo('calling SetDatumConstants'); {$EndIf}
                   MapProjection.SetDatumConstants;
+                  {$If Defined(RecordDefineDatum) or Defined(LongCent)} MapProjection.ShortProjInfo('calling GetProjectParameters'); {$EndIf}
                   MapProjection.GetProjectParameters;
                end;
             {$If Defined(RecordDefineDatum) or Defined(LongCent)} MapProjection.ShortProjInfo('ProcessASCIIstringForProjection out'); {$EndIf}
@@ -1530,8 +1575,6 @@ var
          i : integer;
       begin
          HaveRegistration := false;
-         {$IfDef ExSat}
-         {$Else}
          FSplit(TiffFileName,Dir,bName,Ext);
 
          FileName := Dir + bName + '.tfw';
@@ -1545,7 +1588,6 @@ var
          if FileExists(FileName) then begin
             ReadWorldFile(MapProjection,MapProjection.H_datumCode,TiffFileName,RegVars);
             HaveRegistration := true;
-
             TFWFile := TStringList.Create;
             TFWFile.LoadFromFile(FileName);
             HeaderLogList.Add('');
@@ -1559,7 +1601,6 @@ var
             HeaderLogList.Add('');
             HeaderLogList.Add('No world file found');
          end;
-         {$EndIf}
       end;
 
         procedure DefineGCScoordinates;
@@ -1578,7 +1619,6 @@ var
                MapProjection.H_datumCode := MDDef.DefaultDigitizeDatum;
                {$IfDef RecordFullGeotiff} WriteLineToDebugFile('Need to get registration, ' + FileName); {$EndIf}
                UseDefaultDatumZone := StrUtils.AnsiContainsText(UpperCase(TIFFFileName),'GLC2000') or StrUtils.AnsiContainsText(UpperCase(TIFFFileName),'GLC-2000');
-               //MapProjection.ZoneName := '';
                if (abs(TiffHeader.ModelX) <= 360) and (abs(TiffHeader.ModelY) <= 90)  and (TiffHeader.ScaleX < 0.1) and (TiffHeader.ScaleY < 1) then GeoLatLong := true
                else begin
                   {$IfDef VCL}
@@ -1605,16 +1645,14 @@ var
          Tag,  ftype, LengthIm, TiffOffset : Word;
          Factor,xt : float64;
 
-
-          function SetADouble(DN,Decimals : integer) : float64;
-          begin
-             Result := GeotiffDoubles[TiffOffset];
-             TStr := RealToString(Result,-15,Decimals);
-             inc(MapProjection.GeoKeys.NumKeys);
-             MapProjection.GeoKeys.KeyCode[MapProjection.GeoKeys.NumKeys] := Tag;
-             MapProjection.GeoKeys.KeyVal[MapProjection.GeoKeys.NumKeys] := Result;
-          end;
-
+                   function SetADouble(DN,Decimals : integer) : float64;
+                   begin
+                      Result := GeotiffDoubles[TiffOffset];
+                      TStr := RealToString(Result,-15,Decimals);
+                      inc(MapProjection.GeoKeys.NumKeys);
+                      MapProjection.GeoKeys.KeyCode[MapProjection.GeoKeys.NumKeys] := Tag;
+                      MapProjection.GeoKeys.KeyVal[MapProjection.GeoKeys.NumKeys] := Result;
+                   end;
 
       begin
          {$If Defined(RecordDefineDatum) or Defined(RecordPlateCaree) or Defined(TrackProjection)  or Defined(RecordGeotiffProjection)}
@@ -1682,14 +1720,14 @@ var
                   2057 : MapProjection.a := SetADouble(TiffOffset,2);
                   2058 : SetADouble(TiffOffset,6);
                   2059 : MapProjection.h_f := SetADouble(TiffOffset,6);
-                  2061 : SetADouble(TiffOffset,6);
-                  3072 : begin
+                  2061 : SetADouble(TiffOffset,6);  //Prime Meridian longitude
+                  3072,
+                  3074 : begin
                              TStr := MapProjection.OpenFromTiff3072(TiffOffset);
                              ProjectionDefined :=  TStr <> 'Undefined';
                              {$If Defined(RecordFullGeotiff) or Defined(TrackProjection)} MapProjection.WriteProjectionParametersToDebugFile('Key 3072'); {$EndIf}
                          end;
                   3073 : begin end;
-                  3074 : TStr := 'User defined';
                   3075 : begin
                              TStr := MapProjection.ProcessTiff3075(TiffOffset);
                              {$If Defined(RecordFullGeotiff) or Defined(TrackProjection)} MapProjection.WriteProjectionParametersToDebugFile('Key 3075'); {$EndIf}
@@ -1727,7 +1765,14 @@ var
                   3083,3087 : MapProjection.False_north := SetADouble(TiffOffset,2) * Factor;
                   3092 : MapProjection.ProjMapScale := SetADouble(TiffOffset,4);
                   3095 : xt := SetADouble(TiffOffset,4);
-                  4096 : TStr := MapProjection.ProcessTiff4096(TiffOffset);
+                  4096 : begin
+                            TiffHeader.VertDatum := TiffOffset;
+                            TStr := MapProjection.ProcessTiff4096(TiffOffset);
+                         end;
+                  5120 : begin
+                            //The coordinate epoch is encoded as a new GeoTIFF GeoKey, CoordinateEpochGeoKey of code 5120 and type DOUBLE
+                            MessageToContinue('found CoordinateEpochGeoKey');
+                         end;
                end;
                Aline := IntegerToString(tag,7) + '  ' + TIFFTypeName(FType) + IntegerToString(LengthIm,7) + IntegerToString(TiffOffset,8) + '  ' + GeoTiffTagName(Tag) + '   ' + TStr;
                {$IfDef RecordWhileProcessingHeader} WriteLineToDebugFile(ALine); {$EndIf}
@@ -1735,16 +1780,13 @@ var
                {$If Defined(TrackProjection)}  MapProjection.WriteProjectionParametersToDebugFile('After tag' + IntToStr(i) + '  key=' + IntToStr(tag)); {$EndIf}
             end {for i};
 
-            //added 11/30/2017, since some are not getting this set
-            if MapProjection.PName = UTMEllipsoidal then MapProjection.False_east := 500000;
+            if (MapProjection.PName = UTMEllipsoidal) then MapProjection.False_east := 500000;
             {$If Defined(RecordFullGeotiff) or Defined(TrackProjection)} MapProjection.WriteProjectionParametersToDebugFile('Keys read'); {$EndIf}
 
             if (WeKnowItsUTMZone <> -99) then begin
                MapProjection.StartUTMProjection(WeKnowItsUTMZone);
                MapProjection.H_datumcode := 'NAD83';  //vmDatum := MapProjNAD83;
             end;
-
-            //HaveRegistration := true;
 
             {$If Defined(RecordDefineDatum) or Defined(RecordPlateCaree)}
                WriteLineToDebugFile('Before (GeoASCIIParamsOffset <> 0) Datum code: ' + MapProjection.H_datumCode);
@@ -1771,11 +1813,17 @@ var
    var
       i,j,k : integer;
       TiffKeys : array[1..100] of tTiffKey;
+      SmallOffsetArray : ^tSmallOffsetArray;
 
       {$If Defined(RecordFullGeotiff) or Defined(RecordKeys)}
          procedure WriteKey(j : integer);
          begin
-            WriteLineToDebugFile(IntegerToString(j,5) + IntegerToString(TiffKeys[j].Tag,8) + IntegerToString(TiffKeys[j].ftype,8) + IntegerToString(TiffKeys[j].LengthIm,12) +IntegerToString(TiffKeys[j].KeyOffset,12));
+            try
+               WriteLineToDebugFile(IntegerToString(j,5) + IntegerToString(TiffKeys[j].Tag,8) + IntegerToString(TiffKeys[j].ftype,8) +
+                  IntegerToString(TiffKeys[j].LengthIm,12) + IntegerToString(TiffKeys[j].KeyOffset,14));
+             except
+                on ERangeError do WriteLineToDebugFile(IntegerToString(j,5) + IntegerToString(TiffKeys[j].Tag,8) + IntegerToString(TiffKeys[j].ftype,8));
+             end;
          end;
      {$EndIf}
 
@@ -1876,7 +1924,7 @@ var
                      end;
                259 : begin
                         Compression := TiffKeys[j].KeyOffset;
-                        if (Compression <> 1) {and (Compression <> 32773)} then begin
+                        if (Compression <> 1) then begin
                            Success := false;
                            TStr := 'Unsupported compression (key 259)=' + IntToStr(Compression);
                            HeaderLogList.Insert(1,TStr);
@@ -1922,8 +1970,21 @@ var
                         k := TiffKeys[j].LengthIm;
                         if (k > 1) then begin
                            FileSeek(TiffHandle,TiffKeys[j].KeyOffset,0);
-                           GetMem(OffsetArray,4*TiffKeys[j].LengthIm);
-                           FileRead(TiffHandle,OffsetArray^,4*TiffKeys[j].LengthIm);
+                           OffsetArraySize := 8*TiffKeys[j].LengthIm;
+                           GetMem(OffsetArray,OffsetArraySize);
+
+                           if (OffsetByteSize = 4) then begin
+                              GetMem(SmallOffsetArray,OffsetArraySize div 2);
+                              FileRead(TiffHandle,SmallOffsetArray^,OffsetArraySize div 2);
+                              for k := 0 to pred(TiffKeys[j].LengthIm) do begin
+                                 OffsetArray^[k] := SmallOffsetArray^[k];
+                              end;
+                              FreeMem(SmallOffsetArray,OffsetArraySize div 2);
+                           end
+                           else begin
+                              FileRead(TiffHandle,OffsetArray^,OffsetArraySize);
+                           end;
+
                            Tstr := '';
                            for k := 0 to 10 do TStr := TStr + IntToStr(OffsetArray^[k]) + ',';
                         end
@@ -2024,6 +2085,7 @@ var
                            TStr := ' scalex=' + RealToString(TiffHeader.ScaleX,-18,-8) + '   scaley=' + RealToString(TiffHeader.ScaleY,-18,-8)+ '   scalez=' + RealToString(TiffHeader.Scalez,-18,-8);
                       end;
               33922 : begin {ModelTiePointTag}
+                          {$IfDef RecordWhileProcessingHeader} WriteLineToDebugFile('Key=33922   ' + IntToStr(TiffKeys[j].KeyOffset) + '  ' + IntToStr(TiffKeys[j].LengthIm) ); {$EndIf}
                           HandleTiePoints(TiffKeys[j].KeyOffset,TiffKeys[j].LengthIm);
                       end;
               34264 : begin {ModelTransformationTag, JPL Carto Group}
@@ -2101,7 +2163,26 @@ var
                          end;
                       end;
             end {case};
-            TStr := IntegerToString(TiffKeys[j].Tag,8) + '   ' + TIFFTypeName(TiffKeys[j].fType) + IntegerToString(TiffKeys[j].LengthIm,8) + IntegerToString(TiffKeys[j].KeyOffset,12) + '  ' + TiffTagName(TiffKeys[j].Tag) + '  ' + TStr;
+
+            (*
+            try
+               {$IfDef RecordWhileProcessingHeader}
+                  WriteLineToDebugFile(IntToStr(j) + '  ' + TStr);
+                  WriteLineToDebugFile(IntegerToString(TiffKeys[j].Tag,8));
+                  WriteLineToDebugFile(TIFFTypeName(TiffKeys[j].fType));
+                  WriteLineToDebugFile(IntegerToString(TiffKeys[j].LengthIm,8));
+                  WriteLineToDebugFile(IntToStr(TiffKeys[j].KeyOffset));
+                  WriteLineToDebugFile(TiffTagName(TiffKeys[j].Tag));
+               {$EndIf}
+
+               TStr := IntegerToString(TiffKeys[j].Tag,8) + '   ' + TIFFTypeName(TiffKeys[j].fType) + IntegerToString(TiffKeys[j].LengthIm,8) + '  ' + IntToStr(TiffKeys[j].KeyOffset)
+                    + '  ' + TiffTagName(TiffKeys[j].Tag) + '  ' + TStr;
+            except
+                on ERangeError do TStr := IntegerToString(TiffKeys[j].Tag,8) + '   ' + TIFFTypeName(TiffKeys[j].fType) + '  ' + TiffTagName(TiffKeys[j].Tag) + '  ' + TStr;
+             end;
+            *)
+
+            TStr := IntegerToString(TiffKeys[j].Tag,8) + '   ' + TIFFTypeName(TiffKeys[j].fType) + IntegerToString(TiffKeys[j].LengthIm,8) + '  ' + IntToStr(TiffKeys[j].KeyOffset) + '  ' + TiffTagName(TiffKeys[j].Tag) + '  ' + TStr;
             HeaderLogList.Add(TStr);
             {$IfDef RecordWhileProcessingHeader} WriteLineToDebugFile(TStr); {$EndIf}
          end {for j};
@@ -2145,6 +2226,7 @@ var
       TiffHeader.SamplesPerPixel := 1;
       TiffHeader.ExtraSample := 0;
       TiffHeader.RasterPixelIs := 0;
+      TiffHeader.VertDatum := 0;
       TileWidth := 0;
       TiffHeader.SMax := 9999;
       TiffHeader.SMin := -9999;
@@ -2152,12 +2234,10 @@ var
       TiffHeader.OffsetArray := Nil;
       DatCode := -99;
 
-      //if (MapProjection = Nil) then begin
-         MapProjection := BaseMap.tMapProjection.Create('geotiff');
-         MapProjection.ProjCoordTransGeoKey := -99;
-         MapProjection.H_datumCode := '';
-         {$If Defined(LongCent)} writeLineToDebugFile('Read Geotiff MapProjection created,  LongCent: ' + RadToDegString(MapProjection.Long0)); {$EndIf}
-      //end;
+      MapProjection := BaseMap.tMapProjection.Create('geotiff');
+      MapProjection.ProjCoordTransGeoKey := -99;
+      MapProjection.H_datumCode := '';
+      {$If Defined(LongCent)} writeLineToDebugFile('Read Geotiff MapProjection created,  LongCent=' + RadToDegString(MapProjection.Long0)); {$EndIf}
    end;
 
 
@@ -2175,7 +2255,7 @@ begin
       CanEnhance := (not StrUtils.AnsiContainsText(UpperCase(inFileName),'DRG')) and (not StrUtils.AnsiContainsText(UpperCase(inFileName),'USTOPO')) and (not StrUtils.AnsiContainsText(UpperCase(inFileName),'NAIP'));
    {$EndIf}
    if (not CanEnhance) then GetHistogram := false;
-   TIFFFileName := inFileName;   //outside the loop, since we might use GDAL and change the file name
+   TIFFFileName := inFileName; //outside the loop, since we might use GDAL and change the file name
 
  RestartGeotiff:;
    {$IfDef RecordGeotiffRestart} WriteLineToDebugFile('RestartGeotiff'); {$EndIf}
@@ -2199,7 +2279,8 @@ begin
    HeaderLogList.Add(inFileName);
 
    if BigTiff then begin
-      MakeWord;  //OffsetByteSize, has to be 8
+      //http://www.bigtiff.org/#:~:text=The%20BigTIFF%20modifications%20to%20libtiff%20consisted%20primarily%20of,%22.tiff%22%20file%20extension%20just%20like%20ordinary%20TIFF%20files.
+      OffsetByteSize := MakeWord;  //OffsetByteSize, has to be 8
       MakeWord;  //has to be 0
       //move to first IFD
       FileSeek(TiffHandle,MakeUnsigned8Byte,0);
@@ -2207,6 +2288,7 @@ begin
    end
    else begin
       //move to first IFD
+      OffsetByteSize := 4;
       off1 := MakeLongWord;
       FileSeek(TiffHandle,off1,0);
       TiffHeader.NumEnt := MakeWord;
@@ -2223,11 +2305,11 @@ begin
    TiffHeader.StripOffsets := 0;
    if (TiffHeader.NumEnt > 100) or (TiffHeader.NumEnt < 10) then begin
       Success := false;
-      {$If Defined(RecordGeotiffFailures) or Defined(RecordProblems)} writeLineToDebugFile('NumEnt problem ' + inFileName); {$EndIf}
+      {$If Defined(RecordGeotiffFailures) or Defined(RecordProblems)} WriteLineToDebugFile('NumEnt problem ' + inFileName); {$EndIf}
       goto SkipThumbnail;
    end;
 
-   {$If Defined(LongCent)} writeLineToDebugFile('ReadTIFFtags calling, LongCent: ' + RadToDegString(MapProjection.Long0)); {$EndIf}
+   {$If Defined(LongCent)} WriteLineToDebugFile('ReadTIFFtags calling, LongCent: ' + RadToDegString(MapProjection.Long0)); {$EndIf}
    ReadTIFFtags;
    if (TiffHeader.StripOffsets = 0) and (TileOffsets <> 0) then TiffHeader.StripOffsets := TileOffsets;
 
@@ -2280,7 +2362,7 @@ begin
       if (not (TiffHeader.BitsPerSample in [4,8,15,16,32])) and ((TiffHeader.BitsPerSample <> 3) and (not (TiffHeader.PhotometricInterpretation in [1,2]))) then begin
          Success := false;
          MenuStr := ExtractFileName(TiffFileName) +  ' Unsupported bits per sample (key 258)=' + IntToStr(TiffHeader.BitsPerSample);
-         MessageToContinue(MenuStr);
+         {$IfDef ReportKey258} MessageToContinue(MenuStr); {$Endif}
          {$If Defined(RecordFullGeotiff) or Defined(RecordGeotiffFailures)} WriteLineToDebugFile(MenuStr + ' in ' + inFileName); {$EndIf}
          HeaderLogList.Insert(1,MenuStr);
          CloseTiffFile;
@@ -2325,6 +2407,8 @@ begin
       end
       else begin
          ReadGeotiffTags;
+         {$IfDef TrackHorizontalDatum} WriteLineToDebugFile('ReadGeotiffTags out, datum=' + MapProjection.h_DatumCode); {$EndIf}
+
          GeoSuccess := HaveRegistration;
 
         {$IfDef RecordDefineDatum} MapProjection.ShortProjInfo('UTM zone after first round:');     {$EndIf}
@@ -2357,6 +2441,7 @@ begin
             end;
             if (Hemi > 0) then TiffHeader.HemiChar := 'N' else TiffHeader.HemiChar := 'S';
          end;
+         {$IfDef TrackHorizontalDatum} WriteLineToDebugFile('GeoSuccess and NeedToLoadGeotiffProjection out, datum=' + MapProjection.h_DatumCode); {$EndIf}
       end;
 
       GeoSuccess := (abs(TiffHeader.ScaleY) > 0.00000001);  // and not(IsNaN(TiffHeader.ModelX);
@@ -2368,8 +2453,7 @@ begin
          RegVars.pr_deltaX  := TiffHeader.ScaleX;
          RegVars.Registration := RegProjection;
          HeaderLogList.Add('GEOTIFF registration analyzed OK');
-         {$IfDef RecordFullGeotiff} if MapProjection.WriteProjectionParametersToDebugFile('Tiff Read Projection'); {$EndIf}
-         //{$IfDef TrackProjection} writeLineToDebugFile('Upper left: ' + RealTo); {$EndIf}
+         {$IfDef RecordFullGeotiff} MapProjection.WriteProjectionParametersToDebugFile('Tiff Read Projection'); {$EndIf}
       end;
    end;
 
@@ -2390,14 +2474,13 @@ begin
          if (TiffHeader.BitsPerSample in [15, 16]) then begin
             new(Row16Bit);
          end
-         else if (TiffHeader.BitsPerSample in [32]) then begin
-            //new(Row32Bit);
-         end
          else if (TiffHeader.BitsPerSample in [4,8]) then begin
             new(Row8Bit);
          end;
       end;
    end;
+
+
    TemporaryNewGeotiff := true;
 
    {$IfDef RecordDefineDatum}
@@ -2410,34 +2493,26 @@ begin
    {$IfDef RecordBitPerPixel} WriteLineToDebugFile('leaving read Geotiff, BitsPerSample=' + IntToStr(TiffHeader.BitsPerSample) + ' bytes=' + IntToStr(TiffHeader.BytesPerSample) + 'can enhance=' + TrueOrFalse(CanEnhance)); {$EndIf}
    {$IfDef TrackA} writeLineToDebugFile('read Geotiff out, a=' + RealToString(MapProjection.a,-18,-2) + '  f=' + RealToString(MapProjection.h_f,-18,-6) + '  datum=' + MapProjection.H_datumCode); {$EndIf}
    {$IfDef TrackProjection} MapProjection.ProjectionParamsToDebugFile('ReadGeotiffTags out'); {$EndIf}
-
-   {$IfDef ExPETMARUserInput}
+   {$IfDef TrackHorizontalDatum} WriteLineToDebugFile('GeoSuccess and NeedToLoadGeotiffProjection out, datum=' + MapProjection.h_DatumCode); {$EndIf}
+    if ShowHeader then begin
+      ShowInNotepadPlusPlus(HeaderLogList,'MD_metadata_' + ExtractFileName(InFileName));
+   end
+   else begin
       HeaderLogList.Free;
-   {$Else}
-      if ShowHeader then begin
-         ShowInNotepadPlusPlus(HeaderLogList,'MD_metadata_' + ExtractFileName(InFileName));
-      end
-      else HeaderLogList.Free;
-   {$EndIf}
+      {$IfDef RecordGeotiff} WriteLineToDebugFile('read Geotiff out, HeaderLogList.Free'); {$EndIf}
+   end;
    Success := true;
 end;
 
 
 destructor tTIFFImage.Destroy;
 begin
-   {$IfDef RecordGeotiff} writeLineToDebugFile('tTIFFImage.Destroy ' + TIFFFileName); {$EndIf}
-   if (TiffHeader.PhotometricInterpretation = 2) or (TiffHeader.SamplesPerPixel > 1) then begin    //color image
-      if (TiffHeader.BitsPerSample in [15,16]) then Dispose(Row16Bit)
-      else FreeMem(Row8Bit);
-   end
-   else begin  //single band image
-      if (TiffHeader.Compression = 1) then begin            {uncompressed}
-         if (TiffHeader.BitsPerSample in [15, 16]) then Dispose(Row16Bit)
-         else if (TiffHeader.BitsPerSample = 4) then Dispose(Row8Bit);
-      end;
-   end;
-   if (TiffHeader.OffsetArray <> Nil) then FreeMem(TiffHeader.OffsetArray,TiffHeader.ImageLength);
+   {$IfDef RecordGeotiff} WriteLineToDebugFile('enter tTIFFImage.Destroy ' + TIFFFileName); {$EndIf}
+   Dispose(Row8bit);
+   Dispose(Row16bit);
+   if (TiffHeader.OffsetArray <> Nil) then FreeMem(TiffHeader.OffsetArray,OffsetArraySize);
    CloseTiffFile;
+   {$IfDef RecordGeotiff} WriteLineToDebugFile('exit tTIFFImage.Destroy ' + TIFFFileName); {$EndIf}
 end;
 
 

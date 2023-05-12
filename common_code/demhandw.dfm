@@ -3,8 +3,8 @@ object DemHandForm: TDemHandForm
   Top = 244
   BorderIcons = [biSystemMenu]
   Caption = 'Data Manipulation'
-  ClientHeight = 535
-  ClientWidth = 942
+  ClientHeight = 527
+  ClientWidth = 910
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,8 +19,8 @@ object DemHandForm: TDemHandForm
   object Memo1: TMemo
     Left = 0
     Top = 0
-    Width = 942
-    Height = 516
+    Width = 910
+    Height = 508
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -31,13 +31,13 @@ object DemHandForm: TDemHandForm
     ScrollBars = ssVertical
     TabOrder = 0
     Visible = False
-    ExplicitWidth = 946
-    ExplicitHeight = 517
+    ExplicitWidth = 926
+    ExplicitHeight = 512
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 516
-    Width = 942
+    Top = 508
+    Width = 910
     Height = 19
     Panels = <
       item
@@ -46,8 +46,8 @@ object DemHandForm: TDemHandForm
       item
         Width = 250
       end>
-    ExplicitTop = 517
-    ExplicitWidth = 946
+    ExplicitTop = 512
+    ExplicitWidth = 926
   end
   object MainMenu1: TMainMenu
     Left = 24
@@ -372,6 +372,14 @@ object DemHandForm: TDemHandForm
           Caption = 'OGR shapefiles to GKPG'
           OnClick = OGRshapefilestoGKPG1Click
         end
+      end
+      object XYZshifttoEGM2008withVDATUMresults1: TMenuItem
+        Caption = 'XYZ shift to EGM2008 with VDATUM results'
+        OnClick = XYZshifttoEGM2008withVDATUMresults1Click
+      end
+      object VerticaldatumshiftoverwriteDEMgrid1: TMenuItem
+        Caption = 'Vertical datum shift, overwrite DEM/grid'
+        OnClick = VerticaldatumshiftoverwriteDEMgrid1Click
       end
       object N17: TMenuItem
         Caption = '-'

@@ -48,6 +48,51 @@
 
 
 
+(*
+function SetDigitizeDatumFromH_datumcode(h_datumCode : integer) : byte;
+var
+   i : integer;
+begin
+   for i := 0 to 14 do begin
+      if DEMMapProjection.h_datumCode = DigitizeDatumName[i] then Result := i;
+   end;
+end;
+*)
+
+function DatumCodeFromString(DatString : ShortString) : tDigitizeDatum;
+var
+   i : integer;
+begin
+   Result := 99;
+   for i := 0 to 14 do begin
+      if DatString = DigitizeDatumName[i] then Result := i;
+   end;
+(*
+   if (DatString = 'NAS-C') then Result := NAD27d
+   else if (DatString = 'NAR-C') then Result := NAD83d
+   else if (DatString = 'WGS72') then Result := WGS72d
+   else if (DatString = 'WGS84') then Result := WGS84d
+   else if (DatString = 'ETR89') then Result := ETRS89d
+   else if (DatString = 'UK-OS') then Result := UK_OS_grid;
+   //else Result := Local;
+*)
+end;
+
+function StringFromDatumCode(Code : tDigitizeDatum) : ShortString;
+begin
+   if Code in [0..14] then Result := DigitizeDatumName[Code]
+   else Result := 'unknown';
+   (*
+   if (Code = WGS72d) then Result := 'WGS72'
+   else if (Code = ETRS89d) then Result := 'ETR89'
+   else if (Code = NAD27d) then Result := 'NAS-C'
+   else if (Code in [NAD83d,WGS84d]) then Result := 'WGS84'
+   else if Code = UK_OS_grid then Result := 'UK-OS'
+   else Result := 'Local';
+   *)
+end;
+
+
    procedure tMapProjection.ShortProjInfo(Why : shortstring);
    var
       TStr : shortstring;
@@ -1276,27 +1321,6 @@ begin
 end;
 
 
-
-function DatumCodeFromString(DatString : ShortString) : tDigitizeDatum;
-begin
-   if (DatString = 'NAS-C') then Result := NAD27d
-   else if (DatString = 'NAR-C') then Result := NAD83d
-   else if (DatString = 'WGS72') then Result := WGS72d
-   else if (DatString = 'WGS84') then Result := WGS84d
-   else if (DatString = 'ETR89') then Result := ETRS89d
-   else if (DatString = 'UK-OS') then Result := UK_OS_grid;
-   //else Result := Local;
-end;
-
-function StringFromDatumCode(Code : tDigitizeDatum) : ShortString;
-begin
-   if (Code = WGS72d) then Result := 'WGS72'
-   else if (Code = ETRS89d) then Result := 'ETR89'
-   else if (Code = NAD27d) then Result := 'NAS-C'
-   else if (Code in [NAD83d,WGS84d]) then Result := 'WGS84'
-   else if Code = UK_OS_grid then Result := 'UK-OS'
-   else Result := 'Local';
-end;
 
 function WGSEquivalentDatum(StartDatum : shortstring) : boolean;
 begin

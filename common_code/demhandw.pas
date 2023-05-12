@@ -257,6 +257,8 @@ type
     CSVmergefiles1: TMenuItem;
     OGRshapefilestoGKPG1: TMenuItem;
     ASCIIremovelineswithoutsubstring1: TMenuItem;
+    VerticaldatumshiftoverwriteDEMgrid1: TMenuItem;
+    XYZshifttoEGM2008withVDATUMresults1: TMenuItem;
     procedure ASCIIremovequotes1Click(Sender: TObject);
     procedure ASCII01Click(Sender: TObject);
     procedure HTMLcleanup1Click(Sender: TObject);
@@ -403,6 +405,8 @@ type
     procedure GDALwarpSentinel11Click(Sender: TObject);
     procedure CSVmergefiles1Click(Sender: TObject);
     procedure OGRshapefilestoGKPG1Click(Sender: TObject);
+    procedure VerticaldatumshiftoverwriteDEMgrid1Click(Sender: TObject);
+    procedure XYZshifttoEGM2008withVDATUMresults1Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -416,7 +420,10 @@ var
    DemHandForm  : TDemHandForm;
 
 
+
 function MakeGraphFromSOESTtides(fName : PathStr; var Lat,Long : float64; var Year1,Year2 : integer; var StationName : shortString) :  TThisBaseGraph;
+
+
 procedure JSONtoShapefile(fname : pathStr);
 procedure CopyFiles(JustCopyNotMove : boolean);
 
@@ -527,6 +534,7 @@ var
 
 procedure CopyFiles(JustCopyNotMove : boolean);
 var
+   CopyFilesFromDir,CopyFilesToDir,
    SourceName, DestName : PathStr;
    NameMustHave : ShortString;
    Files : tStringList;
@@ -881,6 +889,41 @@ begin
    {$Else}
       LidarAsciiOut(lasascRGB);
    {$EndIf}
+end;
+
+procedure TDemHandForm.XYZshifttoEGM2008withVDATUMresults1Click(Sender: TObject);
+var
+   aDEM : integer;
+   FilesWanted : tStringList;
+   fName : PathStr;
+   dx,dy,dz : float32;
+   i : integer;
+begin
+   FilesWanted := tStringList.Create;
+   FilesWanted.Add(LastDEMName);
+   dx := 0.305;
+   dy := -1.43;
+   dz := 0.62;
+   if GetMultipleFiles('DEM/grid to move to EGM2008',DEMFilterMasks,FilesWanted ,MDDef.DefaultDEMFilter) then begin
+      for i := 0 to pred(FilesWanted.Count) do begin
+         fName := FilesWanted.Strings[i];
+         aDEM := OpenNewDEM(fName,false);
+         if (DEMGlb[aDEM].DEMheader.VerticalCSTypeGeoKey = 0) or (DEMGlb[aDEM].DEMheader.VerticalCSTypeGeoKey = VertCSNAVD88) then begin
+            Memo1.Lines.Add(DEMGlb[aDEM].AreaName + ' was vertical datum 0 now EGM2008');
+            DEMGlb[aDEM].DEMHeader.VerticalCSTypeGeoKey := VertCSEGM2008;
+            DEMGlb[aDEM].DEMHeader.DEMSWCornerX := DEMGlb[aDEM].DEMHeader.DEMSWCornerX + dx;
+            DEMGlb[aDEM].DEMHeader.DEMSWCornerY := DEMGlb[aDEM].DEMHeader.DEMSWCornerY + dy;
+            DEMGlb[aDEM].AddConstantToGrid(dz);
+            fName := ExtractFilePath(fName) + DEMGlb[aDEM].AreaName + '_egm2008.dem';
+            DEMGlb[aDEM].WriteNewFormatDEM(fName);
+         end
+         else begin
+            Memo1.Lines.Add(DEMGlb[aDEM].AreaName + ' was vertical datum ' + IntToStr(DEMGlb[aDEM].DEMheader.VerticalCSTypeGeoKey) + ' unchanged')
+         end;
+         CloseSingleDEM(aDEM);
+      end;
+      FilesWanted.Free;
+   end;
 end;
 
 procedure TDemHandForm.zshift1Click(Sender: TObject);
@@ -2985,7 +3028,7 @@ begin
               NumAlreadyDone := 0;
               StartProgressAbortOption('Download list ' + IntToStr(succ(f)) + '/' + IntToStr(FilesWanted.Count));
               for i := 0 to pred(FileList.Count) do begin
-                 UpdateProgressBar(pred(i)/FileList.Count);
+                 UpdateProgressBar(succ(i)/FileList.Count);
                  wmdem.SetPanelText(2,IntToStr(succ(i)) + '/' + IntToStr(FileList.Count));
                  TStr := FileList.Strings[i];
                  InName := TStr;
@@ -3257,7 +3300,7 @@ procedure TDemHandForm.LASGeotoUTM1Click(Sender: TObject);
       begin
          pName := lastools_bindir + 'las2las.exe';
 
-         if FileExists(pName) then begin
+         if GetLASToolsFileName(pName) then begin
             Params := '';
             Params2 := '';
             elevparams := '';
@@ -3285,7 +3328,7 @@ procedure TDemHandForm.LASGeotoUTM1Click(Sender: TObject);
             theFileNames.Add(StartDir);
 
             if GetMultipleFiles('input LAS file','Lidar files|*.las;*.laz|*.laz|LAS files|*.las|LAZ files|*.laz',theFileNames,DefaultFilter) then begin
-               DeleteOriginalFiles := AnswerIsYes('Delete original files');
+               DeleteOriginalFiles := AnswerIsYes('Recylceal files');
 
                for I := 0 to pred(TheFileNames.Count) do begin
                   fName := theFileNames.Strings[i];
@@ -3325,7 +3368,7 @@ procedure TDemHandForm.LASGeotoUTM1Click(Sender: TObject);
                   bf.Add('REM ' + IntToStr(i) + '/' + IntToStr(TheFileNames.Count));
                   bf.Add(pName +  ' -i ' + fName + ' -o ' + OutName + ' ' + params + Params2 + elevparams);
                   if DeleteOriginalFiles then bf.Add('del ' + fName);
-                  if i = TheFileNames.Count div 2 then begin
+                  if (i = TheFileNames.Count div 2) then begin
                      EndBatchFile(MDTempDir + 'las2las1.bat',bf,false);
                      bf := tStringList.Create;
                   end;
@@ -3335,9 +3378,6 @@ procedure TDemHandForm.LASGeotoUTM1Click(Sender: TObject);
 
            LetMeOutOfHere:;
             TheFileNames.Free;
-         end
-         else begin
-            MessageToContinue('Option requires ' + pName);
          end;
       end;
 
@@ -3591,6 +3631,35 @@ begin
 end;
 
 
+procedure TDemHandForm.VerticaldatumshiftoverwriteDEMgrid1Click(Sender: TObject);
+var
+   LocalToWGS84,WGS84toEGM2008,aDEM : integer;
+   FilesWanted : tStringList;
+   fName : PathStr;
+   i : integer;
+begin
+   FilesWanted := tStringList.Create;
+   FilesWanted.Add(LastDEMName);
+   if GetMultipleFiles('DEM/grid to move to EGM2008',DEMFilterMasks,FilesWanted ,MDDef.DefaultDEMFilter) then begin
+      LoadDatumShiftGrids(LocalToWGS84,WGS84toEGM2008);
+      for i := 0 to pred(FilesWanted.Count) do begin
+         fName := FilesWanted.Strings[i];
+         aDEM := OpenNewDEM(fName,false);
+         if (DEMGlb[aDEM].DEMheader.VerticalCSTypeGeoKey = 0) then begin
+            Memo1.Lines.Add(DEMGlb[aDEM].AreaName + ' was vertical datum 0 now EGM2008');
+            DEMGlb[aDEM].MoveToEGM2008(WGS84toEGM2008,LocalToWGS84);
+            DEMGlb[aDEM].WriteNewFormatDEM(fName);
+         end
+         else begin
+            Memo1.Lines.Add(DEMGlb[aDEM].AreaName + ' was vertical datum ' + IntToStr(DEMGlb[aDEM].DEMheader.VerticalCSTypeGeoKey) + ' unchanged')
+         end;
+         CloseSingleDEM(aDEM);
+      end;
+      CloseSingleDEM(LocalToWGS84);
+      CloseSingleDEM(WGS84toEGM2008);
+      FilesWanted.Free;
+   end;
+end;
 
 procedure TDemHandForm.Viewsheds1Click(Sender: TObject);
 begin

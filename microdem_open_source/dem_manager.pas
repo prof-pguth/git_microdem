@@ -91,6 +91,9 @@ procedure InitializeDEMsWanted(var DEMList : tDEMBooleanArray; Setting : boolean
 function DEMListForSingleDEM(CurDEM : integer) : tDEMBooleanArray;
 function DEMListForAllOpenDEM: tDEMBooleanArray;
 
+procedure MakeDEMsummaryTable;
+
+
 {$IfDef ExIndexes}
 {$Else}
    const
@@ -121,7 +124,7 @@ function DEMListForAllOpenDEM: tDEMBooleanArray;
        procedure ClimateGetData(ForceDownload : boolean = false);
     {$EndIf}
 
-    {$IfDef ExGeology}
+    {$If Defined(ExGeology) or Defined(ExGeologyDownload)}
     {$Else}
        procedure GeologyGetData(ForceDownload : boolean = false);
     {$EndIf}
@@ -147,6 +150,8 @@ function DEMListForAllOpenDEM: tDEMBooleanArray;
 
 procedure GeotiffMetadata(MDVersion : tMDVersion; fName : PathStr);
 function GeotiffBBox(fName : PathStr) : sfBoundBox;
+
+function LoadDatumShiftGrids(var LocalToWGS84,WGS84toEGM2008 : integer) : boolean;
 
 
 {$IfDef VCL}
@@ -280,6 +285,65 @@ uses
    DEMDef_routines,
    DEMhandW,
    BaseMap;
+
+function LoadDatumShiftGrids(var LocalToWGS84,WGS84toEGM2008 : integer) : boolean;
+begin
+   TemporaryNewGeotiff := false;  //so transformation grid will be untiled, uncompressed
+   FindDriveWithFile(GeoidWGS84ellipsoidToLocalVDatum);
+   LocalToWGS84 := OpenNewDEM(GeoidWGS84ellipsoidToLocalVDatum,false,'WGS84ellipsoid to local geoid');
+   TemporaryNewGeotiff := false;  //so transformation grid will be untiled, uncompressed
+   FindDriveWithFile(Geoid2008FName);
+   WGS84toEGM2008 := OpenNewDEM(Geoid2008FName,false,'WGS84ellipsoid to EGM2008');
+   Result := true;
+end;
+
+
+procedure MakeDEMsummaryTable;
+var
+   Results : tStringList;
+   fName : PathStr;
+   Missing : float64;
+   i,Decs : integer;
+   TStr : shortstring;
+begin
+   Results := tStringList.Create;
+   Results.Add('DEM,PIXEL_IS,HORIZ_DATM,VERT_DATUM,LAT,LONG_CENT,MIN_Z,MAX_Z,HOLES_PC,SW_CornerX,SW_CornerY,SW_Corner,DX,DY,NUM_COL,NUM_ROW,AVG_X_M,AVG_Y_M,AVG_SP_M');
+   for i := 1 to MaxDEMDataSets do if ValidDEM(i) then begin
+      DEMGlb[i].ComputeMissingData(Missing);
+      if (DEMGlb[i].DEMheader.DEMUsed = UTMBasedDEM) then Decs := -2 else Decs := -8;
+      if (DEMGlb[i].DEMheader.DEMUsed = UTMBasedDEM) then TStr := ''
+      else TStr := LatLongDegreeToString(DEMGlb[i].DEMheader.DEMSWCornerY, DEMGlb[i].DEMheader.DEMSWCornerX,DecSeconds);
+
+      Results.Add(DEMGlb[i].AreaName + ',' + IntToStr(DEMGlb[i].DEMheader.RasterPixelIsGeoKey1025) + ',' + DEMGlb[i].DEMMapProjection.h_DatumCode + ',' + IntToStr(DEMGlb[i].DEMheader.VerticalCSTypeGeoKey) + ',' +
+          RealToString(DEMGlb[i].DEMSWcornerLat + 0.5 * DEMGlb[i].LatSizeMap,-12,-3) + ',' +
+          RealToString(DEMGlb[i].DEMSWcornerLong + 0.5 * DEMGlb[i].LongSizeMap,-12,-3)  + ',' +
+          RealToString(DEMGlb[i].DEMheader.MinElev,-12,-1)  + ',' +  RealToString(DEMGlb[i].DEMheader.MaxElev,-12,-1)  + ',' +
+          RealToString(Missing,-12,-3) + ',' +  RealToString(DEMGlb[i].DEMheader.DEMSWCornerX,-12,Decs)  + ',' +RealToString(DEMGlb[i].DEMheader.DEMSWCornerY,-12,Decs)  + ',' +
+          TStr + ',' +
+          RealToString(DEMGlb[i].DEMheader.DEMxSpacing,-12,Decs) + ',' + RealToString(DEMGlb[i].DEMheader.DEMySpacing,-12,Decs)  + ',' +
+          IntToStr(DEMGlb[i].DEMheader.NumCol) + ',' + IntToStr(DEMGlb[i].DEMheader.NumRow) + ',' +
+          RealToString(DEMGlb[i].AverageXSpace,-12,-2) + ',' + RealToString(DEMGlb[i].AverageYSpace,-12,-2)  + ',' + RealToString(DEMGlb[i].AverageSpace,-12,-2));
+   end;
+   fName := Petmar.NextFileNumber(MDTempDir,'dem_summary_','.dbf');
+   StringList2CSVtoDB(Results,fName);
+end;
+
+procedure CheckGeoidNames;
+begin
+   if not FileExists(Geoid2008FName) then begin
+      Geoid2008FName := 'J:\gis_software\OSGeo4W\share\proj\us_nga_egm08_25.tif';
+      if not FileExists(Geoid2008FName) then Geoid2008FName := MainMapData + 'geoid\egm2008-5.tif';
+   end;
+   if not FileExists(Geoid96FName) then begin
+      Geoid96FName := MainMapData + 'geoid\us_nga_egm96_15.tif';
+      if not FileExists(Geoid96FName) then Geoid96FName := MainMapData + 'geoid\egm96-5-idl.tif';
+   end;
+   GeoidDiffFName := MainMapData + 'geoid\egm96_to_egm2008.tif';
+   if not FileExists(GeoidWGS84ellipsoidToLocalVDatum) then begin
+      GeoidWGS84ellipsoidToLocalVDatum := 'J:\gis_software\OSGeo4W\share\proj\us_noaa_g2012bu0.tif';
+   end;
+end;
+
 
 
 procedure InitializeDEMsWanted(var DEMList : tDEMBooleanArray; Setting : boolean);
@@ -727,7 +791,6 @@ var
    TStr : ShortString;
 begin
     TStr :=  'All files|*.*|GEOTIFF|*.tif;*.tiff|' + 'Imagery with world files|*.jgw;*.tfw;*.tifw;*.gfw;*.pnw;*.sdw;*.bpw|' + 'BMP/JPEG/PNG, 3 pt reg|*.xy|JPEG2000|*.jp2|ECW|*.ecw|IMG|*.img|' + 'GeoPDF|*.pdf';
-    //if MrSidEnabled then TStr := TStr + 'MrSID|*.sid|';
     if ASatImage then begin
        Result := '|Landsat Look true color|*T1.TIF|Landsat Look TIR|*TIR.TIF|Likely images|*.tif;*.sid|' + 'Imagery|*.bmp;*.jpg;*.jpeg;*.png;*.gif|' + 'BIP file|*.BIP|';
        Result := TStr + Result;
@@ -767,7 +830,6 @@ end;
              end;
        end;
     end;
-
 
    procedure EditDEMHeader;
    var
@@ -858,7 +920,7 @@ end;
            {$If Defined(TimeLoadDEM)} WriteLineToDebugFile('OpenNewDEM in'); {$EndIf}
            FilesWanted := tStringList.Create;
            FilesWanted.Add(LastDEMName);
-           if GetMultipleFiles('DEM ' + WhatFor,DEMFilterMasks,FilesWanted ,MDDef.DefaultDEMFilter) then begin
+           if GetMultipleFiles('DEM/grid ' + WhatFor,DEMFilterMasks,FilesWanted ,MDDef.DefaultDEMFilter) then begin
               {$If Defined(TimeLoadDEM))} WriteLineToDebugFile('Files picked ' + IntToStr(FilesWanted.Count)); {$EndIf}
               for i := 0 to pred(FilesWanted.Count) do begin
                  fName := FilesWanted.Strings[i];
@@ -932,9 +994,7 @@ end;
          end;
      {$EndIf}
    end;
-
 {$EndIf}
-
 
 
 {$IfDef ExSat}
@@ -1034,7 +1094,6 @@ end;
          end;
          Paths.Free;
       end;
-
 
 
    procedure PickAndOpenImagery(ImageType : tImageType);
@@ -1210,7 +1269,6 @@ begin
             end;
          end;
       end;
-
       if (WMDEM <> Nil) then WMDEM.SetMenusForVersion;
       {$IfDef RecordClosingData} WriteLineToDebugFile('all child windows closed'); {$EndIf}
    {$EndIf}
@@ -1238,7 +1296,7 @@ end;
                   GetDEM(DEM2,false,'Second grid (' + WhatFor + ')');
                end;
                if (DEM1 = DEM2) then begin
-                  if not AnswerIsYes('Cannot pick the same grid for both; retry') then begin
+                  if not AnswerIsYes('Cannot pick same grid for both; retry') then begin
                      Result := false;
                      exit;
                   end
@@ -1364,7 +1422,7 @@ end;
       {$EndIf}
 
 
-      {$IfDef ExGeology}
+      {$If Defined(ExGeology) or Defined(ExGeologyDownload)}
       {$Else}
          procedure GeologyGetData(ForceDownload : boolean = false);
          begin
@@ -1388,7 +1446,6 @@ end;
          end;
       end;
 
-
       procedure GetBlueMarble;
       var
          dName : PathStr;
@@ -1401,7 +1458,6 @@ end;
             ZipMasterUnzip(dName,ExtractFilePath(dName));
          end;
       end;
-
 
       procedure GetNaturalEarthData(Force : boolean = false);
       var
@@ -1418,7 +1474,6 @@ end;
          end;
       end;
 
-
       procedure GetGeoid;
       var
          dName : PathStr;
@@ -1428,18 +1483,6 @@ end;
             CheckGeoidNames;
          end;
       end;
-
-
-procedure CheckGeoidNames;
-begin
-   Geoid2008FName := MainMapData + 'geoid\egm2008-2.5.tif';
-   if not FileExists(Geoid2008FName) then Geoid2008FName := MainMapData + 'geoid\egm2008-5.tif';
-   Geoid96FName := MainMapData + 'geoid\us_nga_egm96_15.tif';
-   if not FileExists(Geoid96FName) then Geoid96FName := MainMapData + 'geoid\egm96-5-idl.tif';
-   GeoidDiffFName := MainMapData + 'geoid\egm96_to_egm2008.tif';
-end;
-
-
 {$EndIf}
 
 
@@ -1463,7 +1506,6 @@ begin
       end;
    end;
 end;
-
 
 
 function GetWhatsOpen : tStringList;
@@ -1786,7 +1828,6 @@ begin
       Table.Destroy;
    end;
 end;
-
 
 
 procedure InitCompareDEMs;

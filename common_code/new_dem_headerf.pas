@@ -218,6 +218,8 @@ begin
       else DEMGlb[DEM].DEMheader.LatHemi := 'S';
       DEMGlb[DEM].DEMFileName := ChangeFileExt(DEMGlb[DEM].DEMFileName,'.dem');
       EditHeadRec.RasterPixelIsGeoKey1025 := RadioGroup4.ItemIndex;
+      CheckEditString(Edit10.Text,EditHeadRec.VerticalCSTypeGeoKey);
+
       if Memo1.Visible then begin
          EditHeadRec.WKTString := '';
          for i := 0 to pred(Memo1.Lines.Count) do EditHeadRec.WKTString := EditHeadRec.WKTString + Memo1.Lines[i];

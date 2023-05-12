@@ -27,7 +27,7 @@
 
    {$IfDef Debug}
       //{$Define RecordFan}
-      {$Define RecordVAT}
+      //{$Define RecordVAT}
       //{$Define FanDrawProblems)
       //{$Define WorldFileOverlay}
       //{$Define RecordStretchBitmap}
@@ -237,6 +237,7 @@ type
      OverlayOrder : array[1..MaxOverlays] of tOverlayOrder;
      DBonThisMap :  array[1..MaxDataBase] of boolean;
      NeedToRedraw,
+     ClosingMapNow,
      InitialMapDrawn,
      FastMapDraw,
      Log10Elev,
@@ -400,11 +401,11 @@ type
 
       procedure MapOverlaysToDebugFile(Where : shortstring);
 
-      procedure MapGridToDEMGrid(xg,yg : float64; var xg1,yg1 : float64);
+      procedure MapGridToDEMGrid(xg,yg : float32; var xg1,yg1 : float32);
 
-      procedure DataGridToLatLongDegree(xgrid,ygrid : float64; var lat,long : float64);
-      procedure DataGridToScreen(XGrid,YGrid : float64; var XPic,YPic : integer; OutsideData : boolean = false);
-      procedure DataGridToProjectedCoords(X,Y : float64; var XProj,YProj : float64);
+      procedure DataGridToLatLongDegree(xgrid,ygrid : float32; var lat,long : float64);
+      procedure DataGridToScreen(XGrid,YGrid : float32; var XPic,YPic : integer; OutsideData : boolean = false);
+      procedure DataGridToProjectedCoords(X,Y : float32; var XProj,YProj : float64);
       procedure ScreenToProjectedCoords(XPic,YPic : integer; var XProj,YProj : float64); {$IfDef InlineCoreMapping} inline; {$EndIf}
       function ScreenToSatelliteDataGrid(Band, XPic,YPic : integer; var XGrid,YGrid : integer) : boolean;
       function ScreenToLatLongString(xpic,ypic : integer) : shortstring;
@@ -422,22 +423,23 @@ type
       function GetBoundBoxUTM : sfBoundBox;
       procedure FindMapUTMLimits;
 
-      function ScreenToDataGrid(XPic,YPic : integer; var XGrid,YGrid : float64) : boolean;
+      function ScreenToDataGrid(XPic,YPic : integer; var XGrid,YGrid : float32) : boolean;
       procedure ScreenToLatLongDegree(XPic,YPic : integer; var Lat,Long : float64);
       procedure ScreenToUTM(xpic,ypic : integer; var xutm,yutm : float64; ForceSlow : boolean = false);
       function ScreenToElev(xpic,ypic : integer; var z : float32) : boolean;
-      procedure ScreenToDEMGrid(xpic,ypic : integer; var XGrid,YGrid : float64); overload; {$IfDef InlineCoreMapping} inline; {$EndIf}
+      procedure ScreenToDEMGrid(xpic,ypic : integer; var XGrid,YGrid : float32); overload; {$IfDef InlineCoreMapping} inline; {$EndIf}
       procedure ScreenToDEMGrid(xpic,ypic : integer; var XGrid,YGrid : integer); overload; {$IfDef InlineCoreMapping} inline; {$EndIf}
 
       procedure LatLongDegreeToScreen(Lat,Long : float64; var XPic,YPic : integer); {$IfDef InlineCoreMapping} inline; {$EndIf}
       procedure LatLongRadiansToScreen(Lat,Long : float64; var XPic,YPic : integer); {$IfDef InlineCoreMapping} inline; {$EndIf}
       procedure LatLongDegreeToProjectedCoords(Lat,Long : float64; var XProj,YProj : float64);
-      procedure LatLongDegreeToDataGrid(Lat,Long : float64; var xg,yg : float64);
+      procedure LatLongDegreeToDataGrid(Lat,Long : float64; var xg,yg : float32);  overload;
+      procedure LatLongDegreeToDataGrid(Lat,Long : float64; var xg,yg : float64);  overload;
 
       procedure UTMtoScreen(XUTM,YUTM : float64; var XPic,YPic : integer; ReallyUTM : boolean = false); overload;
       procedure UTMtoScreen(XUTM,YUTM : float32; var XPic,YPic : integer; ReallyUTM : boolean = false); overload;
       procedure MGRSToScreen(MGRS : shortString; var XPic,YPic : integer);
-      procedure DEMGridToScreen(xg,yg : float64; var xs,ys : integer);
+      procedure DEMGridToScreen(xg,yg : float32; var xs,ys : integer);
 
       procedure ClipDataGrid(var bb : sfBoundBox);
 
@@ -503,6 +505,7 @@ type
         {$EndIf}
 
         function MakeVATLegend : tMyBitmap;
+        function ChangeMapLegend : tMyBitmap;
         function DrawLegendOnBitmap : tMyBitmap;
         procedure DrawLegendsOnMap(var Bitmap : tMyBitmap);
         procedure GazetteerLegend(var Bitmap : tMyBitmap);
@@ -1298,7 +1301,7 @@ begin
                {$IfDef VCL}
                   SaveLayerBitmap(Bitmap,BaseMapFName);
                {$Else}
-                  if FirstMapDrawing and (DEMonMap <> 0) then begin
+                  if FirstMapDrawing and ValidDEM(DEMonMap) then begin
                      {$IfDef RecordOverlays} WriteLineToDebugFile('Try Basemap save, ' + MapSizeString); {$EndIf}
                      Bitmap.SaveToFile(BaseMapFName);
                   end;
@@ -1491,8 +1494,6 @@ begin
 end;
 
 
-
-
 function tMapDraw.KMLcompatibleMap : boolean;
 begin
    Result := (DEMMap and (DEMGlb[DEMonMap].DEMheader.DEMUsed <> UTMbasedDEM)) or ((VectorIndex <> 0) and (PrimMapProj.Pname in [MercatorEllipsoid]))
@@ -1560,7 +1561,7 @@ end;
 
 function TMapDraw.MapAreaDEMGridLimits : tGridLimits;
 var
-   xlow,ylow,xHigh,yHigh : float64;
+   xlow,ylow,xHigh,yHigh : float32;
 begin
   MapGridToDEMGrid(MapCorners.BoundBoxDataGrid.xmin,MapCorners.BoundBoxDataGrid.ymin,xlow,ylow);
   MapGridToDEMGrid(MapCorners.BoundBoxDataGrid.xmax,MapCorners.BoundBoxDataGrid.ymax,xHigh,yHigh);
@@ -1646,7 +1647,7 @@ begin
    end
    else if DEMMap then begin
       if ValidDEMonMap then begin
-         if DEMGlb[DEMonMap].DEMheader.DigitizeDatum in [Spherical,unusedLamAzEqAreaSphere] then exit;
+         if DEMGlb[DEMonMap].DEMheader.DigitizeDatum in [Spherical{,unusedLamAzEqAreaSphere}] then exit;
          Result := true;
       end;
    end
@@ -2064,7 +2065,7 @@ end;
 
 function TMapDraw.ScreenToElev(xpic,ypic : integer; var z : float32) : boolean;
 var
-   xg,yg : float64;
+   xg,yg : float32;
 begin
    if ValidDEMonMap then begin
       ScreenToDataGrid(xpic,ypic,xg,yg);

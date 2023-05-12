@@ -673,7 +673,7 @@ end;
 
 procedure TPickGeoStat.Button12Click(Sender: TObject);
 begin
-   {$IfDef RecordMoments} WriteLineToDebugFile('TPickGeoStat.Button12Click, moments with optons'); {$EndIf}
+   {$IfDef RecordMoments} WriteLineToDebugFile('TPickGeoStat.Button12Click, moments with options'); {$EndIf}
    Moment_Opts.SetMomentOptions;
    DifferenClick(Sender);
 end;

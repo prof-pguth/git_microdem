@@ -19,6 +19,7 @@
       //{$Define RecordParallelLoops}
       //{$Define RecordUseOtherPrograms}
       //{$Define RecordFan}
+      {$Define RecordVertDatumShift}
       //{$Define RecordUpdate}
       //{$Define RecordDirs}
       //{$Define RecordLoadDefault}
@@ -387,6 +388,7 @@ var
    fName : PathStr;
    TheShift : shortString;
 begin
+   {$IfDef RecordVertDatumShift} WriteLineToDebugFile('VerticalDatumShift in, DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].ZRange);  {$EndIf}
    GetGeoid;
    if (vdShift = vdEGM96toEGM2008) then fName := GeoidDiffFName
    else fName := Geoid2008FName;
@@ -404,6 +406,13 @@ begin
    Merge[GeoidGrid] := true;
    SumDEMs(DEM, Merge,DEMGlb[DEM].AreaName + '_vdatum_shift_' + TheShift);
    CloseSingleDEM(GeoidGrid);
+   case vdShift of
+      vdWGS84toEGM2008 : DEMGlb[DEM].DEMheader.VerticalCSTypeGeoKey := VertCSEGM2008;
+      vdEGM2008toWGS84 : DEMGlb[DEM].DEMheader.VerticalCSTypeGeoKey := VertCSWGS84;
+      vdEGM96toEGM2008 : DEMGlb[DEM].DEMheader.VerticalCSTypeGeoKey := VertCSEGM2008;
+   end;
+   DEMGlb[DEM].CheckMaxMinElev;
+   {$IfDef RecordVertDatumShift} WriteLineToDebugFile('VerticalDatumShift out, DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].ZRange);  {$EndIf}
 end;
 
 
@@ -411,39 +420,28 @@ end;
 function ElevUnitsAre(Code : byte) : shortstring;
 begin
    case Code of
-      euMeters	 : Result := 	' m'	;
-      Feet	 : Result := 	' m'	;
-      TenthMgal	 : Result := 	' mgal'	;
-      Milligal	 : Result := 	' mgal'	;
-      TenthGamma	 : Result := 	' gamma'	;
-      Decimeters	 : Result := 	 ' m'	;
-      Gammas	 : Result := 	' gamma'	;
+      euMeters	   : Result := 	' m'	;
+      Feet	      : Result := 	' m'	;
+      TenthMgal   : Result := 	' mgal'	;
+      Milligal	   : Result := 	' mgal'	;
+      TenthGamma  : Result := 	' gamma'	;
+      Decimeters  : Result := 	 ' m'	;
+      Gammas	   : Result := 	' gamma'	;
       HundredthMGal	 : Result := 	' mgal'	;
-      DeciFeet	 : Result := 	' m'	;
-      Centimeters	 : Result := 	' m'	;
-      //Unused10	 : Result := 	''	;
+      DeciFeet	   : Result := 	' m'	;
+      Centimeters	: Result := 	' m'	;
       HundredthMa	 : Result := 	' Ma'	;
       PercentSlope	 : Result := 	'%'	;
       Undefined	 : Result := 	''	;
       zDegrees	 : Result := 	'°'	;
-      //Unused0	 : Result := 	''	;
       lnElev	 : Result := 	'ln(z)'	;
       LogElev	 : Result := 	'log(z)'	;
-      //Unused1	 : Result := 	'°'	;
-      //Unused2	 : Result := 	''	;
       zPercent	 : Result := 	'%'	;
-      //Unused3	 : Result := 	''	;
-      //Unused4	 : Result := 	'°'	;
-      //Unused5	 : Result := 	''	;
-      //Unused6	 : Result := 	''	;
-      //Unused7	 : Result := 	''	;
       NLCD2001up	 : Result := 	' NLCD'	;
       LandFire	 : Result := 	' LandFire'	;
       Nanotesla	 : Result := 	' nT'	;
       NLCD1992	 : Result := 	'NLCD 1992'	;
       euIntCode	 : Result := 	' code'	;
-      //unused8	 : Result := 	''	;
-      //unused9	 : Result := 	''	;
       GLOBCOVER	 : Result := 	'GlobCover'	;
       GLC2000	 : Result := 	'GLC2000'	;
       euImagery	 : Result := 	' Imagery'	;
@@ -472,6 +470,7 @@ begin
       euNBR	 : Result := 	'NBR'	;
       euDifference : Result := 'diff';
       euElevDiff : Result := 'diff m';
+      LCMAP : Result := 'LCMAP'
       else Result := '';
    end;
 end;
@@ -488,8 +487,6 @@ begin
    else if (AspectDir < 292.5) then Result :=cdW
    else Result :=cdNW;
 end;
-
-
 
 
 function ZUnitCategory (Zunit : tElevUnit) : shortstring;
@@ -2482,12 +2479,35 @@ var
          if (IniWhat = iniRead) then LocationLabel := tLocationLabel(IniFile.ReadInteger('StratCol','LocationLabel',ord(llLatLong)));
          if (iniWhat = iniInit) then LocationLabel := llLatLong;
       end;
-      {$IfDef RecordINIfiles}
-      WriteLineToDebugFile('ProcessIniFile after Stratcol');
-      {$EndIf}
+      {$IfDef RecordINIfiles} WriteLineToDebugFile('ProcessIniFile after Stratcol'); {$EndIf}
 
       {$EndIf}
    end;
+
+
+   procedure DEMIXSettings;
+   begin
+      with MDIniFile,MDDef do begin
+            AParameter('DEMIX','DEMIX_criterion_tolerance_fName',DEMIX_criterion_tolerance_fName,'');
+            AParameter('DEMIX','DEMIX_base_dir',DEMIX_base_dir,'');
+            AParameter('DEMIX','DEMIXhalfSecDir',DEMIXhalfSecDir,'');
+
+            AParameter('DEMIX','DEMIX_xsize',DEMIX_xsize,900);
+            AParameter('DEMIX','DEMIX_ysize',DEMIX_ysize,600);
+            AParameter('DEMIX','DEMIX_DoCHM',DEMIX_DoCHM,true);
+            AParameter('DEMIX','DEMIX_DoAirOrDirt',DEMIX_DoAirOrDirt,true);
+            AParameter('DEMIX','DEMIX_DoElevDiff',DEMIX_DoElevDiff,true);
+            AParameter('DEMIX','DEMIX_DoSlopeDiff',DEMIX_DoSlopeDiff,true);
+            AParameter('DEMIX','DEMIX_DoRuffDiff',DEMIX_DoRuffDiff,true);
+            AParameter('DEMIX','DEMIX_DoHalfSecDEMs',DEMIX_DoHalfSecDEMs,true);
+            AParameter('DEMIX','DEMIX_DoElevParamGraphs',DEMIX_DoElevParamGraphs,true);
+            AParameter('DEMIX','DEMIXCompositeImage',DEMIXCompositeImage,true);
+            AParameterShortFloat('DEMIX','DEMIXSimpleTolerance',DEMIXSimpleTolerance,2.0);
+            AParameterShortFloat('DEMIX','DEMIXSlopeTolerance',DEMIXSlopeTolerance,2.0);
+            AParameterShortFloat('DEMIX','DEMIXRuffTolerance',DEMIXRuffTolerance,2.0);
+      end;
+   end;
+
 
 
    procedure ProgramFileSettings;
@@ -2515,31 +2535,6 @@ var
             AParameter('Files','SagaCMD',SagaCMD,'H:\gis_software\saga-8.2.1_x64\saga_cmd.exe');
             AParameter('Files','WhiteBoxFName',WhiteBoxFName,'');
 
-            AParameter('DEMIX','DEMIX_criterion_tolerance_fName',DEMIX_criterion_tolerance_fName,'');
-            AParameter('DEMIX','DEMIX_base_dir',DEMIX_base_dir,'');
-            AParameter('DEMIX','DEMIX_xsize',DEMIX_xsize,900);
-            AParameter('DEMIX','DEMIX_ysize',DEMIX_ysize,600);
-            AParameter('DEMIX','DEMIX_DoCHM',DEMIX_DoCHM,true);
-            AParameter('DEMIX','DEMIX_DoAirOrDirt',DEMIX_DoAirOrDirt,true);
-            AParameter('DEMIX','DEMIX_DoElevDiff',DEMIX_DoElevDiff,true);
-            AParameter('DEMIX','DEMIX_DoSlopeDiff',DEMIX_DoSlopeDiff,true);
-            AParameter('DEMIX','DEMIX_DoRuffDiff',DEMIX_DoRuffDiff,true);
-            AParameter('DEMIX','DEMIX_DoHalfSecDEMs',DEMIX_DoHalfSecDEMs,true);
-            AParameter('DEMIX','DEMIX_DoElevParamGraphs',DEMIX_DoElevParamGraphs,true);
-            AParameter('DEMIX','DEMIXCompositeImage',DEMIXCompositeImage,true);
-            AParameterShortFloat('DEMIX','DEMIXSimpleTolerance',DEMIXSimpleTolerance,2.0);
-
-            {$IfDef ExMrSID}
-            {$Else}
-              //AParameter('Files','MrSIDDecode',MrSIDDecodeName,'');
-              //AParameter('Files','MrSIDInfo',MrSidInfoName,'');
-            {$EndIf}
-
-            {$IfDef ExWMS}
-            {$Else}
-               AParameter('Files','FavoriteWMS',FavoriteWMS,'');
-            {$EndIf}
-
             {$IfDef MSWindows}
                AParameter('Files','mcc_lidarFName',mcc_lidarFName,'');
                AParameter('Files','SmallScaleWorldOutlines',SmallScaleWorldOutlines,'');
@@ -2549,8 +2544,6 @@ var
                AParameter('Files','LastCompressedFile',LastCompressedFile,'');
                AParameter('Files','WriteDEMDir',WriteDEMDir,'');
                AParameter('Files','WriteSatDir',WriteSatDir,'');
-               AParameter('Files','CopyFilesFromDir',CopyFilesFromDir,'');
-               AParameter('Files','CopyFilesToDir',CopyFilesToDir,'');
                AParameter('Files','LastSavedLOSfName',LastSavedLOSfName,'');
                AParameter('Files','LastTrainSetFName',LastTrainSetFName,'');
                AParameter('Files','GADMDir',GADMDir,'');
@@ -3551,24 +3544,12 @@ var
 
 
    procedure MarginaliaLocation(tName : shortstring; var ItemLocation : tLegendLocation; DefSpot : byte; DefDraw : boolean);
-   {tLegendLocation = record
-      DrawItem,
-      HorizontalLegend : boolean;
-      LegendSize,
-      MapPosition : byte;
-   end;}
    begin
       with MDIniFile do begin
          AParameter('MapMargin',tName + '.DrawItem',ItemLocation.DrawItem,DefDraw);
          AParameter('MapMargin',tName + '.HorizontalLegend',ItemLocation.HorizontalLegend,true);
          AParameter('MapMargin',tName + '.LegendSize',ItemLocation.LegendSize,1);
          AParameter('MapMargin',tName + '.MapPosition',ItemLocation.MapPosition,DefSpot);
-
-         (*
-         if (IniWhat = iniWrite) then IniFile.WriteInteger('MapMarginalia',tName + '.MapPosition',ord(ItemLocation.MapPosition));
-         if (IniWhat = iniRead) then ItemLocation.MapPosition := IniFile.ReadInteger('MapMarginalia',tName + '.MapPosition',DefSpot);
-         if (iniWhat = iniInit) then ItemLocation.MapPosition := DefSpot;
-         *)
       end;
    end;
 
@@ -3679,8 +3660,7 @@ begin
 
    TissotOptions;
 
-   {$IfDef RecordINIfiles} WriteLineToDebugFile('Breakpoint 1.5'); {$EndIf}
-   {$IfDef RecordIniMemoryOverwrite} IniMemOverwriteCheck('Breakpoint 1.5'); {$EndIf}
+   {$If Defined(RecordINIfiles) or Defined(RecordIniMemoryOverwrite)} WriteLineToDebugFile('Breakpoint 1.5'); {$EndIf}
 
    SonarDefaults;
    DEMDefaultParameters;
@@ -3693,8 +3673,7 @@ begin
    PLSSsettings;
    ReflectanceSettings;
 
-   {$If Defined(RecordINIfiles) or Defined(RecordINIfiles)} WriteLineToDebugFile('Breakpoint 2'); {$EndIf}
-   {$IfDef RecordIniMemoryOverwrite} IniMemOverwriteCheck('Breakpoint 2'); {$EndIf}
+   {$If Defined(RecordINIfiles) or Defined(RecordINIfiles) or Defined(RecordIniMemoryOverwrite)} WriteLineToDebugFile('Breakpoint 2'); {$EndIf}
    MicronetSettings;
    ContourSettings;
    DatumProjectionSettings;
@@ -3704,14 +3683,14 @@ begin
    MapDrawSettings;
    SatelliteSettings;
    MapGridSettings;
+   DEMIXsettings;
 
    {$IfDef ExDRGimport}
    {$Else}
       DRGImportSettings;
    {$EndIf}
 
-   {$If Defined(RecordINIfiles) or Defined(RecordINIfiles)} WriteLineToDebugFile('Breakpoint 3'); {$EndIf}
-   {$IfDef RecordIniMemoryOverwrite} IniMemOverwriteCheck('Breakpoint 3'); {$EndIf}
+   {$If Defined(RecordINIfiles) or Defined(RecordINIfiles)or Defined(RecordIniMemoryOverwrite)} WriteLineToDebugFile('Breakpoint 3'); {$EndIf}
 
    with MDIniFile,MDDef do begin
       AParameterShortFloat('Anaglyph','AnaglyphVertExag',AnaglyphVertExag,3);
@@ -3789,6 +3768,7 @@ begin
       AParameter('Graph','DefaultGraphXSize',DefaultGraphXSize,600);
       AParameter('Graph','DefaultGraphYSize',DefaultGraphYSize,400);
       AParameter('Graph','BigBM_nc',BigBM_nc,3);
+      AParameter('Graph','MapNameBelowComposite',MapNameBelowComposite,true);
 
       AParameter('Graph','NoHistFreqLabels',NoHistFreqLabels,false);
       AParameter('Graph','RoseBothEnds',RoseBothEnds,false);
@@ -3798,6 +3778,11 @@ begin
       AParameter('Graph','PurgeBigGraphSubGraphs', PurgeBigGraphSubGraphs,true);
       AParameter('Graph','ImageDiffThreshhold', ImageDiffThreshhold,35);
       AParameter('Graph','ErosionCycles',ErosionCycles,1);
+
+      AColorParameter('Graph','DefaultGraphBackgroundColor',DefaultGraphBackgroundColor,claWhite);
+
+
+
 
       {$IfDef AllowGeomorphometry}
          AParameter('Graph','QuantileRanges',QuantileRanges,true);
@@ -3947,8 +3932,6 @@ begin
          with OGLDefs do begin
             AParameterFloat('OpenGL','MoveIncr',MoveIncr,7.5);
             AParameter('OpenGL','DrawOGLAxes',DrawOGLAxes,true);
-            //AParameter('OpenGL','MaxInitOpenGLTriangles',MaxInitOpenGLTriangles,1000000);
-            //AParameter('OpenGL','MaxOpenGLPoints',MaxOpenGLPoints,25000000);
             AParameter('OpenGL','OpenGLDefaultWidth',OpenGLDefaultWidth,1200);
             AParameter('OpenGL','OpenGLDefaultHeight',OpenGLDefaultHeight,800);
             AParameter('OpenGL','OpenGLDefaultTopX',OpenGLDefaultTopX,25);
@@ -4054,7 +4037,7 @@ begin
          InitializeMyFont('DefGISLegendFont',DefGISLegendFont,'Arial New',12,claBlack);
          InitializeMyFont('TitleLabelFont',TitleLabelFont,'Arial',18,claBlack);
          InitializeMyFont('CollarUnitsFont',CollarUnitsFont,'Arial',12,claBlack);
-         InitializeMyFont('LegendFont',LegendFont,'Verdana',14,claBlack);
+         InitializeMyFont('LegendFont',LegendFont,'Verdana',16,claBlack);
          InitializeMyFont('DefaultGraphFont',DefaultGraphFont,'Verdana',14,claBlack);
          InitializeMyFont('InsideGridFont',InsideGridFont,'Verdana',11,claBlack);
 
@@ -4151,14 +4134,14 @@ end;
 
 {$IfDef NoClustering}
 {$Else}
-procedure DefineMICRODEMClusteringOptions(var MVClusterClientDataSet : tMVClusterClientDataSet);
-begin
-   MVClusterClientDataSet.NIterations := MDDef.ClusterIterations;
-   MVClusterClientDataSet.InitOption := MDDef.ClusterInitialization;
-   MVClusterClientDataSet.ConvergenceThreshold := MDDef.ClusterConvergenceThreshold;
-   MVClusterClientDataSet.NClusters := MDDef.NumClusters;
-   MVClusterClientDataSet.AccumulateClusterStats := MDDef.ShowClusterResults and MDDef.IncludeClusterStatistics;
-end;
+   procedure DefineMICRODEMClusteringOptions(var MVClusterClientDataSet : tMVClusterClientDataSet);
+   begin
+      MVClusterClientDataSet.NIterations := MDDef.ClusterIterations;
+      MVClusterClientDataSet.InitOption := MDDef.ClusterInitialization;
+      MVClusterClientDataSet.ConvergenceThreshold := MDDef.ClusterConvergenceThreshold;
+      MVClusterClientDataSet.NClusters := MDDef.NumClusters;
+      MVClusterClientDataSet.AccumulateClusterStats := MDDef.ShowClusterResults and MDDef.IncludeClusterStatistics;
+   end;
 {$EndIf}
 
 procedure ToggleShowProgress(ShowIt : boolean);
@@ -4624,7 +4607,7 @@ begin
     HardLimitColorPaletteFName := ProgramRootDir + 'hard_limit_color_palettes' + DefaultDBExt;
     TableDefinitionsFileName := ProgramRootDir + 'MD_TABLE_DEF_v2' + DefaultDBExt;
     GazOptFName := ProgramRootDir + 'gaz_symbols_v3' + DefaultDBExt;
-    LandCoverFName := ProgramRootDir + 'land_cover_19' + DefaultDBExt;
+    LandCoverFName := ProgramRootDir + 'land_cover_20' + DefaultDBExt;
     RangeCircleSizesfName := ProgramRootDir + 'range_circles' + DefaultDBExt;
     WKT_GCS_Proj_fName := ProgramRootDir + 'wkt_proj\gcs_wgs84.prj';
     if PathIsValid(ProgramRootDir + 'esri_proj') then begin
@@ -5389,6 +5372,9 @@ finalization
    {$IfDef RecordParallelLoops} WriteLineToDebugFile('RecordParallelLoops in demdef_routines'); {$EndIf}
    {$IfDef RecordFont} WriteLineToDebugFile('RecordFont in demdef_routines'); {$EndIf}
 end.
+
+
+
 
 
 

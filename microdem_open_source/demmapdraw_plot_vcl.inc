@@ -93,6 +93,45 @@
 {$EndIf}
 
 
+function tMapDraw.ChangeMapLegend : tMyBitmap;
+var
+   Vat : tStringList;
+   fName : PathStr;
+   color : tColor;
+   TStr : shortstring;
+   CatHeight,Cat : integer;
+begin
+   CreateBitmap(Result,1200,800);
+
+   Result.Canvas.Font.Size := MDDef.LegendFont.Size;
+   CatHeight := 6 * Result.Canvas.TextHeight('Wy') div 5;
+
+   Cat := 0;
+
+   ClearBitmap(Result,clNearWhite);
+   Result.Canvas.Font.Style := [fsBold];
+
+   Result.Canvas.TextOut(5,1,'       Percentile     Category');
+   inc(Cat);
+   Result.Canvas.Pen.Color := clLime;
+   Result.Canvas.Brush.Color := clLime;
+   Result.Canvas.Brush.Style := bsSolid;
+   Result.Canvas.Rectangle(5,Cat*CatHeight,40,succ(Cat)*CatHeight);
+   Result.Canvas.Brush.Style := bsClear;
+   Tstr := RealToString(DEMGlb[DEMonMap].PercentileOfElevation(MDDef.TopCutLevel),9,2) + '%   Positive Change >' + RealToString(MDDef.TopCutLevel,8,-2);
+   Result.Canvas.TextOut(45,Cat*CatHeight + 4, TStr);
+
+   inc(Cat);
+   Result.Canvas.Pen.Color := clRed;
+   Result.Canvas.Brush.Color := clRed;
+   Result.Canvas.Brush.Style := bsSolid;
+   Result.Canvas.Rectangle(5,Cat*CatHeight,40,succ(Cat)*CatHeight);
+   Result.Canvas.Brush.Style := bsClear;
+   TStr := RealToString(DEMGlb[DEMonMap].PercentileOfElevation(MDDef.BottomCutLevel),9,2) + '%   Negative Change <' + RealToString(MDDef.BottomCutLevel,8,-2);
+   Result.Canvas.TextOut(45,Cat*CatHeight + 4,TStr);
+   PutBitmapInBox(Result);
+end;
+
 
 function tMapDraw.MakeVATLegend : tMyBitmap;
 var
@@ -107,7 +146,7 @@ var
 begin
    fName := DEMGlb[DEMOnMap].VATFileName;
    if FileExists(fName) then begin
-      {$IfDef RecordVAT} WriteLineToDebugFile('TMapForm.GridVATlegend1Click found=' + fName); {$EndIf}
+      {$IfDef RecordVAT} WriteLineToDebugFile('tMapDraw.MakeVATLegend found=' + fName); {$EndIf}
    end
    else begin
       fName := DEMGlb[DEMOnMap].DEMFileName + '.vat.dbf';
@@ -116,6 +155,7 @@ begin
       if not FileExists(fName) then exit;
       DEMGlb[DEMOnMap].VATFileName := fName;
    end;
+   {$IfDef RecordVAT} WriteLineToDebugFile('tMapDraw.MakeVATLegend enter for=' + fName); {$EndIf}
    OpenNumberedGISDataBase(db, fName);
 
    (*
@@ -125,89 +165,80 @@ begin
    end
    else CatPCforLegend := 0;
    *)
+   if ValidDB(db) and (GISdb[db].MyData.RecordCount > 0) then begin
+      if GISdb[db].MyData.FieldExists('CODE') then CodeField := 'CODE' else CodeField := 'VALUE';
 
-   if GISdb[db].MyData.FieldExists('CODE') then CodeField := 'CODE' else CodeField := 'VALUE';
+      ShowHourglassCursor;
+      for x := MinVATValue to MaxVATCats do Hist[x] := 0;
+      Missing := 0;
+      Total := 0;
+      fTotal := 0;
+      if not GISdb[db].MyData.FieldExists(GISdb[db].dbOpts.LabelField) then begin
+         GISdb[db].dbOpts.LabelField := OrigPickField(GISdb[db].MyData,'Label',[ftString]);
+      end;
 
-   ShowHourglassCursor;
-   for x := MinVATValue to MaxVATCats do Hist[x] := 0;
-   Missing := 0;
-   Total := 0;
-   fTotal := 0;
-   if not GISdb[db].MyData.FieldExists(GISdb[db].dbOpts.LabelField) then begin
-      GISdb[db].dbOpts.LabelField := OrigPickField(GISdb[db].MyData,'Label',[ftString]);
-   end;
-
-   if true then begin
-      for y := round(MapCorners.BoundBoxDataGrid.ymin) to round(MapCorners.BoundBoxDataGrid.ymax) do begin
-         for x := round(MapCorners.BoundBoxDataGrid.xmin) to round(MapCorners.BoundBoxDataGrid.xmax) do begin
-            if DEMGlb[DEMonMap].GetElevMetersOnGrid(x,y,zf) then begin
-               z := round(zf);
-               if (z >= MinVATValue) and (z <= MaxVatCats) then begin
-                  Inc(Hist[z]);
-                  Inc(Total);
-               end;
-            end
-            else inc(Missing);
+      if true then begin
+         for y := round(MapCorners.BoundBoxDataGrid.ymin) to round(MapCorners.BoundBoxDataGrid.ymax) do begin
+            for x := round(MapCorners.BoundBoxDataGrid.xmin) to round(MapCorners.BoundBoxDataGrid.xmax) do begin
+               if DEMGlb[DEMonMap].GetElevMetersOnGrid(x,y,zf) then begin
+                  z := round(zf);
+                  if (z >= MinVATValue) and (z <= MaxVatCats) then begin
+                     Inc(Hist[z]);
+                     Inc(Total);
+                  end;
+               end
+               else inc(Missing);
+            end;
+         end;
+         fTotal := Total;
+         GISdb[db].MyData.First;
+         while not GISdb[db].MyData.eof do begin
+            i := GISdb[db].MyData.GetFieldByNameAsInteger(CodeField);
+            GISdb[db].MyData.Edit;
+            if (i >= 0) and (i <= MaxVATCats) then GISdb[db].MyData.SetFieldByNameAsInteger(GISdb[db].MyData.NCountField,Hist[i])
+            else GISdb[db].MyData.SetFieldByNameAsInteger(GISdb[db].MyData.NCountField,0);
+            GISdb[db].MyData.Next;
+         end;
+      end
+      else begin
+         while not GISdb[db].MyData.eof do begin
+            fTotal := fTotal + GISdb[db].MyData.GetFieldByNameAsInteger(GISdb[db].MyData.NCountField);
+            GISdb[db].MyData.Next;
          end;
       end;
-      fTotal := Total;
-      GISdb[db].MyData.First;
+
+      Needed := round(0.01 * GISdb[db].dbOpts.CatPCforLegend * fTotal);
+      GISdb[db].MyData.ApplyFilter(GISdb[db].MyData.NCountField + ' > ' + IntToStr(Needed));
+
+      Cats := GISdb[db].MyData.FiltRecsInDB;
+      CreateBitmap(Result,1200,50*succ(Cats) + 4);
+
+      Result.Canvas.Font.Size := MDDef.LegendFont.Size;
+      CatHeight := 6 * Result.Canvas.TextHeight('Wy') div 5;
+
+      Cat := 0;
+
+      ClearBitmap(Result,clNearWhite);
+      Result.Canvas.Font.Style := [fsBold];
+
+      Result.Canvas.TextOut(5,1,'    % Area     ' + GISdb[db].dbOpts.LabelField);
       while not GISdb[db].MyData.eof do begin
-         i := GISdb[db].MyData.GetFieldByNameAsInteger(CodeField);
-         GISdb[db].MyData.Edit;
-         if (i >= 0) and (i <= MaxVATCats) then GISdb[db].MyData.SetFieldByNameAsInteger(GISdb[db].MyData.NCountField,Hist[i])
-         else GISdb[db].MyData.SetFieldByNameAsInteger(GISdb[db].MyData.NCountField,0);
+         xg := 100.0*GISdb[db].MyData.GetFieldByNameAsInteger(GISdb[db].MyData.NCountField) / fTotal;
+         inc(Cat);
+         aColor := GISdb[db].MyData.tColorFromTable;
+         Result.Canvas.Pen.Color := aColor;
+         Result.Canvas.Brush.Color := aColor;
+         Result.Canvas.Brush.Style := bsSolid;
+         Result.Canvas.Rectangle(5,Cat*CatHeight,40,succ(Cat)*CatHeight);
+         Result.Canvas.Brush.Style := bsClear;
+         Result.Canvas.TextOut(45,Cat*CatHeight + 4, RealToString(xg,10,2) + '  ' + GISdb[db].MyData.GetFieldByNameAsString(GISdb[db].dbOpts.LabelField));
          GISdb[db].MyData.Next;
       end;
-   end
-   else begin
-      while not GISdb[db].MyData.eof do begin
-         fTotal := fTotal + GISdb[db].MyData.GetFieldByNameAsInteger(GISdb[db].MyData.NCountField);
-         GISdb[db].MyData.Next;
-      end;
+      PutBitmapInBox(Result);
    end;
-
-   Needed := round(0.01 * GISdb[db].dbOpts.CatPCforLegend * fTotal);
-   GISdb[db].MyData.ApplyFilter(GISdb[db].MyData.NCountField + ' > ' + IntToStr(Needed));
-   if false then begin
-      CatHeight := 40;
-   end
-   else begin
-      CatHeight := 25;
-   end;
-
-   Cats := GISdb[db].MyData.FiltRecsInDB;
-   CreateBitmap(Result,1200,CatHeight*succ(Cats) + 4);
-
-   if false then begin
-      Result.Canvas.Font.Size := 22;
-   end
-   else begin
-      Result.Canvas.Font.Size := 12;
-   end;
-
-   Cat := 0;
-
-   ClearBitmap(Result,clNearWhite);
-   Result.Canvas.Font.Style := [fsBold];
-
-   Result.Canvas.TextOut(5,1,'    % Area     ' + GISdb[db].dbOpts.LabelField);
-   while not GISdb[db].MyData.eof do begin
-      xg := 100.0*GISdb[db].MyData.GetFieldByNameAsInteger(GISdb[db].MyData.NCountField) / fTotal;
-      inc(Cat);
-      aColor := GISdb[db].MyData.tColorFromTable;
-      Result.Canvas.Pen.Color := aColor;
-      Result.Canvas.Brush.Color := aColor;
-      Result.Canvas.Brush.Style := bsSolid;
-      Result.Canvas.Rectangle(5,(Cat)*CatHeight,25,succ(Cat)*CatHeight);
-      Result.Canvas.Brush.Style := bsClear;
-      Result.Canvas.TextOut(30,Cat*CatHeight + 4, RealToString(xg,10,2) + '  ' + GISdb[db].MyData.GetFieldByNameAsString(GISdb[db].dbOpts.LabelField));
-      GISdb[db].MyData.Next;
-   end;
-   PutBitmapInBox(Result);
    ShowDefaultCursor;
    CloseAndNilNumberedDB(db);
-   {$IfDef RecordVAT} WriteLineToDebugFile('TMapForm.GridVATlegend1Click created=' + fName); {$EndIf}
+   {$IfDef RecordVAT} WriteLineToDebugFile('tMapDraw.MakeVATLegend out=' + fName); {$EndIf}
 end;
 
 
@@ -460,65 +491,65 @@ end;
                LenKM := 2 * 0.001 * abs(x2-x1) / k;
             end;
 
-                 if (LenKM > 7500) or (LenKM < 0.001) then exit;
-                 if MDDef.EnglishDistanceUnits = disEnglish then LenKM := LenKM * 0.62137
-                 else if MDDef.EnglishDistanceUnits = disNautical then LenKM := LenKM * 0.539956803;
+            if (LenKM > 7500) or (LenKM < 0.001) then exit;
+            if MDDef.EnglishDistanceUnits = disEnglish then LenKM := LenKM * 0.62137
+            else if MDDef.EnglishDistanceUnits = disNautical then LenKM := LenKM * 0.539956803;
 
-                 if (LenKM > 7500) or (LenKM < 0.001) then exit;
+            if (LenKM > 7500) or (LenKM < 0.001) then exit;
 
-                 if LenKM >= 5000 then Bar := 2500
-                 else if LenKM >= 2500 then Bar := 1000
-                 else if LenKM >= 1000 then Bar := 500
-                 else if LenKM >= 500 then Bar := 250
-                 else if LenKM >= 200 then Bar := 100
-                 else if LenKM >= 100 then Bar := 50
-                 else if LenKM >= 50 then Bar := 25
-                 else if LenKM >= 20 then Bar := 10
-                 else if LenKM >= 10 then Bar := 5
-                 else if LenKM >= 4 then Bar := 2.5
-                 else if LenKM >= 2 then Bar := 1
-                 else if LenKM >= 1 then Bar := 0.5
-                 else if LenKM >= 0.5 then Bar := 0.25
-                 else if LenKM >= 0.2 then Bar := 0.1
-                 else if LenKM >= 0.1 then Bar := 0.05
-                 else if LenKM >= 0.05 then Bar := 0.01
-                 else if LenKM >= 0.01 then Bar := 0.005
-                 else Bar := 0.001;
+            if LenKM >= 5000 then Bar := 2500
+            else if LenKM >= 2500 then Bar := 1000
+            else if LenKM >= 1000 then Bar := 500
+            else if LenKM >= 500 then Bar := 250
+            else if LenKM >= 200 then Bar := 100
+            else if LenKM >= 100 then Bar := 50
+            else if LenKM >= 50 then Bar := 25
+            else if LenKM >= 20 then Bar := 10
+            else if LenKM >= 10 then Bar := 5
+            else if LenKM >= 4 then Bar := 2.5
+            else if LenKM >= 2 then Bar := 1
+            else if LenKM >= 1 then Bar := 0.5
+            else if LenKM >= 0.5 then Bar := 0.25
+            else if LenKM >= 0.2 then Bar := 0.1
+            else if LenKM >= 0.1 then Bar := 0.05
+            else if LenKM >= 0.05 then Bar := 0.01
+            else if LenKM >= 0.01 then Bar := 0.005
+            else Bar := 0.001;
 
-               Bar := 0.2 * Bar / LenKM * MapXSize;
-               TFloat := 5 * Bar * LenKM / MapXSize;
+            Bar := 0.2 * Bar / LenKM * MapXSize;
+            TFloat := 5 * Bar * LenKM / MapXSize;
 
-               if (MDDef.EnglishDistanceUnits=disEnglish) then DistStr := RealToString(TFloat,-12,-4) + ' miles'
-               else if (MDDef.EnglishDistanceUnits=disNautical) then DistStr := RealToString(TFloat,-12,-4) + ' nm'
-               else begin
-                  if (TFloat > 1) then DistStr := RealToString(TFloat,-12,-4) + ' km'
-                  else DistStr := RealToString(1000 * TFloat,-12,-2) + ' m';
+            if (MDDef.EnglishDistanceUnits=disEnglish) then DistStr := RealToString(TFloat,-12,-4) + ' miles'
+            else if (MDDef.EnglishDistanceUnits=disNautical) then DistStr := RealToString(TFloat,-12,-4) + ' nm'
+            else begin
+               if (TFloat > 1) then DistStr := RealToString(TFloat,-12,-4) + ' km'
+               else DistStr := RealToString(1000 * TFloat,-12,-2) + ' m';
+            end;
+            Result := tMyBitmap.Create;
+            Result.Canvas.Font.Size := 14;
+            Result.Canvas.Font.Style := [fsBold];
+            BoxLong := round(5*Bar)+Result.Canvas.TextWidth(DistStr)+15;
+            Result.Height := 30;
+            Result.Width := BoxLong;
+            with Result.Canvas do begin
+               Pen.Width := 1;
+               Pen.Color := clBlack;
+               Brush.Color := clNearWhite;
+               Brush.Style := bsSolid;
+               Font.Color := clBlack;
+               Rectangle(0,0,Result.Width,Result.Height);
+               Rectangle(5,9,round(5*Bar)+5,24);
+
+               Brush.Color := clBlack;
+               for i := 1 to 5 do begin
+                  Start := round(pred(i) * Bar);
+                  EndX :=  round(i * Bar);
+                  if odd(i) then y := 9 else y := 16;
+                  Rectangle(5+Start,Y,EndX+5,Y+8);
                end;
-               Result := tMyBitmap.Create;
-               Result.Canvas.Font.Size := 14;
-               Result.Canvas.Font.Style := [fsBold];
-               BoxLong := round(5*Bar)+Result.Canvas.TextWidth(DistStr)+15;
-               Result.Height := 30;
-               Result.Width := BoxLong;
-               with Result.Canvas do begin
-                  Pen.Width := 1;
-                  Pen.Color := clBlack;
-                  Brush.Color := clNearWhite;
-                  Brush.Style := bsSolid;
-                  Font.Color := clBlack;
-                  Rectangle(0,0,Result.Width,Result.Height);
-                  Rectangle(5,9,round(5*Bar)+5,24);
-
-                  Brush.Color := clBlack;
-                  for i := 1 to 5 do begin
-                     Start := round(pred(i) * Bar);
-                     EndX :=  round(i * Bar);
-                     if odd(i) then y := 9 else y := 16;
-                     Rectangle(5+Start,Y,EndX+5,Y+8);
-                  end;
-                  Brush.Style := bsClear;
-                  TextOut(EndX+10,5,DistStr);
-               end;
+               Brush.Style := bsClear;
+               TextOut(EndX+10,5,DistStr);
+            end;
          end;
 
 
@@ -533,8 +564,6 @@ end;
             Canvas.Draw(xstart,ystart,Bitmap);
             Bitmap.Free;
          end;
-
-
 
          procedure TMapDraw.NewDEMSatelliteMerge(Bitmap : tMyBitmap);
          var
@@ -618,33 +647,33 @@ end;
             Lat,Long,
             Lat1,Long1,Lat2,Long2 : integer;
          begin
-               HighLightDBOnWorld := false;
-               Lat1 := trunc(MapCorners.BoundBoxGeo.ymin + 0.01);
-               if (Lat1 < 0) then dec(lat1);
-               Lat2 := succ(trunc(MapCorners.BoundBoxGeo.ymax - 0.025));
-               if (Lat2 < 0) then dec(lat2);
-               Long1 := trunc(MapCorners.BoundBoxGeo.xmin + 0.01);
-               if (Long1 < 0) then dec(Long1);
-               Long2 := succ(trunc(MapCorners.BoundBoxGeo.xmax - 0.025));
-               if (Long2 < 0) then dec(Long2);
+            HighLightDBOnWorld := false;
+            Lat1 := trunc(MapCorners.BoundBoxGeo.ymin + 0.01);
+            if (Lat1 < 0) then dec(lat1);
+            Lat2 := succ(trunc(MapCorners.BoundBoxGeo.ymax - 0.025));
+            if (Lat2 < 0) then dec(lat2);
+            Long1 := trunc(MapCorners.BoundBoxGeo.xmin + 0.01);
+            if (Long1 < 0) then dec(Long1);
+            Long2 := succ(trunc(MapCorners.BoundBoxGeo.xmax - 0.025));
+            if (Long2 < 0) then dec(Long2);
 
-               if ShowSatProgress then StartProgress('Water');
-               for Long := Long1 to pred(Long2) do begin
-                  if ShowSatProgress then UpdateProgressBar((Long - Long1) / (Long2 - Long1));
-                  for Lat := Lat1 to pred(Lat2) do begin
-                     fName := SRTMWaterBodyFileName(Lat,Long);
-                     if (fName <> '')  then begin
-                        if FileExists(fName) and ZipMasterUnzip(fName,MDTempDir) then begin
-                           FSplit(Fname,dir,bname,ext);
-                           fName := MDTempDir + bName + '.shp';
-                           QuickShapeFileDisplay(Bitmap,fName,false,ConvertPlatformColorToTColor(MDDef.WaterColor));
-                           Petmar.DeleteMultipleFiles(MDTempDir,bName + '*');
-                        end;
+            if ShowSatProgress then StartProgress('Water');
+            for Long := Long1 to pred(Long2) do begin
+               if ShowSatProgress then UpdateProgressBar((Long - Long1) / (Long2 - Long1));
+               for Lat := Lat1 to pred(Lat2) do begin
+                  fName := SRTMWaterBodyFileName(Lat,Long);
+                  if (fName <> '')  then begin
+                     if FileExists(fName) and ZipMasterUnzip(fName,MDTempDir) then begin
+                        FSplit(Fname,dir,bname,ext);
+                        fName := MDTempDir + bName + '.shp';
+                        QuickShapeFileDisplay(Bitmap,fName,false,ConvertPlatformColorToTColor(MDDef.WaterColor));
+                        Petmar.DeleteMultipleFiles(MDTempDir,bName + '*');
                      end;
                   end;
                end;
-               HighLightDBOnWorld := true;
-               if ShowSatProgress then EndProgress;
+            end;
+            HighLightDBOnWorld := true;
+            if ShowSatProgress then EndProgress;
          end;
 
 
@@ -846,7 +875,7 @@ end;
             x,y : integer;
          begin
             if (Bitmap <> Nil) and (Legend <> Nil)  then begin
-               {$IfDef RecordLegend} WriteLineToDebugFile('tMapDraw.PositionBitmap in');   {$EndIf}
+               {$IfDef RecordLegend} WriteLineToDebugFile('tMapDraw.PositionBitmap in, Legend=' + BitmapSize(Legend));   {$EndIf}
                try
                   x := 0;
                   y := 0;
@@ -994,12 +1023,10 @@ end;
                end;
             end;
 
-            if MapType = mtGGRReflect then begin
-               //MDDef.TopCutLevel := abs(MDDef.TopCutLevel);
-               //MDDef.BottomCutLevel := -MDDef.TopCutLevel;
-
+            if (MapType = mtGGRReflect) then begin
+               Result := ChangeMapLegend;
             end
-            else if (MapType = mtDEMVATTable) then begin
+            else if (MapType = mtDEMVATTable) and FileExists(DEMGlb[DEMOnMap].VATFileName) then begin
                Result := MakeVATLegend;
             end;
 
@@ -1944,7 +1971,7 @@ end;
                       PositionBitmap(Overlay,bmp,MDDef.GridLegendLocation.MapPosition);
                    end;
                    if MDDef.MapNameLocation.DrawItem then begin
-                      CreateBitmap(bmp,500,50);
+                      CreateBitmap(bmp,1500,50);
                       Petmar.LoadMyFontIntoWindowsFont(MDDef.TitleLabelFont,bmp.Canvas.Font);
                       bmp.Canvas.Brush.Color := clNearWhite;
                       bmp.Canvas.Brush.Style := bsSolid;

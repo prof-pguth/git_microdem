@@ -251,6 +251,8 @@ object LCP_form: TLCP_form
       item
         Width = 50
       end>
+    ExplicitTop = 455
+    ExplicitWidth = 540
   end
   object GroupBox1: TGroupBox
     Left = 306
