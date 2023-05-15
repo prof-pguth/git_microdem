@@ -151,7 +151,8 @@ begin
    else begin
       BaseName := DEMGlb[DEM].AreaName + '_ref_';
    end;
-   Ext := ExtractFileExt(DEMGlb[DEM].DEMFileName);
+   //Ext := ExtractFileExt(DEMGlb[DEM].DEMFileName);
+   Ext := '.tif';
 
    CreateOne(PixelIsArea,1,1,'1sec_area' + Ext);
 

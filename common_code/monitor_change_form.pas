@@ -157,12 +157,9 @@ var
    color : tColor;
    CatHeight,Cat : integer;
 begin
-
    CreateBitmap(bmp,1200,800);
-
    bmp.Canvas.Font.Size := MDDef.LegendFont.Size;
    CatHeight := 6 * bmp.Canvas.TextHeight('Wy') div 5;
-
    Cat := 0;
 
    ClearBitmap(Bmp,clNearWhite);
@@ -175,7 +172,7 @@ begin
    bmp.Canvas.Brush.Style := bsSolid;
    bmp.Canvas.Rectangle(5,Cat*CatHeight,40,succ(Cat)*CatHeight);
    bmp.Canvas.Brush.Style := bsClear;
-   bmp.Canvas.TextOut(45,Cat*CatHeight + 4, RealToString(DEMGlb[MapOwner.MapDraw.DEMonMap].PercentileOfElevation(MDDef.TopCutLevel),9,2) + '%   Positive Change >' + RealToString (MDDef.TopCutLevel,8,-2));
+   bmp.Canvas.TextOut(45,Cat*CatHeight + 4, RealToString(DEMGlb[MapOwner.MapDraw.DEMonMap].PercentileOfElevation(MDDef.TopCutLevel),9,2) + '%   Positive Change > ' + RealToString(MDDef.TopCutLevel,-8,-2));
 
    inc(Cat);
    bmp.Canvas.Pen.Color := clRed;
@@ -183,7 +180,7 @@ begin
    bmp.Canvas.Brush.Style := bsSolid;
    bmp.Canvas.Rectangle(5,Cat*CatHeight,40,succ(Cat)*CatHeight);
    bmp.Canvas.Brush.Style := bsClear;
-   bmp.Canvas.TextOut(45,Cat*CatHeight + 4,RealToString(DEMGlb[MapOwner.MapDraw.DEMonMap].PercentileOfElevation(MDDef.BottomCutLevel),9,2) + '%    Negative Change <' + RealToString (MDDef.BottomCutLevel,8,-2));
+   bmp.Canvas.TextOut(45,Cat*CatHeight + 4,RealToString(DEMGlb[MapOwner.MapDraw.DEMonMap].PercentileOfElevation(MDDef.BottomCutLevel),9,2) + '%    Negative Change < ' + RealToString(MDDef.BottomCutLevel,-8,-2));
    PutBitmapInBox(Bmp);
 
    Image1.Picture.Graphic := bmp;

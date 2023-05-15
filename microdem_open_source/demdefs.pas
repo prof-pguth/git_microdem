@@ -841,11 +841,11 @@ type
       WKTString : ANSIString;
    end;
 
-(*
+
 {$IfDef AllowV1V2V3DEMHeaders}
    {$I old_dem_headers.inc}
 {$EndIf}
-*)
+
 
    tPrinterLegend = packed record
       ShowTitle,

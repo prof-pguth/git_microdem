@@ -21,7 +21,7 @@ unit GeoTiff;
 
 {$IfDef Recordproblems}  //normally only defined for debugging specific problems
 
-   {$Define RecordGeotiffFailures}
+   //{$Define RecordGeotiffFailures}
    //{$Define ReportKey258}  //this happens with some Landsat, but does not appear to stop things
 
    {$IFDEF DEBUG}

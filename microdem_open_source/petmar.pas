@@ -2021,9 +2021,11 @@ end;
             FName : pathStr;
          begin
             if (Findings <> Nil) then begin
-               FName := NextFileNumber(MDTempDir,'results+','.txt');
-               Findings.SaveToFile(FName);
-               QuickOpenEditWindow(FName,WindowTitle,ListenToClear);
+               if Findings.Count > 0 then begin
+                  FName := NextFileNumber(MDTempDir,'results+','.txt');
+                  Findings.SaveToFile(FName);
+                  QuickOpenEditWindow(FName,WindowTitle,ListenToClear);
+               end;
                Findings.Free;
                Findings := Nil;
             end;
@@ -2758,7 +2760,7 @@ end;
            tDir := DefaultDir;
            Len := length(tDir);
            if (len > 3) and (tDir[len] = '\') then Delete(tDir,len,1);
-           {$IfDef RecordShellExecute} WriteLineToDebugFile('ExecuteFile ' + FileName + '  Parmams=' + Params + '  DefaultDir=' + DefaultDir);        {$EndIf}
+           {$IfDef RecordShellExecute} if (not HeavyDutyProcessing) then WriteLineToDebugFile('ExecuteFile ' + FileName + '  Parmams=' + Params + '  DefaultDir=' + DefaultDir); {$EndIf}
            if MDDef.ShowWinExec then ShowCmd := SW_Show
            else ShowCmd := SW_Hide;
            Result := ShellAPI.ShellExecute(Application.MainForm.Handle, nil,StrPCopy(zFileName, FileName),StrPCopy(zParams, Params),StrPCopy(zDir, tDir), ShowCmd);

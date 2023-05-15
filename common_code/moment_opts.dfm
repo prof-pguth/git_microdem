@@ -2,8 +2,8 @@ object MomentOptsForm: TMomentOptsForm
   Left = 0
   Top = 0
   Caption = 'Moment distribution options'
-  ClientHeight = 233
-  ClientWidth = 292
+  ClientHeight = 230
+  ClientWidth = 280
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

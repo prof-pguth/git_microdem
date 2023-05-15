@@ -8,6 +8,63 @@
 {____________________________________}
 
 
+procedure ComputeVDatumShift(dbOnTable : integer);
+var
+   Lat,Long,Lat2,Long2 : float64;
+   Distance,Bearing : float64;
+   zPresent,FileConvert : boolean;
+   LocalToWGS84,WGS84toEGM2008 : integer;
+   z,z2,AddZ,SubZ : float32;
+begin
+   with GISdb[DBonTable] do begin
+      EmpSource.Enabled := false;
+      AddFieldToDataBase(ftFloat,'VERT_SHIFT',8,2);
+      AddFieldToDataBase(ftFloat,'HORZ_SHIFT',8,2);
+      AddFieldToDataBase(ftFloat,'X_SHIFT',8,2);
+      AddFieldToDataBase(ftFloat,'Y_SHIFT',8,2);
+      AddFieldToDataBase(ftFloat,'HORIZ_AZ',8,2);
+      zPresent := MyData.FieldExists('ELEV') and MyData.FieldExists('ELEV2');
+      FileConvert := FileExists(GeoidWGS84ellipsoidToLocalVDatum) and FileExists(Geoid2008FName);
+      FileConvert := false;
+      if FileConvert then begin
+         LoadDatumShiftGrids(LocalToWGS84,WGS84toEGM2008);
+         AddFieldToDataBase(ftFloat,'GRID_VERT',8,2);
+      end
+      else begin
+         LocalToWGS84 := 0;
+         WGS84toEGM2008 := 0;
+      end;
+
+      EmpSource.Enabled := false;
+      MyData.First;
+      while not MyData.EOF do begin
+         MyData.Edit;
+         if MyData.ValidLatLongFromTable(Lat,Long) and ValidLat2Long2FromTable(Lat2,Long2) then begin
+            VincentyCalculateDistanceBearing(Lat,Long,Lat2,Long2,Distance,Bearing);
+            MyData.SetFieldByNameAsFloat('HORZ_SHIFT',Distance);
+            MyData.SetFieldByNameAsFloat('X_SHIFT',Distance*CosDeg(Bearing));
+            MyData.SetFieldByNameAsFloat('Y_SHIFT',Distance*SinDeg(Bearing));
+            MyData.SetFieldByNameAsFloat('HORIZ_AZ',Bearing);
+            if zPresent then begin
+               z := MyData.GetFieldByNameAsFloat('ELEV');
+               z2 := MyData.GetFieldByNameAsFloat('ELEV2');
+               MyData.SetFieldByNameAsFloat('VERT_SHIFT',(z2-z));
+            end;
+            if FileConvert then begin
+               if DEMGlb[WGS84toEGM2008].GetElevFromLatLongDegree(Lat,Long,AddZ) and DEMGlb[LocalToWGS84].GetElevFromLatLongDegree(Lat,Long,SubZ) then begin
+                  MyData.SetFieldByNameAsFloat('GRID_VERT',(-SubZ+AddZ));
+               end;
+            end;
+         end;
+         MyData.Next;
+      end;
+   end;
+   if FileConvert then begin
+      CloseSingleDEM(LocalToWGS84);
+      CloseSingleDEM(WGS84toEGM2008);
+   end;
+end;
+
 
 {$IfDef ExSidescan}
 {$Else}

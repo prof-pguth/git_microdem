@@ -544,6 +544,9 @@ type
     N3OpenDEMs1: TMenuItem;
     OpenandmergeDEMsgridsverylarge1: TMenuItem;
     Creatediffrencemaps1: TMenuItem;
+    Mergesourcedatatiles1: TMenuItem;
+    N39: TMenuItem;
+    ProcessVDATUMshifts1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -926,6 +929,8 @@ type
     procedure N3OpenDEMs1Click(Sender: TObject);
     procedure OpenandmergeDEMsgridsverylarge1Click(Sender: TObject);
     procedure Creatediffrencemaps1Click(Sender: TObject);
+    procedure Mergesourcedatatiles1Click(Sender: TObject);
+    procedure ProcessVDATUMshifts1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -938,6 +943,7 @@ type
       procedure FormPlacementInCorner(TheForm : Forms.tForm; FormPosition : byte = lpSEMap);
       procedure HandleThreadTerminate(Sender: TObject);
       procedure SetPanelText(PanelNum : integer; What : shortString);
+      procedure ClearStatusBarPanelText;
       procedure StartSealevelrise(BaseMap : tMapForm);
   end;
 
@@ -1217,6 +1223,13 @@ begin
    PlaceFormInCorner(Self,TheForm,FormPosition);
 end;
 
+procedure Twmdem.ClearStatusBarPanelText;
+var
+   i : integer;
+begin
+    for i := 0 to 3 do
+       wmDEM.StatusBar1.Panels[i].Text := '';
+end;
 
 procedure Twmdem.SetPanelText(PanelNum : integer; What : shortString);
 begin
@@ -2201,6 +2214,83 @@ end;
 
 procedure Twmdem.SeeIfThereAreDebugThingsToDo;
 
+(*
+procedure bicubic_interpolation;
+//written by ChatGPT, 14 May 2023
+
+const
+  N = 4;
+
+type
+  real = float32;
+  matrix = array[0..N-1, 0..N-1] of real;
+
+var
+  x: matrix;
+  y: matrix;
+  f: matrix;
+  a: matrix;
+  b: matrix;
+  c: matrix;
+  d: matrix;
+  px, py: real;
+  i, j: integer;
+
+
+    //   interpolate(px,      x[1,1], x[2,2],     a[1,1],    a[1,2],     a[2,1],    a[2,2],   b[1,1],   b[1,2],    c[1,1],    c[1,2],     d[1,1], d[1,2]);
+
+function interpolate(x: real; x1: real; x2: real; f00: real; f01: real; f10: real; f11: real; f20: real; f21: real; f30: real; f31: real): real;
+var
+  m0, m1, m2, m3, a0, a1, a2, a3: real;
+begin
+  m0 := f01;
+  m1 := (f11 - f01) / (x2 - x1);
+  m2 := (f10 - f00) / (x2 - x1);
+  m3 := (f21 - f11 - f10 + f00) / ((x2 - x1) * (x2 - x1) * (x2 - x1));
+
+  a0 := f00;
+  a1 := m0;
+  a2 := 3 * (f21 - f11) / ((x2 - x1) * (x2 - x1)) - 2 * m0 / (x2 - x1) - m1 / (x2 - x1);
+  a3 := (2 * (f11 - f21) + m0 + m1 * (x2 - x1)) / ((x2 - x1) * (x2 - x1) * (x2 - x1));
+
+  interpolate := a0 + a1 * (x - x1) + a2 * sqr(x - x1) + a3 * sqr(x - x1) * (x - x2);
+end;
+
+begin
+  // initialize x and y values
+  for i := 0 to N-1 do begin
+      for j := 0 to N-1 do  begin
+          x[i,j] := i;
+          y[i,j] := j;
+        end;
+    end;
+
+  // initialize f values
+  for i := 0 to N-1 do  begin
+      for j := 0 to N-1 do begin
+          f[i,j] := sin(i) + cos(j);
+        end;
+    end;
+
+  // calculate coefficients
+  for i := 1 to N-2 do begin
+      for j := 1 to N-2 do begin
+          a[i,j] := f[i,j];
+          b[i,j] := (f[i+1,j] - f[i-1,j]) / 2;
+          c[i,j] := (f[i-1,j] - 2*f[i,j] + f[i+1,j]) / 2;
+          d[i,j] := (f[i,j+1] - f[i,j-1]) / 2;
+        end;
+    end;
+
+  // perform interpolation
+  px := 1.5; // x-coordinate to interpolate
+  py := 1.5; // y-coordinate to interpolate
+
+   interpolate(px, x[1,1], x[2,2], a[1,1], a[1,2], a[2,1], a[2,2], b[1,1], b[1,2], c[1,1], c[1,2], d[1,1], d[1,2]);
+
+end;
+*)
+
       (*
       procedure Histies;
       var
@@ -2240,6 +2330,15 @@ begin
 
       //GDAL_Raster_Calculator('-A c:\temp\alos.tif -B c:\temp\3dep_2022.tif --extent intersect --outfile c:\temp\alos-3dep.tif --calc="A-B"');
 //gdal_calc.py -A input1.tif -B input2.tif -C input3.tif --outfile=result.tif --calc="A+B+C"
+
+
+  //bicubic_interpolation;
+
+       WriteLineToDebugFile('10,10   ' + GetLC100_fileName(10,10));
+       WriteLineToDebugFile('10,-30   ' + GetLC100_fileName(10,-30));
+       WriteLineToDebugFile('-30,-30  ' + GetLC100_fileName(-30,-30));
+       WriteLineToDebugFile('-50,-50  ' + GetLC100_fileName(-50,-50));
+
 
    end;
 end;
@@ -2974,6 +3073,11 @@ end;
 
 
 
+procedure Twmdem.ProcessVDATUMshifts1Click(Sender: TObject);
+begin
+   DEMIX_VDatum_shifts;
+end;
+
 procedure Twmdem.Programlimits1Click(Sender: TObject);
 begin
    MessageToContinue(ShortEXEName + ' ' + BuildString + ' Limits' + MessLineBreak +
@@ -3022,7 +3126,7 @@ end;
 
 procedure Twmdem.Makelittletilescontest1Click(Sender: TObject);
 begin
-   {$IfDef Include2021datafusion}  MakeLittleTiles;  {$EndIf}
+   {$IfDef Include2021datafusion} MakeLittleTiles; {$EndIf}
 end;
 
 procedure Twmdem.Californiaoffshore1Click(Sender: TObject);
@@ -4278,6 +4382,11 @@ begin
    {$EndIf}
 end;
 
+
+procedure Twmdem.Mergesourcedatatiles1Click(Sender: TObject);
+begin
+   DEMIX_merge_source;
+end;
 
 procedure Twmdem.MergewavelengthheightDBFs1Click(Sender: TObject);
 {$IfDef ExComplexGeoStats}

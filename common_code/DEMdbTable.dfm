@@ -2,8 +2,8 @@ object dbtablef: Tdbtablef
   Left = 62
   Top = 306
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1009
-  ClientWidth = 1292
+  ClientHeight = 1006
+  ClientWidth = 1280
   Color = clBtnFace
   ParentFont = True
   FormStyle = fsMDIChild
@@ -17,24 +17,22 @@ object dbtablef: Tdbtablef
   TextHeight = 15
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 990
-    Width = 1292
+    Top = 987
+    Width = 1280
     Height = 19
     Panels = <
       item
         Width = 250
       end>
-    ExplicitTop = 994
-    ExplicitWidth = 1308
   end
   object Panel2: TPanel
     Left = 0
     Top = 41
-    Width = 1292
+    Width = 1280
     Height = 32
     Align = alTop
     TabOrder = 1
-    ExplicitWidth = 1308
+    ExplicitWidth = 1276
     object BitBtn1: TBitBtn
       Left = 34
       Top = 1
@@ -215,11 +213,11 @@ object dbtablef: Tdbtablef
   object Panel3: TPanel
     Left = 0
     Top = 73
-    Width = 1292
+    Width = 1280
     Height = 41
     Align = alTop
     TabOrder = 2
-    ExplicitWidth = 1308
+    ExplicitWidth = 1276
     object Label2: TLabel
       Left = 12
       Top = 12
@@ -266,11 +264,11 @@ object dbtablef: Tdbtablef
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1292
+    Width = 1280
     Height = 41
     Align = alTop
     TabOrder = 4
-    ExplicitWidth = 1308
+    ExplicitWidth = 1276
     object LOSButton: TSpeedButton
       Left = 40
       Top = 6
@@ -529,11 +527,11 @@ object dbtablef: Tdbtablef
   object Panel7: TPanel
     Left = 0
     Top = 114
-    Width = 1292
+    Width = 1280
     Height = 41
     Align = alTop
     TabOrder = 3
-    ExplicitWidth = 1308
+    ExplicitWidth = 1276
     object RadioGroup2: TRadioGroup
       Left = 20
       Top = 0
@@ -554,8 +552,8 @@ object dbtablef: Tdbtablef
   object DBGrid1: TDBGrid
     Left = 0
     Top = 155
-    Width = 1292
-    Height = 835
+    Width = 1280
+    Height = 832
     Align = alClient
     TabOrder = 5
     TitleFont.Charset = DEFAULT_CHARSET
@@ -2638,7 +2636,7 @@ object dbtablef: Tdbtablef
         OnClick = Datumshift1Click
       end
       object Datumshift2: TMenuItem
-        Caption = 'Datum shift'
+        Caption = 'Datum shift using VDATUM output'
         OnClick = Datumshift2Click
       end
       object Verticaldatumshift1: TMenuItem

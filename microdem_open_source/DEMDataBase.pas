@@ -763,7 +763,7 @@ procedure MakeLinesFromPoints(GISDataBase : TGISdataBaseModule; fName : PathStr 
       procedure FilterOutSignedCriteria(DBonTable : integer);
       procedure ExtractTheDEMIXtiles(DBonTable : integer);
 
-
+procedure ComputeVDatumShift(dbOnTable : integer);
 
 {$IfDef ExRiverNetworks}
 {$Else}

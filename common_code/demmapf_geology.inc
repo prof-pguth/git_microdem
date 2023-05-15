@@ -1,10 +1,11 @@
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{   file verified 7/30/2014       }
-{                                 }
-{ include file for demmapf        }
-{_________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2023 Peter L. Guth  }
+{___________________________________}
+{ include file for demmapf          }
+{___________________________________}
 
 
        procedure GetEulerPole(var EulerLat,EulerLong,EulerOmega : float64);
@@ -32,7 +33,7 @@ end;
 
 procedure TMapForm.WMBroadcastDrawPlane(var Msg: TMessage);
 var
-   xDEMg1,yDEMg1 : float64;
+   xDEMg1,yDEMg1 : float32;
 begin
    if (MapDraw.ValidDEMonMap) then begin
       DEMGlb[MapDraw.DEMonMap].LatLongDegreeToDEMGrid(BroadCastPlaneData.Lat,BroadCastPlaneData.Long,xDEMg1,yDEMg1);
@@ -92,7 +93,7 @@ procedure TMapForm.ThreePointProblems(DB : integer; DoThreePoints : boolean =  t
 var
    TrendSurf : tTrendSurf;
 
-      procedure DoPoint(var xg,yg : float64; Advance : boolean);
+      procedure DoPoint(var xg,yg : float32; Advance : boolean);
       var
          Lat,Long : float64;
       begin
@@ -221,8 +222,8 @@ end;
 
 function TMapForm.CheckGeologyOptions(Lat,Long : float64; LastX,LastY : integer; NotSamePoint : boolean) : boolean;
 var
-   v,azimuth,xutm,yutm,xSatg3,ysatg3  : float64;
-   z : float32;
+   v,azimuth,xutm,yutm  : float64;
+   xSatg3,ysatg3,z : float32;
    x2,y2,RecsFound : integer;
    P1Name,P2Name,P3Name,
    TStr : ShortString;
@@ -564,7 +565,7 @@ var
    Bitmap : tMyBitmap;
 begin
    {$IfDef RecordThreadCheckPlane} WriteLineToDebugFile('TMapForm.ThreadCheckPlane in  Map=' + Caption); {$EndIf}
-   if ClosingMapNow or (MapDraw.DEMonMap = 0) or (Not DEMGlb[MapDraw.DEMonMap].GridInDataSet(xg1,yg1)) then exit;
+   if MapDraw.ClosingMapNow or (MapDraw.DEMonMap = 0) or (Not DEMGlb[MapDraw.DEMonMap].GridInDataSet(xg1,yg1)) then exit;
    repeat
        if GetOrientation then begin
           GetStrikeAndDip('plane',BroadCastPlaneData.DipAndStrike,Dip,Strike,DipDir);

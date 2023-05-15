@@ -4,8 +4,8 @@ object MapOverlayForm: TMapOverlayForm
   BorderIcons = []
   BorderStyle = bsToolWindow
   Caption = 'Map Overlays'
-  ClientHeight = 611
-  ClientWidth = 238
+  ClientHeight = 575
+  ClientWidth = 214
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -352,8 +352,8 @@ object MapOverlayForm: TMapOverlayForm
   end
   object Panel7: TPanel
     Left = 0
-    Top = 570
-    Width = 238
+    Top = 534
+    Width = 214
     Height = 41
     Align = alBottom
     TabOrder = 6

@@ -17,9 +17,8 @@ unit basemap;
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
-
-      {$Define RecordWKT}
-      {$Define RecordUKOS}
+      //{$Define RecordWKT}
+      //{$Define RecordUKOS}
 
       //{$Define RawProjectInverse}
       //{$Define ForwardProject}

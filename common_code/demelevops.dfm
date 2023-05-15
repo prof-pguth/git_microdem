@@ -2,14 +2,14 @@ inherited ElevOptionsForm: TElevOptionsForm
   Left = 663
   Top = 235
   Caption = 'Elevation map options'
-  ClientHeight = 497
-  ClientWidth = 327
+  ClientHeight = 494
+  ClientWidth = 315
   FormStyle = fsStayOnTop
   Position = poDefaultSizeOnly
   OnClose = FormClose
   OnCreate = FormCreate
-  ExplicitWidth = 343
-  ExplicitHeight = 536
+  ExplicitWidth = 331
+  ExplicitHeight = 533
   TextHeight = 15
   inherited Bevel1: TBevel
     Left = 0

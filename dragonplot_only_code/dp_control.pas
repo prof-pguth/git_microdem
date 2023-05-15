@@ -1,10 +1,12 @@
  unit dp_control;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of DragonPlot Program      }
-{ PETMAR Trilobite Breeding Ranch }
-{   file verified 6/24/2011       }
-{_________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2023 Peter L. Guth  }
+{___________________________________}
+
 
 
 {$I Nevadia_defines.inc}

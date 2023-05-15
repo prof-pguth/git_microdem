@@ -83,7 +83,7 @@ var
        aTstr : ANSIString;
 
              {$IfDef AllowV1V2V3DEMHeaders}
-                //{$I read_old_md_headers.inc}
+                {$I read_old_md_headers.inc}
              {$EndIf}
 
          function GoodMagic(Magic : string) : boolean;
@@ -184,7 +184,7 @@ var
           end
           else begin
              {$IfDef AllowV1V2V3DEMHeaders}
-                //ReadThatOldHeader;
+                ReadThatOldHeader;
             {$EndIf}
           end;
 

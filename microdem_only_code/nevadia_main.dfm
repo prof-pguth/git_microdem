@@ -2,8 +2,8 @@ object wmdem: Twmdem
   Left = 0
   Top = 262
   Caption = 'GIS program loading'
-  ClientHeight = 1151
-  ClientWidth = 2090
+  ClientHeight = 1149
+  ClientWidth = 2082
   Color = clScrollBar
   DefaultMonitor = dmDesktop
   Font.Charset = DEFAULT_CHARSET
@@ -28,13 +28,13 @@ object wmdem: Twmdem
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 2090
+    Width = 2082
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34
     TabOrder = 0
     OnMouseDown = ToolBar1MouseDown
-    ExplicitWidth = 2086
+    ExplicitWidth = 2078
     object SpeedButton2: TSpeedButton
       Left = 0
       Top = 0
@@ -1676,8 +1676,8 @@ object wmdem: Twmdem
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 1132
-    Width = 2090
+    Top = 1130
+    Width = 2082
     Height = 19
     Panels = <
       item
@@ -1696,8 +1696,8 @@ object wmdem: Twmdem
     Visible = False
     OnClick = StatusBar1Click
     OnDblClick = StatusBar1DblClick
-    ExplicitTop = 1131
-    ExplicitWidth = 2086
+    ExplicitTop = 1129
+    ExplicitWidth = 2078
   end
   object MainMenu1: TMainMenu
     Left = 136
@@ -3426,13 +3426,24 @@ object wmdem: Twmdem
   object DemixAnalysisPopupMenu: TPopupMenu
     Left = 712
     Top = 336
-    object DEMIXindexhighresreferenceDEMs1: TMenuItem
-      Caption = 'DEMIX index high res reference DEMs'
-      OnClick = DEMIXindexhighresreferenceDEMs1Click
+    object Mergesourcedatatiles1: TMenuItem
+      Caption = 'Merge source data tiles'
+      OnClick = Mergesourcedatatiles1Click
+    end
+    object ProcessVDATUMshifts1: TMenuItem
+      Caption = 'Process VDATUM shifts'
+      OnClick = ProcessVDATUMshifts1Click
     end
     object DEMIXreferenceDEMcreation1: TMenuItem
       Caption = 'DEMIX 1 second reference DEM creation'
       OnClick = DEMIXreferenceDEMcreation1Click
+    end
+    object N39: TMenuItem
+      Caption = '-'
+    end
+    object DEMIXindexhighresreferenceDEMs1: TMenuItem
+      Caption = 'DEMIX index high res reference DEMs'
+      OnClick = DEMIXindexhighresreferenceDEMs1Click
     end
     object DEMIXreferencetilesurvey1: TMenuItem
       Caption = 'DEMIX reference tile survey'

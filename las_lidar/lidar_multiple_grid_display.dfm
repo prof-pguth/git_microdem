@@ -2,8 +2,8 @@ object LidarMultipleDisplayForm: TLidarMultipleDisplayForm
   Left = 0
   Top = 0
   Caption = 'LidarMultipleDisplayForm'
-  ClientHeight = 333
-  ClientWidth = 506
+  ClientHeight = 332
+  ClientWidth = 502
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -11,10 +11,8 @@ object LidarMultipleDisplayForm: TLidarMultipleDisplayForm
   Font.Name = 'Tahoma'
   Font.Style = []
   FormStyle = fsStayOnTop
-  OldCreateOrder = False
   OnClose = FormClose
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
     Left = 360

@@ -1,5 +1,14 @@
 unit NyqGraph;
 
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2023 Peter L. Guth  }
+{___________________________________}
+
+
+
 interface
 
 uses
@@ -234,7 +243,6 @@ begin
    GraphDraw.MaxVertAxis := 1.25 * Amplitude;
    GraphDraw.MinVertAxis := -1.25 * Amplitude;
    SetUpGraphForm;
-
 end;
 
 procedure TNyquistBaseGraph.Graphsettings2Click(Sender: TObject);
@@ -283,7 +291,7 @@ procedure TNyquistBaseGraph.Run1Click(Sender: TObject);
 var
    tfile : file of float64;
    rfile : file;
-   i{,x,y} : integer;
+   i : integer;
    wave,time   : float64;
    coord : tGraphPoint32;
    ThisGraph    : tThisBaseGraph;

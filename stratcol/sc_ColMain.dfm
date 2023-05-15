@@ -20,8 +20,7 @@ object ColMainF: TColMainF
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
-  PixelsPerInch = 96
-  TextHeight = 20
+  TextHeight = 16
   object Panel1: TPanel
     Left = 0
     Top = 421
@@ -29,6 +28,8 @@ object ColMainF: TColMainF
     Height = 30
     Align = alBottom
     TabOrder = 0
+    ExplicitTop = 400
+    ExplicitWidth = 584
   end
   object ScrollBox1: TScrollBox
     Left = 0
@@ -37,6 +38,8 @@ object ColMainF: TColMainF
     Height = 392
     Align = alClient
     TabOrder = 1
+    ExplicitWidth = 584
+    ExplicitHeight = 371
     object Image1: TImage
       Left = 0
       Top = 0
@@ -65,6 +68,7 @@ object ColMainF: TColMainF
     ParentShowHint = False
     ShowHint = True
     TabOrder = 2
+    ExplicitWidth = 584
     object SpeedButton2: TSpeedButton
       Left = 0
       Top = 0

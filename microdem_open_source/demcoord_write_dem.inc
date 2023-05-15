@@ -19,6 +19,30 @@
    {$EndIf}
 
 
+procedure tDEMDataSet.CSVforVDatum(fName : PathStr = '');
+var
+   Lat,Long : float64;
+   z : float32;
+   Results : tStringList;
+begin
+   Results := tStringList.Create;
+   Results.Add('LONG,LAT,ELEV');
+   Lat := trunc(DEMSWcornerLat);
+   while Lat <= DEMSWcornerLat + LatSizeMap do begin
+      Long := trunc(DEMSWcornerLong - 1);
+      while Long <= DEMSWcornerLong + LongSizeMap do begin
+         if GetElevFromLatLongDegree(Lat,Long,z) then
+            Results.Add(RealToString(Long,-14,-8) + ',' + RealToString(Lat,-14,-8) + ',' + RealToString(z,-8,-2));
+         Long := Long + 1/60;
+      end;
+      Lat := Lat + 1/60;
+   end;
+   if fName = '' then GetFileNameDefaultExt('output for VDatum','.csv',fname);
+   Results.SaveToFile(fName);
+   Results.Free;
+end;
+
+
 
 procedure tDEMDataSet.SaveGridSubsetGeotiff(DEMGridLimits : tGridLimits; fName : PathStr = '');
 var

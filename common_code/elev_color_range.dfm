@@ -4,8 +4,8 @@ object ElevationRangeForm: TElevationRangeForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Elevation Range For Coloring'
-  ClientHeight = 302
-  ClientWidth = 302
+  ClientHeight = 298
+  ClientWidth = 286
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -155,8 +155,8 @@ object ElevationRangeForm: TElevationRangeForm
     OnChange = Edit4Change
   end
   object BitBtn1: TBitBtn
-    Left = 144
-    Top = 16
+    Left = 158
+    Top = 55
     Width = 75
     Height = 25
     Caption = 'Highs'
@@ -164,8 +164,8 @@ object ElevationRangeForm: TElevationRangeForm
     OnClick = BitBtn1Click
   end
   object BitBtn2: TBitBtn
-    Left = 144
-    Top = 48
+    Left = 158
+    Top = 86
     Width = 75
     Height = 25
     Caption = 'Lows'
@@ -173,8 +173,8 @@ object ElevationRangeForm: TElevationRangeForm
     OnClick = BitBtn2Click
   end
   object CheckBox1: TCheckBox
-    Left = 136
-    Top = 88
+    Left = 158
+    Top = 117
     Width = 97
     Height = 17
     Caption = 'Clipped colors'
@@ -203,5 +203,14 @@ object ElevationRangeForm: TElevationRangeForm
     Caption = 'Mask to Z range'
     TabOrder = 11
     OnClick = BitBtn3Click
+  end
+  object BitBtn4: TBitBtn
+    Left = 158
+    Top = 24
+    Width = 75
+    Height = 25
+    Caption = 'Missing'
+    TabOrder = 12
+    OnClick = BitBtn4Click
   end
 end

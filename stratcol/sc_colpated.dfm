@@ -2,8 +2,8 @@ object StratcolPatternEditor: TStratcolPatternEditor
   Left = 200
   Top = 108
   Caption = 'Stratcol Pattern Editor'
-  ClientHeight = 202
-  ClientWidth = 353
+  ClientHeight = 200
+  ClientWidth = 345
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -13,7 +13,6 @@ object StratcolPatternEditor: TStratcolPatternEditor
   Menu = MainMenu1
   OnActivate = FormActivate
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Image1: TImage
     Left = 16

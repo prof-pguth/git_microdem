@@ -948,7 +948,7 @@ end;
       WriteLineToDebugFile('**********');
       WriteLineToDebugFile(TheLine);
       WriteLineToDebugFile('**********');
-      WriteLineToDebugFile('');
+      //WriteLineToDebugFile('');
    end;
 
    procedure WriteLineToDebugFile(TheLine : AnsiString);

@@ -1472,6 +1472,7 @@ type
     DEMIX1: TMenuItem;
     Datumshiftcomparison1: TMenuItem;
     Shiftfilecomparison1: TMenuItem;
+    CSVforVDATUM1: TMenuItem;
     //procedure HiresintervisibilityDEM1Click(Sender: TObject);
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
@@ -2543,6 +2544,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Other1Click(Sender: TObject);
     procedure Datumshiftcomparison1Click(Sender: TObject);
     procedure Shiftfilecomparison1Click(Sender: TObject);
+    procedure CSVforVDATUM1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
     MouseDownLat,MouseDownLong,
@@ -5909,6 +5911,12 @@ begin
       MakeMomentsGrid(MapDraw.DEMonMap,'C');
    {$EndIf}
 end;
+
+procedure TMapForm.CSVforVDATUM1Click(Sender: TObject);
+begin
+   DEMGlb[MapDraw.DEMonMap].CSVforVDatum;
+end;
+
 
 procedure TMapForm.Profile1Click(Sender: TObject);
 var
@@ -15954,17 +15962,11 @@ end;
 procedure TMapForm.FormActivate(Sender: TObject);
 begin
    {$IfDef RecordActivate} WriteLineToDebugFile('Activate map, DEM=' + IntToStr(MapDraw.DEMonMap) + '  & Image=' + IntToStr(MapDraw.SatonMap) ); {$EndIf}
-   if MapDraw.ClosingMapNow or (MapDraw = Nil) or (DEMNowDoing in [Calculating]) or (not MapDraw.MapDrawValid) then exit;
+   if (MapDraw = Nil) or MapDraw.ClosingMapNow or (not MapDraw.MapDrawValid) or (DEMNowDoing in [Calculating]) then exit;
    MouseIsDown := false;
-   if MapDraw.DEMMap then begin
-      if DEMGlb[MapDraw.DEMonMap] <> Nil then exit;
-   end
-   else if ValidSatImage(MapDraw.SatOnMap) then begin
-      if SatImage[MapDraw.SatOnMap] <> nil then exit;
-   end
-   else begin
-       if (MapDraw.VectorIndex <> 0) then exit;
-   end;
+   if MapDraw.DEMMap and (not ValidDEM(MapDraw.DEMonMap)) then exit
+   else if not ValidSatImage(MapDraw.SatOnMap) then exit
+   else if (MapDraw.VectorIndex <> 0) then exit;
    Closable := true;
    Close;
    {$IfDef RecordDEMMapProjection} WriteStringListToDebugFile(DEMMapProjection.ProjectionParamtersList);   {$EndIf}

@@ -30,11 +30,11 @@ unit DEMCoord;
 
    {$IFDEF DEBUG}
       {$Define RecordDEMIX}
-      {$Define RecordVertDatumShift}
-      {$Define RecordVAT}
-      {$Define TrackDEMCorners}
-      {$Define UKOS}
-      {$Define RecordHalfPixelShift}
+      //{$Define RecordVertDatumShift}
+      //{$Define RecordVAT}
+      //{$Define TrackDEMCorners}
+      //{$Define UKOS}
+      //{$Define RecordHalfPixelShift}
       //{$Define RecordDEMEdits}
       //{$Define RecordClone}
       //{$Define RecordGeotiff}
@@ -296,7 +296,7 @@ type
          VATFileName       : PathStr;
          GeotiffImageDesc : shortstring;
          LongWordElevations : pLongWordElevations;
-         Zpercens              : ^floatarray1000;
+         Zpercens           : ^floatarray1000;
 
          LatSizeMap,               {size of area in latitude, in degrees}
          LongSizeMap,              {size of area in longitude, in degrees}
@@ -552,6 +552,7 @@ type
          procedure WriteNewFormatDEM(Limits : tGridLimits; var FileName : PathStr; WhatFor : shortstring = '');  overload;
          procedure SavePartOfDEMWithData(var FileName : PathStr);
          procedure SaveSpecifiedPartOfDEM(var FileName : PathStr; Limits : tGridLimits);
+         procedure CSVforVDatum(fName : PathStr = '');
 
          {$IfDef ExGeotiffWrite}
          {$Else}

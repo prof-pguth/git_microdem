@@ -2,8 +2,8 @@ object rast_2_vect_f: Trast_2_vect_f
   Left = 0
   Top = 0
   Caption = 'Raster to vector options'
-  ClientHeight = 189
-  ClientWidth = 308
+  ClientHeight = 188
+  ClientWidth = 304
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -14,7 +14,6 @@ object rast_2_vect_f: Trast_2_vect_f
   Visible = True
   OnClose = FormClose
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
     Left = 16

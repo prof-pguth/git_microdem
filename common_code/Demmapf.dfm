@@ -2,8 +2,8 @@ object MapForm: TMapForm
   Left = 45
   Top = 303
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1054
-  ClientWidth = 1751
+  ClientHeight = 1051
+  ClientWidth = 1739
   Color = clBtnHighlight
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -40,8 +40,8 @@ object MapForm: TMapForm
   object ScrollBox1: TScrollBox
     Left = 0
     Top = 27
-    Width = 1751
-    Height = 1027
+    Width = 1739
+    Height = 1024
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clRed
@@ -51,8 +51,8 @@ object MapForm: TMapForm
     ParentFont = False
     TabOrder = 0
     OnClick = ScrollBox1Click
-    ExplicitWidth = 1747
-    ExplicitHeight = 1026
+    ExplicitWidth = 1735
+    ExplicitHeight = 1023
     object Image1: TImage
       Left = 3
       Top = -247
@@ -209,13 +209,13 @@ object MapForm: TMapForm
     end
     object BlendPanel: TPanel
       Left = 0
-      Top = 982
-      Width = 1747
+      Top = 979
+      Width = 1735
       Height = 41
       Align = alBottom
       TabOrder = 8
-      ExplicitTop = 981
-      ExplicitWidth = 1743
+      ExplicitTop = 978
+      ExplicitWidth = 1731
       object TrackBar2: TTrackBar
         Left = 289
         Top = 1
@@ -334,12 +334,12 @@ object MapForm: TMapForm
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1751
+    Width = 1739
     Height = 27
     Align = alTop
     TabOrder = 1
     OnMouseDown = Panel1MouseDown
-    ExplicitWidth = 1747
+    ExplicitWidth = 1735
     object AnnotateSpeedButton1: TSpeedButton
       Left = 31
       Top = -4
@@ -1650,6 +1650,11 @@ object MapForm: TMapForm
           Caption = 'DBF file, current map area'
           GroupIndex = 1
           OnClick = DBFfile1Click
+        end
+        object CSVforVDATUM1: TMenuItem
+          Caption = 'CSV for VDATUM'
+          GroupIndex = 1
+          OnClick = CSVforVDATUM1Click
         end
         object JSON1: TMenuItem
           Caption = 'GeoJSON-G'

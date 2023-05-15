@@ -902,7 +902,7 @@ var
          DEMlist.Sorted := false;
          for i := pred(DEMList.Count) downto 0 do begin
             FName := DEMList.Strings[i];
-            WMDEM.StatusBar1.Panels[0].Text := 'Still Check ' + IntToStr(succ(I)) + '/' + IntToStr(DEMList.Count);;
+            WMDEM.StatusBar1.Panels[0].Text := 'Merge still Check ' + IntToStr(succ(I)) + '/' + IntToStr(DEMList.Count);;
             if FileExists(fName) then begin
                if NewArea(true,CurDEM,'',FName) then begin
                   if (not SubsequentDEM) then begin
@@ -1004,7 +1004,6 @@ var
             {$If Defined(RecordMerge) or Defined(RecordTimeMerge) } WriteLineToDebugFile('MD merge done, DEM=' + IntToStr(Result)); {$EndIf}
           end;
      end;
-
 
 
 begin

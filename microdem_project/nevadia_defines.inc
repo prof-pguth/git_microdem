@@ -68,11 +68,11 @@
    {$Define ExDTED}
    {$Define  RecordIniMemoryOverwrite}
    {$Define microdem}
-   {$Define AllowV1V2DEMHeaders}   //must be in DEMDefs and DEMCoord
+   //{$Define AllowV1V2DEMHeaders}   //must be in DEMDefs and DEMCoord
    //{$Define BasicOpens}
 
    {$Define AllowOddballDEMs}
-   {$Define AllowV1V2V3DEMHeaders}
+   //{$Define AllowV1V2V3DEMHeaders}
    {$Define IncludeBILWrite}
    {$Define AllowGeomorphometry}
    {$Define AllowOddballDEMexports}

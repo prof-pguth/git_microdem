@@ -51,6 +51,8 @@ uses
 
 
 procedure DEMIX_CreateReferenceDEMs;
+procedure DEMIX_merge_source;
+procedure DEMIX_VDatum_shifts;
 
 
 const
@@ -59,7 +61,9 @@ var
    TestDEM : array[1..MaxTestDEM] of integer;
    TestSeries : array[1..MaxTestDEM] of shortstring;
    HalfSecRefDTM,HalfSecRefDSM,HalfSecDTM,HalfSecALOS,HalfSecCOP,
-   DEMIXRefDEM,AddLocalVDatum,SubLocalVDatum,RefDTMpoint,RefDTMarea,RefDSMpoint,RefDSMarea,{GeoidGrid,}  COPRefDTM, COPRefDSM : integer;
+   DEMIXRefDEM,AddLocalVDatum,SubLocalVDatum,RefDTMpoint,RefDTMarea,RefDSMpoint,RefDSMarea, COPRefDTM, COPRefDSM : integer;
+   DEMIX_Ref_Source,DEMIX_Ref_Merge,DEMIX_Ref_1sec,
+
    GeodeticFName, IceSatFName, LandCoverFName,
    LocalDatumAddFName,LocalDatumSubFName,RefDSMPointFName,RefDSMareaFName,RefDTMPointFName,RefDTMareaFName, COPRefDTMFName,COPRefDSMFName : PathStr;
 
@@ -72,6 +76,110 @@ uses
    DEMstat,Make_grid,PetImage,PetImage_form,new_petmar_movie,DEMdatabase,PetDButils,Pick_several_dems,
    Geotiff,
    DEMCoord,DEMdefs,DEMMapf,DEMDef_routines,DEM_Manager,DEM_indexes,Petmar_db,PetMath;
+
+var
+   vd_path : PathStr;
+
+
+procedure GetDEMIXpaths;
+begin
+   HeavyDutyProcessing := true;
+   StopSplashing;
+   DEMIX_Ref_Source := 'D:\wine_contest_v2_ref_source\';
+   FindDriveWithPath(DEMIX_Ref_Source);
+   DEMIX_Ref_Merge := 'D:\wine_contest_v2_ref_merge\';
+   FindDriveWithPath(DEMIX_Ref_Merge);
+   DEMIX_Ref_1sec := 'D:\wine_contest_v2_ref_1sec\';
+   FindDriveWithPath(DEMIX_Ref_1sec);
+   vd_path := 'D:\wine_contest_v2_vdatum\';
+   FindDriveWithPath(vd_path);
+
+   Geoid2008FName := 'd:\geoid\egm2008-1-vdatum.tif';
+   FindDriveWithPath(Geoid2008FName);
+
+end;
+
+
+procedure DEMIX_VDatum_shifts;
+label
+   SkipArea;
+var
+  fName,fName2 : PathStr;
+  AreaName,TStr : shortstring;
+  Merged,Shifts,f1,f2,ErrorLog : tStringList;
+  i,j,db,DEM  : Integer;
+  dx,dy,dz : float32;
+begin
+   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_VDatum_shifts in'); {$EndIf}
+   try
+      GetDEMIXPaths;
+      ErrorLog := tStringList.Create;
+      Shifts := tStringList.Create;
+      FindMatchingFiles(vd_path,'*.csv',Shifts,0);
+      for I := 0 to pred(Shifts.Count) do begin
+         AreaName := ExtractFileNameNoExt(Shifts.Strings[i]);
+         {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Start ' + AreaName); {$EndIf}
+         wmdem.SetPanelText(2,'Area: ' + IntToStr(succ(i)) + '/' + IntToStr(Shifts.Count));
+         wmdem.SetPanelText(3,AreaName);
+         fName2 := vd_path + AreaName + '.dbf';
+         if FileExists(fName2) then begin
+            OpenNumberedGISDataBase(db,fName2);
+         end
+         else begin
+            f1 := tStringList.Create;
+            f1.LoadFromFile(Shifts.Strings[i]);
+            f2 := tStringList.Create;
+            fName := vd_path + 'result\' + ExtractFileName(Shifts.Strings[i]);
+            if not FileExists(fName) then begin
+               TStr := 'VDATUM not run yet for ' + AreaName;
+               {$If Defined(RecordDEMIX)} WriteLineToDebugFile(TStr); {$EndIf}
+               ErrorLog.Add(TStr);
+               goto SkipArea;
+            end;
+            f2.LoadFromFile(fName);
+            Merged := tStringList.Create;
+            Merged.Add('LONG,LAT,ELEV,LONG2,LAT2,ELEV2');
+            for j := 1 to pred(f1.Count) do begin
+               Merged.Add(f1.Strings[j] + ',' + f2.Strings[j]);
+            end;
+            f1.Free;
+            f2.Free;
+            db := StringList2CSVtoDB(Merged,fName2);
+            ComputeVDatumShift(db);
+         end;
+         dx := GISdb[db].MyData.FieldAverage('X_SHIFT');
+         dy := GISdb[db].MyData.FieldAverage('Y_SHIFT');
+         dz := GISdb[db].MyData.FieldAverage('VERT_SHIFT');
+
+         fName := DEMIX_Ref_Merge + AreaName + '.dem';
+         {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Load ' + fName); {$EndIf}
+         DEM := OpenNewDEM(fName,false);
+         if DEMGlb[DEM].DEMHeader.VerticalCSTypeGeoKey = VertCSEGM2008 then begin
+            {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEM already EGM2008=' + IntToStr(DEMGlb[DEM].DEMHeader.VerticalCSTypeGeoKey)); {$EndIf}
+         end
+         else begin
+            {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEM was ' + IntToStr(DEMGlb[DEM].DEMHeader.VerticalCSTypeGeoKey)); {$EndIf}
+            DEMGlb[DEM].DEMHeader.VerticalCSTypeGeoKey := VertCSEGM2008;
+            DEMGlb[DEM].DEMHeader.DEMSWCornerX := DEMGlb[DEM].DEMHeader.DEMSWCornerX + dx;
+            DEMGlb[DEM].DEMHeader.DEMSWCornerY := DEMGlb[DEM].DEMHeader.DEMSWCornerY + dy;
+            DEMGlb[DEM].AddConstantToGrid(dz);
+            {$If Defined(RecordDEMIX)} WriteLineToDebugFile('For EGM2008 added dz =' + RealToString(dz,-8,-2)); {$EndIf}
+            DEMGlb[DEM].WriteNewFormatDEM(DEMGlb[DEM].DEMFileName);
+         end;
+         CloseSingleDEM(DEM);
+         SkipArea:;
+         //Merged.SaveToFile(fName);
+         //Merged.Free;
+      end;
+
+   finally
+       HeavyDutyProcessing := false;
+       Shifts.Free;
+       wmdem.ClearStatusBarPanelText;
+       DisplayAndPurgeStringList(ErrorLog,'DEMIX_VDatum_shifts Problems');
+   end;
+   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_VDatum_shifts out'); {$EndIf}
+end;
 
 
 function CriterionTieTolerance(Criterion : shortstring) : float32;
@@ -130,87 +238,175 @@ begin
    end;
 end;
 
+
+procedure ConvertASCtoGeotiffDEMs(aPath : PathStr);
+var
+   ASCIIDEMs : tStringList;
+   i,NewDEM : integer;
+begin
+   ASCIIDEMs := tStringList.Create;
+   FindMatchingFiles(aPath,'*.asc',ASCIIDEMs,5);
+   if (ASCIIDEMs.Count > 0) then begin
+      //convert ASC files to Tiff, there must be a single WKT projection file in the directory
+      for I := 0 to pred(ASCIIDEMs.Count) do begin
+         {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Convert ASC file= ' + ASCIIDEMs.Strings[i]); {$EndIf}
+         NewDEM := OpenNewDEM(ASCIIDEMs.Strings[i],false);
+         CloseSingleDEM(NewDEM);
+      end;
+   end;
+   ASCIIDEMs.Free;
+end;
+
+procedure DEMIX_merge_source;
+var
+   Areas,DEMs,ASCIIDEMs,ErrorLog : tStringList;
+   i,VDatumCode,Fixed,NewDEM,AnArea,LocalToWGS84,WGS84toEGM2008 : integer;
+   AreaMergeName, fName,
+   VDatumListFName,VDatumFilesFName : PathStr;
+   AreaName,TStr : shortstring;
+   VDatumList,VDatumFiles : tMyData;
+begin
+   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_merge_source in'); {$EndIf}
+   try
+      GetDEMIXPaths;
+      ErrorLog := tStringList.Create;
+      Areas := tStringList.Create;
+      Areas.Add(DEMIX_Ref_Source);
+      if GetMultipleDirectories('Areas to merge',Areas) then begin
+         if (Areas.Count > 0) then begin
+            LocalToWGS84 := 0;
+            WGS84toEGM2008 := 0;
+            VDatumListFName := DEMIX_Ref_Source + 'demix_area_vert_datums.dbf';
+            VDatumFilesFName := DEMIX_Ref_Source + 'vert_datum_files.dbf';
+            VDatumList := tMyData.Create(VDatumListFName);
+            VDatumFiles := tMyData.Create(VDatumFilesFName);
+            for anArea := 0 to pred(Areas.Count) do begin
+               wmdem.SetPanelText(2, 'Area: ' + IntToStr(succ(anArea)) + '/' + IntToStr(Areas.Count));
+               AreaName := LastSubDir(Areas.Strings[AnArea]);
+               wmdem.SetPanelText(3, AreaName);
+               AreaMergeName := DEMIX_Ref_Merge + AreaName + '.dem';
+               if FileExists(AreaMergeName) then begin
+                  {$If Defined(RecordDEMIX)} WriteLineToDebugFile('File Existed ' + AreaMergeName); {$EndIf}
+               end
+               else begin
+                  VDatumList.ApplyFilter('AREA=' + QuotedStr(AreaName));
+                  if (VDatumList.FiltRecsInDB = 1) then begin
+                     VDatumCode := VDatumList.GetFieldByNameAsInteger('VERT_CS');
+                  end
+                  else begin
+                     VDatumCode := 0;
+                  end;
+
+                  ConvertASCtoGeotiffDEMs(Areas.Strings[AnArea]);
+
+                  if (VDatumCode = 0) then begin
+                     ErrorLog.Add(AreaName + ' undefined VDatumCode');
+                  end
+                  else begin
+                     DEMs := tStringList.Create;
+                     FindMatchingFiles(Areas.Strings[AnArea],'*.tif',DEMs,5);
+                     if (DEMs.Count > 0) then begin
+                        {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Merge files= ' + IntToStr(DEMs.Count) + ' for ' + AreaMergeName); {$EndIf}
+                        NewDEM := MergeMultipleDEMsHere(DEMs,false,false);  //Frees DEMs
+                        {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Merge files over, MinZ=' + RealToString(DEMGlb[NewDEM].DEMheader.MinElev,-12,-2)); {$EndIf}
+                        if (abs(DEMGlb[NewDEM].DEMheader.MinElev) < 0.001) then begin
+                           //mark sea level as missing for analysis along coast
+                           DEMGlb[NewDEM].MarkInRangeMissing(-0.001,0.001,Fixed);
+                           {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Sea level missing done, pts removed=' + IntToStr(Fixed)); {$EndIf}
+                        end;
+                        DEMGlb[NewDEM].DEMheader.VerticalCSTypeGeoKey := VDatumCode;
+
+                        if (VDatumCode = VertCSNAVD88)  then begin
+                           DEMGlb[NewDEM].CSVforVDatum(vd_path + AreaName + '.csv');
+                           TStr := AreaName + ' VDatumCSV created for NAVD88; run through NOAA VDATUM';
+                           {$If Defined(RecordDEMIX)} WriteLineToDebugFile(TStr); {$EndIf}
+                           ErrorLog.Add(TStr);
+                        end
+                        else if (VDatumCode <> VertCSEGM2008) then begin
+                           //shift to EGM2008
+                           VDatumFiles.ApplyFilter('VERT_CS=' + IntToStr(VDatumCode));
+                           if (VDatumFiles.FiltRecsInDB = 1) then begin
+                              GeoidWGS84ellipsoidToLocalVDatum := VDatumFiles.GetFieldByNameAsString('VERT_SUB');
+                              LoadDatumShiftGrids(LocalToWGS84,WGS84toEGM2008);
+                              DEMGlb[NewDEM].MoveToEGM2008(WGS84toEGM2008,LocalToWGS84);
+                              CloseSingleDEM(LocalToWGS84);
+                              {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Shifted to EGM2008'); {$EndIf}
+                           end;
+                        end;
+                        ShowHourglassCursor;
+                        DEMGlb[NewDEM].CheckMaxMinElev;
+                        DEMGlb[NewDEM].WriteNewFormatDEM(AreaMergeName);
+                        {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Merge saved to ' + AreaMergeName); {$EndIf}
+                        CloseSingleDEM(NewDEM);
+                        CleanUpTempDirectory;  //might be many tiled or compressed DEMs expanded
+                     end;
+                  end;
+               end;
+            end {for area};
+            VDatumList.Free;
+            VDatumFiles.Free;
+         end;
+      end;
+      Areas.Free;
+   finally
+      HeavyDutyProcessing := false;
+      wmdem.ClearStatusBarPanelText;
+      CloseSingleDEM(WGS84toEGM2008);
+      DisplayAndPurgeStringList(ErrorLog,'DEMIX_merge_source Problems');
+   end;
+   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_merge_source out'); {$EndIf}
+end;
+
+
 procedure DEMIX_CreateReferenceDEMs;
 var
-   AreaRefDataPath,RefDataPath,DEMIXRefData,fName, RefDEMDir : PathStr;
-   aTable : Petmar_db.tMyData;
-   Areas,FoundFiles,ShiftFiles : tStringList;
+   fName : PathStr;
+   ErrorLog,Areas : tStringList;
    i,j,WantedDEM : integer;
-   LocalToWGS84,WGS84toEGM2008 : integer;
+   AreaName,TStr : shortstring;
 begin
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs in'); {$EndIf}
    try
-      HeavyDutyProcessing := true;
-      StopSplashing;
-      RefDataPath := 'D:\wine_contest_v2_ref_source\';
-      FindDriveWithPath(RefDataPath);
-      Geoid2008FName := 'H:\gis_software\OSGeo4W\share\proj\us_nga_egm08_25.tif';
+      GetDEMIXPaths;
       Areas := tStringList.Create;
-      Areas := GetSubDirsInDirectory(RefDataPath);
+      ErrorLog := tStringList.Create;
+      FindMatchingFiles(DEMIX_Ref_Merge,'*.dem',Areas,0);
       if (Areas.Count > 0) then begin
-        LocalToWGS84 := 0;
-        WGS84toEGM2008 := 0;
         for i := 0 to pred(Areas.Count) do begin
-           wmdem.SetPanelText(1, IntToStr(i) + '/' + IntToStr(Areas.Count));
-           AreaRefDataPath := RefDataPath + Areas[i] + '\';
-           fName := AreaRefDataPath + 'ref_1sec_area.dem';
+           AreaName := ExtractFileNameNoExt(Areas[i]);
+           wmdem.SetPanelText(2, 'Area: ' + IntToStr(succ(i)) + '/' + IntToStr(Areas.Count));
+           wmdem.SetPanelText(3, AreaName);
+           fName := DEMIX_Ref_1sec + AreaName + '_ref_1sec_area.tif';
            if FileExists(fName) then begin
-              {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs alread done' + AreaRefDataPath ); {$EndIf}
+              {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs alread done ' + fName ); {$EndIf}
            end
            else begin
-              fName := AreaRefDataPath + 'ref_1sec_area.tif';
-              if FileExists(fName) then begin
-                 {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs alread done' + AreaRefDataPath ); {$EndIf}
+              {$If Defined(RecordDEMIX)} HighlightLineToDebugFile('DEMIXreferenceDEMs for ' + AreaName); {$EndIf}
+              WantedDEM := OpenNewDEM(Areas[i],true);   //need to open map to create the subset
+              if (DEMGlb[WantedDEM].DEMheader.VerticalCSTypeGeoKey = VertCSNAVD88)  then begin
+                 TStr := DEMGlb[WantedDEM].AreaName  + ' is NAVD88; run VDATUM conversion';
+                 {$If Defined(RecordDEMIX)} WriteLineToDebugFile(TStr); {$EndIf}
+                 ErrorLog.Add(TStr);
               end
-              else begin
-                 {$If Defined(RecordDEMIX)} HighlightLineToDebugFile('DEMIXreferenceDEMs' + AreaRefDataPath); {$EndIf}
-                 FoundFiles := tStringList.Create;
-                 FindMatchingFiles(AreaRefDataPath,'*.*',FoundFiles);
-                 if (FoundFiles.Count > 0) then begin
-                    for j := 0 to pred(FoundFiles.Count) do begin
-                       fName := FoundFiles.Strings[j];
-                       if (FileExtEquals(fName,'.tif') or FileExtEquals(fName,'.dem')) and (Copy(ExtractFileName(fName),1,4) <> 'ref_') then begin
-                         {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs ' + fName); {$EndIf}
-                         WantedDEM := OpenNewDEM(fName);
-                         if ValidDEM(WantedDEM) then begin
-                            if (DEMGlb[WantedDEM].DEMHeader.VerticalCSTypeGeoKey <> VertCSEGM2008) then begin
-                               {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs call vert datum shift'); {$EndIf}
-                               if (LocalToWGS84 = 0) then begin
-                                  ShiftFiles := tStringList.Create;
-                                  ShiftFiles.LoadFromFile(ExtractFilePath(fName) + 'vert_datum_shift.txt');
-                                  GeoidWGS84ellipsoidToLocalVDatum := ShiftFiles.Strings[0];
-                                  ShiftFiles.Free;
-                               end;
-                               LoadDatumShiftGrids(LocalToWGS84,WGS84toEGM2008);
-                               DEMGlb[WantedDEM].MoveToEGM2008(WGS84toEGM2008,LocalToWGS84);
-                               DEMGlb[WantedDEM].WriteNewFormatDEM(DEMGlb[WantedDEM].DEMFileName);
-                               CloseSingleDEM(LocalToWGS84);
-                               CloseSingleDEM(WGS84toEGM2008);
-                            end;
-                            {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs call resample for ' + fName); {$EndIf}
-                            ResampleForDEMIXOneSecDEMs(WantedDEM,RefDEMDir);
-                            CloseSingleDEM(WantedDEM);
-                            CleanUpTempDirectory;  //might be many tiled or compressed DEMs expanded
-                            {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs done for ' + fName); {$EndIf}
-                         end;
-                       end;
-                    end;
-                    FoundFiles.Free;
-                 end
-                 else begin
-                    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs, area=' + Areas.Strings[i] + ' no dems'); {$EndIf}
-                 end;
-              end;
+              else if (DEMGlb[WantedDEM].DEMheader.VerticalCSTypeGeoKey <> VertCSEGM2008) then begin
+                 TStr := DEMGlb[WantedDEM].AreaName  + ' not EGM2008; ref 1" DEMs not created; Re-Merge Code=' + IntToStr(DEMGlb[WantedDEM].DEMheader.VerticalCSTypeGeoKey);
+                 {$If Defined(RecordDEMIX)} WriteLineToDebugFile(TStr); {$EndIf}
+                 ErrorLog.Add(TStr);
+                 DeleteFileIfExists(Areas[i]);
+              end
+              else ResampleForDEMIXOneSecDEMs(WantedDEM,DEMIX_Ref_1sec,false);
+              CloseSingleDEM(WantedDEM);
            end;
         end;
       end
       else begin
-          {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs, no areas ' + RefDataPath); {$EndIf}
+          {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs, no areas ' + DEMIX_Ref_Merge); {$EndIf}
       end;
    finally
       Areas.Free;
       HeavyDutyProcessing := false;
-      wmdem.SetPanelText(1, '');
+      wmdem.ClearStatusBarPanelText;
+      DisplayAndPurgeStringList(ErrorLog,'DEMIX_CreateReferenceDEMs Problems');
    end;
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs out'); {$EndIf}
 end;
