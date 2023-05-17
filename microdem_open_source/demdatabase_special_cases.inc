@@ -20,19 +20,15 @@ begin
       EmpSource.Enabled := false;
       AddFieldToDataBase(ftFloat,'VERT_SHIFT',8,2);
       AddFieldToDataBase(ftFloat,'HORZ_SHIFT',8,2);
-      AddFieldToDataBase(ftFloat,'X_SHIFT',8,2);
-      AddFieldToDataBase(ftFloat,'Y_SHIFT',8,2);
-      AddFieldToDataBase(ftFloat,'HORIZ_AZ',8,2);
+      AddFieldToDataBase(ftFloat,'X_SHIFT',8,3);
+      AddFieldToDataBase(ftFloat,'Y_SHIFT',8,3);
+      AddFieldToDataBase(ftFloat,'HORIZ_AZ',8,1);
       zPresent := MyData.FieldExists('ELEV') and MyData.FieldExists('ELEV2');
       FileConvert := FileExists(GeoidWGS84ellipsoidToLocalVDatum) and FileExists(Geoid2008FName);
       FileConvert := false;
       if FileConvert then begin
          LoadDatumShiftGrids(LocalToWGS84,WGS84toEGM2008);
          AddFieldToDataBase(ftFloat,'GRID_VERT',8,2);
-      end
-      else begin
-         LocalToWGS84 := 0;
-         WGS84toEGM2008 := 0;
       end;
 
       EmpSource.Enabled := false;
@@ -64,6 +60,46 @@ begin
       CloseSingleDEM(WGS84toEGM2008);
    end;
 end;
+
+function AnalyzeVDatumShift(CSVName : PathStr; ErrorLog : tStringList = Nil) : integer;
+var
+   fName2,fName : Pathstr;
+   f1,f2,Merged : tStringList;
+   TStr : ShortString;
+   j : integer;
+begin
+   if (CSVName = '') then GetFileFromDirectory('VDATUM output file','*.csv',CSVName);
+   fName2 := ChangeFileExt(CSVName, '.dbf');
+   if FileExists(fName2) then begin
+      OpenNumberedGISDataBase(Result,fName2);
+   end
+   else begin
+      fName := ExtractFilePath(CSVName) + 'result\' + ExtractFileName(CSVName);
+      if not FileExists(fName) then begin
+         TStr := 'VDATUM not run yet for ' + CSVName;
+         {$If Defined(RecordDEMIX)} WriteLineToDebugFile(TStr); {$EndIf}
+         if ErrorLog <> Nil then ErrorLog.Add(TStr);
+         Result := 0;
+         exit;
+      end;
+      f1 := tStringList.Create;
+      f1.LoadFromFile(CSVName);
+      f2 := tStringList.Create;
+      f2.LoadFromFile(fName);
+      Merged := tStringList.Create;
+      Merged.Add('LONG,LAT,ELEV,LONG2,LAT2,ELEV2');
+      for j := 1 to pred(f1.Count) do begin
+         Merged.Add(f1.Strings[j] + ',' + f2.Strings[j]);
+      end;
+      f1.Free;
+      f2.Free;
+      Result := StringList2CSVtoDB(Merged,fName2);
+      ComputeVDatumShift(Result);
+   end;
+end;
+
+
+
 
 
 {$IfDef ExSidescan}

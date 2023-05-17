@@ -547,6 +547,8 @@ type
     Mergesourcedatatiles1: TMenuItem;
     N39: TMenuItem;
     ProcessVDATUMshifts1: TMenuItem;
+    Processdifferencestatisticspertile1: TMenuItem;
+    VDATUMshiftinUSA1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -890,7 +892,7 @@ type
     procedure Fatfingers1Click(Sender: TObject);
     procedure Datadownloadpicksubset1Click(Sender: TObject);
     procedure EurekaValleyDownloadClick(Sender: TObject);
-    procedure DEMIXwinecontest1Click(Sender: TObject);
+    //procedure DEMIXwinecontest1Click(Sender: TObject);
     procedure Closeprogramgetdebugversionoftheprogram7MB1Click(Sender: TObject);
     procedure Openrecyclebin1Click(Sender: TObject);
     procedure Existingfile1Click(Sender: TObject);
@@ -931,6 +933,8 @@ type
     procedure Creatediffrencemaps1Click(Sender: TObject);
     procedure Mergesourcedatatiles1Click(Sender: TObject);
     procedure ProcessVDATUMshifts1Click(Sender: TObject);
+    procedure Processdifferencestatisticspertile1Click(Sender: TObject);
+    procedure VDATUMshiftinUSA1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1285,6 +1289,11 @@ begin
 end;
 
 
+procedure Twmdem.VDATUMshiftinUSA1Click(Sender: TObject);
+begin
+   AnalyzeVDatumShift('');
+end;
+
 procedure Twmdem.Vectormap1Click(Sender: TObject);
 begin
    {$IfDef RecordMenu} writeLineToDebugFile('Twmdem.Vectormap1Click'); {$EndIf}
@@ -1474,11 +1483,6 @@ begin
 end;
 
 
-procedure Twmdem.DEMIXwinecontest1Click(Sender: TObject);
-begin
-   ComputeDEMIXstats;
-end;
-
 
 procedure Twmdem.DEMsummarytable1Click(Sender: TObject);
 begin
@@ -1490,6 +1494,7 @@ procedure Twmdem.LoadDEMIXareareferenceDEMs1Click(Sender: TObject);
 var
    fName : PathStr;
 begin
+(*
    {$IfDef RecordDEMIX} WriteLineToDebugFile('Twmdem.LoadDEMIXareareferenceDEMs1Click in'); {$EndIf}
    SetDEMIXdirs;
    fName := DEMIXrefDataDir;
@@ -1509,7 +1514,9 @@ begin
    else begin
       {$IfDef RecordDEMIX} writeLineToDebugFile('Twmdem.LoadDEMIXareareferenceDEMs1Click GetFileFromDirectory fail'); {$EndIf}
    end;
+   *)
 end;
+
 
 procedure Twmdem.Loadimage1Click(Sender: TObject);
 begin
@@ -1957,7 +1964,7 @@ begin
    end;
 
    if Action = 'DEMIX-CRITERIA' then begin
-      ComputeDEMIXstats(FileList);
+      ComputeDEMIX_tile_stats(FileList);
    end;
 
    if Action = 'DEMIX-CREATE-REF' then begin
@@ -2213,6 +2220,7 @@ end;
 
 
 procedure Twmdem.SeeIfThereAreDebugThingsToDo;
+//allows immediate execution of code for debugging
 
 (*
 procedure bicubic_interpolation;
@@ -2322,23 +2330,16 @@ begin
       //Histies;
       //OpenHalfSecCopALOS(true, 'J:\aa_new_half_sec_test\lake_powell\' );
 
-
       //CreateDifferenceMaps('D:\aa_new_half_sec_test\stateline\');
       //CreateDifferenceMaps('J:\aa_new_half_sec_test\stateline\');
 
       //DEMIX_CreateReferenceDEMs;
 
       //GDAL_Raster_Calculator('-A c:\temp\alos.tif -B c:\temp\3dep_2022.tif --extent intersect --outfile c:\temp\alos-3dep.tif --calc="A-B"');
-//gdal_calc.py -A input1.tif -B input2.tif -C input3.tif --outfile=result.tif --calc="A+B+C"
+      //gdal_calc.py -A input1.tif -B input2.tif -C input3.tif --outfile=result.tif --calc="A+B+C"
 
 
-  //bicubic_interpolation;
-
-       WriteLineToDebugFile('10,10   ' + GetLC100_fileName(10,10));
-       WriteLineToDebugFile('10,-30   ' + GetLC100_fileName(10,-30));
-       WriteLineToDebugFile('-30,-30  ' + GetLC100_fileName(-30,-30));
-       WriteLineToDebugFile('-50,-50  ' + GetLC100_fileName(-50,-50));
-
+       //ComputeDEMIXstats;
 
    end;
 end;
@@ -3072,6 +3073,12 @@ begin
 end;
 
 
+procedure Twmdem.Processdifferencestatisticspertile1Click(Sender: TObject);
+//this is the good one
+begin
+   ComputeDEMIX_tile_stats;
+end;
+
 
 procedure Twmdem.ProcessVDATUMshifts1Click(Sender: TObject);
 begin
@@ -3246,7 +3253,6 @@ begin
       ImportMSTSidescan;
    {$EndIf}
 end;
-
 
 
 procedure Twmdem.Showfirstbytesofbinaryfile1Click(Sender: TObject);

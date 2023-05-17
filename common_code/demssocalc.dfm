@@ -2,12 +2,12 @@ inherited SSOCalcDlg: TSSOCalcDlg
   Left = 325
   Top = 120
   Caption = 'Topographic Fabric Calculation'
-  ClientHeight = 460
-  ClientWidth = 656
+  ClientHeight = 459
+  ClientWidth = 652
   Position = poDefaultSizeOnly
   OnCreate = FormCreate
-  ExplicitWidth = 672
-  ExplicitHeight = 499
+  ExplicitWidth = 668
+  ExplicitHeight = 498
   TextHeight = 15
   inherited Bevel1: TBevel
     Left = 252

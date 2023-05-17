@@ -30,7 +30,7 @@ unit DEMCoord;
 
    {$IFDEF DEBUG}
       {$Define RecordDEMIX}
-      //{$Define RecordVertDatumShift}
+      {$Define RecordVertDatumShift}
       //{$Define RecordVAT}
       //{$Define TrackDEMCorners}
       //{$Define UKOS}

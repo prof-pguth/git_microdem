@@ -84,13 +84,13 @@ uses
 
    function GDALextentBoxUTM(xmin,ymin,xmax,ymax : float64) : shortstring; overload;
    function GDALextentBoxUTM(BoundBox : sfBoundBox) : shortstring; overload;
-
    function GDALextentBoxLatLong(BoundBox : sfBoundBox) : shortString;
+
    procedure ResaveAsGDALgeotiff(fName : PathStr);
 
    function GDALImageFormat(Ext : ExtStr; OnlyGDAL : boolean = false) :  boolean;
    function GDALGridFormat(Ext : ExtStr; OnlyGDAL : boolean = false) :  boolean;
-   function GDALinfoOutput(fname : PathStr) : PathStr;
+   function GDALinfoOutputFName(fname : PathStr) : PathStr;
    procedure GetGDALinfo(fName : PathStr; var GDALinfo : tGDALinfo);
    procedure ZeroGDALinfo(var GDALinfo : tGDALinfo);
    function GetEPSG(var GDALinfo : tGDALinfo) : integer;
@@ -152,6 +152,10 @@ uses
    procedure UseGDAL_Warp_to_merge(var MergefName : PathStr; OutNames : tStringList);
 
    procedure ResampleSentinel_1(Path : PathStr; Recycle : boolean = false);
+
+   procedure GDAL_Raster_Calculator(Expression : shortstring);
+
+
 
    {$IfDef ExGeoPDF}
    {$Else}
@@ -266,7 +270,7 @@ begin
    {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} HighlightLineToDebugFile('GetGDALFileNames in'); {$EndIf}
    Result := true;
    if PathIsValid(GDALtools_Dir) and SetRest then begin
-      {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('GDAL valid, ' + GDALtools_Dir + '  ' + GetGDALversion); {$EndIf}
+      {$If Defined(RecordGDAL) or Defined(RecordGDALOpen) or Defined(RecordProblems)} WriteLineToDebugFile('GDAL valid, ' + GDALtools_Dir + '  ' + GetGDALversion); {$EndIf}
       exit;
    end;
 
@@ -313,7 +317,7 @@ begin
       StartGDALbatchFile(BatchFile);
       fName := 'C:\temp\output\L8_OLI_2015_08_17_15_46_10_015033_L1R_pan.nc';
       OutDir := ExtractFilePath(fName);
-      InfoName := GDALinfoOutput(fName);
+      InfoName := GDALinfoOutputFName(fName);
       {$IfDef RecordGDAL} WriteLineToDebugFile('GDAL_netcdf in ' + InfoName); {$EndIf}
 
       //https://gdal.org/drivers/raster/netcdf.html
@@ -342,11 +346,16 @@ begin
 end;
 
 
-function GDAL_DEM_command(cmd : ANSIstring; OutName : PathStr; mt : byte = mtElevSpectrum) : integer;
+function GDAL_DEM_command(InputDEM : integer; cmd : ANSIstring; OutName : PathStr; mt : byte = mtElevSpectrum) : integer;
 begin
     WinExecAndWait32(cmd);
     if FileExists(OutName) then begin
        Result := OpenNewDEM(OutName,false);
+       if InputDEM <> 0 then begin
+          DEMGlb[Result].DEMheader.ElevUnits := DEMGlb[InputDEM].DEMheader.ElevUnits;
+          DEMGlb[Result].DEMheader.VerticalCSTypeGeoKey := DEMGlb[InputDEM].DEMheader.VerticalCSTypeGeoKey;
+          DEMGlb[Result].WriteNewFormatDEM(DEMGlb[Result].DEMFileName);
+       end;
        CreateDEMSelectionMap(Result,true,true,mt);
     end
     else begin
@@ -365,6 +374,42 @@ begin
    BatchFile.Add(cmd);
    EndBatchFile(BatchName,batchfile,true,log);
 end;
+
+
+      procedure CallGDALMerge(var MergefName : PathStr; OutNames : tStringList; MissingData : integer = 255);
+      var
+         BatchFile : tStringList;
+         cmd : ANSIString;
+         i : integer;
+         DefFilter : byte;
+         fName : PathStr;
+      begin
+         if (OutNames = Nil) then begin
+            OutNames := tStringList.Create;
+            OutNames.Add(MainMapData);
+            DefFilter := 1;
+            if not GetMultipleFiles('Files for GDAL merge','TIFF files|*.TIF',OutNames,DefFilter) then exit;
+         end;
+         if (MergefName = '') then begin
+            MergefName := ExtractFilePath(OutNames[0]);
+            Petmar.GetFileNameDefaultExt('Merged filename','*.tif',MergefName);
+         end;
+
+         fName :=  Petmar.NextFileNumber(MDTempDir, 'gdal_merge_file_list_','.txt');
+         OutNames.SaveToFile(fName);
+
+         StartGDALbatchFile(BatchFile);
+         BatchFile.Add('REM Merge tiffs');
+         cmd := PythonEXEname + ' ' + PythonScriptDir + 'gdal_merge.py -a_nodata ' + IntToStr(MissingData) + ' -o ' + MergefName
+           +  ' --optfile ' + fName;
+         for i := 0 to pred(OutNames.Count) do begin
+            cmd := cmd + ' ' + OutNames[i];
+         end;
+         BatchFile.Add(cmd);
+         fName :=  Petmar.NextFileNumber(MDTempDir, 'gdalmerge_','.bat');
+         EndBatchFile(fName,BatchFile);
+      end;
+
 
 
 procedure GDALAssignDEMProjection(DEMName,ProjName : PathStr);
@@ -397,6 +442,7 @@ begin
       cmd := PythonEXEname + ' ' + PythonScriptDir + 'gdal_fillnodata.py -md 100 -si 2 -o ' + OutName + ' ' + InName;
       StartGDALbatchFile(BatchFile);
       BatchFile.Add(cmd);
+      bfile := Petmar.NextFileNumber(MDTempDir, 'gdal_fill_holes_','.bat');
       EndBatchFile(bfile,batchfile);
       if FileExists(OutName) then begin
          OpenNewDEM(OutName);
@@ -405,12 +451,35 @@ begin
    end;
 end;
 
+
+procedure GDAL_Raster_Calculator(Expression : shortstring);
+var
+   //OutName,
+   bfile : PathStr;
+   cmd : shortString;
+   BatchFile : tStringList;
+begin
+//gdal_calc.py -A input1.tif -B input2.tif -C input3.tif --outfile=result.tif --calc="A+B+C"
+   cmd := PythonEXEname + ' ' + PythonScriptDir + 'gdal_calc.py ' + Expression;
+   StartGDALbatchFile(BatchFile);
+   BatchFile.Add(cmd);
+   bfile := Petmar.NextFileNumber(MDTempDir, 'gdal_raster_calc_','.bat');
+   EndBatchFile(bfile,batchfile);
+end;
+
+
+
+
+
+
+
+
 function GDAL_TRI_Wilson(InName : PathStr; sf : shortstring = ''; outname : shortstring = '') : integer;
 begin
    if FileExistsErrorMessage(InName) then begin
       if sf <> '' then sf := ' -s ' + sf + ' ';
       if (Outname = '') then OutName := MDTempDir + 'gdal_TRI_Wilson_' + ExtractFileNameNoExt(InName) + '.tif';
-      GDAL_DEM_command(GDAL_dem_name + ' TRI ' + InName + ' ' + OutName + ' -alg Wilson' + sf, OutName,mtElevSpectrum);
+      GDAL_DEM_command(0,GDAL_dem_name + ' TRI ' + InName + ' ' + OutName + ' -alg Wilson' + sf, OutName,mtElevSpectrum);
    end;
 end;
 
@@ -420,7 +489,7 @@ begin
    if FileExistsErrorMessage(InName) then begin
       if sf <> '' then sf := ' -s ' + sf + ' ';
       if (Outname = '') then OutName := MDTempDir + 'gdal_TRI_Riley_' + ExtractFileNameNoExt(InName) + '.tif';
-      GDAL_DEM_command(GDAL_dem_name + ' TRI ' + InName + ' ' + OutName + ' -alg Riley' + sf, OutName,mtElevSpectrum);
+      GDAL_DEM_command(0,GDAL_dem_name + ' TRI ' + InName + ' ' + OutName + ' -alg Riley' + sf, OutName,mtElevSpectrum);
    end;
 end;
 
@@ -429,7 +498,7 @@ begin
    if FileExistsErrorMessage(InName) then begin
       if sf <> '' then sf := ' -s ' + sf + ' ';
       if (Outname = '') then OutName := MDTempDir + 'gdal_TPI_' + ExtractFileNameNoExt(InName) + '.tif';
-      GDAL_DEM_command(GDAL_dem_name + ' TPI ' + InName + ' ' + OutName + sf, OutName,mtElevSpectrum);
+      GDAL_DEM_command(0,GDAL_dem_name + ' TPI ' + InName + ' ' + OutName + sf, OutName,mtElevSpectrum);
    end;
 end;
 
@@ -439,7 +508,7 @@ begin
    if FileExistsErrorMessage(InName) then begin
       if sf <> '' then sf := ' -s ' + sf + ' ';
       if (Outname = '') then OutName := MDTempDir + 'gdal_roughness_' + ExtractFileNameNoExt(InName) + '.tif';
-      GDAL_DEM_command(GDAL_dem_name + ' roughness ' + InName + ' ' + OutName + sf, OutName);
+      GDAL_DEM_command(0,GDAL_dem_name + ' roughness ' + InName + ' ' + OutName + sf, OutName);
    end;
 end;
 
@@ -450,7 +519,7 @@ begin
    if FileExistsErrorMessage(InName) then begin
       if sf <> '' then sf := ' -s ' + sf + ' ';
       if (Outname = '') then OutName := MDTempDir + 'gdal_slope_zt_' + ExtractFileNameNoExt(InName) + '.tif';
-      Result := GDAL_DEM_command(GDAL_dem_name + ' slope ' + InName + ' ' + OutName +  ' -p -alg ZevenbergenThorne' + sf, OutName);
+      Result := GDAL_DEM_command(0,GDAL_dem_name + ' slope ' + InName + ' ' + OutName +  ' -p -alg ZevenbergenThorne' + sf, OutName);
       if (Result <> 0) then DEMGlb[Result].DEMHeader.ElevUnits := PercentSlope;
    end;
 end;
@@ -461,7 +530,7 @@ begin
    if FileExistsErrorMessage(InName) then begin
       if sf <> '' then sf := ' -s ' + sf + ' ';
       if (Outname = '') then OutName := MDTempDir + 'gdal_slope_horn_' + ExtractFileNameNoExt(InName) + '.tif';
-      Result := GDAL_DEM_command(GDAL_dem_name + ' slope ' + InName + ' ' + OutName +  ' -p ' + sf, OutName);
+      Result := GDAL_DEM_command(0,GDAL_dem_name + ' slope ' + InName + ' ' + OutName +  ' -p ' + sf, OutName);
       if Result <> 0 then DEMGlb[Result].DEMHeader.ElevUnits := PercentSlope;
    end;
 end;
@@ -472,7 +541,7 @@ begin
    if FileExistsErrorMessage(InName) then begin
       if sf <> '' then sf := ' -s ' + sf + ' ';
       if (Outname = '') then OutName := MDTempDir + 'gdal_aspect_horn_' + ExtractFileNameNoExt(InName) + '.tif';
-      Result := GDAL_DEM_command(GDAL_dem_name + ' aspect ' + InName + ' ' + OutName + sf, OutName);
+      Result := GDAL_DEM_command(0,GDAL_dem_name + ' aspect ' + InName + ' ' + OutName + sf, OutName);
       if Result <> 0 then DEMGlb[Result].DEMHeader.ElevUnits := AspectDeg;
    end;
 end;
@@ -484,7 +553,7 @@ begin
    if FileExistsErrorMessage(InName) then begin
       if sf <> '' then sf := ' -s ' + sf + ' ';
       if (Outname = '') then OutName := MDTempDir + 'gdal_aspect_zt_' + ExtractFileNameNoExt(InName) + '.tif';
-      Result := GDAL_DEM_command(GDAL_dem_name + ' aspect ' + InName + ' ' + OutName +  ' -alg ZevenbergenThorne' + sf, OutName);
+      Result := GDAL_DEM_command(0,GDAL_dem_name + ' aspect ' + InName + ' ' + OutName +  ' -alg ZevenbergenThorne' + sf, OutName);
       if Result <> 0 then DEMGlb[Result].DEMHeader.ElevUnits := AspectDeg;
    end;
 end;
@@ -501,7 +570,7 @@ begin
    if FileExistsErrorMessage(InName) then begin
       if sf <> '' then sf := ' -s ' + sf + ' ';
       if (Outname = '') then OutName := MDTempDir + 'gdal_aspect_zt_' + ExtractFileNameNoExt(InName) + '.tif';
-      Result := GDAL_DEM_command(GDAL_dem_name + ' hillshade ' + InName + ' ' + OutName +  ' -alg Horn' + sf, OutName);
+      Result := GDAL_DEM_command(0,GDAL_dem_name + ' hillshade ' + InName + ' ' + OutName +  ' -alg Horn' + sf, OutName);
    end;
 end;
 
@@ -532,7 +601,7 @@ begin
    InName := DEMGlb[DEM].GeotiffDEMName;
    SpaceStr := ' -tr ' + RealToString(xSpace,-12,-8) + ' ' + RealToString(ySpace,-12,-8);
    cmd := GDAL_Warp_Name  + SpaceStr + IntString + InName + ' ' + OutName;
-   Result := GDAL_DEM_command(cmd,OutName,DEMGlb[DEM].SelectionMap.MapDraw.MapType);
+   Result := GDAL_DEM_command(DEM,cmd,OutName,DEMGlb[DEM].SelectionMap.MapDraw.MapType);
 end;
 
 
@@ -562,7 +631,7 @@ begin
    TargetExtent := ' -te ' + RealToString(LatSW,-12,-6) + ' ' + RealToString(LongSW,-12,-6)  +  ' ' + RealToString(LatNE,-12,-6) + ' ' + RealToString(LongNE,-12,-6);
    InName := DEMGlb[DEM].GeotiffDEMName;
    cmd := GDAL_Warp_Name  + SpaceStr + IntString + TargetExtent + TargetEPSG + ' ' + InName + ' ' + OutName;
-   Result := GDAL_DEM_command(cmd,OutName,DEMGlb[DEM].SelectionMap.MapDraw.MapType);
+   Result := GDAL_DEM_command(DEM,cmd,OutName,DEMGlb[DEM].SelectionMap.MapDraw.MapType);
    //gdalwarp -t_srs EPSG:4326 -tr 0.3125 0.25 -r near -te 71.40625 24.875 84.21875 34.375 -te_srs EPSG:4326 -of GTiff foo.tiff bar.tiff
 end;
 
@@ -580,9 +649,9 @@ begin
          Spacing := MDDef.GDALThinFactor * DEMGlb[DEM].DEMheader.DEMxSpacing;
       end;
       if DEMGlb[DEM].DEMheader.DEMUsed = ArcSecDEM then SpaceStr := RealToString(3600 * Spacing,-8,-2) + '_sec' else SpaceStr := RealToString(Spacing,-8,-2) + '_m';
-      OutName := MDTempDir + DEMGlb[DEM].AreaName + '_upsample_linear_' + SpaceStr + '.tif';
+      OutName := MDTempDir + DEMGlb[DEM].AreaName + '_bilinear_' + SpaceStr + '.tif';
       GDAL_warp_DEM(DEM,OutName,Spacing,Spacing,' -r bilinear ');
-      OutName := MDTempDir + DEMGlb[DEM].AreaName + '_upsample_cubic_' + SpaceStr + '.tif';
+      OutName := MDTempDir + DEMGlb[DEM].AreaName + '_bicubic_' + SpaceStr + '.tif';
       GDAL_warp_DEM(DEM,OutName,Spacing,Spacing,' -r cubic ');
    end;
 end;
@@ -780,6 +849,21 @@ end;
              Lat := Mult * (StrToFloat(DegStr) + StrToFloat(MinStr) / 60 + StrToFloat(SecStr) / 3600);
           end;
       end;
+
+      procedure ParseForUTM(TStr, Corner: ANSIstring; var xutm,yutm : float64);
+      //input from GDALinfo
+      var
+         DegStr,MinStr,SecStr : shortstring;
+         Mult : float64;
+      begin
+          if StrUtils.AnsiContainsText(TStr,Corner) and StrUtils.AnsiContainsText(TStr,'(') then begin
+            //Center      (  723282.207, 4270968.445) ( 78d26'14.85"W, 38d33'32.88"N)
+             TStr := AfterSpecifiedString(TStr,'(');
+             xutm := StrToFloat(BeforeSpecifiedCharacterANSI(TStr,',',true,true));
+             yutm := StrToFloat(BeforeSpecifiedCharacterANSI(TStr,')',true,true));
+          end;
+      end;
+
 
 
       function ParseForFips(Tstr : ANSIstring) : int16;
@@ -989,12 +1073,12 @@ end;
                end
                else begin
                   GeotiffMetadata(mdMicrodem, fName);
-                  if not HeavyDutyProcessing then MessageToContinue('Failure; does image really cover this map area?  Check Metadata for image extent');
+                  if (not HeavyDutyProcessing) and ReportErrors then MessageToContinue('Failure; does image really cover this map area?  Check Metadata for image extent');
                end;
             end
             else begin
                if (not HeavyDutyProcessing) then begin
-                  MessageToContinue('Map area is not covered by ' + ExtractFileNameNoExt(fName) + '  ' + sfBoundBoxToString(ImageBB,4));
+                  if (not HeavyDutyProcessing) and ReportErrors  then MessageToContinue('Map area is not covered by ' + ExtractFileNameNoExt(fName) + '  ' + sfBoundBoxToString(ImageBB,4));
                   {$IfDef RecordSubsetOpen} WriteLineToDebugFile('Not covered on map'); {$EndIf}
                end;
             end;
@@ -1412,42 +1496,8 @@ end;
       end;
 
 
-      procedure CallGDALMerge(var MergefName : PathStr; OutNames : tStringList; MissingData : integer = 255);
-      var
-         BatchFile : tStringList;
-         cmd : ANSIString;
-         i : integer;
-         DefFilter : byte;
-         fName : PathStr;
-      begin
-         if (OutNames = Nil) then begin
-            OutNames := tStringList.Create;
-            OutNames.Add(MainMapData);
-            DefFilter := 1;
-            if not GetMultipleFiles('Files for GDAL merge','TIFF files|*.TIF',OutNames,DefFilter) then exit;
-         end;
-         if (MergefName = '') then begin
-            MergefName := ExtractFilePath(OutNames[0]);
-            Petmar.GetFileNameDefaultExt('Merged filename','*.tif',MergefName);
-         end;
 
-         fName :=  Petmar.NextFileNumber(MDTempDir, 'gdal_merge_file_list_','.txt');
-         OutNames.SaveToFile(fName);
-
-         StartGDALbatchFile(BatchFile);
-         BatchFile.Add('REM Merge tiffs');
-         cmd := PythonEXEname + ' ' + PythonScriptDir + 'gdal_merge.py -a_nodata ' + IntToStr(MissingData) + ' -o ' + MergefName
-           +  ' --optfile ' + fName;
-         for i := 0 to pred(OutNames.Count) do begin
-            cmd := cmd + ' ' + OutNames[i];
-         end;
-         BatchFile.Add(cmd);
-         fName :=  Petmar.NextFileNumber(MDTempDir, 'gdalmerge_','.bat');
-         EndBatchFile(fName,BatchFile);
-      end;
-
-
-      function GDALinfoOutput(fname : PathStr) : PathStr;
+      function GDALinfoOutputFName(fname : PathStr) : PathStr;
       begin
          Result := ChangeFileExt(fName, '_gdal_info.txt');
       end;
@@ -1462,7 +1512,7 @@ end;
       begin
          {$IfDef RecordGDAL} WriteLineToDebugFile('GetGDALinfo in ' + fName); {$EndIf}
          ZeroGDALInfo(GDALinfo);
-         OutName := GDALinfoOutput(fname);
+         OutName := GDALinfoOutputFName(fname);
 
          if not FileExists(outName) then begin
             cmd := GDAL_info_name  + ' ' + fName + AddWKT + ' >' + OutName;
@@ -1481,6 +1531,8 @@ end;
              if StrUtils.AnsiContainsText(TStr,'PROJCS["WGS_1984_Web_Mercator_Auxiliary_Sphere"') then GDALInfo.inEPSG := 3857;
              FindUTMZone(TStr,GDALinfo.UTMzone,GDALInfo.Hemi);
              ParseForMapCenter(TStr,GDALInfo.cLat,GDALInfo.cLong);
+             ParseForUTM(TStr, 'UPPERLEFT',GDALInfo.xutm_low,GDALInfo.yutm_high);
+             ParseForUTM(TStr, 'LOWERRIGHT',GDALInfo.xutm_hi,GDALInfo.yutm_low);
          end;
          Metadata.Free;
          GetEPSG(GDALinfo);
@@ -1527,7 +1579,7 @@ end;
          StartGDALbatchFile(BatchFile);
          for i := 0 to pred(infiles.Count) do begin
              fName := Infiles.Strings[i];
-             OutName := GDALinfoOutput(fName);
+             OutName := GDALinfoOutputFName(fName);
              if ExtEquals(fName,'.pdf') then TStr := ' -mdd LAYERS '
              else TStr := ' ';
              if not FileExists(OutName) then begin
@@ -1543,7 +1595,7 @@ end;
                UTMProjection := tMapProjection.Create('utm gdal');
                UTMZone := 0;
                for i := 0 to pred(infiles.Count) do begin
-                   OutName := GDALinfoOutput(Infiles.Strings[i]);
+                   OutName := GDALinfoOutputFName(Infiles.Strings[i]);
                    Metadata := tStringList.Create;
                    Metadata.LoadFromFile(OutName);
                    for j := 0 to pred(Metadata.Count) do begin

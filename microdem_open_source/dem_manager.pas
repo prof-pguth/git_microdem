@@ -295,7 +295,7 @@ function GetLC100_fileName(Lat,Long : float32) : PathStr;
 var
    TileName : shortstring;
 begin
-
+   Lat := Lat + 20;  //because tiles are named for the NW corner
    if (Long > 0) then begin
       Long := 20 * trunc(Long / 20);
       TileName := 'E' + RealToString(Long,3,0);
@@ -314,9 +314,8 @@ begin
    end;
    ReplaceCharacter(TileName,' ','0');
    Result :=  'J:\landcover\Copernicus_LC100\' + TileName + '_PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classification-map_EPSG-4326.tif';
+   FindDriveWithFile(Result);
 end;
-
-
 
 
 function LoadDatumShiftGrids(var LocalToWGS84,WGS84toEGM2008 : integer) : boolean;
@@ -376,7 +375,6 @@ begin
       GeoidWGS84ellipsoidToLocalVDatum := 'J:\gis_software\OSGeo4W\share\proj\us_noaa_g2012bu0.tif';
    end;
 end;
-
 
 
 procedure InitializeDEMsWanted(var DEMList : tDEMBooleanArray; Setting : boolean);
@@ -696,7 +694,6 @@ end;
    end;
 
 
-
    procedure CloseCompareDEMs;
    var
       i : integer;
@@ -706,9 +703,7 @@ end;
       InitCompareDEMs;
    end;
 
-
 {$EndIf}
-
 
 
 {$IfDef ExPointCloud}
@@ -1309,7 +1304,6 @@ begin
 end;
 
 
-
 {$IfDef VCL}
 
       function GetTwoCompatibleGrids(WhatFor : shortString; CheckUnits : boolean; var DEM1,DEM2 : integer; WarnIfIncompatible : boolean = true;  AlwaysAsk : boolean = false) : boolean;
@@ -1413,36 +1407,36 @@ end;
       end;
 
 
-procedure DownloadandUnzipDataFileIfNotPresent(pName : PathStr; Force : boolean = false);
-//pname is a subdirectory of c:\mapdata\, without the final backslash
-var
-   pName2 : PathStr;
-begin
-   {$IfDef RecordDownload} WriteLineToDebugFile('DownloadandUnzipDataFileIfNotPresent for ' + PName); {$EndIf}
-   StopSplashing;
-   if (not Force) and PathIsValid(MainMapData + pname) then begin
-      {$IfDef RecordDownload} WriteLineToDebugFile('DownloadandUnzipDataFileIfNotPresent, already there'); {$EndIf}
-      exit;
-   end;
+      procedure DownloadandUnzipDataFileIfNotPresent(pName : PathStr; Force : boolean = false);
+      //pname is a subdirectory of c:\mapdata\, without the final backslash
+      var
+         pName2 : PathStr;
+      begin
+         {$IfDef RecordDownload} WriteLineToDebugFile('DownloadandUnzipDataFileIfNotPresent for ' + PName); {$EndIf}
+         StopSplashing;
+         if (not Force) and PathIsValid(MainMapData + pname) then begin
+            {$IfDef RecordDownload} WriteLineToDebugFile('DownloadandUnzipDataFileIfNotPresent, already there'); {$EndIf}
+            exit;
+         end;
 
-   pName2 := pName + '.7z';
-   {$IfDef RecordDownload} WriteLineToDebugFile('Try 7z'); {$EndIf}
-   if not DownloadFileFromWeb(WebDataDownLoadDir + pName2,MainMapData + pName2,false) then begin
-      {$IfDef RecordDownload} WriteLineToDebugFile('Try zip'); {$EndIf}
-      pName2 := pName + '.zip';
-      DownloadFileFromWeb(WebDataDownLoadDir + pName2,MainMapData + pName2,false);
-   end;
-   pName2 := MainMapData + pName2;
-   if FileExists(pName2) then begin
-      UnzipSingleFile(pName2);
-      File2Trash(pName2);
-      {$IfDef RecordDownload} WriteLineToDebugFile('success DownloadandUnzipDataFileIfNotPresent for ' + PName); {$EndIf}
-   end
-   else begin
-      {$IfDef RecordDownload} WriteLineToDebugFile('failure DownloadandUnzipDataFileIfNotPresent for ' + PName); {$EndIf}
-      MessageToContinue('Download fail, ' + pName);
-   end;
-end;
+         pName2 := pName + '.7z';
+         {$IfDef RecordDownload} WriteLineToDebugFile('Try 7z'); {$EndIf}
+         if not DownloadFileFromWeb(WebDataDownLoadDir + pName2,MainMapData + pName2,false) then begin
+            {$IfDef RecordDownload} WriteLineToDebugFile('Try zip'); {$EndIf}
+            pName2 := pName + '.zip';
+            DownloadFileFromWeb(WebDataDownLoadDir + pName2,MainMapData + pName2,false);
+         end;
+         pName2 := MainMapData + pName2;
+         if FileExists(pName2) then begin
+            UnzipSingleFile(pName2);
+            File2Trash(pName2);
+            {$IfDef RecordDownload} WriteLineToDebugFile('success DownloadandUnzipDataFileIfNotPresent for ' + PName); {$EndIf}
+         end
+         else begin
+            {$IfDef RecordDownload} WriteLineToDebugFile('failure DownloadandUnzipDataFileIfNotPresent for ' + PName); {$EndIf}
+            MessageToContinue('Download fail, ' + pName);
+         end;
+      end;
 
 
       {$IfDef ExGeography}

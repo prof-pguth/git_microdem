@@ -301,6 +301,99 @@ begin
 end;
 
 
+(*
+// bing results: I can try to write a pascal program for bicubic interpolation, but I cannot guarantee that it will be correct or efficient. Here is what I came up with based on some online sources²³:
+
+//bard would only do bilinear
+//ChatGPT had a mismatch in the number of parameters in the function and in the call, and the meaning
+
+
+// Bicubic interpolation on a rectilinear grid
+// Adapted from https://link.springer.com/article/10.1007/s11554-022-01254-8 and https://github.com/bLightZP/ImageInterpolation
+
+type
+  // A 4x4 matrix of real numbers
+  TMatrix = array[0..3, 0..3] of Real;
+
+  // A function that takes two real numbers and returns a real number
+  TFunction = function(x, y: Real): Real;
+
+const
+  // The inverse matrix for bicubic interpolation
+  InvMat: TMatrix = (
+    (1, 0, 0, 0),
+    (0, 0, 1, 0),
+    (-3, 3, -2, -1),
+    (2, -2, 1, 1)
+  );
+
+// A helper function to multiply two matrices
+function MatMul(A, B: TMatrix): TMatrix;
+var
+  i, j, k: Integer;
+begin
+  for i := 0 to 3 do
+    for j := 0 to 3 do begin
+      Result[i,j] := 0;
+      for k := 0 to 3 do
+        Result[i,j] := Result[i,j] + A[i,k] * B[k,j];
+    end;
+end;
+
+// A helper function to evaluate a cubic polynomial given its coefficients and argument
+function CubicEval(C: array[0..3] of Real; x: Real): Real;
+begin
+  Result := C[0] + C[1]*x + C[2]*x*x + C[3]*x*x*x;
+end;
+
+// The main function that performs bicubic interpolation on a given function f
+// over a rectilinear grid with step size h in both directions
+// Returns the interpolated value at point (x,y)
+function BicubicInterp(f: TFunction; h, x, y: Real): Real;
+var
+  i, j: Integer;
+  x0, y0: Integer;
+  fx: array[-1..2] of Real;
+  fxy: array[-1..2,-1..2] of Real;
+  dx: array[-1..2] of Real;
+  dxy: array[-1..2,-1..2] of Real;
+  a: TMatrix;
+  px: array[0..3] of Real;
+begin
+  // Find the nearest grid point to (x,y) that is below and to the left of it
+  x0 := Floor(x / h);
+  y0 := Floor(y / h);
+
+  // Calculate the function values and the derivatives at the four corners of the grid cell
+  for i := -1 to 2 do begin
+    fx[i] := f((x0+i)*h, y); // f(x,y) along the horizontal line through y
+    for j := -1 to 2 do begin
+      fxy[i,j] := f((x0+i)*h, (y0+j)*h); // f(x,y) at the grid points
+      dxy[i,j] := (f((x0+i+1)*h, (y0+j)*h) - f((x0+i-1)*h, (y0+j)*h)) / (2*h); // df/dx at the grid points using central difference
+    end;
+    dx[i] := (fx[i+1] - fx[i-1]) / (2*h); // df/dx along the horizontal line through y using central difference
+  end;
+
+  // Construct the coefficient matrix for the bicubic polynomial using matrix multiplication
+  a := MatMul(MatMul(InvMat, fxy), InvMat);
+
+  // Evaluate the bicubic polynomial at (x,y) using Horner's method
+  for i := 0 to 3 do begin
+    px[i] := CubicEval(a[i], x/h-x0); // The coefficients of the polynomial in y
+  end;
+
+Result := CubicEval(px, y/h-y0); // The interpolated value at (y)
+end;
+
+```
+
+Source: Conversation with Bing, 5/15/2023
+(1) An efficient bicubic interpolation implementation for real ... - Springer. https://link.springer.com/article/10.1007/s11554-022-01254-8.
+(2) GitHub - bLightZP/ImageInterpolation: High quality, pure pascal image .... https://github.com/bLightZP/ImageInterpolation.
+(3) Bicubic interpolation - Wikipedia. https://en.wikipedia.org/wiki/Bicubic_interpolation.
+
+*)
+
 
 
 function bicuint(y,y1,y2,y12: tElevFloatarray; x1l,x1u,x2l,x2u : integer; x1,x2: float32;  VAR ansy,ansy1,ansy2: float32) : boolean;

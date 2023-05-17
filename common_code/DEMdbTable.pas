@@ -6696,7 +6696,7 @@ begin
    StartProgress('Seach and replace');
    while not GISdb[DBonTable].MyData.bof do begin
      inc(i);
-     if i mod rc = 0 then UpdateProgressBar(i/nc);
+     if (i mod rc = 0) then UpdateProgressBar(i/nc);
      aString := GISdb[DBonTable].MyData.GetFieldByNameAsString(aField);
      NewString := StringReplace(aString,before,after,[rfReplaceAll, rfIgnoreCase]);
      if (aString <> NewString) then begin

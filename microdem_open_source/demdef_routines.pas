@@ -4594,6 +4594,7 @@ begin
    end;
 end;
 
+
 procedure SetRootDirectoryFiles;
 begin
     {$IfDef RecordInitialization} WriteLineToDebugFile('SetRootDirectoryFiles in'); {$EndIf}

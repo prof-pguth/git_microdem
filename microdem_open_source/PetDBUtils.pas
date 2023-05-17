@@ -198,7 +198,6 @@ uses
 
 
 
-
 procedure MergeCSVFiles(var Fnames : tstringList; OutName : PathStr);
 var
    Tstrl,OutPut : tStringList;
@@ -212,18 +211,20 @@ begin
    if (OutName = '') then GetFileNameDefaultExt('Merged CSV file','*.csv',fName);
    for I := 0 to pred(fNames.Count) do begin
       fName := fNames.Strings[i];
-      Tstrl := tStringList.Create;
-      TStrl.LoadFromFile(fName);
-      {$IfDef RecordCSVMerge}  writelinetoDebugFile(IntegerToString(Tstrl.count,12) + ' lines in  ' + fname); {$Endif}
-      if (i = 0) then begin
-         Header1 := tstrl.strings[0];
-         for j := 0 to pred(TStrl.Count) do Output.Add(TStrl.Strings[j]);
-      end
-      else begin
-         Header := tstrl.strings[0];
-         if Uppercase(Header) = UpperCase(Header1) then for j := 1 to pred(TStrl.Count) do Output.Add(TStrl.Strings[j]);
+      if  FileExtEquals(fName,'.csv') or FileExtEquals(fName,'.txt') then begin
+         Tstrl := tStringList.Create;
+         TStrl.LoadFromFile(fName);
+         {$IfDef RecordCSVMerge}  writelinetoDebugFile(IntegerToString(Tstrl.count,12) + ' lines in  ' + fname); {$Endif}
+         if (i = 0) then begin
+            Header1 := tstrl.strings[0];
+            for j := 0 to pred(TStrl.Count) do Output.Add(TStrl.Strings[j]);
+         end
+         else begin
+            Header := tstrl.strings[0];
+            if Uppercase(Header) = UpperCase(Header1) then for j := 1 to pred(TStrl.Count) do Output.Add(TStrl.Strings[j]);
+         end;
+         TStrl.Free;
       end;
-      TStrl.Free;
    end;
    Output.SaveToFile(OutName);
    {$IfDef RecordCSVMerge}  writelinetoDebugFile(IntegerToString(Output.count,8) + ' lines in merge ' + OutName); writelinetoDebugFile(''); {$Endif}

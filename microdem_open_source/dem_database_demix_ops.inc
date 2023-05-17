@@ -30,6 +30,7 @@ end;
 procedure RankDEMS(DBonTable : integer);
 const
    IttyBitty = 0.00001;  //added for floating point funny business between Delphi and Python
+   DoTrio = false;
 var
    DEMsRanked,Scores : tStringList;
    DEM,Value,N,i,j,Score,BestScore : integer;
@@ -74,82 +75,96 @@ begin
     if not GetFileFromDirectory('DEMIX criterial tolerances','*.dbf',MDDef.DEMIX_criterion_tolerance_fName) then exit;
     if GISdb[DBonTable].MyData.GetFieldLength('DEM_LOW_SC') < 48 then GISdb[DBonTable].MyData.TrimField('DEM_LOW_SC',48);
 
-    GISdb[DBonTable].AddFieldToDataBase(ftString,'COP_FAB',8);
-    GISdb[DBonTable].AddFieldToDataBase(ftString,'ALOS_FAB',8);
+    if DoTrio then begin
+       GISdb[DBonTable].AddFieldToDataBase(ftString,'COP_FAB',8);
+       GISdb[DBonTable].AddFieldToDataBase(ftString,'ALOS_FAB',8);
+    end;
 
     DEMsRanked := tStringList.Create;
     DEMsRanked.LoadFromFile(DEMIXSettingsDir + 'demix_dems.txt');
     i := 0;
     if GetFromListZeroBased('DEMs to use in ranking',i,DEMsRanked,true,true) then begin
        {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Load criterion tolerances, ' + MDDef.DEMIX_criterion_tolerance_fName); {$EndIf}
-       TieToleranceTable := tMyData.Create(MDDef.DEMIX_criterion_tolerance_fName);
+       if (DEMsRanked.Count < 3) then begin
+          MessageToContinue('Must pick 3 or more DEMs');
+       end
+       else begin
+          TieToleranceTable := tMyData.Create(MDDef.DEMIX_criterion_tolerance_fName);
+          if TieToleranceTable.FieldExists('CRITERION') and TieToleranceTable.FieldExists('TOLERANCE') then begin
 
-       GridForm := TGridForm.Create(Application);
-       StartProgress('Rank DEMs');
-       j := 0;
-       GISdb[DBonTable].MyData.First;
-       while not GISdb[DBonTable].MyData.eof do begin
-          {$If Defined(RecordDEMIXties)} HighLightLineToDebugFile('Loop =' + IntToStr(j)); {$EndIf}
-          inc(j);
-          UpdateProgressBar(j/GISdb[DBonTable].MyData.FiltRecsInDB);
-          GISdb[DBonTable].EmpSource.Enabled := false;
+             GridForm := TGridForm.Create(Application);
+             StartProgress('Rank DEMs');
+             j := 0;
+             GISdb[DBonTable].MyData.First;
+             while not GISdb[DBonTable].MyData.eof do begin
+                {$If Defined(RecordDEMIXties)} HighLightLineToDebugFile('Loop =' + IntToStr(j)); {$EndIf}
+                inc(j);
+                UpdateProgressBar(j/GISdb[DBonTable].MyData.FiltRecsInDB);
+                GISdb[DBonTable].EmpSource.Enabled := false;
 
-          Scoring := tStringList.Create;
-          Scoring.Add('DEM,VALUE,SCORE');
-          for DEM := 0 to pred(DEMsRanked.Count) do begin
-             aLine := DEMsRanked.Strings[DEM] + ',';
-             aLine := aLine + RealToString(abs(GISdb[DBonTable].MyData.GetFieldByNameAsFloat(DEMsRanked.Strings[DEM])),-12,-2) + ',';
-             aLine := aLine + RealToString(GISdb[DBonTable].MyData.GetFieldByNameAsFloat(DEMsRanked.Strings[DEM] + '_SCR'),-12,-2);
-             Scoring.Add(aline);
-             {$If Defined(RecordDEMIXties)} WriteLineToDebugFile(aLine); {$EndIf}
+                Scoring := tStringList.Create;
+                Scoring.Add('DEM,VALUE,SCORE');
+                for DEM := 0 to pred(DEMsRanked.Count) do begin
+                   aLine := DEMsRanked.Strings[DEM] + ',';
+                   aLine := aLine + RealToString(abs(GISdb[DBonTable].MyData.GetFieldByNameAsFloat(DEMsRanked.Strings[DEM])),-12,-2) + ',';
+                   aLine := aLine + RealToString(GISdb[DBonTable].MyData.GetFieldByNameAsFloat(DEMsRanked.Strings[DEM] + '_SCR'),-12,-2);
+                   Scoring.Add(aline);
+                   {$If Defined(RecordDEMIXties)} WriteLineToDebugFile(aLine); {$EndIf}
+                end;
+                fName := MDTempDir + 'ranking.csv';
+                Scoring.SaveToFile(fName);
+                GridForm.ReadCSVFile(fName);
+                Scoring.Destroy;
+                SortGrid(GridForm.StringGrid1,0,2,true);
+
+                {$If Defined(RecordDEMIXties)} WriteLineToDebugFile('Now sorted'); {$EndIf}
+                for DEM := 0 to pred(DEMsRanked.Count) do begin
+                   RankDEMs[DEM] := GridForm.StringGrid1.Cells[0,succ(DEM)];
+                   Values[DEM] := StrToFloat(GridForm.StringGrid1.Cells[1,succ(DEM)]);
+                   {$If Defined(RecordDEMIXties)} WriteLineToDebugFile(RankDEMs[DEM] + RealToString(Values[DEM],8,-2)); {$EndIf}
+                end;
+
+                TieToleranceTable.ApplyFilter('CRITERION=' + QuotedStr(GISdb[DBonTable].MyData.GetFieldByNameAsString('CRITERION')));
+                if (TieToleranceTable.FiltRecsInDB = 0) then TieTolerance := 0.25
+                else TieTolerance := TieToleranceTable.GetFieldByNameAsFloat('TOLERANCE');
+
+                GISdb[DBonTable].MyData.Edit;
+                GISdb[DBonTable].MyData.SetFieldByNameAsFloat('TOLERANCE',TieTolerance);
+
+                if DoTrio then begin
+                   cop := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('COP');
+                   alos := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('ALOS');
+                   fab := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('FABDEM');
+
+                   if (abs(cop-alos) <= (TieTolerance + IttyBitty)) then which := 'tie'
+                   else if (cop < alos) then which := 'cop'
+                   else which := 'alos';
+                   GISdb[DBonTable].MyData.SetFieldByNameAsString('COP_ALOS',which);
+
+                   if (abs(fab-alos) <= (TieTolerance + IttyBitty)) then which := 'tie'
+                   else if (fab < alos) then which := 'fab'
+                   else which := 'alos';
+                   GISdb[DBonTable].MyData.SetFieldByNameAsString('ALOS_FAB',which);
+
+                   if (abs(cop-fab) <= (TieTolerance + IttyBitty)) then which := 'tie'
+                   else if (cop < fab) then which := 'cop'
+                   else which := 'fabdem';
+                   GISdb[DBonTable].MyData.SetFieldByNameAsString('COP_FAB',which);
+                end;
+
+                FirstDEM := 0;
+                repeat
+                   FindTies(FirstDEM,DEM);
+                   FirstDEM := DEM;
+                until (DEM = DEMsRanked.Count);
+                GISdb[DBonTable].MyData.Next;
+             end;
+             GridForm.Destroy;
+          end
+          else begin
+              MessageToContinue('Table must have fields "CRITERION" and "TOLERANCE"');
           end;
-          fName := MDTempDir + 'ranking.csv';
-          Scoring.SaveToFile(fName);
-          GridForm.ReadCSVFile(fName);
-          Scoring.Destroy;
-          SortGrid(GridForm.StringGrid1,0,2,true);
-
-          {$If Defined(RecordDEMIXties)} WriteLineToDebugFile('Now sorted'); {$EndIf}
-          for DEM := 0 to pred(DEMsRanked.Count) do begin
-             RankDEMs[DEM] := GridForm.StringGrid1.Cells[0,succ(DEM)];
-             Values[DEM] := StrToFloat(GridForm.StringGrid1.Cells[1,succ(DEM)]);
-             {$If Defined(RecordDEMIXties)} WriteLineToDebugFile(RankDEMs[DEM] + RealToString(Values[DEM],8,-2)); {$EndIf}
-          end;
-
-          TieToleranceTable.ApplyFilter('CRITERION=' + QuotedStr(GISdb[DBonTable].MyData.GetFieldByNameAsString('CRITERION')));
-          if (TieToleranceTable.FiltRecsInDB = 0) then TieTolerance := 0.25
-          else TieTolerance := TieToleranceTable.GetFieldByNameAsFloat('TOLERANCE');
-
-          GISdb[DBonTable].MyData.Edit;
-          GISdb[DBonTable].MyData.SetFieldByNameAsFloat('TOLERANCE',TieTolerance);
-
-          cop := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('COP');
-          alos := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('ALOS');
-          fab := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('FABDEM');
-
-          if (abs(cop-alos) <= (TieTolerance + IttyBitty)) then which := 'tie'
-          else if (cop < alos) then which := 'cop'
-          else which := 'alos';
-          GISdb[DBonTable].MyData.SetFieldByNameAsString('COP_ALOS',which);
-
-          if (abs(fab-alos) <= (TieTolerance + IttyBitty)) then which := 'tie'
-          else if (fab < alos) then which := 'fab'
-          else which := 'alos';
-          GISdb[DBonTable].MyData.SetFieldByNameAsString('ALOS_FAB',which);
-
-          if (abs(cop-fab) <= (TieTolerance + IttyBitty)) then which := 'tie'
-          else if (cop < fab) then which := 'cop'
-          else which := 'fabdem';
-          GISdb[DBonTable].MyData.SetFieldByNameAsString('COP_FAB',which);
-
-          FirstDEM := 0;
-          repeat
-             FindTies(FirstDEM,DEM);
-             FirstDEM := DEM;
-          until (DEM = DEMsRanked.Count);
-          GISdb[DBonTable].MyData.Next;
        end;
-       GridForm.Destroy;
     end;
     DEMsRanked.Destroy;
     GISdb[DBonTable].ShowStatus;

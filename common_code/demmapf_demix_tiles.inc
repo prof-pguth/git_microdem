@@ -151,7 +151,7 @@ begin
    else begin
       BaseName := DEMGlb[DEM].AreaName + '_ref_';
    end;
-   //Ext := ExtractFileExt(DEMGlb[DEM].DEMFileName);
+
    Ext := '.tif';
 
    CreateOne(PixelIsArea,1,1,'1sec_area' + Ext);
@@ -190,7 +190,7 @@ const
 
 
 
-function DEMIXtileFill(DEM : integer; AreaBox : sfBoundBox) : integer;
+function DEMIXtileFill(DEM : integer; AreaBox : sfBoundBox; OpenTable : boolean = true) : integer;
 var
    Col,Row : integer;
    Pts,Valid : int64;
@@ -201,7 +201,7 @@ begin
    {$IfDef RecordDEMIXTiles} writeLineToDebugFile('DEMIXtileFill in, DEM=' + IntToStr(DEM)); {$EndIf}
    try
       StartProgress('DEMIX tiles');
-      Result := DEMGlb[DEM].SelectionMap.LoadDEMIXtileOutlines(AreaBox,true);
+      Result := DEMGlb[DEM].SelectionMap.LoadDEMIXtileOutlines(AreaBox,true,OpenTable);
       if (Result <> 0) then try
          {$IfDef RecordDEMIXTiles} writeLineToDebugFile('DEMIXtileFill, db created recs=' + IntToStr(GISdb[Result].MyData.TotRecsInDB)); {$EndIf}
          GISdb[Result].MyData.First;
@@ -309,19 +309,18 @@ begin
    ShapeFileCreator.CloseShapeFiles;
    AddProjectionFile(Result);
    EndProgress;
-   {$If Defined(RecordCarto) or Defined(RecordDEMIXTiles)} WriteLineToDebugFile('TMapForm.LoadDEMIXtileOutlines out '+ sfBoundBoxToString(WantBoundBoxGeo)); {$EndIf}
+   {$If Defined(RecordCarto)} WriteLineToDebugFile('TMapForm.LoadDEMIXtileOutlines out '+ sfBoundBoxToString(WantBoundBoxGeo)); {$EndIf}
 end;
 
 
-function TMapForm.LoadDEMIXtileOutlines(WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false) : integer;
+function TMapForm.LoadDEMIXtileOutlines(WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false; OpenTable : boolean = true) : integer;
 var
    DEMIXFName : PathStr;
-   //ShapeFileCreator : tShapeFileCreation;
 begin
-   {$If Defined(RecordCarto) or Defined(RecordDEMIX)} WriteLineToDebugFile('TMapForm.LoadDEMIXtileOutlines in ' + sfBoundBoxToString(MapDraw.MapCorners.BoundBoxGeo)); {$EndIf}
+   {$If Defined(RecordCarto)} WriteLineToDebugFile('TMapForm.LoadDEMIXtileOutlines in ' + sfBoundBoxToString(MapDraw.MapCorners.BoundBoxGeo)); {$EndIf}
    DEMIXFName := CreateDEMIXTileShapefile(WantBoundBoxGeo,AddGridFull,AddTileSize);
-   Result := LoadDataBaseFile(DEMIXFName);
-   {$If Defined(RecordCarto) or Defined(RecordDEMIX)} WriteLineToDebugFile('TMapForm.LoadDEMIXtileOutlines out'); {$EndIf}
+   Result := LoadDataBaseFile(DEMIXFName,OpenTable);
+   {$If Defined(RecordCarto)} WriteLineToDebugFile('TMapForm.LoadDEMIXtileOutlines out'); {$EndIf}
 end;
 
 

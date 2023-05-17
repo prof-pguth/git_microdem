@@ -2,8 +2,8 @@ object wmdem: Twmdem
   Left = 0
   Top = 262
   Caption = 'GIS program loading'
-  ClientHeight = 1149
-  ClientWidth = 2082
+  ClientHeight = 1147
+  ClientWidth = 2074
   Color = clScrollBar
   DefaultMonitor = dmDesktop
   Font.Charset = DEFAULT_CHARSET
@@ -28,13 +28,12 @@ object wmdem: Twmdem
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 2082
+    Width = 2074
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34
     TabOrder = 0
     OnMouseDown = ToolBar1MouseDown
-    ExplicitWidth = 2078
     object SpeedButton2: TSpeedButton
       Left = 0
       Top = 0
@@ -1676,8 +1675,8 @@ object wmdem: Twmdem
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 1130
-    Width = 2082
+    Top = 1128
+    Width = 2074
     Height = 19
     Panels = <
       item
@@ -1696,8 +1695,6 @@ object wmdem: Twmdem
     Visible = False
     OnClick = StatusBar1Click
     OnDblClick = StatusBar1DblClick
-    ExplicitTop = 1129
-    ExplicitWidth = 2078
   end
   object MainMenu1: TMainMenu
     Left = 136
@@ -2075,6 +2072,10 @@ object wmdem: Twmdem
         object DEMIXtilesizebylatitude1: TMenuItem
           Caption = 'DEMIX tile size by latitude'
           OnClick = DEMIXtilesizebylatitude1Click
+        end
+        object VDATUMshiftinUSA1: TMenuItem
+          Caption = 'VDATUM shift in USA'
+          OnClick = VDATUMshiftinUSA1Click
         end
       end
       object DEMproperties1: TMenuItem
@@ -3438,6 +3439,14 @@ object wmdem: Twmdem
       Caption = 'DEMIX 1 second reference DEM creation'
       OnClick = DEMIXreferenceDEMcreation1Click
     end
+    object Processdifferencestatisticspertile1: TMenuItem
+      Caption = 'Process difference statistics per tile'
+      OnClick = Processdifferencestatisticspertile1Click
+    end
+    object DEMIXmergeCSVfiles1: TMenuItem
+      Caption = 'DEMIX create database (merge and transpose CSV files)'
+      OnClick = DEMIXmergeCSVfiles1Click
+    end
     object N39: TMenuItem
       Caption = '-'
     end
@@ -3513,11 +3522,6 @@ object wmdem: Twmdem
     end
     object DEMIXwinecontest1: TMenuItem
       Caption = 'DEMIX wine contest criteria evaluation'
-      OnClick = DEMIXwinecontest1Click
-    end
-    object DEMIXmergeCSVfiles1: TMenuItem
-      Caption = 'DEMIX create database (merge and transpose CSV files)'
-      OnClick = DEMIXmergeCSVfiles1Click
     end
   end
 end

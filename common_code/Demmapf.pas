@@ -30,7 +30,7 @@
       //{$Define FanDrawProblems}
       //{$Define RawProjectInverse}  //must also be set in BaseMap
       {$Define RecordDEMIX}
-      {$Define RecordCarto}
+      //{$Define RecordCarto}
       //{$Define RecordNumberOpenMaps}
       //{$Define RecordBigMap}
       //{$Define RecordLegend}
@@ -2741,7 +2741,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
 
     procedure RedrawMapDefaultsSize;
 
-    function LoadDEMIXtileOutlines(WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false) : integer;
+    function LoadDEMIXtileOutlines(WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false; OpenTable : boolean = true) : integer;
 
     procedure MoveADBRecord(lat,Long : float64);
 
@@ -2973,7 +2973,7 @@ function LoadBlankVectorMapAndOverlay(ItsTiger,ItsGazetteer : boolean; fName : P
 {$EndIf}
 
 function CreateDEMIXTileShapefile(WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false) : shortstring;
-function DEMIXtileFill(DEM : integer; AreaBox : sfBoundBox) : integer;
+function DEMIXtileFill(DEM : integer; AreaBox : sfBoundBox; OpenTable : boolean = true) : integer;
 procedure ResampleForDEMIXOneSecDEMs(DEM : integer; OutPath : PathStr = ''; DoHalfSec : boolean = true);
 function DEMIXtileBoundingBox(tName : shortString) : sfBoundBox;
 
@@ -22665,7 +22665,7 @@ end;
 
 procedure TMapForm.COPandALOS1Click(Sender: TObject);
 begin
-   LoadDEMIXCandidateDEMs(MapDraw.DEMonMap,true,false,ExtractFilePath(DEMGlb[MapDraw.DEMonMap].DEMFileName));
+   LoadDEMIXCandidateDEMs('',MapDraw.DEMonMap,true,false);
 end;
 
 procedure TMapForm.ASCIIArcGrid1Click(Sender: TObject);
@@ -23627,14 +23627,14 @@ begin
    OpenNewDEM(DEMGlb[MapDraw.DEMonMap].DEMfileName);
    if (DEMGlb[MapDraw.DEMonMap].DEMHeader.RasterPixelIsGeoKey1025 in [PixelIsPoint]) then begin
       DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerX := DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerX - 0.5 * DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMxSpacing;
-      DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerX := DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerY - 0.5 * DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMySpacing;
+      DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerY := DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerY - 0.5 * DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMySpacing;
       DEMGlb[MapDraw.DEMonMap].DEMHeader.RasterPixelIsGeoKey1025 := PixelIsArea;
       fName := ChangeFileExt(DEMGlb[MapDraw.DEMonMap].DEMfileName,'_pixel_is_area.dem');
       DEMGlb[MapDraw.DEMonMap].WriteNewFormatDEM(fName);
    end
    else if (DEMGlb[MapDraw.DEMonMap].DEMHeader.RasterPixelIsGeoKey1025 in [PixelIsArea]) then begin
       DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerX := DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerX + 0.5 * DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMxSpacing;
-      DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerX := DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerY + 0.5 * DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMySpacing;
+      DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerY := DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerY + 0.5 * DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMySpacing;
       DEMGlb[MapDraw.DEMonMap].DEMHeader.RasterPixelIsGeoKey1025 := PixelIsPoint;
       fName := ChangeFileExt(DEMGlb[MapDraw.DEMonMap].DEMfileName,'_pixel_is_point.dem');
    end;
@@ -24222,7 +24222,7 @@ end;
 
 procedure TMapForm.All61Click(Sender: TObject);
 begin
-   LoadDEMIXCandidateDEMs(MapDraw.DEMonMap,true,true,ExtractFilePath(DEMGlb[MapDraw.DEMonMap].DEMFileName));
+   LoadDEMIXCandidateDEMs('',MapDraw.DEMonMap,true,true);
 end;
 
 procedure TMapForm.AllbandsasGeotiffs1Click(Sender: TObject);

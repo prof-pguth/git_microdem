@@ -16,9 +16,9 @@
    {$IfDef RecordProblems}  //normally only defined for debugging specific problems
       //{$Define RecordCloseDB}
       {$Define RecordDEMIX}
-      {$Define RecordLegend}
-      {$Define RecordDBNumericPlot}
-      {$Define RecordHyperion}
+      //{$Define RecordLegend}
+      //{$Define RecordDBNumericPlot}
+      //{$Define RecordHyperion}
 
       //{$Define RecordDEMIXFull}
       //{$Define RecordDEMIXties}   //only enable for small test DB
@@ -764,6 +764,8 @@ procedure MakeLinesFromPoints(GISDataBase : TGISdataBaseModule; fName : PathStr 
       procedure ExtractTheDEMIXtiles(DBonTable : integer);
 
 procedure ComputeVDatumShift(dbOnTable : integer);
+function AnalyzeVDatumShift(CSVName : PathStr; ErrorLog : tStringList = Nil) : integer;
+
 
 {$IfDef ExRiverNetworks}
 {$Else}
