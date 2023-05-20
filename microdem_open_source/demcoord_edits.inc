@@ -370,7 +370,7 @@ var
    x,y  : integer;
    z : float32;
 begin
-    StartProgress('Multiply ' + AreaName);
+    StartProgress('Add constant ' + AreaName);
     for x := 0 to pred(DEMheader.NumCol) do begin
        if (x mod 50 = 0) then UpDateProgressBar(x/pred(DEMheader.NumCol));
        for y := 0 to pred(DEMheader.NumRow) do begin

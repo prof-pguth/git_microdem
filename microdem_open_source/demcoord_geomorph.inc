@@ -3,11 +3,9 @@
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
 { Copyright (c) 2023 Peter L. Guth   }
+{------------------------------------}
+{   include file for demcoord.pas    }
 {____________________________________}
-
-
-{include file for demcoord.pas}
-
 
 
 {$Define MakePartialGrids}
@@ -22,7 +20,6 @@
             WavelengthMean,WavelengthMedian,WavelengthStdDev,HeightMean,HeightMedian,HeightStd,
             Lat,Long,Lat1,Long1,Lat2,Long2,aMinVal,aMaxVal : float64;
             z : float32;
-            //ProfileData : tMyData;
             TableName : PathStr;
          begin
              xsize := round(0.5 * MDDef.SSOBoxSizeMeters / AverageXSpace);
@@ -76,10 +73,8 @@
                                    end;
                                  end;
                                  WantShowProgress := true;
-                                 //ProfileData.Destroy;
                               end;
                           {$EndIf}
-
 
                            Results.Add(aLine);
                        end;
@@ -95,7 +90,6 @@
                 if ShowSatProgress and WantOut then break;
              end {while Col};
              if MDdef.DoWaveLength then begin
-                //ProfileData.Destroy;
                 DeleteFileIfExists(TableName);
              end;
          end;
@@ -1055,7 +1049,7 @@ end;
 
 function tDEMDataSet.SlopePercentFromLatLong(Lat,Long : float64) : float64;
 var
-   xgrid,ygrid : float64;
+   xgrid,ygrid : float32;
    SlopeAsp : tSlopeAspectRec;
 begin
    LatLongDegreeToDEMGrid(Lat,Long,xgrid,ygrid);

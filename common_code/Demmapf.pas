@@ -30,6 +30,7 @@
       //{$Define FanDrawProblems}
       //{$Define RawProjectInverse}  //must also be set in BaseMap
       {$Define RecordDEMIX}
+      {$Define TrackDEMCorners}
       //{$Define RecordCarto}
       //{$Define RecordNumberOpenMaps}
       //{$Define RecordBigMap}
@@ -21300,31 +21301,20 @@ var
    begin
       Geoid2008FName := fName;
       LoadDatumShiftGrids(LocalToWGS84,WGS84toEGM2008);
-
+      //need to add code here to do the datum shift for the grid in question
       CloseSingleDEM(LocalToWGS84);
       CloseSingleDEM(WGS84toEGM2008);
    end;
 
 
 begin
-    SaveBackupDefaults;
-
-
-   TemporaryNewGeotiff := false;  //so transformation grid will be untiled, uncompressed
-
+   SaveBackupDefaults;
+   TemporaryNewGeotiff := false; //so transformation grid will be untiled, uncompressed
    GeoidWGS84ellipsoidToLocalVDatum := 'd:\gis_software\OSGeo4W\share\proj\us_noaa_g2012bu0.tif';
    DoOne('D:\geoid\egm2008-1.tif');
-
-
    LoadDatumShiftGrids(LocalToWGS84,WGS84toEGM2008);
-
    DoOne('D:\geoid\egm2008-2.5.tif');
-
-
-
-
-
-    RestoreBackupDefaults;
+   RestoreBackupDefaults;
 end;
 
 procedure TMapForm.Shipmotion1Click(Sender: TObject);
@@ -23607,7 +23597,7 @@ var
    fName : PathStr;
 begin
    for i := pred(WMDEM.MDIChildCount) downto 0 do begin
-      if WMDEM.MDIChildren[i] is TMapForm then begin
+      if (WMDEM.MDIChildren[i] is TMapForm) then begin
          (WMDEM.MDIChildren[i] as TMapForm).DoFastMapRedraw;
          CopyImageToBitmap((WMDEM.MDIChildren[i] as TMapForm).Image1,MyBMP);
          fName := (WMDEM.MDIChildren[i] as TMapForm).MapDraw.BaseTitle;
@@ -23624,13 +23614,14 @@ procedure TMapForm.ChangePixelIsFormat;
 var
    fName : PathStr;
 begin
+   {$If Defined(TrackDEMCorners)} DEMGlb[MapDraw.DEMonMap].WriteDEMCornersToDebugFile('TMapForm.ChangePixelIsFormat, original DEM'); {$EndIf}
+
    OpenNewDEM(DEMGlb[MapDraw.DEMonMap].DEMfileName);
    if (DEMGlb[MapDraw.DEMonMap].DEMHeader.RasterPixelIsGeoKey1025 in [PixelIsPoint]) then begin
       DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerX := DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerX - 0.5 * DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMxSpacing;
       DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerY := DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerY - 0.5 * DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMySpacing;
       DEMGlb[MapDraw.DEMonMap].DEMHeader.RasterPixelIsGeoKey1025 := PixelIsArea;
       fName := ChangeFileExt(DEMGlb[MapDraw.DEMonMap].DEMfileName,'_pixel_is_area.dem');
-      DEMGlb[MapDraw.DEMonMap].WriteNewFormatDEM(fName);
    end
    else if (DEMGlb[MapDraw.DEMonMap].DEMHeader.RasterPixelIsGeoKey1025 in [PixelIsArea]) then begin
       DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerX := DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerX + 0.5 * DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMxSpacing;
@@ -23640,8 +23631,6 @@ begin
    end;
 
    DEMGlb[MapDraw.DEMonMap].WriteNewFormatDEM(fName);
-
-   //fName2 := DEMGlb[MapDraw.DEMonMap].DEMfileName;
    CloseSingleDEM(MapDraw.DEMonMap);
    OpenNewDEM(fName);
 end;
@@ -23741,12 +23730,11 @@ procedure TMapForm.Allsamedisplay1Click(Sender: TObject);
 var
    i : integer;
 begin
-   for i := 0 to pred(WMDEM.MDIChildCount) do
-      if WMDEM.MDIChildren[i] is tMapForm then begin
-         if (WmDEM.MDIChildren[i].Handle <> Handle) then begin
-            (WMDEM.MDIChildren[i] as TMapForm).SetMapDisplayType(MapDraw.MapType);
-         end;
+   for i := 0 to pred(WMDEM.MDIChildCount) do begin
+      if (WMDEM.MDIChildren[i] is tMapForm) and (WmDEM.MDIChildren[i].Handle <> Handle) then begin
+         (WMDEM.MDIChildren[i] as TMapForm).SetMapDisplayType(MapDraw.MapType);
       end;
+   end;
 end;
 
 
@@ -23820,8 +23808,8 @@ var
    i : integer;
 begin
    for i := 0 to pred(WMDEM.MDIChildCount) do
-      if WMDEM.MDIChildren[i] is tMapForm then begin
-         if (WMDEM.MDIChildren[i] as TMapForm).MapDraw.DEMMap and (WmDEM.MDIChildren[i].Handle <> Handle) then begin
+      if WMDEM.MDIChildren[i] is tMapForm and (WmDEM.MDIChildren[i].Handle <> Handle) then begin
+         if (WMDEM.MDIChildren[i] as TMapForm).MapDraw.DEMMap then begin
             (WMDEM.MDIChildren[i] as TMapForm).MapDraw.MinMapElev := MapDraw.MinMapElev;
             (WMDEM.MDIChildren[i] as TMapForm).MapDraw.MaxMapElev := MapDraw.MaxMapElev;
             (WMDEM.MDIChildren[i] as TMapForm).DoBaseMapRedraw;
@@ -23854,7 +23842,7 @@ var
    i : integer;
 begin
    for i := 0 to pred(WMDEM.MDIChildCount) do
-      if WMDEM.MDIChildren[i] is tMapForm and (WmDEM.MDIChildren[i].Handle <> Handle) then begin
+      if (WMDEM.MDIChildren[i] is tMapForm) and (WmDEM.MDIChildren[i].Handle <> Handle) then begin
          (WMDEM.MDIChildren[i] as TMapForm).OutlineGeoBox(MapDraw.MapCorners.BoundBoxGeo,clRed,3);
       end;
 end;

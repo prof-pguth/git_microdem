@@ -381,9 +381,9 @@ begin
    TiffHeader.StripOffsets := NumEnt*12 +  8 {TIFF version plus first offset} + 2 {NumFields} + 4 {0 ending offset};
    TiffFile := TBufferedFileStream.Create(SaveName, fmCreate);
 
-   {Byte Order}             B[1] := 73;   B[2] := 73;  TiffFile.Write(B,2);
-   {TIFF version number}    B[1] := 42;   B[2] := 0;   TiffFile.Write(B,2);
-   StreamLongInt(TiffFile,8);  {Offset to first Image File Directory}
+   {Byte Order}          B[1] := 73;   B[2] := 73;  TiffFile.Write(B,2);
+   {TIFF version number} B[1] := 42;   B[2] := 0;   TiffFile.Write(B,2);
+   StreamLongInt(TiffFile,8); {Offset to first Image File Directory}
    StreamWord(TiffFile,NumEnt);
 
    StreamFieldEntry(TIFFFile,256,3,1,WidthImage);            //1
@@ -520,7 +520,7 @@ begin
       zc := 0.5 * (DEMheader.MaxElev + DEMheader.MinElev);
    end;
 
-   {$IfDef RecordASCIIExport} WriteLineToDebugFile('ASCII DEM extract to ' + FileName + '  Output z format selected: ' + IntToStr(OutputZFormat) + '   ASCII selected: ' + IntToStr(XYZformatform.RadioGroup2.ItemIndex)); {$EndIf}
+   {$IfDef RecordASCIIExport} WriteLineToDebugFile('ASCII DEM extract to ' + FileName + ' Output z format selected: ' + IntToStr(OutputZFormat) + '  ASCII selected: ' + IntToStr(XYZformatform.RadioGroup2.ItemIndex)); {$EndIf}
 
    if (ASCIIFormat in [UTMFormat,MGRSFormat,GenerateFormat]) then begin
       if (not CheckForUTMZones) then exit;

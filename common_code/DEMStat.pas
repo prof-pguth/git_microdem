@@ -265,7 +265,7 @@ Type
    tDistArray = array[1..MaxCodes] of pbfarray32;
    tNames = array[1..MaxCodes] of shortstring;
 var
-   VAT : integer;  //tMyData;
+   VAT : integer;
    i,j,NumCodes : integer;
    Codes : array[1..MaxCodes] of integer;
    Names : tNames;

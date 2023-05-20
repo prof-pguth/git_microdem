@@ -1,12 +1,11 @@
 unit cart_movie_options;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
-{___________________________________}
-
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of ianMICRODEM GIS Program    }
+{ PETMAR Trilobite Breeding Ranch    }
+{ Released under the MIT Licences    }
+{ Copyright (c) 2023 Peter L. Guth   }
+{____________________________________}
 
 {$I nevadia_defines.inc}
 

@@ -1,11 +1,12 @@
 unit map_overlays;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
-{___________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of ianMICRODEM GIS Program    }
+{ PETMAR Trilobite Breeding Ranch    }
+{ Released under the MIT Licences    }
+{ Copyright (c) 2023 Peter L. Guth   }
+{____________________________________}
+
 
 
 {$I nevadia_defines.inc}
@@ -177,7 +178,7 @@ uses
 
   Petmar, DEMTigerOps,DEMDef_routines,db_display_options, dem_gaz_opts,DEMDataBase,
   dem_plss_op, petmar_types, Petmar_db,usoutlines,DEM_PLSS,
-  BaseMap, DEM_indexes;
+  BaseMap, DEM_indexes,DEMCoord;
 
 
 procedure ManageMapOverlays(MapForm : tMapForm);
@@ -201,7 +202,7 @@ begin
 
    MapOverlayForm.CheckBox1.Checked := MapForm.OverlayUp(ovoTiger);
    MapOverlayForm.CheckBox2.Checked := MapForm.OverlayUp(ovoContours);
-   MapOverlayForm.CheckBox2.Enabled := (MapForm.MapDraw.DEMonMap <> 0);
+   MapOverlayForm.CheckBox2.Enabled := ValidDEM(MapForm.MapDraw.DEMonMap);
    MapOverlayForm.CheckBox3.Checked := MapForm.OverlayUp(ovoGrids);
    MapOverlayForm.CheckBox4.Visible := (MDDef.ProgramOption in [ExpertProgram,DragonPlotProgram]) and MDDef.ShowPLSS;
    MapOverlayForm.CheckBox4.Checked := MapForm.OverlayUp(ovoPLSS);

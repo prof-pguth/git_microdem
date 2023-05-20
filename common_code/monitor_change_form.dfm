@@ -2,8 +2,8 @@ object ChangeMapForm: TChangeMapForm
   Left = 0
   Top = 0
   Caption = 'Change Map'
-  ClientHeight = 303
-  ClientWidth = 399
+  ClientHeight = 300
+  ClientWidth = 387
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

@@ -106,7 +106,12 @@ const   //for DEMIX
    NumDEMIXDEM = 6;
    RefDEMType : array[1..2] of shortstring = ('DSM','DTM');
    LandType : array[1..MaxLandType] of shortstring = ('ALL','CLIFF','STEEP','GENTLE','FLAT','URBAN','FOREST','BARREN');
-   DEMIXDEMType : array[1..NumDEMIXDEM] of shortstring = ('FABDEM','COP','ALOS','NASA','SRTM','ASTER');
+   DEMIXDEMTypeName : array[1..NumDEMIXDEM] of shortstring = ('FABDEM','COP','ALOS','NASA','SRTM','ASTER');
+
+const   //merging DEM modes
+   dmMergeDirectories = 3;
+   dmMergeGDAL = 1;
+   dmMergeMDnative = 2;
 
 
 //satellite imagery definitions
@@ -266,7 +271,7 @@ const
    PixelIsUndefined = 0;
    PixelIsArea = 1;
    PixelIsPoint = 2;
-   PixelIsName : array[0..2] of shortstring = ('Pixel-is-undefined','Pixel-is-area','Pixel-is-point');
+   //PixelIsName : array[0..2] of shortstring = ('Pixel-is-undefined','Pixel-is-area','Pixel-is-point');
 
 type
    tMDVersion = (mdMicrodem,mdWhitebox,mdGDAL,mdListGeo);

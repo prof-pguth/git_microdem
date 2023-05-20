@@ -31,8 +31,9 @@ unit DEMCoord;
    {$IFDEF DEBUG}
       {$Define RecordDEMIX}
       {$Define RecordVertDatumShift}
+      {$Define TrackPixelIs}
       //{$Define RecordVAT}
-      //{$Define TrackDEMCorners}
+      {$Define TrackDEMCorners}
       //{$Define UKOS}
       //{$Define RecordHalfPixelShift}
       //{$Define RecordDEMEdits}
@@ -302,8 +303,8 @@ type
          LongSizeMap,              {size of area in longitude, in degrees}
          DEMSWcornerLat,           {local datum lat of lower left corner}
          DEMSWcornerLong,          {local datum long of lower left corner}
-         ComputeSWCornerX,         //1/2 pixel shift for PixelIsArea
-         ComputeSWCornerY,         //1/2 pixel shift for PixelIsArea
+         ComputeSWCornerX,         //1/2 pixel shift east for PixelIsArea
+         ComputeSWCornerY,         //1/2 pixel shift north for PixelIsArea
          GeotiffNWCornerX,
          GeotiffNWCornerY,
          AverageGridTrue,
@@ -929,7 +930,7 @@ var
 {$IfDef TrackDEMCorners}
    procedure tDEMDataSet.WriteDEMCornersToDebugFile(Where : shortstring);
    begin
-      HighlightLineToDebugFile(Where + '  '  + AreaName + '  ' + PixelIsName[DEMHeader.RasterPixelIsGeoKey1025]);
+      HighlightLineToDebugFile(Where + '  '  + AreaName + '  ' + RasterPixelIsString(DEMHeader.RasterPixelIsGeoKey1025));
       WriteLineToDebugFile('Geotiff NW corner:       ' + RealToString(GeotiffNWCornerX,-18,-8) + '/' +  RealToString(GeotiffNWCornerY,-18,-8) );
       WriteLineToDebugFile('DEM SW corner:           ' + RealToString(DEMHeader.DEMSWCornerX,-18,-8) + '/' +  RealToString(DEMHeader.DEMSWCornerY,-18,-8) );
       WriteLineToDebugFile('Compute point SW corner: ' + RealToString(ComputeSWCornerX,-18,-8) + '/' +  RealToString(ComputeSWCornerY,-18,-8) );
@@ -949,11 +950,10 @@ begin
    TStr := '';
    if DoHalfPixelShift and (DEMHeader.RasterPixelIsGeoKey1025 in [PixelIsUndefined,PixelIsArea]) then begin
       ComputeSWCornerX := DEMHeader.DEMSWCornerX + 0.5 * DEMHeader.DEMxSpacing;
-      ComputeSWCornerY := DEMHeader.DEMSWCornerY + 0.5 * DEMHeader.DEMySpacing;
+      ComputeSWCornerY := DEMHeader.DEMSWCornerY - 0.5 * DEMHeader.DEMySpacing;
       Tstr := ' half pixel shift applied';
-      {$IfDef RecordHalfPixelShift} WriteLineToDebugFile('Half pixel shift applied for DEM=' + AreaName + '  X=' + RealToString(ComputeSWCornerX,-18,-6) + '  Y=' + RealToString(ComputeSWCornerY,-18,-6)); {$EndIf}
    end;
-   {$IfDef TrackDEMCorners} WriteDEMCornersToDebugFile('SetRasterPixelIsGeoKey1025' + TStr); {$EndIf}
+   {$If Defined(TrackDEMCorners) or Defined(RecordHalfPixelShift)} WriteDEMCornersToDebugFile('SetRasterPixelIsGeoKey1025' + TStr); {$EndIf}
 end;
 
 

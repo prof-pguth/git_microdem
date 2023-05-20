@@ -34,6 +34,7 @@ object wmdem: Twmdem
     ButtonWidth = 34
     TabOrder = 0
     OnMouseDown = ToolBar1MouseDown
+    ExplicitWidth = 2070
     object SpeedButton2: TSpeedButton
       Left = 0
       Top = 0
@@ -1695,6 +1696,8 @@ object wmdem: Twmdem
     Visible = False
     OnClick = StatusBar1Click
     OnDblClick = StatusBar1DblClick
+    ExplicitTop = 1127
+    ExplicitWidth = 2070
   end
   object MainMenu1: TMainMenu
     Left = 136
@@ -2522,6 +2525,20 @@ object wmdem: Twmdem
       GroupIndex = 6
       OnClick = est1Click
     end
+    object DEMIX2: TMenuItem
+      Caption = 'DEMIX'
+      GroupIndex = 6
+      object OpenDEMIXdatabase1: TMenuItem
+        Caption = 'Open DEMIX database'
+        OnClick = OpenDEMIXdatabase1Click
+      end
+      object TMenuItem
+      end
+      object CreateDEMIXdatabase1: TMenuItem
+        Caption = 'Create DEMIX database'
+        OnClick = CreateDEMIXdatabase1Click
+      end
+    end
   end
   object MetadataPopupMenu: TPopupMenu
     Left = 360
@@ -3057,6 +3074,10 @@ object wmdem: Twmdem
         Caption = 'Batch change part of file names'
         OnClick = Batchchangepartoffilenames1Click
       end
+      object Addversionnumbertoallfilesinapath1: TMenuItem
+        Caption = 'Add version number to all files in a path'
+        OnClick = Addversionnumbertoallfilesinapath1Click
+      end
       object Openrecyclebin1: TMenuItem
         Caption = 'Open recycle bin'
         OnClick = Openrecyclebin1Click
@@ -3427,29 +3448,6 @@ object wmdem: Twmdem
   object DemixAnalysisPopupMenu: TPopupMenu
     Left = 712
     Top = 336
-    object Mergesourcedatatiles1: TMenuItem
-      Caption = 'Merge source data tiles'
-      OnClick = Mergesourcedatatiles1Click
-    end
-    object ProcessVDATUMshifts1: TMenuItem
-      Caption = 'Process VDATUM shifts'
-      OnClick = ProcessVDATUMshifts1Click
-    end
-    object DEMIXreferenceDEMcreation1: TMenuItem
-      Caption = 'DEMIX 1 second reference DEM creation'
-      OnClick = DEMIXreferenceDEMcreation1Click
-    end
-    object Processdifferencestatisticspertile1: TMenuItem
-      Caption = 'Process difference statistics per tile'
-      OnClick = Processdifferencestatisticspertile1Click
-    end
-    object DEMIXmergeCSVfiles1: TMenuItem
-      Caption = 'DEMIX create database (merge and transpose CSV files)'
-      OnClick = DEMIXmergeCSVfiles1Click
-    end
-    object N39: TMenuItem
-      Caption = '-'
-    end
     object DEMIXindexhighresreferenceDEMs1: TMenuItem
       Caption = 'DEMIX index high res reference DEMs'
       OnClick = DEMIXindexhighresreferenceDEMs1Click
@@ -3522,6 +3520,30 @@ object wmdem: Twmdem
     end
     object DEMIXwinecontest1: TMenuItem
       Caption = 'DEMIX wine contest criteria evaluation'
+    end
+  end
+  object DEMIXdbCreatePopupMenu: TPopupMenu
+    Left = 896
+    Top = 336
+    object Mergesourcedatatiles1: TMenuItem
+      Caption = 'Merge source data tiles'
+      OnClick = Mergesourcedatatiles1Click
+    end
+    object ProcessVDATUMshifts1: TMenuItem
+      Caption = 'Process VDATUM shifts'
+      OnClick = ProcessVDATUMshifts1Click
+    end
+    object DEMIXreferenceDEMcreation1: TMenuItem
+      Caption = 'DEMIX 1 second reference DEM creation'
+      OnClick = DEMIXreferenceDEMcreation1Click
+    end
+    object Processdifferencestatisticspertile1: TMenuItem
+      Caption = 'Process difference statistics per tile'
+      OnClick = Processdifferencestatisticspertile1Click
+    end
+    object DEMIXmergeCSVfiles1: TMenuItem
+      Caption = 'DEMIX create database (merge and transpose CSV files)'
+      OnClick = DEMIXmergeCSVfiles1Click
     end
   end
 end

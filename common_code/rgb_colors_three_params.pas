@@ -4,7 +4,7 @@ unit rgb_colors_three_params;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
 
@@ -231,8 +231,8 @@ end;
 procedure TRGB_form.DrawGridRGBMap(DEM,Channel : integer; MinRange,MaxRange : float64; Bitmap : tMyBitmap);
 var
    xp,yp : Integer;
-   Lat,Long,xdem,ydem : float64;
-   zr : float32;
+   Lat,Long : float64;
+   zr,xdem,ydem : float32;
    Val : byte;
    Found,IdenticalGrids : boolean;
    BMPMem : tBMPMemory;

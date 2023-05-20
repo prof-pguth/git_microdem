@@ -266,7 +266,7 @@ var
           if RewriteDEM then begin
              WriteNewFormatDEM(DEMFileName);
           end;
-          //{$IfDef TrackDEMCorners} WriteDEMCornersToDebugFile('Read MD format'); {$EndIf}
+          {$IfDef TrackDEMCorners} WriteDEMCornersToDebugFile('Read MD format'); {$EndIf}
           {$IfDef RecordReadMDDEM} writeLineToDebugFile('Read DEM ' + AreaName + ' ' + DEMMapProjection.GetProjectionName); DEMMapProjection.ProjectionParamsToDebugFile('Ending read DEM'); {$EndIf}
           {$IfDef RecordDEMDigitizeDatum}  WriteLineToDebugFile('Leaving Read DEM Now, Digitize Datum=' + StringFromDatumCode(DEMheader.DigitizeDatum)); {$EndIf}
        end
@@ -423,6 +423,7 @@ begin
    DefineDEMVariables(TransformToNewDatum);
    DEMstatus := dsSaved;
    {$If Defined(RecordUKOS)} DEMMapProjection.ShortProjInfo('Exit NewArea for ' + AreaName); {$EndIf}
+   {$IfDef TrackPixelIs} WriteLineToDebugFile('tDEMDataSet.ReadDEMNow exit, Pixel is = ' + RasterPixelIsString(DEMHeader.RasterPixelIsGeoKey1025)); {$EndIf}
    {$IfDef RecordReadDEM} WriteLineToDebugFile('exit NewArea with DEM: ' + AreaName + '  ' + HorizontalDEMSpacing); {$EndIf}
 end;
 

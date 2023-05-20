@@ -2,8 +2,8 @@ object MapForm: TMapForm
   Left = 45
   Top = 303
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1049
-  ClientWidth = 1731
+  ClientHeight = 1046
+  ClientWidth = 1719
   Color = clBtnHighlight
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -40,8 +40,8 @@ object MapForm: TMapForm
   object ScrollBox1: TScrollBox
     Left = 0
     Top = 27
-    Width = 1731
-    Height = 1022
+    Width = 1719
+    Height = 1019
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clRed
@@ -51,8 +51,8 @@ object MapForm: TMapForm
     ParentFont = False
     TabOrder = 0
     OnClick = ScrollBox1Click
-    ExplicitWidth = 1735
-    ExplicitHeight = 1023
+    ExplicitWidth = 1715
+    ExplicitHeight = 1018
     object Image1: TImage
       Left = 3
       Top = -247
@@ -209,13 +209,13 @@ object MapForm: TMapForm
     end
     object BlendPanel: TPanel
       Left = 0
-      Top = 979
-      Width = 1735
+      Top = 974
+      Width = 1715
       Height = 41
       Align = alBottom
       TabOrder = 8
-      ExplicitTop = 978
-      ExplicitWidth = 1731
+      ExplicitTop = 973
+      ExplicitWidth = 1711
       object TrackBar2: TTrackBar
         Left = 289
         Top = 1
@@ -334,12 +334,12 @@ object MapForm: TMapForm
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1731
+    Width = 1719
     Height = 27
     Align = alTop
     TabOrder = 1
     OnMouseDown = Panel1MouseDown
-    ExplicitWidth = 1735
+    ExplicitWidth = 1715
     object AnnotateSpeedButton1: TSpeedButton
       Left = 31
       Top = -4
@@ -4763,11 +4763,13 @@ object MapForm: TMapForm
       Caption = 'DEMIX'
       GroupIndex = 1
       object Datumshiftcomparison1: TMenuItem
-        Caption = 'Datum shift comparison'
+        Caption = 'Datum shift comparison (only Stateline)'
         OnClick = Datumshiftcomparison1Click
       end
       object Shiftfilecomparison1: TMenuItem
-        Caption = 'Shift file comparison'
+        Caption = 
+          'Shift file comparison (in progress, compare 1 and 5 minute EGM20' +
+          '08 grids)'
         OnClick = Shiftfilecomparison1Click
       end
     end

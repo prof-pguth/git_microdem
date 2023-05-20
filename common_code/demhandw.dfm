@@ -3,8 +3,8 @@ object DemHandForm: TDemHandForm
   Top = 244
   BorderIcons = [biSystemMenu]
   Caption = 'Data Manipulation'
-  ClientHeight = 522
-  ClientWidth = 890
+  ClientHeight = 521
+  ClientWidth = 886
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,8 +19,8 @@ object DemHandForm: TDemHandForm
   object Memo1: TMemo
     Left = 0
     Top = 0
-    Width = 890
-    Height = 503
+    Width = 886
+    Height = 502
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -36,8 +36,8 @@ object DemHandForm: TDemHandForm
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 503
-    Width = 890
+    Top = 502
+    Width = 886
     Height = 19
     Panels = <
       item

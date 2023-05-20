@@ -27,12 +27,13 @@ unit GeoTiff;
    {$IFDEF DEBUG}
       //{$Define RecordGeotiff}
       //{$Define RecordGeotiffFailures}
+      {$Define TrackPixelIs}
+      {$Define TrackDEMCorners}
       //{$Define RecordDEMMapProjection}
       //{$Define RecordInitializeDEM}
       //{$Define RecordGeotiffProjection}
       //{$Define RecordDefineDatum}
       //{$Define TrackHorizontalDatum}
-      //{$Define TrackDEMCorners}
       //{$Define RecordUKOS}
       //{$Define TrackProjection}
       //{$Define ShowKeyDEM}
@@ -741,9 +742,7 @@ var
    BufLen,
    BufPos,
    NumRead,
-   //LinesNeeded, i,y,
    x,MemNeed        : integer;
-   //b,bc         : byte;
 
          function GetNextByte : SmallInt;
          begin
@@ -1689,11 +1688,7 @@ var
                          end;
                   1025 : begin
                             TiffHeader.RasterPixelIs := TiffOffset;
-                            case TiffOffset of
-                               1 : TStr := 'RasterPixelIsArea';
-                               2 : TStr := 'RasterPixelIsPoint';
-                               else TStr := 'RasterPixelIs unknown';
-                            end;
+                            TStr := RasterPixelIsString(TiffOffset);
                          end;
                   1026 : TStr := ASCIIStr;
                   2048 : begin
@@ -2494,6 +2489,8 @@ begin
    {$IfDef TrackA} writeLineToDebugFile('read Geotiff out, a=' + RealToString(MapProjection.a,-18,-2) + '  f=' + RealToString(MapProjection.h_f,-18,-6) + '  datum=' + MapProjection.H_datumCode); {$EndIf}
    {$IfDef TrackProjection} MapProjection.ProjectionParamsToDebugFile('ReadGeotiffTags out'); {$EndIf}
    {$IfDef TrackHorizontalDatum} WriteLineToDebugFile('GeoSuccess and NeedToLoadGeotiffProjection out, datum=' + MapProjection.h_DatumCode); {$EndIf}
+   {$IfDef TrackPixelIs} WriteLineToDebugFile('read Geotiff ' + ExtractFileName(InFileName) + ' out, Pixel is = ' + RasterPixelIsString(TiffHeader.RasterPixelIs)); {$EndIf}
+
     if ShowHeader then begin
       ShowInNotepadPlusPlus(HeaderLogList,'MD_metadata_' + ExtractFileName(InFileName));
    end

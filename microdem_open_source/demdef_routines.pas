@@ -324,6 +324,8 @@ function ElevUnitsAre(Code : byte) : shortstring;
 
 procedure VerticalDatumShift(DEM : integer; vdShift : tvdShift);
 
+function RasterPixelIsString(Code : integer) : shortstring;
+
 var
    VegDenstColors : array[0..255] of tPlatformColor;
 
@@ -379,6 +381,15 @@ uses
    DEM_indexes,
    DEMStat,
    DataBaseCreate;
+
+
+function RasterPixelIsString(Code : integer) : shortstring;
+begin
+    if Code = 1 then Result := 'Raster Pixel-Is-Area'
+    else if Code = 2 then Result := 'Raster Pixel-Is-Point'
+    else Result := 'Raster Pixel-Is-Unknown';
+end;
+
 
 
 procedure VerticalDatumShift(DEM : integer; vdShift : tvdShift);
@@ -3660,7 +3671,7 @@ begin
 
    TissotOptions;
 
-   {$If Defined(RecordINIfiles) or Defined(RecordIniMemoryOverwrite)} WriteLineToDebugFile('Breakpoint 1.5'); {$EndIf}
+   {$If Defined(RecordINIfiles) } WriteLineToDebugFile('INI files Breakpoint 1.5'); {$EndIf}
 
    SonarDefaults;
    DEMDefaultParameters;
@@ -3673,7 +3684,7 @@ begin
    PLSSsettings;
    ReflectanceSettings;
 
-   {$If Defined(RecordINIfiles) or Defined(RecordINIfiles) or Defined(RecordIniMemoryOverwrite)} WriteLineToDebugFile('Breakpoint 2'); {$EndIf}
+   {$If Defined(RecordINIfiles) } WriteLineToDebugFile('INI files Breakpoint 2'); {$EndIf}
    MicronetSettings;
    ContourSettings;
    DatumProjectionSettings;
@@ -3690,7 +3701,7 @@ begin
       DRGImportSettings;
    {$EndIf}
 
-   {$If Defined(RecordINIfiles) or Defined(RecordINIfiles)or Defined(RecordIniMemoryOverwrite)} WriteLineToDebugFile('Breakpoint 3'); {$EndIf}
+   {$If Defined(RecordINIfiles) } WriteLineToDebugFile('INI files Breakpoint 3'); {$EndIf}
 
    with MDIniFile,MDDef do begin
       AParameterShortFloat('Anaglyph','AnaglyphVertExag',AnaglyphVertExag,3);

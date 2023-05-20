@@ -4,8 +4,8 @@ object LOSOption: TLOSOption
   ActiveControl = OKBtn
   BorderStyle = bsDialog
   Caption = 'Line Of Sight Options'
-  ClientHeight = 375
-  ClientWidth = 591
+  ClientHeight = 385
+  ClientWidth = 702
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
@@ -142,12 +142,12 @@ object LOSOption: TLOSOption
   object PageControl1: TPageControl
     Left = 0
     Top = 0
-    Width = 591
+    Width = 702
     Height = 341
-    ActivePage = TabSheet1
+    ActivePage = TabSheet2
     Align = alTop
     TabOrder = 8
-    ExplicitWidth = 615
+    ExplicitWidth = 583
     object TabSheet1: TTabSheet
       Caption = 'Profile'
       object Label13: TLabel
@@ -505,8 +505,8 @@ object LOSOption: TLOSOption
       Caption = 'LOS'
       ImageIndex = 1
       object Label7: TLabel
-        Left = -1
-        Top = 200
+        Left = 8
+        Top = 209
         Width = 164
         Height = 13
         Caption = 'Closest bocking distance (m)'
@@ -522,12 +522,12 @@ object LOSOption: TLOSOption
         Left = 3
         Top = 3
         Width = 196
-        Height = 90
+        Height = 99
         Caption = 'Color visible/masked'
         TabOrder = 0
         object CheckBox1: TCheckBox
           Left = 16
-          Top = 20
+          Top = 18
           Width = 91
           Height = 14
           Caption = 'Color Visible'
@@ -536,7 +536,7 @@ object LOSOption: TLOSOption
         end
         object RadioGroup1: TRadioGroup
           Left = 3
-          Top = 45
+          Top = 55
           Width = 113
           Height = 41
           HelpType = htKeyword
@@ -573,8 +573,8 @@ object LOSOption: TLOSOption
         end
       end
       object GroupBox6: TGroupBox
-        Left = 205
-        Top = 49
+        Left = 219
+        Top = 59
         Width = 201
         Height = 71
         Caption = 'Observer pitch line'
@@ -628,8 +628,8 @@ object LOSOption: TLOSOption
         end
       end
       object GroupBox4: TGroupBox
-        Left = 412
-        Top = 99
+        Left = 426
+        Top = 59
         Width = 181
         Height = 71
         Caption = 'Fresnel zones'
@@ -678,8 +678,8 @@ object LOSOption: TLOSOption
         end
       end
       object GroupBox3: TGroupBox
-        Left = 412
-        Top = 16
+        Left = 426
+        Top = 3
         Width = 165
         Height = 50
         Caption = 'Masked air space'
@@ -704,15 +704,15 @@ object LOSOption: TLOSOption
         end
       end
       object GroupBox2: TGroupBox
-        Left = 213
+        Left = 219
         Top = 3
-        Width = 193
-        Height = 40
+        Width = 201
+        Height = 50
         Caption = 'Line of sight'
         TabOrder = 4
         object BitBtn4: TBitBtn
-          Left = 87
-          Top = 13
+          Left = 79
+          Top = 12
           Width = 75
           Height = 25
           Caption = 'LOS'
@@ -730,16 +730,16 @@ object LOSOption: TLOSOption
         end
       end
       object Edit6: TEdit
-        Left = 169
-        Top = 192
+        Left = 178
+        Top = 201
         Width = 57
         Height = 21
         TabOrder = 5
         OnChange = Edit6Change
       end
       object CheckBox6: TCheckBox
-        Left = 3
-        Top = 145
+        Left = 20
+        Top = 154
         Width = 179
         Height = 17
         Caption = 'Missing data blocks LOS'
@@ -747,24 +747,24 @@ object LOSOption: TLOSOption
         OnClick = CheckBox6Click
       end
       object CheckBox11: TCheckBox
-        Left = 10
-        Top = 122
+        Left = 19
+        Top = 131
         Width = 179
         Height = 17
         Caption = 'Observer masking circle'
         TabOrder = 7
       end
       object CheckBox12: TCheckBox
-        Left = 10
+        Left = 19
         Top = 177
-        Width = 143
+        Width = 153
         Height = 17
         Caption = 'Show LOS data base'
         TabOrder = 8
       end
       object CheckBox17: TCheckBox
-        Left = 10
-        Top = 99
+        Left = 19
+        Top = 108
         Width = 109
         Height = 17
         Caption = 'Grazing angles'

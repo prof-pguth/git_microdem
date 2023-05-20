@@ -2,8 +2,8 @@ object dbtablef: Tdbtablef
   Left = 62
   Top = 306
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1005
-  ClientWidth = 1276
+  ClientHeight = 1002
+  ClientWidth = 1264
   Color = clBtnFace
   ParentFont = True
   FormStyle = fsMDIChild
@@ -17,21 +17,24 @@ object dbtablef: Tdbtablef
   TextHeight = 15
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 986
-    Width = 1276
+    Top = 983
+    Width = 1264
     Height = 19
     Panels = <
       item
         Width = 250
       end>
+    ExplicitTop = 986
+    ExplicitWidth = 1276
   end
   object Panel2: TPanel
     Left = 0
     Top = 41
-    Width = 1276
+    Width = 1264
     Height = 32
     Align = alTop
     TabOrder = 1
+    ExplicitWidth = 1276
     object BitBtn1: TBitBtn
       Left = 34
       Top = 1
@@ -212,10 +215,11 @@ object dbtablef: Tdbtablef
   object Panel3: TPanel
     Left = 0
     Top = 73
-    Width = 1276
+    Width = 1264
     Height = 41
     Align = alTop
     TabOrder = 2
+    ExplicitWidth = 1276
     object Label2: TLabel
       Left = 12
       Top = 12
@@ -262,10 +266,11 @@ object dbtablef: Tdbtablef
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1276
+    Width = 1264
     Height = 41
     Align = alTop
     TabOrder = 4
+    ExplicitWidth = 1276
     object LOSButton: TSpeedButton
       Left = 40
       Top = 6
@@ -524,10 +529,11 @@ object dbtablef: Tdbtablef
   object Panel7: TPanel
     Left = 0
     Top = 114
-    Width = 1276
+    Width = 1264
     Height = 41
     Align = alTop
     TabOrder = 3
+    ExplicitWidth = 1276
     object RadioGroup2: TRadioGroup
       Left = 20
       Top = 0
@@ -548,8 +554,8 @@ object dbtablef: Tdbtablef
   object DBGrid1: TDBGrid
     Left = 0
     Top = 155
-    Width = 1276
-    Height = 831
+    Width = 1264
+    Height = 828
     Align = alClient
     TabOrder = 5
     TitleFont.Charset = DEFAULT_CHARSET
@@ -1790,6 +1796,10 @@ object dbtablef: Tdbtablef
     end
     object N12: TMenuItem
       Caption = '-'
+    end
+    object Exporttablewithuniquerecords1: TMenuItem
+      Caption = 'Export table with unique records'
+      OnClick = Exporttablewithuniquerecords1Click
     end
     object Exportsortedtable1: TMenuItem
       Caption = 'Export sorted table'

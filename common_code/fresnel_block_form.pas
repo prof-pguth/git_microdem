@@ -1,11 +1,11 @@
 unit fresnel_block_form;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
-{___________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of ianMICRODEM GIS Program    }
+{ PETMAR Trilobite Breeding Ranch    }
+{ Released under the MIT Licences    }
+{ Copyright (c) 2023 Peter L. Guth   }
+{____________________________________}
 
 
 {$I nevadia_defines.inc}
@@ -82,11 +82,11 @@ uses
    DEMLOSw,DEMLos_draw,petmar,demdef_routines,DEMCoord, PETImage,PetDBUtils,Make_tables,
    {$IfDef ExViewshed}
    {$Else}
-   DEMWeapn,
+      DEMWeapn,
    {$EndIf}
    {$IfDef ExGIS}
    {$Else}
-   demdatabase,
+     demdatabase,
    {$EndIf}
   BaseMap;
 
@@ -139,7 +139,6 @@ begin
        LastLong := Long;
        LOSResult := LOSComputeOnly(Fres_blockf.BaseMap.MapDraw.DEMonMap,DEMGlb[Fres_blockf.BaseMap.MapDraw.DEMonMap].VegGrid[1],
              AntLat,AntLong,Lat,Long,MDDef.ObsAboveGround,MDDef.TargetAboveGround,Fres_blockf.FresDB);
-       //Table.Destroy;
        BaseMap.MapDraw.MapSymbolAtLatLongDegree(BaseMap.Image1.Canvas,Lat,Long,FilledBox,3,FresnelZoneColor(LosResult));
        Fres_blockf.Memo1.Lines.Add('  ' + LatLongDegreeToString(Lat,Long,MDDef.OutPutLatLongMethod) + '  ' + FresnelZoneResult(LosResult));
        GISdb[FresDB].MyData.Insert;

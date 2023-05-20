@@ -4,8 +4,8 @@ object Fres_blockf: TFres_blockf
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = 'Fresnel blockage'
-  ClientHeight = 151
-  ClientWidth = 356
+  ClientHeight = 266
+  ClientWidth = 426
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -24,13 +24,14 @@ object Fres_blockf: TFres_blockf
   object Memo1: TMemo
     Left = 0
     Top = 0
-    Width = 356
+    Width = 426
     Height = 169
     Align = alTop
     Lines.Strings = (
       '')
     ScrollBars = ssVertical
     TabOrder = 0
+    ExplicitWidth = 352
   end
   object Sensor: TBitBtn
     Left = 232

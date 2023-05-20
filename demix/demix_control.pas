@@ -50,13 +50,18 @@ uses
    procedure BestDEMSbyCategory(DBonTable : integer);
 
 
+procedure GetDEMIXpaths(StartProcessing : boolean = true);
+
+
 procedure DEMIX_CreateReferenceDEMs;
 procedure DEMIX_merge_source;
 procedure DEMIX_VDatum_shifts;
 
 procedure ComputeDEMIX_tile_stats(FilesWanted : tStringList = Nil);
-procedure MergeDEMIXCSV;
+procedure CreateDEMIX_GIS_database;
 
+procedure OpenDEMIXDatabaseForAnalysis;
+function MakeGraphOfDifferenceDistribution(Tile,param,Ref : shortstring) : tThisBaseGraph;
 
 
 const
@@ -64,13 +69,16 @@ const
 var
    TestDEM : array[1..MaxTestDEM] of integer;
    TestSeries : array[1..MaxTestDEM] of shortstring;
+   DEMIX_DB_v1, DEMIX_DB_v2,
    HalfSecRefDTM,HalfSecRefDSM,HalfSecDTM,HalfSecALOS,HalfSecCOP,
    DEMIXRefDEM,RefDTMpoint,RefDTMarea,RefDSMpoint,RefDSMarea, COPRefDTM, COPRefDSM : integer;
-   DEMIX_Ref_Source,DEMIX_Ref_Merge,DEMIX_Ref_1sec,
+
+   DEMIX_Ref_Source,DEMIX_Ref_Merge,DEMIX_Ref_1sec,DEMIX_Ref_1sec_v1,
+   DEMIX_test_dems,
+   DEMIX_GIS_dbName_v2,DEMIX_GIS_dbName_v1,
 
    GeodeticFName, IceSatFName, LandCoverFName,
    LocalDatumAddFName,LocalDatumSubFName,RefDSMPointFName,RefDSMareaFName,RefDTMPointFName,RefDTMareaFName, COPRefDTMFName,COPRefDSMFName : PathStr;
-
 
 
 implementation
@@ -78,11 +86,11 @@ implementation
 uses
    Nevadia_Main,
    DEMstat,Make_grid,PetImage,PetImage_form,new_petmar_movie,DEMdatabase,PetDButils,Pick_several_dems,
-   Geotiff, BaseMap, GDAL_tools,
+   Geotiff, BaseMap, GDAL_tools, DEMIX_filter,
    DEMCoord,DEMdefs,DEMMapf,DEMDef_routines,DEM_Manager,DEM_indexes,Petmar_db,PetMath;
 
 var
-   vd_path,DEMIX_area_dbName,DEMIX_test_dems,DEMIX_data_base,DEMIX_diff_dist,DEMIX_area_lc100  : PathStr;
+   vd_path,DEMIX_area_dbName_v2,DEMIX_data_base,DEMIX_diff_dist,DEMIX_area_lc100{,DEMIX_area_dbName}  : PathStr;
 
 
 
@@ -91,19 +99,18 @@ var
    aTable : tMyData;
    PickedNum : integer;
 begin
-   aTable := tMyData.Create(DEMIX_area_dbName);
+   aTable := tMyData.Create(DEMIX_area_dbName_v2);
    Result := aTable.UniqueEntriesInDB('AREA');
    aTable.Destroy;
    GetFromListZeroBased('DEMIX test areas to process',PickedNum,Result,false,true);
-
-   for PickedNum := 0 to pred(Result.Count) do WriteLineToDebugFile('Picked ' + Result.Strings[PickedNum]);
+   //for PickedNum := 0 to pred(Result.Count) do WriteLineToDebugFile('Picked ' + Result.Strings[PickedNum]);
 end;
 
 
 
-procedure GetDEMIXpaths;
+procedure GetDEMIXpaths(StartProcessing : boolean = true);
 begin
-   HeavyDutyProcessing := true;
+   if StartProcessing then HeavyDutyProcessing := true;
    StopSplashing;
 
    DEMIX_Ref_Source := 'G:\wine_contest\wine_contest_v2_ref_source\';
@@ -112,6 +119,8 @@ begin
    FindDriveWithPath(DEMIX_Ref_Merge);
    DEMIX_Ref_1sec := 'G:\wine_contest\wine_contest_v2_ref_1sec\';
    FindDriveWithPath(DEMIX_Ref_1sec);
+   DEMIX_Ref_1sec_v1 := 'G:\wine_contest\demix_reference_dems_v1\';
+   FindDriveWithPath(DEMIX_Ref_1sec_v1);
    vd_path := 'G:\wine_contest\wine_contest_v2_vdatum\';
    FindDriveWithPath(vd_path);
    DEMIXresultsDir := 'G:\wine_contest\wine_contest_v2_tile_stats\';
@@ -124,12 +133,20 @@ begin
    FindDriveWithPath(DEMIX_data_base);
    DEMIX_diff_dist  := 'G:\wine_contest\wine_contest_v2_diff_dist\';
    FindDriveWithPath(DEMIX_diff_dist);
-
+   DEMIXSettingsDir := 'G:\wine_contest\wine_contest_settings\';
+   FindDriveWithPath(DEMIXSettingsDir);
    DEMIX_area_lc100  := 'G:\wine_contest\wine_contest_v2_lc100\';
    FindDriveWithPath(DEMIX_area_lc100);
 
-   DEMIX_area_dbName := 'G:\wine_contest\wine_contest_v2_ref_source\demix_area_vert_datums.dbf';
-   FindDriveWithFile(DEMIX_area_dbName);
+   DEMIX_area_dbName_v2 := 'G:\wine_contest\wine_contest_v2_ref_source\demix_area_vert_datums.dbf';
+   FindDriveWithFile(DEMIX_area_dbName_v2);
+
+   DEMIX_GIS_dbName_v2 := 'G:\wine_contest\wine_contest_database\demix_database_v1.92.dbf';
+   FindDriveWithFile(DEMIX_GIS_dbName_v2);
+
+   DEMIX_GIS_dbName_v1 := 'G:\wine_contest\wine_contest_database\demix_database_v1.dbf';
+   FindDriveWithFile(DEMIX_GIS_dbName_v1);
+
 
    Geoid2008FName := 'g:\geoid\egm2008-1-vdatum.tif';
    FindDriveWithFile(Geoid2008FName);
@@ -138,9 +155,77 @@ begin
 end;
 
 
+function MakeGraphOfDifferenceDistribution(Tile,param,Ref : shortstring) : tThisBaseGraph;
+var
+   FilesWanted,Distributions,Legends : tStringList;
+   fName : PathStr;
+   i,j : integer;
+   Min,Max,BinSize : float32;
+begin
+   //new_orleans_ALOS_N29ZW091L_elev_to_DTM.z
+   MDDef.DefaultGraphXSize := 1000;
+   MDDef.DefaultGraphYSize := 600;
+   FilesWanted := tStringList.Create;
+   FindMatchingFiles(DEMIX_diff_dist,'*.z',FilesWanted,0);
+
+   Distributions := tStringList.Create;
+   Legends := tStringList.Create;
+   for i := 0 to pred(FilesWanted.Count) do begin
+      fName := upperCase(FilesWanted.Strings[i]);
+      if StrUtils.AnsiContainsText(fname,Tile) and StrUtils.AnsiContainsText(fname,UpperCase(Param)) and StrUtils.AnsiContainsText(fname,UpperCase(Ref)) then begin
+         Distributions.Add(fName);
+         for j := 1 to NumDEMIXDEM do begin
+            if StrUtils.AnsiContainsText(fname,UpperCase(DEMIXDEMTypeName[j])) then begin
+               Legends.Add(DEMIXDEMTypeName[j]);
+            end;
+         end;
+
+         if StrUtils.AnsiContainsText(fname,'ELEV') then begin
+            Min := -20;
+            Max := 20;
+            BinSize := 0.25;
+         end;
+
+         if StrUtils.AnsiContainsText(fname, 'SLOPE') then begin
+            Min := -20;
+            Max := 20;
+            BinSize := 0.25;
+         end;
+         if StrUtils.AnsiContainsText(fname, 'RUFF') then begin
+            Min := -20;
+            Max := 20;
+            BinSize := 0.15;
+         end;
+      end;
+   end;
+
+   if (Distributions.Count = 6) and (Legends.Count = 6) then begin
+      Result := CreateMultipleHistogram(MDDef.CountHistograms,Distributions,Legends,Tile + '  ' + param + ' difference distribution',Tile + '  ' + param + ' difference',100,Min,Max,BinSize);
+      for I := 1 to Result.GraphDraw.LegendList.Count do begin
+         Result.GraphDraw.FileColors256[i] := DEMIXColorFromDEMName(Result.GraphDraw.LegendList[pred(i)]);
+      end;
+      Result.RedrawDiagram11Click(Nil);
+      Result.Image1.Canvas.Draw(Result.GraphDraw.LeftMargin+15,Result.GraphDraw.TopMargin+10,Result.MakeLegend(Result.GraphDraw.LegendList,false));
+   end;
+   FilesWanted.Free;
+end;
 
 
-procedure MergeDEMIXCSV;
+procedure OpenDEMIXDatabaseForAnalysis;
+begin
+   GetDEMIXpaths(false);
+   if not FileExists(DEMIX_GIS_dbName_v2) then Petmar.GetFileNameDefaultExt('DEMIX db version 2','*.dbf',DEMIX_GIS_dbName_v2);
+   if not FileExists(DEMIX_GIS_dbName_v1) then Petmar.GetFileNameDefaultExt('DEMIX db version 1','*.dbf',DEMIX_GIS_dbName_v1);
+   OpenNumberedGISDataBase(DEMIX_DB_v2,DEMIX_GIS_dbName_v2,false);
+   GISdb[DEMIX_DB_v2].LayerIsOn := false;
+   OpenNumberedGISDataBase(DEMIX_DB_v1,DEMIX_GIS_dbName_v1,false);
+   GISdb[DEMIX_DB_v1].LayerIsOn := false;
+   DoDEMIXFilter(DEMIX_DB_v2);
+end;
+
+
+
+procedure CreateDEMIX_GIS_database;
 var
    fName : PathStr;
    i     : byte;
@@ -307,15 +392,42 @@ var
       end;
    end;
 
-
+var
+   Areas : tStringList;
+   KeepThisOne : boolean;
+   j : integer;
 begin
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('MergeDEMIXCSV in'); {$EndIf}
    GetDEMIXpaths;
    ShowHourglassCursor;
-   FilesWanted := tStringList.Create;
-   FilesWanted.Add(DEMIXresultsDir);
-   i := 1;
-   if not GetMultipleFiles('DEMIX CSV files to process','*.csv',FilesWanted,i) then exit;
+   Areas := DEMIX_AreasWanted;
+   Areas.Sorted := false;
+   for i := pred(Areas.Count) downto 0 do begin
+      fName := Areas.Strings[i];
+      if StrUtils.AnsiContainsText(UpperCase(fname),'_DTM') then Areas.Strings[i] := Copy(fName,1,length(fName)-4);
+      if StrUtils.AnsiContainsText(UpperCase(fname),'_DSM') then Areas.Delete(i);
+   end;
+   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('MergeDEMIXCSV picked areas=' + IntToStr(Areas.Count)); {$EndIf}
+
+
+   FindMatchingFiles(DEMIXresultsDir,'*.csv',FilesWanted,0);
+   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('CSV total results=' + IntToStr(FilesWanted.Count)); {$EndIf}
+   for j := pred(FilesWanted.Count) downto 0 do begin
+      KeepThisOne := false;
+      for i := pred(Areas.Count) downto 0 do begin
+         if StrUtils.AnsiContainsText(FilesWanted.Strings[j],Areas.Strings[i]) then begin
+            KeepThisOne := true;
+         end;
+      end;
+      if Not KeepThisOne then FilesWanted.Delete(j);
+   end;
+   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('CSV in these areas=' + IntToStr(FilesWanted.Count)); {$EndIf}
+
+
+   //FilesWanted := tStringList.Create;
+   //FilesWanted.Add(DEMIXresultsDir);
+   //i := 1;
+   //if not GetMultipleFiles('DEMIX CSV files to process','*.csv',FilesWanted,i) then exit;
 
    try
       Tiles := tStringList.Create;
@@ -329,22 +441,24 @@ begin
         if StrUtils.AnsiContainsText(fname,'ELEV_DIFF_STATS_') then ElevDiff.Add(fName);
         if StrUtils.AnsiContainsText(fname,'SLOPE_DIFF_STATS_') then SlopeDiff.Add(fName);
         if StrUtils.AnsiContainsText(fname,'RUFF_DIFF_STATS_') or StrUtils.AnsiContainsText(fname,'ROUGHNESS_DIFF_STATS_')  then RuffDiff.Add(fName);
-        if (ExtractFileExt(fName) = '.DBF') then DeleteFileIfExists(fName);  //so not have to confirm overwrite later
       end;
-      if (Tiles.Count > 1) then MergeCSVFiles(Tiles,ExtractFilePath(fName) + 'DEMIX_TILES_USED_SUMMARY.csv')
+      if (Tiles.Count > 1) then begin
+         fName := ExtractFilePath(fName) + 'DEMIX_TILES_USED_SUMMARY.csv';
+         fName := StringReplace(fName,'_dtm','',[rfReplaceAll, rfIgnoreCase]);
+         MergeCSVFiles(Tiles,fName);
+      end
       else Tiles.Free;
 
-      fName := DEMIX_data_base + 'demix_database_v2.csv';
-      if not FileExists(fName) then begin
-         wmdem.SetPanelText(1,'1/3  Elev');
-         MergeAndTranspose(ElevDiff,DEMIX_data_base + 'elev_merge_difference_ref_dem.csv');
-         wmdem.SetPanelText(1,'2/3  Slope');
-         MergeAndTranspose(SlopeDiff,DEMIX_data_base + 'slope_merge_difference_ref_dem.csv');
-         wmdem.SetPanelText(1,'3/3  Ruff');
-         MergeAndTranspose(RuffDiff,DEMIX_data_base + 'ruff_merge_difference_ref_dem.csv');
+      fName := DEMIX_data_base + 'latest_demix_database.csv';
 
-         MergeCSVFiles(TransposeNames,fName);
-      end;
+      wmdem.SetPanelText(1,'1/3  Elev');
+      MergeAndTranspose(ElevDiff,DEMIX_data_base + 'elev_merge_difference_ref_dem.csv');
+      wmdem.SetPanelText(1,'2/3  Slope');
+      MergeAndTranspose(SlopeDiff,DEMIX_data_base + 'slope_merge_difference_ref_dem.csv');
+      wmdem.SetPanelText(1,'3/3  Ruff');
+      MergeAndTranspose(RuffDiff,DEMIX_data_base + 'ruff_merge_difference_ref_dem.csv');
+
+      MergeCSVFiles(TransposeNames,fName);
       db := OpenMultipleDataBases('',fName);
       {$If Defined(RecordDEMIX)} WriteLineToDebugFile('MergeDEMIXCSV merged and db opened'); {$EndIf}
       wmdem.ClearStatusBarPanelText;
@@ -472,19 +586,11 @@ var
             Result := StringReplace(Result,'_dsm','',[rfReplaceAll, rfIgnoreCase]);
          end;
 
-         function LineHeader(DEM{,RefDEM} : integer; RefType : shortstring) : shortstring;
+         function LineHeader(DEM : integer; RefType : shortstring) : shortstring;
          var
             t1,t2 : shortstring;
          begin
              if (DEM = 0) then t1 := 'xxx' else t1 := DEMGlb[DEM].AreaName;
-             (*
-             if (RefDEM = 0) then begin
-                t2 := 'xxx';
-             end
-             else begin
-                t2 := DEMGlb[RefDEM].AreaName;
-             end;
-             *)
              Result := t1 + ',' + {t2 + ',' +} RefType + ',' + RealToString(GridFull,-8,2) + ',' + LandTypeMask + ',';
          end;
 
@@ -517,9 +623,9 @@ var
             {$IfDef RecordFullDEMIX} writeLineToDebugFile('DEMIX start string list processing'); {$EndIf}
             ProcessStringList('DEMIX_tiles_used',TileStats);
 
-            ProcessStringList('elev_diff_stats',ElevDiffStats,true);
-            ProcessStringList('ruff_diff_stats',RufDiffStats,true);
-            ProcessStringList('slope_diff_stats',SlopeDiffStats,true);
+            ProcessStringList('_elev_diff_stats',ElevDiffStats,true);
+            ProcessStringList('_ruff_diff_stats',RufDiffStats,true);
+            ProcessStringList('_slope_diff_stats',SlopeDiffStats,true);
 
             (*
             ProcessStringList('ICESat_best_diff_stats',ICESATStats);
@@ -541,7 +647,6 @@ var
 
 
    procedure ProcessDEMIXtestarea;
-
 
 
          function GridBoundingBox(DEM,RefDEM : integer; Clip : boolean = false) : tGridLimits;
@@ -768,90 +873,91 @@ var
             begin
                if (RefDEM = 0) then begin
                   {$If Defined(RecordFullDEMIX) or Defined(RecordDEMIXGridCompare)} writeLineToDebugFile('Fail (RefDEM=0), comparison to reference, ' + DEMGLB[DEM].AreaName); {$EndIf}
-                  exit;
-               end;
-               {$If Defined(RecordFullDEMIX) or Defined(RecordDEMIXGridCompare)} writeLineToDebugFile('Comparison to reference, ' + DEMGLB[DEM].AreaName); {$EndIf}
-               bbgrid := GridBoundingBox(DEM,RefDEM,true);
+               end
+               else begin
+                  {$If Defined(RecordFullDEMIX) or Defined(RecordDEMIXGridCompare)} writeLineToDebugFile('Comparison to reference, ' + DEMGLB[DEM].AreaName); {$EndIf}
+                  bbgrid := GridBoundingBox(DEM,RefDEM,true);
 
-               NumElev := 0;
-               NumSlope := 0;
-               NumRuff := 0;
+                  NumElev := 0;
+                  NumSlope := 0;
+                  NumRuff := 0;
 
-               ZeroMomentVar;
-               {$IfDef RecordFullDEMIX} WriteTileDetails(bbgrid); {$EndIf}
-               for Col := bbgrid.xgridlow to bbgrid.xgridhigh do begin
-                  for Row := bbgrid.ygridlow to bbgrid.ygridhigh do begin
-                     if DEMGlb[DEM].GetElevMetersOnGrid(col,row,z) then begin
-                        DEMGlb[DEM].DEMGridToLatLongDegree(col,row,lat,long);
-                        DEMGlb[RefDEM].LatLongDegreeToDEMGridInteger(Lat,Long,xg,yg);
-                        if DEMGlb[RefDEM].GetElevMetersOnGrid(xg,yg,zref) then begin
-                           Difference := z-zref;
-                           if DEMGlb[RefDEM].GetSlopeAndAspect(xg,yg,SlopeAsp) then begin
-                              LandTypeDiff(Difference);
+                  ZeroMomentVar;
+                  {$IfDef RecordFullDEMIX} WriteTileDetails(bbgrid); {$EndIf}
+                  for Col := bbgrid.xgridlow to bbgrid.xgridhigh do begin
+                     for Row := bbgrid.ygridlow to bbgrid.ygridhigh do begin
+                        if DEMGlb[DEM].GetElevMetersOnGrid(col,row,z) then begin
+                           DEMGlb[DEM].DEMGridToLatLongDegree(col,row,lat,long);
+                           DEMGlb[RefDEM].LatLongDegreeToDEMGridInteger(Lat,Long,xg,yg);
+                           if DEMGlb[RefDEM].GetElevMetersOnGrid(xg,yg,zref) then begin
+                              Difference := z-zref;
+                              if DEMGlb[RefDEM].GetSlopeAndAspect(xg,yg,SlopeAsp) then begin
+                                 LandTypeDiff(Difference);
+                              end;
+                              LandCover(Lat,long,Difference);
                            end;
-                           LandCover(Lat,long,Difference);
                         end;
                      end;
                   end;
-               end;
 
-               if (MomentVar.NPts > 0) then begin
-                  if ElevDiffHists then begin
-                     fName := DEMIXresultsDir + 'elev_diff_hists\' + DEMGLB[DEM].AreaName  + '_to_' + RefType + '-' + DEMIXtile + '.z';
-                     ElevFiles.Add(SaveSingleValueSeries(MomentVar.npts,zs^,fName));
-                     LegendFiles.Add(ExtractFileNameNoExt(fName));
-                  end;
-                  NumElev := WriteDifferenceResults(DEM,REFDEM,RefType,ElevDiffStats);
-               end;
-
-               ZeroMomentVar;
-               for Col := bbgrid.xgridlow to bbgrid.xgridhigh do begin
-                  for Row := bbgrid.ygridlow to bbgrid.ygridhigh do begin
-                     if DEMGlb[DEM].GetSlopeAndAspect(col,row,SlopeAspectTest) then begin
-                        DEMGlb[DEM].DEMGridToLatLongDegree(col,row,lat,long);
-                        if DEMGlb[RefDEM].GetSlopeAndAspectFromLatLong(Lat,Long,SlopeAsp) then begin
-                           Difference := SlopeAspectTest.SlopePercent - SlopeAsp.SlopePercent;
-                           LandTypeDiff(Difference);
-                           LandCover(Lat,Long,Difference);
-                        end;
+                  if (MomentVar.NPts > 0) then begin
+                     if ElevDiffHists then begin
+                        fName := DEMIX_diff_dist + DEMGLB[DEM].AreaName + '_' + DEMIXtile + '_slope_to_' + RefType  + '.z';
+                        ElevFiles.Add(SaveSingleValueSeries(MomentVar.npts,zs^,fName));
+                        LegendFiles.Add(ExtractFileNameNoExt(fName));
                      end;
+                     NumElev := WriteDifferenceResults(DEM,REFDEM,RefType,ElevDiffStats);
                   end;
-               end;
-               if (MomentVar.NPts > 1) then begin
-                  if ElevDiffHists then begin
-                     fName := DEMIXresultsDir + 'slope_diff_hists\' + DEMGLB[DEM].AreaName  + '_to_' + RefType + '-' + DEMIXtile + '.z';
-                     SaveSingleValueSeries(MomentVar.npts,zs^,fName);
-                  end;
-                  NumSlope := WriteDifferenceResults(DEM,REFDEM,RefType,SlopeDiffStats);
-               end;
 
-               ZeroMomentVar;
-               for Col := bbgrid.xgridlow to bbgrid.xgridhigh do begin
-                  for Row := bbgrid.ygridlow to bbgrid.ygridhigh do begin
-                     if DEMGlb[DEM].RoughnessFromSlopeSTD(Col,Row,MDDef.RoughnessBox,Ruff1) then begin
-                        DEMGlb[DEM].DEMGridToLatLongDegree(col,row,lat,long);
-                        DEMGlb[RefDEM].LatLongDegreeToDEMGridInteger(Lat,Long,xg,yg);
-                        if DEMGlb[RefDEM].RoughnessFromSlopeSTD(xg,yg,MDDef.RoughnessBox,Ruff2) then begin
-                           Difference := Ruff1 - Ruff2;
-                           if DEMGlb[RefDEM].GetSlopeAndAspect(xg,yg,SlopeAsp) then begin
+                  ZeroMomentVar;
+                  for Col := bbgrid.xgridlow to bbgrid.xgridhigh do begin
+                     for Row := bbgrid.ygridlow to bbgrid.ygridhigh do begin
+                        if DEMGlb[DEM].GetSlopeAndAspect(col,row,SlopeAspectTest) then begin
+                           DEMGlb[DEM].DEMGridToLatLongDegree(col,row,lat,long);
+                           if DEMGlb[RefDEM].GetSlopeAndAspectFromLatLong(Lat,Long,SlopeAsp) then begin
+                              Difference := SlopeAspectTest.SlopePercent - SlopeAsp.SlopePercent;
                               LandTypeDiff(Difference);
+                              LandCover(Lat,Long,Difference);
                            end;
-                           LandCover(Lat,long,Difference);
                         end;
                      end;
                   end;
-               end;
-               if (MomentVar.NPts > 1) then begin
-                  if ElevDiffHists then begin
-                     fName := DEMIXresultsDir + 'ruff_diff_hists\' + DEMGLB[DEM].AreaName  + '_to_' + RefType + '-' + DEMIXtile + '.z';
-                     SaveSingleValueSeries(MomentVar.npts,zs^,fName);
+                  if (MomentVar.NPts > 1) then begin
+                     if ElevDiffHists then begin
+                        fName := DEMIX_diff_dist + DEMGLB[DEM].AreaName + '_' + DEMIXtile + '_elev_to_' + RefType + '.z';
+                        SaveSingleValueSeries(MomentVar.npts,zs^,fName);
+                     end;
+                     NumSlope := WriteDifferenceResults(DEM,REFDEM,RefType,SlopeDiffStats);
                   end;
-                  NumRuff := WriteDifferenceResults(DEM,REFDEM,RefType,RufDiffStats);
-               end;
 
-               TStr := TestAreaName + '   ' + DEMIXTile + '  ' + RefType + '  elev=' + IntToStr(NumElev) +  '  slope=' + IntToStr(NumSlope) +  '  ruff=' + IntToStr(NumRuff)  +
-                     '  total=' + IntToStr(NumElev+NumSlope+NumRuff);
-               wmdem.SetPanelText(3,TStr);
+                  ZeroMomentVar;
+                  for Col := bbgrid.xgridlow to bbgrid.xgridhigh do begin
+                     for Row := bbgrid.ygridlow to bbgrid.ygridhigh do begin
+                        if DEMGlb[DEM].RoughnessFromSlopeSTD(Col,Row,MDDef.RoughnessBox,Ruff1) then begin
+                           DEMGlb[DEM].DEMGridToLatLongDegree(col,row,lat,long);
+                           DEMGlb[RefDEM].LatLongDegreeToDEMGridInteger(Lat,Long,xg,yg);
+                           if DEMGlb[RefDEM].RoughnessFromSlopeSTD(xg,yg,MDDef.RoughnessBox,Ruff2) then begin
+                              Difference := Ruff1 - Ruff2;
+                              if DEMGlb[RefDEM].GetSlopeAndAspect(xg,yg,SlopeAsp) then begin
+                                 LandTypeDiff(Difference);
+                              end;
+                              LandCover(Lat,long,Difference);
+                           end;
+                        end;
+                     end;
+                  end;
+                  if (MomentVar.NPts > 1) then begin
+                     if ElevDiffHists then begin
+                        fName := DEMIX_diff_dist + DEMGLB[DEM].AreaName + '_' + DEMIXtile + '_ruff_to_' + RefType + '.z';
+                        SaveSingleValueSeries(MomentVar.npts,zs^,fName);
+                     end;
+                     NumRuff := WriteDifferenceResults(DEM,REFDEM,RefType,RufDiffStats);
+                  end;
+
+                  TStr := TestAreaName + '   ' + DEMIXTile + '  ' + RefType + '  elev=' + IntToStr(NumElev) +  '  slope=' + IntToStr(NumSlope) +  '  ruff=' + IntToStr(NumRuff)  +
+                        '  total=' + IntToStr(NumElev+NumSlope+NumRuff);
+                  wmdem.SetPanelText(3,TStr);
+               end;
                {$IfDef RecordFullDEMIX}  WriteLineToDebugFile(TStr); {$EndIf}
             end;
 
@@ -901,64 +1007,13 @@ var
             end;
          end;
 
-         (*
-         procedure DoReferenceCriteria;
-
-               procedure ReferenceDEMcriteria(DEM : integer);
-               begin
-                  if (DEM <> 0) then begin
-                     {
-                     //DEMIXTile := '';
-                     DoSlopeMoments(DEM,0);
-                     DoElevMoments(DEM,0);
-                     DoICESat(DEM);
-                     DoGeodetic(DEM);
-                     DoPeakPits(DEM,0);
-                     }
-                  end;
-               end;
-
-         begin
-            //do critera for reference DEMs
-            ReferenceDEMcriteria(RefDTMpoint);
-            ReferenceDEMcriteria(RefDTMarea);
-            ReferenceDEMcriteria(RefDSMpoint);
-            ReferenceDEMcriteria(RefDSMarea);
-            ReferenceDEMcriteria(COPRefDTM);
-         end;
-         *)
-
-         procedure CompareToReference(DEM,RefDEM : integer; RefType : shortstring);
-         begin
-            if (RefDEM = 0) then begin
-               {$If Defined(RecordFullDEMIX) or Defined(RecordDEMIXGridCompare)}
-                  WriteLineToDebugFile('Failure, missing RefDEM: ' + TestAreaName + '  ' + DEMIXTile  + '  ' + RefType + ' DEM=' + DEMGlb[DEM].AreaName);
-               {$EndIf}
-            end
-            else begin
-               {$If Defined(RecordFullDEMIX) or Defined(RecordDEMIXGridCompare)}
-                  WriteLineToDebugFile(TestAreaName + '  ' + DEMIXTile  + '  ' + RefType + '  CompareToReference, DEM=' + DEMGlb[DEM].AreaName + '   ref=' + DEMGlb[RefDEM].AreaName);
-               {$EndIf}
-               HeavyDutyProcessing := true;
-               CompareDifferencesToReferenceDEM(DEM,RefDEM,RefType);
-
-               (*
-               GetTileStatistics(RefDEM);
-               if DoHorizontalShift then DoHorizontalShift(DEM,RefDEM);
-               DoSlopeMoments(DEM,RefDEM);
-               DoElevMoments(DEM,RefDEM);
-               ComputeCorrelationCoefficient(DEM,RefDEM);
-               DoPeakPits(DEM,RefDEM);
-               *)
-            end;
-         end;
 
    label
       NoLandCover;
    var
       Ser,i,j,UseDSM,UseDTM : integer;
       TStr : shortstring;
-      NoneMissing : boolean;
+      //NoneMissing : boolean;
       LandCoverFName : PathStr;
       DEMIXtileDB2 : integer;
    begin
@@ -1016,11 +1071,10 @@ var
             //DoReferenceCriteria;
             GISdb[DEMIXtileDB].MyData.First;  //placed here to see where in the tile processing the program is at
 
-            NoneMissing := LoadDEMIXCandidateDEMs(TestAreaName,DEMIXRefDEM);
-
-            if NoneMissing then begin
+            if LoadDEMIXCandidateDEMs(TestAreaName,DEMIXRefDEM) then begin
                fName := DEMIX_area_lc100 + TestAreaName + '.tif';
                if FileExists(fname) then begin
+                  LandCoverGrid := OpenNewDEM(fName);
                end
                else begin
                   Lat := 0.5 * (DEMGlb[DEMIXRefDEM].SelectionMap.MapDraw.MapCorners.BoundBoxGeo.YMax + DEMGlb[DEMIXRefDEM].SelectionMap.MapDraw.MapCorners.BoundBoxGeo.YMin);
@@ -1029,17 +1083,8 @@ var
                   {$IfDef RecordDEMIX} writeLineToDebugFile('Landcover=' + LandCoverfName); {$EndIf}
                   if FileExists(LandCoverFName) then begin
                      LandCoverGrid := GDALsubsetimageandopen(DEMGlb[DEMIXRefDEM].SelectionMap.MapDraw.MapCorners.BoundBoxGeo,true,LandCoverFName);
-                     if ValidDEM(LandCoverGrid) then begin
-                        New(zsForest);
-                        New(zsUrban);
-                        New(zsBarren);
-                     end
-                     else begin
-                        TStr := 'Landcover did not load on ' + TestAreaName + ' ' + LandCoverFName;
-                        ErrorLog.Add(Tstr);
-                        {$IfDef RecordDEMIX} WriteLineToDebugFile(TStr); {$EndIf}
-                        goto NoLandCover;
-                     end;
+                     DEMGlb[LandCoverGrid].DEMHeader.ElevUnits := GLCS_LC100;
+                     DEMGlb[LandCoverGrid].WriteNewFormatDEM(fName);
                   end
                   else begin
                      TStr := 'No landcover on ' + TestAreaName + ' ' + LandCoverFName;
@@ -1047,7 +1092,11 @@ var
                      {$IfDef RecordDEMIX} WriteLineToDebugFile(TStr); {$EndIf}
                      goto NoLandCover;
                   end;
-                  DEMGlb[LandCoverGrid].WriteNewFormatDEM(fName);
+               end;
+               if ValidDEM(LandCoverGrid) then begin
+                  New(zsForest);
+                  New(zsUrban);
+                  New(zsBarren);
                end;
 
                new(zs);
@@ -1072,17 +1121,12 @@ var
                      GetTileStatistics(DEMIXRefDEM);
                      for i := 1 to MaxTestDEM do begin
                         if ValidDEM(TestDEM[i]) then begin
-
                            {$If Defined(RecordFullDEMIX) or Defined(RecordDEMIXLoops)}
                               WriteLineToDebugFile(DEMIXTile + ' Start tests for DEM=' + IntToStr(TestDEM[i]) + '/' + IntToStr(Ser) + '  Series=' + TestSeries[i] + '  DEM=' + DEMGlb[TestDEM[i]].AreaName);
                            {$EndIf}
                            GetReferenceDEMsForTestDEM(TestSeries[i],UseDSM,UseDTM);
-                           CompareToReference(TestDEM[i],UseDTM,'DTM');
-                           CompareToReference(TestDEM[i],UseDSM,'DSM');
-                           (*
-                           DoICESat(TestDEM[i]);
-                           DoGeodetic(TestDEM[i]);
-                           *)
+                           CompareDifferencesToReferenceDEM(TestDEM[i],UseDTM,'DTM');
+                           CompareDifferencesToReferenceDEM(TestDEM[i],UseDSM,'DSM');
                            {$If Defined(RecordFullDEMIX)} writeLineToDebugFile('All tests done for ' + TestSeries[i]); {$EndIf}
                         end;
                      end;
@@ -1175,18 +1219,27 @@ begin
                {$IfDef RecordDEMIX} writeLineToDebugFile(TestAreaName + ' already processed'); {$EndIf}
             end
             else begin
-               RefDTMPointFName := DEMIX_Ref_1sec + TestAreaName + '_ref_1sec_point.tif';
-               RefDTMareaFName := StringReplace(RefDTMPointFName, 'point', 'area',[rfIgnoreCase]);
-               RefDSMPointFName := StringReplace(RefDTMPointFName, 'dtm', 'dsm',[rfIgnoreCase]);
-               RefDSMareaFName := StringReplace(RefDSMPointFName, 'point', 'area',[rfIgnoreCase]);
-               COPRefDTMFName := StringReplace(RefDSMPointFName, '1sec', '1.5x1sec',[rfIgnoreCase]);
-               COPRefDSMFName := StringReplace(COPRefDTMFName, 'dtm', 'dsm',[rfIgnoreCase]);
-               if not FileExists(RefDTMPointFName) then RefDTMPointFName := '';
-               if not FileExists(RefDTMareaFName) then RefDTMareaFName  := '';
-               if not FileExists(RefDSMPointFName) then RefDSMPointFName := '';
-               if not FileExists(RefDSMareaFName) then RefDSMareaFName := '';
-               if not FileExists(COPRefDTMFName) then COPRefDTMFName := '';
-               if not FileExists(COPRefDSMFName) then COPRefDSMFName := '';
+               if StrUtils.AnsiContainsText(TestAreaName,'.dsm') then begin
+                  RefDSMPointFName := DEMIX_Ref_1sec + TestAreaName + '_ref_1sec_point.tif';
+                  RefDSMareaFName := StringReplace(RefDSMPointFName, 'point', 'area',[rfIgnoreCase]);
+                  if not FileExists(RefDSMPointFName) then RefDSMPointFName := '';
+                  if not FileExists(RefDSMareaFName) then RefDSMareaFName := '';
+               end
+               else begin
+                  RefDSMPointFName := '';
+                  RefDSMareaFName := '';
+
+                  RefDTMPointFName := DEMIX_Ref_1sec + TestAreaName + '_ref_1sec_point.tif';
+                  RefDTMareaFName := StringReplace(RefDTMPointFName, 'point', 'area',[rfIgnoreCase]);
+                  COPRefDTMFName := StringReplace(RefDSMPointFName, '1sec', '1.5x1sec',[rfIgnoreCase]);
+                  COPRefDSMFName := StringReplace(COPRefDTMFName, 'dtm', 'dsm',[rfIgnoreCase]);
+
+                  if not FileExists(RefDTMPointFName) then RefDTMPointFName := '';
+                  if not FileExists(RefDTMareaFName) then RefDTMareaFName  := '';
+                  if not FileExists(COPRefDTMFName) then COPRefDTMFName := '';
+                  if not FileExists(COPRefDSMFName) then COPRefDSMFName := '';
+               end;
+
                if FileExists(RefDTMPointFName) and FileExists(RefDTMareaFName) then begin
                   {$IfDef RecordDEMIX} writeLineToDebugFile('Start process ' + TestAreaName); {$EndIf}
                   InitializeStringLists;
@@ -1214,6 +1267,7 @@ end;
 
 
 procedure DEMIX_VDatum_shifts;
+//processes any csv files created by VDATUM, which are then converted to dbf files and the DEM shifted in x, y, and z
 var
   fName,fName2 : PathStr;
   AreaName,TStr : shortstring;
@@ -1232,37 +1286,41 @@ begin
          {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Start ' + AreaName); {$EndIf}
          wmdem.SetPanelText(2,'Area: ' + IntToStr(succ(i)) + '/' + IntToStr(Shifts.Count));
          wmdem.SetPanelText(3,AreaName);
-         db := AnalyzeVDatumShift(Shifts.Strings[i],ErrorLog);
-         if ValidDB(db) then begin
-
-            dx := GISdb[db].MyData.FieldAverage('X_SHIFT');
-            dy := GISdb[db].MyData.FieldAverage('Y_SHIFT');
-            dz := GISdb[db].MyData.FieldAverage('VERT_SHIFT');
-
-            if (abs(dx) < 0.01) and (abs(dy) < 0.01) and (abs(dz) < 0.01) then begin
-               ErrorLog.Add(AreaName + ' no change in dx, dy, and dz');
-            end
-            else begin
-               fName := DEMIX_Ref_Merge + AreaName + '.dem';
-               {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Load ' + fName); {$EndIf}
-               DEM := OpenNewDEM(fName,false);
-               if DEMGlb[DEM].DEMHeader.VerticalCSTypeGeoKey = VertCSEGM2008 then begin
-                  {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEM already EGM2008=' + IntToStr(DEMGlb[DEM].DEMHeader.VerticalCSTypeGeoKey)); {$EndIf}
+         fName := DEMIX_Ref_Merge + AreaName + '.dem';
+         if not FileExists(fname) then begin
+            ErrorLog.Add('Merged DEM missing: ' + fName);
+         end
+         else begin
+            db := AnalyzeVDatumShift(Shifts.Strings[i],ErrorLog);
+            if ValidDB(db) then begin
+               dx := GISdb[db].MyData.FieldAverage('X_SHIFT');
+               dy := GISdb[db].MyData.FieldAverage('Y_SHIFT');
+               dz := GISdb[db].MyData.FieldAverage('VERT_SHIFT');
+               if (abs(dx) < 0.01) and (abs(dy) < 0.01) and (abs(dz) < 0.01) then begin
+                  ErrorLog.Add(AreaName + ' no change in dx, dy, and dz');
                end
                else begin
-                  {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEM was ' + IntToStr(DEMGlb[DEM].DEMHeader.VerticalCSTypeGeoKey)); {$EndIf}
-                  DEMGlb[DEM].DEMHeader.VerticalCSTypeGeoKey := VertCSEGM2008;
-                  DEMGlb[DEM].DEMHeader.DEMSWCornerX := DEMGlb[DEM].DEMHeader.DEMSWCornerX + dx;
-                  DEMGlb[DEM].DEMHeader.DEMSWCornerY := DEMGlb[DEM].DEMHeader.DEMSWCornerY + dy;
-                  DEMGlb[DEM].AddConstantToGrid(dz);
-                  {$If Defined(RecordDEMIX)} WriteLineToDebugFile('For EGM2008 added dz =' + RealToString(dz,-8,-2)); {$EndIf}
-                  DEMGlb[DEM].WriteNewFormatDEM(DEMGlb[DEM].DEMFileName);
+                  {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Load ' + fName); {$EndIf}
+                  DEM := OpenNewDEM(fName,false);
+                  if DEMGlb[DEM].DEMHeader.VerticalCSTypeGeoKey = VertCSEGM2008 then begin
+                     {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEM already EGM2008=' + IntToStr(DEMGlb[DEM].DEMHeader.VerticalCSTypeGeoKey)); {$EndIf}
+                  end
+                  else begin
+                     {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEM was ' + IntToStr(DEMGlb[DEM].DEMHeader.VerticalCSTypeGeoKey)); {$EndIf}
+                     DEMGlb[DEM].DEMHeader.VerticalCSTypeGeoKey := VertCSEGM2008;
+                     DEMGlb[DEM].DEMHeader.DEMSWCornerX := DEMGlb[DEM].DEMHeader.DEMSWCornerX + dx;
+                     DEMGlb[DEM].DEMHeader.DEMSWCornerY := DEMGlb[DEM].DEMHeader.DEMSWCornerY + dy;
+                     {$If Defined(RecordDEMIX)} WriteLineToDebugFile('For EGM2008 added dz =' + RealToString(dz,-8,-2)); {$EndIf}
+                     DEMGlb[DEM].AddConstantToGrid(dz);
+                     {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Writing DEM format ' + fName); {$EndIf}
+                     DEMGlb[DEM].WriteNewFormatDEM(DEMGlb[DEM].DEMFileName);
+                  end;
+                  CloseSingleDEM(DEM);
                end;
-               CloseSingleDEM(DEM);
+               CloseAndNilNumberedDB(db);
             end;
          end;
       end;
-
    finally
        HeavyDutyProcessing := false;
        Shifts.Free;
@@ -1362,14 +1420,8 @@ var
 begin
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_merge_source in'); {$EndIf}
    try
-      GetDEMIXPaths;
+      GetDEMIXPaths(true);
       ErrorLog := tStringList.Create;
-(*
-      Areas := tStringList.Create;
-      Areas.Add(DEMIX_Ref_Source);
-      GDAL 3.6.3, released 2023/03/07
-      if GetMultipleDirectories('Areas to merge',Areas) then begin
-*)
       Areas := DEMIX_AreasWanted;
       if (Areas.Count = 0) then begin
          {$If Defined(RecordDEMIX)} WriteLineToDebugFile('No areas selected'); {$EndIf}
@@ -1383,8 +1435,8 @@ begin
          VDatumFiles := tMyData.Create(VDatumFilesFName);
          for anArea := 0 to pred(Areas.Count) do begin
             wmdem.SetPanelText(2, 'Area: ' + IntToStr(succ(anArea)) + '/' + IntToStr(Areas.Count));
-            AreaPath := Areas.Strings[AnArea];
-            AreaName := LastSubDir(AreaPath);
+            AreaName := Areas.Strings[AnArea];
+            AreaPath := DEMIX_Ref_Source + AreaName;
             wmdem.SetPanelText(3, AreaName);
             AreaMergeName := DEMIX_Ref_Merge + AreaName + '.dem';
             if FileExists(AreaMergeName) then begin
@@ -1411,7 +1463,8 @@ begin
                   if (DEMs.Count > 0) then begin
                      wmdem.SetPanelText(3, 'Merge DEMs=' + IntToStr(DEMs.Count));
                      {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Merge files= ' + IntToStr(DEMs.Count) + ' for ' + AreaMergeName); {$EndIf}
-                     NewDEM := MergeMultipleDEMsHere(DEMs,false,false);  //Frees DEMs
+                     if DEMs.Count = 1 then NewDEM := OpenNewDEM(DEMs.Strings[0],false)
+                     else NewDEM := MergeMultipleDEMsHere(DEMs,false,false);  //Frees DEMs
                      {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Merge files over, MinZ=' + RealToString(DEMGlb[NewDEM].DEMheader.MinElev,-12,-2)); {$EndIf}
                      if (abs(DEMGlb[NewDEM].DEMheader.MinElev) < 0.001) then begin
                         //mark sea level as missing for analysis along coast
@@ -1481,10 +1534,12 @@ begin
       GetDEMIXPaths;
       Areas := tStringList.Create;
       ErrorLog := tStringList.Create;
-      FindMatchingFiles(DEMIX_Ref_Merge,'*.dem',Areas,0);
+      //FindMatchingFiles(DEMIX_Ref_Merge,'*.dem',Areas,0);
+      Areas := DEMIX_AreasWanted;
+
       if (Areas.Count > 0) then begin
         for i := 0 to pred(Areas.Count) do begin
-           AreaName := ExtractFileNameNoExt(Areas[i]);
+           AreaName := Areas.Strings[i];  //(Areas[i]);
            wmdem.SetPanelText(2, 'Area: ' + IntToStr(succ(i)) + '/' + IntToStr(Areas.Count));
            wmdem.SetPanelText(3, AreaName);
            fName := DEMIX_Ref_1sec + AreaName + '_ref_1sec_area.tif';
@@ -1493,7 +1548,8 @@ begin
            end
            else begin
               {$If Defined(RecordDEMIX)} HighlightLineToDebugFile('DEMIXreferenceDEMs for ' + AreaName); {$EndIf}
-              WantedDEM := OpenNewDEM(Areas[i],true);   //need to open map to create the subset
+              fName := DEMIX_Ref_Merge + AreaName + '.dem';
+              WantedDEM := OpenNewDEM(fName,true);   //need to open map to create the subset
               if (DEMGlb[WantedDEM].DEMheader.VerticalCSTypeGeoKey = VertCSNAVD88)  then begin
                  TStr := DEMGlb[WantedDEM].AreaName  + ' is still NAVD88; run VDATUM conversion';
                  {$If Defined(RecordDEMIX)} WriteLineToDebugFile(TStr); {$EndIf}
@@ -1678,7 +1734,7 @@ var
                    DEM : integer;
                 begin
                     for DEM := 1 to NumDEMIXDEM do begin
-                       if (Best = DEMIXDEMType[DEM]) then begin
+                       if (Best = DEMIXDEMTypeName[DEM]) then begin
                           v[2] := CurrentY;
                           v[1] := Center;
                           BlockWrite(rfile[DEM],v,1);
@@ -1718,10 +1774,10 @@ var
 
       Graph.GraphDraw.LegendList := tStringList.Create;
       for DEM := 1 to NumDEMIXDEM do begin
-         Symbol := SymbolFromDEMName(DEMIXDEMType[DEM]);
+         Symbol := SymbolFromDEMName(DEMIXDEMTypeName[DEM]);
          Symbol.DrawingSymbol := FilledBox;
          Graph.OpenPointFile(rfile[DEM],Symbol);
-         Graph.GraphDraw.LegendList.Add(DEMIXDEMType[DEM]);
+         Graph.GraphDraw.LegendList.Add(DEMIXDEMTypeName[DEM]);
       end;
 
       Graph.GraphDraw.TopLabel := RefFilter  + '  n=' + IntToStr(NumTiles);
@@ -1925,7 +1981,7 @@ begin
       for DEM := pred(DEMsPresent.Count) downto 0 do begin
          Found := false;
          for i := 1 to NumDEMIXDEM do begin
-            if DEMIXDEMType[i] = UpperCase(DEMsPresent.Strings[DEM]) then begin
+            if DEMIXDEMTypeName[i] = UpperCase(DEMsPresent.Strings[DEM]) then begin
                found := true;
                {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Found: ' + DEMsPresent.Strings[DEM]); {$EndIf}
             end;
@@ -1938,7 +1994,7 @@ begin
 
       for DEM := pred(DEMsPresent.Count) downto 0 do begin
          for i := 1 to NumDEMIXDEM do begin
-            if DEMIXDEMType[i] = UpperCase(DEMsPresent.Strings[DEM]) then begin
+            if DEMIXDEMTypeName[i] = UpperCase(DEMsPresent.Strings[DEM]) then begin
                Symbol := SymbolFromDEMName(DEMsPresent.Strings[DEM]);
                Result.OpenPointFile(rfile[succ(DEM)],Symbol);
                Result.GraphDraw.LegendList.Add(DEMsPresent.Strings[DEM]);
@@ -2117,8 +2173,8 @@ begin
        TileValue := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(TileParam);
        Winners := GISdb[DBonTable].MyData.GetFieldByNameAsString('DEM_LOW_SC');
        for i := 1 to NumDEMIXDEM do begin
-          if StrUtils.AnsiContainsText(Winners,DEMIXDEMType[i]) then begin
-             v[3] := ConvertPlatformColorToTColor(DEMIXColorFromDEMName(DEMIXDEMType[i]));
+          if StrUtils.AnsiContainsText(Winners,DEMIXDEMTypeName[i]) then begin
+             v[3] := ConvertPlatformColorToTColor(DEMIXColorFromDEMName(DEMIXDEMTypeName[i]));
              v[2] := TileValue;
              v[1] := i;
              BlockWrite(rfile,v,1);
@@ -2319,6 +2375,7 @@ begin
    for I := 1 to MaxTestDEM do begin
       if ValidDEM(TestDEM[i]) then begin
          GetReferenceDEMsForTestDEM(TestSeries[i],UseDSM,UseDTM);
+
          if (ShortName = 'elvd') then begin
             TestGrid := TestDEM[i];
             DTMGrid := UseDTM;
@@ -2354,6 +2411,7 @@ begin
       end;
    end;
    {$IfDef RecordDEMIX} WriteLineToDebugFile('start graphs'); {$EndIf}
+
    if (ShortName = 'elvd') then begin
       Min := -50;
       Max := 50;
@@ -2378,8 +2436,6 @@ begin
       ModifyGraph(Graph2);
    end
    else begin
-      //DSMElevFiles.Free;
-      //DSMLegendFiles.Free;
       Graph2 := Nil;
    end;
    {$IfDef RecordDEMIX} writeLineToDebugFile('done differences'); {$EndIf}
@@ -2987,7 +3043,7 @@ function LoadDEMIXReferenceDEMs(var RefDEM : integer) : boolean;
 
          procedure ReferenceFileOpen(var DEM : integer; fName : PathStr);
          begin
-            if {(FName <> '') and} FileExists(fName) then begin
+            if FileExists(fName) then begin
                DEM := OpenNewDEM(FName);   //must load map for the DEMIX tile computation
                if ValidDEM(DEM) and (RefDEM = 0) then RefDEM := DEM;
             end

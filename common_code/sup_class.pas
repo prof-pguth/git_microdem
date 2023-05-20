@@ -1,11 +1,11 @@
 unit sup_class;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
-{___________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of ianMICRODEM GIS Program    }
+{ PETMAR Trilobite Breeding Ranch    }
+{ Released under the MIT Licences    }
+{ Copyright (c) 2023 Peter L. Guth   }
+{____________________________________}
 
 
 {$I nevadia_defines.inc}
@@ -235,7 +235,6 @@ var
 
 begin
    {$IfDef RecordSatClass} WriteLineToDebugFile('TMapForm.TryToOpenTrainSet in'); {$EndIf}
-
    if (ClassesDB = 0) or (TrainingPointsDB = 0) then begin
       {$IfDef RecordSatClass} WriteLineToDebugFile('No training data'); {$EndIf}
       MessageToContinue('No training data');
@@ -469,7 +468,6 @@ begin
 end;
 
 
-
 procedure StartSupervisedClassification;
 begin
    {$IfDef RecordSupClass} WriteLineToDebugFile('StartSupervisedClassification in  BaseMap = ' + Map.Caption); {$EndIf}
@@ -501,7 +499,7 @@ end;
 
 procedure Tsupclasform.BitBtn2Click(Sender: TObject);
 begin
-   {$IfDef RecordSupClass}   WriteLineToDebugFile('Tsupclasform.BitBtn2Click (new training set) in');   {$EndIf}
+   {$IfDef RecordSupClass}   WriteLineToDebugFile('Tsupclasform.BitBtn2Click (new training set) in'); {$EndIf}
    MultiGridArray[UseMG].NewTrainingSet;
    FindClasses;
    {$IfDef RecordSupClass} WriteLineToDebugFile('Tsupclasform.BitBtn2Click (new training set) out'); {$EndIf}

@@ -743,8 +743,8 @@ function OpenNumberedGISDataBase(var GISNum : integer; fName : PathStr; ShowTabl
    {$EndIf}
 {$EndIf}
 
-
 function FindOpenDataBase(var db : integer) : boolean;
+
 procedure CloseAndNilNumberedDB(var i : integer);
 function NumOpenDB : integer;
 function ValidDB(theDB : integer) : boolean;
@@ -905,6 +905,8 @@ uses
    gdal_tools,
    DataBaseCreate,
    DEMDef_routines;
+
+
 
 
 {$include demdatabase_special_cases.inc}

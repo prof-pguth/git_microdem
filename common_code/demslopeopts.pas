@@ -4,7 +4,7 @@ unit demslopeopts;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
 
@@ -165,7 +165,7 @@ procedure TSlopeOptForm.FormCreate(Sender: TObject);
 begin
    Petmar.PlaceFormAtMousePosition(Self);
    CheckBox1.Checked := MDDef.QuickMapRedraw;
-   {$IfDef ExAdvancedGIS}  BitBtn1.Visible := false; {$Endif}
+   {$IfDef ExAdvancedGIS} BitBtn1.Visible := false; {$Endif}
    {$IfDef HideHelpButtons} HelpBtn.Visible := false; {$EndIf}
 end;
 

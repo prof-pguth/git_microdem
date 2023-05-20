@@ -545,10 +545,14 @@ type
     OpenandmergeDEMsgridsverylarge1: TMenuItem;
     Creatediffrencemaps1: TMenuItem;
     Mergesourcedatatiles1: TMenuItem;
-    N39: TMenuItem;
     ProcessVDATUMshifts1: TMenuItem;
     Processdifferencestatisticspertile1: TMenuItem;
     VDATUMshiftinUSA1: TMenuItem;
+    DEMIX2: TMenuItem;
+    OpenDEMIXdatabase1: TMenuItem;
+    Addversionnumbertoallfilesinapath1: TMenuItem;
+    DEMIXdbCreatePopupMenu: TPopupMenu;
+    CreateDEMIXdatabase1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -935,6 +939,9 @@ type
     procedure ProcessVDATUMshifts1Click(Sender: TObject);
     procedure Processdifferencestatisticspertile1Click(Sender: TObject);
     procedure VDATUMshiftinUSA1Click(Sender: TObject);
+    procedure OpenDEMIXdatabase1Click(Sender: TObject);
+    procedure Addversionnumbertoallfilesinapath1Click(Sender: TObject);
+    procedure CreateDEMIXdatabase1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1447,12 +1454,12 @@ end;
 
 procedure Twmdem.DEMIXmergeandtransposewithmeanmedian1Click(Sender: TObject);
 begin
-   MergeDEMIXCSV;
+   CreateDEMIX_GIS_database;
 end;
 
 procedure Twmdem.DEMIXmergeCSVfiles1Click(Sender: TObject);
 begin
-   MergeDEMIXCSV;
+   CreateDEMIX_GIS_database;
 end;
 
 procedure Twmdem.DEMIXreferenceDEMcreation1Click(Sender: TObject);
@@ -2116,6 +2123,7 @@ begin
 
    if FirstRun then begin
      InitializeMICRODEM;
+     FirstRun := false;
      {$IfDef RecordFormActivate} writeLineToDebugFile('Twmdem.FormActivate, initialize MD over'); {$EndIf}
 
       if (not MDDef.RunOddballLocation) then begin
@@ -2209,7 +2217,6 @@ begin
      {$IfDef RecordProblems} WriteLineToDebugFile('ending FormActivate, first time'); {$EndIf}
      {$If Defined(MessageStartup) or Defined(TrackFormCreate)} MessageToContinue('Twmdem.FormActivate ending first time'); {$EndIf}
    end;
-   FirstRun := false;
    WmDEM.StatusBar1.Panels[0].Text := '';
    SetMenusForVersion;
    {$If Defined(RecordFormResize) or Defined(TrackFormCreate)} WriteLineToDebugFile('Twmdem.FormActivate set menu versions'); {$EndIf}
@@ -2341,6 +2348,8 @@ begin
 
        //ComputeDEMIXstats;
 
+       //OpenDEMIXDatabaseForAnalysis;
+
    end;
 end;
 
@@ -2423,6 +2432,31 @@ end;
 procedure Twmdem.Addproject1Click(Sender: TObject);
 begin
    RestoreMicrodemDesktop('',false);
+end;
+
+
+procedure Twmdem.Addversionnumbertoallfilesinapath1Click(Sender: TObject);
+//currently hard wired for a particular case (adding "_v1" to all files in a chosen directory
+var
+   FilesWanted : tStringList;
+   j : integer;
+   ext : extStr;
+   version : shortstring;
+   fName,NewName,Apath : PathStr;
+begin
+   GetDOSPath('files to add version',aPath);
+   Ext := '*.*';
+   Version := '_v1';
+   ShowHourglassCursor;
+   FilesWanted := tStringList.Create;
+   FindMatchingFiles(aPath,Ext,FilesWanted,2);
+   for j := 0 to pred(FilesWanted.Count) do begin
+      fName := FilesWanted.Strings[j];
+      NewName := ExtractFilePath(fName) + ExtractFileNameNoExt(fName) + Version + ExtractFileExt(fName);
+      RenameFile(fName, NewName);
+   end;
+   FilesWanted.Free;
+   ShowDefaultCursor;
 end;
 
 
@@ -3626,6 +3660,12 @@ begin
    RestoreBigCompositeBitmap('');
 end;
 
+procedure Twmdem.CreateDEMIXdatabase1Click(Sender: TObject);
+begin
+   DEMIXdbCreatePopupMenu.Popup(Mouse.CursorPos.X,Mouse.CursorPos.Y);
+end;
+
+
 procedure Twmdem.CreateDEMsfromlidar1Click(Sender: TObject);
 begin
    CreateDEMsfromLidar;
@@ -3645,8 +3685,6 @@ begin
       OceanCal.ImportCTDfile;
    {$EndIf}
 end;
-
-
 
 
 procedure Twmdem.InOutButtonClick(Sender: TObject);
@@ -4016,6 +4054,11 @@ begin
    {$IfDef RecordDEMIX} WriteLineToDebugFile('OpenDEMIXarea1Click in'); {$EndIf}
 end;
 
+
+procedure Twmdem.OpenDEMIXdatabase1Click(Sender: TObject);
+begin
+   OpenDEMIXDatabaseForAnalysis;
+end;
 
 procedure Twmdem.OpenDEMIXridges1Click(Sender: TObject);
 begin
@@ -6095,9 +6138,9 @@ var
    aPath : PathStr;
 begin
    {$If Defined(RecordMenu) or Defined(RecordMerge)} WriteLineToDebugFile('Enter MergeDEMs, mode=' + IntToStr(Mode)); {$EndIf}
-   UseGDALvrt := Mode in [1,3];
+   UseGDALvrt := Mode in [dmMergeGDAL,dmMergeDirectories];
    DEMList := tStringList.Create;
-   if Mode in [1..2] then begin
+   if Mode in [dmMergeGDAL, dmMergeMDnative] then begin
       DEMList.Add(LastDEMName);
       if Petmar.GetMultipleFiles('DEMs to merge',DEMFilterMasks,DEMList,MDDef.DefaultDEMFilter) then begin
          {$IfDef RecordMenu} WriteStringListToDebugFile(DEMList); {$EndIf}
@@ -6137,18 +6180,18 @@ end;
 
 procedure Twmdem.OpenandmergeDEMdirectories1Click(Sender: TObject);
 begin
-   MergeDEMs(3);
+   MergeDEMs(dmMergeDirectories);
 end;
 
 
 procedure Twmdem.OpenandmergeDEMs1Click(Sender: TObject);
 begin
-   MergeDEMs(1);
+   MergeDEMs(dmMergeGDAL);
 end;
 
 procedure Twmdem.OpenandmergeDEMsgridsverylarge1Click(Sender: TObject);
 begin
-   MergeDEMs(2);
+   MergeDEMs(dmMergeMDnative);
 end;
 
 procedure Twmdem.OpenandmergeGeotiffs1Click(Sender: TObject);

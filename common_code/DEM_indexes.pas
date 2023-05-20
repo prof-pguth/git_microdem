@@ -16,6 +16,7 @@ unit dem_indexes;
      //{$Define RecordMultipleFilesInBoundingBox}
      //{$Define RecordLoadMapLibraryBox}
      //{$Define MergeSummary}
+     {$Define TrackPixelIs}
      //{$Define LoadLibrary}
      //{$Define RecordAutoZoom}
      //{$Define RecordImageIndex}
@@ -891,6 +892,7 @@ var
    SaveIt : boolean;
 
       procedure OldMICRODEMmerge;
+      //still an option because MICRODEM had problems with some of the very large Geotiffs created by GDAL
       var
         i,Row,Col : integer;
       begin
@@ -1019,7 +1021,7 @@ begin
       if GDALversion and GDALGridFormat(ExtractFileExt(aName),false) then begin
          {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('GDAL options for DEM'); {$EndIf}
          ProjName := '';
-         if FileExtEquals(aName,'.ASC') then begin //Spanish DEMs have no projection in the ASC files, and user must put WKT file in directory
+         if FileExtEquals(aName,'.ASC') then begin //Spanish and Trento DEMs have no projection in the ASC files, and user must put WKT file in directory
             {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('ASC reprojection'); {$EndIf}
             ProjName := FindSingleWKTinDirectory(ExtractFilePath(aName));
             if (ProjName <> '') then ProjName := '-a_srs ' + ProjName;
@@ -1042,6 +1044,7 @@ begin
       end;
 
     if ValidDEM(Result) then begin
+         {$IfDef TrackPixelIs} WriteLineToDebugFile('MergeMultipleDEMsHere defined, Pixel is = ' + RasterPixelIsString(DEMGlb[Result].DEMHeader.RasterPixelIsGeoKey1025)); {$EndIf}
          {$If Defined(RecordMerge) or Defined(RecordTimeMerge) } WriteLineToDebugFile('Merge set up, Result=' + IntToStr(Result)); {$EndIf}
          if MDdef.AutoFillHoles then begin
             DEMGlb[Result].InterpolateAcrossHoles(false);

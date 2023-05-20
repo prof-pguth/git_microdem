@@ -236,9 +236,9 @@ var
                   for DEM := 1 to NumDEMIXDEM do begin
                      {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Filter= ' + GISdb[DBonTable].MyData.Filter + '  recs=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB)); {$EndIf}
 
-                     if (GISdb[DBonTable].MyData.GetFieldByNameAsString(DEMIXDEMType[DEM]) <> '') then begin
+                     if (GISdb[DBonTable].MyData.GetFieldByNameAsString(DEMIXDEMTypeName[DEM]) <> '') then begin
                         v[2] := Ontile;
-                        v[1] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(DEMIXDEMType[DEM]);
+                        v[1] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(DEMIXDEMTypeNAME[DEM]);
                         if v[1] > Graph.GraphDraw.MaxHorizAxis then Graph.GraphDraw.MaxHorizAxis := v[1] + 1;
                         if v[1] < Graph.GraphDraw.MinHorizAxis then Graph.GraphDraw.MinHorizAxis := v[1] - 1;
                         BlockWrite(rfile[DEM],v,1);
@@ -265,9 +265,9 @@ var
 
          Graph.GraphDraw.LegendList := tStringList.Create;
          for DEM := 1 to NumDEMIXDEM do begin
-            Symbol := SymbolFromDEMName(DEMIXDEMType[DEM]);
+            Symbol := SymbolFromDEMName(DEMIXDEMTypeName[DEM]);
             Graph.OpenPointFile(rfile[DEM],Symbol);
-            Graph.GraphDraw.LegendList.Add(DEMIXDEMType[DEM]);
+            Graph.GraphDraw.LegendList.Add(DEMIXDEMTypeName[DEM]);
          end;
 
          Graph.GraphDraw.GraphAxes := XPartGridOnly;

@@ -10,14 +10,12 @@ unit petmar;
 
 {$I nevadia_defines.inc}
 
-
 {$IfDef FMX}
    {$Define UseIndyDownLoads}
 {$EndIf}
 
-
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
-   {$Define RecordShellExecute}     //this should generally be on; if not desired, shut down in Windows defaults
+   {$Define RecordShellExecute} //this should generally be on; if not desired, shut down in Windows defaults
    {$Define RecordWebDownloads}
 
    {$IfDef Debug}

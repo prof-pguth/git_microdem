@@ -957,6 +957,7 @@ type
     Averagebylatitude1: TMenuItem;
     Datumshift2: TMenuItem;
     Latlongelevofrecordcorners1: TMenuItem;
+    Exporttablewithuniquerecords1: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
     procedure Shiftpointrecords1Click(Sender: TObject);
     procedure Creategrid1Click(Sender: TObject);
@@ -1685,6 +1686,7 @@ type
     procedure Averagebylatitude1Click(Sender: TObject);
     procedure Datumshift2Click(Sender: TObject);
     procedure Latlongelevofrecordcorners1Click(Sender: TObject);
+    procedure Exporttablewithuniquerecords1Click(Sender: TObject);
   private
     procedure PlotSingleFile(fName : PathStr; xoff,yoff : float64);
     procedure SetUpLinkGraph;
@@ -6499,7 +6501,7 @@ begin
       dbIsUnsaved := false;
       tf := 1;
       ch := ',';
-      if Sender = Exporttextdeliberate1 then begin
+      if (Sender = Exporttextdeliberate1) then begin
          ReportOptionsForm := TReportOptionsForm.Create(Application);
          ReportOptionsForm.ShowModal;
          case ReportOptionsForm.RadioGroup1.ItemIndex of
@@ -13421,6 +13423,40 @@ begin
    {$Else}
       ExtractMapCoverageToWGS84Shapefile(GISdb[DBonTable].dbFullName, GISdb[DBonTable].TheMapOwner.MapDraw.MapCorners.BoundBoxGeo);
    {$EndIf}
+end;
+
+
+procedure Tdbtablef.Exporttablewithuniquerecords1Click(Sender: TObject);
+var
+   //tf : integer;
+   Report,NewReport : tStringList;
+   //ch : AnsiChar;
+   fname : PathStr;
+   i : integer;
+   Header : shortstring;
+begin
+   {$IfDef RecordCSVOut} WriteLineToDebugFile('Tdbtablef.Text1Click in'); {$EndIf}
+
+   with GISdb[DBonTable] do begin
+      fName := ChangeFileExt(DBFullName,'.csv');
+      if Petmar.GetFileNameDefaultExt('Text file export','CSV|*.csv|Text|*.txt',fName) then begin
+         Report := ExtractDBtoCSV(1,',');
+         Header := Report.Strings[0];
+         Report.Delete(0);
+         NewReport := tStringList.Create;
+         NewReport.Sorted := true;
+         NewReport.Duplicates := dupIgnore;
+         for i := 1 to pred(Report.Count) do begin
+            NewReport.Add(Report.Strings[i]);
+         end;
+         NewReport.Sorted := false;
+         NewReport.Insert(0,Header);
+         NewReport.SaveToFile(fName);
+         Report.Free;
+         NewReport.Free;
+      end;
+      ShowStatus;
+   end;
 end;
 
 

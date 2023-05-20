@@ -200,8 +200,8 @@ procedure GridCoOccurrence(AutoFull : boolean = false; DEM1 : integer = 0; DEM2 
 var
    Incr,Col,Row : integer;
    Total : int64;
-   Lat,Long,XGrid,YGrid: float64;
-   z1,z2 : float32;
+   Lat,Long : float64;
+   z1,z2,XGrid,YGrid : float32;
    IdenticalGrids : boolean;
    GridLimits : tGridLimits;
    Dist1,Dist2 : tIntVector256;
@@ -292,7 +292,7 @@ begin
    {$If Defined(RecordDEMCompare) or Defined(RecordDiffMap)} WriteLineToDebugFile('MakeDifferenceMapOfBoxRegion in, DEMs = ' + IntToStr(Map1) + '/' + IntToStr(Map2)); {$EndIf}
    Result := 0;
    OpenDEMDataStructures(Result);
-   if (TheAreaName = '') then DEMGlb[Result].AreaName := 'Elev_Diff_' + DEMGlb[Map2].AreaName + '-' + DEMGlb[Map1].AreaName
+   if (TheAreaName = '') then DEMGlb[Result].AreaName := 'Elev_Diff_' + DEMGlb[Map2].AreaName + '_minus_' + DEMGlb[Map1].AreaName
    else DEMGlb[Result].AreaName := TheAreaName;
    DEMGlb[Result].DEMheader := DEMGlb[Map1].DEMheader;
    DEMGlb[Result].DEMMapProjection := DEMGlb[Map1].DEMMapProjection;
