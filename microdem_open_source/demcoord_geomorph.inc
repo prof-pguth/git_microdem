@@ -2413,7 +2413,7 @@ begin
 end;
 
 
-function tDEMDataSet.FindLocationOfMaximum(GridLimits: tGridLimits; var xloc,yloc : integer; var LocMax : float64) : boolean;
+function tDEMDataSet.FindLocationOfMaximum(GridLimits: tGridLimits; var xloc,yloc : integer; var LocMax : float32) : boolean;
 var
    z   : float32;
    x,y : integer;
@@ -2434,7 +2434,7 @@ begin
 end;
 
 
-function tDEMDataSet.FindLocationOfMinimum(GridLimits: tGridLimits; var xloc,yloc : integer; var LocMin : float64) : boolean;
+function tDEMDataSet.FindLocationOfMinimum(GridLimits: tGridLimits; var xloc,yloc : integer; var LocMin : float32) : boolean;
 var
    z   : float32;
    x,y : integer;

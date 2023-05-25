@@ -695,7 +695,6 @@ var
    DefaultFilter : byte;
    fNum,i,Layer,db : integer;
    NumFieldColoring : boolean;
-   //aGISdb : TGISdataBaseModule;
    FieldsInDB : tStringList;
 begin
     CreateShapeFileGrouping(fName,TheGroupingIndex,true,0);

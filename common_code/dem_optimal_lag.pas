@@ -67,6 +67,7 @@ type
     procedure Sensitivty(Lat, Long: float64);
   end;
 
+
 procedure GetOptimalLagParameters(BaseMap : tMapForm; OtherDEM : integer);
 
 var
@@ -125,6 +126,7 @@ var
    TStr : shortstring;
 begin
   try
+      HeavyDutyProcessing := true;
       CheckChanges;
       SaveMDdefaults;
       BigResults := Nil;
@@ -163,6 +165,8 @@ begin
          OneLag(MainDEM,SubDEM,BoxLimits,BigResults);
       end;
   finally
+     HeavyDutyProcessing := false;
+     ShowDefaultCursor;
   end;
 end;
 

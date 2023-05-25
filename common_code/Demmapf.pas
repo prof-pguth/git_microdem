@@ -30,7 +30,7 @@
       //{$Define FanDrawProblems}
       //{$Define RawProjectInverse}  //must also be set in BaseMap
       {$Define RecordDEMIX}
-      {$Define TrackDEMCorners}
+      //{$Define TrackDEMCorners}
       //{$Define RecordCarto}
       //{$Define RecordNumberOpenMaps}
       //{$Define RecordBigMap}
@@ -1474,6 +1474,11 @@ type
     Datumshiftcomparison1: TMenuItem;
     Shiftfilecomparison1: TMenuItem;
     CSVforVDATUM1: TMenuItem;
+    DEMIXhalfsecto2onesec1: TMenuItem;
+    Removequickoverlayhillshade1: TMenuItem;
+    N58: TMenuItem;
+    PerpProfiles1: TMenuItem;
+    NearestpeakoneachDEM1: TMenuItem;
     //procedure HiresintervisibilityDEM1Click(Sender: TObject);
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
@@ -2546,6 +2551,10 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Datumshiftcomparison1Click(Sender: TObject);
     procedure Shiftfilecomparison1Click(Sender: TObject);
     procedure CSVforVDATUM1Click(Sender: TObject);
+    procedure DEMIXhalfsecto2onesec1Click(Sender: TObject);
+    procedure Removequickoverlayhillshade1Click(Sender: TObject);
+    procedure PerpProfiles1Click(Sender: TObject);
+    procedure NearestpeakoneachDEM1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
     MouseDownLat,MouseDownLong,
@@ -2687,11 +2696,11 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
 
      NewX1,NewY1,Newx2,NewY2,
      LastBroadcastX,LastBroadcastY,
-     RightClickX,RightClickY,
-     LastGPSX,LastGPSY,
+     RightClickX,RightClickY,LastX,LastY,LastGPSX,LastGPSY,
      FeaturesDB,
-     ScratchDEM,
-     ExtremeZDEM,LastX,LastY      : integer;
+     SavedMergeReflectanceDEM,
+     //ScratchDEM,
+     ExtremeZDEM      : integer;
      SavedMapImage,
      OverlayOpaqueBMP,MapBaseBMP  : tMyBitmap;
      VariableOpaqueOverlays: boolean;
@@ -2803,7 +2812,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     function Intersection(Lat1,Long1,Az1,Lat2,Long2,Az2 : float64; var Lat,Long : float64) : boolean;
 
     procedure IHSmergeOntoMap(var Bitmap2 : tMyBitmap; IHSValues : boolean = true; Opacity : byte = 100);
-    procedure MergeAnotherDEMreflectance(DEM : integer; Opacity : byte = 40);
+    procedure MergeAnotherDEMreflectance(DEM : integer; MakeSticky : boolean = false; Opacity : byte = 40);
 
     procedure AddPointToDB(Lat,Long : float64; PointLabel : string = '');
     procedure DrawRecordBeingEditted(Table : tMyData);
@@ -3344,6 +3353,26 @@ var
 {$Else}
     {$I demmapf_geology.inc}
 {$EndIf}
+
+procedure MatchAnotherMapThisPixelSize(ThisMap,OtherMap : tMapForm);
+begin
+   if (not ThisMap.OtherMapSameSize(OtherMap)) and (not ThisMap.OtherMapSameCoverage(OtherMap)) then begin
+      OtherMap.SetMapPixelSize(ThisMap.MapDraw.ScreenPixelSize);
+   end;
+end;
+
+procedure MatchAnotherMapThisCoverageArea(ThisMap,OtherMap : tMapForm);
+begin
+    if (not ThisMap.OtherMapSameSize(OtherMap)) and (not ThisMap.OtherMapSameCoverage(OtherMap)) then begin
+       if SameProjection(ThisMap.MapDraw,OtherMap.MapDraw) then begin
+          OtherMap.MapDraw.MapCorners.BoundBoxProj := ThisMap.MapDraw.MapCorners.BoundBoxProj;
+          OtherMap.SubsetAndZoomMapFromProjectedBounds;
+       end
+       else OtherMap.SubsetAndZoomMapFromGeographicBounds(ThisMap.MapDraw.MapCorners.BoundBoxGeo, true);
+       OtherMap.FullMapSpeedButton.Enabled := true;
+    end;
+   UpdateMenusForAllMaps;
+end;
 
 
 
@@ -3999,6 +4028,7 @@ begin
            if (RedistrictForm <> Nil) and (not MapDraw.FastMapDraw) then RedistrictForm.BitBtn4Click(Nil);
         {$EndIf}
      end;
+     if ValidDEM(SavedMergeReflectanceDEM) then MergeAnotherDEMreflectance(SavedMergeReflectanceDEM);
 
      MapDraw.MapDrawValid := true;
      LastGPSX := MaxInt;
@@ -7468,7 +7498,7 @@ begin
                     false,0,360);
                 if (AntDEM <> 0) then begin
                    if (DecFactor > 1) then begin
-                      DEMGlb[AntDEM].ThinThisDEM(ThinDEM,DecFactor);
+                      ThinDEM := DEMGlb[AntDEM].ThinThisDEM('',DecFactor);
                       CloseSingleDEM(AntDEM);
                       AntDEM := ThinDEM;
                    end;
@@ -8124,6 +8154,8 @@ begin
      GetGRASSextensions1.Visible := ValidDEM(MapDraw.DEMonMap) and (MDDef.ProgramOption in [ExpertProgram]);
 
     {$If Defined(RecordCheckProperTix)} WriteLineToDebugFile('CheckProperTix start overlay menu'); {$EndIf}
+
+    Removequickoverlayhillshade1.Visible := ValidDEM(SavedMergeReflectanceDEM);
     //Overlay menu
       ValidPointsInSecondGrid1.Visible := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]);
       Contoursfromsecondgrid2.Visible := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]);
@@ -9619,7 +9651,8 @@ begin
    FullDraw := true;
    ShowAMenu := true;
    MapRedrawsAllowed := true;
-   ScratchDEM := 0;
+   SavedMergeReflectanceDEM := 0;
+   //ScratchDEM := 0;
    FeaturesDB := 0;
    MapTOCIndex := 0;
 
@@ -10633,6 +10666,12 @@ begin
 
    {$IfDef RecordDoubleClick} WriteLineToDebugFile('Image1DblClick in OK, x=' + IntToStr(lastX) + '  y=' + IntToStr(lastY) + '  ' + LatLongDegreeToString(Lat,Long)); {$EndIf}
 
+
+   if (DEMNowDoing = SeekingPerpendicularProfiles) then begin
+      DrawProfilesThroughPeak(MapDraw.DEMonMap,Lat,Long);
+      exit;
+   end;
+
    if (DEMNowDoing = PlotNorthArrow) then begin
       PlotNorthArrowLegend(LastX,LastY);
       exit;
@@ -11609,6 +11648,19 @@ begin
    {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} writeLineToDebugFile('TMapForm.DEMIXevaluatehalfsecondgrids1Click out'); {$EndIf}
 end;
 
+
+procedure TMapForm.DEMIXhalfsecto2onesec1Click(Sender: TObject);
+var
+  dem1,dem2 : integer;
+begin
+   DEM1 := DEMGlb[MapDraw.DEMonMap].ThinThisDEM('1sec_pixel-is-point',2,true,0);
+   DEM2 := DEMGlb[MapDraw.DEMonMap].ThinThisDEM('1sec_pixel-is-area',2,true,1);
+
+   WriteLineToDebugFile('Starter DEM:' +  LatLongDegreeToString(DEMGlb[MapDraw.DEMonMap].DEMheader.DEMSWCornerY,DEMGlb[MapDraw.DEMonMap].DEMheader.DEMSWCornerX,DecSeconds));
+   WriteLineToDebugFile('PIP DEM:' +   LatLongDegreeToString(DEMGlb[DEM1].DEMheader.DEMSWCornerY,DEMGlb[DEM1].DEMheader.DEMSWCornerX,DecSeconds));
+   WriteLineToDebugFile('PIA DEM:' +   LatLongDegreeToString(DEMGlb[DEM2].DEMheader.DEMSWCornerY,DEMGlb[DEM2].DEMheader.DEMSWCornerX,DecSeconds));
+
+end;
 
 procedure TMapForm.PlotGridPoint(xgrid,ygrid : float64; PlotColor : tPlatformColor);
 var
@@ -14367,7 +14419,7 @@ end;
 procedure TMapForm.hinaveragingcomparison1Click(Sender: TObject);
 var
    Levels,i,NewDEM,Spacings,BaseSpacing : integer;
-   Linear,SaveDEMs{,Spacing} : boolean;
+   Linear,SaveDEMs : boolean;
    fName : PathStr;
 begin
    Linear := AnswerIsYes('Linear (not power)');
@@ -14379,17 +14431,17 @@ begin
    for i := 2 to Levels do begin
       if Linear then Spacings := BaseSpacing + pred(i) * BaseSpacing
       else Spacings := round(Math.IntPower(2, pred(i)));
-      DEMGlb[MapDraw.DEMonMap].ThinThisDEM(NewDEM,Spacings);
-      if (NewDEM <> 0) then begin
-         DEMGlb[NewDEM].SetUpMap(NewDEM,true,MapDraw.MapType);
+      NewDEM := DEMGlb[MapDraw.DEMonMap].ThinThisDEM('',Spacings);
+      if (NewDEM <> 0) and SaveDEMs then begin
+         //DEMGlb[NewDEM].SetUpMap(NewDEM,true,MapDraw.MapType);
          fName := WriteDEMDir + DEMGlb[NewDEM].AreaName + '.dem';
-         if SaveDEMs then DEMGlb[NewDEM].WriteNewFormatDEM(fName);
+         DEMGlb[NewDEM].WriteNewFormatDEM(fName);
       end;
-      DEMGlb[MapDraw.DEMonMap].ThinThisDEM(NewDEM,Spacings,true);
-      if (NewDEM <> 0) then begin
-         DEMGlb[NewDEM].SetUpMap(NewDEM,true,MapDraw.MapType);
+      NewDEM := DEMGlb[MapDraw.DEMonMap].ThinThisDEM('',Spacings,true);
+      if (NewDEM <> 0) and SaveDEMs then begin
+         //DEMGlb[NewDEM].SetUpMap(NewDEM,true,MapDraw.MapType);
          fName := WriteDEMDir + DEMGlb[NewDEM].AreaName + '.dem';
-         if SaveDEMs then DEMGlb[NewDEM].WriteNewFormatDEM(fName);
+         DEMGlb[NewDEM].WriteNewFormatDEM(fName);
       end;
    end;
 end;
@@ -16580,6 +16632,7 @@ begin
         EditPointElevs                 : NewTitle := 'Edit point elevations';
         FloodFill                      : NewTitle := 'Pt to flood fill';
         DragEdit                       : NewTitle := LPF;
+        SeekingPerpendicularProfiles   : NewTitle := 'Point for perpendicular profiles';
         GetIslandArea                  : NewTitle := 'Point on island/peak';
         ShapePointsAlongFirstLine      : NewTitle := 'Start of survey line';
         ShapePointsAlongSecondLine     : NewTitle := 'End of survey line';
@@ -16768,7 +16821,7 @@ end;
 
 procedure TMapForm.MergeanotherDEMhillshade1Click(Sender: TObject);
 begin
-   MergeAnotherDEMreflectance(0);
+   MergeAnotherDEMreflectance(0,true);
 end;
 
 procedure TMapForm.Mergecolors1Click(Sender: TObject);
@@ -17237,6 +17290,12 @@ end;
 procedure TMapForm.Removemissingpointsinmask1Click(Sender: TObject);
 begin
    SetMaskGrid1Click(Sender);
+end;
+
+procedure TMapForm.Removequickoverlayhillshade1Click(Sender: TObject);
+begin
+   SavedMergeReflectanceDEM := 0;
+   DoFastMapRedraw;
 end;
 
 procedure TMapForm.Removetoofewsimilarneighbors1Click(Sender: TObject);
@@ -18021,6 +18080,54 @@ begin
 {$EndIf}
 end;
 
+procedure TMapForm.NearestpeakoneachDEM1Click(Sender: TObject);
+var
+   DEM,xloc,yloc : integer;
+   xg,yg,LocMax,zref : float32;
+   Distance,Bearing,
+   Lat,Long : float64;
+   bb : tGridLimits;
+   Results : tStringList;
+   fName : PathStr;
+
+   procedure OneDEM(DEM : integer);
+   var
+      TStr : shortString;
+   begin
+      DEMglb[DEM].LatLongDegreeToDEMGrid(RightClickLat,RightClickLong,xg,yg);
+      bb.XGridLow := round(xg) - 10;
+      bb.XGridHigh := round(xg) + 10;
+      bb.YGridLow := round(yg) - 10;
+      bb.YGridHigh := round(yg) + 10;
+
+      DEMglb[DEM].FindLocationOfMaximum(bb,xloc,yloc,LocMax);
+      DEMglb[DEM].DEMGridToLatLongDegree(xloc,yloc,lat,long);
+      if (DEM <> MapDraw.DEMonMap) then begin
+         VincentyCalculateDistanceBearing(RightClickLat,RightClickLong,Lat,Long,Distance,Bearing);
+         TStr := ',' + RealToString(Distance,-12,-2) + ',' + RealToString(Bearing,-12,1) + ',' + RealToString(LocMax-zref,-12,-2);
+      end
+      else begin
+         RightClickLat := Lat;
+         RightClickLong := Long;
+         TStr := ',-9999,-9999,-9999';
+         Zref := LocMax;
+      end;
+      Results.Add(DEMGlb[DEM].AreaName + ',' + RealToString(Lat,-12,-8) + ',' + RealToString(Long,-12,-8) + ',' + RealToString(LocMax,-12,2) + TStr );
+   end;
+
+begin
+   Results := tStringList.Create;
+   Results.Add('DEM,LAT,LONG,ELEV_M,DISPLACE,DIRECTION,DELTA_Z');
+   OneDEM(MapDraw.DEMonMap);
+   for DEM := 1 to MaxDEMDataSets do begin
+      if ValidDEM(DEM) and (DEM <> MapDraw.DEMonMap) then begin
+         OneDEM(DEM);
+      end;
+   end;
+   fName := Petmar.NextFileNumber(MDTempDir, 'Peaks_in_vicinity_','.dbf');
+   StringList2CSVtoDB(Results,fName);
+end;
+
 procedure TMapForm.Newband1Click(Sender: TObject);
 begin
    {$IfDef ExSat}
@@ -18704,7 +18811,8 @@ end;
 
 procedure TMapForm.ResampleDEMgridbyaveraging1Click(Sender: TObject);
 begin
-   ThinDEM1Click(Sender);
+   DEMGlb[MapDraw.DEMonMap].ThinThisDEM('',0,true);
+   //AverageResampleThisDEM(NewDEM,0);
 end;
 
 
@@ -18895,14 +19003,14 @@ begin
 end;
 
 
-procedure tMapForm.MergeAnotherDEMreflectance(DEM : integer; Opacity : byte = 40);
+procedure tMapForm.MergeAnotherDEMreflectance(DEM : integer; MakeSticky : boolean = false; Opacity : byte = 40);
 var
    Bitmap1,Bitmap2 : tMyBitmap;
 begin
-   if (DEM = 0) then begin
+   if (DEM = 0) or (not ValidDEM(DEM)) then begin
       if GetDEM(DEM,true, 'DEM map to merge on ' + Self.Caption) then begin
          if not (DEMGlb[DEM].SelectionMap <> Nil) then begin
-            MessageToContinue('DEM must have an open map');
+            MessageToContinue('DEM must have open map');
             exit;
          end;
          if (Self.MapDraw.BasicProjection <> DEMGlb[DEM].SelectionMap.MapDraw.BasicProjection) then begin
@@ -18912,24 +19020,26 @@ begin
       end
       else exit;
    end;
+   if MakeSticky then SavedMergeReflectanceDEM := DEM;
 
-    //CopyImageToBitmap(Self.Image1,Bitmap1);
     if (DEMGlb[DEM].SelectionMap.MapDraw.MapType <> mtGrayReflect) then begin
        DEMGlb[DEM].SelectionMap.MapDraw.MapType := mtGrayReflect;
        DEMGlb[DEM].SelectionMap.DoBaseMapRedraw;
     end;
+
+    MatchAnotherMapThisCoverageArea(Self,DEMGlb[DEM].SelectionMap);
+    MatchAnotherMapThisPixelSize(Self,DEMGlb[DEM].SelectionMap);
+
     Bitmap1 := tMyBitmap.Create;
     Bitmap1.LoadFromFile(DEMGlb[DEM].SelectionMap.MapDraw.FullMapfName);
     Bitmap2 := tMyBitmap.Create;
     Bitmap2.LoadFromFile(MapDraw.FullMapfName);
 
-    //IHSMergePurgeBitmaps(Bitmap1,Bitmap2,Opacity);
     DrawAndDeleteOverlay(Bitmap1,Bitmap2,Opacity);
     Image1.Picture.Graphic := Bitmap1;
     Bitmap1.SaveToFile(MapDraw.FullMapfName);
     Bitmap1.Free;
     CheckThatLegendsAreOnTop;
-    //Forceredrawlegendsscalebars1Click(Nil);
 end;
 
 
@@ -20058,7 +20168,7 @@ var
 
    procedure MapHouseKeeping(DEM : integer);
    begin
-      DEMGlb[DEM].SetUpMap(DEM,true,MapDraw.MapType);
+      //DEMGlb[DEM].SetUpMap(DEM,true,MapDraw.MapType);
       fName := SaveDir + DEMGlb[DEM].AreaName + '.dem';
       DEMGlb[DEM].WriteNewFormatDEM(fName);
    end;
@@ -20075,12 +20185,10 @@ begin
    for i := 1 to MDDef.PyramidLevels do begin
       //thin the DEM
       tf := round(Math.Power(2,i));
-      DEMGlb[MapDraw.DEMonMap].ThinThisDEM(ThinDEM[i],tf);
-      DEMGlb[ThinDEM[i]].AreaName := 'thin_' + IntToStr(i);
+      ThinDEM[i] := DEMGlb[MapDraw.DEMonMap].ThinThisDEM('thin_' + IntToStr(i),tf);
       MapHouseKeeping(ThinDEM[i]);
 
-      DEMGlb[MapDraw.DEMonMap].ThinThisDEM(MeanDEM[i],tf,true);
-      DEMGlb[MeanDEM[i]].AreaName := 'mean_' + IntToStr(i);
+      MeanDEM[i] := DEMGlb[MapDraw.DEMonMap].ThinThisDEM('mean_' + IntToStr(i),tf,true);
       MapHouseKeeping(MeanDEM[i]);
    end;
 
@@ -20089,13 +20197,12 @@ begin
    for i := 1 to MDDef.PyramidLevels do begin
       //filter and then thin the DEM
       DEMGlb[StartDEM].FilterThisDEM(fcFilFile,FilDEM,2,ProgramRootDir + 'filters\gauss-5x5.fil');
-      DEMGlb[FilDEM].ThinThisDEM(DownDEM[i],2);
+      DownDEM[i] := DEMGlb[FilDEM].ThinThisDEM('down_' + IntToStr(i),2);
       CloseSingleDEM(FilDEM);
-      DEMGlb[DownDEM[i]].AreaName := 'down_' + IntToStr(i);
       MapHouseKeeping(DownDEM[i]);
 
       //upsample DEM by reinterpolation
-      if DEMGlb[DownDEM[i]].DEMheader.DEMUsed = UTMbasedDEM then UpDEM[i] := DEMGlb[DownDEM[i]].ReinterpolateUTMDEM( 0.5 * DEMGlb[DownDEM[i]].DEMheader.DEMySpacing)
+      if (DEMGlb[DownDEM[i]].DEMheader.DEMUsed = UTMbasedDEM) then UpDEM[i] := DEMGlb[DownDEM[i]].ReinterpolateUTMDEM( 0.5 * DEMGlb[DownDEM[i]].DEMheader.DEMySpacing)
       else begin
          Spacing := 0.5 * 3600 * DEMGlb[DownDEM[i]].DEMheader.DEMySpacing;
          UpDEM[i] := DEMGlb[DownDEM[i]].ReinterpolateLatLongDEM(Spacing);
@@ -21123,7 +21230,7 @@ begin
    DEMGlb[MapDraw.DEMonMap].DEMheader.DEMSWCornerX := DEMGlb[MapDraw.DEMonMap].DEMheader.DEMSWCornerX + xpost * DEMGlb[MapDraw.DEMonMap].DEMheader.DEMxSpacing;
    DEMGlb[MapDraw.DEMonMap].DEMheader.DEMSWCornerY := DEMGlb[MapDraw.DEMonMap].DEMheader.DEMSWCornerY + ypost * DEMGlb[MapDraw.DEMonMap].DEMheader.DEMySpacing;
    {$IfDef RecordEditsDEM}  WriteLineToDebugFile('x shift=' + IntToStr(xpost) + '  y shift=' + IntToStr(ypost) + '   ' + DEMGlb[MapDraw.DEMonMap].SWcornerString);   {$EndIf}
-   fName := MDTempDir + 'horiz_shift_' + DEMGlb[MapDraw.DEMonMap].AreaName + '.dem';
+   fName := MDTempDir + 'horiz_shift_x_' + IntToStr(xpost) + '_y_' + IntToStr(ypost) + DEMGlb[MapDraw.DEMonMap].AreaName + '.dem';
    DEMGlb[MapDraw.DEMonMap].WriteNewFormatDEM(fname);
    DEMGlb[MapDraw.DEMonMap].DEMAlreadyDefined := false;
    ReloadDEMClick(Nil);
@@ -21802,6 +21909,11 @@ end;
 procedure TMapForm.N51Click(Sender: TObject);
 begin
    SagaTRIMap(DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
+end;
+
+procedure TMapForm.PerpProfiles1Click(Sender: TObject);
+begin
+   DrawProfilesThroughPeak(MapDraw.DEMonMap,RightClickLat,RightClickLong);
 end;
 
 procedure TMapForm.N5x5neighborhhhod1Click(Sender: TObject);
@@ -23528,31 +23640,29 @@ var
    x,y, NumHoles,Col,Row,numHolesOnmap : integer;
    Bitmap : tMyBitmap;
 begin
-    //with DEMGlb[MapDraw.DEMOnMap] do begin
-       CopyImageToBitmap(Image1,Bitmap);
-       if ShowSatProgress then Startprogress('Holes');
-       NumHoles := 0;
-       numHolesOnmap := 0;
-       For Col := 0 to pred(DEMGlb[MapDraw.DEMOnMap].DEMheader.NumCol) do begin
-          if ShowSatProgress and (col mod 25 = 0) then UpdateProgressBar(Col/DEMGlb[MapDraw.DEMOnMap].DEMheader.NumCol);
-          for Row := 0 to pred(DEMGlb[MapDraw.DEMOnMap].DEMheader.NumRow) do begin
-             if  DEMGlb[MapDraw.DEMOnMap].MissingDataInGrid(Col,Row) then begin
-                inc(numHoles);
-                MapDraw.DEMGridToScreen(Col,Row,x,y);
-                if MapDraw.OnScreen(x,y) then begin
-                   inc(numHolesOnmap);
-                   Petmar.ScreenSymbol(Bitmap.Canvas,x,y,DrSymbol);
-                end;
+    CopyImageToBitmap(Image1,Bitmap);
+    if ShowSatProgress then Startprogress('Holes');
+    NumHoles := 0;
+    numHolesOnmap := 0;
+    For Col := 0 to pred(DEMGlb[MapDraw.DEMOnMap].DEMheader.NumCol) do begin
+       if ShowSatProgress and (col mod 25 = 0) then UpdateProgressBar(Col/DEMGlb[MapDraw.DEMOnMap].DEMheader.NumCol);
+       for Row := 0 to pred(DEMGlb[MapDraw.DEMOnMap].DEMheader.NumRow) do begin
+          if  DEMGlb[MapDraw.DEMOnMap].MissingDataInGrid(Col,Row) then begin
+             inc(numHoles);
+             MapDraw.DEMGridToScreen(Col,Row,x,y);
+             if MapDraw.OnScreen(x,y) then begin
+                inc(numHolesOnmap);
+                Petmar.ScreenSymbol(Bitmap.Canvas,x,y,DrSymbol);
              end;
           end;
        end;
-       if ShowSatProgress then EndProgress;
-       Image1.Picture.Graphic := Bitmap;
-       FreeAndNil(Bitmap);
-       MessageToContinue('DEM: ' +  DEMGlb[MapDraw.DEMOnMap].AreaName + MessLineBreak + MessLineBreak +
-            'Holes on map: ' + IntToStr(NumHolesOnMap) + '  (' +RealToString(100* NumHoles /  DEMGlb[MapDraw.DEMOnMap].DEMheader.NumRow /  DEMGlb[MapDraw.DEMOnMap].DEMheader.NumCol,-12,2) + '%)' + MessLineBreak +
-            'Holes in DEM: ' + IntToStr(NumHoles) + MessLineBreak,True);
-    //end;
+    end;
+    if ShowSatProgress then EndProgress;
+    Image1.Picture.Graphic := Bitmap;
+    FreeAndNil(Bitmap);
+    MessageToContinue('DEM: ' +  DEMGlb[MapDraw.DEMOnMap].AreaName + MessLineBreak + MessLineBreak +
+         'Holes on map: ' + IntToStr(NumHolesOnMap) + '  (' +RealToString(100* NumHoles /  DEMGlb[MapDraw.DEMOnMap].DEMheader.NumRow /  DEMGlb[MapDraw.DEMOnMap].DEMheader.NumCol,-12,2) + '%)' + MessLineBreak +
+         'Holes in DEM: ' + IntToStr(NumHoles) + MessLineBreak,True);
 end;
 
 
@@ -23664,12 +23774,17 @@ begin
 end;
 
 
+
+
+
 procedure TMapForm.AllMapsMatchThisCoverageArea1Click(Sender: TObject);
 var
    i : integer;
 begin
    for i := 0 to pred(WMDEM.MDIChildCount) do
       if (WMDEM.MDIChildren[i] is tMapForm) and (WmDEM.MDIChildren[i].Handle <> Handle) then begin
+         MatchAnotherMapThisCoverageArea(Self,WMDEM.MDIChildren[i] as TMapForm);
+         (*
           if (not OtherMapSameSize(WMDEM.MDIChildren[i] as TMapForm)) and (not OtherMapSameCoverage(WMDEM.MDIChildren[i] as TMapForm)) then begin
              if SameProjection(MapDraw, (WMDEM.MDIChildren[i] as TMapForm).MapDraw) then begin
                 (WMDEM.MDIChildren[i] as TMapForm).MapDraw.MapCorners.BoundBoxProj := MapDraw.MapCorners.BoundBoxProj;
@@ -23678,8 +23793,8 @@ begin
              else (WMDEM.MDIChildren[i] as TMapForm).SubsetAndZoomMapFromGeographicBounds(MapDraw.MapCorners.BoundBoxGeo, Sender <> Nil);
              (WMDEM.MDIChildren[i] as TMapForm).FullMapSpeedButton.Enabled := true;
           end;
+         *)
       end;
-
    UpdateMenusForAllMaps;
 end;
 
@@ -23767,15 +23882,19 @@ begin
 end;
 
 
+
 procedure TMapForm.Allsamepixelsizeasthismap1Click(Sender: TObject);
 var
    i : integer;
 begin
    for i := 0 to pred(WMDEM.MDIChildCount) do begin
       if (WMDEM.MDIChildren[i] is tMapForm) and (WmDEM.MDIChildren[i].Handle <> Handle) then begin
+         MatchAnotherMapThisPixelSize(Self,WMDEM.MDIChildren[i] as TMapForm);
+         (*
          if (not OtherMapSameSize(WMDEM.MDIChildren[i] as TMapForm)) and (not OtherMapSameCoverage(WMDEM.MDIChildren[i] as TMapForm)) then begin
             (WMDEM.MDIChildren[i] as TMapForm).SetMapPixelSize(MapDraw.ScreenPixelSize);
          end;
+         *)
       end;
    end;
 end;
@@ -24276,46 +24395,50 @@ var
    NewDEM : integer;
    fName : PathStr;
 begin
-   NakedMapOptions;   //which calls SaveBackupDefaults;
-   DEMNowDoing := Calculating;
-   NewDEM := 0;
-   if (Sender = ThinDEM1) then DEMGlb[MapDraw.DEMonMap].ThinThisDEM(NewDEM);
-   if (Sender = Filter1) or (Sender = PickFilter1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcFilFile,NewDEM);
-   if (Sender = Numberimmediateneighbors1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcNumNeigh,NewDEM);
-   if (Sender = Medianfilter1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcMedian,NewDEM);
-   if (Sender = Vectoraverage1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcVectAvg,NewDEM);
-   if (Sender = Meanfilter1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcMean,NewDEM);
-   if (Sender = MinimumFilter1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcMin,NewDEM);
-   if (Sender = MaximumFilter1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcMax,NewDEM);
-   if (Sender = Filledneighborhood1) then begin
-      ReadDefault('Min neighbors required to retain',MDDef.ExpandNeighborsRequired);
-      DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcNeighbors,NewDEM);
-   end;
-   if (Sender = Suminbox1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcSum,NewDEM);
-   if (Sender = StdDevinbox1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcSTD,NewDEM);
-   if (Sender = Parametricisotropicsmoothing1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcParamIsotrop,NewDEM);
-   if (Sender = RemoveTooFewSimilarNeighbors1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcDissimilarNeighbors,NewDEM);
-   if (Sender = Bytes1) then NewDEM := DEMGlb[MapDraw.DEMonMap].ResaveNewResolution(fcSaveByte);
-   if (Sender = Integer161) then NewDEM := DEMGlb[MapDraw.DEMonMap].ResaveNewResolution(fcSaveSmallInt);
-   if (Sender = Word1) then NewDEM := DEMGlb[MapDraw.DEMonMap].ResaveNewResolution(fcSaveWord);
-   if (Sender = FloatingPoint1) then NewDEM := DEMGlb[MapDraw.DEMonMap].ResaveNewResolution(fcSaveFloatingPoint);
-   if (Sender = Western1) then DEMGlb[MapDraw.DEMonMap].FindEdgeThisDEM(NewDEM,cdW);
-   if (Sender = Eastern1) then DEMGlb[MapDraw.DEMonMap].FindEdgeThisDEM(NewDEM,cdE);
-   if (Sender = SouthWestern1) then DEMGlb[MapDraw.DEMonMap].FindEdgeThisDEM(NewDEM,cdSW);
-   if (Sender = ResampleDEMgridbyaveraging1) then DEMGlb[MapDraw.DEMonMap].AverageResampleThisDEM(NewDEM,0);
-   if (Sender = DetrendDEMgrid1) then begin
-      //ReadDefault('radius to filter (pixels)',Radius);
-      Radius := 1;
-      NewDEM := DEMGlb[MapDraw.DEMonMap].DetrendDEM(true,Radius);
-   end;
+   if (Sender = ThinDEM1) then begin
+      DEMGlb[MapDraw.DEMonMap].ThinThisDEM('',NewDEM);
+   end
+   else begin
+      NakedMapOptions;   //which calls SaveBackupDefaults;
+      DEMNowDoing := Calculating;
+      NewDEM := 0;
+      if (Sender = Filter1) or (Sender = PickFilter1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcFilFile,NewDEM);
+      if (Sender = Numberimmediateneighbors1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcNumNeigh,NewDEM);
+      if (Sender = Medianfilter1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcMedian,NewDEM);
+      if (Sender = Vectoraverage1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcVectAvg,NewDEM);
+      if (Sender = Meanfilter1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcMean,NewDEM);
+      if (Sender = MinimumFilter1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcMin,NewDEM);
+      if (Sender = MaximumFilter1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcMax,NewDEM);
+      if (Sender = Filledneighborhood1) then begin
+         ReadDefault('Min neighbors required to retain',MDDef.ExpandNeighborsRequired);
+         DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcNeighbors,NewDEM);
+      end;
+      if (Sender = Suminbox1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcSum,NewDEM);
+      if (Sender = StdDevinbox1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcSTD,NewDEM);
+      if (Sender = Parametricisotropicsmoothing1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcParamIsotrop,NewDEM);
+      if (Sender = RemoveTooFewSimilarNeighbors1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcDissimilarNeighbors,NewDEM);
+      if (Sender = Bytes1) then NewDEM := DEMGlb[MapDraw.DEMonMap].ResaveNewResolution(fcSaveByte);
+      if (Sender = Integer161) then NewDEM := DEMGlb[MapDraw.DEMonMap].ResaveNewResolution(fcSaveSmallInt);
+      if (Sender = Word1) then NewDEM := DEMGlb[MapDraw.DEMonMap].ResaveNewResolution(fcSaveWord);
+      if (Sender = FloatingPoint1) then NewDEM := DEMGlb[MapDraw.DEMonMap].ResaveNewResolution(fcSaveFloatingPoint);
+      if (Sender = Western1) then DEMGlb[MapDraw.DEMonMap].FindEdgeThisDEM(NewDEM,cdW);
+      if (Sender = Eastern1) then DEMGlb[MapDraw.DEMonMap].FindEdgeThisDEM(NewDEM,cdE);
+      if (Sender = SouthWestern1) then DEMGlb[MapDraw.DEMonMap].FindEdgeThisDEM(NewDEM,cdSW);
+      //if (Sender = ResampleDEMgridbyaveraging1) then
+      if (Sender = DetrendDEMgrid1) then begin
+         //ReadDefault('radius to filter (pixels)',Radius);
+         Radius := 1;
+         NewDEM := DEMGlb[MapDraw.DEMonMap].DetrendDEM(true,Radius);
+      end;
 
-   if (NewDEM <> 0) then begin
-      DEMGlb[NewDEM].SetUpMap(NewDEM,true,MapDraw.MapType);
-      fName := '';
-      if MDdef.PromptToSaveNewDEMs then DEMGlb[NewDEM].WriteNewFormatDEM(fName);
+      if (NewDEM <> 0) then begin
+         DEMGlb[NewDEM].SetUpMap(NewDEM,true,MapDraw.MapType);
+         fName := '';
+         if MDdef.PromptToSaveNewDEMs then DEMGlb[NewDEM].WriteNewFormatDEM(fName);
+      end;
+      ChangeDEMNowDoing(JustWandering);
+      RestoreBackupDefaults;
    end;
-   ChangeDEMNowDoing(JustWandering);
-   RestoreBackupDefaults;
 end;
 
 procedure TMapForm.Medianfilter1Click(Sender: TObject);

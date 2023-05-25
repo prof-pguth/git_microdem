@@ -287,7 +287,7 @@ type
    tColors256  = array[0..255] of TColor;
    tPlatformColors256  = array[0..255] of TPlatformColor;
    tDistanceUnits = (disMetric,disEnglish,disNautical);
-   tLatLongMethod = (DecDegrees,DecMinutes,DecSeconds,NearestDegree,NearestMinute,NearestSecond,ShortDegrees,VeryShortDegrees);
+   tLatLongMethod = (DecDegrees,DecMinutes,DecSeconds,NearestDegree,NearestMinute,NearestSecond,ShortDegrees,VeryShortDegrees,LongDegrees);
    tAngleMeasure = (amDegree,amMinute,amSecond);
 
 type

@@ -2,8 +2,8 @@ object wmdem: Twmdem
   Left = 0
   Top = 262
   Caption = 'GIS program loading'
-  ClientHeight = 1147
-  ClientWidth = 2074
+  ClientHeight = 1146
+  ClientWidth = 2070
   Color = clScrollBar
   DefaultMonitor = dmDesktop
   Font.Charset = DEFAULT_CHARSET
@@ -28,13 +28,13 @@ object wmdem: Twmdem
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 2074
+    Width = 2070
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34
     TabOrder = 0
     OnMouseDown = ToolBar1MouseDown
-    ExplicitWidth = 2070
+    ExplicitWidth = 2066
     object SpeedButton2: TSpeedButton
       Left = 0
       Top = 0
@@ -1676,8 +1676,8 @@ object wmdem: Twmdem
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 1128
-    Width = 2074
+    Top = 1127
+    Width = 2070
     Height = 19
     Panels = <
       item
@@ -1696,8 +1696,8 @@ object wmdem: Twmdem
     Visible = False
     OnClick = StatusBar1Click
     OnDblClick = StatusBar1DblClick
-    ExplicitTop = 1127
-    ExplicitWidth = 2070
+    ExplicitTop = 1126
+    ExplicitWidth = 2066
   end
   object MainMenu1: TMainMenu
     Left = 136
@@ -1839,13 +1839,6 @@ object wmdem: Twmdem
         GroupIndex = 6
         OnClick = Structuralgeologylab1Click
       end
-      object Setupserver1: TMenuItem
-        Caption = 'Set up server'
-        GroupIndex = 6
-        object PanoramaAdmin1: TMenuItem
-          Caption = 'Main TCP interface'
-        end
-      end
       object DragonPlot1: TMenuItem
         Caption = 'Dragon Plot'
         GroupIndex = 6
@@ -1927,6 +1920,10 @@ object wmdem: Twmdem
       end
       object N3profiles1: TMenuItem
         Caption = '&3 profiles'
+      end
+      object Perpendicularshortprofilesthroughpoint1: TMenuItem
+        Caption = 'Perpendicular short profiles through point'
+        OnClick = Perpendicularshortprofilesthroughpoint1Click
       end
       object Magneticmodel1: TMenuItem
         Caption = '&Magnetic model'
@@ -2206,7 +2203,6 @@ object wmdem: Twmdem
         end
         object Subsamplecomparethinaverage1: TMenuItem
           Caption = 'Subsample compare thin/average'
-          OnClick = Subsamplecomparethinaverage1Click
         end
         object ACOLITEallopensatelliteimages1: TMenuItem
           Caption = 'ACOLITE all open satellite images'
@@ -2468,6 +2464,18 @@ object wmdem: Twmdem
         OnClick = Closewindows1Click
       end
     end
+    object DEMIX2: TMenuItem
+      Caption = 'DEMIX'
+      GroupIndex = 6
+      object OpenDEMIXdatabase1: TMenuItem
+        Caption = 'Open DEMIX database'
+        OnClick = OpenDEMIXdatabase1Click
+      end
+      object CreateDEMIXdatabase1: TMenuItem
+        Caption = 'Create DEMIX database'
+        OnClick = CreateDEMIXdatabase1Click
+      end
+    end
     object Help1: TMenuItem
       Caption = '&Help'
       GroupIndex = 6
@@ -2524,20 +2532,6 @@ object wmdem: Twmdem
       Caption = 'Test'
       GroupIndex = 6
       OnClick = est1Click
-    end
-    object DEMIX2: TMenuItem
-      Caption = 'DEMIX'
-      GroupIndex = 6
-      object OpenDEMIXdatabase1: TMenuItem
-        Caption = 'Open DEMIX database'
-        OnClick = OpenDEMIXdatabase1Click
-      end
-      object TMenuItem
-      end
-      object CreateDEMIXdatabase1: TMenuItem
-        Caption = 'Create DEMIX database'
-        OnClick = CreateDEMIXdatabase1Click
-      end
     end
   end
   object MetadataPopupMenu: TPopupMenu
@@ -3534,7 +3528,7 @@ object wmdem: Twmdem
       OnClick = ProcessVDATUMshifts1Click
     end
     object DEMIXreferenceDEMcreation1: TMenuItem
-      Caption = 'DEMIX 1 second reference DEM creation'
+      Caption = 'Create 1 second reference DEMs'
       OnClick = DEMIXreferenceDEMcreation1Click
     end
     object Processdifferencestatisticspertile1: TMenuItem
@@ -3542,8 +3536,15 @@ object wmdem: Twmdem
       OnClick = Processdifferencestatisticspertile1Click
     end
     object DEMIXmergeCSVfiles1: TMenuItem
-      Caption = 'DEMIX create database (merge and transpose CSV files)'
+      Caption = 'Create database (merge and transpose CSV files)'
       OnClick = DEMIXmergeCSVfiles1Click
+    end
+    object N39: TMenuItem
+      Caption = '-'
+    end
+    object Fullprocessingchain1: TMenuItem
+      Caption = 'Full processing chain'
+      OnClick = Fullprocessingchain1Click
     end
   end
 end

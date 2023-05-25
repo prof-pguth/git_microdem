@@ -18,13 +18,16 @@ unit demix_filter;
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Winapi.Windows, Winapi.Messages,
+  System.SysUtils, System.Variants, System.Classes,
   StrUtils,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons, Vcl.ComCtrls,
-  Vcl.Grids;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons, Vcl.ComCtrls, Vcl.Grids, Vcl.Graphics,
+  Petmar_types;
 
+const
+   MaxDemixArray = 6;
 type
-  tDEMixarray = array[1..6] of integer;
+  tDEMixarray = array[1..MaxDemixArray] of integer;
 
 
   TDemixFilterForm = class(TForm)
@@ -76,6 +79,11 @@ type
     BitBtn10: TBitBtn;
     CheckBox4: TCheckBox;
     BitBtn11: TBitBtn;
+    BitBtn12: TBitBtn;
+    BitBtn13: TBitBtn;
+    CheckBox5: TCheckBox;
+    CheckBox6: TCheckBox;
+    BitBtn14: TBitBtn;
     procedure BitBtn1Click(Sender: TObject);
     procedure LoadClick(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
@@ -95,10 +103,14 @@ type
     procedure BitBtn9Click(Sender: TObject);
     procedure BitBtn10Click(Sender: TObject);
     procedure BitBtn11Click(Sender: TObject);
+    procedure BitBtn12Click(Sender: TObject);
+    procedure BitBtn13Click(Sender: TObject);
+    procedure BitBtn14Click(Sender: TObject);
+    procedure Edit3Change(Sender: TObject);
   private
     { Private declarations }
-    procedure LoadDEMsForArea(LoadMaps : boolean = true);
     procedure ZeroDEMs;
+    procedure UncheckAllLoadCheckboxes;
   public
     { Public declarations }
     DB : integer;
@@ -107,10 +119,10 @@ type
     LandTypesUsing,
     CriteriaUsing,
     CandidateDEMsUsing : tStringList;
-    MergeDEMs,RefDEMs,RefDEMsv1,TestDEMs,DiffDSM_PointDEMs,DiffDTMDEMs : tDEMixarray;
+    MergeDEMs,RefDEMs,RefDEMsv1,RefDEMsHalfSec,TestDEMs,DiffDSMDEMs,DiffDTMDEMs : tDEMixarray;
     procedure GetUsingStringLists;
     procedure DoCriteriaGraph;
-
+    procedure LoadDEMsForCurrentArea(var AreaName : Petmar_types.shortstring; LoadMaps : boolean = true);
   end;
 
 
@@ -122,9 +134,9 @@ implementation
 {$R *.dfm}
 
 uses
-   Petmar,Petmar_types,Petmar_db,PetMath,PetImage,PetImage_form,
+   Petmar,Petmar_db,PetMath,PetImage,PetImage_form,
    DEMDatabase,DEMDbTable,DEMdef_routines,DEMDefs,DEMcoord,
-   BaseGraf,DEM_Manager,DEMstat,
+   BaseGraf,DEM_Manager,DEMstat,BaseMap,DEMlosw,Make_Grid,
    DEMIX_control,DEMmapf, nevadia_main;
 
 
@@ -150,13 +162,13 @@ begin
    DemixFilterForm.ComboBox1.Items.LoadFromFile(DEMIXSettingsDir + 'demix_tiles_list.txt');
    DemixFilterForm.ComboBox4.Items.LoadFromFile(DEMIXSettingsDir + 'demix_areas_list.txt');
    DemixFilterForm.ComboBox1.ItemIndex := 0;
-   DemixFilterForm.ComboBox4.ItemIndex := 0;
+   //DemixFilterForm.ComboBox4.ItemIndex := 0;
+   DemixFilterForm.ComboBox4.Text := 'state_line';
 
    DemixFilterForm.ComboBox5.Items.LoadFromFile(DEMIXSettingsDir + 'demix_tiles_list.txt');
    DemixFilterForm.ComboBox5.ItemIndex := 0;
    DemixFilterForm.ComboBox6.Items.LoadFromFile(DEMIXSettingsDir + 'demix_criteria.txt');
    DemixFilterForm.ComboBox6.ItemIndex := 0;
-
 
    DemixFilterForm.DEMsTypeUsing := tStringList.Create;
    DemixFilterForm.TilesUsing := tStringList.Create;
@@ -164,6 +176,7 @@ begin
    DemixFilterForm.LandTypesUsing := tStringList.Create;
    DemixFilterForm.CriteriaUsing := tStringList.Create;
    DemixFilterForm.CandidateDEMsUsing := tStringList.Create;
+   DemixFilterForm.Edit3.Text := RealToString(MDDef.TopCutLevel,-8,-2);
 
    //DemixFilterForm.BitBtn1.Enabled := GISdb[db].MyData.FieldExists('DEM');
 
@@ -172,6 +185,17 @@ begin
    //new_orleans_ALOS_N29ZW091L_elev_to_DTM.z
    //MakeGraphOfDifferenceDistribution('N29ZW091L','elev','dtm');
    {$IfDef RecordDEMIX} WriteLineToDebugFile('DoDEMIXFilter out'); {$EndIf}
+end;
+
+
+procedure TDemixFilterForm.UncheckAllLoadCheckboxes;
+begin
+   CheckBox1.Checked := false;
+   CheckBox2.Checked := false;
+   CheckBox3.Checked := false;
+   CheckBox4.Checked := false;
+   CheckBox5.Checked := false;
+   CheckBox6.Checked := false;
 end;
 
 
@@ -208,56 +232,22 @@ var
 begin
    for i := 1 to 6 do begin
       MergeDEMs[i] := 0;
-      DiffDSM_PointDEMs[i] := 0;
+      DiffDSMDEMs[i] := 0;
       RefDEMs[i] := 0;
       RefDEMsv1[i] := 0;
       DiffDTMDEMs[i] := 0;
       TestDEMs[i] := 0;
+      RefDEMsHalfSec[i] := 0;
    end;
 end;
 
 
-procedure TDemixFilterForm.LoadDEMsForArea(LoadMaps : boolean = true);
-var
-   AreaName : shortstring;
-
-      procedure LoadFromPath(var Which : tDEMIXarray; aPath : PathStr; Ext : ANSIstring; LoadMaps : boolean; What : shortstring);
-      var
-         FilesWanted : tStringList;
-         j,DEMs : integer;
-         fName,NewName : PathStr;
-      begin
-         FilesWanted := tStringList.Create;
-         FindMatchingFiles(aPath,Ext,FilesWanted,1);
-         DEMs := 0;
-         for j := 0 to pred(FilesWanted.Count) do begin
-            fName := FilesWanted.Strings[j];
-            if StrUtils.AnsiContainsText(UpperCase(fname),UpperCase(AreaName)) then begin
-               inc(DEMs);
-               Which[DEMs] := OpenNewDEM(fName,LoadMaps);
-            end;
-         end;
-         FilesWanted.Free;
-         {$IfDef RecordDEMIX} WriteLineToDebugFile('Loaded ' + What + '=' + IntToStr(DEMs)); {$EndIf}
-      end;
-
-var
-   i : integer;
-begin
-   {$IfDef RecordDEMIX} WriteLineToDebugFile('TDemixFilterForm.LoadDEMsForArea in'); {$EndIf}
-   AreaName := ComboBox4.Text;
-   ZeroDEMs;
-
-   if CheckBox1.Checked then LoadFromPath(MergeDEMs,DEMIX_Ref_Merge,'*.dem',LoadMaps,'Merge');
-   if CheckBox2.Checked then LoadFromPath(RefDEMs,DEMIX_Ref_1sec,'*.tif',LoadMaps,'Ref');
-   if CheckBox3.Checked then LoadFromPath(TestDEMs,DEMIX_test_dems,'*.dem',LoadMaps,'Test');
-   if CheckBox4.Checked then LoadFromPath(RefDEMsv1,DEMIX_Ref_1sec_v1,'*.tif',LoadMaps,'Ref_v1');
-   {$IfDef RecordDEMIX} WriteLineToDebugFile('TDemixFilterForm.LoadDEMsForArea out'); {$EndIf}
-end;
 
 procedure TDemixFilterForm.BitBtn5Click(Sender: TObject);
+var
+   AreaName : Petmar_types.shortstring;
 begin
-   LoadDEMsForArea(true);
+   LoadDEMsForCurrentArea(AreaName,true);
 end;
 
 
@@ -294,23 +284,26 @@ procedure TDemixFilterForm.BitBtn7Click(Sender: TObject);
 const
    DEMType : array[1..2] of shortstring = ('DTM','DSM');
 var
-   i,j : integer;
+   i,j,k : integer;
    DEMarea : ANSIString;
    fName : PathStr;
 
-   procedure GetRefDEM(theRefDEMs : tDEMixarray; TestDEM : integer; DEMArea,RefTypeString,DEMtype : shortstring);
+   procedure GetRefDEM(theRefDEMs : tDEMixarray; TestDEM : integer; DEMArea,RefPointOrArea,theDEMtype,TestDEMseriesName : shortstring);
    var
-      i : integer;
-      aDEM : shortString;
+      i,refDEMsurface : integer;
+      refDEM : shortString;
    begin
       for I := 1 to 6 do begin
          if ValidDEM(RefDEMs[i]) then begin
-            aDEM := UpperCase(DEMGlb[RefDEMs[i]].AreaName);
-            if StrUtils.AnsiContainsText(aDEM,RefTypeString) then begin
-               if StrUtils.AnsiContainsText(aDEM,DEMType) or ((DEMtype = 'DTM') and (not StrUtils.AnsiContainsText(aDEM,'DSM'))) then
-                  //DiffDSM_PointDEMs[i] := MakeDifferenceMap(theRefDEMs[i],TestDEMs[TestDEM],true,false,false,DEMIXDEMTypeName[TestDEM] + '_Delta_to_' + DEMGlb[RefDEMs[i]].AreaName)
-               //else
-                  DiffDTMDEMs[i] := MakeDifferenceMap(theRefDEMs[i],TestDEMs[TestDEM],true,false,false,DEMIXDEMTypeName[TestDEM] + '_Delta_to_' + DEMGlb[RefDEMs[i]].AreaName);
+            refDEM := UpperCase(DEMGlb[RefDEMs[i]].AreaName);
+            refDEMsurface := IsDEMaDSMorDTM(refDEM);
+            if StrUtils.AnsiContainsText(refDEM,RefPointOrArea) then begin
+               if (refDEMSurface = DEMisDSM) and (theDEMtype = 'DSM') then begin
+                  DiffDSMDEMs[i] := MakeDifferenceMap(theRefDEMs[i],TestDEM,true,false,false,TestDEMseriesName + '_Delta_to_' + DEMGlb[RefDEMs[i]].AreaName)
+               end
+               else if (refDEMSurface = DEMisDTM) and (theDEMtype = 'DTM') then begin
+                  DiffDTMDEMs[i] := MakeDifferenceMap(theRefDEMs[i],TestDEM,true,false,false,TestDEMseriesName + '_Delta_to_' + DEMGlb[RefDEMs[i]].AreaName);
+               end;
             end;
          end;
       end;
@@ -318,15 +311,14 @@ var
 
 var
    theRefDEMs : tDEMixarray;
+   RefPointOrArea,SeriesName,AreaName : shortstring;
 begin
    {$IfDef RecordDEMIX} WriteLineToDebugFile('TDemixFilterForm.BitBtn7Click (difference maps) in'); {$EndIf}
-   CheckEditString(Edit3.Text,MDDef.TopCutLevel);
-   MDDef.BottomCutLevel := -MDDef.TopCutLevel;
-   CheckBox1.Checked := false;
+   UncheckAllLoadCheckboxes;
    CheckBox2.Checked := (Sender = BitBtn7) or (Sender = BitBtn10);
    CheckBox3.Checked := true;
    CheckBox4.Checked := (Sender = BitBtn11);
-   LoadDEMsForArea(false);
+   LoadDEMsForCurrentArea(AreaName,false);
 
    if (Sender = BitBtn11) then theRefDEMs := RefDEMsv1 else theRefDEMs := RefDEMs;
 
@@ -335,13 +327,10 @@ begin
          //this will not work yet for the high latitude areas
          if ValidDEM(TestDEMs[i]) then begin
             DEMArea := UpperCase(DEMGlb[TestDEMs[i]].AreaName);
+            for  k := 1 to 6 do if StrUtils.AnsiContainsText(DEMArea,DEMIXDEMTypeName[k]) then SeriesName := DEMIXDEMTypeName[k];
             {$IfDef RecordDEMIX} WriteLineToDebugFile('Area=' + DEMArea + ' test DEM=' + DEMIXDEMTypeName[i] ); {$EndIf}
-            if StrUtils.AnsiContainsText(DEMArea,'ALOS') then begin
-               GetRefDEM(theRefDEMs,i,DEMArea,'AREA',DEMType[j]);
-            end
-            else begin
-               GetRefDEM(theRefDEMs,i,DEMArea,'POINT',DEMType[j]);
-            end;
+            if StrUtils.AnsiContainsText(DEMArea,'ALOS') then RefPointOrArea := 'AREA' else RefPointOrArea := 'POINT';
+            GetRefDEM(theRefDEMs,TestDEMs[i],DEMArea,RefPointOrArea,DEMType[j],SeriesName);
          end;
       end;
    end;
@@ -352,16 +341,22 @@ end;
 
 
 procedure TDemixFilterForm.BitBtn8Click(Sender: TObject);
-var
-   i : integer;
+//var
+   //i : integer;
 begin
+   (*
    for i := 1 to 6 do begin
+      //must do these so the values are zeroed
       CloseSingleDEM(MergeDEMs[i]);
-      CloseSingleDEM(DiffDSM_PointDEMs[i]);
+      CloseSingleDEM(DiffDSMDEMs[i]);
       CloseSingleDEM(DiffDTMDEMs[i]);
       CloseSingleDEM(RefDEMs[i]);
       CloseSingleDEM(TestDEMs[i]);
+      CloseSingleDEM(RefDEMsHalfSec[i]);
    end;
+   *)
+   CloseAllDEMs;
+   ZeroDEMs;
 end;
 
 procedure TDemixFilterForm.BitBtn9Click(Sender: TObject);
@@ -372,7 +367,7 @@ begin
    CheckEditString(Edit3.Text,MDDef.TopCutLevel);
    MDDef.BottomCutLevel := -MDDef.TopCutLevel;
    for i := 1 to 6 do begin
-      //if ValidDEM(DiffDSM_PointDEMs[i]) then DEMGlb[DiffDSM_PointDEMs[i]].SelectionMap.DoCompleteMapRedraw;
+      if ValidDEM(DiffDSMDEMs[i]) then DEMGlb[DiffDSMDEMs[i]].SelectionMap.DoCompleteMapRedraw;
       if ValidDEM(DiffDTMDEMs[i]) then DEMGlb[DiffDTMDEMs[i]].SelectionMap.DoCompleteMapRedraw;
    end;
    fName := NextFileNumber(MDTempDir,ComboBox4.Text + '_difference_maps_','.png');
@@ -496,13 +491,19 @@ begin
    CheckEditString(Edit2.Text,MDDef.DEMIX_ysize);
 end;
 
+procedure TDemixFilterForm.Edit3Change(Sender: TObject);
+begin
+   CheckEditString(Edit3.Text,MDDef.TopCutLevel);
+   MDDef.BottomCutLevel := -MDDef.TopCutLevel;
+end;
+
 procedure TDemixFilterForm.FormCreate(Sender: TObject);
 var
    i : integer;
 begin
    Edit1.Text := IntToStr(MDDef.DEMIX_xsize);
    Edit2.Text := IntToStr(MDDef.DEMIX_ysize);
-   Edit3.Text := RealToString(MDDef.TopCutLevel ,-8,-2);
+   //Edit3.Text := RealToString(MDDef.TopCutLevel ,-8,-2);
    for i := 1 to NumDEMIXDEM do begin
       StringGrid1.Cells[i,0] := DEMIXDEMTypeName[i];
    end;
@@ -535,6 +536,88 @@ procedure TDemixFilterForm.BitBtn11Click(Sender: TObject);
 begin
    BitBtn10Click(Sender);
 end;
+
+
+
+procedure TDemixFilterForm.BitBtn12Click(Sender: TObject);
+const
+   ProfileLength = 250;
+var
+   //i,j,k : integer;
+   //DEMarea : ANSIString;
+   //fName : PathStr;
+   xloc,yloc : integer;
+   Lat,Long{,LatLeft,LongLeft,LatRight,LongRight} : float64;
+   LocMax : float32;
+   //LOS1 : TDEMLOSF;
+   //Legend : tMyBitmap;
+   //theFiles : tStringList;
+   AreaName : shortstring;
+begin
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('TDemixFilterForm.BitBtn12Click (terrain profiles) in'); {$EndIf}
+   UncheckAllLoadCheckboxes;
+   CheckBox2.Checked := true;
+   CheckBox3.Checked := true;
+   LoadDEMsForCurrentArea(AreaName,false);
+   DEMglb[RefDEMs[1]].FindLocationOfMaximum(DEMglb[RefDEMs[1]].FullDEMGridLimits,xloc,yloc,LocMax);
+   DEMglb[RefDEMs[1]].DEMGridToLatLongDegree(xloc,yloc,lat,long);
+   DrawProfilesThroughPeak(RefDEMs[1],Lat,Long);
+end;
+
+
+procedure TDemixFilterForm.BitBtn13Click(Sender: TObject);
+var
+   i : integer;
+begin
+   try
+      HeavyDutyProcessing := true;
+      for i := 0 to pred(ComboBox4.Items.Count) do begin
+         wmdem.SetPanelText(2,IntToStr(succ(i)) + '/' + IntToStr(ComboBox4.Items.Count));
+         ComboBox4.Text := ComboBox4.Items[i];
+         BitBtn12Click(Sender);   //load dems and draw topo profiles
+         CloseAllDEMs;
+         CloseAllDataBases;
+      end;
+   finally
+      HeavyDutyProcessing := false;
+      ShowDefaultCursor;
+   end;
+end;
+
+
+procedure TDemixFilterForm.BitBtn14Click(Sender: TObject);
+var
+   AreaName,fName : PathStr;
+   i,j,DiffMaps,COPDEM,ALOSDEM,NewGrid : integer;
+begin
+   UncheckAllLoadCheckboxes;
+   CheckBox5.Checked := true;
+   CheckBox6.Checked := true;
+   LoadDEMsForCurrentArea(AreaName,true);
+   Diffmaps := 0;
+   for i := 1 to MaxDemixArray do if ValidDEM(RefDEMsHalfSec[i]) then begin
+      for j := 1 to MaxDemixArray do if ValidDEM(TestDEMs[j]) then begin
+         inc(DiffMaps);
+         DiffDTMDEMs[DiffMaps] := MakeDifferenceMap(RefDEMsHalfSec[i],TestDEMs[j],true,false,false,DEMglb[RefDEMsHalfSec[i]].AreaName + '_Delta_to_' + DEMglb[TestDEMs[j]].AreaName);
+      end;
+   end;
+
+   COPDEM := 0;
+   ALOSDEM := 0;
+   for j := 1 to MaxDemixArray do if ValidDEM(TestDEMs[j]) then begin
+      if StrUtils.AnsiContainsText(UpperCase(DEMglb[TestDEMs[j]].AreaName),'COP') then COPDEM := j;
+      if StrUtils.AnsiContainsText(UpperCase(DEMglb[TestDEMs[j]].AreaName),'ALOS') then ALOSDEM := j;
+   end;
+
+   for i := 1 to MaxDemixArray do if ValidDEM(RefDEMsHalfSec[i]) then begin
+      fName := 'alos_cop_high_low.dem';
+      NewGrid := TwoDEMHighLowMap(RefDEMsHalfSec[i],ALOSDEM,COPDEM,MDDef.TopCutLevel,true,fName);
+      if MDDef.AutoMergeStartDEM then begin
+         DEMGlb[NewGrid].SelectionMap.MergeAnotherDEMreflectance(COPDEM,true);
+      end;
+   end;
+end;
+
 
 procedure TDemixFilterForm.BitBtn1Click(Sender: TObject);
 begin
@@ -577,6 +660,58 @@ begin
    end;
 end;
 
+
+
+procedure TDemixFilterForm.LoadDEMsForCurrentArea(var AreaName: ShortString;  LoadMaps: boolean);
+var
+   DEMs : integer;
+
+      procedure LoadFromPath(var Which : tDEMIXarray; aPath : PathStr; Ext : ANSIstring; LoadMaps : boolean; Limit : shortstring; What : shortstring);
+      var
+         FilesWanted : tStringList;
+         j : integer;
+         fName,NewName : PathStr;
+      begin
+         FilesWanted := tStringList.Create;
+         FindMatchingFiles(aPath,Ext,FilesWanted,1);
+         if Limit = '' then DEMs := 0;
+         for j := 0 to pred(FilesWanted.Count) do begin
+            fName := FilesWanted.Strings[j];
+            if StrUtils.AnsiContainsText(UpperCase(fname),UpperCase(AreaName)) then begin
+               if (Limit = '') or StrUtils.AnsiContainsText(UpperCase(fname),UpperCase(Limit)) then begin
+                  if (DEMs = MaxDemixArray) then begin
+                     MessageToContinue('Too many DEMs in ' + aPath);
+                  end
+                  else begin
+                     inc(DEMs);
+                     Which[DEMs] := OpenNewDEM(fName,LoadMaps);
+                  end;
+               end;
+            end;
+         end;
+         FilesWanted.Free;
+         {$IfDef RecordDEMIX} WriteLineToDebugFile('Loaded ' + What + '=' + IntToStr(DEMs)); {$EndIf}
+      end;
+
+var
+   i : integer;
+begin
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('TDemixFilterForm.LoadDEMsForArea in'); {$EndIf}
+   AreaName := ComboBox4.Text;
+   ZeroDEMs;
+
+   if CheckBox1.Checked then LoadFromPath(MergeDEMs,DEMIX_Ref_Merge,'*.dem',LoadMaps,'','Merge');
+   if CheckBox2.Checked then LoadFromPath(RefDEMs,DEMIX_Ref_1sec,'*.tif',LoadMaps,'','Ref');
+   if CheckBox3.Checked then LoadFromPath(TestDEMs,DEMIX_test_dems,'*.dem',LoadMaps,'','Test');
+   if CheckBox4.Checked then LoadFromPath(RefDEMsv1,DEMIX_Ref_1sec_v1,'*.tif',LoadMaps,'','Ref_v1');
+   if CheckBox5.Checked then LoadFromPath(RefDEMsHalfSec,DEMIX_Ref_Half_sec,'*.tif',LoadMaps,'','Ref_half_sec');
+   if CheckBox6.Checked and (not CheckBox3.Checked) then begin
+      DEMs := 0;
+      LoadFromPath(TestDEMs,DEMIX_test_dems,'*.dem',LoadMaps,'COP','COP & ALOS Test');
+      LoadFromPath(TestDEMs,DEMIX_test_dems,'*.dem',LoadMaps,'ALOS','COP & ALOS Test');
+   end;
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('TDemixFilterForm.LoadDEMsForArea out'); {$EndIf}
+end;
 
 
 initialization

@@ -3401,6 +3401,8 @@ var
          AParameterShortFloat('MapDraw','LatLongCushion',LatLongCushion,0.025);
 
          AParameter('MapDraw','HighlightDiffMap',HighlightDiffMap,true);
+         AParameter('MapDraw','AutoMergeStartDEM',AutoMergeStartDEM,true);
+
 
          //AParameter('MapDrawing','StereoMode',StereoMode,smAnaglyph);
          if (IniWhat = iniWrite) then IniFile.WriteInteger('MapDraw','StereoMode',ord(StereoMode));
@@ -5384,6 +5386,8 @@ finalization
    {$IfDef RecordParallelLoops} WriteLineToDebugFile('RecordParallelLoops in demdef_routines'); {$EndIf}
    {$IfDef RecordFont} WriteLineToDebugFile('RecordFont in demdef_routines'); {$EndIf}
 end.
+
+
 
 
 

@@ -253,7 +253,7 @@ end;
 
 procedure GridDiffernces(EntireDEM : boolean);
 var
-   DEM1,DEM2 : integer;
+   DEM1,DEM2,DiffGrid : integer;
    RegionUsed : tGridLimits;
    aName : shortstring;
 begin
@@ -265,7 +265,10 @@ begin
       SetGridDiffernceProperties;
       if EntireDEM then RegionUsed := DEMGlb[DEM1].FullDEMGridLimits
       else RegionUsed := DEMGlb[DEM1].SelectionMap.MapDraw.MapAreaDEMGridLimits;
-      MakeDifferenceMapOfBoxRegion(DEM1,DEM2,RegionUsed,MDDef.ShowGridDiffMap,MDDef.ShowGridDiffHistogram,MDDef.ShowScatterPlot,aName);
+      DiffGrid := MakeDifferenceMapOfBoxRegion(DEM1,DEM2,RegionUsed,MDDef.ShowGridDiffMap,MDDef.ShowGridDiffHistogram,MDDef.ShowScatterPlot,aName);
+      if MDDef.AutoMergeStartDEM then begin
+         DEMGlb[DiffGrid].SelectionMap.MergeAnotherDEMreflectance(DEM1,true);
+      end;
       {$IfDef RecordDEMCompare} WriteLineToDebugFile('GridDifference out'); {$EndIf}
    end
    else begin

@@ -2,8 +2,8 @@ object DemixFilterForm: TDemixFilterForm
   Left = 0
   Top = 0
   Caption = 'Demix Filter Pick Graphs'
-  ClientHeight = 380
-  ClientWidth = 676
+  ClientHeight = 409
+  ClientWidth = 671
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -16,13 +16,13 @@ object DemixFilterForm: TDemixFilterForm
   object PageControl1: TPageControl
     Left = 0
     Top = 0
-    Width = 676
-    Height = 380
+    Width = 671
+    Height = 409
     ActivePage = TabSheet1
     Align = alClient
     TabOrder = 0
-    ExplicitWidth = 672
-    ExplicitHeight = 379
+    ExplicitWidth = 667
+    ExplicitHeight = 408
     object TabSheet1: TTabSheet
       Caption = 'New options'
       object Label4: TLabel
@@ -132,7 +132,7 @@ object DemixFilterForm: TDemixFilterForm
       end
       object BitBtn8: TBitBtn
         Left = 360
-        Top = 272
+        Top = 312
         Width = 154
         Height = 25
         Caption = 'Close DEMs'
@@ -146,10 +146,11 @@ object DemixFilterForm: TDemixFilterForm
         Height = 23
         TabOrder = 11
         Text = 'Edit3'
+        OnChange = Edit3Change
       end
       object BitBtn9: TBitBtn
         Left = 360
-        Top = 224
+        Top = 264
         Width = 154
         Height = 25
         Caption = 'Redraw difference maps'
@@ -166,21 +167,64 @@ object DemixFilterForm: TDemixFilterForm
         OnClick = BitBtn10Click
       end
       object CheckBox4: TCheckBox
-        Left = 344
-        Top = 148
+        Left = 16
+        Top = 169
         Width = 97
         Height = 17
         Caption = 'Ref DEMs v1'
         TabOrder = 14
       end
       object BitBtn11: TBitBtn
-        Left = 528
-        Top = 207
+        Left = 531
+        Top = 239
         Width = 129
         Height = 25
         Caption = 'v1 Elev Diff Maps'
         TabOrder = 15
         OnClick = BitBtn11Click
+      end
+      object BitBtn12: TBitBtn
+        Left = 360
+        Top = 208
+        Width = 154
+        Height = 25
+        Caption = 'Peak topographic profiles'
+        TabOrder = 16
+        OnClick = BitBtn12Click
+      end
+      object BitBtn13: TBitBtn
+        Left = 531
+        Top = 264
+        Width = 129
+        Height = 25
+        Caption = 'All  peaks profiles'
+        TabOrder = 17
+        OnClick = BitBtn13Click
+      end
+      object CheckBox5: TCheckBox
+        Left = 143
+        Top = 169
+        Width = 97
+        Height = 17
+        Caption = 'Reference 0.5"'
+        TabOrder = 18
+      end
+      object CheckBox6: TCheckBox
+        Left = 256
+        Top = 168
+        Width = 97
+        Height = 17
+        Caption = 'COP && ALOS'
+        TabOrder = 19
+      end
+      object BitBtn14: TBitBtn
+        Left = 531
+        Top = 208
+        Width = 129
+        Height = 25
+        Caption = 'COP/ALOS diff maps'
+        TabOrder = 20
+        OnClick = BitBtn14Click
       end
     end
     object TabSheet2: TTabSheet

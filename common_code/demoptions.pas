@@ -1241,7 +1241,7 @@ begin
    {$IfDef ExDP}
    {$Else}
       if (MDdef.ProgramOption = DragonPlotProgram) then begin
-         RadioGroup7.Visible := false;
+         //RadioGroup7.Visible := false;
          RadioGroup19.Visible := false;
          RadioGroup26.Visible := false;
          GroupBox6.Visible := false;
@@ -1715,7 +1715,9 @@ begin
       {$Else}
          if (MDdef.ProgramOption = DragonPlotProgram) then begin
              WMDEM.CloseAlldataandwindows1Click(Sender);
+             SaveMDdefaults;
              StartDragonPlot;
+             Close;
              exit;
          end;
       {$EndIf}

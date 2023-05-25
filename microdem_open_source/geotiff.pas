@@ -28,7 +28,7 @@ unit GeoTiff;
       //{$Define RecordGeotiff}
       //{$Define RecordGeotiffFailures}
       {$Define TrackPixelIs}
-      {$Define TrackDEMCorners}
+      //{$Define TrackDEMCorners}
       //{$Define RecordDEMMapProjection}
       //{$Define RecordInitializeDEM}
       //{$Define RecordGeotiffProjection}
@@ -1015,8 +1015,6 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
               end;
 
               {$IfDef TrackDEMCorners} WantDEM.WriteDEMCornersToDebugFile('Read the Geotiff'); {$EndIf}
-
-
 
 
               {$IfDef GeotiffCorner} WriteLineToDebugFile('Read Geotiff DEM,  SW corner  X=' + RealToString(WantDEM.DEMheader.DEMSWCornerX,-18,-6) + '  Y=' + RealToString(WantDEM.DEMheader.DEMSWCornerY,-18,-6)); {$EndIf}

@@ -210,6 +210,7 @@ type
 
      procedure LineOfSightFromLatLong;
      procedure MarineMagneticAnomalies;
+     function CreateProfileLegend : tMyBitmap;
      procedure ShowOnMap;
      procedure EnableAzimuthShifts;
      {$IfDef ExWaveLengthHeight}
@@ -237,6 +238,7 @@ var
 
 function StartLOS(inActuallyDraw : boolean; WhatType : tDEMDoingWhat; DEMonMap : integer; Lat1,Long1,Lat2,Long2 : float64; inBaseMap : tMapForm; inEnableAzimuthShifts : boolean = false) : TDEMLOSF;
 function AverageProfileGraph(Map : tMapForm; DEM : Integer; LatLeft,LongLeft,LatRight,LongRight : float64) :  TThisBaseGraph;
+procedure DrawProfilesThroughPeak(DEM : integer; Lat,Long : float64);
 
 
 implementation
@@ -256,6 +258,7 @@ uses
    DataBaseCreate,
    DEM_Manager,
    Toggle_DB_Use,
+   DEMIX_control,
 
    {$IfDef ExPointCloud}
    {$Else}
@@ -300,6 +303,66 @@ var
 {$I demlos_marine_mag.inc}
 
 
+procedure DrawProfilesThroughPeak(DEM : integer; Lat,Long : float64);
+//for all open DEMs, draws two profiles centered on the
+const
+   ProfileLength = 250;
+var
+   i,j,k : integer;
+   DEMarea : ANSIString;
+   fName : PathStr;
+   xloc,yloc : integer;
+   LatLeft,LongLeft,LatRight,LongRight : float64;
+   xg,yg,LocMax : float32;
+   LOS1 : TDEMLOSF;
+   Legend : tMyBitmap;
+   theFiles : tStringList;
+   AreaName : shortstring;
+   bb : tGridLimits;
+
+
+   function DrawProfile(Az1,Az2 : float32) : TDEMLOSF;
+   var
+      fName : PathStr;
+   begin
+      VincentyPointAtDistanceBearing(Lat,Long,ProfileLength,Az1,LatLeft,LongLeft);
+      VincentyPointAtDistanceBearing(Lat,Long,ProfileLength,Az2,LatRight,LongRight);
+      LOS1 := StartLOS(True,MultipleTopoProfileRight,DEM,LatLeft,LongLeft,LatRight,LongRight,Nil);
+      Legend := LOS1.CreateProfileLegend;
+      LOS1.Image1.Canvas.Draw(LOS1.Image1.Width div 2 - Legend.Width div 2, LOS1.LOSdraw.ProfileBot - 5 - Legend.Height,Legend);
+      fName := NextFileNumber(MDtempdir,'profiles_','.bmp');
+      SaveImageAsBMP(LOS1.Image1,fName);
+      theFiles.Add(fName);
+      Legend.Free;
+      //if (Sender = BitBtn13) then LOS1.Destroy;
+   end;
+
+begin
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('TDemixFilterForm.BitBtn12Click (terrain profiles) in'); {$EndIf}
+
+   DEMglb[DEM].LatLongDegreeToDEMGrid(lat,long,xg,yg);
+   bb.XGridLow := round(xg) - 10;
+   bb.XGridHigh := round(xg) + 10;
+   bb.YGridLow := round(yg) - 10;
+   bb.YGridHigh := round(yg) + 10;
+
+   DEMglb[DEM].FindLocationOfMaximum(bb,xloc,yloc,LocMax);
+   DEMglb[DEM].DEMGridToLatLongDegree(xloc,yloc,lat,long);
+
+
+   theFiles := tStringList.Create;
+   DrawProfile(270,90);
+   DrawProfile(0,180);
+
+   fName := NextFileNumber(DEMIX_profile_test_dir,DEMGlb[DEM].AreaName + '_profiles_','.png');
+   MakeBigBitmap(theFiles,'Profiles through peak',fName,1);
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('TDemixFilterForm.BitBtn12Click out'); {$EndIf}
+end;
+
+
+
+
+
 function StartLOS(inActuallyDraw : boolean; WhatType : tDEMDoingWhat; DEMonMap : integer; Lat1,Long1,Lat2,Long2 : float64; inBaseMap : tMapForm; inEnableAzimuthShifts : boolean = false) : TDEMLOSF;
 begin
   {$If Defined(RecordLOSProblems) or Defined(RecordUTMZone)} WriteLineToDebugFile('enter StartLOS, DEM=' + IntToStr(DEMonMap) + '  Map UTM zone=' + IntToStr(inBaseMap.MapDraw.PrimMapProj.projUTMZone)); {$EndIf}
@@ -332,7 +395,8 @@ begin
 
          Result.LOSdraw.DEMonView := DEMonMap;
          Result.BaseMap := inBaseMap;
-         Result.LOSdraw.BaseMapDraw := inBaseMap.MapDraw;
+         if inBaseMap = Nil then Result.LOSdraw.BaseMapDraw := Nil
+         else Result.LOSdraw.BaseMapDraw := inBaseMap.MapDraw;
 
          if inEnableAzimuthShifts then Result.EnableAzimuthShifts;
 
@@ -1302,16 +1366,18 @@ var
    x,y,Rad : integer;
 begin
 {this should just plot Fresnal DB}
-   DEMGlb[LOSDraw.DEMonView].LatLongDegreeToDEMGrid(LOSDraw.LatLeft,LOSDraw.LongLeft,XGridLeft,YGridLeft);
-   DEMGlb[LOSDraw.DEMonView].LatLongDegreeToDEMGrid(LOSDraw.LatRight,LOSDraw.LongRight,XGridRight,YGridRight);
-   if MDDef.ShowObserverMaskingCircle then begin
-      BaseMap.MapDraw.LatLongDegreeToScreen(LOSDraw.LatLeft,LOSDraw.LongLeft,x,y);
-      Rad := round(MDdef.MaskObsRange / BaseMap.MapDraw.ScreenPixelSize);
-      Image1.Canvas.Brush.Style := bsClear;
-      Image1.Canvas.Pen.Color := clRed;
-      Image1.Canvas.Ellipse(x-rad,y-rad,x+rad,y+rad);
+   if (BaseMap <> Nil) then begin
+      DEMGlb[LOSDraw.DEMonView].LatLongDegreeToDEMGrid(LOSDraw.LatLeft,LOSDraw.LongLeft,XGridLeft,YGridLeft);
+      DEMGlb[LOSDraw.DEMonView].LatLongDegreeToDEMGrid(LOSDraw.LatRight,LOSDraw.LongRight,XGridRight,YGridRight);
+      if MDDef.ShowObserverMaskingCircle then begin
+         BaseMap.MapDraw.LatLongDegreeToScreen(LOSDraw.LatLeft,LOSDraw.LongLeft,x,y);
+         Rad := round(MDdef.MaskObsRange / BaseMap.MapDraw.ScreenPixelSize);
+         Image1.Canvas.Brush.Style := bsClear;
+         Image1.Canvas.Pen.Color := clRed;
+         Image1.Canvas.Ellipse(x-rad,y-rad,x+rad,y+rad);
+      end;
+      DEMGlb[LOSDraw.DEMonView].GridPointsIntervisible(XGridLeft,YGridLeft,MDDef.ObsAboveGround,XGridRight,YGridRight,MDDef.TargetAboveGround,Distance,BlockDist);
    end;
-   DEMGlb[LOSDraw.DEMonView].GridPointsIntervisible(XGridLeft,YGridLeft,MDDef.ObsAboveGround,XGridRight,YGridRight,MDDef.TargetAboveGround,Distance,BlockDist);
 end;
 
 
@@ -1503,16 +1569,16 @@ begin
 end;
 
 
-procedure TDEMLOSF.Profilelegends1Click(Sender: TObject);
+function TDEMLOSF.CreateProfileLegend : tMyBitmap;
 var
    y,x,WhichDEM,ItemHigh,ItemWidth,LegendItem,DEMshown : integer;
-   LegBMP : tMyBitmap;
+  // LegBMP : tMyBitmap;
 begin
    {$If Defined(RecordLOSProblems) or Defined(RecordLOSLegend)} WriteLineToDebugFile('TDEMLOSF.Profilelegends1Click'); {$EndIf}
-   CreateBitmap(LegBMP,1,1);
-   LegBMP.Canvas.Font.Name := MDDef.DefaultGraphFont.Name;
-   LegBMP.Canvas.Font.Size := MDDef.DefaultGraphFont.Size;
-   LegBMP.Canvas.Font.Style := [fsBold];
+   CreateBitmap(Result,1,1);
+   Result.Canvas.Font.Name := MDDef.DefaultGraphFont.Name;
+   Result.Canvas.Font.Size := MDDef.DefaultGraphFont.Size;
+   Result.Canvas.Font.Style := [fsBold];
 
    ItemWidth := 40;
    ItemHigh := 0;
@@ -1521,22 +1587,22 @@ begin
       if ValidDEM(WhichDEM) and LOSDraw.ShowProfile[WhichDEM] then begin
          {$If Defined(RecordLOSProblems) or Defined(RecordLOSLegend)} WriteLineToDebugFile('DEM=' + IntToStr(WhichDEM) + '   ' + LOSDraw.ProfileName[WhichDEM]); {$EndIf}
          inc(DEMShown);
-         x := LegBMP.Canvas.TextWidth(LOSdraw.ProfileName[WhichDEM]);
+         x := Result.Canvas.TextWidth(LOSdraw.ProfileName[WhichDEM]);
          if (x > ItemWidth) then ItemWidth := x + 40;
-         x := LegBMP.Canvas.TextHeight(LOSdraw.ProfileName[WhichDEM]);
+         x := Result.Canvas.TextHeight(LOSdraw.ProfileName[WhichDEM]);
          if x > ItemHigh then ItemHigh := x + 10;
       end;
    end;
-   LegBMP.Width := ItemWidth;
-   LegBMP.Height := 15 + DEMShown * ItemHigh;
-   {$If Defined(RecordLOSProblems) or Defined(RecordLOSLegend)}  WriteLineToDebugFile('Legend size: ' + IntToStr(LegBMP.Width) + 'x' + IntToStr(LegBMP.Height) ); {$EndIf}
+   Result.Width := ItemWidth;
+   Result.Height := 15 + DEMShown * ItemHigh;
+   {$If Defined(RecordLOSProblems) or Defined(RecordLOSLegend)}  WriteLineToDebugFile('Legend size: ' + IntToStr(Result.Width) + 'x' + IntToStr(Result.Height) ); {$EndIf}
 
-   LegBMP.Canvas.Brush.Color := clWhite;
-   LegBMP.Canvas.Brush.Style := bsSolid;
-   LegBMP.Canvas.Pen.Color := clBlack;
-   LegBMP.Canvas.Pen.Width := 0;
-   LegBMP.Canvas.Rectangle(0,0,pred(LegBMP.Width),pred(LegBMP.Height));
-   LegBMP.Canvas.Brush.Style := bsClear;
+   Result.Canvas.Brush.Color := clWhite;
+   Result.Canvas.Brush.Style := bsSolid;
+   Result.Canvas.Pen.Color := clBlack;
+   Result.Canvas.Pen.Width := 0;
+   Result.Canvas.Rectangle(0,0,pred(Result.Width),pred(Result.Height));
+   Result.Canvas.Brush.Style := bsClear;
 
    LegendItem := 0;
    DEMShown := 0;
@@ -1546,18 +1612,23 @@ begin
          if LOSDraw.ShowProfile[WhichDEM] then begin
             inc(LegendItem);
             {$If Defined(RecordLOSProblems) or Defined(RecordLOSLegend)}  WriteLineToDebugFile('Item=' + IntToStr(DEMshown) + ' ' +  LOSdraw.ProfileName[WhichDEM] + '  y=' + IntToStr(5+ItemHigh*pred(LegendItem))); {$EndIf}
-            LegBMP.Canvas.Pen.Color := ConvertPlatformColorToTColor(LineColors256[DEMshown]);
-            LegBMP.Canvas.Pen.Width := LineSize256[DEMshown];
-            LegBMP.Canvas.Font.Color := LegBMP.Canvas.Pen.Color;
-            LegBMP.Canvas.TextOut(35,5+ItemHigh*pred(LegendItem),LOSdraw.ProfileName[WhichDEM]);
-            LegBMP.Canvas.MoveTo(5,ItemHigh*pred(LegendItem) + ItemHigh div 2);
-            LegBMP.Canvas.LineTo(30,ItemHigh*pred(LegendItem) + ItemHigh div 2);
+            Result.Canvas.Pen.Color := ConvertPlatformColorToTColor(LineColors256[DEMshown]);
+            Result.Canvas.Pen.Width := LineSize256[DEMshown];
+            Result.Canvas.Font.Color := Result.Canvas.Pen.Color;
+            Result.Canvas.TextOut(35,5+ItemHigh*pred(LegendItem),LOSdraw.ProfileName[WhichDEM]);
+            Result.Canvas.MoveTo(5,ItemHigh*pred(LegendItem) + ItemHigh div 2);
+            Result.Canvas.LineTo(30,ItemHigh*pred(LegendItem) + ItemHigh div 2);
          end;
       end;
    end;
-   PetImage_form.DisplayBitmap(LegBMP,'Profiles');
+end;
+
+procedure TDEMLOSF.Profilelegends1Click(Sender: TObject);
+begin
+   PetImage_form.DisplayBitmap(CreateProfileLegend,'Profiles');
    //LegBMP.Free;
 end;
+
 
 procedure TDEMLOSF.AllopenDEMs1Click(Sender: TObject);
 begin

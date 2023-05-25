@@ -448,7 +448,7 @@ begin
     RegionalDEM := 0;
 
       if (MDdef.AutoOpen in [aoDEM,aoNothing]) then begin
-         LoadNewDEM(RegionalDEM,DragonPlotDef.DefaultDEMName,true,'regional DEM','',false);
+         LoadNewDEM(RegionalDEM,DragonPlotDef.DefaultDEMName,true,'regional DEM','',true);
       end
       else if (MDdef.AutoOpen = aoProject) then begin
          RestoreSpecifiedDesktop(LastDesktop);

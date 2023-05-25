@@ -2,8 +2,8 @@ object dbtablef: Tdbtablef
   Left = 62
   Top = 306
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1002
-  ClientWidth = 1264
+  ClientHeight = 999
+  ClientWidth = 1252
   Color = clBtnFace
   ParentFont = True
   FormStyle = fsMDIChild
@@ -17,24 +17,24 @@ object dbtablef: Tdbtablef
   TextHeight = 15
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 983
-    Width = 1264
+    Top = 980
+    Width = 1252
     Height = 19
     Panels = <
       item
         Width = 250
       end>
-    ExplicitTop = 986
-    ExplicitWidth = 1276
+    ExplicitTop = 981
+    ExplicitWidth = 1256
   end
   object Panel2: TPanel
     Left = 0
     Top = 41
-    Width = 1264
+    Width = 1252
     Height = 32
     Align = alTop
     TabOrder = 1
-    ExplicitWidth = 1276
+    ExplicitWidth = 1256
     object BitBtn1: TBitBtn
       Left = 34
       Top = 1
@@ -215,11 +215,11 @@ object dbtablef: Tdbtablef
   object Panel3: TPanel
     Left = 0
     Top = 73
-    Width = 1264
+    Width = 1252
     Height = 41
     Align = alTop
     TabOrder = 2
-    ExplicitWidth = 1276
+    ExplicitWidth = 1256
     object Label2: TLabel
       Left = 12
       Top = 12
@@ -266,11 +266,11 @@ object dbtablef: Tdbtablef
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1264
+    Width = 1252
     Height = 41
     Align = alTop
     TabOrder = 4
-    ExplicitWidth = 1276
+    ExplicitWidth = 1256
     object LOSButton: TSpeedButton
       Left = 40
       Top = 6
@@ -529,11 +529,11 @@ object dbtablef: Tdbtablef
   object Panel7: TPanel
     Left = 0
     Top = 114
-    Width = 1264
+    Width = 1252
     Height = 41
     Align = alTop
     TabOrder = 3
-    ExplicitWidth = 1276
+    ExplicitWidth = 1256
     object RadioGroup2: TRadioGroup
       Left = 20
       Top = 0
@@ -554,8 +554,8 @@ object dbtablef: Tdbtablef
   object DBGrid1: TDBGrid
     Left = 0
     Top = 155
-    Width = 1264
-    Height = 828
+    Width = 1252
+    Height = 825
     Align = alClient
     TabOrder = 5
     TitleFont.Charset = DEFAULT_CHARSET
@@ -1313,107 +1313,7 @@ object dbtablef: Tdbtablef
     end
     object DEMIX1: TMenuItem
       Caption = 'DEMIX'
-      object Filteroutsignedcriteriameanandmedian1: TMenuItem
-        Caption = 'Filter out signed criteria (mean and median)'
-        OnClick = Filteroutsignedcriteriameanandmedian1Click
-      end
-      object FilterforDEMIXtiles1: TMenuItem
-        Caption = 'Filter for DEMIX tiles'
-        OnClick = FilterforDEMIXtiles1Click
-      end
-      object ExtractDEMIXtiles1: TMenuItem
-        Caption = 'Extract DEMIX tile DEMs'
-        OnClick = ExtractDEMIXtiles1Click
-      end
-      object DEMIXtilesummary1: TMenuItem
-        Caption = 'DEMIX tile summary'
-        OnClick = DEMIXtilesummary1Click
-      end
-      object N1degreetilestocoverrecordsintable1: TMenuItem
-        Caption = '1 degree tiles to cover records in table'
-        OnClick = N1degreetilestocoverrecordsintable1Click
-      end
-      object Graphmeanmedianbyterraincategory1: TMenuItem
-        Caption = 'Graphs with various filters (experimental)'
-        object Allcriteriavalues1: TMenuItem
-          Caption = 'Single tile, all criteria, values'
-          OnClick = Allcriteriavalues1Click
-        end
-        object PercentageofcriteriawhereDEMisbest1: TMenuItem
-          Caption = 'Percentage of criteria where DEM is best'
-          Enabled = False
-          OnClick = PercentageofcriteriawhereDEMisbest1Click
-        end
-        object Averageranksbyarea1: TMenuItem
-          Caption = 'Average ranks by area'
-          OnClick = Averageranksbyarea1Click
-        end
-      end
-      object Graphavereagescoresbyterraincategories1: TMenuItem
-        Caption = 'Graph avereage scores by terrain categories'
-        OnClick = Graphavereagescoresbyterraincategories1Click
-      end
-      object FriedmanTest1: TMenuItem
-        Caption = 'Friedman Test'
-        OnClick = FriedmanTest1Click
-      end
-      object Sumscores1: TMenuItem
-        Caption = 'Sum scores based on active filters'
-        OnClick = Sumscores1Click
-      end
-      object N47: TMenuItem
-        Caption = '-'
-      end
-      object Graphfilters1: TMenuItem
-        Caption = 'Graph filters'
-        OnClick = Graphfilters1Click
-      end
-      object PickParam1: TMenuItem
-        Caption = 'Absolute differences from reference DEM by tile'
-        OnClick = PickParam1Click
-      end
-      object NormalizeddifferencesfromreferenceDEM1: TMenuItem
-        Caption = 'Normalized differences from reference DEM by tile'
-        OnClick = NormalizeddifferencesfromreferenceDEM1Click
-      end
-      object RankDEMs1: TMenuItem
-        Caption = 'Rank DEMs and find best by criterion and tile'
-        OnClick = RankDEMs1Click
-      end
-      object COPoALOS1: TMenuItem
-        Caption = 'Winning percentages and shootouts'
-        OnClick = COPoALOS1Click
-      end
-      object BestDEMpertilebycriteria1: TMenuItem
-        Caption = 'Graphs best DEM per tile, by criteria (sort by area)'
-        OnClick = BestDEMpertilebycriteria1Click
-      end
-      object GraphsbestDEMpertilebycriteriasortbytilecharacteristics1: TMenuItem
-        Caption = 
-          'Graphs best DEM per tile, by criteria (sort by tile characterist' +
-          'ics)'
-        OnClick = GraphsbestDEMpertilebycriteriasortbytilecharacteristics1Click
-      end
-      object BestDEMbycategory1: TMenuItem
-        Caption = 'Graph best DEM (average score) for criteria and filters '
-        OnClick = BestDEMbycategory1Click
-      end
-      object N7Elevationdifferencecriteria1: TMenuItem
-        Caption = 'Graph difference values by DEMIX tile'
-        OnClick = N7Elevationdifferencecriteria1Click
-      end
-      object Bestbysortedgeomorphometry1: TMenuItem
-        Caption = 'Best by sorted geomorphometry'
-        OnClick = Bestbysortedgeomorphometry1Click
-      end
-      object iesbyopinions1: TMenuItem
-        Caption = 'Ties by opinions'
-        OnClick = iesbyopinions1Click
-      end
-      object Wins1: TMenuItem
-        Caption = 'Wins and Ties'
-        OnClick = Wins1Click
-      end
+      OnClick = DEMIX1Click
     end
     object N13: TMenuItem
       Caption = '-'
@@ -3724,6 +3624,118 @@ object dbtablef: Tdbtablef
     object Pointdensitymatchmaparea1: TMenuItem
       Caption = 'Point density (match map area)'
       OnClick = Pointdensitymatchmaparea1Click
+    end
+  end
+  object DEMIXPopupMenu1: TPopupMenu
+    Left = 368
+    Top = 480
+    object Graphfilters1: TMenuItem
+      Caption = 'Graph filters'
+      OnClick = Graphfilters1Click
+    end
+    object DEMIXtileinvertory1: TMenuItem
+      Caption = 'DEMIX tile invertory'
+      OnClick = DEMIXtileinvertory1Click
+    end
+    object DEMIXtilesummary1: TMenuItem
+      Caption = 'DEMIX tile summary'
+      OnClick = DEMIXtilesummary1Click
+    end
+    object Filteroutsignedcriteriameanandmedian1: TMenuItem
+      Caption = 'Filter out signed criteria (mean and median)'
+      OnClick = Filteroutsignedcriteriameanandmedian1Click
+    end
+    object Filterforjustsignedcrirteria1: TMenuItem
+      Caption = 'Filter for just signed crirteria'
+      OnClick = Filterforjustsignedcrirteria1Click
+    end
+    object FilterforDEMIXtiles1: TMenuItem
+      Caption = 'Filter for DEMIX tiles'
+      OnClick = FilterforDEMIXtiles1Click
+    end
+    object N1degreetilestocoverrecordsintable1: TMenuItem
+      Caption = '1 degree tiles to cover records in table'
+      OnClick = N1degreetilestocoverrecordsintable1Click
+    end
+    object N48: TMenuItem
+      Caption = '-'
+    end
+    object Graphmeanmedianbyterraincategory1: TMenuItem
+      Caption = 'Graphs with various filters (experimental)'
+      object Allcriteriavalues1: TMenuItem
+        Caption = 'Single tile, all criteria, values'
+        OnClick = Allcriteriavalues1Click
+      end
+      object PercentageofcriteriawhereDEMisbest1: TMenuItem
+        Caption = 'Percentage of criteria where DEM is best'
+        Enabled = False
+        OnClick = PercentageofcriteriawhereDEMisbest1Click
+      end
+      object Averageranksbyarea1: TMenuItem
+        Caption = 'Average ranks by area'
+        OnClick = Averageranksbyarea1Click
+      end
+    end
+    object Graphavereagescoresbyterraincategories1: TMenuItem
+      Caption = 'Graph avereage scores by terrain categories'
+      OnClick = Graphavereagescoresbyterraincategories1Click
+    end
+    object FriedmanTest1: TMenuItem
+      Caption = 'Friedman Test'
+      OnClick = FriedmanTest1Click
+    end
+    object Sumscores1: TMenuItem
+      Caption = 'Sum scores based on active filters'
+      OnClick = Sumscores1Click
+    end
+    object N47: TMenuItem
+      Caption = '-'
+    end
+    object PickParam1: TMenuItem
+      Caption = 'Absolute differences from reference DEM by tile'
+      OnClick = PickParam1Click
+    end
+    object NormalizeddifferencesfromreferenceDEM1: TMenuItem
+      Caption = 'Normalized differences from reference DEM by tile'
+      OnClick = NormalizeddifferencesfromreferenceDEM1Click
+    end
+    object RankDEMs1: TMenuItem
+      Caption = 'Rank DEMs and find best by criterion and tile'
+      OnClick = RankDEMs1Click
+    end
+    object COPoALOS1: TMenuItem
+      Caption = 'Winning percentages and shootouts'
+      OnClick = COPoALOS1Click
+    end
+    object BestDEMpertilebycriteria1: TMenuItem
+      Caption = 'Graphs best DEM per tile, by criteria (sort by area)'
+      OnClick = BestDEMpertilebycriteria1Click
+    end
+    object GraphsbestDEMpertilebycriteriasortbytilecharacteristics1: TMenuItem
+      Caption = 
+        'Graphs best DEM per tile, by criteria (sort by tile characterist' +
+        'ics)'
+      OnClick = GraphsbestDEMpertilebycriteriasortbytilecharacteristics1Click
+    end
+    object BestDEMbycategory1: TMenuItem
+      Caption = 'Graph best DEM (average score) for criteria and filters '
+      OnClick = BestDEMbycategory1Click
+    end
+    object N7Elevationdifferencecriteria1: TMenuItem
+      Caption = 'Graph difference values by DEMIX tile'
+      OnClick = N7Elevationdifferencecriteria1Click
+    end
+    object Bestbysortedgeomorphometry1: TMenuItem
+      Caption = 'Best by sorted geomorphometry'
+      OnClick = Bestbysortedgeomorphometry1Click
+    end
+    object iesbyopinions1: TMenuItem
+      Caption = 'Ties by opinions'
+      OnClick = iesbyopinions1Click
+    end
+    object Wins1: TMenuItem
+      Caption = 'Wins and Ties'
+      OnClick = Wins1Click
     end
   end
 end

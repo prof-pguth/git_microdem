@@ -903,7 +903,6 @@ type
     GDALsubsettomatchthisrecord1: TMenuItem;
     Removeduplicatepositions1: TMenuItem;
     Filltrackvoids1: TMenuItem;
-    ExtractDEMIXtiles1: TMenuItem;
     DEMIX1: TMenuItem;
     AddEGMfields1: TMenuItem;
     RMSE1: TMenuItem;
@@ -958,6 +957,10 @@ type
     Datumshift2: TMenuItem;
     Latlongelevofrecordcorners1: TMenuItem;
     Exporttablewithuniquerecords1: TMenuItem;
+    DEMIXPopupMenu1: TPopupMenu;
+    N48: TMenuItem;
+    DEMIXtileinvertory1: TMenuItem;
+    Filterforjustsignedcrirteria1: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
     procedure Shiftpointrecords1Click(Sender: TObject);
     procedure Creategrid1Click(Sender: TObject);
@@ -1634,7 +1637,6 @@ type
     procedure GDALsubsettomatchthisrecord1Click(Sender: TObject);
     procedure Removeduplicatepositions1Click(Sender: TObject);
     procedure Filltrackvoids1Click(Sender: TObject);
-    procedure ExtractDEMIXtiles1Click(Sender: TObject);
     procedure AddEGMfields1Click(Sender: TObject);
     procedure RMSE1Click(Sender: TObject);
     procedure AllpointsinlinewithXYZ1Click(Sender: TObject);
@@ -1687,6 +1689,9 @@ type
     procedure Datumshift2Click(Sender: TObject);
     procedure Latlongelevofrecordcorners1Click(Sender: TObject);
     procedure Exporttablewithuniquerecords1Click(Sender: TObject);
+    procedure DEMIX1Click(Sender: TObject);
+    procedure DEMIXtileinvertory1Click(Sender: TObject);
+    procedure Filterforjustsignedcrirteria1Click(Sender: TObject);
   private
     procedure PlotSingleFile(fName : PathStr; xoff,yoff : float64);
     procedure SetUpLinkGraph;
@@ -10532,6 +10537,18 @@ begin
 end;
 
 
+procedure Tdbtablef.DEMIX1Click(Sender: TObject);
+begin
+   DEMIXPopUpMenu1.PopUp(Mouse.CursorPos.X,Mouse.CursorPos.Y);
+
+end;
+
+procedure Tdbtablef.DEMIXtileinvertory1Click(Sender: TObject);
+begin
+   DEMIXtile_inventory(DBonTable);
+end;
+
+
 procedure Tdbtablef.DEMIXtilesummary1Click(Sender: TObject);
 begin
    DEMIXTileSummary(DBonTable);
@@ -11540,30 +11557,28 @@ var
    Lat,Long : float64;
    Sym : tDrawingSymbol;
 begin
-   //with {GISdb[DBonTable]..TheMapOwner.MapDraw do begin
-      Sym := FilledBox;
-      Petmar.GetSymbol(Sym,GISdb[DBonTable].AreaRecordSize,GISdb[DBonTable].dbOpts.FillColor,'Area centroids');
-      GISdb[DBonTable].EmpSource.Enabled := false;
-      CopyImageToBitmap(GISdb[DBonTable].theMapOwner.Image1,BitMap);
-      StartProgress('Centroids');
-      i := 0;
-      rc := GISdb[DBonTable].MyData.RecordCount;
-      GISdb[DBonTable].MyData.First;
-      while not GISdb[DBonTable].MyData.EOF do begin
-         inc(i);
-         if i mod 100 = 0 then begin
-            UpdateProgressBar(i/rc);
-            GISdb[DBonTable].EmpSource.Enabled := false;
-         end;
-         GISdb[DBonTable].GetLatLongToRepresentRecord(Lat,Long);
-         GISdb[DBonTable].TheMapOwner.MapDraw.LatLongDegreeToScreen(Lat,Long,x,y);
-         Petmar.ScreenSymbol(Bitmap.Canvas,x,y,Sym,GISdb[DBonTable].AreaRecordSize,GISdb[DBonTable].dbOpts.FillColor);
-         GISdb[DBonTable].MyData.Next;
+   Sym := FilledBox;
+   Petmar.GetSymbol(Sym,GISdb[DBonTable].AreaRecordSize,GISdb[DBonTable].dbOpts.FillColor,'Area centroids');
+   GISdb[DBonTable].EmpSource.Enabled := false;
+   CopyImageToBitmap(GISdb[DBonTable].theMapOwner.Image1,BitMap);
+   StartProgress('Centroids');
+   i := 0;
+   rc := GISdb[DBonTable].MyData.RecordCount;
+   GISdb[DBonTable].MyData.First;
+   while not GISdb[DBonTable].MyData.EOF do begin
+      inc(i);
+      if i mod 100 = 0 then begin
+         UpdateProgressBar(i/rc);
+         GISdb[DBonTable].EmpSource.Enabled := false;
       end;
-      GISdb[DBonTable].theMapOwner.Image1.Picture.Graphic := Bitmap;
-      Bitmap.Free;
-      ShowStatus;
-   //end;
+      GISdb[DBonTable].GetLatLongToRepresentRecord(Lat,Long);
+      GISdb[DBonTable].TheMapOwner.MapDraw.LatLongDegreeToScreen(Lat,Long,x,y);
+      Petmar.ScreenSymbol(Bitmap.Canvas,x,y,Sym,GISdb[DBonTable].AreaRecordSize,GISdb[DBonTable].dbOpts.FillColor);
+      GISdb[DBonTable].MyData.Next;
+   end;
+   GISdb[DBonTable].theMapOwner.Image1.Picture.Graphic := Bitmap;
+   Bitmap.Free;
+   ShowStatus;
 end;
 
 
@@ -13521,12 +13536,6 @@ begin
    ShowStatus;
 end;
 
-procedure Tdbtablef.ExtractDEMIXtiles1Click(Sender: TObject);
-begin
-  ExtractTheDEMIXtiles(DBonTable);
-end;
-
-
 procedure Tdbtablef.Extractfiename1Click(Sender: TObject);
 var
    TStr : shortstring;
@@ -13672,6 +13681,11 @@ procedure Tdbtablef.FilterforDEMIXtiles1Click(Sender: TObject);
 begin
    GISdb[DBonTable].ApplyGISFilter('REF_TYPE=' + QuotedStr('DTM') + ' AND LAND_TYPE=' + QuotedStr('ALL') + ' AND CRITERION=' + QuotedStr('ELVD_AVD'));
    //ShowStatus;
+end;
+
+procedure Tdbtablef.Filterforjustsignedcrirteria1Click(Sender: TObject);
+begin
+   FilterInSignedCriteria(DBonTable);
 end;
 
 procedure Tdbtablef.Filteroutsignedcriteriameanandmedian1Click(Sender: TObject);

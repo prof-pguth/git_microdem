@@ -547,6 +547,7 @@ type
         SeekingAverageProfile,SeekingSecondAverageProfile,
         SeekingTopoProfile,SimpleTopoProfileRight,
         MultipleLOS,MultipleTopoProfileRight,
+        SeekingPerpendicularProfiles,
 
         TerrainBlowup,
         NewCoverage,OutlineDBIrregularMask,
@@ -831,9 +832,9 @@ type
       StoredMaxElev,
       StoredMinElev,
       MaxElev,               {max elevation in data set}
-      MinElev,               {min elevation in data set}
+      MinElev     : float32; {min elevation in data set}
       DEMySpacing,           {y spacing}
-      DEMxSpacing : float32; {x spacing}
+      DEMxSpacing : float64; {x spacing}
       DEMSWCornerX,
       DEMSWCornerY : float64;
       VerticalCSTypeGeoKey,
@@ -1076,7 +1077,7 @@ type
    ColorCutArrayType = array[0..14] of float64;
    tGridZ = packed record
       x,y : Int32;
-      z   : float64;
+      z   : float32;
    end;
 
 type
@@ -1912,6 +1913,7 @@ type
        DefSlopeMap,
        DefDEMMap             : tMapType;
        HighlightDiffMap,
+       AutoMergeStartDEM,
        QuickSlopeSpacings    : boolean;
        MapTicks              : tMapTick;
        InvertGrayScale       : boolean;

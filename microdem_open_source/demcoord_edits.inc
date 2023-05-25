@@ -76,6 +76,17 @@ var
    z,z1 : float32;
    NewHeadRecs : tDEMheader;
    NewAreaName : shortstring;
+
+   {$If Defined(RecordCreateNewDEMSWCorner)}
+      procedure RecordSWCorner(What : shortstring);
+      begin
+         if (NewHeadRecs.DEMUsed = ArcSecDEM) then begin
+            WriteLineToDebugFile(What + ' SW corner: ' + LatLongDegreeToString(NewHeadRecs.DEMSWCornerY,NewHeadRecs.DEMSWCornerX, DecSeconds) +
+              '   ' + LatLongDegreeToString(NewHeadRecs.DEMSWCornerY,NewHeadRecs.DEMSWCornerX,LongDegrees));
+         end;
+      end;
+   {$EndIf}
+
 begin
    {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResample)} writeLineToDebugFile('tDEMDataSet.ResampleByAveraging in, ' + AreaName + '  ' + KeyDEMParams); {$EndIf}
    NewGrid := SelectionMap.MakeTempGrid;
@@ -85,6 +96,10 @@ begin
    if (SaveName = '') then NewAreaName := AreaName
    else NewAreaName := ExtractFileNameNoExt(SaveName);
 
+   {$If Defined(RecordCreateNewDEMSWCorner)} RecordSWCorner('Initial'); {$EndIf}
+   NewHeadRecs.DEMSWCornerX := trunc(NewHeadRecs.DEMSWCornerX / NewHeadRecs.DEMxSpacing) * NewHeadRecs.DEMxSpacing;
+   NewHeadRecs.DEMSWCornerY := trunc(NewHeadRecs.DEMSWCornerY / NewHeadRecs.DEMySpacing) * NewHeadRecs.DEMySpacing;
+   {$If Defined(RecordCreateNewDEMSWCorner)} RecordSWCorner('Snapped'); {$EndIf}
    NewHeadRecs.RasterPixelIsGeoKey1025 := MDDef.LasDEMPixelIs;
    NewHeadRecs.DEMPrecision := WordDEM;
    NewHeadRecs.ElevUnits := Undefined;
@@ -97,6 +112,8 @@ begin
 
    OpenAndZeroNewDEM(true,NewHeadRecs,Result,MDTempDir + NewAreaName,InitDEMvalue,0);
    {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResample)} WriteLineToDebugFile('ResampleByAveraging, ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].KeyDEMParams); {$EndIf}
+
+   {$If Defined(TrackDEMCorners)} DEMGlb[Result].WriteDEMCornersToDebugFile('tDEMDataSet.ResampleByAveraging, starting DEM'); {$EndIf}
 
    StartProgress('Get z values ' + NewAreaName);
    for x := 0 to pred(DEMHeader.NumCol) do begin
@@ -141,7 +158,7 @@ begin
    end;
    if OpenMap then DEMGlb[Result].SetUpMap(Result,true,SelectionMap.MapDraw.MapType);
    EndProgress;
-   {$IfDef RecordCreateNewDEM} WriteLineToDebugFile('TMapForm.Averagetonewprojection1Click grids out'); {$EndIf}
+   {$IfDef RecordCreateNewDEM} WriteLineToDebugFile('tDEMDataSet.ResampleByAveraging out, newDEM=' + IntToStr(Result)); {$EndIf}
 end;
 
 

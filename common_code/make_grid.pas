@@ -347,7 +347,7 @@ begin
          LongCatName[5] := 'Both good ± ' + RealToString(SimpleTolerance,-5,1);
          for i := 1 to 9 do if (Hist[i] > 0) then Vat.add(IntToStr(i) + ',' + LongCatName[i] + ',' + IntToStr(Hist[i]) + ',Y,' + IntToStr(LongCatColor[i]));
       end;
-      fName2 := MDTempDir + fName2 + '.vat.dbf';
+      fName2 := NextFileNumber(MDTempDir,fName2 + '_','.vat.dbf');
       StringList2CSVtoDB(vat,fName2,true);
       DEMGlb[Result].VATFileName := fName2;
       DEMglb[Result].CheckMaxMinElev;
@@ -374,7 +374,7 @@ var
    Lat,Long : float64;
    x,y : integer;
    VAT : tStringList;
-   //TStr : shortstring;
+   TStr : shortstring;
    Hist : array[1..7] of int64;
 begin
    Result := 0;
@@ -408,13 +408,9 @@ begin
       Vat.add('VALUE,NAME,N,USE,COLOR');
 
       if ThreeCat then begin
-         if (Hist[5] > 0) then Vat.add('5,>' + RealToString(MDDef.TopCutLevel,-8,-2) + ',' + IntToStr(Hist[5]) + ',Y,' + IntToStr(clGreen));
-         if (Hist[3] > 0) then begin
-            if abs(MDDef.TopCutLevel - MDDef.BottomCutLevel) < 0.001 then
-               Vat.add('3, ± ' + RealToString(MDDef.TopCutLevel,-8,2)  + ',' + IntToStr(Hist[3]) + ',Y,' + IntToStr(clWhite))
-            else Vat.add('3,[' + RealToString(MDDef.BottomCutLevel,-8,-2) + '..' + RealToString(MDDef.TopCutLevel,-8,2) + '],' + IntToStr(Hist[3]) + ',Y,' + IntToStr(clWhite));
-         end;
-         if (Hist[1] > 0) then Vat.add('1,<' + RealToString(MDDef.BottomCutLevel,-8,-2) + ',' + IntToStr(Hist[1]) + ',Y,' + IntToStr(clRed));
+         if (Hist[5] > 0) then Vat.add('5,High,' + IntToStr(Hist[5]) + ',Y,' + IntToStr(clGreen));
+         if (Hist[3] > 0) then Vat.add('3,' + TStr + ' ± ' + RealToString(SimpleTolerance,-5,1)  + ',' + IntToStr(Hist[3]) + ',Y,' + IntToStr(clWhite));
+         if (Hist[1] > 0) then Vat.add('1,Low,' + IntToStr(Hist[1]) + ',Y,' + IntToStr(clRed));
       end
       else if FiveCat then begin
          if (Hist[1] > 0) then Vat.add('1,High > ' + RealToString(HighTolerance,-5,-1) + ',' + IntToStr(Hist[1]) + ',Y,' + IntToStr(clGreen));

@@ -3954,6 +3954,7 @@ begin
    Value := abs(Value);
    case OutPutMethod of
       NearestDegree : Str(round(Value):3,DegString);
+      LongDegrees : DegString := RealToString(Value,-15,-10);
       DecDegrees : DegString := RealToString(Value,-15,-DegDec);
       VeryShortDegrees : DegString := RealToString(Value,-10,-2);
       ShortDegrees : DegString := RealToString(Value,-10,-5);
@@ -3963,33 +3964,35 @@ begin
       DecMinutes,
       DecSeconds : DegVal := trunc(Value);
    end;
-   MinValue := (Value - trunc(Value)) * 60;
-   SecValue := (MinValue - trunc(MinValue)) * 60;
+   if (OutPutMethod in [DecMinutes,NearestMinute,NearestSecond,DecSeconds]) then begin
+      MinValue := (Value - DegVal) * 60;
+      SecValue := (MinValue - trunc(MinValue)) * 60;
+      MinValue := trunc(MinValue);
 
-   if (OutPutMethod in [DecMinutes,NearestMinute]) then begin
-      if (OutPutMethod in [NearestMinute]) then MinDec := 0;
-      MinString := RealToString(MinValue,-6,-MinDec);
-      if MinString[1] = '6' then begin
-         MinString := '0';
-         inc(DegVal);
+      if (OutPutMethod in [DecMinutes,NearestMinute]) then begin
+         if (OutPutMethod in [NearestMinute]) then MinDec := 0;
+         MinString := RealToString(MinValue,-6,-MinDec);
+         if (MinString[1] = '6') then begin
+            MinString := '0';
+            inc(DegVal);
+         end;
+         DegString := IntToStr(DegVal);
       end;
-      DegString := IntToStr(DegVal);
-   end;
 
-
-   if (OutPutMethod in [NearestSecond,DecSeconds]) then begin
-      if (OutPutMethod in [NearestSecond]) then DecSec := 0;
-      SecString := RealToString(SecValue,-6,-DecSec);
-      if SecString[1] = '6' then begin
-         SecString := '0';
-         MinValue := MinValue + 1;
+      if (OutPutMethod in [NearestSecond,DecSeconds]) then begin
+         if (OutPutMethod in [NearestSecond]) then DecSec := 0;
+         SecString := RealToString(SecValue,-6,-DecSec);
+         if (SecString[1] = '6') then begin
+            SecString := '0';
+            MinValue := MinValue + 1;
+         end;
+         MinString := RealToString(MinValue,-6,-MinDec);
+         if (MinString[1] = '6') then begin
+            MinString := '0';
+            inc(DegVal);
+         end;
+         DegString := IntToStr(DegVal);
       end;
-      MinString := RealToString(MinValue,-6,-MinDec);
-      if MinString[1] = '6' then begin
-         MinString := '0';
-         inc(DegVal);
-      end;
-      DegString := IntToStr(DegVal);
    end;
 end;
 
@@ -4001,7 +4004,7 @@ begin
    ConvertToDegMinSecString(Value,OutPutMethod,DegString,MinString,SecString,HighAccuracy);
    Result := ptTrim(DegString) + DegSym;
    if (Value < 0) then Result := '-' + Result;
-   if not (OutPutMethod in [DecDegrees,NearestDegree,ShortDegrees,VeryShortDegrees]) then begin
+   if not (OutPutMethod in [DecDegrees,NearestDegree,ShortDegrees,VeryShortDegrees,LongDegrees]) then begin
       Result := Result + MinString + chr(39);
       if (OutPutMethod in [NearestSecond,DecSeconds]) and (SecString <> '') then begin
          Result := Result + SecString + '"';

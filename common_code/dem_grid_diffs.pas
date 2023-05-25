@@ -28,6 +28,7 @@ type
     CheckBox4: TCheckBox;
     Label1: TLabel;
     Edit1: TEdit;
+    CheckBox5: TCheckBox;
     procedure OKBtnClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
@@ -59,6 +60,7 @@ begin
    GridDiffForm.CheckBox2.Checked := MDDef.ShowGridDiffMap;
    GridDiffForm.CheckBox1.Checked := MDDef.ShowGridDiffHistogram;
    GridDiffForm.CheckBox4.Checked := MDDef.HighlightDiffMap;
+   GridDiffForm.CheckBox5.Checked := MDDef.AutoMergeStartDEM;
    GridDiffForm.Edit1.Text := RealToString(abs(MDDef.TopCutLevel),-8,-2);
    PlaceFormInCorner(WMDEM,GridDiffForm,lpCenterMap);
    GridDiffForm.AutoClose := inAutoClose;
@@ -71,6 +73,8 @@ begin
    MDDef.ShowGridDiffMap := CheckBox2.Checked;
    MDDef.ShowGridDiffHistogram := CheckBox1.Checked;
    MDDef.ShowScatterplot := CheckBox3.Checked;
+   MDDef.AutoMergeStartDEM := CheckBox5.Checked;
+
    CheckEditString(Edit1.Text,MDDef.TopCutLevel);
    MDDef.BottomCutLevel := -MDDef.TopCutLevel;
    if AutoClose then Close;

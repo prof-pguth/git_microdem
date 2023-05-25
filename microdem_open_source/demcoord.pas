@@ -30,10 +30,11 @@ unit DEMCoord;
 
    {$IFDEF DEBUG}
       {$Define RecordDEMIX}
-      {$Define RecordVertDatumShift}
+      //{$Define RecordDEMIXResample}
+      //{$Define RecordVertDatumShift}
       {$Define TrackPixelIs}
       //{$Define RecordVAT}
-      {$Define TrackDEMCorners}
+      //{$Define TrackDEMCorners}
       //{$Define UKOS}
       //{$Define RecordHalfPixelShift}
       //{$Define RecordDEMEdits}
@@ -295,23 +296,23 @@ type
          DEMMapProjection  : BaseMap.tMapProjection;
          DEMFileName,
          VATFileName       : PathStr;
-         GeotiffImageDesc : shortstring;
+         GeotiffImageDesc  : shortstring;
          LongWordElevations : pLongWordElevations;
          Zpercens           : ^floatarray1000;
 
          LatSizeMap,               {size of area in latitude, in degrees}
          LongSizeMap,              {size of area in longitude, in degrees}
-         DEMSWcornerLat,           {local datum lat of lower left corner}
-         DEMSWcornerLong,          {local datum long of lower left corner}
-         ComputeSWCornerX,         //1/2 pixel shift east for PixelIsArea
-         ComputeSWCornerY,         //1/2 pixel shift north for PixelIsArea
+         DEMSWcornerLat,           {local datum lat of lower left corner,  the point for pixel-is-point and SW corner for pixel-is-area}
+         DEMSWcornerLong,          {local datum long of lower left corner, the point for pixel-is-point and SW corner for pixel-is-area}
+         ComputeSWCornerX,         //1/2 pixel shifted east for PixelIsArea used for computations which consider all grids pixel-is-point
+         ComputeSWCornerY,         //1/2 pixel shifted north for PixelIsArea used for computations which consider all grids pixel-is-point
          GeotiffNWCornerX,
          GeotiffNWCornerY,
          AverageGridTrue,
          AverageDiaSpace,
-         AverageSpace,
-         AverageXSpace,                {average spacing, in meters, in x direction}
-         AverageYSpace      : float64;   {average spacing, in meters, in y direction}
+         AverageSpace,                   {average spacing in meters of average x and y spacing, for arc second grids}
+         AverageXSpace,                  {average spacing in meters in x direction}
+         AverageYSpace      : float64;   {average spacing in meters in y direction}
          DiagSpaceByDEMrow,
          XSpaceByDEMrow     : ^tShortFloatCol;
          VATrelatedGrid,
@@ -582,9 +583,9 @@ type
          function CloneAndOpenGridSetMissing(NewPrecision : tDEMprecision; Gridname : shortstring; ElevUnits : tElevUnit) : integer;
          function ThinAndOpenGridSetMissing(ThinFactor : integer; NewPrecision : tDEMprecision; Gridname : shortstring; ElevUnits : tElevUnit) : integer;
 
+         function ThinThisDEM(fName : PathStr = ''; ThinFactor : integer = 0; DoItByAveraging : boolean = false; Offset : integer = 0) : integer;
+         function HalfPixelAggregation(fName : PathStr; PixelIs : byte; SaveFile : boolean; Offset : integer = 0) : integer;
 
-         procedure ThinThisDEM(var ThinDEM : integer; ThinFactor : integer = 0; DoItByAveraging : boolean = false);
-         procedure AverageResampleThisDEM(var ThinDEM : integer; ThinFactor : integer = 0);
          procedure FilterThisDEM(FilterCategory : tFilterCat; var NewDEM : integer; BoxSize : integer = 0; FilterName : PathStr = '');
          function DetrendDEM(Normalize : boolean = true; FilterRadius : integer = 2) : integer;
          function ResaveNewResolution(FilterCategory : tFilterCat) : integer;
@@ -610,7 +611,6 @@ type
          procedure TrackElevationRange(Where : shortstring);
 
          function NormalAtPoint(Col,Row : integer; var n1,n2,n3 : float32) : boolean;
-
 
          procedure GetStraightRouteLatLongDegree(Lat1,Long1,Lat2,Long2 : float64; StraightAlgorithm : tStraightAlgorithm; var NumPoints : integer; var Lats,Longs,dists : Petmath.bfarray32);
          procedure GetStraightRouteDEMGrid(Lat1,Long1,Lat2,Long2 : float64; StraightAlgorithm : tStraightAlgorithm; var NumPoints : integer; var xgrids,ygrids,dists : Petmath.bfarray32);
@@ -695,8 +695,8 @@ type
             function InTerrainCategory(x,Y : integer; TerrainCategory : tTerrainCatDefinition) : boolean;
 
             function FindReliefInflectionGraph(xg,yg : integer; var Distance,Relief : float64) : boolean;
-            function FindLocationOfMaximum(GridLimits: tGridLimits; var xloc,yloc : integer; var LocMax : float64) : boolean;
-            function FindLocationOfMinimum(GridLimits: tGridLimits; var xloc,yloc : integer; var LocMin : float64) : boolean;
+            function FindLocationOfMaximum(GridLimits: tGridLimits; var xloc,yloc : integer; var LocMax : float32) : boolean;
+            function FindLocationOfMinimum(GridLimits: tGridLimits; var xloc,yloc : integer; var LocMin : float32) : boolean;
             function FindLocationOfMultipleMaxima(GridLimits: tGridLimits; var NPts : integer; var Locations : array of tGridZ) : boolean;
             function IsSpire(Col,Row,dx,dy : integer; var SpireHeightM : float32; var NumLower : integer) : boolean;
             function PointHasSpecifiedRelief(Col, Row, BoxSize,SampleFactor : integer; Relief: float64): boolean;
@@ -962,15 +962,7 @@ begin
    Result := 1.0 / (111320.0 * CosDeg(0.5* LatSizeMap + DEMSWcornerLat));
 end;
 
-
-
-procedure tDEMDataSet.AverageResampleThisDEM(var ThinDEM : integer; ThinFactor : integer = 0);
-begin
-   ThinThisDEM(ThinDEM, ThinFactor,true);
-end;
-
-
-procedure tDEMDataSet.ThinThisDEM(var ThinDEM : integer; ThinFactor : integer = 0; DoItByAveraging : boolean = false);
+function tDEMDataSet.ThinThisDEM(fName : PathStr = ''; ThinFactor : integer = 0; DoItByAveraging : boolean = false; Offset : integer = 0) : integer;
 var
    Col,Row,x,y,Npts : integer;
    z : float32;
@@ -999,13 +991,12 @@ begin
       TStr := 'Thin_';
    end;
 
-   OpenAndZeroNewDEM(true,NewHeadRecs,ThinDEM,TStr + IntToStr(ThinFactor) + '_' + AreaName,InitDEMmissing);
+   OpenAndZeroNewDEM(true,NewHeadRecs,Result,TStr + IntToStr(ThinFactor) + '_' + AreaName,InitDEMmissing);
 
-
-   StartProgress(DEMGlb[ThinDEM].AreaName);
-   for Col := 0 to pred(DEMGlb[ThinDEM].DEMheader.NumCol) do begin
-      UpdateProgressBar(Col / pred(DEMGlb[ThinDEM].DEMheader.NumCol));
-      for Row := 0 to pred(DEMGlb[ThinDEM].DEMheader.NumRow) do begin
+   StartProgress(DEMGlb[Result].AreaName);
+   for Col := 0 to pred(DEMGlb[Result].DEMheader.NumCol) do begin
+      UpdateProgressBar(Col / pred(DEMGlb[Result].DEMheader.NumCol));
+      for Row := 0 to pred(DEMGlb[Result].DEMheader.NumRow) do begin
          if DoItByAveraging then begin
             Sum := 0;
             NPts := 0;
@@ -1015,14 +1006,67 @@ begin
                      Sum := Sum + z;
                      inc(Npts);
                   end;
-            if (NPts > 0) then DEMGlb[ThinDEM].SetGridElevation(Col,Row,Sum / NPts);
+            if (NPts > 0) then DEMGlb[Result].SetGridElevation(Col,Row,Sum / NPts);
          end
          else begin
-            if GetElevMeters(Col * ThinFactor,Row * ThinFactor,z) then DEMGlb[ThinDEM].SetGridElevation(Col,Row,z);
+            if GetElevMeters(Col * ThinFactor,Row * ThinFactor,z) then DEMGlb[Result].SetGridElevation(Col,Row,z);
          end;
       end;
    end {while};
-   DEMGlb[ThinDEM].CheckMaxMinElev;
+   DEMGlb[Result].CheckMaxMinElev;
+   EndProgress;
+end;
+
+
+
+function tDEMDataSet.HalfPixelAggregation(fName : PathStr; PixelIs : byte; SaveFile : boolean; Offset : integer = 0) : integer;
+var
+   Col,Row,x,y,Npts,bx,by,ThinFactor : integer;
+   znw,zw,zsw,zn,z,zs,zne,ze,zse : float32;
+   Sum       : float64;
+   NewHeadRecs : tDEMheader;
+   TStr : shortstring;
+begin
+   ThinFactor := 2;
+
+   NewHeadRecs := DEMheader;
+   NewHeadRecs.RasterPixelIsGeoKey1025 := PixelIs;
+   NewHeadRecs.NumCol := (DEMheader.NumCol - Offset) div ThinFactor;
+   NewHeadRecs.NumRow := (DEMheader.NumRow - Offset) div ThinFactor;
+   NewHeadRecs.DEMySpacing := DEMheader.DEMySpacing * ThinFactor;
+   NewHeadRecs.DEMxSpacing := DEMheader.DEMxSpacing * ThinFactor;
+
+   if (Offset = 1) then begin
+      NewHeadRecs.DEMSWCornerX := DEMheader.DEMSWCornerX + DEMheader.DEMxSpacing * ThinFactor - DEMheader.DEMxSpacing * Offset;
+      NewHeadRecs.DEMSWCornerY := DEMheader.DEMSWCornerY + DEMheader.DEMySpacing * ThinFactor - DEMheader.DEMySpacing * Offset;
+   end
+   else begin
+      Offset := 2;
+      NewHeadRecs.DEMSWCornerX := DEMheader.DEMSWCornerX + DEMheader.DEMxSpacing * Offset;
+      NewHeadRecs.DEMSWCornerY := DEMheader.DEMSWCornerY + DEMheader.DEMySpacing * Offset;
+   end;
+   TStr := 'Mean_subset_';
+
+   if (fName = '') then fName := TStr + IntToStr(ThinFactor) + '_' + AreaName;
+
+   OpenAndZeroNewDEM(true,NewHeadRecs,Result,ExtractFileNameNoExt(fName),InitDEMmissing);
+
+   StartProgress(DEMGlb[Result].AreaName);
+   for Col := 0 to pred(DEMGlb[Result].DEMheader.NumCol) do begin
+      UpdateProgressBar(Col / pred(DEMGlb[Result].DEMheader.NumCol));
+      for Row := 0 to pred(DEMGlb[Result].DEMheader.NumRow) do begin
+         bx := Offset + Col * ThinFactor;
+         by := Offset + Row * ThinFactor;
+         if GetNineElevMeters(bx,by,znw,zw,zsw,zn,z,zs,zne,ze,zse) then begin
+            z := zw/16 + zn/8 + zne/16 + zw/8 + z/4 + ze/8 + zsw/16 + zs/8 + zse/16;
+            DEMGlb[Result].SetGridElevation(Col,Row,z);
+         end;
+      end;
+   end {while};
+   DEMGlb[Result].CheckMaxMinElev;
+   DEMGlb[Result].SetUpMap(Result,true,SelectionMap.MapDraw.MapType);
+   if SaveFile then  DEMGlb[Result].WriteNewFormatDEM(fName);
+
    EndProgress;
 end;
 
@@ -2853,6 +2897,7 @@ end {proc LatLongToDEMGrid\};
 
 
 function tDEMDataSet.LatLongDegreeToDEMGridInteger(Lat,Long : float64; var XGrid,YGrid : integer) : boolean;
+//this works in the internal program representation of the grid as pixel-is-point
 var
    xg,yg : float64;
 begin

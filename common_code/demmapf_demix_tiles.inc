@@ -8,6 +8,94 @@
 
 {include file for demmapf.pas}
 
+
+procedure ResampleForDEMIXOneSecDEMs(DEM : integer; OutPath : PathStr = ''; DoHalfSec : boolean = true);
+var
+   NewDEM,New2,New3,NewDEM4,NewDEM5,PointOffset,AreaOffset : integer;
+   fName,BaseName : PathStr;
+   Ext : ExtStr;
+   xfrac,yfrac : float64;
+
+
+   function CreateOne(PixelIs : byte; xgridsize,ygridsize : float32; fName : PathStr) : integer;
+   begin
+      if FileExists(fName) then begin
+         Result := OpenNewDEM(fName);
+      end
+      else begin
+         MDdef.DefLidarGeoGridSizeX := xgridsize;
+         MDdef.DefLidarGeoGridSizeY := ygridsize;
+         MDDef.LasDEMPixelIs := PixelIs;
+         {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX, ' + fName); {$EndIf}
+         Result := DEMGlb[DEM].ResampleByAveraging(true,false,fName);
+         {$If Defined(TrackDEMCorners)} DEMGlb[Result].WriteDEMCornersToDebugFile('ResampleForDEMIXOneSecDEMs, new DEM=' + IntToStr(Result)); {$EndIf}
+      end;
+   end;
+
+
+begin
+   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile(''); WriteLineToDebugFile('ResampleForDEMIX DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
+   if (DEMGlb[DEM].DEMFileName = '') then begin
+      DEMGlb[DEM].WriteNewFormatDEM(DEMGlb[DEM].DEMFileName,' save DEM before resampling');
+   end;
+   {$If Defined(TrackDEMCorners)} DEMGlb[DEM].WriteDEMCornersToDebugFile('ResampleForDEMIXOneSecDEMs, starting DEM'); {$EndIf}
+   SaveBackupDefaults;
+   GetDEMIXPaths(false);
+   MDDef.DefDEMMap := mtDEMBlank;
+   MDDef.LidarGridProjection := ArcSecDEM;
+   Ext := '.tif';
+
+   if (OutPath = '') then begin
+      OutPath := ExtractFilePath(DEMGlb[DEM].DEMFileName);
+      BaseName := 'ref_';
+   end
+   else begin
+      BaseName := DEMGlb[DEM].AreaName + '_ref_';
+   end;
+
+   fName := DEMIX_Ref_Half_sec + BaseName + '0.5sec' + Ext;
+   NewDEM := CreateOne(PixelIsPoint,0.5,0.5,fName);
+
+   (*
+   fName := OutPath + BaseName + '1sec_point_v2' + Ext;
+   NewDEM4 := CreateOne(PixelIsPoint,1,1,fName);
+
+   fName := OutPath + BaseName + '1sec_area_v2' + Ext;
+   NewDEM5 := CreateOne(PixelIsArea,1,1,fName);
+   *)
+
+   xfrac := abs(frac(DEMGlb[NewDEM].DEMHeader.DEMSWCornerX / DEMGlb[NewDEM].DEMheader.DEMxSpacing));
+   yfrac := abs(frac(DEMGlb[NewDEM].DEMHeader.DEMSWCornerY / DEMGlb[NewDEM].DEMheader.DEMySpacing));
+   if (xfrac < 0.00000001) and (yfrac < 0.00000001) then begin
+      //sw corner is on a full seccond
+      PointOffset := 0;
+      AreaOffset := 1;
+   end
+   else begin
+      //sw corner is on a half seccond
+      PointOffset := 1;
+      AreaOffset := 0;
+   end;
+
+   fName := OutPath + BaseName + '1sec_point' + Ext;
+   New2 := DEMGlb[NewDEM].HalfPixelAggregation(fName,PixelIsPoint,true,PointOffset);
+
+   fName := OutPath + BaseName + '1sec_area' + Ext;
+   New3 := DEMGlb[NewDEM].HalfPixelAggregation(fName,PixelIsArea,true,AreaOffset);
+
+   if (DEMGlb[DEM].DEMSWcornerLat > 50) and (DEMGlb[DEM].DEMSWcornerLat < 60) then begin
+      fName := OutPath + BaseName + '1.5x1sec_point' + Ext;
+      CreateOne(PixelIsPoint,1.5,1,'1.5x1sec' + Ext);
+   end;
+
+   CloseAllDEMs;
+   RestoreBackupDefaults;
+   //{$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('Out ResampleForDEMIX DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
+end;
+
+
+
+
 procedure ResampleHalfSecondForDEMIX(DEM : integer; OutPath : PathStr = '');
 var
    NewDEM,NewDEM2 : integer;
@@ -116,57 +204,6 @@ begin
    {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('Out ResampleForDEMIX DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
 end;
 
-
-procedure ResampleForDEMIXOneSecDEMs(DEM : integer; OutPath : PathStr = ''; DoHalfSec : boolean = true);
-var
-   NewDEM : integer;
-   fName,BaseName : PathStr;
-   Ext : ExtStr;
-
-   procedure CreateOne(PixelIs : byte; xgridsize,ygridsize : float32; fName : PathStr);
-   begin
-      fName := OutPath + BaseName + fName;
-      MDdef.DefLidarGeoGridSizeX := xgridsize;
-      MDdef.DefLidarGeoGridSizeY := ygridsize;
-      MDDef.LasDEMPixelIs := PixelIs;
-      {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX, ' + fName); {$EndIf}
-      NewDEM := DEMGlb[DEM].ResampleByAveraging(true,false,fName);
-      CloseSingleDEM(newDEM);
-   end;
-
-
-begin
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile(''); WriteLineToDebugFile('ResampleForDEMIX DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
-   if (DEMGlb[DEM].DEMFileName = '') then begin
-      DEMGlb[DEM].WriteNewFormatDEM(DEMGlb[DEM].DEMFileName,' save DEM before resampling');
-   end;
-   SaveBackupDefaults;
-   MDDef.DefDEMMap := mtDEMBlank;
-   MDDef.LidarGridProjection := ArcSecDEM;
-
-   if (OutPath = '') then begin
-      OutPath := ExtractFilePath(DEMGlb[DEM].DEMFileName);
-      BaseName := 'ref_';
-   end
-   else begin
-      BaseName := DEMGlb[DEM].AreaName + '_ref_';
-   end;
-
-   Ext := '.tif';
-
-   CreateOne(PixelIsArea,1,1,'1sec_area' + Ext);
-
-   CreateOne(PixelIsPoint,1,1,'1sec_point' + Ext);
-
-   if DoHalfSec then CreateOne(PixelIsPoint,0.5,0.5,'0.5sec' + Ext);
-
-   if (DEMGlb[DEM].DEMSWcornerLat > 50) and (DEMGlb[DEM].DEMSWcornerLat < 60) then begin
-      CreateOne(PixelIsPoint,1.5,1,'1.5x1sec' + Ext);
-   end;
-
-   RestoreBackupDefaults;
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('Out ResampleForDEMIX DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
-end;
 
 
 

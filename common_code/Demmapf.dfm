@@ -2,8 +2,8 @@ object MapForm: TMapForm
   Left = 45
   Top = 303
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1046
-  ClientWidth = 1719
+  ClientHeight = 1044
+  ClientWidth = 1711
   Color = clBtnHighlight
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -40,8 +40,8 @@ object MapForm: TMapForm
   object ScrollBox1: TScrollBox
     Left = 0
     Top = 27
-    Width = 1719
-    Height = 1019
+    Width = 1711
+    Height = 1017
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clRed
@@ -51,8 +51,8 @@ object MapForm: TMapForm
     ParentFont = False
     TabOrder = 0
     OnClick = ScrollBox1Click
-    ExplicitWidth = 1715
-    ExplicitHeight = 1018
+    ExplicitWidth = 1707
+    ExplicitHeight = 1016
     object Image1: TImage
       Left = 3
       Top = -247
@@ -209,13 +209,13 @@ object MapForm: TMapForm
     end
     object BlendPanel: TPanel
       Left = 0
-      Top = 974
-      Width = 1715
+      Top = 972
+      Width = 1707
       Height = 41
       Align = alBottom
       TabOrder = 8
-      ExplicitTop = 973
-      ExplicitWidth = 1711
+      ExplicitTop = 971
+      ExplicitWidth = 1703
       object TrackBar2: TTrackBar
         Left = 289
         Top = 1
@@ -334,12 +334,12 @@ object MapForm: TMapForm
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1719
+    Width = 1711
     Height = 27
     Align = alTop
     TabOrder = 1
     OnMouseDown = Panel1MouseDown
-    ExplicitWidth = 1715
+    ExplicitWidth = 1707
     object AnnotateSpeedButton1: TSpeedButton
       Left = 31
       Top = -4
@@ -3099,6 +3099,11 @@ object MapForm: TMapForm
           GroupIndex = 1
           OnClick = MergeanotherDEMhillshade1Click
         end
+        object Removequickoverlayhillshade1: TMenuItem
+          Caption = 'Remove quick overlay hillshade'
+          GroupIndex = 1
+          OnClick = Removequickoverlayhillshade1Click
+        end
         object Verticalswipecompare1: TMenuItem
           Caption = 'Vertical swipe compare'
           GroupIndex = 1
@@ -3872,6 +3877,10 @@ object MapForm: TMapForm
           Caption = 'DEMIX 1 sec resample with GDAL'
           Enabled = False
           OnClick = DEMIX1secresamplewithGDAL1Click
+        end
+        object DEMIXhalfsecto2onesec1: TMenuItem
+          Caption = 'DEMIX half sec to 2 one sec'
+          OnClick = DEMIXhalfsecto2onesec1Click
         end
         object ComapreUTMvsgeographic1: TMenuItem
           Caption = 'Comapre UTM vs geographic'
@@ -5056,6 +5065,10 @@ object MapForm: TMapForm
         Caption = 'PLSS location'
         OnClick = PLSSlocation1Click
       end
+      object NearestpeakoneachDEM1: TMenuItem
+        Caption = 'Nearest peak on each DEM'
+        OnClick = NearestpeakoneachDEM1Click
+      end
     end
     object TIGER1: TMenuItem
       Caption = 'TIGER'
@@ -5187,6 +5200,13 @@ object MapForm: TMapForm
       object Smallcirclethroughpoint1: TMenuItem
         Caption = 'Small circle through point'
         OnClick = Smallcirclethroughpoint1Click
+      end
+      object N58: TMenuItem
+        Caption = '-'
+      end
+      object PerpProfiles1: TMenuItem
+        Caption = 'Perpendicular profiles through point'
+        OnClick = PerpProfiles1Click
       end
     end
     object Quickstats1: TMenuItem

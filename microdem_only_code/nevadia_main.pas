@@ -202,11 +202,10 @@ type
     Verticalearthcurvature1: TMenuItem;
     Horizontalearthcurvature1: TMenuItem;
     //Pointspacing1: TMenuItem;
-    PanoramaAdmin1: TMenuItem;
+    //PanoramaAdmin1: TMenuItem;
     Oceanographicdata1: TMenuItem;
     CTD1: TMenuItem;
     Lightdata1: TMenuItem;
-    Setupserver1: TMenuItem;
     IntDBSpeedButton: TSpeedButton;
     HypImageSpeedButton: TSpeedButton;
    //MrSidimagery1: TMenuItem;
@@ -553,6 +552,9 @@ type
     Addversionnumbertoallfilesinapath1: TMenuItem;
     DEMIXdbCreatePopupMenu: TPopupMenu;
     CreateDEMIXdatabase1: TMenuItem;
+    N39: TMenuItem;
+    Fullprocessingchain1: TMenuItem;
+    Perpendicularshortprofilesthroughpoint1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -637,8 +639,6 @@ type
     procedure Polarstereographic1Click(Sender: TObject);
     procedure Verticalearthcurvature1Click(Sender: TObject);
     procedure Horizontalearthcurvature1Click(Sender: TObject);
-    //procedure Pointspacing1Click(Sender: TObject);
-    //procedure PanoramaAdmin1Click(Sender: TObject);
     procedure OpenTIGERcountrymap1Click(Sender: TObject);
     procedure Openproject1Click(Sender: TObject);
     procedure CTD1Click(Sender: TObject);
@@ -886,7 +886,7 @@ type
     procedure CreateDEMsfromlidar1Click(Sender: TObject);
     procedure CategoriesfromallopenDEMs1Click(Sender: TObject);
     procedure Categoriesfromdatabase1Click(Sender: TObject);
-    procedure Subsamplecomparethinaverage1Click(Sender: TObject);
+    //procedure Subsamplecomparethinaverage1Click(Sender: TObject);
     procedure Createcompositebitmap1Click(Sender: TObject);
     procedure Arcsecondrectangularpixels1Click(Sender: TObject);
     procedure DEMIXtiles1Click(Sender: TObject);
@@ -942,6 +942,9 @@ type
     procedure OpenDEMIXdatabase1Click(Sender: TObject);
     procedure Addversionnumbertoallfilesinapath1Click(Sender: TObject);
     procedure CreateDEMIXdatabase1Click(Sender: TObject);
+    procedure Fullprocessingchain1Click(Sender: TObject);
+    procedure Perpendicularshortprofilesthroughpoint1Click(Sender: TObject);
+    //procedure PanoramaAdmin1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -949,7 +952,7 @@ type
     { Private declarations }
   public
     { Public declarations }
-      ProgramClosing,NoAutoOpen,AskForDebugUpdateNow,AskForNewUpdateNow,ShowDragonPlot : boolean;
+      ProgramClosing,NoAutoOpen,AskForDebugUpdateNow,AskForNewUpdateNow{,ShowDragonPlot} : boolean;
       procedure SetMenusForVersion;
       procedure FormPlacementInCorner(TheForm : Forms.tForm; FormPosition : byte = lpSEMap);
       procedure HandleThreadTerminate(Sender: TObject);
@@ -1624,6 +1627,8 @@ begin
 
    Data1.Visible := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]) and MDDef.ShowDataManipulation;
    InOutButton.Visible := Data1.Visible;
+   DEMIX1.Visible := (MDDef.ProgramOption in [ExpertProgram]);
+   DEMIX2.Visible := (MDDef.ProgramOption in [ExpertProgram]);
 
    NewDEMButton.Visible := ShowLoadButtons;
 
@@ -1631,8 +1636,8 @@ begin
 
    XTFsidescan1.Visible := MDDef.ShowSidescan;
 
-   Cascade1.Visible := (MDDef.ProgramOption <> DragonPlotProgram);
-   Tile1.Visible := (MDDef.ProgramOption <> DragonPlotProgram);
+   //Cascade1.Visible := (MDDef.ProgramOption <> DragonPlotProgram);
+   //Tile1.Visible := (MDDef.ProgramOption <> DragonPlotProgram);
 
    Hardware1.Visible := (MDDef.ProgramOption = ExpertProgram);
    OpenDataSets1.Visible := (MDDef.ProgramOption in [ExpertProgram,DragonPlotProgram,RemoteSensingProgram]);
@@ -1706,7 +1711,7 @@ begin
    {$IfDef ExDP}
       DragonPlot1.Visible := false;
    {$Else}
-      DragonPlot1.Visible := (MDDef.ProgramOption = ExpertProgram) and ShowDragonPlot;
+      DragonPlot1.Visible := (MDDef.ProgramOption in [ExpertProgram,DragonPlotProgram]);  // and ShowDragonPlot;
    {$EndIf}
 
    {$IfDef ExIndexes}
@@ -1971,7 +1976,7 @@ begin
    end;
 
    if Action = 'DEMIX-CRITERIA' then begin
-      ComputeDEMIX_tile_stats(FileList);
+      //ComputeDEMIX_tile_stats(FileList);
    end;
 
    if Action = 'DEMIX-CREATE-REF' then begin
@@ -2079,25 +2084,25 @@ var
 
       procedure CheckDragonPlotOptions;
       begin
-         if IsThisDP then MDDef.ProgramOption := DragonPlotProgram;
+         //if IsThisDP then MDDef.ProgramOption := DragonPlotProgram;
          if (MDDef.ProgramOption = DragonPlotProgram) then begin
-            if IsThisDP then begin
+            //if IsThisDP then begin
               {$IfDef ExDP}
                  MDDef.ProgramOption := ExpertProgram;
                  ShowDragonPlot := false;
               {$Else}
                  if (UpperCase(ptTrim(ParamStr(1))) = '-DP') then DragonPlotDef.AdvancedOptions := true;
-                 ShowDragonPlot := true;
-                 BackupProgramEXE('DP');
+                 //ShowDragonPlot := true;
+                 //BackupProgramEXE('DP');
                  {$IfDef RecordDirs}  RecordDirs('before start DP'); {$EndIf}
                  StartDragonPlot;
-                 BorderIcons := [biMinimize,biMaximize];
+                 //BorderIcons := [biMinimize,biMaximize];
               {$EndIf}
-           end
-           else begin
-              ShowDragonPlot := false;
-              MDDef.ProgramOption := ExpertProgram;
-           end;
+           //end
+           //else begin
+              //ShowDragonPlot := false;
+              //MDDef.ProgramOption := ExpertProgram;
+           //end;
          end;
       end;
 
@@ -2199,19 +2204,22 @@ begin
             TryAutoOpen;
          {$EndIf}
       end
+      else if (MDdef.ProgramOption = RemoteSensingProgram) then begin
+         SetRemoteSensingDefaults;
+         TryAutoOpen;
+      end
+      else if (MDdef.ProgramOption = DragonPlotProgram) then begin
+         CheckDragonPlotOptions;
+         StartDragonPlot;
+      end
       else if NoAutoOpen or (MDdef.AutoOpen = aoNothing) then begin
       end
       else if MDdef.ProgramOption in [ExpertProgram] then begin
-         TryAutoOpen;
-      end
-      else if (MDdef.ProgramOption = RemoteSensingProgram) then begin
-         SetRemoteSensingDefaults;
          TryAutoOpen;
       end;
 
      {$IfDef RecordProblems} WriteLineToDebugFile('MDdef.AutoOpen completed, Twmdem.FormActivate wsMaximized, width=' + IntToStr(Width) + '  & height=' + IntToStr(Height)); {$EndIf}
 
-     CheckDragonPlotOptions;
 
      if (UpperCase(ptTrim(ParamStr(1))) = '-DataManip') then Data1Click(Sender);
      {$IfDef RecordProblems} WriteLineToDebugFile('ending FormActivate, first time'); {$EndIf}
@@ -3375,147 +3383,6 @@ begin
 end;
 
 
-procedure Twmdem.Subsamplecomparethinaverage1Click(Sender: TObject);
-const
-   Thinned = 1;
-   Meaned  = 2;
-   nl = 5;
-   Levels : array[1..nl] of integer = (2,5,10,20,25);
-var
-   i,j,graph : integer;
-   zvs : ^bfarray32;
-   ElevMoments,SlopeMoments :  array[0..2,1..nl] of tMomentVar;
-   DEMSpacing  :  array[1..2,1..nl] of float32;
-   ThinDEM,MeanDEM : array[1..nl] of integer;
-   ThisGraph : TThisBaseGraph;
-   aName : shortstring;
-   aPath,
-   fName : PathStr;
-   rfile : file;
-   v : array[1..2] of float32;
-   Table : tMyData;
-   AllFiles : tStringList;
-   LegendBitmap : tMyBitmap;
-begin
-   if (NumDEMDataSetsOpen > 0) then begin
-      if AnswerIsYes('Close all open DEMs to continue') then CloseAllDEMs
-      else exit;
-   end;
-
-   New(zvs);
-   AllFiles := tStringList.Create;
-   fname := 'c:\temp\tandemx_compare\tandemx_test_areas.dbf';
-   Table := tMyData.Create(fName);
-   while not Table.eof do begin
-      aPath := Table.GetFieldByNameAsString('PATH');
-      aName := Table.GetFieldByNameAsString('NAME');
-      OpenNewDEM(aPath + aName + '\tdx-04.dem',false);
-      OpenNewDEM(aPath + aName + '\tdx-10.dem',false);
-      OpenNewDEM(aPath + aName + '\tdx-30.dem',false);
-
-      for i := 1 to nl do begin
-         SetPanelText(0,IntToStr(i));
-
-         DEMGlb[1].ThinThisDEM(ThinDEM[i],Levels[i]);
-         ElevMoments[Thinned,i] := DEMGlb[ThinDEM[i]].ElevationMoments( DEMGlb[ThinDEM[i]].FullDEMGridLimits);
-         DEMGlb[ThinDEM[i]].SlopeMomentsWithArray(DEMGlb[ThinDEM[i]].FullDEMGridLimits,SlopeMoments[Thinned,i],zvs^);
-         DEMGlb[ThinDEM[i]].AreaName := 'Thinned_' + IntToStr(Levels[i]);
-         DEMSpacing[Thinned,i] := DEMGlb[ThinDEM[i]].AverageSpace;
-
-         DEMGlb[1].ThinThisDEM(MeanDEM[i],Levels[i],true);
-         ElevMoments[Meaned,i] := DEMGlb[MeanDEM[i]].ElevationMoments( DEMGlb[MeanDEM[i]].FullDEMGridLimits);
-         DEMGlb[MeanDEM[i]].SlopeMomentsWithArray(DEMGlb[MeanDEM[i]].FullDEMGridLimits,SlopeMoments[Meaned,i],zvs^);
-         DEMGlb[MeanDEM[i]].AreaName := 'Mean_' + IntToStr(Levels[i]);
-         DEMSpacing[Meaned,i] := DEMGlb[MeanDEM[i]].AverageSpace;
-      end;
-
-      Pick_Geostats.DoGeoStatAnalysis;
-      ElevationSlopePlot(DEMListForAllOpenDEM);
-      exit;
-
-      for graph := 1 to 5 do begin
-         ThisGraph := TThisBaseGraph.Create(Application);
-         ThisGraph.SetUpGraphForm;
-         ThisGraph.Caption := '';
-         ThisGraph.GraphDraw.HorizLabel := 'DEM spacing (m)';
-         ThisGraph.GraphDraw.SetShowAllLines(true);
-         ThisGraph.GraphDraw.SetShowAllPoints(false);
-
-         case graph of
-            1 : ThisGraph.GraphDraw.VertLabel := 'Average elevation (m)';
-            2 : ThisGraph.GraphDraw.VertLabel := 'Mean slope (%)';
-            3 : ThisGraph.GraphDraw.VertLabel := 'Max elevation (m)';
-            4 : ThisGraph.GraphDraw.VertLabel := 'Min elevation (m)';
-            5 : ThisGraph.GraphDraw.VertLabel := 'Elevation std dev';
-         end;
-         ThisGraph.GraphDraw.LegendList := tStringList.Create;
-         ThisGraph.GraphDraw.LegendList.Add('TanDEM-X DEMs');
-         ThisGraph.GraphDraw.LegendList.Add('Thinned by decimation');
-         ThisGraph.GraphDraw.LegendList.Add('Thinned by averaging');
-
-          ThisGraph.OpenDataFile(rfile);
-          for j := 1 to 3 do begin
-             if ValidDEM(j) then begin
-               ElevMoments[0,1] := DEMGlb[j].ElevationMoments( DEMGlb[j].FullDEMGridLimits);
-               DEMGlb[j].SlopeMomentsWithArray(DEMGlb[j].FullDEMGridLimits,SlopeMoments[0,1],zvs^);
-                v[1] := DEMGlb[j].AverageSpace;
-                case graph of
-                   1 : v[2] := ElevMoments[0,1].mean;
-                   2 : v[2] := SlopeMoments[0,1].mean;
-                   3 : v[2] := ElevMoments[0,1].MaxZ;
-                   4 : v[2] := ElevMoments[0,1].MinZ;
-                   5 : v[2] := ElevMoments[0,1].sdev;
-                end;
-                ThisGraph.AddPointToDataBuffer(rfile,v[1],v[2]);
-             end;
-          end;
-          ThisGraph.ClosePointDataFile(rfile);
-
-         for I := 1 to 2 do begin
-             ThisGraph.OpenDataFile(rfile);
-             for j := 1 to nl do begin
-                v[1] := DEMSpacing[i,j];
-                case graph of
-                   1 : v[2] := ElevMoments[i,j].mean;
-                   2 : v[2] := SlopeMoments[i,j].mean;
-                   3 : v[2] := ElevMoments[i,j].MaxZ;
-                   4 : v[2] := ElevMoments[i,j].MinZ;
-                   5 : v[2] := ElevMoments[i,j].sdev;
-                end;
-                ThisGraph.AddPointToDataBuffer(rfile,v[1],v[2]);
-             end;
-             ThisGraph.ClosePointDataFile(rfile);
-         end;
-         ThisGraph.AutoScaleAndRedrawDiagram;
-         fName := NextFileNumber(MDTempDir,'graph_image_','.png');
-         SaveImageAsBMP(ThisGraph.Image1,fName);
-         AllFiles.Add(fName);
-         if (Graph = 5) then begin
-            ThisGraph.Legend1Click(Nil);
-            LegendBitmap := tMyBitmap.Create;
-            LegendBitmap.Assign(ClipBoard);
-            LegendBitmap.Height :=  LegendBitmap.Height + 100;
-            LegendBitmap.Canvas.Font.Size := 24;
-            LegendBitmap.Canvas.Font.Style := [fsBold];
-            LegendBitmap.Canvas.TextOut(10,LegendBitmap.Height - 50,aName);
-
-            fName := NextFileNumber(MDTempDir,'legend_','.png');
-            PetImage.SaveBitmap(LegendBitmap,fName);
-            LegendBitmap.Destroy;
-            AllFiles.Add(fName);
-         end;
-         ThisGraph.Destroy;
-      end;
-      CloseAllDEMs;
-      Table.Next;
-      CloseAllDEMs;
-   end;
-   Table.Destroy;
-   Dispose(zvs);
-   MakeBigBitmap(AllFiles,'TanDEM-X resampling');
-end;
-
-
 procedure Twmdem.Subset81Ssidescan1Click(Sender: TObject);
 begin
    {$IfDef ExSidescan}
@@ -4136,6 +4003,11 @@ end;
 procedure Twmdem.Pixelbypixelmapstatistics1Click(Sender: TObject);
 begin
    PixelByPixelCopAlos;
+end;
+
+procedure Twmdem.Perpendicularshortprofilesthroughpoint1Click(Sender: TObject);
+begin
+   ChangeDEMNowDoing(SeekingPerpendicularProfiles);
 end;
 
 procedure Twmdem.Perspective1Click(Sender: TObject);
@@ -4819,6 +4691,11 @@ begin
   {$EndIf}
 end;
 
+
+procedure Twmdem.Fullprocessingchain1Click(Sender: TObject);
+begin
+   SequentialProcessAnArea;
+end;
 
 procedure Twmdem.Fullworldimage1Click(Sender: TObject);
 var

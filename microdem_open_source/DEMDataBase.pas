@@ -761,7 +761,9 @@ procedure MakeLinesFromPoints(GISDataBase : TGISdataBaseModule; fName : PathStr 
       procedure DEMIXwineContestMeanMedianGraph(What,DBonTable : integer; AreaList : tStringList = nil; CriteriaUsed : tStringList = nil; LandTypePresent : tStringList = nil; DEMsPresent : tStringList = nil);
       procedure DEMIXTileSummary(DBonTable : integer);
       procedure FilterOutSignedCriteria(DBonTable : integer);
-      procedure ExtractTheDEMIXtiles(DBonTable : integer);
+      procedure FilterInSignedCriteria(DBonTable : integer);
+
+      //procedure ExtractTheDEMIXtiles(DBonTable : integer);
 
 procedure ComputeVDatumShift(dbOnTable : integer);
 function AnalyzeVDatumShift(CSVName : PathStr; ErrorLog : tStringList = Nil) : integer;

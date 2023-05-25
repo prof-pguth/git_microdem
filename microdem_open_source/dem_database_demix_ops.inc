@@ -7,6 +7,22 @@
 
 //include file for demdatbase
 
+procedure FilterInSignedCriteria(DBonTable : integer);
+const
+   MeanParams : array[1..3] of shortstring = ('ELVD_MEAN','SLPD_MEAN','RUFD_MEAN');
+   MedianParams : array[1..3] of shortstring = ('ELVD_MED','SLPD_MED','RUFD_MED');
+var
+   aFilter : ANSIstring;
+   i : integer;
+begin
+    aFilter := '';
+    for I := 1 to 3 do begin
+       aFilter := AddOrIfNeeded(aFilter) + 'CRITERION=' + QuotedStr(MeanParams[i]);
+       aFilter := AddOrIfNeeded(aFilter) + 'CRITERION=' + QuotedStr(MedianParams[i]);
+    end;
+    GISdb[DBOntable].ApplyGISFilter(aFilter);
+    GISdb[DBonTable].ShowStatus;
+end;
 
 
 procedure FilterOutSignedCriteria(DBonTable : integer);
@@ -675,52 +691,6 @@ begin
    GISdb[DBonTable].EmpSource.Enabled := true;
    GISdb[DBonTable].ShowStatus;
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXTileSummary out'); {$EndIf}
-end;
-
-
-procedure ExtractTheDEMIXtiles(DBonTable : integer);
-//for each record in the database, extracts the DEMs from the map library, subsets them to the extent of the record, and saves in c:\mapdata\demix_tiles. 
-//(not recently tested; the current philosophy is to subset on the fly for a larger DEM covering a test area)
-var
-   bb : sfBoundBox;
-   WantDEM,WantImage,i : integer;
-   OutPath : PathStr;
-   TileName,LastTileName,DEMIXname : shortstring;
-begin
-   {$IfDef RecordExports} WriteLineToDebugFile('Tdbtablef.ExtractDEMIXtiles1, n=' + IntToStr(GISdb[DBonTable].MyData.RecordCount)); {$EndIf}
-    SaveBackupDefaults;    //to keep from plotting on the DEMs, and not being able to loop through all records
-    MDdef.DBsOnAllMaps := false;
-    LastTileName := '';
-    GISdb[DBonTable].MyData.First;
-    repeat
-        {$IfDef RecordExports} WriteLineToDebugFile('Start loop: ' + IntToStr(GISdb[DBonTable].MyData.RecNo)); {$EndIf}
-        bb := GISdb[DBonTable].MyData.GetRecordBoundingBox;
-        TileName := SWcornerString(bb.ymin,bb.ymax,1);
-        DEMIXname := GISdb[DBonTable].MyData.GetFieldByNameAsString('NAME');
-        {$IfDef RecordExports} WriteLineToDebugFile(IntToStr(GISdb[DBonTable].MyData.RecNo) + '  ' + DEMIXname); {$EndIf}
-        OutPath := 'c:\mapdata\demix_tiles\' + DEMIXname + '\';
-        if (TileName <> LastTileName) then begin
-           {$IfDef RecordExports} WriteLineToDebugFile('Load library: ' + IntToStr(GISdb[DBonTable].MyData.RecNo)); {$EndIf}
-           CloseAllDEMs;
-           LoadMapLibraryBox(WantDEM,WantImage,true,bb);
-           SafeMakeDir(OutPath);
-           {$IfDef RecordExports} WriteLineToDebugFile('DEMs loaded: ' + IntToStr(GISdb[DBonTable].MyData.RecNo)); {$EndIf}
-        end;
-
-        for i := 1 to MaxDEMDataSets do begin
-           if ValidDEM(i) then begin
-              DEMGlb[i].SelectionMap.SubsetAndZoomMapFromGeographicBounds(bb);
-              DEMGlb[i].SaveGridSubsetGeotiff(DEMGlb[i].SelectionMap.MapDraw.MapAreaDEMGridLimits,OutPath + DEMGlb[i].AreaName + '.tif');
-              {$IfDef RecordExports} WriteLineToDebugFile('DEM tile written: ' + IntToStr(i) + '  rec='+ IntToStr(GISdb[DBonTable].MyData.RecNo)); {$EndIf}
-           end;
-        end;
-        CloseAllDEMs;
-        LastTileName := TileName;
-        GISdb[DBonTable].MyData.Next;
-        {$IfDef RecordExports} WriteLineToDebugFile(IntToStr(GISdb[DBonTable].MyData.RecNo) + ' now doing'); {$EndIf}
-    until GISdb[DBonTable].MyData.eof;
-    RestoreBackupDefaults;
-   {$IfDef RecordExports} WriteLineToDebugFile('Tdbtablef.ExtractDEMIXtiles1, out'); {$EndIf}
 end;
 
 

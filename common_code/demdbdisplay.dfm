@@ -48,7 +48,7 @@ object dblimit: Tdblimit
     HorzScrollBar.Visible = False
     Align = alLeft
     TabOrder = 1
-    ExplicitHeight = 407
+    ExplicitHeight = 405
     object Image1: TImage
       Left = 0
       Top = 0

@@ -13,12 +13,16 @@ unit DEMStat;
 
 {$I nevadia_defines.inc}
 
+{$Define NoParallelLag}
+
+
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IfDef Debug}
       //{$Define NoParallelFor}
       //{$Define RecordLag}
-      {$Define RecordPitsSpires}
+      //{$Define RecordPitsSpires}
       {$Define RecordMapAlgebra}
+      {$Define RecordHistogramFromVAT}
       //{$Define RecordDiffMap}
       //{$Define RecordStdDef}
       //{$Define RecordElevationSlopePlot}
@@ -36,7 +40,6 @@ unit DEMStat;
       //{$Define MapTraceCrests}
       //{$Define RecordDetailedTraceCrests}
       //{$Define RecordClustering}
-      {$Define RecordHistogramFromVAT}
       //{$Define RecordFFT}
       //{$Define RecordHistogram}
       //{$Define RecordGridScatterGram}
@@ -492,7 +495,7 @@ var
    Lat,Long,Missing,MaxR,NoLagR,zrange,AvgSlope,xd,yd,heading,BestA,BestB : float64;
    GridLimits : tGridLimits;
 begin
-     {$If Defined(NoParallelFor)}
+     {$If Defined(NoParallelFor) or Defined(NoParallelLag)}
         {$IfDef RecordLagProblems} WriteLineToDebugFile('DoStrip in'); {$EndIf}
         StartProgress('Lag strip ' + DEMGlb[SubDEM].AreaName);
      {$EndIf}
@@ -500,7 +503,7 @@ begin
      Buffer := 0;
      x := BoxLimits.XGridLow + Buffer;
      while x <= BoxLimits.XGridHigh - Buffer do begin
-        {$If Defined(NoParallelFor)}
+        {$If Defined(NoParallelFor) or Defined(NoParallelLag)}
           UpdateProgressBar( (x-BoxLimits.XGridLow) / (BoxLimits.XGridHigh - BoxLimits.XGridLow));
         {$EndIf}
         y := BoxLimits.YGridLow + Buffer;
@@ -526,7 +529,7 @@ begin
         inc(x,MDDef.LagCenterShift);
      end;
      {$IfDef VCL}
-        {$If Defined(NoParallelFor)}
+        {$If Defined(NoParallelFor) or Defined(NoParallelLag)}
            EndProgress;
         {$Else}
            TInterlocked.Increment(NumDone);
@@ -548,7 +551,7 @@ begin
    i := 1;
    ShowSatProgress := false;
 
-   {$If Defined(NoParallelFor)}
+   {$If Defined(NoParallelFor) or Defined(NoParallelLag)}
       Results[1] := tStringList.Create;
       nt := 1;
       DoLagStrip(MainDEM,SubDEM,BoxLimits,Results[1]);
@@ -917,8 +920,9 @@ var
 
         procedure ComputeStats;
         var
-           eLat1,eLong1,eLat2,eLong2,z,zl,MissingPC,Distance,Bearing : float64;
+           eLat1,eLong1,eLat2,eLong2,MissingPC,Distance,Bearing : float64;
            xloc,yloc : integer;
+           zl,z : float32;
            SSOvars : tSSOvars;
            SSOGridLimits : tGridLimits;
         begin
@@ -949,7 +953,7 @@ var
                     {$IfDef FullRecordBlockGeostats} WriteLineToDebugFile('ComputeStats Start advanced elevation'); {$EndIf}
                     Table1.SetFieldByNameAsFloat('RELIEF',MomentVar.MaxZ - MomentVar.MinZ);
                     z := (MomentVar.mean-MomentVar.MinZ) / (MomentVar.MaxZ - MomentVar.MinZ);
-                    Table1.CarefullySetFloat('ELEV_RELF',z,0.001);
+                    Table1.SetFieldByNameAsFloat('ELEV_RELF',z);
 
                     if DEMGlb[WantedDEM].FindLocationOfMaximum(GridLimits,xloc,yloc,z) then begin
                        DEMGlb[WantedDEM].DEMGridToLatLongDegree(xloc,yloc,elat1,elong1);
