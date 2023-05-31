@@ -51,7 +51,7 @@ object DemixFilterForm: TDemixFilterForm
         State = cbChecked
         TabOrder = 1
       end
-      object CheckBox2: TCheckBox
+      object LoadOneSecRefCheckBox: TCheckBox
         Left = 143
         Top = 146
         Width = 97
@@ -80,7 +80,7 @@ object DemixFilterForm: TDemixFilterForm
         Text = 'ComboBox4'
       end
       object BitBtn4: TBitBtn
-        Left = 359
+        Left = 287
         Top = 45
         Width = 155
         Height = 25
@@ -194,7 +194,7 @@ object DemixFilterForm: TDemixFilterForm
       end
       object BitBtn13: TBitBtn
         Left = 531
-        Top = 264
+        Top = 270
         Width = 129
         Height = 25
         Caption = 'All  peaks profiles'
@@ -225,6 +225,36 @@ object DemixFilterForm: TDemixFilterForm
         Caption = 'COP/ALOS diff maps'
         TabOrder = 20
         OnClick = BitBtn14Click
+      end
+      object RadioGroup1: TRadioGroup
+        Left = 24
+        Top = 264
+        Width = 185
+        Height = 105
+        Caption = 'COP/ALOS compare'
+        ItemIndex = 0
+        Items.Strings = (
+          '4 categories'
+          '9 categories')
+        TabOrder = 21
+      end
+      object BitBtn15: TBitBtn
+        Left = 448
+        Top = 45
+        Width = 97
+        Height = 25
+        Caption = '3 distributions'
+        TabOrder = 22
+        OnClick = BitBtn15Click
+      end
+      object BitBtn16: TBitBtn
+        Left = 551
+        Top = 45
+        Width = 90
+        Height = 25
+        Caption = '6 distribuitons'
+        TabOrder = 23
+        OnClick = BitBtn16Click
       end
     end
     object TabSheet2: TTabSheet

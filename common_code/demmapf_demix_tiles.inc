@@ -53,35 +53,38 @@ begin
       BaseName := DEMGlb[DEM].AreaName + '_ref_';
    end;
 
-   fName := DEMIX_Ref_Half_sec + BaseName + '0.5sec' + Ext;
-   NewDEM := CreateOne(PixelIsPoint,0.5,0.5,fName);
-
-   (*
-   fName := OutPath + BaseName + '1sec_point_v2' + Ext;
-   NewDEM4 := CreateOne(PixelIsPoint,1,1,fName);
-
-   fName := OutPath + BaseName + '1sec_area_v2' + Ext;
-   NewDEM5 := CreateOne(PixelIsArea,1,1,fName);
-   *)
-
-   xfrac := abs(frac(DEMGlb[NewDEM].DEMHeader.DEMSWCornerX / DEMGlb[NewDEM].DEMheader.DEMxSpacing));
-   yfrac := abs(frac(DEMGlb[NewDEM].DEMHeader.DEMSWCornerY / DEMGlb[NewDEM].DEMheader.DEMySpacing));
-   if (xfrac < 0.00000001) and (yfrac < 0.00000001) then begin
-      //sw corner is on a full seccond
-      PointOffset := 0;
-      AreaOffset := 1;
-   end
-   else begin
-      //sw corner is on a half seccond
-      PointOffset := 1;
-      AreaOffset := 0;
+   if DoHalfSec {or MDDef.UseHalfPixelAggregation} then begin
+      fName := DEMIX_Ref_Half_sec + BaseName + '0.5sec' + Ext;
+      NewDEM := CreateOne(PixelIsPoint,0.5,0.5,fName);
    end;
 
-   fName := OutPath + BaseName + '1sec_point' + Ext;
-   New2 := DEMGlb[NewDEM].HalfPixelAggregation(fName,PixelIsPoint,true,PointOffset);
+(*
+   if true {MDDef.UseHalfPixelAggregation} then begin
+      if DEMGlb[NewDEM].PixelCenterOnFullSecond then begin
+         //sw corner is on a full seccond
+         PointOffset := 0;
+         AreaOffset := 1;
+      end
+      else begin
+         //sw corner is on a half seccond
+         PointOffset := 1;
+         AreaOffset := 0;
+      end;
 
-   fName := OutPath + BaseName + '1sec_area' + Ext;
-   New3 := DEMGlb[NewDEM].HalfPixelAggregation(fName,PixelIsArea,true,AreaOffset);
+      fName := OutPath + BaseName + '1sec_point_v2' + Ext;
+      New2 := DEMGlb[NewDEM].HalfPixelAggregation(fName,PixelIsPoint,true,PointOffset);
+      //this one does not have the correct shift
+      fName := OutPath + BaseName + '1sec_area_v2' + Ext;
+      New3 := DEMGlb[NewDEM].HalfPixelAggregation(fName,PixelIsArea,true,AreaOffset);
+   end;
+*)
+   if true then begin
+      fName := OutPath + BaseName + '1sec_point' + Ext;
+      NewDEM4 := CreateOne(PixelIsPoint,1,1,fName);
+
+      fName := OutPath + BaseName + '1sec_area' + Ext;
+      NewDEM5 := CreateOne(PixelIsArea,1,1,fName);
+   end;
 
    if (DEMGlb[DEM].DEMSWcornerLat > 50) and (DEMGlb[DEM].DEMSWcornerLat < 60) then begin
       fName := OutPath + BaseName + '1.5x1sec_point' + Ext;

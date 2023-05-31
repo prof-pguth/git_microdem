@@ -101,8 +101,8 @@ type
       procedure AspectDistributionByAlgorithm(WhichDEM : Integer; GridLimits : tGridLimits);
 
       procedure GridDiffernces(EntireDEM : boolean);
-      function MakeDifferenceMap(Map1,Map2 : integer; ShowMap,ShowHistogram,ShowScatterPlot : boolean; TheAreaName : ShortString = '') : integer;
-      function MakeDifferenceMapOfBoxRegion(Map1,Map2 : integer; GridLimits: tGridLimits; ShowMap,ShowHistogram,ShowScatterplot : boolean; TheAreaName : ShortString = '') : integer;
+      function MakeDifferenceMap(Map1,Map2,GridForResult : integer; ShowMap,ShowHistogram,ShowScatterPlot : boolean; TheAreaName : ShortString = '') : integer;
+      function MakeDifferenceMapOfBoxRegion(Map1,Map2,GridForResult : integer; GridLimits: tGridLimits; ShowMap,ShowHistogram,ShowScatterplot : boolean; TheAreaName : ShortString = '') : integer;
 
       procedure StatsFromTwoGrids(iDEM,JDEM : integer; var r,covar : float64; Incr : integer = 1);
       procedure ElevationSlopePlot(WhichDEMs : tDEMbooleanArray; DesiredBinSize : integer = 1);

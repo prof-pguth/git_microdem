@@ -1099,6 +1099,7 @@ begin
              or (Ext = '.TXT')   or (Ext = '.XML')  or (Ext = '.KML')  or (Ext = '.CDS') or (Ext = '.XYZ') or (Ext = '.GPX');
 end;
 
+
 function ValidDB(theDB : integer) : boolean;
 begin
    Result := (theDB > 0) and (theDB <= MaxDataBase) and (GISdb[theDB] <> Nil) and (GISdb[theDB].MyData <> nil);
@@ -2317,8 +2318,6 @@ end;
                else inc(Missing);
                for i := 1 to Skip do MyData.Next;
             until MyData.eof;
-            //EndProgress;
-            //EmpSource.Enabled := true;
             ShowStatus;
          end;
 

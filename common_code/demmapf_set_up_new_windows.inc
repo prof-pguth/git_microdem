@@ -16,7 +16,10 @@ var
    LatCh : ANSIchar;
 begin
    {$IfDef RecordMakeGrid} WriteLineToDebugFile('MakeTempGrid in'); {$EndIf}
+
     if GetParameters then begin
+       if ValidDEM(MapDraw.DEMonMap) then MDDef.LasDEMPixelIs := DEMGlb[MapDraw.DEMonMap].DEMHeader.RasterPixelIsGeoKey1025;
+
        GetGridParameters;
        UTMzone := MDdef.DefaultUTMZone;
        LatCh := MDdef.DefaultLatHemi;
@@ -36,7 +39,13 @@ begin
     else begin
        Result := CreateGridToMatchMap(cgWKT,OpenMap,FloatingPointDEM,MDDef.DefWKTGridSize,MDDef.DefWKTGridSize,UTMZone,MDDef.LasDEMPixelIs);
     end;
-    DEMGlb[Result].DEMheader.ElevUnits := Undefined;
+    if ValidDEM(MapDraw.DEMonMap) then begin
+       DEMGlb[Result].DEMheader.VerticalCSTypeGeoKey := DEMGlb[MapDraw.DEMonMap].DEMheader.VerticalCSTypeGeoKey;
+       DEMGlb[Result].DEMheader.ElevUnits := DEMGlb[MapDraw.DEMonMap].DEMheader.ElevUnits;
+    end
+    else begin
+       DEMGlb[Result].DEMheader.ElevUnits := Undefined;
+    end;
     DEMGlb[Result].AreaName := 'new_grid';
    {$IfDef RecordMakeGrid} WriteLineToDebugFile('MakeTempGrid out, TempDEM=' + IntToStr(Result) + ' ' + DEMGlb[Result].GridDefinition + ' ' + DEMGlb[Result].DEMSizeString + ' ' + DEMGlb[Result].ColsRowsString); {$EndIf}
 end;
@@ -239,7 +248,6 @@ var
          else if (DEMGlb[DEM].DEMheader.ElevUnits = euNDVI) then begin
             Result := mtElevFromTable;
             ElevationFixedPalette := 'ndvi-3';
-            //DEMGlb[Result].SelectionMap.DoBaseMapRedraw;
          end
          else if (DEMGlb[DEM].DEMheader.ElevUnits in [euDifference,euElevDiff]) then begin
             Result := mtGGRReflect;
@@ -274,11 +282,14 @@ var
 begin
    {$IfDef NoMapOptions}
    {$Else}
-      {$If Defined(RecordOpenMap) or Defined(RecordCreateSelectionMap)} writeLineToDebugFile('CreateDEMSelectionMap in, DEM=' + IntToStr(DEM)); {$EndIf}
+      {$If Defined(RecordOpenMap) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('CreateDEMSelectionMap in, DEM=' + IntToStr(DEM)); {$EndIf}
+      {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('CreateDEMSelectionMap in, current maps=' + IntToStr(NumOpenMaps)); {$EndIf}
+
       if not ValidDEM(DEM) then exit;
 
       DEMGlb[DEM].SelectionMap := TMapForm.Create(Application);
       DEMGlb[DEM].SelectionMap.MapDraw.PrimMapProj := DEMGlb[DEM].DEMMapProjection;
+      {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('CreateDEMSelectionMap map just created, current maps=' + IntToStr(NumOpenMaps)); {$EndIf}
       {$If Defined(track_f)} DEMGlb[DEM].DEMMapProjection.ShortProjInfo('CreateDEMSelectionMap, DEM'); {$EndIf}
       {$If Defined(track_f)} DEMGlb[DEM].SelectionMap.MapDraw.PrimMapProj.ShortProjInfo('CreateDEMSelectionMap, map'); {$EndIf}
       if (inMapType = mtDEMBlank) then mt := GetWantedMapType
@@ -286,6 +297,7 @@ begin
       {$If Defined(RecordOpenMap) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('CreateDEMSelectionMap call SetUpNewDEMMapWindow'); {$EndIf}
       DEMGlb[DEM].SelectionMap.SetUpNewDEMMapWindow(DEM,mt,DEMGlb[DEM].AreaName,true,DrawIt,UsePC);
       {$If Defined(RecordOpenMap) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('CreateDEMSelectionMap out,' + DEMGlb[DEM].SelectionMap.MapDraw.MapSizeString); {$EndIf}
+      {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('CreateDEMSelectionMap out, current maps=' + IntToStr(NumOpenMaps)); {$EndIf}
    {$EndIf}
 end;
 
@@ -304,6 +316,7 @@ end;
 procedure TMapForm.SetUpNewDEMMapWindow(CurDEM : integer; mt : tMapType; MapCaption : ShortString; Selection,DrawIt,UsePC : boolean);
 begin
    {$If Defined(RecordSetup) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow, DEM=' + IntToStr(CurDEM) + '  maptype=' + IntToStr(ord(mt)) + '  ' + MapDraw.MapSizeString); {$EndIf}
+   {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow in, current maps=' + IntToStr(NumOpenMaps)); {$EndIf}
    try
       if Selection then begin
          MapDraw.MapOwner := moDEMSelectionMap;
@@ -333,6 +346,7 @@ begin
       ShowDefaultCursor;
    end;
    {$If Defined(RecordSetup) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow exit ' + MapCaption + '  ' + MapDraw.MapSizeString); {$EndIf}
+   {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow out, current maps=' + IntToStr(NumOpenMaps)); {$EndIf}
 end;
 
 
@@ -348,7 +362,7 @@ end;
 
       procedure CreateNewSatSubsetWindow(inSatView : tSatView; var ResultMap : tMapForm; CurSat : integer; mt : tMapType; MapCaption : ShortString; Roamable,Selection,ReallyDraw : boolean; UseDEM : integer = 0);
       var
-         xg,yg : float64;
+         xg,yg : float32;
          Inbounds : boolean;
 
 

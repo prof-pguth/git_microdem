@@ -1479,6 +1479,7 @@ type
     N58: TMenuItem;
     PerpProfiles1: TMenuItem;
     NearestpeakoneachDEM1: TMenuItem;
+    Specifyxyzshifts1: TMenuItem;
     //procedure HiresintervisibilityDEM1Click(Sender: TObject);
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
@@ -2555,6 +2556,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Removequickoverlayhillshade1Click(Sender: TObject);
     procedure PerpProfiles1Click(Sender: TObject);
     procedure NearestpeakoneachDEM1Click(Sender: TObject);
+    procedure Specifyxyzshifts1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
     MouseDownLat,MouseDownLong,
@@ -5759,6 +5761,7 @@ begin
    MDDef.TopCutLevel := abs(MDDef.TopCutLevel);
    MDDef.BottomCutLevel := -MDDef.TopCutLevel;
    DoBaseMapRedraw;
+   ModifyChangeMapSettings(Self);
 end;
 
 
@@ -5780,7 +5783,7 @@ begin
    try
       HeavyDutyProcessing := true;
       for i := 1 to MaxDEMDataSets do if DoDEM[i] then begin
-         NewDEM := MakeDifferenceMapOfBoxRegion(MapDraw.DEMonMap,i,DEMGlb[MapDraw.DEMonMap].FullDEMGridLimits,true,false,false,'Delta ' + DEMGlb[i].AreaName + ' minus ' + DEMGlb[MapDraw.DEMonMap].AreaName);
+         NewDEM := MakeDifferenceMapOfBoxRegion(MapDraw.DEMonMap,i,MapDraw.DEMonMap,DEMGlb[MapDraw.DEMonMap].FullDEMGridLimits,true,false,false,'Delta ' + DEMGlb[i].AreaName + ' minus ' + DEMGlb[MapDraw.DEMonMap].AreaName);
          Results.Add(DEMGlb[i].AreaName + ',' + RealToString(DEMGlb[NewDEM].SelectionMap.ComputeRMSE,-12,2));
       end;
    finally
@@ -14496,6 +14499,43 @@ begin
    CutPoints(CutElev,CutElev);
 end;
 
+procedure TMapForm.Specifyxyzshifts1Click(Sender: TObject);
+var
+   //aDEM : integer;
+   //FilesWanted : tStringList;
+   fName : PathStr;
+   dx,dy,dz : float32;
+   i,NewVD : integer;
+begin
+   //FilesWanted := tStringList.Create;
+   //FilesWanted.Add(LastDEMName);
+   dx := 0.43;
+   ReadDefault('dx',dx);
+   dy := -1.24;
+   ReadDefault('dy',dy);
+   dz := -0.58;
+   ReadDefault('dz',dz);
+   NewVD := VertCSEGM2008;
+   ReadDefault('new vertical datum code',NewVD);
+
+   //if GetMultipleFiles('DEM/grid to move to EGM2008',DEMFilterMasks,FilesWanted ,MDDef.DefaultDEMFilter) then begin
+      //for i := 0 to pred(FilesWanted.Count) do begin
+         //fName := FilesWanted.Strings[i];
+         //aDEM := OpenNewDEM(fName,false);
+         //if (DEMGlb[aDEM].DEMheader.VerticalCSTypeGeoKey = 0) or (DEMGlb[aDEM].DEMheader.VerticalCSTypeGeoKey = VertCSNAVD88) then begin
+            //Memo1.Lines.Add(DEMGlb[aDEM].AreaName + ' was vertical datum 0 now EGM2008');
+            DEMGlb[MapDraw.DEMonMap].DEMHeader.VerticalCSTypeGeoKey := NewVD;
+            DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerX := DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerX + dx;
+            DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerY := DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerY + dy;
+            DEMGlb[MapDraw.DEMonMap].AddConstantToGrid(dz);
+            //fName := ExtractFilePath(fName) + DEMGlb[aDEM].AreaName + '_egm2008.dem';
+            //DEMGlb[aDEM].WriteNewFormatDEM(fName);
+      //end;
+      //FilesWanted.Free;
+   //end;
+
+end;
+
 procedure TMapForm.Spectrallibrarygraph1Click(Sender: TObject);
 begin
    {$IfDef ExSat}
@@ -19007,7 +19047,7 @@ procedure tMapForm.MergeAnotherDEMreflectance(DEM : integer; MakeSticky : boolea
 var
    Bitmap1,Bitmap2 : tMyBitmap;
 begin
-   if (DEM = 0) or (not ValidDEM(DEM)) then begin
+   if (not ValidDEM(DEM)) then begin
       if GetDEM(DEM,true, 'DEM map to merge on ' + Self.Caption) then begin
          if not (DEMGlb[DEM].SelectionMap <> Nil) then begin
             MessageToContinue('DEM must have open map');

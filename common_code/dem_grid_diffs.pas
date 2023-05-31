@@ -16,7 +16,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Buttons;
+  Dialogs, StdCtrls, Buttons, Vcl.ExtCtrls;
 
 type
   TGridDiffForm = class(TForm)
@@ -29,6 +29,7 @@ type
     Label1: TLabel;
     Edit1: TEdit;
     CheckBox5: TCheckBox;
+    RadioGroup1: TRadioGroup;
     procedure OKBtnClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
@@ -41,17 +42,17 @@ type
     AutoClose : boolean;
   end;
 
-procedure SetGridDiffernceProperties(inAutoClose : boolean = true);
+procedure SetGridDiffernceProperties(DEM1,DEM2 : integer; var GridDefinition : integer;  inAutoClose : boolean = true);
 
 implementation
 
 {$R *.dfm}
 
 uses
-   Petmar,petmar_types,DEMDefs, nevadia_main;
+   Petmar,petmar_types,DEMDefs,DEMCoord, nevadia_main;
 
 
-procedure SetGridDiffernceProperties(inAutoClose : boolean = true);
+procedure SetGridDiffernceProperties(DEM1,DEM2 : integer; var GridDefinition : integer; inAutoClose : boolean = true);
 var
    GridDiffForm: TGridDiffForm;
 begin
@@ -62,9 +63,14 @@ begin
    GridDiffForm.CheckBox4.Checked := MDDef.HighlightDiffMap;
    GridDiffForm.CheckBox5.Checked := MDDef.AutoMergeStartDEM;
    GridDiffForm.Edit1.Text := RealToString(abs(MDDef.TopCutLevel),-8,-2);
+   GridDiffForm.Caption := 'Difference ' + DEMGlb[DEM1].AreaName + ' minus ' + DEMGlb[DEM2].AreaName;
+   GridDiffForm.RadioGroup1.Items.Add(DEMGlb[DEM1].AreaName + '  ' + DEMGlb[DEM1].HorizontalDEMSpacing);
+   GridDiffForm.RadioGroup1.Items.Add(DEMGlb[DEM2].AreaName + '  ' + DEMGlb[DEM2].HorizontalDEMSpacing);
+   GridDiffForm.RadioGroup1.ItemIndex := 0;
    PlaceFormInCorner(WMDEM,GridDiffForm,lpCenterMap);
    GridDiffForm.AutoClose := inAutoClose;
    GridDiffForm.ShowModal;
+   if GridDiffForm.RadioGroup1.ItemIndex = 0 then GridDefinition := DEM1 else GridDefinition := DEM2;
 end;
 
 

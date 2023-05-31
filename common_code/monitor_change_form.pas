@@ -73,7 +73,7 @@ implementation
 
 
 uses
-   Nevadia_Main, Make_grid,
+   Nevadia_Main, Make_grid,DEMmapDraw,
    PetImage,Petmar,PETMar_types,DEMDefs,DEMCoord;
 
 
@@ -151,38 +151,11 @@ end;
 
 procedure TChangeMapForm.BitBtn2Click(Sender: TObject);
 var
-   Vat : tStringList;
-   fName : PathStr;
    bmp : tMyBitmap;
-   color : tColor;
-   CatHeight,Cat : integer;
 begin
-   CreateBitmap(bmp,1200,800);
-   bmp.Canvas.Font.Size := MDDef.LegendFont.Size;
-   CatHeight := 6 * bmp.Canvas.TextHeight('Wy') div 5;
-   Cat := 0;
-
-   ClearBitmap(Bmp,clNearWhite);
-   bmp.Canvas.Font.Style := [fsBold];
-
-   Bmp.Canvas.TextOut(5,1,'    % Area     Category');
-   inc(Cat);
-   bmp.Canvas.Pen.Color := clLime;
-   bmp.Canvas.Brush.Color := clLime;
-   bmp.Canvas.Brush.Style := bsSolid;
-   bmp.Canvas.Rectangle(5,Cat*CatHeight,40,succ(Cat)*CatHeight);
-   bmp.Canvas.Brush.Style := bsClear;
-   bmp.Canvas.TextOut(45,Cat*CatHeight + 4, RealToString(DEMGlb[MapOwner.MapDraw.DEMonMap].PercentileOfElevation(MDDef.TopCutLevel),9,2) + '%   Positive Change >' + RealToString(MDDef.TopCutLevel,-8,-2));
-
-   inc(Cat);
-   bmp.Canvas.Pen.Color := clRed;
-   bmp.Canvas.Brush.Color := clRed;
-   bmp.Canvas.Brush.Style := bsSolid;
-   bmp.Canvas.Rectangle(5,Cat*CatHeight,40,succ(Cat)*CatHeight);
-   bmp.Canvas.Brush.Style := bsClear;
-   bmp.Canvas.TextOut(45,Cat*CatHeight + 4,RealToString(DEMGlb[MapOwner.MapDraw.DEMonMap].PercentileOfElevation(MDDef.BottomCutLevel),9,2) + '%    Negative Change <' + RealToString(MDDef.BottomCutLevel,-8,-2));
-   PutBitmapInBox(Bmp);
-
+   bmp := MakeChangeMapLegend(MapOwner.MapDraw.DEMonMap);
+   image1.Height := bmp.Height;
+   Image1.Width := bmp.Width;
    Image1.Picture.Graphic := bmp;
    bmp.Free;
 end;

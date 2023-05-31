@@ -27,8 +27,11 @@ unit GeoTiff;
    {$IFDEF DEBUG}
       //{$Define RecordGeotiff}
       //{$Define RecordGeotiffFailures}
+      (*
       {$Define TrackPixelIs}
-      //{$Define TrackDEMCorners}
+      {$Define TrackDEMCorners}
+      {$Define GeotiffCorner}
+      *)
       //{$Define RecordDEMMapProjection}
       //{$Define RecordInitializeDEM}
       //{$Define RecordGeotiffProjection}
@@ -39,7 +42,6 @@ unit GeoTiff;
       //{$Define ShowKeyDEM}
       //{$Define TrackZ}
       //{$Define RecordTiePoints}
-      //{$Define GeotiffCorner}
       //{$Define RecordGeotiffRestart}
       //{$Define TrackModelType}
       //{$Define RecordFullGeotiff}

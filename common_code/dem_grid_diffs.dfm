@@ -4,8 +4,8 @@ object GridDiffForm: TGridDiffForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Grid Differences '
-  ClientHeight = 205
-  ClientWidth = 276
+  ClientHeight = 263
+  ClientWidth = 397
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -17,8 +17,8 @@ object GridDiffForm: TGridDiffForm
   OnCreate = FormCreate
   TextHeight = 13
   object Label1: TLabel
-    Left = 72
-    Top = 128
+    Left = 88
+    Top = 96
     Width = 80
     Height = 13
     Caption = 'Level to highlight'
@@ -41,7 +41,7 @@ object GridDiffForm: TGridDiffForm
   end
   object OKBtn: TBitBtn
     Left = 8
-    Top = 157
+    Top = 227
     Width = 77
     Height = 27
     Kind = bkOK
@@ -54,7 +54,7 @@ object GridDiffForm: TGridDiffForm
   end
   object HelpBtn: TBitBtn
     Left = 109
-    Top = 157
+    Top = 227
     Width = 77
     Height = 27
     Kind = bkHelp
@@ -75,7 +75,7 @@ object GridDiffForm: TGridDiffForm
   end
   object CheckBox4: TCheckBox
     Left = 24
-    Top = 69
+    Top = 119
     Width = 217
     Height = 17
     Caption = 'Highlight significant change on map'
@@ -83,8 +83,8 @@ object GridDiffForm: TGridDiffForm
     OnClick = CheckBox4Click
   end
   object Edit1: TEdit
-    Left = 167
-    Top = 124
+    Left = 183
+    Top = 92
     Width = 74
     Height = 21
     TabOrder = 6
@@ -92,10 +92,18 @@ object GridDiffForm: TGridDiffForm
   end
   object CheckBox5: TCheckBox
     Left = 24
-    Top = 92
+    Top = 69
     Width = 162
     Height = 17
     Caption = 'Merge hillsahde first DEM'
     TabOrder = 7
+  end
+  object RadioGroup1: TRadioGroup
+    Left = 8
+    Top = 142
+    Width = 361
+    Height = 67
+    Caption = 'Grid to copy for difference'
+    TabOrder = 8
   end
 end

@@ -187,7 +187,7 @@ procedure SetGazDefaults;
 procedure SetGeologyOptions(Allow : boolean);
 procedure SetFlatProfile;
 
-procedure SetDEMIXdirs(Ask : boolean = false);
+//procedure SetDEMIXdirs(Ask : boolean = false);
 
 procedure SetSmallGraphs;
 procedure SetDefaultDirectories;
@@ -389,7 +389,6 @@ begin
     else if Code = 2 then Result := 'Raster Pixel-Is-Point'
     else Result := 'Raster Pixel-Is-Unknown';
 end;
-
 
 
 procedure VerticalDatumShift(DEM : integer; vdShift : tvdShift);
@@ -2501,7 +2500,9 @@ var
       with MDIniFile,MDDef do begin
             AParameter('DEMIX','DEMIX_criterion_tolerance_fName',DEMIX_criterion_tolerance_fName,'');
             AParameter('DEMIX','DEMIX_base_dir',DEMIX_base_dir,'');
-            AParameter('DEMIX','DEMIXhalfSecDir',DEMIXhalfSecDir,'');
+            //AParameter('DEMIX','DEMIXhalfSecDir',DEMIXhalfSecDir,'');
+            AParameter('DEMIX','DEMIX_default_area',DEMIX_default_area,'');
+            AParameter('DEMIX','DEMIX_default_tile',DEMIX_default_tile,'');
 
             AParameter('DEMIX','DEMIX_xsize',DEMIX_xsize,900);
             AParameter('DEMIX','DEMIX_ysize',DEMIX_ysize,600);
@@ -4583,31 +4584,6 @@ end;
 
 
 
-procedure SetDEMIXdirs(Ask : boolean = false);
-//the option to get a path failed with a root directory, and we have enough hard coded that we did not want to change
-var
-   Ch : ansichar;
-begin
-   if PathIsValid(DEMIXSettingsDir) and PathIsValid(DEMIXresultsDir) and PathIsValid(DEMIXrefDataDir) then exit;
-   ch := 'B';
-   repeat
-      inc(ch);
-      MDDef.DEMIX_base_dir := ch + ':\';
-      DEMIXSettingsDir := MDDef.DEMIX_base_dir + 'wine_contest_settings\';
-      DEMIXresultsDir := MDDef.DEMIX_base_dir + 'wine_contest_results\';
-      DEMIXrefDataDir := MDDef.DEMIX_base_dir +'wine_contest_reference_dems\';
-      DEMIXTempFiles := MDDef.DEMIX_base_dir +'wine_contest_temp_files\';
-   until (ch = 'Z') or (PathIsValid(DEMIXSettingsDir) and PathIsValid(DEMIXresultsDir) and PathIsValid(DEMIXrefDataDir));
-   if (ch = 'Z') then MDDef.DEMIX_base_dir := 'DEMIX_MIA'
-   else begin
-      SafeMakeDir(DEMIXTempFiles);
-      SafeMakeDir(DEMIXSettingsDir);
-      SafeMakeDir(DEMIXresultsDir);
-      SafeMakeDir(DEMIXrefDataDir);
-   end;
-end;
-
-
 procedure SetRootDirectoryFiles;
 begin
     {$IfDef RecordInitialization} WriteLineToDebugFile('SetRootDirectoryFiles in'); {$EndIf}
@@ -4628,7 +4604,7 @@ begin
        RenameFile(ProgramRootDir + 'esri_proj', ExtractFilePath(WKT_GCS_Proj_fName));
     end;
 
-    SetDEMIXdirs;
+    //DEMIXSetDEMIXdirs;
 
     {$IfDef ExMagVar}
     {$Else}

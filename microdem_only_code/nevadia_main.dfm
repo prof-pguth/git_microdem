@@ -3527,6 +3527,10 @@ object wmdem: Twmdem
       Caption = 'Process VDATUM shifts'
       OnClick = ProcessVDATUMshifts1Click
     end
+    object ProcessGDALshiftforStateLineexperimental1: TMenuItem
+      Caption = 'Process GDAL shift for State Line (experimental)'
+      OnClick = ProcessGDALshiftforStateLineexperimental1Click
+    end
     object DEMIXreferenceDEMcreation1: TMenuItem
       Caption = 'Create 1 second reference DEMs'
       OnClick = DEMIXreferenceDEMcreation1Click
@@ -3545,6 +3549,17 @@ object wmdem: Twmdem
     object Fullprocessingchain1: TMenuItem
       Caption = 'Full processing chain'
       OnClick = Fullprocessingchain1Click
+    end
+    object N40: TMenuItem
+      Caption = '-'
+    end
+    object N41: TMenuItem
+      Caption = 'Summarize VDATUM shift for US areas'
+      OnClick = N41Click
+    end
+    object SummarizeverticaldatumshiftforEGM96testDEMs1: TMenuItem
+      Caption = 'Summarize vertical datum shift for EGM96 test DEMs'
+      OnClick = SummarizeverticaldatumshiftforEGM96testDEMs1Click
     end
   end
 end

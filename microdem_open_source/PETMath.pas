@@ -22,7 +22,8 @@ interface
 
 uses
 //needed for inline of the core DB functions
-   Petmar_db, Data.DB,
+   //Petmar_db,
+   Data.DB,
    {$IfDef UseFireDacSQLlite}
       FireDAC.Comp.Client, FireDAC.Comp.Dataset,FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteWrapper,
    {$EndIf}

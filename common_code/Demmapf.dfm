@@ -2670,6 +2670,10 @@ object MapForm: TMapForm
           Caption = 'Locad datum to EGM2008'
           OnClick = LocaddatumtoEGM20081Click
         end
+        object Specifyxyzshifts1: TMenuItem
+          Caption = 'Spe;cify x,y,z shifts'
+          OnClick = Specifyxyzshifts1Click
+        end
       end
       object Assignverticaldatum1: TMenuItem
         Caption = 'Assign vertical datum'
@@ -3880,6 +3884,7 @@ object MapForm: TMapForm
         end
         object DEMIXhalfsecto2onesec1: TMenuItem
           Caption = 'DEMIX half sec to 2 one sec'
+          Enabled = False
           OnClick = DEMIXhalfsecto2onesec1Click
         end
         object ComapreUTMvsgeographic1: TMenuItem

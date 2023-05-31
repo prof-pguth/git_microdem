@@ -32,9 +32,11 @@ unit DEMCoord;
       {$Define RecordDEMIX}
       //{$Define RecordDEMIXResample}
       //{$Define RecordVertDatumShift}
+      (*
       {$Define TrackPixelIs}
+      {$Define TrackDEMCorners}
+      *)
       //{$Define RecordVAT}
-      //{$Define TrackDEMCorners}
       //{$Define UKOS}
       //{$Define RecordHalfPixelShift}
       //{$Define RecordDEMEdits}
@@ -304,8 +306,8 @@ type
          LongSizeMap,              {size of area in longitude, in degrees}
          DEMSWcornerLat,           {local datum lat of lower left corner,  the point for pixel-is-point and SW corner for pixel-is-area}
          DEMSWcornerLong,          {local datum long of lower left corner, the point for pixel-is-point and SW corner for pixel-is-area}
-         ComputeSWCornerX,         //1/2 pixel shifted east for PixelIsArea used for computations which consider all grids pixel-is-point
-         ComputeSWCornerY,         //1/2 pixel shifted north for PixelIsArea used for computations which consider all grids pixel-is-point
+         ComputeSWCornerX,         //  1/2 pixel shifted east for PixelIsArea used for computations which consider all grids pixel-is-point
+         ComputeSWCornerY,         //  1/2 pixel shifted north for PixelIsArea used for computations which consider all grids pixel-is-point
          GeotiffNWCornerX,
          GeotiffNWCornerY,
          AverageGridTrue,
@@ -376,6 +378,8 @@ type
          function PixelBoundBoxGeo(Col,Row : integer) : sfBoundBox;
          function PixelBoundBoxUTM(Col,Row : integer) : sfBoundBox;
          function bbDEMGridPartOfDEMonMap(BaseMap : tMapForm) : sfBoundBox;
+
+         function PixelCenterOnFullSecond : boolean;
 
          function GeotiffDEMName : PathStr;
 
@@ -554,7 +558,7 @@ type
          procedure WriteNewFormatDEM(Limits : tGridLimits; var FileName : PathStr; WhatFor : shortstring = '');  overload;
          procedure SavePartOfDEMWithData(var FileName : PathStr);
          procedure SaveSpecifiedPartOfDEM(var FileName : PathStr; Limits : tGridLimits);
-         procedure CSVforVDatum(fName : PathStr = '');
+         procedure CSVforVDatum(Delta : float64 = -99;fName : PathStr = '');
 
          {$IfDef ExGeotiffWrite}
          {$Else}
@@ -819,7 +823,6 @@ const
    TooManyDEMsOpenString = 'Too many open DEMs; last closed';
    DEMRequestBeyondDataString = 'DEM request beyond data';
 
-
 const
    CalculatingCurvature : boolean = true;
    WeKnowItsUTMZone : int16 = -99;
@@ -957,10 +960,21 @@ begin
 end;
 
 
+function tDEMDataSet.PixelCenterOnFullSecond : boolean;
+var
+   xfrac,yfrac : float64;
+begin
+   xfrac := abs(frac(ComputeSWCornerX / DEMheader.DEMxSpacing));
+   yfrac := abs(frac(ComputeSWCornerY / DEMheader.DEMySpacing));
+   Result := (xfrac < 0.00000001) and (yfrac < 0.00000001);
+end;
+
+
 function tDEMDataSet.Geo_Z_Factor : float32;
 begin
    Result := 1.0 / (111320.0 * CosDeg(0.5* LatSizeMap + DEMSWcornerLat));
 end;
+
 
 function tDEMDataSet.ThinThisDEM(fName : PathStr = ''; ThinFactor : integer = 0; DoItByAveraging : boolean = false; Offset : integer = 0) : integer;
 var
@@ -971,11 +985,14 @@ var
    TStr : shortstring;
 begin
    if (ThinFactor = 0) then begin
-      ThinFactor := 2;
-      if DoItByAveraging then ReadDefault('Average NxN pixel region to use',ThinFactor)
-      else ReadDefault('Decimation thin factor',ThinFactor);
+      ThinFactor := 3;
+      if DoItByAveraging then begin
+         ReadDefault('Average NxN (odd) pixel region to use (use with caution)',ThinFactor);
+      end
+      else begin
+         ReadDefault('Decimation thin factor',ThinFactor);
+      end;
    end;
-   //ThinDEM := ThinAndOpenGridSetMissing(NewPrecision : tDEMprecision; Gridname : shortstring; ElevUnits : tElevUnit) : integer;
 
    NewHeadRecs := DEMheader;
    NewHeadRecs.NumCol := DEMheader.NumCol div ThinFactor;

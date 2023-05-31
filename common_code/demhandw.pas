@@ -891,6 +891,7 @@ begin
    {$EndIf}
 end;
 
+
 procedure TDemHandForm.XYZshifttoEGM2008withVDATUMresults1Click(Sender: TObject);
 var
    aDEM : integer;
@@ -925,6 +926,8 @@ begin
       FilesWanted.Free;
    end;
 end;
+
+
 
 procedure TDemHandForm.zshift1Click(Sender: TObject);
 begin
@@ -1443,8 +1446,7 @@ begin
       Paths.Add(LastSatDir);
       if GetMultipleDirectories('Directories with Sentinel-1 images to warp',Paths) then begin
          for I := 0 to Paths.Count do
-
-         ResampleSentinel_1(Paths.Strings[i]);
+            ResampleSentinel_1(Paths.Strings[i]);
       end;
    end;
 

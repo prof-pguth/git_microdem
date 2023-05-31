@@ -3,8 +3,8 @@ object OKRightDlg: TOKRightDlg
   Top = 229
   BorderStyle = bsDialog
   Caption = 'Dialog'
-  ClientHeight = 89
-  ClientWidth = 264
+  ClientHeight = 88
+  ClientWidth = 260
   Color = clBtnFace
   ParentFont = True
   Position = poScreenCenter

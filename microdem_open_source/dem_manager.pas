@@ -646,6 +646,11 @@ end;
    begin
       Result := 0;
       if FileExists(SeriesIndexFileName) then begin
+         bb.XMin := bb.XMin + 0.001;
+         bb.YMin := bb.YMin + 0.001;
+         bb.XMax := bb.XMax - 0.001;
+         bb.YMax := bb.YMax - 0.001;
+
          SaveBackupDefaults;
          fName := SeriesIndexFileName;
          Table := tMyData.Create(fName);

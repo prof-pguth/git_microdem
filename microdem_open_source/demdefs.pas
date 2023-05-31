@@ -1941,6 +1941,8 @@ type
       DEMIX_Full : byte;
       DEMIX_base_dir,
       DEMIX_criterion_tolerance_fName : PathStr;
+      DEMIX_default_area,
+      DEMIX_default_tile   : shortstring;
 
       DEMIX_xsize,DEMIX_ysize : integer;
       DEMIXCompositeImage,

@@ -2,8 +2,8 @@ object ChangeMapForm: TChangeMapForm
   Left = 0
   Top = 0
   Caption = 'Change Map'
-  ClientHeight = 322
-  ClientWidth = 431
+  ClientHeight = 332
+  ClientWidth = 453
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -30,10 +30,11 @@ object ChangeMapForm: TChangeMapForm
     OnClick = RedrawSpeedButton12Click
   end
   object Image1: TImage
-    Left = 12
-    Top = 120
-    Width = 385
+    Left = 0
+    Top = 111
+    Width = 449
     Height = 105
+    Align = alCustom
   end
   object OKBtn: TButton
     Left = 28
@@ -56,12 +57,14 @@ object ChangeMapForm: TChangeMapForm
     OnClick = HelpBtnClick
   end
   object PageControl1: TPageControl
-    Left = 8
-    Top = 5
-    Width = 393
+    Left = 0
+    Top = 0
+    Width = 453
     Height = 109
-    ActivePage = TabSheet1
+    ActivePage = Single
+    Align = alTop
     TabOrder = 2
+    ExplicitWidth = 449
     object Single: TTabSheet
       Caption = 'Single cuttoff'
       object Label1: TLabel

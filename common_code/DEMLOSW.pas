@@ -22,7 +22,7 @@ unit demlosw;
       //{$Define RecordClosing}
       //{$Define RecordUTMZones}
       //{$Define RecordSlopeCalc}
-      //{$Define RecordLOSLegend}
+      {$Define RecordLOSLegend}
       {$Define RecordHideProfiles}
       //{$Define RecordLOSProblems}
       //{$Define RecordLOSPrettyDrawing}
@@ -424,13 +424,13 @@ end;
       i : integer;
       TStr : shortstring;
    begin
-        for i := 1 to MaxDEMDataSets do begin
-           if ValidDEM(i) then begin
-              if LOSDraw.ShowProfile[i] then TStr := 'show' else Tstr := 'hide';
-              HighlightLineToDebugFile(Stage);
-              WriteLineToDebugFile(IntToStr(i) + '  ' + DEMGlb[i].AreaName + ' ' + TStr);
-           end;
-        end;
+      for i := 1 to MaxDEMDataSets do begin
+         if ValidDEM(i) then begin
+            if LOSDraw.ShowProfile[i] then TStr := 'show' else Tstr := 'hide';
+            HighlightLineToDebugFile(Stage);
+            WriteLineToDebugFile(IntToStr(i) + '  ' + DEMGlb[i].AreaName + ' ' + TStr);
+         end;
+      end;
    end;
 {$EndIf}
 
@@ -1572,7 +1572,6 @@ end;
 function TDEMLOSF.CreateProfileLegend : tMyBitmap;
 var
    y,x,WhichDEM,ItemHigh,ItemWidth,LegendItem,DEMshown : integer;
-  // LegBMP : tMyBitmap;
 begin
    {$If Defined(RecordLOSProblems) or Defined(RecordLOSLegend)} WriteLineToDebugFile('TDEMLOSF.Profilelegends1Click'); {$EndIf}
    CreateBitmap(Result,1,1);
@@ -1580,7 +1579,7 @@ begin
    Result.Canvas.Font.Size := MDDef.DefaultGraphFont.Size;
    Result.Canvas.Font.Style := [fsBold];
 
-   ItemWidth := 40;
+   ItemWidth := 50;
    ItemHigh := 0;
    DEMShown := 0;
    for WhichDEM := 1 to MaxDEMDataSets do begin
@@ -1588,12 +1587,15 @@ begin
          {$If Defined(RecordLOSProblems) or Defined(RecordLOSLegend)} WriteLineToDebugFile('DEM=' + IntToStr(WhichDEM) + '   ' + LOSDraw.ProfileName[WhichDEM]); {$EndIf}
          inc(DEMShown);
          x := Result.Canvas.TextWidth(LOSdraw.ProfileName[WhichDEM]);
-         if (x > ItemWidth) then ItemWidth := x + 40;
+         if (x > ItemWidth) then ItemWidth := x;
+         {$If Defined(RecordLOSProblems) or Defined(RecordLOSLegend)}
+            WriteLineToDebugFile('DEM=' + IntToStr(WhichDEM) + '   ' + LOSDraw.ProfileName[WhichDEM] + '  text width=' + IntToStr(x) + '  legend width=' + IntToStr(ItemWidth));
+         {$EndIf}
          x := Result.Canvas.TextHeight(LOSdraw.ProfileName[WhichDEM]);
          if x > ItemHigh then ItemHigh := x + 10;
       end;
    end;
-   Result.Width := ItemWidth;
+   Result.Width := ItemWidth + 50;
    Result.Height := 15 + DEMShown * ItemHigh;
    {$If Defined(RecordLOSProblems) or Defined(RecordLOSLegend)}  WriteLineToDebugFile('Legend size: ' + IntToStr(Result.Width) + 'x' + IntToStr(Result.Height) ); {$EndIf}
 

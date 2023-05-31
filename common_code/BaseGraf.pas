@@ -5168,8 +5168,11 @@ begin
              if (GraphDraw.DBFLineFilesPlotted.Count > 0) then bmp := MakeLegend(GraphDraw.DBFLineFilesPlotted,true)
              else if (GraphDraw.LegendList <> Nil) then bmp := MakeLegend(GraphDraw.LegendList,false);
              if BMP <> nil then begin
-                if GraphDraw.InsideMarginLegend in [lpSWMap,lpSEMap] then yi := GraphDraw.YWindowSize - GraphDraw.BottomMargin - bmp.Height else yi := GraphDraw.TopMargin;
-                if GraphDraw.InsideMarginLegend in [lpNWMap,lpSWMap] then xi := GraphDraw.LeftMargin else xi := GraphDraw.XWindowSize - GraphDraw.RightMargin - bmp.Width;
+                if GraphDraw.InsideMarginLegend in [lpSWMap,lpSEMap] then
+                   yi := GraphDraw.YWindowSize - GraphDraw.BottomMargin - bmp.Height else yi := GraphDraw.TopMargin +15;
+                if GraphDraw.InsideMarginLegend in [lpNWMap,lpSWMap] then
+                   xi := GraphDraw.LeftMargin + 15
+                else xi := GraphDraw.XWindowSize - GraphDraw.RightMargin - bmp.Width;
              end;
           end;
           {$If Defined(RecordLegends)} WritelineToDebugFile('Draw legend inside graph, at x=' + IntToStr(xi) + '  y=' + IntToStr(yi)); bmp.SaveToFile(MDtempDir + 'legend.bmp'); {$EndIf}

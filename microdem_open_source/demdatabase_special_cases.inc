@@ -61,6 +61,7 @@ begin
    end;
 end;
 
+
 function AnalyzeVDatumShift(CSVName : PathStr; ErrorLog : tStringList = Nil) : integer;
 var
    fName2,fName : Pathstr;
@@ -74,13 +75,16 @@ begin
       OpenNumberedGISDataBase(Result,fName2);
    end
    else begin
-      fName := ExtractFilePath(CSVName) + 'result\' + ExtractFileName(CSVName);
+      fName := ExtractFilePath(CSVName) + 'result\' + ExtractFileName(CSVName);  //if VDATUM run on local machine
       if not FileExists(fName) then begin
-         TStr := 'VDATUM not run yet for ' + CSVName;
-         {$If Defined(RecordDEMIX)} WriteLineToDebugFile(TStr); {$EndIf}
-         if ErrorLog <> Nil then ErrorLog.Add(TStr);
-         Result := 0;
-         exit;
+         fName := ExtractFilePath(CSVName) + ExtractFileNameNoExt(CSVName) + '_result' + ExtractFileExt(CSVName);  //VDATUM run on web
+         if not FileExists(fName) then begin
+            TStr := 'VDATUM not run yet for ' + CSVName;
+            {$If Defined(RecordDEMIX)} WriteLineToDebugFile(TStr); {$EndIf}
+            if ErrorLog <> Nil then ErrorLog.Add(TStr);
+            Result := 0;
+            exit;
+         end;
       end;
       f1 := tStringList.Create;
       f1.LoadFromFile(CSVName);

@@ -555,6 +555,10 @@ type
     N39: TMenuItem;
     Fullprocessingchain1: TMenuItem;
     Perpendicularshortprofilesthroughpoint1: TMenuItem;
+    N40: TMenuItem;
+    N41: TMenuItem;
+    SummarizeverticaldatumshiftforEGM96testDEMs1: TMenuItem;
+    ProcessGDALshiftforStateLineexperimental1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -944,6 +948,10 @@ type
     procedure CreateDEMIXdatabase1Click(Sender: TObject);
     procedure Fullprocessingchain1Click(Sender: TObject);
     procedure Perpendicularshortprofilesthroughpoint1Click(Sender: TObject);
+    procedure N41Click(Sender: TObject);
+    procedure SummarizeverticaldatumshiftforEGM96testDEMs1Click(
+      Sender: TObject);
+    procedure ProcessGDALshiftforStateLineexperimental1Click(Sender: TObject);
     //procedure PanoramaAdmin1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
@@ -2339,7 +2347,10 @@ end;
          HistogramsFromVATDEM(DEMwithVAT,ElevMap,SlopeMap,RuffMap,AspMap);
       end;
       *)
-
+var
+   BatchFile : tStringList;
+   aName : PathStr;
+   cmd : shortstring;
 begin
    if TrilobiteComputer then begin
       //Histies;
@@ -2357,6 +2368,13 @@ begin
        //ComputeDEMIXstats;
 
        //OpenDEMIXDatabaseForAnalysis;
+ (*
+      StartGDALbatchFile(BatchFile);
+      cmd := 'gdalwarp -overwrite G:\aa_problem\in.tif G:\aa_problem\out.tif -s_srs EPSG:26911+5703 -t_srs EPSG:32611+3855';
+      BatchFile.Add(cmd);
+      aName :=  Petmar.NextFileNumber(MDTempDir, 'gdal_datumshift_','.bat');
+      EndBatchFile(aName,BatchFile);
+ *)
 
    end;
 end;
@@ -2871,6 +2889,11 @@ begin
    OpenHalfSecCopALOS(false);
 end;
 
+procedure Twmdem.N41Click(Sender: TObject);
+begin
+   SummarizeVDatumShifts;
+end;
+
 procedure Twmdem.N81Sfileviewer1Click(Sender: TObject);
 begin
    {$IfDef ExSidescan}
@@ -3121,6 +3144,19 @@ begin
    ComputeDEMIX_tile_stats;
 end;
 
+
+procedure Twmdem.ProcessGDALshiftforStateLineexperimental1Click(Sender: TObject);
+var
+   BatchFile : tStringList;
+   aName : PathStr;
+   cmd : shortstring;
+begin
+   StartGDALbatchFile(BatchFile);
+   cmd := 'gdalwarp -overwrite G:\aa_problem\in.tif G:\aa_problem\out.tif -s_srs EPSG:26911+5703 -t_srs EPSG:32611+3855';
+   BatchFile.Add(cmd);
+   aName :=  Petmar.NextFileNumber(MDTempDir, 'gdal_datumshift_','.bat');
+   EndBatchFile(aName,BatchFile);
+end;
 
 procedure Twmdem.ProcessVDATUMshifts1Click(Sender: TObject);
 begin
@@ -3389,6 +3425,11 @@ begin
    {$Else}
       Subset81Ssidescanfile;
    {$EndIf}
+end;
+
+procedure Twmdem.SummarizeverticaldatumshiftforEGM96testDEMs1Click(Sender: TObject);
+begin
+   SummarizeEGM96toEGM2008shifts;
 end;
 
 procedure Twmdem.Superimposedtopoprofiles1Click(Sender: TObject);

@@ -270,9 +270,9 @@ const
    LongCatName : array[1..9] of shortstring = ('Both high','ALOS high/COP good','ALOS high/COP low',
                                                 'ALOS good/COP high','Both good','ALOS good/COP low',
                                                 'ALOS low/COP high','ALOS low/COP good','Both low');
-   LongCatColor : array[1..9] of tColor = (clBlue,clGreen,clAqua,
+   LongCatColor : array[1..9] of tColor = (clGreen,clBlue,clAqua,
                                            clYellow,clLime,clTeal,
-                                           clPurple,clFuchsia,clBrown);
+                                           clPurple,clFuchsia,clRed);
 var
    i : integer;
    zDEM2,zRefDEM,zDEM1,What : float32;
@@ -283,7 +283,9 @@ var
    Hist : array[1..MaxHist] of int64;
    DEM1high, DEM1low, DEM1good, DEM2high, DEM2low, DEM2good : boolean;
 begin
-   {$If Defined(RecordDEMCompare) or Defined(NewVATgrids)} WriteLineToDebugFile('TwoDEMHighLowMap in, REFDEM=' + IntToStr(RefDEM) + ' DEM1=' + IntToStr(ALOS) + ' and DEM2=' + IntToStr(COP) + '  ' + fName2);  {$EndIf}
+   {$If Defined(RecordDEMCompare) or Defined(NewVATgrids) or Defined(DEMIXmaps)}
+     WriteLineToDebugFile('TwoDEMHighLowMap in, REFDEM=' + IntToStr(RefDEM) + ' DEM1=' + IntToStr(ALOS) + ' and DEM2=' + IntToStr(COP) + '  ' + fName2);
+   {$EndIf}
    Result := 0;
    if ValidDEM(RefDEM)then begin
       for i := 1 to MaxHist do Hist[i] := 0;
@@ -298,10 +300,11 @@ begin
                if DEMGlb[ALOS].GetElevFromLatLongDegree(Lat,Long,zDEM1) and DEMGlb[COP].GetElevFromLatLongDegree(Lat,Long,zDEM2) then begin
                   DEM1high := (zDEM1 > zRefDEM + SimpleTolerance);
                   DEM1low :=  (zDEM1 < zRefDEM - SimpleTolerance);
-                  DEM1good :=  (not DEM1high) and (not DEM1Low);
+                  DEM1good := abs(zDEM1 - zRefDEM) <= SimpleTolerance;     //(not DEM1high) and (not DEM1Low);
+
                   DEM2high := (zDEM2 > zRefDEM + SimpleTolerance);
                   DEM2low :=  (zDEM2 < zRefDEM - SimpleTolerance);
-                  DEM2good := (not DEM2high) and (not DEM2Low);
+                  DEM2good := abs(zDEM2 - zRefDEM) <= SimpleTolerance;     //(not DEM2high) and (not DEM2Low);
 
                   if FourCats then begin
                      if DEM1high and DEM2high then What := 5
@@ -338,9 +341,9 @@ begin
       Vat := tStringList.Create;
       Vat.Add('VALUE,CATEGORY,N,USE,COLOR');
       if FourCats then begin
-         if (Hist[5] > 0) then Vat.add('5,Both high,' + IntToStr(Hist[5]) + ',Y,' + IntToStr(clBlue));
-         if (Hist[3] > 0) then Vat.add('3,Both reference ± ' + RealToString(SimpleTolerance,-5,1) + ',' + IntToStr(Hist[3]) + ',Y,' + IntToStr(clLime));
-         if (Hist[1] > 0) then Vat.add('1,Both low,' + IntToStr(Hist[1]) + ',Y,' + IntToStr(clBrown));
+         if (Hist[5] > 0) then Vat.add('5,Both high,' + IntToStr(Hist[5]) + ',Y,' + IntToStr(clGreen));
+         if (Hist[3] > 0) then Vat.add('3,Both reference ± ' + RealToString(SimpleTolerance,-5,1) + ',' + IntToStr(Hist[3]) + ',Y,' + IntToStr(clWhite));
+         if (Hist[1] > 0) then Vat.add('1,Both low,' + IntToStr(Hist[1]) + ',Y,' + IntToStr(clRed));
          if (Hist[6] > 0) then Vat.add('6,Complex,' + IntToStr(Hist[6]) + ',Y,' + IntToStr(clYellow));
       end
       else begin

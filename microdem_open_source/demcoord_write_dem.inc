@@ -19,12 +19,13 @@
    {$EndIf}
 
 
-procedure tDEMDataSet.CSVforVDatum(fName : PathStr = '');
+procedure tDEMDataSet.CSVforVDatum(Delta : float64 = -99;fName : PathStr = '');
 var
    Lat,Long : float64;
    z : float32;
    Results : tStringList;
 begin
+   if (Delta < 0) then if AnswerIsYes('1 arc minute instead of 0.2 degrees') then Delta := 1/60 else Delta := 0.02;
    Results := tStringList.Create;
    Results.Add('LONG,LAT,ELEV');
    Lat := trunc(DEMSWcornerLat);
@@ -33,15 +34,14 @@ begin
       while Long <= DEMSWcornerLong + LongSizeMap do begin
          if GetElevFromLatLongDegree(Lat,Long,z) then
             Results.Add(RealToString(Long,-14,-8) + ',' + RealToString(Lat,-14,-8) + ',' + RealToString(z,-8,-2));
-         Long := Long + 1/60;
+         Long := Long + Delta;
       end;
-      Lat := Lat + 1/60;
+      Lat := Lat + Delta;
    end;
-   if fName = '' then GetFileNameDefaultExt('output for VDatum','.csv',fname);
+   if (fName = '') then GetFileNameDefaultExt('output for VDatum','.csv',fname);
    Results.SaveToFile(fName);
    Results.Free;
 end;
-
 
 
 procedure tDEMDataSet.SaveGridSubsetGeotiff(DEMGridLimits : tGridLimits; fName : PathStr = '');
@@ -165,18 +165,22 @@ begin
       {$IfDef RecordWriteDEM} WriteLineToDebugFile('Start DEM write ' + FileName); {$EndIf}
 
       NewHeadRecs := DEMheader;
-      NewHeadRecs.NumCol := succ(Limits.XGridHigh - Limits.XGridLow);
-      NewHeadRecs.NumRow := succ(Limits.YGridHigh - Limits.YGridLow);
-      if (DEMheader.NumCol <> NewHeadRecs.NumCol) or (DEMheader.NumRow <> NewHeadRecs.NumRow) then begin
-         NewHeadRecs.DEMSWCornerX := DEMHeader.DEMSWCornerX + Limits.XGridLow * DEMheader.DEMxSpacing;
-         NewHeadRecs.DEMSWCornerY := DEMHeader.DEMSWCornerY + Limits.YGridLow * DEMheader.DEMySpacing;
+      if (Limits.XGridHigh <> FullDEMGridLimits.XGridHigh) or (Limits.YGridHigh <> FullDEMGridLimits.YGridHigh) or
+         (Limits.XGridLow <> FullDEMGridLimits.XGridLow) or (Limits.YGridLow <> FullDEMGridLimits.YGridLow)then begin
+            NewHeadRecs.NumCol := succ(Limits.XGridHigh - Limits.XGridLow);
+            NewHeadRecs.NumRow := succ(Limits.YGridHigh - Limits.YGridLow);
+            if (DEMheader.NumCol <> NewHeadRecs.NumCol) or (DEMheader.NumRow <> NewHeadRecs.NumRow) then begin
+               NewHeadRecs.DEMSWCornerX := DEMHeader.DEMSWCornerX + Limits.XGridLow * DEMheader.DEMxSpacing;
+               NewHeadRecs.DEMSWCornerY := DEMHeader.DEMSWCornerY + Limits.YGridLow * DEMheader.DEMySpacing;
+            end;
+
+            BoxAreaExtremeElevations(Limits,MinZ,MaxZ,avgelev);
+            NewHeadRecs.MinElev := MinZ;
+            NewHeadRecs.MaxElev := MaxZ;
+            NewHeadRecs.StoredMinElev := MinZ / ElevationMultiple;
+            NewHeadRecs.StoredMaxElev := MaxZ / ElevationMultiple;
       end;
 
-      BoxAreaExtremeElevations(Limits,MinZ,MaxZ,avgelev);
-      NewHeadRecs.MinElev := MinZ;
-      NewHeadRecs.MaxElev := MaxZ;
-      NewHeadRecs.StoredMinElev := MinZ / ElevationMultiple;
-      NewHeadRecs.StoredMaxElev := MaxZ / ElevationMultiple;
       CleanUpFileName(FileName);
        assignFile(fFile,FileName);
        rewrite(fFile,1);

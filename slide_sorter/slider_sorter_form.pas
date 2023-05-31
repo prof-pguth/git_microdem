@@ -4,7 +4,7 @@ unit slider_sorter_form;
 { Part of ianMICRODEM GIS Program    }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
-{ Copyright (c) 2022 Peter L. Guth   }
+{ Copyright (c) 2023 Peter L. Guth   }
 {____________________________________}
 
 
@@ -636,8 +636,7 @@ begin
       inc(OnSlide);
       LoadPictures;
       Delay(250);
-   until Onslide =  FileNames.Count - 2;
-
+   until (Onslide =  FileNames.Count - 2);
 end;
 
 procedure TSlideSorterForm.MenuItem1Click(Sender: TObject);

@@ -906,7 +906,7 @@ var
    begin
       NeedReset := true;
       for i := 1 to MaxCompare do begin
-         if ValidDEM(CompareDEMIndexes[i]) and (IsItLikeDTED = LikeDTED[i]) then begin
+         if ValidDEM(CompareDEMIndexes[i]) and (IsItLikeDTED = LikeDTED[i]) {for ASTER} then begin
             DEMGlb[CompareDEMIndexes[i]].LatLongDegreeToDEMgridInteger(SliceGraph[CurSlice].SliceCenter,SliceGraph[CurSlice].gxlo,xgs,ygs);
             DEMGlb[CompareDEMIndexes[i]].LatLongDegreeToDEMgridInteger(SliceGraph[CurSlice].SliceCenter,SliceGraph[CurSlice].gxhi,xge,yge);
             if NeedReset then begin

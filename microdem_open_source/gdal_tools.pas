@@ -1146,7 +1146,7 @@ end;
             BatchFile.Add(GDAL_translate_name + ' -of Gtiff '  + ExtraOptions + ' ' + fName + ' ' + OutName);
             BatchName := Petmar.NextFileNumber(MDTempDir, 'gdal_translate_','.bat');
             EndBatchFile(BatchName,BatchFile);
-            if TrashOriginal then File2Trash(fName);
+            if TrashOriginal and (Uppercase(ExtractFileExt(fName)) <> '.GTX') then File2Trash(fName);
             {$If Defined(RecordGDAL) or Defined(Reformat)} WriteLineToDebugFile(' GDAL_Translate_2_geotiff end'); {$EndIf}
          end;
       end;

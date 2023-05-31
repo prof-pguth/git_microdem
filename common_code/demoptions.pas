@@ -632,7 +632,7 @@ uses
    USOutlines,
    PETMAR,PETMath,PETGraphColors, Petmar_ini_file,
    DEM_indexes,
-   Nevadia_Main;
+   Nevadia_Main, demix_control;
 
 var
    MainMap,
@@ -877,7 +877,7 @@ begin
             GetGDALFileNames;
          end;
       {$EndIf}
-      if Arow = DEMIXbase then SetDEMIXdirs(true);
+      if Arow = DEMIXbase then DEMIX_control.SetDEMIXdirs(true);
       //if Arow = TauDEM then GetDOSPath('TauDEM',TauDEMDir);
    end;
    LabelDirectories;

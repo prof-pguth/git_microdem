@@ -74,7 +74,7 @@ uses
    {$EndIf}
 
    Math,Db,Classes,StrUtils,
-   Petmar_types;
+   Petmar_types,PetMath;
 
 const
    {$IfDef dBase_DefaultDBs}
@@ -214,9 +214,12 @@ type
 
         function FieldSum(FieldDesired : shortstring) : float64;
         function FieldAverage(FieldDesired : shortstring) : float64;
+        function FieldMedian(FieldDesired : shortstring) : float64;
         function FindFieldMax(FieldDesired : shortString) : float64;
         function FindFieldMin(FieldDesired : shortString) : float64;
+        function FieldStdDev(FieldDesired : shortstring) : float64;
         function FindFieldRange(FieldDesired : shortString; var aMinVal,aMaxVal : float64) : boolean;
+        function GetFieldStatistics(FieldDesired : ShortString) : tMomentVar;
 
         function MakeImageTag(ThumbnailDir : PathStr; FieldName : ANSIString) : ANSIString;
         function BoundingBoxPresent : boolean;
@@ -324,7 +327,7 @@ uses
    BaseMap,
    DEMDefs,
    DEMDef_routines,
-   Petmath,
+   //Petmath,
    Petmar;
 
 
@@ -2050,11 +2053,13 @@ begin
    until EOF;
 end;
 
+
 function tMyData.FieldAverage(FieldDesired : shortstring) : float64;
 var
    z : float64;
    n : integer;
 begin
+(*
    Result := 0;
    n := 0;
    First;
@@ -2066,8 +2071,47 @@ begin
       Next;
    until EOF;
    if (N > 0) then Result := Result / n;
+*)
+   Result := GetFieldStatistics(FieldDesired).Mean;
 end;
 
+
+function tMyData.FieldStdDev(FieldDesired : shortstring) : float64;
+begin
+   Result := GetFieldStatistics(FieldDesired).Sdev;
+end;
+
+
+
+function tMyData.GetFieldStatistics(FieldDesired : ShortString) : tMomentVar;
+var
+   zs : ^bfarray32;
+   z : float64;
+ begin
+   New(zs);
+   Result.NPts := 0;
+   First;
+   repeat
+      if CarefullyGetFieldByNameAsFloat64(FieldDesired,z) then begin
+         zs^[Result.NPts] := z;
+         inc(Result.NPts);
+      end;
+      Next;
+   until EOF;
+   if (Result.Npts > 1) then begin
+      moment(zs^,Result,msAll);
+   end
+   else InitializeMomentVar(Result);
+   Dispose(zs);
+   EndProgress;
+end;
+
+
+
+function tMyData.FieldMedian(FieldDesired : shortstring) : float64;
+begin
+   Result := GetFieldStatistics(FieldDesired).Median;
+end;
 
 
 function tMyData.IsNumericField(WantFieldName : ANSIString) : boolean;

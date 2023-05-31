@@ -16,11 +16,14 @@ unit dem_indexes;
      //{$Define RecordMultipleFilesInBoundingBox}
      //{$Define RecordLoadMapLibraryBox}
      //{$Define MergeSummary}
+     (*
      {$Define TrackPixelIs}
+     {$Define TrackDEMCorners}
+     {$Define RecordIndex}
+     *)
      //{$Define LoadLibrary}
      //{$Define RecordAutoZoom}
      //{$Define RecordImageIndex}
-     //{$Define RecordIndex}
      //{$Define RecordIndexFileNames}
      //{$Define RecordMerge}
      //{$Define RecordTimeMerge}
@@ -480,7 +483,7 @@ var
 
       procedure IntegratedIndex(var TheTable : tMyData);
       var
-         Dirs,{TheDEMs,}RawData : TStringList;
+         Dirs,RawData : TStringList;
          fName : PathStr;
          Series : ShortString;
          Ext : ExtStr;
@@ -523,7 +526,6 @@ var
          procedure IndexMapLibraryDataType(DataType : ShortString);
          var
             i,k,Where : integer;
-            //FullRedo : boolean;
             AlreadyIndexed : tStringList;
          begin
             {$IfDef RecordIndex} WriteLineToDebugFile('IndexMapLibraryDataType ' + DataType); {$EndIf}
@@ -541,7 +543,6 @@ var
               ReallyReadDEM := false;
               TheTable.ApplyFilter('SERIES=' + QuotedStr(Series));
               AlreadyIndexed := TheTable.UniqueEntriesInDB('FILENAME');
-              //FullRedo := (TheTable.RecordCount = 0);
               try
                  if (RawData.Count > TheTable.RecordCount) then begin
                     for i := 0 to pred(RawData.Count) do begin
@@ -649,25 +650,30 @@ var
    fname : PathStr;
 begin
    {$IfDef RecordIndex} WriteLineToDebugFile('CreateMapLibrary in'); {$EndIf}
-   ReportErrors := false;
-   if (Memo1 <> Nil) then Memo1.Visible := true;
-   PickMapIndexLocation;
+   try
+      ReportErrors := false;
+      MDdef.MDRecordDebugLog := false;
+      if (Memo1 <> Nil) then Memo1.Visible := true;
+      PickMapIndexLocation;
 
-   fName := MapLibraryFName;
-   if FileExists(MapLibraryFName) then begin
-      TheTable := Petmar_db.tMyData.Create(FName);
-      if AnswerIsYes('Verify files are present') then VerifyMapLibraryFilesExist(theTable,Memo1);
-   end
-   else begin
-      CreateIntegratedDataBaseTable(MapLibraryFName);
-      TheTable := Petmar_db.tMyData.Create(FName);
+      fName := MapLibraryFName;
+      if FileExists(MapLibraryFName) then begin
+         TheTable := Petmar_db.tMyData.Create(FName);
+         if AnswerIsYes('Verify files are present') then VerifyMapLibraryFilesExist(theTable,Memo1);
+      end
+      else begin
+         CreateIntegratedDataBaseTable(MapLibraryFName);
+         TheTable := Petmar_db.tMyData.Create(FName);
+      end;
+
+      IntegratedIndex(TheTable);
+      TheTable.Destroy;
+      if (Memo1 <> Nil) then Memo1.Lines.Add(TimeToStr(Now) + ' Update over');
+   finally
+      ReportErrors := true;
+      MDdef.MDRecordDebugLog := true;
+      {$IfDef RecordIndex} WriteLineToDebugFile('CreateMapLibrary out'); {$EndIf}
    end;
-
-   IntegratedIndex(TheTable);
-   TheTable.Destroy;
-   if (Memo1 <> Nil) then Memo1.Lines.Add(TimeToStr(Now) + ' Update over');
-   ReportErrors := true;
-   {$IfDef RecordIndex} WriteLineToDebugFile('CreateMapLibrary out'); {$EndIf}
 end;
 
 
@@ -1026,10 +1032,9 @@ begin
             if (ProjName <> '') then ProjName := '-a_srs ' + ProjName;
          end;
 
-       //GDAL_VRT was about three times faster than other options
+       //GDAL_VRT was about three times faster than other options tested
          UseGDAL_VRT_to_merge(MergefDir,DEMList,ProjName);
-         {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('GDAL VRT over for DEM'); {$EndIf}
-         {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('open ' + MergeFName); {$EndIf}
+         {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('GDAL VRT over for DEM, open ' + MergeFName); {$EndIf}
          if FileExists(MergefDir) then begin
             Result := OpenNewDEM(MergefDir,false);
          end
@@ -1043,6 +1048,8 @@ begin
       end;
 
     if ValidDEM(Result) then begin
+         //{$If Defined(TrackDEMCorners)} DEMCoord.WriteDEMCornersToDebugFile('SetRasterPixelIsGeoKey1025 for merge DEM'); {$EndIf}
+
          {$IfDef TrackPixelIs} WriteLineToDebugFile('MergeMultipleDEMsHere defined, Pixel is = ' + RasterPixelIsString(DEMGlb[Result].DEMHeader.RasterPixelIsGeoKey1025)); {$EndIf}
          {$If Defined(RecordMerge) or Defined(RecordTimeMerge) } WriteLineToDebugFile('Merge set up, Result=' + IntToStr(Result)); {$EndIf}
          if MDdef.AutoFillHoles then begin
@@ -1106,7 +1113,7 @@ var
 
                 if (LoadList.Count > 1) then begin
                    {$IfDef RecordIndex} WriteLineToDebugFile('call MergeDEMs, count=' + IntToStr(LoadList.Count)); {$EndIf}
-                   WantDEM := MergeMultipleDEMsHere(LoadList,DisplayIt,true);
+                   WantDEM := MergeMultipleDEMsHere(LoadList,DisplayIt,false);  //May 2023, set to use old MICRODEM merge
                    DEMGlb[WantDEM].DEMFileName := NextFileNumber(MDTempDir, MergeSeriesName + '_','.dem');
                    DEMGlb[WantDEM].WriteNewFormatDEM(DEMGlb[WantDEM].DEMFileName);
                 end
