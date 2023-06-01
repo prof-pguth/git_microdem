@@ -4,8 +4,8 @@ object ElevationRangeForm: TElevationRangeForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Elevation Range For Coloring'
-  ClientHeight = 298
-  ClientWidth = 286
+  ClientHeight = 316
+  ClientWidth = 314
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

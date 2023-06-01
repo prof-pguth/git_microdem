@@ -113,6 +113,7 @@ type
     procedure Edit3Change(Sender: TObject);
     procedure BitBtn15Click(Sender: TObject);
     procedure BitBtn16Click(Sender: TObject);
+    procedure ComboBox1Change(Sender: TObject);
   private
     { Private declarations }
     procedure ZeroDEMs;
@@ -160,6 +161,7 @@ begin
    DemixFilterForm.ZeroDEMs;
 
    DemixFilterForm.ComboBox1.Items.LoadFromFile(DEMIXSettingsDir + 'demix_tiles_list.txt');
+   DemixFilterForm.ComboBox1.Text := MDDef.DEMIX_default_tile;
    DemixFilterForm.ComboBox4.Items.LoadFromFile(DEMIXSettingsDir + 'demix_areas_list.txt');
    DemixFilterForm.ComboBox1.ItemIndex := 0;
    DemixFilterForm.ComboBox4.Text := MDDef.DEMIX_default_area;
@@ -262,7 +264,6 @@ begin
 end;
 
 
-
 procedure TDemixFilterForm.BitBtn5Click(Sender: TObject);
 var
    AreaName : Petmar_types.shortstring;
@@ -321,18 +322,13 @@ var
                refDEMname := UpperCase(DEMGlb[RefDEMs[i]].AreaName);
                refDEMsurfaceType := IsDEMaDSMorDTM(refDEMname);
                if StrUtils.AnsiContainsText(refDEMname,RefPointOrArea) then begin
-                  //ame := NextFileNumber(MDtempdir,'diff_map_','.bmp');
                   if (refDEMSurfaceType = DEMisDSM) and (theDEMtype = 'DSM') then begin
                      {$IfDef RecordDEMIX} WriteLineToDebugFile('test DEM=' + DEMGlb[TestDEMs[aTestDEM]].AreaName + ' ref DEM=' + DEMGlb[RefDEMs[i]].AreaName); {$EndIf}
                      DiffDSMDEMs[aTestDEM] := MakeDifferenceMap(RefDEMs[i],TestDEMs[aTestDEM],RefDEMs[i],true,false,false,TestDEMseriesName + '_Delta_to_' + DEMGlb[RefDEMs[i]].AreaName);
-                     //veImageAsBMP(DEMGlb[DiffDSMDEMs[i]].SelectionMap.Image1,fName);
-                     //eFiles.Add(fName);
                   end
                   else if (refDEMSurfaceType = DEMisDTM) and (theDEMtype = 'DTM') then begin
                      {$IfDef RecordDEMIX} WriteLineToDebugFile('test DEM=' + DEMGlb[TestDEMs[aTestDEM]].AreaName + ' ref DEM=' + DEMGlb[RefDEMs[i]].AreaName); {$EndIf}
                      DiffDTMDEMs[aTestDEM] := MakeDifferenceMap(RefDEMs[i],TestDEMs[aTestDEM],RefDEMs[i],true,false,false,TestDEMseriesName + '_Delta_to_' + DEMGlb[RefDEMs[i]].AreaName);
-                     //veImageAsBMP(DEMGlb[DiffDTMDEMs[i]].SelectionMap.Image1,fName);
-                     //eFiles.Add(fName);
                   end;
                end;
             end;
@@ -408,6 +404,11 @@ begin
       if ValidDEM(DiffDTMDEMs[i]) then DEMGlb[DiffDTMDEMs[i]].SelectionMap.DoCompleteMapRedraw;
    end;
    MakeBigDiffferenceMapImage;
+end;
+
+procedure TDemixFilterForm.ComboBox1Change(Sender: TObject);
+begin
+   MDDef.DEMIX_default_tile := ComboBox1.Text;
 end;
 
 procedure TDemixFilterForm.ComboBox5Change(Sender: TObject);

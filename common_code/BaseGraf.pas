@@ -795,6 +795,7 @@ end;
 
 function CreateMultipleHistogram(GraphNumbers : boolean; FileList,LegendList : tStringList; ParamName,TitleBar : ShortString;
     NumBins : integer = 100; Min : float32 = 1; Max : float32 = -1; BinSize : float32 =  -99; TColorList : tStringList = Nil) : TThisBaseGraph;
+//FileList has data files, which are binary float32 with the values in the distribution
 Label
    CleanUp;
 const
@@ -983,7 +984,7 @@ begin
       Result.AutoScaleAndRedrawDiagram(false,false,false,false);
 
       if false and StackedPercents then begin
-      //2/23/2023, this is disable becauase Graph3 is crashing; Graph2 had not been working either; this needs to be looked at
+      //2/23/2023, this is disable because Graph3 is crashing; Graph2 had not been working either; this needs to be looked at
          {$IfDef RecordHistogram} writeLineToDebugFile('Start StackedPercents'); {$EndIf}
          TStr := l1;
          for I := 0 to pred(FileList.Count) do TStr := TStr + ',' + 'SERIES_' + IntToStr(succ(i));
@@ -1000,7 +1001,6 @@ begin
          {$If Defined(RecordHistogram)} HighlightLineToDebugFile('Stacked percents graph percentage call redraw: ' +  Graph3.GraphDraw.AxisRange); {$EndIf}
          Graph3.RedrawDiagram11Click(Nil);
          {$If Defined(RecordHistogram)} HighlightLineToDebugFile('Stacked percents graph percentage done: ' +  Graph3.GraphDraw.AxisRange); {$EndIf}
-
 
          (*
          Graph2 := StartStackedHistogram(DB,false);
@@ -2623,7 +2623,6 @@ begin
    if NormalCartesianY then ty := YWindowSize - TopMargin - BottomMargin - ty;
    GraphY := TopMargin + ty;
 end;
-
 
 
 function tGraphDraw.GraphY2(y : float32) : integer;

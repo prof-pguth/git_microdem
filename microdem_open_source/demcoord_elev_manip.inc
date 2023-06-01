@@ -3,10 +3,9 @@
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
 { Copyright (c) 2023 Peter L. Guth  }
+{-----------------------------------}
+{include file for demcoord.pas      }
 {___________________________________}
-
-
-{include file for demcoord.pas}
 
 function OnGridNode(Xincr,YIncr : float32) : boolean; inline;
 begin

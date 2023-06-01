@@ -330,6 +330,9 @@ begin
 end;
 
 
+
+
+
 procedure MakeDEMsummaryTable;
 var
    Results : tStringList;
@@ -346,7 +349,7 @@ begin
       if (DEMGlb[i].DEMheader.DEMUsed = UTMBasedDEM) then TStr := ''
       else TStr := LatLongDegreeToString(DEMGlb[i].DEMheader.DEMSWCornerY, DEMGlb[i].DEMheader.DEMSWCornerX,DecSeconds);
 
-      Results.Add(DEMGlb[i].AreaName + ',' + IntToStr(DEMGlb[i].DEMheader.RasterPixelIsGeoKey1025) + ',' + DEMGlb[i].DEMMapProjection.h_DatumCode + ',' + IntToStr(DEMGlb[i].DEMheader.VerticalCSTypeGeoKey) + ',' +
+      Results.Add(DEMGlb[i].AreaName + ',' + IntToStr(DEMGlb[i].DEMheader.RasterPixelIsGeoKey1025) + ',' + DEMGlb[i].DEMMapProjection.h_DatumCode + ',' + VertDatumName(DEMGlb[i].DEMheader.VerticalCSTypeGeoKey) + ',' +
           RealToString(DEMGlb[i].DEMSWcornerLat + 0.5 * DEMGlb[i].LatSizeMap,-12,-3) + ',' +
           RealToString(DEMGlb[i].DEMSWcornerLong + 0.5 * DEMGlb[i].LongSizeMap,-12,-3)  + ',' +
           RealToString(DEMGlb[i].DEMheader.MinElev,-12,-1)  + ',' +  RealToString(DEMGlb[i].DEMheader.MaxElev,-12,-1)  + ',' +
@@ -750,14 +753,14 @@ procedure CloseSingleDEM(var DEMtoClose : integer; ResetMenus : boolean = true);
       begin
          if ValidDEM(DEMnowClosing) then try
             try
-               {$IfDef RecordCloseDEM} WriteLineToDebugFile('Destroy DEMGlb=' + IntToStr(i) + '  ' + DEMGlb[i].AreaName); {$EndIf}
+               {$IfDef RecordCloseDEM} WriteLineToDebugFile('Destroy DEMGlb=' + IntToStr(DEMnowClosing) + '  ' + DEMGlb[DEMnowClosing].AreaName); {$EndIf}
                DEMGlb[DEMnowClosing].Destroy;
-               {$IfDef RecordCloseDEM} WriteLineToDebugFile('Destroy OK for DEMGlb=' + IntToStr(i)); {$EndIf}
+               {$IfDef RecordCloseDEM} WriteLineToDebugFile('Destroy OK for DEMGlb=' + IntToStr(DEMnowClosing)); {$EndIf}
             except
                 on Exception do ;
             end
          finally
-            {$IfDef RecordCloseDEM} WriteLineToDebugFile('Have to Nil DEMGlb=' + IntToStr(i)); {$EndIf}
+            {$IfDef RecordCloseDEM} WriteLineToDebugFile('Nil DEMGlb=' + IntToStr(DEMnowClosing)); {$EndIf}
             DEMGlb[DEMnowClosing] := Nil;
          end;
       end;

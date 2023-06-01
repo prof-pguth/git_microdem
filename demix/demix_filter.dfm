@@ -120,6 +120,7 @@ object DemixFilterForm: TDemixFilterForm
         Height = 23
         TabOrder = 8
         Text = 'ComboBox1'
+        OnChange = ComboBox1Change
       end
       object BitBtn7: TBitBtn
         Left = 360

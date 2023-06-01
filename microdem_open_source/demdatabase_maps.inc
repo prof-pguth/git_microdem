@@ -1,13 +1,11 @@
 {^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of ianMICRODEM GIS Program    }
+{ Part of MICRODEM GIS Program       }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
 { Copyright (c) 2023 Peter L. Guth   }
 {------------------------------------}
 {   include file for demdatabase     }
 {____________________________________}
-
-
 
 
 {$IfDef ExGeostats}
@@ -56,7 +54,7 @@
                NoRedraw : boolean;
             begin
                if (TheMapOwner <> Nil) and dbPlotted then begin
-                  NoRedraw := (theMapOwner <> Nil) and theMapOwner.ClosingMapNow;
+                  NoRedraw := (theMapOwner <> Nil) and theMapOwner.MapDraw.ClosingMapNow;
                   TheMapOwner.MapDraw.ClearGISLayer(DBNumber);
                   if (not NoRedraw) then begin
                      theMapOwner.DoFastMapRedraw;

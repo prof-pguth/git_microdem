@@ -818,6 +818,11 @@ function ValidWorldFile(FileName : PathStr) : boolean;
 
 procedure MaskStripFromSecondGrid(Limits : tGridLimits;  FirstGrid,SecondGrid : integer;  HowMask : tMaskGrid);
 
+procedure VerticalDatumShiftWithVDATUM(AreaName : shortstring; DEM,db : integer; SaveName : PathStr; ErrorLog : tStringList = nil);
+procedure VerticalDatumShiftWithGDAL(DEM : integer; var SaveName : PathStr);
+procedure VerticalDatumShift(DEM : integer; vdShift : tvdShift);
+
+
 const
    DEMtooLargeString = 'DEM too large';
    TooManyDEMsOpenString = 'Too many open DEMs; last closed';
@@ -908,6 +913,7 @@ var
 {$I demcoord_read_dem.inc}
 {$I demcoord_write_dem.inc}
 {$I demcoord_elev_manip.inc}
+{$I demcoord_vert_datum.inc}
 
 {$IfDef ExDEMEdits}
 {$Else}
@@ -1491,8 +1497,13 @@ end;
 function tDEMDataSet.ZRange : ShortString;
 var
    Dec : integer;
+   Range : float32;
 begin
-   if ElevationDEM then Dec := 1 else Dec := 6;
+   Range := DEMheader.MaxElev - DEMheader.MinElev;
+   if Range < 1 then Dec := 3
+   else if Range < 10 then Dec := 2
+   else if Range < 1000 then Dec := 1
+   else Dec := 0;
    Result := 'z range: ' + RealToString(DEMheader.MinElev,-18,-Dec) + ' to ' + RealToString(DEMheader.MaxElev,-18,-Dec) + ' ' + ElevUnitsAre(DEMheader.ElevUnits);
 end;
 

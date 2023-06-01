@@ -15,6 +15,8 @@ unit demix_control;
    {$Define RecordDEMIXLoad}
    {$Define RecordDEMIXsave}
    {$Define RecordCreateHalfSec}
+   {$Define RecordTileStats}
+   {$Define RecordUseTile}
    //{$Define RecordDEMIXMovies}
    //{$Define RecordDEMIXVDatum}
    //{$Define RecordFullDEMIX}
@@ -29,7 +31,7 @@ uses
     Petmar,Petmar_types,BaseGraf;
 
 const
-   DEMIXSkipFilesAlreadyDone = false;
+   DEMIXSkipFilesAlreadyDone = true;
 
 //service functions and procedures
    function LoadDEMIXReferenceDEMs(var RefDEM : integer) : boolean;
@@ -343,42 +345,49 @@ function MakeGraphOfDifferenceDistribution(Tile,param,Ref : shortstring) : tThis
 var
    FilesWanted,Distributions,Legends : tStringList;
    fName : PathStr;
+   UseTile : boolean;
    i,j : integer;
    Min,Max,BinSize : float32;
 begin
-   //new_orleans_ALOS_N29ZW091L_elev_to_DTM.z
+   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('MakeGraphOfDifferenceDistribution in, ' + Tile + '  ' + Param + '  ' + Ref); {$EndIf}
    MDDef.DefaultGraphXSize := 1000;
    MDDef.DefaultGraphYSize := 600;
    FilesWanted := tStringList.Create;
    FindMatchingFiles(DEMIX_diff_dist,'*.z',FilesWanted,0);
+   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('MakeGraphOfDifferenceDistribution dist file=' + IntToStr(FilesWanted.Count)); {$EndIf}
 
    Distributions := tStringList.Create;
    Legends := tStringList.Create;
    for i := 0 to pred(FilesWanted.Count) do begin
       fName := upperCase(FilesWanted.Strings[i]);
-      if StrUtils.AnsiContainsText(fname,Tile) and StrUtils.AnsiContainsText(fname,UpperCase(Param)) and StrUtils.AnsiContainsText(fname,UpperCase(Ref)) then begin
-         Distributions.Add(fName);
-         for j := 1 to NumDEMIXDEM do begin
-            if StrUtils.AnsiContainsText(fname,UpperCase(DEMIXDEMTypeName[j])) then begin
-               Legends.Add(DEMIXDEMTypeName[j]);
+      if StrUtils.AnsiContainsText(fname,UpperCase(Tile)) and StrUtils.AnsiContainsText(fname,UpperCase(Param)) then begin
+         if (UpperCase(Ref) = 'DSM') then UseTile := StrUtils.AnsiContainsText(fname,'DSM')
+         else UseTile := not StrUtils.AnsiContainsText(fname,'DSM');
+         if UseTile then begin
+
+            Distributions.Add(fName);
+            for j := 1 to NumDEMIXDEM do begin
+               if StrUtils.AnsiContainsText(fname,UpperCase(DEMIXDEMTypeName[j])) then begin
+                  Legends.Add(DEMIXDEMTypeName[j]);
+               end;
             end;
-         end;
 
-         if StrUtils.AnsiContainsText(fname,'ELEV') then begin
-            Min := -15;
-            Max := 15;
-            BinSize := 0.10;
-         end;
+            if StrUtils.AnsiContainsText(fname,'ELEV') then begin
+               Min := -15;
+               Max := 15;
+               BinSize := 0.10;
+            end;
 
-         if StrUtils.AnsiContainsText(fname, 'SLOPE') then begin
-            Min := -20;
-            Max := 20;
-            BinSize := 0.25;
-         end;
-         if StrUtils.AnsiContainsText(fname, 'RUFF') then begin
-            Min := -20;
-            Max := 20;
-            BinSize := 0.15;
+            if StrUtils.AnsiContainsText(fname, 'SLOPE') then begin
+               Min := -20;
+               Max := 20;
+               BinSize := 0.25;
+            end;
+            if StrUtils.AnsiContainsText(fname, 'RUFF') then begin
+               Min := -20;
+               Max := 20;
+               BinSize := 0.15;
+            end;
          end;
       end;
    end;
@@ -392,6 +401,10 @@ begin
       Result.GraphDraw.InsideMarginLegend := lpNWMap;
       Result.RedrawDiagram11Click(Nil);
       //Result.Image1.Canvas.Draw(Result.GraphDraw.LeftMargin+15,Result.GraphDraw.TopMargin+10,Result.MakeLegend(Result.GraphDraw.LegendList,false));
+      {$If Defined(RecordDEMIX)} WriteLineToDebugFile('MakeGraphOfDifferenceDistribution out'); {$EndIf}
+   end
+   else begin
+      {$If Defined(RecordDEMIX)} WriteLineToDebugFile('MakeGraphOfDifferenceDistribution fail, Dist=' + IntToStr(Distributions.Count) + '  Leg=' + IntToStr(Legends.Count) ); {$EndIf}
    end;
    FilesWanted.Free;
 end;
@@ -621,10 +634,10 @@ begin
       ErrorLog := tStringList.Create;
       for i := 0 to pred(FilesWanted.Count) do begin
          fName := uppercase(FilesWanted.Strings[i]);
-         if StrUtils.AnsiContainsText(fname,'DEMIX_TILES_USED_') then Tiles.Add(fName);
-         if StrUtils.AnsiContainsText(fname,'ELEV_DIFF_STATS_') then ElevDiff.Add(fName);
-         if StrUtils.AnsiContainsText(fname,'SLOPE_DIFF_STATS_') then SlopeDiff.Add(fName);
-         if StrUtils.AnsiContainsText(fname,'RUFF_DIFF_STATS_') or StrUtils.AnsiContainsText(fname,'ROUGHNESS_DIFF_STATS_')  then RuffDiff.Add(fName);
+         if StrUtils.AnsiContainsText(fname,'DEMIX_TILES_USED') then Tiles.Add(fName);
+         if StrUtils.AnsiContainsText(fname,'ELEV_DIFF_STATS') then ElevDiff.Add(fName);
+         if StrUtils.AnsiContainsText(fname,'SLOPE_DIFF_STATS') then SlopeDiff.Add(fName);
+         if StrUtils.AnsiContainsText(fname,'RUFF_DIFF_STATS') {or StrUtils.AnsiContainsText(fname,'ROUGHNESS_DIFF_STATS')} then RuffDiff.Add(fName);
       end;
       if (Tiles.Count > 1) then begin
          fName := ExtractFilePath(fName) + 'DEMIX_TILES_USED_SUMMARY.csv';
@@ -647,7 +660,7 @@ begin
       {$If Defined(RecordDEMIX)} WriteLineToDebugFile('MergeDEMIXCSV merged and db opened'); {$EndIf}
       wmdem.ClearStatusBarPanelText;
 
-      RankDEMS(DB);
+      RankDEMS(DB,true);
       {$If Defined(RecordDEMIX)} WriteLineToDebugFile('MergeDEMIXCSV DEMs ranked'); {$EndIf}
       CloseAndNilNumberedDB(db);
    finally
@@ -794,7 +807,7 @@ var
                begin
                   {$IfDef RecordFullDEMIX} writeLineToDebugFile(fName + '  lines=' + IntToStr(sl.Count)); {$EndIf}
                   if (sl.count > 1) then begin
-                     fName := DEMIXresultsDir + TestAreaName + fname + '_' + '.csv';
+                     fName := DEMIXresultsDir + TestAreaName + fname + '.csv';
                      sl.SaveToFile(fName);
                   end
                   else fName := '';
@@ -867,6 +880,7 @@ var
             bb := GISdb[DEMIXtileDB].MyData.GetRecordBoundingBox;
             LatCent := 0.5 * (bb.ymax + bb.ymin);
             LongCent := 0.5 * (bb.xmax + bb.xmin);
+            {$IfDef RecordUseTile} if not Result then WriteLineToDebugFile('Not doing tile=' + DEMIXTile + '  fill=' + IntToStr(round(GridFull))); {$EndIf}
          end;
 
          function MomentStatsString(MomentVar : tMomentVar) : shortstring;
@@ -1186,6 +1200,9 @@ var
                   RealToString(ElevMomentVar.Maxz - ElevMomentVar.Minz,-12,-2) + ',' + RealToString(ForestPC,-12,-2)  + ',' + RealToString(UrbanPC,-12,-2) + ',' + RealToString(BarrenPC,-12,-2);
                TileStats.Add(TileHeader);
                TileHeader := TileHeader + ',';
+            end
+            else begin
+               {$IfDef RecordTileStats} WriteLineToDebugFile('Not doing tile=' + DEMIXTile); {$EndIf}
             end;
          end;
 
@@ -1373,11 +1390,13 @@ begin {ComputeDEMIX_tile_stats}
       LandTypeMask := 'ALL';
 
       if DoHorizontalShift then SafeMakeDir(DEMIXresultsDir + 'lags\' );
+      (*
       if ElevDiffHists then begin
          SafeMakeDir(DEMIX_diff_dist + 'elev_diff_hists\' );
          SafeMakeDir(DEMIX_diff_dist + 'slope_diff_hists\' );
          SafeMakeDir(DEMIX_diff_dist + 'ruff_diff_hists\' );
       end;
+      *)
 
       if (AreaName = '') then FilesWanted := DEMIX_AreasWanted
       else begin
@@ -1396,18 +1415,18 @@ begin {ComputeDEMIX_tile_stats}
          else begin
             TestAreaName := ShortTestAreaName(ExtractFileNameNoExt(cfName));
             DTMArea := ExtractFileNameNoExt(cfName);
-            if DEMIXSkipFilesAlreadyDone and FileExists(DEMIXresultsDir + 'Elev_diff_stats_' + TestAreaName + '.csv') and
-                  FileExists(DEMIXresultsDir + 'Slope_diff_stats_' + TestAreaName + '.csv') and
-                  FileExists(DEMIXresultsDir + 'Ruff_diff_stats_' + TestAreaName + '.csv') then begin
+            if DEMIXSkipFilesAlreadyDone and FileExists(DEMIXresultsDir + TestAreaName + '_Elev_diff_stats.csv') and
+                  FileExists(DEMIXresultsDir + TestAreaName + '_Slope_diff_stats.csv') and
+                  FileExists(DEMIXresultsDir + TestAreaName + '_Ruff_diff_stats.csv') then begin
                {$IfDef RecordDEMIX} writeLineToDebugFile(TestAreaName + ' already processed'); {$EndIf}
             end
             else begin
-               DeleteFileIfExists(DEMIXresultsDir + 'Elev_diff_stats_' + TestAreaName + '.csv');
-               DeleteFileIfExists(DEMIXresultsDir + 'Slope_diff_stats_' + TestAreaName + '.csv');
-               DeleteFileIfExists(DEMIXresultsDir + 'Ruff_diff_stats_' + TestAreaName + '.csv');
-               DeleteFileIfExists(DEMIXresultsDir + 'Elev_diff_stats_' + TestAreaName + '.dbf');
-               DeleteFileIfExists(DEMIXresultsDir + 'Slope_diff_stats_' + TestAreaName + '.dbf');
-               DeleteFileIfExists(DEMIXresultsDir + 'Ruff_diff_stats_' + TestAreaName + '.dbf');
+               DeleteFileIfExists(DEMIXresultsDir + TestAreaName + '_Elev_diff_stats.csv');
+               DeleteFileIfExists(DEMIXresultsDir + TestAreaName + '_Slope_diff_stats.csv');
+               DeleteFileIfExists(DEMIXresultsDir + TestAreaName + '_Ruff_diff_stats.csv');
+               DeleteFileIfExists(DEMIXresultsDir + TestAreaName + '_Elev_diff_stats.dbf');
+               DeleteFileIfExists(DEMIXresultsDir + TestAreaName + '_Slope_diff_stats.dbf');
+               DeleteFileIfExists(DEMIXresultsDir + TestAreaName + '_Ruff_diff_stats.dbf');
 
                RefDTMPointFName := DEMIX_Ref_1sec + DTMArea + '_ref_1sec_point.tif';
                RefDTMareaFName := StringReplace(RefDTMPointFName, 'point', 'area',[rfIgnoreCase]);
@@ -1432,7 +1451,7 @@ begin {ComputeDEMIX_tile_stats}
                end;
 
                if FileExists(RefDTMPointFName) and FileExists(RefDTMareaFName) then begin
-                  {$IfDef RecordDEMIX} writeLineToDebugFile('Start process ' + TestAreaName); {$EndIf}
+                  {$IfDef RecordDEMIX} writeLineToDebugFile('Start process for ' + TestAreaName); {$EndIf}
                   InitializeStringLists;
                   ProcessDEMIXtestarea;
                   FinalizeStringLists(false);
@@ -1456,6 +1475,7 @@ begin {ComputeDEMIX_tile_stats}
    end;
    {$IfDef RecordDEMIX} writeLineToDebugFile('End ComputeDEMIXstats'); {$EndIf}
 end {ComputeDEMIX_tile_stats};
+
 
 
 procedure DEMIX_VDatum_shifts;
@@ -1484,7 +1504,8 @@ begin
          end
          else begin
             db := AnalyzeVDatumShift(Shifts.Strings[i],ErrorLog);
-
+            VerticalDatumShiftWithVDATUM(AreaName,0,db,fName,ErrorLog);
+            (*
             if ValidDB(db) then begin
                dx := GISdb[db].MyData.FieldAverage('X_SHIFT');
                dy := GISdb[db].MyData.FieldAverage('Y_SHIFT');
@@ -1512,7 +1533,7 @@ begin
                end;
                CloseAndNilNumberedDB(db);
             end;
-
+            *)
          end;
       end;
    finally
@@ -3196,7 +3217,6 @@ begin
    GeoidGrid := OpenNewDEM(GeoidDiffFName,false,'geoid difference from EGM96 to EGM2008');  //to move DEMs from EGM96 to EGM2008
    GeoidDiffFName := DEMGlb[GeoidGrid].DEMFileName;
 
-   //OpenIndexedSeriesTable(IndexSeriesTable);
    IndexSeriesTable.First;
    Ser := 0;
    while not IndexSeriesTable.eof do begin
@@ -3205,7 +3225,6 @@ begin
       wmdem.SetPanelText(3,'Load candidate DEM ' + ShortName);
       if AllCandidates or (ShortName = 'COP') or (ShortName = 'ALOS') then begin
          {$If Defined(RecordFullDEMIX) or Defined(RecordDEMIXLoad)} writeLineToDebugFile('Try ' + WantSeries + ' ' + ShortName + '  ' + IntToStr(Ser) + '/' + IntToStr(IndexSeriesTable.FiltRecsInDB)); {$EndIf}
-         //wmdem.SetPanelText(0,WantSeries);
          {$If Defined(RecordFullDEMIX)} writeLineToDebugFile('Ref DEM=' + DEMGlb[RefDEM].AreaName + '  ' + sfBoundBoxToString(DEMGlb[RefDEM].DEMBoundBoxGeo,6)); {$EndIf}
          if LoadMapLibraryBox(WantDEM,WantImage,true,DEMGlb[RefDEM].DEMBoundBoxGeo,WantSeries,false) and ValidDEM(WantDEM) then begin
             {$If Defined(RecordDEMIXLoad)} writeLineToDebugFile('LoadDEMIXCandidateDEMs done LoadMapLib; Open DEMs=, ' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
@@ -3232,7 +3251,6 @@ begin
                end;
             end;
             if (AreaName <> '') then begin
-               //fName := SaveDEMs + ShortName + '.dem';
                fName := DEMIX_test_dems + AreaName + '_' + shortname + '.dem';
                DEMGlb[TestDEM[Ser]].WriteNewFormatDEM(FName);
             end;

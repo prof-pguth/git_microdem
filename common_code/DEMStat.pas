@@ -30,7 +30,7 @@ unit DEMStat;
       //{$Define RecordGlobalDEM}
       //{$Define RecordElevMoment}
       //{$Define RecordElevationSlopePlotAll}
-      //{$Define RecordDEMCompare}
+      {$Define RecordDEMCompare}
       //{$Define RecordStat}
       //{$Define RecordIceSat}
       //{$Define RecordGeoStat}

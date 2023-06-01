@@ -755,7 +755,7 @@ procedure AdjustGazFeatureName(var FeatureName : ShortString);
 procedure MakeLinesFromPoints(GISDataBase : TGISdataBaseModule; fName : PathStr = ''; ShapeTypeWanted : integer = -99; Thin : integer = -1);
 
 //DEMIX wine contest procedures
-      procedure RankDEMS(DBonTable : integer);
+      procedure RankDEMS(DBonTable : integer; UseAll : boolean = false);
       procedure SumsOfRankDEMS(DBonTable : integer);
       procedure TransposeDEMIXwinecontestGraph(DBonTable : integer);
       procedure DEMIXwineContestMeanMedianGraph(What,DBonTable : integer; AreaList : tStringList = nil; CriteriaUsed : tStringList = nil; LandTypePresent : tStringList = nil; DEMsPresent : tStringList = nil);

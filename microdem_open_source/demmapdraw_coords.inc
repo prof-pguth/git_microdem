@@ -1,6 +1,6 @@
 
 {^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of ianMICRODEM GIS Program    }
+{ Part of MICRODEM GIS Program       }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
 { Copyright (c) 2023 Peter L. Guth   }
@@ -10,7 +10,7 @@
 
 
 
-procedure TMapDraw.LatLongDegreeToDataGrid(Lat,Long : float64; var xg,yg : float64);
+procedure TMapDraw.LatLongDegreeToDataGrid(Lat,Long : float64; var xg,yg : float32);
 begin
    if DEMMap then begin
       DEMGlb[DEMonMap].LatLongDegreeToDEMGrid(Lat,Long,xg,yg);
@@ -20,6 +20,19 @@ begin
    end;
 end;
 
+procedure TMapDraw.LatLongDegreeToDataGrid(Lat,Long : float64; var xg,yg : float64);
+var
+   xg32,yg32 : float32;
+begin
+   if DEMMap then begin
+      DEMGlb[DEMonMap].LatLongDegreeToDEMGrid(Lat,Long,xg32,yg32);
+   end
+   else if ValidSatOnMap then begin
+      SatImage[SatOnMap].LatLongDegreeToSatGrid(SatImage[SatOnMap].BandForSize,Lat,Long,xg32,yg32);
+   end;
+   xg := xg32;
+   yg := yg32;
+end;
 
 procedure tMapDraw.LatLongDegreeToScreen(Lat,Long : float64; var XPic,YPic : integer);
 var
@@ -41,7 +54,7 @@ begin
 end;
 
 
-procedure TMapDraw.DataGridToProjectedCoords(X,Y : float64; var XProj,YProj : float64);
+procedure TMapDraw.DataGridToProjectedCoords(X,Y : float32; var XProj,YProj : float64);
 begin
    if DEMMap then begin
       xproj := DEMGlb[DEMonMap].ComputeSWCornerX  + x * DEMGlb[DEMonMap].DEMHeader.DEMxSpacing;
@@ -82,7 +95,7 @@ end;
 
 function TMapDraw.ScreenLocStr(x,y : integer) : shortstring;
 var
-   xg,yg : float64;
+   xg,yg : float32;
    Lat,Long : float64;
 begin
    Result := '';
@@ -124,14 +137,14 @@ begin
 end;
 
 
-procedure TMapDraw.ScreenToDEMGrid(xpic,ypic : integer; var XGrid,YGrid : float64);
+procedure TMapDraw.ScreenToDEMGrid(xpic,ypic : integer; var XGrid,YGrid : float32);
 var
    Lat,Long : float64;
 begin
    if DEMMap then begin
       ScreenToDataGrid(xpic,ypic,XGrid,YGrid);
    end
-   else if DEMonMap <> 0 then  begin
+   else if ValidDEM(DEMonMap) then  begin
       ScreenToLatLongDegree(xpic,ypic,Lat,long);
       DEMGlb[DEMonMap].LatLongDegreeToDEMGrid(Lat,Long,xgrid,ygrid);
    end;
@@ -140,7 +153,7 @@ end;
 
 procedure TMapDraw.ScreenToDEMGrid(xpic,ypic : integer; var XGrid,YGrid : integer);
 var
-   xf,yf : float64;
+   xf,yf : float32;
 begin
    ScreenToDEMGrid(xpic,ypic,xf,yf);
    xgrid := round(xf);
@@ -148,7 +161,7 @@ begin
 end;
 
 
-function TMapDraw.ScreenToDataGrid(XPic,YPic : integer; var XGrid,YGrid : float64) : boolean;
+function TMapDraw.ScreenToDataGrid(XPic,YPic : integer; var XGrid,YGrid : float32) : boolean;
 begin
    Result := true;
    if DEMMap then begin
@@ -187,7 +200,7 @@ begin
 end;
 
 
-procedure tMapDraw.DataGridToScreen(XGrid,YGrid : float64; var XPic,YPic : integer; OutsideData : boolean = false);
+procedure tMapDraw.DataGridToScreen(XGrid,YGrid : float32; var XPic,YPic : integer; OutsideData : boolean = false);
 begin
    XPic := -9999;
    YPic := -9999;
@@ -211,7 +224,7 @@ begin
    LatLongDegreeToScreen(Lat / DegToRad, Long / DegToRad, XPic,YPic);
 end;
 
-procedure TMapDraw.DEMGridToScreen(xg,yg : float64; var xs,ys : integer);
+procedure TMapDraw.DEMGridToScreen(xg,yg : float32; var xs,ys : integer);
 var
    Lat,Long : float64;
 begin
@@ -379,7 +392,7 @@ begin
 end;
 
 
-procedure TMapDraw.DataGridToLatLongDegree(xgrid,ygrid : float64; var lat,long : float64);
+procedure TMapDraw.DataGridToLatLongDegree(xgrid,ygrid : float32; var lat,long : float64);
 begin
    if (VectorIndex <> 0) then begin
    end
@@ -409,7 +422,7 @@ begin
 end;
 
 
-procedure TMapDraw.MapGridToDEMGrid(xg,yg : float64; var xg1,yg1 : float64);
+procedure TMapDraw.MapGridToDEMGrid(xg,yg : float32; var xg1,yg1 : float32);
 var
    Lat,Long : float64;
 begin

@@ -1,5 +1,5 @@
 {^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of ianMICRODEM GIS Program    }
+{ Part of MICRODEM GIS Program       }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
 { Copyright (c) 2023 Peter L. Guth   }
@@ -11,10 +11,9 @@
 procedure TMapDraw.TerrainShadows(Bitmap : tMyBitmap);
 var
    x,y : integer;
-   Lat,Long,
-   xdem,ydem : float64;
+   Lat,Long: float64;
    BMPMem : tBMPMemory;
-   Hue,Sat,Intens : float32;
+   Hue,Sat,Intens,   xdem,ydem  : float32;
 begin
    {$IfDef RecordDrawLayers} WriteLineToDebugFile('TMapDraw.TerrainShadows in'); {$EndIf}
    if (TerrainShadowsDEM = 0) then TerrainShadowsDEM := DEMonMap;
@@ -145,7 +144,7 @@ end;
 procedure TMapDraw.DrawElevationMapStrip(Limits : tGridLimits; var BMPMemory :  tBMPMemory);
 var
    i,j   : integer;
-   xr,yr : float64;
+   xr,yr : float32;
    Color : tPlatFormColor;
    RefMap : boolean;
 begin

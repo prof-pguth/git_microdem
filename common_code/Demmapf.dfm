@@ -2671,8 +2671,16 @@ object MapForm: TMapForm
           OnClick = LocaddatumtoEGM20081Click
         end
         object Specifyxyzshifts1: TMenuItem
-          Caption = 'Spe;cify x,y,z shifts'
+          Caption = 'Specify x,y,z shifts'
           OnClick = Specifyxyzshifts1Click
+        end
+        object UsingVDATUMoutput1: TMenuItem
+          Caption = 'Using VDATUM output'
+          OnClick = UsingVDATUMoutput1Click
+        end
+        object UsingVDATUM1: TMenuItem
+          Caption = 'Using GDAL'
+          OnClick = UsingVDATUM1Click
         end
       end
       object Assignverticaldatum1: TMenuItem

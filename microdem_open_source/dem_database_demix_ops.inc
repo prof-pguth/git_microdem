@@ -43,7 +43,7 @@ begin
 end;
 
 
-procedure RankDEMS(DBonTable : integer);
+procedure RankDEMS(DBonTable : integer; UseAll : boolean = false);
 const
    IttyBitty = 0.00001;  //added for floating point funny business between Delphi and Python
    DoTrio = false;
@@ -88,7 +88,7 @@ var
    FirstDEM : integer;
 begin
     {$If Defined(RecordDEMIX)} WriteLineToDebugFile('RankDEMS in, ' + GISdb[DBonTable].dbName); {$EndIf}
-    if not GetFileFromDirectory('DEMIX criterial tolerances','*.dbf',MDDef.DEMIX_criterion_tolerance_fName) then exit;
+    if (not UseAll) and (not GetFileFromDirectory('DEMIX criterial tolerances','*.dbf',MDDef.DEMIX_criterion_tolerance_fName)) then exit;
     if GISdb[DBonTable].MyData.GetFieldLength('DEM_LOW_SC') < 48 then GISdb[DBonTable].MyData.TrimField('DEM_LOW_SC',48);
 
     if DoTrio then begin
@@ -99,7 +99,7 @@ begin
     DEMsRanked := tStringList.Create;
     DEMsRanked.LoadFromFile(DEMIXSettingsDir + 'demix_dems.txt');
     i := 0;
-    if GetFromListZeroBased('DEMs to use in ranking',i,DEMsRanked,true,true) then begin
+    if UseAll or GetFromListZeroBased('DEMs to use in ranking',i,DEMsRanked,true,true) then begin
        {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Load criterion tolerances, ' + MDDef.DEMIX_criterion_tolerance_fName); {$EndIf}
        if (DEMsRanked.Count < 3) then begin
           MessageToContinue('Must pick 3 or more DEMs');

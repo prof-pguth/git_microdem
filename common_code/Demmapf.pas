@@ -1480,6 +1480,8 @@ type
     PerpProfiles1: TMenuItem;
     NearestpeakoneachDEM1: TMenuItem;
     Specifyxyzshifts1: TMenuItem;
+    UsingVDATUMoutput1: TMenuItem;
+    UsingVDATUM1: TMenuItem;
     //procedure HiresintervisibilityDEM1Click(Sender: TObject);
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
@@ -2557,6 +2559,8 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure PerpProfiles1Click(Sender: TObject);
     procedure NearestpeakoneachDEM1Click(Sender: TObject);
     procedure Specifyxyzshifts1Click(Sender: TObject);
+    procedure UsingVDATUMoutput1Click(Sender: TObject);
+    procedure UsingVDATUM1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
     MouseDownLat,MouseDownLong,
@@ -21295,6 +21299,18 @@ end;
 procedure TMapForm.USGSquadnames1Click(Sender: TObject);
 begin
    USGSquadnames1.Checked := not USGSquadnames1.Checked;
+end;
+
+procedure TMapForm.UsingVDATUM1Click(Sender: TObject);
+var
+   SaveName : PathStr;
+begin
+   VerticalDatumShiftWithGDAL(MapDraw.DEMonMap,SaveName);
+end;
+
+procedure TMapForm.UsingVDATUMoutput1Click(Sender: TObject);
+begin
+   VerticalDatumShiftWithVDATUM('DEM edit',MapDraw.DEMonMap,0,'');
 end;
 
 procedure TMapForm.LoadDataBaseFileWithMissingMessage(fName : PathStr);

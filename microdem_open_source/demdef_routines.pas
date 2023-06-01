@@ -322,9 +322,10 @@ function RecycleCompressFile : boolean;
 function AspectDir8FromAspect(AspectDir : float32) : tCompassDirection;  inline;
 function ElevUnitsAre(Code : byte) : shortstring;
 
-procedure VerticalDatumShift(DEM : integer; vdShift : tvdShift);
+//procedure VerticalDatumShift(DEM : integer; vdShift : tvdShift);
 
 function RasterPixelIsString(Code : integer) : shortstring;
+function VertDatumName(VerticalCSTypeGeoKey : integer) : shortstring;
 
 var
    VegDenstColors : array[0..255] of tPlatformColor;
@@ -383,46 +384,22 @@ uses
    DataBaseCreate;
 
 
+function VertDatumName(VerticalCSTypeGeoKey : integer) : shortstring;
+begin
+   if VerticalCSTypeGeoKey = VertCSEGM96 then Result := 'EGM96'
+   else if VerticalCSTypeGeoKey = VertCSEGM2008 then Result := 'EGM2008'
+   else if VerticalCSTypeGeoKey = VertCSNAVD88 then Result := 'NAVD88'
+   else if VerticalCSTypeGeoKey = VertCSWGS84 then Result := 'WGS84 ellipsoid'
+   else if VerticalCSTypeGeoKey = 0 then Result := 'undefined ellipsoid'
+   else Result := 'Other (' + IntToStr(VerticalCSTypeGeoKey) + ')';
+end;
+
+
 function RasterPixelIsString(Code : integer) : shortstring;
 begin
     if Code = 1 then Result := 'Raster Pixel-Is-Area'
     else if Code = 2 then Result := 'Raster Pixel-Is-Point'
     else Result := 'Raster Pixel-Is-Unknown';
-end;
-
-
-procedure VerticalDatumShift(DEM : integer; vdShift : tvdShift);
-var
-   i,geoidGrid : Integer;
-   Merge : tDEMbooleans;
-   fName : PathStr;
-   TheShift : shortString;
-begin
-   {$IfDef RecordVertDatumShift} WriteLineToDebugFile('VerticalDatumShift in, DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].ZRange);  {$EndIf}
-   GetGeoid;
-   if (vdShift = vdEGM96toEGM2008) then fName := GeoidDiffFName
-   else fName := Geoid2008FName;
-   GeoidGrid := OpenNewDEM(fName,false);
-
-   case vdShift of
-      vdWGS84toEGM2008 : TheShift := 'gs84_to_egm2008';
-      vdEGM2008toWGS84 : TheShift := 'egm2008_to_wgs84';
-      vdEGM96toEGM2008 : TheShift := 'egm96_to_egm2008';
-   end;
-
-   if (vdShift = vdEGM2008toWGS84) then DEMGlb[GeoidGrid].MultiplyGridByConstant(-1);
-   for i := 1 to MaxDEMDataSets do Merge[i] := false;
-   Merge[DEM] := true;
-   Merge[GeoidGrid] := true;
-   SumDEMs(DEM, Merge,DEMGlb[DEM].AreaName + '_vdatum_shift_' + TheShift);
-   CloseSingleDEM(GeoidGrid);
-   case vdShift of
-      vdWGS84toEGM2008 : DEMGlb[DEM].DEMheader.VerticalCSTypeGeoKey := VertCSEGM2008;
-      vdEGM2008toWGS84 : DEMGlb[DEM].DEMheader.VerticalCSTypeGeoKey := VertCSWGS84;
-      vdEGM96toEGM2008 : DEMGlb[DEM].DEMheader.VerticalCSTypeGeoKey := VertCSEGM2008;
-   end;
-   DEMGlb[DEM].CheckMaxMinElev;
-   {$IfDef RecordVertDatumShift} WriteLineToDebugFile('VerticalDatumShift out, DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].ZRange);  {$EndIf}
 end;
 
 
