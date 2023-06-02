@@ -17,6 +17,9 @@ unit demix_control;
    {$Define RecordCreateHalfSec}
    {$Define RecordTileStats}
    {$Define RecordUseTile}
+
+   {$Define RecordTileProcessing}
+
    //{$Define RecordDEMIXMovies}
    //{$Define RecordDEMIXVDatum}
    //{$Define RecordFullDEMIX}
@@ -43,7 +46,6 @@ const
    procedure ZeroDEMs;
    procedure GetDEMIXpaths(StartProcessing : boolean = true);
    procedure SetDEMIXdirs(Ask : boolean = false);  //these are probably no longer used, May 2023
-
 
 //DEMIX wine contest procedures based on the database
    procedure WinsAndTies(DBonTable : integer);
@@ -76,7 +78,7 @@ function IsDEMaDSMorDTM(DEMName : ShortString) : integer;
 
 
 const
-   MaxTestDEM = 10;
+   MaxTestDEM = 6;
 var
    TestDEM : array[1..MaxTestDEM] of integer;
    TestSeries : array[1..MaxTestDEM] of shortstring;
@@ -304,7 +306,7 @@ begin
    DEMIX_profile_test_dir := DEMIX_Base_DB_Path + 'wine_contest_v2_topo_profiles\';
 
    DEMIX_area_dbName_v2 := DEMIX_Base_DB_Path + 'wine_contest_v2_ref_source\demix_area_vert_datums.dbf';
-   DEMIX_GIS_dbName_v2 := DEMIX_Base_DB_Path + 'wine_contest_database\demix_database_v1.92.dbf';
+   DEMIX_GIS_dbName_v2 := DEMIX_Base_DB_Path + 'wine_contest_database\demix_database_v1.97.dbf';
    DEMIX_GIS_dbName_v1 := DEMIX_Base_DB_Path + 'wine_contest_database\demix_database_v1.dbf';
 
    Geoid2008FName := 'g:\geoid\egm2008-1-vdatum.tif';
@@ -576,6 +578,9 @@ var
 
    procedure MergeAndTranspose(var Diffs : tStringList; fName : PathStr);
    begin
+      DeleteFileIfExists(fName);
+      DeleteFileIfExists(ChangeFileExt(fName,'.dbf'));
+
       if (Diffs.Count > 0) then begin
          {$If Defined(RecordDEMIX)} WriteLineToDebugFile('MergeAndTranspose ' + fName + ' with regions=' + IntToStr(Diffs.Count)); {$EndIf}
          MergeCSVFiles(Diffs,fName);
@@ -637,7 +642,7 @@ begin
          if StrUtils.AnsiContainsText(fname,'DEMIX_TILES_USED') then Tiles.Add(fName);
          if StrUtils.AnsiContainsText(fname,'ELEV_DIFF_STATS') then ElevDiff.Add(fName);
          if StrUtils.AnsiContainsText(fname,'SLOPE_DIFF_STATS') then SlopeDiff.Add(fName);
-         if StrUtils.AnsiContainsText(fname,'RUFF_DIFF_STATS') {or StrUtils.AnsiContainsText(fname,'ROUGHNESS_DIFF_STATS')} then RuffDiff.Add(fName);
+         if StrUtils.AnsiContainsText(fname,'RUFF_DIFF_STATS') then RuffDiff.Add(fName);
       end;
       if (Tiles.Count > 1) then begin
          fName := ExtractFilePath(fName) + 'DEMIX_TILES_USED_SUMMARY.csv';
@@ -662,12 +667,12 @@ begin
 
       RankDEMS(DB,true);
       {$If Defined(RecordDEMIX)} WriteLineToDebugFile('MergeDEMIXCSV DEMs ranked'); {$EndIf}
-      CloseAndNilNumberedDB(db);
+      //CloseAndNilNumberedDB(db);
    finally
       HeavyDutyProcessing := false;
       ShowDefaultCursor;
       DisplayAndPurgeStringList(ErrorLog,'DEMIX Create Database Problems');
-
+      CloseAllDatabases;
       WMdem.Color := clScrollBar;
    end;
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('MergeDEMIXCSV out, created ' + fName); {$EndIf}
@@ -877,6 +882,11 @@ var
             GridFull := GISdb[DEMIXtileDB].MyData.GetFieldByNameAsFloat('GRID_FULL');
             Result := GridFull >= MDDef.DEMIX_Full;
             DEMIXtile := GISdb[DEMIXtileDB].MyData.GetFieldByNameAsString('NAME');
+
+
+//Result := DEMIXTile = 'N39RW113G';
+
+
             bb := GISdb[DEMIXtileDB].MyData.GetRecordBoundingBox;
             LatCent := 0.5 * (bb.ymax + bb.ymin);
             LongCent := 0.5 * (bb.xmax + bb.xmin);
@@ -1068,7 +1078,9 @@ var
               TStr : shortstring;
             begin
                if (RefDEM = 0) then begin
-                  {$If Defined(RecordFullDEMIX) or Defined(RecordDEMIXGridCompare)} writeLineToDebugFile('Fail (RefDEM=0), comparison to reference, ' + DEMGLB[DEM].AreaName); {$EndIf}
+                  TStr := 'Fail (RefDEM=0), comparison to reference, ' + DEMGLB[DEM].AreaName;
+                  {$If Defined(RecordFullDEMIX) or Defined(RecordDEMIXGridCompare)} writeLineToDebugFile(TStr); {$EndIf}
+                  ErrorLog.Add(TStr);
                end
                else begin
                   {$If Defined(RecordFullDEMIX) or Defined(RecordDEMIXGridCompare)} writeLineToDebugFile('Comparison to reference, ' + DEMGLB[DEM].AreaName); {$EndIf}
@@ -1103,6 +1115,11 @@ var
                         LegendFiles.Add(ExtractFileNameNoExt(fName));
                      end;
                      NumElev := WriteDifferenceResults(DEM,REFDEM,RefType,ElevDiffStats);
+                  end
+                  else begin
+                     TStr := 'No points for slope difference ' + DEMGLB[DEM].AreaName;
+                     {$If Defined(RecordFullDEMIX) or Defined(RecordDEMIXGridCompare)} writeLineToDebugFile(TStr); {$EndIf}
+                     ErrorLog.Add(TStr);
                   end;
 
                   ZeroMomentVar;
@@ -1118,12 +1135,18 @@ var
                         end;
                      end;
                   end;
+
                   if (MomentVar.NPts > 1) then begin
                      if ElevDiffHists then begin
                         fName := DEMIX_diff_dist + DEMGLB[DEM].AreaName + '_' + DEMIXtile + '_elev_to_' + RefType + '.z';
                         SaveSingleValueSeries(MomentVar.npts,zs^,fName);
                      end;
                      NumSlope := WriteDifferenceResults(DEM,REFDEM,RefType,SlopeDiffStats);
+                  end
+                  else begin
+                     TStr := 'No points for elevation difference ' + DEMGLB[DEM].AreaName;
+                     {$If Defined(RecordFullDEMIX) or Defined(RecordDEMIXGridCompare)} writeLineToDebugFile(TStr); {$EndIf}
+                     ErrorLog.Add(TStr);
                   end;
 
                   ZeroMomentVar;
@@ -1148,11 +1171,17 @@ var
                         SaveSingleValueSeries(MomentVar.npts,zs^,fName);
                      end;
                      NumRuff := WriteDifferenceResults(DEM,REFDEM,RefType,RufDiffStats);
+                  end
+                  else begin
+                     TStr := 'No points for roughness difference ' + DEMGLB[DEM].AreaName;
+                     {$If Defined(RecordFullDEMIX) or Defined(RecordDEMIXGridCompare)} writeLineToDebugFile(TStr); {$EndIf}
+                     ErrorLog.Add(TStr);
                   end;
 
                   TStr := TestAreaName + '   ' + DEMIXTile + '  ' + RefType + '  elev=' + IntToStr(NumElev) +  '  slope=' + IntToStr(NumSlope) +  '  ruff=' + IntToStr(NumRuff)  +
                         '  total=' + IntToStr(NumElev+NumSlope+NumRuff);
                   wmdem.SetPanelText(3,TStr);
+                  {$If Defined(RecordTileProcessing)} writeLineToDebugFile(TStr); {$EndIf}
                end;
                {$IfDef RecordFullDEMIX}  WriteLineToDebugFile(TStr); {$EndIf}
             end;
@@ -1255,8 +1284,6 @@ var
          end
          else begin
             {$If Defined(RecordFullDEMIX) or Defined(TrackDEMIX_DEMs)} OpenDEMsToDebugFile('DEMs start loading'); {$EndIf}
-
-            //DoReferenceCriteria;
             GISdb[DEMIXtileDB].MyData.First;  //placed here to see where in the tile processing the program is at
 
             if LoadDEMIXCandidateDEMs(TestAreaName,DEMIXRefDEM) then begin
@@ -1321,6 +1348,11 @@ var
                            CompareDifferencesToReferenceDEM(TestDEM[i],UseDTM,'DTM');
                            CompareDifferencesToReferenceDEM(TestDEM[i],UseDSM,'DSM');
                            {$If Defined(RecordFullDEMIX)} writeLineToDebugFile('All tests done for ' + TestSeries[i]); {$EndIf}
+                        end
+                        else begin
+                           TStr := 'Missing test dem=' + IntToStr(i) + ' for ' + TestAreaName;
+                           ErrorLog.Add(Tstr);
+                           {$IfDef RecordDEMIX} WriteLineToDebugFile(TStr); {$EndIf}
                         end;
                      end;
                   end;

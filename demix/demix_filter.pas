@@ -88,6 +88,7 @@ type
     RadioGroup1: TRadioGroup;
     BitBtn15: TBitBtn;
     BitBtn16: TBitBtn;
+    BitBtn17: TBitBtn;
     procedure BitBtn1Click(Sender: TObject);
     procedure LoadClick(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
@@ -114,6 +115,7 @@ type
     procedure BitBtn15Click(Sender: TObject);
     procedure BitBtn16Click(Sender: TObject);
     procedure ComboBox1Change(Sender: TObject);
+    procedure BitBtn17Click(Sender: TObject);
   private
     { Private declarations }
     procedure ZeroDEMs;
@@ -665,6 +667,11 @@ begin
    for j := 0 to 1 do
       for i := 0 to 2 do
          MakeGraphOfDifferenceDistribution(ComboBox1.Items[ComboBox1.ItemIndex],ComboBox2.Items[i],ComboBox3.Items[j]);
+end;
+
+procedure TDemixFilterForm.BitBtn17Click(Sender: TObject);
+begin
+   GISDB[DB].DisplayTable;
 end;
 
 procedure TDemixFilterForm.BitBtn1Click(Sender: TObject);

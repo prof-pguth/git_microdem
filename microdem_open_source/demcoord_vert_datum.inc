@@ -58,7 +58,7 @@ procedure VerticalDatumShiftWithGDAL(DEM : integer; var SaveName : PathStr);
 var
    BatchFile : tStringList;
    aName,InName : PathStr;
-   cmd,SRSstring,tsrsstring : shortstring;
+   cmd,s_SRSstring,t_srsstring : shortstring;
 begin
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('VerticalDatumShiftWithGDAL in'); {$EndIf}
    if (SaveName = '') then begin
@@ -69,16 +69,18 @@ begin
    InName := DEMGlb[DEM].GeotiffDEMName;
 
    if (DEMGlb[DEM].DEMHeader.VerticalCSTypeGeoKey = VertCSEGM96) then begin
-      SRSstring := ' -s_srs EPSG:4326+5773';
-      tsrsstring := ' -t_srs EPSG:4326+3855';
+      //this goes from WGS84 EGM96 to WGS84 EGM2008
+      s_SRSstring := ' -s_srs EPSG:4326+5773';
+      t_srsstring := ' -t_srs EPSG:4326+3855';
    end
    else begin
-      SRSstring := ' -s_srs EPSG:26911+5703';
-      tsrsstring := ' -t_srs EPSG:32611+3855';
+      //this goes from NAD83 NAVD88 to WGS84 EGM2008, both in UTM zone 11N
+      s_SRSstring := ' -s_srs EPSG:26911+5703';
+      t_srsstring := ' -t_srs EPSG:32611+3855';
    end;
 
    StartGDALbatchFile(BatchFile);
-   cmd := 'gdalwarp -overwrite -ot float32 ' + InName + ' ' + SaveName + SRSString + tsrsstring;
+   cmd := 'gdalwarp -overwrite -ot float32 ' + InName + ' ' + SaveName + s_SRSString + t_srsstring;
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('VerticalDatumShiftWithGDAL cmd=' + cmd); {$EndIf}
    BatchFile.Add(cmd);
    aName :=  Petmar.NextFileNumber(MDTempDir, 'gdal_datumshift_','.bat');

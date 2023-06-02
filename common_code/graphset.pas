@@ -93,6 +93,9 @@ type
     ScrollBar1: TScrollBar;
     BitBtn5: TBitBtn;
     BitBtn6: TBitBtn;
+    BitBtn7: TBitBtn;
+    BitBtn8: TBitBtn;
+    CheckBox9: TCheckBox;
     procedure BitBtn1Click(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -106,6 +109,10 @@ type
     procedure RadioGroup1Click(Sender: TObject);
     procedure BitBtn5Click(Sender: TObject);
     procedure BitBtn6Click(Sender: TObject);
+    procedure BitBtn7Click(Sender: TObject);
+    procedure BitBtn8Click(Sender: TObject);
+    procedure CheckBox9Click(Sender: TObject);
+    procedure XMaxEditChange(Sender: TObject);
   private
     { Private declarations }
   public
@@ -244,6 +251,16 @@ begin
    RedrawSpeedButton12Click(Sender);
 end;
 
+procedure TGraphSettingsForm.CheckBox9Click(Sender: TObject);
+begin
+   XMinEdit.Enabled := not CheckBox9.Checked;
+   XMinLabel.Enabled := not CheckBox9.Checked;
+   if CheckBox9.Checked then begin
+      XMinEdit.Text := '-' + XMaxEdit.Text;
+   end;
+end;
+
+
 procedure TGraphSettingsForm.CheckSettings;
 var
    i : integer;
@@ -337,7 +354,7 @@ var
    i : integer;
 begin
    for i := 1 to 15 do begin
-      OwningGraph.GraphDraw.Symbol[i].Size := OwningGraph.GraphDraw.Symbol[i].Size - 1;
+      if (OwningGraph.GraphDraw.Symbol[i].Size) > 0 then OwningGraph.GraphDraw.Symbol[i].Size := OwningGraph.GraphDraw.Symbol[i].Size - 1;
    end;
    RedrawSpeedButton12Click(Sender);
 end;
@@ -353,6 +370,26 @@ begin
    OwningGraph.RedrawDiagram11Click(Nil);
 end;
 
+procedure TGraphSettingsForm.BitBtn7Click(Sender: TObject);
+var
+   i : integer;
+begin
+   for i := 1 to 255 do begin
+      OwningGraph.GraphDraw.LineSize256[i] := OwningGraph.GraphDraw.LineSize256[i] + 1;
+   end;
+   RedrawSpeedButton12Click(Sender);
+end;
+
+procedure TGraphSettingsForm.BitBtn8Click(Sender: TObject);
+var
+   i : integer;
+begin
+   for i := 1 to 255 do begin
+      if (OwningGraph.GraphDraw.LineSize256[i] > 0) then OwningGraph.GraphDraw.LineSize256[i] := OwningGraph.GraphDraw.LineSize256[i] - 1;
+   end;
+   RedrawSpeedButton12Click(Sender);
+end;
+
 procedure TGraphSettingsForm.FormCreate(Sender: TObject);
 begin
    OwningGraph := Nil;
@@ -363,6 +400,7 @@ procedure TGraphSettingsForm.HelpBtnClick(Sender: TObject);
 begin
    DisplayHTMLTopic('html\graph_options.htm');
 end;
+
 
 procedure TGraphSettingsForm.RadioGroup1Click(Sender: TObject);
 begin
@@ -376,10 +414,18 @@ begin
    OwningGraph.RedrawDiagram11Click(Nil);
 end;
 
+
 procedure TGraphSettingsForm.RedrawSpeedButton12Click(Sender: TObject);
 begin
    CheckSettings;
    OwningGraph.RedrawDiagram11Click(Nil);
+end;
+
+procedure TGraphSettingsForm.XMaxEditChange(Sender: TObject);
+begin
+   if CheckBox9.Checked then begin
+      XMinEdit.Text := '-' + XMaxEdit.Text;
+   end;
 end;
 
 procedure TGraphSettingsForm.ComboBox3Change(Sender: TObject);

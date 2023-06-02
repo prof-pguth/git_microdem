@@ -287,18 +287,18 @@ object GraphSettingsForm: TGraphSettingsForm
     Text = 'Edit1'
   end
   object BitBtn3: TBitBtn
-    Left = 356
-    Top = 246
-    Width = 153
+    Left = 315
+    Top = 225
+    Width = 134
     Height = 25
     Caption = 'Bigger point symbols'
     TabOrder = 18
     OnClick = BitBtn3Click
   end
   object BitBtn4: TBitBtn
-    Left = 356
-    Top = 278
-    Width = 153
+    Left = 315
+    Top = 264
+    Width = 134
     Height = 25
     Caption = 'Smaller point symbols'
     TabOrder = 19
@@ -309,7 +309,7 @@ object GraphSettingsForm: TGraphSettingsForm
     Top = 8
     Width = 313
     Height = 185
-    ActivePage = TabSheet4
+    ActivePage = TabSheet1
     TabOrder = 20
     object TabSheet1: TTabSheet
       Caption = 'X axis'
@@ -338,16 +338,17 @@ object GraphSettingsForm: TGraphSettingsForm
       object XMinEdit: TEdit
         Left = 80
         Top = 65
-        Width = 57
+        Width = 121
         Height = 21
         TabOrder = 1
       end
       object XMaxEdit: TEdit
         Left = 80
         Top = 39
-        Width = 57
+        Width = 121
         Height = 21
         TabOrder = 2
+        OnChange = XMaxEditChange
       end
       object XLabelEdit: TEdit
         Left = 3
@@ -373,6 +374,15 @@ object GraphSettingsForm: TGraphSettingsForm
         Text = 'ComboBox3'
         Visible = False
         OnChange = ComboBox3Change
+      end
+      object CheckBox9: TCheckBox
+        Left = 160
+        Top = 88
+        Width = 142
+        Height = 17
+        Caption = 'Symmetrical about 0'
+        TabOrder = 6
+        OnClick = CheckBox9Click
       end
     end
     object TabSheet2: TTabSheet
@@ -402,14 +412,14 @@ object GraphSettingsForm: TGraphSettingsForm
       object YMaxEdit: TEdit
         Left = 67
         Top = 37
-        Width = 57
+        Width = 113
         Height = 21
         TabOrder = 1
       end
       object YMinEdit: TEdit
         Left = 64
         Top = 64
-        Width = 57
+        Width = 116
         Height = 21
         TabOrder = 2
       end
@@ -471,14 +481,14 @@ object GraphSettingsForm: TGraphSettingsForm
       object Edit14: TEdit
         Left = 72
         Top = 72
-        Width = 57
+        Width = 108
         Height = 21
         TabOrder = 1
       end
       object Edit15: TEdit
         Left = 75
         Top = 45
-        Width = 57
+        Width = 105
         Height = 21
         TabOrder = 2
       end
@@ -505,7 +515,7 @@ object GraphSettingsForm: TGraphSettingsForm
       object Edit6: TEdit
         Left = 68
         Top = 0
-        Width = 57
+        Width = 80
         Height = 21
         TabOrder = 0
         Visible = False
@@ -513,7 +523,7 @@ object GraphSettingsForm: TGraphSettingsForm
       object Edit5: TEdit
         Left = 68
         Top = 27
-        Width = 57
+        Width = 79
         Height = 21
         TabOrder = 1
         Visible = False
@@ -545,7 +555,7 @@ object GraphSettingsForm: TGraphSettingsForm
       'X Time, Y Part Grid ')
   end
   object RadioGroup1: TRadioGroup
-    Left = 208
+    Left = 165
     Top = 199
     Width = 127
     Height = 112
@@ -575,5 +585,23 @@ object GraphSettingsForm: TGraphSettingsForm
     Caption = 'Make default'
     TabOrder = 24
     OnClick = BitBtn5Click
+  end
+  object BitBtn7: TBitBtn
+    Left = 464
+    Top = 224
+    Width = 96
+    Height = 25
+    Caption = 'Thicker Lines'
+    TabOrder = 25
+    OnClick = BitBtn7Click
+  end
+  object BitBtn8: TBitBtn
+    Left = 464
+    Top = 264
+    Width = 96
+    Height = 25
+    Caption = 'Thinner lines'
+    TabOrder = 26
+    OnClick = BitBtn8Click
   end
 end
