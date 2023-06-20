@@ -66,7 +66,6 @@ uses
   demterrc in '..\common_code\demterrc.pas' {GetTerrC},
   kml_opts in '..\common_code\kml_opts.pas' {kml_opts_fm},
   GIS_Scaled_symbols in '..\common_code\GIS_Scaled_symbols.pas' {gis_scaled_form},
-  bar_graphs in '..\common_code\bar_graphs.pas' {bargraphform},
   add_time_fields in '..\common_code\add_time_fields.pas' {TimeFieldsForm},
   DEMXYZIm in '..\common_code\DEMXYZIm.pas' {ImportParamsDialog},
   Contgraf in '..\common_code\Contgraf.pas' {ThisContourGraph},

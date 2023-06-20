@@ -1990,6 +1990,11 @@ object MapForm: TMapForm
           GroupIndex = 1
           OnClick = Bigimagewithallmaps1Click
         end
+        object Pickmapsforbigimage1: TMenuItem
+          Caption = 'Pick maps for big image'
+          GroupIndex = 1
+          OnClick = Pickmapsforbigimage1Click
+        end
         object OpenGLwithallmaps1: TMenuItem
           Caption = 'OpenGL with all maps'
           GroupIndex = 1
@@ -2690,9 +2695,13 @@ object MapForm: TMapForm
           Caption = 'NAVD88'
           OnClick = NAVD881Click
         end
-        object NAVD882: TMenuItem
+        object EGM2008: TMenuItem
           Caption = 'EGM2008'
-          OnClick = NAVD882Click
+          OnClick = EGM2008Click
+        end
+        object WGS84elllipsoid1: TMenuItem
+          Caption = 'WGS84 elllipsoid'
+          OnClick = WGS84elllipsoid1Click
         end
         object Other1: TMenuItem
           Caption = 'Other'
@@ -4786,7 +4795,6 @@ object MapForm: TMapForm
       GroupIndex = 1
       object Datumshiftcomparison1: TMenuItem
         Caption = 'Datum shift comparison (only Stateline)'
-        OnClick = Datumshiftcomparison1Click
       end
       object Shiftfilecomparison1: TMenuItem
         Caption = 

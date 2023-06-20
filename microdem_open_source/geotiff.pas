@@ -7,11 +7,11 @@ unit GeoTiff;
 { Copyright (c) 2023 Peter L. Guth   }
 {____________________________________}
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ References:                                                               }
-{    http://partners.adobe.com/asn/developer/pdfs/tn/TIFF6.pdf              }
-{    http://www.remotesensing.org/geotiff/spec/geotiffhome.html             }
-{___________________________________________________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ References:                                                     }
+{    http://partners.adobe.com/asn/developer/pdfs/tn/TIFF6.pdf    }
+{    http://www.remotesensing.org/geotiff/spec/geotiffhome.html   }
+{_________________________________________________________________}
 
 
 {$I nevadia_defines.inc}
@@ -25,18 +25,19 @@ unit GeoTiff;
    //{$Define ReportKey258}  //this happens with some Landsat, but does not appear to stop things
 
    {$IFDEF DEBUG}
+      (*
       //{$Define RecordGeotiff}
       //{$Define RecordGeotiffFailures}
-      (*
-      {$Define TrackPixelIs}
-      {$Define TrackDEMCorners}
-      {$Define GeotiffCorner}
-      *)
-      //{$Define RecordDEMMapProjection}
       //{$Define RecordInitializeDEM}
+
+      //{$Define TrackPixelIs}
+      //{$Define TrackDEMCorners}
+      //{$Define GeotiffCorner}
+      *)
+      //{$Define TrackHorizontalDatum}
+      //{$Define RecordDEMMapProjection}
       //{$Define RecordGeotiffProjection}
       //{$Define RecordDefineDatum}
-      //{$Define TrackHorizontalDatum}
       //{$Define RecordUKOS}
       //{$Define TrackProjection}
       //{$Define ShowKeyDEM}
@@ -166,8 +167,8 @@ type
    procedure WriteFieldEntry(var TIFFFile : File; Tag,TypeField : word; Length,Offset : LongInt);
    procedure WriteFieldEntryIncrementOffset(var TIFFFile : File; Tag,TypeField : word; Length : longint; var Offset : LongInt);
    procedure WriteWordFieldEntry(var TIFFFile : File; Tag,TypeField,Length,Offset : word);
-   function GetUTMDatumCode(PrimaryMapDatum : tMapProjection) : word;
-   function GetGeoDatumCode(PrimaryMapDatum : tMapProjection) : word;
+   //function GetUTMDatumCode(PrimaryMapDatum : tMapProjection) : word;
+   //function GetGeoDatumCode(PrimaryMapDatum : tMapProjection) : word;
    function GeoTIFFTagName(Tag : integer) : ShortString;
    function GeotiffTypeSize(ftype : integer) : integer;
 
@@ -218,8 +219,6 @@ uses
 
 var
    CurrentMissing : float32;
-const
-   GeotiffDatumDefaultString = 'GeoTIFF save only works with NAD or WGS datums; default to WGS84';
 
 
 function BandsInGeotiff(fName : PathStr) : integer;
@@ -309,26 +308,6 @@ end;
       //{$IfDef GeotiffSave} writeLineToDebugFile('    Offset increased to Offset=' + IntToStr(Offset)); {$EndIf}
    end;
 
-
-     function GetUTMDatumCode(PrimaryMapDatum : tMapProjection) : word;
-     begin
-       Result := 32600; {WGS84 default}
-       if (PrimaryMapDatum.h_DatumCode = 'WGS72') then Result := 32200
-       else if (PrimaryMapDatum.h_DatumCode = 'NAS-C') then Result := 26700
-       else if (PrimaryMapDatum.h_DatumCode = 'NAR-C') then Result := 26900
-       else if (PrimaryMapDatum.h_DatumCode <> 'WGS84') then MessageToContinue(GeotiffDatumDefaultString);
-       if (PrimaryMapDatum.LatHemi = 'S') then Result := Result + 100;
-       Result := Result + PrimaryMapDatum.projUTMZone;
-     end;
-
-     function GetGeoDatumCode(PrimaryMapDatum : tMapProjection) : word;
-     begin
-       Result := 4326; {WGS84 default}
-       if (PrimaryMapDatum.h_DatumCode = 'WGS72') then Result := 4322
-       else if (PrimaryMapDatum.h_DatumCode = 'NAS-C') then Result := 4267
-       else if (PrimaryMapDatum.h_DatumCode = 'NAR-C') then Result := 4269
-       else if (PrimaryMapDatum.h_DatumCode <> 'WGS84') then MessageToContinue(GeotiffDatumDefaultString);
-     end;
 
 
 
@@ -505,6 +484,7 @@ begin
       end;
       InsureFileIsNotReadOnly(TIFFFileName);
       TiffHandle := FileOpen(TIFFFileName,fmOpenRead);
+      FileSeek(TiffHandle,0,0);
       TiffOpen := true;
    end;
 end;
@@ -669,7 +649,6 @@ end;
 
 procedure tTIFFImage.SeekFileOffset(Band,Row : int64);
 var
-   //StripUsed,
    TheOffset,LinesNeeded : int64;
 begin
    OpenTiffFile;
@@ -739,14 +718,13 @@ end;
 
 procedure tTIFFImage.GetTiffRow(Band,Row : integer; var TheRow : tImageRow);
 var
-   //RunCount   : ShortInt;
-   Buffer     : array[0..8191] of byte;
-   BufLen,
-   BufPos,
-   NumRead,
-   x,MemNeed        : integer;
+   NumRead,x,MemNeed        : integer;
 
+         (*
          function GetNextByte : SmallInt;
+         var
+            Buffer     : array[0..8191] of byte;
+            BufLen,BufPos : integer;
          begin
             if (BufPos >= BufLen) then begin
                BufLen := FileRead(TiffHandle,Buffer,8192);
@@ -755,7 +733,7 @@ var
             Result := Buffer[BufPos];
             inc(BufPos);
          end;
-
+         *)
 begin
    SeekFileOffset(Band,Row);
    if (TiffHeader.PhotometricInterpretation = 2) or (TiffHeader.SamplesPerPixel > 1) then begin    //color image
@@ -822,7 +800,7 @@ begin
    end;
 
    if (SingleFileBand = 0) then SingleFileBand := 1;
-   
+
    {$IfDef RecordGeotiffHistogram} writeLineToDebugFile('tTIFFImage.GetHistogramDBF ranges'); {$EndIf}
 
    fName1 := HistogramLandsatName(TIFFFileName);
@@ -1018,7 +996,6 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
 
               {$IfDef TrackDEMCorners} WantDEM.WriteDEMCornersToDebugFile('Read the Geotiff'); {$EndIf}
 
-
               {$IfDef GeotiffCorner} WriteLineToDebugFile('Read Geotiff DEM,  SW corner  X=' + RealToString(WantDEM.DEMheader.DEMSWCornerX,-18,-6) + '  Y=' + RealToString(WantDEM.DEMheader.DEMSWCornerY,-18,-6)); {$EndIf}
 
               {$IfDef RecordInitializeDEM} WriteLineToDebugFile(WantDEM.GridDefinition); {$EndIf}
@@ -1051,6 +1028,7 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
                   WantDEM.DEMheader.DataSpacing := SpaceMeters;
                   WantDEM.DEMheader.UTMZone := WantDEM.DEMMapProjection.projUTMZone;
                   WantDEM.DEMheader.LatHemi := WantDEM.DEMMapProjection.LatHemi;
+                  WantDEM.DEMheader.DigitizeDatum := DatumCodeFromString(WantDEM.DEMMapProjection.h_DatumCode);
                end
                else if (WantDEM.DEMMapProjection.wktString <> '') then begin
                   WantDEM.DEMheader.DEMUsed := WKTDEM;
@@ -1088,14 +1066,15 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
                   {$IfDef RecordInitializeDEM} WriteLineToDebugFile('WantDEM.AllocateDEMMemory failed'); {$EndIf}
                   Result := false;
                end;
+               WantDEM.DEMMapProjection.h_DatumCode := StringFromDatumCode(WantDEM.DEMheader.DigitizeDatum);
+              {$IfDef TrackHorizontalDatum} WriteLineToDebugFile('InitTiffDEM out, WantDEM.DEMheader.DigitizeDatum=' + StringFromDatumCode(WantDEM.DEMheader.DigitizeDatum)); {$EndIf}
               {$IfDef TrackA} writeLineToDebugFile('tTIFFImage.CreateTiffDEM out, a=' + RealToString(WantDEM.DEMMapProjection.a,-18,-2)); {$EndIf}
               {$If Defined(RecordInitializeDEM) or Defined(RecordDEMMapProjection)} WantDEM.DEMMapProjection.ShortProjInfo('tTIFFImage.InitializeDEM in'); {$EndIf}
-              {$IfDef TrackHorizontalDatum} WriteLineToDebugFile('InitTiffDEM out, WantDEM.DEMheader.DigitizeDatum=' + StringFromDatumCode(WantDEM.DEMheader.DigitizeDatum)); {$EndIf}
               {$IfDef RecordNLCD} WriteLineToDebugFile('Initialize TIFF DEM out, ' + WantDEM.AreaName + '  data=' + ElevUnitsAre(WantDEM.DEMheader.ElevUnits)); {$EndIf}
          end;
 
 
-         function ValidZ(z : float64) : boolean;  inline;
+         function ValidZ(z : float64) : boolean; inline;
          begin
              Result := (abs(z - CurrentMissing) > 0.01);
          end;
@@ -1129,6 +1108,7 @@ begin
       Result := InitializeTiffDEM(WantDEM);
       {$If Defined(RecordGeotiffProjection)} WriteLineToDebugFile('After InitializeTiffDEM back, Projection=' + WantDEM.DEMMapProjection.GetProjectionName); {$EndIf}
       WantDEM.GeotiffImageDesc := GeotiffImageDesc;
+      {$If Defined(TrackHorizontalDatum)} WriteLineToDebugFile('tTIFFImage.CreateDEM read DEM, ' + WantDEM.AreaName + '  ' + WantDEM.DEMMapProjection.h_DatumCode);   {$EndIf}
       if Result and ReallyReadDEM then begin
             {$If Defined(RecordInitializeDEM)} writeLineToDebugFile('tTIFFImage.CreateDEM initialization done'); {$EndIf}
             if (WantDEM.AreaName = 'EXISTING_VEGETATION_HEIGHT') or (WantDEM.AreaName = 'CANOPY_BASE_HEIGHT') or (WantDEM.AreaName = 'CANOPY_HEIGHT') then TiffHeader.Factor := 0.1;
@@ -1146,7 +1126,7 @@ begin
             end
             else if (TiffHeader.BitsPerSample in [4,8]) then begin
                New(ByteRow);
-               if (TiffHeader.BitsPerSample in [4]) then  bs := WantDEM.DEMheader.NumCol div 2;
+               if (TiffHeader.BitsPerSample in [4]) then bs := WantDEM.DEMheader.NumCol div 2;
             end;
 
             {$If Defined(TrackZ)} WantDEM.TrackElevationRange('start Geotiff read'); {$EndIf}
@@ -1262,6 +1242,7 @@ begin
    {$If Defined(RecordGeotiff) or Defined(RecordInitializeDEM)} WriteLineToDebugFile('tTIFFImage.CreateDEM out, ' + sfBoundBoxToString(WantDEM.DEMBoundBoxProjected,4)); {$EndIf}
    {$If Defined(RecordDefineDatum) or Defined(RecordGeotiff)} WriteLineToDebugFile('tTIFFImage.CreateDEM out, Projection=' + WantDEM.DEMMapProjection.GetProjectionName); {$EndIf}
    {$If Defined(RecordDEMMapProjection) or Defined(RecordInitializeDEM) or Defined(TrackProjection)} WantDEM.DEMMapProjection.ProjectionParamsToDebugFile('SetUpDefaultNewProjection out'); {$EndIf}
+   {$If Defined(TrackHorizontalDatum)} WriteLineToDebugFile('tTIFFImage.CreateDEM out, ' + WantDEM.AreaName + '  ' + WantDEM.DEMMapProjection.h_DatumCode);   {$EndIf}
 end;
 
 
@@ -2475,7 +2456,6 @@ begin
       end;
    end;
 
-
    TemporaryNewGeotiff := true;
 
    {$IfDef RecordDefineDatum}
@@ -2491,12 +2471,12 @@ begin
    {$IfDef TrackHorizontalDatum} WriteLineToDebugFile('GeoSuccess and NeedToLoadGeotiffProjection out, datum=' + MapProjection.h_DatumCode); {$EndIf}
    {$IfDef TrackPixelIs} WriteLineToDebugFile('read Geotiff ' + ExtractFileName(InFileName) + ' out, Pixel is = ' + RasterPixelIsString(TiffHeader.RasterPixelIs)); {$EndIf}
 
-    if ShowHeader then begin
+   if ShowHeader then begin
       ShowInNotepadPlusPlus(HeaderLogList,'MD_metadata_' + ExtractFileName(InFileName));
    end
    else begin
       HeaderLogList.Free;
-      {$IfDef RecordGeotiff} WriteLineToDebugFile('read Geotiff out, HeaderLogList.Free'); {$EndIf}
+      {$IfDef RecordGeotiff} WriteLineToDebugFile('read Geotiff out, HeaderLogList.Freed'); {$EndIf}
    end;
    Success := true;
 end;

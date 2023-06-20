@@ -1807,7 +1807,6 @@ object wmdem: Twmdem
         end
         object EurekaValleyDownload: TMenuItem
           Caption = 'Eureka Valley data download'
-          OnClick = EurekaValleyDownloadClick
         end
         object GERDdownload1: TMenuItem
           Caption = 'GERD download'
@@ -1826,7 +1825,6 @@ object wmdem: Twmdem
         end
         object Datadownloadpicksubset1: TMenuItem
           Caption = 'Kangaroo Island data download'
-          OnClick = Datadownloadpicksubset1Click
         end
       end
       object Physicalgeographylabs1: TMenuItem
@@ -2191,7 +2189,6 @@ object wmdem: Twmdem
         end
         object LidarandglobalDEMs1: TMenuItem
           Caption = 'Lidar and global DEMs'
-          OnClick = LidarandglobalDEMs1Click
         end
         object CreateDEMsfromlidar1: TMenuItem
           Caption = 'Create DEMs from lidar'
@@ -2475,6 +2472,10 @@ object wmdem: Twmdem
         Caption = 'Create DEMIX database'
         OnClick = CreateDEMIXdatabase1Click
       end
+      object Advancedanalysis1: TMenuItem
+        Caption = 'Advanced analysis'
+        OnClick = Advancedanalysis1Click
+      end
     end
     object Help1: TMenuItem
       Caption = '&Help'
@@ -2701,6 +2702,10 @@ object wmdem: Twmdem
     object OpenandmergeDEMdirectories1: TMenuItem
       Caption = 'Open and merge DEM directories'
       OnClick = OpenandmergeDEMdirectories1Click
+    end
+    object OpenandmergeDEMswithfullDEMIXcoverage1: TMenuItem
+      Caption = 'Open and merge DEMs with full DEMIX coverage'
+      OnClick = OpenandmergeDEMswithfullDEMIXcoverage1Click
     end
     object OpenDEMwithoutmap1: TMenuItem
       Caption = 'Open DEM/grid without map'
@@ -3444,10 +3449,12 @@ object wmdem: Twmdem
     Top = 336
     object DEMIXindexhighresreferenceDEMs1: TMenuItem
       Caption = 'DEMIX index high res reference DEMs'
+      Enabled = False
       OnClick = DEMIXindexhighresreferenceDEMs1Click
     end
     object DEMIXreferencetilesurvey1: TMenuItem
       Caption = 'DEMIX reference tile survey'
+      Enabled = False
       OnClick = DEMIXreferencetilesurvey1Click
     end
     object DEMIXtiles1: TMenuItem
@@ -3455,9 +3462,9 @@ object wmdem: Twmdem
       Enabled = False
       OnClick = DEMIXtiles1Click
     end
-    object DEMIXelevationhistograms1: TMenuItem
-      Caption = 'DEMIX elevation histograms'
-      OnClick = DEMIXelevationhistograms1Click
+    object Modesofdifferencedistributions1: TMenuItem
+      Caption = 'Modes of difference distributions'
+      OnClick = Modesofdifferencedistributions1Click
     end
     object HistogramstoCSVfiles1: TMenuItem
       Caption = 'Histograms to CSV files'
@@ -3476,19 +3483,22 @@ object wmdem: Twmdem
       OnClick = COPALOShighlowgeomorphometry1Click
     end
     object Pixelbypixelmapstatistics1: TMenuItem
-      Caption = 'Pixel by pixel map statistics'
+      Caption = 'COP/ALOS Pixel by pixel map statistics'
       OnClick = Pixelbypixelmapstatistics1Click
     end
     object OpenDEMIXarea1: TMenuItem
       Caption = 'Open DEMIX area'
+      Enabled = False
       OnClick = OpenDEMIXarea1Click
     end
     object OpenDEMIXridges1: TMenuItem
       Caption = 'Open DEMIX ridges'
+      Enabled = False
       OnClick = OpenDEMIXridges1Click
     end
     object LoadDEMIXareareferenceDEMs1: TMenuItem
       Caption = 'Load DEMIX area reference DEMs in EGM2008'
+      Enabled = False
       OnClick = LoadDEMIXareareferenceDEMs1Click
     end
     object N37: TMenuItem
@@ -3496,6 +3506,7 @@ object wmdem: Twmdem
     end
     object Creatediffrencemaps1: TMenuItem
       Caption = 'Create diference maps'
+      Enabled = False
       OnClick = Creatediffrencemaps1Click
     end
     object N38: TMenuItem
@@ -3509,12 +3520,6 @@ object wmdem: Twmdem
         OnClick = N3OpenDEMs1Click
       end
     end
-    object N36: TMenuItem
-      Caption = '-'
-    end
-    object DEMIXwinecontest1: TMenuItem
-      Caption = 'DEMIX wine contest criteria evaluation'
-    end
   end
   object DEMIXdbCreatePopupMenu: TPopupMenu
     Left = 896
@@ -3523,17 +3528,37 @@ object wmdem: Twmdem
       Caption = 'Merge source data tiles'
       OnClick = Mergesourcedatatiles1Click
     end
-    object ProcessVDATUMshifts1: TMenuItem
-      Caption = 'Process VDATUM shifts'
-      OnClick = ProcessVDATUMshifts1Click
+    object Subsetlarge3DEPareas1: TMenuItem
+      Caption = 'Subset large 3DEP areas'
+      OnClick = Subsetlarge3DEPareas1Click
     end
     object ProcessGDALshiftforStateLineexperimental1: TMenuItem
-      Caption = 'Process GDAL shift for State Line (experimental)'
+      Caption = 'Process GDAL shift for 3DEP'
       OnClick = ProcessGDALshiftforStateLineexperimental1Click
+    end
+    object ProcessVDATUMshifts1: TMenuItem
+      Caption = 'Process 3DEP VDATUM shifts'
+      OnClick = ProcessVDATUMshifts1Click
+    end
+    object Create3DEP1secrefDEMs1: TMenuItem
+      Caption = 'Create 3DEP 1 sec ref DEMs'
+      OnClick = Create3DEP1secrefDEMs1Click
+    end
+    object Merge3DEPreferenceDEMsbyarea1: TMenuItem
+      Caption = 'Merge 3DEP reference DEMs by area'
+      OnClick = Merge3DEPreferenceDEMsbyarea1Click
     end
     object DEMIXreferenceDEMcreation1: TMenuItem
       Caption = 'Create 1 second reference DEMs'
       OnClick = DEMIXreferenceDEMcreation1Click
+    end
+    object CreatehalfsecondreferenceDEMs1: TMenuItem
+      Caption = 'Create half second reference DEMs'
+      OnClick = CreatehalfsecondreferenceDEMs1Click
+    end
+    object Merge1secreferenceDEMsfromVisioterra1: TMenuItem
+      Caption = 'Merge 1 sec reference DEMs from Visioterra'
+      OnClick = Merge1secreferenceDEMsfromVisioterra1Click
     end
     object Processdifferencestatisticspertile1: TMenuItem
       Caption = 'Process difference statistics per tile'

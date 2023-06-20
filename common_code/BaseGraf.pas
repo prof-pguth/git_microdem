@@ -525,13 +525,10 @@ const
    DefMaxHorizAxis : float32 = 100;
 
 
-//procedure DefaultGraphSettings(var GraphDraw : tGraphDraw);
-
 procedure ComplicatedLocatePointOnGraph(Canvas : TCanvas;  GraphDraw : tGraphDraw;  x,y,sx,sy : integer);
 procedure LocatePointOnGraph(Canvas : TCanvas; GraphDraw : tGraphDraw; x,y : integer);
 
 function GraphAxesName(GraphAxes : AxesType) : shortstring;
-function Linear(x : float32) : float32;
 
 function SaveSingleValueSeries(NumVals : integer; var zs : Petmath.bfarray32; fName : PathStr = '' {; First : integer = 0; Last : integer = -999}) : PathStr;
 
@@ -625,6 +622,12 @@ var
    FilterTerms : integer;
 
 
+function Linear(x : float32) : float32;
+begin
+   Linear := x;
+end;
+
+
 procedure ResetGraphVariables;
 begin
    DefGraphLLText := '';
@@ -695,9 +698,7 @@ begin
 
    if FirstTime then begin
       GISdb[DataBaseOnGraph].Mydata.FindFieldRange(fName,x1,x2);
-      //dx := 0.5 * (x2 - x1);
       GraphDraw.HorizLabel := fName;
-      //x2 := x2 + dx;
       GraphDraw.MinHorizAxis := x1 - dx;
       GraphDraw.MaxHorizAxis := x2 + dx;
       {$IfDef RecordHistogram} HighlightLineToDebugFile('SetUpStackedHistogram FirstTime set, ' + GraphDraw.AxisRange); {$EndIf}
@@ -765,7 +766,6 @@ begin
          end;
       end;
       Bot := GraphDraw.GraphY(0);
-      //Top := 0;
       x1 := GISdb[DataBaseOnGraph].Mydata.GetFieldByNameAsFloat(fName);
       Left := GraphDraw.GraphX(x1-dx);
       Right := GraphDraw.GraphX(x1+dx);
@@ -817,14 +817,17 @@ var
 
           procedure LoadSeries(fName : PathStr);
           var
-             inf : file;
+             //inf : file;
              i : integer;
           begin
+             (*
              NumVals := GetFileSize(fName) div SizeOf(float32);
              AssignFile(inf,fName);
              reset(inf,sizeOf(float32));
              BlockRead(inf,values^[0],NumVals);
              closeFile(inf);
+             *)
+             LoadBFarray32(fName,Values^,NumVals);
              if AutoScale then begin
                 for i := 0 to pred(NumVals) do begin
                    CompareValueToExtremes(Values[i],Min,Max);
@@ -853,9 +856,7 @@ var
                   if (i mod 250 = 0) then UpdateProgressBar(i/NumVals);
                   Value := Values^[i];
                   j := round((Value - Min) / BinSize);
-                  if (j < 0) then j := 0;
-                  if (j > NumBins) then j := NumBins;
-                  inc(Bins[j]);
+                  if (j >= 0) and (j <= NumBins) then inc(Bins[j]);
                end;
                EndProgress;
                CreateMultipleHistogram.OpenDataFile(rfile);
@@ -877,7 +878,7 @@ var
                      else Results.Strings[j] := Results.Strings[j] + ',' + RealToString(v[ay],-12,-4);
                   end;
 
-                  if Bins[j] > 0 then begin
+                  if (Bins[j] > 0) then begin
                      BlockWrite(rfile,v,1);
                   end;
                end;
@@ -889,6 +890,7 @@ var
 
 begin
    {$IfDef RecordHistogram} WriteLineToDebugFile('CreateMultipleHistograms in ' + ParamName + '  ' + TitleBar); {$EndIf}
+   Result := nil;
    if (FileList.Count > 0) then begin
       StackedPercents := (FileList.Count > 1);
       if StackedPercents then Results := tstringlist.Create;
@@ -909,11 +911,6 @@ begin
       Result.GraphDraw.ShowHorizAxis0 := true;
 
       l1 := RemoveUnderscores(ParamName);
-      if MDDef.NoHistFreqLabels then l2 := ''
-      else begin
-         if GraphNumbers then l2 := 'Number of values'
-         else l2 := 'Concentration';
-      end;
 
       if MDDef.FlipHistogram then begin
          Result.GraphDraw.HorizLabel := l2;
@@ -951,6 +948,13 @@ begin
          goto Cleanup;
       end;
 
+      if MDDef.NoHistFreqLabels then l2 := ''
+      else begin
+         if GraphNumbers then l2 := 'Number of values'
+         else l2 := 'Concentration';
+         l2 := l2 + ' (Bin size ' + RealToString(BinSize,-8,-2) + ')';
+      end;
+
       if (Range > 0.001) and (Range < 0.01) then Incr := 0.005;
 
       {$IfDef RecordHistogram} writeLineToDebugFile('CreateMultipleHistograms settings over, NumBins=' + IntToStr(NumBins) + '  ' + Result.GraphDraw.AxisRange); {$EndIf}
@@ -984,7 +988,7 @@ begin
       Result.AutoScaleAndRedrawDiagram(false,false,false,false);
 
       if false and StackedPercents then begin
-      //2/23/2023, this is disable because Graph3 is crashing; Graph2 had not been working either; this needs to be looked at
+      //2/23/2023, this is disabled because Graph3 is crashing; Graph2 had not been working either; this needs to be looked at
          {$IfDef RecordHistogram} writeLineToDebugFile('Start StackedPercents'); {$EndIf}
          TStr := l1;
          for I := 0 to pred(FileList.Count) do TStr := TStr + ',' + 'SERIES_' + IntToStr(succ(i));
@@ -1027,16 +1031,13 @@ CleanUp:;
    MDDef.FlipHistogram := false;
    FreeAndNil(LegendList);
    FreeAndNil(FileList);
-
 end;
-
-
 
 
 procedure SetReasonableGraphSize;
 begin
-   if MDDef.DefaultGraphXSize > 1200 then MDDef.DefaultGraphXSize := 1200;
-   if MDDef.DefaultGraphYSize > 900 then MDDef.DefaultGraphYSize := 900;
+   if (MDDef.DefaultGraphXSize > 1200) then MDDef.DefaultGraphXSize := 1200;
+   if (MDDef.DefaultGraphYSize > 900) then MDDef.DefaultGraphYSize := 900;
 end;
 
 procedure TThisBaseGraph.DrawBoxPlot(Bitmap : tMyBitmap);
@@ -4336,10 +4337,6 @@ begin
    end;
 end;
 
-function Linear(x : float32) : float32;
-begin
-   Linear := x;
-end;
 
 procedure ComplicatedLocatePointOnGraph(Canvas : TCanvas; GraphDraw : tGraphDraw;  x,y,sx,sy : integer);
 var
@@ -4489,7 +4486,7 @@ begin
        end;
        CloseFile(InFile);
 
-       if (fName <> '') then Results.SaveToFile(infName)
+       if (infName <> '') then Results.SaveToFile(infName)
        else begin
           if (GraphDraw.LegendList <> Nil) then fName := NextFileNumber(MDTempDir,GraphName + GraphDraw.LegendList.Strings[pred(i)] + '_', '.dbf')
           else fName := NextFileNumber(MDTempDir,GraphName + 'series_', '.dbf');
@@ -4920,6 +4917,7 @@ begin
    end;
 end;
 
+
 procedure TThisBaseGraph.RedrawDiagram11Click(Sender: TObject);
 var
    BitMap,bmp : tMyBitmap;
@@ -5171,7 +5169,7 @@ begin
                    yi := GraphDraw.YWindowSize - GraphDraw.BottomMargin - bmp.Height else yi := GraphDraw.TopMargin +15;
                 if GraphDraw.InsideMarginLegend in [lpNWMap,lpSWMap] then
                    xi := GraphDraw.LeftMargin + 15
-                else xi := GraphDraw.XWindowSize - GraphDraw.RightMargin - bmp.Width;
+                else xi := GraphDraw.XWindowSize - GraphDraw.RightMargin - bmp.Width - 15;
              end;
           end;
           {$If Defined(RecordLegends)} WritelineToDebugFile('Draw legend inside graph, at x=' + IntToStr(xi) + '  y=' + IntToStr(yi)); bmp.SaveToFile(MDtempDir + 'legend.bmp'); {$EndIf}

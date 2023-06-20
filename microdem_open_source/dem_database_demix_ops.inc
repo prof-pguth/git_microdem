@@ -3,14 +3,91 @@
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
 { Copyright (c) 2023 Peter L. Guth   }
+{------------------------------------}
+{    include file for demdatbase     }
 {____________________________________}
 
-//include file for demdatbase
+
+procedure DEMIXMeanMedianHistograms(db : integer);
+var
+   Min,Max,BinSize : float32;
+   Corner : byte;
+
+
+   procedure MakeOne(DEMType,Param : shortString);
+   var
+      zvs : array[1..MaxTestDEM] of ^Petmath.bfarray32;
+      i,npts,DEM : integer;
+      Dist,Legs : tStringList;
+      Graph : tThisBaseGraph;
+      TStr : shortstring;
+   begin
+      Dist := tStringList.Create;
+      Legs := tStringList.Create;
+      for DEM := 1 to MaxTestDEM do begin
+         Legs.Add(DEMIXDEMTypeName[DEM]);
+      end;
+      GISdb[DB].ApplyGISFilter('REF_TYPE=' + QuotedStr(DEMtype) + ' AND LAND_TYPE=' + QuotedStr('ALL') + ' AND CRITERION=' + QuotedStr(Param));
+      GISdb[DB].EmpSource.Enabled := false;
+      for I := 1 to MaxTestDEM do New(zvs[i]);
+      npts := 0;
+       GISdb[DB].MyData.First;
+       while not GISdb[DB].MyData.eof do begin
+          for DEM := 1 to MaxTestDEM do begin
+             zvs[DEM]^[npts] := GISdb[DB].MyData.GetFieldByNameAsFloat(DEMIXDEMTypeName[DEM]);
+          end;
+          inc(Npts);
+          GISdb[DB].MyData.Next;
+       end;
+
+       for I := 1 to MaxTestDEM do begin
+          Dist.Add(SaveSingleValueSeries(npts,zvs[i]^));
+          Dispose(zvs[i]);
+       end;
+       TStr := Param + ' compared to reference ' + DEMtype;
+       Graph := CreateMultipleHistogram(MDDef.CountHistograms,Dist,Legs,TStr,TStr,100,Min,Max,BinSize);
+
+      for I := 1 to MaxTestDEM do begin
+         Graph.GraphDraw.FileColors256[i] := DEMIXColorFromDEMName(Graph.GraphDraw.LegendList[pred(i)]);
+      end;
+      Graph.GraphDraw.InsideMarginLegend := Corner;
+      Graph.RedrawDiagram11Click(Nil);
+   end;
+
+var
+   i,j : integer;
+begin
+
+   Min := -4;
+   Max := 4;
+   BinSize := 0.5;
+   Corner := lpNWMap;
+   for j := 1 to 2 do begin
+      for i := 1 to 3 do begin
+         MakeOne(RefDEMtype[j],MeanParams[i]);
+      end;
+   end;
+
+   for j := 1 to 2 do begin
+      for i := 1 to 3 do begin
+         MakeOne(RefDEMtype[j],MedianParams[i]);
+      end;
+   end;
+
+   Min := 0;
+   Max := 6;
+   BinSize := 0.25;
+   Corner := lpNEMap;
+   for j := 1 to 2 do begin
+      for i := 1 to 3 do begin
+         MakeOne(RefDEMtype[j],StdDevParams[i]);
+      end;
+   end;
+end;
+
+
 
 procedure FilterInSignedCriteria(DBonTable : integer);
-const
-   MeanParams : array[1..3] of shortstring = ('ELVD_MEAN','SLPD_MEAN','RUFD_MEAN');
-   MedianParams : array[1..3] of shortstring = ('ELVD_MED','SLPD_MED','RUFD_MED');
 var
    aFilter : ANSIstring;
    i : integer;
@@ -26,9 +103,6 @@ end;
 
 
 procedure FilterOutSignedCriteria(DBonTable : integer);
-const
-   MeanParams : array[1..3] of shortstring = ('ELVD_MEAN','SLPD_MEAN','RUFD_MEAN');
-   MedianParams : array[1..3] of shortstring = ('ELVD_MED','SLPD_MED','RUFD_MED');
 var
    aFilter : ANSIstring;
    i : integer;
@@ -354,7 +428,6 @@ var
             RefFilter,aFilter : shortstring;
             bmp : tMyBitmap;
 
-
                procedure OnePercentage(aFilter : shortstring);
                var
                   Total,i : integer;
@@ -373,8 +446,7 @@ var
                   end;
                end;
 
-
-         begin
+         begin {MakeGraphForFilter}
             {$If Defined(RecordDEMIX)} WriteLineToDebugFile('MakeGraphForFilter in, ' + Param + ' ' + Landtype + ' ' + DEMtype); {$EndIf}
             WMDEM.SetPanelText(1,Param + ' ' + Landtype + ' ' + DEMtype);
             if (What in [dgAllValues,dgAllScores,dgPercentBest]) then begin
@@ -560,11 +632,11 @@ var
                SaveBitmap(bmp,LegendfName);
                Bmp.free;
             end;
-         end;
+         end {MakeGraphForFilter};
 
 var
    J,k,ColsInBigGraph : integer;
-begin
+begin {DEMIXwineContestMeanMedianGraph}
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXwineContestMeanMedianGraph in, table=' + IntToStr(DBontable)); {$EndIf}
 
    if (CriteriaUsed = Nil) and (What in [dg7Params,dgNormalizedDiff,dgPick]) then begin
@@ -621,22 +693,15 @@ begin
    end;
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Graphsforwinecontest1Click graphs all made'); {$EndIf}
 
-   (*
-   //these assume the string list are freed in the calling routine; there will be a memory leak is they are NIL coming in and created here
-   DEMsPresent.Free;
-   LandTypesPresent.Free;
-   if (What in [dgPick,dg7Params,dgNormalizedDiff]) then TheParams.Free;
-   *)
 
    if (LegendFName <> '') then BigGraph.Add(LegendfName);
    fName := NextFileNumber(MDtempDir,'demix_big_graph_','.png');
-   if MakeBigBitmap(BigGraph,'',fName,ColsInBigGraph) then DisplayBitmap(fName,'');
-
+   MakeBigBitmap(BigGraph,'',fName,ColsInBigGraph);
    WMDEm.SetPanelText(1,'');
    GISdb[DBonTable].ClearGISFilter;
    GISdb[DBonTable].EmpSource.Enabled := true;
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Graphsforwinecontest1Click out'); {$EndIf}
-end;
+end {DEMIXwineContestMeanMedianGraph};
 
 
 procedure DEMIXTileSummary(DBonTable : integer);
@@ -660,7 +725,7 @@ begin
    {$If Defined(RecordDEMIXFull)} WriteLineToDebugFile('Criteria present=' + IntToStr(CriteriaPresent.Count)); {$EndIf}
 
    Report := tStringList.Create;
-   aline := 'REF_TYPE,AREA,DEMIX_TILE';
+   aline := 'REF_TYPE,AREA';  //,DEMIX_TILE';
    for j := 0 to pred(LandTypesPresent.Count) do aLine := aLine + ',' + LandTypesPresent.strings[j];
    Report.Add(Aline);
 
@@ -672,8 +737,9 @@ begin
       GISdb[DBonTable].EmpSource.Enabled := false;
       aLine := aline + ',' + IntToStr(GISdb[DBonTable].MyData.NumUniqueEntriesInDB('AREA'));
       GISdb[DBonTable].EmpSource.Enabled := false;
-      aLine := aline + ',' + IntToStr(GISdb[DBonTable].MyData.NumUniqueEntriesInDB('DEMIX_TILE'));
+      //aLine := aline + ',' + IntToStr(GISdb[DBonTable].MyData.NumUniqueEntriesInDB('DEMIX_TILE'));
       for k := 0 to pred(LandTypesPresent.Count) do begin
+         wmdem.SetPanelText(3,'DEM type=' + RefDEMType[j] + '  land type=' + LandTypesPresent[k]);
          GISdb[DBonTable].EmpSource.Enabled := false;
          GISdb[DBonTable].ApplyGISFilter('REF_TYPE=' + QuotedStr(RefDEMType[j]) + ' AND LAND_TYPE=' + QuotedStr(LandTypesPresent[k]));
          aLine := aline + ',' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB div CriteriaPresent.Count);
@@ -690,8 +756,9 @@ begin
    GISdb[DBonTable].ClearGISFilter;
    GISdb[DBonTable].EmpSource.Enabled := true;
    GISdb[DBonTable].ShowStatus;
+   wmdem.SetPanelText(3,'');
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXTileSummary out'); {$EndIf}
-end;
+end {DEMIXTileSummary};
 
 
 

@@ -10,7 +10,6 @@ unit DEMStat;
 {___________________________________}
 
 
-
 {$I nevadia_defines.inc}
 
 {$Define NoParallelLag}
@@ -21,8 +20,8 @@ unit DEMStat;
       //{$Define NoParallelFor}
       //{$Define RecordLag}
       //{$Define RecordPitsSpires}
-      {$Define RecordMapAlgebra}
-      {$Define RecordHistogramFromVAT}
+      //{$Define RecordMapAlgebra}
+      //{$Define RecordHistogramFromVAT}
       //{$Define RecordDiffMap}
       //{$Define RecordStdDef}
       //{$Define RecordElevationSlopePlot}
@@ -30,7 +29,9 @@ unit DEMStat;
       //{$Define RecordGlobalDEM}
       //{$Define RecordElevMoment}
       //{$Define RecordElevationSlopePlotAll}
-      {$Define RecordDEMCompare}
+      //{$Define RecordDEMCompare}
+      //{$IfDef RecordFullDEMCompare}
+
       //{$Define RecordStat}
       //{$Define RecordIceSat}
       //{$Define RecordGeoStat}
@@ -101,8 +102,8 @@ type
       procedure AspectDistributionByAlgorithm(WhichDEM : Integer; GridLimits : tGridLimits);
 
       procedure GridDiffernces(EntireDEM : boolean);
-      function MakeDifferenceMap(Map1,Map2,GridForResult : integer; ShowMap,ShowHistogram,ShowScatterPlot : boolean; TheAreaName : ShortString = '') : integer;
-      function MakeDifferenceMapOfBoxRegion(Map1,Map2,GridForResult : integer; GridLimits: tGridLimits; ShowMap,ShowHistogram,ShowScatterplot : boolean; TheAreaName : ShortString = '') : integer;
+      function MakeDifferenceMap(Map1,Map2,GridResultionToUse,GridToMergeShading : integer; ShowMap,ShowHistogram,ShowScatterPlot : boolean; TheAreaName : ShortString = '') : integer;
+      function MakeDifferenceMapOfBoxRegion(Map1,Map2,GridResultionToUse,GridToMergeShading : integer; GridLimits: tGridLimits; ShowMap,ShowHistogram,ShowScatterplot : boolean; TheAreaName : ShortString = '') : integer;
 
       procedure StatsFromTwoGrids(iDEM,JDEM : integer; var r,covar : float64; Incr : integer = 1);
       procedure ElevationSlopePlot(WhichDEMs : tDEMbooleanArray; DesiredBinSize : integer = 1);
@@ -260,6 +261,7 @@ var
 
 
 procedure HistogramsFromVATDEM(DEMwithVAT,ElevMap,SlopeMap,RuffMap,AspMap : integer; var Graph1,Graph2,Graph3,Graph4 : tThisBaseGraph);
+//creates histograms of elevation, slope, roughness, and aspect for each category in the VAT grid
 const
    MaxCodes = 100;
 Type
@@ -303,8 +305,6 @@ var
                      end;
                   end;
                   Result := CreateMultipleHistogram(MDDef.CountHistograms,ElevFiles,LegendFiles,BeforeSpecifiedCharacterANSI(aTitle,' '),aTitle,100,DEMglb[DEM].DEMheader.MinElev,Max,BinSize,Colors);
-                  //ElevFiles.Free;
-                  //LegendFiles.Free;
                end;
             end;
 
@@ -313,8 +313,6 @@ var
       for Col := 0 to pred(DEMGlb[DEMwithVAT].DEMheader.NumCol) do begin
          for Row := 0 to pred(DEMGlb[DEMwithVAT].DEMheader.NumRow) do begin
             if DEMGlb[DEMwithVAT].GetElevMetersOnGrid(Col,Row,zf) then begin
-                //ThisCode := CodeLUT[round(zf)];
-
               ThisCode := round(zf);
                for I := 1 to succ(NumCodes) do begin
                   if (i = succ(NumCodes)) then ThisCode := 0;
@@ -363,6 +361,7 @@ var
       if MDDef.DoRuffHist then Graph3 := MakeOneHistogram(RuffMap,MDDef.HistRuffBinSize,Names,RuffDistCount,RuffDist,'Roughness (%)',100);
       if MDDef.DoAspectHist then Graph4 := MakeOneHistogram(AspMap,MDDef.HistAspectBinSize,Names,AspDistCount,AspDist,'Aspect (' + DegSym + ')',360);
    end;
+
 
 const
    PtRequiredInCat = 2500;

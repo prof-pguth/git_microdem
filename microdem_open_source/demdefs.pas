@@ -841,7 +841,7 @@ type
       UTMZone  : Int16;     {6 degree UTM Zone number, USGS/MGRS standard: 1 = W177, 60 = E177}
       DMAMapDefinition : tDMAMapRawDefinition;
       DigitizeDatum : tDigitizeDatum; {sets datum for DEM, and it is transformed to the desired local datum for use}
-      LatHemi    : AnsiChar;       {N or S}
+      LatHemi    : AnsiChar;  {N or S}
       NumCol,NumRow  : int32;
       RasterPixelIsGeoKey1025 : byte;
       WKTString : ANSIString;
@@ -953,12 +953,9 @@ type   {for ESRI shapefiles}
 type
    tLotsOfPoints = packed array[1..sfMaxPoints] of sfPointsWithHeader;
    tLotsOfPoints3D = packed array[1..sfMaxPoints] of sfPointsZWithHeader;
-
    tReprojectType = (rpjEqAreaConicToLatLong,rpjLatLongToUTM,rpjDatumShift,rpjUTMtoLatLong,rpjSpecifyShift,rpjLambConfConicToLatLong,rpjLambertAzEqAreaToLatLong,rpjArbitraryLatLong,rpjUseMDprjFile);
    tFieldsToAdd = (afBoundingBox,afLineMerge,afXYZ,afLatLong);
    tPartSize = packed array[1..sfMaxParts] of int32;
-
-   //tTauDEM = (tdPitRemove,tdD8Flow,tdDinfFlow,tdD8ContArea,tdDInfContArea,tdGridNet,tdPeukerDouglas,tdStreamReachAndWatershed);
    tImageType = (itSat,itDRG);
 
 const
@@ -1944,6 +1941,11 @@ type
       DEMIX_default_tile   : shortstring;
 
       DEMIX_xsize,DEMIX_ysize : integer;
+
+      MakeCOP_ALOS_diffMaps,
+      MakeCOP_ALOS_Cat_Maps,
+      MakeCOP_ALOS_Best_Map,
+
       DEMIXCompositeImage,
       DEMIX_DoCHM,
       DEMIX_DoAirOrDirt,
@@ -1956,6 +1958,8 @@ type
       DEMIXSimpleTolerance,
       DEMIXSlopeTolerance,
       DEMIXRuffTolerance : float32;
+
+
 
       HistElevBinSize,
       HistSlopeBinSize,
@@ -2934,7 +2938,7 @@ var
 
    LastWorldFileOverlay,
    GazOptFName,
-   LandCoverFName,
+   LandCoverSeriesFName,
    RangeCircleSizesfName,
    GT_Datum_fName,
    GT_Ellipse_fName,

@@ -202,7 +202,7 @@ begin
       fName := Las_fNames.Strings[k];
        {$IfDef RecordListFilesProcessed} WriteLineToDebugFile('file=' + fName); {$EndIf}
        lf := tLAS_data.Create(fName);
-       if lf.LASFileOnMap(BaseMap.MapDraw) then begin
+       if lf.IsLASFileOnMap(BaseMap.MapDraw) then begin
           NoFilter := NoFilterWanted;
           lf.PrepDataRead;
           for i := 0 to lf.ReadsRequired do begin
@@ -312,7 +312,7 @@ begin
 
       {$IfDef RecordListFilesProcessed} WriteLineToDebugFile('file=' + fName); {$EndIf}
        lf := tLAS_data.Create(fName);
-       if lf.LASFileOnMap(BaseMap.MapDraw) then begin
+       if lf.IsLASFileOnMap(BaseMap.MapDraw) then begin
           if (NewLAS = Nil) then begin
              {$IfDef RecordMergeLASfiles} WriteLineToDebugFile('Create new LAS file'); {$EndIf}
              CreateNewLasFromOldHeader(NewName,NewLas,lf);
@@ -1020,20 +1020,8 @@ var
             AddPresence(HasScanAngle);
             AddPresence(HasReturnNumbers);
             AddPresence(HasNIR);
-
-             (*
-             if HasClassification then TileStr := TileStr + ',Y'  else TileStr := TileStr + ',N';
-             if HasRGB then TileStr := TileStr + ',Y'             else TileStr := TileStr + ',N';
-             if HasIntensity then TileStr := TileStr + ',Y'       else TileStr := TileStr + ',N';
-             if HasTime then TileStr := TileStr + ',Y'            else TileStr := TileStr + ',N';
-             if HasPointID then TileStr := TileStr + ',Y'         else TileStr := TileStr + ',N';
-             if HasUserData then TileStr := TileStr + ',Y'        else TileStr := TileStr + ',N';
-             if HasScanAngle then TileStr := TileStr + ',Y'       else TileStr := TileStr + ',N';
-             if HasReturnNumbers then TileStr := TileStr + ',Y'   else TileStr := TileStr + ',N';
-             if HasNIR then TileStr := TileStr + ',Y'             else TileStr := TileStr + ',N';
-             *)
-             TileStr := TileStr + ',' + IntToStr(LasData.LidarPointType);
-             Tiles.Add(TileStr);
+            TileStr := TileStr + ',' + IntToStr(LasData.LidarPointType);
+            Tiles.Add(TileStr);
          end;
 
 
@@ -1501,7 +1489,7 @@ begin
       fName := Las_fNames.Strings[k];
       lf := tLAS_data.Create(fName);
       if lf.HasProjection then begin
-         if (BaseMapDraw <> Nil) and (not lf.LASFileOnMap(BaseMapDraw)) then begin
+         if (BaseMapDraw <> Nil) and (not lf.IsLASFileOnMap(BaseMapDraw)) then begin
             {$IfDef RecordListFilesProcessed} WriteLineToDebugFile('Not on map: ' + fName + ' LAS geo limits ' + sfBoundBoxToString(lf.LAS_LatLong_Box,6) + '  map geo limits=' + sfBoundBoxToString(BaseMapDraw.MapCorners.BoundBoxGeo,6)); {$EndIf}
             Las_fNames.Delete(k);
          end
@@ -1560,7 +1548,7 @@ begin
    for k := 0 to pred(Las_fNames.Count) do begin
       fName := Las_fNames.Strings[k];
        lf := tLAS_data.Create(fName);
-       if lf.LASFileOnMap(BaseMapDraw) then begin
+       if lf.IsLASFileOnMap(BaseMapDraw) then begin
           if (lf.LasHeader.MaxZ > MaxZ) then MaxZ := lf.LasHeader.MaxZ;
           if (lf.LasHeader.MinZ < MinZ) then MinZ := lf.LasHeader.MinZ;
        end;

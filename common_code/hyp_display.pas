@@ -12,6 +12,7 @@ unit hyp_display;
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    //{$Define RecordColorImage}
+   //{$Define RecordHyperion}
 {$EndIf}
 
 
@@ -73,6 +74,7 @@ type
     Label9: TLabel;
     BitBt12: TBitBtn;
     BitBtn9: TBitBtn;
+    RadioGroup2: TRadioGroup;
     procedure BitBtn2Click(Sender: TObject);
     procedure BitBtn1Click(Sender: TObject);
     procedure RadioGroup1Click(Sender: TObject);
@@ -108,8 +110,8 @@ type
     procedure ComboBox2Change(Sender: TObject);
     procedure ComboBox3Change(Sender: TObject);
     procedure ComboBox4Change(Sender: TObject);
-    procedure BitBt12Click(Sender: TObject);
     procedure BitBtn9Click(Sender: TObject);
+    procedure RadioGroup2Click(Sender: TObject);
   private
     { Private declarations }
     procedure ColorImage;
@@ -119,6 +121,7 @@ type
     procedure NewBands(ShowColor : boolean);
     procedure AssociateBandDEMs(WhatFor : shortstring);
     procedure MakeScatterPlotsWithClasses;
+    procedure LabelBands;
   public
     { Public declarations }
      HypersectralImage : tHypersectralImage;
@@ -126,7 +129,7 @@ type
      RedBandNum,GreenBandNum,BlueBandNum,GrayBandNum,
      RedBandDEM,GreenBandDEM,BlueBandDEM,GrayBandDEM,
      LastX,LastY : integer;
-     ThreeColor,
+     ThreeColor,ChangeAllowed,
      HyperionImage : boolean;
      SpecLib  : tThisBaseGraph;
      BaseMap : tMapForm;
@@ -154,40 +157,56 @@ var
    HyperDoing : tHyperDoing;
 
 
+procedure THyperspectralForm.LabelBands;
+begin
+   ChangeAllowed := false;
+   ComboBox1.Text := DEMGlb[MultiGridArray[MultiGridUsed].Grids[RedBandNum]].AreaName;
+   ComboBox2.Text := DEMGlb[MultiGridArray[MultiGridUsed].Grids[GreenBandNum]].AreaName;
+   ComboBox3.Text := DEMGlb[MultiGridArray[MultiGridUsed].Grids[BlueBandNum]].AreaName;
+   ComboBox4.Text := DEMGlb[MultiGridArray[MultiGridUsed].Grids[GrayBandNum]].AreaName;
+   ChangeAllowed := true;
+end;
+
+
 procedure THyperspectralForm.SetForHyperion;
 var
    i : integer;
    TStr : shortstring;
 begin
-    {$IfDef RecordColorImage} WriteLineToDebugFile('THyperspectralForm.SetForHyperion in'); {$EndIf}
+    {$If Defined(RecordColorImage) or Defined(RecordHyperion)} WriteLineToDebugFile('THyperspectralForm.SetForHyperion in, current maps=' + IntToStr(NumOpenMaps)); {$EndIf}
     Panel2.Visible := true;
     Panel2.Left := 0;
     PageControl1.Left := 0;
     ScrollBox1.Visible := false;
     Panel1.Visible := false;
     ClientWidth := Panel2.Width;
-    BitBtn10Click(Nil);
-    RedBandNum := 48;
+    //BitBtn10Click(Nil);
+    RedBandNum := 48;  //NIR
     GreenBandNum := 32;
     BlueBandNum := 18;
-    GrayBandNum := RedBandNum;  //NIR
+    GrayBandNum := RedBandNum;
 
     //if (MultiGridArray[MultiGridUsed].SatImageIndex = 0) then begin
-       CreateDEMSelectionMap(MultiGridArray[MultiGridUsed].Grids[GrayBandNum],false,false,mtElevGray);
+       CreateDEMSelectionMap(MultiGridArray[MultiGridUsed].Grids[GrayBandNum],true,false,mtElevGray);
+      {$If Defined(RecordHyperion)} WriteLineToDebugFile('Created selection map, current maps=' + IntToStr(NumOpenMaps)); {$EndIf}
+
        BaseMap := DEMGlb[MultiGridArray[MultiGridUsed].Grids[GrayBandNum]].SelectionMap;
        BaseMap.MapDraw.MultiGridOnMap := MultiGridUsed;
+       BaseMap.ClosingMapNotAllowed := true;
        DEMGlb[MultiGridArray[MultiGridUsed].Grids[GrayBandNum]].SelectionMap.MapDraw.MultiGridOnMap := MultiGridUsed;
        DEMGlb[MultiGridArray[MultiGridUsed].Grids[GrayBandNum]].SelectionMap.CheckProperTix;
        MultiGridArray[MultiGridUsed].MapOwner := DEMGlb[MultiGridArray[MultiGridUsed].Grids[GrayBandNum]].SelectionMap;
        BaseMap.SetMultibandToShowOnMap(GrayBandNum);
+      {$If Defined(RecordHyperion)} WriteLineToDebugFile('Multiband shown, current maps=' + IntToStr(NumOpenMaps)); {$EndIf}
 
        Caption := MultiGridArray[MultiGridUsed].MG_Name;
-       ListBox2.Sorted := false;
+       //ListBox2.Sorted := false;
          for i := 1 to MaxGridsInMG do begin
             if ValidDEM(MultiGridArray[MultiGridUsed].Grids[i]) then begin
-               if MultiGridArray[MultiGridUsed].SatImageIndex = 0 then TStr := DEMGlb[MultiGridArray[MultiGridUsed].Grids[i]].AreaName
-               else TStr := SatImage[MultiGridArray[MultiGridUsed].SatImageIndex].BandLongName[i];
-               ListBox2.Items.Add(TStr);
+               //if MultiGridArray[MultiGridUsed].SatImageIndex = 0 then TStr := DEMGlb[MultiGridArray[MultiGridUsed].Grids[i]].AreaName
+               //else TStr := SatImage[MultiGridArray[MultiGridUsed].SatImageIndex].BandLongName[i];
+               TStr := DEMGlb[MultiGridArray[MultiGridUsed].Grids[i]].AreaName;
+               //ListBox2.Items.Add(TStr);
                ComboBox1.Items.Add(TStr);
                ComboBox2.Items.Add(TStr);
                ComboBox3.Items.Add(TStr);
@@ -195,11 +214,15 @@ begin
             end;
          end;
 
-         if MultiGridArray[MultiGridUsed].SatImageIndex = 0 then begin
+         LabelBands;
+
+         if (MultiGridArray[MultiGridUsed].SatImageIndex = 0) then begin
+(*
             ComboBox1.Visible := false;
             ComboBox2.Visible := false;
             ComboBox3.Visible := false;
             ComboBox4.Visible := false;
+*)
          end
          else begin
 (*
@@ -255,7 +278,7 @@ end;
 
 procedure THyperspectralForm.AssociateBandDEMs(WhatFor: shortstring);
 begin
-   BaseMap.MapDraw.BaseTitle :=  WhatFor + ' R=' + IntToStr(RedBandNum) + ' G=' + IntToStr(GreenBandNum)  + ' B=' + IntToStr(BlueBandNum);
+   BaseMap.MapDraw.BaseTitle := MultiGridArray[MultiGridUsed].MG_short_name + ' R=' + IntToStr(RedBandNum) + ' G=' + IntToStr(GreenBandNum)  + ' B=' + IntToStr(BlueBandNum);
    ThreeColor := true;
    RedBandDEM := MultiGridArray[MultiGridUsed].Grids[RedBandNum];
    GreenBandDEM := MultiGridArray[MultiGridUsed].Grids[GreenBandNum];
@@ -264,26 +287,13 @@ begin
 end;
 
 
-procedure THyperspectralForm.BitBt12Click(Sender: TObject);
-begin
-   if MultiGridArray[MultiGridUsed].SatImageIndex = 0 then begin
-      ReadDefault('Red band',RedBandNum);
-      ReadDefault('Green band',GreenBandNum);
-      ReadDefault('Blue band',BlueBandNum);
-      if (Sender <> Nil) then begin
-         AssociateBandDEMs('User bands');
-         {$IfDef RecordColorImage} WriteLineToDebugFile('THyperspectralForm.BitBtn12Click out, title=' + BaseMap.MapDraw.BaseTitle); {$EndIf}
-      end;
-   end;
-end;
-
 procedure THyperspectralForm.BitBtn10Click(Sender: TObject);
 begin
-   if (MultiGridArray[MultiGridUsed].SatImageIndex = 0) then begin
+   //if (MultiGridArray[MultiGridUsed].SatImageIndex = 0) then begin
       RedBandNum := 48;
       GreenBandNum := 32;
       BlueBandNum := 18;
-   end;
+   //end;
    if (Sender <> Nil) then begin
       AssociateBandDEMs('False color');
       {$IfDef RecordColorImage} WriteLineToDebugFile('THyperspectralForm.BitBtn10Click out, title=' + BaseMap.MapDraw.BaseTitle); {$EndIf}
@@ -292,11 +302,11 @@ end;
 
 procedure THyperspectralForm.BitBtn11Click(Sender: TObject);
 begin
-   if MultiGridArray[MultiGridUsed].SatImageIndex = 0  then begin
+   //if MultiGridArray[MultiGridUsed].SatImageIndex = 0  then begin
       RedBandNum := 32;
       GreenBandNum := 18;
       BlueBandNum := 14;
-   end;
+   //end;
    if (Sender <> Nil) then begin
       AssociateBandDEMs('True color');
      {$IfDef RecordColorImage} WriteLineToDebugFile('THyperspectralForm.BitBtn11Click out, title=' + BaseMap.MapDraw.BaseTitle); {$EndIf}
@@ -305,26 +315,19 @@ end;
 
 procedure THyperspectralForm.BitBtn13Click(Sender: TObject);
 begin
-   if ThreeColor then begin
-      SingleDEMHistogram(MultiGridArray[MultiGridUsed].Grids[RedBandNum],true);
-      SingleDEMHistogram(MultiGridArray[MultiGridUsed].Grids[BlueBandNum],true);
-      SingleDEMHistogram(MultiGridArray[MultiGridUsed].Grids[GreenBandNum],true);
-   end
-   else SingleDEMHistogram(MultiGridArray[MultiGridUsed].Grids[GrayBandNum],true);
+   SingleDEMHistogram(MultiGridArray[MultiGridUsed].Grids[RedBandNum],true);
+   SingleDEMHistogram(MultiGridArray[MultiGridUsed].Grids[BlueBandNum],true);
+   SingleDEMHistogram(MultiGridArray[MultiGridUsed].Grids[GreenBandNum],true);
+   SingleDEMHistogram(MultiGridArray[MultiGridUsed].Grids[GrayBandNum],true);
 end;
 
 procedure THyperspectralForm.BitBtn14Click(Sender: TObject);
 var
    Band1,Band2 : integer;
 begin
-   if ThreeColor then begin
-      GridScatterGram(true,MultiGridArray[MultiGridUsed].Grids[RedBandNum],MultiGridArray[MultiGridUsed].Grids[GreenBandNum]);
-      GridScatterGram(true,MultiGridArray[MultiGridUsed].Grids[RedBandNum],MultiGridArray[MultiGridUsed].Grids[BlueBandNum]);
-      GridScatterGram(true,MultiGridArray[MultiGridUsed].Grids[GreenBandNum],MultiGridArray[MultiGridUsed].Grids[BlueBandNum]);
-   end
-   else begin
-      MessageToContinue('Select color display first');
-   end;
+   GridScatterGram(true,MultiGridArray[MultiGridUsed].Grids[RedBandNum],MultiGridArray[MultiGridUsed].Grids[GreenBandNum]);
+   GridScatterGram(true,MultiGridArray[MultiGridUsed].Grids[RedBandNum],MultiGridArray[MultiGridUsed].Grids[BlueBandNum]);
+   GridScatterGram(true,MultiGridArray[MultiGridUsed].Grids[GreenBandNum],MultiGridArray[MultiGridUsed].Grids[BlueBandNum]);
 end;
 
 procedure THyperspectralForm.BitBtn15Click(Sender: TObject);
@@ -346,6 +349,7 @@ begin
    SpectralLibraryGraph('');
 end;
 
+
 procedure THyperspectralForm.BitBtn2Click(Sender: TObject);
 begin
    if (RadioGroup1.ItemIndex = 0) then HypersectralImage.GrayBand := HypersectralImage.RedBand
@@ -364,31 +368,36 @@ procedure THyperspectralForm.MakeScatterPlotsWithClasses;
             rfile : file;
             v : array[1..3] of float32;
          begin
-            Result := TThisbasegraph.Create(Application);
-            Result.OpenXYColorFile(rfile);
-
-            for x := 0 to pred(DEMGlb[xaxis].DEMheader.NumCol) do begin
-               for y := 0 to pred(DEMGlb[xaxis].DEMheader.NumRow) do begin
-                  if DEMGlb[xaxis].GetElevMetersOnGrid(x,y,v[1]) and DEMGlb[yaxis].GetElevMetersOnGrid(x,y,v[2]) and DEMGlb[Colors].GetElevMetersOnGrid(x,y,zc) then begin
-                     v[3] := WingraphColors[round(zc) mod 15];
-                     BlockWrite(Rfile,v,1);
+            if ValidDEM(xaxis) and ValidDEM(yaxis) and ValidDEM(Colors) then begin
+               ShowHourglassCursor;
+               Result := TThisbasegraph.Create(Application);
+               Result.OpenXYColorFile(rfile);
+               for x := 0 to pred(DEMGlb[xaxis].DEMheader.NumCol) do begin
+                  for y := 0 to pred(DEMGlb[xaxis].DEMheader.NumRow) do begin
+                     if DEMGlb[xaxis].GetElevMetersOnGrid(x,y,v[1]) and DEMGlb[yaxis].GetElevMetersOnGrid(x,y,v[2]) and DEMGlb[Colors].GetElevMetersOnGrid(x,y,zc) then begin
+                        v[3] := WingraphColors[round(zc) mod 15];
+                        BlockWrite(Rfile,v,1);
+                     end;
                   end;
-                end;
+               end;
+               Result.ClosePointDataFile(rfile);
+               Result.GraphDraw.HorizLabel := DEMGlb[xaxis].AreaName;
+               Result.GraphDraw.VertLabel := DEMGlb[yaxis].AreaName;
+               Result.AutoScaleAndRedrawDiagram(true,true,false,false);
             end;
-            Result.ClosePointDataFile(rfile);
-            Result.AutoScaleAndRedrawDiagram(true,true,false,false);
          end;
 
 begin
    MakeGraph(RedBandDEM,BlueBandDEM,ClassDEM);
    MakeGraph(RedBandDEM,GreenBandDEM,ClassDEM);
    MakeGraph(GreenBandDEM,BlueBandDEM,ClassDEM);
+   ShowDefaultCursor;
 end;
 
 
 procedure THyperspectralForm.BitBtn3Click(Sender: TObject);
 begin
-   ClassDEM := UnsupervisedClassification(MultiGridUsed, BaseMap);
+   ClassDEM := UnsupervisedClassification(MultiGridUsed,BaseMap);
    MakeScatterPlotsWithClasses;
    BitBtn9.Enabled := true;
 end;
@@ -401,10 +410,10 @@ end;
 procedure THyperspectralForm.BitBtn5Click(Sender: TObject);
 begin
    with HypersectralImage do begin
-        RedBand := TrackBar1.Position;
-        BlueBand := TrackBar3.Position;
-        GreenBand := TrackBar2.Position;
-        HypersectralImage.ScatterPlot(RedBand,GreenBand,BlueBand);
+      RedBand := TrackBar1.Position;
+      BlueBand := TrackBar3.Position;
+      GreenBand := TrackBar2.Position;
+      HypersectralImage.ScatterPlot(RedBand,GreenBand,BlueBand);
    end;
 end;
 
@@ -538,18 +547,18 @@ end;
 
 procedure THyperspectralForm.ComboBox1Change(Sender: TObject);
 begin
-   NewBands(true);
+   if ChangeAllowed then NewBands(true);
 end;
 
 
 procedure THyperspectralForm.ComboBox2Change(Sender: TObject);
 begin
-   NewBands(true);
+   if ChangeAllowed then NewBands(true);
 end;
 
 procedure THyperspectralForm.ComboBox3Change(Sender: TObject);
 begin
-   NewBands(true);
+   if ChangeAllowed then NewBands(true);
 end;
 
 procedure THyperspectralForm.ComboBox4Change(Sender: TObject);
@@ -561,14 +570,33 @@ end;
 procedure THyperspectralForm.NewBands(ShowColor : boolean);
 var
    i : integer;
+   fName : shortstring;
 begin
+
+
+(*
    for i := 1 to SatImage[MultiGridArray[MultiGridUsed].SatImageIndex].NumBands do begin
       if ComboBox1.Text = SatImage[MultiGridArray[MultiGridUsed].SatImageIndex].BandLongName[i] then RedBandNum := i;
       if ComboBox2.Text = SatImage[MultiGridArray[MultiGridUsed].SatImageIndex].BandLongName[i] then GreenBandNum := i;
       if ComboBox3.Text = SatImage[MultiGridArray[MultiGridUsed].SatImageIndex].BandLongName[i] then BlueBandNum := i;
       if ComboBox4.Text = SatImage[MultiGridArray[MultiGridUsed].SatImageIndex].BandLongName[i] then GrayBandNum := i;
    end;
-   AssociateBandDEMs('User picks');
+*)
+
+   for i := 1 to MaxGridsInMG do begin
+      if ValidDEM(MultiGridArray[MultiGridUsed].Grids[i]) then begin
+         //if MultiGridArray[MultiGridUsed].SatImageIndex = 0 then TStr := DEMGlb[MultiGridArray[MultiGridUsed].Grids[i]].AreaName
+         //else TStr := SatImage[MultiGridArray[MultiGridUsed].SatImageIndex].BandLongName[i];
+         fName := DEMGlb[MultiGridArray[MultiGridUsed].Grids[i]].AreaName;
+         if ComboBox1.Text = fName then RedBandNum := i;
+         if ComboBox2.Text = fName then GreenBandNum := i;
+         if ComboBox3.Text = fName then BlueBandNum := i;
+         if ComboBox4.Text = fName then GrayBandNum := i;
+      end;
+   end;
+
+   if ShowColor and (RadioGroup2.ItemIndex  = 3) then AssociateBandDEMs('User picks')
+   else BaseMap.SetMultibandToShowOnMap(GrayBandNum);
 end;
 
 
@@ -585,7 +613,9 @@ end;
 procedure THyperspectralForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
    Action := caFree;
+   BaseMap.ClosingMapNotAllowed := false;
    if (SpecLib <> Nil) then SpecLib.Destroy;
+   MultiGridArray[MultiGridUsed].Destroy;
 end;
 
 
@@ -684,6 +714,16 @@ begin
    Label2.Enabled := RadioGroup1.ItemIndex = 1;
    Label3.Enabled := RadioGroup1.ItemIndex = 1;
    ColorImage;
+end;
+
+procedure THyperspectralForm.RadioGroup2Click(Sender: TObject);
+begin
+   case RadioGroup2.ItemIndex of
+      0 : BaseMap.SetMultibandToShowOnMap(GrayBandNum);
+      1 : BitBtn11Click(Sender);
+      2 : BitBtn10Click(Sender);
+      3 : AssociateBandDEMs('Pick bands');
+   end;
 end;
 
 procedure THyperspectralForm.TrackBar1Change(Sender: TObject);

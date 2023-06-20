@@ -2,8 +2,8 @@ object HyperspectralForm: THyperspectralForm
   Left = 0
   Top = 0
   Caption = 'HyperspectralForm'
-  ClientHeight = 441
-  ClientWidth = 884
+  ClientHeight = 505
+  ClientWidth = 872
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,13 +19,13 @@ object HyperspectralForm: THyperspectralForm
     Left = 265
     Top = 0
     Width = 285
-    Height = 441
+    Height = 505
     Align = alLeft
     TabOrder = 0
-    ExplicitHeight = 459
+    ExplicitHeight = 506
     object Label1: TLabel
       Left = 40
-      Top = 40
+      Top = 45
       Width = 31
       Height = 13
       Caption = 'Label1'
@@ -85,9 +85,9 @@ object HyperspectralForm: THyperspectralForm
       OnKeyUp = TrackBar3KeyUp
     end
     object RadioGroup1: TRadioGroup
-      Left = 77
+      Left = 64
       Top = 8
-      Width = 196
+      Width = 215
       Height = 33
       Caption = 'Display'
       Columns = 2
@@ -179,10 +179,10 @@ object HyperspectralForm: THyperspectralForm
     Left = 0
     Top = 0
     Width = 265
-    Height = 441
+    Height = 505
     Align = alLeft
     TabOrder = 1
-    ExplicitHeight = 459
+    ExplicitHeight = 506
     object Image1: TImage
       Left = 0
       Top = -2
@@ -258,12 +258,13 @@ object HyperspectralForm: THyperspectralForm
           Caption = 'Grayscale'
         end
         object ListBox2: TListBox
-          Left = 5
+          Left = 200
           Top = 300
-          Width = 260
+          Width = 81
           Height = 84
           ItemHeight = 13
           TabOrder = 0
+          Visible = False
           OnClick = ListBox2Click
         end
         object BitBtn11: TBitBtn
@@ -273,6 +274,7 @@ object HyperspectralForm: THyperspectralForm
           Height = 25
           Caption = 'True color'
           TabOrder = 1
+          Visible = False
           OnClick = BitBtn11Click
         end
         object BitBtn10: TBitBtn
@@ -282,6 +284,7 @@ object HyperspectralForm: THyperspectralForm
           Height = 25
           Caption = 'False color'
           TabOrder = 2
+          Visible = False
           OnClick = BitBtn10Click
         end
         object CheckBox2: TCheckBox
@@ -417,7 +420,7 @@ object HyperspectralForm: THyperspectralForm
           Height = 25
           Caption = 'Pick bands'
           TabOrder = 16
-          OnClick = BitBt12Click
+          Visible = False
         end
         object BitBtn9: TBitBtn
           Left = 138
@@ -428,6 +431,20 @@ object HyperspectralForm: THyperspectralForm
           Enabled = False
           TabOrder = 17
           OnClick = BitBtn9Click
+        end
+        object RadioGroup2: TRadioGroup
+          Left = 8
+          Top = 304
+          Width = 153
+          Height = 99
+          Caption = 'Display mode'
+          Items.Strings = (
+            'Grayscale single band'
+            'RGB true color'
+            'RGB false color'
+            'RGB pick bands')
+          TabOrder = 18
+          OnClick = RadioGroup2Click
         end
       end
       object TabSheet2: TTabSheet

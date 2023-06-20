@@ -16,9 +16,9 @@ unit demix_cop_alos;
    {$Define RecordDEMIXsave}
    {$Define RecordCreateHalfSec}
    {$Define StartCOPALOSmaps}
-   //{$Define RecordDEMIXMovies}
    {$Define Differencemaps}
    {$Define RecordDEMIXVDatum}
+   //{$Define RecordDEMIXMovies}
    //{$Define RecordFullDEMIX}
    //{$Define ShowDEMIXWhatsOpen}
 {$EndIf}
@@ -40,7 +40,7 @@ const
    procedure PixelByPixelCopAlos;
    procedure COP_ALOS_compare(What : integer);
    procedure HighLowCopAlosGeomorphometry(fName : PathStr = '');
-   procedure OpenDEMIXRidges(fName : PathStr = '');
+   //procedure OpenDEMIXRidges(fName : PathStr = '');
    procedure CreateDifferenceMaps(DEMIXhalfSecDir : PathStr = '');
 
    procedure OpenHalfSecCopALOS(OpenDir : boolean; InDir : PathStr = '');
@@ -125,7 +125,7 @@ begin
    MDDef.ShowRoamOnAllMaps := false;
    MDDef.DefaultGraphBackgroundColor := RGBtrip(233,233,233);
 
-   if DEMIXhalfSecDir = '' then GetDOSPath('Test files',DEMIXhalfSecDir);
+   if (DEMIXhalfSecDir = '') then GetDOSPath('Test files',DEMIXhalfSecDir);
 
    Stopwatch := TStopwatch.StartNew;
 
@@ -150,9 +150,6 @@ begin
 
    for i := 1 to 3 do MapList[i] := tStringList.Create;
 
-
-
-
    MDDef.GridLegendLocation.DrawItem := true;
    for I := 1 to 6 do begin
       RuffTestDEM[i] := CreateSlopeRoughnessSlopeStandardDeviationMap(TestDEM[i],3,SlopeTestDEM[i]);
@@ -162,9 +159,9 @@ begin
    BigImagewithallmaps(3,ImageDir + ThisArea + '_cop_or_alos_better.png');
    for I := 1 to 6 do begin
       if TestSeries[i] = 'ALOS' then RefElev := RefDTMarea else RefElev := RefDTMpoint;
-      ElevDiff[i] := MakeDifferenceMap(RefElev,TestDEM[i],RefElev,true,false,false);
+      ElevDiff[i] := MakeDifferenceMap(RefElev,TestDEM[i],RefElev,RefElev,true,false,false);
       DEMGlb[ElevDiff[i]].AreaName := 'Elevation_difference,_' + TestSeries[i] + '_-_' + 'Reference_DTM';
-      DEMGlb[ElevDiff[i]].SelectionMap.MergeAnotherDEMreflectance(RefElev);
+      //DEMGlb[ElevDiff[i]].SelectionMap.MergeAnotherDEMreflectance(RefElev);
    end;
    BigImagewithallmaps(3,ImageDir + ThisArea + '_Elevation_compare_reference.png');
 
@@ -174,9 +171,9 @@ begin
    for I := 1 to 6 do begin
       if TestSeries[i] = 'ALOS' then RefElev := RefDTMarea else RefElev := RefDTMpoint;
       if TestSeries[i] = 'ALOS' then Ref := SlopeRefDTMarea else Ref := SlopeRefDTMpoint;
-      SlopeDiff[i] := MakeDifferenceMap(Ref,SlopeTestDEM[i],Ref,true,false,false);
+      SlopeDiff[i] := MakeDifferenceMap(Ref,SlopeTestDEM[i],Ref,Ref,true,false,false);
       DEMGlb[SlopeDiff[i]].AreaName := 'Slope_difference,_' + TestSeries[i] + '_-_' + 'Reference_DTM';
-      DEMGlb[SlopeDiff[i]].SelectionMap.MergeAnotherDEMreflectance(RefElev);
+      //DEMGlb[SlopeDiff[i]].SelectionMap.MergeAnotherDEMreflectance(RefElev);
    end;
    BigImagewithallmaps(3,ImageDir + ThisArea + '_Slope_compare_reference.png');
 
@@ -185,9 +182,9 @@ begin
    for I := 1 to 6 do begin
       if TestSeries[i] = 'ALOS' then RefElev := RefDTMarea else RefElev := RefDTMpoint;
       if TestSeries[i] = 'ALOS' then Ref := RuffRefDTMarea else Ref := RuffRefDTMpoint;
-      RuffDiff[i] := MakeDifferenceMap(Ref,RuffTestDEM[i],Ref,true,false,false);
+      RuffDiff[i] := MakeDifferenceMap(Ref,RuffTestDEM[i],Ref,Ref,true,false,false);
       DEMGlb[RuffDiff[i]].AreaName := 'Roughness_difference,_' + TestSeries[i] + '_-_' + 'Reference_DTM';
-      DEMGlb[RuffDiff[i]].SelectionMap.MergeAnotherDEMreflectance(RefElev);
+      //DEMGlb[RuffDiff[i]].SelectionMap.MergeAnotherDEMreflectance(RefElev);
    end;
    BigImagewithallmaps(3,ImageDir + ThisArea + '_Roughness_compare_reference.png');
 
@@ -201,8 +198,8 @@ end;
 procedure OpenHalfSecCopALOS(OpenDir : boolean; InDir : PathStr = '');
 //all tests used external SSD hard drive
 //   16.7633 sec on Dell Inspiron  Intel64 Family 6 Model 165 Stepping 5  CPU Speed: 2904 MHz
-//   17.7185 sec on the Surface Laptop  Intel64 Family 6 Model 140 Stepping 1  CPU Speed: 3302 MHz
-//   48.1982 sec on  Dell T5610 Precision workstation Intel64 Family 6 Model 62 Stepping 4   CPU Speed: 2494 MHz
+//   17.7185 sec on Surface Laptop  Intel64 Family 6 Model 140 Stepping 1  CPU Speed: 3302 MHz
+//   48.1982 sec on Dell T5610 Precision workstation Intel64 Family 6 Model 62 Stepping 4   CPU Speed: 2494 MHz
 //   60.1726 sec on HP laptop    AMD64 Family 23 Model 24 Stepping 1    CPU Speed: 2296 MHz
 var
    DEM4 : integer;
@@ -241,7 +238,6 @@ begin
    {$If Defined(StartCOPALOSmaps)} if OpenDir then WriteLineToDebugFile(RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' OpenHalfSecCopALOS'); {$EndIf}
    RestoreBackupDefaults;
    ResetGraphVariables;
-   //DefGraphLLText := '';
 end;
 
 
@@ -253,17 +249,16 @@ begin
    {$If Defined(StartCOPALOSmaps)} WriteLineToDebugFile('Slope/roughness maps opened'); {$EndIf}
 end;
 
+
 procedure SetLLtext(i : integer);
 begin
-   case i of
-      1 : DefGraphLLText := 'Elevation';
-      2 : DefGraphLLText := 'Slope';
-      3 : DefGraphLLText := 'Roughness';
-   end;
+   if (i in [1..3]) then DefGraphLLText := GeomorphNames[i]
+   else DefGraphLLText := '';
 end;
 
 type
   t3DEM = array[1..3] of integer;
+
 
 procedure MakeHistograms(DEM : t3DEM);
 var
@@ -476,73 +471,6 @@ begin
       end;
    end;
 end;
-
-
-procedure OpenDEMIXRidges(fName : PathStr = '');
-//  4/18/23this is on hold; it may or may not work reliably
-const
-   CatName : array[1..7] of shortstring = ('Ref','ALOS','ALOS+Ref', 'COP','Cop+Ref','ALOS+COP','ALOS+Cop+Ref');
-   CatColor : array[1..7] of tColor = (clBlue,clGreen,clAqua,clLime,clTeal,clPurple,clBrown);
-var
-   AreaName : shortstring;
-   SaveDir : PathStr;
-   Fixed,i,x,y,SumDEM : integer;
-   z : float32;
-   Higher,Lower : array[1..3] of integer;
-   Hist : array[1..7] of int64;
-   Merge : tDEMbooleans;
-   VAT : tStringList;
-begin
-   if FileExists(fName) or GetFileFromDirectory('DEMIX area database','*.dbf',fName) then begin
-      {$IfDef RecordDEMIX} writeLineToDebugFile('OpenDEMIXRidges ' + fName); {$EndIf}
-      AreaName := ExtractFileNameNoExt(fName);
-      SaveDir := fName[1] + ':\aa_half_sec_test\' + AreaName + '\';
-      ZeroDEMs;
-      HalfSecRefDTM := OpenNewDEM(SaveDir + HalfSecRefDTMfName);
-      HalfSecALOS := OpenNewDEM(SaveDir + ALOSHalfSecfName);
-      HalfSecCOP := OpenNewDEM(SaveDir + CopHalfSecfName);
-
-      NumHighLowNeighborsMaps(HalfSecRefDTM,MDDef.WoodRegionRadiusPixels,MDdef.MinDeltaZToClassify, Higher[1],Lower[1]);
-      NumHighLowNeighborsMaps(HalfSecALOS,MDDef.WoodRegionRadiusPixels,MDdef.MinDeltaZToClassify, Higher[2],Lower[2]);
-      NumHighLowNeighborsMaps(HalfSecCOP,MDDef.WoodRegionRadiusPixels,MDdef.MinDeltaZToClassify, Higher[3],Lower[3]);
-      ShowHourglassCursor;
-      for I := 1 to 3 do DEMGlb[Lower[i]].MarkBelowMissing(4.5,Fixed);
-      DEMGlb[Lower[1]].ReclassifyRange(1,8,1);
-      DEMGlb[Lower[2]].ReclassifyRange(1,8,2);
-      DEMGlb[Lower[3]].ReclassifyRange(1,8,4);
-
-      for i := 1 to MaxDEMDataSets do Merge[i] := false;
-      for I := 1 to 3 do Merge[Lower[i]] := true;
-      ShowHourglassCursor;
-      SumDEM := SumDEMs(Lower[1],Merge,AreaName + '_ridges',false,false);
-      DEMGlb[SumDEM].MarkBelowMissing(0.5,Fixed);
-
-      for i := 1 to 7 do Hist[i] := 0;
-      ShowHourglassCursor;
-
-      for x := 0 to pred(DEMGlb[SumDEM].DEMheader.NumCol) do begin
-         for y := 0 to pred(DEMGlb[SumDEM].DEMheader.NumRow) do begin
-            if DEMGlb[SumDEM].GetElevMetersOnGrid(x,y,z) then begin
-               inc(Hist[round(z)]);
-            end;
-         end;
-      end;
-
-      Vat := tStringList.Create;
-      Vat.add('VALUE,NAME,N,USE,COLOR');
-      for i := 7 downto 1 do if (Hist[i] > 0) then Vat.add(IntToStr(i) + ',' + CatName[i] + ',' + IntToStr(Hist[i]) + ',Y,' + IntToStr(CatColor[i]));
-
-      fName := MDTempDir + AreaName + '.vat.dbf';
-      StringList2CSVtoDB(vat,fName,true);
-      DEMGlb[SumDEM].VATFileName := fName;
-      DEMglb[SumDEM].CheckMaxMinElev;
-      DEMglb[SumDEM].SetUpMap(SumDEM,true,mtDEMVATTable);
-   end;
-end;
-
-
-
-
 
 
 end.

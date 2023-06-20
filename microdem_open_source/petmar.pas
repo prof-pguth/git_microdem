@@ -16,7 +16,7 @@ unit petmar;
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$Define RecordShellExecute} //this should generally be on; if not desired, shut down in Windows defaults
-   {$Define RecordWebDownloads}
+   //{$Define RecordWebDownloads}
 
    {$IfDef Debug}
       //{$Define RecordColorPalette}
@@ -454,6 +454,7 @@ var
    clNearKMLWhite,
    clAlmostBlack : tColor;
    HeavyDutyProcessing,
+   DEMIXProcessing,
    LoadingFromMapLibrary,
    WantOut,WantShowProgress : boolean;
    RevisionDate : shortstring;
@@ -500,6 +501,7 @@ function BitmapSizeString(Bitmap : tMyBitmap) : shortstring;
 function GetVolumeName(DriveLetter: ANSIChar): shortstring;
 procedure OpenRecycleBin;
 
+procedure WriteOpenHandlestoDebugLog(Where : shortString);
 
 
 implementation
@@ -538,6 +540,21 @@ var
    TerrainCuts : array[0..4,1..3] of integer;
 
 
+
+procedure WriteOpenHandlestoDebugLog(Where : shortString);
+
+      //function GetProcessHandleCount(hProcess: THandle; var pdwHandleCount: DWORD): BOOL;  stdcall; {external} 'Kernel32.dll' name 'GetProcessHandleCount';
+
+      function GetOpenHandles : DWORD;
+      //https://stackoverflow.com/questions/4966900/delphi-causes-of-system-error-1158-no-more-system-handles-for-current-process
+      begin
+       if not GetProcessHandleCount(GetCurrentProcess,Result) then
+           RaiseLastOSError;
+      end;
+
+begin
+   WriteLineToDebugFile(Where + '  handles open=' + IntToStr(GetOpenHandles));
+end;
 
 function FindDriveWithPath(var aPath : PathStr) : boolean;
 //used for data files on external hard drive, which can have different drive letters when moved
@@ -4736,6 +4753,7 @@ initialization
    ThreadsWorking := false;
    HeavyDutyProcessing := false;
    LoadingFromMapLibrary := false;
+   DEMIXProcessing := false;
    claBrown := ConvertTColorToPlatformColor(clBrown);
 finalization
    {$If Defined(RecordClosing)} WriteLineToDebugFile('Closing petmar in dbfn=' + DebugFileName); {$EndIf}

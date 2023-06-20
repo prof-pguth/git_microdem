@@ -961,6 +961,10 @@ type
     N48: TMenuItem;
     DEMIXtileinvertory1: TMenuItem;
     Filterforjustsignedcrirteria1: TMenuItem;
+    Meanandmedianhistograms1: TMenuItem;
+    N49: TMenuItem;
+    N50: TMenuItem;
+    AddIMAGEfieldfordifferencedistributiongraphs1: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
     procedure Shiftpointrecords1Click(Sender: TObject);
     procedure Creategrid1Click(Sender: TObject);
@@ -1257,7 +1261,6 @@ type
     procedure Normalizedbasinprofile1Click(Sender: TObject);
     procedure ReplaceDialog1Replace(Sender: TObject);
     procedure ReplaceDialog1Find(Sender: TObject);
-    procedure Bargraph1Click(Sender: TObject);
     procedure Addintegercodefield1Click(Sender: TObject);
     procedure N2DgraphCOLORfield1Click(Sender: TObject);
     procedure Driftmodel1Click(Sender: TObject);
@@ -1692,6 +1695,10 @@ type
     procedure DEMIX1Click(Sender: TObject);
     procedure DEMIXtileinvertory1Click(Sender: TObject);
     procedure Filterforjustsignedcrirteria1Click(Sender: TObject);
+    procedure Meanandmedianhistograms1Click(Sender: TObject);
+    procedure N50Click(Sender: TObject);
+    procedure AddIMAGEfieldfordifferencedistributiongraphs1Click(
+      Sender: TObject);
   private
     procedure PlotSingleFile(fName : PathStr; xoff,yoff : float64);
     procedure SetUpLinkGraph;
@@ -1774,7 +1781,6 @@ uses
    DEMCoord,
    DEMLOSW,
    DEMDef_routines,
-  // Line_From_Points,
    Make_Tables,
    Text_report_options,
    DEMdbDisplay,
@@ -1787,13 +1793,12 @@ uses
    Petimage_form,
    Petmar_ini_file,
 
-    DEMESRIShapeFile,
+   DEMESRIShapeFile,
    toggle_db_use,
    DEMEditW,
    GIS_scaled_symbols,
    DEM_Manager,
    demstringgrid,
-   Bar_graphs,
    new_field,
 
    {$IfDef NoExternalPrograms}
@@ -5191,6 +5196,21 @@ begin
 end;
 
 
+procedure Tdbtablef.AddIMAGEfieldfordifferencedistributiongraphs1Click(Sender: TObject);
+begin
+   with GISdb[DBonTable] do begin
+      AddFieldToDataBase(ftString,'IMAGE',48);
+      EmpSource.Enabled := false;
+      MyData.First;
+      while not MYData.eof do begin
+         MyData.Edit;
+         MyData.SetFieldByNameAsString('IMAGE',MyData.GetFieldByNameAsString('DEMIX_TILE') + '_difference_distrib_graphs_1.png');
+         MyData.Next;
+      end;
+      EmpSource.Enabled := true;
+   end;
+end;
+
 procedure Tdbtablef.Addintegercodefield1Click(Sender: TObject);
 var
    fName,NewName : ShortString;
@@ -6430,15 +6450,15 @@ begin
    IcesatProcessCanopy(DBonTable,false,true);
 end;
 
+procedure Tdbtablef.N50Click(Sender: TObject);
+begin
+   AddCountryToDB(DBonTable);
+end;
+
 procedure Tdbtablef.N7Elevationdifferencecriteria1Click(Sender: TObject);
 begin
    DEMIXwineContestMeanMedianGraph(dg7Params,DBonTable);
 end;
-
-procedure ProcessLandsat(Table : tMyData; What :tNewSatBand);
-begin
-end;
-
 
 
 procedure Tdbtablef.N2series1Click(Sender: TObject);
@@ -9850,6 +9870,7 @@ begin
    Legend2Click(Sender);
 end;
 
+
 procedure Tdbtablef.Legend2Click(Sender: TObject);
 begin
    GISdb[DBonTable].CreatePopupLegend;
@@ -10540,7 +10561,6 @@ end;
 procedure Tdbtablef.DEMIX1Click(Sender: TObject);
 begin
    DEMIXPopUpMenu1.PopUp(Mouse.CursorPos.X,Mouse.CursorPos.Y);
-
 end;
 
 procedure Tdbtablef.DEMIXtileinvertory1Click(Sender: TObject);
@@ -11488,13 +11508,6 @@ begin
 end;
 
 
-procedure Tdbtablef.Bargraph1Click(Sender: TObject);
-begin
-   Bar_graphs.MakeBarGraph(GISdb[DBonTable]);
-end;
-
-
-
 procedure Tdbtablef.Beachballs1Click(Sender: TObject);
 var
    Thin,rc : integer;
@@ -11532,7 +11545,6 @@ procedure Tdbtablef.Beachballscolorandsize1Click(Sender: TObject);
 begin
    Dipandstrikes1Click(Sender);
 end;
-
 
 
 procedure Tdbtablef.Bestbysortedgeomorphometry1Click(Sender: TObject);
@@ -15176,6 +15188,11 @@ end;
 procedure Tdbtablef.Mean1Click(Sender: TObject);
 begin
     GISdb[DBonTable].AddMultiFieldStats('Sum',mfsMean);
+end;
+
+procedure Tdbtablef.Meanandmedianhistograms1Click(Sender: TObject);
+begin
+   DEMIXMeanMedianHistograms(dbOnTable);
 end;
 
 procedure Tdbtablef.Meanfilterfilter1Click(Sender: TObject);

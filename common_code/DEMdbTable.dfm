@@ -24,8 +24,8 @@ object dbtablef: Tdbtablef
       item
         Width = 250
       end>
-    ExplicitTop = 981
-    ExplicitWidth = 1256
+    ExplicitTop = 978
+    ExplicitWidth = 1244
   end
   object Panel2: TPanel
     Left = 0
@@ -34,7 +34,7 @@ object dbtablef: Tdbtablef
     Height = 32
     Align = alTop
     TabOrder = 1
-    ExplicitWidth = 1256
+    ExplicitWidth = 1244
     object BitBtn1: TBitBtn
       Left = 34
       Top = 1
@@ -219,7 +219,7 @@ object dbtablef: Tdbtablef
     Height = 41
     Align = alTop
     TabOrder = 2
-    ExplicitWidth = 1256
+    ExplicitWidth = 1244
     object Label2: TLabel
       Left = 12
       Top = 12
@@ -270,7 +270,7 @@ object dbtablef: Tdbtablef
     Height = 41
     Align = alTop
     TabOrder = 4
-    ExplicitWidth = 1256
+    ExplicitWidth = 1244
     object LOSButton: TSpeedButton
       Left = 40
       Top = 6
@@ -533,7 +533,7 @@ object dbtablef: Tdbtablef
     Height = 41
     Align = alTop
     TabOrder = 3
-    ExplicitWidth = 1256
+    ExplicitWidth = 1244
     object RadioGroup2: TRadioGroup
       Left = 20
       Top = 0
@@ -927,7 +927,7 @@ object dbtablef: Tdbtablef
       end
     end
     object N2dgraphs1: TMenuItem
-      Caption = '2d graphs'
+      Caption = '2D graphs'
       object N2Dgraph1: TMenuItem
         Caption = '2D graph, simple (points)'
         OnClick = N2Dgraph1Click
@@ -990,7 +990,7 @@ object dbtablef: Tdbtablef
     end
     object Bargraph1: TMenuItem
       Caption = 'Bar graph'
-      OnClick = Bargraph1Click
+      Enabled = False
     end
     object Stickstadpoleplot1: TMenuItem
       Caption = 'Sticks/tadpole plot'
@@ -2626,7 +2626,7 @@ object dbtablef: Tdbtablef
       OnClick = Deletecurrentrecord1Click
     end
     object Deleteallrecords1: TMenuItem
-      Caption = 'Delete all records'
+      Caption = 'Delete all records in current filter'
       OnClick = Deleteallrecords1Click
     end
     object Thindatabase1: TMenuItem
@@ -3629,6 +3629,10 @@ object dbtablef: Tdbtablef
   object DEMIXPopupMenu1: TPopupMenu
     Left = 368
     Top = 480
+    object Meanandmedianhistograms1: TMenuItem
+      Caption = 'Mean and median histograms'
+      OnClick = Meanandmedianhistograms1Click
+    end
     object Graphfilters1: TMenuItem
       Caption = 'Graph filters'
       OnClick = Graphfilters1Click
@@ -3656,6 +3660,10 @@ object dbtablef: Tdbtablef
     object N1degreetilestocoverrecordsintable1: TMenuItem
       Caption = '1 degree tiles to cover records in table'
       OnClick = N1degreetilestocoverrecordsintable1Click
+    end
+    object AddIMAGEfieldfordifferencedistributiongraphs1: TMenuItem
+      Caption = 'Add IMAGE field for difference distribution graphs'
+      OnClick = AddIMAGEfieldfordifferencedistributiongraphs1Click
     end
     object N48: TMenuItem
       Caption = '-'
@@ -3736,6 +3744,13 @@ object dbtablef: Tdbtablef
     object Wins1: TMenuItem
       Caption = 'Wins and Ties'
       OnClick = Wins1Click
+    end
+    object N49: TMenuItem
+      Caption = '-'
+    end
+    object N50: TMenuItem
+      Caption = 'Add country to DB'
+      OnClick = N50Click
     end
   end
 end

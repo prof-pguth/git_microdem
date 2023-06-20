@@ -9,7 +9,6 @@
 {___________________________________}
 
 
-
 function TMapForm.MakeTempGrid(OpenMap : boolean = false; GetParameters : boolean = false) : integer;
 var
    UTMzone : integer;
@@ -141,7 +140,6 @@ begin
 
       if (abs(long2-long1) < 180) then begin
          extra := MDDef.LatLongCushion * abs(Lat1-Lat2);
-         //MapDraw.OriginalSizemap := false;
          MapDraw.MaximizeLatLongMapCoverage( (Lat1 - extra),(Long1 - extra),(Lat2 + extra),(Long2 + extra) );
          FormResize(nil);
          DoCompleteMapRedraw;
@@ -284,20 +282,26 @@ begin
    {$Else}
       {$If Defined(RecordOpenMap) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('CreateDEMSelectionMap in, DEM=' + IntToStr(DEM)); {$EndIf}
       {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('CreateDEMSelectionMap in, current maps=' + IntToStr(NumOpenMaps)); {$EndIf}
+      {$If Defined(TrackHorizontalDatum)} DEMGlb[DEM].TrackHorizontalDatumDebugLog('enter CreateDEMSelectionMap,'); {$EndIf}
 
       if not ValidDEM(DEM) then exit;
 
       DEMGlb[DEM].SelectionMap := TMapForm.Create(Application);
+      {$If Defined(TrackHorizontalDatum)} DEMGlb[DEM].TrackHorizontalDatumDebugLog('CreateDEMSelectionMap map created,'); {$EndIf}
       DEMGlb[DEM].SelectionMap.MapDraw.PrimMapProj := DEMGlb[DEM].DEMMapProjection;
+      {$If Defined(TrackHorizontalDatum)} DEMGlb[DEM].TrackHorizontalDatumDebugLog('CreateDEMSelectionMap projection set,'); {$EndIf}
       {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('CreateDEMSelectionMap map just created, current maps=' + IntToStr(NumOpenMaps)); {$EndIf}
-      {$If Defined(track_f)} DEMGlb[DEM].DEMMapProjection.ShortProjInfo('CreateDEMSelectionMap, DEM'); {$EndIf}
-      {$If Defined(track_f)} DEMGlb[DEM].SelectionMap.MapDraw.PrimMapProj.ShortProjInfo('CreateDEMSelectionMap, map'); {$EndIf}
+      {$If Defined(track_f)}
+         DEMGlb[DEM].DEMMapProjection.ShortProjInfo('CreateDEMSelectionMap, DEM');
+         DEMGlb[DEM].SelectionMap.MapDraw.PrimMapProj.ShortProjInfo('CreateDEMSelectionMap, map');
+      {$EndIf}
       if (inMapType = mtDEMBlank) then mt := GetWantedMapType
       else mt := inMapType;
       {$If Defined(RecordOpenMap) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('CreateDEMSelectionMap call SetUpNewDEMMapWindow'); {$EndIf}
       DEMGlb[DEM].SelectionMap.SetUpNewDEMMapWindow(DEM,mt,DEMGlb[DEM].AreaName,true,DrawIt,UsePC);
       {$If Defined(RecordOpenMap) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('CreateDEMSelectionMap out,' + DEMGlb[DEM].SelectionMap.MapDraw.MapSizeString); {$EndIf}
       {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('CreateDEMSelectionMap out, current maps=' + IntToStr(NumOpenMaps)); {$EndIf}
+      {$If Defined(TrackHorizontalDatum)} DEMGlb[DEM].TrackHorizontalDatumDebugLog('exit CreateDEMSelectionMap,'); {$EndIf}
    {$EndIf}
 end;
 
@@ -326,7 +330,10 @@ begin
       MapDraw.Long0_360 := DEMGlb[CurDEM].DEMBoundBoxGeo.xmax > 181;
       MapDraw.BaseTitle := MapCaption;
       MapDraw.UsePercentiles := UsePC;
+      {$If Defined(TrackHorizontalDatum)} DEMGlb[CurDEM].TrackHorizontalDatumDebugLog('SetUpNewDEMMapWindow in'); {$EndIf}
+
       MapDraw.DefineNewDEMMap(CurDEM,mt);
+      {$If Defined(TrackHorizontalDatum)} DEMGlb[CurDEM].TrackHorizontalDatumDebugLog('SetUpNewDEMMapWindow New map defined'); {$EndIf}
       {$If Defined(RecordSetup) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow DefineNewDEMMap over, mt=' + IntToStr(mt)); {$EndIf}
       if MDDef.NEAutoDEM then AddOverlay(Self,ovoWorldOutlines);
       SetMapOverlays;
@@ -336,6 +343,7 @@ begin
          try
             {$If Defined(RecordSetup) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow Drawing'); {$EndIf}
             DoCompleteMapRedraw;
+            {$If Defined(TrackHorizontalDatum)} DEMGlb[CurDEM].TrackHorizontalDatumDebugLog('SetUpNewDEMMapWindow done DoCompleteMapRedraw'); {$EndIf}
          except
             on Exception do begin end;
          end;
@@ -347,6 +355,7 @@ begin
    end;
    {$If Defined(RecordSetup) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow exit ' + MapCaption + '  ' + MapDraw.MapSizeString); {$EndIf}
    {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow out, current maps=' + IntToStr(NumOpenMaps)); {$EndIf}
+   {$If Defined(TrackHorizontalDatum)} DEMGlb[CurDEM].TrackHorizontalDatumDebugLog('SetUpNewDEMMapWindow out'); {$EndIf}
 end;
 
 
@@ -406,8 +415,8 @@ end;
                   {$IfDef RecordNewSatMap} WriteLineToDebugFile('Done SetMapOverlays'); {$EndIf}
                   ThisMap.RestoreFullMap;
                   {$IfDef RecordNewSatMap} WriteLineToDebugFile('Done RestoreFullMap'); {$EndIf}
+                  ThisMap.SetFocus;
                end;
-               ThisMap.SetFocus;
             finally
                 ShowDefaultCursor;
             end;

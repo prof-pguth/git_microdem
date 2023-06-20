@@ -11,7 +11,7 @@ unit demrefop;
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
-  // {$Define RecordRefOp}
+   //{$Define RecordRefOp}
 {$EndIf}
 
 

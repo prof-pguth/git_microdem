@@ -11,7 +11,7 @@ unit GIS_Scaled_symbols;
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    //{$Define RecordSym}
-   {$Define RecordLegend}
+   //{$Define RecordLegend}
    //{$Define RecordQuickFilter}
    //{$Define RecordGISvectors}
    //{$Define RecordFormSetup}

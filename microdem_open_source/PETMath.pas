@@ -174,6 +174,7 @@ procedure DegreesToDegMinSec(Degrees : float64; var Deg,Min : integer; var Sec :
 
 function Median(var x : array of float32; n: integer; AlreadySorted : boolean = false) : float64; overload;
 function Median(var x : array of float64; n: integer; AlreadySorted : boolean = false) : float64; overload;
+function Mode(var x : array of float32; n: integer; binsize : float32) : float32;
 function Percentile(PC : float64; var x: array of float32; n : integer; AlreadySorted : boolean = false) : float64; {after Press and others, 1986, Numerical Recipes, Cambridge University Press}
 
 function Quantile(QWant : integer; var x : array of float64; n: integer; AlreadySorted : boolean = false) : float64; overload;
@@ -262,6 +263,8 @@ var
 {$EndIf}
 
 function EnoughPoints(MomentVar : tMomentVar) : boolean;
+procedure LoadBFarray32(fName : PathStr; var Values : Petmath.bfarray32; var npts : integer);
+
 
 
 
@@ -1912,6 +1915,37 @@ BEGIN
    end;
 END;
 
+
+function Mode(var x : array of float32; n: integer; binsize : float32) : float32;
+VAR
+   i,MaxCount,Count : integer;
+   v,bin1 : float32;
+BEGIN
+   Result := Nan;
+   MaxCount := 0;
+
+   HeapSort(n,x);
+
+   bin1 := round(x[0] / binsize) * binSize - 0.5 * BinSize;
+   i := 0;
+   while i <= pred(n) do begin
+       Count := 0;
+       if x[i] < bin1 + binSize then begin
+          while (i <= pred(n)) and (x[i] < bin1 + binSize) do begin
+             inc(Count);
+             inc(i);
+          end;
+       end
+       else inc(i);
+       if (Count > MaxCount) then begin
+          MaxCount := Count;
+          Result := Bin1;
+       end;
+       Bin1 := Bin1 + BinSize;
+   end;
+end;
+
+
 function Percentile(PC : float64; var x: array of float32; n : integer; AlreadySorted : boolean = false) : float64; {after Press and others, 1986, Numerical Recipes, Cambridge University Press}
 VAR
    n2 : integer;
@@ -2066,6 +2100,20 @@ end;
 function FracDimFromSlope2(Slope : float64) : float64;
 begin
    Result := 3 - 0.5 * abs(Slope);
+end;
+
+
+procedure LoadBFarray32(fName : PathStr; var Values : Petmath.bfarray32; var npts : integer);
+//need to create values if it will be a pointer
+var
+    inf : file;
+    i : integer;
+begin
+    npts := GetFileSize(fName) div SizeOf(float32);
+    AssignFile(inf,fName);
+    reset(inf,sizeOf(float32));
+    BlockRead(inf,values[0],Npts);
+    closeFile(inf);
 end;
 
 

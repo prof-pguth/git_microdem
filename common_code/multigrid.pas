@@ -14,11 +14,12 @@ unit multigrid;
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
       //{$Define RecordMultiGrids}
-      {$Define RecordHyperion}
+      //{$Define RecordHyperion}
       //{$Define RecordSentinel1}
       //{$Define RecordMultiGridsDetailed}
       //{$Define RecordCloseMultiGrids}
       //{$Define RecordSatClass}
+      //{$Define RecordMultiGridGraph}
    {$Else}
    {$EndIf}
 {$EndIf}
@@ -994,12 +995,15 @@ begin
    SkipMenuUpdating := true;
    MultiGridArray[ThisOne].LoadHyperion;
    {$IfDef RecordMultiGrids} WriteLineToDebugFile('OpenHyperionMultigrid mid'); {$EndIf}
-
-   HyperspectralForm := THyperspectralForm.Create(Application);
-   //HyperspectralForm.GrayBandNum := 53;
-   HyperspectralForm.HyperionImage := true;
-   HyperspectralForm.MultiGridUsed := ThisOne;
-   HyperspectralForm.SetForHyperion;
+   if (MultiGridArray[ThisOne].NumGrids = 0) then begin
+      MessageToContinue('No Hyperion TIF files found');
+   end
+   else begin
+     HyperspectralForm := THyperspectralForm.Create(Application);
+     HyperspectralForm.HyperionImage := true;
+     HyperspectralForm.MultiGridUsed := ThisOne;
+     HyperspectralForm.SetForHyperion;
+   end;
 
    SkipMenuUpdating := false;
    WmDem.SetMenusForVersion;
@@ -1328,15 +1332,15 @@ var
    Table : tMyData;
 begin
    {$If Defined(RecordHyperion) or Defined(RecordMultiGrids)} WriteLineToDebugFile('tMultiGridArray.LoadHyperion in ' + BasePath); {$EndIf}
-   {$IfDef Defined(RecordHyperion)}
+   {$If Defined(RecordHyperion)}
        Stopwatch := TStopwatch.StartNew;
    {$EndIf}
-
    HyperionDir := ExtractFilePath(BasePath);
    Table := tMyData.Create(SatBandNames);
    FirstValidGrid := 8;
-   Petmar.FindMatchingFiles(HyperionDir,'*.tif',TheFiles);
-
+   TStr := LastSubDir(BasePath);
+   MG_Name := 'Hyperion ' + Copy(TStr,11,4) + ' JDay ' + Copy(TStr,15,3);
+   MG_short_name := 'Hyperion ' + Copy(TStr,11,4) + ' JDay ' + Copy(TStr,15,3);
    StartProgress('Load Hyperion');
    for i := 1 to 242 do begin
       if (i mod 5 = 0) then UpdateProgressBar(i/242);
@@ -1349,13 +1353,12 @@ begin
          UseBand[i] := true;
          Table.ApplyFilter('SHORT_NAME=' + QuotedStr('HYP-' + IntToStr(i)));
          BandWavelengths[i] := Table.GetFieldByNameAsFloat('WAVE_NM');
-         inc(NumGrids);
-         inc(PossGrids);
-                       //EO1H0150332016005110KW_B223_L1GST
          fName := BasePath + LastSubDir(BasePath) + '_B' + IntegerToString(i,3) +  '_L1GST.tif';
          ReplaceCharacter(fName,' ','0');
          ShowDEMReadingProgress := false;
-          if FileExists(fName) then begin
+         if FileExists(fName) then begin
+            inc(NumGrids);
+            inc(PossGrids);
              LoadNewDEM(Grids[i],fName,false);
              DEMGlb[Grids[i]].DEMheader.ElevUnits := euImagery;
              DEMGlb[Grids[i]].MarkInRangeMissing(0,0,NumPts);
@@ -1370,7 +1373,6 @@ begin
    end;
    EndProgress;
    Table.Destroy;
-   TheFiles.Free;
    {$IfDef RecordHyperion}
       Elapsed := Stopwatch.Elapsed;
       WriteLineToDebugFile('Load Hyerion: ' + RealToString(Elapsed.TotalSeconds,-12,-4) + ' sec');
@@ -1989,7 +1991,7 @@ var
    z : float32;
    Results : tStringList;
 begin
-   {$IfDef RecordMultiGrids} WriteLineToDebugFile(' tMultiGridArray.CreateAverageReflectanceGraph in' + '  low corner=' + IntToStr(xlo) + ',' + IntToStr(ylo) + '  hi  corner=' + IntToStr(xhi) + ',' + IntToStr(xhi)); {$EndIf}
+   {$IfDef RecordMultiGridGraph} WriteLineToDebugFile(' tMultiGridArray.CreateAverageReflectanceGraph in' + '  low corner=' + IntToStr(xlo) + ',' + IntToStr(ylo) + '  hi  corner=' + IntToStr(xhi) + ',' + IntToStr(xhi)); {$EndIf}
    StartProgress('Graph');
    Results := tStringList.Create;
    if (xlo=xhi) and (ylo=yhi) then TStr := 'Point DN' else TStr := 'Mean DN';
@@ -2015,6 +2017,7 @@ begin
    end;
    EndProgress;
    Result := GraphFromCSVfile(Results,false,false);
+   {$IfDef RecordMultiGridGraph} WriteLineToDebugFile(' tMultiGridArray.CreateAverageReflectanceGraph out'); {$EndIf}
 end;
 
 

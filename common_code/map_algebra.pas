@@ -11,7 +11,7 @@ unit map_algebra;
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
-   {$Define RecordMapAlgebra}
+   //{$Define RecordMapAlgebra}
 {$EndIf}
 
 interface

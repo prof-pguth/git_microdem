@@ -12,6 +12,7 @@ unit dem_manager;
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
       //{$Define RecordCloseDEM}
+      //{$Define TrackHorizontalDatum}
       //{$Define ShortRecordCloseDEM}
       //{$Define RecordClosingData}
       //{$Define RecordNewMaps}
@@ -67,7 +68,7 @@ uses
 function OpenAndDisplayNewScene(Files : tStringList; IndexFileName : PathStr; DisplayIt,NeedHist,ASatImage : boolean;  WhichSat : integer = 0; DEMtoAssociate : integer = 0) : integer;
 
 procedure CloseAllDEMs;
-procedure CloseSingleDEM(var DEMtoClose : integer; ResetMenus : boolean = true);
+procedure CloseSingleDEM(var DEMtoClose : integer; CloseMap : boolean = true; ResetMenus : boolean = true);
 
 procedure CloseAllWindowsAndData;
 procedure CloseEverything;
@@ -91,7 +92,7 @@ procedure InitializeDEMsWanted(var DEMList : tDEMBooleanArray; Setting : boolean
 function DEMListForSingleDEM(CurDEM : integer) : tDEMBooleanArray;
 function DEMListForAllOpenDEM: tDEMBooleanArray;
 
-procedure MakeDEMsummaryTable;
+procedure MakeDEMSummaryTable(Quick : boolean = true);
 
 
 {$IfDef ExIndexes}
@@ -113,12 +114,10 @@ procedure MakeDEMsummaryTable;
    procedure CheckGeoidNames;
 
 //download data from USNA server
-
      procedure DownloadandUnzipDataFileIfNotPresent(pName : PathStr; Force : boolean = false);
      procedure GetNaturalEarthData(Force : boolean = false);
      procedure GetETOPO1(Force : boolean = false);
      procedure GetBlueMarble(Force : boolean = false);
-     procedure GetGeoid;
     {$IfDef ExGeography}
     {$Else}
        procedure ClimateGetData(ForceDownload : boolean = false);
@@ -128,7 +127,6 @@ procedure MakeDEMsummaryTable;
     {$Else}
        procedure GeologyGetData(ForceDownload : boolean = false);
     {$EndIf}
-
 
 {$IfDef ExSat}
 {$Else}
@@ -147,12 +145,10 @@ procedure MakeDEMsummaryTable;
     procedure OpenLidarMulti(theDir : PathStr = '');
 {$EndIf}
 
-
 procedure GeotiffMetadata(MDVersion : tMDVersion; fName : PathStr);
 function GeotiffBBox(fName : PathStr) : sfBoundBox;
 
 function LoadDatumShiftGrids(var LocalToWGS84,WGS84toEGM2008 : integer) : boolean;
-
 
 {$IfDef VCL}
    procedure GetMultipleDEMsFromList(TheMessage : shortstring; var DEMsWanted : tDEMbooleanArray);
@@ -188,18 +184,14 @@ function LoadDatumShiftGrids(var LocalToWGS84,WGS84toEGM2008 : integer) : boolea
 function ValidDEMExt(ext : extstr) : boolean;
 function ValidImageryExt(ext : extstr) : boolean;
 
-
 function GetLC100_fileName(Lat,Long : float32) : PathStr;
-
 
 const
    EGM96_grid : integer = 0;
    EGM2008_grid : integer = 0;
    EGMdiff_grid : integer = 0;
 
-
 implementation
-
 
 uses
    {$IfDef VCL}
@@ -235,7 +227,7 @@ uses
       New_DEM_Headerf,
       {$IfDef ExPointCloud}
       {$Else}
-      Point_cloud_options,
+         Point_cloud_options,
       {$EndIf}
    {$EndIf}
 
@@ -330,10 +322,7 @@ begin
 end;
 
 
-
-
-
-procedure MakeDEMsummaryTable;
+procedure MakeDEMsummaryTable(Quick : boolean = true);
 var
    Results : tStringList;
    fName : PathStr;
@@ -341,26 +330,38 @@ var
    i,Decs : integer;
    TStr : shortstring;
 begin
+   ShowHourglassCursor;
+   if Quick then TStr := '' else TStr := 'HOLES_PC,';
    Results := tStringList.Create;
-   Results.Add('DEM,PIXEL_IS,HORIZ_DATM,VERT_DATUM,LAT,LONG_CENT,MIN_Z,MAX_Z,HOLES_PC,SW_CornerX,SW_CornerY,SW_Corner,DX,DY,NUM_COL,NUM_ROW,AVG_X_M,AVG_Y_M,AVG_SP_M');
+   Results.Add('DEM,PIXEL_IS,HORIZ_DATM,VERT_DATUM,LAT,LONG_CENT,MIN_Z,MAX_Z,' + TStr + 'SW_CornerX,SW_CornerY,SW_Corner,DX,DY,NUM_COL,NUM_ROW,AVG_X_M,AVG_Y_M,AVG_SP_M');
    for i := 1 to MaxDEMDataSets do if ValidDEM(i) then begin
-      DEMGlb[i].ComputeMissingData(Missing);
+
+      if Quick then begin
+         TStr := '';
+      end
+      else begin
+         DEMGlb[i].ComputeMissingData(Missing);   //takes a long time with big data
+         TStr := RealToString(Missing,-12,-3) + ',';
+      end;
       if (DEMGlb[i].DEMheader.DEMUsed = UTMBasedDEM) then Decs := -2 else Decs := -8;
-      if (DEMGlb[i].DEMheader.DEMUsed = UTMBasedDEM) then TStr := ''
-      else TStr := LatLongDegreeToString(DEMGlb[i].DEMheader.DEMSWCornerY, DEMGlb[i].DEMheader.DEMSWCornerX,DecSeconds);
+
+      //if (DEMGlb[i].DEMheader.DEMUsed = UTMBasedDEM) then TStr := ''
+      //else TStr := LatLongDegreeToString(DEMGlb[i].DEMheader.DEMSWCornerY, DEMGlb[i].DEMheader.DEMSWCornerX,DecSeconds);
 
       Results.Add(DEMGlb[i].AreaName + ',' + IntToStr(DEMGlb[i].DEMheader.RasterPixelIsGeoKey1025) + ',' + DEMGlb[i].DEMMapProjection.h_DatumCode + ',' + VertDatumName(DEMGlb[i].DEMheader.VerticalCSTypeGeoKey) + ',' +
           RealToString(DEMGlb[i].DEMSWcornerLat + 0.5 * DEMGlb[i].LatSizeMap,-12,-3) + ',' +
           RealToString(DEMGlb[i].DEMSWcornerLong + 0.5 * DEMGlb[i].LongSizeMap,-12,-3)  + ',' +
-          RealToString(DEMGlb[i].DEMheader.MinElev,-12,-1)  + ',' +  RealToString(DEMGlb[i].DEMheader.MaxElev,-12,-1)  + ',' +
-          RealToString(Missing,-12,-3) + ',' +  RealToString(DEMGlb[i].DEMheader.DEMSWCornerX,-12,Decs)  + ',' +RealToString(DEMGlb[i].DEMheader.DEMSWCornerY,-12,Decs)  + ',' +
-          TStr + ',' +
+          RealToString(DEMGlb[i].DEMheader.MinElev,-12,2)  + ',' +  RealToString(DEMGlb[i].DEMheader.MaxElev,-12,2)  + ',' +
+          TStr +
+          RealToString(DEMGlb[i].DEMheader.DEMSWCornerX,-12,Decs)  + ',' +RealToString(DEMGlb[i].DEMheader.DEMSWCornerY,-12,Decs)  + ',' +
+          //TStr + ',' +
           RealToString(DEMGlb[i].DEMheader.DEMxSpacing,-12,Decs) + ',' + RealToString(DEMGlb[i].DEMheader.DEMySpacing,-12,Decs)  + ',' +
           IntToStr(DEMGlb[i].DEMheader.NumCol) + ',' + IntToStr(DEMGlb[i].DEMheader.NumRow) + ',' +
           RealToString(DEMGlb[i].AverageXSpace,-12,-2) + ',' + RealToString(DEMGlb[i].AverageYSpace,-12,-2)  + ',' + RealToString(DEMGlb[i].AverageSpace,-12,-2));
    end;
    fName := Petmar.NextFileNumber(MDTempDir,'dem_summary_','.dbf');
    StringList2CSVtoDB(Results,fName);
+   ShowDefaultCursor;
 end;
 
 procedure CheckGeoidNames;
@@ -746,7 +747,7 @@ end;
     end;
 
 
-procedure CloseSingleDEM(var DEMtoClose : integer; ResetMenus : boolean = true);
+procedure CloseSingleDEM(var DEMtoClose : integer; CloseMap : boolean = true; ResetMenus : boolean = true);
 
 
       procedure CloseYeDEM(DEMnowClosing : integer);
@@ -754,7 +755,7 @@ procedure CloseSingleDEM(var DEMtoClose : integer; ResetMenus : boolean = true);
          if ValidDEM(DEMnowClosing) then try
             try
                {$IfDef RecordCloseDEM} WriteLineToDebugFile('Destroy DEMGlb=' + IntToStr(DEMnowClosing) + '  ' + DEMGlb[DEMnowClosing].AreaName); {$EndIf}
-               DEMGlb[DEMnowClosing].Destroy;
+               DEMGlb[DEMnowClosing].Destroy(CloseMap);
                {$IfDef RecordCloseDEM} WriteLineToDebugFile('Destroy OK for DEMGlb=' + IntToStr(DEMnowClosing)); {$EndIf}
             except
                 on Exception do ;
@@ -814,7 +815,7 @@ begin
       j := i;
       if ValidDEM(j) then begin
          {$IfDef RecordClosingData} WriteLineToDebugFile('Try close DEM ' + IntToStr(j)); {$EndIf}
-         CloseSingleDEM(j,false);
+         CloseSingleDEM(j,true,false);
       end;
       ApplicationProcessMessages;
    end;
@@ -846,11 +847,12 @@ end;
        {$IfDef RecordClosingData} WriteLineToDebugFile('CloseAllMaps in'); {$EndIf}
        if (WMDEM.MDIChildCount > 0) then begin
           DEMNowDoing := Calculating;
-          for i := pred(WMDEM.MDIChildCount) downto 0 do
+          for i := pred(WMDEM.MDIChildCount) downto 0 do begin
              if WMDEM.MDIChildren[i] is TMapForm then begin
                 {$IfDef RecordClosingData} WriteLineToDebugFile('Close ' + (WMDEM.MDIChildren[i] as TMapForm).Caption); {$EndIf}
                 (WMDEM.MDIChildren[i] as TMapForm).Close;
              end;
+          end;
        end;
     end;
 
@@ -972,6 +974,11 @@ end;
         DEMMergeInProgress := false;
       end;
       {$If Defined(TimeLoadDEM)} if (Result = 0) then WriteLineToDebugFile('OpenNewDEM fail') else WriteLineToDebugFile('OpenNewDEM out  ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].DEMMapProjection.GetProjectionName); {$EndIf}
+      {$If Defined(TrackHorizontalDatum)}
+         WriteLineToDebugFile('exit OpenNewDEM, ' + DEMGlb[Result].AreaName + '  ' +  DEMGlb[Result].DEMMapProjection.h_DatumCode + '  ' +
+           StringFromDatumCode(DEMGlb[Result].DEMheader.DigitizeDatum));
+      {$EndIf}
+
       {$IfDef RecordIniMemoryOverwrite} IniMemOverwriteCheck('end OpenNewDEM'); {$EndIf}
    end;
 {$EndIf}
@@ -1274,13 +1281,18 @@ end;
 procedure CloseEverything;
 begin
     {$IfDef RecordClosingData} WriteLineToDebugFile('CloseEverything in'); {$EndIf}
-    CloseAllMultigrids;
-    CloseAllDEMs;
-    {$IfDef ExSat}
-    {$Else}
-       CloseAllImagery;
-    {$EndIf}
-    CloseAllDatabases;
+    try
+       ClosingEveryThing := true;
+       CloseAllDatabases;
+       CloseAllMultigrids;
+       CloseAllDEMs;
+       {$IfDef ExSat}
+       {$Else}
+          CloseAllImagery;
+       {$EndIf}
+    finally
+       ClosingEveryThing := false
+    end;
     {$IfDef RecordClosingData} WriteLineToDebugFile('CloseEverything out'); {$EndIf}
 end;
 
@@ -1509,6 +1521,7 @@ end;
          end;
       end;
 
+      (*
       procedure GetGeoid;
       var
          dName : PathStr;
@@ -1518,6 +1531,7 @@ end;
             CheckGeoidNames;
          end;
       end;
+      *)
 {$EndIf}
 
 
@@ -1879,6 +1893,7 @@ end;
 initialization
    {$IfDef MessageStartUpUnit} MessageToContinue('Startup dem_manager'); {$EndIf}
    InitCompareDEMs;
+   ClosingEverything := false;
 finalization
    {$IfDef RecordClosingData} WriteLineToDebugFile('RecordClosingProblems in DEM_Manager'); {$EndIf}
    {$IfDef RecordWhatsOpen} WriteLineToDebugFile('RecordWhatsOpenProblems in DEM_Manager'); {$EndIf}

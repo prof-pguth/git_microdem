@@ -19,7 +19,7 @@
       //{$Define RecordParallelLoops}
       //{$Define RecordUseOtherPrograms}
       //{$Define RecordFan}
-      {$Define RecordVertDatumShift}
+      //{$Define RecordVertDatumShift}
       //{$Define RecordUpdate}
       //{$Define RecordDirs}
       //{$Define RecordLoadDefault}
@@ -390,7 +390,7 @@ begin
    else if VerticalCSTypeGeoKey = VertCSEGM2008 then Result := 'EGM2008'
    else if VerticalCSTypeGeoKey = VertCSNAVD88 then Result := 'NAVD88'
    else if VerticalCSTypeGeoKey = VertCSWGS84 then Result := 'WGS84 ellipsoid'
-   else if VerticalCSTypeGeoKey = 0 then Result := 'undefined ellipsoid'
+   else if VerticalCSTypeGeoKey = 0 then Result := 'undefined geoid'
    else Result := 'Other (' + IntToStr(VerticalCSTypeGeoKey) + ')';
 end;
 
@@ -1080,7 +1080,8 @@ procedure InitializeMICRODEM;
             {$EndIf}
 
             OpenDebugFile;
-            WriteLineToDebugFile('Debug file opened');
+            WriteOpenHandlestoDebugLog('Debug file opened');
+
             {$IfDef MessageStartup}  MessageToContinue('Debug file opened: ' + Petmar_types.DebugFileName); {$EndIf}
          end;
       {$EndIf}
@@ -1299,7 +1300,7 @@ begin
          CheckFile(ExtractFileName(GT_Ellipse_fName));
          CheckFile(ExtractFileName(ColorBrewerName));
          CheckFile(ExtractFileName(HardLimitColorPaletteFName));
-         CheckFile(ExtractFileName(LandCoverFName));
+         CheckFile(ExtractFileName(LandCoverSeriesFName));
 
          CheckFile('KeyHH.exe');
          CheckFile('md_movie.exe');
@@ -2494,6 +2495,9 @@ var
             AParameterShortFloat('DEMIX','DEMIXSimpleTolerance',DEMIXSimpleTolerance,2.0);
             AParameterShortFloat('DEMIX','DEMIXSlopeTolerance',DEMIXSlopeTolerance,2.0);
             AParameterShortFloat('DEMIX','DEMIXRuffTolerance',DEMIXRuffTolerance,2.0);
+            AParameter('DEMIX','MakeCOP_ALOS_diffMaps',MakeCOP_ALOS_diffMaps,false);
+            AParameter('DEMIX','MakeCOP_ALOS_Cat_Maps',MakeCOP_ALOS_Cat_Maps,false);
+            AParameter('DEMIX','MakeCOP_ALOS_Best_Map',MakeCOP_ALOS_Best_Map,true);
       end;
    end;
 
@@ -4574,7 +4578,7 @@ begin
     HardLimitColorPaletteFName := ProgramRootDir + 'hard_limit_color_palettes' + DefaultDBExt;
     TableDefinitionsFileName := ProgramRootDir + 'MD_TABLE_DEF_v2' + DefaultDBExt;
     GazOptFName := ProgramRootDir + 'gaz_symbols_v3' + DefaultDBExt;
-    LandCoverFName := ProgramRootDir + 'land_cover_20' + DefaultDBExt;
+    LandCoverSeriesFName := ProgramRootDir + 'land_cover_20' + DefaultDBExt;
     RangeCircleSizesfName := ProgramRootDir + 'range_circles' + DefaultDBExt;
     WKT_GCS_Proj_fName := ProgramRootDir + 'wkt_proj\gcs_wgs84.prj';
     if PathIsValid(ProgramRootDir + 'esri_proj') then begin
@@ -5339,6 +5343,7 @@ finalization
    {$IfDef RecordParallelLoops} WriteLineToDebugFile('RecordParallelLoops in demdef_routines'); {$EndIf}
    {$IfDef RecordFont} WriteLineToDebugFile('RecordFont in demdef_routines'); {$EndIf}
 end.
+
 
 
 

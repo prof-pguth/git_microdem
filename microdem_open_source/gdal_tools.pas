@@ -20,6 +20,7 @@ unit gdal_tools;
 
    {$IFDEF DEBUG}
       //{$Define RecordSubsetOpen}
+      {$Define RecordDEMIX}
       //{$Define RecordGDALOpen}
       //{$Define RecordUseOtherPrograms}
       //{$Define RecordSaveProblems}
@@ -148,13 +149,15 @@ uses
    procedure GDALConvert4BitGeotiff(fName : PathStr);
    procedure GDALConvertSingleImageToGeotiff(var fName : PathStr);
 
-   procedure UseGDAL_VRT_to_merge(var MergefName : PathStr; OutNames : tStringList; Added : ShortString = '');
-   procedure UseGDAL_Warp_to_merge(var MergefName : PathStr; OutNames : tStringList);
+   procedure UseGDAL_VRT_to_merge(var MergefName,OutVRT : PathStr; OutNames : tStringList; Added : ShortString = '');
+   //procedure UseGDAL_Warp_to_merge(var MergefName : PathStr; OutNames : tStringList);
 
    procedure ResampleSentinel_1(Path : PathStr; Recycle : boolean = false);
 
    procedure GDAL_Raster_Calculator(Expression : shortstring);
 
+   procedure MergeDEMsForDEMIX;
+   procedure CompositeDatumShiftWithGDAL(var InName,SaveName : shortstring; s_SRSstring,t_srsstring : shortstring);
 
 
    {$IfDef ExGeoPDF}
@@ -454,7 +457,6 @@ end;
 
 procedure GDAL_Raster_Calculator(Expression : shortstring);
 var
-   //OutName,
    bfile : PathStr;
    cmd : shortString;
    BatchFile : tStringList;
@@ -466,11 +468,6 @@ begin
    bfile := Petmar.NextFileNumber(MDTempDir, 'gdal_raster_calc_','.bat');
    EndBatchFile(bfile,batchfile);
 end;
-
-
-
-
-
 
 
 
@@ -1036,7 +1033,7 @@ end;
       function GDALsubsetimageandopen(bb : sfBoundBox; LatLongBox : boolean; fName : PathStr; BaseOutPath : PathStr = '') : integer;
 
 
-        procedure DoOneImage(fName : PathStr);
+        function DoOneImage(fName : PathStr) : integer;
         var
            OutPath,OutName : PathStr;
            LandCover,TStr,ExtentBoxString   : shortstring;
@@ -1083,6 +1080,8 @@ end;
                end;
             end;
          end;
+
+
       var
          theFiles : tStringList;
          DefaultFilter : byte;
@@ -1090,11 +1089,10 @@ end;
       begin
          if IsGDALFilePresent(GDAL_Translate_Name) then begin
             if (fName <> '') and FileExists(fname) then begin
-               DoOneImage(fName);
+               Result := DoOneImage(fName);
             end
             else begin
                fName := ExtractFilePath(LastImageName);
-               //if not Petmar.GetExistingFileName('image to subset and import','image|*.tif;*.ecw',fName) then exit;
                theFiles := tStringList.Create;
                theFiles.Add(fName);
                DefaultFilter := 1;
@@ -1451,6 +1449,7 @@ end;
          BatchFile.Add(SetGDALdataStr);
       end;
 
+      (*
       procedure UseGDAL_Warp_to_merge(var MergefName : PathStr; OutNames : tStringList);
       //gdalwarp --config GDAL_CACHEMAX 3000 -wm 3000 $(list_of_tiffs) merged.tiff
       //this option did not work (could not get the list of input files to be acceptable
@@ -1472,28 +1471,83 @@ end;
          aName :=  Petmar.NextFileNumber(MDTempDir, 'gdal_warp2merge_','.bat');
          EndBatchFile(aName,BatchFile);
       end;
+      *)
+
+procedure CompositeDatumShiftWithGDAL(var InName,SaveName : PathStr; s_SRSstring,t_srsstring : shortstring);
+var
+   BatchFile : tstringList;
+   cmd : shortstring;
+   aName : PathStr;
+begin
+   StartGDALbatchFile(BatchFile);
+   cmd := 'gdalwarp --config GDAL_CACHEMAX 1000 -wm 1000 --debug on -overwrite -multi -wo NUM_THREADS=4 -ot float32 ' + InName + ' ' + SaveName + s_SRSString + t_srsstring;
+   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('VerticalDatumShiftWithGDAL cmd=' + cmd); {$EndIf}
+   BatchFile.Add(cmd);
+   aName :=  Petmar.NextFileNumber(MDTempDir, 'gdal_datumshift_','.bat');
+   EndBatchFile(aName,BatchFile);
+end;
 
 
-      procedure UseGDAL_VRT_to_merge(var MergefName : PathStr; OutNames : tStringList; Added : ShortString = '');
+procedure MergeDEMsForDEMIX;
+var
+   DEMList : tStringList;
+   UTMZone : integer;
+   MergefName,OutVRT,SaveName : PathStr;
+begin
+   {$If Defined(RecordMenu) or Defined(RecordMerge) or Defined(RecordDEMIX)} WriteLineToDebugFile('Enter MergeDEMsforDEMIX'); {$EndIf}
+
+ //need to get from the files (there is WKT in the VRT)
+   UTMzone := 17;
+   DEMList := tStringList.Create;
+   DEMList.Add(LastDEMName);
+   if Petmar.GetMultipleFiles('DEMs to merge',DEMFilterMasks,DEMList,MDDef.DefaultDEMFilter) then begin
+      {$IfDef RecordMenu} WriteStringListToDebugFile(DEMList); {$EndIf}
+      MergefName := Petmar.NextFileNumber(MDTempDir,LastSubDir(ExtractFilePath(DEMList.Strings[0])) + '_','.tif');
+      UseGDAL_VRT_to_merge(MergefName,OutVRT,DEMlist);
+      {$If Defined(RecordMenu) or Defined(RecordMerge) or Defined(RecordDEMIX)} WriteLineToDebugFile('UseGDAL_VRT_to_merge done'); {$EndIf}
+
+
+      SaveName := Petmar.NextFileNumber(MDTempDir,LastSubDir(ExtractFilePath(DEMList.Strings[0])) + '_egm2008_','.tif');
+      CompositeDatumShiftWithGDAL(MergefName,SaveName,' -s_srs EPSG:269' + IntToStr(UTMZone) + '+5703', ' -t_srs EPSG:326' + IntToStr(UTMZone) + '+3855');
+      {$If Defined(RecordMenu) or Defined(RecordMerge) or Defined(RecordDEMIX)} WriteLineToDebugFile('CompositeDatumShiftWithGDAL done'); {$EndIf}
+   end;
+   StopSplashing;
+   WMDEM.SetMenusForVersion;
+   {$IfDef TrackDEMCorners} DEMGlb[NewDEM].WriteDEMCornersToDebugFile('Merge DEMs, mode=' + IntToStr(Mode)); {$EndIf}
+   {$If Defined(RecordMenu) or Defined(RecordMerge)} WriteLineToDebugFile('Exit MergeDEMs, mode=' + IntToStr(Mode)); {$EndIf}
+end;
+
+
+
+      procedure UseGDAL_VRT_to_merge(var MergefName,OutVRT : PathStr; OutNames : tStringList; Added : ShortString = '');
+      //GDAL_VRT was about three times faster than other options tested
       var
-         aName,OutVRT : PathStr;
+         aName : PathStr;
          cmd : shortstring;
          BatchFile : tStringList;
       begin
-         aName :=  Petmar.NextFileNumber(MDTempDir, 'gdal_merge_file_list_','.txt');
-         OutNames.SaveToFile(aName);
-         OutVRT := Petmar.NextFileNumber(MDTempDir, 'gdal_vrt_','.vrt');
-         cmd := GDALtools_Dir + 'gdalbuildvrt ' + Added + ' -input_file_list ' + aName + ' ' + OutVRT;
+         try
+            ShowHourglassCursor;
+            HeavyDutyProcessing := true;
+            aName :=  Petmar.NextFileNumber(MDTempDir, 'gdal_merge_file_list_','.txt');
+            OutNames.SaveToFile(aName);
+            OutVRT := Petmar.NextFileNumber(MDTempDir, 'gdal_vrt_','.vrt');
+            cmd := GDALtools_Dir + 'gdalbuildvrt ' + Added + ' -input_file_list ' + aName + ' ' + OutVRT;
 
-         StartGDALbatchFile(BatchFile);
-         BatchFile.Add('REM create VRT');
-         BatchFile.Add(cmd);
-         cmd := GDALtools_Dir + 'gdal_translate -of GTiff ' + OutVrt + ' ' + MergefName;
-         BatchFile.Add(cmd);
+            StartGDALbatchFile(BatchFile);
+            BatchFile.Add('REM create VRT');
+            BatchFile.Add(cmd);
+            cmd := GDALtools_Dir + 'gdal_translate -of GTiff ' + OutVrt + ' ' + MergefName;
+            BatchFile.Add(cmd);
 
-         aName :=  Petmar.NextFileNumber(MDTempDir, 'vrt2merge_','.bat');
-         EndBatchFile(aName,BatchFile);
+            aName :=  Petmar.NextFileNumber(MDTempDir, 'vrt2merge_','.bat');
+            EndBatchFile(aName,BatchFile);
+         finally
+            ShowDefaultCursor;
+            HeavyDutyProcessing := false;
+         end;
       end;
+
 
 
 

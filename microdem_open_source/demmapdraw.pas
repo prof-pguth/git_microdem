@@ -26,6 +26,7 @@
    //{$Define RecordKeyMap}         //don't use if there will be a lot of map drawing
 
    {$IfDef Debug}
+      //{$Define TrackHorizontalDatum}
       //{$Define RecordFan}
       //{$Define RecordVAT}
       //{$Define FanDrawProblems)
@@ -843,7 +844,7 @@ begin
    Result.Canvas.Brush.Style := bsSolid;
    Result.Canvas.Rectangle(5,Cat*CatHeight,40,succ(Cat)*CatHeight);
    Result.Canvas.Brush.Style := bsClear;
-   Tstr := RealToString(100-DEMGlb[DEMonMap].PercentileOfElevation(MDDef.TopCutLevel),9,2) + '%   Positive Change > ' + RealToString(MDDef.TopCutLevel,-8,-2);
+   Tstr := RealToString(100-DEMGlb[DEMonMap].PercentileOfElevation(MDDef.TopCutLevel),9,2) + '%   Positive Difference > ' + RealToString(MDDef.TopCutLevel,-8,-2);
    Result.Canvas.TextOut(45,Cat*CatHeight + 4, TStr);
 
    inc(Cat);
@@ -852,7 +853,7 @@ begin
    Result.Canvas.Brush.Style := bsSolid;
    Result.Canvas.Rectangle(5,Cat*CatHeight,40,succ(Cat)*CatHeight);
    Result.Canvas.Brush.Style := bsClear;
-   TStr := RealToString(DEMGlb[DEMonMap].PercentileOfElevation(MDDef.BottomCutLevel),9,2) + '%   Negative Change < ' + RealToString(MDDef.BottomCutLevel,-8,-2);
+   TStr := RealToString(DEMGlb[DEMonMap].PercentileOfElevation(MDDef.BottomCutLevel),9,2) + '%   Negative Difference < ' + RealToString(MDDef.BottomCutLevel,-8,-2);
    Result.Canvas.TextOut(45,Cat*CatHeight + 4,TStr);
    PutBitmapInBox(Result);
 end;
@@ -2072,7 +2073,6 @@ begin
    finally
       SecondaryMapProj := nil;
    end;
-
    {$IfDef RecordClosing} WriteLineToDebugFile('tMapDraw.Destroy out'); {$EndIf}
 end;
 

@@ -17,6 +17,7 @@
       {$Define RecordCommandLine}
       {$Define RecordDEMIX}
       {$Define RecordMerge}
+      {$Define RecordDragonPlot}
       //{$Define RecordFullDEMIX}
       //{$Define RecordDEMIXLoops}
       //{$Define RecordDEMIXGridCompare}
@@ -477,7 +478,7 @@ type
     GDALslopesarcsecondDEMs1: TMenuItem;
     Mediansatellitedatacontest1: TMenuItem;
     Makelittletilescontest1: TMenuItem;
-    LidarandglobalDEMs1: TMenuItem;
+    //LidarandglobalDEMs1: TMenuItem;
     Guam1: TMenuItem;
     Geotiff2: TMenuItem;
     GDALWKT1: TMenuItem;
@@ -499,7 +500,6 @@ type
     //GetGRASSextensions1: TMenuItem;
     ACOLITEallopensatelliteimages1: TMenuItem;
     Fatfingers1: TMenuItem;
-    DEMIXwinecontest1: TMenuItem;
     Closeprogramgetdebugversionoftheprogram7MB1: TMenuItem;
     Openrecyclebin1: TMenuItem;
     Existingfile1: TMenuItem;
@@ -508,14 +508,13 @@ type
     Allgraphsononeimage1: TMenuItem;
     OpensingleLandsatband1: TMenuItem;
     listgeo1: TMenuItem;
-    DEMIXelevationhistograms1: TMenuItem;
+    //DEMIXelevationhistograms1: TMenuItem;
     DEMIXmergeCSVfiles1: TMenuItem;
     DEMIXtilesizebylatitude1: TMenuItem;
     DEMIXreferenceDEMcreation1: TMenuItem;
     DEMIXindexhighresreferenceDEMs1: TMenuItem;
     DEMIXreferencetilesurvey1: TMenuItem;
     Python1: TMenuItem;
-    N36: TMenuItem;
     OpenDEMIXarea1: TMenuItem;
     OpenSentinel1radarimagery1: TMenuItem;
     DEMIX1: TMenuItem;
@@ -559,6 +558,14 @@ type
     N41: TMenuItem;
     SummarizeverticaldatumshiftforEGM96testDEMs1: TMenuItem;
     ProcessGDALshiftforStateLineexperimental1: TMenuItem;
+    OpenandmergeDEMswithfullDEMIXcoverage1: TMenuItem;
+    Subsetlarge3DEPareas1: TMenuItem;
+    Create3DEP1secrefDEMs1: TMenuItem;
+    Merge3DEPreferenceDEMsbyarea1: TMenuItem;
+    CreatehalfsecondreferenceDEMs1: TMenuItem;
+    Merge1secreferenceDEMsfromVisioterra1: TMenuItem;
+    Modesofdifferencedistributions1: TMenuItem;
+    Advancedanalysis1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -879,7 +886,7 @@ type
     procedure GDALslopesarcsecondDEMs1Click(Sender: TObject);
     procedure Mediansatellitedatacontest1Click(Sender: TObject);
     procedure Makelittletilescontest1Click(Sender: TObject);
-    procedure LidarandglobalDEMs1Click(Sender: TObject);
+    //procedure LidarandglobalDEMs1Click(Sender: TObject);
     procedure Guam1Click(Sender: TObject);
     procedure GDALWKT1Click(Sender: TObject);
     //procedure N28Click(Sender: TObject);
@@ -898,8 +905,8 @@ type
     procedure netcdf1Click(Sender: TObject);
     procedure ACOLITEallopensatelliteimages1Click(Sender: TObject);
     procedure Fatfingers1Click(Sender: TObject);
-    procedure Datadownloadpicksubset1Click(Sender: TObject);
-    procedure EurekaValleyDownloadClick(Sender: TObject);
+    //procedure Datadownloadpicksubset1Click(Sender: TObject);
+    //procedure EurekaValleyDownloadClick(Sender: TObject);
     //procedure DEMIXwinecontest1Click(Sender: TObject);
     procedure Closeprogramgetdebugversionoftheprogram7MB1Click(Sender: TObject);
     procedure Openrecyclebin1Click(Sender: TObject);
@@ -909,7 +916,7 @@ type
     procedure Allgraphsononeimage1Click(Sender: TObject);
     procedure OpensingleLandsatband1Click(Sender: TObject);
     procedure listgeo1Click(Sender: TObject);
-    procedure DEMIXelevationhistograms1Click(Sender: TObject);
+    //procedure DEMIXelevationhistograms1Click(Sender: TObject);
     procedure DEMIXmergeCSVfiles1Click(Sender: TObject);
     procedure DEMIXmergeandtransposewithmeanmedian1Click(Sender: TObject);
     procedure DEMIXtilesizebylatitude1Click(Sender: TObject);
@@ -949,9 +956,16 @@ type
     procedure Fullprocessingchain1Click(Sender: TObject);
     procedure Perpendicularshortprofilesthroughpoint1Click(Sender: TObject);
     procedure N41Click(Sender: TObject);
-    procedure SummarizeverticaldatumshiftforEGM96testDEMs1Click(
-      Sender: TObject);
+    procedure SummarizeverticaldatumshiftforEGM96testDEMs1Click(Sender: TObject);
     procedure ProcessGDALshiftforStateLineexperimental1Click(Sender: TObject);
+    procedure OpenandmergeDEMswithfullDEMIXcoverage1Click(Sender: TObject);
+    procedure Subsetlarge3DEPareas1Click(Sender: TObject);
+    procedure Create3DEP1secrefDEMs1Click(Sender: TObject);
+    procedure Merge3DEPreferenceDEMsbyarea1Click(Sender: TObject);
+    procedure CreatehalfsecondreferenceDEMs1Click(Sender: TObject);
+    procedure Merge1secreferenceDEMsfromVisioterra1Click(Sender: TObject);
+    procedure Modesofdifferencedistributions1Click(Sender: TObject);
+    procedure Advancedanalysis1Click(Sender: TObject);
     //procedure PanoramaAdmin1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
@@ -960,7 +974,7 @@ type
     { Private declarations }
   public
     { Public declarations }
-      ProgramClosing,NoAutoOpen,AskForDebugUpdateNow,AskForNewUpdateNow{,ShowDragonPlot} : boolean;
+      ProgramClosing,NoAutoOpen,AskForDebugUpdateNow,AskForNewUpdateNow : boolean;
       procedure SetMenusForVersion;
       procedure FormPlacementInCorner(TheForm : Forms.tForm; FormPosition : byte = lpSEMap);
       procedure HandleThreadTerminate(Sender: TObject);
@@ -975,6 +989,7 @@ const
 var
    wmdem : Twmdem;
    ShowLoadButtons,LockStatusBar,
+   ClosingEverything,
    SkipMenuUpdating,FirstRun : boolean;
    OnVasaPage : integer;
 
@@ -1398,6 +1413,7 @@ begin
 end;
 
 
+(*
 procedure Twmdem.EurekaValleyDownloadClick(Sender: TObject);
 
    procedure DealWithFile(fName : PathStr);
@@ -1426,10 +1442,12 @@ begin
    {$IfDef RecordLabs} writeLineToDebugFile('Twmdem.Datadownload25GB1Click out'); {$EndIf}
 end;
 
+
 procedure Twmdem.Datadownloadpicksubset1Click(Sender: TObject);
 begin
    DownloadandUnzipDataFileIfNotPresent('kangaroo_island_pa');
 end;
+*)
 
 procedure Twmdem.DBFfile1Click(Sender: TObject);
 begin
@@ -1452,15 +1470,11 @@ begin
    DemixAnalysisPopUpMenu.Popup(Mouse.CursorPos.X,Mouse.CursorPos.Y);
 end;
 
-procedure Twmdem.DEMIXelevationhistograms1Click(Sender: TObject);
-begin
-   DEMIX_elevation_histograms;
-end;
 
 
 procedure Twmdem.DEMIXindexhighresreferenceDEMs1Click(Sender: TObject);
 begin
-   IndexDEMIXreferenceDEMs;
+   //IndexDEMIXreferenceDEMs;
 end;
 
 procedure Twmdem.DEMIXmergeandtransposewithmeanmedian1Click(Sender: TObject);
@@ -1480,7 +1494,7 @@ end;
 
 procedure Twmdem.DEMIXreferencetilesurvey1Click(Sender: TObject);
 begin
-   DEMIXreferenceDEMtiles;
+   //DEMIXreferenceDEMtiles;
 end;
 
 procedure Twmdem.DEMIXtiles1Click(Sender: TObject);
@@ -1514,7 +1528,7 @@ var
 begin
 (*
    {$IfDef RecordDEMIX} WriteLineToDebugFile('Twmdem.LoadDEMIXareareferenceDEMs1Click in'); {$EndIf}
-   SetDEMIXdirs;
+   //SetDEMIXdirs;
    fName := DEMIXrefDataDir;
    if GetFileFromDirectory('DEMIX area database','*.dbf',fName) then begin
       if LoadDEMIXareaDefinitions(fName) then begin
@@ -1644,9 +1658,6 @@ begin
 
    XTFsidescan1.Visible := MDDef.ShowSidescan;
 
-   //Cascade1.Visible := (MDDef.ProgramOption <> DragonPlotProgram);
-   //Tile1.Visible := (MDDef.ProgramOption <> DragonPlotProgram);
-
    Hardware1.Visible := (MDDef.ProgramOption = ExpertProgram);
    OpenDataSets1.Visible := (MDDef.ProgramOption in [ExpertProgram,DragonPlotProgram,RemoteSensingProgram]);
    ProgramLimits1.Visible := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]);
@@ -1719,7 +1730,7 @@ begin
    {$IfDef ExDP}
       DragonPlot1.Visible := false;
    {$Else}
-      DragonPlot1.Visible := (MDDef.ProgramOption in [ExpertProgram,DragonPlotProgram]);  // and ShowDragonPlot;
+      DragonPlot1.Visible := (MDDef.ProgramOption in [ExpertProgram,DragonPlotProgram]);
    {$EndIf}
 
    {$IfDef ExIndexes}
@@ -1873,7 +1884,6 @@ begin
       GeologyProgram : Caption :=  'Geology ' + EXENameWithBuild;
       GeographyProgram : Caption := 'Physical Geography ' + EXENameWithBuild;
       RemoteSensingProgram : Caption := 'Remote Sensing ' + EXENameWithBuild;
-      //TCPprogram : Caption := 'TCP server ' + EXENameWithBuild;
       {$If Defined(ExDP)} {$Else}DragonPlotProgram : Caption := DPcaption; {$EndIf}
    end;
    ShowDefaultCursor;
@@ -2094,6 +2104,7 @@ var
       begin
          //if IsThisDP then MDDef.ProgramOption := DragonPlotProgram;
          if (MDDef.ProgramOption = DragonPlotProgram) then begin
+            {$IfDef RecordDragonPlot} WriteLineToDebugFile('CheckDragonPlotOptions and it is DragonPlotProgram'); {$EndIf}
             //if IsThisDP then begin
               {$IfDef ExDP}
                  MDDef.ProgramOption := ExpertProgram;
@@ -2218,7 +2229,7 @@ begin
       end
       else if (MDdef.ProgramOption = DragonPlotProgram) then begin
          CheckDragonPlotOptions;
-         StartDragonPlot;
+         //StartDragonPlot;
       end
       else if NoAutoOpen or (MDdef.AutoOpen = aoNothing) then begin
       end
@@ -2364,18 +2375,11 @@ begin
       //GDAL_Raster_Calculator('-A c:\temp\alos.tif -B c:\temp\3dep_2022.tif --extent intersect --outfile c:\temp\alos-3dep.tif --calc="A-B"');
       //gdal_calc.py -A input1.tif -B input2.tif -C input3.tif --outfile=result.tif --calc="A+B+C"
 
-
        //ComputeDEMIXstats;
 
        //OpenDEMIXDatabaseForAnalysis;
- (*
-      StartGDALbatchFile(BatchFile);
-      cmd := 'gdalwarp -overwrite G:\aa_problem\in.tif G:\aa_problem\out.tif -s_srs EPSG:26911+5703 -t_srs EPSG:32611+3855';
-      BatchFile.Add(cmd);
-      aName :=  Petmar.NextFileNumber(MDTempDir, 'gdal_datumshift_','.bat');
-      EndBatchFile(aName,BatchFile);
- *)
 
+       //MergeDEMsForDEMIX;
    end;
 end;
 
@@ -2485,6 +2489,12 @@ begin
    ShowDefaultCursor;
 end;
 
+
+procedure Twmdem.Advancedanalysis1Click(Sender: TObject);
+begin
+   StopSplashing;
+   DemixAnalysisPopUpMenu.Popup(Mouse.CursorPos.X,Mouse.CursorPos.Y);
+end;
 
 procedure Twmdem.Afar1Click(Sender: TObject);
 {$IfDef IncludeGeologyLabs}
@@ -3061,7 +3071,7 @@ begin
    ConvertDB(ColorBrewerName);
    ConvertDB(TableDefinitionsFileName);
    ConvertDB(GazOptFName);
-   ConvertDB(LandCoverFName);
+   ConvertDB(LandCoverSeriesFName);
    ConvertDB(GT_Datum_fName);
    ConvertDB(GT_Ellipse_fName);
    ConvertDB(RangeCircleSizesfName);
@@ -3146,17 +3156,10 @@ end;
 
 
 procedure Twmdem.ProcessGDALshiftforStateLineexperimental1Click(Sender: TObject);
-var
-   BatchFile : tStringList;
-   aName : PathStr;
-   cmd : shortstring;
 begin
-   StartGDALbatchFile(BatchFile);
-   cmd := 'gdalwarp -overwrite G:\aa_problem\in.tif G:\aa_problem\out.tif -s_srs EPSG:26911+5703 -t_srs EPSG:32611+3855';
-   BatchFile.Add(cmd);
-   aName :=  Petmar.NextFileNumber(MDTempDir, 'gdal_datumshift_','.bat');
-   EndBatchFile(aName,BatchFile);
+   BatchGDAL_3DEP_shift;
 end;
+
 
 procedure Twmdem.ProcessVDATUMshifts1Click(Sender: TObject);
 begin
@@ -3287,6 +3290,11 @@ begin
    Contents1Click(Sender);
 end;
 
+
+procedure Twmdem.Modesofdifferencedistributions1Click(Sender: TObject);
+begin
+   ModeOfDifferenceDistributions;
+end;
 
 procedure Twmdem.Monthlyclimateparameters1Click(Sender: TObject);
 begin
@@ -3427,6 +3435,11 @@ begin
    {$EndIf}
 end;
 
+procedure Twmdem.Subsetlarge3DEPareas1Click(Sender: TObject);
+begin
+   BatchSubset_3DEP_DEMs;
+end;
+
 procedure Twmdem.SummarizeverticaldatumshiftforEGM96testDEMs1Click(Sender: TObject);
 begin
    SummarizeEGM96toEGM2008shifts;
@@ -3512,10 +3525,12 @@ begin
    CopAlosCompareReference;
 end;
 
+
 procedure Twmdem.COPALOShighlowgeomorphometry1Click(Sender: TObject);
 begin
    HighLowCopAlosGeomorphometry;
 end;
+
 
 procedure Twmdem.CopyDBFstoXML1Click(Sender: TObject);
 var
@@ -3563,6 +3578,11 @@ begin
 end;
 
 
+procedure Twmdem.Create3DEP1secrefDEMs1Click(Sender: TObject);
+begin
+   DEMIX_Create3DEPReferenceDEMs;
+end;
+
 procedure Twmdem.Createcompositebitmap1Click(Sender: TObject);
 begin
    RestoreBigCompositeBitmap('');
@@ -3570,6 +3590,7 @@ end;
 
 procedure Twmdem.CreateDEMIXdatabase1Click(Sender: TObject);
 begin
+   StopSplashing;
    DEMIXdbCreatePopupMenu.Popup(Mouse.CursorPos.X,Mouse.CursorPos.Y);
 end;
 
@@ -3585,6 +3606,11 @@ begin
    CreateDifferenceMaps;
 end;
 
+
+procedure Twmdem.CreatehalfsecondreferenceDEMs1Click(Sender: TObject);
+begin
+   DEMIXCreateHalfSecRefDEMs;
+end;
 
 procedure Twmdem.ImportCTDfile1Click(Sender: TObject);
 begin
@@ -3944,6 +3970,7 @@ var
    fName : PathStr;
    i : integer;
 begin
+(*
    {$IfDef RecordDEMIX} WriteLineToDebugFile('OpenDEMIXarea1Click in'); {$EndIf}
    FilesWanted := tStringList.Create;
    FilesWanted.Add(ExtractFilePath(LastDataBase));
@@ -3960,6 +3987,7 @@ begin
       FilesWanted.Free;
    end;
    {$IfDef RecordDEMIX} WriteLineToDebugFile('OpenDEMIXarea1Click in'); {$EndIf}
+*)
 end;
 
 
@@ -3970,7 +3998,7 @@ end;
 
 procedure Twmdem.OpenDEMIXridges1Click(Sender: TObject);
 begin
-   OpenDEMIXRidges;
+   //OpenDEMIXRidges;
 end;
 
 procedure Twmdem.OpenDEMwithoutmap1Click(Sender: TObject);
@@ -4336,6 +4364,16 @@ begin
    NLCD20011Click(Sender);
 end;
 
+procedure Twmdem.Merge1secreferenceDEMsfromVisioterra1Click(Sender: TObject);
+begin
+   DEMIX_merge_Visioterra_source;
+end;
+
+procedure Twmdem.Merge3DEPreferenceDEMsbyarea1Click(Sender: TObject);
+begin
+   DEMIX_Merge3DEPReferenceDEMs;
+end;
+
 procedure Twmdem.Mergemasp1Click(Sender: TObject);
 begin
    {$If Defined(ExGDAL) or Defined(ExGeoPDF)}
@@ -4546,7 +4584,7 @@ procedure Twmdem.Geoid1Click(Sender: TObject);
 var
    DEM : integer;
 begin
-   GetGeoid;
+   //GetGeoid;
    DEM := OpenNewDEM(Geoid2008FName);
    AddOrSubtractOverlay(DEMGlb[DEM].SelectionMap,ovoWorldOutlines,true);
    DEMGlb[DEM].SelectionMap.DoFastMapRedraw;
@@ -4904,6 +4942,7 @@ procedure Twmdem.DragonPlot1Click(Sender: TObject);
 begin
   {$IfDef ExDP}
   {$Else}
+     {$IfDef RecordDragonPlot} WriteLineToDebugFile('Twmdem.DragonPlot1Click'); {$EndIf}
      StartDragonPlot;
   {$EndIf}
 end;
@@ -5965,11 +6004,6 @@ begin
 end;
 
 
-procedure Twmdem.LidarandglobalDEMs1Click(Sender: TObject);
-begin
-   BatchGlobalDEMs;
-end;
-
 
 
 procedure Twmdem.Lightdata1Click(Sender: TObject);
@@ -6048,6 +6082,7 @@ begin
 end;
 
 
+
 procedure MergeDEMs(Mode : integer);
 var
    UseGDALvrt : boolean;
@@ -6110,6 +6145,11 @@ end;
 procedure Twmdem.OpenandmergeDEMsgridsverylarge1Click(Sender: TObject);
 begin
    MergeDEMs(dmMergeMDnative);
+end;
+
+procedure Twmdem.OpenandmergeDEMswithfullDEMIXcoverage1Click(Sender: TObject);
+begin
+   MergeDEMsForDEMIX;
 end;
 
 procedure Twmdem.OpenandmergeGeotiffs1Click(Sender: TObject);
@@ -6212,6 +6252,7 @@ initialization
    ShowLoadButtons := true;
    SkipMenuUpdating := false;
    LockStatusBar := false;
+   ClosingEverything := false;
 finalization
    {$IfDef RecordMGT} WriteLineToDebugFile('RecordMGTProblems active in Wmaindem'); {$EndIf}
    {$IfDef RecordDBFconvert} WriteLineToDebugFile('RecordDBFconvertProblems active in Wmaindem'); {$EndIf}

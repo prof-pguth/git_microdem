@@ -1,6 +1,5 @@
 ﻿unit DEMEROS;
 
-
 {^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
@@ -21,6 +20,7 @@
       //{$Define RecordLoadSat}
       //{$Define RecordKeyDraw}
       //{$Define RecordTMSat}
+      //{$Define RecordShortLandsat}
       //{$Define RecordDrawSatOnMap}
       //{$Define RecordSatRegistration}
       //{$Define RecordSatColor}
@@ -231,13 +231,14 @@ type
          procedure UTMtoSatGrid(Band : integer; X,Y : float64; var Xu,Yu : float64);
          procedure SatGridToProjectedCoords(Band : integer; x,y : float64; var Xproj,Yproj : float64);   {$IfDef AllowInlines} inline; {$EndIf}
 
-         procedure LatLongDegreeToSatGrid(Band : integer; Lat,Long: float64;  var Xu,Yu : float64);
-         procedure SatGridToLatLongDegree(Band : integer; XGrid,YGrid : float64; var Lat,Long : float64);
+         procedure LatLongDegreeToSatGrid(Band : integer; Lat,Long: float64;  var Xu,Yu : float32);
+         procedure SatGridToLatLongDegree(Band : integer; XGrid,YGrid : float32; var Lat,Long : float64);
 
          function SatGridInDataSet(Band : integer; XGrid,YGrid : float64) : boolean;
          function LatLongDegreeInDataSet(Lat,Long : float64) : boolean;
 
          procedure ClipSatGrid(Band : integer; var x,y : float64); overload;
+         procedure ClipSatGrid(Band : integer; var x,y : float32); overload;
          procedure ClipSatGrid(Band : integer; var x,y : integer); overload;
 
          function SatelliteBoundBoxGeo(Band : integer) : sfBoundBox;
@@ -914,7 +915,7 @@ begin
       Band1 := NIRBand;
       Band2 := SWIRBand;
       if (Band1 = 0) or (Band2 = 0) then PickBands;
-      NewBandTitle := 'NDWI' + RatName;
+      NewBandTitle := 'NBR' + RatName;
    end
    else if (NewBand = nsbSentinelReflectance) then begin
       PickBand('band for Sentinel reflectance',Band1);
@@ -1180,7 +1181,7 @@ end;
 
 function tSatImage.LatLongDegreeInDataSet(Lat,Long : float64) : boolean;
 var
-   xg,yg : float64;
+   xg,yg : float32;
 begin
    LatLongDegreeToSatGrid(DefRedTrue,Lat,Long,xg,yg);
    Result := SatGridInDataSet(DefRedTrue,XG,YG);
@@ -1660,7 +1661,7 @@ begin
 end;
 
 
-procedure tSatImage.LatLongDegreeToSatGrid(Band : integer; Lat,Long: float64;  var Xu,Yu : float64);
+procedure tSatImage.LatLongDegreeToSatGrid(Band : integer; Lat,Long: float64;  var Xu,Yu : float32);
 var
    xims,yims : integer;
    x,y : float64;
@@ -1681,7 +1682,7 @@ begin
 end;
 
 
-procedure tSatImage.SatGridToLatLongDegree(Band : integer; XGrid,YGrid : float64; var Lat,Long : float64);
+procedure tSatImage.SatGridToLatLongDegree(Band : integer; XGrid,YGrid : float32; var Lat,Long : float64);
 var
    xp,yp : float64;
 begin
@@ -1703,6 +1704,14 @@ begin
 end;
 
 
+procedure tSatImage.ClipSatGrid(Band : integer; var x,y : float32);
+begin
+   if (x < 0) then x := 0;
+   if (y < 0) then y := 0;
+   if (x > pred(NumSatCol)) then x := pred(NumSatCol);
+   if (y > pred(NumSatRow)) then y := pred(NumSatRow);
+end;
+
 procedure tSatImage.ClipSatGrid(Band : integer; var x,y : float64);
 begin
    if (x < 0) then x := 0;
@@ -1710,6 +1719,7 @@ begin
    if (x > pred(NumSatCol)) then x := pred(NumSatCol);
    if (y > pred(NumSatRow)) then y := pred(NumSatRow);
 end;
+
 
 procedure tSatImage.ClipSatGrid(Band : integer; var x,y : Integer);
 begin
@@ -1967,7 +1977,7 @@ begin
 
    BandNames.Destroy;
    BandNamesRead := true;
-   {$IfDef RecordTMSat} WriteLineToDebugFile('tSatImage.ReadBandData out, true color ' + RGBString(DefRedTrue,DefGreenTrue,DefBlueTrue) + ', false color ' + RGBString(DefRedFalse,DefGreenFalse,DefBlueFalse) + ' NumBands=' + IntToStr(NumBands)); {$EndIf}
+   {$If Defined(RecordTMSat) or Defined(RecordShortLandsat)} WriteLineToDebugFile('tSatImage.ReadBandData out, true color ' + RGBString(DefRedTrue,DefGreenTrue,DefBlueTrue) + ', false color ' + RGBString(DefRedFalse,DefGreenFalse,DefBlueFalse) + ' NumBands=' + IntToStr(NumBands)); {$EndIf}
 end;
 
 
@@ -2070,7 +2080,7 @@ var
             {$EndIf}
          end
          else begin
-             {$If Defined(RecordTMSatFull) or Defined(RecordTMSat)} WriteLineToDebugFile('ReadTiffBand: ' + IntToStr(BandNum) +  ' missing ' + ExtractFileName(IndexFileName)); {$EndIf}
+             {$If Defined(RecordTMSatFull) or Defined(RecordTMSat) or Defined(RecordShortLandsat)} WriteLineToDebugFile('ReadTiffBand: ' + IntToStr(BandNum) +  ' missing ' + ExtractFileName(IndexFileName)); {$EndIf}
          end;
       end;
 
@@ -2231,7 +2241,7 @@ var
                   i,BandNumberOffset : integer;
                   fName : PathStr;
                begin
-                  {$IfDef RecordTMSat} WriteLineToDebugFile('OpenLandsat in, looking in ' + LandSatDir + ' for scene ' + SceneBaseName + ' NumBands = ' + IntToStr(NumBands)); {$EndIf}
+                  {$If Defined(RecordTMSat) or Defined(RecordShortLandsat)} WriteLineToDebugFile('OpenLandsat in, looking in ' + LandSatDir + ' for scene ' + SceneBaseName + ' NumBands = ' + IntToStr(NumBands)); {$EndIf}
                   if LandsatLook then ReadOrdinaryGeoTiff
                   else begin
                      if (SceneBaseName[7] = '2') then begin
@@ -2398,6 +2408,7 @@ var
                   {$IfDef RecordTMSat} WriteLineToDebugFile('OpenWorldView3 out'); {$EndIf}
                end;
 
+
    function ProcessGDAL(Ext : ExtStr) : boolean;
    var
       MissingBands : integer;
@@ -2419,69 +2430,77 @@ var
             end;
             {$If Defined(RecordLoadSat) or Defined(RecordTMSat)} WriteLineToDebugFile('TIFF=' + IndexFileName + '  Scene base name = ' + SceneBaseName); {$EndIf}
 
-            LandsatSceneMetadata(IndexFilename,LandsatNumber,SceneBaseName);
-            if (LandsatNumber <> 0) then begin
-               if StrUtils.AnsiContainsText(IndexFileName,'BQA') then begin
-                  Data16Bit := true;
+            if FileExists(IndexFileName) then begin
+
+
+               LandsatSceneMetadata(IndexFilename,LandsatNumber,SceneBaseName);
+               if (LandsatNumber <> 0) then begin
+                  if StrUtils.AnsiContainsText(IndexFileName,'BQA') then begin
+                     Data16Bit := true;
+                  end
+                  else begin
+                     GetLandsatMetadata(IndexFilename, LandsatMetadata);
+                     {$IfDef RecordTMSat} WriteLineToDebugFile('Back from LandsatSceneMetadata, scenebasename= ' + SceneBaseName); {$EndIf}
+
+                     if (LandsatNumber in [1..5]) and IsMSS(IndexFilename) then begin
+                        if (LandsatNumber in [1..2]) then begin
+                           ReadBandData('L1-L2',SatView);
+                        end
+                        else if (LandsatNumber in [3]) then begin
+                           ReadBandData('L3',SatView);
+                        end
+                        else if (LandsatNumber in [4,5]) then begin
+                           ReadBandData('L4-L5',SatView);
+                        end;
+                     end
+                     else if LandsatNumber in [4..9] then begin
+                        if (LandsatNumber in [8,9]) then begin
+                           Data16Bit := true;
+                           ReadBandData('TM8',SatView);
+                        end
+                        else begin
+                           if (LandsatNumber in [4,5]) then ReadBandData('TM',SatView)
+                           else ReadBandData('ETM',SatView);
+                        end;
+                        {$If Defined(RecordTMSat) or Defined(RecordShortLandsat)} WriteLineToDebugFile('Landsat read band data ok'); {$EndIf}
+                     end;
+                  end;
+                  MissingBands := OpenLandsat;
                end
                else begin
-                  GetLandsatMetadata(IndexFilename, LandsatMetadata);
-                  {$IfDef RecordTMSat} WriteLineToDebugFile('Back from LandsatSceneMetadata, scenebasename= ' + SceneBaseName); {$EndIf}
-
-                  if (LandsatNumber in [1..5]) and IsMSS(IndexFilename) then begin
-                     if (LandsatNumber in [1..2]) then begin
-                        ReadBandData('L1-L2',SatView);
-                     end
-                     else if (LandsatNumber in [3]) then begin
-                        ReadBandData('L3',SatView);
-                     end
-                     else if (LandsatNumber in [4,5]) then begin
-                        ReadBandData('L4-L5',SatView);
-                     end;
-                  end
-                  else if LandsatNumber in [4..9] then begin
-                     if (LandsatNumber in [8,9]) then begin
-                        Data16Bit := true;
-                        ReadBandData('TM8',SatView);
-                     end
-                     else begin
-                        if (LandsatNumber in [4,5]) then ReadBandData('TM',SatView)
-                        else ReadBandData('ETM',SatView);
-                     end;
-                     {$IfDef RecordTMSat} WriteLineToDebugFile('Landsat read band data ok'); {$EndIf}
+                  if IsThisSentinel2(IndexFileName) then OpenSentinel2
+                  else if StrUtils.AnsiContainsText(UpperCase(IndexFileName),'IKONOS') then OpenIkonos
+                  else if StrUtils.AnsiContainsText(UpperCase(IndexFileName),'SPOT') then OpenSpot
+                  else if StrUtils.AnsiContainsText(UpperCase(IndexFileName),'_SR_8B_') then OpenPlanet(true)
+                  else if StrUtils.AnsiContainsText(UpperCase(IndexFileName),'_4B_') then OpenPlanet(true)
+                  else if StrUtils.AnsiContainsText(UpperCase(IndexFileName),'_3B_') then OpenPlanet(true)
+                  else if StrUtils.AnsiContainsText(UpperCase(IndexFileName),'PLANET') then OpenPlanet(false)
+                  else if StrUtils.AnsiContainsText(UpperCase(IndexFileName),'WV3-MS') then OpenWorldView3('WV3-MS')
+                  else if StrUtils.AnsiContainsText(UpperCase(IndexFileName),'WV3-SWIR') then OpenWorldView3('WV3-SWIR')
+                  else if (Files <> Nil) then OpenUserMultiband
+                  else begin
+                     ReadOrdinaryGeoTiff;
+                     MultiTiff := false;
                   end;
                end;
-               MissingBands := OpenLandsat;
+               CanEnhance := (NumBands >= 1) and (TiffImage[1] <> Nil) and TIFFImage[1].CanEnhance and (not LandsatLook);
+               Success := not ReadFailure;
+
+               if Success then begin
+                  CanEnhance := (NumBands >= 1) and (TiffImage[1] <> Nil) and TIFFImage[1].CanEnhance and (not LandsatLook);
+                  if StrUtils.AnsiContainsText(UpperCase(IndexFileName),'CASI') and (TIFFImage[1].TiffHeader.SamplesPerPixel in [144]) then begin
+                     NumBands := TIFFImage[1].TiffHeader.SamplesPerPixel;
+                     ReadBandData('CASI',SatView);
+                  end;
+                  if MultiTiff then DefineImageFromTiff(SatView.BandInWindow) else DefineImageFromTiff(1);
+                  Result := true;
+                 {$IfDef RecordLoadSat} WriteLineToDebugFile('Done TIFF portion can enhance = ' + TrueOrFalse(CanEnhance)); {$EndIf}
+                end;
             end
             else begin
-               if IsThisSentinel2(IndexFileName) then OpenSentinel2
-               else if StrUtils.AnsiContainsText(UpperCase(IndexFileName),'IKONOS') then OpenIkonos
-               else if StrUtils.AnsiContainsText(UpperCase(IndexFileName),'SPOT') then OpenSpot
-               else if StrUtils.AnsiContainsText(UpperCase(IndexFileName),'_SR_8B_') then OpenPlanet(true)
-               else if StrUtils.AnsiContainsText(UpperCase(IndexFileName),'_4B_') then OpenPlanet(true)
-               else if StrUtils.AnsiContainsText(UpperCase(IndexFileName),'_3B_') then OpenPlanet(true)
-               else if StrUtils.AnsiContainsText(UpperCase(IndexFileName),'PLANET') then OpenPlanet(false)
-               else if StrUtils.AnsiContainsText(UpperCase(IndexFileName),'WV3-MS') then OpenWorldView3('WV3-MS')
-               else if StrUtils.AnsiContainsText(UpperCase(IndexFileName),'WV3-SWIR') then OpenWorldView3('WV3-SWIR')
-               else if (Files <> Nil) then OpenUserMultiband
-               else begin
-                  ReadOrdinaryGeoTiff;
-                  MultiTiff := false;
-               end;
+               Result := false;
+               MessageToContinue('GDAL failure; run c:\mapdata\temp\rev2.bat in command window to see why');
             end;
-            CanEnhance := (NumBands >= 1) and (TiffImage[1] <> Nil) and TIFFImage[1].CanEnhance and (not LandsatLook);
-            Success := not ReadFailure;
-
-            if Success then begin
-               CanEnhance := (NumBands >= 1) and (TiffImage[1] <> Nil) and TIFFImage[1].CanEnhance and (not LandsatLook);
-               if StrUtils.AnsiContainsText(UpperCase(IndexFileName),'CASI') and (TIFFImage[1].TiffHeader.SamplesPerPixel in [144]) then begin
-                  NumBands := TIFFImage[1].TiffHeader.SamplesPerPixel;
-                  ReadBandData('CASI',SatView);
-               end;
-               if MultiTiff then DefineImageFromTiff(SatView.BandInWindow) else DefineImageFromTiff(1);
-               Result := true;
-              {$IfDef RecordLoadSat} WriteLineToDebugFile('Done TIFF portion can enhance = ' + TrueOrFalse(CanEnhance)); {$EndIf}
-             end;
          end;
          {$EndIf}
       end;
@@ -2732,7 +2751,7 @@ begin
    {$IfDef VCL}
    if (SelectionMap <> Nil) then try
       {$IfDef RecordSat} WriteLineToDebugFile('Close image selection map'); {$EndIf}
-      SelectionMap.ClosingMapNow := true;
+      SelectionMap.MapDraw.ClosingMapNow := true;
       SelectionMap.Close;
    finally
       SelectionMap := Nil;

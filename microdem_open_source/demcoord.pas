@@ -30,12 +30,11 @@ unit DEMCoord;
 
    {$IFDEF DEBUG}
       {$Define RecordDEMIX}
+      //{$Define TrackHorizontalDatum}
       //{$Define RecordDEMIXResample}
       //{$Define RecordVertDatumShift}
-      (*
-      {$Define TrackPixelIs}
-      {$Define TrackDEMCorners}
-      *)
+      //{$Define TrackPixelIs}
+      //{$Define TrackDEMCorners}
       //{$Define RecordVAT}
       //{$Define UKOS}
       //{$Define RecordHalfPixelShift}
@@ -73,7 +72,7 @@ unit DEMCoord;
       //{$Define RecordCreateNewDEM}
       //{$Define RecordMapDraw}
       //{$Define RecordProjectionParameters}
-      //{$Define GeotiffSave}
+      {$Define GeotiffSave}
       //{$Define TimeLoadDEM}
       //{$Define RecordDefineDatum}
       //{$Define RecordDEMEdits}
@@ -352,7 +351,7 @@ type
          {$EndIf}
 
          constructor Create(WhichDEM : integer);
-         destructor Destroy;
+         destructor Destroy(CloseMap : boolean = true);
 
          function LandCoverGrid : boolean;
          function ElevationGrid : boolean;
@@ -655,6 +654,11 @@ type
             procedure WriteDEMCornersToDebugFile(Where : shortstring);
          {$EndIf}
 
+         {$If Defined(TrackHorizontalDatum)}
+            procedure TrackHorizontalDatumDebugLog(where : shortstring);
+         {$EndIf}
+
+
          {$IfDef ExVegDensity}
          {$Else}
             procedure GetJustVegHeight(xgrid,ygrid : float32; var veg_ht : float32);
@@ -945,6 +949,14 @@ var
       WriteLineToDebugFile('Compute point SW corner: ' + RealToString(ComputeSWCornerX,-18,-8) + '/' +  RealToString(ComputeSWCornerY,-18,-8) );
    end;
 {$EndIf}
+
+{$If Defined(TrackHorizontalDatum)}
+   procedure tDEMDataSet.TrackHorizontalDatumDebugLog(where : shortstring);
+   begin
+      WriteLineToDebugFile(Where + ' ' + AreaName + '  ' +  DEMMapProjection.h_DatumCode + '  ' + StringFromDatumCode(DEMheader.DigitizeDatum));
+   end;
+{$EndIf}
+
 
 
 procedure tDEMDataSet.SetRasterPixelIsGeoKey1025(DoHalfPixelShift : boolean);
@@ -1255,7 +1267,7 @@ end;
 
 function ValidDEM(DEM : integer) : boolean;
 begin
-   Result := (DEM > 0) and (DEM <= MaxDEMDataSets) and Assigned(DEMGlb[DEM]);
+   Result := (DEM > 0) and (DEM <= MaxDEMDataSets) and (DEMGlb[DEM] <> Nil);
 end;
 
 
@@ -1697,21 +1709,23 @@ end;
 
 
 destructor tDEMDataSet.Destroy;
+var
+   Action: TCloseAction;
 begin
    {$If Defined(RecordClosing) or Defined(RecordDEMClose)} if (not DEMMergeInProgress) then WriteLineToDebugFile('tDEMDataSet.Destroy DEM ' + AreaName); {$EndIf}
 
    {$IfDef EXNLCD}
    {$Else}
-   if (NLCDCats <> Nil) then begin
-      try
-         Dispose(NLCDCats);
-         NLCDcats := Nil;
-      except
-         on Exception do begin
-            {$If Defined(RecordClosing) or Defined(RecordDEMClose)}  WriteLineToDebugFile('Problem disposing NLCDcats'); {$EndIf}
+      if (NLCDCats <> Nil) then begin
+         try
+            Dispose(NLCDCats);
+            NLCDcats := Nil;
+         except
+            on Exception do begin
+               {$If Defined(RecordClosing) or Defined(RecordDEMClose)}  WriteLineToDebugFile('Problem disposing NLCDcats'); {$EndIf}
+            end;
          end;
       end;
-   end;
    {$EndIf}
 
    if (DEMMetadata <> nil) then try
@@ -1720,18 +1734,6 @@ begin
    finally
       DEMMetadata := nil;
    end;
-
-   {$IfDef NoMapOptions}
-   {$Else}
-       if Assigned(SelectionMap) then try
-          {$If Defined(RecordClosing) or Defined(RecordDEMClose)}  WriteLineToDebugFile('tDEMDataSet.Destroy has selection map');   {$EndIf}
-          SelectionMap.MapDraw.ClosingMapNow := true;
-          SelectionMap.Close;
-       finally
-          SelectionMap := Nil;
-          {$If Defined(RecordClosing) or Defined(RecordDEMClose)} WriteLineToDebugFile('tDEMDataSet.Destroy finished close selection map'); {$EndIf}
-       end;
-   {$EndIf}
 
    if not DEMMapProjection.ProjectionSharedWithDataset then FreeAndNil(DEMMapProjection);
    FreeDEMMemory;
@@ -1742,6 +1744,20 @@ begin
        if (VegDensityLayers[1] <> Nil) then VegDensityLayers[1].Destroy;
        if (VegDensityLayers[2] <> Nil) then VegDensityLayers[2].Destroy;
    {$EndIf}
+
+   {$IfDef NoMapOptions}
+   {$Else}
+       if CloseMap and Assigned(SelectionMap) then try
+          {$If Defined(RecordClosing) or Defined(RecordDEMClose)}  WriteLineToDebugFile('tDEMDataSet.Destroy has selection map');   {$EndIf}
+          SelectionMap.MapDraw.ClosingMapNow := true;
+          SelectionMap.Closable := true;
+          SelectionMap.FormClose(Nil,Action);
+       finally
+          SelectionMap := Nil;
+          {$If Defined(RecordClosing) or Defined(RecordDEMClose)} WriteLineToDebugFile('tDEMDataSet.Destroy finished close selection map'); {$EndIf}
+       end;
+   {$EndIf}
+
 
    {$If Defined(RecordClosing) or Defined(RecordDEMClose)} if not DEMMergeInProgress then WriteLineToDebugFile('tDEMDataSet.Destroy done ' + AreaName); {$EndIf}
 end;
@@ -2527,11 +2543,18 @@ end;
 
 function tDEMDataSet.FilledGridBox(var GridLimits : tGridLimits) : boolean;
 begin
-   While MissingCol(GridLimits.XGridLow) do inc(GridLimits.XGridLow);
-   While MissingRow(GridLimits.YGridLow) do inc(GridLimits.YGridLow);
-   While MissingCol(GridLimits.XGridHigh) do dec(GridLimits.XGridHigh);
-   While MissingRow(GridLimits.YGridHigh) do dec(GridLimits.YGridHigh);
-   Result := (GridLimits.XGridHigh > GridLimits.XGridLow) and (GridLimits.YGridHigh > GridLimits.YGridLow);
+   try
+      ShowHourglassCursor;
+      HeavyDutyProcessing := true;
+      While MissingCol(GridLimits.XGridLow) do inc(GridLimits.XGridLow);
+      While MissingRow(GridLimits.YGridLow) do inc(GridLimits.YGridLow);
+      While MissingCol(GridLimits.XGridHigh) do dec(GridLimits.XGridHigh);
+      While MissingRow(GridLimits.YGridHigh) do dec(GridLimits.YGridHigh);
+      Result := (GridLimits.XGridHigh > GridLimits.XGridLow) and (GridLimits.YGridHigh > GridLimits.YGridLow);
+   finally
+      HeavyDutyProcessing := false;
+      ShowDefaultCursor;
+   end;
 end;
 
 

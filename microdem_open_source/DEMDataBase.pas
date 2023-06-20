@@ -540,7 +540,7 @@ type
      procedure DistanceToLinePolygon(IncludeLocationOnLine : boolean);
 
      procedure PurgeDeletedRecords;
-     procedure DeleteAllSelectedRecords;
+     procedure DeleteAllSelectedRecords(ImSure : boolean = false);
 
      procedure GetPointArrayForDBField(FieldName : ShortString; var Values : Petmath.bfarray32; var NPts : int64; Min : float64 = 1; Max : float64 = -1);
      procedure LinearInterpolateAcrossGap(yfield,zField : shortstring);
@@ -762,8 +762,8 @@ procedure MakeLinesFromPoints(GISDataBase : TGISdataBaseModule; fName : PathStr 
       procedure DEMIXTileSummary(DBonTable : integer);
       procedure FilterOutSignedCriteria(DBonTable : integer);
       procedure FilterInSignedCriteria(DBonTable : integer);
+      procedure DEMIXMeanMedianHistograms(db : integer);
 
-      //procedure ExtractTheDEMIXtiles(DBonTable : integer);
 
 procedure ComputeVDatumShift(dbOnTable : integer);
 function AnalyzeVDatumShift(CSVName : PathStr; ErrorLog : tStringList = Nil) : integer;
@@ -844,7 +844,6 @@ uses
       MVClusterClientDataSet,
    {$EndIf}
 
-
    {$IfDef VCL}
       DEMdbFieldPicker,
       DEMDbDisplay,
@@ -894,7 +893,6 @@ uses
       SideImg,
    {$EndIf}
 
-
    DP_control,Dragon_Plot_init,
 
    DEMIX_control,
@@ -907,9 +905,6 @@ uses
    gdal_tools,
    DataBaseCreate,
    DEMDef_routines;
-
-
-
 
 {$include demdatabase_special_cases.inc}
 
@@ -988,7 +983,7 @@ var
                DoPoint;                 //this will have the first point
                for i := 1 to Thin do MyData.Next;
             end;
-            if (Thin > 1) then DoPoint;   //insure the last point is included
+            if (Thin > 1) then DoPoint;   //insure last point is included
             GISDataBase.ValidLatLongFromTable(Lat2,Long2);
             if (TimeField) then Time2 := GISDataBase.MyData.GetFieldByNameAsString(TimeFName);
             if ShapeFileCreator.PtsInShapeStream > 0 then begin
@@ -1086,8 +1081,6 @@ begin
       GISDataBase.TheMapOwner.OpenDBonMap('',fName);
    end;
 end;
-
-
 
 
 function ValidDBfName(fName : PathStr) : boolean;
@@ -1297,7 +1290,6 @@ begin
 end;
 
 
-
 function TGISdataBaseModule.GetStringFromTableLink(FieldDesired : ShortString) : ShortString;
 begin
    try
@@ -1336,12 +1328,6 @@ procedure TGISdataBaseModule.PickNumericFields(GraphType :  tdbGraphType; NField
 begin
 {$EndIf}
 {$IfDef VCL}
-
-//  tdbGraphType = (dbgtN2Dgraph1,dbgtN2Dgraphsimplelines1, dbgtCluster1,dbgtMultiplegraphmatrix1, dbgtByLatitude1,
-//                 dbgtByLongitude1,dbgtByLatitude,dbgtByLongitude2,dbgtN2Dgraph2series1,
-//                 N2Dgraph2yaxes1,dbgtPlot1series1,dbgtPlotforsubsamples1,dbgtN2Dgraphcolorcodetext1,
-//                 dbgtN2Dgraphcolorcoded1,dbgtByLatitude2,dbgtN2Dgraph2yaxes1,dbgtN2DgraphCOLORfield1,dbgtPlot,dbgtUnspecified);
-
 var
    FieldPicker : TFieldPicker;
    NumFields2,
@@ -1557,13 +1543,13 @@ begin
 end;
 
 
-procedure TGISdataBaseModule.DeleteAllSelectedRecords;
+procedure TGISdataBaseModule.DeleteAllSelectedRecords(ImSure : boolean = false);
 var
    rc,i,nc : integer;
 begin
    MyData.ProgressVars(rc,nc);
    if (rc > 0) then begin
-      if ((not MDdef.ConfirmDBEdits) or AnswerIsYes('Confirm delete ' + IntToStr(rc) + ' records in ' + DBName)) then begin
+      if ImSure or ((not MDdef.ConfirmDBEdits) or AnswerIsYes('Confirm delete ' + IntToStr(rc) + ' records in ' + DBName)) then begin
          EmpSource.Enabled := false;
          i := 0;
          MyData.First;
@@ -1605,7 +1591,6 @@ begin
       theMapOwner.CenterMapOnLatLong(ycent,xcent,hzNoZoom)
    end;
 end;
-
 
 
 procedure TGISdataBaseModule.DistanceToLinePolygon(IncludeLocationOnLine : boolean);
@@ -1659,7 +1644,6 @@ begin
     ShowStatus;
    {$IfDef RecordDistance} WriteLineToDebugFile('Tdbtablef.Distancetolinepolygon1Click in'); {$EndIf}
 end;
-
 
 
 procedure TGISdataBaseModule.ZoommaptorecordWithBufferMeters(Buffer : float64);
@@ -1759,8 +1743,6 @@ begin
 end;
 
 
-
-
 procedure TGISdataBaseModule.ShowStatus;
 begin
    {$IfDef VCL}
@@ -1783,7 +1765,6 @@ begin
       Result := false;
    {$EndIf}
 end;
-
 
 
 procedure TGISdataBaseModule.ToggleLayer(LayerOn : boolean);
@@ -1818,22 +1799,20 @@ end;
      NumFields2,FieldsInDB : tStringList;
      WantField,i  : integer;
    begin
-      //with MyData do begin
-         GetFields(MyData,DbOpts.VisCols,TypesAllowed,FieldsInDB,AllFields);
-         if (LinkTable <> Nil) then begin
-            PetdbUtils.GetFields(LinkTable,AllVis,NumericFieldTypes,NumFields2);
-            for I := 0 to pred(NumFields2.Count) do FieldsInDB.Add('LINK-' + NumFields2.Strings[i]);
-            NumFields2.Free;
-         end;
-         if (FieldsInDB.Count = 0) then Result := ''
-         else begin
-            WantField := 0;
-            if GetFromListZeroBased('Database Field for ' + Mess,WantField,FieldsInDB,true) then begin
-               Result := FieldsInDB.Strings[WantField];
-            end
-            else Result := '';
-         end;
-      //end;
+      GetFields(MyData,DbOpts.VisCols,TypesAllowed,FieldsInDB,AllFields);
+      if (LinkTable <> Nil) then begin
+         PetdbUtils.GetFields(LinkTable,AllVis,NumericFieldTypes,NumFields2);
+         for I := 0 to pred(NumFields2.Count) do FieldsInDB.Add('LINK-' + NumFields2.Strings[i]);
+         NumFields2.Free;
+      end;
+      if (FieldsInDB.Count = 0) then Result := ''
+      else begin
+         WantField := 0;
+         if GetFromListZeroBased('Database Field for ' + Mess,WantField,FieldsInDB,true) then begin
+            Result := FieldsInDB.Strings[WantField];
+         end
+         else Result := '';
+      end;
       FieldsInDB.Free;
    end;
 
@@ -1939,11 +1918,10 @@ end;
 
          procedure TGISdataBaseModule.AssociateMap(MapForm : tMapForm);
          begin
-            if (MapForm <> nil) and ValidDB(DBNumber) then begin
+            if (MapForm <> nil) and ValidDB(DBNumber) and (MapForm.MapDraw <> nil) and (not MapForm.MapDraw.ClosingMapNow) then begin
                TheMapOwner := MapForm;
                TheMapOwner.MapDraw := MapForm.MapDraw;
                TheMapOwner.MapDraw.DBonThisMap[DBNumber] := true;
-               //dbTablef.ShowStatus;
             end;
          end;
 
@@ -2058,16 +2036,14 @@ end;
                end
                else begin
                   ThisPattern := ZipATone.PatternFromString(ZipPatName);
-                  //with ThisPattern do begin
-                     Bitmap.Canvas.Brush.Bitmap := tMyBitmap.Create;  //have to go this way
-                     Bitmap.Canvas.Brush.Bitmap.PixelFormat := pfDevice;
-                     Bitmap.Canvas.Brush.Bitmap.Height := ThisPattern.NumCols;
-                     Bitmap.Canvas.Brush.Bitmap.Width := ThisPattern.NumRows;
-                     for y := 0 to pred(ThisPattern.NumRows) do
-                        for x := 0 to pred(ThisPattern.NumCols) do
-                           if (ThisPattern.PatternMasks[y div 8,x] and MaskBit[y mod 8]) > 0 then
-                              Bitmap.Canvas.Brush.Bitmap.Canvas.Pixels[x,y] := ThisPattern.WinColor;
-                  //end;
+                  Bitmap.Canvas.Brush.Bitmap := tMyBitmap.Create;  //have to go this way
+                  Bitmap.Canvas.Brush.Bitmap.PixelFormat := pfDevice;
+                  Bitmap.Canvas.Brush.Bitmap.Height := ThisPattern.NumCols;
+                  Bitmap.Canvas.Brush.Bitmap.Width := ThisPattern.NumRows;
+                  for y := 0 to pred(ThisPattern.NumRows) do
+                     for x := 0 to pred(ThisPattern.NumCols) do
+                        if (ThisPattern.PatternMasks[y div 8,x] and MaskBit[y mod 8]) > 0 then
+                           Bitmap.Canvas.Brush.Bitmap.Canvas.Pixels[x,y] := ThisPattern.WinColor;
                end;
             end
             else if SimplePointFile then begin
@@ -2100,27 +2076,6 @@ end;
                Result := rgb_colors_three_params.tColorFromRedGreenBlue(Color1Val,Color2Val,Color3Val);
             end;
          end;
-
-
-         (*
-         procedure TGISdataBaseModule.InsureSensorsNamed;
-         var
-            SensorBaseName : ShortString;
-         begin
-            MyData.ApplyFilter('(NAME=' + QuotedStr('') + ') AND ((LAT < 0.00001) OR (LAT > 0.00001))');
-            if (MyData.RecordCount > 0) then begin
-               SensorBaseName := 'S_';
-               Petmar.GetString('Sensor base name',SensorBaseName,false,ReasonableTextChars);
-               MyData.First;
-               while not MyData.EOF do begin
-                  MyData.Edit;
-                  MyData.SetFieldByNameAsString('NAME',SensorBaseName + IntToStr(MyData.RecNo));
-                  MyData.Post;
-               end;
-            end;
-            ClearGISFilter;
-         end;
-         *)
 
          procedure TGISdataBaseModule.FillComboBoxFromField(var ComboBox : tComboBox; Field : shortstring);
          var
@@ -2378,7 +2333,6 @@ begin
 end;
 
 
-
          procedure TGISdataBaseModule.DisplayFieldStatistics(WantedField : ShortString);
          var
             Col,i  : integer;
@@ -2435,7 +2389,6 @@ end;
             if (WantedField = 'ALL-FIELDS') or (WantedField = 'SELECT-FIELDS') then begin
                {$IfDef RecordFieldStatistics} WriteLineToDebugFile('TGISdataBaseModule.DisplayFieldStatistics all fields'); {$EndIf}
                TheFieldsInDB := nil;
-               //if (WantedField = 'ALL-FIELDS') then
                PetDBUtils.GetFields(MyData,dbOpts.VisCols,NumericFieldTypes,TheFieldsInDB);
                for i := 0 to pred(TheFieldsInDB.Count) do if (not NoStatsField(TheFieldsInDB.Strings[i])) then FieldResults(TheFieldsInDB.Strings[i]);
                TheFieldsInDB.Free;
@@ -2446,7 +2399,6 @@ end;
             end;
             EmpSource.Enabled := true;
          end;
-
 
 
          function TGISdataBaseModule.ExtractDBtoCSV(ThinFactor : integer; SepChar : ANSIchar) : tStringList;
@@ -2626,12 +2578,6 @@ end;
                dbTablef.BaseMapBitmap := Nil;
                dbTablef.Restrictbymapscale1.Visible := ItsTigerShapeFile or ItsOSMShapeFile;
                dbTablef.Restrictbymapscale1.Checked := MDDef.UsePixelSizeRules;
-
-               {$IfDef ExSidescan}
-                 // dbTablef.BitBtn17.Visible := false;
-               {$Else}
-                  //dbTablef.BitBtn17.Visible := SideScanIndex;
-               {$EndIf}
                if MDDef.DBMinimizeOnOpen then dbTablef.WindowState := wsMinimized;
 
                if MyData.FieldExists('BEAM') and MyData.FieldExists('TRACK_ID') then begin
@@ -3138,7 +3084,6 @@ end;
             end;
 
 
-
             function CopyDatabaseAndOpen(GIS : TGISdataBaseModule; OpenLink : boolean = true) : integer;
             var
                fName : PathStr;
@@ -3162,7 +3107,6 @@ end;
                CopyOneFile(ChangeFileExt(FName,DefaultDBExt));
                if OpenLink and (GIS.LinkTable <> nil) then CopyOneFile(GIS.LinkTable.TableName);
 
-               //NewGIS := Nil;
                OpenNumberedGISDataBase(Result,MDTempDir + ExtractFileName(fName));
                if OpenLink and (GIS.LinkTable <> nil) then begin
                   fName := MDTempDir + ExtractFileName(GIS.LinkTable.TableName);
@@ -3323,14 +3267,14 @@ end;
                      else begin
                         if AreaShapeFile(ShapeFileType) then begin
                            {$IfDef RecordPointInArea}
-                           WriteLineToDebugFile('Records found: ' + IntToStr(MyData.RecordCount));
-                           MyData.First;
-                           for i := 1 to MyData.FiltRecsInDB do begin
-                              if aShapeFile.PointInRecord(MyData.RecNo,Lat,Long) then
-                                 WriteLineToDebugFile('Rec found in box: ' + IntToStr(MyData.RecNo))
-                              else WriteLineToDebugFile('Rec not in box: ' + IntToStr(MyData.RecNo));
-                              MyData.Next;
-                           end;
+                              WriteLineToDebugFile('Records found: ' + IntToStr(MyData.RecordCount));
+                              MyData.First;
+                              for i := 1 to MyData.FiltRecsInDB do begin
+                                 if aShapeFile.PointInRecord(MyData.RecNo,Lat,Long) then
+                                    WriteLineToDebugFile('Rec found in box: ' + IntToStr(MyData.RecNo))
+                                 else WriteLineToDebugFile('Rec not in box: ' + IntToStr(MyData.RecNo));
+                                 MyData.Next;
+                              end;
                            {$EndIf}
 
                            MyData.First;
@@ -3395,7 +3339,7 @@ end;
                   if not DEM_Gaz_Opts.GetGazFileName(LastGazFile) then exit;
                end
                else LastGazFile := fName;
-               if FileExists(LastGazFile) {and FindOpenDataBase(i)} then begin
+               if FileExists(LastGazFile) then begin
                   if OpenNumberedGISDataBase(i,fname,false,false,MapOwner) then begin
                      {$IfDef RecordGAZ} WriteLineToDebugFile('OpenGazetteer=' + LastGazFile); {$EndIf}
                       GISdb[i].SetGazTableOptions;

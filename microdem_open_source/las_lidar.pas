@@ -12,6 +12,7 @@
 
 //{$Define NoInLine}   {use this to be able to trace calls into these routines}
 
+{$Define GetColorInline}
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IfDef Debug}
@@ -285,19 +286,19 @@ type
 
          constructor Create(fileName : PathStr);
          destructor Destroy;
+         procedure PlotTileOnMap(Cloud: integer; BaseMapDraw : tMapDraw; var BMPMemory : tBMPMemory; MinAreaZ, MaxAreaZ : float64);
+
          procedure PrepDataRead;
          procedure FreeLASRecordMemory;
 
          function GetMetadata : tStringList;
-         procedure PlotTileOnMap(Cloud: integer; BaseMapDraw : tMapDraw; var BMPMemory : tBMPMemory; MinAreaZ, MaxAreaZ : float64);
-         function LASClassificationCategory(j: integer): tLASClassificationCategory;
 
-         function LASFileOnMap(BaseMapDraw : tMapDraw) : boolean; {$IfDef NoInLine} {$Else} inline; {$EndIf}
+         function IsLASFileOnMap(BaseMapDraw : tMapDraw) : boolean; {$IfDef NoInLine} {$Else} inline; {$EndIf}
          function InBoundBoxGeo(BoundBox : sfBoundBox): boolean; {$IfDef NoInLine} {$Else} inline; {$EndIf}
          function InBoundBoxUTM(BoundBox : sfBoundBox): boolean; {$IfDef NoInLine} {$Else} inline; {$EndIf}
          function FileOnDEM(DEM: integer): boolean; inline;
 
-         procedure GetColor(j: integer; MinAreaZ,MaxAreaZ : float64; var Color : tPlatformColor); //inline;
+         procedure GetColor(j: integer; MinAreaZ,MaxAreaZ : float64; var Color : tPlatformColor);  {$IfDef GetColorInline} inline; {$EndIf}
          procedure GetColorAndElevation(j : integer; MinAreaZ,MaxAreaZ : float64; var ColorRGB : tPlatformColor; var ze : float64);
          function GetRGBColor(j : integer) : tPlatformColor; {$IfDef NoInLine} {$Else} inline; {$EndIf}
          function GetRGBComponents(j : integer; var r,g,b : byte) : boolean;  {$IfDef NoInLine} {$Else} inline; {$EndIf}
@@ -336,6 +337,7 @@ type
          function GetGPSTime(j : integer) : float64; {$IfDef NoInLine} {$Else} inline; {$EndIf}
          function GetScanAngle(j : integer) : float64; {$IfDef NoInLine} {$Else} inline; {$EndIf}
          function GoodNoiseOverlap(ShotNumber : integer) : boolean; {$IfDef NoInLine} {$Else} inline; {$EndIf}
+         function LASClassificationCategory(j: integer): tLASClassificationCategory;
 
          procedure SetLASClassification(ShotNumber : integer; TheClass : byte); {$IfDef NoInLine} {$Else} inline; {$EndIf}
 
@@ -351,7 +353,7 @@ type
          {$EndIf}
 
          {$IfDef VCL}
-            procedure OutlineOnMap(BaseMap : tMapForm);
+            procedure OutlineOnMap(BaseMap : tMapForm; Color : tColor);
          {$EndIf}
    end;
 
@@ -612,8 +614,8 @@ var
    NoFilter : boolean;
    ColorRGB : tPlatformColor;
 begin
-   if true or LASFileOnMap(BaseMapDraw) then begin
-      {$If Defined(RecordLASplot)} writelineToDebugFile('tLAS_data.PlotOnMap ' + ExtractFileNameNoExt(LasFileName) + '   mode=' + IntToStr(Ord(MDDef.ls.ColorCoding))); {$EndIf}
+   if {true or} IsLASFileOnMap(BaseMapDraw) then begin
+      {$If Defined(RecordLASplot)} writelineToDebugFile('tLAS_data.PlotOnMap ' + ExtractFileNameNoExt(LasFileName) + ' LAS proj=' + sfBoundBoxToString(LAS_Proj_Box,1)); {$EndIf}
       NoFilter := NoFilterWanted;
       pplot := 0;
       if (MDDef.ls.ColorCoding = lasccCloudID) then begin
@@ -950,23 +952,7 @@ var
             Move(Run,Result,8);
          end;
 
-(*
-         procedure SetLasUTMBox;
-         begin
-            LAS_UTM_Box.ymax := LasHeader.MaxY;
-            LAS_UTM_Box.xmax := LasHeader.MaxX;
-            LAS_UTM_Box.ymin := LasHeader.MinY;
-            LAS_UTM_Box.xmin := LasHeader.MinX;
-         end;
 
-         function SetLasGeoBox : sfBoundBox;
-         begin
-            LAS_LatLong_Box.ymax := LasHeader.MaxY;
-            LAS_LatLong_Box.xmax := LasHeader.MaxX;
-            LAS_LatLong_Box.ymin := LasHeader.MinY;
-            LAS_LatLong_Box.xmin := LasHeader.MinX;
-         end;
-*)
          function SetLasBoundBoxFromLasHeader : sfBoundBox;
          begin
             Result.ymax := LasHeader.MaxY;
@@ -976,23 +962,11 @@ var
          end;
 
 
-         (*
-         procedure GetUTMboxFromLatLongBox;
-         begin
-            RedefineWGS84DatumConstants(0.5*(LAS_LatLong_Box.XMax + LAS_LatLong_Box.XMin),lasProjectionDefinition.LasProjection.LatHemi);
-            WGS84DatumConstants.LatLongDegreetoUTM(LAS_LatLong_Box.YMax,LAS_LatLong_Box.XMax,LAS_UTM_Box.xmax,LAS_UTM_Box.ymax);
-            WGS84DatumConstants.LatLongDegreetoUTM(LAS_LatLong_Box.YMin,LAS_LatLong_Box.XMin,LAS_UTM_Box.xmin,LAS_UTM_Box.ymin);
-         end;
-         *)
-
          procedure DoWKTfromVariableLengthRecord;
          begin
             if lasProjectionDefinition.LasProjection.DecodeWKTProjectionFromString(ASCIIProjectionData) then begin
                LAS_Proj_Box := SetLasBoundBoxFromLasHeader;
                LAS_LatLong_Box := lasProjectionDefinition.LasProjection.ConvertProjectedBoundBoxToGeoBoundBox(LAS_Proj_Box);
-
-               //lasProjectionDefinition.LasProjection.InverseProjectDegrees(LasHeader.MaxX,LasHeader.MaxY,LAS_LatLong_Box.ymax,LAS_LatLong_Box.xmax);
-               //lasProjectionDefinition.LasProjection.InverseProjectDegrees(LasHeader.MinX,LasHeader.MinY,LAS_LatLong_Box.ymin,LAS_LatLong_Box.xmin);
                {$If Defined(RecordWKT)} WriteLineToDebugFile('DoWKTfromVariableLengthRecord geobox=' + sfBoundBoxToString(LAS_LatLong_Box)); {$EndIf}
 
                LasHeader.ZscaleFac := LasHeader.ZscaleFac * lasProjectionDefinition.LasProjection.VertFootFactor;
@@ -1000,14 +974,10 @@ var
                LasHeader.MinZ := LasHeader.MinZ * lasProjectionDefinition.LasProjection.VertFootFactor;
                LAS_Z_range := LasHeader.MaxZ - LasHeader.MinZ;
 
-               if lasProjectionDefinition.LasProjection.Pname = UTMEllipsoidal then begin
+               if (lasProjectionDefinition.LasProjection.Pname = UTMEllipsoidal) then begin
                   LAS_UTM_Box := SetLasBoundBoxFromLasHeader;
-                  //SetLasUTMBox;
-                  //LAS_LatLong_Box := lasProjectionDefinition.LasProjection.ConvertUTMBoundBoxToGeoBoundBox(LAS_UTM_Box);
                end
                else begin
-                  //GetUTMboxFromLatLongBox;
-                  //lasProjectionDefinition.LasProjection.ConvertUTMBoundBoxToGeoBoundBox(
                   LAS_UTM_Box := lasProjectionDefinition.LasProjection.ConvertGeoBoundBoxToUTMBoundBox(LAS_LatLong_Box);
                end;
 
@@ -1025,6 +995,11 @@ var
    Hemi : ANSIchar;
 begin
    {$If Defined(RecordCreateEveryFile) or Defined(RecordWKT)} WriteLineToDebugFile('tLAS_data.Create for ' + FileName); {$EndIf}
+   if (UpperCase(ExtractFileExt(FileName)) = '.LAZ') then begin
+     MessageToContinue('Decompress LAZ file before use');
+     exit;
+   end;
+
    if FileExists(FileName) then begin
       CheckFileNameForSpaces(FileName);
       NilRecordMemory;
@@ -1342,13 +1317,14 @@ begin
 end;
 
 {$IfDef VCL}
-procedure tLAS_data.OutlineOnMap(BaseMap: tMapForm);
+procedure tLAS_data.OutlineOnMap(BaseMap: tMapForm; Color : tColor);
 var
    x1,y1,x2,y2,x,y : integer;
    TStr : shortstring;
 begin
-   BaseMap.OutlineGeoBox(LAS_LatLong_Box,clRed,2);
-   BaseMap.OutlineUTMBox(LAS_UTM_Box,clLime,2);
+   //BaseMap.OutlineGeoBox(LAS_LatLong_Box,clRed,2);
+
+   BaseMap.OutlineUTMBox(LAS_UTM_Box,Color,2);
 
     if MDDef.LabelLAStiles then begin
        BaseMap.MapDraw.LatLongDegreeToScreen(LAS_LatLong_Box.ymax,LAS_LatLong_Box.xmin,x1,y1);
@@ -1364,9 +1340,10 @@ end;
 {$EndIf}
 
 
-function tLAS_data.LASFileOnMap(BaseMapDraw : tMapDraw): boolean;
+function tLAS_data.IsLASFileOnMap(BaseMapDraw : tMapDraw): boolean;
 begin
-   Result := {True or} BaseMapDraw.AFullWorldMap or AtLeastPartOfBoxInAnotherBox(LAS_LatLong_Box,BaseMapDraw.MapCorners.BoundBoxGeo);
+   //Result := {True or} BaseMapDraw.AFullWorldMap or AtLeastPartOfBoxInAnotherBox(LAS_LatLong_Box,BaseMapDraw.MapCorners.BoundBoxGeo);
+   Result := BaseMapDraw.AFullWorldMap or AtLeastPartOfBoxInAnotherBox(LAS_UTM_Box,BaseMapDraw.MapCorners.BoundBoxUTM);
    {$If Defined(RecordTilePlotSummary)} if (not Result) then writelineToDebugFile('tLAS_data.FileOnMap fail, LAS bb=' + sfBoundBoxToString(LAS_LatLong_Box,6) + ' map bb=' + sfBoundBoxToString(BaseMapDraw.MapCorners.BoundBoxGeo,6)); {$EndIf}
 end;
 
