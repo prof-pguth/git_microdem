@@ -2,8 +2,8 @@ object MapAlgebraForm: TMapAlgebraForm
   Left = 0
   Top = 0
   Caption = 'Map Algebra '
-  ClientHeight = 283
-  ClientWidth = 631
+  ClientHeight = 280
+  ClientWidth = 619
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

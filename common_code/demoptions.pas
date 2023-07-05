@@ -297,7 +297,7 @@ type
     Label48: TLabel;
     Edit37: TEdit;
     CheckBox156: TCheckBox;
-    CheckBox18: TCheckBox;
+    //CheckBox18: TCheckBox;
     CheckBox118: TCheckBox;
     BitBtn36: TBitBtn;
     CheckBox157: TCheckBox;
@@ -391,7 +391,6 @@ type
     CheckBox116: TCheckBox;
     CheckBox145: TCheckBox;
     CheckBox146: TCheckBox;
-    BitBtn39: TBitBtn;
     BitBtn40: TBitBtn;
     Label20: TLabel;
     BitBtn41: TBitBtn;
@@ -479,7 +478,6 @@ type
     procedure Button6Click(Sender: TObject);
     procedure BitBtn22Click(Sender: TObject);
     procedure BitBtn29Click(Sender: TObject);
-    procedure BitBtn39Click(Sender: TObject);
     procedure BitBtn40Click(Sender: TObject);
     procedure BitBtn41Click(Sender: TObject);
     procedure BitBtn42Click(Sender: TObject);
@@ -642,7 +640,7 @@ var
    BlowUpDEM,
    BlowUpVeg,
    FWT,
-   DEMIXbase,
+   //DEMIXbase,
    TauDEM : integer;
 
 
@@ -808,7 +806,7 @@ end;
 
 procedure TOptionsForm.HelpBtnClick(Sender: TObject);
 begin
-  DisplayHTMLTopic('html\tbme1njp.htm');
+   DisplayHTMLTopic('html\tbme1njp.htm');
 end;
 
 
@@ -848,7 +846,7 @@ begin
       DrawRow(FWT,'GDAL',GDALtools_Dir);
    {$EndIf}
 
-   DrawRow(DEMIXbase,'DEMIX',MDDef.Demix_base_dir);
+   //DrawRow(DEMIXbase,'DEMIX',MDDef.Demix_base_dir);
    //DrawRow(TauDEM,'TauDEM',TauDEMDir);
 
    StringGrid1.RowCount := OnRow + 1;
@@ -877,7 +875,7 @@ begin
             GetGDALFileNames;
          end;
       {$EndIf}
-      if Arow = DEMIXbase then DEMIX_control.SetDEMIXdirs(true);
+      //if Arow = DEMIXbase then DEMIX_control.SetDEMIXdirs(true);
       //if Arow = TauDEM then GetDOSPath('TauDEM',TauDEMDir);
    end;
    LabelDirectories;
@@ -1047,7 +1045,7 @@ begin
    CheckBox13.Checked := MDdef.FilterGridsToEdge;
    CheckBox16.Checked := MDdef.UseSealevel;
    CheckBox17.Checked := MDdef.DBsOnAllMaps;
-   CheckBox18.Checked := MDdef.IsUSNAcomputer;
+   //CheckBox18.Checked := MDdef.IsUSNAcomputer;
    CheckBox20.Checked := MDdef.MissingToSeaLevel;
    CheckBox21.Checked := MDdef.DeleteAuxTiffFiles;
    CheckBox22.Checked := MDdef.DefaultEditDBsInGrid;
@@ -1461,7 +1459,7 @@ begin
    MDdef.ShowPlateRotation := CheckBox15.Checked;
    MDdef.UseSealevel := CheckBox16.Checked;
    MDdef.DBsOnAllMaps := CheckBox17.Checked;
-   MDdef.IsUSNAcomputer := CheckBox18.Checked;
+   //MDdef.IsUSNAcomputer := CheckBox18.Checked;
 
    MDdef.MissingToSeaLevel := CheckBox20.Checked;
    MDdef.DeleteAuxTiffFiles := CheckBox21.Checked;
@@ -1691,17 +1689,21 @@ begin
       MDdef.ProgramOption := tProgramOption(RadioGroup7.ItemIndex);
       if (MDdef.ProgramOption = GeologyProgram) then begin
          SetStructuralGeologyDefaults;
-         {$If Defined(ExGeology) or Defined(ExGeologyDownload)}
-         {$Else}
-            GetNaturalEarthData;
-            GeologyGetData;
+         {$IfDef AllowUSNAdataDownloads}
+            {$If Defined(ExGeology) or Defined(ExGeologyDownload)}
+            {$Else}
+               GetNaturalEarthData;
+               GeologyGetData;
+            {$EndIf}
          {$EndIf}
       end;
-      if (MDdef.ProgramOption = GeographyProgram) then begin
-         SetPhysicalGeographyDefaults;
-         ClimateGetData;
-         GetNaturalEarthData;
-      end;
+      {$IfDef AllowUSNAdataDownloads}
+         if (MDdef.ProgramOption = GeographyProgram) then begin
+            SetPhysicalGeographyDefaults;
+            ClimateGetData;
+            GetNaturalEarthData;
+         end;
+      {$EndIf}
       //if (MDdef.ProgramOption = ShipwrecksProgram) then SetShipwrecksDefaults;
       //if (MDdef.ProgramOption = EconProgram) then SetEconDefaults;
       if (MDdef.ProgramOption = RemoteSensingProgram) then SetRemoteSensingDefaults;
@@ -1999,8 +2001,10 @@ end;
 
 procedure TOptionsForm.BitBtn22Click(Sender: TObject);
 begin
-   GetETOPO1(true);
-   GetBlueMarble(true);
+   {$IfDef AllowUSNAdataDownloads}
+      GetETOPO1(true);
+      GetBlueMarble(true);
+   {$EndIf}
 end;
 
 (*
@@ -2074,9 +2078,11 @@ end;
 
 procedure TOptionsForm.BitBtn33Click(Sender: TObject);
 begin
-   {$IfDef ExGeography}
-   {$Else}
-      ClimateGetData(true);
+   {$IfDef AllowUSNAdataDownloads}
+      {$IfDef ExGeography}
+      {$Else}
+         ClimateGetData(true);
+      {$EndIf}
    {$EndIf}
 end;
 
@@ -2109,11 +2115,6 @@ begin
    {$EndIf}
 end;
 
-procedure TOptionsForm.BitBtn39Click(Sender: TObject);
-begin
-   GetGeoid;
-end;
-
 procedure TOptionsForm.BitBtn40Click(Sender: TObject);
 begin
    PickMapIndexLocation;
@@ -2127,7 +2128,9 @@ end;
 
 procedure TOptionsForm.BitBtn42Click(Sender: TObject);
 begin
-    GetNaturalEarthData(True);
+   {$IfDef AllowUSNAdataDownloads}
+       GetNaturalEarthData(True);
+   {$EndIf}
 end;
 
 procedure TOptionsForm.BitBtn4Click(Sender: TObject);

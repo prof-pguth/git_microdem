@@ -1128,7 +1128,7 @@ begin
       BoxAreaExtremeElevations(Limits,BaseLevel,Summit,ave);
       Relief := Summit - Baselevel;
       GeoRelief := Summit - z;
-      Dropoff :=  z - BaseLevel;
+      Dropoff := z - BaseLevel;
       Elev_relf := (ave-BaseLevel) / (Summit - BaseLevel);
       Result := true;
    end;
@@ -2325,9 +2325,9 @@ begin
 
             SqPQ := (sqr(P) + sqr(Q));
             if SqPQ > Tolerance then begin
-               SqPQ :=  SqPQ * sqrt ( 1 + SqPQ);
+               SqPQ := SqPQ * sqrt ( 1 + SqPQ);
                SlopeCurvature := -100 * (p * p * r  + 2 * P * q * s + q * q * t) / SqPQ;
-               PlanCurvature :=  -100 * (q * q * r  - 2 * P * q * s + p * p * t) / SqPQ;
+               PlanCurvature := -100 * (q * q * r  - 2 * P * q * s + p * p * t) / SqPQ;
             end;
          end;
       end;

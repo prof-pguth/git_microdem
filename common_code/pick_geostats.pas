@@ -105,6 +105,7 @@ type
     BitBtn25: TBitBtn;
     BitBtn26: TBitBtn;
     BitBtn27: TBitBtn;
+    BitBtn29: TBitBtn;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure BitBtn1Click(Sender: TObject);
     procedure Radiogroup1Click(Sender: TObject);
@@ -155,6 +156,7 @@ type
     procedure BitBtn25Click(Sender: TObject);
     procedure BitBtn24Click(Sender: TObject);
     procedure BitBtn26Click(Sender: TObject);
+    procedure BitBtn29Click(Sender: TObject);
   private
     //procedure GetBatchRegionSize;
     function DEMListToProcess :  tDEMBooleanArray;
@@ -182,7 +184,7 @@ implementation
 {$R *.dfm}
 
 uses
-   DEMCoord,DEMStat,MEM_Power_Spect,BaseMap,PetFouri,Petmar,Petmar_types,Petmar_db,Geomorph_point_class,DEMOptions,
+   DEMCoord,DEMStat,MEM_Power_Spect,BaseMap,BaseGraf,PetFouri,Petmar,Petmar_types,Petmar_db,Geomorph_point_class,DEMOptions,
    geomorph_region_size_graph,
    Thread_Timers,
    PetDBUtils,
@@ -546,6 +548,38 @@ begin
       CreateSlopeMap(CurDEM);
    end;
 end;
+
+
+
+procedure TPickGeoStat.BitBtn29Click(Sender: TObject);
+var
+   j : integer;
+   Distributions,Legends : tStringList;
+   Values : ^Petmath.bfarray32;
+   Max,Min,BinSize : float32;
+   NPts : int64;
+   fName : PathStr;
+begin
+   Distributions := tStringList.Create;
+   Legends := tStringList.Create;
+   Max := -99e39;
+   Min := 99e39;
+   for j := 1 to MaxDEMDataSets do begin
+      if DEMsWanted[j] then begin
+         New(Values);
+         DEMGlb[j].GetElevationsInLongArray(DEMGlb[j].FullDEMGridLimits,NPts,Values^);
+         if DEMGlb[j].DEMHeader.MaxElev > Max then Max := DEMGlb[j].DEMHeader.MaxElev;
+         if DEMGlb[j].DEMHeader.MinElev < Min then Min := DEMGlb[j].DEMHeader.MinElev;
+         fName := Petmar.NextFileNumber(MDtempDir,DEMGlb[j].AreaName + '_' ,'.z');
+         Distributions.Add(SaveSingleValueSeries(npts,Values^,fName));
+         Legends.Add(DEMGlb[j].AreaName);
+         Dispose(Values);
+      end;
+   end;
+   BinSize := (Max - Min) / 200;
+   CreateMultipleHistogram(MDDef.CountHistograms,Distributions,Legends,'', '',200,Min,Max,BinSize);
+end;
+
 
 procedure TPickGeoStat.BitBtn2Click(Sender: TObject);
 {$IfDef ExGeostats}

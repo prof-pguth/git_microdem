@@ -423,15 +423,15 @@ begin
    CheckBox42.Checked := MDDef.DoNSSlope;
    CheckBox53.Checked := MDDef.DoEWSlope;
 
-   CheckBox47.Checked :=  MDDef.ElevMoments;
-   CheckBox48.Checked :=  MDDef.SlopeMoments;
-   CheckBox49.Checked :=  MDDef.PlanCurvMoments;
-   CheckBox50.Checked :=  MDDef.SlopeCurvMoments;
+   CheckBox47.Checked := MDDef.ElevMoments;
+   CheckBox48.Checked := MDDef.SlopeMoments;
+   CheckBox49.Checked := MDDef.PlanCurvMoments;
+   CheckBox50.Checked := MDDef.SlopeCurvMoments;
 
-   CheckBox8.Checked :=  MDDef.DoMean;
-   CheckBox55.Checked :=  MDDef.DoSTD;
-   CheckBox56.Checked :=  MDDef.DoSkew;
-   CheckBox57.Checked :=  MDDef.DoKurt;
+   CheckBox8.Checked := MDDef.DoMean;
+   CheckBox55.Checked := MDDef.DoSTD;
+   CheckBox56.Checked := MDDef.DoSkew;
+   CheckBox57.Checked := MDDef.DoKurt;
 
    CheckBox52.Checked := MDDef.AutoSaveGeomorphGrids;
 

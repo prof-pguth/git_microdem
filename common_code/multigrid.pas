@@ -221,7 +221,6 @@ uses
       DEMStat,
    {$EndIf}
 
-
    PetDBUtils,
    PetImage,
    DEM_Manager,
@@ -260,7 +259,6 @@ var
                  {$If Defined(RecordSentinel1)} WriteLineToDebugFile('Resave one=' + fName); {$EndIf}
                  DEMGlb[MultiGridArray[ThisOne].Grids[j]].WriteNewFormatDEM(fName);
                  DEMGlb[MultiGridArray[ThisOne].Grids[j]].DEMFileName := fName;
-                 //DEMGlb[MultiGridArray[ThisOne].Grids[j]].SelectionMap.DoCompleteMapRedraw;
               end;
               {$If Defined(RecordSentinel1)} WriteLineToDebugFile('Create selection map'); {$EndIf}
               CreateDEMSelectionMap(MultiGridArray[ThisOne].Grids[j],true,false,mtElevGray);
@@ -287,13 +285,9 @@ begin
                FindMatchingFiles(fName,'*.tiff',Tiffs,6);
                if (Tiffs.Count > 0) then begin
                   {$If Defined(RecordSentinel1)} WriteLineToDebugFile('No tifs, call ResampleSentinel_1 ' + fName); {$EndIf}
-                  //FreeAndNil(Tiffs);
-                  //FindMatchingFiles(fName,'*.tiff',Tiffs,6);
-                  //if (Tiffs.Count > 0) then begin
-                     ResampleSentinel_1(fName);
-                     FreeAndNil(Tiffs);
-                     FindMatchingFiles(fName,'*.tif',Tiffs,6);
-                  //end;
+                  ResampleSentinel_1(fName);
+                  FreeAndNil(Tiffs);
+                  FindMatchingFiles(fName,'*.tif',Tiffs,6);
                end;
             end;
 
@@ -339,7 +333,6 @@ begin
       HeavyDutyProcessing := false;
    end;
 end;
-
 
 
 procedure OpenEGMgrids;
@@ -416,7 +409,6 @@ begin
 end;
 
 
-
 procedure OpenSolarRad;
 begin
    if (PathIsValid(WorldClimate2Dir)) then begin
@@ -428,7 +420,7 @@ end;
 
 procedure OpenDailyTemps;
 begin
-   ClimateGetData;
+   {$IfDef AllowUSNAdataDownloads}  ClimateGetData;  {$EndIf}
    if (PathIsValid(WorldClimate2Dir)) then begin
       if (MaxTempMG = 0) then MaxTempMG := OpenMonthlyMultiGrids('Maximum temperature',OpenMaps);
       if (TempMG = 0) then TempMG := OpenMonthlyMultiGrids('Average temperature (entire earth)',OpenMaps);
@@ -440,7 +432,7 @@ end;
 
 procedure OpenTempPrecipEvap;
 begin
-   ClimateGetData;
+   {$IfDef AllowUSNAdataDownloads}  ClimateGetData;  {$EndIf}
    if (PathIsValid(WorldClimate2Dir)) then begin
       if (TempMG = 0) then TempMG := OpenMonthlyMultiGrids('Average temperature (entire earth)',OpenMaps);
       if (PrecipMG = 0) then PrecipMG := OpenMonthlyMultiGrids('Precipitation',OpenMaps);
@@ -454,7 +446,6 @@ function ValidLMG(i : integer) : boolean;
 begin
    Result := (i > 0) and (i <= MaxLMG) and (lmg[i] <> nil);
 end;
-
 
 
 { tMonthlyDBArray }
@@ -654,7 +645,6 @@ begin
    end;
    {$IfDef RecordMultiGrids} WriteLineToDebugFile('TwoMultigridsAnnualParameterGraph out'); {$EndIf}
 end;
-
 
 
 function GetMultiGridPath : PathStr;
@@ -878,7 +868,6 @@ begin
    if (fName = '') then fName := ExtractFilePath(BasePath) + 'sup_class\';
    if (MapOwner <> Nil) then begin
       TrainingPointsDB := MapOwner.OpenDBonMap('Training set',fName);
-      //TrainingPointsDB := LastDBLoaded;
       LastTrainSetFName := GISdb[TrainingPointsDB].dbFullName;
       GISdb[TrainingPointsDB].dbOpts.DBAutoShow := (dbasColorField);
       GISdb[TrainingPointsDB].RedrawLayerOnMap;
@@ -893,7 +882,6 @@ begin
          CreateDataBase.WriteCorrectHeader;
       end;
       ClassesDB := MapOwner.OpenDBonMap('Classes',fName,false,false);
-      //ClassesDB := LastDBLoaded;
    end;
    {$IfDef RecordSatClass} WriteLineToDebugFile('LoadTrainingset1Click out,  TrainingPointsDB=' + IntToStr(TrainingPointsDB)  + '   ClassesDB =' + IntToStr(ClassesDB)); {$EndIf}
 end;
@@ -1176,7 +1164,7 @@ begin
          New(ByteRow);
          for y := 0 to pred(TiffHeader.ImageLength) do begin
             if (y mod 50 = 0) then UpDateProgressBar(y/TiffHeader.ImageLength);
-            SeekFileOffset({BigTiffFile,}1,y);
+            SeekFileOffset(1,y);
             if (TiffHeader.BitsPerSample = 8) then NumRead := SysUtils.FileRead(TiffHandle, ByteRow^,TiffHeader.ImageWidth*TiffHeader.SamplesPerPixel)
             else NumRead := SysUtils.FileRead(TiffHandle, BigRow^,2*TiffHeader.ImageWidth*TiffHeader.SamplesPerPixel);
             for x := 0 to pred(TiffHeader.ImageWidth) do begin
@@ -1332,9 +1320,7 @@ var
    Table : tMyData;
 begin
    {$If Defined(RecordHyperion) or Defined(RecordMultiGrids)} WriteLineToDebugFile('tMultiGridArray.LoadHyperion in ' + BasePath); {$EndIf}
-   {$If Defined(RecordHyperion)}
-       Stopwatch := TStopwatch.StartNew;
-   {$EndIf}
+   {$If Defined(RecordHyperion)}Stopwatch := TStopwatch.StartNew; {$EndIf}
    HyperionDir := ExtractFilePath(BasePath);
    Table := tMyData.Create(SatBandNames);
    FirstValidGrid := 8;
@@ -1373,14 +1359,9 @@ begin
    end;
    EndProgress;
    Table.Destroy;
-   {$IfDef RecordHyperion}
-      Elapsed := Stopwatch.Elapsed;
-      WriteLineToDebugFile('Load Hyerion: ' + RealToString(Elapsed.TotalSeconds,-12,-4) + ' sec');
-   {$EndIf}
-
+   {$IfDef RecordHyperion} Elapsed := Stopwatch.Elapsed; WriteLineToDebugFile('Load Hyerion: ' + RealToString(Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
    {$IfDef RecordMultiGridsDetailed} WriteLineToDebugFile('tMultiGridArray.LoadHyperion out ' + BasePath); {$EndIf}
 end;
-
 
 
 procedure tMultiGridArray.LoadFromENVI(fName : PathStr);

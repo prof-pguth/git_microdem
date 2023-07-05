@@ -297,6 +297,11 @@ procedure MetersPerDegree(Lat,Long : float64; var Distance1,Distance2,Distance3 
 function FindSingleWKTinDirectory(thePath : PathStr) : PathStr;
 
 
+function GetUTMDatumCode(PrimaryMapDatum : tMapProjection) : word;
+function GetGeoDatumCode(PrimaryMapDatum : tMapProjection) : word;
+
+
+
 {$IfDef VCL}
    procedure PickDatum(WhatFor : shortstring; var DatumCode : ShortString);
    procedure PickUTMZone(var UTMZone : int16);
@@ -308,6 +313,7 @@ function FindSingleWKTinDirectory(thePath : PathStr) : PathStr;
 
 const
    PointConvertDebug : boolean = false;
+   GeotiffDatumDefaultString = 'GeoTIFF save only works with NAD or WGS datums; default to WGS84';
 
 var
    OppositeSideMapTolerance : integer;
@@ -412,7 +418,7 @@ begin
    Lat1 := Lat + 0.5;
    Lat2 := Lat - 0.5;
    Long2 := Long + 0.5;
-   Long1 :=  Long - 0.5;
+   Long1 := Long - 0.5;
    VincentyCalculateDistanceBearing(Lat1,Long,Lat2,Long,Distance1,Bearing);
    VincentyCalculateDistanceBearing(Lat,Long1,Lat,Long2,Distance2,Bearing);
    Distance3 := 0.5 * (Distance1 + Distance2);
@@ -874,7 +880,7 @@ begin
       for i := 1 to Length(TheProjectionString) - 6 do begin
          if Copy(TheProjectionString,i,6) = 'VERTCS' then begin
             HorizWKT := Copy(TheProjectionString,1,pred(i));
-            VertWKT :=  Copy(TheProjectionString,i,Length(TheProjectionString) - i);
+            VertWKT := Copy(TheProjectionString,i,Length(TheProjectionString) - i);
             break;
          end
          else HorizWKT := TheProjectionString;
@@ -1271,7 +1277,7 @@ begin
 
       if (PName = CylindricalEqualAreaEllipsoidal) then begin
          k0 := cosPhi1 / sqrt(1 - e2 * sqr(sin(Phi1)));     //Snyder, equation 10-13
-         //qp :=                                           //Snyder, equation 3-12
+         //qp :=                                          //Snyder, equation 3-12
       end
       else if PName in [LambertConformalConicEllipse] then begin
          FullWorld := false;
@@ -1282,7 +1288,7 @@ begin
          t2 := ft(Phi2);
          if abs(Phi1-Phi2) < 0.0001 then  n_lcc := 1
          else n_lcc := (ln(m1/m2)) / (ln(t1/t2));
-         Big_F :=  m1 / n_lcc / Math.Power(t1,n_lcc);
+         Big_F := m1 / n_lcc / Math.Power(t1,n_lcc);
          rho0 := A * Big_F * Math.Power(t0,n_lcc);
          {$IfDef DebugConformalConic} WriteLineToDebugFile('tMapProjection.GetProjectParameters  LCC LatCent=' + RealToString(Lat0/DegToRad,-12,-8) + '  LongCent=' + RealToString(Long0/DegToRad,-12,-8)); {$EndIf}
       end

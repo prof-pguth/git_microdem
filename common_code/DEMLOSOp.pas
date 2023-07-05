@@ -4,9 +4,8 @@ unit Demlosop;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
-
 
 {$I nevadia_defines.inc}
 
@@ -826,6 +825,6 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordLOSOptions} WriteLineToDebugFile('RecordLOSOptions action in demlosop');  {$EndIf}
+   {$IfDef RecordLOSOptions} WriteLineToDebugFile('RecordLOSOptions action in demlosop'); {$EndIf}
    {$IfDef RecordClosingProblems} WriteLineToDebugFile('Closing demlsoop out'); {$EndIf}
 end.

@@ -8,7 +8,6 @@ unit computations;
 {____________________________________}
 
 
-
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
@@ -144,7 +143,7 @@ begin
    {$IfDef ExGeography}
    {$Else}
       if (RadioGroup1.ItemIndex = 3) then begin
-         SunRiseSunSet({True,}Lat1,Long2,true,true);
+         SunRiseSunSet(Lat1,Long2,true,true);
       end;
       if (RadioGroup1.ItemIndex = 4) then begin
          DecodeDate(DateTimePicker1.Date,Year, Month, Day);

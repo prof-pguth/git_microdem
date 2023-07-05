@@ -1,11 +1,11 @@
 unit dem_cart_proj;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of ianMICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch    }
-{ Released under the MIT Licences    }
-{ Copyright (c) 2022 Peter L. Guth   }
-{____________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2023 Peter L. Guth  }
+{___________________________________}
 
 
 {$I nevadia_defines.inc}
@@ -120,7 +120,9 @@ begin
    if (SimpleMode <> 0) then begin
       MDDef.OpenMultipleVectorMaps := true;
       MDDef.MapTicks := tixLatLong;
-      GetNaturalEarthData;
+      {$IfDef AllowUSNAdataDownloads}  GetNaturalEarthData;  {$EndIf}
+
+
       ProcessIniFile(iniInit,'Tissot');
       MDDef.DrawTissotDefault := true;
       ProjectionDemForm.CheckBox17.Checked := false;

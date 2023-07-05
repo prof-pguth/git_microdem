@@ -4015,7 +4015,7 @@ end;
 function tAspectStats.CreateRose(BaseLegend : shortstring = '') : tThisBaseGraph;
 begin
    Result := TThisBaseGraph.Create(Application);
-   Result.RoseColor := WinGraphColors[DEM];
+   Result.RoseColor := WinGraphColors[DEM mod 16];
    Result.DrawAspectRose(AspectFreqValsTrue,DEMGlb[DEM].AreaName + ' ' + Report,BaseLegend);
 end;
 

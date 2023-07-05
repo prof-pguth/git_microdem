@@ -16,7 +16,7 @@ unit petmar;
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$Define RecordShellExecute} //this should generally be on; if not desired, shut down in Windows defaults
-   //{$Define RecordWebDownloads}
+   //D{$Define RecordWebDownloads}
 
    {$IfDef Debug}
       //{$Define RecordColorPalette}
@@ -1113,7 +1113,7 @@ end;
                   Min := Max;
                   Max := x;
                   case legend of
-                     LegSpectrum : for i := 0 to 255 do Colors[255-i] :=  ConvertPlatformColorToTColor(SpectrumRGBFunct(i,0,255));
+                     LegSpectrum : for i := 0 to 255 do Colors[255-i] := ConvertPlatformColorToTColor(SpectrumRGBFunct(i,0,255));
                      LegRainbows : for i := 0 to 255 do Colors[255-i] := RainbowColorFunct(i,0,255);
                      LegGrays : for i := 0 to 255 do Colors[255-i] := RGB(i,i,i);
                      LegTerrain : for i := 0 to 255 do Colors[255-i] := TerrainTColor(i,0,255);
@@ -1121,7 +1121,7 @@ end;
                end
                else begin
                   case legend of
-                     LegSpectrum : for i := 0 to 255 do Colors[i] :=  ConvertPlatformColorToTColor(SpectrumRGBFunct(i,0,255));
+                     LegSpectrum : for i := 0 to 255 do Colors[i] := ConvertPlatformColorToTColor(SpectrumRGBFunct(i,0,255));
                      LegRainbows : for i := 0 to 255 do Colors[i] := RainbowColorFunct(i,0,255);
                      LegGrays : for i := 0 to 255 do Colors[i] := RGB(i,i,i);
                      LegTerrain :  for i := 0 to 255 do Colors[i] := TerrainTColor(i,0,255);
@@ -1629,7 +1629,7 @@ end;
             zi : integer;
          begin
             zi := ValidByteRange(round(255.0 * (z - Min) / (Max - Min)));
-            Result :=  RGB(zi,zi,zi);
+            Result := RGB(zi,zi,zi);
          end;
 
          function PlatformRainbowColorFunct(z,Min,Max : float64) : TPlatformColor;
@@ -1788,14 +1788,16 @@ end;
             fName : Ansistring;
          begin
             fName := ProgramRootDir + Application.HelpFile;
-            if (not FileExists(fname)) then begin
-               ReplaceCharacter(Name,'\','/');
-               fname := 'https://www.usna.edu/Users/oceano/pguth/md_help/' + Name;
-               ExecuteFile(fName,'','');
-            end
-            else begin
+            if FileExists(fname) then begin
                ReplaceCharacter(Name,'\','/');
                ExecuteFile(ProgramRootDir + 'keyhh.exe','-MDhelp microdem.chm::/' + Name,ProgramRootDir);
+            end
+            else begin
+               {$IfDef AllowUSNAhelp}
+                  ReplaceCharacter(Name,'\','/');
+                  fname := 'https://www.usna.edu/Users/oceano/pguth/md_help/' + Name;
+                  ExecuteFile(fName,'','');
+               {$EndIf}
             end;
             StopSplashing;
             {$IfDef RecordHelp} WriteLineToDebugFile('DisplayHTMLTopic ' + Name + ' from ' + fName); {$EndIf}
@@ -1873,7 +1875,7 @@ end;
                Label2.Caption := Modifier;
                Label3.Caption := 'Database: ' + DBdriver;
                ProgramIcon.Canvas.Draw(0,0,Application.Icon);
-               Version.Caption :=  BuildString;
+               Version.Caption := BuildString;
                ProductName.Caption := ShortEXEName;
                ShowModal;
             end;
@@ -1952,7 +1954,7 @@ end;
                EditWindow.NoOpenNewOptions;
                with EditWindow do begin
                   FileInWindow := FName;
-                  S:= TfileStream.Create(FName,fmOpenRead + fmShareDenyNone    );
+                  S:= TfileStream.Create(FName,fmOpenRead + fmShareDenyNone);
                   try
                      RichEdit1.Lines.LoadFromStream(S);
                   Finally
@@ -1989,7 +1991,7 @@ end;
                   Visible := false;
                   FileInWindow := FName;
                   RichEdit1.Lines.LoadFromFile(FName);
-                  Caption :=  WindowCaption;
+                  Caption := WindowCaption;
                   Width := 640;
                   Height := 300;
                   ShowModal;
@@ -2138,7 +2140,7 @@ end;
             if (z > Max) then z := Max;
             z := 380 + 400 * (z - Min) / (Max - Min);
             WavelengthToRGB(z, R,G,B);
-            Result :=  RGB(r,g,b);
+            Result := RGB(r,g,b);
          end;
 
 
@@ -2258,7 +2260,6 @@ end;
                 g := Value(m1,m2,h);
                 b := Value(m1,m2,h-120);
              end;
-
           end;
 
 
@@ -2390,8 +2391,6 @@ begin
    if (zi < 130) then Result := RGBTrip(0,0,round(90 + zi))
    else Result := RGBTrip(0,0,round(90 + (zi-130)));
 end;
-
-
 
 
          function TerrainTColor(z,aMin,aMax : float64) : TColor;
@@ -2579,28 +2578,28 @@ end;
             with Canvas do begin
                Pen.Width := 1;
                Pen.Color := Color;
-            i := 1;
-            if Odd(Random(500)) then begin
-               while i <= 424 do begin
-                  if (Nevadella[i,1] = 0) and (Nevadella[i,2] = 0) then begin
+               i := 1;
+               if Odd(Random(500)) then begin
+                  while i <= 424 do begin
+                     if (Nevadella[i,1] = 0) and (Nevadella[i,2] = 0) then begin
+                        inc(i);
+                        MoveTo(xoff+Size*Nevadella[i,1],yoff+Size*Nevadella[i,2])
+                     end
+                     else LineTo(xoff+Size*Nevadella[i,1],yoff+Size*Nevadella[i,2]);
                      inc(i);
-                     MoveTo(xoff+Size*Nevadella[i,1],yoff+Size*Nevadella[i,2])
-                  end
-                  else LineTo(xoff+Size*Nevadella[i,1],yoff+Size*Nevadella[i,2]);
-                  inc(i);
-               end {for i};
-            end
-            else begin
-               Pen.Width := 3;
-               while i <= PTBRpts do begin
-                  if (PTBR[i,1] = 0) and (PTBR[i,2] = 0) then begin
+                  end {for i};
+               end
+               else begin
+                  Pen.Width := 3;
+                  while i <= PTBRpts do begin
+                     if (PTBR[i,1] = 0) and (PTBR[i,2] = 0) then begin
+                        inc(i);
+                        MoveTo(xoff+size*succ(PTBR[i,1]),yoff+size*PTBR[i,2]);
+                     end
+                     else LineTo(xoff+size*succ(PTBR[i,1]),yoff+size*PTBR[i,2]);
                      inc(i);
-                     MoveTo(xoff+size*succ(PTBR[i,1]),yoff+size*PTBR[i,2]);
-                  end
-                  else LineTo(xoff+size*succ(PTBR[i,1]),yoff+size*PTBR[i,2]);
-                  inc(i);
+                  end;
                end;
-            end;
             end {with};
          end;
 
@@ -2608,15 +2607,15 @@ end;
          function MonthColor(i : integer) : TPlatformColor;
          begin
             case i of
-                1 :  MonthColor := RGBtrip(0,0,100) ;
-                2 :  MonthColor := RGBtrip(0,0,200);
-                3 :  MonthColor := rgbTrip(0,100,100);
-                4 :  MonthColor := rgbTrip(0,200,200);
-                5 :  MonthColor := rgbTrip(0,100,0);
-                6 :  MonthColor := rgbTrip(0,200,0);
-                7 :  MonthColor := rgbTrip(100,100,0);
-                8 :  MonthColor := rgbTrip(200,200,0);
-                9 :  MonthColor := rgbTrip(100,0,0);
+                1 : MonthColor := RGBtrip(0,0,100) ;
+                2 : MonthColor := RGBtrip(0,0,200);
+                3 : MonthColor := rgbTrip(0,100,100);
+                4 : MonthColor := rgbTrip(0,200,200);
+                5 : MonthColor := rgbTrip(0,100,0);
+                6 : MonthColor := rgbTrip(0,200,0);
+                7 : MonthColor := rgbTrip(100,100,0);
+                8 : MonthColor := rgbTrip(200,200,0);
+                9 : MonthColor := rgbTrip(100,0,0);
                10 : MonthColor := rgbTrip(200,0,0);
                11 : MonthColor := rgbTrip(100,0,100);
                12 : MonthColor := rgbTrip(200,0,200);
@@ -2646,10 +2645,10 @@ end;
                   if Sym in [VertLine] then pw := Size;
 
                   Canvas.Pen.Width := pw;
-                  Canvas.Pen.Color :=  ConvertPlatformColorToTColor(Color);
+                  Canvas.Pen.Color := ConvertPlatformColorToTColor(Color);
 
                   if Sym in [FilledCircle,FilledBox,FilledDiamond,FilledUpTri,FilledDownTri] then begin
-                     Canvas.Brush.Color :=  ConvertPlatformColorToTColor(Color);
+                     Canvas.Brush.Color := ConvertPlatformColorToTColor(Color);
                      Canvas.Brush.Style := bsSolid;
                   end
                   else Canvas.Brush.Style := bsClear;
@@ -2657,7 +2656,7 @@ end;
                      FilledBox,Box : Canvas.Rectangle(x-size,y-size,x+size,y+size);
                      FilledCircle,
                      Circle  : Canvas.Ellipse(X+Size,Y+Size,X-Size,Y-Size);
-                     Dot     : Canvas.Pixels[x,y] :=  ConvertPlatformColorToTColor(Color);
+                     Dot     : Canvas.Pixels[x,y] := ConvertPlatformColorToTColor(Color);
                      Cross   : begin
                                   Canvas.MoveTo(x+Size,y);  Canvas.LineTo(x-Size,y);
                                   Canvas.MoveTo(x,y+Size);  Canvas.LineTo(x,y-Size);
@@ -2862,9 +2861,8 @@ begin
    WantShowProgress := true;
 
    {$IfDef VCL}
-   PETMARCommonForm := tPETMARCommonForm.Create(Application);
-   //PETMARCommonForm.BMPSaveDialog1.InitialDir := ProgramRootDir;
-   PETMARCommonForm.DefaultMonitor := dmMainForm;
+      PETMARCommonForm := tPETMARCommonForm.Create(Application);
+      PETMARCommonForm.DefaultMonitor := dmMainForm;
    {$EndIf}
 
    TerrainCuts[0,1] := 2;
@@ -3235,6 +3233,7 @@ begin
   Move(Packet,FloatValue,4);
 end;
 
+
 procedure SwapToFloat8byte(var FloatValue : Float64);
 var
   i : integer;
@@ -3292,7 +3291,6 @@ begin
 end;
 
 
-
 function GetDOSPath(TheMessage : AnsiString; var Path : PathStr) : boolean;
 begin
    {$IfDef VCL}
@@ -3322,24 +3320,23 @@ var
 begin
    {$IfDef VCL}
       fod := TFileOpenDialog.Create(nil);
-        try
-          fod.Title := 'Folders/directories for ' + TheMessage;
-          fod.Options := [fdoPickFolders,fdoAllowMultiSelect];
-          fod.FileName := LastSubDir(Paths[0]);
-          fod.DefaultFolder := GetParentDirectory(Paths[0]);
-          Paths.Clear;
-          if fod.Execute then begin
-               for i := 0 to pred(fod.Files.Count) do begin
-                  Paths.Add(fod.Files[i] + '\');
-               end;
-          end;
-          Result := Paths.Count > 0;
-        finally
-          fod.Free;
-        end;
+      try
+         fod.Title := 'Folders/directories for ' + TheMessage;
+         fod.Options := [fdoPickFolders,fdoAllowMultiSelect];
+         fod.FileName := LastSubDir(Paths[0]);
+         fod.DefaultFolder := GetParentDirectory(Paths[0]);
+         Paths.Clear;
+         if fod.Execute then begin
+              for i := 0 to pred(fod.Files.Count) do begin
+                 Paths.Add(fod.Files[i] + '\');
+              end;
+         end;
+         Result := Paths.Count > 0;
+     finally
+       fod.Free;
+     end;
    {$EndIf}
 end;
-
 
 
 procedure StripInvalidPathNameChars(var fName : PathStr);
@@ -3494,7 +3491,7 @@ end;
 
 procedure ReadDefault(Prompt : ShortString; var IntVal : byte);
 var
-   Error    : integer;
+   Error : integer;
 begin
    {$IfDef VCL}
       with PETMARCommonForm do repeat
@@ -3511,7 +3508,7 @@ end;
 
 procedure ReadDefault(Prompt : ShortString; var IntVal : int16);
 var
-   Error    : integer;
+   Error : integer;
 begin
    {$IfDef VCL}
       with PETMARCommonForm do repeat
@@ -3528,7 +3525,7 @@ end;
 
 procedure ReadDefault(Prompt : ShortString; var IntVal : int32);
 var
-   Error    : integer;
+   Error : integer;
 begin
    {$IfDef VCL}
       with PETMARCommonForm do repeat
@@ -3545,7 +3542,7 @@ end;
 
 procedure ReadDefault(Prompt : ShortString; var IntVal : int64);
 var
-   Error    : integer;
+   Error : integer;
 begin
    {$IfDef VCL}
       with PETMARCommonForm do repeat
@@ -3706,14 +3703,14 @@ end;
 
 procedure GetSeparationCharacter(MenuStr : ANSIstring; var SepChar : ANSIchar);
 
-   procedure SeeIfItsThis(ch :Ansichar);
-   var
-      j : integer;
-   begin
-      if (SepChar = ' ') then begin
-         for j := 1 to length(MenuStr) do if MenuStr[j] = ch then SepChar := ch;
-      end;
-   end;
+         procedure SeeIfItsThis(ch :Ansichar);
+         var
+            j : integer;
+         begin
+            if (SepChar = ' ') then begin
+               for j := 1 to length(MenuStr) do if MenuStr[j] = ch then SepChar := ch;
+            end;
+         end;
 
 begin
    SepChar := ' ';
@@ -3726,14 +3723,14 @@ end;
 
 procedure GetSeparationCharacterUnicode(MenuStr : string; var SepChar : char);
 
-   procedure SeeIfItsThis(ch : char);
-   var
-      j : integer;
-   begin
-      if (SepChar = ' ') then begin
-         for j := 1 to length(MenuStr) do if MenuStr[j] = ch then SepChar := ch;
-      end;
-   end;
+         procedure SeeIfItsThis(ch : char);
+         var
+            j : integer;
+         begin
+            if (SepChar = ' ') then begin
+               for j := 1 to length(MenuStr) do if MenuStr[j] = ch then SepChar := ch;
+            end;
+         end;
 
 begin
    SepChar := ' ';
@@ -4136,22 +4133,6 @@ begin
    for i := 1 to length(Result) do if Result[i] in ['/',':'] then Result[i] := '_';
 end;
 
-{$IfDef VCL}
-{$Else}
-   procedure DisplayHTMLTopic(Name : ANSIstring);
-   begin
-   end;
-{$EndIf}
-
-
-(*
-procedure ClearMessages;
-begin
-   {$IfDef VCL}
-      Application.ProcessMessages;
-   {$EndIf}
-end;
-*)
 
 const
   ProgressTop  : integer = -99;

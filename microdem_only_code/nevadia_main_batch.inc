@@ -11,35 +11,81 @@
 procedure Sentinel2BatchOps;
 var
    Paths : tStringList;
-   fName,sName : PathStr;
+   fName,sName,dName : PathStr;
    i,Sat,NDVIgrid,NBRgrid,db : integer;
 begin
+   {$IfDef FireStats} WriteLineToDebugFile('Sentinel2BatchOps in'); {$EndIf}
+   HeavyDutyProcessing := true;
+
    Paths := tStringList.Create;
-   Paths.Add(LastSatDir);
-   fName := 'H:\mid_projects\debuse\calwood.shp';
+   Paths.Add('G:\debuse\sentinel_2\');
+   fName := 'G:\debuse\calwood.shp';
    if GetMultipleDirectories('Landsat or Sentinel-2 image',Paths) then begin
       for i := 0 to pred(Paths.Count) do begin
+         WMDEM.SetPanelText(1,'Scene: ' + IntToStr(succ(i)) + '/' + IntToStr(Paths.Count));
+         wmdem.ClearStatusBarPanelText;
          LastSatDir := Paths[i];
          Sat := OpenSatImageFromDirectory(LastSatDir);
          db := SatImage[Sat].SelectionMap.LoadDataBaseFile(fName, false,true);
-         NDVIgrid := SatImage[Sat].SelectionMap.NewSatWindow(nsbNDVI);
-         MaskDEMFromShapeFile(NDVIgrid,db,true,true,0,MDDef.MaskDistance);
-         sName := GetParentDirectory(LastSatDir) + 'ndvi\';
-         SafeMakeDir(sName);
-         sName := sName + SatImage[Sat].SceneBaseName + '_ndvi.dem';
-         DEMGlb[NDVIgrid].SavePartOfDEMWithData(sName);
+         dName := GetParentDirectory(LastSatDir) + 'ndvi\';
+         SafeMakeDir(dName);
+         sName := dName + 'Sentinel-2_' + SatImage[Sat].ImageDateString + '_ndvi.dem';
+         if Not FileExists(sName) then begin
+            {$IfDef FireStats} WriteLineToDebugFile('Sentinel2BatchOps  create ' + sName); {$EndIf}
+            NDVIgrid := SatImage[Sat].SelectionMap.NewSatWindow(nsbNDVI);
+            MaskDEMFromShapeFile(NDVIgrid,db,true,true,0,MDDef.MaskDistance);
+            DEMGlb[NDVIgrid].SavePartOfDEMWithData(sName);
+         end;
 
-         NBRgrid := SatImage[Sat].SelectionMap.NewSatWindow(nsbNBRNormalizedBurnIndex);
-         MaskDEMFromShapeFile(NBRgrid,db,true,true,0,MDDef.MaskDistance);
-         sName := GetParentDirectory(LastSatDir) + 'nbr\';
-         SafeMakeDir(sName);
-         sName := sName + SatImage[Sat].SceneBaseName + '_nbr.dem';
-         DEMGlb[NDVIgrid].SavePartOfDEMWithData(sName);
-
+         dName := GetParentDirectory(LastSatDir) + 'nbr\';
+         SafeMakeDir(dName);
+         sName := dName + 'Sentinel-2_' + SatImage[Sat].ImageDateString + '_nbr.dem';
+         if Not FileExists(sName) then begin
+            {$IfDef FireStats} WriteLineToDebugFile('Sentinel2BatchOps  create ' + sName); {$EndIf}
+            NBRgrid := SatImage[Sat].SelectionMap.NewSatWindow(nsbNBRNormalizedBurnIndex);
+            MaskDEMFromShapeFile(NBRgrid,db,true,true,0,MDDef.MaskDistance);
+            DEMGlb[NBRgrid].SavePartOfDEMWithData(sName);
+         end;
+         CloseAndNilNumberedDB(db);
          CloseSingleSatelliteImage(Sat);
+         CloseSingleDEM(NBRgrid);
+         CloseSingleDEM(NDVIgrid);
       end;
    end;
    Paths.Free;
+   wmdem.ClearStatusBarPanelText;
+   HeavyDutyProcessing := false;
+
+   {$IfDef FireStats} WriteLineToDebugFile('Sentinel2BatchOps out'); {$EndIf}
+end;
+
+
+procedure Sentinel2Batch_dNBR;
+var
+   fName : PathStr;
+   AreaName : shortstring;
+   RefNBR,i,dNBRgrid : integer;
+begin
+   {$IfDef FireStats} WriteLineToDebugFile('Sentinel2BatchdNBR in'); {$EndIf}
+   HeavyDutyProcessing := true;
+   fName := '';
+   OpenNewDEM(fName,true,'NBR grids');
+   if GetDEM(RefNBR, true,' pre fire NBR for dNBR reference time') then begin
+      for i := 1 to MaxDEMDataSets do if (i <> RefNBR) and ValidDEM(i) then begin
+         WMDEM.SetPanelText(1,'Scene: ' + IntToStr(i) + '/' + IntToStr( MaxDEMDataSets));
+         //AreaName := StringReplace(DEMglb[i].AreaName,'_nbr','_dNBR',[rfReplaceAll, rfIgnoreCase]);
+         dNBRgrid := MakeDNBRMap(RefNBR,i);
+         fName := StringReplace(DEMglb[i].DEMfileName,'_nbr','_dNBR',[rfReplaceAll, rfIgnoreCase]);
+         DEMGlb[dNBRgrid].WriteNewFormatDEM(fName);
+         //MessageToContinue('yes');
+         CloseSingleDEM(i);
+         CloseSingleDEM(dNBRgrid);
+      end;
+   end;
+   CloseSingleDEM(RefNBR);
+   wmdem.ClearStatusBarPanelText;
+   HeavyDutyProcessing := false;
+   {$IfDef FireStats} WriteLineToDebugFile('Sentinel2BatchdNBR out'); {$EndIf}
 end;
 
 

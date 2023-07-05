@@ -635,7 +635,7 @@ begin
    repeat
       inc(OnSlide);
       LoadPictures;
-      Delay(250);
+      Delay(50);
    until (Onslide =  FileNames.Count - 2);
 end;
 

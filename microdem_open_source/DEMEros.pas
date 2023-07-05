@@ -220,6 +220,9 @@ type
          function IsLandsatImageAnalysisBand(Band : integer) : boolean;
          function FindTMBand(TMBandName : integer; var BandPresent : integer) : boolean;
 
+         //function Sentinel2DateString : shortstring;
+         function ImageDateString : shortstring;
+
          function GetLandsatBQAName : shortstring;
          function GetLandsatMetadataName : shortstring;
 
@@ -357,6 +360,20 @@ begin
             StrUtils.AnsiContainsText(UpperCase(fName),'S2B_MSI_');
 end;
 
+function tSatImage.ImageDateString : shortstring;
+begin
+   if IsSentinel2 then Result := Copy(SceneBaseName,8,4) + '-' + Copy(SceneBaseName,12,2) + '-' + Copy(SceneBaseName,14,2)
+   else Result := '';
+end;
+
+
+(*
+function tSatImage.Sentinel2DateString : shortstring;
+begin
+   Result := Copy(SceneBaseName,8,4) + '-' + Copy(SceneBaseName,12,2) + '-' + Copy(SceneBaseName,14,2);
+end;
+*)
+
 function ValidSatImage(i : integer) : boolean;
 begin
    Result := (i in [1..MaxSatAllowed]) and (SatImage[i] <> nil);
@@ -469,7 +486,9 @@ var
    rfile : file;
    v     : tGraphPoint32;
 begin
-   DownloadandUnzipDataFileIfNotPresent('spectral_library');
+   {$IfDef AllowUSNAdataDownloads}
+      DownloadandUnzipDataFileIfNotPresent('spectral_library');
+   {$EndIf}
    Result := Nil;
    FilesWanted := tStringList.Create;
    if (fName = '') then begin
@@ -838,16 +857,17 @@ begin
       SWIRBand := 7;
    end
    else if (LandsatNumber in [8,9]) then begin
-      IR2Band := 5;
+      SWIRBand := 7;
+      IR2Band := 6;
       NIRBand := 5;
       RedBand := 4;
       GreenBand := 3;
-      SWIRBand := 7;
    end
-   else if SatelliteName = 'Sentinel-2' then begin
+   else if (SatelliteName = 'Sentinel-2') then begin
       SWIRBand := 13;  //Band 12
       IR2Band := 12;  //Band 11
-      NIRBand := 8;
+      if (NewBand = nsbNBRNormalizedburnindex) then NIRBand := 9  //8A
+      else NIRBand := 8;
       RedBand := 4;
       GreenBand := 3;
    end
@@ -911,11 +931,17 @@ begin
       if (Band1 = 0) or (Band2 = 0) then PickBands;
       NewBandTitle := 'NDWI' + RatName;
    end
-   else if (NewBand = nsbNBRNormalizedburnindex) then begin
+   else if (NewBand in [nsbNBRNormalizedburnindex]) then begin
       Band1 := NIRBand;
       Band2 := SWIRBand;
       if (Band1 = 0) or (Band2 = 0) then PickBands;
       NewBandTitle := 'NBR' + RatName;
+   end
+   else if (NewBand in [nsbNBRNormalizedburnindex2]) then begin
+      Band1 := IR2Band;
+      Band2 := SWIRBand;
+      if (Band1 = 0) or (Band2 = 0) then PickBands;
+      NewBandTitle := 'NBR-2' + RatName;
    end
    else if (NewBand = nsbSentinelReflectance) then begin
       PickBand('band for Sentinel reflectance',Band1);
@@ -974,8 +1000,10 @@ begin
    end;
    if (Band2 <> 0) and (BandXSpace[Band1] <> BandXSpace[Band2]) then begin
       ThinFactor := round(BandXSpace[Band1]/BandXSpace[Band2]);
-      if Not AnswerIsYes('Use thinning factor of ' + IntToStr(ThinFactor) + ' on bands with different spatial resolution, band1=' +
-          RealToString(BandXSpace[Band1],-8,-2) + ' band2=' + RealToString(BandXSpace[Band2],-8,-2)) then exit;
+      if not (NewBand = nsbNBRNormalizedburnindex) then begin
+         if Not AnswerIsYes('Use thinning factor of ' + IntToStr(ThinFactor) + ' on bands with different spatial resolution, band1=' +
+             RealToString(BandXSpace[Band1],-8,-2) + ' band2=' + RealToString(BandXSpace[Band2],-8,-2)) then exit;
+      end;
    end;
    ShowHourglassCursor;
 
@@ -1013,7 +1041,7 @@ begin
            numvalsf := ConvertDN(SatRow[1]^[k],Band1);
            if (Band2 <> 0) then denvalsf  := ConvertDN(SatRow[2]^[j],Band2);
            if (Band3 <> 0) then ThirdValsf := ConvertDN(SatRow[3]^[j],Band3);
-           if (NewBand in [nsbPickEm,nsbNDVI, nsbNDSIsoil, nsbNDSIsnow, nsbNDWI, nsbVARI,nsbNBRNormalizedburnindex,nsbNDBIbuilding,nsbGDVI]) then begin
+           if (NewBand in [nsbPickEm,nsbNDVI, nsbNDSIsoil, nsbNDSIsnow, nsbNDWI, nsbVARI,nsbNBRNormalizedburnindex,nsbNBRNormalizedburnindex2,nsbNDBIbuilding,nsbGDVI]) then begin
               if (NumValsf + DenValsf = 0) then Ratio := 0
               else begin
                  Ratio := (NumValsf - DenValsf) / (NumValsf + DenValsf);
@@ -1046,6 +1074,7 @@ begin
    EndProgress;
 
    if (LandsatNumber in [1..9]) then DEMGlb[Result].AreaName := NewBandTitle + '_' + ShortLandsatName(SceneBaseName)
+   else if IsSentinel2 then DEMGlb[Result].AreaName := NewBandTitle + '_' + ImageDateString + '_Sentinel-2'
    else DEMGlb[Result].AreaName := NewBandTitle + ' ' + SceneBaseName;
    DEMGlb[Result].CheckMaxMinElev;
    {$IfDef RecordNewSat} WriteLineToDebugFile('Band range: ' + DEMGlb[Result].zRange); {$EndIf}
@@ -1818,7 +1847,7 @@ end;
 
 function tSatImage.ConvertDN(DN : word; Band : integer; HowConvert : tDNconvert = dncMDDefault) : float64;
 begin
-   if HowConvert = dncMDDefault then HowConvert := MDDef.dnConvert;
+   if (HowConvert = dncMDDefault) then HowConvert := MDDef.dnConvert;
    if (LandsatNumber = 0) or (HowConvert = dncDN) then Result := DN
    else if (HowConvert  in [dncRadiance,dncBrightness]) then begin
       Result := LandsatMetadata.RadianceMult[Band] * DN + LandsatMetadata.RadianceAdd[Band];

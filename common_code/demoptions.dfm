@@ -3,20 +3,20 @@ inherited OptionsForm: TOptionsForm
   Top = 230
   BorderStyle = bsSizeable
   Caption = ''
-  ClientHeight = 568
-  ClientWidth = 813
+  ClientHeight = 567
+  ClientWidth = 809
   Position = poDefaultPosOnly
   OnClose = FormClose
   OnCreate = FormCreate
   OnResize = FormResize
-  ExplicitWidth = 829
-  ExplicitHeight = 607
+  ExplicitWidth = 821
+  ExplicitHeight = 605
   TextHeight = 15
   inherited Bevel1: TBevel
     Left = 0
     Top = 0
-    Width = 813
-    Height = 510
+    Width = 809
+    Height = 509
     Align = alClient
     ExplicitLeft = 0
     ExplicitTop = 1
@@ -45,12 +45,14 @@ inherited OptionsForm: TOptionsForm
   object PageControl1: TPageControl
     Left = 0
     Top = 0
-    Width = 813
-    Height = 510
-    ActivePage = TabSheet4
+    Width = 809
+    Height = 509
+    ActivePage = TabSheet10
     Align = alClient
     MultiLine = True
     TabOrder = 2
+    ExplicitWidth = 805
+    ExplicitHeight = 508
     object TabSheet1: TTabSheet
       Caption = 'Program'
       object RadioGroup7: TRadioGroup
@@ -128,8 +130,8 @@ inherited OptionsForm: TOptionsForm
       object StringGrid1: TStringGrid
         Left = 0
         Top = 0
-        Width = 809
-        Height = 461
+        Width = 801
+        Height = 459
         Align = alClient
         ColCount = 2
         ScrollBars = ssVertical
@@ -696,7 +698,7 @@ inherited OptionsForm: TOptionsForm
       object CheckBox86: TCheckBox
         Left = 24
         Top = 215
-        Width = 180
+        Width = 209
         Height = 17
         Caption = 'Backup EXE before web update'
         TabOrder = 5
@@ -860,6 +862,7 @@ inherited OptionsForm: TOptionsForm
         Width = 177
         Height = 25
         Caption = 'Get geology data'
+        Enabled = False
         TabOrder = 6
         OnClick = BitBtn21Click
       end
@@ -869,6 +872,7 @@ inherited OptionsForm: TOptionsForm
         Width = 177
         Height = 25
         Caption = 'Get geography data'
+        Enabled = False
         TabOrder = 7
         OnClick = BitBtn33Click
       end
@@ -902,6 +906,7 @@ inherited OptionsForm: TOptionsForm
         Width = 177
         Height = 25
         Caption = 'Get ETOPO1/Blue Marble'
+        Enabled = False
         TabOrder = 11
         OnClick = BitBtn22Click
       end
@@ -913,22 +918,14 @@ inherited OptionsForm: TOptionsForm
         Caption = 'Custom sidescan palette'
         TabOrder = 12
       end
-      object BitBtn39: TBitBtn
-        Left = 16
-        Top = 365
-        Width = 177
-        Height = 25
-        Caption = 'Get geoid'
-        TabOrder = 13
-        OnClick = BitBtn39Click
-      end
       object BitBtn42: TBitBtn
         Left = 16
         Top = 400
         Width = 177
         Height = 25
         Caption = 'Get Natural Earth Vectors'
-        TabOrder = 14
+        Enabled = False
+        TabOrder = 13
         OnClick = BitBtn42Click
       end
     end
@@ -3268,11 +3265,13 @@ inherited OptionsForm: TOptionsForm
   end
   object Panel1: TPanel
     Left = 0
-    Top = 510
-    Width = 813
+    Top = 509
+    Width = 809
     Height = 58
     Align = alBottom
     TabOrder = 3
+    ExplicitTop = 508
+    ExplicitWidth = 805
     object BitBtn3: TBitBtn
       Left = 178
       Top = 6

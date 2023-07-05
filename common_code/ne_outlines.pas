@@ -129,7 +129,9 @@ end;
 
 procedure TNEOutlineForm.BitBtn2Click(Sender: TObject);
 begin
-    GetNaturalEarthData(True);
+   {$IfDef AllowUSNAdataDownloads}
+      GetNaturalEarthData(True);
+   {$EndIf}
 end;
 
 procedure TNEOutlineForm.BitBtn3Click(Sender: TObject);

@@ -605,10 +605,10 @@ end;
 
 function SmartMemorySizeBytes(Memory : int64) : shortstring;
 begin
-   if (Memory < 2048000) then Result :=  RealToString(memory / 1024,-12,1) + ' kb'
-   else if (Memory < 50000000) then Result :=  RealToString(memory / 1024 / 1024,-12,1) + ' Mb'
-   else if (Memory < 1000000000) then Result :=  IntToStr(Memory div 1024 div 1024 ) + ' Mb'
-   else Result :=  RealToString(1.0 * Memory / 1024 / 1024 / 1024 ,-12,1) + ' Gb'
+   if (Memory < 2048000) then Result := RealToString(memory / 1024,-12,1) + ' kb'
+   else if (Memory < 50000000) then Result := RealToString(memory / 1024 / 1024,-12,1) + ' Mb'
+   else if (Memory < 1000000000) then Result := IntToStr(Memory div 1024 div 1024 ) + ' Mb'
+   else Result := RealToString(1.0 * Memory / 1024 / 1024 / 1024 ,-12,1) + ' Gb'
 end;
 
 {$IfDef MSWindows}

@@ -4,9 +4,8 @@ unit moon_montenbruk_pfleger;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
-
 
 
 { from Montenbruck, O., and Pfleger, T., 1991, Astronomy on the personal computer: Springer-Verlag, 255 p.}
@@ -355,10 +354,10 @@ PROCEDURE PMATEQU(T1,T2:float64;VAR A:REAL33);
       C1,S1,C2,S2,C3,S3: float64;
   begin
    DT:=T2-T1;
-    ZETA  :=  ( (2306.2181+(1.39656-0.000139*T1)*T1)+
+    ZETA  := ( (2306.2181+(1.39656-0.000139*T1)*T1)+
                 ((0.30188-0.000345*T1)+0.017998*DT)*DT )*DT/SEC;
-    Z     :=  ZETA + ( (0.79280+0.000411*T1)+0.000205*DT)*DT*DT/SEC;
-    THETA :=  ( (2004.3109-(0.85330+0.000217*T1)*T1)-
+    Z     := ZETA + ( (0.79280+0.000411*T1)+0.000205*DT)*DT*DT/SEC;
+    THETA := ( (2004.3109-(0.85330+0.000217*T1)*T1)-
                 ((0.42665+0.000217*T1)+0.041833*DT)*DT )*DT/SEC;
     C1:=CosDeg(Z);  C2:=CosDeg(THETA);  C3:=CosDeg(ZETA);
     S1:=SinDeg(Z);  S2:=SinDeg(THETA);  S3:=SinDeg(ZETA);
@@ -673,7 +672,7 @@ VAR
 
   begin
     (* mean elements of lunar orbit *)
-    L0:=   FRAC(0.606433+1336.855225*T); (* mean longitude Moon (in rev) *)
+    L0:= FRAC(0.606433+1336.855225*T); (* mean longitude Moon (in rev) *)
     L :=TwoPi*FRAC(0.374897+1325.552410*T); (* mean anomaly of the Moon     *)
     LS:=TwoPi*FRAC(0.993133+  99.997361*T); (* mean anomaly of the Sun      *)
     D :=TwoPi*FRAC(0.827361+1236.853086*T); (* diff. longitude Moon-Sun     *)

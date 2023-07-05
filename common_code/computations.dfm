@@ -23,6 +23,8 @@ object CompForm: TCompForm
       '')
     ScrollBars = ssVertical
     TabOrder = 0
+    ExplicitWidth = 513
+    ExplicitHeight = 219
   end
   object Panel1: TPanel
     Left = 0
@@ -31,7 +33,7 @@ object CompForm: TCompForm
     Height = 145
     Align = alTop
     TabOrder = 1
-    ExplicitWidth = 515
+    ExplicitWidth = 513
     object Label3: TLabel
       Left = 182
       Top = 85

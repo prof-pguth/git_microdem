@@ -2,8 +2,8 @@ object DemixFilterForm: TDemixFilterForm
   Left = 0
   Top = 0
   Caption = 'Demix Filter Pick Graphs'
-  ClientHeight = 475
-  ClientWidth = 709
+  ClientHeight = 473
+  ClientWidth = 701
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -16,8 +16,8 @@ object DemixFilterForm: TDemixFilterForm
   object PageControl1: TPageControl
     Left = 0
     Top = 0
-    Width = 709
-    Height = 475
+    Width = 701
+    Height = 473
     ActivePage = TabSheet1
     Align = alClient
     TabOrder = 0
@@ -385,6 +385,15 @@ object DemixFilterForm: TDemixFilterForm
         Caption = 'DB stats'
         TabOrder = 35
         OnClick = BitBtn26Click
+      end
+      object BitBtn27: TBitBtn
+        Left = 658
+        Top = 377
+        Width = 49
+        Height = 25
+        Caption = 'All'
+        TabOrder = 36
+        OnClick = BitBtn27Click
       end
     end
     object TabSheet2: TTabSheet

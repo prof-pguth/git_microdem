@@ -113,21 +113,6 @@ procedure MakeDEMSummaryTable(Quick : boolean = true);
 
    procedure CheckGeoidNames;
 
-//download data from USNA server
-     procedure DownloadandUnzipDataFileIfNotPresent(pName : PathStr; Force : boolean = false);
-     procedure GetNaturalEarthData(Force : boolean = false);
-     procedure GetETOPO1(Force : boolean = false);
-     procedure GetBlueMarble(Force : boolean = false);
-    {$IfDef ExGeography}
-    {$Else}
-       procedure ClimateGetData(ForceDownload : boolean = false);
-    {$EndIf}
-
-    {$If Defined(ExGeology) or Defined(ExGeologyDownload)}
-    {$Else}
-       procedure GeologyGetData(ForceDownload : boolean = false);
-    {$EndIf}
-
 {$IfDef ExSat}
 {$Else}
    procedure CloseAllImagery;
@@ -156,6 +141,8 @@ function LoadDatumShiftGrids(var LocalToWGS84,WGS84toEGM2008 : integer) : boolea
    function OpenNewDEM(fName : PathStr = ''; LoadMap : boolean = true; WhatFor : shortstring = '') : integer;
    function GetTwoCompatibleGrids(WhatFor : shortString; CheckUnits : boolean; var DEM1,DEM2 : integer; WarnIfIncompatible : boolean = true;  AlwaysAsk : boolean = false) : boolean;
 
+   function GetImage(var ImageWanted : integer; CanCancel : boolean = false; TheMessage : ShortString = '') : boolean;
+
    function PickMap(WhatFor : shortstring) : integer;
    function PickADifferentMap(WhatFor,ThisMapCaption : shortstring) : integer;
    procedure PickMaps(var Maps : tStringList; aCaption : ShortString);
@@ -174,10 +161,6 @@ function LoadDatumShiftGrids(var LocalToWGS84,WGS84toEGM2008 : integer) : boolea
       procedure AutoOpenOptions;
    {$EndIf}
 
-   {$IfDef ExSat}
-   {$Else}
-      function GetImage(var ImageWanted : integer; CanCancel : boolean = false; TheMessage : ShortString = '') : boolean;
-   {$EndIf}
 {$EndIf}
 
 
@@ -190,6 +173,26 @@ const
    EGM96_grid : integer = 0;
    EGM2008_grid : integer = 0;
    EGMdiff_grid : integer = 0;
+
+{$IfDef AllowUSNAdataDownloads}
+   //download data from USNA server
+     procedure DownloadandUnzipDataFileIfNotPresent(pName : PathStr; Force : boolean = false);
+     procedure GetNaturalEarthData(Force : boolean = false);
+     procedure GetETOPO1(Force : boolean = false);
+     procedure GetBlueMarble(Force : boolean = false);
+    {$IfDef ExGeography}
+    {$Else}
+       procedure ClimateGetData(ForceDownload : boolean = false);
+    {$EndIf}
+
+    {$If Defined(ExGeology) or Defined(ExGeologyDownload)}
+    {$Else}
+       procedure GeologyGetData(ForceDownload : boolean = false);
+    {$EndIf}
+{$EndIf}
+
+
+
 
 implementation
 
@@ -1458,6 +1461,9 @@ end;
          end;
       end;
 
+{$EndIf}
+
+{$IfDef AllowUSNAdataDownloads}
 
       {$IfDef ExGeography}
       {$Else}

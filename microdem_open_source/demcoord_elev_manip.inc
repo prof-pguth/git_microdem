@@ -7,12 +7,11 @@
 {include file for demcoord.pas      }
 {___________________________________}
 
+
 function OnGridNode(Xincr,YIncr : float32) : boolean; inline;
 begin
    Result := ( (abs(XIncr) < 0.01) or (abs(XIncr) > 0.99) ) and ( (abs(YIncr) < 0.01) or (abs(YIncr) > 0.99))
 end;
-
-
 
 function tDEMDataSet.InterpolateBiCubicNumericalRecipes(xgrid,ygrid : float32; var z : float32) : boolean;
 //uses code from Numerical Recipes
@@ -26,8 +25,8 @@ var
        begin
           Result := SurroundedPointElevs(xg,yg,znw,zw,zsw,zn,z,zs,zne,ze,zse);
           if Result then begin
-             xgrad[Index] :=  (zw-ze) / (2 * XSpaceByDEMrow[yg]);
-             ygrad[Index] :=  (zn-zs) / (2 * AverageYSpace);
+             xgrad[Index] := (zw-ze) / (2 * XSpaceByDEMrow[yg]);
+             ygrad[Index] := (zn-zs) / (2 * AverageYSpace);
              crossgrad[Index] := (zne-zsw + znw-zse) / sqr(2*DiagSpaceByDEMrow[yg]);
           end
        end;
@@ -49,7 +48,6 @@ begin
      end;
    end;
 end;
-
 
 
 
@@ -138,24 +136,19 @@ begin
                wy[i] := wy[i] * MDDef.BicubicSlope / 0.5;
             end;
 
-
            // check this!!
 
-
-            z :=  wx[-1] * wy[2] * znw2 + wx[0] * wy[2] * zn2 + wx[1] * wy[2] * zne2   + wx[2] * wy[2] * zne3 +
+            z := wx[-1] * wy[2] * znw2 + wx[0] * wy[2] * zn2 + wx[1] * wy[2] * zne2   + wx[2] * wy[2] * zne3 +
                   wx[-1] * wy[1] * znw  + wx[0] * wy[1] * zn  + wx[1] * wy[1] *  zne   + wx[2] * wy[1] * zne4 +
                   wx[-1] * wy[0] *  zw  + wx[0] * wy[0] *  z  + wx[1] * wy[0] *   ze   + wx[2] * wy[0] *  ze2 +
                   wx[-1] * wy[-1] * zsw + wx[0] * wy[-1] * zs + wx[-1] * wy[-1] * zse  + wx[-1] * wy[-1] * zse2;
          end
          else begin  //revert to bilinear
-             z :=  (1-XIncr) * (1-YIncr)  * zsw + (1-XIncr) * YIncr  * znw + XIncr * (1-YIncr) * zse + XIncr * YIncr * zne;
+             z := (1-XIncr) * (1-YIncr)  * zsw + (1-XIncr) * YIncr  * znw + XIncr * (1-YIncr) * zse + XIncr * YIncr * zne;
          end;
       end;
    end;
 end;
-
-
-
 
 
 function tDEMDataSet.ZinMeters(z : float64) : float64;
@@ -174,11 +167,7 @@ begin
       else if (DEMheader.DEMPrecision = WordDEM) then z := WordElevations^[x]^[y]
       else if (DEMheader.DEMPrecision = LongWordDEM) then z := LongWordElevations^[x]^[y]
       else if (DEMheader.DEMPrecision = ByteDEM) then z := ByteElevations^[x]^[y];
-      if MissingElevation(z) then begin
-         //z := ThisDEMMissingValue;
-         //Result := false;
-      end
-      else begin
+      if not MissingElevation(z) then begin
          z := zinMeters(z);
          Result := true;
       end;

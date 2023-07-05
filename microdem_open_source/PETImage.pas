@@ -177,8 +177,6 @@ function ExtractPartOfImage(var Image1 : tImage; Left,Right,Top,Bottom : integer
 
       procedure SetRedrawMode(Image1 : tImage);  inline;
 
-      function MakeBigBitmap(var theFiles : tStringList; Capt : shortstring; SaveName : PathStr = ''; Cols : integer = -1) : boolean;
-
       procedure RestoreBigCompositeBitmap(fName : PathStr);
 
       procedure Drehen90Grad(Bitmap : tMyBitmap);
@@ -606,7 +604,7 @@ var
    zoom1,zoom2 : integer;
 begin
    zoom1 := round(100 * Height / bmp.Height);
-   zoom2 :=  round(100 * Width / bmp.Width);
+   zoom2 := round(100 * Width / bmp.Width);
    if zoom2 < zoom1 then zoom1 := zoom2;
    Result := CreateThumbNailBMP(bmp,zoom1 * bmp.Height div 100);
 end;
@@ -715,53 +713,6 @@ begin
    end;
 end;
 
-
-function MakeBigBitmap(var theFiles : tStringList; Capt : shortstring; SaveName : PathStr = ''; Cols : integer = -1) : boolean;
-var
-   bigbmp : tMyBitmap;
-   fName : PathStr;
-   AskCols : boolean;
-   x,y : integer;
-   ImageForm : TImageDisplayForm;
-begin
-   {$IfDef RecordBigBitmap}  WriteLineToDebugFile('MakeBigBitmap in'); {$EndIf}
-   Result := false;
-   if (TheFiles.Count > 0) then begin
-     AskCols := (Cols < 0);
-     if AskCols then begin
-        Cols := MDDef.BigBM_nc;
-     end;
-     BigBMP := CombineBitmaps(Cols, theFiles, Capt);
-     if (BigBMP <> nil) then begin
-        if (Capt <> '') then begin
-           BigBmp.Canvas.Font.Size := 24;
-           BigBmp.Canvas.Font.Style := [fsBold];
-           x := BigBmp.Width - 10 - BigBmp.Canvas.TextWidth(Capt);
-           y := BigBmp.Height - 10 - BigBmp.Canvas.TextHeight(Capt);
-           BigBmp.Canvas.TextOut(x,y,Capt);
-        end;
-        if (SaveName <> '') then begin
-            {$IfDef RecordBigBitmap} WriteLineToDebugFile('MakeBigBitmap save in ' + SaveName); {$EndIf}
-            SaveBitmap(BigBmp,SaveName);
-            Result := true;
-         end;
-         ImageForm := TImageDisplayForm.Create(Application);
-         ImageForm.LoadImage(BigBmp,true);
-         fName := Petmar.NextFileNumber(MDtempDir,'big_bmp_files_','.txt');
-         theFiles.SaveToFile(fName);
-         ImageForm.BigBM_Capt := Capt;
-         ImageForm.BigBM_files := fName;
-         ImageForm.ChangeColumns1.Visible := true;
-         if AskCols then ImageForm.Changecolumns1Click(nil)
-         else ImageForm.RedrawSpeedButton12Click(Nil);
-         {$IfDef RecordBigBitmap}  WriteLineToDebugFile('MakeBigBitmap out, imageform created'); {$EndIf}
-      end;
-   end
-   else begin
-      {$IfDef RecordBigBitmap}  WriteLineToDebugFile('Nothing in string list'); {$EndIf}
-   end;
-   theFiles.Destroy;
-end;
 
 
 procedure GrayscaleImage(var Image1 : tImage);
@@ -949,7 +900,7 @@ begin
    {$IfDef ExPointCloud}
    {$Else}
       if (Palette256 = p256LasClass) then begin
-         Result :=  ProgramRootDir + 'las_palette256.bmp';
+         Result := ProgramRootDir + 'las_palette256.bmp';
          for i := 0 to MaxLasCat do BMPMemory.SetPixelColor(0,i,LAS_RGB_colors[i]);
       end;
    {$EndIf}
@@ -1226,7 +1177,7 @@ begin
       Result := RGBtoGrayscale(Color.rgbtRed,Color.rgbtGreen,Color.rgbtBlue );
    {$EndIf}
    {$IfDef FMX}
-      Result :=  RGBtoGrayscale((tAlphaColorRec(Color).R),(tAlphaColorRec(Color).G),(tAlphaColorRec(Color).B) );
+      Result := RGBtoGrayscale((tAlphaColorRec(Color).R),(tAlphaColorRec(Color).G),(tAlphaColorRec(Color).B) );
    {$EndIf}
 end;
 
@@ -2819,13 +2770,13 @@ Var
     begin
       ANeighbour := (ANeighbour - 2) mod 8 + 2; // neighbourhood wrap-round
       Case ANeighbour of
-        2 : begin Result.X :=  0; Result.Y := -1; end; //    ___________
-        3 : begin Result.X :=  1; Result.Y := -1; end; //   | 9 | 2 | 3 |
-        4 : begin Result.X :=  1; Result.Y :=  0; end; //   |___|___|___|
-        5 : begin Result.X :=  1; Result.Y :=  1; end; //   | 8 | 1 | 4 |
-        6 : begin Result.X :=  0; Result.Y :=  1; end; //   |___|___|___|
-        7 : begin Result.X := -1; Result.Y :=  1; end; //   | 7 | 6 | 5 |
-        8 : begin Result.X := -1; Result.Y :=  0; end; //   |___|___|___|
+        2 : begin Result.X := 0; Result.Y := -1; end; //    ___________
+        3 : begin Result.X := 1; Result.Y := -1; end; //   | 9 | 2 | 3 |
+        4 : begin Result.X := 1; Result.Y := 0; end; //   |___|___|___|
+        5 : begin Result.X := 1; Result.Y := 1; end; //   | 8 | 1 | 4 |
+        6 : begin Result.X := 0; Result.Y := 1; end; //   |___|___|___|
+        7 : begin Result.X := -1; Result.Y := 1; end; //   | 7 | 6 | 5 |
+        8 : begin Result.X := -1; Result.Y := 0; end; //   |___|___|___|
         9 : begin Result.X := -1; Result.Y := -1; end; //
       end;
     end;
@@ -3271,7 +3222,7 @@ end;
 procedure tBMPMemory.SetGreenChannel(x,y : integer; Value : byte);
 begin
    {$IfDef VCL}
-      p1[y]^[x].rgbtGreen :=  Value;
+      p1[y]^[x].rgbtGreen := Value;
    {$EndIf}
 
    {$IfDef FMX}

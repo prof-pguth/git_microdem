@@ -922,7 +922,6 @@ type
     RankDEMs1: TMenuItem;
     N1degreetilestocoverrecordsintable1: TMenuItem;
     Sumscores1: TMenuItem;
-    Graphavereagescoresbyterraincategories1: TMenuItem;
     Graphmeanmedianbyterraincategory1: TMenuItem;
     DEMIXtilesummary1: TMenuItem;
     PickParam1: TMenuItem;
@@ -962,9 +961,9 @@ type
     DEMIXtileinvertory1: TMenuItem;
     Filterforjustsignedcrirteria1: TMenuItem;
     Meanandmedianhistograms1: TMenuItem;
-    N49: TMenuItem;
     N50: TMenuItem;
     AddIMAGEfieldfordifferencedistributiongraphs1: TMenuItem;
+    Modestandarddeviationplots1: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
     procedure Shiftpointrecords1Click(Sender: TObject);
     procedure Creategrid1Click(Sender: TObject);
@@ -1657,7 +1656,6 @@ type
     procedure BestDEMbycategory1Click(Sender: TObject);
     procedure RankDEMs1Click(Sender: TObject);
     procedure Sumscores1Click(Sender: TObject);
-    procedure Graphavereagescoresbyterraincategories1Click(Sender: TObject);
     procedure DEMIXtilesummary1Click(Sender: TObject);
     procedure PickParam1Click(Sender: TObject);
     procedure Filteroutsignedcriteriameanandmedian1Click(Sender: TObject);
@@ -1668,7 +1666,6 @@ type
     procedure COPoALOS1Click(Sender: TObject);
     procedure BestDEMpertilebycriteria1Click(Sender: TObject);
     procedure N7Elevationdifferencecriteria1Click(Sender: TObject);
-    procedure FriedmanTest1Click(Sender: TObject);
     procedure Ascending1Click(Sender: TObject);
     procedure Descending1Click(Sender: TObject);
     procedure Alphabetize1Click(Sender: TObject);
@@ -1699,6 +1696,7 @@ type
     procedure N50Click(Sender: TObject);
     procedure AddIMAGEfieldfordifferencedistributiongraphs1Click(
       Sender: TObject);
+    procedure Modestandarddeviationplots1Click(Sender: TObject);
   private
     procedure PlotSingleFile(fName : PathStr; xoff,yoff : float64);
     procedure SetUpLinkGraph;
@@ -3562,18 +3560,6 @@ begin
 end;
 
 
-procedure Tdbtablef.FriedmanTest1Click(Sender: TObject);
-var
-   DEMs : tStringList;
-begin
-   DEMs := tStringList.Create;
-   DEMs.Add('COP');
-   DEMs.Add('ALOS');
-   DEMs.Add('ASTER');
-   Friedman(DBonTable,DEMs);
-end;
-
-
 procedure Tdbtablef.Fuibn1Click(Sender: TObject);
 var
    aString : ShortString;
@@ -3795,7 +3781,7 @@ begin
         ICESat21.Visible := GISdb[DBonTable].IsIcesat;
         PointcloudstoanalyzeglobalDEMs1.Visible := (MyData.FieldExists('BEAM') and MyData.FieldExists('TRACK_ID')) or (MyData.FieldExists('CLOUD_0_5') and MyData.FieldExists('CLOUD_995'));
 
-        Graphavereagescoresbyterraincategories1.Visible := MyData.FieldExists('FILTER');
+        //Graphavereagescoresbyterraincategories1.Visible := MyData.FieldExists('FILTER');
 
         {$IfDef ExGeography}
            Koppenlatitudestats1.Visible := false;
@@ -9967,12 +9953,6 @@ begin
    end;
 end;
 
-procedure Tdbtablef.Graphavereagescoresbyterraincategories1Click(Sender: TObject);
-begin
-   DEMIXwineContestScoresGraph(DBonTable,'Average score');
-end;
-
-
 procedure Tdbtablef.Graphfilters1Click(Sender: TObject);
 begin
    DoDEMIXFilter(DBonTable);
@@ -11014,7 +10994,7 @@ end;
 procedure Tdbtablef.iesbyopinions1Click(Sender: TObject);
 var
    entry : shortstring;
-   i,nTies : integer;
+   i,nTies,j : integer;
 
          procedure DoOne(DEM : shortString);
          var
@@ -11024,8 +11004,8 @@ var
             GISdb[DBonTable].MyData.SetFieldByNameAsInteger(DEM + '_TIE',n);
          end;
 
-
 begin
+   {$IfDef RecordDEMIX} HighlightLineToDebugFile('Tdbtablef.iesbyopinions1Click in'); {$EndIf}
     GISdb[DBonTable].AddFieldToDataBase(ftInteger,'ALOS_TIE',2);
     GISdb[DBonTable].AddFieldToDataBase(ftInteger,'ASTER_TIE',2);
     GISdb[DBonTable].AddFieldToDataBase(ftInteger,'COP_TIE',2);
@@ -11036,10 +11016,14 @@ begin
     GISdb[DBonTable].AddFieldToDataBase(ftString,'CRIT_CAT',4);
     GISdb[DBonTable].EmpSource.Enabled := false;
     GISdb[DBonTable].MyData.First;
+    StartProgress('Tie numbers');
+    j := 0;
     while not GISdb[DBonTable].MyData.eof do begin
-       entry := UpperCase(GISdb[DBonTable].MyData.GetFieldByNameAsString('TIES_ALPHA'));
+       inc(j);
+       UpdateProgressBar(i/GISdb[DBonTable].MyData.FiltRecsInDB);
+       entry := UpperCase(GISdb[DBonTable].MyData.GetFieldByNameAsString('DEM_LOW_SC'));
        GISdb[DBonTable].MyData.Edit;
-       GISdb[DBonTable].MyData.SetFieldByNameAsString('TIES_ALPHA',entry);
+       GISdb[DBonTable].MyData.SetFieldByNameAsString('DEM_LOW_SC',entry);
        nTies := 0;
        for i := 1 to Length(Entry) do if (Entry[i] = ',') then inc(NTies);
        GISdb[DBonTable].MyData.SetFieldByNameAsInteger('TIES',succ(nTies));
@@ -11052,7 +11036,9 @@ begin
        DoOne('FABDEM');
        GISdb[DBonTable].MyData.Next;
     end;
-    ShowStatus;
+
+   ShowStatus;
+   {$IfDef RecordDEMIX} HighlightLineToDebugFile('Tdbtablef.iesbyopinions1Click out'); {$EndIf}
 end;
 
 procedure Tdbtablef.Includedebuglog1Click(Sender: TObject);
@@ -11549,13 +11535,14 @@ end;
 
 procedure Tdbtablef.Bestbysortedgeomorphometry1Click(Sender: TObject);
 begin
-   MultipleBestByParameters(DBonTable);
+   MultipleBestByParametersSortByValue(DBonTable);
 end;
 
 procedure Tdbtablef.BestDEMbycategory1Click(Sender: TObject);
 begin
    BestDEMSbyCategory(DBonTable);
 end;
+
 
 procedure Tdbtablef.BestDEMpertilebycriteria1Click(Sender: TObject);
 begin
@@ -15192,7 +15179,8 @@ end;
 
 procedure Tdbtablef.Meanandmedianhistograms1Click(Sender: TObject);
 begin
-   DEMIXMeanMedianHistograms(dbOnTable);
+   //DEMIXMeanMedianHistograms(dbOnTable);
+   DEMIXMeanMedianModeHistograms(dbOnTable);
 end;
 
 procedure Tdbtablef.Meanfilterfilter1Click(Sender: TObject);
@@ -15377,6 +15365,11 @@ begin
       end;
       ShowStatus;
    end;
+end;
+
+procedure Tdbtablef.Modestandarddeviationplots1Click(Sender: TObject);
+begin
+   ModeSTDPlot(DBonTable);
 end;
 
 procedure Tdbtablef.Monthlyprecipitation1Click(Sender: TObject);

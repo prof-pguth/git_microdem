@@ -24,16 +24,16 @@ object GridDiffForm: TGridDiffForm
     Caption = 'Level to highlight'
   end
   object CheckBox1: TCheckBox
-    Left = 24
-    Top = 23
+    Left = 272
+    Top = 31
     Width = 113
     Height = 17
     Caption = 'Histograms'
     TabOrder = 0
   end
   object CheckBox2: TCheckBox
-    Left = 24
-    Top = 46
+    Left = 8
+    Top = 8
     Width = 137
     Height = 17
     Caption = 'Difference map'
@@ -41,7 +41,7 @@ object GridDiffForm: TGridDiffForm
   end
   object OKBtn: TBitBtn
     Left = 8
-    Top = 227
+    Top = 192
     Width = 77
     Height = 27
     Kind = bkOK
@@ -53,8 +53,8 @@ object GridDiffForm: TGridDiffForm
     IsControl = True
   end
   object HelpBtn: TBitBtn
-    Left = 109
-    Top = 227
+    Left = 93
+    Top = 192
     Width = 77
     Height = 27
     Kind = bkHelp
@@ -66,44 +66,50 @@ object GridDiffForm: TGridDiffForm
     IsControl = True
   end
   object CheckBox3: TCheckBox
-    Left = 24
-    Top = 0
+    Left = 272
+    Top = 8
     Width = 97
     Height = 17
     Caption = 'Scatter plot'
     TabOrder = 4
-  end
-  object CheckBox4: TCheckBox
-    Left = 24
-    Top = 119
-    Width = 217
-    Height = 17
-    Caption = 'Highlight significant change on map'
-    TabOrder = 5
-    OnClick = CheckBox4Click
   end
   object Edit1: TEdit
     Left = 183
     Top = 92
     Width = 74
     Height = 21
-    TabOrder = 6
+    TabOrder = 5
     Text = 'Edit1'
   end
   object CheckBox5: TCheckBox
-    Left = 24
-    Top = 69
+    Left = 8
+    Top = 31
     Width = 162
     Height = 17
     Caption = 'Merge hillsahde first DEM'
-    TabOrder = 7
+    TabOrder = 6
   end
   object RadioGroup1: TRadioGroup
     Left = 8
-    Top = 142
-    Width = 361
+    Top = 119
+    Width = 409
     Height = 67
     Caption = 'Grid to copy for difference'
+    Columns = 3
+    TabOrder = 7
+  end
+  object RadioGroup2: TRadioGroup
+    Left = 8
+    Top = 54
+    Width = 409
+    Height = 35
+    Caption = 'Map coloring'
+    Columns = 3
+    Items.Strings = (
+      'Color map'
+      'Highlight cutoff'
+      'Divergent color scheme')
     TabOrder = 8
+    OnClick = RadioGroup2Click
   end
 end

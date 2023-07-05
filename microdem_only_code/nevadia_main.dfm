@@ -2,8 +2,8 @@ object wmdem: Twmdem
   Left = 0
   Top = 262
   Caption = 'GIS program loading'
-  ClientHeight = 1146
-  ClientWidth = 2070
+  ClientHeight = 1145
+  ClientWidth = 2066
   Color = clScrollBar
   DefaultMonitor = dmDesktop
   Font.Charset = DEFAULT_CHARSET
@@ -24,17 +24,17 @@ object wmdem: Twmdem
   OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
   OnResize = FormResize
-  TextHeight = 16
+  TextHeight = 20
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 2070
+    Width = 2066
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34
     TabOrder = 0
     OnMouseDown = ToolBar1MouseDown
-    ExplicitWidth = 2066
+    ExplicitWidth = 2062
     object SpeedButton2: TSpeedButton
       Left = 0
       Top = 0
@@ -1676,8 +1676,8 @@ object wmdem: Twmdem
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 1127
-    Width = 2070
+    Top = 1126
+    Width = 2066
     Height = 19
     Panels = <
       item
@@ -1696,8 +1696,8 @@ object wmdem: Twmdem
     Visible = False
     OnClick = StatusBar1Click
     OnDblClick = StatusBar1DblClick
-    ExplicitTop = 1126
-    ExplicitWidth = 2066
+    ExplicitTop = 1125
+    ExplicitWidth = 2062
   end
   object MainMenu1: TMainMenu
     Left = 136
@@ -1800,31 +1800,6 @@ object wmdem: Twmdem
         end
         object N19: TMenuItem
           Caption = '-'
-        end
-        object Annapolislidar8GB1: TMenuItem
-          Caption = 'Annapolis lidar (8 GB)'
-          OnClick = Annapolislidar8GB1Click
-        end
-        object EurekaValleyDownload: TMenuItem
-          Caption = 'Eureka Valley data download'
-        end
-        object GERDdownload1: TMenuItem
-          Caption = 'GERD download'
-          object N2020fillseason1: TMenuItem
-            Caption = '2020 fill season'
-            OnClick = N2020fillseason1Click
-          end
-          object N2021fillseason: TMenuItem
-            Caption = '2021 fill season'
-            OnClick = N2021fillseasonClick
-          end
-          object N2022fillseason1: TMenuItem
-            Caption = '2022 fill season'
-            OnClick = N2022fillseason1Click
-          end
-        end
-        object Datadownloadpicksubset1: TMenuItem
-          Caption = 'Kangaroo Island data download'
         end
       end
       object Physicalgeographylabs1: TMenuItem
@@ -2212,6 +2187,10 @@ object wmdem: Twmdem
           Caption = 'Sentinel-2 NBR and NDVI'
           OnClick = BatchNDVIClick
         end
+        object MultipledNBRmaps1: TMenuItem
+          Caption = 'Multiple dNBR maps'
+          OnClick = MultipledNBRmaps1Click
+        end
         object N3: TMenuItem
           Caption = '-'
         end
@@ -2486,6 +2465,7 @@ object wmdem: Twmdem
       end
       object Onlinehelp1: TMenuItem
         Caption = 'Online help'
+        Enabled = False
         OnClick = Onlinehelp1Click
       end
       object Hardware1: TMenuItem
@@ -2522,6 +2502,7 @@ object wmdem: Twmdem
       end
       object Updatehelpfile2: TMenuItem
         Caption = 'Update help file'
+        Enabled = False
         OnClick = Updatehelpfile2Click
       end
       object AboutMICRODEM1: TMenuItem
@@ -2943,7 +2924,6 @@ object wmdem: Twmdem
       end
       object Importfromcamera1: TMenuItem
         Caption = 'Import from camera'
-        OnClick = Importfromcamera1Click
       end
       object Createcompositebitmap1: TMenuItem
         Caption = 'Create composite bitmap'
@@ -2982,9 +2962,6 @@ object wmdem: Twmdem
       object Createmoviefromstills1: TMenuItem
         Caption = 'Create movie from stills'
       end
-      object GPS1: TMenuItem
-        Caption = 'GPS'
-      end
       object N20: TMenuItem
         Caption = '-'
       end
@@ -3002,9 +2979,6 @@ object wmdem: Twmdem
       end
       object N25: TMenuItem
         Caption = '-'
-      end
-      object N28: TMenuItem
-        Caption = 'Assign projection (GDAL, hard wired)'
       end
       object GetGRASSextensions1: TMenuItem
         Caption = 'Get GRASS extensions'
@@ -3100,7 +3074,6 @@ object wmdem: Twmdem
       Caption = 'Download data sets'
       object All1: TMenuItem
         Caption = 'All'
-        OnClick = All1Click
       end
       object Climate1: TMenuItem
         Caption = 'Climate'
@@ -3116,7 +3089,6 @@ object wmdem: Twmdem
       end
       object ETOPO11: TMenuItem
         Caption = 'ETOPO1'
-        OnClick = ETOPO11Click
       end
     end
     object N2: TMenuItem
@@ -3223,10 +3195,6 @@ object wmdem: Twmdem
         OnClick = UTMprojectoiin1Click
       end
     end
-    object Landsatimage1: TMenuItem
-      Caption = 'Landsat TM8 scene Annapolis'
-      OnClick = Landsatimage1Click
-    end
     object Equinoxeandsolstices1: TMenuItem
       Caption = 'Equinoxes and solstices'
       object hreeviews1: TMenuItem
@@ -3285,14 +3253,6 @@ object wmdem: Twmdem
     object Platetectonics1: TMenuItem
       Caption = 'Plate tectonics global map'
       OnClick = Platetectonics1Click
-    end
-    object Piracywindsandrain1: TMenuItem
-      Caption = 'Piracy, winds, and rain'
-      OnClick = Piracywindsandrain1Click
-    end
-    object Nightlights1: TMenuItem
-      Caption = 'Night lights 2016'
-      OnClick = Nightlights1Click
     end
     object Sealevelrise1: TMenuItem
       Caption = 'Sea level rise'

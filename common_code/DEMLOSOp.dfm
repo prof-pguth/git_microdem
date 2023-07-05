@@ -147,6 +147,7 @@ object LOSOption: TLOSOption
     ActivePage = TabSheet2
     Align = alTop
     TabOrder = 8
+    ExplicitWidth = 694
     object TabSheet1: TTabSheet
       Caption = 'Profile'
       object Label13: TLabel

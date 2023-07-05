@@ -38,7 +38,6 @@
       //{$Define MessageStartup}
       //{$Define RecordFanConversions}
       //{$Define RecordTerrainCategories}
-      //{$Define RecordFont}
       //{$Define RecordGazOps}
       //{$Define RecordPath}
       //{$Define RecordWebDownloads}
@@ -162,7 +161,6 @@ procedure ResetStratColDefaults;
 
 procedure SetGeomorphDefaults;
 
-//function MrSidEnabled : boolean;
 
 {$IfDef ExGeomorphGrids}
 {$Else}
@@ -187,8 +185,6 @@ procedure SetGazDefaults;
 procedure SetGeologyOptions(Allow : boolean);
 procedure SetFlatProfile;
 
-//procedure SetDEMIXdirs(Ask : boolean = false);
-
 procedure SetSmallGraphs;
 procedure SetDefaultDirectories;
 procedure SetBaseDirectory;
@@ -204,7 +200,6 @@ procedure AddFreeDiskSpaceToDebugFile;
 function MissingData(z : float64) : boolean;
 
 procedure ToggleShowProgress(ShowIt : boolean);
-procedure CheckRequiredFiles;
 
 procedure InitializeVegColors;
 function RidgeAlgorithmName : string;
@@ -255,10 +250,14 @@ function sfBoundBoxSizeToString(Limits : sfBoundBox; Decs : integer = 2) : short
    procedure PickGazFeatures;
 {$EndIf}
 
+{$IfDef AllowUSNAdataDownloads}
+   procedure CheckFile(fName : PathStr);
+   procedure CheckRequiredFiles;
+{$EndIf}
+
+
 {$IfDef VCL}
    procedure RecolorFan(var Bitmap : tMyBitmap; Color : tPlatformColor);
-   procedure CheckFile(fName : PathStr);
-   function USNAcomputer : boolean;
    procedure BackupProgramEXE(sname : shortstring = '');
    procedure RestorePreviousEXE;
    procedure PickForNotePadPlusPlus(DefFilt : byte);
@@ -270,14 +269,9 @@ function sfBoundBoxSizeToString(Limits : sfBoundBox; Decs : integer = 2) : short
    function BoxGridSize : shortString;
 {$EndIf}
 
-
 {$IfDef NoClustering}
 {$Else}
    procedure DefineMICRODEMClusteringOptions(var MVClusterClientDataSet : tMVClusterClientDataSet);
-{$EndIf}
-
-{$IfDef RecordDefault}
-   //procedure ShowKeyDefaults(Mess : shortString);
 {$EndIf}
 
 {$IfDef RecordIniMemoryOverwrite}
@@ -298,9 +292,6 @@ function WarnAboutSpaces(fName : PathStr) : boolean;
 function AskUserAboutMemory(MemNeed : int64) : boolean;
 function GridLimitsString(GridLimits : tGridLimits) : shortstring;
 
-{$IfDef RecordDirs}
-   procedure RecordDirs(When : shortstring);
-{$EndIf}
 
 function DEMGridString(xgrid,ygrid : float32) : shortstring;
 
@@ -321,8 +312,6 @@ function RecycleCompressFile : boolean;
 
 function AspectDir8FromAspect(AspectDir : float32) : tCompassDirection;  inline;
 function ElevUnitsAre(Code : byte) : shortstring;
-
-//procedure VerticalDatumShift(DEM : integer; vdShift : tvdShift);
 
 function RasterPixelIsString(Code : integer) : shortstring;
 function VertDatumName(VerticalCSTypeGeoKey : integer) : shortstring;
@@ -454,10 +443,11 @@ begin
       euPerMeter	 : Result := 	'/m'	;
       WorldCover10m	 : Result := 	'WorldCover 10m'	;
       euNDVI	 : Result := 	'NDVI'	;
-      euNBR	 : Result := 	'NBR'	;
+      euNBR	 : Result := 'NBR'	;
       euDifference : Result := 'diff';
       euElevDiff : Result := 'diff m';
-      LCMAP : Result := 'LCMAP'
+      LCMAP : Result := 'LCMAP';
+      euDNBR	 : Result := 'dNBR';
       else Result := '';
    end;
 end;
@@ -520,7 +510,7 @@ begin
       Result := 'S' + IntegerToString(trunc(abs(Lat-TileSize) / TileSize) * TileSize,2);
    end;
    if Long > 0 then begin
-      Result :=  Result + 'E' + IntegerToString(trunc(Long / TileSize) * TileSize,3);
+      Result := Result + 'E' + IntegerToString(trunc(Long / TileSize) * TileSize,3);
    end
    else begin
       Result := Result + 'W' + IntegerToString(trunc(abs(Long-TileSize) / TileSize) * TileSize,3);
@@ -537,7 +527,7 @@ begin
       Result := 'S' + IntegerToString(-TileSize + trunc(abs(Lat-TileSize) / TileSize) * TileSize,2);
    end;
    if Long > 0 then begin
-      Result :=  Result + 'E' + IntegerToString(trunc(Long / TileSize) * TileSize,3);
+      Result := Result + 'E' + IntegerToString(trunc(Long / TileSize) * TileSize,3);
    end
    else begin
       Result := Result + 'W' + IntegerToString(trunc(abs(Long-TileSize) / TileSize) * TileSize,3);
@@ -549,53 +539,53 @@ end;
 function MapTypeName(MapType : integer) : shortstring;
 begin
    case MapType of
-      mtIHSReflect : Result :=  'IHSReflect';
-      mtGrayReflect :  Result :=  'GrayReflect';
-      mtDEMContour   : Result :=  'Contour';
-      mtSlopeGrayScaleReversed   : Result :=   'SlopeGrayScaleReversed';
-      mtDEMReflectElevMerge   : Result :=  'ReflectElevMerge';
-      mtDEMBlank   : Result :=   'Blank';
-      mtDEMaspect   : Result :=   'aspect';
+      mtIHSReflect : Result := 'IHSReflect';
+      mtGrayReflect :  Result := 'GrayReflect';
+      mtDEMContour   : Result := 'Contour';
+      mtSlopeGrayScaleReversed   : Result := 'SlopeGrayScaleReversed';
+      mtDEMReflectElevMerge   : Result := 'ReflectElevMerge';
+      mtDEMBlank   : Result := 'Blank';
+      mtDEMaspect   : Result := 'aspect';
       mtDEMaspectSlope : Result := 'aspect/slope';
-      mtElevGray   : Result :=  'ElevGray';
-      mtElevGrayReversed   : Result :=   'ElevGrayRev';
-      mtSatImageGray   : Result :=   'SatImage';
-      mtAnaglyph   : Result :=   'Anaglyph';
-      mtElevBands   : Result :=   'ElevBands';
-      mtElevTerrain   : Result :=   'ElevTerrain';
-      mtBlueGreenReflect   : Result :=   'BlueGreenReflect';
-      mtElevRainbow   : Result :=  'ElevRainbow';
-      mtElevIHS   : Result :=   'ElevIH';
-      mtMergeTwoDEMs   : Result :=  'MergeTwoDEM';
-      mtSatBlank   : Result :=   'SatBlank';
-      mtElevSpectrum   : Result :=  'ElevSpectrum';
-      mtVector   : Result :=   'Vector';
-      mtNone   : Result :=  'None';
+      mtElevGray   : Result := 'ElevGray';
+      mtElevGrayReversed   : Result := 'ElevGrayRev';
+      mtSatImageGray   : Result := 'SatImage';
+      mtAnaglyph   : Result := 'Anaglyph';
+      mtElevBands   : Result := 'ElevBands';
+      mtElevTerrain   : Result := 'ElevTerrain';
+      mtBlueGreenReflect   : Result := 'BlueGreenReflect';
+      mtElevRainbow   : Result := 'ElevRainbow';
+      mtElevIHS   : Result := 'ElevIH';
+      mtMergeTwoDEMs   : Result := 'MergeTwoDEM';
+      mtSatBlank   : Result := 'SatBlank';
+      mtElevSpectrum   : Result := 'ElevSpectrum';
+      mtVector   : Result := 'Vector';
+      mtNone   : Result := 'None';
       mtElevFromTable   : Result := 'ElevFromTable';
-      mtElevDefinedPalette   : Result :=  'ElevDefinedPalette';
-      mtNoChange   : Result :=  'NoChange';
-      mtDEMMask   : Result :=   'DEMMask';
-      mtDEMVATTable   : Result :=  'DEMVATTable';
-      mtElevContrast   : Result :=  'ElevContrast';
-      mtFlowDir360   : Result :=  'FlowDir360';
-      mtFlowDirArc   : Result :=  'FlowDirArc';
-      mtFlowDirTau   : Result :=   'FlowDirTau';
-      mt6ColorsReflect   : Result :=   '6ColorsReflect';
-      mtSlopeStandardCats   : Result :=  'SlopeStandardCats';
-      mtSlopeTrafficCats   : Result :=  'SlopeTrafficCats';
-      mtSlopeGrayScale   : Result :=  'SlopeGrayScale';
-      mtSlopeRainbow   : Result :=  'SlopeRainbow';
-      mtSlopePastel   : Result :=  'SlopePastel';
-      mtSlopeGoNoGo   : Result :=  'SlopeGoNoGo';
-      mtRefGrayBlue   : Result :=  'RefGrayBlue';
+      mtElevDefinedPalette   : Result := 'ElevDefinedPalette';
+      mtNoChange   : Result := 'NoChange';
+      mtDEMMask   : Result := 'DEMMask';
+      mtDEMVATTable   : Result := 'DEMVATTable';
+      mtElevContrast   : Result := 'ElevContrast';
+      mtFlowDir360   : Result := 'FlowDir360';
+      mtFlowDirArc   : Result := 'FlowDirArc';
+      mtFlowDirTau   : Result := 'FlowDirTau';
+      mt6ColorsReflect   : Result := '6ColorsReflect';
+      mtSlopeStandardCats   : Result := 'SlopeStandardCats';
+      mtSlopeTrafficCats   : Result := 'SlopeTrafficCats';
+      mtSlopeGrayScale   : Result := 'SlopeGrayScale';
+      mtSlopeRainbow   : Result := 'SlopeRainbow';
+      mtSlopePastel   : Result := 'SlopePastel';
+      mtSlopeGoNoGo   : Result := 'SlopeGoNoGo';
+      mtRefGrayBlue   : Result := 'RefGrayBlue';
       mtRefColorGray   : Result := 'RefColorGray';
       mtOpenness   : Result := 'Openness';
       mtLASclass   : Result := 'LASclass';
-      mtRGB   : Result :=  'RGB';
+      mtRGB   : Result := 'RGB';
       mtGYRReflect   : Result := 'Gr/Yel/red';
       mtGGRReflect   : Result := 'Gr/gray/red';
       mtSatTrueColor   : Result := 'True color';
-      mtSatFalseColor   : Result := 'False color NIR';
+      mtSatFalseColor  : Result := 'False color NIR';
       mtSatPickColor   : Result := 'Select false color';
       mtUnenhancedRGB  : Result := 'Unenhanced RGB';
    end;
@@ -648,12 +638,6 @@ end;
 function GPSTimeToDateTime(GPSTime: LongWord): TDateTime;
 begin
    Result := UnixTimeToDateTime(GPSTime + 315964800);
-end;
-
-
-procedure RecordDirs(When : shortstring);
-begin
-   {$IfDef RecordDirs} WriteLineToDebugFile(When + ' MainMapData=' + MainMapData + '   GT_Datum_fName=' + GT_Datum_fName); {$EndIf}
 end;
 
 
@@ -1023,8 +1007,7 @@ end;
 function IsOtherGridMap(MapType : tMapType) : boolean;
 begin
    Result := (MapType in [mtDEMContour,mtDEMaspect,mtDEMaspectSlope,mtDEMBlank,mtMergeTwoDEMs,mtDEMMask,mtDEMVATTable,
-        mtFlowDir360,mtFlowDirArc,mtFlowDirTau,mtDEMContour,mtDEMReflectElevMerge,
-        mtNoChange, mtDEMMask,mtOpenness,mtLASclass,mtRGB,mtLandCover]);
+        mtFlowDir360,mtFlowDirArc,mtFlowDirTau,mtDEMContour,mtDEMReflectElevMerge,mtNoChange, mtDEMMask,mtOpenness,mtLASclass,mtRGB,mtLandCover]);
 end;
 
 
@@ -1276,79 +1259,11 @@ begin
       end;
       VegDenstColors[0] := VegDenstColors[1];
       for I :=succ(MDDef.VegDensityGraphMaxDensity) to 255 do begin
-         VegDenstColors[i] :=  VegDenstColors[MDDef.VegDensityGraphMaxDensity];
+         VegDenstColors[i] := VegDenstColors[MDDef.VegDensityGraphMaxDensity];
       end;
    {$EndIf}
 end;
 
-
-procedure CheckRequiredFiles;
-begin
-   {$IfDef VCL}
-      {$IfDef SQLiteDefaultDBs}
-         wmdem.ConvertDBFsfor64bit1Click(nil);
-      {$EndIf}
-      if MDDef.SkipWebUpdates then begin
-         {$IfDef RecordUpdate} WriteLineToDebugFile('CheckRequiredFiles skipped'); {$EndIf}
-      end
-      else begin
-         {$IfDef RecordUpdate} WriteLineToDebugFile('CheckRequiredFiles in'); {$EndIf}
-         CheckFile(ExtractFileName(TableDefinitionsFileName));
-         CheckFile(ExtractFileName(CSVImportRulesFName));
-         CheckFile(ExtractFileName(GazOptFName));
-         CheckFile(ExtractFileName(GT_Datum_fName));
-         CheckFile(ExtractFileName(GT_Ellipse_fName));
-         CheckFile(ExtractFileName(ColorBrewerName));
-         CheckFile(ExtractFileName(HardLimitColorPaletteFName));
-         CheckFile(ExtractFileName(LandCoverSeriesFName));
-
-         CheckFile('KeyHH.exe');
-         CheckFile('md_movie.exe');
-         CheckFile('7z.exe');
-         CheckFile('7z.dll');
-
-         {$IfDef ExGeography}
-         {$Else}
-            CheckFile(ExtractFileName(MonthlyClimateFName));
-            CheckFile(ExtractFileName(KoppenDefFName));
-         {$EndIf}
-
-         {$IfDef ExSat}
-         {$Else}
-            CheckFile(ExtractFileName(SatBandNames));
-            CheckFile(ExtractFileName(TM_RGB_fname));
-         {$EndIf}
-
-         {$IfDef ExPointCloud}
-         {$Else}
-            CheckFile(ExtractFileName(LasRulesName));
-         {$EndIf}
-
-         {$IfDef ExMagVar}
-         {$Else}
-            CheckFile(ExtractFileName(www_mag_mod_fName));
-         {$EndIf}
-
-         {$IfDef ExPLSS}
-         {$Else}
-            CheckFile(ExtractFileName(PLSSMerfName));
-         {$EndIf}
-
-         {$IfDef ExOSM}
-         {$Else}
-            CheckFile(ExtractFileName(OSMRoadRules));
-            CheckFile(ExtractFileName(OSMGroupRules));
-         {$EndIf}
-
-         {$IfDef ExTIGER}
-         {$Else}
-            CheckFile(ExtractFileName(TigerShapeRules));
-            CheckFile(ExtractFileName(TigerIndex));
-         {$EndIf}
-      end;
-      {$IfDef RecordUpdate} WriteLineToDebugFile('CheckRequiredFiles out, MainMapData=' + MainMapData); {$EndIf}
-   {$EndIf}
-end;
 
 
 procedure ProcessIniFile(iniWhat : tIniWhat; SectionRestoreDefaults : ShortString = ''; ExplicitName : PathStr = '');
@@ -2887,7 +2802,7 @@ var
 
             //AParameter('Micronet','DrawGridCircles',DrawGridCircles,ngNone);
             if (IniWhat = iniWrite) then IniFile.WriteInteger('Micronet','DrawGridCircles',ord(DrawGridCircles));
-            if (IniWhat = iniRead) then DrawGridCircles :=  tNetGrid(IniFile.ReadInteger('Micronet','DrawGridCircles',ord(ngNone)));
+            if (IniWhat = iniRead) then DrawGridCircles := tNetGrid(IniFile.ReadInteger('Micronet','DrawGridCircles',ord(ngNone)));
             if (iniWhat = iniInit) then DrawGridCircles := ngNone;
 
             //AParameter('Micronet','NetUsed',NetUsed,Schmidt);
@@ -2963,7 +2878,6 @@ var
          AParameter('DatumProjection','MercShiftSingleZone',MercShiftSingleZone,true);
          AParameter('DatumProjection','FullUTMGridLabels',FullUTMGridLabels,false);
          AParameter('DatumProjection','MaxEllipsoidalSpacing',MaxEllipsoidalSpacing,35);
-         //AParameter('DatumProjection','BothDatumsWhileRoam',BothDatumsWhileRoam,false);
          AParameter('DatumProjection','MGRSandLatLongWhileRoam',MGRSandLatLongWhileRoam,false);
          AParameter('DatumProjection','ShowProjectedCoordinates',ShowProjectedCoordinates,false);
          ACharacter('DatumProjection','DefaultLatHemi',DefaultLatHemi,'N');
@@ -3000,23 +2914,13 @@ var
             AParameter('PLSS','PLSSRangeDef',PLSSRangeDef,0);
             AParameter('PLSS','PLSSTownShipDef',PLSSTownShipDef,0);
 
-            {$IfDef Nevadia}
-               AParameter('PLSS','PLSSSectionWidth',PLSSSectionWidth,1);
-               AParameter('PLSS','AutoDrawPLSS',AutoDrawPLSS,true);
-               AColorParameter('PLSS','PLSSTownColor',MDDef.PLSSDef.PLSSTownColor, RGBtrip(0,0,0));
-               AColorParameter('PLSS','PLSSSectionColor',PLSSSectionColor,RGBtrip(0,128,128));
-               AColorParameter('PLSS','PLSSQuarterColor',PLSSQuarterColor,RGBtrip(0,0,0));
-               InitializeMyFont('SectFont',MDDef.PLSSDef.SectFont,'Courier New',8,RGBtrip(0,128,128));
-               InitializeMyFont('TownFont',MDDef.PLSSDef.TownFont,'Courier New',8,cRGBtrip(0,0,0));
-            {$Else}
-               AParameter('PLSS','PLSSSectionWidth',PLSSSectionWidth,2);
-               AParameter('PLSS','AutoDrawPLSS',AutoDrawPLSS,false);
-               AColorParameter('PLSS','PLSSTownColor',MDDef.PLSSDef.PLSSTownColor,claRed);
-               AColorParameter('PLSS','PLSSSectionColor',MDDef.PLSSDef.PLSSSectionColor,claLime);
-               AColorParameter('PLSS','PLSSQuarterColor',PLSSQuarterColor,claBlue);
-               InitializeMyFont('SectFont',MDDef.PLSSDef.SectFont,'Courier New',8,claLime);
-               InitializeMyFont('TownFont',MDDef.PLSSDef.TownFont,'Courier New',8,claRed);
-            {$EndIf}
+            AParameter('PLSS','PLSSSectionWidth',PLSSSectionWidth,2);
+            AParameter('PLSS','AutoDrawPLSS',AutoDrawPLSS,false);
+            AColorParameter('PLSS','PLSSTownColor',MDDef.PLSSDef.PLSSTownColor,claRed);
+            AColorParameter('PLSS','PLSSSectionColor',MDDef.PLSSDef.PLSSSectionColor,claLime);
+            AColorParameter('PLSS','PLSSQuarterColor',PLSSQuarterColor,claBlue);
+            InitializeMyFont('SectFont',MDDef.PLSSDef.SectFont,'Courier New',8,claLime);
+            InitializeMyFont('TownFont',MDDef.PLSSDef.TownFont,'Courier New',8,claRed);
 
             if (IniWhat = iniWrite) then IniFile.WriteInteger('PLSS','PLSSFormat',ord(PLSSFormat));
             if (IniWhat = iniRead) then PLSSFormat := tPLSSFormat(IniFile.ReadInteger('PLSS','PLSSFormat',ord(plssTRS)));
@@ -3034,24 +2938,13 @@ var
    begin
      {$IfDef VCL}
       with MDIniFile,MDDef do begin
-         {$IfDef Nevadia}
-            AParameter('Menus','ShowCartography',MDDef.ShowCartography,false);
-            AParameter('Menus','ShowPointClouds',ShowPointClouds,false);
-            AParameter('Menus','ShowGeologyOptions',ShowGeologyOptions,false);
-            AParameter('Menus','ShowGeomorphometry',ShowGeomorphometry,false);
-            AParameter('Menus','ShowClimateAndLight',ShowClimateAndLight,false);
-            AParameter('Menus','ShowClimateStationDB',ShowClimateStationDB,false);
-            AParameter('Menus','ShowIntervisibility',ShowIntervisibility,false);
-            AParameter('Menus','ShowMethodCompare',ShowMethodCompare,false);
-         {$Else}
-            AParameter('Menus','ShowCartography',MDDef.ShowCartography,true);
-            AParameter('Menus','ShowPointClouds',ShowPointClouds,true);
-            AParameter('Menus','ShowGeologyOptions',ShowGeologyOptions,true);
-            AParameter('Menus','ShowGeomorphometry',ShowGeomorphometry,true);
-            AParameter('Menus','ShowClimateAndLight',ShowClimateAndLight,true);
-            AParameter('Menus','ShowIntervisibility',ShowIntervisibility,true);
-            AParameter('Menus','ShowMethodCompare',ShowMethodCompare,true);
-         {$EndIf}
+         AParameter('Menus','ShowCartography',MDDef.ShowCartography,true);
+         AParameter('Menus','ShowPointClouds',ShowPointClouds,true);
+         AParameter('Menus','ShowGeologyOptions',ShowGeologyOptions,true);
+         AParameter('Menus','ShowGeomorphometry',ShowGeomorphometry,true);
+         AParameter('Menus','ShowClimateAndLight',ShowClimateAndLight,true);
+         AParameter('Menus','ShowIntervisibility',ShowIntervisibility,true);
+         AParameter('Menus','ShowMethodCompare',ShowMethodCompare,true);
          AParameter('Menus','ShowDEMCompare',ShowDEMCompare,true);
          AParameter('Menus','ShowConversionAndAnalyze',ShowConversionAndAnalyze,true);
          AParameter('Menus','ShowViews',ShowViews,true);
@@ -3382,7 +3275,7 @@ var
          AParameterShortFloat('MapDraw','BlowUpLatSize',BlowUpLatSize,0.05);
          AParameterShortFloat('MapDraw','LatLongCushion',LatLongCushion,0.025);
 
-         AParameter('MapDraw','HighlightDiffMap',HighlightDiffMap,true);
+         AParameter('MapDraw','HighlightDiffMap',HighlightDiffMap,hdHighlight);
          AParameter('MapDraw','AutoMergeStartDEM',AutoMergeStartDEM,true);
 
 
@@ -3743,7 +3636,6 @@ begin
       AParameter('Export','GeoJSONG_zdec',GeoJSONG_zdec,1);
       AParameter('Export','GeoJSONP_zdec',GeoJSONP_zdec,1);
       AParameter('Export','GeoJSONP_zdec',GeoJSONP_xydec,1);
-      //AParameter('ImpExport','DeleteTarGZ',DeleteTarGZ,false);
 
    {$If Defined(RecordINIfiles) or Defined(RecordINIfiles)} WriteLineToDebugFile('Breakpoint 5'); {$EndIf}
 
@@ -3791,7 +3683,7 @@ begin
          AParameter('Hardware','DefaultServerPort',DefaultServerPort,7676);
          AParameter('Hardware','MaxThreadsForPC',MaxThreadsForPC,8);
          AParameter('Hardware','UpdateDelay',UpdateDelay,4);
-         AParameter('Hardware','IsUSNAcomputer',IsUSNAcomputer,false);
+         //AParameter('Hardware','IsUSNAcomputer',IsUSNAcomputer,false);
          AParameter('Hardware','ShowWinExec',ShowWinExec,true);
          AParameter('Hardware','LogDOSoutput',LogDOSoutput,false);
       {$EndIf}
@@ -4026,6 +3918,7 @@ begin
 
       {$IfDef VCL}
          AColorParameter('Maps','InsideMapGridColor',InsideMapGridColor,claNearWhite);
+         //these are the fonts whose settings are stored, with the initial settings if they have not been changed
          InitializeMyFont('ContourLabelFont',ContourLabelFont,'TimesNewRoman',12,claBlack);
          InitializeMyFont('DefGisLabelFont1',DefGisLabelFont1,'Courier New',8,claBlack);
          InitializeMyFont('DefGisLabelFont2',DefGisLabelFont2,'Courier New',8,claBlack);
@@ -4086,44 +3979,120 @@ begin
    end;
 end;
 
-
+(*
 function USNAcomputer : boolean;
 begin
    Result := (Copy(LocalIP,1,5) = '10.50') or (Copy(LocalIP,1,5) = '10.23') or (Copy(LocalIP,1,5) = '10.25') or MDDef.IsUSNAcomputer;
 end;
+*)
 
 
-procedure CheckFile(fName : PathStr);
-var
-  OutName,OutName2,InName : ANSIstring;
-begin
-   if (fName <> '') then begin
-      OutName := fName;
-      if UpperCase(ptcopy(OutName,1,3)) = 'C:\' then OutName2 := OutName
-      else OutName2 := ProgramRootDir + OutName;
-      if (FileExists(OutName2)) then exit;
 
-      {$IfDef SQLiteDefaultDBs}
-      if FileExtEquals(fName,'.db') then begin
-         OldName := ChangeFileExt(fName,'.dbf');
-         if FileExists(OldName) then begin
-            ConvertDBFtoSQLite(OldName);
-            exit;
-         end;
+   {$IfDef AllowUSNAdataDownloads}
+      procedure CheckRequiredFiles;
+      begin
+         {$IfDef VCL}
+            {$IfDef SQLiteDefaultDBs}
+               wmdem.ConvertDBFsfor64bit1Click(nil);
+            {$EndIf}
+            if MDDef.SkipWebUpdates then begin
+               {$IfDef RecordUpdate} WriteLineToDebugFile('CheckRequiredFiles skipped'); {$EndIf}
+            end
+            else begin
+               {$IfDef RecordUpdate} WriteLineToDebugFile('CheckRequiredFiles in'); {$EndIf}
+               CheckFile(ExtractFileName(TableDefinitionsFileName));
+               CheckFile(ExtractFileName(CSVImportRulesFName));
+               CheckFile(ExtractFileName(GazOptFName));
+               CheckFile(ExtractFileName(GT_Datum_fName));
+               CheckFile(ExtractFileName(GT_Ellipse_fName));
+               CheckFile(ExtractFileName(ColorBrewerName));
+               CheckFile(ExtractFileName(HardLimitColorPaletteFName));
+               CheckFile(ExtractFileName(LandCoverSeriesFName));
+
+               CheckFile('KeyHH.exe');
+               CheckFile('md_movie.exe');
+               CheckFile('7z.exe');
+               CheckFile('7z.dll');
+
+
+               {$IfDef AllowUSNAdataDownloads}
+                  {$IfDef ExGeography}
+                  {$Else}
+                     CheckFile(ExtractFileName(MonthlyClimateFName));
+                     CheckFile(ExtractFileName(KoppenDefFName));
+                  {$EndIf}
+
+                  {$IfDef ExSat}
+                  {$Else}
+                     CheckFile(ExtractFileName(SatBandNames));
+                     CheckFile(ExtractFileName(TM_RGB_fname));
+                  {$EndIf}
+
+                  {$IfDef ExPointCloud}
+                  {$Else}
+                     CheckFile(ExtractFileName(LasRulesName));
+                  {$EndIf}
+
+                  {$IfDef ExMagVar}
+                  {$Else}
+                     CheckFile(ExtractFileName(www_mag_mod_fName));
+                  {$EndIf}
+
+                  {$IfDef ExPLSS}
+                  {$Else}
+                     CheckFile(ExtractFileName(PLSSMerfName));
+                  {$EndIf}
+
+                  {$IfDef ExOSM}
+                  {$Else}
+                     CheckFile(ExtractFileName(OSMRoadRules));
+                     CheckFile(ExtractFileName(OSMGroupRules));
+                  {$EndIf}
+
+                  {$IfDef ExTIGER}
+                  {$Else}
+                     CheckFile(ExtractFileName(TigerShapeRules));
+                     CheckFile(ExtractFileName(TigerIndex));
+                  {$EndIf}
+               {$EndIf}
+            end;
+            {$IfDef RecordUpdate} WriteLineToDebugFile('CheckRequiredFiles out, MainMapData=' + MainMapData); {$EndIf}
+         {$EndIf}
       end;
-      {$EndIf}
 
-     if (copy(fname,1,7) = 'http://') or (copy(fname,1,8) = 'https://') then InName := fName
-     else InName := WebDataDownLoadDir + LowerCase(ExtractFileName(fName));
+      procedure CheckFile(fName : PathStr);
+      var
+        OutName,OutName2,InName : ANSIstring;
+      begin
+         if (fName <> '') then begin
+            OutName := fName;
+            if UpperCase(ptcopy(OutName,1,3)) = 'C:\' then OutName2 := OutName
+            else OutName2 := ProgramRootDir + OutName;
+            if (FileExists(OutName2)) then exit;
 
-     StopSplashing;
-     SetCursorPos(600,600);
-     if USNAComputer or AnswerIsYes('MICRODEM requires ' + fName +'; Allow automatic download now') then begin
-        {$IfDef RecordUpdate} WriteLineToDebugFile(LocalIP + ' CheckFile Copy ' + InName + ' to ' + OutName2); {$EndIf}
-        DownloadFileFromWeb(InName,OutName2);
-     end;
-  end;
-end;
+            {$IfDef SQLiteDefaultDBs}
+            if FileExtEquals(fName,'.db') then begin
+               OldName := ChangeFileExt(fName,'.dbf');
+               if FileExists(OldName) then begin
+                  ConvertDBFtoSQLite(OldName);
+                  exit;
+               end;
+            end;
+            {$EndIf}
+
+           if (copy(fname,1,7) = 'http://') or (copy(fname,1,8) = 'https://') then InName := fName
+           else InName := WebDataDownLoadDir + LowerCase(ExtractFileName(fName));
+
+           StopSplashing;
+
+           SetCursorPos(600,600);
+           if USNAComputer or AnswerIsYes('MICRODEM requires ' + fName +'; Allow automatic download now') then begin
+              {$IfDef RecordUpdate} WriteLineToDebugFile(LocalIP + ' CheckFile Copy ' + InName + ' to ' + OutName2); {$EndIf}
+              DownloadFileFromWeb(InName,OutName2);
+           end;
+        end;
+      end;
+   {$EndIf}
 {$EndIf}
 
 
@@ -4611,7 +4580,7 @@ begin
     {$Else}
        WMS_servers_fName := ProgramRootDir + 'wms_servers_v8' + DefaultDBExt;
     {$EndIf}
-    RecordDirs('end SetRootDirectoryFiles');
+    //RecordDirs('end SetRootDirectoryFiles');
     {$IfDef RecordInitialization} WriteLineToDebugFile('SetRootDirectoryFiles out'); {$EndIf}
  end;
 
@@ -4713,7 +4682,7 @@ begin
       PlateBoundaryFile := GeologyDir + 'usgs_plate_boundaries_complex\usgs_plate_boundaries.shp';
       VolcanoesDB := GeologyDir + 'smithsonian_volcanoes\volcanoes_4_11_0' + DefaultDBExt;
       MagneticAnomalyTimeScale := GeologyDir + 'time\cande_kent_time' + DefaultDBExt;
-      EpochsTimeScale :=  'geologic_time_epochs';
+      EpochsTimeScale := 'geologic_time_epochs';
       PeriodsTimeScale := 'geologic_time_periods';
 
       CurrentMotionsFile := GeologyDir + 'plate_motions\current_rotations_v4' + DefaultDBExt;
@@ -4986,7 +4955,7 @@ begin
       SetExpertOptions(false);
       MDDef.ShowClimateAndLight := false;
       MDDef.ShowOpenImagery := true;
-      MDDef.ShowPointClouds :=  true;
+      MDDef.ShowPointClouds := true;
    {$EndIf}
 end;
 
@@ -5163,9 +5132,9 @@ end;
 
 procedure SetDefaults;
 begin
-   RecordDirs('Set Defaults in');
+   //RecordDirs('Set Defaults in');
    ProcessIniFile(iniInit);
-   RecordDirs('Set Defaults out');
+   //RecordDirs('Set Defaults out');
    {$IfDef VCL}
       if (WriteSatDir = '') then WriteSatDir := MDTempDir;
       if (WriteDEMDir = '') then WriteDEMDir := MDTempDir;

@@ -31,8 +31,8 @@ object DemHandForm: TDemHandForm
     ScrollBars = ssVertical
     TabOrder = 0
     Visible = False
-    ExplicitWidth = 926
-    ExplicitHeight = 512
+    ExplicitWidth = 882
+    ExplicitHeight = 501
   end
   object StatusBar1: TStatusBar
     Left = 0
@@ -46,8 +46,8 @@ object DemHandForm: TDemHandForm
       item
         Width = 250
       end>
-    ExplicitTop = 512
-    ExplicitWidth = 926
+    ExplicitTop = 501
+    ExplicitWidth = 882
   end
   object MainMenu1: TMainMenu
     Left = 24
@@ -199,16 +199,13 @@ object DemHandForm: TDemHandForm
         Caption = 'xview2 json to shapefile'
         OnClick = xview2json1Click
       end
-      object LineKML1: TMenuItem
-        Caption = 'Line KML to shapefile'
-        OnClick = LineKML1Click
-      end
-    end
-    object Export1: TMenuItem
-      Caption = '&Export'
       object SINfiletoshapefile1: TMenuItem
         Caption = 'SIN file to shapefile'
         OnClick = SINfiletoshapefile1Click
+      end
+      object LineKML1: TMenuItem
+        Caption = 'Line KML to shapefile'
+        OnClick = LineKML1Click
       end
     end
     object Subset1: TMenuItem
@@ -767,52 +764,6 @@ object DemHandForm: TDemHandForm
       object Viewsheds1: TMenuItem
         Caption = 'Viewsheds'
         OnClick = Viewsheds1Click
-      end
-    end
-    object Experimental1: TMenuItem
-      Caption = 'Experimental'
-      Visible = False
-      object ranslatecoordsASCIIfile1: TMenuItem
-        Caption = 'Translate coords, ASCII file'
-        OnClick = ranslatecoordsASCIIfile1Click
-      end
-      object CloudCompare2: TMenuItem
-        Caption = 'Cloud Compare compute roughness and curvature'
-      end
-      object InsertroughnessandcurvatureinDBF1: TMenuItem
-        Caption = 'Insert roughness and curvature in DBF'
-      end
-      object BatchCSFdemo1: TMenuItem
-        Caption = 'Batch CSFdemo for ground points'
-      end
-      object Addgroundclassifiedpoints1: TMenuItem
-        Caption = 'Add ground classified points to DBF'
-        OnClick = Addgroundclassifiedpoints1Click
-      end
-      object Histogramsbyclass1: TMenuItem
-        Caption = 'Histograms by class'
-      end
-      object Addcolors1: TMenuItem
-        Caption = 'Add colors'
-        OnClick = Addcolors1Click
-      end
-      object Coloredmaps1: TMenuItem
-        Caption = 'Colored maps'
-      end
-      object Statsbyclass1: TMenuItem
-        Caption = 'Stats by class'
-      end
-      object LoadDBintoslicer1: TMenuItem
-        Caption = 'Load DB into slicer'
-      end
-      object Classificationaccuracy1: TMenuItem
-        Caption = 'Classification accuracy'
-      end
-      object Quickclassification1: TMenuItem
-        Caption = 'Quick classification'
-      end
-      object Extractclassification1: TMenuItem
-        Caption = 'Extract classification'
       end
     end
     object Help1: TMenuItem

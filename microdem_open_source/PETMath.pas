@@ -13,8 +13,11 @@ unit PETMATH;
 
 {$I nevadia_defines.inc}
 
+//{$Def IncludeFriedman}  //this is not currently working.  It is for DEMIX, which uses the Jupyter notebook
+
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    //{$Define RecordFitProblems}
+  {$Define TrackNegStdDev}
    //{$Define RecordMatrixOps} //can really degrade performance
 {$EndIf}
 
@@ -246,8 +249,9 @@ Function IsNumeric(s: AnsiString) : Boolean;
 function RadToDegString(rads : float64) : shortstring;
 function FilterSizeStr(i : integer) : shortstring;
 
-
-function Friedman(DBonTable : integer; DEMs : tStringList; Alpha : float64 = 95) : boolean;
+{$IfDef IncludeFriedman}
+   function Friedman(DBonTable : integer; DEMs : tStringList; Alpha : float64 = 95) : boolean;
+{$EndIf}
 
 function bicuint(y,y1,y2,y12: tElevFloatarray; x1l,x1u,x2l,x2u : integer; x1,x2: float32;  VAR ansy,ansy1,ansy2: float32) : boolean;
 
@@ -289,8 +293,9 @@ BEGIN
 END {IsInfinity};
 
 
-
-{$I stats_petmath.inc}
+{$IfDef IncludeFriedman}
+   {$I stats_petmath.inc}
+{$EndIf}
 
 
 function FilterSizeStr(i : integer) : shortstring;
@@ -1999,15 +2004,20 @@ BEGIN
       s := data[j]-MomentVar.Mean;
       MomentVar.avg_dev := MomentVar.avg_dev+abs(s);
       p := s*s;
-      MomentVar.svar := MomentVar.svar+p;
+      MomentVar.svar := MomentVar.svar + p;
       p := p*s;
-      MomentVar.skew := MomentVar.skew+p;
+      MomentVar.skew := MomentVar.skew + p;
       p := p*s;
-      MomentVar.curt := MomentVar.curt+p;
+      MomentVar.curt := MomentVar.curt + p;
       MomentVar.MAE := MomentVar.MAE + abs(data[j]);
    END;
    MomentVar.svar := MomentVar.svar / (MomentVar.Npts-1);
    MomentVar.sdev := sqrt(MomentVar.svar);
+   {$If Defined(TrackNegStdDev)}
+      if (MomentVar.sdev < 0) then begin
+         MessageToContinue('Negative standard deviation');
+      end;
+   {$EndIf}
    if (MomentStop = msAfterStdDev) then exit;
 
    MomentVar.rmse := sqrt(S2/MomentVar.Npts);

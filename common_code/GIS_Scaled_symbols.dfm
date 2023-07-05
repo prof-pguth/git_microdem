@@ -4,8 +4,8 @@ object gis_scaled_form: Tgis_scaled_form
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Scaled Symbols'
-  ClientHeight = 2261
-  ClientWidth = 295
+  ClientHeight = 2258
+  ClientWidth = 283
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

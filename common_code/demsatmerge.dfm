@@ -2,14 +2,14 @@ inherited IHSMergeForm: TIHSMergeForm
   Left = 537
   Top = 153
   Caption = 'IHS DEM/Image Merge'
-  ClientHeight = 277
-  ClientWidth = 354
+  ClientHeight = 295
+  ClientWidth = 370
   Position = poDefaultSizeOnly
   OnClose = FormClose
   OnCreate = FormCreate
-  ExplicitWidth = 372
-  ExplicitHeight = 324
-  TextHeight = 20
+  ExplicitWidth = 382
+  ExplicitHeight = 333
+  TextHeight = 15
   inherited Bevel1: TBevel
     Width = 345
     Height = 238
@@ -19,43 +19,43 @@ inherited IHSMergeForm: TIHSMergeForm
   object TLabel [1]
     Left = 24
     Top = 16
-    Width = 55
-    Height = 20
+    Width = 45
+    Height = 15
     Caption = 'Intensity'
   end
   object Label1: TLabel [2]
     Left = 24
     Top = 64
-    Width = 27
-    Height = 20
+    Width = 22
+    Height = 15
     Caption = 'Hue'
   end
   object Label2: TLabel [3]
     Left = 24
     Top = 112
-    Width = 68
-    Height = 20
+    Width = 54
+    Height = 15
     Caption = 'Saturation'
   end
   object Label3: TLabel [4]
     Left = 232
     Top = 16
-    Width = 44
-    Height = 20
+    Width = 34
+    Height = 15
     Caption = 'Label3'
   end
   object Label4: TLabel [5]
     Left = 232
     Top = 64
-    Width = 44
-    Height = 20
+    Width = 34
+    Height = 15
     Caption = 'Label4'
   end
   object Label5: TLabel [6]
     Left = 232
     Top = 112
-    Width = 44
-    Height = 20
+    Width = 34
+    Height = 15
     Caption = 'Label5'
   end
   object Image1: TImage [7]

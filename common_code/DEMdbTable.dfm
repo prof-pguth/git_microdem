@@ -2,8 +2,8 @@ object dbtablef: Tdbtablef
   Left = 62
   Top = 306
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 998
-  ClientWidth = 1248
+  ClientHeight = 996
+  ClientWidth = 1240
   Color = clBtnFace
   ParentFont = True
   FormStyle = fsMDIChild
@@ -17,8 +17,8 @@ object dbtablef: Tdbtablef
   TextHeight = 15
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 979
-    Width = 1248
+    Top = 977
+    Width = 1240
     Height = 19
     Panels = <
       item
@@ -30,7 +30,7 @@ object dbtablef: Tdbtablef
   object Panel2: TPanel
     Left = 0
     Top = 41
-    Width = 1248
+    Width = 1240
     Height = 32
     Align = alTop
     TabOrder = 1
@@ -215,7 +215,7 @@ object dbtablef: Tdbtablef
   object Panel3: TPanel
     Left = 0
     Top = 73
-    Width = 1248
+    Width = 1240
     Height = 41
     Align = alTop
     TabOrder = 2
@@ -266,7 +266,7 @@ object dbtablef: Tdbtablef
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1248
+    Width = 1240
     Height = 41
     Align = alTop
     TabOrder = 4
@@ -529,7 +529,7 @@ object dbtablef: Tdbtablef
   object Panel7: TPanel
     Left = 0
     Top = 114
-    Width = 1248
+    Width = 1240
     Height = 41
     Align = alTop
     TabOrder = 3
@@ -554,8 +554,8 @@ object dbtablef: Tdbtablef
   object DBGrid1: TDBGrid
     Left = 0
     Top = 155
-    Width = 1248
-    Height = 824
+    Width = 1240
+    Height = 822
     Align = alClient
     TabOrder = 5
     TitleFont.Charset = DEFAULT_CHARSET
@@ -3633,6 +3633,10 @@ object dbtablef: Tdbtablef
       Caption = 'Mean and median histograms'
       OnClick = Meanandmedianhistograms1Click
     end
+    object Modestandarddeviationplots1: TMenuItem
+      Caption = 'Mode--standard deviation plots'
+      OnClick = Modestandarddeviationplots1Click
+    end
     object Graphfilters1: TMenuItem
       Caption = 'Graph filters'
       OnClick = Graphfilters1Click
@@ -3665,11 +3669,27 @@ object dbtablef: Tdbtablef
       Caption = 'Add IMAGE field for difference distribution graphs'
       OnClick = AddIMAGEfieldfordifferencedistributiongraphs1Click
     end
+    object Bestbysortedgeomorphometry1: TMenuItem
+      Caption = 'Best by sorted geomorphometry values'
+      OnClick = Bestbysortedgeomorphometry1Click
+    end
+    object BestDEMbycategory1: TMenuItem
+      Caption = 'Graph best DEM (average score) for criteria and filters '
+      OnClick = BestDEMbycategory1Click
+    end
     object N48: TMenuItem
       Caption = '-'
     end
+    object Sumscores1: TMenuItem
+      Caption = 'Sum scores based on active filters'
+      OnClick = Sumscores1Click
+    end
+    object RankDEMs1: TMenuItem
+      Caption = 'Rank DEMs and find best by criterion and tile'
+      OnClick = RankDEMs1Click
+    end
     object Graphmeanmedianbyterraincategory1: TMenuItem
-      Caption = 'Graphs with various filters (experimental)'
+      Caption = 'Graphs with various filters (experimental, untested recently)'
       object Allcriteriavalues1: TMenuItem
         Caption = 'Single tile, all criteria, values'
         OnClick = Allcriteriavalues1Click
@@ -3683,33 +3703,25 @@ object dbtablef: Tdbtablef
         Caption = 'Average ranks by area'
         OnClick = Averageranksbyarea1Click
       end
-    end
-    object Graphavereagescoresbyterraincategories1: TMenuItem
-      Caption = 'Graph avereage scores by terrain categories'
-      OnClick = Graphavereagescoresbyterraincategories1Click
+      object PickParam1: TMenuItem
+        Caption = 'Absolute differences from reference DEM by tile'
+        OnClick = PickParam1Click
+      end
+      object NormalizeddifferencesfromreferenceDEM1: TMenuItem
+        Caption = 'Normalized differences from reference DEM by tile'
+        OnClick = NormalizeddifferencesfromreferenceDEM1Click
+      end
+      object N7Elevationdifferencecriteria1: TMenuItem
+        Caption = 'Graph difference values by DEMIX tile'
+        OnClick = N7Elevationdifferencecriteria1Click
+      end
     end
     object FriedmanTest1: TMenuItem
       Caption = 'Friedman Test'
-      OnClick = FriedmanTest1Click
-    end
-    object Sumscores1: TMenuItem
-      Caption = 'Sum scores based on active filters'
-      OnClick = Sumscores1Click
+      Enabled = False
     end
     object N47: TMenuItem
       Caption = '-'
-    end
-    object PickParam1: TMenuItem
-      Caption = 'Absolute differences from reference DEM by tile'
-      OnClick = PickParam1Click
-    end
-    object NormalizeddifferencesfromreferenceDEM1: TMenuItem
-      Caption = 'Normalized differences from reference DEM by tile'
-      OnClick = NormalizeddifferencesfromreferenceDEM1Click
-    end
-    object RankDEMs1: TMenuItem
-      Caption = 'Rank DEMs and find best by criterion and tile'
-      OnClick = RankDEMs1Click
     end
     object COPoALOS1: TMenuItem
       Caption = 'Winning percentages and shootouts'
@@ -3725,18 +3737,6 @@ object dbtablef: Tdbtablef
         'ics)'
       OnClick = GraphsbestDEMpertilebycriteriasortbytilecharacteristics1Click
     end
-    object BestDEMbycategory1: TMenuItem
-      Caption = 'Graph best DEM (average score) for criteria and filters '
-      OnClick = BestDEMbycategory1Click
-    end
-    object N7Elevationdifferencecriteria1: TMenuItem
-      Caption = 'Graph difference values by DEMIX tile'
-      OnClick = N7Elevationdifferencecriteria1Click
-    end
-    object Bestbysortedgeomorphometry1: TMenuItem
-      Caption = 'Best by sorted geomorphometry'
-      OnClick = Bestbysortedgeomorphometry1Click
-    end
     object iesbyopinions1: TMenuItem
       Caption = 'Ties by opinions'
       OnClick = iesbyopinions1Click
@@ -3745,11 +3745,10 @@ object dbtablef: Tdbtablef
       Caption = 'Wins and Ties'
       OnClick = Wins1Click
     end
-    object N49: TMenuItem
-      Caption = '-'
-    end
     object N50: TMenuItem
       Caption = 'Add country to DB'
+      Enabled = False
+      Visible = False
       OnClick = N50Click
     end
   end

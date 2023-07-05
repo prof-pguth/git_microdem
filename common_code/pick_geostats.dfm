@@ -28,8 +28,8 @@ object PickGeoStat: TPickGeoStat
     Height = 77
     Align = alBottom
     TabOrder = 0
-    ExplicitTop = 269
-    ExplicitWidth = 509
+    ExplicitTop = 266
+    ExplicitWidth = 497
     object Label1: TLabel
       Left = 256
       Top = 17
@@ -110,8 +110,8 @@ object PickGeoStat: TPickGeoStat
     Align = alClient
     MultiLine = True
     TabOrder = 1
-    ExplicitWidth = 324
-    ExplicitHeight = 269
+    ExplicitWidth = 312
+    ExplicitHeight = 266
     object TabSheet1: TTabSheet
       Caption = 'Basic'
       object Button6: TButton
@@ -185,6 +185,15 @@ object PickGeoStat: TPickGeoStat
         Caption = 'Quick Elev Histogram'
         TabOrder = 7
         OnClick = Button14Click
+      end
+      object BitBtn29: TBitBtn
+        Left = 180
+        Top = 69
+        Width = 125
+        Height = 25
+        Caption = 'Multiple histograms'
+        TabOrder = 8
+        OnClick = BitBtn29Click
       end
     end
     object TabSheet2: TTabSheet
@@ -593,7 +602,7 @@ object PickGeoStat: TPickGeoStat
     Height = 267
     Align = alRight
     TabOrder = 2
-    ExplicitLeft = 324
-    ExplicitHeight = 269
+    ExplicitLeft = 312
+    ExplicitHeight = 266
   end
 end

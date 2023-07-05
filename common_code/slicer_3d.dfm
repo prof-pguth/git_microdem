@@ -1,8 +1,8 @@
 object SlicerForm: TSlicerForm
   Left = 0
   Top = 0
-  ClientHeight = 214
-  ClientWidth = 820
+  ClientHeight = 211
+  ClientWidth = 808
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

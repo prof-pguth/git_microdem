@@ -2,8 +2,8 @@ object MapForm: TMapForm
   Left = 45
   Top = 303
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1044
-  ClientWidth = 1711
+  ClientHeight = 1043
+  ClientWidth = 1707
   Color = clBtnHighlight
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -40,8 +40,8 @@ object MapForm: TMapForm
   object ScrollBox1: TScrollBox
     Left = 0
     Top = 27
-    Width = 1711
-    Height = 1017
+    Width = 1707
+    Height = 1016
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clRed
@@ -51,8 +51,8 @@ object MapForm: TMapForm
     ParentFont = False
     TabOrder = 0
     OnClick = ScrollBox1Click
-    ExplicitWidth = 1707
-    ExplicitHeight = 1016
+    ExplicitWidth = 1703
+    ExplicitHeight = 1015
     object Image1: TImage
       Left = 3
       Top = -247
@@ -209,13 +209,13 @@ object MapForm: TMapForm
     end
     object BlendPanel: TPanel
       Left = 0
-      Top = 972
-      Width = 1707
+      Top = 971
+      Width = 1703
       Height = 41
       Align = alBottom
       TabOrder = 8
-      ExplicitTop = 971
-      ExplicitWidth = 1703
+      ExplicitTop = 970
+      ExplicitWidth = 1699
       object TrackBar2: TTrackBar
         Left = 289
         Top = 1
@@ -334,12 +334,12 @@ object MapForm: TMapForm
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1711
+    Width = 1707
     Height = 27
     Align = alTop
     TabOrder = 1
     OnMouseDown = Panel1MouseDown
-    ExplicitWidth = 1707
+    ExplicitWidth = 1703
     object AnnotateSpeedButton1: TSpeedButton
       Left = 31
       Top = -4
@@ -3687,11 +3687,9 @@ object MapForm: TMapForm
         Caption = 'Map projection zones'
         object MGRSUSNG6x8zones1: TMenuItem
           Caption = 'MGRS/USNG 6x8 zones'
-          OnClick = MGRSUSNG6x8zones1Click
         end
         object UTM100Kzones1: TMenuItem
           Caption = 'UTM 100K zones'
-          OnClick = UTM100Kzones1Click
         end
         object CombinedMGRSpolygons1: TMenuItem
           Caption = 'Combined MGRS polygons'
@@ -6267,6 +6265,14 @@ object MapForm: TMapForm
       Caption = 'NBR, Normalized Burn Index'
       OnClick = NormalizedBurnIndex1Click
     end
+    object NBR21: TMenuItem
+      Caption = 'NBR-2'
+      OnClick = NBR21Click
+    end
+    object dNBRNBRbeforeandafterfire1: TMenuItem
+      Caption = 'dNBR (NBR before and after fire)'
+      OnClick = dNBRNBRbeforeandafterfire1Click
+    end
     object Normalizeddifferencepickbands1: TMenuItem
       Caption = 'Normalized difference (pick bands)'
       OnClick = Normalizeddifferencepickbands1Click
@@ -6511,7 +6517,6 @@ object MapForm: TMapForm
     end
     object Nightlights20161: TMenuItem
       Caption = 'Night lights 2016'
-      OnClick = Nightlights20161Click
     end
   end
   object PopupMenu19: TPopupMenu

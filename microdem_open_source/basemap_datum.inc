@@ -3,9 +3,32 @@
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
 { Copyright (c) 2023 Peter L. Guth  }
-{___________________________________}
+{-----------------------------------}
 {     include file for basemap      }
 {___________________________________}
+
+
+
+     function GetUTMDatumCode(PrimaryMapDatum : tMapProjection) : word;
+     begin
+       Result := 32600; {WGS84 default}
+       if (PrimaryMapDatum.h_DatumCode = 'WGS72') then Result := 32200
+       else if (PrimaryMapDatum.h_DatumCode = 'NAS-C') or (PrimaryMapDatum.h_DatumCode = 'NAD83') then Result := 26700
+       else if (PrimaryMapDatum.h_DatumCode = 'NAR-C') then Result := 26900
+       else if (PrimaryMapDatum.h_DatumCode <> 'WGS84') then MessageToContinue(GeotiffDatumDefaultString);
+       if (PrimaryMapDatum.LatHemi = 'S') then Result := Result + 100;
+       Result := Result + PrimaryMapDatum.projUTMZone;
+     end;
+
+     function GetGeoDatumCode(PrimaryMapDatum : tMapProjection) : word;
+     begin
+       Result := 4326; {WGS84 default}
+       if (PrimaryMapDatum.h_DatumCode = 'WGS72') then Result := 4322
+       else if (PrimaryMapDatum.h_DatumCode = 'NAS-C') or (PrimaryMapDatum.h_DatumCode = 'NAD83') then Result := 4267
+       else if (PrimaryMapDatum.h_DatumCode = 'NAR-C') then Result := 4269
+       else if (PrimaryMapDatum.h_DatumCode <> 'WGS84') then MessageToContinue(GeotiffDatumDefaultString);
+     end;
+
 
 
 {$If Defined(RecordDefineDatum) or Defined(ProjectionInfoAllowed)}
@@ -65,7 +88,7 @@ var
 begin
    Result := 99;
    for i := 0 to 14 do begin
-      if DatString = DigitizeDatumName[i] then Result := i;
+      if (DatString = DigitizeDatumName[i]) then Result := i;
    end;
 (*
    if (DatString = 'NAS-C') then Result := NAD27d
@@ -815,13 +838,13 @@ begin
                   end;
      Gnomonic   : begin       {Snyder, 1987, p.165}
                      Prime := true;
-                     Cosc :=  Sin(Lat0) * SinDeg(Lat) + Cos(Long0) * CosDeg(Long) * Cos(Long * Petmar_types.DegToRad - Long0);
+                     Cosc := Sin(Lat0) * SinDeg(Lat) + Cos(Long0) * CosDeg(Long) * Cos(Long * Petmar_types.DegToRad - Long0);
                      k := 1 / CosC;
                      h := 1 / sqr(cosc);
                   end;
      LamAzEqArea  : begin       {Snyder, 1987, p.185}
                      Prime := true;
-                     k :=  sqrt(2 / (1 + Sin(Lat0) * SinDeg(Lat) + Cos(Long0) * CosDeg(Long) * Cos(Long * Petmar_types.DegToRad - Long0)));
+                     k := sqrt(2 / (1 + Sin(Lat0) * SinDeg(Lat) + Cos(Long0) * CosDeg(Long) * Cos(Long * Petmar_types.DegToRad - Long0)));
                      h := 1 / k;
                   end;
      SinusProj     : begin  {Snyder, 1987, p.247}
@@ -1073,7 +1096,7 @@ begin
      end;
   end
   else begin
-     if h_f > 1 then h_f := 1 / h_f;
+     if (h_f > 1) then h_f := 1 / h_f;
   end;
 
   e2 := 2*h_f-sqr(h_f);
@@ -1209,7 +1232,7 @@ begin
      N := a / Sqrt(1 - e2*Sqr(sin(Lat)));
      {$IfDef ForwardProject} WriteLineToDebugFile('e2=' + RealToString(e2,-18,-6) + '  a=' + RealToString(A,-12,-2)); {$EndIf}
      T := Sqr(Math.Tan(Lat));
-     CC :=  EP2* Sqr(cos(Lat));
+     CC := EP2* Sqr(cos(Lat));
      BigA := (Long - Long0) * Cos(Lat);
      {$IfDef ForwardProject} ShortProjInfo('ForwardProject TM mid projmapscale'); {$EndIf}
      {$IfDef ForwardProject} WriteLineToDebugFile('N=' + RealToString(N,-18,-6) + '  BigA=' + RealToString(BigA,-18,-6)); {$EndIf}
@@ -1258,8 +1281,8 @@ procedure tMapProjection.ProtectedDefineDatum(DatumCode : ShortString; Why : sho
          Table : tMyData;
       begin
          {$If Defined(RecordDefineDatum) or Defined(RecordLong0) or Defined(LongCent)} WriteLineToDebugFile(ProjDebugName + ' SafeDefineDatum in, ' + KeyDatumParams); {$EndIf}
-         DefineWGS84;
          {$IfDef FMX}
+            DefineWGS84;
          {$Else}
             if not WGSEquivalentDatum(DatumCode) then begin
               if FileExists(GT_Datum_fName) and FileExists(GT_Ellipse_fName) then begin
@@ -1445,7 +1468,7 @@ begin
    projUTMZone := UTMZone;
    ProtectedDefineDatum(DatumCode,Why);
    if (Pname = UTMellipsoidal) then begin
-      if LatHemi = 'N' then false_north := 0 else false_north := 10000000;
+      if (LatHemi = 'N') then false_north := 0 else false_north := 10000000;
    end;
    {$If Defined(RecordShortDefineDatum) or Defined(RecordDefineDatum)} WriteLineToDebugFile(ProjDebugName + ' out DefineDatumFromUTMZone=' + KeyDatumParams + ' ' + Why); {$EndIf}
    {$If Defined(RecordLong0) or Defined(LongCent)} ShortProjInfo(ProjDebugName + ' tMapProjection.DefineDatumFromUTMZone out'); {$EndIf}
@@ -1504,7 +1527,7 @@ begin
       if (Letter >= 'I') and (Letter < 'X') then inc(Letter);   {I not used}
       if (Letter >= 'O') and (Letter < 'X') then inc(Letter);   {O not used}
       Str(projUTMZone,Result);
-      Result :=  Result + Letter + BuildMGRSstring(GridZo,x,y,UTMLen);
+      Result := Result + Letter + BuildMGRSstring(GridZo,x,y,UTMLen);
    end;
 end;
 
@@ -1577,7 +1600,7 @@ begin
       if (Letter >= 'O') then inc(Letter);   {O not used}
       if (Letter > 'X') then Letter := 'X';   {X zone is 12 degrees high}
       Str(NumZone,Result);
-      Result :=  Result + Letter;
+      Result := Result + Letter;
 
     {now check for exceptions}
       if (Result = '31V') and (Long >= 3) then Result := '32V';

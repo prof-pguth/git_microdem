@@ -386,22 +386,22 @@ begin
                       ',"dx":' + RealToString(DEMheader.DEMxSpacing,-18,-6) +
                       ',"dy":' + RealToString(DEMheader.DEMySpacing,-18,-6) +
                       ',"proj":';
-       if DEMheader.DEMUsed = ArcSecDEM then  JSONString :=  JSONString  + '"GCS"'
+       if DEMheader.DEMUsed = ArcSecDEM then  JSONString := JSONString  + '"GCS"'
        else JSONString := JSONString + '"UTM' + IntToStr(DEMheader.UTMZone) +  DEMMapProjection.LatHemi + '"';
 
        JSONString := JSONString + ',"data":[';
        for j := pred(DEMheader.NumRow) downto 0 do begin
           for i := 0 to pred(DEMheader.NumCol) do begin
               if GetElevMeters(i,j,z) then begin
-                 JSONString :=  JSONString + RealToString(z,-12,-MDDef.GeoJSONG_zdec) + ',';
+                 JSONString := JSONString + RealToString(z,-12,-MDDef.GeoJSONG_zdec) + ',';
               end
               else begin
-                 JSONString :=  JSONString + 'null,';
+                 JSONString := JSONString + 'null,';
               end;
           end;
        end;
        Delete(JSONString,Length(JSONString),1);
-       JSONString :=  JSONString + ']}';
+       JSONString := JSONString + ']}';
        sl := tStringList.Create;
        sl.Add(JSONstring);
        sl.SaveToFile(fName);

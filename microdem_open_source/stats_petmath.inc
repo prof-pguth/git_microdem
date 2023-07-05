@@ -76,12 +76,6 @@
 TYPE
    barray = ARRAY [1..10] of extended;
    bExtArray = array of extended;
-   //bint64array = array of int64;
-//VAR
-   //glinext,glinextp : integer;
-   //glma : ARRAY [1..55] OF extended;
-   //chsq, chsq64, df, prob, prob64, x : extended;
-   //ibin,idum : integer;
 
 {******************************************************}
 {      "Numerical Recipes in Pascal" Includes          }
@@ -258,7 +252,7 @@ begin
 
    sumr2 := 0;
    sumRi2 := 0;
-   for DEM := 0 to pred(k) do  R[succ(DEM)] := 0;
+   for DEM := 0 to pred(k) do R[succ(DEM)] := 0;
       //R[succ(DEM)] := GISdb[DBonTable].MyData.FieldSum(DEMs[DEM] + '_SCR');
    GISdb[DBonTable].MyData.First;
    while not GISdb[DBonTable].MyData.eof do begin //was i loop

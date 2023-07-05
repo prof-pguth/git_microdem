@@ -94,47 +94,8 @@
 
 
 function tMapDraw.ChangeMapLegend : tMyBitmap;
-(*
-var
-   Vat : tStringList;
-   fName : PathStr;
-   color : tColor;
-   TStr : shortstring;
-   CatHeight,Cat : integer;
-*)
 begin
    Result := MakeChangeMapLegend(DEMonMap);
-(*
-   CreateBitmap(Result,1200,800);
-
-   Result.Canvas.Font.Size := MDDef.LegendFont.Size;
-   CatHeight := 6 * Result.Canvas.TextHeight('Wy') div 5;
-
-   Cat := 0;
-
-   ClearBitmap(Result,clNearWhite);
-   Result.Canvas.Font.Style := [fsBold];
-
-   Result.Canvas.TextOut(5,1,'       % of area      Category');
-   inc(Cat);
-   Result.Canvas.Pen.Color := clLime;
-   Result.Canvas.Brush.Color := clLime;
-   Result.Canvas.Brush.Style := bsSolid;
-   Result.Canvas.Rectangle(5,Cat*CatHeight,40,succ(Cat)*CatHeight);
-   Result.Canvas.Brush.Style := bsClear;
-   Tstr := RealToString(100-DEMGlb[DEMonMap].PercentileOfElevation(MDDef.TopCutLevel),9,2) + '%   Positive Change > ' + RealToString(MDDef.TopCutLevel,-8,-2);
-   Result.Canvas.TextOut(45,Cat*CatHeight + 4, TStr);
-
-   inc(Cat);
-   Result.Canvas.Pen.Color := clRed;
-   Result.Canvas.Brush.Color := clRed;
-   Result.Canvas.Brush.Style := bsSolid;
-   Result.Canvas.Rectangle(5,Cat*CatHeight,40,succ(Cat)*CatHeight);
-   Result.Canvas.Brush.Style := bsClear;
-   TStr := RealToString(DEMGlb[DEMonMap].PercentileOfElevation(MDDef.BottomCutLevel),9,2) + '%   Negative Change < ' + RealToString(MDDef.BottomCutLevel,-8,-2);
-   Result.Canvas.TextOut(45,Cat*CatHeight + 4,TStr);
-   PutBitmapInBox(Result);
-*)
 end;
 
 
@@ -1987,7 +1948,7 @@ end;
                               TStr := ShortLandsatName(SatImage[SatonMap].SceneBaseName) + '  ' + CurrentSatelliteColors;
                            end
                            else if SatImage[SatonMap].IsSentinel2 then begin
-                              TStr := 'Sentinel-2  ' + Copy(SatImage[SatonMap].SceneBaseName,12,2) + '-' + Copy(SatImage[SatonMap].SceneBaseName,14,2) +  '-' + Copy(SatImage[SatonMap].SceneBaseName,8,4) + '  ' + CurrentSatelliteColors;
+                              TStr := 'Sentinel-2  ' + SatImage[SatonMap].ImageDateString + '  ' + CurrentSatelliteColors;
                            end
                            else begin
                               TStr := SatImage[SatonMap].SceneBaseName;

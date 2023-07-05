@@ -16,7 +16,9 @@ unit make_grid;
 
    {$IfDef RecordProblems}   //normally only defined for debugging specific problems
       //$Define CreateAspectMap}
-      {$Define DEMIXmaps}
+      //{$Define DEMIXmaps}
+      //{$Define CreateSlopeMap}
+      //{$Define TrackMapRange}
       //{$Define CreateGeomorphMaps}
       //{$Define RecordTimeGridCreate}
       //{$Define RecordPointClass}
@@ -100,16 +102,18 @@ function CreateRoughnessMap(WhichDEM : integer; OpenMap : boolean = true) : inte
 function CreateRoughnessMap2(DEM : integer; OpenMap : boolean = true; SaveSlopeMap : boolean = true) : integer;
 function CreateRoughnessMapAvgVector(WhichDEM : integer; OpenMap : boolean = true) : integer;
 
-function CreateRoughnessSlopeStandardDeviationMap(DEM,RadiusMustBeOdd : integer) : integer;
-function CreateSlopeRoughnessSlopeStandardDeviationMap(DEM,RadiusMustBeOdd : integer; var SlopeMap : integer) : integer;
+function CreateRoughnessSlopeStandardDeviationMap(DEM,RadiusMustBeOdd : integer; OpenMap : boolean = true) : integer;
+function CreateSlopeRoughnessSlopeStandardDeviationMap(DEM,RadiusMustBeOdd : integer; var SlopeMap : integer; OpenMap : boolean = true) : integer;
 
 procedure MakeGammaGrids(CurDEM,BoxSize : integer);
 
 function DifferenceCategoryMap(DEMonMap : integer; fName : PathStr = '') : integer;
 
 function AirBallDirtBallMap(DEMonMap,DSM,DTM : integer; fName : PathStr = '') : integer;
-function TwoDEMHighLowMap(RefDEM,ALOS,COP : integer; SimpleTolerance : float32; FourCats : boolean; fName2 : PathStr) : integer;
+function TwoDEMHighLowMap(RefDEM,ALOS,COP : integer; SimpleTolerance : float32; FourCats : boolean; fName2 : PathStr; ShowMap : boolean = true) : integer;
 function BestCopOrALOSmap(RefDEM,ALOS,Cop : integer; Tolerance : float32; AName : shortString) : integer;
+
+function MakeDNBRMap(PreNBR,PostNBR : integer) : integer;
 
 
 {$IfDef ExExoticMaps}
@@ -129,10 +133,39 @@ uses
    DEMDef_routines,Petimage,DEMRefOp,DEMterrC,
    DEMStat,DEMMapf,
    Geomorph_point_class,
+   DEMEros,
    DEMweapn;
 
 var
    CountInStrips : integer;
+
+
+function MakeDNBRMap(PreNBR,PostNBR : integer) : integer;
+var
+   PreFire,PostFire : integer;
+   AreaName : shortstring;
+begin
+   {$IfDef RecordSat} WriteLineToDebugFile('TMapForm.dNBRNBRbeforeandafterfire1Click in'); {$EndIf}
+    if ValidDEM(PreNBR) and ValidDEM(PostNBR) then begin
+    end
+    else begin
+       if GetImage(PreFire,true,'Pre fire image') and GetImage(PostFire,true,'Post fire image') then begin
+          PreNBR := SatImage[PreFire].SelectionMap.NewSatWindow(nsbNBRNormalizedBurnIndex);
+          PostNBR := SatImage[PostFire].SelectionMap.NewSatWindow(nsbNBRNormalizedBurnIndex);
+       end
+       else begin
+          Result := 0;
+          exit;
+       end;
+    end;
+    Result := MakeDifferenceMap(PreNBR,PostNBR,PreNBR,0,true,false,false,AreaName);
+    DEMGlb[Result].DEMHeader.ElevUnits := euDNBR;
+    DEMGlb[Result].SelectionMap.MapDraw.MapType := mtElevFromTable;
+    ElevationFixedPalette := 'dNBR';
+    DEMGlb[Result].SelectionMap.DoBaseMapRedraw;
+   {$IfDef RecordSat} WriteLineToDebugFile('TMapForm.dNBRNBRbeforeandafterfire1Click out'); {$EndIf}
+end;
+
 
 
 function MakeAspectMap(ElevMap : integer) : integer;
@@ -264,7 +297,7 @@ begin
 end;
 
 
-function TwoDEMHighLowMap(RefDEM,ALOS,COP : integer; SimpleTolerance : float32; FourCats : boolean; fName2 : PathStr) : integer;
+function TwoDEMHighLowMap(RefDEM,ALOS,COP : integer; SimpleTolerance : float32; FourCats : boolean; fName2 : PathStr; ShowMap : boolean = true) : integer;
 const
    MaxHist = 9;
    LongCatName : array[1..9] of shortstring = ('Both high','ALOS high/COP good','ALOS high/COP low',
@@ -287,7 +320,7 @@ begin
      WriteLineToDebugFile('TwoDEMHighLowMap in, REFDEM=' + IntToStr(RefDEM) + ' DEM1=' + IntToStr(ALOS) + ' and DEM2=' + IntToStr(COP) + '  ' + fName2);
    {$EndIf}
    Result := 0;
-   if ValidDEM(RefDEM)then begin
+   if ValidDEM(RefDEM) and ValidDEM(ALOS) and ValidDEM(COP) then begin
       for i := 1 to MaxHist do Hist[i] := 0;
       Result := DEMGlb[RefDEM].CloneAndOpenGridSetMissing(ByteDEM,fName2,euIntCode);
       DEMGlb[Result].AreaName := fName2;
@@ -354,11 +387,11 @@ begin
       StringList2CSVtoDB(vat,fName2,true);
       DEMGlb[Result].VATFileName := fName2;
       DEMglb[Result].CheckMaxMinElev;
-      DEMglb[Result].SetUpMap(Result,true,mtDEMVATTable);
+      if ShowMap then DEMglb[Result].SetUpMap(Result,true,mtDEMVATTable);
       {$If Defined(RecordDEMCompare) or Defined(NewVATgrids)} WriteLineToDebugFile('TwoDEMHighLowMap out, new grid=' + IntToStr(Result) + ' ' + fName2);  {$EndIf}
    end
    else begin
-      {$If Defined(RecordDEMCompare) or Defined(NewVATgrids)} HighlightLineToDebugFile('TwoDEMHighLowMap invalid input, DEM=' + IntToStr(RefDEM));  {$EndIf}
+      {$If Defined(RecordDEMCompare) or Defined(NewVATgrids)} HighlightLineToDebugFile('TwoDEMHighLowMap invalid input, ref=' + IntToStr(RefDEM) + ' cop=' + IntToStr(COP) + ' alos=' + IntToStr(ALOS));  {$EndIf}
    end;
 end;
 
@@ -540,16 +573,16 @@ begin
 end;
 
 
-function CreateRoughnessSlopeStandardDeviationMap(DEM,RadiusMustBeOdd : integer) : integer;
+function CreateRoughnessSlopeStandardDeviationMap(DEM,RadiusMustBeOdd : integer; OpenMap : boolean = true) : integer;
 var
    SlopeMap : integer;
 begin
    SlopeMap := 0;
-   CreateSlopeRoughnessSlopeStandardDeviationMap(DEM,RadiusMustBeOdd,SlopeMap);
+   CreateSlopeRoughnessSlopeStandardDeviationMap(DEM,RadiusMustBeOdd,SlopeMap,OpenMap);
 end;
 
 
-function CreateSlopeRoughnessSlopeStandardDeviationMap(DEM,RadiusMustBeOdd : integer; var SlopeMap : integer) : integer;
+function CreateSlopeRoughnessSlopeStandardDeviationMap(DEM,RadiusMustBeOdd : integer; var SlopeMap : integer; OpenMap : boolean = true) : integer;
 var
    x,y,i,j,Radius : integer;
    Slope : float32;
@@ -559,7 +592,7 @@ var
    sl : array[1..100] of float32;
 begin
    ReturnSlopeMap := (SlopeMap = 0);
-   SlopeMap := CreateSlopeMap(DEM,ReturnSlopeMap);
+   SlopeMap := CreateSlopeMap(DEM,OpenMap);
    fName := 'md_ruff_slope_std_' + FilterSizeStr(RadiusMustBeOdd) + '_' + DEMGlb[DEM].AreaName;
    Result := DEMGlb[DEM].CloneAndOpenGridSetMissing(FloatingPointDEM,fName,PercentSlope);
    Radius := RadiusMustBeOdd div 2;
@@ -583,10 +616,10 @@ begin
       end;
    end;
    DEMglb[Result].CheckMaxMinElev;
-   DEMglb[Result].SetUpMap(Result,true,mtElevSpectrum);
+   if OpenMap then DEMglb[Result].SetUpMap(Result,true,mtElevSpectrum);
    if ReturnSlopeMap then begin
       DEMglb[SlopeMap].CheckMaxMinElev;
-      DEMglb[SlopeMap].SetUpMap(Result,true,mtElevSpectrum);
+      if OpenMap then DEMglb[SlopeMap].SetUpMap(Result,true,mtElevSpectrum);
    end
    else begin
       CloseSingleDEM(SlopeMap);
@@ -1223,10 +1256,14 @@ begin
     for i := 1 to MaxGrids do begin
        if ValidDEM(MomentDEMs[i]) then begin
           DEMGlb[MomentDEMs[i]].CheckMaxMinElev;
+          (*  //removed 6/4/2023
           fName := MDTempDir + DEMGlb[MomentDEMs[i]].AreaName + '.dem';
           DEMGlb[MomentDEMs[i]].WriteNewFormatDEM(fName,'difference map');
+          {$IfDef TrackMapRange} WriteLineToDebugFile(IntToStr(i) + '  ' + DEMGlb[MomentDEMs[i]].AreaName + '  ' +  DEMGlb[MomentDEMs[i]].zRange); {$EndIf}
           CloseSingleDEM(MomentDEMs[i]);
           MomentDEMs[i] := OpenNewDEM(fName,false);
+          *)
+          {$IfDef TrackMapRange} WriteLineToDebugFile(IntToStr(i) + '  ' + DEMGlb[MomentDEMs[i]].AreaName + '  ' +  DEMGlb[MomentDEMs[i]].zRange); {$EndIf}
 
           if OpenMaps then begin
              {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('Create map for DEM ' + IntToStr(MomentDEMs[i]) + ' ' + DEMGlb[MomentDEMs[i]].KeyDEMParams); {$EndIf}
@@ -1389,6 +1426,8 @@ begin
    MDDef.DoEWSlope := Components;
    Result := MakeMomentsGrid(WhichDEM,'S',-99,OpenMap);
    RestoreBackupDefaults;
+
+   {$If Defined(CreateSlopeMap)} WriteLineToDebugFile('CreateSlopeMap=' + IntToStr(Result) + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].zRange); {$EndIf}
    {$IfDef  Defined(CreateGeomorphMaps)} WriteLineToDebugFile('CreateSlopeMap, InGrid=' + IntToStr(WhichDEM) + '  NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProjection.ProjDebugName); {$EndIf}
 end;
 

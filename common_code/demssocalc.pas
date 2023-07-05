@@ -8,7 +8,6 @@
 {___________________________________}
 
 
-
 {$I nevadia_defines.inc}
 
 {$IFDEF DEBUG}
@@ -381,7 +380,6 @@ begin
 end;
 
 
-
 procedure TSSOCalcDlg.BitBtn7Click(Sender: TObject);
 var
    i,it  : integer;
@@ -451,10 +449,10 @@ end;
 
 procedure TSSOCalcDlg.BitBtn9Click(Sender: TObject);
 begin
-{$IfDef ExWaveLengthHeight}
-{$Else}
-   ComputeDunecrestspacingheight(theBaseMap,theBaseMap.MapDraw.MapAreaDEMGridLimits,Memo1);
-{$EndIf}
+   {$IfDef ExWaveLengthHeight}
+   {$Else}
+      ComputeDunecrestspacingheight(theBaseMap,theBaseMap.MapDraw.MapAreaDEMGridLimits,Memo1);
+   {$EndIf}
 end;
 
 
@@ -575,8 +573,6 @@ begin
       BitBtn8.Visible := false;
       BitBtn9.Visible := false;
    {$EndIf}
-
-
 end;
 
 

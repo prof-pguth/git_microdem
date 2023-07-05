@@ -57,7 +57,6 @@ var
 var
    i,j : integer;
 begin
-
    Min := -4;
    Max := 4;
    BinSize := 0.5;
@@ -403,8 +402,7 @@ end;
 
 
 
-procedure DEMIXwineContestMeanMedianGraph(What,DBonTable : integer; AreaList : tStringList = nil; CriteriaUsed : tStringList = nil; LandTypePresent : tStringList = nil;
-      DEMsPresent : tStringList = nil);
+procedure DEMIXwineContestMeanMedianGraph(What,DBonTable : integer; AreaList : tStringList = nil; CriteriaUsed : tStringList = nil; LandTypePresent : tStringList = nil; DEMsPresent : tStringList = nil);
 const
    InterAreaSkip = 4;
 var
@@ -499,7 +497,8 @@ var
 
             for i := 0 to pred(AreaList.Count) do begin
              GISdb[DBonTable].EmpSource.Enabled := false;
-                GISdb[DBonTable].ApplyGISFilter(RefFilter + ' AND AREA=' + QuotedStr(AreaList.Strings[i]));
+                if (RefFilter <> '') then RefFilter := RefFilter + ' AND ';
+                GISdb[DBonTable].ApplyGISFilter(RefFilter + 'AREA=' + QuotedStr(AreaList.Strings[i]));
                 WMDEM.SetPanelText(0,IntToStr(i) + '/' + IntToStr(AreaList.Count) );
                 WMDEM.SetPanelText(1,RefFilter);
                 if (GISdb[DBonTable].MyData.FiltRecsInDB > 0) then begin
@@ -637,7 +636,7 @@ var
 var
    J,k,ColsInBigGraph : integer;
 begin {DEMIXwineContestMeanMedianGraph}
-   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXwineContestMeanMedianGraph in, table=' + IntToStr(DBontable)); {$EndIf}
+   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXwineContestMeanMedianGraph in, table=' + IntToStr(DBontable) + '  what='  + IntToStr(What)); {$EndIf}
 
    if (CriteriaUsed = Nil) and (What in [dg7Params,dgNormalizedDiff,dgPick]) then begin
       fName := DEMIXSettingsDir;
@@ -648,7 +647,7 @@ begin {DEMIXwineContestMeanMedianGraph}
 
    if (DEMsPresent = Nil) then begin
       DEMsPresent := tStringList.Create;
-      DEMsPresent.LoadFromFile(DEMIXSettingsDir + 'demix_dems.txt');
+      DEMsPresent.LoadFromFile(DEMIXSettingsDir + 'demix_dems_all_six.txt');
    end;
 
    if (AreaList = Nil) then begin
@@ -657,16 +656,17 @@ begin {DEMIXwineContestMeanMedianGraph}
    end;
 
    if (LandTypePresent = Nil) then begin
-      LandTypePresent := GISdb[DBonTable].MyData.UniqueEntriesInDB('LAND_TYPE');
       GISdb[DBonTable].EmpSource.Enabled := false;
+      LandTypePresent := GISdb[DBonTable].MyData.UniqueEntriesInDB('LAND_TYPE');
+      //GISdb[DBonTable].EmpSource.Enabled := false;
    end;
 
    GISdb[DBonTable].EmpSource.Enabled := false;
    ColsInBigGraph := 3;
 
-   GISdb[DBonTable].EmpSource.Enabled := false;
 
    if What in [dgAllValues,dgAllScores] then begin
+      GISdb[DBonTable].EmpSource.Enabled := false;
       AllTiles := GISdb[DBonTable].MyData.UniqueEntriesInDB('DEMIX_TILE');
       ThisTile := GetFromList('DEMIX tile to plot',AllTiles);
       FreeAndNil(AllTiles);
@@ -737,7 +737,6 @@ begin
       GISdb[DBonTable].EmpSource.Enabled := false;
       aLine := aline + ',' + IntToStr(GISdb[DBonTable].MyData.NumUniqueEntriesInDB('AREA'));
       GISdb[DBonTable].EmpSource.Enabled := false;
-      //aLine := aline + ',' + IntToStr(GISdb[DBonTable].MyData.NumUniqueEntriesInDB('DEMIX_TILE'));
       for k := 0 to pred(LandTypesPresent.Count) do begin
          wmdem.SetPanelText(3,'DEM type=' + RefDEMType[j] + '  land type=' + LandTypesPresent[k]);
          GISdb[DBonTable].EmpSource.Enabled := false;

@@ -32,14 +32,14 @@ begin
       for y := 0 to pred(DEMheader.NumRow) do begin
          if SurroundedPointElevs(x,y,znw,zw,zsw,zn,z,zs,zne,ze,zse) then begin
             if Normalize then begin
-                znw :=  (zNW-z) * FactorDiag;
-                zne :=  (zNE-z) * FactorDiag;
-                zsw :=  (zSW-z) * FactorDiag;
-                zse :=  (zSE-z) * FactorDiag;
-                ze :=  (ze-z) * FactorEW;
-                zw :=  (zw-z) * FactorEW;
-                zn :=  (zn-z) * FactorNS;
-                zs :=  (zs-z) * FactorNS;
+                znw := (zNW-z) * FactorDiag;
+                zne := (zNE-z) * FactorDiag;
+                zsw := (zSW-z) * FactorDiag;
+                zse := (zSE-z) * FactorDiag;
+                ze := (ze-z) * FactorEW;
+                zw := (zw-z) * FactorEW;
+                zn := (zn-z) * FactorNS;
+                zs := (zs-z) * FactorNS;
                 Sum := (zn+zne+ze+zse+zs+zsw+zw+znw)/8;
             end
             else Sum := z-(zn+zne+ze+zse+zs+zsw+zw+znw)/8;

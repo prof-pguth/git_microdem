@@ -365,6 +365,9 @@ procedure PopUpDefaultHorizontalLegendOnBitmap(Min,Max : float64;  Units : short
 procedure PutMyBitmapIntoImage(fname : PathStr; Image : tImage);
 procedure AlphaMatchBitmaps(Bitmap,Bitmap2 : tMyBitmap);
 
+function MakeBigBitmap(var theFiles : tStringList; Capt : shortstring; SaveName : PathStr = ''; Cols : integer = -1) : TImageDisplayForm;
+
+
 procedure DifferenceTwoBitmaps;
 
 function OpenImageEditor : TImageDisplayForm;
@@ -438,10 +441,7 @@ uses
    PETMath,
    PetDBUtils,
    KML_Creator,
-
    Nevadia_Main;
-
-
 
 type
    trgbArray =  array[0..MaxScreenXMax] of TRGBTriple;
@@ -449,6 +449,55 @@ type
 
 var
    FirstX,FirstY,LastX,LastY : integer;
+
+
+function MakeBigBitmap(var theFiles : tStringList; Capt : shortstring; SaveName : PathStr = ''; Cols : integer = -1) : TImageDisplayForm;
+var
+   bigbmp : tMyBitmap;
+   fName : PathStr;
+   AskCols : boolean;
+   x,y : integer;
+begin
+   {$IfDef RecordBigBitmap}  WriteLineToDebugFile('MakeBigBitmap in'); {$EndIf}
+   Result := nil;
+   if (TheFiles.Count > 0) then begin
+     AskCols := (Cols < 0);
+     if AskCols then begin
+        Cols := MDDef.BigBM_nc;
+     end;
+     BigBMP := CombineBitmaps(Cols, theFiles, Capt);
+     if (BigBMP <> nil) then begin
+        if (Capt <> '') then begin
+           BigBmp.Canvas.Font.Size := 24;
+           BigBmp.Canvas.Font.Style := [fsBold];
+           x := BigBmp.Width - 10 - BigBmp.Canvas.TextWidth(Capt);
+           y := BigBmp.Height - 10 - BigBmp.Canvas.TextHeight(Capt);
+           BigBmp.Canvas.TextOut(x,y,Capt);
+        end;
+        if (SaveName <> '') then begin
+            {$IfDef RecordBigBitmap} WriteLineToDebugFile('MakeBigBitmap save in ' + SaveName); {$EndIf}
+            SaveBitmap(BigBmp,SaveName);
+         end;
+         Result := TImageDisplayForm.Create(Application);
+         Result.LoadImage(BigBmp,true);
+         fName := Petmar.NextFileNumber(MDtempDir,'big_bmp_files_','.txt');
+         theFiles.SaveToFile(fName);
+         Result.BigBM_Capt := Capt;
+         Result.BigBM_files := fName;
+         Result.ChangeColumns1.Visible := true;
+         if AskCols then Result.Changecolumns1Click(nil)
+         else Result.RedrawSpeedButton12Click(Nil);
+         BigBMP.Free;
+         {$IfDef RecordBigBitmap}  WriteLineToDebugFile('MakeBigBitmap out, imageform created'); {$EndIf}
+      end;
+   end
+   else begin
+      {$IfDef RecordBigBitmap}  WriteLineToDebugFile('Nothing in string list'); {$EndIf}
+   end;
+   theFiles.Destroy;
+end;
+
+
 
 
 function OpenImageEditor : TImageDisplayForm;
@@ -746,31 +795,31 @@ begin
    wmdem.StatusBar1.Panels[2].Text := ColorString(Image1.Canvas.Pixels[x,y]);
 
    {$IfDef RegisterPhoto}
-   if (PhotoRegForm <> Nil) and (PhotoRegForm.DEMPersF <> Nil) then begin
-      PhotoRegForm.DEMPersF.LastX := x;
-      PhotoRegForm.DEMPersF.LastY := y;
-      PhotoRegForm.DEMPersF.FindLatLong(Lat,Long,Pitch,DistOut,Azimuth,Mess1,Mess2,Mess3,Mess4);
+      if (PhotoRegForm <> Nil) and (PhotoRegForm.DEMPersF <> Nil) then begin
+         PhotoRegForm.DEMPersF.LastX := x;
+         PhotoRegForm.DEMPersF.LastY := y;
+         PhotoRegForm.DEMPersF.FindLatLong(Lat,Long,Pitch,DistOut,Azimuth,Mess1,Mess2,Mess3,Mess4);
 
-      PhotoRegForm.DEMPersF.Image1.Canvas.Pen.Color := clRed;
-      PhotoRegForm.DEMPersF.Image1.Canvas.Pen.Mode := pmNotXor;
-      PhotoRegForm.DEMPersF.Image1.Canvas.Pen.Width := 3;
-      if (LastPhotoRoamX > -1) then CrossWithHole(PhotoRegForm.DEMPersF.Image1.Canvas,LastPhotoRoamX,LastPhotoRoamY);
-      CrossWithHole(PhotoRegForm.DEMPersF.Image1.Canvas,x,y);
-      LastPhotoRoamX := x;
-      LastPhotoRoamY := y;
+         PhotoRegForm.DEMPersF.Image1.Canvas.Pen.Color := clRed;
+         PhotoRegForm.DEMPersF.Image1.Canvas.Pen.Mode := pmNotXor;
+         PhotoRegForm.DEMPersF.Image1.Canvas.Pen.Width := 3;
+         if (LastPhotoRoamX > -1) then CrossWithHole(PhotoRegForm.DEMPersF.Image1.Canvas,LastPhotoRoamX,LastPhotoRoamY);
+         CrossWithHole(PhotoRegForm.DEMPersF.Image1.Canvas,x,y);
+         LastPhotoRoamX := x;
+         LastPhotoRoamY := y;
 
-      if ImageMouseIsDown and (ImageDoingWhat = DigitizeOnPhoto) then begin
-         {$IfDef RecordRoamOnMapProblems} WriteLineToDebugFile('TImageFm.Image1MouseMove: ' + LatLongDegreeToString(Lat,Long)); {$EndIf}
-         if (Lat < 99) then with DEMGlb[1].SelectionMap,MapDraw do begin
-            Petmar.ScreenSymbol(Self.Image1.Canvas,x,y,FilledBox,2,clRed);
-            LatLongDegreeToScreen(Lat,Long,x1,y1);
-            Petmar.ScreenSymbol(DEMGlb[1].SelectionMap.Image1.Canvas,x1,y1,FilledBox,2,clRed);
-            {$IfDef RecordRoamOnMapProblems} WriteLineToDebugFile('x1=' + IntToStr(x1) + '   y1=' + IntToStr(y1) + '  x2=' + IntToStr(x2) + '   y2=' + IntToStr(y2)  ); {$EndIf}
+         if ImageMouseIsDown and (ImageDoingWhat = DigitizeOnPhoto) then begin
+            {$IfDef RecordRoamOnMapProblems} WriteLineToDebugFile('TImageFm.Image1MouseMove: ' + LatLongDegreeToString(Lat,Long)); {$EndIf}
+            if (Lat < 99) then with DEMGlb[1].SelectionMap,MapDraw do begin
+               Petmar.ScreenSymbol(Self.Image1.Canvas,x,y,FilledBox,2,clRed);
+               LatLongDegreeToScreen(Lat,Long,x1,y1);
+               Petmar.ScreenSymbol(DEMGlb[1].SelectionMap.Image1.Canvas,x1,y1,FilledBox,2,clRed);
+               {$IfDef RecordRoamOnMapProblems} WriteLineToDebugFile('x1=' + IntToStr(x1) + '   y1=' + IntToStr(y1) + '  x2=' + IntToStr(x2) + '   y2=' + IntToStr(y2)  ); {$EndIf}
+            end;
+            LastLat := Lat;
+            LastLong := Long;
          end;
-         LastLat := Lat;
-         LastLong := Long;
       end;
-   end;
    {$EndIf}
 
    if ImageMouseIsDown and (ImageDoingWhat = imDoingNothing) then begin
@@ -1004,12 +1053,12 @@ begin
    ScrollBox1.VertScrollBar.Visible := AllowScrollbars and (ForceScrollBars or (Image1.Height + Panel1.Height + Toolbar1.height + StatusBar1.Height > ClientHeight + 2));
 
    {$IfDef RecordImageResize}
-   WriteLineToDebugFile('TImageFm.FormResize');
-   WriteLineToDebugFile('  Image size: ' + ImageSize(Image1));
-   WriteLineToDebugFile('  Client size: ' + IntToStr(ClientWidth) + ' x ' + IntToStr(ClientHeight));
-   if ScrollBox1.HorzScrollBar.Visible and ScrollBox1.VertScrollBar.Visible then WriteLineToDebugFile('   Both scrollbars visible')
-   else if not (ScrollBox1.HorzScrollBar.Visible and ScrollBox1.VertScrollBar.Visible) then WriteLineToDebugFile('   No scrollbars visible')
-   else WriteLineToDebugFile('   One scrollbar visible');
+      WriteLineToDebugFile('TImageFm.FormResize');
+      WriteLineToDebugFile('  Image size: ' + ImageSize(Image1));
+      WriteLineToDebugFile('  Client size: ' + IntToStr(ClientWidth) + ' x ' + IntToStr(ClientHeight));
+      if ScrollBox1.HorzScrollBar.Visible and ScrollBox1.VertScrollBar.Visible then WriteLineToDebugFile('   Both scrollbars visible')
+      else if not (ScrollBox1.HorzScrollBar.Visible and ScrollBox1.VertScrollBar.Visible) then WriteLineToDebugFile('   No scrollbars visible')
+      else WriteLineToDebugFile('   One scrollbar visible');
    {$EndIf}
 end;
 
@@ -1069,75 +1118,74 @@ begin
    ImageDoingWhat := imPickingBox;
 end;
 
+
 {$IfDef ExImageOverlays}
 {$Else}
 
-
-procedure TImageDisplayForm.CreateOverlays;
-var
-  fName : PathStr;
-begin
-   if (Overlays = Nil) then begin
-      fName := MDTempDir + 'imageoverlay' + DefaultDBExt;
-      MakeImageOverlayTable(fName);
-      Overlays := tMyData.Create(fName);
-   end;
-end;
-
-
-procedure TImageDisplayForm.Cyan1Click(Sender: TObject);
-begin
-   MakeNewImageForm(TurnCyan,LoadedFileName);
-end;
-
-procedure TImageDisplayForm.AddImageOverlay(x,y,width,height : integer; fName : PathStr; Plot : boolean);
-var
-   ch : AnsiChar;
-begin
-   Overlays.ApplyFilter('FILENAME=' + QuotedStr(fname));
-   if (Overlays.RecordCount > 0) then begin
-      Overlays.Edit;
-   end
-   else begin
-      Overlays.Insert;
-   end;
-   Overlays.SetFieldByNameAsInteger('X',x);
-   Overlays.SetFieldByNameAsInteger('Y',y);
-   Overlays.SetFieldByNameAsInteger('WIDTH',X + Width);
-   Overlays.SetFieldByNameAsInteger('HEIGHT',Y + HEIGHT);
-   Overlays.SetFieldByNameAsString('FILENAME',fName);
-   if Plot then ch := 'Y' else ch := 'N';
-   Overlays.SetFieldByNameAsString('PLOT',ch);
-   Overlays.Post;
-   Overlays.ApplyFilter('');
-end;
-
-
-procedure TImageDisplayForm.DrawOverlays;
-var
-   Bitmap,Bitmap2 : tMyBitmap;
-begin
-   Bitmap := Nil;
-   Overlays.First;
-   while not Overlays.EOF do begin
-      if (ptTrim(Overlays.GetFieldByNameAsString('PLOT')) = 'Y') then begin
-         if Bitmap = Nil then begin
-            Bitmap := tBitmap.Create;
-            Bitmap.LoadFromFile(MDTempDir + Overlays.GetFieldByNameAsString('FILENAME'));
-         end
-         else begin
-            Bitmap2 := tMyBitmap.Create;
-            Bitmap2.LoadFromFile(MDTempDir + Overlays.GetFieldByNameAsString('FILENAME'));
-            Bitmap.Canvas.Draw(Overlays.GetFieldByNameAsInteger('X'),Overlays.GetFieldByNameAsInteger('Y'),Bitmap2);
-            Bitmap2.Free;
+      procedure TImageDisplayForm.CreateOverlays;
+      var
+        fName : PathStr;
+      begin
+         if (Overlays = Nil) then begin
+            fName := MDTempDir + 'imageoverlay' + DefaultDBExt;
+            MakeImageOverlayTable(fName);
+            Overlays := tMyData.Create(fName);
          end;
       end;
-      Overlays.Next;
-   end;
-   Image1.Picture.Graphic := Bitmap;
-   Bitmap.Free;
-end;
 
+
+      procedure TImageDisplayForm.Cyan1Click(Sender: TObject);
+      begin
+         MakeNewImageForm(TurnCyan,LoadedFileName);
+      end;
+
+      procedure TImageDisplayForm.AddImageOverlay(x,y,width,height : integer; fName : PathStr; Plot : boolean);
+      var
+         ch : AnsiChar;
+      begin
+         Overlays.ApplyFilter('FILENAME=' + QuotedStr(fname));
+         if (Overlays.RecordCount > 0) then begin
+            Overlays.Edit;
+         end
+         else begin
+            Overlays.Insert;
+         end;
+         Overlays.SetFieldByNameAsInteger('X',x);
+         Overlays.SetFieldByNameAsInteger('Y',y);
+         Overlays.SetFieldByNameAsInteger('WIDTH',X + Width);
+         Overlays.SetFieldByNameAsInteger('HEIGHT',Y + HEIGHT);
+         Overlays.SetFieldByNameAsString('FILENAME',fName);
+         if Plot then ch := 'Y' else ch := 'N';
+         Overlays.SetFieldByNameAsString('PLOT',ch);
+         Overlays.Post;
+         Overlays.ApplyFilter('');
+      end;
+
+
+      procedure TImageDisplayForm.DrawOverlays;
+      var
+         Bitmap,Bitmap2 : tMyBitmap;
+      begin
+         Bitmap := Nil;
+         Overlays.First;
+         while not Overlays.EOF do begin
+            if (ptTrim(Overlays.GetFieldByNameAsString('PLOT')) = 'Y') then begin
+               if Bitmap = Nil then begin
+                  Bitmap := tBitmap.Create;
+                  Bitmap.LoadFromFile(MDTempDir + Overlays.GetFieldByNameAsString('FILENAME'));
+               end
+               else begin
+                  Bitmap2 := tMyBitmap.Create;
+                  Bitmap2.LoadFromFile(MDTempDir + Overlays.GetFieldByNameAsString('FILENAME'));
+                  Bitmap.Canvas.Draw(Overlays.GetFieldByNameAsInteger('X'),Overlays.GetFieldByNameAsInteger('Y'),Bitmap2);
+                  Bitmap2.Free;
+               end;
+            end;
+            Overlays.Next;
+         end;
+         Image1.Picture.Graphic := Bitmap;
+         Bitmap.Free;
+      end;
 
 {$EndIf}
 
@@ -1675,7 +1723,6 @@ begin
       end;
       ComboBox1.Text := IntToStr(ImageBlowUp)  + '%';
    end;
-
    {$IfDef RecordImageResize} WriteLineToDebugFile('TImageFm.LoadImage, Im size: ' + IntToStr(Image1.Width) + 'x' + IntToStr(Image1.Height) + '  Client size: ' + IntToStr(ClientWidth) + 'x' + IntToStr(ClientHeight)); {$EndIf}
 end;
 
@@ -2199,7 +2246,6 @@ begin
       if (Overlays <> Nil) then begin
          Overlays.ApplyFilter('');
          {$IfDef RecordImageOverlayProblems} WriteLineToDebugFile('Overlay records: ' + IntToStr(Overlays.RecordCount));      {$EndIf}
-
          Overlays.ApplyFilter('(X < ' + IntToStr(x) + ') AND (WIDTH > ' + IntToStr(x) + ') AND (Y < ' + IntToStr(y) + ') AND (HEIGHT > ' + IntToStr(y) + ')');
          {$IfDef RecordImageOverlayProblems} WriteLineToDebugFile('Overlay filter: ' + Overlays.Filter + '  Found: ' + IntToStr(Overlays.RecordCount)); {$EndIf}
          if (Overlays.RecordCount > 0) then begin
@@ -2269,9 +2315,7 @@ begin
       end;
    {$EndIf}
 
-   {$IfDef RegisterPhoto}
-      ImageMouseIsDown := false;
-   {$EndIf}
+   {$IfDef RegisterPhoto} ImageMouseIsDown := false; {$EndIf}
 end;
 
 
@@ -2289,9 +2333,11 @@ end;
 
 procedure TImageDisplayForm.Subsetthispicture1Click(Sender: TObject);
 begin
-   {$IfDef RecordBitmapEdit} WriteLineToDebugFile('Picked box, x=' + IntToStr(Firstx) + 'x' + IntToStr(EndX) + '  y=' +  IntToStr(Firsty) + 'x' + IntToStr(Endy)); {$EndIf}
-   {$IfDef RecordBitmapEdit} WriteLineToDebugFile('Actual box, x=' + IntToStr(Firstx * 100 div ImageBlowUp) + 'x' + IntToStr(EndX * 100 div ImageBlowUp) + '  y=' +
-       IntToStr(Firsty * 100 div ImageBlowUp) + 'x' + IntToStr(Endy * 100 div ImageBlowUp)); {$EndIf}
+   {$IfDef RecordBitmapEdit}
+      WriteLineToDebugFile('Picked box, x=' + IntToStr(Firstx) + 'x' + IntToStr(EndX) + '  y=' +  IntToStr(Firsty) + 'x' + IntToStr(Endy));
+      WriteLineToDebugFile('Actual box, x=' + IntToStr(Firstx * 100 div ImageBlowUp) + 'x' + IntToStr(EndX * 100 div ImageBlowUp) + '  y=' +
+          IntToStr(Firsty * 100 div ImageBlowUp) + 'x' + IntToStr(Endy * 100 div ImageBlowUp));
+   {$EndIf}
    ReplaceBitmapWithSubset(EditBMP,FirstX * 100 div ImageBlowUp,EndX * 100 div ImageBlowUp,FirstY * 100 div ImageBlowUp,EndY * 100 div ImageBlowUp);
    LoadImage(EditBMP);
    {$IfDef RecordBitmapEdit} WriteLineToDebugFile('Aspect ratio: ' + realToString(EditBMP.Width/EditBMP.Height,-12,-4)); {$EndIf}

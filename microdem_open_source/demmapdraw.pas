@@ -860,9 +860,6 @@ end;
 
 
 
-
-
-
 function SameProjection(Map1,Map2 : tMapDraw) : boolean;
 begin
    {$If Defined(SameProjection)} WriteLineToDebugFile('Same projection,' + Map1.BaseTitle + ' and ' + Map2.BaseTitle); {$EndIf}

@@ -247,6 +247,10 @@ var
             Result := mtElevFromTable;
             ElevationFixedPalette := 'ndvi-3';
          end
+         else if (DEMGlb[DEM].DEMheader.ElevUnits = eudNBR) then begin
+            Result := mtElevFromTable;
+            ElevationFixedPalette := 'dNBR';
+         end
          else if (DEMGlb[DEM].DEMheader.ElevUnits in [euDifference,euElevDiff]) then begin
             Result := mtGGRReflect;
             MDDef.TopCutLevel := abs(MDDef.TopCutLevel);

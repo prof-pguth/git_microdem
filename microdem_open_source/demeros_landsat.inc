@@ -213,7 +213,6 @@ begin
 end;
 
 
-
 function ShortLandsatName(fName : PathStr) : ShortString;
 var
    Year,Month,Day,JDay : integer;

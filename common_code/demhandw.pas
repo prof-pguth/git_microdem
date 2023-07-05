@@ -64,7 +64,6 @@ type
     MainMenu1: TMainMenu;
     File1: TMenuItem;
     Import1: TMenuItem;
-    Export1: TMenuItem;
     Close1: TMenuItem;
     Help1: TMenuItem;
     Subset1: TMenuItem;
@@ -233,15 +232,12 @@ type
     LASfilesbysize1: TMenuItem;
     IFfiles1: TMenuItem;
     AssignbyEPSGandreprojecttoUTM1: TMenuItem;
-    Experimental1: TMenuItem;
     N10: TMenuItem;
     ASCIIreplaceheaderline1: TMenuItem;
     ASCIIheader1: TMenuItem;
-    Histogramsbyclass1: TMenuItem;
-    Addcolors1: TMenuItem;
-    Addgroundclassifiedpoints1: TMenuItem;
+    //Addgroundclassifiedpoints1: TMenuItem;
     Plateboundaryfile1: TMenuItem;
-    ranslatecoordsASCIIfile1: TMenuItem;
+    //ranslatecoordsASCIIfile1: TMenuItem;
     N17: TMenuItem;
     ASCIIremovelinesinsecondfile1: TMenuItem;
     Chromelist1: TMenuItem;
@@ -388,10 +384,9 @@ type
     procedure IFfiles1Click(Sender: TObject);
     procedure AssignbyEPSGandreprojecttoUTM1Click(Sender: TObject);
     procedure ASCIIreplaceheaderline1Click(Sender: TObject);
-    procedure Addcolors1Click(Sender: TObject);
-    procedure Addgroundclassifiedpoints1Click(Sender: TObject);
+    //procedure Addcolors1Click(Sender: TObject);
+    //procedure Addgroundclassifiedpoints1Click(Sender: TObject);
     procedure Plateboundaryfile1Click(Sender: TObject);
-    procedure ranslatecoordsASCIIfile1Click(Sender: TObject);
     procedure ASCIIremovelinesinsecondfile1Click(Sender: TObject);
     procedure Chromelist1Click(Sender: TObject);
     procedure IElist1Click(Sender: TObject);
@@ -3218,11 +3213,6 @@ begin
 end;
 
 
-procedure TDemHandForm.Addcolors1Click(Sender: TObject);
-begin
-   {$IfDef Include2019datafusion} experimental_md.AddColorFromJoin(Memo1); {$EndIf}
-end;
-
 
 procedure TDemHandForm.Addfileextensions1Click(Sender: TObject);
 begin
@@ -3267,10 +3257,6 @@ begin
     ShowDefaultCursor;
 end;
 
-procedure TDemHandForm.Addgroundclassifiedpoints1Click(Sender: TObject);
-begin
-   {$IfDef Include2019datafusion} AddGroundPoints(Memo1); {$EndIf}
-end;
 
 procedure TDemHandForm.LASfilesbysize1Click(Sender: TObject);
 begin
@@ -3671,11 +3657,6 @@ end;
 procedure TDemHandForm.RANSAC1Click(Sender: TObject);
 begin
    CloudCompare(false);
-end;
-
-procedure TDemHandForm.ranslatecoordsASCIIfile1Click(Sender: TObject);
-begin
-   {$IfDef Include2019datafusion} TranslateXY(Memo1); {$EndIf}
 end;
 
 procedure TDemHandForm.Rename1Click(Sender: TObject);

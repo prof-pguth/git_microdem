@@ -79,7 +79,7 @@ uses
 
 procedure ModifyChangeMapSettings(aMapOwner : tMapForm);
 var
-   ChangeMapForm: TChangeMapForm;
+   ChangeMapForm : TChangeMapForm;
 begin
    ChangeMapForm := TChangeMapForm.Create(Application);
    ChangeMapForm.MapOwner := aMapOwner;

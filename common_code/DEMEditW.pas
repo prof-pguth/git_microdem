@@ -81,12 +81,9 @@ implementation
 {$R *.DFM}
                
 uses
-{Main program MDI window for different programs that use this module}
    Nevadia_Main,
-{End of the MDI parent declaration}
    PETMAR, Petmar_types,
    DEMDefs,DEMDef_routines,DEMCoord,DEMMapF;
-
 
 var
    Lastx,lasty : integer;
@@ -345,7 +342,7 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordEditProblems}   WriteLineToDebugFile('RecordEditProblem active in demeditw');  {$EndIf}
+   {$IfDef RecordEditProblems} WriteLineToDebugFile('RecordEditProblem active in demeditw'); {$EndIf}
 end.
 
 

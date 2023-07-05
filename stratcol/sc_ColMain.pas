@@ -1318,7 +1318,7 @@ begin
                      reset(TimeFile);
                      ZoneWidth := ZoneWidth*Canvas.Font.Size + 2;
                   end;
-            'V' : ZoneWidth :=  Canvas.TextHeight('W') + 2;
+            'V' : ZoneWidth := Canvas.TextHeight('W') + 2;
          end;
          if First then begin
             readln(TimeFile,tage,DiagramTopAge);
@@ -1448,7 +1448,7 @@ begin
             if AnswerIsYes(IntegerToString(i,2) + ' Column ' + ColumnLabel + ' in ' + #10 +
                    ColumnFileName + ' has changed.  Save it') then begin
                if TimeLabelFile[i] then ColumnModified := not SaveCOTFile(NumColumns,ColumnFileName)
-               else ColumnModified :=  not SaveCOLFile(NumColumns,ColumnFileName);;
+               else ColumnModified := not SaveCOLFile(NumColumns,ColumnFileName);;
             end;
          end;
       end;
@@ -1917,8 +1917,8 @@ begin
       EditRockColumnUnit := true;
 
       Resistance := succ(RadioGroup1.ItemIndex);
-      UnitBase :=  BaseType(BaseListBox.ItemIndex);
-      RockColumn[pred(Bed)].UnitBase :=  BaseType(TopListBox.ItemIndex);
+      UnitBase := BaseType(BaseListBox.ItemIndex);
+      RockColumn[pred(Bed)].UnitBase := BaseType(TopListBox.ItemIndex);
       if Copy(LithLabel.Caption,1,5) = 'Other' then UnitLith := Copy(LithLabel.Caption,8,3)
       else UnitLith := NamedPatternShortName[LithListBox.ItemIndex];
 
@@ -2546,7 +2546,7 @@ end;
 procedure TColMainF.Present1Click(Sender: TObject);
 begin
    MDDef.ColDef.ShowAgeBar := not MDDef.ColDef.ShowAgeBar;
-   Present1.Checked :=  MDDef.ColDef.ShowAgeBar;
+   Present1.Checked := MDDef.ColDef.ShowAgeBar;
 end;
 
 procedure TColMainF.Rescalethickness1Click(Sender: TObject);

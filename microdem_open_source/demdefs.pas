@@ -219,7 +219,7 @@ type
 
 type
    tSatSubset = (ssImageCoords,ssGroundCoords,ssAllImage,ssGraphical);
-   tNewSatBand = (nsbAddimages,nsbNDWI,nsbNBRNormalizedburnindex,nsbNDVI,nsbNDSIsoil,nsbRatio,nsbFilter,nsbVARI,nsbGrayscale,nsbNDSIsnow,nsbPickem,
+   tNewSatBand = (nsbAddimages,nsbNDWI,nsbNBRNormalizedburnindex,nsbNBRNormalizedburnindex2,nsbNDVI,nsbNDSIsoil,nsbRatio,nsbFilter,nsbVARI,nsbGrayscale,nsbNDSIsnow,nsbPickem,
          nsbNDBIbuilding,nsbTOARefSolar,nsbTOARef,nsbTOARadiance,nsbBrightness,nsbSentinelReflectance,nsbGDVI,nsbLST);
    tMaxBandsArray = array[1..MaxBands] of float64;
 
@@ -733,7 +733,8 @@ const
    euDifference = 59;
    euElevDiff = 60;
    LCMAP = 61;
-   HighElevUnits = 61;  //same as last real one;  used only for loops through all the elevation units;
+   euDNBR = 62;
+   HighElevUnits = 62;  //same as last real one;  used only for loops through all the elevation units;
 (*
 type
    tElevUnit = (euMeters,Feet,TenthMgal,Milligal,TenthGamma,
@@ -962,6 +963,10 @@ const
    StraightAlgorithmName : array[tStraightAlgorithm] of ShortString = ('DEM Grid','UTM','Lat/Long','Geodetic','Smart');
    ElevInterpolationName : array[tElevInterpolation] of ShortString = ('Bilinear Interpolation','Bicubic interpolation VT','Bicubic interpolation NR','Grid triangle','1/R weighting','1/R² weighting','Nearest grid','SW grid');
    SpacingUnits : array[tSpacingUnit] of ShortString = (' m',' sec',' min',' km',' 100m',' ft','k ft',' deg','0.01 sec',' m(M)','100m(PS)','10m','0.1 sec','0.0001 deg',' Int Feet',' US feet');
+
+   hdColors = 0;
+   hdHighlight = 1;
+   hdDiverging = 2;
 
 type //for MICRONET
    tInputDisplay    = (Pole,DipDirDis,GreatCircle,Both);
@@ -1908,11 +1913,11 @@ type
        DefRefMap,
        DefSlopeMap,
        DefDEMMap             : tMapType;
-       HighlightDiffMap,
        AutoMergeStartDEM,
        QuickSlopeSpacings    : boolean;
        MapTicks              : tMapTick;
        InvertGrayScale       : boolean;
+       HighlightDiffMap,
        MonochromeColor        : byte;
 
        CoordUse              : tCoordUse;
@@ -2548,7 +2553,7 @@ type
       DefaultLongHemi : AnsiChar;
       ASCIIZUnits : byte;
       ASCIIXYFormat : byte;
-      IsUSNAComputer,
+      //IsUSNAComputer,
       TargetsAlongLine : boolean;
 
       NEAutoSat,

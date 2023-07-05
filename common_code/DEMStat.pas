@@ -1964,7 +1964,7 @@ var
                   Result.GraphDraw.LineSize256[2] := 1;
                   Result.GraphDraw.LineSize256[3] := 1;
                end;
-               Result.GraphDraw.FileColors256[CurDEM] := ConvertTColorToPlatformColor(WinGraphColors[CurDEM]);
+               Result.GraphDraw.FileColors256[CurDEM] := ConvertTColorToPlatformColor(WinGraphColors[CurDEM mod 16]);
                if (Graph = ElevFreq) then begin
                   for x := 0 to NumBins[CurDEM] do if Count[CurDEM]^[x] > 0 then begin
                      v[1] := Count[CurDEM]^[x];

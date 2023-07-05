@@ -30,6 +30,8 @@
       //{$Define FanDrawProblems}
       //{$Define RawProjectInverse}  //must also be set in BaseMap
       {$Define RecordDEMIX}
+      {$Define RecordMatchMaps}
+      {$Define RecordSat}
       //{$Define TrackHorizontalDatum}
       //{$Define TrackDEMCorners}
       //{$Define RecordCarto}
@@ -81,7 +83,6 @@
       //{$Define RecordIndex}
       //{$Define RecordGISDB}
       //{$Define RecordAmbush}
-      //{$Define RecordSat}
       //{$Define RecordLAS}
       //{$Define RecordGazetteer}
       //{$Define RecordSatClass}
@@ -1096,7 +1097,7 @@ type
     Offcurrentmap1: TMenuItem;
     PLSSlocation1: TMenuItem;
     CompareDNconversions1: TMenuItem;
-    Nightlights20161: TMenuItem;
+    //Nightlights20161: TMenuItem;
     IwashishiandPikeclassification1: TMenuItem;
     GDALtranslatesubset1: TMenuItem;
     Orfeotoolbox1: TMenuItem;
@@ -1106,8 +1107,8 @@ type
     LCCstandardparallels1: TMenuItem;
     Mapprojectionzones1: TMenuItem;
     //USSPCS1: TMenuItem;
-    MGRSUSNG6x8zones1: TMenuItem;
-    UTM100Kzones1: TMenuItem;
+    //MGRSUSNG6x8zones1: TMenuItem;
+    //UTM100Kzones1: TMenuItem;
     Maximizeforscreen1: TMenuItem;
     N1: TMenuItem;
     Streammodetolerance1: TMenuItem;
@@ -1485,6 +1486,8 @@ type
     UsingVDATUM1: TMenuItem;
     WGS84elllipsoid1: TMenuItem;
     Pickmapsforbigimage1: TMenuItem;
+    dNBRNBRbeforeandafterfire1: TMenuItem;
+    NBR21: TMenuItem;
     //procedure HiresintervisibilityDEM1Click(Sender: TObject);
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
@@ -2259,14 +2262,14 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Offcurrentmap1Click(Sender: TObject);
     procedure PLSSlocation1Click(Sender: TObject);
     procedure CompareDNconversions1Click(Sender: TObject);
-    procedure Nightlights20161Click(Sender: TObject);
+    //procedure Nightlights20161Click(Sender: TObject);
     procedure Concatenateimages1Click(Sender: TObject);
     procedure Kmeansclustering1Click(Sender: TObject);
     procedure Segmentation1Click(Sender: TObject);
     procedure LCCstandardparallels1Click(Sender: TObject);
     //procedure USSPCS1Click(Sender: TObject);
-    procedure MGRSUSNG6x8zones1Click(Sender: TObject);
-    procedure UTM100Kzones1Click(Sender: TObject);
+    //procedure MGRSUSNG6x8zones1Click(Sender: TObject);
+    //procedure UTM100Kzones1Click(Sender: TObject);
     procedure Maximizeforscreen1Click(Sender: TObject);
     procedure Streammodetolerance1Click(Sender: TObject);
     procedure MergemultipleCSVTXTfiles1Click(Sender: TObject);
@@ -2566,6 +2569,8 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure UsingVDATUM1Click(Sender: TObject);
     procedure WGS84elllipsoid1Click(Sender: TObject);
     procedure Pickmapsforbigimage1Click(Sender: TObject);
+    procedure dNBRNBRbeforeandafterfire1Click(Sender: TObject);
+    procedure NBR21Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
     MouseDownLat,MouseDownLong,
@@ -3367,8 +3372,13 @@ var
 
 procedure MatchAnotherMapThisPixelSize(ThisMap,OtherMap : tMapForm);
 begin
-   if (not ThisMap.OtherMapSameSize(OtherMap)) and (not ThisMap.OtherMapSameCoverage(OtherMap)) then begin
+   {$IfDef RecordMatchMaps} WriteLineToDebugFile('MatchAnotherMapThisPixelSize, thisMap=' + ThisMap.Caption + ' other map=' + OtherMap.Caption); {$EndIf}
+
+   if (not ThisMap.OtherMapSameSize(OtherMap)) {and (not ThisMap.OtherMapSameCoverage(OtherMap))} then begin
       OtherMap.SetMapPixelSize(ThisMap.MapDraw.ScreenPixelSize);
+   end
+   else begin
+      {$IfDef RecordMatchMaps} WriteLineToDebugFile('MatchAnotherMapThisPixelSize already same pixel size'); {$EndIf}
    end;
 end;
 
@@ -5309,8 +5319,8 @@ end;
 
 procedure TMapForm.CombinedMGRSpolygons1Click(Sender: TObject);
 begin
-   UTM100Kzones1Click(Sender);
-   MGRSUSNG6x8zones1Click(Sender);
+   //UTM100Kzones1Click(Sender);
+   //MGRSUSNG6x8zones1Click(Sender);
 end;
 
 procedure TMapForm.ComboBox1Change(Sender: TObject);
@@ -5435,7 +5445,7 @@ begin
       NewMap[i].Caption := IntervisiblityAlgorithmName(MDDef.wf);
       CopyImageToBitmap(NewMap[i].Image1,Bitmap[i]);
       NewMap[i].MapDraw.DrawFanOnMap(WeaponsFan,ShowName,'');
-      TStr :=  IntervisiblityAlgorithmName(MDDef.wf) + '    ' +  RealToString(PotentialCoverage,-8,2) + '%';
+      TStr := IntervisiblityAlgorithmName(MDDef.wf) + '    ' +  RealToString(PotentialCoverage,-8,2) + '%';
       NewMap[i].Caption := TStr;
       {$IfDef RecordProblems} WriteLineToDebugFile(TStr); {$EndIf}
       NewMap[i].Image1.Picture.Graphic := Bitmap[i];
@@ -7311,7 +7321,6 @@ begin
 end;
 
 
-
 procedure TMapForm.NumericgridwithVATtobytegridwithcodes1Click(Sender: TObject);
 var
    fName2 : PathStr;
@@ -7321,59 +7330,39 @@ var
    Vat : tStringList;
    Hist : array[1..50] of int64;
 begin
-(*
-   fName := ProgramRootDir;
+   for Code := 1 to 50 do Hist[Code] := 0;
 
-               ZColorTable.zTableValue[ZColorTable.ZTableEntries] := ColorTable.GetFieldByNameAsFloat('MAX');
-               if (ZColorTable.zTableValue[ZColorTable.ZTableEntries] >= MinMapElev) then begin
-                  ZColorTable.zTableColors[ZColorTable.ZTableEntries] := ColorTable.PlatformColorFromTable;
-                  ZColorTable.zTableLabels[ZColorTable.ZTableEntries] := ColorTable.GetFieldByNameAsString('NAME');
-               end
-               else dec(ZColorTable.ZTableEntries);
-
-
-
-   //for i := 0 to 255 do LUT[i] := i;
-   //tn := OpenDBonMap('Reclassify lookup',fName,false,false);
-   //if tn <> 0  then begin
-      while not GISdb[tn].MyData.eof do begin
-         LUT[GISdb[tn].MyData.GetFieldByNameAsInteger('OLD_CODE')] := GISdb[tn].MyData.GetFieldByNameAsInteger('NEW_CODE');
-         GISdb[tn].MyData.Next;
-      end;
-   *)
-      for Code := 1 to 50 do Hist[Code] := 0;
-
-      StartProgress('Reclassify');
-      for x := 0 to pred(DEMGlb[MapDraw.DEMonMap].DEMheader.NumCol) do begin
-         if (x mod 50 = 0) then UpDateProgressBar(x/DEMGlb[MapDraw.DEMonMap].DEMheader.NumCol);
-         for y := 0 to pred(DEMGlb[MapDraw.DEMonMap].DEMheader.NumRow) do begin
-            if DEMGlb[MapDraw.DEMonMap].GetElevMetersOnGrid(x,y,z) then begin
-               Color := ColorFromZColorTable(MapDraw.ZColorTable,z, Code);
-               DEMGlb[MapDraw.DEMonMap].SetGridElevation(x,y,Code);
-               inc(Hist[Code]);
-            end;
+   StartProgress('Reclassify');
+   for x := 0 to pred(DEMGlb[MapDraw.DEMonMap].DEMheader.NumCol) do begin
+      if (x mod 50 = 0) then UpDateProgressBar(x/DEMGlb[MapDraw.DEMonMap].DEMheader.NumCol);
+      for y := 0 to pred(DEMGlb[MapDraw.DEMonMap].DEMheader.NumRow) do begin
+         if DEMGlb[MapDraw.DEMonMap].GetElevMetersOnGrid(x,y,z) then begin
+            Color := ColorFromZColorTable(MapDraw.ZColorTable,z, Code);
+            DEMGlb[MapDraw.DEMonMap].SetGridElevation(x,y,Code);
+            inc(Hist[Code]);
          end;
       end;
+   end;
 
-      NewDEM := DEMGlb[MapDraw.DEMonMap].ResaveNewResolution(fcSaveByte);
-      fName2 := MDTempDir + 'reclasify_' + DEMGlb[MapDraw.DEMonMap].AreaName + '.dem';
-      DEMGlb[NewDEM].WriteNewFormatDEM(fName2);
+   NewDEM := DEMGlb[MapDraw.DEMonMap].ResaveNewResolution(fcSaveByte);
+   fName2 := MDTempDir + 'reclasify_' + DEMGlb[MapDraw.DEMonMap].AreaName + '.dem';
+   DEMGlb[NewDEM].WriteNewFormatDEM(fName2);
 
-      Vat := tStringList.Create;
-      Vat.add('VALUE,NAME,N,USE,COLOR');
-      for Code := 1 to 50 do
-         if Hist[Code] > 0 then begin
-            Vat.add(IntToStr(Code) + ',' + MapDraw.ZColorTable.zTableLabels[Code] + ',' + IntToStr(Hist[Code]) + ',Y,' +
-               IntToStr(ConvertPlatformColorToTColor(MapDraw.ZColorTable.zTableColors[Code])) );
-         end;
+   Vat := tStringList.Create;
+   Vat.add('VALUE,NAME,N,USE,COLOR');
+   for Code := 1 to 50 do
+      if Hist[Code] > 0 then begin
+         Vat.add(IntToStr(Code) + ',' + MapDraw.ZColorTable.zTableLabels[Code] + ',' + IntToStr(Hist[Code]) + ',Y,' +
+            IntToStr(ConvertPlatformColorToTColor(MapDraw.ZColorTable.zTableColors[Code])) );
+      end;
 
-      fName2 := ChangeFileExt(fName2,'.vat.dbf');
-      StringList2CSVtoDB(vat,fName2,true);
-      DEMGlb[NewDEM].VATFileName := fName2;
-      DEMglb[NewDEM].CheckMaxMinElev;
-      DEMglb[NewDEM].SetUpMap(NewDEM,true,mtDEMVATTable);
+   fName2 := ChangeFileExt(fName2,'.vat.dbf');
+   StringList2CSVtoDB(vat,fName2,true);
+   DEMGlb[NewDEM].VATFileName := fName2;
+   DEMglb[NewDEM].CheckMaxMinElev;
+   DEMglb[NewDEM].SetUpMap(NewDEM,true,mtDEMVATTable);
 
-      ReloadDEMClick(Sender);
+   ReloadDEMClick(Sender);
 end;
 
 procedure TMapForm.Geostationarysatellitevisibility1Click(Sender: TObject);
@@ -8021,7 +8010,7 @@ begin
          ComboBox1.Top := 1;
          glLeftPos := ComboBox1.Width;
          ZoomBitbtn.Left := glLeftPos;
-         glLeftPos :=  glLeftPos + ZoomBitBtn.Width;
+         glLeftPos := glLeftPos + ZoomBitBtn.Width;
       end;
 
       ButtonsVisible := 0;
@@ -8199,8 +8188,8 @@ begin
       Walls1.Visible := ExpertDEMVersion;
       BuildingEdges1.Visible := ExpertDEMVersion;
       ShiftDEM1.Visible := (MDDef.ProgramOption in [ExpertProgram,GeologyProgram]) and MapDraw.ValidDEMonMap and (DEMGlb[MapDraw.DEMonMap].LongSizeMap > 350);
-      oInternationalDateLine1.Enabled :=  ExpertDEMVersion and (DEMGlb[MapDraw.DEMonMap].DEMheader.DEMSWCornerX < 179.95) and (DEMGlb[MapDraw.DEMonMap].DEMheader.DEMSWCornerX > -179.95);
-      oPrimeMeridian1.Enabled :=  ExpertDEMVersion and (abs(DEMGlb[MapDraw.DEMonMap].DEMheader.DEMSWCornerX) > 0.05);
+      oInternationalDateLine1.Enabled := ExpertDEMVersion and (DEMGlb[MapDraw.DEMonMap].DEMheader.DEMSWCornerX < 179.95) and (DEMGlb[MapDraw.DEMonMap].DEMheader.DEMSWCornerX > -179.95);
+      oPrimeMeridian1.Enabled := ExpertDEMVersion and (abs(DEMGlb[MapDraw.DEMonMap].DEMheader.DEMSWCornerX) > 0.05);
       Loadfeaturegrid1.Visible := (MDDef.ProgramOption = ExpertProgram);
       LoadCHMgrid1.Visible := (MDDef.ProgramOption = ExpertProgram);
       LoadLOStopoprofile1.Visible := (MDDef.ProgramOption = ExpertProgram);
@@ -8263,7 +8252,7 @@ begin
          Savesatelliteimage1.Visible := false;
          Band1.Visible := false;
          Landsatmetadata1.Visible := false;
-         Sentinel2Metadata.Visible :=  false;
+         Sentinel2Metadata.Visible := false;
       {$Else}
          MergeColorScene1.Visible := MapDraw.ValidSatOnMap;
          SubsetSpeedButton.Enabled := MapDraw.DEMMap or (MapDraw.VectorIndex <> 0 ) or (MapDraw.ValidSatOnMap);
@@ -8280,7 +8269,7 @@ begin
          NDVI1.Visible := (MapDraw.MultiGridOnMap <> 0);
          Mergeallimages1.Visible := (NumSatImageOpen > 1);
          Savesatelliteimage1.Visible := MapDraw.ValidSatOnMap;
-         Imagepalette1.Visible :=  MapDraw.ValidSatOnMap;
+         Imagepalette1.Visible := MapDraw.ValidSatOnMap;
          Reregisterimage1.Visible := MapDraw.ValidSatOnMap and (MDDef.ProgramOption = ExpertProgram);
          Newband1.Visible := MapDraw.ValidSatOnMap and (SatImage[MapDraw.SATonMap] <> Nil);
          NLCD1.Visible := false;
@@ -8343,7 +8332,7 @@ begin
          Walls1.visible := ExpertDEMVersion;
          Pointsnotmeetingcriteria1.Visible := (GridMaskDEM > 0);
          MaskDEM1.Visible := (GridMaskDEM > 0);
-         GridMigration1.Visible :=  ExpertDEMVersion and MDDef.ShowGeomorphometry;  // and (NumDEMDataSetsOpen >= 2);
+         GridMigration1.Visible := ExpertDEMVersion and MDDef.ShowGeomorphometry;  // and (NumDEMDataSetsOpen >= 2);
       {$EndIf}
 
       ForGoogleearth1.visible := true;
@@ -8618,7 +8607,7 @@ begin
       GridSpeedButton15.Visible := (MDdef.ProgramOption in [ExpertProgram,GeographyProgram,GeologyProgram,RemoteSensingProgram]);
       SpeedButton4.Visible := (MDdef.ProgramOption in [ExpertProgram,GeologyProgram,DragonPlotProgram]);
       Area1.Visible := SpeedButton4.Visible;
-      SpeedButton8.Visible :=  NumOpenDB > 0;
+      SpeedButton8.Visible := NumOpenDB > 0;
 
       SpeedButton5.Visible := ExpertDEMVersion;
 
@@ -9498,7 +9487,7 @@ begin
       MapDraw.MapXSize := MDdef.DefaultMapXSize;
       MapDraw.MapYSize := MDdef.DefaultMapYSize;
    end;
-   ClientWidth :=  MapDraw.MapXSize + GetSystemMetrics(SM_CXVSCROLL);  //ScrollBox1.HorzScrollBar.Size;
+   ClientWidth := MapDraw.MapXSize + GetSystemMetrics(SM_CXVSCROLL);  //ScrollBox1.HorzScrollBar.Size;
    ClientHeight := MapDraw.MapYSize + ToolAndPanelHeights + GetSystemMetrics(SM_CXVSCROLL);  //ScrollBox1.HorzScrollBar.Size;
 end;
 
@@ -10188,7 +10177,7 @@ end;
       Bitmap.Canvas.Brush.Style := bsSolid;
       Bitmap.Canvas.Brush.Color := clRed;
       Bitmap.Canvas.FloodFill(x,y,clWhite,fsBorder);
-      Pts :=  0;
+      Pts := 0;
       for y := 0 to pred(Bitmap.Height) do begin
          p0 := Bitmap.ScanLine[y];
          for x := 0 to pred(Bitmap.Width) do begin
@@ -11774,7 +11763,7 @@ begin
    if (MDdef.MGRSandLatLongWhileRoam) then begin
       if MDdef.CoordUse = coordLatLong then TStr := 'MGRS: ' + WGS84DatumConstants.LatLongToMGRS(Lat,Long)
       else TStr := LatLongDegreeToString(Lat,Long,MDdef.OutPutLatLongMethod);
-      Panel3String :=  TStr +  '   ' +   MapDraw.PrimMapProj.h_DatumCode + ' ' + Panel3String;
+      Panel3String := TStr +  '   ' +   MapDraw.PrimMapProj.h_DatumCode + ' ' + Panel3String;
    end;
 
    {$IfDef RecordAllMapRoam} WriteLineToDebugFile('MapDisplayLocation 2'); {$EndIf}
@@ -13410,6 +13399,12 @@ begin
    Multiplyzvalues1Click(Sender);
 end;
 
+procedure TMapForm.dNBRNBRbeforeandafterfire1Click(Sender: TObject);
+begin
+   MakeDNBRMap(0,0);
+end;
+
+
 procedure TMapForm.Slope2Click(Sender: TObject);
 begin
    ChangeDEMNowDoing(FirstSlopePoint);
@@ -13585,7 +13580,7 @@ begin
         GISdb[SideIndexDB].DBTablef.Picklinefromfile1Click(Sender);
      end
      else begin
-        SideIndexDB :=  LoadDataBaseFile(SidescanIndexFName);
+        SideIndexDB := LoadDataBaseFile(SidescanIndexFName);
         if (SideIndexDB = 0) then begin
            SidescanIndexFName := '';
         end
@@ -14285,13 +14280,13 @@ var
 begin
     with DEMGlb[MapDraw.DEMonMap] do begin
        if (Sender = Multiplyzvalues1) then begin
-          Mult :=  1 / FeetToMeters;
+          Mult := 1 / FeetToMeters;
           ReadDefault('z multiplier',Mult);
           DEMGlb[MapDraw.DEMonMap].MultiplyGridByConstant(Mult);
           goto CompletedEarly;
        end
        else if (Sender = Dividezvalues1) then begin
-          Mult :=  1 / FeetToMeters;
+          Mult := 1 / FeetToMeters;
           ReadDefault('z divisor',Mult);
           DEMGlb[MapDraw.DEMonMap].MultiplyGridByConstant(1/Mult);
           goto CompletedEarly;
@@ -14730,7 +14725,7 @@ procedure TMapForm.FormResize(Sender: TObject);
 
      function WantedWidth : integer;
      begin
-        WantedWidth :=  MapDraw.MapXSize + GetSystemMetrics(SM_CXVSCROLL);  //ScrollBox1.HorzScrollBar.Size;
+        WantedWidth := MapDraw.MapXSize + GetSystemMetrics(SM_CXVSCROLL);  //ScrollBox1.HorzScrollBar.Size;
      end;
 
      function WantedHeight : integer;
@@ -16654,8 +16649,8 @@ begin
         ShowMagneticVariation          : NewTitle := PointFor + 'magnetic variation';
         TerrainBlowup                  : NewTitle := PointFor + 'Terrain Blowup';
         GetPointSymbols                : NewTitle := PointsFor + 'symbol overlay';
-        RegionDNs                      : NewTitle :=  NWCornerStr + ' average reflectance';
-        OpenMrSid                      : NewTitle :=  NWCornerStr + 'MrSid blowup';
+        RegionDNs                      : NewTitle := NWCornerStr + ' average reflectance';
+        OpenMrSid                      : NewTitle := NWCornerStr + 'MrSid blowup';
         NewCoverage,
         CornerEditBox,
         GraphFilterDB                        : NewTitle := NWCornerStr;
@@ -16728,7 +16723,7 @@ begin
         {$EndIf}
 
         {$IfDef ExRedistrict}{$Else}
-           RecolorRedistrictBox        : NewTitle :=  NWCornerStr + 'recs to redistrict';
+           RecolorRedistrictBox        : NewTitle := NWCornerStr + 'recs to redistrict';
            RecolorRedistrict           : NewTitle := 'Single record to redistrict';
        {$EndIf}
 
@@ -17403,7 +17398,7 @@ begin
    Feet1Click(Meters1);
 end;
 
-
+(*
 procedure TMapForm.MGRSUSNG6x8zones1Click(Sender: TObject);
 var
    fName : PathStr;
@@ -17414,6 +17409,7 @@ begin
    fName := MainMapData + 'mgrs6x8_100k\mgrs6x8_west.shp';
    LoadDataBaseFile(fName);
 end;
+*)
 
 procedure TMapForm.MICRODEMGeotiffinfo1Click(Sender: TObject);
 begin
@@ -17682,7 +17678,7 @@ begin
        GISdb[db].MyData.First;
        while not GISdb[db].MyData.eof do begin
           Use := GISdb[db].MyData.GetFieldByNameAsString('USE');
-          aClass :=  GISdb[db].MyData.GetFieldByNameAsInteger('Code');
+          aClass := GISdb[db].MyData.GetFieldByNameAsInteger('Code');
           LasCatMapped[aClass] := Use = 'Y';
           GISdb[db].MyData.Next;
        end;
@@ -19105,7 +19101,7 @@ begin
     MatchAnotherMapThisPixelSize(Self,DEMGlb[DEM].SelectionMap);
 
     Bitmap1 := tMyBitmap.Create;
-    Bitmap1.LoadFromFile(DEMGlb[DEM].SelectionMap.MapDraw.FullMapfName);
+    Bitmap1.LoadFromFile(DEMGlb[DEM].SelectionMap.MapDraw.BaseMapFName);
     Bitmap2 := tMyBitmap.Create;
     Bitmap2.LoadFromFile(MapDraw.FullMapfName);
 
@@ -20906,6 +20902,7 @@ begin
    OpenNewDEM(Geoid2008FName);
 end;
 
+(*
 procedure TMapForm.UTM100Kzones1Click(Sender: TObject);
 var
    fName : PathStr;
@@ -20914,7 +20911,7 @@ begin
    fName := MainMapData + 'mgrs6x8_100k\mgrs_region.shp';
    LoadDataBaseFile(fName);
 end;
-
+*)
 
 procedure TMapForm.UTM1Click(Sender: TObject);
 begin
@@ -21693,7 +21690,9 @@ end;
 
 procedure TMapForm.Rivers2Click(Sender: TObject);
 begin
-   if not FileExists(RiversFile) then GetNaturalEarthData;
+   {$IfDef AllowUSNAdataDownloads}
+      if not FileExists(RiversFile) then GetNaturalEarthData;
+   {$EndIf}
    LoadDataBaseFile(RiversFile);
 end;
 
@@ -22081,6 +22080,11 @@ begin
    ChangeElevUnits(euNBR);
 end;
 
+procedure TMapForm.NBR21Click(Sender: TObject);
+begin
+   NewSatWindow(nsbNBRNormalizedBurnIndex2);
+end;
+
 function TMapForm.NewSatWindow(nsb : tNewSatBand) : integer;
 begin
    {$IfDef ExSat}
@@ -22090,13 +22094,6 @@ begin
    {$EndIf}
 end;
 
-procedure TMapForm.Nightlights20161Click(Sender: TObject);
-begin
-   {$IfDef Nevadia}
-   {$Else}
-      wmdem.Nightlights1Click(Sender);
-   {$EndIf}
-end;
 
 procedure TMapForm.NDSI1Click(Sender: TObject);
 begin
@@ -22445,7 +22442,7 @@ procedure TMapForm.Coastlines1Click(Sender: TObject);
 var
    db : integer;
 begin
-   if not FileExists(CoastLineFile) then GetNaturalEarthData;
+   //if not FileExists(CoastLineFile) then GetNaturalEarthData;
    db := LoadDataBaseFile(CoastLineFile);
    if ValidDB(db) then begin
       GISdb[db].dbOpts.LineColor := ConvertTColorToPlatformColor(clBlue);
@@ -22730,7 +22727,7 @@ begin
       CopyImageToBitmap(Image1,Bitmap);
       if ShowSatProgress then StartProgressAbortOption('Grids');
 
-      DrainIncr :=  0;
+      DrainIncr := 0;
       repeat
          inc(DrainIncr);
       until (MapDraw.MapXSize div(round(MapDraw.MapCorners.BoundBoxDataGrid.xmax - MapDraw.MapCorners.BoundBoxDataGrid.xmin) div DrainIncr)) >= MDdef.DrainageArrowSeparation;
@@ -23917,6 +23914,7 @@ var
    i : integer;
    Aspect : float64;
 begin
+   {$IfDef RecordMatchMaps} WriteLineToDebugFile('TMapForm.Allsamemapsize1Click'); {$EndIf}
    if GetNewBMPSize(MapDraw.MapXSize, MapDraw.MapYSize,'' ) then begin
       for i := 0 to pred(WMDEM.MDIChildCount) do begin
          if (WMDEM.MDIChildren[i] is tMapForm) then begin
@@ -23927,6 +23925,10 @@ begin
             (WMDEM.MDIChildren[i] as TMapForm).MapDraw.LatTickInt := MapDraw.LatTickInt;
             (WMDEM.MDIChildren[i] as TMapForm).FormResize(Nil);
             (WMDEM.MDIChildren[i] as TMapForm).DrawColoredMap1Click(Nil);
+            {$IfDef RecordMatchMaps}
+               WriteLineToDebugFile((WMDEM.MDIChildren[i] as TMapForm).Caption + ' redrawn, ' + IntToStr((WMDEM.MDIChildren[i] as TMapForm).MapDraw.MapXSize) +
+                    'x' + IntToStr((WMDEM.MDIChildren[i] as TMapForm).MapDraw.MapYSize));
+            {$EndIf}
          end;
       end;
    end;
@@ -24353,6 +24355,7 @@ var
 begin
    for i := 0 to pred(WMDEM.MDIChildCount) do
       if WMDEM.MDIChildren[i] is tMapForm then begin
+         {$IfDef RecordMatchMaps} WriteLineToDebugFile('TMapForm.All11scale1Click for 100%, Map=' + (WMDEM.MDIChildren[i] as TMapForm).Caption); {$EndIf}
          (WMDEM.MDIChildren[i] as TMapForm).ResizeByPercentage(100);
       end;
 end;

@@ -250,7 +250,7 @@ implementation
 uses
    {$IfDef ExSat}
    {$Else}
-      DEMEROS,//DEMEROSM,
+      DEMEROS,
    {$EndIf}
    DEMRefOp,Demdef_routines,BaseMap,DEMCoord,demfanparams,
    GetLatLn,
@@ -272,7 +272,7 @@ begin
       StillSettingUp := true;
       Pitch := View3D.MaxPitch - 0.5*(View3D.MaxPitch-View3D.MinPitch);
 
-      {$IfDef RecordPerspectiveProblems} WriteLineToDebugFile('SetPerspectiveOptions in, Pitch=' + RealToString(Pitch,-12,2) + '  ' + View3D.VertAngleRange + '  ' + View3D.FieldOfView);   {$EndIf}
+      {$IfDef RecordPerspectiveProblems} WriteLineToDebugFile('SetPerspectiveOptions in, Pitch=' + RealToString(Pitch,-12,2) + '  ' + View3D.VertAngleRange + '  ' + View3D.FieldOfView); {$EndIf}
       CurrentMode := WhichSet;
       DEMUsed := View3D.DEMOnView;
 
@@ -349,130 +349,128 @@ begin
       Result := (ShowModal <> idCancel);
    end;
 
+   if Result then begin
+      inView3D := PerspOptionsForm.View3D;
+      inView3D.PersOpts.PerpsectiveStereo := tPerpsectiveStereo(PerspOptionsForm.RadioGroup2.ItemIndex);
+      inView3D.PersOpts.WhichPerspective := tPerspectiveType(PerspOptionsForm.ComboBox1.ItemIndex);
+      inView3D.PersOpts.LabelPerspectiveViewPort := PerspOptionsForm.CheckBox1.Checked;
+      inView3D.PersOpts.TitlePerspectiveViewPort := PerspOptionsForm.CheckBox4.Checked;
+      MDdef.AviationDangerColors := PerspOptionsForm.CheckBox5.Checked;
+      inView3D.PersOpts.OutlineCrests := PerspOptionsForm.CheckBox6.Checked;
+      MDDef.DrapeExactly := PerspOptionsForm.CheckBox10.Checked;
 
-
-      if Result then begin
-         inView3D := PerspOptionsForm.View3D;
-         inView3D.PersOpts.PerpsectiveStereo := tPerpsectiveStereo(PerspOptionsForm.RadioGroup2.ItemIndex);
-         inView3D.PersOpts.WhichPerspective := tPerspectiveType(PerspOptionsForm.ComboBox1.ItemIndex);
-         inView3D.PersOpts.LabelPerspectiveViewPort := PerspOptionsForm.CheckBox1.Checked;
-         inView3D.PersOpts.TitlePerspectiveViewPort := PerspOptionsForm.CheckBox4.Checked;
-         MDdef.AviationDangerColors := PerspOptionsForm.CheckBox5.Checked;
-         inView3D.PersOpts.OutlineCrests := PerspOptionsForm.CheckBox6.Checked;
-         MDDef.DrapeExactly := PerspOptionsForm.CheckBox10.Checked;
-
-           {$IfDef ExFly}
-           {$Else}
-              if PerspOptionsForm.CheckBox14.Checked then inView3D.FlyOpts.NumTargetViews := 2
-              else inView3D.FlyOpts.NumTargetViews := 1;
-              inView3D.FlyOpts.ShowFlyThroughRoute := PerspOptionsForm.CheckBox11.Checked;
-              inView3D.FlyOpts.FlySideBySide := PerspOptionsForm.CheckBox12.Checked;
-              if PerspOptionsForm.CheckBox15.Checked then inView3D.FlyOpts.NumFlyDrapes := 2 else inView3D.FlyOpts.NumFlyDrapes := 1;
-              inView3D.FlyOpts.LiveFlyMovie := PerspOptionsForm.CheckBox27.Checked;
-              CheckEditString(PerspOptionsForm.Edit45.Text,inView3D.FlyOpts.FlyHeight);
-              CheckEditString(PerspOptionsForm.Edit24.Text,inView3D.FlyOpts.FlyThroughWidth);
-              CheckEditString(PerspOptionsForm.Edit25.Text,inView3D.FlyOpts.FlyThroughHeight);
-              if (inView3D.FlyOpts.FlyThroughWidth mod 16 <> 0) or (inView3D.FlyOpts.FlyThroughHeight mod 16 <> 0) then begin
-                  inView3D.FlyOpts.FlyThroughWidth := 16 * (succ(inView3D.FlyOpts.FlyThroughWidth div 16));
-                  inView3D.FlyOpts.FlyThroughHeight := 16 * (succ(inView3D.FlyOpts.FlyThroughHeight div 16));
-              end;
-              CheckEditString(PerspOptionsForm.Edit45.Text,MDDef.FlyOptions.FlyHeight);
-              CheckEditString(PerspOptionsForm.Edit16.Text,inView3D.FlyOpts.FlySceneSeparation);
-              CheckEditString(PerspOptionsForm.Edit22.Text,inView3D.FlyOpts.TargetFOV1);
-              CheckEditString(PerspOptionsForm.Edit23.Text,inView3D.FlyOpts.TargetFOV2);
-           {$EndIf}
-
-           MDdef.AutomaticNewMovieNames := PerspOptionsForm.CheckBox13.Checked;
-           inView3D.PersOpts.ViewShedFanWithPerspective := PerspOptionsForm.CheckBox16.Checked;
-           inView3D.PersOpts.PersVaryResolutionAlongRadial := PerspOptionsForm.CheckBox17.Checked;
-           inView3D.PersOpts.CloudBackground := PerspOptionsForm.CheckBox18.Checked;
-           inView3D.PersOpts.SaveAsProgramDefaults := PerspOptionsForm.CheckBox20.Checked;
-           MDDef.ShowLocationSensitivity := PerspOptionsForm.CheckBox21.Checked;
-
-           MDDef.SaveLiveFlying := PerspOptionsForm.CheckBox28.Checked;
-
-           MDDef.PerspOpts.UsersSky := PerspOptionsForm.CheckBox52.Checked;
-           MDDef.ConvergingViews := PerspOptionsForm.CheckBox99.Checked;
-           inView3D.PersOpts.NapEarth := (PerspOptionsForm.RadioGroup1.ItemIndex = 0);
-           CheckEditString(PerspOptionsForm.Edit1.Text,inView3D.PersOpts.PersDistBetweenProf);
-           CheckEditString(PerspOptionsForm.Edit2.Text,inView3D.PersOpts.PersMeshSpace);
-           CheckEditString(PerspOptionsForm.Edit3.Text,inView3D.PersOpts.PersFirstProfile);
-
-           CheckEditString(PerspOptionsForm.Edit4.Text,MDDef.FlyCrossTrackheight);
-           CheckEditString(PerspOptionsForm.Edit5.Text,MDDef.FlyCrossTrackDistance);
-
-           CheckEditString(PerspOptionsForm.Edit30.Text,MDDef.NumSideProfiles);
-           CheckEditString(PerspOptionsForm.Edit39.Text,MDDef.NumSideProfiles);
-           CheckEditString(PerspOptionsForm.Edit40.Text,MDDef.SideProfileSpacing);
-
-           CheckEditString(PerspOptionsForm.Edit46.Text,MDDef.PerspOpts.HorizLabelInc);
-           CheckEditString(PerspOptionsForm.Edit47.Text,MDDef.PerspOpts.VertLabelInc);
-
-           MDDef.ShowCrossTrackProfiles := PerspOptionsForm.CheckBox7.Checked;
-           MDDef.ShowAlongTrackProfiles := PerspOptionsForm.CheckBox22.Checked;
-
-           CheckEditString(PerspOptionsForm.Edit7.Text,inView3D.PersOpts.PersObsUp);
-           CheckEditString(PerspOptionsForm.Edit8.Text,inView3D.RadialPointSpacing[1]);
-           CheckEditString(PerspOptionsForm.Edit9.Text,inView3D.PersOpts.PerspAbsElev);
-           CheckEditString(PerspOptionsForm.Edit10.Text,inView3D.PersOpts.PerspAnaglyphShift);
-           CheckEditString(PerspOptionsForm.Edit11.Text,inView3D.PersOpts.PerspAnaglyphSeperate);
-           CheckEditString(PerspOptionsForm.Edit12.Text,inView3D.ViewDepth);
-
-           CheckEditString(PerspOptionsForm.Edit14.Text,inView3D.PersOpts.CrestSeparator);
-
-           CheckEditString(PerspOptionsForm.Edit15.Text,PerspOptionsForm.Pitch);
-           inView3D.MinPitch := PerspOptionsForm.Pitch - inView3D.ViewVFOV * 0.5;
-           inView3D.MaxPitch := PerspOptionsForm.Pitch + inView3D.ViewVFOV * 0.5;
-
-           CheckEditString(PerspOptionsForm.Edit17.Text,inView3D.ViewAzimuth);
-           inView3D.SaveName := PerspOptionsForm.Edit18.Text;
-
-           {$IfDef RecordPerspectiveProblems}
-              WriteLineToDebugFile('Before checkviewsize HFOV=' + RealToString(inView3D.ViewHFOV,-12,2 )+  '  VFOV=' + RealToString(inView3D.ViewVFOV,-12,2));
-           {$EndIf}
-
-           PerspOptionsForm.CheckViewSize;
-
-           {$IfDef RecordPerspectiveProblems}
-              WriteLineToDebugFile(' HFOV=' + RealToString(inView3D.ViewHFOV,-12,2));
-              WriteLineToDebugFile(' VFOV=' + RealToString(inView3D.ViewVFOV,-12,2));
-              WriteLineToDebugFile(' Pitch=' + RealToString(PerspOptionsForm.Pitch,-12,2),true);
-              WriteLineToDebugFile(' Pers vert angle range: ' + RealToString(inView3D.MinPitch,8,2) + RealToString(inView3D.MaxPitch,8,2));
-           {$EndIf}
-
-           CheckEditString(PerspOptionsForm.Edit31.Text,MDdef.MaxDrapeXSize);
-           CheckEditString(PerspOptionsForm.Edit32.Text,MDdef.MaxDrapeYSize);
-           CheckEditString(PerspOptionsForm.Edit35.Text,MDDef.PerspectiveSkyAngle);
-
-           if (MDdef.MaxDrapeXSize > 6000) then MDdef.MaxDrapeXSize := 6000;
-           if (MDdef.MaxDrapeYSize > 6000) then MDdef.MaxDrapeYSize := 6000;
-
-           for i := 1 to 4 do begin
-              inView3D.PersOpts.PersVaryResRanges[i] := StrToInt(PerspOptionsForm.StringGrid1.Cells[0,i]);
-              inView3D.PersOpts.PersVaryResFactors[i] := StrToInt(PerspOptionsForm.StringGrid1.Cells[1,i]);
+        {$IfDef ExFly}
+        {$Else}
+           if PerspOptionsForm.CheckBox14.Checked then inView3D.FlyOpts.NumTargetViews := 2
+           else inView3D.FlyOpts.NumTargetViews := 1;
+           inView3D.FlyOpts.ShowFlyThroughRoute := PerspOptionsForm.CheckBox11.Checked;
+           inView3D.FlyOpts.FlySideBySide := PerspOptionsForm.CheckBox12.Checked;
+           if PerspOptionsForm.CheckBox15.Checked then inView3D.FlyOpts.NumFlyDrapes := 2 else inView3D.FlyOpts.NumFlyDrapes := 1;
+           inView3D.FlyOpts.LiveFlyMovie := PerspOptionsForm.CheckBox27.Checked;
+           CheckEditString(PerspOptionsForm.Edit45.Text,inView3D.FlyOpts.FlyHeight);
+           CheckEditString(PerspOptionsForm.Edit24.Text,inView3D.FlyOpts.FlyThroughWidth);
+           CheckEditString(PerspOptionsForm.Edit25.Text,inView3D.FlyOpts.FlyThroughHeight);
+           if (inView3D.FlyOpts.FlyThroughWidth mod 16 <> 0) or (inView3D.FlyOpts.FlyThroughHeight mod 16 <> 0) then begin
+               inView3D.FlyOpts.FlyThroughWidth := 16 * (succ(inView3D.FlyOpts.FlyThroughWidth div 16));
+               inView3D.FlyOpts.FlyThroughHeight := 16 * (succ(inView3D.FlyOpts.FlyThroughHeight div 16));
            end;
+           CheckEditString(PerspOptionsForm.Edit45.Text,MDDef.FlyOptions.FlyHeight);
+           CheckEditString(PerspOptionsForm.Edit16.Text,inView3D.FlyOpts.FlySceneSeparation);
+           CheckEditString(PerspOptionsForm.Edit22.Text,inView3D.FlyOpts.TargetFOV1);
+           CheckEditString(PerspOptionsForm.Edit23.Text,inView3D.FlyOpts.TargetFOV2);
+        {$EndIf}
 
-           CheckEditString(PerspOptionsForm.Edit41.Text,MDDef.ShiftGazPeaksDist);
-           CheckEditString(PerspOptionsForm.Edit42.Text,MDDef.GazPeakObsUp);
+        MDdef.AutomaticNewMovieNames := PerspOptionsForm.CheckBox13.Checked;
+        inView3D.PersOpts.ViewShedFanWithPerspective := PerspOptionsForm.CheckBox16.Checked;
+        inView3D.PersOpts.PersVaryResolutionAlongRadial := PerspOptionsForm.CheckBox17.Checked;
+        inView3D.PersOpts.CloudBackground := PerspOptionsForm.CheckBox18.Checked;
+        inView3D.PersOpts.SaveAsProgramDefaults := PerspOptionsForm.CheckBox20.Checked;
+        MDDef.ShowLocationSensitivity := PerspOptionsForm.CheckBox21.Checked;
 
-           MDDef.AutoLabelGaz := PerspOptionsForm.CheckBox23.Checked;
-           MDDef.ShiftGazPeaks := PerspOptionsForm.CheckBox24.Checked;
-           MDDef.GazMarkPeaksPerspective := PerspOptionsForm.CheckBox25.Checked;
-           MDDef.GazMarkPeaksPerpsOnMap := PerspOptionsForm.CheckBox26.Checked;
+        MDDef.SaveLiveFlying := PerspOptionsForm.CheckBox28.Checked;
 
-           inView3D.DEMOnView := PerspOptionsForm.DEMUsed;
+        MDDef.PerspOpts.UsersSky := PerspOptionsForm.CheckBox52.Checked;
+        MDDef.ConvergingViews := PerspOptionsForm.CheckBox99.Checked;
+        inView3D.PersOpts.NapEarth := (PerspOptionsForm.RadioGroup1.ItemIndex = 0);
+        CheckEditString(PerspOptionsForm.Edit1.Text,inView3D.PersOpts.PersDistBetweenProf);
+        CheckEditString(PerspOptionsForm.Edit2.Text,inView3D.PersOpts.PersMeshSpace);
+        CheckEditString(PerspOptionsForm.Edit3.Text,inView3D.PersOpts.PersFirstProfile);
 
-           inView3D.SetSize;
+        CheckEditString(PerspOptionsForm.Edit4.Text,MDDef.FlyCrossTrackheight);
+        CheckEditString(PerspOptionsForm.Edit5.Text,MDDef.FlyCrossTrackDistance);
 
-           {$IfDef RecordPerspectiveProblems}
-               WriteLineToDebugFile('SetPerspectiveOptions out, width=' + IntToStr(inView3D.PersOpts.PersWidth) + '    & height=' + IntToStr(inView3D.PersOpts.PersHeight),true);
-               WriteLineToDebugFile(' HFOV=' + RealToString(inView3D.ViewHFOV,-12,2));
-               WriteLineToDebugFile(' VFOV=' + RealToString(inView3D.ViewVFOV,-12,2));
-               WriteLineToDebugFile(' Pitch=' + RealToString(PerspOptionsForm.Pitch,-12,2));
-               WriteLineToDebugFile(' Pers vert angle range: ' + RealToString(inView3D.MinPitch,8,2) + RealToString(inView3D.MaxPitch,8,2));
-               WriteLineToDebugFile('');
-           {$EndIf}
-      end;
+        CheckEditString(PerspOptionsForm.Edit30.Text,MDDef.NumSideProfiles);
+        CheckEditString(PerspOptionsForm.Edit39.Text,MDDef.NumSideProfiles);
+        CheckEditString(PerspOptionsForm.Edit40.Text,MDDef.SideProfileSpacing);
+
+        CheckEditString(PerspOptionsForm.Edit46.Text,MDDef.PerspOpts.HorizLabelInc);
+        CheckEditString(PerspOptionsForm.Edit47.Text,MDDef.PerspOpts.VertLabelInc);
+
+        MDDef.ShowCrossTrackProfiles := PerspOptionsForm.CheckBox7.Checked;
+        MDDef.ShowAlongTrackProfiles := PerspOptionsForm.CheckBox22.Checked;
+
+        CheckEditString(PerspOptionsForm.Edit7.Text,inView3D.PersOpts.PersObsUp);
+        CheckEditString(PerspOptionsForm.Edit8.Text,inView3D.RadialPointSpacing[1]);
+        CheckEditString(PerspOptionsForm.Edit9.Text,inView3D.PersOpts.PerspAbsElev);
+        CheckEditString(PerspOptionsForm.Edit10.Text,inView3D.PersOpts.PerspAnaglyphShift);
+        CheckEditString(PerspOptionsForm.Edit11.Text,inView3D.PersOpts.PerspAnaglyphSeperate);
+        CheckEditString(PerspOptionsForm.Edit12.Text,inView3D.ViewDepth);
+
+        CheckEditString(PerspOptionsForm.Edit14.Text,inView3D.PersOpts.CrestSeparator);
+
+        CheckEditString(PerspOptionsForm.Edit15.Text,PerspOptionsForm.Pitch);
+        inView3D.MinPitch := PerspOptionsForm.Pitch - inView3D.ViewVFOV * 0.5;
+        inView3D.MaxPitch := PerspOptionsForm.Pitch + inView3D.ViewVFOV * 0.5;
+
+        CheckEditString(PerspOptionsForm.Edit17.Text,inView3D.ViewAzimuth);
+        inView3D.SaveName := PerspOptionsForm.Edit18.Text;
+
+        {$IfDef RecordPerspectiveProblems}
+           WriteLineToDebugFile('Before checkviewsize HFOV=' + RealToString(inView3D.ViewHFOV,-12,2 )+  '  VFOV=' + RealToString(inView3D.ViewVFOV,-12,2));
+        {$EndIf}
+
+        PerspOptionsForm.CheckViewSize;
+
+        {$IfDef RecordPerspectiveProblems}
+           WriteLineToDebugFile(' HFOV=' + RealToString(inView3D.ViewHFOV,-12,2));
+           WriteLineToDebugFile(' VFOV=' + RealToString(inView3D.ViewVFOV,-12,2));
+           WriteLineToDebugFile(' Pitch=' + RealToString(PerspOptionsForm.Pitch,-12,2),true);
+           WriteLineToDebugFile(' Pers vert angle range: ' + RealToString(inView3D.MinPitch,8,2) + RealToString(inView3D.MaxPitch,8,2));
+        {$EndIf}
+
+        CheckEditString(PerspOptionsForm.Edit31.Text,MDdef.MaxDrapeXSize);
+        CheckEditString(PerspOptionsForm.Edit32.Text,MDdef.MaxDrapeYSize);
+        CheckEditString(PerspOptionsForm.Edit35.Text,MDDef.PerspectiveSkyAngle);
+
+        if (MDdef.MaxDrapeXSize > 6000) then MDdef.MaxDrapeXSize := 6000;
+        if (MDdef.MaxDrapeYSize > 6000) then MDdef.MaxDrapeYSize := 6000;
+
+        for i := 1 to 4 do begin
+           inView3D.PersOpts.PersVaryResRanges[i] := StrToInt(PerspOptionsForm.StringGrid1.Cells[0,i]);
+           inView3D.PersOpts.PersVaryResFactors[i] := StrToInt(PerspOptionsForm.StringGrid1.Cells[1,i]);
+        end;
+
+        CheckEditString(PerspOptionsForm.Edit41.Text,MDDef.ShiftGazPeaksDist);
+        CheckEditString(PerspOptionsForm.Edit42.Text,MDDef.GazPeakObsUp);
+
+        MDDef.AutoLabelGaz := PerspOptionsForm.CheckBox23.Checked;
+        MDDef.ShiftGazPeaks := PerspOptionsForm.CheckBox24.Checked;
+        MDDef.GazMarkPeaksPerspective := PerspOptionsForm.CheckBox25.Checked;
+        MDDef.GazMarkPeaksPerpsOnMap := PerspOptionsForm.CheckBox26.Checked;
+
+        inView3D.DEMOnView := PerspOptionsForm.DEMUsed;
+
+        inView3D.SetSize;
+
+        {$IfDef RecordPerspectiveProblems}
+            WriteLineToDebugFile('SetPerspectiveOptions out, width=' + IntToStr(inView3D.PersOpts.PersWidth) + '    & height=' + IntToStr(inView3D.PersOpts.PersHeight),true);
+            WriteLineToDebugFile(' HFOV=' + RealToString(inView3D.ViewHFOV,-12,2));
+            WriteLineToDebugFile(' VFOV=' + RealToString(inView3D.ViewVFOV,-12,2));
+            WriteLineToDebugFile(' Pitch=' + RealToString(PerspOptionsForm.Pitch,-12,2));
+            WriteLineToDebugFile(' Pers vert angle range: ' + RealToString(inView3D.MinPitch,8,2) + RealToString(inView3D.MaxPitch,8,2));
+            WriteLineToDebugFile('');
+        {$EndIf}
+   end;
 end;
 
 
