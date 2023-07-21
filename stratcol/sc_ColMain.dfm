@@ -2,8 +2,8 @@ object ColMainF: TColMainF
   Left = 278
   Top = 273
   Caption = 'STRATCOL'
-  ClientHeight = 430
-  ClientWidth = 584
+  ClientHeight = 367
+  ClientWidth = 572
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -20,22 +20,26 @@ object ColMainF: TColMainF
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
-  TextHeight = 20
+  TextHeight = 16
   object Panel1: TPanel
     Left = 0
-    Top = 400
-    Width = 584
+    Top = 337
+    Width = 572
     Height = 30
     Align = alBottom
     TabOrder = 0
+    ExplicitTop = 400
+    ExplicitWidth = 584
   end
   object ScrollBox1: TScrollBox
     Left = 0
     Top = 29
-    Width = 584
-    Height = 371
+    Width = 572
+    Height = 308
     Align = alClient
     TabOrder = 1
+    ExplicitWidth = 584
+    ExplicitHeight = 371
     object Image1: TImage
       Left = 0
       Top = 0
@@ -57,13 +61,14 @@ object ColMainF: TColMainF
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 584
+    Width = 572
     Height = 29
     ButtonHeight = 25
     Caption = 'ToolBar1'
     ParentShowHint = False
     ShowHint = True
     TabOrder = 2
+    ExplicitWidth = 584
     object SpeedButton2: TSpeedButton
       Left = 0
       Top = 0

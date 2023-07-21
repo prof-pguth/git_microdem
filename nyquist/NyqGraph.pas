@@ -8,7 +8,6 @@ unit NyqGraph;
 {___________________________________}
 
 
-
 interface
 
 uses
@@ -209,15 +208,11 @@ begin
 
          x := GraphX(Time);
          y := GraphY(Tide);
-         if (Time >= MinHorizAxis) and (Time <= MaxHorizAxis) then
-            ScreenSymbol(Image1.Canvas,x,y,FilledBox,3,claRed);
-
-
+         if (Time >= MinHorizAxis) and (Time <= MaxHorizAxis) then ScreenSymbol(Image1.Canvas,x,y,FilledBox,3,claRed);
          Time := Time + SamplingInterval;
       end;
 
-      Spline(Sample,NumPts,Sample[2,1],Sample[pred(NumPts),1],
-               Splined,500);
+      Spline(Sample,NumPts,Sample[2,1],Sample[pred(NumPts),1],Splined,500);
       Pen.Color := clMaroon;
       Pen.Width := 2;
       for i := 1 to 500 do if Splined[i,1] < 0 then Splined[i,1] := 0;
@@ -297,12 +292,10 @@ var
    ThisGraph    : tThisBaseGraph;
 begin
    FFTGraph := TFFTGraph.Create(Application);
-   FFTGraph.Caption := 'FFT Power spectrum with sampling interval:  ' + RealToString(SamplingInterval,-8,-2) +
-       '  from Period:  ' + RealToString(Period,-8,-2);
+   FFTGraph.Caption := 'FFT Power spectrum with sampling interval:  ' + RealToString(SamplingInterval,-8,-2) + '  from Period:  ' + RealToString(Period,-8,-2);
 
    ThisGraph := TThisBaseGraph.Create(Application);
-   ThisGraph.Caption := 'Sampled Time Series with sampling interval:  ' + RealToString(SamplingInterval,-8,-2) +
-       '  from Period:  ' + RealToString(Period,-8,-2);
+   ThisGraph.Caption := 'Sampled Time Series with sampling interval:  ' + RealToString(SamplingInterval,-8,-2) + '  from Period:  ' + RealToString(Period,-8,-2);
 
    with FFTGraph do begin
       TotalNumberPoints := 64;
@@ -341,7 +334,6 @@ begin
       FFTGraph.FastFourierTransform;
    end;
 end;
-
 
 
 procedure TNyquistBaseGraph.FFT2Click(Sender: TObject);

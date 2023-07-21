@@ -47,10 +47,6 @@ uses
       FireDAC.Comp.Client, FireDAC.Comp.Dataset,FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteWrapper,
    {$EndIf}
 
-   {$IfDef UseBDETables}
-      dbTables,
-   {$EndIf}
-
    {$IfDef UseTDBF}
       dbf,
    {$EndIf}
@@ -215,7 +211,6 @@ begin
    end;
    {$IfDef RecordLOS} WriteLineToDebugFile('CreateLOS out'); {$EndIf}
 end;
-
 
 
       procedure tLOSdraw.SetSize(var Bitmap : tMybitmap; x,y : integer);
@@ -387,7 +382,7 @@ begin
     {$IfDef ExFresnel}
          DrawFresnel := false;
     {$Else}
-      if LOSVariety = losVanilla then begin
+      if (LOSVariety = losVanilla) then begin
          DrawFresnel := MDDef.DrawFresnel;
       end
       else begin
@@ -395,12 +390,10 @@ begin
       end;
    {$EndIf}
 
-
      {$IfDef LoadLastLOS}
         LastSavedLOSfName := ProjectDir + 'last_los.csv';
         Saveprofileendpoints1Click(nil);
      {$EndIf}
-
 
       if ValidDB(LOSProfileDB) then begin
          {$IfDef RecordLOS} WriteLineToDebugFile('Closing ProfileDB'); {$EndIf}
@@ -463,14 +456,14 @@ begin
       LosCalculation.Destroy;
    end;
 
-      if ValidDB(LOSProfileDB) then GISdb[LOSProfileDB].LayerIsOn := false;
+   if ValidDB(LOSProfileDB) then GISdb[LOSProfileDB].LayerIsOn := false;
 
-      GISdb[LOSProfileDB].MyData.First;
-      ObsGroundElev := GISdb[LOSProfileDB].MyData.GetFieldByNameAsFloat('ELEV_M');
-      GISdb[LOSProfileDB].MyData.Last;
-      TargetGroundElev := GISdb[LOSProfileDB].MyData.GetFieldByNameAsFloat('ELEV_M');
-      CalculatingCurvature := true;
-      {$If Defined(RecordLOS) or Defined(RecordLOSDraw)} WriteLineToDebugFile('tLOSdraw.RecalculateProfile out'); {$EndIf}
+   GISdb[LOSProfileDB].MyData.First;
+   ObsGroundElev := GISdb[LOSProfileDB].MyData.GetFieldByNameAsFloat('ELEV_M');
+   GISdb[LOSProfileDB].MyData.Last;
+   TargetGroundElev := GISdb[LOSProfileDB].MyData.GetFieldByNameAsFloat('ELEV_M');
+   CalculatingCurvature := true;
+   {$If Defined(RecordLOS) or Defined(RecordLOSDraw)} WriteLineToDebugFile('tLOSdraw.RecalculateProfile out'); {$EndIf}
 end;
 
 
@@ -992,8 +985,8 @@ begin
    end;
 
    {$IfDef VCL}
-   Bitmap.Canvas.Pen.Color := clBlack;
-   Bitmap.Canvas.Pen.Width := MDDef.FrameLineWidth;
+      Bitmap.Canvas.Pen.Color := clBlack;
+      Bitmap.Canvas.Pen.Width := MDDef.FrameLineWidth;
    {$EndIf}
 
    TickElev := round(MaxAreaZ * Factor) - (round(MaxAreaZ * Factor) mod TickInt);
@@ -1027,7 +1020,7 @@ begin
       {label right side ticks}
        if not First then begin
           {$IfDef VCL}
-          yp := Yp-Bitmap.Canvas.TextHeight('8') div 2;
+             yp := Yp-Bitmap.Canvas.TextHeight('8') div 2;
           {$EndIf}
           BitmapTextOut(Bitmap,xp+15,yp,IntegerToString(TickElev,4));
           if MDDef.LOSLeftTixLabels then BitmapTextOut(Bitmap,0,yp,IntegerToString(TickElev,4));
@@ -1074,7 +1067,7 @@ begin
       else TStr := RealToString(i,-8,-2);
 
       {$IfDef VCL}
-      XP := xp - Bitmap.Canvas.TextWidth(TStr) div 2;
+         XP := xp - Bitmap.Canvas.TextWidth(TStr) div 2;
       {$EndIf}
       if xp < 2 then xp := 2;
 
@@ -1103,7 +1096,7 @@ begin
 
       if (XP > LastXP) then begin
          {$IfDef VCL}
-         LastXP := XP + Bitmap.Canvas.TextWidth(TStr) + 8;
+            LastXP := XP + Bitmap.Canvas.TextWidth(TStr) + 8;
          {$EndIf}
       end;
    until (i > ZoomRight);
@@ -1116,10 +1109,8 @@ begin
     PetImage.DrawLine(Bitmap,XP,ProfileBot,StartLOSLeft,ProfileBot);     //bottom of profile
 
     if MDDef.LabelMultipleProf then begin
-        //TStr := BaseMapDraw.PrimMapProj.PreferLocationString(LatLeft,LongLeft);
         TStr := DEMGlb[DEMonView].DEMMapProjection.PreferLocationString(LatLeft,LongLeft);
         BitmapTextOut(Bitmap,0,0,TStr + ' ' + SensorName);
-        //TStr := BaseMapDraw.PrimMapProj.PreferLocationString(LatRight,LongRight);
         TStr := DEMGlb[DEMonView].DEMMapProjection.PreferLocationString(LatRight,LongRight);
         TStr := TStr + ' ' + TargetName;
         BitmapTextOut(Bitmap,PixLong - round(Bitmap.Canvas.TextWidth(TStr)),0,TStr);
@@ -1175,7 +1166,6 @@ end;
       end;
 
 {$EndIf}
-
 
 
 { tLOSCalculation }
@@ -1493,7 +1483,6 @@ begin
          end;
       {$EndIf}
 
-
       {$IfDef ExFresnel}
       {$Else}
          if (GISdb[ProfileDB].MyData <> Nil) then begin
@@ -1586,116 +1575,115 @@ begin
 end;
 
 
-
 {$IfDef ExWaveLengthHeight}
 {$Else}
 
-procedure FindWavelengthStats(var UseData : tMyData; var WavelengthMean,WavelengthMedian,WavelengthStdDev,
-   HeightMean,HeightMedian,HeightStd : float64; ColorFields : boolean = false);
-var
-   MomentVar : tMomentVar;
-   lastx,lasty,x,y,dz : float64;
-   LastPit,ThisPit : boolean;
-   TStr,TStr2  : shortString;
-   Factor : integer;
-   xs,ys : array[0..500] of float32;
+      procedure FindWavelengthStats(var UseData : tMyData; var WavelengthMean,WavelengthMedian,WavelengthStdDev,
+         HeightMean,HeightMedian,HeightStd : float64; ColorFields : boolean = false);
+      var
+         MomentVar : tMomentVar;
+         lastx,lasty,x,y,dz : float64;
+         LastPit,ThisPit : boolean;
+         TStr,TStr2  : shortString;
+         Factor : integer;
+         xs,ys : array[0..500] of float32;
 
-         procedure ReadValues;
-         begin
-            Y := UseData.GetFieldByNameAsFloat('ELEV_M');
-            X :=  UseData.GetFieldByNameAsFloat('RANGE_KM');
-            ThisPit :=  UseData.GetFieldByNameAsString('PIT') = 'Y';
-            UseData.Next;
-         end;
-
-         procedure ColorAllFields(Color : tColor);
-         begin
-            UseData.First;
-            repeat
-               UseData.Edit;
-               UseData.SetFieldByNameAsInteger('COLOR',Color);
-               UseData.Next;
-            until UseData.EOF;
-         end;
-
-begin
-  {$IfDef RecordWaveLenghtHeight} WriteLineToDebugFile('FindWavelengthStats in, table=' + UseData.TableName); {$EndIf}
-   if (UseData = Nil) then begin
-      exit;
-   end;
-   if UseData.FieldExists('PEAK') then begin
-      WavelengthMean := 0;
-      WavelengthMedian := 0;
-      WavelengthStdDev := 0;
-      HeightMean := 0;
-      HeightMedian := 0;
-      HeightStd := 0;
-
-      if ColorFields then ColorAllFields(clYellow);
-      UseData.ApplyFilter( 'PIT=' + QuotedStr('Y') + ' OR PEAK=' + QuotedStr('Y'));
-      MomentVar.NPts := 0;
-      ReadValues;
-
-      while not UseData.eof do begin
-         LastX := x;
-         LastY := y;
-         LastPit := ThisPit;
-         repeat
-            ReadValues;
-            dz := abs(LastY-y);
-            if (dz >= MDDef.MinWaveHeight) then begin
-               TStr := RealToString(x-Lastx,11,3) + RealToString(dz,16,2);
-               Factor := 2;
-               if (LastPit = ThisPit) then begin
-                  if LastPit and ThisPit then TStr2 := 'adjacent Pits'
-                  else TStr2 := 'adjacent peaks';
-                  TStr := TStr + '   ' + TStr2;
-                  Factor := 1;
+               procedure ReadValues;
+               begin
+                  Y := UseData.GetFieldByNameAsFloat('ELEV_M');
+                  X :=  UseData.GetFieldByNameAsFloat('RANGE_KM');
+                  ThisPit :=  UseData.GetFieldByNameAsString('PIT') = 'Y';
+                  UseData.Next;
                end;
-               xs[MomentVar.NPts] := Factor * (x-Lastx);
-               ys[MomentVar.NPts] := dz;
-               inc(MomentVar.NPts);
+
+               procedure ColorAllFields(Color : tColor);
+               begin
+                  UseData.First;
+                  repeat
+                     UseData.Edit;
+                     UseData.SetFieldByNameAsInteger('COLOR',Color);
+                     UseData.Next;
+                  until UseData.EOF;
+               end;
+
+      begin
+        {$IfDef RecordWaveLenghtHeight} WriteLineToDebugFile('FindWavelengthStats in, table=' + UseData.TableName); {$EndIf}
+         if (UseData = Nil) then begin
+            exit;
+         end;
+         if UseData.FieldExists('PEAK') then begin
+            WavelengthMean := 0;
+            WavelengthMedian := 0;
+            WavelengthStdDev := 0;
+            HeightMean := 0;
+            HeightMedian := 0;
+            HeightStd := 0;
+
+            if ColorFields then ColorAllFields(clYellow);
+            UseData.ApplyFilter( 'PIT=' + QuotedStr('Y') + ' OR PEAK=' + QuotedStr('Y'));
+            MomentVar.NPts := 0;
+            ReadValues;
+
+            while not UseData.eof do begin
+               LastX := x;
+               LastY := y;
+               LastPit := ThisPit;
+               repeat
+                  ReadValues;
+                  dz := abs(LastY-y);
+                  if (dz >= MDDef.MinWaveHeight) then begin
+                     TStr := RealToString(x-Lastx,11,3) + RealToString(dz,16,2);
+                     Factor := 2;
+                     if (LastPit = ThisPit) then begin
+                        if LastPit and ThisPit then TStr2 := 'adjacent Pits'
+                        else TStr2 := 'adjacent peaks';
+                        TStr := TStr + '   ' + TStr2;
+                        Factor := 1;
+                     end;
+                     xs[MomentVar.NPts] := Factor * (x-Lastx);
+                     ys[MomentVar.NPts] := dz;
+                     inc(MomentVar.NPts);
+                  end;
+               until (dz >= MDDef.MinWaveHeight) or UseData.eof;
             end;
-         until (dz >= MDDef.MinWaveHeight) or UseData.eof;
+
+            if (MomentVar.NPts > MDDef.WaveHtValuesNeeded) then begin
+               Moment(xs,MomentVar,msAll);
+               WaveLengthMedian := MomentVar.Median;
+               WavelengthMean := MomentVar.mean;
+               WaveLengthStdDev := MomentVar.sdev;
+               Moment(ys,MomentVar,msAll);
+               HeightMedian := MomentVar.Median;
+               HeightMean := MomentVar.mean;
+               HeightStd := MomentVar.sdev;
+            end
+            else begin
+               {$IfDef RecordWaveLenghtHeight} WriteLineToDebugFile('NPts < MDDef.WaveHtValuesNeeded ' + IntToStr(Npts) + '<' + IntToStr(MDDef.WaveHtValuesNeeded)); {$EndIf}
+            end;
+
+            if ColorFields then begin
+               UseData.ApplyFilter('PIT=' + QuotedStr('Y'));
+               ColorAllFields(clRed);
+               UseData.ApplyFilter('PEAK=' + QuotedStr('Y'));
+               ColorAllFields(clLime);
+            end;
+         end;
       end;
 
-      if (MomentVar.NPts > MDDef.WaveHtValuesNeeded) then begin
-         Moment(xs,MomentVar,msAll);
-         WaveLengthMedian := MomentVar.Median;
-         WavelengthMean := MomentVar.mean;
-         WaveLengthStdDev := MomentVar.sdev;
-         Moment(ys,MomentVar,msAll);
-         HeightMedian := MomentVar.Median;
-         HeightMean := MomentVar.mean;
-         HeightStd := MomentVar.sdev;
-      end
-      else begin
-         {$IfDef RecordWaveLenghtHeight} WriteLineToDebugFile('NPts < MDDef.WaveHtValuesNeeded ' + IntToStr(Npts) + '<' + IntToStr(MDDef.WaveHtValuesNeeded)); {$EndIf}
+
+      procedure AddToWaveSpacingHeightResults(var Findings : TStringList; WavelengthMean,WavelengthMedian,WavelengthStdDev,HeightMean,HeightMedian,HeightStd : float64);
+      begin
+          Findings.Add('Wavelength (m)');
+          Findings.Add('   Mean: ' + RealToString(1000*WavelengthMean,-18,-2));
+          Findings.Add('   Std Dev: ' + RealToString(1000*WavelengthStdDev,-18,-2));
+          Findings.Add('   Median: ' + RealToString(1000*WaveLengthMedian,-18,-2));
+          Findings.Add(' ');
+          Findings.Add('Height (m)');
+          Findings.Add('   Mean: ' + RealToString(HeightMean,-18,-2));
+          Findings.Add('   Std Dev: ' + RealToString(HeightStd,-18,-2));
+          Findings.Add('   Median: ' + RealToString(HeightMedian,-18,-2));
+          Findings.Add(' ');
       end;
-
-      if ColorFields then begin
-         UseData.ApplyFilter('PIT=' + QuotedStr('Y'));
-         ColorAllFields(clRed);
-         UseData.ApplyFilter('PEAK=' + QuotedStr('Y'));
-         ColorAllFields(clLime);
-      end;
-   end;
-end;
-
-
-procedure AddToWaveSpacingHeightResults(var Findings : TStringList; WavelengthMean,WavelengthMedian,WavelengthStdDev,HeightMean,HeightMedian,HeightStd : float64);
-begin
-    Findings.Add('Wavelength (m)');
-    Findings.Add('   Mean: ' + RealToString(1000*WavelengthMean,-18,-2));
-    Findings.Add('   Std Dev: ' + RealToString(1000*WavelengthStdDev,-18,-2));
-    Findings.Add('   Median: ' + RealToString(1000*WaveLengthMedian,-18,-2));
-    Findings.Add(' ');
-    Findings.Add('Height (m)');
-    Findings.Add('   Mean: ' + RealToString(HeightMean,-18,-2));
-    Findings.Add('   Std Dev: ' + RealToString(HeightStd,-18,-2));
-    Findings.Add('   Median: ' + RealToString(HeightMedian,-18,-2));
-    Findings.Add(' ');
-end;
 
 {$EndIf}
 
@@ -1715,7 +1703,6 @@ begin
    ShowSeaLevel := true;
    CompareDensityAlongProfile := false;
    FirstDraw := true;
-   //EraseFresnelDB := false;
    EnvelopeDone := false;
    ProfileDropDown := 0;
    LOSProfileDB := 0;
@@ -1723,7 +1710,6 @@ begin
    MaxAreaZ := -MaxSmallInt;
    TargetGroundElevLAS := -9999;
    ObsGroundElevLAS := -9999;
-   //for j := 1 to MaxDEMDataSets do ShowProfile[j] := true;
    InitializeDEMsWanted(ShowProfile,true);
    {$IfDef ExPointCloudMemory}
    {$Else}

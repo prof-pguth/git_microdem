@@ -214,7 +214,6 @@ end;
 
 
 procedure tLAS_data.ExportXYZ(Output : tLASAsciiOutput; ScaleFactor : float64 = -99; CenterOutput : boolean = true);
-//lasascXYYonly,lasascClassInt,lasascRGB
 var
    Category,i,j,RecsRead,Npts : integer;
    xoff,yoff,zoff : float64;
@@ -436,7 +435,6 @@ end;
 {$EndIf}
 
 
-
 procedure tLAS_data.ExportGeoJSON;
 var
    i,j,RecsRead,Npts,Decs : integer;
@@ -501,7 +499,7 @@ begin
    sl.SaveToFile(fName);
    sl.Free;
    {$IfDef VCL}
-   MainBZ2(fName);
+      MainBZ2(fName);
    {$EndIf}
    ShowDefaultCursor;
    if not QuietActions then MessageToContinue('Extracted points: ' + IntToStr(NPts));

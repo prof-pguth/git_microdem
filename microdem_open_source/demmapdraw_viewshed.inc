@@ -15,15 +15,15 @@
          wf : tWeaponsFan;
          ShowName,CoverName : PathStr;
       begin
-         //{$IfDef RecordFan}  ShowMapUTMCorners('TMapDraw.FanBitmap in'); {$EndIf}
-         {$IfDef AndroidProgress}  ShowMainFormProgress('TMapDraw.FanBitmap in'); {$EndIf}
+         //{$IfDef RecordFan} ShowMapUTMCorners('TMapDraw.FanBitmap in'); {$EndIf}
+         {$IfDef AndroidProgress} ShowMainFormProgress('TMapDraw.FanBitmap in'); {$EndIf}
 
          InitializeWeaponsFan(wf);
          wf.W_Lat := Lat;
          wf.W_Long := Long;
          DrawRadialFan(wf,ShowName,CoverName);
          //{$IfDef RecordFan} ShowMapUTMCorners('TMapDraw.FanBitmap DrawRadialFan done'); {$EndIf}
-         {$IfDef AndroidProgress}  ShowMainFormProgress('TMapDraw.FanBitmap after draw'); {$EndIf}
+         {$IfDef AndroidProgress} ShowMainFormProgress('TMapDraw.FanBitmap after draw'); {$EndIf}
          if FileExists(BaseMapFName) then begin
             CreateBitmap(Bitmap,0,0);
             Bitmap := LoadBitmapFromFile(BaseMapFName);
@@ -387,14 +387,11 @@ procedure tMapDraw.InsureAllFansDrawn(Table : tMyData; var SummaryBitmap : tMyBi
 var
    i : integer;
    fName,VisName,MaskName,CoverName,ShowName : PathStr;
-   //NormalTermination : boolean;
    wf : tWeaponsFan;
    Results : tStringList;
    TStr : shortstring;
 begin
    {$IfDef RecordFan} WriteLineToDebugFile('tMapDraw.InsureAllFansDrawn in  Filter=' + Table.Filter + '  Write fans to ' + SaveViewshedDir); {$EndIf}
-
-   //NormalTermination := true;
    ShowHourglassCursor;
    Table.First;
    I := 0;
@@ -419,7 +416,7 @@ begin
    until (Table.eof);
    {$IfDef RecordFan} WriteLineToDebugFile('tMapDraw.InsureAllFansDrawn all fans created'); {$EndIf}
 
-   if {NormalTermination and} (SummaryBitmap <> Nil) then begin
+   if  (SummaryBitmap <> Nil) then begin
       {$IfDef FanDrawProblems} WriteLineToDebugFile('SummaryBitmap <> Nil, ' + DEMGlb[DEMonMap].KeyDEMParams(True)); {$EndIf}
       ShowHourglassCursor;
       Table.First;

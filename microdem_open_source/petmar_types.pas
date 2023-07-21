@@ -330,7 +330,9 @@ var
 {$EndIf}
 
 
-function MyDataPath : PathStr;
+//function MyDataPath : PathStr;
+//function FullGetHomePath : PathStr;
+//function FullGetTempPath : PathStr;
 
 procedure SafeMakeDir(DirName : PathStr);
 function PathIsValid(Path : PathStr) : boolean;
@@ -339,8 +341,6 @@ function IniFileName : PathStr;
 
 function LinkImageString(f2 : ShortString) : shortstring;
 
-function FullGetHomePath : PathStr;
-function FullGetTempPath : PathStr;
 
 {$IfDef MSWindows}
    function GetAppDataFolder : AnsiString;
@@ -529,7 +529,6 @@ procedure StringToByteArray(TStr : shortString; var values : array of byte);
 var
    i : integer;
 begin
-   //Values[0] := length(TStr);
    {$IfDef VCL}
       for i := 1 to Length(TStr) do values[i] := ord(TStr[i]);
    {$Else}
@@ -537,18 +536,18 @@ begin
    {$EndIf}
 end;
 
-
+(*
 function FullGetHomePath : PathStr;
 begin
    Result := System.IOUtils.tPath.GetHomePath + PathDelim;
 end;
 
 
-
 function FullGetTempPath : PathStr;
 begin
     Result := System.IOUtils.tPath.GetTempPath;
 end;
+*)
 
 
 function SQLTypeDefString(ft : tFieldType; len : integer) : shortString;
@@ -840,11 +839,13 @@ begin
    Delete(Result,1,succ(i));
 end;
 
-
+ (*
 function MyDataPath : PathStr;
 begin
   Result := TPath.GetDocumentsPath + PathDelim + 'MyMapData\';
 end;
+ *)
+
 
 function IniFileName : PathStr;
 var

@@ -8,7 +8,6 @@ unit param_graphs;
 {___________________________________}
 
 
-
 {$I nevadia_defines.inc}
 
 
@@ -38,7 +37,6 @@ type
     { Public declarations }
     theDB : integer;
     ThisGraph : TThisbasegraph;
-
   end;
 
 
@@ -148,7 +146,6 @@ begin
    bmp.Free;
    GISdb[theDB].dbTablef.ShowStatus;
 end;
-
 
 
 initialization

@@ -14,8 +14,6 @@ unit simple_python;
 {$Define RecordPython}
 
 
-
-
 //{$IfDef IncludePython}
 
   interface

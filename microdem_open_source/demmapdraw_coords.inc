@@ -9,7 +9,6 @@
 {____________________________________}
 
 
-
 procedure TMapDraw.LatLongDegreeToDataGrid(Lat,Long : float64; var xg,yg : float32);
 begin
    if DEMMap then begin
@@ -268,7 +267,6 @@ begin
        LatLongDegreeToScreen(Lat,Long,xpic,ypic);
    end;
 end;
-
 
 
 procedure TMapDraw.MGRSToScreen(MGRS : shortString; var XPic,YPic : integer);

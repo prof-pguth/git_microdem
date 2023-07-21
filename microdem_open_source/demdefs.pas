@@ -364,7 +364,7 @@ const  //map display modes, for particular data types and desired look
    mtRefColorGray = 41;
    mtOpenness = 42;
    mtLASclass = 43;
-   mtRGB = 44;
+   mtRGBimagery = 44;
    mtGYRReflect = 45;
    mtGGRReflect = 46;
    mtSatTrueColor = 47;
@@ -376,6 +376,7 @@ const  //map display modes, for particular data types and desired look
    mtDEMaspectSlope = 56;
    mt6ColorVAToverlay = 57;
    mtSatFalseVeg = 58;
+   mtRGB3Grids = 59;
    //mtDifferenceMap = 57;
 
 type
@@ -1073,8 +1074,8 @@ type
       BoundBoxUTM,
       BoundBoxProj : sfBoundBox;
    end;
-   LongReal        = array[0..100] of float64;
-   LongRealPointer = ^LongReal;
+   //LongReal        = array[0..100] of float64;
+   //LongRealPointer = ^LongReal;
    ColorCutArrayType = array[0..14] of float64;
    tGridZ = packed record
       x,y : Int32;
@@ -1512,7 +1513,7 @@ type
 
        {$IfDef ExFly}
        {$Else}
-          FlyOptions            : tFlyOptions;
+          FlyOptions  : tFlyOptions;
        {$EndIf}
 
        {$IfDef ExSidescan}
@@ -1652,7 +1653,6 @@ type
            BatchRegionSize : array[1..5] of integer;
        {$EndIf}
 
-
        {$IfDef ExPOTRACE}
        {$Else}
            potrace_tsize : integer;
@@ -1687,7 +1687,7 @@ type
 
        {$IfDef ExGeology}
        {$Else}
-           MoveGeologyDBMemory,
+           //MoveGeologyDBMemory,
            PlateRotateContCrust,
            PlateRotateBoundaries : boolean;
        {$EndIf}
@@ -1708,7 +1708,7 @@ type
        {$IfDef ExGeography}
        {$Else}
            KoppenOpts  : tKoppenOpts;
-           MoveGeographyDBMemory,
+           //MoveGeographyDBMemory,
            RiseSet,MoonPhase : boolean;
        {$EndIf}
 
@@ -1742,7 +1742,7 @@ type
 
        {$IfDef ExOSM}
        {$Else}
-          OSMcheck,OSMtoCDS : boolean;
+          OSMcheck{,OSMtoCDS} : boolean;
           OSMOpacity : byte;
           OSMmaxLength : int16;
        {$EndIf}
@@ -1949,7 +1949,9 @@ type
 
       MakeCOP_ALOS_diffMaps,
       MakeCOP_ALOS_Cat_Maps,
+      MakeCOP_FABDEM_diffMaps,
       MakeCOP_ALOS_Best_Map,
+      MakeRGB_Best_Map,
 
       DEMIXCompositeImage,
       DEMIX_DoCHM,
@@ -2108,8 +2110,9 @@ type
        TreatPolygonAsLine,
        LOSShowPitch,
        TrackDatabaseRanges,
-       DBRecShowToolbarTop,
-       TigerToCDS : boolean;
+       DBRecShowToolbarTop : boolean;
+
+       DefCatPCforLegend : float32;
 
        AllowMemoryLinkDB,
        AllowDBsToRAM,

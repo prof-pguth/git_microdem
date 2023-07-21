@@ -53,10 +53,6 @@ uses
       FireDAC.Comp.Client, FireDAC.Comp.Dataset,FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteWrapper,
    {$EndIf}
 
-   {$IfDef UseBDETables}
-      dbTables,
-   {$EndIf}
-
    {$IfDef UseTDBF}
       dbf,
    {$EndIf}
@@ -130,9 +126,9 @@ type
         ViewedLat,ViewedLong,
         FlightAzimuth,ViewAzimuth,ViewDepth,
         tanMinElevAngle,tanMaxElevAngle,LookHeadingRelative,
-        Exag,Size,TargetXUTM,TargetYUTM,XGridLeft,YGridLeft,
-        LeftRearGridX,LeftRearGridY,RightRearGridX,RightRearGridY : float64;
-        XGridRight,YGridRight : float64;  //the viewer's location in the DEM grid
+        Exag,Size,TargetXUTM,TargetYUTM : float64;
+        XGridLeft,YGridLeft,LeftRearGridX,LeftRearGridY,RightRearGridX,RightRearGridY : float32;
+        XGridRight,YGridRight : float32;  //the viewer's location in the DEM grid
         ObsElev,      //viewer's total elevation
         ElevObs : float32;     //ground elevation under viewer
 
@@ -143,7 +139,7 @@ type
         {$EndIf}
 
         DrapeDisplay : tDrapeDisplay;
-        xu,yu        : array[1..4] of float64;
+        xu,yu        : array[1..4] of float32;
 
      {for oblique, corner point order is:
               Left is left front
@@ -171,19 +167,19 @@ type
         function PerspectiveDraw(var Bitmap : tMyBitmap; ShowProgress : boolean) : boolean;
         function FindPitch(Elev1,DistOut : float64) : float64;
         procedure SeriesNumberCoord(Prof : integer);
-        procedure AzimuthPitchToScreen(Azimuth,Pitch : float64; var x,y : integer);
-        procedure ScreenToAzimuthPitch(x,y : integer; var Azimuth,Pitch : float64);
-        procedure AzimuthToScreen(Azimuth : float64; var x : integer);
-        procedure PitchToScreen(Pitch : float64; var y : integer);
-        procedure ScreenToAzimuth(x: integer; var Azimuth : float64);
-        procedure ScreenToPitch(y : integer; var Pitch : float64);
+        procedure AzimuthPitchToScreen(Azimuth,Pitch : float32; var x,y : integer);
+        procedure ScreenToAzimuthPitch(x,y : integer; var Azimuth,Pitch : float32);
+        procedure AzimuthToScreen(Azimuth : float32; var x : integer);
+        procedure PitchToScreen(Pitch : float32; var y : integer);
+        procedure ScreenToAzimuth(x: integer; var Azimuth : float32);
+        procedure ScreenToPitch(y : integer; var Pitch : float32);
         procedure SetAzimuthLimits;
         function VertAngleRange : shortstring;
         function FieldOfView : shortstring;
 
-        procedure BackCorner(LastX : integer;  var Azimuth,LeftRearGridX,LeftRearGridY : float64; var ViewedLat,ViewedLong  : float64);
+        procedure BackCorner(LastX : integer;  var Azimuth,LeftRearGridX,LeftRearGridY : float32; var ViewedLat,ViewedLong  : float64);
         procedure FindProfilePoint(DistOut : float64; var xr,yr,Elev1,ThisPitch : float64);
-        procedure ViewPortBackCorners(var LeftRearGridX,LeftRearGridY,RightRearGridX,RightRearGridY : float64);
+        procedure ViewPortBackCorners(var LeftRearGridX,LeftRearGridY,RightRearGridX,RightRearGridY : float32);
         function ViewWithInData(ModifyElevAngle,SafetyFactor,NewExtremes : boolean) : boolean;
   end;
 
@@ -282,7 +278,6 @@ begin
 end;
 
 
-
 {$IfDef VCL}
 procedure BresenhamDrawAlgorithm(BitMap : tMyBitmap; x1,y1,x2,y2 : integer; color : TColor;  PointSetter : PETMAR_types.SetPointProcedure);
 var
@@ -309,7 +304,6 @@ begin
 end {proc BresenhamDraw};
 
 {$EndIf}
-
 
 
 function tView3D.ViewWithInData(ModifyElevAngle,SafetyFactor,NewExtremes : boolean) : boolean;
@@ -392,7 +386,6 @@ begin {func ViewWithInData}
 end {function ViewWithinData};
 
 
-
 procedure tView3D.SetAzimuthLimits;
 begin
    LeftAzimuth := ViewAzimuth - (0.5 * ViewHFOV);
@@ -470,8 +463,8 @@ var
 
    procedure SetUpSingleDrape(ThisViewDepth : float64; WhichDrapeMap : integer);
    var
-      Lat,Long,LatLow,LatHigh,LongLow,LongHigh,Bearing,
-      sf2,xu1,yu1,xu4,yu4 : float64;
+      Lat,Long,LatLow,LatHigh,LongLow,LongHigh,Bearing,sf2 : float64;
+      xu1,yu1,xu4,yu4 : float32;
       DrapeForm : tMapForm;
    begin
       with MapForm do begin
@@ -549,8 +542,7 @@ var
          DrapingMaps[DrapeMapUsing].Caption := 'Drape map ' + IntToStr(DrapeMapUsing) +  ' pixel size=' + RealToString(DrapeForm.MapDraw.ScreenPixelSize,-8,1) + ' m';
 
          {$IfDef RecordFullDrape}
-            WriteLineToDebugFile('Set up drape map in tView3D.SetUpDrapeMap',true);
-            WriteLineToDebugFile('Map draped: ' + MapForm.Caption);
+            WriteLineToDebugFile('Set up drape map in tView3D.SetUpDrapeMap, Map draped: ' + MapForm.Caption);
             WriteLineToDebugFile('Grid (UL): x=' + RealToString(xu1,12,2) + '   &y=' + RealToString(yu4,12,2) + '  Grid (LR): x=' + RealToString(xu4,12,2) + '   &y=' + RealToString(yu1,12,2));
             WriteLineToDebugFile('PersViewDepth: ' + RealToString(ViewDepth,-12,0) + '  rapeMapUsing= ' + IntToStr(DrapeMapUsing));
          {$EndIf}
@@ -615,7 +607,6 @@ begin
       end;
    end;
 end;
-
 
 
 procedure TView3D.InitHidden;
@@ -732,11 +723,9 @@ begin
    end;
 
   {$IfDef RecordFlySequence}
-     WriteLineToDebugFile('SNC 3, z=' + RealToString(ObserverElevation,-8,1));
-     WriteLineToDebugFile('viewer: ' + LatLongDegreeToString(ViewerLat,ViewerLong));
-     WriteLineToDebugFile('viewer depth: ' + RealToString(ViewDepth,-12,1) + '  viewer azimuth: ' + RealToString(ViewAzimuth,-12,1));
+     WriteLineToDebugFile('DEMonView: ' + IntToStr(DEMonView) + '   SNC 3, z=' + RealToString(ObserverElevation,-8,1));
+     WriteLineToDebugFile('viewer: ' + LatLongDegreeToString(ViewerLat,ViewerLong) + '  viewer depth: ' + RealToString(ViewDepth,-12,1) + '  viewer azimuth: ' + RealToString(ViewAzimuth,-12,1));
      WriteLineToDebugFile('HFOV: ' + RealToString(ViewHFOV,-12,2) + '  VFOV: ' + RealToString(ViewVFOV,-12,2));
-     WriteLineToDebugFile('DEMonView: ' + IntToStr(DEMonView));
   {$EndIf}
 
    VincentyPointAtDistanceBearing(ViewerLat,ViewerLong,ViewDepth,ViewAzimuth,ViewedLat,ViewedLong);
@@ -758,8 +747,7 @@ begin
    end;
 
    {$IfDef RecordFlySequence}
-      WriteLineToDebugFile('tView3D.SeriesNumberCoord',true);
-      WriteLineToDebugFile('Draw number '+ IntToStr(Prof));
+      WriteLineToDebugFile('tView3D.SeriesNumberCoord,  Draw number '+ IntToStr(Prof));
       WriteLineToDebugFile('viewer depth: ' + RealToString(ViewDepth,-12,1) + '  viewer azimuth: ' + RealToString(ViewAzimuth,-12,1));
       WriteLineToDebugFile('Target coordinates:'+RealToString(TargetXUTM,8,0) +RealToString(TargetYUTM,10,0));
       WriteLineToDebugFile('View start center: '+ LatLongDegreeToString(ViewerLat,ViewerLong) + '   zg='+RealToString(ElevObs,8,0)+'   zobs='+RealToString(ObserverElevation,8,0));
@@ -785,7 +773,7 @@ begin
 end;
 
 
-procedure TView3D.BackCorner(LastX : integer;  var Azimuth,LeftRearGridX,LeftRearGridY : float64; var ViewedLat,ViewedLong  : float64);
+procedure TView3D.BackCorner(LastX : integer;  var Azimuth,LeftRearGridX,LeftRearGridY : float32; var ViewedLat,ViewedLong  : float64);
 begin
    if (DEMonView <> 0) and (DEMGlb[DEMonView] <> Nil) then begin
       ScreenToAzimuth(LastX,Azimuth);
@@ -795,7 +783,7 @@ begin
 end;
 
 
-procedure TView3D.ViewPortBackCorners(var LeftRearGridX,LeftRearGridY,RightRearGridX,RightRearGridY : float64);
+procedure TView3D.ViewPortBackCorners(var LeftRearGridX,LeftRearGridY,RightRearGridX,RightRearGridY : float32);
 var
    Lat,Long : float64;
 begin
@@ -807,26 +795,26 @@ begin
 end;
 
 
-procedure TView3D.AzimuthToScreen(Azimuth : float64; var x : integer);
+procedure TView3D.AzimuthToScreen(Azimuth : float32; var x : integer);
 begin
    x := round(((Azimuth - LeftAzimuth) / ViewHFOV) * ViewportWidth);
 end;
 
 
-procedure TView3D.PitchToScreen(Pitch : float64; var y : integer);
+procedure TView3D.PitchToScreen(Pitch : float32; var y : integer);
 begin
    y := ViewportHeight - round((ViewportHeight) * (Pitch - MinPitch) / ViewVFOV);
 end;
 
 
-procedure TView3D.AzimuthPitchToScreen(Azimuth,Pitch : float64; var x,y : integer);
+procedure TView3D.AzimuthPitchToScreen(Azimuth,Pitch : float32; var x,y : integer);
 begin
    AzimuthToScreen(Azimuth,x);
    PitchToScreen(Pitch,y);
 end;
 
 
-procedure TView3D.ScreenToAzimuth(x: integer; var Azimuth : float64);
+procedure TView3D.ScreenToAzimuth(x: integer; var Azimuth : float32);
 begin
    if (X > -1) then begin
       Azimuth := LeftAzimuth + (X / pred(ViewPortWidth) * ViewHFOV);
@@ -835,13 +823,13 @@ begin
 end;
 
 
-procedure TView3D.ScreenToPitch(y : integer; var Pitch : float64);
+procedure TView3D.ScreenToPitch(y : integer; var Pitch : float32);
 begin
    Pitch := MaxPitch - (Y / pred(ViewPortHeight) * ViewVFOV);
 end;
 
 
-procedure TView3D.ScreenToAzimuthPitch(x,y : integer; var Azimuth,Pitch : float64);
+procedure TView3D.ScreenToAzimuthPitch(x,y : integer; var Azimuth,Pitch : float32);
 begin
    ScreenToAzimuth(x,Azimuth);
    ScreenToPitch(y,Pitch);
@@ -851,9 +839,9 @@ end;
 procedure TView3D.PerspectiveDrawStrip(FirstXStrip,LastXStrip : integer; BMPMemory : tBMPMemory; ShowProgress : boolean);
 var
    Elev1,
-   LastDistOut,
+   LastDistOut : float64;
    ThisPitch,
-   Azimuth                 : float64;
+   Azimuth                 : float32;
    Shift,Runs,
    i,y,ip,iy,
    Min,FirstPt,Pt,PtInc                    : integer;

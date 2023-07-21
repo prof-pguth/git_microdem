@@ -129,10 +129,6 @@ uses
       FireDAC.Comp.Client, FireDAC.Comp.Dataset,FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteWrapper,
    {$EndIf}
 
-   {$IfDef UseBDETables}
-      dbTables,
-   {$EndIf}
-
    {$IfDef UseTDBF}
       dbf,
    {$EndIf}
@@ -1299,7 +1295,7 @@ begin
                   else if (MapType in [mtOpenness]) then begin
                      DrawOpennessMap(BitMap);
                   end
-                  else if (MapType in [mtRGB]) then begin
+                  else if (MapType in [mtRGBimagery]) then begin
                      DrawRGBMap(BitMap);
                   end
                   else if IsReflectanceMap(MapType) or IsElevationMap(MapType) or (MapType in [mtDEMVATTable,mtLandCover]) then begin

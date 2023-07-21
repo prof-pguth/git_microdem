@@ -2,8 +2,8 @@ object DemixFilterForm: TDemixFilterForm
   Left = 0
   Top = 0
   Caption = 'Demix Filter Pick Graphs'
-  ClientHeight = 473
-  ClientWidth = 701
+  ClientHeight = 495
+  ClientWidth = 746
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -16,11 +16,13 @@ object DemixFilterForm: TDemixFilterForm
   object PageControl1: TPageControl
     Left = 0
     Top = 0
-    Width = 701
-    Height = 473
+    Width = 746
+    Height = 495
     ActivePage = TabSheet1
     Align = alClient
     TabOrder = 0
+    ExplicitWidth = 742
+    ExplicitHeight = 494
     object TabSheet1: TTabSheet
       Caption = 'New options'
       object Label4: TLabel
@@ -395,6 +397,15 @@ object DemixFilterForm: TDemixFilterForm
         TabOrder = 36
         OnClick = BitBtn27Click
       end
+      object BitBtn28: TBitBtn
+        Left = 687
+        Top = 264
+        Width = 51
+        Height = 25
+        Caption = 'All'
+        TabOrder = 37
+        OnClick = BitBtn28Click
+      end
     end
     object TabSheet2: TTabSheet
       Caption = 'Compare v1 v2'
@@ -704,6 +715,24 @@ object DemixFilterForm: TDemixFilterForm
         Caption = 'Two differnce category maps'
         TabOrder = 2
         OnClick = CheckBox8Click
+      end
+      object threedembestrgm_checkbox: TCheckBox
+        Left = 40
+        Top = 96
+        Width = 161
+        Height = 17
+        Caption = 'Three DEM best RGB'
+        TabOrder = 3
+        OnClick = threedembestrgm_checkboxClick
+      end
+      object CheckBox9: TCheckBox
+        Left = 40
+        Top = 119
+        Width = 217
+        Height = 17
+        Caption = 'COP-FABDEM difference map'
+        TabOrder = 4
+        OnClick = CheckBox9Click
       end
     end
   end

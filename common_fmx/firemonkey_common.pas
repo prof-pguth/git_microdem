@@ -1,5 +1,12 @@
 unit firemonkey_common;
 
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2023 Peter L. Guth  }
+{___________________________________}
+
 
 {$I nevadia_defines.inc}
 
@@ -106,7 +113,7 @@ begin
   ys := GridLimits.YGridHigh - GridLimits.YGridLow;
   zr := (DEMGlb[NewDEM].DEMHeader.MaxElev-DEMGlb[NewDEM].DEMHeader.MinElev);
 
-  // We have to set these up front. The buffers are cleared every time Length is set.
+  // We have to set these up front. Buffers cleared every time Length is set.
   TheMesh.Data.VertexBuffer.Length := Round(2*MaxX*2*MaxZ/d/d)*4;
   TheMesh.Data.IndexBuffer.Length := Round(2*MaxX*2*MaxZ/d/d)*6;
   Grids := 0;

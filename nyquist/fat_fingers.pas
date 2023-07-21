@@ -8,7 +8,6 @@ unit fat_fingers;
 {___________________________________}
 
 
-
 {$I nevadia_defines.inc}
 
 
@@ -16,7 +15,6 @@ unit fat_fingers;
    {$IfDef Debug}
    {$EndIf}
 {$EndIf}
-
 
 
 interface
@@ -71,10 +69,7 @@ implementation
 uses PETImage;
 
 
-
 procedure StartFatFingers(BaseMap : tMapForm);
-//var
-   //i,x,y : integer;
 begin
    fat_fingers_form := Tfat_fingers_form.create(Application);
    fat_fingers_form.BaseMap := BaseMap;

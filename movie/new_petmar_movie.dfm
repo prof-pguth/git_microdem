@@ -3,8 +3,8 @@ object FormAnimate: TFormAnimate
   Top = 238
   BorderIcons = [biSystemMenu, biMinimize]
   Caption = 'Animated GIF '
-  ClientHeight = 668
-  ClientWidth = 1068
+  ClientHeight = 665
+  ClientWidth = 1056
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -17,12 +17,12 @@ object FormAnimate: TFormAnimate
   object ScrollBoxSource: TScrollBox
     Left = 0
     Top = 0
-    Width = 1068
+    Width = 1056
     Height = 93
     VertScrollBar.Visible = False
     Align = alTop
     TabOrder = 0
-    ExplicitWidth = 1074
+    ExplicitWidth = 1060
     object Image1: TImage
       Left = 0
       Top = 0
@@ -87,32 +87,32 @@ object FormAnimate: TFormAnimate
   object Panel1: TPanel
     Left = 0
     Top = 93
-    Width = 1068
-    Height = 556
+    Width = 1056
+    Height = 553
     Align = alClient
     BevelOuter = bvNone
     BorderWidth = 4
     Caption = ' '
     TabOrder = 1
-    ExplicitWidth = 1074
-    ExplicitHeight = 565
+    ExplicitWidth = 1060
+    ExplicitHeight = 554
     object PanelPreview: TPanel
       Left = 137
       Top = 4
-      Width = 939
-      Height = 566
+      Width = 923
+      Height = 547
       Align = alClient
       BevelOuter = bvLowered
       BorderWidth = 2
       Caption = ' '
       TabOrder = 0
-      ExplicitWidth = 933
-      ExplicitHeight = 557
+      ExplicitWidth = 919
+      ExplicitHeight = 546
       object ImageAnimate: TImage
         Left = 3
         Top = 3
-        Width = 933
-        Height = 560
+        Width = 917
+        Height = 541
         Align = alClient
         Center = True
         Proportional = True
@@ -127,12 +127,12 @@ object FormAnimate: TFormAnimate
       Left = 4
       Top = 4
       Width = 133
-      Height = 566
+      Height = 547
       Align = alLeft
       BevelOuter = bvNone
       Caption = ' '
       TabOrder = 1
-      ExplicitHeight = 557
+      ExplicitHeight = 546
       object Label1: TLabel
         Left = 9
         Top = 112
@@ -273,8 +273,8 @@ object FormAnimate: TFormAnimate
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 649
-    Width = 1068
+    Top = 646
+    Width = 1056
     Height = 19
     Panels = <
       item
@@ -289,8 +289,8 @@ object FormAnimate: TFormAnimate
         Alignment = taCenter
         Width = 120
       end>
-    ExplicitTop = 658
-    ExplicitWidth = 1074
+    ExplicitTop = 647
+    ExplicitWidth = 1060
   end
   object SaveDialog: TSaveDialog
     DefaultExt = 'gif'

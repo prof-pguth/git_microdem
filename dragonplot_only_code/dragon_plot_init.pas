@@ -130,7 +130,7 @@ end;
       {$IfDef RecordDP} WriteLineToDebugFile('UnCustomizeMDDefaults in'); {$EndIf}
       SetGeologyOptions(true);
       SetTigerDefaults;
-      MDDef.TigertoCDS := true;
+      //MDDef.TigertoCDS := true;
       MDDef.ShowConversionAndAnalyze := true;
       MDDef.EnglishDistanceUnits := disMetric;
       MDDef.DBMinimizeOnOpen := false;
@@ -283,7 +283,7 @@ var
 
           AParameter('MDforDP','MDDef.DoReqFlyHigh', MDDef.DoReqFlyHigh, false);
           AParameter('MDforDP','MDDef.DrawLOS', MDDef.DrawLOS, false);
-          AParameter('MDforDP','MDDef.TigertoCDS', MDDef.TigertoCDS, false);
+          //AParameter('MDforDP','MDDef.TigertoCDS', MDDef.TigertoCDS, false);
           AParameter('MDforDP','MDDef.ShowConversionAndAnalyze', MDDef.ShowConversionAndAnalyze, false);
           AParameter('MDforDP','MDDef.UseMapPanButtons', MDDef.UseMapPanButtons, false);
           AParameter('MDforDP','MDdef.ShowMainToolbar', MDdef.ShowMainToolbar, false);

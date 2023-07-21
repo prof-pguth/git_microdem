@@ -344,7 +344,7 @@ begin
          0,1,2 : lmg[lmgonmap].Mapowner.MapDraw.MapType := MDDef.DefLidarElevMap;
          3 : lmg[lmgonmap].Mapowner.MapDraw.MapType := mtElevGray;
          4 : lmg[lmgonmap].Mapowner.MapDraw.MapType := mtLASclass;
-         5,6 : lmg[lmgonmap].Mapowner.MapDraw.MapType := mtRGB;
+         5,6 : lmg[lmgonmap].Mapowner.MapDraw.MapType := mtRGBimagery;
          7 : lmg[lmgonmap].Mapowner.MapDraw.MapType := mtGrayReflect;
          8 : lmg[lmgonmap].Mapowner.MapDraw.MapType := mtGGRReflect;
       end;

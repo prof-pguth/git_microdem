@@ -1342,13 +1342,25 @@ end;
 
 function tDEMDataSet.CreatePartDEMHistogram(GridLimits: tGridLimits) : TThisBaseGraph;
 var
+   Distributions,Legends : tStringList;
    Values : ^Petmath.bfarray32;
-   NPts   : int64;
+   Max,Min,BinSize : float32;
+   NPts : int64;
+   fName : PathStr;
 begin
+   Distributions := tStringList.Create;
+   Legends := tStringList.Create;
    New(Values);
-   GetElevationsInLongArray(GridLimits,NPts,Values^,MDDef.UseSealevel);
-   Result := BaseGraf.DeprecatedCreateHistogram(True,NPts,values^,AreaName,AreaName + ' histogram ' + '  n=' + IntToStr(NPts));
+   GetElevationsInLongArray(GridLimits,NPts,Values^);
+   Max := DEMHeader.MaxElev;
+   Min := DEMHeader.MinElev;
+   fName := Petmar.NextFileNumber(MDtempDir,AreaName + '_' ,'.z');
+   Distributions.Add(SaveSingleValueSeries(npts,Values^,fName));
+   Legends.Add(AreaName);
    Dispose(Values);
+   BinSize := (Max - Min) / 200;
+   //if (Max-Min > 25) then BinSize := round(BinSize);
+   Result := CreateMultipleHistogram(MDDef.CountHistograms,Distributions,Legends,'', '',200,Min,Max,BinSize);
 end;
 
 

@@ -61,10 +61,6 @@ uses
       FireDAC.Comp.Client, FireDAC.Comp.Dataset,FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteWrapper,
    {$EndIf}
 
-   {$IfDef UseBDETables}
-      dbTables,
-   {$EndIf}
-
    {$IfDef UseTDBF}
       dbf,
    {$EndIf}
@@ -134,6 +130,7 @@ function IsSatelliteColorImage(MapType : tMapType) : boolean;
 procedure SetReflectanceDefaults;
 procedure SetContourDefaults;
 procedure SetSlopedefaultColors(var NumCats : SmallInt; var SlopeCut : ColorCutArrayType; var SlopeColors : tColorArray);
+procedure SetDEMIXSlopeColors(var NumCats : SmallInt; var SlopeCut : ColorCutArrayType; var SlopeColors : tColorArray);
 
 procedure SetDefaults(SetDirectories : boolean = false);
 procedure SetExpertOptions(Expert : boolean);
@@ -581,7 +578,7 @@ begin
       mtRefColorGray   : Result := 'RefColorGray';
       mtOpenness   : Result := 'Openness';
       mtLASclass   : Result := 'LASclass';
-      mtRGB   : Result := 'RGB';
+      mtRGBimagery   : Result := 'RGB';
       mtGYRReflect   : Result := 'Gr/Yel/red';
       mtGGRReflect   : Result := 'Gr/gray/red';
       mtSatTrueColor   : Result := 'True color';
@@ -1007,7 +1004,7 @@ end;
 function IsOtherGridMap(MapType : tMapType) : boolean;
 begin
    Result := (MapType in [mtDEMContour,mtDEMaspect,mtDEMaspectSlope,mtDEMBlank,mtMergeTwoDEMs,mtDEMMask,mtDEMVATTable,
-        mtFlowDir360,mtFlowDirArc,mtFlowDirTau,mtDEMContour,mtDEMReflectElevMerge,mtNoChange, mtDEMMask,mtOpenness,mtLASclass,mtRGB,mtLandCover]);
+        mtFlowDir360,mtFlowDirArc,mtFlowDirTau,mtDEMContour,mtDEMReflectElevMerge,mtNoChange, mtDEMMask,mtOpenness,mtLASclass,mtRGBimagery,mtLandCover]);
 end;
 
 
@@ -1042,7 +1039,7 @@ procedure InitializeMICRODEM;
                DebugFileName := ProgramRootDir + 'logs\';
                SafeMakeDir(DebugFileName);
                DebugFileName := DebugFileName + ExtractFileNameNoExt(Forms.Application.ExeName) + '_debug_log.txt';
-               SafeMakeDir(MyDataPath);
+               //SafeMakeDir(MyDataPath);
             {$Else}
                {$IfDef Android}
                   DebugFileName := TPath.GetSharedDownloadsPath;
@@ -2412,6 +2409,7 @@ var
             AParameterShortFloat('DEMIX','DEMIXRuffTolerance',DEMIXRuffTolerance,2.0);
             AParameter('DEMIX','MakeCOP_ALOS_diffMaps',MakeCOP_ALOS_diffMaps,false);
             AParameter('DEMIX','MakeCOP_ALOS_Cat_Maps',MakeCOP_ALOS_Cat_Maps,false);
+            AParameter('DEMIX','MakeCOP_FABDEM_diffMaps',MakeCOP_FABDEM_diffMaps,false);
             AParameter('DEMIX','MakeCOP_ALOS_Best_Map',MakeCOP_ALOS_Best_Map,true);
       end;
    end;
@@ -2708,7 +2706,7 @@ var
             //AParameter('Geography','SunExtremes',SunExtremes,false);
             AParameter('Geography','MoonPhase',MoonPhase,true);
             AParameter('Geography','RiseSet',RiseSet,true);
-            AParameter('Geography','MoveGeographyDBMemory', MoveGeographyDBMemory,false);
+            //AParameter('Geography','MoveGeographyDBMemory', MoveGeographyDBMemory,false);
 
             with KoppenOpts do begin
                AParameter('Koppen','Width',KopWidth,300);
@@ -3084,7 +3082,7 @@ var
          AParameter('Geology','PlateModel', PlateModel,'HS3-NUVEL-1A');
          AParameter('Geology','PlateVelocityDiagram', PlateVelocityDiagram,true);
          AParameter('Geology','PlateLabelVectors', PlateLabelVectors,true);
-         AParameter('Geology','MoveGeologyDBMemory', MoveGeologyDBMemory,false);
+         //AParameter('Geology','MoveGeologyDBMemory', MoveGeologyDBMemory,false);
 
          AParameter('Geology','PlateNumbers', PlateNumbers,false);
          AColorParameter('Geology','ColorFP1', ColorFP1,claRed);
@@ -3133,10 +3131,10 @@ var
          AParameter('GISDB','TrackDatabaseRanges',TrackDatabaseRanges,true);
          AParameter('GISDB','AllowMemoryLinkDB',AllowMemoryLinkDB,true);
          AParameter('GISDB','AllowDBsToRAM',AllowDBstoRAM,true);
-         AParameter('GISDB','TigertoCDS',TigertoCDS,true);
+         //AParameter('GISDB','TigertoCDS',TigertoCDS,true);
          AParameter('GISDB','DBRecShowToolbarTop',DBRecShowToolbarTop,true);
          AParameter('GISDB','AutoDBFieldNameFixes',MDDef.AutoDBFieldNameFixes,true);
-
+         AParameterShortFloat('GISDB','DefCatPCforLegend',DefCatPCforLegend,0);
          AParameter('GISDB','AllowFirstOfMultipleJoins',AllowFirstOfMultipleJoins,false);
          AParameter('GISDB','ModalDBDisplay',ModalDBDisplay,false);
          AParameter('GISDB','AllowEditDBInGrid',AllowEditDBInGrid,true);
@@ -3184,10 +3182,6 @@ var
          AParameter('GISDB','LCPStartfName', LCPStartfName,'');
          AParameter('GISDB','LCPendfName', LCPendfName,'');
          AParameter('GISDB','LCProadfName', LCProadfName,'');
-         {$IfDef ExOSM}
-         {$Else}
-            AParameter('GISDB','OSMtoCDS',OSMtoCDS,true);
-         {$EndIf}
 
          //AColorParameter('GISDB','CanEditGIS',CanEditGIS,egisSometimes);
          if (IniWhat = iniWrite) then IniFile.WriteInteger('GISDB','CanEditGIS',ord(CanEditGIS));
@@ -5095,6 +5089,20 @@ begin
 end;
 
 
+procedure SetDEMIXSlopeColors(var NumCats : SmallInt; var SlopeCut : ColorCutArrayType; var SlopeColors : tColorArray);
+begin
+   NumCats := 4;
+   SlopeColors[0] := clLime;
+   SlopeColors[1] := clYellow;
+   SlopeColors[2] := clRed;
+   SlopeColors[3] := clMagenta;
+   SlopeCut[0] := MDDef.SlopeFlatBoundary;
+   SlopeCut[1] := MDDef.SlopeGentleBoundary;
+   SlopeCut[2] := MDDef.SlopeSteepBoundary;
+   SlopeCut[3] := 250;
+end;
+
+
 procedure SetFlyDefaults;
 begin
    ProcessIniFile(iniInit,'Fly');
@@ -5141,13 +5149,6 @@ begin
    {$EndIf}
 end;
 
-
-(*
-function MrSidEnabled :boolean;
-begin
-   Result := FileExists(MrSidDecodeName) and FileExists(MrSidInfoName);
-end;
-*)
 
 procedure LoadMDdefaults;
 
@@ -5235,9 +5236,6 @@ begin
    {$EndIf}
 
    {$IfDef MSWindows}
-      //TrySettingDefaultFName(MrSidInfoName,ProgramRootDir + 'mrsid\bin\mrsidgeoinfo.exe');
-      //TrySettingDefaultFName(MrSIDDecodeName,ProgramRootDir + 'mrsid\bin\mrsidgeodecode.exe');
-      //TrySettingDefaultDir(TauDEMDir,ProgramRootDir + 'taudem\');
       TrySettingDefaultDir(GADMDir,MainMapData + 'GADM\');
       if (not PathIsValid(SaveViewshedDir)) then SaveViewshedDir := MDTempDir;
       if not FileExists(LastDesktop) then begin

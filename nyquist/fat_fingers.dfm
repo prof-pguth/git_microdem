@@ -4,8 +4,8 @@ object fat_fingers_form: Tfat_fingers_form
   BorderIcons = []
   BorderStyle = bsToolWindow
   Caption = 'Fat fingers'
-  ClientHeight = 352
-  ClientWidth = 706
+  ClientHeight = 328
+  ClientWidth = 690
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

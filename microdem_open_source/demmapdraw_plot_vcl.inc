@@ -124,13 +124,6 @@ begin
    {$IfDef RecordVAT} WriteLineToDebugFile('tMapDraw.MakeVATLegend enter for=' + fName); {$EndIf}
    OpenNumberedGISDataBase(db, fName);
 
-   (*
-   if (GISdb[db].MyData.FiltRecsInDB > 16) then begin
-      CatPCforLegend := 2;
-      ReadDefault('Min category percentage for legend',CatPCforLegend);
-   end
-   else CatPCforLegend := 0;
-   *)
    if ValidDB(db) and (GISdb[db].MyData.RecordCount > 0) then begin
       if GISdb[db].MyData.FieldExists('CODE') then CodeField := 'CODE' else CodeField := 'VALUE';
 
@@ -1848,7 +1841,7 @@ end;
                    {$Else}
                       ovoOSM      : begin
                                        SaveBackupDefaults;
-                                       MDDef.OSMtoCDS := false;
+                                       //MDDef.OSMtoCDS := false;
                                        PlotShapeFileGroup(inBitmap,OSMShapesUp);
                                        if GrayscaleOSM then MakeTheBitmapGrayScale(inBitmap);
                                        if SubdueOSM then MakeTheBitmapSubdued(inBitmap);

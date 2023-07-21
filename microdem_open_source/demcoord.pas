@@ -72,7 +72,7 @@ unit DEMCoord;
       //{$Define RecordCreateNewDEM}
       //{$Define RecordMapDraw}
       //{$Define RecordProjectionParameters}
-      {$Define GeotiffSave}
+      //{$Define GeotiffSave}
       //{$Define TimeLoadDEM}
       //{$Define RecordDefineDatum}
       //{$Define RecordDEMEdits}
@@ -128,10 +128,6 @@ uses
    Data.DB,
    {$IfDef UseFireDacSQLlite}
       FireDAC.Comp.Client, FireDAC.Comp.Dataset,FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteWrapper,
-   {$EndIf}
-
-   {$IfDef UseBDETables}
-      dbTables,
    {$EndIf}
 
    {$IfDef UseTDBF}
@@ -2768,7 +2764,7 @@ var
    Col,Row  : integer;
    z : float32;
 begin
-   {$IfDef RecordMinMax} WriteLineToDebugFile(AreaName + ' enter tDEMDataSet.CheckMaxMinElev: ' + ZRange); {$EndIf}
+   {$IfDef RecordMinMax} WriteLineToDebugFile('enter tDEMDataSet.CheckMaxMinElev: ' + AreaName +  ZRange); {$EndIf}
    ShowHourglassCursor;
    DEMheader.MaxElev := -99e38;
    DEMheader.MinElev := 99e38;
@@ -2780,7 +2776,7 @@ begin
          end;
       end {for Row};
    end {for Col};
-  {$IfDef RecordMinMax} WriteLineToDebugFile(AreaName + ' exit tDEMDataSet.CheckMaxMinElev: ' + ZRange); {$EndIf}
+   {$IfDef RecordMinMax} WriteLineToDebugFile('exit tDEMDataSet.CheckMaxMinElev: ' + AreaName +  ZRange); {$EndIf}
   ShowDefaultCursor;
 end {proc};
 

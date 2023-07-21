@@ -33,10 +33,6 @@ uses
       FireDAC.Phys.SQLite, FireDAC.Comp.UI,
    {$EndIf}
 
-   {$IfDef UseBDETables}
-      dbTables,
-   {$EndIf}
-
    {$IfDef UseTDBF}
       dbf,
    {$EndIf}
@@ -134,6 +130,9 @@ type
     CheckBox7: TCheckBox;
     CheckBox8: TCheckBox;
     BitBtn27: TBitBtn;
+    threedembestrgm_checkbox: TCheckBox;
+    CheckBox9: TCheckBox;
+    BitBtn28: TBitBtn;
     procedure BitBtn1Click(Sender: TObject);
     procedure LoadClick(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
@@ -176,6 +175,9 @@ type
     procedure CheckBox7Click(Sender: TObject);
     procedure CheckBox8Click(Sender: TObject);
     procedure BitBtn27Click(Sender: TObject);
+    procedure threedembestrgm_checkboxClick(Sender: TObject);
+    procedure CheckBox9Click(Sender: TObject);
+    procedure BitBtn28Click(Sender: TObject);
   private
     { Private declarations }
     procedure ZeroDEMs;
@@ -388,6 +390,11 @@ end;
 
 
 
+procedure TDemixFilterForm.threedembestrgm_checkboxClick(Sender: TObject);
+begin
+   MDDef.MakeCOP_ALOS_Best_Map := threedembestrgm_checkbox.Checked;
+end;
+
 procedure TDemixFilterForm.UncheckAllLoadCheckboxes;
 begin
    CheckBox1.Checked := false;
@@ -554,6 +561,20 @@ begin
    MakeDifferenceMaps(AllAll);
 end;
 
+procedure TDemixFilterForm.BitBtn28Click(Sender: TObject);
+var
+   i : integer;
+begin
+   for i := 0 to pred(ComboBox4.Items.Count) do begin
+      wmdem.SetPanelText(2,IntToStr(succ(i)) + '/' + IntToStr(ComboBox4.Items.Count));
+      ComboBox4.Text := ComboBox4.Items[i];
+      ComboBox4.ItemIndex := i;
+      if not FileExists(DEMIX_distrib_graph_dir + ComboBox1.Text + '_difference_distrib_graphs_1.png') then begin
+         BitBtn14Click(Sender);
+      end;
+   end;
+end;
+
 procedure TDemixFilterForm.BitBtn2Click(Sender: TObject);
 var
    fName : PathStr;
@@ -672,6 +693,11 @@ end;
 procedure TDemixFilterForm.CheckBox8Click(Sender: TObject);
 begin
    MDDef.MakeCOP_ALOS_Cat_Maps := CheckBox8.Checked;
+end;
+
+procedure TDemixFilterForm.CheckBox9Click(Sender: TObject);
+begin
+   MDDef.MakeCOP_FABDEM_diffMaps := CheckBox9.Checked;
 end;
 
 procedure TDemixFilterForm.ComboBox1Change(Sender: TObject);
@@ -821,7 +847,6 @@ begin
    Edit2.Text := IntToStr(MDDef.DEMIX_ysize);
    Edit4.Text := RealToString(MDDef.DEMIXSlopeTolerance,-8,-2);
    Edit5.Text := RealToString(MDDef.DEMIXRuffTolerance,-8,-2);
-   //Edit3.Text := RealToString(MDDef.TopCutLevel ,-8,-2);
    for i := 1 to NumDEMIXDEM do begin
       StringGrid1.Cells[i,0] := DEMIXDEMTypeName[i];
    end;
@@ -832,6 +857,11 @@ begin
    CheckBox2.Checked := MDDef.MakeCOP_ALOS_diffMaps;
    CheckBox8.Checked := MDDef.MakeCOP_ALOS_Cat_Maps;
    CheckBox7.Checked := MDDef.MakeCOP_ALOS_Best_Map;
+   CheckBox9.Checked := MDDef.MakeCOP_FABDEM_diffMaps;
+
+   threedembestrgm_checkbox.Checked := MDDef.MakeCOP_ALOS_Best_Map;
+
+   PageControl1.ActivePage := TabSheet1;
 end;
 
 
@@ -870,7 +900,6 @@ begin
 end;
 
 
-
 procedure TDemixFilterForm.BitBtn12Click(Sender: TObject);
 var
    xloc,yloc : integer;
@@ -879,6 +908,7 @@ var
    AreaName : shortstring;
 begin
    {$IfDef RecordDEMIX} WriteLineToDebugFile('TDemixFilterForm.BitBtn12Click (terrain profiles) in'); {$EndIf}
+   CloseAllDEMs;
    UncheckAllLoadCheckboxes;
    LoadOneSecRefCheckBox.Checked := true;
    CheckBox3.Checked := true;
@@ -912,9 +942,8 @@ end;
 procedure TDemixFilterForm.BitBtn14Click(Sender: TObject);
 var
    AreaName,fName : PathStr;
-   RuffRef,SlopeRef,RuffALOS,SlopeALOS,RuffCOP,SlopeCOP,
-   i,j,DiffMaps,COPDEM,ALOSDEM : integer;
-   NewElevGrid,NewSlopeGrid,NewRuffGrid,BestElevGrid,BestSlopeGrid,BestRuffGrid : array[1..MaxDemixArray] of integer;
+   RuffRef,SlopeRef,RuffALOS,SlopeALOS,RuffCOP,SlopeCOP,RuffFab,SlopeFab,i,j,DiffMaps,COPDEM,ALOSDEM,FABDEM,Cop_FAB_diff : integer;
+   NewElevGrid,NewSlopeGrid,NewRuffGrid,BestElevGrid,BestSlopeGrid,BestRuffGrid,RGBBestElevGrid,RGBBestSlopeGrid,RGBBestRuffGrid : array[1..MaxDemixArray] of integer;
 
       function MakeNewMap(What : shortstring; RefDEM,ALOSDEM,COPDEM,MergeDEM : integer) : integer;
 
@@ -941,7 +970,6 @@ var
 
       function MakeBestMap(RefDEM,ALOSDEM,COPDEM,MergeDEM : integer; Tolerance : float32; What : shortstring) : integer;
       begin
-         //fName := What + Cats + '_alos_cop_high_low_ref_' + DEMGlb[RefDEM].AreaName + '.dem';
          Result := BestCopOrALOSmap(RefDEM,ALOSDEM,COPDEM,Tolerance,What);
          if ValidDEM(Result) then begin
             if MDDef.AutoMergeStartDEM then begin
@@ -949,24 +977,45 @@ var
             end;
          end
          else begin
-            {$IfDef RecordDEMIX} WriteLineToDebugFile('MakeNewMap failed, ' + fName); {$EndIf}
+            {$IfDef RecordDEMIX} WriteLineToDebugFile('MakeBestMap failed, ' + fName); {$EndIf}
          end;
       end;
 
+      function MakeRGBBestMap(RefDEM,ALOSDEM,COPDEM,FabDEM,MergeDEM : integer; Tolerance : float32; What : shortstring) : integer;
+      begin
+        {$IfDef RecordDEMIX} WriteLineToDebugFile('MakeRGBBestMap, ' + What); {$EndIf}
+         Result := RGBBestOfThreeMap(RefDEM,ALOSDEM,COPDEM,FABDEM,Tolerance,What);
+         if ValidDEM(Result) then begin
+            if MDDef.AutoMergeStartDEM then begin
+               DEMGlb[Result].SelectionMap.MergeAnotherDEMreflectance(MergeDEM,true);
+            end;
+         end
+         else begin
+            {$IfDef RecordDEMIX} WriteLineToDebugFile('MakeRGBBestMap failed, ' + fName); {$EndIf}
+         end;
+      end;
 
-
+var
+   z,pc : float32;
 begin
    {$IfDef RecordDEMIX} WriteLineToDebugFile('TDemixFilterForm.BitBtn14Click (COP-ALOS) in'); {$EndIf}
+   BitBtn8Click(Sender);  //close and zero all DEMs
+   GetDEMIXpaths(true);
    UncheckAllLoadCheckboxes;
    CheckBox5.Checked := true;
    CheckBox6.Checked := true;
    LoadDEMsForCurrentArea(AreaName,true);
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('AreaName: ' + AreaName); {$EndIf}
+
+   //MDDef.MakeRGB_Best_Map := true;
 
    COPDEM := 0;
    ALOSDEM := 0;
+   FABDEM := 0;
    for j := 1 to MaxDemixArray do if ValidDEM(TestDEMs[j]) then begin
       if StrUtils.AnsiContainsText(UpperCase(DEMglb[TestDEMs[j]].AreaName),'COP') then COPDEM := TestDEMs[j];
       if StrUtils.AnsiContainsText(UpperCase(DEMglb[TestDEMs[j]].AreaName),'ALOS') then ALOSDEM := TestDEMs[j];
+      if StrUtils.AnsiContainsText(UpperCase(DEMglb[TestDEMs[j]].AreaName),'FABDEM') then FABDEM := TestDEMs[j];
    end;
 
    if MDDef.MakeCOP_ALOS_diffMaps then begin
@@ -979,7 +1028,25 @@ begin
       end;
    end;
 
-   if MDDef.MakeCOP_ALOS_Cat_Maps or MDDef.MakeCOP_ALOS_Best_Map then begin
+   if MDDef.MakeCOP_FABDEM_diffMaps then begin
+      Cop_FAB_diff := MakeDifferenceMap(COPDEM,FABDEM,COPDEM,COPDEM,true,false,false,AreaName + '_COPDEM_minus_FABDEM');
+      {$IfDef RecordDEMIX} WriteLineToDebugFile('TDemixFilterForm.BitBtn14Click Cop_FAB_diff ' + DEMGlb[Cop_FAB_diff].ZRange ); {$EndIf}
+      z := DEMGlb[Cop_FAB_diff].DEMheader.MinElev;
+      WriteLineToDebugFile('');
+      WriteLineToDebugFile(DEMGlb[Cop_FAB_diff].AreaName);
+      WriteLineToDebugFile('Min: ' + RealToString(z,-8,-2));
+      z := round(z);
+      while z <= 0 do begin
+         if (z > -0.2) then z := -0.1;
+         pc := DEMGlb[Cop_FAB_diff]. PercentileOfElevation(z);
+         if (pc > 0.11) then WriteLineToDebugFile('Below ' + RealToString(z,4,1) + 'm  ' +  RealToString(pc,8,1) + '%');
+         z := z + 0.5;
+      end;
+      WriteLineToDebugFile('');
+   end;
+
+
+   if MDDef.MakeCOP_ALOS_Cat_Maps or MDDef.MakeCOP_ALOS_Best_Map or MDDef.MakeRGB_Best_Map then begin
       for i := 1 to MaxDemixArray do begin
          if ValidDEM(RefDEMsHalfSec[i]) then begin
             {$IfDef RecordDEMIX} WriteLineToDebugFile('Do half sec, ' + DEMGlb[RefDEMsHalfSec[i]].AreaName); {$EndIf}
@@ -990,6 +1057,17 @@ begin
             RuffCOP := CreateSlopeRoughnessSlopeStandardDeviationMap(COPDEM,5,SlopeCOP,false);
             SlopeALOS := 0;
             RuffALOS := CreateSlopeRoughnessSlopeStandardDeviationMap(ALOSDEM,5,SlopeALOS,false);
+            if MDDef.MakeRGB_Best_Map then begin
+               SlopeFAB := 0;
+               RuffFAB:= CreateSlopeRoughnessSlopeStandardDeviationMap(FABDEM,5,SlopeFAB,false);
+            end;
+            {$IfDef RecordDEMIX} WriteLineToDebugFile('Slope/ruff created'); {$EndIf}
+
+            if MDDef.MakeRGB_Best_Map then begin
+               RGBBestElevGrid[i] := MakeRGBBestMap(RefDEMsHalfSec[i],ALOSDEM,COPDEM,FABDEM,RefDEMsHalfSec[i],MDDef.DEMIXSimpleTolerance,'_elevation_RGB_' + DEMGlb[RefDEMsHalfSec[i]].AreaName);
+               RGBBestSlopeGrid[i] := MakeRGBBestMap(SlopeRef,SlopeALOS,SlopeCOP,SlopeFAB,RefDEMsHalfSec[i],MDDef.DEMIXSlopeTolerance,'slope_RGB_' + DEMGlb[RefDEMsHalfSec[i]].AreaName);
+               RGBBestRuffGrid[i] := MakeRGBBestMap(RuffRef,RuffALOS,RuffCOP,RuffFAB,RefDEMsHalfSec[i],MDDef.DEMIXRuffTolerance,'roughness_RGB_' + DEMGlb[RefDEMsHalfSec[i]].AreaName);
+            end;
 
             if MDDef.MakeCOP_ALOS_Best_Map then begin
                BestElevGrid[i] := MakeBestMap(RefDEMsHalfSec[i],ALOSDEM,COPDEM,RefDEMsHalfSec[i],MDDef.DEMIXSimpleTolerance,'_elevation_compared_to_' + DEMGlb[RefDEMsHalfSec[i]].AreaName);
@@ -1005,6 +1083,7 @@ begin
          end;
       end;
    end;
+   EndDEMIXProcessing;
    {$IfDef RecordDEMIX} WriteLineToDebugFile('TDemixFilterForm.BitBtn14Click (COP-ALOS) out'); {$EndIf}
 end;
 
@@ -1188,6 +1267,7 @@ begin
       DEMs := 0;
       LoadFromPath(TestDEMs,DEMIX_test_dems,'*.dem',LoadMaps,'COP','COP & ALOS Test');
       LoadFromPath(TestDEMs,DEMIX_test_dems,'*.dem',LoadMaps,'ALOS','COP & ALOS Test');
+      LoadFromPath(TestDEMs,DEMIX_test_dems,'*.dem',LoadMaps,'FABDEM','COP & ALOS Test');
    end;
    {$IfDef RecordDEMIX} WriteLineToDebugFile('TDemixFilterForm.LoadDEMsForArea out'); {$EndIf}
 end;

@@ -117,10 +117,6 @@ uses
       FireDAC.Phys.SQLite, FireDAC.Comp.UI,
    {$EndIf}
 
-   {$IfDef UseBDETables}
-      dbTables,
-   {$EndIf}
-
    {$IfDef UseTDBF}
       dbf,
    {$EndIf}
@@ -4199,6 +4195,7 @@ end;
          if (not MDDef.SaveDBStatus) or (not FileExists(fName2)) or (ExtractFilePath(dbFullName) = MDTempDir) then begin
             {$IfDef RecordDataSaveStatus} WriteLineToDebugFile('iniInit'); {$EndIf}
             ProcessDBIniFile(iniInit,'',fName2);
+            dbOpts.CatPCforLegend := MDDef.DefCatPCforLegend;
             SetSymbols;
          end
          else begin
@@ -5078,7 +5075,6 @@ procedure TGISdataBaseModule.InitializeDBValues;
 var
    i : integer;
 begin
-    //NeedToDefineColorTable := true;
     RestrictToMapOwner := false;
     ShowLocalMapOnly := false;
     AutoRedrawAllowed := true;
@@ -5312,7 +5308,7 @@ begin
 
 
      {$IfDef AllowDBsToCDS}}
-        if {$IfDef ExOSM} {$Else}(ItsOSMShapeFile and MDDef.OSMtoCDS) or {$EndIf} (ItsTigerShapeFile and MDDef.TigertoCDS) then begin
+        if {$IfDef ExOSM} {$EndIf} then begin
            if (DesiredDBMode <> dbmForceDefault) then DesiredDBMode := dbmCDS;
         end;
         {$IfDef RecordFullOpenDB} WriteLineToDebugFile('TGISDataBase.InitializeTheData Data calling tMyData.Create, Mode=' + IntToStr(ord(DesiredDBMode)) + '  filewanted=' + dbFullName); {$EndIf}

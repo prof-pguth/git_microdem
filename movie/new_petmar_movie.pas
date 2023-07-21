@@ -28,7 +28,6 @@ unit new_petmar_movie;
 {$EndIf}
 
 
-
 interface
 
 uses
@@ -94,7 +93,6 @@ implementation
 uses
    Petmar,PetImage,
    DEMdefs;
-
 
 {$R *.DFM}
 
@@ -315,8 +313,7 @@ begin
             Size := SizeOfGIF(GIF);
 
             // Optimize Color map...
-            if (CheckBoxPalette.Checked) then
-              GIF.OptimizeColorMap;
+            if (CheckBoxPalette.Checked) then GIF.OptimizeColorMap;
 
             // Optimize GIF frames...
             OptimizeOptions := [];
@@ -358,9 +355,8 @@ begin
   SaveDialog.DefaultExt := GraphicExtension(TGraphicClass(ImageAnimate.Picture.Graphic.ClassType));
   SaveDialog.Filter := GraphicFilter(TGraphicClass(ImageAnimate.Picture.Graphic.ClassType));
   // Prompt for filename
-  if (SaveDialog.Execute) then
-    ImageAnimate.Picture.SaveToFile(SaveDialog.Filename);
-  if UpperCase(ExtractFilePath(SaveDialog.Filename)) = UpperCase(MDTempDir) then MessageToContinue('The file will be purged the next time the program starts; save elsewhere if you want the file to remain');
+  if (SaveDialog.Execute) then ImageAnimate.Picture.SaveToFile(SaveDialog.Filename);
+  if UpperCase(ExtractFilePath(SaveDialog.Filename)) = UpperCase(MDTempDir) then MessageToContinue('File will be purged next time program starts; save elsewhere if you want the to remain');
 end;
 
 
