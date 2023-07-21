@@ -39,10 +39,6 @@ uses
       FireDAC.Comp.Client, FireDAC.Comp.Dataset,FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteWrapper,
    {$EndIf}
 
-   {$IfDef UseBDETables}
-      dbTables,
-   {$EndIf}
-
    {$IfDef UseTDBF}
       dbf,
    {$EndIf}
@@ -590,7 +586,8 @@ procedure tTIN.InterpolateDEM;
 var
    x,y,NewDEM,Count : integer;
    fName : PathStr;
-   z,xlo,ylo,xhi,yhi,Lat,Long : float64;
+   z,Lat,Long : float64;
+   xlo,ylo,xhi,yhi : float32;
    NewHeadRecs : tDEMheader;
    {$IfDef ExTINGraph}
    {$Else}

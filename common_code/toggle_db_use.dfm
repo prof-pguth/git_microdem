@@ -2,8 +2,8 @@ object ToggleDBfieldsForm: TToggleDBfieldsForm
   Left = 262
   Top = 116
   Caption = 'Select '
-  ClientHeight = 377
-  ClientWidth = 410
+  ClientHeight = 376
+  ClientWidth = 406
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
@@ -18,7 +18,7 @@ object ToggleDBfieldsForm: TToggleDBfieldsForm
     Left = 0
     Top = 35
     Width = 202
-    Height = 293
+    Height = 292
     Align = alLeft
     Color = clGray
     ItemHeight = 13
@@ -27,10 +27,10 @@ object ToggleDBfieldsForm: TToggleDBfieldsForm
     OnClick = ListBox1Click
   end
   object ListBox2: TListBox
-    Left = 209
+    Left = 205
     Top = 35
     Width = 201
-    Height = 293
+    Height = 292
     Align = alRight
     ItemHeight = 13
     Sorted = True
@@ -39,13 +39,11 @@ object ToggleDBfieldsForm: TToggleDBfieldsForm
   end
   object Panel1: TPanel
     Left = 0
-    Top = 328
-    Width = 410
+    Top = 327
+    Width = 406
     Height = 49
     Align = alBottom
     TabOrder = 2
-    ExplicitTop = 317
-    ExplicitWidth = 386
     object OKBtn: TBitBtn
       Left = 8
       Top = 14
@@ -119,11 +117,10 @@ object ToggleDBfieldsForm: TToggleDBfieldsForm
   object Panel2: TPanel
     Left = 0
     Top = 0
-    Width = 410
+    Width = 406
     Height = 35
     Align = alTop
     TabOrder = 3
-    ExplicitWidth = 386
     object Label2: TLabel
       Left = 32
       Top = 14

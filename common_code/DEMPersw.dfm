@@ -3,8 +3,8 @@ object ThreeDview: TThreeDview
   Top = 195
   Hint = 'Gazetteer labels'
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 364
-  ClientWidth = 746
+  ClientHeight = 343
+  ClientWidth = 742
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -26,10 +26,12 @@ object ThreeDview: TThreeDview
   object ScrollBox1: TScrollBox
     Left = 0
     Top = 25
-    Width = 746
-    Height = 298
+    Width = 742
+    Height = 277
     Align = alClient
     TabOrder = 0
+    ExplicitWidth = 746
+    ExplicitHeight = 298
     object Image1: TImage
       Left = 0
       Top = 0
@@ -44,11 +46,12 @@ object ThreeDview: TThreeDview
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 746
+    Width = 742
     Height = 25
     AutoSize = True
     ButtonHeight = 25
     TabOrder = 1
+    ExplicitWidth = 746
     object SpeedButton2: TSpeedButton
       Left = 0
       Top = 0
@@ -495,11 +498,13 @@ object ThreeDview: TThreeDview
   end
   object Panel1: TPanel
     Left = 0
-    Top = 323
-    Width = 746
+    Top = 302
+    Width = 742
     Height = 41
     Align = alBottom
     TabOrder = 2
+    ExplicitTop = 323
+    ExplicitWidth = 746
     object TrackBar1: TTrackBar
       Left = 162
       Top = 1

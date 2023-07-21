@@ -52,10 +52,6 @@ uses
       FireDAC.Comp.Client, FireDAC.Comp.Dataset,FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteWrapper,
    {$EndIf}
 
-   {$IfDef UseBDETables}
-      dbTables,
-   {$EndIf}
-
    {$IfDef UseTDBF}
       dbf,
    {$EndIf}
@@ -304,7 +300,7 @@ var
 
 
 procedure DrawProfilesThroughPeak(DEM : integer; Lat,Long : float64);
-//for all open DEMs, draws two profiles centered on the
+//for all open DEMs, draws two profiles centered on the point
 const
    ProfileLength = 250;
 var
@@ -334,7 +330,6 @@ var
       SaveImageAsBMP(LOS1.Image1,fName);
       theFiles.Add(fName);
       Legend.Free;
-      //if (Sender = BitBtn13) then LOS1.Destroy;
    end;
 
 begin
@@ -349,7 +344,6 @@ begin
    DEMglb[DEM].FindLocationOfMaximum(bb,xloc,yloc,LocMax);
    DEMglb[DEM].DEMGridToLatLongDegree(xloc,yloc,lat,long);
 
-
    theFiles := tStringList.Create;
    DrawProfile(270,90);
    DrawProfile(0,180);
@@ -358,9 +352,6 @@ begin
    MakeBigBitmap(theFiles,'Profiles through peak',fName,1);
    {$IfDef RecordDEMIX} WriteLineToDebugFile('TDemixFilterForm.BitBtn12Click out'); {$EndIf}
 end;
-
-
-
 
 
 function StartLOS(inActuallyDraw : boolean; WhatType : tDEMDoingWhat; DEMonMap : integer; Lat1,Long1,Lat2,Long2 : float64; inBaseMap : tMapForm; inEnableAzimuthShifts : boolean = false) : TDEMLOSF;
@@ -387,10 +378,7 @@ begin
          if (WhatType = MultipleTopoProfileRight) then Result.LOSdraw.LOSVariety := losAllDEMs
          else if (WhatType = SimpleTopoProfileRight) then Result.LOSdraw.LOSVariety := losSimpleOne
          else if (WhatType = MultipleLOS) then Result.LOSdraw.LOSVariety := losAllDEMDropDown
-         {$IfDef ExGeology}
-         {$Else}
-         else if (WhatType = SeekingRightSideMagModels) then Result.LOSdraw.LOSVariety := losMagModel
-         {$EndIf}
+         {$IfDef ExGeology} {$Else} else if (WhatType = SeekingRightSideMagModels) then Result.LOSdraw.LOSVariety := losMagModel {$EndIf}
          else Result.LOSdraw.LOSVariety := losVanilla;
 
          Result.LOSdraw.DEMonView := DEMonMap;

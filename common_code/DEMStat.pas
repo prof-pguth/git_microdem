@@ -30,8 +30,8 @@ unit DEMStat;
       //{$Define RecordElevMoment}
       //{$Define RecordElevationSlopePlotAll}
       //{$Define RecordDEMCompare}
-      //{$IfDef RecordFullDEMCompare}
-
+      //{$Define RecordFullDEMCompare}
+      //{$Define TrackZRange}
       //{$Define RecordStat}
       //{$Define RecordIceSat}
       //{$Define RecordGeoStat}
@@ -62,10 +62,6 @@ uses
       FireDAC.Stan.Async, FireDAC.DApt, FireDAC.UI.Intf, FireDAC.Stan.Def,
       FireDAC.Stan.Pool, FireDAC.Phys, FireDAC.Comp.Client, FireDAC.Comp.DataSet,
       FireDAC.Phys.SQLite, FireDAC.Comp.UI,
-   {$EndIf}
-
-   {$IfDef UseBDETables}
-      dbTables,
    {$EndIf}
 
    {$IfDef UseTDBF}

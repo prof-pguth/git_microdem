@@ -55,10 +55,6 @@ uses
       FireDAC.Comp.Client, FireDAC.Comp.Dataset,FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteWrapper,
    {$EndIf}
 
-   {$IfDef UseBDETables}
-      dbTables,
-   {$EndIf}
-
    {$IfDef UseTDBF}
       dbf,
    {$EndIf}
@@ -200,8 +196,8 @@ type
         procedure ShowSunPath(Day : integer);
         procedure ShowMoonPath(Today : boolean);
      {$EndIf}
-
-     function FindLatLong(var Lat,Long,Pitch,DistOut,Azimuth : float64; var Mess1,Mess2,Mess3,Mess4 : shortString; DoPLSS : boolean = false) : boolean;
+     function FindLatLong( var Lat,Long : float64; var Pitch : float32; var DistOut : float64; var Azimuth : float32;
+        {function FindLatLong(var Lat,Long,Pitch,DistOut,Azimuth : float64;} var Mess1,Mess2,Mess3,Mess4 : shortString; DoPLSS : boolean = false) : boolean;
      procedure SetPerspectiveWindowSize;
      procedure PerspectiveView(SkipDraw : boolean = false);
      function DrawPerspective(SkipDraw : boolean)  : boolean;
@@ -364,7 +360,8 @@ end;
 
 procedure TThreeDview.ShowHorizonOnView(SecondImage : tImage);
 var
-   Azimuth,BlockAngle,BlockDist,BlockLat,BlockLong : float64;
+   Azimuth : float32;
+   BlockAngle,BlockDist,BlockLat,BlockLong : float64;
    xp,yp : integer;
 begin
    {$IfDef RecordHorizon} WriteLineToDebugFile('TThreeDview.ShowHorizonOnView in'); {$EndIf}
@@ -431,7 +428,8 @@ end;
 
 procedure TThreeDview.DistanceOverlay;
 var
-   az, pit,Dist,Lat2,Long2 : float64;
+   az, pit : float32;
+   Dist,Lat2,Long2 : float64;
    Mes1,Mes2 : shortstring;
    xp,yp : integer;
    Bitmap : tBitmap;
@@ -1358,7 +1356,7 @@ var
    ErrorString : string;
 
 
-function TThreeDview.FindLatLong(var Lat,Long,Pitch,DistOut,Azimuth : float64;
+function TThreeDview.FindLatLong(var Lat,Long : float64; var Pitch : float32; var DistOut : float64; var Azimuth : float32;
    var Mess1,Mess2,Mess3,Mess4 : shortString; DoPLSS : boolean = false) : boolean;
 var
    lx,ly,i : integer;
@@ -1366,7 +1364,8 @@ var
 
    function NeighborPixel(xp,yp : integer) : shortString;
    var
-      az, pit,Dist,Heading,Lat2,Long2 : float64;
+      az, pit : float32;
+      Dist,Heading,Lat2,Long2 : float64;
       Mes1,Mes2 : shortstring;
    begin
       with View3D,DEMGlb[DEMOnView] do begin
@@ -1420,7 +1419,8 @@ end;
 procedure TThreeDview.RadialStatistics;
 var
    Mess2,Mess3,Mess4,MessZ : ShortString;
-   Lat,Long,Pitch,DistOut,Azimuth : float64;
+   Lat,Long,DistOut: float64;
+   Pitch,Azimuth : float32;
    SaveLastY,i : integer;
    Results : tStringList;
 begin
@@ -1442,7 +1442,8 @@ end;
 procedure TThreeDview.Image1DblClick(Sender: TObject);
 var
    Mess1,Mess2,Mess3,Mess4,MessZ : ShortString;
-   Lat,Long,Pitch,DistOut,Azimuth : float64;
+   Lat,Long,DistOut: float64;
+   Pitch,Azimuth : float32;
 begin
    with View3D,DEMGlb[DEMOnView],SelectionMap.MapDraw do if (MainInCh in ['P']) then begin
       if GetRadial then begin
@@ -1488,7 +1489,8 @@ end;
 procedure TThreeDview.Image1MouseMove(Sender: TObject; Shift: TShiftState; X,Y: Integer);
 var
    Mess1,Mess2,Mess3,Mess4 : ShortString;
-   Pitch,DistOut,Azimuth,Lat,Long : float64;
+   Lat,Long,DistOut: float64;
+   Pitch,Azimuth : float32;
 begin
    if (View3D <> Nil) and (View3d.MainInCh in ['P']) then begin
       {$IfDef RecordFindLatLong} WriteLineToDebugFile('TThreeDview.Image1MouseMove in'); {$EndIf}
@@ -1683,8 +1685,8 @@ var
    MenuStr : ShortString;
    s1,s2,s3 : string35;
    j : integer;
-   xgl,ygl,xgr,ygr,
-   dxg1,dyg1,dxg2,dyg2,xg1,yg1,xg2,yg2,p,dist : float64;
+   xgl,ygl,xgr,ygr,xg1,yg1,xg2,yg2 : float32;
+   dxg1,dyg1,dxg2,dyg2,p,dist : float64;
    Results : tStringList;
 begin
    with View3D do begin
@@ -1973,7 +1975,8 @@ end;
 procedure TThreeDview.SpeedButton19Click(Sender: TObject);
 var
    x,y : integer;
-   Azimuth,Pitch,Distout,Lat,Long : float64;
+   Azimuth,Pitch : float32;
+   Distout,Lat,Long : float64;
    Mess1,Mess2 : shortString;
    Bitmap : tMyBitmap;
 begin

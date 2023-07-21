@@ -2,13 +2,13 @@ inherited PanoramaOps: TPanoramaOps
   Left = 428
   Top = 292
   Caption = 'Panorama Options'
-  ClientHeight = 205
-  ClientWidth = 416
+  ClientHeight = 201
+  ClientWidth = 400
   Position = poDefaultSizeOnly
   OnCreate = FormCreate
-  ExplicitWidth = 434
-  ExplicitHeight = 252
-  TextHeight = 20
+  ExplicitWidth = 416
+  ExplicitHeight = 240
+  TextHeight = 15
   inherited Bevel1: TBevel
     Width = 273
     Height = 185
@@ -18,22 +18,22 @@ inherited PanoramaOps: TPanoramaOps
   object Label1: TLabel [1]
     Left = 24
     Top = 80
-    Width = 88
-    Height = 20
+    Width = 70
+    Height = 15
     Caption = 'Start azimuth'
   end
   object Label2: TLabel [2]
     Left = 24
     Top = 104
-    Width = 95
-    Height = 20
+    Width = 76
+    Height = 15
     Caption = 'Panorama size'
   end
   object Label3: TLabel [3]
     Left = 24
     Top = 128
-    Width = 135
-    Height = 20
+    Width = 108
+    Height = 15
     Caption = 'Increment per frame'
   end
   inherited OKBtn: TButton
@@ -73,7 +73,7 @@ inherited PanoramaOps: TPanoramaOps
     Left = 173
     Top = 82
     Width = 57
-    Height = 28
+    Height = 23
     TabOrder = 4
     Text = 'Edit1'
   end
@@ -81,7 +81,7 @@ inherited PanoramaOps: TPanoramaOps
     Left = 173
     Top = 106
     Width = 57
-    Height = 28
+    Height = 23
     TabOrder = 5
     Text = 'Edit2'
   end
@@ -89,7 +89,7 @@ inherited PanoramaOps: TPanoramaOps
     Left = 173
     Top = 130
     Width = 57
-    Height = 28
+    Height = 23
     TabOrder = 6
     Text = 'Edit3'
   end
@@ -97,7 +97,7 @@ inherited PanoramaOps: TPanoramaOps
     Left = 24
     Top = 160
     Width = 145
-    Height = 28
+    Height = 23
     TabOrder = 7
     Text = 'ComboBox1'
     OnChange = ComboBox1Change

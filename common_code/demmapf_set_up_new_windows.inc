@@ -257,7 +257,7 @@ var
             MDDef.BottomCutLevel := -MDDef.TopCutLevel;
          end
          else if IsThisSentinel2(DEMGlb[DEM].DEMFileName) or IsLandsat(DEMGlb[DEM].DEMFileName, MPath) or (DEMGlb[DEM].DEMheader.ElevUnits in [euImagery,euNBR]) then Result := mtElevGray
-         else if (DEMGlb[DEM].DEMheader.ElevUnits in [euRGB]) then Result := mtRGB
+         else if (DEMGlb[DEM].DEMheader.ElevUnits in [euRGB]) then Result := mtRGBimagery
          else if (DEMGlb[DEM].DEMheader.ElevUnits in [AspectDeg]) then Result := mtDEMaspect
          else if (DEMGlb[DEM].DEMheader.ElevUnits in [euIntCode]) or (abs(DEMGlb[DEM].DEMheader.MaxElev - DEMGlb[DEM].DEMheader.MinElev) < 0.00001) then Result := mtElevContrast
          {$IfDef ExPointCloud}

@@ -550,7 +550,6 @@ begin
 end;
 
 
-
 procedure TPickGeoStat.BitBtn29Click(Sender: TObject);
 var
    j : integer;

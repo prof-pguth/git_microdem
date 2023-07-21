@@ -86,10 +86,6 @@ uses
       FireDAC.Comp.Client, FireDAC.Comp.Dataset,FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteWrapper,
    {$EndIf}
 
-   {$IfDef UseBDETables}
-      dbTables,
-   {$EndIf}
-
    {$IfDef UseTDBF}
       dbf,
    {$EndIf}
@@ -964,6 +960,8 @@ type
     N50: TMenuItem;
     AddIMAGEfieldfordifferencedistributiongraphs1: TMenuItem;
     Modestandarddeviationplots1: TMenuItem;
+    Pointfilter1: TMenuItem;
+    Pointfilter2: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
     procedure Shiftpointrecords1Click(Sender: TObject);
     procedure Creategrid1Click(Sender: TObject);
@@ -1677,7 +1675,6 @@ type
     procedure Graphfilters1Click(Sender: TObject);
     procedure FilterforDEMIXtiles1Click(Sender: TObject);
     procedure NormalizeddifferencesfromreferenceDEM1Click(Sender: TObject);
-    procedure Bestbysortedgeomorphometry1Click(Sender: TObject);
     procedure Stackedpercentages1Click(Sender: TObject);
     procedure Deleterecord1Click(Sender: TObject);
     procedure AlphabetizefieldwithCSVsubfields1Click(Sender: TObject);
@@ -1697,6 +1694,8 @@ type
     procedure AddIMAGEfieldfordifferencedistributiongraphs1Click(
       Sender: TObject);
     procedure Modestandarddeviationplots1Click(Sender: TObject);
+    procedure Pointfilter2Click(Sender: TObject);
+    procedure Pointfilter1Click(Sender: TObject);
   private
     procedure PlotSingleFile(fName : PathStr; xoff,yoff : float64);
     procedure SetUpLinkGraph;
@@ -11533,11 +11532,6 @@ begin
 end;
 
 
-procedure Tdbtablef.Bestbysortedgeomorphometry1Click(Sender: TObject);
-begin
-   MultipleBestByParametersSortByValue(DBonTable);
-end;
-
 procedure Tdbtablef.BestDEMbycategory1Click(Sender: TObject);
 begin
    BestDEMSbyCategory(DBonTable);
@@ -14461,6 +14455,16 @@ end;
 procedure Tdbtablef.Pointdensitymatchmaparea1Click(Sender: TObject);
 begin
    CreateGrid(cgPointDensity);
+end;
+
+procedure Tdbtablef.Pointfilter1Click(Sender: TObject);
+begin
+   MultipleBestByParametersSortByValue(DBonTable,true);
+end;
+
+procedure Tdbtablef.Pointfilter2Click(Sender: TObject);
+begin
+   MultipleBestByParametersSortByValue(DBonTable,false);
 end;
 
 procedure Tdbtablef.Pointinarea1Click(Sender: TObject);

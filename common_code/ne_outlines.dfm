@@ -4,8 +4,8 @@ object NEOutlineForm: TNEOutlineForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Smart Natural Earth Outlines'
-  ClientHeight = 226
-  ClientWidth = 557
+  ClientHeight = 223
+  ClientWidth = 545
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

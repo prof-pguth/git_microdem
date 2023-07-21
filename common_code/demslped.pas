@@ -31,6 +31,7 @@ type
     Edit1: TEdit;
     StringGrid2: TStringGrid;
     StringGrid1: TStringGrid;
+    Button2: TButton;
     procedure HelpBtnClick(Sender: TObject);
     procedure Image1DblClick(Sender: TObject);
     procedure Image1MouseMove(Sender: TObject; Shift: TShiftState; X,Y: Integer);
@@ -40,6 +41,7 @@ type
     procedure StringGrid1MouseMove(Sender: TObject; Shift: TShiftState; X,Y: Integer);
     procedure StringGrid2MouseMove(Sender: TObject; Shift: TShiftState; X,Y: Integer);
     procedure StringGrid2Click(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
   private
     { Private declarations }
     procedure ShowColors;
@@ -89,7 +91,6 @@ var
    i      : integer;
 begin
    Edit1.Text := IntegerToString(NumCats,-8);
-
    StringGrid1.Cells[0,0] := '%';
    StringGrid2.Cells[0,0] := 'Degrees (°)';
    for i := 1 to pred(NumCats) do begin
@@ -145,6 +146,12 @@ begin
 end;
 
 
+procedure TSlopeCategoryEditor.Button2Click(Sender: TObject);
+begin
+   SetDEMIXSlopeColors(NumCats,EditSlopeCut,EditSlopeColors);
+   ShowColors;
+end;
+
 procedure TSlopeCategoryEditor.Edit1Change(Sender: TObject);
 begin
    CheckEditString(Edit1.Text,NumCats);
@@ -182,7 +189,7 @@ procedure TSlopeCategoryEditor.StringGrid2Click(Sender: TObject);
 var
    tval : float64;
 begin
-   if 15-Row < NumCats then begin
+   if (15-Row < NumCats) then begin
       CheckEditString(StringGrid2.Cells[Col,Row],tVal);
       ReadDefault('Slope (°)',tVal);
       StringGrid2.Cells[0,Row] := RealToString(tVal,-12,-2);

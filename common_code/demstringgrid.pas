@@ -518,9 +518,9 @@ begin
    Bitmap.Width := LeftOffset + pred(StringGrid1.ColCount)*BoxSize + LegendSize;
    Bitmap.Height := LeftOffset + StringGrid1.RowCount * BoxSize;
 
-   {$IfDef StringGridProblems} WriteLineToDebugFile('start columns');   {$EndIf}
+   {$IfDef StringGridProblems} WriteLineToDebugFile('start columns'); {$EndIf}
    for i := 1 to pred(StringGrid1.ColCount) do  begin
-      {$IfDef StringGridProblems}    WriteLineToDebugFile('i=' + IntToStr(i));    {$EndIf}
+      {$IfDef StringGridProblems}    WriteLineToDebugFile('i=' + IntToStr(i)); {$EndIf}
       Bitmap.Canvas.Brush.Style := bsClear;
       Petmar.TextOutVertical(Bitmap.Canvas,LeftOffset+pred(i)*BoxSize,LeftOffset-5,RemoveUnderscores(StringGrid1.Cells[i,0]));
       for j := 1 to pred(StringGrid1.RowCount) do  begin

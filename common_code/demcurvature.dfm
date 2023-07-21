@@ -4,8 +4,8 @@ object CurvatureForm: TCurvatureForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Vertical Earth Curvature'
-  ClientHeight = 139
-  ClientWidth = 193
+  ClientHeight = 185
+  ClientWidth = 243
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

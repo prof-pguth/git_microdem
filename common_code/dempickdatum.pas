@@ -29,7 +29,6 @@ type
     Edit1: TEdit;
     Button1: TButton;
     Label2: TLabel;
-    //Label3: TLabel;
     Label4: TLabel;
     RadioGroup2: TRadioGroup;
     BitBtn3: TBitBtn;
@@ -101,7 +100,6 @@ begin
    Petmar.PlaceFormAtMousePosition(Self);
    RadioGroup2.ItemIndex := ord(MDDef.DEMZunits);
    ProjFName := '';
-   //Mercator := false;
    GeoLatLong := false;
    CheckBox2.Checked := MDDef.RememberUTM;
    BringToFront;

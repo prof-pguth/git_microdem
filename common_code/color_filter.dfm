@@ -2,8 +2,8 @@ object ColorFilterForm: TColorFilterForm
   Left = 0
   Top = 0
   Caption = 'Max'
-  ClientHeight = 178
-  ClientWidth = 253
+  ClientHeight = 177
+  ClientWidth = 249
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

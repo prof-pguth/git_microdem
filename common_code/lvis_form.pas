@@ -4,7 +4,7 @@ unit lvis_form;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
 
@@ -30,10 +30,6 @@ uses
    FireDAC.Stan.Async, FireDAC.DApt, FireDAC.UI.Intf, FireDAC.Stan.Def,
    FireDAC.Stan.Pool, FireDAC.Phys, FireDAC.Comp.Client, FireDAC.Comp.DataSet,
    FireDAC.Phys.SQLite, FireDAC.Comp.UI,
-   {$EndIf}
-
-   {$IfDef UseBDETables}
-   dbTables,
    {$EndIf}
 
    {$IfDef UseTDBF}

@@ -2,8 +2,8 @@ object RGB_form: TRGB_form
   Left = 0
   Top = 0
   Caption = 'RGB 3 parameter map coloring'
-  ClientHeight = 227
-  ClientWidth = 588
+  ClientHeight = 258
+  ClientWidth = 584
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -18,13 +18,13 @@ object RGB_form: TRGB_form
   TextHeight = 13
   object Panel1: TPanel
     Left = 0
-    Top = 97
-    Width = 588
+    Top = 128
+    Width = 584
     Height = 130
     Align = alBottom
     TabOrder = 0
-    ExplicitTop = 106
-    ExplicitWidth = 594
+    ExplicitTop = 95
+    ExplicitWidth = 580
     object Label11: TLabel
       Left = 277
       Top = 69
@@ -146,11 +146,11 @@ object RGB_form: TRGB_form
     Left = 0
     Top = 0
     Width = 207
-    Height = 97
+    Height = 128
     Align = alLeft
     Caption = ' '
     TabOrder = 1
-    ExplicitHeight = 106
+    ExplicitHeight = 95
     object Label5: TLabel
       Left = 8
       Top = 88
@@ -201,13 +201,13 @@ object RGB_form: TRGB_form
   object Panel3: TPanel
     Left = 207
     Top = 0
-    Width = 180
-    Height = 97
+    Width = 176
+    Height = 128
     Align = alClient
     Caption = ' '
     TabOrder = 2
-    ExplicitWidth = 186
-    ExplicitHeight = 106
+    ExplicitWidth = 172
+    ExplicitHeight = 95
     object Label13: TLabel
       Left = 24
       Top = 54
@@ -240,11 +240,12 @@ object RGB_form: TRGB_form
     object ComboBox2: TComboBox
       Left = 1
       Top = 1
-      Width = 184
+      Width = 174
       Height = 21
       Align = alTop
       TabOrder = 1
       OnChange = ComboBox2Change
+      ExplicitWidth = 170
     end
     object Edit4: TEdit
       Left = 50
@@ -256,15 +257,15 @@ object RGB_form: TRGB_form
     end
   end
   object Panel4: TPanel
-    Left = 387
+    Left = 383
     Top = 0
     Width = 201
-    Height = 97
+    Height = 128
     Align = alRight
     Caption = ' '
     TabOrder = 3
-    ExplicitLeft = 393
-    ExplicitHeight = 106
+    ExplicitLeft = 379
+    ExplicitHeight = 95
     object Label9: TLabel
       Left = 23
       Top = 88

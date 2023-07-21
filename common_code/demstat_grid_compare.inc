@@ -277,6 +277,7 @@ end;
 function MakeDifferenceMap(Map1,Map2,GridResultionToUse,GridToMergeShading : integer; ShowMap,ShowHistogram,ShowScatterPlot : boolean; TheAreaName : ShortString = '') : integer;
 begin
    Result := MakeDifferenceMapOfBoxRegion(Map1,Map2,GridResultionToUse,GridToMergeShading,DEMGlb[GridResultionToUse].FullDEMGridLimits,ShowMap,ShowHistogram,ShowScatterplot,TheAreaName);
+   {$If Defined(TrackZRange)} WriteLineToDebugFile('MakeDifferenceMap ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].ZRange); {$EndIf}
 end;
 
 
@@ -340,6 +341,7 @@ begin
       end {for Col};
       EndProgress;
       DEMGlb[Result].CheckMaxMinElev;
+      {$If Defined(TrackZRange)} WriteLineToDebugFile('MakeDifferenceMapOfBoxRegion did check: ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].zRange); {$EndIf}
       {$IfDef RecordFullDEMCompare}
          WriteLineToDebugFile('');  WriteLineToDebugFile('DEM1: ' + DEMGlb[Map1].FullDEMParams);
          WriteLineToDebugFile('');  WriteLineToDebugFile('DEM2: ' + DEMGlb[Map2].FullDEMParams);
@@ -348,7 +350,9 @@ begin
       {$EndIf}
 
       if ShowMap then begin
-         {$If Defined(RecordDEMCompare) or Defined(RecordDiffMap)} WriteLineToDebugFile('MakeDifferenceMap call setupmap'); {$EndIf}
+         {$If Defined(RecordDEMCompare) or Defined(RecordDiffMap) or Defined(TrackZRange)}
+            WriteLineToDebugFile('MakeDifferenceMapofBoxRegion call setupmap ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].zRange); {$EndIf}
+         {$EndIf}
          if MDDef.HighlightDiffMap = 0 then mt := mtElevSpectrum
          else if MDDef.HighlightDiffMap = 1 then mt := mtGGRReflect
          else begin
@@ -357,8 +361,13 @@ begin
          end;
          DEMGlb[Result].SetUpMap(Result,true,mt);
          if MDDef.AutoMergeStartDEM and ValidDEM(GridToMergeShading) then begin
+            {$If Defined(TrackZRange)} WriteLineToDebugFile('MakeDifferenceMapOfBoxRegion call MergeAnotherDEM: ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].zRange); {$EndIf}
             DEMGlb[Result].SelectionMap.MergeAnotherDEMreflectance(GridToMergeShading,true);
+            {$If Defined(TrackZRange)} WriteLineToDebugFile('MakeDifferenceMapOfBoxRegion done MergeAnotherDEM: ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].zRange); {$EndIf}
          end;
+         {$If Defined(RecordDEMCompare) or Defined(RecordDiffMap) or Defined(TrackZRange)}
+            WriteLineToDebugFile('MakeDifferenceMapofBoxRegion done ShowMap ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].zRange);
+         {$EndIf}
       end;
 
       if ShowScatterPlot then begin
@@ -366,8 +375,8 @@ begin
          ThisGraph.AutoScaleAndRedrawDiagram;
       end;
       if ShowHistogram then SingleDEMHistogram(Result);
-      {$If Defined(RecordDEMCompare) or Defined(RecordDiffMap)} WriteLineToDebugFile('MakeDifferenceMap out, ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].zRange); {$EndIf}
-
+      DEMGlb[Result].CheckMaxMinElev;  //because it is reset somewhere in the ShowMapBlock
+      {$If Defined(RecordDEMCompare) or Defined(RecordDiffMap) or Defined(TrackZRange)} WriteLineToDebugFile('MakeDifferenceMapofBoxRegion out, ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].zRange); {$EndIf}
    finally
       HeavyDutyProcessing := false;
    end;

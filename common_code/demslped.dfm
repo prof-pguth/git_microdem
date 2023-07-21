@@ -3,8 +3,8 @@ inherited SlopeCategoryEditor: TSlopeCategoryEditor
   Top = 317
   BorderIcons = [biSystemMenu]
   Caption = 'Set Slope Categories'
-  ClientHeight = 408
-  ClientWidth = 450
+  ClientHeight = 451
+  ClientWidth = 457
   Icon.Data = {
     0000010001002020100000000000E80200001600000028000000200000004000
     0000010004000000000080020000000000000000000000000000000000000000
@@ -30,8 +30,8 @@ inherited SlopeCategoryEditor: TSlopeCategoryEditor
     0000000000000000000000000000000000000000000000000000000000000000
     0000000000000000000000000000000000000000000000000000000000000000
     000000000000000000000000000000000000000000000000000000000000}
-  ExplicitWidth = 466
-  ExplicitHeight = 447
+  ExplicitWidth = 469
+  ExplicitHeight = 489
   TextHeight = 15
   inherited Bevel1: TBevel
     Width = 265
@@ -114,6 +114,15 @@ inherited SlopeCategoryEditor: TSlopeCategoryEditor
     TabOrder = 6
     OnClick = StringGrid1Click
     OnMouseMove = StringGrid1MouseMove
+  end
+  object Button2: TButton
+    Left = 288
+    Top = 280
+    Width = 75
+    Height = 25
+    Caption = 'DEMIX'
+    TabOrder = 7
+    OnClick = Button2Click
   end
   object ColorDialog1: TColorDialog
     Left = 312

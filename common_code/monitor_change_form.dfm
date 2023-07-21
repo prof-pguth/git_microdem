@@ -2,8 +2,8 @@ object ChangeMapForm: TChangeMapForm
   Left = 0
   Top = 0
   Caption = 'Change Map'
-  ClientHeight = 332
-  ClientWidth = 453
+  ClientHeight = 329
+  ClientWidth = 441
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -59,7 +59,7 @@ object ChangeMapForm: TChangeMapForm
   object PageControl1: TPageControl
     Left = 0
     Top = 0
-    Width = 453
+    Width = 441
     Height = 109
     ActivePage = Single
     Align = alTop

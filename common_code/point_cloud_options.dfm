@@ -2,8 +2,8 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
   Left = 0
   Top = 0
   Caption = 'Point Cloud Options'
-  ClientHeight = 441
-  ClientWidth = 481
+  ClientHeight = 440
+  ClientWidth = 477
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -30,13 +30,11 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
   end
   object Panel1: TPanel
     Left = 0
-    Top = 400
-    Width = 481
+    Top = 399
+    Width = 477
     Height = 41
     Align = alBottom
     TabOrder = 0
-    ExplicitTop = 403
-    ExplicitWidth = 493
     object CancelBtn: TBitBtn
       Left = 290
       Top = 6
@@ -110,13 +108,11 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
   object PageControl1: TPageControl
     Left = 0
     Top = 0
-    Width = 481
-    Height = 231
+    Width = 477
+    Height = 230
     ActivePage = TabSheet1
     Align = alClient
     TabOrder = 1
-    ExplicitWidth = 493
-    ExplicitHeight = 234
     object General: TTabSheet
       Caption = 'General'
       object Label6: TLabel
@@ -258,12 +254,12 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
       object Panel2: TPanel
         Left = 0
         Top = 0
-        Width = 489
-        Height = 207
+        Width = 473
+        Height = 203
         Align = alClient
         TabOrder = 0
-        ExplicitWidth = 485
-        ExplicitHeight = 206
+        ExplicitWidth = 469
+        ExplicitHeight = 202
         object Label1: TLabel
           Left = 296
           Top = 16
@@ -1159,8 +1155,8 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
         Caption = 'YGrid size (m)'
       end
       object RadioGroup5: TRadioGroup
-        Left = 6
-        Top = 159
+        Left = 3
+        Top = 160
         Width = 103
         Height = 40
         Caption = 'Pixel Is'
@@ -1660,13 +1656,11 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
   end
   object Panel3: TPanel
     Left = 0
-    Top = 231
-    Width = 481
+    Top = 230
+    Width = 477
     Height = 169
     Align = alBottom
     TabOrder = 2
-    ExplicitTop = 234
-    ExplicitWidth = 493
     object RadioGroup1: TRadioGroup
       Left = 10
       Top = 2

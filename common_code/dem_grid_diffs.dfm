@@ -4,8 +4,8 @@ object GridDiffForm: TGridDiffForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Grid Differences '
-  ClientHeight = 263
-  ClientWidth = 397
+  ClientHeight = 260
+  ClientWidth = 385
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

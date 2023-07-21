@@ -46,10 +46,6 @@ uses
       FireDAC.Comp.Client,FireDAC.Comp.Dataset,FireDAC.Phys.SQLite,FireDAC.Phys.SQLiteWrapper,
    {$EndIf}
 
-   {$IfDef UseBDETables}
-      dbTables,
-   {$EndIf}
-
    {$IfDef UseTDBF}
       dbf,
    {$EndIf}
@@ -892,7 +888,7 @@ var
    Inbounds,UTMDEMs : boolean;
    MergeUTMzone,TileX,TileY : int32;
    CurDEM     : integer;
-   aName,ProjName,OldDEMName  : PathStr;
+   aName,ProjName,OldDEMName,OutVRT  : PathStr;
    MenuStr : ShortString;
    SaveIt : boolean;
 
@@ -1032,8 +1028,7 @@ begin
             if (ProjName <> '') then ProjName := '-a_srs ' + ProjName;
          end;
 
-       //GDAL_VRT was about three times faster than other options tested
-         UseGDAL_VRT_to_merge(MergefDir,DEMList,ProjName);
+         UseGDAL_VRT_to_merge(MergefDir,OutVRT,DEMList,ProjName);
          {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('GDAL VRT over for DEM, open ' + MergeFName); {$EndIf}
          if FileExists(MergefDir) then begin
             Result := OpenNewDEM(MergefDir,false);

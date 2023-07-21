@@ -189,10 +189,6 @@ uses
       FireDAC.Comp.Client, FireDAC.Comp.Dataset,FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteWrapper,
    {$EndIf}
 
-   {$IfDef UseBDETables}
-      dbTables,
-   {$EndIf}
-
    {$IfDef UseTDBF}
       dbf,
    {$EndIf}
@@ -1428,7 +1424,6 @@ type
     PickseriesandloadDEMsfromlibrary1: TMenuItem;
     N52: TMenuItem;
     ComapreUTMvsgeographic1: TMenuItem;
-    hiscoverageareaandsamepixelsize1: TMenuItem;
     NDVI3: TMenuItem;
     NBR1: TMenuItem;
     Elevationdifference1: TMenuItem;
@@ -2521,7 +2516,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Changemap2Click(Sender: TObject);
     procedure PickseriesandloadDEMsfromlibrary1Click(Sender: TObject);
     procedure ComapreUTMvsgeographic1Click(Sender: TObject);
-    procedure hiscoverageareaandsamepixelsize1Click(Sender: TObject);
+    procedure MatchThiscoverageareaandsamepixelsize1Click(Sender: TObject);
     procedure NDVI3Click(Sender: TObject);
     procedure NBR1Click(Sender: TObject);
     procedure Elevationdifference1Click(Sender: TObject);
@@ -6386,7 +6381,7 @@ begin
    {$Else}
       {$IfDef RecordCreateGeomorphMaps} writeLineToDebugFile('TMapForm.Multipleparameters1Click in'); {$EndIf}
          GetGeomorphBlockOpts(gbGrid,Self.MapDraw.DEMonMap,DEMGlb[Self.MapDraw.DEMonMap].FullDEMGridLimits);
-         hiscoverageareaandsamepixelsize1Click(Sender);
+         MatchThiscoverageareaandsamepixelsize1Click(Sender);
       {$IfDef RecordCreateGeomorphMaps}  WriteLineToDebugFile('TMapForm.Multipleparameters1Click out'); {$EndIf}
    {$EndIf}
 end;
@@ -11367,7 +11362,7 @@ var
 begin
    PickMaps(Maps,'Maps for 3D view (max ' + IntToStr(MaxClouds) + ')');
    if (Maps.Count > 0) then begin
-      hiscoverageareaandsamepixelsize1Click(Sender);
+      MatchThiscoverageareaandsamepixelsize1Click(Sender);
       Viewer := MapTo3DView(Self.MapDraw);
       Num := 1;
       for i := 0 to pred(WMDEM.MDIChildCount) do begin
@@ -13335,7 +13330,7 @@ var
 begin
    {$IfDef ExGeology}
    {$Else}
-      if MDDef.MoveGeologyDBMemory then DesiredDBMode := dbmCDS;
+      //if MDDef.MoveGeologyDBMemory then DesiredDBMode := dbmCDS;
       db := LoadDataBaseFile(ContCrustOutlineFile);
       if ValidDB(db) then begin
          GISdb[db].dbOpts.LineColor := ConvertTColorToPlatformColor(clBrown);
@@ -14462,7 +14457,7 @@ begin
    end;
 end;
 
-procedure TMapForm.hiscoverageareaandsamepixelsize1Click(Sender: TObject);
+procedure TMapForm.MatchThiscoverageareaandsamepixelsize1Click(Sender: TObject);
 begin
    AllMapsMatchThisCoverageArea1Click(Sender);
    Allsamepixelsizeasthismap1Click(Sender);
@@ -19452,7 +19447,7 @@ var
 
 begin
    {$If Defined(RecordDEMIX)} writeLineToDebugFile('TMapForm.Winwcontestmaps1Click in'); {$EndIf}
-   DEMGlb[1].SelectionMap.hiscoverageareaandsamepixelsize1Click(Sender);
+   DEMGlb[1].SelectionMap.MatchThiscoverageareaandsamepixelsize1Click(Sender);
    DEMGlb[1].SelectionMap.SameElevationColors1Click(Sender);
    Findings := tStringList.Create;
    Output := 'c:\temp\';
@@ -20383,7 +20378,7 @@ end;
 
 procedure TMapForm.Variableopaquemerge1Click(Sender: TObject);
 begin
-   //hiscoverageareaandsamepixelsize1Click(Sender);
+   //MatchThiscoverageareaandsamepixelsize1Click(Sender);
    MergeColorScene1Click(Sender);
 end;
 
@@ -20459,7 +20454,7 @@ var
 begin
    {$IfDef ExGeology}
    {$Else}
-      if MDDef.MoveGeologyDBMemory then DesiredDBMode := dbmCDS;
+      //if MDDef.MoveGeologyDBMemory then DesiredDBMode := dbmCDS;
       db := LoadDataBaseFile(PlateBoundaryFile);
       GISdb[db].dbOpts.dbAutoShow := dbasColorField;
       GISdb[db].RedrawLayerOnMap;
@@ -20472,7 +20467,7 @@ var
 begin
    {$IfDef ExGeology}
    {$Else}
-      if MDDef.MoveGeologyDBMemory then DesiredDBMode := dbmCDS;
+      //if MDDef.MoveGeologyDBMemory then DesiredDBMode := dbmCDS;
       db := LoadDataBaseFile(PlateOutlinesfName);
       GISdb[db].dbOpts.dbAutoShow := dbasColorField;
       GISdb[db].RedrawLayerOnMap;
@@ -20503,7 +20498,7 @@ begin
    {$IfDef ExGeology}
    {$Else}
       {$IfDef RecordGISDB} WriteLineToDebugFile('TMapForm.Volcanoes1Click'); {$EndIf}
-      if MDDef.MoveGeologyDBMemory then DesiredDBMode := dbmCDS;
+      //if MDDef.MoveGeologyDBMemory then DesiredDBMode := dbmCDS;
       LoadDataBaseFile(VolcanoesDB);
    {$EndIf}
 end;
@@ -20512,7 +20507,7 @@ procedure TMapForm.Magneticanomaly1Click(Sender: TObject);
 begin
    {$IfDef ExGeology}
    {$Else}
-   if MDDef.MoveGeologyDBMemory then DesiredDBMode := dbmCDS;
+   //if MDDef.MoveGeologyDBMemory then DesiredDBMode := dbmCDS;
    LoadDataBaseFile(DBDir + 'wmag' + DefaultDBExt);
    {$EndIf}
 end;
@@ -20569,7 +20564,7 @@ procedure TMapForm.Fracturezones1Click(Sender: TObject);
 begin
     {$IfDef ExGeology}
     {$Else}
-    if MDDef.MoveGeologyDBMemory then DesiredDBMode := dbmCDS;
+    //if MDDef.MoveGeologyDBMemory then DesiredDBMode := dbmCDS;
     LoadDataBaseFile(DBDir + 'wfz' + DefaultDBExt)
     {$EndIf}
 end;
@@ -20621,7 +20616,7 @@ begin
    {$IfDef ExGeology}
    {$Else}
       {$IfDef RecordGISDB} WriteLineToDebugFile('TMapForm.Earthquakefocalmechanisms1Click'); {$EndIf}
-      if MDDef.MoveGeologyDBMemory then DesiredDBMode := dbmCDS;
+      //if MDDef.MoveGeologyDBMemory then DesiredDBMode := dbmCDS;
       db := LoadDataBaseFile(CMT_fault_cent_fName,true,false);
       if db <> 0 then begin
          GISdb[db].dbOpts.DBAutoShow := dbasQuakeMechColor;
@@ -21412,7 +21407,7 @@ begin
 {$Else}
 begin
    {$IfDef RecordGISDB} WriteLineToDebugFile('TMapForm.Globalmonthlywinds1Click in'); {$EndIf}
-   if MDDef.MoveGeographyDBMemory then DesiredDBMode := dbmCDS;
+   //if MDDef.MoveGeographyDBMemory then DesiredDBMode := dbmCDS;
    WindsDB := OpenDBonMap('',GlobalWindsFName,true,(Sender <> Nil));
    {$IfDef RecordGISDB} WriteLineToDebugFile('WindsDB opened'); {$EndIf}
 
@@ -21520,7 +21515,7 @@ begin
    pName := 'cliwoc_ships_all_v6';
    fName := DBDir + pName + DefaultDBExt;
    if not FileExists(fName) then DownloadFileFromWeb(WebDataDownLoadDir + pName + '.dbf',fName);
-   if MDDef.MoveGeographyDBMemory then DesiredDBMode := dbmCDS;
+   //if MDDef.MoveGeographyDBMemory then DesiredDBMode := dbmCDS;
    db := OpenDBonMap('',FName);
    GISdb[db].ClearGISFilter;
    GISdb[db].dbOpts.DirField := 'HEADING';
@@ -21548,7 +21543,7 @@ begin
    pname := 'cliwoc_weather_all_v3';
    fName := DBDir + pName + DefaultDBExt;
    if not FileExists(fName) then DownloadFileFromWeb( WebDataDownLoadDir + pName + '.dbf',fName);
-   if MDDef.MoveGeographyDBMemory then DesiredDBMode := dbmCDS;
+   //if MDDef.MoveGeographyDBMemory then DesiredDBMode := dbmCDS;
    LoadDataBaseFile(fName);
 {$EndIf}
 end;
@@ -23068,7 +23063,7 @@ procedure TMapForm.Hotspots1Click(Sender: TObject);
 begin
    {$IfDef ExGeology}
    {$Else}
-      if MDDef.MoveGeologyDBMemory then DesiredDBMode := dbmCDS;
+      //if MDDef.MoveGeologyDBMemory then DesiredDBMode := dbmCDS;
       LoadDataBaseFile(Hotspot_db);
    {$EndIf}
 end;
@@ -23078,7 +23073,7 @@ procedure TMapForm.Hurricanes1Click(Sender: TObject);
 begin
    {$IfDef ExGeography}
    {$Else}
-      if MDDef.MoveGeographyDBMemory then DesiredDBMode := dbmCDS;
+      //if MDDef.MoveGeographyDBMemory then DesiredDBMode := dbmCDS;
       LoadDataBaseFile(ClimateDir + 'hurricane_2017\Allstorms.ibtracs_wmo.v03r10.dbf');
    {$EndIf}
 end;
@@ -23190,7 +23185,7 @@ var
 begin
    PickMaps(Maps,'Maps for shading from this map');
    if (Maps.Count > 0) then begin
-      //hiscoverageareaandsamepixelsize1Click(Sender);
+      //MatchThiscoverageareaandsamepixelsize1Click(Sender);
       for i := 0 to pred(WMDEM.MDIChildCount) do begin
          if WMDEM.MDIChildren[i] is tMapForm and (WmDEM.MDIChildren[i].Handle <> Handle) then begin
             for j := 0 to pred(Maps.Count) do begin
@@ -23373,7 +23368,7 @@ procedure TMapForm.Oceancurrents1Click(Sender: TObject);
 begin
   {$IfDef ExGeography}
   {$Else}
-      if MDDef.MoveGeographyDBMemory then DesiredDBMode := dbmCDS;
+      //if MDDef.MoveGeographyDBMemory then DesiredDBMode := dbmCDS;
       LoadDataBaseFile(GlobalCurrentsFName);
   {$EndIf}
 end;
@@ -23482,7 +23477,7 @@ begin
 {$Else}
 begin
    if not ValidDB(ClimateStationDB) then begin
-      if MDDef.MoveGeographyDBMemory then DesiredDBMode := dbmCDS;
+      //if MDDef.MoveGeographyDBMemory then DesiredDBMode := dbmCDS;
       ClimateStationDB := LoadDataBaseFile(ClimateStationFName);
    end;
    if ValidDB(ClimateStationDB) then begin
@@ -23840,16 +23835,6 @@ begin
    for i := 0 to pred(WMDEM.MDIChildCount) do
       if (WMDEM.MDIChildren[i] is tMapForm) and (WmDEM.MDIChildren[i].Handle <> Handle) then begin
          MatchAnotherMapThisCoverageArea(Self,WMDEM.MDIChildren[i] as TMapForm);
-         (*
-          if (not OtherMapSameSize(WMDEM.MDIChildren[i] as TMapForm)) and (not OtherMapSameCoverage(WMDEM.MDIChildren[i] as TMapForm)) then begin
-             if SameProjection(MapDraw, (WMDEM.MDIChildren[i] as TMapForm).MapDraw) then begin
-                (WMDEM.MDIChildren[i] as TMapForm).MapDraw.MapCorners.BoundBoxProj := MapDraw.MapCorners.BoundBoxProj;
-                (WMDEM.MDIChildren[i] as TMapForm).SubsetAndZoomMapFromProjectedBounds(Sender <> Nil);
-             end
-             else (WMDEM.MDIChildren[i] as TMapForm).SubsetAndZoomMapFromGeographicBounds(MapDraw.MapCorners.BoundBoxGeo, Sender <> Nil);
-             (WMDEM.MDIChildren[i] as TMapForm).FullMapSpeedButton.Enabled := true;
-          end;
-         *)
       end;
    UpdateMenusForAllMaps;
 end;

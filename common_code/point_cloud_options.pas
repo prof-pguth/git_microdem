@@ -12,8 +12,8 @@
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
-      //{$Define RecordMakeGrid}
-      //{$Define RecordMakeBaseMap}
+      {$Define RecordMakeGrid}
+      {$Define RecordMakeBaseMap}
       //{$Define TrackPointCloud}
       //{$Define RecordExtractPoints}
       //{$Define Slicer}
@@ -25,10 +25,11 @@
       //{$Define TimePointCloud}
       //{$Define RecordGridFileNames}
       //{$Define OGLexport}
-      //{$Define PointCloudMap}
+      {$Define PointCloudMap}
+      {$Define PointCloudOutlines}
       //{$Define RecordPointCloudViewing}
       //{$Define RecordLASfilesRedraw}
-      //{$Define RecordLASOpen}
+      {$Define RecordLASOpen}
       //{$Define RecordPointCloudOptionsForm}
       //{$Define RecordPointCloudViewing}
       //{$Define RecordNewGrids}
@@ -46,10 +47,6 @@ uses
    Petmar_db, Data.DB,
    {$IfDef UseFireDacSQLlite}
       FireDAC.Comp.Client, FireDAC.Comp.Dataset,FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteWrapper,
-   {$EndIf}
-
-   {$IfDef UseBDETables}
-      dbTables,
    {$EndIf}
 
    {$IfDef UseTDBF}
@@ -619,7 +616,7 @@ begin
    pt_cloud_opts_fm.InitialCloudDisplay := true;
    pt_cloud_opts_fm.BaseMap := InBaseMap;
    if (inBaseMap <> Nil) then begin
-      {$If Defined(RecordLASfiles) or Defined(RecordLASopen)} WriteLineToDebugFile('OvelayPointCloud start map creationg'); {$EndIf}
+      {$If Defined(RecordLASfiles) or Defined(RecordLASopen)} WriteLineToDebugFile('OvelayPointCloud start map creation'); {$EndIf}
       inBaseMap.MapDraw.DrawLegendsThisMap := false;
       pt_cloud_opts_fm.BaseMap.MapDraw.LasLayerOnMap := true;
       pt_cloud_opts_fm.Caption := 'Point clouds on ' + InBaseMap.Caption;
@@ -633,11 +630,13 @@ begin
       Paths := tStringList.Create;
       Paths.Add(LastLidarDirectory);
       if MDDef.PickLASDirs and GetMultipleDirectories('Lidar point clouds',Paths) then begin
-         for i := 1 to Paths.Count do begin
-            if (i < MaxClouds) then begin
+         for i := 0 to pred(Paths.Count) do begin
+            if (i=0) then LastLidarDirectory := Paths.Strings[0];
+
+            if (succ(i) < MaxClouds) then begin
                if (i>1) then pt_cloud_opts_fm.InitialCloudDisplay := false;
-               fName := Paths.Strings[pred(i)];
-               pt_cloud_opts_fm.GetFilesForPointCloud(i,fName,true);
+               fName := Paths.Strings[i];
+               pt_cloud_opts_fm.GetFilesForPointCloud(succ(i),fName,true);
             end;
          end;
       end
@@ -651,7 +650,6 @@ begin
    pt_cloud_opts_fm.InitialCloudDisplay := true;
    {$If Defined(RecordLASfiles) or Defined(RecordLASopen) or Defined(TrackPointCloud)} WriteLineToDebugFile('OvelayPointCloud out'); {$EndIf}
 end;
-
 
 
 
@@ -920,7 +918,8 @@ end;
 
 function Tpt_cloud_opts_fm.FindDEMGridCellOfShot(LasData : Las_Lidar.tLAS_data; DEM,J : integer; var xgrid,ygrid : integer) : boolean;
 var
-   xApp,yApp,xf,yf : float64;
+   xApp,yApp : float64;
+   xf,yf : float32;
 begin
     if (MDDef.LidarGridProjection = UTMBasedDEM) then begin
         LasData.GetShotCoordinatesUTM(j,xApp,yApp);
@@ -1356,7 +1355,7 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
            end;
 
            if (NewRGBGrid <> 0) then begin
-              CheckMap(NewRGBGrid,false,mtRGB);
+              CheckMap(NewRGBGrid,false,mtRGBimagery);
               if MDDef.PCAutoFillHoles then begin
                  RGBFilterDEM(NewRGBGrid,1,true);
                  CloseSingleDEM(NewRGBGrid);
@@ -1833,16 +1832,18 @@ var
    sf      : tShapeFile;
    success : boolean;
 begin
+   {$IfDef PointCloudOutlines} WriteLineToDebugFile('Tpt_cloud_opts_fm.MapCallOutlineClouds in'); {$EndIf}
    for Cloud := 1 to MaxClouds do if UsePC[Cloud] and (LasFiles[Cloud] <> Nil) then begin
       if (LasFiles[Cloud].LAS_fnames.Count > 0) then  begin
-         BaseMap.Image1.Canvas.Pen.Color := ConvertPlatformColorToTColor(MDDef.CloudSymbol[Cloud].Color);
+         //BaseMap.Image1.Canvas.Pen.Color := ConvertPlatformColorToTColor(MDDef.CloudSymbol[Cloud].Color);
          BaseMap.Image1.Canvas.Pen.Width := 3;
          BaseMap.Image1.Canvas.Brush.Style := bsClear;
+         {$IfDef PointCloudOutlines} WriteLineToDebugFile('Cloud=' + IntToStr(Cloud) + '  files=' + IntToStr(LasFiles[Cloud].LAS_fnames.Count) + '  color=' + IntToStr(BaseMap.Image1.Canvas.Pen.Color)); {$EndIf}
          for i := 0 to pred(LasFiles[Cloud].LAS_fnames.Count) do begin
             fName := LasFiles[Cloud].LAS_fnames.Strings[i];
             if FileExtEquals(fName, '.LAS') then begin
                LasData := Las_Lidar.tLAS_data.Create(fName);
-               LasData.OutlineOnMap(BaseMap);
+               LasData.OutlineOnMap(BaseMap,ConvertPlatformColorToTColor(MDDef.CloudSymbol[Cloud].Color));
                FreeAndNil(LasData);
             end
             else if FileExtEquals(fName,'.shp') then  begin
@@ -1928,9 +1929,9 @@ begin
    if (Sender = BitBtn18) or (Sender = Nil) then BaseMap.DoFastMapRedraw;
    for Cloud := 1 to MaxClouds do if  UsePC[Cloud] and (LasFiles[Cloud] <> Nil) then begin
       if (LasFiles[Cloud].LAS_fnames.Count  > 0) then  begin
-         BaseMap.Image1.Canvas.Pen.Color := clRed;
-         BaseMap.Image1.Canvas.Pen.Width := 3;
-         BaseMap.Image1.Canvas.Brush.Style := bsClear;
+         //BaseMap.Image1.Canvas.Pen.Color := clRed;
+         //BaseMap.Image1.Canvas.Pen.Width := 3;
+         //BaseMap.Image1.Canvas.Brush.Style := bsClear;
          NumShow := LasFiles[Cloud].LAS_fnames.Count;
          if LasFiles[Cloud].LAS_fnames.Count > 5 then begin
             ReadDefault('Metadata files to show',NumShow);
@@ -1941,7 +1942,8 @@ begin
              if FileExtEquals(fName,'.LAS') then  begin
                 LasData := Las_Lidar.tLAS_data.Create(fName);
                 if (Sender = BitBtn18) or (Sender = Nil) then begin
-                   LasData.OutlineOnMap(BaseMap);
+                   {$If Defined(PointCloudOutlines) or Defined(RecordLASfiles)} WriteLineToDebugFile('Tpt_cloud_opts_fm.BitBtn13Click, call LasData.OutlineOnMap'); {$EndIf}
+                   LasData.OutlineOnMap(BaseMap,clRed);
                 end
                 else begin
                    {$IfDef RecordLASfiles} WriteLineToDebugFile('LASdata.GetMetadata for ' + ExtractFileName(fName)); {$EndIf}
@@ -3041,6 +3043,7 @@ var
    DEMbase,i : integer;
    Files : tStringList;
    MakeBox : sfBoundBox;
+   fName : PathStr;
 begin
    {$If Defined(BasicOpens) or Defined(RecordPointCloudOptionsForm) or Defined(RecordLASOpen)  or Defined(TrackPointCloud)} WriteLineToDebugFile('Tpt_cloud_opts_fm.GetFilesForPointCloud in, cloud=' + IntToStr(CloudNum)); {$EndIf}
    if (LasFiles[CloudNum] = Nil) then LasFiles[CloudNum] := tLas_files.Create
@@ -3069,6 +3072,15 @@ begin
       LasFiles[CloudNum].CloudDir := BaseDir;
    end;
 
+   for i := pred(Files.Count) downto 0 do begin
+       fName := LasFiles[CloudNum].LAS_fnames.Strings[i];
+       if (UpperCase(ExtractFileExt(fName)) = '.LAZ') then begin
+           MessageToContinue('Decompress LAZ file before use, '+ ExtractFileName(fName));
+           LasFiles[CloudNum].LAS_fnames.Delete(i);
+       end;
+   end;
+
+
    {$If Defined(BasicOpens) or Defined(RecordPointCloudOptionsForm) or Defined(RecordLASOpen)} WriteLineToDebugFile('Files found ' + IntToStr(LasFiles[CloudNum].LAS_fnames.Count)); {$EndIf}
    Result := (LasFiles[CloudNum].LAS_fnames.Count > 0);
    if Result then begin
@@ -3082,43 +3094,52 @@ begin
       if (BaseMap = Nil) then begin
          MDDef.DefaultUTMZone := LasFiles[CloudNum].UTMZone;
          MDDef.DefaultLatHemi := LasFiles[CloudNum].LatHemi;
-         {$If Defined(RecordPointCloudOptionsForm) or Defined(RecordLASOpen)} WriteLineToDebugFile('GetFiles Create cloud basemap, UTM=' + IntToStr(MDDef.DefaultUTMZone) + MDDef.DefaultLatHemi); {$EndIf}
-         {$If Defined(RecordPointCloudOptionsForm) or Defined(RecordMakeBaseMap)} WriteLineToDebugFile('GetFile CreateNewGrid, cloud utm box:  ' + sfBoundBoxToString(LasFiles[CloudNum].UTMBBox,1)); {$EndIf}
-         {$If Defined(RecordPointCloudOptionsForm) or Defined(RecordMakeBaseMap)} WriteLineToDebugFile('GetFile CreateNewGrid, cloud geo box:  ' + sfBoundBoxToString(LasFiles[CloudNum].GeoBBox,6)); {$EndIf}
+         {$If Defined(RecordPointCloudOptionsForm) or Defined(RecordLASOpen)}
+            WriteLineToDebugFile('GetFiles Create cloud basemap, UTM=' + IntToStr(MDDef.DefaultUTMZone) + MDDef.DefaultLatHemi);
+            WriteLineToDebugFile('GetFile CreateNewGrid, cloud utm box:  ' + sfBoundBoxToString(LasFiles[CloudNum].UTMBBox,1));
+            WriteLineToDebugFile('GetFile CreateNewGrid, cloud geo box:  ' + sfBoundBoxToString(LasFiles[CloudNum].GeoBBox,6));
+         {$EndIf}
 
          MakeBox := LasFiles[CloudNum].UTMBBox;
+
          Width := MakeBox.XMax - MakeBox.XMin;
          Height := MakeBox.yMax - MakeBox.yMin;
          Aspect := Height / Width;
          DesiredAspect := MDDef.DefaultMapYSize / MDDef.DefaultMapXSize;
-         if Aspect < DesiredAspect then begin
+         if (Aspect < DesiredAspect) then begin
             NewWidth := DesiredAspect * Height;
+            NewHeight := Height;
             MakeBox.XMax := MakeBox.XMax + 0.5 * (NewWidth-Width);
             MakeBox.XMin := MakeBox.XMin - 0.5 * (NewWidth-Width);
          end
          else begin
             NewHeight := Width / DesiredAspect;
+            NewWidth := Width;
             MakeBox.YMax := MakeBox.YMax + 0.5 * (NewHeight-Height);
             MakeBox.YMin := MakeBox.YMin - 0.5 * (NewHeight-Height);
          end;
 
+         {$If Defined(RecordPointCloudOptionsForm) or Defined(RecordLASOpen)}
+            WriteLineToDebugFile('GetFile CreateNewGrid, utm Make box:  ' + sfBoundBoxToString(MakeBox,1));
+            WriteLineToDebugFile('utm resizing, ' + RealToString(Width,-12,-1) + 'x' + RealToString(Height,-12,-1) + ' to ' + RealToString(NewWidth,-12,-1) + 'x' + RealToString(NewHeight,-12,-1));
+         {$EndIf}
+
 
          DEMBase := CreateNewGrid(LasFiles[CloudNum].CloudName + '_cloud',cgUTM,MakeBox,FloatingPointDEM,2);
-         {$If Defined(RecordPointCloudOptionsForm) or Defined(RecordMakeBaseMap)} WriteLineToDebugFile('GetFile CreateNewGrid UTM out, map utm box:  ' + sfBoundBoxToString(DEMGlb[DEMBase].SelectionMap.MapDraw.MapCorners.BoundBoxUTM,2)); {$EndIf}
          BaseMap := DEMGlb[DemBase].SelectionMap;
 
-
-         {$If Defined(RecordMakeBaseMap)} WriteLineToDebugFile('Cloud Basemap UTM box:' + sfBoundBoxToString(BaseMap.MapDraw.MapCorners.BoundBoxUTM,1) ); {$EndIf}
-         {$If Defined(RecordMakeBaseMap)} WriteLineToDebugFile('Cloud Basemap geo box:' + sfBoundBoxToString(BaseMap.MapDraw.MapCorners.BoundBoxGeo,6) ); {$EndIf}
-         {$If Defined(RecordMakeBaseMap)} WriteLineToDebugFile('Cloud Basemap projected box:' + sfBoundBoxToString(BaseMap.MapDraw.MapCorners.BoundBoxProj,6) + ' dx=' + RealToString(BaseMap.MapDraw.MapCorners.ProjDX,-12,-6) + ' dy=' + RealToString(BaseMap.MapDraw.MapCorners.ProjDY,-12,-6)); {$EndIf}
-
+         {$If Defined(RecordMakeBaseMap)}
+            WriteLineToDebugFile('Cloud Basemap UTM box:' + sfBoundBoxToString(BaseMap.MapDraw.MapCorners.BoundBoxUTM,1) );
+            WriteLineToDebugFile('Cloud Basemap geo box:' + sfBoundBoxToString(BaseMap.MapDraw.MapCorners.BoundBoxGeo,6) );
+            WriteLineToDebugFile('Cloud Basemap projected box:' + sfBoundBoxToString(BaseMap.MapDraw.MapCorners.BoundBoxProj,6) +
+               ' dx=' + RealToString(BaseMap.MapDraw.MapCorners.ProjDX,-12,-6) + ' dy=' + RealToString(BaseMap.MapDraw.MapCorners.ProjDY,-12,-6));
+         {$EndIf}
 
          BaseMap.MapDraw.DrawLegendsThisMap := false;
          BaseMap.MapDraw.LasLayerOnMap := true;
          BaseMap.Closable := true;
          BaseMap.PointCloudBase := true;
          BitBtn56.Visible := true;
-         {$If Defined(RecordPointCloudOptionsForm)} WriteLineToDebugFile('GetFile BaseMap all created, map grid box:' + sfBoundBoxToString(DEMGlb[DEMBase].SelectionMap.MapDraw.MapCorners.BoundBoxDataGrid,2)); {$EndIf}
       end
       else if MDDef.CheckLasOnMap then begin
          {$If Defined(RecordPointCloudOptionsForm) or Defined(RecordLASOpen)} WriteLineToDebugFile('Call Remove tiles not on map'); {$EndIf}
@@ -3142,12 +3163,12 @@ begin
 
          if (CloudNum = 1) then begin
             {$If Defined(RecordPointCloudOptionsForm) or Defined(RecordLASOpen)} WriteLineToDebugFile('cloudnum=1'); {$EndIf}
-             CheckBoxPC1.Caption := LasFiles[CloudNum].CloudName;
+            CheckBoxPC1.Caption := LasFiles[CloudNum].CloudName;
             {$If Defined(RecordPointCloudOptionsForm) or Defined(RecordLASOpen)} WriteLineToDebugFile('got stats'); {$EndIf}
              if (LasFiles[CloudNum].UTMZone > 0) then begin
-                 MDdef.DefaultUTMZone := LasFiles[CloudNum].UTMZone;
-                 Edit19.Text := IntToStr(LasFiles[CloudNum].UTMZone);
-              end;
+                MDdef.DefaultUTMZone := LasFiles[CloudNum].UTMZone;
+                Edit19.Text := IntToStr(LasFiles[CloudNum].UTMZone);
+             end;
              if LasFiles[CloudNum].HasRGB then begin
                 Edit23.Text := IntToStr(LasFiles[CloudNum].Max_Red);
                 Edit4.Text := IntToStr(LasFiles[CloudNum].Min_Red);

@@ -2,12 +2,12 @@ inherited SSOCalcDlg: TSSOCalcDlg
   Left = 325
   Top = 120
   Caption = 'Topographic Fabric Calculation'
-  ClientHeight = 458
-  ClientWidth = 648
+  ClientHeight = 455
+  ClientWidth = 636
   Position = poDefaultSizeOnly
   OnCreate = FormCreate
-  ExplicitWidth = 664
-  ExplicitHeight = 497
+  ExplicitWidth = 652
+  ExplicitHeight = 494
   TextHeight = 15
   inherited Bevel1: TBevel
     Left = 252
@@ -188,7 +188,7 @@ inherited SSOCalcDlg: TSSOCalcDlg
           Left = 179
           Top = 0
           Width = 43
-          Height = 28
+          Height = 23
           TabOrder = 0
           Text = ' '
           OnChange = Edit1Change
@@ -197,7 +197,7 @@ inherited SSOCalcDlg: TSSOCalcDlg
           Left = 179
           Top = 27
           Width = 41
-          Height = 28
+          Height = 23
           TabOrder = 1
           Text = ' '
           OnChange = Edit2Change
@@ -206,7 +206,7 @@ inherited SSOCalcDlg: TSSOCalcDlg
           Left = 138
           Top = 190
           Width = 43
-          Height = 28
+          Height = 23
           TabOrder = 2
           Text = ' '
           OnChange = Edit3Change
@@ -215,7 +215,7 @@ inherited SSOCalcDlg: TSSOCalcDlg
           Left = 194
           Top = 161
           Width = 43
-          Height = 28
+          Height = 23
           TabOrder = 3
           Text = ' '
           OnChange = Edit5Change
@@ -233,7 +233,7 @@ inherited SSOCalcDlg: TSSOCalcDlg
           Left = 179
           Top = 76
           Width = 41
-          Height = 28
+          Height = 23
           TabOrder = 5
         end
         object BitBtn2: TBitBtn
@@ -249,14 +249,14 @@ inherited SSOCalcDlg: TSSOCalcDlg
           Left = 194
           Top = 127
           Width = 42
-          Height = 28
+          Height = 23
           TabOrder = 7
         end
         object Edit14: TEdit
           Left = 179
           Top = 53
           Width = 41
-          Height = 28
+          Height = 23
           TabOrder = 8
           OnChange = Edit14Change
         end
@@ -273,7 +273,7 @@ inherited SSOCalcDlg: TSSOCalcDlg
           Left = 209
           Top = 221
           Width = 42
-          Height = 28
+          Height = 23
           TabOrder = 10
           Text = 'Edit17'
           OnChange = Edit17Change
@@ -282,7 +282,7 @@ inherited SSOCalcDlg: TSSOCalcDlg
           Left = 302
           Top = 221
           Width = 51
-          Height = 28
+          Height = 23
           TabOrder = 11
           Text = 'Edit18'
           OnChange = Edit18Change
@@ -300,7 +300,7 @@ inherited SSOCalcDlg: TSSOCalcDlg
           Left = 302
           Top = 190
           Width = 50
-          Height = 28
+          Height = 23
           TabOrder = 13
           Text = 'Edit20'
           OnChange = Edit20Change

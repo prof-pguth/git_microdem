@@ -222,7 +222,7 @@ begin
    StatusBar1.Panels[0].Text := 'Creating cost surface';
    CheckLCPSettings;
    SaveBackupDefaults;
-   MDDef.TigertoCDS := false;
+   //MDDef.TigertoCDS := false;
    if not FileExists(MDDef.LCPRoadfName) then RoadNetworkBitBtn9Click(Sender);
    StatusBar1.Panels[0].Text := 'Calling CreateCostPathSurface';
    CreateCostPathSurface(StatusBar1);

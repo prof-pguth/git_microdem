@@ -3,20 +3,20 @@ inherited OptionsForm: TOptionsForm
   Top = 230
   BorderStyle = bsSizeable
   Caption = ''
-  ClientHeight = 567
-  ClientWidth = 809
+  ClientHeight = 564
+  ClientWidth = 797
   Position = poDefaultPosOnly
   OnClose = FormClose
   OnCreate = FormCreate
   OnResize = FormResize
-  ExplicitWidth = 821
-  ExplicitHeight = 605
+  ExplicitWidth = 813
+  ExplicitHeight = 603
   TextHeight = 15
   inherited Bevel1: TBevel
     Left = 0
     Top = 0
-    Width = 809
-    Height = 509
+    Width = 797
+    Height = 506
     Align = alClient
     ExplicitLeft = 0
     ExplicitTop = 1
@@ -45,14 +45,12 @@ inherited OptionsForm: TOptionsForm
   object PageControl1: TPageControl
     Left = 0
     Top = 0
-    Width = 809
-    Height = 509
-    ActivePage = TabSheet10
+    Width = 797
+    Height = 506
+    ActivePage = TabSheet15
     Align = alClient
     MultiLine = True
     TabOrder = 2
-    ExplicitWidth = 805
-    ExplicitHeight = 508
     object TabSheet1: TTabSheet
       Caption = 'Program'
       object RadioGroup7: TRadioGroup
@@ -130,8 +128,8 @@ inherited OptionsForm: TOptionsForm
       object StringGrid1: TStringGrid
         Left = 0
         Top = 0
-        Width = 801
-        Height = 459
+        Width = 793
+        Height = 457
         Align = alClient
         ColCount = 2
         ScrollBars = ssVertical
@@ -2172,6 +2170,13 @@ inherited OptionsForm: TOptionsForm
         Height = 15
         Caption = 'Min integer field length'
       end
+      object Label41: TLabel
+        Left = 328
+        Top = 424
+        Width = 207
+        Height = 15
+        Caption = 'Min VAT percentage to show in legends'
+      end
       object CheckBox69: TCheckBox
         Left = 16
         Top = 371
@@ -2419,33 +2424,17 @@ inherited OptionsForm: TOptionsForm
       object GroupBox13: TGroupBox
         Left = 311
         Top = 314
-        Width = 314
-        Height = 135
+        Width = 202
+        Height = 97
         Caption = 'Speed up operations'
         TabOrder = 30
         object CheckBox37: TCheckBox
           Left = 17
-          Top = 86
+          Top = 40
           Width = 216
           Height = 17
           Caption = 'Linked DBs moved to RAM'
           TabOrder = 0
-        end
-        object checkbox161: TCheckBox
-          Left = 17
-          Top = 63
-          Width = 240
-          Height = 17
-          Caption = 'Move Tiger into memory'
-          TabOrder = 1
-        end
-        object CheckBox167: TCheckBox
-          Left = 17
-          Top = 40
-          Width = 216
-          Height = 17
-          Caption = 'Move OSM  into memory'
-          TabOrder = 2
         end
         object CheckBox121: TCheckBox
           Left = 16
@@ -2453,15 +2442,15 @@ inherited OptionsForm: TOptionsForm
           Width = 201
           Height = 17
           Caption = 'Track database ranges'
-          TabOrder = 3
+          TabOrder = 1
         end
         object CheckBox35: TCheckBox
           Left = 16
-          Top = 109
+          Top = 63
           Width = 233
           Height = 17
           Caption = 'Allow DBs to RAM'
-          TabOrder = 4
+          TabOrder = 2
         end
       end
       object CheckBox60: TCheckBox
@@ -2479,6 +2468,14 @@ inherited OptionsForm: TOptionsForm
         Height = 17
         Caption = 'Confirm DB edits'
         TabOrder = 32
+      end
+      object Edit36: TEdit
+        Left = 544
+        Top = 424
+        Width = 61
+        Height = 23
+        TabOrder = 33
+        Text = 'Edit36'
       end
     end
     object TabSheet16: TTabSheet
@@ -3265,13 +3262,11 @@ inherited OptionsForm: TOptionsForm
   end
   object Panel1: TPanel
     Left = 0
-    Top = 509
-    Width = 809
+    Top = 506
+    Width = 797
     Height = 58
     Align = alBottom
     TabOrder = 3
-    ExplicitTop = 508
-    ExplicitWidth = 805
     object BitBtn3: TBitBtn
       Left = 178
       Top = 6

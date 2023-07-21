@@ -324,8 +324,6 @@ type
     CheckBox166: TCheckBox;
     GroupBox13: TGroupBox;
     CheckBox37: TCheckBox;
-    checkbox161: TCheckBox;
-    CheckBox167: TCheckBox;
     CheckBox121: TCheckBox;
     BitBtn37: TBitBtn;
     CheckBox110: TCheckBox;
@@ -357,8 +355,8 @@ type
     BitBtn33: TBitBtn;
     CheckBox6: TCheckBox;
     CheckBox35: TCheckBox;
-    CheckBox53: TCheckBox;
-    CheckBox57: TCheckBox;
+    //CheckBox53: TCheckBox;
+    //CheckBox57: TCheckBox;
     CheckBox60: TCheckBox;
     Button6: TButton;
     CheckBox36: TCheckBox;
@@ -415,6 +413,8 @@ type
     Edit16: TEdit;
     Edit30: TEdit;
     CheckBox89: TCheckBox;
+    Label41: TLabel;
+    Edit36: TEdit;
     procedure BitBtn32Click(Sender: TObject);
     procedure BitBtn13Click(Sender: TObject);
     procedure HelpBtnClick(Sender: TObject);
@@ -1009,6 +1009,7 @@ begin
    Edit29.Text := IntToStr(MDDef.DbMinIntFieldSize);
    Edit32.Text := IntToStr(MDDef.CloudOpenGLThinFactor);
    Edit33.Text := RealToString(MDDef.MinMaxGridTolerance,-12,-2);
+   Edit36.Text := RealToString(MDDef.DefCatPCforLegend,-8,-2);
    Edit37.Text := IntToStr(MDDef.UpdateDelay);
 
    Edit27.Text := IntToStr(MDDef.GeoJSONG_zdec);
@@ -1191,7 +1192,7 @@ begin
 
    CheckBox157.Checked := MDDef.ShowWinExec;
    CheckBox159.Checked := MDDef.MapLimitDB;
-   CheckBox161.Checked := MDDef.TigertoCDS;
+   //CheckBox161.Checked := MDDef.TigertoCDS;
    CheckBox181.Checked := MDDef.DEMIXCompositeImage;
 
    CheckBox300.Checked := MDDef.SeaLevelToMissing;
@@ -1199,7 +1200,7 @@ begin
    {$IfDef ExOSM}
       CheckBox117.Visible := false;
    {$Else}
-      CheckBox167.Checked := MDDef.OSMtoCDS;
+      //CheckBox167.Checked := MDDef.OSMtoCDS;
    {$EndIf}
 
    CheckBox24.Checked := MDDef.AutoLoadVegGrid;
@@ -1232,8 +1233,8 @@ begin
       CheckBox135.Checked := MDDef.ShowMarineGeology;
       CheckBox137.Checked := MDDef.ShowSieve;
       CheckBox138.Checked := MDDef.ShowGeomorphometry;
-      CheckBox53.Checked := MDDef.MoveGeographyDBMemory;
-      CheckBox57.Checked := MDDef.MoveGeologyDBMemory;
+      //CheckBox53.Checked := MDDef.MoveGeographyDBMemory;
+      //CheckBox57.Checked := MDDef.MoveGeologyDBMemory;
    {$EndIf}
 
    {$IfDef ExDP}
@@ -1362,26 +1363,17 @@ begin
       MDDef.ShowTernary := CheckBox134.Checked;
       MDDef.ShowMarineGeology := CheckBox135.Checked;
       MDDef.ShowGeomorphometry := CheckBox138.Checked;
-      MDDef.MoveGeologyDBMemory := CheckBox57.Checked;
-   {$EndIf}
-
-   {$IfDef ExGeography}
-   {$Else}
-      MDDef.MoveGeographyDBMemory := CheckBox53.Checked;
+      //MDDef.MoveGeologyDBMemory := CheckBox57.Checked;
    {$EndIf}
 
    {$IFDef ExPointCloud}
    {$Else}
-   if (MDDef.MemoryPointCloudMaxPts > TheMaxPointsMemPtCloud) then MDDef.MemoryPointCloudMaxPts := TheMaxPointsMemPtCloud;
+      if (MDDef.MemoryPointCloudMaxPts > TheMaxPointsMemPtCloud) then MDDef.MemoryPointCloudMaxPts := TheMaxPointsMemPtCloud;
    {$EndIf}
 
-   {$IfDef ExOSM}
-   {$Else}
-   MDDef.OSMtoCDS := CheckBox167.Checked;
-   {$EndIf}
 
    {$IfDef AllowGeomorphometry}
-   MDDef.CumFreqNormAxis := CheckBox149.Checked;
+      MDDef.CumFreqNormAxis := CheckBox149.Checked;
    {$EndIf}
 
    {$IfDef ExDRGimport}
@@ -1572,7 +1564,7 @@ begin
 
    MDDef.OpenGLCleanOverlays := CheckBox145.Checked;
 
-   MDDef.TigerToCDS := CheckBox161.Checked;
+  // MDDef.TigerToCDS := CheckBox161.Checked;
    MDDef.SeaLevelToMissing := CheckBox300.Checked;
 
    MDdef.doMeanDEM :=  CheckBox58.Checked;
@@ -1630,16 +1622,13 @@ begin
    MDDef.GoogleAPIkey := Edit1.Text;
 
    CheckEditString(Edit2.Text,MDDef.BlowUpExtraMargin);
-   //CheckEditString(Edit3.Text,MDdef.MaxMrSidImageSize);
    CheckEditString(Edit4.Text,MDdef.ScalebarDistortionTolerable);
    CheckEditString(Edit5.Text,MDDef.HistogramTailClipSize);
    CheckEditString(Edit6.Text,MDdef.MercShiftLongLimit);
 
-   //CheckEditString(Edit7.Text,MDdef.OGLDefs.MaxInitOpenGLTriangles);
    CheckEditString(Edit8.Text,MDdef.FillHoleRadius);
    CheckEditString(Edit11.Text,MDDef.JPEGQuality);
    CheckEditString(Edit12.Text,MDDef.DEMIX_full);
-
 
    MDDef.DefaultServerIP := Edit13.Text;
    MDDef.DefaultServerPort := StrToInt(Edit14.Text);
@@ -1658,12 +1647,13 @@ begin
    CheckEditString(Edit26.Text,MDDef.OpennessHowHigh);
    CheckEditString(Edit28.Text,MDDef.VegGridRandomizationDistance);
    CheckEditString(Edit29.Text,MDDef.DbMinIntFieldSize);
-   //CheckEditString(Edit31.Text,MDdef.OGLDefs.MaxOpenGLPoints);
    CheckEditString(Edit32.Text,MDDef.CloudOpenGLThinFactor);
    CheckEditString(Edit33.Text,MDDef.MinMaxGridTolerance);
    CheckEditString(Edit27.Text,MDDef.GeoJSONG_zdec);
    CheckEditString(Edit34.Text,MDDef.GeoJSONP_xydec);
    CheckEditString(Edit35.Text,MDDef.GeoJSONP_zdec);
+   CheckEditString(Edit36.Text,MDDef.DefCatPCforLegend);
+
    CheckEditString(Edit37.Text,MDDef.UpdateDelay);
 
    if (MDdef.MaxMapSize > MaxScreenXMax) then MDdef.MaxMapSize := MaxScreenXMax;

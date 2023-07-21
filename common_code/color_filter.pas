@@ -8,7 +8,6 @@ unit color_filter;
 {___________________________________}
 
 
-
 interface
 
 uses

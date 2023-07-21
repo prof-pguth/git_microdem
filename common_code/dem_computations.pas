@@ -16,7 +16,6 @@ unit dem_computations;
       //{$Define PixelRectBackup}
       //{$Define RecordTDemHandFormFormClose}
       //{$Define RecordDuckProblems}
-      //{$Define RecordSOESTtides}
       //{$Define RecordHandlingProblems}
       //{$Define RecordReformat}
       //{$Define RecordImportProblems}
@@ -38,10 +37,6 @@ uses
    Data.DB,
    {$IfDef UseFireDacSQLlite}
       FireDAC.Comp.Client, FireDAC.Comp.Dataset,FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteWrapper,
-   {$EndIf}
-
-   {$IfDef UseBDETables}
-      dbTables,
    {$EndIf}
 
    {$IfDef UseTDBF}
@@ -129,7 +124,6 @@ begin
 end;
 
 
-
 procedure MakeUTMTable;
 var
    Results : tStringList;
@@ -211,7 +205,7 @@ var
    Values : array[1..5000] of float32;
    Param : ShortString;
 begin
-   {$IfDef RecordGeostats} WriteLineToDebugFile('TPickGeoStat.Statsfortrainingset1Click in');  {$EndIf}
+   {$IfDef RecordGeostats} WriteLineToDebugFile('TPickGeoStat.Statsfortrainingset1Click in'); {$EndIf}
    GetAtlasDirectories(dbfDir,GridDir);
    GridsDB := OpenMultipleDataBases('',ExtractFilePath(GridDir) + 'param_stats.dbf');
 
@@ -229,7 +223,7 @@ begin
       ThreadTimers.OverallGauge9.Progress := round(100 * i/TheFiles.Count);
       fName := TheFiles.Strings[i];
       Param := UpperCase(ExtractFileNameNoExt(fName));
-      {$IfDef RecordGeostats} WriteLineToDebugFile(Param);   {$EndIf}
+      {$IfDef RecordGeostats} WriteLineToDebugFile(Param); {$EndIf}
 
       GISdb[GridsDB].MyData.ApplyFilter('PARAM=' + QuotedStr(Param));
       Results.Add(Param + ',WORLD,0,' +
@@ -246,7 +240,7 @@ begin
                   RealToString(GISdb[GridsDB].MyData.GetFieldByNameAsFloat('MAX'),-12,-4) );
 
       for j := 0 to pred(Classes.Count) do begin
-         {$IfDef RecordGeostats}  WriteLineToDebugFile('   ' + Classes.Strings[j]);   {$EndIf}
+         {$IfDef RecordGeostats}  WriteLineToDebugFile('   ' + Classes.Strings[j]); {$EndIf}
          GISdb[db].MyData.ApplyFilter('NAME=' + QuotedStr(Classes.Strings[j]));
          GISdb[db].EmpSource.Enabled := false;
          MomentVar.NPts := 0;
@@ -665,7 +659,6 @@ begin
    ThisGraph.AutoScaleAndRedrawDiagram;
    DEMDef_Routines.RestoreBackupDefaults;
 end;
-
 
 
 end.

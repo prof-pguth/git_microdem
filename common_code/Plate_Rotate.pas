@@ -30,10 +30,6 @@ uses
       FireDAC.Phys.SQLite, FireDAC.Comp.UI,
    {$EndIf}
 
-   {$IfDef UseBDETables}
-      dbTables,
-   {$EndIf}
-
    {$IfDef UseTDBF}
       dbf,
    {$EndIf}

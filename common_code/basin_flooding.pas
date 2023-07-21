@@ -4,7 +4,7 @@ unit basin_flooding;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
 
@@ -23,10 +23,6 @@ uses
    Data.DB,
    {$IfDef UseFireDacSQLlite}
       FireDAC.Comp.Client, FireDAC.Comp.Dataset,FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteWrapper,
-   {$EndIf}
-
-   {$IfDef UseBDETables}
-      dbTables,
    {$EndIf}
 
    {$IfDef UseTDBF}
@@ -146,8 +142,7 @@ end;
 procedure TFloodingForm.FloodTheBasin(StartX,StartY : integer; ReservoirTop : float64; var MaxDepth,AverageDepth,Area,Volume : float64; SaveFile : boolean);
 var
    NPts,x,y,xp,yp,BasinDEM,its   : integer;
-   XDEM,YDEM : float64;
-   z,zt : float32;
+   XDEM,YDEM,z,zt : float32;
    Changed : boolean;
    Bitmap,Bitmap2 : tMyBitmap;
    fName : PathStr;

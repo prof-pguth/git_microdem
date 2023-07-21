@@ -2,8 +2,8 @@ object dbtablef: Tdbtablef
   Left = 62
   Top = 306
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 996
-  ClientWidth = 1240
+  ClientHeight = 993
+  ClientWidth = 1228
   Color = clBtnFace
   ParentFont = True
   FormStyle = fsMDIChild
@@ -17,24 +17,24 @@ object dbtablef: Tdbtablef
   TextHeight = 15
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 977
-    Width = 1240
+    Top = 974
+    Width = 1228
     Height = 19
     Panels = <
       item
         Width = 250
       end>
-    ExplicitTop = 978
-    ExplicitWidth = 1244
+    ExplicitTop = 975
+    ExplicitWidth = 1232
   end
   object Panel2: TPanel
     Left = 0
     Top = 41
-    Width = 1240
+    Width = 1228
     Height = 32
     Align = alTop
     TabOrder = 1
-    ExplicitWidth = 1244
+    ExplicitWidth = 1232
     object BitBtn1: TBitBtn
       Left = 34
       Top = 1
@@ -215,11 +215,11 @@ object dbtablef: Tdbtablef
   object Panel3: TPanel
     Left = 0
     Top = 73
-    Width = 1240
+    Width = 1228
     Height = 41
     Align = alTop
     TabOrder = 2
-    ExplicitWidth = 1244
+    ExplicitWidth = 1232
     object Label2: TLabel
       Left = 12
       Top = 12
@@ -266,11 +266,11 @@ object dbtablef: Tdbtablef
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1240
+    Width = 1228
     Height = 41
     Align = alTop
     TabOrder = 4
-    ExplicitWidth = 1244
+    ExplicitWidth = 1232
     object LOSButton: TSpeedButton
       Left = 40
       Top = 6
@@ -529,11 +529,11 @@ object dbtablef: Tdbtablef
   object Panel7: TPanel
     Left = 0
     Top = 114
-    Width = 1240
+    Width = 1228
     Height = 41
     Align = alTop
     TabOrder = 3
-    ExplicitWidth = 1244
+    ExplicitWidth = 1232
     object RadioGroup2: TRadioGroup
       Left = 20
       Top = 0
@@ -554,8 +554,8 @@ object dbtablef: Tdbtablef
   object DBGrid1: TDBGrid
     Left = 0
     Top = 155
-    Width = 1240
-    Height = 822
+    Width = 1228
+    Height = 819
     Align = alClient
     TabOrder = 5
     TitleFont.Charset = DEFAULT_CHARSET
@@ -3671,7 +3671,14 @@ object dbtablef: Tdbtablef
     end
     object Bestbysortedgeomorphometry1: TMenuItem
       Caption = 'Best by sorted geomorphometry values'
-      OnClick = Bestbysortedgeomorphometry1Click
+      object Pointfilter1: TMenuItem
+        Caption = 'Point filter'
+        OnClick = Pointfilter1Click
+      end
+      object Pointfilter2: TMenuItem
+        Caption = 'ALL points'
+        OnClick = Pointfilter2Click
+      end
     end
     object BestDEMbycategory1: TMenuItem
       Caption = 'Graph best DEM (average score) for criteria and filters '

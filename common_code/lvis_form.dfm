@@ -2,8 +2,8 @@ object lvis_form1: Tlvis_form1
   Left = 0
   Top = 0
   Caption = 'LVIS'
-  ClientHeight = 229
-  ClientWidth = 390
+  ClientHeight = 228
+  ClientWidth = 386
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -79,12 +79,11 @@ object lvis_form1: Tlvis_form1
   object Memo1: TMemo
     Left = 0
     Top = 0
-    Width = 390
+    Width = 386
     Height = 74
     Align = alTop
     ScrollBars = ssVertical
     TabOrder = 7
-    ExplicitWidth = 384
   end
   object BitBtn8: TBitBtn
     Left = 280

@@ -4,11 +4,8 @@ unit AltCommR;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
-
-
-//http://podaac.jpl.nasa.gov/dataset/PODAAC_MGDR
 
 {$I nevadia_defines.inc}
  
@@ -210,7 +207,6 @@ begin
 end;
 
 
-
 function GrossGeoidHeight(Lat,Long : float64) : float64;
 var
    XLo,YLo,XHi : integer;
@@ -234,8 +230,7 @@ end;
 function TopexFlagsOK(MGDRRec : MGDRRecordTypeVersionB) : boolean;
 begin
    {first relaxation: shallow water and rain allowed}
-   with MGDRRec do
-      TopexFlagsOK := (H_MSS < 2147483647) and (H_Alt < 2147483647) and (Geo_Bad_1 in [0,1]) and (Geo_Bad_2 in [0,1]) and (Alt_Bad_1 = 0) and (Alt_Bad_2 = 0);
+   with MGDRRec do TopexFlagsOK := (H_MSS < 2147483647) and (H_Alt < 2147483647) and (Geo_Bad_1 in [0,1]) and (Geo_Bad_2 in [0,1]) and (Alt_Bad_1 = 0) and (Alt_Bad_2 = 0);
 end;
 
 
@@ -296,13 +291,13 @@ begin
    close(Gfile);
 end;
 
+
 procedure ReadRecords(var VersionBMGDRRecs : MGDRRecordTypeVersionB; var NumRead : int32);
 begin
    BlockRead(GFile,VersionBMGDRRecs,MaxRecords,NumRead);
 end;
 
-
-
+(*
 procedure AltimeterInitialization;
 var
    GeoidFile : file;
@@ -318,7 +313,7 @@ begin
    else MessageToContinue('GEOID.DEM missing.');
    AltParam := WaveHeight;
 end;
-
+*)
 
 initialization
 end.

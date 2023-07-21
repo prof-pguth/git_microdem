@@ -52,10 +52,6 @@ uses
       FireDAC.Comp.Client, FireDAC.Comp.Dataset,FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteWrapper,
    {$EndIf}
 
-   {$IfDef UseBDETables}
-      dbTables,
-   {$EndIf}
-
    {$IfDef UseTDBF}
       dbf,
    {$EndIf}
@@ -530,7 +526,7 @@ procedure LocatePointOnGraph(Canvas : TCanvas; GraphDraw : tGraphDraw; x,y : int
 
 function GraphAxesName(GraphAxes : AxesType) : shortstring;
 
-function SaveSingleValueSeries(NumVals : integer; var zs : Petmath.bfarray32; fName : PathStr = '' {; First : integer = 0; Last : integer = -999}) : PathStr;
+function SaveSingleValueSeries(NumVals : integer; var zs : Petmath.bfarray32; fName : PathStr = '') : PathStr;
 
 function CreateMultipleHistogram(GraphNumbers : boolean; FileList,LegendList : tStringList; ParamName,TitleBar : ShortString;
     NumBins : integer = 100; Min : float32 = 1; Max : float32 = -1; BinSize : float32 =  -99; TColorList : tStringList = Nil) : TThisBaseGraph;
@@ -2536,7 +2532,9 @@ begin {proc CreateGraphAxes}
       {$If Defined(RecordGrafAxes)} WriteLineToDebugFile('tThisBaseGraph.CreateGraphAxes primary y axis set, ' + GraphDraw.AxisRange); {$EndIf}
 
       if (GraphDraw.GraphAxes <> NoGrid) then begin
-         for i := 1 to GraphDraw.NumVertCycles do VertPartOfGraph(GraphDraw.VertCycleCuts[i,1],GraphDraw.VertCycleCuts[i,2],GraphDraw.VertCycleCuts[i,3],i=1);
+         for i := 1 to GraphDraw.NumVertCycles do begin
+            VertPartOfGraph(GraphDraw.VertCycleCuts[i,1],GraphDraw.VertCycleCuts[i,2],GraphDraw.VertCycleCuts[i,3],i=1);
+         end;
          {$If Defined(RecordGrafAxes)} WriteLineToDebugFile('tThisBaseGraph.CreateGraphAxes VertPartOfGraph done, ' + GraphDraw.AxisRange); {$EndIf}
       end;
 
@@ -2619,10 +2617,15 @@ function tGraphDraw.GraphY(y : float32) : integer;
 var
    ty : integer;
 begin
-   y := VertAxisFunct(y);
-   tY := round( (y - ScrMinVertAxis) /(ScrVertRange) * (YWindowSize - BottomMargin - TopMargin));
-   if NormalCartesianY then ty := YWindowSize - TopMargin - BottomMargin - ty;
-   GraphY := TopMargin + ty;
+   if abs(ScrVertRange) < 0.000001 then begin
+      Result := TopMargin;
+   end
+   else begin
+      y := VertAxisFunct(y);
+      tY := round( (y - ScrMinVertAxis) / (ScrVertRange) * (YWindowSize - BottomMargin - TopMargin));
+      if NormalCartesianY then ty := YWindowSize - TopMargin - BottomMargin - ty;
+      Result := TopMargin + ty;
+   end;
 end;
 
 

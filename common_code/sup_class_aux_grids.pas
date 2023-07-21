@@ -24,10 +24,6 @@ uses
    FireDAC.Comp.Client, FireDAC.Comp.Dataset,FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteWrapper,
    {$EndIf}
 
-   {$IfDef UseBDETables}
-   dbTables,
-   {$EndIf}
-
    {$IfDef UseTDBF}
    dbf,
    {$EndIf}
@@ -217,14 +213,14 @@ implementation
 uses
    {$IfDef ExSats}
    {$Else}
-   DEMEros,
+      DEMEros,
    {$EndIf}
 
    DEMDefs,DEMCoord, DEMDef_Routines, BaseGraf,DEMDataBase,
    PetImage,Petmar,
    {$IfDef ExGeoStats}
    {$Else}
-   DEMStat,
+      DEMStat,
    {$EndIf}
    Mask_opts2,
    Make_Tables,
@@ -248,7 +244,7 @@ begin
    SupClassAuxGrids.BaseMap := theBaseMap;
    SupClassAuxGrids.TrainingSetDB := aTrainingSetDB;
    SupClassAuxGrids.InitialSetupOver := true;
-   SupClassAuxGrids.BitBtn9.Enabled := theBaseMap.MapDraw.SatOnMap <> 0;
+   SupClassAuxGrids.BitBtn9.Enabled := ValidSatImage(SupClassAuxGrids.BaseMap.MapDraw.SatOnMap);
    SupClassAuxGrids.Show;
    {$IfDef SupClassAuxGrids} WriteLineToDebugFile('ClassWithAuxGrids out'); {$EndIf}
 end;
@@ -553,8 +549,7 @@ end;
 
 procedure TSupClassAuxGrids.GridValuesAtPoint(Lat,Long : float64);
 var
-   xg1,yg1 : float64;
-   z : float32;
+   xg1,yg1,z : float32;
    Band : integer;
    TStr : shortString;
 begin

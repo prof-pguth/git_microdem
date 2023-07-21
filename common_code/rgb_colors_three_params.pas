@@ -98,6 +98,7 @@ function tPlatformColorFromRGB(RedField,GreenField,BlueField : float64) : TRGBTr
 
 procedure ThreeGridRGBMap(aMapForm : tMapForm);
 
+function NewThreeGridRGBMap : integer;
 
 implementation
 
@@ -146,9 +147,45 @@ begin
    Result.rgbtBlue := ValidByteRange(MDDef.MinRGBColor + round( MDDef.RangeRGBColor * (BlueField - MinBlueRange) / (MaxBlueRange - MinBlueRange)));
 end;
 
+
 function tColorFromRedGreenBlue(RedField,GreenField,BlueField : float64) : tColor;
 begin
    Result := ConvertPlatformColorToTColor(tPlatformColorFromRGB(RedField,GreenField,BlueField));
+end;
+
+
+function NewThreeGridRGBMap : integer;
+var
+   i : Integer;
+begin
+   {$IfDef RecordRGBIssues} WriteLineToDebugFile('ThreeGridRGBMap in'); {$EndIf}
+   RGB_form := TRGB_form.Create(Application);
+   with RGB_form do begin
+      MapForm := nil;
+      PetImage.CloneImageToBitmap(MapForm.Image1,RedBMP,true);
+      PetImage.CloneImageToBitmap(MapForm.Image1,GreenBMP,true);
+      PetImage.CloneImageToBitmap(MapForm.Image1,BlueBMP,true);
+      for i := 1 to MaxDEMDataSets do if ValidDEM(i) then begin
+         ComboBox1.Items.Add(DEMGlb[i].AreaName);
+         ComboBox2.Items.Add(DEMGlb[i].AreaName);
+         ComboBox3.Items.Add(DEMGlb[i].AreaName);
+         {$IfDef RecordRGBIssues} WriteLineToDebugFile('Accepted: ' + DEMGlb[i].FullDEMParams); {$EndIf}
+      end;
+      Edit7.Text := RealToString(MDDef.MinPercentile,-12,-1);
+      Edit8.Text := RealToString(MDDef.MaxPercentile,-12,-1);
+
+      ComboBox1.Text := ComboBox1.Items[0];
+      if (ComboBox1.Items.Count > 1) then ComboBox2.Text := ComboBox1.Items[1];
+      if (ComboBox1.Items.Count > 2) then ComboBox3.Text := ComboBox1.Items[2];
+      ComboBox1Change(Nil);
+      ComboBox2Change(Nil);
+      ComboBox3Change(Nil);
+      RGB_form.DoingWork := true;
+      BitBtn1Click(Nil);
+      Show;
+   end;
+   {$IfDef RecordRGBIssues} WriteLineToDebugFile('ThreeGridRGBMap out'); {$EndIf}
+
 end;
 
 
@@ -163,14 +200,11 @@ begin
       PetImage.CloneImageToBitmap(MapForm.Image1,RedBMP,true);
       PetImage.CloneImageToBitmap(MapForm.Image1,GreenBMP,true);
       PetImage.CloneImageToBitmap(MapForm.Image1,BlueBMP,true);
-      //FirstDEM := 0;
       for i := 1 to MaxDEMDataSets do if ValidDEM(i) then begin
-         //if True or (FirstDEM = 0) or (DEMGlb[FirstDEM].SecondGridIdentical(i)) then begin
-            ComboBox1.Items.Add(DEMGlb[i].AreaName);
-            ComboBox2.Items.Add(DEMGlb[i].AreaName);
-            ComboBox3.Items.Add(DEMGlb[i].AreaName);
-            //FirstDEM := i;
-            {$IfDef RecordRGBIssues} WriteLineToDebugFile('Accepted: ' + DEMGlb[i].FullDEMParams); {$EndIf}
+         ComboBox1.Items.Add(DEMGlb[i].AreaName);
+         ComboBox2.Items.Add(DEMGlb[i].AreaName);
+         ComboBox3.Items.Add(DEMGlb[i].AreaName);
+         {$IfDef RecordRGBIssues} WriteLineToDebugFile('Accepted: ' + DEMGlb[i].FullDEMParams); {$EndIf}
       end;
       Edit7.Text := RealToString(MDDef.MinPercentile,-12,-1);
       Edit8.Text := RealToString(MDDef.MaxPercentile,-12,-1);
@@ -194,13 +228,14 @@ begin
    ResetChannels;
 end;
 
+
 procedure TRGB_form.CheckComboBox(ComboBox : tComboBox; MinEdit,MaxEdit : tEdit; var DEM : integer;  var Min,Max : Petmar_types.float64; Bitmap : tMyBitmap);
 var
     i,chan : integer;
 begin
    {$IfDef RecordRGBIssues} WriteLineToDebugFile('TRGB_form.CheckComboBox. DEM=' + IntToStr(DEM)); {$EndIf}
    for i := 1 to MaxDEMDataSets do if ValidDEM(i) then begin
-      if ComboBox.Text = DEMGlb[i].AreaName then begin
+      if (ComboBox.Text = DEMGlb[i].AreaName) then begin
          DEM := i;
 
          if MDDef.DefElevsPercentile then begin
@@ -208,15 +243,15 @@ begin
             Max := DEMGlb[DEM].FindPercentileElevation(MDDef.MaxPercentile);
          end
          else begin
-            Min := DEMGlb[DEM].DEMHeader.MinElev;  //SelectionMap.MapDraw.MinMapElev;
-            Max := DEMGlb[DEM].DEMHeader.MaxElev;  //SelectionMap.MapDraw.MaxMapElev;
+            Min := DEMGlb[DEM].DEMHeader.MinElev;
+            Max := DEMGlb[DEM].DEMHeader.MaxElev;
          end;
          {$IfDef RecordRGBIssues} WriteLineToDebugFile('Min=' + RealToString(Min,-12,-2) + ' Max=' + RealToString(Max,-12,-2) ); {$EndIf}
 
          MinEdit.Text := RealToString(Min,-18,-4);
          MaxEdit.Text := RealToString(Max,-18,-4);
          if (ComboBox = ComboBox1) then Chan := RedChannel
-         else  if (ComboBox = ComboBox2) then Chan := GreenChannel
+         else if (ComboBox = ComboBox2) then Chan := GreenChannel
          else if (ComboBox = ComboBox3) then Chan := BlueChannel;
          DrawGridRGBMap(DEM,chan,Min,Max,Bitmap);
          exit;
@@ -285,6 +320,13 @@ var
    Composite,Red,Green,Blue : tBMPMemory;
 begin
    {$IfDef RecordRGBIssues} WriteLineToDebugFile('TRGB_form.BitBtn1Click in'); {$EndIf}
+   if (MapForm = nil) then  begin
+      MapForm := DEMGlb[RedDEM].SelectionMap.DuplicateMap(false);
+      MapForm.MapDraw.MapType := mtRGB3grids;
+      MapForm.MatchThiscoverageareaandsamepixelsize1Click(Sender);
+   end;
+
+
    if (RedBMP.Height <> MapForm.Image1.ClientHeight) or (RedBMP.Width <> MapForm.Image1.ClientWidth) then begin
       RedChanged := true;
       BlueChanged := true;
@@ -330,6 +372,7 @@ begin
    RadioGroup2Click(Sender);
    {$IfDef RecordRGBIssues} WriteLineToDebugFile('TRGB_form.BitBtn1Click out'); {$EndIf}
 end;
+
 
 procedure TRGB_form.BitBtn2Click(Sender: TObject);
 begin

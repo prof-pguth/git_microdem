@@ -33,10 +33,6 @@ uses
       FireDAC.Comp.Client, FireDAC.Comp.Dataset,FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteWrapper,
    {$EndIf}
 
-   {$IfDef UseBDETables}
-      dbTables,
-   {$EndIf}
-
    {$IfDef UseTDBF}
       dbf,
    {$EndIf}
@@ -112,7 +108,7 @@ begin
       GISdb[IndexNum].ClearGISFilter;
       StartProgress('Index');
       SaveBackupDefaults;
-      MDDef.TigerToCDS := false;
+      //MDDef.TigerToCDS := false;
       Count := 0;
       i := 0;
       StartProgress('TIGER index');
@@ -153,7 +149,6 @@ begin
    RestoreBackupDefaults;
    {$IfDef RecordTigerIndex} WriteLinetoDebugFile('IndexTigerFiles out; found n=' + IntToStr(Count)); {$EndIf}
 end;
-
 
 
 procedure RedistrictTigerFiles(fName : PathStr);
@@ -423,7 +418,7 @@ begin
 end;
 
 
-procedure FindTIGERinBox(bb : sfBoundBox;  var TigerNames : tStringList);
+procedure FindTIGERinBox(bb : sfBoundBox; var TigerNames : tStringList);
 {using a database of the TIGER county files, determines counties within a box defined by lat/long}
 label
    Restart;

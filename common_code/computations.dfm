@@ -2,8 +2,8 @@ object CompForm: TCompForm
   Left = 0
   Top = 0
   Caption = 'Computations'
-  ClientHeight = 365
-  ClientWidth = 517
+  ClientHeight = 362
+  ClientWidth = 505
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -16,24 +16,22 @@ object CompForm: TCompForm
   object Memo1: TMemo
     Left = 0
     Top = 145
-    Width = 517
-    Height = 220
+    Width = 505
+    Height = 217
     Align = alClient
     Lines.Strings = (
       '')
     ScrollBars = ssVertical
     TabOrder = 0
-    ExplicitWidth = 513
-    ExplicitHeight = 219
   end
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 517
+    Width = 505
     Height = 145
     Align = alTop
     TabOrder = 1
-    ExplicitWidth = 513
+    ExplicitWidth = 509
     object Label3: TLabel
       Left = 182
       Top = 85

@@ -2,8 +2,8 @@ object MapForm: TMapForm
   Left = 45
   Top = 303
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1043
-  ClientWidth = 1707
+  ClientHeight = 1040
+  ClientWidth = 1695
   Color = clBtnHighlight
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -40,8 +40,8 @@ object MapForm: TMapForm
   object ScrollBox1: TScrollBox
     Left = 0
     Top = 27
-    Width = 1707
-    Height = 1016
+    Width = 1695
+    Height = 1013
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clRed
@@ -51,8 +51,8 @@ object MapForm: TMapForm
     ParentFont = False
     TabOrder = 0
     OnClick = ScrollBox1Click
-    ExplicitWidth = 1703
-    ExplicitHeight = 1015
+    ExplicitWidth = 1691
+    ExplicitHeight = 1012
     object Image1: TImage
       Left = 3
       Top = -247
@@ -209,13 +209,13 @@ object MapForm: TMapForm
     end
     object BlendPanel: TPanel
       Left = 0
-      Top = 971
-      Width = 1703
+      Top = 968
+      Width = 1691
       Height = 41
       Align = alBottom
       TabOrder = 8
-      ExplicitTop = 970
-      ExplicitWidth = 1699
+      ExplicitTop = 967
+      ExplicitWidth = 1687
       object TrackBar2: TTrackBar
         Left = 289
         Top = 1
@@ -334,12 +334,12 @@ object MapForm: TMapForm
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1707
+    Width = 1695
     Height = 27
     Align = alTop
     TabOrder = 1
     OnMouseDown = Panel1MouseDown
-    ExplicitWidth = 1703
+    ExplicitWidth = 1691
     object AnnotateSpeedButton1: TSpeedButton
       Left = 31
       Top = -4
@@ -6562,7 +6562,6 @@ object MapForm: TMapForm
     Top = 428
     object hiscoverageareaandsamepixelsize1: TMenuItem
       Caption = 'This coverage area and same pixel size'
-      OnClick = hiscoverageareaandsamepixelsize1Click
     end
     object Allmapsmatchthiscoveragearea1: TMenuItem
       Caption = 'This coverage area'

@@ -48,7 +48,6 @@ begin
       GetFieldValuesInArrayLinkPossible(GISdb[LOSdraw.FresnelDB].MyData,Nil,'','','SLOPE_2D',zs^,MomentVar.Npts,Missing,Min,Max);
       if (NPts > 1)  then begin
          moment(zs^,MomentVar,msAll);
-         //Median := Petmath.Median(zs^,npts);
          Findings.Add('   average slope:' + RealToString(MomentVar.Mean,8,2));
          Findings.Add('   median slope:' + RealToString(MomentVar.Median,8,2));
       end;
@@ -58,7 +57,6 @@ begin
       GetFieldValuesInArrayLinkPossible(GISdb[LOSdraw.FresnelDB].MyData,Nil,'','','SLOPE_2D',zs^,MomentVar.Npts,Missing,Min,Max);
       if (NPts > 1)  then begin
          moment(zs^,MomentVar,msAll);
-         //Median := Petmath.Median(zs^,npts);
          Findings.Add('   average slope:' + RealToString(MomentVar.Mean,8,2));
          Findings.Add('   median slope:' + RealToString(MomentVar.Median,8,2));
       end;

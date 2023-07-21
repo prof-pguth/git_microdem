@@ -127,7 +127,6 @@ begin
    DEMDef_routines.SaveBackupDefaults;
    RefOptFm.MapOwner := aMapOwner;
    RefOptFm.Caption := 'Hillshade/reflectance options: ' + DEMGlb[RefOptFm.MapOwner.MapDraw.DEMonMap].AreaName;
-   //RefOptFm.UpDown1.Position := round(DEMGlb[RefOptFm.MapOwner.MapDraw.DEMonMap].RefVertExag);
    RefOptFm.Edit3.Text := RealToString(MDDef.RefVertExag,-8,-2);
    RefOptFm.SetUpForm;
    RefOptFm.SetupOver := true;
@@ -360,7 +359,6 @@ procedure TRefOptFM.TrackBar1Change(Sender: TObject);
 begin
    MDDEF.MergeSat := TrackBar1.Position;
    label5.Caption := 'Saturation: ' + IntToStr(MDDEF.MergeSat);
-   //SetUpForm;
 end;
 
 procedure TRefOptFM.BitBtn2Click(Sender: TObject);

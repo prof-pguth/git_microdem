@@ -26,10 +26,6 @@ uses
       FireDAC.Comp.Client, FireDAC.Comp.Dataset,FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteWrapper,
    {$EndIf}
 
-   {$IfDef UseBDETables}
-      dbTables,
-   {$EndIf}
-
    {$IfDef UseTDBF}
       dbf,
    {$EndIf}
@@ -304,10 +300,9 @@ procedure Tshowrecordform.ShowRecords;
 var
    DEMGridSize,
    fLoX,fHiX,fLoY,fHiY,k,i,err : integer;
-   xDEMg,yDEMg, xSATg,ySATg,
-   s1s2,s2s3,Trend,RoughnessFactor,
-   xg1,yg1,Lat,Long : float64;
-   z : float32;
+   xDEMg,yDEMg, xSATg,ySATg : float32;
+   s1s2,s2s3,Trend,RoughnessFactor,Lat,Long : float64;
+   xg1,yg1,z : float32;
    TStr2 : String;
    TStr : ShortString;
    bmp,bmp2,bmp3 : tMyBitmap;
@@ -791,6 +786,7 @@ begin
    StringGrid1.ColWidths[0] := StringGrid1.Canvas.TextWidth('WWWWWWWWWW');
    StringGrid1.ColWidths[1] := ClientWidth - StringGrid1.ColWidths[0];
    StringGrid1.RowHeights[0] := 5 * StringGrid1.Canvas.TextHeight('WWWWWWWWWW') div 4;
+   if (CurrentRec_ID <> 0) then ShowRecords(CurrentRec_ID);
 end;
 
 

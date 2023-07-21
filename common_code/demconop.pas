@@ -252,7 +252,6 @@ end;
 procedure TContourOptions.CheckBox2Click(Sender: TObject);
 begin
   {$IfDef DrawContours} writeLineToDebugFile('TContourOptions.CheckBox2Click');  {$EndIf}
-   //MDDef.ExportContourShapeFile := CheckBox2.Checked;
 end;
 
 initialization
