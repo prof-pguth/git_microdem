@@ -2411,6 +2411,7 @@ var
             AParameter('DEMIX','MakeCOP_ALOS_Cat_Maps',MakeCOP_ALOS_Cat_Maps,false);
             AParameter('DEMIX','MakeCOP_FABDEM_diffMaps',MakeCOP_FABDEM_diffMaps,false);
             AParameter('DEMIX','MakeCOP_ALOS_Best_Map',MakeCOP_ALOS_Best_Map,true);
+            AParameter('DEMIX','MakeRGB_Best_Map',MakeRGB_Best_Map,true);
       end;
    end;
 

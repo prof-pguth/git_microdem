@@ -605,8 +605,6 @@ end;
 
 
 procedure OpenRecycleBin;
-//uses
-   //ShlObj, ShellAPI, ... ;  Place a TButton named "OpenBinButton" on a form, handle its OnClick event as:  procedure TRecycleBinForm.OpenBinButtonClick(Sender: TObject) ;
 var
     recycleBinPIDL: PItemIDList;
     execInfo: TShellExecuteInfo;
@@ -652,14 +650,13 @@ begin
   end;
 end;
 
+
 procedure UnblockFile(fName : PathStr);
 begin
    {$IfDef VCL}
-      //http://engram404.net/programmatically-unblocking-downloaded-files/
       if FileExists(fName) then ExecuteFile('type nul > ' + fName + ':Zone.Identifier','','');
    {$EndIf}
 end;
-
 
 
 function FileCanBeOpened(fName : PathStr) : boolean;
@@ -732,6 +729,36 @@ end;
             TheForm.Left := Mouse.CursorPos.X - TheForm.Width div 2;
             InsureFormIsOnScreen(TheForm);
          end;
+
+
+         procedure ShowInNotepadPlusPlus(inName : tStringList; Capt : shortstring = '');
+         var
+             fName : PathStr;
+         begin
+            fName := MDTempDir + ExtractFileNameNoExt(Capt) + '.txt';
+            inName.SaveToFile(fName);
+            inName.Free;
+            ShowInNotepadPlusPlus(fName);
+         end;
+
+
+         procedure ShowInNotepadPlusPlus(fName : PathStr; Capt : shortstring = '');
+         var
+            ppName,Params,DefaultDir : ANSIstring;
+         begin
+            ppName := 'C:\Program Files\Notepad++\notepad++.exe';
+            if (not FileExists(ppName)) then ppName := 'C:\Program Files (x86)\Notepad++\notepad++.exe';
+            if FileExists(ppName) then begin
+               ppName := '"' + ppName + '"';
+               Params := fName;
+               DefaultDir := '';
+               ExecuteFile(ppName, Params, DefaultDir);
+            end
+            else begin
+               if (Capt = '') then Capt := fname;
+               QuickOpenEditWindow(FName,Capt);
+            end;
+         end;
 {$EndIf}
 
 
@@ -778,36 +805,6 @@ begin
 end;
 
 
-{$IfDef VCL}
-         procedure ShowInNotepadPlusPlus(inName : tStringList; Capt : shortstring = '');
-         var
-             fName : PathStr;
-         begin
-            fName := MDTempDir + ExtractFileNameNoExt(Capt) + '.txt';
-            inName.SaveToFile(fName);
-            inName.Free;
-            ShowInNotepadPlusPlus(fName);
-         end;
-
-
-         procedure ShowInNotepadPlusPlus(fName : PathStr; Capt : shortstring = '');
-         var
-            ppName,Params,DefaultDir : ANSIstring;
-         begin
-            ppName := 'C:\Program Files\Notepad++\notepad++.exe';
-            if (not FileExists(ppName)) then ppName := 'C:\Program Files (x86)\Notepad++\notepad++.exe';
-            if FileExists(ppName) then begin
-               ppName := '"' + ppName + '"';
-               Params := fName;
-               DefaultDir := '';
-               ExecuteFile(ppName, Params, DefaultDir);
-            end
-            else begin
-               if (Capt = '') then Capt := fname;
-               QuickOpenEditWindow(FName,Capt);
-            end;
-         end;
-{$EndIf}
 
 procedure CleanUpFileName(var fname : PathStr);
 var

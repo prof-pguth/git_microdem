@@ -29,6 +29,7 @@
       //{$Define TrackHorizontalDatum}
       //{$Define RecordFan}
       //{$Define RecordVAT}
+      //{$Define RecordMapType}
       //{$Define FanDrawProblems)
       //{$Define WorldFileOverlay}
       //{$Define RecordStretchBitmap}
@@ -151,8 +152,7 @@ uses
    {$EndIf}
 
    {$IfDef Android}
-      Androidapi.NativeActivity,
-      Posix.Pthread,
+      Androidapi.NativeActivity,Posix.Pthread,
    {$EndIf}
 
    {$IfDef RecordTime}
@@ -381,11 +381,8 @@ type
       procedure CheckMapNotTooLarge;
       function MapZRange : float64; inline;
 
-      //function ConicProjection : boolean;
-
       procedure AdjustProjectionForUTMZone(Why : shortstring; PrimaryDatum: shortstring;  UTMZone : byte; LatHemi : ANSIchar); overload;
       procedure AdjustProjectionForUTMZone(Why : shortstring; PrimaryDatum : shortstring;  Lat,Long : float64); overload;
-
 
       procedure ResetMarginalia;
 
@@ -701,7 +698,6 @@ uses
    {$EndIf}
 
    {$IfDef VCL}
-      //GetMapF,
       DEMElevOps,
    {$EndIf}
 
@@ -783,7 +779,6 @@ const
                                                      (5817485,7449405,11958352,10307447,10243520,8024039,7120610,6216662),
                                                      (54916,4500224,12609536,10682476,10223818,6837759,4697087,64244));
 
-
    {$IfDef ExViewshed}
    {$Else}
       {$I demmapdraw_viewshed.inc}
@@ -799,61 +794,19 @@ const
       {$I demmapdraw_grids.inc}
    {$EndIf}
 
+   {$IfDef ExWMS}
+   {$Else}
+      {$I demmapdraw_wms.inc}
+   {$EndIf}
+
    {$IfDef VCL}
       {$I demmapdraw_map_colors.inc}
       {$I demmapdraw_plot_dbs.inc}
       {$I demmapdraw_plot_vcl.inc}
    {$EndIf}
 
-
-   {$IfDef ExWMS}
-   {$Else}
-      {$I demmapdraw_wms.inc}
-   {$EndIf}
-
    {$I demmapdraw_coords.inc}
    {$I demmapdraw_map_sizing.inc}
-
-
-function MakeChangeMapLegend(DEMonMap : integer) : tMyBitmap;
-var
-   Vat : tStringList;
-   fName : PathStr;
-   color : tColor;
-   TStr : shortstring;
-   CatHeight,Cat : integer;
-begin
-   CreateBitmap(Result,1200,800);
-
-   Result.Canvas.Font.Size := MDDef.LegendFont.Size;
-   CatHeight := 6 * Result.Canvas.TextHeight('Wy') div 5;
-
-   Cat := 0;
-
-   ClearBitmap(Result,clNearWhite);
-   Result.Canvas.Font.Style := [fsBold];
-
-   Result.Canvas.TextOut(5,1,'       % of area      Category');
-   inc(Cat);
-   Result.Canvas.Pen.Color := clLime;
-   Result.Canvas.Brush.Color := clLime;
-   Result.Canvas.Brush.Style := bsSolid;
-   Result.Canvas.Rectangle(5,Cat*CatHeight,40,succ(Cat)*CatHeight);
-   Result.Canvas.Brush.Style := bsClear;
-   Tstr := RealToString(100-DEMGlb[DEMonMap].PercentileOfElevation(MDDef.TopCutLevel),9,2) + '%   Positive Difference > ' + RealToString(MDDef.TopCutLevel,-8,-2);
-   Result.Canvas.TextOut(45,Cat*CatHeight + 4, TStr);
-
-   inc(Cat);
-   Result.Canvas.Pen.Color := clRed;
-   Result.Canvas.Brush.Color := clRed;
-   Result.Canvas.Brush.Style := bsSolid;
-   Result.Canvas.Rectangle(5,Cat*CatHeight,40,succ(Cat)*CatHeight);
-   Result.Canvas.Brush.Style := bsClear;
-   TStr := RealToString(DEMGlb[DEMonMap].PercentileOfElevation(MDDef.BottomCutLevel),9,2) + '%   Negative Difference < ' + RealToString(MDDef.BottomCutLevel,-8,-2);
-   Result.Canvas.TextOut(45,Cat*CatHeight + 4,TStr);
-   PutBitmapInBox(Result);
-end;
-
 
 
 function SameProjection(Map1,Map2 : tMapDraw) : boolean;
@@ -867,7 +820,6 @@ begin
       end;
    end;
 end;
-
 
 
 function tMapDraw.ColsDisplayed : integer;
@@ -1162,8 +1114,6 @@ begin
       {$If Defined(WorldFileOverlay) or Defined(RecordFan) or Defined(RecordOverlays)} WriteLineToDebugFile('File missing in tMapDraw.DrawWorldFileImageOnMap=' + fName); {$EndIf}
    end;
 end;
-
-
 
 
 function TMapDraw.NativeGridAllowedOnMap : boolean;
@@ -1475,21 +1425,11 @@ var
    {$IfDef VCL}
       p0,p1 : pRGB;
    {$EndIf}
-   {$IfDef FMX}
-      Region : tRectF;
-   {$EndIf}
 begin
    if (Overlay <> Nil) then begin
       {$IfDef RecordOverlays}
          Overlay.SaveToFile(MDTempDir + 'DrawOverlayNoDelete_overlay' + OverlayFExt);
          Bitmap.SaveToFile(MDTempDir + 'DrawOverlayNoDelete_bitmap' + OverlayFExt);
-      {$EndIf}
-
-      {$IfDef FMX}
-          Bitmap.Canvas.BeginScene;
-          Region.Create(0,0,pred(Bitmap.Width),pred(Bitmap.Height));
-          Bitmap.Canvas.DrawBitmap(Overlay,region,region,0.01 * Opacity);
-          Bitmap.Canvas.EndScene;
       {$EndIf}
 
       {$IfDef VCL}
@@ -1536,10 +1476,7 @@ end;
 function tMapDraw.KMLcompatibleMap : boolean;
 begin
    Result := (DEMMap and (DEMGlb[DEMonMap].DEMheader.DEMUsed <> UTMbasedDEM)) or ((VectorIndex <> 0) and (PrimMapProj.Pname in [MercatorEllipsoid]))
-{$IfDef ExSat}
-{$Else}
       or ((SATonMap > 0) and (SatImage[SATonMap].ImageMapProjection.PName = PlateCaree));
-{$EndIf}
 end;
 
 

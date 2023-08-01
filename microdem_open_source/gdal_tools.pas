@@ -177,6 +177,7 @@ uses
    nevadia_main;
 
 const
+   ogr2ogr_params = ' -skipfailures -overwrite -progress -t_srs EPSG:4326';
    GDAL_Geotiff_str = ' -of Gtiff -co TILED=NO -co COMPRESS=NONE ';
    AddWKT = ' -wkt_format WKT2';
 
@@ -886,9 +887,6 @@ end;
                else exit;
             end;
             StartGDALbatchFile(BatchFile);
-            //Code := 32600;      {WGS84 default}
-            //if LatHemi= 'S' then Code := Code + 100;
-            //Code := Code + MdDEF.DefaultUTMZone;
             Code := 4326;
             cmd := GDAL_translate_name + ' -a_srs EPSG:' + IntToStr(Code);
             GISdb[GISNum].MyData.First;
@@ -923,9 +921,6 @@ end;
          flist,my_vrt,OutName : PathStr;
          cmd : shortstring;
       begin
-      //gdalbuildvrt -separate -input_file_list my_files.txt my.vrt
-      //gdal_translate -projwin ulx uly lrx lry my.vrt my.tif
-
          FileNames := tStringList.Create;
          FileNames.Add(ExtractFilePath(LastImageName));
          DefaultFilter := 0;
@@ -959,15 +954,6 @@ end;
             for I := 0 to pred(FilesWanted.Count) do begin
                fName := FilesWanted.Strings[i];
                Numbands := BandsInGeotiff(fName);
-               (*
-               if StrUtils.AnsiContainsText(UpperCase(fName),'_SR_8B_') then NumBands := 8
-               else if StrUtils.AnsiContainsText(UpperCase(fName),'_4B_') then NumBands := 4
-               else if StrUtils.AnsiContainsText(UpperCase(fName),'_3B_') then NumBands := 3
-               else begin
-                  NumBands := 84;
-                  ReadDefault('bands to extract',NumBands);
-               end;
-               *)
                {$IfDef RecordReformat} WriteLineToDebugFile(fName); {$EndIf}
                StartProgress('Extract');
                for j := 1 to NumBands do begin
@@ -1023,7 +1009,6 @@ end;
             {$IfDef RecordGDAL} WriteLineToDebugFile('GDALSubsetSatImageToMatchMap fails, missing ' + GDAL_program); {$EndIf}
          end;
       end;
-
 
 
       function GDALsubsetimageandopen(bb : sfBoundBox; LatLongBox : boolean; fName : PathStr; BaseOutPath : PathStr = '') : integer;
@@ -1168,7 +1153,7 @@ end;
 
 
       procedure GDALConvertSingleImageToGeotiff(var fName : PathStr);
-      //if you want to keep the compressed DEM and uncompress to temporary storage, use this
+      //if you want to keep compressed DEM and uncompress to temporary storage, use this
       var
          OutName : PathStr;
          cmd : shortstring;
@@ -1291,11 +1276,6 @@ end;
         end;
         FileNames.Free;
       end;
-
-
-      const
-         ogr2ogr_params = ' -skipfailures -overwrite -progress -t_srs EPSG:4326';
-
 
       procedure GDALGeodatabasetoshapefile;
       var

@@ -97,8 +97,6 @@ type
     ComboBox8: TComboBox;
     BitBtn7: TBitBtn;
     BitBtn8: TBitBtn;
-    Label4: TLabel;
-    Edit3: TEdit;
     BitBtn9: TBitBtn;
     BitBtn10: TBitBtn;
     CheckBox4: TCheckBox;
@@ -120,10 +118,6 @@ type
     BitBtn23: TBitBtn;
     BitBtn24: TBitBtn;
     BitBtn25: TBitBtn;
-    Label5: TLabel;
-    Label6: TLabel;
-    Edit4: TEdit;
-    Edit5: TEdit;
     BitBtn26: TBitBtn;
     Settings: TTabSheet;
     CheckBox2: TCheckBox;
@@ -133,6 +127,14 @@ type
     threedembestrgm_checkbox: TCheckBox;
     CheckBox9: TCheckBox;
     BitBtn28: TBitBtn;
+    GroupBox7: TGroupBox;
+    Label6: TLabel;
+    Edit5: TEdit;
+    Edit4: TEdit;
+    Label5: TLabel;
+    Edit3: TEdit;
+    Label4: TLabel;
+    BitBtn29: TBitBtn;
     procedure BitBtn1Click(Sender: TObject);
     procedure LoadClick(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
@@ -178,6 +180,7 @@ type
     procedure threedembestrgm_checkboxClick(Sender: TObject);
     procedure CheckBox9Click(Sender: TObject);
     procedure BitBtn28Click(Sender: TObject);
+    procedure BitBtn29Click(Sender: TObject);
   private
     { Private declarations }
     procedure ZeroDEMs;
@@ -255,7 +258,6 @@ begin
    DemixFilterForm.LandTypesUsing := tStringList.Create;
    DemixFilterForm.CriteriaUsing := tStringList.Create;
    DemixFilterForm.CandidateDEMsUsing := tStringList.Create;
-   DemixFilterForm.Edit3.Text := RealToString(MDDef.TopCutLevel,-8,-2);
 
    DemixFilterForm.Show;
    {$If Defined(RecordDEMIX) or Defined(TrackOpenHandles)} WriteOpenHandlestoDebugLog('DoDEMIXFilter out'); {$EndIf}
@@ -271,8 +273,8 @@ const
    AllAll        = 6;
 
 procedure TDemixFilterForm.MakeDifferenceMaps(WhatType : integer);
-const
-   DEMType : array[1..2] of shortstring = ('DTM','DSM');
+//const
+   //DEMType : array[1..2] of shortstring = ('DTM','DSM');
 var
    i,j,k : integer;
    DEMarea : ANSIString;
@@ -365,7 +367,7 @@ begin
    MDDef.GridLegendLocation.MapPosition := lpNWMap;
 
    if (WhatType = ElevV1) then theRefDEMs := RefDEMsv1 else theRefDEMs := RefDEMs;
-   for j := 1 to 2 do begin
+   for j := 2 downto 1 do begin
       for i := 1 to MaxDemixArray do begin
          //this will not work yet for the high latitude areas
          if ValidDEM(TestDEMs[i]) then begin
@@ -374,11 +376,11 @@ begin
             for  k := 1 to 6 do if StrUtils.AnsiContainsText(DEMArea,DEMIXDEMTypeName[k]) then SeriesName := DEMIXDEMTypeName[k];
             if StrUtils.AnsiContainsText(DEMArea,'ALOS') then RefPointOrArea := 'AREA' else RefPointOrArea := 'POINT';
             if (WhatType = AllAll) then begin
-               GetRefDEMDifferenceMap(ElevAll,i,DEMArea,RefPointOrArea,DEMType[j],SeriesName);
-               GetRefDEMDifferenceMap(SlopeAll,i,DEMArea,RefPointOrArea,DEMType[j],SeriesName);
-               GetRefDEMDifferenceMap(RuffAll,i,DEMArea,RefPointOrArea,DEMType[j],SeriesName);
+               GetRefDEMDifferenceMap(ElevAll,i,DEMArea,RefPointOrArea,RefDEMType[j],SeriesName);
+               GetRefDEMDifferenceMap(SlopeAll,i,DEMArea,RefPointOrArea,RefDEMType[j],SeriesName);
+               GetRefDEMDifferenceMap(RuffAll,i,DEMArea,RefPointOrArea,RefDEMType[j],SeriesName);
             end
-            else GetRefDEMDifferenceMap(WhatType,i,DEMArea,RefPointOrArea,DEMType[j],SeriesName);
+            else GetRefDEMDifferenceMap(WhatType,i,DEMArea,RefPointOrArea,RefDEMType[j],SeriesName);
          end;
       end;
    end;
@@ -392,7 +394,7 @@ end;
 
 procedure TDemixFilterForm.threedembestrgm_checkboxClick(Sender: TObject);
 begin
-   MDDef.MakeCOP_ALOS_Best_Map := threedembestrgm_checkbox.Checked;
+   MDDef.MakeRGB_Best_Map := threedembestrgm_checkbox.Checked;
 end;
 
 procedure TDemixFilterForm.UncheckAllLoadCheckboxes;
@@ -573,6 +575,14 @@ begin
          BitBtn14Click(Sender);
       end;
    end;
+end;
+
+procedure TDemixFilterForm.BitBtn29Click(Sender: TObject);
+begin
+   MDDef.TopCutLevel := 0.5;
+   MDDef.DEMIXSlopeTolerance := 0.5;
+   MDDef.DEMIXRuffTolerance := 0.2;
+   FormCreate(nil);
 end;
 
 procedure TDemixFilterForm.BitBtn2Click(Sender: TObject);
@@ -845,6 +855,7 @@ var
 begin
    Edit1.Text := IntToStr(MDDef.DEMIX_xsize);
    Edit2.Text := IntToStr(MDDef.DEMIX_ysize);
+   Edit3.Text := RealToString(MDDef.TopCutLevel,-8,-2);
    Edit4.Text := RealToString(MDDef.DEMIXSlopeTolerance,-8,-2);
    Edit5.Text := RealToString(MDDef.DEMIXRuffTolerance,-8,-2);
    for i := 1 to NumDEMIXDEM do begin
@@ -859,7 +870,7 @@ begin
    CheckBox7.Checked := MDDef.MakeCOP_ALOS_Best_Map;
    CheckBox9.Checked := MDDef.MakeCOP_FABDEM_diffMaps;
 
-   threedembestrgm_checkbox.Checked := MDDef.MakeCOP_ALOS_Best_Map;
+   threedembestrgm_checkbox.Checked := MDDef.MakeRGB_Best_Map;
 
    PageControl1.ActivePage := TabSheet1;
 end;
@@ -984,19 +995,12 @@ var
       function MakeRGBBestMap(RefDEM,ALOSDEM,COPDEM,FabDEM,MergeDEM : integer; Tolerance : float32; What : shortstring) : integer;
       begin
         {$IfDef RecordDEMIX} WriteLineToDebugFile('MakeRGBBestMap, ' + What); {$EndIf}
-         Result := RGBBestOfThreeMap(RefDEM,ALOSDEM,COPDEM,FABDEM,Tolerance,What);
-         if ValidDEM(Result) then begin
-            if MDDef.AutoMergeStartDEM then begin
-               DEMGlb[Result].SelectionMap.MergeAnotherDEMreflectance(MergeDEM,true);
-            end;
-         end
-         else begin
-            {$IfDef RecordDEMIX} WriteLineToDebugFile('MakeRGBBestMap failed, ' + fName); {$EndIf}
-         end;
+         Result := RGBBestOfThreeMap(RefDEM,ALOSDEM,COPDEM,FABDEM,MergeDEM,Tolerance,What);
       end;
 
 var
    z,pc : float32;
+   refDEMSurfaceType : integer;
 begin
    {$IfDef RecordDEMIX} WriteLineToDebugFile('TDemixFilterForm.BitBtn14Click (COP-ALOS) in'); {$EndIf}
    BitBtn8Click(Sender);  //close and zero all DEMs
@@ -1006,8 +1010,6 @@ begin
    CheckBox6.Checked := true;
    LoadDEMsForCurrentArea(AreaName,true);
    {$IfDef RecordDEMIX} WriteLineToDebugFile('AreaName: ' + AreaName); {$EndIf}
-
-   //MDDef.MakeRGB_Best_Map := true;
 
    COPDEM := 0;
    ALOSDEM := 0;
@@ -1029,7 +1031,10 @@ begin
    end;
 
    if MDDef.MakeCOP_FABDEM_diffMaps then begin
+      MakeDifferenceMap(COPDEM,RefDEMsHalfSec[1],COPDEM,COPDEM,true,false,false,AreaName + '_COPDEM_minus_Ref');
+      MakeDifferenceMap(FABDEM,RefDEMsHalfSec[1],FABDEM,COPDEM,true,false,false,AreaName + '_FABDEM_minus_Ref');
       Cop_FAB_diff := MakeDifferenceMap(COPDEM,FABDEM,COPDEM,COPDEM,true,false,false,AreaName + '_COPDEM_minus_FABDEM');
+
       {$IfDef RecordDEMIX} WriteLineToDebugFile('TDemixFilterForm.BitBtn14Click Cop_FAB_diff ' + DEMGlb[Cop_FAB_diff].ZRange ); {$EndIf}
       z := DEMGlb[Cop_FAB_diff].DEMheader.MinElev;
       WriteLineToDebugFile('');
@@ -1049,6 +1054,7 @@ begin
    if MDDef.MakeCOP_ALOS_Cat_Maps or MDDef.MakeCOP_ALOS_Best_Map or MDDef.MakeRGB_Best_Map then begin
       for i := 1 to MaxDemixArray do begin
          if ValidDEM(RefDEMsHalfSec[i]) then begin
+            refDEMsurfaceType := IsDEMaDSMorDTM(UpperCase(DEMGlb[RefDEMsHalfSec[i]].AreaName));
             {$IfDef RecordDEMIX} WriteLineToDebugFile('Do half sec, ' + DEMGlb[RefDEMsHalfSec[i]].AreaName); {$EndIf}
 
             SlopeRef := 0; //to force return of the slope map in addition to the ruff map
@@ -1064,18 +1070,27 @@ begin
             {$IfDef RecordDEMIX} WriteLineToDebugFile('Slope/ruff created'); {$EndIf}
 
             if MDDef.MakeRGB_Best_Map then begin
-               RGBBestElevGrid[i] := MakeRGBBestMap(RefDEMsHalfSec[i],ALOSDEM,COPDEM,FABDEM,RefDEMsHalfSec[i],MDDef.DEMIXSimpleTolerance,'_elevation_RGB_' + DEMGlb[RefDEMsHalfSec[i]].AreaName);
-               RGBBestSlopeGrid[i] := MakeRGBBestMap(SlopeRef,SlopeALOS,SlopeCOP,SlopeFAB,RefDEMsHalfSec[i],MDDef.DEMIXSlopeTolerance,'slope_RGB_' + DEMGlb[RefDEMsHalfSec[i]].AreaName);
-               RGBBestRuffGrid[i] := MakeRGBBestMap(RuffRef,RuffALOS,RuffCOP,RuffFAB,RefDEMsHalfSec[i],MDDef.DEMIXRuffTolerance,'roughness_RGB_' + DEMGlb[RefDEMsHalfSec[i]].AreaName);
+               {$IfDef RecordDEMIX} WriteLineToDebugFile('MDDef.MakeRGB_Best_Map'); {$EndIf}
+               RGBBestElevGrid[i] := RGBBestOfThreeMap(RefDEMsHalfSec[i],ALOSDEM,COPDEM,FABDEM,RefDEMsHalfSec[i],MDDef.DEMIXSimpleTolerance,
+                   AreaName + '_best_elevation_ref_' + RefDEMType[refDEMSurfaceType] + '±' + RealToString(MDDef.DEMIXSimpleTolerance,-4,-2));
+               RGBBestSlopeGrid[i] := RGBBestOfThreeMap(SlopeRef,SlopeALOS,SlopeCOP,SlopeFAB,RefDEMsHalfSec[i],MDDef.DEMIXSlopeTolerance,
+                   AreaName + '_best_slope_ref_' + RefDEMType[refDEMSurfaceType] + '±' + RealToString(MDDef.DEMIXSlopeTolerance,-4,-2));
+               RGBBestRuffGrid[i] := RGBBestOfThreeMap(RuffRef,RuffALOS,RuffCOP,RuffFAB,RefDEMsHalfSec[i],MDDef.DEMIXRuffTolerance,
+                   AreaName + '_best_roughness_ref_' + RefDEMType[refDEMSurfaceType] + '±' + RealToString(MDDef.DEMIXRuffTolerance,-4,-2));
             end;
 
             if MDDef.MakeCOP_ALOS_Best_Map then begin
-               BestElevGrid[i] := MakeBestMap(RefDEMsHalfSec[i],ALOSDEM,COPDEM,RefDEMsHalfSec[i],MDDef.DEMIXSimpleTolerance,'_elevation_compared_to_' + DEMGlb[RefDEMsHalfSec[i]].AreaName);
-               BestSlopeGrid[i] := MakeBestMap(SlopeRef,SlopeALOS,SlopeCOP,RefDEMsHalfSec[i],MDDef.DEMIXSlopeTolerance,'slope_compared_to_' + DEMGlb[RefDEMsHalfSec[i]].AreaName);
-               BestRuffGrid[i] := MakeBestMap(RuffRef,RuffALOS,RuffCOP,RefDEMsHalfSec[i],MDDef.DEMIXRuffTolerance,'roughness_compared_to_' + DEMGlb[RefDEMsHalfSec[i]].AreaName);
+               {$IfDef RecordDEMIX} WriteLineToDebugFile('MDDef.MakeCOP_ALOS_Best_Map'); {$EndIf}
+               BestElevGrid[i] := MakeBestMap(RefDEMsHalfSec[i],ALOSDEM,COPDEM,RefDEMsHalfSec[i],MDDef.DEMIXSimpleTolerance,
+                   AreaName + '_elevation_ref_' +  RefDEMType[refDEMSurfaceType] + '±' + RealToString(MDDef.DEMIXSimpleTolerance,-4,-2));
+               BestSlopeGrid[i] := MakeBestMap(SlopeRef,SlopeALOS,SlopeCOP,RefDEMsHalfSec[i],MDDef.DEMIXSlopeTolerance,
+                   AreaName + '_slope_ref_' +  RefDEMType[refDEMSurfaceType] + '±' + RealToString(MDDef.DEMIXSlopeTolerance,-4,-2));
+               BestRuffGrid[i] := MakeBestMap(RuffRef,RuffALOS,RuffCOP,RefDEMsHalfSec[i],MDDef.DEMIXRuffTolerance,
+                   AreaName + '_roughness_ref_' +  RefDEMType[refDEMSurfaceType] + '±' + RealToString(MDDef.DEMIXRuffTolerance,-4,-2));
             end;
 
             if MDDef.MakeCOP_ALOS_Cat_Maps then begin
+               {$IfDef RecordDEMIX} WriteLineToDebugFile('MDDef.MakeCOP_ALOS_Cat_Maps'); {$EndIf}
                NewElevGrid[i] := MakeNewMap('elev',RefDEMsHalfSec[i],ALOSDEM,COPDEM,RefDEMsHalfSec[i]);
                NewSlopeGrid[i] := MakeNewMap('slope',SlopeRef,SlopeALOS,SlopeCOP,RefDEMsHalfSec[i]);
                NewRuffGrid[i] := MakeNewMap('ruff',RuffRef,RuffALOS,RuffCOP,RefDEMsHalfSec[i]);

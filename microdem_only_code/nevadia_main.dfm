@@ -29,13 +29,12 @@ object wmdem: Twmdem
     Left = 0
     Top = 0
     Width = 2058
-    Height = 29
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34
     TabOrder = 0
     OnMouseDown = ToolBar1MouseDown
-    ExplicitWidth = 2062
+    ExplicitWidth = 2054
     object SpeedButton2: TSpeedButton
       Left = 0
       Top = 0
@@ -1697,8 +1696,8 @@ object wmdem: Twmdem
     Visible = False
     OnClick = StatusBar1Click
     OnDblClick = StatusBar1DblClick
-    ExplicitTop = 1125
-    ExplicitWidth = 2062
+    ExplicitTop = 1123
+    ExplicitWidth = 2054
   end
   object MainMenu1: TMainMenu
     Left = 136
@@ -2456,6 +2455,13 @@ object wmdem: Twmdem
         Caption = 'Advanced analysis'
         OnClick = Advancedanalysis1Click
       end
+      object N28: TMenuItem
+        Caption = '-'
+      end
+      object DEMIXhelp1: TMenuItem
+        Caption = 'DEMIX help'
+        OnClick = DEMIXhelp1Click
+      end
     end
     object Help1: TMenuItem
       Caption = '&Help'
@@ -2503,7 +2509,6 @@ object wmdem: Twmdem
       end
       object Updatehelpfile2: TMenuItem
         Caption = 'Update help file'
-        Enabled = False
         OnClick = Updatehelpfile2Click
       end
       object AboutMICRODEM1: TMenuItem

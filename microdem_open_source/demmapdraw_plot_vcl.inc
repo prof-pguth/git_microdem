@@ -93,6 +93,49 @@
 {$EndIf}
 
 
+function MakeChangeMapLegend(DEMonMap : integer) : tMyBitmap;
+var
+   Vat : tStringList;
+   fName : PathStr;
+   color : tColor;
+   TStr : shortstring;
+   CatHeight,Cat : integer;
+begin
+   CreateBitmap(Result,1200,800);
+
+   //Result.Canvas.Font.Size := MDDef.LegendFont.Size;
+   LoadMyFontIntoWindowsFont(MDDef.LegendFont,Result.Canvas.Font);
+
+   CatHeight := 6 * Result.Canvas.TextHeight('Wy') div 5;
+
+   Cat := 1;
+
+   ClearBitmap(Result,clNearWhite);
+   Result.Canvas.Font.Style := [fsBold];
+
+   Result.Canvas.TextOut(5,1,RemoveUnderscores(DEMGlb[DEMonMap].AreaName));
+   Result.Canvas.TextOut(5,Cat*CatHeight + 4,'       % of area      Category');
+   inc(Cat);
+   Result.Canvas.Pen.Color := clLime;
+   Result.Canvas.Brush.Color := clLime;
+   Result.Canvas.Brush.Style := bsSolid;
+   Result.Canvas.Rectangle(5,Cat*CatHeight,40,succ(Cat)*CatHeight);
+   Result.Canvas.Brush.Style := bsClear;
+   Tstr := RealToString(100-DEMGlb[DEMonMap].PercentileOfElevation(MDDef.TopCutLevel),9,2) + '%   Positive Difference > ' + RealToString(MDDef.TopCutLevel,-8,-2);
+   Result.Canvas.TextOut(45,Cat*CatHeight + 4, TStr);
+
+   inc(Cat);
+   Result.Canvas.Pen.Color := clRed;
+   Result.Canvas.Brush.Color := clRed;
+   Result.Canvas.Brush.Style := bsSolid;
+   Result.Canvas.Rectangle(5,Cat*CatHeight,40,succ(Cat)*CatHeight);
+   Result.Canvas.Brush.Style := bsClear;
+   TStr := RealToString(DEMGlb[DEMonMap].PercentileOfElevation(MDDef.BottomCutLevel),9,2) + '%   Negative Difference < ' + RealToString(MDDef.BottomCutLevel,-8,-2);
+   Result.Canvas.TextOut(45,Cat*CatHeight + 4,TStr);
+   PutBitmapInBox(Result);
+end;
+
+
 function tMapDraw.ChangeMapLegend : tMyBitmap;
 begin
    Result := MakeChangeMapLegend(DEMonMap);
@@ -118,7 +161,10 @@ begin
       fName := DEMGlb[DEMOnMap].DEMFileName + '.vat.dbf';
       if not FileExists(fName) then fName := ChangeFileExt(DEMGlb[DEMOnMap].DEMFileName,'.vat.dbf');
       if not FileExists(fName) then fName := DEMGlb[DEMOnMap].DEMFileName + '.vat.csv';
-      if not FileExists(fName) then exit;
+      if not FileExists(fName) then begin
+         {$IfDef RecordVAT} WriteLineToDebugFile('tMapDraw.MakeVATLegend did not find VAT file'); {$EndIf}
+         exit;
+      end;
       DEMGlb[DEMOnMap].VATFileName := fName;
    end;
    {$IfDef RecordVAT} WriteLineToDebugFile('tMapDraw.MakeVATLegend enter for=' + fName); {$EndIf}
@@ -170,17 +216,14 @@ begin
       GISdb[db].MyData.ApplyFilter(GISdb[db].MyData.NCountField + ' > ' + IntToStr(Needed));
 
       Cats := GISdb[db].MyData.FiltRecsInDB;
-      CreateBitmap(Result,1200,50*succ(Cats) + 4);
-
-      Result.Canvas.Font.Size := MDDef.LegendFont.Size;
+      CreateBitmap(Result,1200,50*(Cats+2) + 4);
+      LoadMyFontIntoWindowsFont(MDDef.LegendFont,Result.Canvas.Font);
       CatHeight := 6 * Result.Canvas.TextHeight('Wy') div 5;
-
-      Cat := 0;
-
+      Cat := 1;
       ClearBitmap(Result,clNearWhite);
-      Result.Canvas.Font.Style := [fsBold];
 
-      Result.Canvas.TextOut(5,1,'    % Area     ' + GISdb[db].dbOpts.LabelField);
+      Result.Canvas.TextOut(5,1,RemoveUnderscores(BaseTitle));
+      Result.Canvas.TextOut(5,Cat*CatHeight + 4,'    % Area     ' + GISdb[db].dbOpts.LabelField);
       while not GISdb[db].MyData.eof do begin
          xg := 100.0*GISdb[db].MyData.GetFieldByNameAsInteger(GISdb[db].MyData.NCountField) / fTotal;
          inc(Cat);
@@ -957,10 +1000,10 @@ end;
                       end;
 
          begin
-            {$IfDef RecordMapDraw} WriteLineToDebugFile('TMapDraw.DrawLegendOnBitmap in'); {$EndIf}
+            {$If Defined(RecordMapDraw) or Defined(RecordMapType)} WriteLineToDebugFile('TMapDraw.DrawLegendOnBitmap in, maptype='+ IntToStr(MapType)); {$EndIf}
 
             Result := Nil;
-            if ((MaxMapElev - MinMapElev) < 0.0001) then exit;
+            if ((MaxMapElev - MinMapElev) < 0.0001) and (MapType <> mtDEMVATTable) then exit;
 
             if (MapMerge in [mmElevation]) then begin
                if not DEMMap then ScaleMapElevationsToDEM;
@@ -985,7 +1028,8 @@ end;
             if (MapType = mtGGRReflect) then begin
                Result := ChangeMapLegend;
             end
-            else if (MapType = mtDEMVATTable) and FileExists(DEMGlb[DEMOnMap].VATFileName) then begin
+            else if (MapType = mtDEMVATTable) {and FileExists(DEMGlb[DEMOnMap].VATFileName)} then begin
+               {$If Defined(RecordVAT) or Defined(RecordMapType)} WriteLineToDebugFile('TMapDraw.DrawLegendOnBitmap (MapType = mtDEMVATTable)'); {$EndIf}
                Result := MakeVATLegend;
             end;
 
@@ -1347,16 +1391,8 @@ end;
                       if MDDef.LabelContours and (SideZ[Side,Num] mod (5 * ContInt) = 0) then begin
                          if (XPix[Side1,Cnt] <> XPix[Side,Num]) or (YPix[Side1,Cnt] <> YPix[Side,Num]) then
                             IndexContours.Add(IntegerToString(SideZ[Side,Num]-ElevShift,8) + IntegerToString(XPix[Side1,Cnt],8) +
-                                     IntegerToString(YPix[Side1,Cnt],8) + IntegerToString(XPix[Side,Num],8) +
-                                     IntegerToString(YPix[Side,Num],8));
+                                     IntegerToString(YPix[Side1,Cnt],8) + IntegerToString(XPix[Side,Num],8) + IntegerToString(YPix[Side,Num],8));
                       end;
-
-                      {$IfDef RecordContourLines}
-                      if SmallArea then begin
-                         WriteLineToDebugFile(IntegerToString(SideZ[Side,Num],8) + IntegerToString(XPix[Side1,Cnt],8) +  IntegerToString(YPix[Side1,Cnt],8) + IntegerToString(XPix[Side,Num],8) + IntegerToString(YPix[Side,Num],8));
-                      end;
-                      {$EndIf}
-
                       SideZ[Side1,Cnt] := -1;
                       SideZ[Side,Num] := -1;
                       inc(Tested[Side1]);
@@ -1373,7 +1409,7 @@ end;
             zmin,zmax,zAvg         : float32;
             FloatElev  : tElevFloatArray;
          begin
-            {$IfDef RecordContour} WriteLineToDebugFile('TMapDraw.DrawContoursInArea, map=' + BaseTitle + '  contouring DEM=' + IntToStr(DEMToUse)); {$EndIf}
+            {$IfDef RecordContour} WriteLineToDebugFile('TMapDraw.DrawContoursInArea, map=' + BaseTitle + ' contouring DEM=' + IntToStr(DEMToUse)); {$EndIf}
             if (ContInt <> 0) then with MapCorners do begin
                if (DEMToUse = DEMonMap) and (ContourOverlayfName <> '')  then begin
                   ContourOverlay := LoadBitmapFromFile(ContourOverlayfName);
@@ -1383,7 +1419,7 @@ end;
                end
                else begin
                   CreateBitmap(ContourOverlay,Bitmap.Width,Bitmap.Height);
-                  {$IfDef RecordContour} WriteLineToDebugFile('Starting Contour map with contour interval ' + IntToStr(ContInt) + '   Contour color method: ' + IntToStr(ord(MDdef.ContourColors))); {$EndIf}
+                  {$IfDef RecordContour} WriteLineToDebugFile('Starting Contour map with contour interval ' + IntToStr(ContInt) + ' Contour color method: ' + IntToStr(ord(MDdef.ContourColors))); {$EndIf}
                   if MDDef.LabelContours then begin
                      {$IfDef RecordContour} WriteLineToDebugFile('MDDef.LabelContours active'); {$EndIf}
                      IndexContours := tStringList.Create;
@@ -1450,7 +1486,6 @@ end;
                                   Point[Cnt,1] := (Elv[Cnt] mod ContInt) / abs(DifElv[Cnt]);
                                   SideZ[Cnt,1] := (Elv[Cnt] div ContInt) * ContInt;
                                end;
-                               //ContourZ[Cnt,1] := (Elv[Cnt] div ContInt) * ContInt - ElevShift;
                                for Num := 2 to ElvPer[Cnt] do Begin
                                   Point[Cnt,Num] := Point[Cnt,pred(Num)] + ContInt / abs(DifElv[Cnt]);
                                   if (DifElv[Cnt] > 0) then begin
@@ -1470,15 +1505,6 @@ end;
                           For Num := 1 to ElvPer[2] do DEMGridToScreen(succ(EWGrid),NSGrid + Point[2,Num],XPix[2,num],YPix[2,Num]);
                           For Num := 1 to ElvPer[3] do DEMGridToScreen(succ(EWGrid)-Point[3,Num],succ(NSGrid),XPix[3,num],YPix[3,Num]);
                           For Num := 1 to ElvPer[4] do DEMGridToScreen(EWGrid,succ(NSGrid) - Point[4,Num],XPix[4,num],YPix[4,Num]);
-
-                          {$IfDef RecordContourLines}
-                          if SmallArea then begin
-                             For Num := 1 to ElvPer[1] do WriteLineToDebugFile(RealToString(EWGrid+Point[1,Num],12,2) + RealToString(NSGrid,12,2));
-                             For Num := 1 to ElvPer[2] do WriteLineToDebugFile(RealToString(succ(EWGrid),12,2) + RealToString(NSGrid + Point[2,Num],12,2));
-                             For Num := 1 to ElvPer[3] do WriteLineToDebugFile(RealToString(succ(EWGrid)-Point[3,Num],12,2) + RealToString(succ(NSGrid),12,2));
-                             For Num := 1 to ElvPer[4] do WriteLineToDebugFile(RealToString(EWGrid,12,2) + RealToString(succ(NSGrid) - Point[4,Num],12,2));
-                          end;
-                          {$EndIf}
 
                         For Num := 1 to 4 do Tested[Num] := 0;
                            {Tested is number of contour lines drawn to a side}
@@ -1713,9 +1739,6 @@ end;
 
 
          procedure TMapDraw.PlotAnIcon(Bitmap : tMyBitmap; Table : tMyData; LatFieldName,LongFieldName : ShortString; FieldName : ShortString = 'ICONNAME'; ScalingFactor : byte = 100);
-         {$IfDef ExMovie}
-         begin
-         {$Else}
          var
             Lat,Long : float64;
             Lastx,lasty : integer;
@@ -1730,7 +1753,6 @@ end;
                   if FileExists(MenuStr) then PlotAnIcon(Bitmap,Lat,Long,MenuStr,ScalingFactor);
                end;
             end;
-         {$EndIf}
          end;
 
 
@@ -1879,9 +1901,9 @@ end;
                {$IfDef RecordOverlays} WriteLineToDebugFile('PlotDataBases catch up'); {$EndIf}
                PlotDataBases(inBitmap);
             end;
-
             {$IfDef RecordTiming} WriteLineToDebugFile('tMapDraw.DrawMapOverlays out'); {$EndIf}
          end;
+
 
          function tMapDraw.MaxScaleDistortionOnMap : float64;
          var

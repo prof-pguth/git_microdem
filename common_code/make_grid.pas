@@ -16,7 +16,8 @@ unit make_grid;
 
    {$IfDef RecordProblems}   //normally only defined for debugging specific problems
       //$Define CreateAspectMap}
-      //{$Define DEMIXmaps}
+      {$Define RecordDEMIX_VAt}
+      {$Define DEMIXmaps}
       //{$Define CreateSlopeMap}
       //{$Define TrackMapRange}
       //{$Define CreateGeomorphMaps}
@@ -112,7 +113,7 @@ function DifferenceCategoryMap(DEMonMap : integer; fName : PathStr = '') : integ
 function AirBallDirtBallMap(DEMonMap,DSM,DTM : integer; fName : PathStr = '') : integer;
 function TwoDEMHighLowMap(RefDEM,ALOS,COP : integer; SimpleTolerance : float32; FourCats : boolean; fName2 : PathStr; ShowMap : boolean = true) : integer;
 function BestCopOrALOSmap(RefDEM,ALOS,Cop : integer; Tolerance : float32; AName : shortString) : integer;
-function RGBBestOfThreeMap(RefDEM,ALOS,Cop,Fab : integer; Tolerance : float32; AName : shortString) : integer;
+function RGBBestOfThreeMap(RefDEM,ALOS,Cop,Fab,Merge : integer; Tolerance : float32; AName : shortString) : integer;
 
 function MakeDNBRMap(PreNBR,PostNBR : integer) : integer;
 
@@ -248,21 +249,66 @@ begin
 end;
 
 
-function RGBBestOfThreeMap(RefDEM,ALOS,Cop,Fab : integer; Tolerance : float32; AName : shortString) : integer;
+function RGBBestOfThreeMap(RefDEM,ALOS,Cop,Fab,Merge : integer; Tolerance : float32; AName : shortString) : integer;
+type
+   tHist = array[1..8] of int64;
 var
-   i,What : integer;
+   i,What,ALOSBest,COPbest,FABbest : integer;
    RefZ,CopZ,ALOSZ,FabZ,Best : float32;
    Lat,Long : float64;
    x,y : integer;
+   fName : PathStr;
    VAT : tStringList;
    TStr : shortstring;
-   Hist : array[1..7] of int64;
+   Maps : TStringList;
+   Hist,ALOSHist,COPhist,FabHist : tHist;
+
+   procedure FinalizeMap(DEM : integer; aHist : tHist; Extra : shortString = ' (or tied)');
+   begin
+      Vat := tStringList.Create;
+      Vat.add('VALUE,NAME,N,USE,COLOR');
+      if (aHist[1] > 0) then Vat.add('1,ALOS best' + Extra + ',' + IntToStr(aHist[1]) + ',Y,' + IntToStr(RGB(255,0,0)));
+      if (aHist[2] > 0) then Vat.add('2,COP best' + Extra + ',' + IntToStr(aHist[2]) + ',Y,' + IntToStr(RGB(0,255,0)));
+      if (aHist[3] > 0) then Vat.add('3,ALOS/COP best,' + IntToStr(aHist[3]) + ',Y,' + IntToStr(RGB(255,255,0)));
+      if (aHist[4] > 0) then Vat.add('4,FABDEM best' + Extra + ',' + IntToStr(aHist[4]) + ',Y,' + IntToStr(RGB(0,0,255)));
+      if (aHist[5] > 0) then Vat.add('5,ALOS/FABDEM best,' + IntToStr(aHist[5]) + ',Y,' + IntToStr(RGB(255,0,255)));
+      if (aHist[6] > 0) then Vat.add('6,COP/FABDEM best,' + IntToStr(aHist[6]) + ',Y,' + IntToStr(RGB(0,255,255)));
+      if (aHist[7] > 0) then Vat.add('7,ALOS/COP/FABDEM best,' + IntToStr(aHist[7]) + ',Y,' + IntToStr(RGB(255,255,255)));
+      if (aHist[8] > 0) then Vat.add('8,Other best,' + IntToStr(aHist[8]) + ',Y,' + IntToStr(RGB(255,255,255)));
+
+      DEMGlb[DEM].VATFileName := MDtempDir + DEMGlb[DEM].AreaName + '.vat.dbf';
+      DeleteFileIfExists(DEMGlb[DEM].VATFileName);
+      StringList2CSVtoDB(vat,DEMGlb[DEM].VATFileName,true);
+      DEMglb[DEM].CheckMaxMinElev;
+      DEMglb[DEM].SetUpMap(DEM,true,mtDEMVATTable);
+      {$IfDef RecordDEMIX_VAT}
+         WriteLineToDebugFile('RGBBestOfThreeMap FinalizeMap=' + IntToStr(DEMglb[DEM].SelectionMap.MapDraw.MapType) + '  DEM=' + IntToStr(DEM) + '   ' + DEMGlb[DEM].AreaName + '  ' + DEMGlb[DEM].VATFileName);
+      {$EndIf}
+
+      if ValidDEM(DEM) then begin
+         if MDDef.AutoMergeStartDEM then begin
+            DEMGlb[DEM].SelectionMap.MergeAnotherDEMreflectance(Merge,true);
+         end;
+         Maps.Add(DEMGlb[DEM].SelectionMap.Caption)
+      end
+      else begin
+         {$IfDef RecordDEMIX} WriteLineToDebugFile('MakeRGBBestMap failed, ' + fName); {$EndIf}
+      end;
+   end;
+
+
 begin
    {$IfDef DEMIXmaps} WriteLineToDebugFile('RGBBestOfThreeMap in'); {$EndIf}
-   for i := 1 to 7 do Hist[i] := 0;
+   for i := 1 to 8 do begin
+      Hist[i] := 0;
+      COPHist[i] := 0;
+      FABHist[i] := 0;
+      ALOSHist[i] := 0;
+   end;
    Result := DEMGlb[RefDEM].CloneAndOpenGridSetMissing(ByteDEM,AName,euIntCode);
-   DEMglb[Result].SetEntireGridMissing;
-   DEMglb[Result].AreaName := aName;
+   COPbest := DEMGlb[RefDEM].CloneAndOpenGridSetMissing(ByteDEM,'COP_' + AName,euIntCode);
+   ALOSBest := DEMGlb[RefDEM].CloneAndOpenGridSetMissing(ByteDEM,'ALOS_' + AName,euIntCode);
+   FABbest := DEMGlb[RefDEM].CloneAndOpenGridSetMissing(ByteDEM,'FAB_' + AName,euIntCode);
    StartProgressAbortOption('Best on map');
    for x := 0 to pred(DEMGlb[RefDEM].DEMheader.NumCol) do begin
       UpdateProgressBar(x/DEMGlb[RefDEM].DEMheader.NumCol);
@@ -277,9 +323,33 @@ begin
                Fabz := abs(Fabz - RefZ);
                Best := PetMath.MinFloat(ALOSz,COPZ,FabZ);
                What := 0;
-               if (ALOSZ - Best <= Tolerance) then What := What + 1;
-               if (CopZ - Best <= Tolerance) then What := What + 2;
-               if (FabZ - Best <= Tolerance) then What := What + 4;
+               if (ALOSZ - Best <= Tolerance) then begin
+                  What := What + 1;
+                  DEMglb[ALOSbest].SetGridElevation(x,y,1);
+                  inc(ALOSHist[1]);
+               end
+               else begin
+                  inc(ALOShist[8]);
+                  DEMglb[ALOSbest].SetGridElevation(x,y,8);
+               end;
+               if (CopZ - Best <= Tolerance) then begin
+                  What := What + 2;
+                  DEMglb[COPbest].SetGridElevation(x,y,2);
+                  inc(COPHist[2]);
+               end
+               else begin
+                  inc(COPhist[8]);
+                  DEMglb[COPbest].SetGridElevation(x,y,8);
+               end;
+               if (FabZ - Best <= Tolerance) then begin
+                  What := What + 4;
+                  DEMglb[Fabbest].SetGridElevation(x,y,4);
+                  inc(FabHist[4]);
+               end
+               else begin
+                  inc(Fabhist[8]);
+                  DEMglb[Fabbest].SetGridElevation(x,y,8);
+               end;
                if (What > 0) then begin
                   DEMglb[Result].SetGridElevation(x,y,what);
                   inc(Hist[round(what)]);
@@ -288,22 +358,19 @@ begin
          end;
       end;
    end;
-   Vat := tStringList.Create;
-   Vat.add('VALUE,NAME,N,USE,COLOR');
 
-   if (Hist[1] > 0) then Vat.add('1,ALOS best,' + IntToStr(Hist[1]) + ',Y,' + IntToStr(RGB(255,0,0)));
-   if (Hist[2] > 0) then Vat.add('2,COP best,' + IntToStr(Hist[2]) + ',Y,' + IntToStr(RGB(0,255,0)));
-   if (Hist[3] > 0) then Vat.add('3,ALOS/COP best,' + IntToStr(Hist[3]) + ',Y,' + IntToStr(RGB(255,255,0)));
-   if (Hist[4] > 0) then Vat.add('4,FABDEM best,' + IntToStr(Hist[4]) + ',Y,' + IntToStr(RGB(0,0,255)));
-   if (Hist[5] > 0) then Vat.add('5,ALOS/FABDEM best,' + IntToStr(Hist[5]) + ',Y,' + IntToStr(RGB(255,0,255)));
-   if (Hist[6] > 0) then Vat.add('6,COP/FABDEM best,' + IntToStr(Hist[6]) + ',Y,' + IntToStr(RGB(0,255,255)));
-   if (Hist[7] > 0) then Vat.add('7,ALOS/COP/FABDEM best,' + IntToStr(Hist[7]) + ',Y,' + IntToStr(RGB(255,255,255)));
+   SaveBackupDefaults;
+   MDDef.MapNameBelowComposite := false;
+   Maps := tStringList.Create;
+   FinalizeMap(ALOSbest,ALOSHist);
+   FinalizeMap(COPbest,COPHist);
+   FinalizeMap(FABbest,FABHist);
+   FinalizeMap(Result,Hist,'');
+   fName := NextFileNumber(MDtempDir,AName + '_rgb3_','.png');
+   Bigimagewithallmaps(2,fName,Maps);
+   Maps.Free;
+   RestoreBackupDefaults;
 
-   AName := MDTempDir + AName + '.vat.dbf';
-   StringList2CSVtoDB(vat,AName,true);
-   DEMGlb[Result].VATFileName := AName;
-   DEMglb[Result].CheckMaxMinElev;
-   DEMglb[Result].SetUpMap(Result,true,mtDEMVATTable);
    {$IfDef DEMIXmaps} WriteLineToDebugFile('BestCopOrALOSmap out'); {$EndIf}
 end;
 
@@ -347,7 +414,8 @@ begin
    if (Hist[3] > 0) then Vat.add('3,ALOS best,' + IntToStr(Hist[3]) + ',Y,' + IntToStr(clBlue));
    if (Hist[2] > 0) then Vat.add('2,Both ± ' + RealToString(Tolerance,-5,1)  + ',' + IntToStr(Hist[2]) + ',Y,' + IntToStr(clYellow));
    if (Hist[1] > 0) then Vat.add('1,COP best,' + IntToStr(Hist[1]) + ',Y,' + IntToStr(clLime));
-   AName := MDTempDir + AName + '.vat.dbf';
+   //AName := MDTempDir + AName + '.vat.dbf';
+   AName := Petmar.NextFileNumber(MDtempDir,AName +'_', '.vat.dbf');
    StringList2CSVtoDB(vat,AName,true);
    DEMGlb[Result].VATFileName := AName;
    DEMglb[Result].CheckMaxMinElev;

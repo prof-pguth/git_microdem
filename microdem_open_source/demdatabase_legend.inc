@@ -191,12 +191,6 @@ begin
              MyData.ApplyFilter(BaseFilter);
           end;
           if (Result <> Nil) then begin
-             (*
-             PetImage.GetImagePartOfBitmap(Result);
-             Result.Canvas.Pen.Color := clBlack;
-             Result.Canvas.Brush.Style := bsClear;
-             Result.Canvas.Rectangle(0,0,pred(Result.Width),pred(Result.Height));
-             *)
              PutBitmapInBox(Result);
           end;
           RestoreFilterStatus;
@@ -246,7 +240,6 @@ var
 begin
    if (aLabel = '') then aLabel := dbOpts.FloatColorField;
    if copy(aLabel,1,5) = 'LINK-' then Delete(aLabel,1,5);
-   //Petimage.CreateBitmap(Result,286,75);
    Result := DefaultHorizontalLegendOnBitmap(dbOpts.ColorMin,dbOpts.ColorMax,'',aLabel,dbOpts.DBColorScheme,dbOpts.DBColorPaletteName,dbOpts.ReverseColorTable);
 end;
 

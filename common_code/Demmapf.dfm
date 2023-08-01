@@ -6562,6 +6562,7 @@ object MapForm: TMapForm
     Top = 428
     object hiscoverageareaandsamepixelsize1: TMenuItem
       Caption = 'This coverage area and same pixel size'
+      OnClick = MatchThiscoverageareaandsamepixelsize1Click
     end
     object Allmapsmatchthiscoveragearea1: TMenuItem
       Caption = 'This coverage area'

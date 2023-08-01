@@ -30,6 +30,7 @@ unit DEMCoord;
 
    {$IFDEF DEBUG}
       {$Define RecordDEMIX}
+      {$Define RecordMapType}
       //{$Define TrackHorizontalDatum}
       //{$Define RecordDEMIXResample}
       //{$Define RecordVertDatumShift}
@@ -1131,7 +1132,7 @@ begin
   {$IfDef RecordCreateNewDEM} WriteLineToDebugFile('tDEMDataSet.CloneAndOpenGrid off to OpenAndZero'); {$EndIf}
    Result := 0;
    if OpenAndZeroNewDEM(true,NewHeadRecs,Result,Gridname,InitDEMMissing,0) then begin
-      //DEMGlb[Result].AreaName := GridName;
+      DEMGlb[Result].AreaName := GridName;
       AssignProjectionFromDEM(DEMGlb[Result].DEMMapProjection,'DEM=' + IntToStr(Result));
       DEMGlb[Result].DEMMapProjection.ProjectionSharedWithDataset := true;
    end;
@@ -3400,7 +3401,9 @@ begin
    {$IfDef RecordSetup} WriteLineToDebugFile('Elev range: ' + DEMGlb[DEMNumber].zRange); {$EndIf}
    DefineDEMVariables(True);
    {$IfDef VCL}
+      {$IfDef RecordMapType} WriteLineToDebugFile(AreaName + ' tDEMDataSet.SetUpMap, maptype=' + IntToStr(inMapType) + '  DEM=' + IntToStr(DEMNumber)); {$EndIf}
       CreateDEMSelectionMap(DEMNumber,true,UsePC,inMapType);
+      {$IfDef RecordMapType} WriteLineToDebugFile(AreaName + ' tDEMDataSet.SetUpMap, maptype=' + IntToStr(inMapType) + '  DEM=' + IntToStr(DEMNumber)); {$EndIf}
       SelectionMap.Closable := true;
       SelectionMap.CheckProperTix;
       {$IfDef RecordSetup} WriteLineToDebugFile('tDEMDataSet.SetUpMap, projection=' + SelectionMap.MapDraw.PrimMapProj.GetProjectionName); {$EndIf}

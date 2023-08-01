@@ -160,11 +160,9 @@ var
 begin
    {$IfDef RecordRGBIssues} WriteLineToDebugFile('ThreeGridRGBMap in'); {$EndIf}
    RGB_form := TRGB_form.Create(Application);
+   (*
    with RGB_form do begin
       MapForm := nil;
-      PetImage.CloneImageToBitmap(MapForm.Image1,RedBMP,true);
-      PetImage.CloneImageToBitmap(MapForm.Image1,GreenBMP,true);
-      PetImage.CloneImageToBitmap(MapForm.Image1,BlueBMP,true);
       for i := 1 to MaxDEMDataSets do if ValidDEM(i) then begin
          ComboBox1.Items.Add(DEMGlb[i].AreaName);
          ComboBox2.Items.Add(DEMGlb[i].AreaName);
@@ -184,8 +182,8 @@ begin
       BitBtn1Click(Nil);
       Show;
    end;
+   *)
    {$IfDef RecordRGBIssues} WriteLineToDebugFile('ThreeGridRGBMap out'); {$EndIf}
-
 end;
 
 
@@ -195,6 +193,7 @@ var
 begin
    {$IfDef RecordRGBIssues} WriteLineToDebugFile('ThreeGridRGBMap in'); {$EndIf}
    RGB_form := TRGB_form.Create(Application);
+(*
    with RGB_form do begin
       MapForm := aMapForm;
       PetImage.CloneImageToBitmap(MapForm.Image1,RedBMP,true);
@@ -219,6 +218,7 @@ begin
       BitBtn1Click(Nil);
       Show;
    end;
+*)
    {$IfDef RecordRGBIssues} WriteLineToDebugFile('ThreeGridRGBMap out'); {$EndIf}
 end;
 
@@ -324,9 +324,13 @@ begin
       MapForm := DEMGlb[RedDEM].SelectionMap.DuplicateMap(false);
       MapForm.MapDraw.MapType := mtRGB3grids;
       MapForm.MatchThiscoverageareaandsamepixelsize1Click(Sender);
+      PetImage.CloneImageToBitmap(MapForm.Image1,RedBMP,true);
+      PetImage.CloneImageToBitmap(MapForm.Image1,GreenBMP,true);
+      PetImage.CloneImageToBitmap(MapForm.Image1,BlueBMP,true);
    end;
 
 
+(*
    if (RedBMP.Height <> MapForm.Image1.ClientHeight) or (RedBMP.Width <> MapForm.Image1.ClientWidth) then begin
       RedChanged := true;
       BlueChanged := true;
@@ -339,6 +343,7 @@ begin
    RedChanged := false;
    BlueChanged := false;
    GreenChanged := false;
+*)
 
    if (CompositeBMP <> Nil) then FreeAndNil(CompositeBMP);
 
@@ -454,10 +459,31 @@ begin
 end;
 
 procedure TRGB_form.FormCreate(Sender: TObject);
+var
+   i : integer;
 begin
-    DoingWork := false;
-    wmdem.FormPlacementInCorner(Self);
-    CheckBox1.Checked := MDDef.GrayscaleChannels;
+   DoingWork := false;
+   wmdem.FormPlacementInCorner(Self);
+   CheckBox1.Checked := MDDef.GrayscaleChannels;
+   Edit7.Text := RealToString(MDDef.MinPercentile,-12,-1);
+   Edit8.Text := RealToString(MDDef.MaxPercentile,-12,-1);
+   MapForm := nil;
+   for i := 1 to MaxDEMDataSets do if ValidDEM(i) then begin
+      ComboBox1.Items.Add(DEMGlb[i].AreaName);
+      ComboBox2.Items.Add(DEMGlb[i].AreaName);
+      ComboBox3.Items.Add(DEMGlb[i].AreaName);
+      {$IfDef RecordRGBIssues} WriteLineToDebugFile('Accepted: ' + DEMGlb[i].FullDEMParams); {$EndIf}
+   end;
+
+   ComboBox1.Text := ComboBox1.Items[0];
+   if (ComboBox1.Items.Count > 1) then ComboBox2.Text := ComboBox1.Items[1];
+   if (ComboBox1.Items.Count > 2) then ComboBox3.Text := ComboBox1.Items[2];
+   ComboBox1Change(Nil);
+   ComboBox2Change(Nil);
+   ComboBox3Change(Nil);
+   RGB_form.DoingWork := true;
+   BitBtn1Click(Nil);
+   Show;
 end;
 
 procedure TRGB_form.FormResize(Sender: TObject);

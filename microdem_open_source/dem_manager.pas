@@ -1459,6 +1459,8 @@ end;
 
 {$EndIf}
 
+
+
 {$IfDef AllowUSNAdataDownloads}
 
       {$IfDef ExGeography}
@@ -1523,27 +1525,13 @@ end;
          end;
       end;
 
-      (*
-      procedure GetGeoid;
-      var
-         dName : PathStr;
-      begin
-         if (Not FileExists(Geoid2008FName)) then begin
-            DownloadandUnzipDataFileIfNotPresent('geoid');
-            CheckGeoidNames;
-         end;
-      end;
-      *)
 {$EndIf}
 
 
-{$IfDef Exgis}
-{$Else}
-   function OpenDBString : shortstring;
-   begin
-      Result := 'Open DBs: ' + IntToStr(NumOpenDB);
-   end;
-{$EndIf}
+function OpenDBString : shortstring;
+begin
+   Result := 'Open DBs: ' + IntToStr(NumOpenDB);
+end;
 
 
 procedure OpenDEMsToDebugFile(Why : shortstring);
@@ -1656,7 +1644,6 @@ begin
       bf.Add( 'rd /S /Q c:\mapdata\temp\grass1');
       EndBatchFile(MDTempdir + 'clear_grass.bat',bf);
    end;
-
 
    if (MDTempDir <> '') then begin
       ChDir(MDTempDir);

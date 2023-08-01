@@ -65,7 +65,6 @@ uses
    {$EndIf}
 //end DB declarations
 
-
    System.UITypes,
    Classes, StrUtils,Math, SysUtils,
 
@@ -79,24 +78,24 @@ uses
       DEMMapf,
    {$EndIf}
 
-{$If Defined(ExSat) or Defined(ExNLCD)}
-{$Else}
-   DEM_NLCD,
-{$EndIf}
-
-{$IfDef ExAdvancedSats}
-{$Else}
-   Multigrid,
-   {$IfDef ExHyperSpectral}
+   {$If Defined(ExSat) or Defined(ExNLCD)}
    {$Else}
-      HyperSpectral_Image,
+      DEM_NLCD,
    {$EndIf}
-{$EndIf}
 
-{$IfDef ExTIN}
-{$Else}
-   DEM_Tin,
-{$EndIf}
+   {$IfDef ExAdvancedSats}
+   {$Else}
+      Multigrid,
+      {$IfDef ExHyperSpectral}
+      {$Else}
+         HyperSpectral_Image,
+      {$EndIf}
+   {$EndIf}
+
+   {$IfDef ExTIN}
+   {$Else}
+      DEM_Tin,
+   {$EndIf}
 
    DEMCoord,
    DEMDefs,
@@ -216,7 +215,6 @@ type
          function IsLandsatImageAnalysisBand(Band : integer) : boolean;
          function FindTMBand(TMBandName : integer; var BandPresent : integer) : boolean;
 
-         //function Sentinel2DateString : shortstring;
          function ImageDateString : shortstring;
 
          function GetLandsatBQAName : shortstring;
@@ -280,27 +278,26 @@ var
    SatImage : array[1..MaxSatAllowed] of tSatImage;
    TreatThisAsSingleTif : boolean;
 
-function ValidSatImage(i : integer) : boolean;
+   function ValidSatImage(i : integer) : boolean;
 
-procedure InitializeSatView(var SatView : tSatView);
+   procedure InitializeSatView(var SatView : tSatView);
 
-function LandsatSceneMetadata(fName : PathStr; var LandsatNumber : byte; var MPath : PathStr) : tStringList;
-procedure GetLandsatMetadata(fName : PathStr; var LandsatMetadata : tLandsatMetadata);
-function ShortLandsatName(fName : PathStr) : ShortString;
-function HistogramLandsatName(fName : PathStr) : ShortString;
-function IsThisSentinel2(fName : PathStr) : boolean;
-function IsLandsat(fName : PathStr; var MPath : PathStr) : boolean;
+   function LandsatSceneMetadata(fName : PathStr; var LandsatNumber : byte; var MPath : PathStr) : tStringList;
+   procedure GetLandsatMetadata(fName : PathStr; var LandsatMetadata : tLandsatMetadata);
+   function ShortLandsatName(fName : PathStr) : ShortString;
+   function HistogramLandsatName(fName : PathStr) : ShortString;
+   function IsThisSentinel2(fName : PathStr) : boolean;
+   function IsLandsat(fName : PathStr; var MPath : PathStr) : boolean;
 
+   {$IfDef ExLandsatQA}
+   {$Else}
+      function GetLandsatQA(fName : PathStr) : tStringList;
+      procedure GetLandsatQAMap(What : ShortString;fName : PathStr; LowBitV,HighBitV : integer);
+   {$EndIf}
 
-{$IfDef ExLandsatQA}
-{$Else}
-   function GetLandsatQA(fName : PathStr) : tStringList;
-   procedure GetLandsatQAMap(What : ShortString;fName : PathStr; LowBitV,HighBitV : integer);
-{$EndIf}
-
-{$IfDef VCL}
-   function SpectralLibraryGraph(fName : PathStr = ''; MaxVert : float64 = 100) : TThisBaseGraph;
-{$EndIf}
+   {$IfDef VCL}
+      function SpectralLibraryGraph(fName : PathStr = ''; MaxVert : float64 = 100) : TThisBaseGraph;
+   {$EndIf}
 
 
 implementation
@@ -362,13 +359,6 @@ begin
    else Result := '';
 end;
 
-
-(*
-function tSatImage.Sentinel2DateString : shortstring;
-begin
-   Result := Copy(SceneBaseName,8,4) + '-' + Copy(SceneBaseName,12,2) + '-' + Copy(SceneBaseName,14,2);
-end;
-*)
 
 function ValidSatImage(i : integer) : boolean;
 begin
@@ -529,30 +519,6 @@ begin
    end;
    Result.RedrawDiagram11Click(Nil);
 end;
-
-
-{
-procedure tSatImage.ShowPreview;
-var
-   Bitmap : tMyBitmap;
-   PreviewSatView : tSatView;
-begin
-(*
-   if (DefinedImageColors <> Nil) then Dispose(DefinedImageColors);
-   DefinedImageColors := Nil;
-   CreateBitmap(Bitmap,128,128);
-   PreviewSatView := SatView;
-   PreviewMapCorners.BoundBoxDataGrid.xmin := MapCorners.BoundBoxDataGrid.xmin + SatView.ColsDisplayed div 2;
-   PreviewSatView.YOffsetInWindow := SatView.YoffsetinWindow + SatView.RowsDisplayed div 2;
-   PreviewSatView.ColsDisplayed := 128;
-   PreviewSatView.RowsDisplayed := 128;
-   DisplayImage(PreviewSatView,SelectionMap.MapDraw,Bitmap);
-   Image1.Picture.Graphic := Bitmap;
-   Bitmap.Free;
-   ShowDefaultCursor;
-*)
-end;
-}
 
 {$IfDef NoDBGrafs}
 {$Else}

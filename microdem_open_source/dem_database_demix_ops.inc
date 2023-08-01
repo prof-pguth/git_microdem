@@ -101,17 +101,30 @@ begin
 end;
 
 
-procedure FilterOutSignedCriteria(DBonTable : integer);
+function CreateFilterOutSignedCriteria(DBonTable : integer) : shortstring;
 var
-   aFilter : ANSIstring;
    i : integer;
 begin
-    aFilter := '';
+    Result := '' ;
     for I := 1 to 3 do begin
-       aFilter := AddAndIfNeeded(aFilter) + 'CRITERION<>' + QuotedStr(MeanParams[i]);
-       aFilter := AddAndIfNeeded(aFilter) + 'CRITERION<>' + QuotedStr(MedianParams[i]);
+       Result := AddAndIfNeeded(Result) + 'CRITERION<>' + QuotedStr(MeanParams[i]);
+       Result := AddAndIfNeeded(Result) + 'CRITERION<>' + QuotedStr(MedianParams[i]);
     end;
-    GISdb[DBOntable].ApplyGISFilter(aFilter);
+    Result := '(' + Result + ')';
+end;
+
+
+procedure FilterOutSignedCriteria(DBonTable : integer);
+//var
+   //aFilter : ANSIstring;
+   //i : integer;
+begin
+    //aFilter := '';
+    //for I := 1 to 3 do begin
+       //aFilter := AddAndIfNeeded(aFilter) + 'CRITERION<>' + QuotedStr(MeanParams[i]);
+       //aFilter := AddAndIfNeeded(aFilter) + 'CRITERION<>' + QuotedStr(MedianParams[i]);
+    //end;
+    GISdb[DBOntable].ApplyGISFilter(CreateFilterOutSignedCriteria(DBonTable));
     GISdb[DBonTable].ShowStatus;
 end;
 

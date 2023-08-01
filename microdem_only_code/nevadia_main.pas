@@ -552,6 +552,8 @@ type
     Modesofdifferencedistributions1: TMenuItem;
     Advancedanalysis1: TMenuItem;
     MultipledNBRmaps1: TMenuItem;
+    N28: TMenuItem;
+    DEMIXhelp1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -955,6 +957,7 @@ type
     procedure MultipledNBRmaps1Click(Sender: TObject);
     procedure Datadownloadpicksubset1Click(Sender: TObject);
     procedure Piracywindsandrain1Click(Sender: TObject);
+    procedure DEMIXhelp1Click(Sender: TObject);
     //procedure PanoramaAdmin1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
@@ -1260,7 +1263,7 @@ end;
 
 procedure Twmdem.SetPanelText(PanelNum : integer; What : shortString);
 begin
-   if not LockStatusBar then begin
+   if (not LockStatusBar) then begin
       wmDEM.StatusBar1.Panels[PanelNum].Text := What;
       ApplicationProcessMessages;
    end;
@@ -1466,6 +1469,11 @@ begin
 end;
 
 
+
+procedure Twmdem.DEMIXhelp1Click(Sender: TObject);
+begin
+   DisplayHTMLTopic('demix_sg2\wine_contest.html');
+end;
 
 procedure Twmdem.DEMIXindexhighresreferenceDEMs1Click(Sender: TObject);
 begin

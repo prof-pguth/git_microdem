@@ -301,7 +301,7 @@ begin
       {$EndIf}
       if (inMapType = mtDEMBlank) then mt := GetWantedMapType
       else mt := inMapType;
-      {$If Defined(RecordOpenMap) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('CreateDEMSelectionMap call SetUpNewDEMMapWindow'); {$EndIf}
+      {$If Defined(RecordOpenMap) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('CreateDEMSelectionMap call SetUpNewDEMMapWindow, maptype=' + IntToStr(mt)); {$EndIf}
       DEMGlb[DEM].SelectionMap.SetUpNewDEMMapWindow(DEM,mt,DEMGlb[DEM].AreaName,true,DrawIt,UsePC);
       {$If Defined(RecordOpenMap) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('CreateDEMSelectionMap out,' + DEMGlb[DEM].SelectionMap.MapDraw.MapSizeString); {$EndIf}
       {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('CreateDEMSelectionMap out, current maps=' + IntToStr(NumOpenMaps)); {$EndIf}

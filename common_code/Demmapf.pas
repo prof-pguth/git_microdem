@@ -32,6 +32,7 @@
       {$Define RecordDEMIX}
       {$Define RecordMatchMaps}
       {$Define RecordSat}
+      {$Define RecordVAT}
       //{$Define TrackHorizontalDatum}
       //{$Define TrackDEMCorners}
       //{$Define RecordCarto}
@@ -540,7 +541,6 @@ type
     Matchothermaps1: TMenuItem;
     Sameelevationcolors1: TMenuItem;
     PopupMenu17: TPopupMenu;
-    //Graph1: TMenuItem;
     Shorttable1: TMenuItem;
     Longtable1: TMenuItem;
     NLCD1: TMenuItem;
@@ -3406,7 +3406,7 @@ var
       i : integer;
    begin
       for i := 0 to pred(MapsToUse.Count) do begin
-         if MapCaption = MapsToUse[i] then begin
+         if (MapCaption = MapsToUse[i]) then begin
             Result := true;
             exit;
          end;
@@ -3420,7 +3420,7 @@ begin
    if MDDef.MapNameBelowComposite then BottomMargin := 55 else BottomMargin := 25;;
    for i := pred(WMDEM.MDIChildCount) downto 0 do begin
       if (WMDEM.MDIChildren[i] is tMapForm) and (WMDEM.MDIChildren[i] as TMapForm).UseMapForMultipleMapOperations then begin
-         if (MapsToUse = Nil)  or UseThisMap((WMDEM.MDIChildren[i] as TMapForm).Caption) then begin
+         if (MapsToUse = Nil) or UseThisMap((WMDEM.MDIChildren[i] as TMapForm).Caption) then begin
 
             (WMDEM.MDIChildren[i] as TMapForm).DoFastMapRedraw;
             CopyImageToBitmap((WMDEM.MDIChildren[i] as TMapForm).Image1,Bitmap);
@@ -14509,14 +14509,10 @@ end;
 
 procedure TMapForm.Specifyxyzshifts1Click(Sender: TObject);
 var
-   //aDEM : integer;
-   //FilesWanted : tStringList;
-   fName : PathStr;
+   //fName : PathStr;
    dx,dy,dz : float32;
    i,NewVD : integer;
 begin
-   //FilesWanted := tStringList.Create;
-   //FilesWanted.Add(LastDEMName);
    dx := 0.43;
    ReadDefault('dx',dx);
    dy := -1.24;
@@ -14525,23 +14521,10 @@ begin
    ReadDefault('dz',dz);
    NewVD := VertCSEGM2008;
    ReadDefault('new vertical datum code',NewVD);
-
-   //if GetMultipleFiles('DEM/grid to move to EGM2008',DEMFilterMasks,FilesWanted ,MDDef.DefaultDEMFilter) then begin
-      //for i := 0 to pred(FilesWanted.Count) do begin
-         //fName := FilesWanted.Strings[i];
-         //aDEM := OpenNewDEM(fName,false);
-         //if (DEMGlb[aDEM].DEMheader.VerticalCSTypeGeoKey = 0) or (DEMGlb[aDEM].DEMheader.VerticalCSTypeGeoKey = VertCSNAVD88) then begin
-            //Memo1.Lines.Add(DEMGlb[aDEM].AreaName + ' was vertical datum 0 now EGM2008');
-            DEMGlb[MapDraw.DEMonMap].DEMHeader.VerticalCSTypeGeoKey := NewVD;
-            DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerX := DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerX + dx;
-            DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerY := DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerY + dy;
-            DEMGlb[MapDraw.DEMonMap].AddConstantToGrid(dz);
-            //fName := ExtractFilePath(fName) + DEMGlb[aDEM].AreaName + '_egm2008.dem';
-            //DEMGlb[aDEM].WriteNewFormatDEM(fName);
-      //end;
-      //FilesWanted.Free;
-   //end;
-
+   DEMGlb[MapDraw.DEMonMap].DEMHeader.VerticalCSTypeGeoKey := NewVD;
+   DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerX := DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerX + dx;
+   DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerY := DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerY + dy;
+   DEMGlb[MapDraw.DEMonMap].AddConstantToGrid(dz);
 end;
 
 procedure TMapForm.Spectrallibrarygraph1Click(Sender: TObject);
@@ -15782,7 +15765,8 @@ procedure TMapForm.Slopeandroughness1Click(Sender: TObject);
 var
    RuffMap,SlopeMap : integer;
 begin
-   RuffMap := CreateSlopeRoughnessSlopeStandardDeviationMap(MapDraw.DEMonMap,3,SlopeMap);
+   SlopeMap := 0;
+   RuffMap := CreateSlopeRoughnessSlopeStandardDeviationMap(MapDraw.DEMonMap,5,SlopeMap);
 end;
 
 procedure TMapForm.Reflectance3Click(Sender: TObject);

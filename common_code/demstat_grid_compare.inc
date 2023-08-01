@@ -290,95 +290,101 @@ var
    IdenticalGrids : boolean;
    rFile : file;
 begin
-   try
-      {$If Defined(RecordDEMCompare) or Defined(RecordDiffMap)}
-         WriteLineToDebugFile('MakeDifferenceMapOfBoxRegion in, ' + DEMGlb[Map1].AreaName + ' ' + DEMGlb[Map1].zRange + ' minus ' + DEMGlb[Map2].AreaName + ' ' + DEMGlb[Map2].zRange);
-      {$EndIf}
-      HeavyDutyProcessing := true;
-      Result := 0;
-      OpenDEMDataStructures(Result);
-      if (TheAreaName = '') then DEMGlb[Result].AreaName := 'Elev_Diff_' + DEMGlb[Map2].AreaName + '_minus_' + DEMGlb[Map1].AreaName
-      else DEMGlb[Result].AreaName := TheAreaName;
-      DEMGlb[Result].DEMheader := DEMGlb[GridResultionToUse].DEMheader;
-      DEMGlb[Result].DEMheader.VerticalCSTypeGeoKey := 0;  //difference not referred to a datum
-      DEMGlb[Result].DEMMapProjection := DEMGlb[GridResultionToUse].DEMMapProjection;
-      DEMGlb[Result].DEMMapProjection.ProjectionSharedWithDataset := true;
-      if DEMGlb[Result].DEMheader.DEMPrecision = ByteDEM then DEMGlb[Result].DEMheader.DEMPrecision := SmallIntDEM
-      else DEMGlb[Result].DEMheader.DEMPrecision := FloatingPointDEM;;
-      if DEMGlb[Map1].ElevationGrid and DEMGlb[Map2].ElevationGrid then DEMGlb[Result].DEMheader.ElevUnits := euElevDiff else DEMGlb[Result].DEMheader.ElevUnits := euDifference;
+   if ValidDEM(Map1) and ValidDEM(Map2) then begin
 
-      DEMGlb[Result].DEMstatus := dsUnsaved;
-      if (GridResultionToUse = Map1) then begin
-         ThisGrid := Map1;
-         OtherGrid := Map2;
-      end
-      else begin
-         ThisGrid := Map2;
-         OtherGrid := Map1;
-      end;
-
-      if not DEMGlb[Result].AllocateDEMMemory(InitDEMMissing) then exit;
-
-      if ShowScatterPlot then begin
-         ThisGraph := TThisBaseGraph.Create(Application);
-         ThisGraph.SetUpGraphForm;
-         ThisGraph.Caption := 'Grid comparison';
-         ThisGraph.OpenPointFile(rfile,ThisGraph.Symbol);
-         ThisGraph.GraphDraw.HorizLabel := DEMGlb[Map1].AreaName;
-         ThisGraph.GraphDraw.VertLabel := DEMGlb[Map2].AreaName;
-      end;
-      IdenticalGrids := DEMGlb[Map1].SecondGridIdentical(Map2);
-
-      StartProgress('Grid Differences');
-      for Col := GridLimits.XGridLow to GridLimits.XGridHigh do begin
-         if (Col mod 25 = 0) then UpdateProgressBar(Col / pred(DEMGlb[Map1].DEMheader.NumCol));
-         for Row := GridLimits.YGridLow to GridLimits.YGridHigh do begin
-            if DEMGlb[ThisGrid].GetElevMetersFromThisAndSecondDEM(OtherGrid,Col,Row,z1,z2) then begin
-               DEMGlb[Result].SetGridElevation(Col,Row,z1 - z2);
-               if ShowScatterPlot then ThisGraph.AddPointToDataBuffer(rfile,z1,z2);
-            end;
-         end {for Row};
-      end {for Col};
-      EndProgress;
-      DEMGlb[Result].CheckMaxMinElev;
-      {$If Defined(TrackZRange)} WriteLineToDebugFile('MakeDifferenceMapOfBoxRegion did check: ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].zRange); {$EndIf}
-      {$IfDef RecordFullDEMCompare}
-         WriteLineToDebugFile('');  WriteLineToDebugFile('DEM1: ' + DEMGlb[Map1].FullDEMParams);
-         WriteLineToDebugFile('');  WriteLineToDebugFile('DEM2: ' + DEMGlb[Map2].FullDEMParams);
-         WriteLineToDebugFile('');  WriteLineToDebugFile('Diff: ' + DEMGlb[Result].FullDEMParams);
-         WriteLineToDebugFile('');
-      {$EndIf}
-
-      if ShowMap then begin
-         {$If Defined(RecordDEMCompare) or Defined(RecordDiffMap) or Defined(TrackZRange)}
-            WriteLineToDebugFile('MakeDifferenceMapofBoxRegion call setupmap ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].zRange); {$EndIf}
+      try
+         {$If Defined(RecordDEMCompare) or Defined(RecordDiffMap)}
+            WriteLineToDebugFile('MakeDifferenceMapOfBoxRegion in, ' + DEMGlb[Map1].AreaName + ' ' + DEMGlb[Map1].zRange + ' minus ' + DEMGlb[Map2].AreaName + ' ' + DEMGlb[Map2].zRange);
          {$EndIf}
-         if MDDef.HighlightDiffMap = 0 then mt := mtElevSpectrum
-         else if MDDef.HighlightDiffMap = 1 then mt := mtGGRReflect
+         HeavyDutyProcessing := true;
+         Result := 0;
+         OpenDEMDataStructures(Result);
+         if (TheAreaName = '') then DEMGlb[Result].AreaName := 'Elev_Diff_' + DEMGlb[Map2].AreaName + '_minus_' + DEMGlb[Map1].AreaName
+         else DEMGlb[Result].AreaName := TheAreaName;
+         DEMGlb[Result].DEMheader := DEMGlb[GridResultionToUse].DEMheader;
+         DEMGlb[Result].DEMheader.VerticalCSTypeGeoKey := 0;  //difference not referred to a datum
+         DEMGlb[Result].DEMMapProjection := DEMGlb[GridResultionToUse].DEMMapProjection;
+         DEMGlb[Result].DEMMapProjection.ProjectionSharedWithDataset := true;
+         if DEMGlb[Result].DEMheader.DEMPrecision = ByteDEM then DEMGlb[Result].DEMheader.DEMPrecision := SmallIntDEM
+         else DEMGlb[Result].DEMheader.DEMPrecision := FloatingPointDEM;;
+         if DEMGlb[Map1].ElevationGrid and DEMGlb[Map2].ElevationGrid then DEMGlb[Result].DEMheader.ElevUnits := euElevDiff else DEMGlb[Result].DEMheader.ElevUnits := euDifference;
+
+         DEMGlb[Result].DEMstatus := dsUnsaved;
+         if (GridResultionToUse = Map1) then begin
+            ThisGrid := Map1;
+            OtherGrid := Map2;
+         end
          else begin
-            mt := 8;
-            MDDef.ElevPalName := 'CET-D08';
+            ThisGrid := Map2;
+            OtherGrid := Map1;
          end;
-         DEMGlb[Result].SetUpMap(Result,true,mt);
-         if MDDef.AutoMergeStartDEM and ValidDEM(GridToMergeShading) then begin
-            {$If Defined(TrackZRange)} WriteLineToDebugFile('MakeDifferenceMapOfBoxRegion call MergeAnotherDEM: ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].zRange); {$EndIf}
-            DEMGlb[Result].SelectionMap.MergeAnotherDEMreflectance(GridToMergeShading,true);
-            {$If Defined(TrackZRange)} WriteLineToDebugFile('MakeDifferenceMapOfBoxRegion done MergeAnotherDEM: ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].zRange); {$EndIf}
-         end;
-         {$If Defined(RecordDEMCompare) or Defined(RecordDiffMap) or Defined(TrackZRange)}
-            WriteLineToDebugFile('MakeDifferenceMapofBoxRegion done ShowMap ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].zRange);
-         {$EndIf}
-      end;
 
-      if ShowScatterPlot then begin
-         CloseFile(rfile);
-         ThisGraph.AutoScaleAndRedrawDiagram;
+         if not DEMGlb[Result].AllocateDEMMemory(InitDEMMissing) then exit;
+
+         if ShowScatterPlot then begin
+            ThisGraph := TThisBaseGraph.Create(Application);
+            ThisGraph.SetUpGraphForm;
+            ThisGraph.Caption := 'Grid comparison';
+            ThisGraph.OpenPointFile(rfile,ThisGraph.Symbol);
+            ThisGraph.GraphDraw.HorizLabel := DEMGlb[Map1].AreaName;
+            ThisGraph.GraphDraw.VertLabel := DEMGlb[Map2].AreaName;
+         end;
+         IdenticalGrids := DEMGlb[Map1].SecondGridIdentical(Map2);
+
+         StartProgress('Grid Differences');
+         for Col := GridLimits.XGridLow to GridLimits.XGridHigh do begin
+            if (Col mod 25 = 0) then UpdateProgressBar(Col / pred(DEMGlb[Map1].DEMheader.NumCol));
+            for Row := GridLimits.YGridLow to GridLimits.YGridHigh do begin
+               if DEMGlb[ThisGrid].GetElevMetersFromThisAndSecondDEM(OtherGrid,Col,Row,z1,z2) then begin
+                  DEMGlb[Result].SetGridElevation(Col,Row,z1 - z2);
+                  if ShowScatterPlot then ThisGraph.AddPointToDataBuffer(rfile,z1,z2);
+               end;
+            end {for Row};
+         end {for Col};
+         EndProgress;
+         DEMGlb[Result].CheckMaxMinElev;
+         {$If Defined(TrackZRange)} WriteLineToDebugFile('MakeDifferenceMapOfBoxRegion did check: ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].zRange); {$EndIf}
+         {$IfDef RecordFullDEMCompare}
+            WriteLineToDebugFile('');  WriteLineToDebugFile('DEM1: ' + DEMGlb[Map1].FullDEMParams);
+            WriteLineToDebugFile('');  WriteLineToDebugFile('DEM2: ' + DEMGlb[Map2].FullDEMParams);
+            WriteLineToDebugFile('');  WriteLineToDebugFile('Diff: ' + DEMGlb[Result].FullDEMParams);
+            WriteLineToDebugFile('');
+         {$EndIf}
+
+         if ShowMap then begin
+            {$If Defined(RecordDEMCompare) or Defined(RecordDiffMap) or Defined(TrackZRange)}
+               WriteLineToDebugFile('MakeDifferenceMapofBoxRegion call setupmap ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].zRange); {$EndIf}
+            {$EndIf}
+            if MDDef.HighlightDiffMap = 0 then mt := mtElevSpectrum
+            else if MDDef.HighlightDiffMap = 1 then mt := mtGGRReflect
+            else begin
+               mt := 8;
+               MDDef.ElevPalName := 'CET-D08';
+            end;
+            DEMGlb[Result].SetUpMap(Result,true,mt);
+            if MDDef.AutoMergeStartDEM and ValidDEM(GridToMergeShading) then begin
+               {$If Defined(TrackZRange)} WriteLineToDebugFile('MakeDifferenceMapOfBoxRegion call MergeAnotherDEM: ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].zRange); {$EndIf}
+               DEMGlb[Result].SelectionMap.MergeAnotherDEMreflectance(GridToMergeShading,true);
+               {$If Defined(TrackZRange)} WriteLineToDebugFile('MakeDifferenceMapOfBoxRegion done MergeAnotherDEM: ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].zRange); {$EndIf}
+            end;
+            {$If Defined(RecordDEMCompare) or Defined(RecordDiffMap) or Defined(TrackZRange)}
+               WriteLineToDebugFile('MakeDifferenceMapofBoxRegion done ShowMap ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].zRange);
+            {$EndIf}
+         end;
+
+         if ShowScatterPlot then begin
+            CloseFile(rfile);
+            ThisGraph.AutoScaleAndRedrawDiagram;
+         end;
+         if ShowHistogram then SingleDEMHistogram(Result);
+         DEMGlb[Result].CheckMaxMinElev;  //because it is reset somewhere in the ShowMapBlock
+         {$If Defined(RecordDEMCompare) or Defined(RecordDiffMap) or Defined(TrackZRange)} WriteLineToDebugFile('MakeDifferenceMapofBoxRegion out, ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].zRange); {$EndIf}
+      finally
+         HeavyDutyProcessing := false;
       end;
-      if ShowHistogram then SingleDEMHistogram(Result);
-      DEMGlb[Result].CheckMaxMinElev;  //because it is reset somewhere in the ShowMapBlock
-      {$If Defined(RecordDEMCompare) or Defined(RecordDiffMap) or Defined(TrackZRange)} WriteLineToDebugFile('MakeDifferenceMapofBoxRegion out, ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].zRange); {$EndIf}
-   finally
-      HeavyDutyProcessing := false;
+   end
+   else begin
+      {$If Defined(RecordDEMCompare) or Defined(RecordDiffMap)} WriteLineToDebugFile('MakeDifferenceMapofBoxRegion called with invalid grid'); {$EndIf}
    end;
 end;
 
