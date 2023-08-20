@@ -528,13 +528,16 @@ end;
 
 
 procedure MakeElevSlopeAspectDifferenceMap;
+const
+   NumDiffs = 5;
 var
-   Col,Row  : integer;
+   Col,Row,Col2,Row2  : integer;
    DEM1,DEM2,i : integer;
-   Diffs : array[1..4] of integer;
+   Diffs : array[1..NumDiffs] of integer;
    n11,n12,n13,n21,n22,n23,
    dp,mag1,mag2,
-   z1,z2 : float32;
+   z1,z2,fc,fr : float32;
+   Lat,Long : float64;
    IdenticalGrids : boolean;
    ThisGraph : TThisBaseGraph;
    SlopeAspect1,SlopeAspect2 : tSlopeAspectRec;
@@ -553,28 +556,40 @@ var
             end;
 
 begin
-   {$IfDef RecordDEMCompare} WriteLineToDebugFile('MakeDifferenceMap in'); {$EndIf}
+   {$IfDef RecordDEMCompare} WriteLineToDebugFile('MakeElevSlopeAspectDifferenceMap in'); {$EndIf}
    GetTwoCompatibleGrids('Grids to compare, DEM2-DEM1',true,DEM2,DEM1,false,true);  // then begin
    IdenticalGrids := DEMGlb[DEM1].SecondGridIdentical(DEM2);
 
    Diffs[1] := OpenOneResult( 'Elev_Diff_' + DEMGlb[DEM2].AreaName + '-' + DEMGlb[DEM1].AreaName,euMeters);
    Diffs[2] := OpenOneResult( 'Slope_Diff_' + DEMGlb[DEM2].AreaName + '-' + DEMGlb[DEM1].AreaName,PercentSlope);
    Diffs[3] := OpenOneResult( 'Aspect_Diff_' + DEMGlb[DEM2].AreaName + '-' + DEMGlb[DEM1].AreaName,zDegrees);
-   Diffs[4] := OpenOneResult( 'Normal_Diff_' + DEMGlb[DEM2].AreaName + '-' + DEMGlb[DEM1].AreaName,zDegrees);
+   Diffs[4] := OpenOneResult( 'Vector_Normal_Diff_' + DEMGlb[DEM2].AreaName + '-' + DEMGlb[DEM1].AreaName,zDegrees);
+   Diffs[5] := OpenOneResult( 'Vector_Downhill_Diff_' + DEMGlb[DEM2].AreaName + '-' + DEMGlb[DEM1].AreaName,zDegrees);
+   //Diffs[6] := OpenOneResult( 'Roughness_Diff_' + DEMGlb[DEM2].AreaName + '-' + DEMGlb[DEM1].AreaName,zDegrees);
    StartProgress('Diffs');
    for Col := 0 to pred(DEMGlb[DEM1].DEMheader.NumCol) do begin
       for Row := 0 to pred(DEMGlb[DEM1].DEMheader.NumRow) do begin
-         if DEMGlb[DEM1].GetElevMeters(Col,Row,z1) and DEMGlb[DEM1].GetElevMetersFromSecondDEM(IdenticalGrids,DEM2,Col,Row,z2) then begin
+         if IdenticalGrids then begin
+            Col2 := Col;
+            Row2 := Row;
+         end
+         else begin
+            DEMGlb[DEM1].DEMgridToLatLongDegree(Col,Row,Lat,Long);
+            DEMGlb[DEM2].LatLongDegreeToDEMGrid(Lat,Long,fc,fr);
+            Col2 := round(fc);
+            Row2 := round(fr);
+         end;
+         if DEMGlb[DEM1].GetElevMeters(Col,Row,z1) and DEMGlb[DEM2].GetElevMeters(Col2,Row2,z2) then begin
             DEMGlb[Diffs[1]].SetGridElevation(Col,Row,z2 - z1);
-            if DEMGlb[DEM1].GetSlopeAndAspect(Col,Row,SlopeAspect1) and DEMGlb[DEM1].GetSlopeAspectFromSecondDEM(Dem2,Col,Row,SlopeAspect2) then begin
+            if DEMGlb[DEM1].GetSlopeAndAspect(Col,Row,SlopeAspect1) and DEMGlb[DEM2].GetSlopeAndAspect(Col2,Row2,SlopeAspect2) then begin
                DEMGlb[Diffs[2]].SetGridElevation(Col,Row,(SlopeAspect2.SlopePercent - SlopeAspect1.SlopePercent));
                z1 := SlopeAspect2.AspectDir - SlopeAspect1.AspectDir;
                if abs(z1) < 999 then begin  //aspect undefined if slope is 0
                   if (z1 > 180) then z1 := z1 - 360
                   else  if (z1 < -180) then z1 := z1 + 360;
-                  DEMGlb[Diffs[3]].SetGridElevation(Col,Row,z1);
+                  DEMGlb[Diffs[3]].SetGridElevation(Col,Row,abs(z1));
                end;
-               if DEMGlb[DEM1].NormalAtPoint(Col,Row, n11,n12,n13) and DEMGlb[DEM2].NormalAtPoint(Col,Row, n21,n22,n23) then begin
+               if DEMGlb[DEM1].NormalAtPoint(Col,Row, n11,n12,n13) and DEMGlb[DEM2].NormalAtPoint(Col2,Row2, n21,n22,n23) then begin
                    dp := (n11 * n21 + n12 * n22 + n13 * n23);
                    //because these are unit vectors, we can use just the dot product
                    //mag1 := sqrt(sqr(n11) + sqr(n12) + sqr(n13));
@@ -582,7 +597,12 @@ begin
                    //z1 :=  dp / mag1 / mag2;
                    //z1 := arccos(z1) / DegToRad;
                    //DEMGlb[Diffs[4]].SetGridElevation(Col,Row,z1);
-                   DEMGlb[Diffs[4]].SetGridElevation(Col,Row,arccos(dp) / DegToRad);
+                   DEMGlb[Diffs[4]].SetGridElevation(Col,Row,abs(arccos(dp) / DegToRad));
+               end;
+
+               if DEMGlb[DEM1].DownhillVectorAtPoint(Col,Row,n11,n12,n13) and DEMGlb[DEM2].DownhillVectorAtPoint(Col2,Row2, n21,n22,n23) then begin
+                   dp := (n11 * n21 + n12 * n22 + n13 * n23);
+                   DEMGlb[Diffs[5]].SetGridElevation(Col,Row,abs(arccos(dp) / DegToRad));
                end;
             end;
          end;
@@ -590,8 +610,11 @@ begin
       if (Col mod 25 = 0) then UpdateProgressBar(Col / pred(DEMGlb[DEM1].DEMheader.NumCol));
    end {for Col};
    EndProgress;
-   for i := 1 to 4 do DEMGlb[Diffs[i]].SetUpMap(Diffs[i],true);
-   {$IfDef RecordDEMCompare} WriteLineToDebugFile('MakeDifferenceMap out'); {$EndIf}
+   for i := 1 to NumDiffs do begin
+      DEMGlb[Diffs[i]].SetUpMap(Diffs[i],true,mtElevSpectrum);
+      DEMGlb[Diffs[i]].SelectionMap.MergeAnotherDEMreflectance(DEM2,true);
+   end;
+   {$IfDef RecordDEMCompare} WriteLineToDebugFile('MakeElevSlopeAspectDifferenceMap out'); {$EndIf}
 end;
 
 

@@ -1160,7 +1160,7 @@ begin
          New(ByteRow);
          for y := 0 to pred(TiffHeader.ImageLength) do begin
             if (y mod 50 = 0) then UpDateProgressBar(y/TiffHeader.ImageLength);
-            SeekFileOffset(1,y);
+            SeekFileOffset({1,}y);
             if (TiffHeader.BitsPerSample = 8) then NumRead := SysUtils.FileRead(TiffHandle, ByteRow^,TiffHeader.ImageWidth*TiffHeader.SamplesPerPixel)
             else NumRead := SysUtils.FileRead(TiffHandle, BigRow^,2*TiffHeader.ImageWidth*TiffHeader.SamplesPerPixel);
             for x := 0 to pred(TiffHeader.ImageWidth) do begin

@@ -250,7 +250,6 @@ type
 
    function CreateAspectRose(DEM : integer) : tThisBaseGraph;
 
-
 type
    tSSOVarAnalysis = object
       protected
@@ -611,6 +610,8 @@ type
          procedure TrackElevationRange(Where : shortstring);
 
          function NormalAtPoint(Col,Row : integer; var n1,n2,n3 : float32) : boolean;
+         function DownhillVectorAtPoint(Col,Row : integer; var n1,n2,n3 : float32) : boolean;
+
 
          procedure GetStraightRouteLatLongDegree(Lat1,Long1,Lat2,Long2 : float64; StraightAlgorithm : tStraightAlgorithm; var NumPoints : integer; var Lats,Longs,dists : Petmath.bfarray32);
          procedure GetStraightRouteDEMGrid(Lat1,Long1,Lat2,Long2 : float64; StraightAlgorithm : tStraightAlgorithm; var NumPoints : integer; var xgrids,ygrids,dists : Petmath.bfarray32);
@@ -1955,7 +1956,7 @@ end;
 
 function tDEMDataSet.LandCoverGrid : boolean;
 begin
-   Result := DEMheader.ElevUnits in [NLCD2001up,LandFire,NLCD1992,GLOBCOVER,GLC2000,CCAP,CCI_LC,S2GLC,NLCD_Change,GLCS_LC100,Meybeck,Geomorphon,Iwahashi,ESRI2020,euPennock,WorldCover10m,LCMAP];
+   Result := DEMheader.ElevUnits in [NLCD2001up,LandFire,NLCD1992,GLOBCOVER,GLC2000,CCAP,CCI_LC,S2GLC,NLCD_Change,GLCS_LC100,Meybeck,Geomorphon,Iwahashi,ESRI2020,euPennock,WorldCover10m,LCMAP,euSent2SLC];
 end;
 
 function tDEMDataSet.ElevationGrid : boolean;
@@ -2275,6 +2276,7 @@ begin
       else if (DEMheader.ElevUnits in [Geomorphon]) then TStr := 'GEOMORPHON'
       else if (DEMheader.ElevUnits in [euPennock]) then TStr := 'PENNOCK'
       else if (DEMheader.ElevUnits in [LCMAP]) then TStr := 'LCMAP'
+      else if (DEMheader.ElevUnits in [euSent2SLC]) then TStr := 'Sent-2_SLC'
       else if (DEMheader.ElevUnits in [NLCD_Change]) then TStr := 'NLCD-Change'
       else TStr := 'LANDFIRE';                                               //this is in the DB for the filter
       //if not StrUtils.AnsiContainsText(UpperCase(AreaName),UpperCase(TStr)) then AreaName := AreaName + ' ' + TStr;

@@ -521,12 +521,16 @@ end;
 
 procedure tDEMDataSet.RichardsonExtrapolationSlopeMaps(Save : boolean = false);
 //Extrapolated Evans-Young method (López-Vázquez, 2022), using Richardson extrapolation
+//Carlos López-Vázquez (2022) Uncertainty interval estimates for computing slope and aspect from a gridded digital elevation model,
+//   International Journal of Geographical Information Science, 36:8, 1601-1628, DOI: 10.1080/13658816.2022.2063294
+
 
 //the DEM is entirely in memory, and could be stored as bytes, short integers, long integers, unsigned integers, or floats
 //while some of these do not make sense for a DEM, they do for other grids, where it does not make sense to store bytes as floats
 //calls to get elevations sort out the storage issues and return floats for all the internal computations
 
 //there is error trapping code, with a conditional compilation directive, to store intermediate values for debugging with the partial derivatives
+//this creates a lot of grids, which are not necessarily easy to interpret or immediately useful
 
 var
   bmplist : tStringList;
@@ -1474,6 +1478,20 @@ begin
    Result := GetSlopeAndAspect(Col,Row,SlopAsp);
    if Result then begin
       if (SlopAsp.SlopeDegree < 0.0001) then SlopAsp.AspectDir := 0;
+      n1 := sinDeg(SlopAsp.SlopeDegree) * sinDeg(SlopAsp.AspectDir);
+      n2 := sinDeg(SlopAsp.SlopeDegree) * cosDeg(SlopAsp.AspectDir);
+      n3 := cosDeg(SlopAsp.SlopeDegree);
+   end;
+end;
+
+function tDEMDataSet.DownhillVectorAtPoint(Col,Row : integer; var n1,n2,n3 : float32) : boolean;
+var
+  SlopAsp : tSlopeAspectRec;
+begin
+   Result := GetSlopeAndAspect(Col,Row,SlopAsp);
+   if Result then begin
+      if (SlopAsp.SlopeDegree < 0.0001) then SlopAsp.AspectDir := 0;
+      SlopAsp.SlopeDegree := 90 - SlopAsp.SlopeDegree;
       n1 := sinDeg(SlopAsp.SlopeDegree) * sinDeg(SlopAsp.AspectDir);
       n2 := sinDeg(SlopAsp.SlopeDegree) * cosDeg(SlopAsp.AspectDir);
       n3 := cosDeg(SlopAsp.SlopeDegree);

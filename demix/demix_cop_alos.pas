@@ -27,6 +27,28 @@ unit demix_cop_alos;
 interface
 
 uses
+//needed for inline of core DB functions
+   Petmar_db,
+   Data.DB,
+
+   {$IfDef UseFireDacSQLlite}
+      FireDAC.Stan.ExprFuncs,
+      FireDAC.Stan.Intf, FireDAC.Stan.Option, FireDAC.Stan.Param,
+      FireDAC.Stan.Error, FireDAC.DatS, FireDAC.Phys.Intf, FireDAC.DApt.Intf,
+      FireDAC.Stan.Async, FireDAC.DApt, FireDAC.UI.Intf, FireDAC.Stan.Def,
+      FireDAC.Stan.Pool, FireDAC.Phys, FireDAC.Comp.Client, FireDAC.Comp.DataSet,
+      FireDAC.Phys.SQLite, FireDAC.Comp.UI,
+   {$EndIf}
+
+   {$IfDef UseTDBF}
+      dbf,
+   {$EndIf}
+
+   {$IfDef UseTCLientDataSet}
+      DBClient,
+   {$EndIf}
+//end core DB functions definitions
+
     System.SysUtils,System.Classes,System.Diagnostics,StrUtils,VCL.ExtCtrls,VCL.Forms, VCL.Graphics, WinAPI.Windows,
     Petmar,Petmar_types,BaseGraf;
 
@@ -48,13 +70,14 @@ const
    procedure BestMapCOPALOSThreeParams;
    procedure HighLowMapCOPALOSThreeParams;
 
+
 implementation
 
 uses
    Nevadia_Main,
    DEMIX_Control,
    DEMstat,Make_grid,PetImage,PetImage_form,new_petmar_movie,DEMdatabase,PetDButils,Pick_several_dems,
-   DEMCoord,DEMdefs,DEMMapf,DEMDef_routines,DEM_Manager,DEM_indexes,Petmar_db,PetMath;
+   DEMCoord,DEMdefs,DEMMapf,DEMDef_routines,DEM_Manager,DEM_indexes,PetMath;
 
 const
    GeomorphNames : array[1..3] of shortstring = ('Elevation','Slope','Roughness');
@@ -86,7 +109,8 @@ const
    DTMRuffDiffMapCOPfName = 'ruff_diff_dtm_cop.tif';
 
 var
-   HalfSecDir,ThisArea : PathStr;
+   //HalfSecDir,
+   ThisArea : PathStr;
    ALOSHalfSec,COPHalfSec,RefDTMhalfsec,
    RuffALOSHalfSec,RuffCOPHalfSec,RuffRefDTMPointhalfsec : integer;
    RuffRefDTMarea,SlopeRefDTMarea,

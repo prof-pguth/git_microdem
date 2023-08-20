@@ -192,12 +192,12 @@ const
                                            clPurple,clFuchsia,clBrown);
  var
    i,Higher,Lower : integer;
-   zDEM2,zRefDEM,zDEM1,What : float32;
-   Lat,Long : float64;
+   //zDEM2,zRefDEM,zDEM1,What : float32;
+   //Lat,Long : float64;
    x,y : integer;
-   TStr : shortstring;
+   //TStr : shortstring;
    HighHist,LowHist : tHist;
-   DEM1high, DEM1low, DEM1good, DEM2high, DEM2low, DEM2good : boolean;
+   //DEM1high, DEM1low, DEM1good, DEM2high, DEM2low, DEM2good : boolean;
 
 
          procedure Finalize(Neigh : integer; Hist : tHist; aLabel : shortstring; ReverseColors : boolean);
@@ -259,7 +259,7 @@ var
    x,y : integer;
    fName : PathStr;
    VAT : tStringList;
-   TStr : shortstring;
+   //TStr : shortstring;
    Maps : TStringList;
    Hist,ALOSHist,COPhist,FabHist : tHist;
 
@@ -306,9 +306,16 @@ begin
       ALOSHist[i] := 0;
    end;
    Result := DEMGlb[RefDEM].CloneAndOpenGridSetMissing(ByteDEM,AName,euIntCode);
-   COPbest := DEMGlb[RefDEM].CloneAndOpenGridSetMissing(ByteDEM,'COP_' + AName,euIntCode);
-   ALOSBest := DEMGlb[RefDEM].CloneAndOpenGridSetMissing(ByteDEM,'ALOS_' + AName,euIntCode);
-   FABbest := DEMGlb[RefDEM].CloneAndOpenGridSetMissing(ByteDEM,'FAB_' + AName,euIntCode);
+   if MDDef.RGBbestSeparates then begin
+      COPbest := DEMGlb[RefDEM].CloneAndOpenGridSetMissing(ByteDEM,'COP_' + AName,euIntCode);
+      ALOSBest := DEMGlb[RefDEM].CloneAndOpenGridSetMissing(ByteDEM,'ALOS_' + AName,euIntCode);
+      FABbest := DEMGlb[RefDEM].CloneAndOpenGridSetMissing(ByteDEM,'FAB_' + AName,euIntCode);
+   end
+   else begin
+      COPbest := 0;
+      ALOSBest := 0;
+      FABbest := 0;
+   end;
    StartProgressAbortOption('Best on map');
    for x := 0 to pred(DEMGlb[RefDEM].DEMheader.NumCol) do begin
       UpdateProgressBar(x/DEMGlb[RefDEM].DEMheader.NumCol);
@@ -325,30 +332,30 @@ begin
                What := 0;
                if (ALOSZ - Best <= Tolerance) then begin
                   What := What + 1;
-                  DEMglb[ALOSbest].SetGridElevation(x,y,1);
+                  if ALOSBest <> 0 then DEMglb[ALOSbest].SetGridElevation(x,y,1);
                   inc(ALOSHist[1]);
                end
                else begin
                   inc(ALOShist[8]);
-                  DEMglb[ALOSbest].SetGridElevation(x,y,8);
+                  if ALOSBest <> 0 then DEMglb[ALOSbest].SetGridElevation(x,y,8);
                end;
                if (CopZ - Best <= Tolerance) then begin
                   What := What + 2;
-                  DEMglb[COPbest].SetGridElevation(x,y,2);
+                  if COPBest <> 0 then DEMglb[COPbest].SetGridElevation(x,y,2);
                   inc(COPHist[2]);
                end
                else begin
                   inc(COPhist[8]);
-                  DEMglb[COPbest].SetGridElevation(x,y,8);
+                  if COPBest <> 0 then DEMglb[COPbest].SetGridElevation(x,y,8);
                end;
                if (FabZ - Best <= Tolerance) then begin
                   What := What + 4;
-                  DEMglb[Fabbest].SetGridElevation(x,y,4);
+                  if FABBest <> 0 then DEMglb[Fabbest].SetGridElevation(x,y,4);
                   inc(FabHist[4]);
                end
                else begin
                   inc(Fabhist[8]);
-                  DEMglb[Fabbest].SetGridElevation(x,y,8);
+                  if FABBest <> 0 then DEMglb[Fabbest].SetGridElevation(x,y,8);
                end;
                if (What > 0) then begin
                   DEMglb[Result].SetGridElevation(x,y,what);
@@ -362,9 +369,9 @@ begin
    SaveBackupDefaults;
    MDDef.MapNameBelowComposite := false;
    Maps := tStringList.Create;
-   FinalizeMap(ALOSbest,ALOSHist);
-   FinalizeMap(COPbest,COPHist);
-   FinalizeMap(FABbest,FABHist);
+   if ALOSBest <> 0 then FinalizeMap(ALOSbest,ALOSHist);
+   if COPBest <> 0 then FinalizeMap(COPbest,COPHist);
+   if FABBest <> 0 then FinalizeMap(FABbest,FABHist);
    FinalizeMap(Result,Hist,'');
    fName := NextFileNumber(MDtempDir,AName + '_rgb3_','.png');
    Bigimagewithallmaps(2,fName,Maps);
@@ -382,7 +389,7 @@ var
    Lat,Long : float64;
    x,y : integer;
    VAT : tStringList;
-   TStr : shortstring;
+   //TStr : shortstring;
    Hist : array[1..3] of int64;
 begin
    {$IfDef DEMIXmaps} WriteLineToDebugFile('BestCopOrALOSmap in'); {$EndIf}
@@ -439,7 +446,7 @@ var
    Lat,Long : float64;
    x,y : integer;
    VAT : tStringList;
-   TStr : shortstring;
+   //TStr : shortstring;
    Hist : array[1..MaxHist] of int64;
    DEM1high, DEM1low, DEM1good, DEM2high, DEM2low, DEM2good : boolean;
 begin
@@ -533,8 +540,8 @@ const
    FiveCat = false;
 var
    i : integer;
-   z1,z2,z3,What : float32;
-   Lat,Long : float64;
+   z2,What : float32;
+   //Lat,Long : float64;
    x,y : integer;
    VAT : tStringList;
    TStr : shortstring;
@@ -667,7 +674,8 @@ end;
 
 function CreateStandardDeviationMap(DEM,Radius : integer) : integer;
 var
-   SlopeGrid,x,y,i,j : integer;
+   //SlopeGrid,
+   x,y,i,j : integer;
    sl : array[1..500] of float32;
    MomentVar : tMomentVar;
    z : float32;
@@ -783,7 +791,7 @@ end;
 function CreateRoughnessMap2(DEM : integer; OpenMap : boolean = true; SaveSlopeMap : boolean = true) : integer;
 var
    SlopeGrid,x,y : integer;
-   Roughness : float32;
+   //Roughness : float32;
    sl : array[1..9] of float32;
    MomentVar : tMomentVar;
 begin
@@ -1239,11 +1247,11 @@ end;
 function MakeMomentsGrid(CurDEM : integer; What : char; BoxSizeRadiusMeters : integer = -99; OpenMaps : boolean = true) : integer;
 var
    XBoxGridSize,YBoxGridSize,ThinFactor,i : integer;
-   PartLimits :  tGridLimitsArray;
+   //PartLimits :  tGridLimitsArray;
    TStr : ShortString;
    WantMapType : tMapType;
    fName,pName : PathStr;
-   Stopwatch1 : TStopwatch;
+   //Stopwatch1 : TStopwatch;
 
 
        procedure NewGrid(var DEM : integer; Gridname : shortstring; ElevUnits : tElevUnit);

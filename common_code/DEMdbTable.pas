@@ -960,8 +960,11 @@ type
     N50: TMenuItem;
     AddIMAGEfieldfordifferencedistributiongraphs1: TMenuItem;
     Modestandarddeviationplots1: TMenuItem;
-    Pointfilter1: TMenuItem;
-    Pointfilter2: TMenuItem;
+    AddDEMIXtilecentroid1: TMenuItem;
+    Clustermaplocations1: TMenuItem;
+    Clusterstatistics1: TMenuItem;
+    //Pointfilter1: TMenuItem;
+    //Pointfilter2: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
     procedure Shiftpointrecords1Click(Sender: TObject);
     procedure Creategrid1Click(Sender: TObject);
@@ -1694,8 +1697,11 @@ type
     procedure AddIMAGEfieldfordifferencedistributiongraphs1Click(
       Sender: TObject);
     procedure Modestandarddeviationplots1Click(Sender: TObject);
-    procedure Pointfilter2Click(Sender: TObject);
-    procedure Pointfilter1Click(Sender: TObject);
+    procedure AddDEMIXtilecentroid1Click(Sender: TObject);
+    procedure Clustermaplocations1Click(Sender: TObject);
+    procedure Clusterstatistics1Click(Sender: TObject);
+    //procedure Pointfilter2Click(Sender: TObject);
+    //procedure Pointfilter1Click(Sender: TObject);
   private
     procedure PlotSingleFile(fName : PathStr; xoff,yoff : float64);
     procedure SetUpLinkGraph;
@@ -2207,7 +2213,7 @@ var
   MinColor,MaxColor : float64;
   StringColorField,NumericColorField{,SizeField} : ShortString;
   DataThere : tStringList;
-  acolor : tPlatformColor;
+  //acolor : tPlatformColor;
 
      procedure OpenNew3Dform;
      var
@@ -4417,16 +4423,12 @@ var
    GridForm : TGridForm;
 begin
    UseFields := GISdb[DBonTable].GetAnalysisFields;
-
    {$IfDef RecordCorrelationMatrix} WriteLineToDebugFile('Tdbtablef.Fieldcorrelations1Click, n=' + IntToStr(UseFields.Count)); {$EndIf}
-
    ShowHourglassCursor;
    GISdb[DBonTable].EmpSource.Enabled := false;
    OldFilter := GISdb[DBonTable].MyData.Filter;
-
    New(VarCovar);
    New(Correlations);
-
    DataBaseCorrelations(DBonTable,UseFields,VarCovar^,Correlations^,NumPoints);
    {$IfDef RecordCorrelationMatrix} WriteLineToDebugFile('DataBaseCorrelations done'); {$EndIf}
 
@@ -4453,8 +4455,8 @@ begin
       end;
    end;
 
-   if (Sender = Statisticsgroupedbyonefield1) then with GISdb[DBonTable] do begin
-      dbOpts.MainFilter := OldFilter;
+   if (Sender = Statisticsgroupedbyonefield1) then begin
+      GISdb[DBonTable].dbOpts.MainFilter := OldFilter;
       GISdb[DBonTable].AssembleGISFilter;
    end;
   Cleanup:;
@@ -4859,9 +4861,9 @@ end;
 
 
 procedure Tdbtablef.Addazimuthtotravelpath1Click(Sender: TObject);
-var
-   Last4Grad,This4Grad,Lat,Long,LastLat,LastLong,Az,Dist : float64;
-   f1,f2,TStr : ShortString;
+//var
+   //Last4Grad,This4Grad,Lat,Long,LastLat,LastLong,Az,Dist : float64;
+   //f1,f2,TStr : ShortString;
 begin
    {$IfDef RecordNavigation} WriteLineToDebugFile('Tdbtablef.Addazimuthtotravelpath1Click in'); {$EndIf}
    with GISdb[DBonTable] do begin
@@ -4960,6 +4962,28 @@ end;
 procedure Tdbtablef.AddDEMdata1Click(Sender: TObject);
 begin
     AddGlobalDEMs(dbOnTable);
+end;
+
+procedure Tdbtablef.AddDEMIXtilecentroid1Click(Sender: TObject);
+var
+   WantField,tName : shortstring;
+   Lat,Long : float32;
+begin
+   GISdb[DBonTable].AddLatLong;
+   WantField := GISdb[DBonTable].PickField('DEMIX file names',[ftstring]);
+   if (WantField <> '') then begin
+      GISdb[DBonTable].EmpSource.Enabled := false;
+      GISdb[DBonTable].MyData.First;
+      while not GISdb[DBonTable].MyData.eof do begin
+         tName := GISdb[DBonTable].MyData.GetFieldByNameAsString(WantField);
+         DEMIXtileCentroid(tName,Lat,Long);
+         GISdb[DBonTable].MyData.Edit;
+         GISdb[DBonTable].MyData.SetFieldByNameAsFloat('LAT',Lat);
+         GISdb[DBonTable].MyData.SetFieldByNameAsFloat('LONG',Long);
+         GISdb[DBonTable].MyData.Next;
+      end;
+      ShowStatus;
+   end;
 end;
 
 procedure Tdbtablef.AddDISTANCEAZIMUTHfields1Click(Sender: TObject);
@@ -6014,7 +6038,7 @@ end;
 
 procedure Tdbtablef.Alphabetize1Click(Sender: TObject);
 var
-   aString,ExtToAdd,Ext : ShortString;
+   aString{,ExtToAdd,Ext} : ShortString;
    i : integer;
    Sorting : tStringList;
 begin
@@ -7937,7 +7961,7 @@ end;
 procedure Tdbtablef.Averagebylatitude1Click(Sender: TObject);
 var
    aField : shortstring;
-   BinSize,Lat,Avg,Done,Value : float32;
+   BinSize,Lat,{Avg,Done,}Value : float32;
    GraphData : tStringList;
    i,Bin : integer;
    Sum : array[0..180] of float64;
@@ -10575,7 +10599,7 @@ function Tdbtablef.DrawDEMTerrainprofile(Sender: TObject) : tThisBaseGraph;
 var
   i,j,rc : integer;
   rFile : file;
-  MaxDist,Lat,Long,Lat2,Long2,Distance,Bearing,CumDist,MaxDensity,LastZ : float64;
+  MaxDist,Lat,Long,Lat2,Long2,Distance,Bearing,CumDist,MaxDensity{,LastZ} : float64;
   v : tFloatPoint;
   v3 : array[1..3] of float64;
   u1,u2 : ShortString;
@@ -12193,9 +12217,7 @@ var
          if GISdb[DBonTable].LatLongFieldsPresent and (GISdb[DBonTable].TheMapOwner <> Nil) then begin
             {if GISdb[DBonTable].dbFullName = '' then Petmar.NextFileNumber(MDTempDir, 'cluster_',DefaultDBExt)
             else} fName := Petmar.NextFileNumber(ExtractFilePath(GISdb[DBonTable].dbFullName),GISdb[DBonTable].dbName + '_cluster_',DefaultDBExt);
-            {$IfDef RecordClustering}
-            WriteLineToDebugFile('save and open ' + fName);
-            {$EndIf}
+            {$IfDef RecordClustering} WriteLineToDebugFile('save and open ' + fName); {$EndIf}
             //GISdb[DBonTable].dbTableF.ToggleLayer;
             GISdb[DBonTable].TheMapOwner.StringListToLoadedDatabase(NewDB,fName);
             GISdb[DBonTable].dbOpts.FloatColorField := 'CLUSTER';
@@ -12211,9 +12233,7 @@ var
 
 
    procedure SetUpRun;
-   //var
-      //j : integer;
-   begin
+    begin
       {$IfDef RecordClustering} WriteLineToDebugFile('Cluster SetUpRun enter'); {$EndIf}
       Sampler := 1;
       while ( (GISdb[DBonTable].MyData.RecordCount div Sampler) > EdburgGeneralFuncsMaxObservations) do inc(Sampler);
@@ -12234,8 +12254,8 @@ var
              inc(ClusterRuns);
              EmpSource.Enabled := false;
              {$IfDef RecordClustering}
-             WriteLineToDebugFile('Cluster variables for ' + ClusterField ,true);
-             WriteStringListToDebugFile(UsingFields,true);
+                WriteLineToDebugFile('Cluster variables for ' + ClusterField ,true);
+                WriteStringListToDebugFile(UsingFields,true);
              {$EndIf}
           end;
       end;
@@ -12254,7 +12274,7 @@ begin
 
       ClusterSuccess := Nil;
       if MyData.FieldExists('MASK') then ClusterSuccess := tStringList.Create
-      else    begin
+      else begin
          MDDef.ShowMaskScatterPlots:= false;
          MDDef.ShowMaskHistograms := false;
       end;
@@ -12323,7 +12343,7 @@ var
    fName : PathStr;
 begin
    {$IfDef RecordClustering} WriteLineToDebugFile('Tdbtablef.Clusterfrequency1Click'); {$EndIf}
-   with GISdb[DBonTable] do  begin
+   with GISdb[DBonTable] do begin
       if MyData.Filtered then MessageToContinue('Results apply to entire database');
       GISdb[DBonTable].ClearGISFilter;
       SaveHiddenColumns(DBonTable);
@@ -12358,6 +12378,7 @@ begin
    ShowStatus;
 end;
 
+
 procedure Tdbtablef.Clusterlegend1Click(Sender: TObject);
 {$IfDef ExGeostats}
 begin
@@ -12386,6 +12407,112 @@ begin
 {$EndIf}
 end;
 
+
+procedure Tdbtablef.Clustermaplocations1Click(Sender: TObject);
+var
+   //MinX,MaxX : float64;
+   i{,j} : integer;
+   //WantedField : ShortString;
+   UniqueEntries,Results : tStringList;
+   //TStr,f1 : AnsiString;
+   fName : PathStr;
+   Bitmap : tMyBitmap;
+begin
+   {$IfDef RecordClustering} WriteLineToDebugFile('Clustermaplocations1Click in'); {$EndIf}
+   //with GISdb[DBonTable] do begin
+   if not GISdb[DBonTable].MyData.FieldExists('CLUSTER') then begin
+      MessageToContinue('Requires CLUSTER field in DB');
+      exit;
+   end;
+   SaveBackupDefaults;
+      GISdb[DBonTable].ClearGISFilter;
+      //SaveHiddenColumns(DBonTable);
+      //UnHideColumns;
+      Results := tStringList.Create;
+      GISdb[DBonTable].EmpSource.Enabled := false;
+      UniqueEntries := GISdb[DBonTable].MyData.UniqueEntriesInDB('CLUSTER');
+      for i := 0 to pred(UniqueEntries.Count) do begin
+         GISdb[DBonTable].MyData.ApplyFilter('CLUSTER=' + UniqueEntries.Strings[i]);
+         MDDef.MapNameLocation.DrawItem := true;
+          //MDDef.MapNameLocation.MapPosition := lpSMap;
+
+          GISdb[DBonTable].theMapOwner.MapDraw.GrayscaleWorldOutline := true;
+          GISdb[DBonTable].theMapOwner.MapDraw.SubdueWorldOutline := true;
+
+          GISdb[DBonTable].theMapOwner.MapDraw.BaseTitle := GISdb[DBonTable].MyData.Filter  + '  (n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) +')';
+          GISdb[DBonTable].theMapOwner.DoCompleteMapRedraw;
+         //GISdb[DBonTable].theMapOwner.MapDraw.DeleteSingleMapLayer(GISdb[DBonTable].theMapOwner.MapDraw.LegendOverlayfName);
+         //GISdb[DBonTable].RedrawLayerOnMap;
+         GISdb[DBonTable].GISProportionalSymbols(dbasColorField);
+         GISdb[DBonTable].theMapOwner.OutlineMap;
+
+         CopyImageToBitmap(GISdb[DBonTable].theMapOwner.Image1,Bitmap);
+
+         fName := MDTempDir + GISdb[DBonTable].MyData.Filter + '.bmp';
+         Bitmap.SaveToFile(fName);
+         Results.Add(fName);
+      end;
+      MakeBigBitmap(Results,'Cluster locations');
+
+   GISdb[DBonTable].ClearGISFilter;
+   GISdb[DBonTable].theMapOwner.MapDraw.BaseTitle := '';
+   RestoreBackupDefaults;
+   GISdb[DBonTable].theMapOwner.DoCompleteMapRedraw;
+   ShowStatus;
+   {$IfDef RecordClustering} WriteLineToDebugFile('Clustermaplocations1Click out'); {$EndIf}
+end;
+
+procedure Tdbtablef.Clusterstatistics1Click(Sender: TObject);
+var
+   Results,UsingFields,UniqueEntries : tStringList;
+   i,j : integer;
+   aLine,MaxLine,MeanLine,MedianLine,MinLine,stdLine,Common : shortstring;
+   MomentVar : tMomentVar;
+   fName : PathStr;
+begin
+   if not GISdb[DBonTable].MyData.FieldExists('CLUSTER') then begin
+      MessageToContinue('Requires CLUSTER field in DB');
+      exit;
+   end;
+   UsingFields := GISdb[DBonTable].GetAnalysisFields;
+   UniqueEntries := GISdb[DBonTable].MyData.UniqueEntriesInDB('CLUSTER');
+   Results := tStringList.Create;
+   aline := 'CLUSTER,N,METRIC';
+   for j := 0 to pred(UsingFields.Count) do begin
+      aline := aline + ',' + UsingFields.Strings[j];
+   end;
+   Results.Add(aLine);
+   for i := 0 to pred(UniqueEntries.Count) do begin
+      GISdb[DBonTable].MyData.ApplyFilter('CLUSTER=' + UniqueEntries.Strings[i]);
+      GISdb[DBonTable].EmpSource.Enabled := false;
+      Common := UniqueEntries.Strings[i] + ',' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + ',' ;
+      MaxLine := Common + 'MAX' ;
+      MeanLine := Common + 'MEAN' ;
+      MedianLine := Common + 'MEDIAN';
+      MinLine := Common + 'MIN';
+      STDline := Common + 'StdDev';
+
+      for j := 0 to pred(UsingFields.Count) do begin
+         MomentVar := GISdb[DBonTable].GetFieldStatistics(UsingFields.Strings[j]);
+         MaxLine := MaxLine + ',' + RealToString(MomentVar.MaxZ,-18,-2);
+         MeanLine := MeanLine + ',' + RealToString(MomentVar.Mean,-18,-2);
+         MedianLine := MedianLine + ','  + RealToString(MomentVar.Median,-18,-2);
+         MinLine := MinLine + ',' +  RealToString(MomentVar.MinZ,-18,-2);
+         STDLine := STDLine + ',' +  RealToString(MomentVar.sdev,-18,-2);
+      end;
+      Results.Add(MaxLine);
+      Results.Add(MeanLine);
+      Results.Add(MedianLine);
+      Results.Add(MinLine);
+      Results.Add(STDLine);
+   end;
+   fName := Petmar.NextFileNumber(MDTempDir, 'Cluster_stats_',DefaultDBExt);
+   {$IfDef RecordClustering} WriteLineToDebugFile(fName); {$EndIf}
+   GISdb[DBonTable].theMapOwner.StringListToLoadedDatabase(Results,fName);
+
+   GISdb[DBonTable].ClearGISFilter;
+   ShowStatus;
+end;
 
 procedure Tdbtablef.CalculateVolume1Click(Sender: TObject);
 var
@@ -12615,7 +12742,7 @@ var
    aString : AnsiString;
    Done : boolean;
 begin
-   with GISdb[DBonTable]{,MyData} do begin
+   with GISdb[DBonTable] do begin
       EmpSource.Enabled := false;
       MyData.Next;
       repeat
@@ -12646,7 +12773,6 @@ begin
          ReadDefault('Buffer (m)',DistanceBuffer);
          NewField := 'NEIGH_' + IntToStr(DistanceBuffer);
          NewField := GetFieldNameForDB('Number neighbors field name',True,NewField);
-         //GetString('Number neighbors field name',NewField,true,Petmar_types.DBaseFieldNameChars);
          AddFieldToDataBase(ftInteger,NewField,5,0);
          LoadPointCoords;
          EmpSource.Enabled := false;
@@ -12734,7 +12860,6 @@ var
    TheField : shortstring;
 begin
    {$IfDef RecordOnDEM} writelinetodebugFile('Tdbtablef.FindrecordsonDEM1Click in'); {$EndIf}
-
    with GISdb[DBonTable],MyData do begin
       TheField := PickField('Name' ,[ftString]);
       EmpSource.Enabled := false;
@@ -12782,7 +12907,7 @@ procedure Tdbtablef.Proportionalsquares1Click(Sender: TObject);
 begin
    {$IfDef ExAdvancedGIS}
    {$Else}
-   GISdb[DBonTable].GISProportionalSymbols(dbasTTFontSymbol);
+      GISdb[DBonTable].GISProportionalSymbols(dbasTTFontSymbol);
    {$EndIf}
 end;
 
@@ -12879,7 +13004,6 @@ begin
             OutForm.Activate;
             if GISdb[DBonTable].MyData.GetFieldByNameAsString('HEADING') <> '' then begin
                OutForm.Layout3D1.RotationAngle.Y := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('HEADING') + 90;
-               //OutForm.Label6.Text := 'Heading: ' + RealToString(GISdb[DBonTable].MyData.GetFieldByNameAsFloat('HEADING'),-6,1);
             end;
             OutForm.Show;
          end;
@@ -12978,9 +13102,7 @@ procedure Tdbtablef.BitBtn18Click(Sender: TObject);
 var
    Target : integer;
 begin
-   {$IfDef RecordFan}
-   WriteLineToDebugFile('Tdbtablef.BitBtn18Click',true);
-   {$EndIf}
+   {$IfDef RecordFan} WriteLineToDebugFile('Tdbtablef.BitBtn18Click'); {$EndIf}
    Target := PickOpenGISDataBase('Targets for Fan coverage',DBonTable);
    if (Target = -99) then MessageToContinue('Open desired target area shapefile')
    else ViewshedTargetCoverage(Target);
@@ -12998,7 +13120,7 @@ var
    Answer : string;
    MyTable : tMyData;
 begin
-   {$IfDef RecordFan} WriteLineToDebugFile('Tdbtablef.ViewshedTargetCoverage, Sensors filter=' + GISDB[Target].MyData.Filter);   {$EndIf}
+   {$IfDef RecordFan} WriteLineToDebugFile('Tdbtablef.ViewshedTargetCoverage, Sensors filter=' + GISDB[Target].MyData.Filter); {$EndIf}
    if (Target <> 0) and (Target <> DBonTable) then with GISdb[DBonTable] do begin
       MyData.ApplyFilter('USE=' + QuotedStr('Y'));
       TheMapOwner.DoFastMapRedraw;
@@ -13041,14 +13163,11 @@ begin
          GISdb[db].dbOpts.DBAutoShow := dbasConnectTwoPointsInRec;
          GISdb[db].dbOpts.LineColor := MDDef.ConPtsColor;
          GISdb[db].dbOpts.LineWidth := MDDef.ConPtsWidth;
-         //bm1 := Nil;
-         GISdb[db].RedrawLayerOnMap;   //DisplayOnMap(bm1);
+         GISdb[db].RedrawLayerOnMap;
          ShowStatus;
       end
       else begin
-         {$IfDef RecordFan}
-         WriteLineToDebugFile('Line/area targets');
-         {$EndIf}
+         {$IfDef RecordFan} WriteLineToDebugFile('Line/area targets'); {$EndIf}
           if (TheMapOwner.MapDraw.DBOverlayfName[Target] <> '') and (TheMapOwner.MapDraw.AllFansCoverageFName <> '') then begin
              bm1 := PetImage.LoadBitmapFromFile(TheMapOwner.MapDraw.DBOverlayfName[Target]);
              bm2 := PetImage.LoadBitmapFromFile(TheMapOwner.MapDraw.AllFansCoverageFName);
@@ -13964,7 +14083,7 @@ end;
 function Tdbtablef.CreateGrid(HowCreate : tcgHow; GridSize : float64 = -99) : integer;
 //type = tcgHow(cgValuesGrid,cgRadiusDB,cgBox,cdCode,cdPointDensity);
 var
-   NewHeadRecs : tDEMheader;
+   //NewHeadRecs : tDEMheader;
    WantedFieldName : ShortString;
    xg,yg,NewDEM,i,j,xinc,yinc,x,y,Code,NumPts,rc : integer;
    fName : PathStr;
@@ -14265,7 +14384,7 @@ var
    sfc : tShapeFileCreation;
    fName,tile : PathStr;
    db : integer;
-   Lat,Long : float64;
+   //Lat,Long : float64;
    bb : sfBoundBox;
 begin
    GISdb[DBonTable].MyData.First;
@@ -14457,15 +14576,6 @@ begin
    CreateGrid(cgPointDensity);
 end;
 
-procedure Tdbtablef.Pointfilter1Click(Sender: TObject);
-begin
-   MultipleBestByParametersSortByValue(DBonTable,true);
-end;
-
-procedure Tdbtablef.Pointfilter2Click(Sender: TObject);
-begin
-   MultipleBestByParametersSortByValue(DBonTable,false);
-end;
 
 procedure Tdbtablef.Pointinarea1Click(Sender: TObject);
 var

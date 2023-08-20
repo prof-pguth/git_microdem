@@ -644,8 +644,8 @@ end;
 
 
 function ExecuteWBandOpenMap(cmd : ansistring; OutName : PathStr; TheElevUnits : tElevUnit; MapType :tMapType = mtElevRainbow) : integer;
-var
-   NewGrid : integer;
+//var
+   //NewGrid : integer;
 begin
    {$IfDef RecordWBT} WriteLineToDebugFile('ExecuteWBandOpenMap, cmd=' + cmd); {$EndIf}
    WinExecAndWait32(cmd);

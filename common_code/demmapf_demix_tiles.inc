@@ -8,97 +8,7 @@
 
 {include file for demmapf.pas}
 
-
-procedure ResampleForDEMIXOneSecDEMs(DEM : integer; OutPath : PathStr = ''; DoHalfSec : boolean = true);
-var
-   NewDEM,New2,New3,NewDEM4,NewDEM5,PointOffset,AreaOffset : integer;
-   fName,BaseName : PathStr;
-   Ext : ExtStr;
-   xfrac,yfrac : float64;
-
-
-   function CreateOne(PixelIs : byte; xgridsize,ygridsize : float32; fName : PathStr) : integer;
-   begin
-      if FileExists(fName) then begin
-         Result := OpenNewDEM(fName);
-      end
-      else begin
-         MDdef.DefLidarGeoGridSizeX := xgridsize;
-         MDdef.DefLidarGeoGridSizeY := ygridsize;
-         MDDef.LasDEMPixelIs := PixelIs;
-         {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX, ' + fName); {$EndIf}
-         Result := DEMGlb[DEM].ResampleByAveraging(true,false,fName);
-         {$If Defined(TrackDEMCorners)} DEMGlb[Result].WriteDEMCornersToDebugFile('ResampleForDEMIXOneSecDEMs, new DEM=' + IntToStr(Result)); {$EndIf}
-      end;
-   end;
-
-
-begin
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile(''); WriteLineToDebugFile('ResampleForDEMIX DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
-   if (DEMGlb[DEM].DEMFileName = '') then begin
-      DEMGlb[DEM].WriteNewFormatDEM(DEMGlb[DEM].DEMFileName,' save DEM before resampling');
-   end;
-   {$If Defined(TrackDEMCorners)} DEMGlb[DEM].WriteDEMCornersToDebugFile('ResampleForDEMIXOneSecDEMs, starting DEM'); {$EndIf}
-   SaveBackupDefaults;
-   GetDEMIXPaths(false);
-   MDDef.DefDEMMap := mtDEMBlank;
-   MDDef.LidarGridProjection := ArcSecDEM;
-   Ext := '.tif';
-
-   if (OutPath = '') then begin
-      OutPath := ExtractFilePath(DEMGlb[DEM].DEMFileName);
-      BaseName := 'ref_';
-   end
-   else begin
-      BaseName := DEMGlb[DEM].AreaName + '_ref_';
-   end;
-
-   if DoHalfSec {or MDDef.UseHalfPixelAggregation} then begin
-      fName := DEMIX_Ref_Half_sec + BaseName + '0.5sec' + Ext;
-      NewDEM := CreateOne(PixelIsPoint,0.5,0.5,fName);
-   end;
-
 (*
-   if true {MDDef.UseHalfPixelAggregation} then begin
-      if DEMGlb[NewDEM].PixelCenterOnFullSecond then begin
-         //sw corner is on a full seccond
-         PointOffset := 0;
-         AreaOffset := 1;
-      end
-      else begin
-         //sw corner is on a half seccond
-         PointOffset := 1;
-         AreaOffset := 0;
-      end;
-
-      fName := OutPath + BaseName + '1sec_point_v2' + Ext;
-      New2 := DEMGlb[NewDEM].HalfPixelAggregation(fName,PixelIsPoint,true,PointOffset);
-      //this one does not have the correct shift
-      fName := OutPath + BaseName + '1sec_area_v2' + Ext;
-      New3 := DEMGlb[NewDEM].HalfPixelAggregation(fName,PixelIsArea,true,AreaOffset);
-   end;
-*)
-   if true then begin
-      fName := OutPath + BaseName + '1sec_point' + Ext;
-      NewDEM4 := CreateOne(PixelIsPoint,1,1,fName);
-
-      fName := OutPath + BaseName + '1sec_area' + Ext;
-      NewDEM5 := CreateOne(PixelIsArea,1,1,fName);
-   end;
-
-   if (DEMGlb[DEM].DEMSWcornerLat > 50) and (DEMGlb[DEM].DEMSWcornerLat < 60) then begin
-      fName := OutPath + BaseName + '1.5x1sec_point' + Ext;
-      CreateOne(PixelIsPoint,1.5,1,'1.5x1sec' + Ext);
-   end;
-
-   CloseAllDEMs;
-   RestoreBackupDefaults;
-   //{$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('Out ResampleForDEMIX DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
-end;
-
-
-
-
 procedure ResampleHalfSecondForDEMIX(DEM : integer; OutPath : PathStr = '');
 var
    NewDEM,NewDEM2 : integer;
@@ -167,6 +77,7 @@ begin
    RestoreBackupDefaults;
    {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('Out ResampleForDEMIX DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
 end;
+*)
 
 
 procedure ResampleForUTM_GeoComparison(DEM : integer; OutPath : PathStr = '');
@@ -275,6 +186,16 @@ begin
    {$IfDef RecordDEMIXTiles} writeLineToDebugFile('DEM contains parts of tiles=' + IntToStr(GISdb[Result].MyData.TotRecsInDB)); {$EndIf}
 end;
 
+function LoadDEMIXtileOutlinesNoMap(WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false; OpenTable : boolean = true) : integer;
+var
+   DEMIXFName : PathStr;
+begin
+   {$If Defined(RecordCarto)} WriteLineToDebugFile('LoadDEMIXtileOutlinesNoMap in ' + sfBoundBoxToString(WantBoundBoxGeo)); {$EndIf}
+   DEMIXFName := CreateDEMIXTileShapefile(WantBoundBoxGeo,AddGridFull,AddTileSize);
+   OpenNumberedGISDataBase(Result,DEMIXFName,OpenTable);
+   {$If Defined(RecordCarto)} WriteLineToDebugFile('LoadDEMIXtileOutlinesNoMap out'); {$EndIf}
+end;
+
 
 function CreateDEMIXTileShapefile(WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false) : shortstring;
 const
@@ -283,6 +204,7 @@ var
    xminutes,yminutes,LongHi,LowLat,HighLat,LongLow,Wide,High,Bearing : float64;
    FirstLat, LastLat, FirstLong, LastLong, Lat,Long, yt,y,i,xtiles : integer;
    xch : integer;
+   bb : sfBoundBox;
    ShapeFileCreator : tShapeFileCreation;
 begin
    {$If Defined(RecordCartoFull)} WriteLineToDebugFile('TMapForm.LoadDEMIXtileOutlines in ' + sfBoundBoxToString(WantBoundBoxGeo)); {$EndIf}
@@ -328,7 +250,12 @@ begin
                   if ((LongLow < WantBoundBoxGeo.xMax) and (LongHi > WantBoundBoxGeo.xMin)) then begin
                      ShapeFileCreator.RecordName := LatToString3(Lat) + DEMIXLatLetters[y] + LongToString4(Long) + DEMIXLongLetters[xch];
                      {$IfDef RecordCartoFull} WriteLineToDebugFile(ShapeFileCreator.RecordName); {$EndIf}
-                     ShapeFileCreator.AddBoxLatLongToShapeFile(LowLat,LongLow,HighLat,LongHi);
+                     //ShapeFileCreator.AddBoxLatLongToShapeFile(LowLat,LongLow,HighLat,LongHi);
+                     bb.xmin := LongLow;
+                     bb.xmax := LongHi;
+                     bb.ymin := LowLat;
+                     bb.ymax := HighLat;
+                     ShapeFileCreator.AddBoundBoxToShapeStream(bb);
                      ShapeFileCreator.Table.Edit;
                      ShapeFileCreator.Table.SetFieldByNameAsString('LETTERS',DEMIXLongLetters[xch] + DEMIXLatLetters[y]);
                      if AddTileSize then begin
@@ -390,6 +317,16 @@ begin
       end;
    end;
 end;
+
+procedure DEMIXtileCentroid(tName : shortString; var Lat,Long : float32);
+var
+   bb : sfBoundBox;
+begin
+   bb := DEMIXtileBoundingBox(tName);
+   Long := 0.5 * (bb.xmin + bb.xmax);
+   Lat := 0.5 * (bb.ymin + bb.ymax);
+end;
+
 
 
 

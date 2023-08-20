@@ -3323,7 +3323,7 @@ finalization
    {$IfDef RecordBlendBitmaps} WriteLineToDebugFile('RecordBlendBitmaps active in PetImage'); {$EndIf}
    {$IfDef RecordJPEG} WriteLineToDebugFile('RecordJPEG active in PetImage'); {$EndIf}
    {$IfDef RecordIHSmerges} WriteLineToDebugFile('RecordIHSmerges active in PetImage'); {$EndIf}
-   {$IfDef RecordPNG} WriteLineToDebugFile('RecordPNG active in PetImage');{$EndIf}
+   {$IfDef RecordPNG} WriteLineToDebugFile('RecordPNG active in PetImage'); {$EndIf}
    {$IfDef RecordBitmapProblems} WriteLineToDebugFile('RecordBitmapProblems active in PetImage'); {$EndIf}
    {$IfDef RecordGetImagePartOfBitmap} WriteLineToDebugFile('RecordGetImagePartOfBitmap active in PetImage'); {$EndIf}
    {$IfDef RecordDipStrike} WriteLineToDebugFile('RecordDipStrike active in PetImage'); {$EndIf}

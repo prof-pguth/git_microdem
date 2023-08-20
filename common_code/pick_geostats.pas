@@ -388,7 +388,7 @@ procedure TPickGeoStat.BitBtn20Click(Sender: TObject);
       end;
 
 var
-   Radius,Box,DEM,NoSlopeMap : integer;
+   Radius,Box,DEM{,NoSlopeMap} : integer;
 begin
    {$IfDef RecordMapMaking} WriteLineToDebugFile('TPickGeoStat.BitBtn20Click in'); {$EndIf}
    try

@@ -19,8 +19,9 @@ procedure tDEMDataSet.GetStraightRouteDEMGrid(Lat1,Long1,Lat2,Long2 : float64; S
 var
    DeltaX,DeltaY,XStep,YStep,direction,
    i,err,x,y,x1,x2,y1,y2 : integer;
+   xg1,yg1,xg2,yg2 : float32;
    SectLen,Bearing,
-   fd,yg,xg,xg1,yg1,xg2,yg2,Heading : float64;
+   fd,yg,xg,Heading : float64;
    GridCoords : tStringList;
    TStr : ShortString;
 
@@ -124,10 +125,11 @@ end;
 procedure tDEMDataSet.GetStraightRoute(LatLong : boolean; Lat1,Long1,Lat2,Long2 : float64; StraightAlgorithm : tStraightAlgorithm; var NumPoints : integer; var xgrids,ygrids,dists : Petmath.bfarray32);
 var
    I : integer;
-   InBounds : boolean;
-   xUTM1,xUTM2,yUTM1,yUTM2,
-   Lat,Long,Lat4,Long4,
-   dx,dy,dLat,dLong,x,y,
+  //InBounds : boolean;
+  // xUTM1,xUTM2,yUTM1,yUTM2,
+   Lat,Long,
+   //Lat4,Long4,
+   //dx,dy,dLat,dLong,x,y,
    dDistance,FullDistance,Bearing : float64;
 begin
    {$IfDef RecordLOSAlgorithm} WriteLineToDebugFile('tDEMDataSet.GetStraightRoute enter'); {$EndIf}

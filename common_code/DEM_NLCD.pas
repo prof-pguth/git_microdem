@@ -56,6 +56,8 @@ type
    function IsThisLandCover(fName : PathStr;  var LandCover : ShortString) : boolean;
    procedure LandCoverBarGraphs(UseTable : boolean; Legend : boolean = true; MaxCat : boolean = true);
 
+   function MakeAnNLCDLegend(DEM : integer;  theLabel : shortstring = ''; Stats : tstringlist = nil) : integer;
+
 var
    LandCoverCatsUsed : array[0..MaxNLCDCategories] of boolean;
 
@@ -73,6 +75,91 @@ uses
    PetImage,PetMath,PetDBUtils,Toggle_db_use,nevadia_main,DEMDef_routines;
 
 
+function MakeAnNLCDLegend(DEM : integer; theLabel : shortstring = ''; Stats : tstringlist = nil) : integer;
+var
+   x,y,zi : integer;
+   z,Max,pc : float32;
+   NameStr,CatStr,FirstLine,NextLine : ANSIString;
+   Title : shortstring;
+   fName : PathStr;
+   Results : tStringList;
+   Total : int64;
+   Count :  array[1..MaxNLCDCategories] of int64;
+begin
+   {$IfDef TrackNLCD} WriteLineToDebugFile('TMapForm.NLCDLegend1Click in'); {$EndIf}
+   if (DEMGLB[DEM].SelectionMap.MapDraw.ValidDEMonMap and (DEMGlb[DEM].LandCoverGrid)) then begin
+      for x := 1 to MaxNLCDCategories do Count[x] := 0;
+      Total := 0;
+      StartProgress('Land cover');
+      for x := round(DEMGLB[DEM].SelectionMap.MapDraw.Mapcorners.BoundBoxDataGrid.xmin) to round(DEMGLB[DEM].SelectionMap.MapDraw.Mapcorners.BoundBoxDataGrid.xmax) do begin
+         if (x mod 400 = 0) then UpDateProgressBar( (x-DEMGLB[DEM].SelectionMap.MapDraw.Mapcorners.BoundBoxDataGrid.xmin) /
+            (DEMGLB[DEM].SelectionMap.MapDraw.Mapcorners.BoundBoxDataGrid.xmax - DEMGLB[DEM].SelectionMap.MapDraw.Mapcorners.BoundBoxDataGrid.xmin));
+         for y := round(DEMGLB[DEM].SelectionMap.MapDraw.Mapcorners.BoundBoxDataGrid.ymin) to round(DEMGLB[DEM].SelectionMap.MapDraw.Mapcorners.BoundBoxDataGrid.ymax) do begin
+            if DEMGlb[DEM].GetElevMetersOnGrid(x,y,z) then begin
+               zi := round(z);
+               if (zi > 0) and (zi <= MaxNLCDCategories) and (DEMGlb[DEM].NLCDCats^[zi].UseStat) then begin
+                  inc(Count[zi]);
+                  inc(Total);
+                  LandCoverCatsUsed[zi] := true;
+               end;
+            end;
+         end;
+      end;
+      EndProgress;
+
+      if (Total = 0) then begin
+         Result := 0;
+      end
+      else begin
+         Results := tStringList.Create;
+         Title := 'PERCENT,NAME,COLOR,CODE';
+         if MDDef.LongLandCoverResults then Title := Title +  ',CATEGORY,NUMBER';
+         Results.Add(Title);
+         if (Stats <> Nil) then begin
+            if (Stats.Count = 1) then begin
+               FirstLine := Stats.Strings[0];
+               //NameStr := Petmar_types.BeforeSpecifiedCharacterANSI(FirstLine,',',true,true);
+               CatStr := FirstLine;
+               FirstLine := 'NAME,' + CatStr + '_MAX';
+               for x := 1 to MaxNLCDCategories do if (DEMGlb[DEM].NLCDCats^[x].LongName <> '') then begin
+                  FirstLine := FirstLine + ',' + CatStr + '_' + IntToStr(x);
+               end;
+            end
+            else FirstLine := '';
+         end;
+         Max := 0;
+         for x := 1 to MaxNLCDCategories do if (Count[x] > 0) and (DEMGlb[DEM].NLCDCats^[x].LongName <> '') then begin
+            pc := 100 * Count[x]/Total;
+            if (pc > Max) then Max := pc;
+
+            Title := RealToString(pc,8,2) + ',' + DEMGlb[DEM].NLCDCats^[x].LongName + ',' + IntToStr(ConvertPlatformColorToTColor(DEMGlb[DEM].NLCDCats^[x].Color)) +
+                ',' + IntToStr(x);
+            if MDDef.LongLandCoverResults then Title := Title + ',' + IntToStr(x) + ',' + IntToStr(Count[x]);
+            Results.Add(Title);
+            {$IfDef TrackNLCD} WriteLineToDebugFile(Title); {$EndIf}
+         end;
+         if (Stats <> Nil) then begin
+            if (FirstLine <> '') then begin
+               Stats.Clear;
+               Stats.Add(FirstLine);
+            end;
+            NextLine := TheLabel + ',' +  RealToString(max,-8,3);
+            for x := 1 to MaxNLCDCategories do if (DEMGlb[DEM].NLCDCats^[x].LongName <> '') then begin
+               NextLine := NextLine + ',' + RealToString(100 * Count[x]/Total,-8,3);
+            end;
+            Stats.Add(NextLine);
+         end;
+
+         Title := ElevUnitsAre(DEMGlb[DEM].DEMheader.ElevUnits) + '_' + DEMGlb[DEM].AreaName;
+         fName := Petmar.NextFileNumber(MDTempDir, Title + '_','.dbf');
+         Result := StringList2CSVtoDB(Results,fName);
+      end;
+   end;
+   {$IfDef TrackNLCD} WriteLineToDebugFile('TMapForm.NLCDLegend1Click out'); {$EndIf}
+end;
+
+
+
 procedure LandCoverBarGraphs(UseTable : boolean; Legend : boolean = true; MaxCat : boolean = true);
 const
    TopSize = 40;
@@ -83,16 +170,17 @@ const
    IncludeLegend : boolean = false;
    IncludeAreaName : boolean = true;
 var
-   dbName : PathStr;
+   dbName,outPath : PathStr;
+   What : shortstring;
 
 
-   procedure ASeries(LandCoverfName : PathStr; aTitle : shortstring);
+   procedure ASeries(LandCoverfName : PathStr; aTitle,ShortName : shortstring);
    var
       NumDrawn,AreaWidth,TileWidth,
       j,x,top,NumAreas : integer;
       singleleg,legbmp,bmp : tMyBitmap;
       Table : tMyData;
-      Areas : tStringList;
+      Areas,SeriesStats : tStringList;
 
          function DoOne(bbox : sfBoundBox; aLabel : shortstring) : boolean;
          var
@@ -105,11 +193,11 @@ var
                NewDEM := GDALsubsetimageandopen(bbox,true,LandCoverfName);
                {$IfDef RecordBarGraphsDetailed} WriteLineToDebugFile('Grid opened'); {$EndIf}
                if ValidDEM(NewDEM) then begin
-                  NewDB := DEMGlb[NewDEM].SelectionMap.MakeNLCDLegend(aLabel);
+                  NewDB := DEMGlb[NewDEM].SelectionMap.MakeNLCDLegend(aLabel,SeriesStats);
                   {$IfDef RecordBarGraphsDetailed} WriteLineToDebugFile('Legend made'); {$EndIf}
                   inc(NumDrawn);  //outside loop in case nothing drawn
                   if ValidDB(NewDB) then begin
-                     if not IncludeLegend then aLabel := '';
+                     if (not IncludeLegend) then aLabel := '';
                      SingleLeg := GISDB[NewDB].BarGraphLegend(false,aLabel);
                      {$IfDef RecordBarGraphsDetailed} WriteLineToDebugFile('Bar graph legend made'); {$EndIf}
                      bmp.Canvas.Draw(AreaWidth + TileWidth,Top,SingleLeg);
@@ -133,18 +221,19 @@ var
             end;
          end;
 
-       procedure AddTitle(Xloc : integer = 0);
-       begin
-          bmp.canvas.font.Size := 20;
-          bmp.canvas.font.Style := [fsBold];
-          bmp.Canvas.TextOut(5 + XLoc,0,aTitle);
-          bmp.Canvas.Font.Size := 14;
-       end;
+          procedure AddTitle(Xloc : integer = 0);
+          begin
+             bmp.canvas.font.Size := 20;
+             bmp.canvas.font.Style := [fsBold];
+             bmp.Canvas.TextOut(5 + XLoc,0,aTitle);
+             bmp.Canvas.Font.Size := 14;
+          end;
 
    var
       Name,Area,AreaName : shortstring;
       ItsDEMIX : boolean;
       i,RefDEM : integer;
+      fName : PathStr;
    begin
        {$If Defined(RecordBatch) or Defined(RecordDEMIX)} HighLightLineToDebugFile('Do series=' + LandCoverfName); {$EndIf}
        NumDrawn := 0;
@@ -154,12 +243,12 @@ var
           Table := tMyData.Create(dbName);
           ItsDEMIX := Table.FieldExists('DEMIX_TILE') and Table.FieldExists('AREA');
           if ItsDEMIX then begin
-             GetDEMIXpaths;
+             //GetDEMIXpaths;
              CreateBitmap(bmp,2400,1200);  //100 + (Table.RecordCount * EntryHeight) + (pred(Areas.Count) * AreaBlank));
              bmp.Canvas.Font.Size := 14;
              AreaWidth := 0;
              TileWidth := 0;
-
+             SeriesStats := tStringList.Create;
              Areas := tStringList.Create;
              Table.First;
              while not Table.eof do begin
@@ -196,36 +285,38 @@ var
           if ItsDEMIX then begin
              AreaWidth := AreaWidth + 15;
              TileWidth := TileWidth + 15;
-
              {$IfDef RecordBatch} WriteLineToDebugFile('AreaWidth=' + IntToStr(AreaWidth) + '  TileWidth=' + IntToStr(TileWidth)); {$EndIf}
-
              AddTitle(AreaWidth + TileWidth);
 
              for i := 0 to pred(Areas.Count) do begin
-                WMDEM.SetPanelText(1,IntToStr(i) + '/' + IntToStr(Areas.Count) + ' ' + Areas.Strings[i] );
+                WMDEM.SetPanelText(2,IntToStr(i) + '/' + IntToStr(Areas.Count) + ' ' + Areas.Strings[i] );
                 Table.ApplyFilter('AREA=' + QuotedStr(Areas.Strings[i]));
                 AreaName := Table.GetFieldByNameAsString('AREA');
                 Name := RemoveUnderScores(AreaName);
                 {$IfDef RecordBarGraphs} WriteLineToDebugFile('Area=' + Name + ' at x=' + IntToStr(5) + '  y=' + IntToStr(Top)); {$EndIf}
+                if (SeriesStats.Count = 0) then begin
+                   SeriesStats.Add(ShortName{ + ',' + Name});
+                end;
                 if IncludeTiles then begin
                    if IncludeAreaName then Bmp.Canvas.TextOut(5,Top + Table.FiltRecsInDB div 2 * EntryHeight,Name);
                    while not Table.Eof do begin
                       Name := Table.GetFieldByNameAsString('DEMIX_TILE');
-                      if DoOne(DEMIXtileBoundingBox(Name),'  ') then begin
+                      WMDEM.SetPanelText(3,Name);
+                      if DoOne(DEMIXtileBoundingBox(Name),Name) then begin
                       end
                       else begin
                          {$IfDef RecordBatch} HighLightLineToDebugFile('No land type ' + Name); {$EndIf}
                       end;
                       if IncludeTileName then Bmp.Canvas.TextOut(AreaWidth + 5,Top,Name);
+                      Top := Top + EntryHeight;
+                      Table.Next;
                    end;
                    {$IfDef RecordBarGraphs} WriteLineToDebugFile('Tile=' + Name + ' at x=' + IntToStr(AreaWidth + 5) + '  y=' + IntToStr(Top)); {$EndIf}
-                   Top := Top + EntryHeight;
-                   Table.Next;
                 end
                 else begin
                     if IncludeAreaName then Bmp.Canvas.TextOut(5,Top,Name);
                     RefDEM := DEMIXLoadRefDEMFromPath(AreaName,true);
-                    DoOne(DEMGlb[RefDEM].DEMBoundBoxGeo,'  ');
+                    DoOne(DEMGlb[RefDEM].DEMBoundBoxGeo,AreaName);
                     CloseSingleDEM(RefDEM);
                     Top := Top + EntryHeight;
                 end;
@@ -254,22 +345,32 @@ var
       {$IfDef RecordBatch} WriteLineToDebugFile('Drawing done bitmap, ' + BitmapSize(bmp)); {$EndIf}
       PutBitmapInBox(bmp);
       {$IfDef RecordBatch} WriteLineToDebugFile('Got image part bitmap, ' + BitmapSize(bmp)); {$EndIf}
-      DisplayBitmap(Bmp,'Land cover distribution');
+      BMP.SaveToFile(OutPath + What + '_' + ShortName + '.png');
+      DisplayBitmap(Bmp,What + '_' + ShortName + ' Land cover distribution');
+      fName := OutPath + What + '_' + ShortName + '.dbf';
+      StringList2CSVtoDB(SeriesStats,fName);
+
    end;
 
 begin
    {$If Defined(RecordBatch) or Defined(RecordDEMIX)} WriteLineToDebugFile('LandCoverBarGraphs in'); {$EndIf}
    try
-      HeavyDutyProcessing := true;
+      GetDEMIXpaths;
+      OutPath := DEMIX_Base_DB_Path + 'test_land_class\';
+      SafeMakeDir(OutPath);
+      IncludeTiles := true;
+      What := 'Tiles';
+      //Legend := true;
+      //What := 'Area';
       if UseTable and (not GetFileFromDirectory('bounding box data base','*.dbf',dbName)) then exit;
-      ASeries('d:\landcover\lccs_300m\ESACCI-LC-L4-LCCS-Map-300m-P1Y-2015-v2.0.7.tif','LCCS 300 m 2015');
-      IncludeAreaName := false;
-      ASeries('d:\landcover\iwahashi\iwahashi.tif','Iwahashi and Pike');
-      ASeries('d:\landcover\Meybeck\Meybeck_1km1.tif','Meybeck and others');
-      ASeries('d:\landcover\Geomorphon\geomorphon_1KMmaj_GMTEDmd.tif','Geomorphons');
+      ASeries('d:\landcover\lccs_300m\ESACCI-LC-L4-LCCS-Map-300m-P1Y-2015-v2.0.7.tif','LCCS 300 m 2015','LCCS');
+      //IncludeAreaName := false;
+      ASeries('d:\landcover\iwahashi\iwahashi.tif','Iwahashi and Pike','IP');
+      ASeries('d:\landcover\Meybeck\Meybeck_1km1.tif','Meybeck and others','MEYB');
+      ASeries('d:\landcover\Geomorphon\geomorphon_1KMmaj_GMTEDmd.tif','Geomorphons','GEOM');
    finally
       CloseAllDatabases;
-      HeavyDutyProcessing := false;
+      EndDEMIXProcessing;
       {$If Defined(RecordBatch) or Defined(RecordDEMIX)} WriteLineToDebugFile('LandCoverBarGraphs out'); {$EndIf}
    end;
 end;
@@ -298,6 +399,7 @@ begin
       else if StrUtils.AnsiContainsText(fName,'PENNOCK') then LandCover := 'PENNOCK'
       else if StrUtils.AnsiContainsText(fName,'IWAHASHI') then LandCover := 'IWAHASHI'
       else if StrUtils.AnsiContainsText(fName,'MEYBECK') then LandCover := 'MEYBECK'
+      //else if StrUtils.AnsiContainsText(fName,'Sentinel-2_L2A_Scene_classification_map') then LandCover := 'Sent2SLC'         //it is a 3 color scene
       else if StrUtils.AnsiContainsText(fName,'LCMAP') then LandCover := 'LCMAP';
    end;
    Result := (LandCover <> '');

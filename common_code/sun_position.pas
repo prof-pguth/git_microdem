@@ -66,7 +66,7 @@ type
 function MoonPostionFromUSNO(Lat,Long : float32; iyear,imonth,iday : integer; var HTML : PathStr) : tStringList;
 var
    URL : shortstring;
-   FoundIt : boolean;
+   //FoundIt : boolean;
    Month,Day,year : word;
 begin
    if (iyear = -99) then begin
@@ -119,11 +119,12 @@ end;
 
 function MoonPositionStereoNet(Lat,Long : float32; iyear,imonth,iday : integer) : tNetForm;
 var
-   URL : shortstring;
-   fName,fName2 : PathStr;
-   webpage,positions : tstringlist;
-   FoundIt : boolean;
-   aLine,Time : shortstring;
+   //URL : shortstring;
+   //fName,fName2 : PathStr;
+   //webpage,positions : tstringlist;
+   //FoundIt : boolean;
+   //aLine,
+   Time : shortstring;
    Hour : float32;
    xd,yd,
    i,db : integer;
@@ -513,7 +514,8 @@ function HorizonBlockingGraph(MapForm : tMapForm; Lat,Long : float64; AngleGraph
 var
    Results : TStringList;
    Location : ShortString;
-   xdemg1,ydemg1,BlockAngle,BlockLength,Angle,BlockLat,BlockLong : float64;
+   xdemg1,ydemg1 : float32;
+   BlockAngle,BlockLength,Angle,BlockLat,BlockLong : float64;
    lastxd,lastyd, xd,yd,db : integer;
    fName : PathStr;
    Graph1 : tThisBaseGraph;

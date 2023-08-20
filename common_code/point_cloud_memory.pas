@@ -559,7 +559,7 @@ var
    xlo,xhi,ylo,yhi,xcoord,ycoord, BoxSize,z1,z2,z3 : float64;
    i: integer;
    TStr : shortString;
-   Results : tStringList;
+   Results,Distributions : tStringList;
    fName : pathStr;
    z : float32;
    zvs : ^bfarray32;
@@ -640,7 +640,21 @@ begin
          end;
 
          MDDef.FlipHistogram := true;
-         Histogram := DeprecatedCreateHistogram(true,MomentVar.NPts,zvs^,'Elevations','Distribution at ' + LatLongDegreeToString(Lat,Long) );
+
+
+         //Histogram := DeprecatedCreateHistogram(true,MomentVar.NPts,zvs^,'Elevations','Distribution at ' + LatLongDegreeToString(Lat,Long) );
+
+
+
+
+         Distributions := tStringList.Create;
+         fName := NextFileNumber(MDTempDir,'pc_distrib_','.z');
+         Distributions.Add(SaveSingleValueSeries(MomentVar.NPts,zvs^,fName));
+         Histogram := CreateMultipleHistogram(MDDef.CountHistograms,Distributions,Nil,'', '');   //,200,Min,Max,BinSize);
+
+
+
+
          Histogram.GraphDraw.LegendList := tStringList.Create;
          Histogram.GraphDraw.LegendList.Add('Point cloud');
          for i := 1 to MaxCompare do begin

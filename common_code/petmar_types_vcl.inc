@@ -126,7 +126,7 @@ var
    MemStr,TStr,TStr2,TStr3,TStr4  : ShortString;
    i : integer;
    ch : ansichar;
-   OSVersion : tOSVersion;
+   OSVersion : tOSVersion;   //is really used
 begin
    MemStr := OSversion.ToString +  MessLineBreak + 'Total Physical Memory: ' + SmartMemorySizeBytes(SystemMemorySize) +  MessLineBreak;
    TStr := CPUName + MessLineBreak + GetCPUSpeed + MessLineBreak + 'Processors: ' + IntToStr(GetNumberProcessors) + MessLineBreak;

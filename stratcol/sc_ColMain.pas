@@ -24,8 +24,29 @@ unit sc_ColMain;
 interface
 
 uses
+//need for inline of core DB functions
+   Data.DB,
+
+   {$IfDef UseFireDacSQLlite}
+      FireDAC.Stan.ExprFuncs,
+      FireDAC.Stan.Intf, FireDAC.Stan.Option, FireDAC.Stan.Param,
+      FireDAC.Stan.Error, FireDAC.DatS, FireDAC.Phys.Intf, FireDAC.DApt.Intf,
+      FireDAC.Stan.Async, FireDAC.DApt, FireDAC.UI.Intf, FireDAC.Stan.Def,
+      FireDAC.Stan.Pool, FireDAC.Phys, FireDAC.Comp.Client, FireDAC.Comp.DataSet,
+      FireDAC.Phys.SQLite, FireDAC.Comp.UI,
+   {$EndIf}
+
+   {$IfDef UseTDBF}
+      dbf,
+   {$EndIf}
+
+   {$IfDef UseTCLientDataSet}
+      DBClient,
+   {$EndIf}
+//end core DB functions definitions
   PETMAR,sc_ColLith,Zipatone,DEMDefs,Petmar_types,Petmar_db,
-  Data.db,
+  System.Math,
+  //Data.db,
   SysUtils, Windows, Messages, Classes, Graphics, Controls,   Printers,
   Forms, Dialogs, Menus, StdCtrls, ExtCtrls,Consts,
   Buttons, ToolWin, ComCtrls;
@@ -220,7 +241,7 @@ type
      procedure RedrawUnits(Canvas : TCanvas; Column,TopUnit,BaseUnit : integer);
       procedure CreateNewColumn;
       procedure DrawAColumn(Canvas : TCanvas; Column : integer);
-      function PlotColumn(fName : PathStr) : tMyBitmap;
+      //function PlotColumn(fName : PathStr) : tMyBitmap;
       procedure DrawAgeBar(Canvas : TCanvas; TickSize : float64);
       procedure InitializeCorrelationDiagram;
       procedure DrawALabelFile(Canvas : TCanvas; Labels : integer);
@@ -789,14 +810,13 @@ end;
 
 procedure ReadTheFile(FileName : PathStr; var ThisColumn : OneColumnType);
 var
-   i,code,OnUnit              : integer;
+   i,{code,}OnUnit              : integer;
    OneLine,
    SectionTitle               : shortstring;
-   MeterThickStr,DurationStr  : shortstring;
-   LithStr,ResistStr          : shortstring;
+  // MeterThickStr,DurationStr  : shortstring;
+   //LithStr,ResistStr          : shortstring;
    RockCol                    : System.text;
    ch                         : AnsiChar;
-
 
    procedure BaseParams;
    begin
@@ -985,7 +1005,7 @@ begin
    {$IfDef RecordStratColUnitProblems} WriteLineToDebugFile('DrawAColumn out, TopCol=' + IntToStr(StratColumn[Column].TopOfColumn) + '  BottomCol=' + IntToStr(StratColumn[Column].BottomOfColumn)); {$EndIf}
 end;
 
-
+(*
 function TColMainF.PlotColumn(fName : PathStr) : tMyBitmap;
 begin
     CreateNewColumn;
@@ -996,7 +1016,7 @@ begin
        DrawAColumn(Result.Canvas,1);
     end;
 end;
-
+*)
 
 procedure InitializeNamedPatterns;
 var
@@ -1460,8 +1480,8 @@ end;
 
 
 procedure TColMainF.ZeroVariables;
-var
-   i : integer;
+//var
+   //i : integer;
 begin
    with CorrelationDiagram do begin
       SaveDataFiles;
@@ -2594,7 +2614,7 @@ end;
 
 procedure TColMainF.Create1Click(Sender: TObject);
 var
-   NamFile : textfile;
+   //NamFile : textfile;
    i : integer;
    tf : tStringList;
 begin
@@ -2606,7 +2626,6 @@ begin
    tf.SaveToFile(ProgramRootDir + 'all_lith_patterns.nam');
    tf.Free;
 
-
    PatternF := TPatternF.Create(Application);
    sc_ColLith.PatternF.Visible := false;
    PatternF.CreatingNAMFile := true;
@@ -2614,7 +2633,6 @@ begin
    rewrite(PatternF.NamFile);
    sc_ColLith.PatternF.ShowModal;
    PatternF.Destroy;
-
 end;
 
 
@@ -2742,8 +2760,8 @@ end;
 
 
 procedure InitialStatColOptions;
-var
-   i : integer;
+//var
+  // i : integer;
 begin
 {$IfDef MessageStartUpUnitProblems} MessageToContinue('start colmain initialization'); {$EndIf}
    NamedPatternLongNames := Nil;

@@ -1,17 +1,18 @@
 unit OceanCal;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{   file verified 11/26/2014      }
-{_________________________________}
-
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2023 Peter L. Guth  }
+{___________________________________}
 
 
 interface
 
 uses
-   PETMAR,Petmar_Types;
+   System.classes, System.SysUtils,VCl.Forms,
+   PETMAR,Petmar_Types,PETMath,PetDButils;
 
 
 type
@@ -22,11 +23,223 @@ function CalSigmaT(T,S : float64) : float64;
 function SoundVelocity(T,S,Z : float64) : float64;
 function CalSigmaTheta(Temp,Sal,Depth : float64) : float64;
 
+procedure ImportCTDFile;
+
 
 implementation
 
+
+uses
+   Nevadia_main,DEMmapf,DEMdefs;
+
 var
    SoundVelAlg : SoundVelocityAlgorithm;
+
+
+
+procedure ImportCTDFile;
+type
+   tProfInfo = record
+      No_seg : int32;
+      Prof_type : string[4];
+      Deep_Depth : int32;
+   end;
+var
+   fName : PathStr;
+   DataFileInMemory,Stations,SubFile,Points  : tStringList;
+   aLine,bLine : AnsiString;
+   TempLine,SalLine : array[1..5] of ANSIString;
+   TStr : shortstring;
+   MinSV,sofar_m,
+   LowDepth,HighDepth,
+   LowLat,HighLat,LowLong,HighLong,
+   aLat,aLong : float64;
+   ExtractSubset,IncludeXBT,StationsDB,DepthLimits,
+   InBox,CreatePoints : boolean;
+   Year,Month,Day,i,j,k,Start,
+   OnLine,No_Depths,OnDepth,OnDepth2,Mismatches,
+   No_prof : integer;
+   DTG,Stn_Num,CruiseID : ShortString;
+   ProfInfo : array[1..30] of tProfInfo;
+   sv,Depth,Temperature,Salinity : array[1..6000] of float64;
+begin
+   StopSplashing;
+   fName := '';
+   Petmar.GetFileFromDirectory('CTD data, MEDS format','*.*', fName);
+   {$IfDef RecordOceanography} WriteLineToDebugFile('Twmdem.ImportCTDfile1Click inf=' + fName); {$EndIf}
+   CreatePoints := AnswerIsYes('Create points DB');
+   StationsDB := AnswerIsYes('Create stations DB');
+   ExtractSubset := AnswerIsYes('Extract MEDS file');
+   IncludeXBT := AnswerIsYes('Include XBT stations');
+   DepthLimits := AnswerIsYes('Depth limits');
+
+   if ExtractSubset then begin
+      LowLat := -80;
+      HighLat := 80;
+      LowLong := -180;
+      HighLong := 180;
+      ReadDefault('Low lat',LowLat);
+      ReadDefault('High lat',HighLat);
+      ReadDefault('Low long',LowLong);
+      ReadDefault('High long',HighLong);
+   end;
+
+   if DepthLimits then begin
+      LowDepth := 495;
+      HighDepth := 505;
+      ReadDefault('Upper depth limit',LowDepth);
+      ReadDefault('Lower depth limit',HighDepth);
+   end
+   else begin
+      LowDepth := -1;
+      HighDepth := 9999;
+   end;
+
+   if CreatePoints then begin
+      Points := tStringList.Create;
+      Points.Add('LAT,LONG,DEPTH,TEMP_C,SALINITY,SOUND_VEL');
+   end;
+
+   ShowHourglassCursor;
+   if StationsDB then begin
+      Stations := tStringList.Create;
+      Stations.Add('DTG,CRUISEID,STATION,LAT,LONG,DEPTH,MAX_TEMP,MIN_TEMP,MAX_SAL,MIN_SAL,SOFAR_M,INSTRUMENT');
+   end;
+
+   DataFileInMemory := tStringList.Create;
+   DataFileInMemory.LoadFromFile(fName);
+
+   if ExtractSubset then begin
+      Subfile := tStringList.Create;
+   end;
+
+   OnLine := -1;
+   MisMatches := 0;
+
+   while online < pred(DataFileInMemory.Count) do begin
+      inc(Online);
+      if (Online mod 500 = 0) then wmdem.SetPanelText(0,IntToStr(Online));
+
+      aLine := DataFileInMemory.Strings[OnLine];
+      aLat := StrToFloat(ptTrim(Copy(aline,63,8)));
+      aLong := -StrToFloat(ptTrim(Copy(aline,71,9)));
+      Year := StrToInt(Copy(aline,27,4));
+      Month := StrToInt(Copy(aline,31,2));
+      Day := StrToInt(Copy(aline,33,2));
+      No_prof := StrToInt(Copy(aline,122,2));
+
+      Stn_Num := copy(aline,41,12);
+      DTG := copy(aline,27,12);
+      CruiseID := copy(aline,17,10);
+
+      if ExtractSubset then begin
+         InBox := (aLat > LowLat) and (aLat < HighLat) and (aLong > LowLong) and (aLong < HighLong);
+      end
+      else InBox := true;
+
+      for I := 1 to No_Prof do  begin
+         Start := 130 + pred(i) * 14;
+         ProfInfo[i].No_seg := StrToInt(ptTrim(Copy(aline,Start+1,2)));
+         ProfInfo[i].Prof_Type := Copy(aline,Start+3,4);
+      end;
+
+      OnDepth := 0;
+      OnDepth2 := 0;
+      for i := 1 to No_Prof do begin
+         for j := 1 to ProfInfo[i].No_seg do begin
+            //Get next line from memory
+            inc(OnLine);
+            bLine := DataFileInMemory.Strings[OnLine];
+            //save line for export later
+            if ProfInfo[i].Prof_Type = 'TEMP' then TempLine[j] := bline
+            else SalLine[j] := bline;
+            //process the line
+            No_Depths := StrToInt(ptTrim(Copy(bline,59,4)));
+            for k := 1 to No_Depths do begin
+               if ProfInfo[i].Prof_Type = 'TEMP' then begin
+                  inc(OnDepth);
+                  Depth[OnDepth] := StrToFloat(ptTrim(Copy(bline,64 + pred(k) * 17,6)));
+                  Temperature[OnDepth] := StrToFloat(ptTrim(Copy(bline,64 + 8 + pred(k) * 17,9)));
+               end
+               else if ProfInfo[i].Prof_Type = 'PSAL' then begin
+                  inc(OnDepth2);
+                  Salinity[OnDepth2] := StrToFloat(ptTrim(Copy(bline,64 + 8 + pred(k) * 17,9)))
+               end;
+            end;
+         end;
+      end;
+
+      if (OnDepth = OnDepth2) then begin
+         if ExtractSubset and (OnDepth > 10) and InBox then begin
+            SubFile.Add(aline);
+            for i := 1 to ProfInfo[1].No_seg do SubFile.Add(TempLine[i]);
+            for i := 1 to ProfInfo[1].No_seg do SubFile.Add(SalLine[i]);
+         end;
+
+         MinSV := 9999;
+         if (No_Prof = 2) then begin
+            for i := 1 to OnDepth do begin
+               sv[i] := SoundVelocity(Temperature[i],Salinity[i],Depth[i]);
+               if sv[i] < MinSV then begin
+                  MinSv := sv[i];
+                  Sofar_m := Depth[i];
+               end;
+            end;
+
+            if InBox and CreatePoints then begin
+               for i := 1 to OnDepth do begin
+                  if (Salinity[i] > 0.1) and (Depth[i] > LowDepth) and (Depth[i] < HighDepth) then begin
+                     {$IfDef RecordFullOceanography} writeLineToDebugFile(aLine); {$EndIf}
+                     Points.Add(RealToString(aLat,-12,-4) + ',' +
+                                RealToString(aLong,-12,-2) + ',' +
+                                RealToString(Depth[i],-12,-2) + ',' +
+                                RealToString(Temperature[i],-12,-3) + ',' +
+                                RealToString(Salinity[i],-12,-4) + ',' +
+                                RealToString(sv[i],-12,-4));
+                  end;
+               end;
+            end;
+         end
+         else begin
+            TStr := '  ,  ,  ,XBT';
+         end;
+
+         if StationsDB and ((No_Prof = 2) or IncludeXBT) then begin
+            aLine := DTG + ',' + CruiseID + ',' + Stn_Num + ',' + RealToString(aLat,-12,-3) + ',' + RealToString(aLong,-12,-3) + ',' + RealToString(Depth[OnDepth],-12,-3) + ',' +
+                RealToString(PetMath.MaxInArray(OnDepth,Temperature),-12,-2) + ',' +
+                RealToString(PetMath.MinInArray(OnDepth,Temperature),-12,-2) + ',' +  TStr;
+            Stations.Add(aLine);
+         end;
+      end
+      else inc(MisMatches);
+
+   end;
+
+   if ExtractSubset then begin
+      SubFile.SaveToFile(ExtractFilePath(fName) + ExtractFileNameNoExt(fName ) + '_sub');
+   end;
+
+   DataFileInMemory.Destroy;
+   wmdem.SetPanelText(0,'');
+
+   wmdem.VectorMapButtonClick(Nil);
+   if StationsDB then begin
+      {$IfDef RecordOceanography} WriteLineToDebugFile('File had stations=' + IntToStr(Stations.Count)); {$EndIf}
+      fName := ChangeFileExt(fName,'.csv');
+      VectorMap[LastVectorMap].StringListToLoadedDatabase(Stations,fName);
+   end;
+
+   if CreatePoints then begin
+      ShowHourglassCursor;
+      Points.SaveToFile('c:\temp\pts.csv');
+      fName := ExtractFilePath(fName) + ExtractFileNameNoExt(fName ) + '_points.csv';
+      VectorMap[LastVectorMap].StringListToLoadedDatabase(Points,fName);
+   end;
+end;
+
+
+
+
 
 
 function CalSigmaTheta(Temp,Sal,Depth : float64) : float64;
@@ -100,53 +313,6 @@ end;
 begin
    SoundVelAlg := Medwin;
 end.
-
-(*
-
-function OxySat(Temp,Sal : float64) : float64;
-{from Application Note No. 13-1, rev B (April 1993) from SeaBird}
-{units are ml/l}
-var
-   T : float64;
-begin
-   T := 0.01 * (Temp + 273.15);
-   OxySat := exp(-173.4292 + 249.6339 / T + 143.3438 * ln(t) -21.8492 * t +
-                 Sal * (-0.033096 + 0.014259 * T - 0.00170 * sqr(t)));
-end;
-
-
-
-function Salinity(Tm,Cn,Pr : float64) : float64;
-const
-   StdCondRdg = 42.9192;
-var
-   Temp,T0,T1,T2,T3,T4 : float64;
-begin
-{  Function returns salinity S from conductivity CN in mmho/cm, temperature TM in C, and pressure PR in decibars.
-   Algorithm based on BASIC program S78TCRPI by D.W. Pritchard.  }
-   If (Cn<=0) or (Cn>100) or (Tm<-5) or (Tm>100) or (Pr<-10) then begin
-      Salinity := 0;
-      exit;
-    end;
-   t0 := 1 + PR * ((3.989E-15 * PR - 6.37E-10) * PR + 0.0000207) /
-      (1 + (0.00004464 * TM + 0.03426) * TM + (0.4215 - 0.003107 * TM) * CN
-      / 42.9192);
-   T1 := (1.0031E-9*TM - 6.9698E-7)*TM;
-   T1 := 0.67661 + ((T1 + 1.10426E-4) * TM + 0.0200564) * TM;
-   T2 := (TM - 15) / (1 + 0.0162 * (TM - 15));
-   T3 := SQRT(ABS((CN/StdCondRdg) / (T0*T1)));
-   if T3*T3 > 0.05 Then begin
-      T4 := ((0.0636 - 0.0144 * T3) * T3 - 0.0375) * T3;
-      T4 := T2 * (0.0005 + ((T4 - 0.0066) * T3 - 0.0056) * T3);
-   end
-   Else begin
-      T4 := ((0.168176 * T3 - 0.338782) * T3 + 0.26076) * T3;
-      T4 := T2 * ((T4 - 0.0958843) * T3 + 0.00573) * T3;
-   end;
-   Temp := ((2.7081 * T3 - 7.0261) * T3 + 14.0941) * T3;
-   Salinity := 0.008 + ((Temp + 25.3851) * T3 - 0.1692) * T3 + T4;
-end;
-*)
 
 
 

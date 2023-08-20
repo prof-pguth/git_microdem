@@ -445,6 +445,7 @@ begin
       euElevDiff : Result := 'diff m';
       LCMAP : Result := 'LCMAP';
       euDNBR	 : Result := 'dNBR';
+      euSent2SLC : Result := 'Sentinel-2 SLC';
       else Result := '';
    end;
 end;
@@ -2412,6 +2413,7 @@ var
             AParameter('DEMIX','MakeCOP_FABDEM_diffMaps',MakeCOP_FABDEM_diffMaps,false);
             AParameter('DEMIX','MakeCOP_ALOS_Best_Map',MakeCOP_ALOS_Best_Map,true);
             AParameter('DEMIX','MakeRGB_Best_Map',MakeRGB_Best_Map,true);
+            AParameter('DEMIX','RGBbestSeparates',RGBbestSeparates,true);
       end;
    end;
 
@@ -2427,7 +2429,7 @@ var
             AParameter('Files','Last DB',LastDataBase,'');
             AParameter('Files','PhotoDir',PhotoDir,'');
             AParameter('Files','LastLidarMult',LastLidarMulti,'');
-            AParameter('Files','LastOSMoverlay',LastOSMoverlay,'');
+            //AParameter('Files','LastOSMoverlay',LastOSMoverlay,'');
             AParameter('Files','MapLibDir',MapLibDir,'');
             AParameter('Files','lastools_bindir',lastools_bindir,'');
 
@@ -4542,7 +4544,7 @@ begin
     HardLimitColorPaletteFName := ProgramRootDir + 'hard_limit_color_palettes' + DefaultDBExt;
     TableDefinitionsFileName := ProgramRootDir + 'MD_TABLE_DEF_v2' + DefaultDBExt;
     GazOptFName := ProgramRootDir + 'gaz_symbols_v3' + DefaultDBExt;
-    LandCoverSeriesFName := ProgramRootDir + 'land_cover_20' + DefaultDBExt;
+    LandCoverSeriesFName := ProgramRootDir + 'land_cover_21' + DefaultDBExt;
     RangeCircleSizesfName := ProgramRootDir + 'range_circles' + DefaultDBExt;
     WKT_GCS_Proj_fName := ProgramRootDir + 'wkt_proj\gcs_wgs84.prj';
     if PathIsValid(ProgramRootDir + 'esri_proj') then begin

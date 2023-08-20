@@ -264,8 +264,8 @@ const
          end;
 
 
-var
-  TStr : ShortString;
+//var
+  //TStr : ShortString;
 begin
    {$IfDef RecordPLSSDraw} if (SectionDB <> 0) then WriteLineToDebugFile('+++++ tPLSSDataBase.DrawPLSS in, ' + GISdb[SectionDB].dbFullName); {$EndIf}
    //if (TownshipDB = 0) or (SectionDB = 0) or (QuarterDB = 0) then exit;
@@ -500,8 +500,8 @@ OR33T0220S0130E             key in BLM shape files for quarters, sections
 end;
 
 function tPLSSDataBase.PLSSTownshipNameFromLNDKEY(Table : tMyData) : shortstring;
-var
-   tStr,TStr2 : shortstring;
+//var
+   //tStr,TStr2 : shortstring;
   // MenuStr : ShortString;
 begin
    {$IfDef RecordPLSSTiming} WriteLineToDebugFile('Arrive tPLSSDataBase.PLSSTownshipNameFromLNDKEY, Recs=' + IntToStr(Table.RecordCount)); {$EndIf}
@@ -589,7 +589,7 @@ function tPLSSDataBase.SimplePLSSLocation(Lat,Long : float64) : ShortString;
 var
    QuarterString,SectionString,TownshipString,TStr : shortstring;
    UseFilter : string;
-   i : integer;
+   //i : integer;
 
       function RestrictIfNeeded(var DataBase : TGISdataBaseModule) : boolean;
       label

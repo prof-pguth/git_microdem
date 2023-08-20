@@ -110,6 +110,7 @@ begin
    end {if};
 end {proc VectorToDipStrike};
 
+
 procedure VectorToDipStrike32(x : VectorType32;  var DipDir,Dip : float32);
 {input is vector normal to plane; procedure returns dip and dip direction of plane}
 var
@@ -125,7 +126,6 @@ begin
       DipDir := DipDir + 180;
    end {if};
 end {proc VectorToDipStrike};
-
 
 
 procedure StrikeDirection(DipDirect : float32; var StrikeDirect : float32);
@@ -410,7 +410,6 @@ begin
 end {procedure StripDirection};
 
 
-
 procedure CalculateThickness(var XUTM1,YUTM1,Elv1,XUTM2,YUTM2,Elv2 : float32; Dip,DipDir : integer; var Thick : float32);
 var
    h,v,DownHillDir  : float32;
@@ -442,7 +441,6 @@ procedure ApparentDip(Dip,Strike : integer; Azimuth : integer; var AppDip : floa
 begin
    AppDip := abs( ArcTan( sinDeg( abs(Azimuth - Strike) ) * TanDeg(Dip) ) / DegToRad);
 end;
-
 
 
 initialization

@@ -37,7 +37,7 @@
       //{$Define RecordDrawGridLines}
       //{$Define RecordSat}
       //{$Define AspectCheck}
-      //{$Define RecordShapeFileGroup}
+      {$Define RecordShapeFileGroup}
       //{$Define RecordWorldOutline}
       //{$Define Track_f}
       //{$Define RecordMapResize}
@@ -274,6 +274,7 @@ type
      GroundOnly,
      LASlayerOnMap : boolean;
 
+     OSMShapesUp : tStringList;
      IndexFileName,
      GraticuleFName,
      UTMgridFName,
@@ -281,7 +282,6 @@ type
      UTMgridEndsFName,
      RangeCirclesFName,
      CartoGroupShapesUp,
-     OSMShapesUp,
      SectorOutlines,
      FullMapfName,
      CartoDBfName,
@@ -569,7 +569,7 @@ type
 
       procedure PlotLineShapeFileOnMap(fName : PathStr; var Bitmap : tMyBitmap; LineColor : tPlatformColor; LineWidth : byte);
       procedure PlotShapeFileGroupOnMap(IndexFName : PathStr; Bitmap : tMyBitmap; BaseDir : PathStr = '');
-      procedure PlotShapeFileGroup(inBitmap : tMyBitmap; FName : PathStr);
+      procedure PlotShapeFileGroup(inBitmap : tMyBitmap; FName : PathStr; SaveLayerAllowed : boolean = true);
       procedure QuietPlotTIGERShapeFileOnMap(fName : PathStr; var Bitmap : tMyBitmap; RoadsOnly : boolean = false; MaskSize : integer = -1; StreamsOnly : boolean = false);
       procedure PlotDataBase(DBNum : integer; var Bitmap : tMyBitmap);
       procedure PlotDBLegend(DBNum : integer; var Bitmap : tMyBitmap);
@@ -1525,7 +1525,6 @@ begin
 end;
 
 
-
 function TMapDraw.FullDEMMap : boolean;
 begin
    Result := (MapAreaDEMGridLimits.XGridLow = DEMglb[DEMonMap].FullDEMGridLimits.XGridLow) and
@@ -1866,6 +1865,7 @@ begin
       WMSOverlayOnMap := false;
    {$EndIf}
 
+   OSMShapesUp := Nil;
    InitialMapDrawn := false;
    BaseTitle := 'Default map';
    FullMapfName := '';
@@ -1876,7 +1876,7 @@ begin
    ContourOverlayfName  := '';
    ContourOverlayfName2 := '';
    BaseMapFName := '';
-   OSMShapesUp := '';
+   //OSMShapesUp := '';
    OSMOverlayfName := '';
    PLSSOverlayfName := '';
    GazOverlayFName := '';

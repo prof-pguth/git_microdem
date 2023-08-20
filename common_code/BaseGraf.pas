@@ -531,7 +531,7 @@ function SaveSingleValueSeries(NumVals : integer; var zs : Petmath.bfarray32; fN
 function CreateMultipleHistogram(GraphNumbers : boolean; FileList,LegendList : tStringList; ParamName,TitleBar : ShortString;
     NumBins : integer = 100; Min : float32 = 1; Max : float32 = -1; BinSize : float32 =  -99; TColorList : tStringList = Nil) : TThisBaseGraph;
 
-function DeprecatedCreateHistogram(GraphNumbers : boolean; NumVals : integer; var values : Petmath.bfarray32; ParamName,TitleBar : ShortString) : TThisBaseGraph;
+//function DeprecatedCreateHistogram(GraphNumbers : boolean; NumVals : integer; var values : Petmath.bfarray32; ParamName,TitleBar : ShortString) : TThisBaseGraph;
 
 procedure CreateQuantileQuantilePlot(var ThisGraph : TThisBaseGraph; NumVals : integer; var values : array of float32; Mean,Std : float32; ParamName,TitleBar : ShortString);
 function CreateCumProbabilityFromFile(fNames : tStringList; ParamName,TitleBar : ShortString) : TThisBaseGraph;
@@ -632,12 +632,13 @@ end;
 
 function StartStackedHistogram(DBonTable : integer; Percentage : boolean) : TThisBaseGraph;
 var
-   fName : shortstring;
-   Min,Max : float64;
-   x1,x2,dx,Cum : float32;
-   Bot,Top,Left,Right,i,Series,Total : integer;
-   Count : array[1..10] of integer;
-   PC    : array[1..10] of float32;
+   //fName : shortstring;
+   //Min,Max : float64;
+   //x1,x2,dx,Cum : float32;
+   //Bot,Top,Left,Right,i,Total,
+   Series : integer;
+   //Count : array[1..10] of integer;
+   //PC    : array[1..10] of float32;
 begin
    {$IfDef RecordHistogram} writeLineToDebugFile('GetStackedHistogram in, db=' + IntToStr(dbOnTable)); {$EndIf}
    Series := 0;
@@ -668,12 +669,13 @@ label
    FoundMax;
 var
    fName : shortstring;
-   Graph : tThisBaseGraph;
+   //Graph : tThisBaseGraph;
    x1,x2 : float64;
    dx,Cum : float32;
    Bot,Top,Left,Right,MaxCount,
    i,Series,Total : integer;
-   SeriesCount,CumCount,Count : array[1..10] of integer;
+   //SeriesCount,CumCount,
+   Count : array[1..10] of integer;
    PC    : array[1..10] of float32;
 begin
    {$IfDef RecordHistogram} HighlightLineToDebugFile('SetUpStackedHistogram graph enter, DataBaseOnGraph=' + IntToStr(DataBaseOnGraph) + GraphDraw.AxisRange); {$EndIf}
@@ -797,7 +799,7 @@ Label
 const
    MaxBins = 5000;
 var
-  i,NumVals,db : integer;
+  i,NumVals{,db} : integer;
   values : ^Petmath.bfarray32;
   Value,Range,Incr,MaxCount,MinInSeries,MaxInSeries : float32;
   rFile : file;
@@ -806,10 +808,9 @@ var
   v : array[1..2] of float32;
   Bins : array[0..MaxBins] of integer;
   Results : tstringlist;
-  TStr : shortstring;
-  fName : PathStr;
+  //fName : PathStr;
   StackedPercents : boolean;
-  Graph2,Graph3 : TThisBaseGraph;
+  //Graph2, Graph3 : TThisBaseGraph;
 
           procedure LoadSeries(fName : PathStr);
           var
@@ -977,6 +978,7 @@ begin
       {$IfDef RecordHistogram} writeLineToDebugFile('CreateMultipleHistograms ProcessSeries over, NumBins=' + IntToStr(NumBins) + '  ' + Result.GraphDraw.AxisRange); {$EndIf}
       Result.AutoScaleAndRedrawDiagram(false,false,false,false);
 
+      (*
       if false and StackedPercents then begin
       //2/23/2023, this is disabled because Graph3 is crashing; Graph2 had not been working either; this needs to be looked at
          {$IfDef RecordHistogram} writeLineToDebugFile('Start StackedPercents'); {$EndIf}
@@ -996,24 +998,22 @@ begin
          Graph3.RedrawDiagram11Click(Nil);
          {$If Defined(RecordHistogram)} HighlightLineToDebugFile('Stacked percents graph percentage done: ' +  Graph3.GraphDraw.AxisRange); {$EndIf}
 
-         (*
-         Graph2 := StartStackedHistogram(DB,false);
-         Graph2.GraphDraw.VertLabel := l1 + ' Counts';
-         Graph2.GraphDraw.LeftMargin := Result.GraphDraw.LeftMargin;
-         Graph2.GraphDraw.MarginsGood := true;
-         Graph2.Caption := l1 + ' Category percentages in histogram bins';
-         Graph2.RedrawDiagram11Click(Nil);
+
+         //Graph2 := StartStackedHistogram(DB,false);
+         //Graph2.GraphDraw.VertLabel := l1 + ' Counts';
+         //Graph2.GraphDraw.LeftMargin := Result.GraphDraw.LeftMargin;
+         //Graph2.GraphDraw.MarginsGood := true;
+         //Graph2.Caption := l1 + ' Category percentages in histogram bins';
+         //Graph2.RedrawDiagram11Click(Nil);
          {$If Defined(RecordHistogram)} HighlightLineToDebugFile('Stacked percents graph counts: ' +  Graph2.GraphDraw.AxisRange); {$EndIf}
 
          //Result.GraphDraw.MaxHorizAxis := Graph2.GraphDraw.MaxHorizAxis;
          {$If Defined(RecordHistogram)} WriteLineToDebugFile('Reset Hist: ' +  Result.GraphDraw.AxisRange); {$EndIf}
-         *)
-         (*
-         Result.GraphDraw.MarginsGood := true;
-         Result.RedrawDiagram11Click(Nil);
-         *)
+         //Result.GraphDraw.MarginsGood := true;
+         //Result.RedrawDiagram11Click(Nil);
          {$If Defined(RecordHistogram)} WriteLineToDebugFile('Done StackedPercents, Redrawn Hist graph: ' +  Result.GraphDraw.AxisRange); {$EndIf}
       end;
+      *)
    end;
 CleanUp:;
    Dispose(Values);
@@ -1418,7 +1418,7 @@ begin
 end;
 
 
-
+(*
 function DeprecatedCreateHistogram(GraphNumbers : boolean; NumVals : integer; var values : Petmath.bfarray32; ParamName,TitleBar : ShortString) : TThisBaseGraph;
 var
    FileList : tStringList;
@@ -1428,7 +1428,7 @@ begin
    FileList.Add(SaveSingleValueSeries(NumVals,Values));
    Result := CreateMultipleHistogram(GraphNumbers,FileList,Nil,ParamName,TitleBar);
 end;
-
+*)
 
 procedure CreateQuantileQuantilePlot(var ThisGraph : TThisBaseGraph; NumVals : integer; var values : array of float32; Mean,Std : float32; ParamName,TitleBar : ShortString);
 var
@@ -4444,7 +4444,7 @@ var
    Month,Day,Year,
    i      : integer;
    fName : PathStr;
-   TStr : shortString;
+   //TStr : shortString;
    Results : tStringList;
    v       : array[1..3] of float32;
 
@@ -4921,12 +4921,13 @@ end;
 procedure TThisBaseGraph.RedrawDiagram11Click(Sender: TObject);
 var
    BitMap,bmp : tMyBitmap;
-   LastXi,LastYi,LastYi2,width,
+   LastXi,LastYi,LastYi2,
+   //width,
    xi,yi,yi2,i,j,err,NumRead  : integer;
    x      : float32;
    MenuStr : ShortString;
    aTable : tMyData;
-   fName : PathStr;
+   //fName : PathStr;
    tf : file;
    Coords3 : ^Coord3Array;
 begin

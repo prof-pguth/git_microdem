@@ -2,8 +2,8 @@ object dbtablef: Tdbtablef
   Left = 62
   Top = 306
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 993
-  ClientWidth = 1228
+  ClientHeight = 991
+  ClientWidth = 1220
   Color = clBtnFace
   ParentFont = True
   FormStyle = fsMDIChild
@@ -17,24 +17,24 @@ object dbtablef: Tdbtablef
   TextHeight = 15
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 974
-    Width = 1228
+    Top = 972
+    Width = 1220
     Height = 19
     Panels = <
       item
         Width = 250
       end>
-    ExplicitTop = 975
-    ExplicitWidth = 1232
+    ExplicitTop = 971
+    ExplicitWidth = 1216
   end
   object Panel2: TPanel
     Left = 0
     Top = 41
-    Width = 1228
+    Width = 1220
     Height = 32
     Align = alTop
     TabOrder = 1
-    ExplicitWidth = 1232
+    ExplicitWidth = 1216
     object BitBtn1: TBitBtn
       Left = 34
       Top = 1
@@ -215,11 +215,11 @@ object dbtablef: Tdbtablef
   object Panel3: TPanel
     Left = 0
     Top = 73
-    Width = 1228
+    Width = 1220
     Height = 41
     Align = alTop
     TabOrder = 2
-    ExplicitWidth = 1232
+    ExplicitWidth = 1216
     object Label2: TLabel
       Left = 12
       Top = 12
@@ -266,11 +266,11 @@ object dbtablef: Tdbtablef
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1228
+    Width = 1220
     Height = 41
     Align = alTop
     TabOrder = 4
-    ExplicitWidth = 1232
+    ExplicitWidth = 1216
     object LOSButton: TSpeedButton
       Left = 40
       Top = 6
@@ -529,11 +529,11 @@ object dbtablef: Tdbtablef
   object Panel7: TPanel
     Left = 0
     Top = 114
-    Width = 1228
+    Width = 1220
     Height = 41
     Align = alTop
     TabOrder = 3
-    ExplicitWidth = 1232
+    ExplicitWidth = 1216
     object RadioGroup2: TRadioGroup
       Left = 20
       Top = 0
@@ -554,8 +554,8 @@ object dbtablef: Tdbtablef
   object DBGrid1: TDBGrid
     Left = 0
     Top = 155
-    Width = 1228
-    Height = 819
+    Width = 1220
+    Height = 817
     Align = alClient
     TabOrder = 5
     TitleFont.Charset = DEFAULT_CHARSET
@@ -652,7 +652,7 @@ object dbtablef: Tdbtablef
       OnClick = Heatmap1Click
     end
     object Cluster2: TMenuItem
-      Caption = 'Cluster'
+      Caption = 'K-means Clustering'
       object Cluster1: TMenuItem
         Caption = 'Create cluster'
         OnClick = Cluster1Click
@@ -660,6 +660,14 @@ object dbtablef: Tdbtablef
       object Clusterfrequency1: TMenuItem
         Caption = 'Cluster frequency'
         OnClick = Clusterfrequency1Click
+      end
+      object Clustermaplocations1: TMenuItem
+        Caption = 'Cluster map locations'
+        OnClick = Clustermaplocations1Click
+      end
+      object Clusterstatistics1: TMenuItem
+        Caption = 'Cluster statistics'
+        OnClick = Clusterstatistics1Click
       end
     end
     object SupervisedClassification1: TMenuItem
@@ -2466,6 +2474,10 @@ object dbtablef: Tdbtablef
         Caption = 'Add Lat/long'
         OnClick = AddLatlong1Click
       end
+      object AddDEMIXtilecentroid1: TMenuItem
+        Caption = 'Add DEMIX tile centroid'
+        OnClick = AddDEMIXtilecentroid1Click
+      end
       object AddUTMcoordfields1: TMenuItem
         Caption = 'Add UTM'
         OnClick = AddUTMcoordfields1Click
@@ -3673,11 +3685,9 @@ object dbtablef: Tdbtablef
       Caption = 'Best by sorted geomorphometry values'
       object Pointfilter1: TMenuItem
         Caption = 'Point filter'
-        OnClick = Pointfilter1Click
       end
       object Pointfilter2: TMenuItem
         Caption = 'ALL points'
-        OnClick = Pointfilter2Click
       end
     end
     object BestDEMbycategory1: TMenuItem

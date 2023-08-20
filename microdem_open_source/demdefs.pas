@@ -102,10 +102,14 @@ const
 
 
 const   //for DEMIX
-   MaxLandType = 8;
-   NumDEMIXDEM = 6;
+   //MaxLandType = 8;
+   //LandType : array[1..MaxLandType] of shortstring = ('ALL','CLIFF','STEEP','GENTLE','FLAT','URBAN','FOREST','BARREN');
    RefDEMType : array[1..2] of shortstring = ('DSM','DTM');
-   LandType : array[1..MaxLandType] of shortstring = ('ALL','CLIFF','STEEP','GENTLE','FLAT','URBAN','FOREST','BARREN');
+
+   NumLandTypes = 8;
+   LandTypes : array[1..NumLandTypes] of shortstring = ('ALL','FLAT','GENTLE','STEEP','CLIFF','URBAN','FOREST','BARREN');
+
+   NumDEMIXDEM = 6;
    DEMIXDEMTypeName : array[1..NumDEMIXDEM] of shortstring = ('FABDEM','COP','ALOS','NASA','SRTM','ASTER');
 
 const   //merging DEM modes
@@ -735,42 +739,8 @@ const
    euElevDiff = 60;
    LCMAP = 61;
    euDNBR = 62;
-   HighElevUnits = 62;  //same as last real one;  used only for loops through all the elevation units;
-(*
-type
-   tElevUnit = (euMeters,Feet,TenthMgal,Milligal,TenthGamma,
-                  Decimeters,Gammas,HundredthMGal,DeciFeet,Centimeters,
-                  Unused10,
-                  HundredthMa,PercentSlope,Undefined,zDegrees,
-                  Unused0,
-                  lnElev,LogElev,
-                  Unused1,Unused2,
-                  zPercent,
-                  Unused3,Unused4,Unused5,Unused6,Unused7,
-                  NLCD2001up,LandFire,Nanotesla,NLCD1992,
-                  euIntCode,unused8,unused9,GLOBCOVER,GLC2000,euImagery,euMM,euMetersPerSec,zMperM,euKM,CCAP,euLASclass13,
-                  euLASclass14,euRGB,euMonth,CCI_LC,S2GLC,NLCD_Change,GLCS_LC100,Meybeck,Geomorphon,Iwahashi,ESRI2020,AspectDeg,euPennock,euPerMeter,WorldCover10m,euNDVI,euNBR);
-const
-   ElevUnitsAre : array[tElevUnit] of string10 =
-       (' m',' m',' mgal',' mgal',' gamma',
-        ' m',' gamma',' mgal',' m',' m',
-        '',' Ma','%','','°',
-        '','ln(z)','log(z)','°','',
-        '%','','°','','',
-        '',' NLCD',' LandFire',' nT','NLCD 1992',
-        'code','','','GlobCover','GLC2000',' Imagery',' mm',' m/s',' m/m',' km',' C-CAP',' LAS1.3',' LAS1.4',' RGB',' month',
-        ' CCI-LC','S2GLC','dNLCD','GLCS_LC100','Meybeck','Geomorphon','Iwahashi','ESRI2020','°','Pennock','/m','WorldCover 10m','NDVI','NBR');
-
-   ElevUnitsAre : array[tElevUnit] of string16 =
-        (' meters',' feet',' 0.1 mgal',' mgal',' 0.1 gam',
-        ' decim',' gamma',' 0.01 mgal',' 0.1 ft',' cm',
-        ' (?)',' 0.01 Ma',' %',' undefined','°',
-        ' hundredth','ln(z)','log(z)','0.1°',' thousandth',
-        '0.01 %','tenth','0.01°',' tens',' hundreds',
-        ' thousands',' NLCD',' LandFire',' nT',' NLCD 1992',
-        ' Integer code','','','GlobCover','GLC2000',' Imagery',' mm',' m/s',' m/m',' km',' C-CAP',' LAS1.3',' LAS1.4',
-        'RGB',' month','CCI-LC','S2GLC','NLCD_change','GLCS_LC100','Meybeck','Geomorphon','Iwahashi','ESRI2020','°','Pennock','/m','WorldCover 10m',NDVI','NBR');
-   *)
+   euSent2SLC = 63;
+   HighElevUnits = 63;  //same as last real one;  used only for loops through all the elevation units;
 
    VertCSEGM96 = 5773;
    VertCSEGM2008 = 3855;
@@ -1952,6 +1922,7 @@ type
       MakeCOP_FABDEM_diffMaps,
       MakeCOP_ALOS_Best_Map,
       MakeRGB_Best_Map,
+      RGBbestSeparates,
 
       DEMIXCompositeImage,
       DEMIX_DoCHM,
@@ -2941,7 +2912,7 @@ var
    LastDataBase,
    LastDesktop,
    LastLidarMulti,
-   LastOSMoverlay,
+   //LastOSMoverlay,
    ElevationFixedPalette,
 
    LastWorldFileOverlay,

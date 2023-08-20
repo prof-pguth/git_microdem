@@ -1920,7 +1920,8 @@ END;
 function Mode(var x : array of float32; n: integer; binsize : float32) : float32;
 VAR
    i,MaxCount,Count : integer;
-   v,bin1 : float32;
+   //v,
+   bin1 : float32;
 BEGIN
    Result := Nan;
    MaxCount := 0;
@@ -2113,7 +2114,7 @@ procedure LoadBFarray32(fName : PathStr; var Values : Petmath.bfarray32; var npt
 //need to create values if it will be a pointer
 var
     inf : file;
-    i : integer;
+    //i : integer;
 begin
     npts := GetFileSize(fName) div SizeOf(float32);
     AssignFile(inf,fName);

@@ -192,15 +192,16 @@ const
 procedure ResampleSentinel_1(Path : PathStr; Recycle : boolean = false);
 // based on https://asf.alaska.edu/how-to/data-recipes/geocode-sentinel-1-with-gdal/
 var
-   fName,fName2,outName : PathStr;
-   DefaultFilter : byte;
+   fName,{fName2,}outName : PathStr;
+   //DefaultFilter : byte;
    BatchFile,TheFiles: tStringList;
    UTMspace : float32;
-   UTMzone,i,j : Integer;
-   ch : ANSIchar;
+   //UTMzone,
+   i,j : Integer;
+   //ch : ANSIchar;
    TStr2,OutEPSG : shortString;
    cmd : ANSIString;
-   GDALinfo : tGDALinfo;
+   //GDALinfo : tGDALinfo;
    RecycleList : tStringList;
 begin
    PickUTMZone(MDdef.DefaultUTMZone);
@@ -634,7 +635,7 @@ procedure GDAL_upsample_DEM(DEM : integer; Spacing : float32 = -99);
 var
    OutName : PathStr;
    SpaceStr : shortString;
-   cmd : AnsiString;
+   //cmd : AnsiString;
 begin
    {$If Defined(RecordSave) or Defined(RecordGDAL)} WriteLineToDebugFile('GDALresamplethin1Click'); {$EndIf}
    if IsGDALFilePresent(GDAL_Warp_Name) then begin
@@ -846,9 +847,9 @@ end;
 
       procedure ParseForUTM(TStr, Corner: ANSIstring; var xutm,yutm : float64);
       //input from GDALinfo
-      var
-         DegStr,MinStr,SecStr : shortstring;
-         Mult : float64;
+      //var
+        // DegStr,MinStr,SecStr : shortstring;
+         //Mult : float64;
       begin
           if StrUtils.AnsiContainsText(TStr,Corner) and StrUtils.AnsiContainsText(TStr,'(') then begin
             //Center      (  723282.207, 4270968.445) ( 78d26'14.85"W, 38d33'32.88"N)
@@ -857,7 +858,6 @@ end;
              yutm := StrToFloat(BeforeSpecifiedCharacterANSI(TStr,')',true,true));
           end;
       end;
-
 
 
       function ParseForFips(Tstr : ANSIstring) : int16;
@@ -1299,7 +1299,7 @@ end;
 
       procedure GDAL_Convert_Shapefile_2_geopackage(fName : pathStr);
       var
-         NewDir : PathStr;
+         //NewDir : PathStr;
          cmd : shortstring;
       begin
 //convert a shapefile to geopackage
@@ -1410,8 +1410,8 @@ end;
       var
          Code : integer;
       begin
-         Code := 26900;      {NAD83}
-         if WGS84 then Code := 32600;      {WGS84 default}
+         Code := 26900; {NAD83}
+         if WGS84 then Code := 32600; {WGS84 default}
          if not NHemi then Code := Code + 100;
          Code := Code + UTMZone;
          Result := GDAL_translate_name + ' -of Gtiff' + ' -a_srs EPSG:' + IntToStr(Code) + ' ' + inName + ' ' + OutName;
@@ -1425,29 +1425,6 @@ end;
          BatchFile.Add(SetGDALdataStr);
       end;
 
-      (*
-      procedure UseGDAL_Warp_to_merge(var MergefName : PathStr; OutNames : tStringList);
-      //gdalwarp --config GDAL_CACHEMAX 3000 -wm 3000 $(list_of_tiffs) merged.tiff
-      //this option did not work (could not get the list of input files to be acceptable
-      var
-         aName,OutVRT : PathStr;
-         cmd : shortstring;
-         BatchFile : tStringList;
-      begin
-         aName := Petmar.NextFileNumber(MDTempDir, 'gdal_merge_file_list_','.txt');
-         OutNames.SaveToFile(aName);
-
-         OutVRT := Petmar.NextFileNumber(MDTempDir, 'gdal_vrt_','.vrt');
-         cmd := GDALtools_Dir + 'gdalwarp --config GDAL_CACHEMAX 3000 -wm 3000 --input_file_list ' + aName + ' ' + ' ' + MergeFName;
-
-         StartGDALbatchFile(BatchFile);
-         BatchFile.Add('REM create VRT');
-         BatchFile.Add(cmd);
-
-         aName := Petmar.NextFileNumber(MDTempDir, 'gdal_warp2merge_','.bat');
-         EndBatchFile(aName,BatchFile);
-      end;
-      *)
 
 procedure CompositeDatumShiftWithGDAL(var InName,SaveName : PathStr; s_SRSstring,t_srsstring : shortstring);
 var

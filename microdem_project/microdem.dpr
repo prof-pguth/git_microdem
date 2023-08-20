@@ -299,7 +299,6 @@ uses
   petmar_ini_file in '..\microdem_open_source\petmar_ini_file.pas',
   icesat_filter_form in '..\common_code\icesat_filter_form.pas' {Icesat_filter},
   firemonkey_common in '..\common_fmx\firemonkey_common.pas',
-  DEM_NLCD in '..\common_code\DEM_NLCD.pas',
   demsatmerge in '..\common_code\demsatmerge.pas' {IHSMergeForm},
   dem_computations in '..\common_code\dem_computations.pas',
   aspect_colors in '..\common_code\aspect_colors.pas' {AspectMapColors},
@@ -328,7 +327,8 @@ uses
   monitor_change_form in '..\common_code\monitor_change_form.pas' {ChangeMapForm},
   pick_several_dems in '..\common_code\pick_several_dems.pas' {tPickGridsForm},
   tiger_address in '..\gis_ops\tiger_address.pas' {TigerAddressForm},
-  demix_cop_alos in '..\demix\demix_cop_alos.pas';
+  demix_cop_alos in '..\demix\demix_cop_alos.pas',
+  DEM_NLCD in '..\common_code\DEM_NLCD.pas';
 
 {$R *.RES}
 

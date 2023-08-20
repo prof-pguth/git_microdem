@@ -1526,8 +1526,8 @@ end;
 
 
 procedure Twmdem.LoadDEMIXareareferenceDEMs1Click(Sender: TObject);
-var
-   fName : PathStr;
+//var
+   //fName : PathStr;
 begin
 (*
    {$IfDef RecordDEMIX} WriteLineToDebugFile('Twmdem.LoadDEMIXareareferenceDEMs1Click in'); {$EndIf}
@@ -2020,7 +2020,7 @@ begin
    end;
 
 
-   if Action = 'SLOPEUNCERTAIN' then begin
+   if (Action = 'SLOPEUNCERTAIN') then begin
       if OpenADEM then begin
          if (xval <> '') then CarlosXRecord := StrToInt(xVal);
          if (yval <> '') then CarlosYRecord := StrToInt(yVal);
@@ -2360,10 +2360,12 @@ end;
          HistogramsFromVATDEM(DEMwithVAT,ElevMap,SlopeMap,RuffMap,AspMap);
       end;
       *)
+(*
 var
    BatchFile : tStringList;
    aName : PathStr;
    cmd : shortstring;
+*)
 begin
    if TrilobiteComputer then begin
       //Histies;
@@ -3941,13 +3943,12 @@ end;
 
 
 procedure Twmdem.Existingfile1Click(Sender: TObject);
-{$IfDef ExMovie}
 begin
-{$Else}
-begin
-   StopSplashing;
-   CreateNewMovie;
-{$EndIf}
+   {$IfDef ExMovie}
+   {$Else}
+      StopSplashing;
+      CreateNewMovie;
+   {$EndIf}
 end;
 
 procedure Twmdem.Existingfile2Click(Sender: TObject);

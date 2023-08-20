@@ -96,7 +96,7 @@ var
 
          function DoPixelSize(Secs : integer) : shortString;
          var
-            d0,d1,d2,Bearing,Rect,dx,dy : float64;
+            d0,d1,d2,Bearing,{Rect,}dx,dy : float64;
          begin
             IvanGeodeticDxDy(Lat,Secs, dx,dy);
             VincentyCalculateDistanceBearing(Lat+ secs/3600,Long,Lat,Long,d0,Bearing);  //side of pixel

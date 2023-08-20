@@ -82,7 +82,7 @@ implementation
                
 uses
    Nevadia_Main,
-   PETMAR, Petmar_types,
+   PETMAR, Petmar_types, PetMath,
    DEMDefs,DEMDef_routines,DEMCoord,DEMMapF;
 
 var

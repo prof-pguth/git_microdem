@@ -215,8 +215,8 @@ end;
 procedure TDrawFan.DoRadial(Alpha : float64);
 var
    PointOnRay,RayVis,RayMask,OffMap,x,y : integer;
-   xgrids,ygrids,dists : tRayArray64;
-   elevs : tRayArray32;
+   xgrids,ygrids, elevs : tRayArray32;
+   dists : tRayArray64;
    VisPoints : array[0..MaxOnRay] of boolean;
    Lat2,Long2 : float64;
 
@@ -243,12 +243,14 @@ var
       procedure RadialStraightRoute(LatLong : boolean; Lat1,Long1,Lat2,Long2 : float64; StraightAlgorithm : tStraightAlgorithm; var NumPoints : integer);
       var
          I : integer;
-         InBounds : boolean;
-         xUTM1,xUTM2,yUTM1,yUTM2,
+         //InBounds : boolean;
+         //xUTM1,xUTM2,yUTM1,yUTM2,
          Lat,Long,Lat4,Long4,
-         dx,dy,dLat,dLong,x,y,
+         //dx,dy,x,y,
+         dLat,dLong,
          dDistance,FullDistance,Bearing : float64;
 
+               (*
                procedure ComputeVersion1;
                var
                   i : integer;
@@ -267,6 +269,7 @@ var
                      Dists[i] := i * dDistance;
                   end;
                end;
+               *)
 
                procedure ComputeVersion2;
                var
@@ -287,6 +290,20 @@ var
          VincentyCalculateDistanceBearing(Lat1,Long1,Lat2,Long2,FullDistance,Bearing);    //does not depend on UTM zone
          dDistance := FullDistance / NumPoints;
 
+         dLat := (Lat2-Lat1) / NumPoints;
+         dLong := (Long2-Long1) / NumPoints;
+         for i := 0 to NumPoints do begin
+            Lat4 := Lat1+ i * dLat;
+            Long4 := Long1 + i * dLong;
+            if LatLong then begin
+               XGrids[i] := Long4;
+               YGrids[i] := Lat4;
+            end
+            else DEMGLB[aNewMapDraw.DEMonMap].LatLongDegreeToDEMGrid(Lat4,Long4,xgrids[i],ygrids[i]);
+            Dists[i] := i * dDistance;
+         end;
+
+         (*
          {$IfDef SingleStraightAlgorithm}
             if (FullDistance < MDDef.wf.SmartSwitchOver) and (Lat1 > 0) and (Lat2 > 0)) then begin
                ComputeVersion1;
@@ -322,6 +339,7 @@ var
                end;
             end
             else ComputeVersion2;
+            *)
 (*
             else if (StraightAlgorithm = saUTM) or ((StraightAlgorithm = saSmart) and (FullDistance < MDDef.wf.SmartSwitchOver) and (Lat1 > 0) and (Lat2 > 0))
                   or ((StraightAlgorithm = saDEMGrid) and (DEMGLB[aNewMapDraw.DEMonMap].DEMheader.DEMUsed = UTMBasedDEM)) then begin
@@ -330,8 +348,8 @@ var
             else if (StraightAlgorithm = saVincenty) or ( (StraightAlgorithm = saSmart) and ((FullDistance > MDDef.wf.SmartSwitchOver) or (Lat1 < 0) or (Lat2 < 0))) then begin
                ComputeVersion2;
             end;
-*)
          {$EndIf}
+*)
       end;
 
 
@@ -526,10 +544,10 @@ var
    XStart,YStart,XEnd,YEnd,
    PointsPerRay2 : integer;
    HorizDist,Distance,
-   XGrid,YGrid,LeftLimit,RightLimit,
-   Alpha,Beta,Lat2,Long2,FanGX,FanGY,xu,yu,Heading,BlockDist : float64;
+   LeftLimit,RightLimit,
+   Alpha,Beta,Lat2,Long2,xu,yu,Heading,BlockDist : float64;
    Inbounds : boolean;
-   ObsElev,z,FanZ : float32;
+   FanGX,FanGY,XGrid,YGrid,ObsElev,z,FanZ : float32;
     {$IfDef NoParallelFor}
     {$Else}
        UseThreads : integer;

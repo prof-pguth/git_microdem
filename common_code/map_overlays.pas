@@ -557,11 +557,11 @@ end;
 
 procedure TMapOverlayForm.BitBtn34Click(Sender: TObject);
 begin
-   if (TheMapForm.MapDraw.OSMShapesUp = '') and CheckBox15.Checked then begin
+   if (TheMapForm.MapDraw.OSMShapesUp = Nil) and CheckBox15.Checked then begin
       TheMapForm.LoadOSMoverlay1Click(Nil);
    end;
-   if (not CheckBox15.Checked) then TheMapForm.MapDraw.OSMShapesUp := '';
-   UpdateOverlayOrder(ovoOSM, CheckBox15.Checked and (TheMapForm.MapDraw.OSMShapesUp <> ''));
+   if (not CheckBox15.Checked) then FreeAndNil(TheMapForm.MapDraw.OSMShapesUp);
+   UpdateOverlayOrder(ovoOSM, CheckBox15.Checked and (TheMapForm.MapDraw.OSMShapesUp <> Nil));
    CheckPanels;
 end;
 

@@ -34,6 +34,7 @@ unit GeoTiff;
       //{$Define TrackDEMCorners}
       //{$Define GeotiffCorner}
       *)
+      //{$Define RecordImageOffsets}
       //{$Define TrackHorizontalDatum}
       //{$Define RecordDEMMapProjection}
       //{$Define RecordGeotiffProjection}
@@ -119,8 +120,10 @@ type
    tTIFFImage = class
       private
       protected
-         Row16Bit     : ^tWordRow16Bit;
-         Row8Bit      : ^tRow8Bit;
+         Row16Bit : ^tWordRow16Bit;
+         Row8Bit  : ^tRow8Bit;
+         BigRow   : ^tWordBigRow;
+
          procedure WordToByte(Band : integer; Row16bit : Word; var TheRow : byte); inline;
          function MakeDouble : Double;   {$IfDef InlineGeotiff} inline; {$EndIf}
          function MakeSingle : Single;   {$IfDef InlineGeotiff} inline; {$EndIf}
@@ -154,7 +157,7 @@ type
          procedure GetPointReflectances(Column,Row : integer; var Reflectances : tAllRefs);
          procedure GetTiffRow16bit(Band,Row : integer; var Row16bit : tWordRow16Bit);
 
-         procedure SeekFileOffset(Band,Row : int64);
+         procedure SeekFileOffset({Band,}Row : int64);
          function CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
          {$IfDef VCL}
             procedure GetTIFFRowRGB(Row : integer;  var TheRow : tLongRGB);
@@ -499,33 +502,46 @@ end;
 
 {$IfDef VCL}
 
-      procedure tTIFFImage.GetTIFFRowRGB(Row : integer;  var TheRow : tLongRGB);
+      procedure tTIFFImage.GetTIFFRowRGB(Row : integer; var TheRow : tLongRGB);
       var
          x : integer;
-         TheRawRow : tImageRow;
+         TheRawRow : ^tImageRow;
       begin
-         SeekFileOffset(1,Row);
+         SeekFileOffset(Row);
          if (TiffHeader.PhotometricInterpretation in [1,2]) and (TiffHeader.SamplesPerPixel > 1) then begin
-             if (TiffHeader.BitsPerSample in [15, 16]) then begin
+             if (TiffHeader.BitsPerSample in [15,16]) then begin
+             //this has problems 8/13/23
                FileRead(TiffHandle,Row16bit^,ImageBytesPerRow);
-               for x := 0 to TiffHeader.ImageWidth do begin
-                   TheRow[x].rgbtRed := Row16bit^[x*TiffHeader.SamplesPerPixel];
-                   TheRow[x].rgbtGreen := Row16bit^[x*TiffHeader.SamplesPerPixel+1];
-                   TheRow[x].rgbtBlue := Row16bit^[x*TiffHeader.SamplesPerPixel+2];
+               for x := 0 to pred(TiffHeader.ImageWidth) do begin
+                   TheRow[x].rgbtRed := Row16bit^[x*TiffHeader.SamplesPerPixel] mod 256;
+                   TheRow[x].rgbtGreen := Row16bit^[x*TiffHeader.SamplesPerPixel+1] mod 256;
+                   TheRow[x].rgbtBlue := Row16bit^[x*TiffHeader.SamplesPerPixel+2] mod 256;
+                   (*
+                   TheRow[x].rgbtBlue := Row16bit^[x*TiffHeader.SamplesPerPixel] div 256;
+                   TheRow[x].rgbtGreen := Row16bit^[x*TiffHeader.SamplesPerPixel+1] div 256;
+                   TheRow[x].rgbtRed := Row16bit^[x*TiffHeader.SamplesPerPixel+2] div 256;
+                   *)
                end;
             end
             else begin
                 FileRead(TiffHandle,Row8Bit^,ImageBytesPerRow);
-                for x := 0 to TiffHeader.ImageWidth do begin
+                for x := 0 to pred(TiffHeader.ImageWidth) do begin
                    TheRow[x].rgbtRed := Row8Bit^[x*TiffHeader.SamplesPerPixel];
                    TheRow[x].rgbtGreen := Row8Bit^[x*TiffHeader.SamplesPerPixel+1];
                    TheRow[x].rgbtBlue := Row8Bit^[x*TiffHeader.SamplesPerPixel+2];
+                   (*
+                   TheRow[x].rgbtBlue := Row8Bit^[x*TiffHeader.SamplesPerPixel];
+                   TheRow[x].rgbtGreen := Row8Bit^[x*TiffHeader.SamplesPerPixel+1];
+                   TheRow[x].rgbtRed := Row8Bit^[x*TiffHeader.SamplesPerPixel+2];
+                   *)
                 end;
             end;
          end
          else begin
-            GetTiffRow(1,Row,TheRawRow);
-            for x := 0 to TiffHeader.ImageWidth do TheRow[x] := TIFFImageColor[TheRawRow[x]];
+            New(TheRawRow);
+            GetTiffRow(1,Row,TheRawRow^);
+            for x := 0 to TiffHeader.ImageWidth do TheRow[x] := TIFFImageColor[TheRawRow^[x]];
+            Dispose(TheRawRow);
          end;
       end;
 
@@ -647,16 +663,23 @@ begin
 end;
 
 
-procedure tTIFFImage.SeekFileOffset(Band,Row : int64);
+procedure tTIFFImage.SeekFileOffset({Band,}Row : int64);
 var
    TheOffset,LinesNeeded : int64;
 begin
+
+//restored from 6/20/23
    OpenTiffFile;
-   if (TiffHeader.PhotometricInterpretation = 2) then  begin  //color image
-      TheOffset := TiffHeader.OffsetArray^[(Row div TiffHeader.RowsPerStrip)];
+   if (TiffHeader.PhotometricInterpretation = 2) then begin  //color image
+      if (TiffHeader.StripOffsets <> 0) then begin
+         TheOffset := TiffHeader.StripOffsets + (Row * TiffHeader.ImageWidth * TiffHeader.BytesPerSample * TiffHeader.SamplesPerPixel);
+      end
+      else begin
+         TheOffset := TiffHeader.OffsetArray^[(Row div TiffHeader.RowsPerStrip)];
+      end;
    end
    else if (TiffHeader.RowsPerStrip = TiffHeader.ImageLength) then begin
-      TheOffset := TiffHeader.StripOffsets + round(1.0 * Row * TiffHeader.ImageWidth * TiffHeader.BytesPerSample * TiffHeader.SamplesPerPixel);
+      TheOffset := TiffHeader.StripOffsets + (Row * TiffHeader.ImageWidth * TiffHeader.BytesPerSample * TiffHeader.SamplesPerPixel);
    end
    else if (TiffHeader.RowsPerStrip = 1) then begin
       TheOffset := TiffHeader.OffsetArray^[(Row div TiffHeader.RowsPerStrip)];
@@ -667,20 +690,40 @@ begin
    end;
    FileSeek(TiffHandle,TheOffset,0);
    {$IfDef RecordGeotiffRow} if (Row mod 100 = 0) then WriteLineToDebugFile('Seek file offset, Band=' + IntToStr(Band) + '   Row=' + IntToStr(Row) + '   Offset=' + IntToStr(TheOffset)); {$EndIf}
+
+
+(*
+//   8/13/23 version which is not working
+   OpenTiffFile;
+   if (TiffHeader.StripOffsets <> 0) then begin
+      TheOffset := TiffHeader.StripOffsets + (Row * TiffHeader.ImageWidth * TiffHeader.BytesPerSample * TiffHeader.SamplesPerPixel);
+   end
+   else begin
+      if (TiffHeader.PhotometricInterpretation = 2) or (TiffHeader.RowsPerStrip = 1) then begin
+         TheOffset := TiffHeader.OffsetArray^[(Row div TiffHeader.RowsPerStrip)];
+      end
+      else begin
+         LinesNeeded := (Row mod TiffHeader.RowsPerStrip);
+         TheOffset := TiffHeader.OffsetArray^[Row div TiffHeader.RowsPerStrip] + LinesNeeded * TiffHeader.ImageWidth * TiffHeader.BytesPerSample;
+      end;
+   end;
+   FileSeek(TiffHandle,TheOffset,0);
+   {$IfDef RecordGeotiffRow} if (Row mod 100 = 0) then WriteLineToDebugFile('Seek file offset, Band=' + IntToStr(Band) + '   Row=' + IntToStr(Row) + '   Offset=' + IntToStr(TheOffset)); {$EndIf}
+*)
 end;
 
 
 procedure tTIFFImage.GetPointReflectances(Column, Row: integer;  var Reflectances : tAllRefs);
 var
    x : integer;
-   BigRow : ^tWordBigRow;
+   //BigRow : ^tWordBigRow;
 begin
    if (TiffHeader.BitsPerSample in [15,16]) and (TiffHeader.SamplesPerPixel > 1) then begin
-      SeekFileOffset(1,Row);
-      New(BigRow);
+      SeekFileOffset({1,}Row);
+      //New(BigRow);
       FileRead(TiffHandle,BigRow^,ImageBytesPerRow);
       for x := 1 to TiffHeader.SamplesPerPixel do Reflectances[x] := BigRow^[Column*TiffHeader.SamplesPerPixel+ pred(x)];
-      Dispose(BigRow);
+      //Dispose(BigRow);
       if BigEndian then for x := 0 to pred(TiffHeader.ImageWidth) do Reflectances[x] := swap(Reflectances[x]);
    end;
 end;
@@ -690,17 +733,16 @@ procedure tTIFFImage.GetTiffRow16bit(Band,Row : integer; var Row16bit : tWordRow
 var
    x : integer;
    TheRow : ^tImageRow;
-   BigRow : ^tWordBigRow;
 begin
+   SeekFileOffset(Row);
    if (TiffHeader.BitsPerSample in [15,16]) then begin
-      SeekFileOffset(Band,Row);
       if (TiffHeader.SamplesPerPixel > 1) then begin
-         New(BigRow);
+         //New(BigRow);
          FileRead(TiffHandle,BigRow^,ImageBytesPerRow);
          for x := 0 to pred(TiffHeader.ImageWidth) do begin
-            Row16Bit[x] := BigRow^[x*(TiffHeader.SamplesPerPixel)+ pred(Band)];
+            Row16Bit[x] := BigRow^[x*(TiffHeader.SamplesPerPixel) + pred(Band)];
          end;
-         Dispose(BigRow);
+         //Dispose(BigRow);
       end
       else begin
          FileRead(TiffHandle,Row16bit,ImageBytesPerRow);
@@ -718,24 +760,9 @@ end;
 
 procedure tTIFFImage.GetTiffRow(Band,Row : integer; var TheRow : tImageRow);
 var
-   NumRead,x,MemNeed        : integer;
-
-         (*
-         function GetNextByte : SmallInt;
-         var
-            Buffer     : array[0..8191] of byte;
-            BufLen,BufPos : integer;
-         begin
-            if (BufPos >= BufLen) then begin
-               BufLen := FileRead(TiffHandle,Buffer,8192);
-               BufPos := 0;
-            end;
-            Result := Buffer[BufPos];
-            inc(BufPos);
-         end;
-         *)
+   NumRead,x,MemNeed  : integer;
 begin
-   SeekFileOffset(Band,Row);
+   SeekFileOffset(Row);
    if (TiffHeader.PhotometricInterpretation = 2) or (TiffHeader.SamplesPerPixel > 1) then begin    //color image
       if (TiffHeader.BitsPerSample in [15,16]) then begin
          GetTiffRow16bit(Band,Row,Row16bit^);
@@ -919,6 +946,7 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
                      if (LandCover = 'GEOMORPHON') then WantDEM.DEMheader.ElevUnits := Geomorphon;
                      if (LandCover = 'PENNOCK') then WantDEM.DEMheader.ElevUnits := euPennock;
                      if (LandCover = 'LCMAP') then WantDEM.DEMheader.ElevUnits := LCMAP;
+                     if (LandCover = 'SENT2SLC') then WantDEM.DEMheader.ElevUnits := euSent2SLC;
                      if (LandCover = 'GLC2000') or (LandCover = 'GLC-2000')  then begin
                         WantDEM.DEMheader.DEMUsed := ArcSecDEM;
                         WantDEM.DEMheader.ElevUnits := GLC2000;
@@ -1087,7 +1115,7 @@ var
    WordRow : ^tWordRow;
    ByteRow : ^tByteRow;
    Int32Row : ^tInt32Row;
-   bs,dRow,Col,Row,RecsRead,spot,rc : int32;
+   bs,dRow,Col,Row,RecsRead,{spot,}rc : int32;
    zi : smallInt;
    zw : word;
    zb : byte;
@@ -1358,12 +1386,15 @@ var
    Dir    : DirStr;
    bName  : NameStr;
    Ext    : ExtStr;
-   Value, b  : SingleBytes;
+   //Value,
+   b  : SingleBytes;
    Zone : byte;
    FileName,ProjFileName : PathStr;
-   DatCode,Hemi,Err,TiePoints,l,
+   DatCode,Hemi,
+   //Err,l,
+   TiePoints,
    TypeSize : integer;
-   tf,f  : float64;
+   tf{,f}  : float64;
    off1 : int64;
    TFWFile,
    HeaderLogList    : tStringList;
@@ -1943,13 +1974,15 @@ var
                      end;
                273 : begin
                      //6     273       4          28         286
+                       {$If Defined(RecordImageOffsets)} WriteLineToDebugFile('Geotiff key 273, image offsets'); {$EndIf}
                         k := TiffKeys[j].LengthIm;
                         if (k > 1) then begin
                            FileSeek(TiffHandle,TiffKeys[j].KeyOffset,0);
-                           OffsetArraySize := 8*TiffKeys[j].LengthIm;
+                           OffsetArraySize := 8 * TiffKeys[j].LengthIm;
                            GetMem(OffsetArray,OffsetArraySize);
 
                            if (OffsetByteSize = 4) then begin
+                              {$If Defined(RecordImageOffsets)} WriteLineToDebugFile('Geotiff key 273, 4 byte offsets'); {$EndIf}
                               GetMem(SmallOffsetArray,OffsetArraySize div 2);
                               FileRead(TiffHandle,SmallOffsetArray^,OffsetArraySize div 2);
                               for k := 0 to pred(TiffKeys[j].LengthIm) do begin
@@ -1958,6 +1991,7 @@ var
                               FreeMem(SmallOffsetArray,OffsetArraySize div 2);
                            end
                            else begin
+                              {$If Defined(RecordImageOffsets)} WriteLineToDebugFile('Geotiff key 273, 8 byte offsets'); {$EndIf}
                               FileRead(TiffHandle,OffsetArray^,OffsetArraySize);
                            end;
 
@@ -1967,6 +2001,7 @@ var
                         else begin
                            StripOffsets := TiffKeys[j].KeyOffset;
                            TStr := IntToStr(StripOffsets);
+                           {$If Defined(RecordImageOffsets)} WriteLineToDebugFile('Geotiff key 273, single offset=' + TStr); {$EndIf}
                         end;
                      end;
                274 : begin
@@ -2437,6 +2472,11 @@ begin
 
    {$IfDef RecordInitializeDEM} WriteLineToDebugFile(' closed tiff file,  ModelX=' + RealToString(TiffHeader.ModelX,-18,-6) + ' ModelY=' + RealToString(TiffHeader.ModelY,-18,-6) ); {$EndIf}
 
+   if (TiffHeader.BitsPerSample in [15,16]) and (TiffHeader.SamplesPerPixel > 1) then begin
+      New(BigRow);
+   end;
+
+
    if (TiffHeader.PhotometricInterpretation = 2) or (TiffHeader.SamplesPerPixel > 1) then begin    //color image
       if (TiffHeader.BitsPerSample in [15,16]) then begin
          new(Row16Bit);
@@ -2446,14 +2486,14 @@ begin
       end;
    end
    else begin  //single band image
-      if (TiffHeader.Compression = 1) then begin  {uncompressed}
+      //if (TiffHeader.Compression = 1) then begin  {uncompressed}
          if (TiffHeader.BitsPerSample in [15, 16]) then begin
             new(Row16Bit);
          end
          else if (TiffHeader.BitsPerSample in [4,8]) then begin
             new(Row8Bit);
          end;
-      end;
+      //end;
    end;
 
    TemporaryNewGeotiff := true;
@@ -2487,6 +2527,10 @@ begin
    {$IfDef RecordGeotiff} WriteLineToDebugFile('enter tTIFFImage.Destroy ' + TIFFFileName); {$EndIf}
    Dispose(Row8bit);
    Dispose(Row16bit);
+   if (TiffHeader.BitsPerSample in [15,16]) and (TiffHeader.SamplesPerPixel > 1) then begin
+      Dispose(BigRow);
+   end;
+
    if (TiffHeader.OffsetArray <> Nil) then FreeMem(TiffHeader.OffsetArray,OffsetArraySize);
    CloseTiffFile;
    {$IfDef RecordGeotiff} WriteLineToDebugFile('exit tTIFFImage.Destroy ' + TIFFFileName); {$EndIf}

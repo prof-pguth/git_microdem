@@ -115,15 +115,7 @@ end;
 
 
 procedure FilterOutSignedCriteria(DBonTable : integer);
-//var
-   //aFilter : ANSIstring;
-   //i : integer;
 begin
-    //aFilter := '';
-    //for I := 1 to 3 do begin
-       //aFilter := AddAndIfNeeded(aFilter) + 'CRITERION<>' + QuotedStr(MeanParams[i]);
-       //aFilter := AddAndIfNeeded(aFilter) + 'CRITERION<>' + QuotedStr(MedianParams[i]);
-    //end;
     GISdb[DBOntable].ApplyGISFilter(CreateFilterOutSignedCriteria(DBonTable));
     GISdb[DBonTable].ShowStatus;
 end;
@@ -416,6 +408,7 @@ end;
 
 
 procedure DEMIXwineContestMeanMedianGraph(What,DBonTable : integer; AreaList : tStringList = nil; CriteriaUsed : tStringList = nil; LandTypePresent : tStringList = nil; DEMsPresent : tStringList = nil);
+//this includes a number of options that have not been used recently, and may not currently work
 const
    InterAreaSkip = 4;
 var
@@ -671,12 +664,10 @@ begin {DEMIXwineContestMeanMedianGraph}
    if (LandTypePresent = Nil) then begin
       GISdb[DBonTable].EmpSource.Enabled := false;
       LandTypePresent := GISdb[DBonTable].MyData.UniqueEntriesInDB('LAND_TYPE');
-      //GISdb[DBonTable].EmpSource.Enabled := false;
    end;
 
    GISdb[DBonTable].EmpSource.Enabled := false;
    ColsInBigGraph := 3;
-
 
    if What in [dgAllValues,dgAllScores] then begin
       GISdb[DBonTable].EmpSource.Enabled := false;
@@ -734,11 +725,10 @@ begin
    LandTypesPresent := GISdb[DBonTable].MyData.UniqueEntriesInDB('LAND_TYPE');
    GISdb[DBonTable].EmpSource.Enabled := false;
    CriteriaPresent := GISdb[DBonTable].MyData.UniqueEntriesInDB('CRITERION');
-   {$If Defined(RecordDEMIXFull)} WriteLineToDebugFile('Land_Types present=' + IntToStr(LandTypesPresent.Count)); {$EndIf}
-   {$If Defined(RecordDEMIXFull)} WriteLineToDebugFile('Criteria present=' + IntToStr(CriteriaPresent.Count)); {$EndIf}
+   {$If Defined(RecordDEMIXFull)} WriteLineToDebugFile('Land_Types present=' + IntToStr(LandTypesPresent.Count) + '  Criteria present=' + IntToStr(CriteriaPresent.Count)); {$EndIf}
 
    Report := tStringList.Create;
-   aline := 'REF_TYPE,AREA';  //,DEMIX_TILE';
+   aline := 'REF_TYPE,AREA';
    for j := 0 to pred(LandTypesPresent.Count) do aLine := aLine + ',' + LandTypesPresent.strings[j];
    Report.Add(Aline);
 

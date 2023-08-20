@@ -20,6 +20,8 @@ unit demix_control;
    {$Define RecordTileProcessing}
    {$Define Record3DEPX}
    {$Define RecordCriteriaEvaluation}
+   {$Define RecordDEMIXSortGraph}
+   {$Define RecordDEMIXSortGraph}
    //{$Define RecordGridCompare}
    //{$Define RecordDEMIXRefDEMopen}
    //{$Define RecordUseTile}
@@ -56,8 +58,9 @@ uses
    {$EndIf}
 //end core DB functions definitions
 
-    System.SysUtils,System.Classes,StrUtils,
-    VCL.ExtCtrls,VCL.Forms, VCL.Graphics,
+    System.SysUtils,System.Classes,System.UITypes,
+    StrUtils,
+    VCL.ExtCtrls,VCL.Forms, VCL.Graphics, VCL.Controls,
     WinAPI.Windows,
     Petmar,Petmar_types,BaseGraf,
     DEMDefs;
@@ -74,6 +77,7 @@ const
    function DEMIXColorFromDEMName(DEMName : shortstring) : tPlatformColor;
    procedure OpenDEMIXArea(fName : PathStr = '');
    procedure ZeroDEMs;
+   function DEMIXTestDEMLegend : tMyBitmap;
 
    procedure GetDEMIXpaths(StartProcessing : boolean = true);
    procedure EndDEMIXProcessing;
@@ -113,12 +117,15 @@ procedure OpenDEMIXDatabaseForAnalysis;
 //DEMIX wine contest procedures based on the database
    function DEMIXwineContestScoresGraph(DBonTable : integer; XScalelabel : shortstring; MinHoriz : float32 = 0.5; MaxHoriz : float32 = 5.5) : tThisBaseGraph;
    procedure WinsAndTies(DBonTable : integer);
-   procedure MultipleBestByParametersSortByValue(DBonTable : integer; ByPointFilters : boolean = false);
    procedure DEMIX_graph_best_in_Tile(DBonTable : integer; SortByArea : boolean);
    procedure DEMIXisCOPorALOSbetter(DBonTable : integer);
    procedure BestDEMSbyCategory(DBonTable : integer);
    procedure ModeSTDPlot(DBonTable : integer);
    procedure DEMIXMeanMedianModeHistograms(db : integer);
+
+   procedure MultipleBestByParametersSortByValue(DBonTable,Option : integer; var DEMsTypeUsing,TilesUsing,LandTypesUsing,CandidateDEMsUsing,CriteriaUsing,TileParameters : tStringList; ByPointFilters : boolean = false);
+   //procedure MakeCriteriaGraph(DB : integer; var DEMsTypeUsing,TilesUsing,LandTypesUsing,CandidateDEMsUsing,CriteriaUsing : tStringList);
+
 
 const
    DEMisDTM = 2;
@@ -133,9 +140,11 @@ const
    MeanParams : array[1..3] of shortstring = ('ELVD_MEAN','SLPD_MEAN','RUFD_MEAN');
    StdDevParams : array[1..3] of shortstring = ('ELVD_STD','SLPD_STD','RUFD_STD');
    MedianParams : array[1..3] of shortstring = ('ELVD_MED','SLPD_MED','RUFD_MED');
+   (*
    AllCriteria : array[1..15] of shortstring = ('ELVD_AVD','ELVD_STD','ELVD_MAE','ELVD_RMSE','ELVD_LE90',
                                                 'SLPD_AVD','SLPD_STD','SLPD_MAE','SLPD_RMSE','SLPD_LE90',
                                                 'RUFD_AVD','RUFD_STD','RUFD_MAE','RUFD_RMSE','RUFD_LE90');
+   *)
    DEMIXshort : array[1..NumDEMIXDEM] of shortstring = ('FAB','COP','ALOS','NASA','SRTM','ASTER');
 
 
@@ -178,12 +187,34 @@ var
    DoHorizontalShift,
    ElevDiffHists : boolean;
 
+
+function DEMIXTestDEMLegend : tMyBitmap;
+var
+   i,Left,Top : integer;
+begin
+   CreateBitmap(Result,1500,250);
+   LoadMyFontIntoWindowsFont(MDDef.LegendFont,Result.Canvas.Font);
+   Left := 25;
+   Top := 10;
+   for i := 1 to NumDEMIXDEM do begin
+      Result.Canvas.Pen.Color := ConvertPlatformColorToTColor(DEMIXColorFromDEMName(DEMIXDEMTypeName[i]));
+      Result.Canvas.Brush.Color := Result.Canvas.Pen.Color;
+      Result.Canvas.Brush.Style := bsSolid;
+      Result.Canvas.Rectangle(Left,Top,Left + 15,Top + 15);
+      Result.Canvas.Brush.Style := bsClear;
+      Result.Canvas.TextOut(Left + 20,Top,DEMIXDEMTypeName[i]);
+      Left := Left + 30 + Result.Canvas.TextWidth(DEMIXDEMTypeName[i]);
+   end;
+   PutBitmapInBox(Result);
+end;
+
+
+
 procedure SetDirtAirballBackground(var Result : tThisBaseGraph; DEMType : shortstring);
 begin
     if (DEMtype = 'DSM') then Result.GraphDraw.GraphBackgroundColor := RGB(219,236,237)
     else Result.GraphDraw.GraphBackgroundColor := RGB(237,237,221);
 end;
-
 
 
 procedure GetDEMIXpaths(StartProcessing : boolean = true);
@@ -300,7 +331,8 @@ procedure DEMIXCreateHalfSecRefDEMs(AreaName : shortstring = '');
 var
    fName : PathStr;
    ErrorLog,Areas : tStringList;
-   i,j,WantedDEM : integer;
+   //j,
+   i,WantedDEM : integer;
    TStr : shortstring;
 begin
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXCreateHalfSecRefDEMs in'); {$EndIf}
@@ -390,12 +422,12 @@ end;
 
 procedure DEMIX_Merge3DEPReferenceDEMs;
 var
-   fName,DoneName : PathStr;
+   fName{,DoneName} : PathStr;
    ErrorLog,
    Areas,
    MergeList,
    Files : tStringList;
-   i,j,DEM : integer;
+   i,{j,}DEM : integer;
    TStr,Area : shortstring;
 
       function DoOne(Which : shortstring) : boolean;
@@ -470,8 +502,8 @@ procedure DEMIX_Create3DEPReferenceDEMs;
 var
    fName,DoneName : PathStr;
    ErrorLog,Files : tStringList;
-   i,j,WantedDEM : integer;
-   TStr : shortstring;
+   i,{j,}WantedDEM : integer;
+   //TStr : shortstring;
 begin
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_Create3DEPReferenceDEMs in'); {$EndIf}
    try
@@ -852,7 +884,7 @@ procedure ModeOfDifferenceDistributions;
 var
    FilesWanted,Modes,TileList : tStringList;
    fName,fName2 : PathStr;
-   UseTile : boolean;
+   //UseTile : boolean;
    i,j,NPts,db,atile : integer;
    BinSize,Mode : float32;
    Tile,param,Ref,aLine,Area : shortstring;
@@ -1024,7 +1056,8 @@ procedure CreateDEMIX_GIS_database(AreaName : shortstring = '');
 var
    fName : PathStr;
    i     : byte;
-   DEM,db : integer;
+   //DEM,
+   db : integer;
    FilesWanted : tStringList;
    Tiles,ElevDiff,SlopeDiff,RuffDiff,TransposeNames,ErrorLog : tStringList;
 
@@ -1036,7 +1069,8 @@ var
       var
          Headers,DEMs,Criteria,Output,Tiles : tStringList;
          Line : ANSIString;
-         fName,CriteriaFile : PathStr;
+         //fName,
+         CriteriaFile : PathStr;
          value,ThisDEM,Missing : shortstring;
          Cycles,Done,
          i,j,  Tile, Ref, aLandType,DEM,Criterion : Integer;
@@ -1077,7 +1111,7 @@ var
          Tiles := GISdb[DBonTable].MyData.UniqueEntriesInDB('DEMIX_TILE');
          {$If Defined(RecordDEMIX)} WriteLineToDebugFile('TransposeDEMIXcriteria tiles=' + IntToStr(Tiles.Count)); {$EndIf}
 
-         Cycles := Tiles.Count * 2 * MaxLandType;
+         Cycles := Tiles.Count * 2 * NumLandTypes;
          Done := 0;
          StartProgress('Transposing ' + GISdb[DBontable].DBName);
          for Tile := 0 to Pred(Tiles.Count) do begin
@@ -1089,8 +1123,8 @@ var
                GISdb[DBonTable].ApplyGISFilter(Line);
                GISdb[DBonTable].EmpSource.Enabled := false;
                if (GISdb[DBonTable].MyData.FiltRecsInDB > 0) then begin  //there are DSMs or DTMs for this tile
-                  for aLandType := 1 to MaxLandType do begin
-                     Line := 'DEMIX_TILE=' + QuotedStr(Tiles[Tile]) + ' AND REF_TYPE=' + QuotedStr(RefDEMType[Ref])  + ' AND LAND_TYPE=' + QuotedStr(LandType[aLandType]);
+                  for aLandType := 1 to NumLandTypes do begin
+                     Line := 'DEMIX_TILE=' + QuotedStr(Tiles[Tile]) + ' AND REF_TYPE=' + QuotedStr(RefDEMType[Ref])  + ' AND LAND_TYPE=' + QuotedStr(LandTypes[aLandType]);
                      GISdb[DBonTable].ApplyGISFilter(Line);
                      GISdb[DBonTable].EmpSource.Enabled := false;
                      if (GISdb[DBonTable].MyData.FiltRecsInDB = DEMs.Count) then begin
@@ -1288,7 +1322,7 @@ var
    LandCoverGrid : integer;
    bbgrid : tGridLimits;
 
-   IceSatFName,GeodeticFName,
+   //IceSatFName,GeodeticFName,
 
    cfName,fName : PathStr;
    TestAreaName,DEMIXtile,LandTypeMask,TileHeader : shortstring;
@@ -1301,9 +1335,7 @@ var
    RufDiffStats,
    SlopeDiffStats  : tStringList;
    zs,zsSteep,ZSFlat,zsGentle,zsCliff,zsForest,zsUrban,zsBarren : ^bfarray32;
-   Rules,
-   GeodeticTable,
-   IceSatTable : tMyData;
+   //Rules,GeodeticTable,IceSatTable : tMyData;
    SlopeAsp,SlopeAspectTest : tSlopeAspectRec;
    ErrorLog : tStringList;
    ElevFiles,LegendFiles : tStringList;
@@ -1349,7 +1381,7 @@ var
 
          function LineHeader(DEM : integer; RefType : shortstring) : shortstring;
          var
-            t1,t2 : shortstring;
+            t1{,t2} : shortstring;
          begin
              if (DEM = 0) then t1 := 'xxx' else t1 := DEMGlb[DEM].AreaName;
              Result := t1 + ',' + {t2 + ',' +} RefType + ',' + RealToString(GridFull,-8,2) + ',' + LandTypeMask + ',';
@@ -1555,7 +1587,7 @@ var
            //do full DEM pixel by pixel comparison to reference DEM
            var
               NumRuff,NumSlope,NumElev,
-              xg,yg,Col,Row : integer;
+              xg,yg{,Col,Row} : integer;
               TStr : shortstring;
               z,Difference : float32;
 
@@ -1744,7 +1776,7 @@ var
       Ser,i,j,UseDSM,UseDTM : integer;
       TStr : shortstring;
       LandCoverFName : PathStr;
-      DEMIXtileDB2 : integer;
+      //DEMIXtileDB2 : integer;
       CandidateBoundBoxGeo,bb : sfBoundBox;
    begin
       {$If Defined(RecordDEMIXFull)} HighlightLineToDebugFile('ProcessDEMIXtestarea in ' + TestAreaName); {$EndIf}
@@ -1909,11 +1941,12 @@ var
 
 
 var
-   DataPath,DTMArea : pathStr;
+   //DataPath,
+   DTMArea : pathStr;
    i : integer;
-   DefaultFilter : byte;
-   TStr : shortstring;
-   aTable : tMyData;
+   //DefaultFilter : byte;
+   //TStr : shortstring;
+   //aTable : tMyData;
    FilesWanted : tStringList;
 begin {ComputeDEMIX_tile_stats}
    {$IfDef RecordDEMIX} writeLineToDebugFile('Start ComputeDEMIXstats'); {$EndIf}
@@ -2004,11 +2037,12 @@ end {ComputeDEMIX_tile_stats};
 procedure DEMIX_VDatum_shifts;
 //processes any csv files created by VDATUM, which are then converted to dbf files and the DEM shifted in x, y, and z
 var
-  fName,fName2 : PathStr;
-  AreaName,TStr : shortstring;
-  Merged,Shifts,ErrorLog : tStringList;
-  i,j,db,DEM  : Integer;
-  dx,dy,dz : float32;
+  fName{,fName2} : PathStr;
+  AreaName{,TStr} : shortstring;
+  //Merged,
+  Shifts,ErrorLog : tStringList;
+  i,{j,}db{,DEM}  : Integer;
+  //dx,dy,dz : float32;
 begin
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_VDatum_shifts in'); {$EndIf}
    try
@@ -2146,10 +2180,11 @@ end;
 
 procedure DEMIX_merge_Visioterra_source(AreaName : shortstring = '');
 var
-   Areas,DEMs,ASCIIDEMs,ErrorLog : tStringList;
-   i,VDatumCode,Fixed,NewDEM,AnArea : integer;
-   AreaMergeName, fName, AreaPath,
-   VDatumListFName,VDatumFilesFName : PathStr;
+   Areas,{DEMs,ASCIIDEMs,}ErrorLog : tStringList;
+   //i,VDatumCode,
+   Fixed,NewDEM,AnArea : integer;
+   AreaMergeName, {fName,} AreaPath,
+   //VDatumListFName,VDatumFilesFName : PathStr;
    TStr : shortstring;
 
 
@@ -2221,8 +2256,9 @@ end;
 
 procedure DEMIX_merge_source(AreaName : shortstring = '');
 var
-   Areas,DEMs,ASCIIDEMs,ErrorLog : tStringList;
-   i,VDatumCode,Fixed,NewDEM,AnArea,LocalToWGS84,WGS84toEGM2008 : integer;
+   Areas,DEMs,{ASCIIDEMs,}ErrorLog : tStringList;
+   //i,
+   Fixed,VDatumCode,NewDEM,AnArea,LocalToWGS84,WGS84toEGM2008 : integer;
    AreaMergeName, fName, AreaPath,
    VDatumListFName,VDatumFilesFName : PathStr;
    TStr : shortstring;
@@ -2341,7 +2377,7 @@ procedure DEMIX_CreateReferenceDEMs(AreaName : shortstring = '');
 var
    fName : PathStr;
    ErrorLog,Areas : tStringList;
-   i,j,WantedDEM : integer;
+   i,{j,}WantedDEM : integer;
    TStr : shortstring;
 begin
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs in'); {$EndIf}
@@ -2404,15 +2440,17 @@ end;
 
 procedure DEMIXisCOPorALOSbetter(DBonTable : integer);
 var
-   which,RefFilter : shortstring;
-   Compare,i,j,ties,opinions,db : integer;
+   //which,
+   RefFilter : shortstring;
+   Compare,i,j,{ties,}opinions,db : integer;
    fName : PathStr;
    Findings,Criteria,DEMs : tStringList;
 
 
    procedure DoOne(Header,theFilter : shortstring);
    var
-      Total,Cop,ALOS,Ties,FAB,dem : integer;
+      //Total,
+      Cop,ALOS,Ties,FAB,dem : integer;
       aLine : shortString;
       Counts : array[0..10] of integer;
    begin
@@ -2483,8 +2521,8 @@ begin
             end;
 
             RefFilter := ' AND REF_TYPE=' + QuotedStr(RefDEMType[i]);
-            for j := 1 to MaxLandType do begin
-               DoOne(RefDEMType[i] + ' ' + LandType[j] + ' pixels','LAND_TYPE=' + QuotedStr(LandType[j]) + RefFilter);
+            for j := 1 to NumLandTypes do begin
+               DoOne(RefDEMType[i] + ' ' + LandTypes[j] + ' pixels','LAND_TYPE=' + QuotedStr(LandTypes[j]) + RefFilter);
             end;
             Findings.Add('SKIP');
 
@@ -2536,7 +2574,7 @@ var
     var
        NumAreas,NumTiles : integer;
        TileList,AreaList : tStringList;
-       i,j,k,CurrentY,DEM,Center,NumTies : integer;
+       i,j,CurrentY,DEM,Center,NumTies : integer;
        Criterion,Best,TStr,AreaFilter : shortstring;
        aDEM : array[1..10] of shortstring;
        Graph : tThisBaseGraph;
@@ -2544,7 +2582,7 @@ var
        v : array[1..2] of float32;
        Symbol : tFullSymbolDeclaration;
        fName : PathStr;
-       bmp : tMyBitmap;
+       //bmp : tMyBitmap;
        TieTolerance : float32;
 
                 procedure LocateBest(Best : shortstring; Center : float32);
@@ -2714,8 +2752,8 @@ begin
       for i := 1 to 2 do begin
          BigBMPfiles := tStringList.Create;
          if SortByArea then begin
-            for j := 1 to MaxLandType do begin
-               RefFilter := 'REF_TYPE=' + QuotedStr(RefDEMType[i]) + ' AND LAND_TYPE=' + QuotedStr(LandType[j]);
+            for j := 1 to NumLandTypes do begin
+               RefFilter := 'REF_TYPE=' + QuotedStr(RefDEMType[i]) + ' AND LAND_TYPE=' + QuotedStr(LandTypes[j]);
                OneLoop;
             end;
          end
@@ -2867,228 +2905,6 @@ end;
 
 
 
-procedure MultipleBestByParametersSortByValue(DBonTable : integer; ByPointFilters : boolean = false);
-const
-(*
-   NumCriteria = 3;
-   NumParameter = 4;
-   Criteria : array[1..NumCriteria] of shortstring = ('ELVD_RMSE','SLPD_MAE','RUFD_RMSE');
-   Parameter  : array[1..NumParameter] of shortstring = ('RELIEF','AVG_SLOPE','AVG_ROUGH','FOREST_PC');
-*)
-   NumCriteria = 6;
-   NumTileParameter = 7;
-   Criteria : array[1..NumCriteria] of shortstring = ('ELVD_RMSE','ELVD_MAE', 'SLPD_RMSE','SLPD_MAE','RUFD_RMSE','RUFD_MAE');
-   TileParameter  : array[1..NumTileParameter] of shortstring = ('RELIEF','AVG_ELEV','AVG_SLOPE','AVG_ROUGH','FOREST_PC','URBAN_PC','BARREN_PC');
-var
-   BigBitmap : tMyBitmap;
-   fName : PathStr;
-   UsefulWidth,
-   GraphPanelsWide,
-   LeftStart : integer;
-   UseMax : float32;
-   aLine : shortstring;
-   Statistics : tStringList;
-
-
-      function OnlyInTieForBestByParameterSorting(DBonTable : integer; UseMax : float32; TileParam,Criterion,DEMtype,LandType,HorizLabel,VertLabel : shortstring) : tThisBaseGraph;
-      var
-         TileValue : float32;
-         rfile: file;
-         i,TotalPoss : integer;
-         v : array[1..3] of float32;
-         Winners,CriterionFilter : shortstring;
-         BestCount : array[1..NumDEMIXDEM] of int32;
-      begin
-          if Criterion = '' then CriterionFilter := CreateFilterOutSignedCriteria(DBonTable)
-          else CriterionFilter := 'CRITERION=' + QuotedStr(Criterion);
-          for i := 1 to NumDEMIXDEM do BestCount[i] := 0;
-          TotalPoss := 0;
-          GISdb[DBonTable].ApplyGISFilter('REF_TYPE=' + QuotedStr(DEMType) + ' AND LAND_TYPE=' + QuotedStr(LandType) + ' AND ' + CriterionFilter);
-          {$If Defined(RecordDEMIX)}
-             WriteLineToDebugFile('BestByParameterSorting, param=' + TileParam + ' recs=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + '  filter=' + GISdb[DBonTable].MyData.Filter);
-          {$EndIf}
-          GISdb[DBonTable].EmpSource.Enabled := false;
-          Result := tThisBaseGraph.Create(Application);
-          Result.GraphDraw.HorizLabel := RemoveUnderscores(HorizLabel);
-          Result.GraphDraw.VertLabel := RemoveUnderscores(VertLabel);
-          Result.GraphDraw.RighJustifyHorizLabel := true;
-
-          Result.Caption := GISdb[DBonTable].DBName;
-          Result.OpenXYColorFile(rfile);
-
-          SetDirtAirballBackground(Result,DEMType);
-
-          while not GISdb[DBonTable].MyData.eof do begin
-             TileValue := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(TileParam);
-             Winners := GISdb[DBonTable].MyData.GetFieldByNameAsString('DEM_LOW_SC');
-             inc(TotalPoss);
-             for i := 1 to NumDEMIXDEM do begin
-                if StrUtils.AnsiContainsText(Winners,DEMIXDEMTypeName[i]) then begin
-                   v[3] := ConvertPlatformColorToTColor(DEMIXColorFromDEMName(DEMIXDEMTypeName[i]));
-                   v[2] := TileValue;
-                   v[1] := i;
-                   BlockWrite(rfile,v,1);
-                   inc(BestCount[i]);
-                end;
-             end;
-             GISdb[DBonTable].MyData.Next;
-          end;
-          CloseFile(rfile);
-          Result.GraphDraw.MinHorizAxis := 0.5;
-          Result.GraphDraw.MaxHorizAxis := 6.5;
-          Result.GraphDraw.GraphAxes := YFullGridOnly;
-          Result.AutoScaleAndRedrawDiagram(true,false);
-          Result.Height := 1200;
-          Result.Width := 275;
-          Result.GraphDraw.MinVertAxis := 0;
-          Result.GraphDraw.MaxVertAxis := UseMax;
-          Result.RedrawDiagram11Click(Nil);
-          //{$If Defined(RecordDEMIX)}
-             Winners := VertLabel + ',' + DEMType + ',' + LandType + ',' + IntToStr(TotalPoss);
-             for i := 1 to NumDEMIXDEM do Winners := Winners + ',' + RealToString(100 * BestCount[i] / TotalPoss,-8,-2);
-             Statistics.Add(Winners);
-          //{$EndIf}
-      end;
-
-
-    procedure MakeGraph(aP : integer; TheCriteria,TheParameter,TheDEM,LandType,HorizLabel,VertLabel : shortstring);
-    var
-       Bitmap : tMyBitmap;
-       SourceRect, DestRect : TRect;
-       Gr : TThisBaseGraph;
-    begin
-      {$If Defined(RecordDEMIX)} WriteLineToDebugFile('MakeGraph labels: ' + HorizLabel + '  ' + VertLabel); {$EndIf}
-      GISdb[DBonTable].EmpSource.Enabled := false;
-      if (aP = 1) then UseMax := 1.025 * GISdb[DBonTable].MyData.FindFieldMax(TheParameter);
-      Gr := OnlyInTieForBestByParameterSorting(DBonTable,UseMax,TheParameter,TheCriteria,theDEM,LandType,HorizLabel,VertLabel);
-      CopyImageToBitmap(gr.Image1,Bitmap);
-      {$If Defined(RecordDEMIX)}
-         fName := Petmar.NextFileNumber(MDTempDir,'frame_' + TheParameter + '_' + TheCriteria + '_' + theDEM + '_','.bmp');
-         Bitmap.SaveToFile(fName);
-      {$EndIf}
-      if (ap = 1) then begin
-         UseFulWidth := Bitmap.Width - Gr.GraphDraw.LeftMargin;
-         CreateBitmap(BigBitmap,Bitmap.Width + pred(GraphPanelsWide) * (UsefulWidth + 10), Bitmap.Height);
-         BigBitmap.Canvas.Draw(0,0,Bitmap);
-         LeftStart := Bitmap.Width + 10;
-      end
-      else begin
-         SourceRect := Rect(Gr.GraphDraw.LeftMargin,0,Bitmap.Width,Bitmap.Height);
-         DestRect := Rect(LeftStart,0,LeftStart + UsefulWidth,Bitmap.Height);
-         BigBitmap.Canvas.CopyRect(DestRect,Bitmap.Canvas,SourceRect);
-         LeftStart := LeftStart + UsefulWidth + 10;
-      end;
-      Gr.Destroy;
-      Bitmap.Free;
-      {$If Defined(RecordDEMIX)} WriteLineToDebugFile('MakeGraph out, ap=' + IntToStr(ap) + '  LeftStart=' + IntToStr(LeftStart)); {$EndIf}
-    end;
-
-const
-   NumLandTypes = 8;
-   LandTypes : array[1..NumLandTypes] of shortstring = ('ALL','FLAT','GENTLE','STEEP','CLIFF','URBAN','FOREST','BARREN');
-var
-   DEMtype,aName : shortstring;
-   ap,i : integer;
-   aCriteria,aTileParameter,k,Sl : integer;
-begin {procedure MultipleBestByParametersSortByValue}
-   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('MultipleBestByParameters in, table=' + IntToStr(DBontable)); {$EndIf}
-   Statistics := tStringList.Create;
-   aline := 'GRAPH,REF_TYPE,LAND_TYPE,OPINIONS';
-   for i := 1 to NumDEMIXDEM do aLine := aLine + ',' + DEMIXDEMTypeName[i];
-   Statistics.Add(aLine);
-
-   if true then begin
-      for aTileParameter := 1 to NumTileParameter do begin
-         wmdem.SetPanelText(1,TileParameter[aTileParameter]);
-         GraphPanelsWide := 15;
-         for k := 2 downto 1 do begin
-            wmdem.SetPanelText(3,RefDEMType[k]);
-            ap := 1;
-            for i := 1 to 15 do begin
-               aName :=  'criteria_ref_' + RefDEMType[k] + '_results_sort_by_' + TileParameter[aTileParameter];
-               wmdem.SetPanelText(2,AllCriteria[i]);
-               MakeGraph(ap,AllCriteria[i],TileParameter[aTileParameter],RefDEMType[k],'ALL',AllCriteria[i],aName);
-               inc(ap);
-            end;
-            BigBitmap.Width := LeftStart;
-            fName := MDTempDir + 'Supp_fig_' + aName + '.png';
-            SaveBitmap(BigBitmap,fName);
-            DisplayBitmap(BigBitmap);
-            BigBitmap.Free;
-         end;
-         {$If Defined(RecordDEMIX)} WriteLineToDebugFile('MultipleBestByParameters done graph=' + aName); {$EndIf}
-      end
-   end
-   else if false then begin
-      for aTileParameter := 1 to NumTileParameter do begin
-         wmdem.SetPanelText(1,TileParameter[aTileParameter]);
-         aName :=  'all_15_criteria_sort_by_' + TileParameter[aTileParameter];
-         ap := 1;
-         GraphPanelsWide := NumLandTypes * 2;
-         for k := 2 downto 1 do begin
-            wmdem.SetPanelText(2,RefDEMType[k]);
-            for sl := 1 to NumLandTypes do begin
-               wmdem.SetPanelText(3,LandTypes[sl]);
-               MakeGraph(ap,'',TileParameter[aTileParameter],RefDEMType[k],LandTypes[sl],LandTypes[sl],aName);
-               inc(ap);
-            end;
-            BigBitmap.Width := LeftStart;
-            fName := MDTempDir + 'Supp_fig_' + aName + '.png';
-            SaveBitmap(BigBitmap,fName);
-            DisplayBitmap(BigBitmap);
-            BigBitmap.Free;
-            {$If Defined(RecordDEMIX)} WriteLineToDebugFile('MultipleBestByParameters done graph=' + IntToStr(aTileParameter)); {$EndIf}
-         end;
-      end
-   end
-   else if ByPointFilters then begin
-      for aTileParameter := 1 to NumTileParameter do begin
-         for aCriteria := 1 to NumCriteria do begin
-            aName := Criteria[aCriteria] + '_sort_by_' + TileParameter[aTileParameter];
-            ap := 1;
-            GraphPanelsWide := NumLandTypes * 2;
-            for k := 2 downto 1 do begin
-               for sl := 1 to NumLandTypes do begin
-                  MakeGraph(ap,Criteria[aCriteria],TileParameter[aTileParameter],RefDEMType[k],LandTypes[sl],LandTypes[sl],aName);
-                  inc(ap);
-               end;
-            end;
-            BigBitmap.Width := LeftStart;
-            fName := MDTempDir + 'Supp_fig_' + aName + '.png';
-            SaveBitmap(BigBitmap,fName);
-            DisplayBitmap(BigBitmap);
-            BigBitmap.Free;
-         end;
-         {$If Defined(RecordDEMIX)} WriteLineToDebugFile('MultipleBestByParameters done graph=' + IntToStr(aTileParameter)); {$EndIf}
-      end
-   end
-   else begin
-      for aTileParameter := 1 to NumTileParameter do begin
-         ap := 1;
-         GraphPanelsWide := NumCriteria * 2;
-         for aCriteria := 1 to NumCriteria do begin
-            for k := 2 downto 1 do begin
-               MakeGraph(ap,Criteria[aCriteria],TileParameter[aTileParameter],RefDEMType[k],'ALL',Criteria[aCriteria],TileParameter[aTileParameter]);
-               inc(ap);
-            end;
-         end;
-         BigBitmap.Width := LeftStart;
-         fName := MDTempDir + 'Supplementary_figure_' + TileParameter[aTileParameter] + '_tiles_sort_by_value.png';
-         SaveBitmap(BigBitmap,fName);
-         DisplayBitmap(BigBitmap);
-         BigBitmap.Free;
-         {$If Defined(RecordDEMIX)} WriteLineToDebugFile('MultipleBestByParameters done graph=' + IntToStr(aTileParameter)); {$EndIf}
-      end;
-   end;
-
-   fName := NextFileNumber(MDTempDir,MDTempDir + 'dem_batting_average_','.dbf');
-   StringList2CSVtoDB(Statistics,fName);
-   GISdb[DBonTable].ClearGISFilter;
-   GISdb[DBonTable].EmpSource.Enabled := true;
-   GISdb[DBonTable].ShowStatus;
-end {procedure MultipleBestByParametersSortByValue};
-
-
 procedure WinsAndTies(DBonTable : integer);
 const
     nDEMs = 7;
@@ -3177,10 +2993,10 @@ end;
 
 procedure ResampleForDEMIXOneSecDEMs(DEM : integer; OpenMap : boolean = false; OutPath : PathStr = ''; ResampleMode : byte = 1);
 var
-   NewDEM,New2,New3,NewDEM4,NewDEM5,PointOffset,AreaOffset : integer;
+   NewDEM,{New2,New3,}NewDEM4,NewDEM5{,PointOffset,AreaOffset} : integer;
    fName,BaseName : PathStr;
    Ext : ExtStr;
-   xfrac,yfrac : float64;
+   //xfrac,yfrac : float64;
 
 
    function CreateOne(PixelIs : byte; xgridsize,ygridsize : float32; fName : PathStr) : integer;
@@ -3279,8 +3095,6 @@ begin
 end;
 
 function SymbolFromDEMName(DEMName : shortstring) : tFullSymbolDeclaration;
-var
-   DEM : integer;
 begin
    Result.Size := 4;
    Result.Color := DEMIXColorFromDEMName(DEMName);
@@ -3308,9 +3122,10 @@ end;
 
 procedure DoDEMIX_DifferenceMaps(AreaName,ShortName,LongName : shortString; var Graph1,Graph2 : tThisBaseGraph);
 var
-   TestGrid,DSMgrid,DTMGrid,DiffGrid,
-   i,NoSlopeMap,UseDSM,UseDTM : integer;
-   fName : PathStr;
+   TestGrid,DSMgrid,DTMGrid,
+   //DiffGrid,NoSlopeMap,
+   i,UseDSM,UseDTM : integer;
+   //fName : PathStr;
    Min,Max,BinSize : float32;
    DSMElevFiles,DSMLegendFiles,DTMElevFiles,DTMLegendFiles : tStringList;
 
@@ -3918,9 +3733,9 @@ var
    {$IfDef RecordDEMIX} AllDEMs, {$EndIf}
    WantSeries,ShortName : shortstring;
    IndexSeriesTable : tMyData;
-   WantDEM,WantImage,Ser,i,NumPts,GeoidGrid,NewDEM : integer;
+   WantDEM,WantImage,Ser,i,NumPts,GeoidGrid{,NewDEM} : integer;
    fName,SaveName : Pathstr;
-   Spacing : float32;
+   //Spacing : float32;
 
 
          procedure MoveFromEGM96toEGM2008(var DEM : integer);
@@ -4087,7 +3902,7 @@ procedure BestDEMSbyCategory(DBonTable : integer);
 var
    DEMs,Criteria,Besties,Findings,Findings2,AverageScore,FiltersTooFewOpinions : tStringList;
    i : integer;
-   theSum,MaxSum : float64;
+   MaxSum : float64;
    theSums : array[0..10] of float64;
    fName : PathStr;
    aLine : shortstring;
@@ -4145,7 +3960,7 @@ var
 
 var
    Header,aFilter,RefFilter : ShortString;
-   j,n,ScoresDB : integer;
+   j,ScoresDB : integer;
    Graph : tThisBaseGraph;
    bmp : tMyBitmap;
    LegendfName : PathStr;
@@ -4188,8 +4003,8 @@ begin
       AverageScore.Add(aLine);
       BigBitmap := tStringList.Create;
       RefFilter := ' AND REF_TYPE=' + QuotedStr(RefDEMType[i]);
-      for j := 1 to MaxLandType do begin
-         DoOne(RefDEMType[i] + ' ' + LandType[j] + ' pixels','LAND_TYPE=' + QuotedStr(LandType[j]) + RefFilter);
+      for j := 1 to NumLandTypes do begin
+         DoOne(RefDEMType[i] + ' ' + LandTypes[j] + ' pixels','LAND_TYPE=' + QuotedStr(LandTypes[j]) + RefFilter);
       end;
       AverageScore.Add('SKIP');
 
@@ -4208,10 +4023,12 @@ begin
       fName := NextFileNumber(MDTempDir,RefDEMType[i] + '_average_scores_','.dbf');
       ScoresDB := StringList2CSVtoDB(AverageScore,fName);
       Graph := DEMIXwineContestScoresGraph(ScoresDB,'Average score',0.5, 6.25);
-      LegendfName := NextFileNumber(MDTempDir,'legend_','.png');
-      bmp := Graph.MakeLegend(Graph.GraphDraw.LegendList,false);
-      SaveBitmap(bmp,LegendfName);
-      Bmp.free;
+      if (Graph.GraphDraw.LegendList <> nil) and (Graph.GraphDraw.LegendList.Count > 0) then begin
+         LegendfName := NextFileNumber(MDTempDir,'legend_','.png');
+         bmp := Graph.MakeLegend(Graph.GraphDraw.LegendList,false);
+         SaveBitmap(bmp,LegendfName);
+         Bmp.free;
+      end;
 
       fName := NextFileNumber(MDTempDir,'best_graph_','.png');
       SaveImageAsBMP(Graph.Image1,fName);
@@ -4251,9 +4068,6 @@ begin
 end;
 
 
-
-
-
 procedure ModeSTDPlot(DBonTable : integer);
 const
    Params : array[1..3] of shortstring = ('elvd_mode','slpd_mode','rufd_mode');
@@ -4290,30 +4104,7 @@ begin
       EmpSource.Enabled := true;
       ClearGISFilter;
    end;
-(*
-
-               v[3] := ConvertPlatformColorToTColor(DEMIXColorFromDEMName(DEMIXDEMTypeName[i]));
-             v[2] := TileValue;
-             v[1] := i;
-             BlockWrite(rfile,v,1);
-          end;
-       end;
-       GISdb[DBonTable].MyData.Next;
-    end;
-    CloseFile(rfile);
-    Result.GraphDraw.MinHorizAxis := 0.5;
-    Result.GraphDraw.MaxHorizAxis := 6.5;
-    Result.GraphDraw.GraphAxes := YFullGridOnly;
-    Result.AutoScaleAndRedrawDiagram(true,false);
-    Result.Height := 1200;
-    Result.Width := 250;
-    Result.GraphDraw.MinVertAxis := 0;
-    Result.RedrawDiagram11Click(Nil);
-*)
-
-
 end;
-
 
 
 procedure DEMIXMeanMedianModeHistograms(db : integer);
@@ -4394,6 +4185,321 @@ begin
    end;
 end;
 
+(*
+procedure MakeCriteriaGraph(DB : integer; var DEMsTypeUsing,TilesUsing,LandTypesUsing,CandidateDEMsUsing,CriteriaUsing : tStringList);
+//3 Aug 2023, not working and not clear it is worth revising
+var
+   aFilter,DEMstr : shortstring;
+   i,j,k,m,DEM : integer;
+   Graph : tThisBaseGraph;
+   rfile : array[0..10] of file;
+   Symbol : tFullSymbolDeclaration;
+   v : array[1..2] of float32;
+   AllGraphs : tStringList;
+   fName : PathStr;
+begin
+   {$IfDef RecordFullDEMIX} WriteLineToDebugFile('Start TDemixFilterForm.DoCriteriaGraph'); {$EndIf}
+   GISdb[DB].EmpSource.Enabled := false;
+   AllGraphs := tStringList.Create;
+   for i := 0 to pred(DEMsTypeUsing.Count) do begin
+      for j := 0 to pred(TilesUsing.Count) do begin
+         for k :=  0 to pred(LandTypesUsing.Count) do begin
+            aFilter := 'REF_TYPE=' + QuotedStr(DEMsTypeUsing[i]) + ' AND DEMIX_TILE=' + QuotedStr(TilesUsing[j])+ ' AND LAND_TYPE=' + QuotedStr(LandTypesUsing[k]);
+            GISdb[db].ApplyGISFilter(aFilter);
+            if (GISdb[db].MyData.FiltRecsInDB > 0) then begin
+               {$IfDef RecordFullDEMIX} WriteLineToDebugFile(aFilter); {$EndIf}
+               Graph := tThisBaseGraph.Create(Application);
+
+               Graph.GraphDraw.LegendList := tStringList.Create;
+               for DEM := 0 to pred(CandidateDEMsUsing.Count) do begin
+                  Symbol := SymbolFromDEMName(CandidateDEMsUsing[DEM]);
+                  Symbol.DrawingSymbol := FilledBox;
+                  Graph.OpenPointFile(rfile[DEM],Symbol);
+                  Graph.GraphDraw.LegendList.Add(CandidateDEMsUsing[DEM]);
+                  Graph.GraphDraw.LineSize256[DEM] := 2;
+               end;
+
+               Graph.Caption := aFilter;
+               Graph.GraphDraw.GraphAxes := YFullGridOnly;
+               Graph.GraphDraw.MinVertAxis := 999;
+               Graph.GraphDraw.MaxVertAxis := -999;
+               Graph.GraphDraw.HorizLabel := aFilter;
+               Graph.GraphDraw.GraphLeftLabels := tStringList.Create;
+               Graph.GraphDraw.GraphBottomLabels := tStringList.Create;
+               Graph.GraphDraw.GraphBottomLabels := tStringList.Create;
+
+               GISdb[db].MyData.first;
+               while not GISdb[db].MyData.eof do begin
+                  DEMstr := GISdb[db].MyData.GetFieldByNameAsString('DEM');
+                  DEM := CandidateDEMsUsing.IndexOf(DEMstr);
+                  if (DEM <> -1) then begin
+                     for m := 0 to pred(CriteriaUsing.Count) do begin
+                        Graph.GraphDraw.GraphBottomLabels.Add(IntToStr(m) + ',' + CriteriaUsing[m]);
+                        v[1] := m;
+                        v[2] := GISdb[db].MyData.GetFieldByNameAsFloat(CriteriaUsing[m]);
+                        CompareValueToExtremes(v[2],Graph.GraphDraw.MinVertAxis,Graph.GraphDraw.MaxVertAxis);
+                        BlockWrite(rfile[DEM],v,1);
+                     end;
+                  end;
+                  GISdb[db].MyData.Next;
+               end;
+               Graph.GraphDraw.MinHorizAxis := -0.5;
+               Graph.GraphDraw.MaxHorizAxis := CriteriaUsing.Count - 0.5;
+               Graph.GraphDraw.MinVertAxis := Graph.GraphDraw.MinVertAxis - 1;
+               Graph.GraphDraw.MaxVertAxis := Graph.GraphDraw.MaxVertAxis + 1;
+               Graph.GraphDraw.SetShowAllLines(true,2);
+               Graph.GraphDraw.VertGraphBottomLabels := false;
+               Graph.GraphDraw.ShowVertAxis0 := true;
+               Graph.AutoScaleAndRedrawDiagram(false,false,false,false);
+               Graph.Height := MDDef.DEMIX_ysize;
+               Graph.Width := MDDef.DEMIX_xsize;
+               Graph.RedrawDiagram11Click(Nil);
+
+               Graph.Image1.Canvas.Draw(Graph.GraphDraw.LeftMargin+15,Graph.GraphDraw.TopMargin+10,Graph.MakeLegend(Graph.GraphDraw.LegendList,false));
+               fName := NextFileNumber(MDTempDir,'big_graph_','.png');
+               SaveImageAsBMP(Graph.Image1,fName);
+               AllGraphs.Add(fName);
+            end;
+         end;
+      end;
+   end;
+   fName := NextFileNumber(MDtempDir,'criteria_by_tile_','.png');
+   MakeBigBitmap(AllGraphs,'',fName,4);
+   DisplayBitmap(fName,'');
+
+   GISdb[DB].ClearGISFilter;
+   GISdb[DB].EmpSource.Enabled := true;
+   {$IfDef RecordFullDEMIX} WriteLineToDebugFile('End TDemixFilterForm.DoCriteriaGraph'); {$EndIf}
+end;
+*)
+
+
+procedure MultipleBestByParametersSortByValue(DBonTable,Option : integer; var DEMsTypeUsing,TilesUsing,LandTypesUsing,CandidateDEMsUsing,CriteriaUsing,TileParameters : tStringList; ByPointFilters : boolean = false);
+//const
+(*
+   NumCriteria = 3;
+   Criteria : array[1..NumCriteria] of shortstring = ('ELVD_RMSE','SLPD_MAE','RUFD_RMSE');
+   NumParameter = 4;
+   Parameter  : array[1..NumParameter] of shortstring = ('RELIEF','AVG_SLOPE','AVG_ROUGH','FOREST_PC');
+*)
+(*
+   NumCriteria = 6;
+   Criteria : array[1..NumCriteria] of shortstring = ('ELVD_RMSE','ELVD_MAE', 'SLPD_RMSE','SLPD_MAE','RUFD_RMSE','RUFD_MAE');
+
+   NumTileParameter = 7;
+   TileParameter  : array[1..NumTileParameter] of shortstring = ('RELIEF','AVG_ELEV','AVG_SLOPE','AVG_ROUGH','FOREST_PC','URBAN_PC','BARREN_PC');
+*)
+var
+   BigBitmap : tMyBitmap;
+   fName : PathStr;
+   UsefulWidth,
+   GraphPanelsWide,
+   LeftStart : integer;
+   UseMax : float32;
+   aLine : shortstring;
+   Statistics : tStringList;
+
+
+         function OnlyInTieForBestByParameterSorting(DBonTable : integer; UseMax : float32; TileParam,Criterion,DEMtype,LandType,HorizLabel,VertLabel : shortstring) : tThisBaseGraph;
+         var
+            TileValue : float32;
+            rfile: file;
+            i,TotalPoss : integer;
+            v : array[1..3] of float32;
+            Winners,CriterionFilter : shortstring;
+            BestCount : array[1..NumDEMIXDEM] of int32;
+         begin
+             if Criterion = '' then CriterionFilter := CreateFilterOutSignedCriteria(DBonTable)
+             else CriterionFilter := 'CRITERION=' + QuotedStr(Criterion);
+             for i := 1 to NumDEMIXDEM do BestCount[i] := 0;
+             TotalPoss := 0;
+             GISdb[DBonTable].ApplyGISFilter('REF_TYPE=' + QuotedStr(DEMType) + ' AND LAND_TYPE=' + QuotedStr(LandType) + ' AND ' + CriterionFilter);
+             {$If Defined(RecordDEMIXSortGraph)}
+                WriteLineToDebugFile('BestByParameterSorting, param=' + TileParam + ' recs=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + '  filter=' + GISdb[DBonTable].MyData.Filter);
+             {$EndIf}
+             GISdb[DBonTable].EmpSource.Enabled := false;
+             Result := tThisBaseGraph.Create(Application);
+             Result.GraphDraw.HorizLabel := RemoveUnderscores(HorizLabel);
+             Result.GraphDraw.VertLabel := RemoveUnderscores(VertLabel);
+             Result.GraphDraw.RighJustifyHorizLabel := true;
+
+             Result.Caption := GISdb[DBonTable].DBName;
+             Result.OpenXYColorFile(rfile);
+
+             SetDirtAirballBackground(Result,DEMType);
+
+             while not GISdb[DBonTable].MyData.eof do begin
+                TileValue := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(TileParam);
+                Winners := GISdb[DBonTable].MyData.GetFieldByNameAsString('DEM_LOW_SC');
+                inc(TotalPoss);
+                for i := 1 to NumDEMIXDEM do begin
+                   if StrUtils.AnsiContainsText(Winners,DEMIXDEMTypeName[i]) then begin
+                      v[3] := ConvertPlatformColorToTColor(DEMIXColorFromDEMName(DEMIXDEMTypeName[i]));
+                      v[2] := TileValue;
+                      v[1] := i;
+                      BlockWrite(rfile,v,1);
+                      inc(BestCount[i]);
+                   end;
+                end;
+                GISdb[DBonTable].MyData.Next;
+             end;
+             CloseFile(rfile);
+             Result.GraphDraw.MinHorizAxis := 0.5;
+             Result.GraphDraw.MaxHorizAxis := 6.5;
+             Result.GraphDraw.GraphAxes := YFullGridOnly;
+             Result.AutoScaleAndRedrawDiagram(true,false);
+             Result.Height := 1200;
+             Result.Width := 275;
+             Result.GraphDraw.MinVertAxis := 0;
+             Result.GraphDraw.MaxVertAxis := UseMax;
+             Result.RedrawDiagram11Click(Nil);
+
+             Winners := VertLabel + ',' + DEMType + ',' + LandType + ',' + IntToStr(TotalPoss);
+             for i := 1 to NumDEMIXDEM do Winners := Winners + ',' + RealToString(100 * BestCount[i] / TotalPoss,-8,-2);
+             Statistics.Add(Winners);
+         end;
+
+
+
+    procedure MakeGraph(aP : integer; TheCriteria,TheParameter,TheDEM,LandType,HorizLabel,VertLabel : shortstring);
+    var
+       Bitmap : tMyBitmap;
+       FullWidth  : integer;
+       SourceRect, DestRect : TRect;
+       Gr : TThisBaseGraph;
+    begin
+      {$If Defined(RecordDEMIXSortGraph)} WriteLineToDebugFile('MakeGraph,   labels: ' + HorizLabel + '  ' + VertLabel); {$EndIf}
+      GISdb[DBonTable].EmpSource.Enabled := false;
+      if (aP = 1) then UseMax := 1.025 * GISdb[DBonTable].MyData.FindFieldMax(TheParameter);
+      Gr := OnlyInTieForBestByParameterSorting(DBonTable,UseMax,TheParameter,TheCriteria,theDEM,LandType,HorizLabel,VertLabel);
+      CopyImageToBitmap(gr.Image1,Bitmap);
+      {$If Defined(RecordDEMIXSortGraph)}
+         fName := Petmar.NextFileNumber(MDTempDir,'frame_' + TheParameter + '_' + TheCriteria + '_' + theDEM + '_','.bmp');
+         Bitmap.SaveToFile(fName);
+      {$EndIf}
+      if (ap = 1) then begin
+         UseFulWidth := Bitmap.Width - Gr.GraphDraw.LeftMargin;
+         FullWidth := Bitmap.Width + pred(GraphPanelsWide) * (UsefulWidth + 10);
+         CreateBitmap(BigBitmap,FullWidth, Bitmap.Height);
+         BigBitmap.Canvas.Draw(0,0,Bitmap);
+         LeftStart := Bitmap.Width + 10;
+      end
+      else begin
+         SourceRect := Rect(Gr.GraphDraw.LeftMargin,0,Bitmap.Width,Bitmap.Height);
+         DestRect := Rect(LeftStart,0,LeftStart + UsefulWidth,Bitmap.Height);
+         BigBitmap.Canvas.CopyRect(DestRect,Bitmap.Canvas,SourceRect);
+         LeftStart := LeftStart + UsefulWidth + 10;
+      end;
+      Gr.Destroy;
+      Bitmap.Free;
+      {$If Defined(RecordDEMIXSortGraph)} WriteLineToDebugFile('MakeGraph out, ap=' + IntToStr(ap) + '  LeftStart=' + IntToStr(LeftStart) + ' ' + BitmapSizeString(BigBitmap)); {$EndIf}
+    end;
+
+         procedure FinishBigMap(aName : shortstring);
+         var
+            BMP : tMyBitmap;
+         begin
+            fName := MDTempDir + 'Supp_fig_' + aName + '.png';
+            BMP := DEMIXTestDEMLegend;
+            BigBitmap.Height := BigBitmap.Height + BMP.Height;
+            BigBitmap.Canvas.Draw((BigBitmap.Width div 2) - (bmp.Width div 2), BigBitmap.Height - bmp.Height,BMP);
+            SaveBitmap(BigBitmap,fName);
+            {$If Defined(RecordDEMIX)} WriteLineToDebugFile('MultipleBestByParameters done graph=' + aName  + ' ' + BitmapSizeString(BigBitmap)); {$EndIf}
+            DisplayBitmap(BigBitmap);
+            BigBitmap.Free;
+         end;
+
+
+var
+   //DEMtype,
+   aName : shortstring;
+   ap,i : integer;
+   aCriteria,aTileParameter,k,Sl : integer;
+begin {procedure MultipleBestByParametersSortByValue}
+   {$If Defined(RecordDEMIXSortGraph)} WriteLineToDebugFile('MultipleBestByParameters in, table=' + IntToStr(DBontable)); {$EndIf}
+
+   Statistics := tStringList.Create;
+   aline := 'GRAPH,REF_TYPE,LAND_TYPE,OPINIONS';
+   for i := 1 to NumDEMIXDEM do aLine := aLine + ',' + DEMIXDEMTypeName[i];
+   Statistics.Add(aLine);
+
+//DEMsTypeUsing,TilesUsing,LandTypesUsing,CandidateDEMsUsing,CriteriaUsing
+
+   if (Option = 0) then begin
+      {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Graph option 0'); {$EndIf}
+      for aTileParameter := 0 to pred(TileParameters.Count) do begin
+         wmdem.SetPanelText(1,TileParameters[aTileParameter]);
+         GraphPanelsWide := CriteriaUsing.Count;
+         for k := 0 to pred(DEMsTypeUsing.Count) do begin
+            wmdem.SetPanelText(3,DEMsTypeUsing[k]);
+            aName :=  'criteria_ref_' + DEMsTypeUsing[k] + '_results_sort_by_' + TileParameters[aTileParameter];
+            ap := 1;
+            for i := 0 to pred(CriteriaUsing.Count) do begin
+               wmdem.SetPanelText(2,CriteriaUsing[i]);
+               MakeGraph(ap,CriteriaUsing[i],TileParameters[aTileParameter],DEMsTypeUsing[k],'ALL',CriteriaUsing[i],aName);
+               inc(ap);
+            end;
+            FinishBigMap(aName);
+         end;
+      end
+   end
+   else if (Option = 1) then begin
+      {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Graph option 1'); {$EndIf}
+      for aTileParameter := 0 to pred(TileParameters.Count) do begin
+         wmdem.SetPanelText(1,TileParameters[aTileParameter]);
+         aName := 'all_15_criteria_sort_by_' + TileParameters[aTileParameter];
+         ap := 1;
+         GraphPanelsWide := LandTypesUsing.Count * 2;
+         for k := 0 to pred(DEMsTypeUsing.Count) do begin
+            wmdem.SetPanelText(2,DEMsTypeUsing[k]);
+            for sl := 0 to pred(LandTypesUsing.Count) do begin
+               wmdem.SetPanelText(3,LandTypesUsing[sl]);
+               MakeGraph(ap,'',TileParameters[aTileParameter],DEMsTypeUsing[k],LandTypesUsing[sl],LandTypesUsing[sl],aName);
+               inc(ap);
+            end;
+         end;
+         FinishBigMap(aName);
+      end
+   end
+   else if (Option = 2) then begin
+      for aTileParameter := 0 to pred(TileParameters.Count) do begin
+         for aCriteria := 0 to pred(CriteriaUsing.Count) do begin
+            aName := CriteriaUsing[aCriteria] + '_sort_by_' + TileParameters[aTileParameter];
+            ap := 1;
+            GraphPanelsWide := LandTypesUsing.Count * 2;
+            for k := 0 to pred(DEMsTypeUsing.Count) do begin
+               for sl := 0 to pred(LandTypesUsing.Count) do begin
+                  MakeGraph(ap,CriteriaUsing[aCriteria],TileParameters[aTileParameter],DEMsTypeUsing[k],LandTypesUsing[sl],LandTypesUsing[sl],aName);
+                  inc(ap);
+               end;
+            end;
+            FinishBigMap(aName);
+         end;
+      end
+   end
+   else if (Option = 3) then begin
+      for aTileParameter := 0 to pred(TileParameters.Count) do begin
+         wmdem.SetPanelText(1,TileParameters[aTileParameter]);
+         aName := 'criterion_sort_by_' + TileParameters[aTileParameter];
+         ap := 1;
+         GraphPanelsWide := CriteriaUsing.Count * 2;
+         for aCriteria := 0 to pred(CriteriaUsing.Count) do begin
+            for k := 0 to pred(DEMsTypeUsing.Count) do begin
+               MakeGraph(ap,CriteriaUsing[aCriteria],TileParameters[aTileParameter],DEMsTypeUsing[k],'ALL',CriteriaUsing[aCriteria],TileParameters[aTileParameter]);
+               inc(ap);
+            end;
+         end;
+         FinishBigMap(aName);
+         {$If Defined(RecordDEMIX)} WriteLineToDebugFile('MultipleBestByParameters done graph=' + IntToStr(aTileParameter)); {$EndIf}
+      end;
+   end;
+
+   fName := NextFileNumber(MDTempDir,MDTempDir + 'dem_batting_average_','.dbf');
+   StringList2CSVtoDB(Statistics,fName);
+   GISdb[DBonTable].ClearGISFilter;
+   GISdb[DBonTable].EmpSource.Enabled := true;
+   GISdb[DBonTable].ShowStatus;
+end {procedure MultipleBestByParametersSortByValue};
 
 
 

@@ -63,7 +63,6 @@ end;
 procedure Sentinel2Batch_dNBR;
 var
    fName : PathStr;
-   AreaName : shortstring;
    RefNBR,i,dNBRgrid : integer;
 begin
    {$IfDef FireStats} WriteLineToDebugFile('Sentinel2BatchdNBR in'); {$EndIf}

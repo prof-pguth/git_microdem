@@ -939,7 +939,7 @@ end;
 
         function DoLegendOnBitmap(Horizontal : boolean; Colors : tColors256; Values : array of float64; Units : shortstring; LegendTitle : shortstring = ''; LegendSize : integer = 1) : tMyBitmap;
          var
-           Width,Height,Size,i,j,LastLabel,Dec,xloc,yloc : integer;
+           Width,Height,Size,i,j,LastLabel,Dec,xloc,yloc,TopText : integer;
            Min,Max,Range,Tick,FirstTick  : float64;
            First          : boolean;
            TStr           : ShortString;
@@ -1023,17 +1023,21 @@ end;
                      Pen.Color := clBlack;
                      if First then begin
                         First := false;
-                        TStr := TStr + Units;
+                        if Horizontal then begin
+                           TopText := MDDef.LegendBarWidth + MDDef.LegendTickSize + 3;
+                           LastLabel := LegendSize * (256) + 5;
+                           TextOut(LastLabel,TopText,Units);
+                        end
+                        else TStr := TStr + Units;
                      end;
                      if Horizontal then begin
                         xloc := 5 + LegendSize * (256-i)*Size;
                         if LastLabel >  (xloc -5 + TextWidth(TStr)) then begin
                            LastLabel := xloc - TextWidth(TStr) div 2;
                            if (LastLabel < 0) then LastLabel := 0;
-                           j := MDDef.LegendBarWidth + MDDef.LegendTickSize + 3;
-                           TextOut(LastLabel,j,TStr);
+                           TextOut(LastLabel,TopText,TStr);
                            {$IfDef RecordLegends} WriteLineToDebugFile('Tick label at: ' + IntToStr(LastLabel) + '--' + IntToStr(j)); {$EndIf}
-                           Pen.Width := 2;
+                           Pen.Width := 3;
                         end
                         else Pen.Width := 1;
                         MoveTo(xloc,MDDef.LegendBarWidth);
@@ -1056,13 +1060,6 @@ end;
                until (FirstTick > Max) or (i = 255);
             end;
             PutBitmapInBox(Result);
-            (*
-            GetImagePartOfBitmap(Result);
-            Result.Canvas.Pen.Color := clBlack;
-            Result.Canvas.Pen.Width := 0;
-            Result.Canvas.Brush.Style := bsClear;
-            Result.Canvas.Rectangle(0,0,Result.Width,Result.height);
-            *)
          end;
 
 
@@ -1141,32 +1138,6 @@ end;
             Result := DoLegendOnBitmap(false,Colors,vals,Units,LegendTitle);
          end;
 
-
-
-         function LocalIP: string;
-         type
-            TaPInAddr = array [0..10] of PInAddr;
-            PaPInAddr = ^TaPInAddr;
-         var
-             phe: PHostEnt;
-             pptr: PaPInAddr;
-             Buffer: array [0..63] of ANSIchar;
-             i: Integer;
-             GInitData: TWSADATA;
-         begin
-             WSAStartup($101, GInitData);
-             Result := '';
-             GetHostName(Buffer, SizeOf(Buffer));
-             phe := GetHostByName(buffer);
-             if phe = nil then Exit;
-             pptr := PaPInAddr(Phe^.h_addr_list);
-             i := 0;
-             while pptr^[i] <> nil do    begin
-               result := StrPas(inet_ntoa(pptr^[i]^));
-               Inc(i);
-             end;
-             WSACleanup;
-         end;
 
 
          procedure ColorLineWidthBitmap(var Bitmap : tMyBitmap; Color : TPlatformColor; Size : integer; Minimize : boolean = true);
@@ -1547,7 +1518,6 @@ end;
          end;
 
 
-
          procedure EditTFont(Font : tFont);
          var
             MyFont : tMyFont;
@@ -1870,6 +1840,33 @@ end;
             end;
             AboutBox.Free;
          end;
+
+
+         function LocalIP: string;
+         type
+            TaPInAddr = array [0..10] of PInAddr;
+            PaPInAddr = ^TaPInAddr;
+         var
+             phe: PHostEnt;
+             pptr: PaPInAddr;
+             Buffer: array [0..63] of ANSIchar;
+             i: Integer;
+             GInitData: TWSADATA;
+         begin
+             WSAStartup($101, GInitData);
+             Result := '';
+             GetHostName(Buffer, SizeOf(Buffer));
+             phe := GetHostByName(buffer);
+             if phe = nil then Exit;
+             pptr := PaPInAddr(Phe^.h_addr_list);
+             i := 0;
+             while pptr^[i] <> nil do    begin
+               result := StrPas(inet_ntoa(pptr^[i]^));
+               Inc(i);
+             end;
+             WSACleanup;
+         end;
+
 
 
          procedure StringListToContinue(SaveOut : boolean; Mess : tStringList);

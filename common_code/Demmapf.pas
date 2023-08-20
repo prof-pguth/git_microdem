@@ -2566,6 +2566,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Pickmapsforbigimage1Click(Sender: TObject);
     procedure dNBRNBRbeforeandafterfire1Click(Sender: TObject);
     procedure NBR21Click(Sender: TObject);
+    procedure N60Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
     MouseDownLat,MouseDownLong,
@@ -2607,7 +2608,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure DropinthebucketfromGrids;
 
     procedure PlotNorthArrowLegend(x, y : integer);
-    procedure LoadDataBaseFileWithMissingMessage(fName : PathStr);
+    //procedure LoadDataBaseFileWithMissingMessage(fName : PathStr);
     procedure PostPointCoordinates(Lat,Long : float64);
 
     //procedure VerticalDatumShift(vdShift : tvdShift);
@@ -2732,6 +2733,8 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure SetUpNewDEMMapWindow(CurDEM : integer; mt : tMapType; MapCaption : ShortString; Selection,DrawIt,UsePC : boolean);
     procedure CreateZoomWindow(UseToVerify : boolean; ContourInterval,DEMGridSize : integer; var xDEMg,yDEMg,xSATg,ySATg : float32; ShowPanButtons : boolean = true; ShowMenu : boolean = true; LabelGridPts : boolean = true);
 
+    function CreateMapAndLegendSideBySide : tMyBitmap;
+
     function CurrentMapImage : tImage;
     procedure DrawCollaredMap(var TickSize,LabelSize : float64; var Bitmap2 : tMyBitmap);
     procedure EditMapViaColor(emvc : temvc; Color : tColor; LakeZ : float64 = -MaxSmallInt; SureOfColor : boolean = false; ShowResults : boolean = true);
@@ -2758,6 +2761,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure OutlineGridOutlines;
     procedure OutlineGeoBox(bb : sfBoundBox; Color : tColor; LineSize : integer);
     procedure OutlineUTMBox(bb : sfBoundBox; Color : tColor; LineSize : integer);
+    procedure OutlineMap;
 
     procedure RedrawMapDefaultsSize;
 
@@ -2765,7 +2769,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
 
     procedure MoveADBRecord(lat,Long : float64);
 
-    function MakeNLCDLegend(theLabel : shortstring = '') : integer;
+    function MakeNLCDLegend(theLabel : shortstring = ''; Stats : tstringlist = nil) : integer;
 
     function StringListToLoadedDatabase(var Findings : tStringList; fName : PathStr; DisplayNow : boolean = true; RestrictToMapOwner : boolean = false; ShowTable : boolean = true) : integer;
     function LoadDataBaseFile(fName : PathStr; OpenTable : boolean = true; DrawNow : boolean = true; RestrictToMapOwner : boolean = false) : integer;
@@ -2995,8 +2999,8 @@ function LoadBlankVectorMapAndOverlay(ItsTiger,ItsGazetteer : boolean; fName : P
 function CreateDEMIXTileShapefile(WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false) : shortstring;
 function DEMIXtileFill(DEM : integer; AreaBox : sfBoundBox; OpenTable : boolean = true) : integer;
 function DEMIXtileBoundingBox(tName : shortString) : sfBoundBox;
+procedure DEMIXtileCentroid(tName : shortString; var Lat,Long : float32);
 function LoadDEMIXtileOutlinesNoMap(WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false; OpenTable : boolean = true) : integer;
-
 
 
 procedure CreateDEMSelectionMap(DEM : integer; DrawIt : boolean = true; usePC : boolean = true; inMapType : tMapType = mtElevRainbow);
@@ -3599,7 +3603,8 @@ end;
 
 procedure TMapForm.OutlineGridOutlines;
 var
-   DEMWanted,i,x,y,xp,yp,n,SymSize,xi,yi : integer;
+   //DEMWanted,xi,yi ,
+   i,x,y,xp,yp,n,SymSize : integer;
    bb : sfBoundBox;
    Sum : float64;
    z,xg,yg : float32;
@@ -9280,12 +9285,15 @@ end;
 
 procedure TMapForm.LoadOSMoverlay1Click(Sender: TObject);
 begin
-   //if (LastOSMoverlay = '') then LastOSMoverlay := MainMapData + 'openstreetmap\';
-   GetDOSPath('OSM shape files',LastOSMoverlay);
-   if (LastOSMoverlay <> '') then begin
+   if (MapDraw.OSMShapesUp <> Nil) then FreeAndNil(MapDraw.OSMShapesUp);
+   MapDraw.OSMShapesUp := tStringList.Create;
+   MapDraw.OSMShapesUp.Add(MainMapData);
+   if GetMultipleDirectories('OSM shape files',MapDraw.OSMShapesUp) then begin
+   //GetDOSPath('OSM shape files',LastOSMoverlay);
+   //if (LastOSMoverlay <> '') then begin
       SubtractOverlay(Self,ovoWorldOutlines);
       MapDraw.DeleteSingleMapLayer(MapDraw.OSMOverlayfName);
-      MapDraw.OSMShapesUp := LastOSMoverlay;
+      //MapDraw.OSMShapesUp := LastOSMoverlay;
       AddOverlay(self,ovoOSM);
       DoFastMapRedraw;
    end;
@@ -10623,7 +10631,7 @@ var
    MenuStr     : string;
    First       : boolean;
    DistStr     : AnsiString;
-   Findings    : tStringList;
+   //Findings    : tStringList;
    TStr,TStr2,
    PrimaryLocation,SecondaryLocation : ShortString;
    Refs : tAllRefs;
@@ -14511,7 +14519,8 @@ procedure TMapForm.Specifyxyzshifts1Click(Sender: TObject);
 var
    //fName : PathStr;
    dx,dy,dz : float32;
-   i,NewVD : integer;
+   //i,
+   NewVD : integer;
 begin
    dx := 0.43;
    ReadDefault('dx',dx);
@@ -15715,16 +15724,22 @@ begin
    ThinDEM1Click(Sender);
 end;
 
+procedure TMapForm.OutlineMap;
+begin
+    Image1.Canvas.Brush.Style := bsClear;
+    Image1.Canvas.Pen.Width := 3;
+    Image1.Canvas.Pen.Color := clBlack;
+    Image1.Canvas.Rectangle(0,0,pred(Image1.Width),pred(Image1.Height));
+end;
+
+
 procedure TMapForm.Quickmap1Click(Sender: TObject);
 var
    bmp : Graphics.TBitmap;
 begin
     if MDDef.BoxAroundQuickMaps then begin
        CopyImageToBitmap(Image1,bmp);
-       Image1.Canvas.Brush.Style := bsClear;
-       Image1.Canvas.Pen.Width := 3;
-       Image1.Canvas.Pen.Color := clBlack;
-       Image1.Canvas.Rectangle(0,0,pred(Image1.Width),pred(Image1.Height));
+       OutlineMap;
     end;
     AssignImageToClipBoard(Image1);
     if MDDef.BoxAroundQuickMaps then begin
@@ -15895,7 +15910,7 @@ end;
 procedure TMapForm.Pickmapsforbigimage1Click(Sender: TObject);
 var
    Maps : tStringList;
-   i,j : integer;
+   //i,j : integer;
 begin
    PickMaps(Maps,'Maps for to combine on big figure');
    Bigimagewithallmaps(3,'',Maps);
@@ -21320,6 +21335,8 @@ begin
    VerticalDatumShiftWithVDATUM('DEM edit',MapDraw.DEMonMap,0,'');
 end;
 
+
+(*
 procedure TMapForm.LoadDataBaseFileWithMissingMessage(fName : PathStr);
 begin
    if FileExists(fName) then begin
@@ -21329,7 +21346,7 @@ begin
       MessageToContinue('File missing: ' + fName);
    end;
 end;
-
+*)
 
 procedure TMapForm.UStornadoes1Click(Sender: TObject);
 begin
@@ -21607,58 +21624,11 @@ begin
 end;
 
 
-function TMapForm.MakeNLCDLegend(theLabel : shortstring = '') : integer;
-var
-   x,y,zi : integer;
-   z : float32;
-   Title : shortstring;
-   fName : PathStr;
-   Results : tStringList;
-   Total : int64;
-   Count :  array[1..MaxNLCDCategories] of int64;
+function TMapForm.MakeNLCDLegend(theLabel : shortstring = ''; Stats : tstringlist = nil) : integer;
 begin
-   {$IfDef TrackNLCD} WriteLineToDebugFile('TMapForm.NLCDLegend1Click in'); {$EndIf}
-   if (MapDraw.ValidDEMonMap and (DEMGlb[MapDraw.DEMonMap].LandCoverGrid)) then begin
-      for x := 1 to MaxNLCDCategories do Count[x] := 0;
-      Total := 0;
-      StartProgress('Land cover');
-      for x := round(MapDraw.Mapcorners.BoundBoxDataGrid.xmin) to round(MapDraw.Mapcorners.BoundBoxDataGrid.xmax) do begin
-         if (x mod 400 = 0) then UpDateProgressBar( (x-MapDraw.Mapcorners.BoundBoxDataGrid.xmin) / (MapDraw.Mapcorners.BoundBoxDataGrid.xmax - MapDraw.Mapcorners.BoundBoxDataGrid.xmin));
-         for y := round(MapDraw.Mapcorners.BoundBoxDataGrid.ymin) to round(MapDraw.Mapcorners.BoundBoxDataGrid.ymax) do begin
-            if DEMGlb[MapDraw.DEMonMap].GetElevMetersOnGrid(x,y,z) then begin
-               zi := round(z);
-               if (zi > 0) and (zi <= MaxNLCDCategories) and (DEMGlb[MapDraw.DEMonMap].NLCDCats^[zi].UseStat) then begin
-                  inc(Count[zi]);
-                  inc(Total);
-                  LandCoverCatsUsed[zi] := true;
-               end;
-            end;
-         end;
-      end;
-      EndProgress;
-
-      if (Total = 0) then begin
-         Result := 0;
-      end
-      else begin
-         Results := tStringList.Create;
-         Title := 'PERCENT,NAME,COLOR,CODE';
-         if MDDef.LongLandCoverResults then Title := Title +  ',CATEGORY,NUMBER';
-         Results.Add(Title);
-         for x := 1 to MaxNLCDCategories do if (Count[x] > 0) and (DEMGlb[MapDraw.DEMonMap].NLCDCats^[x].LongName <> '') then begin
-            Title := RealToString(100 * Count[x]/Total,8,3) + ',' + DEMGlb[MapDraw.DEMonMap].NLCDCats^[x].LongName + ',' + IntToStr(ConvertPlatformColorToTColor(DEMGlb[MapDraw.DEMonMap].NLCDCats^[x].Color)) +
-                ',' + IntToStr(x);
-            if MDDef.LongLandCoverResults then Title := Title + ',' + IntToStr(x) + ',' + IntToStr(Count[x]);
-            Results.Add(Title);
-            {$IfDef TrackNLCD} WriteLineToDebugFile(Title); {$EndIf}
-         end;
-         Title := ElevUnitsAre(DEMGlb[MapDraw.DEMonMap].DEMheader.ElevUnits) + '_' + DEMGlb[MapDraw.DEMonMap].AreaName;
-         fName := Petmar.NextFileNumber(MDTempDir, Title + '_','.dbf');
-         Result := StringList2CSVtoDB(Results,fName);
-      end;
-   end;
-   {$IfDef TrackNLCD} WriteLineToDebugFile('TMapForm.NLCDLegend1Click out'); {$EndIf}
+   Result := MakeAnNLCDLegend(MapDraw.DEMonMap,theLabel,Stats);
 end;
+
 
 
 procedure TMapForm.Rivers1Click(Sender: TObject);
@@ -21999,6 +21969,54 @@ begin
    CreateRoughnessSlopeStandardDeviationMap(MapDraw.DEMonMap,5);
 end;
 
+function TMapForm.CreateMapAndLegendSideBySide : tMyBitmap;
+var
+   bmp2 : tMyBitmap;
+begin
+   SaveBackupDefaults;
+   MDDef.GridLegendLocation.DrawItem := false;
+   //DoFastMapRedraw;
+   //MessageToContinue('1');
+   DoCompleteMapRedraw;
+   //MessageToContinue('2');
+   //CloneImageToBitmap(Image1,bmp1);
+   CreateBitmap(Result,1,1);
+   Result.LoadFromFile(MapDraw.FullMapfName);
+   bmp2 := MapDraw.DrawLegendOnBitmap;
+   Result.Width := Result.Width + 25 + Bmp2.Width;
+   if (Result.Height < bmp2.Height) then Result.Height := bmp2.Height;
+   Result.Canvas.Draw(Result.Width - bmp2.width,0,bmp2);
+   bmp2.Free;
+   //DisplayBitmap(bmp1,'Map with legend',true);
+   RestoreBackupDefaults;
+   DoCompleteMapRedraw;
+end;
+
+procedure TMapForm.N60Click(Sender: TObject);
+//var
+   //bmp1 : tMyBitmap;
+begin
+   //SaveBackupDefaults;
+   //MDDef.GridLegendLocation.DrawItem := false;
+   //DoFastMapRedraw;
+   //MessageToContinue('1');
+   //DoCompleteMapRedraw;
+   //MessageToContinue('2');
+   //CloneImageToBitmap(Image1,bmp1);
+   //CreateBitmap(bmp1,1,1);
+   //bmp1.LoadFromFile(MapDraw.FullMapfName);
+   //bmp2 := MapDraw.DrawLegendOnBitmap;
+   //bmp1.Width := bmp1.Width + 25 + Bmp2.Width;
+   //if (bmp1.Height < bmp2.Height) then bmp1.Height := bmp2.Height;
+   //bmp1.Canvas.Draw(bmp1.Width - bmp2.width,0,bmp2);
+   //bmp2.Free;
+
+   DisplayBitmap(CreateMapAndLegendSideBySide,'Map with legend',true);
+   //RestoreBackupDefaults;
+   //DoCompleteMapRedraw;
+end;
+
+
 procedure TMapForm.N7x7region1Click(Sender: TObject);
 begin
    CreateRoughnessSlopeStandardDeviationMap(MapDraw.DEMonMap,7);
@@ -22027,7 +22045,7 @@ begin
          if Lat >= 0 then ch1 := 'n' else ch1 := 's';
          cmd := ch1 + IntegerToString(abs(Lat),2) + ch2 + IntegerToString(abs(Long),3);
          ReplaceCharacter(cmd,' ','0');
-         if Sender =  NASADEMtomatchthismap1 then begin
+         if (Sender =  NASADEMtomatchthismap1) then begin
             cmd := 'https://e4ftl01.cr.usgs.gov//DP132/MEASURES/NASADEM_HGT.001/2000.02.11/NASADEM_HGT_' + cmd + '.zip';
          end
 {
@@ -22044,8 +22062,8 @@ end;
 
 procedure TMapForm.NAVD881Click(Sender: TObject);
 begin
-    DEMGlb[MapDraw.DEMonMap].DEMheader.VerticalCSTypeGeoKey := VertCSNAVD88;
-    DEMGlb[MapDraw.DEMonMap].DEMMapProjection.h_DatumCode := 'NAD83';
+   DEMGlb[MapDraw.DEMonMap].DEMheader.VerticalCSTypeGeoKey := VertCSNAVD88;
+   DEMGlb[MapDraw.DEMonMap].DEMMapProjection.h_DatumCode := 'NAD83';
 end;
 
 procedure TMapForm.EGM2008Click(Sender: TObject);

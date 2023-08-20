@@ -297,23 +297,6 @@ begin
    BlockRead(GFile,VersionBMGDRRecs,MaxRecords,NumRead);
 end;
 
-(*
-procedure AltimeterInitialization;
-var
-   GeoidFile : file;
-   fName     : PathStr;
-begin
-   fName := ProgramRootDir + 'GEOID.DEM';
-   if FileExists(fName) then begin
-      assignFile(GeoidFile,fName);
-      reset(GeoidFile,SizeOf(GeoidGrid));
-      BlockRead(GeoidFile,GeoidGrid,1);
-      closeFile(GeoidFile);
-   end
-   else MessageToContinue('GEOID.DEM missing.');
-   AltParam := WaveHeight;
-end;
-*)
 
 initialization
 end.

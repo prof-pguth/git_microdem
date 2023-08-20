@@ -95,9 +95,9 @@
 
 function MakeChangeMapLegend(DEMonMap : integer) : tMyBitmap;
 var
-   Vat : tStringList;
-   fName : PathStr;
-   color : tColor;
+   //Vat : tStringList;
+   //fName : PathStr;
+   //color : tColor;
    TStr : shortstring;
    CatHeight,Cat : integer;
 begin
@@ -1820,7 +1820,7 @@ end;
 
          procedure tMapDraw.DrawMapOverlays(var inBitmap : tMyBitmap);
          var
-            i : integer;
+            i,j : integer;
             DBsDone : boolean;
          begin
             {$If Defined(RecordFullMapDraw) or Defined(RecordTiming) or Defined(RecordOverlays)} WriteLineToDebugFile('tMapDraw.DrawMapOverlays in ' + BaseTitle  + '  ' + MapSizeString); {$EndIf}
@@ -1864,7 +1864,10 @@ end;
                       ovoOSM      : begin
                                        SaveBackupDefaults;
                                        //MDDef.OSMtoCDS := false;
-                                       PlotShapeFileGroup(inBitmap,OSMShapesUp);
+                                       for j := 0 to pred(OSMShapesUp.Count) do begin
+                                          {$IfDef RecordShapeFileGroup} WriteLineToDebugFile('ovoOSM ' + OSMShapesUp.Strings[j]); {$EndIf}
+                                          PlotShapeFileGroup(inBitmap,OSMShapesUp.Strings[j],j=pred(OSMShapesUp.Count));
+                                       end;
                                        if GrayscaleOSM then MakeTheBitmapGrayScale(inBitmap);
                                        if SubdueOSM then MakeTheBitmapSubdued(inBitmap);
                                        RestoreBackupDefaults;

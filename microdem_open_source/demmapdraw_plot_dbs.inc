@@ -94,7 +94,7 @@ procedure TMapDraw.PlotDataBase(DBNum : integer; var Bitmap : tMyBitmap);
 var
    PlotLayer : boolean;
 begin
-   with GISDB[DBNum] do begin
+   if ValidDB(DBNum) then with GISDB[DBNum] do begin
       if CanPlot and (MyData <> Nil) then begin
          {$IfDef RecordDBPlot} WriteLineToDebugFile('TGISDataBase.PlotDataBase in ' + DBName + '  Recs=' + IntToStr(MyData.RecordCount) + '   Mode=' + IntToStr(dbOpts.DBAutoShow)); {$EndIf}
          if ItsAShapeFile and (not AFullWorldMap) and (not LatLongBoxOnScreen(aShapeFile.MainFileHeader.BoundBox)) then begin
@@ -170,6 +170,7 @@ var
    i,j : integer;
    Overlay : tMyBitmap;
 begin
+   if ClosingIsHappening or (not MapDrawValid) or ClosingMapNow then exit;
    {$IfDef RecordDBPlots} WriteLineToDebugFile('TMapDraw.PlotDataBases in, on map ' + BaseTitle); {$EndIf}
    if (NumOpenDB > 0) then for j := MaxDataBase downto 1 do begin
       i := DBPlotOrder[j];
@@ -538,7 +539,7 @@ end;
          end;
 
 
-            procedure TMapDraw.PlotShapeFileGroup(inBitmap : tMyBitmap; FName : PathStr);
+            procedure TMapDraw.PlotShapeFileGroup(inBitmap : tMyBitmap; FName : PathStr; SaveLayerAllowed : boolean = true);
             var
                Bitmap : tMyBitmap;
                BMPname : PathStr;
@@ -570,9 +571,11 @@ end;
                           OSMthread(1,fname,Bitmap);   //everything except roads
                           OSMthread(2,fname,Bitmap);   //roads
                           // 4/29/2018, threading did not increase speed
-                          OSMOverlayfName := NextFileNumber(MDTempDir, 'osm_overlay', OverlayFExt);
-                          SaveBitmap(Bitmap,OSMOverlayfName);
-                          {$IfDef RecordShapeFileGroup} WriteLineToDebugFile('Created and saved: ' + OSMOverlayfName); {$EndIf}
+                          if SaveLayerAllowed then begin
+                             OSMOverlayfName := NextFileNumber(MDTempDir, 'osm_overlay', OverlayFExt);
+                             SaveBitmap(Bitmap,OSMOverlayfName);
+                             {$IfDef RecordShapeFileGroup} WriteLineToDebugFile('Created and saved: ' + OSMOverlayfName); {$EndIf}
+                          end;
                        {$EndIf}
                    end
                    else begin

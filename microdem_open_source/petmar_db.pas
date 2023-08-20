@@ -2055,23 +2055,7 @@ end;
 
 
 function tMyData.FieldAverage(FieldDesired : shortstring) : float64;
-var
-   z : float64;
-   n : integer;
 begin
-(*
-   Result := 0;
-   n := 0;
-   First;
-   repeat
-      if CarefullyGetFieldByNameAsFloat64(FieldDesired,z) then begin
-         Result := Result + z;
-         inc(n);
-      end;
-      Next;
-   until EOF;
-   if (N > 0) then Result := Result / n;
-*)
    Result := GetFieldStatistics(FieldDesired).Mean;
 end;
 

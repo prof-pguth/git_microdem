@@ -494,8 +494,6 @@ begin
 end;
 
 
-
-
 function OpenImageEditor : TImageDisplayForm;
 begin
    StopSplashing;
@@ -503,7 +501,6 @@ begin
    Result.LoadedFileName := ImageDir;
    Result.Replaceimage1Click(Nil);
 end;
-
 
 
 procedure DoBitmapDifference(bmp1,bmp2 : tMyBitmap; var Difference : float64; Display : boolean = true);

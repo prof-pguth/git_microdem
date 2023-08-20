@@ -2,8 +2,8 @@ object MapForm: TMapForm
   Left = 45
   Top = 303
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1040
-  ClientWidth = 1695
+  ClientHeight = 1039
+  ClientWidth = 1691
   Color = clBtnHighlight
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -40,8 +40,8 @@ object MapForm: TMapForm
   object ScrollBox1: TScrollBox
     Left = 0
     Top = 27
-    Width = 1695
-    Height = 1013
+    Width = 1691
+    Height = 1012
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clRed
@@ -51,8 +51,8 @@ object MapForm: TMapForm
     ParentFont = False
     TabOrder = 0
     OnClick = ScrollBox1Click
-    ExplicitWidth = 1691
-    ExplicitHeight = 1012
+    ExplicitWidth = 1687
+    ExplicitHeight = 1011
     object Image1: TImage
       Left = 3
       Top = -247
@@ -209,13 +209,13 @@ object MapForm: TMapForm
     end
     object BlendPanel: TPanel
       Left = 0
-      Top = 968
-      Width = 1691
+      Top = 967
+      Width = 1687
       Height = 41
       Align = alBottom
       TabOrder = 8
-      ExplicitTop = 967
-      ExplicitWidth = 1687
+      ExplicitTop = 966
+      ExplicitWidth = 1683
       object TrackBar2: TTrackBar
         Left = 289
         Top = 1
@@ -334,12 +334,12 @@ object MapForm: TMapForm
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1695
+    Width = 1691
     Height = 27
     Align = alTop
     TabOrder = 1
     OnMouseDown = Panel1MouseDown
-    ExplicitWidth = 1691
+    ExplicitWidth = 1687
     object AnnotateSpeedButton1: TSpeedButton
       Left = 31
       Top = -4
@@ -1761,7 +1761,6 @@ object MapForm: TMapForm
           object GDALupsample1: TMenuItem
             Caption = 'GDAL upsample, bllinear/bicubic'
             GroupIndex = 1
-            OnClick = GDALupsample1Click
           end
           object GDALbilinearbicubictoUTM1: TMenuItem
             Caption = 'GDAL bilinear/bicubic to UTM'
@@ -1824,7 +1823,6 @@ object MapForm: TMapForm
         object GDALtranslatesubset1: TMenuItem
           Caption = 'GDAL translate, subset this scene to current map area'
           GroupIndex = 1
-          OnClick = GDALtranslatesubset1Click
         end
         object GDALwarpsubset1: TMenuItem
           Caption = 'GDAL warp, subset this scene to current map area'
@@ -2056,7 +2054,6 @@ object MapForm: TMapForm
         object Rasteraftersubsettomatchthismapextent1: TMenuItem
           Caption = 'GDAL Raster  subset to match this map'
           GroupIndex = 1
-          OnClick = Rasteraftersubsettomatchthismapextent1Click
         end
         object N10: TMenuItem
           Caption = '-'
@@ -5197,6 +5194,13 @@ object MapForm: TMapForm
       object DrapecurrentmaptoOpenGL1: TMenuItem
         Caption = 'Drape current map to OpenGL'
         OnClick = DrapecurrentmaptoOpenGL1Click
+      end
+      object N59: TMenuItem
+        Caption = '-'
+      end
+      object N60: TMenuItem
+        Caption = 'Export map with legend on right'
+        OnClick = N60Click
       end
     end
     object Geocode1: TMenuItem

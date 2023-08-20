@@ -18,6 +18,7 @@
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IfDef Debug}
       //{$Define RecordLoadSat}
+      {$Define RecordEOBrowser}
       //{$Define RecordKeyDraw}
       //{$Define RecordTMSat}
       //{$Define RecordShortLandsat}
@@ -143,6 +144,7 @@ type
          BandNamesRead,
          IsSentinel2,
          LandsatLook,
+         EOBrowserExport,
          Is4band,
          MultiTiff,
          SingleTiff,
@@ -287,6 +289,7 @@ var
    function ShortLandsatName(fName : PathStr) : ShortString;
    function HistogramLandsatName(fName : PathStr) : ShortString;
    function IsThisSentinel2(fName : PathStr) : boolean;
+   function IsEOBrowserExport(fName : PathStr) : boolean;
    function IsLandsat(fName : PathStr; var MPath : PathStr) : boolean;
 
    {$IfDef ExLandsatQA}
@@ -347,11 +350,24 @@ function IsThisSentinel2(fName : PathStr) : boolean;
 //  S2B_MSIL1C_20220602T082559_N0400_R021_T37TCN_20220602T121719.SAFE
 //  L1C_T37TCN_A027360_20220602T082807           {inside granule folder}
 begin
-   Result := StrUtils.AnsiContainsText(UpperCase(fName),'SENTINEL') or
+   fName := UpperCase(fName);
+   Result := {StrUtils.AnsiContainsText(UpperCase(fName),'SENTINEL') or}
             (StrUtils.AnsiContainsText(fName,'_B') and (StrUtils.AnsiContainsText(fName,'L1C_T') or StrUtils.AnsiContainsText(fName,'L 1C_'))) or
-            StrUtils.AnsiContainsText(UpperCase(fName),'S2A_MSI_') or
-            StrUtils.AnsiContainsText(UpperCase(fName),'S2B_MSI_');
+            StrUtils.AnsiContainsText(fName,'S2A_MSI_') or
+            StrUtils.AnsiContainsText(fName,'S2B_MSI_');
 end;
+
+
+function IsEOBrowserExport(fName : PathStr) : boolean;
+begin
+   fName := UpperCase(fName);
+
+//2022-05-03-00_00_2022-05-03-23_59_Sentinel-1_AWS-IW-VVVH_RGB_ratio
+//2022-05-03-00_00_2022-05-03-23_59_Sentinel-2_L2A_Scene_classification_map
+
+   Result := StrUtils.AnsiContainsText(fName,'_SENTINEL-1_AWS') or StrUtils.AnsiContainsText(fName,'_SENTINEL-2_L2A_') or StrUtils.AnsiContainsText(fName,'_SENTINEL-2_L1C_');
+end;
+
 
 function tSatImage.ImageDateString : shortstring;
 begin
@@ -1253,8 +1269,6 @@ var
          for i := succ(MaxUsed) to MaxRefCount do SetColorChoices[i] := 255;
       end;
 
-
-
          procedure SetRGBLookupArray(BandInWindow : integer);
          var
             i : integer;
@@ -1423,7 +1437,7 @@ var
       {$EndIf}
 
 
-        procedure DoBand(Band,ColorBand : integer);
+        procedure GetBandParameters(Band,ColorBand : integer);
         begin
             DiffXOffset[Band] := round(MapDraw.MapCorners.BoundBoxDataGrid.xmin * BandXSpace[BandForSize]  / BandXSpace[ColorBand]);
             DiffYOffset[Band] := round(MapDraw.MapCorners.BoundBoxDataGrid.ymin * BandXSpace[BandForSize]  / BandXSpace[ColorBand]);
@@ -1501,27 +1515,27 @@ var
       procedure SingleBandOrColorsSameSpacing(var Bitmap : tMyBitmap);
       var
          x,y,j,Row : integer;
-         aRow : tLongRGB;
+         aRow,TheRow : ^tLongRGB;
          BMPMem : tBMPMemory;
-         TheRow : ^tlongRGB;
       begin
         {$If Defined(RecordDrawSatOnMap) or Defined(RecordKeyDraw)}WriteLineToDebugFile('Sat display start loop same spacing data grid: ' +  sfBoundBoxToString(MapDraw.MapCorners.BoundBoxDataGrid,1)); {$EndIf}
             BMPMem := tBMPMemory.Create(Bitmap);
             New(TheRow);
+            New(aRow);
             if IsSatelliteColorImage(MapDraw.MapType) then begin
                for y := 0 to pred(Bitmap.Height) do begin
                   if ShowSatProgress and (y mod 100 = 0) then UpdateProgressBar(y/pred(Bitmap.Height));
                   Row := round(MapDraw.MapCorners.BoundBoxDataGrid.ymin) + round(y/pred(Bitmap.Height)*pred(MapDraw.RowsDisplayed));
                   if (Row < NumSatRow) then begin
                      if (TiffImage[1] <> nil) and (TIFFImage[1].TiffHeader.PhotometricInterpretation in [1,2]) and (TIFFImage[1].TiffHeader.SamplesPerPixel > 1) then begin
-                       TiffImage[1].GetTIFFRowRGB(Row,aRow);
+                       TiffImage[1].GetTIFFRowRGB(Row,aRow^);
                         for j := 0 to pred(NumSatCol) do begin
                            {$IfDef FMX}
                               TheRow^[j] := RGBtrip(aRow[j*TiffImage[1].TiffHeader.SamplesPerPixel]+2, aRow[j*TiffImage[1].TiffHeader.SamplesPerPixel]+1,aRow[j*TiffImage[1].TiffHeader.SamplesPerPixel] );
                            {$Else}
-                              TheRow^[j].rgbtRed := aRow[j].rgbtRed;
-                              TheRow^[j].rgbtGreen := aRow[j].rgbtGreen;
-                              TheRow^[j].rgbtBlue := aRow[j].rgbtBlue;
+                              TheRow^[j].rgbtRed := aRow^[j].rgbtRed;
+                              TheRow^[j].rgbtGreen := aRow^[j].rgbtGreen;
+                              TheRow^[j].rgbtBlue := aRow^[j].rgbtBlue;
                            {$EndIf}
                         end;
                      end
@@ -1569,6 +1583,7 @@ var
            end;
            CloseTiffImages(SatView);
            Dispose(TheRow);
+           Dispose(aRow);
            BMPMem.Destroy;
       end;
 
@@ -1588,22 +1603,22 @@ begin
    end
    else begin
       if IsSatelliteColorImage(MapDraw.MapType) then begin
-         DoBand(1,SatView.RedBand);
-         DoBand(2,SatView.GreenBand);
-         DoBand(3,SatView.BlueBand);
+         GetBandParameters(1,SatView.RedBand);
+         GetBandParameters(2,SatView.GreenBand);
+         GetBandParameters(3,SatView.BlueBand);
       end
       else begin
-         DoBand(1,SatView.BandInWindow);
+         GetBandParameters(1,SatView.BandInWindow);
       end;
       SetUpColors(MapDraw,SatView);
 
-      if SatView.PanSharpenImage then begin
-         if LandsatNumber in [7..9] then DoBand(4,8); //pan band for pan sharpening
+      if SatView.PanSharpenImage and (LandsatNumber in [7..9]) then begin
+         GetBandParameters(4,8); //pan band for pan sharpening
          DrawPanSharpened(Bitmap);
       end
       else begin
          ShowHourglassCursor;
-         {$If Defined(RecordDrawSatOnMap) or Defined(RecordKeyDraw)} WriteLineToDebugFile('Start pre-loop,  data grid: ' +  sfBoundBoxToString(MapDraw.MapCorners.BoundBoxDataGrid,1)); {$EndIf}
+         {$If Defined(RecordDrawSatOnMap) or Defined(RecordKeyDraw)} WriteLineToDebugFile('Start pre-loop, sat data grid: ' +  sfBoundBoxToString(MapDraw.MapCorners.BoundBoxDataGrid,1)); {$EndIf}
          if ShowSatProgress then StartProgressAbortOption('Display ' + SceneBaseName);
 
          {$If Defined(RecordDrawSatOnMap)} WriteLineToDebugFile('Band spacing, Red: ' + RealToString(BandXSpace[SatView.RedBand],-8,0) + ' Green: ' + RealToString(BandXSpace[SatView.GreenBand],-8,0) +
@@ -2111,7 +2126,7 @@ var
                      BandXSpace[i] := TiffImage[1].TiffHeader.ScaleX;
                      BandYSpace[i] := TiffImage[1].TiffHeader.ScaleY;
                   end;
-                  if LandsatLook then DefineImageFromTiff(1);
+                  if LandsatLook or EOBrowserExport then DefineImageFromTiff(1);
 
                   {$IfDef RecordLoadSat} WriteLineToDebugFile('ReadOrdinaryGeoTiff tTiffImage.CreateGeotiff OK'); {$EndIf}
                   if (TIFFImage[1].TiffHeader.PhotometricInterpretation = 2) or (TIFFImage[1].TiffHeader.SamplesPerPixel in [3,4,8]) then begin
@@ -2423,7 +2438,6 @@ var
 
             if FileExists(IndexFileName) then begin
 
-
                LandsatSceneMetadata(IndexFilename,LandsatNumber,SceneBaseName);
                if (LandsatNumber <> 0) then begin
                   if StrUtils.AnsiContainsText(IndexFileName,'BQA') then begin
@@ -2612,8 +2626,13 @@ begin
       end;
    {$EndIf}
    LandSatLook := IsLandsatLook(IndexFileName);
-   if (TreatThisAsSingleTif and (Ext = '.TIF')) or LandsatLook then begin
+   EOBrowserExport := IsEOBrowserExport(IndexFileName);
+   if (TreatThisAsSingleTif and ((Ext = '.TIF') or (Ext = '.TIFF'))) or LandsatLook or EOBrowserExport then begin
       ReadOrdinaryGeoTiff;
+      if LandsatLook or EOBrowserExport then begin
+         {$If Defined(RecordEOBrowser)} WriteLineToDebugFile('tSatImage.Create, ' + IndexFileName + '  LandsatLook or EOBrowserExport'); {$EndIf}
+         CanEnhance := false;
+      end;
    end
    else if (Ext = '.JPG') or (Ext = '.JPEG') or (Ext = '.JPE') or (Ext = '.GIF') or (Ext = '.PNG') or
       (Ext = '.BMP') or (Ext = '.HTM') or (Ext = '.BPW') or (Ext = '.JGW') or (Ext = '.JPW') or
@@ -2656,7 +2675,7 @@ begin
       {$IfDef RecordLoadSat} WriteLineToDebugFile('Call load histogram, NumBands=' + IntToStr(NumBands)); {$EndIf}
       LoadHistogram;
    end;
-   {$IfDef RecordLoadSat} WriteLineToDebugFile('tSatImage.Create out ' + SceneBaseName + '  can enhance=' + TrueOrFalse(CanEnhance) + '  ' + ImageMapProjection.GetProjectionName); {$EndIf}
+   {$If Defined(RecordLoadSat) or Defined(RecordEOBrowser)} WriteLineToDebugFile('tSatImage.Create out ' + SceneBaseName + '  can enhance=' + TrueOrFalse(CanEnhance) + '  ' + ImageMapProjection.GetProjectionName); {$EndIf}
 end;
 
 

@@ -16,7 +16,6 @@ unit demix_filter;
   {$Define TrackOpenHandles}
 {$EndIf}
 
-
 interface
 
 uses
@@ -87,7 +86,6 @@ type
     Edit1: TEdit;
     Label2: TLabel;
     Label1: TLabel;
-    Label3: TLabel;
     BitBtn1: TBitBtn;
     ComboBox5: TComboBox;
     ComboBox6: TComboBox;
@@ -135,6 +133,10 @@ type
     Edit3: TEdit;
     Label4: TLabel;
     BitBtn29: TBitBtn;
+    GroupBox8: TGroupBox;
+    Memo7: TMemo;
+    RadioGroup2: TRadioGroup;
+    CheckBox10: TCheckBox;
     procedure BitBtn1Click(Sender: TObject);
     procedure LoadClick(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
@@ -181,6 +183,9 @@ type
     procedure CheckBox9Click(Sender: TObject);
     procedure BitBtn28Click(Sender: TObject);
     procedure BitBtn29Click(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
+    procedure RadioGroup2Click(Sender: TObject);
+    procedure CheckBox10Click(Sender: TObject);
   private
     { Private declarations }
     procedure ZeroDEMs;
@@ -188,6 +193,7 @@ type
     procedure MakeBigDiffferenceMapImage(Param : shortstring);
     procedure MakeDifferenceMaps(WhatType : integer);
     procedure DifferenceMapsAllAreas(WhatFor : integer);
+    procedure GetUsingStringLists;
   public
     { Public declarations }
     DB : integer;
@@ -195,10 +201,10 @@ type
     TilesUsing,
     LandTypesUsing,
     CriteriaUsing,
+    TileParameters,
     CandidateDEMsUsing : tStringList;
     MergeDEMs,RefDEMs,RefDEMsv1,RefDEMsHalfSec,TestDEMs,DiffDSMDEMs,DiffDTMDEMs : tDEMixarray;
-    procedure GetUsingStringLists;
-    procedure DoCriteriaGraph;
+    //procedure DoCriteriaGraph;
     procedure LoadDEMsForCurrentArea(var AreaName : Petmar_types.shortstring; LoadMaps : boolean = true);
   end;
 
@@ -233,7 +239,7 @@ end;
 procedure DoDEMIXFilter(DB : integer);
 var
   DemixFilterForm: TDemixFilterForm;
-  i: Integer;
+  //i: Integer;
 begin
    {$If Defined(RecordDEMIX) or Defined(TrackOpenHandles)} WriteOpenHandlestoDebugLog('DoDEMIXFilter in'); {$EndIf}
 
@@ -252,13 +258,6 @@ begin
    LoadComboBoxFromDBField(db,DemixFilterForm.ComboBox6,'CRITERION');
    DemixFilterForm.ComboBox6.ItemIndex := 0;
 
-   DemixFilterForm.DEMsTypeUsing := tStringList.Create;
-   DemixFilterForm.TilesUsing := tStringList.Create;
-
-   DemixFilterForm.LandTypesUsing := tStringList.Create;
-   DemixFilterForm.CriteriaUsing := tStringList.Create;
-   DemixFilterForm.CandidateDEMsUsing := tStringList.Create;
-
    DemixFilterForm.Show;
    {$If Defined(RecordDEMIX) or Defined(TrackOpenHandles)} WriteOpenHandlestoDebugLog('DoDEMIXFilter out'); {$EndIf}
 end;
@@ -272,21 +271,20 @@ const
    RuffAll       = 5;   //BitBtn21;
    AllAll        = 6;
 
+
 procedure TDemixFilterForm.MakeDifferenceMaps(WhatType : integer);
-//const
-   //DEMType : array[1..2] of shortstring = ('DTM','DSM');
 var
    i,j,k : integer;
    DEMarea : ANSIString;
-   fName : PathStr;
-   theFiles : tStringList;
+   //fName : PathStr;
+   //theFiles : tStringList;
    Param : shortString;
 
    procedure GetRefDEMDifferenceMap(DiffType,aTestDEM : integer; DEMArea,RefPointOrArea,theDEMtype,TestDEMseriesName : shortstring);
    var
       i,refDEMsurfaceType: integer;
       refDEMname : shortString;
-      fName : PathStr;
+      //fName : PathStr;
 
       function MakeTheMap(i : integer) : integer;
       var
@@ -348,7 +346,7 @@ var
 
 var
    theRefDEMs : tDEMixarray;
-   RefDEM : integer;
+   //RefDEM : integer;
    RefPointOrArea,SeriesName,AreaName : shortstring;
 begin
    {$If Defined(RecordDEMIX) or Defined(TrackOpenHandles)} WriteOpenHandlestoDebugLog('TDemixFilterForm.MakeDifferenceMaps in, type=' + IntToStr(WhatType)); {$EndIf}
@@ -391,6 +389,16 @@ begin
 end;
 
 
+
+procedure TDemixFilterForm.RadioGroup2Click(Sender: TObject);
+begin
+   Memo1.Enabled := RadioGroup2.ItemIndex in [0,1,2];    //DEMsTypeUsing
+   Memo2.Enabled := RadioGroup2.ItemIndex in [99];       //TilesUsing
+   Memo3.Enabled := RadioGroup2.ItemIndex in [1];        //LandTypesUsing
+   Memo4.Enabled := RadioGroup2.ItemIndex in [0,2];        //CriteriaUsing
+   Memo5.Enabled := RadioGroup2.ItemIndex in [99];       //CandidateDEMsUsing
+   Memo7.Enabled := RadioGroup2.ItemIndex in [0,1,2];      //TileParameters
+end;
 
 procedure TDemixFilterForm.threedembestrgm_checkboxClick(Sender: TObject);
 begin
@@ -470,12 +478,12 @@ var
 
       procedure DoArea;
       var
-         AreaName,fName : PathStr;
+         AreaName{,fName} : PathStr;
          Table : tMyData;
          Sum : float64;
          aLine : shortstring;
          RuffRef,SlopeRef,RuffALOS,SlopeALOS,RuffCOP,SlopeCOP,
-         i,j,DiffMaps,COPDEM,ALOSDEM : integer;
+         i,j,{DiffMaps,}COPDEM,ALOSDEM : integer;
          BestElevGrid,BestSlopeGrid,BestRuffGrid : array[1..MaxDemixArray] of integer;
 
 
@@ -675,6 +683,8 @@ procedure TDemixFilterForm.BitBtn8Click(Sender: TObject);
 begin
    CloseAllDEMs;
    ZeroDEMs;
+   wmdem.CloseAlldataandwindows1Click(nil);
+   CleanUpTempDirectory;
 end;
 
 procedure TDemixFilterForm.BitBtn9Click(Sender: TObject);
@@ -688,6 +698,11 @@ begin
       if ValidDEM(DiffDTMDEMs[i]) then DEMGlb[DiffDTMDEMs[i]].SelectionMap.DoCompleteMapRedraw;
    end;
    MakeBigDiffferenceMapImage('Elev');
+end;
+
+procedure TDemixFilterForm.CheckBox10Click(Sender: TObject);
+begin
+   MDDef.RGBbestSeparates := CheckBox10.Checked;
 end;
 
 procedure TDemixFilterForm.CheckBox2Click(Sender: TObject);
@@ -735,90 +750,6 @@ begin
    BitBtn6Click(Sender);
 end;
 
-procedure TDemixFilterForm.DoCriteriaGraph;
-var
-   aFilter,DEMstr : shortstring;
-   i,j,k,m,DEM : integer;
-   Graph : tThisBaseGraph;
-   rfile : array[0..10] of file;
-   Symbol : tFullSymbolDeclaration;
-   v : array[1..2] of float32;
-   AllGraphs : tStringList;
-   fName : PathStr;
-begin
-   {$IfDef RecordFullDEMIX} WriteLineToDebugFile('Start TDemixFilterForm.DoCriteriaGraph'); {$EndIf}
-   GISdb[DB].EmpSource.Enabled := false;
-   AllGraphs := tStringList.Create;
-   for i := 0 to pred(DEMsTypeUsing.Count) do begin
-      for j := 0 to pred(TilesUsing.Count) do begin
-         for k :=  0 to pred(LandTypesUsing.Count) do begin
-            aFilter := 'REF_TYPE=' + QuotedStr(DEMsTypeUsing[i]) + ' AND DEMIX_TILE=' + QuotedStr(TilesUsing[j])+ ' AND LAND_TYPE=' + QuotedStr(LandTypesUsing[k]);
-            GISdb[db].ApplyGISFilter(aFilter);
-            if (GISdb[db].MyData.FiltRecsInDB > 0) then begin
-               {$IfDef RecordFullDEMIX} WriteLineToDebugFile(aFilter); {$EndIf}
-               Graph := tThisBaseGraph.Create(Application);
-
-               Graph.GraphDraw.LegendList := tStringList.Create;
-               for DEM := 0 to pred(CandidateDEMsUsing.Count) do begin
-                  Symbol := SymbolFromDEMName(CandidateDEMsUsing[DEM]);
-                  Symbol.DrawingSymbol := FilledBox;
-                  Graph.OpenPointFile(rfile[DEM],Symbol);
-                  Graph.GraphDraw.LegendList.Add(CandidateDEMsUsing[DEM]);
-                  Graph.GraphDraw.LineSize256[DEM] := 2;
-               end;
-
-               Graph.Caption := aFilter;
-               Graph.GraphDraw.GraphAxes := YFullGridOnly;
-               Graph.GraphDraw.MinVertAxis := 999;
-               Graph.GraphDraw.MaxVertAxis := -999;
-               Graph.GraphDraw.HorizLabel := aFilter;
-               Graph.GraphDraw.GraphLeftLabels := tStringList.Create;
-               Graph.GraphDraw.GraphBottomLabels := tStringList.Create;
-               Graph.GraphDraw.GraphBottomLabels := tStringList.Create;
-
-               GISdb[db].MyData.first;
-               while not GISdb[db].MyData.eof do begin
-                  DEMstr := GISdb[db].MyData.GetFieldByNameAsString('DEM');
-                  DEM := CandidateDEMsUsing.IndexOf(DEMstr);
-                  if DEM <> -1 then begin
-                     for m := 0 to pred(CriteriaUsing.Count) do begin
-                        Graph.GraphDraw.GraphBottomLabels.Add(IntToStr(m) + ',' + CriteriaUsing[m]);
-                        v[1] := m;
-                        v[2] := GISdb[db].MyData.GetFieldByNameAsFloat(CriteriaUsing[m]);
-                        CompareValueToExtremes(v[2],Graph.GraphDraw.MinVertAxis,Graph.GraphDraw.MaxVertAxis);
-                        BlockWrite(rfile[DEM],v,1);
-                     end;
-                  end;
-                  GISdb[db].MyData.Next;
-               end;
-               Graph.GraphDraw.MinHorizAxis := -0.5;
-               Graph.GraphDraw.MaxHorizAxis := CriteriaUsing.Count - 0.5;
-               Graph.GraphDraw.MinVertAxis := Graph.GraphDraw.MinVertAxis - 1;
-               Graph.GraphDraw.MaxVertAxis := Graph.GraphDraw.MaxVertAxis + 1;
-               Graph.GraphDraw.SetShowAllLines(true,2);
-               Graph.GraphDraw.VertGraphBottomLabels := false;
-               Graph.GraphDraw.ShowVertAxis0 := true;
-               Graph.AutoScaleAndRedrawDiagram(false,false,false,false);
-               Graph.Height := MDDef.DEMIX_ysize;
-               Graph.Width := MDDef.DEMIX_xsize;
-               Graph.RedrawDiagram11Click(Nil);
-
-               Graph.Image1.Canvas.Draw(Graph.GraphDraw.LeftMargin+15,Graph.GraphDraw.TopMargin+10,Graph.MakeLegend(Graph.GraphDraw.LegendList,false));
-               fName := NextFileNumber(MDTempDir,'big_graph_','.png');
-               SaveImageAsBMP(Graph.Image1,fName);
-               AllGraphs.Add(fName);
-            end;
-         end;
-      end;
-   end;
-   fName := NextFileNumber(MDtempDir,'criteria_by_tile_','.png');
-   MakeBigBitmap(AllGraphs,'',fName,4);
-   DisplayBitmap(fName,'');
-
-   GISdb[DB].ClearGISFilter;
-   GISdb[DB].EmpSource.Enabled := true;
-   {$IfDef RecordFullDEMIX} WriteLineToDebugFile('End TDemixFilterForm.DoCriteriaGraph'); {$EndIf}
-end;
 
 
 procedure TDemixFilterForm.Edit1Change(Sender: TObject);
@@ -869,12 +800,34 @@ begin
    CheckBox8.Checked := MDDef.MakeCOP_ALOS_Cat_Maps;
    CheckBox7.Checked := MDDef.MakeCOP_ALOS_Best_Map;
    CheckBox9.Checked := MDDef.MakeCOP_FABDEM_diffMaps;
+   CheckBox10.Checked := MDDef.RGBbestSeparates;
+
 
    threedembestrgm_checkbox.Checked := MDDef.MakeRGB_Best_Map;
+
+   if (Sender <> Nil) then begin
+      DEMsTypeUsing := tStringList.Create;
+      TilesUsing := tStringList.Create;
+      LandTypesUsing := tStringList.Create;
+      CriteriaUsing := tStringList.Create;
+      CandidateDEMsUsing := tStringList.Create;
+      TileParameters := tStringList.Create;
+   end;
+
 
    PageControl1.ActivePage := TabSheet1;
 end;
 
+
+procedure TDemixFilterForm.FormDestroy(Sender: TObject);
+begin
+      DEMsTypeUsing.Destroy;
+      TilesUsing.Destroy;
+      LandTypesUsing.Destroy;
+      CriteriaUsing.Destroy;
+      CandidateDEMsUsing.Destroy;
+      TileParameters.Destroy;
+end;
 
 procedure TDemixFilterForm.BitBtn10Click(Sender: TObject);
 begin
@@ -953,6 +906,7 @@ end;
 procedure TDemixFilterForm.BitBtn14Click(Sender: TObject);
 var
    AreaName,fName : PathStr;
+   RGB_Best_Map : tStringList;
    RuffRef,SlopeRef,RuffALOS,SlopeALOS,RuffCOP,SlopeCOP,RuffFab,SlopeFab,i,j,DiffMaps,COPDEM,ALOSDEM,FABDEM,Cop_FAB_diff : integer;
    NewElevGrid,NewSlopeGrid,NewRuffGrid,BestElevGrid,BestSlopeGrid,BestRuffGrid,RGBBestElevGrid,RGBBestSlopeGrid,RGBBestRuffGrid : array[1..MaxDemixArray] of integer;
 
@@ -993,9 +947,17 @@ var
       end;
 
       function MakeRGBBestMap(RefDEM,ALOSDEM,COPDEM,FabDEM,MergeDEM : integer; Tolerance : float32; What : shortstring) : integer;
+      var
+         bmp : tMyBitmap;
+         fName : PathStr;
       begin
         {$IfDef RecordDEMIX} WriteLineToDebugFile('MakeRGBBestMap, ' + What); {$EndIf}
          Result := RGBBestOfThreeMap(RefDEM,ALOSDEM,COPDEM,FABDEM,MergeDEM,Tolerance,What);
+         bmp := DEMGlb[Result].SelectionMap.CreateMapAndLegendSideBySide;
+         fName := Petmar.NextFileNumber(MDTempDir,'rgb_map_with_legend_','.bmp');
+         bmp.SaveToFile(fName);
+         bmp.Free;
+         RGB_Best_Map.Add(fName);
       end;
 
 var
@@ -1053,6 +1015,7 @@ begin
 
    if MDDef.MakeCOP_ALOS_Cat_Maps or MDDef.MakeCOP_ALOS_Best_Map or MDDef.MakeRGB_Best_Map then begin
       for i := 1 to MaxDemixArray do begin
+         if MDDef.MakeRGB_Best_Map then RGB_Best_Map := tStringList.Create;
          if ValidDEM(RefDEMsHalfSec[i]) then begin
             refDEMsurfaceType := IsDEMaDSMorDTM(UpperCase(DEMGlb[RefDEMsHalfSec[i]].AreaName));
             {$IfDef RecordDEMIX} WriteLineToDebugFile('Do half sec, ' + DEMGlb[RefDEMsHalfSec[i]].AreaName); {$EndIf}
@@ -1071,11 +1034,11 @@ begin
 
             if MDDef.MakeRGB_Best_Map then begin
                {$IfDef RecordDEMIX} WriteLineToDebugFile('MDDef.MakeRGB_Best_Map'); {$EndIf}
-               RGBBestElevGrid[i] := RGBBestOfThreeMap(RefDEMsHalfSec[i],ALOSDEM,COPDEM,FABDEM,RefDEMsHalfSec[i],MDDef.DEMIXSimpleTolerance,
+               RGBBestElevGrid[i] := MakeRGBBestMap(RefDEMsHalfSec[i],ALOSDEM,COPDEM,FABDEM,RefDEMsHalfSec[i],MDDef.DEMIXSimpleTolerance,
                    AreaName + '_best_elevation_ref_' + RefDEMType[refDEMSurfaceType] + '±' + RealToString(MDDef.DEMIXSimpleTolerance,-4,-2));
-               RGBBestSlopeGrid[i] := RGBBestOfThreeMap(SlopeRef,SlopeALOS,SlopeCOP,SlopeFAB,RefDEMsHalfSec[i],MDDef.DEMIXSlopeTolerance,
+               RGBBestSlopeGrid[i] := MakeRGBBestMap(SlopeRef,SlopeALOS,SlopeCOP,SlopeFAB,RefDEMsHalfSec[i],MDDef.DEMIXSlopeTolerance,
                    AreaName + '_best_slope_ref_' + RefDEMType[refDEMSurfaceType] + '±' + RealToString(MDDef.DEMIXSlopeTolerance,-4,-2));
-               RGBBestRuffGrid[i] := RGBBestOfThreeMap(RuffRef,RuffALOS,RuffCOP,RuffFAB,RefDEMsHalfSec[i],MDDef.DEMIXRuffTolerance,
+               RGBBestRuffGrid[i] := MakeRGBBestMap(RuffRef,RuffALOS,RuffCOP,RuffFAB,RefDEMsHalfSec[i],MDDef.DEMIXRuffTolerance,
                    AreaName + '_best_roughness_ref_' + RefDEMType[refDEMSurfaceType] + '±' + RealToString(MDDef.DEMIXRuffTolerance,-4,-2));
             end;
 
@@ -1096,8 +1059,10 @@ begin
                NewRuffGrid[i] := MakeNewMap('ruff',RuffRef,RuffALOS,RuffCOP,RefDEMsHalfSec[i]);
             end;
          end;
+         if MDDef.MakeRGB_Best_Map then MakeBigBitmap(RGB_Best_Map,'Best for ' + AreaName,'',1);
       end;
    end;
+
    EndDEMIXProcessing;
    {$IfDef RecordDEMIX} WriteLineToDebugFile('TDemixFilterForm.BitBtn14Click (COP-ALOS) out'); {$EndIf}
 end;
@@ -1193,9 +1158,20 @@ end;
 
 
 procedure TDemixFilterForm.BitBtn1Click(Sender: TObject);
+var
+   NumGraph: integer;
 begin
    GetUsingStringLists;
-   DoCriteriaGraph;
+   case RadioGroup2.ItemIndex of
+      0 : NumGraph := TileParameters.Count * DEMsTypeUsing.Count;
+      1 : NumGraph := TileParameters.Count;
+      2 : NumGraph := TileParameters.Count * CriteriaUsing.Count;
+      3 : NumGraph := TileParameters.Count;
+   end;
+   if AnswerIsYes('This will create ' + IntToStr(NumGraph) + ' graphs; Proceed') then begin
+      MultipleBestByParametersSortByValue(DB, RadioGroup2.ItemIndex, DEMsTypeUsing,TilesUsing,LandTypesUsing,CandidateDEMsUsing,CriteriaUsing,TileParameters);
+   end;
+   //DoCriteriaGraph;
 end;
 
 
@@ -1211,15 +1187,14 @@ procedure TDemixFilterForm.GetUsingStringLists;
             end;
          end;
 
-
 begin
    DoOne(Memo1,DEMsTypeUsing);
    DoOne(Memo2,TilesUsing);
    DoOne(Memo3,LandTypesUsing);
    DoOne(Memo4,CriteriaUsing);
    DoOne(Memo5,CandidateDEMsUsing);
+   DoOne(Memo7,TileParameters);
 end;
-
 
 
 procedure TDemixFilterForm.LoadClick(Sender: TObject);
@@ -1242,7 +1217,7 @@ var
       var
          FilesWanted : tStringList;
          j : integer;
-         fName,NewName : PathStr;
+         fName{,NewName} : PathStr;
       begin
          FilesWanted := tStringList.Create;
          FindMatchingFiles(aPath,Ext,FilesWanted,1);
@@ -1265,8 +1240,8 @@ var
          {$IfDef RecordDEMIX} WriteLineToDebugFile('Loaded ' + What + '=' + IntToStr(DEMs)); {$EndIf}
       end;
 
-var
-   i : integer;
+//var
+   //i : integer;
 begin
    {$IfDef RecordDEMIX} WriteLineToDebugFile('TDemixFilterForm.LoadDEMsForArea in'); {$EndIf}
    AreaName := ComboBox4.Text;
