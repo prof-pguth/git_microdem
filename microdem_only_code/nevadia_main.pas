@@ -330,7 +330,7 @@ type
     Subset81Ssidescan1: TMenuItem;
     GISdatasampler1: TMenuItem;
     N15: TMenuItem;
-    imecores1: TMenuItem;
+    //imecores1: TMenuItem;
     Sealevelrise1: TMenuItem;
     N29: TMenuItem;
     Ages1: TMenuItem;
@@ -554,6 +554,10 @@ type
     MultipledNBRmaps1: TMenuItem;
     N28: TMenuItem;
     DEMIXhelp1: TMenuItem;
+    Landformcategorieslegends1: TMenuItem;
+    Extract1: TMenuItem;
+    N36: TMenuItem;
+    N42: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -757,7 +761,7 @@ type
     procedure GISdatasampler1Click(Sender: TObject);
     procedure OpenScannedmap1Click(Sender: TObject);
     procedure Openlandcover1Click(Sender: TObject);
-    procedure imecores1Click(Sender: TObject);
+    //procedure imecores1Click(Sender: TObject);
     procedure Sealevelrise1Click(Sender: TObject);
     procedure Ages1Click(Sender: TObject);
     procedure Magneticanomaliesgrid1Click(Sender: TObject);
@@ -921,9 +925,9 @@ type
     procedure Bringslicecontroltofront1Click(Sender: TObject);
     procedure Bringpointcloudcontroltofront1Click(Sender: TObject);
     procedure Viewlastexectiondebuglog1Click(Sender: TObject);
-    procedure N2020fillseason1Click(Sender: TObject);
-    procedure N2021fillseasonClick(Sender: TObject);
-    procedure N2022fillseason1Click(Sender: TObject);
+    //procedure N2020fillseason1Click(Sender: TObject);
+    //procedure N2021fillseasonClick(Sender: TObject);
+    //procedure N2022fillseason1Click(Sender: TObject);
     procedure COPALOScomparetoreference1Click(Sender: TObject);
     procedure Pixelbypixelmapstatistics1Click(Sender: TObject);
     procedure COPALOShighlowgeomorphometry1Click(Sender: TObject);
@@ -958,6 +962,8 @@ type
     procedure Datadownloadpicksubset1Click(Sender: TObject);
     procedure Piracywindsandrain1Click(Sender: TObject);
     procedure DEMIXhelp1Click(Sender: TObject);
+    procedure Landformcategorieslegends1Click(Sender: TObject);
+    procedure Extract1Click(Sender: TObject);
     //procedure PanoramaAdmin1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
@@ -2897,20 +2903,6 @@ begin
 end;
 *)
 
-procedure Twmdem.N2020fillseason1Click(Sender: TObject);
-begin
-   //GerdDownload(2020)
-end;
-
-procedure Twmdem.N2021fillseasonClick(Sender: TObject);
-begin
-   //GerdDownload(2021)
-end;
-
-procedure Twmdem.N2022fillseason1Click(Sender: TObject);
-begin
-   //GerdDownload(2022)
-end;
 
 procedure Twmdem.N3OpenDEMs1Click(Sender: TObject);
 begin
@@ -2966,7 +2958,9 @@ begin
    {$IfDef RecordClosing} WriteLineToDebugFile('Defaults saved ' + '  dbfn=' + DebugFileName); {$EndIf}
    DEM_Manager.CloseAllWindowsAndData;
    {$IfDef RecordClosing} WriteLineToDebugFile('Windows closed ' + '  dbfn=' + DebugFileName); {$EndIf}
-  if AskForDebugUpdateNow or AskForNewUpdateNow then begin
+
+(*
+   if AskForDebugUpdateNow or AskForNewUpdateNow then begin
       if MDDef.BackupEXEbeforeUpdate then BackupprogramEXE1Click(Sender);
       DeleteFileIfExists(ProgramRootDir + 'backup\microdem.exe');
       if AskForNewUpdateNow then DownloadFileFromWeb(WebProgramDownLoadDir + 'microdem_update.exe',MDTempDir + 'microdem_update.exe')
@@ -2989,6 +2983,8 @@ begin
       BatFile.Free;
       ExecuteFile(fName,'', ProgramRootDir);
    end;
+*)
+
    Action := caFree;
    {$If Defined(RecordClosing) or Defined(RecordProblems)} writeLineToDebugFile('Twmdem.FormClose out, normal termination build ' + BuildString  + '  dbfn=' + DebugFileName); {$EndIf}
 end;
@@ -3060,7 +3056,7 @@ procedure Twmdem.ConvertDBFsfor64bit1Click(Sender: TObject);
      var
         OldName : PathStr;
      begin
-        {$IfDef RecordDBFconvert} WriteLineToDebugFile('ConvertDB ' + NewName);   {$EndIf}
+        {$IfDef RecordDBFconvert} WriteLineToDebugFile('ConvertDB ' + NewName); {$EndIf}
         OldName := ChangeFileExt(NewName,'.dbf');
         {$IfDef SQLiteDefaultDBs}
            if MDDef.ForceOverwriteDB then SysUtils.DeleteFile(NewName);
@@ -3516,10 +3512,12 @@ var
 begin
    dName := MainMapData + 'geology\geology_grids\';
    fName := 'EMAG2_V2.tif';
+(*
    if not FileExists(dName + fName) then begin
       {$IfDef RecordMGT} WriteLineToDebugFile('Did not find, and try to download ' + fName); {$EndIf}
       DownloadFileFromWeb(WebDataDownLoadDir + fName,dName + fName);
    end;
+*)
    if FileExists(dName + fName) then begin
       OpenNewDEM(dName + fName,false);
       DEMGlb[LastDEMLoaded].DEMheader.ElevUnits := Nanotesla;
@@ -3754,7 +3752,7 @@ begin
    {$IfDef ExSetOptions}
    {$Else}
       ChangeOptions;
-      {$IfDef RecordProblems} WriteLineToDebugFile('Options change ProgramMode=' + IntToStr(ord(MDdef.ProgramOption )));   {$EndIf}
+      {$IfDef RecordProblems} WriteLineToDebugFile('Options change ProgramMode=' + IntToStr(ord(MDdef.ProgramOption ))); {$EndIf}
    {$EndIf}
 end;
 
@@ -3792,6 +3790,11 @@ begin
    end;
 end;
 
+
+procedure Twmdem.Extract1Click(Sender: TObject);
+begin
+   ExtractEDTMforTestAreas;
+end;
 
 procedure Twmdem.CloseallDBs1Click(Sender: TObject);
 begin
@@ -3987,10 +3990,12 @@ begin
 end;
 
 procedure Twmdem.OpenDEMIXarea1Click(Sender: TObject);
+(*
 var
    FilesWanted : tStringList;
    fName : PathStr;
    i : integer;
+*)
 begin
 (*
    {$IfDef RecordDEMIX} WriteLineToDebugFile('OpenDEMIXarea1Click in'); {$EndIf}
@@ -4438,7 +4443,7 @@ var
             fName := GridDir + ParamsUsed[i] + '.dem';
             if FileExists(fName) then begin
                LoadNewDEM(ParamDEMs[i],fName,false);
-               {$IfDef RecordGeostats} writeLineToDebugFile('Grid existed ' + IntToStr(ParamDEMs[i]));   {$EndIf}
+               {$IfDef RecordGeostats} writeLineToDebugFile('Grid existed ' + IntToStr(ParamDEMs[i]);: {$EndIf}
             end
             else begin
                OpenDEMDataStructures(ParamDEMs[i]);
@@ -4609,7 +4614,6 @@ procedure Twmdem.Geoid1Click(Sender: TObject);
 var
    DEM : integer;
 begin
-   //GetGeoid;
    DEM := OpenNewDEM(Geoid2008FName);
    AddOrSubtractOverlay(DEMGlb[DEM].SelectionMap,ovoWorldOutlines,true);
    DEMGlb[DEM].SelectionMap.DoFastMapRedraw;
@@ -4828,70 +4832,6 @@ begin
    {$EndIf}
 end;
 
-
-procedure Twmdem.imecores1Click(Sender: TObject);
-{$IfDef NoTiming}
-begin
-{$Else}
-var
-   NewDEM : integer;
-
-
-      procedure DrawMap(mt : tMapType);
-      var
-         RightImage,LeftImage : PathStr;
-         MyBitmap : tMyBitmap;
-      begin
-          Stopwatch := TStopwatch.StartNew;
-          if (mt = mtAnaglyph) then begin
-            MyBitmap := Nil;
-            DEMGlb[NewDEM].SelectionMap.MapDraw.MapType := mtGrayReflect;
-            DEMGlb[NewDEM].SelectionMap.MapDraw.DeleteSingleMapLayer(DEMGlb[NewDEM].SelectionMap.MapDraw.BaseMapFName);
-            DEMGlb[NewDEM].SelectionMap.MapDraw.DrawMapOnBMP(MyBitmap);
-            DEMGlb[NewDEM].SelectionMap.MapDraw.AnaglyphBitmap(RightImage,LeftImage,MyBitmap);
-            DEMGlb[NewDEM].SelectionMap.Image1.Picture.Graphic := MyBitmap;
-            MyBitmap.Free;
-          end
-          else begin
-             DEMGlb[NewDEM].SelectionMap.MapDraw.MapType := mt;
-             DEMGlb[NewDEM].SelectionMap.DoBaseMapRedraw;
-          end;
-          WriteLineToDebugFile(RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + '   ' + MapTypeName(mt));
-       end;
-
-
-      procedure DoLots(What : shortString; ThreadsToUse : Integer);
-      begin
-         WriteLineToDebugFile('Threads=' + ThreadsToUse.ToString);
-         MDdef.MaxThreadsForPC := ThreadsToUse;
-         DrawMap(mtElevSpectrum);
-         DrawMap(mtGrayReflect);
-         DrawMap(mtIHSReflect);
-         DrawMap(mtSlopeTrafficCats);
-         DrawMap(mtDEMAspect);
-         DrawMap(mtAnaglyph);
-      end;
-
-begin
-   SaveBackupDefaults;
-
-   NewDEM := OpenNewDEM('c:\mapdata\test-v4.dem');
-   MDDef.MapTicks := tixNone;
-   MDDef.DefaultMapXSize := 2048;
-   MDDef.DefaultMapYSize := 2048;
-   MDDef.FanSaveExt := '.png';
-   //SaveThreads := MDdef.MaxThreadsForPC;
-
-   DoLots('Threads',16);
-   DoLots('Threads',8);
-   DoLots('Threads',4);
-   DoLots('Threads',2);
-   DoLots('Threads',1);
-   CloseSingleDEM(NewDEM);
-
-   RestoreBackupDefaults;
-{$EndIf}
-end;
 
 
 procedure Twmdem.Micronetquiz1Click(Sender: TObject);
@@ -5253,10 +5193,10 @@ begin
    for i := 0 to pred(TheFiles.Count) do begin
       ThreadTimers.OverallGauge9.Progress := round(100 * i/TheFiles.Count);
       fName := TheFiles.Strings[i];
-      {$IfDef RecordGeostats}     WriteLineToDebugFile(fName,true);   {$EndIf}
+      {$IfDef RecordGeostats}     WriteLineToDebugFile(fName,true): {$EndIf}
       aDEM := OpenNewDEM(fName);
       DEMGlb[aDEM].SelectionMap.OpenDBonMap('',dbname);
-      {$IfDef RecordGeostats}   WriteLineToDebugFile(DEMGlb[aDEM].AreaName);   {$EndIf}
+      {$IfDef RecordGeostats}   WriteLineToDebugFile(DEMGlb[aDEM].AreaName): {$EndIf}
       GISdb[db].AddAndFillFieldFromDEM(adElevNearest,ptTrim(DEMGlb[aDEM].AreaName));
       MomentVar := DEMGlb[aDEM].ElevationMoments(DEMGlb[aDEM].FullDEMGridLimits);
       Results.Add(ptTrim(DEMGlb[aDEM].AreaName) + ',' +
@@ -5921,6 +5861,11 @@ begin
 end;
 
 
+procedure Twmdem.Landformcategorieslegends1Click(Sender: TObject);
+begin
+   LandCoverBarGraphLegends;
+end;
+
 procedure Twmdem.Landsatbrowseindex1Click(Sender: TObject);
 begin
    {$IfDef ExComplexGeoStats}
@@ -6289,7 +6234,7 @@ finalization
    {$IfDef RecordMrSidStartup} WriteLineToDebugFile('RecordMrSidStartupProblems  active in Wmaindem');{$EndIf}
    {$IfDef FullDrainageBasinStats} WriteLineToDebugFile('FullDrainageBasinStats active in Wmaindem'); {$EndIf}
    {$IfDef DrainageBasinStats} WriteLineToDebugFile('DrainageBasinStats active in Wmaindem'); {$EndIf}
-   {$IfDef RecordUpdate} WriteLineToDebugFile('RecordUpdateProblem active in WMainDEM');   {$EndIf}
+   {$IfDef RecordUpdate} WriteLineToDebugFile('RecordUpdateProblem active in WMainDEM'): {$EndIf}
    {$IfDef DrainageBasinStreamsInBasins} writeLineToDebugFile('DrainageBasinStreamsInBasins active in WMainDEM'); {$EndIf}
    {$IfDef RecordButton} WriteLineToDebugFile('RecordButtonProblems active in WMainDEM'); {$EndIf}
    {$IfDef RecordOpenVectorMap} writeLineToDebugFile('RecordOpenVectorMap active in WMainDEM'); {$EndIf}

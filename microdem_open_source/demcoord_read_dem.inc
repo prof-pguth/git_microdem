@@ -24,10 +24,9 @@ var
          i : integer;
       begin
          {$If Defined(RecordReadDEM) or Defined(RecordGeotiff)} WriteLineToDebugFile('tDEMDataSet.ReadDEMNow ReadTIFFDEM in'); {$EndIf}
-         TiffImage := tTiffImage.CreateGeotiff(DEMMapProjection,RegVars,false,DEMFileName,Result,false,false);
-         DEMheader.DigitizeDatum := DatumCodeFromString(DEMMapProjection.h_datumCode);
+         TiffImage := tTiffImage.CreateGeotiff(false,DEMMapProjection,RegVars,false,DEMFileName,Result,false,false);
+         {$If Defined(RecordGeotiff) or Defined(TrackHorizontalDatum)} WriteLineToDebugFile('DEM TiffImage created, datum=' + DEMMapProjection.h_DatumCode); {$EndIf}
 
-         {$IfDef TrackHorizontalDatum} WriteLineToDebugFile('ReadDEMNOw TiffImageCreated, DigitizeDatum=' + StringFromDatumCode(DEMheader.DigitizeDatum)); {$EndIf}
          if Result then begin
             {$If Defined(RecordReadDEM) or Defined(RecordGeotiff)} WriteLineToDebugFile('Call TiffImage.CreateTiffDEM'); {$EndIf}
             Result := TiffImage.CreateTiffDEM(Self);
@@ -37,7 +36,7 @@ var
             {$If Defined(RecordReadDEM) or Defined(RecordGeotiff)} WriteLineToDebugFile('tDEMDataSet.ReadDEMNow ReadTIFFDEM error, ' + DEMFileName); {$EndIf}
          end;
          TiffImage.Destroy;
-         {$If Defined(RecordReadDEM) or Defined(RecordGeotiff)} WriteLineToDebugFile('RtDEMDataSet.ReadDEMNow eadTIFFDEM out, ' + DEMMapProjection.GetProjectionName); {$EndIf}
+         {$If Defined(RecordReadDEM) or Defined(RecordGeotiff)} WriteLineToDebugFile('tDEMDataSet.ReadDEMNow ReadTIFFDEM out, ' + DEMMapProjection.GetProjectionName); {$EndIf}
       end;
    {$EndIf}
 
@@ -77,8 +76,9 @@ var
        LogRecA : array[0..2048] of Byte;
        l1 : float64;
        BytesToRead,BytesRead,
-       LogRecAOffset,i,NumRead,HeaderSize,
-       x,HeaderOffset,DEMOffset : integer;
+       //LogRecAOffset,
+       i,NumRead,HeaderSize,
+       x{,HeaderOffset,DEMOffset} : integer;
        Magic : shortstring;
        aTstr : ANSIString;
 
@@ -360,7 +360,7 @@ var
 
 var
    ofName,WKTfile : PathStr;
-   DEMlist : tStringList;
+   //DEMlist : tStringList;
 begin
    {$IfDef RecordReadDEM} WriteLineToDebugFile('enter read DEM for ' +  tFile); {$EndIf}
    InsureFileIsNotReadOnly(tFile);
@@ -379,18 +379,15 @@ begin
       GDALAssignDEMProjection(DEMFileName,WKTfile);
       Error := not ReadTIFFDEM(DEMFileName);
    end
-   {$IfDef  ExGeotiff}
-   {$Else}
-      else if ExtEquals(Ext, '.TIF') or ExtEquals(Ext, '.TIFF') then begin
-         if StrUtils.AnsiContainsText(DEMFileName,'original_') and (not AnswerIsYes('GDAL has tried with the file already; are you sure you want to continue ' + DEMFileName)) then begin
-            Result := false;
-            exit;
-         end;
-         Error := not ReadTIFFDEM(DEMFileName);
-         {$If Defined(RecordUKOS) or Defined(RecordReadDEM)} WriteLineToDebugFile('Load Geotiff read ' + AreaName + '  ' + DEMMapProjection.GetProjectionName); {$EndIf}
-         {$If Defined(RecordUKOS)} DEMMapProjection.ShortProjInfo('AreaName Tiff Read'); {$EndIf}
-      end
-   {$EndIf}
+   else if ExtEquals(Ext, '.TIF') or ExtEquals(Ext, '.TIFF') then begin
+      if StrUtils.AnsiContainsText(DEMFileName,'original_') and (not AnswerIsYes('GDAL has tried with the file already; are you sure you want to continue ' + DEMFileName)) then begin
+         Result := false;
+         exit;
+      end;
+      Error := not ReadTIFFDEM(DEMFileName);
+      {$If Defined(RecordUKOS) or Defined(RecordReadDEM)} WriteLineToDebugFile('Load Geotiff read ' + AreaName + '  ' + DEMMapProjection.GetProjectionName); {$EndIf}
+      {$If Defined(RecordUKOS)} DEMMapProjection.ShortProjInfo('AreaName Tiff Read'); {$EndIf}
+   end
    else if ExtEquals(Ext, '.HGT') or ExtEquals(Ext, '.SWB') or ExtEquals(Ext, '.HGTS') or ExtEquals(Ext, '.NUM') or ExtEquals(Ext,'.BIN') then begin
       ReadSRTMHGTField(DEMFileName,Error);
    end
@@ -872,6 +869,10 @@ begin
 
    if NewArea(True,WantedDEM,DEMMessage,FullFileName) then begin
       {$If Defined(RecordZRange) or Defined(RecordReadDEM)} WriteLineToDebugFile('LoadNewDEM NewArea over, ' + DEMGlb[WantedDEM].AreaName + '  ' + DEMGlb[WantedDEM].Zrange); {$EndIf}
+      {$If Defined(TrackHorizontalDatum)}
+         WriteLineToDebugFile('LoadNewDEM NewArea over, ' + DEMGlb[WantedDEM].AreaName + '  ' +  DEMGlb[WantedDEM].DEMMapProjection.h_DatumCode + '  ' +
+           StringFromDatumCode(DEMGlb[WantedDEM].DEMheader.DigitizeDatum));
+      {$EndIf}
       Result := true;
       if CreateMap then begin
         {$IfDef VCL}
@@ -883,6 +884,7 @@ begin
                AddOrSubtractOverlay(DEMGlb[WantedDEM].SelectionMap,ovoUSOUtlines,true);
                DEMGlb[WantedDEM].SelectionMap.DoFastMapRedraw;
             end;
+            {$If Defined(TrackHorizontalDatum)}  DEMGlb[WantedDEM].TrackHorizontalDatumDebugLog('LoadNewDEM map created,'); {$EndIf}
          {$EndIf}
       end;
    end
@@ -901,6 +903,7 @@ begin
    {$If Defined(RecordShortDefineDatum) or Defined(RecordReadDEM)  or Defined(TimeLoadDEM)}
       if (WantedDEM <> 0) then WriteLineToDebugFile('Exit LoadNewDEM=' + IntToStr(WantedDEM) + '  ' + DEMGlb[WantedDEM].KeyDEMParams(true));
    {$EndIf}
+   {$If Defined(TrackHorizontalDatum)}  DEMGlb[WantedDEM].TrackHorizontalDatumDebugLog('exit LoadNewDEM,'); {$EndIf}
 end;
 
 
@@ -980,6 +983,10 @@ begin
    if (ImportingDEM <> 0) and FileExists(DEMGlb[ImportingDEM].MetadataFileName) then DEMGlb[ImportingDEM].DEMmetadata.LoadFromFile(DEMGlb[ImportingDEM].MetadataFileName);
    {$If Defined(RecordReadDEM) or Defined(TimeLoadDEM) or Defined(ShortDEMLoad)}
       WriteLineToDebugFile('exit ReadDEMNow, ' + DEMGlb[ImportingDEM].AreaName + '  ' + DEMGlb[ImportingDEM].KeyDEMParams(true) + ' ' + DEMGlb[ImportingDEM].DEMHorizontalSpacingSummary);
+   {$EndIf}
+   {$If Defined(TrackHorizontalDatum)}
+      WriteLineToDebugFile('exit ReadDEMNow, ' + DEMGlb[ImportingDEM].AreaName + '  ' +  DEMGlb[ImportingDEM].DEMMapProjection.h_DatumCode + '  ' +
+        StringFromDatumCode(DEMGlb[ImportingDEM].DEMheader.DigitizeDatum));
    {$EndIf}
 end;
 

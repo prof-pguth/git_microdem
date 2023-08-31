@@ -1,7 +1,7 @@
 unit GeoTiff;
 
 {^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of ianMICRODEM GIS Program    }
+{ Part of MICRODEM GIS Program       }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
 { Copyright (c) 2023 Peter L. Guth   }
@@ -25,15 +25,14 @@ unit GeoTiff;
    //{$Define ReportKey258}  //this happens with some Landsat, but does not appear to stop things
 
    {$IFDEF DEBUG}
-      (*
       //{$Define RecordGeotiff}
+      //{$Define RecordJustMetadata}
       //{$Define RecordGeotiffFailures}
       //{$Define RecordInitializeDEM}
 
       //{$Define TrackPixelIs}
       //{$Define TrackDEMCorners}
       //{$Define GeotiffCorner}
-      *)
       //{$Define RecordImageOffsets}
       //{$Define TrackHorizontalDatum}
       //{$Define RecordDEMMapProjection}
@@ -151,7 +150,8 @@ type
          procedure OpenTiffFile;   //inline;
          procedure CloseTiffFile;  //inline;
 
-         constructor CreateGeotiff(var MapProjection : tMapProjection; var RegVars : tRegVars; NoGeo : boolean; inFileName : PathStr; var Success : boolean; ShowHeader : boolean = false; GetHistogram : boolean = true; BandNum : integer = 0);
+         constructor CreateGeotiff(Metadataonly : boolean; var MapProjection : tMapProjection; var RegVars : tRegVars; NoGeo : boolean; inFileName : PathStr;
+            var Success : boolean; ShowHeader : boolean = false; GetHistogram : boolean = true; BandNum : integer = 0);
          destructor Destroy; override;
          procedure GetTiffRow(Band,Row : integer; var TheRow : tImageRow);
          procedure GetPointReflectances(Column,Row : integer; var Reflectances : tAllRefs);
@@ -170,8 +170,6 @@ type
    procedure WriteFieldEntry(var TIFFFile : File; Tag,TypeField : word; Length,Offset : LongInt);
    procedure WriteFieldEntryIncrementOffset(var TIFFFile : File; Tag,TypeField : word; Length : longint; var Offset : LongInt);
    procedure WriteWordFieldEntry(var TIFFFile : File; Tag,TypeField,Length,Offset : word);
-   //function GetUTMDatumCode(PrimaryMapDatum : tMapProjection) : word;
-   //function GetGeoDatumCode(PrimaryMapDatum : tMapProjection) : word;
    function GeoTIFFTagName(Tag : integer) : ShortString;
    function GeotiffTypeSize(ftype : integer) : integer;
 
@@ -231,7 +229,7 @@ var
   MapProjection : tMapProjection;
   RegVars : tRegVars;
 begin
-   TiffImage := tTiffImage.CreateGeotiff(MapProjection,RegVars,false,fName,success);
+   TiffImage := tTiffImage.CreateGeotiff(false,MapProjection,RegVars,false,fName,success);
    if Success then Result := TiffImage.TiffHeader.SamplesPerPixel
    else Result := 0;
    TiffImage.Destroy;
@@ -1379,22 +1377,21 @@ begin
 end;
 
 
-constructor tTIFFImage.CreateGeotiff(var MapProjection : tMapProjection; var RegVars : tRegVars; NoGeo : boolean; inFileName : PathStr; var Success : boolean; ShowHeader : boolean = false; GetHistogram : boolean = true; BandNum : integer = 0);
+constructor tTIFFImage.CreateGeotiff(Metadataonly : boolean; var MapProjection : tMapProjection; var RegVars : tRegVars; NoGeo : boolean; inFileName : PathStr;
+   var Success : boolean; ShowHeader : boolean = false; GetHistogram : boolean = true; BandNum : integer = 0);
 label
    SkipThumbnail,RestartGeotiff;
 var
    Dir    : DirStr;
    bName  : NameStr;
    Ext    : ExtStr;
-   //Value,
    b  : SingleBytes;
    Zone : byte;
    FileName,ProjFileName : PathStr;
    DatCode,Hemi,
-   //Err,l,
    TiePoints,
    TypeSize : integer;
-   tf{,f}  : float64;
+   tf  : float64;
    off1 : int64;
    TFWFile,
    HeaderLogList    : tStringList;
@@ -2327,7 +2324,10 @@ begin
    {$If Defined(LongCent)} writeLineToDebugFile('ReadTIFFtags done, LongCent: ' + RadToDegString(MapProjection.Long0)); {$EndIf}
    {$IfDef TrackModelType} WriteLineToDebugFile('ReadTIFFtags done, TiffHeader.ModelType=' + IntToStr(TiffHeader.ModelType) ); {$EndIf}
 
-   if TiledImage or (TiffHeader.Compression <> 1) then begin
+   if MetadataOnly then begin
+      //don't need to worry about tiled or compressed geotiffs
+   end
+   else if TiledImage or (TiffHeader.Compression <> 1) then begin
       HeaderLogList.Insert(1,'Problem image');
       Success := false;
       CloseTiffFile;
@@ -2472,28 +2472,26 @@ begin
 
    {$IfDef RecordInitializeDEM} WriteLineToDebugFile(' closed tiff file,  ModelX=' + RealToString(TiffHeader.ModelX,-18,-6) + ' ModelY=' + RealToString(TiffHeader.ModelY,-18,-6) ); {$EndIf}
 
-   if (TiffHeader.BitsPerSample in [15,16]) and (TiffHeader.SamplesPerPixel > 1) then begin
-      New(BigRow);
-   end;
-
-
-   if (TiffHeader.PhotometricInterpretation = 2) or (TiffHeader.SamplesPerPixel > 1) then begin    //color image
-      if (TiffHeader.BitsPerSample in [15,16]) then begin
-         new(Row16Bit);
-      end
-      else begin
-         New(Row8Bit);
+   if (not MetadataOnly) then begin
+      if (TiffHeader.BitsPerSample in [15,16]) and (TiffHeader.SamplesPerPixel > 1) then begin
+         New(BigRow);
       end;
-   end
-   else begin  //single band image
-      //if (TiffHeader.Compression = 1) then begin  {uncompressed}
+      if (TiffHeader.PhotometricInterpretation = 2) or (TiffHeader.SamplesPerPixel > 1) then begin    //color image
+         if (TiffHeader.BitsPerSample in [15,16]) then begin
+            new(Row16Bit);
+         end
+         else begin
+            New(Row8Bit);
+         end;
+      end
+      else begin  //single band image
          if (TiffHeader.BitsPerSample in [15, 16]) then begin
             new(Row16Bit);
          end
          else if (TiffHeader.BitsPerSample in [4,8]) then begin
             new(Row8Bit);
          end;
-      //end;
+      end;
    end;
 
    TemporaryNewGeotiff := true;
@@ -2513,12 +2511,14 @@ begin
 
    if ShowHeader then begin
       ShowInNotepadPlusPlus(HeaderLogList,'MD_metadata_' + ExtractFileName(InFileName));
+      {$If Defined(RecordJustMetadata)} WriteLineToDebugFile('ShowHeader done'); {$EndIf}
    end
    else begin
       HeaderLogList.Free;
       {$IfDef RecordGeotiff} WriteLineToDebugFile('read Geotiff out, HeaderLogList.Freed'); {$EndIf}
    end;
    Success := true;
+   {$If Defined(RecordGeotiff) or Defined(RecordJustMetadata)} WriteLineToDebugFile('TiffImageCreate out'); {$EndIf}
 end;
 
 

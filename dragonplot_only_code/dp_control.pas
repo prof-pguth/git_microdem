@@ -808,11 +808,11 @@ procedure TDragonPlotForm.ProcessShot;
 var
    BlockLat,BlockLong,DistOut,BlockAngle,BlockDist : float64;
    TStr : shortstring;
-   AzTrue,AzUTM,MapAz,Dist,BearingAngle,TargetZ,ReportedDistance,z,Pitch1,Pitch2  : float64;
+   AzTrue,AzUTM,MapAz,Dist,BearingAngle,TargetZ,ReportedDistance,{z,}Pitch1,Pitch2  : float64;
    GeoName,PointMess1,PLSSMess2 : ShortString;
    FoundIntersection : boolean;
    Sym1 : tFullSymbolDeclaration;
-   Bitmap : Graphics.tBitmap;
+   //Bitmap : Graphics.tBitmap;
 
       procedure AccuracyCheck(Map : tMapForm; Azimuth,Depress : float64; NeedPLSS : boolean);
       var
@@ -1177,8 +1177,8 @@ end;
 
 
 procedure TDragonPlotForm.FormCreate(Sender: TObject);
-var
-   i  : integer;
+//var
+   //i  : integer;
 begin
    SettingUp := true;
    FirstKML := true;
@@ -1252,7 +1252,7 @@ var
    NewDEM : integer;
    Bitmap : Graphics.tBitmap;
    wFan : tWeaponsFan;
-   CoverName,
+   //CoverName,
    fName : PathStr;
 begin
    {$IfDef RecordDP} WriteLineToDebugFile('TDragonPlotForm.PanoramaSpeedButtonClick in'); {$EndIf}
@@ -1431,7 +1431,7 @@ end;
 procedure TDragonPlotForm.BitBtn11Click(Sender: TObject);
 var
    //fName : PathStr;
-   csv : tStringList;
+   //csv : tStringList;
    i : integer;
    bmp : Graphics.tBitmap;
 begin
@@ -1577,10 +1577,6 @@ end;
 
 
 procedure TDragonPlotForm.CreateSinglePerspective;
-var
-  Vis : boolean;
-  t2 : shortstring;
-  Distance,BlockDist : float64;
 begin
 end;
 
@@ -1997,7 +1993,7 @@ end;
 
 procedure TDragonPlotForm.SetLightningSymbols;
 var
-   fName : PathStr;
+   //fName : PathStr;
    Polarity : shortstring;
    Mag : float64;
    Sym : tFullSymbolDeclaration;

@@ -3305,6 +3305,8 @@ var
    i : integer;
 begin
    {$IfDef VCL}
+      if Paths.Count = 0 then Paths.Add(MainMapData);
+
       fod := TFileOpenDialog.Create(nil);
       try
          fod.Title := 'Folders/directories for ' + TheMessage;
@@ -3313,11 +3315,11 @@ begin
          fod.DefaultFolder := GetParentDirectory(Paths[0]);
          Paths.Clear;
          if fod.Execute then begin
-              for i := 0 to pred(fod.Files.Count) do begin
-                 Paths.Add(fod.Files[i] + '\');
-              end;
+            for i := 0 to pred(fod.Files.Count) do begin
+               Paths.Add(fod.Files[i] + '\');
+            end;
          end;
-         Result := Paths.Count > 0;
+         Result := (Paths.Count > 0);
      finally
        fod.Free;
      end;
@@ -4741,6 +4743,7 @@ finalization
    {$If Defined(RecordDialogs)} WriteLineToDebugFile('RecordDialogs active in PETMAR'); {$EndIf}
    {$If Defined(RecordClosing)} WriteLineToDebugFile('Closing petmar out dbfn=' + DebugFileName); {$EndIf}
 end {unit}.
+
 
 
 

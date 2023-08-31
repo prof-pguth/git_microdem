@@ -177,10 +177,11 @@ var
    lf : tLAS_data;
    fName : PathStr;
    Points : ^tPointXYZIArray;
-   last,xc,yc : integer;
+   //last,xc,yc : integer;
    Outf : file;
-   zf,z,xutm,yutm : float64;
-   bmp : tMyBitmap;
+   //zf,z,
+   xutm,yutm : float64;
+   //bmp : tMyBitmap;
    Range : float64;
    ThisPoint : tLASClassificationCategory;
    Color : tPlatformColor;
@@ -587,15 +588,17 @@ type
    tElevArray = array[LowElev..HighElev] of integer;
 var
    WithHeldPoints,OverlapPoints,z1,z99,
-   I,j,k,RecsRead,z,First,Last,Total,TotalPoints,ThisReturn,AirPoints : Integer;
+   //I,j,ThisReturn,
+   k,RecsRead,z,First,Last,Total,TotalPoints,AirPoints : Integer;
    CenterLat,CenterLong : float64;
    ze : float64;
    r,g,b,n : word;
    LasData : tLas_Data;
-   PointCat : tLASClassificationCategory;
+   //PointCat : tLASClassificationCategory;
    Elevs : tElevArray;
    HasNIR : boolean;
-   ThisGraph,ThisGraph2 : TThisBaseGraph;
+   //ThisGraph,
+   ThisGraph2 : TThisBaseGraph;
    rFile : file;
    v : tGraphPoint32;
    fName : PathStr;
@@ -807,8 +810,8 @@ var
 
 
          procedure DoResults(fName : PathStr;  LasData : tLas_Data);
-         var
-            i : integer;
+         //var
+            //i : integer;
 
                  procedure TimeForScanAngles;
                  var

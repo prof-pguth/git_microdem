@@ -881,11 +881,11 @@ end;
                try
                   x := 0;
                   y := 0;
-                  if (MDDef.SpecifyLegendX = 0) then begin
+                  //if (MDDef.SpecifyLegendX = 0) then begin
                      if LegendLocation in [lpNEMap,lpSEMap] then x := MapXSize - Legend.Width;
                      if LegendLocation in [lpNMap,lpSMap] then x := MapXSize div 2 - Legend.Width div 2;
-                  end
-                  else x := MDDef.SpecifyLegendX;
+                  //end
+                  //else x := MDDef.SpecifyLegendX;
                   if LegendLocation in [lpSWMap,lpSMap,lpSEMap] then y := MapYSize - Legend.Height;
                   Bitmap.Canvas.Pen.Color := clNearWhite;   //RGB(254,254,254);
                   Bitmap.Canvas.Brush.Color := clWhite;

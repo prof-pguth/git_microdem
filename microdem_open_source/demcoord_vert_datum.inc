@@ -52,15 +52,22 @@ begin
    end;
 end;
 
-
 procedure VerticalDatumShiftWithGDAL(DEM : integer; var SaveName : PathStr);
-//obviously hard wired for testing
+//obviously hard wired for testing and not error trapped
+//slow
 var
-   BatchFile : tStringList;
-   aName,InName : PathStr;
-   cmd,s_SRSstring,t_srsstring : shortstring;
+   //BatchFile : tStringList;
+   //aName,
+   InName : PathStr;
+   UTMzone : shortstring;
+   //cmd,
+   s_SRSstring,t_srsstring : shortstring;
 begin
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('VerticalDatumShiftWithGDAL in'); {$EndIf}
+   if (DEMGlb[DEM].DEMHeader.VerticalCSTypeGeoKey = VertCSEGM2008) then begin
+      MessageToContinue('DEM already EGM2008');
+      exit;
+   end;
    if (SaveName = '') then begin
       if not GetFileNameDefaultExt('Vertical shifted DEM','*.tif',SaveName) then begin
          exit;
@@ -73,18 +80,24 @@ begin
       s_SRSstring := ' -s_srs EPSG:4326+5773';
       t_srsstring := ' -t_srs EPSG:4326+3855';
    end
-   else begin
+   else if (DEMGlb[DEM].DEMMapProjection.h_DatumCode = 'NAD83') then begin
       //this goes from NAD83 NAVD88 to WGS84 EGM2008, both in UTM zone 11N
-      s_SRSstring := ' -s_srs EPSG:26911+5703';
-      t_srsstring := ' -t_srs EPSG:32611+3855';
+      UTMZone := AddDayMonthLeadingZero(DEMGlb[DEM].DEMHeader.UTMzone);
+      s_SRSstring := ' -s_srs EPSG:269' + UTMzone + '+5703';
+      t_srsstring := ' -t_srs EPSG:326' + UTMzone + '+3855';
+   end
+   (*
+   else if  (DEMGlb[DEM].DEMMapProjection.h_DatumCode = 'UKOS') then begin
+      //this goes from UK to UTM zone, but did not work
+      s_SRSstring := ' -s_srs EPSG:27700+5701';
+      t_srsstring := ' -t_srs EPSG:32630+3855';
+   end
+   *)
+   else begin
+      MessageToContinue('Not yet supported for ' + DEMGlb[DEM].DEMMapProjection.h_DatumCode);
+      exit;
    end;
-
-   StartGDALbatchFile(BatchFile);
-   cmd := 'gdalwarp -overwrite -ot float32 ' + InName + ' ' + SaveName + s_SRSString + t_srsstring;
-   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('VerticalDatumShiftWithGDAL cmd=' + cmd); {$EndIf}
-   BatchFile.Add(cmd);
-   aName :=  Petmar.NextFileNumber(MDTempDir, 'gdal_datumshift_','.bat');
-   EndBatchFile(aName,BatchFile);
+   CompositeDatumShiftWithGDAL(InName,SaveName,s_SRSstring,t_srsstring);
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('VerticalDatumShiftWithGDAL out'); {$EndIf}
 end;
 
@@ -97,29 +110,31 @@ var
    TheShift : shortString;
 begin
    {$IfDef RecordVertDatumShift} WriteLineToDebugFile('VerticalDatumShift in, DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].ZRange);  {$EndIf}
-   GetGeoid;
+   //GetGeoid;
    if (vdShift = vdEGM96toEGM2008) then fName := GeoidDiffFName
    else fName := Geoid2008FName;
    GeoidGrid := OpenNewDEM(fName,false);
+   if ValidDEM(GeoidGrid) then begin
 
-   case vdShift of
-      vdWGS84toEGM2008 : TheShift := 'gs84_to_egm2008';
-      vdEGM2008toWGS84 : TheShift := 'egm2008_to_wgs84';
-      vdEGM96toEGM2008 : TheShift := 'egm96_to_egm2008';
-   end;
+      case vdShift of
+         vdWGS84toEGM2008 : TheShift := 'gs84_to_egm2008';
+         vdEGM2008toWGS84 : TheShift := 'egm2008_to_wgs84';
+         vdEGM96toEGM2008 : TheShift := 'egm96_to_egm2008';
+      end;
 
-   if (vdShift = vdEGM2008toWGS84) then DEMGlb[GeoidGrid].MultiplyGridByConstant(-1);
-   for i := 1 to MaxDEMDataSets do Merge[i] := false;
-   Merge[DEM] := true;
-   Merge[GeoidGrid] := true;
-   SumDEMs(DEM, Merge,DEMGlb[DEM].AreaName + '_vdatum_shift_' + TheShift);
-   CloseSingleDEM(GeoidGrid);
-   case vdShift of
-      vdWGS84toEGM2008 : DEMGlb[DEM].DEMheader.VerticalCSTypeGeoKey := VertCSEGM2008;
-      vdEGM2008toWGS84 : DEMGlb[DEM].DEMheader.VerticalCSTypeGeoKey := VertCSWGS84;
-      vdEGM96toEGM2008 : DEMGlb[DEM].DEMheader.VerticalCSTypeGeoKey := VertCSEGM2008;
+      if (vdShift = vdEGM2008toWGS84) then DEMGlb[GeoidGrid].MultiplyGridByConstant(-1);
+      for i := 1 to MaxDEMDataSets do Merge[i] := false;
+      Merge[DEM] := true;
+      Merge[GeoidGrid] := true;
+      SumDEMs(DEM, Merge,DEMGlb[DEM].AreaName + '_vdatum_shift_' + TheShift);
+      CloseSingleDEM(GeoidGrid);
+      case vdShift of
+         vdWGS84toEGM2008 : DEMGlb[DEM].DEMheader.VerticalCSTypeGeoKey := VertCSEGM2008;
+         vdEGM2008toWGS84 : DEMGlb[DEM].DEMheader.VerticalCSTypeGeoKey := VertCSWGS84;
+         vdEGM96toEGM2008 : DEMGlb[DEM].DEMheader.VerticalCSTypeGeoKey := VertCSEGM2008;
+      end;
+      DEMGlb[DEM].CheckMaxMinElev;
    end;
-   DEMGlb[DEM].CheckMaxMinElev;
    {$IfDef RecordVertDatumShift} WriteLineToDebugFile('VerticalDatumShift out, DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].ZRange);  {$EndIf}
 end;
 

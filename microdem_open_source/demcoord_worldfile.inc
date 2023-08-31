@@ -4,7 +4,7 @@
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
 { Copyright (c) 2023 Peter L. Guth   }
-{____________________________________}
+{------------------------------------}
 {include file for demcoord.pas       }
 {____________________________________}
 
@@ -174,14 +174,15 @@ var
    DatumFile : tStringList;
    RawDatum : tMapProjection;
    i,err : integer;
-   Lat,Long,Factor,
+   Lat,Long,//Factor,
    xrot,yrot : float64;
    tFile : textFile;
    HaveToAsk,GeoLatLong : boolean;
    TStr : shortstring;
-   PName :    tProjectType;
+   //PName :    tProjectType;
    vmProjection : tMapProjection;
-   fName3,fName2,fName, DatumFName : PathStr;
+   //fName3,fName2,
+   fName, DatumFName : PathStr;
 
        procedure DefinePlateCareeProjection;
        begin

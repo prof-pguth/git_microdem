@@ -1,5 +1,5 @@
 ﻿{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of ianMICRODEM GIS Program    }
+{ Part of MICRODEM GIS Program       }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
 { Copyright (c) 2023 Peter L. Guth   }
@@ -17,8 +17,11 @@
             aLine : ANSIString;
             SSOvars : tSSOvars;
             Col,Row,xsize,ysize,ColInc,RowInc,Done : integer;
-            WavelengthMean,WavelengthMedian,WavelengthStdDev,HeightMean,HeightMedian,HeightStd,
-            Lat,Long,Lat1,Long1,Lat2,Long2,aMinVal,aMaxVal : float64;
+            {$IfDef FabricWavelengthAmplitude}
+               WavelengthMean,WavelengthMedian,WavelengthStdDev,Lat1,Long1,Lat2,Long2,aMinVal,aMaxVal,
+            {$EndIf}
+            HeightMean,HeightMedian,HeightStd,
+            Lat,Long : float64;
             z : float32;
             TableName : PathStr;
          begin
@@ -493,27 +496,31 @@
 
 
 function tDEMDataSet.RoughnessFromSlopeSTD(x,y,Radius : integer; var Roughness : float32) : boolean;
+const
+   MaxPoints = 51 * 51;
 var
    i,j : integer;
    z : float32;
    MomentVar : tMomentVar;
    SlopeAsp : tSlopeAspectRec;
-   sl : array[1..100] of float32;
+   sl : array[1..MaxPoints] of float32;
 begin
-   MomentVar.Npts := 0;
-   Radius := Radius div 2;
-   for I := -Radius to Radius do begin
-      for J := -Radius to Radius do begin
-         if GetSlopeAndAspect(x+i,y+j,SlopeAsp) then begin
-            inc(MomentVar.Npts);
-            sl[MomentVar.Npts] := SlopeAsp.SlopePercent;
+   if (Radius * Radius <= MaxPoints) then begin
+      MomentVar.Npts := 0;
+      Radius := Radius div 2;
+      for I := -Radius to Radius do begin
+         for J := -Radius to Radius do begin
+            if GetSlopeAndAspect(x+i,y+j,SlopeAsp) then begin
+               inc(MomentVar.Npts);
+               sl[MomentVar.Npts] := SlopeAsp.SlopePercent;
+            end;
          end;
       end;
-   end;
-   Result := MomentVar.NPts > 5;
-   if Result then begin
-      moment(sl,MomentVar,msAfterStdDev);
-      Roughness := MomentVar.sdev;
+      Result := MomentVar.NPts > 5;
+      if Result then begin
+         moment(sl,MomentVar,msAfterStdDev);
+         Roughness := MomentVar.sdev;
+      end;
    end;
 end;
 
@@ -1977,44 +1984,63 @@ end;
 procedure tDEMDataSet.PointParameters(xgrid,ygrid : float64);
 var
    Results,Results2 : tStringList;
-   i : integer;
+   i,Col,Row : integer;
    SSOvars : tSSOvars;
    {$IfDef MultipleCurvatureMethods} PlanCurv,SlopeCurv : float64; {$EndIf}
    SlopeCurvature, PlanCurvature,crossc,MaxCurve,MinCurve,MaxSlp,Upward,Downward : float64;
    z : float32;
    SlopeAspectRec : tSlopeAspectRec;
 begin
+   {$If Defined(TimePointParameters)} WriteLineToDebugFile('tDEMDataSet.PointParameters in'); {$EndIf}
+   ShowHourGlassCursor;
+   Col := round(xgrid);
+   Row := round(ygrid);
    Results := tStringList.Create;
    Results.Add(DEMLocationString(xgrid,ygrid));
    Results.Add('');
    if GetElevMeters(XGrid,YGrid,z) then Results.Add('Elev: ' + RealToString(z,8,2) + ' m');
 
-   if GetSlopeAndAspect(round(xgrid),round(ygrid),SlopeAspectRec) then begin
+   if GetSlopeAndAspect(Col,Row,SlopeAspectRec) then begin
       Results.Add('Slope:' + RealToString(SlopeAspectRec.SlopePercent,7,2) + '%' + RealToString(SlopeAspectRec.SlopeDegree,8,2) + '°');
       Results.Add('Aspect: ' + RealToString(SlopeAspectRec.AspectDir,6,1) + '°');
    end;
+   {$If Defined(TimePointParameters)} WriteLineToDebugFile('slope/aspect done'); {$EndIf}
 
-   {$IfDef MultipleCurvatureMethods}
+
+   if RoughnessFromSlopeSTD(Col,Row,3,z) then Results.Add('Roughness 3x3: ' + RealToString(z,8,2) + '%');
+   if RoughnessFromSlopeSTD(Col,Row,5,z) then Results.Add('Roughness 5x5: ' + RealToString(z,8,2) + '%');
+   if RoughnessFromSlopeSTD(Col,Row,7,z) then Results.Add('Roughness 7x7: ' + RealToString(z,8,2) + '%');
+   if RoughnessFromSlopeSTD(Col,Row,9,z) then Results.Add('Roughness 9x9: ' + RealToString(z,8,2) + '%');
+   if RoughnessFromSlopeSTD(Col,Row,11,z) then Results.Add('Roughness 11x11: ' + RealToString(z,6,2) + '%');
+   {$If Defined(TimePointParameters)} WriteLineToDebugFile('roughness done'); {$EndIf}
+
+   {$If Defined(MultipleCurvatureMethods) and Defined(CurvaturePointParameters)}
+      //this one is off by default, since curvature is so messy
       if GetCurvature(round(xgrid),round(ygrid),PlanCurv,SlopeCurv) then begin
          Results.Add('Plan curvature: ' + RealToString(PlanCurv,12,6));
          Results.Add('Slope curvature:' + RealToString(SlopeCurv,12,6));
       end;
+     {$If Defined(TimePointParameters)} WriteLineToDebugFile('curvature done'); {$EndIf}
    {$EndIf}
 
    {$IfDef ExGeostats}
    {$Else}
-      if GetEvansParams(round(xgrid),round(ygrid),MDDef.WoodRegionRadiusPixels,MaxSlp,SlopeCurvature,PlanCurvature,crossc,MaxCurve,MinCurve) then begin
-         Results.Add('');
-         Results.Add('Evans curvature (Region size=' + IntToStr(MDDef.WoodRegionRadiusPixels) + '):');
-         Results.Add('   Plan curvature: ' + RealToString(PlanCurvature,13,6));
-         Results.Add('   Slope curvature:' + RealToString(SlopeCurvature,12,6));
-         Results.Add('   Cross curvature:' + RealToString(CrossC,12,6));
-         Results.Add('   Max curvature: ' + RealToString(MaxCurve,14,6));
-         Results.Add('   Min curvature:' + RealToString(MinCurve,14,6));
-      end;
+      {$If Defined(CurvaturePointParameters)}
+         //this one is off by default, since curvature is so messy
+         if GetEvansParams(Col,Row,MDDef.WoodRegionRadiusPixels,MaxSlp,SlopeCurvature,PlanCurvature,crossc,MaxCurve,MinCurve) then begin
+            Results.Add('');
+            Results.Add('Evans curvature (Region size=' + IntToStr(MDDef.WoodRegionRadiusPixels) + '):');
+            Results.Add('   Plan curvature: ' + RealToString(PlanCurvature,13,6));
+            Results.Add('   Slope curvature:' + RealToString(SlopeCurvature,12,6));
+            Results.Add('   Cross curvature:' + RealToString(CrossC,12,6));
+            Results.Add('   Max curvature: ' + RealToString(MaxCurve,14,6));
+            Results.Add('   Min curvature:' + RealToString(MinCurve,14,6));
+            {$If Defined(TimePointParameters)} WriteLineToDebugFile('Evans done'); {$EndIf}
+         end;
+      {$EndIf}
 
       Results2 := tStringList.Create;
-      if FigureOpenness(round(xgrid),round(ygrid),MDDef.OpenGridBoxSize,Upward,Downward,Results2) then begin
+      if FigureOpenness(Col,Row,MDDef.OpenGridBoxSize,Upward,Downward,Results2) then begin
          Results.Add('');
          Results.Add('Openness parameters (' + IntToStr(MDDef.OpenGridBoxSize) + ' m)');
          Results.Add('  Upward openness: ' + RealToString(Upward,12,2) + '°');
@@ -2022,22 +2048,29 @@ begin
          Results.Add('');
          for i := 0 to pred(Results2.Count) do Results.Add('      ' + Results2.Strings[i]);
          Results.Add('');
+         {$If Defined(TimePointParameters)} WriteLineToDebugFile('Openness done'); {$EndIf}
       end;
       Results2.Free;
 
-      if PointSSOComputations(round(xgrid),round(ygrid),MDDef.SSOBoxSizeMeters, SSOvars,false,true,false) then  begin
-         Results.Add('SSO parameters (' + IntToStr(MDDef.SSOBoxSizeMeters) + ' m)');
-         Results.Add('  Points in box: ' + IntToStr(SSOvars.NumPts));
-         Results.Add('  Organization ln(s2/s3): ' + RealToString(SSOvars.s2s3,12,2));
-         Results.Add('  Organization direction: ' + RealToString(SSOvars.TheDipDirs[3],6,1) + '°');
-         Results.Add('  Relief: ' + RealToString(SSOvars.ElevRange,12,2) + ' m');
-         Results.Add('  Region average elev: ' + RealToString(SSOvars.AvgElev,12,2) + ' m');
-         Results.Add('  Region elev std dev: ' + RealToString(SSOvars.StdDevElev,12,2));
-         Results.Add('  Region max slope: ' + RealToString(100*SSOvars.MaxSlope,12,2) + '%');
-         Results.Add('  Roughness factor: ' + RealToString(SSOvars.RoughnessFactor,8,3));
-      end;
+      {$If Defined(PointSSOPointParameters)}
+         //this one is off by default, since it is so slow for lidar
+         if PointSSOComputations(Col,Row,MDDef.SSOBoxSizeMeters, SSOvars,false,true,false) then  begin
+            Results.Add('SSO parameters (' + IntToStr(MDDef.SSOBoxSizeMeters) + ' m)');
+            Results.Add('  Points in box: ' + IntToStr(SSOvars.NumPts));
+            Results.Add('  Organization ln(s2/s3): ' + RealToString(SSOvars.s2s3,12,2));
+            Results.Add('  Organization direction: ' + RealToString(SSOvars.TheDipDirs[3],6,1) + '°');
+            Results.Add('  Relief: ' + RealToString(SSOvars.ElevRange,12,2) + ' m');
+            Results.Add('  Region average elev: ' + RealToString(SSOvars.AvgElev,12,2) + ' m');
+            Results.Add('  Region elev std dev: ' + RealToString(SSOvars.StdDevElev,12,2));
+            Results.Add('  Region max slope: ' + RealToString(100*SSOvars.MaxSlope,12,2) + '%');
+            Results.Add('  Roughness factor: ' + RealToString(SSOvars.RoughnessFactor,8,3));
+            {$If Defined(TimePointParameters)} WriteLineToDebugFile('SSO done'); {$EndIf}
+         end;
+      {$EndIf}
    {$EndIf}
    ModalStringListDisplay(Results,'Point parameters');
+   ShowDefaultCursor;
+   {$If Defined(TimePointParameters)} WriteLineToDebugFile('tDEMDataSet.PointParameters out'); {$EndIf}
 end;
 
 

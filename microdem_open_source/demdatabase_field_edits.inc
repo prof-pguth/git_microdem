@@ -254,7 +254,7 @@ procedure TGISdataBaseModule.AddNavFields;
 var
    xutm,yutm,xutm2,yutm2,z,LastZ,
    Last4Grad,This4Grad,Lat,Long,LastLat,LastLong,Az,Dist,FirstAz,CumDist,CumDist3d,Factor,h1,h2,tf,dz : float64;
-   f1,f2,f3,f4,TStr,zfield : ShortString;
+   f1,f2,f3,f4,{TStr,}zfield : ShortString;
    dd,i,rc : integer;
 begin
     {$IfDef RecordNavigation} WriteLineToDebugFile('TGISdataBaseModule.AddNavFields in'); {$EndIf}
@@ -440,9 +440,9 @@ procedure TGISdataBaseModule.FillFieldsFromJoinedTable(var TheFields : tStringLi
 var
    aCopyFieldThisDB,aCopyFieldOtherDB : ShortString;
    Overwrite : boolean;
-   TStr,TStr2 : ShortString;
+   TStr{,TStr2} : ShortString;
    ft : tFieldType;
-   fLength,Decs,i,j,rc : integer;
+   fLength,Decs,i,j{,rc} : integer;
 begin
     if (TheFields.Count > 0) then begin
        {$IfDef RecordCopyFieldLinkDB} WriteLineToDebugFile('TGISdataBaseModule.FillFieldsFromJoinedTable in'); {$EndIf}

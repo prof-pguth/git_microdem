@@ -2070,7 +2070,7 @@ var
          Result := FileExists(FileName);
          if Result then begin
             TemporaryNewGeotiff := false;
-            TiffImage[BandNum] := tTiffImage.CreateGeotiff(ImageMapProjection,RegVars,false,FileName,Success,false,true,BandNum);
+            TiffImage[BandNum] := tTiffImage.CreateGeotiff(false,ImageMapProjection,RegVars,false,FileName,Success,false,true,BandNum);
             BandRows[BandNum] := TiffImage[BandNum].TiffHeader.ImageLength;
             BandColumns[BandNum] := TiffImage[BandNum].TiffHeader.ImageWidth;
             BandXSpace[BandNum] := TiffImage[BandNum].TiffHeader.ScaleX;
@@ -2110,7 +2110,7 @@ var
             begin
                {$IfDef RecordLoadSat} WriteLineToDebugFile('ReadOrdinaryGeoTiff ' + IndexFileName); {$EndIf}
                TemporaryNewGeotiff := false;
-               TiffImage[1] := tTiffImage.CreateGeotiff(ImageMapProjection,RegVars,false,IndexFileName,Success);
+               TiffImage[1] := tTiffImage.CreateGeotiff(false,ImageMapProjection,RegVars,false,IndexFileName,Success);
                if Success then begin
                   if (TIFFImage[1].TiffHeader.SampleFormat = sfIEEEfloat) then begin
                      ReadFailure := true;
@@ -2233,7 +2233,7 @@ var
                      inc(NumBands);
                      {$IfDef RecordProblems} WriteLineToDebugFile(Files.Strings[i]); {$EndIf}
                      TemporaryNewGeotiff := false;
-                     TiffImage[NumBands] := tTiffImage.CreateGeotiff(ImageMapProjection,RegVars,false,Files.Strings[i],Success,false,true,NumBands);
+                     TiffImage[NumBands] := tTiffImage.CreateGeotiff(false,ImageMapProjection,RegVars,false,Files.Strings[i],Success,false,true,NumBands);
                      BandLongName[NumBands] := ExtractFileNameNoExt(Files.Strings[i]);
                      BandShortName[NumBands] := BandLongName[NumBands];
                      MultiTiff := true;

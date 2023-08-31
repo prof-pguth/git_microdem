@@ -1,7 +1,7 @@
 ﻿unit demdef_routines;
 
 {^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of ianMICRODEM GIS Program    }
+{ Part of MICRODEM GIS Program       }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
 { Copyright (c) 2023 Peter L. Guth   }
@@ -409,7 +409,7 @@ begin
       zDegrees	 : Result := 	'°'	;
       lnElev	 : Result := 	'ln(z)'	;
       LogElev	 : Result := 	'log(z)'	;
-      zPercent	 : Result := 	'%'	;
+      euPercent	 : Result := 	'%'	;
       NLCD2001up	 : Result := 	' NLCD'	;
       LandFire	 : Result := 	' LandFire'	;
       Nanotesla	 : Result := 	' nT'	;
@@ -3736,7 +3736,7 @@ begin
       AParameter('LineDraw','ConnectArrows',ConnectArrows,false);
       AParameter('LineDraw','ConnectArrowSpacing',ConnectArrowSpacing,5);
 
-      AParameter('MapMargin','SpecifyLegendX',SpecifyLegendX,0);
+      //AParameter('MapMargin','SpecifyLegendX',SpecifyLegendX,0);
       AParameter('MapMargin','LegendSingleHeight',LegendSingleHeight,25);
       AParameter('MapMargin','LegendGraphWidth',LegendGraphWidth,50);
       AParameter('MapMargin','LegendBarWidth',LegendBarWidth,15);

@@ -34,6 +34,8 @@ unit JpegDumpForm;
 }
 interface
 
+{$I nevadia_defines.inc}
+
 uses
 //needed for inline of the core DB functions
    Petmar_db,
@@ -49,7 +51,7 @@ uses
    {$IfDef UseTCLientDataSet}
       DBClient,
    {$EndIf}
-// end units for inline of the core DB functions
+//end DB declarations
 
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs, ExtDlgs,
   Buttons, StdCtrls, ExtCtrls, ComCtrls, ActnList, StdActns,
@@ -126,6 +128,8 @@ var
   NewfrmJpegDump : TNewfrmJpegDump;
 begin
   NewfrmJpegDump := TNewfrmJpegDump.Create(Application);
+  NewfrmJpegDump.FOriginalFrame.Enabled := false;
+  NewfrmJpegDump.FOriginalFrame.Memo.Enabled := false;
   PhotoDir := fName;
   NewfrmJpegDump.BitBtn2Click(nil);
   NewfrmJpegDump.Close;

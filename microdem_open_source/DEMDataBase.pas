@@ -194,7 +194,7 @@ const
 
 type
   tHowRestrict = (resNone);
-  tAddDEM = (adPickNearest,adElevDiff,adElevInterp,adElevNearest,adSlope,adElevAllGrids,adDeltaAllGrids,adElevNearestInt);
+  tAddDEM = (adPickNearest,adElevDiff,adElevInterp,adElevNearest,adSlope,adElevAllGrids,adDeltaAllGrids,adElevNearestInt,adAvgElevInWindow);
   tdbGraphType = (dbgtN2Dgraph1,dbgtN2Dgraphsimplelines1, dbgtCluster1,dbgtMultiplegraphmatrix1, dbgtByLatitude1,dbgtByLongitude1,dbgtByLatitude,dbgtByLongitude2,dbgtN2Dgraph2series1,
      N2Dgraph2yaxes1,dbgtPlot1series1,dbgtPlotforsubsamples1,dbgtN2Dgraphcolorcodetext1, dbgtN2Dgraphcolorcoded1,dbgtByLatitude2,dbgtN2Dgraph2yaxes1,dbgtN2DgraphCOLORfield1,dbgtPlot,dbgtUnspecified);
 
@@ -620,7 +620,7 @@ type
 
          procedure LinkSecondaryTable(var FileWanted : PathStr);
          function CreateDataBaseLegend(SimpleLegend : boolean = false) : tMyBitmap;
-         procedure CreatePopupLegend;
+         procedure CreatePopupLegend(Title : shortstring = ''; SaveName : PathStr = '');
          function GetElevationField(CheckOverWrite : boolean = true) : shortstring;
          procedure LimitDBtoMapArea;
          procedure ColorButtonForSymbol(BitBtn1 : tBitBtn; Capt : shortString = '');
@@ -722,7 +722,7 @@ procedure InitializeDEMdbs;
 
 
 {$IfDef FMX}
-function OpenNumberedGISDataBase(var GISNum : integer; fName : PathStr; ShowTable : boolean = false; MapDraw : tMapDraw = nil) : boolean;
+   function OpenNumberedGISDataBase(var GISNum : integer; fName : PathStr; ShowTable : boolean = false; MapDraw : tMapDraw = nil) : boolean;
 {$EndIf}
 
 {$IfDef VCL}
@@ -749,6 +749,9 @@ function ValidDBfName(fName : PathStr) : boolean;
 procedure AdjustGazFeatureName(var FeatureName : ShortString);
 
 procedure MakeLinesFromPoints(GISDataBase : TGISdataBaseModule; fName : PathStr = ''; ShapeTypeWanted : integer = -99; Thin : integer = -1);
+
+procedure DoKMeansClustering(DBonTable : integer);
+
 
 //DEMIX wine contest procedures
       procedure RankDEMS(DBonTable : integer; UseAll : boolean = false);
@@ -898,6 +901,7 @@ uses
    Make_Tables,
    GPS_strings,
    DEM_Manager,
+   clusteroptions,
    DEMCoord,
    PetImage,
    gdal_tools,
@@ -2696,14 +2700,18 @@ end;
             procedure TGISdataBaseModule.AddAndFillFieldFromDEM(AddDEM : tAddDEM; fName : PathStr = ''; DecimalsToUse : integer = 6);
             var
                Lat,Long,Avg,Delta : float64;
-               z : float32;
-               x,y,i,UseDEM,Col,Row,n,ic : integer;
+               z,sum : float32;
+               x,y,i,UseDEM,Col,Row,n,ic,Window : integer;
                eName : ShortString;
                SlopeAspectRec : tSlopeAspectRec;
             begin
                {$IfDef FieldFromDEM} WriteLineToDebugFile('TGISdataBaseModule.AddAndFillFieldFromDEM in, opt=' + IntToStr(Ord(AddDEM))); {$EndIf}
-                if (AddDEM in [adElevDiff,adElevNearest,adElevNearestInt,adElevInterp,adSlope]) then begin
+                if (AddDEM in [adElevDiff,adElevNearest,adElevNearestInt,adElevInterp,adSlope,adAvgElevInWindow]) then begin
                    if not GetDEM(UseDEM, true,'Add field from') then exit;
+                   if (AddDEM in [adAvgElevInWindow]) then begin
+                      Window := 5;
+                      ReadDefault('Window size (rectangle radius, pixels)',Window);
+                   end;
                 end;
                if (AddDEM = adPickNearest) then begin
                   fName := GetFieldNameForDB('Field to add',True,fName);
@@ -2732,7 +2740,7 @@ end;
                   fName := GetFieldNameForDB('Field to add',True,fName);
                   AddFieldToDataBase(ftInteger,fName,8);
                end;
-               if (AddDEM = adElevInterp) or (AddDEM = adElevNearest) then begin
+               if (AddDEM in [adElevInterp,adElevNearest,adAvgElevInWindow]) then begin
                   if (fName = '') then fName := GetElevationField;
                   if not MyData.FieldExists(fName) then begin
                      AddFieldToDataBase(ftFloat,fName,14,6);
@@ -2794,12 +2802,27 @@ end;
                       end;
                       if (AddDEM in [adElevNearest,adElevNearestInt]) then begin
                          DEMGlb[UseDEM].LatLongDegreeToDEMGridInteger(Lat,Long,Col,Row);
-                         if DEMGlb[TheMapOwner.MapDraw.DEMonMap].GetElevMeters(Col,Row,z) then begin
+                         if DEMGlb[UseDEM].GetElevMeters(Col,Row,z) then begin
                             if (AddDEM in [adElevNearest]) then MyData.SetFieldByNameAsFloat(fName,z)
                             else MyData.SetFieldByNameAsInteger(fName,round(z));
                            {$IfDef FieldFromDEM} if (I mod ic = 0) then  WriteLineToDebugFile('i=' + IntToStr(i) + ' z=' + RealToString(z,-12,-2)); {$EndIf}
                          end;
                       end;
+                      if (AddDEM in [adAvgElevInWindow]) then begin
+                         n := 0;
+                         Sum := 0;
+                         DEMGlb[UseDEM].LatLongDegreeToDEMGridInteger(Lat,Long,Col,Row);
+                         for x := Col - Window to Col + Window do begin
+                            for y := Row - Window to Row + Window do begin
+                               if DEMGlb[UseDEM].GetElevMeters(x,y,z) then begin
+                                  inc(n);
+                                  Sum := Sum + z;
+                               end;
+                            end;
+                         end;
+                         MyData.SetFieldByNameAsFloat(fName,Sum/n);
+                      end;
+
                       if (AddDEM = adElevInterp) then begin
                          if DEMGlb[UseDEM].GetElevFromLatLongDegree(Lat,Long,z) then MyData.SetFieldByNameAsFloat(fName,z);
                       end;

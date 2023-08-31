@@ -12,7 +12,7 @@
 
 function TGISdataBaseModule.ActuallyDrawGraph(Graphtype : tdbGraphType) : TThisbasegraph;
 var
-  i,j,k,TimeCount,xLen,OnFile : integer;
+  i,j,k,TimeCount,{xLen,}OnFile : integer;
   Hist : array[0..1000] of integer;
   TStr : ShortString;
   rFile,rfile2 : file;
@@ -463,7 +463,8 @@ end;
 function TGISdataBaseModule.WaveFormGraph(SingleGraph : boolean) : tThisBaseGraph;
 var
    sl,sl2 : tStringList;
-   i,LastI,FileNum : integer;
+   //i,
+   LastI,FileNum : integer;
    fname : shortstring;
    z,lastz : float64;
 
@@ -602,7 +603,7 @@ end;
 procedure TGISdataBaseModule.AddSeriesToScatterGram(Graph : TThisbasegraph; Color : tColor; anXField,anYField : ShortString;  Connect : boolean = false);
 var
   rFile : file;
-  j : integer;
+  //j : integer;
   v : array[1..2] of float32;
 begin
    ShowHourglassCursor;
@@ -726,7 +727,8 @@ end;
 
 function TGISdataBaseModule.CreateHistogramFromDataBase(RegHist: boolean; Fields : tStringList; AllDBs: boolean; MinUse : float64 = 1; MaxUse : float64 = -1; BinSize : float64 = -99): TThisBaseGraph;
 var
-   i,j : integer;
+   //i,
+   j : integer;
    FilesList,
    LegendList : tStringList;
 
@@ -767,12 +769,8 @@ begin
   {$IfDef RecordDataBaseTiming} WriteLineToDebugFile('TGISDataBase.CreateHistogram done prep'); {$EndIf}
 
   Result := CreateMultipleHistogram(True,FilesList,LegendList,'','Histogram ' +  MyData.Filter,100,MinUse,MaxUse,BinSize);
-  //FilesList.Free;
-  //LegendList.Free;
   {$IfDef RecordDataBaseTiming} WriteLineToDebugFile('TGISDataBase.CreateHistogram out'); {$EndIf}
 end;
-
-
 
 
 function TGISdataBaseModule.CreateHistogramFromClustersInDataBase(WantXField: shortString;  UseClusters: boolean): TThisBaseGraph;
@@ -816,7 +814,11 @@ begin
 
      {$IfDef RecordDataBaseTiming} writeLineToDebugFile('TGISDataBase.CreateHistogram done'); {$EndIf}
 
+     (*
+     //not working 8/23/2023
      Result := CreateMultipleHistogram(True,FilesList,LegendList,WantXField,'Histogram');
+     *)
+
      Dispose(Values);
      //FilesList.Free;
      //LegendList.Free;

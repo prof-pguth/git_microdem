@@ -1,7 +1,7 @@
 ﻿program microdem;
 
 {^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of ianMICRODEM GIS Program    }
+{ Part of MICRODEM GIS Program       }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
 { Copyright (c) 2023 Peter L. Guth   }
@@ -298,7 +298,6 @@ uses
   lidar_multiple_grid_display in '..\las_lidar\lidar_multiple_grid_display.pas' {LidarMultipleDisplayForm},
   petmar_ini_file in '..\microdem_open_source\petmar_ini_file.pas',
   icesat_filter_form in '..\common_code\icesat_filter_form.pas' {Icesat_filter},
-  firemonkey_common in '..\common_fmx\firemonkey_common.pas',
   demsatmerge in '..\common_code\demsatmerge.pas' {IHSMergeForm},
   dem_computations in '..\common_code\dem_computations.pas',
   aspect_colors in '..\common_code\aspect_colors.pas' {AspectMapColors},

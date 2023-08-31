@@ -59,7 +59,7 @@ const
    BitmapMaxWidth = 1500;
 var
    i,ItemHeight,TextStart : integer;
-   x,MaxX, OnY : integer;
+   //x,MaxX, OnY : integer;
    Lat,Long,Lat2,Long2 : float64;
    PCpresent : boolean;
    PCname,theFilter : ShortString;
@@ -235,8 +235,8 @@ end;
 
 
 function TGISdataBaseModule.ChloroplethLegend(aLabel : shortString) : tMyBitmap;
-var
-   i,j,fhi : integer;
+//var
+   //i,j,fhi : integer;
 begin
    if (aLabel = '') then aLabel := dbOpts.FloatColorField;
    if copy(aLabel,1,5) = 'LINK-' then Delete(aLabel,1,5);
@@ -285,9 +285,10 @@ begin
 end;
 
 
-procedure TGISdataBaseModule.CreatePopupLegend;
+procedure TGISdataBaseModule.CreatePopupLegend(Title : shortstring = ''; SaveName : PathStr = '');
 var
    bmp : tMyBitmap;
+   x,y : integer;
 begin
 {$IfDef RecordLegend} WriteLineToDebugFile('TGISdataBaseModule.CreatePopupLegend in'); {$EndIf}
    bmp := nil;
@@ -302,6 +303,15 @@ begin
    else begin
       bmp := CreateDataBaseLegend;
    end;
+   if (Title <> '') then begin
+      bmp.Canvas.Font.Size := 14;
+      x := bmp.Canvas.TextWidth(Title);
+      y := bmp.Canvas.TextHeight(Title);
+      bmp.Height := Bmp.Height + 25;
+      if bmp.Width < x then bmp.Width := x + 20;
+      bmp.Canvas.TextOut(15,Bmp.Height - y,Title);
+   end;
+   if (SaveName <> '') then SaveBitmap(bmp,SaveName);
 
    if (bmp <> Nil) then begin
       Petimage_form.DisplayBitmap(BMP,'Legend ' + dbName,true,true);
@@ -314,7 +324,7 @@ end;
 procedure TGISdataBaseModule.DoTheLegend(var Bitmap : tMyBitmap);
 var
    i : integer;
-   Legend,cbmp : tMyBitmap;
+   Legend{,cbmp} : tMyBitmap;
    Values  : array[0..255] of float64;
    Colors : TColors256;
    LabelStr : shortstring;

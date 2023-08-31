@@ -2,8 +2,8 @@ object wmdem: Twmdem
   Left = 0
   Top = 262
   Caption = 'GIS program loading'
-  ClientHeight = 1141
-  ClientWidth = 2050
+  ClientHeight = 1140
+  ClientWidth = 2046
   Color = clScrollBar
   DefaultMonitor = dmDesktop
   Font.Charset = DEFAULT_CHARSET
@@ -28,13 +28,13 @@ object wmdem: Twmdem
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 2050
+    Width = 2046
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34
     TabOrder = 0
     OnMouseDown = ToolBar1MouseDown
-    ExplicitWidth = 2046
+    ExplicitWidth = 2042
     object SpeedButton2: TSpeedButton
       Left = 0
       Top = 0
@@ -1676,8 +1676,8 @@ object wmdem: Twmdem
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 1122
-    Width = 2050
+    Top = 1121
+    Width = 2046
     Height = 19
     Panels = <
       item
@@ -1696,8 +1696,8 @@ object wmdem: Twmdem
     Visible = False
     OnClick = StatusBar1Click
     OnDblClick = StatusBar1DblClick
-    ExplicitTop = 1121
-    ExplicitWidth = 2046
+    ExplicitTop = 1120
+    ExplicitWidth = 2042
   end
   object MainMenu1: TMainMenu
     Left = 136
@@ -2196,7 +2196,6 @@ object wmdem: Twmdem
         end
         object imecores1: TMenuItem
           Caption = 'Time cores'
-          OnClick = imecores1Click
         end
       end
       object DEMIX1: TMenuItem
@@ -3440,6 +3439,10 @@ object wmdem: Twmdem
       Caption = 'Landform categories from data base'
       OnClick = Categoriesfromdatabase1Click
     end
+    object Landformcategorieslegends1: TMenuItem
+      Caption = 'Landform categories legends'
+      OnClick = Landformcategorieslegends1Click
+    end
     object COPALOScomparetoreference1: TMenuItem
       Caption = 'COP/ALOS compare to reference'
       OnClick = COPALOScomparetoreference1Click
@@ -3490,10 +3493,6 @@ object wmdem: Twmdem
   object DEMIXdbCreatePopupMenu: TPopupMenu
     Left = 896
     Top = 336
-    object Mergesourcedatatiles1: TMenuItem
-      Caption = 'Merge source data tiles'
-      OnClick = Mergesourcedatatiles1Click
-    end
     object Subsetlarge3DEPareas1: TMenuItem
       Caption = 'Subset large 3DEP areas'
       OnClick = Subsetlarge3DEPareas1Click
@@ -3504,6 +3503,7 @@ object wmdem: Twmdem
     end
     object ProcessVDATUMshifts1: TMenuItem
       Caption = 'Process 3DEP VDATUM shifts'
+      Enabled = False
       OnClick = ProcessVDATUMshifts1Click
     end
     object Create3DEP1secrefDEMs1: TMenuItem
@@ -3513,6 +3513,20 @@ object wmdem: Twmdem
     object Merge3DEPreferenceDEMsbyarea1: TMenuItem
       Caption = 'Merge 3DEP reference DEMs by area'
       OnClick = Merge3DEPreferenceDEMsbyarea1Click
+    end
+    object N36: TMenuItem
+      Caption = '-'
+    end
+    object Extract1: TMenuItem
+      Caption = 'Extract EDTM for test areas'
+      OnClick = Extract1Click
+    end
+    object N42: TMenuItem
+      Caption = '-'
+    end
+    object Mergesourcedatatiles1: TMenuItem
+      Caption = 'Merge source data tiles'
+      OnClick = Mergesourcedatatiles1Click
     end
     object DEMIXreferenceDEMcreation1: TMenuItem
       Caption = 'Create 1 second reference DEMs'

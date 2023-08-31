@@ -2,8 +2,8 @@ object ColMainF: TColMainF
   Left = 278
   Top = 273
   Caption = 'STRATCOL'
-  ClientHeight = 367
-  ClientWidth = 572
+  ClientHeight = 304
+  ClientWidth = 560
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -23,8 +23,8 @@ object ColMainF: TColMainF
   TextHeight = 16
   object Panel1: TPanel
     Left = 0
-    Top = 337
-    Width = 572
+    Top = 274
+    Width = 560
     Height = 30
     Align = alBottom
     TabOrder = 0
@@ -34,8 +34,8 @@ object ColMainF: TColMainF
   object ScrollBox1: TScrollBox
     Left = 0
     Top = 29
-    Width = 572
-    Height = 308
+    Width = 560
+    Height = 245
     Align = alClient
     TabOrder = 1
     ExplicitWidth = 584
@@ -61,7 +61,7 @@ object ColMainF: TColMainF
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 572
+    Width = 560
     Height = 29
     ButtonHeight = 25
     Caption = 'ToolBar1'

@@ -31,6 +31,7 @@ unit DEMCoord;
    {$IFDEF DEBUG}
       {$Define RecordDEMIX}
       {$Define RecordMapType}
+      {$Define TimePointParameters}
       //{$Define TrackHorizontalDatum}
       //{$Define RecordDEMIXResample}
       //{$Define RecordVertDatumShift}
@@ -281,7 +282,7 @@ type
          function InterpolateBiCubicVisioTerra(xgrid,ygrid : float32; var z : float32) : boolean;
          function InterpolateBiCubicNumericalRecipes(xgrid,ygrid : float32; var z : float32) : boolean;
          function CheckForUTMZones : boolean;
-         procedure MissingDataToSeaLevelStrip(SeaLevel : float64; PartLimits :  tGridLimits);
+         //procedure MissingDataToSeaLevelStrip(SeaLevel : float64; PartLimits :  tGridLimits);
          procedure FilterStrip(NewDEM, FilterLap : integer; GridLimits : tGridLimits; FilterCategory : tFilterCat; Filter : FilterType);
       public
          ThisDEM   : integer;  //to access the global array
@@ -782,7 +783,7 @@ const
           'NOS EEZ Bathymetry|*.PRU|' +
           'OS 5 or 20 km tile|*.ntf|' +
           'Surfer grid|*.grd|' +
-          'VTP BT|*.bt|' +
+          //'VTP BT|*.bt|' +
           {$IfDef ExDTED}
           {$Else}
              'DTED|*.dt*|' +
@@ -1054,9 +1055,9 @@ end;
 
 function tDEMDataSet.HalfPixelAggregation(fName : PathStr; PixelIs : byte; SaveFile : boolean; Offset : integer = 0) : integer;
 var
-   Col,Row,x,y,Npts,bx,by,ThinFactor : integer;
+   Col,Row,{x,y,Npts,}bx,by,ThinFactor : integer;
    znw,zw,zsw,zn,z,zs,zne,ze,zse : float32;
-   Sum       : float64;
+   //Sum       : float64;
    NewHeadRecs : tDEMheader;
    TStr : shortstring;
 begin
@@ -1106,11 +1107,11 @@ end;
 
 function tDEMDataSet.ThinAndOpenGridSetMissing(ThinFactor : integer; NewPrecision : tDEMprecision; Gridname : shortstring; ElevUnits : tElevUnit) : integer;
 var
-   Col,Row,x,y,Npts : integer;
-   z : float32;
-   Sum       : float64;
+   //Col,Row,x,y,Npts : integer;
+   //z : float32;
+   //Sum       : float64;
    NewHeadRecs : tDEMheader;
-   TStr : shortstring;
+   //TStr : shortstring;
 begin
    NewHeadRecs := DEMheader;
    NewHeadRecs.DEMPrecision := NewPrecision;
@@ -1118,7 +1119,7 @@ begin
    NewHeadRecs.NumRow := DEMheader.NumRow div ThinFactor;
    NewHeadRecs.DEMySpacing := DEMheader.DEMySpacing * ThinFactor;
    NewHeadRecs.DEMxSpacing := DEMheader.DEMxSpacing * ThinFactor;
-   OpenAndZeroNewDEM(true,NewHeadRecs,Result,TStr + IntToStr(ThinFactor) + '_' + AreaName,InitDEMmissing);
+   OpenAndZeroNewDEM(true,NewHeadRecs,Result,'Thin_' + IntToStr(ThinFactor) + '_' + AreaName,InitDEMmissing);
 end;
 
 
@@ -1686,11 +1687,11 @@ begin
           for j := 0 to pred(DEMheader.NumCol) do FreeMem(LongWordElevations^[j],BytesPerColumn);
           Dispose(LongWordElevations);
           LongWordElevations := Nil;
-          {$IfDef RecordCloseDEM} WriteLineToDebugFile('longwords cleared');    {$EndIf}
+          {$IfDef RecordCloseDEM} WriteLineToDebugFile('longwords cleared'); {$EndIf}
        end;
     end
     else begin
-       {$IfDef RecordCloseDEM} WriteLineToDebugFile('HeadRecs.DEMPrecision = SmallIntDEM');   {$EndIf}
+       {$IfDef RecordCloseDEM} WriteLineToDebugFile('HeadRecs.DEMPrecision = SmallIntDEM'); {$EndIf}
        if (SmallIntElevations <> Nil) then begin
           for j := 0 to pred(DEMheader.NumCol) do FreeMem(SmallIntElevations^[j],BytesPerColumn);
           Dispose(SmallIntElevations);
@@ -1746,7 +1747,7 @@ begin
    {$IfDef NoMapOptions}
    {$Else}
        if CloseMap and Assigned(SelectionMap) then try
-          {$If Defined(RecordClosing) or Defined(RecordDEMClose)}  WriteLineToDebugFile('tDEMDataSet.Destroy has selection map');   {$EndIf}
+          {$If Defined(RecordClosing) or Defined(RecordDEMClose)}  WriteLineToDebugFile('tDEMDataSet.Destroy has selection map'): {$EndIf}
           SelectionMap.MapDraw.ClosingMapNow := true;
           SelectionMap.Closable := true;
           SelectionMap.FormClose(Nil,Action);
@@ -2156,7 +2157,7 @@ begin
      cdW: Tstr := 'west';
      cdNW: Tstr := 'northwest';
    end;
-   {$IfDef RecordFilter} WriteLineToDebugFile('tDEMDataSet.FindEdgeThisDEM in, dir=' + TStr);   {$EndIf}
+   {$IfDef RecordFilter} WriteLineToDebugFile('tDEMDataSet.FindEdgeThisDEM in, dir=' + TStr): {$EndIf}
 
    NewDEM := CloneAndOpenGridSetMissing(ByteDEM,AreaName + TStr + '_edge',Undefined);
 
@@ -4069,7 +4070,7 @@ finalization
    {$IfDef RecordMerge} WriteLineToDebugFile('RecordMergeProblems in read_dem'); {$EndIf}
    {$IfDef RecordOpenMap} WriteLineToDebugFile('RecordOpenMapProblems in read_dem'); {$EndIf}
    {$IfDef RecordAllImport} WriteLineToDebugFile('RecordAllImportProblems in read_dem (real slowdown)'); {$EndIf}
-   {$IfDef RecordCreateNewDEM} WriteLineToDebugFile('RecordCreateNewDEM in read_dem');   {$EndIf}
+   {$IfDef RecordCreateNewDEM} WriteLineToDebugFile('RecordCreateNewDEM in read_dem'): {$EndIf}
    {$IfDef RecordGDAL} WriteLineToDebugFile('RecordGDALProblems in read_dem'); {$EndIf}
    {$IfDef RecordWorldFile} WriteLineToDebugFile('RecordWorldFileProblems in read_dem'); {$EndIf}
    {$IfDef RecordLOS} WriteLineToDebugFile('RecordLOSProblems in demcoord'); {$EndIf}

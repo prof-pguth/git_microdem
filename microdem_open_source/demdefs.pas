@@ -1,7 +1,7 @@
 ﻿unit Demdefs;
 
 {^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of ianMICRODEM GIS Program    }
+{ Part of MICRODEM GIS Program       }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
 { Copyright (c) 2023 Peter L. Guth   }
@@ -29,8 +29,8 @@ uses
    Petmar_types,petmar,PetMar_db,Petmath;
 
 const
-   WebProgramDownLoadDir = 'https://www.usna.edu/Users/oceano/pguth/microdem/win32/';
-   WebDataDownLoadDir = 'https://www.usna.edu/Users/oceano/pguth/downloads/';
+   //WebProgramDownLoadDir = 'https://www.usna.edu/Users/oceano/pguth/microdem/win32/';
+   //WebDataDownLoadDir = 'https://www.usna.edu/Users/oceano/pguth/downloads/';
    GoogleAPIsURL = 'https://maps.googleapis.com/maps/api/geocode/xml?';   //need for geocoding
    PythonEXEname = 'C:\OSGeo4W\apps\Python39\python.exe';
    PythonScriptDir = 'C:\OSGeo4W\apps\Python39\Scripts\';
@@ -696,7 +696,7 @@ const
    LogElev = 17;
    //Unused1 = 18;
    //Unused2 = 19;
-   zPercent = 20;
+   euPercent = 20;
    //Unused3 = 21;
    //Unused4 = 22;
    //Unused5 = 23;
@@ -2764,8 +2764,7 @@ type
        ConPtsWidth : byte;
        LegendBarWidth,
        LegendTickSize : byte;
-       tnHeight,tnQuality,
-       SpecifyLegendX : SmallInt;
+       tnHeight,tnQuality : SmallInt;
        SinglePixel,
        LongLandCoverResults : boolean;
        PtSlicerDefView : byte;

@@ -1,7 +1,7 @@
 unit gdal_tools;
 
 {^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of ianMICRODEM GIS Program    }
+{ Part of MICRODEM GIS Program       }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
 { Copyright (c) 2023 Peter L. Guth   }
@@ -16,11 +16,13 @@ unit gdal_tools;
 
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
    //{$Define RecordGDALOpen}
-   //{$Define RecordSubsetOpen}
+   {$Define RecordSubsetOpen}
 
    {$IFDEF DEBUG}
       //{$Define RecordSubsetOpen}
       {$Define RecordDEMIX}
+      {$Define RecordSubsetGDAL}
+      //{$Define RecordDEMIXCompositeDatum}
       //{$Define RecordGDALOpen}
       //{$Define RecordUseOtherPrograms}
       //{$Define RecordSaveProblems}
@@ -141,7 +143,7 @@ uses
    procedure GDALreprojectLASfile(fName : PathStr; T_EPSG,a_EPSG : integer);
 
    procedure GDALSubsetSatImageToMatchMap(MapOwner : tMapForm; GDAL_program : PathStr);
-   function GDALsubsetimageandopen(bb : sfBoundBox; LatLongBox : boolean; fName : PathStr; BaseOutPath : PathStr = '') : integer;
+   function GDALsubsetGridAndOpen(bb : sfBoundBox; LatLongBox : boolean; fName : PathStr; BaseOutPath : PathStr = '') : integer;
    procedure GDALConvert4BitGeotiff(fName : PathStr);
    procedure GDALConvertSingleImageToGeotiff(var fName : PathStr);
 
@@ -985,7 +987,7 @@ end;
       begin
       //gdal_translate -of GTiff  C:\Users\pguth_2\Downloads\world_climate2_30sec\wc2.0_30s_tavg\wc2.0_30s_tavg_01.tif  c:\temp\subset.tif  -projwin -80 45 -70 30
          if IsGDALFilePresent(GDAL_program) then begin
-            {$IfDef RecordGDAL} WriteLineToDebugFile('GDALSubsetSatImageToMatchMap in ' + GDAL_program + '  ' + ExtractFilePath(SatImage[MapOwner.MapDraw.SATonMap].IndexFileName)); {$EndIf}
+            {$If Defined(RecordGDAL) or Defined(RecordSubsetGDAL)} WriteLineToDebugFile('GDALSubsetSatImageToMatchMap in ' + GDAL_program + '  ' + ExtractFilePath(SatImage[MapOwner.MapDraw.SATonMap].IndexFileName)); {$EndIf}
             OutPath := LastSatDir;
             OutPath := Copy(OutPath, 1,pred(length(OutPath)));
             OutPath := NextFilePath(OutPath + '_subset');
@@ -993,7 +995,7 @@ end;
 
             MapOwner.MapDraw.ScreenToUTM(0,0, xmin,ymax);
             MapOwner.MapDraw.ScreenToUTM(MapOwner.MapDraw.MapXSize,MapOwner.MapDraw.MapYSize, xmax,ymin);
-            {$IfDef RecordGDAL} WriteLineToDebugFile('Map limits from screen: ' + GDALextentBoxUTM(xmin,ymax,xmax,ymin)); {$EndIf}
+            {$If Defined(RecordGDAL) or Defined(RecordSubsetGDAL)} WriteLineToDebugFile('Map limits from screen: ' + GDALextentBoxUTM(xmin,ymax,xmax,ymin)); {$EndIf}
             StartGDALbatchFile(bFile);
             for i := 1 to SatImage[MapOwner.MapDraw.SATonMap].NumBands do begin
                bfile.Add('REM  Band ' + IntToStr(i) + '/' + IntToStr(SatImage[MapOwner.MapDraw.SATonMap].NumBands));
@@ -1004,17 +1006,14 @@ end;
                CopyFile(SatImage[MapOwner.MapDraw.SATonMap].GetLandsatMetadataName, OutPath + ExtractFileName(SatImage[MapOwner.MapDraw.SATonMap].GetLandsatMetadataName));
             end;
             EndBatchFile(Petmar.NextFileNumber(MDTempDir, ExtractFileNameNoExt(GDAL_program) +'_subset_sat_','.bat'),bfile);
-         end
-         else begin
-            {$IfDef RecordGDAL} WriteLineToDebugFile('GDALSubsetSatImageToMatchMap fails, missing ' + GDAL_program); {$EndIf}
          end;
       end;
 
 
-      function GDALsubsetimageandopen(bb : sfBoundBox; LatLongBox : boolean; fName : PathStr; BaseOutPath : PathStr = '') : integer;
+      function GDALsubsetGridAndOpen(bb : sfBoundBox; LatLongBox : boolean; fName : PathStr; BaseOutPath : PathStr = '') : integer;
 
 
-        function DoOneImage(fName : PathStr) : integer;
+        function DoOneGrid(fName : PathStr) : integer;
         var
            OutPath,OutName : PathStr;
            LandCover,TStr,ExtentBoxString   : shortstring;
@@ -1026,13 +1025,26 @@ end;
             if (BaseOutPath = '') or (not PathIsValid(BaseOutPath)) then BaseOutPath := MDtempdir;
             OutPath := NextFilePath(BaseOutPath + ExtractFileNameNoExt(fName) + '_subset_');
             OutName := OutPath + ExtractFileName(fName);
-            {$IfDef RecordSubsetOpen} WriteLineToDebugFile('GDALsubsetimageandopen ' + ExtractFileName(fname) + '  ' + sfBoundBoxToString(ImageBB,4)); {$EndIf}
+            {$IfDef RecordSubsetOpen} WriteLineToDebugFile('GDALsubsetGridAndOpen ' + ExtractFileName(fname) + '  ' + sfBoundBoxToString(BB,4)); {$EndIf}
 
             Ext := UpperCase(ExtractFileExt(fName));
-            if (Ext = '.TIF') or (Ext = '.TIFF') then Imagebb := GeotiffBBox(fName)
+            (*
+            //removed Aug 2023, faced with Tom Hengl 300 MB DEM
+            if (Ext = '.TIF') or (Ext = '.TIFF') then begin
+               Imagebb := GeotiffBBox(fName);
+            end
             else begin
                GetGDALinfo(fName, GDALinfo);
             end;
+            *)
+
+            GetGDALinfo(fName, GDALinfo);
+
+            Imagebb.XMin := GDALInfo.xutm_low;
+            Imagebb.XMax := GDALInfo.xutm_hi;
+            Imagebb.YMin := GDALInfo.yutm_low;
+            Imagebb.YMax := GDALInfo.yutm_high;
+
 
             if LatLongBox then begin
                ExtentBoxString := GDALextentBoxLatLong(bb);
@@ -1070,7 +1082,7 @@ end;
       begin
          if IsGDALFilePresent(GDAL_Translate_Name) then begin
             if (fName <> '') and FileExists(fname) then begin
-               Result := DoOneImage(fName);
+               Result := DoOneGrid(fName);
             end
             else begin
                fName := ExtractFilePath(LastImageName);
@@ -1078,7 +1090,7 @@ end;
                theFiles.Add(fName);
                DefaultFilter := 1;
                if GetMultipleFiles('image to subset and import','image|*.tif;*.ecw',theFiles,DefaultFilter) then begin
-                  for i := 0 to pred(TheFiles.Count) do DoOneImage(theFiles.Strings[i]);
+                  for i := 0 to pred(TheFiles.Count) do DoOneGrid(theFiles.Strings[i]);
                end;
                LastImageName := fName;
             end;
@@ -1434,7 +1446,7 @@ var
 begin
    StartGDALbatchFile(BatchFile);
    cmd := 'gdalwarp --config GDAL_CACHEMAX 1000 -wm 1000 --debug on -overwrite -multi -wo NUM_THREADS=4 -ot float32 ' + InName + ' ' + SaveName + s_SRSString + t_srsstring;
-   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('VerticalDatumShiftWithGDAL cmd=' + cmd); {$EndIf}
+   {$If Defined(RecordDEMIXCompositeDatum)} WriteLineToDebugFile('VerticalDatumShiftWithGDAL cmd=' + cmd); {$EndIf}
    BatchFile.Add(cmd);
    aName := Petmar.NextFileNumber(MDTempDir, 'gdal_datumshift_','.bat');
    EndBatchFile(aName,BatchFile);

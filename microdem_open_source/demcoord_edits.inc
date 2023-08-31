@@ -286,8 +286,8 @@ var
    Filter   : FilterType;
    {$IfDef NoParallelFor}
    {$Else}
-       PartLimits : tGridLimitsArray;
-       NewDEM1 : integer;
+       //PartLimits : tGridLimitsArray;
+       //NewDEM1 : integer;
    {$EndIf}
 begin
    {$IfDef RecordDEMEdits}  WriteLineToDebugFile('tDEMDataSet.FilterThisDEM in'); {$EndIf}
@@ -514,7 +514,7 @@ procedure tDEMDataSet.SpecialInterpolateAcrossHoles;
 var
    HolesFilled,TotalHoles : int64;
    //NewDEM,
-   n,Col,Row,i,x,y,xc,yc : integer;
+   n,Col,Row{,i,x,y,xc,yc} : integer;
    ThisWeight,Sum : float64;
    zs,zn,ze,zw : float32;
    Found : array[1..8] of boolean;
@@ -712,6 +712,7 @@ begin
    end;
 end;
 
+(*
 procedure tDEMDataSet.MissingDataToSeaLevelStrip(SeaLevel : float64; PartLimits :  tGridLimits);
 var
    x,y : integer;
@@ -722,6 +723,7 @@ begin
       end;
    end;
 end;
+*)
 
 procedure tDEMDataSet.MissingDataToConstantVelue(SeaLevel : float64 = 0);
 var

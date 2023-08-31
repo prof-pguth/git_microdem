@@ -342,8 +342,8 @@
 
             procedure TGISdataBaseModule.PlotVectorsOnMap(var Bitmap : tMyBitmap);
             var
-               Lat,Long,Lat2,Long2,Dir,Mag,Value,xf,yf,dLong,LongCent,ve,vn,cv : float64;
-               Recs, err,i,j,x1,y1,x2,y2,Dist,rc : integer;
+               Lat,Long,Lat2,Long2,Dir,Mag,{Value,}xf,yf,dLong,LongCent,ve,vn{,cv} : float64;
+               Recs, {err,}i,{j,}x1,y1,x2,y2,Dist,rc : integer;
                Color : tPlatformColor;
                PlotIt : boolean;
             begin
@@ -439,7 +439,7 @@
 
             procedure TGISdataBaseModule.PlotDefaultSymbols(MapDraw : tMapDraw; var Bitmap : tMyBitmap);
             var
-               Recs,x,y,rc : integer;
+               Recs,{x,y,}rc : integer;
             begin
                {$IfDef RecordSym} WriteLineToDebugFile('tGISdataBaseModule.PlotDefaultSymbols ' + dbName); {$EndIf}
                {$IfDef RecordSymbolColor} WriteLineToDebugFile('TGISdataBaseModule.PlotDefaultSymbols out, color = ' + RGBString(dbOpts.Symbol.Color.rgbtRed,dbOpts.Symbol.Color.rgbtGreen,dbOpts.Symbol.Color.rgbtBlue)); {$EndIf}
@@ -465,7 +465,7 @@
 
             procedure TGISdataBaseModule.PlotZipATone(var Bitmap : tMyBitmap);
             var
-               Recs,x,y,rc : integer;
+               Recs,{x,y,}rc : integer;
                ZipPatName,LastZipAtone : PathStr;
                BMP : tMyBitmap;
 
@@ -866,10 +866,10 @@
 
 
             procedure TGISdataBaseModule.GISProportionalSymbols(dbShow : byte);
-            var
-               i : integer;
-               ShortName : ShortString;
-               UseLink : boolean;
+            //var
+               //i : integer;
+               //ShortName : ShortString;
+               //UseLink : boolean;
 
                   procedure FillComboBoxes;
                   var

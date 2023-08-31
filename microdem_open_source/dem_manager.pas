@@ -16,7 +16,8 @@ unit dem_manager;
       //{$Define ShortRecordCloseDEM}
       //{$Define RecordClosingData}
       //{$Define RecordNewMaps}
-      //{$Define LoadDEMsCovering}
+      {$Define LoadDEMsCovering}
+      {$Define RecordMetadata}
       //{$Define RecordProjects}
       //{$Define RecordDownload}
       //{$Define RecordGet2DEMs}
@@ -88,7 +89,7 @@ procedure InitializeDEMsWanted(var DEMList : tDEMBooleanArray; Setting : boolean
 function DEMListForSingleDEM(CurDEM : integer) : tDEMBooleanArray;
 function DEMListForAllOpenDEM: tDEMBooleanArray;
 
-procedure MakeDEMSummaryTable(Quick : boolean = true);
+procedure MakeDEMSummaryTable;
 
 
 {$IfDef ExIndexes}
@@ -321,39 +322,23 @@ begin
 end;
 
 
-procedure MakeDEMsummaryTable(Quick : boolean = true);
+procedure MakeDEMsummaryTable;
 var
    Results : tStringList;
    fName : PathStr;
-   Missing : float64;
    i,Decs : integer;
-   TStr : shortstring;
 begin
    ShowHourglassCursor;
-   if Quick then TStr := '' else TStr := 'HOLES_PC,';
    Results := tStringList.Create;
-   Results.Add('DEM,PIXEL_IS,HORIZ_DATM,VERT_DATUM,LAT,LONG_CENT,MIN_Z,MAX_Z,' + TStr + 'SW_CornerX,SW_CornerY,SW_Corner,DX,DY,NUM_COL,NUM_ROW,AVG_X_M,AVG_Y_M,AVG_SP_M');
+   Results.Add('DEM,PIXEL_IS,HORIZ_DATM,VERT_DATUM,LAT,LONG_CENT,MIN_Z,MAX_Z,SW_CornerX,SW_CornerY,DX,DY,NUM_COL,NUM_ROW,AVG_X_M,AVG_Y_M,AVG_SP_M');
    for i := 1 to MaxDEMDataSets do if ValidDEM(i) then begin
-
-      if Quick then begin
-         TStr := '';
-      end
-      else begin
-         DEMGlb[i].ComputeMissingData(Missing);   //takes a long time with big data
-         TStr := RealToString(Missing,-12,-3) + ',';
-      end;
       if (DEMGlb[i].DEMheader.DEMUsed = UTMBasedDEM) then Decs := -2 else Decs := -8;
-
-      //if (DEMGlb[i].DEMheader.DEMUsed = UTMBasedDEM) then TStr := ''
-      //else TStr := LatLongDegreeToString(DEMGlb[i].DEMheader.DEMSWCornerY, DEMGlb[i].DEMheader.DEMSWCornerX,DecSeconds);
-
       Results.Add(DEMGlb[i].AreaName + ',' + IntToStr(DEMGlb[i].DEMheader.RasterPixelIsGeoKey1025) + ',' + DEMGlb[i].DEMMapProjection.h_DatumCode + ',' + VertDatumName(DEMGlb[i].DEMheader.VerticalCSTypeGeoKey) + ',' +
           RealToString(DEMGlb[i].DEMSWcornerLat + 0.5 * DEMGlb[i].LatSizeMap,-12,-3) + ',' +
           RealToString(DEMGlb[i].DEMSWcornerLong + 0.5 * DEMGlb[i].LongSizeMap,-12,-3)  + ',' +
           RealToString(DEMGlb[i].DEMheader.MinElev,-12,2)  + ',' +  RealToString(DEMGlb[i].DEMheader.MaxElev,-12,2)  + ',' +
-          TStr +
+          //TStr +
           RealToString(DEMGlb[i].DEMheader.DEMSWCornerX,-12,Decs)  + ',' +RealToString(DEMGlb[i].DEMheader.DEMSWCornerY,-12,Decs)  + ',' +
-          //TStr + ',' +
           RealToString(DEMGlb[i].DEMheader.DEMxSpacing,-12,Decs) + ',' + RealToString(DEMGlb[i].DEMheader.DEMySpacing,-12,Decs)  + ',' +
           IntToStr(DEMGlb[i].DEMheader.NumCol) + ',' + IntToStr(DEMGlb[i].DEMheader.NumRow) + ',' +
           RealToString(DEMGlb[i].AverageXSpace,-12,-2) + ',' + RealToString(DEMGlb[i].AverageYSpace,-12,-2)  + ',' + RealToString(DEMGlb[i].AverageSpace,-12,-2));
@@ -575,20 +560,23 @@ var
    OutName : PathStr;
 begin
    if FileExists(fName) or GetFileFromDirectory('GeoTiff file','*.TIF;*.TIFF',FName) then begin
-      if MDversion= mdMicrodem then begin
+      if (MDversion= mdMicrodem) then begin
+         {$IfDef RecordMetadata} WriteLineToDebugFile('MICRODEM GeotiffMetadata for ' + fName); {$EndIf}
          MapProjection := tMapProjection.Create('geotiff metadata');
-         TiffImage := tTiffImage.CreateGeotiff(MapProjection,RegVars,false,fName,Success,true,false);
-         TiffImage.Destroy;
+         TiffImage := tTiffImage.CreateGeotiff(true,MapProjection,RegVars,false,fName,Success,true,false);
+         {$IfDef RecordMetadata} WriteLineToDebugFile('tTiffImage.CreateGeotiff completed'); {$EndIf}
          MapProjection.Destroy;
+         TiffImage.Destroy;
       end
-      else if MDversion= mdWhiteBox then WhiteBoxGeotiffMetadata(fName)
-      else if MDversion= mdListGeo then begin
+      else if (MDversion= mdWhiteBox) then WhiteBoxGeotiffMetadata(fName)
+      else if (MDversion= mdListGeo) then begin
           OutName := MDTempDir + extractFileNameNoExt(fname) + '_metadata.txt';
           cmd := ProgramRootDir + 'listgeo\listgeo.exe ' + fname + ' > ' + Outname;
           WinExecAndWait32(cmd);
           ShowInNotepadPlusPlus(OutName,ExtractFileName(OutName));
       end
-      else if MDversion= mdGDAL then GDALGeotiffToWKT(fName);
+      else if (MDversion= mdGDAL) then GDALGeotiffToWKT(fName);
+      {$IfDef RecordMetadata} WriteLineToDebugFile('GeotiffMetadata out'); {$EndIf}
    end;
 end;
 
@@ -602,7 +590,7 @@ var
 begin
    if FileExists(fName) then begin
       MapProjection := tMapProjection.Create('geotiff metadata');
-      TiffImage := tTiffImage.CreateGeotiff(MapProjection,RegVars,false,fName,Success,false,false);
+      TiffImage := tTiffImage.CreateGeotiff(true,MapProjection,RegVars,false,fName,Success,false,false);
       Result.XMin := RegVars.UpLeftX;
       Result.YMax := RegVars.UpLeftY;
       Result.XMax := RegVars.UpLeftX + RegVars.pr_deltaX * pred(TiffImage.TiffHeader.ImageWidth);
@@ -694,10 +682,10 @@ end;
    var
       bb : sfBoundBox;
    begin
-      bb.XMin := Long - 0.0001;
-      bb.XMax := Long + 0.0001;
-      bb.YMin := Lat - 0.0001;
-      bb.YMax := Lat + 0.0001;
+      bb.XMin := Long - 0.01;
+      bb.XMax := Long + 0.01;
+      bb.YMin := Lat - 0.01;
+      bb.YMax := Lat + 0.01;
       Result := LoadDEMsCoveringBox(bb,LoadMap);
    end;
 
@@ -1425,6 +1413,8 @@ end;
          end;
       end;
 
+{$If Defined(ExLabDownLoads)}
+{$Else}
 
       procedure DownloadandUnzipDataFileIfNotPresent(pName : PathStr; Force : boolean = false);
       //pname is a subdirectory of c:\mapdata\, without the final backslash
@@ -1456,6 +1446,7 @@ end;
             MessageToContinue('Download fail, ' + pName);
          end;
       end;
+{$EndIf}
 
 {$EndIf}
 
