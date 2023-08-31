@@ -1,7 +1,7 @@
 unit pick_several_dems;
 
 {^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of ianMICRODEM GIS Program    }
+{ Part of MICRODEM GIS Program       }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
 { Copyright (c) 2023 Peter L. Guth   }
@@ -10,7 +10,7 @@ unit pick_several_dems;
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
-   {$IFDEF DEBUG}
+   {$IfDef DEBUG}
    {$Else}
    {$EndIf}
 {$EndIf}
@@ -128,4 +128,6 @@ begin
    Close;
 end;
 
+initialization
+finalization
 end.

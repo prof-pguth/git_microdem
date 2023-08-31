@@ -50,6 +50,26 @@ implementation
 
 
 uses
+//need for inline of core DB functions
+   Data.DB,
+
+   {$IfDef UseFireDacSQLlite}
+      FireDAC.Stan.ExprFuncs,
+      FireDAC.Stan.Intf, FireDAC.Stan.Option, FireDAC.Stan.Param,
+      FireDAC.Stan.Error, FireDAC.DatS, FireDAC.Phys.Intf, FireDAC.DApt.Intf,
+      FireDAC.Stan.Async, FireDAC.DApt, FireDAC.UI.Intf, FireDAC.Stan.Def,
+      FireDAC.Stan.Pool, FireDAC.Phys, FireDAC.Comp.Client, FireDAC.Comp.DataSet,
+      FireDAC.Phys.SQLite, FireDAC.Comp.UI,
+   {$EndIf}
+
+   {$IfDef UseTDBF}
+      dbf,
+   {$EndIf}
+
+   {$IfDef UseTCLientDataSet}
+      DBClient,
+   {$EndIf}
+//end core DB functions definitions
    DEMDefs,BaseMap,DEMCoord,DEM_Manager,DEMDatabase,
    Make_tables,Petmar_db,PetMath,PetDBUtils,PetImage;
 
@@ -227,7 +247,7 @@ end;
 procedure FigureLeastCostPath(MapOwner : tMapForm; Lat,Long: float64; var PathDistance,PathCost : float64);
 var
    MinCost,z : float32;
-   Points,x,y,xmin,ymin,pts,i : integer;
+   Points,x,y,pts,i : integer;
    Diagonal : boolean;
    fName,fName2 : PathStr;
    Table : tMyData;
@@ -331,7 +351,6 @@ var
    NewMinFound : boolean;
    AccumCostDEM,
    CostPassageDEM,
-   EqualCostPassageDEM,
    FinalDistanceDEM,
    AccumDistanceDEM,
    x,y,Found,
@@ -450,7 +469,7 @@ var
    DEMGridLimits :  tGridLimits;
    npts : integer;
 begin
-   {$IfDef RecordBasicsAccumPath} WritelineToDebugFile('Enter AccumulatedCostSurface, fName =' + fName);   {$EndIf}
+   {$IfDef RecordBasicsAccumPath} WritelineToDebugFile('Enter AccumulatedCostSurface, fName =' + fName); {$EndIf}
 
    LoadNewDEM(CostPassageDEM,CostSurfacefName,false,'Cost surface grid');
 
@@ -478,7 +497,7 @@ begin
    DEMGlb[CostPassageDEM].MissingDataToConstantVelue(MDDef.ImpossibleCost);
    {$IfDef RecordBasicsAccumPath} WritelineToDebugFile('Grid prepped'); {$EndIf}
 
-   {$IfDef RecordBasicsAccumPath} WritelineToDebugFile('Create new grids ' + fName);   {$EndIf}
+   {$IfDef RecordBasicsAccumPath} WritelineToDebugFile('Create new grids ' + fName); {$EndIf}
 
    NewHeadrecs := DEMGlb[CostPassageDEM].DEMheader;
    NewHeadRecs.ElevUnits := Undefined;
@@ -570,7 +589,7 @@ initialization
 finalization
    {$IfDef RecordSetAccumPathPoints} WriteLineToDebugFile('RecordFullPath active in least_cost_path (big slowdown)'); {$EndIf}
    {$IfDef RecordFullPath} WriteLineToDebugFile('RecordFullPath active in least_cost_path (big slowdown)'); {$EndIf}
-   {$IfDef RecordBasicsAccumPath}   WriteLineToDebugFile('RecordBasicsAccumPath active in least_cost_path (big slowdown)');   {$EndIf}
+   {$IfDef RecordBasicsAccumPath}   WriteLineToDebugFile('RecordBasicsAccumPath active in least_cost_path (big slowdown)'); {$EndIf}
 end.
 
 

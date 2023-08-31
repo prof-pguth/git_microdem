@@ -52,7 +52,22 @@ implementation
 
 
 uses
-   Petmath,DEMCoord,DEMOptions,DEMMapDraw,BaseMap,GetLatLn,Petmar_db,Petmar,Petdbutils,
+//needed for inline of the core DB functions
+   Petmar_db,
+   Data.DB,
+   {$IfDef UseFireDacSQLlite}
+      FireDAC.Comp.Client, FireDAC.Comp.Dataset,FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteWrapper,
+   {$EndIf}
+
+   {$IfDef UseTDBF}
+      dbf,
+   {$EndIf}
+
+   {$IfDef UseTCLientDataSet}
+      DBClient,
+   {$EndIf}
+//end DB declarations
+   Petmath,DEMCoord,DEMOptions,DEMMapDraw,BaseMap,GetLatLn,Petmar,Petdbutils,
    DEMDataBase,DEMDef_routines,
    Nevadia_Main;
 
@@ -119,15 +134,8 @@ end;
 
 function MoonPositionStereoNet(Lat,Long : float32; iyear,imonth,iday : integer) : tNetForm;
 var
-   //URL : shortstring;
-   //fName,fName2 : PathStr;
-   //webpage,positions : tstringlist;
-   //FoundIt : boolean;
-   //aLine,
    Time : shortstring;
-   Hour : float32;
-   xd,yd,
-   i,db : integer;
+   xd,yd,db : integer;
 begin
    db := MoonPositionDB(Lat,Long,iyear,imonth,iday);
 
@@ -363,14 +371,11 @@ begin
    declination := 23.45 * sindeg (360.0 * (284+day) / 365.25);
    {Compute the hour angle in degrees. }
    Hourangle:=180.0 + lontz - long - 15.0*(hrtime-dlshours+e);
-   //sin(ALT) = sin(DEC)*sin(LAT)+cos(DEC)*cos(LAT)*cos(HA)
-   //ALT = asin(ALT)
    Alt:=radtodeg(arcsin(sindeg(declination)*sindeg(lat)+cosdeg(declination)*cosdeg(lat)*cosdeg(hourangle)));
    gs:=arccos((sindeg(declination)-sindeg(alt)*sindeg(lat))/(cosdeg(alt)*cosdeg(lat)));
    az:=radtodeg(gs);
-  //If sin(HA) is negative, then AZ = A, otherwise AZ = 360 - A
-  If sindeg(Hourangle)<0 then az:=360-az;
-   { Compute the position of the sun. }
+   If sindeg(Hourangle)<0 then az:=360-az;
+   { Compute position of the sun. }
    If sindeg(Hourangle)<0 then gs:=2*pi-gs;
    EqOfTimeMinutes := e*60;
 
@@ -409,7 +414,7 @@ function HoursSolarIlluminationGrid(MapForm : tMapForm; JulianDay : integer) : i
 var
    BlockAngle,BlockLength,BlockLat,BlockLong,Lat,Long, SunRise,SunSet, az,alt, hrtime : float64;
    z : float32;
-   NewGrid,x,y, tz,SunUp,db : integer;
+   NewGrid,x,y, tz,SunUp{,db} : integer;
 begin
    {$IfDef RecordHorizon} WriteLineToDebugFile('HoursSolarIlluminationGrid JDay=' + IntToStr(JulianDay)); {$EndIf}
 
@@ -448,9 +453,10 @@ end;
 
 function HoursSolarIlluminationGraph(DEM : integer; Lat,Long : float64) : TThisBaseGraph;
 var
-   SunRise,SunSet,SunAppears,SunDisappears,DurationDirectLight,DurationDayLight,TerrainMasking,
+   SunRise,SunSet,
+   //SunAppears,SunDisappears,DurationDirectLight,DurationDayLight,TerrainMasking,
    az,alt, hrtime,HoursDaylight : float64;
-   i,Month,tz,SunUp,db : integer;
+   i,{Month,}tz,SunUp,db : integer;
    SunResults : tStringList;
    fName : PathStr;
 
@@ -880,7 +886,7 @@ end;
 function SunAndHorizon(BaseMap : tMapForm; DEM : integer; Latitude,Longitude : float64; ShowToday : boolean = true; ShowKeyDays : boolean = true) : TNetForm;
 var
    SunRise,SunSet,
-   SunAppears,SunDisappears,DurationDirectLight,DurationDayLight,
+   SunAppears,SunDisappears,{DurationDirectLight,}DurationDayLight,
    az,alt, hrtime : float64;
    Month,DayMonth,Year,Day,SymSize,NumDay,tz,xd,yd,SunUp,SunMasked,db : integer;
    TStr : ShortString;

@@ -102,6 +102,7 @@ implementation
 
 uses
    Nevadia_main,DEMDefs,Make_Tables,DEMCoord,Petmath,Petmar,Petmar_geology,
+   BaseMap,
    DEMdips,DEM_Manager,DEMDataBase;
 
 
@@ -176,7 +177,7 @@ end;
 
 procedure TThreePointer.DrawPlaneAtPoint(Lat,Long,Dip,Strike,DipDir : float64);
 var
-   xDEMg1,yDEMg1 : float64;
+   xDEMg1,yDEMg1 : float32;
    i : integer;
 
    procedure TraceOnAMap(TheMap : tMapForm);

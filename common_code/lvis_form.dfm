@@ -84,6 +84,7 @@ object lvis_form1: Tlvis_form1
     Align = alTop
     ScrollBars = ssVertical
     TabOrder = 7
+    ExplicitWidth = 382
   end
   object BitBtn8: TBitBtn
     Left = 280

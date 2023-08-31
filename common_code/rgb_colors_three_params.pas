@@ -155,8 +155,8 @@ end;
 
 
 function NewThreeGridRGBMap : integer;
-var
-   i : Integer;
+//var
+   //i : Integer;
 begin
    {$IfDef RecordRGBIssues} WriteLineToDebugFile('ThreeGridRGBMap in'); {$EndIf}
    RGB_form := TRGB_form.Create(Application);
@@ -188,8 +188,8 @@ end;
 
 
 procedure ThreeGridRGBMap(aMapForm : tMapForm);
-var
-   i : Integer;
+//var
+   //i : Integer;
 begin
    {$IfDef RecordRGBIssues} WriteLineToDebugFile('ThreeGridRGBMap in'); {$EndIf}
    RGB_form := TRGB_form.Create(Application);

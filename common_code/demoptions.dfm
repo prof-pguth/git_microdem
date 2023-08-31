@@ -9,8 +9,8 @@ inherited OptionsForm: TOptionsForm
   OnClose = FormClose
   OnCreate = FormCreate
   OnResize = FormResize
-  ExplicitWidth = 813
-  ExplicitHeight = 603
+  ExplicitWidth = 809
+  ExplicitHeight = 602
   TextHeight = 15
   inherited Bevel1: TBevel
     Left = 0
@@ -47,10 +47,12 @@ inherited OptionsForm: TOptionsForm
     Top = 0
     Width = 797
     Height = 506
-    ActivePage = TabSheet15
+    ActivePage = TabSheet4
     Align = alClient
     MultiLine = True
     TabOrder = 2
+    ExplicitWidth = 793
+    ExplicitHeight = 505
     object TabSheet1: TTabSheet
       Caption = 'Program'
       object RadioGroup7: TRadioGroup
@@ -3267,6 +3269,8 @@ inherited OptionsForm: TOptionsForm
     Height = 58
     Align = alBottom
     TabOrder = 3
+    ExplicitTop = 505
+    ExplicitWidth = 793
     object BitBtn3: TBitBtn
       Left = 178
       Top = 6

@@ -39,6 +39,7 @@ type
     RedrawSpeedButton12: TSpeedButton;
     CheckBox6: TCheckBox;
     ComboBox2: TComboBox;
+    CheckBox1: TCheckBox;
     procedure Button2Click(Sender: TObject);
     procedure HelpBtnClick(Sender: TObject);
     procedure RadioGroup1Click(Sender: TObject);
@@ -56,6 +57,8 @@ type
     procedure RedrawSpeedButton12Click(Sender: TObject);
     procedure CheckBox6Click(Sender: TObject);
     procedure ComboBox2Change(Sender: TObject);
+    procedure CheckBox1Click(Sender: TObject);
+    procedure CancelBtnClick(Sender: TObject);
   private
     { Private declarations }
     procedure DrawPreview;
@@ -113,6 +116,7 @@ begin
    else ElevOptionsForm.ComboBox2.Text := ElevationFixedPalette;
    ElevOptionsForm.Button2.Visible := (ElevOptionsForm.MapOwner <> Nil);
 
+   ElevOptionsForm.CheckBox1.Checked := MDDef.NoDEMInterpolations;
    ElevOptionsForm.CheckBox2.Checked := MDdef.WaterCheck;
    ElevOptionsForm.CheckBox3.Checked := MDdef.LakeCheck;
    ElevOptionsForm.CheckBox4.Checked := MDdef.InvertGrayScale;
@@ -284,6 +288,18 @@ begin
    {$IfDef HideHelpButtons} HelpBtn.Visible := false; {$EndIf}
 end;
 
+
+procedure TElevOptionsForm.CancelBtnClick(Sender: TObject);
+begin
+   MapOwner.MapDraw.NeedToRedraw := false;
+   Close;
+end;
+
+procedure TElevOptionsForm.CheckBox1Click(Sender: TObject);
+begin
+   MDDef.NoDEMInterpolations := CheckBox1.Checked;
+   SetMapType;
+end;
 
 procedure TElevOptionsForm.CheckBox4Click(Sender: TObject);
 begin

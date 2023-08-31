@@ -1,9 +1,11 @@
 unit dem_nlcd;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM                }
-{ PETMAR Trilobite Breeding Ranch }
-{_________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2023 Peter L. Guth  }
+{___________________________________}
 
 
 {$I nevadia_defines.inc}
@@ -55,6 +57,7 @@ type
    procedure SetUpNLCDCategories(AskLimit : boolean; LandCover : ShortString; var Categories : tNLCDCats);
    function IsThisLandCover(fName : PathStr;  var LandCover : ShortString) : boolean;
    procedure LandCoverBarGraphs(UseTable : boolean; Legend : boolean = true; MaxCat : boolean = true);
+   procedure LandCoverBarGraphLegends;
 
    function MakeAnNLCDLegend(DEM : integer;  theLabel : shortstring = ''; Stats : tstringlist = nil) : integer;
 
@@ -77,9 +80,9 @@ uses
 
 function MakeAnNLCDLegend(DEM : integer; theLabel : shortstring = ''; Stats : tstringlist = nil) : integer;
 var
-   x,y,zi : integer;
+   x,y,zi,MaxCat : integer;
    z,Max,pc : float32;
-   NameStr,CatStr,FirstLine,NextLine : ANSIString;
+   CatStr,FirstLine,NextLine : ANSIString;
    Title : shortstring;
    fName : PathStr;
    Results : tStringList;
@@ -120,7 +123,7 @@ begin
                FirstLine := Stats.Strings[0];
                //NameStr := Petmar_types.BeforeSpecifiedCharacterANSI(FirstLine,',',true,true);
                CatStr := FirstLine;
-               FirstLine := 'NAME,' + CatStr + '_MAX';
+               FirstLine := 'NAME,' + CatStr + '_MAX,MAJOR_CAT,MAJOR_NAME';
                for x := 1 to MaxNLCDCategories do if (DEMGlb[DEM].NLCDCats^[x].LongName <> '') then begin
                   FirstLine := FirstLine + ',' + CatStr + '_' + IntToStr(x);
                end;
@@ -130,7 +133,10 @@ begin
          Max := 0;
          for x := 1 to MaxNLCDCategories do if (Count[x] > 0) and (DEMGlb[DEM].NLCDCats^[x].LongName <> '') then begin
             pc := 100 * Count[x]/Total;
-            if (pc > Max) then Max := pc;
+            if (pc > Max) then begin
+               Max := pc;
+               MaxCat := x;
+            end;
 
             Title := RealToString(pc,8,2) + ',' + DEMGlb[DEM].NLCDCats^[x].LongName + ',' + IntToStr(ConvertPlatformColorToTColor(DEMGlb[DEM].NLCDCats^[x].Color)) +
                 ',' + IntToStr(x);
@@ -143,7 +149,7 @@ begin
                Stats.Clear;
                Stats.Add(FirstLine);
             end;
-            NextLine := TheLabel + ',' +  RealToString(max,-8,3);
+            NextLine := TheLabel + ',' +  RealToString(max,-8,3) + ',' + IntToStr(MaxCat) + ',' + DEMGlb[DEM].NLCDCats^[MaxCat].LongName;
             for x := 1 to MaxNLCDCategories do if (DEMGlb[DEM].NLCDCats^[x].LongName <> '') then begin
                NextLine := NextLine + ',' + RealToString(100 * Count[x]/Total,-8,3);
             end;
@@ -158,7 +164,38 @@ begin
    {$IfDef TrackNLCD} WriteLineToDebugFile('TMapForm.NLCDLegend1Click out'); {$EndIf}
 end;
 
+procedure LandCoverBarGraphLegends;
+var
+   OutPath : PathStr;
+   db : integer;
 
+   procedure ASeries(Name,Title : shortstring);
+   var
+     SaveName : PathStr;
+   begin
+      GISdb[db].ApplyGISFilter('SERIES=' + QuotedStr(Name));
+      SaveName := OutPath + Title + '.png';
+      GISdb[db].CreatePopupLegend(RemoveUnderscores(Title),SaveName);
+   end;
+
+begin
+   try
+      GetDEMIXpaths;
+      OpenNumberedGISDataBase(db,LandCoverSeriesFName,false);
+
+      OutPath := DEMIX_Base_DB_Path + 'test_land_class\';
+      SafeMakeDir(OutPath);
+      ASeries('CCI-LC','LCCS_300_m_2015');
+      ASeries('Iwahashi','Iwahashi_and_Pike');
+      ASeries('Meybeck','Meybeck_and_others');
+      ASeries('Geomorphon','Geomorphons');
+   finally
+      CloseAllDatabases;
+      EndDEMIXProcessing;
+      {$If Defined(RecordBatch) or Defined(RecordDEMIX)} WriteLineToDebugFile('LandCoverBarGraphs out'); {$EndIf}
+   end;
+
+end;
 
 procedure LandCoverBarGraphs(UseTable : boolean; Legend : boolean = true; MaxCat : boolean = true);
 const
@@ -177,8 +214,8 @@ var
    procedure ASeries(LandCoverfName : PathStr; aTitle,ShortName : shortstring);
    var
       NumDrawn,AreaWidth,TileWidth,
-      j,x,top,NumAreas : integer;
-      singleleg,legbmp,bmp : tMyBitmap;
+      j,top{,x,NumAreas} : integer;
+      singleleg,{legbmp,}bmp : tMyBitmap;
       Table : tMyData;
       Areas,SeriesStats : tStringList;
 
@@ -190,7 +227,7 @@ var
             {$IfDef RecordBarGraphsDetailed} WriteLineToDebugFile('Do series=' + aLabel); {$EndIf}
             try
                Result := true;
-               NewDEM := GDALsubsetimageandopen(bbox,true,LandCoverfName);
+               NewDEM := GDALsubsetGridAndOpen(bbox,true,LandCoverfName);
                {$IfDef RecordBarGraphsDetailed} WriteLineToDebugFile('Grid opened'); {$EndIf}
                if ValidDEM(NewDEM) then begin
                   NewDB := DEMGlb[NewDEM].SelectionMap.MakeNLCDLegend(aLabel,SeriesStats);
@@ -349,7 +386,6 @@ var
       DisplayBitmap(Bmp,What + '_' + ShortName + ' Land cover distribution');
       fName := OutPath + What + '_' + ShortName + '.dbf';
       StringList2CSVtoDB(SeriesStats,fName);
-
    end;
 
 begin
@@ -360,14 +396,15 @@ begin
       SafeMakeDir(OutPath);
       IncludeTiles := true;
       What := 'Tiles';
-      //Legend := true;
-      //What := 'Area';
       if UseTable and (not GetFileFromDirectory('bounding box data base','*.dbf',dbName)) then exit;
       ASeries('d:\landcover\lccs_300m\ESACCI-LC-L4-LCCS-Map-300m-P1Y-2015-v2.0.7.tif','LCCS 300 m 2015','LCCS');
       //IncludeAreaName := false;
       ASeries('d:\landcover\iwahashi\iwahashi.tif','Iwahashi and Pike','IP');
       ASeries('d:\landcover\Meybeck\Meybeck_1km1.tif','Meybeck and others','MEYB');
       ASeries('d:\landcover\Geomorphon\geomorphon_1KMmaj_GMTEDmd.tif','Geomorphons','GEOM');
+
+
+
    finally
       CloseAllDatabases;
       EndDEMIXProcessing;

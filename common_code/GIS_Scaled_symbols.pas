@@ -455,7 +455,7 @@ begin
    end;
 
    GISdb[theDB].EmpSource.Enabled := false;
-   {$IfDef RecordQuickFilter} WriteLineToDebugFile('Filter applied, ' + ff);   {$EndIf}
+   {$IfDef RecordQuickFilter} WriteLineToDebugFile('Filter applied, ' + ff): {$EndIf}
 
    if MDDef.ApplySameFilterAllDBs then GISdb[theDB].ShowOtherDBsWithSameFilter(CheckBox19.Checked,CheckBox20.Checked,true)
    else GISdb[theDB].dbTableF.ShowFilteredDB(CheckBox19.Checked,CheckBox20.Checked);
@@ -547,7 +547,7 @@ begin
    Panel5.Visible := GISdb[theDB].CanPlot and (GISdb[theDB].dbOpts.dbAutoShow = dbasColorPosNeg);
    Panel6.Visible := GISdb[theDB].CanPlot and (GISdb[theDB].dbOpts.dbAutoShow in [dbasConnectSeqPts]) or (GISdb[theDB].dbOpts.ConnectUnderPoints);
    PanelColorByString.Visible := (GISdb[theDB].dbOpts.dbAutoShow = dbasColorByString);
-   PanelDBASDefault.Visible := (GISdb[theDB].ItsAPointDB or GISdb[theDB].XYZfile) and (GISdb[theDB].dbOpts.dbAutoShow in [dbasDefault,dbasColorByString,dbasColorByNumeric,dbasKoppen]);
+   PanelDBASDefault.Visible := (GISdb[theDB].ItsAPointDB or GISdb[theDB].XYZfile) and (GISdb[theDB].dbOpts.dbAutoShow in [dbasDefault,dbasColorByString,dbasColorByNumeric,dbasKoppen,dbasColorField]);
    GISdb[theDB].ColorButtonForSymbol(BitBtnPoint);
    CheckBox14.Enabled := GISdb[theDB].ItsAPointDB;
 
@@ -914,7 +914,7 @@ procedure Tgis_scaled_form.Modifylegend1Click(Sender: TObject);
 begin
    {$IfDef RecordSym} WriteLineToDebugFile('Tgis_scaled_form.Modifylegend1Click in'); {$EndIf}
    if (GISdb[theDB].TheMapOwner.MapDraw <> Nil) then GISdb[theDB].theMapOwner.MapDraw.DeleteSingleMapLayer(GISdb[theDB].TheMapOwner.MapDraw.LegendOverlayfName);
-   LegendOptions('data base',MDDef.LegendFont, GISdb[theDB].dbOpts.DBLegendLocation);
+   LegendOptions(GISdb[theDB].TheMapOwner,'data base',MDDef.LegendFont, GISdb[theDB].dbOpts.DBLegendLocation);
    if ((GISdb[theDB].dbOpts.dbAutoShow in [dbasVector]) and CheckBox5.Checked) then begin
       FillInLegendPanel(true);
    end
@@ -1031,7 +1031,7 @@ begin
    if StillSettingUp or ((Sender = nil) and (not MDDef.QuickMapRedraw)) then exit;
    if NowIdle then begin
       NowIdle := false;
-      {$IfDef RecordSym} WriteLineToDebugFile('Tgis_scaled_form.PlotScaledSymbolsButtonClick in, dbAutoShow=' + IntToStr(GISdb[theDB].dbOpts.dbAutoShow) + ' DbOpts.dbColorMode=' + IntToStr(GISdb[theDB].DbOpts.dbColorMode));   {$EndIf}
+      {$IfDef RecordSym} WriteLineToDebugFile('Tgis_scaled_form.PlotScaledSymbolsButtonClick in, dbAutoShow=' + IntToStr(GISdb[theDB].dbOpts.dbAutoShow) + ' DbOpts.dbColorMode=' + IntToStr(GISdb[theDB].DbOpts.dbColorMode)): {$EndIf}
       GISdb[theDB].RedrawLayerOnMap;
       GISdb[theDB].ColorButtonForSymbol(GISdb[theDB].dbTableF.BitBtn1);
 
@@ -1792,11 +1792,11 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordSym} WriteLineToDebugFile('RecordSymProblems active in gis_scaled_symbols');   {$EndIf}
-   {$IfDef RecordDataBase} WriteLineToDebugFile('RecordDataBaseProblems active in gis_scaled_symbols');   {$EndIf}
-   {$IfDef RecordDataInsideLoopPlots} WriteLineToDebugFile('RecordDataInsideLoopPlots active in gis_scaled_symbols');   {$EndIf}
-   {$IfDef RecordQuantile} WriteLineToDebugFile('RecordQuantileProblems active in gis_scaled_symbols');   {$EndIf}
-   {$IfDef RecordGISvectors} WriteLineToDebugFile('RecordGISvectors active in gis_scaled_symbols');   {$EndIf}
+   {$IfDef RecordSym} WriteLineToDebugFile('RecordSymProblems active in gis_scaled_symbols'): {$EndIf}
+   {$IfDef RecordDataBase} WriteLineToDebugFile('RecordDataBaseProblems active in gis_scaled_symbols'): {$EndIf}
+   {$IfDef RecordDataInsideLoopPlots} WriteLineToDebugFile('RecordDataInsideLoopPlots active in gis_scaled_symbols'): {$EndIf}
+   {$IfDef RecordQuantile} WriteLineToDebugFile('RecordQuantileProblems active in gis_scaled_symbols'): {$EndIf}
+   {$IfDef RecordGISvectors} WriteLineToDebugFile('RecordGISvectors active in gis_scaled_symbols'): {$EndIf}
    {$IfDef RecordFormSetup} WriteLineToDebugFile('RecordFormSetup active in gis_scaled_symbols'); {$EndIf}
    {$IfDef RecordColorPalette} WriteLineToDebugFile('RecordColorPalette active in gis_scaled_symbols'); {$EndIf}
    {$IfDef RecordQuickFilter} WriteLineToDebugFile('RecordQuickFilter active in gis_scaled_symbols'); {$EndIf}

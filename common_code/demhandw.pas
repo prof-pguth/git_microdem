@@ -3557,7 +3557,7 @@ begin
    fName := MainMapData;
    if GetFileFromDirectory('ENVI or Geotiff multiband imagery','*.img;*.tif;*.hdr',FName) then begin
       if FileExtEquals(fName,'.TIF') then begin
-         TiffImage := tTiffImage.CreateGeotiff(MapProjection,RegVars,false,fName,success);
+         TiffImage := tTiffImage.CreateGeotiff(false,MapProjection,RegVars,false,fName,success);
          MultiGridArray := tMultiGridArray.Create;
          MultiGridArray.LoadFromSingleFileGeotiff(TiffImage);
          MultiGridArray.Destroy;

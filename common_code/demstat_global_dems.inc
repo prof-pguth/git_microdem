@@ -15,7 +15,6 @@ var
    ns : integer;
 
 
-
 function GetCloudHeightFilter : shortstring;
 var
    Min,Max : float32;
@@ -208,7 +207,7 @@ end;
 
 procedure ElevationSlopePlotCompareDEMs;
 var
-   BinSize,StartIndex,Bin : integer;
+   BinSize{,StartIndex,Bin} : integer;
    sl : tStringList;
    fName : PathStr;
 
@@ -324,8 +323,8 @@ function FiveSeriesGraph(DB : integer; Lat,Long,Tolerance : float64; DirField : 
 
       function OnHorizontalDatum(d :  integer) : TThisbasegraph;
       var
-        i,j,k,xLen,OnFile : integer;
-        TStr : ShortString;
+        i,j,k{,xLen,OnFile} : integer;
+        //TStr : ShortString;
         offset : float32;
         OK : boolean;
         rFiles : array[1..5] of file;
@@ -767,7 +766,7 @@ const
    BeamName : array[0..6] of string10 = ('None','GT1R','GT1L','GT2R','GT2L','GT3R','GT3L');
 var
    DefaultFilter : byte;
-   outCSV,BigCSV,csv,FilesWanted  : tStringList;
+   outCSV,{BigCSV,}csv,FilesWanted  : tStringList;
    Table1 : tMyData;
    fName,OutName : PathStr;
    GeoidGrid,i,j,conf : integer;
@@ -804,7 +803,7 @@ begin
    if GetMultipleFiles('IceSat-2 point cloud data','Any file|*.dbf;*.csv',FilesWanted,DefaultFilter) then begin
       ZeroLidarPointType0(lp1.lp0);
 
-      GetGeoid;
+      //GetGeoid;
       GeoidGrid := OpenNewDEM(Geoid2008FName,false);
       DEMGlb[GeoidGrid].MultiplyGridByConstant(-1);
 
@@ -887,7 +886,7 @@ begin
 end;
 
 
-procedure IcesatProcessCanopy(dbOnTable : integer; AddDEMs : boolean);
+procedure IcesatProcessCanopy(dbOnTable : integer; AddDEMs : boolean; LimitDecimals : boolean = false);
 
 var
    i,j,rc,Wait,geoidGrid : integer;
@@ -911,7 +910,7 @@ var
 begin
    {$IfDef RecordIceSat} WriteLineToDebugFile('IcesatProcessCanopy in'); {$EndIf}
    if ValidDB(dbOnTable) then begin
-      GetGeoid;
+      //GetGeoid;
       GeoidGrid := OpenNewDEM(Geoid2008FName,false,'ellipsoid/geoid shift');
       if (GeoidGrid = 0) then begin
          MessageToContinue('Ellipsoid to Geoid grid required');
@@ -919,11 +918,13 @@ begin
       end;
       if not FileExists(ChangeFileExt(GISdb[DBonTable].DBfullName,'.shx')) then GISdb[DBonTable].SavePointShapeFile(false);      //create SHX file
 
-      GISdb[DBonTable].LimitFieldDecimals('H_TE_BEST_',2);
-      GISdb[DBonTable].LimitFieldDecimals('H_TE_UNCER',2);
-      GISdb[DBonTable].LimitFieldDecimals('H_CANOPY',2);
-      GISdb[DBonTable].LimitFieldDecimals('H_CANOPY_U',2);
-      {$IfDef RecordIceSat} WriteLineToDebugFile('Decimals limited'); {$EndIf}
+      if LimitDecimals then begin
+         GISdb[DBonTable].LimitFieldDecimals('H_TE_BEST_',2);
+         GISdb[DBonTable].LimitFieldDecimals('H_TE_UNCER',2);
+         GISdb[DBonTable].LimitFieldDecimals('H_CANOPY',2);
+         GISdb[DBonTable].LimitFieldDecimals('H_CANOPY_U',2);
+         {$IfDef RecordIceSat} WriteLineToDebugFile('Decimals limited'); {$EndIf}
+      end;
 
       GISdb[DBonTable].AddFieldToDataBase(ftFloat,'EGM2008_GD',9,2);
       GISdb[DBonTable].AddFieldToDataBase(ftFloat,'ICESAT_GRD',9,2);
@@ -931,7 +932,6 @@ begin
       GISdb[DBonTable].AddFieldToDataBase(ftString,'DATE',8);
       {$IfDef RecordIceSat} WriteLineToDebugFile('Fields added'); {$EndIf}
 
-      //GISdb[DBonTable].MyData.SimplePointFile := true;
       GISdb[DBonTable].MyData.First;
       StartProgress('Icesat-2 elevs');
       i := 0;
@@ -955,8 +955,7 @@ begin
                   z := z - zgeoid;
                   GISdb[DBonTable].MyData.SetFieldByNameAsFloat('ICESAT_GRD',z);
                   if GISdb[DBonTable].MyData.CarefullyGetFieldByNameAsFloat32('H_CANOPY',zh) then begin
-                     zh := z + zh;
-                     GISdb[DBonTable].MyData.SetFieldByNameAsFloat('ICESAT_CAN',zh);
+                     GISdb[DBonTable].MyData.SetFieldByNameAsFloat('ICESAT_CAN',z+zh);
                   end;
                end;
             end;
@@ -988,7 +987,7 @@ var
    zgeoid : float32;
 begin
    {$IfDef RecordIceSat} WriteLineToDebugFile('AddEGMfields in'); {$EndIf}
-      GetGeoid;
+      //GetGeoid;
       Geoid2008 := OpenNewDEM(Geoid2008FName,false,'geoid/ellipsoid shift');
       Geoid1996 := OpenNewDEM(Geoid96FName,false,'geoid/ellipsoid shift');
       GeoidDiff := OpenNewDEM(GeoidDiffFName,false,'geoid/ellipsoid shift');
@@ -1049,7 +1048,6 @@ var
          GISdb[DBonTable].MyData.SetFieldByNameAsFloat(fName,f);
       end;
 
-
 begin
    {$IfDef RecordIceSat} WriteLineToDebugFile('AddGlobalDEMs in'); {$EndIf}
    if not FileExists(ChangeFileExt(GISdb[DBonTable].DBfullName,'.shx')) then GISdb[DBonTable].SavePointShapeFile(false);      //create SHX file
@@ -1089,7 +1087,7 @@ begin
       if GISdb[DBonTable].ValidLatLongFromTable(Lat,Long) then begin
            ztop := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(LidarFields[2]);
            zbot := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(LidarFields[1]);
-           if ztop < 0.0001 then ztop := zbot;
+           if (ztop < 0.0001) then ztop := zbot;
 
            GISdb[DBonTable].MyData.Edit;
            for j := 1 to MaxCompare do begin

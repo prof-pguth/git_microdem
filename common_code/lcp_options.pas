@@ -118,7 +118,7 @@ end;
 
 procedure TLCP_form.CreateRouteCostBitBtn7Click(Sender: TObject);
 var
-   GISStart,GISend,Num,i,rc,NumDEMs,NumStarts : integer;
+   GISStart,GISend,{Num,}i,rc,NumDEMs,NumStarts : integer;
    Started : shortstring;
    Lat,Long : float64;
    fName : PathStr;
@@ -215,8 +215,8 @@ begin
 end;
 
 procedure TLCP_form.CreateCostSurfaceBitBtn1Click(Sender: TObject);
-var
-   StartMap : integer;
+//var
+   //StartMap : integer;
 begin
    {$IfDef RecordLCP} WritelineToDebugFile('enter TLCP_form.CreateCostSurfaceBitBtn1Click'); {$EndIf}
    StatusBar1.Panels[0].Text := 'Creating cost surface';

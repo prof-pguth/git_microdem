@@ -43,7 +43,7 @@ implementation
 {$R *.dfm}
 
 uses
-   Petmar,Petmar_types,DEMCoord,DEMDefs;
+   Petmar,PetMath,Petmar_types,DEMCoord,DEMDefs;
 
 
 procedure MultMaskDEM(TheDEM : integer);

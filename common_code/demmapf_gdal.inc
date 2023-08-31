@@ -20,7 +20,7 @@ begin
      else if ValidSatImage(MapDraw.SatOnMap) then fName := SatImage[MapDraw.SATonMap].IndexFileName
      else exit;
      GetGDALinfo(fName, GDALinfo);
-     ShowInNotepadPlusPlus(GDALinfoOutput(fname),'GDALinfo results ' + ExtractFileName(fName));
+     ShowInNotepadPlusPlus(GDALinfoOutputFName(fname),'GDALinfo results ' + ExtractFileName(fName));
 {$EndIf}
 end;
 
@@ -34,14 +34,6 @@ begin
    {$EndIf}
 end;
 
-
-procedure TMapForm.Rasteraftersubsettomatchthismapextent1Click(Sender: TObject);
-begin
-   {$IfDef ExGDAL}
-   {$Else}
-      GDALsubsetimageandopen(MapDraw.MapCorners.BoundBoxGeo,true,'');
-   {$EndIf}
-end;
 
 
 procedure TMapForm.ContoursShapefile1Click(Sender: TObject);

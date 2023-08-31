@@ -17,7 +17,7 @@ procedure AddSubtractGrid(Map1,Multiple : integer);
 var
    Map2,Col,Row  : integer;
    z1,z2 : float32;
-   ThisGraph : TThisBaseGraph;
+   //ThisGraph : TThisBaseGraph;
    IdenticalGrids,OK : boolean;
    rFile : file;
 begin
@@ -145,8 +145,8 @@ var
    z1,z2 : float32;
    IdenticalGrids : boolean;
    GridLimits : tGridLimits;
-   Dist1,Dist2 : tIntVector256;
-   CoOccur  : tIntMatrix256;
+   //Dist1,Dist2 : tIntVector256;
+   //CoOccur  : tIntMatrix256;
    sl : tStringList;
    Name1,Name2 : shortstring;
 begin

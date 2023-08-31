@@ -19,7 +19,7 @@ unit kml_opts;
 interface
 
 uses
-  Windows, Messages, SysUtils,  Classes, Graphics, Controls, Forms,StrUtils,  Buttons,DB,
+  Windows, Messages, SysUtils,  Classes, Graphics, Controls, Forms,StrUtils,  Buttons,
   KML_creator,Petmar_types, Vcl.ExtCtrls, Vcl.StdCtrls;
 
 type
@@ -93,6 +93,21 @@ implementation
 {$R *.dfm}
 
 uses
+//needed for inline of the core DB functions
+   Petmar_db,
+   Data.DB,
+   {$IfDef UseFireDacSQLlite}
+      FireDAC.Comp.Client, FireDAC.Comp.Dataset,FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteWrapper,
+   {$EndIf}
+
+   {$IfDef UseTDBF}
+      dbf,
+   {$EndIf}
+
+   {$IfDef UseTCLientDataSet}
+      DBClient,
+   {$EndIf}
+//end inline core DB functions
    {$IfDef ExGeography} {$Else} KoppenGr, {$EndIf}
    Petmar,DEMCoord,DEMDefs,DEMDatabase,DEMESRIShapefile,PETDBUtils,
    PETImage, nevadia_main;
@@ -325,7 +340,7 @@ end;
 function ConvertToKML(DBonTable : integer; ThumbNailDir : PathStr; kml : KML_Creator.tKMLCreator = Nil; SingleRecordOnly : boolean = false; SepExpField : ShortString = '') : PathStr;
 var
    kml_opts_fm: Tkml_opts_fm;
-   fname : PathStr;
+   //fname : PathStr;
    NameField,FolderName,FolderDesc,IconName,
    MenuStr,TStr : shortstring;
    Options,Desc : string;
@@ -408,7 +423,7 @@ var
           Lat := GISdb[DBonTable].aShapeFile.CurrentLineCoords^[i].Lat;
           Long := GISdb[DBonTable].aShapeFile.CurrentLineCoords^[i].Long;
           z := 0;
-          if (GISdb[DBonTable].TheMapOwner <> Nil) and (GISdb[DBonTable].TheMapOwner.MapDraw.DEMonMap <> 0) then DEMGlb[GISdb[DBonTable].TheMapOwner.MapDraw.DEMonMap].GetElevFromLatLongDegree(Lat,Long,z);
+          if (GISdb[DBonTable].TheMapOwner <> Nil) and ValidDEM(GISdb[DBonTable].TheMapOwner.MapDraw.DEMonMap) then DEMGlb[GISdb[DBonTable].TheMapOwner.MapDraw.DEMonMap].GetElevFromLatLongDegree(Lat,Long,z);
           KML.EncodeLatLongZ(Lat, Long, z);
        end;
 

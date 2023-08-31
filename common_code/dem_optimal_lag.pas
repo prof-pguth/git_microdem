@@ -81,6 +81,7 @@ uses
    Petmar,PetMath,// SystemCriticalU,
    BaseGraf,Thread_timers,
    Petmar_db,
+   BaseMap,
    DEM_Manager,
    DEMdatabase,
    DEMDef_routines,

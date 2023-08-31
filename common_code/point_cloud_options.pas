@@ -597,6 +597,7 @@ uses
    MultiGrid,
    BaseGraf,
    MD_Use_tools,
+   demmapdraw,
    Nevadia_Main, Make_tables, DEMESRIShapeFile, DEM_indexes, slicer_3d,
    demdbfilter, basemap, DEMStat, demstringgrid;
 
@@ -977,14 +978,17 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
          SingleReturnDEM,
          TempDEM,
        CheckDEM,
-       GISNum,Intensity,x,y,i,RecsRead,Count,xgrid,ygrid : integer;
-       xApp,yApp,zShot,zCrit,z2,z1,z3 : float64;
-       TStr : ShortString;
-       fName,OutDir,DTMName : PathStr;
-       Table : tMyData;
-       TheFilter : AnsiString;
-       Output : tstringList;
-       ChangeUse : boolean;
+       Intensity,
+       //GISNum,x,y,i,xgrid,ygrid,
+       i,RecsRead,Count : integer;
+       //xApp,yApp,z2,z1,z3 ,
+       zShot,zCrit: float64;
+       //TStr : ShortString;
+       fName,OutDir{,DTMName} : PathStr;
+       //Table : tMyData;
+       //TheFilter : AnsiString;
+       //Output : tstringList;
+       //ChangeUse : boolean;
        Ext : ExtStr;
        LasData : Las_Lidar.tLAS_data;
        VegDensity : array[1..MaxVegLayers] of integer;
@@ -1139,10 +1143,10 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
            procedure OneLasLayer(Layer : integer);
            var
               xgrid,ygrid,k,i,j,LasClass : integer;
-              r,g,b : byte;
+              //r,g,b : byte;
               zGrid,Dist,xf,yf : float32;
               NoFilter,OK : boolean;
-              TStr : shortstring;
+              //TStr : shortstring;
            begin
               NoFilter := NoFilterWanted;  //not checking for noise, or a user filter
              {$IfDef RecordMakeGrid} WriteLineToDebugFile('One layer, layer=' + IntToStr(Layer) + '   points=' + IntToStr(LasFiles[Layer].TotalCloudPts) + ' filter=' + TrueOrFalse(not NoFilter)); {$EndIf}
@@ -1500,15 +1504,17 @@ var
               RestartThinned;
            var
               NumNoiseOverlap,OutsideBlock,NumWrongReturn,OutsideNewGrid,GoodInBlock : int64;
-              TilesUsed,ThinFactor,xf,yf,ff,xp,yp, buf,
-              k,i,j,RecsRead,xgrid,ygrid,xg,yg,ColHi,RowHi : integer;
+              TilesUsed,ThinFactor,xf,yf,ff,
+              //xp,yp,
+              buf,k,i,j,RecsRead,xgrid,ygrid,xg,yg,ColHi,RowHi : integer;
               fName : PathStr;
-              NeedTile,NoFilter : boolean;
+              NeedTile{,NoFilter} : boolean;
               LasData : Las_Lidar.tLAS_data;
               bb : sfBoundBox;
-              Proceed,p1,p2 : boolean;
-              Lat,Long,xutm,yutm : float64;
-              x,y : array[1..4] of float64;
+              Proceed{,p1,p2} : boolean;
+              //Lat,Long,
+              xutm,yutm : float64;
+              //x,y : array[1..4] of float64;
            begin
               {$IfDef RecordNewGrids} WriteLineToDebugFile(aLabel + '  layer=' + IntToStr(Layer) + ' col=' + IntToStr(Col) + ' row=' + IntToStr(Row) ); {$EndIf}
               {$IfDef ShowNewGridsMap} BaseMap.DoFastMapRedraw; {$EndIf}
@@ -1625,8 +1631,9 @@ var
 
 var
    i,x,y,Col,Row,theRound,Rounds,Base,PtDensity : integer;
-   Lat,Long,fr1,fr2,fr3,CellDZ,PC_99,PC_95,PC_5,PC_1,PC_995,PC_05,z : float64;
+   Lat,Long,{fr1,fr2,fr3,CellDZ,z,}PC_99,PC_95,PC_5,PC_1,PC_995,PC_05 : float64;
    TStr : shortstring;
+
 begin
    Result := BaseMap.MakeTempGrid;
    if (Result = 0) then exit;
@@ -2383,7 +2390,7 @@ begin
        NewName := '';
        for i := MaxClouds downto 1 do begin
           if UsePC[i] and (LasFiles[i] <> Nil) then begin
-             {$IfDef RecordPointCloudViewing} WriteLineToDebugFile('Tpt_cloud_opts_fm.BitBtn21Click cloud=' + IntToStr(i));   {$EndIf}
+             {$IfDef RecordPointCloudViewing} WriteLineToDebugFile('Tpt_cloud_opts_fm.BitBtn21Click cloud=' + IntToStr(i)): {$EndIf}
              wmdem.SetPanelText(0,'Slice out=' + IntToStr(i) + ' ' + LasFiles[i].CloudName);
              LasFiles[i].ShowLASProgress := true;
              if (LasFiles[i].LAS_fnames.Count = 1) and BaseMap.MapDraw.LatLongOnScreen(LasFiles[i].GeoBBox.ymin,LasFiles[i].GeoBBox.xmin) and BaseMap.MapDraw.LatLongOnScreen(LasFiles[i].GeoBBox.ymax,LasFiles[i].GeoBBox.xmax) then begin
@@ -2703,7 +2710,7 @@ begin
    Extra := 0.025 * (LasFiles[Layer].GeoBBox.xmax - LasFiles[Layer].GeoBBox.xmin);
    Extra := 0;
    BaseMap.MapDraw.MaximizeLatLongMapCoverage(LasFiles[Layer].GeoBBox.ymin - Extra,LasFiles[Layer].GeoBBox.xmin  - Extra,LasFiles[Layer].GeoBBox.ymax  + Extra,LasFiles[Layer].GeoBBox.xmax  + Extra);
-   {$IfDef RecordPointCloudOptionsForm} WriteLineToDebugFile('MaximizeLatLongMapCoverage over');   {$EndIf}
+   {$IfDef RecordPointCloudOptionsForm} WriteLineToDebugFile('MaximizeLatLongMapCoverage over'): {$EndIf}
    BaseMap.DoCompleteMapRedraw;
    BaseMap.FullMapSpeedButton.Enabled := true;
    OutlineClouds;
@@ -3596,7 +3603,8 @@ end;
 
 procedure Tpt_cloud_opts_fm.DTMrangescalesfromgroundpoints1Click(Sender: TObject);
 var
-   i,NewDEM : integer;
+   //i,
+   NewDEM : integer;
    SaveDir,fName : PathStr;
    NewName : shortstring;
    aTable : Petmar_db.tMyData;
@@ -4047,7 +4055,7 @@ var
    i : integer;
    LasName,DTMName : PathStr;
 begin
-    {$IfDef RecordMakeGrid} WriteLineToDebugFile('Tpt_cloud_opts_fm.BitBtn1Click');   {$EndIf}
+    {$IfDef RecordMakeGrid} WriteLineToDebugFile('Tpt_cloud_opts_fm.BitBtn1Click'); {$EndIf}
     if (Edit19.Text = '') then begin
        PickUTMZone(MDdef.DefaultUTMZone);
        Edit19.Text := IntToStr(MDdef.DefaultUTMZone);
@@ -4118,7 +4126,7 @@ var
    OK,
    ViewMultiple,ExportDone,AlreadyLoaded,LASDestroy : Boolean;
    ColorsFName,fName : array[1..5] of PathStr;
-   LasData : Las_Lidar.tLAS_data;
+   //LasData : Las_Lidar.tLAS_data;
    i : Integer;
 
       procedure ExportCloud(Cloud : integer; var fName,ColorName : PathStr; BaseName : PathStr; ExportFilter : tLASClassificationCategory = lccAll);

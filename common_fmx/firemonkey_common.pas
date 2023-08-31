@@ -1,3 +1,6 @@
+removed 20 Aug 2023
+
+
 unit firemonkey_common;
 
 {^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
@@ -39,6 +42,7 @@ uses
 
 
 procedure GenerateMesh(NewDEM : integer; TheMesh : tMesh; GridLimits : tGridLimits);
+
 {$IfDef Android}
    procedure SetFileForViewing(sYourPath : PathStr);
 {$EndIf}
@@ -47,7 +51,7 @@ procedure GenerateMesh(NewDEM : integer; TheMesh : tMesh; GridLimits : tGridLimi
 implementation
 
 uses
-   PetImage,
+   PetImage, PetMath,
    DEMCoord,
    DEMDef_routines,
    Petmar;
@@ -82,6 +86,7 @@ var
 
 
 procedure GenerateMesh(NewDEM : integer; TheMesh : tMesh; GridLimits : tGridLimits);
+//not recently tested
 //FMX code, currently with a hard coded number of vertices to load
 //plan is to load the largest number of triangles that will work
 //this currently takes just the DEM, since I cannot programmatically load the draping bitmap texture

@@ -8,8 +8,8 @@ inherited ElevOptionsForm: TElevOptionsForm
   Position = poDefaultSizeOnly
   OnClose = FormClose
   OnCreate = FormCreate
-  ExplicitWidth = 352
-  ExplicitHeight = 522
+  ExplicitWidth = 348
+  ExplicitHeight = 521
   TextHeight = 15
   inherited Bevel1: TBevel
     Left = 0
@@ -54,6 +54,7 @@ inherited ElevOptionsForm: TElevOptionsForm
   inherited CancelBtn: TButton
     Left = 104
     Top = 451
+    OnClick = CancelBtnClick
     ExplicitLeft = 104
     ExplicitTop = 451
   end
@@ -177,9 +178,9 @@ inherited ElevOptionsForm: TElevOptionsForm
     OnClick = CheckBox5Click
   end
   object CheckBox6: TCheckBox
-    Left = 79
+    Left = 119
     Top = 406
-    Width = 158
+    Width = 131
     Height = 17
     Caption = 'Immediate redraws'
     TabOrder = 13
@@ -192,5 +193,14 @@ inherited ElevOptionsForm: TElevOptionsForm
     Height = 23
     TabOrder = 14
     OnChange = ComboBox2Change
+  end
+  object CheckBox1: TCheckBox
+    Left = 8
+    Top = 406
+    Width = 105
+    Height = 17
+    Caption = 'No interpolation'
+    TabOrder = 15
+    OnClick = CheckBox1Click
   end
 end

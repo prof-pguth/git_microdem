@@ -67,6 +67,7 @@ uses
    {$EndIf}
    DEMDefs,Petmar,Petmar_types;
 
+
 function GetClusterOptions;
 {$IfDef NoClustering}
 begin
@@ -86,7 +87,7 @@ begin
       Edit1.Text := IntToStr(MDDef.NumClusters);
       Edit2.Text := IntToStr(MDDef.ClusterIterations);
       Label5.Caption := 'Min sampling=' + IntToStr(Sampling);
-      Edit3.Text := IntToStr(Sampling + 2);
+      Edit3.Text := IntToStr(Sampling);
       RadioGroup1.ItemIndex := ord(MDDef.ClusterInitialization);
       RadioGroup2.ItemIndex := pred(round(MDDef.ClassDistancePower * 2));
 

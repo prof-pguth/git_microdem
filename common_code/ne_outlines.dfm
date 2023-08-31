@@ -5,7 +5,7 @@ object NEOutlineForm: TNEOutlineForm
   BorderStyle = bsDialog
   Caption = 'Smart Natural Earth Outlines'
   ClientHeight = 223
-  ClientWidth = 545
+  ClientWidth = 638
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -67,8 +67,8 @@ object NEOutlineForm: TNEOutlineForm
     Caption = 'Pixel size (m) to stop using'
   end
   object OKBtn: TBitBtn
-    Left = 216
-    Top = 173
+    Left = 320
+    Top = 170
     Width = 77
     Height = 27
     Kind = bkOK
@@ -95,8 +95,8 @@ object NEOutlineForm: TNEOutlineForm
     OnChange = Edit3Change
   end
   object BitBtn5: TBitBtn
-    Left = 299
-    Top = 173
+    Left = 403
+    Top = 170
     Width = 77
     Height = 27
     Kind = bkHelp
@@ -177,7 +177,7 @@ object NEOutlineForm: TNEOutlineForm
     OnClick = CheckBox3Click
   end
   object BitBtn2: TBitBtn
-    Left = 267
+    Left = 499
     Top = 136
     Width = 109
     Height = 25
@@ -236,5 +236,23 @@ object NEOutlineForm: TNEOutlineForm
       FFF00000000000000000DADADADADADADADAADADADADADADADAD}
     TabOrder = 13
     OnClick = BitBtn4Click
+  end
+  object CheckBox4: TCheckBox
+    Left = 192
+    Top = 168
+    Width = 97
+    Height = 17
+    Caption = 'Grayscale'
+    TabOrder = 14
+    OnClick = CheckBox4Click
+  end
+  object CheckBox5: TCheckBox
+    Left = 192
+    Top = 191
+    Width = 97
+    Height = 17
+    Caption = 'Subdue'
+    TabOrder = 15
+    OnClick = CheckBox5Click
   end
 end

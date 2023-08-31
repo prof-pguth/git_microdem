@@ -2,8 +2,8 @@ object dbtablef: Tdbtablef
   Left = 62
   Top = 306
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 991
-  ClientWidth = 1220
+  ClientHeight = 990
+  ClientWidth = 1216
   Color = clBtnFace
   ParentFont = True
   FormStyle = fsMDIChild
@@ -17,24 +17,24 @@ object dbtablef: Tdbtablef
   TextHeight = 15
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 972
-    Width = 1220
+    Top = 971
+    Width = 1216
     Height = 19
     Panels = <
       item
         Width = 250
       end>
-    ExplicitTop = 971
-    ExplicitWidth = 1216
+    ExplicitTop = 970
+    ExplicitWidth = 1212
   end
   object Panel2: TPanel
     Left = 0
     Top = 41
-    Width = 1220
+    Width = 1216
     Height = 32
     Align = alTop
     TabOrder = 1
-    ExplicitWidth = 1216
+    ExplicitWidth = 1212
     object BitBtn1: TBitBtn
       Left = 34
       Top = 1
@@ -215,11 +215,11 @@ object dbtablef: Tdbtablef
   object Panel3: TPanel
     Left = 0
     Top = 73
-    Width = 1220
+    Width = 1216
     Height = 41
     Align = alTop
     TabOrder = 2
-    ExplicitWidth = 1216
+    ExplicitWidth = 1212
     object Label2: TLabel
       Left = 12
       Top = 12
@@ -266,11 +266,11 @@ object dbtablef: Tdbtablef
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1220
+    Width = 1216
     Height = 41
     Align = alTop
     TabOrder = 4
-    ExplicitWidth = 1216
+    ExplicitWidth = 1212
     object LOSButton: TSpeedButton
       Left = 40
       Top = 6
@@ -529,11 +529,11 @@ object dbtablef: Tdbtablef
   object Panel7: TPanel
     Left = 0
     Top = 114
-    Width = 1220
+    Width = 1216
     Height = 41
     Align = alTop
     TabOrder = 3
-    ExplicitWidth = 1216
+    ExplicitWidth = 1212
     object RadioGroup2: TRadioGroup
       Left = 20
       Top = 0
@@ -554,8 +554,8 @@ object dbtablef: Tdbtablef
   object DBGrid1: TDBGrid
     Left = 0
     Top = 155
-    Width = 1220
-    Height = 817
+    Width = 1216
+    Height = 816
     Align = alClient
     TabOrder = 5
     TitleFont.Charset = DEFAULT_CHARSET
@@ -2720,6 +2720,10 @@ object dbtablef: Tdbtablef
           Caption = 'Integer'
           OnClick = Integer2Click
         end
+      end
+      object Addaverageelevationinwindow1: TMenuItem
+        Caption = 'Add average elevation in window'
+        OnClick = Addaverageelevationinwindow1Click
       end
       object AddslopefromDEM1: TMenuItem
         Caption = 'Add slope/aspect from DEM'

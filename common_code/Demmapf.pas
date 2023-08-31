@@ -971,9 +971,9 @@ type
     Gridinfile1: TMenuItem;
     N34: TMenuItem;
     SpeedButton3: TSpeedButton;
-    renchslabdips1: TMenuItem;
+    //renchslabdips1: TMenuItem;
     renches1: TMenuItem;
-    Slabdepths1: TMenuItem;
+    //Slabdepths1: TMenuItem;
     Maxmeanmingridsfrompointdata1: TMenuItem;
     SpeedButton8: TSpeedButton;
     NLCD19921: TMenuItem;
@@ -1483,6 +1483,8 @@ type
     Pickmapsforbigimage1: TMenuItem;
     dNBRNBRbeforeandafterfire1: TMenuItem;
     NBR21: TMenuItem;
+    Percent1: TMenuItem;
+    GDALgridsubsettomatchthismap1: TMenuItem;
     //procedure HiresintervisibilityDEM1Click(Sender: TObject);
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
@@ -1585,7 +1587,7 @@ type
     procedure Colors2Click(Sender: TObject);
     procedure Erasersize1Click(Sender: TObject);
     procedure GDALinfo1Click(Sender: TObject);
-    procedure Rasteraftersubsettomatchthismapextent1Click(Sender: TObject);
+    //procedure Rasteraftersubsettomatchthismapextent1Click(Sender: TObject);
     procedure GDALtranslatesubset1Click(Sender: TObject);
     procedure ContoursShapefile1Click(Sender: TObject);
     procedure GDALslopemap1Click(Sender: TObject);
@@ -2155,8 +2157,8 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Opengrid2Click(Sender: TObject);
     procedure Gridinfile1Click(Sender: TObject);
     procedure SpeedButton3Click(Sender: TObject);
-    procedure renchslabdips1Click(Sender: TObject);
-    procedure Slabdepths1Click(Sender: TObject);
+    //procedure renchslabdips1Click(Sender: TObject);
+    //procedure Slabdepths1Click(Sender: TObject);
     procedure Maxmeanmingridsfrompointdata1Click(Sender: TObject);
     procedure SpeedButton8Click(Sender: TObject);
     procedure NLCD19921Click(Sender: TObject);
@@ -2567,6 +2569,9 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure dNBRNBRbeforeandafterfire1Click(Sender: TObject);
     procedure NBR21Click(Sender: TObject);
     procedure N60Click(Sender: TObject);
+    procedure Percent1Click(Sender: TObject);
+    procedure Rasteraftersubsettomatchthismapextent1Click(Sender: TObject);
+    procedure GDALgridsubsettomatchthismap1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
     MouseDownLat,MouseDownLong,
@@ -3302,6 +3307,7 @@ uses
    {$EndIf}
 
    DEMIX_control,
+   DEMcoord,
    DEMIX_cop_alos,
    pick_several_dems ,
    Monitor_Change_Form,
@@ -3329,7 +3335,6 @@ uses
    GEOTIFF,
    DEMPrintPreview,
    DEM_Map_scale,
-   DEMCoord,
    DEMGrPik,
    DEMConOp,
    DEMSlopeOpts,
@@ -5044,7 +5049,7 @@ begin
       InsureAllFansDrawn(AmbushFansTable,Bitmap);
       AmbushFansTable.Destroy;
 
-      {$IfDef RecordAmbush} WriteLineToDebugFile('Load DB ' + fName);   {$EndIf}
+      {$IfDef RecordAmbush} WriteLineToDebugFile('Load DB ' + fName): {$EndIf}
       CurrentFansTable := LoadDataBaseFile(fName);
       fName := SaveViewShedDir + 'route_composite' + OverlayFExt;
       PetImage.SaveBitmap(Bitmap,fName);
@@ -5825,7 +5830,7 @@ begin
 {$EndIf}
 end;
 
-
+(*
 procedure TMapForm.Slabdepths1Click(Sender: TObject);
 {$IfDef ExGeology}
 begin
@@ -5840,6 +5845,7 @@ begin
       DownloadFileFromWeb(WebDataDownLoadDir + fName2,fName);
    end;
 
+
    if FileExists(fName) then  begin
       MapDraw.AllowDataBaseDrawing := false;
       db := LoadDataBaseFile(fName);
@@ -5850,7 +5856,7 @@ begin
    end;
 {$EndIf}
 end;
-
+*)
 
 procedure TMapForm.Solarparameters1Click(Sender: TObject);
 begin
@@ -6324,7 +6330,7 @@ begin
    WantedField := GISdb[FeaturesDB].PickField('Field for grid',NumericFieldTypes);
    if WantedField = '' then exit;
 
-   {$IfDef RecordCreateGeomorphMaps} WriteLineToDebugFile('  WantedField=' + WantedField);   {$EndIf}
+   {$IfDef RecordCreateGeomorphMaps} WriteLineToDebugFile('  WantedField=' + WantedField): {$EndIf}
 
    if (DEMGlb[MapDraw.DEMonMap].SelectionMap.MapDraw.FeatureGrid = 0) then UseDEM := MapDraw.DEMonMap
    else UseDEM := DEMGlb[MapDraw.DEMonMap].SelectionMap.MapDraw.FeatureGrid;
@@ -6709,7 +6715,7 @@ var
          {$EndIf}
 
    begin
-      {$IfDef RecordGetFabricAtPoint}  WriteLineToDebugFile('DEM=' + DEMGlb[DEM].AreaName);   {$EndIf}
+      {$IfDef RecordGetFabricAtPoint}  WriteLineToDebugFile('DEM=' + DEMGlb[DEM].AreaName): {$EndIf}
       if DEMGlb[DEM].GetElevMetersOnGrid(x,y,z) and DEMGlb[DEM].SimplePointSSOComputations(true,x,y,MDDef.SSOBoxSizeMeters,s1s2,s2s3,Trend,rf) then begin
          if (DEM = MapDraw.DEMonMap) then begin
             MapDraw.DEMGridToScreen(x,y,xp,yp);
@@ -6757,7 +6763,7 @@ var
 
 
 begin
-   {$IfDef RecordGetFabricAtPoint} writeLineToDebugFile('GetFabricAtPoint in');   {$EndIf}
+   {$IfDef RecordGetFabricAtPoint} writeLineToDebugFile('GetFabricAtPoint in'): {$EndIf}
    if MapDraw.ValidDEMonMap then begin
       ShowHourglassCursor;
       MapDraw.ScreenToLatLongDegree(x,y,Lat,Long);
@@ -7031,6 +7037,12 @@ begin
    {$Else}
       DEMOptions.PitSpireDefaults(Self,1);
    {$EndIf}
+end;
+
+procedure TMapForm.Percent1Click(Sender: TObject);
+begin
+   DEMGlb[MapDraw.DEMonMap].SelectionMap.MapDraw.MapType := mtElevRainbow;
+   ChangeElevUnits(euPercent);
 end;
 
 procedure TMapForm.Percentages1Click(Sender: TObject);
@@ -7324,7 +7336,8 @@ end;
 procedure TMapForm.NumericgridwithVATtobytegridwithcodes1Click(Sender: TObject);
 var
    fName2 : PathStr;
-   i,x,y,Code,NewDEM : integer;
+   //i,
+   x,y,Code,NewDEM : integer;
    z : float32;
    Color : tRGBTriple;
    Vat : tStringList;
@@ -9267,7 +9280,7 @@ var
 begin
    {$IfDef ExGDAL}
    {$Else}
-      NewGrid := GDALsubsetimageandopen(MapDraw.MapCorners.BoundBoxGeo,true,'');
+      NewGrid := GDALsubsetGridAndOpen(MapDraw.MapCorners.BoundBoxGeo,true,'');
       if DEMGlb[NewGrid].LandCoverGrid then DEMGlb[NewGrid].SelectionMap.MakeNLCDLegend(DEMGlb[NewGrid].AreaName);
    {$EndIf}
 end;
@@ -10969,7 +10982,7 @@ begin
 
    (*
    if (DEMNowDoing = DoingDatumShift) then begin
-      {$IfDef RecordDatumShift} WriteLineToDebugFile('DEMNowDoing = DoingDatumShift click ' + LatLongDegreeToString(Lat,Long));   {$EndIf}
+      {$IfDef RecordDatumShift} WriteLineToDebugFile('DEMNowDoing = DoingDatumShift click ' + LatLongDegreeToString(Lat,Long)): {$EndIf}
       MapDraw.ComputeDatumShifts(Image1.Canvas,Lat,Long,shift1,shift2,LabelDatumShift);
       exit;
    end;
@@ -11710,7 +11723,7 @@ var
                    euMM : Result := ' z=' + RealToString(Elev,6,2) + ' mm';
                    HundredthMa  : Result := ' z=' + RealToString(Elev,6,2) + ' Ma';
                    PercentSlope : Result := ' z=' + RealToString(Elev,6,1) + '%';
-                   zPercent : Result := ' z=' + RealToString(Elev,6,2) + '%';
+                   euPercent : Result := ' z=' + RealToString(Elev,6,2) + '%';
                    zDegrees : Result := ' z=' + RealToString(Elev,6,2) + '°';
                    lnElev : Result := 'ln z=' + RealToString(Elev,5,3) + '  z=' + RealToString(Math.Power(e,Elev),-18,-2);
                    LogElev : Result := 'log z=' + RealToString(Elev,5,3) + '  z=' + RealToString(Math.Power(10,Elev),-18,-2);
@@ -11945,7 +11958,7 @@ begin
          LastY := y;
          if DEMNowDoing in [NewTrack] then AddLatLongPointToStreamProfile(Lat,Long)
          else dbAddRecForm.ShapeFileCreator.ProcessShapeDigitization(Self);
-         {$IfDef RecordStreamModeDigitize} WriteLineToDebugFile('far enough, TMapForm.Image1MouseMove from ' + IntToStr(NewX1) + '/' + IntToStr(NewY1) + ' to ' + IntToStr(x) + '/' + IntToStr(y) + '  ' + LatLongDegreeToString(Lat,Long) );   {$EndIf}
+         {$IfDef RecordStreamModeDigitize} WriteLineToDebugFile('far enough, TMapForm.Image1MouseMove from ' + IntToStr(NewX1) + '/' + IntToStr(NewY1) + ' to ' + IntToStr(x) + '/' + IntToStr(y) + '  ' + LatLongDegreeToString(Lat,Long) ): {$EndIf}
          if (StreamProfileResults = Nil) then begin
             MapScreenX1 := x;
             MapScreenY1 := y;
@@ -12954,7 +12967,7 @@ begin
    if (DEMNowDoing in [ErasingPoints,MoveMapBox,DigitizeContourStream]) then MouseIsDown := true;
 
    if (MDDef.DigitizeMode = dmStream) and (NowStreamDigitizing(DEMNowDoing)) then begin
-      {$IfDef RecordStreamModeDigitize} WriteLineToDebugFile('TMapForm.Image1MouseDown  x=' + IntToStr(NewX1) + '  y=' + IntToStr(NewY1) + ' to x=' + IntToStr(x) + '  y=' + IntToStr(y));   {$EndIf}
+      {$IfDef RecordStreamModeDigitize} WriteLineToDebugFile('TMapForm.Image1MouseDown  x=' + IntToStr(NewX1) + '  y=' + IntToStr(NewY1) + ' to x=' + IntToStr(x) + '  y=' + IntToStr(y)): {$EndIf}
       newx1 := x;
       Newy1 := y;
       Image1.Canvas.MoveTo(x,y);
@@ -13622,7 +13635,6 @@ begin
 end;
 
 
-
 procedure TMapForm.Subsetgraphicalzoom1Click(Sender: TObject);
 begin
    Subset1Click(Sender);
@@ -13675,14 +13687,14 @@ var
          begin
              {$IfDef ExSat}
              {$Else}
-             if (i > 0) and (SatImage[i] <> Nil) then begin
-                SatImage[i].SatGridToLatLongDegree(SatImage[MapDraw.SatOnMap].BandForSize,0,0,Lat,Long);
-                if Lat > LatHi Then LatHi := Lat;
-                if Long < LongLow then LongLow := Long;
-                SatImage[i].SatGridToLatLongDegree(SatImage[MapDraw.SatOnMap].BandForSize,SatImage[i].NumSatCol,SatImage[i].NumSatRow,Lat,Long);
-                if Lat < LatLow Then LatLow := Lat;
-                if Long > LongHi then LongHi := Long;
-             end;
+                if (i > 0) and (SatImage[i] <> Nil) then begin
+                   SatImage[i].SatGridToLatLongDegree(SatImage[MapDraw.SatOnMap].BandForSize,0,0,Lat,Long);
+                   if Lat > LatHi Then LatHi := Lat;
+                   if Long < LongLow then LongLow := Long;
+                   SatImage[i].SatGridToLatLongDegree(SatImage[MapDraw.SatOnMap].BandForSize,SatImage[i].NumSatCol,SatImage[i].NumSatRow,Lat,Long);
+                   if Lat < LatLow Then LatLow := Lat;
+                   if Long > LongHi then LongHi := Long;
+                end;
              {$EndIf}
          end;
 
@@ -13774,7 +13786,6 @@ begin
           {$Else}
              LoadMapInGoogleEarth(DEMGlb[NewMap].SelectionMap.Caption,DEMGlb[NewMap].SelectionMap);
           {$EndIf}
-          //DEMGlb[NewMap].SelectionMap.ADuplicateMap := true;
           DEMGlb[NewMap].SelectionMap.Close;
         end;
       end;
@@ -13927,7 +13938,7 @@ begin
          Decimeters : MDdef.DefaultContourInterval := (MDdef.DefaultContourInterval * 10);
          Centimeters : MDdef.DefaultContourInterval := (MDdef.DefaultContourInterval * 100);
       end;
-      {$IfDef RecordMapDraw} WriteLineToDebugFile('TMapForm.Contourinterval1Click contour interval=' + IntToStr(MDdef.DefaultContourInterval));   {$EndIf}
+      {$IfDef RecordMapDraw} WriteLineToDebugFile('TMapForm.Contourinterval1Click contour interval=' + IntToStr(MDdef.DefaultContourInterval)): {$EndIf}
       MapDraw.MapOverlays.ConInt := MDdef.DefaultContourInterval;
       DoCompleteMapRedraw;
    end;
@@ -15472,7 +15483,7 @@ end;
 
 procedure TMapForm.WeaponFanSpeedButton8Click(Sender: TObject);
 begin
-   {$IfDef RecordFan} WriteLineToDebugFile('WeaponFanSpeedButton8Click');   {$EndIf}
+   {$IfDef RecordFan} WriteLineToDebugFile('WeaponFanSpeedButton8Click'): {$EndIf}
    FirstFan := true;
    ChangeDEMNowDoing(QuickWeaponsFan);
 end;
@@ -15612,6 +15623,14 @@ begin
    RuffMap := CreateSlopeRoughnessSlopeStandardDeviationMap(ElevMap,3,SlopeMap);
    AspMap := MakeAspectMap(ElevMap);
    HistogramsFromVATDEM(MapDraw.DEMonMap,ElevMap,SlopeMap,RuffMap,AspMap,Graph1,Graph2,Graph3,Graph4);
+end;
+
+procedure TMapForm.Rasteraftersubsettomatchthismapextent1Click(Sender: TObject);
+begin
+   {$IfDef ExGDAL}
+   {$Else}
+      GDALsubsetGridAndOpen(MapDraw.MapCorners.BoundBoxGeo,true,'');
+   {$EndIf}
 end;
 
 procedure TMapForm.Rastertovector1Click(Sender: TObject);
@@ -16085,7 +16104,7 @@ begin
    else if (MapDraw.VectorIndex <> 0) then exit;
    Closable := true;
    Close;
-   {$IfDef RecordDEMMapProjection} WriteStringListToDebugFile(DEMMapProjection.ProjectionParamtersList);   {$EndIf}
+   {$IfDef RecordDEMMapProjection} WriteStringListToDebugFile(DEMMapProjection.ProjectionParamtersList): {$EndIf}
 end;
 
 procedure TMapForm.Topographicgrain2Click(Sender: TObject);
@@ -18831,9 +18850,7 @@ procedure TMapForm.Recentworldpiracy1Click(Sender: TObject);
 begin
 {$Else}
 begin
-   if not FileExists(PiratesFName) then begin
-      DownloadFileFromWeb(WebDataDownLoadDir + ExtractFileName(PiratesFName),PiratesFName);
-   end;
+   //if not FileExists(PiratesFName) then DownloadFileFromWeb(WebDataDownLoadDir + ExtractFileName(PiratesFName),PiratesFName);
 
    PiratesDB := OpenDBonMap('',PiratesFName);
    if (Sender = Nil) then begin
@@ -19845,26 +19862,20 @@ var
   xg,yg : float32;
   xg1,yg1,xg2,yg2,xs,ys, lat,Long,xc,yc,LatC,LongC,Lat1,Long1,h,k : float64;
 begin
-  with mapDraw do begin
+  //with mapDraw do begin
      MapDraw.ScreenToLatLongDegree(lastx,LastY,Lat,Long);
       {$IfDef RecordMapDraw} WriteLineToDebugFile('TMapForm.Setscale1Click enter'); {$EndIf}
      MapScaledForm := DEM_Map_scale.TMapScaledForm.Create(Application);
      with MapScaledForm,MapDraw do begin
         WantLat := Lat;
         WantLong := Long;
-        if  (VectorIndex <> 0) then with PrimMapProj{,ViewProjection} do begin
+        if  (VectorIndex <> 0) then with PrimMapProj do begin
            OldCenterLat := MapDraw.MapLatCent;
            OldCenterLong := MapDraw.MapLongCent;
         end;
-
-        //ComboBox1.Text := MDDef.DefaultScale;
         MapDatumConstants := MapDraw.PrimMapProj;
         ShowMapSize;
-
         ShowModal;
-
-        //MDDef.DefaultScale:= ComboBox1.Text;
-
        Lat := WantLat;
        Long := WantLong;
        MapDraw.MapLatCent := Lat;
@@ -19875,13 +19886,13 @@ begin
        ClientHeight := MapYSize;
        MapDraw.ZeroTickInt;
 
-       if  (VectorIndex <> 0) then begin
+       if (VectorIndex <> 0) then begin
          PrimMapProj.GetMapScaleFactor(Lat,Long,h,k ,Prime);
          PrimMapProj.ForwardProjectDegrees(Lat,Long,Xc,yc);
          PrimMapProj.InverseProjectDegrees(xc-0.5*xmeters*h,yc+0.5*ymeters*h,LatC,LongC);
          PrimMapProj.InverseProjectDegrees(xc+0.5*xmeters*h,yc-0.5*ymeters*h,Lat1,Long1);
 
-         {$IfDef RecordMapDraw} WriteLineToDebugFile('TMapForm.Setscale1Click 4' + '  ' + LatLongDegreeToString(Lat1,LongC) +'  ' + LatLongDegreeToString(LatC,Long1));   {$EndIf}
+         {$IfDef RecordMapDraw} WriteLineToDebugFile('TMapForm.Setscale1Click 4' + '  ' + LatLongDegreeToString(Lat1,LongC) +'  ' + LatLongDegreeToString(LatC,Long1)): {$EndIf}
 
           MapDraw.MaximizeLatLongMapCoverage(Lat1,LongC,LatC,Long1);
           {$IfDef RecordMapDraw} WriteLineToDebugFile('Resizing vector map'); {$EndIf}
@@ -19916,7 +19927,7 @@ begin
        end;
 
      end;
-  end;
+ // end;
   MapScaledForm.Free;
  {$IfDef RecordMapDraw} WriteLineToDebugFile('TMapForm.Setscale1Click done'); {$EndIf}
 end;
@@ -21294,7 +21305,7 @@ begin
    ReadDefault('Posts to shift north-south',ypost);
    DEMGlb[MapDraw.DEMonMap].DEMheader.DEMSWCornerX := DEMGlb[MapDraw.DEMonMap].DEMheader.DEMSWCornerX + xpost * DEMGlb[MapDraw.DEMonMap].DEMheader.DEMxSpacing;
    DEMGlb[MapDraw.DEMonMap].DEMheader.DEMSWCornerY := DEMGlb[MapDraw.DEMonMap].DEMheader.DEMSWCornerY + ypost * DEMGlb[MapDraw.DEMonMap].DEMheader.DEMySpacing;
-   {$IfDef RecordEditsDEM}  WriteLineToDebugFile('x shift=' + IntToStr(xpost) + '  y shift=' + IntToStr(ypost) + '   ' + DEMGlb[MapDraw.DEMonMap].SWcornerString);   {$EndIf}
+   {$IfDef RecordEditsDEM}  WriteLineToDebugFile('x shift=' + IntToStr(xpost) + '  y shift=' + IntToStr(ypost) + '   ' + DEMGlb[MapDraw.DEMonMap].SWcornerString): {$EndIf}
    fName := MDTempDir + 'horiz_shift_x_' + IntToStr(xpost) + '_y_' + IntToStr(ypost) + DEMGlb[MapDraw.DEMonMap].AreaName + '.dem';
    DEMGlb[MapDraw.DEMonMap].WriteNewFormatDEM(fname);
    DEMGlb[MapDraw.DEMonMap].DEMAlreadyDefined := false;
@@ -21385,6 +21396,11 @@ end;
 procedure TMapForm.GDALcontourshapefile1Click(Sender: TObject);
 begin
    ContoursShapefile1Click(Sender);
+end;
+
+procedure TMapForm.GDALgridsubsettomatchthismap1Click(Sender: TObject);
+begin
+   GDALsubsetGridAndOpen(MapDraw.MapCorners.BoundBoxGeo,true,'');
 end;
 
 procedure TMapForm.BlueMarble1Click(Sender: TObject);
@@ -21515,7 +21531,7 @@ begin
    {$IfDef RecordGISDB} WriteLineToDebugFile('TMapForm.Shipmotion1Click in'); {$EndIf}
    pName := 'cliwoc_ships_all_v6';
    fName := DBDir + pName + DefaultDBExt;
-   if not FileExists(fName) then DownloadFileFromWeb(WebDataDownLoadDir + pName + '.dbf',fName);
+   //if not FileExists(fName) then DownloadFileFromWeb(WebDataDownLoadDir + pName + '.dbf',fName);
    //if MDDef.MoveGeographyDBMemory then DesiredDBMode := dbmCDS;
    db := OpenDBonMap('',FName);
    GISdb[db].ClearGISFilter;
@@ -21543,7 +21559,7 @@ var
 begin
    pname := 'cliwoc_weather_all_v3';
    fName := DBDir + pName + DefaultDBExt;
-   if not FileExists(fName) then DownloadFileFromWeb( WebDataDownLoadDir + pName + '.dbf',fName);
+   //if not FileExists(fName) then DownloadFileFromWeb( WebDataDownLoadDir + pName + '.dbf',fName);
    //if MDDef.MoveGeographyDBMemory then DesiredDBMode := dbmCDS;
    LoadDataBaseFile(fName);
 {$EndIf}
@@ -22648,7 +22664,7 @@ procedure TMapForm.DSDPODPIODPdrilling1Click(Sender: TObject);
 begin
    {$IfDef ExGeology}
    {$Else}
-      if not FileExists(DSDP_db) then DownloadFileFromWeb(WebDataDownLoadDir + ExtractFileName(DSDP_db),DSDP_db);
+      //if not FileExists(DSDP_db) then DownloadFileFromWeb(WebDataDownLoadDir + ExtractFileName(DSDP_db),DSDP_db);
       LoadDataBaseFile(DSDP_db);
    {$EndIf}
 end;
@@ -23634,7 +23650,7 @@ begin
    DoFastMapRedraw;
 end;
 
-
+(*
 procedure TMapForm.renchslabdips1Click(Sender: TObject);
 {$IfDef ExGeology}
 begin
@@ -23645,9 +23661,7 @@ var
 begin
    fName2 := 'trench_slab_dips' + DefaultDBExt;
    fName := DBDir + 'trench_slab_dips' + DefaultDBExt;
-   if not FileExists(fName) then begin
-      DownloadFileFromWeb(WebDataDownLoadDir + fName2,fName);
-   end;
+   if not FileExists(fName) then DownloadFileFromWeb(WebDataDownLoadDir + fName2,fName);
 
    if FileExists(fName) then begin
       MapDraw.AllowDataBaseDrawing := false;
@@ -23659,6 +23673,7 @@ begin
    end;
    {$EndIf}
 end;
+*)
 
 procedure TMapForm.ElevationsExtremes1Click(Sender: TObject);
 {$IfDef ExVectorOverlay}

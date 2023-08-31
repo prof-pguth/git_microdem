@@ -66,6 +66,7 @@ implementation
 
 uses
    DEMcoord,DEMstat,Petmar,Petmath,DEMMapf,
+   BaseMap,
    Nevadia_Main;
 
 
@@ -121,12 +122,12 @@ var
          end
          else begin
             Result := DEMGlb[CurDEM].QuickRelief(Col,Row,RegionM,Relief,Summit,BaseLevel,GeoRelief,Dropoff,Elev_relf);
-            if Param = rsSummit then Relief1 := Summit
+            if (Param = rsSummit) then Relief1 := Summit
             else if (Param = rsRelief) then Relief1 := Relief
-            else if Param = rsBaseLevel then Relief1 := BaseLevel
-            else if Param = rsGeoRelief then Relief1 := GeoRelief
-            else if Param = rsDropoff then Relief1 := Dropoff
-            else if Param = rsElevRelf then Relief1 := Elev_relf;
+            else if (Param = rsBaseLevel) then Relief1 := BaseLevel
+            else if (Param = rsGeoRelief) then Relief1 := GeoRelief
+            else if (Param = rsDropoff) then Relief1 := Dropoff
+            else if (Param = rsElevRelf) then Relief1 := Elev_relf;
          end;
          if Result then begin
             inc(MomentVar.NPts);

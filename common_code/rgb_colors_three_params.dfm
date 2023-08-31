@@ -2,8 +2,8 @@ object RGB_form: TRGB_form
   Left = 0
   Top = 0
   Caption = 'RGB 3 parameter map coloring'
-  ClientHeight = 256
-  ClientWidth = 576
+  ClientHeight = 254
+  ClientWidth = 568
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -18,8 +18,8 @@ object RGB_form: TRGB_form
   TextHeight = 13
   object Panel1: TPanel
     Left = 0
-    Top = 126
-    Width = 576
+    Top = 124
+    Width = 568
     Height = 130
     Align = alBottom
     TabOrder = 0
@@ -146,7 +146,7 @@ object RGB_form: TRGB_form
     Left = 0
     Top = 0
     Width = 207
-    Height = 126
+    Height = 124
     Align = alLeft
     Caption = ' '
     TabOrder = 1
@@ -200,8 +200,8 @@ object RGB_form: TRGB_form
   object Panel3: TPanel
     Left = 207
     Top = 0
-    Width = 168
-    Height = 126
+    Width = 160
+    Height = 124
     Align = alClient
     Caption = ' '
     TabOrder = 2
@@ -237,7 +237,7 @@ object RGB_form: TRGB_form
     object ComboBox2: TComboBox
       Left = 1
       Top = 1
-      Width = 166
+      Width = 158
       Height = 21
       Align = alTop
       TabOrder = 1
@@ -253,10 +253,10 @@ object RGB_form: TRGB_form
     end
   end
   object Panel4: TPanel
-    Left = 375
+    Left = 367
     Top = 0
     Width = 201
-    Height = 126
+    Height = 124
     Align = alRight
     Caption = ' '
     TabOrder = 3

@@ -719,16 +719,17 @@ procedure PointSlopesByRegionSize(DEM : integer; RightClickLat,RightClickLong : 
 var
    xDEMg1,yDEMg1 : float32;
    Findings : tStringList;
+   xField,yField,aCapt,
    TStr,location : shortString;
-   i,db : integer;
+   i,db,Col,Row : integer;
    graph : tThisBaseGraph;
 
-         procedure MakeSlopeMap(BoxSize : integer);
+         procedure GetTheSlopes(BoxSize : integer);
          var
             SlopeAsp : tSlopeAspectRec;
          begin
             MDDef.SlopeRegionRadius := BoxSize;
-            if DEMGlb[DEM].GetSlopeAndAspect(round(xDEMg1),round(yDEMg1),SlopeAsp) then begin
+            if DEMGlb[DEM].GetSlopeAndAspect(Col,Row,SlopeAsp) then begin
                Findings.Add(Location + ',' + IntToStr(BoxSize) + ',' + RealToString(BoxSize* DEMGlb[DEM].AverageYSpace,-12,-2) + ',' +
                      RealToString(SlopeAsp.SlopePercent,-12,2) + ',' + RealToString(SlopeAsp.SlopeDegree,-12,2) + ',' + RealToString(SlopeAsp.AspectDir,-8,2));
             end;
@@ -738,12 +739,20 @@ begin
    DEMDef_routines.SaveBackupDefaults;
    Findings := tStringList.Create;
    Location := LatLongDegreeToString(RightClickLat,RightClickLong,MDDef.OutPutLatLongMethod);
-   Findings.Add('Location,Region,Dist_m,Slope_pc,Slope_deg,Aspect_deg');
+
    DEMGlb[DEM].LatLongDegreeToDEMGrid(RightClickLat,RightClickLong,xDEMg1,yDEMg1);
-   for i := 1 to 25 do MakeSlopeMap(i);
+   Col := round(xDEMg1);
+   Row := round(yDEMg1);
+
+   Findings.Add('Location,Region,Dist_m,Slope_pc,Slope_deg,Aspect_deg');
+   for i := 1 to 25 do GetTheSlopes(i);
    TStr := NextFileNumber(MDTempDir,DEMGlb[DEM].AreaName + '_Slope_by_region_','.dbf');
+   xField := 'DIST_M';
+   yField := 'SLOPE_PC';
+   aCapt := 'Slopes by region at ' + Location;
+
    StringList2CSVtoDB(Findings,TStr);
-   Graph := GISDB[db].CreateScatterGram('DIST_M','SLOPE_PC',true,'Slopes by region at ' + Location);
+   Graph := GISDB[db].CreateScatterGram(xField,yField,true,aCapt);
    Graph.GraphDraw.MinVertAxis := 0;
    Graph.GraphDraw.LLCornerText := Location;
    Graph.RedrawDiagram11Click(Nil);

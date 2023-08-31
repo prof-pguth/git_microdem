@@ -45,6 +45,8 @@ type
     BitBtn3: TBitBtn;
     BitBtn4: TBitBtn;
     Label5: TLabel;
+    CheckBox4: TCheckBox;
+    CheckBox5: TCheckBox;
     procedure BitBtn5Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure BitBtn1Click(Sender: TObject);
@@ -60,6 +62,8 @@ type
     procedure BitBtn3Click(Sender: TObject);
     procedure BitBtn4Click(Sender: TObject);
     procedure CheckBox1Click(Sender: TObject);
+    procedure CheckBox4Click(Sender: TObject);
+    procedure CheckBox5Click(Sender: TObject);
   private
     { Private declarations }
     MapOwner : tMapForm;
@@ -93,6 +97,15 @@ begin
    USOutlineForm.CheckBox1.Checked := MDDef.NEAutoDEM;
    USOutlineForm.CheckBox2.Checked := MDDef.NEAutoSat;
    USOutlineForm.CheckBox3.Checked := MDDef.NEAutoScale;
+   if (MapOwner = Nil) then begin
+      USOutlineForm.CheckBox4.Enabled := false;
+      USOutlineForm.CheckBox5.Enabled := false;
+   end
+   else begin
+      USOutlineForm.CheckBox4.Checked := MapOwner.MapDraw.GrayscaleWorldOutline;
+      USOutlineForm.CheckBox5.Checked := MapOwner.MapDraw.SubdueWorldOutline;
+   end;
+
    USOutlineForm.Label1.Caption := SmallScaleWorldOutlines;
    USOutlineForm.Label2.Caption := MedScaleWorldOutlines;
    USOutlineForm.Label3.Caption := LargeScaleWorldOutlines;
@@ -174,6 +187,16 @@ end;
 procedure TNEOutlineForm.CheckBox3Click(Sender: TObject);
 begin
    MDDef.NEAutoScale := CheckBox3.Checked;
+end;
+
+procedure TNEOutlineForm.CheckBox4Click(Sender: TObject);
+begin
+   MapOwner.MapDraw.GrayscaleWorldOutline := CheckBox4.Checked;
+end;
+
+procedure TNEOutlineForm.CheckBox5Click(Sender: TObject);
+begin
+   MapOwner.MapDraw.SubdueWorldOutline := CheckBox5.Checked;
 end;
 
 procedure TNEOutlineForm.Edit1Change(Sender: TObject);

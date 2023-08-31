@@ -3,8 +3,8 @@ object DEMLOSF: TDEMLOSF
   Top = 454
   BorderIcons = [biSystemMenu, biMinimize]
   Caption = 'LOS'
-  ClientHeight = 189
-  ClientWidth = 527
+  ClientHeight = 168
+  ClientWidth = 523
   Color = clWhite
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -29,13 +29,11 @@ object DEMLOSF: TDEMLOSF
   object ScrollBox1: TScrollBox
     Left = 0
     Top = 0
-    Width = 527
-    Height = 112
+    Width = 523
+    Height = 91
     VertScrollBar.Visible = False
     Align = alClient
     TabOrder = 0
-    ExplicitWidth = 523
-    ExplicitHeight = 91
     object Image1: TImage
       Left = 0
       Top = 0
@@ -53,24 +51,20 @@ object DEMLOSF: TDEMLOSF
   end
   object Panel1: TPanel
     Left = 0
-    Top = 148
-    Width = 527
+    Top = 127
+    Width = 523
     Height = 41
     Align = alBottom
     Caption = ' '
     TabOrder = 1
-    ExplicitTop = 127
-    ExplicitWidth = 523
   end
   object Panel2: TPanel
     Left = 0
-    Top = 112
-    Width = 527
+    Top = 91
+    Width = 523
     Height = 36
     Align = alBottom
     TabOrder = 2
-    ExplicitTop = 91
-    ExplicitWidth = 523
     object Label1: TLabel
       Left = 16
       Top = 8
@@ -200,9 +194,16 @@ object DEMLOSF: TDEMLOSF
       Caption = 'Profile names'
       OnClick = Profilenames1Click
     end
-    object Profilelegends1: TMenuItem
+    object Profilelegends2: TMenuItem
       Caption = 'Profile legends'
-      OnClick = Profilelegends1Click
+      object Profilelegends1: TMenuItem
+        Caption = 'New window'
+        OnClick = Profilelegends1Click
+      end
+      object Pasteintowindow1: TMenuItem
+        Caption = 'Paste into window'
+        OnClick = Pasteintowindow1Click
+      end
     end
     object Hideprofiles1: TMenuItem
       Caption = 'Hide profiles'

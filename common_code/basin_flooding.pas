@@ -106,6 +106,7 @@ implementation
 uses
    Petmar,Petmath,PetImage,
    PetDBUtils,
+   BaseMap,
    DEM_Manager,
    DEMDef_Routines,
    DEMCoord,DEMDefs;

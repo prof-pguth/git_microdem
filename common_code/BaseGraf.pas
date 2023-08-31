@@ -156,6 +156,7 @@ type
          ShowVertAxis0,
          RighJustifyHorizLabel,
          VertGraphBottomLabels,
+         ResetMargins,
          GraphDrawn     : boolean;
          InsideMarginLegend : byte;
          GraphBackgroundColor,
@@ -672,7 +673,7 @@ var
    //Graph : tThisBaseGraph;
    x1,x2 : float64;
    dx,Cum : float32;
-   Bot,Top,Left,Right,MaxCount,
+   Bot,Top,Left,Right,//MaxCount,
    i,Series,Total : integer;
    //SeriesCount,CumCount,
    Count : array[1..10] of integer;
@@ -1811,7 +1812,7 @@ var
          {$IfDef RecordDetailedTIN}   WriteLineToDebugFile(IntToStr(i) + RealToString(Pnt[1]^[i],12,3) + RealToString(Pnt[2]^[i],12,3)); {$EndIf}
          Pnt[1]^[i] := (Pnt[1]^[i] - XMin) / DataX;
          Pnt[2]^[i] := (Pnt[2]^[i] - YMin) / DataX;
-         {$IfDef RecordDetailedTIN} WriteLineToDebugFile(IntToStr(i) + RealToString(Pnt[1]^[i],12,3) + RealToString(Pnt[2]^[i],12,3));   {$EndIf}
+         {$IfDef RecordDetailedTIN} WriteLineToDebugFile(IntToStr(i) + RealToString(Pnt[1]^[i],12,3) + RealToString(Pnt[2]^[i],12,3)): {$EndIf}
       end {for i};
 
       {$IfDef RecordTIN} WriteLineToDebugFile('start Delauney triangles'); {$EndIf}
@@ -1894,7 +1895,7 @@ var
    var
       i,JT,jc : integer;
    begin
-      {$IfDef RecordTIN} WriteLineToDebugFile('Created SaveTIN file: '+ SaveTIN);   {$EndIf}
+      {$IfDef RecordTIN} WriteLineToDebugFile('Created SaveTIN file: '+ SaveTIN): {$EndIf}
       Make_tables.MakeDelauneyTable(SaveTIN,AddDelauneyZ,AddDelauneyImage);
       ApplicationProcessMessages;
 
@@ -2634,7 +2635,7 @@ var
    ty : integer;
 begin
    y := VertAxisFunct(y);
-   tY := round( (y - ScrMinVertAxis2) /(ScrVertRange2) * (YWindowSize - BottomMargin - TopMargin));
+   tY := round( (y - ScrMinVertAxis2) / ScrVertRange2 * (YWindowSize - BottomMargin - TopMargin));
    if NormalCartesianY then ty := YWindowSize - TopMargin - BottomMargin - ty;
    GraphY2 := TopMargin + ty;
 end;
@@ -2644,14 +2645,25 @@ end;
 function tGraphDraw.GraphX(x : float32) : integer;
 var
    Month,Day,Year : integer;
+   dx : float32;
 begin
    x := HorizAxisFunct(x);
    if AnnualCycle then begin
       CalDat(Trunc(x),Month,Day,Year);
       x := JulDay(Month,Day,1996);
    end;
-   if NormalCartesianX then GraphX := LeftMargin + round((x - ScrMinHorizAxis) / (ScrHorizRange) * (XWindowSize - LeftMargin - RightMargin))
-   else GraphX := LeftMargin + round((ScrMaxHorizAxis - x) / (ScrHorizRange) * (XWindowSize - LeftMargin-RightMargin))
+
+   (*
+   if NormalCartesianX then GraphX := LeftMargin + round((x - ScrMinHorizAxis) / ScrHorizRange * (XWindowSize - LeftMargin - RightMargin))
+   else GraphX := LeftMargin + round((ScrMaxHorizAxis - x) / ScrHorizRange * (XWindowSize - LeftMargin-RightMargin))
+   *)
+   if NormalCartesianX then dX := (x - ScrMinHorizAxis)
+   else dX := (ScrMaxHorizAxis - x);
+   if (abs(dx) < 0.00001) then begin
+      GraphX := 0;
+      exit;
+   end;
+   GraphX := LeftMargin + round(dx / ScrHorizRange * (XWindowSize - LeftMargin-RightMargin));
 end;
 
 procedure tGraphDraw.SetAllDrawingSymbols(DrawingSymbol: tDrawingSymbol);
@@ -2668,13 +2680,14 @@ var
 begin
    if MarginsGood then exit;
 
-   BottomMargin := MarginFreeboard + 2 * Bitmap.Canvas.TextHeight(HorizLabel);
+   if HorizLabel = '' then i := 1 else i := 2;
+   BottomMargin := MarginFreeboard + 1 * Bitmap.Canvas.TextHeight(HorizLabel);
 
    ad := GetAxisDecimals((MaxVertAxis-MinVertAxis) / NumVertCycles);    //inc);
    w1 := Bitmap.Canvas.TextWidth(RealToString(MaxVertAxis,-12,ad));
    w2 := Bitmap.Canvas.TextWidth(RealToString(MinVertAxis,-12,ad));
 
-   if w2 > w1 then w1 := w2;
+   if (w2 > w1) then w1 := w2;
    LeftMargin := MarginFreeboard + Bitmap.Canvas.TextHeight(VertLabel) + w1;
 
     if (GraphLeftLabels <> Nil) and (GraphLeftLabels.Count > 0) then begin
@@ -2976,9 +2989,9 @@ begin
    NumDone := 0;
    Numyears := 0;
    while not EOF(tf) do begin
-      {$IfDef RecordPlotFiles} writeLineToDebugFile('Try to read=' + IntToStr(ASize));   {$EndIf}
+      {$IfDef RecordPlotFiles} writeLineToDebugFile('Try to read=' + IntToStr(ASize)): {$EndIf}
       BlockRead(tf,Coords^,ASize,Numread);
-      {$IfDef RecordPlotFiles} WriteLineToDebugFile('Did read=' + IntToStr(NumRead));   {$EndIf}
+      {$IfDef RecordPlotFiles} WriteLineToDebugFile('Did read=' + IntToStr(NumRead)): {$EndIf}
       inc(NumDone,NumRead);
       if ShowProgress then UpdateProgressBar(NumDone/TotNum);
       for i := 1 to NumRead do  begin
@@ -3712,6 +3725,7 @@ begin
      RangeGraphName := '';
      GraphFilter := '';
      SlicerOverlay := false;
+     GraphDraw.ResetMargins := false;
 
      MainMenu1.AutoMerge := Not SkipMenuUpdating;
 
@@ -4923,7 +4937,7 @@ var
    BitMap,bmp : tMyBitmap;
    LastXi,LastYi,LastYi2,
    //width,
-   xi,yi,yi2,i,j,err,NumRead  : integer;
+   xi,yi,yi2,i,{j,}err,NumRead  : integer;
    x      : float32;
    MenuStr : ShortString;
    aTable : tMyData;
@@ -4955,6 +4969,9 @@ begin
 
        ShowHourglassCursor;
        CreateBitmap(Bitmap,ClientWidth,ClientHeight - Panel1.Height - ToolBar1.Height);
+       if GraphDraw.ResetMargins then GraphDraw.SetMargins(Bitmap);
+       GraphDraw.ResetMargins := false;
+
        {$If Defined(RecordGrafSize) or Defined(RecordScaling)}
           WriteLineToDebugFile('RedrawDiagram11Click create bitmap=' + BitmapSize(Bitmap) + '  '  + FormClientSize(Self) + '  ' + ImageSize(Image1));
        {$EndIf}

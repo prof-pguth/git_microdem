@@ -24,20 +24,20 @@ uses
    Data.DB,
 
    {$IfDef UseFireDacSQLlite}
-   FireDAC.Stan.ExprFuncs,
-   FireDAC.Stan.Intf, FireDAC.Stan.Option, FireDAC.Stan.Param,
-   FireDAC.Stan.Error, FireDAC.DatS, FireDAC.Phys.Intf, FireDAC.DApt.Intf,
-   FireDAC.Stan.Async, FireDAC.DApt, FireDAC.UI.Intf, FireDAC.Stan.Def,
-   FireDAC.Stan.Pool, FireDAC.Phys, FireDAC.Comp.Client, FireDAC.Comp.DataSet,
-   FireDAC.Phys.SQLite, FireDAC.Comp.UI,
+      FireDAC.Stan.ExprFuncs,
+      FireDAC.Stan.Intf, FireDAC.Stan.Option, FireDAC.Stan.Param,
+      FireDAC.Stan.Error, FireDAC.DatS, FireDAC.Phys.Intf, FireDAC.DApt.Intf,
+      FireDAC.Stan.Async, FireDAC.DApt, FireDAC.UI.Intf, FireDAC.Stan.Def,
+      FireDAC.Stan.Pool, FireDAC.Phys, FireDAC.Comp.Client, FireDAC.Comp.DataSet,
+      FireDAC.Phys.SQLite, FireDAC.Comp.UI,
    {$EndIf}
 
    {$IfDef UseTDBF}
-   dbf,
+      dbf,
    {$EndIf}
 
    {$IfDef UseTCLientDataSet}
-   DBClient,
+      DBClient,
    {$EndIf}
 //end core DB functions definitions
 
@@ -127,7 +127,7 @@ end;
 
 procedure Tlvis_form1.BitBtn7Click(Sender: TObject);
 begin
-   {$IfDef RecordLVIS} WriteLineToDebugFile('Tlvis_form1.BitBtn7Click (pulse stats)');  {$EndIf}
+   {$IfDef RecordLVIS} WriteLineToDebugFile('Tlvis_form1.BitBtn7Click (pulse stats)'); {$EndIf}
    LVIS.PulseStats;
 end;
 
@@ -137,7 +137,7 @@ var
    ProjectTable : tMyData;
    xutm,yutm : float64;
 begin
-   {$IfDef RecordLVIS}   WriteLineToDebugFile('Tlvis_form1.BitBtn8Click (slices)');  {$EndIf}
+   {$IfDef RecordLVIS}   WriteLineToDebugFile('Tlvis_form1.BitBtn8Click (slices)'); {$EndIf}
    NewName2 := Petmar.NextFileNumber(MDTempDir, 'Proj_temp_subset_',DefaultDBExt);
    Make_Tables.CreatPointCloudProjectTable(NewName2);
    ProjectTable := tMyData.Create(NewName2);
@@ -164,7 +164,7 @@ begin
 
    ProjectTable.Post;
    DEMDefs.VasaProjectFName := NewName2;
-   {$IfDef RecordLVIS} WriteLineToDebugFile('calling Slicer_3D.DB_3dSlices');  {$EndIf}
+   {$IfDef RecordLVIS} WriteLineToDebugFile('calling Slicer_3D.DB_3dSlices'); {$EndIf}
    Slicer_3D.DB_3dSlices(BaseMap,Nil,Nil);
 end;
 

@@ -124,6 +124,8 @@ type
     Saveprofileendpoints2: TMenuItem;
     Sethorizontalpixelsizem1: TMenuItem;
     Hideprofiles1: TMenuItem;
+    Profilelegends2: TMenuItem;
+    Pasteintowindow1: TMenuItem;
     procedure Wavelengthheight1Click(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure Close1Click(Sender: TObject);
@@ -175,6 +177,7 @@ type
     procedure SetImagesize1Click(Sender: TObject);
     procedure Sethorizontalpixelsizem1Click(Sender: TObject);
     procedure Hideprofiles1Click(Sender: TObject);
+    procedure Pasteintowindow1Click(Sender: TObject);
   private
     { Private declarations }
       procedure ClearProtractorTool;
@@ -1512,6 +1515,12 @@ begin
    DragEdit := true;
 end;
 
+procedure TDEMLOSF.Pasteintowindow1Click(Sender: TObject);
+begin
+   AssignBitmapToClipBoard(CreateProfileLegend);
+   Pastefromclipboard1Click(Sender);
+end;
+
 procedure TDEMLOSF.Profilenames1Click(Sender: TObject);
 var
    WhichDEM : integer;
@@ -1538,6 +1547,7 @@ begin
        end;
    end;
 end;
+
 
 procedure TDEMLOSF.Protractor1Click(Sender: TObject);
 begin
@@ -1580,7 +1590,7 @@ begin
             WriteLineToDebugFile('DEM=' + IntToStr(WhichDEM) + '   ' + LOSDraw.ProfileName[WhichDEM] + '  text width=' + IntToStr(x) + '  legend width=' + IntToStr(ItemWidth));
          {$EndIf}
          x := Result.Canvas.TextHeight(LOSdraw.ProfileName[WhichDEM]);
-         if x > ItemHigh then ItemHigh := x + 10;
+         if (x > ItemHigh) then ItemHigh := x + 10;
       end;
    end;
    Result.Width := ItemWidth + 50;

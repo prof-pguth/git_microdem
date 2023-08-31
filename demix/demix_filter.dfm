@@ -2,8 +2,8 @@ object DemixFilterForm: TDemixFilterForm
   Left = 0
   Top = 0
   Caption = 'Demix Filter Pick Graphs'
-  ClientHeight = 483
-  ClientWidth = 787
+  ClientHeight = 482
+  ClientWidth = 783
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -17,13 +17,13 @@ object DemixFilterForm: TDemixFilterForm
   object PageControl1: TPageControl
     Left = 0
     Top = 0
-    Width = 787
-    Height = 483
-    ActivePage = TabSheet3
+    Width = 783
+    Height = 482
+    ActivePage = TabSheet1
     Align = alClient
     TabOrder = 0
-    ExplicitWidth = 783
-    ExplicitHeight = 482
+    ExplicitWidth = 779
+    ExplicitHeight = 481
     object TabSheet1: TTabSheet
       Caption = 'New options'
       object BitBtn5: TBitBtn
@@ -505,9 +505,9 @@ object DemixFilterForm: TDemixFilterForm
         Caption = 'Graph x size'
       end
       object GroupBox3: TGroupBox
-        Left = 222
-        Top = 8
-        Width = 105
+        Left = 349
+        Top = 13
+        Width = 100
         Height = 161
         Caption = 'Land type'
         TabOrder = 0
@@ -529,11 +529,11 @@ object DemixFilterForm: TDemixFilterForm
         end
       end
       object GroupBox5: TGroupBox
-        Left = 111
-        Top = 8
+        Left = 741
+        Top = 13
         Width = 105
         Height = 153
-        Caption = 'Candidate DEM'
+        Caption = 'Global DEM'
         TabOrder = 1
         object Memo5: TMemo
           Left = 3
@@ -551,8 +551,8 @@ object DemixFilterForm: TDemixFilterForm
         end
       end
       object GroupBox1: TGroupBox
-        Left = 8
-        Top = 8
+        Left = 104
+        Top = 13
         Width = 97
         Height = 153
         Caption = 'DEM type'
@@ -569,8 +569,8 @@ object DemixFilterForm: TDemixFilterForm
         end
       end
       object GroupBox6: TGroupBox
-        Left = 604
-        Top = 8
+        Left = 582
+        Top = 13
         Width = 153
         Height = 191
         Caption = 'Areas'
@@ -594,8 +594,8 @@ object DemixFilterForm: TDemixFilterForm
         end
       end
       object GroupBox2: TGroupBox
-        Left = 477
-        Top = 8
+        Left = 455
+        Top = 13
         Width = 121
         Height = 191
         Caption = 'DEMIX tile'
@@ -613,7 +613,7 @@ object DemixFilterForm: TDemixFilterForm
           TabOrder = 0
         end
         object Load: TBitBtn
-          Left = 3
+          Left = 11
           Top = 156
           Width = 75
           Height = 25
@@ -623,8 +623,8 @@ object DemixFilterForm: TDemixFilterForm
         end
       end
       object GroupBox4: TGroupBox
-        Left = 342
-        Top = 8
+        Left = 214
+        Top = 13
         Width = 129
         Height = 191
         Caption = 'Criteria'
@@ -654,8 +654,8 @@ object DemixFilterForm: TDemixFilterForm
           TabOrder = 0
         end
         object BitBtn2: TBitBtn
-          Left = 0
-          Top = 158
+          Left = 16
+          Top = 159
           Width = 75
           Height = 25
           Caption = 'Load'
@@ -682,8 +682,8 @@ object DemixFilterForm: TDemixFilterForm
         OnChange = Edit1Change
       end
       object BitBtn1: TBitBtn
-        Left = 177
-        Top = 397
+        Left = 65
+        Top = 340
         Width = 150
         Height = 25
         Caption = 'Multiple Criteria per Tile'
@@ -691,11 +691,11 @@ object DemixFilterForm: TDemixFilterForm
         OnClick = BitBtn1Click
       end
       object GroupBox8: TGroupBox
-        Left = 16
-        Top = 192
+        Left = 0
+        Top = 13
         Width = 89
         Height = 145
-        Caption = 'Tile stats'
+        Caption = 'Tile parameters'
         TabOrder = 9
         object Memo7: TMemo
           Left = 0
@@ -714,7 +714,7 @@ object DemixFilterForm: TDemixFilterForm
         end
       end
       object RadioGroup2: TRadioGroup
-        Left = 177
+        Left = 8
         Top = 224
         Width = 496
         Height = 110

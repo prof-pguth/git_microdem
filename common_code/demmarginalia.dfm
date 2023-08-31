@@ -3,8 +3,8 @@ object DemMarginaliaForm: TDemMarginaliaForm
   Top = 313
   BorderIcons = []
   Caption = 'Legends/Marginalia'
-  ClientHeight = 422
-  ClientWidth = 607
+  ClientHeight = 421
+  ClientWidth = 603
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -29,22 +29,18 @@ object DemMarginaliaForm: TDemMarginaliaForm
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 403
-    Width = 607
+    Top = 402
+    Width = 603
     Height = 19
     Panels = <>
-    ExplicitTop = 384
-    ExplicitWidth = 550
   end
   object Panel1: TPanel
-    Left = 443
+    Left = 439
     Top = 0
     Width = 164
-    Height = 403
+    Height = 402
     Align = alRight
     TabOrder = 1
-    ExplicitLeft = 386
-    ExplicitHeight = 384
     object Label4: TLabel
       Left = 14
       Top = 204
@@ -69,9 +65,9 @@ object DemMarginaliaForm: TDemMarginaliaForm
       Caption = 'Label2'
     end
     object El: TBitBtn
-      Left = 32
+      Left = 34
       Top = 7
-      Width = 105
+      Width = 111
       Height = 25
       Caption = 'Elevation/grid value'
       TabOrder = 0

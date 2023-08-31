@@ -637,11 +637,11 @@ var
    EtopoRow,
    ViewSheds,
    VectorMap,
-   BlowUpDEM,
-   BlowUpVeg,
-   FWT,
+   //BlowUpDEM,
+   //BlowUpVeg,
+   FWT : integer;
    //DEMIXbase,
-   TauDEM : integer;
+   //TauDEM : integer;
 
 
 

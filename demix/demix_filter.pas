@@ -276,15 +276,12 @@ procedure TDemixFilterForm.MakeDifferenceMaps(WhatType : integer);
 var
    i,j,k : integer;
    DEMarea : ANSIString;
-   //fName : PathStr;
-   //theFiles : tStringList;
    Param : shortString;
 
    procedure GetRefDEMDifferenceMap(DiffType,aTestDEM : integer; DEMArea,RefPointOrArea,theDEMtype,TestDEMseriesName : shortstring);
    var
       i,refDEMsurfaceType: integer;
       refDEMname : shortString;
-      //fName : PathStr;
 
       function MakeTheMap(i : integer) : integer;
       var
@@ -346,7 +343,6 @@ var
 
 var
    theRefDEMs : tDEMixarray;
-   //RefDEM : integer;
    RefPointOrArea,SeriesName,AreaName : shortstring;
 begin
    {$If Defined(RecordDEMIX) or Defined(TrackOpenHandles)} WriteOpenHandlestoDebugLog('TDemixFilterForm.MakeDifferenceMaps in, type=' + IntToStr(WhatType)); {$EndIf}

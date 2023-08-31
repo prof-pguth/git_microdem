@@ -61,7 +61,7 @@ procedure SimpleLoadGoogleMaps(Lat,Long : float64);
 
 procedure OverlayKMLonMap(Map : tMapForm; fName : PathStr);
 procedure MakeLegendOverlay(TheName : shortString; Image1 : tImage; UpperLeft : boolean);
-function GetKMLPath(Path : PathStr{; var KMLRandomBase : ShortString}) : PathStr;
+function GetKMLPath(Path : PathStr) : PathStr;
 
 procedure CreateKMLImageOverlay(Path,fName,fname2 : PathStr; North,East,West,South : float64);
 procedure UnzipKMLtoKMLDir(var Dir : PathStr; fName : PathStr);
@@ -91,7 +91,6 @@ begin
    Dir := GetKMLPath(Dir);
    ZipMasterUnzip(fName,Dir);
 end;
-
 
 
 procedure CreateKMLImageOverlay(Path,fName,fname2 : PathStr; North,East,West,South : float64);
@@ -184,13 +183,12 @@ begin
    if MDDef.AskAboutKMLExport then begin
       {$IfDef KMLProblems} WriteLineToDebugFile('LoadMapInGoogleEarth about to showmodal'); {$EndIf}
       KML_over_opts.ShowModal;
+      {$IfDef KMLProblems} WriteLineToDebugFile('Options set'); {$EndIf}
    end;
 
    ShowHourglassCursor;
 
-   {$IfDef KMLProblems} WriteLineToDebugFile('Options set'); {$EndIf}
-   if MDDef.UseGif then Ext := '.gif'
-   else Ext := '.png';
+   if MDDef.UseGif then Ext := '.gif' else Ext := '.png';
    {$IfDef KMLProblems} WriteLineToDebugFile('Picked: ' + Ext); {$EndIf}
 
    KML := tKMLCreator.Create('',Title);
@@ -283,7 +281,7 @@ begin
 end;
 
 
-function GetKMLPath(Path : PathStr{; var KMLRandomBase : ShortString}) : PathStr;
+function GetKMLPath(Path : PathStr) : PathStr;
 var
    Base : PathStr;
 begin
@@ -293,7 +291,6 @@ begin
    Path := NextFilePath(Base + 'KML');
    Result := Path;
 end;
-
 
 
 constructor tKMLCreator.Create(Path : PathStr = ''; Name : shortString = '');
@@ -538,8 +535,7 @@ begin
    if (StyleURL <> '') then KMLStringList.Add(StyleUrl);
    KMLStringList.Add('<Point>');
    if (abs(z) > 0.00001) then begin
-      //required here, for every point, or it will clamp to ground
-      KMLStringList.Add('<altitudeMode>absolute</altitudeMode>');
+      KMLStringList.Add('<altitudeMode>absolute</altitudeMode>'); //required here, for every point, or it will clamp to ground
    end;
    KMLStringList.Add('<coordinates>' + RealToString(Long,-18,-6) + ',' + RealToString(Lat,-18,-6) +  ',' + RealToString(z,-18,-2) + '</coordinates>');
    KMLStringList.Add('</Point>');

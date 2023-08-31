@@ -93,7 +93,7 @@ procedure IndexTigerFiles;
 var
    fname,DirStr : PathStr;
    Count, Year  : integer;
-   Present : boolean;
+   //Present : boolean;
    TStr : ShortString;
    i,GISNum,IndexNum : integer;
    bBox : sfBoundBox;

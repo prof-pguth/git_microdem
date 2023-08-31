@@ -1166,7 +1166,7 @@ end;
       x,y,db : integer;
       az,alt : float64;
       iYear,iMonth,iDay : integer;
-      Year,Month,Day : integer;
+      //Year,Month,Day : integer;
       Sym : tFullSymbolDeclaration;
       Time : shortstring;
    begin

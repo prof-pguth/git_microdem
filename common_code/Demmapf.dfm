@@ -2052,8 +2052,14 @@ object MapForm: TMapForm
           OnClick = Shapefileaftersubsettomatchmapextent1Click
         end
         object Rasteraftersubsettomatchthismapextent1: TMenuItem
-          Caption = 'GDAL Raster  subset to match this map'
+          Caption = 'GDAL image  subset to match this map'
           GroupIndex = 1
+          OnClick = Rasteraftersubsettomatchthismapextent1Click
+        end
+        object GDALgridsubsettomatchthismap1: TMenuItem
+          Caption = 'GDAL grid subset to match this map'
+          GroupIndex = 1
+          OnClick = GDALgridsubsettomatchthismap1Click
         end
         object N10: TMenuItem
           Caption = '-'
@@ -2619,6 +2625,10 @@ object MapForm: TMapForm
         object Integercode1: TMenuItem
           Caption = 'Integer code'
           OnClick = Integercode1Click
+        end
+        object Percent1: TMenuItem
+          Caption = 'Percent'
+          OnClick = Percent1Click
         end
         object NLCD20011: TMenuItem
           Caption = 'NLCD-2001 or later'
@@ -5271,10 +5281,6 @@ object MapForm: TMapForm
         Caption = 'Point slope algorithms'
         OnClick = Pointslopealgorithms1Click
       end
-      object Pointslopebyregionsize1: TMenuItem
-        Caption = 'Point slope by region size'
-        OnClick = Pointslopebyregionsize1Click
-      end
       object Directionalslopes1: TMenuItem
         Caption = 'Directional slopes'
         OnClick = Directionalslopes1Click
@@ -5286,11 +5292,17 @@ object MapForm: TMapForm
       object N43: TMenuItem
         Caption = '-'
       end
+      object Pointslopebyregionsize1: TMenuItem
+        Caption = 'Point slope by region size'
+        OnClick = Pointslopebyregionsize1Click
+      end
       object Grainbyregionsize2: TMenuItem
         Caption = 'Grain by region size'
+        OnClick = Grainbyregionsize2Click
       end
       object Reliefbyregionsize1: TMenuItem
         Caption = 'Parameter graph by region size'
+        OnClick = Reliefbyregionsize1Click
       end
     end
     object Mapdirectsolarillumination1: TMenuItem
@@ -5873,12 +5885,10 @@ object MapForm: TMapForm
       object renchslabdips1: TMenuItem
         Caption = 'Slab dips'
         GroupIndex = 1
-        OnClick = renchslabdips1Click
       end
       object Slabdepths1: TMenuItem
         Caption = 'Slab depths'
         GroupIndex = 1
-        OnClick = Slabdepths1Click
       end
     end
     object FennemanProvinces1: TMenuItem

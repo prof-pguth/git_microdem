@@ -1,5 +1,15 @@
 ﻿Unit MVClusterClientDataSet;
 
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2023 Peter L. Guth  }
+{___________________________________}
+
+
+//used in demdatabase_special_cases.inc for MICRODEM perform K-means clustering
+
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems}
@@ -42,19 +52,35 @@ Delphi Version(s):  Originally written in Delphi6, should compile fine in D7+
 
 ******************************************************************************)
 
+
+//8/21/2003: I have been unable to find a site for this with a Google search, and the email bounces back
+//this has been revised for newer versions of Delphi, to use larger data sets, and to integrate with the rest of my code
+
 Interface
 
 Uses
+//needed for inline of the core DB functions
+   Petmar_db,
+   Data.DB,
    {$IfDef UseFireDacSQLlite}
-   FireDAC.Comp.Client,
+      FireDAC.Comp.Client, FireDAC.Comp.Dataset,FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteWrapper,
    {$EndIf}
+
+   {$IfDef UseTDBF}
+      dbf,
+   {$EndIf}
+
+   {$IfDef UseTCLientDataSet}
+      DBClient,
+   {$EndIf}
+//end DB declarations
+
   System.UITypes,
   SysUtils, Classes, Math,Dialogs,
-  DB, DBClient,
   Petmar_types;
 
 
-{These were in GeneralFuncs}
+{These were in GeneralFuncs, and have been moved here}
 
 
 const
@@ -64,7 +90,7 @@ const
    MAXITERATIONS       = 200;   // Max number of iterations for clustering
    VERYSMALLNUMBER     = -9999999999999999999999.0;  // Small number; arbitrary
    VERYLARGENUMBER     =  9999999999999999999999.0;  // Large number; arbitrary
-   MAXHISTOBINS        = EdburgGeneralFuncsMaxObservations;            // Arbitrary - # of 'bins' for histo
+   MAXHISTOBINS        = EdburgGeneralFuncsMaxObservations;   // Arbitrary - # of 'bins' for histogram
    ONE                 = 1;
    TWO                 = 2;
    ONE_HALF            = 1 / 2;
@@ -75,7 +101,7 @@ const
    CRLF2               = sLineBreak + sLineBreak;
    HTMLRed             = '"#DD0000"';
    HTMLBlack           = '"#000000"';
-   ERROR_PREFIX        = 'Error occurred in ';
+   ERROR_PREFIX        = 'Error in ';
    ABS_NEAR_ZERO       = 0.00001;
    CLOSE_TO_ZERO       = 0.01;
    DISP_ZERO_CELL      = '------';
@@ -10444,7 +10470,7 @@ begin
 
     for i:= 1 to NumberClusters do begin
       Write (f,'Cluster#:',i:3);
-      for j:= 1 to k do Write (f,'  ',ClusterMeans[i,j]:8:2);
+      for j:= 1 to k do if ClusterMeans[i,j] > 0 then Write(f,'  ',ClusterMeans[i,j]:8:2);
       Writeln (f);
     end; // for i:= 1 to NumberClusters
 
@@ -10504,7 +10530,8 @@ begin
         for i:= 1 to NumberClusters do begin
            Write (f,'Cluster#: ',i:3);
 
-           for j:= 1 to k do
+           for j:= 1 to k do if ClusterMeans[i,j] > 0 then
+
               Write (f,'  ',ClusterMeans[i,j]:8:2);
            Writeln (f);
         end; // for i:= 1 to NumberClusters
@@ -10555,7 +10582,7 @@ begin
     for i:= 1 to NumberClusters do begin
       Write (f,'Cluster#: ',i:3);
 
-      for j:= 1 to k do Write (f,'  ',ClusterMeans[i,j]:8:2);
+      for j:= 1 to k do {if ClusterMeans[i,j] > 0 then} Write (f,'  ',ClusterMeans[i,j]:8:2);
       Writeln (f);
     end; // for i:= 1 to NumberClusters
     Writeln (f);
@@ -10691,11 +10718,13 @@ begin
     Writeln (f);
     Writeln (f,'New Cluster Means:');
     for i:= 1 to NumberClusters do begin
-        Write (f,'Cluster#: ',i:3,' N:',ClsCounts[i]:5);
-        if ( clsCounts[i] > 0 ) then begin
-           for j:= 1 to k do
-              Write (f,'  ',Result[i,j]:6:2);
-        end; // if ( ClsCounts[i]
+        if Result[i,1] > 0 then begin
+           Write (f,'Cluster#: ',i:3,' N:',ClsCounts[i]:5);
+           if ( clsCounts[i] > 0 ) then begin
+              for j := 1 to k do
+                 Write (f,'  ',Result[i,j]:6:2);
+           end; // if ( ClsCounts[i]
+        end;
       Writeln (f);
     end; // for i:= 1 to NumberClusters
     Writeln (f);

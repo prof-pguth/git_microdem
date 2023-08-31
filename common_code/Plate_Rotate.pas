@@ -246,7 +246,7 @@ var
    i : integer;
    DataThere : tStringList;
 begin
-   if not FileExists(CurrentMotionsFile) then DownloadFileFromWeb(WebDataDownLoadDir + ExtractFileName(CurrentMotionsFile),CurrentMotionsFile);
+   //if not FileExists(CurrentMotionsFile) then DownloadFileFromWeb(WebDataDownLoadDir + ExtractFileName(CurrentMotionsFile),CurrentMotionsFile);
 
    RotLineSize := 3;
    RotLineColor := claPurple;

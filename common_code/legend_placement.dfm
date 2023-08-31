@@ -3,7 +3,7 @@ object leg_opts_form: Tleg_opts_form
   Top = 0
   BorderIcons = []
   BorderStyle = bsDialog
-  ClientHeight = 258
+  ClientHeight = 283
   ClientWidth = 293
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -16,11 +16,11 @@ object leg_opts_form: Tleg_opts_form
   OnCreate = FormCreate
   TextHeight = 13
   object Label1: TLabel
-    Left = 56
-    Top = 152
-    Width = 37
+    Left = 58
+    Top = 150
+    Width = 49
     Height = 13
-    Caption = 'Bar size'
+    Caption = 'Bar height'
   end
   object Label2: TLabel
     Left = 56
@@ -28,13 +28,6 @@ object leg_opts_form: Tleg_opts_form
     Width = 39
     Height = 13
     Caption = 'Tick size'
-  end
-  object Label3: TLabel
-    Left = 56
-    Top = 200
-    Width = 46
-    Height = 13
-    Caption = 'x location'
   end
   object RadioGroup1: TRadioGroup
     Left = 16
@@ -131,11 +124,12 @@ object leg_opts_form: Tleg_opts_form
     Top = 87
     Width = 75
     Height = 57
-    Caption = 'Size'
+    Caption = 'Size (width)'
     Items.Strings = (
       'Small'
       'Medium')
     TabOrder = 6
+    OnClick = RadioGroup3Click
   end
   object Edit1: TEdit
     Left = 128
@@ -144,6 +138,7 @@ object leg_opts_form: Tleg_opts_form
     Height = 21
     TabOrder = 7
     Text = 'Edit1'
+    OnChange = Edit1Change
   end
   object Edit2: TEdit
     Left = 128
@@ -152,13 +147,24 @@ object leg_opts_form: Tleg_opts_form
     Height = 21
     TabOrder = 8
     Text = 'Edit2'
+    OnChange = Edit2Change
   end
-  object Edit3: TEdit
-    Left = 128
-    Top = 196
-    Width = 54
-    Height = 21
+  object BitBtn2: TBitBtn
+    Left = 204
+    Top = 171
+    Width = 69
+    Height = 25
+    Caption = 'Redraw'
+    Glyph.Data = {
+      F6000000424DF600000000000000760000002800000010000000100000000100
+      0400000000008000000000000000000000001000000010000000000000000000
+      80000080000000808000800000008000800080800000C0C0C000808080000000
+      FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00FFFFFFFFFFFF
+      FFFFFFFFCFFFFFFFFFFFFFFCCFFFFFFFFFFFFCCCCFFFFFFFFFFFFCCCFFFFFFFF
+      FFFFFCCFFFFFFFFFFFFFFCCFFFFFCCCCCCFFFCCFFFCCCCCCCCFFFCCFFFCCCCCC
+      CCFFFCCFFFFFFFCCCCFFFCCCFFFFFFCCCCCFFCCCFFFFFCCCCCCFFFCCCCCCCCCC
+      FCCFFFCCCCCCCCCFFCCFFFFFFFFFFFFFFCCFFFFFFFFFFFFFFFFF}
     TabOrder = 9
-    Text = 'Edit3'
+    OnClick = BitBtn2Click
   end
 end
