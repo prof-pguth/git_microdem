@@ -1,7 +1,7 @@
 unit gps_strings;
 
 {^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of ianMICRODEM GIS Program    }
+{ Part of MICRODEM GIS Program       }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
 { Copyright (c) 2023 Peter L. Guth   }
@@ -51,9 +51,6 @@ uses
 
 
 procedure TextNMEAfiletoDBF(var fName : PathStr);
-{$IfDef NoCSVImports}
-begin
-{$Else}
 var
    GPSPartialString : AnsiString;
    Lat,long,Elev : float64;
@@ -73,10 +70,7 @@ begin
    inf.Destroy;
    fName := ChangeFileExt(fName,'.dbf');
    StringList2CSVtoDB(OutF,fName,true);
-{$EndIf}
 end;
-
-
 
 
 procedure DecodeLatLongFromString(var GPSPartialString : AnsiString; var Lat,Long : float64);

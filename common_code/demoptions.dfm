@@ -47,12 +47,10 @@ inherited OptionsForm: TOptionsForm
     Top = 0
     Width = 797
     Height = 506
-    ActivePage = TabSheet4
+    ActivePage = TabSheet21
     Align = alClient
     MultiLine = True
     TabOrder = 2
-    ExplicitWidth = 793
-    ExplicitHeight = 505
     object TabSheet1: TTabSheet
       Caption = 'Program'
       object RadioGroup7: TRadioGroup
@@ -130,8 +128,8 @@ inherited OptionsForm: TOptionsForm
       object StringGrid1: TStringGrid
         Left = 0
         Top = 0
-        Width = 793
-        Height = 457
+        Width = 789
+        Height = 456
         Align = alClient
         ColCount = 2
         ScrollBars = ssVertical
@@ -261,7 +259,7 @@ inherited OptionsForm: TOptionsForm
         TabOrder = 5
       end
       object CheckBox59: TCheckBox
-        Left = 176
+        Left = 190
         Top = 152
         Width = 156
         Height = 17
@@ -383,7 +381,7 @@ inherited OptionsForm: TOptionsForm
         TabOrder = 16
       end
       object CheckBox43: TCheckBox
-        Left = 176
+        Left = 190
         Top = 168
         Width = 156
         Height = 17
@@ -400,7 +398,7 @@ inherited OptionsForm: TOptionsForm
       object CheckBox97: TCheckBox
         Left = 23
         Top = 152
-        Width = 147
+        Width = 161
         Height = 17
         Caption = 'Box around quick exports'
         TabOrder = 19
@@ -417,26 +415,13 @@ inherited OptionsForm: TOptionsForm
           'Ask')
         TabOrder = 20
       end
-      object RadioGroup33: TRadioGroup
-        Left = 14
-        Top = 319
-        Width = 170
-        Height = 47
-        Caption = 'Center global maps'
-        Columns = 2
-        Items.Strings = (
-          'Atlantic'
-          'Pacific')
-        TabOrder = 21
-        OnClick = RadioGroup33Click
-      end
       object BitBtn36: TBitBtn
         Left = 113
         Top = 111
         Width = 96
         Height = 25
         Caption = 'Blank map'
-        TabOrder = 22
+        TabOrder = 21
         OnClick = BitBtn36Click
       end
       object CheckBox160: TCheckBox
@@ -445,14 +430,14 @@ inherited OptionsForm: TOptionsForm
         Width = 314
         Height = 17
         Caption = 'Grayscale reflectance map with overlay'
-        TabOrder = 23
+        TabOrder = 22
       end
       object Edit4: TEdit
         Left = 547
         Top = 373
         Width = 48
         Height = 23
-        TabOrder = 24
+        TabOrder = 23
         Text = 'Edit4'
       end
       object CheckBox89: TCheckBox
@@ -461,7 +446,7 @@ inherited OptionsForm: TOptionsForm
         Width = 218
         Height = 17
         Caption = 'Map name below composite maps'
-        TabOrder = 25
+        TabOrder = 24
       end
     end
     object TabSheet5: TTabSheet
@@ -3061,14 +3046,14 @@ inherited OptionsForm: TOptionsForm
       Caption = 'Menus'
       ImageIndex = 20
       object GroupBox4: TGroupBox
-        Left = 355
-        Top = 3
-        Width = 129
+        Left = 467
+        Top = 18
+        Width = 102
         Height = 97
         Caption = 'Oceanography'
         TabOrder = 0
         object CheckBox105: TCheckBox
-          Left = 8
+          Left = 3
           Top = 25
           Width = 97
           Height = 17
@@ -3076,7 +3061,7 @@ inherited OptionsForm: TOptionsForm
           TabOrder = 0
         end
         object CheckBox111: TCheckBox
-          Left = 8
+          Left = 3
           Top = 48
           Width = 97
           Height = 17
@@ -3084,8 +3069,8 @@ inherited OptionsForm: TOptionsForm
           TabOrder = 1
         end
         object CheckBox112: TCheckBox
-          Left = 8
-          Top = 72
+          Left = 3
+          Top = 71
           Width = 97
           Height = 17
           Caption = 'Chirps'
@@ -3189,76 +3174,85 @@ inherited OptionsForm: TOptionsForm
         end
       end
       object CheckBox142: TCheckBox
-        Left = 360
-        Top = 128
+        Left = 224
+        Top = 40
         Width = 97
         Height = 17
         Caption = 'Show labs'
         TabOrder = 3
+        Visible = False
       end
       object CheckBox151: TCheckBox
-        Left = 360
-        Top = 160
+        Left = 224
+        Top = 72
         Width = 97
         Height = 17
         Caption = 'Show views'
         TabOrder = 4
       end
       object CheckBox156: TCheckBox
-        Left = 360
-        Top = 192
+        Left = 224
+        Top = 104
         Width = 201
         Height = 17
         Caption = 'Advanced  DB options'
         TabOrder = 5
       end
       object CheckBox9: TCheckBox
-        Left = 360
-        Top = 224
+        Left = 224
+        Top = 136
         Width = 97
         Height = 17
         Caption = 'SHP button'
         TabOrder = 6
       end
       object CheckBox32: TCheckBox
-        Left = 360
-        Top = 248
+        Left = 224
+        Top = 160
         Width = 97
         Height = 17
         Caption = 'DB button'
         TabOrder = 7
       end
       object CheckBox72: TCheckBox
-        Left = 360
-        Top = 272
+        Left = 224
+        Top = 184
         Width = 97
         Height = 17
         Caption = 'Map library'
         TabOrder = 8
       end
       object CheckBox28: TCheckBox
-        Left = 360
-        Top = 320
+        Left = 224
+        Top = 232
         Width = 97
         Height = 17
         Caption = 'PLSS'
         TabOrder = 9
       end
       object CheckBox103: TCheckBox
-        Left = 360
-        Top = 343
+        Left = 224
+        Top = 255
         Width = 124
         Height = 17
         Caption = 'Point clouds'
         TabOrder = 10
       end
       object CheckBox44: TCheckBox
-        Left = 360
-        Top = 366
+        Left = 224
+        Top = 278
         Width = 233
         Height = 17
         Caption = 'Experimental slice options'
         TabOrder = 11
+      end
+      object CheckBox106: TCheckBox
+        Left = 224
+        Top = 18
+        Width = 158
+        Height = 17
+        Caption = 'DEMIX wine contest'
+        TabOrder = 12
       end
     end
   end

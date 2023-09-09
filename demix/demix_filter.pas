@@ -44,15 +44,15 @@ uses
   Winapi.Windows, Winapi.Messages,
   System.SysUtils, System.Variants, System.Classes,
   StrUtils,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons, Vcl.ComCtrls, Vcl.Grids, Vcl.Graphics,
-  Petmar_types, Vcl.ExtCtrls;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons, Vcl.ComCtrls, Vcl.Grids, Vcl.Graphics,Vcl.ExtCtrls,
+  Petmar_types,DEMIX_Control;
 
-const
-   MaxDemixArray = 6;
+//const
+   //MaxDemixArray = 6;
+//type
+  //tDEMixarray = array[1..MaxDemixDEM] of integer;
+
 type
-  tDEMixarray = array[1..MaxDemixArray] of integer;
-
-
   TDemixFilterForm = class(TForm)
     PageControl1: TPageControl;
     TabSheet1: TTabSheet;
@@ -137,6 +137,7 @@ type
     Memo7: TMemo;
     RadioGroup2: TRadioGroup;
     CheckBox10: TCheckBox;
+    BitBtn30: TBitBtn;
     procedure BitBtn1Click(Sender: TObject);
     procedure LoadClick(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
@@ -186,6 +187,7 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure RadioGroup2Click(Sender: TObject);
     procedure CheckBox10Click(Sender: TObject);
+    procedure BitBtn30Click(Sender: TObject);
   private
     { Private declarations }
     procedure ZeroDEMs;
@@ -203,7 +205,7 @@ type
     CriteriaUsing,
     TileParameters,
     CandidateDEMsUsing : tStringList;
-    MergeDEMs,RefDEMs,RefDEMsv1,RefDEMsHalfSec,TestDEMs,DiffDSMDEMs,DiffDTMDEMs : tDEMixarray;
+    MergeDEMs,RefDEMs,RefDEMsv1,RefDEMsHalfSec,TestDEMs,DiffDSMDEMs,DiffDTMDEMs : tDEMIXindexes;
     //procedure DoCriteriaGraph;
     procedure LoadDEMsForCurrentArea(var AreaName : Petmar_types.shortstring; LoadMaps : boolean = true);
   end;
@@ -220,7 +222,7 @@ uses
    Petmar,PetMath,PetImage,PetImage_form,
    DEMDatabase,DEMDbTable,DEMdef_routines,DEMDefs,DEMcoord,
    BaseGraf,DEM_Manager,DEMstat,BaseMap,DEMlosw,Make_Grid,
-   DEMIX_control,DEMmapf, nevadia_main, PetDBUtils;
+   DEMmapf, nevadia_main, PetDBUtils;
 
 
 const
@@ -323,7 +325,7 @@ var
    begin
       if ValidDEM(aTestDEM) then begin
          {$IfDef TrackOpenHandles} WriteOpenHandlestoDebugLog('GetRefDEMDifferenceMap in'); {$EndIf}
-         for I := 1 to MaxDemixArray do begin
+         for I := 1 to MaxDEMIXDEM do begin
             if ValidDEM(RefDEMs[i]) then begin
                refDEMname := UpperCase(DEMGlb[RefDEMs[i]].AreaName);
                refDEMsurfaceType := IsDEMaDSMorDTM(refDEMname);
@@ -342,7 +344,7 @@ var
    end;
 
 var
-   theRefDEMs : tDEMixarray;
+   theRefDEMs : tDEMIXindexes;
    RefPointOrArea,SeriesName,AreaName : shortstring;
 begin
    {$If Defined(RecordDEMIX) or Defined(TrackOpenHandles)} WriteOpenHandlestoDebugLog('TDemixFilterForm.MakeDifferenceMaps in, type=' + IntToStr(WhatType)); {$EndIf}
@@ -362,7 +364,7 @@ begin
 
    if (WhatType = ElevV1) then theRefDEMs := RefDEMsv1 else theRefDEMs := RefDEMs;
    for j := 2 downto 1 do begin
-      for i := 1 to MaxDemixArray do begin
+      for i := 1 to MaxDEMIXDEM do begin
          //this will not work yet for the high latitude areas
          if ValidDEM(TestDEMs[i]) then begin
             wmdem.SetPanelText(1,'i=' + IntToStr(i) + '  j=' + IntToStr(j));
@@ -419,14 +421,14 @@ var
    fName : PathStr;
 begin
    theFiles := tStringList.Create;
-   for I := 1 to MaxDemixArray do begin
+   for I := 1 to MaxDEMIXDEM do begin
       if ValidDEM(DiffDSMDEMs[i]) then begin
          fName := NextFileNumber(MDtempdir,'diff_map_','.bmp');
          SaveImageAsBMP(DEMGlb[DiffDSMDEMs[i]].SelectionMap.Image1,fName);
          theFiles.Add(fName);
       end;
    end;
-   for I := 1 to MaxDemixArray do begin
+   for I := 1 to MaxDEMIXDEM do begin
       if ValidDEM(DiffDTMDEMs[i]) then begin
          fName := NextFileNumber(MDtempdir,'diff_map_','.bmp');
          SaveImageAsBMP(DEMGlb[DiffDTMDEMs[i]].SelectionMap.Image1,fName);
@@ -480,7 +482,7 @@ var
          aLine : shortstring;
          RuffRef,SlopeRef,RuffALOS,SlopeALOS,RuffCOP,SlopeCOP,
          i,j,{DiffMaps,}COPDEM,ALOSDEM : integer;
-         BestElevGrid,BestSlopeGrid,BestRuffGrid : array[1..MaxDemixArray] of integer;
+         BestElevGrid,BestSlopeGrid,BestRuffGrid : tDEMIXindexes;
 
 
          procedure AddResults(What : shortString; fName : PathStr);
@@ -506,12 +508,12 @@ var
 
          COPDEM := 0;
          ALOSDEM := 0;
-         for j := 1 to MaxDemixArray do if ValidDEM(TestDEMs[j]) then begin
+         for j := 1 to MaxDemixDEM do if ValidDEM(TestDEMs[j]) then begin
             if StrUtils.AnsiContainsText(UpperCase(DEMglb[TestDEMs[j]].AreaName),'COP') then COPDEM := TestDEMs[j];
             if StrUtils.AnsiContainsText(UpperCase(DEMglb[TestDEMs[j]].AreaName),'ALOS') then ALOSDEM := TestDEMs[j];
          end;
 
-         for i := 1 to MaxDemixArray do begin
+         for i := 1 to MaxDemixDEM do begin
             if ValidDEM(RefDEMsHalfSec[i]) then begin
                if IsDEMaDSMorDTM(DEMglb[RefDEMsHalfSec[i]].AreaName) = DEMisDSM then DEMtype := 'DSM' else DEMType := 'DTM';
                SlopeRef := 0; //to force return of the slope map in addition to the ruff map
@@ -599,6 +601,92 @@ begin
    end;
 end;
 
+procedure TDemixFilterForm.BitBtn30Click(Sender: TObject);
+var
+   i : integer;
+   bb : sfBoundBox;
+   OutPath : PathStr;
+   OpenMap : boolean;
+   RefSlopeMap,RefRuffMap,RefRRImap,
+   SlopeMap,RuffMap,RRImap : tDEMIXindexes;
+
+         procedure SaveAndNormalize(TheDEMs : tDEMIXindexes; What : shortstring = '');
+         var
+            Min,Max : float32;
+            fName : PathStr;
+            DEM : integer;
+         begin
+            wmdem.SetPanelText(1,'Normalize and save=' + What);
+            Min := 99e39;
+            Max := -99e39;
+            for DEM := 1 to MaxDemixDEM do begin
+               //get elevation range
+               if ValidDEM(TheDEMs[DEM]) then begin
+                  if DEMGlb[TheDEMs[DEM]].DEMheader.MaxElev > Max then Max := DEMGlb[TheDEMs[DEM]].DEMheader.MaxElev;
+                  if DEMGlb[TheDEMs[DEM]].DEMheader.MinElev < Min then Min := DEMGlb[TheDEMs[DEM]].DEMheader.MinElev;
+               end;
+            end;
+            for DEM := 1 to MaxDemixDEM do begin
+               //rescale to 0-1 range
+               if ValidDEM(TheDEMs[DEM]) then begin
+                  fName := OutPath + DEMGlb[TheDEMs[DEM]].AreaName + '.tif';
+                  DEMGlb[TheDEMs[DEM]].SaveGridSubsetGeotiff(DEMGlb[TheDEMs[DEM]].SelectionMap.MapDraw.MapAreaDEMGridLimits,fName);
+
+                  DEMGlb[TheDEMs[DEM]].AddConstantToGrid(-Min);
+                  DEMGlb[TheDEMs[DEM]].MultiplyGridByConstant(1/(Max-Min));
+                  fName := OutPath + DEMGlb[TheDEMs[DEM]].AreaName + '_ssim.tif';
+                  DEMGlb[TheDEMs[DEM]].SaveGridSubsetGeotiff(DEMGlb[TheDEMs[DEM]].SelectionMap.MapDraw.MapAreaDEMGridLimits,fName);
+               end;
+            end;
+         end;
+
+
+
+begin
+   GetDEMIXpaths;
+   OpenMap := true;
+   OutPath := 'c:\temp\';
+   for i := 1 to MaxDemixDEM do begin
+      wmdem.SetPanelText(1,'DEM underway=' + IntToStr(i));
+      SlopeMap[i] := 0;
+      RuffMap[i] := 0;
+      RRImap[i] := 0;
+      RefSlopeMap[i] := 0;
+      RefRuffMap[i] := 0;
+      RefRRImap[i] := 0;
+      if ValidDEM(TestDEMs[i]) then begin
+         if MDDef.SSIM_rri then RRImap[i] := MakeTRIGrid(TestDEMs[i],nmRRI,OpenMap,false);
+         if MDDef.SSIM_slope or MDDef.SSIM_ruff then RuffMap[i] := CreateSlopeRoughnessSlopeStandardDeviationMap(TestDEMs[i],5,SlopeMap[i],OpenMap);
+      end;
+      if ValidDEM(RefDEMs[i]) then begin
+         if MDDef.SSIM_rri then RefRRImap[i] := MakeTRIGrid(RefDEMs[i],nmRRI,OpenMap,false);
+         if MDDef.SSIM_slope or MDDef.SSIM_ruff then RefRuffMap[i] := CreateSlopeRoughnessSlopeStandardDeviationMap(RefDEMs[i],5,RefSlopeMap[i],OpenMap);
+      end;
+   end;
+   if (ComboBox1.Text <> '') then begin
+      bb := DEMIXtileBoundingBox(ComboBox1.Text);
+      MaskAllDEMsWithGeoBoundingBox(bb);
+   end;
+   if MDDef.SSIM_elev then begin
+      SaveAndNormalize(RefDEMs,'Ref elev');
+      SaveAndNormalize(TestDEMs,'Test elev');
+   end;
+   if MDDef.SSIM_slope then begin
+      SaveAndNormalize(RefSlopeMap,'Ref slope');
+      SaveAndNormalize(SlopeMap,'Test slope');
+   end;
+   if MDDef.SSIM_ruff then begin
+      SaveAndNormalize(RefRuffMap,'Ref ruff');
+      SaveAndNormalize(RuffMap,'Test ruff');
+   end;
+   if MDDef.SSIM_rri then begin
+      SaveAndNormalize(RefRRImap,'Ref RRI');
+      SaveAndNormalize(RRImap,'Test RRI');
+   end;
+   EndDEMIXProcessing;
+end;
+
+
 procedure TDemixFilterForm.BitBtn3Click(Sender: TObject);
 var
    fName : PathStr;
@@ -620,7 +708,7 @@ procedure TDemixFilterForm.ZeroDEMs;
 var
    i : integer;
 begin
-   for i := 1 to MaxDemixArray do begin
+   for i := 1 to MaxDemixDEM do begin
       MergeDEMs[i] := 0;
       DiffDSMDEMs[i] := 0;
       RefDEMs[i] := 0;
@@ -635,8 +723,15 @@ end;
 procedure TDemixFilterForm.BitBtn5Click(Sender: TObject);
 var
    AreaName : Petmar_types.shortstring;
+   Tiles : tStringList;
+   i : integer;
 begin
    LoadDEMsForCurrentArea(AreaName,true);
+   ComboBox1.Items.Clear;
+   Tiles := DEMGlb[1].SelectionMap.DEMIXtilesOnMap;
+   for i := 0 to pred(Tiles.Count) do ComboBox1.Items.Add(Tiles.Strings[i]);
+   ComboBox1.Text := Tiles.Strings[0];
+   Tiles.Destroy;
 end;
 
 
@@ -745,7 +840,6 @@ procedure TDemixFilterForm.ComboBox8Change(Sender: TObject);
 begin
    BitBtn6Click(Sender);
 end;
-
 
 
 procedure TDemixFilterForm.Edit1Change(Sender: TObject);
@@ -904,7 +998,7 @@ var
    AreaName,fName : PathStr;
    RGB_Best_Map : tStringList;
    RuffRef,SlopeRef,RuffALOS,SlopeALOS,RuffCOP,SlopeCOP,RuffFab,SlopeFab,i,j,DiffMaps,COPDEM,ALOSDEM,FABDEM,Cop_FAB_diff : integer;
-   NewElevGrid,NewSlopeGrid,NewRuffGrid,BestElevGrid,BestSlopeGrid,BestRuffGrid,RGBBestElevGrid,RGBBestSlopeGrid,RGBBestRuffGrid : array[1..MaxDemixArray] of integer;
+   NewElevGrid,NewSlopeGrid,NewRuffGrid,BestElevGrid,BestSlopeGrid,BestRuffGrid,RGBBestElevGrid,RGBBestSlopeGrid,RGBBestRuffGrid : tDEMIXindexes;
 
       function MakeNewMap(What : shortstring; RefDEM,ALOSDEM,COPDEM,MergeDEM : integer) : integer;
 
@@ -972,7 +1066,7 @@ begin
    COPDEM := 0;
    ALOSDEM := 0;
    FABDEM := 0;
-   for j := 1 to MaxDemixArray do if ValidDEM(TestDEMs[j]) then begin
+   for j := 1 to MaxDemixDEM do if ValidDEM(TestDEMs[j]) then begin
       if StrUtils.AnsiContainsText(UpperCase(DEMglb[TestDEMs[j]].AreaName),'COP') then COPDEM := TestDEMs[j];
       if StrUtils.AnsiContainsText(UpperCase(DEMglb[TestDEMs[j]].AreaName),'ALOS') then ALOSDEM := TestDEMs[j];
       if StrUtils.AnsiContainsText(UpperCase(DEMglb[TestDEMs[j]].AreaName),'FABDEM') then FABDEM := TestDEMs[j];
@@ -980,8 +1074,8 @@ begin
 
    if MDDef.MakeCOP_ALOS_diffMaps then begin
       Diffmaps := 0;
-      for i := 1 to MaxDemixArray do if ValidDEM(RefDEMsHalfSec[i]) then begin
-         for j := 1 to MaxDemixArray do if ValidDEM(TestDEMs[j]) then begin
+      for i := 1 to MaxDemixDEM do if ValidDEM(RefDEMsHalfSec[i]) then begin
+         for j := 1 to MaxDemixDEM do if ValidDEM(TestDEMs[j]) then begin
             inc(DiffMaps);
             DiffDTMDEMs[DiffMaps] := MakeDifferenceMap(RefDEMsHalfSec[i],TestDEMs[j],RefDEMsHalfSec[i],0,true,false,false,DEMglb[RefDEMsHalfSec[i]].AreaName + '_Delta_to_' + DEMglb[TestDEMs[j]].AreaName);
          end;
@@ -1010,7 +1104,7 @@ begin
 
 
    if MDDef.MakeCOP_ALOS_Cat_Maps or MDDef.MakeCOP_ALOS_Best_Map or MDDef.MakeRGB_Best_Map then begin
-      for i := 1 to MaxDemixArray do begin
+      for i := 1 to MaxDemixDEM do begin
          if MDDef.MakeRGB_Best_Map then RGB_Best_Map := tStringList.Create;
          if ValidDEM(RefDEMsHalfSec[i]) then begin
             refDEMsurfaceType := IsDEMaDSMorDTM(UpperCase(DEMGlb[RefDEMsHalfSec[i]].AreaName));
@@ -1209,11 +1303,11 @@ procedure TDemixFilterForm.LoadDEMsForCurrentArea(var AreaName: ShortString;  Lo
 var
    DEMs : integer;
 
-      procedure LoadFromPath(var Which : tDEMIXarray; aPath : PathStr; Ext : ANSIstring; LoadMaps : boolean; Limit : shortstring; What : shortstring);
+      procedure LoadFromPath(var Which : tDEMIXindexes; aPath : PathStr; Ext : ANSIstring; LoadMaps : boolean; Limit : shortstring; What : shortstring);
       var
          FilesWanted : tStringList;
          j : integer;
-         fName{,NewName} : PathStr;
+         fName : PathStr;
       begin
          FilesWanted := tStringList.Create;
          FindMatchingFiles(aPath,Ext,FilesWanted,1);
@@ -1222,7 +1316,7 @@ var
             fName := FilesWanted.Strings[j];
             if StrUtils.AnsiContainsText(UpperCase(fname),UpperCase(AreaName)) then begin
                if (Limit = '') or StrUtils.AnsiContainsText(UpperCase(fname),UpperCase(Limit)) then begin
-                  if (DEMs = MaxDemixArray) then begin
+                  if (DEMs = MaxDemixDEM) then begin
                      MessageToContinue('Too many DEMs in ' + aPath);
                   end
                   else begin
@@ -1236,8 +1330,6 @@ var
          {$IfDef RecordDEMIX} WriteLineToDebugFile('Loaded ' + What + '=' + IntToStr(DEMs)); {$EndIf}
       end;
 
-//var
-   //i : integer;
 begin
    {$IfDef RecordDEMIX} WriteLineToDebugFile('TDemixFilterForm.LoadDEMsForArea in'); {$EndIf}
    AreaName := ComboBox4.Text;

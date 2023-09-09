@@ -1,8 +1,8 @@
 object SatHeaderForm: TSatHeaderForm
   Left = 338
   Top = 200
-  ClientHeight = 326
-  ClientWidth = 531
+  ClientHeight = 325
+  ClientWidth = 527
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -15,23 +15,19 @@ object SatHeaderForm: TSatHeaderForm
   object StringGrid1: TStringGrid
     Left = 0
     Top = 105
-    Width = 531
-    Height = 180
+    Width = 527
+    Height = 179
     Align = alClient
     ColCount = 3
     TabOrder = 0
-    ExplicitWidth = 527
-    ExplicitHeight = 179
   end
   object Panel1: TPanel
     Left = 0
-    Top = 285
-    Width = 531
+    Top = 284
+    Width = 527
     Height = 41
     Align = alBottom
     TabOrder = 1
-    ExplicitTop = 284
-    ExplicitWidth = 527
     object OKBtn: TBitBtn
       Left = 192
       Top = 6
@@ -49,11 +45,10 @@ object SatHeaderForm: TSatHeaderForm
   object Panel2: TPanel
     Left = 0
     Top = 0
-    Width = 531
+    Width = 527
     Height = 105
     Align = alTop
     TabOrder = 2
-    ExplicitWidth = 527
     object Label5: TLabel
       Left = 8
       Top = 72

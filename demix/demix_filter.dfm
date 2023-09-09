@@ -61,8 +61,6 @@ object DemixFilterForm: TDemixFilterForm
         Width = 121
         Height = 17
         Caption = 'Source EGM2008'
-        Checked = True
-        State = cbChecked
         TabOrder = 3
       end
       object ComboBox4: TComboBox
@@ -423,6 +421,15 @@ object DemixFilterForm: TDemixFilterForm
           TabOrder = 3
           OnClick = BitBtn29Click
         end
+      end
+      object BitBtn30: TBitBtn
+        Left = 232
+        Top = 224
+        Width = 97
+        Height = 25
+        Caption = 'RRI all maps'
+        TabOrder = 36
+        OnClick = BitBtn30Click
       end
     end
     object TabSheet2: TTabSheet

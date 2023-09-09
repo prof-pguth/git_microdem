@@ -112,141 +112,141 @@ function CreateHTML_href(fName,Display : ANSIString) : ANSIString;
 var
    SevenZipfName : PathStr;
 
+
 {$IfDef VCL}
 
-function File2Trash(const FileName: string): boolean;
+      function File2Trash(const FileName: string): boolean;
 
-procedure StartThreadTimers(Capt : ShortString = ''; MaxThreads : integer = 8; Enable1 : boolean = false);
-procedure EndThreadTimers;
-procedure StartSingleThreadTimer(Capt : ShortString = '');
+      procedure StartThreadTimers(Capt : ShortString = ''; MaxThreads : integer = 8; Enable1 : boolean = false);
+      procedure EndThreadTimers;
+      procedure StartSingleThreadTimer(Capt : ShortString = '');
 
-procedure InsureFormIsOnScreen(TheForm : Forms.tForm);
-procedure PlaceFormInCorner(Owner,TheForm : Forms.tForm; FormPosition :  byte = lpSEMap);
-
-
-procedure HardwareOnLine;
-procedure PETMARAboutBox(ProgramName : ANSIstring; Modifier : ANSIstring = '');
-
-function GetNewBMPSize(var x,y : int32; aCapt : shortstring) : boolean;
-
-procedure ShowInNotepadPlusPlus(fName : PathStr; Capt : shortstring = '');   overload;
-procedure ShowInNotepadPlusPlus(inName : tStringList; Capt : shortstring = '');  overload;
-
-procedure ModalEditWindow(FName : PathStr; WindowCaption : ANSIstring);
-procedure ModalStringListDisplay(var aList : tStringList; WindowCaption : ANSIstring; Purge : boolean = true);
-procedure DisplayAndPurgeStringList(var Findings : tStringList; WindowTitle : shortString;  ListenToClear : boolean = false);
-procedure DisplayString(Findings : String; WindowTitle : shortString; ListenToClear : boolean = false);
-procedure QuickOpenEditWindow(FName : PathStr; WindowCaption : ANSIstring; ListenToClear : boolean = false; AddLineNumbers : boolean = false);
-
-procedure GetDate(var Month,Day,Year : integer);
-procedure GetDateAndDuration(var Month,Day,Year,Duration : integer; ShowDuration : boolean = true);
-
-procedure GetSymbol(var DrSymbol : tDrawingSymbol; var SymSize   : byte; var WantColor  : tPlatformColor; WhatFor : shortstring = '');
-procedure PickLineSizeAndColor(WhatFor : shortString; BitButton : tBitBtn; var LineColor : tPlatformColor; var LineSize :  byte); overload;
-procedure PickLineSizeAndColor(WhatFor : shortString; BitButton : tBitBtn; var LineColor : tPlatformColor; var LineSize :  float32); overload;
-procedure PickLineSizeAndColor(WhatFor : shortString; BitButton : tBitBtn; var LineColor : tPlatformColor; var LineSize :  integer); overload;
-procedure PickSymbol(BitButton : tBitBtn; var DrSymbol : tDrawingSymbol; var SymSize : byte; var WantColor  : tPlatformColor; WhatFor : shortstring = ''); overload;
-procedure PickSymbol(BitButton : tBitBtn; var Symbol : tFullSymbolDeclaration; WhatFor : shortstring = ''); Overload;
-
-procedure PickPattern(WhatFor : shortString; var Style : tBrushStyle; var FillColor,BorderColor : tPlatformColor; var inBorderWidth : integer; BackBMP : tMyBitmap = Nil);
-
-//Bit button routines
-      procedure ColorLineWidthBitmap(var Bitmap : tMyBitmap; Color : TPlatformColor; Size : integer; Minimize : boolean = true);
-      procedure DrawPatternOnBitmap(var Bitmap : tMyBitmap; FillColor,SymbolLineBorderColor : tPlatformColor; SymbolFill :  tBrushStyle; SymbolLineBorderSize : integer);
-
-      procedure ColorLineWidthBitBtn(var BitBtn : tBitBtn; Color : tPlatformColor; Size : integer);
-      procedure SymbolOnButton(var BitBtn : tBitBtn; Symbol : tDrawingSymbol; SymbolSize : integer; SymbolColor : tPlatformColor); Overload;
-      procedure SymbolOnButton(var BitBtn : tBitBtn; Symbol : tFullSymbolDeclaration); Overload;
-      procedure FillPatternOnBitBtn(BitBtn : tBitBtn; FillColor,SymbolLineBorderColor : tPlatformColor; SymbolFill :  tBrushStyle; SymbolLineBorderSize : integer);
-      {$IfDef VCL}
-         procedure ColorBitBtn(var BitBtn : tBitBtn; Color : tPlatformColor);  overload;
-         procedure ColorBitBtn(var BitBtn : tBitBtn; Color : tColor);          overload;
-      {$EndIf}
+      procedure InsureFormIsOnScreen(TheForm : Forms.tForm);
+      procedure PlaceFormInCorner(Owner,TheForm : Forms.tForm; FormPosition :  byte = lpSEMap);
 
 
-procedure TextOutVertical(Canvas : TCanvas; x,y : integer; Words : ShortString; ClearBack : boolean = false);
-procedure CanvasTextOutAngle(c : TCanvas; x,y: Integer; d : Word; s: ShortString);
-     {angle measured in tenths degree, math convention: starts with east and runs counterclockwise}
+      procedure HardwareOnLine;
+      procedure PETMARAboutBox(ProgramName : ANSIstring; Modifier : ANSIstring = '');
 
-procedure DisplayNevadella(Canvas : TCanvas; xoff,yoff,size : integer; Color : TColor);
-procedure CheckFormPlacement(TheForm : Forms.tForm); //MonitorDesired : integer = 0);
-procedure PlaceFormAtMousePosition(TheForm : Forms.tForm);
+      function GetNewBMPSize(var x,y : int32; aCapt : shortstring) : boolean;
 
-function LocalIP: string;
+      procedure ShowInNotepadPlusPlus(fName : PathStr; Capt : shortstring = '');   overload;
+      procedure ShowInNotepadPlusPlus(inName : tStringList; Capt : shortstring = '');  overload;
 
-function FontInstalled(Const FontName:String) : Boolean;
+      procedure ModalEditWindow(FName : PathStr; WindowCaption : ANSIstring);
+      procedure ModalStringListDisplay(var aList : tStringList; WindowCaption : ANSIstring; Purge : boolean = true);
+      procedure DisplayAndPurgeStringList(var Findings : tStringList; WindowTitle : shortString;  ListenToClear : boolean = false);
+      procedure DisplayString(Findings : String; WindowTitle : shortString; ListenToClear : boolean = false);
+      procedure QuickOpenEditWindow(FName : PathStr; WindowCaption : ANSIstring; ListenToClear : boolean = false; AddLineNumbers : boolean = false);
 
+      procedure GetDate(var Month,Day,Year : integer);
+      procedure GetDateAndDuration(var Month,Day,Year,Duration : integer; ShowDuration : boolean = true);
 
-//drawing
-   procedure CrossWithHole(Canvas : tCanvas; x,y : integer);
-   procedure ScreenSymbol(Canvas : TCanvas; x,y : integer; Sym : tDrawingSymbol; size: integer; color : TPlatformColor); overload;
-   procedure ScreenSymbol(Canvas : TCanvas; x,y : integer; Symbol : tFullSymbolDeclaration); overload;
+      procedure GetSymbol(var DrSymbol : tDrawingSymbol; var SymSize   : byte; var WantColor  : tPlatformColor; WhatFor : shortstring = '');
+      procedure PickLineSizeAndColor(WhatFor : shortString; BitButton : tBitBtn; var LineColor : tPlatformColor; var LineSize :  byte); overload;
+      procedure PickLineSizeAndColor(WhatFor : shortString; BitButton : tBitBtn; var LineColor : tPlatformColor; var LineSize :  float32); overload;
+      procedure PickLineSizeAndColor(WhatFor : shortString; BitButton : tBitBtn; var LineColor : tPlatformColor; var LineSize :  integer); overload;
+      procedure PickSymbol(BitButton : tBitBtn; var DrSymbol : tDrawingSymbol; var SymSize : byte; var WantColor  : tPlatformColor; WhatFor : shortstring = ''); overload;
+      procedure PickSymbol(BitButton : tBitBtn; var Symbol : tFullSymbolDeclaration; WhatFor : shortstring = ''); Overload;
 
-      procedure StartCount(Title : ShortString);
-      procedure UpdateCount(HowFar : LongInt);
-      procedure EndCount;
+      procedure PickPattern(WhatFor : shortString; var Style : tBrushStyle; var FillColor,BorderColor : tPlatformColor; var inBorderWidth : integer; BackBMP : tMyBitmap = Nil);
 
-function ExecuteFile(const FileName, Params, DefaultDir: ANSIstring): THandle;
-function WinExecAndWait32(FileName : ANSIstring; Wait : boolean = true; Log : boolean = true) : integer;
+      //Bit button routines
+            procedure ColorLineWidthBitmap(var Bitmap : tMyBitmap; Color : TPlatformColor; Size : integer; Minimize : boolean = true);
+            procedure DrawPatternOnBitmap(var Bitmap : tMyBitmap; FillColor,SymbolLineBorderColor : tPlatformColor; SymbolFill :  tBrushStyle; SymbolLineBorderSize : integer);
 
-function GetFromListZeroBased(InMessage : ANSIstring; var PickedNum : integer; var InList : TStringList; CanCancel : boolean = false; MultiPick : boolean = false) : boolean;
-function GetFromList(InMessage : ANSIstring; var PickedNum : integer; InList : TStringList; CanCancel : boolean = false) : boolean;    overload;
-function GetFromList(InMessage : ANSIstring; InList : TStringList; CanCancel : boolean = false) : ShortString; overload;
-function GetMultipleFromList(InMessage : ANSIstring; var PickedNum : integer; var InList : TStringList; CanCancel : boolean = false) : boolean;
-
-procedure GetString(Prompt : ShortString; var Input : ShortString; ForceCaps : boolean; ValidChars : characters);
-procedure GetValidDBfieldname(var fName2 : shortstring);
-
-procedure QueryTColor(var Color : tColor); overload;
-procedure QueryColor(var Color : tPlatformColor); overload;
-procedure QueryColor(BitBtn : tBitBtn; var Color : tPlatformColor); overload;
-procedure QueryTColor(BitBtn : tBitBtn; var Color : Tcolor); overload;
-procedure FillComboBoxWithColorPalettes(fName : PathStr; ComboBox1 : tComboBox);
-procedure GetAngleInRadians(Message : shortstring; var Angle : float64);
-procedure GetAngle(Mess : shortstring; var theAngle : float64; var AngleMeasure : tAngleMeasure);
+            procedure ColorLineWidthBitBtn(var BitBtn : tBitBtn; Color : tPlatformColor; Size : integer);
+            procedure SymbolOnButton(var BitBtn : tBitBtn; Symbol : tDrawingSymbol; SymbolSize : integer; SymbolColor : tPlatformColor); Overload;
+            procedure SymbolOnButton(var BitBtn : tBitBtn; Symbol : tFullSymbolDeclaration); Overload;
+            procedure FillPatternOnBitBtn(BitBtn : tBitBtn; FillColor,SymbolLineBorderColor : tPlatformColor; SymbolFill :  tBrushStyle; SymbolLineBorderSize : integer);
+            {$IfDef VCL}
+               procedure ColorBitBtn(var BitBtn : tBitBtn; Color : tPlatformColor);  overload;
+               procedure ColorBitBtn(var BitBtn : tBitBtn; Color : tColor);          overload;
+            {$EndIf}
 
 
-//color routines
-      function ColorString(Color : tRGBTriple) : shortString; overload;
+      procedure TextOutVertical(Canvas : TCanvas; x,y : integer; Words : ShortString; ClearBack : boolean = false);
+      procedure CanvasTextOutAngle(c : TCanvas; x,y: Integer; d : Word; s: ShortString);
+           {angle measured in tenths degree, math convention: starts with east and runs counterclockwise}
 
-      function GrayColorFunct(i : integer) : TColor;  overload;
-      function GrayColorFunct(z,Min,Max : float64) : TColor; overload; inline;
-      function SpectrumColorFunct(z,Min,Max : float64) : tColor;
-      function RainbowColorFunct(z,Min,Max : float64) : TColor;
-      function TerrainTColor(z,aMin,aMax : float64) : TColor;
-      function ColorToHtml(DColor : TColor) : ShortString;
+      procedure DisplayNevadella(Canvas : TCanvas; xoff,yoff,size : integer; Color : TColor);
+      procedure CheckFormPlacement(TheForm : Forms.tForm); //MonitorDesired : integer = 0);
+      procedure PlaceFormAtMousePosition(TheForm : Forms.tForm);
 
-      function PlatformRainbowColorFunct(z,Min,Max : float64) : TPlatformColor;
+      function LocalIP: string;
 
-      procedure tColortoHLS(Color : tColor; var h,l,s : float64);
-      function HLStoTcolor(H,L,S : float64) : tcolor;
-      procedure RGBtripToHLS(Color : tRGBTriple; var h,l,s : float64);
-
-      function MonthColor(i : integer) : TPlatformColor;
-      function SameColor(c1,c2 : tPlatformColor) : boolean; inline;
-
-//legends
-      function MakeColorScaleBitmap(width,height : integer; ColorScheme : tLegendColors; ColorTable : tColorTableDefinitions) : tMyBitmap;
-      function HorizontalLegendOnBitmap(Colors : tColors256; Values : array of float64; Units,LegendTitle : shortstring; LegendSize : integer = 1) : tMyBitmap;
-      function DefaultHorizontalLegendOnBitmap(Min,Max : float64; Units,LegendTitle : shortstring; Legend : tLegendColors; ChloroplethScheme : shortstring = ''; Reverse : boolean = false) : tMyBitmap;
-      function DefaultVerticalLegendOnBitmap(Min,Max : float64; Units,LegendTitle : shortstring; Legend : tLegendColors; ChloroplethScheme : shortstring = ''; Reverse : boolean = false) : tMyBitmap;
-      function VerticalLegendOnBitmap(Colors : tColors256; Values : array of float64; Units : shortstring; LegendTitle : shortstring = '') : tMyBitmap;
-
-//font routines
-      procedure LoadMyFontIntoWindowsFont(MyFont : tMyFont; WindFont : tFont);
-      procedure GetMyFontFromWindowsFont(var MyFont : tMyFont; WindFont : tFont);
-      procedure InitializeMyFont(var MyFont : tMyFont; Name : shortstring; Size : SmallInt; Color : tPlatformColor);
-      procedure EditMyFont(var MyFont : tMyFont);
-      procedure EditTFont(Font : tFont);
-      function MyFontToString(MyFont : tMyFont) : ShortString;
+      function FontInstalled(Const FontName:String) : Boolean;
 
 
-procedure StopSplashing;
+      //drawing
+         procedure CrossWithHole(Canvas : tCanvas; x,y : integer);
+         procedure ScreenSymbol(Canvas : TCanvas; x,y : integer; Sym : tDrawingSymbol; size: integer; color : TPlatformColor); overload;
+         procedure ScreenSymbol(Canvas : TCanvas; x,y : integer; Symbol : tFullSymbolDeclaration); overload;
+
+            procedure StartCount(Title : ShortString);
+            procedure UpdateCount(HowFar : LongInt);
+            procedure EndCount;
+
+      function ExecuteFile(const FileName, Params, DefaultDir: ANSIstring): THandle;
+      function WinExecAndWait32(FileName : ANSIstring; Wait : boolean = true; Log : boolean = true) : integer;
+
+      function GetFromListZeroBased(InMessage : ANSIstring; var PickedNum : integer; var InList : TStringList; CanCancel : boolean = false; MultiPick : boolean = false) : boolean;
+      function GetFromList(InMessage : ANSIstring; var PickedNum : integer; InList : TStringList; CanCancel : boolean = false) : boolean;    overload;
+      function GetFromList(InMessage : ANSIstring; InList : TStringList; CanCancel : boolean = false) : ShortString; overload;
+      function GetMultipleFromList(InMessage : ANSIstring; var PickedNum : integer; var InList : TStringList; CanCancel : boolean = false) : boolean;
+
+      procedure GetString(Prompt : ShortString; var Input : ShortString; ForceCaps : boolean; ValidChars : characters);
+      procedure GetValidDBfieldname(var fName2 : shortstring);
+
+      procedure QueryTColor(var Color : tColor); overload;
+      procedure QueryColor(var Color : tPlatformColor); overload;
+      procedure QueryColor(BitBtn : tBitBtn; var Color : tPlatformColor); overload;
+      procedure QueryTColor(BitBtn : tBitBtn; var Color : Tcolor); overload;
+      procedure FillComboBoxWithColorPalettes(fName : PathStr; ComboBox1 : tComboBox);
+      procedure GetAngleInRadians(Message : shortstring; var Angle : float64);
+      procedure GetAngle(Mess : shortstring; var theAngle : float64; var AngleMeasure : tAngleMeasure);
+
+      //color routines
+         function ColorString(Color : tRGBTriple) : shortString; overload;
+
+         function GrayColorFunct(i : integer) : TColor;  overload;
+         function GrayColorFunct(z,Min,Max : float64) : TColor; overload; inline;
+         function SpectrumColorFunct(z,Min,Max : float64) : tColor;
+         function RainbowColorFunct(z,Min,Max : float64) : TColor;
+         function TerrainTColor(z,aMin,aMax : float64) : TColor;
+         function ColorToHtml(DColor : TColor) : ShortString;
+
+         function PlatformRainbowColorFunct(z,Min,Max : float64) : TPlatformColor;
+
+         procedure tColortoHLS(Color : tColor; var h,l,s : float64);
+         function HLStoTcolor(H,L,S : float64) : tcolor;
+         procedure RGBtripToHLS(Color : tRGBTriple; var h,l,s : float64);
+
+         function MonthColor(i : integer) : TPlatformColor;
+         function SameColor(c1,c2 : tPlatformColor) : boolean; inline;
+
+      //legends
+         function MakeColorScaleBitmap(width,height : integer; ColorScheme : tLegendColors; ColorTable : tColorTableDefinitions) : tMyBitmap;
+         function HorizontalLegendOnBitmap(Colors : tColors256; Values : array of float64; Units,LegendTitle : shortstring; LegendSize : integer = 1) : tMyBitmap;
+         function DefaultHorizontalLegendOnBitmap(Min,Max : float64; Units,LegendTitle : shortstring; Legend : tLegendColors; ChloroplethScheme : shortstring = ''; Reverse : boolean = false) : tMyBitmap;
+         function DefaultVerticalLegendOnBitmap(Min,Max : float64; Units,LegendTitle : shortstring; Legend : tLegendColors; ChloroplethScheme : shortstring = ''; Reverse : boolean = false) : tMyBitmap;
+         function VerticalLegendOnBitmap(Colors : tColors256; Values : array of float64; Units : shortstring; LegendTitle : shortstring = '') : tMyBitmap;
+
+      //font routines
+         procedure LoadMyFontIntoWindowsFont(MyFont : tMyFont; WindFont : tFont);
+         procedure GetMyFontFromWindowsFont(var MyFont : tMyFont; WindFont : tFont);
+         procedure InitializeMyFont(var MyFont : tMyFont; Name : shortstring; Size : SmallInt; Color : tPlatformColor);
+         procedure EditMyFont(var MyFont : tMyFont);
+         procedure EditTFont(Font : tFont);
+         function MyFontToString(MyFont : tMyFont) : ShortString;
+
+
+      procedure StopSplashing;
 
 {$EndIf}
 
 
-//progress routines, which do nothing in NoProgress is defined
+//progress routines, which do nothing if NoProgress is defined
       procedure StartProgress(Title : ShortString); //overload;
       procedure StartProgressAbortOption(Title : ShortString); //overload;
       procedure UpdateProgressBar(HowFar : float64);
@@ -266,7 +266,7 @@ procedure GetSeparationCharacterUnicode(MenuStr : string; var SepChar : char);
 
 
 {$IfDef MSWindows}
-   procedure StripBlanks(var St : Shortstring);  //overload;{removes blank characters from any ANSIstring}
+   procedure StripBlanks(var St : Shortstring);
 {$Else}
    procedure StripBlanks(var St : ANSIString);  {removes blank characters from any ANSIstring}
 {$EndIf}
@@ -288,6 +288,7 @@ function NoCommas(TheString: ShortString) : shortstring;
 
 procedure SortAndRemoveDuplicates(var StringList : tStringList);
 procedure CopyStringList(FromList : tStringList; var ToList : tStringList);
+procedure RandomizeStringList(var TheList : tStringList; SpareFirst : boolean = true);
 
 function GetFromRequest(InString : ANSIstring; WantField : shortstring) : shortstring;
 function GetFloatFromRequest(InString : ANSIstring; WantField : shortstring) : float64;
@@ -304,12 +305,6 @@ procedure ReadDefault(Prompt : ShortString; var RealVal : float32); overload;
 procedure ReadDefault(Prompt : ShortString;  var WordVal : word); overload;
 
 
-function RGBtrip(r,g,b : integer; a : integer = 255) : TPlatformColor;  inline;
-function GrayRGBtrip(i : integer; a : integer = 255) : TPlatformColor;  inline;
-
-procedure ModifyRGBColor(Color : TPlatformColor; r,g,b : integer; a : integer = 255);
-
-
 //file routines, file name and path names
       function GetExistingFileName(Mess,Filters : ANSIstring; var FName : PathStr) : boolean;
       function GetFileNameDefaultExt(Mess,Filters : ANSIstring; var FName : PathStr; AppendOption : boolean = false) : boolean;
@@ -320,6 +315,7 @@ procedure ModifyRGBColor(Color : TPlatformColor; r,g,b : integer; a : integer = 
       function GetSubDirsInDirectory(BaseDir : PathStr) : tStringList;
       function GetFileSize(FileName : String) : Int64;
       function LastSubDir(Dir : AnsiString) : PathStr;
+
       function GetParentDirectory(path : Ansistring) : Ansistring;
       procedure StripInvalidPathNameChars(var fName : PathStr);
       function CopyFile(SourceFile,DestinationFile : string):  boolean;
@@ -344,9 +340,6 @@ procedure ModifyRGBColor(Color : TPlatformColor; r,g,b : integer; a : integer = 
       function ExtEquals(Ext,Wanted : ExtStr) : boolean;
       function FileExtEquals(fName : PathStr; Wanted : ExtStr) : boolean;
       procedure UnblockFile(fName : PathStr);
-
-      procedure RandomizeStringList(var TheList : tStringList; SpareFirst : boolean = true);
-
 
 //values from strings
       function CheckEditString(Text : string; var OutValue : float64) : boolean; overload;
@@ -383,17 +376,20 @@ procedure ModifyRGBColor(Color : TPlatformColor; r,g,b : integer; a : integer = 
          function DefineColorArray(Palette : shortstring; var NumColors : integer; var ColorsTable : tZTableColors255; Reverse : boolean = false) : boolean;
       {$EndIf}
 
+      function RGBtrip(r,g,b : integer; a : integer = 255) : TPlatformColor;  inline;
+      function GrayRGBtrip(i : integer; a : integer = 255) : TPlatformColor;  inline;
+
+      procedure ModifyRGBColor(Color : TPlatformColor; r,g,b : integer; a : integer = 255);
+
 
 // print routines
 
       {$IfDef ExPrintFile}
       {$Else}
-         //procedure PrintImageForceDPI(Image1 : TImage; TargetDPI : integer; ForceBW : boolean);
          procedure PrintImageToSpecifiedSize(Image1 : TImage; PrinterXInches,PrinterYInches : float64);
       {$EndIf}
 
 
-function CurrentMilitaryTime(WithSeconds : boolean = false) : shortString;
 function ArrayOfCharToString(LenArray : integer; var Chars : array of ANSIchar) : shortstring;
 
 
@@ -411,24 +407,22 @@ function ArrayOfCharToString(LenArray : integer; var Chars : array of ANSIchar) 
       {$EndIf}
 
 //ANSIstring routines with deg/min/sec and time
+      function HoursMinutesString(Time : float64; WithSec : boolean = false) : ShortString;
+      function CurrentMilitaryTime(WithSeconds : boolean = false) : shortString;
       procedure ConvertToDegMinSecString(Value : float64; OutPutMethod : tLatLongMethod;  var DegString,MinString,SecString : string10; HighAccuracy : boolean = true);
       function ConvertToDegreesString(Value : float64; OutPutMethod : tLatLongMethod; HighAccuracy : boolean = true) : shortstring;
       function LatLongDegreeToString(Lat,Long : float64; OutPutLatLongMethod : tLatLongMethod = DecDegrees) : shortstring;
       function LatLongRadToString(Lat,Long : float64; OutPutLatLongMethod : tLatLongMethod = DecDegrees) : shortstring;
       function LatToString(Lat : float64; OutPutLatLongMethod : tLatLongMethod) : shortstring;
       function LongToString(Long : float64;  OutPutLatLongMethod : tLatLongMethod) : shortstring;
-      function HoursMinutesString(Time : float64; WithSec : boolean = false) : ShortString;
       function LatLongToStringForFileName(Lat,Long : float64) : shortstring;
       function LatToString3(Lat : float64) : shortstring;
       function LongToString4(Long : float64) : shortstring;
 
 //format strings with units
-      {$IfDef MICRODEM}
-         function SmartDistanceMetersFormat(d : float64) : shortString;
-         function SmartVolumeFormat(d : float64; DistanceUnits : tDistanceUnits = disMetric) : shortString;
-         function SmartAreaFormat(d : float64) : shortString;
-      {$EndIf}
-
+      function SmartDistanceMetersFormat(d : float64) : shortString;
+      function SmartVolumeFormat(d : float64; DistanceUnits : tDistanceUnits = disMetric) : shortString;
+      function SmartAreaFormat(d : float64) : shortString;
       function SmartNumberPoints(NumPoints : int64) : shortstring;
       function AngleFormat(Angle : float64; Units : tAngleMeasure; ShowUnits : boolean = true) : shortstring;
       function FormatString(TheString : shortString; Len : integer; Justify : tJustify) : shortString;
@@ -3241,6 +3235,16 @@ begin
   result := ExpandFileName(path + '\..');
   if Result[length(Result)] <> '\' then Result := Result +  '\';
 end;
+
+(*
+function JustLastSubDir(Dir : AnsiString) : shortstring;
+var
+   ts : PathStr;
+begin
+   ts := LastSubDir(Dir);
+   Result := Copy(Dir,Length(ts),Length(Dir)-Length(ts) - 1);
+end;
+*)
 
 
 function LastSubDir(Dir : AnsiString) : PathStr;

@@ -4,13 +4,13 @@ unit MEM_Power_spect;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
 
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
-   //{$Define RecordMemPower}
+   {$Define RecordMemPower}
    //{$Define RecordFullMemPower}
 {$EndIf}
 
@@ -54,8 +54,7 @@ implementation
 
 
 uses
-   Petmar,Petmath,CrossCor,DEMCoord;
-
+   Petmar,Petmath,CrossCor,DEMCoord,demdef_routines;
 
 
 procedure GetMemOptions;
@@ -88,44 +87,40 @@ var
    Prof,x,y : integer;
    z : float32;
 begin
-   {$IfDef RecordMemPower}
-   WriteLineToDebugFile('GetMEMPowerSpectra in Col range: ' + IntToStr(GridLimits.XGridLow) + '/' + IntToStr(GridLimits.XGridHigh) +
-       '  Row range: ' + IntToStr(GridLimits.YGridLow) + '/' + IntToStr(GridLimits.YGridHigh));
-   {$EndIf}
+   {$IfDef RecordMemPower} WriteLineToDebugFile('GetMEMPowerSpectra in Col range: ' + GridLimitsToString(GridLimits)); {$EndIf}
    NS_Slope := -999;
    EW_Slope := -999;
 
    with MDDef.MEMPowerDefaults do begin
       Line := TStringList.Create;
       FNames := TStringList.Create;
-      with DEMGlb[WhichDEM],MDDef.MEMPowerDefaults do begin
-         For Prof := 0 to pred(NumProfiles) do begin
-            Line.Clear;
-            y := GridLimits.YGridLow + round( Prof * succ(GridLimits.YGridHigh - GridLimits.YGridLow) / pred(NumProfiles));
-            {$IfDef RecordFullMemPower} WriteLineToDebugFile('y=' + IntToStr(y)); {$EndIf}
-            for x := GridLimits.XGridLow to GridLimits.XGridHigh do begin
-               if DEMGlb[WhichDEM].GetElevMeters(x,y,z) then Line.Add(RealToString(z,8,2));
-            end;
-            fName := MDTempDir + 'E-W' + IntToStr(y) + '.txt';
-            Line.SaveToFile(fName);
-            fNames.Add(fName);
+      For Prof := 0 to pred(NumProfiles) do begin
+         Line.Clear;
+         y := GridLimits.YGridLow + round( Prof * succ(GridLimits.YGridHigh - GridLimits.YGridLow) / pred(NumProfiles));
+         {$IfDef RecordFullMemPower} WriteLineToDebugFile('y=' + IntToStr(y)); {$EndIf}
+         for x := GridLimits.XGridLow to GridLimits.XGridHigh do begin
+            if DEMGlb[WhichDEM].GetElevMeters(x,y,z) then Line.Add(RealToString(z,8,2));
          end;
-         PowerSpectrumByMaximumEntropy(MDDef.MEMPowerDefaults,EW_Slope,EWFFTGraph,AreaName + ' E-W',fNames,succ(GridLimits.XGridHigh-GridLimits.XGridLow),AverageXSpace);   //Gallant and others, 1994, Math.Geol.
-
-         FNames.Clear;
-         For Prof := 0 to pred(NumProfiles) do begin
-            Line.Clear;
-            x := GridLimits.XGridLow + round( Prof * succ(GridLimits.XGridHigh - GridLimits.XGridLow) / pred(NumProfiles));
-            {$IfDef RecordFullMemPower} WriteLineToDebugFile('x=' + IntToStr(x)); {$EndIf}
-            for y := GridLimits.YGridLow to GridLimits.YGridHigh do begin
-               if DEMGlb[WhichDEM].GetElevMeters(x,y,z) then Line.Add(RealToString(z,8,2));
-            end;
-            fName := MDTempDir + 'N-S' + IntToStr(x) + '.txt';
-            Line.SaveToFile(fName);
-            fNames.Add(fName);
-         end;
-         PowerSpectrumByMaximumEntropy(MDDef.MEMPowerDefaults,NS_Slope,NSFFTGraph,AreaName + ' N-S',fNames,succ(GridLimits.YGridHigh - GridLimits.YGridLow ),AverageYSpace);  //Gallant and others, 1994, Math.Geol.
+         fName := MDTempDir + 'E-W' + IntToStr(y) + '.txt';
+         Line.SaveToFile(fName);
+         fNames.Add(fName);
       end;
+      PowerSpectrumByMaximumEntropy(MDDef.MEMPowerDefaults,EW_Slope,EWFFTGraph,DEMGlb[WhichDEM].AreaName + ' E-W',fNames,succ(GridLimits.XGridHigh-GridLimits.XGridLow),DEMGlb[WhichDEM].AverageXSpace);   //Gallant and others, 1994, Math.Geol.
+
+      FNames.Clear;
+      For Prof := 0 to pred(NumProfiles) do begin
+         Line.Clear;
+         x := GridLimits.XGridLow + round( Prof * succ(GridLimits.XGridHigh - GridLimits.XGridLow) / pred(NumProfiles));
+         {$IfDef RecordFullMemPower} WriteLineToDebugFile('x=' + IntToStr(x)); {$EndIf}
+         for y := GridLimits.YGridLow to GridLimits.YGridHigh do begin
+            if DEMGlb[WhichDEM].GetElevMeters(x,y,z) then Line.Add(RealToString(z,8,2));
+         end;
+         fName := MDTempDir + 'N-S' + IntToStr(x) + '.txt';
+         Line.SaveToFile(fName);
+         fNames.Add(fName);
+      end;
+      PowerSpectrumByMaximumEntropy(MDDef.MEMPowerDefaults,NS_Slope,NSFFTGraph,DEMGlb[WhichDEM].AreaName + ' N-S',fNames,succ(GridLimits.YGridHigh - GridLimits.YGridLow ),DEMGlb[WhichDEM].AverageYSpace);  //Gallant and others, 1994, Math.Geol.
+      //end;
       Line.Free;
       FNames.Free;
    end;
@@ -146,10 +141,6 @@ end;
 
 initialization
 finalization
-{$IfDef RecordMemPower}
-   WriteLineToDebugFile('RecordMemPower active in mem_power_spect');
-{$EndIf}
-{$IfDef RecordFullMemPower}
-   WriteLineToDebugFile('RecordFullMemPower active in mem_power_spect');
-{$EndIf}
+   {$IfDef RecordMemPower} WriteLineToDebugFile('RecordMemPower active in mem_power_spect'); {$EndIf}
+   {$IfDef RecordFullMemPower} WriteLineToDebugFile('RecordFullMemPower active in mem_power_spect'); {$EndIf}
 end.

@@ -4,9 +4,8 @@ unit us_properties;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2022 Peter L. Guth  }
+{ Copyright (c) 2023 Peter L. Guth  }
 {___________________________________}
-
 
 
 {$I nevadia_defines.inc}
@@ -32,9 +31,9 @@ uses
 
 {$IfDef VCL}
    function GetCounty(Lat,Long : float64; var GeoName : ShortString) : boolean;
-   function GetCountyFIPS(Lat,Long : float64; var GeoName : ShortString) : boolean;
-   function GetState(Lat,Long : float64; var GeoName : ShortString) : boolean;
-   function GetStateAbbrev(Lat,Long : float64; var GeoName : ShortString) : boolean;
+   //function GetCountyFIPS(Lat,Long : float64; var GeoName : ShortString) : boolean;
+   //function GetState(Lat,Long : float64; var GeoName : ShortString) : boolean;
+   //function GetStateAbbrev(Lat,Long : float64; var GeoName : ShortString) : boolean;
    function GetUSGSQuadName(Lat,Long : float64; var GeoName : ShortString) : boolean;
 
    procedure FennemanOutlines(MapOwner : DEMMapF.tMapForm; var Bitmap : tMyBitmap);
@@ -119,7 +118,7 @@ begin
    {$IfDef USpropertiesTrack} WriteLineToDebugFile('GetUSPropertiesString got ' + USName); {$EndIf}
 end;
 
-
+(*
 function GetUSPropertiesFloat(var db : integer; fName : PathStr; Field1,Field2,Field3,Field4 : ShortString; var Float1,Float2,Float3,Float4 : float64; Lat,Long : float64) : boolean;
 begin
    Result := false;
@@ -134,7 +133,21 @@ begin
    end;
 end;
 
+function GetStateAbbrev(Lat,Long : float64; var GeoName : ShortString) : boolean;
+begin
+   Result := GetUSPropertiesString(County,CountyGISFileName,'STATE','','','','',Lat,Long,GeoName);
+end;
+
+function GetCountyFIPS(Lat,Long : float64; var GeoName : ShortString) : boolean;
+begin
+   Result := GetUSPropertiesString(County,CountyGISFileName,'FIPS','','','','',Lat,Long,GeoName);
+end;
+
+*)
+
+
 function GetUSGSQuadName(Lat,Long : float64; var GeoName : ShortString) : boolean;
+//kept for use in DragonPlot
 begin
    Result := GetUSPropertiesString(USGSQuadNames,'us\usgs_24K_quads\24kgrid' + DefaultDBExt,'NAME','STATE','',',  ','',Lat,Long,GeoName);
 end;
@@ -145,17 +158,6 @@ begin
    Result := GetUSPropertiesString(States,StateGISFileName,'STATE','','','','',Lat,Long,GeoName);
 end;
 
-
-function GetStateAbbrev(Lat,Long : float64; var GeoName : ShortString) : boolean;
-begin
-   Result := GetUSPropertiesString(County,CountyGISFileName,'STATE','','','','',Lat,Long,GeoName);
-end;
-
-
-function GetCountyFIPS(Lat,Long : float64; var GeoName : ShortString) : boolean;
-begin
-   Result := GetUSPropertiesString(County,CountyGISFileName,'FIPS','','','','',Lat,Long,GeoName);
-end;
 
 
 function GetCounty(Lat,Long : float64; var GeoName : ShortString) : boolean;
@@ -208,7 +210,7 @@ initialization
 finalization
    CloseDataBases;
    {$IfDef USpropertiesTrack} WriteLineToDebugFile('USpropertiesTrack in US_properties'); {$EndIf}
-   {$IfDef RecordDBClosing}  WriteLineToDebugFile('RecordDBClosing in US_properties'); {$EndIf}
+   {$IfDef RecordDBClosing} WriteLineToDebugFile('RecordDBClosing in US_properties'); {$EndIf}
 end.
 
 

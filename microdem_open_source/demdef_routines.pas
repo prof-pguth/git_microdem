@@ -316,6 +316,8 @@ function VertDatumName(VerticalCSTypeGeoKey : integer) : shortstring;
 var
    VegDenstColors : array[0..255] of tPlatformColor;
 
+procedure MaskAllDEMsWithGeoBoundingBox(bb : sfboundBox);
+
 
 implementation
 
@@ -368,6 +370,18 @@ uses
    DEM_indexes,
    DEMStat,
    DataBaseCreate;
+
+procedure MaskAllDEMsWithGeoBoundingBox(bb : sfboundBox);
+var
+   DEM : integer;
+begin
+   for DEM := 1 to MaxDEMDataSets do begin
+      if ValidDEM(DEM) then begin
+         DEMGlb[DEM].SelectionMap.SubsetAndZoomMapFromGeographicBounds(bb);
+      end;
+   end;
+end;
+
 
 
 function VertDatumName(VerticalCSTypeGeoKey : integer) : shortstring;
@@ -2291,7 +2305,7 @@ var
          AParameter('DEM','NoDEMInterpolations',NoDEMInterpolations,false);
          AParameter('DEM','PromptToSaveNewDEMs',PromptToSaveNewDEMs,false);
          AParameter('DEM','DefaultDEMFilter',DefaultDEMFilter,1);
-         AParameter('DEM','WrapETOPO',WrapETOPO,false);
+         //AParameter('DEM','WrapETOPO',WrapETOPO,false);
          AParameter('DEM','DoubleEtopoImport',DoubleEtopoImport,false);
          AParameter('DEM','FavDEMSeries1',FavDEMSeries1,'');
          AParameter('DEM','FavDEMSeries2',FavDEMSeries2,'');
@@ -2389,31 +2403,36 @@ var
    procedure DEMIXSettings;
    begin
       with MDIniFile,MDDef do begin
-            AParameter('DEMIX','DEMIX_criterion_tolerance_fName',DEMIX_criterion_tolerance_fName,'');
-            AParameter('DEMIX','DEMIX_base_dir',DEMIX_base_dir,'');
-            //AParameter('DEMIX','DEMIXhalfSecDir',DEMIXhalfSecDir,'');
-            AParameter('DEMIX','DEMIX_default_area',DEMIX_default_area,'');
-            AParameter('DEMIX','DEMIX_default_tile',DEMIX_default_tile,'');
+         AParameter('DEMIX','DEMIX_criterion_tolerance_fName',DEMIX_criterion_tolerance_fName,'');
+         AParameter('DEMIX','DEMIX_base_dir',DEMIX_base_dir,'');
+         //AParameter('DEMIX','DEMIXhalfSecDir',DEMIXhalfSecDir,'');
+         AParameter('DEMIX','DEMIX_default_area',DEMIX_default_area,'');
+         AParameter('DEMIX','DEMIX_default_tile',DEMIX_default_tile,'');
 
-            AParameter('DEMIX','DEMIX_xsize',DEMIX_xsize,900);
-            AParameter('DEMIX','DEMIX_ysize',DEMIX_ysize,600);
-            AParameter('DEMIX','DEMIX_DoCHM',DEMIX_DoCHM,true);
-            AParameter('DEMIX','DEMIX_DoAirOrDirt',DEMIX_DoAirOrDirt,true);
-            AParameter('DEMIX','DEMIX_DoElevDiff',DEMIX_DoElevDiff,true);
-            AParameter('DEMIX','DEMIX_DoSlopeDiff',DEMIX_DoSlopeDiff,true);
-            AParameter('DEMIX','DEMIX_DoRuffDiff',DEMIX_DoRuffDiff,true);
-            AParameter('DEMIX','DEMIX_DoHalfSecDEMs',DEMIX_DoHalfSecDEMs,true);
-            AParameter('DEMIX','DEMIX_DoElevParamGraphs',DEMIX_DoElevParamGraphs,true);
-            AParameter('DEMIX','DEMIXCompositeImage',DEMIXCompositeImage,true);
-            AParameterShortFloat('DEMIX','DEMIXSimpleTolerance',DEMIXSimpleTolerance,2.0);
-            AParameterShortFloat('DEMIX','DEMIXSlopeTolerance',DEMIXSlopeTolerance,2.0);
-            AParameterShortFloat('DEMIX','DEMIXRuffTolerance',DEMIXRuffTolerance,2.0);
-            AParameter('DEMIX','MakeCOP_ALOS_diffMaps',MakeCOP_ALOS_diffMaps,false);
-            AParameter('DEMIX','MakeCOP_ALOS_Cat_Maps',MakeCOP_ALOS_Cat_Maps,false);
-            AParameter('DEMIX','MakeCOP_FABDEM_diffMaps',MakeCOP_FABDEM_diffMaps,false);
-            AParameter('DEMIX','MakeCOP_ALOS_Best_Map',MakeCOP_ALOS_Best_Map,true);
-            AParameter('DEMIX','MakeRGB_Best_Map',MakeRGB_Best_Map,true);
-            AParameter('DEMIX','RGBbestSeparates',RGBbestSeparates,true);
+         AParameter('DEMIX','DEMIX_xsize',DEMIX_xsize,900);
+         AParameter('DEMIX','DEMIX_ysize',DEMIX_ysize,600);
+         AParameter('DEMIX','DEMIX_DoCHM',DEMIX_DoCHM,true);
+         AParameter('DEMIX','DEMIX_DoAirOrDirt',DEMIX_DoAirOrDirt,true);
+         AParameter('DEMIX','DEMIX_DoElevDiff',DEMIX_DoElevDiff,true);
+         AParameter('DEMIX','DEMIX_DoSlopeDiff',DEMIX_DoSlopeDiff,true);
+         AParameter('DEMIX','DEMIX_DoRuffDiff',DEMIX_DoRuffDiff,true);
+         AParameter('DEMIX','DEMIX_DoHalfSecDEMs',DEMIX_DoHalfSecDEMs,true);
+         AParameter('DEMIX','DEMIX_DoElevParamGraphs',DEMIX_DoElevParamGraphs,true);
+         AParameter('DEMIX','DEMIXCompositeImage',DEMIXCompositeImage,true);
+         AParameterShortFloat('DEMIX','DEMIXSimpleTolerance',DEMIXSimpleTolerance,2.0);
+         AParameterShortFloat('DEMIX','DEMIXSlopeTolerance',DEMIXSlopeTolerance,2.0);
+         AParameterShortFloat('DEMIX','DEMIXRuffTolerance',DEMIXRuffTolerance,2.0);
+         AParameter('DEMIX','MakeCOP_ALOS_diffMaps',MakeCOP_ALOS_diffMaps,false);
+         AParameter('DEMIX','MakeCOP_ALOS_Cat_Maps',MakeCOP_ALOS_Cat_Maps,false);
+         AParameter('DEMIX','MakeCOP_FABDEM_diffMaps',MakeCOP_FABDEM_diffMaps,false);
+         AParameter('DEMIX','MakeCOP_ALOS_Best_Map',MakeCOP_ALOS_Best_Map,true);
+         AParameter('DEMIX','MakeRGB_Best_Map',MakeRGB_Best_Map,true);
+         AParameter('DEMIX','RGBbestSeparates',RGBbestSeparates,true);
+
+         AParameter('DEMIX','SSIM_elev',SSIM_elev,true);
+         AParameter('DEMIX','SSIM_slope',SSIM_slope,true);
+         AParameter('DEMIX','SSIM_ruff',SSIM_ruff,true);
+         AParameter('DEMIX','SSIM_rri',SSIM_rri,true);
       end;
    end;
 
@@ -2977,6 +2996,7 @@ var
          AParameter('Menus','ShowDataManipulation',ShowDataManipulation,true);
          AParameter('Menus','ShowGlobalDEM',ShowGlobalDEM,true);
          AParameter('Menus','ShowBlueMarble',ShowBlueMarble,true);
+         AParameter('Menus','ShowDEMIX',ShowDEMIX,false);
          AParameter('Menus','ShowOpenGL',ShowOpenGL,true);
          AParameter('Menus','ShowMultigrids',ShowMultigrids,true);
          //AParameter('Menus','ShowGISlabs',ShowGISLabs,false);
@@ -3249,7 +3269,7 @@ var
          AParameter('MapDraw','CartMovieSteps', CartMovieSteps,2);
          AParameter('MapDraw','InvertGrayScale',InvertGrayScale,false);
          AParameter('MapDraw','MonochromeColor',MonochromeColor,0);
-         AParameter('MapDraw','LeftLatGlobalDEM',LeftLatGlobalDEM,0);
+         //AParameter('MapDraw','LeftLatGlobalDEM',LeftLatGlobalDEM,0);
          AParameter('MapDraw','LargeScaleWorldOutlinePixelSize',LargeScaleWorldOutlinePixelSize,250);
          AParameter('MapDraw','MedScaleWorldOutlinePixelSize',MedScaleWorldOutlinePixelSize,1500);
          AParameter('MapDraw','SmallScaleWorldOutlinePixelSize',SmallScaleWorldOutlinePixelSize,10000);

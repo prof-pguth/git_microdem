@@ -16,7 +16,7 @@ var
 
    procedure MakeOne(DEMType,Param : shortString);
    var
-      zvs : array[1..MaxTestDEM] of ^Petmath.bfarray32;
+      zvs : array[1..MaxDEMIXDEM] of ^Petmath.bfarray32;
       i,npts,DEM : integer;
       Dist,Legs : tStringList;
       Graph : tThisBaseGraph;
@@ -24,30 +24,30 @@ var
    begin
       Dist := tStringList.Create;
       Legs := tStringList.Create;
-      for DEM := 1 to MaxTestDEM do begin
+      for DEM := 1 to NumDEMIXDEM  do begin
          Legs.Add(DEMIXDEMTypeName[DEM]);
       end;
       GISdb[DB].ApplyGISFilter('REF_TYPE=' + QuotedStr(DEMtype) + ' AND LAND_TYPE=' + QuotedStr('ALL') + ' AND CRITERION=' + QuotedStr(Param));
       GISdb[DB].EmpSource.Enabled := false;
-      for I := 1 to MaxTestDEM do New(zvs[i]);
+      for I := 1 to NumDEMIXDEM  do New(zvs[i]);
       npts := 0;
        GISdb[DB].MyData.First;
        while not GISdb[DB].MyData.eof do begin
-          for DEM := 1 to MaxTestDEM do begin
+          for DEM := 1 to NumDEMIXDEM  do begin
              zvs[DEM]^[npts] := GISdb[DB].MyData.GetFieldByNameAsFloat(DEMIXDEMTypeName[DEM]);
           end;
           inc(Npts);
           GISdb[DB].MyData.Next;
        end;
 
-       for I := 1 to MaxTestDEM do begin
+       for I := 1 to NumDEMIXDEM  do begin
           Dist.Add(SaveSingleValueSeries(npts,zvs[i]^));
           Dispose(zvs[i]);
        end;
        TStr := Param + ' compared to reference ' + DEMtype;
        Graph := CreateMultipleHistogram(MDDef.CountHistograms,Dist,Legs,TStr,TStr,100,Min,Max,BinSize);
 
-      for I := 1 to MaxTestDEM do begin
+      for I := 1 to NumDEMIXDEM  do begin
          Graph.GraphDraw.FileColors256[i] := DEMIXColorFromDEMName(Graph.GraphDraw.LegendList[pred(i)]);
       end;
       Graph.GraphDraw.InsideMarginLegend := Corner;
@@ -761,6 +761,38 @@ begin
    wmdem.SetPanelText(3,'');
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXTileSummary out'); {$EndIf}
 end {DEMIXTileSummary};
+
+
+procedure DEMIXtile_inventory(DBonTable : integer);
+var
+   TileList,Findings,DEMs : tStringList;
+   TStr : shortstring;
+   fName : PathStr;
+   i : Integer;
+begin
+   GISdb[DBonTable].EmpSource.Enabled := false;
+   TileList := GISdb[DBonTable].MyData.UniqueEntriesInDB('DEMIX_TILE');
+   Findings := tStringList.Create;
+   Findings.Add('COUNTRY,AREA,DEMIX_TILE,DEMS');
+   StartProgress('Inventory tiles');
+   for i := 0 to pred(TileList.Count) do begin
+      wmdem.SetPanelText(3,'Tile ' + IntToStr(i) + '/' + IntToStr(TileList.Count));
+      GISdb[DBonTable].EmpSource.Enabled := false;
+      if (i mod 10 = 0) then UpdateProgressBar(i/TileList.Count);
+      GISdb[DBonTable].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(TileList.Strings[i]),false);
+      DEMs := GISdb[DBonTable].MyData.UniqueEntriesInDB('REF_TYPE');
+      TStr := DEMs[0];
+      if (DEMs.Count > 1) then TStr := TStr + ' + ' +  DEMs[1];
+      Findings.Add(GISdb[DBonTable].MyData.GetFieldByNameAsString('COUNTRY') + ',' + GISdb[DBonTable].MyData.GetFieldByNameAsString('AREA') + ',' +  TileList.Strings[i] + ',' + TStr);
+   end;
+   GISdb[DBonTable].ClearGISFilter;
+   fName := NextFileNumber(MDTempDir,'DEMIX_tile_inventory','.dbf');
+   StringList2CSVtoDB(Findings,fName);
+   GISdb[DBonTable].ShowStatus;
+   wmdem.SetPanelText(3,'');
+end;
+
+
 
 
 

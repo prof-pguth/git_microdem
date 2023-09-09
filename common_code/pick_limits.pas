@@ -1,7 +1,7 @@
 unit pick_limits;
 
 {^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of ianMICRODEM GIS Program    }
+{ Part of MICRODEM GIS Program       }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
 { Copyright (c) 2023 Peter L. Guth   }
@@ -108,12 +108,7 @@ begin
     Label7.Caption := IntToStr(Succ(GridLimits.XGridHigh-GridLimits.XGridLow)) + ' cols x ' + IntToStr(Succ(GridLimits.YGridHigh - GridLimits.YGridLow)) + ' rows';
     EditChanges := true;
 
-    {$IfDef RecordGetGridLimits}
-    WriteLineToDebugFile('TpicklimitsForm.LabelLimits in',true);
-    WriteLineToDebugFile('NW corner: ' + Label5.Caption);
-    WriteLineToDebugFile('SE corner: ' + Label6.Caption);
-    WriteLineToDebugFile(Label7.Caption);
-    {$EndIf}
+    {$IfDef RecordGetGridLimits} WriteLineToDebugFile('TpicklimitsForm.LabelLimits in,  NW corner: ' + Label5.Caption + 'SE corner: ' + Label6.Caption + '  ' + Label7.Caption); {$EndIf}
 end;
 
 procedure TpicklimitsForm.BitBtn1Click(Sender: TObject);

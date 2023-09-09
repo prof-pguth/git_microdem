@@ -29,6 +29,7 @@ object wmdem: Twmdem
     Left = 0
     Top = 0
     Width = 2046
+    Height = 29
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34
@@ -3495,6 +3496,7 @@ object wmdem: Twmdem
     Top = 336
     object Subsetlarge3DEPareas1: TMenuItem
       Caption = 'Subset large 3DEP areas'
+      Enabled = False
       OnClick = Subsetlarge3DEPareas1Click
     end
     object ProcessGDALshiftforStateLineexperimental1: TMenuItem
@@ -3514,13 +3516,6 @@ object wmdem: Twmdem
       Caption = 'Merge 3DEP reference DEMs by area'
       OnClick = Merge3DEPreferenceDEMsbyarea1Click
     end
-    object N36: TMenuItem
-      Caption = '-'
-    end
-    object Extract1: TMenuItem
-      Caption = 'Extract EDTM for test areas'
-      OnClick = Extract1Click
-    end
     object N42: TMenuItem
       Caption = '-'
     end
@@ -3536,9 +3531,19 @@ object wmdem: Twmdem
       Caption = 'Create half second reference DEMs'
       OnClick = CreatehalfsecondreferenceDEMs1Click
     end
+    object N44: TMenuItem
+      Caption = '-'
+    end
+    object Extract1: TMenuItem
+      Caption = 'Extract EDTM for test areas'
+      OnClick = Extract1Click
+    end
     object Merge1secreferenceDEMsfromVisioterra1: TMenuItem
       Caption = 'Merge 1 sec reference DEMs from Visioterra'
       OnClick = Merge1secreferenceDEMsfromVisioterra1Click
+    end
+    object N43: TMenuItem
+      Caption = '-'
     end
     object Processdifferencestatisticspertile1: TMenuItem
       Caption = 'Process difference statistics per tile'
@@ -3553,6 +3558,7 @@ object wmdem: Twmdem
     end
     object Fullprocessingchain1: TMenuItem
       Caption = 'Full processing chain'
+      Enabled = False
       OnClick = Fullprocessingchain1Click
     end
     object N40: TMenuItem

@@ -768,7 +768,7 @@ begin
          if (DEMtoClose = SedThickDEM) then SedThickDEM := 0;
          if (DEMtoClose = SedTypeDEM) then SedTypeDEM := 0;
 
-         for j := 1 to MaxTestDEM do begin
+         for j := 1 to MaxDEMIXDEM do begin
             if (TestDEM[j] = DEMtoClose) then TestDEM[j] := 0;
          end;
 

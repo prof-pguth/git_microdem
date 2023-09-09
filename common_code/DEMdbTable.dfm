@@ -2147,6 +2147,10 @@ object dbtablef: Tdbtablef
       Caption = 'Mask DEM/grid'
       OnClick = MaskDEMgrid1Click
     end
+    object MaskallopenDEMgrids1: TMenuItem
+      Caption = 'Mask all open DEM/grids'
+      OnClick = MaskallopenDEMgrids1Click
+    end
     object Rangecircles1: TMenuItem
       Caption = 'Range circles'
       OnClick = Rangecircles1Click

@@ -30,10 +30,10 @@ unit DEMCoord;
 
    {$IFDEF DEBUG}
       {$Define RecordDEMIX}
-      {$Define RecordMapType}
-      {$Define TimePointParameters}
+      //{$Define RecordMapType}
+      //{$Define TimePointParameters}
+      {$Define RecordDEMIXResample}
       //{$Define TrackHorizontalDatum}
-      //{$Define RecordDEMIXResample}
       //{$Define RecordVertDatumShift}
       //{$Define TrackPixelIs}
       //{$Define TrackDEMCorners}
@@ -2753,13 +2753,14 @@ begin
       {$IfDef RecordDEMMemoryAllocations} WriteLineToDebugFile('tDEMDataSet.AllocateDEMMemory, allocated'); {$EndIf}
       if (InitDEM = InitDEMmissing) then SetEntireGridMissing
       else if (InitDEM = InitDEMvalue) then SetEntireGridToConstant(InitVal);
-      {$IfDef RecordDEMMemoryAllocations} WriteLineToDebugFile('tDEMDataSet.AllocateDEMMemory, initialized'); {$EndIf}
+      {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMMemoryAllocations)} WriteLineToDebugFile('tDEMDataSet.AllocateDEMMemory out  proj=' + DEMMapProjection.ProjDebugName); {$EndIf}
    end
    else begin
-      AllocateDEMMemory := false;
-      MessageToContinue('Grid too large (Cols=' + IntToStr(DEMheader.NumCol) + ', rows=' + IntToStr(DEMheader.NumRow) + ')');
+      Result := false;
+      {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMMemoryAllocations)}
+         HighlightLineToDebugFile(AreaName + '  Grid too large (Cols=' + IntToStr(DEMheader.NumCol) + ', rows=' + IntToStr(DEMheader.NumRow) + ')');
+      {$EndIf}
    end;
-   {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMMemoryAllocations)} WriteLineToDebugFile('tDEMDataSet.AllocateDEMMemory out  proj=' + DEMMapProjection.ProjDebugName); {$EndIf}
 end;
 
 
@@ -3783,9 +3784,11 @@ begin
    else if (DEMheader.DEMPrecision = LongWordDEM) then Result := 'long word (unsigned 4 byte)'
    else if (DEMheader.DEMPrecision = SmallIntDEM) then Result := '2-byte int';
    Result := ColsRowsString + '  ' + Result + '  ' + zRange + HorizontalDEMSpacing;
-   if (not Short) then Result := Result + MessLineBreak + ' Datum: ' +  DigitizeDatumName[DEMheader.DigitizeDatum] +  MessLineBreak + ' utm=' + IntToStr(DEMheader.UTMZone) + DEMheader.LatHemi;
+   if (not Short) then begin
+      if DEMheader.DigitizeDatum in [0..14] then Result := Result + MessLineBreak + ' Datum: ' +  DigitizeDatumName[DEMheader.DigitizeDatum] ;
+      Result := Result +  MessLineBreak + ' utm=' + IntToStr(DEMheader.UTMZone) + DEMheader.LatHemi;
+   end;
 end;
-
 
 
 function tDEMDataSet.PixelIsString : AnsiString;
@@ -4070,7 +4073,6 @@ finalization
    {$IfDef RecordMerge} WriteLineToDebugFile('RecordMergeProblems in read_dem'); {$EndIf}
    {$IfDef RecordOpenMap} WriteLineToDebugFile('RecordOpenMapProblems in read_dem'); {$EndIf}
    {$IfDef RecordAllImport} WriteLineToDebugFile('RecordAllImportProblems in read_dem (real slowdown)'); {$EndIf}
-   {$IfDef RecordCreateNewDEM} WriteLineToDebugFile('RecordCreateNewDEM in read_dem'): {$EndIf}
    {$IfDef RecordGDAL} WriteLineToDebugFile('RecordGDALProblems in read_dem'); {$EndIf}
    {$IfDef RecordWorldFile} WriteLineToDebugFile('RecordWorldFileProblems in read_dem'); {$EndIf}
    {$IfDef RecordLOS} WriteLineToDebugFile('RecordLOSProblems in demcoord'); {$EndIf}

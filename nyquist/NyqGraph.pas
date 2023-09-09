@@ -290,6 +290,7 @@ var
    wave,time   : float64;
    coord : tGraphPoint32;
    ThisGraph    : tThisBaseGraph;
+   FFTGraph : TFFTGraph;
 begin
    FFTGraph := TFFTGraph.Create(Application);
    FFTGraph.Caption := 'FFT Power spectrum with sampling interval:  ' + RealToString(SamplingInterval,-8,-2) + '  from Period:  ' + RealToString(Period,-8,-2);

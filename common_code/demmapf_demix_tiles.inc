@@ -8,79 +8,9 @@
 
 {include file for demmapf.pas}
 
-(*
-procedure ResampleHalfSecondForDEMIX(DEM : integer; OutPath : PathStr = '');
-var
-   NewDEM,NewDEM2 : integer;
-   BasefName,fName : PathStr;
-   Spacing : float32;
-begin
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile(''); WriteLineToDebugFile('ResampleForDEMIX DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
-   SaveBackupDefaults;
-   MDDef.DefDEMMap := mtDEMBlank;
-
-   if (OutPath = '') then begin
-      OutPath := ExtractFilePath(DEMGlb[DEM].DEMFileName);
-      BaseFName := '';
-   end
-   else begin
-      BaseFName := 'md_' + DEMGlb[DEM].AreaName + '_';
-   end;
-
-   MDDef.LidarGridProjection := ArcSecDEM;
-
-   MDdef.DefLidarGeoGridSizeX := 0.5;
-   MDdef.DefLidarGeoGridSizeY := 0.5;
-
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX 0.5 sec area'); {$EndIf}
-   MDDef.LasDEMPixelIs := 1; //area
-   fName := OutPath + BaseFName + 'ref_0.5sec_area.tif';
-   NewDEM := DEMGlb[DEM].ResampleByAveraging(true,false,fName);
-   CloseSingleDEM(newDEM);
-
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX 0.5 sec point'); {$EndIf}
-   MDDef.LasDEMPixelIs := 2; //point
-   fName := OutPath + BaseFName + 'ref_0.5sec_point.tif';
-   NewDEM := DEMGlb[DEM].ResampleByAveraging(true,false,fName);
-   CloseSingleDEM(newDEM);
-
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX 1 sec area'); {$EndIf}
-   MDdef.DefLidarGeoGridSizeX := 1;
-   MDdef.DefLidarGeoGridSizeY := 1;
-   MDDef.LasDEMPixelIs := 1; //area
-
-   fName := OutPath + BaseFName + 'ref_1sec_area.tif';
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX, ' + fName); {$EndIf}
-   NewDEM := DEMGlb[DEM].ResampleByAveraging(true,false,fName);
-
-   fName := OutPath + BaseFName + 'upsample_0.5sec_area.tif';
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX, ' + fName); {$EndIf}
-   Spacing := 0.5;
-   NewDEM2 := DEMGlb[NewDEM].ReinterpolateLatLongDEM(Spacing);
-   DEMGlb[NewDEM2].SaveAsGeotiff(FName);
-   CloseSingleDEM(newDEM2);
-   CloseSingleDEM(newDEM);
-
-   MDDef.LasDEMPixelIs := 2; //point
-
-   fName := OutPath + BaseFName + 'ref_1sec_point.tif';
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX, ' + fName); {$EndIf}
-   NewDEM := DEMGlb[DEM].ResampleByAveraging(true,false,fName);
-
-   fName := OutPath + BaseFName + 'upsample_0.5sec_point.tif';
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX, ' + fName); {$EndIf}
-   NewDEM2 := DEMGlb[NewDEM].ReinterpolateLatLongDEM(Spacing);
-   DEMGlb[NewDEM2].SaveAsGeotiff(FName);
-   CloseSingleDEM(newDEM2);
-   CloseSingleDEM(newDEM);
-
-   RestoreBackupDefaults;
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('Out ResampleForDEMIX DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
-end;
-*)
-
 
 procedure ResampleForUTM_GeoComparison(DEM : integer; OutPath : PathStr = '');
+//   9/8/2023, check if this is really needed; only called by TMapForm.ComapreUTMvsgeographic1Click(Sender: TObject);
 var
    NewDEM1, NewDEM2, NewDEM3 : integer;
    fName : PathStr;
@@ -138,6 +68,87 @@ const
              else if Lat < 85 then Result := 30
              else Result := 60;
           end;
+
+function CreateDEMIXTileShapefile(WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false) : shortstring;
+const
+   SegsPerSide = 1;
+var
+   xminutes,yminutes,LongHi,LowLat,HighLat,LongLow,Wide,High,Bearing : float64;
+   FirstLat, LastLat, FirstLong, LastLong, Lat,Long, yt,y,i,xtiles : integer;
+   xch : integer;
+   bb : sfBoundBox;
+   ShapeFileCreator : tShapeFileCreation;
+begin
+   {$If Defined(RecordCartoFull)} WriteLineToDebugFile('TMapForm.LoadDEMIXtileOutlines in ' + sfBoundBoxToString(WantBoundBoxGeo)); {$EndIf}
+   if (WantBoundBoxGeo.ymin < 0) then FirstLat := trunc(WantBoundBoxGeo.ymin - 1)
+   else FirstLat := trunc(WantBoundBoxGeo.yMin);
+   LastLat := trunc(WantBoundBoxGeo.yMax+1);
+   if (WantBoundBoxGeo.xMin < 0) then FirstLong := trunc(WantBoundBoxGeo.xMin - 1)
+   else FirstLong := trunc(WantBoundBoxGeo.xMin);
+   LastLong := trunc(WantBoundBoxGeo.xMax+1);
+   Result := Petmar.NextFileNumber(MDTempDir, 'demix_tiles_',DefaultDBExt);
+
+   ShapeFileCreator := tShapeFileCreation.Create(WGS84DatumConstants,Result,true,5);
+   ShapeFileCreator.Table.InsureFieldPresentAndAdded(ftString,'LETTERS',2);
+   if AddGridFull then ShapeFileCreator.Table.InsureFieldPresentAndAdded(ftFloat,'GRID_FULL',9,2);
+   if AddTileSize then begin
+      ShapeFileCreator.Table.InsureFieldPresentAndAdded(ftFloat,'TILE_WIDE',9,3);
+      ShapeFileCreator.Table.InsureFieldPresentAndAdded(ftFloat,'TILE_HIGH',9,3);
+      ShapeFileCreator.Table.InsureFieldPresentAndAdded(ftFloat,'TILE_KM2',9,3);
+   end;
+
+   //NumTiles := 0;
+   yminutes := 6 / 60;
+   yt := 10;
+   StartProgress('tiles');
+   for Lat := FirstLat to LastLat do begin
+      {$If Defined(RecordCartoFull)} WriteLineToDebugFile('Lat=' + IntToStr(Lat)); {$EndIf}
+      UpdateprogressBar((Lat-FirstLat)/(LastLat - FirstLat));
+
+      xminutes := DEMIXXMinuteIncr(Lat) / 60;
+      xtiles := 60 div DEMIXXMinuteIncr(Lat);
+      for y := 0 to pred(yt) do begin
+         LowLat := Lat + Y * yminutes;
+         HighLat := LowLat + yminutes;
+         if ((HighLat > WantBoundBoxGeo.YMin) and (LowLat < WantBoundBoxGeo.YMax)) then begin
+            for Long := FirstLong to LastLong do begin
+               {$If Defined(RecordCartoFull)} WriteLineToDebugFile('Long=' + IntToStr(Long)); {$EndIf}
+               LongLow := Long;
+               LongHi := Long + xminutes;
+               xch := 0;
+               for i := 0 to pred(xtiles) do  begin
+                  LongLow := Long + i * xminutes;
+                  LongHi := LongLow + xminutes;
+                  if ((LongLow < WantBoundBoxGeo.xMax) and (LongHi > WantBoundBoxGeo.xMin)) then begin
+                     ShapeFileCreator.RecordName := LatToString3(Lat) + DEMIXLatLetters[y] + LongToString4(Long) + DEMIXLongLetters[xch];
+                     {$IfDef RecordCartoFull} WriteLineToDebugFile(ShapeFileCreator.RecordName); {$EndIf}
+                     bb.xmin := LongLow;
+                     bb.xmax := LongHi;
+                     bb.ymin := LowLat;
+                     bb.ymax := HighLat;
+                     ShapeFileCreator.AddBoundBoxToShapeStream(bb);
+                     ShapeFileCreator.Table.Edit;
+                     ShapeFileCreator.Table.SetFieldByNameAsString('LETTERS',DEMIXLongLetters[xch] + DEMIXLatLetters[y]);
+                     if AddTileSize then begin
+                        VincentyCalculateDistanceBearing(LowLat,0.5*(LongLow + LongHi),HighLat,0.5*(LongLow + LongHi), High,Bearing);
+                        VincentyCalculateDistanceBearing(0.5*(LowLat+HighLat),LongLow,0.5*(LowLat+HighLat),LongHi, Wide,Bearing);
+                        ShapeFileCreator.Table.SetFieldByNameAsFloat('TILE_WIDE',0.001 * Wide);
+                        ShapeFileCreator.Table.SetFieldByNameAsFloat('TILE_HIGH',0.001 * High);
+                        ShapeFileCreator.Table.SetFieldByNameAsFloat('TILE_KM2',0.001 * Wide * 0.001 * High);
+                     end;
+                     ShapeFileCreator.Table.Post;
+                  end;
+                  inc(xch);
+               end;
+            end;
+         end;
+      end;
+   end;
+   ShapeFileCreator.CloseShapeFiles;
+   AddProjectionFile(Result);
+   EndProgress;
+   {$If Defined(RecordCarto)} WriteLineToDebugFile('TMapForm.LoadDEMIXtileOutlines out '+ sfBoundBoxToString(WantBoundBoxGeo)); {$EndIf}
+end;
 
 
 
@@ -197,88 +208,6 @@ begin
 end;
 
 
-function CreateDEMIXTileShapefile(WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false) : shortstring;
-const
-   SegsPerSide = 1;
-var
-   xminutes,yminutes,LongHi,LowLat,HighLat,LongLow,Wide,High,Bearing : float64;
-   FirstLat, LastLat, FirstLong, LastLong, Lat,Long, yt,y,i,xtiles : integer;
-   xch : integer;
-   bb : sfBoundBox;
-   ShapeFileCreator : tShapeFileCreation;
-begin
-   {$If Defined(RecordCartoFull)} WriteLineToDebugFile('TMapForm.LoadDEMIXtileOutlines in ' + sfBoundBoxToString(WantBoundBoxGeo)); {$EndIf}
-   if (WantBoundBoxGeo.ymin < 0) then FirstLat := trunc(WantBoundBoxGeo.ymin - 1)
-   else FirstLat := trunc(WantBoundBoxGeo.yMin);
-   LastLat := trunc(WantBoundBoxGeo.yMax+1);
-   if (WantBoundBoxGeo.xMin < 0) then FirstLong := trunc(WantBoundBoxGeo.xMin - 1)
-   else FirstLong := trunc(WantBoundBoxGeo.xMin);
-   LastLong := trunc(WantBoundBoxGeo.xMax+1);
-   Result := Petmar.NextFileNumber(MDTempDir, 'demix_tiles_' {+ MapDraw.BaseTitle  + '_'},DefaultDBExt);
-
-   ShapeFileCreator := tShapeFileCreation.Create(WGS84DatumConstants,Result,true,5);
-   ShapeFileCreator.Table.InsureFieldPresentAndAdded(ftString,'LETTERS',2);
-   if AddGridFull then ShapeFileCreator.Table.InsureFieldPresentAndAdded(ftFloat,'GRID_FULL',9,2);
-   if AddTileSize then begin
-      ShapeFileCreator.Table.InsureFieldPresentAndAdded(ftFloat,'TILE_WIDE',9,3);
-      ShapeFileCreator.Table.InsureFieldPresentAndAdded(ftFloat,'TILE_HIGH',9,3);
-      ShapeFileCreator.Table.InsureFieldPresentAndAdded(ftFloat,'TILE_KM2',9,3);
-   end;
-
-   //NumTiles := 0;
-   yminutes := 6 / 60;
-   yt := 10;
-   StartProgress('tiles');
-   for Lat := FirstLat to LastLat do begin
-      {$If Defined(RecordCartoFull)} WriteLineToDebugFile('Lat=' + IntToStr(Lat)); {$EndIf}
-      UpdateprogressBar((Lat-FirstLat)/(LastLat - FirstLat));
-
-      xminutes := DEMIXXMinuteIncr(Lat) / 60;
-      xtiles := 60 div DEMIXXMinuteIncr(Lat);
-      for y := 0 to pred(yt) do begin
-         LowLat := Lat + Y * yminutes;
-         HighLat := LowLat + yminutes;
-         if ((HighLat > WantBoundBoxGeo.YMin) and (LowLat < WantBoundBoxGeo.YMax)) then begin
-            for Long := FirstLong to LastLong do begin
-               {$If Defined(RecordCartoFull)} WriteLineToDebugFile('Long=' + IntToStr(Long)); {$EndIf}
-               LongLow := Long;
-               LongHi := Long + xminutes;
-               xch := 0;
-               for i := 0 to pred(xtiles) do  begin
-                  LongLow := Long + i * xminutes;
-                  LongHi := LongLow + xminutes;
-                  if ((LongLow < WantBoundBoxGeo.xMax) and (LongHi > WantBoundBoxGeo.xMin)) then begin
-                     ShapeFileCreator.RecordName := LatToString3(Lat) + DEMIXLatLetters[y] + LongToString4(Long) + DEMIXLongLetters[xch];
-                     {$IfDef RecordCartoFull} WriteLineToDebugFile(ShapeFileCreator.RecordName); {$EndIf}
-                     //ShapeFileCreator.AddBoxLatLongToShapeFile(LowLat,LongLow,HighLat,LongHi);
-                     bb.xmin := LongLow;
-                     bb.xmax := LongHi;
-                     bb.ymin := LowLat;
-                     bb.ymax := HighLat;
-                     ShapeFileCreator.AddBoundBoxToShapeStream(bb);
-                     ShapeFileCreator.Table.Edit;
-                     ShapeFileCreator.Table.SetFieldByNameAsString('LETTERS',DEMIXLongLetters[xch] + DEMIXLatLetters[y]);
-                     if AddTileSize then begin
-                        VincentyCalculateDistanceBearing(LowLat,0.5*(LongLow + LongHi),HighLat,0.5*(LongLow + LongHi), High,Bearing);
-                        VincentyCalculateDistanceBearing(0.5*(LowLat+HighLat),LongLow,0.5*(LowLat+HighLat),LongHi, Wide,Bearing);
-                        ShapeFileCreator.Table.SetFieldByNameAsFloat('TILE_WIDE',0.001 * Wide);
-                        ShapeFileCreator.Table.SetFieldByNameAsFloat('TILE_HIGH',0.001 * High);
-                        ShapeFileCreator.Table.SetFieldByNameAsFloat('TILE_KM2',0.001 * Wide * 0.001 * High);
-                     end;
-                     ShapeFileCreator.Table.Post;
-                  end;
-                  inc(xch);
-               end;
-            end;
-         end;
-      end;
-   end;
-   ShapeFileCreator.CloseShapeFiles;
-   AddProjectionFile(Result);
-   EndProgress;
-   {$If Defined(RecordCarto)} WriteLineToDebugFile('TMapForm.LoadDEMIXtileOutlines out '+ sfBoundBoxToString(WantBoundBoxGeo)); {$EndIf}
-end;
-
 
 function TMapForm.LoadDEMIXtileOutlines(WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false; OpenTable : boolean = true) : integer;
 var
@@ -289,6 +218,31 @@ begin
    Result := LoadDataBaseFile(DEMIXFName,OpenTable);
    {$If Defined(RecordCarto)} WriteLineToDebugFile('TMapForm.LoadDEMIXtileOutlines out'); {$EndIf}
 end;
+
+
+function TMapForm.DEMIXtilesOnMap : tStringList;
+var
+   DEMIXFName : PathStr;
+   bb : sfBoundBox;
+   db : integer;
+begin
+   Result := tStringList.Create;
+   bb := MapDraw.MapCorners.BoundBoxGeo;
+   if ValidDEM(MapDraw.DEMonMap)  then begin
+      db := DEMIXtileFill(MapDraw.DEMonMap,bb,False);
+      GISdb[DB].ApplyGISFilter('GRID_FULL>' + IntToStr(MDDef.DEMIX_Full));
+   end
+   else begin
+      LoadDEMIXtileOutlines(bb,False,False,False);
+   end;
+   {$If Defined(RecordCarto)} WriteLineToDebugFile('TMapForm.DEMIXtilesOnMap, tiles=' + IntToStr(GISdb[db].MyData.FiltRecInDB)); {$EndIf}
+   while not GISdb[db].MyData.Eof do begin
+      Result.Add(GISdb[db].MyData.GetFieldByNameAsString('NAME'));
+      GISdb[db].MyData.Next;
+   end;
+   CloseAndNilNumberedDB(db);
+end;
+
 
 
 function DEMIXtileBoundingBox(tName : shortString) : sfBoundBox;
@@ -326,6 +280,7 @@ begin
    Long := 0.5 * (bb.xmin + bb.xmax);
    Lat := 0.5 * (bb.ymin + bb.ymax);
 end;
+
 
 
 

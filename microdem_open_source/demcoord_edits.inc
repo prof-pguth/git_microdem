@@ -1,5 +1,5 @@
 {^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of ianMICRODEM GIS Program    }
+{ Part of MICRODEM GIS Program       }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
 { Copyright (c) 2023 Peter L. Guth   }
@@ -17,7 +17,7 @@ var
 begin
    Result := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_detrend_residual',DEMHeader.ElevUnits);
 
-   Normalize := AnswerIsYes('Normal distances to the y dimension pixel spacing');
+   Normalize := AnswerIsYes('Normal distances to y dimension pixel spacing');
 
    if Normalize then begin
       //factors to get the elevations at the Y spacing distance from the center pixel, assuming the same slope prevailed
@@ -103,14 +103,23 @@ begin
    NewHeadRecs.RasterPixelIsGeoKey1025 := MDDef.LasDEMPixelIs;
    NewHeadRecs.DEMPrecision := WordDEM;
    NewHeadRecs.ElevUnits := Undefined;
-   OpenAndZeroNewDEM(true,NewHeadRecs,CountGrid,MDTempDir + NewAreaName + '_resample_density',InitDEMvalue,0);
+
+   if not OpenAndZeroNewDEM(true,NewHeadRecs,CountGrid,MDTempDir + NewAreaName + '_resample_density',InitDEMvalue,0) then begin
+      {$If Defined(RecordProblems)} HighLightLineToDebugFile('ResampleByAveraging Fail to open ' + DEMGlb[CountGrid].AreaName); {$EndIf}
+      CloseSingleDEM(CountGrid);
+      exit;
+   end;
    {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResample)} WriteLineToDebugFile('ResampleByAveraging, ' + DEMGlb[CountGrid].AreaName + '  ' + DEMGlb[CountGrid].KeyDEMParams); {$EndIf}
 
    NewHeadRecs.DEMPrecision := FloatingPointDEM;
    NewHeadRecs.ElevUnits := DEMheader.ElevUnits;
    NewHeadRecs.VerticalCSTypeGeoKey := DEMheader.VerticalCSTypeGeoKey;
-
-   OpenAndZeroNewDEM(true,NewHeadRecs,Result,MDTempDir + NewAreaName,InitDEMvalue,0);
+   if not OpenAndZeroNewDEM(true,NewHeadRecs,Result,MDTempDir + NewAreaName,InitDEMvalue,0) then begin
+      {$If Defined(RecordProblems)} HighLightLineToDebugFile('ResampleByAveraging Fail to open ' + DEMGlb[CountGrid].AreaName); {$EndIf}
+      CloseSingleDEM(CountGrid);
+      CloseSingleDEM(Result);
+      exit;
+   end;
    {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResample)} WriteLineToDebugFile('ResampleByAveraging, ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].KeyDEMParams); {$EndIf}
 
    {$If Defined(TrackDEMCorners)} DEMGlb[Result].WriteDEMCornersToDebugFile('tDEMDataSet.ResampleByAveraging, starting DEM'); {$EndIf}
@@ -147,6 +156,8 @@ begin
    end;
 
    if (SaveName <> '') then begin
+      SaveName := ChangeFileExt(SaveName,'.dem');
+      {$If Defined(RecordDEMIXResample)} WriteLineToDebugFile('tDEMDataSet.ResampleByAveraging save=' + SaveName); {$EndIf}
       DEMGlb[Result].WriteNewFormatDEM(SaveName);
       {$IfDef RecordSaveAverageResampleDEMformat} SaveName := ChangeFileExt(SaveName,'.dem'); DEMGlb[Result].WriteNewFormatDEM(SaveName); {$EndIf}
    end;

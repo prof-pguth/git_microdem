@@ -54,7 +54,7 @@ type
     BitBtn8: TBitBtn;
     BitBtn7: TBitBtn;
     TabSheet8: TTabSheet;
-    CheckBox26: TCheckBox;
+    //CheckBox26: TCheckBox;
     Button22: TButton;
     TabSheet9: TTabSheet;
     Label3: TLabel;
@@ -293,7 +293,6 @@ type
     Edit34: TEdit;
     Edit35: TEdit;
     CheckBox23: TCheckBox;
-    RadioGroup33: TRadioGroup;
     Label48: TLabel;
     Edit37: TEdit;
     CheckBox156: TCheckBox;
@@ -415,6 +414,7 @@ type
     CheckBox89: TCheckBox;
     Label41: TLabel;
     Edit36: TEdit;
+    CheckBox106: TCheckBox;
     procedure BitBtn32Click(Sender: TObject);
     procedure BitBtn13Click(Sender: TObject);
     procedure HelpBtnClick(Sender: TObject);
@@ -462,7 +462,6 @@ type
     procedure BitBtn34Click(Sender: TObject);
     procedure BitBtn35Click(Sender: TObject);
     procedure BitBtn4Click(Sender: TObject);
-    procedure RadioGroup33Click(Sender: TObject);
     procedure BitBtn36Click(Sender: TObject);
     procedure RadioGroup7Click(Sender: TObject);
     procedure BitBtn11Click(Sender: TObject);
@@ -968,8 +967,8 @@ begin
    RadioGroup26.ItemIndex := ord(MDdef.AutoOpen);
    RadioGroup32.ItemIndex := MDDef.ClipboardExports;
 
-   if MDDef.LeftLatGlobalDEM = 0 then RadioGroup33.ItemIndex := 1
-   else RadioGroup33.ItemIndex := 0;
+   //if MDDef.LeftLatGlobalDEM = 0 then RadioGroup33.ItemIndex := 1
+   //else RadioGroup33.ItemIndex := 0;
 
    RadioGroup34.ItemIndex := pred(MDDef.FrameLineWidth);
 
@@ -1059,7 +1058,7 @@ begin
    {$EndIf}
 
    CheckBox25.Checked := MDDef.DEMIX_DoElevParamGraphs;
-   CheckBox26.Checked := MDdef.WrapETOPO;
+   //CheckBox26.Checked := MDdef.WrapETOPO;
    CheckBox29.Checked := MDdef.AutoAssignNameField;
    CheckBox30.Checked := MDdef.MGRSandLatLongWhileRoam;
 
@@ -1145,6 +1144,7 @@ begin
    CheckBox103.Checked := MDDef.ShowPointClouds;
 
    CheckBox104.Checked := MDDef.VegDensityBuildingPoints;
+   CheckBox106.Checked := MDDef.ShowDEMIX;
    CheckBox107.Checked := MDDef.TerrainCatPercentages;
 
    CheckBox108.Checked := MDDef.MercShiftSingleZone;
@@ -1328,7 +1328,6 @@ end;
 procedure TOptionsForm.OKBtnClick(Sender: TObject);
 var
    fName : PathStr;
-   SaveLabs : boolean;
 begin
    {$IfDef OptionsProblems} WriteLineToDebugFile('TOptionsForm.OKBtnClick in'); {$EndIf}
 
@@ -1459,7 +1458,7 @@ begin
    MDdef.DefaultEditDBsInGrid := CheckBox22.Checked;
    MDDef.DEMIX_DoElevParamGraphs := CheckBox25.Checked;
 
-   MDdef.WrapETOPO := CheckBox26.Checked;
+   //MDdef.WrapETOPO := CheckBox26.Checked;
    MDDef.ShowPLSS := CheckBox28.Checked;
 
    MDdef.AutoAssignNameField := CheckBox29.Checked;
@@ -1537,6 +1536,7 @@ begin
    MDDef.DeleteJP2 := CheckBox102.Checked;
    MDDef.ShowPointClouds := CheckBox103.Checked;
    MDDef.VegDensityBuildingPoints := CheckBox104.Checked;
+   MDDef.ShowDEMIX := CheckBox106.Checked;
 
    MDDef.TerrainCatPercentages := CheckBox107.Checked;
 
@@ -1697,12 +1697,6 @@ begin
       //if (MDdef.ProgramOption = ShipwrecksProgram) then SetShipwrecksDefaults;
       //if (MDdef.ProgramOption = EconProgram) then SetEconDefaults;
       if (MDdef.ProgramOption = RemoteSensingProgram) then SetRemoteSensingDefaults;
-      if (MDdef.ProgramOption = ExpertProgram) then begin
-         SaveLabs := MDDef.ShowLabs;
-         ProcessIniFile(iniInit,'Menus');
-         SetExpertOptions(true);
-         MDDef.ShowLabs := SaveLabs;
-      end;
       {$IfDef ExDP}
       {$Else}
          if (MDdef.ProgramOption = DragonPlotProgram) then begin
@@ -1714,16 +1708,6 @@ begin
          end;
       {$EndIf}
 
-      (*
-      if (WmDEM.MDIChildCount > 0) then begin
-         if AnswerIsYes('Close open data') then begin
-            WMDEM.CloseAlldataandwindows1Click(Sender);
-         end
-         else begin
-            UpdateMenusForAllMaps;
-         end;
-      end;
-      *)
       UpdateMenusForAllMaps;
       WMDEM.FormActivate(Nil);
       {$IfDef OptionsProblems} WriteLineToDebugFile('Done version change');   {$EndIf}
@@ -1757,11 +1741,6 @@ begin
    Petmar.PickLineSizeAndColor('DB region outlines',OutlineButton,MDDef.DBOutlineColor,MDDef.DBOutlineWidth);
 end;
 
-
-procedure TOptionsForm.RadioGroup33Click(Sender: TObject);
-begin
-   if (RadioGroup3.ItemIndex = 0) then MDDef.LeftLatGlobalDEM := 0 else MDDef.LeftLatGlobalDEM := -180;
-end;
 
 procedure TOptionsForm.RadioGroup7Click(Sender: TObject);
 begin

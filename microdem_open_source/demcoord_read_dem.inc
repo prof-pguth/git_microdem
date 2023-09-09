@@ -207,15 +207,16 @@ var
 
           TStr := UpperCase(ptCopy(AreaName,1,5));
 
+          (*
           if MDdef.WrapETOPO and (UpperCase(ptCopy(AreaName,1,6)) = 'ETOPO5') then begin
              if MDDef.DoubleEtopoImport then DEMheader.Numcol := 2 * DEMheader.NumCol
              else DEMheader.NumCol := 5420;
              DEMheader.DEMSWCornerX := DEMheader.DEMSWCornerX - 360;
           end;
-
           if (TStr = 'AGES_') then begin
              if MDdef.WrapETOPO then DEMheader.NumCol := 4801;
           end;
+          *)
 
           if ReallyReadDEM and AllocateDEMMemory(InitDEMNone) then begin
              Showprogress := WantShowProgress and (DEMheader.NumCol > 4000) and ShowDEMReadingProgress;
@@ -248,16 +249,17 @@ var
                    goto CleanUp;
                 end;
              end;
+             if (DEMheader.MaxElev - DEMheader.MinElev < 0.01) then begin
+                //not clear why this is needed, but download of ETOPO1 had 0,0 for elevation range
+                CheckMaxMinElev;
+             end;
           end;
 
+          (*
           if MDdef.WrapETOPO and (UpperCase(ptCopy(AreaName,1,6)) = 'ETOPO5') then begin
             for x := 4320 to pred(DEMheader.NumCol) do Move(SmallIntElevations[x-4320]^,SmallIntElevations[x]^,2*DEMheader.NumRow);
           end;
-
-          if (DEMheader.MaxElev - DEMheader.MinElev < 0.01) then begin
-             //not clear why this is needed, but download of ETOPO1 had 0,0 for elevation range
-             CheckMaxMinElev;
-          end;
+          *)
 
          Cleanup:;
           if ShowProgress then EndProgress;

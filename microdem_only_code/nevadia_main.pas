@@ -10,6 +10,7 @@
 
 {$I nevadia_defines.inc}
 
+//{$Define IncludePython}
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
@@ -556,8 +557,9 @@ type
     DEMIXhelp1: TMenuItem;
     Landformcategorieslegends1: TMenuItem;
     Extract1: TMenuItem;
-    N36: TMenuItem;
     N42: TMenuItem;
+    N43: TMenuItem;
+    N44: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -1658,8 +1660,8 @@ begin
 
    Data1.Visible := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]) and MDDef.ShowDataManipulation;
    InOutButton.Visible := Data1.Visible;
-   DEMIX1.Visible := (MDDef.ProgramOption in [ExpertProgram]);
-   DEMIX2.Visible := (MDDef.ProgramOption in [ExpertProgram]);
+   DEMIX1.Visible := (MDDef.ProgramOption in [ExpertProgram]) and MDDef.ShowDEMIX;
+   DEMIX2.Visible := (MDDef.ProgramOption in [ExpertProgram]) and MDDef.ShowDEMIX;
 
    //NewDEMButton.Visible := ShowLoadButtons;
 
@@ -2911,7 +2913,9 @@ end;
 
 procedure Twmdem.N41Click(Sender: TObject);
 begin
-   SummarizeVDatumShifts;
+   {$IfDef Old3DEP}
+      SummarizeVDatumShifts;
+   {$EndIf}
 end;
 
 procedure Twmdem.N81Sfileviewer1Click(Sender: TObject);
@@ -3177,7 +3181,9 @@ end;
 
 procedure Twmdem.ProcessVDATUMshifts1Click(Sender: TObject);
 begin
-   DEMIX_VDatum_shifts;
+   {$IfDef Old3DEP}
+      DEMIX_VDatum_shifts;
+   {$EndIf}
 end;
 
 procedure Twmdem.Programlimits1Click(Sender: TObject);
@@ -3452,7 +3458,9 @@ end;
 
 procedure Twmdem.Subsetlarge3DEPareas1Click(Sender: TObject);
 begin
-   BatchSubset_3DEP_DEMs;
+   {$IfDef Old3DEP}
+      BatchSubset_3DEP_DEMs;
+   {$EndIf}
 end;
 
 procedure Twmdem.SummarizeverticaldatumshiftforEGM96testDEMs1Click(Sender: TObject);

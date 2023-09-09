@@ -504,7 +504,7 @@ type
     MapLibSpeedButton: TSpeedButton;
     Editpointelevations1: TMenuItem;
     DRGanaglyph1: TMenuItem;
-    UScounty1: TMenuItem;
+    //UScounty1: TMenuItem;
     Openimage1: TMenuItem;
     Downhillvectors1: TMenuItem;
     Drainage1: TMenuItem;
@@ -1781,7 +1781,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Dataheader1Click(Sender: TObject);
     procedure Editpointelevations1Click(Sender: TObject);
     procedure DRGanaglyph1Click(Sender: TObject);
-    procedure UScounty1Click(Sender: TObject);
+    //procedure UScounty1Click(Sender: TObject);
     procedure Openimage1Click(Sender: TObject);
     //procedure Scatterplotoftwogrids2Click(Sender: TObject);
     procedure Downhillvectors1Click(Sender: TObject);
@@ -2572,6 +2572,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Percent1Click(Sender: TObject);
     procedure Rasteraftersubsettomatchthismapextent1Click(Sender: TObject);
     procedure GDALgridsubsettomatchthismap1Click(Sender: TObject);
+    //procedure RescaleallDEMsforSSIM1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
     MouseDownLat,MouseDownLong,
@@ -2771,6 +2772,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure RedrawMapDefaultsSize;
 
     function LoadDEMIXtileOutlines(WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false; OpenTable : boolean = true) : integer;
+    function DEMIXtilesOnMap : tStringList;
 
     procedure MoveADBRecord(lat,Long : float64);
 
@@ -5322,6 +5324,7 @@ begin
    {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} writeLineToDebugFile('TMapForm.ComapreUTMvsgeographic1Click out'); {$EndIf}
 end;
 
+
 procedure TMapForm.CombinedMGRSpolygons1Click(Sender: TObject);
 begin
    //UTM100Kzones1Click(Sender);
@@ -6898,7 +6901,7 @@ end;
 
 procedure TMapForm.Normalizeto30m1Click(Sender: TObject);
 begin
-   MakeTRIGrid(MapDraw.DEMonMap,nm30m,false);
+   MakeTRIGrid(MapDraw.DEMonMap,nm30m,true,false);
 end;
 
 procedure TMapForm.Excessiveslopes2Click(Sender: TObject);
@@ -10644,7 +10647,6 @@ var
    MenuStr     : string;
    First       : boolean;
    DistStr     : AnsiString;
-   //Findings    : tStringList;
    TStr,TStr2,
    PrimaryLocation,SecondaryLocation : ShortString;
    Refs : tAllRefs;
@@ -10729,11 +10731,11 @@ begin
 
    {$IfDef ExGeoStats}
    {$Else}
-        if (DEMNowDoing in [GeomorphPointGraph]) and  (RegionSizeForm <> Nil) then begin
+        if (DEMNowDoing in [GeomorphPointGraph]) and (RegionSizeForm <> Nil) then begin
            RegionSizeForm.GeomorphParameterVersusRegion(Lat,Long);
            exit;
         end;
-        if (DEMNowDoing in [LagSizeSensitivity]) and  (LagOptionsForm <> Nil) then begin
+        if (DEMNowDoing in [LagSizeSensitivity]) and (LagOptionsForm <> Nil) then begin
            LagOptionsForm.Sensitivty(Lat,Long);
            exit;
         end;
@@ -10901,7 +10903,6 @@ begin
       exit;
    end;
 
-
    {$IfDef RegisterPhoto}
       if PersPitchAzimuthDigitize then with RegPhotoForm.RegPers.View3D  do begin
          DEMGlb[MapDraw.DEMonMap].GetElevFromLatLongDegree(Lat,Long,z);
@@ -10941,11 +10942,13 @@ begin
       exit;
    end;
 
+   (*
    if (DEMNowDoing in [USCounty]) then begin
       US_properties.GetCounty(Lat,Long,TStr);
       MessageToContinue(tStr);
       exit;
    end;
+   *)
 
    if (DEMNowDoing = UTMTrueDeviation) then begin
       Dec := MapDraw.UTMGridToTrueNorthAngle(Lat,Long);
@@ -16710,7 +16713,7 @@ begin
         DeleteMultipleDBRecs           : NewTitle := OLAF + 'delete records';
         MapTissotIndicatrix            : NewTitle := 'Point for Tissot indicatrix';
         LabelIDDataBase                : NewTitle := 'DB record to label';
-        USCounty                       : NewTitle := 'US county';
+        //USCounty                       : NewTitle := 'US county';
         EditPointElevs                 : NewTitle := 'Edit point elevations';
         FloodFill                      : NewTitle := 'Pt to flood fill';
         DragEdit                       : NewTitle := LPF;
@@ -17048,7 +17051,7 @@ end;
 
 procedure TMapForm.RIK1Click(Sender: TObject);
 begin
-   MakeTRIGrid(MapDraw.DEMonMap,nmTRIK,false);
+   MakeTRIGrid(MapDraw.DEMonMap,nmTRIK,true,false);
 end;
 
 function TMapForm.GetSecondDEM(MustBeCompatible : boolean = true) : boolean;
@@ -18896,6 +18899,33 @@ begin
    //AverageResampleThisDEM(NewDEM,0);
 end;
 
+(*
+procedure TMapForm.RescaleallDEMsforSSIM1Click(Sender: TObject);
+var
+   DEM : integer;
+   Min,Max : float32;
+   fName : PathStr;
+begin
+   Min := 99e39;
+   Max := -99e39;
+   for DEM := 1 to MaxDEMDataSets do begin
+      //get elevation range
+      if ValidDEM(DEM) then begin
+         if DEMGlb[DEM].DEMheader.MaxElev > Max then Max := DEMGlb[DEM].DEMheader.MaxElev;
+         if DEMGlb[DEM].DEMheader.MinElev < Min then Min := DEMGlb[DEM].DEMheader.MinElev;
+      end;
+   end;
+   for DEM := 1 to MaxDEMDataSets do begin
+      //rescale to 0-1 range
+      if ValidDEM(DEM) then begin
+         DEMGlb[DEM].AddConstantToGrid(-Min);
+         DEMGlb[DEM].MultiplyGridByConstant(1/(Max-Min));
+         fName := 'c:\temp\' + DEMGlb[DEM].AreaName + '_ssim.tif';
+         DEMGlb[DEM].SaveGridSubsetGeotiff(MapDraw.MapAreaDEMGridLimits,fName);
+      end;
+   end;
+end;
+*)
 
 procedure TMapForm.Resoremenus1Click(Sender: TObject);
 begin
@@ -19247,13 +19277,13 @@ var
 begin
    {$IfDef ExGeostats}
    {$Else}
-      TRI_ew := MakeTRIGrid(MapDraw.DEMonMap,nmEastWest,false);
-      TRI_ns := MakeTRIGrid(MapDraw.DEMonMap,nmNorthSouth,false);
-      TRI_none := MakeTRIGrid(MapDraw.DEMonMap,nmNone,false);
-      TRI_interpolate := MakeTRIGrid(MapDraw.DEMonMap,nmInterpolate,false);
-      TRI_30m := MakeTRIGrid(MapDraw.DEMonMap,nm30m,false);
-      MakeTRIGrid(MapDraw.DEMonMap,nmTRIK,false);
-      MakeTRIGrid(MapDraw.DEMonMap,nmRRI,false);
+      TRI_ew := MakeTRIGrid(MapDraw.DEMonMap,nmEastWest,true,false);
+      TRI_ns := MakeTRIGrid(MapDraw.DEMonMap,nmNorthSouth,true,false);
+      TRI_none := MakeTRIGrid(MapDraw.DEMonMap,nmNone,true,false);
+      TRI_interpolate := MakeTRIGrid(MapDraw.DEMonMap,nmInterpolate,true,false);
+      TRI_30m := MakeTRIGrid(MapDraw.DEMonMap,nm30m,true,false);
+      MakeTRIGrid(MapDraw.DEMonMap,nmTRIK,true,false);
+      MakeTRIGrid(MapDraw.DEMonMap,nmRRI,true,false);
    {$EndIf}
 end;
 
@@ -19692,7 +19722,7 @@ procedure TMapForm.Nonormalization1Click(Sender: TObject);
 begin
    {$IfDef ExGeostats}
    {$Else}
-      MakeTRIGrid(MapDraw.DEMonMap,nmNone,false);
+      MakeTRIGrid(MapDraw.DEMonMap,nmNone,true,false);
    {$EndIf}
 end;
 
@@ -19718,7 +19748,7 @@ procedure TMapForm.Normalizeeastwest1Click(Sender: TObject);
 begin
    {$IfDef ExGeostats}
    {$Else}
-      MakeTRIGrid(MapDraw.DEMonMap,nmEastWest);
+      MakeTRIGrid(MapDraw.DEMonMap,nmEastWest,true);
    {$EndIf}
 end;
 
@@ -19726,7 +19756,7 @@ procedure TMapForm.Normalizenorthsouth1Click(Sender: TObject);
 begin
    {$IfDef ExGeostats}
    {$Else}
-      MakeTRIGrid(MapDraw.DEMonMap,nmNorthSouth);
+      MakeTRIGrid(MapDraw.DEMonMap,nmNorthSouth,true,true);
    {$EndIf}
 end;
 
@@ -20752,7 +20782,7 @@ var
    i : integer;
 begin
    for i := 1 to MaxDEMDataSets do begin
-      if (I <> MapDraw.DEMonMap) and ValidDEM(i) and Assigned(DEMGlb[i].SelectionMap) then begin
+      if ValidDEM(i) and (I <> MapDraw.DEMonMap) and Assigned(DEMGlb[i].SelectionMap) then begin
          DEMGlb[i].SelectionMap.MaskFromSecondGrid(MapDraw.DEMonMap, msSecondMissing);
          //DEMGlb[i].SelectionMap.SubsetAndZoomMapFromGeographicBounds(MapDraw.MapCorners.BoundBoxGeo);
          DEMGlb[i].SavePartOfDEMWithData(DEMGlb[i].DEMFileName);
@@ -21985,17 +22015,14 @@ begin
    CreateRoughnessSlopeStandardDeviationMap(MapDraw.DEMonMap,5);
 end;
 
+
 function TMapForm.CreateMapAndLegendSideBySide : tMyBitmap;
 var
    bmp2 : tMyBitmap;
 begin
    SaveBackupDefaults;
    MDDef.GridLegendLocation.DrawItem := false;
-   //DoFastMapRedraw;
-   //MessageToContinue('1');
    DoCompleteMapRedraw;
-   //MessageToContinue('2');
-   //CloneImageToBitmap(Image1,bmp1);
    CreateBitmap(Result,1,1);
    Result.LoadFromFile(MapDraw.FullMapfName);
    bmp2 := MapDraw.DrawLegendOnBitmap;
@@ -22003,33 +22030,13 @@ begin
    if (Result.Height < bmp2.Height) then Result.Height := bmp2.Height;
    Result.Canvas.Draw(Result.Width - bmp2.width,0,bmp2);
    bmp2.Free;
-   //DisplayBitmap(bmp1,'Map with legend',true);
    RestoreBackupDefaults;
    DoCompleteMapRedraw;
 end;
 
 procedure TMapForm.N60Click(Sender: TObject);
-//var
-   //bmp1 : tMyBitmap;
 begin
-   //SaveBackupDefaults;
-   //MDDef.GridLegendLocation.DrawItem := false;
-   //DoFastMapRedraw;
-   //MessageToContinue('1');
-   //DoCompleteMapRedraw;
-   //MessageToContinue('2');
-   //CloneImageToBitmap(Image1,bmp1);
-   //CreateBitmap(bmp1,1,1);
-   //bmp1.LoadFromFile(MapDraw.FullMapfName);
-   //bmp2 := MapDraw.DrawLegendOnBitmap;
-   //bmp1.Width := bmp1.Width + 25 + Bmp2.Width;
-   //if (bmp1.Height < bmp2.Height) then bmp1.Height := bmp2.Height;
-   //bmp1.Canvas.Draw(bmp1.Width - bmp2.width,0,bmp2);
-   //bmp2.Free;
-
    DisplayBitmap(CreateMapAndLegendSideBySide,'Map with legend',true);
-   //RestoreBackupDefaults;
-   //DoCompleteMapRedraw;
 end;
 
 
@@ -22675,10 +22682,12 @@ begin
    DoBaseMapRedraw;
 end;
 
+(*
 procedure TMapForm.UScounty1Click(Sender: TObject);
 begin
    ChangeDEMNowDoing(USCounty);
 end;
+*)
 
 procedure TMapForm.Openimage1Click(Sender: TObject);
 begin
@@ -24715,7 +24724,7 @@ end;
 
 procedure TMapForm.RICK1Click(Sender: TObject);
 begin
-   MakeTRIGrid(MapDraw.DEMonMap,nmRRI,false);
+   MakeTRIGrid(MapDraw.DEMonMap,nmRRI,true,false);
 end;
 
 procedure TMapForm.Mapshadingoptions1Click(Sender: TObject);

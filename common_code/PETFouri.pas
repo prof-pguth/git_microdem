@@ -1,18 +1,18 @@
 unit petfouri;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of ianMICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch    }
-{ Released under the MIT Licences    }
-{ Copyright (c) 2023 Peter L. Guth   }
-{____________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2023 Peter L. Guth  }
+{___________________________________}
 
 
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
-   //{$Define FFTGraphProblems}
-   //{$Define MemProblems}
+   {$Define FFTGraphProblems}
+   {$Define MemProblems}
 {$EndIf}
 
 
@@ -90,11 +90,9 @@ type
     function ComputeAndDraw : boolean;
   end;
 
-var
-  FFTGraph : TFFTGraph;
 
 procedure PowerSpectrumByMaximumEntropy(MEMPowerDefaults : tMEMPowerDefaults;  var Slope : float32; var FFTGraph : TFFTGraph; Title : ShortString;
-    DataFNames : tStringList; NumRecs : integer; BinTime : float32); //SkipDrawing : boolean = false);
+    DataFNames : tStringList; NumRecs : integer; BinTime : float32);
 
 
 implementation
@@ -107,43 +105,50 @@ uses
    Nevadia_Main;
 
 
-PROCEDURE memcof(data: array of float32; n,m: integer; VAR pm: float32; VAR cof : array of float32);
+PROCEDURE memcof(var data: array of float32; n,m: integer; VAR pm: float32; VAR cof : array of float32);
 //Maximum Entropy power spectrum //from Press and others, 1989, Numerical Recipes
 //n is the length of the input data array
 //m is the number of coefficients to return
 var
    k,j,i : integer;
    pneum,p,denom : float64;
-   wk1,wk2,wkm : array[1..12000] of float64;
+   wk1,wk2,wkm : ^bfarray32;  //array[1..12000] of float64;
 begin
+   New(wk1);
+   New(wk2);
+   New(wkm);
    p := 0.0;
    for j := 0 to n-1 do p := p+sqr(data[j]);
    pm := p/n;
-   wk1[1] := data[0];
-   wk2[n-1] := data[n-1];
+   wk1^[1] := data[0];
+   wk2^[n-1] := data[n-1];
 
    for j := 2 to n-1 do begin
-      wk1[j] := data[j-1];
-      wk2[j-1] := data[j-1]
+      wk1^[j] := data[j-1];
+      wk2^[j-1] := data[j-1]
    end;
 
    for k := 1 to m do begin
       pneum := 0.0;
       denom := 0.0;
       for j := 1 to n-k do begin
-         pneum := pneum+wk1[j]*wk2[j];
-         denom := denom+sqr(wk1[j])+sqr(wk2[j])
+         pneum := pneum+wk1^[j]*wk2^[j];
+         denom := denom+sqr(wk1^[j])+sqr(wk2^[j])
       end;
       cof[k] := 2.0*pneum/denom;
       pm := pm*(1.0-sqr(cof[k]));
-      IF (k <> 1) then for i := 1 to k-1 do cof[i] := wkm[i]-cof[k]*wkm[k-i];
-      if (k = m) then exit;
-      for i := 1 to k do wkm[i] := cof[i];
-      for j := 1 to n-k-1 do begin
-         wk1[j] := wk1[j]-wkm[k]*wk2[j];
-         wk2[j] := wk2[j+1]-wkm[k]*wk1[j+1]
+      IF (k <> 1) then for i := 1 to k-1 do cof[i] := wkm^[i]-cof[k]*wkm^[k-i];
+      if (k <> m) then begin
+         for i := 1 to k do wkm[i] := cof[i];
+         for j := 1 to n-k-1 do begin
+            wk1^[j] := wk1^[j]-wkm^[k]*wk2^[j];
+            wk2^[j] := wk2^[j+1]-wkm^[k]*wk1^[j+1]
+         end;
       end;
    end;
+   Dispose(wk1);
+   Dispose(wk2);
+   Dispose(wkm);
 end;
 
 
@@ -173,9 +178,9 @@ END;
 
 
 procedure PowerSpectrumByMaximumEntropy(MEMPowerDefaults : tMEMPowerDefaults; var Slope : float32; var FFTGraph : TFFTGraph; Title : ShortString;
-    DataFNames : tStringList; NumRecs : integer; BinTime : float32); //SkipDrawing : boolean = false);
-type
-   bfArray = array[0..12000] of float32;
+    DataFNames : tStringList; NumRecs : integer; BinTime : float32);
+//type
+   //bfArray = array[0..12000] of float32;
 var
    DataFile : tStringList;
    DataFName: PathStr;
@@ -185,16 +190,17 @@ var
    v         : array[1..2] of float32;
    rFile : file;
    cof : array[0..100] of float32;
-   Slopes : bfarray32;  //array[0..100] of float32;
-   DataArray : ^bfArray;
+   Slopes : ^bfarray32;  //array[0..100] of float32;
+   DataArray : ^bfArray32;
    Results : tStringList;
    //DoResults : boolean;
 begin
+   {$IfDef MemProblems} WriteLineToDebugFile('PowerSpectrumByMaximumEntropy in'); {$EndIf}
    MaxPower := -9999;
    MaxPeriod := NumRecs * BinTime;
    New(DataArray);
+   New(Slopes);
    FFTGraph := TFFTGraph.Create(Application);
-   //FFTGraph.GraphDraw.SkipDrawing := SkipDrawing;
    with FFTGraph,GraphDraw,MEMPowerDefaults do begin
       if LogLogPlot then begin
          MinVertAxis := log10(0.01);
@@ -217,7 +223,7 @@ begin
    cof[0] := 0;
 
    {$IfDef MemProblems}
-      DoResults := true;
+      //DoResults := true;
    {$Else}
       //DoResults := (not SkipDrawing);
    {$EndIf}
@@ -235,9 +241,10 @@ begin
       DataFile := tStringList.Create;
       DataFile.LoadFromFile(DataFName);
       MomentVar.NPts  := DataFile.Count;
-      {$IfDef MemProblems} WriteLineToDebugFile(IntToStr(NVals) + '   ' +  DataFName);  {$EndIf}
+      {$IfDef MemProblems} WriteLineToDebugFile(IntToStr(MomentVar.NPts) + '   ' +  DataFName);  {$EndIf}
       if (MomentVar.NPts  > 3 * NumRecs div 4) then begin
-         for i := 0 to pred(MomentVar.NPts ) do Val(DataFile.Strings[i],DataArray^[i],err);
+         for i := 0 to pred(MomentVar.NPts ) do DataArray^[i] := StrToFloat(DataFile.Strings[i]);
+         //Val(DataFile.Strings[i],DataArray^[i],err);
 
          memcof(dataarray^,MomentVar.NPts,MEMPowerDefaults.NumPoles,pm,cof);
 
@@ -270,13 +277,13 @@ begin
       for i := 0 to pred(GraphDraw.DataFilesPlotted.Count) do begin
          FitGraph(true,2,GraphDraw.DataFilesPlotted.Strings[i], a,b,r,n);
          if (abs(b) > 0.01) and (abs(b) < 10) then begin
-            {if (not SkipDrawing) then} Results.Add(RealToString(b,8,3)+ RealToString(r,8,3));
-            Slopes[MomentVar.NPts] := b;
+            Results.Add(RealToString(b,8,3)+ RealToString(r,8,3));
+            Slopes^[MomentVar.NPts] := b;
             Inc(MomentVar.NPts);
          end;
       end;
    end;
-   Moment(Slopes,MomentVar,msAll);
+   Moment(Slopes^,MomentVar,msAll);
    //if DoResults then begin
       Results.Add('');
       Results.Add('Average slope: ' + RealToString(MomentVar.mean,-18,-3));
@@ -285,16 +292,8 @@ begin
       Results.Add('Fractal dimension: ' + RealToString(FracDimFromSlope2(Slope),-18,-3));
       //if (not SkipDrawing)then
          Petmar.DisplayAndPurgeStringList(Results,'MEM Power Spectrum Slopes');
-      (*
-      else begin
-         {$IfDef MemProblems}
-            WriteStringListToDebugFile(Results);
-            Results.Free;
-         {$EndIf}
-      end;
-      *)
-   //end;
    Dispose(DataArray);
+   Dispose(Slopes);
 end;
 
 
@@ -555,9 +554,9 @@ var
 
    procedure GraphPowerSpectrum;
    var
-      i : integer;
-      rfile     : file;
-      v         : array[1..2] of float32;
+      i      : integer;
+      rfile  : file;
+      v      : array[1..2] of float32;
    begin
       with GraphDraw,Image1.Canvas do begin
          if NewAxes then begin
@@ -582,9 +581,7 @@ var
             if not CreateGraphHidden then Caption := 'FFT Power Spectrum--' + ACaption;
          end;
 
-         {$IfDef FFTGraphProblems}
-         WriteLineToDebugFile('GraphPowerSpectrum, Horiz Axis: ' + RealToString(MinHorizAxis,18,6) + ' to ' + RealToString(MaxHorizAxis,18,6) + ' Vert Axis: ' + RealToString(MinVertAxis,18,6) + ' to ' + RealToString(MaxVertAxis,18,6));
-         {$EndIf}
+         {$IfDef FFTGraphProblems} WriteLineToDebugFile('GraphPowerSpectrum, ' + AxisRange); {$EndIf}
 
          SetUpGraphForm;
          OpenDataFile(rfile);
@@ -601,6 +598,7 @@ var
 
 
 begin
+   {$IfDef FFTGraphProblems} WriteLineToDebugFile('Compute and draw in'); {$EndIf}
    try
       Result := false;
       assignFile(FFTfile,FFTFileName);
@@ -625,13 +623,14 @@ begin
    finally
       closeFile(FFTfile);
    end;
+   {$IfDef FFTGraphProblems} WriteLineToDebugFile('Compute and draw out'); {$EndIf}
 end;
 
 
 function TFFTGraph.NewOptions;
 begin
    FourierOptionsForm := tFourierOptionsForm.Create(Self);
-   with FourierOptionsForm  do begin
+   with FourierOptionsForm do begin
       Edit1.Text := RealToString(BinTime,-18,-8);
       Edit2.Text := BinUnits;
       RadioButton1.Checked := WindowFunction = Parzen;
@@ -855,6 +854,7 @@ begin
    GetSlope(True,a,b,r);
 end;
 
+
 procedure TFFTGraph.GetSlope(ShowResults : boolean; var a,b,r : float32);
 var
    infile,outfile : file;
@@ -865,6 +865,7 @@ var
 begin
    assignFile(infile,GraphDraw.DataFilesPlotted.Strings[0]);
    reset(infile,2*SizeOf(float64));
+
    fName := MDTempDir + 'qq_fft_xyz.tmp';
    assignFile(outfile,fName);
    rewrite(outfile,2*SizeOf(float64));

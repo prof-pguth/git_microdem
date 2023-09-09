@@ -759,6 +759,7 @@ procedure DoKMeansClustering(DBonTable : integer);
       procedure TransposeDEMIXwinecontestGraph(DBonTable : integer);
       procedure DEMIXwineContestMeanMedianGraph(What,DBonTable : integer; AreaList : tStringList = nil; CriteriaUsed : tStringList = nil; LandTypePresent : tStringList = nil; DEMsPresent : tStringList = nil);
       procedure DEMIXTileSummary(DBonTable : integer);
+      procedure DEMIXtile_inventory(DBonTable : integer);
       function CreateFilterOutSignedCriteria(DBonTable : integer) : shortstring;
 
       procedure FilterOutSignedCriteria(DBonTable : integer);

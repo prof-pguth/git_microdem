@@ -964,6 +964,7 @@ type
     Clustermaplocations1: TMenuItem;
     Clusterstatistics1: TMenuItem;
     Addaverageelevationinwindow1: TMenuItem;
+    MaskallopenDEMgrids1: TMenuItem;
     //Pointfilter1: TMenuItem;
     //Pointfilter2: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
@@ -1702,6 +1703,7 @@ type
     procedure Clustermaplocations1Click(Sender: TObject);
     procedure Clusterstatistics1Click(Sender: TObject);
     procedure Addaverageelevationinwindow1Click(Sender: TObject);
+    procedure MaskallopenDEMgrids1Click(Sender: TObject);
     //procedure Pointfilter2Click(Sender: TObject);
     //procedure Pointfilter1Click(Sender: TObject);
   private
@@ -3296,7 +3298,7 @@ end;
 
 function PictureInDBField(FieldName : ShortString) : boolean;
 begin
-  Result := (FieldName = 'NAME') or (FieldName = 'EVT_NAME') or (FieldName = 'NAME00') or (FieldName = 'NAME10') or
+  Result := (FieldName = 'NAME') or (FieldName = 'DEM_NAME') or (FieldName = 'EVT_NAME') or (FieldName = 'NAME00') or (FieldName = 'NAME10') or
        (FieldName = 'F_NAME') or (FieldName = 'LONG_NAME') or (FieldName = 'PALETTE') or (FieldName = 'SENSORS') or
        (FieldName = 'PLACE') or (FieldName = 'CLASS_NAME') or (FieldName = 'CLASS') or (FieldName = 'CLUSTER');
 end;
@@ -3372,9 +3374,8 @@ begin
                    Bitmap.Canvas.Rectangle(0,0,Pred(bmpWidth),pred(BMPWidth));
                  end;
             end;
-
-              DBGrid1.Canvas.StretchDraw(fixRect,bitmap);
-              {$IfDef RecordDBGrid1DrawColumnCell} WriteLineToDebugFile('Drew image'); {$Endif}
+            DBGrid1.Canvas.StretchDraw(fixRect,bitmap);
+            {$IfDef RecordDBGrid1DrawColumnCell} WriteLineToDebugFile('Drew image'); {$Endif}
           finally
             bitmap.Free;
           end;
@@ -3564,6 +3565,7 @@ begin
    Top := 0;
    Left := wmdem.Width - Width - 20;
    TrackBar1.Position := MDDef.SecondGridOpacity;
+   DEMIX1.Visible := MDDef.ShowDEMIX;
    {$IfDef RecordDataBase} WriteLineToDebugFile('Tdbtablef.FormCreate out'); {$EndIf}
 end;
 
@@ -4874,9 +4876,6 @@ begin
 end;
 
 procedure Tdbtablef.Addazimuthtotravelpath1Click(Sender: TObject);
-//var
-   //Last4Grad,This4Grad,Lat,Long,LastLat,LastLong,Az,Dist : float64;
-   //f1,f2,TStr : ShortString;
 begin
    {$IfDef RecordNavigation} WriteLineToDebugFile('Tdbtablef.Addazimuthtotravelpath1Click in'); {$EndIf}
    with GISdb[DBonTable] do begin
@@ -7702,6 +7701,7 @@ var
    WantedFieldName : ShortString;
    Dfile : file of float64;
    v : float64;
+   FFTGraph : TFFTGraph;
 begin
    with GISdb[DBonTable] do begin
       WantedFieldName := PickField('FFTs',[ftFloat,ftInteger,ftSmallInt]);
@@ -14752,6 +14752,15 @@ begin
 {$EndIf}
 end;
 
+procedure Tdbtablef.MaskallopenDEMgrids1Click(Sender: TObject);
+var
+   bb : sfBoundBox;
+begin
+   bb := GISdb[DBonTable].MyData.GetRecordBoundingBox;
+   MaskAllDEMsWithGeoBoundingBox(bb);
+end;
+
+
 procedure Tdbtablef.MaskClick(Sender: TObject);
 var
    i,WantedDEM,rc : integer;
@@ -14798,11 +14807,7 @@ end;
 
 procedure Tdbtablef.MaskDatabaseWithShapefile1Click(Sender: TObject);
 var
-   //i,
    MaskDB{,x,y,rc} : integer;
-  // LatCent,LongCent : float64;
-   //PutNames : boolean;
-//   bmp : tMyBitmap;
    PIP : tPointInPolygon;
    NameField,MaskFieldName : string10;
 begin

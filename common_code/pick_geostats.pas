@@ -430,6 +430,7 @@ end;
 procedure TPickGeoStat.NeedSingleDEM;
 begin
    if (CurDEM = 0) and GetDEM(CurDEM,true,'single DEM geomorphometry') then CheckBox2.Checked := false;
+   Button15Click(nil);
 end;
 
 
@@ -490,9 +491,9 @@ begin
    if (CurDEM = 0) then GetDEM(CurDEM,true,'single DEM geomorphometry');
    HeavyDutyProcessing := true;
    CreateSlopeMap(CurDEM);
-   MakeTRIGrid(CurDEM,nmEastWest,true);
-   MakeTRIGrid(CurDEM,nmNorthSouth,true);
-   MakeTRIGrid(CurDEM,nmNone,true);
+   MakeTRIGrid(CurDEM,nmEastWest,true,true);
+   MakeTRIGrid(CurDEM,nmNorthSouth,true,true);
+   MakeTRIGrid(CurDEM,nmNone,true,true);
    GDAL_TRI_Riley(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
    GDAL_TRI_Wilson(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
    GDAL_TPI(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
@@ -529,10 +530,10 @@ var
    j : integer;
 begin
    if CheckBox2.Checked then begin
-      for j := 1 to MaxDEMDataSets do if DEMsWanted[j] then MakeTRIGrid(j,nmTRIK,false);
+      for j := 1 to MaxDEMDataSets do if DEMsWanted[j] then MakeTRIGrid(j,nmTRIK,true,false);
    end
    else begin
-      MakeTRIGrid(CurDEM,nmTRIK,false);
+      MakeTRIGrid(CurDEM,nmTRIK,true,false);
    end;
 end;
 
@@ -616,6 +617,7 @@ procedure TPickGeoStat.BitBtn4Click(Sender: TObject);
 var
    NS_Slope,EW_Slope : float32;
 begin
+   NeedSingleDEM;
    MEM_Power_Spect.GetMEMPowerSpectra(NS_Slope,EW_Slope,CurDEM,GridLimits);
 end;
 

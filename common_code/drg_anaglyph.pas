@@ -1,7 +1,7 @@
 unit drg_anaglyph;
 
 {^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of ianMICRODEM GIS Program    }
+{ Part of MICRODEM GIS Program       }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
 { Copyright (c) 2023 Peter L. Guth   }
@@ -83,14 +83,14 @@ var
 begin
    {$IfDef RecordAnaglyph} WriteLineToDebugFile('DrawAnaglyphMap in'); {$EndIf}
    if (MapForm.MapDraw.DEMonMap = 0) then MapForm.SetDEMwithmap1Click(Nil);
-    DRGAnaglyphForm := TDRGAnaglyphForm.Create(Application);
-    DRGAnaglyphForm.MapOwner := MapForm;
-    DRGAnaglyphForm.RadioGroup1.Enabled := (MapForm.MapDraw.DEMonMap <> 0);
-    if (MapForm.MapDraw.DEMonMap = 0) then DRGAnaglyphForm.RadioGroup1.ItemIndex := 0;
-    DRGAnaglyphForm.Edit2.Text := IntToStr(MDDef.MaxAnaglyphShift);
-    {$IfDef RecordAnaglyph} WriteLineToDebugFile(' TMapForm.DRGanaglyph1Click set up done'); {$EndIf}
-    MapForm.AutoAnaglyphRedraw := false;
-    DRGAnaglyphForm.Show;
+   DRGAnaglyphForm := TDRGAnaglyphForm.Create(Application);
+   DRGAnaglyphForm.MapOwner := MapForm;
+   DRGAnaglyphForm.RadioGroup1.Enabled := ValidDEM(MapForm.MapDraw.DEMonMap);
+   if (MapForm.MapDraw.DEMonMap = 0) then DRGAnaglyphForm.RadioGroup1.ItemIndex := 0;
+   DRGAnaglyphForm.Edit2.Text := IntToStr(MDDef.MaxAnaglyphShift);
+   {$IfDef RecordAnaglyph} WriteLineToDebugFile(' TMapForm.DRGanaglyph1Click set up done'); {$EndIf}
+   MapForm.AutoAnaglyphRedraw := false;
+   DRGAnaglyphForm.Show;
    {$IfDef RecordAnaglyph} WriteLineToDebugFile(' TMapForm.DRGanaglyph1Click out'); {$EndIf}
 end;
 
@@ -104,7 +104,7 @@ begin
     else MapForm.MapDraw.TerrainShadowsDEM := 0;
     MapForm.MapDraw.DeleteSingleMapLayer(MapForm.MapDraw.BaseMapFName);
 
-    if (MapForm.MapDraw.DEMonMap <> 0) and (MapForm.MapDraw.MinMapElev = 0) and (MapForm.MapDraw.MaxMapElev = 0) then begin
+    if ValidDEM(MapForm.MapDraw.DEMonMap) and (MapForm.MapDraw.MinMapElev = 0) and (MapForm.MapDraw.MaxMapElev = 0) then begin
        MapForm.MapDraw.ScaleMapElevationsToDEM;
     end;
 

@@ -14,7 +14,7 @@ unit simple_python;
 {$Define RecordPython}
 
 
-//{$IfDef IncludePython}
+{$Define IncludePython}
 
   interface
 
@@ -22,7 +22,8 @@ unit simple_python;
     Classes, SysUtils,
     Windows, Messages, Graphics, Controls, Forms, Dialogs,
     StdCtrls, ComCtrls, ExtCtrls,
-    PythonEngine, Vcl.PythonGUIInputOutput;
+    PythonEngine,Vcl.PythonGUIInputOutput;
+
 
   type
     TPythonForm1 = class(TForm)
@@ -35,6 +36,7 @@ unit simple_python;
       OpenDialog1: TOpenDialog;
       SaveDialog1: TSaveDialog;
       Memo2: TMemo;
+      PythonEngine1 : tPythonEngine;
       procedure Button1Click(Sender: TObject);
       procedure Button2Click(Sender: TObject);
       procedure Button3Click(Sender: TObject);
@@ -73,7 +75,7 @@ unit simple_python;
 
   procedure TPythonForm1.Button2Click(Sender: TObject);
   begin
-    with OpenDialog1 do  begin
+    with OpenDialog1 do begin
         if Execute then
           Memo1.Lines.LoadFromFile( FileName );
       end;
@@ -122,12 +124,13 @@ unit simple_python;
         try
          {$IfDef RecordPython} WriteLineToDebugFile('TPythonForm1.FormCreate up and away');  {$EndIf}
          MaskFPUExceptions(True);
-         exit;
+         //exit;
 
          PythonEngine1.DLLPath := 'C:\Users\pguth\anaconda3\';
          {$IfDef RecordPython} WriteLineToDebugFile('TPythonForm1.FormCreate set dll path');  {$EndIf}
          PythonEngine1.DLLName := 'python310.dll';
          PythonEngine1.LoadDLL;
+
          {$IfDef RecordPython} WriteLineToDebugFile('TPythonForm1.FormCreate dll loaded');  {$EndIf}
         except
            on Exception do {$IfDef RecordPython} WriteLineToDebugFile('TPythonForm1.FormCreate exception');  {$EndIf}
@@ -159,19 +162,6 @@ unit simple_python;
     else
   *)
   end;
-
-
-(*
-{$Else}
-
-
-interface
-implementation
-
-
-{$EndIf}
-
-*)
 
 
 

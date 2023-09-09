@@ -101,17 +101,6 @@ const
    MaxThreadsAllowed = 24;
 
 
-const   //for DEMIX
-   //MaxLandType = 8;
-   //LandType : array[1..MaxLandType] of shortstring = ('ALL','CLIFF','STEEP','GENTLE','FLAT','URBAN','FOREST','BARREN');
-   RefDEMType : array[1..2] of shortstring = ('DSM','DTM');
-
-   NumLandTypes = 8;
-   LandTypes : array[1..NumLandTypes] of shortstring = ('ALL','FLAT','GENTLE','STEEP','CLIFF','URBAN','FOREST','BARREN');
-
-   NumDEMIXDEM = 6;
-   DEMIXDEMTypeName : array[1..NumDEMIXDEM] of shortstring = ('FABDEM','COP','ALOS','NASA','SRTM','ASTER');
-
 const   //merging DEM modes
    dmMergeDirectories = 3;
    dmMergeGDAL = 1;
@@ -640,7 +629,7 @@ type
         IDDataBaseOne,IDDataBaseAll,LabelIDDataBase,GraphicalResizeWindow,GetPointSymbols,CornerEditBox,FindBlockHorizon, IDDBforAction,
         GetGreatCircleRoute, PlotNorthArrow,DeleteSingleDBRecs,DeleteMultipleDBRecs,DeleteMultipleRecsAllDBs,
         MovePointDBRecs,EditDBRecs,EditZDBRecs,
-        USCounty,DigitizeContourPoint,DigitizeContourStream,PickCenterAndScale,PickDBRecsToMove);
+        {USCounty,}DigitizeContourPoint,DigitizeContourStream,PickCenterAndScale,PickDBRecsToMove);
 
 
    tGridLimits = packed record
@@ -1447,6 +1436,7 @@ type
            ShowGlobalDEM,
            ShowBlueMarble,
            ShowMultigrids,
+           ShowDEMIX,
 
            US_Show_States,
            US_Show_Counties,
@@ -1924,6 +1914,7 @@ type
       MakeRGB_Best_Map,
       RGBbestSeparates,
 
+      SSIM_elev,SSIM_slope,SSIM_ruff,SSIM_rri,
       DEMIXCompositeImage,
       DEMIX_DoCHM,
       DEMIX_DoAirOrDirt,
@@ -2424,8 +2415,8 @@ type
        MissingToSeaLevel : boolean;
        MaxMergeSlope : float32;
 
-      ElevDisplayMeters,
-      WrapETOPO  : boolean;
+      ElevDisplayMeters : boolean;
+      //WrapETOPO  : boolean;
       FillHoleRadius      : byte;
       RoamAllZ           : boolean;
 
@@ -2814,7 +2805,7 @@ type
        MapMaskColor : tPlatformColor;
        EWAnaglyphShift : boolean;
        VegOptionMap : tVegOptionMap;
-       LeftLatGlobalDEM : int16;
+       //LeftLatGlobalDEM : int16;
 
        GeocodeAddress : shortString;
        BandsByWavelength,

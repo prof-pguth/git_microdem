@@ -97,14 +97,14 @@ function CreateStandardDeviationMap(DEM,Radius : integer) : integer;
 procedure ModeFilterDEM(DEM,BufferSize : integer; JustDoHoles : boolean);
 procedure RGBFilterDEM(DEM,BufferSize : integer; JustDoHoles : boolean);
 
-function MakeTRIGrid(CurDEM : integer; Normalize : tNormalMethod; DoTPI : boolean = true) : integer;
+function MakeTRIGrid(CurDEM : integer; Normalize : tNormalMethod; OpenMap : boolean = true; DoTPI : boolean = true) : integer;
 
 function CreateRoughnessMap(WhichDEM : integer; OpenMap : boolean = true) : integer;
 function CreateRoughnessMap2(DEM : integer; OpenMap : boolean = true; SaveSlopeMap : boolean = true) : integer;
 function CreateRoughnessMapAvgVector(WhichDEM : integer; OpenMap : boolean = true) : integer;
 
-function CreateRoughnessSlopeStandardDeviationMap(DEM,RadiusMustBeOdd : integer; OpenMap : boolean = true) : integer;
-function CreateSlopeRoughnessSlopeStandardDeviationMap(DEM,RadiusMustBeOdd : integer; var SlopeMap : integer; OpenMap : boolean = true) : integer;
+function CreateRoughnessSlopeStandardDeviationMap(DEM,DiameterMustBeOdd : integer; OpenMap : boolean = true) : integer;
+function CreateSlopeRoughnessSlopeStandardDeviationMap(DEM,DiameterMustBeOdd : integer; var SlopeMap : integer; OpenMap : boolean = true) : integer;
 
 procedure MakeGammaGrids(CurDEM,BoxSize : integer);
 
@@ -708,16 +708,16 @@ begin
 end;
 
 
-function CreateRoughnessSlopeStandardDeviationMap(DEM,RadiusMustBeOdd : integer; OpenMap : boolean = true) : integer;
+function CreateRoughnessSlopeStandardDeviationMap(DEM,DiameterMustBeOdd : integer; OpenMap : boolean = true) : integer;
 var
    SlopeMap : integer;
 begin
-   SlopeMap := 0;
-   CreateSlopeRoughnessSlopeStandardDeviationMap(DEM,RadiusMustBeOdd,SlopeMap,OpenMap);
+   SlopeMap := -1;
+   CreateSlopeRoughnessSlopeStandardDeviationMap(DEM,DiameterMustBeOdd,SlopeMap,OpenMap);
 end;
 
 
-function CreateSlopeRoughnessSlopeStandardDeviationMap(DEM,RadiusMustBeOdd : integer; var SlopeMap : integer; OpenMap : boolean = true) : integer;
+function CreateSlopeRoughnessSlopeStandardDeviationMap(DEM,DiameterMustBeOdd : integer; var SlopeMap : integer; OpenMap : boolean = true) : integer;
 var
    x,y,i,j,Radius : integer;
    Slope : float32;
@@ -727,10 +727,10 @@ var
    sl : array[1..100] of float32;
 begin
    ReturnSlopeMap := (SlopeMap = 0);
-   SlopeMap := CreateSlopeMap(DEM,OpenMap);
-   fName := 'md_ruff_slope_std_' + FilterSizeStr(RadiusMustBeOdd) + '_' + DEMGlb[DEM].AreaName;
+   SlopeMap := CreateSlopeMap(DEM,ReturnSlopeMap);
+   fName := 'md_ruff_slope_std_' + FilterSizeStr(DiameterMustBeOdd) + '_' + DEMGlb[DEM].AreaName;
    Result := DEMGlb[DEM].CloneAndOpenGridSetMissing(FloatingPointDEM,fName,PercentSlope);
-   Radius := RadiusMustBeOdd div 2;
+   Radius := DiameterMustBeOdd div 2;
    StartProgressAbortOption('Slope and roughness');
    for x := Radius to pred(DEMGlb[DEM].DEMheader.NumCol - Radius) do begin
       UpdateProgressBar(x/DEMGlb[DEM].DEMheader.NumCol);
@@ -753,8 +753,8 @@ begin
    DEMglb[Result].CheckMaxMinElev;
    if OpenMap then DEMglb[Result].SetUpMap(Result,true,mtElevSpectrum);
    if ReturnSlopeMap then begin
-      DEMglb[SlopeMap].CheckMaxMinElev;
-      if OpenMap then DEMglb[SlopeMap].SetUpMap(Result,true,mtElevSpectrum);
+      //DEMglb[SlopeMap].CheckMaxMinElev;
+      //if OpenMap then DEMglb[SlopeMap].SetUpMap(Result,true,mtElevSpectrum);
    end
    else begin
       CloseSingleDEM(SlopeMap);
@@ -912,7 +912,7 @@ end;
    end;
 
 
-function MakeTRIGrid(CurDEM : integer; Normalize : tNormalMethod; DoTPI : boolean = true) : integer;
+function MakeTRIGrid(CurDEM : integer; Normalize : tNormalMethod; OpenMap : boolean = true; DoTPI : boolean = true) : integer;
 var
    Col,Row,TPIGrid : integer;
    GridLimits : tGridLimits;
@@ -939,7 +939,7 @@ begin
     FactorEW := 1;
     FactorDiag := 1;
 
-    if ShowSatProgress then StartProgressAbortOption('TRI');
+    if ShowSatProgress then StartProgressAbortOption(TStr);
 
     //you could set the normalization factors here, using the average diagonal spacing
     //it would not be much faster, and the approximation would be increasingly in error for geographic DEMs as the latitude or size of the DEM increased
@@ -1032,7 +1032,7 @@ begin
                 sum := sqrt(sum/8);
                 DEMGlb[Result].SetGridElevation(Col,Row,sum);
                 if DoTPI then begin
-                   Sum := z-(zn+zne+ze+zse+zs+zsw+zw+znw)/8;
+                   Sum := z-(zn+zne+ze+zse+zs+zsw+zw+znw) / 8;
                    DEMGlb[TPIGrid].SetGridElevation(Col,Row,sum);
                 end;
              end;
@@ -1040,8 +1040,10 @@ begin
        end;
     end;
     if ShowSatProgress then EndProgress;
-    DEMGlb[Result].SetUpMap(Result,true,mtElevSpectrum);
-    if DoTPI then DEMGlb[TPIGrid].SetUpMap(TPIGrid,true,mtElevSpectrum);
+    if OpenMap then begin
+       DEMGlb[Result].SetUpMap(Result,true,mtElevSpectrum);
+       if DoTPI then DEMGlb[TPIGrid].SetUpMap(TPIGrid,true,mtElevSpectrum);
+    end;
     {$IfDef RecordTimeGridCreate} WriteLineToDebugFile('Make TRIGrid took ' + RealToString(Stopwatch1.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
 end;
 

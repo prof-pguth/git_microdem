@@ -1100,8 +1100,8 @@ end;
 
 
 initialization
-    AFormat := System.SysUtils.TFormatSettings.Create;
-    AFormat.LongTimeFormat := 'hh:mm:ss.zzz';
+   AFormat := System.SysUtils.TFormatSettings.Create;
+   AFormat.LongTimeFormat := 'hh:mm:ss.zzz';
    {$IfDef MessageStartupProblems} MessageToContinue('Startup petmar_types'); {$EndIf}
    {$IfDef FMX} FMXinit; {$EndIf}
    {$IfDef VCL} VCLinit; {$EndIf}
@@ -1114,6 +1114,7 @@ finalization
    {$IfDef TrackCDStiming} WriteLineToDebugFile('TrackCDStiming active in petmar_types'); {$EndIf}
    {$If Defined(RecordClosing)} WriteLineToDebugFile('Closing petmar_types out dbfn=' + DebugFileName); {$EndIf}
 end.
+
 
 
 

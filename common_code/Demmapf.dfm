@@ -3559,7 +3559,6 @@ object MapForm: TMapForm
         end
         object UScounty1: TMenuItem
           Caption = 'US county'
-          OnClick = UScounty1Click
         end
       end
       object RoamingZvaluesfrom2dgrid1: TMenuItem
@@ -6086,10 +6085,6 @@ object MapForm: TMapForm
         OnClick = Immediateneighbordropoff1Click
       end
     end
-    object Rugosity1: TMenuItem
-      Caption = 'Rugosity'
-      OnClick = Rugosity1Click
-    end
     object Convergenceindex1: TMenuItem
       Caption = 'Convergence index'
       OnClick = Convergenceindex1Click
@@ -6110,6 +6105,10 @@ object MapForm: TMapForm
       end
       object PI1: TMenuItem
         Caption = 'TPI'
+      end
+      object Rugosity1: TMenuItem
+        Caption = 'Rugosity'
+        OnClick = Rugosity1Click
       end
       object Experimental2: TMenuItem
         Caption = 'Experimental'

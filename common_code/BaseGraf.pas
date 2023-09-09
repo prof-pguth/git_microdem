@@ -3995,6 +3995,8 @@ procedure TThisBaseGraph.DoFFT(XAxis,SeekPeaks : boolean);
 {$IfDef ExFourier}
 begin
 {$Else}
+var
+   FFTGraph : TFFTGraph;
 begin
    if (GraphDraw.DataFilesPlotted.Count = 0) then exit;
    FFTGraph := TFFTGraph.Create(Application);

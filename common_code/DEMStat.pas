@@ -41,7 +41,7 @@ unit DEMStat;
       //{$Define MapTraceCrests}
       //{$Define RecordDetailedTraceCrests}
       //{$Define RecordClustering}
-      //{$Define RecordFFT}
+      {$Define RecordFFT}
       //{$Define RecordHistogram}
       //{$Define RecordGridScatterGram}
    {$Else}
@@ -235,7 +235,7 @@ uses
 
 const
    InsuffDEMrelief = 'Insufficient DEM relief';
-   ZRangeTooLarge = 'Elev range too large';
+   //ZRangeTooLarge = 'Elev range too large';
 type
    PlotModeType = (Plain,Strahler,Cumulative,NormProb);
 var
@@ -3101,15 +3101,14 @@ var
    FFTFile : file;
    FName   : PathStr;
    Size,x,y,Good,Bad : integer;
-   z : float32;
-   a,r : float32;
+   z,a,r : float32;
    Vals    : array[0..MaxElevArraySize] of float32;
 
          procedure SetUpAnalysis(NumRecs : integer);
          var
             x : integer;
          begin
-            {$IfDef RecordFFT} WriteLineToDebugFile('SetUpAnalysis in');     {$EndIf}
+            {$IfDef RecordFFT} WriteLineToDebugFile('SetUpAnalysis in, NumRecs=' + IntToStr(NumRecs));     {$EndIf}
             Size := 2;
             While (Size < NumRecs) do Size := Size * 2;
             assignFile(FFTfile,FName);
@@ -3121,6 +3120,8 @@ var
          end;
 
          procedure SetUpGraph(Title : ShortString; AverageSpace : float32; var Slope : float32);
+         var
+            FFTGraph : TFFTGraph;
          begin
             CloseFile(FFTFile);
             EndProgress;
@@ -3140,14 +3141,18 @@ var
                   BinTime := AverageSpace;
                   BinUnits := ' (' + ElevUnitsAre(DEMGlb[WantedDEM].DEMheader.ElevUnits) + ')';
                end;
-               if FFTGraph.FastFourierTransform and (FFTGraph.GraphDraw.DataFilesPlotted.Count > 0) then FFTGraph.GetSlope(false,a,Slope,r);
+               {$IfDef RecordFFT} WriteLineToDebugFile('FFT set up graph initialized');   {$EndIf}
+               if FFTGraph.FastFourierTransform then begin
+                  {$IfDef RecordFFT} WriteLineToDebugFile('FFTGraph.FastFourierTransform done');   {$EndIf}
+                  if (FFTGraph.GraphDraw.DataFilesPlotted.Count > 0) then FFTGraph.GetSlope(false,a,Slope,r);
+               end;
                if CloseGraphs then FFTGraph.Close;
             end;
          end;
 
 
 begin
-   {$IfDef RecordFFT} WriteLineToDebugFile('FastFourierTransform in, WantedDEM=' + IntToStr(WantedDEM)); {$EndIf}
+   {$IfDef RecordFFT} WriteLineToDebugFile('FastFourierTransform in, WantedDEM=' + IntToStr(WantedDEM) + '  '  + DEMGlb[WantedDEM].AreaName); {$EndIf}
    fName := MDTempDir + 'tempfft1.zzz';
    SetUpAnalysis(succ(GridLimits.XGridHigh-GridLimits.XGridLow));
    y := GridLimits.YGridLow;
@@ -3181,6 +3186,7 @@ begin
       inc(x,MDdef.StatSampleIncr);
    end;
    SetUpGraph(' by column ',DEMGlb[WantedDEM].AverageYSpace,SlopeByRow);
+   {$IfDef RecordFFT} WriteLineToDebugFile('FastFourierTransform out'); {$EndIf}
 end;
 
 
@@ -3221,6 +3227,7 @@ begin
    DEMGlb[DEMToUse].ComputeVariogram(GridLimits);  //,false);
    {$IfDef RecordGridScatterGram} WriteLineToDebugFile('SemiVariogram for DEM=' + intToStr(DEMtoUse) + ' out'); {$EndIf}
 end {proc SemiVariogram};
+
 {$EndIf}
 
 
