@@ -1,6 +1,6 @@
 # git_microdem
  
-Last changes posted  9 Sept 2023
+Last changes posted  25 Sept 2023
 
 MICRODEM help file at https://www.usna.edu/Users/oceano/pguth/md_help/html/microdem.htm
 
