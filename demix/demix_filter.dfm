@@ -26,14 +26,14 @@ object DemixFilterForm: TDemixFilterForm
     ExplicitHeight = 481
     object TabSheet1: TTabSheet
       Caption = 'New options'
-      object BitBtn5: TBitBtn
+      object LoadCurrentAreaBitBtn5: TBitBtn
         Left = 502
         Top = 138
         Width = 155
         Height = 25
         Caption = 'Load area DEMs'
         TabOrder = 0
-        OnClick = BitBtn5Click
+        OnClick = LoadCurrentAreaBitBtn5Click
       end
       object CheckBox3: TCheckBox
         Left = 256
@@ -70,6 +70,7 @@ object DemixFilterForm: TDemixFilterForm
         Height = 23
         TabOrder = 4
         Text = 'ComboBox4'
+        OnChange = ComboBox4Change
       end
       object BitBtn4: TBitBtn
         Left = 287
@@ -423,13 +424,40 @@ object DemixFilterForm: TDemixFilterForm
         end
       end
       object BitBtn30: TBitBtn
-        Left = 232
-        Top = 224
-        Width = 97
+        Left = 224
+        Top = 233
+        Width = 113
         Height = 25
-        Caption = 'RRI all maps'
+        Caption = 'SSIM prep, area'
         TabOrder = 36
         OnClick = BitBtn30Click
+      end
+      object BitBtn31: TBitBtn
+        Left = 224
+        Top = 264
+        Width = 113
+        Height = 25
+        Caption = 'SSIM prep, tile'
+        TabOrder = 37
+        OnClick = BitBtn31Click
+      end
+      object BitBtn5: TBitBtn
+        Left = 224
+        Top = 202
+        Width = 113
+        Height = 25
+        Caption = 'SSIM prep, all areas'
+        TabOrder = 38
+        OnClick = BitBtn5Click
+      end
+      object BitBtn32: TBitBtn
+        Left = 176
+        Top = 115
+        Width = 129
+        Height = 25
+        Caption = 'Load areas from list'
+        TabOrder = 39
+        OnClick = BitBtn32Click
       end
     end
     object TabSheet2: TTabSheet
@@ -795,6 +823,77 @@ object DemixFilterForm: TDemixFilterForm
         Caption = 'Three DEM best separates'
         TabOrder = 5
         OnClick = CheckBox10Click
+      end
+      object CheckBox11: TCheckBox
+        Left = 40
+        Top = 164
+        Width = 233
+        Height = 17
+        Caption = 'Half second DEMs default'
+        TabOrder = 6
+        OnClick = CheckBox11Click
+      end
+      object GroupBox9: TGroupBox
+        Left = 272
+        Top = 16
+        Width = 185
+        Height = 142
+        Caption = 'SSIM parameters'
+        TabOrder = 7
+        object CheckBox12: TCheckBox
+          Left = 16
+          Top = 23
+          Width = 97
+          Height = 17
+          Caption = 'Elevation'
+          TabOrder = 0
+          OnClick = CheckBox12Click
+        end
+        object CheckBox13: TCheckBox
+          Left = 16
+          Top = 46
+          Width = 97
+          Height = 17
+          Caption = 'Slope'
+          TabOrder = 1
+          OnClick = CheckBox13Click
+        end
+        object CheckBox14: TCheckBox
+          Left = 16
+          Top = 69
+          Width = 97
+          Height = 17
+          Caption = 'Roughness'
+          TabOrder = 2
+          OnClick = CheckBox14Click
+        end
+        object CheckBox15: TCheckBox
+          Left = 16
+          Top = 92
+          Width = 97
+          Height = 17
+          Caption = 'RRI'
+          TabOrder = 3
+          OnClick = CheckBox15Click
+        end
+        object Hillshade: TCheckBox
+          Left = 16
+          Top = 115
+          Width = 97
+          Height = 17
+          Caption = 'Hillshade'
+          TabOrder = 4
+          OnClick = HillshadeClick
+        end
+      end
+      object CheckBox16: TCheckBox
+        Left = 40
+        Top = 187
+        Width = 177
+        Height = 17
+        Caption = 'Open reference DSMs'
+        TabOrder = 8
+        OnClick = CheckBox16Click
       end
     end
   end

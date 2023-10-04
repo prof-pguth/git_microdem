@@ -329,6 +329,7 @@ type
     BitBtn64: TBitBtn;
     CheckBox34: TCheckBox;
     CheckBox29: TCheckBox;
+    DTMfromlowestreturn1: TMenuItem;
     procedure BitBtn14Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure RadioGroup1Click(Sender: TObject);
@@ -516,6 +517,7 @@ type
     procedure BitBtn64Click(Sender: TObject);
     procedure CheckBox34Click(Sender: TObject);
     procedure BitBtn63Click(Sender: TObject);
+    procedure DTMfromlowestreturn1Click(Sender: TObject);
   private
     { Private declarations }
     MinAreaZ,MaxAreaZ : float64;
@@ -3600,6 +3602,13 @@ begin
    MakeGrid(pcgmGrndPtDTM);
 end;
 
+
+procedure Tpt_cloud_opts_fm.DTMfromlowestreturn1Click(Sender: TObject);
+begin
+   MDDef.MakePCFloor := true;
+   MDDef.MakePCCeiling := false;
+   MakeGrid(pcgmCeilFloor);
+end;
 
 procedure Tpt_cloud_opts_fm.DTMrangescalesfromgroundpoints1Click(Sender: TObject);
 var

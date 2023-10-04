@@ -1,12 +1,11 @@
 unit sup_class;
 
 {^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of ianMICRODEM GIS Program    }
+{ Part of MICRODEM GIS Program       }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
 { Copyright (c) 2023 Peter L. Guth   }
 {____________________________________}
-
 
 {$I nevadia_defines.inc}
 
@@ -121,7 +120,6 @@ type
   end;
 
 procedure StartSupervisedClassification(var Map : tMapForm);
-//procedure UnsupervisedClassification(MGUsed : integer; var MapOwner : tMapForm);
 function UnsupervisedClassification(MGUsed : integer; var MapOwner : tMapForm) : integer;
 
 
@@ -133,14 +131,10 @@ implementation
 {$R *.dfm}
 
 uses
-   {$IfDef ExGIS}
-   {$Else}
    demdatabase,
-   {$EndIf}
-
-  Petmar,PetMath,DEMMapDraw, PetDBUtils, BaseGraf,DEMCoord,Geotiff,DEMDef_routines,Make_Tables,
-  DEM_Manager,PetImage,
-  Nevadia_main, map_overlays, multigrid, basemap, clusterOptions;
+   Petmar,PetMath,DEMMapDraw, PetDBUtils, BaseGraf,DEMCoord,Geotiff,DEMDef_routines,Make_Tables,
+   DEM_Manager,PetImage,
+   Nevadia_main, map_overlays, multigrid, basemap, clusterOptions;
 
 
 
@@ -223,7 +217,7 @@ var
            end;
        end;
        GISDB[TrainingPointsDB].ClearGISFilter;
-       GISDB[TrainingPointsDB].MyData.ApplyFilter('');
+       //GISDB[TrainingPointsDB].MyData.ApplyFilter('');
        GISDB[TrainingPointsDB].dbTablef.ShowStatus;
     end;
 
@@ -295,7 +289,7 @@ var
    MinSampler,Sampler : integer;
    Limits : tGridLimits;
    FieldsUsed : byte;
-   MetaData : tStringList;
+   MetaData,sl : tStringList;
    FieldsToUse : array[1..MaxBands] of AnsiString;
 begin
    {$IfDef RecordUnsupClass} WriteLineToDebugFile('UnsupervisedClassification in, MG=' + IntToStr(MGUsed)); {$EndIf}
@@ -325,58 +319,60 @@ begin
    MetaData.Add('Cluster initialization: ' +  IntToStr(ord(MDDef.ClusterInitialization)));
    FieldsUsed := 0;
    for i := 1 to MaxGridsInMG do begin
-         if MultiGridArray[MGUsed].UseBand[i] and ValidDEM(MultiGridArray[MGUsed].Grids[i]) then begin
-            {$IfDef RecordUnsupClass} WriteLineToDebugFile('Use band=' + IntToStr(i)); {$EndIf}
-            MVClusterClientDataSet.FieldDefs.Add('BAND_' + IntToStr(i),ftFloat, 0, False);
-            inc(FieldsUsed);
-            FieldsToUse[FieldsUsed] := 'BAND_' + IntToStr(i);
-         end
-         else begin
-            aLine := 'Skip band=' + IntToStr(i);
-            MetaData.Add(aline);
-         end;
+      if MultiGridArray[MGUsed].UseBand[i] and ValidDEM(MultiGridArray[MGUsed].Grids[i]) then begin
+         {$IfDef RecordUnsupClass} WriteLineToDebugFile('Use band=' + IntToStr(i)); {$EndIf}
+         MVClusterClientDataSet.FieldDefs.Add('BAND_' + IntToStr(i),ftFloat, 0, False);
+         inc(FieldsUsed);
+         FieldsToUse[FieldsUsed] := 'BAND_' + IntToStr(i);
+      end
+      else begin
+         aLine := 'Skip band=' + IntToStr(i);
+         MetaData.Add(aline);
       end;
-      MetaData.Add('Bands used = ' + IntToStr(FieldsUsed));
+   end;
+   MetaData.Add('Bands used = ' + IntToStr(FieldsUsed));
 
-      MVClusterClientDataSet.CreateDataset;
-      MVClusterClientDataSet.Open;
-      {$IfDef RecordUnsupClass} WriteLineToDebugFile('MVClusterClientDataSet.Open over, bands used=' + IntToStr(FieldsUsed) + '  First valid grid=' + IntToStr(MultiGridArray[MGUsed].FirstValidGrid)); {$EndIf}
-      StartProgress('Load sample pts ' + MultiGridArray[MGUsed].MG_Name);
-      y := Limits.YGridLow;
-      while y <= Limits.YGridHigh do begin
-         {$IfDef RecordSatLoops} WriteLineToDebugFile('y=' + IntToStr(y)); {$EndIf}
-         if (y mod 50 = 0) then UpdateProgressBar((y-Limits.YGridLow)/(Limits.YGridHigh-Limits.YGridLow));
-         x := Limits.XGridLow;
-         while x <= Limits.XGridHigh do begin
-            if DEMGlb[MultiGridArray[MGUsed].Grids[MultiGridArray[MGUsed].FirstValidGrid]].GridInDataSet(x,y) then begin
-               if DEMGlb[MultiGridArray[MGUsed].Grids[MultiGridArray[MGUsed].FirstValidGrid]].GetElevMeters(x,y,PV) then begin
-                  MVClusterClientDataSet.Insert;
-                  for i := 1 to MaxGridsInMG do begin
-                     if MultiGridArray[MGUsed].UseBand[i] and ValidDEM(MultiGridArray[MGUsed].Grids[i]) then begin
-                        DEMGlb[MultiGridArray[MGUsed].Grids[i]].GetElevMetersOnGrid(x,y,PV);
-                        MVClusterClientDataSet.FieldByName('BAND_' + IntToStr(i)).AsFloat := PV;
-                     end;
+   MVClusterClientDataSet.CreateDataset;
+   MVClusterClientDataSet.Open;
+   {$IfDef RecordUnsupClass} WriteLineToDebugFile('MVClusterClientDataSet.Open over, bands used=' + IntToStr(FieldsUsed) + '  First valid grid=' + IntToStr(MultiGridArray[MGUsed].FirstValidGrid)); {$EndIf}
+   StartProgress('Load sample pts ' + MultiGridArray[MGUsed].MG_Name);
+   y := Limits.YGridLow;
+   while y <= Limits.YGridHigh do begin
+      {$IfDef RecordSatLoops} WriteLineToDebugFile('y=' + IntToStr(y)); {$EndIf}
+      if (y mod 50 = 0) then UpdateProgressBar((y-Limits.YGridLow)/(Limits.YGridHigh-Limits.YGridLow));
+      x := Limits.XGridLow;
+      while x <= Limits.XGridHigh do begin
+         if DEMGlb[MultiGridArray[MGUsed].Grids[MultiGridArray[MGUsed].FirstValidGrid]].GridInDataSet(x,y) then begin
+            if DEMGlb[MultiGridArray[MGUsed].Grids[MultiGridArray[MGUsed].FirstValidGrid]].GetElevMeters(x,y,PV) then begin
+               MVClusterClientDataSet.Insert;
+               for i := 1 to MaxGridsInMG do begin
+                  if MultiGridArray[MGUsed].UseBand[i] and ValidDEM(MultiGridArray[MGUsed].Grids[i]) then begin
+                     DEMGlb[MultiGridArray[MGUsed].Grids[i]].GetElevMetersOnGrid(x,y,PV);
+                     MVClusterClientDataSet.FieldByName('BAND_' + IntToStr(i)).AsFloat := PV;
                   end;
-                  MVClusterClientDataSet.Post;
-                 end;
-                 inc(x,sampler);
                end;
-           end;
-         inc(y,sampler);
-      end;
-      aLine := 'Sampling points=' + IntToStr(MVClusterClientDataSet.RecordCount);
-      MetaData.Add('');
-      MetaData.Add(aline);
-      wmDEM.SetPanelText(0,'Save pts');
-      MVClusterClientDataSet.SaveToFile(MDTempDir + 'points.cds',dfBinary);
-      {$IfDef RecordUnsupClass} WriteLineToDebugFile('TMapForm.Unsupervisedclassification1Click data loaded  ' + aLine); {$EndIf}
-      EndProgress;
-      ShowHourglassCursor;
-      wmDEM.SetPanelText(0,'K Means Clustering');
-      MVClusterClientDataSet.KMeansClustering(FieldsToUse, FieldsUsed, MDTempDir + 'Cluster_Results.HTML');
-      MVClusterClientDataSet.SaveToFile(MDTempDir + 'clusters.cds',dfBinary);
-      {$IfDef RecordUnsupClass} WriteLineToDebugFile('KMeansClustering over'); {$EndIf}
-       wmDEM.SetPanelText(0,'');
+               MVClusterClientDataSet.Post;
+              end;
+              inc(x,sampler);
+            end;
+        end;
+      inc(y,sampler);
+   end;
+   aLine := 'Sampling points=' + IntToStr(MVClusterClientDataSet.RecordCount);
+   MetaData.Add('');
+   MetaData.Add(aline);
+   wmDEM.SetPanelText(0,'Save pts');
+   MVClusterClientDataSet.SaveToFile(MDTempDir + 'points.cds',dfBinary);
+   {$IfDef RecordUnsupClass} WriteLineToDebugFile('TMapForm.Unsupervisedclassification1Click data loaded  ' + aLine); {$EndIf}
+   EndProgress;
+   ShowHourglassCursor;
+   wmDEM.SetPanelText(0,'K Means Clustering');
+   sl := tStringList.Create;
+   MVClusterClientDataSet.KMeansClustering(sl,FieldsToUse, FieldsUsed, MDTempDir + 'Cluster_Results.HTML');
+   sl.Destroy;
+   MVClusterClientDataSet.SaveToFile(MDTempDir + 'clusters.cds',dfBinary);
+   {$IfDef RecordUnsupClass} WriteLineToDebugFile('KMeansClustering over'); {$EndIf}
+   wmDEM.SetPanelText(0,'');
    UnSupClassDir := ExtractFilePath(MultiGridArray[MGUsed].BasePath) + 'unsup_class\';
    SafeMakeDir(UnSupClassDir);
    fName2 := NextFileNumber(UnSupClassDir,MultiGridArray[MGUsed].MG_Name + '_unsup_class_' ,'.dem');
@@ -719,7 +715,6 @@ begin
    {$EndIf}
 
    fName2 := NextFileNumber(MultiGridArray[UseMG].SupClassDir, 'sc_' ,'.dem');
-   //ClassName := MultiGridArray[UseMG].MG_Name + '_' + ExtractFileNameNoExt(fName2);
    ClassDEM := DEMGlb[MultiGridArray[UseMG].Grids[1]].CloneAndOpenGridSetMissing(byteDEM,ClassName,Undefined);
 
    try

@@ -2,8 +2,8 @@ object wmdem: Twmdem
   Left = 0
   Top = 262
   Caption = 'GIS program loading'
-  ClientHeight = 1140
-  ClientWidth = 2046
+  ClientHeight = 1157
+  ClientWidth = 2034
   Color = clScrollBar
   DefaultMonitor = dmDesktop
   Font.Charset = DEFAULT_CHARSET
@@ -28,14 +28,13 @@ object wmdem: Twmdem
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 2046
-    Height = 29
+    Width = 2034
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34
     TabOrder = 0
     OnMouseDown = ToolBar1MouseDown
-    ExplicitWidth = 2042
+    ExplicitWidth = 2030
     object SpeedButton2: TSpeedButton
       Left = 0
       Top = 0
@@ -1677,8 +1676,8 @@ object wmdem: Twmdem
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 1121
-    Width = 2046
+    Top = 1138
+    Width = 2034
     Height = 19
     Panels = <
       item
@@ -1697,8 +1696,8 @@ object wmdem: Twmdem
     Visible = False
     OnClick = StatusBar1Click
     OnDblClick = StatusBar1DblClick
-    ExplicitTop = 1120
-    ExplicitWidth = 2042
+    ExplicitTop = 1137
+    ExplicitWidth = 2030
   end
   object MainMenu1: TMainMenu
     Left = 136
@@ -2467,8 +2466,12 @@ object wmdem: Twmdem
       Caption = '&Help'
       GroupIndex = 6
       object Contents1: TMenuItem
-        Caption = '&Contents'
+        Caption = 'CHM viewer contents'
         OnClick = Contents1Click
+      end
+      object SumatraPDFhelpcontents1: TMenuItem
+        Caption = 'SumatraPDF help contents'
+        OnClick = SumatraPDFhelpcontents1Click
       end
       object Onlinehelp1: TMenuItem
         Caption = 'Online help'
@@ -2957,7 +2960,14 @@ object wmdem: Twmdem
     end
     object Allgraphsononeimage1: TMenuItem
       Caption = 'All graphs on one image'
-      OnClick = Allgraphsononeimage1Click
+      object Noaddedlegends1: TMenuItem
+        Caption = 'No added legends'
+        OnClick = Noaddedlegends1Click
+      end
+      object Noaddedlegends2: TMenuItem
+        Caption = 'Added legends'
+        OnClick = Noaddedlegends2Click
+      end
     end
     object Experimental1: TMenuItem
       Caption = 'Experimental'
@@ -2992,6 +3002,10 @@ object wmdem: Twmdem
       object Python1: TMenuItem
         Caption = 'Python (experimental)'
         OnClick = Python1Click
+      end
+      object Pythontestrun1: TMenuItem
+        Caption = 'Python test run'
+        OnClick = Pythontestrun1Click
       end
     end
     object Spectrallibrary1: TMenuItem
@@ -3040,6 +3054,14 @@ object wmdem: Twmdem
       object Findmatchingfiles1: TMenuItem
         Caption = 'List of matching files'
         OnClick = Findmatchingfiles1Click
+      end
+      object Listofsubdirectoriesfullpaths1: TMenuItem
+        Caption = 'List of subdirectories, full paths'
+        OnClick = Listofsubdirectoriesfullpaths1Click
+      end
+      object Listofsubdirectoriesrelativenames1: TMenuItem
+        Caption = 'List of subdirectories, relative names'
+        OnClick = Listofsubdirectoriesrelativenames1Click
       end
       object Copyfile1: TMenuItem
         Caption = 'Copy files with name match'
@@ -3459,7 +3481,6 @@ object wmdem: Twmdem
     object OpenDEMIXarea1: TMenuItem
       Caption = 'Open DEMIX area'
       Enabled = False
-      OnClick = OpenDEMIXarea1Click
     end
     object OpenDEMIXridges1: TMenuItem
       Caption = 'Open DEMIX ridges'
@@ -3536,6 +3557,7 @@ object wmdem: Twmdem
     end
     object Extract1: TMenuItem
       Caption = 'Extract EDTM for test areas'
+      Enabled = False
       OnClick = Extract1Click
     end
     object Merge1secreferenceDEMsfromVisioterra1: TMenuItem

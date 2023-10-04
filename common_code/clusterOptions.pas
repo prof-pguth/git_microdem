@@ -41,6 +41,11 @@ type
     CheckBox8: TCheckBox;
     Label4: TLabel;
     Label5: TLabel;
+    CheckBox9: TCheckBox;
+    Label6: TLabel;
+    Edit4: TEdit;
+    Label7: TLabel;
+    Edit5: TEdit;
     procedure OKBtnClick(Sender: TObject);
     procedure HelpBtnClick(Sender: TObject);
     procedure CancelBtnClick(Sender: TObject);
@@ -75,13 +80,7 @@ begin
 var
    ClusterOptsForm : TClusterOptsForm;
 begin
-   MDDef.ShowClusterScatterPlots := false;
-   MDDef.ShowMaskScatterPlots := false;
-   MDDef.ShowClusterHistograms := false;
-   MDDef.ShowMaskHistograms := false;
-
    ClusterOptsForm := TClusterOptsForm.Create(Application);
-
    with ClusterOptsForm do begin
       Label4.Caption := 'Max ' + IntToStr(EdburgGeneralFuncsMaxClusters);
       Edit1.Text := IntToStr(MDDef.NumClusters);
@@ -96,18 +95,22 @@ begin
       CheckBox3.Checked := MDDef.ShowClusterHistograms;
       CheckBox4.Checked := MDDef.ShowMaskHistograms;
 
-      CheckBox6.Checked := MDDef.ShowClusterResults;
-      CheckBox7.Checked := MDDef.IncludeClusterStatistics;
+      //CheckBox6.Checked := MDDef.ShowClusterResults;
+      //CheckBox7.Checked := MDDef.IncludeClusterStatistics;
 
       CheckBox5.Checked := MDDef.UnSupSamplesFullImage;
       CheckBox8.Checked := MDDef.UnSupClassFullImage;
+      CheckBox9.Checked := MDDef.ClusterSensitivity;
+      Edit4.Text := IntToStr(MDDef.ClustSensitiveMin);
+      Edit5.Text := IntToStr(MDDef.ClustSensitiveMax);
+
 
       CheckBox1.Enabled := true;
       CheckBox2.Enabled := All;
       CheckBox3.Enabled := true;
       CheckBox4.Enabled := All;
-      CheckBox6.Enabled := All;
-      CheckBox7.Enabled := All;
+      //CheckBox6.Enabled := All;
+      //CheckBox7.Enabled := All;
 
       ShowModal;
       if Aborted then begin
@@ -124,8 +127,8 @@ begin
 
           MDDef.ShowClusterHistograms := CheckBox3.Checked;
           MDDef.ShowMaskHistograms := CheckBox4.Checked;
-          MDDef.ShowClusterResults := CheckBox6.Checked;
-          MDDef.IncludeClusterStatistics := CheckBox7.Checked;
+          //MDDef.ShowClusterResults := CheckBox6.Checked;
+          //MDDef.IncludeClusterStatistics := CheckBox7.Checked;
 
           MDDef.UnSupSamplesFullImage := CheckBox5.Checked;
           MDDef.UnSupClassFullImage := CheckBox8.Checked;

@@ -151,7 +151,6 @@ begin
 end;
 
 
-
 function DEMIXtileFill(DEM : integer; AreaBox : sfBoundBox; OpenTable : boolean = true) : integer;
 var
    Col,Row : integer;
@@ -161,7 +160,7 @@ var
    bb : sfBoundBox;
 begin
    {$IfDef RecordDEMIXTiles} writeLineToDebugFile('DEMIXtileFill in, DEM=' + IntToStr(DEM)); {$EndIf}
-   try
+   if ValidDEM(DEM) then try
       StartProgress('DEMIX tiles');
       Result := DEMGlb[DEM].SelectionMap.LoadDEMIXtileOutlines(AreaBox,true,OpenTable);
       if (Result <> 0) then try
@@ -189,7 +188,6 @@ begin
             GISdb[Result].MyData.Next;
          end;
       finally
-
       end;
    finally
       EndProgress;
@@ -208,7 +206,6 @@ begin
 end;
 
 
-
 function TMapForm.LoadDEMIXtileOutlines(WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false; OpenTable : boolean = true) : integer;
 var
    DEMIXFName : PathStr;
@@ -220,32 +217,37 @@ begin
 end;
 
 
-function TMapForm.DEMIXtilesOnMap : tStringList;
+function TMapForm.DEMIXtilesOnMap(RecordFill : tStringList = Nil) : tStringList;
 var
    DEMIXFName : PathStr;
    bb : sfBoundBox;
    db : integer;
+   Name : shortstring;
 begin
    Result := tStringList.Create;
    bb := MapDraw.MapCorners.BoundBoxGeo;
-   if ValidDEM(MapDraw.DEMonMap)  then begin
+   if ValidDEM(MapDraw.DEMonMap) then begin
       db := DEMIXtileFill(MapDraw.DEMonMap,bb,False);
       GISdb[DB].ApplyGISFilter('GRID_FULL>' + IntToStr(MDDef.DEMIX_Full));
+      GISdb[DB].Empsource.Enabled := false;
    end
    else begin
       LoadDEMIXtileOutlines(bb,False,False,False);
    end;
    {$If Defined(RecordCarto)} WriteLineToDebugFile('TMapForm.DEMIXtilesOnMap, tiles=' + IntToStr(GISdb[db].MyData.FiltRecInDB)); {$EndIf}
    while not GISdb[db].MyData.Eof do begin
-      Result.Add(GISdb[db].MyData.GetFieldByNameAsString('NAME'));
+      Name := GISdb[db].MyData.GetFieldByNameAsString('NAME');
+      Result.Add(Name);
+      if (RecordFill <> Nil) then begin
+          RecordFill.Add(Name + ',' + RealToString(GISdb[db].MyData.GetFieldByNameAsFloat('GRID_FULL'),-8,-2));
+      end;
       GISdb[db].MyData.Next;
    end;
    CloseAndNilNumberedDB(db);
 end;
 
 
-
-function DEMIXtileBoundingBox(tName : shortString) : sfBoundBox;
+function DEMIXtileBoundingBox(tName : shortString; PixelIsAreaSafe : boolean = false) : sfBoundBox;
 var
    i,MinIncr,BaseLat,BaseLong : integer;
 begin
@@ -269,6 +271,9 @@ begin
          Result.XMax := BaseLong + (succ(i) * MinIncr) / 60;
          Break;
       end;
+   end;
+   if PixelIsAreaSafe then begin
+      SafeAdjustGeoBoundBoxForPixelIsArea(Result);
    end;
 end;
 

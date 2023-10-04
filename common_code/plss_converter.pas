@@ -1,10 +1,11 @@
 ﻿unit plss_converter;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{   file verified 5/13/2018       }
-{_________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2023 Peter L. Guth  }
+{___________________________________}
 
 {$I nevadia_defines.inc}
 
@@ -81,10 +82,7 @@ var
    GeoName,PLSSString : ShortString;
    Lat,Long : float64;
 begin
-   {$IfDef ExSats}
-   {$Else}
-      CloseAllImagery;
-   {$EndIf}
+   CloseAllImagery;
    Self.Visible := false;
    if GetPLSSLocation(PLSSString,Lat,Long,DEMGlb[1].SelectionMap) then begin
       {$IfDef RecordPLSSProblems} WriteLineToDebugFile('TPLSSConvertForm.BitBtn1Click: '  + PLSSString + '   ' + LatLongDegreeToString(Lat,Long,MDDef.OutPutLatLongMethod)); {$EndIf}
@@ -102,10 +100,7 @@ var
    Lat,Long : float64;
    GeoName : ShortString;
 begin
-   {$IfDef ExSats}
-   {$Else}
-      CloseAllImagery;
-   {$EndIf}
+   CloseAllImagery;
    Self.Visible := false;
    GetLatLong(WGS84DatumConstants,'to convert', Lat,Long);
    ShowHourglassCursor;

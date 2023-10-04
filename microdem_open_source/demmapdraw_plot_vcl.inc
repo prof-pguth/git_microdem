@@ -411,9 +411,9 @@ end;
 
             procedure FindDifferenceInUTMCoords;
             begin
-               //find utm of the current point
+               //find utm of current point
                PrimMapProj.ForwardProjectDegrees(Lat,Long,xutm1,yutm1);
-               //use that UTM, but on the other datum, and find lat/long on other datum
+               //use that UTM, but on other datum, and find lat/long on other datum
                SecondaryMapProj.UTMtoLatLongDegree(xutm1,yutm1,Lat2,Long2);
                //shift that lat,long point to find where it is on the primary datum
                MolodenskiyTransformation(Lat2,Long2,Lat1,Long1,SecondaryMapProj,PrimMapProj);
@@ -469,9 +469,14 @@ end;
 
 
          function TMapDraw.DrawScaleBarOnBitmap(PixelSize : float64 = -1) : tMyBitmap;
+         const
+            NBins = 18;
+            BarLong : array[1..NBins] of float32 = (2500,1000,500,250,100,50,25,10,5,2.5,1, 0.5,0.25,0.1,0.05,0.01,0.005,0.001);
+            BarHalfHeight : array[1..3] of byte = (10,15,20);
+            FontSize  : array[1..3] of byte = (14,18,24);
          var
             TFloat,Bar,LenKM,Lat,Long,h,k,x1,y1,x2,y2 : float64;
-            BoxLong,i,Start,EndX,y : integer;
+            BoxLong,i,Start,EndX,y,BarTop : integer;
             Prime : boolean;
             DistStr : shortstring;
          begin
@@ -482,43 +487,24 @@ end;
             else if (VectorIndex = 0) then begin
                LenKM := 0.001 * MapXSize * ScreenPixelSize;
             end
-            else with PrimMapProj do begin
+            else begin
                if (not PrimMapProj.EllipsoidalProjection) then exit;
                ScreenToLatLongDegree(MapXSize div 2, MapYSize div 2,Lat,Long);
                GetMapScaleFactor(Lat,Long,h,k,Prime);
                ScreenToLatLongDegree(MapXSize div 2, MapYSize div 2,Lat,Long);
-               ForwardProjectDegrees(Lat,Long,x1,y1);
+               PrimMapProj.ForwardProjectDegrees(Lat,Long,x1,y1);
                ScreenToLatLongDegree(pred(MapXSize), MapYSize div 2,Lat,Long);
-               ForwardProjectDegrees(Lat,Long,x2,y2);
+               PrimMapProj.ForwardProjectDegrees(Lat,Long,x2,y2);
                LenKM := 2 * 0.001 * abs(x2-x1) / k;
             end;
 
             if (LenKM > 7500) or (LenKM < 0.001) then exit;
-            if MDDef.EnglishDistanceUnits = disEnglish then LenKM := LenKM * 0.62137
-            else if MDDef.EnglishDistanceUnits = disNautical then LenKM := LenKM * 0.539956803;
-
+            if (MDDef.EnglishDistanceUnits = disEnglish) then LenKM := LenKM * 0.62137
+            else if (MDDef.EnglishDistanceUnits = disNautical) then LenKM := LenKM * 0.539956803;
             if (LenKM > 7500) or (LenKM < 0.001) then exit;
-
-            if LenKM >= 5000 then Bar := 2500
-            else if LenKM >= 2500 then Bar := 1000
-            else if LenKM >= 1000 then Bar := 500
-            else if LenKM >= 500 then Bar := 250
-            else if LenKM >= 200 then Bar := 100
-            else if LenKM >= 100 then Bar := 50
-            else if LenKM >= 50 then Bar := 25
-            else if LenKM >= 20 then Bar := 10
-            else if LenKM >= 10 then Bar := 5
-            else if LenKM >= 4 then Bar := 2.5
-            else if LenKM >= 2 then Bar := 1
-            else if LenKM >= 1 then Bar := 0.5
-            else if LenKM >= 0.5 then Bar := 0.25
-            else if LenKM >= 0.2 then Bar := 0.1
-            else if LenKM >= 0.1 then Bar := 0.05
-            else if LenKM >= 0.05 then Bar := 0.01
-            else if LenKM >= 0.01 then Bar := 0.005
-            else Bar := 0.001;
-
-            Bar := 0.2 * Bar / LenKM * MapXSize;
+            i := 1;
+            while (i <= NBins) and (LenKM < 2 * BarLong[i]) do inc(i);
+            Bar := 0.2 * BarLong[i] / LenKM * MapXSize;
             TFloat := 5 * Bar * LenKM / MapXSize;
 
             if (MDDef.EnglishDistanceUnits=disEnglish) then DistStr := RealToString(TFloat,-12,-4) + ' miles'
@@ -527,31 +513,31 @@ end;
                if (TFloat > 1) then DistStr := RealToString(TFloat,-12,-4) + ' km'
                else DistStr := RealToString(1000 * TFloat,-12,-2) + ' m';
             end;
-            Result := tMyBitmap.Create;
-            Result.Canvas.Font.Size := 14;
-            Result.Canvas.Font.Style := [fsBold];
-            BoxLong := round(5*Bar)+Result.Canvas.TextWidth(DistStr)+15;
-            Result.Height := 30;
-            Result.Width := BoxLong;
-            with Result.Canvas do begin
-               Pen.Width := 1;
-               Pen.Color := clBlack;
-               Brush.Color := clNearWhite;
-               Brush.Style := bsSolid;
-               Font.Color := clBlack;
-               Rectangle(0,0,Result.Width,Result.Height);
-               Rectangle(5,9,round(5*Bar)+5,24);
 
-               Brush.Color := clBlack;
-               for i := 1 to 5 do begin
-                  Start := round(pred(i) * Bar);
-                  EndX :=  round(i * Bar);
-                  if odd(i) then y := 9 else y := 16;
-                  Rectangle(5+Start,Y,EndX+5,Y+8);
-               end;
-               Brush.Style := bsClear;
-               TextOut(EndX+10,5,DistStr);
+            Result := tMyBitmap.Create;
+            BarTop := 8;
+            Result.Canvas.Font.Size := FontSize[MDDef.ScaleBarLocation.LegendSize];
+            Result.Canvas.Font.Style := [fsBold];
+            BoxLong := round(5*Bar) + Result.Canvas.TextWidth(DistStr) + 15;
+            Result.Height := 2 * BarTop + 2 * BarHalfHeight[MDDef.ScaleBarLocation.LegendSize];
+            Result.Width := BoxLong;
+            Result.Canvas.Pen.Width := 1;
+            //Result.Canvas.Pen.Color := clBlack;
+            Result.Canvas.Brush.Color := clNearWhite;
+            Result.Canvas.Brush.Style := bsSolid;
+            //Result.Canvas.Font.Color := clBlack;
+            Result.Canvas.Rectangle(0,0,Result.Width,Result.Height);
+            Result.Canvas.Rectangle(5,BarTop,round(5*Bar)+5, BarTop + 2 * BarHalfHeight[MDDef.ScaleBarLocation.LegendSize]);
+
+            Result.Canvas.Brush.Color := clBlack;
+            for i := 1 to 5 do begin
+               Start := round(pred(i) * Bar);
+               EndX :=  round(i * Bar);
+               if odd(i) then y := BarTop else y := BarTop + BarHalfHeight[MDDef.ScaleBarLocation.LegendSize];
+               Result.Canvas.Rectangle(5+Start,Y,EndX+5,Y + BarHalfHeight[MDDef.ScaleBarLocation.LegendSize]);
             end;
+            Result.Canvas.Brush.Style := bsClear;
+            Result.Canvas.TextOut(EndX+10,5,DistStr);
          end;
 
 

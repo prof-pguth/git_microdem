@@ -4,8 +4,8 @@ object ClusterOptsForm: TClusterOptsForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Clustering Options'
-  ClientHeight = 345
-  ClientWidth = 272
+  ClientHeight = 390
+  ClientWidth = 302
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -49,9 +49,23 @@ object ClusterOptsForm: TClusterOptsForm
     Height = 13
     Caption = 'Label5'
   end
+  object Label6: TLabel
+    Left = 165
+    Top = 132
+    Width = 16
+    Height = 13
+    Caption = 'Min'
+  end
+  object Label7: TLabel
+    Left = 226
+    Top = 132
+    Width = 20
+    Height = 13
+    Caption = 'Max'
+  end
   object HelpBtn: TBitBtn
-    Left = 200
-    Top = 311
+    Left = 183
+    Top = 356
     Width = 77
     Height = 27
     Kind = bkHelp
@@ -64,7 +78,7 @@ object ClusterOptsForm: TClusterOptsForm
   end
   object OKBtn: TBitBtn
     Left = 8
-    Top = 308
+    Top = 356
     Width = 77
     Height = 27
     Caption = 'OK'
@@ -122,7 +136,7 @@ object ClusterOptsForm: TClusterOptsForm
   end
   object CheckBox1: TCheckBox
     Left = 8
-    Top = 127
+    Top = 175
     Width = 137
     Height = 17
     Caption = 'Scatterplots by cluster'
@@ -130,7 +144,7 @@ object ClusterOptsForm: TClusterOptsForm
   end
   object CheckBox2: TCheckBox
     Left = 8
-    Top = 150
+    Top = 198
     Width = 137
     Height = 17
     Caption = 'Scatterplots by mask'
@@ -138,7 +152,7 @@ object ClusterOptsForm: TClusterOptsForm
   end
   object CheckBox3: TCheckBox
     Left = 8
-    Top = 168
+    Top = 216
     Width = 137
     Height = 17
     Caption = 'Histograms by cluster'
@@ -146,7 +160,7 @@ object ClusterOptsForm: TClusterOptsForm
   end
   object CheckBox4: TCheckBox
     Left = 8
-    Top = 187
+    Top = 235
     Width = 121
     Height = 17
     Caption = 'Histograms by mask'
@@ -154,15 +168,16 @@ object ClusterOptsForm: TClusterOptsForm
   end
   object CheckBox6: TCheckBox
     Left = 165
-    Top = 150
+    Top = 198
     Width = 97
     Height = 17
     Caption = 'Cluster results'
+    Enabled = False
     TabOrder = 9
   end
   object CheckBox7: TCheckBox
     Left = 165
-    Top = 169
+    Top = 217
     Width = 97
     Height = 17
     Caption = 'Cluster statistics'
@@ -178,7 +193,7 @@ object ClusterOptsForm: TClusterOptsForm
   end
   object CancelBtn: TBitBtn
     Left = 91
-    Top = 308
+    Top = 356
     Width = 86
     Height = 27
     Kind = bkCancel
@@ -191,7 +206,7 @@ object ClusterOptsForm: TClusterOptsForm
   end
   object RadioGroup2: TRadioGroup
     Left = 8
-    Top = 249
+    Top = 297
     Width = 254
     Height = 40
     Caption = 'Classification distance power'
@@ -208,7 +223,7 @@ object ClusterOptsForm: TClusterOptsForm
   end
   object CheckBox5: TCheckBox
     Left = 16
-    Top = 216
+    Top = 264
     Width = 129
     Height = 17
     Caption = 'Samples from full map'
@@ -216,10 +231,34 @@ object ClusterOptsForm: TClusterOptsForm
   end
   object CheckBox8: TCheckBox
     Left = 165
-    Top = 216
+    Top = 264
     Width = 97
     Height = 17
     Caption = 'Classify full map'
     TabOrder = 15
+  end
+  object CheckBox9: TCheckBox
+    Left = 8
+    Top = 131
+    Width = 161
+    Height = 17
+    Caption = 'Number cluster sensitivity'
+    TabOrder = 16
+  end
+  object Edit4: TEdit
+    Left = 187
+    Top = 129
+    Width = 33
+    Height = 21
+    TabOrder = 17
+    Text = 'Edit4'
+  end
+  object Edit5: TEdit
+    Left = 252
+    Top = 129
+    Width = 37
+    Height = 21
+    TabOrder = 18
+    Text = 'Edit5'
   end
 end

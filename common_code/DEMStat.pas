@@ -41,7 +41,7 @@ unit DEMStat;
       //{$Define MapTraceCrests}
       //{$Define RecordDetailedTraceCrests}
       //{$Define RecordClustering}
-      {$Define RecordFFT}
+      //{$Define RecordFFT}
       //{$Define RecordHistogram}
       //{$Define RecordGridScatterGram}
    {$Else}
@@ -101,7 +101,7 @@ type
       function MakeDifferenceMap(Map1,Map2,GridResultionToUse,GridToMergeShading : integer; ShowMap,ShowHistogram,ShowScatterPlot : boolean; TheAreaName : ShortString = '') : integer;
       function MakeDifferenceMapOfBoxRegion(Map1,Map2,GridResultionToUse,GridToMergeShading : integer; GridLimits: tGridLimits; ShowMap,ShowHistogram,ShowScatterplot : boolean; TheAreaName : ShortString = '') : integer;
 
-      procedure StatsFromTwoGrids(iDEM,JDEM : integer; var r,covar : float64; Incr : integer = 1);
+      procedure VarCovarStatsFromTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer; var r,covar : float64);
       procedure ElevationSlopePlot(WhichDEMs : tDEMbooleanArray; DesiredBinSize : integer = 1);
 
       procedure DoAnSSODiagram(CurDEM : integer; GridLimits : tGridLimits);
@@ -235,11 +235,10 @@ uses
 
 const
    InsuffDEMrelief = 'Insufficient DEM relief';
-   //ZRangeTooLarge = 'Elev range too large';
 type
    PlotModeType = (Plain,Strahler,Cumulative,NormProb);
 var
-   Count   : array[1..MaxDEMDataSets] of ^CountType;
+   Count : array[1..MaxDEMDataSets] of ^CountType;
 
 
 {$I demstat_global_dems.inc}
@@ -257,7 +256,7 @@ var
 
 
 procedure HistogramsFromVATDEM(DEMwithVAT,ElevMap,SlopeMap,RuffMap,AspMap : integer; var Graph1,Graph2,Graph3,Graph4 : tThisBaseGraph);
-//creates histograms of elevation, slope, roughness, and aspect for each category in the VAT grid
+//creates histograms of elevation, slope, roughness, and aspect for each category in VAT grid
 const
    MaxCodes = 100;
 Type
@@ -364,7 +363,6 @@ const
 var
    Sum : float64;
 begin
-
    {$IfDef RecordHistogramFromVAT} WriteLineToDebugFile('HistogramsFromVATDEM in, DEM=' + IntToStr(DEMwithVAT)); {$EndIf}
    if not ValidDEM(DEMwithVAT) then exit;
    if OpenNumberedGISDataBase(VAT,DEMGlb[DEMwithVAT].VATFileName) then begin
@@ -416,6 +414,7 @@ end;
 
 var
    NumDone,NumToDo : integer;
+
 
 procedure Lag_and_Shift(ColC,RowC : integer; MainDEM,SubDEM : integer; GridLimits : tGridLimits; var NPts,XWhereMaxR,YWhereMaxR : integer; var MaxR,NoLagR,ZRange,AvgSlope,BestA,BestB : float64; CorrelationMatrix : tStringList = Nil);
 var
@@ -588,8 +587,6 @@ begin
 end;
 
 
-
-
 function FindPits(DEM : integer; GridLimits : tGridLimits; var PitResults : tStringList; Memo1 : tMemo) : integer;
 label
    NotPit;
@@ -634,7 +631,6 @@ begin
   Result := NumPit;
   {$IfDef RecordPitsSpires} WriteLineToDebugFile('FindPits out'); {$EndIf}
 end;
-
 
 
 function FindPeaks(DEM : integer; GridLimits : tGridLimits; var PeakResults : tStringList; Memo1 : tMemo) : integer;
@@ -702,12 +698,11 @@ procedure AllAspects;
     BMPlist := tStringList.Create;
     for DEM := 1 to MaxDEMDataSets do begin
        if ValidDEM(DEM) then begin
-           if DEMGlb[DEM].DEMHeader.ElevUnits = AspectDeg then begin
+           if (DEMGlb[DEM].DEMHeader.ElevUnits = AspectDeg) then begin
               rg := CreateAspectRose(DEM);
            end;
        end;
     end;
-
    if (BMPlist.Count > 0) then begin
       MakeBigBitmap(BMPlist,'Aspect roses');
    end
@@ -828,7 +823,6 @@ begin
 
    DEMDef_routines.RestoreBackupDefaults;  //restore slope algorithm
 end;
-
 
 
 procedure GridsByRegionSize(CurDEM : integer; GridCh : char);
@@ -1344,6 +1338,7 @@ var
    DistArr : array[1..EdburgGeneralFuncsMaxClusters] of float64;
    HistArray : array[1..EdburgGeneralFuncsMaxClusters] of integer;
    NewHeadRecs : tDEMheader;
+   sl : tStringList;
 begin
    {$IfDef RecordClustering} WriteLineToDebugFile('ClusterGrids in'); {$EndIf}
      Limits := DEMGlb[StartingGrid].FullDEMGridLimits;
@@ -1421,7 +1416,9 @@ begin
        with MVClusterClientDataSet do begin
           ShowHourglassCursor;
           wmDEM.SetPanelText(0,'K Means Clustering');
-          KMeansClustering(FieldsToUse, FieldsUsed, MDTempDir + 'Clster_Results.HTML');
+          sl := tStringList.Create;
+          KMeansClustering(sl,FieldsToUse, FieldsUsed, MDTempDir + 'Clster_Results.HTML');
+          sl.destroy;
           wmDEM.SetPanelText(0,'');
        end;
 
@@ -1629,7 +1626,7 @@ begin
             VarTitle[i] := DEMGlb[MG.Grids[i]].AreaName;
             for j := 1 to MG.NumGrids do begin
                if (MG.Grids[j] <> 0) then begin
-                  StatsFromTwoGrids(MG.Grids[i],MG.Grids[j],Correlations[i,j],VarCoVar[i,j]);
+                  VarCovarStatsFromTwoGrids(DEMGlb[MG.Grids[i]].FullDEMGridLimits,MG.Grids[i],MG.Grids[j],Correlations[i,j],VarCoVar[i,j]);
                end;
             end;
          end;
@@ -1799,55 +1796,52 @@ end;
 
 
 
-procedure StatsFromTwoGrids(iDEM,JDEM : integer; var r,covar : float64; Incr : integer = 1);
+procedure VarCovarStatsFromTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer; var r,covar : float64); //Incr : integer = 1);
 var
-   Col,Row : integer;
+   Col,Row,incr : integer;
    NPts : int64;
    z1,z2,XGrid,YGrid : float32;
    Lat,Long : float64;
    IdenticalGrids : boolean;
-   GridLimits : tGridLimits;
    x,y : ^bfarray32;
 begin
-   {$IfDef RecordStat} WriteLineToDebugFile('StatsFromTwoGrids in, grids=' + IntToStr(IDEM) + ' and ' + IntToStr(jDEM)); {$EndIf}
-   IdenticalGrids := DEMGlb[iDEM].SecondGridIdentical(jDEM);
-   GridLimits := DEMGlb[iDEM].FullDEMGridLimits;
-
+   {$IfDef RecordStat} WriteLineToDebugFile('StatsFromTwoGrids in, grids=' + IntToStr(DEM1) + ' and ' + IntToStr(DEM2)); {$EndIf}
+   IdenticalGrids := DEMGlb[DEM1].SecondGridIdentical(DEM2);
    NPts := 0;
    New(x);
    New(y);
-   while ( (GridLimits.XGridHigh - GridLimits.XGridLow) div Incr) * ((GridLimits.YGridHigh - GridLimits.YGridLow) div Incr) > Petmath.bfArrayMaxSize do inc(incr);
-   Col := GridLimits.XGridLow;
-   while (Col <= GridLimits.XGridHigh) do begin
-      Row := GridLimits.YGridLow;
-      while (Row <= GridLimits.YGridHigh) do begin
-         if DEMGlb[iDEM].GetElevMeters(Col,Row,z1) then begin
+   incr := 1;
+   while ( (GridLimitsDEM1.XGridHigh - GridLimitsDEM1.XGridLow) div incr) * ((GridLimitsDEM1.YGridHigh - GridLimitsDEM1.YGridLow) div Incr) > Petmath.bfArrayMaxSize do inc(incr);
+   Col := GridLimitsDEM1.XGridLow;
+   while (Col <= GridLimitsDEM1.XGridHigh) do begin
+      Row := GridLimitsDEM1.YGridLow;
+      while (Row <= GridLimitsDEM1.YGridHigh) do begin
+         if DEMGlb[DEM1].GetElevMeters(Col,Row,z1) then begin
             if IdenticalGrids then begin
-               if DEMGlb[jDEM].GetElevMeters(Col,Row,z2) then begin
+               if DEMGlb[DEM2].GetElevMeters(Col,Row,z2) then begin
                   x^[NPts] := z1;
                   y^[NPts] := z2;
                   inc(NPts);
                end;
             end
             else begin
-               DEMGlb[iDEM].DEMGridToLatLongDegree(Col,Row,Lat,Long);
-               DEMGlb[jDEM].LatLongDegreetoDEMGrid(Lat,Long,XGrid,YGrid);
-               if DEMGlb[jDEM].GetElevMeters(XGrid,YGrid,z2) then begin
+               DEMGlb[DEM1].DEMGridToLatLongDegree(Col,Row,Lat,Long);
+               DEMGlb[DEM2].LatLongDegreetoDEMGrid(Lat,Long,XGrid,YGrid);
+               if DEMGlb[DEM2].GetElevMeters(XGrid,YGrid,z2) then begin
                   x^[NPts] := z1;
                   y^[NPts] := z2;
                   inc(NPts);
                end;
             end;
          end;
-         inc(Row,Incr);
+         inc(Row,incr);
       end;
-      inc(Col,Incr);
+      inc(Col,incr);
    end;
    varcovar(x^,y^,NPts,r,covar);
    Dispose(x);
    Dispose(y);
 end;
-
 
 
 
@@ -2944,7 +2938,7 @@ begin
                   Corrs^[i,j] := 1;
                end
                else begin
-                  StatsFromTwoGrids(i,J,r,covar,Incr);
+                  VarCovarStatsFromTwoGrids(DEMGlb[i].FullDEMGridLimits,i,J,r,covar);
                   Corrs^[i,j] := r;
                   Corrs^[j,i] := r;
                end;
@@ -2957,7 +2951,6 @@ begin
    for i := 1 to MaxDEMDataSets do begin
       if ValidDEM(i) then begin
          inc(n);
-         UpdateProgressBar(n/NumDEMDataSetsOpen);
          MenuStr := DEMGlb[i].AreaName;
          for j := 1 to MaxDEMDataSets do begin
             if ValidDEM(j) then begin
@@ -2976,7 +2969,6 @@ begin
    DEMStringGrid.OpenCorrelationMatrix('Correlation',fName);
 {$EndIf}
 end;
-
 
 
 procedure SingleDEMHistogram(WhichDEM : integer; Quick : boolean = false);

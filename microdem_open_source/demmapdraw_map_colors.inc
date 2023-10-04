@@ -687,7 +687,7 @@ begin
    {$Else}
    else if (MapType = mtLandCover) then begin
       {$IfDef RecordNLCD} WriteLineToDebugFile('LandCoverGrid on DEM Map'); {$EndIf}
-      for I := 1 to MaxNLCDCategories do begin
+      for I := 1 to MaxLandCoverCategories do begin
          if DEMGlb[DEMonMap].NLCDCats^[i].UseCat then begin
             {$IfDef RecordNLCD} WriteLineToDebugFile(IntegerToString(i,3) + IntegerToString(DEMGlb[DEMonMap].NLCDCats^[i].Color,12)); {$EndIf}
             pPal[i] := DEMGlb[DEMonMap].NLCDCats^[i].Color;

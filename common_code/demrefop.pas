@@ -57,6 +57,7 @@ type
     Edit6: TEdit;
     Edit5: TEdit;
     Label7: TLabel;
+    RadioGroup4: TRadioGroup;
     procedure Edit3Change(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
     procedure HelpBtnClick(Sender: TObject);
@@ -81,6 +82,7 @@ type
     procedure Edit6Change(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure RadioGroup3Click(Sender: TObject);
+    procedure RadioGroup4Click(Sender: TObject);
   private
     { Private declarations }
       procedure SetNewOptions;
@@ -294,6 +296,8 @@ begin
    Edit6.Text := RealToString(MDDef.BottomCutLevel,-8,-2);
    Edit5.Text := RealToString(MDDef.TopCutLevel,-8,-2);
    RadioGroup2.ItemIndex := pred(MDdef.UseRefDirs);
+   RadioGroup4.ItemIndex := MDDef.MultShadeReliefMode;
+
    CheckBox5.Checked := MDdef.QuickMapRedraw;
    CanChange := true;
    SetUpForm;
@@ -336,6 +340,12 @@ procedure TRefOptFM.RadioGroup3Click(Sender: TObject);
 begin
    MDDef.RefVertExag := StrToFloat(RadioGroup3.Items[RadioGroup3.ItemIndex]);
    Edit3.Text := RealToString(MDDef.RefVertExag,-8,-2);
+   DrawPreview;
+end;
+
+procedure TRefOptFM.RadioGroup4Click(Sender: TObject);
+begin
+   MDDef.MultShadeReliefMode := RadioGroup4.ItemIndex;
    DrawPreview;
 end;
 

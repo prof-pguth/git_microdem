@@ -362,6 +362,7 @@ begin
    {$IfDef RecordRedistrict} WriteLineToDebugFile('RedistrictTigerFiles Out'); {$EndIf}
 end;
 
+
 function GetTIGERCounty(var fNames : TStringList; var inLat1,inLong1,inLat2,inLong2 : float64; var CountyName : ShortString) : boolean;
 var
    pc : Tpickcounty;

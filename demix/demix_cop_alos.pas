@@ -8,6 +8,9 @@ unit demix_cop_alos;
 {___________________________________}
 
 
+//9/15/2023   this is experimental, and has not been tested recently
+
+
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
@@ -49,7 +52,8 @@ uses
    {$EndIf}
 //end core DB functions definitions
 
-    System.SysUtils,System.Classes,System.Diagnostics,StrUtils,VCL.ExtCtrls,VCL.Forms, VCL.Graphics, WinAPI.Windows,
+    System.SysUtils,System.Classes,System.Diagnostics,StrUtils,WinAPI.Windows,
+    VCL.ExtCtrls,VCL.Forms, VCL.Graphics,
     Petmar,Petmar_types,BaseGraf;
 
 const
@@ -62,7 +66,6 @@ const
    procedure PixelByPixelCopAlos;
    procedure COP_ALOS_compare(What : integer);
    procedure HighLowCopAlosGeomorphometry(fName : PathStr = '');
-   //procedure OpenDEMIXRidges(fName : PathStr = '');
    procedure CreateDifferenceMaps(DEMIXhalfSecDir : PathStr = '');
 
    procedure OpenHalfSecCopALOS(OpenDir : boolean; InDir : PathStr = '');
@@ -109,7 +112,6 @@ const
    DTMRuffDiffMapCOPfName = 'ruff_diff_dtm_cop.tif';
 
 var
-   //HalfSecDir,
    ThisArea : PathStr;
    ALOSHalfSec,COPHalfSec,RefDTMhalfsec,
    RuffALOSHalfSec,RuffCOPHalfSec,RuffRefDTMPointhalfsec : integer;
@@ -128,10 +130,6 @@ begin
    if not FileExists(fName) then fName := ChangeFileExt(fName,'.tif');
    Result := OpenNewDEM(fName,true,what);
 end;
-
-
-const
-   TestDEMs : array[1..6] of shortstring = ('ALOS','COP','FABDEM','NASA','SRTM','ASTER');
 
 
 procedure CreateDifferenceMaps(DEMIXhalfSecDir : PathStr = '');
@@ -156,9 +154,9 @@ begin
    RefDTMpoint := OpenHalfSec(DEMIXhalfSecDir + 'ref_1sec.dem','ref dem');
    RefDTMarea := OpenHalfSec(DEMIXhalfSecDir + 'ref_1sec_area.dem','ref dem');
 
-   for I := 1 to 6 do begin
-      TestDEM[i] := OpenHalfSec(DEMIXhalfSecDir + TestDEMs[i] + '.dem',TestDEMs[i]);
-      TestSeries[i] := TestDEMs[i];
+   for I := 1 to NumDEMIXDEM do begin
+      TestDEM[i] := OpenHalfSec(DEMIXhalfSecDir + DEMIXDEMTypeName[i] + '.dem',DEMIXDEMTypeName[i]);
+      TestSeries[i] := DEMIXDEMTypeName[i];
    end;
 
    //call if it has not been done already
@@ -279,6 +277,7 @@ begin
    if (i in [1..3]) then DefGraphLLText := GeomorphNames[i]
    else DefGraphLLText := '';
 end;
+
 
 type
   t3DEM = array[1..3] of integer;

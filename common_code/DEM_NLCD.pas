@@ -51,8 +51,8 @@ type
       UseStat   : boolean;
       Height    : float64;
    end;
-   tNLCDarray = array[0..MaxNLCDCategories] of float64;
-   tNLCDCats = array[0..MaxNLCDCategories] of tCategory;
+   tNLCDarray = array[0..MaxLandCoverCategories] of float64;
+   tNLCDCats = array[0..MaxLandCoverCategories] of tCategory;
 
    procedure SetUpNLCDCategories(AskLimit : boolean; LandCover : ShortString; var Categories : tNLCDCats);
    function IsThisLandCover(fName : PathStr;  var LandCover : ShortString) : boolean;
@@ -62,7 +62,7 @@ type
    function MakeAnNLCDLegend(DEM : integer;  theLabel : shortstring = ''; Stats : tstringlist = nil) : integer;
 
 var
-   LandCoverCatsUsed : array[0..MaxNLCDCategories] of boolean;
+   LandCoverCatsUsed : array[0..MaxLandCoverCategories] of boolean;
 
 implementation
 
@@ -87,11 +87,11 @@ var
    fName : PathStr;
    Results : tStringList;
    Total : int64;
-   Count :  array[1..MaxNLCDCategories] of int64;
+   Count :  array[1..MaxLandCoverCategories] of int64;
 begin
    {$IfDef TrackNLCD} WriteLineToDebugFile('TMapForm.NLCDLegend1Click in'); {$EndIf}
    if (DEMGLB[DEM].SelectionMap.MapDraw.ValidDEMonMap and (DEMGlb[DEM].LandCoverGrid)) then begin
-      for x := 1 to MaxNLCDCategories do Count[x] := 0;
+      for x := 1 to MaxLandCoverCategories do Count[x] := 0;
       Total := 0;
       StartProgress('Land cover');
       for x := round(DEMGLB[DEM].SelectionMap.MapDraw.Mapcorners.BoundBoxDataGrid.xmin) to round(DEMGLB[DEM].SelectionMap.MapDraw.Mapcorners.BoundBoxDataGrid.xmax) do begin
@@ -100,7 +100,7 @@ begin
          for y := round(DEMGLB[DEM].SelectionMap.MapDraw.Mapcorners.BoundBoxDataGrid.ymin) to round(DEMGLB[DEM].SelectionMap.MapDraw.Mapcorners.BoundBoxDataGrid.ymax) do begin
             if DEMGlb[DEM].GetElevMetersOnGrid(x,y,z) then begin
                zi := round(z);
-               if (zi > 0) and (zi <= MaxNLCDCategories) and (DEMGlb[DEM].NLCDCats^[zi].UseStat) then begin
+               if (zi > 0) and (zi <= MaxLandCoverCategories) and (DEMGlb[DEM].NLCDCats^[zi].UseStat) then begin
                   inc(Count[zi]);
                   inc(Total);
                   LandCoverCatsUsed[zi] := true;
@@ -124,14 +124,14 @@ begin
                //NameStr := Petmar_types.BeforeSpecifiedCharacterANSI(FirstLine,',',true,true);
                CatStr := FirstLine;
                FirstLine := 'NAME,' + CatStr + '_MAX,MAJOR_CAT,MAJOR_NAME';
-               for x := 1 to MaxNLCDCategories do if (DEMGlb[DEM].NLCDCats^[x].LongName <> '') then begin
+               for x := 1 to MaxLandCoverCategories do if (DEMGlb[DEM].NLCDCats^[x].LongName <> '') then begin
                   FirstLine := FirstLine + ',' + CatStr + '_' + IntToStr(x);
                end;
             end
             else FirstLine := '';
          end;
          Max := 0;
-         for x := 1 to MaxNLCDCategories do if (Count[x] > 0) and (DEMGlb[DEM].NLCDCats^[x].LongName <> '') then begin
+         for x := 1 to MaxLandCoverCategories do if (Count[x] > 0) and (DEMGlb[DEM].NLCDCats^[x].LongName <> '') then begin
             pc := 100 * Count[x]/Total;
             if (pc > Max) then begin
                Max := pc;
@@ -150,7 +150,7 @@ begin
                Stats.Add(FirstLine);
             end;
             NextLine := TheLabel + ',' +  RealToString(max,-8,3) + ',' + IntToStr(MaxCat) + ',' + DEMGlb[DEM].NLCDCats^[MaxCat].LongName;
-            for x := 1 to MaxNLCDCategories do if (DEMGlb[DEM].NLCDCats^[x].LongName <> '') then begin
+            for x := 1 to MaxLandCoverCategories do if (DEMGlb[DEM].NLCDCats^[x].LongName <> '') then begin
                NextLine := NextLine + ',' + RealToString(100 * Count[x]/Total,-8,3);
             end;
             Stats.Add(NextLine);
@@ -274,7 +274,7 @@ var
    begin
        {$If Defined(RecordBatch) or Defined(RecordDEMIX)} HighLightLineToDebugFile('Do series=' + LandCoverfName); {$EndIf}
        NumDrawn := 0;
-       for j := 0 to MaxNLCDCategories do LandCoverCatsUsed[j] := false;
+       for j := 0 to MaxLandCoverCategories do LandCoverCatsUsed[j] := false;
        FindDriveWithFile(LandCoverfName);
        if UseTable then begin
           Table := tMyData.Create(dbName);
@@ -451,7 +451,7 @@ var
    var
       i : integer;
    begin
-      for i := 0 to MaxNLCDCategories do begin
+      for i := 0 to MaxLandCoverCategories do begin
          Categories[i].ShortName := '';
          Categories[i].LongName  := '';
          Categories[i].Color     := claWhite;

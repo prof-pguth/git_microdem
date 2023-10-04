@@ -914,7 +914,7 @@ procedure Tgis_scaled_form.Modifylegend1Click(Sender: TObject);
 begin
    {$IfDef RecordSym} WriteLineToDebugFile('Tgis_scaled_form.Modifylegend1Click in'); {$EndIf}
    if (GISdb[theDB].TheMapOwner.MapDraw <> Nil) then GISdb[theDB].theMapOwner.MapDraw.DeleteSingleMapLayer(GISdb[theDB].TheMapOwner.MapDraw.LegendOverlayfName);
-   LegendOptions(GISdb[theDB].TheMapOwner,'data base',MDDef.LegendFont, GISdb[theDB].dbOpts.DBLegendLocation);
+   LegendOptions(GISdb[theDB].TheMapOwner,'data base',MDDef.LegendFont, GISdb[theDB].dbOpts.DBLegendLocation,loDBLegend);
    if ((GISdb[theDB].dbOpts.dbAutoShow in [dbasVector]) and CheckBox5.Checked) then begin
       FillInLegendPanel(true);
    end

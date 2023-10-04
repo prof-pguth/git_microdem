@@ -98,7 +98,7 @@ begin
    {$IfDef ExNLCD}
    {$Else}
    if LandCoverGrid then begin
-      if GetElevMeters(xgrid,ygrid,veg) and (veg > 0) and (veg < MaxNLCDCategories) then
+      if GetElevMeters(xgrid,ygrid,veg) and (veg > 0) and (veg < MaxLandCoverCategories) then
          veg_ht := NLCDCats^[round(veg)].Height;
    end
    else {$EndIf}
@@ -124,7 +124,7 @@ end;
 
 function tDEMDataSet.GetElevMetersWithVegFromLatLong(Lat,Long : float64; var z : float32) : boolean;
 var
-   x,y : float64;
+   x,y : float32;
 begin
     LatLongDegreeToDEMGrid(Lat,Long,x,y);
     Result := GetElevMetersWithVeg(x,y,z);

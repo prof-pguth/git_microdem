@@ -2,8 +2,8 @@ object MapForm: TMapForm
   Left = 45
   Top = 303
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1039
-  ClientWidth = 1691
+  ClientHeight = 1036
+  ClientWidth = 1679
   Color = clBtnHighlight
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -40,8 +40,8 @@ object MapForm: TMapForm
   object ScrollBox1: TScrollBox
     Left = 0
     Top = 27
-    Width = 1691
-    Height = 1012
+    Width = 1679
+    Height = 1009
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clRed
@@ -51,8 +51,8 @@ object MapForm: TMapForm
     ParentFont = False
     TabOrder = 0
     OnClick = ScrollBox1Click
-    ExplicitWidth = 1687
-    ExplicitHeight = 1011
+    ExplicitWidth = 1675
+    ExplicitHeight = 1008
     object Image1: TImage
       Left = 3
       Top = -247
@@ -209,13 +209,13 @@ object MapForm: TMapForm
     end
     object BlendPanel: TPanel
       Left = 0
-      Top = 967
-      Width = 1687
+      Top = 964
+      Width = 1675
       Height = 41
       Align = alBottom
       TabOrder = 8
-      ExplicitTop = 966
-      ExplicitWidth = 1683
+      ExplicitTop = 963
+      ExplicitWidth = 1671
       object TrackBar2: TTrackBar
         Left = 289
         Top = 1
@@ -334,12 +334,12 @@ object MapForm: TMapForm
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1691
+    Width = 1679
     Height = 27
     Align = alTop
     TabOrder = 1
     OnMouseDown = Panel1MouseDown
-    ExplicitWidth = 1687
+    ExplicitWidth = 1675
     object AnnotateSpeedButton1: TSpeedButton
       Left = 31
       Top = -4
@@ -3914,7 +3914,6 @@ object MapForm: TMapForm
         end
         object DEMIXevaluatehalfsecondgrids1: TMenuItem
           Caption = 'Evaluate half second grids'
-          OnClick = DEMIXevaluatehalfsecondgrids1Click
         end
       end
       object Derivativegrid2: TMenuItem

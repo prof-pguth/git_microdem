@@ -2490,7 +2490,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure N7x7region1Click(Sender: TObject);
     procedure N7x7region2Click(Sender: TObject);
     procedure GDALcontourshapefile1Click(Sender: TObject);
-    procedure DEMIXevaluatehalfsecondgrids1Click(Sender: TObject);
+    //procedure DEMIXevaluatehalfsecondgrids1Click(Sender: TObject);
     procedure MICRODEMupsamplebilinearbicubic1Click(Sender: TObject);
     procedure BestglobalDEM1Click(Sender: TObject);
     procedure DEMIX1secresamplewithGDAL1Click(Sender: TObject);
@@ -2772,7 +2772,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure RedrawMapDefaultsSize;
 
     function LoadDEMIXtileOutlines(WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false; OpenTable : boolean = true) : integer;
-    function DEMIXtilesOnMap : tStringList;
+    function DEMIXtilesOnMap(RecordFill : tStringList = Nil) : tStringList;
 
     procedure MoveADBRecord(lat,Long : float64);
 
@@ -3005,7 +3005,7 @@ function LoadBlankVectorMapAndOverlay(ItsTiger,ItsGazetteer : boolean; fName : P
 
 function CreateDEMIXTileShapefile(WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false) : shortstring;
 function DEMIXtileFill(DEM : integer; AreaBox : sfBoundBox; OpenTable : boolean = true) : integer;
-function DEMIXtileBoundingBox(tName : shortString) : sfBoundBox;
+function DEMIXtileBoundingBox(tName : shortString; PixelIsAreaSafe : boolean = false) : sfBoundBox;
 procedure DEMIXtileCentroid(tName : shortString; var Lat,Long : float32);
 function LoadDEMIXtileOutlinesNoMap(WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false; OpenTable : boolean = true) : integer;
 
@@ -3450,8 +3450,10 @@ begin
                Bitmap.Canvas.Font.Size := 34;
                Bitmap.Canvas.Font.Style := [fsBold];
                DEM := (WMDEM.MDIChildren[i] as TMapForm).MapDraw.DEMonMap;
-               TStr := RemoveUnderScores(DEMGLB[DEM].AreaName);
-               if (DEM <> 0) then Bitmap.Canvas.TextOut(5,(Bitmap.Height - Bitmap.Canvas.TextHeight(TStr) - 5), TStr);
+               if (DEM <> 0) then begin
+                  TStr := RemoveUnderScores(DEMGLB[DEM].AreaName);
+                  Bitmap.Canvas.TextOut(5,(Bitmap.Height - Bitmap.Canvas.TextHeight(TStr) - 5), TStr);
+               end;
             end;
 
             fName := NextFileNumber(MDtempDir,(WMDEM.MDIChildren[i] as TMapForm).Caption + '_','.bmp');
@@ -6034,7 +6036,7 @@ procedure TMapForm.MenuItem3Click(Sender: TObject);
 begin
    {$IfDef ExGeoStats}
    {$Else}
-     MakeSingleNewDerivativeMap('R',MapDraw.DEMonMap);
+      MakeSingleNewDerivativeMap('R',MapDraw.DEMonMap);
    {$EndIf}
 end;
 
@@ -11666,19 +11668,6 @@ begin
     GDAL_downsample_DEM_1sec(MapDraw.DEMonMap,MDTempDir + 'gdal_downsample.dem');
 end;
 
-procedure TMapForm.DEMIXevaluatehalfsecondgrids1Click(Sender: TObject);
-begin
-   MessageToContinue('Disabled');
-(*
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} writeLineToDebugFile('TMapForm.DEMIXevaluatehalfsecondgrids1Click in, ' + DEMGlb[MapDraw.DEMonMap].DEMFileName); {$EndIf}
-   if (DEMGlb[MapDraw.DEMonMap].DEMFileName = '') then begin
-      DEMGlb[MapDraw.DEMonMap].WriteNewFormatDEM(DEMGlb[MapDraw.DEMonMap].DEMFileName,' save DEM before resampling');
-   end;
-   ResampleHalfSecondForDEMIX(MapDraw.DEMonMap);
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} writeLineToDebugFile('TMapForm.DEMIXevaluatehalfsecondgrids1Click out'); {$EndIf}
-   *)
-end;
-
 
 procedure TMapForm.DEMIXhalfsecto2onesec1Click(Sender: TObject);
 var
@@ -11686,9 +11675,11 @@ var
 begin
    DEM1 := DEMGlb[MapDraw.DEMonMap].ThinThisDEM('1sec_pixel-is-point',2,true,0);
    DEM2 := DEMGlb[MapDraw.DEMonMap].ThinThisDEM('1sec_pixel-is-area',2,true,1);
+   (*
    WriteLineToDebugFile('Starter DEM:' +  LatLongDegreeToString(DEMGlb[MapDraw.DEMonMap].DEMheader.DEMSWCornerY,DEMGlb[MapDraw.DEMonMap].DEMheader.DEMSWCornerX,DecSeconds));
    WriteLineToDebugFile('PIP DEM:' +   LatLongDegreeToString(DEMGlb[DEM1].DEMheader.DEMSWCornerY,DEMGlb[DEM1].DEMheader.DEMSWCornerX,DecSeconds));
    WriteLineToDebugFile('PIA DEM:' +   LatLongDegreeToString(DEMGlb[DEM2].DEMheader.DEMSWCornerY,DEMGlb[DEM2].DEMheader.DEMSWCornerX,DecSeconds));
+   *)
 end;
 
 procedure TMapForm.PlotGridPoint(xgrid,ygrid : float64; PlotColor : tPlatformColor);
@@ -11794,7 +11785,7 @@ begin
 
    if ValidDEM(MapDraw.DEMonMap) and (not LockStatusBar) then begin
       {$IfDef RecordAllMapRoam} WriteLineToDebugFile('Point 2.1'); {$EndIf}
-      {if not ((DEMGlb[MapDraw.DEMonMap].DEMheader.DigitizeDatum in [Rectangular])) then} DEMGlb[MapDraw.DEMonMap].LatLongDegreeToDEMGrid(Lat,Long,XGrid,YGrid);
+      DEMGlb[MapDraw.DEMonMap].LatLongDegreeToDEMGrid(Lat,Long,XGrid,YGrid);
 
       if MDDef.ShowDEMGridCoords and (Panel3String = '') then Panel3String := DEMGridString(xgrid,ygrid) + ' ' + Panel3String;
 
@@ -11822,7 +11813,7 @@ begin
          {$IfDef ExSat}
          {$Else}
             if (DEMGlb[MapDraw.DEMonMap].LandCoverGrid) and (DEMGlb[MapDraw.DEMonMap].NLCDCats <> Nil) then begin
-               if DEMGlb[MapDraw.DEMonMap].GetElevMeters(round(XGrid),round(YGrid),Elev) and (Elev > 0) and (Elev < MaxNLCDCategories) then
+               if DEMGlb[MapDraw.DEMonMap].GetElevMeters(round(XGrid),round(YGrid),Elev) and (Elev > 0) and (Elev < MaxLandCoverCategories) then
                   Panel2String := DEMGlb[MapDraw.DEMonMap].NLCDCats^[round(Elev)].LongName + '  z=' + RealToString( DEMGlb[MapDraw.DEMonMap].NLCDCats^[round(Elev)].Height,-7,-1);
             end;
          {$EndIf}
@@ -23504,7 +23495,6 @@ begin
 {$Else}
 begin
    if not ValidDB(ClimateStationDB) then begin
-      //if MDDef.MoveGeographyDBMemory then DesiredDBMode := dbmCDS;
       ClimateStationDB := LoadDataBaseFile(ClimateStationFName);
    end;
    if ValidDB(ClimateStationDB) then begin

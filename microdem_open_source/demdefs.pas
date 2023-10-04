@@ -114,7 +114,7 @@ const
    MaxClass    = 25;
    MinVATValue = -32;
    MaxVATCats = 64000;
-   MaxNLCDCategories = 255;
+   MaxLandCoverCategories = 255;
    MaxVegLayers = 50;
    TMhistfName = '_bfrq.dbf';
 
@@ -746,7 +746,7 @@ const
 
 const
    //these go back a long way, and a number are no longer used
-   //because they in the the DEM header, then numbering must be retained
+   //because they in the the DEM header, the numbering must be retained
    WGS72d = 0;
    WGS84d = 1;
    NAD27d = 2;
@@ -764,6 +764,13 @@ const
    ETRs89d = 14;
 
    DigitizeDatumName : array[0..14] of ShortString = ('WGS72','WGS84','NAD27','NAD83','Sphere','','Rect','','','','UK OS','Defined','','','ETRS89');
+
+   mhsSingleDirection = 0;
+   mhsThreeFixed = 1;
+   mhsFourFixed = 2;
+   mhsEightFixed = 3;
+   mhsPick = 4;
+
 
 type
    tDigitizeDatum = byte;
@@ -1668,7 +1675,6 @@ type
        {$IfDef ExGeography}
        {$Else}
            KoppenOpts  : tKoppenOpts;
-           //MoveGeographyDBMemory,
            RiseSet,MoonPhase : boolean;
        {$EndIf}
 
@@ -1676,8 +1682,11 @@ type
        {$Else}
            ClusterInitialization : MVClusterClientDataSet.tInitializationOption;
            ClusterIterations,
+           ClustSensitiveMin,
+           ClustSensitiveMax,
            NumClusters : byte;
            ShowClusterScatterPlots,
+           ClusterSensitivity,
            ShowClusterHistograms : boolean;
        {$EndIf}
 
@@ -1904,9 +1913,10 @@ type
       DEMIX_criterion_tolerance_fName : PathStr;
       DEMIX_default_area,
       DEMIX_default_tile   : shortstring;
+      DEMIX_default_half_sec_ref : boolean;
 
       DEMIX_xsize,DEMIX_ysize : integer;
-
+      DEMIX_open_ref_DEM,
       MakeCOP_ALOS_diffMaps,
       MakeCOP_ALOS_Cat_Maps,
       MakeCOP_FABDEM_diffMaps,
@@ -1914,7 +1924,7 @@ type
       MakeRGB_Best_Map,
       RGBbestSeparates,
 
-      SSIM_elev,SSIM_slope,SSIM_ruff,SSIM_rri,
+      SSIM_elev,SSIM_slope,SSIM_ruff,SSIM_rri,SSIM_hill,
       DEMIXCompositeImage,
       DEMIX_DoCHM,
       DEMIX_DoAirOrDirt,
@@ -2259,8 +2269,8 @@ type
        FanPickMode : tFanPickMode;
        SaveLiveFlying : boolean;
 
-       ShowClusterResults,
-       IncludeClusterStatistics : boolean;
+       //ShowClusterResults,
+       //IncludeClusterStatistics : boolean;
        ClusterConvergenceThreshold : float32;
        LabelEachGraph,
        EntireDEMGeostats,
@@ -2307,7 +2317,7 @@ type
        FabColorMin,FabColorMax : float32;
        FabColorByField,
        DoFabricAmplitude : boolean;
-       HighlightLineWdith : byte;
+       HighlightLineWidth : byte;
        HighLightColor : TPlatformColor;
 
        MinRegionPoints : smallInt;
@@ -2380,6 +2390,7 @@ type
 
        PrinterScale : float32;
 
+       MultShadeReliefMode,
        UseRefDirs : integer;
        RefPhi,RefTheta,
        RefVertExag : float32;

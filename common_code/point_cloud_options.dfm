@@ -35,8 +35,8 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
     Height = 41
     Align = alBottom
     TabOrder = 0
-    ExplicitTop = 399
-    ExplicitWidth = 477
+    ExplicitTop = 397
+    ExplicitWidth = 469
     object CancelBtn: TBitBtn
       Left = 290
       Top = 6
@@ -112,11 +112,11 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
     Top = 0
     Width = 473
     Height = 229
-    ActivePage = TabSheet1
+    ActivePage = TabSheet6
     Align = alClient
     TabOrder = 1
-    ExplicitWidth = 477
-    ExplicitHeight = 230
+    ExplicitWidth = 469
+    ExplicitHeight = 228
     object General: TTabSheet
       Caption = 'General'
       object Label6: TLabel
@@ -258,12 +258,12 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
       object Panel2: TPanel
         Left = 0
         Top = 0
-        Width = 473
-        Height = 203
+        Width = 465
+        Height = 201
         Align = alClient
         TabOrder = 0
-        ExplicitWidth = 469
-        ExplicitHeight = 202
+        ExplicitWidth = 461
+        ExplicitHeight = 200
         object Label1: TLabel
           Left = 296
           Top = 16
@@ -1665,8 +1665,8 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
     Height = 169
     Align = alBottom
     TabOrder = 2
-    ExplicitTop = 230
-    ExplicitWidth = 477
+    ExplicitTop = 228
+    ExplicitWidth = 469
     object RadioGroup1: TRadioGroup
       Left = 10
       Top = 2
@@ -1837,6 +1837,10 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
     object DTMrangescalesfromgroundpoints1: TMenuItem
       Caption = 'DTM range scales from ground points'
       OnClick = DTMrangescalesfromgroundpoints1Click
+    end
+    object DTMfromlowestreturn1: TMenuItem
+      Caption = 'DTM from lowest return'
+      OnClick = DTMfromlowestreturn1Click
     end
     object Meanstandarddeviation1: TMenuItem
       Caption = 'Mean all returns'

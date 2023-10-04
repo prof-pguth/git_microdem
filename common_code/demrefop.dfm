@@ -4,8 +4,8 @@ object RefOptFM: TRefOptFM
   ActiveControl = OKBtn
   BorderStyle = bsDialog
   Caption = 'Hillshade/Reflectance Map Options'
-  ClientHeight = 452
-  ClientWidth = 453
+  ClientHeight = 551
+  ClientWidth = 555
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
@@ -19,12 +19,11 @@ object RefOptFM: TRefOptFM
   object Bevel1: TBevel
     Left = 0
     Top = 0
-    Width = 453
-    Height = 401
+    Width = 555
+    Height = 473
     Align = alTop
     Shape = bsFrame
     IsControl = True
-    ExplicitWidth = 525
   end
   object Label1: TLabel
     Left = 25
@@ -75,8 +74,8 @@ object RefOptFM: TRefOptFM
     Caption = 'Saturation'
   end
   object RedrawSpeedButton12: TSpeedButton
-    Left = 385
-    Top = 407
+    Left = 355
+    Top = 503
     Width = 25
     Height = 25
     Hint = 'Force redraw'
@@ -99,8 +98,8 @@ object RefOptFM: TRefOptFM
     Caption = 'Sea level (m)'
   end
   object OKBtn: TBitBtn
-    Left = 38
-    Top = 407
+    Left = 8
+    Top = 503
     Width = 77
     Height = 27
     Kind = bkOK
@@ -112,8 +111,8 @@ object RefOptFM: TRefOptFM
     IsControl = True
   end
   object CancelBtn: TBitBtn
-    Left = 121
-    Top = 407
+    Left = 91
+    Top = 503
     Width = 77
     Height = 27
     Kind = bkCancel
@@ -125,8 +124,8 @@ object RefOptFM: TRefOptFM
     IsControl = True
   end
   object HelpBtn: TBitBtn
-    Left = 204
-    Top = 407
+    Left = 174
+    Top = 503
     Width = 76
     Height = 27
     Kind = bkHelp
@@ -162,8 +161,8 @@ object RefOptFM: TRefOptFM
     OnChange = Edit3Change
   end
   object Button1: TButton
-    Left = 286
-    Top = 407
+    Left = 256
+    Top = 503
     Width = 75
     Height = 27
     Caption = 'Default'
@@ -239,10 +238,10 @@ object RefOptFM: TRefOptFM
   object RadioGroup2: TRadioGroup
     Left = 8
     Top = 353
-    Width = 295
-    Height = 36
+    Width = 137
+    Height = 80
     Caption = 'Directions to average'
-    Columns = 8
+    Columns = 4
     Items.Strings = (
       '1'
       '2'
@@ -333,5 +332,20 @@ object RefOptFM: TRefOptFM
       Text = 'Edit4'
       OnChange = Edit5Change
     end
+  end
+  object RadioGroup4: TRadioGroup
+    Left = 170
+    Top = 353
+    Width = 175
+    Height = 104
+    Caption = 'Multidirctional hillshade'
+    Items.Strings = (
+      'Single direction'
+      'Three fixed'
+      'Four fixed'
+      'Eight fixed'
+      'Pick')
+    TabOrder = 18
+    OnClick = RadioGroup4Click
   end
 end

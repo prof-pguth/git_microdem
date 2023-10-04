@@ -154,10 +154,6 @@ procedure RecreateIniFile;
 procedure SetPerspectiveDefaults(var WorkingPersOpts : tPerspectiveOptions);
 procedure SetFlyDefaults;
 procedure SetLOSDefaults;
-procedure ResetStratColDefaults;
-
-procedure SetGeomorphDefaults;
-
 
 {$IfDef ExGeomorphGrids}
 {$Else}
@@ -212,8 +208,11 @@ function ExpandIconFileName(var fName : PathStr) : boolean;
 
 function StandardLatLongString(Lat,Long : float64) : shortstring;
 function GridLimitsToString(Limits : tGridLimits) : shortstring;
+function GridLimistsSizeToString(Limits : tGridLimits) : shortstring;
+
 function sfBoundBoxToString(Limits : sfBoundBox; Decs : integer = 4) : shortstring;
 function sfBoundBoxSizeToString(Limits : sfBoundBox; Decs : integer = 2) : shortstring;
+function sfBoundBoxSizeMinutesToString(Limits : sfBoundBox) : shortstring;
 
 
 {$IfDef ExDRGimport}
@@ -655,20 +654,33 @@ end;
 
 function GridLimitsToString(Limits : tGridLimits) : shortstring;
 begin
-   Result := 'x=' + RealToString(Limits.XGridLow,-12,-4) + ' to ' + RealToString(Limits.XGridHigh,-12,-4) + ' y=' + RealToString(Limits.YGridLow,-12,-4) + ' to ' + RealToString(Limits.YGridHigh,-12,-4);
+   Result := 'x=' + IntToStr(Limits.XGridLow) + ' to ' + IntToStr(Limits.XGridHigh) + '  y=' + IntToStr(Limits.YGridLow) + ' to ' + IntToStr(Limits.YGridHigh);
 end;
 
+
+function GridLimistsSizeToString(Limits : tGridLimits) : shortstring;
+begin
+   Result := IntToStr(succ(Limits.XGridHigh - Limits.XGridLow)) + ' x ' + IntToStr(succ(Limits.YGridHigh - Limits.YGridLow));
+end;
 
 
 function sfBoundBoxToString(Limits : sfBoundBox; Decs : integer = 4) : shortstring;
 begin
-   Result := 'x=' + RealToString(Limits.XMin,-12,-Decs) + ' to ' + RealToString(Limits.XMax,-12,-Decs) + '  y=' + RealToString(Limits.YMin,-12,-Decs) + ' to ' + RealToString(Limits.YMax,-12,-Decs);
+   Result := 'x=' + RealToString(Limits.XMin,-12,-Decs) + ' to ' + RealToString(Limits.XMax,-12,-Decs) +
+           '  y=' + RealToString(Limits.YMin,-12,-Decs) + ' to ' + RealToString(Limits.YMax,-12,-Decs);
 end;
+
 
 function sfBoundBoxSizeToString(Limits : sfBoundBox; Decs : integer = 2) : shortstring;
 begin
    Result := RealToString(Limits.XMax - Limits.XMin,-12,-Decs) + ' x ' + RealToString(Limits.YMax-Limits.YMin,-12,-Decs);
 end;
+
+function sfBoundBoxSizeMinutesToString(Limits : sfBoundBox) : shortstring;
+begin
+   Result := RealToString(60 * (Limits.XMax - Limits.XMin),-12,1) + ' x ' + RealToString(60  * (Limits.YMax-Limits.YMin),-12,1) + ' minutes';
+end;
+
 
 
 {$IfDef RecordIniMemoryOverwrite}
@@ -1145,7 +1157,7 @@ begin
      {$IfDef MSWindows}
         MDTempDir := MainMapData + 'temp\';
         {$IfDef RecordInitialization} WriteLineToDebugFile('InitializeMICRODEM Call clean up tempdir'); {$EndIf}
-        CleanUpTempDirectory;
+        CleanUpTempDirectory(true);
      {$Else}
         {$If Defined(Android) or Defined(MacOS)}
            MDTempDir := TPath.GetDocumentsPath;
@@ -2405,7 +2417,6 @@ var
       with MDIniFile,MDDef do begin
          AParameter('DEMIX','DEMIX_criterion_tolerance_fName',DEMIX_criterion_tolerance_fName,'');
          AParameter('DEMIX','DEMIX_base_dir',DEMIX_base_dir,'');
-         //AParameter('DEMIX','DEMIXhalfSecDir',DEMIXhalfSecDir,'');
          AParameter('DEMIX','DEMIX_default_area',DEMIX_default_area,'');
          AParameter('DEMIX','DEMIX_default_tile',DEMIX_default_tile,'');
 
@@ -2428,11 +2439,14 @@ var
          AParameter('DEMIX','MakeCOP_ALOS_Best_Map',MakeCOP_ALOS_Best_Map,true);
          AParameter('DEMIX','MakeRGB_Best_Map',MakeRGB_Best_Map,true);
          AParameter('DEMIX','RGBbestSeparates',RGBbestSeparates,true);
-
+         AParameter('DEMIX','DEMIX_default_half_sec_ref',DEMIX_default_half_sec_ref,false);
          AParameter('DEMIX','SSIM_elev',SSIM_elev,true);
          AParameter('DEMIX','SSIM_slope',SSIM_slope,true);
          AParameter('DEMIX','SSIM_ruff',SSIM_ruff,true);
          AParameter('DEMIX','SSIM_rri',SSIM_rri,true);
+         AParameter('DEMIX','SSIM_hill',SSIM_hill,true);
+         AParameter('DEMIX','DEMIX_open_ref_DEM',DEMIX_open_ref_DEM,true);
+         AParameter('DEMIX','DEMIX_Full',DEMIX_Full,100);
       end;
    end;
 
@@ -2605,7 +2619,6 @@ var
          AParameterShortFloat('Misc','TopCutLevel',TopCutLevel,1);
          AParameterShortFloat('Misc','BottomCutLevel',BottomCutLevel,-1);
 
-         AParameter('Misc','DEMIX_Full',DEMIX_Full,100);
          AParameterShortFloat('Misc','SlopeFlatBoundary',SlopeFlatBoundary,12.5);
          AParameterShortFloat('Misc','SlopeGentleBoundary',SlopeGentleBoundary,25);
          AParameterShortFloat('Misc','SlopeSteepBoundary',SlopeSteepBoundary,50);
@@ -2771,6 +2784,7 @@ var
    begin
       with MDIniFile,MDDef do begin
          AParameter('Reflect','UseRefDirs',MDDef.UseRefDirs,1);
+         AParameter('Reflect','MultShadeReliefMode',MDDef.UseRefDirs,0);
          AParameter('Reflect','WaterCheck',MDDef.WaterCheck,false);
          AParameter('Reflect','LakeCheck',MDDef.LakeCheck,false);
          AParameter('Reflect','AviationDangerColors',MDDef.AviationDangerColors,False);
@@ -2996,7 +3010,7 @@ var
          AParameter('Menus','ShowDataManipulation',ShowDataManipulation,true);
          AParameter('Menus','ShowGlobalDEM',ShowGlobalDEM,true);
          AParameter('Menus','ShowBlueMarble',ShowBlueMarble,true);
-         AParameter('Menus','ShowDEMIX',ShowDEMIX,false);
+         AParameter('Menus','ShowDEMIX',ShowDEMIX,true);
          AParameter('Menus','ShowOpenGL',ShowOpenGL,true);
          AParameter('Menus','ShowMultigrids',ShowMultigrids,true);
          //AParameter('Menus','ShowGISlabs',ShowGISLabs,false);
@@ -3200,7 +3214,7 @@ var
          AParameter('GISDB','LCPoverwrite', LCPoverwrite,true);
          AParameter('GISDB','LCP_ShortestDistance', LCP_ShortestDistance,false);
          AParameter('GISDB','LCP_LeastCost', LCP_LeastCost,true);
-         AParameter('GISDB','ConfirmDBEdits', ConfirmDBEdits,true);
+         AParameter('GISDB','ConfirmDBEdits', ConfirmDBEdits,false);
 
          AParameter('GISDB','LCPStartfName', LCPStartfName,'');
          AParameter('GISDB','LCPendfName', LCPendfName,'');
@@ -3259,7 +3273,7 @@ var
          AParameter('MapDraw','WorldOutlinesOnGlobalDEM',WorldOutlinesOnGlobalDEM,true);
          AParameter('MapDraw','WorldOutlinesOnGlobalBlueMarble',WorldOutlinesOnGlobalBlueMarble,true);
          AParameter('MapDraw','BlowUpExtraMargin',BlowUpExtraMargin,250);
-         AParameter('MapDraw','HighlightLineWdith',HighlightLineWdith,3);
+         AParameter('MapDraw','HighlightLineWidth',HighlightLineWidth,3);
          AParameter('MapDraw','ConPtsWidth',ConPtsWidth,2);
          AParameter('MapDraw','UseMapPanButtons',UseMapPanButtons,true);
          AParameter('MapDraw','DefaultUTMGridSpacing',DefaultUTMGridSpacing,15);
@@ -3629,13 +3643,16 @@ begin
          if (IniWhat = iniRead) then ClusterInitialization := TInitializationOption(IniFile.ReadInteger('Cluster','ClusterInitialization',ord(MVClusterClientDataSet.ioStdDev)));
          if (iniWhat = iniInit) then ClusterInitialization := MVClusterClientDataSet.ioStdDev;
 
-         AParameter('Cluster','ClusterIterations',ClusterIterations,5);
+         AParameter('Cluster','ClusterIterations',ClusterIterations,15);
          AParameter('Cluster','NumClusters',NumClusters,15);
          AParameterShortFloat('Cluster','ClusterConvergenceThreshold',ClusterConvergenceThreshold,500);
-         AParameter('Cluster','ShowClusterScatterPlots',ShowClusterScatterPlots,true);
-         AParameter('Cluster','ShowMaskScatterPlots',ShowMaskScatterPlots,true);
+         AParameter('Cluster','ShowClusterScatterPlots',ShowClusterScatterPlots,false);
+         AParameter('Cluster','ShowMaskScatterPlots',ShowMaskScatterPlots,false);
          AParameter('Cluster','ShowClusterHistograms',ShowClusterHistograms,false);
          AParameter('Cluster','ShowMaskHistograms',ShowMaskHistograms,false);
+         AParameter('Cluster','ClustSensitiveMin',ClustSensitiveMin,3);
+         AParameter('Cluster','ClustSensitiveMax',ClustSensitiveMax,15);
+         AParameter('Cluster','ClusterSensitivity',ClusterSensitivity,false);
          AParameterShortFloat('Cluster','ClassDistancePower',ClassDistancePower,2);
       {$EndIf}
 
@@ -4121,7 +4138,7 @@ end;
       MVClusterClientDataSet.InitOption := MDDef.ClusterInitialization;
       MVClusterClientDataSet.ConvergenceThreshold := MDDef.ClusterConvergenceThreshold;
       MVClusterClientDataSet.NClusters := MDDef.NumClusters;
-      MVClusterClientDataSet.AccumulateClusterStats := MDDef.ShowClusterResults and MDDef.IncludeClusterStatistics;
+      MVClusterClientDataSet.AccumulateClusterStats := false;  //MDDef.ShowClusterResults and MDDef.IncludeClusterStatistics;
    end;
 {$EndIf}
 
@@ -4677,7 +4694,7 @@ begin
       WorldClimate2Dir := ClimateDir + '\world_climate_2.1\';
       ClimateStationFName := ClimateDir + 'climate_station_v3' + DefaultDBExt;
       GlobalWindsFName := ClimateDir + '\global_winds_v2' + DefaultDBExt;
-      GlobalCurrentsFName := ClimateDir + '\ocean_currents'{_v2'} + DefaultDBExt;
+      GlobalCurrentsFName := ClimateDir + '\ocean_currents' + DefaultDBExt;
       PiratesFName := DBDir + 'ASAM_21_JAN_16' + DefaultDBExt;
       MonthlyClimateFName := ProgramRootDir +  'monthly_climate_grids_v6.dbf';
       KoppenDefFName := ProgramRootDir + 'koppen_def_v4' + DefaultDBExt;
@@ -4701,10 +4718,8 @@ begin
       MagneticAnomalyTimeScale := GeologyDir + 'time\cande_kent_time' + DefaultDBExt;
       EpochsTimeScale := 'geologic_time_epochs';
       PeriodsTimeScale := 'geologic_time_periods';
-
       CurrentMotionsFile := GeologyDir + 'plate_motions\current_rotations_v4' + DefaultDBExt;
       PlatePolesFile := GeologyDir + 'plate_motions\total_poles' + DefaultDBExt;
-
       DSDP_db := GeologyDir + 'ocean_drilling\ocean_drilling_march_2022' + DefaultDBExt;
       Hotspot_db := GeologyDir + 'hot_spots\hotspot' + DefaultDBExt;
       PlateOutlinesfName := GeologyDir + 'plate_outlines\bird_argus_others_plates.shp';
@@ -4732,7 +4747,7 @@ begin
       if (MainMapData = '') then MainMapData := 'c:\mapdata\';
 
       if (UpperCase(MainMapData) <> 'C:\MAPDATA\') then begin
-         if (not MDDef.RunOddballLocation )then begin
+         if (not MDDef.RunOddballLocation) then begin
             if AnswerIsYes('Sure you want main data location at ' + MainMapData +  '  (not recommended)') then begin
                MDDef.RunOddballLocation := true;
             end
@@ -4744,7 +4759,7 @@ begin
    {$EndIf}
    SetDefaultDirectories;
    {$IfDef RecordProblems} WriteLineToDebugFile('MakeRequiredDirectories out, MainMapData=' + MainMapData); {$EndIf}
-   {$IfDef MessageStartupUnit}  MessageToContinue('end demdefs MakeRequiredDirectories, MainMapData=' + MainMapData); {$EndIf}
+   {$IfDef MessageStartupUnit} MessageToContinue('end demdefs MakeRequiredDirectories, MainMapData=' + MainMapData); {$EndIf}
 end;
 
 
@@ -5146,7 +5161,6 @@ end;
 
 procedure ResetStratColDefaults;
 begin
-   ProcessIniFile(iniInit,'Stratcol');
 end;
 
 procedure ResetMicronetDefaults;

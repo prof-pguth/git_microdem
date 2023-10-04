@@ -727,7 +727,7 @@ var
    sl : array[1..100] of float32;
 begin
    ReturnSlopeMap := (SlopeMap = 0);
-   SlopeMap := CreateSlopeMap(DEM,ReturnSlopeMap);
+   SlopeMap := CreateSlopeMap(DEM,OpenMap);
    fName := 'md_ruff_slope_std_' + FilterSizeStr(DiameterMustBeOdd) + '_' + DEMGlb[DEM].AreaName;
    Result := DEMGlb[DEM].CloneAndOpenGridSetMissing(FloatingPointDEM,fName,PercentSlope);
    Radius := DiameterMustBeOdd div 2;
@@ -760,6 +760,7 @@ begin
       CloseSingleDEM(SlopeMap);
       SlopeMap := 0;
    end;
+   EndProgress;
    {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateRoughnessMap2, NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProjection.ProjDebugName); {$EndIf}
 end;
 
@@ -1039,6 +1040,8 @@ begin
           end;
        end;
     end;
+    DEMGlb[Result].CheckMaxMinElev;
+    if DoTPI then DEMGlb[TPIGrid].CheckMaxMinElev;
     if ShowSatProgress then EndProgress;
     if OpenMap then begin
        DEMGlb[Result].SetUpMap(Result,true,mtElevSpectrum);
@@ -1613,7 +1616,7 @@ var
 
 begin
    {$IfDef RecordMakeNewMapProblems} WriteLineToDebugFile('MakeANewMap ' + DerivativeMapName(ch,SampleBoxSize)); {$EndIf}
-   if (CurDEM = 0) or (DEMGlb[CurDEM] = Nil) then GetDEM(CurDEM);
+   if not ValidDEM(CurDEM) then GetDEM(CurDEM);
    Result := 0;
    if (ch = 'r') then begin
       {$IfDef ExGeostats}
@@ -1657,7 +1660,7 @@ begin
          else if (ch in ['B','n','C','+','-','P','p','1','2','s','N','W','X','Y','Z']) then DEMGlb[Result].DEMheader.ElevUnits := Undefined
          else if (ch = 'R') then begin
             DEMGlb[Result].DEMheader.ElevUnits := Undefined;
-            ChangeReflectanceOptions(DEMGlb[CurDEM].SelectionMap);
+            //ChangeReflectanceOptions(DEMGlb[CurDEM].SelectionMap);
          end
          else if (ch = 'S') then DEMGlb[Result].DEMheader.ElevUnits := PercentSlope
          else if (ch in ['H','M','g','i']) then DEMGlb[Result].DEMheader.ElevUnits := euMeters

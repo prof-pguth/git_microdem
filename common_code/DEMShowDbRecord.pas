@@ -255,7 +255,7 @@ begin
 
      with GISdb[DBshown] do begin
         if LineOrAreaShapefile(ShapeFileType) then begin
-           ColorLineWidthBitBtn(BitBtn6,MDDef.HighLightColor,MDDef.HighlightLineWdith);
+           ColorLineWidthBitBtn(BitBtn6,MDDef.HighLightColor,MDDef.HighlightLineWidth);
         end
         else begin
           SymbolOnButton(BitBtn6,MDDef.HighlightSymbol);
@@ -869,7 +869,7 @@ end;
 procedure Tshowrecordform.BitBtn6Click(Sender: TObject);
 begin
    if LineOrAreaShapefile(GISDb[DBShown].ShapeFileType) then begin
-      Petmar.PickLineSizeAndColor('Highlight records',BitBtn6,MDDef.HighLightColor,MDDef.HighlightLineWdith);
+      Petmar.PickLineSizeAndColor('Highlight records',BitBtn6,MDDef.HighLightColor,MDDef.HighlightLineWidth);
    end
    else begin
       Petmar.PickSymbol(BitBtn6,MDDef.HighlightSymbol,'Highlight records');

@@ -65,13 +65,13 @@
        //{$Define RecordShapeFileEdits}
        //{$Define ExportCoords}
        //{$Define RecordMakeLineArea}
-       //{$Define RecordDBfilter}
+       {$Define RecordDBfilter}
        //{$Define RecordOpenGL}
        //{$Define FindNeighbors}
        //{$Define RecordFont}
        //{$Define AverageNeighbors}
        //{$Define AverageNeighborsFull}
-       //{$Define CountUniqueValues}
+       {$Define CountUniqueValues}
        //{$Define RecordCurrentRecord}
    {$EndIf}
 {$EndIf}
@@ -965,6 +965,22 @@ type
     Clusterstatistics1: TMenuItem;
     Addaverageelevationinwindow1: TMenuItem;
     MaskallopenDEMgrids1: TMenuItem;
+    Currenttest1: TMenuItem;
+    Evaluationrangeforcriterion1: TMenuItem;
+    SSIMtodissimilarity1: TMenuItem;
+    Addtilecharacteristics1: TMenuItem;
+    Sorttable1: TMenuItem;
+    Ascending2: TMenuItem;
+    Descending2: TMenuItem;
+    Loadtile1: TMenuItem;
+    GraphSSIMR2foratile1: TMenuItem;
+    Clustercomposition1: TMenuItem;
+    GraphSSIMR2forclusters1: TMenuItem;
+    ilecharacteristicsbytileforCopDEM1: TMenuItem;
+    ClustersperDEMIXtile1: TMenuItem;
+    Clusterdiversity1: TMenuItem;
+    N49: TMenuItem;
+    Clustersensitivity1: TMenuItem;
     //Pointfilter1: TMenuItem;
     //Pointfilter2: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
@@ -1654,7 +1670,7 @@ type
     procedure Lattimecolors1Click(Sender: TObject);
     procedure Boxplot1Click(Sender: TObject);
     //procedure ransposeforwinecontest1Click(Sender: TObject);
-    procedure Graphfortransposeddata1Click(Sender: TObject);
+    //procedure Graphfortransposeddata1Click(Sender: TObject);
     procedure N1degreetilestocoverrecordsintable1Click(Sender: TObject);
     procedure BestDEMbycategory1Click(Sender: TObject);
     procedure RankDEMs1Click(Sender: TObject);
@@ -1704,6 +1720,20 @@ type
     procedure Clusterstatistics1Click(Sender: TObject);
     procedure Addaverageelevationinwindow1Click(Sender: TObject);
     procedure MaskallopenDEMgrids1Click(Sender: TObject);
+    procedure Currenttest1Click(Sender: TObject);
+    procedure Evaluationrangeforcriterion1Click(Sender: TObject);
+    procedure SSIMtodissimilarity1Click(Sender: TObject);
+    procedure Addtilecharacteristics1Click(Sender: TObject);
+    procedure Ascending2Click(Sender: TObject);
+    procedure Descending2Click(Sender: TObject);
+    procedure Loadtile1Click(Sender: TObject);
+    procedure GraphSSIMR2foratile1Click(Sender: TObject);
+    procedure Clustercomposition1Click(Sender: TObject);
+    procedure GraphSSIMR2forclusters1Click(Sender: TObject);
+    procedure ilecharacteristicsbytileforCopDEM1Click(Sender: TObject);
+    procedure ClustersperDEMIXtile1Click(Sender: TObject);
+    procedure Clusterdiversity1Click(Sender: TObject);
+    procedure Clustersensitivity1Click(Sender: TObject);
     //procedure Pointfilter2Click(Sender: TObject);
     //procedure Pointfilter1Click(Sender: TObject);
   private
@@ -1943,16 +1973,16 @@ var
    BroadCastingFilterChanges : boolean;
 
 
-procedure SortDataBase(DBOnTable : integer; Ascending : boolean);
+procedure SortDataBase(DBOnTable : integer; Ascending : boolean; aField : shortString = '');
 var
    GridForm : tGridForm;
    Report : tStringList;
    fName : PathStr;
-   aField,TStr : shortstring;
+   TStr : shortstring;
    ft,col : integer;
 begin
-   aField := GISDB[DBonTable].PickField('field to sort on',[ftString,ftSmallInt,ftFloat,ftInteger]);
-   if GISDB[DBonTable].MyData.GetFieldType(aField) = ftString then ft := 0 else ft := 2;
+   if (aField = '') then aField := GISDB[DBonTable].PickField('field to sort on',[ftString,ftSmallInt,ftFloat,ftInteger]);
+   if (GISDB[DBonTable].MyData.GetFieldType(aField) = ftString) then ft := 0 else ft := 2;
    GridForm := tGridForm.Create(Application);
    GridForm.HideCorrelationControls;
    GridForm.ShowSortingControls(true);
@@ -1972,9 +2002,11 @@ begin
    SortGrid(GridForm.StringGrid1,pred(Col),ft,Ascending);
 
    StringGridToCSVFile(fName,GridForm.StringGrid1,Nil);
-   if GISdb[DBonTable].theMapOwner <> nil then GISdb[DBonTable].theMapOwner.OpenDBonMap('',fName)
+   if (GISdb[DBonTable].theMapOwner <> nil) then GISdb[DBonTable].theMapOwner.OpenDBonMap('',fName)
    else OpenMultipleDataBases('',fName);
+   GridForm.Close;
 end;
+
 
 type tPointInPolygon = (pipLabels,pipDelete,pipSetMask);
 
@@ -2116,7 +2148,7 @@ end;
 
 procedure Tdbtablef.NormalizeddifferencesfromreferenceDEM1Click(Sender: TObject);
 begin
-   DEMIXwineContestMeanMedianGraph(dgNormalizedDiff,DBonTable);
+   DEMIXwineContestCriterionGraph(dgNormalizedDiff,DBonTable);
 end;
 
 procedure Tdbtablef.Normalizefield1Click(Sender: TObject);
@@ -2724,7 +2756,7 @@ begin
         CloneImageToBitmap(theMapOwner.Image1,Bitmap);
 
         Bitmap.Canvas.Pen.Color := ConvertPlatformColorToTColor(MDDef.HighlightColor);
-        Bitmap.Canvas.Pen.Width := MDDef.HighlightLineWdith;
+        Bitmap.Canvas.Pen.Width := MDDef.HighlightLineWidth;
         Bitmap.Canvas.Brush.Color := ConvertPlatformColorToTColor(MDDef.HighlightColor);
         Bitmap.Canvas.Brush.Style := bsSolid;
 
@@ -3170,7 +3202,7 @@ begin
         if (Column.FieldName = 'USE') then ToggleField('USE');
         if (Column.FieldName = 'PLOT') then ToggleField('PLOT');
         if (Column.FieldName = 'GRAY') then ToggleField('GRAY');
-        if (Column.FieldName = 'NAME') or (Column.FieldName = 'CLASS_NAME') or (Column.FieldName = 'CLASS') or (Column.FieldName = 'COLOR') or (Column.FieldName = 'PALETTE') then begin
+        if (Column.FieldName = 'NAME') or (Column.FieldName = 'CLASS_NAME') or (Column.FieldName = 'CLASS') or (Column.FieldName = 'COLOR') or (Column.FieldName = 'PALETTE') or (Column.FieldName = 'DEMIX_TILE') then begin
            Colorpoint1Click(Nil);
         end;
   end;
@@ -3796,6 +3828,11 @@ begin
         ICESat21.Visible := GISdb[DBonTable].IsIcesat;
         PointcloudstoanalyzeglobalDEMs1.Visible := (MyData.FieldExists('BEAM') and MyData.FieldExists('TRACK_ID')) or (MyData.FieldExists('CLOUD_0_5') and MyData.FieldExists('CLOUD_995'));
 
+        ClusterStatistics1.Enabled := GISdb[DBonTable].MyData.FieldExists('CLUSTER');
+        ClusterFrequency1.Enabled := GISdb[DBonTable].MyData.FieldExists('CLUSTER');
+        ClusterMapLocations1.Enabled := GISdb[DBonTable].MyData.FieldExists('CLUSTER') and (GISdb[DBonTable].theMapOwner <> nil);
+        ilecharacteristicsbytileforCopDEM1.Enabled := GISdb[DBonTable].MyData.FieldExists('CLUSTER') and GISdb[DBonTable].MyData.FieldExists('DEM') ;
+        GraphSSIMR2forclusters1.Enabled := GISdb[DBonTable].MyData.FieldExists('CLUSTER') and GISdb[DBonTable].MyData.FieldExists('METRIC');
         //Graphavereagescoresbyterraincategories1.Visible := MyData.FieldExists('FILTER');
 
         {$IfDef ExGeography}
@@ -3899,6 +3936,7 @@ var
 begin
    {$IfDef CountUniqueValues} WriteLineToDebugFile('Tdbtablef.Countuniquevalues1Click in'); {$EndIf}
    with GISdb[DBonTable] do begin
+     GISdb[DBonTable].EmpSource.Enabled := false;
      if (Sender = Listuniquevalues2) or (Sender = Frequencytable1) then begin
         WantedFieldName := SelectedColumn;
      end
@@ -3930,7 +3968,7 @@ begin
         EmpSource.Enabled := false;
 
         if (Sender = Singlefield1) or (Sender = Frequencytable1) or (Sender = Assignuniquecolors1) then begin
-            {$IfDef CountUniqueValues} WriteLineToDebugFile('(Sender = Singlefield1) or (Sender = Frequencytable1)'); {$EndIf}
+           {$IfDef CountUniqueValues} WriteLineToDebugFile('(Sender = Singlefield1) or (Sender = Frequencytable1)'); {$EndIf}
            FieldsInDB := tStringList.Create;
            FieldsInDB.Sorted := true;
            FieldsInDB.Duplicates := dupAccept;
@@ -3998,6 +4036,7 @@ begin
            exit;
         end;
 
+        GISdb[DBonTable].EmpSource.Enabled := false;
         DBFieldUniqueEntries(WantedFieldName,FieldsInDB);
         if (Sender = TwoFields1) then begin
            for i := 0 to pred(SecondFields.Count) do FieldsInDB.Add(SecondFields.Strings[i]);
@@ -4028,7 +4067,7 @@ begin
            if (FieldsInDB.Count = 0) then MessageToContinue('No non-numeric fields')
            else DisplayAndPurgeStringList(FieldsInDB,WantedFieldName + ' Unique non numeric values=' + IntToStr(FieldsInDB.Count) + '   n=' + IntToStr(i));
         end
-        else if (Sender = SingleField1) or (Sender = TwoFields1)  or (Sender = Frequencytable1) or (Sender = Allrecordsmatchingsinglefield1) then begin
+        else if (Sender = SingleField1) or (Sender = TwoFields1) or (Sender = Frequencytable1) or (Sender = Allrecordsmatchingsinglefield1) then begin
            if (MyData.Filter = '') then BaseFilter := '' else BaseFilter := MyData.Filter + 'AND ';
            OldFilter := MyData.Filter;
            LongFilter := WantedFieldName;
@@ -5501,6 +5540,11 @@ begin
    end;
 end;
 
+procedure Tdbtablef.Addtilecharacteristics1Click(Sender: TObject);
+begin
+   AddTileCharacteristics(DBonTable);
+end;
+
 procedure Tdbtablef.AddUTMcoordfields1Click(Sender: TObject);
 var
    Lat,Long,xutm,yutm,xbase,ybase : float64;
@@ -5875,7 +5919,7 @@ end;
 
 procedure Tdbtablef.Allcriteriavalues1Click(Sender: TObject);
 begin
-   DEMIXwineContestMeanMedianGraph(dgAllValues,DBonTable);
+   DEMIXwineContestCriterionGraph(dgAllValues,DBonTable);
 end;
 
 procedure Tdbtablef.AllDBs1Click(Sender: TObject);
@@ -6271,6 +6315,11 @@ begin
 end;
 
 
+procedure Tdbtablef.SSIMtodissimilarity1Click(Sender: TObject);
+begin
+   SwitchSSIMorR2Scoring(DBonTable);
+end;
+
 procedure Tdbtablef.Statisticsgroupedbyonefield1Click(Sender: TObject);
 begin
    Fieldcorrelations1Click(Sender);
@@ -6478,7 +6527,7 @@ end;
 
 procedure Tdbtablef.N7Elevationdifferencecriteria1Click(Sender: TObject);
 begin
-   DEMIXwineContestMeanMedianGraph(dg7Params,DBonTable);
+   DEMIXwineContestCriterionGraph(dg7Params,DBonTable);
 end;
 
 
@@ -6927,6 +6976,11 @@ begin
 end;
 
 
+procedure Tdbtablef.Currenttest1Click(Sender: TObject);
+begin
+   DEMIX_evaluations_graph(DBonTable);
+end;
+
 procedure Tdbtablef.Cyclethroughterrainprofiles1Click(Sender: TObject);
 var
    thisGraph : tThisBaseGraph;
@@ -6955,7 +7009,7 @@ procedure Tdbtablef.Lidarwaveform1Click(Sender: TObject);
 begin
    {$IfDef NoDBGrafs}
    {$Else}
-   GISdb[DBonTable].WaveFormGraph(true);
+      GISdb[DBonTable].WaveFormGraph(true);
    {$EndIf}
 end;
 
@@ -6963,7 +7017,7 @@ procedure Tdbtablef.Lidarwaveforms1Click(Sender: TObject);
 begin
    {$IfDef NoDBGrafs}
    {$Else}
-   GISdb[DBonTable].WaveFormGraph(false);
+      GISdb[DBonTable].WaveFormGraph(false);
    {$EndIf}
 end;
 
@@ -7548,6 +7602,11 @@ begin
    SortDataBase(DBOnTable,true);
 end;
 
+procedure Tdbtablef.Ascending2Click(Sender: TObject);
+begin
+   SortDataBase(DBOnTable,true,SelectedColumn);
+end;
+
 procedure Tdbtablef.Assignuniquecolors1Click(Sender: TObject);
 begin
    Countuniquevalues1Click(Sender);
@@ -7612,7 +7671,7 @@ procedure Tdbtablef.Highlightcolor1Click(Sender: TObject);
 begin
    with GISdb[DBonTable] do begin
       if LineOrAreaShapefile(ShapeFileType) then begin
-         Petmar.PickLineSizeAndColor('Highlight records',Nil,MDDef.HighLightColor,MDDef.HighlightLineWdith);
+         Petmar.PickLineSizeAndColor('Highlight records',Nil,MDDef.HighLightColor,MDDef.HighlightLineWidth);
       end
       else begin
          Petmar.PickSymbol(Nil,MDDef.HighlightSymbol,'Highlight records');
@@ -7971,10 +8030,15 @@ end;
 
 
 
+procedure Tdbtablef.ilecharacteristicsbytileforCopDEM1Click(Sender: TObject);
+begin
+   DEMIX_COP_clusters_tile_stats(DBonTable);
+end;
+
 procedure Tdbtablef.Averagebylatitude1Click(Sender: TObject);
 var
    aField : shortstring;
-   BinSize,Lat,{Avg,Done,}Value : float32;
+   BinSize,Lat,Value : float32;
    GraphData : tStringList;
    i,Bin : integer;
    Sum : array[0..180] of float64;
@@ -8021,7 +8085,7 @@ end;
 
 procedure Tdbtablef.Averageranksbyarea1Click(Sender: TObject);
 begin
-   DEMIXwineContestMeanMedianGraph(dgArea,DBonTable);
+   DEMIXwineContestCriterionGraph(dgArea,DBonTable);
 end;
 
 procedure Tdbtablef.AverageStandarddeviation1Click(Sender: TObject);
@@ -9995,10 +10059,6 @@ begin
 end;
 
 
-procedure Tdbtablef.Graphfortransposeddata1Click(Sender: TObject);
-begin
-   TransposeDEMIXwinecontestGraph(DBonTable);
-end;
 
 procedure Tdbtablef.Graphicallymovepoints1Click(Sender: TObject);
 var
@@ -10035,6 +10095,16 @@ end;
 procedure Tdbtablef.GraphsbestDEMpertilebycriteriasortbytilecharacteristics1Click(Sender: TObject);
 begin
    DEMIX_graph_best_in_Tile(DBonTable,false);
+end;
+
+procedure Tdbtablef.GraphSSIMR2foratile1Click(Sender: TObject);
+begin
+    DEMIX_SSIM_R2_tile_graph(DBonTable);
+end;
+
+procedure Tdbtablef.GraphSSIMR2forclusters1Click(Sender: TObject);
+begin
+    DEMIX_SSIM_R2_clusters_graph(DBonTable);
 end;
 
 procedure Tdbtablef.Graphwithranges1Click(Sender: TObject);
@@ -10576,6 +10646,7 @@ end;
 
 procedure Tdbtablef.DEMIX1Click(Sender: TObject);
 begin
+   LoadDEMIXnames;
    DEMIXPopUpMenu1.PopUp(Mouse.CursorPos.X,Mouse.CursorPos.Y);
 end;
 
@@ -10836,6 +10907,11 @@ end;
 procedure Tdbtablef.Descending1Click(Sender: TObject);
 begin
    SortDataBase(DBOnTable,false);
+end;
+
+procedure Tdbtablef.Descending2Click(Sender: TObject);
+begin
+   SortDataBase(DBOnTable,false,SelectedColumn);
 end;
 
 procedure Tdbtablef.Deadreckoning1Click(Sender: TObject);
@@ -11785,6 +11861,11 @@ begin
    OpenNewDEM(GISdb[DBonTable].MyData.GetFieldByNameAsString('FILENAME'));
 end;
 
+procedure Tdbtablef.Loadtile1Click(Sender: TObject);
+begin
+    LoadThisDEMIXTile(GISdb[dbOnTable].MyData.GetFieldByNameAsString('AREA'),GISdb[dbOnTable].MyData.GetFieldByNameAsString('DEMIX_TILE'));
+end;
+
 procedure Tdbtablef.Logoffield1Click(Sender: TObject);
 begin
    Sumtwofields1Click(Sender);
@@ -11942,6 +12023,51 @@ begin
 end;
 
 
+procedure Tdbtablef.Clustercomposition1Click(Sender: TObject);
+var
+   i,j : integer;
+   WantedField,aLine : ShortString;
+   UniqueEntries1,UniqueEntries2,Results : tStringList;
+   fName : PathStr;
+begin
+   {$IfDef RecordClustering} WriteLineToDebugFile('Tdbtablef.ClusterComposition1Click'); {$EndIf}
+   with GISdb[DBonTable] do begin
+      if MyData.Filtered then MessageToContinue('Results apply to entire database');
+      GISdb[DBonTable].ClearGISFilter;
+      GISdb[DBonTable].EmpSource.Enabled := false;
+      UniqueEntries1 := GISdb[DBonTable].MyData.UniqueEntriesInDB('CLUSTER');
+      GISdb[DBonTable].EmpSource.Enabled := false;
+      WantedField := 'DEM';
+      UniqueEntries2 := GISdb[DBonTable].MyData.UniqueEntriesInDB(WantedField);
+
+      Results := tStringList.Create;
+      aLine := 'CLUSTER';
+      for I := 0 to pred(UniqueEntries2.Count) do aLine := aLine + ',' + UniqueEntries2.Strings[i];
+      Results.Add(aline);
+
+      for j := 0 to pred(UniqueEntries1.Count) do begin
+         aLine := UniqueEntries1.Strings[j];
+         for I := 0 to pred(UniqueEntries2.Count) do begin
+            GISdb[DBonTable].ApplyGISFilter('CLUSTER=' + UniqueEntries1.Strings[j] + ' AND ' + WantedField + '=' + QuotedStr(UniqueEntries2.Strings[i]));
+            aLine := aLine + ',' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB);
+         end;
+         Results.Add(aline);
+      end;
+
+      fName := Petmar.NextFileNumber(MDTempDir, 'Cluster_freq_',DefaultDBExt);
+      {$IfDef RecordClustering} WriteLineToDebugFile(fName); {$EndIf}
+      StringList2CSVtoDB(Results,fName);
+   end;
+   GISdb[DBonTable].ClearGISFilter;
+   ShowStatus;
+end;
+
+
+procedure Tdbtablef.Clusterdiversity1Click(Sender: TObject);
+begin
+    DEMIX_SSIM_R2_clusters_diversity_graphs(DBonTable);
+end;
+
 procedure Tdbtablef.Clusterfrequency1Click(Sender: TObject);
 var
    MinX,MaxX : float64;
@@ -12019,20 +12145,13 @@ end;
 
 procedure Tdbtablef.Clustermaplocations1Click(Sender: TObject);
 var
-   //MinX,MaxX : float64;
    i{,j} : integer;
-   //WantedField : ShortString;
    UniqueEntries,Results : tStringList;
-   //TStr,f1 : AnsiString;
    fName : PathStr;
    Bitmap : tMyBitmap;
 begin
    {$IfDef RecordClustering} WriteLineToDebugFile('Clustermaplocations1Click in'); {$EndIf}
-   //with GISdb[DBonTable] do begin
-   if not GISdb[DBonTable].MyData.FieldExists('CLUSTER') then begin
-      MessageToContinue('Requires CLUSTER field in DB');
-      exit;
-   end;
+
    SaveBackupDefaults;
       GISdb[DBonTable].ClearGISFilter;
       //SaveHiddenColumns(DBonTable);
@@ -12050,8 +12169,6 @@ begin
 
           GISdb[DBonTable].theMapOwner.MapDraw.BaseTitle := GISdb[DBonTable].MyData.Filter  + '  (n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) +')';
           GISdb[DBonTable].theMapOwner.DoCompleteMapRedraw;
-         //GISdb[DBonTable].theMapOwner.MapDraw.DeleteSingleMapLayer(GISdb[DBonTable].theMapOwner.MapDraw.LegendOverlayfName);
-         //GISdb[DBonTable].RedrawLayerOnMap;
          GISdb[DBonTable].GISProportionalSymbols(dbasColorField);
          GISdb[DBonTable].theMapOwner.OutlineMap;
 
@@ -12071,6 +12188,17 @@ begin
    {$IfDef RecordClustering} WriteLineToDebugFile('Clustermaplocations1Click out'); {$EndIf}
 end;
 
+procedure Tdbtablef.Clustersensitivity1Click(Sender: TObject);
+begin
+   DEMIX_SSIM_R2_cluster_sensitivity_graph(DBonTable);
+end;
+
+procedure Tdbtablef.ClustersperDEMIXtile1Click(Sender: TObject);
+begin
+   DEMIX_clusters_per_tile(DBonTable);
+end;
+
+
 procedure Tdbtablef.Clusterstatistics1Click(Sender: TObject);
 var
    Results,UsingFields,UniqueEntries : tStringList;
@@ -12079,21 +12207,18 @@ var
    MomentVar : tMomentVar;
    fName : PathStr;
 begin
-   if not GISdb[DBonTable].MyData.FieldExists('CLUSTER') then begin
-      MessageToContinue('Requires CLUSTER field in DB');
-      exit;
-   end;
    UsingFields := GISdb[DBonTable].GetAnalysisFields;
    UniqueEntries := GISdb[DBonTable].MyData.UniqueEntriesInDB('CLUSTER');
    Results := tStringList.Create;
-   aline := 'CLUSTER,N,METRIC';
+   aline := 'CLUSTER,COLOR,N,METRIC';
    for j := 0 to pred(UsingFields.Count) do begin
       aline := aline + ',' + UsingFields.Strings[j];
    end;
    Results.Add(aLine);
    for i := 0 to pred(UniqueEntries.Count) do begin
       GISdb[DBonTable].MyData.ApplyFilter('CLUSTER=' + UniqueEntries.Strings[i]);
-      Common := UniqueEntries.Strings[i] + ',' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + ',' ;
+      GISdb[DBonTable].Empsource.Enabled := false;
+      Common := UniqueEntries.Strings[i] + ',' + IntToStr(GISdb[DBonTable].MyData.GetFieldByNameAsInteger('COLOR')) + ','  + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + ',' ;
       MaxLine := Common + 'MAX' ;
       MeanLine := Common + 'MEAN' ;
       MedianLine := Common + 'MEDIAN';
@@ -12103,6 +12228,7 @@ begin
       for j := 0 to pred(UsingFields.Count) do begin
          GISdb[DBonTable].EmpSource.Enabled := false;
          MomentVar := GISdb[DBonTable].GetFieldStatistics(UsingFields.Strings[j]);
+         GISdb[DBonTable].Empsource.Enabled := false;
          MaxLine := MaxLine + ',' + RealToString(MomentVar.MaxZ,-18,-2);
          MeanLine := MeanLine + ',' + RealToString(MomentVar.Mean,-18,-2);
          MedianLine := MedianLine + ','  + RealToString(MomentVar.Median,-18,-2);
@@ -14411,7 +14537,7 @@ end;
 
 procedure Tdbtablef.PercentageofcriteriawhereDEMisbest1Click(Sender: TObject);
 begin
-   DEMIXwineContestMeanMedianGraph(dgPercentBest,DBonTable);
+   DEMIXwineContestCriterionGraph(dgPercentBest,DBonTable);
 end;
 
 procedure Tdbtablef.Percentfield1Click(Sender: TObject);
@@ -14517,7 +14643,7 @@ end;
 
 procedure Tdbtablef.PickParam1Click(Sender: TObject);
 begin
-   DEMIXwineContestMeanMedianGraph(dgPick,DBonTable);
+   DEMIXwineContestCriterionGraph(dgPick,DBonTable);
 end;
 
 
@@ -14642,6 +14768,11 @@ begin
    BMP.Free;
 end;
 
+
+procedure Tdbtablef.Evaluationrangeforcriterion1Click(Sender: TObject);
+begin
+    EvaluationRangeForCriterion(DBonTable);
+end;
 
 procedure Tdbtablef.PlotClick(Sender: TObject);
 begin

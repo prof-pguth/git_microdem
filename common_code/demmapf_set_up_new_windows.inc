@@ -90,13 +90,13 @@ begin
       if ItsTiger then begin
          {$IfDef ExTIGER}
          {$Else}
-         {$IfDef RecordOpenVectorMap} WriteLineToDebugFile('LoadBlankVectorMapAndOverlay call DEMTiger.GetTIGERCounty'); {$EndIf}
-         if (Fname <> '') then begin
-            fNames := tStringList.Create;
-            fNames.Add(fName);
-         end
-         else fNames := Nil;
-         if (not DEMTiger.GetTIGERCounty(fNames,Lat1,Long1,Lat2,Long2,aName)) then exit;
+            {$IfDef RecordOpenVectorMap} WriteLineToDebugFile('LoadBlankVectorMapAndOverlay call DEMTiger.GetTIGERCounty'); {$EndIf}
+            if (Fname <> '') then begin
+               fNames := tStringList.Create;
+               fNames.Add(fName);
+            end
+            else fNames := Nil;
+            if (not DEMTiger.GetTIGERCounty(fNames,Lat1,Long1,Lat2,Long2,aName)) then exit;
          {$EndIf}
          VectorMap[Result].MapDraw.BaseTitle := aName + ' TIGER county map';
       end;

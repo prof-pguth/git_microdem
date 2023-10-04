@@ -1011,7 +1011,7 @@ begin
    else if inMapProjection.PName in [PolarStereographicEllipsoidal] then begin
       inMapProjection.Lat0 := 75 * Petmar_types.DegToRad; {lat cent is standard parallel}
    end
-   else if inMapProjection.PName in [PlateCaree,EquiDistantCylindrical,CylindricalEqualArea,MillerCylindrical,Mollweide,Cassini,HammerProj,EquiDistantCylindrical,WebMercator,Mercator,MercatorEllipsoid,MillerCylindrical] then begin
+   else if inMapProjection.PName in [PlateCaree,EquiDistantCylindrical,MillerCylindrical,Mollweide,Cassini,HammerProj,EquiDistantCylindrical,WebMercator,Mercator,MercatorEllipsoid,MillerCylindrical] then begin
    end;
    {$IfDef RecordProjectionParameters} WriteLineToDebugFile('SetUpDefaultNewProjection out '  + inMapProjection.GetProjectionName); {$EndIf}
    {$If Defined(LongCent)} WriteLineToDebugFile('SetUpDefaultNewProjection Out,  LongCent: ' + RadToDegString(inMapProjection.long0)); {$EndIf}

@@ -70,53 +70,50 @@ var
 
       procedure MakeScatterPlots;
 
-               procedure MakeBigGraph;
-               var
-                  i,j,xdrawspot,ydrawspot : integer;
-                  TStr : shortstring;
-                  AllGraphBitmap,bmp : tMyBitmap;
-                  gr : tThisBaseGraph;
-               begin
-                  with GISdb[DBonTable],MyData do  begin
+         procedure MakeBigGraph;
+         var
+            i,j,xdrawspot,ydrawspot : integer;
+            TStr : shortstring;
+            AllGraphBitmap,bmp : tMyBitmap;
+            gr : tThisBaseGraph;
+         begin
+            with GISdb[DBonTable],MyData do  begin
+               GISdb[DBonTable].EmpSource.Enabled := false;
+               PetImage.CreateBitmap(AllGraphBitmap,(FieldsUsed*MDDef.DefaultGraphXSize) + 75,(FieldsUsed*MDDef.DefaultGraphYSize) + 50);
+               AllGraphBitmap.Canvas.Font.Style := [fsBold];
+               AllGraphBitmap.Canvas.Font.Size := 18;
+               StartThreadTimers('Big graphs',1);
+
+               for i := 0 to pred(FieldsUsed) do begin
+                  ThreadTimers.OverallGauge9.Progress := round(100 * i/FieldsUsed);
+                  dbOpts.XField := FieldsToUse[i];
+                  xdrawspot := AllGraphBitmap.Canvas.TextHeight(dbOpts.YField) + 15 + i * MDDef.DefaultGraphXSize;
+                  AllGraphBitmap.Canvas.TextOut(xdrawspot + MDDef.DefaultGraphXSize div 2,5,RemoveUnderscores(dbOpts.XField));
+                  for j := 0 to pred(FieldsUsed) do begin
                      GISdb[DBonTable].EmpSource.Enabled := false;
-                     PetImage.CreateBitmap(AllGraphBitmap,(FieldsUsed*MDDef.DefaultGraphXSize) + 75,(FieldsUsed*MDDef.DefaultGraphYSize) + 50);
-                     AllGraphBitmap.Canvas.Font.Style := [fsBold];
-                     AllGraphBitmap.Canvas.Font.Size := 18;
-                     StartThreadTimers('Big graphs',1);
+                     ydrawspot := 75 + j * MDDef.DefaultGraphYSize;
+                     dbOpts.YField := FieldsToUse[j];
+                     Petmar.TextOutVertical(AllGraphBitmap.Canvas,5,YDrawspot + 25 + AllGraphBitmap.Canvas.TextWidth(dbOpts.YField),RemoveUnderscores(dbOpts.YField));
+                     if FieldExists('CLUSTER') then dbOpts.ZField := 'CLUSTER' else dbOpts.ZField := 'MASK';
+                     gr := GISdb[DBonTable].MakeGraph(dbgtN2DgraphCOLORfield1,false);
+                     gr.GraphDraw.HorizLabel := '';
+                     gr.GraphDraw.VertLabel := '';
+                     gr.GraphDraw.ResetMargins := true;
+                     gr.RedrawDiagram11Click(Nil);
 
-                     for i := 0 to pred(FieldsUsed) do begin
-                        ThreadTimers.OverallGauge9.Progress := round(100 * i/FieldsUsed);
-                        dbOpts.XField := FieldsToUse[i];
-                        xdrawspot := AllGraphBitmap.Canvas.TextHeight(dbOpts.YField) + 15 + i * MDDef.DefaultGraphXSize;
-                        AllGraphBitmap.Canvas.TextOut(xdrawspot + MDDef.DefaultGraphXSize div 2,5,RemoveUnderscores(dbOpts.XField));
-                        //AllGraphBitmap.Canvas.TextOut(xdrawspot + MDDef.DefaultGraphXSize div 2,AllGraphBitmap.Height-25,dbOpts.XField);
-                        for j := 0 to pred(FieldsUsed) do begin
-                           GISdb[DBonTable].EmpSource.Enabled := false;
-                           ydrawspot := 75 + j * MDDef.DefaultGraphYSize;
-                           dbOpts.YField := FieldsToUse[j];
-                           Petmar.TextOutVertical(AllGraphBitmap.Canvas,5,YDrawspot + 25 + AllGraphBitmap.Canvas.TextWidth(dbOpts.YField),RemoveUnderscores(dbOpts.YField));
-                           //Petmar.TextOutVertical(AllGraphBitmap.Canvas,AllGraphBitmap.Width - 15,YDrawspot + 25 + AllGraphBitmap.Canvas.TextWidth(dbOpts.YField),dbOpts.YField);
-                           if FieldExists('CLUSTER') then dbOpts.ZField := 'CLUSTER' else dbOpts.ZField := 'MASK';
-                           gr := GISdb[DBonTable].MakeGraph(dbgtN2DgraphCOLORfield1,false);
-                           gr.GraphDraw.HorizLabel := '';
-                           gr.GraphDraw.VertLabel := '';
-                           //gr.GraphDraw.MarginFreeboard := 10;
-                           gr.GraphDraw.ResetMargins := true;
-                           gr.RedrawDiagram11Click(Nil);
-
-                           CopyImageToBitmap(gr.Image1,bmp);
-                           AllGraphBitmap.Canvas.Draw(xdrawspot,ydrawspot,bmp);
-                           Bmp.Free;
-                           gr.Destroy;
-                        end;
-                     end;
-                     if dbTablef.RedGrayGraph then TStr := 'Masked region'
-                     else TStr := 'Cluster composition';
-                     PetImage_form.DisplayBitmap(AllGraphBitmap,TStr);
-                     AllGraphBitmap.Free;
-                     EndThreadTimers;
+                     CopyImageToBitmap(gr.Image1,bmp);
+                     AllGraphBitmap.Canvas.Draw(xdrawspot,ydrawspot,bmp);
+                     Bmp.Free;
+                     gr.Destroy;
                   end;
                end;
+               if dbTablef.RedGrayGraph then TStr := 'Masked region'
+               else TStr := 'Cluster composition';
+               PetImage_form.DisplayBitmap(AllGraphBitmap,TStr);
+               AllGraphBitmap.Free;
+               EndThreadTimers;
+            end;
+         end;
 
       begin
          if MDDef.ShowClusterScatterPlots or MDDef.ShowMaskScatterPlots then begin
@@ -144,12 +141,14 @@ var
 
    procedure ProcessClustering;
    var
-      i,j,Skip,fLen,rc : integer;
+      i,j,Skip,fLen,rc,Save : integer;
       f2Name : ShortString;
+      aline : shortstring;
       NewDB : tStringList;
+      ClusterSummary : tStringList;
    begin
       {$IfDef RecordClustering} WriteLineToDebugFile('ProcessClustering in'); {$EndIf}
-      if (FieldsUsed > EdburgMaxVariables) then  begin
+      if (FieldsUsed > EdburgMaxVariables) then begin
          FieldsUsed := EdburgMaxVariables;
          MessageToContinue('Too many fields ' + IntToStr(FieldsUsed) + '/' + IntToStr(EdburgMaxVariables));
       end;
@@ -198,12 +197,28 @@ var
 
       {$IfDef RecordClustering} WriteLineToDebugFile('Start K Means Clustering'); {$EndIf}
       wmDEM.SetPanelText(0,'K Means Clustering');
-      MVClusterClientDataSet.KMeansClustering(FieldsToUse, FieldsUsed, MDTempDir + 'Cluster_Results.HTML');
-      GISdb[DBonTable].dbTablef.SaveHiddenColumns;
-      GISdb[DBonTable].dbTablef.UnHideColumns;
+      if MDDef.ClusterSensitivity then begin
+
+         ClusterSummary := tStringList.Create;
+         //Save := MDDef.NumClusters;
+         aline := 'MAX_CLUSTR,ITERATION,CLUSTER,N,SSE,COLOR';
+         for I := 0 to pred(FieldsUsed) do aLine := aLine + ',' + FieldsToUse[i];
+         ClusterSummary.Add(aline);
+         for I := MDDef.ClustSensitiveMin to MDDef.ClustSensitiveMax do begin
+            MVClusterClientDataSet.NClusters := i;
+            MVClusterClientDataSet.KMeansClustering(ClusterSummary,FieldsToUse, FieldsUsed, MDTempDir + 'Cluster_Results.HTML');
+         end;
+
+         fName := NextFileNumber(MDTempDir,MDTempDir + 'cluster_sensitivity_','.dbf');
+         StringList2CSVtoDB(ClusterSummary,fName);
+         MVClusterClientDataSet.NClusters := MDDef.NumClusters;
+      end;
+      ClusterSummary := tStringList.Create;
+
+       MVClusterClientDataSet.KMeansClustering(ClusterSummary,FieldsToUse, FieldsUsed, MDTempDir + 'Cluster_Results.HTML');
+
 
       {$IfDef RecordClustering} WriteLineToDebugFile('Update DB with clusters'); {$EndIf}
-
       wmDEM.SetPanelText(0,'Update DB with clusters');
       GISdb[DBonTable].EmpSource.Enabled := false;
       GISdb[DBonTable].MyData.First;
@@ -263,66 +278,64 @@ var
       end;
 
       MVClusterClientDataSet.Free;
-      GISdb[DBonTable].MyData.ApplyFilter( '');
+      GISdb[DBonTable].ClearGISFilter;
 
-         if MDDef.ShowClusterScatterPlots or MDDef.ShowMaskScatterPlots or MDDef.ShowClusterHistograms or MDDef.ShowMaskHistograms then begin
-            wmDEM.SetPanelText(0,'Graphs');
-            //Make legend
-            CreateBitmap(Bitmap,200,20* NClustersUsed);
-            for i := 1 to NClustersUsed do begin
-               Bitmap.Canvas.Brush.Color := WinGraphColors[i mod 15];
-               Bitmap.Canvas.Brush.Style := bsSolid;
-               Bitmap.Canvas.Rectangle(5,2 + pred(i) * 20, 25, (i) * 20 - 2);
-               Bitmap.Canvas.Brush.Style := bsClear;
-               Bitmap.Canvas.TextOut(30,2 + pred(i) * 20,'Cluster ' + IntToStr(i));
-            end;
-            PetImage_form.DisplayBitmap(Bitmap,'Legend');
-            Bitmap.Free;
-
-            if MDDef.ShowClusterHistograms then MakeBigHistogram(true);
-            if MDDef.ShowMaskHistograms then MakeBigHistogram(false);
-            MakeScatterPlots;
+      if MDDef.ShowClusterScatterPlots or MDDef.ShowMaskScatterPlots or MDDef.ShowClusterHistograms or MDDef.ShowMaskHistograms then begin
+         wmDEM.SetPanelText(0,'Graphs');
+         //Make legend
+         CreateBitmap(Bitmap,200,20* NClustersUsed);
+         for i := 1 to NClustersUsed do begin
+            Bitmap.Canvas.Brush.Color := WinGraphColors[i mod 15];
+            Bitmap.Canvas.Brush.Style := bsSolid;
+            Bitmap.Canvas.Rectangle(5,2 + pred(i) * 20, 25, (i) * 20 - 2);
+            Bitmap.Canvas.Brush.Style := bsClear;
+            Bitmap.Canvas.TextOut(30,2 + pred(i) * 20,'Cluster ' + IntToStr(i));
          end;
+         PetImage_form.DisplayBitmap(Bitmap,'Legend');
+         Bitmap.Free;
+         if MDDef.ShowClusterHistograms then MakeBigHistogram(true);
+         if MDDef.ShowMaskHistograms then MakeBigHistogram(false);
+         MakeScatterPlots;
+      end;
 
+      NewDB := tStringList.Create;
+      if GISdb[DBonTable].LatLongFieldsPresent then TStr := 'LAT,LONG,'
+      else TStr := '';
 
-         NewDB := tStringList.Create;
-         if GISdb[DBonTable].LatLongFieldsPresent then TStr := 'LAT,LONG,'
+      TStr := TStr + 'CLUSTER,COLOR';
+      for I := 0 to pred(FieldsUsed) do TStr := TStr + ',' + FieldsToUse[i];
+      NewDB.Add(TStr);
+      GISdb[DBonTable].MyData.First;
+      while not GISdb[DBonTable].MyData.eof do
+      begin
+         if GISdb[DBonTable].LatLongFieldsPresent then TStr := GISdb[DBonTable].MyData.GetFieldByNameAsString(GISdb[DBonTable].LatFieldName) + ',' +
+                 GISdb[DBonTable].MyData.GetFieldByNameAsString(GISdb[DBonTable].LongFieldName) + ','
          else TStr := '';
 
-         TStr := TStr + 'CLUSTER,COLOR';
-         for I := 0 to pred(FieldsUsed) do TStr := TStr + ',' + FieldsToUse[i];
+         TStr := TStr + GISdb[DBonTable].MyData.GetFieldByNameAsString('CLUSTER') + ',' + GISdb[DBonTable].MyData.GetFieldByNameAsString('COLOR');
+
+         for I := 0 to pred(FieldsUsed) do TStr := TStr + ',' + GISdb[DBonTable].MyData.GetFieldByNameAsString(FieldsToUse[i]);
          NewDB.Add(TStr);
-         GISdb[DBonTable].MyData.First;
-         while not GISdb[DBonTable].MyData.eof do
-         begin
-            if GISdb[DBonTable].LatLongFieldsPresent then TStr := GISdb[DBonTable].MyData.GetFieldByNameAsString(GISdb[DBonTable].LatFieldName) + ',' +
-                    GISdb[DBonTable].MyData.GetFieldByNameAsString(GISdb[DBonTable].LongFieldName) + ','
-            else TStr := '';
+         GISdb[DBonTable].MyData.Next;
+      end;
 
-            TStr := TStr + GISdb[DBonTable].MyData.GetFieldByNameAsString('CLUSTER') + ',' + GISdb[DBonTable].MyData.GetFieldByNameAsString('COLOR');
+      if GISdb[DBonTable].LatLongFieldsPresent and (GISdb[DBonTable].TheMapOwner <> Nil) then begin
+         fName := Petmar.NextFileNumber(ExtractFilePath(GISdb[DBonTable].dbFullName),GISdb[DBonTable].dbName + '_cluster_',DefaultDBExt);
+         {$IfDef RecordClustering} WriteLineToDebugFile('save and open ' + fName); {$EndIf}
+         GISdb[DBonTable].TheMapOwner.StringListToLoadedDatabase(NewDB,fName);
+         GISdb[DBonTable].dbOpts.FloatColorField := 'CLUSTER';
+         GISdb[DBonTable].dbOpts.dbAutoShow := dbasColorByString;
+         GISdb[DBonTable].RedrawLayerOnMap;
+      end;
 
-            for I := 0 to pred(FieldsUsed) do TStr := TStr + ',' + GISdb[DBonTable].MyData.GetFieldByNameAsString(FieldsToUse[i]);
-            NewDB.Add(TStr);
-            GISdb[DBonTable].MyData.Next;
-         end;
-
-         if GISdb[DBonTable].LatLongFieldsPresent and (GISdb[DBonTable].TheMapOwner <> Nil) then begin
-            fName := Petmar.NextFileNumber(ExtractFilePath(GISdb[DBonTable].dbFullName),GISdb[DBonTable].dbName + '_cluster_',DefaultDBExt);
-            {$IfDef RecordClustering} WriteLineToDebugFile('save and open ' + fName); {$EndIf}
-            GISdb[DBonTable].TheMapOwner.StringListToLoadedDatabase(NewDB,fName);
-            GISdb[DBonTable].dbOpts.FloatColorField := 'CLUSTER';
-            GISdb[DBonTable].dbOpts.dbAutoShow := dbasColorByString;
-            GISdb[DBonTable].RedrawLayerOnMap;
-         end;
-
-         if MDDef.ShowClusterResults then Petmar.QuickOpenEditWindow(MDTempDir + 'Clster_Results.HTML','Cluster results');
-         wmDEM.SetPanelText(0,'');
-         GISdb[DBonTable].dbTablef.RestoreHiddenColumns;
+      //if MDDef.ShowClusterResults then Petmar.QuickOpenEditWindow(MDTempDir + 'Clster_Results.HTML','Cluster results');
+      wmDEM.SetPanelText(0,'');
+      GISdb[DBonTable].dbTablef.RestoreHiddenColumns;
    end;
 
 
    function SetUpRun : boolean;
-    begin
+   begin
       {$IfDef RecordClustering} WriteLineToDebugFile('Cluster SetUpRun enter'); {$EndIf}
       Sampler := 1;
       while ( (GISdb[DBonTable].MyData.RecordCount div Sampler) > EdburgGeneralFuncsMaxObservations) do inc(Sampler);
@@ -348,7 +361,7 @@ var
 begin
    with GISdb[DBonTable] do begin
       {$IfDef RecordClustering} WriteLineToDebugFile('DoKMeansClustering in'); {$EndIf}
-      DEMDef_routines.SaveBackupDefaults;
+      //DEMDef_routines.SaveBackupDefaults;
       ClusterRuns := 0;
       if SetUpRun then begin
          ClusterSuccess := Nil;
@@ -403,15 +416,15 @@ begin
             UsingFields.Free;
          end;
       end;
-      GISdb[DBonTable].dbTablef.UnHideColumns;
+      //DEMDef_routines.RestoreBackupDefaults;
+      GISdb[DBonTable].dbTablef.RestoreHiddenColumns;
       GISdb[DBonTable].dbTablef.ShowStatus;
-      DEMDef_routines.RestoreBackupDefaults;
+      //GISdb[DBonTable].dbTablef.UnHideColumns;
 
       if (ClusterSuccess <> Nil) and (ClusterSuccess.Count > 0) then Petmar.DisplayAndPurgeStringList(ClusterSuccess,'Cluster results');
       {$IfDef RecordClustering} WriteLineToDebugFile('DoKMeansClustering over'); {$EndIf}
    end;
 end;
-
 
 
 procedure ComputeVDatumShift(dbOnTable : integer);

@@ -2,8 +2,8 @@ object dbtablef: Tdbtablef
   Left = 62
   Top = 306
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 990
-  ClientWidth = 1216
+  ClientHeight = 988
+  ClientWidth = 1208
   Color = clBtnFace
   ParentFont = True
   FormStyle = fsMDIChild
@@ -17,24 +17,22 @@ object dbtablef: Tdbtablef
   TextHeight = 15
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 971
-    Width = 1216
+    Top = 969
+    Width = 1208
     Height = 19
     Panels = <
       item
         Width = 250
       end>
-    ExplicitTop = 970
-    ExplicitWidth = 1212
   end
   object Panel2: TPanel
     Left = 0
     Top = 41
-    Width = 1216
+    Width = 1208
     Height = 32
     Align = alTop
     TabOrder = 1
-    ExplicitWidth = 1212
+    ExplicitWidth = 1204
     object BitBtn1: TBitBtn
       Left = 34
       Top = 1
@@ -215,11 +213,11 @@ object dbtablef: Tdbtablef
   object Panel3: TPanel
     Left = 0
     Top = 73
-    Width = 1216
+    Width = 1208
     Height = 41
     Align = alTop
     TabOrder = 2
-    ExplicitWidth = 1212
+    ExplicitWidth = 1204
     object Label2: TLabel
       Left = 12
       Top = 12
@@ -266,11 +264,11 @@ object dbtablef: Tdbtablef
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1216
+    Width = 1208
     Height = 41
     Align = alTop
     TabOrder = 4
-    ExplicitWidth = 1212
+    ExplicitWidth = 1204
     object LOSButton: TSpeedButton
       Left = 40
       Top = 6
@@ -529,11 +527,11 @@ object dbtablef: Tdbtablef
   object Panel7: TPanel
     Left = 0
     Top = 114
-    Width = 1216
+    Width = 1208
     Height = 41
     Align = alTop
     TabOrder = 3
-    ExplicitWidth = 1212
+    ExplicitWidth = 1204
     object RadioGroup2: TRadioGroup
       Left = 20
       Top = 0
@@ -554,8 +552,8 @@ object dbtablef: Tdbtablef
   object DBGrid1: TDBGrid
     Left = 0
     Top = 155
-    Width = 1216
-    Height = 816
+    Width = 1208
+    Height = 814
     Align = alClient
     TabOrder = 5
     TitleFont.Charset = DEFAULT_CHARSET
@@ -668,6 +666,10 @@ object dbtablef: Tdbtablef
       object Clusterstatistics1: TMenuItem
         Caption = 'Cluster statistics'
         OnClick = Clusterstatistics1Click
+      end
+      object Clustercomposition1: TMenuItem
+        Caption = 'Cluster composition'
+        OnClick = Clustercomposition1Click
       end
     end
     object SupervisedClassification1: TMenuItem
@@ -3427,6 +3429,17 @@ object dbtablef: Tdbtablef
       Caption = 'Sort field values'
       OnClick = Sortfield1Click
     end
+    object Sorttable1: TMenuItem
+      Caption = 'Sort table'
+      object Ascending2: TMenuItem
+        Caption = 'Ascending'
+        OnClick = Ascending2Click
+      end
+      object Descending2: TMenuItem
+        Caption = 'Descending'
+        OnClick = Descending2Click
+      end
+    end
     object Fieldpercentiles1: TMenuItem
       Caption = 'Field percentiles'
       OnClick = Fieldpercentiles1Click
@@ -3649,6 +3662,53 @@ object dbtablef: Tdbtablef
   object DEMIXPopupMenu1: TPopupMenu
     Left = 368
     Top = 480
+    object Loadtile1: TMenuItem
+      Caption = 'Load this tile maps'
+      OnClick = Loadtile1Click
+    end
+    object Currenttest1: TMenuItem
+      Caption = 'Graph by criteria, with tile names and parameter sorts'
+      OnClick = Currenttest1Click
+    end
+    object Evaluationrangeforcriterion1: TMenuItem
+      Caption = 'Evaluation range (max - min) for criterion and tile'
+      OnClick = Evaluationrangeforcriterion1Click
+    end
+    object Addtilecharacteristics1: TMenuItem
+      Caption = 'Add tile characteristics to DB'
+      OnClick = Addtilecharacteristics1Click
+    end
+    object SSIMtodissimilarity1: TMenuItem
+      Caption = 'SSIM or R2 evaluations to dissimilarity'
+      OnClick = SSIMtodissimilarity1Click
+    end
+    object GraphSSIMR2foratile1: TMenuItem
+      Caption = 'Graph SSIM/R2 for a tile'
+      OnClick = GraphSSIMR2foratile1Click
+    end
+    object GraphSSIMR2forclusters1: TMenuItem
+      Caption = 'Graph SSIM/R2 for cluster'
+      OnClick = GraphSSIMR2forclusters1Click
+    end
+    object ilecharacteristicsbytileforCopDEM1: TMenuItem
+      Caption = 'Tile characteristics by tile for CopDEM'
+      OnClick = ilecharacteristicsbytileforCopDEM1Click
+    end
+    object ClustersperDEMIXtile1: TMenuItem
+      Caption = 'Clusters per DEMIX tile'
+      OnClick = ClustersperDEMIXtile1Click
+    end
+    object Clusterdiversity1: TMenuItem
+      Caption = 'Cluster diversity'
+      OnClick = Clusterdiversity1Click
+    end
+    object Clustersensitivity1: TMenuItem
+      Caption = 'Cluster sensitivity'
+      OnClick = Clustersensitivity1Click
+    end
+    object N49: TMenuItem
+      Caption = '-'
+    end
     object Meanandmedianhistograms1: TMenuItem
       Caption = 'Mean and median histograms'
       OnClick = Meanandmedianhistograms1Click

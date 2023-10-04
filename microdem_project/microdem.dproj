@@ -165,11 +165,11 @@
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_MinorVer>9</VerInfo_MinorVer>
         <VerInfo_MajorVer>2023</VerInfo_MajorVer>
-        <VerInfo_Release>4</VerInfo_Release>
+        <VerInfo_Release>17</VerInfo_Release>
         <DCC_DcuOutput>C:\turbo\obj_files_64\</DCC_DcuOutput>
-        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2023.9.4.8;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2023.9.17.18;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
-        <VerInfo_Build>8</VerInfo_Build>
+        <VerInfo_Build>18</VerInfo_Build>
         <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
         <DCC_OutputDRCFile>false</DCC_OutputDRCFile>
         <DCC_RangeChecking>true</DCC_RangeChecking>
@@ -986,10 +986,14 @@
         <None Include="..\microdem_open_source\demmapdraw_viewshed.inc"/>
         <None Include="..\microdem_open_source\demcoord_worldfile.inc"/>
         <None Include="..\common_code\demmapf_demix_tiles.inc"/>
-        <None Include="..\microdem_open_source\dem_database_demix_ops.inc"/>
         <None Include="..\microdem_open_source\stats_petmath.inc"/>
         <None Include="..\microdem_open_source\demcoord_point_class.inc"/>
         <None Include="..\microdem_open_source\demcoord_vert_datum.inc"/>
+        <None Include="..\demix\demix_create_database.inc"/>
+        <None Include="..\demix\demix_graphs.inc"/>
+        <None Include="..\demix\open_demix_area.inc"/>
+        <None Include="..\demix\demix_create_ref_dems.inc"/>
+        <None Include="..\microdem_open_source\petimage_vcl.inc"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -1532,6 +1536,30 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="..\common_code\petmar_vcl.inc" Configuration="Release" Class="ProjectFile"/>
+                <DeployFile LocalName="..\demix\demix_create_database.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="..\demix\demix_create_ref_dems.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="..\demix\demix_graphs.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="..\demix\open_demix_area.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\las_lidar\create_las.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\las_lidar\create_las.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
@@ -1580,12 +1608,6 @@
                 </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\basemap_vincenty.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\dem_database_demix_ops.inc" Configuration="Debug" Class="ProjectFile"/>
-                <DeployFile LocalName="..\microdem_open_source\dem_database_demix_ops.inc" Configuration="Debug" Class="ProjectFile">
-                    <Platform Name="Win64">
-                        <RemoteDir>.\</RemoteDir>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\demcoord_edits.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\demcoord_edits.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
@@ -1796,6 +1818,12 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\demmapdraw_viewshed.inc" Configuration="Release" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\petimage_vcl.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\petmar_types_db.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\petmar_types_db.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\shapefile_creation.inc" Configuration="Debug" Class="ProjectFile"/>

@@ -119,18 +119,18 @@ var
    Bitmap : tMyBitmap;
    Top : integer;
    Categories : tNLCDCats;
-   CatUsed : array[1..MaxNLCDCategories] of boolean;
+   CatUsed : array[1..MaxLandCoverCategories] of boolean;
 
 
       function DoOne(DB : integer) : integer;
       var
         LegendY,xstart,xend,i,j,k,total,cat : Integer;
         Cum  : float64;
-        Count :  array[1..MaxNLCDCategories] of int64;
+        Count :  array[1..MaxLandCoverCategories] of int64;
       begin
          {$IfDef RecordGlobalDEM} WriteLineToDebugFile('DoOne in, db=' + GISdb[DB].dbName); {$EndIf}
          if GISdb[DB].MyData.FieldExists('COP_GLC100') then begin
-            for i := 1 to MaxNLCDCategories do begin
+            for i := 1 to MaxLandCoverCategories do begin
                Count[i] := 0;
             end;
             Total := 0;
@@ -147,7 +147,7 @@ var
             end;
             xstart := 150;
             Cum := 0;
-            for i := 1 to MaxNLCDCategories do begin
+            for i := 1 to MaxLandCoverCategories do begin
                if (Count[i] > 0) then begin
                   CatUsed[i] := true;
                   Cum := Cum + Count[i] / Total;
@@ -179,7 +179,7 @@ begin
    if (GetCompareNames = 0) then begin
       exit;
    end;
-   for j := 1 to MaxNLCDCategories do begin
+   for j := 1 to MaxLandCoverCategories do begin
       CatUsed[j] := false;
    end;
    SetUpNLCDCategories(false,'GLCS-LC100',Categories);
@@ -189,7 +189,7 @@ begin
       DoOne(j);
    end;
    LegendY := 0;
-   for i := 1 to MaxNLCDCategories do begin
+   for i := 1 to MaxLandCoverCategories do begin
       if CatUsed[i] then begin
          Bitmap.Canvas.Brush.Style := bsSolid;
          Bitmap.Canvas.Brush.Color := ConvertPlatformColorToTColor(Categories[i].Color);

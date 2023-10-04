@@ -13,8 +13,8 @@
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems}
-   //{$Define LogOps}
-   //{$Define LogResults}
+   {$Define LogOps}
+   {$Define LogResults}
 {$EndIf}
 
 (*****************************************************************************
@@ -97,10 +97,10 @@ const
    ONE_QUARTER         = 1 / 4;
    ONE_EIGHTH          = 1 / 8;
 
-   CRLF                = sLineBreak;
-   CRLF2               = sLineBreak + sLineBreak;
-   HTMLRed             = '"#DD0000"';
-   HTMLBlack           = '"#000000"';
+   //CRLF                = sLineBreak;
+   //CRLF2               = sLineBreak + sLineBreak;
+   //HTMLRed             = '"#DD0000"';
+   //HTMLBlack           = '"#000000"';
    ERROR_PREFIX        = 'Error in ';
    ABS_NEAR_ZERO       = 0.00001;
    CLOSE_TO_ZERO       = 0.01;
@@ -928,7 +928,8 @@ type
                                       const k            : byte;
                                       const n            : integer): extended;
 
-      function ComputeClusterMeans (  const PRegressData   : PTRegressDataArray;
+      function ComputeClusterMeans ( when : shortString;
+                                      const PRegressData   : PTRegressDataArray;
                                       const ClsLabls       : TVectorClassLabels;
                                       const NumberClusters : byte;
                                       const k              : byte;
@@ -972,7 +973,8 @@ type
 
       procedure SaveToHTML(const sFileName : AnsiString; const sHeader   : AnsiString);
 
-      function KMeansClustering ( const sXFields        : array of AnsiString;
+      function KMeansClustering ( var ClusterSummary    : tStringList;
+                                  const sXFields        : array of AnsiString;
                                   const k               : byte;
                                   const sHTMLFileName   : AnsiString) : extended;
 
@@ -1669,7 +1671,11 @@ implementation
         * History  :  New
         ******************************************************************************)
         function InitMultStatRec: TMultStatRec;
+var
+  i : TMultStatRec;
+  j : integer;
         //var i:byte;
+
         begin
 
           with Result do begin
@@ -1700,6 +1706,16 @@ implementation
               TValue[i]        := 0;
             end; // for i:= 1 to EdburgMaxVariables+1 }
 
+
+              for j := 1 to 15 do begin
+                 Beta[j] := 0;
+                 BetaCIUpper[j] := 0;
+                 BetaCILower[j] := 0;
+                 SeBeta[j] := 0;
+                 TValue[j] := 0;
+              end;
+
+(*
               Beta[1]   := 0;
               Beta[2]   := 0;
               Beta[3]   := 0;
@@ -1779,7 +1795,7 @@ implementation
               TValue[13] := 0;
               TValue[14] := 0;
               TValue[15] := 0;
-
+*)
           end; // with aMultStatRec
 
         end;
@@ -2429,8 +2445,6 @@ implementation
                 Z[308]:= 0.4989;
                 Z[309]:= 0.4990;
                 Z[310]:= 0.4990;
-
-
 
           if ( aZ < -3.1 ) then  TmpVal:= -3.1
           else if ( aZ > 3.1 ) then TmpVal:= 3.1
@@ -8948,7 +8962,7 @@ implementation
         var
           i,j:byte;
         begin
-
+(*
           if ( k in Range1to10 ) then begin
 
              case k of
@@ -9414,7 +9428,8 @@ implementation
              end; // case
           end
 
-          else if ( k in [11..EdburgMaxVariables] ) then
+          else *)
+          if ( k in [11..EdburgMaxVariables] ) then
              for i:= 1 to k do
                 for j:= 1 to k do
                    Result[i,j]:= aValue;
@@ -9434,6 +9449,7 @@ implementation
         begin
           Result:= 0;
 
+(*
           if ( k in Range1to10 ) then begin
 
           case k of
@@ -9518,6 +9534,9 @@ implementation
               for i := 1 to k do
                  Result:= Result + aMatrix[i,i];
            end; // else begin
+           *)
+           for i := 1 to k do
+              Result:= Result + aMatrix[i,i];
 
         end;
 
@@ -10678,7 +10697,8 @@ end;
 * Result   :  TClusterMeansArray
 * History  :  New
 ******************************************************************************)
-function TMVClusterClientDataSet.ComputeClusterMeans (  const PRegressData   : PTRegressDataArray;
+function TMVClusterClientDataSet.ComputeClusterMeans (when : shortString;
+                                                        const PRegressData   : PTRegressDataArray;
                                                         const ClsLabls       : TVectorClassLabels;
                                                         const NumberClusters : byte;
                                                         const k              : byte;
@@ -10716,7 +10736,7 @@ begin
     Assignfile (f,OutputFileName);
     System.Append (f);
     Writeln (f);
-    Writeln (f,'New Cluster Means:');
+    Writeln (f,When + ' New Cluster Means:');
     for i:= 1 to NumberClusters do begin
         if Result[i,1] > 0 then begin
            Write (f,'Cluster#: ',i:3,' N:',ClsCounts[i]:5);
@@ -10768,28 +10788,26 @@ end;
 * Result   :  extended
 * History  :  New
 ******************************************************************************)
-function TMVClusterClientDataSet.KMeansClustering ( const sXFields : array of AnsiString;
+function TMVClusterClientDataSet.KMeansClustering ( var ClusterSummary : tStringList;
+                                                    const sXFields : array of AnsiString;
                                                     const k        : byte;
                                                     const sHTMLFileName : AnsiString): extended;
 var
+  ClusterCount,StartCluster,
   i,j,l,iEndIter : integer;
   f              : textfile;
   cf             : double;
   slHTMLStrings  : TStringList;
+  aLine : shortstring;
 begin
-   {$IfDef LogOps}
-   WriteLineToDebugFile('TMVClusterClientDataSet.KMeansClustering in');
-   //AccumulateClusterStats := true;
-   {$EndIf}
+   {$IfDef LogOps} WriteLineToDebugFile('TMVClusterClientDataSet.KMeansClustering in'); {AccumulateClusterStats := true;} {$EndIf}
 
   Result      := -1;
   iEndIter    := -1;
   cf          := -1;
   n           := GetCurrentData(sXFields,k);
 
- {$IfDef LogOps}
- WriteLineToDebugFile('n=' + n.ToString);
- {$EndIf}
+ {$IfDef LogOps} WriteLineToDebugFile('n=' + n.ToString); {$EndIf}
 
   for i := 1 to MAXITERATIONS do SSEArray[i]:= 0;
 
@@ -10810,54 +10828,65 @@ begin
      MeanVect   := MeanVector(PRegressData,k,n);
      VarVect    := VarianceVector(PRegressData,k,n);
 
+     StartCluster := NClusters;
+
      if ( fInitOption = ioMinMax ) then ClsCenters := ComputeInitialClusterCentersMinMax(MeanVect,MinVect,MaxVect,k,NClusters)
      else if ( fInitOption = ioStdDev ) then ClsCenters := ComputeInitialClusterCentersStdDev(MeanVect,VarVect,k,NClusters)
      else if ( fInitOption = ioRandom) then ClsCenters := ComputeInitialClusterCentersRandom(MeanVect,MinVect,MaxVect,k,NClusters);
 
-    {$IfDef LogOps}
-    WriteLineToDebugFile('Cluster centers computed');
-    {$EndIf}
+    {$IfDef LogOps} WriteLineToDebugFile('Cluster centers computed'); {$EndIf}
 
      ClsLabs    := AssignDataToCluster(PRegressData,ClsCenters,NClusters,k,n);
-     NewCenters := ComputeClusterMeans(PRegressData,ClsLabs,NClusters,k,n);
+     NewCenters := ComputeClusterMeans('Initial assignment',PRegressData,ClsLabs,NClusters,k,n);
 
-    {$IfDef LogOps}
-    WriteLineToDebugFile('Assigned to clusters and means computed');
-    {$EndIf}
-
+    {$IfDef LogOps} WriteLineToDebugFile('Assigned to clusters and means computed'); {$EndIf}
 
      for i := 1 to NIterations do begin
-       {$IfDef LogOps}
-       WriteLineToDebugFile('Start iteration ' + IntToStr(i));
-       {$EndIf}
-        for j:= 1 to NClusters do TmpClsLabs[j]:= ClsLabs[j];
+       {$IfDef LogOpsFull} WriteLineToDebugFile('Start iteration ' + IntToStr(i)); {$EndIf}
+        for j := 1 to NClusters do TmpClsLabs[j]:= ClsLabs[j];
 
         ClsLabs     := AssignDataToCluster(PRegressData,NewCenters,NClusters,k,n);
-        NewCenters  := ComputeClusterMeans(PRegressData,ClsLabs,NClusters,k,n);
-        {$IfDef LogOps}
-        WriteLineToDebugFile('Assigned to clusters and means computed');
-        {$EndIf}
+        NewCenters  := ComputeClusterMeans('Iteration ' + IntToStr(i),PRegressData,ClsLabs,NClusters,k,n);
+        {$IfDef LogOpsFull} WriteLineToDebugFile('Assigned to clusters and means computed'); {$EndIf}
 
         SSEArray[i] := CalcClusterSSE (PRegressData,ClsLabs,NewCenters,k,n);
-        {$IfDef LogOps}
-        WriteLineToDebugFile('CalcClusterSSE computed');
-        {$EndIf}
+        {$IfDef LogOpsFull} WriteLineToDebugFile('CalcClusterSSE computed'); {$EndIf}
         Result      := SSEArray[i];
         cf          := CorrespondenceFactor(TmpClsLabs,ClsLabs);
 
         {$IfDef LogOps}
-        WriteLineToDebugFile('cf= ' + RealToString(cf,-18,-2));
+           ClusterCount := 0;
+           for j:= 1 to NClusters do if (ClsCounts[j] > 0) then inc(ClusterCount);
+
+           WriteLineToDebugFile('iteration=' + IntToStr(i) + '  clusters=' + IntToStr(ClusterCount) + '  SSE=' + RealToString(SSEArray[i],-15,2) +  ' cf= ' + RealToString(cf,-18,-2) +
+              ' ConvergenceThreshold=' + RealToString(ConvergenceThreshold,-18,-2)  );
         {$EndIf}
 
+        iEndIter:= i;
+        //  10/3/2023  It is unclear where the ConvergenceThreshold is set at 500, and how a reasonable value would be picked , so this probably never applies
         if ( cf > ConvergenceThreshold ) then begin
-           {$IfDef LogOps}
-           WriteLineToDebugFile('   exceed threshhole= ' + RealToString(ConvergenceThreshold,-18,-2));
-           {$EndIf}
-           iEndIter:= i;
+           {$IfDef LogOps} WriteLineToDebugFile('Break;  exceed threshhole= ' + RealToString(ConvergenceThreshold,-18,-2)); {$EndIf}
            break;
         end; // if ( cf > )
      end; // for i:= 1 t NIterations
      ClusterMeans := NewCenters;
+
+     {$IfDef LogResults}
+        for j := 1 to NClusters do if (ClsCounts[j] > 0) then begin
+           aline := 'Cluster: ' + IntToStr(j) + '  n=' + IntToStr(ClsCounts[j]) + '  Variable means';
+           for i := 1 to k do aline := aline + RealToString(NewCenters[j,i],12,6);
+           WriteLineToDebugFile(aline);
+        end; // for j
+     {$EndIf}
+
+
+    for j := 1 to NClusters do if (ClsCounts[j] > 0) then begin
+       //aline := 'MAX_CLUSTR,CLUSTER,N,SSE,COLOR');
+       aline := IntToStr(StartCluster) + ',' + IntToStr(iEndIter) + ',' + IntToStr(j) + ',' + IntToStr(ClsCounts[j]) + ',' + RealToString(SSEArray[iEndIter],-15,4) + ',' + IntToStr(WinGraphColors[j mod 15]);
+       for i := 1 to k do aline := aline + ',' + RealToString(NewCenters[j,i],12,6);
+       ClusterSummary.Add(aline);
+    end;
+
 
      System.Append (f);
      Writeln (f);
@@ -10869,30 +10898,20 @@ begin
      Writeln (f);
      for i:= 1 to NIterations do Writeln (f,'  SSE : (iteration',i:3,') ',SSEArray[i]:15:2);
      Writeln (f);
-     (*
-     Writeln (f,'Cluster Assignments:');
-     Writeln (f);
-
-     for i:= 1 to n do
-        Writeln (f,'Data Point: ',i,' Cluster: ',ClsLabs[i]);
-     *)
      Closefile(f);
 
-     {$IfDef LogOps}
-     WriteLineToDebugFile('TMVClusterClientDataSet.KMeansClustering done work');
-     {$EndIf}
+     {$IfDef LogOps} WriteLineToDebugFile('TMVClusterClientDataSet.KMeansClustering done work'); {$EndIf}
 
      if ( fAccumulateClusterStats ) then begin
         GatherFinalStats(k);
         System.Append (f);
         Writeln (f,'===============================================================================');
-        for j:= 1 to NClusters do begin
+        for j := 1 to NClusters do begin
            Writeln (f);
            Writeln (f,'Cluster: ',j);
            Writeln (f,'                         Means         StdDev.      Variances');
            for i:= 1 to k do
-              Writeln(f,sXFields[i-1]:15,' (',i,')',NewCenters[j,i]:12:4,', ',sqrt(ClusterVariances[j,i]):12:4,', ',
-                 ClusterVariances[j,i]:12:4);
+              Writeln(f,sXFields[i-1]:15,' (',i,')',NewCenters[j,i]:12:4,', ',sqrt(ClusterVariances[j,i]):12:4,', ', ClusterVariances[j,i]:12:4);
            Writeln (f);
         end; // for j
         Writeln (f,'===============================================================================');
@@ -10901,7 +10920,7 @@ begin
         Writeln (f);
         Writeln (f,'Cluster Covariances:');
         Writeln (f);
-        for i:= 1 to NClusters do begin
+        for i := 1 to NClusters do begin
            Writeln (f);
            Writeln (f,'Cluster: ',i);
            Writeln (f);
@@ -10928,21 +10947,12 @@ begin
         writeln (f);
         writeln (f,'Total Avg Divergence:   Sum           Mean');
         writeln (f);
-        for i:= 1 to NClusters do
+        for i := 1 to NClusters do
            Writeln(f,'Clusters: [',i,'] : ',ClusterTotalSumDistances[i]:12:3,', ',
               ClusterTotalSumDistances[i] / ( NClusters - 1):12:3);
         Writeln (f,'===============================================================================');
         CloseFile(f);
      end; // if ( fAccumulateClusterStats )
-
-     {$IfDef LogResults}
-        for j:= 1 to NClusters do if (ClsCounts[j] > 0) then begin
-           WriteLineToDebugFile('');
-           WriteLineToDebugFile('Cluster: ' + IntToStr(j) + '  n=' + IntToStr(ClsCounts[j]));
-           WriteLineToDebugFile('             Means');
-           for i := 1 to k do WriteLineToDebugFile('Variable ' + IntToStr(i) + RealToString(NewCenters[j,i],12,4));
-        end; // for j
-     {$EndIf}
 
      if ( sHTMLFileName <> '' ) then begin
         with slHTMLStrings do begin
@@ -10962,9 +10972,7 @@ begin
    finally
      slHTMLStrings.Free;
    end; // try - finally - end
-   {$IfDef LogOps}
-   WriteLineToDebugFile('TMVClusterClientDataSet.KMeansClustering out');
-   {$EndIf}
+   {$IfDef LogOps} WriteLineToDebugFile('TMVClusterClientDataSet.KMeansClustering out'); {$EndIf}
 end;
 
 (*****************************************************************************
@@ -11109,8 +11117,7 @@ begin
    sStrList:= TStringList.Create;
    sStrTmp:= TStringList.Create;
 
-   with sStrList do begin
-     try
+   with sStrList do try
        sStrTmp.LoadFromFile(sFileName);
        Add(StartHTMLString + '<BODY>');
        Add('<BR><HR><BR><BR>');
@@ -11124,18 +11131,12 @@ begin
      finally
         sStrList.Free;
         sStrTmp.Free;
-     end; // try - finally - end
-   end; // with
-
+     end; // with try - finally - end
 end;
 
 
 initialization
 finalization
-   {$IfDef LogOps}
-   WriteLineToDebugFile('LogOps active in MVClusterClientDataSet');
-   {$EndIf}
-   {$IfDef LogResults}
-   WriteLineToDebugFile('LogResults active in MVClusterClientDataSet');
-   {$EndIf}
+   {$IfDef LogOps} WriteLineToDebugFile('LogOps active in MVClusterClientDataSet'); {$EndIf}
+   {$IfDef LogResults} WriteLineToDebugFile('LogResults active in MVClusterClientDataSet'); {$EndIf}
 end.

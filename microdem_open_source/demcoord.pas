@@ -33,6 +33,7 @@ unit DEMCoord;
       //{$Define RecordMapType}
       //{$Define TimePointParameters}
       {$Define RecordDEMIXResample}
+      //{$Define RecordsfBoundBox2tGridLimits}     //use with care; trashes the debug file
       //{$Define TrackHorizontalDatum}
       //{$Define RecordVertDatumShift}
       //{$Define TrackPixelIs}
@@ -282,7 +283,6 @@ type
          function InterpolateBiCubicVisioTerra(xgrid,ygrid : float32; var z : float32) : boolean;
          function InterpolateBiCubicNumericalRecipes(xgrid,ygrid : float32; var z : float32) : boolean;
          function CheckForUTMZones : boolean;
-         //procedure MissingDataToSeaLevelStrip(SeaLevel : float64; PartLimits :  tGridLimits);
          procedure FilterStrip(NewDEM, FilterLap : integer; GridLimits : tGridLimits; FilterCategory : tFilterCat; Filter : FilterType);
       public
          ThisDEM   : integer;  //to access the global array
@@ -328,8 +328,8 @@ type
          DEMMemoryAlreadyAllocated,
          HiddenGrid,
          UTMValidDEM        : boolean;
-         cosDegSunAltitude,sinDegSunAltitude : float64;
-         RefPhi : array[1..MaxRefDir] of float64;
+         cosAlt,sinAlt,
+         RefPhi,RefAlt,RefWeight : array[1..MaxRefDir] of float64;
          VatLegendStrings : tStringList;
 
          {$IfDef VCL}
@@ -374,6 +374,7 @@ type
          function PixelBoundBoxGeo(Col,Row : integer) : sfBoundBox;
          function PixelBoundBoxUTM(Col,Row : integer) : sfBoundBox;
          function bbDEMGridPartOfDEMonMap(BaseMap : tMapForm) : sfBoundBox;
+         function sfBoundBox2tGridLimits(sfBoundBox : sfboundBox) :tGridLimits;
 
          function PixelCenterOnFullSecond : boolean;
 
@@ -1057,7 +1058,6 @@ function tDEMDataSet.HalfPixelAggregation(fName : PathStr; PixelIs : byte; SaveF
 var
    Col,Row,{x,y,Npts,}bx,by,ThinFactor : integer;
    znw,zw,zsw,zn,z,zs,zne,ze,zse : float32;
-   //Sum       : float64;
    NewHeadRecs : tDEMheader;
    TStr : shortstring;
 begin
@@ -1107,11 +1107,7 @@ end;
 
 function tDEMDataSet.ThinAndOpenGridSetMissing(ThinFactor : integer; NewPrecision : tDEMprecision; Gridname : shortstring; ElevUnits : tElevUnit) : integer;
 var
-   //Col,Row,x,y,Npts : integer;
-   //z : float32;
-   //Sum       : float64;
    NewHeadRecs : tDEMheader;
-   //TStr : shortstring;
 begin
    NewHeadRecs := DEMheader;
    NewHeadRecs.DEMPrecision := NewPrecision;
@@ -2021,12 +2017,37 @@ begin
 end {proc GetElevCol};
 
 
+
+function tDEMDataSet.sfBoundBox2tGridLimits(sfBoundBox : sfboundBox) : tGridLimits;
+var
+   xlo,xhi,ylo,yhi,xtra : float32;
+begin
+   {$IfDef RecordsfBoundBox2tGridLimits} HighlightLineToDebugFile('sfBoundBox2tGridLimits: ' + AreaName);  WriteLineToDebugFile('Geo: ' + sfBoundBoxToString(sfBoundBox));   {$EndIf}
+   LatLongDegreeToDEMGrid(sfBoundBox.YMin,sfBoundBox.XMin,xlo,ylo);
+   LatLongDegreeToDEMGrid(sfBoundBox.YMax,sfBoundBox.XMax,xhi,yhi);
+   {$IfDef RecordsfBoundBox2tGridLimits} WriteLineToDebugFile('DEM Grid, x=' + RealToString(xlo,-12,-2) + ' to ' + RealToString(xhi,-12,-2) +  '  y=' + RealToString(ylo,-12,-2) + ' to ' + RealToString(yhi,-12,-2) ); {$EndIf}
+   ClipDEMGrid(xlo,ylo);
+   ClipDEMGrid(xhi,yhi);
+   {$IfDef RecordsfBoundBox2tGridLimits} WriteLineToDebugFile('clipped, x=' + RealToString(xlo,-12,-2) + ' to ' + RealToString(xhi,-12,-2) +  '  y=' + RealToString(ylo,-12,-2) + ' to ' + RealToString(yhi,-12,-2) ); {$EndIf}
+   xtra := 0.00;  //0.0001;
+   Result.XGridLow := round(xlo-xtra);
+   Result.YGridLow := round(ylo-xtra);
+   Result.XGridHigh := round(xhi+xtra);
+   Result.YGridHigh := round(yhi+xtra);
+   {$IfDef RecordsfBoundBox2tGridLimits}
+      WriteLineToDebugFile('Final: ' + GridLimitsToString(Result) + 'Rows=' + IntToStr((succ(Result.XGridHigh-Result.XGridLow))) +
+         'x' + IntToStr(succ(Result.YGridHigh-Result.YGridLow)));
+   {$EndIf}
+end;
+
+
 function tDEMDataSet.bbDEMGridPartOfDEMonMap(BaseMap : tMapForm) : sfBoundBox;
 begin
    LatLongDegreeToDEMGrid(BaseMap.MapDraw.MapCorners.BoundBoxGeo.YMin,BaseMap.MapDraw.MapCorners.BoundBoxGeo.XMin,Result.XMin,Result.YMin);
-   LatLongDegreeToDEMGrid(BaseMap.MapDraw.MapCorners.BoundBoxGeo.YMin,BaseMap.MapDraw.MapCorners.BoundBoxGeo.XMax,Result.XMax,Result.YMin);
-   LatLongDegreeToDEMGrid(BaseMap.MapDraw.MapCorners.BoundBoxGeo.YMax,BaseMap.MapDraw.MapCorners.BoundBoxGeo.XMin,Result.XMin,Result.YMax);
    LatLongDegreeToDEMGrid(BaseMap.MapDraw.MapCorners.BoundBoxGeo.YMax,BaseMap.MapDraw.MapCorners.BoundBoxGeo.XMax,Result.XMax,Result.YMax);
+   //removed 9/10/2023
+   //LatLongDegreeToDEMGrid(BaseMap.MapDraw.MapCorners.BoundBoxGeo.YMin,BaseMap.MapDraw.MapCorners.BoundBoxGeo.XMax,Result.XMax,Result.YMin);
+   //LatLongDegreeToDEMGrid(BaseMap.MapDraw.MapCorners.BoundBoxGeo.YMax,BaseMap.MapDraw.MapCorners.BoundBoxGeo.XMin,Result.XMin,Result.YMax);
 end;
 
 
@@ -2998,16 +3019,65 @@ end;
 
 procedure tDEMDataSet.ReflectanceParams(Min : float64 = -9999; Max : float64 = -9999);
 {initializes values used for reflectance map calculations}
+const  //from WBT
+   //https://pubs.usgs.gov/of/2012/1171/pdf/usgs_of2012-1171-Gantenbein_p101-106.pdf
+   Azimuth3 : array[1..3] of float32 = (350,15,270);
+   Alt3 : array[1..3] of float32 = (70,60,55);
+   Weight3 : array[1..3] of float32 = (0.35,0.325,0.325);
+   //WBT
+   Azimuth4 : array[1..4] of float32 = (225, 270, 315,360);
+   Weight4 : array[1..4] of float32 = (0.1, 0.4, 0.4,0.1);
+   //WBT full 360
+   Azimuth8 : array[1..8] of float32 = (0, 45, 90, 135, 180, 225, 270, 315);
+   Weight8 : array[1..8] of float32 = (0.15, 0.125, 0.1, 0.05, 0.1, 0.125, 0.15, 0.2);
 var
    i : integer;
 begin
-   {$If Defined(RecordMapDraw) or Defined(RecordMultipleRefDirs)} WriteLineToDebugFile('tDEMDataSet.ReflectanceParams in, DEM=' + AreaName); {$EndIf}
-   cosDegSunAltitude := cosDeg(90-MDdef.RefTheta);
-   sinDegSunAltitude := sinDeg(90-MDdef.RefTheta);
-   {$If Defined(RecordMapDraw) or Defined(RecordMultipleRefDirs)} WriteLineToDebugFile('reftheta='  + RealToString(MDdef.RefTheta,8,3)); {$EndIf}
+   {$If Defined(RecordMultipleRefDirs)} WriteLineToDebugFile('tDEMDataSet.ReflectanceParams in, DEM=' + AreaName); {$EndIf}
+
+   if (MDDef.MultShadeReliefMode = mhsFourFixed) then begin
+      MDdef.UseRefDirs := 4;
+      for I := 1 to MDdef.UseRefDirs do begin
+         RefPhi[i] := Azimuth4[i];
+         RefAlt[i] := (90-MDdef.RefTheta);
+         RefWeight[i] := Weight4[i];
+      end;
+   end
+   else if (MDDef.MultShadeReliefMode = mhsEightFixed) then begin
+      MDdef.UseRefDirs := 8;
+      for I := 1 to MDdef.UseRefDirs do begin
+         RefPhi[i] := Azimuth8[i];
+         RefAlt[i] := (90-MDdef.RefTheta);
+         RefWeight[i] := Weight8[i];
+      end;
+   end
+   else if (MDDef.MultShadeReliefMode = mhsThreeFixed) then begin
+      MDdef.UseRefDirs := 3;
+      for I := 1 to MDdef.UseRefDirs do begin
+         RefPhi[i] := Azimuth3[i];
+         RefAlt[i] := (90-Alt3[i]);
+         RefWeight[i] := Weight3[i];
+        {$If Defined(RecordMultipleRefDirs)} WriteLineToDebugFile(' dir ' + IntToStr(i) + RealToString(RefPhi[i],8,3)); {$EndIf}
+      end;
+   end
+   else if (MDDef.MultShadeReliefMode = mhsSingleDirection) then begin
+      MDdef.UseRefDirs := 1;
+      RefPhi[1] := MDdef.RefPhi;
+      RefAlt[2] := (90-MDdef.RefTheta);
+      RefWeight[1] := 1 ;
+   end
+   else if (MDDef.MultShadeReliefMode = mhsPick)then begin
+      for I := 1 to MDdef.UseRefDirs do begin
+         RefPhi[i] := FindCompassAngleInRange(MDdef.RefPhi + pred(i) * 360 / MDdef.UseRefDirs);
+         RefAlt[i] := (90-MDdef.RefTheta);
+         RefWeight[i] := 1 / MDdef.UseRefDirs;
+      end;
+   end;
+   {$If Defined(RecordMultipleRefDirs)} for I := 1 to MDdef.UseRefDirs do WriteLineToDebugFile(' dir ' + IntToStr(i) + RealToString(RefPhi[i],8,3)); {$EndIf}
+
    for I := 1 to MDdef.UseRefDirs do begin
-      RefPhi[i] := FindCompassAngleInRange(MDdef.RefPhi + pred(i) * 360 / MDdef.UseRefDirs);
-     {$If Defined(RecordMapDraw) or Defined(RecordMultipleRefDirs)} WriteLineToDebugFile(' dir ' + IntToStr(i) + RealToString(RefPhi[i],8,3)); {$EndIf}
+      cosAlt[i] := cosDeg(RefAlt[i]);
+      sinAlt[i] := sinDeg(RefAlt[i]);
    end;
 
    if (Min < -9998) and (Max < -9998) then begin
@@ -3022,8 +3092,9 @@ end;
 
 
 function tDEMDataSet.ReflectanceValue(x,y : integer) : integer;
+{heavily modified for multidirectional hillshade}
 {returns reflectance value that ranges from 0 (black) to 255 (white); MaxSmallInt if undefined}
-{ after Pelton, Colin, 1987, A computer program for hill-shading digital topographic data sets: Computers & Geosciences, vol.13, no.5, p.545-548.}
+{originally after Pelton, Colin, 1987, A computer program for hill-shading digital topographic data sets: Computers & Geosciences, vol.13, no.5, p.545-548.}
 //https://desktop.arcgis.com/en/arcmap/10.3/tools/spatial-analyst-toolbox/how-hillshade-works.htm
 //Hillshade = 255.0 * ((cos(Zenith_rad) * cos(Slope_rad)) + (sin(Zenith_rad) * sin(Slope_rad) * cos(Azimuth_rad - Aspect_rad)))
 //Note that if the calculation of the hillshade value is < 0, the output cell value will be = 0.
@@ -3034,15 +3105,16 @@ var
 begin
    Result := MaxSmallInt;
    if GetSlopeAndAspect(x,y,SlopeAsp) then begin
-      // (SlopeAsp.AspectDir <= 360) or (SlopeAsp.AspectDir >= 0) then SlopeAsp.AspectDir := 180;  //deal with the undefined case for flat pixel
+      // (SlopeAsp.AspectDir <= 360) or (SlopeAsp.AspectDir >= 0) then SlopeAsp.AspectDir := 180;  //deal with undefined case for flat pixel
       try
          Sum := 0;
          for I := 1 to MDdef.UseRefDirs do begin
             //allows multi-directions, which will all have the same sun alitutde and azimuths spread around the circle
-            Value := 255.0 * ( (cosDegSunAltitude * cosDeg(MDDef.RefVertExag * SlopeAsp.SlopeDegree)) + (sinDegSunAltitude * sinDeg(MDDef.RefVertExag * SlopeAsp.SlopeDegree * cosDeg(RefPhi[i] - SlopeAsp.AspectDir))));
-            Sum := sum + ValidByteRange(round(Value));
+            Value := RefWeight[i] * ( (cosAlt[i] * cosDeg(MDDef.RefVertExag * SlopeAsp.SlopeDegree)) + (sinAlt[i] * sinDeg(MDDef.RefVertExag * SlopeAsp.SlopeDegree * cosDeg(RefPhi[i] - SlopeAsp.AspectDir))));
+            Sum := sum + Value;
          end;
-         Result := round(Sum/MDdef.UseRefDirs);
+         //Result := round(Sum / MDdef.UseRefDirs);
+         Result := ValidByteRange(round(255 * Sum));
       except
           on Exception do Result := MaxSmallInt;
       end;
@@ -3502,7 +3574,6 @@ end;
 function tDEMDataSet.ReinterpolateUTMDEM(FloatSpacingMeters : float64;  UTMzone : int16 = -99; fName : PathStr = '') : integer;
 begin
    {$IfDef RecordResample} WriteLineToDebugFile('tDEMDataSet.ReinterpolateUTMDEM in'); {$EndIf}
-
    if (FloatSpacingMeters < 0) then begin
       FloatSpacingMeters := MDDef.DefaultUTMGridSpacing;
       ReadDefault('spacing for new DEM (m)',FloatSpacingMeters);
@@ -3535,18 +3606,6 @@ begin
       SpacingArcSec := 1;
       ReadDefault('Spacing for new DEM (sec)',SpacingArcSec);
    end;
-(*
-   Result := ReinterpolateLatLongDEM(0.5,fName);
-   DEMGlb[Result].DEMheader.VerticalCSTypeGeoKey := DEMheader.VerticalCSTypeGeoKey;
-   DEMGlb[Result].DEMheader.ElevUnits := DEMheader.ElevUnits;
-   if (fName = '') then DEMGlb[Result].AreaName := AreaName + '_geo_reint_' + RealToString(SpacingArcSec,-8,-2)
-   else begin
-      DEMGlb[Result].AreaName := ExtractFileNameNoExt(fName);
-      DEMGlb[Result].WriteNewFormatDEM(fName);
-      {$IfDef RecordResample} WriteLineToDebugFile('Resample Lat/Long, saved to ' + fName + '   '  + DEMGlb[Result].KeyDEMParams(true)); {$EndIf}
-   end;
-*)
-
    {$IfDef RecordResample} WriteLineToDebugFile('Resample ' + AreaName + ' Lat/Long,  Spacing sec=' + RealToString(SpacingArcSec,-8,2) + '  ' + KeyDEMParams(true)); {$EndIf}
    Result := SelectionMap.CreateGridToMatchMap(cgLatLong,false,FloatingPointDEM,SpacingArcSec,SpacingArcSec,MDdef.DefaultUTMZone,PixelIsPoint);   //DEMHeader.RasterPixelIsGeoKey1025);
    DEMGlb[Result].DEMheader.VerticalCSTypeGeoKey := DEMheader.VerticalCSTypeGeoKey;
@@ -3558,7 +3617,6 @@ begin
       DEMGlb[Result].WriteNewFormatDEM(fName);
       {$IfDef RecordResample} WriteLineToDebugFile('Resample Lat/Long, saved to ' + fName + '   '  + DEMGlb[Result].KeyDEMParams(true)); {$EndIf}
    end;
-
 end;
 
 

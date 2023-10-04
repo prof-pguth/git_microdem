@@ -133,7 +133,7 @@ end;
 
 procedure TDemMarginaliaForm.ElClick(Sender: TObject);
 begin
-   Legend_Placement.LegendOptions(MapOwner,'Elevation legend',MDDef.LegendFont,MDDef.GridLegendLocation);
+   Legend_Placement.LegendOptions(MapOwner,'Elevation legend',MDDef.LegendFont,MDDef.GridLegendLocation,loElevLegend);
    CheckBox1.Checked := MDDef.GridLegendLocation.DrawItem;
    MapOwner.MapDraw.DeleteSingleMapLayer(MapOwner.MapDraw.LegendOverlayfName);
    MapOwner.DoFastMapRedraw;
@@ -200,7 +200,7 @@ end;
 
 procedure TDemMarginaliaForm.BitBtn3Click(Sender: TObject);
 begin
-   Legend_Placement.LegendOptions(MapOwner,'Scale bar',MDDef.LegendFont,MDDef.ScaleBarLocation,false);
+   Legend_Placement.LegendOptions(MapOwner,'Scale bar',MDDef.LegendFont,MDDef.ScaleBarLocation,loScaleBar);
    CheckBox2.Checked := MDDef.ScaleBarLocation.DrawItem;
    MapOwner.MapDraw.DeleteSingleMapLayer(MapOwner.MapDraw.LegendOverlayfName);
    MapOwner.DoFastMapRedraw;
@@ -214,21 +214,21 @@ end;
 
 procedure TDemMarginaliaForm.BitBtn5Click(Sender: TObject);
 begin
-   Legend_Placement.LegendOptions(MapOwner,'Terrain category legend',MDDef.LegendFont,MDDef.TerrainCatLegend);
+   Legend_Placement.LegendOptions(MapOwner,'Terrain category legend',MDDef.LegendFont,MDDef.TerrainCatLegend,loTerrainCat);
    CheckBox3.Checked := MDDef.TerrainCatLegend.DrawItem;
 end;
 
 
 procedure TDemMarginaliaForm.BitBtn6Click(Sender: TObject);
 begin
-   Legend_Placement.LegendOptions(MapOwner,'North arrow',MDDef.LegendFont,MDDef.NorthArrowLocation);
+   Legend_Placement.LegendOptions(MapOwner,'North arrow',MDDef.LegendFont,MDDef.NorthArrowLocation,loNorthArrow);
    CheckBox5.Checked := MDDef.NorthArrowLocation.DrawItem;
 end;
 
 
 procedure TDemMarginaliaForm.BitBtn7Click(Sender: TObject);
 begin
-   Legend_Placement.LegendOptions(MapOwner,'Map name',MDDef.TitleLabelFont,MDDef.MapNameLocation,false);
+   Legend_Placement.LegendOptions(MapOwner,'Map name',MDDef.TitleLabelFont,MDDef.MapNameLocation,loMapName);
    GetString('Map title',MapOwner.MapDraw.BaseTitle,false,ReasonableTextChars);
    CheckBox6.Checked := MDDef.MapNameLocation.DrawItem;
 end;

@@ -1226,7 +1226,11 @@ begin
                      else BaseTitle := 'Grid';
                      BaseTitle := BaseTitle + ': ' + RemoveUnderscores(DEMGlb[DEMonMap].AreaName);
                      if (MapType = mtDEMContour) then BaseTitle := RemoveUnderscores(DEMGlb[DEMonMap].AreaName) + ' with ' + RealToString(DEMGlb[DEMonMap].ZinMeters(MapOverlays.ConInt),-6,-1) + ' m contours';
-                     if isReflectanceMap(MapType) then BaseTitle := RemoveUnderscores(DEMGlb[DEMonMap].AreaName) + ': Sun Az=' + RealToString(MDdef.RefPhi,-4,0) + '°, Elev='+ RealToString(MDDef.RefTheta,-4,0) + DegSym;
+                     if isReflectanceMap(MapType) then begin
+                        if MDDef.UseRefDirs = 1 then
+                            BaseTitle := RemoveUnderscores(DEMGlb[DEMonMap].AreaName) + ': Sun Az=' + RealToString(MDdef.RefPhi,-4,0) + '°, Elev='+ RealToString(MDDef.RefTheta,-4,0) + DegSym
+                        else BaseTitle := RemoveUnderscores(DEMGlb[DEMonMap].AreaName) + ' multidirectional hillshade';
+                     end;
                   end;
 
                   {$If Defined(RecordFullMapDraw) or Defined(RecordKeyMap)} WriteLineToDebugFile('Draw DEM map type=' + IntToStr(MapType) + '  ' + BaseTitle); {$EndIf}
@@ -2009,17 +2013,11 @@ end;
 
 function tMapDraw.IsThisMapUTM : boolean;
 begin
-   Result := false;
-   {$IfDef ExSat}
-   {$Else}
-      if ValidSatOnMap then begin
-         Result := ( (SatImage[SatOnMap].RegVars.Registration = RegProjection) and (SatImage[SatOnMap].ImageMapProjection.pName = UTMEllipsoidal) );
-      end;
-   {$EndIf}
-   if (VectorIndex <> 0) then Result := (PrimMapProj.PName in [UTMEllipsoidal]);
-   if DEMMap then Result := (DEMGlb[DEMonMap].DEMheader.DEMUsed = UTMbasedDEM);
+   if DEMMap then Result := (DEMGlb[DEMonMap].DEMheader.DEMUsed = UTMbasedDEM)
+   else if ValidSatOnMap then Result := ( (SatImage[SatOnMap].RegVars.Registration = RegProjection) and (SatImage[SatOnMap].ImageMapProjection.pName = UTMEllipsoidal) )
+   else if (VectorIndex <> 0) then Result := (PrimMapProj.PName in [UTMEllipsoidal])
+   else Result := false;
 end;
-
 
 function tMapDraw.ValidDEMonMap: boolean;
 begin
@@ -2812,6 +2810,7 @@ finalization
    {$If Defined(TimePLSS)} WriteLineToDebugFile('TimePLSS in demmapdraw'); {$EndIf}
    {$IfDef RecordFullDrawGridLines} WriteLineToDebugFile('TimePLSS in demmapdraw'); {$EndIf}
 end.
+
 
 
 

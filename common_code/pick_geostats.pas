@@ -203,6 +203,7 @@ uses
    gdal_tools,
    Netopts,
    MD_use_tools,
+   Petmar_ini_file,
    demtrendopt, PETMath, demstringgrid;
 
 
@@ -360,23 +361,19 @@ var
    Method : integer;
 begin
    DEMDef_routines.SaveBackupDefaults;   //so we save slope region size
-      for Method:= FirstSlopeMethod to LastSlopeMethod do begin
-         MDdef.SlopeAlg := Method;
-         CreateSlopeMap(CurDEM);
-      end;
+   for Method:= FirstSlopeMethod to LastSlopeMethod do begin
+      MDdef.SlopeAlg := Method;
+      CreateSlopeMap(CurDEM);
+   end;
    DEMDef_routines.RestoreBackupDefaults;  //to restore slope region size
 end;
 
 
 procedure TPickGeoStat.BitBtn1Click(Sender: TObject);
-{$IfDef ExGeostats}
-begin
-{$Else}
 var
    FracDim,r  : float32;
 begin
    DEMGlb[CurDEM].FractalBox(GridLimits,FracDim,r);
-{$EndIf}
 end;
 
 
@@ -388,7 +385,7 @@ procedure TPickGeoStat.BitBtn20Click(Sender: TObject);
       end;
 
 var
-   Radius,Box,DEM{,NoSlopeMap} : integer;
+   Radius,Box,DEM : integer;
 begin
    {$IfDef RecordMapMaking} WriteLineToDebugFile('TPickGeoStat.BitBtn20Click in'); {$EndIf}
    try
@@ -582,34 +579,27 @@ end;
 
 
 procedure TPickGeoStat.BitBtn2Click(Sender: TObject);
-{$IfDef ExGeostats}
-begin
-{$Else}
 var
    SlopeByColumn,SlopeByRow : float32;
 begin
    NeedSingleDEM;
    DEMStat.FastFourierTransform(CurDEM,GridLimits,SlopeByColumn,SlopeByRow);
-{$EndIf}
 end;
 
 
 procedure TPickGeoStat.BitBtn3Click(Sender: TObject);
 begin
-   {$IfDef ExGeostats}
-   {$Else}
-      SemiVariogramOptions;
-      if (CurDEM = 0) then begin
-         var j : integer;
-         for j := 1 to MaxDEMDataSets do if DEMsWanted[j] then begin
-            DEMStat.SemiVariogram(j,DEMGlb[j].FullDEMGridLimits);
-         end;
-      end
-      else begin
-         Radiogroup1Click(Sender);
-         DEMStat.SemiVariogram(CurDEM,GridLimits);
+   SemiVariogramOptions;
+   if (CurDEM = 0) then begin
+      var j : integer;
+      for j := 1 to MaxDEMDataSets do if DEMsWanted[j] then begin
+         DEMStat.SemiVariogram(j,DEMGlb[j].FullDEMGridLimits);
       end;
-   {$EndIf}
+   end
+   else begin
+      Radiogroup1Click(Sender);
+      DEMStat.SemiVariogram(CurDEM,GridLimits);
+   end;
 end;
 
 
@@ -703,7 +693,7 @@ end;
 
 procedure TPickGeoStat.Button11Click(Sender: TObject);
 begin
-   SetGeomorphDefaults;
+   ProcessIniFile(iniInit,'Geomorph');
 end;
 
 procedure TPickGeoStat.Button12Click(Sender: TObject);
@@ -715,10 +705,7 @@ end;
 
 procedure TPickGeoStat.Button13Click(Sender: TObject);
 begin
-   {$IfDef ExGeostats}
-   {$Else}
-      ElevMomentReport(DEMSWanted,'',Memo1,true,GridLimits,CurDEM);
-   {$EndIf}
+   ElevMomentReport(DEMSWanted,'',Memo1,true,GridLimits,CurDEM);
 end;
 
 procedure TPickGeoStat.Button14Click(Sender: TObject);

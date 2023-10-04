@@ -16,15 +16,15 @@ object leg_opts_form: Tleg_opts_form
   OnCreate = FormCreate
   TextHeight = 13
   object Label1: TLabel
-    Left = 58
-    Top = 150
+    Left = 18
+    Top = 174
     Width = 49
     Height = 13
     Caption = 'Bar height'
   end
   object Label2: TLabel
-    Left = 56
-    Top = 176
+    Left = 16
+    Top = 200
     Width = 39
     Height = 13
     Caption = 'Tick size'
@@ -47,7 +47,7 @@ object leg_opts_form: Tleg_opts_form
   end
   object OKBtn: TBitBtn
     Left = 8
-    Top = 223
+    Top = 239
     Width = 77
     Height = 27
     Caption = 'OK'
@@ -79,7 +79,7 @@ object leg_opts_form: Tleg_opts_form
   end
   object HelpBtn: TBitBtn
     Left = 105
-    Top = 223
+    Top = 239
     Width = 77
     Height = 27
     Kind = bkHelp
@@ -100,7 +100,7 @@ object leg_opts_form: Tleg_opts_form
     OnClick = CheckBox1Click
   end
   object RadioGroup2: TRadioGroup
-    Left = 16
+    Left = 99
     Top = 87
     Width = 85
     Height = 57
@@ -111,8 +111,8 @@ object leg_opts_form: Tleg_opts_form
     TabOrder = 4
   end
   object BitBtn1: TBitBtn
-    Left = 198
-    Top = 87
+    Left = 158
+    Top = 174
     Width = 51
     Height = 25
     Caption = 'Font'
@@ -120,20 +120,21 @@ object leg_opts_form: Tleg_opts_form
     OnClick = BitBtn1Click
   end
   object RadioGroup3: TRadioGroup
-    Left = 107
+    Left = 18
     Top = 87
     Width = 75
-    Height = 57
+    Height = 74
     Caption = 'Size (width)'
     Items.Strings = (
       'Small'
-      'Medium')
+      'Medium'
+      'Large')
     TabOrder = 6
     OnClick = RadioGroup3Click
   end
   object Edit1: TEdit
-    Left = 128
-    Top = 152
+    Left = 88
+    Top = 176
     Width = 54
     Height = 21
     TabOrder = 7
@@ -141,8 +142,8 @@ object leg_opts_form: Tleg_opts_form
     OnChange = Edit1Change
   end
   object Edit2: TEdit
-    Left = 128
-    Top = 176
+    Left = 88
+    Top = 200
     Width = 54
     Height = 21
     TabOrder = 8
@@ -151,7 +152,7 @@ object leg_opts_form: Tleg_opts_form
   end
   object BitBtn2: TBitBtn
     Left = 204
-    Top = 171
+    Top = 240
     Width = 69
     Height = 25
     Caption = 'Redraw'

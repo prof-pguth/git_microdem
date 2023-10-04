@@ -16,6 +16,8 @@
    {$IfDef RecordProblems}  //normally only defined for debugging specific problems
       //{$Define RecordCloseDB}
       {$Define RecordDEMIX}
+      {$Define RecordCopyFieldLinkDB}
+      {$Define RecordClustering}
       //{$Define RecordLegend}
       //{$Define RecordDBNumericPlot}
       //{$Define RecordHyperion}
@@ -753,20 +755,6 @@ procedure MakeLinesFromPoints(GISDataBase : TGISdataBaseModule; fName : PathStr 
 procedure DoKMeansClustering(DBonTable : integer);
 
 
-//DEMIX wine contest procedures
-      procedure RankDEMS(DBonTable : integer; UseAll : boolean = false);
-      procedure SumsOfRankDEMS(DBonTable : integer);
-      procedure TransposeDEMIXwinecontestGraph(DBonTable : integer);
-      procedure DEMIXwineContestMeanMedianGraph(What,DBonTable : integer; AreaList : tStringList = nil; CriteriaUsed : tStringList = nil; LandTypePresent : tStringList = nil; DEMsPresent : tStringList = nil);
-      procedure DEMIXTileSummary(DBonTable : integer);
-      procedure DEMIXtile_inventory(DBonTable : integer);
-      function CreateFilterOutSignedCriteria(DBonTable : integer) : shortstring;
-
-      procedure FilterOutSignedCriteria(DBonTable : integer);
-      procedure FilterInSignedCriteria(DBonTable : integer);
-      procedure DEMIXMeanMedianHistograms(db : integer);
-
-
 procedure ComputeVDatumShift(dbOnTable : integer);
 function AnalyzeVDatumShift(CSVName : PathStr; ErrorLog : tStringList = Nil) : integer;
 
@@ -911,7 +899,6 @@ uses
 
 {$include demdatabase_special_cases.inc}
 
-{$include dem_database_demix_ops.inc}
 
 {$IfDef NoDBEdits}
 {$Else}
@@ -2130,8 +2117,8 @@ end;
              end
              else begin
                 dbOpts.LinkTableName := FileWanted;
-                if MDDef.AllowMemoryLinkDB then DesiredDBMode := dbmCDS;
-                LinkTable := tMyData.Create(dbOpts.LinkTableName,DesiredDBMode);
+                //if MDDef.AllowMemoryLinkDB then DesiredDBMode := dbmCDS;
+                LinkTable := tMyData.Create(dbOpts.LinkTableName);   //,DesiredDBMode);
                 LinkTable.AssignEmpSource(LinkSource1);
                 DesiredDBMode := dbmDefault;
                 {$IfDef RecordLinkTable}
@@ -2191,7 +2178,7 @@ end;
          begin
             Result := tStringList.Create;
             repeat
-               {$IfDef RecordClustering} WriteLineToDebugFile('Cluster SetUpRun calling BitBtn9Click'); {$EndIf}
+               {$IfDef RecordClustering} WriteLineToDebugFile('ClusTGISdataBaseModule.GetAnalysisFields for clustering'); {$EndIf}
                for j := 0 to pred(dbTablef.DBGrid1.Columns.Count) do  begin
                   TStr := dbTablef.DBGrid1.Columns[j].FieldName;
                   if NoStatsField(TStr) or (not(MyData.GetFieldType(TStr) in NumericFieldTypes)) then begin
@@ -4664,6 +4651,7 @@ procedure TGISdataBaseModule.SplitDateField(Format : tDateField);
 var
    tStr : ANSIString;
    Year,i : integer;
+   SepChar : Ansichar;
    DateField : shortstring;
 begin
    AddFieldToDataBase(ftInteger,'YEAR',4,0);
@@ -4681,15 +4669,19 @@ begin
    end;
 
    MyData.First;
+   TStr := MyData.GetFieldByNameAsString(DateField);
+   if StrUtils.AnsiContainsText(TStr,'/') then SepChar := '/'
+   else if StrUtils.AnsiContainsText(TStr,'-') then SepChar := '-';
+
    i := 0;
    {$IfDef VCL} StartProgress('Year'); {$EndIf}
    While not MyData.eof do begin
       inc(i);
       {$IfDef VCL}
-      if (i Mod 1000 = 0) then begin
-         UpDateProgressBar(i/MyData.RecordCount);
-         EmpSource.Enabled := false;
-      end;
+         if (i Mod 1000 = 0) then begin
+            UpDateProgressBar(i/MyData.RecordCount);
+            EmpSource.Enabled := false;
+         end;
       {$EndIf}
 
       TStr := MyData.GetFieldByNameAsString(DateField);
@@ -5332,7 +5324,6 @@ begin
      ItsTigerShapeFile := IsThisaTigerShapefile(FileWanted);
      {$IfDef RecordTIGER} if ItsOSMShapeFile or ItsTigerShapeFile then WriteLineToDebugFile('TIGER/OSM') else WriteLineToDebugFile('TIGER/OSM'); {$EndIf}
 
-
      {$IfDef AllowDBsToCDS}}
         if {$IfDef ExOSM} {$EndIf} then begin
            if (DesiredDBMode <> dbmForceDefault) then DesiredDBMode := dbmCDS;
@@ -5527,7 +5518,6 @@ begin
       PointSymbolFieldsPresent := MyData.FieldExists('SYM_TYPE') and MyData.FieldExists('SYM_SIZE') and MyData.FieldExists('SYM_COLOR');
       LineColorPresent := MyData.FieldExists('LINE_WIDTH') and  MyData.FieldExists('LINE_COLOR');
       AreaFillPresent := MyData.FieldExists('FILL_PAT') and  MyData.FieldExists('FILL_COLOR') and LineColorPresent;
-      //TMIndex := MyData.FieldExists('TM') and MyData.FieldExists('SENSOR');
       FocalMechsPresent := MyData.FieldExists('FP1_STRIKE') and MyData.FieldExists('FP2_STRIKE');
       VelNECompPresent  := (MyData.FieldExists('VN') and MyData.FieldExists('VE')) or (MyData.FieldExists('VBAR') and MyData.FieldExists('UBAR'));
       if VelNECompPresent then begin
@@ -5546,6 +5536,11 @@ begin
       ItsBoxOutline := (MyData.FieldExists('X1') and MyData.FieldExists('Y2') and MyData.FieldExists('X3')) and MyData.FieldExists('Y4');
       XYZFile := ItsBoxOutline or ((MyData.FieldExists('X') and MyData.FieldExists('Y') and MyData.FieldExists('Z')) and (not MyData.FieldExists('LAT')));
 
+      ItsAGroupingFile := MyData.FieldExists('SHAPE_TYPE') and MyData.FieldExists('FILTER') and MyData.FieldExists('PLOT') and MyData.FieldExists('PLOT_ORDER');
+
+      PhotoLocationsPresent := MyData.FieldExists('LAT') and MyData.FieldExists('LONG') and MyData.FieldExists('HFOV') and MyData.FieldExists('ELEV');
+      CameraOrientationExists := MyData.FieldExists('HEIGHT') and MyData.FieldExists('AZIMUTH') and MyData.FieldExists('HFOV') and MyData.FieldExists('VFOV') and MyData.FieldExists('DEPTH') and MyData.FieldExists('PITCH');
+
      {$IfDef ExGeography}
      {$Else}
          KoppenPresent := (MyData.FieldExists('JAN_TEMP') and MyData.FieldExists('JAN_PRECIP')) or MyData.FieldExists('KOPPEN');
@@ -5553,16 +5548,11 @@ begin
             KoppenGr.LoadKoppenDefs;
             dbOpts.DBAutoShow := dbasKoppen;
          end;
-      {$EndIf}
-
-      ItsAGroupingFile := MyData.FieldExists('SHAPE_TYPE') and MyData.FieldExists('FILTER') and MyData.FieldExists('PLOT') and MyData.FieldExists('PLOT_ORDER');
-
-      PhotoLocationsPresent := MyData.FieldExists('LAT') and MyData.FieldExists('LONG') and MyData.FieldExists('HFOV') and MyData.FieldExists('ELEV');
-      CameraOrientationExists := MyData.FieldExists('HEIGHT') and MyData.FieldExists('AZIMUTH') and MyData.FieldExists('HFOV') and MyData.FieldExists('VFOV') and MyData.FieldExists('DEPTH') and MyData.FieldExists('PITCH');
+     {$EndIf}
 
      {$IfDef ExGeology}
      {$Else}
-        StratColPresent  := MyData.FieldExists('COL_NAME');
+        StratColPresent := MyData.FieldExists('COL_NAME');
         if StratColPresent then ColMainF := TColMainF.Create(Application);
      {$EndIf}
 
@@ -5669,8 +5659,7 @@ begin
    {$IfDef RecordFont} WriteLineToDebugFile('File=' + dbName + ' Gis font 1: ' + MyFontToString(dbOpts.GisLabelFont1) + '  Gis font 2: ' + MyFontToString(dbOpts.GisLabelFont2)); {$EndIf}
    {$IfDef RecordIniMemoryOverwrite} IniMemOverwriteCheck('TGISdataBaseModule.InitializeTheTable out'); {$EndIf}
    {$IfDef RecordSymbolColor} WriteLineToDebugFile('TGISdataBaseModule.InitializeTheTable out, color = ' + RGBString(dbOpts.Symbol.Color.rgbtRed,dbOpts.Symbol.Color.rgbtGreen,dbOpts.Symbol.Color.rgbtBlue)); {$EndIf}
-
- end;
+end;
 
 
 procedure TGISdataBaseModule.MarkRecordsOnDEM(fName : shortstring; DEM : integer);
@@ -5682,35 +5671,32 @@ begin
       WriteLineToDebugFile('TGISDataBase.MarkRecordsOnDEM, fName=' + FName);
       WriteLineToDebugFile('filter=' + MakeCornersGeoFilter(DEMGlb[DEM].DEMBoundBoxGeo) + ' AND ' + MyData.GetFieldByNameAsString(fName) + '=' + QuotedStr(''));
    {$EndIf}
-   //with MyData do begin
-      MyData.ApplyFilter(MakeCornersGeoFilter(DEMGlb[DEM].DEMBoundBoxGeo));   // + ' AND ' + fName + '=' + QuotedStr(''));
-      if LineShapeFile(ShapeFileType) then begin
-        MyData.First;
-        while not MyData.eof do begin
-          {$IfDef RecordMaskDEMShapeFile} WriteLineToDebugFile('TGISDataBase.MarkRecordsOnDEM, rec=' + IntToStr(MyData.RecNo)); {$EndIf}
-           if ShapeFileType in [13,15,23,25] then
-              aShapeFile.GetLineCoords(MyData.RecNo,true)
-           else aShapeFile.GetLineCoordsAndZsFromDEM(DEM,MyData.RecNo);
-           InDEM := 0;
-           for I := 0 to pred(aShapeFile.CurrentPolyLineHeader.NumPoints) do begin
-              if abs(aShapeFile.CurrentLineZs^[i]) < 32000 then inc(InDEM);
-           end;
-
-           if (InDEM > 3 * aShapeFile.CurrentPolyLineHeader.NumPoints div 4) and ( (abs(aShapeFile.CurrentLineZs^[0]) < 32000) or
-                 (abs(aShapeFile.CurrentLineZs^[pred(aShapeFile.CurrentPolyLineHeader.NumPoints)]) < 32000)) then begin
-              MyData.Edit;
-              MyData.SetFieldByNameAsString(fName, ptTrim(DEMGlb[DEM].AreaName));
-           end;
-           MyData.Next;
+   MyData.ApplyFilter(MakeCornersGeoFilter(DEMGlb[DEM].DEMBoundBoxGeo));   // + ' AND ' + fName + '=' + QuotedStr(''));
+   if LineShapeFile(ShapeFileType) then begin
+     MyData.First;
+     while not MyData.eof do begin
+       {$IfDef RecordMaskDEMShapeFile} WriteLineToDebugFile('TGISDataBase.MarkRecordsOnDEM, rec=' + IntToStr(MyData.RecNo)); {$EndIf}
+        if ShapeFileType in [13,15,23,25] then
+           aShapeFile.GetLineCoords(MyData.RecNo,true)
+        else aShapeFile.GetLineCoordsAndZsFromDEM(DEM,MyData.RecNo);
+        InDEM := 0;
+        for I := 0 to pred(aShapeFile.CurrentPolyLineHeader.NumPoints) do begin
+           if abs(aShapeFile.CurrentLineZs^[i]) < 32000 then inc(InDEM);
         end;
-      end
-      else MessageToContinue('Currently only implemented for lines');
-   //end;
+
+        if (InDEM > 3 * aShapeFile.CurrentPolyLineHeader.NumPoints div 4) and ( (abs(aShapeFile.CurrentLineZs^[0]) < 32000) or
+              (abs(aShapeFile.CurrentLineZs^[pred(aShapeFile.CurrentPolyLineHeader.NumPoints)]) < 32000)) then begin
+           MyData.Edit;
+           MyData.SetFieldByNameAsString(fName, ptTrim(DEMGlb[DEM].AreaName));
+        end;
+        MyData.Next;
+     end;
+   end
+   else MessageToContinue('Currently only implemented for lines');
 end;
 
 
-
-   {$IfDef VCL}
+{$IfDef VCL}
    procedure TGISdataBaseModule.CloseDBtableF(Reopen : boolean = false);
    var
       Action : TCloseAction;
@@ -5727,7 +5713,7 @@ end;
          DisplayTable;
       end;
    end;
-   {$EndIf}
+{$EndIf}
 
 
 function TGISdataBaseModule.CloseDataBase : boolean;
@@ -5743,7 +5729,6 @@ begin
    if (DBNumber = ClimateStationDB) then ClimateStationDB := 0;
    if (DBNumber = WindsDB) then WindsDB := 0;
    if (DBNumber = PiratesDB) then PiratesDB := 0;
-
 
    {$IfDef ExSidescan}
    {$Else}
@@ -5784,7 +5769,6 @@ begin
       aShapeFile.Destroy;
       aShapeFile := Nil;
    end;
-
 
    {$IfDef ExRedistrict}
    {$Else}

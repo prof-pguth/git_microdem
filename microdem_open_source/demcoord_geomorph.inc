@@ -1985,9 +1985,9 @@ procedure tDEMDataSet.PointParameters(xgrid,ygrid : float64);
 var
    Results,Results2 : tStringList;
    i,Col,Row : integer;
-   SSOvars : tSSOvars;
+   //SSOvars : tSSOvars;
    {$IfDef MultipleCurvatureMethods} PlanCurv,SlopeCurv : float64; {$EndIf}
-   SlopeCurvature, PlanCurvature,crossc,MaxCurve,MinCurve,MaxSlp,Upward,Downward : float64;
+   {SlopeCurvature, PlanCurvature,crossc,MaxCurve,MinCurve,}MaxSlp,Upward,Downward : float64;
    z : float32;
    SlopeAspectRec : tSlopeAspectRec;
 begin

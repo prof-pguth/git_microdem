@@ -73,7 +73,7 @@ uses
    Buttons, Vcl.ToolWin, Vcl.ComCtrls, Vcl.Menus, Vcl.ExtCtrls, Vcl.Controls;
 const
    MaxContoursPerGrid = 25;
-   MaxGraphSeries = 250;
+   MaxGraphSeries = 100;
    MaxGridSize  = 100;
    TickSize     = 10;
    MaxCycles    = 100;
@@ -153,10 +153,12 @@ type
          ShowYears,
          LabelXFromLog,
          ShowHorizAxis0,
+         ShowHorizAxis1,
          ShowVertAxis0,
          RighJustifyHorizLabel,
          VertGraphBottomLabels,
          ResetMargins,
+         SingleGraphSymbology,
          GraphDrawn     : boolean;
          InsideMarginLegend : byte;
          GraphBackgroundColor,
@@ -2365,6 +2367,9 @@ var
          if GraphDraw.ShowHorizAxis0 and (GraphDraw.MinHorizAxis < 0) and (GraphDraw.MaxHorizAxis > 0) then begin
             DrawLine(Bitmap,GraphDraw.GraphX(0),GraphDraw.TopMargin,GraphDraw.GraphX(0),GraphDraw.YWindowSize-GraphDraw.BottomMargin);
          end;
+         if GraphDraw.ShowHorizAxis1 and (GraphDraw.MinHorizAxis < 1) and (GraphDraw.MaxHorizAxis > 1) then begin
+            DrawLine(Bitmap,GraphDraw.GraphX(1),GraphDraw.TopMargin,GraphDraw.GraphX(1),GraphDraw.YWindowSize-GraphDraw.BottomMargin);
+         end;
 
          //label, but only the first and last in the cycle
          if GraphDraw.NormalCartesianX then begin
@@ -2384,7 +2389,22 @@ var
          i,y,y2,AxisDecimals : integer;
          TStr : ShortString;
       begin
-         if GraphDraw.GraphAxes in [XFullGridOnly,XPartGridOnly] then exit;
+         if GraphDraw.GraphAxes in [XFullGridOnly,XPartGridOnly] then begin
+            if (GraphDraw.GraphLeftLabels <> Nil) then begin
+               Bitmap.Canvas.Pen.Color := clSilver;
+               y := round(Min);
+               while (y <= Max + 0.01) do begin
+                  if y >= Max then begin
+                     y := GraphDraw.GraphY(round(y));
+                     Bitmap.Canvas.MoveTo(GraphDraw.LeftMargin,y);
+                     Bitmap.Canvas.LineTo(GraphDraw.XWindowSize - GraphDraw.RightMargin,y);
+                  end;
+                  y := y + 1;
+               end;
+               Bitmap.Canvas.Pen.Color := clBlack;
+            end;
+            exit;
+         end;
 
          if ((Max - Min) > 1) and (abs(Max - round(Max)) < 0.0001) and (abs(Min - round(Min)) < 0.0001) then AxisDecimals := 0
          else AxisDecimals := GetAxisDecimals(Max-Min);    //inc);
@@ -2713,7 +2733,7 @@ var
    i : integer;
 begin
    for i := 1 to 15 do ShowLine[i] := setting;
-
+   for i := 1 to 15 do LineSize256[i] := LineWidth;
 end;
 
 procedure tGraphDraw.SetShowAllPoints(setting: boolean);
@@ -3656,8 +3676,10 @@ begin
    end;
 
    GraphDraw.GraphDrawn := false;
+   GraphDraw.SingleGraphSymbology := false;
    GraphDraw.LabelXFromLog := false;
    GraphDraw.ShowHorizAxis0 := false;
+   GraphDraw.ShowHorizAxis1 := false;
    GraphDraw.ShowVertAxis0 := false;
    GraphDraw.VertGraphBottomLabels := true;
    GraphDraw.GraphBackgroundColor := ConvertPlatFormColorToTColor(MDDef.DefaultGraphBackgroundColor);
@@ -4919,17 +4941,26 @@ procedure TThisBaseGraph.PlotDataFilesPlotted(Bitmap : tMyBitmap; fName : PathSt
 var
    J : integer;
 begin
-   SetMyBitmapColors(Bitmap,i);
    fName := GraphDraw.DataFilesPlotted.Strings[pred(i)];
-   if GraphDraw.ShowLine[i] then begin
-      {$IfDef RecordGraphColors} writelineToDebugFile(IntToStr(i) + '   ' + GraphDraw.DataFilesPlotted.Strings[pred(i)] + '  = '+ IntToStr(Bitmap.Canvas.Font.Color)); {$EndIf}
-      PlotAFile(BitMap,fName,i);
-   end;
-   j := i;
-   if (j > 15) then j := succ(j mod 15);
-   if GraphDraw.ShowPoints[i] then begin
-      {$IfDef RecordGraphColors} writelineToDebugFile(IntToStr(i) + '   ' + GraphDraw.DataFilesPlotted.Strings[pred(i)] + '  = '+ IntToStr(Bitmap.Canvas.Font.Color)); {$EndIf}
-      PlotPointFile(BitMap,fName,GraphDraw.Symbol[j]);
+   if GraphDraw.SingleGraphSymbology then begin
+      Bitmap.Canvas.Pen.Color := ConvertPlatformColorToTColor(GraphDraw.FileColors256[1]);
+      Bitmap.Canvas.Pen.Width := GraphDraw.LineSize256[1];
+
+      if GraphDraw.ShowLine[1] then PlotAFile(BitMap,fName,1);
+      if GraphDraw.ShowPoints[1] then PlotPointFile(BitMap,fName,GraphDraw.Symbol[1]);
+   end
+   else begin
+      SetMyBitmapColors(Bitmap,i);
+      if GraphDraw.ShowLine[i] then begin
+         {$IfDef RecordGraphColors} writelineToDebugFile(IntToStr(i) + '   ' + GraphDraw.DataFilesPlotted.Strings[pred(i)] + '  = '+ IntToStr(Bitmap.Canvas.Font.Color)); {$EndIf}
+         PlotAFile(BitMap,fName,i);
+      end;
+      j := i;
+      if (j > 15) then j := succ(j mod 15);
+      if GraphDraw.ShowPoints[i] then begin
+         {$IfDef RecordGraphColors} writelineToDebugFile(IntToStr(i) + '   ' + GraphDraw.DataFilesPlotted.Strings[pred(i)] + '  = '+ IntToStr(Bitmap.Canvas.Font.Color)); {$EndIf}
+         PlotPointFile(BitMap,fName,GraphDraw.Symbol[j]);
+      end;
    end;
 end;
 
@@ -4938,12 +4969,10 @@ procedure TThisBaseGraph.RedrawDiagram11Click(Sender: TObject);
 var
    BitMap,bmp : tMyBitmap;
    LastXi,LastYi,LastYi2,
-   //width,
-   xi,yi,yi2,i,{j,}err,NumRead  : integer;
+   xi,yi,yi2,i,err,NumRead  : integer;
    x      : float32;
    MenuStr : ShortString;
    aTable : tMyData;
-   //fName : PathStr;
    tf : file;
    Coords3 : ^Coord3Array;
 begin
@@ -5181,7 +5210,7 @@ begin
              bmp := Nil;
              if (GraphDraw.DBFLineFilesPlotted.Count > 0) then bmp := MakeLegend(GraphDraw.DBFLineFilesPlotted,true)
              else if (GraphDraw.LegendList <> Nil) then bmp := MakeLegend(GraphDraw.LegendList,false);
-             if BMP <> nil then begin
+             if (BMP <> nil) then begin
                 if GraphDraw.InsideMarginLegend in [lpSWMap,lpSEMap] then
                    yi := GraphDraw.YWindowSize - GraphDraw.BottomMargin - bmp.Height else yi := GraphDraw.TopMargin +15;
                 if GraphDraw.InsideMarginLegend in [lpNWMap,lpSWMap] then

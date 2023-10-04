@@ -1,10 +1,11 @@
 unit sc_colopts;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{   file verified 5/13/2018       }
-{_________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2023 Peter L. Guth  }
+{___________________________________}
 
 {$I nevadia_defines.inc}
 
@@ -75,6 +76,7 @@ implementation
 uses
    DEMDefs,
    Petmar_types,
+   Petmar_ini_file,
    Demdef_routines;
 
 
@@ -155,7 +157,7 @@ end;
 
 procedure TStratOptsForm.BitBtn1Click(Sender: TObject);
 begin
-   ResetStratcolDefaults;
+   ProcessIniFile(iniInit,'Stratcol');
    FormCreate(Nil);
 end;
 
