@@ -25,8 +25,8 @@ unit dem_indexes;
      //{$Define RecordAutoZoom}
      //{$Define RecordImageIndex}
      //{$Define RecordIndexFileNames}
-     {$Define RecordMerge}
-     {$Define RecordMergeDetails}
+     //{$Define RecordMerge}
+     //{$Define RecordMergeDetails}
      //{$Define RecordTimeMerge}
      //{$Define RecordIndexImagery}
      //{$Define RecordClosing}
@@ -604,6 +604,7 @@ var
             CreateDataUseTable(DataTypeFileName);
          end;
          fName := DataTypeFileName;
+         (*
          DataTypeTable := tMyData.Create(fName);
          DataTypeTableInsert('DEMS');
          DataTypeTableInsert('IMAGERY');
@@ -617,6 +618,8 @@ var
             DataTypeTable.Next;
          end;
          DataTypeTable.Destroy;
+         *)
+         IndexMapLibraryDataType('DEMS');
 
          {$IfDef RecordIndex} WriteLineToDebugFile('All data types done'); {$EndIf}
 

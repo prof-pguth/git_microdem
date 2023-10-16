@@ -1,5 +1,6 @@
 ﻿unit demdbtable;
 
+
 {^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
@@ -973,14 +974,22 @@ type
     Ascending2: TMenuItem;
     Descending2: TMenuItem;
     Loadtile1: TMenuItem;
-    GraphSSIMR2foratile1: TMenuItem;
     Clustercomposition1: TMenuItem;
-    GraphSSIMR2forclusters1: TMenuItem;
+    TransposeSSIMR2forclusters1: TMenuItem;
     ilecharacteristicsbytileforCopDEM1: TMenuItem;
     ClustersperDEMIXtile1: TMenuItem;
     Clusterdiversity1: TMenuItem;
     N49: TMenuItem;
     Clustersensitivity1: TMenuItem;
+    AddcountryfieldtoDB1: TMenuItem;
+    Clusterwhiskerplotsforslopeandroughness1: TMenuItem;
+    CreateDBwithparametersbyDEM1: TMenuItem;
+    DEMIX2: TMenuItem;
+    LoadtestandreferenceDEMs1: TMenuItem;
+    GraphSSIMR2bycluster1: TMenuItem;
+    GraphSSIMR2byDEM1: TMenuItem;
+    BitBtn13: TBitBtn;
+    SSIMR2graphforthistile1: TMenuItem;
     //Pointfilter1: TMenuItem;
     //Pointfilter2: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
@@ -1711,7 +1720,6 @@ type
     procedure DEMIXtileinvertory1Click(Sender: TObject);
     procedure Filterforjustsignedcrirteria1Click(Sender: TObject);
     procedure Meanandmedianhistograms1Click(Sender: TObject);
-    procedure N50Click(Sender: TObject);
     procedure AddIMAGEfieldfordifferencedistributiongraphs1Click(
       Sender: TObject);
     procedure Modestandarddeviationplots1Click(Sender: TObject);
@@ -1727,13 +1735,21 @@ type
     procedure Ascending2Click(Sender: TObject);
     procedure Descending2Click(Sender: TObject);
     procedure Loadtile1Click(Sender: TObject);
-    procedure GraphSSIMR2foratile1Click(Sender: TObject);
+    //procedure GraphSSIMR2foratile1Click(Sender: TObject);
     procedure Clustercomposition1Click(Sender: TObject);
-    procedure GraphSSIMR2forclusters1Click(Sender: TObject);
+    procedure TransposeSSIMR2forclusters1Click(Sender: TObject);
     procedure ilecharacteristicsbytileforCopDEM1Click(Sender: TObject);
     procedure ClustersperDEMIXtile1Click(Sender: TObject);
     procedure Clusterdiversity1Click(Sender: TObject);
     procedure Clustersensitivity1Click(Sender: TObject);
+    procedure AddcountryfieldtoDB1Click(Sender: TObject);
+    procedure Clusterwhiskerplotsforslopeandroughness1Click(Sender: TObject);
+    procedure CreateDBwithparametersbyDEM1Click(Sender: TObject);
+    procedure LoadtestandreferenceDEMs1Click(Sender: TObject);
+    procedure GraphSSIMR2bycluster1Click(Sender: TObject);
+    procedure GraphSSIMR2byDEM1Click(Sender: TObject);
+    procedure BitBtn13Click(Sender: TObject);
+    procedure SSIMR2graphforthistile1Click(Sender: TObject);
     //procedure Pointfilter2Click(Sender: TObject);
     //procedure Pointfilter1Click(Sender: TObject);
   private
@@ -1953,9 +1969,9 @@ uses
     {$EndIf}
 
     DEMIX_filter,
+    DEMIX_Control,
 
    map_overlays,
-   demix_control,
    db_display_options,
    gdal_tools,
    Least_cost_path,
@@ -2472,13 +2488,13 @@ begin
 {$EndIf}
 end;
 
+
 procedure Tdbtablef.Outlinecameraview1Click(Sender: TObject);
 begin
    GISdb[DBonTable].TheMapOwner.DoFastMapRedraw;
    GISdb[DBonTable].OutlineCurrentViewOnMap;
    RecordDisplay1Click(Sender);
 end;
-
 
 
 procedure Tdbtablef.Updaterecordnumbers1Click(Sender: TObject);
@@ -2493,7 +2509,6 @@ begin
 end;
 
 
-
 procedure Tdbtablef.UnHideColumns;
 var
    j : integer;
@@ -2503,6 +2518,7 @@ begin
          if (j <= 100) then DBGrid1.Columns[j].Visible := true;
       AnyHiddenColumns := false;
    end;
+   BitBtn13.Enabled := false;
 end;
 
 procedure Tdbtablef.HideColumns;
@@ -2515,6 +2531,7 @@ begin
       AnyHiddenColumns := false;
       for j := 0 to 100 do if (Not GISdb[DBonTable].dbOpts.VisCols[j]) then AnyHiddenColumns := true;
    end;
+   if AnyHiddenColumns then BitBtn13.Enabled := true;
 end;
 
 
@@ -3089,54 +3106,8 @@ end;
 
 
 procedure Tdbtablef.ZoomtoDBcoverage1Click(Sender: TObject);
-var
-  extra,xf : float64;
-  xminproj,xmaxproj,yminproj,ymaxproj,
-  xmin,xmax,ymin,ymax : float64;
-
-
-      procedure Apoint(Long,Lat : float64);
-      var
-         xproj,yproj : float64;
-      begin
-         GISdb[DBonTable].TheMapOwner.MapDraw.PrimMapProj.ForwardProjectDegrees(Lat,Long,xproj,yproj);
-         Petmath.CompareValueToExtremes(xproj,xminproj,xmaxproj);
-         Petmath.CompareValueToExtremes(yproj,yminproj,ymaxproj);
-      end;
-
-      procedure InversePoint(x,y : float64; var Lat,Long : float64);
-      begin
-         GISdb[DBonTable].TheMapOwner.MapDraw.PrimMapProj.InverseProjectDegrees(x,y,Lat,Long);
-      end;
-
 begin
-  if not FileExists(ChangeFileExt(GISdb[DBonTable].DBFullName,'.shx')) then GISdb[DBonTable].SavePointShapeFile(false);
-  xmin := GISdb[DBonTable].dbBoundBox.XMin;
-  xmax := GISdb[DBonTable].dbBoundBox.XMax;
-  ymin := GISdb[DBonTable].dbBoundBox.YMin;
-  yMax := GISdb[DBonTable].dbBoundBox.YMax;
-  if GISdb[DBonTable].TheMapOwner.MapDraw.PrimMapProj.Pname in [AlbersEqAreaConicalEllipsoid,LambertConformalConicEllipse] then begin
-     xminproj := 99e38;
-     xmaxproj := -99e38;
-     yminproj := 99e38;
-     yMaxproj := -99e38;
-     APoint(GISdb[DBonTable].dbBoundBox.XMin,GISdb[DBonTable].dbBoundBox.YMin);
-     APoint(GISdb[DBonTable].dbBoundBox.XMin,GISdb[DBonTable].dbBoundBox.YMax);
-     APoint(GISdb[DBonTable].dbBoundBox.XMax,GISdb[DBonTable].dbBoundBox.YMin);
-     APoint(GISdb[DBonTable].dbBoundBox.XMax,GISdb[DBonTable].dbBoundBox.YMax);
-     APoint(0.5*(GISdb[DBonTable].dbBoundBox.XMin + GISdb[DBonTable].dbBoundBox.XMax),GISdb[DBonTable].dbBoundBox.YMin);
-     APoint(0.5*(GISdb[DBonTable].dbBoundBox.XMin + GISdb[DBonTable].dbBoundBox.XMax),GISdb[DBonTable].dbBoundBox.YMax);
-     InversePoint(xminproj,yminproj,ymin,xmin);
-     InversePoint(xmaxproj,ymaxproj,ymax,xmax);
-     extra := 5.0;
-     GISdb[DBonTable].TheMapOwner.MapDraw.MaximizeLatLongMapCoverage(YMin - extra,XMin - extra, YMax + Extra,XMax + Extra);
-     GISdb[DBonTable].TheMapOwner.DoCompleteMapRedraw;
-  end
-  else begin
-     xf := MDDef.LatLongCushion;
-     extra := xf * (XMax - xmin);
-     GISdb[DBonTable].TheMapOwner.SubsetAndZoomMapFromGeographicBounds(GISdb[DBonTable].dbBoundBox);
-  end;
+   GISdb[DBonTable].ZoomToDBCoverageOnMap;
 end;
 
 
@@ -3322,7 +3293,7 @@ begin
       MaskDEMgrid1.Visible := CheckBox1.Checked and ((TheMapOwner <> Nil) and (TheMapOwner.MapDraw.DEMonMap <> 0));
       AddXYbox1.Visible := MyData.FieldExists('X1') and MyData.FieldExists('Y2') and MyData.FieldExists('X3') and MyData.FieldExists('Y4');
       LidarWaveform1.Visible := MyData.FieldExists('RH99');
-
+      DEMIX2.Visible := MyData.FieldExists('DEMIX_TILE');
       GridCellPopupMenu6.PopUp(Mouse.CursorPos.X,Mouse.CursorPos.Y);
    end;
 end;
@@ -3682,7 +3653,7 @@ end;
 procedure Tdbtablef.BitBtn5Click(Sender: TObject);
 begin
    {$IfDef RecordDataBase} WriteLineToDebugFile('Tdbtablef.BitBtn5Click--Plot'); {$EndIf}
-   if (GISdb[DBonTable] = Nil) then exit;
+   if not ValidDB(DBonTable) then exit;
    if GISdb[DBonTable].ItsFanFile and (not AllOptionsForFans) then begin
       PopupMenu9.PopUp(Mouse.CursorPos.X,Mouse.CursorPos.Y);
    end
@@ -3796,7 +3767,7 @@ begin
         Elevationsatbenchmarks1.Visible := MyData.FieldExists('Z');
         ShowJoin1.Visible := LinkTable <> Nil;
         ClearJoin1.Visible := LinkTable <> Nil;
-        ResetJoin1.Visible := LinkTable <> Nil;
+        ResetJoin1.Visible := FileExists(GISdb[DBonTable].dbOpts.LinkTableName);
         SetJoin1.Visible := LinkTable = Nil;
         LOSterrainprofile1.Visible := SecondLatLongFieldsPresent and GISdb[DBonTable].DEMwithDBsMap;
         LOStopoprofile1.Visible := LOSterrainprofile1.Visible;
@@ -3832,7 +3803,10 @@ begin
         ClusterFrequency1.Enabled := GISdb[DBonTable].MyData.FieldExists('CLUSTER');
         ClusterMapLocations1.Enabled := GISdb[DBonTable].MyData.FieldExists('CLUSTER') and (GISdb[DBonTable].theMapOwner <> nil);
         ilecharacteristicsbytileforCopDEM1.Enabled := GISdb[DBonTable].MyData.FieldExists('CLUSTER') and GISdb[DBonTable].MyData.FieldExists('DEM') ;
-        GraphSSIMR2forclusters1.Enabled := GISdb[DBonTable].MyData.FieldExists('CLUSTER') and GISdb[DBonTable].MyData.FieldExists('METRIC');
+        GraphSSIMR2bycluster1.Enabled := GISdb[DBonTable].MyData.FieldExists('CLUSTER') and GISdb[DBonTable].MyData.FieldExists('METRIC');
+        GraphSSIMR2byDEM1.Enabled := GISdb[DBonTable].MyData.FieldExists('DEM') and GISdb[DBonTable].MyData.FieldExists('METRIC');
+
+        TransposeSSIMR2forclusters1.Enabled := true;  //{GISdb[DBonTable].MyData.FieldExists('CLUSTER') and} GISdb[DBonTable].MyData.FieldExists('METRIC');
         //Graphavereagescoresbyterraincategories1.Visible := MyData.FieldExists('FILTER');
 
         {$IfDef ExGeography}
@@ -5020,9 +4994,10 @@ var
    WantField,tName : shortstring;
    Lat,Long : float32;
 begin
-   GISdb[DBonTable].AddLatLong;
    WantField := GISdb[DBonTable].PickField('DEMIX file names',[ftstring]);
    if (WantField <> '') then begin
+      ShowHourglassCursor;
+      GISdb[DBonTable].AddLatLong;
       GISdb[DBonTable].EmpSource.Enabled := false;
       GISdb[DBonTable].MyData.First;
       while not GISdb[DBonTable].MyData.eof do begin
@@ -5044,6 +5019,7 @@ begin
    with GISdb[DBonTable] do begin
       AddFieldToDataBase(ftFloat,'DIST_KM',12,4);
       AddFieldToDataBase(ftFloat,'AZIMUTH',6,2);
+      ShowHourglassCursor;
       EmpSource.Enabled := false;
       MyData.First;
       while not MyData.EOF do begin
@@ -5206,6 +5182,11 @@ begin
    Addfromsubstring1Click(Sender);
 end;
 
+
+procedure Tdbtablef.AddcountryfieldtoDB1Click(Sender: TObject);
+begin
+   AddCountryToDB(DBonTable);
+end;
 
 procedure Tdbtablef.Addfromsubstring1Click(Sender: TObject);
 var
@@ -6315,6 +6296,11 @@ begin
 end;
 
 
+procedure Tdbtablef.SSIMR2graphforthistile1Click(Sender: TObject);
+begin
+   DEMIX_SSIM_R2_single_tile_graph(DBonTable,GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'));
+end;
+
 procedure Tdbtablef.SSIMtodissimilarity1Click(Sender: TObject);
 begin
    SwitchSSIMorR2Scoring(DBonTable);
@@ -6520,11 +6506,6 @@ begin
    IcesatProcessCanopy(DBonTable,false,true);
 end;
 
-procedure Tdbtablef.N50Click(Sender: TObject);
-begin
-   AddCountryToDB(DBonTable);
-end;
-
 procedure Tdbtablef.N7Elevationdifferencecriteria1Click(Sender: TObject);
 begin
    DEMIXwineContestCriterionGraph(dg7Params,DBonTable);
@@ -6581,6 +6562,11 @@ begin
    end;
 end;
 
+
+procedure Tdbtablef.BitBtn13Click(Sender: TObject);
+begin
+   UnHideColumns;
+end;
 
 procedure Tdbtablef.Text1Click(Sender: TObject);
 var
@@ -9150,7 +9136,7 @@ procedure Tdbtablef.ShowStatus;
             if SB1.Visible then begin
                //inc(ButtonsVisible);
                SB1.Top := 1;
-               glLeftPos := glLeftPos + SB1.Width;
+               glLeftPos := glLeftPos + SB1.Width+2;
             end;
          end;
 
@@ -9163,7 +9149,7 @@ procedure Tdbtablef.ShowStatus;
             if SB1.Visible then begin
                //inc(ButtonsVisible);
                SB1.Top := 1;
-               glLeftPos := glLeftPos + SB1.Width;
+               glLeftPos := glLeftPos + SB1.Width+2;
             end;
          end;
 
@@ -9182,6 +9168,7 @@ procedure Tdbtablef.ShowStatus;
          CheckBitButton(BitBtn12);
          CheckButton(Button4);
          CheckBitButton(BitBtn9);
+         CheckBitButton(BitBtn13);
          CheckBitButton(BitBtn23);
          CheckBitButton(HelpBtn);
          CheckBox1.Left := glLeftPos + 5;
@@ -9203,6 +9190,7 @@ begin
       BitBtn7.Visible := BitBtn1.Visible;
       Button5.Enabled := GISdb[DBonTable].LatLongFieldsPresent or GISdb[DBonTable].LatLongCornersPresent;
       Button1.Enabled := (GISdb[DBonTable].MyData <> Nil) and GISdb[DBonTable].MyData.Filtered;
+      BitBtn13.Enabled :=  AnyHiddenColumns;
       Zstatistics1.Visible := GISdb[DBonTable].ShapeFileType in [13,23];
       Addfontdefinition1.Visible := not GISdb[DBonTable].FontFieldExists;
       Insertpointsymbol1.Visible := not GISdb[DBonTable].PointSymbolFieldsPresent;
@@ -9906,7 +9894,6 @@ begin
 end;
 
 
-
 procedure Tdbtablef.LONGprofile1Click(Sender: TObject);
 begin
    Bothprofiles1Click(Sender);
@@ -10097,14 +10084,21 @@ begin
    DEMIX_graph_best_in_Tile(DBonTable,false);
 end;
 
-procedure Tdbtablef.GraphSSIMR2foratile1Click(Sender: TObject);
+procedure Tdbtablef.GraphSSIMR2bycluster1Click(Sender: TObject);
 begin
-    DEMIX_SSIM_R2_tile_graph(DBonTable);
+   DEMIX_SSIM_R2_clusters_graph(DBonTable);
 end;
 
-procedure Tdbtablef.GraphSSIMR2forclusters1Click(Sender: TObject);
+
+procedure Tdbtablef.GraphSSIMR2byDEM1Click(Sender: TObject);
 begin
-    DEMIX_SSIM_R2_clusters_graph(DBonTable);
+   DEMIX_SSIM_R2_clusters_graph(DBonTable);
+end;
+
+procedure Tdbtablef.TransposeSSIMR2forclusters1Click(Sender: TObject);
+begin
+    //DEMIX_SSIM_R2_clusters_graph(DBonTable);
+    DEMIX_SSIM_R2_transpose_kmeans_new_db(DBonTable);
 end;
 
 procedure Tdbtablef.Graphwithranges1Click(Sender: TObject);
@@ -11856,6 +11850,11 @@ begin
 {$EndIf}
 end;
 
+procedure Tdbtablef.LoadtestandreferenceDEMs1Click(Sender: TObject);
+begin
+   LoadThisDEMIXTile(GISdb[DBonTable].MyData.GetFieldByNameAsString('AREA'),GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'));
+end;
+
 procedure Tdbtablef.LoadthisDEM1Click(Sender: TObject);
 begin
    OpenNewDEM(GISdb[DBonTable].MyData.GetFieldByNameAsString('FILENAME'));
@@ -12019,6 +12018,7 @@ begin
    {$IfDef NoClustering}
    {$Else}
       DoKMeansClustering(DBonTable);
+      UnhideColumns;
    {$EndIf}
 end;
 
@@ -12031,13 +12031,14 @@ var
    fName : PathStr;
 begin
    {$IfDef RecordClustering} WriteLineToDebugFile('Tdbtablef.ClusterComposition1Click'); {$EndIf}
-   with GISdb[DBonTable] do begin
-      if MyData.Filtered then MessageToContinue('Results apply to entire database');
+   if GISdb[DBonTable].MyData.FieldExists('CLUSTER') then begin
+      if GISdb[DBonTable].MyData.Filtered then MessageToContinue('Results apply to entire database');
       GISdb[DBonTable].ClearGISFilter;
       GISdb[DBonTable].EmpSource.Enabled := false;
       UniqueEntries1 := GISdb[DBonTable].MyData.UniqueEntriesInDB('CLUSTER');
+      SortStringListNumerically(UniqueEntries1);
       GISdb[DBonTable].EmpSource.Enabled := false;
-      WantedField := 'DEM';
+      WantedField := GISdb[DBonTable].PickField('cluster membership statistics' ,[ftString]);
       UniqueEntries2 := GISdb[DBonTable].MyData.UniqueEntriesInDB(WantedField);
 
       Results := tStringList.Create;
@@ -12200,52 +12201,14 @@ end;
 
 
 procedure Tdbtablef.Clusterstatistics1Click(Sender: TObject);
-var
-   Results,UsingFields,UniqueEntries : tStringList;
-   i,j : integer;
-   aLine,MaxLine,MeanLine,MedianLine,MinLine,stdLine,Common : shortstring;
-   MomentVar : tMomentVar;
-   fName : PathStr;
 begin
-   UsingFields := GISdb[DBonTable].GetAnalysisFields;
-   UniqueEntries := GISdb[DBonTable].MyData.UniqueEntriesInDB('CLUSTER');
-   Results := tStringList.Create;
-   aline := 'CLUSTER,COLOR,N,METRIC';
-   for j := 0 to pred(UsingFields.Count) do begin
-      aline := aline + ',' + UsingFields.Strings[j];
-   end;
-   Results.Add(aLine);
-   for i := 0 to pred(UniqueEntries.Count) do begin
-      GISdb[DBonTable].MyData.ApplyFilter('CLUSTER=' + UniqueEntries.Strings[i]);
-      GISdb[DBonTable].Empsource.Enabled := false;
-      Common := UniqueEntries.Strings[i] + ',' + IntToStr(GISdb[DBonTable].MyData.GetFieldByNameAsInteger('COLOR')) + ','  + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + ',' ;
-      MaxLine := Common + 'MAX' ;
-      MeanLine := Common + 'MEAN' ;
-      MedianLine := Common + 'MEDIAN';
-      MinLine := Common + 'MIN';
-      STDline := Common + 'StdDev';
+    MakeDBForParamStats(opByCluster,DBonTable);
+end;
 
-      for j := 0 to pred(UsingFields.Count) do begin
-         GISdb[DBonTable].EmpSource.Enabled := false;
-         MomentVar := GISdb[DBonTable].GetFieldStatistics(UsingFields.Strings[j]);
-         GISdb[DBonTable].Empsource.Enabled := false;
-         MaxLine := MaxLine + ',' + RealToString(MomentVar.MaxZ,-18,-2);
-         MeanLine := MeanLine + ',' + RealToString(MomentVar.Mean,-18,-2);
-         MedianLine := MedianLine + ','  + RealToString(MomentVar.Median,-18,-2);
-         MinLine := MinLine + ',' +  RealToString(MomentVar.MinZ,-18,-2);
-         STDLine := STDLine + ',' +  RealToString(MomentVar.sdev,-18,-2);
-      end;
-      Results.Add(MaxLine);
-      Results.Add(MeanLine);
-      Results.Add(MedianLine);
-      Results.Add(MinLine);
-      Results.Add(STDLine);
-   end;
-   fName := Petmar.NextFileNumber(MDTempDir, 'Cluster_stats_',DefaultDBExt);
-   {$IfDef RecordClustering} WriteLineToDebugFile(fName); {$EndIf}
-   GISdb[DBonTable].theMapOwner.StringListToLoadedDatabase(Results,fName);
-   GISdb[DBonTable].ClearGISFilter;
-   ShowStatus;
+
+procedure Tdbtablef.Clusterwhiskerplotsforslopeandroughness1Click(Sender: TObject);
+begin
+   SlopeRoughnessWhiskerPlots(DBonTable);
 end;
 
 procedure Tdbtablef.CalculateVolume1Click(Sender: TObject);
@@ -13712,6 +13675,11 @@ begin
    GISdb[DBonTable].theMapOwner.StringListToLoadedDatabase(sl,fName);
 end;
 
+procedure Tdbtablef.CreateDBwithparametersbyDEM1Click(Sender: TObject);
+begin
+   MakeDBForParamStats(opByDEM,DBonTable);
+end;
+
 procedure Tdbtablef.CreateDEM1Click(Sender: TObject);
 var
    bbox : sfBoundBox;
@@ -13819,7 +13787,8 @@ function Tdbtablef.CreateGrid(HowCreate : tcgHow; GridSize : float64 = -99) : in
 var
    //NewHeadRecs : tDEMheader;
    WantedFieldName : ShortString;
-   xg,yg,NewDEM,i,j,xinc,yinc,x,y,Code,NumPts,rc : integer;
+   NumPts : int64;
+   xg,yg,NewDEM,i,j,xinc,yinc,x,y,Code,rc : integer;
    fName : PathStr;
    Lat,Long,z,rad : float64;
    FieldsUsed : tStringList;
@@ -15154,11 +15123,11 @@ var
 begin
     ThePath := ExtractFilePath(GISdb[DBonTable].dbFullName);
     FileNames := tStringList.Create;
-     FileNames.Add(ThePath);
-     DefaultFilter := 0;
-     if GetMultipleFiles('Shape file',DBNameMask,FileNames,DefaultFilter) then begin
-        GISdb[DBonTable].MergeDataBases(FileNames);
-     end;
+    FileNames.Add(ThePath);
+    DefaultFilter := 0;
+    if GetMultipleFiles('Point data bases to merge into this file',DBNameMask,FileNames,DefaultFilter) then begin
+       GISdb[DBonTable].MergeDataBases(FileNames);
+    end;
     FileNames.Free;
     GISdb[DBonTable].AddSequentialIndex(RecNoFName,true);
     ShowStatus;

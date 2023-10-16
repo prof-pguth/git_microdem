@@ -633,24 +633,30 @@ end;
 function CombineBitmaps(nc : integer; theFiles : tStringList; Capt : shortstring) : tMyBitmap;
 var
    bmp : tMyBitmap;
-   SingleWide,SingleHigh,
    Left,Right,Top,Bottom,
+   BigWidth,BigHeight,
    n,nr : integer;
 begin
    Result := nil;
    if (TheFiles.Count > 0) then begin
       nr := theFiles.Count div nc;
       if (nr = 0) or ((theFiles.Count mod nc) > 0) then inc(nr);
+      BigWidth := 0;
+      BigHeight := 0;
+      for n := 0 to pred(theFiles.Count) do begin
+         if FileExists(theFiles.Strings[n]) then begin
+            bmp := LoadBitmapFromFile(theFiles.Strings[n]);
+            if (bmp.Width > BigWidth) then BigWidth := bmp.Width;
+            if (bmp.Height > BigHeight) then BigHeight := bmp.Height;
+            bmp.Free;
+         end;
+      end;
+      CreateBitmap(Result,nc * BigWidth + 10,nr * BigHeight + 60);
       for n := 0 to pred(theFiles.Count) do begin
          if FileExists(theFiles.Strings[n]) then begin
             bmp := LoadBitmapFromFile(theFiles.Strings[n]);
             FindImagePartOfBitmap(Bmp,Left,Right,Top,Bottom);
-            if (Result = nil) then begin
-               SingleWide := bmp.Width + 25;
-               SingleHigh := bmp.Height + 25;
-               if (Result = nil) then CreateBitmap(Result,nc * SingleWide + 10,nr * SingleHigh + 60);
-            end;
-            Result.Canvas.Draw( 5 + (n mod nc) * SingleWide, (n div nc) * SingleHigh + 15,bmp);
+            Result.Canvas.Draw((n mod nc) * BigWidth + 5, (n div nc) * BigHeight + 15,bmp);
             bmp.Free;
          end;
       end;

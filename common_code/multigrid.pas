@@ -235,7 +235,8 @@ uses
 
 procedure OpenSentinel1Radar;
 var
-   ThisOne,i,j,k,x,y,NumPts : integer;
+   ThisOne,i,j,k,x,y : integer;
+   NumPts : int64;
    Paths,Tiffs : tStringList;
    fName,mgName : PathStr;
    bmp : array[1..3] of tMyBitmap;
@@ -470,7 +471,8 @@ end;
 
 function OpenMonthlyMultiGrids(Parameter : shortstring = ''; OpenMaps : boolean = true) : integer;
 var
-   ThisOne,ForceMin,ForceMax,ForceMissing,NumPts : integer;
+   ThisOne,ForceMin,ForceMax,ForceMissing : integer;
+   NumPts : int64;
    fName,tName : PathStr;
    Options,
    TheFiles : tStringList;
@@ -1226,7 +1228,7 @@ end;
 
 procedure tMultiGridArray.LoadLandsatMultigrid;
 var
-   i,NumPts : integer;
+   i,NumPts : int64;
    fName,mgName,MGPath : PathStr;
 
 
@@ -1309,7 +1311,7 @@ end;
 
 procedure tMultiGridArray.LoadHyperion;
 var
-   i,NumPts : integer;
+   i,NumPts : int64;
    SceneBaseName : ANSIstring;
    TStr : shortstring;
    fName,HyperionDir,mgName{,MGPath} : PathStr;

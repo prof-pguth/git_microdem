@@ -727,7 +727,6 @@ end;
 
 function TGISdataBaseModule.CreateHistogramFromDataBase(RegHist: boolean; Fields : tStringList; AllDBs: boolean; MinUse : float64 = 1; MaxUse : float64 = -1; BinSize : float64 = -99): TThisBaseGraph;
 var
-   //i,
    j : integer;
    FilesList,
    LegendList : tStringList;

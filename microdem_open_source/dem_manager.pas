@@ -1,7 +1,7 @@
 unit dem_manager;
 
 {^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of ianMICRODEM GIS Program    }
+{ Part of MICRODEM GIS Program       }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
 { Copyright (c) 2023 Peter L. Guth   }
@@ -16,8 +16,8 @@ unit dem_manager;
       //{$Define ShortRecordCloseDEM}
       //{$Define RecordClosingData}
       //{$Define RecordNewMaps}
-      {$Define LoadDEMsCovering}
-      {$Define RecordMetadata}
+      //{$Define LoadDEMsCovering}
+      //{$Define RecordMetadata}
       //{$Define RecordProjects}
       //{$Define RecordDownload}
       //{$Define RecordGet2DEMs}
@@ -77,7 +77,7 @@ procedure SaveMicrodemDesktop;
 procedure RestoreSpecifiedDesktop(FName : PathStr);
 procedure RestoreMicrodemDesktop(fName : PathStr = ''; CloseAll : boolean = true);
 
-procedure CleanUpTempDirectory(IncudeDirs : boolean = true);
+procedure CleanUpTempDirectory(IncudeDirs : boolean = false);
 
 function GetWhatsOpen : tStringList;
 procedure OpenDEMsToDebugFile(Why : shortstring);
@@ -143,6 +143,8 @@ function LoadDatumShiftGrids(var LocalToWGS84,WGS84toEGM2008 : integer) : boolea
    function PickMap(WhatFor : shortstring) : integer;
    function PickADifferentMap(WhatFor,ThisMapCaption : shortstring) : integer;
    procedure PickMaps(var Maps : tStringList; aCaption : ShortString);
+   procedure PickMapsFromDEMsWanted(var Maps : tStringList; DEMSwanted : tDEMbooleanArray);
+
 
    function EditHeaderRecord(DEM : integer; AllowChangeType : boolean) : boolean;
    procedure ViewHeaderRecord(DEM : integer);
@@ -328,9 +330,18 @@ var
    fName : PathStr;
    i,Decs : integer;
 begin
+(*
+         DEMSWcornerLat,           {local datum lat of lower left corner,  the point for pixel-is-point and SW corner for pixel-is-area}
+         DEMSWcornerLong,          {local datum long of lower left corner, the point for pixel-is-point and SW corner for pixel-is-area}
+         ComputeSWCornerX,         //  1/2 pixel shifted east for PixelIsArea used for computations which consider all grids pixel-is-point
+         ComputeSWCornerY,         //  1/2 pixel shifted north for PixelIsArea used for computations which consider all grids pixel-is-point
+         GeotiffNWCornerX,
+         GeotiffNWCornerY,
+*)
+
    ShowHourglassCursor;
    Results := tStringList.Create;
-   Results.Add('DEM,PIXEL_IS,HORIZ_DATM,VERT_DATUM,LAT,LONG_CENT,MIN_Z,MAX_Z,SW_CornerX,SW_CornerY,DX,DY,NUM_COL,NUM_ROW,AVG_X_M,AVG_Y_M,AVG_SP_M');
+   Results.Add('DEM,PIXEL_IS,HORIZ_DATM,VERT_DATUM,LAT,LONG_CENT,MIN_Z,MAX_Z,SW_POINTX,SW_POINTY,SW_CornerX,SW_CornerY,NW_CornerX,NW_CornerY,DX,DY,NUM_COL,NUM_ROW,AVG_X_M,AVG_Y_M,AVG_SP_M');
    for i := 1 to MaxDEMDataSets do if ValidDEM(i) then begin
       if (DEMGlb[i].DEMheader.DEMUsed = UTMBasedDEM) then Decs := -2 else Decs := -8;
       Results.Add(DEMGlb[i].AreaName + ',' + IntToStr(DEMGlb[i].DEMheader.RasterPixelIsGeoKey1025) + ',' + DEMGlb[i].DEMMapProjection.h_DatumCode + ',' + VertDatumName(DEMGlb[i].DEMheader.VerticalCSTypeGeoKey) + ',' +
@@ -338,7 +349,9 @@ begin
           RealToString(DEMGlb[i].DEMSWcornerLong + 0.5 * DEMGlb[i].LongSizeMap,-12,-3)  + ',' +
           RealToString(DEMGlb[i].DEMheader.MinElev,-12,2)  + ',' +  RealToString(DEMGlb[i].DEMheader.MaxElev,-12,2)  + ',' +
           //TStr +
+          RealToString(DEMGlb[i].ComputeSWCornerX,-12,Decs)  + ',' +RealToString(DEMGlb[i].ComputeSWCornerY,-12,Decs)  + ',' +
           RealToString(DEMGlb[i].DEMheader.DEMSWCornerX,-12,Decs)  + ',' +RealToString(DEMGlb[i].DEMheader.DEMSWCornerY,-12,Decs)  + ',' +
+          RealToString(DEMGlb[i].GeotiffNWCornerX,-12,Decs)  + ',' +RealToString(DEMGlb[i].GeotiffNWCornerY,-12,Decs)  + ',' +
           RealToString(DEMGlb[i].DEMheader.DEMxSpacing,-12,Decs) + ',' + RealToString(DEMGlb[i].DEMheader.DEMySpacing,-12,Decs)  + ',' +
           IntToStr(DEMGlb[i].DEMheader.NumCol) + ',' + IntToStr(DEMGlb[i].DEMheader.NumRow) + ',' +
           RealToString(DEMGlb[i].AverageXSpace,-12,-2) + ',' + RealToString(DEMGlb[i].AverageYSpace,-12,-2)  + ',' + RealToString(DEMGlb[i].AverageSpace,-12,-2));
@@ -769,7 +782,7 @@ begin
          if (DEMtoClose = SedTypeDEM) then SedTypeDEM := 0;
 
          for j := 1 to MaxDEMIXDEM do begin
-            if (TestDEM[j] = DEMtoClose) then TestDEM[j] := 0;
+            if (TestDEMs[j] = DEMtoClose) then TestDEMs[j] := 0;
          end;
 
          j := DEMtoClose;
@@ -1391,6 +1404,16 @@ end;
          PickSomeFromStringList(Maps, aCaption);
       end;
 
+      procedure PickMapsFromDEMsWanted(var Maps : tStringList; DEMSwanted : tDEMbooleanArray);
+      var
+         i : integer;
+      begin
+         Maps := tStringList.Create;
+         for i := 1 to MaxDEMDataSets do
+            if DEMsWanted[i] then Maps.Add(DEMGlb[i].SelectionMap.Caption);
+      end;
+
+
 
       function PickADifferentMap(WhatFor,ThisMapCaption : shortstring) : integer;
       var
@@ -1619,7 +1642,7 @@ begin
 end;
 
 
-procedure CleanUpTempDirectory(IncudeDirs : boolean = true);
+procedure CleanUpTempDirectory(IncudeDirs : boolean = false);
 var
    bf : tstringlist;
 begin
@@ -1643,7 +1666,7 @@ begin
       DeleteMultipleFiles(MDTempDir + 'db_aux\', '*.*');
       DeleteMultipleFiles(MainMapData + 'Icons\','beach_ball_*.*');
       if MDDef.CleanKMLDirOnClosing then CleanOutDirectory(MainMapData + 'kml\');
-      if IncudeDirs  then CleanOutDirectory(MDTempDir);
+      if IncudeDirs then CleanOutDirectory(MDTempDir);
    end;
    ShowDefaultCursor;
 end;

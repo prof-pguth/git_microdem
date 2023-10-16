@@ -1916,7 +1916,7 @@ type
       DEMIX_default_half_sec_ref : boolean;
 
       DEMIX_xsize,DEMIX_ysize : integer;
-      DEMIX_open_ref_DEM,
+      DEMIX_open_ref_DSM,
       MakeCOP_ALOS_diffMaps,
       MakeCOP_ALOS_Cat_Maps,
       MakeCOP_FABDEM_diffMaps,
@@ -1924,7 +1924,7 @@ type
       MakeRGB_Best_Map,
       RGBbestSeparates,
 
-      SSIM_elev,SSIM_slope,SSIM_ruff,SSIM_rri,SSIM_hill,
+      SSIM_elev,SSIM_slope,SSIM_ruff,SSIM_rri,SSIM_hill,SSIM_tpi,
       DEMIXCompositeImage,
       DEMIX_DoCHM,
       DEMIX_DoAirOrDirt,

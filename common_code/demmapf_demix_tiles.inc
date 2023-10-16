@@ -166,6 +166,7 @@ begin
       if (Result <> 0) then try
          {$IfDef RecordDEMIXTiles} writeLineToDebugFile('DEMIXtileFill, db created recs=' + IntToStr(GISdb[Result].MyData.TotRecsInDB)); {$EndIf}
          GISdb[Result].MyData.First;
+         GISdb[Result].EmpSource.Enabled := false;
          while not GISdb[Result].MyData.eof do begin
             Pts := 0;
             Valid := 0;
@@ -191,6 +192,8 @@ begin
       end;
    finally
       EndProgress;
+      if OpenTable then GISdb[Result].ShowStatus;
+      //else CloseAndNilNumberedDB(db);
    end;
    {$IfDef RecordDEMIXTiles} writeLineToDebugFile('DEM contains parts of tiles=' + IntToStr(GISdb[Result].MyData.TotRecsInDB)); {$EndIf}
 end;
@@ -216,6 +219,49 @@ begin
    {$If Defined(RecordCarto)} WriteLineToDebugFile('TMapForm.LoadDEMIXtileOutlines out'); {$EndIf}
 end;
 
+procedure TMapForm.ClipDEMtoFullDEMIXTiles(NewName : PathStr = '');
+const
+   Fudge = 0.001;
+var
+   //DEMIXFName : PathStr;
+   bb,bb2 : sfBoundBox;
+   db : integer;
+   //Name : shortstring;
+   {$If Defined(RecordCarto)} aLine : shortString; {$EndIf}
+begin
+   if ValidDEM(MapDraw.DEMonMap) then begin
+      {$If Defined(RecordCarto)} aLine := DEMGlb[MapDraw.DEMonMap].AreaName + ' initial ' + DEMGlb[MapDraw.DEMonMap].ColsRowsString;  {$EndIf}
+      bb := DEMGlb[MapDraw.DEMonMap].DEMBoundBoxGeo;
+      {$If Defined(RecordCartoFull)} WriteLineToDebugFile('TMapForm.ClipDEMtoFullDEMIXTiles, DEM in ' + sfBoundBoxToString(bb,8)); {$EndIf}
+      db := DEMIXtileFill(MapDraw.DEMonMap,bb,False);
+      GISdb[DB].Empsource.Enabled := false;
+      GISdb[DB].ApplyGISFilter('GRID_FULL >' + IntToStr(MDDef.DEMIX_Full));
+      //GISdb[DB].DeleteAllSelectedRecords;
+      bb2.xmax := GISdb[DB].MyData.FindFieldMax('LONG_HI') + Fudge;
+      bb2.xmin := GISdb[DB].MyData.FindFieldMin('LONG_LOW') - Fudge;
+      bb2.ymax := GISdb[DB].MyData.FindFieldMax('LAT_HI') + Fudge;
+      bb2.ymin := GISdb[DB].MyData.FindFieldMin('LAT_LOW') - Fudge;
+      {$If Defined(RecordCartoFull)} WriteLineToDebugFile('TMapForm.ClipDEMtoFullDEMIXTiles, tile boundaries ' + sfBoundBoxToString(bb2,8)); {$EndIf}
+      bb.xmax := Petmath.MinFloat(bb.xMax,bb2.xMax);
+      bb.xmin := Petmath.MaxFloat(bb.xmin,bb2.xMin);
+      bb.ymax := Petmath.MinFloat(bb.yMax,bb2.yMax);
+      bb.ymin := Petmath.MaxFloat(bb.yMin,bb2.YMin);
+      {$If Defined(RecordCartoFull)} WriteLineToDebugFile('TMapForm.ClipDEMtoFullDEMIXTiles, map full tiles ' + sfBoundBoxToString(bb,8)); {$EndIf}
+      SubsetAndZoomMapFromGeographicBounds(bb);
+
+//      GISdb[DB].ZoomToDBCoverageOnMap;
+      //DEMGlb[MapDraw.DEMonMap].DEMFileName := MDTempDir + DEMGlb[MapDraw.DEMonMap].AreaName + '.dem';
+
+      if (NewName = '') then NewName := DEMGlb[MapDraw.DEMonMap].DEMFileName;
+      DEMGlb[MapDraw.DEMonMap].SaveGridSubsetGeotiff(DEMGlb[MapDraw.DEMonMap].SelectionMap.MapDraw.MapAreaDEMGridLimits,NewName);
+      DEMGlb[MapDraw.DEMonMap].DEMFileName := NewName;
+      DEMGlb[MapDraw.DEMonMap].SelectionMap.ReloadDEMClick(Nil);
+      {$If Defined(RecordCarto)} aLine := aline + ' clipped ' + DEMGlb[MapDraw.DEMonMap].ColsRowsString;   WriteLineToDebugFile(aLine); {$EndIf}
+
+
+      CloseAndNilNumberedDB(db);
+   end;
+end;
 
 function TMapForm.DEMIXtilesOnMap(RecordFill : tStringList = Nil) : tStringList;
 var
@@ -228,13 +274,13 @@ begin
    bb := MapDraw.MapCorners.BoundBoxGeo;
    if ValidDEM(MapDraw.DEMonMap) then begin
       db := DEMIXtileFill(MapDraw.DEMonMap,bb,False);
-      GISdb[DB].ApplyGISFilter('GRID_FULL>' + IntToStr(MDDef.DEMIX_Full));
+      GISdb[DB].ApplyGISFilter('GRID_FULL >' + IntToStr(MDDef.DEMIX_Full));
       GISdb[DB].Empsource.Enabled := false;
    end
    else begin
       LoadDEMIXtileOutlines(bb,False,False,False);
    end;
-   {$If Defined(RecordCarto)} WriteLineToDebugFile('TMapForm.DEMIXtilesOnMap, tiles=' + IntToStr(GISdb[db].MyData.FiltRecInDB)); {$EndIf}
+   {$If Defined(RecordCarto)} WriteLineToDebugFile('TMapForm.DEMIXtilesOnMap, tiles=' + IntToStr(GISdb[db].MyData.FiltRecsInDB)); {$EndIf}
    while not GISdb[db].MyData.Eof do begin
       Name := GISdb[db].MyData.GetFieldByNameAsString('NAME');
       Result.Add(Name);

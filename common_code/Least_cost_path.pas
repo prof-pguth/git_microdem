@@ -467,7 +467,7 @@ var
 var
    Dir : tCompassDirection;
    DEMGridLimits :  tGridLimits;
-   npts : integer;
+   npts : int64;
 begin
    {$IfDef RecordBasicsAccumPath} WritelineToDebugFile('Enter AccumulatedCostSurface, fName =' + fName); {$EndIf}
 

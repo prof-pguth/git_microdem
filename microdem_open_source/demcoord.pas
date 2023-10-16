@@ -275,6 +275,7 @@ type
          WordElevations        : pWordElevations;
          SmallIntElevations    : pSmallIntElevations;
          ShortFloatElevations  : pShortFloatElevations;
+         LongWordElevations    : pLongWordElevations;
          Normals               : tNormalsPointer;
          RefMinElev,RefMaxElev : float64;
          DEMDatumShiftDone     : boolean;
@@ -295,7 +296,6 @@ type
          DEMFileName,
          VATFileName       : PathStr;
          GeotiffImageDesc  : shortstring;
-         LongWordElevations : pLongWordElevations;
          Zpercens           : ^floatarray1000;
 
          LatSizeMap,               {size of area in latitude, in degrees}
@@ -389,7 +389,7 @@ type
          function ValidNeighborsInBox(XGrid,YGrid,Size : integer) :  integer;
          function ImmediateNeighborsMissing(XGrid,YGrid : integer) :  integer;
          function ImmediateNeighborsSameCode(XGrid,YGrid : integer) :  integer;
-         procedure DeleteMissingDataPoints;
+         procedure DeleteMissingDataPoints(CheckMaxMin : boolean = true);
          procedure ComputeMissingData(var Missing : float64); overload;
          procedure ComputeMissingData(GridLimits : tGridLimits; var Missing : float64); overload;
 
@@ -529,7 +529,7 @@ type
          function ReflectanceColor(TintedReflectance : tMapType; x,y : integer) : tcolor;
          function ReflectanceValue(x,y : integer) : integer;
          function RGBReflectanceColor(TintedReflectance : tMapType; Col,Row : integer) : tPlatformColor;
-         function ReflectanceValueFloat(x,y :  float64) : integer;
+         function InterpolateReflectanceValue(x,y :  float64) : integer;
          procedure ReflectanceParams(Min : float64 = -9999; Max : float64 = -9999);
 
      //slope and aspect
@@ -588,7 +588,10 @@ type
          function HalfPixelAggregation(fName : PathStr; PixelIs : byte; SaveFile : boolean; Offset : integer = 0) : integer;
 
          procedure FilterThisDEM(FilterCategory : tFilterCat; var NewDEM : integer; BoxSize : integer = 0; FilterName : PathStr = '');
+         procedure RGBFilterDEM(BufferSize : integer; JustDoHoles : boolean);
+
          function DetrendDEM(Normalize : boolean = true; FilterRadius : integer = 2) : integer;
+         function BoxcarDetrendDEM(OpenMap : boolean; GridLimits : tGridLimits; FilterRadius : integer = 2) : integer;
          function ResaveNewResolution(FilterCategory : tFilterCat) : integer;
 
          function RectangleSubsetDEM(GridLimits : tGridLimits; FileName : PathStr = '') : PathStr; overload;
@@ -632,11 +635,11 @@ type
          procedure FillHolesSelectedBoxFromReferenceDEM(GridLimits : tGridLimits; RefDEM : integer; HoleFill : tHoleFill);
 
          procedure MissingDataToConstantVelue(SeaLevel : float64 = 0);
-         procedure MarkElevationRangeAsConstant(var NumPts : integer);
-         procedure MarkInRangeMissing(LowVal,HighVal : float64; var NumPts : integer);
-         procedure MarkOutsideRangeMissing(LowVal,HighVal : float64; var NumPts : integer);
-         procedure MarkAboveMissing(LowVal : float64; var NumPts : integer);
-         procedure MarkBelowMissing(HighVal : float64; var NumPts : integer);
+         procedure MarkElevationRangeAsConstant(var NumPts : integer; CheckMaxMin : boolean = true);
+         procedure MarkInRangeMissing(LowVal,HighVal : float64; var NumPts : int64; CheckMaxMin : boolean = true);
+         procedure MarkOutsideRangeMissing(LowVal,HighVal : float64; var NumPts : int64; CheckMaxMin : boolean = true);
+         procedure MarkAboveMissing(LowVal : float64; var NumPts : int64; CheckMaxMin : boolean = true);
+         procedure MarkBelowMissing(HighVal : float64; var NumPts : int64; CheckMaxMin : boolean = true);
 
          function FullDEMGridLimits : tGridLimits;
          function SpecifyDEMGridLimits(xgl,ygl,xgh,ygh : float64) :  tGridLimits;
@@ -2794,7 +2797,9 @@ begin
    ShowHourglassCursor;
    DEMheader.MaxElev := -99e38;
    DEMheader.MinElev := 99e38;
+   if ShowSatProgress and (DEMheader.NumCol > 1500) then StartProgress('Check min/max ' + AreaName);
    for Col := 0 to pred(DEMheader.NumCol) do begin
+      if ShowSatProgress and (DEMheader.NumCol > 1500) and (Col mod 100 = 0) then UpdateProgressBar(Col/DEMheader.NumCol);
       for Row := 0 to pred(DEMheader.NumRow) do begin
          if GetElevMetersOnGrid(Col,Row,Z) then begin
             {$IfDef RecordExtremeZ} if (z < -100000) or (z > 100000) then WriteLineToDebugFile('col=' + IntToStr(col) + '  row=' + IntToStr(Row) + ' elev=' + RealToString(z,-18,0) ); {$EndIf}
@@ -2803,7 +2808,7 @@ begin
       end {for Row};
    end {for Col};
    {$IfDef RecordMinMax} WriteLineToDebugFile('exit tDEMDataSet.CheckMaxMinElev: ' + AreaName +  ZRange); {$EndIf}
-  ShowDefaultCursor;
+  EndProgress;
 end {proc};
 
 
@@ -3019,11 +3024,11 @@ end;
 
 procedure tDEMDataSet.ReflectanceParams(Min : float64 = -9999; Max : float64 = -9999);
 {initializes values used for reflectance map calculations}
-const  //from WBT
+const
    //https://pubs.usgs.gov/of/2012/1171/pdf/usgs_of2012-1171-Gantenbein_p101-106.pdf
    Azimuth3 : array[1..3] of float32 = (350,15,270);
    Alt3 : array[1..3] of float32 = (70,60,55);
-   Weight3 : array[1..3] of float32 = (0.35,0.325,0.325);
+   Weight3 : array[1..3] of float32 = (0.35,0.325,0.325);   //my approximation of their transparency settings
    //WBT
    Azimuth4 : array[1..4] of float32 = (225, 270, 315,360);
    Weight4 : array[1..4] of float32 = (0.1, 0.4, 0.4,0.1);
@@ -3097,7 +3102,7 @@ function tDEMDataSet.ReflectanceValue(x,y : integer) : integer;
 {originally after Pelton, Colin, 1987, A computer program for hill-shading digital topographic data sets: Computers & Geosciences, vol.13, no.5, p.545-548.}
 //https://desktop.arcgis.com/en/arcmap/10.3/tools/spatial-analyst-toolbox/how-hillshade-works.htm
 //Hillshade = 255.0 * ((cos(Zenith_rad) * cos(Slope_rad)) + (sin(Zenith_rad) * sin(Slope_rad) * cos(Azimuth_rad - Aspect_rad)))
-//Note that if the calculation of the hillshade value is < 0, the output cell value will be = 0.
+//If the calculation of the hillshade value is < 0, the output cell value will be = 0.
 var
    sum,value  : float64;
    i : integer;
@@ -3122,7 +3127,7 @@ begin
 end;
 
 
-function tDEMDataSet.ReflectanceValueFloat(x,y : float64) : integer;
+function tDEMDataSet.InterpolateReflectanceValue(x,y : float64) : integer;
 var
    Refs : array[1..4] of integer;
    xt,yt : integer;
@@ -3329,7 +3334,7 @@ end;
 function tDEMDataSet.SurroundedPointElevs(Col,Row : integer; var znw,zw,zsw,zn,z,zs,zne,ze,zse : float32; RegionSize : integer = 1) : boolean;
 {determines if point can be safely interpolated, or used for focal operations, that it is surrounded by valid data points}
 begin
-   Result := ((Col - RegionSize) >= 0) and ((Row - RegionSize) >= 0) and ((Col + RegionSize) < pred(DEMheader.NumCol)) and ((Row  + RegionSize) < pred(DEMheader.NumRow));
+   Result := ((Col - RegionSize) >= 0) and ((Row - RegionSize) >= 0) and ((Col + RegionSize) < (DEMheader.NumCol-2)) and ((Row  + RegionSize) < (DEMheader.NumRow-2));
    if Result then begin
       Result := GetElevMetersOnGrid((Col - RegionSize),(Row - RegionSize),zsw) and GetElevMetersOnGrid(Col,(Row - RegionSize),zs) and GetElevMetersOnGrid((Col + RegionSize),(Row - RegionSize),zse) and
                 GetElevMetersOnGrid((Col - RegionSize),Row,zw) and GetElevMetersOnGrid(Col,Row,z) and GetElevMetersOnGrid((Col + RegionSize),Row,ze) and

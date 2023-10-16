@@ -96,6 +96,11 @@ type
     BitBtn7: TBitBtn;
     BitBtn8: TBitBtn;
     CheckBox9: TCheckBox;
+    HistogramTabSheet: TTabSheet;
+    Edit16: TEdit;
+    Label13: TLabel;
+    Label14: TLabel;
+    Edit17: TEdit;
     procedure BitBtn1Click(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -113,6 +118,10 @@ type
     procedure BitBtn8Click(Sender: TObject);
     procedure CheckBox9Click(Sender: TObject);
     procedure XMaxEditChange(Sender: TObject);
+    procedure YMaxEditChange(Sender: TObject);
+    procedure XMinEditChange(Sender: TObject);
+    procedure Edit16Change(Sender: TObject);
+    procedure Edit17Change(Sender: TObject);
   private
     { Private declarations }
   public
@@ -160,6 +169,9 @@ begin
          Edit8.Text := IntToStr(TopMargin);
          Edit9.Text := IntToStr(BottomMargin);
          Edit10.Text := LLcornerText;
+         Edit16.Text := RealToString(OwningGraph.HistogramBinSize,-12,-3);
+         Edit17.Text := RealToString(OwningGraph.HistogramNumBins,-12,-3);
+
 
          if (DBFLineFilesPlotted.Count > 0) then begin
             ComboBox3.Visible := true;
@@ -195,6 +207,7 @@ begin
          else begin
             TabSheet3.TabVisible := false;
          end;
+         HistogramTabSheet.Visible := GraphDraw.GraphType in [gtMultHist];
 
          if OwningGraph.GraphDraw.InsideMarginLegend = lpNone then RadioGroup1.ItemIndex := 0;
          if OwningGraph.GraphDraw.InsideMarginLegend = lpNWMap then RadioGroup1.ItemIndex := 1;
@@ -426,11 +439,47 @@ begin
    if CheckBox9.Checked then begin
       XMinEdit.Text := '-' + XMaxEdit.Text;
    end;
+   OwningGraph.HistogramChanged := true;
+end;
+
+procedure TGraphSettingsForm.XMinEditChange(Sender: TObject);
+begin
+   OwningGraph.HistogramChanged := true;
+end;
+
+procedure TGraphSettingsForm.YMaxEditChange(Sender: TObject);
+begin
+   OwningGraph.HistogramChanged := true;
 end;
 
 procedure TGraphSettingsForm.ComboBox3Change(Sender: TObject);
 begin
    XLabelEdit.Text := ComboBox3.Text;
+end;
+
+
+
+procedure TGraphSettingsForm.Edit16Change(Sender: TObject);
+begin
+   if Sender = Edit16 then begin
+      CheckEditString(Edit16.Text,OwningGraph.HistogramBinSize);
+      if (OwningGraph.HistogramBinSize > 0) then begin
+         OwningGraph.HistogramNumBins := round((OwningGraph.GraphDraw.MaxHorizAxis - OwningGraph.GraphDraw.MinHorizAxis) / OwningGraph.HistogramBinSize);
+         Edit17.Text := IntToStr(OwningGraph.HistogramNumBins);
+         OwningGraph.HistogramChanged := true;
+      end;
+   end;
+end;
+
+procedure TGraphSettingsForm.Edit17Change(Sender: TObject);
+begin
+   if Sender = Edit17 then begin
+      CheckEditString(Edit17.Text,OwningGraph.HistogramNumBins);
+      if OwningGraph.HistogramNumBins > 0 then begin
+         OwningGraph.HistogramBinSize := round((OwningGraph.GraphDraw.MaxHorizAxis - OwningGraph.GraphDraw.MinHorizAxis) / OwningGraph.HistogramNumBins);
+         OwningGraph.HistogramChanged := true;
+      end;
+   end;
 end;
 
 

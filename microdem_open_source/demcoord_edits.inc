@@ -4,8 +4,43 @@
 { Released under the MIT Licences    }
 { Copyright (c) 2023 Peter L. Guth   }
 {------------------------------------}
-{    include file for demcoord.pas   }
+{  include file for demcoord.pas     }
 {____________________________________}
+
+
+function tDEMDataSet.BoxCarDetrendDEM(OpenMap : boolean; GridLimits : tGridLimits; FilterRadius : integer = 2) : integer;
+var
+   x,y,xr,yr,n : integer;
+   Sum,zt,z : float32;
+begin
+   Result := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_detrend_residual',DEMHeader.ElevUnits);
+   if (FilterRadius < 1) then ReadDefault('radius to filter (pixels)',FilterRadius);
+   StartProgress('Detrend/residual ' + AreaName);
+   for x := GridLimits.XGridLow to GridLimits.XGridHigh do begin
+      if (x mod 50 = 0) then UpDateProgressBar(x/pred(DEMheader.NumCol));
+      for y := GridLimits.YGridLow to GridLimits.YGridHigh do begin
+         Sum := 0;
+         n := 0;
+         if GetElevMetersOnGrid(x,y,zt) then begin
+            for xr := (x - FilterRadius) to (x + FilterRadius) do begin
+               for yr := (y - FilterRadius) to (y + FilterRadius) do begin
+                  if GetElevMetersOnGrid(xr,yr,z) then begin
+                     Sum := Sum + z;
+                     inc(n);
+                  end;
+               end;
+            end;
+            if (n > 0) then begin
+               zt := zt - (sum / n);
+               DEMGlb[Result].SetGridElevation(x,y,zt);
+            end;
+         end;
+      end;
+   end;
+   if OpenMap then DEMGlb[Result].SetUpMap(Result,true,mtElevSpectrum)
+   else DEMGlb[Result].CheckMaxMinElev;
+end;
+
 
 
 function tDEMDataSet.DetrendDEM(Normalize : boolean = true; FilterRadius : integer = 2) : integer;
@@ -13,12 +48,8 @@ var
    x,y : integer;
    Sum,znw,zw,zsw,zn,z,zs,zne,ze,zse,
    FactorNS,FactorEW,FactorDiag : float32;
-
 begin
    Result := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_detrend_residual',DEMHeader.ElevUnits);
-
-   Normalize := AnswerIsYes('Normal distances to y dimension pixel spacing');
-
    if Normalize then begin
       //factors to get the elevations at the Y spacing distance from the center pixel, assuming the same slope prevailed
       FactorNS := 1;
@@ -26,7 +57,7 @@ begin
       FactorDiag := AverageYSpace / AverageDiaSpace;   //sqrt(2) for UTM grids, something close for geographic
    end;
 
-   StartProgress('Detrend/residual');
+   StartProgress('Detrend/residual ' + AreaName);
    for x := 0 to pred(DEMheader.NumCol) do begin
       if (x mod 50 = 0) then UpDateProgressBar(x/pred(DEMheader.NumCol));
       for y := 0 to pred(DEMheader.NumRow) do begin
@@ -40,14 +71,57 @@ begin
                 zw := (zw-z) * FactorEW;
                 zn := (zn-z) * FactorNS;
                 zs := (zs-z) * FactorNS;
-                Sum := (zn+zne+ze+zse+zs+zsw+zw+znw)/8;
+                Sum := (zn+zne+ze+zse+zs+zsw+zw+znw) / 8;
             end
-            else Sum := z-(zn+zne+ze+zse+zs+zsw+zw+znw)/8;
+            else Sum := z-(zn+zne+ze+zse+zs+zsw+zw+znw) / 8;
             DEMGlb[Result].SetGridElevation(x,y,sum);
          end;
       end;
    end;
 end;
+
+
+procedure tDEMDataSet.RGBFilterDEM(BufferSize : integer; JustDoHoles : boolean);
+var
+   x,y,x2,y2,NewDEM : integer;
+   r,g,b : byte;
+   z : LongWord;
+   rsum,gsum,bsum,Npts : int32;
+begin
+   StartProgress('RGB filter');
+   NewDEM := CloneAndOpenGridSetMissing(LongWordDEM,AreaName +'_rgb_filter',DEMheader.ElevUnits);
+   for x := 0 to pred(DEMheader.NumCol) do begin
+      if (x mod 50 = 0) then UpDateProgressBar(x/DEMheader.NumCol);
+      for y := 0 to pred(DEMheader.NumRow) do begin
+         if JustDoHoles and (not MissingDataInGrid(x,y)) then begin
+            DEMGlb[NewDEM].LongWordElevations^[x]^[y] := LongWordElevations^[x]^[y];
+         end
+         else begin
+            rsum := 0;
+            gsum := 0;
+            bsum := 0;
+            NPts := 0;
+            for x2 := x-BufferSize to x+BufferSize do begin
+               for y2 := y-BufferSize to y+BufferSize do
+                  if RGBfromLongWord(x2,y2,r,g,b) then begin
+                     rsum := rsum + r;
+                     gsum := gsum + g;
+                     bsum := bsum + b;
+                     inc(NPts);
+                  end;
+            end;
+            if (Npts > 0) then begin
+               z := (rsum div NPts) + 256 * (gsum div NPts) + 256 * 256 * (bsum div NPts);
+               DEMGlb[NewDEM].LongWordElevations^[x]^[y] := z;
+            end;
+         end;
+      end;
+   end;
+   EndProgress;
+   DEMGlb[NewDEM].SetUpMap(NewDEM,true,mtRGBimagery);
+end;
+
+
 
 
 procedure tDEMDataSet.MoveToEGM2008(AddLocalVDatum,SubLocalVDatum : integer);
@@ -761,7 +835,7 @@ begin
 end;
 
 
-procedure tDEMDataSet.MarkInRangeMissing(LowVal,HighVal : float64; var NumPts : integer);
+procedure tDEMDataSet.MarkInRangeMissing(LowVal,HighVal : float64; var NumPts : int64; CheckMaxMin : boolean = true);
 var
    x, y : integer;
    z : float32;
@@ -782,10 +856,10 @@ begin
       end;
    end;
    if ShowSatProgress and (DEMheader.NumCol > 1500) then EndProgress;
-   if (NumPts > 0) then CheckMaxMinElev;
+   if (NumPts > 0) and CheckMaxMin then CheckMaxMinElev;
 end;
 
-procedure tDEMDataSet.MarkOutsideRangeMissing(LowVal,HighVal : float64; var NumPts : integer);
+procedure tDEMDataSet.MarkOutsideRangeMissing(LowVal,HighVal : float64; var NumPts : int64; CheckMaxMin : boolean = true);
 var
    x, y : integer;
    z : float32;
@@ -806,11 +880,11 @@ begin
       end;
    end;
    if ShowSatProgress and (DEMheader.NumCol > 1500) then EndProgress;
-   if (NumPts > 0) then CheckMaxMinElev;
+   if (NumPts > 0) and CheckMaxMin then CheckMaxMinElev;
 end;
 
 
-procedure tDEMDataSet.MarkAboveMissing(LowVal : float64; var NumPts : integer);
+procedure tDEMDataSet.MarkAboveMissing(LowVal : float64; var NumPts : int64; CheckMaxMin : boolean = true);
 var
    x, y : integer;
    z : float32;
@@ -829,11 +903,11 @@ begin
       end;
    end;
    if ShowSatProgress and (DEMheader.NumCol > 1500) then EndProgress;
-   if (NumPts > 0) then CheckMaxMinElev;
+   if CheckMaxMin and (NumPts > 0) then CheckMaxMinElev;
 end;
 
 
-procedure tDEMDataSet.MarkBelowMissing(HighVal : float64; var NumPts : integer);
+procedure tDEMDataSet.MarkBelowMissing(HighVal : float64; var NumPts : int64; CheckMaxMin : boolean = true);
 var
    x, y : integer;
    z : float32;
@@ -852,7 +926,7 @@ begin
       end;
    end;
    if ShowSatProgress and (DEMheader.NumCol > 1500) then EndProgress;
-   if (NumPts > 0) then CheckMaxMinElev;
+   if CheckMaxMin and (NumPts > 0) then CheckMaxMinElev;
 end;
 
 
@@ -878,7 +952,7 @@ begin
 end;
 
 
-procedure tDEMDataSet.MarkElevationRangeAsConstant(var NumPts : integer);
+procedure tDEMDataSet.MarkElevationRangeAsConstant(var NumPts : integer; CheckMaxMin : boolean = true);
 var
    x,y       : integer;
    zHi,zLo,z,nz : float32;
@@ -904,11 +978,11 @@ begin
        end;
     end;
     EndProgress;
-    CheckMaxMinElev;
+    if CheckMaxMin and (NumPts > 0) then CheckMaxMinElev;
 end;
 
 
-procedure tDEMDataSet.DeleteMissingDataPoints;
+procedure tDEMDataSet.DeleteMissingDataPoints(CheckMaxMin : boolean = true);
 var
    Col,Row : integer;
    z : float32;
@@ -920,7 +994,7 @@ begin
              if GetElevMeters(Col,Row,z) and DEMDef_routines.MissingData(z) then SetGridMissing(Col,Row);
           end
        end;
-       CheckMaxMinElev;
+       if CheckMaxMin then CheckMaxMinElev;
     end;
 end;
 

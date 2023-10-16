@@ -947,7 +947,7 @@ end;
 
 function NewArea(TransformToNewDatum : boolean; var ImportingDEM : integer; DEMMessage : shortstring; var TFile : PathStr; DEMtoUse : integer = 0) : boolean;
 var
-   NumPts : integer;
+   NumPts : int64;
 begin
    {$If Defined(RecordReadDEM) or Defined(TimeLoadDEM) or Defined(BasicOpens)} if (TFile <> '') and not FileExists(TFile) then WriteLineToDebugFile('NewArea enter, missing File=' + TFile) else WriteLineToDebugFile('NewArea enter ' + tFile); {$EndIf}
    DEMStatsString := '';

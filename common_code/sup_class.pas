@@ -167,8 +167,7 @@ var
        fName : PathStr;
        zs : ^bfarray32;
        Line : AnsiString;
-       q95,q90,q10,q5,
-       rt,Min,Max,Median : float64;
+       q95,q90,q10,q5,rt,Min,Max,Median : float64;
        MomentVar : tMomentVar;
     begin
        {$IfDef RecordSatClass} WriteLineToDebugFile('TMapForm.TryToOpenTrainSet, LoadClassStats'); {$EndIf}
@@ -217,7 +216,6 @@ var
            end;
        end;
        GISDB[TrainingPointsDB].ClearGISFilter;
-       //GISDB[TrainingPointsDB].MyData.ApplyFilter('');
        GISDB[TrainingPointsDB].dbTablef.ShowStatus;
     end;
 

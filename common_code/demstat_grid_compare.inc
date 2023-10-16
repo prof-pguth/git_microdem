@@ -371,13 +371,13 @@ begin
                WriteLineToDebugFile('MakeDifferenceMapofBoxRegion done ShowMap ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].zRange);
             {$EndIf}
          end;
+         DEMGlb[Result].CheckMaxMinElev;  //because it is reset somewhere in the ShowMapBlock
 
          if ShowScatterPlot then begin
             CloseFile(rfile);
             ThisGraph.AutoScaleAndRedrawDiagram;
          end;
-         if ShowHistogram then SingleDEMHistogram(Result);
-         DEMGlb[Result].CheckMaxMinElev;  //because it is reset somewhere in the ShowMapBlock
+         if ShowHistogram then DEMGlb[Result].CreateWholeDEMHistogram;  //SingleDEMHistogram(Result);
          {$If Defined(RecordDEMCompare) or Defined(RecordDiffMap) or Defined(TrackZRange)} WriteLineToDebugFile('MakeDifferenceMapofBoxRegion out, ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].zRange); {$EndIf}
       finally
          HeavyDutyProcessing := false;

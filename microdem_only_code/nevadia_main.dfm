@@ -2,8 +2,8 @@ object wmdem: Twmdem
   Left = 0
   Top = 262
   Caption = 'GIS program loading'
-  ClientHeight = 1157
-  ClientWidth = 2034
+  ClientHeight = 1154
+  ClientWidth = 2022
   Color = clScrollBar
   DefaultMonitor = dmDesktop
   Font.Charset = DEFAULT_CHARSET
@@ -28,13 +28,13 @@ object wmdem: Twmdem
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 2034
+    Width = 2022
+    Height = 29
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34
     TabOrder = 0
     OnMouseDown = ToolBar1MouseDown
-    ExplicitWidth = 2030
     object SpeedButton2: TSpeedButton
       Left = 0
       Top = 0
@@ -1676,8 +1676,8 @@ object wmdem: Twmdem
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 1138
-    Width = 2034
+    Top = 1135
+    Width = 2022
     Height = 19
     Panels = <
       item
@@ -1696,8 +1696,6 @@ object wmdem: Twmdem
     Visible = False
     OnClick = StatusBar1Click
     OnDblClick = StatusBar1DblClick
-    ExplicitTop = 1137
-    ExplicitWidth = 2030
   end
   object MainMenu1: TMainMenu
     Left = 136
@@ -3490,7 +3488,6 @@ object wmdem: Twmdem
     object LoadDEMIXareareferenceDEMs1: TMenuItem
       Caption = 'Load DEMIX area reference DEMs in EGM2008'
       Enabled = False
-      OnClick = LoadDEMIXareareferenceDEMs1Click
     end
     object N37: TMenuItem
       Caption = '-'
@@ -3588,11 +3585,27 @@ object wmdem: Twmdem
     end
     object N41: TMenuItem
       Caption = 'Summarize VDATUM shift for US areas'
+      Enabled = False
       OnClick = N41Click
     end
     object SummarizeverticaldatumshiftforEGM96testDEMs1: TMenuItem
       Caption = 'Summarize vertical datum shift for EGM96 test DEMs'
       OnClick = SummarizeverticaldatumshiftforEGM96testDEMs1Click
+    end
+    object N36: TMenuItem
+      Caption = '-'
+    end
+    object N45: TMenuItem
+      Caption = 'Clip DEMs to full DEMIX tiles'
+      OnClick = N45Click
+    end
+    object VerifySSIMfiles1: TMenuItem
+      Caption = 'Verify SSIM files'
+      OnClick = VerifySSIMfiles1Click
+    end
+    object MergeSSIMandR2database1: TMenuItem
+      Caption = 'Merge SSIM and R2 database'
+      OnClick = MergeSSIMandR2database1Click
     end
   end
 end

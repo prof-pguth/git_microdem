@@ -488,9 +488,14 @@ begin
    if (CurDEM = 0) then GetDEM(CurDEM,true,'single DEM geomorphometry');
    HeavyDutyProcessing := true;
    CreateSlopeMap(CurDEM);
-   MakeTRIGrid(CurDEM,nmEastWest,true,true);
-   MakeTRIGrid(CurDEM,nmNorthSouth,true,true);
-   MakeTRIGrid(CurDEM,nmNone,true,true);
+   MakeTRIGrid(CurDEM,nmEastWest,true);
+   MakeTRIGrid(CurDEM,nmNorthSouth,true);
+   MakeTRIGrid(CurDEM,nmEastWest,true);
+   MakeTPIGrid(CurDEM,nmNorthSouth,true);
+   MakeTPIGrid(CurDEM,nmNone,true);
+   MakeTPIGrid(CurDEM,nmEastWest,true);
+
+
    GDAL_TRI_Riley(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
    GDAL_TRI_Wilson(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
    GDAL_TPI(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
@@ -527,10 +532,10 @@ var
    j : integer;
 begin
    if CheckBox2.Checked then begin
-      for j := 1 to MaxDEMDataSets do if DEMsWanted[j] then MakeTRIGrid(j,nmTRIK,true,false);
+      for j := 1 to MaxDEMDataSets do if DEMsWanted[j] then MakeTRIGrid(j,nmTRIK,true);
    end
    else begin
-      MakeTRIGrid(CurDEM,nmTRIK,true,false);
+      MakeTRIGrid(CurDEM,nmTRIK,true);
    end;
 end;
 
@@ -548,33 +553,10 @@ begin
 end;
 
 
+
 procedure TPickGeoStat.BitBtn29Click(Sender: TObject);
-var
-   j : integer;
-   Distributions,Legends : tStringList;
-   Values : ^Petmath.bfarray32;
-   Max,Min,BinSize : float32;
-   NPts : int64;
-   fName : PathStr;
 begin
-   Distributions := tStringList.Create;
-   Legends := tStringList.Create;
-   Max := -99e39;
-   Min := 99e39;
-   for j := 1 to MaxDEMDataSets do begin
-      if DEMsWanted[j] then begin
-         New(Values);
-         DEMGlb[j].GetElevationsInLongArray(DEMGlb[j].FullDEMGridLimits,NPts,Values^);
-         if DEMGlb[j].DEMHeader.MaxElev > Max then Max := DEMGlb[j].DEMHeader.MaxElev;
-         if DEMGlb[j].DEMHeader.MinElev < Min then Min := DEMGlb[j].DEMHeader.MinElev;
-         fName := Petmar.NextFileNumber(MDtempDir,DEMGlb[j].AreaName + '_' ,'.z');
-         Distributions.Add(SaveSingleValueSeries(npts,Values^,fName));
-         Legends.Add(DEMGlb[j].AreaName);
-         Dispose(Values);
-      end;
-   end;
-   BinSize := (Max - Min) / 200;
-   CreateMultipleHistogram(MDDef.CountHistograms,Distributions,Legends,'', '',200,Min,Max,BinSize);
+   CreateGridHistograms(DEMSwanted);
 end;
 
 

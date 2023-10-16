@@ -48,7 +48,7 @@ uses
   System.SysUtils, System.Variants, System.Classes,
   StrUtils,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons, Vcl.ComCtrls, Vcl.Grids, Vcl.Graphics,Vcl.ExtCtrls,
-  Petmar_types,DEMIX_Control;
+  Petmar_types,DEMDefs,DEMIX_Control;
 
 type
   TDemixFilterForm = class(TForm)
@@ -146,6 +146,17 @@ type
     BitBtn5: TBitBtn;
     Hillshade: TCheckBox;
     BitBtn32: TBitBtn;
+    TabSheet4: TTabSheet;
+    AreaProgress: TEdit;
+    TileProgress: TEdit;
+    CurrentOperation: TEdit;
+    Memo8: TMemo;
+    Label3: TLabel;
+    TabSheet5: TTabSheet;
+    BitBtn33: TBitBtn;
+    BitBtn34: TBitBtn;
+    BitBtn35: TBitBtn;
+    BitBtn36: TBitBtn;
     procedure BitBtn1Click(Sender: TObject);
     procedure LoadClick(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
@@ -207,6 +218,10 @@ type
     procedure BitBtn5Click(Sender: TObject);
     procedure HillshadeClick(Sender: TObject);
     procedure BitBtn32Click(Sender: TObject);
+    procedure BitBtn33Click(Sender: TObject);
+    procedure BitBtn34Click(Sender: TObject);
+    procedure BitBtn35Click(Sender: TObject);
+    procedure BitBtn36Click(Sender: TObject);
     //procedure CheckBox4Click(Sender: TObject);
   private
     { Private declarations }
@@ -217,6 +232,8 @@ type
     procedure DifferenceMapsAllAreas(WhatFor : integer);
     procedure GetUsingStringLists;
     procedure SSIMprep(AllTiles: tStringList; GridCorrelations : tStringList);
+    procedure MakeGeomorphometricMaps(What : shortstring; var  DEMSwanted : tDEMbooleanArray);
+
   public
     { Public declarations }
     DB : integer;
@@ -226,8 +243,8 @@ type
     CriteriaUsing,
     TileParameters,
     CandidateDEMsUsing : tStringList;
-    MergeDEMs,RefDEMs,RefDEMsHalfSec,TestDEMs,DiffDSMDEMs,DiffDTMDEMs : tDEMIXindexes;
-    procedure LoadDEMsForCurrentArea(var AreaName : Petmar_types.shortstring; LoadMaps : boolean = true);
+    MergeDEMs,RefDEMsHalfSec,DiffDSMDEMs,DiffDTMDEMs : tDEMIXindexes;
+    procedure LoadDEMsForCurrentArea(var AreaName : Petmar_types.shortstring; LoadRefMaps,LoadTestDEMs : boolean);
   end;
 
 
@@ -240,12 +257,58 @@ implementation
 
 uses
    Petmar,PetMath,PetImage,PetImage_form,BaseGraf,
-   DEMDatabase,DEMDbTable,DEMdef_routines,DEMDefs,DEMcoord,
+   DEMDatabase,DEMDbTable,DEMdef_routines,DEMcoord,
    DEM_Manager,DEMstat,BaseMap,DEMlosw,Make_Grid,
    DEMmapf, nevadia_main, PetDBUtils;
 
 const
    SaveDifferenceDistribution : boolean = false;
+
+
+procedure ExpandCumulativeRangeForThisGrid(DEM : integer; var Min,Max : float32);
+begin
+   if DEMGlb[DEM].DEMheader.MaxElev > Max then Max := DEMGlb[DEM].DEMheader.MaxElev;
+   if DEMGlb[DEM].DEMheader.MinElev < Min then Min := DEMGlb[DEM].DEMheader.MinElev;
+end;
+
+
+procedure RescaleDEMs(DEMsWanted : tDEMbooleanArray);
+   //this moves all the RRI maps to the same color scale, but does not work very well
+var
+   Max,Min : float32;
+   i : integer;
+   Maps : tstringlist;
+begin
+   Max := -9999;
+   Min := 9999;
+   for i := 1 to MaxDemixDEM do begin
+      if DEMsWanted[i] then ExpandCumulativeRangeForThisGrid(i, Min,Max);
+   end;
+   for i := 1 to MaxDemixDEM do begin
+      if DEMsWanted[i] then DEMGlb[i].SelectionMap.RecolorMapWithElevationRange(Min,Max);
+   end;
+   PickMapsFromDEMsWanted(Maps,DEMSwanted);
+   Bigimagewithallmaps(3,'',Maps);
+end;
+
+
+procedure ZeroMapIndexes;
+var
+   i : integer;
+begin
+   for i := 1 to MaxDemixDEM do begin
+      SlopeMap[i] := 0;
+      TestRuffMap[i] := 0;
+      TestRRI[i] := 0;
+      TestTPI[i] := 0;
+      TestHillshade[i] := 0;
+      RefSlopeMap[i] := 0;
+      RefRuffMap[i] := 0;
+      RefRRI[i] := 0;
+      RefTPI[i] := 0;
+      RefHillshade[i] := 0;
+   end;
+end;
 
 
 procedure LoadComboBoxFromDBField(db : integer; ComboBox : tComboBox; aField : shortstring);
@@ -370,7 +433,7 @@ begin
    //LoadOneSecRefCheckBox.Checked := (WhatType in [ElevSpecified,ElevAll,SlopeAll,RuffAll,AllAll]);
    //CheckBox3.Checked := true;
    //CheckBox4.Checked := (WhatType = ElevV1);
-   LoadDEMsForCurrentArea(AreaName,true);  //needs hillshade maps for background on difference maps
+   LoadDEMsForCurrentArea(AreaName,true,true);  //needs hillshade maps for background on difference maps
    SaveBackupDefaults;
    MDDef.HighlightDiffMap := 1;
    MDDef.ScaleBarLocation.DrawItem := true;
@@ -522,7 +585,7 @@ var
          UncheckAllLoadCheckboxes;
          CheckBox5.Checked := true;
          CheckBox6.Checked := true;
-         LoadDEMsForCurrentArea(AreaName,false);
+         LoadDEMsForCurrentArea(AreaName,false,false);
 
          COPDEM := 0;
          ALOSDEM := 0;
@@ -621,31 +684,8 @@ end;
 
 
 procedure TDemixFilterForm.BitBtn30Click(Sender: TObject);
-var
-   AllTiles,Correlations : tStringList;
-   i : integer;
-   fName : PathStr;
 begin
    BitBtn5Click(Nil);
-
-(*
-   Correlations := tStringList.Create;
-   LoadCurrentAreaBitBtn5Click(Nil);
-   AllTiles := Nil;
-   for i := 1 to MaxDemixDEM do begin
-      if ValidDEM(RefDEMs[i]) then begin
-         if not StrUtils.AnsiContainsText(DEMGlb[RefDEMs[i]].AreaName,'_dsm') then begin
-            if StrUtils.AnsiContainsText(DEMGlb[RefDEMs[i]].AreaName,'_ref') and StrUtils.AnsiContainsText(DEMGlb[RefDEMs[i]].AreaName,'_point') then begin
-               AllTiles := DEMGlb[RefDEMs[i]].SelectionMap.DEMIXtilesOnMap;
-               {$If Defined(RecordSSIMprep)} WriteLineToDebugFile('Tiles in dtm_ref=' + IntToStr(AllTiles.Count)); {$EndIf}
-            end;
-         end;
-      end;
-   end;
-   SSIMprep(AllTiles,Correlations);
-   fName := NextFileNumber('c:\temp\','grid_correlations_','.dbf');
-   StringList2CSVtoDB(Correlations,fName);
-*)
 end;
 
 
@@ -654,7 +694,7 @@ var
    AllTiles : tStringList;
 begin
    AllTiles := tStringList.Create;
-   AllTiles.Add(ComboBox1.Text);
+   AllTiles.Add(ComboBox4.Text);
    SSIMprep(AllTiles,Nil);
 end;
 
@@ -671,16 +711,127 @@ begin
 end;
 
 
+procedure TDemixFilterForm.BitBtn33Click(Sender: TObject);
+var
+   i,UseDSM,UseDTM : integer;
+   DiffGrid : tDEMIXindexes;
+   DEMSwanted : tDEMbooleanArray;
+   GridLimits: tGridLimits;
+begin
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('TDemixFilterForm.BitBtn33Click in'); {$EndIf}
+   MakeGeomorphometricMaps('TPI',DEMSwanted);
+
+
+exit;
+
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('TDemixFilterForm.BitBtn33Click TPI done'); {$EndIf}
+   InitializeDEMsWanted(DEMsWanted,false);
+   for I := 1 to MaxDEMIXDEM do begin
+      if ValidDEM(TestDEMs[i]) then begin
+         GetReferenceDEMsForTestDEM(TestSeries[i],UseDSM,UseDTM);
+         DiffGrid[i] := MakeDifferenceMap(RefTPI[UseDTM],TestTPI[i],TestTPI[i],0,true,false,false);
+         GridLimits := DEMGlb[TestTPI[i]].sfBoundBox2tGridLimits(DEMIXtileBoundingBox(ComboBox1.Text));
+         DiffGrid[i] := MakeDifferenceMapOfBoxRegion(RefTPI[UseDTM],TestTPI[i],TestTPI[i],0,GridLimits,true,false,false);
+         DEMsWanted[DiffGrid[i]] := true;
+      end;
+   end;
+   CreateGridHistograms(DEMSwanted);
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('TDemixFilterForm.BitBtn33Click out'); {$EndIf}
+end;
+
+procedure TDemixFilterForm.BitBtn34Click(Sender: TObject);
+begin
+   if ValidDB(DB) then LoadThisDEMIXTile(GetAreaNameForDEMIXTile(DB,ComboBox1.Text),ComboBox1.Text)
+   else MessageToContinue('No valid DB');
+   BitBtn34.Enabled := false;
+end;
+
+
+procedure TDemixFilterForm.MakeGeomorphometricMaps(What : shortstring; var  DEMSwanted : tDEMbooleanArray);
+var
+   i : integer;
+   GridLimits: tGridLimits;
+   Maps : tStringList;
+begin
+   InitializeDEMsWanted(DEMsWanted,false);
+   for i := 1 to MaxDemixDEM do begin
+      if ValidDEM(UsingRefDEMs[i]) then begin
+         GridLimits := DEMGlb[UsingRefDEMs[i]].sfBoundBox2tGridLimits(DEMIXtileBoundingBox(ComboBox1.Text));
+         if What = 'RRI' then begin
+            RefRRI[i] := MakeSpecifiedTPIGrid(UsingRefDEMs[i],GridLimits,nmRRI,true);
+            DEMGlb[RefRRI[i]].AreaName := DEMGlb[RefDEMs[i]].AreaName + '_RRI';
+            DEMSWanted[RefRRI[i]] := true;
+         end;
+         if What = 'Ruff' then begin
+            RefRuffMap[i] := DEMGlb[RefDEMs[i]].BoxCarDetrendDEM(true,GridLimits,3);
+            DEMGlb[RefRuffMap[i]].AreaName := DEMGlb[RefDEMs[i]].AreaName + '_Ruff';
+            DEMSWanted[RefRuffMap[i]] := true;
+         end;
+         if What = 'TPI' then begin
+            RefTPI[i] := DEMGlb[RefDEMs[i]].BoxCarDetrendDEM(true,GridLimits,3);
+            DEMGlb[RefTPI[i]].AreaName := DEMGlb[RefDEMs[i]].AreaName + '_TPI';
+            DEMSWanted[RefTPI[i]] := true;
+         end;
+      end;
+   end;
+
+   for i := 1 to MaxDemixDEM do begin
+      if ValidDEM(TestDEMs[i]) then begin
+         GridLimits := DEMGlb[TestDEMs[i]].sfBoundBox2tGridLimits(DEMIXtileBoundingBox(ComboBox1.Text));
+         if What = 'RRI' then begin
+            TestRRI[i] := MakeSpecifiedTPIGrid(TestDEMs[i],GridLimits,nmRRI,true);
+            DEMGlb[TestRRI[i]].AreaName := DEMGlb[TestDEMs[i]].AreaName + '_RRI';
+            DEMSWanted[TestRRI[i]] := true;
+         end;
+         if What = 'Ruff' then begin
+            TestRuffMap[i] := DEMGlb[TestDEMs[i]].BoxCarDetrendDEM(true,GridLimits,3);
+            DEMGlb[TestRuffMap[i]].AreaName := DEMGlb[TestDEMs[i]].AreaName + '_Ruff';
+            DEMSWanted[TestRuffMap[i]] := true;
+         end;
+
+         if What = 'TPI' then begin
+            TestTPI[i] := DEMGlb[TestDEMs[i]].BoxCarDetrendDEM(true,GridLimits,3);
+            DEMGlb[TestTPI[i]].AreaName := DEMGlb[TestDEMs[i]].AreaName + '_TPI';
+            DEMSWanted[TestTPI[i]] := true;
+         end;
+         //DEMGlb[TestRRI[i]].SelectionMap.ClipDEMtoregionwithdata1Click(nil);
+      end;
+   end;
+
+   for i := 1 to MaxDEMDataSets do begin
+      if DEMsWanted[i] then DEMGlb[i].SelectionMap.ClipDEMtoregionwithdata1Click(nil);
+   end;
+
+   PickMapsFromDEMsWanted(Maps,DEMSwanted);
+   BigImageWithAllMaps(3,'',Maps);
+
+   CreateGridHistograms(DEMSwanted);
+end;
+
+procedure TDemixFilterForm.BitBtn35Click(Sender: TObject);
+var
+   DEMSwanted : tDEMbooleanArray;
+begin
+   MakeGeomorphometricMaps('RRI',DEMSwanted);
+
+   RescaleDEMs(DEMsWanted);
+
+   CreateGridHistograms(DEMSwanted);
+end;
+
+procedure TDemixFilterForm.BitBtn36Click(Sender: TObject);
+var
+   DEMSwanted : tDEMbooleanArray;
+begin
+   MakeGeomorphometricMaps('Ruff',DEMSwanted);
+end;
+
 procedure TDemixFilterForm.SSIMprep(AllTiles : tStringList; GridCorrelations : tStringList);
 const
-   TileNormalize = true;
+   TileNormalize = false;
 var
    OpenMap : boolean;
    OutPath : PathStr;
-   UsingRefDEMs,
-   RefSlopeMap,RefRuffMap,RefRRImap,
-   RefHillshade,TestHillshade,
-   SlopeMap,RuffMap,RRImap : tDEMIXindexes;
 
          procedure SaveGrids(TileName : shortstring; TheRefDEMs,TheTestDEMs : tDEMIXindexes; What : shortstring = '');
          var
@@ -735,15 +886,12 @@ var
             OldSetting : boolean;
          begin
             {$IfDef RecordSSIMprepFull} HighlightLineToDebugFile('Save ' + What); {$EndIf}
-            wmdem.SetPanelText(1,'Save=' + What);
             for DEM := 1 to MaxDemixDEM do begin
                if ValidDEM(TheRefDEMs[DEM]) then begin
                   if StrUtils.AnsiContainsText(DEMGlb[TheRefDEMs[DEM]].AreaName,'area') then begin
                      bb_pia := DEMIXtileBoundingBox(TileName,true);
-                     {$IfDef RecordSSIMprepFull} WriteLineToDebugFile(TileName + ' bb:  ' + sfBoundBoxToString(bb_pia,8) + '  ' + sfBoundBoxSizeMinutesToString(bb_pia)); {$EndIf}
-                     {$IfDef RecordSSIMprepFull}
-                        WriteLineToDebugFile('Area ref bb:   ' + sfBoundBoxToString(DEMGlb[TheRefDEMs[DEM]].DEMBoundBoxGeo,8) + '  ' + sfBoundBoxSizeMinutesToString(DEMGlb[TheRefDEMs[DEM]].DEMBoundBoxGeo));
-                     {$EndIf}
+                     {$IfDef RecordSSIMprepFull} WriteLineToDebugFile(TileName + ' bb:  ' + sfBoundBoxToString(bb_pia,8) + ' ' + sfBoundBoxSizeMinutesToString(bb_pia)); {$EndIf}
+                     {$IfDef RecordSSIMprepFull} WriteLineToDebugFile('Area ref bb: ' + sfBoundBoxToString(DEMGlb[TheRefDEMs[DEM]].DEMBoundBoxGeo,8) + ' ' + sfBoundBoxSizeMinutesToString(DEMGlb[TheRefDEMs[DEM]].DEMBoundBoxGeo));                     {$EndIf}
                      bb_pia := IntersectionTwoGeoBoundBoxes(bb_pia,DEMGlb[TheRefDEMs[DEM]].DEMBoundBoxGeo);
                      {$IfDef RecordSSIMprepFull} WriteLineToDebugFile('Intersect bb:  ' + sfBoundBoxToString(bb_pia,8) + '  ' + sfBoundBoxSizeMinutesToString(bb_pia)); {$EndIf}
                      SafeAdjustGeoBoundBoxForPixelIsArea(bb_pia);
@@ -797,10 +945,6 @@ var
                            DEMGlb[WhichGrids[DEM]].AddConstantToGrid(-Min);
                            DEMGlb[WhichGrids[DEM]].MultiplyGridByConstant(1/(Max-Min));
                            DEMGlb[WhichGrids[DEM]].CheckMaxMinElev;
-                           {$IfDef RecordSSIMprepFull}
-                              if (DEMGlb[WhichGrids[DEM]].DEMheader.MaxElev > 1) then HighlightLineToDebugFile(DEMGlb[WhichGrids[DEM]].AreaName + '  ' + DEMGlb[WhichGrids[DEM]].ZRange)
-                              else WriteLineToDebugFile(DEMGlb[WhichGrids[DEM]].AreaName + '  ' + DEMGlb[WhichGrids[DEM]].ZRange);
-                           {$EndIf}
                         end;
                      end;
                   end;
@@ -809,7 +953,6 @@ var
             OldSetting : boolean;
          begin
             {$IfDef RecordSSIMprepFull} WriteLineToDebugFile('Normalize ' + What + '  Refs=' + IntToStr(DEMsinIndex(TheRefs)) + '  Test=' + IntToStr(DEMsinIndex(TheDEMs))); {$EndIf}
-            wmdem.SetPanelText(1,'Normalize=' + What);
             Min := 99e39;
             Max := -99e39;
             try
@@ -837,6 +980,10 @@ var
                      Min := 0;
                      Max := 1000;
                   end
+                  else if (What = 'TPI') then begin
+                     Min := -50;
+                     Max := 50;
+                  end
                   else if (What = 'Ruff') then begin
                      Min := 0;
                      Max := 125;
@@ -857,53 +1004,42 @@ var
          i : integer;
       begin
          {$IfDef RecordSSIMprep} WriteLineToDebugFile('MakeAreaGeomorphGrids in'); {$EndIf}
+         ZeroMapIndexes;
          for i := 1 to MaxDemixDEM do begin
-            wmdem.SetPanelText(1,'Grids for test DEM=' + IntToStr(i));
-            SlopeMap[i] := 0;
-            RuffMap[i] := 0;
-            RRImap[i] := 0;
-            TestHillshade[i] := 0;
             if ValidDEM(TestDEMs[i]) then begin
-               TestHillshade[i] := MakeSingleNewDerivativeMap('R',TestDEMs[i],0,false);
-               if MDDef.SSIM_rri then RRImap[i] := MakeTRIGrid(TestDEMs[i],nmRRI,OpenMap,false);
-               if MDDef.SSIM_slope or MDDef.SSIM_ruff then RuffMap[i] := CreateSlopeRoughnessSlopeStandardDeviationMap(TestDEMs[i],5,SlopeMap[i],OpenMap);
+               TileProgress.Text := 'TEST DEM: ' + IntToStr(i) + '  ' + DEMGlb[TestDEMs[i]].AreaName;
+               if MDDef.SSIM_hill then TestHillshade[i] := MakeSingleNewDerivativeMap('R',TestDEMs[i],0,false);
+               if MDDef.SSIM_rri then TestRRI[i] := MakeTRIGrid(TestDEMs[i],nmRRI,OpenMap);
+               if MDDef.SSIM_slope or MDDef.SSIM_ruff then TestRuffMap[i] := CreateSlopeRoughnessSlopeStandardDeviationMap(TestDEMs[i],5,SlopeMap[i],OpenMap);
+               if MDDef.SSIM_tpi then TestTPI[i] := DEMGlb[TestDEMs[i]].BoxCarDetrendDEM(OpenMap,DEMGlb[TestDEMs[i]].FullDEMGridLimits,3);
             end;
          end;
          {$IfDef RecordSSIMprepFull} WriteLineToDebugFile('MakeAreaGeomorphGrids test grids done'); {$EndIf}
          for i := 1 to MaxDemixDEM do begin
-            wmdem.SetPanelText(1,'Grids for ref DEM=' + IntToStr(i));
-            RefSlopeMap[i] := 0;
-            RefRuffMap[i] := 0;
-            RefRRImap[i] := 0;
-            RefHillshade[i] := 0;
             if ValidDEM(UsingRefDEMs[i]) then begin
-               RefHillshade[i] := MakeSingleNewDerivativeMap('R',UsingRefDEMs[i],0,false);
-               if MDDef.SSIM_rri then RefRRImap[i] := MakeTRIGrid(UsingRefDEMs[i],nmRRI,OpenMap,false);
+               TileProgress.Text := 'Ref DEM: ' + IntToStr(i) + '  ' + DEMGlb[UsingRefDEMs[i]].AreaName;
+               if MDDef.SSIM_tpi then RefTPI[i] := DEMGlb[UsingRefDEMs[i]].BoxCarDetrendDEM(OpenMap,DEMGlb[RefDEMs[i]].FullDEMGridLimits,3);
+               if MDDef.SSIM_hill then RefHillshade[i] := MakeSingleNewDerivativeMap('R',UsingRefDEMs[i],0,false);
+               if MDDef.SSIM_rri then RefRRI[i] := MakeTRIGrid(UsingRefDEMs[i],nmRRI,OpenMap);
                if MDDef.SSIM_slope or MDDef.SSIM_ruff then RefRuffMap[i] := CreateSlopeRoughnessSlopeStandardDeviationMap(UsingRefDEMs[i],5,RefSlopeMap[i],OpenMap);
             end;
          end;
          {$IfDef RecordSSIMprepFull} WriteLineToDebugFile('MakeAreaGeomorphGrids ref grids done'); {$EndIf}
-         if MDDef.SSIM_elev then NormalizeGrids(TestDEMS,UsingRefDEMs,'Elev');
-         if MDDef.SSIM_hill then NormalizeGrids(TestHillshade,RefHillshade,'Hill');
-         if MDDef.SSIM_rri then NormalizeGrids(RRIMap,RefRRIMap,'RRI');
-         if MDDef.SSIM_slope then NormalizeGrids(SlopeMap,RefSlopeMap,'Slope');
-         if MDDef.SSIM_ruff then NormalizeGrids(RuffMap,RefRuffMap,'Ruff');
-         {$IfDef RecordSSIMprepFull} WriteLineToDebugFile('After Normalize elev ' + '  Refs=' + IntToStr(DEMsinIndex(UsingRefDEMs)) + '  Test=' + IntToStr(DEMsinIndex(TestDEMS))); {$EndIf}
-         {$IfDef RecordSSIMprepFull} WriteLineToDebugFile('After Normalize RRI  ' + '  Refs=' + IntToStr(DEMsinIndex(RefRRIMap)) + '  Test=' + IntToStr(DEMsinIndex(RRIMap))); {$EndIf}
       end;
-
 
       procedure SaveGridsForOneTile(TileName : shortstring);
       begin
          {$IfDef RecordSSIMprepFull} HighlightLineToDebugFile(TileName); {$EndIf}
+         //wmdem.SetPanelText(1,'Save grids');
          if TileNormalize then OutPath := 'c:\temp\ssim_tile_normalize\' + TileName + '\'
          else OutPath := 'c:\temp\ssim_global_norm\' + TileName + '\';
          SafeMakeDir(OutPath);
          if MDDef.SSIM_hill then SaveGrids(TileName,RefHillshade,TestHillshade,'hill');
          if MDDef.SSIM_elev then SaveGrids(TileName,UsingRefDEMs,TestDEMs,'elev');
          if MDDef.SSIM_slope then SaveGrids(TileName,RefSlopeMap,SlopeMap,'slope');
-         if MDDef.SSIM_ruff then SaveGrids(TileName,RefRuffMap,RuffMap,'ruff');
-         if MDDef.SSIM_rri then SaveGrids(TileName,RefRRImap,RRImap,'RRI');
+         if MDDef.SSIM_ruff then SaveGrids(TileName,RefRuffMap,TestRuffMap,'ruff');
+         if MDDef.SSIM_rri then SaveGrids(TileName,RefRRI,TestRRI,'RRI');
+         if MDDef.SSIM_tpi then SaveGrids(TileName,RefTPI,TestTPI,'TPI');
       end;
 
       procedure GetGridCorrelations(TileName,What : shortstring; TestDEMs,RefDEMs : tDEMIXindexes);
@@ -917,8 +1053,8 @@ var
       begin
          ThisRefDEM := 0;
          ThisTestDEM := 0;
-         Line1 := 'DEMIX_TILE,REF_TYPE,CRITERION';
-         Line2 := TileName + ',DTM,' + What + '_R2';
+         Line1 := 'DEMIX_TILE,AREA,REF_TYPE,CRITERION';
+         Line2 := TileName + ',' + ComboBox4.Text + ',DTM,' + What + '_R2';
          TileProcessed := false;
          for i := 1 to MaxDemixDEM do begin
             ThisTestDEM := TestDEMs[i];
@@ -948,6 +1084,7 @@ var
                    end;
                end;
                if ValidDEM(ThisTestDEM) and ValidDEM(ThisRefDEM) then begin
+                  //WriteLineToDebugFile('Test=' + DEMGlb[ThisTestDEM].AreaName + '  Ref=' + DEMGlb[ThisRefDEM].AreaName);
                   bgTest := DEMGlb[ThisTestDEM].sfBoundBox2tGridLimits(bb);
                   VarCovarStatsFromTwoGrids(bgTest,ThisTestDEM,ThisRefDEM, r,covar);
                   Line1 := Line1 + ',' + WhatTestDEMisThis(DEMGlb[ThisTestDEM].AreaName);
@@ -957,19 +1094,24 @@ var
                else exit;
             end;
          end;
-         if (GridCorrelations.Count = 0) then GridCorrelations.Add(Line1);
-         if TileProcessed then GridCorrelations.Add(Line2);
+         if TileProcessed then begin
+            if (GridCorrelations.Count = 0) then GridCorrelations.Add(Line1);
+            GridCorrelations.Add(Line2);
+         end
+         else begin
+            Memo3.Lines.Add('Processing error tile: ' + TileName);
+         end;
       end;
 
 var
    i,j : integer;
-begin
+begin {TDemixFilterForm.SSIMprep}
    if (AllTiles = Nil) or (AllTiles.Count = 0) then begin
       exit;
    end;
-   {$If Defined(RecordDEMIX) or Defined(RecordSSIMprep)} WriteLineToDebugFile('TDemixFilterForm.BitBtn30Click in'); {$EndIf}
+   {$If Defined(RecordDEMIX) or Defined(RecordSSIMprep)} WriteLineToDebugFile('SSIMprep in'); {$EndIf}
    try
-      GetDEMIXpaths;
+      //GetDEMIXpaths;
       SaveBackupDefaults;
       MDDef.MultShadeReliefMode := mhsEightFixed;
       if ValidDEM(RefDEMsHalfSec[1]) then begin
@@ -978,41 +1120,65 @@ begin
       end
       else UsingRefDEMs := RefDEMs;
 
-      //ComboBox1.Items should have all the full tiles in the current area
-      //you must delete any entry for this to work
       OpenMap := false;
       OutPath := 'c:\temp\ssim\' + AllTiles[0] + '\';
       if (not PathIsValid(OutPath)) or AnswerIsYes(OutPath + 'exists; redo this area') then begin
+         CurrentOperation.Text := 'Make geomorph grids';
          MakeAreaGeomorphGrids;
-         for i := 0 to pred(AllTiles.Count) do begin
-            SaveGridsForOneTile(AllTiles[i]);
-            if (GridCorrelations <> Nil) then begin
-               GetGridCorrelations(AllTiles[i],'ELEV',TestDEMs,UsingRefDEMs);
+         if (GridCorrelations <> Nil) then begin
+            CurrentOperation.Text := 'Grid correlations';
+            for i := 0 to pred(AllTiles.Count) do begin
+               TileProgress.Text := IntToStr(succ(i)) + '/' + IntToStr(AllTiles.Count) + '  ' + AllTiles[i];
+               if MDDef.SSIM_elev  then GetGridCorrelations(AllTiles[i],'ELEV',TestDEMs,UsingRefDEMs);
                if MDDef.SSIM_slope then GetGridCorrelations(AllTiles[i],'SLOPE',SlopeMap,RefSlopeMap);
-               if MDDef.SSIM_ruff then GetGridCorrelations(AllTiles[i],'RUFF',RuffMap,RefRuffMap);
-               if MDDef.SSIM_rri then GetGridCorrelations(AllTiles[i],'RRI',RRImap,RefRRImap);
-               if MDDef.SSIM_hill then GetGridCorrelations(AllTiles[i],'HILL',TestHillshade,RefHillshade);
+               if MDDef.SSIM_ruff  then GetGridCorrelations(AllTiles[i],'RUFF',TestRuffMap,RefRuffMap);
+               if MDDef.SSIM_rri   then GetGridCorrelations(AllTiles[i],'RRI',TestRRI,RefRRI);
+               if MDDef.SSIM_hill  then GetGridCorrelations(AllTiles[i],'HILL',TestHillshade,RefHillshade);
+               if MDDef.SSIM_tpi   then GetGridCorrelations(AllTiles[i],'TPI',TestTPI,RefTPI);
             end;
          end;
+         TileProgress.Text := '';
+         CurrentOperation.Text := 'Normalize grids';
+         if MDDef.SSIM_elev then NormalizeGrids(TestDEMS,UsingRefDEMs,'Elev');
+         if MDDef.SSIM_hill then NormalizeGrids(TestHillshade,RefHillshade,'Hill');
+         if MDDef.SSIM_rri then NormalizeGrids(TestRRI,RefRRI,'RRI');
+         if MDDef.SSIM_slope then NormalizeGrids(SlopeMap,RefSlopeMap,'Slope');
+         if MDDef.SSIM_ruff then NormalizeGrids(TestRuffMap,RefRuffMap,'Ruff');
+         if MDDef.SSIM_tpi then NormalizeGrids(TestTPI,RefTPI,'TPI');
+         {$IfDef RecordSSIMprepFull} WriteLineToDebugFile('After Normalize elev ' + '  Refs=' + IntToStr(DEMsinIndex(UsingRefDEMs)) + '  Test=' + IntToStr(DEMsinIndex(TestDEMS))); {$EndIf}
+         {$IfDef RecordSSIMprepFull} WriteLineToDebugFile('After Normalize RRI  ' + '  Refs=' + IntToStr(DEMsinIndex(RefRRIMap)) + '  Test=' + IntToStr(DEMsinIndex(RRIMap))); {$EndIf}
+
+         CurrentOperation.Text := 'Save grids';
+         for i := 0 to pred(AllTiles.Count) do begin
+            TileProgress.Text := IntToStr(succ(i)) + '/' + IntToStr(AllTiles.Count) + '  ' + AllTiles[i];
+            SaveGridsForOneTile(AllTiles[i]);
+         end;
+
+         CurrentOperation.Text := 'Close tile geomorph grids';
          for j := 1 to MaxDemixDEM do begin
             CloseSingleDEM(SlopeMap[j]);
-            CloseSingleDEM(RuffMap[j]);
-            CloseSingleDEM(RRImap[j]);
+            CloseSingleDEM(TestRuffMap[j]);
+            CloseSingleDEM(TestRRI[j]);
+            CloseSingleDEM(TestTPI[j]);
             CloseSingleDEM(RefSlopeMap[j]);
             CloseSingleDEM(RefRuffMap[j]);
-            CloseSingleDEM(RefRRImap[j]);
+            CloseSingleDEM(RefRRI[j]);
             CloseSingleDEM(TestHillshade[j]);
             CloseSingleDEM(RefHillshade[j]);
+            CloseSingleDEM(RefTPI[j]);
          end;
       end;
+      CurrentOperation.Text := 'Clean memory for area';
       FreeAndNil(AllTiles);
       BitBtn8Click(Nil);
+      CurrentOperation.Text := '';
    finally
       RestoreBackupDefaults;
-      EndDEMIXProcessing;
+      TileProgress.Text := '';
+      //EndDEMIXProcessing;
    end;
-   {$If Defined(RecordDEMIX) or Defined(RecordSSIMprep)} WriteLineToDebugFile('TDemixFilterForm.BitBtn30Click out'); {$EndIf}
-end;
+   {$If Defined(RecordDEMIX) or Defined(RecordSSIMprep)} WriteLineToDebugFile('SSIMprep out'); {$EndIf}
+end {TDemixFilterForm.SSIMprep};
 
 
 procedure TDemixFilterForm.BitBtn3Click(Sender: TObject);
@@ -1049,35 +1215,50 @@ var
          for i := 1 to MaxDemixDEM do begin
             if ValidDEM(RefDEMs[i]) then begin
                if not StrUtils.AnsiContainsText(DEMGlb[RefDEMs[i]].AreaName,'_dsm') then begin //currently only doing for DTMs
-                  if StrUtils.AnsiContainsText(DEMGlb[RefDEMs[i]].AreaName,'_ref') and StrUtils.AnsiContainsText(DEMGlb[RefDEMs[i]].AreaName,'_point') then begin
+                  if StrUtils.AnsiContainsText(DEMGlb[RefDEMs[i]].AreaName,'1sec') and StrUtils.AnsiContainsText(DEMGlb[RefDEMs[i]].AreaName,'_point') then begin
                      AllTiles := DEMGlb[RefDEMs[i]].SelectionMap.DEMIXtilesOnMap(TileFill);
                      {$If Defined(RecordSSIMprep)} WriteLineToDebugFile('Tiles in dtm_ref=' + IntToStr(AllTiles.Count)); {$EndIf}
                   end;
                end;
             end;
          end;
-         SSIMprep(AllTiles,Correlations);
+         if (AllTiles = nil) then Memo8.Lines.Add('Incorrect ref DEMs for ' + ComboBox4.Text)
+         else SSIMprep(AllTiles,Correlations);
+          {$If Defined(RecordSSIMprepFull)} Correlations.SaveToFile('c:\temp\ssim\' + ComboBox4.Text + '.csv'); {$EndIf}
          BitBtn8Click(Sender);
       end;
 
 begin
-   Correlations := tStringList.Create;
-   if (Sender = Nil) then begin
-      TileFill := Nil;
-      ProcessOneArea;
-   end
-   else begin
-      TileFill := tStringList.Create;
-      TileFill.Add('DEMIX_TILE,PC_FULL');
-      for j := 0 to pred(ComboBox4.Items.Count) do begin
-         ComboBox4.Text := ComboBox4.Items[j];
+   try
+      Correlations := tStringList.Create;
+      HeavyDutyProcessing := true;
+      PageControl1.ActivePage := TabSheet4;
+      Label3.Caption := 'Processing start: ' + TimeToStr(now);
+      if (Sender = Nil) then begin
+         TileFill := Nil;
+         AreaProgress.Text := ComboBox4.Text;
          ProcessOneArea;
+      end
+      else begin
+         TileFill := tStringList.Create;
+         TileFill.Add('DEMIX_TILE,PC_FULL');
+         for j := 0 to pred(ComboBox4.Items.Count) do begin
+            ComboBox4.Text := ComboBox4.Items[j];
+            AreaProgress.Text := IntToStr(succ(j)) + '/' + IntToStr(ComboBox4.Items.Count) + '  ' + ComboBox4.Text;
+            ProcessOneArea;
+         end;
+         fName := NextFileNumber('c:\temp\ssim\','demix_tile_fill_','.dbf');
+         StringList2CSVtoDB(TileFill,fName);
       end;
-      fName := NextFileNumber('c:\temp\ssim\','demix_tile_fill_','.dbf');
-      StringList2CSVtoDB(TileFill,fName);
+      fName := NextFileNumber('c:\temp\ssim\','r2_grid_correlations_','.dbf');
+      StringList2CSVtoDB(Correlations,fName);
+   finally
+      HeavyDutyProcessing := false;
+      PageControl1.ActivePage := TabSheet1;
+      AreaProgress.Text := '';
+      TileProgress.Text := '';
+      CurrentOperation.Text := '';
    end;
-   fName := NextFileNumber('c:\temp\ssim\','r2_grid_correlations_','.dbf');
-   StringList2CSVtoDB(Correlations,fName);
 end;
 
 
@@ -1095,7 +1276,9 @@ begin
    end;
 end;
 
+
 procedure TDemixFilterForm.BitBtn6Click(Sender: TObject);
+{$IfDef DEMIX_DB1}
 var
    Filter : shortString;
    i,j : integer;
@@ -1121,6 +1304,9 @@ begin
             StringGrid1.Cells[i,j] := '';
       end;
    end;
+{$Else}
+begin
+{$EndIf}
 end;
 
 
@@ -1136,6 +1322,7 @@ begin
    ZeroDEMs;
    wmdem.CloseAlldataandwindows1Click(nil);
    CleanUpTempDirectory;
+   BitBtn34.Enabled := true;
 end;
 
 procedure TDemixFilterForm.BitBtn9Click(Sender: TObject);
@@ -1183,7 +1370,7 @@ end;
 
 procedure TDemixFilterForm.CheckBox16Click(Sender: TObject);
 begin
-   MDDef.DEMIX_open_ref_DEM := CheckBox16.Checked;
+   MDDef.DEMIX_open_ref_DSM := CheckBox16.Checked;
 end;
 
 procedure TDemixFilterForm.CheckBox2Click(Sender: TObject);
@@ -1294,7 +1481,7 @@ begin
    CheckBox13.Checked := MDDef.SSIM_slope;
    CheckBox14.Checked := MDDef.SSIM_ruff;
    CheckBox15.Checked := MDDef.SSIM_rri;
-   CheckBox16.Checked := MDDef.DEMIX_open_ref_DEM;
+   CheckBox16.Checked := MDDef.DEMIX_open_ref_DSM;
    Hillshade.Checked := MDDef.SSIM_hill;
 
    threedembestrgm_checkbox.Checked := MDDef.MakeRGB_Best_Map;
@@ -1307,7 +1494,8 @@ begin
       CandidateDEMsUsing := tStringList.Create;
       TileParameters := tStringList.Create;
    end;
-
+   ZeroMapIndexes;
+   {$IfDef DEMIX_DB1} BitBtn6.Visible := false;  {$EndIf}
    PageControl1.ActivePage := TabSheet1;
 end;
 
@@ -1369,7 +1557,7 @@ begin
    UncheckAllLoadCheckboxes;
    LoadOneSecRefCheckBox.Checked := true;
    CheckBox3.Checked := true;
-   LoadDEMsForCurrentArea(AreaName,false);
+   LoadDEMsForCurrentArea(AreaName,false,false);
    DEMglb[RefDEMs[1]].FindLocationOfMaximum(DEMglb[RefDEMs[1]].FullDEMGridLimits,xloc,yloc,LocMax);
    DEMglb[RefDEMs[1]].DEMGridToLatLongDegree(xloc,yloc,lat,long);
    DrawProfilesThroughPeak(RefDEMs[1],Lat,Long);
@@ -1463,7 +1651,7 @@ begin
    UncheckAllLoadCheckboxes;
    CheckBox5.Checked := true;
    CheckBox6.Checked := true;
-   LoadDEMsForCurrentArea(AreaName,true);
+   LoadDEMsForCurrentArea(AreaName,true,true);
    {$IfDef RecordDEMIX} WriteLineToDebugFile('AreaName: ' + AreaName); {$EndIf}
 
    COPDEM := 0;
@@ -1621,7 +1809,7 @@ procedure TDemixFilterForm.BitBtn18Click(Sender: TObject);
 var
    fName : PathStr;
 begin
-   fName := DEMIXSettingsDir;
+   fName := DEMIXSettingsDir + 'tile*.txt';
    if GetExistingFileName('DEMIX tiles','*.txt',fName) then begin
       ComboBox1.Items.LoadFromFile(fName);
       ComboBox1.ItemIndex := 0;
@@ -1713,22 +1901,28 @@ var
    AllTiles : tStringList;
    i,j : integer;
 begin
-   LoadDEMsForCurrentArea(AreaName,true);
+   LoadDEMsForCurrentArea(AreaName,true,false);
    ComboBox1.Items.Clear;
+   AllTiles := nil;
    for i := 1 to MaxDemixDEM do begin
       if ValidDEM(RefDEMs[i]) then begin
          AllTiles := DEMGlb[RefDEMs[i]].SelectionMap.DEMIXtilesOnMap;
       end;
    end;
-   for i := 0 to pred(AllTiles.Count) do ComboBox1.Items.Add(AllTiles.Strings[i]);
-   ComboBox1.Text := AllTiles.Strings[0];
-   AllTiles.Destroy;
+   if (AllTiles <> Nil) then begin
+      for i := 0 to pred(AllTiles.Count) do ComboBox1.Items.Add(AllTiles.Strings[i]);
+      ComboBox1.Text := AllTiles.Strings[0];
+      AllTiles.Destroy;
+   end;
+   BitBtn34.Enabled := false;
+   //LoadCurrentAreaBitBtn5.Enabled := false;
 end;
 
 
-procedure TDemixFilterForm.LoadDEMsForCurrentArea(var AreaName: ShortString;  LoadMaps: boolean);
+procedure TDemixFilterForm.LoadDEMsForCurrentArea(var AreaName: ShortString;  LoadRefMaps,LoadTestDEMs : boolean);
 var
    DEMs : integer;
+   LoadResults : shortstring;
 
       procedure LoadFromPath(var Which : tDEMIXindexes; aPath : PathStr; Ext : ANSIstring; LoadMaps : boolean; Limit : shortstring; What : shortstring);
       var
@@ -1747,10 +1941,10 @@ var
                end
                else if (Limit = '') or StrUtils.AnsiContainsText(UpperCase(fname),UpperCase(Limit)) then begin
                   if (DEMs = MaxDemixDEM) then begin
-                     MessageToContinue('Too many DEMs in ' + aPath);
+                     Memo8.Lines.Add('Too many DEMs in ' + aPath);
                   end
                   else begin
-                     if StrUtils.AnsiContainsText(UpperCase(fname),UpperCase('DSM')) and (not MDDef.DEMIX_open_ref_DEM) then begin
+                     if StrUtils.AnsiContainsText(UpperCase(fname),UpperCase('DSM')) and (not MDDef.DEMIX_open_ref_DSM) then begin
                         {$If Defined(RecordDEMIXLoad)} writeLineToDebugFile('Not opening DSM,  ' + fName); {$EndIf}
                      end
                      else begin
@@ -1763,33 +1957,36 @@ var
             end;
          end;
          FilesWanted.Free;
-         {$IfDef RecordDEMIX} WriteLineToDebugFile('Loaded ' + What + '=' + IntToStr(DEMs)); {$EndIf}
+         LoadResults := LoadResults + What + '=' + IntToStr(DEMs) + '  ';
+         {$IfDef RecordDEMIXLoad} WriteLineToDebugFile('Loaded ' + What + '=' + IntToStr(DEMs)); {$EndIf}
       end;
 
 begin
    AreaName := ComboBox4.Text;
    MDDef.DEMIX_default_area := AreaName;
-   {$IfDef RecordDEMIX} WriteLineToDebugFile('TDemixFilterForm.LoadDEMsForArea in ' + AreaName); {$EndIf}
+   CurrentOperation.Text := 'Load DEMs for ' + AreaName;
+   {$IfDef RecordDEMIXLoad} WriteLineToDebugFile('TDemixFilterForm.LoadDEMsForArea in ' + AreaName); {$EndIf}
    ZeroDEMs;
-
-   if CheckBox1.Checked then LoadFromPath(MergeDEMs,DEMIX_Ref_Merge,'*.dem',LoadMaps,'','Merge');
-   if LoadOneSecRefCheckBox.Checked then LoadFromPath(RefDEMs,DEMIX_Ref_1sec,'*.tif',LoadMaps,'','Ref');
+   LoadResults := '';
+   if CheckBox1.Checked then LoadFromPath(MergeDEMs,DEMIX_Ref_Merge,'*.dem',LoadRefMaps,'','Merge');
+   if LoadOneSecRefCheckBox.Checked then LoadFromPath(RefDEMs,DEMIX_Ref_1sec,'*.tif',LoadRefMaps,'','Ref');
    if CheckBox3.Checked then begin
-      LoadFromPath(TestDEMs,DEMIX_test_dems,'*.dem',LoadMaps,'','Test');
-      if DEMs=0 then begin
-         LoadDEMIXCandidateDEMs(AreaName,RefDEMs[1],LoadMaps);
+      LoadFromPath(TestDEMs,DEMIX_test_dems,'*.dem',LoadTestDEMs,'','Test');
+      if (DEMs <> 6) then begin
+         LoadDEMIXCandidateDEMs(AreaName,RefDEMs[1],LoadTestDEMs);
+         Memo8.Lines.Add('Did not find 6 test DEMs for  ' + AreaName);
       end;
    end;
 
    //if CheckBox4.Checked then LoadFromPath(RefDEMsv1,DEMIX_Ref_1sec_v1,'*.tif',LoadMaps,'','Ref_v1');
-   if CheckBox5.Checked then LoadFromPath(RefDEMsHalfSec,DEMIX_Ref_Half_sec,'*.tif',LoadMaps,'','Ref_half_sec');
+   if CheckBox5.Checked then LoadFromPath(RefDEMsHalfSec,DEMIX_Ref_Half_sec,'*.tif',LoadRefMaps,'','Ref_half_sec');
    if CheckBox6.Checked and (not CheckBox3.Checked) then begin
       DEMs := 0;
-      LoadFromPath(TestDEMs,DEMIX_test_dems,'*.dem',LoadMaps,'COP','COP & ALOS Test');
-      LoadFromPath(TestDEMs,DEMIX_test_dems,'*.dem',LoadMaps,'ALOS','COP & ALOS Test');
-      LoadFromPath(TestDEMs,DEMIX_test_dems,'*.dem',LoadMaps,'FABDEM','COP & ALOS Test');
+      LoadFromPath(TestDEMs,DEMIX_test_dems,'*.dem',LoadTestDEMs,'COP','COP & ALOS Test');
+      LoadFromPath(TestDEMs,DEMIX_test_dems,'*.dem',LoadTestDEMs,'ALOS','COP & ALOS Test');
+      LoadFromPath(TestDEMs,DEMIX_test_dems,'*.dem',LoadTestDEMs,'FABDEM','COP & ALOS Test');
    end;
-   {$IfDef RecordDEMIX} WriteLineToDebugFile('TDemixFilterForm.LoadDEMsForArea out'); {$EndIf}
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('TDemixFilterForm.LoadDEMsForArea out ' + AreaName + '  ' + LoadResults); {$EndIf}
 end;
 
 

@@ -13,7 +13,7 @@ var
    x,y : integer;
    Lat,Long: float64;
    BMPMem : tBMPMemory;
-   Hue,Sat,Intens,   xdem,ydem  : float32;
+   Hue,Sat,Intens,xdem,ydem : float32;
 begin
    {$IfDef RecordDrawLayers} WriteLineToDebugFile('TMapDraw.TerrainShadows in'); {$EndIf}
    if (TerrainShadowsDEM = 0) then TerrainShadowsDEM := DEMonMap;
@@ -31,7 +31,7 @@ begin
              ScreenToDEMGrid(X,Y,XDEM,YDEM);
           end;
           HSIfromRGBTrip(BMPMem.GetPixelColor(x,y),Hue,Sat,Intens);
-          if MDDef.ShadeOpts in [soReflectance] then Intens := DEMGlb[TerrainShadowsDEM].ReflectanceValueFloat(xdem,Ydem)
+          if MDDef.ShadeOpts in [soReflectance] then Intens := DEMGlb[TerrainShadowsDEM].InterpolateReflectanceValue(xdem,Ydem)
           else begin
              DEMGlb[TerrainShadowsDEM].GetElevMeters(xdem,Ydem, Intens);
              Intens := DEMGlb[TerrainShadowsDEM].ScaleZtoByte(Intens);

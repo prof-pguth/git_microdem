@@ -69,7 +69,7 @@ uses
     DEMDefs;
 
 const
-   DEMIXSkipFilesAlreadyDone = false;
+   DEMIXSkipFilesAlreadyDone = true;
    FilterOutSeaLevel = false;
 
 const
@@ -89,8 +89,8 @@ const
 const
    NumTileCharacters = 7;
    TileCharacters : array[1..NumTileCharacters] of shortstring = ('AVG_ELEV','AVG_ROUGH','AVG_SLOPE','BARREN_PC','FOREST_PC','RELIEF','URBAN_PC');
-   NCrits = 9;
-   Crits : array[1..NCrits] of shortstring = ('ELEV_SSIM','RRI_SSIM','SLOPE_SSIM','HILL_SSIM','RUFF_SSIM','ELEV_R2','SLOPE_R2','RUFF_R2','RRI_R2');
+   NCrits = 12;
+   Crits : array[1..NCrits] of shortstring = ('ELEV_SSIM','RRI_SSIM','SLOPE_SSIM','HILL_SSIM','RUFF_SSIM','TPI_SSIM','ELEV_R2','SLOPE_R2','HILL_R2','RUFF_R2','TPI_R2','RRI_R2');
 const
    RefDEMType : array[1..2] of shortstring = ('DSM','DTM');
 
@@ -115,6 +115,7 @@ var
    function DEMIX_AreasWanted(AreaName : shortstring = '') : tStringList;
    function ShortTestAreaName(TestAreaName : shortstring) : shortstring;
 
+   function GetAreaNameForDEMIXTile(DB : integer; DemixTile : shortstring) : shortstring;
 
    procedure FilterInSignedCriteria(DBonTable : integer);
    function CreateFilterOutSignedCriteria(DBonTable : integer) : shortstring;
@@ -153,6 +154,27 @@ var
    procedure DEMIXCreateHalfSecRefDEMs(AreaName : shortstring = '');
    procedure DEMIX_merge_Visioterra_source(AreaName : shortstring = '');
 
+//DEMIX graphs
+   procedure DEMIX_evaluations_graph(DBonTable : integer);
+   procedure SlopeRoughnessWhiskerPlots(DBonTable : integer);
+   function DEMIX_SSIM_R2_clusters_graph(DBonTable : integer) : tThisBaseGraph;
+   procedure DEMIX_SSIM_R2_clusters_diversity_graphs(DBonTable : integer; ColorByDEM : boolean = true);
+   function DEMIX_SSIM_R2_cluster_sensitivity_graph(DBonTable : integer) : tThisBaseGraph;
+   function DEMIX_SSIM_R2_single_tile_graph(DBonTable : integer; tile : shortstring) :tThisBaseGraph;
+
+
+//DEMIX SSIM/R2 database operations
+   procedure DEMIX_SSIM_R2_transpose_kmeans_new_db(DBonTable : integer);
+   procedure SwitchSSIMorR2Scoring(DBonTable : integer);
+   procedure DEMIX_clusters_per_tile(DBonTable : integer);
+
+
+procedure AddTileCharacteristics(DBonTable : integer);
+procedure EvaluationRangeForCriterion(DBonTable : integer);
+
+procedure LoadThisDEMIXTile(AreaName,TileName : shortstring);
+
+
    procedure ModeOfDifferenceDistributions;
 
 //DEMIX wine contest procedures based on database
@@ -166,14 +188,6 @@ var
 
    procedure MultipleBestByParametersSortByValue(DBonTable,Option : integer; var DEMsTypeUsing,TilesUsing,LandTypesUsing,CandidateDEMsUsing,CriteriaUsing,TileParameters : tStringList; ByPointFilters : boolean = false);
 
-//DEMIX graphs
-   procedure DEMIX_evaluations_graph(DBonTable : integer);
-   function DEMIX_SSIM_R2_tile_graph(DBonTable : integer) :tThisBaseGraph;
-   function DEMIX_SSIM_R2_clusters_graph(DBonTable : integer) :tThisBaseGraph;
-   procedure DEMIX_SSIM_R2_clusters_diversity_graphs(DBonTable : integer);
-   function DEMIX_SSIM_R2_cluster_sensitivity_graph(DBonTable : integer) : tThisBaseGraph;
-
-
 
 //DEMIX wine contest procedures moved from DEMdatabase 9/14/2023
    procedure RankDEMS(DBonTable : integer; UseAll : boolean = false);
@@ -183,14 +197,17 @@ var
    procedure DEMIXtile_inventory(DBonTable : integer);
    procedure DEMIXMeanMedianHistograms(db : integer);
 
-procedure EvaluationRangeForCriterion(DBonTable : integer);
-procedure SwitchSSIMorR2Scoring(DBonTable : integer);
-procedure AddTileCharacteristics(DBonTable : integer);
-
-procedure LoadThisDEMIXTile(AreaName,TileName : shortstring);
 
 procedure DEMIX_COP_clusters_tile_stats(DBonTable : integer);
-procedure DEMIX_clusters_per_tile(DBonTable : integer);
+
+
+
+const
+  opByCluster = 1;
+  opByDEM = 2;
+
+
+procedure MakeDBForParamStats(Option,DBonTable : integer);
 
 
    {$IfDef Old3DEP}
@@ -227,28 +244,39 @@ type
 function DEMsinIndex(Index : tDEMIXindexes) : integer;
 
 var
-   TestDEM : tDEMIXindexes;
+   RefDEMs,TestDEMs,
+   UsingRefDEMs,
+   RefSlopeMap,RefRuffMap,RefRRI,RefTPI,
+   RefHillshade,TestHillshade,TestTPI,
+   SlopeMap,TestRuffMap,TestRRI : tDEMIXindexes;
+
+   //TestDEM : tDEMIXindexes;
+
    TestSeries : array[1..MaxDEMIXDEM] of shortstring;
-   DEMIX_DB_v1, DEMIX_DB_v2,
+   DEMIX_DB_v2,
    HalfSecRefDTM,HalfSecRefDSM,HalfSecDTM,HalfSecALOS,HalfSecCOP,
    DEMIXRefDEM,RefDTMpoint,RefDTMarea,RefDSMpoint,RefDSMarea, COPRefDTM, COPRefDSM : integer;
 
    DEMIX_Base_DB_Path,DEMIX_profile_test_dir,
    DEMIX_Ref_Source,DEMIX_Ref_Merge,DEMIX_Ref_1sec,DEMIX_Ref_1sec_v1,
    DEMIX_test_dems,DEMIX_Ref_Half_sec,
-   DEMIX_GIS_dbName_v2,DEMIX_GIS_dbName_v1,
+   DEMIX_GIS_dbName_v3,
    DEMIX_distrib_graph_dir,DEMIX_diff_maps_dir,DEMIX_3DEP_Dir,
 
    GeodeticFName, IceSatFName, LandCoverFName,
    LocalDatumAddFName,LocalDatumSubFName,RefDSMPointFName,RefDSMareaFName,RefDTMPointFName,RefDTMareaFName, COPRefDTMFName,COPRefDSMFName : PathStr;
 
+   {$IfDef DEMIX_DB1}
+      DEMIX_DB_v1 : integer;
+      DEMIX_GIS_dbName_v1 : PathStr;
+   {$EndIf}
 
 implementation
 
 uses
    Nevadia_Main,
    DEMstat,Make_grid,PetImage,PetImage_form,new_petmar_movie,DEMdatabase,PetDButils,Pick_several_dems,
-   Geotiff, BaseMap, GDAL_tools, DEMIX_filter, DEMstringgrid,
+   Geotiff, BaseMap, GDAL_tools, DEMIX_filter, DEMstringgrid,DEM_NLCD,
    DEMCoord,DEMMapf,DEMDef_routines,DEM_Manager,DEM_indexes,PetMath;
 
 var
@@ -257,27 +285,69 @@ var
    ElevDiffHists : boolean;
 
 
+function GetAreaNameForDEMIXTile(DB : integer; DemixTile : shortstring) : shortstring;
+begin
+   GISdb[DB].SaveFilterStatus;
+   GISdb[DB].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(DemixTile));
+   if GISdb[DB].MyData.FiltRecsInDB > 0 then Result := GISdb[DB].MyData.GetFieldByNameAsString('AREA')
+   else Result := '';
+   GISdb[DB].RestoreFilterStatus;
+end;
+
+
+procedure GetAreaDEMNames(TestAreaName : shortstring);
+begin
+   RefDTMareaFName  := '';
+   //COPRefDTMFName := '';       //not needed
+   //COPRefDSMFName := '';       //not needed
+
+   //unfortunately we have not been totally consistent with the file naming
+   RefDTMPointFName := DEMIX_Ref_1sec + TestAreaName + '_ref_1sec_point.tif';
+   if not FileExists(RefDTMPointFName) then RefDTMPointFName := DEMIX_Ref_1sec + TestAreaName + '_dtm_ref_1sec_point.tif';
+   if not FileExists(RefDTMPointFName) then RefDTMPointFName := DEMIX_Ref_1sec + TestAreaName + '_dtm_1sec_point.tif';
+   if not FileExists(RefDTMPointFName) then RefDTMPointFName := DEMIX_Ref_1sec + TestAreaName + '_1sec_point.tif';
+
+   if FileExists(RefDTMPointFName) then begin
+      RefDTMareaFName := StringReplace(RefDTMPointFName, 'point', 'area',[rfIgnoreCase]);
+      RefDSMpointFName := StringReplace(RefDTMpointFName, 'dtm', 'dsm',[rfIgnoreCase]);
+      RefDSMareaFName := StringReplace(RefDTMareaFName, 'dtm', 'dsm',[rfIgnoreCase]);
+      if not FileExists(RefDSMPointFName) then RefDSMPointFName := '';
+      if not FileExists(RefDSMareaFName) then RefDSMareaFName := '';
+      COPRefDTMFName := StringReplace(RefDSMPointFName, '1sec', '1.5x1sec',[rfIgnoreCase]);
+      COPRefDSMFName := StringReplace(COPRefDTMFName, 'dtm', 'dsm',[rfIgnoreCase]);
+   end
+   else begin
+      RefDTMPointFName := '';
+   end;
+end;
+
+
+
 procedure LoadThisDEMIXTile(AreaName,TileName : shortstring);
 var
    RefDEM,i : integer;
 begin
    GetDEMIXpaths(false);
+   GetAreaDEMNames(AreaName);
    LoadDEMIXReferenceDEMs(RefDEM);
+   UsingRefDEMs := RefDEMs;
    if LoadDEMIXCandidateDEMs(AreaName,RefDEM,true) then begin
    end;
-(*
+
    for I := 1 to MaxDEMIXDEM do begin
-      if ValidDEM(TestDEM[i]) then DEMGlb[TestDEM[i]].SelectionMap.SubsetAndZoomMapFromGeographicBounds(DEMIXtileBoundingBox(TileName));
+      if ValidDEM(TestDEMs[i]) then DEMGlb[TestDEMs[i]].SelectionMap.SubsetAndZoomMapFromGeographicBounds(DEMIXtileBoundingBox(TileName));
    end;
 
    for I := 1 to MaxDEMIXDEM do begin
       if ValidDEM(RefDEMs[i]) then DEMGlb[RefDEMs[i]].SelectionMap.SubsetAndZoomMapFromGeographicBounds(DEMIXtileBoundingBox(TileName));
    end;
-*)
+(*
+
       for i := pred(WMDEM.MDIChildCount) downto 0 do begin
          if (WMDEM.MDIChildren[i] is tMapForm) then (WMDEM.MDIChildren[i] as TMapForm).SubsetAndZoomMapFromGeographicBounds(DEMIXtileBoundingBox(TileName));
       end;
    //end;
+*)
 end;
 
 
@@ -605,18 +675,19 @@ begin
    DEMIXresultsDir := DEMIX_Base_DB_Path + 'wine_contest_v2_tile_stats\';
    DEMIX_test_dems := DEMIX_Base_DB_Path + 'wine_contest_v2_test_dems\';
    DEMIXSettingsDir := DEMIX_Base_DB_Path + 'wine_contest_settings\';
-   DEMIX_data_base  := DEMIX_Base_DB_Path + 'wine_contest_database\';
    DEMIX_diff_dist  := DEMIX_Base_DB_Path + 'wine_contest_v2_diff_dist\';
    DEMIX_diff_maps_dir  := DEMIX_Base_DB_Path + 'wine_contest_difference_maps\';
-   DEMIXSettingsDir := DEMIX_Base_DB_Path + 'wine_contest_settings\';
+   DEMIXSettingsDir := ProgramRootDir + 'demix\';
    DEMIX_area_lc100  := DEMIX_Base_DB_Path + 'wine_contest_v2_lc100\';
    DEMIX_profile_test_dir := DEMIX_Base_DB_Path + 'wine_contest_v2_topo_profiles\';
    DEMIX_distrib_graph_dir := DEMIX_Base_DB_Path + 'wine_contest_v2_difference_distrib_graphs\';
    DEMIX_3DEP_Dir := DEMIX_Base_DB_Path + 'wine_contest_v2_3dep\';
 
-   DEMIX_area_dbName_v2 := DEMIX_Base_DB_Path + 'wine_contest_v2_ref_source\demix_area_vert_datums.dbf';
-   DEMIX_GIS_dbName_v2 := DEMIX_Base_DB_Path + 'wine_contest_database\demix_database_v2.dbf';
-   DEMIX_GIS_dbName_v1 := DEMIX_Base_DB_Path + 'wine_contest_database\demix_database_v1.dbf';
+   //DEMIX_area_dbName_v2 := DEMIX_Base_DB_Path + 'wine_contest_v2_ref_source\demix_area_vert_datums.dbf';
+   DEMIX_area_dbName_v2 := ProgramRootDir + 'demix\demix_test_areas_v3.dbf';
+
+   DEMIX_GIS_dbName_v3 := DEMIX_Base_DB_Path + 'wine_contest_database\demix_gis_db_v2.5.dbf';
+   //DEMIX_GIS_dbName_v1 := DEMIX_Base_DB_Path + 'wine_contest_database\demix_database_v1.dbf';
    {$If Defined(RecordDEMIXStart)} WriteLineToDebugFile('GetDEMIXpaths point 4'); {$EndIf}
 
    Geoid2008FName := 'g:\geoid\egm2008-1-vdatum.tif';
@@ -750,13 +821,13 @@ begin
    GetDEMIXPaths;
    Table := tMyData.Create(DEMIX_area_dbName_v2);
    GISdb[db].AddFieldToDatabase(ftString,'COUNTRY',16);
-   StartProgress('Add country');
    i := 0;
    while not Table.eof do begin
-      UpdateProgressBar(i/Table.FiltRecsInDB);
+      inc(i);
       GISdb[db].EmpSource.Enabled := false;
       Country := Table.GetFieldByNameAsString('COUNTRY');
       Area := Table.GetFieldByNameAsString('AREA');
+      wmdem.SetPanelText(2, 'Area: ' + IntToStr(succ(i)) + '/' + IntToStr(Table.FiltRecsInDB) + ' ' + Area);
       if StrUtils.AnsiContainsText(UpperCase(Area),'_DSM') then begin
 
       end
@@ -768,6 +839,7 @@ begin
       Table.Next;
    end;
    Table.Destroy;
+   wmdem.SetPanelText(2,'');
    GISdb[db].ClearGISFilter;
    GISdb[db].ShowStatus;
 end;
@@ -861,22 +933,19 @@ begin
 end;
 
 
-
-
 procedure OpenDEMIXDatabaseForAnalysis;
 begin
    GetDEMIXpaths(false);
-   if not FileExists(DEMIX_GIS_dbName_v2) then Petmar.GetFileNameDefaultExt('DEMIX db version 2','*.dbf',DEMIX_GIS_dbName_v2);
-   if not FileExists(DEMIX_GIS_dbName_v1) then Petmar.GetFileNameDefaultExt('DEMIX db version 1','*.dbf',DEMIX_GIS_dbName_v1);
-   OpenNumberedGISDataBase(DEMIX_DB_v2,DEMIX_GIS_dbName_v2,false);
+   if not FileExists(DEMIX_GIS_dbName_v3) then Petmar.GetExistingFileName('DEMIX db version 3','*.dbf',DEMIX_GIS_dbName_v3);
+   {$IfDef DEMIX_DB1} if not FileExists(DEMIX_GIS_dbName_v1) then Petmar.GetExistingFileName('DEMIX db version 1','*.dbf',DEMIX_GIS_dbName_v1); {$EndIf}
+   OpenNumberedGISDataBase(DEMIX_DB_v2,DEMIX_GIS_dbName_v3,false);
    GISdb[DEMIX_DB_v2].LayerIsOn := false;
-   OpenNumberedGISDataBase(DEMIX_DB_v1,DEMIX_GIS_dbName_v1,false);
-   GISdb[DEMIX_DB_v1].LayerIsOn := false;
+   {$IfDef DEMIX_DB1}
+      OpenNumberedGISDataBase(DEMIX_DB_v1,DEMIX_GIS_dbName_v1,false);
+      GISdb[DEMIX_DB_v1].LayerIsOn := false;
+   {$EndIf}
    DoDEMIXFilter(DEMIX_DB_v2);
 end;
-
-
-
 
 
 function CriterionTieTolerance(Criterion : shortstring) : float32;
@@ -888,7 +957,6 @@ begin
    Result := TieToleranceTable.GetFieldByNameAsFloat('TOLERANCE');
    TieToleranceTable.Destroy;
 end;
-
 
 
 procedure DEMIXisCOPorALOSbetter(DBonTable : integer);
@@ -1211,19 +1279,19 @@ begin
    DSMLegendFiles := tStringList.Create;
 
    for I := 1 to MaxDEMIXDEM do begin
-      if ValidDEM(TestDEM[i]) then begin
+      if ValidDEM(TestDEMs[i]) then begin
          GetReferenceDEMsForTestDEM(TestSeries[i],UseDSM,UseDTM);
 
          if (ShortName = 'elvd') then begin
-            TestGrid := TestDEM[i];
+            TestGrid := TestDEMs[i];
             DTMGrid := UseDTM;
          end;
          if (ShortName = 'slpd') then begin
-            TestGrid := CreateSlopeMap(TestDEM[i]);
+            TestGrid := CreateSlopeMap(TestDEMs[i]);
             DTMGrid := CreateSlopeMap(UseDTM);
          end;
          if (ShortName = 'rufd') then begin
-            TestGrid := CreateRoughnessSlopeStandardDeviationMap(TestDEM[i],3);
+            TestGrid := CreateRoughnessSlopeStandardDeviationMap(TestDEMs[i],3);
             DTMGrid := CreateRoughnessSlopeStandardDeviationMap(UseDTM,3);
          end;
 
@@ -1284,7 +1352,8 @@ var
    {$IfDef RecordDEMIX} AllDEMs, {$EndIf}
    WantSeries,ShortName : shortstring;
    IndexSeriesTable : tMyData;
-   WantDEM,WantImage,Ser,i,NumPts,GeoidGrid : integer;
+   NumPts : int64;
+   WantDEM,WantImage,Ser,i,GeoidGrid : integer;
    fName,SaveName : Pathstr;
 
 
@@ -1334,7 +1403,7 @@ begin
    LoadDEMIXnames;
 
    for I := 1 to MaxDEMIXDEM do begin
-      TestDEM[i] := 0;
+      TestDEMs[i] := 0;
       TestSeries[i] := '';
    end;
 
@@ -1345,17 +1414,17 @@ begin
    Ser := 0;
    for I := 1 to NumDEMIXDEM do begin
       WantSeries := DEMIXDEMTypeName[i];
-      ShortName := DEMIXshort[i];
-      fName := DEMIX_test_dems + AreaName + '_' + shortname + '.dem';
+      //ShortName := DEMIXshort[i];
+      fName := DEMIX_test_dems + AreaName + '_' + WantSeries + '.dem';
       if FileExists(fname) then begin
          {$If Defined(RecordDEMIXLoad)} writeLineToDebugFile('Loaded test DEM= ' + fName  ); {$EndIf}
          inc(Ser);
-         TestDEM[Ser] := OpenNewDEM(fName);
-         TestSeries[Ser] := ShortName;
+         TestDEMs[Ser] := OpenNewDEM(fName);
+         TestSeries[Ser] := WantSeries;
+         //TestSeries[Ser] := ShortName;
       end
-      else if (WantSeries = 'EDTM') then begin
-         MessageToContinue('Need to extract EDTM DEMs');
-         exit;
+      else begin
+         {$If Defined(RecordDEMIX)} HighlightLineToDebugFile('Missing test DEM= ' + fName  ); {$EndIf}
       end;
    end;
 
@@ -1383,30 +1452,30 @@ begin
          if LoadMapLibraryBox(WantDEM,WantImage,true,DEMGlb[RefDEM].DEMBoundBoxGeo,WantSeries,false) and ValidDEM(WantDEM) then begin
             {$If Defined(RecordDEMIXLoad)} writeLineToDebugFile('LoadDEMIXCandidateDEMs done LoadMapLib; Open DEMs=, ' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
             inc(Ser);
-            TestDEM[Ser] := WantDEM;
+            TestDEMs[Ser] := WantDEM;
             TestSeries[Ser] := ShortName;
             {$IfDef RecordDEMIX}
                if not AllOfBoxInAnotherBox(DEMGlb[RefDEM].DEMBoundBoxGeo,DEMGlb[WantDEM].DEMBoundBoxGeo) then begin
                   AllDEMs := AllDEMs + TestSeries[Ser] + ' (partial  ' + sfBoundBoxToString(DEMGlb[RefDEM].DEMBoundBoxGeo) + ')  ';
                end;
             {$EndIf}
-            DEMGlb[TestDEM[Ser]].AreaName := TestSeries[Ser];
-            DEMGlb[TestDEM[Ser]].DEMFileName := NextFileNumber(MDTempDir, DEMGlb[TestDEM[Ser]].AreaName + '_', '.dem');
+            DEMGlb[TestDEMs[Ser]].AreaName := TestSeries[Ser];
+            DEMGlb[TestDEMs[Ser]].DEMFileName := NextFileNumber(MDTempDir, DEMGlb[TestDEMs[Ser]].AreaName + '_', '.dem');
 
             {$IfDef RecordDEMIXLoad} writeLineToDebugFile('Opened:' + WantSeries + '  Open DEMs=' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
-            if (DEMGlb[TestDEM[Ser]].DEMHeader.MinElev < 0.01) then DEMGlb[TestDEM[Ser]].MarkInRangeMissing(0,0,NumPts);
-            DEMGlb[TestDEM[Ser]].DEMHeader.VerticalCSTypeGeoKey := IndexSeriesTable.GetFieldByNameAsInteger('VERT_DATUM');
-            MoveFromEGM96toEGM2008(TestDEM[Ser]);
+            if (DEMGlb[TestDEMs[Ser]].DEMHeader.MinElev < 0.01) then DEMGlb[TestDEMs[Ser]].MarkInRangeMissing(0,0,NumPts);
+            DEMGlb[TestDEMs[Ser]].DEMHeader.VerticalCSTypeGeoKey := IndexSeriesTable.GetFieldByNameAsInteger('VERT_DATUM');
+            MoveFromEGM96toEGM2008(TestDEMs[Ser]);
             If OpenMaps or (AreaName <> '') then begin
-               CreateDEMSelectionMap(TestDEM[Ser],true,false,MDDef.DefDEMMap);
+               CreateDEMSelectionMap(TestDEMs[Ser],true,false,MDDef.DefDEMMap);
                if ValidDEM(RefDEM) then begin
-                  DEMGlb[TestDEM[Ser]].SelectionMap.ClipDEMtoregion(DEMGlb[RefDEM].DEMBoundBoxGeo);
+                  DEMGlb[TestDEMs[Ser]].SelectionMap.ClipDEMtoregion(DEMGlb[RefDEM].DEMBoundBoxGeo);
                   {$IfDef RecordDEMIXLoad} writeLineToDebugFile('Clipped:' + WantSeries + '  Open DEMs=' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
                end;
             end;
             if (AreaName <> '') then begin
                //fName := DEMIX_test_dems + AreaName + '_' + shortname + '.dem';
-               DEMGlb[TestDEM[Ser]].WriteNewFormatDEM(SaveName);
+               DEMGlb[TestDEMs[Ser]].WriteNewFormatDEM(SaveName);
             end;
             Result := true;
          end
@@ -1425,12 +1494,16 @@ end;
 
 
 function LoadDEMIXReferenceDEMs(var RefDEM : integer; OpenMaps : boolean = true) : boolean;
+var
+   NumRefDEMs : integer;
 
          procedure ReferenceFileOpen(var DEM : integer; fName : PathStr);
          begin
             if FileExists(fName) then begin
                DEM := OpenNewDEM(FName,OpenMaps);   //must load map for the DEMIX tile computation
                if ValidDEM(DEM) and (RefDEM = 0) then RefDEM := DEM;
+               inc(NumRefDEMs);
+               RefDEMs[NumRefDEMs] := DEM;
                {$If Defined(RecordDEMIXRefDEMopen)} writeLineToDebugFile('RefDEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
             end
             else DEM := 0;
@@ -1438,10 +1511,12 @@ function LoadDEMIXReferenceDEMs(var RefDEM : integer; OpenMaps : boolean = true)
 
 begin
    RefDEM := 0;
+   NumRefDEMs := 0;
+
    ReferenceFileOpen(RefDTMpoint,RefDTMpointFName);
    ReferenceFileOpen(RefDTMarea,RefDTMareaFName);
    ReferenceFileOpen(COPRefDTM,COPRefDTMFName);
-   if MDDef.DEMIX_open_ref_DEM then begin
+   if MDDef.DEMIX_open_ref_DSM then begin
       ReferenceFileOpen(RefDSMpoint,RefDSMpointFName);
       ReferenceFileOpen(RefDSMarea,RefDSMareaFName);
       ReferenceFileOpen(COPRefDSM,COPRefDSMFName);

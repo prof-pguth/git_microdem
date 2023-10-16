@@ -552,6 +552,10 @@ type
     SumatraPDFhelpcontents1: TMenuItem;
     Noaddedlegends1: TMenuItem;
     Noaddedlegends2: TMenuItem;
+    N36: TMenuItem;
+    N45: TMenuItem;
+    VerifySSIMfiles1: TMenuItem;
+    MergeSSIMandR2database1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -884,7 +888,7 @@ type
     procedure COPALOShighlowgeomorphometry1Click(Sender: TObject);
     procedure Metadata2Click(Sender: TObject);
     procedure OpenDEMIXridges1Click(Sender: TObject);
-    procedure LoadDEMIXareareferenceDEMs1Click(Sender: TObject);
+    //procedure LoadDEMIXareareferenceDEMs1Click(Sender: TObject);
     procedure Pickdatadirectory1Click(Sender: TObject);
     procedure N3OpenDEMs1Click(Sender: TObject);
     procedure OpenandmergeDEMsgridsverylarge1Click(Sender: TObject);
@@ -921,6 +925,9 @@ type
     procedure SumatraPDFhelpcontents1Click(Sender: TObject);
     procedure Noaddedlegends1Click(Sender: TObject);
     procedure Noaddedlegends2Click(Sender: TObject);
+    procedure N45Click(Sender: TObject);
+    procedure VerifySSIMfiles1Click(Sender: TObject);
+    procedure MergeSSIMandR2database1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1486,34 +1493,6 @@ begin
 end;
 
 
-procedure Twmdem.LoadDEMIXareareferenceDEMs1Click(Sender: TObject);
-//var
-   //fName : PathStr;
-begin
-(*
-   {$IfDef RecordDEMIX} WriteLineToDebugFile('Twmdem.LoadDEMIXareareferenceDEMs1Click in'); {$EndIf}
-   //SetDEMIXdirs;
-   fName := DEMIXrefDataDir;
-   if GetFileFromDirectory('DEMIX area database','*.dbf',fName) then begin
-      if LoadDEMIXareaDefinitions(fName) then begin
-         if LoadDEMIXReferenceDEMs(DEMIXRefDEM) then begin
-            {$IfDef RecordDEMIX} writeLineToDebugFile('Twmdem.LoadDEMIXareareferenceDEMs1Click success'); {$EndIf}
-         end
-         else begin
-            {$IfDef RecordDEMIX} writeLineToDebugFile('Twmdem.LoadDEMIXareareferenceDEMs1Click LoadDEMIXReferenceDEMs fail'); {$EndIf}
-         end;
-      end
-      else begin
-         {$IfDef RecordDEMIX} writeLineToDebugFile('Twmdem.LoadDEMIXareareferenceDEMs1Click LoadDEMIXareaDefinitions fail'); {$EndIf}
-      end;
-   end
-   else begin
-      {$IfDef RecordDEMIX} writeLineToDebugFile('Twmdem.LoadDEMIXareareferenceDEMs1Click GetFileFromDirectory fail'); {$EndIf}
-   end;
-   *)
-end;
-
-
 procedure Twmdem.Loadimage1Click(Sender: TObject);
 begin
    OpenImageEditor;
@@ -1528,7 +1507,6 @@ begin
    StopSplashing;
    fName := ChangeFileExt(Application.ExeName,'.chm');
    //if not FileExists(ChangeFileExt(Application.ExeName,'.chm')) then Updatehelpfile1Click(Sender);
-
    DisplayHTMLTopic('html\microdem.htm');
 end;
 
@@ -2863,6 +2841,26 @@ begin
    {$IfDef Old3DEP}
       SummarizeVDatumShifts;
    {$EndIf}
+end;
+
+procedure Twmdem.N45Click(Sender: TObject);
+var
+   FilesWanted : tStringList;
+   i,DEM : integer;
+   fName : PathStr;
+begin
+   FilesWanted := tStringList.Create;
+   FilesWanted.Add(LastDEMName);
+   if GetMultipleFiles('DEM to clip',DEMFilterMasks,FilesWanted ,MDDef.DefaultDEMFilter) then begin
+     {$If Defined(TimeLoadDEM))} WriteLineToDebugFile('Files picked ' + IntToStr(FilesWanted.Count)); {$EndIf}
+     for i := 0 to pred(FilesWanted.Count) do begin
+        SetPanelText(1,IntToStr(i) + '/' + IntToStr(FilesWanted.Count));
+        fName := FilesWanted.Strings[i];
+        LoadNewDEM(DEM,fName,true);
+        DEMGlb[DEM].SelectionMap.ClipDEMtoFullDEMIXTiles;
+        CloseSingleDEM(DEM);
+     end;
+   end;
 end;
 
 procedure Twmdem.N81Sfileviewer1Click(Sender: TObject);
@@ -4402,6 +4400,11 @@ begin
    DEMIX_merge_source;
 end;
 
+procedure Twmdem.MergeSSIMandR2database1Click(Sender: TObject);
+begin
+    //MergeSSIMandR2DB;
+end;
+
 procedure Twmdem.MergewavelengthheightDBFs1Click(Sender: TObject);
 {$IfDef ExComplexGeoStats}
 begin
@@ -5646,6 +5649,49 @@ begin
 {$EndIf}
 end;
 
+
+procedure Twmdem.VerifySSIMfiles1Click(Sender: TObject);
+const
+   NCrits = 6;
+   Crits : array[1..NCrits] of shortstring = ('ELEV_','RRI_','SLOPE_','HILL_','RUFF_','TRI_');
+   NDEMs = 8;
+   DEMs : array[1..NDEMs] of shortstring = ('COP','FABDEM','NASA','SRTM','ASTER','ALOS','dtm_ref_area','dtm_ref_point');
+var
+   Dirs,GoodTiles,BadTiles : tStringList;
+   i,j,k : Integer;
+   fName : PathStr;
+   Error,Tile : shortstring;
+begin
+   Dirs := tStringList.Create;
+   GoodTiles := tStringList.Create;
+   BadTiles := tStringList.Create;
+   if GetMultipleDirectories('SSIM files to verify',Dirs) then begin
+      StartProgress('Verify');
+      for i := 0 to pred(Dirs.Count) do begin
+         //GetSubDirsInDirectory(Dirs[i]);
+         UpdateProgressBar(i/Dirs.Count);
+         Tile := LastSubDir(Dirs[i]);
+         Error := '';
+         for j := 1 to NDEMs do begin
+            for k := 1 to NCrits do begin
+               fName := Crits[k] + DEMs[j] + '_norm.tif';
+               if FileExists(Dirs[i] + fName) then begin
+               end
+               else begin
+                  Error := Error + fName + '  ';
+               end;
+            end;
+         end;
+         if Error = '' then GoodTiles.Add(Tile)
+         else BadTiles.Add(Tile + '  ' + Error);
+      end;
+   end;
+   EndProgress;
+   Dirs.Free;
+   DisplayAndPurgeStringList(GoodTiles,'Good tiles');
+   DisplayAndPurgeStringList(BadTiles,'Problem tiles');
+
+end;
 
 procedure Twmdem.Verticalearthcurvature1Click(Sender: TObject);
 begin

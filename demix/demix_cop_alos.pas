@@ -155,7 +155,7 @@ begin
    RefDTMarea := OpenHalfSec(DEMIXhalfSecDir + 'ref_1sec_area.dem','ref dem');
 
    for I := 1 to NumDEMIXDEM do begin
-      TestDEM[i] := OpenHalfSec(DEMIXhalfSecDir + DEMIXDEMTypeName[i] + '.dem',DEMIXDEMTypeName[i]);
+      TestDEMs[i] := OpenHalfSec(DEMIXhalfSecDir + DEMIXDEMTypeName[i] + '.dem',DEMIXDEMTypeName[i]);
       TestSeries[i] := DEMIXDEMTypeName[i];
    end;
 
@@ -174,14 +174,14 @@ begin
 
    MDDef.GridLegendLocation.DrawItem := true;
    for I := 1 to 6 do begin
-      RuffTestDEM[i] := CreateSlopeRoughnessSlopeStandardDeviationMap(TestDEM[i],3,SlopeTestDEM[i]);
+      RuffTestDEM[i] := CreateSlopeRoughnessSlopeStandardDeviationMap(TestDEMs[i],3,SlopeTestDEM[i]);
    end;
 
    SetMapsForBigBitmaps(false);
    BigImagewithallmaps(3,ImageDir + ThisArea + '_cop_or_alos_better.png');
    for I := 1 to 6 do begin
       if TestSeries[i] = 'ALOS' then RefElev := RefDTMarea else RefElev := RefDTMpoint;
-      ElevDiff[i] := MakeDifferenceMap(RefElev,TestDEM[i],RefElev,RefElev,true,false,false);
+      ElevDiff[i] := MakeDifferenceMap(RefElev,TestDEMs[i],RefElev,RefElev,true,false,false);
       DEMGlb[ElevDiff[i]].AreaName := 'Elevation_difference,_' + TestSeries[i] + '_-_' + 'Reference_DTM';
       //DEMGlb[ElevDiff[i]].SelectionMap.MergeAnotherDEMreflectance(RefElev);
    end;

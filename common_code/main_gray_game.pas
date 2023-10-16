@@ -8,7 +8,6 @@ unit main_gray_game;
 {___________________________________}
 
 
-
 interface
 
 uses

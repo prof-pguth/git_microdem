@@ -8,6 +8,51 @@
 {____________________________________}
 
 
+procedure MergeSSIMandR2DB;
+var
+   db1,db2 : integer;
+begin
+   //db1 :=
+end;
+
+procedure SlopeRoughnessWhiskerPlots(DBonTable : integer);
+
+      function OneGraph(Param : shortstring)  : tThisBaseGraph;
+      var
+         MomentVar : tMomentVar;
+         i,db : integer;
+         Stats : tStringList;
+         fName : PathStr;
+      begin
+         if GISdb[DBonTable].MyData.FieldExists(Param) then begin
+            Stats := tStringList.Create;
+            Stats.Add(MomentStr);
+            for i := 1 to 15 do begin
+               GISdb[DBonTable].ApplyGISFilter('CLUSTER=' + IntToStr(i));
+               GISdb[DBonTable].EmpSource.Enabled := false;
+               if GISdb[DBonTable].MyData.FiltRecsInDB > 0 then begin
+                  MomentVar := GISdb[DBonTable].GetFieldStatistics(Param);
+                  Stats.Add('Cluster' + IntegerToString(i,3) + ' (n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + ')' +  MomentResultsToString(MomentVar));
+               end;
+            end;
+            fName := NextFileNumber(MDTempDir,MDTempDir + 'clusters_geomorph','.dbf');
+            db := StringList2CSVtoDB(Stats,fName);
+            Result := StartBoxPlot(db,Param);
+         end
+         else Result := Nil;
+      end;
+var
+   Graph : array[1..7] of  tThisBaseGraph;
+begin
+   Graph[1] := OneGraph('AVG_SLOPE');
+   Graph[2] := OneGraph('AVG_ROUGH');
+   Graph[3] := OneGraph('AVG_ELEV');
+   Graph[4] := OneGraph('RELIEF');
+   Graph[5] := OneGraph('BARREN_PC');
+   Graph[6] := OneGraph('URBAN_PC');
+   Graph[7] := OneGraph('FOREST_PC');
+end;
+
 
 procedure DEMIX_clusters_per_tile(DBonTable : integer);
 //makes table with the number of clusters in each DEMIX tile
@@ -75,7 +120,77 @@ begin
 end;
 
 
-procedure DEMIX_SSIM_R2_GraphSettings(var Graph : tThisBaseGraph;lltext : shortstring);
+procedure MakeDBForParamStats(Option,DBonTable : integer);
+var
+   Results,UsingFields,UniqueEntries : tStringList;
+   i,j : integer;
+   aLine,MaxLine,MeanLine,MedianLine,MinLine,stdLine,Common : shortstring;
+   MomentVar : tMomentVar;
+   aField : shortstring;
+   fName : PathStr;
+   Color : tColor;
+begin
+   GISdb[DBonTable].EmpSource.Enabled := false;
+   if Option = opByCluster then begin
+      aField := 'CLUSTER';
+      UniqueEntries := GISdb[DBonTable].MyData.UniqueEntriesInDB(aField);
+      SortStringListNumerically(UniqueEntries);
+   end
+   else if Option = opByDEM then begin
+      aField := 'DEM';
+      UniqueEntries := GISdb[DBonTable].MyData.UniqueEntriesInDB(aField);
+   end;
+
+   UsingFields := GISdb[DBonTable].GetAnalysisFields;
+
+   Results := tStringList.Create;
+   aline := aField + ',COLOR,N,METRIC';
+   for j := 0 to pred(UsingFields.Count) do begin
+      aline := aline + ',' + UsingFields.Strings[j];
+   end;
+   Results.Add(aLine);
+   for i := 0 to pred(UniqueEntries.Count) do begin
+      if Option = opByCluster then begin
+         GISdb[DBonTable].MyData.ApplyFilter(aField + '=' + UniqueEntries.Strings[i]);
+         Color := GISdb[DBonTable].MyData.GetFieldByNameAsInteger('COLOR');
+      end;
+      if Option = opByDEM then begin
+         GISdb[DBonTable].MyData.ApplyFilter(aField + '=' + QuotedStr(UniqueEntries.Strings[i]));
+         Color := ConvertPlatformColorToTColor(DEMIXColorFromDEMName(UniqueEntries.Strings[i]));
+      end;
+      GISdb[DBonTable].Empsource.Enabled := false;
+      Common := UniqueEntries.Strings[i] + ',' + IntToStr(Color) + ','  + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + ',' ;
+      MaxLine := Common + 'MAX' ;
+      MeanLine := Common + 'MEAN' ;
+      MedianLine := Common + 'MEDIAN';
+      MinLine := Common + 'MIN';
+      STDline := Common + 'StdDev';
+
+      for j := 0 to pred(UsingFields.Count) do begin
+         GISdb[DBonTable].EmpSource.Enabled := false;
+         MomentVar := GISdb[DBonTable].GetFieldStatistics(UsingFields.Strings[j]);
+         GISdb[DBonTable].Empsource.Enabled := false;
+         MaxLine := MaxLine + ',' + RealToString(MomentVar.MaxZ,-18,-4);
+         MeanLine := MeanLine + ',' + RealToString(MomentVar.Mean,-18,-6);
+         MedianLine := MedianLine + ','  + RealToString(MomentVar.Median,-18,-6);
+         MinLine := MinLine + ',' +  RealToString(MomentVar.MinZ,-18,-4);
+         STDLine := STDLine + ',' +  RealToString(MomentVar.sdev,-18,-6);
+      end;
+      Results.Add(MaxLine);
+      Results.Add(MeanLine);
+      Results.Add(MedianLine);
+      Results.Add(MinLine);
+      Results.Add(STDLine);
+   end;
+   fName := Petmar.NextFileNumber(MDTempDir, 'stats_by_' + aField + '_' ,DefaultDBExt);
+   {$IfDef RecordClustering} WriteLineToDebugFile(fName); {$EndIf}
+   GISdb[DBonTable].theMapOwner.StringListToLoadedDatabase(Results,fName);
+   GISdb[DBonTable].ClearGISFilter;
+   GISdb[DBonTable].ShowStatus;
+end;
+
+
+procedure DEMIX_SSIM_R2_GraphSettings(var Graph : tThisBaseGraph; lltext : shortstring; Ncrits : integer);
 begin
    Graph.GraphDraw.GraphAxes := XPartGridOnly;
    Graph.GraphDraw.LeftMargin := 150;
@@ -88,35 +203,50 @@ begin
 end;
 
 
-procedure DEMIX_SSIM_R2_clusters_diversity_graphs(DBonTable : integer);
+procedure DEMIX_SSIM_R2_clusters_diversity_graphs(DBonTable : integer; ColorByDEM : boolean = true);
 //Makes one graph per cluster of the evaluation for each criterion, with every Tile/DEM that belongs to the cluster
 
-   procedure OneGraph;
-   var
-      //values : array[1..9,1..10] of float32;
-      Tile,Crit,aline : shortstring;
-      i,j,k,NCrit,NDEM : integer;
-      rfile : file;
-      fName : PathStr;
-      Clusters : tStringList;
-      Color : tColor;
-      Graph : array[1..15] of tThisBaseGraph;
-   begin
-      Clusters := GISdb[DBonTable].MyData.UniqueEntriesInDB('CLUSTER');
-      LoadDEMIXnames;
-      StartProgress('Cluster');
-      for I := 1 to Clusters.Count do begin
-         UpdateProgressBar(i/Clusters.Count);
-         GISdb[DBonTable].ApplyGISFilter('CLUSTER=' + Clusters.Strings[pred(i)]);
+var
+   Tile,Crit,aline : shortstring;
+   NCrit,NDEM : integer;
+   rfile : file;
+   fName : PathStr;
+   Clusters,DEMs : tStringList;
+   Color : tColor;
+   Graph : array[1..15] of tThisBaseGraph;
+
+
+      procedure StartGraph(i : integer);
+      var
+         J : integer;
+      begin
          GISdb[DBonTable].EmpSource.Enabled := false;
          Graph[i] := tThisBaseGraph.Create(Application);
-         Graph[i].GraphDraw.SingleGraphSymbology := true;
          Graph[i].GraphDraw.GraphLeftLabels := tStringList.Create;
-         DEMIX_SSIM_R2_GraphSettings(Graph[i],'Cluster ' + Clusters.Strings[pred(i)] + '  n=' + IntToStr(GISdb[DBonTable].MyData.GetFieldByNameAsInteger('N')));
          for j := 1 to NCrits do Graph[i].GraphDraw.GraphLeftLabels.Add(IntToStr(j) + ',' + Crits[j]);
+         Graph[i].GraphDraw.SingleGraphSymbology := true;
+      end;
 
+      procedure EndGraph(i : integer);
+      begin
+         Graph[i].GraphDraw.SetShowAllLines(true, 2);
+         Graph[i].GraphDraw.SetShowAllPoints(false);
+         Graph[i].GraphDraw.FileColors256[1] := ConvertTColorToPlatformColor(Color);
+         Graph[i].RedrawDiagram11Click(Nil);
+      end;
+
+   procedure GraphByDEMs;
+   var
+      i,j : integer;
+   begin
+      for i := 1 to DEMs.Count do begin
+         StartGraph(i);
+         DEMIX_SSIM_R2_GraphSettings(Graph[i],'DEM= ' + DEMs.Strings[pred(i)],NCrits);
+
+         GISdb[DBonTable].ApplyGISFilter('DEM=' + QuotedStr(DEMs.Strings[pred(i)]));
+         Color := ConvertPlatformColorToTColor(DEMIXColorFromDEMName(GISdb[DBonTable].MyData.GetFieldByNameAsString('DEM')));
+         GISdb[DBonTable].EmpSource.Enabled := false;
          while not GISdb[DBonTable].MyData.eof do begin
-            Color := GISdb[DBonTable].MyData.GetFieldByNameAsInteger('COLOR');
             Graph[i].OpenDataFile(rfile,true,Color);
             for j := 1 to NCrits do begin
                Graph[i].AddPointToDataBuffer(rfile,GISdb[DBonTable].MyData.GetFieldByNameAsFloat(Crits[j]),j);
@@ -124,22 +254,66 @@ procedure DEMIX_SSIM_R2_clusters_diversity_graphs(DBonTable : integer);
             Graph[i].ClosePointDataFile(rfile);
             GISdb[DBonTable].MyData.Next;
          end;
-         Graph[i].GraphDraw.SetShowAllLines(true, 2);
-         Graph[i].GraphDraw.SetShowAllPoints(false);
-         Graph[i].GraphDraw.FileColors256[1] := ConvertTColorToPlatformColor(Color);
-         Graph[i].RedrawDiagram11Click(Nil);
-           ///fName := OutPath + Tile + '.png';
-            ///SaveImageAsBMP(Result.Image1,fName);
+         EndGraph(i);
       end;
-      Clusters.Destroy;
    end;
 
 
+   procedure GraphByClusters;
+   var
+      i,j,k : integer;
+   begin
+      for I := 1 to Clusters.Count do begin
+         StartGraph(i);
+         DEMIX_SSIM_R2_GraphSettings(Graph[i],'Cluster ' + Clusters.Strings[pred(i)] + '  n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB),NCrits);
+
+         UpdateProgressBar(i/Clusters.Count);
+         GISdb[DBonTable].ApplyGISFilter('CLUSTER=' + Clusters.Strings[pred(i)]);
+         if ColorByDEM then begin
+            Graph[i].GraphDraw.SingleGraphSymbology := false;
+            for k := 1 to DEMs.Count do begin
+               GISdb[DBonTable].ApplyGISFilter('CLUSTER=' + Clusters.Strings[pred(i)] + ' AND DEM=' + QuotedStr(DEMs.Strings[pred(k)]));
+               Color := ConvertPlatformColorToTColor(DEMIXColorFromDEMName(GISdb[DBonTable].MyData.GetFieldByNameAsString('DEM')));
+               GISdb[DBonTable].EmpSource.Enabled := false;
+               while not GISdb[DBonTable].MyData.eof do begin
+                  Graph[i].OpenDataFile(rfile,true,Color);
+                  for j := 1 to NCrits do begin
+                     Graph[i].AddPointToDataBuffer(rfile,GISdb[DBonTable].MyData.GetFieldByNameAsFloat(Crits[j]),j);
+                  end;
+                  Graph[i].ClosePointDataFile(rfile);
+                  GISdb[DBonTable].MyData.Next;
+               end;
+            end;
+         end
+         else begin
+            while not GISdb[DBonTable].MyData.eof do begin
+               Color := GISdb[DBonTable].MyData.GetFieldByNameAsInteger('COLOR');
+               Graph[i].OpenDataFile(rfile,true,Color);
+               for j := 1 to NCrits do begin
+                  Graph[i].AddPointToDataBuffer(rfile,GISdb[DBonTable].MyData.GetFieldByNameAsFloat(Crits[j]),j);
+               end;
+               Graph[i].ClosePointDataFile(rfile);
+               GISdb[DBonTable].MyData.Next;
+            end;
+         end;
+         EndGraph(i);
+      end;
+   end;
 
 begin
-   GISdb[DBonTable].EmpSource.Enabled := false;
+   ColorByDEM := false;
 
-   OneGraph;
+   GISdb[DBonTable].EmpSource.Enabled := false;
+   Clusters := GISdb[DBonTable].MyData.UniqueEntriesInDB('CLUSTER');
+   SortStringListNumerically(Clusters);
+   GISdb[DBonTable].EmpSource.Enabled := false;
+   DEMs := GISdb[DBonTable].MyData.UniqueEntriesInDB('DEM');
+   LoadDEMIXnames;
+   StartProgress('Cluster');
+   GraphByDEMs;
+   GraphByClusters;
+   Clusters.Destroy;
+   DEMs.Destroy;
 
    EndProgress;
    GISdb[DBonTable].ClearGISFilter;
@@ -148,12 +322,8 @@ end;
 
 
 function DEMIX_SSIM_R2_cluster_sensitivity_graph(DBonTable : integer) : tThisBaseGraph;
-(*
-a Cr
-   rfile : file;
-   fName,OutPath : PathStr;
+//graphs showing how the number of cluster changes results
 
-   *)
          function OneGraph(MaxCluster : integer): tThisBaseGraph;
          var
             Crit,aline : shortstring;
@@ -167,8 +337,7 @@ a Cr
                Result.GraphDraw.GraphLeftLabels := tStringList.Create;
                Result.GraphDraw.SetShowAllPoints(false);
                Result.GraphDraw.LegendList := tStringList.Create;
-               DEMIX_SSIM_R2_GraphSettings(Result,'Cluster ' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + '/' + IntToStr(MaxCluster));
-              // GridOnly;
+               DEMIX_SSIM_R2_GraphSettings(Result,'Cluster ' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + '/' + IntToStr(MaxCluster),Ncrits);
                Result.GraphDraw.LeftMargin := 175;
                GISdb[DBonTable].EmpSource.Enabled := false;
                while not GISdb[DBonTable].MyData.eof do begin
@@ -203,65 +372,96 @@ begin
 end;
 
 
-
 function DEMIX_SSIM_R2_clusters_graph(DBonTable : integer) : tThisBaseGraph;
-//makes graph of each cluster with criteria on y axis and evaluation on x axis, with all DEM/Tile combinations
+//makes graph of each cluster with criteria on y axis and evaluation on x axis
 var
-   Crit,aline : shortstring;
-   i,j,k,NCrit,NDEM,Cluster : integer;
+   Crit,aline,aField : shortstring;
+   j,k,NCrit,NDEM,Cluster : integer;
    rfile : file;
    fName,OutPath : PathStr;
-
+   NumCrits : integer;
+   TheCrits : array[1..100] of shortstring;
 
          function OneGraph(What : shortstring): tThisBaseGraph;
          var
-            j : integer;
+            j,n : integer;
          begin
             GISdb[DBonTable].ApplyGISFilter('METRIC=' + QuotedStr(UpperCase(What)));
             if (GISdb[DBonTable].MyData.FiltRecsInDB > 0) then begin
-               inc(i);
                Result:= tThisBaseGraph.Create(Application);
                Result.GraphDraw.GraphLeftLabels := tStringList.Create;
                Result.GraphDraw.SetShowAllPoints(false);
                Result.GraphDraw.LegendList := tStringList.Create;
-               DEMIX_SSIM_R2_GraphSettings(Result,'Cluster ' + What);
-               //Graph.GraphDraw.LeftMargin := 175;
+               if (aField = '') then DEMIX_SSIM_R2_GraphSettings(Result,What,NumCrits)
+               else DEMIX_SSIM_R2_GraphSettings(Result,aField + ' ' + What,NCrits);
                GISdb[DBonTable].EmpSource.Enabled := false;
                while not GISdb[DBonTable].MyData.eof do begin
-                  Cluster := GISdb[DBonTable].MyData.GetFieldByNameAsInteger('CLUSTER');
-                  Result.GraphDraw.LegendList.Add('Cluster ' + IntToStr(Cluster));
+                  if (aField = 'CLUSTER') or (aField = '') then begin
+                     Cluster := GISdb[DBonTable].MyData.GetFieldByNameAsInteger('CLUSTER');
+                     n := GISdb[DBonTable].MyData.GetFieldByNameAsInteger('N');
+                     Result.GraphDraw.LegendList.Add('Cluster ' + IntToStr(Cluster) + ' (n=' + IntToStr(n) + ')');
+                  end;
+                  if (aField = 'DEM') then begin
+                     Result.GraphDraw.LegendList.Add(GISdb[DBonTable].MyData.GetFieldByNameAsString('DEM'));
+                  end;
+
                   Result.OpenDataFile(rfile,true,GISdb[DBonTable].MyData.GetFieldByNameAsInteger('COLOR'));
-                  for j := 1 to NCrits do begin
-                     Result.AddPointToDataBuffer(rfile,GISdb[DBonTable].MyData.GetFieldByNameAsFloat(Crits[j]),j);
+                  if (aField = '') then begin
+                     for j := 1 to NumCrits do begin
+                        Result.AddPointToDataBuffer(rfile,GISdb[DBonTable].MyData.GetFieldByNameAsFloat(TheCrits[j]),j);
+                     end;
+                  end
+                  else begin
+                     for j := 1 to NCrits do begin
+                        Result.AddPointToDataBuffer(rfile,GISdb[DBonTable].MyData.GetFieldByNameAsFloat(Crits[j]),j);
+                     end;
                   end;
                   Result.ClosePointDataFile(rfile);
                   GISdb[DBonTable].MyData.Next;
                end;
-               for j := 1 to NCrits do Result.GraphDraw.GraphLeftLabels.Add(IntToStr(j) + ',' + Crits[j]);
+               if (aField = '') then begin
+                  for j := 1 to NumCrits do Result.GraphDraw.GraphLeftLabels.Add(IntToStr(j) + ',' + TheCrits[j]);
+               end
+               else begin
+                  for j := 1 to NCrits do Result.GraphDraw.GraphLeftLabels.Add(IntToStr(j) + ',' + Crits[j]);
+               end;
                Result.RedrawDiagram11Click(Nil);
             end;
          end;
 
-
 begin
    GISdb[DBonTable].EmpSource.Enabled := false;
+   if GISdb[DBonTable].MyData.FieldExists('CLUSTER') and GISdb[DBonTable].MyData.FieldExists(Crits[1]) then aField := 'CLUSTER'
+   else if GISdb[DBonTable].MyData.FieldExists('DEM') then aField := 'DEM'
+   else begin
+      aField := '';
+      NumCrits := 0;
+      for j := 0 to pred(GISdb[DBonTable].MyData.FieldCount) do begin
+         if GISdb[DBonTable].MyData.GetFieldType(j) = ftFloat then begin
+            inc(NumCrits);
+            TheCrits[NumCrits] := GISdb[DBonTable].MyData.GetFieldName(j);
+         end;
+      end;
+   end;
+
    SafeMakeDir(OutPath);
    LoadDEMIXnames;
    ShowHourglassCursor;
 
    Result := OneGraph('Mean');
-   OneGraph('Median');
+   //OneGraph('Median');
 
    GISdb[DBonTable].ClearGISFilter;
    GISdb[DBonTable].ShowStatus;
 end;
 
 
-function DEMIX_SSIM_R2_tile_graph(DBonTable : integer) :tThisBaseGraph;
+procedure DEMIX_SSIM_R2_transpose_kmeans_new_db(DBonTable : integer);
+//transpose the DB so it has one TILE/DEM pair on each line, the Criteria as columns
 var
-   values : array[1..9,1..10] of float32;
+   values : array[1..9,1..NCrits] of float32;
    Tile,Crit,aline : shortstring;
-   i,j,k,NCrit,NDEM : integer;
+   i,j,k,N,NDEM : integer;
    rfile : file;
    theTiles,sl : tStringList;
    fName,OutPath : PathStr;
@@ -275,25 +475,23 @@ begin
    for I := 1 to NCrits do aline := aline + ',' + Crits[i];
    sl.Add(Aline);
 
+   LoadDEMIXnames;
    SafeMakeDir(OutPath);
    StartProgress('SSIM summary');
    for k := 0 to pred(theTiles.Count) do begin
       if (k mod 10 = 0) then UpdateProgressBar(k/TheTiles.Count);
 
       Tile := theTiles[k];
-      LoadDEMIXnames;
       GISdb[DBonTable].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(Tile));
-      if (GISdb[DBonTable].MyData.FiltRecsInDB > 0) then begin
-         GISdb[DBonTable].EmpSource.Enabled := false;
-         Result:= tThisBaseGraph.Create(Application);
-         Result.GraphDraw.GraphLeftLabels := tStringList.Create;
+      GISdb[DBonTable].EmpSource.Enabled := false;
+      if (GISdb[DBonTable].MyData.FiltRecsinDB = NCrits) then begin
          while not GISdb[DBonTable].MyData.eof do begin
             Crit := UpperCase(GISdb[DBonTable].MyData.GetFieldByNameAsString('CRITERION'));
-            NCrit := 1;
-            while (Crit <> Crits[NCrit]) and (NCrit < NCrits) do inc(NCrit);
-            if (NCrit < 10) then begin
+            N := 1;
+            while (N < succ(NCrits)) and (Crit <> Crits[N]) do inc(N);
+            if (N <= NCrits) then begin
                for I := 1 to NumDEMIXDEM do begin
-                   Values[i,NCrit] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(DEMIXDEMTypeName[i]);
+                   Values[i,N] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(DEMIXDEMTypeName[i]);
                end;
             end;
             GISdb[DBonTable].MyData.Next;
@@ -304,30 +502,82 @@ begin
             for j := 1 to NCrits do aline := aline + ',' + RealToString(Values[i,j],-10,6);
             sl.Add(Aline);
          end;
-
-         for j := 1 to NCrits do Result.GraphDraw.GraphLeftLabels.Add(IntToStr(j) + ',' + Crits[j]);
-         for I := 1 to NumDEMIXDEM do begin
-            Result.OpenDataFile(rfile,true,ConvertPlatformColorToTColor(DEMIXColorFromDEMName(DEMIXDEMTypeName[i])));
-            for j := 1 to NCrits do begin
-               Result.AddPointToDataBuffer(rfile,Values[i,j],j);
-            end;
-            Result.ClosePointDataFile(rfile);
-         end;
-
-         DEMIX_SSIM_R2_GraphSettings(Result,Tile);
-         Result.RedrawDiagram11Click(Nil);
-         fName := OutPath + Tile + '.png';
-         SaveImageAsBMP(Result.Image1,fName);
       end;
    end;
 
-   fName := NextFileNumber(MDTempDir,MDTempDir + 'ssim_cop_','.dbf');
+   fName := NextFileNumber(MDTempDir,MDTempDir + 'ssim_r2_clustering','.dbf');
    StringList2CSVtoDB(sl,fName);
 
    EndProgress;
    GISdb[DBonTable].ClearGISFilter;
    GISdb[DBonTable].ShowStatus;
 end;
+
+
+function DEMIX_SSIM_R2_single_tile_graph(DBonTable : integer; tile : shortstring) :tThisBaseGraph;
+var
+   DEM : shortstring;
+   i,j,k,NCrit,NDEM : integer;
+   rfile : file;
+begin
+   GISdb[DBonTable].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(Tile));
+   if (GISdb[DBonTable].MyData.FiltRecsInDB > 0) then begin
+      GISdb[DBonTable].EmpSource.Enabled := false;
+
+      Result := tThisBaseGraph.Create(Application);
+      Result.GraphDraw.LegendList := tStringList.Create;
+      Result.GraphDraw.GraphLeftLabels := tStringList.Create;
+      for j := 1 to NCrits do Result.GraphDraw.GraphLeftLabels.Add(IntToStr(j) + ',' + Crits[j]);
+
+      while not GISdb[DBonTable].MyData.eof do begin
+         DEM := GISdb[DBonTable].MyData.GetFieldByNameAsString('DEM');
+         Result.GraphDraw.LegendList.Add(DEM);
+         Result.OpenDataFile(rfile,true,ConvertPlatformColorToTColor(DEMIXColorFromDEMName(DEM)));
+
+         for j := 1 to NCrits do begin
+            Result.AddPointToDataBuffer(rfile,GISdb[DBonTable].MyData.GetFieldByNameAsFloat(Crits[j]),j);
+         end;
+         Result.ClosePointDataFile(rfile);
+         GISdb[DBonTable].MyData.Next;
+      end;
+
+      DEMIX_SSIM_R2_GraphSettings(Result,Tile,NCrits);
+      Result.RedrawDiagram11Click(Nil);
+   end;
+end;
+
+
+(*
+
+function DEMIX_SSIM_R2_tile_graph(DBonTable : integer) :tThisBaseGraph;
+var
+   //values : array[1..9,1..NCrits] of float32;
+   Tile,Crit,aline : shortstring;
+   i,j,k,NCrit,NDEM : integer;
+   rfile : file;
+   theTiles,sl : tStringList;
+   fName,OutPath : PathStr;
+begin
+   GISdb[DBonTable].EmpSource.Enabled := false;
+   theTiles := GISdb[DBonTable].MyData.UniqueEntriesInDB('DEMIX_TILE');
+   OutPath := 'c:\temp\ssim_tile_summary\';
+   SafeMakeDir(OutPath);
+   StartProgress('SSIM summary');
+   for k := 0 to pred(theTiles.Count) do begin
+      if (k mod 10 = 0) then UpdateProgressBar(k/TheTiles.Count);
+      Tile := theTiles[k];
+      LoadDEMIXnames;
+      Result := DEMIX_SSIM_R2_single_tile_graph(DBonTable, tile);
+         fName := OutPath + Tile + '.png';
+         SaveImageAsBMP(Result.Image1,fName);
+      end;
+   end;
+
+   EndProgress;
+   GISdb[DBonTable].ClearGISFilter;
+   GISdb[DBonTable].ShowStatus;
+end;
+*)
 
 
 procedure DEMIX_evaluations_graph(DBonTable : integer);
@@ -750,8 +1000,6 @@ begin
       end;
    end;
 end {DEMIXMeanMedianHistograms};
-
-
 
 
 function MakeHistogramOfDifferenceDistribution(Tile,param,Ref : shortstring) : tThisBaseGraph;

@@ -103,6 +103,10 @@ procedure FindPointFileGeoLimits(Table : tMyData; var HiLat,LowLong,LowLat,HighL
 
 function PointBoundBoxGeo(Lat,Long : float64) : sfBoundBox;
 
+procedure SafeAdjustGeoBoundBoxForPixelIsArea(var bb : sfBoundBox);
+function IntersectionTwoGeoBoundBoxes(bb1,bb2 : sfBoundBox) : sfBoundBox;
+
+
 procedure ZeroTable(fName : PathStr);  overload;
 procedure ZeroTable(var TheTable : tMyData); overload;
 
@@ -153,7 +157,7 @@ procedure QuickGraphFromStringList(var sl : tStringList; xf,yf,Capt : shortstrin
 {$IfDef NoCSVImports}
 {$Else}
    function DoCSVFileImport(fName : PathStr  = ''; SpecialGaz : tCSVImport = csvNormal) : PathStr;
-   function StringList2CSVtoDB(Results : tstringList; fName : Pathstr = ''; CloseFile : boolean = false; SaveCSVfile : boolean = false) : integer;
+   function StringList2CSVtoDB(Results : tstringList; fName : Pathstr = ''; CloseFile : boolean = false; SaveCSVfile : boolean = false; OpenTable : boolean = true) : integer;
    procedure MergeCSVFiles(var Fnames : tstringList; OutName : PathStr);
 {$EndIf}
 
@@ -188,6 +192,24 @@ uses
    DEMDataBase,
    PETImage;
 
+
+procedure SafeAdjustGeoBoundBoxForPixelIsArea(var bb : sfBoundBox);
+const
+   QuarterSec = 1 / (4 * 3600);
+begin
+   bb.XMin := bb.XMin + QuarterSec;
+   bb.XMax := bb.XMax - QuarterSec;
+   bb.YMin := bb.YMin + QuarterSec;
+   bb.YMax := bb.YMax - QuarterSec;
+end;
+
+function IntersectionTwoGeoBoundBoxes(bb1,bb2 : sfBoundBox) : sfBoundBox;
+begin
+   Result.XMin := Petmath.MaxFloat(bb1.XMin,bb2.xmin);
+   Result.XMax := Petmath.MinFloat(bb1.XMax,bb2.xMaX);
+   Result.YMin := Petmath.MaxFloat(bb1.YMin,bb2.Ymin);
+   Result.yMax := Petmath.MinFloat(bb1.YMax,bb2.YMaX);
+end;
 
 
 procedure MergeCSVFiles(var Fnames : tstringList; OutName : PathStr);
@@ -936,7 +958,7 @@ end;
 {$IfDef NoCSVImports}
 {$Else}
 
-   function StringList2CSVtoDB(Results : tstringList; fName : Pathstr = ''; CloseFile : boolean = false; SaveCSVfile : boolean = false) : integer;
+   function StringList2CSVtoDB(Results : tstringList; fName : Pathstr = ''; CloseFile : boolean = false; SaveCSVfile : boolean = false; OpenTable : boolean = true) : integer;
    var
       fName2 : PathStr;
    begin
@@ -948,13 +970,13 @@ end;
          fName2 := fName;
          Results.SaveToFile(fName);
          Results.Free;
-         OpenNumberedGISDataBase(Result,fName,(not CloseFile));
+         OpenNumberedGISDataBase(Result,fName,OpenTable);
          if CloseFile then begin
             CloseAndNilNumberedDB(Result);
             Result := 0;
          end
          else begin
-            GISdb[Result].dbTablef.HideHouseKeepingColumns;
+            if OpenTable then GISdb[Result].dbTablef.HideHouseKeepingColumns;
          end;
          {$IfDef RecordOpenDB} WriteLineToDebugFile('StringList2CSVtoDB out, fname=' + fName); {$EndIf}
       end
@@ -1845,13 +1867,12 @@ begin
    end;
    Result := Result + EndRowString;
    Table.First;
-   //dbGrid1.Visible := false;
    Source.Enabled := true;   //needed to get columns.visible
    repeat
       Result := Result + StartRowString;
       for j := 0 to pred(Table.FieldCount) do begin
          if (VisCols[j])  then begin
-            if Table.GetFieldName(j) = 'COLOR' then begin
+            if (Table.GetFieldName(j) = 'COLOR') then begin
                Result := Result + '<td style="background-color: ' + ColorToHtml(Table.GetFieldByNameAsInteger(Table.GetFieldName(j))) +'">' +  EndColumnString;
             end
             else begin
@@ -1869,7 +1890,6 @@ begin
       Table.Next;
    until Table.EOF;
    Result := Result + EndTableString;
-   //dbGrid1.Visible := true;
 end;
 
 {$EndIf}

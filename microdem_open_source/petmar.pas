@@ -1335,6 +1335,11 @@ end;
          begin
             PETMARCommonForm.SaveDialog1.Title := Mess;
             PETMARCommonForm.SaveDialog1.Filter := Filters;
+
+            PETMARCommonForm.SaveDialog1.InitialDir := ExtractFilePath(FName);
+            PETMARCommonForm.SaveDialog1.FileName := ExtractFileName(fName);
+
+(*
             if FileExists(fName) or PathIsValid(ExtractFilePath(fName)) then begin
                PETMARCommonForm.SaveDialog1.InitialDir := ExtractFilePath(FName);
                PETMARCommonForm.SaveDialog1.FileName := ExtractFileName(fName);
@@ -1343,6 +1348,7 @@ end;
                PETMARCommonForm.SaveDialog1.InitialDir := Copy(fName,1,pred(Length(fName)));
                PETMARCommonForm.SaveDialog1.FileName := '';
             end;
+*)
             PETMARCommonForm.SaveDialog1.FilterIndex := 1;
 
             if PETMARCommonForm.SaveDialog1.Execute then begin
@@ -2244,7 +2250,7 @@ end;
 
 
          procedure RGBtoHLS(r,g,b : integer; var h,l,s : float64);
-         {Foley & Van Dam, p.618;  hue is 0..360, lightness and saturation 0..1}
+         {Foley & Van Dam, p.618; hue is 0..360, lightness and saturation 0..1}
          var
             rr,gr,br,min,max,rc,gc,bc : float64;
          begin
@@ -3309,7 +3315,7 @@ var
    i : integer;
 begin
    {$IfDef VCL}
-      if Paths.Count = 0 then Paths.Add(MainMapData);
+      if (Paths.Count = 0) then Paths.Add(MainMapData);
 
       fod := TFileOpenDialog.Create(nil);
       try
@@ -4220,6 +4226,7 @@ var
    i : integer;
 begin
     StripBlanks(fName);
+    CleanUpFileName(fName);
     i := 0;
     repeat
        inc(i);

@@ -180,6 +180,7 @@ type
    procedure Lag_and_Shift(ColC,RowC : integer; MainDEM,SubDEM : integer; GridLimits : tGridLimits; var NPts,XWhereMaxR,YWhereMaxR : integer; var MaxR,NoLagR,ZRange,AvgSlope,BestA,BestB : float64; CorrelationMatrix : tStringList = Nil);
 
    procedure HistogramsFromVATDEM(DEMwithVAT,ElevMap,SlopeMap,RuffMap,AspMap : integer; var Graph1,Graph2,Graph3,Graph4 : tThisBaseGraph);
+   procedure CreateGridHistograms(DEMSwanted : tDEMbooleanArray; TailCutoff : float32 = 0.5);
 
 
 var
@@ -253,6 +254,41 @@ var
 {$Else}
    {$I demstat_grid_compare.inc}
 {$EndIf}
+
+
+procedure CreateGridHistograms(DEMSwanted : tDEMbooleanArray; TailCutoff : float32 = 0.5);
+var
+   j : integer;
+   Distributions,Legends : tStringList;
+   Values : ^Petmath.bfarray32;
+   Max,Min,BinSize,ThisMin,ThisMax : float32;
+   NPts : int64;
+   fName : PathStr;
+begin
+   if (TailCutoff < 0) then ReadDefault('Tail cutoff (%)',TailCutoff);
+   Distributions := tStringList.Create;
+   Legends := tStringList.Create;
+   Max := -99e39;
+   Min := 99e39;
+   for j := 1 to MaxDEMDataSets do begin
+      if DEMsWanted[j] then begin
+         New(Values);
+         DEMGlb[j].GetElevationsInLongArray(DEMGlb[j].FullDEMGridLimits,NPts,Values^);
+
+         ThisMax := Values^[round(NPts * (100 - TailCutoff) / 100)];
+         ThisMin := Values^[round(NPts * TailCutoff / 100)];
+
+         if (ThisMax > Max) then Max := ThisMax;
+         if (ThisMin < Min) then Min := ThisMin;
+         fName := Petmar.NextFileNumber(MDtempDir,DEMGlb[j].AreaName + '_' ,'.z');
+         Distributions.Add(SaveSingleValueSeries(npts,Values^,fName));
+         Legends.Add(DEMGlb[j].AreaName);
+         Dispose(Values);
+      end;
+   end;
+   BinSize := (Max - Min) / 200;
+   CreateMultipleHistogram(MDDef.CountHistograms,Distributions,Legends,'', 'DEM/Grid histograms',200,Min,Max,BinSize);
+end;
 
 
 procedure HistogramsFromVATDEM(DEMwithVAT,ElevMap,SlopeMap,RuffMap,AspMap : integer; var Graph1,Graph2,Graph3,Graph4 : tThisBaseGraph);
@@ -411,9 +447,6 @@ begin
    {$IfDef RecordHistogramFromVAT} WriteLineToDebugFile('HistogramsFromVATDEM out'); {$EndIf}
 end;
 
-
-var
-   NumDone,NumToDo : integer;
 
 
 procedure Lag_and_Shift(ColC,RowC : integer; MainDEM,SubDEM : integer; GridLimits : tGridLimits; var NPts,XWhereMaxR,YWhereMaxR : integer; var MaxR,NoLagR,ZRange,AvgSlope,BestA,BestB : float64; CorrelationMatrix : tStringList = Nil);
@@ -1263,6 +1296,7 @@ var
    i,j,Col,Row : integer;
    Lat,Long : float64;
    z,z2 : float32;
+   IdenticalGrids : boolean;
 begin
    {$IfDef RecordMapAlgebra} WriteLineToDebugFile('SumDEMs in'); {$EndIf}
    if OpenAndZeroNewDEM(true,DEMGlb[FirstDEM].DEMheader,Result,NewName,InitDEMmissing) then begin
@@ -2878,7 +2912,7 @@ begin
       TheBitmaps.Add(fName);
       RoseGraph.Close;
       RoseGraph.Free;
-      RoseGraph := Nil;
+      //RoseGraph := Nil;
       inc(i);
    end;
    MakeBigBitmap(theBitmaps, 'Aspect: ' + DEMGlb[WhichDEM].AreaName);

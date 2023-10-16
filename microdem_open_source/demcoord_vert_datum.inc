@@ -104,16 +104,17 @@ end;
 
 procedure VerticalDatumShift(DEM : integer; vdShift : tvdShift);
 var
-   i,geoidGrid : Integer;
+   i,geoidGrid,Col,Row : Integer;
    Merge : tDEMbooleans;
    fName : PathStr;
    TheShift : shortString;
+   z1,z2  : float32;
 begin
    {$IfDef RecordVertDatumShift} WriteLineToDebugFile('VerticalDatumShift in, DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].ZRange);  {$EndIf}
    //GetGeoid;
    if (vdShift = vdEGM96toEGM2008) then fName := GeoidDiffFName
    else fName := Geoid2008FName;
-   GeoidGrid := OpenNewDEM(fName,false);
+   GeoidGrid := OpenNewDEM(fName,false,'geoid shift');
    if ValidDEM(GeoidGrid) then begin
 
       case vdShift of
@@ -123,17 +124,31 @@ begin
       end;
 
       if (vdShift = vdEGM2008toWGS84) then DEMGlb[GeoidGrid].MultiplyGridByConstant(-1);
+
+      StartProgress('Datum shift');
+      for Col := 0 to pred(DEMGlb[DEM].DEMHeader.NumCol) do begin
+          if (Col mod 150 = 0) then UpdateProgressBar(Col/DEMGlb[DEM].DEMHeader.NumCol);
+          for Row := 0 to pred(DEMGlb[DEM].DEMHeader.NumRow) do begin
+             if DEMGlb[DEM].GetElevMetersFromThisAndSecondDEM(GeoidGrid,Col,Row,z1,z2) then begin
+                DEMGlb[DEM].SetGridElevation(Col,Row,z1+z2);
+             end;
+          end;
+      end;
+
+      (*
       for i := 1 to MaxDEMDataSets do Merge[i] := false;
       Merge[DEM] := true;
       Merge[GeoidGrid] := true;
       SumDEMs(DEM, Merge,DEMGlb[DEM].AreaName + '_vdatum_shift_' + TheShift);
+      *)
+
       CloseSingleDEM(GeoidGrid);
       case vdShift of
          vdWGS84toEGM2008 : DEMGlb[DEM].DEMheader.VerticalCSTypeGeoKey := VertCSEGM2008;
          vdEGM2008toWGS84 : DEMGlb[DEM].DEMheader.VerticalCSTypeGeoKey := VertCSWGS84;
          vdEGM96toEGM2008 : DEMGlb[DEM].DEMheader.VerticalCSTypeGeoKey := VertCSEGM2008;
       end;
-      DEMGlb[DEM].CheckMaxMinElev;
+      DEMGlb[DEM].SelectionMap.RespondToChangedDEM;
    end;
    {$IfDef RecordVertDatumShift} WriteLineToDebugFile('VerticalDatumShift out, DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].ZRange);  {$EndIf}
 end;

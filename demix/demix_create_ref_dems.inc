@@ -148,7 +148,7 @@ begin
          Paths := tStringList.Create;
          Paths.Add(DEMIX_3DEP_Dir);
          if GetMultipleDirectories('3DEP DEMs', Paths) then begin
-            {$If Defined(Record3DEPX)}WriteLineToDebugFile('DEMIX_Create3DEPReferenceDEMs paths=' + IntToStr(Paths.Count)); {$EndIf}
+            {$If Defined(Record3DEPX)} HighlightLineToDebugFile('DEMIX_Create3DEPReferenceDEMs paths=' + IntToStr(Paths.Count)); {$EndIf}
             for I := 0 to pred(Paths.Count) do begin
                DirStatus := 'Dir: ' + IntToStr(succ(i)) + '/' + IntToStr(Paths.Count);
                wmdem.SetPanelText(3,DirStatus);
@@ -220,7 +220,7 @@ begin
          Paths := tStringList.Create;
          Paths.Add(DEMIX_3DEP_Dir);
          if GetMultipleDirectories('3DEP DEMs', Paths) then begin
-            {$If Defined(Record3DEPX)}WriteLineToDebugFile('DEMIX_Create3DEPReferenceDEMs paths=' + IntToStr(Paths.Count)); {$EndIf}
+            {$If Defined(Record3DEPX)} WriteLineToDebugFile('DEMIX_Create3DEPReferenceDEMs paths=' + IntToStr(Paths.Count)); {$EndIf}
             for I := 0 to pred(Paths.Count) do begin
                DirStatus := 'Dir: ' + IntToStr(succ(i)) + '/' + IntToStr(Paths.Count);
                wmdem.SetPanelText(3,DirStatus);
@@ -246,12 +246,12 @@ procedure BatchGDAL_3DEP_shift(DataDir : PathStr = '');
       InName,SaveName : PathStr;
       UTMZone,s_SRSstring,t_srsstring : shortstring;
    begin
-      {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DatumShiftforUS3DEParea in'); {$EndIf}
       try
          GetDEMIXpaths;
          if not ValidDEM(DEM) then begin
             DEM := OpenNewDEM('',false);
          end;
+         {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DatumShiftforUS3DEParea in, ' + DEMGlb[DEM].AreaName); {$EndIf}
          InName := DEMGlb[DEM].GeotiffDEMName;
          SaveName := ChangeFileExt(InName,'_egm2008.tif');
          UTMZone := AddDayMonthLeadingZero(DEMGlb[DEM].DEMHeader.UTMzone);
@@ -276,15 +276,15 @@ procedure BatchGDAL_3DEP_shift(DataDir : PathStr = '');
       FilesWanted := tStringList.Create;
       Petmar.FindMatchingFiles(DataDir,'*.tif',FilesWanted,0);
       if (FilesWanted.Count = 0) then begin
-         {$If Defined(Record3DEPX)} WriteLineToDebugFile('No DEMs found'); {$EndIf}
+         {$If Defined(Record3DEPX)} WriteLineToDebugFile('No DEMs found in ' + DataDir); {$EndIf}
       end
       else begin
          for I := 0 to pred(FilesWanted.Count) do begin
             TStr := 'GDAL 3DEP datum shift: ' + IntToStr(succ(i)) + '/' + IntToStr(FilesWanted.Count);
-            {$If Defined(Record3DEPX)} WriteLineToDebugFile(TStr); {$EndIf}
             wmdem.SetPanelText(2,TStr);
             fName := FilesWanted.Strings[i];
             if (FileExists(ChangeFileExt(fName,'_egm2008.tif'))) or StrUtils.AnsiContainsText(UpperCase(fname),'EGM2008') then begin
+               {$If Defined(Record3DEPX)} WriteLineToDebugFile('Already done ' + ExtractFileName(fName)); {$EndIf}
                //already done EGM2008 shift
             end
             else begin
@@ -317,7 +317,7 @@ begin
          if GetMultipleDirectories('3DEP DEMs', Paths) then begin
              {$If Defined(Record3DEPX)} WriteLineToDebugFile('BatchGDAL_3DEP_shift paths=' + IntToStr(Paths.Count)); {$EndIf}
             for I := 0 to pred(Paths.Count) do begin
-               wmdem.SetPanelText(3,'Dir: ' + IntToStr(succ(i)) + '/' + IntToStr(Paths.Count));
+               wmdem.SetPanelText(1,'Dir: ' + IntToStr(succ(i)) + '/' + IntToStr(Paths.Count) + ' ' + LastSubDir(Paths.Strings[i]));
                OneDirectory(Paths.Strings[i]);
             end;
          end;
@@ -353,7 +353,8 @@ end;
 procedure DEMIX_merge_Visioterra_source(AreaName : shortstring = '');
 var
    Areas,ErrorLog : tStringList;
-   Fixed,NewDEM,AnArea : integer;
+   Fixed : int64;
+   NewDEM,AnArea : integer;
    AreaMergeName,AreaPath,TStr : shortstring;
 
 
@@ -425,7 +426,8 @@ end;
 procedure DEMIX_merge_source(Areas : tStringList = Nil);
 var
    DEMs,ErrorLog : tStringList;
-   Fixed,VDatumCode,NewDEM,AnArea,LocalToWGS84,WGS84toEGM2008 : integer;
+   Fixed : int64;
+   VDatumCode,NewDEM,AnArea,LocalToWGS84,WGS84toEGM2008 : integer;
    AreaInventoryName,AreaMergeName, AreaPath : PathStr;
    AreaName,TStr : shortstring;
    AreaInventory : tMyData;

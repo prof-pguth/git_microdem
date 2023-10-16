@@ -2087,6 +2087,7 @@ begin
    if (StringGrid <> Nil) then MomentsToStringGrid(StringGrid,OnLine,OnCol,Variable,MomentVar);
 end;
 
+
 function MomentResultsToString(MomentVar : tMomentVar) : shortstring;
 begin
    Result := ',' + RealToString(MomentVar.MinZ,-18,-4) + ','  + RealToString(MomentVar.PC1,-18,-4) + ','  + RealToString(MomentVar.PC2,-18,-4) + ',' + RealToString(MomentVar.PC5,-18,-4) + ',' +
@@ -2095,7 +2096,6 @@ begin
        RealToString(MomentVar.avg_dev,-8,2) + ',' + RealToString(MomentVar.sdev,-8,2) + ',' + RealToString(MomentVar.skew,-18,-4) + ',' +  RealToString(MomentVar.curt,-18,-4) + ',' +
        IntToStr(MomentVar.NPts);
 end;
-
 
 
 function FracDimFromSlope1(Slope : float64) : float64;
@@ -2114,7 +2114,6 @@ procedure LoadBFarray32(fName : PathStr; var Values : Petmath.bfarray32; var npt
 //need to create values if it will be a pointer
 var
     inf : file;
-    //i : integer;
 begin
     npts := GetFileSize(fName) div SizeOf(float32);
     AssignFile(inf,fName);

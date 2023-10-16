@@ -2,8 +2,8 @@ object dbtablef: Tdbtablef
   Left = 62
   Top = 306
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 988
-  ClientWidth = 1208
+  ClientHeight = 986
+  ClientWidth = 1200
   Color = clBtnFace
   ParentFont = True
   FormStyle = fsMDIChild
@@ -17,22 +17,24 @@ object dbtablef: Tdbtablef
   TextHeight = 15
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 969
-    Width = 1208
+    Top = 967
+    Width = 1200
     Height = 19
     Panels = <
       item
         Width = 250
       end>
+    ExplicitTop = 966
+    ExplicitWidth = 1196
   end
   object Panel2: TPanel
     Left = 0
     Top = 41
-    Width = 1208
+    Width = 1200
     Height = 32
     Align = alTop
     TabOrder = 1
-    ExplicitWidth = 1204
+    ExplicitWidth = 1196
     object BitBtn1: TBitBtn
       Left = 34
       Top = 1
@@ -209,15 +211,25 @@ object dbtablef: Tdbtablef
       TabOrder = 14
       OnClick = BitBtn28Click
     end
+    object BitBtn13: TBitBtn
+      Left = 654
+      Top = 1
+      Width = 51
+      Height = 25
+      Caption = 'Unhide'
+      Enabled = False
+      TabOrder = 15
+      OnClick = BitBtn13Click
+    end
   end
   object Panel3: TPanel
     Left = 0
     Top = 73
-    Width = 1208
+    Width = 1200
     Height = 41
     Align = alTop
     TabOrder = 2
-    ExplicitWidth = 1204
+    ExplicitWidth = 1196
     object Label2: TLabel
       Left = 12
       Top = 12
@@ -264,11 +276,11 @@ object dbtablef: Tdbtablef
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1208
+    Width = 1200
     Height = 41
     Align = alTop
     TabOrder = 4
-    ExplicitWidth = 1204
+    ExplicitWidth = 1196
     object LOSButton: TSpeedButton
       Left = 40
       Top = 6
@@ -527,11 +539,11 @@ object dbtablef: Tdbtablef
   object Panel7: TPanel
     Left = 0
     Top = 114
-    Width = 1208
+    Width = 1200
     Height = 41
     Align = alTop
     TabOrder = 3
-    ExplicitWidth = 1204
+    ExplicitWidth = 1196
     object RadioGroup2: TRadioGroup
       Left = 20
       Top = 0
@@ -552,8 +564,8 @@ object dbtablef: Tdbtablef
   object DBGrid1: TDBGrid
     Left = 0
     Top = 155
-    Width = 1208
-    Height = 814
+    Width = 1200
+    Height = 812
     Align = alClient
     TabOrder = 5
     TitleFont.Charset = DEFAULT_CHARSET
@@ -664,11 +676,11 @@ object dbtablef: Tdbtablef
         OnClick = Clustermaplocations1Click
       end
       object Clusterstatistics1: TMenuItem
-        Caption = 'Cluster statistics'
+        Caption = 'Create DB with cluster statistics'
         OnClick = Clusterstatistics1Click
       end
       object Clustercomposition1: TMenuItem
-        Caption = 'Cluster composition'
+        Caption = 'Cluster composition by DB field'
         OnClick = Clustercomposition1Click
       end
     end
@@ -2121,6 +2133,17 @@ object dbtablef: Tdbtablef
       Caption = 'LVIS waveform'
       OnClick = Lidarwaveform1Click
     end
+    object DEMIX2: TMenuItem
+      Caption = 'DEMIX'
+      object LoadtestandreferenceDEMs1: TMenuItem
+        Caption = 'Load test and reference DEMs'
+        OnClick = LoadtestandreferenceDEMs1Click
+      end
+      object SSIMR2graphforthistile1: TMenuItem
+        Caption = 'SSIM/R2 graph for this tile'
+        OnClick = SSIMR2graphforthistile1Click
+      end
+    end
     object Insertnewrecordatdistancebearing1: TMenuItem
       Caption = 'Insert new record at distance/bearing'
       OnClick = Insertnewrecordatdistancebearing1Click
@@ -2811,7 +2834,7 @@ object dbtablef: Tdbtablef
       OnClick = f1Click
     end
     object AddfieldfromopenDB1: TMenuItem
-      Caption = 'Add field from open DB'
+      Caption = 'Add fields from nearest record in open DB'
       OnClick = AddfieldfromopenDB1Click
     end
     object N6: TMenuItem
@@ -3678,33 +3701,49 @@ object dbtablef: Tdbtablef
       Caption = 'Add tile characteristics to DB'
       OnClick = Addtilecharacteristics1Click
     end
+    object AddcountryfieldtoDB1: TMenuItem
+      Caption = 'Add country field to DB'
+      OnClick = AddcountryfieldtoDB1Click
+    end
     object SSIMtodissimilarity1: TMenuItem
       Caption = 'SSIM or R2 evaluations to dissimilarity'
       OnClick = SSIMtodissimilarity1Click
     end
-    object GraphSSIMR2foratile1: TMenuItem
-      Caption = 'Graph SSIM/R2 for a tile'
-      OnClick = GraphSSIMR2foratile1Click
+    object TransposeSSIMR2forclusters1: TMenuItem
+      Caption = 'Transpose SSIM/R2 means for K-means cluster'
+      OnClick = TransposeSSIMR2forclusters1Click
     end
-    object GraphSSIMR2forclusters1: TMenuItem
-      Caption = 'Graph SSIM/R2 for cluster'
-      OnClick = GraphSSIMR2forclusters1Click
+    object GraphSSIMR2bycluster1: TMenuItem
+      Caption = 'Graph SSIM/R2 by cluster means'
+      OnClick = GraphSSIMR2bycluster1Click
+    end
+    object GraphSSIMR2byDEM1: TMenuItem
+      Caption = 'Graph SSIM/R2 by DEM means'
+      OnClick = GraphSSIMR2byDEM1Click
     end
     object ilecharacteristicsbytileforCopDEM1: TMenuItem
       Caption = 'Tile characteristics by tile for CopDEM'
       OnClick = ilecharacteristicsbytileforCopDEM1Click
     end
     object ClustersperDEMIXtile1: TMenuItem
-      Caption = 'Clusters per DEMIX tile'
+      Caption = 'Number of clusters per DEMIX tile (table)'
       OnClick = ClustersperDEMIXtile1Click
     end
     object Clusterdiversity1: TMenuItem
-      Caption = 'Cluster diversity'
+      Caption = 'Graphs all SSIM/R2 range by DEMs and clusters (very slow)'
       OnClick = Clusterdiversity1Click
     end
     object Clustersensitivity1: TMenuItem
       Caption = 'Cluster sensitivity'
       OnClick = Clustersensitivity1Click
+    end
+    object Clusterwhiskerplotsforslopeandroughness1: TMenuItem
+      Caption = 'Cluster whisker plots for slope and roughness'
+      OnClick = Clusterwhiskerplotsforslopeandroughness1Click
+    end
+    object CreateDBwithparametersbyDEM1: TMenuItem
+      Caption = 'Create DB with parameters by DEM'
+      OnClick = CreateDBwithparametersbyDEM1Click
     end
     object N49: TMenuItem
       Caption = '-'
@@ -3726,7 +3765,7 @@ object dbtablef: Tdbtablef
       OnClick = DEMIXtileinvertory1Click
     end
     object DEMIXtilesummary1: TMenuItem
-      Caption = 'DEMIX tile summary'
+      Caption = 'DEMIX tile characteristic summary (one record per tile)'
       OnClick = DEMIXtilesummary1Click
     end
     object Filteroutsignedcriteriameanandmedian1: TMenuItem
@@ -3834,7 +3873,6 @@ object dbtablef: Tdbtablef
       Caption = 'Add country to DB'
       Enabled = False
       Visible = False
-      OnClick = N50Click
     end
   end
 end

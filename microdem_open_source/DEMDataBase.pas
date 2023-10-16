@@ -434,7 +434,7 @@ type
      //filtering
         function AssembleGISFilter : AnsiString;
         procedure ClearGISFilter;
-        procedure SaveFilterStatus(RemoveFilter : boolean);
+        procedure SaveFilterStatus(RemoveFilter : boolean = false);
         procedure RestoreFilterStatus;
         procedure ApplyGISFilter(fString : AnsiString; DoShowStatus : boolean = true);
         procedure FilterDBByUseAndDisable(Used : boolean);
@@ -593,6 +593,7 @@ type
          procedure CloseGisScaledForm;
          procedure ZoommaptorecordWithBufferMeters(Buffer : float64);
          procedure Recentermaponrecord;
+         procedure ZoomToDBCoverageOnMap;
      {$EndIf}
 
      {$IfDef VCL}
@@ -2577,18 +2578,18 @@ end;
                end;
             end;
 
-               if (fstring = 'NONE') then fstring := ''
-               else if MyData.FieldExists(fstring) then begin
-                  dbOpts.MainFilter := '';
-                  AssembleGISFilter;
-                  GetFilterString(Self,fString,ChangeUse,true,fString);
-               end
-               else if (fstring <> 'NONE') and (not CompleteFilter) then begin
-                  {$IfDef RecordDataBase} WriteLineToDebugFile('Off to GetFilterString'); {$EndIf}
-                  GetFilterString(Self,fString,ChangeUse);
-                  {$IfDef RecordDataBase} WriteLineToDebugFile('Back from GetFilterString, filter=' + fString); {$EndIf}
-               end;
-               if (not FirstTime) then ApplyGISFilter(fString);
+            if (fstring = 'NONE') then fstring := ''
+            else if MyData.FieldExists(fstring) then begin
+               dbOpts.MainFilter := '';
+               AssembleGISFilter;
+               GetFilterString(Self,fString,ChangeUse,true,fString);
+            end
+            else if (fstring <> 'NONE') and (not CompleteFilter) then begin
+               {$IfDef RecordDataBase} WriteLineToDebugFile('Off to GetFilterString'); {$EndIf}
+               GetFilterString(Self,fString,ChangeUse);
+               {$IfDef RecordDataBase} WriteLineToDebugFile('Back from GetFilterString, filter=' + fString); {$EndIf}
+            end;
+            if (not FirstTime) then ApplyGISFilter(fString);
 
             {$IfDef RecordDataBase} WriteLineToDebugFile('Filtering data base  Filter: ' + fString); {$EndIf}
 
@@ -2601,6 +2602,7 @@ end;
                end;
             end;
             dbTablef.FormActivate(Nil);
+            ShowStatus;
             {$IfDef RecordDataBase} WriteLineToDebugFile('   Filtered recs: ' + IntToStr(MyData.FiltRecsInDB)); {$EndIf}
          end;
 {$EndIf}
@@ -4276,8 +4278,8 @@ begin
       Table := Nil;
       Table := tMyData.Create(fName);
       {$IfDef RecordRangeTable}
-      if (Table=Nil) then WriteLineToDebugFile('TGISdataBaseModule.SetUpRangeTable failure')
-      else WriteLineToDebugFile('TGISdataBaseModule.SetUpRangeTable ' + ExtractFileName(fName));
+         if (Table=Nil) then WriteLineToDebugFile('TGISdataBaseModule.SetUpRangeTable failure')
+         else WriteLineToDebugFile('TGISdataBaseModule.SetUpRangeTable ' + ExtractFileName(fName));
       {$EndIf}
    end
    else begin
@@ -4444,7 +4446,7 @@ begin
 end;
 
 
-procedure TGISdataBaseModule.SaveFilterStatus(RemoveFilter : boolean);
+procedure TGISdataBaseModule.SaveFilterStatus(RemoveFilter : boolean = false);
 begin
    DBOldFilter := MyData.Filter;
    DBWasFiltered := MyData.Filtered;
@@ -4566,26 +4568,36 @@ end;
 
 procedure TGISdataBaseModule.MergeDataBases(FileNames : tStringList);
 var
-   i,j  : integer;
+   i,j,Max  : integer;
    MergingTable : tMyData;
    fName        : PathStr;
    fN           : ShortString;
    TStr         : ShortString;
 begin
-   {$IfDef RecordMergeDB} WriteLineToDebugFile('TGISDataBase.MergeDataBases in'); {$EndIf}
-    {$IfDef VCL} StartProgress('Merge'); {$EndIf}
+    {$IfDef RecordMergeDB} WriteLineToDebugFile('TGISDataBase.MergeDataBases in'); {$EndIf}
+    StartProgress('Merge');
+    ShowHourglassCursor;
     for j := 0 to pred(FileNames.Count) do begin
-      EmpSource.Enabled := false;
-      {$IfDef VCL} UpdateProgressBar(j/FileNames.Count); {$EndIf}
-      fName := FileNames.Strings[j];
-      {$IfDef RecordMergeDB} WriteLineToDebugFile(fName); {$EndIf}
-      if (upperCase(fName) <> UpperCase(MyData.TableName)) then begin
+       EmpSource.Enabled := false;
+       UpdateProgressBar(j/FileNames.Count);
+       fName := FileNames.Strings[j];
+       {$IfDef RecordMergeDB} WriteLineToDebugFile(fName); {$EndIf}
+       if (upperCase(fName) <> UpperCase(MyData.TableName)) then begin
           MergingTable := tMyData.Create(fName);
+          for i := 0 to pred(MyData.FieldCount) do begin
+             fn := MyData.GetFieldName(i);
+             if (MergingTable.FieldExists(fn)) then begin
+                Max := MergingTable.GetFieldLength(fn);
+                if MyData.GetFieldLength(fn) < Max then begin
+                   MyData.TrimField(fn,Max);
+                end;
+             end;
+          end;
           while not MergingTable.EOF do begin
                EmpSource.Enabled := false;
                MyData.Insert;
-               ApplicationProcessMessages;
-               EmpSource.Enabled := false;
+               //ApplicationProcessMessages;
+               //EmpSource.Enabled := false;
                for i := 0 to pred(MyData.FieldCount) do begin
                   fn := MyData.GetFieldName(i);
                   if (MergingTable.FieldExists(fn)) then begin
@@ -4599,11 +4611,10 @@ begin
            MergingTable.Destroy;
        end;
     end;
-    EmpSource.Enabled := true;
-    {$IfDef VCL}
-       EndProgress;
-       RedrawLayerOnMap;
-    {$EndIf}
+    //EmpSource.Enabled := true;
+    //EndProgress;
+    ShowStatus;
+    RedrawLayerOnMap;
 end;
 
 
@@ -5158,10 +5169,7 @@ var
    sl,FieldsInDB : tStringList;
    glIndexFile : file;
    MainFileHeader : sfMainFileHeader;
-   {$IfDef RecordOpenDataBase}
-      TStr : shortstring;
-   {$EndIf}
-
+   {$IfDef RecordOpenDataBase} TStr : shortstring; {$EndIf}
 begin
     if not FileExists(FileWanted) then begin
        {$IfDef RecordOpenDataBase} WriteLineToDebugFile('TGISDataBase.InitializeTheData try open missing ' + ExtractFileName(FileWanted)); {$EndIf}
@@ -5170,9 +5178,9 @@ begin
        exit;
     end;
     {$If Defined(RecordOpenDataBase)} if (UpperCase(ExtractFilePath(FileWanted)) <> UpperCase(MDTempDir)) then WriteLineToDebugFile('TGISDataBase.InitializeTheData start, ' + ExtractFileName(FileWanted)); {$EndIf}
-    {$IfDef RecordIniMemoryOverwrite} IniMemOverwriteCheck('TGISdataBaseModule.InitializeTheTable start'); {$EndIf}
+    //{$IfDef RecordIniMemoryOverwrite} IniMemOverwriteCheck('TGISdataBaseModule.InitializeTheTable start'); {$EndIf}
 
-   {$IfDef VCL}
+    {$IfDef VCL}
        if (FileWanted = '') then begin
           FileWanted := LastDataBase;
           if (WhatDataBase = '') then WhatDataBase := 'data base';

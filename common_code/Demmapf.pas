@@ -30,9 +30,9 @@
       //{$Define FanDrawProblems}
       //{$Define RawProjectInverse}  //must also be set in BaseMap
       {$Define RecordDEMIX}
-      {$Define RecordMatchMaps}
-      {$Define RecordSat}
-      {$Define RecordVAT}
+      //{$Define RecordMatchMaps}
+      //{$Define RecordSat}
+      //{$Define RecordVAT}
       //{$Define TrackHorizontalDatum}
       //{$Define TrackDEMCorners}
       //{$Define RecordCarto}
@@ -1485,6 +1485,10 @@ type
     NBR21: TMenuItem;
     Percent1: TMenuItem;
     GDALgridsubsettomatchthismap1: TMenuItem;
+    ClipDEMtofullDEMIXtiles1: TMenuItem;
+    N61: TMenuItem;
+    N62: TMenuItem;
+    Roundtointegers1: TMenuItem;
     //procedure HiresintervisibilityDEM1Click(Sender: TObject);
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
@@ -2572,6 +2576,10 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Percent1Click(Sender: TObject);
     procedure Rasteraftersubsettomatchthismapextent1Click(Sender: TObject);
     procedure GDALgridsubsettomatchthismap1Click(Sender: TObject);
+    procedure PI1Click(Sender: TObject);
+    procedure ClipDEMtofullDEMIXtiles1Click(Sender: TObject);
+    procedure N62Click(Sender: TObject);
+    procedure Roundtointegers1Click(Sender: TObject);
     //procedure RescaleallDEMsforSSIM1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
@@ -2754,6 +2762,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure CheckThatLegendsAreOnTop;
     procedure SetMapDisplayType(dt : tMapType);
     procedure MakeHeatMap(db : integer);
+    procedure RecolorMapWithElevationRange(Min,Max : float32);
 
     procedure BackToWandering;
     procedure BlowUpTheMap(BlowUp : float64);
@@ -2773,6 +2782,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
 
     function LoadDEMIXtileOutlines(WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false; OpenTable : boolean = true) : integer;
     function DEMIXtilesOnMap(RecordFill : tStringList = Nil) : tStringList;
+    procedure ClipDEMtoFullDEMIXTiles(NewName : PathStr = '');
 
     procedure MoveADBRecord(lat,Long : float64);
 
@@ -5124,7 +5134,7 @@ procedure TMapForm.RGBgridfillholes1Click(Sender: TObject);
 begin
    {$IfDef ExAdvancedGIS}
    {$Else}
-      RGBfilterDEM(MapDraw.DEMonMap,1,true);
+      DEMGlb[MapDraw.DEMonMap].RGBfilterDEM(1,true);
    {$EndIf}
 end;
 
@@ -6903,7 +6913,7 @@ end;
 
 procedure TMapForm.Normalizeto30m1Click(Sender: TObject);
 begin
-   MakeTRIGrid(MapDraw.DEMonMap,nm30m,true,false);
+   MakeTRIGrid(MapDraw.DEMonMap,nm30m,true);
 end;
 
 procedure TMapForm.Excessiveslopes2Click(Sender: TObject);
@@ -7452,6 +7462,11 @@ procedure TMapForm.Roundtobyterangepercentiles1Click(Sender: TObject);
 begin
    DEMGlb[MapDraw.DEMonMap].RoundZRangeByPercentileToByte;
    RespondToChangedDEM;
+end;
+
+procedure TMapForm.Roundtointegers1Click(Sender: TObject);
+begin
+   Multiplyzvalues1Click(Sender);
 end;
 
 procedure TMapForm.Suminbox1Click(Sender: TObject);
@@ -14320,6 +14335,7 @@ begin
                 if (Sender = Radianstodegrees1) then SetGridElevation(x,y,z/DegToRad);
                 //if (Sender = Raiselowerzvalues1) then SetGridElevation(x,y, Add + z);
                 if (Sender = Absolutevalue1) then SetGridElevation(x,y, abs(z));
+                if (Sender = Roundtointegers1) then SetGridElevation(x,y, round(z));
                 if (Sender = Lntransform1) or (Sender = Logbase10transform1) then begin
                     if (z > 0) then begin
                        if (Sender = Lntransform1) then SetGridElevation(x,y,ln(z));
@@ -15709,6 +15725,11 @@ begin
 end;
 
 
+procedure TMapForm.ClipDEMtofullDEMIXtiles1Click(Sender: TObject);
+begin
+   ClipDEMtoFullDEMIXTiles;
+end;
+
 procedure TMapForm.ClipDEMtoregion(Limits : sfBoundBox);
 begin
    if (DEMGlb[MapDraw.DEMonMap].DEMFileName = '') then DEMGlb[MapDraw.DEMonMap].DEMFileName := MDTempDir + DEMGlb[MapDraw.DEMonMap].AreaName + '.dem';
@@ -15923,7 +15944,6 @@ end;
 procedure TMapForm.Pickmapsforbigimage1Click(Sender: TObject);
 var
    Maps : tStringList;
-   //i,j : integer;
 begin
    PickMaps(Maps,'Maps for to combine on big figure');
    Bigimagewithallmaps(3,'',Maps);
@@ -17042,7 +17062,7 @@ end;
 
 procedure TMapForm.RIK1Click(Sender: TObject);
 begin
-   MakeTRIGrid(MapDraw.DEMonMap,nmTRIK,true,false);
+   MakeTRIGrid(MapDraw.DEMonMap,nmTRIK,true);
 end;
 
 function TMapForm.GetSecondDEM(MustBeCompatible : boolean = true) : boolean;
@@ -17468,7 +17488,8 @@ const
    zLo : float32 = 0;
 var
    x,y,zi,
-   Fixed,Original,PN,NPts  : integer;
+   PN,NPts  : integer;
+   Original,Fixed : int64;
    znw,zw,zsw,zn,z,zs,zne,ze,zse : float32;
    HiMissing,LowMissing : ShortString;
 begin
@@ -17635,19 +17656,22 @@ begin
        end;
     end
     else if (Sender = EverythingAboveCutoff1) then begin
-       DEMGLb[MapDraw.DEMonMap].MarkAboveMissing(zlo,Fixed);
+       DEMGLb[MapDraw.DEMonMap].MarkAboveMissing(zlo,Fixed,false);
     end
     else if (Sender = EverythingBelowCutoff1) then begin
-       DEMGLb[MapDraw.DEMonMap].MarkBelowMissing(zHi,Fixed);
+       DEMGLb[MapDraw.DEMonMap].MarkBelowMissing(zHi,Fixed,false);
     end
     else if (Sender = Likelymissingdatacodes1) then begin
        DEMGLb[MapDraw.DEMonMap].DeleteMissingDataPoints;
     end
     else begin
-       DEMGLb[MapDraw.DEMonMap].MarkInRangeMissing(zlo,zhi,Fixed);
+       DEMGLb[MapDraw.DEMonMap].MarkInRangeMissing(zlo,zhi,Fixed,false);
     end;
 
-    if (Original = 0) then Original := DEMGLb[MapDraw.DEMonMap].DEMheader.NumCol * DEMGLb[MapDraw.DEMonMap].DEMheader.NumRow;
+    if (Original = 0) then begin
+       Original := 1;
+       Original := Original * DEMGLb[MapDraw.DEMonMap].DEMheader.NumCol * DEMGLb[MapDraw.DEMonMap].DEMheader.NumRow;
+    end;
 
     RespondToChangedDEM;
 
@@ -19268,13 +19292,13 @@ var
 begin
    {$IfDef ExGeostats}
    {$Else}
-      TRI_ew := MakeTRIGrid(MapDraw.DEMonMap,nmEastWest,true,false);
-      TRI_ns := MakeTRIGrid(MapDraw.DEMonMap,nmNorthSouth,true,false);
-      TRI_none := MakeTRIGrid(MapDraw.DEMonMap,nmNone,true,false);
-      TRI_interpolate := MakeTRIGrid(MapDraw.DEMonMap,nmInterpolate,true,false);
-      TRI_30m := MakeTRIGrid(MapDraw.DEMonMap,nm30m,true,false);
-      MakeTRIGrid(MapDraw.DEMonMap,nmTRIK,true,false);
-      MakeTRIGrid(MapDraw.DEMonMap,nmRRI,true,false);
+      TRI_ew := MakeTRIGrid(MapDraw.DEMonMap,nmEastWest,true);
+      TRI_ns := MakeTRIGrid(MapDraw.DEMonMap,nmNorthSouth,true);
+      TRI_none := MakeTRIGrid(MapDraw.DEMonMap,nmNone,true);
+      TRI_interpolate := MakeTRIGrid(MapDraw.DEMonMap,nmInterpolate,true);
+      TRI_30m := MakeTRIGrid(MapDraw.DEMonMap,nm30m,true);
+      MakeTRIGrid(MapDraw.DEMonMap,nmTRIK,true);
+      MakeTRIGrid(MapDraw.DEMonMap,nmRRI,true);
    {$EndIf}
 end;
 
@@ -19713,7 +19737,7 @@ procedure TMapForm.Nonormalization1Click(Sender: TObject);
 begin
    {$IfDef ExGeostats}
    {$Else}
-      MakeTRIGrid(MapDraw.DEMonMap,nmNone,true,false);
+      MakeTRIGrid(MapDraw.DEMonMap,nmNone,true);
    {$EndIf}
 end;
 
@@ -19747,7 +19771,7 @@ procedure TMapForm.Normalizenorthsouth1Click(Sender: TObject);
 begin
    {$IfDef ExGeostats}
    {$Else}
-      MakeTRIGrid(MapDraw.DEMonMap,nmNorthSouth,true,true);
+      MakeTPIGrid(MapDraw.DEMonMap,nmNorthSouth,true);
    {$EndIf}
 end;
 
@@ -22031,6 +22055,13 @@ begin
 end;
 
 
+procedure TMapForm.N62Click(Sender: TObject);
+var
+   ErrorMessage : shortstring;
+begin
+   LoadLC100LandCover('',MapDraw.MapCorners.BoundBoxGeo,ErrorMessage);
+end;
+
 procedure TMapForm.N7x7region1Click(Sender: TObject);
 begin
    CreateRoughnessSlopeStandardDeviationMap(MapDraw.DEMonMap,7);
@@ -23437,6 +23468,11 @@ begin
   {$EndIf}
 end;
 
+procedure TMapForm.PI1Click(Sender: TObject);
+begin
+   MakeTPIGrid(MapDraw.DEMonMap,nmRRI,true);
+end;
+
 procedure TMapForm.EditDEMgrid1Click(Sender: TObject);
 begin
    DEMEditW.ShowAndEditDEMGrid(DEMGlb[MAPDraw.DEMonMap].SelectionMap.DEMeditForm,MapDraw.DEMonMap);
@@ -23984,6 +24020,13 @@ begin
    SagaVectorRuggednessMap(DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap,Radius);
 end;
 
+procedure TMapForm.RecolorMapWithElevationRange(Min,Max : float32);
+begin
+   MapDraw.MinMapElev := Min;
+   MapDraw.MaxMapElev := Max;
+   DoBaseMapRedraw;
+end;
+
 procedure TMapForm.SameElevationColors1Click(Sender: TObject);
 var
    i : integer;
@@ -23991,9 +24034,12 @@ begin
    for i := 0 to pred(WMDEM.MDIChildCount) do
       if WMDEM.MDIChildren[i] is tMapForm and (WmDEM.MDIChildren[i].Handle <> Handle) then begin
          if (WMDEM.MDIChildren[i] as TMapForm).MapDraw.DEMMap then begin
+           (WMDEM.MDIChildren[i] as TMapForm).RecolorMapWithElevationRange(MapDraw.MinMapElev,MapDraw.MaxMapElev);
+           (*
             (WMDEM.MDIChildren[i] as TMapForm).MapDraw.MinMapElev := MapDraw.MinMapElev;
             (WMDEM.MDIChildren[i] as TMapForm).MapDraw.MaxMapElev := MapDraw.MaxMapElev;
             (WMDEM.MDIChildren[i] as TMapForm).DoBaseMapRedraw;
+            *)
          end;
       end;
 end;
@@ -24489,9 +24535,11 @@ begin
       if (Sender = SouthWestern1) then DEMGlb[MapDraw.DEMonMap].FindEdgeThisDEM(NewDEM,cdSW);
       //if (Sender = ResampleDEMgridbyaveraging1) then
       if (Sender = DetrendDEMgrid1) then begin
-         //ReadDefault('radius to filter (pixels)',Radius);
-         Radius := 1;
-         NewDEM := DEMGlb[MapDraw.DEMonMap].DetrendDEM(true,Radius);
+         Radius := 3;
+         ReadDefault('radius to filter (pixels)',Radius);
+         NewDEM := DEMGlb[MapDraw.DEMonMap].BoxcarDetrendDEM(true,DEMGlb[MapDraw.DEMonMap].FullDEMGridLimits, Radius);
+         exit;
+         //NewDEM := DEMGlb[MapDraw.DEMonMap].DetrendDEM(true,Radius);
       end;
 
       if (NewDEM <> 0) then begin
@@ -24714,7 +24762,7 @@ end;
 
 procedure TMapForm.RICK1Click(Sender: TObject);
 begin
-   MakeTRIGrid(MapDraw.DEMonMap,nmRRI,true,false);
+   MakeTRIGrid(MapDraw.DEMonMap,nmRRI,true);
 end;
 
 procedure TMapForm.Mapshadingoptions1Click(Sender: TObject);

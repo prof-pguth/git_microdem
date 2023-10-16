@@ -2444,8 +2444,9 @@ var
          AParameter('DEMIX','SSIM_slope',SSIM_slope,true);
          AParameter('DEMIX','SSIM_ruff',SSIM_ruff,true);
          AParameter('DEMIX','SSIM_rri',SSIM_rri,true);
+         AParameter('DEMIX','SSIM_tpi',SSIM_tpi,true);
          AParameter('DEMIX','SSIM_hill',SSIM_hill,true);
-         AParameter('DEMIX','DEMIX_open_ref_DEM',DEMIX_open_ref_DEM,true);
+         AParameter('DEMIX','DEMIX_open_ref_DEM',DEMIX_open_ref_DSM,true);
          AParameter('DEMIX','DEMIX_Full',DEMIX_Full,100);
       end;
    end;

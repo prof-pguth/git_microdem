@@ -8,6 +8,64 @@
 {____________________________________}
 
 
+
+procedure tGISdataBaseModule.ZoomToDBCoverageOnMap;
+var
+  extra,xf : float64;
+  xminproj,xmaxproj,yminproj,ymaxproj,
+  xmin,xmax,ymin,ymax : float64;
+
+
+      procedure Apoint(Long,Lat : float64);
+      var
+         xproj,yproj : float64;
+      begin
+         TheMapOwner.MapDraw.PrimMapProj.ForwardProjectDegrees(Lat,Long,xproj,yproj);
+         Petmath.CompareValueToExtremes(xproj,xminproj,xmaxproj);
+         Petmath.CompareValueToExtremes(yproj,yminproj,ymaxproj);
+      end;
+
+      procedure InversePoint(x,y : float64; var Lat,Long : float64);
+      begin
+         TheMapOwner.MapDraw.PrimMapProj.InverseProjectDegrees(x,y,Lat,Long);
+      end;
+
+begin
+  if (TheMapOwner = Nil) then exit;
+
+  if (not FileExists(ChangeFileExt(DBFullName,'.shx'))) then begin
+     SavePointShapeFile(false);
+  end;
+  xmin := dbBoundBox.XMin;
+  xmax := dbBoundBox.XMax;
+  ymin := dbBoundBox.YMin;
+  yMax := dbBoundBox.YMax;
+  if TheMapOwner.MapDraw.PrimMapProj.Pname in [AlbersEqAreaConicalEllipsoid,LambertConformalConicEllipse] then begin
+     xminproj := 99e38;
+     xmaxproj := -99e38;
+     yminproj := 99e38;
+     yMaxproj := -99e38;
+     APoint(dbBoundBox.XMin,dbBoundBox.YMin);
+     APoint(dbBoundBox.XMin,dbBoundBox.YMax);
+     APoint(dbBoundBox.XMax,dbBoundBox.YMin);
+     APoint(dbBoundBox.XMax,dbBoundBox.YMax);
+     APoint(0.5*(dbBoundBox.XMin + dbBoundBox.XMax),dbBoundBox.YMin);
+     APoint(0.5*(dbBoundBox.XMin + dbBoundBox.XMax),dbBoundBox.YMax);
+     InversePoint(xminproj,yminproj,ymin,xmin);
+     InversePoint(xmaxproj,ymaxproj,ymax,xmax);
+     extra := 5.0;
+     TheMapOwner.MapDraw.MaximizeLatLongMapCoverage(YMin - extra,XMin - extra, YMax + Extra,XMax + Extra);
+     TheMapOwner.DoCompleteMapRedraw;
+  end
+  else begin
+     //xf := MDDef.LatLongCushion;
+     //extra := xf * (XMax - xmin);
+     TheMapOwner.SubsetAndZoomMapFromGeographicBounds(dbBoundBox);
+  end;
+end;
+
+
+
 {$IfDef ExGeostats}
 {$Else}
 
@@ -649,12 +707,12 @@
                      inc(Count);
                      if (Count >= MDDef.GISLabelSkip) and ((TStr <> '') or (TStr2 <> '') )then begin
                         if AreaShapeFile(ShapeFileType) or LatLongCornersPresent then begin
-                           if AreaShapeFile(ShapeFileType) then begin
-                              aShapeFile.AreaAndCentroid(TheMapOwner.MapDraw.PrimMapProj,MyData.RecNo,Lat,Long);
-                           end
-                           else begin
+                           if LatLongCornersPresent  then begin
                               Long := 0.5 *(MyData.GetFieldByNameAsFloat('LONG_HI') + MyData.GetFieldByNameAsFloat('LONG_LOW'));
                               Lat := 0.5*(MyData.GetFieldByNameAsFloat('LAT_HI') + MyData.GetFieldByNameAsFloat('LAT_LOW'));
+                           end
+                           else if AreaShapeFile(ShapeFileType) then begin
+                              aShapeFile.AreaAndCentroid(TheMapOwner.MapDraw.PrimMapProj,MyData.RecNo,Lat,Long);
                            end;
                            TheMapOwner.MapDraw.LatLongDegreeToScreen(Lat,Long,xCentroid,yCentroid);
                            if TheMapOwner.MapDraw.OnScreen(xCentroid,yCentroid) then begin

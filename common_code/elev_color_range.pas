@@ -112,7 +112,7 @@ end;
 
 procedure TElevationRangeForm.BitBtn3Click(Sender: TObject);
 var
-   NumPts : integer;
+   NumPts : int64;
 begin
    DEMGlb[MapOwner.MapDraw.DEMonMap].MarkOutsideRangeMissing(MapOwner.MapDraw.MinMapElev,MapOwner.MapDraw.MaxMapElev,NumPts);
    if (NumPts > 0) then RedrawSpeedButton12Click(Sender);

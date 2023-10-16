@@ -2,8 +2,8 @@ object MapForm: TMapForm
   Left = 45
   Top = 303
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1036
-  ClientWidth = 1679
+  ClientHeight = 1033
+  ClientWidth = 1936
   Color = clBtnHighlight
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -40,8 +40,8 @@ object MapForm: TMapForm
   object ScrollBox1: TScrollBox
     Left = 0
     Top = 27
-    Width = 1679
-    Height = 1009
+    Width = 1936
+    Height = 1006
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clRed
@@ -51,8 +51,8 @@ object MapForm: TMapForm
     ParentFont = False
     TabOrder = 0
     OnClick = ScrollBox1Click
-    ExplicitWidth = 1675
-    ExplicitHeight = 1008
+    ExplicitWidth = 1932
+    ExplicitHeight = 1005
     object Image1: TImage
       Left = 3
       Top = -247
@@ -209,13 +209,13 @@ object MapForm: TMapForm
     end
     object BlendPanel: TPanel
       Left = 0
-      Top = 964
-      Width = 1675
+      Top = 961
+      Width = 1932
       Height = 41
       Align = alBottom
       TabOrder = 8
-      ExplicitTop = 963
-      ExplicitWidth = 1671
+      ExplicitTop = 960
+      ExplicitWidth = 1928
       object TrackBar2: TTrackBar
         Left = 289
         Top = 1
@@ -334,12 +334,12 @@ object MapForm: TMapForm
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1679
+    Width = 1936
     Height = 27
     Align = alTop
     TabOrder = 1
     OnMouseDown = Panel1MouseDown
-    ExplicitWidth = 1675
+    ExplicitWidth = 1932
     object AnnotateSpeedButton1: TSpeedButton
       Left = 31
       Top = -4
@@ -2075,6 +2075,15 @@ object MapForm: TMapForm
           GroupIndex = 1
           OnClick = ASTERGDEMtomatchthismap1Click
         end
+        object N61: TMenuItem
+          Caption = '-'
+          GroupIndex = 1
+        end
+        object N62: TMenuItem
+          Caption = 'LC100 land cover'
+          GroupIndex = 1
+          OnClick = N62Click
+        end
       end
       object ViewExifimages1: TMenuItem
         Caption = 'View Exif images'
@@ -2613,6 +2622,11 @@ object MapForm: TMapForm
             GroupIndex = 1
             OnClick = Absolutevalue1Click
           end
+          object Roundtointegers1: TMenuItem
+            Caption = 'Round to integers'
+            GroupIndex = 1
+            OnClick = Roundtointegers1Click
+          end
         end
       end
       object Setzunits1: TMenuItem
@@ -2724,6 +2738,11 @@ object MapForm: TMapForm
         Caption = 'Clip DEM to region with data'
         GroupIndex = 1
         OnClick = ClipDEMtoregionwithdata1Click
+      end
+      object ClipDEMtofullDEMIXtiles1: TMenuItem
+        Caption = 'Clip DEM to full DEMIX tiles'
+        GroupIndex = 1
+        OnClick = ClipDEMtofullDEMIXtiles1Click
       end
       object Erodedilate1: TMenuItem
         Caption = 'Erode/dilate'
@@ -6104,6 +6123,7 @@ object MapForm: TMapForm
       end
       object PI1: TMenuItem
         Caption = 'TPI'
+        OnClick = PI1Click
       end
       object Rugosity1: TMenuItem
         Caption = 'Rugosity'

@@ -54,12 +54,15 @@ type
    tNLCDarray = array[0..MaxLandCoverCategories] of float64;
    tNLCDCats = array[0..MaxLandCoverCategories] of tCategory;
 
-   procedure SetUpNLCDCategories(AskLimit : boolean; LandCover : ShortString; var Categories : tNLCDCats);
-   function IsThisLandCover(fName : PathStr;  var LandCover : ShortString) : boolean;
-   procedure LandCoverBarGraphs(UseTable : boolean; Legend : boolean = true; MaxCat : boolean = true);
-   procedure LandCoverBarGraphLegends;
+procedure SetUpNLCDCategories(AskLimit : boolean; LandCover : ShortString; var Categories : tNLCDCats);
+function IsThisLandCover(fName : PathStr;  var LandCover : ShortString) : boolean;
+procedure LandCoverBarGraphs(UseTable : boolean; Legend : boolean = true; MaxCat : boolean = true);
+procedure LandCoverBarGraphLegends;
 
-   function MakeAnNLCDLegend(DEM : integer;  theLabel : shortstring = ''; Stats : tstringlist = nil) : integer;
+function MakeAnNLCDLegend(DEM : integer;  theLabel : shortstring = ''; Stats : tstringlist = nil) : integer;
+
+function LoadLC100LandCover(fName : PathStr; bb : sfboundbox; var ErrorMessage : shortstring) : integer;
+
 
 var
    LandCoverCatsUsed : array[0..MaxLandCoverCategories] of boolean;
@@ -76,6 +79,28 @@ uses
    DEMIX_control,
    petimage_form,
    PetImage,PetMath,PetDBUtils,Toggle_db_use,nevadia_main,DEMDef_routines;
+
+
+
+function LoadLC100LandCover(fName : PathStr; bb : sfboundbox; var ErrorMessage : shortstring) : integer;
+var
+   Lat,Long : float32;
+begin
+   Lat := 0.5 * (bb.YMax + bb.YMin);
+   Long := 0.5 * (bb.XMax + bb.XMin);
+   LandCoverFName := GetLC100_fileName(Lat,Long);
+   {$IfDef RecordDEMIX} writeLineToDebugFile('Landcover=' + LandCoverfName); {$EndIf}
+   if FileExists(LandCoverFName) then begin
+      Result := GDALsubsetGridAndOpen(bb,true,LandCoverFName);
+      if ValidDEM(Result) then begin
+         DEMGlb[Result].DEMHeader.ElevUnits := GLCS_LC100;
+         if fName = '' then fName := Petmar.NextFileNumber(MDtempDir,'lcc100_','.dem');
+         
+         DEMGlb[Result].WriteNewFormatDEM(fName);
+      end;
+   end;
+end;
+
 
 
 function MakeAnNLCDLegend(DEM : integer; theLabel : shortstring = ''; Stats : tstringlist = nil) : integer;

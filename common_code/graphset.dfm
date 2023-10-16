@@ -4,8 +4,8 @@ object GraphSettingsForm: TGraphSettingsForm
   ActiveControl = OKBtn
   BorderStyle = bsDialog
   Caption = 'Graph Modifications'
-  ClientHeight = 448
-  ClientWidth = 568
+  ClientHeight = 447
+  ClientWidth = 564
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
@@ -309,7 +309,7 @@ object GraphSettingsForm: TGraphSettingsForm
     Top = 8
     Width = 313
     Height = 185
-    ActivePage = TabSheet1
+    ActivePage = HistogramTabSheet
     TabOrder = 20
     object TabSheet1: TTabSheet
       Caption = 'X axis'
@@ -341,6 +341,7 @@ object GraphSettingsForm: TGraphSettingsForm
         Width = 121
         Height = 21
         TabOrder = 1
+        OnChange = XMinEditChange
       end
       object XMaxEdit: TEdit
         Left = 80
@@ -415,6 +416,7 @@ object GraphSettingsForm: TGraphSettingsForm
         Width = 113
         Height = 21
         TabOrder = 1
+        OnChange = YMaxEditChange
       end
       object YMinEdit: TEdit
         Left = 64
@@ -536,6 +538,42 @@ object GraphSettingsForm: TGraphSettingsForm
         Caption = 'Graph background'
         TabOrder = 2
         OnClick = BitBtn6Click
+      end
+    end
+    object HistogramTabSheet: TTabSheet
+      Caption = 'Histogram'
+      ImageIndex = 4
+      object Label13: TLabel
+        Left = 8
+        Top = 16
+        Width = 45
+        Height = 13
+        Caption = 'Bin size'
+      end
+      object Label14: TLabel
+        Left = 12
+        Top = 48
+        Width = 86
+        Height = 13
+        Caption = 'Number of bins'
+      end
+      object Edit16: TEdit
+        Left = 103
+        Top = 13
+        Width = 80
+        Height = 21
+        TabOrder = 0
+        Text = 'Edit16'
+        OnChange = Edit16Change
+      end
+      object Edit17: TEdit
+        Left = 104
+        Top = 48
+        Width = 79
+        Height = 21
+        TabOrder = 1
+        Text = 'Edit17'
+        OnChange = Edit17Change
       end
     end
   end

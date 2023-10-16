@@ -982,7 +982,7 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
        CheckDEM,
        Intensity,
        //GISNum,x,y,i,xgrid,ygrid,
-       i,RecsRead,Count : integer;
+       i,RecsRead : integer;
        //xApp,yApp,z2,z1,z3 ,
        zShot,zCrit: float64;
        //TStr : ShortString;
@@ -991,6 +991,7 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
        //TheFilter : AnsiString;
        //Output : tstringList;
        //ChangeUse : boolean;
+       Count : int64;
        Ext : ExtStr;
        LasData : Las_Lidar.tLAS_data;
        VegDensity : array[1..MaxVegLayers] of integer;
@@ -1363,7 +1364,7 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
            if (NewRGBGrid <> 0) then begin
               CheckMap(NewRGBGrid,false,mtRGBimagery);
               if MDDef.PCAutoFillHoles then begin
-                 RGBFilterDEM(NewRGBGrid,1,true);
+                 DEMGlb[NewRGBGrid].RGBFilterDEM(1,true);
                  CloseSingleDEM(NewRGBGrid);
                  NewRGBGrid := LastDEMLoaded;
               end;

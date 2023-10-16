@@ -2,8 +2,8 @@ object DemixFilterForm: TDemixFilterForm
   Left = 0
   Top = 0
   Caption = 'Demix Filter Pick Graphs'
-  ClientHeight = 482
-  ClientWidth = 783
+  ClientHeight = 480
+  ClientWidth = 775
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -17,13 +17,13 @@ object DemixFilterForm: TDemixFilterForm
   object PageControl1: TPageControl
     Left = 0
     Top = 0
-    Width = 783
-    Height = 482
-    ActivePage = TabSheet1
+    Width = 775
+    Height = 480
+    ActivePage = TabSheet5
     Align = alClient
     TabOrder = 0
-    ExplicitWidth = 779
-    ExplicitHeight = 481
+    ExplicitWidth = 771
+    ExplicitHeight = 479
     object TabSheet1: TTabSheet
       Caption = 'New options'
       object LoadCurrentAreaBitBtn5: TBitBtn
@@ -451,13 +451,22 @@ object DemixFilterForm: TDemixFilterForm
         OnClick = BitBtn5Click
       end
       object BitBtn32: TBitBtn
-        Left = 176
+        Left = 167
         Top = 115
         Width = 129
         Height = 25
         Caption = 'Load areas from list'
         TabOrder = 39
         OnClick = BitBtn32Click
+      end
+      object BitBtn34: TBitBtn
+        Left = 536
+        Top = 8
+        Width = 137
+        Height = 25
+        Caption = 'Load tile DEMs'
+        TabOrder = 40
+        OnClick = BitBtn34Click
       end
     end
     object TabSheet2: TTabSheet
@@ -894,6 +903,82 @@ object DemixFilterForm: TDemixFilterForm
         Caption = 'Open reference DSMs'
         TabOrder = 8
         OnClick = CheckBox16Click
+      end
+    end
+    object TabSheet4: TTabSheet
+      Caption = 'Current progress'
+      ImageIndex = 4
+      object Label3: TLabel
+        Left = 24
+        Top = 8
+        Width = 34
+        Height = 15
+        Caption = 'Label3'
+      end
+      object AreaProgress: TEdit
+        Left = 16
+        Top = 40
+        Width = 273
+        Height = 23
+        TabOrder = 0
+        Text = 'AreaProgress'
+      end
+      object TileProgress: TEdit
+        Left = 16
+        Top = 120
+        Width = 273
+        Height = 23
+        TabOrder = 1
+        Text = 'TileProgress'
+      end
+      object CurrentOperation: TEdit
+        Left = 16
+        Top = 80
+        Width = 273
+        Height = 23
+        TabOrder = 2
+        Text = 'CurrentOperation'
+      end
+      object Memo8: TMemo
+        Left = 328
+        Top = 16
+        Width = 417
+        Height = 361
+        Lines.Strings = (
+          'Memo8')
+        ScrollBars = ssVertical
+        TabOrder = 3
+      end
+    end
+    object TabSheet5: TTabSheet
+      Caption = 'Tile analysis'
+      ImageIndex = 5
+      object BitBtn33: TBitBtn
+        Left = 16
+        Top = 16
+        Width = 75
+        Height = 25
+        Caption = 'TPI maps'
+        TabOrder = 0
+        OnClick = BitBtn33Click
+      end
+      object BitBtn35: TBitBtn
+        Left = 16
+        Top = 57
+        Width = 75
+        Height = 25
+        Caption = 'RRI maps'
+        TabOrder = 1
+        OnClick = BitBtn35Click
+      end
+      object BitBtn36: TBitBtn
+        Left = 16
+        Top = 88
+        Width = 75
+        Height = 25
+        Caption = 'Ruff maps'
+        TabOrder = 2
+        OnClick = BitBtn36Click
       end
     end
   end

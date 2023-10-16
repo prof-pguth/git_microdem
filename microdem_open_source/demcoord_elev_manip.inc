@@ -163,7 +163,7 @@ begin
    Result := false;
    if GridInDataSet(x,y) then begin
       if (DEMheader.DEMPrecision = FloatingPointDEM) then z := ShortFloatElevations^[x]^[y]
-      else if (DEMheader.DEMPrecision = SmallIntDEM) then z := SmallIntElevations[x]^[y]
+      else if (DEMheader.DEMPrecision = SmallIntDEM) then z := SmallIntElevations^[x]^[y]
       else if (DEMheader.DEMPrecision = WordDEM) then z := WordElevations^[x]^[y]
       else if (DEMheader.DEMPrecision = LongWordDEM) then z := LongWordElevations^[x]^[y]
       else if (DEMheader.DEMPrecision = ByteDEM) then z := ByteElevations^[x]^[y];
@@ -173,7 +173,6 @@ begin
       end;
    end;
 end;
-
 
 
 function tDEMDataSet.GetElevMeters(XGrid,YGrid : float64; var z  : float32) : boolean;
