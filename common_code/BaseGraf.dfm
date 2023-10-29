@@ -54,13 +54,11 @@ object ThisBaseGraph: TThisBaseGraph
     Height = 342
     Align = alClient
     TabOrder = 0
-    ExplicitWidth = 841
-    ExplicitHeight = 363
     object Image1: TImage
       Left = 0
       Top = 0
-      Width = 841
-      Height = 380
+      Width = 837
+      Height = 359
       Hint = 'Legend'
       Align = alClient
       OnDblClick = Image1DblClick
@@ -87,8 +85,6 @@ object ThisBaseGraph: TThisBaseGraph
     Font.Style = [fsBold]
     ParentFont = False
     TabOrder = 1
-    ExplicitTop = 391
-    ExplicitWidth = 841
   end
   object ToolBar1: TToolBar
     Left = 0
@@ -96,7 +92,6 @@ object ThisBaseGraph: TThisBaseGraph
     Width = 837
     Height = 28
     TabOrder = 2
-    ExplicitWidth = 841
     object SpeedButton2: TSpeedButton
       Left = 0
       Top = 0
@@ -661,6 +656,15 @@ object ThisBaseGraph: TThisBaseGraph
       OnClick = Saveimage2Click
     end
     object Copytoclipboard2: TMenuItem
+      Bitmap.Data = {
+        F6000000424DF600000000000000760000002800000010000000100000000100
+        0400000000008000000000000000000000001000000000000000000000000000
+        80000080000000808000800000008000800080800000C0C0C000808080000000
+        FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00FFFFFFFFFFFF
+        FFFFFFF0000000000FFFFF0FFFFFFFFFF0FFFF0FFFFFFFFFF0FFFF0F9FFFFFFF
+        F0FFFF0FF9FFFFFFF0FF9999999FFFFFF0FF99999999FFFFF0FF99999999FFFF
+        F0FF9999999FFFFFF0FFFF0FF9FFFFFFF0FFFF0F9FFFFFFFF0FFFF0FFFDDDDFF
+        F0FFFFF000DDDD000FFFFFFFFDDFFDDFFFFFFFFFFFDDDDFFFFFF}
       Caption = 'Copy to clipboard'
       OnClick = Copytoclipboard2Click
     end

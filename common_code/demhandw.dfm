@@ -3,8 +3,8 @@ object DemHandForm: TDemHandForm
   Top = 244
   BorderIcons = [biSystemMenu]
   Caption = 'Data Manipulation'
-  ClientHeight = 518
-  ClientWidth = 874
+  ClientHeight = 517
+  ClientWidth = 870
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,8 +19,8 @@ object DemHandForm: TDemHandForm
   object Memo1: TMemo
     Left = 0
     Top = 0
-    Width = 874
-    Height = 499
+    Width = 870
+    Height = 498
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -31,13 +31,13 @@ object DemHandForm: TDemHandForm
     ScrollBars = ssVertical
     TabOrder = 0
     Visible = False
-    ExplicitWidth = 882
-    ExplicitHeight = 501
+    ExplicitWidth = 866
+    ExplicitHeight = 497
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 499
-    Width = 874
+    Top = 498
+    Width = 870
     Height = 19
     Panels = <
       item
@@ -46,8 +46,8 @@ object DemHandForm: TDemHandForm
       item
         Width = 250
       end>
-    ExplicitTop = 501
-    ExplicitWidth = 882
+    ExplicitTop = 497
+    ExplicitWidth = 866
   end
   object MainMenu1: TMainMenu
     Left = 24
@@ -133,7 +133,6 @@ object DemHandForm: TDemHandForm
       end
       object ISOGravity1: TMenuItem
         Caption = 'ISO gravity stations'
-        OnClick = ISOGravity1Click
       end
       object Plateboundaryfile1: TMenuItem
         Caption = 'Plate boundary file'
@@ -552,6 +551,10 @@ object DemHandForm: TDemHandForm
       object Verticaldatums1: TMenuItem
         Caption = 'Vertical datums'
         OnClick = Verticaldatums1Click
+      end
+      object DiluviumDEMreprot1: TMenuItem
+        Caption = 'Diluvium DEM reprot'
+        OnClick = DiluviumDEMreprot1Click
       end
     end
     object Edit1: TMenuItem

@@ -346,6 +346,7 @@ end;
 procedure TRefOptFM.RadioGroup4Click(Sender: TObject);
 begin
    MDDef.MultShadeReliefMode := RadioGroup4.ItemIndex;
+   RadioGroup2.Enabled := (MDDef.MultShadeReliefMode = mhsPick);
    DrawPreview;
 end;
 

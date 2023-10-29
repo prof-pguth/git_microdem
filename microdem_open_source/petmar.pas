@@ -289,6 +289,9 @@ function NoCommas(TheString: ShortString) : shortstring;
 procedure SortAndRemoveDuplicates(var StringList : tStringList);
 procedure CopyStringList(FromList : tStringList; var ToList : tStringList);
 procedure RandomizeStringList(var TheList : tStringList; SpareFirst : boolean = true);
+procedure RemoveFilesThatDoNotHaveString(var Files : tStringList; What : shortstring);
+procedure RemoveFilesThatDoHaveString(var Files : tStringList; What : shortstring);
+
 
 function GetFromRequest(InString : ANSIstring; WantField : shortstring) : shortstring;
 function GetFloatFromRequest(InString : ANSIstring; WantField : shortstring) : float64;
@@ -4121,6 +4124,29 @@ begin
       if StringList.Strings[i] = StringList.Strings[pred(i)] then
          StringList.Delete(i);
 end;
+
+procedure RemoveFilesThatDoNotHaveString(var Files : tStringList; What : shortstring);
+var
+   i : integer;
+   fName : PathStr;
+begin
+   for i := pred(Files.Count) downto 0 do begin
+      fName := Files.Strings[i];
+      if (not StrUtils.AnsiContainsText(UpperCase(fname),UpperCase(What))) then Files.Delete(i);
+   end;
+end;
+
+procedure RemoveFilesThatDoHaveString(var Files : tStringList; What : shortstring);
+var
+   i : integer;
+   fName : PathStr;
+begin
+   for i := pred(Files.Count) downto 0 do begin
+      fName := Files.Strings[i];
+      if (StrUtils.AnsiContainsText(UpperCase(fname),UpperCase(What))) then Files.Delete(i);
+   end;
+end;
+
 
 
 function CurrentTimeForFileName : PathStr;

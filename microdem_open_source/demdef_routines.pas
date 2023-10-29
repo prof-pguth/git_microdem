@@ -137,9 +137,12 @@ procedure SetExpertOptions(Expert : boolean);
 
 procedure SetStructuralGeologyDefaults;
 procedure SetPhysicalGeographyDefaults;
+procedure SetRemoteSensingDefaults;
+
+(*
 procedure SetEconDefaults;
 procedure SetShipwrecksDefaults;
-procedure SetRemoteSensingDefaults;
+*)
 
 procedure HideAllOceanOptions;
 procedure SetDefaultMapSizeToScreen;
@@ -4278,8 +4281,6 @@ begin
       case LOSAlgorithm of
          losMicrodemFractional : TStr2 := RealToString(FanDEMSpaceMultiple,-8,-2) + '-' + RealToString(FanMapSpaceMultiple,-8,-1);
          losMicrodemConstant : TStr2 := RealToString(MaskAreaInterval,-8,-1) + 'm';
-         losYoeli :  TStr2 := 'grid sides';
-         losBresenham : TStr2 := 'grid nodes';
       end;
       if (FanMethod = fmRadialIHS) then Result := Result +  TStr2;
       if (FanMethod = fmFanRadials) then Result := Result +  RealToString(MaskRaySpacingDeg,-8,-2) + '°-' + TStr2;

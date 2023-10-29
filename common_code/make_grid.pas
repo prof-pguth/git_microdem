@@ -1554,7 +1554,7 @@ begin
       'o' : Result := 'Slope (°)';
       'P' : Result := 'Percentile';
       'p' : Result := 'Point density';
-      'R' : Result := 'Reflect';
+      'R' : Result := 'Hillshade';
       'r' : Result := 'Ridges';
       's' : Result := 'Sin of slope';
       'S' : Result := 'Slope (%)';
@@ -1600,7 +1600,7 @@ begin
       'O' : Result := 'UP_OP_' + IntToStr(SampleBoxSize);
       'P' : Result := 'Percentile';
       'p' : Result := 'Pt_density';
-      'R' : Result := 'Reflect';
+      'R' : Result := 'Hillshade';
       'r' : Result := 'RIDGES';
       's' : Result := 'Sin_slope';
       'S' : Result := 'SLOPE_PC';
@@ -1747,7 +1747,7 @@ begin
          if (ch = 'p') then MDdef.UseSealevel := true;
 
          DEMGlb[Result].ShortName := ShortDerivativeMapName(ch,SampleBoxSize);
-         DEMGlb[Result].AreaName := DEMGlb[CurDEM].AreaName + ' ' + DerivativeMapName(ch,SampleBoxSize);
+         DEMGlb[Result].AreaName := DEMGlb[CurDEM].AreaName + '_' + DerivativeMapName(ch,SampleBoxSize);
          if ch = 'g' then DEMGlb[Result].AreaName := 'md_rugosity_(m per '+ RealToString(DEMGlb[Result].AverageSpace,-8,-1) + 'm)_' +  DEMGlb[Result].AreaName;
 
          DEMGlb[Result].DefineDEMVariables(true);

@@ -64,7 +64,6 @@ procedure PixelRectangles;
 procedure DoGridSpacingAndDeclination(CurDEM : integer);
 
 
-
 implementation
 
 uses
@@ -72,7 +71,6 @@ uses
    Thread_timers,
    DEMeros,DEMdatabase,
    BaseMap,DEMCoord,DEM_Manager,DEMDef_routines;
-
 
 
 procedure PixelRectangles;

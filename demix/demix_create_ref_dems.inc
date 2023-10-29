@@ -91,7 +91,7 @@ end;
 
 procedure DEMIX_Merge3DEPReferenceDEMs;
 var
-   ErrorLog,Paths : tStringList;
+   Paths : tStringList;
    DirStatus : shortstring;
    i : integer;
    OutPath : PathStr;
@@ -123,12 +123,18 @@ var
                else begin
                   wmdem.SetPanelText(2, DirStatus + '  DEM: ' + IntToStr(succ(i)) + '/' + IntToStr(Files.Count));
                   DEM := MergeMultipleDEMsHere(Files,false,false);
+                  {$If Defined(Record3DEPX)} WriteLineToDebugFile('Merged'); {$EndIf}
                   DEMGlb[DEM].SavePartOfDEMWithData(DoneName);
+                  {$If Defined(Record3DEPX)} WriteLineToDebugFile('Data part saved'); {$EndIf}
+                  ClipTheDEMtoFullDEMIXTiles(DEM,DoneName);
+                  {$If Defined(Record3DEPX)} WriteLineToDebugFile('Clipped'); {$EndIf}
                 end;
             end;
             CloseAllDEMs;
          end;
    begin
+      OutPath := aDir[1] + ':\us\';
+      SafeMakeDir(OutPath);
       OnePixelIs('_ref_1sec_point');
       OnePixelIs('_ref_1sec_area');
    end;
@@ -138,8 +144,6 @@ begin
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_Create3DEPReferenceDEMs in'); {$EndIf}
    try
       GetDEMIXPaths;
-      OutPath := 'j:\us\';
-      ErrorLog := tStringList.Create;
       if PathIsValid(DataDir) then begin
          MergeRefDEMsForOneDir(DataDir);
       end
@@ -159,7 +163,6 @@ begin
       end;
    finally
       EndDEMIXProcessing;
-      DisplayAndPurgeStringList(ErrorLog,'DEMIX_Create3DEPReferenceDEMs Problems');
    end;
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_Create3DEPReferenceDEMs out'); {$EndIf}
 end;
@@ -168,7 +171,7 @@ end;
 
 procedure DEMIX_Create3DEPReferenceDEMs(DataDir : PathStr = '');
 var
-   ErrorLog,Paths : tStringList;
+   Paths : tStringList;
    DirStatus : shortstring;
    i : integer;
 
@@ -204,6 +207,7 @@ var
             CloseSingleDEM(WantedDEM);
           end;
       end;
+      CleanUpTempDirectory(True);
    end;
 
 
@@ -211,7 +215,6 @@ begin
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_Create3DEPReferenceDEMs in'); {$EndIf}
    try
       GetDEMIXPaths;
-      ErrorLog := tStringList.Create;
       if PathIsValid(DataDir) then begin
          MakeRefDEMsForOneDir(DataDir);
       end
@@ -231,46 +234,21 @@ begin
       end;
    finally
       EndDEMIXProcessing;
-      DisplayAndPurgeStringList(ErrorLog,'DEMIX_Create3DEPReferenceDEMs Problems');
    end;
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_Create3DEPReferenceDEMs out'); {$EndIf}
 end;
 
 
 
-procedure BatchGDAL_3DEP_shift(DataDir : PathStr = '');
-
-   procedure DatumShiftforUS3DEParea(DEM : integer = 0);
-   //for a single DEM, called by routine above for many
-   var
-      InName,SaveName : PathStr;
-      UTMZone,s_SRSstring,t_srsstring : shortstring;
-   begin
-      try
-         GetDEMIXpaths;
-         if not ValidDEM(DEM) then begin
-            DEM := OpenNewDEM('',false);
-         end;
-         {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DatumShiftforUS3DEParea in, ' + DEMGlb[DEM].AreaName); {$EndIf}
-         InName := DEMGlb[DEM].GeotiffDEMName;
-         SaveName := ChangeFileExt(InName,'_egm2008.tif');
-         UTMZone := AddDayMonthLeadingZero(DEMGlb[DEM].DEMHeader.UTMzone);
-         s_SRSstring := ' -s_srs EPSG:269' + UTMzone + '+5703';
-         t_srsstring := ' -t_srs EPSG:326' + UTMzone + '+3855';
-         CompositeDatumShiftWithGDAL(InName,SaveName,s_SRSstring,t_srsstring);
-      finally
-          EndDEMIXProcessing;
-      end;
-      {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DatumShiftforUS3DEParea out'); {$EndIf}
-   end;
-
+procedure BatchGDAL_3DEP_shift(DataDirs : tStringList = Nil);
 
    procedure OneDirectory(DataDir : PathStr);
    var
       FilesWanted : tStringList;
       DEM,i  : integer;
       fName : PathStr;
-      TStr : shortstring;
+      InName,SaveName : PathStr;
+      UTMZone,s_SRSstring,t_srsstring : shortstring;
    begin
       {$If Defined(Record3DEPX)} WriteLineToDebugFile('BatchGDAL_3DEP_shift in, DataDir=' + DataDir); {$EndIf}
       FilesWanted := tStringList.Create;
@@ -280,49 +258,57 @@ procedure BatchGDAL_3DEP_shift(DataDir : PathStr = '');
       end
       else begin
          for I := 0 to pred(FilesWanted.Count) do begin
-            TStr := 'GDAL 3DEP datum shift: ' + IntToStr(succ(i)) + '/' + IntToStr(FilesWanted.Count);
-            wmdem.SetPanelText(2,TStr);
+            //TStr :=
+            wmdem.SetPanelText(2,'GDAL 3DEP datum shift: ' + IntToStr(succ(i)) + '/' + IntToStr(FilesWanted.Count));
             fName := FilesWanted.Strings[i];
             if (FileExists(ChangeFileExt(fName,'_egm2008.tif'))) or StrUtils.AnsiContainsText(UpperCase(fname),'EGM2008') then begin
                {$If Defined(Record3DEPX)} WriteLineToDebugFile('Already done ' + ExtractFileName(fName)); {$EndIf}
                //already done EGM2008 shift
             end
             else begin
-               wmdem.SetPanelText(3,ExtractFileName(fName));
+               //wmdem.SetPanelText(3,ExtractFileName(fName));
                DEM := OpenNewDEM(fName,false);
-               DatumShiftforUS3DEParea(DEM);
+               //DatumShiftforUS3DEPfile(DEM);
+               InName := DEMGlb[DEM].GeotiffDEMName;
+               SaveName := ChangeFileExt(InName,'_egm2008.tif');
+               UTMZone := AddDayMonthLeadingZero(DEMGlb[DEM].DEMHeader.UTMzone);
+               s_SRSstring := ' -s_srs EPSG:269' + UTMzone + '+5703';
+               t_srsstring := ' -t_srs EPSG:326' + UTMzone + '+3855';
+               CompositeDatumShiftWithGDAL(InName,SaveName,s_SRSstring,t_srsstring);
                CloseSingleDEM(DEM);
             end;
          end;
       end;
       FilesWanted.Free;
+      CleanUpTempDirectory(True);
    end;
 
 
 var
-   Paths : tStringList;
    I : Integer;
 begin
    try
-      {$If Defined(RecordDEMIX)} WriteLineToDebugFile('BatchGDAL_3DEP_shift in, DataDir=' + DataDir); {$EndIf}
       GetDEMIXpaths;
-      {$If Defined(Record3DEPX)} WriteLineToDebugFile('BatchGDAL_3DEP_shift done get DEMIX paths'); {$EndIf}
+      (*
       if PathIsValid(DataDir) then begin
+         {$If Defined(RecordDEMIX)} WriteLineToDebugFile('BatchGDAL_3DEP_shift in, DataDir=' + DataDir); {$EndIf}
          OneDirectory(DataDir);
       end
       else begin
          {$If Defined(Record3DEPX)} WriteLineToDebugFile('BatchGDAL_3DEP_shift getting data paths'); {$EndIf}
-         Paths := tStringList.Create;
-         Paths.Add(DEMIX_3DEP_Dir);
-         if GetMultipleDirectories('3DEP DEMs', Paths) then begin
-             {$If Defined(Record3DEPX)} WriteLineToDebugFile('BatchGDAL_3DEP_shift paths=' + IntToStr(Paths.Count)); {$EndIf}
-            for I := 0 to pred(Paths.Count) do begin
-               wmdem.SetPanelText(1,'Dir: ' + IntToStr(succ(i)) + '/' + IntToStr(Paths.Count) + ' ' + LastSubDir(Paths.Strings[i]));
-               OneDirectory(Paths.Strings[i]);
-            end;
-         end;
-         Paths.Free;
+*)
+      if (DataDirs = Nil) then begin
+         DataDirs := tStringList.Create;
+         DataDirs.Add(DEMIX_3DEP_Dir);
+         GetMultipleDirectories('3DEP DEMs', DataDirs);
       end;
+      {$If Defined(Record3DEPX)} WriteLineToDebugFile('BatchGDAL_3DEP_shift paths=' + IntToStr(DataDirs.Count)); {$EndIf}
+      for I := 0 to pred(DataDirs.Count) do begin
+         wmdem.SetPanelText(3,'Dir: ' + IntToStr(succ(i)) + '/' + IntToStr(DataDirs.Count) + ' ' + LastSubDir(DataDirs.Strings[i]));
+         OneDirectory(DataDirs.Strings[i]);
+      end;
+      DataDirs.Free;
+      //end;
    finally
       EndDEMIXProcessing;
    end;

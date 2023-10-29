@@ -500,7 +500,7 @@ const
    MaxPoints = 51 * 51;
 var
    i,j : integer;
-   z : float32;
+   //z : float32;
    MomentVar : tMomentVar;
    SlopeAsp : tSlopeAspectRec;
    sl : array[1..MaxPoints] of float32;
@@ -539,8 +539,8 @@ procedure tDEMDataSet.RichardsonExtrapolationSlopeMaps(Save : boolean = false);
 //there is error trapping code, with a conditional compilation directive, to store intermediate values for debugging with the partial derivatives
 //this creates a lot of grids, which are not necessarily easy to interpret or immediately useful
 
-var
-  bmplist : tStringList;
+//var
+  //bmplist : tStringList;
 
     procedure MapAndSave(DEM : integer);
     begin

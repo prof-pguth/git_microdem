@@ -11,7 +11,7 @@
 
 procedure tGISdataBaseModule.ZoomToDBCoverageOnMap;
 var
-  extra,xf : float64;
+  extra{,xf} : float64;
   xminproj,xmaxproj,yminproj,ymaxproj,
   xmin,xmax,ymin,ymax : float64;
 

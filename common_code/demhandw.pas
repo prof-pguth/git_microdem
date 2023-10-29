@@ -102,7 +102,7 @@ type
     StatusBar1: TStatusBar;
     ASCIIreverseorder1: TMenuItem;
     BinaryrawDEM32bit1: TMenuItem;
-    ISOGravity1: TMenuItem;
+    //ISOGravity1: TMenuItem;
     Repairheaders1: TMenuItem;
     ASCIIsplitfile1: TMenuItem;
     Cardfileimport1: TMenuItem;
@@ -251,6 +251,7 @@ type
     ASCIIremovelineswithoutsubstring1: TMenuItem;
     VerticaldatumshiftoverwriteDEMgrid1: TMenuItem;
     XYZshifttoEGM2008withVDATUMresults1: TMenuItem;
+    DiluviumDEMreprot1: TMenuItem;
     procedure ASCIIremovequotes1Click(Sender: TObject);
     procedure ASCII01Click(Sender: TObject);
     procedure HTMLcleanup1Click(Sender: TObject);
@@ -286,7 +287,7 @@ type
     procedure ASCIIremoveblanklines1Click(Sender: TObject);
     procedure IGERredistricting1Click(Sender: TObject);
     procedure ASCIIreverseorder1Click(Sender: TObject);
-    procedure ISOGravity1Click(Sender: TObject);
+    //procedure ISOGravity1Click(Sender: TObject);
     procedure Repairheaders1Click(Sender: TObject);
     procedure Cardfileimport1Click(Sender: TObject);
     procedure ICOADSLMRF1Click(Sender: TObject);
@@ -398,6 +399,7 @@ type
     procedure OGRshapefilestoGKPG1Click(Sender: TObject);
     procedure VerticaldatumshiftoverwriteDEMgrid1Click(Sender: TObject);
     procedure XYZshifttoEGM2008withVDATUMresults1Click(Sender: TObject);
+    procedure DiluviumDEMreprot1Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -1059,8 +1061,21 @@ begin
    end;
 end;
 
-
+(*
 procedure ImportISOGravity;
+
+      procedure CreateISOGravity(fName : PathStr);
+      begin
+          CreateDataBase := tCreateDataBase.Create(fName);
+          with CreateDataBase do begin
+             AddLatLongToTable;
+             AddAField('ELEV',ftFloat,8,1);
+             AddAField('BOUGER',ftFloat,7,2);
+             AddAField('ISOSTATIC',ftFloat,7,2);
+             WriteCorrectHeader;
+          end;
+      end;
+
 var
    MenuStr : ShortString;
    CentFile,FilesWanted : tStringList;
@@ -1114,6 +1129,7 @@ begin
       ShowDefaultCursor;
    end;
 end;
+*)
 
 {$EndIf}
 
@@ -1301,6 +1317,11 @@ begin
       end;
    end;
    FilesWanted.Free;
+end;
+
+procedure TDemHandForm.DiluviumDEMreprot1Click(Sender: TObject);
+begin
+   DiluviumDEMIXtileReport;
 end;
 
 procedure TDemHandForm.GDALassignandwarptoUTM1Click(Sender: TObject);
@@ -2997,74 +3018,79 @@ var
    TStr,inName,OutName : AnsiString;
    DefFilter : byte;
 begin
-   inPut := '';
-   DefFilter := 1;
-   FilesWanted := tStringList.Create;
-   FilesWanted.Add(MainMapData);
-   if GetMultipleFiles('Files to download','Text or csv*.txt;*.csv',FilesWanted,DefFilter) then begin
-      for f := 0 to pred(FilesWanted.Count) do begin
-         Input := FilesWanted.Strings[f];
-         Memo1.Visible := true;
-         Memo1.Lines.Add(TimeToStr(Now) + '  Download list ' + IntToStr(succ(f)) + '/' + IntToStr(FilesWanted.Count) + '  ' + ExtractFileNameNoExt(Input));
-         Memo1.Lines.Add('');
-         if FileExists(Input) then begin
-            FileList := tStringList.Create;
-            FileList.LoadFromFile(Input);
-            OutPath := ExtractFilePath(Input) + ExtractFileNameNoExt(Input) + '\';
-            SafeMakeDir(OutPath);
+   try
+      WMdem.Color := clInactiveCaption;
+      inPut := '';
+      DefFilter := 1;
+      FilesWanted := tStringList.Create;
+      FilesWanted.Add(MainMapData);
+      if GetMultipleFiles('Files to download','Text or csv*.txt;*.csv',FilesWanted,DefFilter) then begin
+         for f := 0 to pred(FilesWanted.Count) do begin
+            Input := FilesWanted.Strings[f];
             Memo1.Visible := true;
-            Memo1.Lines.Add(TimeToStr(Now) + ' start download, files= ' + IntToStr(FileList.Count));
-            wmdem.SetPanelText(3,'Started: ' + TimeToStr(Now));
-            repeat
-              NumSucc := 0;
-              NumFail := 0;
-              NumAlreadyDone := 0;
-              StartProgressAbortOption('Download list ' + IntToStr(succ(f)) + '/' + IntToStr(FilesWanted.Count));
-              for i := 0 to pred(FileList.Count) do begin
-                 UpdateProgressBar(succ(i)/FileList.Count);
-                 wmdem.SetPanelText(2,IntToStr(succ(i)) + '/' + IntToStr(FileList.Count));
-                 TStr := FileList.Strings[i];
-                 InName := TStr;
-                 if (InName <> '') then begin
-                    j := length(TStr);
-                    repeat
-                       dec(j)
-                    until TStr[j] = '/';
-                    OutName := OutPath + Copy(TStr,j+1,Length(TStr)-j);
-                    if FileExists(OutName) then begin
-                       inc(NumAlreadyDone);
-                    end
-                    else begin
-                       TStr := ExtractFileName(Tstr);
-                       if DownloadFileFromWeb(InName,OutName,false) then begin
-                          TStr := TStr + '  ' + SmartMemorySizeBytes(GetFileSize(OutName)) +  ' success';
-                          inc(NumSucc);
+            Memo1.Lines.Add(TimeToStr(Now) + '  Download list ' + IntToStr(succ(f)) + '/' + IntToStr(FilesWanted.Count) + '  ' + ExtractFileNameNoExt(Input));
+            Memo1.Lines.Add('');
+            if FileExists(Input) then begin
+               FileList := tStringList.Create;
+               FileList.LoadFromFile(Input);
+               OutPath := ExtractFilePath(Input) + ExtractFileNameNoExt(Input) + '\';
+               SafeMakeDir(OutPath);
+               Memo1.Visible := true;
+               Memo1.Lines.Add(TimeToStr(Now) + ' start download, files= ' + IntToStr(FileList.Count));
+               wmdem.SetPanelText(3,'Started: ' + TimeToStr(Now));
+               repeat
+                 NumSucc := 0;
+                 NumFail := 0;
+                 NumAlreadyDone := 0;
+                 StartProgressAbortOption('Download list ' + IntToStr(succ(f)) + '/' + IntToStr(FilesWanted.Count));
+                 for i := 0 to pred(FileList.Count) do begin
+                    UpdateProgressBar(succ(i)/FileList.Count);
+                    wmdem.SetPanelText(2,IntToStr(succ(i)) + '/' + IntToStr(FileList.Count));
+                    TStr := FileList.Strings[i];
+                    InName := TStr;
+                    if (InName <> '') then begin
+                       j := length(TStr);
+                       repeat
+                          dec(j)
+                       until TStr[j] = '/';
+                       OutName := OutPath + Copy(TStr,j+1,Length(TStr)-j);
+                       if FileExists(OutName) then begin
+                          inc(NumAlreadyDone);
                        end
                        else begin
-                          TStr := TStr + ' failure ***** ' + InName;
-                          inc(NumFail);
+                          TStr := ExtractFileName(Tstr);
+                          if DownloadFileFromWeb(InName,OutName,false) then begin
+                             TStr := TStr + '  ' + SmartMemorySizeBytes(GetFileSize(OutName)) +  ' success';
+                             inc(NumSucc);
+                          end
+                          else begin
+                             TStr := TStr + ' failure ***** ' + InName;
+                             inc(NumFail);
+                          end;
+                          Memo1.Lines.Add(IntToStr(I) + '/' + IntToStr(FileList.Count) + '  ' + TimeToStr(Now) + ' ' + TStr);
                        end;
-                       Memo1.Lines.Add(IntToStr(I) + '/' + IntToStr(FileList.Count) + '  ' + TimeToStr(Now) + ' ' + TStr);
+                    end;
+                    if WantOut then begin
+                       Memo1.Lines.Add('Aborted');
+                       break;
                     end;
                  end;
-                 if WantOut then begin
-                    Memo1.Lines.Add('Aborted');
-                    break;
-                 end;
-              end;
-              EndProgress;
-              Memo1.Lines.Add('Done; downloads=' + intToStr(NumSucc) + '  failures=' + IntToStr(NumFail) + '  already done=' + IntToStr(NumAlreadyDone));
-              Memo1.Lines.Add('');
-              Memo1.Lines.Add('');
-              if (NumFail = 0) then File2Trash(InName);
-            until Wantout or (NumFail = 0) or (not AnswerIsYes('Retry failures'));
-            FileList.Free;
+                 EndProgress;
+                 Memo1.Lines.Add('Done; downloads=' + intToStr(NumSucc) + '  failures=' + IntToStr(NumFail) + '  already done=' + IntToStr(NumAlreadyDone));
+                 Memo1.Lines.Add('');
+                 Memo1.Lines.Add('');
+                 if (NumFail = 0) then File2Trash(InName);
+               until Wantout or (NumFail = 0) or (not AnswerIsYes('Retry failures'));
+               FileList.Free;
+            end;
          end;
       end;
+      FilesWanted.Free;
+   finally
+      WMdem.Color := clScrollBar;
+      wmdem.SetPanelText(3,'');
+      wmdem.SetPanelText(2,'');
    end;
-   FilesWanted.Free;
-   wmdem.SetPanelText(3,'');
-   wmdem.SetPanelText(2,'');
 end;
 
 
@@ -3577,15 +3603,6 @@ procedure TDemHandForm.ShiftXYZcoordinates1Click(Sender: TObject);
 begin
    Conictolatlong1Click(Sender);
 end;
-
-procedure TDemHandForm.ISOGravity1Click(Sender: TObject);
-begin
-   {$IfDef ExGeology}
-   {$Else}
-      ImportISOGravity;
-   {$EndIf}
-end;
-
 
 
 procedure TDemHandForm.Verticaldatums1Click(Sender: TObject);

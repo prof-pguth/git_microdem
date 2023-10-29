@@ -51,8 +51,7 @@ object MapForm: TMapForm
     ParentFont = False
     TabOrder = 0
     OnClick = ScrollBox1Click
-    ExplicitWidth = 1932
-    ExplicitHeight = 1005
+    ExplicitLeft = 50
     object Image1: TImage
       Left = 3
       Top = -247
@@ -5169,6 +5168,10 @@ object MapForm: TMapForm
       object DEMsfrommaplibrarymaparea1: TMenuItem
         Caption = 'DEMs from map library, map area'
         OnClick = DEMsfrommaplibrarymaparea1Click
+      end
+      object PicksingleDEMseriesthisarea1: TMenuItem
+        Caption = 'Pick single DEM series, this area'
+        OnClick = PicksingleDEMseriesthisarea1Click
       end
       object N54: TMenuItem
         Caption = '-'

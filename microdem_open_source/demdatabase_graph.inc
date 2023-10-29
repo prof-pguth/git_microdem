@@ -12,7 +12,7 @@
 
 function TGISdataBaseModule.ActuallyDrawGraph(Graphtype : tdbGraphType) : TThisbasegraph;
 var
-  i,j,k,TimeCount,{xLen,}OnFile : integer;
+  i,j,k,TimeCount,OnFile : integer;
   Hist : array[0..1000] of integer;
   TStr : ShortString;
   rFile,rfile2 : file;

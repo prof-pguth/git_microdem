@@ -143,7 +143,7 @@ uses
    procedure GDALreprojectLASfile(fName : PathStr; T_EPSG,a_EPSG : integer);
 
    procedure GDALSubsetSatImageToMatchMap(MapOwner : tMapForm; GDAL_program : PathStr);
-   function GDALsubsetGridAndOpen(bb : sfBoundBox; LatLongBox : boolean; fName : PathStr; BaseOutPath : PathStr = '') : integer;
+   function GDALsubsetGridAndOpen(bb : sfBoundBox; LatLongBox : boolean; fName : PathStr; OpenMap : boolean; BaseOutPath : PathStr = '') : integer;
    procedure GDALConvert4BitGeotiff(fName : PathStr);
    procedure GDALConvertSingleImageToGeotiff(var fName : PathStr);
 
@@ -156,6 +156,8 @@ uses
 
    procedure MergeDEMsForDEMIX;
    procedure CompositeDatumShiftWithGDAL(var InName,SaveName : shortstring; s_SRSstring,t_srsstring : shortstring);
+
+   procedure TestPythonFile;
 
 
    {$IfDef ExGeoPDF}
@@ -190,20 +192,30 @@ const
    {$EndIf}
 
 
+      procedure TestPythonFile;
+      var
+         BatchFile : tStringList;
+         fName : PathStr;
+      begin
+         StartGDALbatchFile(BatchFile);
+         BatchFile.Add('REM Test');
+         BatchFile.Add(PythonEXEname + 'c:\temp\dem_ssim.py');
+         fName := Petmar.NextFileNumber(MDTempDir, 'pytest_','.bat');
+         EndBatchFile(fName,BatchFile);
+      end;
+
+
+
 
 procedure ResampleSentinel_1(Path : PathStr; Recycle : boolean = false);
 // based on https://asf.alaska.edu/how-to/data-recipes/geocode-sentinel-1-with-gdal/
 var
    fName,{fName2,}outName : PathStr;
-   //DefaultFilter : byte;
    BatchFile,TheFiles: tStringList;
    UTMspace : float32;
-   //UTMzone,
    i,j : Integer;
-   //ch : ANSIchar;
    TStr2,OutEPSG : shortString;
    cmd : ANSIString;
-   //GDALinfo : tGDALinfo;
    RecycleList : tStringList;
 begin
    PickUTMZone(MDdef.DefaultUTMZone);
@@ -427,7 +439,6 @@ begin
    bfile := Petmar.NextFileNumber(MDTempDir, 'gdal_assign_proj_','.bat');
    EndBatchFile(bfile ,batchfile);
    if FileExists(DEMName) then begin
-      //OpenNewDEM(DEMName);
    end
    else MessageToContinue('GDALAssignProjection failure, to see error messages try batch file in DOS window: ' + bfile);
 end;
@@ -557,11 +568,6 @@ end;
 
 
 function GDAL_HillshadeMap_Horn(InName : PathStr; sf : shortstring = ''; outname : shortstring = '') : integer;
-//gdaldem hillshade input_dem output_hillshade
-//            [-z ZFactor (default=1)] [-s scale* (default=1)]
-//            [-az Azimuth (default=315)] [-alt Altitude (default=45)]
-//            [-alg Horn|ZevenbergenThorne] [-combined | -multidirectional | -igor]
-//            [-compute_edges] [-b Band (default=1)] [-of format] [-co "NAME=VALUE"]* [-q]
 //https://gdal.org/programs/gdaldem.html
 begin
    if FileExistsErrorMessage(InName) then begin
@@ -603,14 +609,6 @@ end;
 
 
 function GDAL_downsample_DEM_1sec(DEM : integer; OutName : PathStr) : integer;
-//tried a number of ways to change this, including having the input UTM EPSG
-(*
-C:\OSGeo4W\bin\gdalwarp.exe -te_srs EPSG:4326 -tr 0.000277778 0.000277778 -r average -te 46.095105 10.681662 46.201234 10.814749 H:\demix_wine_contest\italy\trentino_dtm.tif c:\mapdata\temp\gdal_downsample.dem
-Creating output file that is 42211541P x 72564645L.
-Using internal nodata values (e.g. -3.40282e+38) for image H:\demix_wine_contest\italy\trentino_dtm.tif.
-Copying nodata values from source H:\demix_wine_contest\italy\trentino_dtm.tif to destination .
-ERROR 2: usgsdem_create.cpp, 1291: cannot allocate 6126130975135890 bytes
-*)
 var
    cmd : AnsiString;
    IntString,
@@ -1010,7 +1008,7 @@ end;
       end;
 
 
-      function GDALsubsetGridAndOpen(bb : sfBoundBox; LatLongBox : boolean; fName : PathStr; BaseOutPath : PathStr = '') : integer;
+      function GDALsubsetGridAndOpen(bb : sfBoundBox; LatLongBox : boolean; fName : PathStr; OpenMap : boolean; BaseOutPath : PathStr = '') : integer;
 
 
         function DoOneGrid(fName : PathStr) : integer;
@@ -1028,23 +1026,12 @@ end;
             {$IfDef RecordSubsetOpen} WriteLineToDebugFile('GDALsubsetGridAndOpen ' + ExtractFileName(fname) + '  ' + sfBoundBoxToString(BB,4)); {$EndIf}
 
             Ext := UpperCase(ExtractFileExt(fName));
-            (*
-            //removed Aug 2023, faced with Tom Hengl 300 MB DEM
-            if (Ext = '.TIF') or (Ext = '.TIFF') then begin
-               Imagebb := GeotiffBBox(fName);
-            end
-            else begin
-               GetGDALinfo(fName, GDALinfo);
-            end;
-            *)
-
             GetGDALinfo(fName, GDALinfo);
 
             Imagebb.XMin := GDALInfo.xutm_low;
             Imagebb.XMax := GDALInfo.xutm_hi;
             Imagebb.YMin := GDALInfo.yutm_low;
             Imagebb.YMax := GDALInfo.yutm_high;
-
 
             if LatLongBox then begin
                ExtentBoxString := GDALextentBoxLatLong(bb);
@@ -1058,7 +1045,7 @@ end;
                else TStr := '';
                GDALcommand(MDTempDir + 'raster_subset.bat',GDAL_Translate_Name + ' ' + ExtentBoxString + TStr + fName + ' ' + OutName);
                if FileExists(OutName) then begin
-                  Result := OpenNewDEM(OutName);
+                  Result := OpenNewDEM(OutName,OpenMap);
                   {$IfDef RecordSubsetOpen} WriteLineToDebugFile('Grid opened ' + IntToStr(Result)); {$EndIf}
                end
                else begin
@@ -1470,7 +1457,6 @@ begin
       MergefName := Petmar.NextFileNumber(MDTempDir,LastSubDir(ExtractFilePath(DEMList.Strings[0])) + '_','.tif');
       UseGDAL_VRT_to_merge(MergefName,OutVRT,DEMlist);
       {$If Defined(RecordMenu) or Defined(RecordMerge) or Defined(RecordDEMIX)} WriteLineToDebugFile('UseGDAL_VRT_to_merge done'); {$EndIf}
-
 
       SaveName := Petmar.NextFileNumber(MDTempDir,LastSubDir(ExtractFilePath(DEMList.Strings[0])) + '_egm2008_','.tif');
       CompositeDatumShiftWithGDAL(MergefName,SaveName,' -s_srs EPSG:269' + IntToStr(UTMZone) + '+5703', ' -t_srs EPSG:326' + IntToStr(UTMZone) + '+3855');

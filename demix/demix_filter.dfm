@@ -19,7 +19,7 @@ object DemixFilterForm: TDemixFilterForm
     Top = 0
     Width = 775
     Height = 480
-    ActivePage = TabSheet5
+    ActivePage = TabSheet1
     Align = alClient
     TabOrder = 0
     ExplicitWidth = 771
@@ -151,21 +151,13 @@ object DemixFilterForm: TDemixFilterForm
         TabOrder = 12
         OnClick = BitBtn10Click
       end
-      object CheckBox4: TCheckBox
-        Left = 16
-        Top = 169
-        Width = 97
-        Height = 17
-        Caption = 'Ref DEMs v1'
-        TabOrder = 13
-      end
       object BitBtn11: TBitBtn
         Left = 531
         Top = 208
         Width = 129
         Height = 25
         Caption = 'v1 Elev Diff Maps'
-        TabOrder = 14
+        TabOrder = 13
         OnClick = BitBtn11Click
       end
       object BitBtn12: TBitBtn
@@ -174,7 +166,7 @@ object DemixFilterForm: TDemixFilterForm
         Width = 154
         Height = 25
         Caption = 'Peak topographic profiles'
-        TabOrder = 15
+        TabOrder = 14
         OnClick = BitBtn12Click
       end
       object BitBtn13: TBitBtn
@@ -183,24 +175,25 @@ object DemixFilterForm: TDemixFilterForm
         Width = 129
         Height = 25
         Caption = 'All  peaks profiles'
-        TabOrder = 16
+        TabOrder = 15
         OnClick = BitBtn13Click
       end
       object CheckBox5: TCheckBox
-        Left = 143
+        Left = 16
         Top = 169
         Width = 97
         Height = 17
         Caption = 'Reference 0.5"'
-        TabOrder = 17
+        TabOrder = 16
       end
       object CheckBox6: TCheckBox
-        Left = 256
-        Top = 168
+        Left = 143
+        Top = 169
         Width = 97
         Height = 17
         Caption = 'COP && ALOS'
-        TabOrder = 18
+        Enabled = False
+        TabOrder = 17
       end
       object BitBtn14: TBitBtn
         Left = 531
@@ -208,21 +201,23 @@ object DemixFilterForm: TDemixFilterForm
         Width = 150
         Height = 25
         Caption = 'COP/ALOS diff maps'
-        TabOrder = 19
+        Enabled = False
+        TabOrder = 18
         OnClick = BitBtn14Click
       end
       object RadioGroup1: TRadioGroup
         Left = 16
-        Top = 352
+        Top = 346
         Width = 177
         Height = 81
         Caption = 'COP/ALOS compare'
+        Enabled = False
         ItemIndex = 0
         Items.Strings = (
           '4 categories'
           '9 categories'
           'Both')
-        TabOrder = 20
+        TabOrder = 19
       end
       object BitBtn15: TBitBtn
         Left = 448
@@ -230,7 +225,7 @@ object DemixFilterForm: TDemixFilterForm
         Width = 97
         Height = 25
         Caption = '3 distributions'
-        TabOrder = 21
+        TabOrder = 20
         OnClick = BitBtn15Click
       end
       object BitBtn16: TBitBtn
@@ -239,7 +234,7 @@ object DemixFilterForm: TDemixFilterForm
         Width = 90
         Height = 25
         Caption = '6 distribuitons'
-        TabOrder = 22
+        TabOrder = 21
         OnClick = BitBtn16Click
       end
       object BitBtn17: TBitBtn
@@ -256,7 +251,7 @@ object DemixFilterForm: TDemixFilterForm
           44400FF0EFE4EFE4EFE00000FEF4FEF4FEF00FF04444444444400FF0FEF4FEF4
           FEF00FF0EFE4EFE4EFE000000000000000000FF0FFFFF0FFFFF00FF0FFFFF0FF
           FFF00000000000000000DADADADADADADADAADADADADADADADAD}
-        TabOrder = 23
+        TabOrder = 22
         OnClick = BitBtn17Click
       end
       object BitBtn18: TBitBtn
@@ -265,7 +260,7 @@ object DemixFilterForm: TDemixFilterForm
         Width = 146
         Height = 25
         Caption = 'Load tiles from list'
-        TabOrder = 24
+        TabOrder = 23
         OnClick = BitBtn18Click
       end
       object BitBtn19: TBitBtn
@@ -274,7 +269,7 @@ object DemixFilterForm: TDemixFilterForm
         Width = 75
         Height = 25
         Caption = 'All tiles'
-        TabOrder = 25
+        TabOrder = 24
         OnClick = BitBtn19Click
       end
       object BitBtn20: TBitBtn
@@ -283,7 +278,7 @@ object DemixFilterForm: TDemixFilterForm
         Width = 131
         Height = 25
         Caption = 'Slope difference maps'
-        TabOrder = 26
+        TabOrder = 25
         OnClick = BitBtn20Click
       end
       object BitBtn21: TBitBtn
@@ -292,7 +287,7 @@ object DemixFilterForm: TDemixFilterForm
         Width = 131
         Height = 25
         Caption = ' Ruff difference maps'
-        TabOrder = 27
+        TabOrder = 26
         OnClick = BitBtn21Click
       end
       object BitBtn22: TBitBtn
@@ -301,7 +296,7 @@ object DemixFilterForm: TDemixFilterForm
         Width = 131
         Height = 25
         Caption = 'All slope diff maps'
-        TabOrder = 28
+        TabOrder = 27
         OnClick = BitBtn22Click
       end
       object BitBtn23: TBitBtn
@@ -310,7 +305,7 @@ object DemixFilterForm: TDemixFilterForm
         Width = 131
         Height = 25
         Caption = 'All ruff diff maps'
-        TabOrder = 29
+        TabOrder = 28
         OnClick = BitBtn23Click
       end
       object BitBtn24: TBitBtn
@@ -319,7 +314,7 @@ object DemixFilterForm: TDemixFilterForm
         Width = 146
         Height = 25
         Caption = 'Load tiles from db filter'
-        TabOrder = 30
+        TabOrder = 29
         OnClick = BitBtn24Click
       end
       object BitBtn25: TBitBtn
@@ -328,7 +323,8 @@ object DemixFilterForm: TDemixFilterForm
         Width = 150
         Height = 25
         Caption = 'COP/ALOS summary stats'
-        TabOrder = 31
+        Enabled = False
+        TabOrder = 30
         OnClick = BitBtn25Click
       end
       object BitBtn26: TBitBtn
@@ -337,7 +333,7 @@ object DemixFilterForm: TDemixFilterForm
         Width = 75
         Height = 25
         Caption = 'DB stats'
-        TabOrder = 32
+        TabOrder = 31
         OnClick = BitBtn26Click
       end
       object BitBtn27: TBitBtn
@@ -346,7 +342,7 @@ object DemixFilterForm: TDemixFilterForm
         Width = 49
         Height = 25
         Caption = 'All'
-        TabOrder = 33
+        TabOrder = 32
         OnClick = BitBtn27Click
       end
       object BitBtn28: TBitBtn
@@ -355,7 +351,7 @@ object DemixFilterForm: TDemixFilterForm
         Width = 51
         Height = 25
         Caption = 'All'
-        TabOrder = 34
+        TabOrder = 33
         OnClick = BitBtn28Click
       end
       object GroupBox7: TGroupBox
@@ -364,7 +360,7 @@ object DemixFilterForm: TDemixFilterForm
         Width = 177
         Height = 145
         Caption = 'Tolerances'
-        TabOrder = 35
+        TabOrder = 34
         object Label6: TLabel
           Left = 18
           Top = 82
@@ -429,7 +425,7 @@ object DemixFilterForm: TDemixFilterForm
         Width = 113
         Height = 25
         Caption = 'SSIM prep, area'
-        TabOrder = 36
+        TabOrder = 35
         OnClick = BitBtn30Click
       end
       object BitBtn31: TBitBtn
@@ -438,7 +434,7 @@ object DemixFilterForm: TDemixFilterForm
         Width = 113
         Height = 25
         Caption = 'SSIM prep, tile'
-        TabOrder = 37
+        TabOrder = 36
         OnClick = BitBtn31Click
       end
       object BitBtn5: TBitBtn
@@ -447,7 +443,7 @@ object DemixFilterForm: TDemixFilterForm
         Width = 113
         Height = 25
         Caption = 'SSIM prep, all areas'
-        TabOrder = 38
+        TabOrder = 37
         OnClick = BitBtn5Click
       end
       object BitBtn32: TBitBtn
@@ -456,7 +452,7 @@ object DemixFilterForm: TDemixFilterForm
         Width = 129
         Height = 25
         Caption = 'Load areas from list'
-        TabOrder = 39
+        TabOrder = 38
         OnClick = BitBtn32Click
       end
       object BitBtn34: TBitBtn
@@ -465,8 +461,26 @@ object DemixFilterForm: TDemixFilterForm
         Width = 137
         Height = 25
         Caption = 'Load tile DEMs'
-        TabOrder = 40
+        TabOrder = 39
         OnClick = BitBtn34Click
+      end
+      object BitBtn38: TBitBtn
+        Left = 632
+        Top = 88
+        Width = 121
+        Height = 25
+        Caption = 'Create test DEMs'
+        TabOrder = 40
+        OnClick = BitBtn38Click
+      end
+      object BitBtn39: TBitBtn
+        Left = 224
+        Top = 304
+        Width = 113
+        Height = 25
+        Caption = 'Diluvium'
+        TabOrder = 41
+        OnClick = BitBtn39Click
       end
     end
     object TabSheet2: TTabSheet
@@ -846,7 +860,7 @@ object DemixFilterForm: TDemixFilterForm
         Left = 272
         Top = 16
         Width = 185
-        Height = 142
+        Height = 165
         Caption = 'SSIM parameters'
         TabOrder = 7
         object CheckBox12: TCheckBox
@@ -893,6 +907,15 @@ object DemixFilterForm: TDemixFilterForm
           Caption = 'Hillshade'
           TabOrder = 4
           OnClick = HillshadeClick
+        end
+        object CheckBox17: TCheckBox
+          Left = 16
+          Top = 138
+          Width = 166
+          Height = 17
+          Caption = 'TPI (detrended elevation)'
+          TabOrder = 5
+          OnClick = CheckBox17Click
         end
       end
       object CheckBox16: TCheckBox
@@ -945,7 +968,7 @@ object DemixFilterForm: TDemixFilterForm
         Width = 417
         Height = 361
         Lines.Strings = (
-          'Memo8')
+          'Processing errors:')
         ScrollBars = ssVertical
         TabOrder = 3
       end
@@ -964,7 +987,7 @@ object DemixFilterForm: TDemixFilterForm
       end
       object BitBtn35: TBitBtn
         Left = 16
-        Top = 57
+        Top = 47
         Width = 75
         Height = 25
         Caption = 'RRI maps'
@@ -979,6 +1002,15 @@ object DemixFilterForm: TDemixFilterForm
         Caption = 'Ruff maps'
         TabOrder = 2
         OnClick = BitBtn36Click
+      end
+      object BitBtn37: TBitBtn
+        Left = 16
+        Top = 120
+        Width = 75
+        Height = 25
+        Caption = 'Elev maps'
+        TabOrder = 3
+        OnClick = BitBtn37Click
       end
     end
   end

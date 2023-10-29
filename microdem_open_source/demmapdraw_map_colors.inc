@@ -175,12 +175,6 @@ var
    {$EndIf}
 begin
    {$If Defined(RecordElevationScaling)} WriteLineToDebugFile('TMapDraw.SetFullMapCoverage ' + MapZRangeString); {$EndIf}
-   (*
-   if (MapZRange = 0) then begin
-      {$If Defined(RecordTiming) or Defined(RecordKeyMap)} WriteLineToDebugFile('TMapDraw.ColorTintedElevationMap out for pancake grid'); {$EndIf}
-      exit;
-   end;
-   *)
    {$If Defined(RecordFullMapDraw) or Defined(RecordMapDraw) or Defined(RecordTiming) or Defined(RecordElevationScaling) or Defined(RecordMapLayers)}
       WriteLineToDebugFile('TMapDraw.ColorTintedElevationMap in, maptype=' + IntToStr(Ord(MapType)) + MapZRangeString + '  ' +  MapSizeString);
    {$EndIf}
@@ -564,7 +558,7 @@ end;
 
           procedure ColorizeInPlace;
           var
-             x,y{,zi} : integer;
+             x,y : integer;
              Lat,Long,xg,yg : float64;
              pUse : tRGBTriple;
              BMPMemory : tBMPMemory;
@@ -967,7 +961,6 @@ begin
          exit;
       end;
    end;
-
 
    if (MaxMapElev - MinMapElev) < 0.001 then begin
       Result := RGBTrip(0,0,125);

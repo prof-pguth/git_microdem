@@ -1489,6 +1489,7 @@ type
     N61: TMenuItem;
     N62: TMenuItem;
     Roundtointegers1: TMenuItem;
+    PicksingleDEMseriesthisarea1: TMenuItem;
     //procedure HiresintervisibilityDEM1Click(Sender: TObject);
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
@@ -2580,6 +2581,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure ClipDEMtofullDEMIXtiles1Click(Sender: TObject);
     procedure N62Click(Sender: TObject);
     procedure Roundtointegers1Click(Sender: TObject);
+    procedure PicksingleDEMseriesthisarea1Click(Sender: TObject);
     //procedure RescaleallDEMsforSSIM1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
@@ -3018,6 +3020,7 @@ function DEMIXtileFill(DEM : integer; AreaBox : sfBoundBox; OpenTable : boolean 
 function DEMIXtileBoundingBox(tName : shortString; PixelIsAreaSafe : boolean = false) : sfBoundBox;
 procedure DEMIXtileCentroid(tName : shortString; var Lat,Long : float32);
 function LoadDEMIXtileOutlinesNoMap(WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false; OpenTable : boolean = true) : integer;
+function DEMIXtilesOnDEM(DEM : integer; RecordFill : tStringList = Nil) : tStringList;
 
 
 procedure CreateDEMSelectionMap(DEM : integer; DrawIt : boolean = true; usePC : boolean = true; inMapType : tMapType = mtElevRainbow);
@@ -3438,11 +3441,10 @@ var
 begin
    {$IfDef RecordBigMap} WriteLineToDebugFile('Bigimagewithallmaps in'); {$EndIf}
    Findings := tStringList.Create;
-   if MDDef.MapNameBelowComposite then BottomMargin := 55 else BottomMargin := 25;;
+   if MDDef.MapNameBelowComposite then BottomMargin := 55 else BottomMargin := 25;
    for i := pred(WMDEM.MDIChildCount) downto 0 do begin
       if (WMDEM.MDIChildren[i] is tMapForm) and (WMDEM.MDIChildren[i] as TMapForm).UseMapForMultipleMapOperations then begin
          if (MapsToUse = Nil) or UseThisMap((WMDEM.MDIChildren[i] as TMapForm).Caption) then begin
-
             (WMDEM.MDIChildren[i] as TMapForm).DoFastMapRedraw;
             CopyImageToBitmap((WMDEM.MDIChildren[i] as TMapForm).Image1,Bitmap);
             Bitmap.Canvas.Brush.Style := bsClear;
@@ -3460,12 +3462,12 @@ begin
                Bitmap.Canvas.Font.Size := 34;
                Bitmap.Canvas.Font.Style := [fsBold];
                DEM := (WMDEM.MDIChildren[i] as TMapForm).MapDraw.DEMonMap;
-               if (DEM <> 0) then begin
+               if ValidDEM(DEM) then begin
                   TStr := RemoveUnderScores(DEMGLB[DEM].AreaName);
+                  while Bitmap.Canvas.TextWidth(TStr) > Bitmap.Width - 10 do Bitmap.Canvas.Font.Size := Bitmap.Canvas.Font.Size - 1;
                   Bitmap.Canvas.TextOut(5,(Bitmap.Height - Bitmap.Canvas.TextHeight(TStr) - 5), TStr);
                end;
             end;
-
             fName := NextFileNumber(MDtempDir,(WMDEM.MDIChildren[i] as TMapForm).Caption + '_','.bmp');
             Bitmap.SaveToFile(fName);
             Findings.Add(fName);
@@ -7029,10 +7031,12 @@ end;
 
 
 procedure TMapForm.N2bandscattergram1Click(Sender: TObject);
+var
+   GridLimits : tGridLimits;
 begin
     {$IfDef ExGeoStats}
     {$Else}
-       DEMStat.GridScatterGram(false);
+       DEMStat.GridScatterGram(GridLimits);
     {$EndIf}
 end;
 
@@ -7571,16 +7575,6 @@ begin
    MapDraw.DefineNewDEMMap(MapDraw.DEMonMap,MapDraw.MapType);
    DoCompleteMapRedraw;
 end;
-
-{$IfDef RecordFormResize}
-procedure TMapForm.RecordFormSize(Title : shortString);
-begin
-   if FormOperational then  WriteLineToDebugFile(Title + ' client: ' + IntToStr(Self.ClientWidth) + 'x' + IntToStr(Self.ClientHeight) +
-       '  scrollbox: ' + IntToStr(ScrollBox1.ClientWidth) + 'x' + IntToStr(ScrollBox1.ClientHeight)  +
-       '  image: ' + IntToStr(Image1.ClientWidth) + 'x' + IntToStr(Image1.ClientHeight)  +  '  ' + MapDraw.MapSizeString {+  '  Toolbar: ' + IntToStr(ToolAndPanelHeights)});
-end;
-{$EndIf}
-
 
 
 function ShapeFileDigitizingUnderway(DEMNowDoing :  tDEMDoingWhat) : boolean;
@@ -9300,7 +9294,7 @@ var
 begin
    {$IfDef ExGDAL}
    {$Else}
-      NewGrid := GDALsubsetGridAndOpen(MapDraw.MapCorners.BoundBoxGeo,true,'');
+      NewGrid := GDALsubsetGridAndOpen(MapDraw.MapCorners.BoundBoxGeo,true,'',true);
       if DEMGlb[NewGrid].LandCoverGrid then DEMGlb[NewGrid].SelectionMap.MakeNLCDLegend(DEMGlb[NewGrid].AreaName);
    {$EndIf}
 end;
@@ -9545,13 +9539,13 @@ begin
    {$IfDef RecordDrape} WriteLineToDebugFile('ConvertToPNGwithWorldFile in'); {$EndIf}
    fName2 := ChangeFileExt(fName,'.png');
    if FileExists(fName2) then begin
-      NewSatImage := OpenAndDisplayNewScene(Nil,fName,true,true,true);
+      NewSatImage := OpenAndDisplaySatelliteScene(Nil,fName,true,true,true);
       ItsUTM := SatImage[NewSatImage].SelectionMap.MapDraw.IsThisMapUTM;
       CloseSingleSatelliteImage(NewSatImage);
    end
    else begin
       NakedMapOptions;   //which calls SaveBackupDefaults;
-      OpenAndDisplayNewScene(Nil,fName,true,true,true);
+      OpenAndDisplaySatelliteScene(Nil,fName,true,true,true);
       {$IfDef RecordDrape} WriteLineToDebugFile('Scene opened'); {$EndIf}
       SatImage[NewSatImage].SelectionMap.N11view1Click(Nil);
       ItsUTM := SatImage[NewSatImage].SelectionMap.MapDraw.IsThisMapUTM;
@@ -9911,7 +9905,7 @@ procedure TMapForm.Scatterplotoftwogrids2Click(Sender: TObject);
 begin
     {$IfDef ExGeoStats}
     {$Else}
-      DEMStat.GridScatterGram(false);
+      N2bandscattergram1Click(Sender);
     {$EndIf}
 end;
 
@@ -14716,19 +14710,28 @@ begin
    ZoomOutSpeedButton5.Visible := false;
    SpeedButton22.Visible := false;
    MapArea1.Visible := false;
-   //Recenter1.Visible := false;
    ModifyMapArea1.Visible := false;
    ArrangeButtons;
 end;
 
 
+{$IfDef RecordFormResize}
+   procedure TMapForm.RecordFormSize(Title : shortString);
+   begin
+      if FormOperational then  WriteLineToDebugFile(Title + ' client: ' + IntToStr(Self.ClientWidth) + 'x' + IntToStr(Self.ClientHeight) +
+          '  scrollbox: ' + IntToStr(ScrollBox1.ClientWidth) + 'x' + IntToStr(ScrollBox1.ClientHeight)  +
+          '  image: ' + IntToStr(Image1.ClientWidth) + 'x' + IntToStr(Image1.ClientHeight)  +  '  ' + MapDraw.MapSizeString {+  '  Toolbar: ' + IntToStr(ToolAndPanelHeights)});
+   end;
+{$EndIf}
+
+
 procedure TMapForm.FormResize(Sender: TObject);
 
 
-      procedure SetSize(wantx,wanty : integer);
+      procedure SetSize(wantx,wanty,extra : integer);
       begin
-         if (ClientWidth > WantX + 20) then ClientWidth := WantX + 20;
-         if (ClientHeight > WantY + Panel1.Height + 20) then ClientHeight := WantY + Panel1.Height + 20;
+         if (ClientWidth > WantX + Extra) then ClientWidth := WantX + Extra;
+         if (ClientHeight > WantY + Panel1.Height + Extra) then ClientHeight := WantY + Panel1.Height + Extra;
      end;
 
      function WantedWidth : integer;
@@ -14749,19 +14752,36 @@ begin
    end;
    {$IfDef RecordFormResize} RecordFormSize(Self.Caption + ' FormResize in, ' + MapDraw.MapSizeString); {$EndIf}
 
-
+   (*
    if (ClientWidth > WantedWidth) then ClientWidth := WantedWidth;
    if (ClientHeight > WantedHeight) then ClientHeight := WantedHeight;
+   *)
 
    if (MapDraw.MapOwner = moPointVerificationMap) then begin
       NoScrollBars;
    end
    else begin
-      SetSize(WantedWidth,WantedHeight);
-      if (ScrollBox1.Width > WantedWidth) then ScrollBox1.ClientWidth := WantedWidth;
-      if (ScrollBox1.Height > WantedHeight) then ScrollBox1.ClientHeight := WantedHeight;
-      ScrollBox1.HorzScrollBar.Range := MapDraw.MapXSize;
-      ScrollBox1.VertScrollBar.Range := MapDraw.MapYSize;
+      if (WantedWidth < 8 * wmdem.ClientWidth div 10) and (WantedHeight < 8 * wmdem.ClientHeight div 10) then begin
+         //SetSize(WantedWidth,WantedHeight,0);
+         ClientWidth := WantedWidth;
+         ClientHeight := WantedHeight + Panel1.Height;
+         ScrollBox1.HorzScrollBar.Visible := false;
+         ScrollBox1.VertScrollBar.Visible := false;
+      end
+      else begin
+         //SetSize(WantedWidth,WantedHeight,20);
+         ClientWidth := 8 * wmdem.ClientWidth div 10;
+         ClientHeight := 8 * wmdem.ClientHeight div 10;
+         ScrollBox1.HorzScrollBar.Visible := true;
+         ScrollBox1.VertScrollBar.Visible := true;
+         if (ScrollBox1.Width > WantedWidth) then ScrollBox1.ClientWidth := WantedWidth;
+         if (ScrollBox1.Height > WantedHeight) then ScrollBox1.ClientHeight := WantedHeight;
+         ScrollBox1.HorzScrollBar.Range := MapDraw.MapXSize;
+         ScrollBox1.VertScrollBar.Range := MapDraw.MapYSize;
+      end;
+      //ClientWidth := ScrollBox1.Width;
+      //ClientHeight := ScrollBox1.Height;
+
    end;
    SetPanButtons;
 
@@ -15639,7 +15659,7 @@ procedure TMapForm.Rasteraftersubsettomatchthismapextent1Click(Sender: TObject);
 begin
    {$IfDef ExGDAL}
    {$Else}
-      GDALsubsetGridAndOpen(MapDraw.MapCorners.BoundBoxGeo,true,'');
+      GDALsubsetGridAndOpen(MapDraw.MapCorners.BoundBoxGeo,true,'',true);
    {$EndIf}
 end;
 
@@ -15954,6 +15974,14 @@ procedure TMapForm.PickseriesandloadDEMsfromlibrary1Click(Sender: TObject);
 begin
    AdjustIntegratedDataBaseSeries;
    LoadDEMsCoveringBox(MapDraw.MapCorners.BoundBoxGeo,true);
+end;
+
+procedure TMapForm.PicksingleDEMseriesthisarea1Click(Sender: TObject);
+//var
+   //sName : ShortString;
+begin
+   //PickDEMSeries(sName,'DEM series to load for this map area');
+   DEMfromseries1Click(Sender);
 end;
 
 procedure TMapForm.Pixelextentandhighresaverage1Click(Sender: TObject);
@@ -18632,7 +18660,7 @@ begin
          {$Else}
             else if (Sender = BlueMarble1) or (Sender = OpenImage1) then begin
                 if (Sender = BlueMarble1) then begin
-                   NewSatImage := OpenAndDisplayNewScene(nil,MainMapData + 'nasa\world20min.jpg',true,true,true);
+                   NewSatImage := OpenAndDisplaySatelliteScene(nil,MainMapData + 'nasa\world20min.jpg',true,true,true);
                    if NewSatImage = 0 then exit;
                    SatJustLoaded := NewSatImage;
                 end
@@ -18976,10 +19004,15 @@ begin
 end;
 
 procedure TMapForm.MatchMapToThisOne(var DrapeMap : tMapForm);
+(*
+//changed 10/22/2023
 var
    Lat1,Long1,Lat2,Long2 : float64;
    xg1,yg1,xg2,yg2 : float32;
+*)
 begin
+   MatchAnotherMapThisCoverageArea(Self,DrapeMap);
+(*
    MapDraw.ScreenToLatLongDegree(0,0,Lat1,Long1);
    MapDraw.ScreenToLatLongDegree(MapDraw.MapXSize,MapDraw.MapYSize,Lat2,Long2);
    if (DrapeMap.MapDraw.DEMMap ) then begin
@@ -19006,6 +19039,7 @@ begin
    DrapeMap.ClientHeight := Self.ClientHeight;
    SizeIsCorrectThankYou := false;
    DrapeMap.DoCompleteMapRedraw;
+*)
 end;
 
 
@@ -21445,7 +21479,7 @@ end;
 
 procedure TMapForm.GDALgridsubsettomatchthismap1Click(Sender: TObject);
 begin
-   GDALsubsetGridAndOpen(MapDraw.MapCorners.BoundBoxGeo,true,'');
+   GDALsubsetGridAndOpen(MapDraw.MapCorners.BoundBoxGeo,true,'',true);
 end;
 
 procedure TMapForm.BlueMarble1Click(Sender: TObject);
@@ -22059,7 +22093,7 @@ procedure TMapForm.N62Click(Sender: TObject);
 var
    ErrorMessage : shortstring;
 begin
-   LoadLC100LandCover('',MapDraw.MapCorners.BoundBoxGeo,ErrorMessage);
+   LoadLC100LandCover('',MapDraw.MapCorners.BoundBoxGeo,ErrorMessage,true);
 end;
 
 procedure TMapForm.N7x7region1Click(Sender: TObject);
@@ -23143,7 +23177,7 @@ begin
       AllMapsMatchThisCoverageArea1Click(Nil);
    end;
 
-   ThisGraph := DEMStat.GridScatterGram(false,PredAgesDEM,DepthDEM);
+   ThisGraph := DEMStat.GridScatterGram(DEMGlb[PredAgesDEM].SelectionMap.MapDraw.MapAreaDEMGridLimits,PredAgesDEM,DepthDEM);
    ThisGraph.Caption := 'Age-depth Curve';
    ThisGraph.GraphDraw.HorizLabel := 'Age (Ma)';
    ThisGraph.GraphDraw.VertLabel := 'Depth (m)';
@@ -23326,6 +23360,8 @@ begin
     LongHigh := MapDraw.MapCorners.BoundBoxGeo.xmax;
     LongLow := MapDraw.MapCorners.BoundBoxGeo.xmin;
     LoadMapLibraryBox(WantedDEM,WantImage,true,LatHigh,LongLow,LatLow,LongHigh,DEMSeries,True);
+
+    MatchMapToThisOne(DEMGlb[WantedDEM].SelectionMap);
 end;
 
 
@@ -24372,7 +24408,7 @@ begin
    wmdem.SeaFloorAgeSpeedButtonClick(nil);
    wmdem.SedThickButtonClick(Nil);
    AllMapsMatchThisCoverageArea1Click(Nil);
-   ThisGraph := DEMStat.GridScatterGram(false,PredAgesDEM,ThickDEM);
+   ThisGraph := DEMStat.GridScatterGram(DEMglb[PredAgesDEM].SelectionMap.MapDraw.MapAreaDEMGridLimits,PredAgesDEM,ThickDEM);
    ThisGraph.Caption := 'Age versus sediment thickness';
    ThisGraph.GraphDraw.HorizLabel := 'Age (Ma)';
    ThisGraph.GraphDraw.VertLabel := 'Sediment thickness (m)';

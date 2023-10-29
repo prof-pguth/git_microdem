@@ -3686,32 +3686,15 @@ object dbtablef: Tdbtablef
     Left = 368
     Top = 480
     object Loadtile1: TMenuItem
-      Caption = 'Load this tile maps'
+      Caption = 'Load maps for this tile'
       OnClick = Loadtile1Click
+    end
+    object N52: TMenuItem
+      Caption = '-'
     end
     object Currenttest1: TMenuItem
       Caption = 'Graph by criteria, with tile names and parameter sorts'
       OnClick = Currenttest1Click
-    end
-    object Evaluationrangeforcriterion1: TMenuItem
-      Caption = 'Evaluation range (max - min) for criterion and tile'
-      OnClick = Evaluationrangeforcriterion1Click
-    end
-    object Addtilecharacteristics1: TMenuItem
-      Caption = 'Add tile characteristics to DB'
-      OnClick = Addtilecharacteristics1Click
-    end
-    object AddcountryfieldtoDB1: TMenuItem
-      Caption = 'Add country field to DB'
-      OnClick = AddcountryfieldtoDB1Click
-    end
-    object SSIMtodissimilarity1: TMenuItem
-      Caption = 'SSIM or R2 evaluations to dissimilarity'
-      OnClick = SSIMtodissimilarity1Click
-    end
-    object TransposeSSIMR2forclusters1: TMenuItem
-      Caption = 'Transpose SSIM/R2 means for K-means cluster'
-      OnClick = TransposeSSIMR2forclusters1Click
     end
     object GraphSSIMR2bycluster1: TMenuItem
       Caption = 'Graph SSIM/R2 by cluster means'
@@ -3720,14 +3703,6 @@ object dbtablef: Tdbtablef
     object GraphSSIMR2byDEM1: TMenuItem
       Caption = 'Graph SSIM/R2 by DEM means'
       OnClick = GraphSSIMR2byDEM1Click
-    end
-    object ilecharacteristicsbytileforCopDEM1: TMenuItem
-      Caption = 'Tile characteristics by tile for CopDEM'
-      OnClick = ilecharacteristicsbytileforCopDEM1Click
-    end
-    object ClustersperDEMIXtile1: TMenuItem
-      Caption = 'Number of clusters per DEMIX tile (table)'
-      OnClick = ClustersperDEMIXtile1Click
     end
     object Clusterdiversity1: TMenuItem
       Caption = 'Graphs all SSIM/R2 range by DEMs and clusters (very slow)'
@@ -3738,12 +3713,68 @@ object dbtablef: Tdbtablef
       OnClick = Clustersensitivity1Click
     end
     object Clusterwhiskerplotsforslopeandroughness1: TMenuItem
-      Caption = 'Cluster whisker plots for slope and roughness'
+      Caption = 'Cluster whisker plots for tile characteristics'
       OnClick = Clusterwhiskerplotsforslopeandroughness1Click
     end
-    object CreateDBwithparametersbyDEM1: TMenuItem
-      Caption = 'Create DB with parameters by DEM'
-      OnClick = CreateDBwithparametersbyDEM1Click
+    object N51: TMenuItem
+      Caption = '-'
+    end
+    object Createnewtables1: TMenuItem
+      Caption = 'Create new tables'
+      object TransposeSSIMR2forclusters1: TMenuItem
+        Caption = 'Transpose SSIM/R2 means for K-means cluster'
+        OnClick = TransposeSSIMR2forclusters1Click
+      end
+      object ClustersperDEMIXtile1: TMenuItem
+        Caption = 'Number of clusters per DEMIX tile (table)'
+        OnClick = ClustersperDEMIXtile1Click
+      end
+      object ilecharacteristicsbytileforCopDEM1: TMenuItem
+        Caption = 'Tile characteristics by tile for CopDEM'
+        OnClick = ilecharacteristicsbytileforCopDEM1Click
+      end
+      object CreateDBwithparametersbyDEM1: TMenuItem
+        Caption = 'Create DB with criteria by DEM'
+        OnClick = CreateDBwithparametersbyDEM1Click
+      end
+    end
+    object Modifythistable1: TMenuItem
+      Caption = 'Modify this table'
+      object SSIMtodissimilarity1: TMenuItem
+        Caption = 'Convert SSIM/R2 evaluations to dissimilarity'
+        OnClick = SSIMtodissimilarity1Click
+      end
+      object Addtilecharacteristics1: TMenuItem
+        Caption = 'Add tile characteristics to DB'
+        OnClick = Addtilecharacteristics1Click
+      end
+      object AddcountryfieldtoDB1: TMenuItem
+        Caption = 'Add country field to DB'
+        OnClick = AddcountryfieldtoDB1Click
+      end
+      object Evaluationrangeforcriterion1: TMenuItem
+        Caption = 'Add evaluation range (max - min) for criterion and tile'
+        OnClick = Evaluationrangeforcriterion1Click
+      end
+      object AddIMAGEfieldfordifferencedistributiongraphs1: TMenuItem
+        Caption = 'Add IMAGE field for difference distribution graphs'
+        OnClick = AddIMAGEfieldfordifferencedistributiongraphs1Click
+      end
+    end
+    object Filterthistable1: TMenuItem
+      Caption = 'Filter this table'
+      object Filteroutsignedcriteriameanandmedian1: TMenuItem
+        Caption = 'Filter out signed criteria (mean and median)'
+        OnClick = Filteroutsignedcriteriameanandmedian1Click
+      end
+      object Filterforjustsignedcrirteria1: TMenuItem
+        Caption = 'Filter for just signed crirteria'
+        OnClick = Filterforjustsignedcrirteria1Click
+      end
+      object FilterforDEMIXtiles1: TMenuItem
+        Caption = 'Filter for DEMIX tiles'
+        OnClick = FilterforDEMIXtiles1Click
+      end
     end
     object N49: TMenuItem
       Caption = '-'
@@ -3768,25 +3799,9 @@ object dbtablef: Tdbtablef
       Caption = 'DEMIX tile characteristic summary (one record per tile)'
       OnClick = DEMIXtilesummary1Click
     end
-    object Filteroutsignedcriteriameanandmedian1: TMenuItem
-      Caption = 'Filter out signed criteria (mean and median)'
-      OnClick = Filteroutsignedcriteriameanandmedian1Click
-    end
-    object Filterforjustsignedcrirteria1: TMenuItem
-      Caption = 'Filter for just signed crirteria'
-      OnClick = Filterforjustsignedcrirteria1Click
-    end
-    object FilterforDEMIXtiles1: TMenuItem
-      Caption = 'Filter for DEMIX tiles'
-      OnClick = FilterforDEMIXtiles1Click
-    end
     object N1degreetilestocoverrecordsintable1: TMenuItem
       Caption = '1 degree tiles to cover records in table'
       OnClick = N1degreetilestocoverrecordsintable1Click
-    end
-    object AddIMAGEfieldfordifferencedistributiongraphs1: TMenuItem
-      Caption = 'Add IMAGE field for difference distribution graphs'
-      OnClick = AddIMAGEfieldfordifferencedistributiongraphs1Click
     end
     object Bestbysortedgeomorphometry1: TMenuItem
       Caption = 'Best by sorted geomorphometry values'
@@ -3868,11 +3883,6 @@ object dbtablef: Tdbtablef
     object Wins1: TMenuItem
       Caption = 'Wins and Ties'
       OnClick = Wins1Click
-    end
-    object N50: TMenuItem
-      Caption = 'Add country to DB'
-      Enabled = False
-      Visible = False
     end
   end
 end

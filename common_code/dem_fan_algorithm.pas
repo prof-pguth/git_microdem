@@ -107,7 +107,7 @@ begin
    {$IfDef RecordFanProblems} WriteLineToDebugFile('GetFanAlgorithmParameters in,  method=' + FanMethodName[in_iva.FanMethod] + ' algorithm=' + LOSAlgorithmDescription(MDDef.wf));  {$EndIf}
 
    FanAlgParams := TFanAlgParams.Create(Application);
-   with FanAlgParams,iva do begin
+   with FanAlgParams do begin
       Top := Mouse.CursorPos.Y;
       Left := Mouse.CursorPos.X;
       CheckBox3.Checked := MDDef.MissingDataBlocksLOS;
@@ -118,20 +118,20 @@ begin
       LabelForm;
       Hide;
 
-      Result := (ShowModal = mrCancel);
+      Result := (ShowModal <> mrCancel);
       if Result then begin
-         CheckEditString(Edit1.Text,FanDEMSpaceMultiple);
-         CheckEditString(Edit2.Text,FanMapSpaceMultiple);
-         CheckEditString(Edit6.Text,MaskRaySpacingDeg);
-         CheckEditString(Edit7.Text,MaskAreaInterval);
-         CheckEditString(Edit3.Text,SmartSwitchOver);
-         CheckEditString(Edit4.Text,ClosestBlockingDistance);
+         CheckEditString(Edit1.Text,iva.FanDEMSpaceMultiple);
+         CheckEditString(Edit2.Text,iva.FanMapSpaceMultiple);
+         CheckEditString(Edit6.Text,iva.MaskRaySpacingDeg);
+         CheckEditString(Edit7.Text,iva.MaskAreaInterval);
+         CheckEditString(Edit3.Text,iva.SmartSwitchOver);
+         CheckEditString(Edit4.Text,iva.ClosestBlockingDistance);
          CheckEditString(Edit5.Text,MDDef.FanMapZoom);
-         FanMethod := tFanMethod(RadioGroup2.ItemIndex);
-         LOSAlgorithm := tLOSAlgorithm(RadioGroup3.ItemIndex);
-         FanCurvAlg := MDdef.CurvAlg;
-         ElevInterpolation := tElevInterpolation(RadioGroup4.ItemIndex);
-         StraightAlgorithm := tStraightAlgorithm(RadioGroup5.ItemIndex);
+         iva.FanMethod := tFanMethod(FanAlgParams.RadioGroup2.ItemIndex);
+         iva.LOSAlgorithm := tLOSAlgorithm(RadioGroup3.ItemIndex);
+         iva.FanCurvAlg := MDdef.CurvAlg;
+         iva.ElevInterpolation := tElevInterpolation(RadioGroup4.ItemIndex);
+         iva.StraightAlgorithm := tStraightAlgorithm(RadioGroup5.ItemIndex);
          in_iva := iva;
          MDDef.MissingDataBlocksLOS := CheckBox3.Checked;
       end;
@@ -199,5 +199,5 @@ end;
 initialization
 finalization
    {$IfDef RecordFanProblems} WriteLineToDebugFile('RecordFanProblems active in dem_fan_algorithm'); {$EndIf}
-   {$IfDef RecordClosingProblems} WriteLineToDebugFile('Closing dem_fan_algorithm');  {$EndIf}
+   {$IfDef RecordClosingProblems} WriteLineToDebugFile('Closing dem_fan_algorithm'); {$EndIf}
 end.

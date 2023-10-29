@@ -61,7 +61,7 @@ procedure LandCoverBarGraphLegends;
 
 function MakeAnNLCDLegend(DEM : integer;  theLabel : shortstring = ''; Stats : tstringlist = nil) : integer;
 
-function LoadLC100LandCover(fName : PathStr; bb : sfboundbox; var ErrorMessage : shortstring) : integer;
+function LoadLC100LandCover(fName : PathStr; bb : sfboundbox; var ErrorMessage : shortstring; OpenMap : boolean) : integer;
 
 
 var
@@ -82,7 +82,7 @@ uses
 
 
 
-function LoadLC100LandCover(fName : PathStr; bb : sfboundbox; var ErrorMessage : shortstring) : integer;
+function LoadLC100LandCover(fName : PathStr; bb : sfboundbox; var ErrorMessage : shortstring; OpenMap : boolean) : integer;
 var
    Lat,Long : float32;
 begin
@@ -91,11 +91,10 @@ begin
    LandCoverFName := GetLC100_fileName(Lat,Long);
    {$IfDef RecordDEMIX} writeLineToDebugFile('Landcover=' + LandCoverfName); {$EndIf}
    if FileExists(LandCoverFName) then begin
-      Result := GDALsubsetGridAndOpen(bb,true,LandCoverFName);
+      Result := GDALsubsetGridAndOpen(bb,true,LandCoverFName,OpenMap);
       if ValidDEM(Result) then begin
          DEMGlb[Result].DEMHeader.ElevUnits := GLCS_LC100;
-         if fName = '' then fName := Petmar.NextFileNumber(MDtempDir,'lcc100_','.dem');
-         
+         if (fName = '') then fName := Petmar.NextFileNumber(MDtempDir,'lcc100_','.dem');
          DEMGlb[Result].WriteNewFormatDEM(fName);
       end;
    end;
@@ -252,7 +251,7 @@ var
             {$IfDef RecordBarGraphsDetailed} WriteLineToDebugFile('Do series=' + aLabel); {$EndIf}
             try
                Result := true;
-               NewDEM := GDALsubsetGridAndOpen(bbox,true,LandCoverfName);
+               NewDEM := GDALsubsetGridAndOpen(bbox,true,LandCoverfName,true);
                {$IfDef RecordBarGraphsDetailed} WriteLineToDebugFile('Grid opened'); {$EndIf}
                if ValidDEM(NewDEM) then begin
                   NewDB := DEMGlb[NewDEM].SelectionMap.MakeNLCDLegend(aLabel,SeriesStats);
@@ -290,6 +289,25 @@ var
              bmp.Canvas.TextOut(5 + XLoc,0,aTitle);
              bmp.Canvas.Font.Size := 14;
           end;
+
+         function DEMIXLoadRefDEMFromPath(AreaName : shortstring; LoadMap : boolean) : integer;
+         var
+            FilesWanted : tStringList;
+            j : integer;
+            fName : PathStr;
+         begin
+            FilesWanted := tStringList.Create;
+            FindMatchingFiles(DEMIX_Ref_1sec,'*.tif',FilesWanted,1);
+            for j := 0 to pred(FilesWanted.Count) do begin
+               fName := FilesWanted.Strings[j];
+               if StrUtils.AnsiContainsText(UpperCase(fname),UpperCase(AreaName)) then begin
+                  Result := OpenNewDEM(fName,LoadMap);
+                  exit;
+               end;
+            end;
+            FilesWanted.Free;
+         end;
+
 
    var
       Name,Area,AreaName : shortstring;

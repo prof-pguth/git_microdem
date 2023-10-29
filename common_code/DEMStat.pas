@@ -101,7 +101,7 @@ type
       function MakeDifferenceMap(Map1,Map2,GridResultionToUse,GridToMergeShading : integer; ShowMap,ShowHistogram,ShowScatterPlot : boolean; TheAreaName : ShortString = '') : integer;
       function MakeDifferenceMapOfBoxRegion(Map1,Map2,GridResultionToUse,GridToMergeShading : integer; GridLimits: tGridLimits; ShowMap,ShowHistogram,ShowScatterplot : boolean; TheAreaName : ShortString = '') : integer;
 
-      procedure VarCovarStatsFromTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer; var r,covar : float64);
+      function VarCovarStatsFromTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer; var r,covar : float64) : boolean;
       procedure ElevationSlopePlot(WhichDEMs : tDEMbooleanArray; DesiredBinSize : integer = 1);
 
       procedure DoAnSSODiagram(CurDEM : integer; GridLimits : tGridLimits);
@@ -147,7 +147,7 @@ type
   {$IfDef ExCompare}
   {$Else}
       procedure MissingPointsInGrids(DEM1 : integer = 0; DEM2 : integer = 0);
-      function GridScatterGram(FullGrid : boolean; DEM1 : integer = 0; DEM2 : integer = 0) : TThisBaseGraph;
+      function GridScatterGram(GridLimits : tGridLimits; DEM1 : integer = 0; DEM2 : integer = 0) : TThisBaseGraph;
       procedure GridCoOccurrence(AutoFull : boolean = false; DEM1 : integer = 0; DEM2 : integer = 0; Percentages : boolean = true);
       procedure DBCoOccurrence(Table : tMyData; EmpSource: TDataSource; Field1,Field2 : ShortString; Percentages : boolean);
   {$EndIf}
@@ -1830,7 +1830,7 @@ end;
 
 
 
-procedure VarCovarStatsFromTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer; var r,covar : float64); //Incr : integer = 1);
+function VarCovarStatsFromTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer; var r,covar : float64) : boolean; //Incr : integer = 1);
 var
    Col,Row,incr : integer;
    NPts : int64;
@@ -1872,7 +1872,8 @@ begin
       end;
       inc(Col,incr);
    end;
-   varcovar(x^,y^,NPts,r,covar);
+   Result := NPts > 0;
+   if Result then varcovar(x^,y^,NPts,r,covar);
    Dispose(x);
    Dispose(y);
 end;
@@ -2096,20 +2097,7 @@ begin {proc ElevationSlopePlot}
 
    NumDEMs := 0;
    for i := 1 to MaxDEMDataSets do if WhichDEMs[i] then inc(NumDEMs);
-
-
-   //if (WhichDEM = 0) then begin
-      //StartDEM := 1;
-      //EndDEM := MaxDEMDataSets;
-      if (NumDEMs > 1) and  MDDef.ShowAspectRose then GraphList := tStringList.Create;
-(*
-   end
-   else begin
-      StartDEM := WhichDEM;
-      EndDEM := WhichDEM;
-   end;
-*)
-
+   if (NumDEMs > 1) and  MDDef.ShowAspectRose then GraphList := tStringList.Create;
    MinMin := 9999;
    MaxMax := -9999;
    for Which := 1 to MaxDEMDataSets do if WhichDEMs[Which] and ValidDEM(Which) then begin
@@ -2131,7 +2119,6 @@ begin {proc ElevationSlopePlot}
    end;
 
    for CurDEM := 1 to MaxDEMDataSets do if WhichDEMs[CurDEM] and ValidDEM(CurDEM) then begin
-      //CurDEM := Which;
       {$IfDef RecordElevationSlopePlot} WriteLineToDebugFile('ElevationSlopePlot DEM=' + IntToStr(CurDEM)); {$EndIf}
       AspectStats.Create(CurDEM);
 
@@ -2636,18 +2623,12 @@ begin
       CreateMultipleHistogram(MDDef.CountHistograms,ElevFiles,LegendFiles,'Elevation/grid','Elevation/grid distribution',200,MinElev,MaxElev,MDDef.ElevHistBinSize);
       CreateMultipleHistogram(MDDef.CountHistograms,SlopeFiles,LegendFiles,'Slope (%)','Slope distribution',200,0,Trunc(MaxSlope + 0.99),MDDef.SlopeHistBinSize);
       CreateMultipleHistogram(MDDef.CountHistograms,RoughFiles,LegendFiles,'Roughness (%)','Roughness distribution',200,0,Trunc(MaxRough + 0.99),0.25);
-      //SlopeFiles.Free;
-      //RoughFiles.Free;
-      //ElevFiles.Free;
-
       {$IfDef AllowCurvatureStatistics}
          if (PlanCurvFiles.Count > 0) then CreateMultipleHistograms(MDDef.CountHistograms,PlanCurvFiles,LegendFiles,'Plan curvature','Plan curvature distribution',200,-10,10,0.1);
          if (ProfCurvFiles.Count > 0) then CreateMultipleHistograms(MDDef.CountHistograms,ProfCurvFiles,LegendFiles,'Profile curvature','Profile curvature distribution',200,-10,10,0.1);
          PlanCurvFiles.Free;
          ProfCurvFiles.Free;
       {$EndIf}
-
-      //LegendFiles.Free;
       {$IfDef RecordElevMoment} WriteLineToDebugFile('Done histograms'); {$EndIf}
    end;
    GridForm.SetFormSize;
@@ -2912,7 +2893,6 @@ begin
       TheBitmaps.Add(fName);
       RoseGraph.Close;
       RoseGraph.Free;
-      //RoseGraph := Nil;
       inc(i);
    end;
    MakeBigBitmap(theBitmaps, 'Aspect: ' + DEMGlb[WhichDEM].AreaName);
@@ -3163,7 +3143,6 @@ var
                   Double := false;
                   PowerTables := false;
                   ShowProgress := false;
-                  //SkipDrawing := CloseGraphs;
                   BinTime := AverageSpace;
                   BinUnits := ' (' + ElevUnitsAre(DEMGlb[WantedDEM].DEMheader.ElevUnits) + ')';
                end;
@@ -3250,14 +3229,14 @@ end;
 procedure SemiVariogram(DEMtoUse : integer; GridLimits: tGridLimits);
 begin
    {$IfDef RecordGridScatterGram} WriteLineToDebugFile('SemiVariogram for DEM=' + intToStr(DEMtoUse) + '  ' + DEMGlb[DEMToUse].AreaName); {$EndIf}
-   DEMGlb[DEMToUse].ComputeVariogram(GridLimits);  //,false);
+   DEMGlb[DEMToUse].ComputeVariogram(GridLimits);
    {$IfDef RecordGridScatterGram} WriteLineToDebugFile('SemiVariogram for DEM=' + intToStr(DEMtoUse) + ' out'); {$EndIf}
 end {proc SemiVariogram};
 
 {$EndIf}
 
 
-function GridScatterGram(FullGrid : boolean; DEM1 : integer = 0; DEM2 : integer = 0) : TThisBaseGraph;
+function GridScatterGram(GridLimits : tGridLimits; DEM1 : integer = 0; DEM2 : integer = 0) : TThisBaseGraph;
 var
    Incr,Col,Row,NPts,Prog : integer;
    Lat,Long : float64;
@@ -3265,9 +3244,11 @@ var
    rFile : file;
    v : tFloatPoint;
    IdenticalGrids : boolean;
-   GridLimits : tGridLimits;
 begin
-   if (DEM1 = 0) and (DEM2 = 0) then IdenticalGrids := GetTwoCompatibleGrids('DEM1=x axis, DEM2= y axis',false,DEM1,DEM2,false,true)
+   if (DEM1 = 0) and (DEM2 = 0) then begin
+      IdenticalGrids := GetTwoCompatibleGrids('DEM1=x axis, DEM2= y axis',false,DEM1,DEM2,false,true);
+      GridLimits := DEMGlb[DEM1].SelectionMap.MapDraw.MapAreaDEMGridLimits;
+   end
    else IdenticalGrids := DEMGlb[DEM1].SecondGridIdentical(DEM2);
    if ValidDEM(DEM1) and ValidDEM(DEM2) then begin
       {$IfDef RecordGridScatterGram}
@@ -3275,12 +3256,8 @@ begin
          WriteLineToDebugFile('  DEM 1:' + DEMGlb[DEM1].AreaName + '  ' + DEMGlb[DEM1].KeyDEMParams);
          WriteLineToDebugFile('  DEM 2:' + DEMGlb[DEM2].AreaName + '  ' + DEMGlb[DEM2].KeyDEMParams);
          WriteLineToDebugFile('  ll corner :' + RealToString(DEMGlb[DEM2].Headrecs.hdfSWCornerx,-12,-2) + '   ' + RealToString(DEMGlb[DEM2].Headrecs.hdfSWCornery,-12,-2) );
+         WriteLineToDebugFile('Grid from DEM 1: ' + GridLimitsToString(GridLimits));
       {$EndIf}
-
-      if FullGrid then GridLimits := DEMGlb[DEM1].FullDEMGridLimits
-      else GridLimits := DEMGlb[DEM1].SelectionMap.MapDraw.MapAreaDEMGridLimits;
-
-      {$IfDef RecordGridScatterGram} WriteLineToDebugFile('Grid from DEM 1: ' + GridLimitsToString(GridLimits)); {$EndIf}
       SetReasonableGraphSize;
 
       Result := TThisBaseGraph.Create(Application);
@@ -3300,16 +3277,17 @@ begin
       while ( (GridLimits.XGridHigh - GridLimits.XGridLow) div Incr) * ((GridLimits.YGridHigh - GridLimits.YGridLow) div Incr) > Petmath.bfArrayMaxSize do inc(incr);
       Col := GridLimits.XGridLow;
       while (Col <= GridLimits.XGridHigh) do begin
-
-         Row := GridLimits.YGridLow;
-         if (Prog mod 100 = 0) then  begin
-            UpdateProgressBar((Col - GridLimits.XGridLow) / (GridLimits.XGridHigh - GridLimits.XGridLow));
-            {$IfDef RecordGridScatterGram} WriteLineToDebugFile('Col=' + IntToStr(Col) ); {$EndIf}
-         end;
+         if (Prog mod 100 = 0) then UpdateProgressBar((Col - GridLimits.XGridLow) / (GridLimits.XGridHigh - GridLimits.XGridLow));
          Inc(Prog);
-
+         Row := GridLimits.YGridLow;
          while (Row <= GridLimits.YGridHigh) do begin
             if DEMGlb[DEM1].GetElevMeters(Col,Row,v[1]) then begin
+               if DEMGlb[DEM1].GetElevMetersFromSecondDEM(IdenticalGrids,Dem2,Col,Row,v[2]) then begin
+                  Result.AddPointToDataBuffer(rfile,v);
+                  inc(NPts);
+               end;
+               (*
+               //changed 10/22/2023
                if IdenticalGrids then begin
                   if DEMGlb[DEM2].GetElevMeters(Col,Row,v[2]) then begin
                      Result.AddPointToDataBuffer(rfile,v);
@@ -3319,6 +3297,7 @@ begin
                else begin
                   DEMGlb[DEM1].DEMGridToLatLongDegree(Col,Row,Lat,Long);
                   DEMGlb[DEM2].LatLongDegreetoDEMGrid(Lat,Long,XGrid,YGrid);
+
                   {$IfDef RecordGridScatterGram}
                      if (Col mod 100 = 0)  and (Row mod 100 = 0) then begin
                          WriteLineToDebugFile('Col=' + IntToStr(Col) + '  ' + 'Row=' + IntToStr(Row) + '  ' + LatLongDegreeToString(Lat,Long) + '  xgrid=' + IntToStr(Round(xgrid)) +  '  ygrid=' + IntToStr(Round(ygrid)));
@@ -3329,6 +3308,7 @@ begin
                      inc(NPts);
                   end;
                end;
+               *)
             end;
             inc(Row,Incr);
          end;
@@ -3338,10 +3318,11 @@ begin
       EndProgress;
       if (NPts > 0) then begin
          Result.AutoScaleAndRedrawDiagram;
+         Result.AddCorrelationToCorner;
       end
       else begin
          Result.Close;
-         MessageToContinue('No matches');
+         MessageToContinue('No scattergram matches ' + DEMGlb[DEM1].AreaName + ' and ' + DEMGlb[DEM2].AreaName);
       end;
    end;
 end;

@@ -15,7 +15,7 @@ var
    NewDEM1, NewDEM2, NewDEM3 : integer;
    fName : PathStr;
 begin
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile(''); WriteLineToDebugFile('ResampleForDEMIX DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
+   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIXFull)} WriteLineToDebugFile(''); WriteLineToDebugFile('ResampleForDEMIX DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
    SaveBackupDefaults;
    MDDef.DefDEMMap := mtDEMBlank;
    MDDef.LidarGridProjection := ArcSecDEM;
@@ -23,29 +23,29 @@ begin
 
    if (OutPath = '') then OutPath := ExtractFilePath(DEMGlb[DEM].DEMFileName);
 
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX 1 sec area'); {$EndIf}
+   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIXFull)} WriteLineToDebugFile('ResampleForDEMIX 1 sec area'); {$EndIf}
    MDdef.DefLidarGeoGridSizeX := 1;
    MDdef.DefLidarGeoGridSizeY := 1;
    fName := OutPath +  DEMGlb[DEM].AreaName + '_1sec.tif';
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX, ' + fName); {$EndIf}
+   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIXFull)} WriteLineToDebugFile('ResampleForDEMIX, ' + fName); {$EndIf}
    NewDEM1 := DEMGlb[DEM].ResampleByAveraging(true,false,fName);
 
    MDDef.LidarGridProjection := UTMbasedDEM;
    MDdef.DefLidarXGridSize := 30;
    MDdef.DefLidarYGridSize := 30;
    fName := OutPath +  DEMGlb[DEM].AreaName + '_30m.tif';
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX, ' + fName); {$EndIf}
+   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIXFull)} WriteLineToDebugFile('ResampleForDEMIX, ' + fName); {$EndIf}
    NewDEM2 := DEMGlb[DEM].ResampleByAveraging(true,false,fName);
 
    MDDef.LidarGridProjection := UTMbasedDEM;
    MDdef.DefLidarXGridSize := DEMGlb[NewDEM1].AverageSpace;
    MDdef.DefLidarYGridSize := MDdef.DefLidarXGridSize;
    fName := OutPath +  DEMGlb[DEM].AreaName + '_' + IntToStr(round(MDdef.DefLidarXGridSize)) + '_m.tif';
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('ResampleForDEMIX, ' + fName); {$EndIf}
+   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIXFull)} WriteLineToDebugFile('ResampleForDEMIX, ' + fName); {$EndIf}
    NewDEM3 := DEMGlb[DEM].ResampleByAveraging(true,false,fName);
 
    RestoreBackupDefaults;
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('Out ResampleForDEMIX DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
+   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIXFull)} WriteLineToDebugFile('Out ResampleForDEMIX DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
 end;
 
 
@@ -97,7 +97,6 @@ begin
       ShapeFileCreator.Table.InsureFieldPresentAndAdded(ftFloat,'TILE_KM2',9,3);
    end;
 
-   //NumTiles := 0;
    yminutes := 6 / 60;
    yt := 10;
    StartProgress('tiles');
@@ -162,7 +161,8 @@ begin
    {$IfDef RecordDEMIXTiles} writeLineToDebugFile('DEMIXtileFill in, DEM=' + IntToStr(DEM)); {$EndIf}
    if ValidDEM(DEM) then try
       StartProgress('DEMIX tiles');
-      Result := DEMGlb[DEM].SelectionMap.LoadDEMIXtileOutlines(AreaBox,true,OpenTable);
+      Result := LoadDEMIXtileOutlinesNoMap(AreaBox,true,OpenTable);
+
       if (Result <> 0) then try
          {$IfDef RecordDEMIXTiles} writeLineToDebugFile('DEMIXtileFill, db created recs=' + IntToStr(GISdb[Result].MyData.TotRecsInDB)); {$EndIf}
          GISdb[Result].MyData.First;
@@ -198,6 +198,7 @@ begin
    {$IfDef RecordDEMIXTiles} writeLineToDebugFile('DEM contains parts of tiles=' + IntToStr(GISdb[Result].MyData.TotRecsInDB)); {$EndIf}
 end;
 
+
 function LoadDEMIXtileOutlinesNoMap(WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false; OpenTable : boolean = true) : integer;
 var
    DEMIXFName : PathStr;
@@ -219,53 +220,42 @@ begin
    {$If Defined(RecordCarto)} WriteLineToDebugFile('TMapForm.LoadDEMIXtileOutlines out'); {$EndIf}
 end;
 
+
 procedure TMapForm.ClipDEMtoFullDEMIXTiles(NewName : PathStr = '');
-const
-   Fudge = 0.001;
-var
-   //DEMIXFName : PathStr;
-   bb,bb2 : sfBoundBox;
-   db : integer;
-   //Name : shortstring;
-   {$If Defined(RecordCarto)} aLine : shortString; {$EndIf}
 begin
    if ValidDEM(MapDraw.DEMonMap) then begin
-      {$If Defined(RecordCarto)} aLine := DEMGlb[MapDraw.DEMonMap].AreaName + ' initial ' + DEMGlb[MapDraw.DEMonMap].ColsRowsString;  {$EndIf}
-      bb := DEMGlb[MapDraw.DEMonMap].DEMBoundBoxGeo;
-      {$If Defined(RecordCartoFull)} WriteLineToDebugFile('TMapForm.ClipDEMtoFullDEMIXTiles, DEM in ' + sfBoundBoxToString(bb,8)); {$EndIf}
-      db := DEMIXtileFill(MapDraw.DEMonMap,bb,False);
-      GISdb[DB].Empsource.Enabled := false;
+       ClipTheDEMtoFullDEMIXTiles(MapDraw.DEMonMap);
+       DEMGlb[MapDraw.DEMonMap].SelectionMap.ReloadDEMClick(Nil);
+   end;
+end;
+
+
+function DEMIXtilesOnDEM(DEM : integer; RecordFill : tStringList = Nil) : tStringList;
+var
+   db : integer;
+   Name : shortstring;
+begin
+   if ValidDEM(DEM) then begin
+      Result := tStringList.Create;
+      db := DEMIXtileFill(DEM,DEMGlb[DEM].DEMBoundBoxGeo,False);
       GISdb[DB].ApplyGISFilter('GRID_FULL >' + IntToStr(MDDef.DEMIX_Full));
-      //GISdb[DB].DeleteAllSelectedRecords;
-      bb2.xmax := GISdb[DB].MyData.FindFieldMax('LONG_HI') + Fudge;
-      bb2.xmin := GISdb[DB].MyData.FindFieldMin('LONG_LOW') - Fudge;
-      bb2.ymax := GISdb[DB].MyData.FindFieldMax('LAT_HI') + Fudge;
-      bb2.ymin := GISdb[DB].MyData.FindFieldMin('LAT_LOW') - Fudge;
-      {$If Defined(RecordCartoFull)} WriteLineToDebugFile('TMapForm.ClipDEMtoFullDEMIXTiles, tile boundaries ' + sfBoundBoxToString(bb2,8)); {$EndIf}
-      bb.xmax := Petmath.MinFloat(bb.xMax,bb2.xMax);
-      bb.xmin := Petmath.MaxFloat(bb.xmin,bb2.xMin);
-      bb.ymax := Petmath.MinFloat(bb.yMax,bb2.yMax);
-      bb.ymin := Petmath.MaxFloat(bb.yMin,bb2.YMin);
-      {$If Defined(RecordCartoFull)} WriteLineToDebugFile('TMapForm.ClipDEMtoFullDEMIXTiles, map full tiles ' + sfBoundBoxToString(bb,8)); {$EndIf}
-      SubsetAndZoomMapFromGeographicBounds(bb);
-
-//      GISdb[DB].ZoomToDBCoverageOnMap;
-      //DEMGlb[MapDraw.DEMonMap].DEMFileName := MDTempDir + DEMGlb[MapDraw.DEMonMap].AreaName + '.dem';
-
-      if (NewName = '') then NewName := DEMGlb[MapDraw.DEMonMap].DEMFileName;
-      DEMGlb[MapDraw.DEMonMap].SaveGridSubsetGeotiff(DEMGlb[MapDraw.DEMonMap].SelectionMap.MapDraw.MapAreaDEMGridLimits,NewName);
-      DEMGlb[MapDraw.DEMonMap].DEMFileName := NewName;
-      DEMGlb[MapDraw.DEMonMap].SelectionMap.ReloadDEMClick(Nil);
-      {$If Defined(RecordCarto)} aLine := aline + ' clipped ' + DEMGlb[MapDraw.DEMonMap].ColsRowsString;   WriteLineToDebugFile(aLine); {$EndIf}
-
-
+      GISdb[DB].Empsource.Enabled := false;
+      {$If Defined(RecordCarto)} WriteLineToDebugFile('TMapForm.DEMIXtilesOnMap, tiles=' + IntToStr(GISdb[db].MyData.FiltRecsInDB)); {$EndIf}
+      while not GISdb[db].MyData.Eof do begin
+         Name := GISdb[db].MyData.GetFieldByNameAsString('NAME');
+         Result.Add(Name);
+         if (RecordFill <> Nil) then begin
+             RecordFill.Add(Name + ',' + RealToString(GISdb[db].MyData.GetFieldByNameAsFloat('GRID_FULL'),-8,-2));
+         end;
+         GISdb[db].MyData.Next;
+      end;
       CloseAndNilNumberedDB(db);
    end;
 end;
 
+
 function TMapForm.DEMIXtilesOnMap(RecordFill : tStringList = Nil) : tStringList;
 var
-   DEMIXFName : PathStr;
    bb : sfBoundBox;
    db : integer;
    Name : shortstring;

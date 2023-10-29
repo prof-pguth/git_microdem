@@ -62,7 +62,7 @@ uses
     Petmar_types,Petmar,DEMMapDraw,DEMDefs;
 
 
-function OpenAndDisplayNewScene(Files : tStringList; IndexFileName : PathStr; DisplayIt,NeedHist,ASatImage : boolean;  WhichSat : integer = 0; DEMtoAssociate : integer = 0) : integer;
+function OpenAndDisplaySatelliteScene(Files : tStringList; IndexFileName : PathStr; DisplayIt,NeedHist,ASatImage : boolean;  WhichSat : integer = 0; DEMtoAssociate : integer = 0) : integer;
 
 procedure CloseAllDEMs;
 procedure CloseSingleDEM(var DEMtoClose : integer; CloseMap : boolean = true; ResetMenus : boolean = true);
@@ -189,8 +189,6 @@ const
        procedure GeologyGetData(ForceDownload : boolean = false);
     {$EndIf}
 {$EndIf}
-
-
 
 
 implementation
@@ -421,7 +419,7 @@ begin
 end;
 
 
-function OpenAndDisplayNewScene(Files : tStringList; IndexFileName : PathStr; DisplayIt,NeedHist,ASatImage : boolean;  WhichSat : integer = 0; DEMtoAssociate : integer = 0) : integer;
+function OpenAndDisplaySatelliteScene(Files : tStringList; IndexFileName : PathStr; DisplayIt,NeedHist,ASatImage : boolean;  WhichSat : integer = 0; DEMtoAssociate : integer = 0) : integer;
 var
    Masks   : ANSIString;
    Dir     : DirStr;
@@ -1023,7 +1021,7 @@ end;
       {$EndIf}
       else if (MDdef.AutoOpen = aoImage) then begin
          {$If Defined(RecordStartup) or Defined(RecordProjects)} WriteLineToDebugFile('MDdef.AutoOpen image=' + LastImageName); {$EndIf}
-         OpenAndDisplayNewScene(Nil,LastImageName,true,true,(not GlobalDRGMap));
+         OpenAndDisplaySatelliteScene(Nil,LastImageName,true,true,(not GlobalDRGMap));
       end
       else if MDdef.AutoOpen = aoShapeFile then begin
          DEMMapf.LoadBlankVectorMapAndOverlay(false,false,LastDataBase);
@@ -1106,7 +1104,7 @@ end;
          if (TheFiles.Count > 0) then begin
             if (TheFiles.Count = 1) then i := 0 else i := 1;      //for Sentinel-2, where band 1 is low resolution
             {$If Defined(RecordSatLoad) or Defined(RecordSatDirOpen)} WriteLineToDebugFile('Open=' + TheFiles.Strings[i]); {$EndIf}
-            Result := OpenAndDisplayNewScene(Nil,TheFiles.Strings[i],true,true,true);
+            Result := OpenAndDisplaySatelliteScene(Nil,TheFiles.Strings[i],true,true,true);
          end;
          TheFiles.Free;
          UpdateMenusForAllMaps;
@@ -1179,7 +1177,7 @@ end;
                ShowHourglassCursor;
                ShlObj.SHAddToRecentDocs(SHARD_PATH, PChar(TheFiles.Strings[i]));
                {$If Defined(RecordSatLoad) or Defined(RecordMenu) or Defined(TimeSatLoad)} WriteLineToDebugFile('call OpenAndDisplay ' + fName); {$EndIf}
-               if not CheckFileNameForSpaces(fName) then NewSatImage := OpenAndDisplayNewScene(Nil,fName,true,(ImageType <> itDRG),(not GlobalDRGMap));
+               if not CheckFileNameForSpaces(fName) then NewSatImage := OpenAndDisplaySatelliteScene(Nil,fName,true,(ImageType <> itDRG),(not GlobalDRGMap));
             end;
          end;
          if (ImageType = itDRG) then begin
@@ -1731,7 +1729,7 @@ begin
                   if( What = 'SAT') then begin
                      if FileExists(fName) then begin
                         WantedDEM := 0;
-                        WantedSat := OpenAndDisplayNewScene(Nil,fname,true,true,true);
+                        WantedSat := OpenAndDisplaySatelliteScene(Nil,fname,true,true,true);
                         if Table.FieldExists('MAP_TYPE') then begin
                            mt := Table.GetFieldByNameAsInteger('MAP_TYPE');
                            if (mt <> 0) then SatImage[WantedSat].SelectionMap.MapDraw.MapType := mt;

@@ -27,7 +27,7 @@ object ImageDisplayForm: TImageDisplayForm
     Align = alClient
     TabOrder = 0
     ExplicitWidth = 815
-    ExplicitHeight = 32
+    ExplicitHeight = 267
     object Image1: TImage
       Left = -2
       Top = 3
@@ -48,7 +48,7 @@ object ImageDisplayForm: TImageDisplayForm
     Align = alBottom
     Caption = 'Panel1'
     TabOrder = 1
-    ExplicitTop = 58
+    ExplicitTop = 293
     ExplicitWidth = 815
   end
   object ToolBar1: TToolBar
@@ -362,7 +362,7 @@ object ImageDisplayForm: TImageDisplayForm
       item
         Width = 50
       end>
-    ExplicitTop = 58
+    ExplicitTop = 293
     ExplicitWidth = 815
   end
   object Panel2: TPanel
@@ -372,7 +372,7 @@ object ImageDisplayForm: TImageDisplayForm
     Height = 41
     Align = alBottom
     TabOrder = 4
-    ExplicitTop = 58
+    ExplicitTop = 293
     ExplicitWidth = 815
     object TrackBar1: TTrackBar
       Left = 240
@@ -806,6 +806,15 @@ object ImageDisplayForm: TImageDisplayForm
       OnClick = Overlaynewimagefromclipboard1Click
     end
     object Copyimagetoclipboard1: TMenuItem
+      Bitmap.Data = {
+        F6000000424DF600000000000000760000002800000010000000100000000100
+        0400000000008000000000000000000000001000000000000000000000000000
+        80000080000000808000800000008000800080800000C0C0C000808080000000
+        FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00FFFFFFFFFFFF
+        FFFFFFF0000000000FFFFF0FFFFFFFFFF0FFFF0FFFFFFFFFF0FFFF0F9FFFFFFF
+        F0FFFF0FF9FFFFFFF0FF9999999FFFFFF0FF99999999FFFFF0FF99999999FFFF
+        F0FF9999999FFFFFF0FFFF0FF9FFFFFFF0FFFF0F9FFFFFFFF0FFFF0FFFDDDDFF
+        F0FFFFF000DDDD000FFFFFFFFDDFFDDFFFFFFFFFFFDDDDFFFFFF}
       Caption = 'Copy image to clipboard'
       OnClick = Copyimagetoclipboard1Click
     end

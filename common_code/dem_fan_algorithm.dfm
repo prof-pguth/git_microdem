@@ -3,8 +3,8 @@ object FanAlgParams: TFanAlgParams
   Top = 155
   BorderStyle = bsDialog
   Caption = 'LOS/Fan Algorithm Options'
-  ClientHeight = 459
-  ClientWidth = 494
+  ClientHeight = 497
+  ClientWidth = 512
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
@@ -36,15 +36,15 @@ object FanAlgParams: TFanAlgParams
     Caption = 'Switchover distance'
   end
   object Label4: TLabel
-    Left = 16
-    Top = 376
+    Left = 23
+    Top = 387
     Width = 171
     Height = 13
     Caption = 'Closest blocking distance (m) '
   end
   object Label8: TLabel
     Left = 232
-    Top = 395
+    Top = 425
     Width = 92
     Height = 13
     Caption = 'Fan zoom factor'
@@ -61,7 +61,7 @@ object FanAlgParams: TFanAlgParams
     Left = 8
     Top = 40
     Width = 161
-    Height = 57
+    Height = 73
     Caption = 'Fan drawing method'
     Items.Strings = (
       'Radial lines, discrete'
@@ -81,29 +81,27 @@ object FanAlgParams: TFanAlgParams
   end
   object RadioGroup3: TRadioGroup
     Left = 8
-    Top = 145
+    Top = 146
     Width = 217
-    Height = 73
+    Height = 76
     Caption = 'Point selection method'
     Items.Strings = (
       'Scaled radial spacing '
-      'Constant radial spacing'
-      'Grid square sides (Yoeli)'
-      'Nearest grid point (Bresenham)')
+      'Constant radial spacing')
     TabOrder = 3
     OnClick = RadioGroup3Click
   end
   object CheckBox1: TCheckBox
-    Left = 16
-    Top = 104
+    Left = 210
+    Top = 100
     Width = 161
     Height = 17
     Caption = 'Viewer on grid node'
     TabOrder = 4
   end
   object CheckBox2: TCheckBox
-    Left = 16
-    Top = 120
+    Left = 210
+    Top = 123
     Width = 169
     Height = 17
     Caption = 'Target on grid node'
@@ -111,13 +109,13 @@ object FanAlgParams: TFanAlgParams
   end
   object Panel1: TPanel
     Left = 0
-    Top = 418
-    Width = 494
+    Top = 456
+    Width = 512
     Height = 41
     Align = alBottom
     TabOrder = 6
-    ExplicitTop = 419
-    ExplicitWidth = 498
+    ExplicitTop = 455
+    ExplicitWidth = 508
     object OKBtn: TBitBtn
       Left = 8
       Top = 6
@@ -158,25 +156,25 @@ object FanAlgParams: TFanAlgParams
   end
   object RadioGroup4: TRadioGroup
     Left = 8
-    Top = 224
+    Top = 240
     Width = 161
     Height = 129
     Caption = 'Point interpolation'
     TabOrder = 7
   end
   object RadioGroup5: TRadioGroup
-    Left = 184
-    Top = 232
+    Left = 175
+    Top = 240
     Width = 185
     Height = 105
     Caption = 'Horizontal earth curvature'
     TabOrder = 8
   end
   object Panel2: TPanel
-    Left = 240
-    Top = 112
+    Left = 258
+    Top = 146
     Width = 217
-    Height = 105
+    Height = 88
     TabOrder = 9
     object Label2: TLabel
       Left = 17
@@ -193,8 +191,8 @@ object FanAlgParams: TFanAlgParams
       Caption = 'DEM spacing multiple'
     end
     object Label7: TLabel
-      Left = 24
-      Top = 75
+      Left = 16
+      Top = 63
       Width = 105
       Height = 13
       Caption = 'Point Spacing (m):'
@@ -215,7 +213,7 @@ object FanAlgParams: TFanAlgParams
     end
     object Edit7: TEdit
       Left = 147
-      Top = 75
+      Top = 63
       Width = 54
       Height = 21
       TabOrder = 2
@@ -229,8 +227,8 @@ object FanAlgParams: TFanAlgParams
     TabOrder = 10
   end
   object BitBtn1: TBitBtn
-    Left = 384
-    Top = 336
+    Left = 400
+    Top = 344
     Width = 75
     Height = 25
     Caption = 'Defaults'
@@ -239,14 +237,14 @@ object FanAlgParams: TFanAlgParams
   end
   object Edit4: TEdit
     Left = 200
-    Top = 368
+    Top = 384
     Width = 81
     Height = 21
     TabOrder = 12
   end
   object CheckBox3: TCheckBox
     Left = 16
-    Top = 408
+    Top = 424
     Width = 171
     Height = 17
     Caption = 'Missing data blocks LOS'
@@ -263,7 +261,7 @@ object FanAlgParams: TFanAlgParams
   end
   object Edit5: TEdit
     Left = 336
-    Top = 392
+    Top = 422
     Width = 81
     Height = 21
     TabOrder = 15

@@ -14,26 +14,26 @@ unit BaseGraf;
    {$IFDEF DEBUG}
        {$Define NoInLine}
        //{$Define RecordGraphMemoryAlocations}
-       {$Define RecordGrafProblems}
+       //{$Define RecordGrafProblems}
        //{$Define RecordScaling}
        //{$Define RecordGrafSize}
        //{$Define RecordGrafAxes}
-       {$Define RecordFormResize}
+       //{$Define RecordFormResize}
 
-       {$Define RecordHistogram}
+       //{$Define RecordHistogram}
        //{$Define RecordHistogramColors}
        //{$Define RecordFullGrafAxes}
-       {$Define RecordLegends}
+       //{$Define RecordLegends}
        //{$Define RecordSaveSeries}
-       {$Define RecordGrafAxis}
-       {$Define RecordGraf}
+       //{$Define RecordGrafAxis}
+       //{$Define RecordGraf}
        //{$Define RecordHistogram}
        //{$Define RecordGraphColors}
        //{$Define RecordGrafDensity}
-       {$Define RecordPlotFiles}
+       //{$Define RecordPlotFiles}
        //{$Define Closing}
        //{$Define ReverseFit}
-       {$Define TimeGraphing}
+       //{$Define TimeGraphing}
        //{$Define RecordTIN}
        //{$Define RecordDetailedTIN}
        //{$Define RecordFullFit}
@@ -513,6 +513,7 @@ type
      procedure FitGraph(AllData : boolean; nt : integer; fName : PathStr; var a,b,r : float32; var n  : integer; LowLimitPoint : integer = 0; HighLimitPoint : integer = -1);
      procedure WriteDataSeriesASCII(XAxis,ASCII : boolean; var fftfilename : PathStr; var TotalNumberPoints : integer; DefSeries : integer = -1);
      procedure WindowGraphAxes(Bitmap : tMyBitmap; DrawInsideLines : boolean = true);
+     procedure AddCorrelationToCorner;
   end;
 
    //t4GraphArray = array[1..4] of TThisBaseGraph;
@@ -623,6 +624,12 @@ var
    LegendBitmap : tMyBitmap;
    BestFitLineWidth : integer;
    FilterTerms : integer;
+
+
+procedure TThisBaseGraph.AddCorrelationToCorner;
+begin
+   Linearfit1Click(Nil);
+end;
 
 
 function Linear(x : float32) : float32;
@@ -996,6 +1003,9 @@ begin
       end;
 
       {$IfDef RecordHistogram} writeLineToDebugFile('CreateMultipleHistograms ProcessSeries over, NumBins=' + IntToStr(NumBins) + '  ' + Result.GraphDraw.AxisRange); {$EndIf}
+
+//10/29/23: the vertical axis is not being set, but crash if Result.AutoScaleAndRedrawDiagram(true,false,false,false);
+
       Result.AutoScaleAndRedrawDiagram(false,false,false,false);
 
       (*
@@ -1051,18 +1061,7 @@ var
    y : float32;
    xi,yi,x1,x2 : integer;
    TStr : shortstring;
-
-         procedure Symbol(aName : shortstring);
-         var
-            x : integer;
-            val : float32;
-         begin
-            val := GISdb[DataBaseOnGraph].MyData.GetFieldByNameAsFloat(aName);
-            x := GraphDraw.GraphX(val);
-            ScreenSymbol(Bitmap.Canvas,x,Yi,FilledBox,3,claRed);
-         end;
-
-
+   color : TPlatformColor;
 begin
    GISDB[DataBaseOnGraph].MyData.First;
    y := 1;
@@ -1071,17 +1070,11 @@ begin
       TStr := RemoveUnderscores(GISdb[DataBaseOnGraph].MyData.GetFieldByNameAsString('NAME'));
       Bitmap.Canvas.TextOut(2,yi - Bitmap.Canvas.TextHeight(TStr) div 2,TStr);
 
-      (*
-      Symbol('MIN');
-      Symbol('MAX');
-      Symbol('PC99');
-      Symbol('PC98');
-      *)
-
-      ScreenSymbol(Bitmap.Canvas,GraphDraw.GraphX(GISdb[DataBaseOnGraph].MyData.GetFieldByNameAsFloat('MIN') ),Yi,FilledBox,3,claRed);
-      ScreenSymbol(Bitmap.Canvas,GraphDraw.GraphX(GISdb[DataBaseOnGraph].MyData.GetFieldByNameAsFloat('MAX') ),Yi,FilledBox,3,claRed);
-      ScreenSymbol(Bitmap.Canvas,GraphDraw.GraphX(GISdb[DataBaseOnGraph].MyData.GetFieldByNameAsFloat('PC99') ),Yi,FilledBox,3,claRed);
-      ScreenSymbol(Bitmap.Canvas,GraphDraw.GraphX(GISdb[DataBaseOnGraph].MyData.GetFieldByNameAsFloat('PC98') ),Yi,FilledBox,3,claRed);
+      Color := ConvertTColorToPlatformColor(WinGraphColors[round(y) mod 15]);
+      ScreenSymbol(Bitmap.Canvas,GraphDraw.GraphX(GISdb[DataBaseOnGraph].MyData.GetFieldByNameAsFloat('MIN') ),Yi,FilledBox,3,Color);
+      ScreenSymbol(Bitmap.Canvas,GraphDraw.GraphX(GISdb[DataBaseOnGraph].MyData.GetFieldByNameAsFloat('MAX') ),Yi,FilledBox,3,Color);
+      ScreenSymbol(Bitmap.Canvas,GraphDraw.GraphX(GISdb[DataBaseOnGraph].MyData.GetFieldByNameAsFloat('PC99') ),Yi,FilledBox,3,Color);
+      ScreenSymbol(Bitmap.Canvas,GraphDraw.GraphX(GISdb[DataBaseOnGraph].MyData.GetFieldByNameAsFloat('PC98') ),Yi,FilledBox,3,Color);
 
       x1 := GraphDraw.GraphX(GISdb[DataBaseOnGraph].MyData.GetFieldByNameAsFloat('PC5'));
       x2 := GraphDraw.GraphX(GISdb[DataBaseOnGraph].MyData.GetFieldByNameAsFloat('PC95'));
@@ -1121,11 +1114,8 @@ begin
    Result.GraphDraw.MinVertAxis := 0;
    Result.GraphDraw.MaxVertAxis := succ(GISDB[Result.DataBaseOnGraph].MyData.FiltRecsInDB);
    Result.GraphDraw.ShowHorizAxis0 := true;
-
    Result.GraphDraw.MinHorizAxis := GISDB[Result.DataBaseOnGraph].MyData.FindFieldMin('MIN');
    Result.GraphDraw.MaxHorizAxis := GISDB[Result.DataBaseOnGraph].MyData.FindFieldMax('MAX');
-
-   //Result.AutoScaleAndRedrawDiagram(false,false);
    Result.GraphDraw.LeftMargin := 250;
 
    Result.Width := 850;
@@ -1342,6 +1332,11 @@ begin
             end;
          end;
          Dispose(NeighborHood);
+      if (GraphDraw.LLcornerText <> '') then begin
+         Bitmap.Canvas.Font.Color := clBlack;
+         Bitmap.Canvas.TextOut(1, Bitmap.Height - Bitmap.Canvas.TextHeight(GraphDraw.LLcornerText), RemoveUnderScores(GraphDraw.LLcornerText));
+      end;
+
 
       Image1.Picture.Graphic := Bitmap;
       Bitmap.Free;
@@ -2662,7 +2657,7 @@ function tGraphDraw.GraphY(y : float32) : integer;
 var
    ty : integer;
 begin
-   if abs(ScrVertRange) < 0.000001 then begin
+   if (abs(ScrVertRange) < 0.000001) then begin
       Result := TopMargin;
    end
    else begin
@@ -2869,10 +2864,10 @@ begin
                   x := MyTable.GetFieldByNameAsFloat('X_COORD');
                   y := MyTable.GetFieldByNameAsFloat('Y_COORD');
                   if DoHoriz then begin
-                     Petmath.CompareValueToExtremes(x,MinHorizAxis,MaxHorizAxis);
+                     Petmath.CompareValueToExtremes(x,GraphDraw.MinHorizAxis,GraphDraw.MaxHorizAxis);
                   end;
                   if DoVert then begin
-                     Petmath.CompareValueToExtremes(y,MinVertAxis,MaxVertAxis);
+                     Petmath.CompareValueToExtremes(y,GraphDraw.MinVertAxis,GraphDraw.MaxVertAxis);
                   end;
                   MyTable.Next;
                end;
@@ -2886,10 +2881,10 @@ begin
                   BlockRead(tf,Coords^,ASize,Numread);
                   for i := 1 to NumRead do begin
                      if DoHoriz then begin
-                        Petmath.CompareValueToExtremes(Coords^[pred(2*i)],MinHorizAxis,MaxHorizAxis);
+                        Petmath.CompareValueToExtremes(Coords^[pred(2*i)],GraphDraw.MinHorizAxis,GraphDraw.MaxHorizAxis);
                      end;
                      if DoVert then begin
-                        Petmath.CompareValueToExtremes(Coords^[2*i],MinVertAxis,MaxVertAxis);
+                        Petmath.CompareValueToExtremes(Coords^[2*i],GraphDraw.MinVertAxis,GraphDraw.MaxVertAxis);
                      end;
                   end;
                end;
@@ -2905,8 +2900,8 @@ begin
                while not EOF(tf) do begin
                   BlockRead(tf,Coords3^,ASize,Numread);
                   for i := 1 to NumRead do begin
-                     if DoHoriz then Petmath.CompareValueToExtremes(Coords3^[(3*i)-2],MinHorizAxis,MaxHorizAxis);
-                     if DoVert then Petmath.CompareValueToExtremes(Coords3^[pred(3*i)],MinVertAxis,MaxVertAxis);
+                     if DoHoriz then Petmath.CompareValueToExtremes(Coords3^[(3*i)-2],GraphDraw.MinHorizAxis,GraphDraw.MaxHorizAxis);
+                     if DoVert then Petmath.CompareValueToExtremes(Coords3^[pred(3*i)],GraphDraw.MinVertAxis,GraphDraw.MaxVertAxis);
                      Petmath.CompareValueToExtremes(Coords3^[(3*i)],MinZ,MaxZ);
                   end;
                end;
@@ -5308,17 +5303,17 @@ var
    PtInSeries,NumRead,i : integer;
    Coords : ^tPointDataBuffer;
 
-               procedure ProcessPoint;
-               begin
-                 if (AllData) or ( (v[1] <= GraphDraw.MaxHorizAxis) and (v[1] >= GraphDraw.MinHorizAxis) ) then begin
-                    if (PtInSeries >= LowLimitPoint) then begin
-                       x^[n] := v[1];
-                       y^[n] := v[2];
-                       inc(n);
-                    end;
-                    inc(PtInSeries);
-                 end;
-               end;
+         procedure ProcessPoint;
+         begin
+           if (AllData) or ( (v[1] <= GraphDraw.MaxHorizAxis) and (v[1] >= GraphDraw.MinHorizAxis) ) then begin
+              if (PtInSeries >= LowLimitPoint) then begin
+                 x^[n] := v[1];
+                 y^[n] := v[2];
+                 inc(n);
+              end;
+              inc(PtInSeries);
+           end;
+         end;
 
 
 begin
@@ -5496,10 +5491,11 @@ var
          Results.Add('n=' + IntToStr(n));
          Results.Add('');
          FittedSlope := b;
-
          GraphDraw.MinHorizAxis := MinX;
          GraphDraw.MaxHorizAxis := MaxX;
       end;
+      GraphDraw.LLcornerText := 'r=' + RealToString(r,-8,3) + '  r²=' + RealToString(sqr(r),-8,3);
+      RedrawDiagram11Click(Nil);
    end;
 
 var

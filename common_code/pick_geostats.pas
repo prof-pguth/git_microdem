@@ -433,7 +433,7 @@ end;
 
 procedure TPickGeoStat.BitBtn21Click(Sender: TObject);
 var
-   NewMap,FirstMap : integer;
+   NewMap{,FirstMap} : integer;
 
    procedure MatchAndSave;
    begin
@@ -450,7 +450,7 @@ begin
 
    MDdef.SlopeAlg := smEightNeighborsUnweighted;
    NewMap := CreateSlopeMap(CurDEM);
-   FirstMap := NewMap;
+   //FirstMap := NewMap;
    DEMGlb[NewMap].AreaName := 'md_evans_slope';
    MatchAndSave;
 

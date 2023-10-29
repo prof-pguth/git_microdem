@@ -32,7 +32,7 @@ unit DEMCoord;
       {$Define RecordDEMIX}
       //{$Define RecordMapType}
       //{$Define TimePointParameters}
-      {$Define RecordDEMIXResample}
+      //{$Define RecordDEMIXResample}
       //{$Define RecordsfBoundBox2tGridLimits}     //use with care; trashes the debug file
       //{$Define TrackHorizontalDatum}
       //{$Define RecordVertDatumShift}
@@ -760,6 +760,9 @@ procedure GetSampleBoxSize(WhichDEM : integer; var BoxSize : integer);
 
 function RectSpacingFactor(DataSpacing : tSpacingUnit) : float64;
 
+procedure ClipTheDEMtoFullDEMIXTiles(DEM : integer; NewName : PathStr = '');
+
+
 {$IfDef NoMapOptions}
 {$Else}
    procedure MaskGrid(Map : tMapForm; DEM : integer; MatchCriteria : boolean; OnlyMissing : boolean = false);
@@ -1195,17 +1198,46 @@ procedure MaskStripFromSecondGrid(Limits : tGridLimits;  FirstGrid,SecondGrid : 
 var
    Col,Row: integer;
    Lat,Long : float64;
-   z,z2 : float32;
+   z1,z2 : float32;
    SameGrid : boolean;
 begin
    SameGrid := DEMGlb[FirstGrid].SecondGridIdentical(SecondGrid);
-
    for Row := Limits.YGridLow to Limits.YGridHigh do begin
       TInterlocked.Increment(ParallelRowsDone);
       if (ParallelRowsDone Mod 250 = 0) then UpdateProgressBar(ParallelRowsDone / DEMGlb[FirstGrid].DEMheader.NumRow);
 
       for Col := Limits.XGridLow to Limits.XGridHigh do begin
          if (not DEMGlb[FirstGrid].MissingDataInGrid(Col,Row)) then begin
+
+            if DEMGlb[FirstGrid].GetElevMetersFromSecondDEM(SameGrid,SecondGrid,Col,Row,z2) then begin
+               if (HowMask = msSecondValid) then begin
+                  DEMGlb[FirstGrid].SetGridMissing(Col,Row);
+                  TInterlocked.Increment(EditsDone);
+               end
+               else if (HowMask = msSeaLevel) then begin
+                  if abs(z2) < 0.001 then begin
+                     DEMGlb[FirstGrid].SetGridMissing(Col,Row);
+                     TInterlocked.Increment(EditsDone);
+                  end;
+               end
+               else begin
+                  if DEMGlb[FirstGrid].GetElevMetersOnGrid(Col,Row,z1) then begin
+                     if ((HowMask = msAboveSecond) and (z1 > z2)) or  ((HowMask = msBelowSecond) and (z1 < z2)) then begin
+                        DEMGlb[FirstGrid].SetGridMissing(Col,Row);
+                        TInterlocked.Increment(EditsDone);
+                     end;
+                  end;
+               end;
+            end
+            else begin
+               if (HowMask = msSecondMissing) then begin
+                  DEMGlb[FirstGrid].SetGridMissing(Col,Row);
+                  TInterlocked.Increment(EditsDone);
+               end;
+            end;
+
+
+(*
             if SameGrid then begin
                if (HowMask = msSecondValid) then begin
                   if (not DEMGlb[SecondGrid].MissingDataInGrid(Col,Row)) then begin
@@ -1257,6 +1289,7 @@ begin
                   end;
                end;
             end;
+         *)
          end;
       end;
    end;
@@ -3068,10 +3101,10 @@ begin
    else if (MDDef.MultShadeReliefMode = mhsSingleDirection) then begin
       MDdef.UseRefDirs := 1;
       RefPhi[1] := MDdef.RefPhi;
-      RefAlt[2] := (90-MDdef.RefTheta);
-      RefWeight[1] := 1 ;
+      RefAlt[1] := (90-MDdef.RefTheta);
+      RefWeight[1] := 1;
    end
-   else if (MDDef.MultShadeReliefMode = mhsPick)then begin
+   else if (MDDef.MultShadeReliefMode = mhsPick) then begin
       for I := 1 to MDdef.UseRefDirs do begin
          RefPhi[i] := FindCompassAngleInRange(MDdef.RefPhi + pred(i) * 360 / MDdef.UseRefDirs);
          RefAlt[i] := (90-MDdef.RefTheta);
@@ -3114,7 +3147,7 @@ begin
       try
          Sum := 0;
          for I := 1 to MDdef.UseRefDirs do begin
-            //allows multi-directions, which will all have the same sun alitutde and azimuths spread around the circle
+            //allows multi-directions
             Value := RefWeight[i] * ( (cosAlt[i] * cosDeg(MDDef.RefVertExag * SlopeAsp.SlopeDegree)) + (sinAlt[i] * sinDeg(MDDef.RefVertExag * SlopeAsp.SlopeDegree * cosDeg(RefPhi[i] - SlopeAsp.AspectDir))));
             Sum := sum + Value;
          end;

@@ -3,8 +3,7 @@
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
 { Copyright (c) 2023 Peter L. Guth  }
-{___________________________________}
-{                                   }
+{-----------------------------------}
 { include file for demcoord         }
 {___________________________________}
 
@@ -247,7 +246,7 @@ var
             UTMZone := MDDef.DefaultUTMZone;
             LatHemi := MDDef.DefaultLatHemi;
             {$IfDef VCL}
-            GetMapParameters(Hemi,UTMZone,DatCode,true);
+               GetMapParameters(Hemi,UTMZone,DatCode,true);
             {$EndIf}
          end
          else begin
@@ -270,7 +269,7 @@ begin
       AreaName := bName;
       DataFile := tStringList.Create;
       DataFile.LoadFromFile(Dir + bName + '.hdr');
-      {$IfDef RecordReadDEM}  WriteLineToDebugFile('hdr file');  WriteStringListToDebugFile(DataFile); {$EndIf}
+      {$IfDef RecordReadDEM} WriteLineToDebugFile('hdr file'); WriteStringListToDebugFile(DataFile); {$EndIf}
       DEMUsed := ArcSecDEM;
       DigitizeDatum := NAD83d;
       DataSpacing := SpaceDegrees;
@@ -323,10 +322,7 @@ begin
 
       if FileExists(Dir + bName + '.prj') then begin
          DataFile.LoadFromFile(Dir + bName + '.prj');
-         {$IfDef RecordReadDEM}
-         WriteLineToDebugFile('prj file');
-         WriteStringListToDebugFile(DataFile);
-         {$EndIf}
+         {$IfDef RecordReadDEM} WriteLineToDebugFile('prj file'); WriteStringListToDebugFile(DataFile); {$EndIf}
          for k := 0 to pred(DataFile.Count) do begin
             TStr := DataFile.Strings[k];
             if UpperCase(ptCopy(TStr,1,6)) = 'ZUNITS' then begin
@@ -416,9 +412,7 @@ begin
          closeFile(inf);
       except
          on EinOutError do begin
-            {$IfDef Record}
-            WriteLineToDebugFile('Problem with ' + fName);
-            {$EndIf}
+            {$IfDef Record} WriteLineToDebugFile('Problem with ' + fName); {$EndIf}
          end;
       end;
 
@@ -428,7 +422,7 @@ begin
       else if (NumBits = 32) then Dispose(Row);
       DefineDEMvariables(True);
       Error := false;
-      {$IfDef RecordReadDEM}   WriteLineToDebugFile('NED read out'); {$EndIf}
+      {$IfDef RecordReadDEM} WriteLineToDebugFile('NED read out'); {$EndIf}
    end;
 end;
 

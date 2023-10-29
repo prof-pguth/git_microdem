@@ -15,7 +15,10 @@ begin
    //db1 :=
 end;
 
+
 procedure SlopeRoughnessWhiskerPlots(DBonTable : integer);
+var
+   GraphImages : tStringList;
 
       function OneGraph(Param : shortstring)  : tThisBaseGraph;
       var
@@ -35,15 +38,19 @@ procedure SlopeRoughnessWhiskerPlots(DBonTable : integer);
                   Stats.Add('Cluster' + IntegerToString(i,3) + ' (n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + ')' +  MomentResultsToString(MomentVar));
                end;
             end;
-            fName := NextFileNumber(MDTempDir,MDTempDir + 'clusters_geomorph','.dbf');
+            fName := NextFileNumber(MDTempDir,'clusters_geomorph_','.dbf');
             db := StringList2CSVtoDB(Stats,fName);
             Result := StartBoxPlot(db,Param);
+            fName := NextFileNumber(MDTempDir,'clusters_geomorph_','.bmp');
+            SaveImageAsBMP(Result.Image1,fName);
+            GraphImages.Add(fName);
          end
          else Result := Nil;
       end;
 var
    Graph : array[1..7] of  tThisBaseGraph;
 begin
+   GraphImages := tStringList.Create;
    Graph[1] := OneGraph('AVG_SLOPE');
    Graph[2] := OneGraph('AVG_ROUGH');
    Graph[3] := OneGraph('AVG_ELEV');
@@ -51,6 +58,7 @@ begin
    Graph[5] := OneGraph('BARREN_PC');
    Graph[6] := OneGraph('URBAN_PC');
    Graph[7] := OneGraph('FOREST_PC');
+   MakeBigBitmap(GraphImages,'Cluster tile characteristics','',3);
 end;
 
 
@@ -80,7 +88,6 @@ begin
    GISdb[DBonTable].ClearGISFilter;
    GISdb[DBonTable].ShowStatus;
 end;
-
 
 
 procedure DEMIX_COP_clusters_tile_stats(DBonTable : integer);
@@ -131,12 +138,12 @@ var
    Color : tColor;
 begin
    GISdb[DBonTable].EmpSource.Enabled := false;
-   if Option = opByCluster then begin
+   if (Option = opByCluster) then begin
       aField := 'CLUSTER';
       UniqueEntries := GISdb[DBonTable].MyData.UniqueEntriesInDB(aField);
       SortStringListNumerically(UniqueEntries);
    end
-   else if Option = opByDEM then begin
+   else if (Option = opByDEM) then begin
       aField := 'DEM';
       UniqueEntries := GISdb[DBonTable].MyData.UniqueEntriesInDB(aField);
    end;
@@ -193,7 +200,7 @@ end;
 procedure DEMIX_SSIM_R2_GraphSettings(var Graph : tThisBaseGraph; lltext : shortstring; Ncrits : integer);
 begin
    Graph.GraphDraw.GraphAxes := XPartGridOnly;
-   Graph.GraphDraw.LeftMargin := 150;
+   Graph.GraphDraw.LeftMargin := 175;
    Graph.GraphDraw.MaxVertAxis := NCrits + 0.5;
    Graph.GraphDraw.MinVertAxis := 0.5;
    Graph.GraphDraw.MaxHorizAxis := 1.0;
@@ -205,7 +212,6 @@ end;
 
 procedure DEMIX_SSIM_R2_clusters_diversity_graphs(DBonTable : integer; ColorByDEM : boolean = true);
 //Makes one graph per cluster of the evaluation for each criterion, with every Tile/DEM that belongs to the cluster
-
 var
    Tile,Crit,aline : shortstring;
    NCrit,NDEM : integer;
@@ -466,6 +472,8 @@ var
    theTiles,sl : tStringList;
    fName,OutPath : PathStr;
 begin
+   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_SSIM_R2_transpose_kmeans_new_db in'); {$EndIf}
+   GetDEMIXpaths;
    GISdb[DBonTable].EmpSource.Enabled := false;
    theTiles := GISdb[DBonTable].MyData.UniqueEntriesInDB('DEMIX_TILE');
    OutPath := 'c:\temp\ssim_tile_summary\';
@@ -479,8 +487,7 @@ begin
    SafeMakeDir(OutPath);
    StartProgress('SSIM summary');
    for k := 0 to pred(theTiles.Count) do begin
-      if (k mod 10 = 0) then UpdateProgressBar(k/TheTiles.Count);
-
+      if (k mod 10 = 0) then wmdem.SetPanelText(1,IntToStr(k) + '/' + IntToStr(TheTiles.Count) + ' tiles transpose');
       Tile := theTiles[k];
       GISdb[DBonTable].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(Tile));
       GISdb[DBonTable].EmpSource.Enabled := false;
@@ -506,11 +513,15 @@ begin
    end;
 
    fName := NextFileNumber(MDTempDir,MDTempDir + 'ssim_r2_clustering','.dbf');
+   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_SSIM_R2_transpose_kmeans_new_db creating ' + fName); {$EndIf}
+
    StringList2CSVtoDB(sl,fName);
 
    EndProgress;
    GISdb[DBonTable].ClearGISFilter;
    GISdb[DBonTable].ShowStatus;
+   EndDEMIXProcessing;
+   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_SSIM_R2_transpose_kmeans_new_db out'); {$EndIf}
 end;
 
 

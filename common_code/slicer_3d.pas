@@ -293,7 +293,7 @@ var
                ProjectTable := tMyData.Create(SlicerForm.ThisProject);
                ProjectTable.ApplyFilter( 'USE=' + QuotedStr('Y') + ' AND TYPE=' + QuotedStr('image'));
                while not ProjectTable.Eof do begin
-                  OpenAndDisplayNewScene(Nil,ProjectTable.GetFieldByNameAsString('FILENAME'),true,false,true);
+                  OpenAndDisplaySatelliteScene(Nil,ProjectTable.GetFieldByNameAsString('FILENAME'),true,false,true);
                   ProjectTable.Next;
                end;
                FreeAndNil(ProjectTable);

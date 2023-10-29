@@ -2153,7 +2153,7 @@ end;
                ShapeFileCreator.NParts := aShapeFile.CurrentPolyLineHeader.NumParts;
                ShapeFileCreator.ShapeStreamCoords^ := aShapeFile.CurrentLineCoords^;
                ShapeFileCreator.PartSize :=  aShapeFile.CurrentLinePartSize;
-               if ShapeFileType in [13,15,23,25] then ShapeFileCreator.ShapeStreamZs^ := aShapeFile.CurrentLineZs^;
+               if ShapeFile3D(ShapeFileType) then ShapeFileCreator.ShapeStreamZs^ := aShapeFile.CurrentLineZs^;
                {$IfDef RecordDataBaseSaveFiles}
                   WriteLineToDebugFile(IntToStr(Count) +  '  DB record ' + IntToStr(MyData.RecNo),true);
                   WriteLineToDebugFile('Parts=' + IntToStr(ShapeFileCreator.NParts) + '  Pts=' + IntToStr(ShapeFileCreator.PtsInShapeStream));
@@ -3862,6 +3862,7 @@ begin
             end
             else begin
                {$IfDef RecordOpenDataBase}  WriteLineToDebugFile('Open failed'); {$EndIf}
+               GISNum := 0;
             end;
       {$EndIf}
    end;
@@ -5356,7 +5357,7 @@ begin
      if ZeroRecordsAllowed then begin
      end
      else if (MyData.RecordCount = 0) then begin
-        if AnswerIsYes('No records in ' + dbFullName + '; Delete file') then begin
+        if HeavyDutyProcessing or AnswerIsYes('No records in ' + dbFullName + '; Delete file') then begin
            MyData.Destroy;
            DeleteShapeFile(dbFullName);
         end;
@@ -5684,7 +5685,7 @@ begin
      MyData.First;
      while not MyData.eof do begin
        {$IfDef RecordMaskDEMShapeFile} WriteLineToDebugFile('TGISDataBase.MarkRecordsOnDEM, rec=' + IntToStr(MyData.RecNo)); {$EndIf}
-        if ShapeFileType in [13,15,23,25] then
+        if ShapeFile3D(ShapeFileType) then
            aShapeFile.GetLineCoords(MyData.RecNo,true)
         else aShapeFile.GetLineCoordsAndZsFromDEM(DEM,MyData.RecNo);
         InDEM := 0;
@@ -5762,17 +5763,6 @@ begin
       CloseGisScaledForm;
    {$EndIf}
 
-   if (MyData <> Nil) then begin
-      {$IfDef AllowSX_index}
-         if MDDef.ClearSecondaryIndexes then begin
-            DeleteSX(TheData);
-            DeleteFile(ChangeFileExt(dbFullName,'.mdx'));
-         end;
-      {$EndIf}
-      MyData.Destroy;
-      MyData := Nil;
-   end;
-
    if (aShapeFile <> Nil) then begin
       aShapeFile.Destroy;
       aShapeFile := Nil;
@@ -5798,27 +5788,18 @@ begin
       StringCategories := Nil;
    end;
 
-   Self.Destroy;
+   if (MyData <> Nil) then begin
+      {$IfDef AllowSX_index}
+         if MDDef.ClearSecondaryIndexes then begin
+            DeleteSX(TheData);
+            DeleteFile(ChangeFileExt(dbFullName,'.mdx'));
+         end;
+      {$EndIf}
+      MyData.Destroy;
+      MyData := Nil;
+   end;
 
-   {$IfDef NoDBMaps}
-   {$Else}
-      if ValidDB(DBNumber) and dbPlotted and LayerIsOn then begin
-           if MDDef.DBsOnAllMaps and (not ShowLocalMapOnly) then begin
-              for i := 0 to pred(WMDEM.MDIChildCount) do
-                 if WMDEM.MDIChildren[i] is tMapForm then begin
-                    (WMDEM.MDIChildren[i] as TMapForm).MapDraw.DeleteSingleMapLayer((WMDEM.MDIChildren[i] as TMapForm).MapDraw.DBOverlayfName[DBNumber]);
-                    (WMDEM.MDIChildren[i] as TMapForm).DoFastMapRedraw;
-                 end;
-           end
-           else begin
-              if (TheMapOwner <> Nil) and (TheMapOwner.MapDraw.DBOverlayfName[DBNumber] <> '') then begin
-                 TheMapOwner.MapDraw.DeleteSingleMapLayer(TheMapOwner.MapDraw.DBOverlayfName[DBNumber]);
-                 if (TheMapOwner.MapDraw.CurrentFansTable = DBNumber) then TheMapOwner.MapDraw.CurrentFansTable := 0;
-                 theMapOwner.DoFastMapRedraw;
-              end;
-          end;
-      end;
-   {$EndIf}
+   Self.Destroy;
 
    {$IfDef RecordCloseDB} WriteLineToDebugFile(' closed OK'); {$EndIf}
 end;

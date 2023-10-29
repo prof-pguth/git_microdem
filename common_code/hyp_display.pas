@@ -325,9 +325,9 @@ procedure THyperspectralForm.BitBtn14Click(Sender: TObject);
 var
    Band1,Band2 : integer;
 begin
-   GridScatterGram(true,MultiGridArray[MultiGridUsed].Grids[RedBandNum],MultiGridArray[MultiGridUsed].Grids[GreenBandNum]);
-   GridScatterGram(true,MultiGridArray[MultiGridUsed].Grids[RedBandNum],MultiGridArray[MultiGridUsed].Grids[BlueBandNum]);
-   GridScatterGram(true,MultiGridArray[MultiGridUsed].Grids[GreenBandNum],MultiGridArray[MultiGridUsed].Grids[BlueBandNum]);
+   GridScatterGram(DEMGlb[MultiGridArray[MultiGridUsed].Grids[RedBandNum]].FullDEMGridLimits,MultiGridArray[MultiGridUsed].Grids[RedBandNum],MultiGridArray[MultiGridUsed].Grids[GreenBandNum]);
+   GridScatterGram(DEMGlb[MultiGridArray[MultiGridUsed].Grids[RedBandNum]].FullDEMGridLimits,MultiGridArray[MultiGridUsed].Grids[RedBandNum],MultiGridArray[MultiGridUsed].Grids[BlueBandNum]);
+   GridScatterGram(DEMGlb[MultiGridArray[MultiGridUsed].Grids[GreenBandNum]].FullDEMGridLimits,MultiGridArray[MultiGridUsed].Grids[GreenBandNum],MultiGridArray[MultiGridUsed].Grids[BlueBandNum]);
 end;
 
 procedure THyperspectralForm.BitBtn15Click(Sender: TObject);

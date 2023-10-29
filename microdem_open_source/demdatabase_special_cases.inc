@@ -138,14 +138,41 @@ var
          end;
       end;
 
+   function SetUpRun : boolean;
+   begin
+      {$IfDef RecordClustering} WriteLineToDebugFile('Cluster SetUpRun enter'); {$EndIf}
+      Sampler := 1;
+      while ( (GISdb[DBonTable].MyData.RecordCount div Sampler) > EdburgGeneralFuncsMaxObservations) do inc(Sampler);
+      Result := GetClusterOptions(Sampler);
+      if Result then begin
+          GISdb[DBonTable].EmpSource.Enabled := true;
+
+          if (ClusterRuns > 0) then ClusterField := 'CLUSTER' + IntToStr(ClusterRuns)
+          else begin
+             ClusterField := 'CLUSTER';
+             GISdb[DBonTable].AddFieldToDataBase(ftInteger,'COLOR',9,0);
+          end;
+
+          GISdb[DBonTable].AddFieldToDataBase(ftInteger,ClusterField,3,0);
+          GISdb[DBonTable].dbtablef.Hideunusedfields1Click(nil);
+          UsingFields := GISdb[DBonTable].GetAnalysisFields;
+          inc(ClusterRuns);
+          GISdb[DBonTable].EmpSource.Enabled := false;
+          {$IfDef RecordClustering} WriteLineToDebugFile('Cluster variables for ' + ClusterField); WriteStringListToDebugFile(UsingFields,true); {$EndIf}
+      end;
+   end;
+
 
    procedure ProcessClustering;
    var
-      i,j,Skip,fLen,rc,Save : integer;
+      i,j,k,Skip,fLen,rc : integer;
+      asum : array[1..25] of float32;
+      pv,ThisSum : float32;
       f2Name : ShortString;
       aline : shortstring;
       NewDB : tStringList;
       ClusterSummary : tStringList;
+      OrderedCluster : array[1..25] of integer;
    begin
       {$IfDef RecordClustering} WriteLineToDebugFile('ProcessClustering in'); {$EndIf}
       if (FieldsUsed > EdburgMaxVariables) then begin
@@ -198,9 +225,7 @@ var
       {$IfDef RecordClustering} WriteLineToDebugFile('Start K Means Clustering'); {$EndIf}
       wmDEM.SetPanelText(0,'K Means Clustering');
       if MDDef.ClusterSensitivity then begin
-
          ClusterSummary := tStringList.Create;
-         //Save := MDDef.NumClusters;
          aline := 'MAX_CLUSTR,ITERATION,CLUSTER,N,SSE,COLOR';
          for I := 0 to pred(FieldsUsed) do aLine := aLine + ',' + FieldsToUse[i];
          ClusterSummary.Add(aline);
@@ -213,21 +238,51 @@ var
          StringList2CSVtoDB(ClusterSummary,fName);
          MVClusterClientDataSet.NClusters := MDDef.NumClusters;
       end;
+
       ClusterSummary := tStringList.Create;
+      MVClusterClientDataSet.KMeansClustering(ClusterSummary,FieldsToUse, FieldsUsed, MDTempDir + 'Cluster_Results.HTML');
 
-       MVClusterClientDataSet.KMeansClustering(ClusterSummary,FieldsToUse, FieldsUsed, MDTempDir + 'Cluster_Results.HTML');
+
+      {$IfDef RecordClusteringFull} WriteLineToDebugFile('Rank the clusters'); {$EndIf}
+          for j := 1 to MVClusterClientDataSet.NClusters do if (MVClusterClientDataSet.ClsCounts[j] > 0) then begin
+             aSum[j] := 0;
+             for i := 1 to FieldsUsed do begin
+                pv := abs(MVClusterClientDataSet.NewCenters[j,i]);
+                pv := System.Math.Power(pv,MDDef.ClassDistancePower);
+                aSum[j] := aSum[j] + pv;
+             end;
+             {$IfDef RecordClusteringFull} WriteLineToDebugFile(intToStr(j) + ',' + RealToString(asum[j],-12,-4)); {$EndIf}
+          end;
+
+      {$IfDef RecordClusteringFull} WriteLineToDebugFile('Renumber the clusters in order'); {$EndIf}
+          for j := 1 to MVClusterClientDataSet.NClusters do if (MVClusterClientDataSet.ClsCounts[j] > 0) then begin
+             ThisSum := 99999;
+             //OrderedCluster[j] := 0;
+             for i := 1 to MVClusterClientDataSet.NClusters do if (MVClusterClientDataSet.ClsCounts[i] > 0) then begin
+                if asum[i] < ThisSum then begin
+                   OrderedCluster[j] := i;
+                   ThisSum := asum[i];
+                end;
+             end;
+             {$IfDef RecordClusteringFull} WriteLineToDebugFile(intToStr(j) + ',' + IntToStr(OrderedCluster[j]) + ',' + RealToString(ThisSum,-12,-4)); {$EndIf}
+             asum[OrderedCluster[j]] := 9999;
+          end;
 
 
-      {$IfDef RecordClustering} WriteLineToDebugFile('Update DB with clusters'); {$EndIf}
+      {$IfDef RecordClusteringFull} WriteLineToDebugFile('Update DB with clusters'); {$EndIf}
       wmDEM.SetPanelText(0,'Update DB with clusters');
       GISdb[DBonTable].EmpSource.Enabled := false;
       GISdb[DBonTable].MyData.First;
       i := 0;
       while not GISdb[DBonTable].MyData.eof do begin
          inc(i);
+         k := MVClusterClientDataSet.ClsLabs[i];
+         for j := 1 to MVClusterClientDataSet.NClusters do begin
+            if OrderedCluster[j] = k then break;
+         end;
          GISdb[DBonTable].MyData.Edit;
-         GISdb[DBonTable].MyData.SetFieldByNameAsInteger('COLOR',WinGraphColors[MVClusterClientDataSet.ClsLabs[i] mod 15]);
-         GISdb[DBonTable].MyData.SetFieldByNameAsInteger(ClusterField,MVClusterClientDataSet.ClsLabs[i]);
+         GISdb[DBonTable].MyData.SetFieldByNameAsInteger(ClusterField,j);
+         GISdb[DBonTable].MyData.SetFieldByNameAsInteger('COLOR',WinGraphColors[j mod 15]);
          GISdb[DBonTable].MyData.Next;
       end;
 
@@ -334,31 +389,7 @@ var
    end;
 
 
-   function SetUpRun : boolean;
-   begin
-      {$IfDef RecordClustering} WriteLineToDebugFile('Cluster SetUpRun enter'); {$EndIf}
-      Sampler := 1;
-      while ( (GISdb[DBonTable].MyData.RecordCount div Sampler) > EdburgGeneralFuncsMaxObservations) do inc(Sampler);
-      Result := GetClusterOptions(Sampler);
-      if Result then begin
-          GISdb[DBonTable].EmpSource.Enabled := true;
-
-          if (ClusterRuns > 0) then ClusterField := 'CLUSTER' + IntToStr(ClusterRuns)
-          else begin
-             ClusterField := 'CLUSTER';
-             GISdb[DBonTable].AddFieldToDataBase(ftInteger,'COLOR',9,0);
-          end;
-
-          GISdb[DBonTable].AddFieldToDataBase(ftInteger,ClusterField,3,0);
-          GISdb[DBonTable].dbtablef.Hideunusedfields1Click(nil);
-          UsingFields := GISdb[DBonTable].GetAnalysisFields;
-          inc(ClusterRuns);
-          GISdb[DBonTable].EmpSource.Enabled := false;
-          {$IfDef RecordClustering} WriteLineToDebugFile('Cluster variables for ' + ClusterField); WriteStringListToDebugFile(UsingFields,true); {$EndIf}
-      end;
-   end;
-
-begin
+begin {DoKMeansClustering}
    with GISdb[DBonTable] do begin
       {$IfDef RecordClustering} WriteLineToDebugFile('DoKMeansClustering in'); {$EndIf}
       //DEMDef_routines.SaveBackupDefaults;
@@ -372,6 +403,7 @@ begin
          end;
 
         (*
+        //unclear if this works or was fully implemented; it has been commented out for a long time
          if false and (UsingFields.Count > 5) and (AnswerIsYes('Find best combination')) then begin
             MDDef.ShowClusterScatterPlots  := false;
             MDDef.ShowMaskScatterPlots  := false;
@@ -383,12 +415,12 @@ begin
                {$IfDef RecordClustering}
                WriteLineToDebugFile('i=' + IntToStr(i));
                {$EndIf}
-               for j := succ(i) to pred(UsingFields.Count) - 3 do            begin
+               for j := succ(i) to pred(UsingFields.Count) - 3 do begin
                   wmdem.StatusBar1.Panels[1].Text := IntToStr(j) + '/' + IntToStr(pred(UsingFields.Count) - 3);
                   ApplicationProcessMessages;
-                  for k := succ(j) to pred(UsingFields.Count) - 2 do               begin
-                     for l := succ(k) to pred(UsingFields.Count) - 1 do                  begin
-                        for m := succ(l) to pred(UsingFields.Count) do                    begin
+                  for k := succ(j) to pred(UsingFields.Count) - 2 do begin
+                     for l := succ(k) to pred(UsingFields.Count) - 1 do  begin
+                        for m := succ(l) to pred(UsingFields.Count) do begin
                             FieldsUsed := 5;
                             SetLength(FieldsToUse,FieldsUsed);
                             FieldsToUse[0] := UsingFields.Strings[i];
@@ -403,9 +435,7 @@ begin
                end;
             end;
             UsingFields.Free;
-            {$IfDef RecordClustering}
-            WriteLineToDebugFile('Big Loops over');
-            {$EndIf}
+            {$IfDef RecordClustering} WriteLineToDebugFile('Big Loops over'); {$EndIf}
          end
          else *)
          begin
@@ -424,7 +454,7 @@ begin
       if (ClusterSuccess <> Nil) and (ClusterSuccess.Count > 0) then Petmar.DisplayAndPurgeStringList(ClusterSuccess,'Cluster results');
       {$IfDef RecordClustering} WriteLineToDebugFile('DoKMeansClustering over'); {$EndIf}
    end;
-end;
+end {DoKMeansClustering};
 
 
 procedure ComputeVDatumShift(dbOnTable : integer);

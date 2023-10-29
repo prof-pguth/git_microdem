@@ -90,12 +90,6 @@ uses
 const
    DatumWGS84 = 0;
    SphericalEarthAkm = 6378.137; {Earth equatorial radius in Km; as used in most GPS}
-const
-   eeA1 = 1.340264;
-   eeA2 = -0.081106;
-   eeA3 = 0.000893;
-   eeA4 = 0.003796;
-   eeM  = 0.86602540378;  //(0.5 * sqrt(3));
 
 type
    tGeoKeys = record
@@ -283,7 +277,6 @@ function DatumName(var DatumCode : ShortString) : ShortString;
 function EllipsoidName(EllipCode : ShortString) : ShortString;
 
 function DatumCodeFromString(DatString : ShortString) : tDigitizeDatum;
-//function SetDigitizeDatumFromH_datumcode(h_datumCode : integer) : byte;
 
 function StringFromDatumCode(Code : tDigitizeDatum) : ShortString;
 function WGSEquivalentDatum(StartDatum : shortstring) : boolean;
@@ -331,7 +324,6 @@ implementation
 uses
    {$IfDef VCL}
       PetDBUtils,
-      {Proj_Params,}
       Nevadia_Main,
    {$EndIf}
    DEMPickDatum,
@@ -339,6 +331,11 @@ uses
 
 const
    SphericalMercatorA : float64 = (6378137.0 * 30 * 360 / 2 / Pi);
+   eeA1 = 1.340264;
+   eeA2 = -0.081106;
+   eeA3 = 0.000893;
+   eeA4 = 0.003796;
+   eeM  = 0.86602540378;  //(0.5 * sqrt(3));
 
 
 {$I basemap_datum.inc}
@@ -468,7 +465,6 @@ begin
       end;
    end;
 end;
-
 
 
 procedure tMapProjection.SetProjectionParameterFromGeotiffKey(Key : integer; Value : float64);
@@ -639,7 +635,7 @@ begin
           H_datumCode := 'WGS84';
           GetProjectParameters;
       end
-      else if ((TiffOffset >= 3708) and (TiffOffset <= 3726))  then begin   //3747 is zone 17
+      else if ((TiffOffset >= 3708) and (TiffOffset <= 3726))  then begin
           StartUTMProjection(TiffOffset - 3707);
           H_DatumCode := 'NAD83';
       end
@@ -648,7 +644,6 @@ begin
          H_DatumCode := 'NAD83';
       end
       else if ((TiffOffset >= 6330) and (TiffOffset <= 6348)) then begin
-         //NAD83(2011)
          StartUTMProjection(TiffOffset - 6329);
          H_DatumCode := 'NAD83';
       end

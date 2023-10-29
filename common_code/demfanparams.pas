@@ -78,10 +78,9 @@ function GetFanParameters : boolean;
 var
   PickFanParams: TPickFanParams;
 begin
-   {$IfDef RecordFanOptions} WriteLineToDebugFile('GetFanParams in');  {$EndIf}
+   {$IfDef RecordFanOptions} WriteLineToDebugFile('GetFanParams in'); {$EndIf}
    PickFanParams := TPickFanParams.Create(Application);
-   with PickFanParams do
-   begin
+   with PickFanParams do begin
       SetupDone := false;
       Label1.Caption := IntervisiblityAlgorithmName(MDDef.wf);
       CheckBox2.Checked := MDDef.ShowFanLocation;
@@ -112,7 +111,7 @@ begin
       end;
       PickFanParams.Free;
    end;
-   {$IfDef RecordFanOptions} WriteLineToDebugFile('GetFanParams in');  {$EndIf}
+   {$IfDef RecordFanOptions} WriteLineToDebugFile('GetFanParams in'); {$EndIf}
 end;
 
 procedure TPickFanParams.HelpBtnClick(Sender: TObject);
@@ -191,5 +190,5 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordFanOptions} WriteLineToDebugFile('RecordFanOptions active in demfanParams');  {$EndIf}
+   {$IfDef RecordFanOptions} WriteLineToDebugFile('RecordFanOptions active in demfanParams'); {$EndIf}
 end.

@@ -25,7 +25,6 @@ uses
 const
    MaxSeriesNameLength = 35;
 
-
 procedure CreateLatLongTable(fName : PathStr; HighAcc : boolean = true);
 procedure CreateGeologyTable(fName : PathStr);
 procedure CreateGPSTrackTable(fName : PathStr);
@@ -73,7 +72,7 @@ procedure CreateUTM_ZTable(fName : PathStr);
 procedure Create_ZTable(fName : PathStr);
 
 procedure CreateTigerRulesDBF(fName : PathStr);
-procedure CreateDuckFile(fName : PathStr);
+//procedure CreateDuckFile(fName : PathStr);
 
 procedure MakeDummyRecordTable(fName : PathStr);
 procedure CreatPointCloudProjectTable(fName : PathStr);
@@ -120,7 +119,7 @@ procedure MakeAtlasParametersTable(fName : PathStr);
 
 {$IfDef ExGeology}
 {$Else}
-   procedure CreateISOGravity(fName : PathStr);
+   //procedure CreateISOGravity(fName : PathStr);
    procedure CreateGeologySymbolFile(fName : PathStr);
    procedure MakeStatColGIS(fName : PathStr);
    procedure MakeEarthQuakeCentroidsFile(fName : PathStr);
@@ -313,17 +312,8 @@ begin
 end;
 
 
-procedure CreateISOGravity(fName : PathStr);
-begin
-    CreateDataBase := tCreateDataBase.Create(fName);
-    with CreateDataBase do begin
-       AddLatLongToTable;
-       AddAField('ELEV',ftFloat,8,1);
-       AddAField('BOUGER',ftFloat,7,2);
-       AddAField('ISOSTATIC',ftFloat,7,2);
-       WriteCorrectHeader;
-    end;
-end;
+
+(*
 
 
 procedure CreateDuckFile(fName : PathStr);
@@ -345,7 +335,7 @@ begin
           WriteCorrectHeader;
       end;
 end;
-
+*)
 
 procedure CreateProjectTable(fName : PathStr);
 begin

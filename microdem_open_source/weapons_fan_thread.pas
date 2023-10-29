@@ -878,7 +878,7 @@ begin
        SaveFanBitmaps;
 
        {$IfDef Android}
-          //bad crash if try to aNewMapDraw.Destroy;
+          //bad crash if try aNewMapDraw.Destroy;
        {$Else}
           if (aNewMapDraw <> Nil) then aNewMapDraw.Destroy;
        {$EndIf}
@@ -897,7 +897,7 @@ end;
 
 
 initialization
-   {$IfDef MessageStartUpUnitProblems} MessageToContinue('Startup weapons_fan_thread');  {$EndIf}
+   {$IfDef MessageStartUpUnitProblems} MessageToContinue('Startup weapons_fan_thread'); {$EndIf}
 finalization
     {$IfDef RecordThreadProgress} WriteLineToDebugFile('RecordThreadProgress active, weapons_fan_thread'); {$EndIf}
     {$IfDef RecordMainThreadProgress} WriteLineToDebugFile('RecordMainThreadProgress active, weapons_fan_thread'); {$EndIf}

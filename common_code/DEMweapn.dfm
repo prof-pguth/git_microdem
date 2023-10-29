@@ -3,8 +3,8 @@ object PickWeapon: TPickWeapon
   Top = 256
   BorderStyle = bsDialog
   Caption = 'Viewshed parameters'
-  ClientHeight = 464
-  ClientWidth = 390
+  ClientHeight = 495
+  ClientWidth = 443
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
@@ -16,13 +16,13 @@ object PickWeapon: TPickWeapon
   TextHeight = 13
   object Panel1: TPanel
     Left = 0
-    Top = 349
-    Width = 390
+    Top = 380
+    Width = 443
     Height = 74
     Align = alBottom
     TabOrder = 0
-    ExplicitTop = 352
-    ExplicitWidth = 402
+    ExplicitTop = 348
+    ExplicitWidth = 386
     object Label11: TLabel
       Left = 16
       Top = 8
@@ -56,16 +56,16 @@ object PickWeapon: TPickWeapon
   end
   object Panel2: TPanel
     Left = 0
-    Top = 423
-    Width = 390
+    Top = 454
+    Width = 443
     Height = 41
     Align = alBottom
     TabOrder = 1
-    ExplicitTop = 426
-    ExplicitWidth = 402
+    ExplicitTop = 422
+    ExplicitWidth = 386
     object CancelBtn: TBitBtn
-      Left = 85
-      Top = 8
+      Left = 144
+      Top = 6
       Width = 78
       Height = 27
       Cancel = True
@@ -95,8 +95,8 @@ object PickWeapon: TPickWeapon
       IsControl = True
     end
     object OKBtn: TBitBtn
-      Left = 8
-      Top = 8
+      Left = 58
+      Top = 6
       Width = 77
       Height = 27
       Caption = '&OK'
@@ -108,8 +108,8 @@ object PickWeapon: TPickWeapon
       IsControl = True
     end
     object HelpBtn: TBitBtn
-      Left = 163
-      Top = 8
+      Left = 237
+      Top = 6
       Width = 77
       Height = 27
       Caption = 'Help'
@@ -122,7 +122,7 @@ object PickWeapon: TPickWeapon
       IsControl = True
     end
     object BitBtn4: TBitBtn
-      Left = 296
+      Left = 320
       Top = 6
       Width = 75
       Height = 25
@@ -134,8 +134,8 @@ object PickWeapon: TPickWeapon
   object Panel3: TPanel
     Left = 8
     Top = 0
-    Width = 412
-    Height = 345
+    Width = 427
+    Height = 374
     TabOrder = 2
     object Label1: TLabel
       Left = 8
@@ -217,7 +217,7 @@ object PickWeapon: TPickWeapon
     end
     object BitBtn1: TBitBtn
       Left = 216
-      Top = 271
+      Top = 289
       Width = 113
       Height = 25
       Caption = 'Color && algorithm'
@@ -292,8 +292,8 @@ object PickWeapon: TPickWeapon
       TabOrder = 9
     end
     object RadioGroup3: TRadioGroup
-      Left = 216
-      Top = 232
+      Left = 215
+      Top = 250
       Width = 145
       Height = 33
       Caption = 'Range Units'
@@ -362,8 +362,8 @@ object PickWeapon: TPickWeapon
       OnClick = CheckBox3Click
     end
     object BitBtn2: TBitBtn
-      Left = 244
-      Top = 206
+      Left = 252
+      Top = 214
       Width = 85
       Height = 20
       Caption = 'Outline'
@@ -386,9 +386,9 @@ object PickWeapon: TPickWeapon
       TabOrder = 19
     end
     object RadioGroup4: TRadioGroup
-      Left = 8
-      Top = 296
-      Width = 323
+      Left = 15
+      Top = 320
+      Width = 345
       Height = 41
       Caption = 'Fan selection'
       Columns = 3
@@ -408,7 +408,7 @@ object PickWeapon: TPickWeapon
     end
     object BitBtn3: TBitBtn
       Left = 335
-      Top = 271
+      Top = 289
       Width = 64
       Height = 25
       Caption = 'Full view'

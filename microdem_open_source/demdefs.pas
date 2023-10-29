@@ -297,7 +297,7 @@ const
    MaxClouds = 5;
 
 type
-   tMaskGrid = (msSecondValid,msSecondMissing,msAboveSecond,msBelowSecond);
+   tMaskGrid = (msSecondValid,msSecondMissing,msAboveSecond,msBelowSecond,msSeaLevel);
    tSecondGrid = (g2Feature,g2CHM,g2Change);
    tRidgeTypemap = (rtmRidge,rtmStream,rtmAllPoints);
 
@@ -1049,7 +1049,7 @@ type
    end;
 
 type
-   tLOSAlgorithm = (losMicrodemFractional,losMicrodemConstant,losYoeli,losBresenham);
+   tLOSAlgorithm = (losMicrodemFractional,losMicrodemConstant);
    tLOSVariety = (losVanilla,losMagModel,losAllDEMs,losAllDEMDropDown,losSimpleMagModel,losSimpleOne);
    tLOSResult = (losIsVisible,losBlockByTerrain,losCenterFresnelIntrusion,losEdgeFresnelIntrusion);
 
@@ -1077,7 +1077,7 @@ type
 
 const
    BaseCurvAlgName : array[tVerticalCurvAlg] of ShortString = ('None','TM5-441','Radio','Yoeli');
-   LOSAlgorithmName : array[tLOSAlgorithm] of ShortString = ('Scale radial','Const radial','Grid sides','Nearest grid');
+   LOSAlgorithmName : array[tLOSAlgorithm] of ShortString = ('Scale radial','Const radial');
    FanMethodName  : array[tFanMethod] of shortstring = ('Radials, discrete','Point to point','Radials, full');
    FanShowName  : array[tFanShow] of ShortString = ('Masked','Visible','Both');
 

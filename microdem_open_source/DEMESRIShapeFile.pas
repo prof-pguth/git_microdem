@@ -286,6 +286,7 @@ procedure PutBoundBoxInTable(var MyTable : tMyData; BoundBox : sfBoundBox; Name 
 function PointShapeFile(ShapeType : int32) : boolean;  inline;
 function LineShapeFile(ShapeType : int32) : boolean;   inline;
 function AreaShapeFile(ShapeType : int32) : boolean;   inline;
+function ShapeFile3D(ShapeType : int32) : boolean; inline;
 function LineOrAreaShapeFile(ShapeType : int32) : boolean;  inline;
 
 procedure LineKMLtoStringList(fName : PathStr);

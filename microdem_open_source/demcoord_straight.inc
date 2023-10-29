@@ -46,91 +46,15 @@ begin
       xgrids[0] := xg1;
       ygrids[0] := yg1;
       dists[0] := 0;
-      if (MDDef.wf.LOSAlgorithm = losBresenham) then begin
-         {$IfDef RecordLOSAlgorithm} WriteLineToDebugFile('tDEMDataSet.GetStraightRouteDEMGrid, losBresenham'); {$EndIf}
-         x1 := round(xg1);
-         y1 := round(yg1);
-         x2 := round(xg2);
-         y2 := round(yg2);
-         NumPoints := 0;
-         x := x1;
-         y := y1;
-         if (x1 > x2) then XStep := -1 else XStep := 1;
-         if (y1 > y2) then YStep := -1 else YStep := 1;
-         DeltaX := abs(x2 - x1);
-         DeltaY := abs(y2 - y1);
-         if DeltaX = 0 then direction := -1 else direction := 0;
-         while not ((x = x2) and (y = y2)) do  begin
-            inc(NumPoints);
-            xgrids[NumPoints] := x;
-            ygrids[NumPoints] := y;
-            dists[NumPoints] := DistanceMetersBetweenPoints(xg1,yg1,x,y,Heading);
-
-            if (direction < 0) then begin
-               inc(y,YStep);
-               inc(direction,DeltaX);
-            end
-            else  begin
-               inc(x,XStep);
-               dec(direction,DeltaY);
-            end {if};
-         end {while};
-      end
-      else if (MDDef.wf.LOSAlgorithm = losYoeli) then begin  //not optimized for speed
-         {$IfDef RecordLOSAlgorithm} WriteLineToDebugFile('tDEMDataSet.GetStraightRouteDEMGrid, losYoeli'); {$EndIf}
-         GridCoords := tStringList.Create;
-         GridCoords.Sorted := true;
-         if (yg2 > yg1) then begin
-            y1 := trunc(yg1+1);
-            y2 := trunc(yg2);
-         end
-         else begin
-            y1 := trunc(yg2 + 1);
-            y2 := trunc(yg1);
-         end;
-         if abs(yg2-yg1) > 0.001 then for y := y1 to y2 do begin
-            fd := (y-yg1) / (yg2-yg1);
-            xg := xg1 + ( fd ) * (xg2-xg1);
-            GridCoords.Add(RealToString(fd*SectLen,12,2) + RealToString(Xg,12,4) + RealToString(Y,12,4));
-         end;
-
-         if (xg2 > xg1) then begin
-            x1 := trunc(xg1+1);
-            x2 := trunc(xg2);
-         end
-         else begin
-            x1 := trunc(xg2 + 1);
-            x2 := trunc(xg1);
-         end;
-         if (abs(xg2-xg1) > 0.001) then for x := x1 to x2 do begin
-            fd := (x-xg1) / (xg2-xg1);
-            yg := yg1 + ( fd ) * (yg2-yg1);
-            GridCoords.Add(RealToString(fd*SectLen,12,2) + RealToString(X,12,4) + RealToString(YG,12,4));
-         end;
-
-         NumPoints := GridCoords.Count;
-         for i := 1 to pred(NumPoints) do AssignValues(pred(i),i);
-
-         {$IfDef RecordLOSAlgorithm} WriteStringListToDebugFile(GridCoords); {$EndIf}
-
-         GridCoords.Free;
-      end;
    end;
-   {$IfDef RecordFullStraightRoute}
-   for i := 0 to NumPoints do WriteLineToDebugFile(IntToStr(i) + RealToString(xgrids[i],8,1) + RealToString(ygrids[i],8,1) + RealToString(dists[i],12,1));
-   {$EndIf}
+   {$IfDef RecordFullStraightRoute} for i := 0 to NumPoints do WriteLineToDebugFile(IntToStr(i) + RealToString(xgrids[i],8,1) + RealToString(ygrids[i],8,1) + RealToString(dists[i],12,1)); {$EndIf}
 end;
 
 
 procedure tDEMDataSet.GetStraightRoute(LatLong : boolean; Lat1,Long1,Lat2,Long2 : float64; StraightAlgorithm : tStraightAlgorithm; var NumPoints : integer; var xgrids,ygrids,dists : Petmath.bfarray32);
 var
    I : integer;
-  //InBounds : boolean;
-  // xUTM1,xUTM2,yUTM1,yUTM2,
-   Lat,Long,
-   //Lat4,Long4,
-   //dx,dy,dLat,dLong,x,y,
-   dDistance,FullDistance,Bearing : float64;
+   Lat,Long,dDistance,FullDistance,Bearing : float64;
 begin
    {$IfDef RecordLOSAlgorithm} WriteLineToDebugFile('tDEMDataSet.GetStraightRoute enter'); {$EndIf}
 

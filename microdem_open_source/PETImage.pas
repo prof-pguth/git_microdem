@@ -646,8 +646,8 @@ begin
       for n := 0 to pred(theFiles.Count) do begin
          if FileExists(theFiles.Strings[n]) then begin
             bmp := LoadBitmapFromFile(theFiles.Strings[n]);
-            if (bmp.Width > BigWidth) then BigWidth := bmp.Width;
-            if (bmp.Height > BigHeight) then BigHeight := bmp.Height;
+            if (bmp.Width > BigWidth + 10) then BigWidth := bmp.Width + 10;
+            if (bmp.Height > BigHeight + 10) then BigHeight := bmp.Height + 10;
             bmp.Free;
          end;
       end;

@@ -404,7 +404,7 @@ begin
    {$IfDef ExSats}
    {$Else}
       {$IfDef RecordDP} WriteLineToDebugFile('LoadSatelliteImage, file=' + DragonPlotDef.DefaultDRGName); {$EndIf}
-      OpenAndDisplayNewScene(Nil,DragonPlotDef.DefaultDRGName,true,false,false);
+      OpenAndDisplaySatelliteScene(Nil,DragonPlotDef.DefaultDRGName,true,false,false);
       DragonPlotDef.DefaultDRGName := LastScanMapName;
       if (SatImage[1] <> Nil) then begin
          SatImage[1].SelectionMap.WindowState := wsMinimized;

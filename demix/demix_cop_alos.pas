@@ -124,6 +124,9 @@ const
    SlopeRefDTMPointhalfsec : integer = 0;
    RefAspectMapHalfSec : integer = 0;
 
+type
+  t3DEM = array[1..3] of integer;
+
 
 function OpenHalfSec(fName : PathStr; What : shortstring) : integer;
 begin
@@ -158,14 +161,6 @@ begin
       TestDEMs[i] := OpenHalfSec(DEMIXhalfSecDir + DEMIXDEMTypeName[i] + '.dem',DEMIXDEMTypeName[i]);
       TestSeries[i] := DEMIXDEMTypeName[i];
    end;
-
-   //call if it has not been done already
-   //LoadDEMIXCandidateDEMs(RefDTMpoint,true,true,DEMIXhalfSecDir);
-
-   //ALOSHalfSec := OpenHalfSec(DEMIXhalfSecDir + 'ALOS.dem','alos');
-   //COPHalfSec := OpenHalfSec(DEMIXhalfSecDir + 'COP.dem','cop');
-
-   //CreateHalfSecSlopeRuffMaps(RefDTMPoint,ALOSHalfSec,COPHalfSec);
 
    RuffRefDTMPoint := CreateSlopeRoughnessSlopeStandardDeviationMap(RefDTMpoint,3,SlopeRefDTMPoint );
    RuffRefDTMArea := CreateSlopeRoughnessSlopeStandardDeviationMap(RefDTMarea,3,SlopeRefDTMarea );
@@ -277,10 +272,6 @@ begin
    if (i in [1..3]) then DefGraphLLText := GeomorphNames[i]
    else DefGraphLLText := '';
 end;
-
-
-type
-  t3DEM = array[1..3] of integer;
 
 
 procedure MakeHistograms(DEM : t3DEM);
@@ -407,7 +398,6 @@ begin
    fName := NextFileNumber(MDTempDir,'p_by_cop_alos','.dbf');
    StringList2CSVtoDB(Results,fName);
 end;
-
 
 
 procedure CopAlosCompareReference;

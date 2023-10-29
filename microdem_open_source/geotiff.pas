@@ -157,7 +157,7 @@ type
          procedure GetPointReflectances(Column,Row : integer; var Reflectances : tAllRefs);
          procedure GetTiffRow16bit(Band,Row : integer; var Row16bit : tWordRow16Bit);
 
-         procedure SeekFileOffset({Band,}Row : int64);
+         procedure SeekFileOffset(Row : int64);
          function CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
          {$IfDef VCL}
             procedure GetTIFFRowRGB(Row : integer;  var TheRow : tLongRGB);
@@ -165,17 +165,21 @@ type
          {$EndIf}
    end;
 
+(*
    procedure WriteLongInt(var TIFFFile : file; Value : LongInt);
    procedure WriteWord(var TIFFFile : file; Value : Word);
    procedure WriteFieldEntry(var TIFFFile : File; Tag,TypeField : word; Length,Offset : LongInt);
    procedure WriteFieldEntryIncrementOffset(var TIFFFile : File; Tag,TypeField : word; Length : longint; var Offset : LongInt);
    procedure WriteWordFieldEntry(var TIFFFile : File; Tag,TypeField,Length,Offset : word);
+*)
+
    function GeoTIFFTagName(Tag : integer) : ShortString;
    function GeotiffTypeSize(ftype : integer) : integer;
 
 
 procedure CaptureBMPInGeoTIFF(MapDraw : tMapDraw; FileName : PathStr; Image1 : tImage; MonoImage : boolean = false);
 function BandsInGeotiff(fName : PathStr) : integer;
+function GeotiffImageSize(fName : PathStr; Width,Height : integer) : boolean;
 
 
 {$IfDef VCL}
@@ -220,6 +224,25 @@ uses
 
 var
    CurrentMissing : float32;
+
+
+function GeotiffImageSize(fName : PathStr; Width,Height : integer) : boolean;
+var
+   success : boolean;
+   TiffImage : tTIFFImage;
+   MapProjection : tMapProjection;
+   RegVars : tRegVars;
+begin
+   Result := FileExists(fName);
+   if Result then begin
+      MapProjection := tMapProjection.Create('geotiff metadata');
+      TiffImage := tTiffImage.CreateGeotiff(true,MapProjection,RegVars,false,fName,Success,false,false);
+      Width := TiffImage.TiffHeader.ImageWidth;
+      Height := TiffImage.TiffHeader.ImageLength;
+      MapProjection.Destroy;
+      TiffImage.Destroy;
+   end;
+end;
 
 
 function BandsInGeotiff(fName : PathStr) : integer;

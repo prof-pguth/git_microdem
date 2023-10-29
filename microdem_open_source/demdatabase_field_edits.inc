@@ -200,7 +200,7 @@ end;
 
 function TGISdataBaseModule.AddNavFieldDefinitions : boolean;
 var
-   f1,f2,f3,f4,TStr,zfield : ShortString;
+   f1,f2,f3,f4{,TStr,zfield} : ShortString;
    dd : integer;
 begin
     if MDDef.UseMeters then begin
@@ -252,8 +252,10 @@ end;
 
 procedure TGISdataBaseModule.AddNavFields;
 var
-   xutm,yutm,xutm2,yutm2,z,LastZ,
-   Last4Grad,This4Grad,Lat,Long,LastLat,LastLong,Az,Dist,FirstAz,CumDist,CumDist3d,Factor,h1,h2,tf,dz : float64;
+   //xutm,yutm,xutm2,yutm2,
+   z,LastZ,
+   //Last4Grad,This4Grad,
+   Lat,Long,LastLat,LastLong,Az,Dist,FirstAz,CumDist,CumDist3d,Factor,h1,h2,tf,dz : float64;
    f1,f2,f3,f4,{TStr,}zfield : ShortString;
    dd,i,rc : integer;
 begin
@@ -434,18 +436,18 @@ end;
             {$IfDef RecordIcons} WriteLineToDebugFile('TGISdataBaseModule.AddIcon out'); {$EndIf}
          end;
 
+{$IfDef VCL}
 
 procedure TGISdataBaseModule.FillFieldsFromJoinedTable(var TheFields : tStringList; ForceOverWrite : boolean);
-{$IfDef VCL}
 var
    aCopyFieldThisDB,aCopyFieldOtherDB : ShortString;
    Overwrite : boolean;
-   TStr{,TStr2} : ShortString;
+   TStr : ShortString;
    ft : tFieldType;
-   fLength,Decs,i,j{,rc} : integer;
+   fLength,Decs,i,j : integer;
 begin
     if (TheFields.Count > 0) then begin
-       {$IfDef RecordCopyFieldLinkDB} WriteLineToDebugFile('TGISdataBaseModule.FillFieldsFromJoinedTable in'); {$EndIf}
+       {$IfDef RecordCopyFieldLinkDB} WriteLineToDebugFile('TGISdataBaseModule.FillFieldsFromJoinedTable in, add fields=' + IntToStr(TheFields.Count)); {$EndIf}
        Overwrite := true;
        if not ForceOverwrite then begin
          for j := pred(TheFields.Count) downto 0 do begin
@@ -468,7 +470,9 @@ begin
          if not MyData.FieldExists(aCopyFieldOtherDB) then begin
             fLength := LinkTable.GetFieldLength(aCopyFieldOtherDB);
             ft := LinkTable.GetFieldType(aCopyFieldOtherDB);
-            if (ft = ftFloat) then Decs := LinkTable.GetFieldPrecision(aCopyFieldOtherDB)
+            if (ft = ftFloat) then begin
+               Decs := LinkTable.GetFieldPrecision(aCopyFieldOtherDB);
+            end
             else Decs := 0;
             {$IfDef RecordCopyFieldLinkDB} WriteLineToDebugFile('field=' + TheFields.Strings[j] + '  fieldType=' + FieldTypeStr(ft) + '  fieldLength=' + IntToStr(fLength) +   '  decs=' + IntToStr(Decs)); {$EndIf}
             AddFieldToDataBase(ft,aCopyFieldThisDB,fLength,Decs);
@@ -500,10 +504,8 @@ begin
       EndThreadTimers;
     end;
     TheFields.Free;
-{$Else}
-begin
-{$EndIf}
 end;
+{$EndIf}
 
 
             procedure TGISdataBaseModule.AddGeometry(What : tAddGeometry);

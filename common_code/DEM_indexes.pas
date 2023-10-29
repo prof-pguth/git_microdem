@@ -96,6 +96,9 @@ function PickMapIndexLocation : boolean;
 procedure CheckDEMFileForMapLibrary(TheTable : Petmar_db.tMyData; Series : PathStr; var fName : PathStr);
 procedure VerifyMapLibraryFilesExist(theTable : Petmar_db.tMyData; Memo1 : tMemo = Nil);
 
+procedure DiluviumDEMIXtileReport;
+
+
 implementation
 
 uses
@@ -132,6 +135,103 @@ uses
 
 var
    MergeSeriesName : shortstring;
+
+
+procedure DiluviumDEMIXtileFill(DEM : integer; var sl : tStringList);
+var
+   Col,Row,db : integer;
+   Pts,Coastal,Ocean,Highlands,DeepWater : int64;
+   bbgrid : tGridLimits;
+   Full,z : float32;
+   bb : sfBoundBox;
+begin
+   {$IfDef RecordDEMIXTiles} writeLineToDebugFile('DEMIXtileFill in, DEM=' + IntToStr(DEM)); {$EndIf}
+   if ValidDEM(DEM) then try
+      db := LoadDEMIXtileOutlinesNoMap(DEMGlb[DEM].DEMBoundBoxGeo,false,false,false);
+      if ValidDB(db) then try
+         {$IfDef RecordDEMIXTiles} writeLineToDebugFile('DEMIXtileFill, db created recs=' + IntToStr(GISdb[Result].MyData.TotRecsInDB)); {$EndIf}
+         GISdb[db].MyData.First;
+         GISdb[db].EmpSource.Enabled := false;
+         while not GISdb[db].MyData.eof do begin
+            Pts := 0;
+            Coastal := 0;
+            Ocean := 0;
+            Highlands := 0;
+            DeepWater := 0;
+            bb := GISdb[db].MyData.GetRecordBoundingBox;
+            DEMGlb[DEM].LatLongDegreeToDEMGridInteger(bb.ymin,bb.xmin,bbgrid.xgridlow,bbgrid.ygridlow);
+            DEMGlb[DEM].LatLongDegreeToDEMGridInteger(bb.ymax,bb.xmax,bbgrid.xgridhigh,bbgrid.ygridhigh);
+            for Col := bbgrid.xgridlow to bbgrid.xgridhigh do begin
+               //UpdateProgressBar((bbgrid.xgridhigh - Col) / (bbgrid.xgridhigh - bbgrid.xgridlow));
+               for Row := bbgrid.ygridlow to bbgrid.ygridhigh do begin
+                  inc(Pts);
+                  if DEMGlb[DEM].MissingDataInGrid(Col,Row) then inc(Highlands)
+                  else begin
+                     if DEMGlb[DEM].GetElevMetersOnGrid(Col,Row,z) then begin
+                        if z < -0.01 then inc(DeepWater)
+                        else if z < 0.01 then inc(Ocean)
+                        else inc(Coastal);
+                     end;
+                  end;
+               end;
+            end;
+
+            if (Coastal > 1) then begin
+
+               sl.Add(GISdb[db].MyData.GetFieldByNameAsString('NAME') + ',' +
+                      RealToString(0.5 * (bb.YMax + bb.YMin),-12,-3)+ ',' +
+                      RealToString(0.5 * (bb.xMax + bb.xMin),-12,-3)+ ',' +
+
+                      RealToString(100 * Ocean / Pts,-12,-3)+ ',' +
+                      RealToString(100 * DeepWater / Pts,-12,-3)+ ',' +
+                      RealToString(100 * Coastal / Pts,-12,-3)+ ',' +
+                      RealToString(100 * Highlands / Pts,-12,-3) );
+            end;
+            {$IfDef RecordDEMIXTiles} writeLineToDebugFile('File boundary, ' + GridLimitsToString(bbgrid) + RealToString(Full,8,2)); {$EndIf}
+            GISdb[db].MyData.Next;
+         end;
+      finally
+      end;
+   finally
+      CloseAndNilNumberedDB(db);
+   end;
+   {$IfDef RecordDEMIXTiles} writeLineToDebugFile('DEM contains parts of tiles=' + IntToStr(GISdb[Result].MyData.TotRecsInDB)); {$EndIf}
+end;
+
+
+procedure DiluviumDEMIXtileReport;
+var
+   sl : tStringList;
+   db,DEM,i : integer;
+   MapLib : tMyData;
+   fName : PathStr;
+begin
+   if FileExists(MapLibraryFName) then begin
+      try
+         HeavyDutyProcessing := true;
+         sl := tStringList.Create;
+         sl.Add('DEMIX_TILE,LAT,LONG,OCEAN,DEEPWATER,COASTAL,HIGHLANDS');
+         fName := MapLibraryFName;
+         MapLib := tMyData.Create(fName);
+         MapLib.ApplyFilter('SERIES=' + QuotedStr('DILUV'));
+         //StartProgress('DEMIX tiles summary for DILUV');
+         i := 0;
+         while not MapLib.eof do begin
+            wmDEM.SetPanelText(2,IntToStr(i) + '/' + IntToStr(MapLib.FiltRecsInDB));
+            inc(i);
+            DEM := OpenNewDEM(MapLib.GetFieldByNameAsString('FILENAME'),false);
+            DiluviumDEMIXtileFill(DEM,sl);
+            sl.SaveToFile(mdTempDir + 'floods.csv');
+            CleanUpTempDirectory(false);
+            MapLib.Next;
+         end;
+         fname := NextFileNumber(MDTempDir,'diluvium_dem_report_','.dbf');
+         StringList2CSVtoDB(sl,fName);
+      finally
+         HeavyDutyProcessing := false;
+      end;
+   end;
+end;
 
 
 function PickMapIndexLocation : boolean;
@@ -1168,7 +1268,7 @@ begin
                   for I := 0 to pred(DataInSeries.Count) do begin
                       fName := DataInSeries.Strings[i];
                       {$If Defined(RecordIndex) or Defined(RecordImageIndex)} WriteLineToDebugFile('Load ' + fName); {$EndIf}
-                      OpenAndDisplayNewScene(nil,fName,true,true,(not GlobalDRGMap));
+                      OpenAndDisplaySatelliteScene(nil,fName,true,true,(not GlobalDRGMap));
                    end;
                {$EndIf}
                FreeAndNil(DataInSeries);

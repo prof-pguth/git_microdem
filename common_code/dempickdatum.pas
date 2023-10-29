@@ -49,7 +49,7 @@ type
     { Public declarations }
      FormDatumCode : Shortstring;
      PName : tProjectType;
-     GeoLatLong{,Mercator}: boolean;
+     GeoLatLong : boolean;
      ProjFName : PathStr;
   end;
 

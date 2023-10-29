@@ -16,7 +16,7 @@ var
    xstart,xend,total,maxstart : Integer;
    Percent,Cum,MaxPC  : float64;
 begin
-   {$IfDef RecordGlobalDEM} WriteLineToDebugFile('LandCoverSummary in');   {$EndIf}
+   {$IfDef RecordGlobalDEM} WriteLineToDebugFile('LandCoverSummary in'); {$EndIf}
    CreateBitmap(Result,1400,30);
    Top := 5;
 
@@ -50,7 +50,7 @@ begin
        Result.Canvas.TextOut(MaxStart,Top+10,MaxStr);
     end;
    if Display then DisplayBitmap(Result,'Land cover distribution');
-   {$IfDef RecordGlobalDEM} WriteLineToDebugFile('LandCoverSummary out');   {$EndIf}
+   {$IfDef RecordGlobalDEM} WriteLineToDebugFile('LandCoverSummary out'); {$EndIf}
 end;
 
 
@@ -59,7 +59,6 @@ const
    BitmapMaxWidth = 1500;
 var
    i,ItemHeight,TextStart : integer;
-   //x,MaxX, OnY : integer;
    Lat,Long,Lat2,Long2 : float64;
    PCpresent : boolean;
    PCname,theFilter : ShortString;
@@ -235,8 +234,6 @@ end;
 
 
 function TGISdataBaseModule.ChloroplethLegend(aLabel : shortString) : tMyBitmap;
-//var
-   //i,j,fhi : integer;
 begin
    if (aLabel = '') then aLabel := dbOpts.FloatColorField;
    if copy(aLabel,1,5) = 'LINK-' then Delete(aLabel,1,5);
@@ -324,7 +321,7 @@ end;
 procedure TGISdataBaseModule.DoTheLegend(var Bitmap : tMyBitmap);
 var
    i : integer;
-   Legend{,cbmp} : tMyBitmap;
+   Legend : tMyBitmap;
    Values  : array[0..255] of float64;
    Colors : TColors256;
    LabelStr : shortstring;

@@ -13,8 +13,8 @@
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems}
-   {$Define LogOps}
-   {$Define LogResults}
+   //{$Define LogOps}
+   //{$Define LogResults}
 {$EndIf}
 
 (*****************************************************************************
@@ -921,6 +921,11 @@ type
                                      const NumberClusters : byte;
                                      const k              : byte;
                                      const n              : integer):TVectorClassLabels;
+      function AssignDataToOrderedClusters (  const PRegressData   : PTRegressDataArray;
+                                                        const Clusters       : TClusterMeansArray;
+                                                        const NumberClusters : byte;
+                                                        const k              : byte;
+                                                        const n              : integer)  :  TVectorClassLabels;
 
       function CalcClusterSSE      (  const PRegressData : PTRegressDataArray;
                                       const ClsLabs      : TVectorClassLabels;
@@ -940,7 +945,6 @@ type
       ClusterTotalSumDistances: TSSEArray;
       ClusterVariances : TClusterVariancesArray;
       DistArr : DistArray;
-      NewCenters : TClusterMeansArray;
       TmpClsLabs : TVectorClassLabels;
       XTmpArray : TDoubleArray;
       YTmpArray : TDoubleArray;
@@ -955,6 +959,7 @@ type
       ClsCenters : TClusterMeansArray;   //Moved from protected by PLG so it will be accessible outside the routine for classifying
       ClusterMeans : TClusterMeansArray; //Moved from protected by PLG so it will be accessible outside the routine for classifying
       ClsCounts : TClusterCounts;        //Moved from protected by PLG so it will be accessible outside the routine for classifying
+      NewCenters : TClusterMeansArray;   //Moved from protected by PLG so it will be accessible outside the routine for classifying
       PRegressData      : PTRegressDataArray; // Holds X variables values [Dynamic]
       n                 : integer;
       MeanVect          : XVector;
@@ -10484,16 +10489,16 @@ begin
 
     Assignfile (f,OutputFileName);
     System.Append (f);
-    Writeln (f);
-    Writeln (f,'Initial Cluster Centers (min/max):');
+    Writeln(f);
+    Writeln(f,'Initial Cluster Centers (min/max):');
 
     for i:= 1 to NumberClusters do begin
       Write (f,'Cluster#:',i:3);
       for j:= 1 to k do if ClusterMeans[i,j] > 0 then Write(f,'  ',ClusterMeans[i,j]:8:2);
-      Writeln (f);
+      Writeln(f);
     end; // for i:= 1 to NumberClusters
 
-    Writeln (f);
+    Writeln(f);
     Closefile(f);
     Result:= ClusterMeans;
 
@@ -10543,8 +10548,8 @@ begin
 
         Assignfile (f,OutputFileName);
         System.Append (f);
-        Writeln (f);
-        Writeln (f,'Initial Cluster Centers (std dev):');
+        Writeln(f);
+        Writeln(f,'Initial Cluster Centers (std dev):');
 
         for i:= 1 to NumberClusters do begin
            Write (f,'Cluster#: ',i:3);
@@ -10552,9 +10557,9 @@ begin
            for j:= 1 to k do if ClusterMeans[i,j] > 0 then
 
               Write (f,'  ',ClusterMeans[i,j]:8:2);
-           Writeln (f);
+           Writeln(f);
         end; // for i:= 1 to NumberClusters
-        Writeln (f);
+        Writeln(f);
         Closefile(f);
 
         Result:= ClusterMeans;
@@ -10596,15 +10601,15 @@ begin
 
     Assignfile (f,OutputFileName);
     System.Append (f);
-    Writeln (f);
-    Writeln (f,'Initial Cluster Centers (random):');
+    Writeln(f);
+    Writeln(f,'Initial Cluster Centers (random):');
     for i:= 1 to NumberClusters do begin
       Write (f,'Cluster#: ',i:3);
 
       for j:= 1 to k do {if ClusterMeans[i,j] > 0 then} Write (f,'  ',ClusterMeans[i,j]:8:2);
-      Writeln (f);
+      Writeln(f);
     end; // for i:= 1 to NumberClusters
-    Writeln (f);
+    Writeln(f);
     Closefile(f);
 
     Result:= ClusterMeans;
@@ -10627,38 +10632,69 @@ function TMVClusterClientDataSet.AssignDataToCluster (  const PRegressData   : P
                                                         const NumberClusters : byte;
                                                         const k              : byte;
                                                         const n              : integer)  :  TVectorClassLabels;
-
 var
   i,j,ObsCnt : integer;
   aSum       : extended;
   aMin       : extended;
   BestClass  : integer;
 begin
-  for ObsCnt:= 1 to n do
-  begin
-     for j := 1 to NumberClusters do
-     begin
+  for ObsCnt:= 1 to n do begin
+     for j := 1 to NumberClusters do begin
         DistArr[j] := 0;
         aSum := 0;
         for i:= 1 to k do
-          aSum:= aSum + sqr(PRegressData^[i,ObsCnt-1] - Clusters[j,i]);
-          //aSum:= aSum + abs(PRegressData^[i,ObsCnt-1] - Clusters[j,i]);
-        DistArr[j]:= aSum;  // DistArr[j] := sqrt(aSum);
-     end; // for j:= 1 to NumberClusters do
+          aSum := aSum + sqr(PRegressData^[i,ObsCnt-1] - Clusters[j,i]);
+        DistArr[j]:= aSum;
+     end;
 
      aMin:= DistArr[1];
      BestClass:= 1;
-     for j:= 2 to NumberClusters do
-     begin
-        if ( DistArr[j] < aMin ) then
-        begin
+     for j:= 2 to NumberClusters do begin
+        if ( DistArr[j] < aMin ) then begin
            aMin := DistArr[j];
            BestClass:= j;
-        end; // if ( DistArr[j] < aMin )
-     end; // for j:= 2 to NumberClusters
+        end;
+     end;
      Result[ObsCnt]:= BestClass;
-  end; // for ObsCnt := 1 to n
+  end;
 end;
+
+
+function TMVClusterClientDataSet.AssignDataToOrderedClusters (  const PRegressData   : PTRegressDataArray;
+                                                        const Clusters       : TClusterMeansArray;
+                                                        const NumberClusters : byte;
+                                                        const k              : byte;
+                                                        const n              : integer)  :  TVectorClassLabels;
+//added by PLG, October 2023
+var
+  i,j,ObsCnt : integer;
+  aSum       : extended;
+  aMin       : extended;
+  BestClass  : integer;
+begin
+     for j := 1 to NumberClusters do begin
+        DistArr[j] := 0;
+        aSum := 0;
+        for i:= 1 to k do
+          aSum := aSum + sqr(Clusters[j,i]);
+        DistArr[j]:= aSum;
+        WriteLineToDebugFile(IntToStr(j) + ',' + RealToString(DistArr[j],-12,-4));
+     end;
+(*
+  for ObsCnt:= 1 to n do begin
+     aMin:= DistArr[1];
+     BestClass:= 1;
+     for j:= 2 to NumberClusters do begin
+        if ( DistArr[j] < aMin ) then begin
+           aMin := DistArr[j];
+           BestClass:= j;
+        end;
+     end;
+     Result[ObsCnt]:= BestClass;
+  end;
+*)
+end;
+
 
 
 (*****************************************************************************
@@ -10735,8 +10771,8 @@ begin
 
     Assignfile (f,OutputFileName);
     System.Append (f);
-    Writeln (f);
-    Writeln (f,When + ' New Cluster Means:');
+    Writeln(f);
+    Writeln(f,When + ' New Cluster Means:');
     for i:= 1 to NumberClusters do begin
         if Result[i,1] > 0 then begin
            Write (f,'Cluster#: ',i:3,' N:',ClsCounts[i]:5);
@@ -10745,9 +10781,9 @@ begin
                  Write (f,'  ',Result[i,j]:6:2);
            end; // if ( ClsCounts[i]
         end;
-      Writeln (f);
+      Writeln(f);
     end; // for i:= 1 to NumberClusters
-    Writeln (f);
+    Writeln(f);
     Closefile(f);
 
   except
@@ -10800,7 +10836,7 @@ var
   slHTMLStrings  : TStringList;
   aLine : shortstring;
 begin
-   {$IfDef LogOps} WriteLineToDebugFile('TMVClusterClientDataSet.KMeansClustering in'); {AccumulateClusterStats := true;} {$EndIf}
+   {$IfDef LogOps} WriteLineToDebugFile('TMVClusterClientDataSet.KMeansClustering in'); {$EndIf}
 
   Result      := -1;
   iEndIter    := -1;
@@ -10865,7 +10901,7 @@ begin
         iEndIter:= i;
         //  10/3/2023  It is unclear where the ConvergenceThreshold is set at 500, and how a reasonable value would be picked , so this probably never applies
         if ( cf > ConvergenceThreshold ) then begin
-           {$IfDef LogOps} WriteLineToDebugFile('Break;  exceed threshhole= ' + RealToString(ConvergenceThreshold,-18,-2)); {$EndIf}
+           {$IfDef LogOps} WriteLineToDebugFile('Break; exceed threshhold= ' + RealToString(ConvergenceThreshold,-18,-2)); {$EndIf}
            break;
         end; // if ( cf > )
      end; // for i:= 1 t NIterations
@@ -10876,81 +10912,77 @@ begin
            aline := 'Cluster: ' + IntToStr(j) + '  n=' + IntToStr(ClsCounts[j]) + '  Variable means';
            for i := 1 to k do aline := aline + RealToString(NewCenters[j,i],12,6);
            WriteLineToDebugFile(aline);
-        end; // for j
+        end;
      {$EndIf}
 
-
     for j := 1 to NClusters do if (ClsCounts[j] > 0) then begin
-       //aline := 'MAX_CLUSTR,CLUSTER,N,SSE,COLOR');
        aline := IntToStr(StartCluster) + ',' + IntToStr(iEndIter) + ',' + IntToStr(j) + ',' + IntToStr(ClsCounts[j]) + ',' + RealToString(SSEArray[iEndIter],-15,4) + ',' + IntToStr(WinGraphColors[j mod 15]);
        for i := 1 to k do aline := aline + ',' + RealToString(NewCenters[j,i],12,6);
        ClusterSummary.Add(aline);
     end;
 
-
      System.Append (f);
-     Writeln (f);
-     Writeln (f,'End Iteration: ',iEndIter:2);
-     Writeln (f);
-     Writeln (f,'Convergence Factor : ',cf:5:2);
-     Writeln (f);
-     Writeln (f,'Sum Sqrs of Error: ');
-     Writeln (f);
-     for i:= 1 to NIterations do Writeln (f,'  SSE : (iteration',i:3,') ',SSEArray[i]:15:2);
-     Writeln (f);
+     Writeln(f);
+     Writeln(f,'End Iteration: ',iEndIter:2);
+     Writeln(f);
+     Writeln(f,'Convergence Factor : ',cf:5:2);
+     Writeln(f);
+     Writeln(f,'Sum Sqrs of Error: ');
+     Writeln(f);
+     for i:= 1 to NIterations do Writeln(f,'  SSE : (iteration',i:3,') ',SSEArray[i]:15:2);
+     Writeln(f);
      Closefile(f);
 
      {$IfDef LogOps} WriteLineToDebugFile('TMVClusterClientDataSet.KMeansClustering done work'); {$EndIf}
 
-     if ( fAccumulateClusterStats ) then begin
+     if fAccumulateClusterStats then begin
         GatherFinalStats(k);
         System.Append (f);
-        Writeln (f,'===============================================================================');
+        Writeln(f,'===============================================================================');
         for j := 1 to NClusters do begin
-           Writeln (f);
-           Writeln (f,'Cluster: ',j);
-           Writeln (f,'                         Means         StdDev.      Variances');
+           Writeln(f);
+           Writeln(f,'Cluster: ',j);
+           Writeln(f,'                         Means         StdDev.      Variances');
            for i:= 1 to k do
               Writeln(f,sXFields[i-1]:15,' (',i,')',NewCenters[j,i]:12:4,', ',sqrt(ClusterVariances[j,i]):12:4,', ', ClusterVariances[j,i]:12:4);
-           Writeln (f);
-        end; // for j
-        Writeln (f,'===============================================================================');
+           Writeln(f);
+        end;
+        Writeln(f,'===============================================================================');
 
-        Writeln (f);
-        Writeln (f);
-        Writeln (f,'Cluster Covariances:');
-        Writeln (f);
+        Writeln(f);
+        Writeln(f);
+        Writeln(f,'Cluster Covariances:');
+        Writeln(f);
         for i := 1 to NClusters do begin
-           Writeln (f);
-           Writeln (f,'Cluster: ',i);
-           Writeln (f);
+           Writeln(f);
+           Writeln(f,'Cluster: ',i);
+           Writeln(f);
            for j:= 1 to k do begin
               for l:= 1 to k do
                 Write (f,ClusterCovariances[i,j,l]:12:4,' ');
-              Writeln (f);
-           end; // for j
-        end; // for i
-        Writeln (f);
-        Writeln (f,'===============================================================================');
+              Writeln(f);
+           end;
+        end;
+        Writeln(f);
+        Writeln(f,'===============================================================================');
 
-        Writeln (f);
-        Writeln (f,'Pairwise Divergence:');
-        Writeln (f);
+        Writeln(f);
+        Writeln(f,'Pairwise Divergence:');
+        Writeln(f);
         for i:= NClusters downto 1 do begin
            for j:= NClusters downto 1 do begin
               if ( i > j ) then begin
                   Writeln(f,'Clusters: [',i,',',j,'] : ',DivergencesArray[i,j]:12:3);
-              end; // if ( i > j )
-           end; // for j
-        end; // for i
+              end;
+           end;
+        end;
 
-        writeln (f);
-        writeln (f,'Total Avg Divergence:   Sum           Mean');
-        writeln (f);
+        Writeln(f);
+        Writeln(f,'Total Avg Divergence:   Sum           Mean');
+        Writeln(f);
         for i := 1 to NClusters do
-           Writeln(f,'Clusters: [',i,'] : ',ClusterTotalSumDistances[i]:12:3,', ',
-              ClusterTotalSumDistances[i] / ( NClusters - 1):12:3);
-        Writeln (f,'===============================================================================');
+           Writeln(f,'Clusters: [',i,'] : ',ClusterTotalSumDistances[i]:12:3,', ',ClusterTotalSumDistances[i] / ( NClusters - 1):12:3);
+        Writeln(f,'===============================================================================');
         CloseFile(f);
      end; // if ( fAccumulateClusterStats )
 
@@ -10965,6 +10997,8 @@ begin
 
      if ( ShowDoneMessage ) then
         ShowMessage('Clustering completed.');
+
+     //AssignDataToOrderedClusters(PRegressData,ClsCenters,NClusters,k,n);
 
      except On E: Exception do
         Raise Exception.Create('KMeansClusterError' + E.Message);

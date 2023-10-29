@@ -2,8 +2,8 @@ object wmdem: Twmdem
   Left = 0
   Top = 262
   Caption = 'GIS program loading'
-  ClientHeight = 1154
-  ClientWidth = 2022
+  ClientHeight = 1155
+  ClientWidth = 2026
   Color = clScrollBar
   DefaultMonitor = dmDesktop
   Font.Charset = DEFAULT_CHARSET
@@ -28,13 +28,13 @@ object wmdem: Twmdem
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 2022
-    Height = 29
+    Width = 2026
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34
     TabOrder = 0
     OnMouseDown = ToolBar1MouseDown
+    ExplicitWidth = 2022
     object SpeedButton2: TSpeedButton
       Left = 0
       Top = 0
@@ -1676,8 +1676,8 @@ object wmdem: Twmdem
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 1135
-    Width = 2022
+    Top = 1136
+    Width = 2026
     Height = 19
     Panels = <
       item
@@ -1696,6 +1696,8 @@ object wmdem: Twmdem
     Visible = False
     OnClick = StatusBar1Click
     OnDblClick = StatusBar1DblClick
+    ExplicitTop = 1135
+    ExplicitWidth = 2022
   end
   object MainMenu1: TMainMenu
     Left = 136
@@ -3557,6 +3559,10 @@ object wmdem: Twmdem
       Enabled = False
       OnClick = Extract1Click
     end
+    object DiluviumDEMfortestareas1: TMenuItem
+      Caption = 'Diluvium DEM for test areas'
+      OnClick = DiluviumDEMfortestareas1Click
+    end
     object Merge1secreferenceDEMsfromVisioterra1: TMenuItem
       Caption = 'Merge 1 sec reference DEMs from Visioterra'
       OnClick = Merge1secreferenceDEMsfromVisioterra1Click
@@ -3600,12 +3606,32 @@ object wmdem: Twmdem
       OnClick = N45Click
     end
     object VerifySSIMfiles1: TMenuItem
-      Caption = 'Verify SSIM files'
+      Caption = 'Verify all SSIM files exist for tile'
       OnClick = VerifySSIMfiles1Click
+    end
+    object CheckfilesizesforSSIMimagemismatches1: TMenuItem
+      Caption = 'Check file sizes for SSIM image mismatches'
+      OnClick = CheckfilesizesforSSIMimagemismatches1Click
+    end
+    object CheckreferenceDEMs1: TMenuItem
+      Caption = 'Check reference DEMs'
+      OnClick = CheckreferenceDEMs1Click
+    end
+    object ChecktestDEMs1: TMenuItem
+      Caption = 'Check test DEMs'
+      OnClick = ChecktestDEMs1Click
     end
     object MergeSSIMandR2database1: TMenuItem
       Caption = 'Merge SSIM and R2 database'
+      Enabled = False
       OnClick = MergeSSIMandR2database1Click
+    end
+    object N46: TMenuItem
+      Caption = '-'
+    end
+    object DiluviumDEMandDEMIXDBoverlap1: TMenuItem
+      Caption = 'Diluvium DEM and DEMIX DB overlap'
+      OnClick = DiluviumDEMandDEMIXDBoverlap1Click
     end
   end
 end

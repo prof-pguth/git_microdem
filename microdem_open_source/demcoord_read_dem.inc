@@ -559,7 +559,6 @@ begin
    NewHeadRecs.DEMSWCornerX := LongCorner;
    NewHeadRecs.DEMSWCornerY := LatCorner;
    {$IfDef RecordCreateNewDEM}
-      //WriteLineToDebugFile('NewHeadrecs.Fipszone=' + IntToStr(NewHeadRecs.SPCS_FIPS_Zone));
       WriteLineToDebugFile('xll=' + RealToString(NewHeadRecs.DEMSWCornerX,-18,-8) + ' yll=' + RealToString(NewHeadRecs.DEMSWCornerY,-18,-8) + ' dy=' + RealToString(NewHeadRecs.DEMySpacing,-18,-8) + ' dx=' + RealToString(NewHeadRecs.DEMxSpacing,-18,-8));
    {$EndIf}
 

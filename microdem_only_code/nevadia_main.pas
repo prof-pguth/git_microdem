@@ -83,16 +83,6 @@ uses
 //end DB declarations
 
    DEMDefs,Petmar_types,PETMAR, DEMMapDraw, DEMMapF,
-
-   {$IfDef ExMovie}
-   {$Else}
-      //PetMovie,
-   {$EndIf}
-
-   {$IfDef ExFMX3D}
-      FMX.Types3D,
-   {$EndIf}
-
    System.Math.Vectors,System.Types,System.RTLConsts,System.Win.TaskbarCore,System.IOUtils,System.Diagnostics,System.UiTypes,
    Windows,ShlObj, WinInet,
    Vcl.Taskbar,
@@ -100,10 +90,6 @@ uses
    Dialogs, ExtCtrls, ComCtrls, Buttons, ToolWin,SysUtils,ShellAPI,Messages,URLMon,Math,StrUtils;
 
 const
-   (*
-   {$IfDef Win32}  ProgramName = 'MicroDEM-32';  {$EndIf}
-   {$IfDef Win64}  ProgramName = 'MicroDEM-64';  {$EndIf}
-   *)
    ProgramFunction = 'Freeware GIS';
 type
   Twmdem = class(TForm)
@@ -344,7 +330,6 @@ type
     LatLong1: TMenuItem;
     Edit1: TMenuItem;
     EditDEMHeader1: TMenuItem;
-    //OpenGLtwogrids1: TMenuItem;
     Timer2: TTimer;
     Seismicviewing1: TMenuItem;
     RestorepreviousprogramEXE1: TMenuItem;
@@ -410,7 +395,6 @@ type
     Planarprojections1: TMenuItem;
     Cylindricalprojections1: TMenuItem;
     Conicprojections1: TMenuItem;
-    //All1: TMenuItem;
     Monthlyinsolation1: TMenuItem;
     UTMprojectoiin1: TMenuItem;
     LabSpeedButton7: TSpeedButton;
@@ -556,6 +540,12 @@ type
     N45: TMenuItem;
     VerifySSIMfiles1: TMenuItem;
     MergeSSIMandR2database1: TMenuItem;
+    CheckfilesizesforSSIMimagemismatches1: TMenuItem;
+    N46: TMenuItem;
+    DiluviumDEMandDEMIXDBoverlap1: TMenuItem;
+    CheckreferenceDEMs1: TMenuItem;
+    ChecktestDEMs1: TMenuItem;
+    DiluviumDEMfortestareas1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -928,6 +918,11 @@ type
     procedure N45Click(Sender: TObject);
     procedure VerifySSIMfiles1Click(Sender: TObject);
     procedure MergeSSIMandR2database1Click(Sender: TObject);
+    procedure CheckfilesizesforSSIMimagemismatches1Click(Sender: TObject);
+    procedure DiluviumDEMandDEMIXDBoverlap1Click(Sender: TObject);
+    procedure CheckreferenceDEMs1Click(Sender: TObject);
+    procedure ChecktestDEMs1Click(Sender: TObject);
+    procedure DiluviumDEMfortestareas1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -948,14 +943,11 @@ const
 
 var
    wmdem : Twmdem;
-   //ShowLoadButtons,
    LockStatusBar,
    ClosingEverything,
    SkipMenuUpdating,FirstRun : boolean;
-   //OnVasaPage : integer;
 
 
-//procedure SunOrMoon(LocationSet : boolean; Lat,Long : float64);
 function OpenGazFile(fName : PathStr = '') : integer;
 procedure InsureFormOnScreen(Form4 : tForm; x,y : integer);
 
@@ -1335,6 +1327,41 @@ begin
 end;
 
 
+procedure Twmdem.CheckfilesizesforSSIMimagemismatches1Click(Sender: TObject);
+var
+   fName,fName2 : PathStr;
+   sl,Findings : tStringList;
+   i : Integer;
+   aLine : shortstring;
+   H1,H2,W1,W2 : integer;
+begin
+   fName := 'C:\temp\ssim_global_norm\aster_size_mismatch.csv';
+   sl := tStringList.Create;
+   sl.LoadFromFile(fName);
+   Findings := tStringList.Create;
+   for i := 0 to pred(sl.Count) do begin
+      fName := sl.Strings[i];
+      fName2 := Petmar_types.BeforeSpecifiedCharacterANSI(fName,',',true,true);
+      GeotiffImageSize(fName,w1,h1);
+      GeotiffImageSize(fName2,w2,h2);
+      Findings.Add(fName + ',' + fName2 + ',' + IntToStr(w1) + ',' + IntToStr(h1) + ',' + IntToStr(w2)+ ',' + IntToStr(h2) );
+   end;
+
+   DisplayAndPurgeStringList(Findings,'Size mismatches');
+   ShowDefaultCursor;
+   sl.Destroy;
+end;
+
+procedure Twmdem.CheckreferenceDEMs1Click(Sender: TObject);
+begin
+   CheckReferenceDEMs;
+end;
+
+procedure Twmdem.ChecktestDEMs1Click(Sender: TObject);
+begin
+   CheckTestDEMs;
+end;
+
 procedure Twmdem.Tile1Click(Sender: TObject);
 begin
    Tile;
@@ -1551,6 +1578,12 @@ begin
    {$IfDef ExRedistrict}
       Legislativeredistricting1.Visible := false;
    {$EndIf}
+
+   {$IfDef IncludePython}
+   {$Else}
+      Pythontestrun1.Visible := false;
+   {$EndIf}
+
 
    {$IfDef ExGeoPDF}
       OpenGeoPDF1.Visible := false;
@@ -2849,6 +2882,7 @@ var
    i,DEM : integer;
    fName : PathStr;
 begin
+   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Clip DEMs to DEMIX tile boundaries in'); {$EndIf}
    FilesWanted := tStringList.Create;
    FilesWanted.Add(LastDEMName);
    if GetMultipleFiles('DEM to clip',DEMFilterMasks,FilesWanted ,MDDef.DefaultDEMFilter) then begin
@@ -2856,11 +2890,12 @@ begin
      for i := 0 to pred(FilesWanted.Count) do begin
         SetPanelText(1,IntToStr(i) + '/' + IntToStr(FilesWanted.Count));
         fName := FilesWanted.Strings[i];
-        LoadNewDEM(DEM,fName,true);
-        DEMGlb[DEM].SelectionMap.ClipDEMtoFullDEMIXTiles;
+        LoadNewDEM(DEM,fName,false);
+        ClipTheDEMtoFullDEMIXTiles(DEM);
         CloseSingleDEM(DEM);
      end;
    end;
+   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Clip DEMs to DEMIX tile boundaries out'); {$EndIf}
 end;
 
 procedure Twmdem.N81Sfileviewer1Click(Sender: TObject);
@@ -3160,7 +3195,9 @@ end;
 
 procedure Twmdem.Pythontestrun1Click(Sender: TObject);
 begin
-   TestPythonFile;
+   {$IfDef IncludePython}
+      TestPythonFile;
+   {$EndIf}
 end;
 
 procedure Twmdem.Quickplatetectonicsmaps1Click(Sender: TObject);
@@ -4709,7 +4746,7 @@ begin
     GetMultipleFiles('Multiple Bands',GetSatMaskList(true),Bands,MDDef.DefaultSatFilter);
     Bands.Sorted := true;
     LastImageName := Bands.Strings[0];
-    OpenAndDisplayNewScene(Bands,'',true,true,true);
+    OpenAndDisplaySatelliteScene(Bands,'',true,true,true);
    {$IfDef RecordMenu} WriteLineToDebugFile('Twmdem.Openimagewithmultiplebands1Click out'); {$EndIf}
 end;
 
@@ -4874,6 +4911,34 @@ end;
 procedure Twmdem.Differencetwobitmaps1Click(Sender: TObject);
 begin
    DifferenceTwoBitmaps;
+end;
+
+procedure Twmdem.DiluviumDEMandDEMIXDBoverlap1Click(Sender: TObject);
+var
+   fName1,fName2 : Pathstr;
+   sl1,sl2,sl3 : tStringList;
+   tile : shortstring;
+   i : Integer;
+begin
+   fName1 := DEMIXSettingsDir + 'tiles_demix2.6.txt';
+   fName2 := DEMIXSettingsDir + 'tiles_diluvium_filled.txt';
+   sl1 := tStringList.Create;
+   sl1.LoadFromFile(fName1);
+   sl2 := tStringList.Create;
+   sl2.LoadFromFile(fName2);
+   sl3 := tStringList.Create;
+   for i := 0 to pred(sl1.Count) do begin
+      Tile := sl1.Strings[i];
+      if sl2.IndexOf(Tile) >= 0 then sl3.Add(tile);
+   end;
+   DisplayAndPurgeStringList(sl3,'Common tiles=' + IntToStr(sl3.Count));
+   sl1.Destroy;
+   sl2.Destroy;
+end;
+
+procedure Twmdem.DiluviumDEMfortestareas1Click(Sender: TObject);
+begin
+   DiluviumDEMforTestAreas;
 end;
 
 procedure Twmdem.Discussionforum1Click(Sender: TObject);
@@ -5127,7 +5192,7 @@ begin
    {$IfDef ExSat}
    {$Else}
       //GetBlueMarble;
-      NewSatImage := OpenAndDisplayNewScene(nil,BlueMarblefName,true,true,false);
+      NewSatImage := OpenAndDisplaySatelliteScene(nil,BlueMarblefName,true,true,false);
       if NewSatImage <> 0 then begin
          SatImage[NewSatImage].SelectionMap.MapSubsetAllowed := false;
          if MDDef.WorldOutlinesOnGlobalBlueMarble then begin
@@ -5651,47 +5716,10 @@ end;
 
 
 procedure Twmdem.VerifySSIMfiles1Click(Sender: TObject);
-const
-   NCrits = 6;
-   Crits : array[1..NCrits] of shortstring = ('ELEV_','RRI_','SLOPE_','HILL_','RUFF_','TRI_');
-   NDEMs = 8;
-   DEMs : array[1..NDEMs] of shortstring = ('COP','FABDEM','NASA','SRTM','ASTER','ALOS','dtm_ref_area','dtm_ref_point');
-var
-   Dirs,GoodTiles,BadTiles : tStringList;
-   i,j,k : Integer;
-   fName : PathStr;
-   Error,Tile : shortstring;
 begin
-   Dirs := tStringList.Create;
-   GoodTiles := tStringList.Create;
-   BadTiles := tStringList.Create;
-   if GetMultipleDirectories('SSIM files to verify',Dirs) then begin
-      StartProgress('Verify');
-      for i := 0 to pred(Dirs.Count) do begin
-         //GetSubDirsInDirectory(Dirs[i]);
-         UpdateProgressBar(i/Dirs.Count);
-         Tile := LastSubDir(Dirs[i]);
-         Error := '';
-         for j := 1 to NDEMs do begin
-            for k := 1 to NCrits do begin
-               fName := Crits[k] + DEMs[j] + '_norm.tif';
-               if FileExists(Dirs[i] + fName) then begin
-               end
-               else begin
-                  Error := Error + fName + '  ';
-               end;
-            end;
-         end;
-         if Error = '' then GoodTiles.Add(Tile)
-         else BadTiles.Add(Tile + '  ' + Error);
-      end;
-   end;
-   EndProgress;
-   Dirs.Free;
-   DisplayAndPurgeStringList(GoodTiles,'Good tiles');
-   DisplayAndPurgeStringList(BadTiles,'Problem tiles');
-
+   VerifyAllMapsReadyForSSIM;
 end;
+
 
 procedure Twmdem.Verticalearthcurvature1Click(Sender: TObject);
 begin
@@ -6159,7 +6187,7 @@ begin
    MergeFName := '';
    OutNames := Nil;
    CallGDALMerge(MergefName,OutNames);
-   OpenAndDisplayNewScene(Nil,MergefName,true,true,true);
+   OpenAndDisplaySatelliteScene(Nil,MergefName,true,true,true);
 {$EndIf}
 end;
 

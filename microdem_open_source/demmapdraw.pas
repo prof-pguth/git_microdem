@@ -807,6 +807,7 @@ const
 
    {$I demmapdraw_coords.inc}
    {$I demmapdraw_map_sizing.inc}
+   {$I demmapdraw_legends.inc}
 
 
 function SameProjection(Map1,Map2 : tMapDraw) : boolean;
@@ -866,7 +867,7 @@ begin
    csv := tStringList.Create;
    csv.Add('LAT,LONG');
 
-    //top side
+   //top side
    y := pred(MapYSize);
    for i := 0 to 10 do begin
       x :=  i * MapXSize div 10;
@@ -944,6 +945,7 @@ begin
    end;
 end;
 
+
 function TMapDraw.DEMGridOnScreen(x,y : float64) : boolean;
 begin
    Result := (x >= MapCorners.BoundBoxDataGrid.xmin) and (x <= MapCorners.BoundBoxDataGrid.xmax) and (y >= MapCorners.BoundBoxDataGrid.ymin) and (y <= MapCorners.BoundBoxDataGrid.ymax);
@@ -970,7 +972,7 @@ var
 begin
    {$If Defined(ShowUTMZone)} WriteLineToDebugFile('');  WriteLineToDebugFile('tMapDraw.GetBoundBoxUTM in for ' + BaseTitle); {$EndIf}
    InitializeBoundBox(Result);
-    //top side
+   //top side
    y := pred(MapYSize);
    for i := 0 to EachSide do begin
       x :=  i * MapXSize div eachSide;
@@ -1012,7 +1014,6 @@ end;
 function TMapDraw.CurrentSatelliteColors : shortstring;
 begin
   if MapType in [mtSatTrueColor,mtSatFalseColor,mtSatPickColor,mtSatFalseVeg] then begin
-     //Result := RGBString(SatView.RedBand,SatView.GreenBand,SatView.BlueBand);
      Result := SatImage[SATonMap].BandShortName[SatView.RedBand] + '-' + SatImage[SATonMap].BandShortName[SatView.GreenBand] + '-' +  SatImage[SATonMap].BandShortName[SatView.BlueBand];
      if SatView.PanSharpenImage then Result := Result + ' (pan sharpen)';
   end
@@ -1048,7 +1049,6 @@ begin
       if ValidSatOnMap and (SatImage[SATonMap].RegVars.Registration = RegProjection) then Result := true;
    {$EndIf}
 end;
-
 
 
 procedure tMapDraw.DrawWorldFileImageOnMap(var SummaryBitmap : tBitmap; fName : PathStr; Exagerrate : boolean = false);
@@ -1275,11 +1275,6 @@ begin
                      {$EndIf}
                   end;
                end
-               {$IfDef ExSat}
-               else begin
-                  {$IfDef RecordFullMapDraw} WriteLineToDebugFile('Sat image undefined'); {$EndIf}
-               end;
-               {$Else}
                else if ValidSatOnMap then begin
                   {$If Defined(RecordMapDraw)  or Defined(RecordKeyMap)} WriteLineToDebugFile('satellite image'); {$EndIf}
                   if (MapType <> mtSatBlank) then begin
@@ -1287,7 +1282,6 @@ begin
                   end;
                   {$IfDef RecordMapDraw} WriteLineToDebugFile('Sat image drawn OK, ' + MapSizeString); {$EndIf}
                end;
-               {$EndIf}
 
                {$If Defined(RecordFullMapDraw) or Defined(RecordTiming) or Defined(RecordOverlays)} WriteLineToDebugFile('BaseMapFName=' + BaseMapFName + '   ' + MapSizeString); {$EndIf}
 

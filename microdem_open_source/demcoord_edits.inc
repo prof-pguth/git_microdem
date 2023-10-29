@@ -8,6 +8,44 @@
 {____________________________________}
 
 
+procedure ClipTheDEMtoFullDEMIXTiles(DEM : integer; NewName : PathStr = '');
+const
+   Fudge = 0.001;
+var
+   bb,bb2 : sfBoundBox;
+   db : integer;
+   {$If Defined(RecordCarto)} aLine : shortString; {$EndIf}
+begin
+   if ValidDEM(DEM) then begin
+      {$If Defined(RecordCarto)} aLine := DEMGlb[DEM].AreaName + ' initial ' + DEMGlb[DEM].ColsRowsString;  {$EndIf}
+      bb := DEMGlb[DEM].DEMBoundBoxGeo;
+      {$If Defined(RecordCartoFull)} WriteLineToDebugFile('TMapForm.ClipDEMtoFullDEMIXTiles, DEM in ' + sfBoundBoxToString(bb,8)); {$EndIf}
+      db := DEMIXtileFill(DEM,bb,False);
+      GISdb[DB].Empsource.Enabled := false;
+      GISdb[DB].ApplyGISFilter('GRID_FULL >' + IntToStr(MDDef.DEMIX_Full));
+      //GISdb[DB].DeleteAllSelectedRecords;
+      bb2.xmax := GISdb[DB].MyData.FindFieldMax('LONG_HI') + Fudge;
+      bb2.xmin := GISdb[DB].MyData.FindFieldMin('LONG_LOW') - Fudge;
+      bb2.ymax := GISdb[DB].MyData.FindFieldMax('LAT_HI') + Fudge;
+      bb2.ymin := GISdb[DB].MyData.FindFieldMin('LAT_LOW') - Fudge;
+      {$If Defined(RecordCartoFull)} WriteLineToDebugFile('TMapForm.ClipDEMtoFullDEMIXTiles, tile boundaries ' + sfBoundBoxToString(bb2,8)); {$EndIf}
+      bb.xmax := Petmath.MinFloat(bb.xMax,bb2.xMax);
+      bb.xmin := Petmath.MaxFloat(bb.xmin,bb2.xMin);
+      bb.ymax := Petmath.MinFloat(bb.yMax,bb2.yMax);
+      bb.ymin := Petmath.MaxFloat(bb.yMin,bb2.YMin);
+      {$If Defined(RecordCartoFull)} WriteLineToDebugFile('TMapForm.ClipDEMtoFullDEMIXTiles, map full tiles ' + sfBoundBoxToString(bb,8)); {$EndIf}
+      //SubsetAndZoomMapFromGeographicBounds(bb);
+      if (NewName = '') then NewName := DEMGlb[DEM].DEMFileName;
+      DEMGlb[DEM].SaveGridSubsetGeotiff(DEMGlb[DEM].sfBoundBox2tGridLimits(bb),NewName);
+      DEMGlb[DEM].DEMFileName := NewName;
+      //DEMGlb[DEM].SelectionMap.ReloadDEMClick(Nil);
+      {$If Defined(RecordCarto)} aLine := aline + ' clipped ' + DEMGlb[DEM].ColsRowsString;   WriteLineToDebugFile(aLine); {$EndIf}
+      CloseAndNilNumberedDB(db);
+   end;
+end;
+
+
+
 function tDEMDataSet.BoxCarDetrendDEM(OpenMap : boolean; GridLimits : tGridLimits; FilterRadius : integer = 2) : integer;
 var
    x,y,xr,yr,n : integer;

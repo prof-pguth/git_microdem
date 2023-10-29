@@ -8,7 +8,6 @@ unit DEMmagvar;
 {___________________________________}
 
 
-
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
@@ -131,7 +130,6 @@ begin
       {$IfDef RecordProblems} WriteLineToDebugFile('Missing ' + www_mag_mod_fName); {$EndIf}
    end;
 end;
-
 
 
 procedure MagVr1;
