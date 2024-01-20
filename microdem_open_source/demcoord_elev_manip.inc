@@ -2,10 +2,25 @@
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {-----------------------------------}
 {include file for demcoord.pas      }
 {___________________________________}
+
+
+procedure tDEMDataSet.SetGridMissingOutsideBox(Col1,Row1,Col2,Row2 : integer);
+var
+   Col,Row : integer;
+begin
+    for Col := 0 to pred(Col1) do
+       for Row := 0 to pred(DEMheader.NumRow) do SetGridMissing(Col,Row);
+    for Col := succ(Col2) to pred(DEMheader.NumCol) do
+       for Row := 0 to pred(DEMheader.NumRow) do SetGridMissing(Col,Row);
+    for Row := 0 to pred(Row1) do
+       for Col := 0 to pred(DEMheader.NumCol) do SetGridMissing(Col,Row);
+    for Row := succ(Row2) to pred(DEMheader.NumRow) do
+       for Col := 0 to pred(DEMheader.NumCol) do SetGridMissing(Col,Row);
+end;
 
 
 function OnGridNode(Xincr,YIncr : float32) : boolean; inline;
@@ -55,7 +70,7 @@ function tDEMDataSet.InterpolateBiCubicVisioTerra(xgrid,ygrid : float32; var z :
 var
    Elev,xgrad,ygrad,crossgrad  : tElevFloatArray;
 
-// this uses the notation in Gross and Cosseaux, 2022, in the figure page 25
+// uses notation in Gross and Cosseaux, 2022, in the figure page 25
 //        dy-1  dy0  dy1   dy2
 //  dx-1   znw2 zn2  zne2 zne3
 //  dx0    znw  zn  zne   zne4
@@ -63,8 +78,8 @@ var
 //  dx2    zsw  zs  zse    zse2
 
 
-// this uses the notation in MICRODEM
-//following the DTED convention, the origin on the grid describing the DEM has a normal  Cartesian origin in the SW corner
+// uses notation in MICRODEM
+//following DTED convention, the origin on the describing the DEM has a normal Cartesian origin in the SW corner
 //        dx-1  dx0  dx1   dx2
 //  dy+2   znw2 zn2  zne2 zne3
 //  dy+1    znw  zn  zne   zne4
@@ -127,7 +142,6 @@ begin
                WriteLineToDebugFile('dy: ' + RealToString(dy[-1],6,2 ) + RealToString(dy[0],6,2 ) + RealToString(dy[1],6,2 ) + RealToString(dy[2],6,2 ) );
                WriteLineToDebugFile('wy: ' + RealToString(wy[-1],6,2 ) + RealToString(wy[0],6,2 ) + RealToString(wy[1],6,2 ) + RealToString(wy[2],6,2 ) );
             {$EndIf}
-
 
             //this is w2 of Gross and Cosseaux, 2022; to adjust the slopes for w1, multiply all weights by 2; for w3, divide by 2
             //slopes for w1= -1,  w2 = -0.5,  w3=-0.25

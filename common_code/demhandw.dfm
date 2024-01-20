@@ -3,8 +3,8 @@ object DemHandForm: TDemHandForm
   Top = 244
   BorderIcons = [biSystemMenu]
   Caption = 'Data Manipulation'
-  ClientHeight = 517
-  ClientWidth = 870
+  ClientHeight = 516
+  ClientWidth = 866
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,8 +19,8 @@ object DemHandForm: TDemHandForm
   object Memo1: TMemo
     Left = 0
     Top = 0
-    Width = 870
-    Height = 498
+    Width = 866
+    Height = 497
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -31,13 +31,13 @@ object DemHandForm: TDemHandForm
     ScrollBars = ssVertical
     TabOrder = 0
     Visible = False
-    ExplicitWidth = 866
-    ExplicitHeight = 497
+    ExplicitWidth = 862
+    ExplicitHeight = 496
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 498
-    Width = 870
+    Top = 497
+    Width = 866
     Height = 19
     Panels = <
       item
@@ -46,8 +46,8 @@ object DemHandForm: TDemHandForm
       item
         Width = 250
       end>
-    ExplicitTop = 497
-    ExplicitWidth = 866
+    ExplicitTop = 496
+    ExplicitWidth = 862
   end
   object MainMenu1: TMainMenu
     Left = 24
@@ -381,7 +381,7 @@ object DemHandForm: TDemHandForm
         Caption = '-'
       end
       object DEMformats1: TMenuItem
-        Caption = 'DEM format conversions'
+        Caption = 'DEM format conversions (to MD or Geotiff)'
         object IMGdirectorytoMDDEM1: TMenuItem
           Caption = 'IMG files'
           OnClick = IMGdirectorytoMDDEM1Click

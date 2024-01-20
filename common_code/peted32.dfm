@@ -91,7 +91,7 @@ object PetEditf: TPetEditf
     ParentShowHint = False
     ShowHint = True
     TabOrder = 0
-    ExplicitWidth = 462
+    ExplicitWidth = 483
     object SpeedButton5: TSpeedButton
       Left = 0
       Top = 0

@@ -4,7 +4,7 @@ unit petdbutils;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -13,7 +13,7 @@ unit petdbutils;
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
       //{$Define RecordDataBaseFilter}
-      //{$Define RecordCSVMerge}
+      {$Define RecordCSVMerge}
       //{$Define RecordDataBaseImage}
       //{$Define RecordOpenDB}
       //{$Define RecordCSVimport}
@@ -220,28 +220,34 @@ var
    DefaultFilter : byte;
    i,j : integer;
 begin
-   {$IfDef RecordCSVMerge}  writelinetoDebugFile(''); {$Endif}
+   {$IfDef RecordCSVMerge} writelinetoDebugFile(''); {$Endif}
    Output := tStringList.Create;
    if (OutName = '') then GetFileNameDefaultExt('Merged CSV file','*.csv',fName);
+   {$IfDef RecordCSVMerge} writelinetoDebugFile('MergeCSVFiles, files=' + IntToStr(fNames.Count)); {$Endif}
    for I := 0 to pred(fNames.Count) do begin
       fName := fNames.Strings[i];
       if  FileExtEquals(fName,'.csv') or FileExtEquals(fName,'.txt') then begin
          Tstrl := tStringList.Create;
          TStrl.LoadFromFile(fName);
-         {$IfDef RecordCSVMerge}  writelinetoDebugFile(IntegerToString(Tstrl.count,12) + ' lines in  ' + fname); {$Endif}
+         {$IfDef RecordCSVMerge} writelinetoDebugFile(IntegerToString(pred(Tstrl.count),12) + ' lines in  ' + fname); {$Endif}
          if (i = 0) then begin
             Header1 := tstrl.strings[0];
             for j := 0 to pred(TStrl.Count) do Output.Add(TStrl.Strings[j]);
          end
          else begin
             Header := tstrl.strings[0];
-            if Uppercase(Header) = UpperCase(Header1) then for j := 1 to pred(TStrl.Count) do Output.Add(TStrl.Strings[j]);
+            if (Uppercase(Header) <> UpperCase(Header1)) then begin
+               {$IfDef RecordCSVMerge} writelinetoDebugFile('Header mismatch, ' + Header + ' and '+ Header1); {$Endif}
+            end
+            else begin
+               for j := 1 to pred(TStrl.Count) do Output.Add(TStrl.Strings[j]);
+            end;
          end;
          TStrl.Free;
       end;
    end;
    Output.SaveToFile(OutName);
-   {$IfDef RecordCSVMerge}  writelinetoDebugFile(IntegerToString(Output.count,8) + ' lines in merge ' + OutName); writelinetoDebugFile(''); {$Endif}
+   {$IfDef RecordCSVMerge}  writelinetoDebugFile(IntegerToString(pred(Output.count),8) + ' lines in merge ' + OutName); writelinetoDebugFile(''); {$Endif}
    Output.Free;
 end;
 
@@ -356,7 +362,7 @@ begin
       end;
    end;
    Result := (ZColorTable.ZTableEntries > 0);
-   {$IfDef RecordColorPalette} writeLineToDebugFile('Min=' + RealToString(Min,-18,2) + ' Max=' + RealToString(Max,-18,2) + ' dz=' + RealToString(dz,-18,2) + ' entries=' + IntToStr(ZColorTable.ZTableEntries)); {$EndIf}
+   {$IfDef RecordColorPalette} WriteLineToDebugFile('Min=' + RealToString(Min,-18,2) + ' Max=' + RealToString(Max,-18,2) + ' dz=' + RealToString(dz,-18,2) + ' entries=' + IntToStr(ZColorTable.ZTableEntries)); {$EndIf}
 end;
 
 
@@ -447,512 +453,6 @@ begin
              *)
 end;
 
-
-{$IfDef VCL}
-function DoCSVFileImport(fName : PathStr  = ''; SpecialGaz : tCSVImport = csvNormal) : PathStr;
-var
-   CreateDataBase : tCreateDataBase;
-   ZeroPadLen : tZeroPadLen;
-   Duplicates,
-   FileInMemory,
-   RecordValues : tStringList;
-   j : int64;
-   LinesToMoveToStringGrid,NumDupesIgnored,
-   NumRules,fs,skip,
-   OnLine,i,k,n,Len,Decs,BadFieldNames : integer;
-   LongV : float64;
-   SepChar : Char;
-   AskAboutBadFieldNames,RecIDExists,
-   IsString,IsFloat,IsLeadingZero : boolean;
-   TStr,Str,MenuStr,LastLine : String;
-   t2,aStr : shortstring;
-   tFile : System.Text;
-   NeedTrimWarning,
-   ProcessInMemory,AllInStringGrid : boolean;
-   Fieldname : shortstring;
-   LocalStringGrid : tStringGrid;
-   OldNames,NewNames : array[1..250] of string35;
-
-
-         procedure CleanLine(var MenuStr : String);
-         var
-            j : integer;
-         begin
-              if (SepChar = ' ') then begin
-                 for j := length(MenuStr) downto 2 do begin
-                    if (MenuStr[j] = ' ') and (MenuStr[pred(j)] = ' ') then begin
-                       System.Delete(MenuStr,j,1);
-                    end;
-                 end;
-              end;
-              if (MenuStr[1] = SepChar) then System.Insert('9999',MenuStr,1);
-              for j := pred(Length(MenuStr)) downto 2 do begin
-                 if (MenuStr[j] = SepChar) and (MenuStr[pred(j)] = SepChar) then begin
-                    System.Insert('9999',MenuStr,j);
-                 end;
-              end;
-         end;
-
-         procedure ProcessLine(MenuStr : string; j : integer);
-        {$IfDef RecordProcessLine}
-        const
-           RecsDone : integer = 0;
-        {$EndIf}
-         var
-            i : integer;
-         begin
-           {$IfDef RecordProcessLine} inc(RecsDone); WriteLineToDebugFile('Recs=' + IntToStr(RecsDone)); if (RecsDone > 100) then MDdef.MDRecordDebugLog := false; {$EndIf}
-           CleanLine(MenuStr);
-            RecordValues := tStringList.Create;
-            for i := 0 to pred(LocalStringGrid.ColCount) do begin
-               fName := ptTrim(LocalStringGrid.Cells[i,0]);
-               TStr := Petmar_types.BeforeSpecifiedCharacterUnicode(MenuStr,SepChar,true,true);
-               {$IfDef RecordProcessLine} WriteLineToDebugFile('fName=' + fName + '   TStr=' + TStr); {$EndIf}
-               if (fName <> 'SKIP') then begin
-                  if FieldRequiresLeadingZeros(fName) then begin
-                     while (Length(TStr) < ZeroPadLen[i]) do TStr := '0' + TStr;
-                  end;
-                  RecordValues.Add(ptTrim(TStr));
-                  {$IfDef RecordProcessLine} WriteLineToDebugFile('added TStr=' + TStr); {$EndIf}
-               end;
-            end;
-            if (not RecIdExists) then  RecordValues.Add(IntToStr(j));
-            CreateDataBase.AddCorrectRecordFromStringList(RecordValues);
-            RecordValues.Free;
-         end;
-
-
-         procedure GetGazReplacements;
-         var
-            Table : tMyData;
-         begin
-            Table := tMyData.Create(CSVImportRulesFName);
-            if (SpecialGaz = csvNGAgaz) then Table.ApplyFilter('GAZ_TYPE=' + QuotedStr('NGA'))
-            else if (SpecialGaz = csvUSGSgaz) then Table.ApplyFilter('GAZ_TYPE=' + QuotedStr('USGS'));
-            while not Table.eof do begin
-               inc(NumRules);
-               OldNames[NumRules] := Table.GetFieldByNameAsString('IN_NAME');
-               NewNames[NumRules] := Table.GetFieldByNameAsString('OUT_NAME');
-               Table.Next;
-            end;
-            Table.Destroy;
-         end;
-
-
-begin
-  {$If Defined(RecordShortCSV) or Defined(RecordCSVProblems)} WriteLineToDebugFile('DoCSVFileImport enter for ' + fName); {$EndIf}
-
-   if (FName = '') then begin
-      fName := ProgramRootDir;
-      if not GetFileFromDirectory('CSV file','*.txt;*.csv',fName) then exit;
-   end;
-   wmdem.SetPanelText(0,'Make ' + ExtractFileName(fName));
-
-   if OutsideCSVImport then begin
-      RemoveASCII0FromFile(fName);
-   end;
-
-     LocalStringGrid := tStringGrid.Create(Application);
-     ShowHourglassCursor;
-     fs := Petmar.GetFileSize(fName);
-     ProcessInMemory := (fs < (InMemoryStringSizeLimit));
-
-     {$If Defined(RecordShortCSV) or Defined(RecordCSVProblems)} if ProcessInMemory then WriteLineToDebugFile('Process in memory') else WriteLineToDebugFile('Process by line'); {$EndIf}
-     FileInMemory := tStringList.Create;
-     if ProcessInMemory then begin
-        FileInMemory.LoadFromFile(fName);
-     end
-     else begin
-        fs := fs div 1024 div 1024;
-        if fs < 50 then Skip := 0
-        else if fs < 200 then Skip := 10
-        else Skip := 25;
-
-        AssignFile(tfile,fName);
-        reset(tfile);
-        repeat
-           if not eof(tfile) then begin
-              readln(tfile,LastLine);
-              if (LastLine <> '') then FileInMemory.Add(LastLine);
-              for j := 1 to skip do readln(tfile);
-           end;
-        until eof(tfile);
-     end;
-
-     {$IfDef RecordCSV}
-        WriteLineToDebugFile('CSV file import: ' + fname + '  Records: ' + IntToStr(FileInMemory.Count));
-        k := 10;
-        if (FileInMemory.Count < 10) then k := pred(FileInMemory.Count);
-        for j := 0 to pred(k) do WriteLineToDebugFile('---' +  FileInMemory.Strings[j]);
-     {$EndIf}
-
-     Str := FileInMemory.Strings[0];
-     for k := Length(Str) downto 1 do
-        if Str[k] in ['0'..'9','-','.',' ',',',#9] then Delete(Str,k,1);
-     if (Length(Str) = 0) then begin
-        if (not WeKnowTheHeader) and AnswerIsYes('Enter field names') then begin
-           aStr := FileInMemory.Strings[0];
-           Petmar.GetString('Headers for ' + aStr,MDDef.CSVfileHeaders,true,DBaseFieldNameChars + [' ',',']);
-        end;
-        FileInMemory.Insert(0,MDDef.CSVfileHeaders);
-     end;
-
-     LocalStringGrid.RowCount := FileInMemory.Count;
-     MenuStr := ptTrim(FileInMemory.Strings[0]);
-     for k := 1 to 2 do if (length(MenuStr) > 0) and (MenuStr[1] = '/') then Delete(MenuStr,1,1);
-     GetSeparationCharacterUnicode(MenuStr,SepChar);
-
-     {$IfDef RecordCSV} WriteLineToDebugFile('SepChar= "' + SepChar + '"' + '  ord=' + IntToStr(ord(SepChar))); {$EndIf}
-
-     if ForceAllInStringGrid then begin
-        AllInStringGrid := true;
-        ForceAllInStringGrid := false;
-     end
-     else begin
-         if ProcessInMemory then begin
-            AllInStringGrid := (FileInMemory.Count < InMemoryStringSizeLimit);
-         end
-         else AllInStringGrid := false;
-     end;
-
-     if AllInStringGrid then LinesToMoveToStringGrid := pred(FileInMemory.Count)
-     else begin
-         if ProcessInMemory then LinesToMoveToStringGrid := InMemoryStringSizeLimit
-         else LinesToMoveToStringGrid := pred(FileInMemory.Count);
-     end;
-     NumDupesIgnored := 0;
-     if (SepChar in [#9, ',', ' ', '|', ';']) then begin
-        ptTrim(MenuStr);
-        if (SepChar = ' ') then begin
-           for j := length(MenuStr) downto 2 do
-              if (MenuStr[j] = ' ') and (MenuStr[pred(j)] = ' ') then begin
-                 System.Delete(MenuStr,j,1);
-              end;
-        end;
-        i := 1;
-        for j := 1 to length(MenuStr) do if (MenuStr[j] = SepChar) then inc(i);
-        LocalStringGrid.ColCount := i;
-        Duplicates := tStringList.Create;
-        LastLine := '';
-        OnLine := 0;
-        StartProgress('Parse');
-        for i := 0 to LinesToMoveToStringGrid do begin
-           if (i mod 2000 = 0) then UpdateProgressBar(i/LinesToMoveToStringGrid);
-           MenuStr := ptTrim(FileInMemory.Strings[i]);
-           ReplaceStr(MenuStr,#0,'');
-           if (SepChar <> ' ') then ReplaceStr(MenuStr,' ','');
-           {$IfDef RecordCSV} if (i mod 25000 = 0) or (i < 10) then WriteLineToDebugFile(IntToStr(i) + '/' + IntToStr(FileInMemory.Count) + '  line=' + MenuStr); {$EndIf}
-           if (MenuStr <> LastLine) or MDDef.DupeImportsAllowed then begin
-              LastLine := MenuStr;
-              CleanLine(MenuStr);
-             {$IfDef RecordCSV} if (i mod 25000 = 0) or (i < 10) then WriteLineToDebugFile('clean=' + MenuStr); {$EndIf}
-              for j := 0 to LocalStringGrid.ColCount-2 do begin
-                 T2 := ptTrim(BeforeSpecifiedCharacterUnicode(MenuStr,SepChar,false,true));
-                 if (length(t2) > 2) and (t2[1] = '"') and  (t2[length(t2)] = '"') then begin
-                    Delete(t2,1,1);
-                    Delete(t2,length(t2),1);
-                 end;
-                 LocalStringGrid.Cells[j,OnLine] := t2;
-                 {$IfDef RecordCSV} if (i mod 25000 = 0) or (i < 25) then WriteLineToDebugFile(IntToStr(j) + '  ' + LocalStringGrid.Cells[j,0] + ' = ' + LocalStringGrid.Cells[j,OnLine] +  '   len=' + IntToStr(length(LocalStringGrid.Cells[j,OnLine])) ); {$EndIf}
-              end;
-              LocalStringGrid.Cells[pred(LocalStringGrid.ColCount),OnLine] := ptTrim(MenuStr);
-              inc(OnLine);
-           end
-           else begin
-              inc(NumDupesIgnored);
-              Duplicates.Add(LastLine);
-           end;
-        end;
-        LocalStringGrid.RowCount := OnLine;
-     end;
-     {$IfDef RecordCSV} if (NumDupesIgnored > 0) then WriteLineToDebugFile(' Duplicate lines ignored: ' + IntToStr(NumDupesIgnored)); {$EndIf}
-
-     Duplicates.Destroy;
-
-     {$IfDef RecordCSV} WriteLineToDebugFile(' Records: ' + IntToStr(LocalStringGrid.RowCount) + '   Fields: ' + IntToStr(LocalStringGrid.ColCount)); {$EndIf}
-
-     Result := ExtractFilePath(fName) + SpacesToUnderScores(ExtractFileNameNoExt(fName)) + DefaultDBExt;
-     DeleteFileIfExists(Result);
-
-     NumRules := 0;
-     if (SpecialGaz = csvNGAgaz) or (SpecialGaz = csvUSGSgaz) then GetGazReplacements;
-
-     RecIDExists := false;
-     for i := 0 to pred(LocalStringGrid.ColCount) do begin
-         FieldName := UpperCase(ptTrim(LocalStringGrid.Cells[i,0]));
-         if StrUtils.AnsiContainsText(FieldName,'Roughness (') then FieldName := 'ROUGHNESS';
-         if StrUtils.AnsiContainsText(FieldName,'Gaussian curvature (') then FieldName := 'CURV_GAUSS';
-         for j := length(FieldName) downto 1 do if (FieldName[j] in [' ']) then Delete(FieldName,j,1);
-         {$IfDef RecordCSV} WriteLineToDebugFile(FieldName); {$EndIf}
-         if (FieldName = '')  then  begin
-            FieldName := 'F_' + IntToStr(i);
-         end
-         else begin
-            if (FieldName = 'SEGMENT_ID_BEG') then FieldName := 'SEG_BEGIN';
-            if (FieldName = 'SEGMENT_ID_END') then FieldName := 'SEG_END';
-            if (FieldName = 'EASTING') then FieldName := 'X';
-            if (FieldName = 'NORTHING') then FieldName := 'Y';
-            if (FieldName = 'ELEVATION') then FieldName := 'Z';
-            if (FieldName = 'LATITUDE') then FieldName := 'LAT';
-            if (FieldName = 'LATITUDEN/S') then FieldName := 'LAT';
-            if (FieldName = 'LONGITUDE') then FieldName := 'LONG';
-            if (FieldName = 'LONGITUDEE/W') then FieldName := 'LONG';
-            if (FieldName = 'LON') then FieldName := 'LONG';
-            for j := length(FieldName) downto 1 do if not (FieldName[j] in DBaseFieldNameChars) then Delete(FieldName,j,1);
-            if (FieldName = '')  then FieldName := 'F_' + IntToStr(i);
-            for j := 1 to NumRules do if FieldName = OldNames[j] then FieldName := NewNames[j];
-           if (FieldName[1] in ['0'..'9']) then FieldName := 'N_' + FieldName;
-         end;
-         LocalStringGrid.Cells[i,0] := FieldName;
-         if (FieldName = RecNoFName) then RecIdExists := true;
-     end;
-
-     {$IfDef RecordCSV} WriteLineToDebugFile('Field names done'); {$EndIf}
-
-     {$IfDef MICRODEM}
-     if (SpecialGaz = csvNGAgaz) then begin
-        {$IfDef RecordGAZ}
-        WriteLineToDebugFile('NGA GAZ=' + fName +'output='+ OutputName);
-        OutputName := DEMDefs.GazetteerDir + ExtractFileName(OutputName);
-        {$EndIf}
-     end;
-
-     if (SpecialGaz = csvUSGSgaz) then begin
-        {$IfDef RecordGAZ} writeLineToDebugFile('USGS GAZ='+ fName + ' output='+ OutputName); {$EndIf}
-     end;
-     {$EndIf}
-
-      CreateDataBase := tCreateDataBase.Create(Result);
-      CreateDataBase.AddRecId := not RecIdExists;
-        {$IfDef RecordCSV}
-            WriteLineToDebugFile('Fields in Input file ' + fName  + 'NumFields= ' + IntToStr(LocalStringGrid.ColCount));
-            for i := 0 to pred(LocalStringGrid.ColCount) do WriteLineToDebugFile(UpperCase(LocalStringGrid.Cells[i,0]));
-        {$EndIf}
-
-         BadFieldNames := 0;
-         for i := 0 to pred(LocalStringGrid.ColCount) do begin
-            TStr := UpperCase(LocalStringGrid.Cells[i,0]);
-            if (Length(TStr) > 10) or (ptTrim(TStr) ='') then inc(BadFieldNames);
-         end;
-
-         if MDDef.AutoDBFieldNameFixes then AskAboutBadFieldNames := false
-         else AskAboutBadFieldNames := (BadFieldNames > 0) and AnswerIsYes('Ask about bad field names');
-
-         for i := 0 to 250 do ZeroPadLen[i] := 0;
-
-          for i := 0 to pred(LocalStringGrid.ColCount) do begin
-             {$IfDef RecordCSVParse} WriteLineToDebugFile(IntToStr(i) + '='+ UpperCase(LocalStringGrid.Cells[i,0])); {$EndIf}
-             Len := 0;
-             Decs := 0;
-             IsString := false;
-             IsFloat := false;
-             IsLeadingZero := false;
-             FieldName := LocalStringGrid.Cells[i,0];
-             NeedTrimWarning := false;
-             if (FieldName <> 'SKIP') then begin
-                {$IfDef RecordCSVParse} WriteLineToDebugFile('Name check'); {$EndIf}
-                while (Length(FieldName) > 10) or (ptTrim(FieldName) = '') do begin
-                   if (Length(FieldName) > 10) then FieldName := Copy(FieldName,1,10);
-                   if AskAboutBadFieldNames then GetString('Field name (< 10 chars)',FieldName,true,DBaseFieldNameChars);
-                end;
-                LocalStringGrid.Cells[i,0] := FieldName;
-
-                if (FieldName = 'IP') then IsString := true;
-                StartProgress('Field check ' + FieldName);
-                for j := 1 to pred(LocalStringGrid.RowCount) do begin
-                   if ((pred(j) mod 2000) = 0) then UpdateProgressBar(j/LocalStringGrid.RowCount);
-
-                   TStr := ptTrim(LocalStringGrid.Cells[i,j]);
-                   if (TStr <> '') then begin
-                      if (TStr[1] = '"') then Delete(TStr,1,1);
-                      if (Length(Tstr)> 0) and (TStr[Length(Tstr)] = '"') then Delete(TStr,length(TStr),1);
-                   end;
-
-                   if (FieldName = 'LAT') then begin
-                       while System.Copy(TStr,1,2) = '00' do Delete(Tstr,1,1);
-                       if (TStr <> '') and (TStr[1] = 'N') then Delete(TStr,1,1);
-                       if (TStr <> '') and (TStr[1] = 'S') then TStr[1] := '-';
-                       if (TStr <> '') then begin
-                          if TStr[Length(Tstr)] = 'N' then Delete(TStr,length(TStr),1);
-                          if TStr[Length(Tstr)] = 'S' then begin
-                             Delete(TStr,length(TStr),1);
-                             TStr := '-' + TStr;
-                          end;
-                       end;
-                       LocalStringGrid.Cells[i,j] := TStr;
-                       IsFloat := true;
-                       IsString := false;
-                       Len := 11;
-                       Decs := 7;
-                    end
-                    else if (FieldName = 'LONG') then begin
-                       while System.Copy(TStr,1,2) = '00' do Delete(Tstr,1,1);
-                       if (TStr <> '') and (TStr[1] = 'E') then Delete(TStr,1,1);
-                       if (TStr <> '') and (TStr[1] = 'W') then TStr[1] := '-';
-                       if (TStr <> '') and (TStr[Length(Tstr)] = 'E') then Delete(TStr,length(TStr),1);
-                       if (TStr <> '') and (TStr[Length(Tstr)] = 'W') then begin
-                          Delete(TStr,length(TStr),1);
-                          TStr := '-' + TStr;
-                       end;
-                       if (TStr <> '') then begin
-                         LongV := StrToFloat(TStr);
-                         PetMath.LongitudeAngleInRange(LongV);
-                         LocalStringGrid.Cells[i,j] := RealToString(LongV,-12,-7);
-                         IsFloat := true;
-                         IsString := false;
-                         Len := 12;
-                         Decs := 7;
-                       end;
-                    end
-                    else begin
-                       if (Length(TStr) > 1) and (TStr[1] = '0') then IsLeadingZero := true;
-
-                       if (TStr = '#DIV/0!') or (UpperCase(TStr) = 'NAN') or (UpperCase(TStr) = 'NO DATA') or (UpperCase(TStr) = 'NA') then begin
-                          TStr := '';
-                          LocalStringGrid.Cells[i,j] := '';
-                       end
-                       else if (TStr <> '') then begin
-                          k := length(TStr);
-                          if (k > 254) then begin
-                             if NeedTrimWarning then MessageToContinue(FieldName + MessLineBreak + TStr + MessLineBreak + ' is too long (' + IntToStr(k) + ' chars; problems likely and will be truncated');
-                             k := 254;
-                             NeedTrimWarning := false;
-                          end;
-                          t2 := '-';
-                          if (k > len) then len := k;
-                          if IsNumeric(TStr) then begin
-                              if MissingNumericString(TStr) then LocalStringGrid.Cells[i,j] := ''
-                              else begin
-                                 for n := 1 to k do begin
-                                    if (TStr[n] = '.') then begin
-                                       IsFloat := true;
-                                       if (k-n > Decs) then Decs := k - n;
-                                    end;
-                                 end;
-                              end;
-                          end
-                          else begin
-                             IsString := true;
-                          end;
-                          if IsString then Decs := 0;
-                       end;
-                    end;
-                 end;
-
-                {$IfDef RecordCSVParse} WriteLineToDebugFile('Done field check'); {$EndIf}
-
-               if FieldRequiresLeadingZeros(FieldName) or IsString or (IsLeadingZero and (not IsFloat)) then begin
-                  if FieldRequiresLeadingZeros(FieldName) or IsLeadingZero then begin
-                     ZeroPadLen[i] := len;
-                  end;
-                  if (FieldName = 'BIN_NAME') and (Len < 35) then Len := 35;
-                  CreateDataBase.AddAField(FieldName,ftString,Len);
-                  {$IfDef RecordCSVParse} WriteLineToDebugFile(FieldName + '  type = string,  len=' + IntToStr(len) + '  zeropad=' + IntToStr(ZeroPadLen[i])); {$EndIf}
-               end
-               else if IsFloat then begin
-                  if (FieldName = 'LAT') or (FieldName = 'LONG') then begin
-                     if (Len < 11) then Len := 11;
-                     if (Decs < 7) then Decs := 7;
-                  end
-                  else if (FieldName = 'X_UTM') or (FieldName = 'Y_UTM') then begin
-                     if (Len < 12) then Len := 12;
-                     if (Decs < 2) then Decs := 2;
-                  end
-                  else Len := Len + 1;
-                  CreateDataBase.AddAField(FieldName,ftFloat,Len,Decs);
-                  {$IfDef RecordCSVParse} WriteLineToDebugFile(FieldName + '  type = float64'); {$EndIf}
-               end
-               else begin
-                  if (Len >= 10) then begin
-                     CreateDataBase.AddAField(FieldName,ftString,Len);
-                     ZeroPadLen[i] := len;
-                     {$IfDef RecordCSVParse} WriteLineToDebugFile(FieldName + '  type = string (because too long for int or field=zip)'); {$EndIf}
-                  end
-                  else begin
-                     CreateDataBase.AddAField(FieldName,ftInteger,succ(Len));
-                     {$IfDef RecordCSVParse} writeLineToDebugFile(FieldName + '  type = integer, length=' + IntToStr(Len)); {$EndIf}
-                  end;
-               end;
-            end;
-         end;
-         if not RecIdExists then CreateDataBase.AddAField(RecNoFName,ftInteger,9);
-
-         CreateDataBase.WriteCorrectHeader(true);
-
-      ShowHourglassCursor;
-      wmdem.SetPanelText(0,'');
-
-      {$IfDef RecordCSV} WriteLineToDebugFile('Batch mode point 1'); {$EndIf}
-
-      if CreateDataBase.UsingNewDBF then CreateDataBase.NewDBF := tMyData.Create(CreateDataBase.FileName);
-
-      if AllinStringGrid then begin
-         {$IfDef RecordCSV} writeLineToDebugFile('All in string grid'); {$EndIf}
-         SendStringGridToDataBase(LocalStringGrid,CreateDataBase,ZeroPadLen);
-      end
-      else begin
-         StartProgress('Convert');
-         if ProcessInMemory then begin
-            for j := 1 to pred(FileInMemory.Count) do begin
-               if (j mod 1000 = 0) then UpdateProgressBar(j/FileInMemory.Count);
-               MenuStr := FileInMemory.Strings[j];
-               processLine(MenuStr,j);
-            end;
-         end
-         else begin
-            j := 0;
-            Reset(tfile);
-            readln(tfile);
-            while not eof(tfile) do begin
-               readln(tfile,MenuStr);
-               inc(j);
-               processLine(MenuStr,j);
-            end;
-            CloseFile(tFile);
-         end;
-         EndProgress;
-      end;
-      ShowHourglassCursor;
-      LocalStringGrid.Free;
-      CreateDataBase.Destroy;
-      EndProgress;
-end;
-
-
-procedure SendStringGridToDataBase(StringGrid1 : tStringGrid; CreateDataBase : tCreateDataBase; ZeroPadLen : tZeroPadLen);
-var
-   i,j : integer;
-   fv : shortString;
-   TStr : Shortstring;
-   RecordValues : tStringList;
-begin
-   {$IfDef RecordCSV} writeLineToDebugFile('TCSVFileImportForm.BitBtn1Click import underway'); {$EndIf}
-   StartProgress('Create DB ' + ExtractFileName(CreateDataBase.FileName));
-   for j := 1 to pred(StringGrid1.RowCount) do begin
-      if (j mod 250 = 0) then UpdateProgressBar(j / StringGrid1.RowCount);
-      {$IfDef RecordCSV} if (J mod 500 = 0) then WriteLineToDebugFile('Record ' + IntToStr(j)); {$EndIf}
-      RecordValues := tStringList.Create;
-      for i := 0 to pred(StringGrid1.ColCount) do begin
-         TStr := StringGrid1.Cells[i,0];
-         if (TStr <> 'SKIP') then begin
-            {$IfDef RecordFullCSV} writeLineToDebugFile(TStr + ': '  + StringGrid1.Cells[i,j]); {$EndIf}
-            if FieldRequiresLeadingZeros(TStr) then begin
-               fv := ptTrim(StringGrid1.Cells[i,j]);
-               while (length(fv) < ZeroPadLen[i]) do fv := '0' + fv;
-               StringGrid1.Cells[i,j] := fv;
-            end;
-            RecordValues.Add(ptTrim(StringGrid1.Cells[i,j]));
-         end;
-      end;
-      if (CreateDataBase.AddRecID) then  RecordValues.Add(IntToStr(j));
-      CreateDataBase.AddCorrectRecordFromStringList(RecordValues);
-      RecordValues.Free;
-      {$IfDef RecordFullCSV} writeLineToDebugFile(''); {$EndIf}
-   end;
-   EndProgress;
-   {$IfDef RecordCSV} WriteLineToDebugFile('TCSVFileImportForm.BitBtn1Click import done'); {$EndIf}
-end;
-{$EndIf}
 
 
 {$IfDef NoCSVImports}
@@ -1223,7 +723,7 @@ end;
          TStr : ShortString;
       begin
          if FileExists(fName) then begin
-            {$IfDef RecordDBF} writeLineToDebugFile('RepairDBaseFieldNames' + fname); {$EndIf}
+            {$IfDef RecordDBF} WriteLineToDebugFile('RepairDBaseFieldNames' + fname); {$EndIf}
             InsureFileIsNotReadOnly(fName);
             assignFile(inf,fName);
             reset(inf,1);
@@ -1288,7 +788,7 @@ end;
          TableFieldDescriptor : tTableFieldDescriptor;
       begin
          if FileExists(fName) then begin
-            {$IfDef RecordDBF} writeLineToDebugFile('ChangeDBaseFieldType' + fname); {$EndIf}
+            {$IfDef RecordDBF} WriteLineToDebugFile('ChangeDBaseFieldType' + fname); {$EndIf}
             InsureFileIsNotReadOnly(fName);
             assignFile(inf,fName);
             reset(inf,1);
@@ -1326,7 +826,7 @@ end;
          TableFieldDescriptor : tTableFieldDescriptor;
       begin
          if FileExists(fName) then begin
-            {$IfDef RecordDBF} writeLineToDebugFile('ChangeDBaseFieldType' + fname); {$EndIf}
+            {$IfDef RecordDBF} WriteLineToDebugFile('ChangeDBaseFieldType' + fname); {$EndIf}
             InsureFileIsNotReadOnly(fName);
             assignFile(inf,fName);
             reset(inf,1);
@@ -1387,7 +887,7 @@ begin
             TheTable.Edit;
             TheTable.Delete;
          end;
-         {$IfDef VCL} if WantShowProgress then EndProgress;  {$EndIf}
+         {$IfDef VCL} if WantShowProgress then EndProgress; {$EndIf}
       end;
    end;
 end;
@@ -1461,7 +961,7 @@ begin
       i := 0;
       if GetFromListZeroBased(Prompt,i,DataThere,true) then begin
          Result := DataThere.Strings[i];
-         {$IfDef RecordStringFromTable} writeLineToDebugFile('i=' + IntToStr(i) + '   ' + Result); {$EndIf}
+         {$IfDef RecordStringFromTable} WriteLineToDebugFile('i=' + IntToStr(i) + '   ' + Result); {$EndIf}
       end;
       DataThere.Free;
    {$EndIf}
@@ -1487,7 +987,7 @@ var
    BaseTable : tMyData;
    TStr : ShortString;
 begin
-   {$If Defined(RecordRangeProblems) or Defined(RecordUniqueProblems)} writeLineToDebugFile('FindUniqueEntriesLinkPossible in ' + Table.TableName + '  ' + FieldName); {$EndIf}
+   {$If Defined(RecordRangeProblems) or Defined(RecordUniqueProblems)} WriteLineToDebugFile('FindUniqueEntriesLinkPossible in ' + Table.TableName + '  ' + FieldName); {$EndIf}
    try
       BaseTable := Table;
       if (LinkData <> Nil) and LinkedField(FieldName) then BaseTable := LinkData;
@@ -1511,7 +1011,7 @@ begin
          end;
       end;
    finally
-     {$IfDef VCL} if WantShowProgress then EndProgress;  {$EndIf}
+     {$IfDef VCL} if WantShowProgress then EndProgress; {$EndIf}
    end;
    {$IfDef RecordRange} WriteLineToDebugFile('FindUniqueEntriesLinkPossible out'); {$EndIf}
 end;
@@ -1594,39 +1094,8 @@ begin
    else TStr := '((LONG_LOW<=' + RealToString(HighLong,-18,6) + ' AND LONG_HI>=' + RealToString(LowLong,-18,6) + ') OR ' +
                  '(LONG_LOW<=' + RealToString(LowLong,-18,6) + ' AND LONG_HI<=' + RealToString(HighLong,-18,6) + ')';
   Result := '(LAT_LOW<=' + RealToString(HiLat,-18,6) + ' AND LAT_HI>=' + RealToString(LowLat,-18,6) + ' AND ' + TStr + ')';
-  {$IfDef RecordDataBaseFilter} WritelineToDebugFile('   Filter= ' + Result); {$EndIf}
+  {$IfDef RecordDataBaseFilter} WritelineToDebugFile(' Filter= ' + Result); {$EndIf}
 end;
-
-
-{$IfDef VCL}
-
-function OrigPickField(Table : tMyData; Mess: ShortString; TypesAllowed : tSetFieldType) : ShortString;
-var
-  FieldsInDB : tStringList;
-  WantField,i  : integer;
-begin
-   with Table do begin
-      GetFields(Table,AllVis,TypesAllowed,FieldsInDB,false);
-      if (FieldsInDB.Count = 0) then Result := ''
-      else begin
-         for i := pred(FieldsInDB.Count) downto 0 do
-             if (UpperCase(FieldsInDB[i]) = 'USE') then FieldsInDB.Delete(i);
-         if (FieldsInDB.Count = 1) then Result := FieldsInDB.Strings[0]
-         else begin
-            WantField := 0;
-            if GetFromListZeroBased('Database Field for ' + Mess,WantField,FieldsInDB,true) then begin
-               Result := FieldsInDB.Strings[WantField];
-            end
-            else Result := '';
-         end;
-      end;
-   end;
-   FieldsInDB.Free;
-end;
-
-
-
-{$EndIf}
 
 
 procedure CopyDBTable(FromDBF,ToDBF : PathStr);
@@ -1745,7 +1214,7 @@ begin
    Report.SaveToFile(fName);
    Report.Free;
 
-   {$IfDef RecordHTML} writeLineToDebugFile('');  WriteLineToDebugFile(LineClipboard);  WriteLineToDebugFile(''); {$EndIf}
+   {$IfDef RecordHTML} WriteLineToDebugFile('');  WriteLineToDebugFile(LineClipboard);  WriteLineToDebugFile(''); {$EndIf}
    ClipBrd.ClipBoard.AsText := LineClipboard;
    {$IfDef VCL}
       ExecuteFile(fname, '', '');
@@ -1771,6 +1240,537 @@ end;
 
 
 {$IfDef VCL}
+
+function DoCSVFileImport(fName : PathStr  = ''; SpecialGaz : tCSVImport = csvNormal) : PathStr;
+var
+   CreateDataBase : tCreateDataBase;
+   ZeroPadLen : tZeroPadLen;
+   Duplicates,
+   FileInMemory,
+   RecordValues : tStringList;
+   j : int64;
+   LinesToMoveToStringGrid,NumDupesIgnored,
+   NumRules,fs,skip,
+   OnLine,i,k,n,Len,Decs,BadFieldNames : integer;
+   LongV : float64;
+   SepChar : Char;
+   AskAboutBadFieldNames,RecIDExists,
+   IsString,IsFloat,IsLeadingZero : boolean;
+   TStr,Str,MenuStr,LastLine : String;
+   t2,aStr : shortstring;
+   tFile : System.Text;
+   NeedTrimWarning,
+   ProcessInMemory,AllInStringGrid : boolean;
+   Fieldname : shortstring;
+   LocalStringGrid : tStringGrid;
+   OldNames,NewNames : array[1..250] of string35;
+
+
+         procedure CleanLine(var MenuStr : String);
+         var
+            j : integer;
+         begin
+              if (SepChar = ' ') then begin
+                 for j := length(MenuStr) downto 2 do begin
+                    if (MenuStr[j] = ' ') and (MenuStr[pred(j)] = ' ') then begin
+                       System.Delete(MenuStr,j,1);
+                    end;
+                 end;
+              end;
+              if (MenuStr[1] = SepChar) then System.Insert('9999',MenuStr,1);
+              for j := pred(Length(MenuStr)) downto 2 do begin
+                 if (MenuStr[j] = SepChar) and (MenuStr[pred(j)] = SepChar) then begin
+                    System.Insert('9999',MenuStr,j);
+                 end;
+              end;
+         end;
+
+         procedure ProcessLine(MenuStr : string; j : integer);
+        {$IfDef RecordProcessLine}
+        const
+           RecsDone : integer = 0;
+        {$EndIf}
+         var
+            i : integer;
+         begin
+           {$IfDef RecordProcessLine} inc(RecsDone); WriteLineToDebugFile('Recs=' + IntToStr(RecsDone)); if (RecsDone > 100) then MDdef.MDRecordDebugLog := false; {$EndIf}
+           CleanLine(MenuStr);
+            RecordValues := tStringList.Create;
+            for i := 0 to pred(LocalStringGrid.ColCount) do begin
+               fName := ptTrim(LocalStringGrid.Cells[i,0]);
+               TStr := Petmar_types.BeforeSpecifiedCharacterUnicode(MenuStr,SepChar,true,true);
+               {$IfDef RecordProcessLine} WriteLineToDebugFile('fName=' + fName + '   TStr=' + TStr); {$EndIf}
+               if (fName <> 'SKIP') then begin
+                  if FieldRequiresLeadingZeros(fName) then begin
+                     while (Length(TStr) < ZeroPadLen[i]) do TStr := '0' + TStr;
+                  end;
+                  RecordValues.Add(ptTrim(TStr));
+                  {$IfDef RecordProcessLine} WriteLineToDebugFile('added TStr=' + TStr); {$EndIf}
+               end;
+            end;
+            if (not RecIdExists) then  RecordValues.Add(IntToStr(j));
+            CreateDataBase.AddCorrectRecordFromStringList(RecordValues);
+            RecordValues.Free;
+         end;
+
+
+         procedure GetGazReplacements;
+         var
+            Table : tMyData;
+         begin
+            Table := tMyData.Create(CSVImportRulesFName);
+            if (SpecialGaz = csvNGAgaz) then Table.ApplyFilter('GAZ_TYPE=' + QuotedStr('NGA'))
+            else if (SpecialGaz = csvUSGSgaz) then Table.ApplyFilter('GAZ_TYPE=' + QuotedStr('USGS'));
+            while not Table.eof do begin
+               inc(NumRules);
+               OldNames[NumRules] := Table.GetFieldByNameAsString('IN_NAME');
+               NewNames[NumRules] := Table.GetFieldByNameAsString('OUT_NAME');
+               Table.Next;
+            end;
+            Table.Destroy;
+         end;
+
+
+begin
+  {$If Defined(RecordShortCSV) or Defined(RecordCSVProblems)} WriteLineToDebugFile('DoCSVFileImport enter for ' + fName); {$EndIf}
+
+   if (FName = '') then begin
+      fName := ProgramRootDir;
+      if not GetFileFromDirectory('CSV file','*.txt;*.csv',fName) then exit;
+   end;
+   wmdem.SetPanelText(0,'Make ' + ExtractFileName(fName));
+
+   if OutsideCSVImport then begin
+      RemoveASCII0FromFile(fName);
+   end;
+
+     LocalStringGrid := tStringGrid.Create(Application);
+     ShowHourglassCursor;
+     fs := Petmar.GetFileSize(fName);
+     ProcessInMemory := (fs < (InMemoryStringSizeLimit));
+
+     {$If Defined(RecordShortCSV) or Defined(RecordCSVProblems)} if ProcessInMemory then WriteLineToDebugFile('Process in memory') else WriteLineToDebugFile('Process by line'); {$EndIf}
+     FileInMemory := tStringList.Create;
+     if ProcessInMemory then begin
+        FileInMemory.LoadFromFile(fName);
+     end
+     else begin
+        fs := fs div 1024 div 1024;
+        if fs < 50 then Skip := 0
+        else if fs < 200 then Skip := 10
+        else Skip := 25;
+
+        AssignFile(tfile,fName);
+        reset(tfile);
+        repeat
+           if not eof(tfile) then begin
+              readln(tfile,LastLine);
+              if (LastLine <> '') then FileInMemory.Add(LastLine);
+              for j := 1 to skip do readln(tfile);
+           end;
+        until eof(tfile);
+     end;
+
+     {$IfDef RecordCSV}
+        WriteLineToDebugFile('CSV file import: ' + fname + '  Records: ' + IntToStr(FileInMemory.Count));
+        k := 10;
+        if (FileInMemory.Count < 10) then k := pred(FileInMemory.Count);
+        for j := 0 to pred(k) do WriteLineToDebugFile('---' +  FileInMemory.Strings[j]);
+     {$EndIf}
+
+     Str := FileInMemory.Strings[0];
+     for k := Length(Str) downto 1 do
+        if Str[k] in ['0'..'9','-','.',' ',',',#9] then Delete(Str,k,1);
+     if (Length(Str) = 0) then begin
+        if (not WeKnowTheHeader) and AnswerIsYes('Enter field names') then begin
+           aStr := FileInMemory.Strings[0];
+           Petmar.GetString('Headers for ' + aStr,MDDef.CSVfileHeaders,true,DBaseFieldNameChars + [' ',',']);
+        end;
+        FileInMemory.Insert(0,MDDef.CSVfileHeaders);
+     end;
+
+     LocalStringGrid.RowCount := FileInMemory.Count;
+     MenuStr := ptTrim(FileInMemory.Strings[0]);
+     for k := 1 to 2 do if (length(MenuStr) > 0) and (MenuStr[1] = '/') then Delete(MenuStr,1,1);
+     GetSeparationCharacterUnicode(MenuStr,SepChar);
+
+     {$IfDef RecordCSV} WriteLineToDebugFile('SepChar= "' + SepChar + '"' + '  ord=' + IntToStr(ord(SepChar))); {$EndIf}
+
+     if ForceAllInStringGrid then begin
+        AllInStringGrid := true;
+        ForceAllInStringGrid := false;
+     end
+     else begin
+         if ProcessInMemory then begin
+            AllInStringGrid := (FileInMemory.Count < InMemoryStringSizeLimit);
+         end
+         else AllInStringGrid := false;
+     end;
+
+     if AllInStringGrid then LinesToMoveToStringGrid := pred(FileInMemory.Count)
+     else begin
+         if ProcessInMemory then LinesToMoveToStringGrid := InMemoryStringSizeLimit
+         else LinesToMoveToStringGrid := pred(FileInMemory.Count);
+     end;
+     NumDupesIgnored := 0;
+     if (SepChar in [#9, ',', ' ', '|', ';']) then begin
+        ptTrim(MenuStr);
+        if (SepChar = ' ') then begin
+           for j := length(MenuStr) downto 2 do
+              if (MenuStr[j] = ' ') and (MenuStr[pred(j)] = ' ') then begin
+                 System.Delete(MenuStr,j,1);
+              end;
+        end;
+        i := 1;
+        for j := 1 to length(MenuStr) do if (MenuStr[j] = SepChar) then inc(i);
+        LocalStringGrid.ColCount := i;
+        Duplicates := tStringList.Create;
+        LastLine := '';
+        OnLine := 0;
+        StartProgress('Parse');
+        for i := 0 to LinesToMoveToStringGrid do begin
+           if (i mod 2000 = 0) then UpdateProgressBar(i/LinesToMoveToStringGrid);
+           MenuStr := ptTrim(FileInMemory.Strings[i]);
+           ReplaceStr(MenuStr,#0,'');
+           if (SepChar <> ' ') then ReplaceStr(MenuStr,' ','');
+           {$IfDef RecordCSV} if (i mod 25000 = 0) or (i < 10) then WriteLineToDebugFile(IntToStr(i) + '/' + IntToStr(FileInMemory.Count) + '  line=' + MenuStr); {$EndIf}
+           if (MenuStr <> LastLine) or MDDef.DupeImportsAllowed then begin
+              LastLine := MenuStr;
+              CleanLine(MenuStr);
+             {$IfDef RecordCSV} if (i mod 25000 = 0) or (i < 10) then WriteLineToDebugFile('clean=' + MenuStr); {$EndIf}
+              for j := 0 to LocalStringGrid.ColCount-2 do begin
+                 T2 := ptTrim(BeforeSpecifiedCharacterUnicode(MenuStr,SepChar,false,true));
+                 if (length(t2) > 2) and (t2[1] = '"') and  (t2[length(t2)] = '"') then begin
+                    Delete(t2,1,1);
+                    Delete(t2,length(t2),1);
+                 end;
+                 LocalStringGrid.Cells[j,OnLine] := t2;
+                 {$IfDef RecordCSV} if (i mod 25000 = 0) or (i < 25) then WriteLineToDebugFile(IntToStr(j) + '  ' + LocalStringGrid.Cells[j,0] + ' = ' + LocalStringGrid.Cells[j,OnLine] +  '   len=' + IntToStr(length(LocalStringGrid.Cells[j,OnLine])) ); {$EndIf}
+              end;
+              LocalStringGrid.Cells[pred(LocalStringGrid.ColCount),OnLine] := ptTrim(MenuStr);
+              inc(OnLine);
+           end
+           else begin
+              inc(NumDupesIgnored);
+              Duplicates.Add(LastLine);
+           end;
+        end;
+        LocalStringGrid.RowCount := OnLine;
+     end;
+     {$IfDef RecordCSV} if (NumDupesIgnored > 0) then WriteLineToDebugFile(' Duplicate lines ignored: ' + IntToStr(NumDupesIgnored)); {$EndIf}
+
+     Duplicates.Destroy;
+
+     {$IfDef RecordCSV} WriteLineToDebugFile(' Records: ' + IntToStr(LocalStringGrid.RowCount) + '   Fields: ' + IntToStr(LocalStringGrid.ColCount)); {$EndIf}
+
+     Result := ExtractFilePath(fName) + SpacesToUnderScores(ExtractFileNameNoExt(fName)) + DefaultDBExt;
+     DeleteFileIfExists(Result);
+
+     NumRules := 0;
+     if (SpecialGaz = csvNGAgaz) or (SpecialGaz = csvUSGSgaz) then GetGazReplacements;
+
+     RecIDExists := false;
+     for i := 0 to pred(LocalStringGrid.ColCount) do begin
+         FieldName := UpperCase(ptTrim(LocalStringGrid.Cells[i,0]));
+         if StrUtils.AnsiContainsText(FieldName,'Roughness (') then FieldName := 'ROUGHNESS';
+         if StrUtils.AnsiContainsText(FieldName,'Gaussian curvature (') then FieldName := 'CURV_GAUSS';
+         for j := length(FieldName) downto 1 do if (FieldName[j] in [' ']) then Delete(FieldName,j,1);
+         {$IfDef RecordCSV} WriteLineToDebugFile(FieldName); {$EndIf}
+         if (FieldName = '')  then  begin
+            FieldName := 'F_' + IntToStr(i);
+         end
+         else begin
+            if (FieldName = 'SEGMENT_ID_BEG') then FieldName := 'SEG_BEGIN';
+            if (FieldName = 'SEGMENT_ID_END') then FieldName := 'SEG_END';
+            if (FieldName = 'EASTING') then FieldName := 'X';
+            if (FieldName = 'NORTHING') then FieldName := 'Y';
+            if (FieldName = 'ELEVATION') then FieldName := 'Z';
+            if (FieldName = 'LATITUDE') then FieldName := 'LAT';
+            if (FieldName = 'LATITUDEN/S') then FieldName := 'LAT';
+            if (FieldName = 'LONGITUDE') then FieldName := 'LONG';
+            if (FieldName = 'LONGITUDEE/W') then FieldName := 'LONG';
+            if (FieldName = 'LON') then FieldName := 'LONG';
+            for j := length(FieldName) downto 1 do if not (FieldName[j] in DBaseFieldNameChars) then Delete(FieldName,j,1);
+            if (FieldName = '')  then FieldName := 'F_' + IntToStr(i);
+            for j := 1 to NumRules do if FieldName = OldNames[j] then FieldName := NewNames[j];
+           if (FieldName[1] in ['0'..'9']) then FieldName := 'N_' + FieldName;
+         end;
+         LocalStringGrid.Cells[i,0] := FieldName;
+         if (FieldName = RecNoFName) then RecIdExists := true;
+     end;
+
+     {$IfDef RecordCSV} WriteLineToDebugFile('Field names done'); {$EndIf}
+
+     {$IfDef MICRODEM}
+     if (SpecialGaz = csvNGAgaz) then begin
+        {$IfDef RecordGAZ}
+        WriteLineToDebugFile('NGA GAZ=' + fName +'output='+ OutputName);
+        OutputName := DEMDefs.GazetteerDir + ExtractFileName(OutputName);
+        {$EndIf}
+     end;
+
+     if (SpecialGaz = csvUSGSgaz) then begin
+        {$IfDef RecordGAZ} WriteLineToDebugFile('USGS GAZ='+ fName + ' output='+ OutputName); {$EndIf}
+     end;
+     {$EndIf}
+
+      CreateDataBase := tCreateDataBase.Create(Result);
+      CreateDataBase.AddRecId := not RecIdExists;
+        {$IfDef RecordCSV}
+            WriteLineToDebugFile('Fields in Input file ' + fName  + 'NumFields= ' + IntToStr(LocalStringGrid.ColCount));
+            for i := 0 to pred(LocalStringGrid.ColCount) do WriteLineToDebugFile(UpperCase(LocalStringGrid.Cells[i,0]));
+        {$EndIf}
+
+         BadFieldNames := 0;
+         for i := 0 to pred(LocalStringGrid.ColCount) do begin
+            TStr := UpperCase(LocalStringGrid.Cells[i,0]);
+            if (Length(TStr) > 10) or (ptTrim(TStr) ='') then inc(BadFieldNames);
+         end;
+
+         if MDDef.AutoDBFieldNameFixes then AskAboutBadFieldNames := false
+         else AskAboutBadFieldNames := (BadFieldNames > 0) and AnswerIsYes('Ask about bad field names');
+
+         for i := 0 to 250 do ZeroPadLen[i] := 0;
+
+          for i := 0 to pred(LocalStringGrid.ColCount) do begin
+             {$IfDef RecordCSVParse} WriteLineToDebugFile(IntToStr(i) + '='+ UpperCase(LocalStringGrid.Cells[i,0])); {$EndIf}
+             Len := 0;
+             Decs := 0;
+             IsString := false;
+             IsFloat := false;
+             IsLeadingZero := false;
+             FieldName := LocalStringGrid.Cells[i,0];
+             NeedTrimWarning := false;
+             if (FieldName <> 'SKIP') then begin
+                {$IfDef RecordCSVParse} WriteLineToDebugFile('Name check'); {$EndIf}
+                while (Length(FieldName) > 10) or (ptTrim(FieldName) = '') do begin
+                   if (Length(FieldName) > 10) then FieldName := Copy(FieldName,1,10);
+                   if AskAboutBadFieldNames then GetString('Field name (< 10 chars)',FieldName,true,DBaseFieldNameChars);
+                end;
+                LocalStringGrid.Cells[i,0] := FieldName;
+
+                if (FieldName = 'IP') then IsString := true;
+                StartProgress('Field check ' + FieldName);
+                for j := 1 to pred(LocalStringGrid.RowCount) do begin
+                   if ((pred(j) mod 2000) = 0) then UpdateProgressBar(j/LocalStringGrid.RowCount);
+
+                   TStr := ptTrim(LocalStringGrid.Cells[i,j]);
+                   if (TStr <> '') then begin
+                      if (TStr[1] = '"') then Delete(TStr,1,1);
+                      if (Length(Tstr)> 0) and (TStr[Length(Tstr)] = '"') then Delete(TStr,length(TStr),1);
+                   end;
+
+                   if (FieldName = 'LAT') then begin
+                       while System.Copy(TStr,1,2) = '00' do Delete(Tstr,1,1);
+                       if (TStr <> '') and (TStr[1] = 'N') then Delete(TStr,1,1);
+                       if (TStr <> '') and (TStr[1] = 'S') then TStr[1] := '-';
+                       if (TStr <> '') then begin
+                          if TStr[Length(Tstr)] = 'N' then Delete(TStr,length(TStr),1);
+                          if TStr[Length(Tstr)] = 'S' then begin
+                             Delete(TStr,length(TStr),1);
+                             TStr := '-' + TStr;
+                          end;
+                       end;
+                       LocalStringGrid.Cells[i,j] := TStr;
+                       IsFloat := true;
+                       IsString := false;
+                       Len := 11;
+                       Decs := 7;
+                    end
+                    else if (FieldName = 'LONG') then begin
+                       while System.Copy(TStr,1,2) = '00' do Delete(Tstr,1,1);
+                       if (TStr <> '') and (TStr[1] = 'E') then Delete(TStr,1,1);
+                       if (TStr <> '') and (TStr[1] = 'W') then TStr[1] := '-';
+                       if (TStr <> '') and (TStr[Length(Tstr)] = 'E') then Delete(TStr,length(TStr),1);
+                       if (TStr <> '') and (TStr[Length(Tstr)] = 'W') then begin
+                          Delete(TStr,length(TStr),1);
+                          TStr := '-' + TStr;
+                       end;
+                       if (TStr <> '') then begin
+                         LongV := StrToFloat(TStr);
+                         PetMath.LongitudeAngleInRange(LongV);
+                         LocalStringGrid.Cells[i,j] := RealToString(LongV,-12,-7);
+                         IsFloat := true;
+                         IsString := false;
+                         Len := 12;
+                         Decs := 7;
+                       end;
+                    end
+                    else begin
+                       if (Length(TStr) > 1) and (TStr[1] = '0') then IsLeadingZero := true;
+
+                       if (TStr = '#DIV/0!') or (UpperCase(TStr) = 'NAN') or (UpperCase(TStr) = 'NO DATA') or (UpperCase(TStr) = 'NA') then begin
+                          TStr := '';
+                          LocalStringGrid.Cells[i,j] := '';
+                       end
+                       else if (TStr <> '') then begin
+                          k := length(TStr);
+                          if (k > 254) then begin
+                             if NeedTrimWarning then MessageToContinue(FieldName + MessLineBreak + TStr + MessLineBreak + ' is too long (' + IntToStr(k) + ' chars; problems likely and will be truncated');
+                             k := 254;
+                             NeedTrimWarning := false;
+                          end;
+                          t2 := '-';
+                          if (k > len) then len := k;
+                          if IsNumeric(TStr) then begin
+                              if MissingNumericString(TStr) then LocalStringGrid.Cells[i,j] := ''
+                              else begin
+                                 for n := 1 to k do begin
+                                    if (TStr[n] = '.') then begin
+                                       IsFloat := true;
+                                       if (k-n > Decs) then Decs := k - n;
+                                    end;
+                                 end;
+                              end;
+                          end
+                          else begin
+                             IsString := true;
+                          end;
+                          if IsString then Decs := 0;
+                       end;
+                    end;
+                 end;
+
+                {$IfDef RecordCSVParse} WriteLineToDebugFile('Done field check'); {$EndIf}
+
+               if FieldRequiresLeadingZeros(FieldName) or IsString or (IsLeadingZero and (not IsFloat)) then begin
+                  if FieldRequiresLeadingZeros(FieldName) or IsLeadingZero then begin
+                     ZeroPadLen[i] := len;
+                  end;
+                  if (FieldName = 'BIN_NAME') and (Len < 35) then Len := 35;
+                  CreateDataBase.AddAField(FieldName,ftString,Len);
+                  {$IfDef RecordCSVParse} WriteLineToDebugFile(FieldName + '  type = string,  len=' + IntToStr(len) + '  zeropad=' + IntToStr(ZeroPadLen[i])); {$EndIf}
+               end
+               else if IsFloat then begin
+                  if (FieldName = 'LAT') or (FieldName = 'LONG') then begin
+                     if (Len < 11) then Len := 11;
+                     if (Decs < 7) then Decs := 7;
+                  end
+                  else if (FieldName = 'X_UTM') or (FieldName = 'Y_UTM') then begin
+                     if (Len < 12) then Len := 12;
+                     if (Decs < 2) then Decs := 2;
+                  end
+                  else Len := Len + 1;
+                  CreateDataBase.AddAField(FieldName,ftFloat,Len,Decs);
+                  {$IfDef RecordCSVParse} WriteLineToDebugFile(FieldName + '  type = float64'); {$EndIf}
+               end
+               else begin
+                  if (Len >= 10) then begin
+                     CreateDataBase.AddAField(FieldName,ftString,Len);
+                     ZeroPadLen[i] := len;
+                     {$IfDef RecordCSVParse} WriteLineToDebugFile(FieldName + '  type = string (because too long for int or field=zip)'); {$EndIf}
+                  end
+                  else begin
+                     CreateDataBase.AddAField(FieldName,ftInteger,succ(Len));
+                     {$IfDef RecordCSVParse} WriteLineToDebugFile(FieldName + '  type = integer, length=' + IntToStr(Len)); {$EndIf}
+                  end;
+               end;
+            end;
+         end;
+         if not RecIdExists then CreateDataBase.AddAField(RecNoFName,ftInteger,9);
+
+         CreateDataBase.WriteCorrectHeader(true);
+
+      ShowHourglassCursor;
+      wmdem.SetPanelText(0,'');
+
+      {$IfDef RecordCSV} WriteLineToDebugFile('Batch mode point 1'); {$EndIf}
+
+      if CreateDataBase.UsingNewDBF then CreateDataBase.NewDBF := tMyData.Create(CreateDataBase.FileName);
+
+      if AllinStringGrid then begin
+         {$IfDef RecordCSV} WriteLineToDebugFile('All in string grid'); {$EndIf}
+         SendStringGridToDataBase(LocalStringGrid,CreateDataBase,ZeroPadLen);
+      end
+      else begin
+         if ProcessInMemory then begin
+            StartProgress('Convert');
+            for j := 1 to pred(FileInMemory.Count) do begin
+               if (j mod 100 = 0) then UpdateProgressBar(j/FileInMemory.Count);
+               MenuStr := FileInMemory.Strings[j];
+               processLine(MenuStr,j);
+            end;
+         end
+         else begin
+            ShowHourglassCursor;
+            j := 0;
+            Reset(tfile);
+            readln(tfile);
+            while not eof(tfile) do begin
+               readln(tfile,MenuStr);
+               inc(j);
+               processLine(MenuStr,j);
+            end;
+            CloseFile(tFile);
+         end;
+         EndProgress;
+      end;
+      ShowHourglassCursor;
+      LocalStringGrid.Free;
+      CreateDataBase.Destroy;
+      EndProgress;
+end;
+
+
+procedure SendStringGridToDataBase(StringGrid1 : tStringGrid; CreateDataBase : tCreateDataBase; ZeroPadLen : tZeroPadLen);
+var
+   i,j : integer;
+   fv : shortString;
+   TStr : Shortstring;
+   RecordValues : tStringList;
+begin
+   {$IfDef RecordCSV} WriteLineToDebugFile('TCSVFileImportForm.BitBtn1Click import underway'); {$EndIf}
+   StartProgress('Create DB ' + ExtractFileName(CreateDataBase.FileName));
+   for j := 1 to pred(StringGrid1.RowCount) do begin
+      if (j mod 250 = 0) then UpdateProgressBar(j / StringGrid1.RowCount);
+      {$IfDef RecordCSV} if (J mod 500 = 0) then WriteLineToDebugFile('Record ' + IntToStr(j)); {$EndIf}
+      RecordValues := tStringList.Create;
+      for i := 0 to pred(StringGrid1.ColCount) do begin
+         TStr := StringGrid1.Cells[i,0];
+         if (TStr <> 'SKIP') then begin
+            {$IfDef RecordFullCSV} WriteLineToDebugFile(TStr + ': '  + StringGrid1.Cells[i,j]); {$EndIf}
+            if FieldRequiresLeadingZeros(TStr) then begin
+               fv := ptTrim(StringGrid1.Cells[i,j]);
+               while (length(fv) < ZeroPadLen[i]) do fv := '0' + fv;
+               StringGrid1.Cells[i,j] := fv;
+            end;
+            RecordValues.Add(ptTrim(StringGrid1.Cells[i,j]));
+         end;
+      end;
+      if (CreateDataBase.AddRecID) then  RecordValues.Add(IntToStr(j));
+      CreateDataBase.AddCorrectRecordFromStringList(RecordValues);
+      RecordValues.Free;
+      {$IfDef RecordFullCSV} WriteLineToDebugFile(''); {$EndIf}
+   end;
+   EndProgress;
+   {$IfDef RecordCSV} WriteLineToDebugFile('TCSVFileImportForm.BitBtn1Click import done'); {$EndIf}
+end;
+
+
+function OrigPickField(Table : tMyData; Mess: ShortString; TypesAllowed : tSetFieldType) : ShortString;
+var
+  FieldsInDB : tStringList;
+  WantField,i  : integer;
+begin
+   with Table do begin
+      GetFields(Table,AllVis,TypesAllowed,FieldsInDB,false);
+      if (FieldsInDB.Count = 0) then Result := ''
+      else begin
+         for i := pred(FieldsInDB.Count) downto 0 do
+             if (UpperCase(FieldsInDB[i]) = 'USE') then FieldsInDB.Delete(i);
+         if (FieldsInDB.Count = 1) then Result := FieldsInDB.Strings[0]
+         else begin
+            WantField := 0;
+            if GetFromListZeroBased('Database Field for ' + Mess,WantField,FieldsInDB,true) then begin
+               Result := FieldsInDB.Strings[WantField];
+            end
+            else Result := '';
+         end;
+      end;
+   end;
+   FieldsInDB.Free;
+end;
+
 
 function StringGridToHTMLTable(StringGrid : tStringGrid) : AnsiString;
 var
@@ -1823,13 +1823,13 @@ var
    ReportSL : tStringList;
    Report : string;
 begin
-   {$IfDef RecordHTML} writeLineToDebugFile('');  WriteLineToDebugFile('HTMLReport'); {$EndIf}
+   {$IfDef RecordHTML} WriteLineToDebugFile('');  WriteLineToDebugFile('HTMLReport'); {$EndIf}
    if (fName = '') then begin
       fName := Petmar.NextFileNumber(MDTempDir, 'StringGrid_','.htm');
    end;
    Report := StartHTMLString + '<b>' + Title + '</b>' + StringGridToHTMLTable(StringGrid) + EndHTMLString;
    ClipBrd.ClipBoard.AsText := Report;
-   {$IfDef RecordHTML} writeLineToDebugFile(Report);  WriteLineToDebugFile(''); {$EndIf}
+   {$IfDef RecordHTML} WriteLineToDebugFile(Report);  WriteLineToDebugFile(''); {$EndIf}
    ReportSL := tStringList.Create;
    ReportSL.Add(Report);
    ReportSL.SaveToFile(fName);
@@ -1847,7 +1847,7 @@ begin
    fName := Petmar.NextFileNumber(MDTempDir, ExtractFileNameNoExt(Table.TableName) + '_','.htm');
    Report := StartHTMLString + DBtableToHTML(Table,Source,VisCols) + EndHTMLString;
    ClipBrd.ClipBoard.AsText := Report;
-   {$IfDef RecordHTML} writeLineToDebugFile(Report);  WriteLineToDebugFile(''); {$EndIf}
+   {$IfDef RecordHTML} WriteLineToDebugFile(Report);  WriteLineToDebugFile(''); {$EndIf}
    ReportSL := tStringList.Create;
    ReportSL.Add(Report);
    ReportSL.SaveToFile(fName);
@@ -1920,7 +1920,7 @@ finalization
    {$IfDef RecordGPX} WriteLineToDebugFile('RecordGPX active in petdbutils'); {$EndIf}
    {$IfDef RecordFullGPX} WriteLineToDebugFile('RecordFullGPX active in petdbutils'); {$EndIf}
    {$IfDef RecordCSVParse} WriteLineToDebugFile('RecordCSVParse active in petdbutils'); {$EndIf}
-   {$IfDef RecordCSVimport} writeLineToDebugFile('RecordCSVimport active in petdbutils'); {$EndIf}
+   {$IfDef RecordCSVimport} WriteLineToDebugFile('RecordCSVimport active in petdbutils'); {$EndIf}
 end.
 
 

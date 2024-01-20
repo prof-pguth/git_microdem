@@ -20,14 +20,13 @@ unit BaseGraf;
        //{$Define RecordGrafAxes}
        //{$Define RecordFormResize}
 
-       //{$Define RecordHistogram}
+       {$Define RecordHistogram}
        //{$Define RecordHistogramColors}
        //{$Define RecordFullGrafAxes}
        //{$Define RecordLegends}
        //{$Define RecordSaveSeries}
        //{$Define RecordGrafAxis}
        //{$Define RecordGraf}
-       //{$Define RecordHistogram}
        //{$Define RecordGraphColors}
        //{$Define RecordGrafDensity}
        //{$Define RecordPlotFiles}
@@ -648,7 +647,7 @@ function StartStackedHistogram(DBonTable : integer; Percentage : boolean) : TThi
 var
    Series : integer;
 begin
-   {$IfDef RecordHistogram} writeLineToDebugFile('GetStackedHistogram in, db=' + IntToStr(dbOnTable)); {$EndIf}
+   {$IfDef RecordHistogram} WriteLineToDebugFile('StartStackedHistogram in, db=' + IntToStr(dbOnTable)); {$EndIf}
    Series := 0;
    while GISdb[DBonTable].Mydata.FieldExists('SERIES_' + IntToStr(succ(Series))) do inc(Series);
    (*
@@ -657,18 +656,18 @@ begin
          if (i > 1) then fName := fName + ' AND ';
          fName := fName + 'SERIES_' + IntToStr(i) + '=0';
       end;
-      {$IfDef RecordHistogram} writeLineToDebugFile('GetStackedHistogram filter=' + fName); {$EndIf}
+      {$IfDef RecordHistogram} WriteLineToDebugFile('GetStackedHistogram filter=' + fName); {$EndIf}
       GISdb[DBonTable].ApplyGISFilter(fName);
       GISdb[DBonTable].DeleteAllSelectedRecords;
    end;
    *)
 
-   {$IfDef RecordHistogram} writeLineToDebugFile('GetStackedHistogram clear empty cells'); {$EndIf}
+   {$IfDef RecordHistogram} WriteLineToDebugFile('StartStackedHistogram clear empty cells'); {$EndIf}
    Result := TThisBaseGraph.Create(Application);
    Result.GraphDraw.GraphType := gtStackedHist;
    Result.DataBaseOnGraph := DBonTable;
    Result.SetUpStackedHistogram(Percentage,true);
-   {$IfDef RecordHistogram} writeLineToDebugFile('GetStackedHistogram out' + Result.GraphDraw.AxisRange); {$EndIf}
+   {$IfDef RecordHistogram} WriteLineToDebugFile('StartStackedHistogram out' + Result.GraphDraw.AxisRange); {$EndIf}
 end;
 
 
@@ -708,7 +707,7 @@ begin
       {$IfDef RecordHistogram} HighlightLineToDebugFile('SetUpStackedHistogram FirstTime set, ' + GraphDraw.AxisRange); {$EndIf}
 
 (*
-      {$IfDef RecordHistogram} writeLineToDebugFile('GetStackedHistogram if out to tail, ' + GraphDraw.AxisRange); {$EndIf}
+      {$IfDef RecordHistogram} WriteLineToDebugFile('GetStackedHistogram if out to tail, ' + GraphDraw.AxisRange); {$EndIf}
       for i := 1 to Series do SeriesCount[i] := 0;
       MaxCount := 0;
       GISdb[DataBaseOnGraph].Mydata.First;
@@ -755,10 +754,10 @@ begin
             GISdb[DataBaseOnGraph].Mydata.Next;
          end;
       end;
-      {$IfDef RecordHistogram} writeLineToDebugFile('SetUpStackedHistogram graph set up, ' + GraphDraw.AxisRange); {$EndIf}
+      {$IfDef RecordHistogram} WriteLineToDebugFile('SetUpStackedHistogram graph set up, ' + GraphDraw.AxisRange); {$EndIf}
    end;
    AutoScaleAndRedrawDiagram(false,false,false,false);
-   {$IfDef RecordHistogram} writeLineToDebugFile('SetUpStackedHistogram AutoScaleAndRedrawDiagram, ' + GraphDraw.AxisRange); {$EndIf}
+   {$IfDef RecordHistogram} WriteLineToDebugFile('SetUpStackedHistogram AutoScaleAndRedrawDiagram, ' + GraphDraw.AxisRange); {$EndIf}
 
    GISdb[DataBaseOnGraph].Mydata.First;
    while not GISdb[DataBaseOnGraph].Mydata.eof do begin
@@ -793,7 +792,7 @@ begin
       GISdb[DataBaseOnGraph].Mydata.Next;
    end;
    GISdb[DataBaseOnGraph].ShowStatus;
-   {$IfDef RecordHistogram} writeLineToDebugFile('SetUpStackedHistogram out, ' + GraphDraw.AxisRange); {$EndIf}
+   {$IfDef RecordHistogram} WriteLineToDebugFile('SetUpStackedHistogram out, ' + GraphDraw.AxisRange); {$EndIf}
 end;
 
 
@@ -886,9 +885,9 @@ begin
       MinInSeries := 99e39;
       MaxInSeries := -99e39;
       GraphDraw.DataFilesPlotted.Clear;
-      {$IfDef RecordHistogram} writeLineToDebugFile('Start file list processing'); {$EndIf}
+      {$IfDef RecordHistogram} WriteLineToDebugFile('Start file list processing'); {$EndIf}
       for I := 0 to pred(GraphDraw.HistogramFileList.Count) do begin
-         {$IfDef RecordHistogram} writeLineToDebugFile('Load series ' + IntToStr(i) + ' ' + GraphDraw.HistogramFileList.Strings[i]); {$EndIf}
+         {$IfDef RecordHistogram} WriteLineToDebugFile('Load series ' + IntToStr(i) + ' ' + GraphDraw.HistogramFileList.Strings[i]); {$EndIf}
          LoadSeries(GraphDraw.HistogramFileList.Strings[i]);
       end;
 
@@ -916,11 +915,11 @@ begin
          GraphDraw.MinHorizAxis := -(NegBins + 0.5) * HistogramBinSize
       end;
 
-      {$IfDef RecordHistogram} writeLineToDebugFile('CreateMultipleHistograms settings over, NumBins=' + IntToStr(HistogramNumBins) + '  ' + GraphDraw.AxisRange); {$EndIf}
+      {$IfDef RecordHistogram} WriteLineToDebugFile('CreateMultipleHistograms settings over, NumBins=' + IntToStr(HistogramNumBins) + '  ' + GraphDraw.AxisRange); {$EndIf}
       First := true;
       for I := 0 to pred(GraphDraw.HistogramFileList.Count) do begin
          if ProcessSeries(GraphDraw.HistogramFileList.Strings[i]) and (i < MaxGraphSeries) then begin
-            {$IfDef RecordHistogram} writeLineToDebugFile('Process series ' + IntToStr(i) + ' ' + GraphDraw.HistogramFileList.Strings[i]); {$EndIf}
+            {$IfDef RecordHistogram} WriteLineToDebugFile('Process series ' + IntToStr(i) + ' ' + GraphDraw.HistogramFileList.Strings[i]); {$EndIf}
             GraphDraw.ShowLine[succ(i)] := true;
          end;
       end;
@@ -954,12 +953,13 @@ begin
       Result.HistogramNumBins := NumBins;
       Result.HistogramGraphNumbers := GraphNumbers;
       Result.GraphDraw.GraphType := gtMultHist;
+      Result.HistogramChanged := true;
 
       if (LegendList <> Nil) then begin
          Result.GraphDraw.LegendList := tStringList.Create;
          for I := 0 to pred(LegendList.Count) do begin
             Result.GraphDraw.LegendList.Add(LegendList.Strings[i]);
-            {$IfDef RecordHistogram} WriteLineToDebugFile(IntToStr(i) + ' ' + LegendList.Strings[i]); {$EndIf}
+            {$IfDef RecordHistogram} WriteLineToDebugFile('Series=' + IntToStr(i) + ' ' + LegendList.Strings[i]); {$EndIf}
          end;
       end;
       ShowHourglassCursor;
@@ -991,7 +991,7 @@ begin
 
       if (TColorList <> Nil) and (TColorList.Count > 0) then begin
          for i := 1 to TColorList.Count do begin
-            {$IfDef RecordHistogramColors} writeLineToDebugFile(IntToStr(i) + '  ' + TcolorList.Strings[pred(i)]); {$EndIf}
+            {$IfDef RecordHistogramColors} WriteLineToDebugFile(IntToStr(i) + '  ' + TcolorList.Strings[pred(i)]); {$EndIf}
             if i in [0..255] then begin
                Result.GraphDraw.Symbol[i].Color := ConvertTColorToPlatformColor(StrToInt(TcolorList.Strings[pred(i)]));
                Result.GraphDraw.FileColors256[i] := ConvertTColorToPlatformColor(StrToInt(TcolorList.Strings[pred(i)]));
@@ -1002,7 +1002,7 @@ begin
          end;
       end;
 
-      {$IfDef RecordHistogram} writeLineToDebugFile('CreateMultipleHistograms ProcessSeries over, NumBins=' + IntToStr(NumBins) + '  ' + Result.GraphDraw.AxisRange); {$EndIf}
+      {$IfDef RecordHistogram} WriteLineToDebugFile('CreateMultipleHistograms ProcessSeries over, NumBins=' + IntToStr(NumBins) + '  ' + Result.GraphDraw.AxisRange); {$EndIf}
 
 //10/29/23: the vertical axis is not being set, but crash if Result.AutoScaleAndRedrawDiagram(true,false,false,false);
 
@@ -1011,7 +1011,7 @@ begin
       (*
       if false and StackedPercents then begin
       //2/23/2023, this is disabled because Graph3 is crashing; Graph2 had not been working either; this needs to be looked at
-         {$IfDef RecordHistogram} writeLineToDebugFile('Start StackedPercents'); {$EndIf}
+         {$IfDef RecordHistogram} WriteLineToDebugFile('Start StackedPercents'); {$EndIf}
          TStr := l1;
          for I := 0 to pred(FileList.Count) do TStr := TStr + ',' + 'SERIES_' + IntToStr(succ(i));
          Results.Insert(0,TStr);
@@ -1069,25 +1069,28 @@ begin
       yi := GraphDraw.GraphY(y);
       TStr := RemoveUnderscores(GISdb[DataBaseOnGraph].MyData.GetFieldByNameAsString('NAME'));
       Bitmap.Canvas.TextOut(2,yi - Bitmap.Canvas.TextHeight(TStr) div 2,TStr);
-
       Color := ConvertTColorToPlatformColor(WinGraphColors[round(y) mod 15]);
-      ScreenSymbol(Bitmap.Canvas,GraphDraw.GraphX(GISdb[DataBaseOnGraph].MyData.GetFieldByNameAsFloat('MIN') ),Yi,FilledBox,3,Color);
-      ScreenSymbol(Bitmap.Canvas,GraphDraw.GraphX(GISdb[DataBaseOnGraph].MyData.GetFieldByNameAsFloat('MAX') ),Yi,FilledBox,3,Color);
-      ScreenSymbol(Bitmap.Canvas,GraphDraw.GraphX(GISdb[DataBaseOnGraph].MyData.GetFieldByNameAsFloat('PC99') ),Yi,FilledBox,3,Color);
-      ScreenSymbol(Bitmap.Canvas,GraphDraw.GraphX(GISdb[DataBaseOnGraph].MyData.GetFieldByNameAsFloat('PC98') ),Yi,FilledBox,3,Color);
+      if StrUtils.AnsiContainsText(TStr,'(n=1)') then begin
+         ScreenSymbol(Bitmap.Canvas,GraphDraw.GraphX(GISdb[DataBaseOnGraph].MyData.GetFieldByNameAsFloat('MEAN') ),Yi,FilledBox,3,Color);
+      end
+      else begin
+         ScreenSymbol(Bitmap.Canvas,GraphDraw.GraphX(GISdb[DataBaseOnGraph].MyData.GetFieldByNameAsFloat('MIN') ),Yi,FilledBox,3,Color);
+         ScreenSymbol(Bitmap.Canvas,GraphDraw.GraphX(GISdb[DataBaseOnGraph].MyData.GetFieldByNameAsFloat('MAX') ),Yi,FilledBox,3,Color);
+         ScreenSymbol(Bitmap.Canvas,GraphDraw.GraphX(GISdb[DataBaseOnGraph].MyData.GetFieldByNameAsFloat('PC99') ),Yi,FilledBox,3,Color);
+         ScreenSymbol(Bitmap.Canvas,GraphDraw.GraphX(GISdb[DataBaseOnGraph].MyData.GetFieldByNameAsFloat('PC98') ),Yi,FilledBox,3,Color);
 
-      x1 := GraphDraw.GraphX(GISdb[DataBaseOnGraph].MyData.GetFieldByNameAsFloat('PC5'));
-      x2 := GraphDraw.GraphX(GISdb[DataBaseOnGraph].MyData.GetFieldByNameAsFloat('PC95'));
-      Bitmap.Canvas.MoveTo(x1,yi-5); Bitmap.Canvas.LineTo(x1,yi+5);
-      Bitmap.Canvas.MoveTo(x2,yi-5); Bitmap.Canvas.LineTo(x2,yi+5);
-      Bitmap.Canvas.MoveTo(x1,yi); Bitmap.Canvas.LineTo(x2,yi);
+         x1 := GraphDraw.GraphX(GISdb[DataBaseOnGraph].MyData.GetFieldByNameAsFloat('PC5'));
+         x2 := GraphDraw.GraphX(GISdb[DataBaseOnGraph].MyData.GetFieldByNameAsFloat('PC95'));
+         Bitmap.Canvas.MoveTo(x1,yi-5); Bitmap.Canvas.LineTo(x1,yi+5);
+         Bitmap.Canvas.MoveTo(x2,yi-5); Bitmap.Canvas.LineTo(x2,yi+5);
+         Bitmap.Canvas.MoveTo(x1,yi); Bitmap.Canvas.LineTo(x2,yi);
 
-      x1 := GraphDraw.GraphX(GISdb[DataBaseOnGraph].MyData.GetFieldByNameAsFloat('Q1'));
-      x2 := GraphDraw.GraphX(GISdb[DataBaseOnGraph].MyData.GetFieldByNameAsFloat('Q3'));
-      Bitmap.Canvas.Rectangle(x1,yi-5,x2,yi+5);
-      xi := GraphDraw.GraphX(GISdb[DataBaseOnGraph].MyData.GetFieldByNameAsFloat('MEAN'));
-      Bitmap.Canvas.MoveTo(xi,yi-5); Bitmap.Canvas.LineTo(xi,yi+5);
-
+         x1 := GraphDraw.GraphX(GISdb[DataBaseOnGraph].MyData.GetFieldByNameAsFloat('Q1'));
+         x2 := GraphDraw.GraphX(GISdb[DataBaseOnGraph].MyData.GetFieldByNameAsFloat('Q3'));
+         Bitmap.Canvas.Rectangle(x1,yi-5,x2,yi+5);
+         xi := GraphDraw.GraphX(GISdb[DataBaseOnGraph].MyData.GetFieldByNameAsFloat('MEAN'));
+         Bitmap.Canvas.MoveTo(xi,yi-5); Bitmap.Canvas.LineTo(xi,yi+5);
+      end;
       y := y + 1;
       GISDB[DataBaseOnGraph].MyData.Next;
    end;
@@ -1116,7 +1119,8 @@ begin
    Result.GraphDraw.ShowHorizAxis0 := true;
    Result.GraphDraw.MinHorizAxis := GISDB[Result.DataBaseOnGraph].MyData.FindFieldMin('MIN');
    Result.GraphDraw.MaxHorizAxis := GISDB[Result.DataBaseOnGraph].MyData.FindFieldMax('MAX');
-   Result.GraphDraw.LeftMargin := 250;
+   Result.GraphDraw.LeftMargin := 275;
+   Result.GraphDraw.BottomMargin := 75;
 
    Result.Width := 850;
    Result.Height := 130 + 30 * GISDB[Result.DataBaseOnGraph].MyData.FiltRecsInDB;
@@ -1197,7 +1201,7 @@ begin
    rewrite(inf,sizeOf(float32));
    BlockWrite(inf,zs[First],Last);
    closeFile(inf);
-   {$IfDef RecordSaveSeries} writeLineToDebugFile('SaveSingleValueSeries, n=' + IntToStr(NumVals) + '  ' + Result ); {$EndIf}
+   {$IfDef RecordSaveSeries} WriteLineToDebugFile('SaveSingleValueSeries, n=' + IntToStr(NumVals) + '  ' + Result ); {$EndIf}
 end;
 
 
@@ -2354,7 +2358,7 @@ var
 
 
       begin
-         {$IfDef RecordGrafAxis} writeLineToDebugFile('HorizPartOfGraph in: ' + RealToString(Min,-18,-6) + ' to ' + RealToString(Max,-18,-6) + ' inc=' + RealToString(Inc,-18,-6)); {$EndIf}
+         {$IfDef RecordGrafAxis} WriteLineToDebugFile('HorizPartOfGraph in: ' + RealToString(Min,-18,-6) + ' to ' + RealToString(Max,-18,-6) + ' inc=' + RealToString(Inc,-18,-6)); {$EndIf}
          if (GraphDraw.GraphAxes in [XTimeYFullGrid,XTimeYPartGrid]) or (abs(Max-Min) < MinTickValue) then exit;
          if GraphDraw.LabelXFromLog then begin
          end
@@ -2397,7 +2401,7 @@ var
             GraphTick(Min,x);
             if (First) then GraphTick(Max,x);
          end;
-         {$IfDef RecordGrafAxis} writeLineToDebugFile('HorizPartOfGraph out'); {$EndIf}
+         {$IfDef RecordGrafAxis} WriteLineToDebugFile('HorizPartOfGraph out'); {$EndIf}
       end;
 
 
@@ -2686,23 +2690,25 @@ var
    Month,Day,Year : integer;
    dx : float32;
 begin
-   x := HorizAxisFunct(x);
-   if AnnualCycle then begin
-      CalDat(Trunc(x),Month,Day,Year);
-      x := JulDay(Month,Day,1996);
-   end;
+   if abs(ScrHorizRange) > 0.00001 then begin
+       x := HorizAxisFunct(x);
+       if AnnualCycle then begin
+          CalDat(Trunc(x),Month,Day,Year);
+          x := JulDay(Month,Day,1996);
+       end;
 
-   (*
-   if NormalCartesianX then GraphX := LeftMargin + round((x - ScrMinHorizAxis) / ScrHorizRange * (XWindowSize - LeftMargin - RightMargin))
-   else GraphX := LeftMargin + round((ScrMaxHorizAxis - x) / ScrHorizRange * (XWindowSize - LeftMargin-RightMargin))
-   *)
-   if NormalCartesianX then dX := (x - ScrMinHorizAxis)
-   else dX := (ScrMaxHorizAxis - x);
-   if (abs(dx) < 0.00001) then begin
-      GraphX := LeftMargin;
-      exit;
+       (*
+       if NormalCartesianX then GraphX := LeftMargin + round((x - ScrMinHorizAxis) / ScrHorizRange * (XWindowSize - LeftMargin - RightMargin))
+       else GraphX := LeftMargin + round((ScrMaxHorizAxis - x) / ScrHorizRange * (XWindowSize - LeftMargin-RightMargin))
+       *)
+       if NormalCartesianX then dX := (x - ScrMinHorizAxis)
+       else dX := (ScrMaxHorizAxis - x);
+       if (abs(dx) < 0.00001) then begin
+          GraphX := LeftMargin;
+          exit;
+       end;
+       GraphX := LeftMargin + round(dx / ScrHorizRange * (XWindowSize - LeftMargin-RightMargin));
    end;
-   GraphX := LeftMargin + round(dx / ScrHorizRange * (XWindowSize - LeftMargin-RightMargin));
 end;
 
 procedure tGraphDraw.SetAllDrawingSymbols(DrawingSymbol: tDrawingSymbol);
@@ -2771,9 +2777,9 @@ begin
    ForceCycleSize := GraphDraw.ForceVertCycleSize;
    ForceTickIncr  := GraphDraw.ForceVertTickIncr;
    if (not GraphDraw.UserSetVertCycles) then GraphDraw.ForceAxisFit(GraphDraw.VertAxisFunctionType,GraphDraw.VertCycleCuts,GraphDraw.NumVertCycles,GraphDraw.MinVertAxis,GraphDraw.MaxVertAxis,GraphDraw.YWindowSize-GraphDraw.BottomMargin,25);
-   {$If Defined(RecordGraf) or Defined(RecordGrafSize)} writeLineToDebugFile('TThisBaseGraph.DrawGraph axis fit over ' + GraphDraw.AxisRange); {$EndIf}
+   {$If Defined(RecordGraf) or Defined(RecordGrafSize)} WriteLineToDebugFile('TThisBaseGraph.DrawGraph axis fit over ' + GraphDraw.AxisRange); {$EndIf}
    if (Bitmap <> Nil) then WindowGraphAxes(Bitmap);
-   {$If Defined(RecordGraf) or Defined(RecordGrafSize)} writeLineToDebugFile('TThisBaseGraph.DrawGraph out ' + FormClientSize(Self) + '  ' +  GraphDraw.AxisRange); {$EndIf}
+   {$If Defined(RecordGraf) or Defined(RecordGrafSize)} WriteLineToDebugFile('TThisBaseGraph.DrawGraph out ' + FormClientSize(Self) + '  ' +  GraphDraw.AxisRange); {$EndIf}
 end;
 
 
@@ -2782,7 +2788,7 @@ var
    BitMap : tMyBitmap;
    w,h : integer;
 begin
-   {$If Defined(RecordGraf) or Defined(RecordGrafSize)} writeLineToDebugFile('TThisBaseGraph.SetUpGraphForm, clientsize ' + intToStr(ClientWidth) + 'x' + intToStr(ClientHeight)+ ' ' +  GraphDraw.AxisRange); {$EndIf}
+   {$If Defined(RecordGraf) or Defined(RecordGrafSize)} WriteLineToDebugFile('TThisBaseGraph.SetUpGraphForm, clientsize ' + intToStr(ClientWidth) + 'x' + intToStr(ClientHeight)+ ' ' +  GraphDraw.AxisRange); {$EndIf}
    ScrollBox1.Enabled := true;
    if ScrollGraph then begin
       ScrollBox1.AutoScroll := true;
@@ -2954,16 +2960,16 @@ begin
          ClientWidth := DefaultClientWidth;
          ClientHeight := DefaultClientHeight;
          GraphDraw.ForceNewSize := false;
-         {$IfDef RecordFormResize} writeLineToDebugFile('TThisBaseGraph.FormResize forced new size ' + FormClientSize(Self)); {$EndIf}
+         {$IfDef RecordFormResize} WriteLineToDebugFile('TThisBaseGraph.FormResize forced new size ' + FormClientSize(Self)); {$EndIf}
       end;
       if GraphDraw.CorrectScaling then begin
          SizingWindow := true;
          xs := GraphDraw.XWindowSize - GraphDraw.LeftMargin;
          ys := GraphDraw.YWindowSize - GraphDraw.BottomMargin - Panel1.Height;
-         {$IfDef RecordFormResize} writeLineToDebugFile('GraphDraw.CorrectScaling,  Pixels on graph area: ' + intToStr(round(xs)) + 'x' + intToStr(round(ys))); {$EndIf}
+         {$IfDef RecordFormResize} WriteLineToDebugFile('GraphDraw.CorrectScaling,  Pixels on graph area: ' + intToStr(round(xs)) + 'x' + intToStr(round(ys))); {$EndIf}
          xs := ( GraphDraw.MaxHorizAxis - GraphDraw.MinHorizAxis) / xs;
          ys := ( GraphDraw.MaxVertAxis - GraphDraw.MinVertAxis) / ys;
-         {$IfDef RecordFormResize} writeLineToDebugFile('Pixel dimensions: ' + RealToString(xs,-16,-4) + 'x' + RealToString(ys,-16,-4)); {$EndIf}
+         {$IfDef RecordFormResize} WriteLineToDebugFile('Pixel dimensions: ' + RealToString(xs,-16,-4) + 'x' + RealToString(ys,-16,-4)); {$EndIf}
          if (xs > ys) then ClientWidth := round( (GraphDraw.MaxHorizAxis - GraphDraw.MinHorizAxis) / ys) +  GraphDraw.LeftMargin
          else ClientHeight := round( (GraphDraw.MaxVertAxis - GraphDraw.MinVertAxis) / xs * GraphDraw.VertExag) +  GraphDraw.BottomMargin;
       end;
@@ -3028,7 +3034,7 @@ begin
    NumDone := 0;
    Numyears := 0;
    while not EOF(tf) do begin
-      {$IfDef RecordPlotFiles} writeLineToDebugFile('Try to read=' + IntToStr(ASize));{$EndIf}
+      {$IfDef RecordPlotFiles} WriteLineToDebugFile('Try to read=' + IntToStr(ASize));{$EndIf}
       BlockRead(tf,Coords^,ASize,Numread);
       {$IfDef RecordPlotFiles} WriteLineToDebugFile('Did read=' + IntToStr(NumRead)); {$EndIf}
       inc(NumDone,NumRead);
@@ -3072,7 +3078,7 @@ begin
    EndProgress;
    Dispose(Coords);
    closeFile(tf);
-   {$IfDef RecordPlotFiles} writeLineToDebugFile('TThisBaseGraph.PlotAFile out'); {$EndIf}
+   {$IfDef RecordPlotFiles} WriteLineToDebugFile('TThisBaseGraph.PlotAFile out'); {$EndIf}
 end;
 
 
@@ -3119,7 +3125,7 @@ var
    Coords : ^Coord3Array;
    Plot : boolean;
 begin
-   {$IfDef RecordPlotFiles} writeLineToDebugFile('TThisBaseGraph.PlotXYColorFile in, ' + inf); {$EndIf}
+   {$IfDef RecordPlotFiles} WriteLineToDebugFile('TThisBaseGraph.PlotXYColorFile in, ' + inf); {$EndIf}
    try
        TotNum := GetFileSize(inf) div (3*SizeOf(float32));
        assignFile(tf,inf);
@@ -3160,7 +3166,7 @@ begin
       Canvas.Pen.Width := 1;
       EndProgress;
    end;
-   {$IfDef RecordPlotFiles} writeLineToDebugFile('TThisBaseGraph.PlotXYColorFile out'); {$EndIf}
+   {$IfDef RecordPlotFiles} WriteLineToDebugFile('TThisBaseGraph.PlotXYColorFile out'); {$EndIf}
 end;
 
 procedure TThisBaseGraph.InitializeTadpole(Title : shortstring; MinX,MaxX,MaxRange : float32);
@@ -3188,7 +3194,7 @@ var
    Plot : boolean;
    sBitmap : tMyBitmap;
 begin
-   {$IfDef RecordPlotFiles} writeLineToDebugFile('TThisBaseGraph.PlotXYZFile in, ' +  inf); {$EndIf}
+   {$IfDef RecordPlotFiles} WriteLineToDebugFile('TThisBaseGraph.PlotXYZFile in, ' +  inf); {$EndIf}
    try
       if (GraphDraw.GraphType = gtTernary) or (GraphDraw.GraphType = gtTadpole) then begin
          if (GraphDraw.GraphType = gtTadpole) then begin
@@ -3287,7 +3293,7 @@ begin
       Canvas.Pen.Width := 1;
       EndProgress;
    end;
-   {$IfDef RecordPlotFiles} writeLineToDebugFile('TThisBaseGraph.PlotXYZFile out'); {$EndIf}
+   {$IfDef RecordPlotFiles} WriteLineToDebugFile('TThisBaseGraph.PlotXYZFile out'); {$EndIf}
 end;
 
 
@@ -3296,7 +3302,7 @@ var
    i,x,y : integer;
    MyTable : tMyData;
 begin
-   {$IfDef RecordPlotFiles} writeLineToDebugFile('TThisBaseGraph.PlotDBFFile in ' + inf); {$EndIf}
+   {$IfDef RecordPlotFiles} WriteLineToDebugFile('TThisBaseGraph.PlotDBFFile in ' + inf); {$EndIf}
    try
       MyTable := tMyData.Create(Inf);
       i := 0;
@@ -3313,7 +3319,7 @@ begin
       Canvas.Pen.Width := 1;
       EndProgress;
    end;
-   {$IfDef RecordPlotFiles} writeLineToDebugFile('TThisBaseGraph.PlotDBFFile in'); {$EndIf}
+   {$IfDef RecordPlotFiles} WriteLineToDebugFile('TThisBaseGraph.PlotDBFFile in'); {$EndIf}
 end;
 
 
@@ -3326,7 +3332,7 @@ var
    SymbolColor : tPlatformColor;
    TStr : shortstring;
 begin
-   {$IfDef RecordPlotFiles} writeLineToDebugFile('TThisBaseGraph.PlotDBFFile in ' + inf); {$EndIf}
+   {$IfDef RecordPlotFiles} WriteLineToDebugFile('TThisBaseGraph.PlotDBFFile in ' + inf); {$EndIf}
    try
       MyTable := tMyData.Create(Inf);
       while not MyTable.Eof do  begin
@@ -3344,7 +3350,7 @@ begin
    finally
       EndProgress;
    end;
-   {$IfDef RecordPlotFiles} writeLineToDebugFile('TThisBaseGraph.PlotDBFFile in'); {$EndIf}
+   {$IfDef RecordPlotFiles} WriteLineToDebugFile('TThisBaseGraph.PlotDBFFile in'); {$EndIf}
 end;
 
 
@@ -3800,7 +3806,7 @@ begin
      CurrentOverlay := 0;
 
 
-     {$IfDef RecordGraf} writeLineToDebugFile('TThisBaseGraph.FormCreate 1 ' + intToStr(ClientWidth) + 'x' + intToStr(ClientHeight)); {$EndIf}
+     {$IfDef RecordGraf} WriteLineToDebugFile('TThisBaseGraph.FormCreate 1 ' + intToStr(ClientWidth) + 'x' + intToStr(ClientHeight)); {$EndIf}
 
      Image1.Stretch := true;             //Required for Delphi 6 "feature"
      ScrollBox1.AutoScroll := false;
@@ -3816,7 +3822,7 @@ begin
      RoseData := Nil;
 
      RoseColor := clLime;
-     {$IfDef RecordGraf} writeLineToDebugFile('TThisBaseGraph.FormCreate 2 ' + intToStr(ClientWidth) + 'x' + intToStr(ClientHeight)); {$EndIf}
+     {$IfDef RecordGraf} WriteLineToDebugFile('TThisBaseGraph.FormCreate 2 ' + intToStr(ClientWidth) + 'x' + intToStr(ClientHeight)); {$EndIf}
      GraphDraw.XWindowSize := pred(DefaultClientWidth);
      GraphDraw.YWindowSize := pred(DefaultClientHeight - Panel1.Height - ToolBar1.Height);
      CreateBitmap(Bitmap,succ(GraphDraw.XWindowSize),Succ(GraphDraw.YWindowSize));
@@ -5570,7 +5576,7 @@ end;
 
 function TThisBaseGraph.MakeLegend(Flist : tstringList; Extract : boolean) : tMyBitmap;
 const
-   ItemHigh = 21;
+   ItemHigh = 25;
 var
    MaxLen,Len,i : integer;
    TStr : shortString;
@@ -5583,7 +5589,7 @@ begin
 
    for i := 1 to fList.Count do begin
        SetMyBitmapColors(Result,i);
-       {$If Defined(RecordGraphColors) or Defined(RecordLegends)} WritelineToDebugFile(IntToStr(i) + '   ' + fList.Strings[pred(i)]+ '  = '+ IntToStr(Result.Canvas.Font.Color)); {$EndIf}
+       {$If Defined(RecordGraphColors) or Defined(RecordLegends)} WritelineToDebugFile(IntToStr(i) + '   ' + fList.Strings[pred(i)]+ '  = '+ ColorString(Result.Canvas.Font.Color)); {$EndIf}
        Result.Canvas.Font.Style := [fsBold];
        Result.Canvas.Font.Name := FontDialog1.Font.Name;
        Result.Canvas.Font.Size := FontDialog1.Font.Size;
@@ -5777,21 +5783,21 @@ finalization
    {$IfDef RecordClosing} WriteLineToDebugFile('Closing basegraf in'); {$EndIf}
    {$IfDef RecordGraphMemoryAlocations} WiteLineToDebugFile('RecordGraphMemoryAlocations active in BaseGraf'); {$EndIf}
    {$IfDef RecordGraf} WriteLineToDebugFile('RecordGrafProblems active in BaseGraf'); {$EndIf}
-   {$IfDef RecordTIN} writeLineToDebugFile('RecordTINProblems active in BaseGraf'); {$EndIf}
-   {$IfDef RecordDetailedTIN} writeLineToDebugFile('RecordDetailedTINProblems active in BaseGraf'); {$EndIf}
-   {$IfDef RecordFit} writeLineToDebugFile('RecordFitProblems active in BaseGraf'); {$EndIf}
-   {$IfDef RecordFullFit} writeLineToDebugFile('RecordFullFitProblems active in BaseGraf'); {$EndIf}
-   {$IfDef RecordHistogram} writeLineToDebugFile('RecordHistogramProblems active in BaseGraf'); {$EndIf}
-   {$IfDef RecordGrafDensity} writeLineToDebugFile('RecordGrafDensityProblems active in BaseGraf'); {$EndIf}
-   {$IfDef ReverseFit} writeLineToDebugFile('ReverseFit active in BaseGraf'); {$EndIf}
-   {$IfDef RecordGrafAxis} writeLineToDebugFile('RecordGrafAxisProblems active in BaseGraf'); {$EndIf}
-   {$IfDef TimeGraphing} writeLineToDebugFile('TimeGraphing active in BaseGraf'); {$EndIf}
-   {$IfDef RecordHistogram} writeLineToDebugFile('RecordHistogram active in BaseGraf'); {$EndIf}
-   {$IfDef RecordPlotFiles} writeLineToDebugFile('RecordPlotFiles active in BaseGraf'); {$EndIf}
-   {$IfDef RecordScaling} writeLineToDebugFile('RecordScalingProblems active in BaseGraf'); {$EndIf}
-   {$IfDef RecordGraphColors} writeLineToDebugFile('RecordGraphColors active in BaseGraf'); {$EndIf}
-   {$IfDef RecordFormResize} writeLineToDebugFile('RecordFormResize active in BaseGraf'); {$EndIf}
-   {$IfDef Closing} writeLineToDebugFile('ClosingProblems active in BaseGraf'); {$EndIf}
+   {$IfDef RecordTIN} WriteLineToDebugFile('RecordTINProblems active in BaseGraf'); {$EndIf}
+   {$IfDef RecordDetailedTIN} WriteLineToDebugFile('RecordDetailedTINProblems active in BaseGraf'); {$EndIf}
+   {$IfDef RecordFit} WriteLineToDebugFile('RecordFitProblems active in BaseGraf'); {$EndIf}
+   {$IfDef RecordFullFit} WriteLineToDebugFile('RecordFullFitProblems active in BaseGraf'); {$EndIf}
+   {$IfDef RecordHistogram} WriteLineToDebugFile('RecordHistogramProblems active in BaseGraf'); {$EndIf}
+   {$IfDef RecordGrafDensity} WriteLineToDebugFile('RecordGrafDensityProblems active in BaseGraf'); {$EndIf}
+   {$IfDef ReverseFit} WriteLineToDebugFile('ReverseFit active in BaseGraf'); {$EndIf}
+   {$IfDef RecordGrafAxis} WriteLineToDebugFile('RecordGrafAxisProblems active in BaseGraf'); {$EndIf}
+   {$IfDef TimeGraphing} WriteLineToDebugFile('TimeGraphing active in BaseGraf'); {$EndIf}
+   {$IfDef RecordHistogram} WriteLineToDebugFile('RecordHistogram active in BaseGraf'); {$EndIf}
+   {$IfDef RecordPlotFiles} WriteLineToDebugFile('RecordPlotFiles active in BaseGraf'); {$EndIf}
+   {$IfDef RecordScaling} WriteLineToDebugFile('RecordScalingProblems active in BaseGraf'); {$EndIf}
+   {$IfDef RecordGraphColors} WriteLineToDebugFile('RecordGraphColors active in BaseGraf'); {$EndIf}
+   {$IfDef RecordFormResize} WriteLineToDebugFile('RecordFormResize active in BaseGraf'); {$EndIf}
+   {$IfDef Closing} WriteLineToDebugFile('ClosingProblems active in BaseGraf'); {$EndIf}
    {$IfDef RecordSaveSeries} WriteLineToDebugFile('RecordSaveSeries active in BaseGraf'); {$EndIf}
    {$IfDef RecordClosing} WriteLineToDebugFile('Closing basegraf out'); {$EndIf}
 end.

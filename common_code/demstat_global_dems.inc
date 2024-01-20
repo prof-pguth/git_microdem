@@ -2,7 +2,7 @@
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 {                                   }
 {   include file for demstat        }
@@ -722,8 +722,8 @@ var
             IntToStr(GISdb[thedb].MyData.FiltRecsInDB)  +  ',' +  RealToString(Moment3.mean,-8,0)   +  ',' +
             RealToString(MinZ,-8,0) +  ' to ' + RealToString(MaxZ,-8,0) +  ',' +
             RealToString(SRTMmin,-8,0) +  ' to ' + RealToString(SRTMMax,-8,0) +  ',' +
-            RealToString(Moment1.mean,-8,2) + '±' + RealToString(Moment1.sdev,-8,2) +  ',' +
-            RealToString(Moment2.mean,-8,2) + '±' + RealToString(Moment2.sdev,-8,2);
+            RealToString(Moment1.mean,-8,2) + '±' + RealToString(Moment1.std_dev,-8,2) +  ',' +
+            RealToString(Moment2.mean,-8,2) + '±' + RealToString(Moment2.std_dev,-8,2);
          s1.Add(TStr);
          GISdb[thedb].EmpSource.Enabled := true;
       end;

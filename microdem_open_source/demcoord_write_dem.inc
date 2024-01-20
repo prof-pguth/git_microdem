@@ -1,5 +1,5 @@
 {^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of ianMICRODEM GIS Program    }
+{ Part of MICRODEM GIS Program       }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
 { Copyright (c) 2023 Peter L. Guth   }
@@ -67,7 +67,9 @@ var
    Limits : tGridLimits;
 begin
    Limits := FullDEMGridLimits;
+   {$If Defined(SavePartDEM)} WriteLineToDebugFile(AreaName + ' tDEMDataSet.SavePartOfDEMWithData full ' + GridLimitsToString(Limits)); {$EndIf}
    FilledGridBox(Limits);
+   {$If Defined(SavePartDEM)} WriteLineToDebugFile(AreaName + ' with data ' + GridLimitsToString(Limits)); {$EndIf}
    WriteNewFormatDEM(Limits,FileName);
 end;
 
@@ -135,6 +137,7 @@ var
    avgelev : float32;
 begin
    {$If Defined(RecordWriteDEM) or Defined(RecordZRange)} WriteLineToDebugFile('WriteNewFormatDEM Elev range: ' + ZRange); {$EndIf}
+   {$If Defined(SavePartDEM)} WriteLineToDebugFile(AreaName + ' tDEMDataSet.WriteNewFormatDEM, full ' + GridLimitsToString(FullDEMGridLimits) + '  writing ' + GridLimitsToString(Limits)); {$EndIf}
 
     if (FileExtEquals(FileName,'.TIF')) then begin
        SaveAsGeotiff(FileName);
@@ -165,7 +168,7 @@ begin
 
       NewHeadRecs := DEMheader;
       if (Limits.XGridHigh <> FullDEMGridLimits.XGridHigh) or (Limits.YGridHigh <> FullDEMGridLimits.YGridHigh) or
-         (Limits.XGridLow <> FullDEMGridLimits.XGridLow) or (Limits.YGridLow <> FullDEMGridLimits.YGridLow)then begin
+         (Limits.XGridLow <> FullDEMGridLimits.XGridLow) or (Limits.YGridLow <> FullDEMGridLimits.YGridLow) then begin
             NewHeadRecs.NumCol := succ(Limits.XGridHigh - Limits.XGridLow);
             NewHeadRecs.NumRow := succ(Limits.YGridHigh - Limits.YGridLow);
             if (DEMheader.NumCol <> NewHeadRecs.NumCol) or (DEMheader.NumRow <> NewHeadRecs.NumRow) then begin
@@ -245,7 +248,7 @@ end;
       StreamWord(TIFFFile,TypeField);
       StreamLongInt(TIFFFile,Length);
       StreamLongInt(TIFFFile,Offset);
-      {$IfDef GeotiffSave} WriteLineToDebugFile('tag=' + IntegerToString(Tag,5) + '  type=' + TiffTypeName(TypeField) + '  Length=' + IntegerToString(Length,4) + '  Value=' + IntToStr(Offset));    {$EndIf}
+      //{$IfDef GeotiffSave} WriteLineToDebugFile('tag=' + IntegerToString(Tag,5) + '  type=' + TiffTypeName(TypeField) + '  Length=' + IntegerToString(Length,4) + '  Value=' + IntToStr(Offset));    {$EndIf}
    end;
 
    procedure StreamWordFieldEntry(var TIFFFile : TBufferedFileStream; Tag,TypeField,Length,Offset : word);
@@ -254,7 +257,7 @@ end;
       StreamWord(TIFFFile,TypeField);
       StreamWord(TiffFile,Length);
       StreamWord(TIFFFile,Offset);
-      {$IfDef GeotiffSave} WriteLineToDebugFile('tag=' + IntegerToString(Tag,5) + '  type=' + TiffTypeName(TypeField) + '  Length=' + IntegerToString(Length,4) + '  Value=' + IntToStr(Offset));    {$EndIf}
+      //{$IfDef GeotiffSave} WriteLineToDebugFile('tag=' + IntegerToString(Tag,5) + '  type=' + TiffTypeName(TypeField) + '  Length=' + IntegerToString(Length,4) + '  Value=' + IntToStr(Offset));    {$EndIf}
    end;
 
    procedure StreamFieldEntryIncrementOffset(var TIFFFile : TBufferedFileStream; Tag,TypeField : word; Length : longint; var Offset : LongInt);
@@ -263,7 +266,7 @@ end;
       StreamWord(TIFFFile,TypeField);
       StreamLongInt(TIFFFile,Length);
       StreamLongInt(TIFFFile,Offset);
-      {$IfDef GeotiffSave} WriteLineToDebugFile('tag=' +  IntegerToString(Tag,5) + ' type=' + TiffTypeName(TypeField) + ' Length=' + IntegerToString(Length,4) + ' Offset=' + IntToStr(Offset) + '  Bytes=' + IntToStr(Length * GeotiffTypeSize(TypeField)));     {$EndIf}
+      //{$IfDef GeotiffSave} WriteLineToDebugFile('tag=' +  IntegerToString(Tag,5) + ' type=' + TiffTypeName(TypeField) + ' Length=' + IntegerToString(Length,4) + ' Offset=' + IntToStr(Offset) + '  Bytes=' + IntToStr(Length * GeotiffTypeSize(TypeField)));     {$EndIf}
       Offset := Offset + Length * GeotiffTypeSize(TypeField);
    end;
 
@@ -422,21 +425,21 @@ begin
 
    {0 offset marking end} StreamLongInt(TIFFFile,0);
 
-   {$IfDef GeotiffSave} WriteLineToDebugFile('starting DEM write, filepos=' + IntToStr(FilePos(TiffFile))); {$EndIf}
+   //{$IfDef GeotiffSave} WriteLineToDebugFile('starting DEM write, filepos=' + IntToStr(FilePos(TiffFile))); {$EndIf}
    WriteTheDEM;
-   {$IfDef GeotiffSave} WriteLineToDebugFile('done DEM write, filepos=' + IntToStr(FilePos(TiffFile))); {$EndIf}
+   //{$IfDef GeotiffSave} WriteLineToDebugFile('done DEM write, filepos=' + IntToStr(FilePos(TiffFile))); {$EndIf}
 
    {$IfDef WriteSminSmax}
       BlockWriteDouble(DEMheader.MinElev);  //340
       BlockWriteDouble(DEMheader.MaxElev);  //341
    {$EndIf}
 
-   {$IfDef GeotiffSave} WriteLineToDebugFile('start 33550, filepos=' + IntToStr(FilePos(TiffFile))); {$EndIf}
+   //{$IfDef GeotiffSave} WriteLineToDebugFile('start 33550, filepos=' + IntToStr(FilePos(TiffFile))); {$EndIf}
    BlockWriteDouble(DEMheader.DEMxSpacing);
    BlockWriteDouble(DEMheader.DEMySpacing);
    BlockWriteDouble(0);
 
-   {$IfDef GeotiffSave} WriteLineToDebugFile('start 33922, filepos=' + IntToStr(FilePos(TiffFile))); {$EndIf}
+  // {$IfDef GeotiffSave} WriteLineToDebugFile('start 33922, filepos=' + IntToStr(FilePos(TiffFile))); {$EndIf}
    {$IfDef GeotiffCorner} WriteLineToDebugFile('Write DEM,  NW cornerX=' + RealToString(DEMheader.DEMSWCornerX,-18,-6) + '  NW cornerY=' + RealToString(DEMheader.DEMSWCornerY + DEMheader.NumRow * DEMheader.DEMySpacing,-18,-6)); {$EndIf}
    BlockWriteDouble(0);
    BlockWriteDouble(0);
@@ -445,7 +448,7 @@ begin
    BlockWriteDouble(GeotiffNWCornerY);
    BlockWriteDouble(0);
 
-   {$IfDef GeotiffSave} WriteLineToDebugFile('start 34735 Geotiff keys, filepos=' + IntToStr(FilePos(TiffFile))); {$EndIf}
+   //{$IfDef GeotiffSave} WriteLineToDebugFile('start 34735 Geotiff keys, filepos=' + IntToStr(FilePos(TiffFile))); {$EndIf}
    StreamWordFieldEntry(TIFFFile,1,1,0,pred(GeoKeyEntries));
    StreamWordFieldEntry(TIFFFile,1024,0,1,wField);  {1 is for projection coords, 2 for Lat/long}
    StreamWordFieldEntry(TIFFFile,1025,0,1,DEMheader.RasterPixelIsGeoKey1025); {1=RasterPixelIsArea, 2=RasterPixelIsPoint}
@@ -457,15 +460,15 @@ begin
 
    StreamWordFieldEntry(TIFFFile,4096,0,1,DEMheader.VerticalCSTypeGeoKey);
 
-   {$IfDef GeotiffSave} WriteLineToDebugFile('start 34737 ASCII, ' + ASCIIstr + '  filepos=' + IntToStr(FilePos(TiffFile))); {$EndIf}
+   //{$IfDef GeotiffSave} WriteLineToDebugFile('start 34737 ASCII, ' + ASCIIstr + '  filepos=' + IntToStr(FilePos(TiffFile))); {$EndIf}
    TiffFile.Write(AsciiStr[1],ASCIIsize);
 
    {$IfDef WriteMissing}
-      {$IfDef GeotiffSave} WriteLineToDebugFile('start 42113 ASCII, ' + Missingstr + '  filepos=' + IntToStr(FilePos(TiffFile))); {$EndIf}
+     // {$IfDef GeotiffSave} WriteLineToDebugFile('start 42113 ASCII, ' + Missingstr + '  filepos=' + IntToStr(FilePos(TiffFile))); {$EndIf}
       TiffFile.Write(MissingStr[1],MissingSize);
    {$EndIf}
 
-   {$IfDef GeotiffSave} WriteLineToDebugFile('all done, filepos=' + IntToStr(FilePos(TiffFile))); {$EndIf}
+   //{$IfDef GeotiffSave} WriteLineToDebugFile('all done, filepos=' + IntToStr(FilePos(TiffFile))); {$EndIf}
    TiffFile.Free;
    DEMstatus := dsSaved;
    HeavyDutyProcessing := false;

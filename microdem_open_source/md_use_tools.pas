@@ -4,7 +4,7 @@ unit md_use_tools;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 {$I nevadia_defines.inc}
@@ -24,6 +24,8 @@ unit md_use_tools;
       //{$Define RecordOGR}
       //{$Define RecordGeoPDF}
       //{$Define RecordReformat}
+      {$Define RecordSAGA}
+      {$Define RecordSAGAFull}
    {$Else}
    {$EndIf}
 {$EndIf}
@@ -127,6 +129,10 @@ uses
    function SagaTRIMap(InName : PathStr) : integer;
    function SagaTPIMap(InName : PathStr) : integer;
    function SagaVectorRuggednessMap(InName : PathStr; Radius : integer) : integer;
+   function SagaChannelNetwork(InName : PathStr; OutName : PathStr = ''; ShpName : PathStr = '') : integer;
+   function SagaSinkRemoval(InName : PathStr; OutName : PathStr = '') : integer;
+   function SagaChannelShapefile(InName : PathStr; ChannelName : PathStr = '') : integer;
+   procedure SAGA_all_DEMs_remove_sinks;
 {$EndIf}
 
 
@@ -136,7 +142,7 @@ procedure FusionTinCreate(InName,OutName : PathStr; GridSize : float64; GridZone
 
 function MCC_lidarPresent : boolean;
 
-procedure GPSBabel_fit2gpx(inname,outname : PathStr);
+function GPSBabel_fit2gpx(inname,outname : PathStr) : boolean;
 
 procedure ACOLITEprocessing(MapOwner : tMapForm; OpenMaps : boolean = true);
 
@@ -156,6 +162,7 @@ uses
    DEM_Manager,
    DEMDataBase,
    gdal_tools,
+   geotiff,
    nevadia_main;
 
 const
@@ -170,57 +177,161 @@ end;
 
 
 
-function IsSagaCMDthere : boolean;
-begin
-   Result := FileExists(MDDef.SagaCMD) or GetExistingFileName('saga_cmd.exe','*.exe',MDDef.SagaCMD);
-end;
+
+{$IfDef ExSAGA}
+{$Else}
+
+//  https://sourceforge.net/p/saga-gis/wiki/Executing%20Modules%20with%20SAGA%20CMD/#:~:text=SAGA%20CMD%20is%20a%20command,application%20like%20a%20web%20server.
+
+(*
+ Algorithm 'Sink Removal' starting…
+Input parameters:
+{ 'DEM' : 'C:/temp/canyon_range/canyon_range_COP.tif', 'DEM_PREPROC' : 'TEMPORARY_OUTPUT', 'METHOD' : 1, 'SINKROUTE' : None, 'THRESHOLD' : False, 'THRSHEIGHT' : 100 }
+
+ta_preprocessor "Sink Removal" -DEM "C:/Users/pguth/AppData/Local/Temp/processing_rDPKFj/f38374e4abec45d0b2951b2280afff43/canyonrangeCOP.sgrd" -METHOD 1 -THRESHOLD false -THRSHEIGHT 100.0 -DEM_PREPROC "C:/Users/pguth/AppData/Local/Temp/processing_rDPKFj/5e3826c0da1d4b1c994adef706c2d79a/DEM_PREPROC.sdat"
 
 
-function SAGAMap(cmd : shortstring; inName,OutName : shortstring; ZUnits : tElevUnit) : integer;
-begin
-   if IsSagaCMDthere and FileExists(InName) then begin
-      WinExecAndWait32(cmd);
-      Result := OpenNewDEM(OutName,false);
-      if (Result <> 0) then begin
-         DEMGlb[Result].DEMheader.ElevUnits := zUnits;
-         CreateDEMSelectionMap(Result,true,true,mtElevSpectrum);
-      end;
-   end
-   else Result := 0;
-end;
+
+Algorithm 'Channel Network' starting…
+Input parameters:
+{ 'CHNLNTWRK' : 'TEMPORARY_OUTPUT', 'CHNLROUTE' : 'TEMPORARY_OUTPUT', 'DIV_CELLS' : 5, 'DIV_GRID' : None, 'ELEVATION' : 'C:/temp/canyon_range/canyon_range_COP.tif', 'INIT_GRID' : 'C:/temp/canyon_range/canyon_range_COP.tif', 'INIT_METHOD' : 2, 'INIT_VALUE' : 0, 'MINLEN' : 10, 'SHAPES' : 'TEMPORARY_OUTPUT', 'SINKROUTE' : None, 'TRACE_WEIGHT' : None }
+
+ta_channels "Channel Network" -ELEVATION "C:/Users/pguth/AppData/Local/Temp/processing_rDPKFj/f38374e4abec45d0b2951b2280afff43/canyonrangeCOP.sgrd"
+  -INIT_GRID "C:/Users/pguth/AppData/Local/Temp/processing_rDPKFj/f38374e4abec45d0b2951b2280afff43/canyonrangeCOP.sgrd"
+  -INIT_METHOD 2 -INIT_VALUE 0.0 -DIV_CELLS 5 -MINLEN 10
+  -CHNLNTWRK "C:/Users/pguth/AppData/Local/Temp/processing_rDPKFj/78fcdc4180ba4343beafaf3dc5267ff2/CHNLNTWRK.sdat" -CHNLROUTE "C:/Users/pguth/AppData/Local/Temp/processing_rDPKFj/b8eeb6cc8a244aef9058514ad6e4b7ae/CHNLROUTE.sdat" -SHAPES "C:/Users/pguth/AppData/Local/Temp/processing_rDPKFj/578df69586ac4544b9e5384bd8e7650e/SHAPES.shp"
+*)
 
 
-function SagaTRIMap(InName : PathStr) : integer;
-var
-   cmd : shortstring;
-   OutName : shortstring;
-begin
-   OutName := MDTempDir + 'saga_tri_' + ExtractFileNameNoExt(InName) + '.tif';
-   CMD := MDDef.SagaCMD + ' ta_morphometry 16 -DEM ' + inName + ' -TRI ' + OutName + ' -MODE 0';
-   Result := SAGAMap(cmd,InName,outname,euMeters);
-end;
+    function IsSagaCMDthere : boolean;
+    begin
+       Result := FileExists(MDDef.SagaCMD) or GetExistingFileName('saga_cmd.exe','*.exe',MDDef.SagaCMD);
+    end;
 
 
-function SagaTPIMap(InName : PathStr) : integer;
-var
-   cmd : shortstring;
-   OutName : shortstring;
-begin
-   OutName := MDTempDir + 'saga_tpi_' + ExtractFileNameNoExt(InName) + '.tif';
-   CMD := MDDef.SagaCMD + ' ta_morphometry 18 -DEM ' + inName + ' -TPI ' + OutName;
-   Result := SAGAMap(cmd,InName,outname,euMeters);
-end;
+    function SAGAMap(cmd : shortstring; inName,OutName : shortstring; ZUnits : tElevUnit; OpenMap : boolean = true) : integer;
+    begin
+       if IsSagaCMDthere and FileExists(InName) then begin
+          {$IfDef RecordSAGA} WriteLineToDebugFile('SAGAMap in, cmd= ' + CMD); {$EndIf}
+          WinExecAndWait32(cmd);
+          if OpenMap and (OutName <> '') then begin
+            Result := OpenNewDEM(OutName,false);
+            if (Result <> 0) and OpenMap then begin
+               DEMGlb[Result].DEMheader.ElevUnits := zUnits;
+               CreateDEMSelectionMap(Result,true,true,mtElevSpectrum);
+            end;
+          end;
+       end
+       else Result := 0;
+    end;
 
 
-function SagaVectorRuggednessMap(InName : PathStr; Radius : integer) : integer;
-var
-   cmd : shortstring;
-   OutName : shortstring;
-begin
-   OutName := MDTempDir + 'saga_vrm_rad_' + FilterSizeStr(Radius) + '_' + ExtractFileNameNoExt(InName) + '.tif';
-   CMD := MDDef.SagaCMD + ' ta_morphometry 17 -DEM ' + inName + ' -VRM ' + OutName + ' -RADIUS ' + IntToStr(Radius);
-   Result := SAGAMap(cmd,InName,outname,Undefined);
-end;
+    function SagaChannelShapefile(InName : PathStr; ChannelName : PathStr = '') : integer;
+    var
+       cmd : shortstring;
+    begin
+       Result := 0;
+       if IsSagaCMDthere and FileExists(InName) then begin
+         {$IfDef RecordSAGAFull} WriteLineToDebugFile('SagaChannelShapefile in, InName= ' + InName); {$EndIf}
+          if (ChannelName = '') then ChannelName := MDTempDir + 'saga_channel_' + ExtractFileNameNoExt(InName) + '.shp';
+          if not FileExists(ChannelName) then begin
+             CMD := MDDef.SagaCMD + ' ta_channels 0' +
+                  ' -ELEVATION ' + inName +
+                  ' -INIT_GRID ' + inName +
+                  ' -CHNLNTWRK ' + MDTempDir + 'saga_channel_network' + ExtractFileNameNoExt(InName) + '.tif' +
+                  ' -CHNLROUTE ' + MDTempDir + 'saga_channel_route' + ExtractFileNameNoExt(InName) + '.tif' +
+                  ' -SHAPES ' + ChannelName;
+             WinExecAndWait32(cmd);
+             CleanUpTempDirectory(false);
+             {$IfDef RecordSAGAFull} WriteLineToDebugFile('SagaChannelShapefile in, ChannelName= ' + ChannelName); {$EndIf}
+          end;
+          //Result := SAGAMap(cmd,InName,'',Undefined,false);
+       end;
+    end;
+
+
+    function SagaSinkRemoval(InName: PathStr; OutName : PathStr = '') : integer;
+    var
+       cmd : shortstring;
+    begin
+       if IsSagaCMDthere then begin
+          {$IfDef RecordSAGA} WriteLineToDebugFile('SagaSinkRemoval in, InName= ' + InName); {$EndIf}
+          if (OutName = '') then OutName := MDTempDir + 'saga_sinks_removed_' + ExtractFileNameNoExt(InName) + '.tif';
+          CMD := MDDef.SagaCMD + ' ta_preprocessor "Sink Removal" -DEM ' + inName + ' -DEM_PREPROC ' + OutName;
+          //TemporaryNewGeotiff := false;
+          Result := SAGAMap(cmd,InName,outname,euMeters,false);
+          {$IfDef RecordSAGA} WriteLineToDebugFile('SagaSinkRemoval out'); {$EndIf}
+       end
+       else Result := 0;;
+    end;
+
+
+    procedure SAGA_all_DEMs_remove_sinks;
+    var
+       i : integer;
+       InName,OutName : PathStr;
+    begin
+        {$IfDef RecordSAGA} WriteLineToDebugFile('SagaSinkRemoval in, InName= ' + InName); {$EndIf}
+        if IsSagaCMDthere then begin
+           for i := 1 to MaxDEMDataSets do begin
+             if ValidDEM(i) then begin
+                InName := DEMGlb[i].SelectionMap.GeotiffDEMNameOfMap;
+                OutName := ChangeFileExt(InName,'_no_sink.tif');
+                SagaSinkRemoval(InName,OutName);
+                GDALConvertImagesToGeotiff(OutName,true);
+             end;
+          end;
+        end;
+    end;
+
+
+    function SagaChannelNetwork(InName : PathStr; OutName : PathStr = ''; ShpName : PathStr = '') : integer;
+    var
+       cmd : shortstring;
+    begin
+       if (OutName = '') then OutName := MDTempDir + 'saga_channel_' + ExtractFileNameNoExt(InName) + '.tif';
+       if (ShpName = '') then ShpName := MDTempDir + 'saga_channel_' + ExtractFileNameNoExt(InName) + '.shp';
+       CMD := MDDef.SagaCMD + ' ta_channels "Channel Network" -ELEVATION ' + inName + ' -INIT_GRID ' + inName + ' -CHNLNTWRK ' + OutName;
+       Result := SAGAMap(cmd,InName,OutName,Undefined,false);
+       //WinExecAndWait32(cmd);
+       Result := 0;
+    end;
+
+
+
+    function SagaTRIMap(InName : PathStr) : integer;
+    var
+       cmd : shortstring;
+       OutName : shortstring;
+    begin
+       OutName := MDTempDir + 'saga_tri_' + ExtractFileNameNoExt(InName) + '.tif';
+       CMD := MDDef.SagaCMD + ' ta_morphometry 16 -DEM ' + inName + ' -TRI ' + OutName + ' -MODE 0';
+       Result := SAGAMap(cmd,InName,outname,euMeters);
+    end;
+
+
+    function SagaTPIMap(InName : PathStr) : integer;
+    var
+       cmd : shortstring;
+       OutName : shortstring;
+    begin
+       OutName := MDTempDir + 'saga_tpi_' + ExtractFileNameNoExt(InName) + '.tif';
+       CMD := MDDef.SagaCMD + ' ta_morphometry 18 -DEM ' + inName + ' -TPI ' + OutName;
+       Result := SAGAMap(cmd,InName,outname,euMeters);
+    end;
+
+
+    function SagaVectorRuggednessMap(InName : PathStr; Radius : integer) : integer;
+    var
+       cmd : shortstring;
+       OutName : shortstring;
+    begin
+       OutName := MDTempDir + 'saga_vrm_rad_' + FilterSizeStr(Radius) + '_' + ExtractFileNameNoExt(InName) + '.tif';
+       CMD := MDDef.SagaCMD + ' ta_morphometry 17 -DEM ' + inName + ' -VRM ' + OutName + ' -RADIUS ' + IntToStr(Radius);
+       Result := SAGAMap(cmd,InName,outname,Undefined);
+    end;
+
+{$EndIf}
 
 
 procedure AddEGMtoDBfromSphHarmonics(DBonTable : integer; Do2008 : boolean);
@@ -236,8 +347,8 @@ begin
    GISdb[DBonTable].MyData.First;
    Output := tStringList.Create;
    if (Do2008) then begin
-      EGMDir := ProgramRootDir +  'EGM2008_Spherical_Harmonics\';
-      EXEName := EGMDir +  'hsynth_WGS84.exe';
+      EGMDir := ProgramRootDir + 'EGM2008_Spherical_Harmonics\';
+      EXEName := EGMDir + 'hsynth_WGS84.exe';
       fName := 'EGM2008_AL';
       OutName := 'OUTPUT.DAT';
    end
@@ -278,7 +389,6 @@ begin
    end;
    {$IfDef RecordExports} WriteLineToDebugFile('AddEGMtoDBfromSphHarmonics out'); {$EndIf}
 end;
-
 
 
 procedure FusionTinCreate(InName,OutName : PathStr; GridSize : float64; GridZone : integer; HemiChar : ansichar);
@@ -338,12 +448,13 @@ end;
 
 
 
-procedure GPSBabel_fit2gpx(inname,outname : PathStr);
+function GPSBabel_fit2gpx(inname,outname : PathStr) : boolean;
 var
    GPSBabelEXEName : PathStr;
 begin
-   GPSBabelEXEName := 'C:\Program Files (x86)\GPSBabel\gpsbabel.exe';
-   if FileExists(GPSBabelExeName) then begin
+   GPSBabelEXEName := 'C:\Program Files\GPSBabel\gpsbabel.exe';
+   Result := FileExists(GPSBabelExeName);
+   if Result then begin
       WinExecAndWait32('"' + GPSBabelExeName + '" -i garmin_fit -o gpx -f ' + inName + ' -F ' + OutName);
       if MDDef.DeleteFIT and FileExists(OutName) then File2Trash(InName);
    end
@@ -644,8 +755,6 @@ end;
 
 
 function ExecuteWBandOpenMap(cmd : ansistring; OutName : PathStr; TheElevUnits : tElevUnit; MapType :tMapType = mtElevRainbow) : integer;
-//var
-   //NewGrid : integer;
 begin
    {$IfDef RecordWBT} WriteLineToDebugFile('ExecuteWBandOpenMap, cmd=' + cmd); {$EndIf}
    WinExecAndWait32(cmd);

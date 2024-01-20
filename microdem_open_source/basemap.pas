@@ -76,7 +76,7 @@ uses
 //end DB declarations
 
    {$IfDef VCL}
-      Graphics,Forms,StdCtrls,ComCtrls,Controls,Dialogs, Menus, Buttons,Printers, ToolWin,
+      Graphics,Forms,StdCtrls,ComCtrls,Controls,Dialogs, Menus, Buttons,{Printers,} ToolWin,
    {$EndIf}
 
    {$IfDef MSWindows}

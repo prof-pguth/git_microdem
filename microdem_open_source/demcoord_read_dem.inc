@@ -2,7 +2,7 @@
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 {include file for demcoord.pas}
@@ -21,7 +21,6 @@ var
       var
          TiffImage : tTiffImage;
          RegVars : tRegVars;
-         i : integer;
       begin
          {$If Defined(RecordReadDEM) or Defined(RecordGeotiff)} WriteLineToDebugFile('tDEMDataSet.ReadDEMNow ReadTIFFDEM in'); {$EndIf}
          TiffImage := tTiffImage.CreateGeotiff(false,DEMMapProjection,RegVars,false,DEMFileName,Result,false,false);
@@ -74,17 +73,17 @@ var
        RewriteDEM,
        ShowProgress : boolean;
        LogRecA : array[0..2048] of Byte;
-       l1 : float64;
+       //l1 : float64;
        BytesToRead,BytesRead,
-       //LogRecAOffset,
-       i,NumRead,HeaderSize,
+       //LogRecAOffset,   i,
+       NumRead,HeaderSize,
        x{,HeaderOffset,DEMOffset} : integer;
        Magic : shortstring;
-       aTstr : ANSIString;
+       //aTstr : ANSIString;
 
-             {$IfDef AllowV1V2V3DEMHeaders}
-                {$I read_old_md_headers.inc}
-             {$EndIf}
+       {$IfDef AllowV1V2V3DEMHeaders}
+          {$I read_old_md_headers.inc}
+       {$EndIf}
 
          function GoodMagic(Magic : string) : boolean;
          begin
@@ -362,7 +361,6 @@ var
 
 var
    ofName,WKTfile : PathStr;
-   //DEMlist : tStringList;
 begin
    {$IfDef RecordReadDEM} WriteLineToDebugFile('enter read DEM for ' +  tFile); {$EndIf}
    InsureFileIsNotReadOnly(tFile);
@@ -372,7 +370,11 @@ begin
    Error := true;
    WKTfile := FindSingleWKTinDirectory(ExtractFilePath(DEMFileName));
    if ExtEquals(Ext, '.DEM') then begin
-      Error := not ReadNewMicroDEMFormat(DEMFileName)
+      Error := not ReadNewMicroDEMFormat(DEMFileName);
+      if Error then begin
+         File2Trash(DEMFileName);
+        {$If Defined(RecordReadDEM) or Defined(RecordProblems)} HighlightLineToDebugFile('Broken file deleted ' +  DEMFileName); {$EndIf}
+      end;
    end
    else if ExtEquals(Ext,'.ASC') and (WKTFile <> '') then begin
       ofName := DEMFileName;
@@ -406,7 +408,7 @@ begin
       if (Tfile <> '') then begin
          {$IfDef RecordReadDEM} WriteLineToDebugFile(DEMFileName + ' Not acceptable DEM'); {$EndIf}
          if ReportErrors then begin
-            MessageToContinue(DEMFileName + MessLineBreak + 'Not acceptable DEM');
+            MessageToContinue(DEMFileName + MessLineBreak + 'Not acceptable DEM (maybe open elsewhere?)');
          end;
       end;
       Self.Destroy;
@@ -432,7 +434,8 @@ var
    fName : PathStr;
    TStr : shortstring;
    xutm,yutm,LatUK,LongUK,LatWGS,LongWGS : array[1..4] of float64;
-   i,NewDEM,Col,Row : integer;
+   //i,
+   NewDEM,Col,Row : integer;
    Lat,Long : float64;
    z : float32;
    UKOS : tMapProjection;

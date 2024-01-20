@@ -4,7 +4,7 @@ unit petimage_form;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -50,7 +50,7 @@ uses
 
   System.UITypes,
   Windows,  SysUtils, Messages, Classes, Graphics, Controls,
-  Forms, Dialogs, Menus, ExtCtrls,Printers,JPEG,ClipBrd,
+  Forms, Dialogs, Menus, ExtCtrls,{Printers,}JPEG,ClipBrd,
   Buttons, ToolWin, ComCtrls,
   PETMAR,Petmar_types,PetImage,
   {$IfDef RegisterPhoto}    //unclear if all the code for this is still available, and if it would run
@@ -503,23 +503,25 @@ end;
 
 
 procedure DoBitmapDifference(bmp1,bmp2 : tMyBitmap; var Difference : float64; Display : boolean = true);
-const
-   GoGrayscale = false;
+//const
+  //GoGrayscale = false;
 var
    xstart,ystart,xend,yend,
    x,y,ChangeCount : integer;
-   MaxDiff,Red1,Red2,Green1,Green2,Blue1,Blue2,Red3,
-   Gray1,Gray2,Gray3 : byte;
+   MaxDiff,Red1,Red2,Green1,Green2,Blue1,Blue2,Red3 : byte;
+   //Gray1,Gray2,Gray3 : byte;
    Diffs : array[0..255] of integer;
    BMP3 : tMyBitmap;
    BMPMemory,BMPMemory2,BMPMemory3 : tBMPMemory;
    results : tStringList;
 begin
       for x := 0 to 255 do Diffs[x] := 0;
+      (*
       if GoGrayscale then begin
          MakeTheBitmapGrayScale(bmp1);
          MakeTheBitmapGrayScale(bmp2);
       end;
+      *)
       ChangeCount := 0;
       BMPMemory := tBMPMemory.Create(Bmp1);
       BMPMemory2 := tBMPMemory.Create(Bmp2);
@@ -541,13 +543,14 @@ begin
             BMPMemory.GetPixelRGB(x,y,Red1,Green1,Blue1);
             BMPMemory2.GetPixelRGB(x,y,Red2,Green2,Blue2);
 
+            (*
             if GoGrayscale then begin
                Gray1 := RGBtoGrayscale(Red1,Green1,Blue1);
                Gray2 := RGBtoGrayscale(Red2,Green2,Blue2);
                Gray3 := abs(Gray1-Gray2);
             end
             else Gray3 := 0;
-
+            *)
             Red3 := abs(Red1-Red2);
             MaxDiff := Red3;
             inc(Diffs[MaxDiff]);
@@ -668,7 +671,7 @@ begin
    Bitmap := DefaultHorizontalLegendOnBitmap(Min,Max,Units,'',Legend,ChloroplethScheme);
    DisplayBitmap(Bitmap,'Legend');
    Bitmap.Free;
-   Bitmap := Nil;
+   //Bitmap := Nil;
 end;
 
 

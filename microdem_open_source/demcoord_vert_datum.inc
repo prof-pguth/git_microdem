@@ -104,14 +104,12 @@ end;
 
 procedure VerticalDatumShift(DEM : integer; vdShift : tvdShift);
 var
-   i,geoidGrid,Col,Row : Integer;
-   Merge : tDEMbooleans;
+   geoidGrid,Col,Row : Integer;
    fName : PathStr;
    TheShift : shortString;
    z1,z2  : float32;
 begin
-   {$IfDef RecordVertDatumShift} WriteLineToDebugFile('VerticalDatumShift in, DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].ZRange);  {$EndIf}
-   //GetGeoid;
+   {$IfDef RecordVertDatumShift} WriteLineToDebugFile('VerticalDatumShift in, DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].ZRange); {$EndIf}
    if (vdShift = vdEGM96toEGM2008) then fName := GeoidDiffFName
    else fName := Geoid2008FName;
    GeoidGrid := OpenNewDEM(fName,false,'geoid shift');
@@ -134,13 +132,6 @@ begin
              end;
           end;
       end;
-
-      (*
-      for i := 1 to MaxDEMDataSets do Merge[i] := false;
-      Merge[DEM] := true;
-      Merge[GeoidGrid] := true;
-      SumDEMs(DEM, Merge,DEMGlb[DEM].AreaName + '_vdatum_shift_' + TheShift);
-      *)
 
       CloseSingleDEM(GeoidGrid);
       case vdShift of

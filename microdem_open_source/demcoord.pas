@@ -6,7 +6,7 @@ unit DEMCoord;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -30,7 +30,9 @@ unit DEMCoord;
 
    {$IFDEF DEBUG}
       {$Define RecordDEMIX}
+      //{$Define SavePartDEM}
       //{$Define RecordMapType}
+      //{$Define RecordDEMstats}
       //{$Define TimePointParameters}
       //{$Define RecordDEMIXResample}
       //{$Define RecordsfBoundBox2tGridLimits}     //use with care; trashes the debug file
@@ -412,7 +414,7 @@ type
 
          procedure ClipDEMGrid(var x,y : float64);  overload;
          procedure ClipDEMGrid(var x,y : float32);  overload;
-         procedure ClipDEMGrid(var x,y : int32);  overload;
+         procedure ClipDEMGrid(var x,y : int32);    overload;
 
          function GridInDataSet(XGrid,YGrid : int32) : boolean; overload; {$IfDef NoInLine} {$Else} inline; {$EndIf}
          function GridInDataSet(XGrid,YGrid : float64) : boolean; overload; {$IfDef NoInLine} {$Else} inline; {$EndIf}
@@ -456,6 +458,7 @@ type
          procedure IncrementGridValue(Col,Row : int32);
          procedure SetGridMissing(Col,Row : int32); overload;
          procedure SetGridMissing(x,y : float64); overload;
+         procedure SetGridMissingOutsideBox(Col1,Row1,Col2,Row2 : integer);
          procedure SetEntireGridMissing;
          procedure SetEntireGridToConstant(z : float64);
          procedure ReclassifyRange(MinRange, MaxRange, NewZ : float64);
@@ -611,6 +614,7 @@ type
          function DEMSizeString : shortstring;
          function ColsRowsString : ShortString;
          function ZRange : ShortString;
+         function NominalCorner : shortstring;
 
          procedure TrackElevationRange(Where : shortstring);
 
@@ -826,7 +830,7 @@ procedure GetDefaultWorldFile(var ReadFileName : PathStr);
 function FindExistingWorldFile(var ReadFileName : PathStr) : boolean;
 function ValidWorldFile(FileName : PathStr) : boolean;
 
-procedure MaskStripFromSecondGrid(Limits : tGridLimits;  FirstGrid,SecondGrid : integer;  HowMask : tMaskGrid);
+procedure MaskStripFromSecondGrid(FirstGrid,SecondGrid : integer;  HowMask : tMaskGrid);
 
 procedure VerticalDatumShiftWithVDATUM(AreaName : shortstring; DEM,db : integer; SaveName : PathStr; ErrorLog : tStringList = nil);
 procedure VerticalDatumShiftWithGDAL(DEM : integer; var SaveName : PathStr);
@@ -963,7 +967,16 @@ var
    end;
 {$EndIf}
 
-
+function tDEMDataSet.NominalCorner : shortstring;
+var
+   xg,yg,f : float32;
+begin
+    LatLongDegreeToDEMGrid( round(DEMSWcornerLat),round(DEMSWcornerLong),xg,yg);
+    f := abs(frac(xg));
+    if (f < 0.0001) or (f > 0.9999) then Result := 'Corner'
+    else if (f-0.5) < 0.0001 then Result := 'Centroid'
+    else Result := 'Random';
+end;
 
 procedure tDEMDataSet.SetRasterPixelIsGeoKey1025(DoHalfPixelShift : boolean);
 var
@@ -1194,21 +1207,18 @@ begin
 end;
 
 
-procedure MaskStripFromSecondGrid(Limits : tGridLimits;  FirstGrid,SecondGrid : integer;  HowMask : tMaskGrid);
+procedure MaskStripFromSecondGrid(FirstGrid,SecondGrid : integer;  HowMask : tMaskGrid);
 var
    Col,Row: integer;
-   Lat,Long : float64;
    z1,z2 : float32;
    SameGrid : boolean;
 begin
    SameGrid := DEMGlb[FirstGrid].SecondGridIdentical(SecondGrid);
-   for Row := Limits.YGridLow to Limits.YGridHigh do begin
+   for Row := 0 to pred(DEMGlb[FirstGrid].DEMHeader.NumRow) do begin
       TInterlocked.Increment(ParallelRowsDone);
       if (ParallelRowsDone Mod 250 = 0) then UpdateProgressBar(ParallelRowsDone / DEMGlb[FirstGrid].DEMheader.NumRow);
-
-      for Col := Limits.XGridLow to Limits.XGridHigh do begin
+      for Col := 0 to pred(DEMGlb[FirstGrid].DEMHeader.NumCol) do begin
          if (not DEMGlb[FirstGrid].MissingDataInGrid(Col,Row)) then begin
-
             if DEMGlb[FirstGrid].GetElevMetersFromSecondDEM(SameGrid,SecondGrid,Col,Row,z2) then begin
                if (HowMask = msSecondValid) then begin
                   DEMGlb[FirstGrid].SetGridMissing(Col,Row);
@@ -1222,7 +1232,7 @@ begin
                end
                else begin
                   if DEMGlb[FirstGrid].GetElevMetersOnGrid(Col,Row,z1) then begin
-                     if ((HowMask = msAboveSecond) and (z1 > z2)) or  ((HowMask = msBelowSecond) and (z1 < z2)) then begin
+                     if ((HowMask = msAboveSecond) and (z1 > z2)) or ((HowMask = msBelowSecond) and (z1 < z2)) then begin
                         DEMGlb[FirstGrid].SetGridMissing(Col,Row);
                         TInterlocked.Increment(EditsDone);
                      end;
@@ -1235,61 +1245,6 @@ begin
                   TInterlocked.Increment(EditsDone);
                end;
             end;
-
-
-(*
-            if SameGrid then begin
-               if (HowMask = msSecondValid) then begin
-                  if (not DEMGlb[SecondGrid].MissingDataInGrid(Col,Row)) then begin
-                     DEMGlb[FirstGrid].SetGridMissing(Col,Row);
-                     TInterlocked.Increment(EditsDone);
-                  end;
-               end
-               else if (HowMask = msSecondMissing) then begin
-                  if DEMGlb[SecondGrid].MissingDataInGrid(Col,Row) then begin
-                     DEMGlb[FirstGrid].SetGridMissing(Col,Row);
-                     TInterlocked.Increment(EditsDone);
-                  end;
-               end
-               else begin
-                  if DEMGlb[FirstGrid].GetElevMetersOnGrid(Col,Row,z2) then begin
-                     if ((HowMask = msAboveSecond) and (z2 > z)) or  ((HowMask = msBelowSecond) and (z2 < z)) then begin
-                        DEMGlb[FirstGrid].SetGridMissing(Col,Row);
-                        TInterlocked.Increment(EditsDone);
-                     end;
-                  end;
-               end;
-            end
-            else begin
-               DEMGlb[FirstGrid].DEMGridToLatLongDegree(Col,Row,Lat,Long);
-               if (HowMask = msSecondValid) then begin
-                  if DEMGlb[SecondGrid].GetElevFromLatLongDegree(Lat,Long,z) then begin
-                     DEMGlb[FirstGrid].SetGridMissing(Col,Row);
-                     TInterlocked.Increment(EditsDone);
-                  end;
-               end
-               else if (HowMask = msSecondMissing) then begin
-                  if not DEMGlb[SecondGrid].GetElevFromLatLongDegree(Lat,Long,z) then begin
-                     DEMGlb[FirstGrid].SetGridMissing(Col,Row);
-                     TInterlocked.Increment(EditsDone);
-                  end;
-               end
-               else begin
-                  if DEMGlb[SecondGrid].GetElevFromLatLongDegree(Lat,Long,z) then begin
-                     if DEMGlb[FirstGrid].GetElevMetersOnGrid(Col,Row,z2) then begin
-                       if (HowMask = msAboveSecond) and (z2 > z) then begin
-                          DEMGlb[FirstGrid].SetGridMissing(Col,Row);
-                          TInterlocked.Increment(EditsDone);
-                       end;
-                       if (HowMask = msBelowSecond) and (z2 < z) then begin
-                          DEMGlb[FirstGrid].SetGridMissing(Col,Row);
-                          TInterlocked.Increment(EditsDone);
-                       end;
-                     end;
-                  end;
-               end;
-            end;
-         *)
          end;
       end;
    end;
@@ -2488,25 +2443,28 @@ var
          {$IfDef RecordLatSpacingValues} WriteLineToDebugFile('tDEMDataSet.LatLongMapSpacing in SW corner of map ' + LatLongDegreeToString(BaseLat,BaseLong)); {$EndIf}
          LatSizeMap := pred(DEMheader.NumRow) * DEMheader.DEMySpacing;
          LongSizeMap := pred(DEMheader.NumCol) * DEMheader.DEMxSpacing;
-         Long1 := DEMheader.DEMSWCornerX + Pred(DEMheader.NumRow div 2) * DEMheader.DEMxSpacing;
-         Long2 := DEMheader.DEMSWCornerX + Succ(DEMheader.NumRow div 2) * DEMheader.DEMxSpacing;
-         VincentyCalculateDistanceBearing(DEMSWcornerLat,Long1,DEMSWcornerLat+LatSizeMap,Long1,Distance,Bearing);
-         {$IfDef RecordLatSpacingValues} WriteLineToDebugFile('Width of bottom of map ' + RealToString(Distance,-12,2)); {$EndIf}
-         AverageYSpace := Distance / Pred(DEMheader.NumRow);
-         Sum := 0;
-         for i := 0 to Pred(DEMheader.NumRow) do begin
-            Lat := DEMheader.DEMSWCornerY + i * DEMheader.DEMySpacing;
-            VincentyCalculateDistanceBearing(Lat,Long1,Lat,Long2,Distance,Bearing);
-            XSpaceByDEMrow^[i] := Distance * 0.5;
-            DiagSpaceByDEMrow^[i] := sqrt(sqr(XSpaceByDEMrow^[i])+ sqr(AverageYSpace));
-            Sum := Sum + XSpaceByDEMrow^[i];
-            {$IfDef RecordLatSpacingValues} if (i mod 50 = 0) then WriteLineToDebugFile(IntegerToString(i,5) + RealToString(Lat,12,8) + RealToString(ExactXSpace^[i],10,4) + RealToString(ExactDiaSpace^[i],10,4)); {$EndIf}
-         end;
-         AverageXSpace := Sum / DEMheader.NumRow;
+
          if ((LatSizeMap > 3) or (LongSizeMap > 3)) and (DEMheader.DEMySpacing > 20 / 3600) then begin
             l1 := DEMSWcornerLat + 0.5 * LatSizeMap;
             AverageXSpace := abs(LongSizeMap * 111000 / pred(DEMheader.NumCol) * CosDeg(L1));
             AverageYSpace := abs(LatSizeMap * 111000 / pred(DEMheader.NumRow));
+         end
+         else begin
+           Long1 := DEMheader.DEMSWCornerX + Pred(DEMheader.NumRow div 2) * DEMheader.DEMxSpacing;
+           Long2 := DEMheader.DEMSWCornerX + Succ(DEMheader.NumRow div 2) * DEMheader.DEMxSpacing;
+           VincentyCalculateDistanceBearing(DEMSWcornerLat,Long1,DEMSWcornerLat+LatSizeMap,Long1,Distance,Bearing);
+           {$IfDef RecordLatSpacingValues} WriteLineToDebugFile('Width of bottom of map ' + RealToString(Distance,-12,2)); {$EndIf}
+           AverageYSpace := Distance / Pred(DEMheader.NumRow);
+           Sum := 0;
+           for i := 0 to Pred(DEMheader.NumRow) do begin
+              Lat := DEMheader.DEMSWCornerY + i * DEMheader.DEMySpacing;
+              VincentyCalculateDistanceBearing(Lat,Long1,Lat,Long2,Distance,Bearing);
+              XSpaceByDEMrow^[i] := Distance * 0.5;
+              DiagSpaceByDEMrow^[i] := sqrt(sqr(XSpaceByDEMrow^[i])+ sqr(AverageYSpace));
+              Sum := Sum + XSpaceByDEMrow^[i];
+              {$IfDef RecordLatSpacingValues} if (i mod 50 = 0) then WriteLineToDebugFile(IntegerToString(i,5) + RealToString(Lat,12,8) + RealToString(ExactXSpace^[i],10,4) + RealToString(ExactDiaSpace^[i],10,4)); {$EndIf}
+           end;
+           AverageXSpace := Sum / DEMheader.NumRow;
          end;
          AverageSpace := 0.5 * (AverageXSpace + AverageYSpace);
          {$IfDef RecordReadDEM} if not DEMMergeInProgress then WriteLineToDebugFile('AverageXSpace=' + RealToString(AverageXSpace,12,2) + '  AverageYSpace=' + RealToString(AverageYSpace,12,2) ); {$EndIf}
@@ -2654,7 +2612,7 @@ end;
 function tDEMDataSet.RectangleSubsetDEMinMemory(GridLimits : tGridLimits) : tDEMDataSet;
 var
    z   : float32;
-   x,y   : integer;
+   x,y : integer;
 begin
     ClipDEMGrid(GridLimits.XGridLow,GridLimits.YGridLow);
     ClipDEMGrid(GridLimits.XGridHigh,GridLimits.YGridHigh);

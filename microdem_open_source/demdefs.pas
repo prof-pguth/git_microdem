@@ -4,7 +4,7 @@
 { Part of MICRODEM GIS Program       }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
-{ Copyright (c) 2023 Peter L. Guth   }
+{ Copyright (c) 2024 Peter L. Guth   }
 {____________________________________}
 
 {$I nevadia_defines.inc}
@@ -771,6 +771,10 @@ const
    mhsEightFixed = 3;
    mhsPick = 4;
 
+   ResampleModeBoth = 1;
+   ResampleModeHalfSec = 2;
+   ResampleModeOneSec = 3;
+   ResampleModeRange = 4;
 
 type
    tDigitizeDatum = byte;
@@ -1583,6 +1587,7 @@ type
            ShowElevSlope,
            ShowCumSlope,
            ShowAspectRose,
+           ShowElevRough,
            ShowElevSlopeDeg : boolean;
 
            ElevMoments,
@@ -1955,7 +1960,7 @@ type
       LandTypePointsNeeded : int32;
        RotateVectMult : byte;
        AddFitNav,
-       ConfirmDBEdits : boolean;
+       ApplyFilterToAllDBs,ConfirmDBEdits : boolean;
        AspectMapMode : byte;
        XAspect,YAspect : int32;
 
@@ -2529,7 +2534,6 @@ type
       DefaultLongHemi : AnsiChar;
       ASCIIZUnits : byte;
       ASCIIXYFormat : byte;
-      //IsUSNAComputer,
       TargetsAlongLine : boolean;
 
       NEAutoSat,
@@ -3048,6 +3052,7 @@ var
       GDAL_translate_name,
       GDAL_contour_name,
       GDAL_Warp_Name,
+      GDAL_rasterize,
       GDAL_dem_name,
       GDAL_ogr_Name,
       GDAL_info_Name,

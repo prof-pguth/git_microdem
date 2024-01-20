@@ -4,7 +4,7 @@ unit petmar;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -123,7 +123,6 @@ var
 
       procedure InsureFormIsOnScreen(TheForm : Forms.tForm);
       procedure PlaceFormInCorner(Owner,TheForm : Forms.tForm; FormPosition :  byte = lpSEMap);
-
 
       procedure HardwareOnLine;
       procedure PETMARAboutBox(ProgramName : ANSIstring; Modifier : ANSIstring = '');
@@ -344,6 +343,10 @@ procedure ReadDefault(Prompt : ShortString;  var WordVal : word); overload;
       function FileExtEquals(fName : PathStr; Wanted : ExtStr) : boolean;
       procedure UnblockFile(fName : PathStr);
 
+      procedure AddSuffixOrPrefixToFiles(PrefixWanted : boolean; aPath : Pathstr = '');
+
+
+
 //values from strings
       function CheckEditString(Text : string; var OutValue : float64) : boolean; overload;
       function CheckEditString(Text : string; var OutValue : float32) : boolean; overload;
@@ -529,16 +532,40 @@ var
    TerrainCuts : array[0..4,1..3] of integer;
 
 
+procedure AddSuffixOrPrefixToFiles(PrefixWanted : boolean; aPath : Pathstr = '');
+var
+   FilesWanted : tStringList;
+   j : integer;
+   ext : extStr;
+   version,what : shortstring;
+   fName,NewName : PathStr;
+begin
+   if aPath = '' then GetDOSPath('files to add ' + What,aPath);
+   Ext := '*.*';
+   if PrefixWanted then What := 'prefix' else what := 'suffix';
+
+   Version := '_v1';
+   Petmar.GetString('file name ' + What,Version,false,ValidDosFileNameChars);
+   ShowHourglassCursor;
+   FilesWanted := tStringList.Create;
+   FindMatchingFiles(aPath,Ext,FilesWanted,2);
+   for j := 0 to pred(FilesWanted.Count) do begin
+      fName := FilesWanted.Strings[j];
+      if PrefixWanted then  NewName := ExtractFilePath(fName) + Version + ExtractFileNameNoExt(fName) + ExtractFileExt(fName)
+      else NewName := ExtractFilePath(fName) + ExtractFileNameNoExt(fName) + Version + ExtractFileExt(fName);
+      RenameFile(fName, NewName);
+   end;
+   FilesWanted.Free;
+   ShowDefaultCursor;
+end;
+
 
 procedure WriteOpenHandlestoDebugLog(Where : shortString);
-
-      //function GetProcessHandleCount(hProcess: THandle; var pdwHandleCount: DWORD): BOOL;  stdcall; {external} 'Kernel32.dll' name 'GetProcessHandleCount';
 
       function GetOpenHandles : DWORD;
       //https://stackoverflow.com/questions/4966900/delphi-causes-of-system-error-1158-no-more-system-handles-for-current-process
       begin
-       if not GetProcessHandleCount(GetCurrentProcess,Result) then
-           RaiseLastOSError;
+         if not GetProcessHandleCount(GetCurrentProcess,Result) then RaiseLastOSError;
       end;
 
 begin
@@ -551,9 +578,9 @@ var
    ch : ANSIchar;
 begin
    Result := PathIsValid(aPath);
-   ch := 'a';
+   //ch := 'a';
    if not Result then begin
-      for ch := 'a' to 'z' do begin
+      for ch := 'c' to 'z' do begin
          aPath[1] := ch;
          if PathIsValid(aPath) then begin
             Result := true;
@@ -2714,7 +2741,7 @@ end;
 
          function WinExecAndWait32(FileName : ANSIstring; Wait : boolean = true; Log : boolean = true) : integer;
          var
-           zAppName : array[0..512] of char;
+           zAppName : array[0..1024] of char;  //[0..512] of char;
            zCurDir : array[0..255] of char;
            WorkDir : ANSIstring;
            StartupInfo : TStartupInfo;
@@ -2747,7 +2774,7 @@ end;
                 if Wait then WaitforSingleObject(ProcessInfo.hProcess,INFINITE);
                 Result := 0;
             end;
-            ApplicationProcessMessages;
+            //ApplicationProcessMessages;
             if Wait then ShowDefaultCursor;
             {$IfDef RecordShellExecute} if Log and (not HeavyDutyProcessing) then WriteLineToDebugFile('WinExecAndWait32 out, result=' + IntToStr(Result)); {$EndIf}
          end;

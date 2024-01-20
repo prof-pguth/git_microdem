@@ -4,7 +4,7 @@
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -16,12 +16,11 @@
    {$IfDef RecordProblems}  //normally only defined for debugging specific problems
       //{$Define RecordCloseDB}
       {$Define RecordDEMIX}
-      {$Define RecordCopyFieldLinkDB}
-      {$Define RecordClustering}
+      //{$Define RecordCopyFieldLinkDB}
+      //{$Define RecordClustering}
       //{$Define RecordLegend}
       //{$Define RecordDBNumericPlot}
       //{$Define RecordHyperion}
-
       //{$Define RecordDEMIXFull}
       //{$Define RecordDEMIXties}   //only enable for small test DB
       //{$Define RecordSymbolColor}
@@ -42,7 +41,7 @@
 
       //{$Define RecordSym}
       //{$Define RecordDBPlotDetailed}
-      //{$Define RecordShapeFileGroup}
+      {$Define RecordShapeFileGroup}
       //{$Define RecordFullOpenDB}
       //{$Define RecordFullShapeFileGroup}
       //{$Define RecordMonthlyFilter}
@@ -61,7 +60,7 @@
       //{$Define RecordDataBaseText}
       //{$Define RecordLegend}
       //{$Define RecordOpenDataBaseStructure}
-      //{$Define RecordPlotDBRules}
+
       //{$Define RecordDataBaseLabels}
       //{$Define RecordEveryDataBaseLabel}
 
@@ -309,9 +308,9 @@ type
         theGraphOwner : TThisBaseGraph;
      {$EndIf}
 
-     DBAuxDir  : PathStr;
 
      StringDataThere : tStringList;
+     DBAuxDir,
      LayerTableFName,
      dbFullName,
      ShapeFileName        : PathStr;
@@ -397,18 +396,12 @@ type
         LastGraphType : tdbGraphType;
      {$EndIf}
 
-     {$IfDef ExSidescan}
-     {$Else}
-        //SideScanIndex : boolean;
-     {$EndIf}
      {$IfDef ExGeography}
      {$Else}
         KoppenPresent : boolean;
         KoppenDisplay : tKoppenDisplay;
      {$EndIf}
 
-     //constructor Create;
-     //constructor Create(GISNum : integer; WhatDataBase : shortstring; FileWanted : PathStr = '');
      function InitializeTheTable(WhatDataBase : shortstring; FileWanted : PathStr = '') : boolean;
      function CloseDataBase : boolean;
 
@@ -722,8 +715,6 @@ procedure InitializeDEMdbs;
       procedure ConvertShapeFileToKML(fName : PathStr; MapOwner : tMapForm);
 {$EndIf}
 
-
-
 {$IfDef FMX}
    function OpenNumberedGISDataBase(var GISNum : integer; fName : PathStr; ShowTable : boolean = false; MapDraw : tMapDraw = nil) : boolean;
 {$EndIf}
@@ -771,11 +762,6 @@ function AnalyzeVDatumShift(CSVName : PathStr; ErrorLog : tStringList = Nil) : i
    procedure DeleteSX(TableX : tMyTable; cindexName : ShortString);  overload;
 {$EndIf}
 
-
-{$IfDef ExSidescan}
-{$Else}
-  // procedure GetCoverageCorners(theData : tMyData; var CornerLats,CornerLongs: array of float64);
-{$EndIf}
 
 const
    IDRecScreenTolerance : integer = 8;
@@ -943,19 +929,19 @@ var
    var
       Lat,Long : float64;
    begin
-      with GISDataBase do begin
+     // with GISDataBase do begin
            if GISDataBase.ValidLatLongFromTable(Lat,Long) then begin
               if (abs(LastLat - Lat) > 0.00000001) or (abs(LastLong - Long) > 0.00000001) then begin
                   if ThreeD then begin
-                     if (MyData.GetFieldByNameAsString(Field3D) <> '') then
-                        ShapeFileCreator.AddPointWithZToShapeStream(Lat,Long,MyData.GetFieldByNameAsFloat(Field3D));
+                     if (GISDataBase.MyData.GetFieldByNameAsString(Field3D) <> '') then
+                        ShapeFileCreator.AddPointWithZToShapeStream(Lat,Long,GISDataBase.MyData.GetFieldByNameAsFloat(Field3D));
                   end
                   else ShapeFileCreator.AddPointToShapeStream(Lat,Long);
                   LastLat := Lat;
                   LastLong := Long;
               end;
            end;
-      end;
+      ///end;
    end;
 
      procedure DoALine(LineName : string35; RecNum : integer);
@@ -964,15 +950,15 @@ var
         Lat1,Lat2,Long1,Long2 : float64;
         Time1,Time2 : shortstring;
       begin
-         with GISDataBase do begin
+         //with GISDataBase do begin
             ShowHourglassCursor;
-            MyData.First;
+            GISDataBase.MyData.First;
             GISDataBase.ValidLatLongFromTable(Lat1,Long1);
             if (TimeField) then Time1 := GISDataBase.MyData.GetFieldByNameAsString(TimeFName);
-            EmpSource.Enabled := false;
-            while not MyData.eof do begin
+            GISDataBase.EmpSource.Enabled := false;
+            while not GISDataBase.MyData.eof do begin
                DoPoint;                 //this will have the first point
-               for i := 1 to Thin do MyData.Next;
+               for i := 1 to Thin do GISDataBase.MyData.Next;
             end;
             if (Thin > 1) then DoPoint;   //insure last point is included
             GISDataBase.ValidLatLongFromTable(Lat2,Long2);
@@ -993,7 +979,7 @@ var
                end;
                NewTable.Post;
                ShapeFileCreator.ProcessShapeFileRecord;
-            end;
+            //end;
          end;
       end;
 
@@ -2121,7 +2107,7 @@ end;
                 //if MDDef.AllowMemoryLinkDB then DesiredDBMode := dbmCDS;
                 LinkTable := tMyData.Create(dbOpts.LinkTableName);   //,DesiredDBMode);
                 LinkTable.AssignEmpSource(LinkSource1);
-                DesiredDBMode := dbmDefault;
+                DesiredDBMode := dbmyDefault;
                 {$IfDef RecordLinkTable}
                    WriteLineToDebugFile('LinkSecondaryTable Picked: ' + FileWanted);
                    WriteLineToDebugFile('LinkSecondaryTable Linking fields: ' + dbOpts.LinkFieldThisDB + ' and ' + dbOpts.LinkFieldOtherDB);
@@ -2274,7 +2260,7 @@ end;
           begin
             New(zs);
             GetFieldValuesInArrayLinkPossible(WantedField,zs^,Result.Npts,Result.Missing,Result.MinZ,Result.MaxZ);
-            if (Result.Npts > 1) then begin
+            if (Result.Npts > 0) then begin
                moment(zs^,Result,msAll);
             end
             else InitializeMomentVar(Result);
@@ -2342,7 +2328,7 @@ end;
                      if (MomentVar.Npts > 1) then begin
                         GridForm.StringGrid1.Cells[Col,1] := RealToString(MomentVar.mean,-18,-4);
                         GridForm.StringGrid1.Cells[Col,2] := RealToString(MomentVar.avg_dev,-18,-4);
-                        GridForm.StringGrid1.Cells[Col,3] := RealToString(MomentVar.sdev,-18,-4);
+                        GridForm.StringGrid1.Cells[Col,3] := RealToString(MomentVar.std_dev,-18,-4);
                         GridForm.StringGrid1.Cells[Col,4] := RealToString(MomentVar.skew,-18,-4);
                         GridForm.StringGrid1.Cells[Col,5] := RealToString(MomentVar.curt,-18,-4);
                         GridForm.StringGrid1.Cells[Col,8] := RealToString(MomentVar.MinZ,-18,-4);
@@ -2582,11 +2568,11 @@ end;
             else if MyData.FieldExists(fstring) then begin
                dbOpts.MainFilter := '';
                AssembleGISFilter;
-               GetFilterString(Self,fString,ChangeUse,true,fString);
+               GetFilterString(dbNumber,fString,ChangeUse,true,fString);
             end
             else if (fstring <> 'NONE') and (not CompleteFilter) then begin
                {$IfDef RecordDataBase} WriteLineToDebugFile('Off to GetFilterString'); {$EndIf}
-               GetFilterString(Self,fString,ChangeUse);
+               GetFilterString(dbNumber,fString,ChangeUse);
                {$IfDef RecordDataBase} WriteLineToDebugFile('Back from GetFilterString, filter=' + fString); {$EndIf}
             end;
             if (not FirstTime) then ApplyGISFilter(fString);
@@ -4780,8 +4766,9 @@ procedure TGISdataBaseModule.DBFieldUniqueEntries(FieldName : shortstring; var F
 
 begin
    {$IfDef RecordUnique} WriteLineToDebugFile('TGISdataBaseModule.DBFieldUniqueEntries in'); {$EndIf}
-            if (LinkTable <> Nil) and LinkedField(FieldName) then UseCorrectTable(LinkTable)
-            else UseCorrectTable(MyData);
+   EmpSource.Enabled := false;
+   if (LinkTable <> Nil) and LinkedField(FieldName) then UseCorrectTable(LinkTable)
+   else UseCorrectTable(MyData);
 end;
 
 
@@ -4943,7 +4930,6 @@ begin
    until MyData.EOF;
    EmpSource.Enabled := ReEnable;
 end;
-
 
 
 {$IfDef ExGeostats}
@@ -5154,8 +5140,6 @@ begin
 end;
 
 
-
-
 function TGISdataBaseModule.InitializeTheTable(WhatDataBase : shortstring; FileWanted : PathStr = '') : boolean;
 label
    Retry;
@@ -5179,7 +5163,6 @@ begin
        exit;
     end;
     {$If Defined(RecordOpenDataBase)} if (UpperCase(ExtractFilePath(FileWanted)) <> UpperCase(MDTempDir)) then WriteLineToDebugFile('TGISDataBase.InitializeTheData start, ' + ExtractFileName(FileWanted)); {$EndIf}
-    //{$IfDef RecordIniMemoryOverwrite} IniMemOverwriteCheck('TGISdataBaseModule.InitializeTheTable start'); {$EndIf}
 
     {$IfDef VCL}
        if (FileWanted = '') then begin
@@ -5217,14 +5200,16 @@ begin
              FileWanted := tName;
              {$IfDef RecordFIT} WriteLineToDebugFile('open FIT, copied to: ' + FileWanted); {$EndIf}
              tName := MDtempDir + ExtractFileNameNoExt(FileWanted) + '.gpx';
-             GPSBabel_fit2gpx(FileWanted,tName);
-             if GetFileSize(tName) < 500 then begin
-                {$IfDef RecordFIT} WriteLineToDebugFile('FIT only ' + SmartMemorySizeBytes(GetFileSize(tName))); {$EndIf}
-                if not AnswerIsYes('File very small, probably has no locations (indoor activity?).  Try to import anyway') then begin
-                   Result := false;
-                   exit;
+             if GPSBabel_fit2gpx(FileWanted,tName) then begin
+                if GetFileSize(tName) < 500 then begin
+                   {$IfDef RecordFIT} WriteLineToDebugFile('FIT only ' + SmartMemorySizeBytes(GetFileSize(tName))); {$EndIf}
+                   if not AnswerIsYes('File very small, probably has no locations (indoor activity?).  Try to import anyway') then begin
+                      Result := false;
+                      exit;
+                   end;
                 end;
-             end;
+             end
+             else exit;
           end;
           if FileExists(tName) then begin
              {$IfDef RecordFIT} WriteLineToDebugFile('GPSBabel_fit2gpx created ' + tName); {$EndIf}
@@ -5353,7 +5338,7 @@ begin
                      end;
      end;
 
-     DesiredDBMode := dbmDefault;
+     DesiredDBMode := dbmyDefault;
      if ZeroRecordsAllowed then begin
      end
      else if (MyData.RecordCount = 0) then begin
@@ -6000,7 +5985,6 @@ initialization
 finalization
    {$IfDef RecordClosing} WriteLineToDebugFile('Closing demdatabase in'); {$EndIf}
    {$IfDef RecordZoomMap} WriteLineToDebugFile('RecordZoomMap active in demdatabase'); {$EndIf}
-   {$IfDef RecordPlotDBRules} WriteLineToDebugFile('RecordPlotDBRules active in demdatabase'); {$EndIf}
    {$IfDef RecordLineWidth} WriteLineToDebugFile('RecordLineWidth active in demdatabase'); {$EndIf}
    {$IfDef RecordID} WriteLineToDebugFile('RecordIDProblems active in demdatabase'); {$EndIf}
    {$IfDef RecordSPCS} WriteLineToDebugFile('RecordSPCSProblems active in demdatabase'); {$EndIf}

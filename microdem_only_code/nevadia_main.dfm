@@ -2,8 +2,8 @@ object wmdem: Twmdem
   Left = 0
   Top = 262
   Caption = 'GIS program loading'
-  ClientHeight = 1155
-  ClientWidth = 2026
+  ClientHeight = 1154
+  ClientWidth = 2022
   Color = clScrollBar
   DefaultMonitor = dmDesktop
   Font.Charset = DEFAULT_CHARSET
@@ -28,13 +28,12 @@ object wmdem: Twmdem
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 2026
+    Width = 2022
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34
     TabOrder = 0
     OnMouseDown = ToolBar1MouseDown
-    ExplicitWidth = 2022
     object SpeedButton2: TSpeedButton
       Left = 0
       Top = 0
@@ -1676,8 +1675,8 @@ object wmdem: Twmdem
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 1136
-    Width = 2026
+    Top = 1135
+    Width = 2022
     Height = 19
     Panels = <
       item
@@ -1696,8 +1695,6 @@ object wmdem: Twmdem
     Visible = False
     OnClick = StatusBar1Click
     OnDblClick = StatusBar1DblClick
-    ExplicitTop = 1135
-    ExplicitWidth = 2022
   end
   object MainMenu1: TMainMenu
     Left = 136
@@ -2454,6 +2451,21 @@ object wmdem: Twmdem
         Caption = 'Advanced analysis'
         OnClick = Advancedanalysis1Click
       end
+      object N48: TMenuItem
+        Caption = '-'
+      end
+      object FillholesintestareaDEMs1: TMenuItem
+        Caption = 'Fill holes in test area DEMs (SAGA)'
+        OnClick = FillholesintestareaDEMs1Click
+      end
+      object VectorchannelnetworksSAGA1: TMenuItem
+        Caption = 'Vector channel networks (SAGA)'
+        OnClick = VectorchannelnetworksSAGA1Click
+      end
+      object Createchannelnetworkgrids1: TMenuItem
+        Caption = 'Create channel network grids'
+        OnClick = Createchannelnetworkgrids1Click
+      end
       object N28: TMenuItem
         Caption = '-'
       end
@@ -2523,6 +2535,11 @@ object wmdem: Twmdem
       Caption = 'Test'
       GroupIndex = 6
       OnClick = est1Click
+    end
+    object channelnewtowk1: TMenuItem
+      Caption = 'channel newtowk'
+      GroupIndex = 6
+      OnClick = channelnewtowk1Click
     end
   end
   object MetadataPopupMenu: TPopupMenu
@@ -2846,22 +2863,6 @@ object wmdem: Twmdem
       GroupIndex = 6
       OnClick = OpenDatabasewithoutmap1Click
     end
-    object Annapolisebasemap1: TMenuItem
-      Caption = 'Annapolis harbor maps'
-      GroupIndex = 6
-      object Bathymetrygrid1: TMenuItem
-        Caption = 'Bathymetry grid'
-      end
-      object Chart12263180K1: TMenuItem
-        Caption = 'Chart 12263 (1:80K)'
-      end
-      object Chart12282125K1: TMenuItem
-        Caption = 'Chart 12282 (1:25K)'
-      end
-      object Chart12283110K1: TMenuItem
-        Caption = 'Chart 12283 (1:10K)'
-      end
-    end
   end
   object ToolsPopupMenu3: TPopupMenu
     Left = 352
@@ -3076,8 +3077,12 @@ object wmdem: Twmdem
         OnClick = Batchchangepartoffilenames1Click
       end
       object Addversionnumbertoallfilesinapath1: TMenuItem
-        Caption = 'Add version number to all files in a path'
+        Caption = 'Add suffix to all files in a path'
         OnClick = Addversionnumbertoallfilesinapath1Click
+      end
+      object Addprefixtoallfilesindirectory1: TMenuItem
+        Caption = 'Add prefix to all files in a path'
+        OnClick = Addprefixtoallfilesindirectory1Click
       end
       object Openrecyclebin1: TMenuItem
         Caption = 'Open recycle bin'
@@ -3105,7 +3110,6 @@ object wmdem: Twmdem
       end
       object Climate1: TMenuItem
         Caption = 'Climate'
-        OnClick = Climate1Click
       end
       object Geology2: TMenuItem
         Caption = 'Geology'
@@ -3485,7 +3489,6 @@ object wmdem: Twmdem
     object OpenDEMIXridges1: TMenuItem
       Caption = 'Open DEMIX ridges'
       Enabled = False
-      OnClick = OpenDEMIXridges1Click
     end
     object LoadDEMIXareareferenceDEMs1: TMenuItem
       Caption = 'Load DEMIX area reference DEMs in EGM2008'
@@ -3519,9 +3522,9 @@ object wmdem: Twmdem
       Enabled = False
       OnClick = Subsetlarge3DEPareas1Click
     end
-    object ProcessGDALshiftforStateLineexperimental1: TMenuItem
+    object GDALshiftFor3DEP1: TMenuItem
       Caption = 'Process GDAL shift for 3DEP'
-      OnClick = ProcessGDALshiftforStateLineexperimental1Click
+      OnClick = GDALshiftFor3DEP1Click
     end
     object ProcessVDATUMshifts1: TMenuItem
       Caption = 'Process 3DEP VDATUM shifts'
@@ -3550,6 +3553,10 @@ object wmdem: Twmdem
     object CreatehalfsecondreferenceDEMs1: TMenuItem
       Caption = 'Create half second reference DEMs'
       OnClick = CreatehalfsecondreferenceDEMs1Click
+    end
+    object CreaterangereferenceDEMs1: TMenuItem
+      Caption = 'Create range reference DEMs'
+      OnClick = CreaterangereferenceDEMs1Click
     end
     object N44: TMenuItem
       Caption = '-'
@@ -3601,6 +3608,21 @@ object wmdem: Twmdem
     object N36: TMenuItem
       Caption = '-'
     end
+    object InventoryreferenceDEMs1: TMenuItem
+      Caption = 'Inventory reference DEMs'
+      OnClick = InventoryreferenceDEMs1Click
+    end
+    object Inventorydifferencestats1: TMenuItem
+      Caption = 'Inventory difference stats'
+      OnClick = Inventorydifferencestats1Click
+    end
+    object MergeDEMIXtilestats1: TMenuItem
+      Caption = 'Merge DEMIX tile stats'
+      OnClick = MergeDEMIXtilestats1Click
+    end
+    object N47: TMenuItem
+      Caption = '-'
+    end
     object N45: TMenuItem
       Caption = 'Clip DEMs to full DEMIX tiles'
       OnClick = N45Click
@@ -3614,11 +3636,11 @@ object wmdem: Twmdem
       OnClick = CheckfilesizesforSSIMimagemismatches1Click
     end
     object CheckreferenceDEMs1: TMenuItem
-      Caption = 'Check reference DEMs'
+      Caption = 'Check reference DEMs (number DTM/DSM by area)'
       OnClick = CheckreferenceDEMs1Click
     end
     object ChecktestDEMs1: TMenuItem
-      Caption = 'Check test DEMs'
+      Caption = 'Check test DEMs (missing .DEM  by area)'
       OnClick = ChecktestDEMs1Click
     end
     object MergeSSIMandR2database1: TMenuItem

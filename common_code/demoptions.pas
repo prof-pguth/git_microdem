@@ -4,7 +4,7 @@ unit demoptions;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -636,6 +636,7 @@ var
    EtopoRow,
    ViewSheds,
    VectorMap,
+   SAGArow,
    //BlowUpDEM,
    //BlowUpVeg,
    FWT : integer;
@@ -838,6 +839,7 @@ begin
    DrawRow(MainMap,'Main map directory',MainMapData);
    DrawRow(EtopoRow,'ETOPO DEM',ETOPODEMName);
    DrawRow(Viewsheds,'Viewshed dir',SaveViewShedDir);
+   DrawRow(SAGArow,'SAGA EXE name',MDDef.SagaCMD);
    DrawRow(VectorMap,'Vector map name',VectorMapName);
 
    {$IfDef ExGDAL}
@@ -867,6 +869,7 @@ begin
       if Arow = EtopoRow then GetFileFromDirectory('ETOPO DEM','*.dem',ETOPODEMName);
       if Arow = ViewSheds then GetDOSPath('Viewshed dir',SaveViewShedDir);
       if Arow = VectorMap then GetFileFromDirectory('Vector map name','*.prj',VectorMapName);
+      if Arow = SAGArow then GetFileFromDirectory('SAGA exe','*.exe',MDDef.SagaCMD);
       {$IfDef ExGDAL}
       {$Else}
          if (Arow = FWT) then begin
@@ -1045,7 +1048,6 @@ begin
    CheckBox13.Checked := MDdef.FilterGridsToEdge;
    CheckBox16.Checked := MDdef.UseSealevel;
    CheckBox17.Checked := MDdef.DBsOnAllMaps;
-   //CheckBox18.Checked := MDdef.IsUSNAcomputer;
    CheckBox20.Checked := MDdef.MissingToSeaLevel;
    CheckBox21.Checked := MDdef.DeleteAuxTiffFiles;
    CheckBox22.Checked := MDdef.DefaultEditDBsInGrid;
@@ -1450,7 +1452,6 @@ begin
    MDdef.ShowPlateRotation := CheckBox15.Checked;
    MDdef.UseSealevel := CheckBox16.Checked;
    MDdef.DBsOnAllMaps := CheckBox17.Checked;
-   //MDdef.IsUSNAcomputer := CheckBox18.Checked;
 
    MDdef.MissingToSeaLevel := CheckBox20.Checked;
    MDdef.DeleteAuxTiffFiles := CheckBox21.Checked;

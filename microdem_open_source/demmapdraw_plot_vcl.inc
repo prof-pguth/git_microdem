@@ -2,7 +2,7 @@
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 {                                   }
 {   include file for demmapdraw     }
@@ -1453,7 +1453,6 @@
                    {$Else}
                       ovoOSM      : begin
                                        SaveBackupDefaults;
-                                       //MDDef.OSMtoCDS := false;
                                        for j := 0 to pred(OSMShapesUp.Count) do begin
                                           {$IfDef RecordShapeFileGroup} WriteLineToDebugFile('ovoOSM ' + OSMShapesUp.Strings[j]); {$EndIf}
                                           PlotShapeFileGroup(inBitmap,OSMShapesUp.Strings[j],j=pred(OSMShapesUp.Count));
@@ -1466,9 +1465,9 @@
                    {$IfDef ExViewshed}
                    {$Else}
                       ovoFans     : if (CurrentFansTable <> 0) and (GISdb[CurrentFansTable] <> Nil) then begin
-                                       {$IfDef FanDrawProblems} SaveBitmap(inBitmap,MDTempDir + 'aa_before_fans.png');  {$EndIf}
+                                       {$IfDef FanDrawProblems} SaveBitmap(inBitmap,MDTempDir + 'aa_before_fans.png'); {$EndIf}
                                        DrawAllFans(GISdb[CurrentFansTable].MyData,inBitmap);
-                                       {$IfDef FanDrawProblems} SaveBitmap(inBitmap,MDTempDir + 'aa_after_fans.png');  {$EndIf}
+                                       {$IfDef FanDrawProblems} SaveBitmap(inBitmap,MDTempDir + 'aa_after_fans.png'); {$EndIf}
                                     end;
                    {$EndIf}
                end {case};

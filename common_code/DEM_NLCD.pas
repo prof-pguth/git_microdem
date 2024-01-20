@@ -14,7 +14,7 @@ unit dem_nlcd;
    //{$Define RecordNLCDProblems}
    //{$Define RecordNLCDLegend}
    //{$Define RecordBarGraphs}
-   {$Define RecordDEMIX}
+   //{$Define RecordDEMIX}
    //{$Define RecordBatch}
    //{$Define RecordBarGraphsDetailed}
    //{$Define RecordPaletteProblems}
@@ -96,10 +96,12 @@ begin
          DEMGlb[Result].DEMHeader.ElevUnits := GLCS_LC100;
          if (fName = '') then fName := Petmar.NextFileNumber(MDtempDir,'lcc100_','.dem');
          DEMGlb[Result].WriteNewFormatDEM(fName);
+      end
+      else begin
+         {$IfDef RecordDEMIX} HighlightLineToDebugFile('Landcover load fail ' + LandCoverfName + '  ' + LatLongDegreeToString(Lat,Long)); {$EndIf}
       end;
    end;
 end;
-
 
 
 function MakeAnNLCDLegend(DEM : integer; theLabel : shortstring = ''; Stats : tstringlist = nil) : integer;
@@ -206,7 +208,6 @@ begin
    try
       GetDEMIXpaths;
       OpenNumberedGISDataBase(db,LandCoverSeriesFName,false);
-
       OutPath := DEMIX_Base_DB_Path + 'test_land_class\';
       SafeMakeDir(OutPath);
       ASeries('CCI-LC','LCCS_300_m_2015');
@@ -238,8 +239,8 @@ var
    procedure ASeries(LandCoverfName : PathStr; aTitle,ShortName : shortstring);
    var
       NumDrawn,AreaWidth,TileWidth,
-      j,top{,x,NumAreas} : integer;
-      singleleg,{legbmp,}bmp : tMyBitmap;
+      j,top: integer;
+      singleleg,bmp : tMyBitmap;
       Table : tMyData;
       Areas,SeriesStats : tStringList;
 
@@ -323,7 +324,6 @@ var
           Table := tMyData.Create(dbName);
           ItsDEMIX := Table.FieldExists('DEMIX_TILE') and Table.FieldExists('AREA');
           if ItsDEMIX then begin
-             //GetDEMIXpaths;
              CreateBitmap(bmp,2400,1200);  //100 + (Table.RecordCount * EntryHeight) + (pred(Areas.Count) * AreaBlank));
              bmp.Canvas.Font.Size := 14;
              AreaWidth := 0;
@@ -441,13 +441,9 @@ begin
       What := 'Tiles';
       if UseTable and (not GetFileFromDirectory('bounding box data base','*.dbf',dbName)) then exit;
       ASeries('d:\landcover\lccs_300m\ESACCI-LC-L4-LCCS-Map-300m-P1Y-2015-v2.0.7.tif','LCCS 300 m 2015','LCCS');
-      //IncludeAreaName := false;
       ASeries('d:\landcover\iwahashi\iwahashi.tif','Iwahashi and Pike','IP');
       ASeries('d:\landcover\Meybeck\Meybeck_1km1.tif','Meybeck and others','MEYB');
       ASeries('d:\landcover\Geomorphon\geomorphon_1KMmaj_GMTEDmd.tif','Geomorphons','GEOM');
-
-
-
    finally
       CloseAllDatabases;
       EndDEMIXProcessing;
@@ -532,9 +528,9 @@ end;
 
 initialization
 finalization
-{$IfDef RecordNLCDProblems}    WriteLineToDebugFile('RecordNLCDProblems in DEM_NLCD'); {$EndIf}
-{$IfDef RecordNLCDLegend}      WriteLineToDebugFile('RecordNLCDLegend in DEM_NLCD'); {$EndIf}
-{$IfDef RecordPaletteProblems} WriteLineToDebugFile('RecordPaletteProblems in DEM_NLCD'); {$EndIf}
+  {$IfDef RecordNLCDProblems}    WriteLineToDebugFile('RecordNLCDProblems in DEM_NLCD'); {$EndIf}
+  {$IfDef RecordNLCDLegend}      WriteLineToDebugFile('RecordNLCDLegend in DEM_NLCD'); {$EndIf}
+  {$IfDef RecordPaletteProblems} WriteLineToDebugFile('RecordPaletteProblems in DEM_NLCD'); {$EndIf}
 end.
 
 

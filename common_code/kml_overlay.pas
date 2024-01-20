@@ -1,9 +1,12 @@
 unit kml_overlay;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{_________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2024 Peter L. Guth  }
+{___________________________________}
+
 
 {$I nevadia_defines.inc}
 
@@ -132,7 +135,7 @@ begin
    CheckBox13.Checked := MDDef.KMLLabelGraticule;
    CheckBox14.Checked := MDDef.KMLTopLevelFolder;
    AllMapsCheckBox3.Checked := MDDef.KMLExportAllMaps;
-   {$IfDef KMLProblems} WriteLineToDebugFile('TKML_over_opts.FormCreate  out');  {$EndIf}
+   {$IfDef KMLProblems} WriteLineToDebugFile('TKML_over_opts.FormCreate  out'); {$EndIf}
 end;
 
 procedure TKML_over_opts.HelpBtnClick(Sender: TObject);
@@ -159,7 +162,7 @@ begin
 
    MDDef.KMLExportAllMaps := AllMapsCheckBox3.Checked;
 
-   {$IfDef KMLProblems} WriteLineToDebugFile('Options set');  {$EndIf}
+   {$IfDef KMLProblems} WriteLineToDebugFile('Options set'); {$EndIf}
 
    MDDef.UseGif := (RadioGroup1.ItemIndex = 0);
    MDDef.KMLOutputOption := RadioGroup2.ItemIndex;
@@ -183,5 +186,5 @@ end;
 initialization
 finalization
    {$IfDef KMLProblems} WriteLineToDebugFile('KMLProblems active in kml_overlay'); {$EndIf}
-   {$IfDef RecordClosingProblems} WriteLineToDebugFile('Closing kml_overlay');  {$EndIf}
+   {$IfDef RecordClosingProblems} WriteLineToDebugFile('Closing kml_overlay'); {$EndIf}
 end.

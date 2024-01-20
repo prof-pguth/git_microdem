@@ -305,7 +305,7 @@ begin
       x := bmp.Canvas.TextWidth(Title);
       y := bmp.Canvas.TextHeight(Title);
       bmp.Height := Bmp.Height + 25;
-      if bmp.Width < x then bmp.Width := x + 20;
+      if (bmp.Width < x) then bmp.Width := x + 20;
       bmp.Canvas.TextOut(15,Bmp.Height - y,Title);
    end;
    if (SaveName <> '') then SaveBitmap(bmp,SaveName);

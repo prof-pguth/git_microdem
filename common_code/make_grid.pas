@@ -4,7 +4,7 @@ unit make_grid;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -36,7 +36,7 @@ interface
  uses
    SysUtils, Windows, Classes, Graphics, Controls,JPEG,DBCtrls,Math,dbClient,
    System.Threading,System.SyncObjs,
-   Forms, Dialogs, ExtCtrls, StdCtrls,Printers,ComCtrls,ClipBrd, Menus, Buttons, ToolWin,StrUtils,db,
+   Forms, Dialogs, ExtCtrls, StdCtrls,{Printers,}ComCtrls,ClipBrd, Menus, Buttons, ToolWin,StrUtils,db,
    System.Types,
 
    {$IfDef RecordTime}
@@ -702,7 +702,7 @@ begin
          end;
          if (MomentVar.NPts > 5) then begin
             moment(sl,MomentVar,msAfterStdDev);
-            DEMglb[Result].SetGridElevation(x,y,MomentVar.sdev);
+            DEMglb[Result].SetGridElevation(x,y,MomentVar.std_dev);
          end;
       end;
    end;
@@ -750,7 +750,7 @@ begin
          end;
          if (MomentVar.NPts > 5) then begin
             moment(sl,MomentVar,msAfterStdDev);
-            DEMglb[Result].SetGridElevation(x,y,MomentVar.sdev);
+            DEMglb[Result].SetGridElevation(x,y,MomentVar.std_dev);
          end;
       end;
    end;
@@ -815,7 +815,7 @@ begin
       for y := GridLimits.YGridLow to GridLimits.YGridHigh do begin
          if DEMGlb[DEM].SurroundedPointElevs(x,y,sl[1],sl[2],sl[3],sl[4],sl[5],sl[6],sl[7],sl[8],sl[9]) then begin
             moment(sl,MomentVar,msAfterStdDev);
-            DEMglb[Result].SetGridElevation(x,y,MomentVar.sdev);
+            DEMglb[Result].SetGridElevation(x,y,MomentVar.std_dev);
          end;
       end;
    end;
@@ -1305,7 +1305,7 @@ begin
              else if What = 'r' then DEMGlb[CurDEM].ProfCMoments(Limits,MomentVar);
              if (MomentVar.NPts > 3) then  begin
                 PostResults(DEMs[1],x,y,GridInc,MomentVar.mean);
-                PostResults(DEMs[2],x,y,GridInc,MomentVar.sdev);
+                PostResults(DEMs[2],x,y,GridInc,MomentVar.std_dev);
                 PostResults(DEMs[3],x,y,GridInc,MomentVar.skew);
                 PostResults(DEMs[4],x,y,GridInc,MomentVar.curt);
              end;
@@ -1787,7 +1787,7 @@ begin
                   end
                   else if (ch in ['n']) then begin
                       if DEMGlb[CurDEM].GetElevMeters(Col,Row,zr) then begin
-                         DEMGlb[result].SetGridElevation(Col,Row,(zr-MomentVar.mean)/MomentVar.SDev);
+                         DEMGlb[result].SetGridElevation(Col,Row,(zr-MomentVar.mean)/MomentVar.std_dev);
                       end;
                   end
                   else if (ch in ['c']) then begin

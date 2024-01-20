@@ -4,7 +4,7 @@ unit peted32;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -18,7 +18,7 @@ interface
 uses
    Windows, Classes, Graphics, Controls, Menus,Messages,
    System.UITypes,
-   Forms, StdCtrls, Dialogs, ExtCtrls,Printers,
+   Forms, StdCtrls, Dialogs, ExtCtrls,//Printers,
    PETMAR_types, Buttons, ToolWin, ComCtrls;
 
 type

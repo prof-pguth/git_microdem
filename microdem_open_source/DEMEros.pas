@@ -4,7 +4,7 @@
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -488,9 +488,7 @@ var
    rfile : file;
    v     : tGraphPoint32;
 begin
-   {$IfDef AllowUSNAdataDownloads}
-      DownloadandUnzipDataFileIfNotPresent('spectral_library');
-   {$EndIf}
+   {$IfDef AllowUSNAdataDownloads} DownloadandUnzipDataFileIfNotPresent('spectral_library'); {$EndIf}
    Result := Nil;
    FilesWanted := tStringList.Create;
    if (fName = '') then begin
@@ -698,7 +696,7 @@ end;
          LoadHistogram;
 
          for i := 1 to NumBands do begin
-            {$IfDef RecordSat} WriteLineToDebugFile('Histogram band: ' + IntToStr(i));      {$EndIf}
+            {$IfDef RecordSat} WriteLineToDebugFile('Histogram band: ' + IntToStr(i)); {$EndIf}
             StartProgress('Histogram ' + IntToStr(i));
             FillChar(Distrib[i]^,SizeOf(Distrib[i]^),0);
             for j := ylo to yhi do begin

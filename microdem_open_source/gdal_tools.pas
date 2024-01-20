@@ -4,7 +4,7 @@ unit gdal_tools;
 { Part of MICRODEM GIS Program       }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
-{ Copyright (c) 2023 Peter L. Guth   }
+{ Copyright (c) 2024 Peter L. Guth   }
 {____________________________________}
 
 
@@ -19,9 +19,10 @@ unit gdal_tools;
    {$Define RecordSubsetOpen}
 
    {$IFDEF DEBUG}
-      //{$Define RecordSubsetOpen}
+      {$Define RecordSubsetOpen}
       {$Define RecordDEMIX}
       {$Define RecordSubsetGDAL}
+      {$Define RecordGDALinfo}
       //{$Define RecordDEMIXCompositeDatum}
       //{$Define RecordGDALOpen}
       //{$Define RecordUseOtherPrograms}
@@ -79,11 +80,14 @@ uses
 
    function IsGDALFilePresent(fName : PathStr) : boolean;
    procedure GDALcommand(BatchName : PathStr; cmd : ShortString; Log : boolean = true);
+   procedure StartGDALbatchFile(var BatchFile : tStringList);
+
    procedure GDAL_netcdf(fName : PathStr ='');
 
    function GDALextentBoxUTM(xmin,ymin,xmax,ymax : float64) : shortstring; overload;
    function GDALextentBoxUTM(BoundBox : sfBoundBox) : shortstring; overload;
    function GDALextentBoxLatLong(BoundBox : sfBoundBox) : shortString;
+   function GDALextentBoxGeo(BoundBox : sfBoundBox) : shortstring;
 
    procedure ResaveAsGDALgeotiff(fName : PathStr);
 
@@ -111,8 +115,6 @@ uses
    procedure GDAL_Upsample_DEM(DEM : integer; Spacing : float32 = -99);
    function GDAL_downsample_DEM_1sec(DEM : integer; OutName : PathStr) : integer;
    procedure GDALGeotiffToWKT(fName : PathStr);
-
-   procedure StartGDALbatchFile(var BatchFile : tStringList);
 
    procedure GDAL_ConvertGPXToSHP(var fName : pathStr);
    procedure GDALreprojectshapefile;
@@ -148,7 +150,6 @@ uses
    procedure GDALConvertSingleImageToGeotiff(var fName : PathStr);
 
    procedure UseGDAL_VRT_to_merge(var MergefName,OutVRT : PathStr; OutNames : tStringList; Added : ShortString = '');
-   //procedure UseGDAL_Warp_to_merge(var MergefName : PathStr; OutNames : tStringList);
 
    procedure ResampleSentinel_1(Path : PathStr; Recycle : boolean = false);
 
@@ -273,7 +274,7 @@ label
      begin
          Result := SetGDALprogramName('gdal_translate.exe',GDAL_translate_name) and SetGDALprogramName('gdal_contour.exe',GDAL_contour_name) and SetGDALprogramName('gdalwarp.exe',GDAL_warp_name) and
                    SetGDALprogramName('gdaldem.exe',GDAL_dem_name) and SetGDALprogramName('ogr2ogr.exe',GDAL_ogr_name) and SetGDALprogramName('gdalinfo.exe',GDAL_info_name) and
-                   SetGDALprogramName('gdalsrsinfo.exe',GDAL_srs_info_name);
+                   SetGDALprogramName('gdalsrsinfo.exe',GDAL_info_Name) and SetGDALprogramName('gdal_rasterize.exe',GDAL_rasterize);
          if (not Result) then begin
             MessageToContinue('GDAL files are missing; consider reinstalling OSGEO4W');
             {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('user recommended reinstalling'); {$EndIf}
@@ -623,7 +624,7 @@ begin
    SpaceStr := ' -tr 0.000277778 0.000277778';
    DEMGlb[DEM].DEMGridToLatLongDegree(0,0,LatSW,LongSW);
    DEMGlb[DEM].DEMGridToLatLongDegree(pred(DEMGlb[DEM].DEMHeader.NumCol),pred(DEMGlb[DEM].DEMHeader.NumRow),LatNE,LongNE);
-   TargetExtent := ' -te ' + RealToString(LatSW,-12,-6) + ' ' + RealToString(LongSW,-12,-6)  +  ' ' + RealToString(LatNE,-12,-6) + ' ' + RealToString(LongNE,-12,-6);
+   TargetExtent := ' -te ' + RealToString(LatSW,-12,-8) + ' ' + RealToString(LongSW,-12,-8)  +  ' ' + RealToString(LatNE,-12,-8) + ' ' + RealToString(LongNE,-12,-8);
    InName := DEMGlb[DEM].GeotiffDEMName;
    cmd := GDAL_Warp_Name  + SpaceStr + IntString + TargetExtent + TargetEPSG + ' ' + InName + ' ' + OutName;
    Result := GDAL_DEM_command(DEM,cmd,OutName,DEMGlb[DEM].SelectionMap.MapDraw.MapType);
@@ -1023,15 +1024,22 @@ end;
             if (BaseOutPath = '') or (not PathIsValid(BaseOutPath)) then BaseOutPath := MDtempdir;
             OutPath := NextFilePath(BaseOutPath + ExtractFileNameNoExt(fName) + '_subset_');
             OutName := OutPath + ExtractFileName(fName);
-            {$IfDef RecordSubsetOpen} WriteLineToDebugFile('GDALsubsetGridAndOpen ' + ExtractFileName(fname) + '  ' + sfBoundBoxToString(BB,4)); {$EndIf}
+            {$IfDef RecordSubsetOpen} WriteLineToDebugFile('GDALsubsetGridAndOpen ' + ExtractFileName(fname) + ' want out ' + sfBoundBoxToString(BB,4)); {$EndIf}
 
             Ext := UpperCase(ExtractFileExt(fName));
-            GetGDALinfo(fName, GDALinfo);
 
+(*
+            GetGDALinfo(fName, GDALinfo);
             Imagebb.XMin := GDALInfo.xutm_low;
             Imagebb.XMax := GDALInfo.xutm_hi;
             Imagebb.YMin := GDALInfo.yutm_low;
             Imagebb.YMax := GDALInfo.yutm_high;
+*)
+
+
+            GeotiffBoudingBox(fName,Imagebb);
+            {$IfDef RecordSubsetOpen} WriteLineToDebugFile('GDALsubsetGridAndOpen ' + ExtractFileName(fname) + ' in file ' + sfBoundBoxToString(ImageBB,4)); {$EndIf}
+
 
             if LatLongBox then begin
                ExtentBoxString := GDALextentBoxLatLong(bb);
@@ -1432,7 +1440,7 @@ var
    aName : PathStr;
 begin
    StartGDALbatchFile(BatchFile);
-   cmd := 'gdalwarp --config GDAL_CACHEMAX 1000 -wm 1000 --debug on -overwrite -multi -wo NUM_THREADS=4 -ot float32 ' + InName + ' ' + SaveName + s_SRSString + t_srsstring;
+   cmd := 'gdalwarp --config GDAL_CACHEMAX 1000 -wm 1000 --debug on -overwrite -multi -wo NUM_THREADS=8 -ot float32 ' + InName + ' ' + SaveName + s_SRSString + t_srsstring;
    {$If Defined(RecordDEMIXCompositeDatum)} WriteLineToDebugFile('VerticalDatumShiftWithGDAL cmd=' + cmd); {$EndIf}
    BatchFile.Add(cmd);
    aName := Petmar.NextFileNumber(MDTempDir, 'gdal_datumshift_','.bat');
@@ -1515,13 +1523,14 @@ end;
          Metadata : tStringList;
          j : integer;
       begin
-         {$IfDef RecordGDAL} WriteLineToDebugFile('GetGDALinfo in ' + fName); {$EndIf}
+         {$If Defined(RecordGDALinfo)} WriteLineToDebugFile('GetGDALinfo in ' + fName); {$EndIf}
          ZeroGDALInfo(GDALinfo);
          OutName := GDALinfoOutputFName(fname);
 
-         if not FileExists(outName) then begin
+         if (not FileExists(outName)) then begin
             cmd := GDAL_info_name  + ' ' + fName + AddWKT + ' >' + OutName;
             GDALCommand(MDTempDir + 'gdal_info.bat',cmd);
+            {$If Defined(RecordGDALinfo)} WriteLineToDebugFile('GetGDALinfo in, cmd=   ' + cmd); {$EndIf}
          end;
 
          Metadata := tStringList.Create;
@@ -1541,7 +1550,7 @@ end;
          end;
          Metadata.Free;
          GetEPSG(GDALinfo);
-         {$IfDef RecordGDAL} WriteLineToDebugFile('GetGDALinfo out ' + fName); {$EndIf}
+         {$If Defined(RecordGDALinfo)}  WriteLineToDebugFile('GetGDALinfo out ' + fName); {$EndIf}
       end;
 
 

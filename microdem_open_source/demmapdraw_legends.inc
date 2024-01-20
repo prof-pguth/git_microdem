@@ -2,7 +2,7 @@
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 {                                   }
 {   include file for demmapdraw     }
@@ -140,7 +140,7 @@ begin
          Result.Canvas.Pen.Color := aColor;
          Result.Canvas.Brush.Color := aColor;
          Result.Canvas.Brush.Style := bsSolid;
-         Result.Canvas.Rectangle(5,Cat*CatHeight,40,succ(Cat)*CatHeight);
+         Result.Canvas.Rectangle(5,Cat*CatHeight,40,(succ(Cat)*CatHeight) - 4);
          Result.Canvas.Brush.Style := bsClear;
          Result.Canvas.TextOut(45,Cat*CatHeight + 4, RealToString(xg,10,2) + '  ' + GISdb[db].MyData.GetFieldByNameAsString(GISdb[db].dbOpts.LabelField));
          GISdb[db].MyData.Next;

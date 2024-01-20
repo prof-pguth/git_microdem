@@ -6,7 +6,7 @@ unit DEMStat;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -16,8 +16,10 @@ unit DEMStat;
 
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
-   {$IfDef Debug}
+   {$IfDef Debug }
       //{$Define NoParallelFor}
+      //{$Define RecordDEMIX_colors}
+      {$Define RecordSSIM}
       //{$Define RecordLag}
       //{$Define RecordPitsSpires}
       //{$Define RecordMapAlgebra}
@@ -32,7 +34,7 @@ unit DEMStat;
       //{$Define RecordDEMCompare}
       //{$Define RecordFullDEMCompare}
       //{$Define TrackZRange}
-      //{$Define RecordStat}
+      {$Define RecordStat}
       //{$Define RecordIceSat}
       //{$Define RecordGeoStat}
       //{$Define FullRecordBlockGeostats}
@@ -74,7 +76,7 @@ uses
 //end core DB functions definitions
 
    SysUtils,Forms,Classes,Controls,Graphics,ExtCtrls,Math,StdCtrls,
-   System.Threading,System.SyncObjs,System.UITypes,System.IOUtils,
+   System.Threading,System.SyncObjs,System.UITypes,System.IOUtils, StrUtils,
    WinAPI.Windows,
 
    {$IfDef ExSat}
@@ -101,8 +103,8 @@ type
       function MakeDifferenceMap(Map1,Map2,GridResultionToUse,GridToMergeShading : integer; ShowMap,ShowHistogram,ShowScatterPlot : boolean; TheAreaName : ShortString = '') : integer;
       function MakeDifferenceMapOfBoxRegion(Map1,Map2,GridResultionToUse,GridToMergeShading : integer; GridLimits: tGridLimits; ShowMap,ShowHistogram,ShowScatterplot : boolean; TheAreaName : ShortString = '') : integer;
 
-      function VarCovarStatsFromTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer; var r,covar : float64) : boolean;
-      procedure ElevationSlopePlot(WhichDEMs : tDEMbooleanArray; DesiredBinSize : integer = 1);
+      function CovariancesFromTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer; var r,covar : float64) : boolean;
+      procedure ElevationSlopePlot(WhichDEMs : tDEMbooleanArray; DesiredBinSize : integer = 1; Memo : tMemo = Nil);
 
       procedure DoAnSSODiagram(CurDEM : integer; GridLimits : tGridLimits);
       function GridRatio(Map1Num : integer = 0; Map2Den : integer = 0; inMapType : tMapType = mtDEMBlank) : integer;
@@ -182,6 +184,18 @@ type
    procedure HistogramsFromVATDEM(DEMwithVAT,ElevMap,SlopeMap,RuffMap,AspMap : integer; var Graph1,Graph2,Graph3,Graph4 : tThisBaseGraph);
    procedure CreateGridHistograms(DEMSwanted : tDEMbooleanArray; TailCutoff : float32 = 0.5);
 
+   procedure ComputeSSIM(DEM1,DEM2 : integer; gl1,gl2 : tGridLimits; var SSIM,Luminance,Contrast,Structure : float64);
+
+
+
+
+   procedure ChannelSHPToGrid(DEM,db : integer; OutDir : PathStr; PlotOrder : integer = 1);
+   procedure CompareChannelNetworks;
+   procedure ChannelNetworkMapComparison(BaseDEM,RefDEM, TestDEM : integer);
+   procedure CreateChannelNetworkGridsFromVectors;
+   procedure BatchFillHolesInDEMIX_DEMS;
+   procedure BatchCreateVectorChannelNewtwork;
+
 
 var
    IPColor : array[1..16] of Graphics.tColor;
@@ -216,6 +230,8 @@ uses
       demdatabase,
    {$EndIf}
 
+   DEMIX_Control,
+
    DEMCoord,DEMOptions,
    PetDBUtils,
    GetLatLn,
@@ -231,6 +247,7 @@ uses
    las_lidar,
    basemap,
    DEM_NLCD,
+   md_use_tools,
    icesat_filter_form,
    PETMath;
 
@@ -243,7 +260,7 @@ var
 
 
 {$I demstat_global_dems.inc}
-
+{$I demstat_ssim.inc}
 
 {$IfDef ExWaveLengthHeight}
 {$Else}
@@ -254,6 +271,8 @@ var
 {$Else}
    {$I demstat_grid_compare.inc}
 {$EndIf}
+
+{$I demstat_demix_channels.inc}
 
 
 procedure CreateGridHistograms(DEMSwanted : tDEMbooleanArray; TailCutoff : float32 = 0.5);
@@ -974,7 +993,7 @@ var
                  {$IfDef FullRecordBlockGeostats} WriteLineToDebugFile('ComputeStats got good elevation moments'); {$EndIf}
                  if MDDef.IncludeBasicElevation then begin
                    Table1.SetFieldByNameAsFloat('ELEV_AVG',MomentVar.mean);
-                   Table1.CarefullySetFloat('ELEV_STD',MomentVar.sdev,0.001);
+                   Table1.CarefullySetFloat('ELEV_STD',MomentVar.std_dev,0.001);
                    Table1.CarefullySetFloat('ELEV_SKW',MomentVar.skew,0.001);
                    Table1.CarefullySetFloat('ELEV_KRT',MomentVar.curt,0.001);
                    {$IfDef FullRecordBlockGeostats} WriteLineToDebugFile('ComputeStats finished basic elevation'); {$EndIf}
@@ -1014,7 +1033,7 @@ var
                      DEMGlb[WantedDEM].SlopeMoments(GridLimits,MomentVar);
                      if MomentVar.NPts > 1 then begin
                         Table1.CarefullySetFloat('SLOPE_AVG',MomentVar.mean,0.001);
-                        Table1.CarefullySetFloat('SLOPE_STD',MomentVar.sdev,0.001);
+                        Table1.CarefullySetFloat('SLOPE_STD',MomentVar.std_dev,0.001);
                         Table1.CarefullySetFloat('SLOPE_SKW',MomentVar.skew,0.001);
                         Table1.CarefullySetFloat('SLOPE_KRT',MomentVar.curt,0.001);
                         Table1.CarefullySetFloat('SLOPE_MAX',MomentVar.MaxZ,0.001);
@@ -1026,7 +1045,7 @@ var
                       DEMGlb[WantedDEM].PlanCMoments(GridLimits,MomentVar);
                       if MomentVar.NPts > 1 then begin
                          Table1.CarefullySetFloat('PLANC_AVG',MomentVar.mean,0.000001);
-                         Table1.CarefullySetFloat('PLANC_STD',MomentVar.sdev,0.000001);
+                         Table1.CarefullySetFloat('PLANC_STD',MomentVar.std_dev,0.000001);
                          Table1.CarefullySetFloat('PLANC_SKW',MomentVar.skew,0.000001);
                          Table1.CarefullySetFloat('PLANC_KRT',MomentVar.curt,0.000001);
                       end;
@@ -1037,7 +1056,7 @@ var
                      DEMGlb[WantedDEM].ProfCMoments(GridLimits,MomentVar);
                      if MomentVar.NPts > 1 then begin
                         Table1.CarefullySetFloat('PROFC_AVG',MomentVar.mean,0.000001);
-                        Table1.CarefullySetFloat('PROFC_STD',MomentVar.sdev,0.000001);
+                        Table1.CarefullySetFloat('PROFC_STD',MomentVar.std_dev,0.000001);
                         Table1.CarefullySetFloat('PROFC_SKW',MomentVar.skew,0.000001);
                         Table1.CarefullySetFloat('PROFC_KRT',MomentVar.curt,0.000001);
                      end;
@@ -1049,11 +1068,11 @@ var
                      DEMGlb[WantedDEM].BothOpennessMoments(GridLimits,UpMoment,DownMoment);
                      if (UpMoment.NPts > 0) then begin
                         Table1.SetFieldByNameAsFloat('OPN_UP_AVG',UpMoment.mean);
-                        Table1.SetFieldByNameAsFloat('OPN_UP_STD',UpMoment.sdev);
+                        Table1.SetFieldByNameAsFloat('OPN_UP_STD',UpMoment.std_dev);
                         Table1.SetFieldByNameAsFloat('OPN_UP_SKW',UpMoment.Skew);
                         Table1.SetFieldByNameAsFloat('OPN_UP_KRT',UpMoment.Curt);
                         Table1.SetFieldByNameAsFloat('OPN_DN_AVG',DownMoment.mean);
-                        Table1.SetFieldByNameAsFloat('OPN_DN_STD',DownMoment.sdev);
+                        Table1.SetFieldByNameAsFloat('OPN_DN_STD',DownMoment.std_dev);
                         Table1.SetFieldByNameAsFloat('OPN_DN_SKW',DownMoment.Skew);
                         Table1.SetFieldByNameAsFloat('OPN_DN_KRT',DownMoment.curt);
                      end;
@@ -1660,7 +1679,7 @@ begin
             VarTitle[i] := DEMGlb[MG.Grids[i]].AreaName;
             for j := 1 to MG.NumGrids do begin
                if (MG.Grids[j] <> 0) then begin
-                  VarCovarStatsFromTwoGrids(DEMGlb[MG.Grids[i]].FullDEMGridLimits,MG.Grids[i],MG.Grids[j],Correlations[i,j],VarCoVar[i,j]);
+                  CovariancesFromTwoGrids(DEMGlb[MG.Grids[i]].FullDEMGridLimits,MG.Grids[i],MG.Grids[j],Correlations[i,j],VarCoVar[i,j]);
                end;
             end;
          end;
@@ -1830,7 +1849,7 @@ end;
 
 
 
-function VarCovarStatsFromTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer; var r,covar : float64) : boolean; //Incr : integer = 1);
+function CovariancesFromTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer; var r,covar : float64) : boolean;
 var
    Col,Row,incr : integer;
    NPts : int64;
@@ -1839,7 +1858,7 @@ var
    IdenticalGrids : boolean;
    x,y : ^bfarray32;
 begin
-   {$IfDef RecordStat} WriteLineToDebugFile('StatsFromTwoGrids in, grids=' + IntToStr(DEM1) + ' and ' + IntToStr(DEM2)); {$EndIf}
+   {$IfDef RecordStat} WriteLineToDebugFile('CovariancesFromTwoGrids in, grids=' + IntToStr(DEM1) + ' and ' + IntToStr(DEM2)); {$EndIf}
    IdenticalGrids := DEMGlb[DEM1].SecondGridIdentical(DEM2);
    NPts := 0;
    New(x);
@@ -1872,10 +1891,11 @@ begin
       end;
       inc(Col,incr);
    end;
-   Result := NPts > 0;
+   Result := (NPts > 0);
    if Result then varcovar(x^,y^,NPts,r,covar);
    Dispose(x);
    Dispose(y);
+   {$IfDef RecordStat} WriteLineToDebugFile('CovariancesFromTwoGrids out covar=' + RealToString(covar,-12,-4)); {$EndIf}
 end;
 
 
@@ -1884,7 +1904,7 @@ end;
 {$Else}
 
 
-procedure ElevationSlopePlot(WhichDEMs : tDEMbooleanArray; DesiredBinSize : integer = 1);
+procedure ElevationSlopePlot(WhichDEMs : tDEMbooleanArray; DesiredBinSize : integer = 1; Memo : tMemo = nil);
 label
    Restart;
 const
@@ -1892,14 +1912,13 @@ const
    MaxSlopeValue = 250;
 type
    TheArrayType = array[MinSlopeValue..MaxSlopeValue] of float64;
-   CountType    = array[MinSlopeValue..MaxSlopeValue] of LongInt;
+   //tCountType    = array[MinSlopeValue..MaxSlopeValue] of LongInt;
    GraphType    = (ElevFreq,SlopeFreq,ElevSlope,AspectFreq,CumSlope,AspectRose,ElevSlopeDeg,ElevRuff);
 var
    Graph : GraphType;
    BinSize,StartIndex,Bin,
    IntSlope,
    MinMin,MaxMax,NumDEMs, CurDEM,
-   //StartDEM,EndDEM,
    j,x,which : LongInt;
    MaxCount,MaxSlopeCount,
    Cum,MinElevZ,MaxElevZ,MaxSlope : float64;
@@ -1927,18 +1946,19 @@ var
          Which,x,CurDEM : integer;
          rfile,rfile2,rfile3 : file;
          v       : tGraphPoint32;
-         MenuStr,TStr : ShortString;
+         MenuStr,TStr,bsString : ShortString;
       begin
          if Graph in [AspectRose] then begin
             Result := AspectStats.CreateRose;
          end
          else begin
              Result := TThisBaseGraph.Create(Application);
+             bsString := 'bin size=' + IntToStr(BinSize) + ' m';
              case Graph of
-                ElevRuff  : TStr := ' Elevation vs Roughness (%), bin size=' + IntToStr(BinSize) + ' m';
-                ElevSlope  : TStr := ' Elevation vs Slope (%), bin size=' + IntToStr(BinSize) + ' m';
-                ElevFreq   : Tstr := ' Elevation Frequency, bin size=' + IntToStr(BinSize) + ' m';
-                ElevSlopeDeg : TStr := ' Elevation vs Slope (°), bin size=' + IntToStr(BinSize) + ' m';
+                ElevRuff  : TStr := ' Elevation vs Roughness (%), ' + bsString;
+                ElevSlope  : TStr := ' Elevation vs Slope (%), ' + bsString;
+                ElevFreq   : Tstr := ' Elevation Frequency, ' + bsString;
+                ElevSlopeDeg : TStr := ' Elevation vs Slope (°), ' + bsString;
                 SlopeFreq  : TStr := ' Slope Frequency';
                 AspectFreq : TStr := ' Aspect Frequency';
                 CumSlope   : TStr := ' Cumulative Slope Distribution';
@@ -1950,6 +1970,7 @@ var
              Result.GraphDraw.HorizLabel := 'Percentage of Region';
              Result.GraphDraw.MinVertAxis := MinElevZ;
              Result.GraphDraw.MaxVertAxis := MaxElevZ;
+             Result.GraphDraw.LLcornerText := bsString;
              if (NumDEMs = 1) then TStr := DEMGlb[CurDEM].AreaName + '  ' + TStr;
              if (not BaseGraf.CreateGraphHidden) then Result.Caption := TStr;
              case Graph of
@@ -1987,8 +2008,20 @@ var
 
             for CurDEM := 1 to MaxDEMDataSets do if WhichDEMs[CurDEM] and ValidDEM(CurDEM) then begin
                //CurDEM := Which;
+               If (Memo <> nil) then begin
+                  Memo.Lines.Add(TimeToStr(Now) + '  ' + DEMGlb[CurDEM].AreaName);
+                  Application.ProcessMessages;
+               end;
                Result.GraphDraw.LegendList.Add(DEMGlb[CurDEM].AreaName);
                Result.OpenDataFile(rfile);
+               Result.GraphDraw.FileColors256[CurDEM] := ConvertTColorToPlatformColor(WinGraphColors[CurDEM mod 16]);
+
+
+               LoadDEMIXnames;
+               Result.GraphDraw.FileColors256[CurDEM] := DEMIXColorFromDEMName(DEMGlb[CurDEM].AreaName);
+               {$IfDef RecordDEMIX_colors} WriteLineToDebugFile('DEMStat ' + DEMGlb[CurDEM].AreaName + '  ' + ColorStringFromPlatformColor(Result.GraphDraw.FileColors256[CurDEM])); {$EndIf}
+
+
                if (Graph in [ElevSlope,ElevSlopeDeg,ElevRuff])  then begin
                   Result.GraphDraw.ShowLine[Result.GraphDraw.DataFilesPlotted.Count] := true;
                end;
@@ -1998,7 +2031,6 @@ var
                   Result.GraphDraw.LineSize256[2] := 1;
                   Result.GraphDraw.LineSize256[3] := 1;
                end;
-               Result.GraphDraw.FileColors256[CurDEM] := ConvertTColorToPlatformColor(WinGraphColors[CurDEM mod 16]);
                if (Graph = ElevFreq) then begin
                   for x := 0 to NumBins[CurDEM] do if Count[CurDEM]^[x] > 0 then begin
                      v[1] := Count[CurDEM]^[x];
@@ -2197,7 +2229,7 @@ begin {proc ElevationSlopePlot}
             if Ruffs[CurDEM]^[x] > MaxRuff then MaxRuff := Ruffs[CurDEM]^[x];
             Slopes[CurDEM]^[x] := 100 * Slopes[CurDEM]^[x] / Count[CurDEM]^[x];
             if Slopes[CurDEM]^[x] > MaxSlope then MaxSlope := Slopes[CurDEM]^[x];
-            if 100 * Count[CurDEM]^[x] / TotalCount[CurDEM] > MaxCount then MaxCount := 100 * Count[CurDEM]^[x] / TotalCount[CurDEM];
+            if (100 * Count[CurDEM]^[x] / TotalCount[CurDEM] > MaxCount) then MaxCount := 100 * Count[CurDEM]^[x] / TotalCount[CurDEM];
             NumBins[CurDEM] := x;
          end {if};
          Count[CurDEM]^[x] := 100 * Count[CurDEM]^[x] / TotalCount[CurDEM];
@@ -2242,7 +2274,7 @@ begin {proc ElevationSlopePlot}
       if MDDef.ShowElevSlope then GraphPlot(ElevSlope);
       if MDDef.ShowCumSlope then GraphPlot(CumSlope);
       if MDDef.ShowElevSlopeDeg then GraphPlot(ElevSlopeDeg);
-      GraphPlot(ElevRuff);
+      if MDDef.ShowElevRough then GraphPlot(ElevRuff);
    finally
       ShowDefaultCursor;
    end;
@@ -2952,7 +2984,7 @@ begin
                   Corrs^[i,j] := 1;
                end
                else begin
-                  VarCovarStatsFromTwoGrids(DEMGlb[i].FullDEMGridLimits,i,J,r,covar);
+                  CovariancesFromTwoGrids(DEMGlb[i].FullDEMGridLimits,i,J,r,covar);
                   Corrs^[i,j] := r;
                   Corrs^[j,i] := r;
                end;

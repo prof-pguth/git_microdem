@@ -17,7 +17,7 @@ var
    {$If Defined(RecordCarto)} aLine : shortString; {$EndIf}
 begin
    if ValidDEM(DEM) then begin
-      {$If Defined(RecordCarto)} aLine := DEMGlb[DEM].AreaName + ' initial ' + DEMGlb[DEM].ColsRowsString;  {$EndIf}
+      {$If Defined(RecordCarto)} aLine := DEMGlb[DEM].AreaName + ' initial ' + DEMGlb[DEM].ColsRowsString; {$EndIf}
       bb := DEMGlb[DEM].DEMBoundBoxGeo;
       {$If Defined(RecordCartoFull)} WriteLineToDebugFile('TMapForm.ClipDEMtoFullDEMIXTiles, DEM in ' + sfBoundBoxToString(bb,8)); {$EndIf}
       db := DEMIXtileFill(DEM,bb,False);
@@ -185,7 +185,7 @@ function tDEMDataSet.ResampleByAveraging(OpenMap : boolean; SaveCountGrid : bool
 var
    NewGrid,CountGrid,x,y,xi,yi : integer;
    Lat,Long : float64;
-   z,z1 : float32;
+   z,z1,avgz : float32;
    NewHeadRecs : tDEMheader;
    NewAreaName : shortstring;
 
@@ -213,7 +213,7 @@ begin
    NewHeadRecs.DEMSWCornerY := trunc(NewHeadRecs.DEMSWCornerY / NewHeadRecs.DEMySpacing) * NewHeadRecs.DEMySpacing;
    {$If Defined(RecordCreateNewDEMSWCorner)} RecordSWCorner('Snapped'); {$EndIf}
    NewHeadRecs.RasterPixelIsGeoKey1025 := MDDef.LasDEMPixelIs;
-   NewHeadRecs.DEMPrecision := WordDEM;
+   NewHeadRecs.DEMPrecision := LongWordDEM;
    NewHeadRecs.ElevUnits := Undefined;
 
    if not OpenAndZeroNewDEM(true,NewHeadRecs,CountGrid,MDTempDir + NewAreaName + '_resample_density',InitDEMvalue,0) then begin
@@ -243,12 +243,12 @@ begin
           if GetElevMeters(x,y,z) then begin
              DEMGridToLatLongDegree(x,y,Lat,Long);
              DEMGlb[CountGrid].LatLongDegreeToDEMGridInteger(Lat,Long,xi,yi);
-             DEMGlb[CountGrid].IncrementGridValue(xi,yi);
              if DEMGlb[Result].GetElevMetersOnGrid(xi,yi,z1) then begin
+                DEMGlb[CountGrid].IncrementGridValue(xi,yi);
                 DEMGlb[Result].SetGridElevation(xi,yi,z1+Z);
              end
              else begin
-                DEMGlb[Result].SetGridElevation(xi,yi,Z);
+                //DEMGlb[Result].SetGridElevation(xi,yi,Z);
              end;
           end;
        end;
@@ -259,8 +259,15 @@ begin
        UpdateProgressBar(x/DEMGlb[Result].DEMHeader.NumCol);
        for y := 0 to pred(DEMGlb[Result].DEMHeader.NumRow) do begin
           if DEMGlb[CountGrid].GetElevMetersOnGrid(x,y,z) and (z > 0) and DEMGlb[Result].GetElevMetersOnGrid(x,y,z1) then begin
-             DEMGlb[Result].SetGridElevation(x,y,z1/z);
+             avgz := z1/z;
+
+             if (avgz < DEMHeader.MinElev) then begin
+                WriteLineToDebugFile('x=' + IntToStr(x) + '  y=' + IntToStr(y) + ' z=' + RealToString(avgz,-8,-1));
+             end;
+
+             DEMGlb[Result].SetGridElevation(x,y,avgz);
           end
+
           else begin
              DEMGlb[Result].SetGridMissing(x,y);
           end;
@@ -384,7 +391,7 @@ begin
                      else if (FilterCategory in [fcMean,fcSTD]) then begin
                         Moment(xs,MomentVar,msAfterStdDev);
                         if (FilterCategory in [fcMean]) then DEMGlb[NewDEM].SetGridElevation(Col,Row,MomentVar.mean)
-                        else DEMGlb[NewDEM].SetGridElevation(Col,Row,MomentVar.sdev);
+                        else DEMGlb[NewDEM].SetGridElevation(Col,Row,MomentVar.std_dev);
                      end
                      else if (FilterCategory = fcSum) then DEMGlb[NewDEM].SetGridElevation(Col,Row,Sum)
                      else if (FilterCategory = fcMin) then DEMGlb[NewDEM].SetGridElevation(Col,Row,Min)
@@ -619,7 +626,7 @@ begin
    end;
    CheckMaxMinElev;
    if ShowSatProgress then EndProgress;
-   {$IfDef RecordDEMEdits} WriteLineToDebugFile('Points changed=' + IntToStr(Changed));  {$EndIf}
+   {$IfDef RecordDEMEdits} WriteLineToDebugFile('Points changed=' + IntToStr(Changed)); {$EndIf}
 end;
 
 
@@ -638,9 +645,10 @@ var
    HolesFilled,TotalHoles : int64;
    //NewDEM,
    n,Col,Row{,i,x,y,xc,yc} : integer;
-   ThisWeight,Sum : float64;
+   //ThisWeight,
+   Sum : float64;
    zs,zn,ze,zw : float32;
-   Found : array[1..8] of boolean;
+   //Found : array[1..8] of boolean;
 begin
    StartProgressAbortOption('Fill holes ' + AreaName);
    HolesFilled := 0;

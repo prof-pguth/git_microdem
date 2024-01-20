@@ -4,7 +4,7 @@ unit pick_geostats;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -433,13 +433,12 @@ end;
 
 procedure TPickGeoStat.BitBtn21Click(Sender: TObject);
 var
-   NewMap{,FirstMap} : integer;
+   NewMap : integer;
 
    procedure MatchAndSave;
    begin
       if ValidDEM(NewMap) then begin
          MatchAnotherDEMMap(NewMap,CurDEM);
-         //if NewMap <> FirstMap then MaskStripFromSecondGrid(DEMGlb[FirstMap].FullDEMGridLimits,NewMap.DEMonMap,SecondGrid,HowMask);
          DEMGlb[NewMap].SaveAsGeotiff(ExtractFilePath(DEMGlb[CurDEM].DEMFileName) + DEMGlb[NewMap].AreaName + '.tif');
       end;
    end;
@@ -759,7 +758,7 @@ end;
 
 procedure TPickGeoStat.Button5Click(Sender: TObject);
 begin
-   ElevationSlopePlot(DEMListToProcess,MDDef.ElevBinSize);
+   ElevationSlopePlot(DEMListToProcess,MDDef.ElevBinSize,Memo1);
 end;
 
 procedure TPickGeoStat.Button6Click(Sender: TObject);

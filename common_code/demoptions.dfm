@@ -3,20 +3,20 @@ inherited OptionsForm: TOptionsForm
   Top = 230
   BorderStyle = bsSizeable
   Caption = ''
-  ClientHeight = 564
-  ClientWidth = 797
+  ClientHeight = 563
+  ClientWidth = 793
   Position = poDefaultPosOnly
   OnClose = FormClose
   OnCreate = FormCreate
   OnResize = FormResize
-  ExplicitWidth = 809
-  ExplicitHeight = 602
+  ExplicitWidth = 805
+  ExplicitHeight = 601
   TextHeight = 15
   inherited Bevel1: TBevel
     Left = 0
     Top = 0
-    Width = 797
-    Height = 506
+    Width = 793
+    Height = 505
     Align = alClient
     ExplicitLeft = 0
     ExplicitTop = 1
@@ -45,14 +45,12 @@ inherited OptionsForm: TOptionsForm
   object PageControl1: TPageControl
     Left = 0
     Top = 0
-    Width = 797
-    Height = 506
+    Width = 793
+    Height = 505
     ActivePage = TabSheet15
     Align = alClient
     MultiLine = True
     TabOrder = 2
-    ExplicitWidth = 793
-    ExplicitHeight = 505
     object TabSheet1: TTabSheet
       Caption = 'Program'
       object RadioGroup7: TRadioGroup
@@ -130,8 +128,8 @@ inherited OptionsForm: TOptionsForm
       object StringGrid1: TStringGrid
         Left = 0
         Top = 0
-        Width = 789
-        Height = 456
+        Width = 785
+        Height = 455
         Align = alClient
         ColCount = 2
         ScrollBars = ssVertical
@@ -1582,21 +1580,13 @@ inherited OptionsForm: TOptionsForm
         Height = 23
         TabOrder = 5
       end
-      object CheckBox18: TCheckBox
-        Left = 21
-        Top = 241
-        Width = 179
-        Height = 17
-        Caption = 'Love Bill the Goat'
-        TabOrder = 6
-      end
       object CheckBox157: TCheckBox
         Left = 23
         Top = 123
         Width = 199
         Height = 17
         Caption = 'Show WinExec window'
-        TabOrder = 7
+        TabOrder = 6
       end
       object CheckBox166: TCheckBox
         Left = 21
@@ -1604,7 +1594,7 @@ inherited OptionsForm: TOptionsForm
         Width = 332
         Height = 17
         Caption = 'Stay awake (for GPS, bulk processing)'
-        TabOrder = 8
+        TabOrder = 7
       end
     end
     object TabSheet11: TTabSheet
@@ -2228,7 +2218,7 @@ inherited OptionsForm: TOptionsForm
       end
       object CheckBox17: TCheckBox
         Left = 16
-        Top = 33
+        Top = 32
         Width = 169
         Height = 17
         Caption = 'Plot on all maps'
@@ -3260,13 +3250,13 @@ inherited OptionsForm: TOptionsForm
   end
   object Panel1: TPanel
     Left = 0
-    Top = 506
-    Width = 797
+    Top = 505
+    Width = 793
     Height = 58
     Align = alBottom
     TabOrder = 3
-    ExplicitTop = 505
-    ExplicitWidth = 793
+    ExplicitTop = 504
+    ExplicitWidth = 789
     object BitBtn3: TBitBtn
       Left = 178
       Top = 6

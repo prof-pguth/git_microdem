@@ -3,7 +3,7 @@
 { Part of MICRODEM GIS Program       }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
-{ Copyright (c) 2023 Peter L. Guth   }
+{ Copyright (c) 2024 Peter L. Guth   }
 {------------------------------------}
 {include file for demcoord.pas       }
 {____________________________________}
@@ -173,15 +173,12 @@ function ReadWorldFile(var MapProjection : tMapProjection; var DigitizeDatum : S
 var
    DatumFile : tStringList;
    RawDatum : tMapProjection;
-   i,err : integer;
-   Lat,Long,//Factor,
-   xrot,yrot : float64;
+   err : integer;
+   Lat,Long,xrot,yrot : float64;
    tFile : textFile;
    HaveToAsk,GeoLatLong : boolean;
    TStr : shortstring;
-   //PName :    tProjectType;
    vmProjection : tMapProjection;
-   //fName3,fName2,
    fName, DatumFName : PathStr;
 
        procedure DefinePlateCareeProjection;

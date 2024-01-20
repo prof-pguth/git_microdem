@@ -4,8 +4,8 @@ object gis_scaled_form: Tgis_scaled_form
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Scaled Symbols'
-  ClientHeight = 2256
-  ClientWidth = 317
+  ClientHeight = 2255
+  ClientWidth = 313
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -1369,7 +1369,7 @@ object gis_scaled_form: Tgis_scaled_form
     object Edit19: TEdit
       Left = 96
       Top = 11
-      Width = 86
+      Width = 186
       Height = 21
       TabOrder = 0
       OnChange = Edit19Change

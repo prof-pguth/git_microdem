@@ -47,7 +47,7 @@ uses
   PETMAR,sc_ColLith,Zipatone,DEMDefs,Petmar_types,Petmar_db,
   System.Math,
   //Data.db,
-  SysUtils, Windows, Messages, Classes, Graphics, Controls,   Printers,
+  SysUtils, Windows, Messages, Classes, Graphics, Controls,   //Printers,
   Forms, Dialogs, Menus, StdCtrls, ExtCtrls,Consts,
   Buttons, ToolWin, ComCtrls;
 

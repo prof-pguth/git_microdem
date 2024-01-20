@@ -4,7 +4,7 @@
 { Part of MICRODEM GIS Program       }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
-{ Copyright (c) 2023 Peter L. Guth   }
+{ Copyright (c) 2024 Peter L. Guth   }
 {____________________________________}
 
 
@@ -311,6 +311,7 @@ function RecycleCompressFile : boolean;
 
 function AspectDir8FromAspect(AspectDir : float32) : tCompassDirection;  inline;
 function ElevUnitsAre(Code : byte) : shortstring;
+function PixelIsString(Code : integer) : shortstring;
 
 function RasterPixelIsString(Code : integer) : shortstring;
 function VertDatumName(VerticalCSTypeGeoKey : integer) : shortstring;
@@ -319,6 +320,7 @@ var
    VegDenstColors : array[0..255] of tPlatformColor;
 
 procedure MaskAllDEMsWithGeoBoundingBox(bb : sfboundBox);
+procedure InitLatLongBoundBox(LatLow,LongLow,LatHi,LongHi : float64);
 
 
 implementation
@@ -373,6 +375,16 @@ uses
    DEMStat,
    DataBaseCreate;
 
+ procedure InitLatLongBoundBox(LatLow,LongLow,LatHi,LongHi : float64);
+ begin
+    LatHi := -9999;
+    LongHi := -9999;
+    LatLow := 9999;
+    LongLow := 9999;
+ end;
+
+
+
 procedure MaskAllDEMsWithGeoBoundingBox(bb : sfboundBox);
 var
    DEM : integer;
@@ -384,7 +396,12 @@ begin
    end;
 end;
 
-
+function PixelIsString(Code : integer) : shortstring;
+begin
+   if Code = 1 then Result := 'Area'
+   else if Code = 2 then Result := 'Point'
+   else Result := 'Undefined';
+end;
 
 function VertDatumName(VerticalCSTypeGeoKey : integer) : shortstring;
 begin
@@ -1656,6 +1673,8 @@ var
             AParameter('Geomorph','ShowElevFreq',ShowElevFreq,true);
             AParameter('Geomorph','ShowSlopeFreq',ShowSlopeFreq,true);
             AParameter('Geomorph','ShowElevSlope',ShowElevSlope,true);
+            AParameter('Geomorph','ShowElevRough',ShowElevRough,true);
+
             AParameter('Geomorph','ShowCumSlope',ShowCumSlope,true);
             AParameter('Geomorph','ShowAspectRose',ShowAspectRose,true);
             AParameter('Geomorph','ShowElevSlopeDeg',ShowElevSlopeDeg,false);
@@ -3219,7 +3238,7 @@ var
          AParameter('GISDB','LCP_ShortestDistance', LCP_ShortestDistance,false);
          AParameter('GISDB','LCP_LeastCost', LCP_LeastCost,true);
          AParameter('GISDB','ConfirmDBEdits', ConfirmDBEdits,false);
-
+         AParameter('GISDB','ApplyFilterToAllDBs', ApplyFilterToAllDBs,false);
          AParameter('GISDB','LCPStartfName', LCPStartfName,'');
          AParameter('GISDB','LCPendfName', LCPendfName,'');
          AParameter('GISDB','LCProadfName', LCProadfName,'');
@@ -3721,7 +3740,6 @@ begin
          AParameter('Hardware','DefaultServerPort',DefaultServerPort,7676);
          AParameter('Hardware','MaxThreadsForPC',MaxThreadsForPC,8);
          AParameter('Hardware','UpdateDelay',UpdateDelay,4);
-         //AParameter('Hardware','IsUSNAcomputer',IsUSNAcomputer,false);
          AParameter('Hardware','ShowWinExec',ShowWinExec,true);
          AParameter('Hardware','LogDOSoutput',LogDOSoutput,false);
       {$EndIf}
@@ -4016,14 +4034,6 @@ begin
        end;
    end;
 end;
-
-(*
-function USNAcomputer : boolean;
-begin
-   Result := (Copy(LocalIP,1,5) = '10.50') or (Copy(LocalIP,1,5) = '10.23') or (Copy(LocalIP,1,5) = '10.25') or MDDef.IsUSNAcomputer;
-end;
-*)
-
 
 
    {$IfDef AllowUSNAdataDownloads}
@@ -5349,6 +5359,7 @@ finalization
    {$IfDef RecordParallelLoops} WriteLineToDebugFile('RecordParallelLoops in demdef_routines'); {$EndIf}
    {$IfDef RecordFont} WriteLineToDebugFile('RecordFont in demdef_routines'); {$EndIf}
 end.
+
 
 
 

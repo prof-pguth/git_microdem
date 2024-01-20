@@ -4,7 +4,7 @@
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 {$I nevadia_defines.inc}
@@ -3510,7 +3510,7 @@ begin
          {$IfDef RecordReformat} WriteLineToDebugFile(fName); {$EndIf}
          FSplit(fName,Dir,bName,Ext);
          Memo1.Lines.Add(TimeToStr(Now) + ' Convert ' + IntToStr(i) + '/' + IntToStr(pred(TheFiles.Count)) + '  ' + ExtractFileName(fName));
-         ApplicationProcessMessages;
+         //ApplicationProcessMessages;
          OutName := OutPath + bName + OutF;
 
          if (not FileExists(OutName)) then begin
@@ -3519,7 +3519,7 @@ begin
             else begin
                if (Sender <> BILdirectorytoMDDEM1) or FileExists(ChangeFileExt(fName,'.hdr')) then begin
                   LoadNewDEM(j,fName,false);
-                  if (j <> 0) and (DEMGlb[j] <> Nil) then begin
+                  if (j <> 0) and ValidDEM(j) then begin
                      if (Sender <> ASCfiles1) then SaveIt;  //ASC files converted during LoadNewDEM
                      CloseSingleDEM(j);
                   end;
@@ -3699,7 +3699,7 @@ begin
    tName := ProgramRootDir + 'DP_TableDescriptions' + DefaultDBExt;
    if GetFileFromDirectory('file with name subsitutions',DefaultDBMask,tName) and GetFileFromDirectory('file to rename fields',DefaultDBMask,FName) then begin
       Table := tMyData.Create(fName);
-      PetDBUtils.GetFields(Table,AllVis,[ftString,ftInteger,ftSmallInt,ftFloat],FieldsInDB,true);
+      PetDBUtils.GetFields(Table,AllVis,[ftString,ftInteger,ftSmallInt,ftFloat,ftLargeInt],FieldsInDB,true);
       Table.Destroy;
       FieldsRenamed := 0;
       Table := tMyData.Create(tName);

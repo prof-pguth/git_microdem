@@ -4,7 +4,7 @@ unit dem_manager;
 { Part of MICRODEM GIS Program       }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
-{ Copyright (c) 2023 Peter L. Guth   }
+{ Copyright (c) 2024 Peter L. Guth   }
 {____________________________________}
 
 {$I nevadia_defines.inc}
@@ -190,7 +190,6 @@ const
     {$EndIf}
 {$EndIf}
 
-
 implementation
 
 uses
@@ -328,25 +327,16 @@ var
    fName : PathStr;
    i,Decs : integer;
 begin
-(*
-         DEMSWcornerLat,           {local datum lat of lower left corner,  the point for pixel-is-point and SW corner for pixel-is-area}
-         DEMSWcornerLong,          {local datum long of lower left corner, the point for pixel-is-point and SW corner for pixel-is-area}
-         ComputeSWCornerX,         //  1/2 pixel shifted east for PixelIsArea used for computations which consider all grids pixel-is-point
-         ComputeSWCornerY,         //  1/2 pixel shifted north for PixelIsArea used for computations which consider all grids pixel-is-point
-         GeotiffNWCornerX,
-         GeotiffNWCornerY,
-*)
-
    ShowHourglassCursor;
    Results := tStringList.Create;
-   Results.Add('DEM,PIXEL_IS,HORIZ_DATM,VERT_DATUM,LAT,LONG_CENT,MIN_Z,MAX_Z,SW_POINTX,SW_POINTY,SW_CornerX,SW_CornerY,NW_CornerX,NW_CornerY,DX,DY,NUM_COL,NUM_ROW,AVG_X_M,AVG_Y_M,AVG_SP_M');
+   Results.Add('DEM,PIXEL_IS,NOM_CORNER,HORIZ_DATM,VERT_DATUM,LAT,LONG_CENT,MIN_Z,MAX_Z,SW_POINTX,SW_POINTY,SW_CornerX,SW_CornerY,NW_CornerX,NW_CornerY,DX,DY,NUM_COL,NUM_ROW,AVG_X_M,AVG_Y_M,AVG_SP_M');
    for i := 1 to MaxDEMDataSets do if ValidDEM(i) then begin
       if (DEMGlb[i].DEMheader.DEMUsed = UTMBasedDEM) then Decs := -2 else Decs := -8;
-      Results.Add(DEMGlb[i].AreaName + ',' + IntToStr(DEMGlb[i].DEMheader.RasterPixelIsGeoKey1025) + ',' + DEMGlb[i].DEMMapProjection.h_DatumCode + ',' + VertDatumName(DEMGlb[i].DEMheader.VerticalCSTypeGeoKey) + ',' +
+      Results.Add(DEMGlb[i].AreaName + ',' + PixelIsString(DEMGlb[i].DEMheader.RasterPixelIsGeoKey1025) + ',' + DEMGlb[i].NominalCorner + ',' +
+          DEMGlb[i].DEMMapProjection.h_DatumCode + ',' + VertDatumName(DEMGlb[i].DEMheader.VerticalCSTypeGeoKey) + ',' +
           RealToString(DEMGlb[i].DEMSWcornerLat + 0.5 * DEMGlb[i].LatSizeMap,-12,-3) + ',' +
           RealToString(DEMGlb[i].DEMSWcornerLong + 0.5 * DEMGlb[i].LongSizeMap,-12,-3)  + ',' +
           RealToString(DEMGlb[i].DEMheader.MinElev,-12,2)  + ',' +  RealToString(DEMGlb[i].DEMheader.MaxElev,-12,2)  + ',' +
-          //TStr +
           RealToString(DEMGlb[i].ComputeSWCornerX,-12,Decs)  + ',' +RealToString(DEMGlb[i].ComputeSWCornerY,-12,Decs)  + ',' +
           RealToString(DEMGlb[i].DEMheader.DEMSWCornerX,-12,Decs)  + ',' +RealToString(DEMGlb[i].DEMheader.DEMSWCornerY,-12,Decs)  + ',' +
           RealToString(DEMGlb[i].GeotiffNWCornerX,-12,Decs)  + ',' +RealToString(DEMGlb[i].GeotiffNWCornerY,-12,Decs)  + ',' +

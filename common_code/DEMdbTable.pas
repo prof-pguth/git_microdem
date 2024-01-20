@@ -5,7 +5,7 @@
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -994,6 +994,9 @@ type
     Createnewtables1: TMenuItem;
     Modifythistable1: TMenuItem;
     Filterthistable1: TMenuItem;
+    Comparerankingswithdifferentcriteria1: TMenuItem;
+    DifferentrankingsbyCriteria1: TMenuItem;
+    AssignDEMIXDEMcolors1: TMenuItem;
     //Pointfilter1: TMenuItem;
     //Pointfilter2: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
@@ -1754,6 +1757,9 @@ type
     procedure GraphSSIMR2byDEM1Click(Sender: TObject);
     procedure BitBtn13Click(Sender: TObject);
     procedure SSIMR2graphforthistile1Click(Sender: TObject);
+    procedure Comparerankingswithdifferentcriteria1Click(Sender: TObject);
+    procedure DifferentrankingsbyCriteria1Click(Sender: TObject);
+    procedure AssignDEMIXDEMcolors1Click(Sender: TObject);
     //procedure Pointfilter2Click(Sender: TObject);
     //procedure Pointfilter1Click(Sender: TObject);
   private
@@ -2227,7 +2233,7 @@ begin
           end
           else begin
               if GISdb[DBonTable].MyData.CarefullyGetFieldByNameAsFloat64(FieldsUsed.Strings[j],z) then
-                 TStr := TStr + RealToString((z - MomentVar[j].mean) / MomentVar[j].sdev,-12,-5)
+                 TStr := TStr + RealToString((z - MomentVar[j].mean) / MomentVar[j].std_dev,-12,-5)
               else TStr := TStr + ' ';
           end;
        end;
@@ -3420,6 +3426,7 @@ begin
    Historgram1.Visible := Fieldstatistics1.Visible;
    Listuniquevalues2.Visible := true;
    Searchandreplace1.Visible := CheckBox1.Checked and (ft in [ftString,ftInteger,ftSmallInt,ftFloat,ftLargeInt]);
+   Historgram1.Visible := NumericField;
    Limitdecimalplaces1.Visible := CheckBox1.Checked and (ft in [ftFloat]);
    Stringmanipulation1.Visible := CheckBox1.Checked and (ft in [ftString]);
    Colorallrecords2.Visible := ((SelectedColumn = 'LINE_COLOR') or (SelectedColumn = 'COLOR')) and CheckBox1.Checked;
@@ -3612,7 +3619,7 @@ end;
 
 procedure Tdbtablef.BitBtn4Click(Sender: TObject);
 begin
-   {$IfDef RecordDataBase} WriteLineToDebugFile('Tdbtablef.BitBtn4Click--DB filter selected');     {$EndIf}
+   {$IfDef RecordDataBase} WriteLineToDebugFile('Tdbtablef.BitBtn4Click--DB filter selected'); {$EndIf}
    GISdb[DBonTable].DisplayTable(GISdb[DBonTable].MyData.Filter);
    ShowStatus;
 end;
@@ -4252,6 +4259,11 @@ begin
    Sumtwofields1Click(Sender);
 end;
 
+
+procedure Tdbtablef.DifferentrankingsbyCriteria1Click(Sender: TObject);
+begin
+    DifferentRankingsByCriteria(DBonTable);
+end;
 
 procedure Tdbtablef.Asymmetric1Click(Sender: TObject);
 begin
@@ -6887,42 +6899,40 @@ var
    rFile : file;
    Subs : tStringList;
 begin
-   //with GISdb[DBonTable] do begin
-     aField := GISdb[DBonTable].PickField('time variable',[ftInteger,ftSmallInt,ftFloat]);
-     sField := GISdb[DBonTable].PickField('sort',[ftString]);
+  aField := GISdb[DBonTable].PickField('time variable',[ftInteger,ftSmallInt,ftFloat]);
+  sField := GISdb[DBonTable].PickField('sort',[ftString]);
 
-     Subs := nil;
-     Subs := GISdb[DBonTable].MyData.UniqueEntriesInDB(sField);
+  Subs := nil;
+  Subs := GISdb[DBonTable].MyData.UniqueEntriesInDB(sField);
 
-     GISdb[DBonTable].EmpSource.Enabled := false;
+  GISdb[DBonTable].EmpSource.Enabled := false;
 
-     ThisGraph := TThisBaseGraph.Create(Application);
-     ThisGraph.GraphDraw.LegendList := tStringList.create;
+  ThisGraph := TThisBaseGraph.Create(Application);
+  ThisGraph.GraphDraw.LegendList := tStringList.create;
 
-      for j := 0 to pred(subs.Count) do begin
-         GISdb[DBonTable].ApplyGISFilter(sField + '=' + QuotedStr(Subs.Strings[j]));
-         New(zs);
-         GetFieldValuesInArray(GISdb[DBonTable].MyData,aField,zs^,Npts,Missing,Min,Max);
-         PetMath.HeapSort(NPts,zs^);
-         ThisGraph.OpenDataFile(rfile);
-         ThisGraph.GraphDraw.LegendList.Add(Subs.Strings[j] + '  n=' + IntToStr(NPts));
-         ShowHourglassCursor;
-         Cum := 0;
-         for i := 0 to pred(Npts) do begin
-             inc(cum);
-             ThisGraph.AddPointToDataBuffer(rfile,zs^[i],100 * Cum / NPts);
-         end;
-         ThisGraph.ClosePointDataFile(rfile);
-         Dispose(zs);
+   for j := 0 to pred(subs.Count) do begin
+      GISdb[DBonTable].ApplyGISFilter(sField + '=' + QuotedStr(Subs.Strings[j]));
+      New(zs);
+      GetFieldValuesInArray(GISdb[DBonTable].MyData,aField,zs^,Npts,Missing,Min,Max);
+      PetMath.HeapSort(NPts,zs^);
+      ThisGraph.OpenDataFile(rfile);
+      ThisGraph.GraphDraw.LegendList.Add(Subs.Strings[j] + '  n=' + IntToStr(NPts));
+      ShowHourglassCursor;
+      Cum := 0;
+      for i := 0 to pred(Npts) do begin
+          inc(cum);
+          ThisGraph.AddPointToDataBuffer(rfile,zs^[i],100 * Cum / NPts);
       end;
+      ThisGraph.ClosePointDataFile(rfile);
+      Dispose(zs);
+   end;
 
-      ThisGraph.GraphDraw.HorizLabel := aField;
-      ThisGraph.GraphDraw.VertLabel := 'Cumulative percentile';
-      ThisGraph.AutoScaleAndRedrawDiagram;
-      ThisGraph.Caption := aField;
-      GISdb[DBonTable].ApplyGISFilter('');
-      ShowStatus;
-   //end;
+   ThisGraph.GraphDraw.HorizLabel := aField;
+   ThisGraph.GraphDraw.VertLabel := 'Cumulative percentile';
+   ThisGraph.AutoScaleAndRedrawDiagram;
+   ThisGraph.Caption := aField;
+   GISdb[DBonTable].ApplyGISFilter('');
+   ShowStatus;
 end;
 
 procedure Tdbtablef.Currentfilter1Click(Sender: TObject);
@@ -6944,18 +6954,16 @@ end;
 
 procedure Tdbtablef.CurrentflterYrestN1Click(Sender: TObject);
 begin
-   //with GISdb[DBonTable] do begin
-      if GISdb[DBonTable].MyData.FieldExists('USE') then begin
-         GISdb[DBonTable].SaveFilterStatus(true);
-         GISdb[DBonTable].ClearGISFilter;
-         GISdb[DBonTable].FillUseField(false,'N');
-         if GISdb[DBonTable].ItsFanFile then begin
-            GISdb[DBonTable].TheMapOwner.MapDraw.DeleteSingleMapLayer(GISdb[DBonTable].TheMapOwner.MapDraw.AllFansCoverageFName);
-         end;
-         GISdb[DBonTable].RestoreFilterStatus;
-         GISdb[DBonTable].FillUseField(false,'Y');
+   if GISdb[DBonTable].MyData.FieldExists('USE') then begin
+      GISdb[DBonTable].SaveFilterStatus(true);
+      GISdb[DBonTable].ClearGISFilter;
+      GISdb[DBonTable].FillUseField(false,'N');
+      if GISdb[DBonTable].ItsFanFile then begin
+         GISdb[DBonTable].TheMapOwner.MapDraw.DeleteSingleMapLayer(GISdb[DBonTable].TheMapOwner.MapDraw.AllFansCoverageFName);
       end;
-   //end;
+      GISdb[DBonTable].RestoreFilterStatus;
+      GISdb[DBonTable].FillUseField(false,'Y');
+   end;
 end;
 
 procedure Tdbtablef.Currentmaparea1Click(Sender: TObject);
@@ -6970,27 +6978,26 @@ begin
    DEMIX_evaluations_graph(DBonTable);
 end;
 
+
 procedure Tdbtablef.Cyclethroughterrainprofiles1Click(Sender: TObject);
 var
    thisGraph : tThisBaseGraph;
    DelayTime,i,rc : integer;
 begin
-   //with GISdb[DBonTable] do begin
-      DelayTime := 250;
-      ReadDefault('Recs on map: ' + IntToStr(GISdb[DBonTable].MyData.RecordCount) + ';  Delay (ms)',DelayTime);
-      StartProgressAbortOption('Profiles');
-      i := 0;
-      rc := GISdb[DBonTable].MyData.RecordCount;
-      GISdb[DBonTable].MyData.First;
-      repeat
-         inc(i);
-         UpdateProgressBar(i/rc);
-         ThisGraph := DrawDEMTerrainprofile(Normalizedbasinprofile1);
-         Delay(DelayTime);
-         ThisGraph.Destroy;
-         GISdb[DBonTable].MyData.Next;
-      until GISdb[DBonTable].MyData.Eof or WantOut;
-   //end;
+   DelayTime := 250;
+   ReadDefault('Recs on map: ' + IntToStr(GISdb[DBonTable].MyData.RecordCount) + ';  Delay (ms)',DelayTime);
+   StartProgressAbortOption('Profiles');
+   i := 0;
+   rc := GISdb[DBonTable].MyData.RecordCount;
+   GISdb[DBonTable].MyData.First;
+   repeat
+      inc(i);
+      UpdateProgressBar(i/rc);
+      ThisGraph := DrawDEMTerrainprofile(Normalizedbasinprofile1);
+      Delay(DelayTime);
+      ThisGraph.Destroy;
+      GISdb[DBonTable].MyData.Next;
+   until GISdb[DBonTable].MyData.Eof or WantOut;
 end;
 
 
@@ -7026,11 +7033,9 @@ procedure Tdbtablef.Linearinterpolateacrossgaps1Click(Sender: TObject);
 var
    YField,ZField : ShortString;
 begin
-   //with GISdb[DBonTable] do begin
-      yField := GISdb[DBonTable].PickField('time variable',[ftInteger,ftSmallInt,ftFloat]);
-      zField := GISdb[DBonTable].PickField('Z field',[ftFloat]);
-      GISdb[DBonTable].LinearInterpolateAcrossGap(yfield,zField);
-   //end;
+   yField := GISdb[DBonTable].PickField('time variable',[ftInteger,ftSmallInt,ftFloat]);
+   zField := GISdb[DBonTable].PickField('Z field',[ftFloat]);
+   GISdb[DBonTable].LinearInterpolateAcrossGap(yfield,zField);
 end;
 
 
@@ -7039,19 +7044,17 @@ var
    Sum : float64;
    Success : boolean;
 begin
-    //with GISdb[DBonTable] do begin
-        GISdb[DBonTable].aShapeFile := tShapeFile.Create(GISdb[DBonTable].ShapeFileName,Success);
-        Sum := 0;
-        GISdb[DBonTable].EmpSource.Enabled := false;
-        GISdb[DBonTable].MyData.First;
-        repeat
-           sum := sum + GISdb[DBonTable].aShapeFile.LineLength(GISdb[DBonTable].MyData.RecNo);
-           GISdb[DBonTable].MyData.Next;
-        until GISdb[DBonTable].MyData.EOF;
-        GISdb[DBonTable].aShapeFile.Destroy;
-        ShowStatus;
-        MessageToContinue('Segments: '+ IntToStr(GISdb[DBonTable].MyData.RecordCount) + MessLineBreak + 'Line Length: ' + RealToString(Sum,-12,0) + ' m',True);
-   //end;
+   GISdb[DBonTable].aShapeFile := tShapeFile.Create(GISdb[DBonTable].ShapeFileName,Success);
+   Sum := 0;
+   GISdb[DBonTable].EmpSource.Enabled := false;
+   GISdb[DBonTable].MyData.First;
+   repeat
+     sum := sum + GISdb[DBonTable].aShapeFile.LineLength(GISdb[DBonTable].MyData.RecNo);
+     GISdb[DBonTable].MyData.Next;
+   until GISdb[DBonTable].MyData.EOF;
+   GISdb[DBonTable].aShapeFile.Destroy;
+   ShowStatus;
+   MessageToContinue('Segments: '+ IntToStr(GISdb[DBonTable].MyData.RecordCount) + MessLineBreak + 'Line Length: ' + RealToString(Sum,-12,0) + ' m',True);
 end;
 
 function MakeCell(Text : ShortString) : AnsiString;
@@ -7238,19 +7241,19 @@ var
    fName : ShortString;
 begin
    {$IfDef RecordEditDB} WriteLineToDebugFile('Tdbtablef.Colorallrecords1Click in'); {$EndIf}
-   with GISdb[DBonTable],MyData do begin
-      if FieldExists('COLOR') then fName := 'COLOR'
+   with GISdb[DBonTable] do begin
+      if MyData.FieldExists('COLOR') then fName := 'COLOR'
       else fName := 'LINE_COLOR';
-      if (GetFieldByNameAsString(fName) = '') then ColorDialog1.Color := clBlack
-      else ColorDialog1.Color := GetFieldByNameAsInteger(fName);
+      if (MyData.GetFieldByNameAsString(fName) = '') then ColorDialog1.Color := clBlack
+      else ColorDialog1.Color := MyData.GetFieldByNameAsInteger(fName);
       if ColorDialog1.Execute then begin
          EmpSource.Enabled := false;
-         First;
+         MyData.First;
          repeat
-            Edit;
-            if (Sender <> Coloruncoloredrecords1) or (GetFieldByNameAsString(fName) = '') then SetFieldByNameAsInteger(fName,ColorDialog1.Color);
-            Next;
-         until EOF;
+            MyData.Edit;
+            if (Sender <> Coloruncoloredrecords1) or (MyData.GetFieldByNameAsString(fName) = '') then MyData.SetFieldByNameAsInteger(fName,ColorDialog1.Color);
+            MyData.Next;
+         until MyData.EOF;
       end;
       ShowStatus;
    end;
@@ -7299,10 +7302,8 @@ end;
 
 procedure Tdbtablef.Columnoperations1Click(Sender: TObject);
 begin
-  // with GISdb[DBonTable] do begin
-      SelectedColumn := GISdb[DBonTable].PickField('Column operations',[ftString,ftInteger,ftSmallInt,ftFloat]);
-      SelectedColumnType := GISdb[DBonTable].MyData.GetFieldType(SelectedColumn);
-  // end;
+   SelectedColumn := GISdb[DBonTable].PickField('Column operations',[ftString,ftInteger,ftSmallInt,ftFloat]);
+   SelectedColumnType := GISdb[DBonTable].MyData.GetFieldType(SelectedColumn);
    ColumnOps;
 end;
 
@@ -7403,6 +7404,11 @@ begin
    Symmetric1Click(Sender);
 end;
 
+procedure Tdbtablef.Comparerankingswithdifferentcriteria1Click(Sender: TObject);
+begin
+   CompareRankings(DBonTable);
+end;
+
 procedure Tdbtablef.CompareshapefileandDEMprofiles1Click(Sender: TObject);
 begin
    Do3Dshapefileprofile1Click(Sender);
@@ -7429,20 +7435,18 @@ var
    db_concatenate : db_field_concatenate.Tdb_concatenate;
    FieldsInDB : tStringList;
 begin
-   //with GISdb[DBonTable] do begin
-     db_concatenate := Tdb_concatenate.Create(Application);
-     GetFieldsLinkPossible(GISdb[DBonTable].MyData,GISdb[DBonTable].LinkTable,GISdb[DBonTable].dbOpts.VisCols,[ftString,ftInteger,ftSmallInt],FieldsInDB);
-     db_concatenate.ComboBox1.Items := FieldsInDB;
-     db_concatenate.ComboBox2.Items := FieldsInDB;
-     db_concatenate.ComboBox3.Items := FieldsInDB;
-     FieldsInDB.Free;
-     db_concatenate.ShowModal;
-     if not db_concatenate.Abort then with db_concatenate do begin
-        GISdb[DBonTable].AddConcatenatedField(Edit4.Text,ComboBox1.Text,ComboBox2.Text,ComboBox3.Text,Edit1.Text,Edit2.Text,Edit5.Text,Edit3.Text);
-     end;
-     db_concatenate.Free;
-     ShowStatus;
-   //end;
+   db_concatenate := Tdb_concatenate.Create(Application);
+   GetFieldsLinkPossible(GISdb[DBonTable].MyData,GISdb[DBonTable].LinkTable,GISdb[DBonTable].dbOpts.VisCols,[ftString,ftInteger,ftSmallInt],FieldsInDB);
+   db_concatenate.ComboBox1.Items := FieldsInDB;
+   db_concatenate.ComboBox2.Items := FieldsInDB;
+   db_concatenate.ComboBox3.Items := FieldsInDB;
+   FieldsInDB.Free;
+   db_concatenate.ShowModal;
+   if not db_concatenate.Abort then with db_concatenate do begin
+      GISdb[DBonTable].AddConcatenatedField(Edit4.Text,ComboBox1.Text,ComboBox2.Text,ComboBox3.Text,Edit1.Text,Edit2.Text,Edit5.Text,Edit3.Text);
+   end;
+   db_concatenate.Free;
+   ShowStatus;
 end;
 
 
@@ -7460,24 +7464,22 @@ var
    aLine : shortstring;
    Lat,Long : float64;
 begin
-   //with GISdb[DBonTable] do begin
-      GISdb[DBonTable].AddLatLong;
-      ShowHourglassCursor;
-      GISdb[DBonTable].EmpSource.Enabled := false;
-      GISdb[DBonTable].MyData.First;
-      while not GISdb[DBonTable].MyData.eof do begin
-         aline := GISdb[DBonTable].MyData.GetFieldByNameAsString('LOCATION');
-         Lat := strToFloat(copy(aline,1,2)) + strToFloat(copy(aline,3,4)) / 60;
-         if aline[7] in ['s','S'] then Lat := - Lat;
-         Long := strToFloat(copy(aline,9,3)) + strToFloat(copy(aline,12,4)) / 60;
-         if aline[16] in ['w','W'] then Long := - Long;
-         GISdb[DBonTable].MyData.Edit;
-         GISdb[DBonTable].MyData.SetFieldByNameAsFloat('LAT',lat);
-         GISdb[DBonTable].MyData.SetFieldByNameAsFloat('LONG',long);
-         GISdb[DBonTable].MyData.Next;
-      end;
-      ShowStatus;
-   //end;
+   GISdb[DBonTable].AddLatLong;
+   ShowHourglassCursor;
+   GISdb[DBonTable].EmpSource.Enabled := false;
+   GISdb[DBonTable].MyData.First;
+   while not GISdb[DBonTable].MyData.eof do begin
+      aline := GISdb[DBonTable].MyData.GetFieldByNameAsString('LOCATION');
+      Lat := strToFloat(copy(aline,1,2)) + strToFloat(copy(aline,3,4)) / 60;
+      if aline[7] in ['s','S'] then Lat := - Lat;
+      Long := strToFloat(copy(aline,9,3)) + strToFloat(copy(aline,12,4)) / 60;
+      if aline[16] in ['w','W'] then Long := - Long;
+      GISdb[DBonTable].MyData.Edit;
+      GISdb[DBonTable].MyData.SetFieldByNameAsFloat('LAT',lat);
+      GISdb[DBonTable].MyData.SetFieldByNameAsFloat('LONG',long);
+      GISdb[DBonTable].MyData.Next;
+   end;
+   ShowStatus;
 end;
 
 procedure Tdbtablef.ConvertUTMtolatlong1Click(Sender: TObject);
@@ -7491,7 +7493,6 @@ procedure Tdbtablef.Colorbarchart1Click(Sender: TObject);
 begin
    GISdb[DBonTable].BarGraphLegend;
 end;
-
 
 
 procedure Tdbtablef.Colorbasedonfield1Click(Sender: TObject);
@@ -7596,6 +7597,22 @@ begin
    SortDataBase(DBOnTable,true,SelectedColumn);
 end;
 
+procedure Tdbtablef.AssignDEMIXDEMcolors1Click(Sender: TObject);
+var
+   i,j : integer;
+begin
+    for i := 1 to MaxDataBase do begin
+       if ValidDB(i) then begin
+          for j := 1 to MaxDEMIXDEM do begin
+             if StrUtils.AnsiContainsText(UpperCase(GISdb[i].DBName),UpperCase(DEMIXshort[j])) then begin
+                GISdb[i].dbOpts.LineColor := DEMIXDEMcolors[j];
+                GISdb[i].RedrawLayerOnMap;
+             end;
+          end;
+       end;
+    end;
+end;
+
 procedure Tdbtablef.Assignuniquecolors1Click(Sender: TObject);
 begin
    Countuniquevalues1Click(Sender);
@@ -7606,18 +7623,15 @@ var
    fName : PathStr;
    i     : byte;
 begin
-   //with GISdb[DBonTable] do begin
-      Highlightrecordonmap1Click(Sender);
-      fName :=  ExtractFilePath(GISdb[DBonTable].dbFullName);
-      i := 1;
-      if GetGraphicsFileName('Image to associate',fName) then begin
-         GISdb[DBonTable].MyData.Edit;
-         i := Length(ExtractFilePath(GISdb[DBonTable].dbFullName));
-         System.Delete(fname,1,i);
-         GISdb[DBonTable].MyData.SetFieldByNameAsString('IMAGE',fName);
-         GISdb[DBonTable].MyData.Post;
-      end;
-   //end;
+   Highlightrecordonmap1Click(Sender);
+   fName :=  ExtractFilePath(GISdb[DBonTable].dbFullName);
+   if GetGraphicsFileName('Image to associate',fName) then begin
+      GISdb[DBonTable].MyData.Edit;
+      i := Length(ExtractFilePath(GISdb[DBonTable].dbFullName));
+      System.Delete(fname,1,i);
+      GISdb[DBonTable].MyData.SetFieldByNameAsString('IMAGE',fName);
+      GISdb[DBonTable].MyData.Post;
+   end;
 end;
 
 
@@ -7625,22 +7639,20 @@ procedure Tdbtablef.Timer1Timer(Sender: TObject);
 var
    Bitmap : tMyBitmap;
 begin
-   //with GISdb[DBonTable] do begin
-      GISdb[DBonTable].theMapOwner.Image1.Picture.Graphic := BaseMapBitmap;
-      if not CopyImageToBitmap(GISdb[DBonTable].theMapOwner.Image1,Bitmap) then exit;
-      case HighLightCycle of
-         1 : Bitmap.Canvas.Pen.Color := clRed;
-         2 : Bitmap.Canvas.Pen.Color := clGreen;
-         3 : Bitmap.Canvas.Pen.Color := clBlue;
-      end;
-      Bitmap.Canvas.Pen.Width := 4;
-      Bitmap.Canvas.Brush.Color := Bitmap.Canvas.Pen.Color;
-      inc(HighLightCycle);
-      if (HighLightCycle = 3) then HighLightCycle := 1;
-      GISdb[DBonTable].DisplayCurrentRecordOnMap(GISdb[DBonTable].TheMapOwner.MapDraw,Bitmap);
-      GISdb[DBonTable].theMapOwner.Image1.Picture.Graphic := Bitmap;
-      Bitmap.Destroy;
-   //end;
+   GISdb[DBonTable].theMapOwner.Image1.Picture.Graphic := BaseMapBitmap;
+   if not CopyImageToBitmap(GISdb[DBonTable].theMapOwner.Image1,Bitmap) then exit;
+   case HighLightCycle of
+      1 : Bitmap.Canvas.Pen.Color := clRed;
+      2 : Bitmap.Canvas.Pen.Color := clGreen;
+      3 : Bitmap.Canvas.Pen.Color := clBlue;
+   end;
+   Bitmap.Canvas.Pen.Width := 4;
+   Bitmap.Canvas.Brush.Color := Bitmap.Canvas.Pen.Color;
+   inc(HighLightCycle);
+   if (HighLightCycle = 3) then HighLightCycle := 1;
+   GISdb[DBonTable].DisplayCurrentRecordOnMap(GISdb[DBonTable].TheMapOwner.MapDraw,Bitmap);
+   GISdb[DBonTable].theMapOwner.Image1.Picture.Graphic := Bitmap;
+   Bitmap.Destroy;
 end;
 
 procedure Tdbtablef.TrackBar1Change(Sender: TObject);
@@ -7658,14 +7670,12 @@ end;
 
 procedure Tdbtablef.Highlightcolor1Click(Sender: TObject);
 begin
-   //with GISdb[DBonTable] do begin
-      if LineOrAreaShapefile(GISdb[DBonTable].ShapeFileType) then begin
-         Petmar.PickLineSizeAndColor('Highlight records',Nil,MDDef.HighLightColor,MDDef.HighlightLineWidth);
-      end
-      else begin
-         Petmar.PickSymbol(Nil,MDDef.HighlightSymbol,'Highlight records');
-      end;
-   //end;
+   if LineOrAreaShapefile(GISdb[DBonTable].ShapeFileType) then begin
+      Petmar.PickLineSizeAndColor('Highlight records',Nil,MDDef.HighLightColor,MDDef.HighlightLineWidth);
+   end
+   else begin
+      Petmar.PickSymbol(Nil,MDDef.HighlightSymbol,'Highlight records');
+   end;
 end;
 
 procedure Tdbtablef.Linelength2Click(Sender: TObject);
@@ -7711,31 +7721,29 @@ var
 begin
    {$IfDef ExGeology}
    {$Else}
-     // with GISdb[DBonTable] do begin
-         GISdb[DBonTable].AddFieldToDataBase(ftFloat,'S1S2',8,3);
-         GISdb[DBonTable].AddFieldToDataBase(ftFloat,'S2S3',8,3);
-         GISdb[DBonTable].AddFieldToDataBase(ftFloat,'TREND',6,1);
-         GISdb[DBonTable].EmpSource.Enabled := false;
-         GISdb[DBonTable].MyData.First;
-         i := 0;
-         NPts := GISdb[DBonTable].MyData.RecordCount;
-         StartSingleThreadTimer('Features');
-         while not GISdb[DBonTable].MyData.eof do begin
-            inc(i);
-            if (i mod 100 = 0) then begin
-               ThreadTimers.UpdateThreadStats(9, round(100 * i / Npts));
-               GISdb[DBonTable].EmpSource.Enabled := false;
-            end;
-
-            if GISdb[DBonTable].SSOandaspectdiagrams(s1s2,s2s3,Trend,RoughnessFactor) then begin
-               GISdb[DBonTable].MyData.Edit;
-               GISdb[DBonTable].MyData.SetFieldByNameAsFloat('S1S2',s1s2);
-               GISdb[DBonTable].MyData.SetFieldByNameAsFloat('S2S3',s2s3);
-               GISdb[DBonTable].MyData.SetFieldByNameAsFloat('TREND',Trend);
-            end;
-            GISdb[DBonTable].MyData.Next;
+      GISdb[DBonTable].AddFieldToDataBase(ftFloat,'S1S2',8,3);
+      GISdb[DBonTable].AddFieldToDataBase(ftFloat,'S2S3',8,3);
+      GISdb[DBonTable].AddFieldToDataBase(ftFloat,'TREND',6,1);
+      GISdb[DBonTable].EmpSource.Enabled := false;
+      GISdb[DBonTable].MyData.First;
+      i := 0;
+      NPts := GISdb[DBonTable].MyData.RecordCount;
+      StartSingleThreadTimer('Features');
+      while not GISdb[DBonTable].MyData.eof do begin
+         inc(i);
+         if (i mod 100 = 0) then begin
+            ThreadTimers.UpdateThreadStats(9, round(100 * i / Npts));
+            GISdb[DBonTable].EmpSource.Enabled := false;
          end;
-     // end;
+
+         if GISdb[DBonTable].SSOandaspectdiagrams(s1s2,s2s3,Trend,RoughnessFactor) then begin
+            GISdb[DBonTable].MyData.Edit;
+            GISdb[DBonTable].MyData.SetFieldByNameAsFloat('S1S2',s1s2);
+            GISdb[DBonTable].MyData.SetFieldByNameAsFloat('S2S3',s2s3);
+            GISdb[DBonTable].MyData.SetFieldByNameAsFloat('TREND',Trend);
+         end;
+         GISdb[DBonTable].MyData.Next;
+      end;
       EndThreadTimers;
       ShowStatus;
    {$EndIf}
@@ -7751,27 +7759,25 @@ var
    v : float64;
    FFTGraph : TFFTGraph;
 begin
-   //with GISdb[DBonTable] do begin
-      WantedFieldName := GISdb[DBonTable].PickField('FFTs',[ftFloat,ftInteger,ftSmallInt]);
-      FFTGraph := TFFTGraph.Create(Application);
-      FFTGraph.BinTime := 1;
-      FFTGraph.BinUnits := '';
-      FFTGraph.fftfilename := NextFileNumber(MDTempDir, WantedFieldName,'');
-      FFTGraph.TotalNumberPoints := 0;
-      AssignFile(dFile,FFTGraph.fftfilename);
-      Rewrite(dFile);
-      GISdb[DBonTable].EmpSource.Enabled := false;
-      GISdb[DBonTable].MyData.First;
-      repeat
-         v := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(WantedFieldName);
-         BlockWrite(dFile,v,1);
-         inc(FFTGraph.TotalNumberPoints);
-         GISdb[DBonTable].MyData.Next;
-      until GISdb[DBonTable].MyData.EOF;
-      ShowStatus;
-      CloseFile(DFile);
-      FFTGraph.FastFourierTransform;
-   //end;
+   WantedFieldName := GISdb[DBonTable].PickField('FFTs',[ftFloat,ftInteger,ftSmallInt]);
+   FFTGraph := TFFTGraph.Create(Application);
+   FFTGraph.BinTime := 1;
+   FFTGraph.BinUnits := '';
+   FFTGraph.fftfilename := NextFileNumber(MDTempDir, WantedFieldName,'');
+   FFTGraph.TotalNumberPoints := 0;
+   AssignFile(dFile,FFTGraph.fftfilename);
+   Rewrite(dFile);
+   GISdb[DBonTable].EmpSource.Enabled := false;
+   GISdb[DBonTable].MyData.First;
+   repeat
+      v := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(WantedFieldName);
+      BlockWrite(dFile,v,1);
+      inc(FFTGraph.TotalNumberPoints);
+      GISdb[DBonTable].MyData.Next;
+   until GISdb[DBonTable].MyData.EOF;
+   ShowStatus;
+   CloseFile(DFile);
+   FFTGraph.FastFourierTransform;
 {$EndIf}
 end;
 
@@ -7846,13 +7852,13 @@ var
    WantedFieldName : ShortString;
    I : integer;
 begin
-   with GISdb[DBonTable] do begin
+   //with GISdb[DBonTable] do begin
       GISdb[DBonTable].MyData.First;
-      WantedFieldName := PickField(TStr,[ftString]);
+      WantedFieldName := GISdb[DBonTable].PickField(TStr,[ftString]);
       while not GISdb[DBonTable].MyData.eof do begin
          TStr := GISdb[DBonTable].MyData.GetFieldByNameAsString(WantedFieldName);
          if StrUtils.AnsiContainsText(TStr,'-') then begin
-            EmpSource.Enabled := false;
+            GISdb[DBonTable].EmpSource.Enabled := false;
             FirstPart := Petmar_types.BeforeSpecifiedCharacterANSI(TStr,'-',true,true);
             TStr := UpperCase(TStr);
             for I := 1 to 12 do begin
@@ -7864,7 +7870,7 @@ begin
          end;
          GISdb[DBonTable].MyData.Next;
       end;
-   end;
+//   end;
    ShowStatus;
 end;
 
@@ -7899,23 +7905,23 @@ var
    DataSpacing : float64;
    DataSpacingUnits : shortstring;
 begin
-   with GISdb[DBonTable] do begin
+   //with GISdb[DBonTable] do begin
       if (Sender = Fitfouriercurve1) then TStr := 'Fourier curve fitting'
       else if (Sender = Crosscorrelation1) then begin
-         WantedFieldName2 := PickField('First series cross correlation',NumericFieldTypes);
+         WantedFieldName2 := GISdb[DBonTable].PickField('First series cross correlation',NumericFieldTypes);
          fName2 := NextFileNumber(MDTempDir, WantedFieldName2,'');
          DataFile2 := tStringList.Create;
          TStr := 'Second series cross correlation';
       end
       else TStr := 'Autocorrelation';
-      WantedFieldName := PickField(TStr,[ftFloat,ftInteger,ftSmallInt]);
+      WantedFieldName := GISdb[DBonTable].PickField(TStr,[ftFloat,ftInteger,ftSmallInt]);
       fName := NextFileNumber(MDTempDir, WantedFieldName,'');
       DataFile := tStringList.Create;
-      EmpSource.Enabled := false;
+      GISdb[DBonTable].EmpSource.Enabled := false;
       GISdb[DBonTable].MyData.First;
       repeat
-         DataFile.Add(MyData.GetFieldByNameAsString(WantedFieldName));
-         if (Sender = Crosscorrelation1) then DataFile2.Add(MyData.GetFieldByNameAsString(WantedFieldName2));
+         DataFile.Add(GISdb[DBonTable].MyData.GetFieldByNameAsString(WantedFieldName));
+         if (Sender = Crosscorrelation1) then DataFile2.Add(GISdb[DBonTable].MyData.GetFieldByNameAsString(WantedFieldName2));
          GISdb[DBonTable].MyData.Next;
       until GISdb[DBonTable].MyData.EOF;
       DataFile.SaveToFile(fName);
@@ -7932,7 +7938,7 @@ begin
          else CrossCor.CrossCorrelating(true,fName,'',true,true,DataSpacing,DataSpacingUnits);
       end;
       ShowStatus;
-   end;
+   //end;
 {$EndIf}
 end;
 
@@ -8033,8 +8039,8 @@ var
    Sum : array[0..180] of float64;
    Count : array[0..180] of int64;
 begin
-   with GISdb[DBonTable] do begin
-      aField := PickField('Field for rose diagram',NumericFieldTypes);
+   //with GISdb[DBonTable] do begin
+      aField := GISdb[DBonTable].PickField('Field for rose diagram',NumericFieldTypes);
       BinSize := 5;
       ReadDefault('Lat bin size (degrees)',BinSize);
       if BinSize < 1 then BinSize := 1;
@@ -8045,14 +8051,14 @@ begin
 
       GraphData := tStringList.Create;
       GraphData.Add(aField + ',LAT');
-      EmpSource.Enabled := false;
+      GISdb[DBonTable].EmpSource.Enabled := false;
       StartProgress('Average');
 
       i := 0;
       GISdb[DBonTable].MyData.First;
       while not GISdb[DBonTable].MyData.eof do begin
          if (i mod 100 = 0) then UpdateProgressBar(i / GISdb[DBonTable].MyData.FiltRecsInDB);
-         Lat := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(LatFieldName);
+         Lat := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(GISdb[DBonTable].LatFieldName);
          Value := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(aField);
          Bin := round((180 - (Lat + 90)) / BinSize);
          Sum[Bin] := Sum[Bin] + value;
@@ -8066,10 +8072,10 @@ begin
           end;
       end;
       GraphFromCSVfile(GraphData,false,true);
-      ClearGISFilter;
+      GISdb[DBonTable].ClearGISFilter;
       EndProgress;
       ShowStatus;
-   end;
+   //end;
 end;
 
 procedure Tdbtablef.Averageranksbyarea1Click(Sender: TObject);
@@ -8123,7 +8129,7 @@ begin
              HeapSort(MomentVar.NPts,Values);
              Moment(Values,MomentVar,msAll);
              Results.Add(IntToStr(Band) + ',' + RealToString(MultiGridArray[TheMapOwner.MapDraw.MultiGridOnMap].BandWavelengths[Band],-8,-2) + ',' +
-                  RealToString(MomentVar.mean,-12,Decs) + ',' + RealToString(MomentVar.sdev,-12,Decs) + ',' +
+                  RealToString(MomentVar.mean,-12,Decs) + ',' + RealToString(MomentVar.std_dev,-12,Decs) + ',' +
                   RealToString(values[1],-12,Decs) + ',' + RealToString(values[MomentVar.NPts],-12,Decs) + ',' +
                   RealToString(MomentVar.Median,-12,Decs) + ',' +
                   RealToString(Quantile(5,Values,MomentVar.NPts,true),-12,Decs) + ',' +
@@ -8165,11 +8171,11 @@ procedure Tdbtablef.Requiredantennaheight1Click(Sender: TObject);
 begin
 {$Else}
 begin
-   with GISdb[DBonTable] do begin
+   //with GISdb[DBonTable] do begin
       MDDef.ObsAboveGround := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('SENSOR_UP');
       MDDef.MaskObsRange := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('SENSOR_RNG');
-      TheMapOwner.RequiredAntennaMap(MyData.GetFieldByNameAsFloat('LAT'),MyData.GetFieldByNameAsFloat('LONG'));
-   end;
+      GISdb[DBonTable].TheMapOwner.RequiredAntennaMap(GISdb[DBonTable].MyData.GetFieldByNameAsFloat('LAT'),GISdb[DBonTable].MyData.GetFieldByNameAsFloat('LONG'));
+   //end;
 {$EndIf}   
 end;
 
@@ -8384,8 +8390,13 @@ begin
          Petmar.CopyFile(dbFullName,fName);
       end
       else begin
-         if (not AllVis) and (not AnswerIsYes('Save without hidden fields')) then Button1Click(Sender);
-         if GISdb[DBonTable].MyData.Filtered and (not AnswerIsYes('Confirm save filtered database')) then Button1Click(Sender);
+         if (not AllVis) and GISdb[DBonTable].MyData.Filtered then begin
+            if (not AnswerIsYes('Save filtered DB without hidden fields')) then Button1Click(Sender);
+         end
+         else begin
+            if (not AllVis) and (not AnswerIsYes('Save without hidden fields')) then Button1Click(Sender);
+            if GISdb[DBonTable].MyData.Filtered and (not AnswerIsYes('Confirm save filtered database')) then Button1Click(Sender);
+         end;
          GISdb[DBonTable].SaveCurrentDBaseSubset('');
       end;
       dbIsUnsaved := false;
@@ -9549,17 +9560,18 @@ end;
 procedure Tdbtablef.ReplaceDialog1Replace(Sender: TObject);
 var
    Before,After : ShortString;
-   TotChanged,Changed : integer;
+   //TotChanged,
+   Changed : integer;
 begin
    if ReplaceDialog1.Execute and (ReplaceDialog1.FindText <> '') and (ReplaceDialog1.FindText <> ReplaceDialog1.ReplaceText) then begin
      Before := ReplaceDialog1.FindText;
      After := ReplaceDialog1.ReplaceText;
      try
         ShowHourglassCursor;
-        TotChanged := 0;
+        //TotChanged := 0;
         repeat
            SearchAndReplace(SelectedColumn, Before,After,Changed);
-           inc(TotChanged, Changed);
+           //inc(TotChanged, Changed);
         until (Changed = 0) or (GISdb[DBonTable].MyData.Filter = '');
      finally
         ShowStatus;
@@ -10233,22 +10245,24 @@ var
 begin
    with GISdb[DBonTable],MyData do begin
      WantedFieldName := PickField('Field fo copy',[ftString,ftInteger,ftSmallInt,ftFloat]);
-     NewField := WantedFieldName + '2';
-     i := GISdb[DBonTable].MyData.GetFieldLength(WantedFieldName);
-     NewField := AddNewField(GISdb[DBonTable], NewField,ftString,i);
-     EmpSource.Enabled := false;
-     First;
-     i := 0;
-     rc := GISdb[DBonTable].MyData.RecordCount;
-     StartProgress('Copy field');
-     while not EOF do begin
-        inc(i);
-        if (i mod 1000 = 0) then UpDateProgressBar(i/rc);
-        Edit;
-        SetFieldByNameAsString(NewField,ptTrim(GetFieldByNameAsString(WantedFieldName)));
-        Next;
+     if GISdb[DBonTable].MyData.FieldExists(WantedFieldName) then begin
+       NewField := WantedFieldName + '2';
+       i := GISdb[DBonTable].MyData.GetFieldLength(WantedFieldName);
+       NewField := AddNewField(GISdb[DBonTable], NewField,ftString,i);
+       EmpSource.Enabled := false;
+       First;
+       i := 0;
+       rc := GISdb[DBonTable].MyData.RecordCount;
+       StartProgress('Copy field');
+       while not EOF do begin
+          inc(i);
+          if (i mod 1000 = 0) then UpDateProgressBar(i/rc);
+          Edit;
+          SetFieldByNameAsString(NewField,ptTrim(GetFieldByNameAsString(WantedFieldName)));
+          Next;
+       end;
+       ShowStatus;
      end;
-     ShowStatus;
    end;
 end;
 
@@ -10644,7 +10658,7 @@ end;
 
 procedure Tdbtablef.DEMIX1Click(Sender: TObject);
 begin
-   LoadDEMIXnames;
+   GetDEMIXpaths(false);
    DEMIXPopUpMenu1.PopUp(Mouse.CursorPos.X,Mouse.CursorPos.Y);
 end;
 
@@ -11130,7 +11144,7 @@ begin
     j := 0;
     while not GISdb[DBonTable].MyData.eof do begin
        inc(j);
-       UpdateProgressBar(i/GISdb[DBonTable].MyData.FiltRecsInDB);
+       UpdateProgressBar(j/GISdb[DBonTable].MyData.FiltRecsInDB);
        entry := UpperCase(GISdb[DBonTable].MyData.GetFieldByNameAsString('DEM_LOW_SC'));
        GISdb[DBonTable].MyData.Edit;
        GISdb[DBonTable].MyData.SetFieldByNameAsString('DEM_LOW_SC',entry);
@@ -12042,7 +12056,7 @@ begin
       UniqueEntries1 := GISdb[DBonTable].MyData.UniqueEntriesInDB('CLUSTER');
       SortStringListNumerically(UniqueEntries1);
       GISdb[DBonTable].EmpSource.Enabled := false;
-      WantedField := GISdb[DBonTable].PickField('cluster membership statistics' ,[ftString]);
+      WantedField := GISdb[DBonTable].PickField('cluster membership statistics' ,[ftString],true);
       UniqueEntries2 := GISdb[DBonTable].MyData.UniqueEntriesInDB(WantedField);
 
       Results := tStringList.Create;
@@ -12060,10 +12074,11 @@ begin
       end;
 
       fName := Petmar.NextFileNumber(MDTempDir, 'Cluster_freq_',DefaultDBExt);
-      {$IfDef RecordClustering} WriteLineToDebugFile(fName); {$EndIf}
+      {$IfDef RecordClustering} WriteLineToDebugFile('Created: ' + fName); {$EndIf}
       StringList2CSVtoDB(Results,fName);
    end;
    GISdb[DBonTable].ClearGISFilter;
+   UnHideColumns;
    ShowStatus;
 end;
 
@@ -12321,10 +12336,9 @@ begin
                NeighList := tStringList.Create;
                NeighList.Sorted := true;
                NeighList.Duplicates := dupIgnore;
-               LatHi := -9999;
-               LongHi := -9999;
-               LatLow := 9999;
-               LongLow := 9999;
+               InitLatLongBoundBox(LatLow,LongLow,LatHi,LongHi);
+
+
                while not GISdb[DBonTable].MyData.eof do begin
                   with GISdb[DBonTable] do aShapeFile.PlotSingleRecordMap(TheMapOwner.MapDraw,RecBitmap,GISdb[DBonTable].MyData.RecNo);
                   GISdb[DBonTable].MyData.Next;
@@ -12364,7 +12378,7 @@ begin
                RecBitmap := PetImage.LoadBitmapFromFile(MDTempDir + 'rec_' + TStr + '.gif');
                ExtentTable.ApplyFilter( PetDBUtils.MakeCornersGeoFilter(LatHi,LongLow,LatLow,LongHi));
                GridForm.StringGrid1.Cells[0,succ(k)] := TStr;
-               i := 0;
+               //i := 0;
                NeighList := tStringList.Create;
                while not ExtentTable.eof do  begin
                   TStr2 := ExtentTable.GetFieldByNameAsString('FILENAME');
@@ -12376,7 +12390,7 @@ begin
                         pTest := TestMyBitmap.ScanLine[y];
                         for x := 0 to pred(RecBitmap.Width) do  begin
                            if SameColor(pRec[x],RGBTripleBlack) and SameColor(pTest[x],RGBTripleBlack) then  begin
-                              inc(i);
+                              //inc(i);
                               NeighList.Add(TStr2);
                               goto OverNow;
                            end;
@@ -13713,7 +13727,7 @@ begin
          aShapeFile.PlotSingleRecordMap(DEMGlb[WantDEM].SelectionMap.MapDraw,Bitmap,MyData.RecNo);
          DEMGlb[WantDEM].SelectionMap.Image1.Picture.Graphic := Bitmap;
          Bitmap.Free;
-         DEMGlb[WantDEM].SelectionMap.EditMapViaColor(emvcAllbutselectedcolor,clBlack,-MaxSmallInt,true,false);
+         DEMGlb[WantDEM].SelectionMap.EditGridViaColor(emvcAllbutselectedcolor,clBlack,-MaxSmallInt,true,false);
          DEMDef_Routines.SaveBackupDefaults;
 
           with DEMGlb[WantDEM],SelectionMap,MapDraw,Mapcorners do begin
@@ -15043,7 +15057,7 @@ begin
          if (MomentVar.NPts > 1)  then begin
             moment(zs^,MomentVar,msAll);
             Findings.Add(GISdb[i].DBName + ',' + IntToStr(MomentVar.Npts) + ',' + RealToString(MomentVar.mean,-12,-4) + ',' +
-                 RealToString(MomentVar.sdev,-12,-4) + ',' + RealToString(MomentVar.skew,-12,-4) + ',' +
+                 RealToString(MomentVar.std_dev,-12,-4) + ',' + RealToString(MomentVar.skew,-12,-4) + ',' +
                  RealToString(MomentVar.curt,-12,-4) + ',' + RealToString(MomentVar.Median,-12,-4) + ',' +
                  RealToString(min,-12,-4) + ',' +  RealToString(max,-12,-4) );
          end;

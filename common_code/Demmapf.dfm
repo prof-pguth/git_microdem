@@ -2,8 +2,8 @@ object MapForm: TMapForm
   Left = 45
   Top = 303
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1033
-  ClientWidth = 1936
+  ClientHeight = 1051
+  ClientWidth = 1928
   Color = clBtnHighlight
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -40,8 +40,8 @@ object MapForm: TMapForm
   object ScrollBox1: TScrollBox
     Left = 0
     Top = 27
-    Width = 1936
-    Height = 1006
+    Width = 1928
+    Height = 1024
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clRed
@@ -51,7 +51,8 @@ object MapForm: TMapForm
     ParentFont = False
     TabOrder = 0
     OnClick = ScrollBox1Click
-    ExplicitLeft = 50
+    ExplicitWidth = 1924
+    ExplicitHeight = 1023
     object Image1: TImage
       Left = 3
       Top = -247
@@ -208,13 +209,13 @@ object MapForm: TMapForm
     end
     object BlendPanel: TPanel
       Left = 0
-      Top = 961
-      Width = 1932
+      Top = 979
+      Width = 1924
       Height = 41
       Align = alBottom
       TabOrder = 8
-      ExplicitTop = 960
-      ExplicitWidth = 1928
+      ExplicitTop = 978
+      ExplicitWidth = 1920
       object TrackBar2: TTrackBar
         Left = 289
         Top = 1
@@ -333,12 +334,12 @@ object MapForm: TMapForm
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1936
+    Width = 1928
     Height = 27
     Align = alTop
     TabOrder = 1
     OnMouseDown = Panel1MouseDown
-    ExplicitWidth = 1932
+    ExplicitWidth = 1924
     object AnnotateSpeedButton1: TSpeedButton
       Left = 31
       Top = -4
@@ -2263,7 +2264,7 @@ object MapForm: TMapForm
           OnClick = Offcurrentmap1Click
         end
         object Bycolumnrow1: TMenuItem
-          Caption = 'By column/row'
+          Caption = 'By grid column/row'
           object Rowsnorthoflimit1: TMenuItem
             Caption = 'Rows north of limit'
             OnClick = Rowsnorthoflimit1Click
@@ -3794,17 +3795,67 @@ object MapForm: TMapForm
           OnClick = CurrentMapArea2Click
         end
       end
-      object Elevationpercentiles1: TMenuItem
-        Caption = 'Elevation percentiles'
-        OnClick = Elevationpercentiles1Click
+      object Geomorphometryanalysis1: TMenuItem
+        Caption = 'Geomorphometry analysis'
+        OnClick = Geomorphometryanalysis1Click
       end
-      object Fixedpalettestats1: TMenuItem
-        Caption = 'Fixed palette stats'
-        OnClick = Fixedpalettestats1Click
+      object Derivativegrid2: TMenuItem
+        Caption = 'Create derivative grid'
+        OnClick = Derivativegrid2Click
       end
-      object Geomorphometrybycategories1: TMenuItem
-        Caption = 'Geomorphometry by categories'
-        OnClick = Geomorphometrybycategories1Click
+      object Multiplegridarithmetic1: TMenuItem
+        Caption = 'Multiple grid arithmetic (map algebra)'
+        object Differencebetweentwogrids2: TMenuItem
+          Caption = 'Difference/change between two grids'
+          OnClick = Differencebetweentwogrids2Click
+        end
+        object Dif: TMenuItem
+          Caption = 'Difference between two grids (current map area)'
+          OnClick = DifClick
+        end
+        object Differencemapsallotheropengrids1: TMenuItem
+          Caption = 'Difference maps all other open grids'
+          OnClick = Differencemapsallotheropengrids1Click
+        end
+        object Addgrids1: TMenuItem
+          Caption = 'Add multiple grids'
+          OnClick = Addgrids1Click
+        end
+        object Ratiooftwogrids1: TMenuItem
+          Caption = 'Ratio of two grids'
+          OnClick = Ratiooftwogrids1Click
+        end
+        object Minimumoftwogrids1: TMenuItem
+          Caption = 'Minimum of two grids'
+          OnClick = Minimumoftwogrids1Click
+        end
+        object Changemap1: TMenuItem
+          Caption = 'Change map'
+          OnClick = Changemap1Click
+        end
+        object Airballdirtball1: TMenuItem
+          Caption = 'Air ball, dirt ball'
+          OnClick = Airballdirtball1Click
+        end
+        object Differenceelevationslopeaspectmaps1: TMenuItem
+          Caption = 'Difference elevation, slope, aspect maps'
+          OnClick = Differenceelevationslopeaspectmaps1Click
+        end
+        object N20: TMenuItem
+          Caption = '-'
+        end
+        object StdDevinregion1: TMenuItem
+          Caption = 'Std Dev in region'
+          OnClick = StdDevinregion1Click
+        end
+        object Gridaveragestddev1: TMenuItem
+          Caption = 'Grid average/std dev'
+          OnClick = Gridaveragestddev1Click
+        end
+        object RMSE1: TMenuItem
+          Caption = 'RMSE'
+          OnClick = RMSE1Click
+        end
       end
       object Filter2: TMenuItem
         Caption = 'Filter DEM/Grid'
@@ -3916,6 +3967,10 @@ object MapForm: TMapForm
           Caption = 'DEMIX 1 sec resample by averaging'
           OnClick = DEMIX1secresamplebyaveraging1Click
         end
+        object DEMIXrangescales1: TMenuItem
+          Caption = 'DEMIX range scales'
+          OnClick = DEMIXrangescales1Click
+        end
         object DEMIX1secresamplewithGDAL1: TMenuItem
           Caption = 'DEMIX 1 sec resample with GDAL'
           Enabled = False
@@ -3934,67 +3989,21 @@ object MapForm: TMapForm
           Caption = 'Evaluate half second grids'
         end
       end
-      object Derivativegrid2: TMenuItem
-        Caption = 'Create derivative grid'
-        OnClick = Derivativegrid2Click
+      object SSIM1: TMenuItem
+        Caption = 'SSIM'
+        OnClick = SSIM1Click
       end
-      object Multiplegridarithmetic1: TMenuItem
-        Caption = 'Multiple grid arithmetic (map algebra)'
-        object Differencebetweentwogrids2: TMenuItem
-          Caption = 'Difference/change between two grids'
-          OnClick = Differencebetweentwogrids2Click
-        end
-        object Dif: TMenuItem
-          Caption = 'Difference between two grids (current map area)'
-          OnClick = DifClick
-        end
-        object Differencemapsallotheropengrids1: TMenuItem
-          Caption = 'Difference maps all other open grids'
-          OnClick = Differencemapsallotheropengrids1Click
-        end
-        object Addgrids1: TMenuItem
-          Caption = 'Add multiple grids'
-          OnClick = Addgrids1Click
-        end
-        object Ratiooftwogrids1: TMenuItem
-          Caption = 'Ratio of two grids'
-          OnClick = Ratiooftwogrids1Click
-        end
-        object Minimumoftwogrids1: TMenuItem
-          Caption = 'Minimum of two grids'
-          OnClick = Minimumoftwogrids1Click
-        end
-        object Changemap1: TMenuItem
-          Caption = 'Change map'
-          OnClick = Changemap1Click
-        end
-        object Airballdirtball1: TMenuItem
-          Caption = 'Air ball, dirt ball'
-          OnClick = Airballdirtball1Click
-        end
-        object Differenceelevationslopeaspectmaps1: TMenuItem
-          Caption = 'Difference elevation, slope, aspect maps'
-          OnClick = Differenceelevationslopeaspectmaps1Click
-        end
-        object N20: TMenuItem
-          Caption = '-'
-        end
-        object StdDevinregion1: TMenuItem
-          Caption = 'Std Dev in region'
-          OnClick = StdDevinregion1Click
-        end
-        object Gridaveragestddev1: TMenuItem
-          Caption = 'Grid average/std dev'
-          OnClick = Gridaveragestddev1Click
-        end
-        object RMSE1: TMenuItem
-          Caption = 'RMSE'
-          OnClick = RMSE1Click
-        end
+      object Elevationpercentiles1: TMenuItem
+        Caption = 'Elevation percentiles'
+        OnClick = Elevationpercentiles1Click
       end
-      object Geomorphometryanalysis1: TMenuItem
-        Caption = 'Geomorphometry analysis'
-        OnClick = Geomorphometryanalysis1Click
+      object Fixedpalettestats1: TMenuItem
+        Caption = 'Fixed palette stats'
+        OnClick = Fixedpalettestats1Click
+      end
+      object Geomorphometrybycategories1: TMenuItem
+        Caption = 'Geomorphometry by categories'
+        OnClick = Geomorphometrybycategories1Click
       end
       object Heatmap1: TMenuItem
         Caption = 'Heat map'
@@ -4134,6 +4143,10 @@ object MapForm: TMapForm
           Caption = 'GDAL contour shapefile'
           OnClick = GDALcontourshapefile1Click
         end
+        object GDALrasterizehapfiels1: TMenuItem
+          Caption = 'GDAL rasterize shapefiles'
+          OnClick = GDALrasterizehapfiels1Click
+        end
         object N47: TMenuItem
           Caption = '-'
         end
@@ -4148,6 +4161,23 @@ object MapForm: TMapForm
         object SAGAVRMmapvectorruggedness1: TMenuItem
           Caption = 'SAGA VRM map (vector ruggedness)'
           OnClick = SAGAVRMmapvectorruggedness1Click
+        end
+        object SAGAchannelnetwork1: TMenuItem
+          Caption = 'SAGA channel network'
+          Enabled = False
+          OnClick = SAGAchannelnetwork1Click
+        end
+        object SAGAremovesinksallopenDEMs1: TMenuItem
+          Caption = 'SAGA remove sinks all open DEMs'
+          OnClick = SAGAremovesinksallopenDEMs1Click
+        end
+        object SAGAchannelnetworkallopenDEMs1: TMenuItem
+          Caption = 'SAGA Channel Network shapefile, all open DEMs'
+          OnClick = SAGAchannelnetworkallopenDEMs1Click
+        end
+        object SAGAChannelNetworkandBasins1: TMenuItem
+          Caption = 'SAGA  Channel Network Shapfile'
+          OnClick = SAGAChannelNetworkandBasins1Click
         end
         object N46: TMenuItem
           Caption = '-'
@@ -4247,6 +4277,14 @@ object MapForm: TMapForm
       object Averagetopographicprofile1: TMenuItem
         Caption = 'Average topographic profile'
         OnClick = Averagetopographicprofile1Click
+      end
+      object Rasterizedatabases1: TMenuItem
+        Caption = 'Rasterize databases (channel networks);'
+        OnClick = Rasterizedatabases1Click
+      end
+      object Comparechannelnetworks1: TMenuItem
+        Caption = 'Compare channel networks'
+        OnClick = Comparechannelnetworks1Click
       end
       object Createmask1: TMenuItem
         Caption = 'Create mask'
@@ -6419,6 +6457,10 @@ object MapForm: TMapForm
     object Setmappixelsize1: TMenuItem
       Caption = 'Set map pixel size'
       OnClick = Setmappixelsize1Click
+    end
+    object Pureplatecareeprojectiondistorted1: TMenuItem
+      Caption = 'Pure plate caree projection (distorted)'
+      OnClick = Pureplatecareeprojectiondistorted1Click
     end
   end
   object LegendPopupMenu14: TPopupMenu

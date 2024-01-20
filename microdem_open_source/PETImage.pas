@@ -4,7 +4,7 @@
 { Part of MICRODEM GIS Program       }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
-{ Copyright (c) 2023 Peter L. Guth   }
+{ Copyright (c) 2024 Peter L. Guth   }
 {____________________________________}
 
 
@@ -44,7 +44,7 @@ uses
   {$IfDef VCL}
      VCL.Graphics,
      Windows,   Messages, Classes,  Controls,
-     Forms, Dialogs, Menus, ExtCtrls,Printers,ClipBrd,  ExtDlgs, StdCtrls,
+     Forms, Dialogs, Menus, ExtCtrls,{Printers,}ClipBrd,  ExtDlgs, StdCtrls,
      Buttons, ToolWin, ComCtrls,DB,  JPEG,
   {$EndIf}
 
@@ -270,6 +270,7 @@ procedure HSIfromRGBTrip(RGB : tPlatformColor; var H,S,I : float32);
 function CombineBitmaps(nc : integer; theFiles : tStringList; Capt : shortstring) : tMyBitmap;
 procedure PutBitmapInBox(var BMP : tMyBitmap);
 
+function PixelsWithThisColor(var Bitmap : tMyBitmap; TestColor : tPlatformColor) : int64;
 
 {$IfDef NoPatternFloodFill}
 {$Else}
@@ -370,6 +371,24 @@ type
 {$IfDef VCL}
    {$I petimage_vcl.inc}
 {$EndIf}
+
+
+function PixelsWithThisColor(var Bitmap : tMyBitmap; TestColor : tPlatformColor) : int64;
+var
+   x,y : integer;
+   BMPMemory : tBMPMemory;
+   Color : tPlatformColor;
+begin
+   Result := 0;
+   BMPMemory := tBMPMemory.Create(Bitmap);
+   for y := 0 to pred(Bitmap.Height) do begin
+      for x := 0 to pred(Bitmap.Width) do begin
+         Color := BMPMemory.GetPixelColor(x,y);
+         if BMPMemory.SameColor(x,y,TestColor) then inc(Result);
+      end;
+   end;
+   BMPMemory.Destroy;
+end;
 
 
 function ExtractPartOfImage(var Image1 : tImage; Left,Right,Top,Bottom : integer) : tMyBitmap;
@@ -1061,6 +1080,9 @@ begin
    end;
    BMPMemory.Destroy;
 end;
+
+
+
 
 
 procedure BitmapRemoveNonGrays(var Bitmap : tMyBitmap; Tolerance : byte);
@@ -1962,6 +1984,7 @@ finalization
 
    {$IfDef MessageShutdownUnitProblems} MessageToContinue('Closing petimage'); {$EndIf}
 end.
+
 
 
 

@@ -301,11 +301,6 @@ type
     DEMsummarytable1: TMenuItem;
     Landsatfullsceneindex1: TMenuItem;
     Satellitepredictions1: TMenuItem;
-    Annapolisebasemap1: TMenuItem;
-    Bathymetrygrid1: TMenuItem;
-    Chart12263180K1: TMenuItem;
-    Chart12282125K1: TMenuItem;
-    Chart12283110K1: TMenuItem;
     Subset81Ssidescan1: TMenuItem;
     GISdatasampler1: TMenuItem;
     N15: TMenuItem;
@@ -513,7 +508,7 @@ type
     N40: TMenuItem;
     N41: TMenuItem;
     SummarizeverticaldatumshiftforEGM96testDEMs1: TMenuItem;
-    ProcessGDALshiftforStateLineexperimental1: TMenuItem;
+    GDALshiftFor3DEP1: TMenuItem;
     OpenandmergeDEMswithfullDEMIXcoverage1: TMenuItem;
     Subsetlarge3DEPareas1: TMenuItem;
     Create3DEP1secrefDEMs1: TMenuItem;
@@ -546,6 +541,17 @@ type
     CheckreferenceDEMs1: TMenuItem;
     ChecktestDEMs1: TMenuItem;
     DiluviumDEMfortestareas1: TMenuItem;
+    CreaterangereferenceDEMs1: TMenuItem;
+    Addprefixtoallfilesindirectory1: TMenuItem;
+    channelnewtowk1: TMenuItem;
+    InventoryreferenceDEMs1: TMenuItem;
+    Inventorydifferencestats1: TMenuItem;
+    N47: TMenuItem;
+    MergeDEMIXtilestats1: TMenuItem;
+    N48: TMenuItem;
+    FillholesintestareaDEMs1: TMenuItem;
+    VectorchannelnetworksSAGA1: TMenuItem;
+    Createchannelnetworkgrids1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -740,7 +746,7 @@ type
     procedure Onlinehelp1Click(Sender: TObject);
     procedure AnnapolisTM8scene1Click(Sender: TObject);
     procedure OpenandmergeDEMdirectories1Click(Sender: TObject);
-    procedure SanitizedXTF1Click(Sender: TObject);
+    //procedure SanitizedXTF1Click(Sender: TObject);
     procedure SpeedButton6Click(Sender: TObject);
     procedure est1Click(Sender: TObject);
     procedure LatLong1Click(Sender: TObject);
@@ -812,7 +818,6 @@ type
     procedure Seismicfencediagram1Click(Sender: TObject);
     procedure NaturalEarthvectoroutlines1Click(Sender: TObject);
     procedure Geology2Click(Sender: TObject);
-    procedure Climate1Click(Sender: TObject);
     procedure Slidesorter1Click(Sender: TObject);
     procedure Movefileswithnamematch1Click(Sender: TObject);
     procedure RenameJPEGswithcreationtime1Click(Sender: TObject);
@@ -877,7 +882,6 @@ type
     procedure Pixelbypixelmapstatistics1Click(Sender: TObject);
     procedure COPALOShighlowgeomorphometry1Click(Sender: TObject);
     procedure Metadata2Click(Sender: TObject);
-    procedure OpenDEMIXridges1Click(Sender: TObject);
     //procedure LoadDEMIXareareferenceDEMs1Click(Sender: TObject);
     procedure Pickdatadirectory1Click(Sender: TObject);
     procedure N3OpenDEMs1Click(Sender: TObject);
@@ -894,7 +898,7 @@ type
     procedure Perpendicularshortprofilesthroughpoint1Click(Sender: TObject);
     procedure N41Click(Sender: TObject);
     procedure SummarizeverticaldatumshiftforEGM96testDEMs1Click(Sender: TObject);
-    procedure ProcessGDALshiftforStateLineexperimental1Click(Sender: TObject);
+    procedure GDALshiftFor3DEP1Click(Sender: TObject);
     procedure OpenandmergeDEMswithfullDEMIXcoverage1Click(Sender: TObject);
     procedure Subsetlarge3DEPareas1Click(Sender: TObject);
     procedure Create3DEP1secrefDEMs1Click(Sender: TObject);
@@ -923,6 +927,15 @@ type
     procedure CheckreferenceDEMs1Click(Sender: TObject);
     procedure ChecktestDEMs1Click(Sender: TObject);
     procedure DiluviumDEMfortestareas1Click(Sender: TObject);
+    procedure CreaterangereferenceDEMs1Click(Sender: TObject);
+    procedure Addprefixtoallfilesindirectory1Click(Sender: TObject);
+    procedure channelnewtowk1Click(Sender: TObject);
+    procedure InventoryreferenceDEMs1Click(Sender: TObject);
+    procedure Inventorydifferencestats1Click(Sender: TObject);
+    procedure MergeDEMIXtilestats1Click(Sender: TObject);
+    procedure FillholesintestareaDEMs1Click(Sender: TObject);
+    procedure VectorchannelnetworksSAGA1Click(Sender: TObject);
+    procedure Createchannelnetworkgrids1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1237,7 +1250,12 @@ begin
 end;
 
 
-procedure Twmdem.Findmatchingfiles1Click(Sender: TObject);
+procedure Twmdem.FillholesintestareaDEMs1Click(Sender: TObject);
+begin
+   BatchFillHolesInDEMIX_DEMS;
+end;
+
+ procedure Twmdem.Findmatchingfiles1Click(Sender: TObject);
 var
    ThePath : PathStr;
    Ext : extstr;
@@ -1254,9 +1272,8 @@ begin
    Ext := '*' + Ext;
    NameContains := '000';
    Petmar.GetString('name contains',NameContains,false,ValidDosFileNameChars);
-   TheFiles := nil;
    ShowHourglassCursor;
-
+   TheFiles := nil;
    Petmar.FindMatchingFiles(ThePath,Ext,TheFiles,SubDirs);
    TheMatches := tStringList.Create;
    TheMatches.Sorted := true;
@@ -1267,6 +1284,7 @@ begin
    DisplayAndPurgeStringList(TheMatches,'Files containing ' + NameContains + '  , n=' + IntToStr(TheMatches.Count));
    ShowDefaultCursor;
 end;
+
 
 
 procedure Twmdem.HandleThreadTerminate(Sender: TObject);
@@ -1280,9 +1298,17 @@ begin
    AnalyzeVDatumShift('');
 end;
 
+
+procedure Twmdem.VectorchannelnetworksSAGA1Click(Sender: TObject);
+begin
+   BatchCreateVectorChannelNewtwork;
+end;
+
+
+
 procedure Twmdem.Vectormap1Click(Sender: TObject);
 begin
-   {$IfDef RecordMenu} writeLineToDebugFile('Twmdem.Vectormap1Click'); {$EndIf}
+   {$IfDef RecordMenu} WriteLineToDebugFile('Twmdem.Vectormap1Click'); {$EndIf}
    VectorMapButtonClick(Sender);
 end;
 
@@ -1327,12 +1353,18 @@ begin
 end;
 
 
+procedure Twmdem.channelnewtowk1Click(Sender: TObject);
+begin
+   ChannelNetworkMapComparison(0,0,0);
+
+end;
+
 procedure Twmdem.CheckfilesizesforSSIMimagemismatches1Click(Sender: TObject);
 var
    fName,fName2 : PathStr;
    sl,Findings : tStringList;
    i : Integer;
-   aLine : shortstring;
+   //aLine : shortstring;
    H1,H2,W1,W2 : integer;
 begin
    fName := 'C:\temp\ssim_global_norm\aster_size_mismatch.csv';
@@ -1394,7 +1426,7 @@ begin
    {$IfDef ExDataManip}
    {$Else}
       StopSplashing;
-      {$IfDef RecordMenu} writeLineToDebugFile('Twmdem.Data1Click (In<>Out)'); {$EndIf}
+      {$IfDef RecordMenu} WriteLineToDebugFile('Twmdem.Data1Click (In<>Out)'); {$EndIf}
       DEMHandForm := TDEMHandForm.Create(Application);
       DEMHandForm.ShowModal;
    {$EndIf}
@@ -1413,26 +1445,26 @@ procedure Twmdem.EurekaValleyDownloadClick(Sender: TObject);
    var
       Source,Dest : string;
    begin
-      {$IfDef RecordLabs} writeLineToDebugFile('Twmdem.Datadownload25GB1Click check ' + fname); {$EndIf}
+      {$IfDef RecordLabs} WriteLineToDebugFile('Twmdem.Datadownload25GB1Click check ' + fname); {$EndIf}
       Dest := MainMapData + 'eureka_valley\' + fname;
       if not PathIsValid(Dest) then begin
-         {$IfDef RecordLabs} writeLineToDebugFile('Twmdem.Datadownload25GB1Click downlaod ' + fname); {$EndIf}
+         {$IfDef RecordLabs} WriteLineToDebugFile('Twmdem.Datadownload25GB1Click downlaod ' + fname); {$EndIf}
          DownloadandUnzipDataFileIfNotPresent(fName,true);
          Source := MainMapData + fname;
          System.IOUtils.TDirectory.Move(Source,Dest);
-         {$IfDef RecordLabs} writeLineToDebugFile('Twmdem.Datadownload25GB1Click moved to ' + Dest); {$EndIf}
+         {$IfDef RecordLabs} WriteLineToDebugFile('Twmdem.Datadownload25GB1Click moved to ' + Dest); {$EndIf}
       end;
    end;
 
 begin
-   {$IfDef RecordLabs} writeLineToDebugFile('Twmdem.Datadownload25GB1Click in'); {$EndIf}
+   {$IfDef RecordLabs} WriteLineToDebugFile('Twmdem.Datadownload25GB1Click in'); {$EndIf}
    SafeMakeDir(MainMapData + 'eureka_valley\');
    DealWithFile('naip_merge');
    DealWithFile('LC08_L1TP_041034_20190615_20190620_01_T1');
    DealWithFile('geologic_map');
    DealWithFile('L1C_T11SMB_A011464_20170901T183959');
    DealWithFile('dem');
-   {$IfDef RecordLabs} writeLineToDebugFile('Twmdem.Datadownload25GB1Click out'); {$EndIf}
+   {$IfDef RecordLabs} WriteLineToDebugFile('Twmdem.Datadownload25GB1Click out'); {$EndIf}
 end;
 
 
@@ -1487,7 +1519,7 @@ end;
 
 procedure Twmdem.DEMIXreferenceDEMcreation1Click(Sender: TObject);
 begin
-   DEMIX_CreateReferenceDEMs;
+   DEMIX_CreateReferenceDEMs(ResampleModeOneSec);
 end;
 
 procedure Twmdem.DEMIXreferencetilesurvey1Click(Sender: TObject);
@@ -1680,8 +1712,6 @@ begin
    NASABlueMarbleSpeedButton.visible := MDDef.ShowBlueMarble and FileExists(BlueMarblefName);
    NewSATButton.Visible := MDDef.ShowOpenImagery;
    OpenImage1.Visible := MDDef.ShowOpenImagery;
-
-   Annapolisebasemap1.visible := (MDDef.ProgramOption = ExpertProgram);
 
    LiveFlySpeedButton.Enabled := (NumDEMDataSetsOpen > 0);
 
@@ -1881,7 +1911,7 @@ var
          end;
 
 begin
-   {$IfDef RecordCommandLine} writeLineToDebugFile('Process ? command line ' + Commandline); {$EndIf}
+   {$IfDef RecordCommandLine} WriteLineToDebugFile('Process ? command line ' + Commandline); {$EndIf}
    Action := '';
    infile := '';
    outfile := '';
@@ -1942,7 +1972,7 @@ begin
       {$EndIf}
    end;
 
-   {$IfDef RecordCommandLine} writeLineToDebugFile('action=' + Action); {$EndIf}
+   {$IfDef RecordCommandLine} WriteLineToDebugFile('action=' + Action); {$EndIf}
 
    if Action = 'DEM2JSON' then begin
       if OpenADEM then begin
@@ -1952,19 +1982,19 @@ begin
 
    if Action = 'RESAMPAVG' then begin
       if OpenADEM(true) then begin
-         {$IfDef RecordCommandLine} writeLineToDebugFile('dem opened'); {$EndIf}
+         {$IfDef RecordCommandLine} WriteLineToDebugFile('dem opened'); {$EndIf}
          NewDEM := DEMGlb[DEM].ResampleByAveraging(false, false,Outfile);
-         {$IfDef RecordCommandLine} writeLineToDebugFile('resampled created'); {$EndIf}
+         {$IfDef RecordCommandLine} WriteLineToDebugFile('resampled created'); {$EndIf}
       end;
    end;
 
    if Action = 'SLOPEMAP' then begin
       if OpenADEM then begin
-         {$IfDef RecordCommandLine} writeLineToDebugFile('dem opened'); {$EndIf}
+         {$IfDef RecordCommandLine} WriteLineToDebugFile('dem opened'); {$EndIf}
          NewDEM := CreateSlopeMap(DEM,false);
-         {$IfDef RecordCommandLine} writeLineToDebugFile('slope map created'); {$EndIf}
+         {$IfDef RecordCommandLine} WriteLineToDebugFile('slope map created'); {$EndIf}
          DEMGlb[NewDEM].SaveAsGeotiff(outfile);
-         {$IfDef RecordCommandLine} writeLineToDebugFile('geotiff saved'); {$EndIf}
+         {$IfDef RecordCommandLine} WriteLineToDebugFile('geotiff saved'); {$EndIf}
       end;
    end;
 
@@ -1979,15 +2009,15 @@ begin
 
    if Action = 'OPENMAP' then begin
       if OpenADEM then begin
-         {$IfDef RecordCommandLine} writeLineToDebugFile('dem opened'); {$EndIf}
+         {$IfDef RecordCommandLine} WriteLineToDebugFile('dem opened'); {$EndIf}
          MDDef.DoUpOpen := (UpFile <> '');
          MDDef.DoDownOpen := (DownFile <> '');
          MDDef.DoDiffOpen := false;
          MakeMomentsGrid(DEM,'O',MDDef.OpenBoxSizeMeters,false);
-         {$IfDef RecordCommandLine} writeLineToDebugFile('openness map created'); {$EndIf}
+         {$IfDef RecordCommandLine} WriteLineToDebugFile('openness map created'); {$EndIf}
          if (UpFile <> '') then DEMGlb[MomentDEMs[UpOpenDEM]].SaveAsGeotiff(UpFile);
          if (DownFile <> '') then DEMGlb[MomentDEMs[DownOpenDEM]].SaveAsGeotiff(DownFile);
-         {$IfDef RecordCommandLine} writeLineToDebugFile('geotiff saved'); {$EndIf}
+         {$IfDef RecordCommandLine} WriteLineToDebugFile('geotiff saved'); {$EndIf}
       end;
    end;
 
@@ -2122,8 +2152,10 @@ begin
 
    if FirstRun then begin
      InitializeMICRODEM;
+     GetDEMIXpaths(false);
+
      FirstRun := false;
-     {$IfDef RecordFormActivate} writeLineToDebugFile('Twmdem.FormActivate, initialize MD over'); {$EndIf}
+     {$IfDef RecordFormActivate} WriteLineToDebugFile('Twmdem.FormActivate, initialize MD over'); {$EndIf}
 
       if (not MDDef.RunOddballLocation) then begin
          if (Copy(UpperCase(ProgramRootDir),2,11) <> ':\MICRODEM\') then begin
@@ -2181,12 +2213,12 @@ begin
 
     {$If Defined(MessageStartup) or Defined(TrackFormCreate)} MessageToContinue('Twmdem.FormActivate after command line, width=' + IntToStr(Width) + '  & height=' + IntToStr(Height)); {$EndIf}
     {$IfDef RecordDirs}  RecordDirs('after command line'); {$EndIf}
-    {$IfDef RecordProblems} writeLineToDebugFile('MDdef.AutoOpen=' + IntToStr(ord(MDdef.AutoOpen)) + '  MDdef.ProgramOption=' + IntToStr(ord(MDdef.ProgramOption)) ); {$EndIf}
+    {$IfDef RecordProblems} WriteLineToDebugFile('MDdef.AutoOpen=' + IntToStr(ord(MDdef.AutoOpen)) + '  MDdef.ProgramOption=' + IntToStr(ord(MDdef.ProgramOption)) ); {$EndIf}
 
       if MDdef.ProgramOption in [GeologyProgram] then begin
          {$If Defined(ExGeology) or Defined(ExGeologyDownload)}
          {$Else}
-            {$IfDef RecordProblems} writeLineToDebugFile('StructuralGeologyProgram, call GeologyGetData'); {$EndIf}
+            {$IfDef RecordProblems} WriteLineToDebugFile('StructuralGeologyProgram, call GeologyGetData'); {$EndIf}
             GeologyGetData;
          {$EndIf}
       end
@@ -2459,6 +2491,11 @@ begin
 end;
 
 
+procedure Twmdem.Addprefixtoallfilesindirectory1Click(Sender: TObject);
+begin
+   AddSuffixOrPrefixToFiles(true);
+end;
+
 procedure Twmdem.Addproject1Click(Sender: TObject);
 begin
    RestoreMicrodemDesktop('',false);
@@ -2466,28 +2503,10 @@ end;
 
 
 procedure Twmdem.Addversionnumbertoallfilesinapath1Click(Sender: TObject);
-//currently hard wired for a particular case (adding "_v1" to all files in a chosen directory
-var
-   FilesWanted : tStringList;
-   j : integer;
-   ext : extStr;
-   version : shortstring;
-   fName,NewName,Apath : PathStr;
 begin
-   GetDOSPath('files to add version',aPath);
-   Ext := '*.*';
-   Version := '_v1';
-   ShowHourglassCursor;
-   FilesWanted := tStringList.Create;
-   FindMatchingFiles(aPath,Ext,FilesWanted,2);
-   for j := 0 to pred(FilesWanted.Count) do begin
-      fName := FilesWanted.Strings[j];
-      NewName := ExtractFilePath(fName) + ExtractFileNameNoExt(fName) + Version + ExtractFileExt(fName);
-      RenameFile(fName, NewName);
-   end;
-   FilesWanted.Free;
-   ShowDefaultCursor;
+    AddSuffixOrPrefixToFiles(false);
 end;
+
 
 
 procedure Twmdem.Advancedanalysis1Click(Sender: TObject);
@@ -2508,7 +2527,7 @@ var
          var
             db : integer;
          begin
-            {$IfDef RecordLabs} writeLineToDebugFile('Twmdem.Afar1Click SetColors: ' + fName); {$EndIf}
+            {$IfDef RecordLabs} WriteLineToDebugFile('Twmdem.Afar1Click SetColors: ' + fName); {$EndIf}
             DEMGlb[LastDEMLoaded].SelectionMap.MapDraw.AllowDataBaseDrawing := false;
             db := DEMGlb[LastDEMLoaded].SelectionMap.LoadDataBaseFile(fName);
             GISdb[db].dbOpts.DBAutoShow := dbasZValues;
@@ -2529,7 +2548,7 @@ begin
    SetMenusForVersion;
    MDDef.MoveGeologyDBMemory := false;
 
-   {$IfDef RecordLabs} writeLineToDebugFile('Twmdem.Afar1Click data ready'); {$EndIf}
+   {$IfDef RecordLabs} WriteLineToDebugFile('Twmdem.Afar1Click data ready'); {$EndIf}
 
    if (Sender = SheepRange1) then begin
       dName := 'sheep_range_nv_geology';
@@ -2542,7 +2561,7 @@ begin
    end;
 
    if (Sender = Atlantis1) then begin
-      {$IfDef RecordLabs} writeLineToDebugFile('Atlantis'); {$EndIf}
+      {$IfDef RecordLabs} WriteLineToDebugFile('Atlantis'); {$EndIf}
       MDDef.NetDef.NetScreenMult := 1;
       MDDef.NetDef.BeachBallSize := bbsAll;
 
@@ -2561,7 +2580,7 @@ begin
       DEMGlb[LastDEMLoaded].SelectionMap.LoadDataBaseFile(dName + 'atlantis_mag_picks.dbf');
       GISdb[db].PlotFieldOnMap('GEEK2007',0,20);
       DisplayHTMLTopic('geology_course\oceanic_detachment_faults.htm');
-      {$IfDef RecordLabs} writeLineToDebugFile('done'); {$EndIf}
+      {$IfDef RecordLabs} WriteLineToDebugFile('done'); {$EndIf}
    end;
 
    if (Sender = GulfofMexicoGLORIA1) then begin
@@ -2675,7 +2694,7 @@ begin
          SetColors(dName + 'MRTN06WT_line.shp');
          SetColors(dName + 'ELT19_line.shp');
          DEMGlb[LastDEMLoaded].SelectionMap.DoCompleteMapRedraw;
-         {$IfDef RecordLabs} writeLineToDebugFile('Completed'); {$EndIf}
+         {$IfDef RecordLabs} WriteLineToDebugFile('Completed'); {$EndIf}
       end;
 
        if (Sender = Italyfocalmechs1) then begin
@@ -2725,19 +2744,19 @@ begin
    var
       Source,Dest : string;
    begin
-      {$IfDef RecordLabs} writeLineToDebugFile('TTwmdem.Annapolislidar1Click check ' + fname); {$EndIf}
+      {$IfDef RecordLabs} WriteLineToDebugFile('TTwmdem.Annapolislidar1Click check ' + fname); {$EndIf}
       Dest := LastLidarDirectory + fname;
       if not PathIsValid(Dest) then begin
-         {$IfDef RecordLabs} writeLineToDebugFile('TTwmdem.Annapolislidar1Click downlaod ' + fname); {$EndIf}
+         {$IfDef RecordLabs} WriteLineToDebugFile('TTwmdem.Annapolislidar1Click downlaod ' + fname); {$EndIf}
          DownloadandUnzipDataFileIfNotPresent(fName,true);
          Source := MainMapData + fname;
          System.IOUtils.TDirectory.Move(Source,Dest);
-         {$IfDef RecordLabs} writeLineToDebugFile('TTwmdem.Annapolislidar1Click moved to ' + Dest); {$EndIf}
+         {$IfDef RecordLabs} WriteLineToDebugFile('TTwmdem.Annapolislidar1Click moved to ' + Dest); {$EndIf}
       end;
    end;
 
 begin
-   {$IfDef RecordLabs} writeLineToDebugFile('TTwmdem.Annapolislidar1Click in'); {$EndIf}
+   {$IfDef RecordLabs} WriteLineToDebugFile('TTwmdem.Annapolislidar1Click in'); {$EndIf}
    LastLidarDirectory := MainMapData + 'annapolis_lidar\';
    SafeMakeDir(LastLidarDirectory);
    DealWithFile('las_2004_anne_arundel');
@@ -2752,7 +2771,7 @@ begin
       LastDEMLoaded := DEMGlb[LastDEMLoaded].ReinterpolateUTMDEM(2);
       DEMGlb[LastDEMLoaded].SelectionMap.PointCloudSpeedButtonClick(Sender);
    end;
-   {$IfDef RecordLabs} writeLineToDebugFile('TTwmdem.Annapolislidar1Click out'); {$EndIf}
+   {$IfDef RecordLabs} WriteLineToDebugFile('TTwmdem.Annapolislidar1Click out'); {$EndIf}
 {$EndIf}
 end;
 
@@ -2789,7 +2808,7 @@ begin
    {$IfDef RecordLabs} WriteLineToDebugFile('Twmdem.AnnapolisTM8scene1Click in'); {$EndIf}
    pName := 'annap_tm8';
    DownloadandUnzipDataFileIfNotPresent(pName);
-   {$IfDef RecordLabs} writeLineToDebugFile('Twmdem.AnnapolisTM8scene1Click data set'); {$EndIf}
+   {$IfDef RecordLabs} WriteLineToDebugFile('Twmdem.AnnapolisTM8scene1Click data set'); {$EndIf}
    pName := MainMapData + pname + '\';
    LastImageName := pName + 'LC80150332015229LGN00\LC80150332015229LGN00_B1.TIF';
    OpenAndDisplayNewScene(Nil,LastImageName,true,true,true);
@@ -2840,26 +2859,26 @@ procedure GerdDownload(Year : integer);
    var
       Source,Dest : string;
    begin
-      {$IfDef RecordLabs} writeLineToDebugFile('Gerd check ' + fname); {$EndIf}
+      {$IfDef RecordLabs} WriteLineToDebugFile('Gerd check ' + fname); {$EndIf}
       Dest := MainMapData + 'gerd\' + fname;
       if not PathIsValid(Dest) then begin
-         {$IfDef RecordLabs} writeLineToDebugFile('Gerd downlaod ' + fname); {$EndIf}
+         {$IfDef RecordLabs} WriteLineToDebugFile('Gerd downlaod ' + fname); {$EndIf}
          DownloadandUnzipDataFileIfNotPresent(fName,true);
          Source := MainMapData + fname;
          System.IOUtils.TDirectory.Move(Source,Dest);
-         {$IfDef RecordLabs} writeLineToDebugFile('Gerd moved to ' + Dest); {$EndIf}
+         {$IfDef RecordLabs} WriteLineToDebugFile('Gerd moved to ' + Dest); {$EndIf}
       end;
    end;
 
 begin
-   {$IfDef RecordLabs} writeLineToDebugFile('Gerd in'); {$EndIf}
+   {$IfDef RecordLabs} WriteLineToDebugFile('Gerd in'); {$EndIf}
    SafeMakeDir(MainMapData + 'gerd\');
    DealWithFile('S2A_MSIL1C_20200429T075611_N0209_R035_T36PYT_20200429T095912.SAFE');
    if (Year = 2020) then DealWithFile('S2A_MSIL1C_20201016T075921_N0209_R035_T36PYT_20201016T093633.SAFE');
    if (Year = 2021) then DealWithFile('S2A_MSIL1C_20210911T075611_N0301_R035_T36PYT_20210911T090843.SAFE');
    if (Year = 2022) then DealWithFile('S2B_MSIL1C_20220911T075609_N0400_R035_T36PYT_20220911T095042.SAFE');
    DealWithFile('cop_dem');
-   {$IfDef RecordLabs} writeLineToDebugFile('Gerd out'); {$EndIf}
+   {$IfDef RecordLabs} WriteLineToDebugFile('Gerd out'); {$EndIf}
 end;
 *)
 
@@ -2972,12 +2991,12 @@ begin
 *)
 
    Action := caFree;
-   {$If Defined(RecordClosing) or Defined(RecordProblems)} writeLineToDebugFile('Twmdem.FormClose out, normal termination build ' + BuildString  + '  dbfn=' + DebugFileName); {$EndIf}
+   {$If Defined(RecordClosing) or Defined(RecordProblems)} WriteLineToDebugFile('Twmdem.FormClose out, normal termination build ' + BuildString  + '  dbfn=' + DebugFileName); {$EndIf}
 end;
 
 procedure Twmdem.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
-   {$IfDef RecordClosing} writeLineToDebugFile('Enter wmDEM formCloseQuery'); {$EndIf}
+   {$IfDef RecordClosing} WriteLineToDebugFile('Enter wmDEM formCloseQuery'); {$EndIf}
    ApplicationProcessMessages;
    CanClose := true;
 end;
@@ -3149,13 +3168,12 @@ end;
 
 
 procedure Twmdem.Processdifferencestatisticspertile1Click(Sender: TObject);
-//this is the good one
 begin
-   ComputeDEMIX_tile_stats;
+   ComputeDEMIX_tile_stats;  //('Almeria');
 end;
 
 
-procedure Twmdem.ProcessGDALshiftforStateLineexperimental1Click(Sender: TObject);
+procedure Twmdem.GDALshiftFor3DEP1Click(Sender: TObject);
 begin
    BatchGDAL_3DEP_shift;
 end;
@@ -3167,6 +3185,7 @@ begin
       DEMIX_VDatum_shifts;
    {$EndIf}
 end;
+
 
 procedure Twmdem.Programlimits1Click(Sender: TObject);
 begin
@@ -3214,7 +3233,7 @@ procedure Twmdem.Magneticmodel1Click(Sender: TObject);
 begin
    {$IfDef ExGeology}
    {$Else}
-      {$IfDef RecordMGT} writeLineToDebugFile('Twmdem.Magneticmodel1Click'); {$EndIf}
+      {$IfDef RecordMGT} WriteLineToDebugFile('Twmdem.Magneticmodel1Click'); {$EndIf}
       DEMGlb[3].SelectionMap.BringToFront;
       ChangeDEMNowDoing(SeekingLeftSideMagModels);
    {$EndIf}
@@ -3609,6 +3628,12 @@ begin
    DEMIX_Create3DEPReferenceDEMs;
 end;
 
+procedure Twmdem.Createchannelnetworkgrids1Click(Sender: TObject);
+begin
+   CreateChannelNetworkGridsFromVectors;
+end;
+
+
 procedure Twmdem.Createcompositebitmap1Click(Sender: TObject);
 begin
    RestoreBigCompositeBitmap('');
@@ -3638,6 +3663,11 @@ begin
    DEMIXCreateHalfSecRefDEMs;
 end;
 
+procedure Twmdem.CreaterangereferenceDEMs1Click(Sender: TObject);
+begin
+   DEMIX_CreateReferenceDEMs(ResampleModeRange);
+end;
+
 procedure Twmdem.ImportCTDfile1Click(Sender: TObject);
 begin
    {$IfDef ExOceanography}
@@ -3660,6 +3690,36 @@ begin
    {$EndIf}
 end;
 
+
+procedure Twmdem.Inventorydifferencestats1Click(Sender: TObject);
+begin
+   InventoryDEMIXdifferenceStats;
+end;
+
+
+
+procedure Twmdem.InventoryreferenceDEMs1Click(Sender: TObject);
+var
+   TheFiles,Results : tStringList;
+   i : integer;
+   fName : PathStr;
+begin
+   TheFiles := Nil;
+   FindMatchingFiles(DEMIX_Ref_1sec,'*.tif',TheFiles);
+   Results := tStringList.Create;
+   Results.Sorted := true;
+   for i := 0 to pred(TheFiles.Count) do begin
+      fName := theFiles.Strings[i];
+      if (StrUtils.AnsiContainsText(fName,'_point')) and (not StrUtils.AnsiContainsText(fName,'_dsm'))then begin
+         fName := AreaNameFromRefDEMName(fName);
+         fName := StringReplace(fName,'_dtm','',[rfReplaceAll, rfIgnoreCase]);
+         Results.Add(fName);
+      end;
+   end;
+   DisplayAndPurgeStringList(Results,'DEMIX test areas (n=' + IntToStr(Results.Count) + ')');
+end;
+
+
 procedure Twmdem.Italyfocalmechs1Click(Sender: TObject);
 begin
    {$IfDef IncludeGeologyLabs} Afar1Click(Sender); {$EndIf}
@@ -3681,7 +3741,6 @@ end;
 procedure Twmdem.VectorMapButtonClick(Sender: TObject);
 begin
    {$If Defined(RecordOpenVectorMap) or Defined(BasicOpens)} WriteLineToDebugFile('Twmdem.VectorMapButtonClick in'); {$EndIf}
-   //GetNaturalEarthData;
    StopSplashing;
    if ((Sender = VectorMapButton) or (Sender = OpenVectorMap1)) and MDdef.ShowCartography then begin
       PickProjections(0);
@@ -3712,7 +3771,7 @@ end;
 
 procedure Twmdem.MGTMagModelSpeedButtonClick(Sender: TObject);
 begin
-   {$IfDef RecordMGT} writeLineToDebugFile('Twmdem.MGTMagModelSpeedButtonClick'); {$EndIf}
+   {$IfDef RecordMGT} WriteLineToDebugFile('Twmdem.MGTMagModelSpeedButtonClick'); {$EndIf}
    Magneticmodel1Click(Sender);
 end;
 
@@ -3729,7 +3788,7 @@ begin
    OutsideCSVImport := true;
    OpenMultipleDataBases('');
    OutsideCSVImport := false;
-   {$IfDef RecordMenu} writeLineToDebugFile('Twmdem.SpeedButton4Click out'); {$EndIf}
+   {$IfDef RecordMenu} WriteLineToDebugFile('Twmdem.SpeedButton4Click out'); {$EndIf}
 end;
 
 procedure Twmdem.SpeedButton5Click(Sender: TObject);
@@ -3779,7 +3838,7 @@ end;
 
 procedure Twmdem.Exitprogram2Click(Sender: TObject);
 begin
-   {$IfDef RecordClosing} writeLineToDebugFile('Twmdem.Exitprogram2Click Clicked exit program from pop up menu'); {$EndIf}
+   {$IfDef RecordClosing} WriteLineToDebugFile('Twmdem.Exitprogram2Click Clicked exit program from pop up menu'); {$EndIf}
    CloseAlldataandwindows1Click(Nil);
    Close;
    {$IfDef RecordClosing} WriteLineToDebugFile('Twmdem.Exitprogram2Click out'); {$EndIf}
@@ -3829,7 +3888,6 @@ begin
       if WMDEM.MDIChildren[i] is TNetForm then (WMDEM.MDIChildren[i] as TNetForm).Close;
    end;
 end;
-
 
 
 procedure Twmdem.CloseallImagery1Click(Sender: TObject);
@@ -3885,7 +3943,7 @@ end;
 procedure Twmdem.Closeprogramgetdebugversionoftheprogram7MB1Click(Sender: TObject);
 begin
    {$IfDef AllowProgramWebUpdates}
-      {$IfDef RecordUpdate} writeLineToDebugFile('Twmdem.Closeprogramandupdate1Click in'); {$EndIf}
+      {$IfDef RecordUpdate} WriteLineToDebugFile('Twmdem.Closeprogramandupdate1Click in'); {$EndIf}
       if (UpperCase(ProgramRootDir) <> 'C:\MICRODEM\') then begin
          if not AnswerIsYes('This will download to c:\microdem\ and reopen there; Continue') then exit;
       end;
@@ -3898,7 +3956,7 @@ end;
 procedure Twmdem.CloseprogramupdateEXEnewversion7MBdownload1Click(Sender: TObject);
 begin
    {$IfDef AllowProgramWebUpdates}
-      {$IfDef RecordUpdate} writeLineToDebugFile('Twmdem.Closeprogramandupdate1Click in'); {$EndIf}
+      {$IfDef RecordUpdate} WriteLineToDebugFile('Twmdem.Closeprogramandupdate1Click in'); {$EndIf}
       if (UpperCase(ProgramRootDir) <> 'C:\MICRODEM\') then begin
          if not AnswerIsYes('This will download to c:\microdem\ and reopen there; Continue') then exit;
       end;
@@ -3929,14 +3987,6 @@ begin
    {$EndIf}
 end;
 
-
-procedure Twmdem.Climate1Click(Sender: TObject);
-begin
-   {$IfDef ExGeography}
-   {$Else}
-      //ClimateGetData(true);
-   {$EndIf}
-end;
 
 procedure Twmdem.Climatestationsforclimographs1Click(Sender: TObject);
 begin
@@ -4004,11 +4054,6 @@ end;
 procedure Twmdem.OpenDEMIXdatabase1Click(Sender: TObject);
 begin
    OpenDEMIXDatabaseForAnalysis;
-end;
-
-procedure Twmdem.OpenDEMIXridges1Click(Sender: TObject);
-begin
-   //OpenDEMIXRidges;
 end;
 
 procedure Twmdem.OpenDEMwithoutmap1Click(Sender: TObject);
@@ -4163,7 +4208,7 @@ begin
    for i := 0 to pred(TheFiles.Count) do begin
       ThreadTimers.OverallGauge9.Progress := round(100 * i/TheFiles.Count);
       fName := TheFiles.Strings[i];
-      {$IfDef RecordGeostats} writeLineToDebugFile(fName); {$EndIf}
+      {$IfDef RecordGeostats} WriteLineToDebugFile(fName); {$EndIf}
       aDEM := OpenNewDEM(fName,false);
       nDEM := MakeSingleNewDerivativeMap('n',aDEM,0,false);
       fName := ExtractFilePath(GridDir) + 'normalized\' + ExtractFileName(DEMGlb[aDEM].DEMFileName);
@@ -4349,6 +4394,7 @@ begin
 end;
 
 
+(*
 procedure Twmdem.SanitizedXTF1Click(Sender: TObject);
 {$IfDef ExSideScan}
 begin
@@ -4364,7 +4410,7 @@ begin
    for i := 1 to 4 do LoadSideScanFile(DEMGlb[LastDEMLoaded].SelectionMap,MainMapData + dName + '\sanitized_' + IntToStr(i) + '.xtf');
 {$EndIf}
 end;
-
+*)
 
 procedure Twmdem.Satellitepredictions1Click(Sender: TObject);
 begin
@@ -4423,6 +4469,12 @@ begin
    DEMIX_Merge3DEPReferenceDEMs;
 end;
 
+procedure Twmdem.MergeDEMIXtilestats1Click(Sender: TObject);
+begin
+   MergeDEMIXtileStats;
+end;
+
+
 procedure Twmdem.Mergemasp1Click(Sender: TObject);
 begin
    {$If Defined(ExGDAL) or Defined(ExGeoPDF)}
@@ -4467,7 +4519,7 @@ var
             fName := GridDir + ParamsUsed[i] + '.dem';
             if FileExists(fName) then begin
                LoadNewDEM(ParamDEMs[i],fName,false);
-               {$IfDef RecordGeostats} writeLineToDebugFile('Grid existed ' + IntToStr(ParamDEMs[i]);: {$EndIf}
+               {$IfDef RecordGeostats} WriteLineToDebugFile('Grid existed ' + IntToStr(ParamDEMs[i]);: {$EndIf}
             end
             else begin
                OpenDEMDataStructures(ParamDEMs[i]);
@@ -4486,7 +4538,7 @@ var
                   ElevUnits  := Undefined;
                   AllocateDEMMemory(InitDEMMissing);
                   DefineDEMVariables(true);
-                  {$IfDef RecordGeostats} writeLineToDebugFile('New grid created ' + IntToStr(ParamDEMs[i])); {$EndIf}
+                  {$IfDef RecordGeostats} WriteLineToDebugFile('New grid created ' + IntToStr(ParamDEMs[i])); {$EndIf}
                end;
             end;
          end;
@@ -4537,7 +4589,7 @@ var
    i : integer;
    fName : PathStr;
 begin
-   {$IfDef RecordGeostats} writeLineToDebugFile('Twmdem.MergewavelengthheightDBFs1Click in'); {$EndIf}
+   {$IfDef RecordGeostats} WriteLineToDebugFile('Twmdem.MergewavelengthheightDBFs1Click in'); {$EndIf}
    StopSplashing;
    GetAtlasDirectories(dbfDir,GridDir);
 
@@ -4557,7 +4609,7 @@ begin
    FieldsInDB.Free;
    Table.Destroy;
 
-   {$IfDef RecordGeostats} writeLineToDebugFile('found fields'); {$EndIf}
+   {$IfDef RecordGeostats} WriteLineToDebugFile('found fields'); {$EndIf}
 
    for i := 1 to NumParams do ParamDEMs[i] := 0;
    i := 1;
@@ -4740,7 +4792,7 @@ procedure Twmdem.Openimagewithmultiplebands1Click(Sender: TObject);
 var
    Bands : tStringList;
 begin
-   {$IfDef RecordMenu} writeLineToDebugFile('Twmdem.Openimagewithmultiplebands1Click in'); {$EndIf}
+   {$IfDef RecordMenu} WriteLineToDebugFile('Twmdem.Openimagewithmultiplebands1Click in'); {$EndIf}
     Bands := tStringList.Create;
     Bands.Add(LastImageName);
     GetMultipleFiles('Multiple Bands',GetSatMaskList(true),Bands,MDDef.DefaultSatFilter);
@@ -5252,7 +5304,7 @@ begin
       GISdb[db].AddAndFillFieldFromDEM(adElevNearest,ptTrim(DEMGlb[aDEM].AreaName));
       MomentVar := DEMGlb[aDEM].ElevationMoments(DEMGlb[aDEM].FullDEMGridLimits);
       Results.Add(ptTrim(DEMGlb[aDEM].AreaName) + ',' +
-                  RealToString(MomentVar.mean,-12,-4) + ',' + RealToString(MomentVar.sdev,-12,-4) + ',' +
+                  RealToString(MomentVar.mean,-12,-4) + ',' + RealToString(MomentVar.std_dev,-12,-4) + ',' +
                   RealToString(MomentVar.MinZ,-12,-4) + ',' + RealToString(MomentVar.MaxZ,-12,-2) + ',' +
                   RealToString(DEMGlb[aDEM].FindPercentileElevation(50),-12,-4) + ',' +
                   RealToString(DEMGlb[aDEM].FindPercentileElevation(5),-12,-4) + ',' +
@@ -5505,7 +5557,7 @@ end;
 procedure Twmdem.FormKeyDown(Sender: TObject; var Key: Word;  Shift: TShiftState);
 begin
    if (Key =  VK_F1) then begin
-      {$IfDef RecordProblems} writeLineToDebugFile(' Twmdem.FormKeyDown, Key =  VK_F1'); {$EndIf}
+      {$IfDef RecordProblems} WriteLineToDebugFile(' Twmdem.FormKeyDown, Key =  VK_F1'); {$EndIf}
       if AnswerIsYes('Reset defaults, restart') then begin
          ProcessIniFile(iniInit);
          FirstRun := true;
@@ -5708,7 +5760,7 @@ begin
     LastDEMName := pName + 'dems\NED_ninth_sec.tif';
     LastDataBase := pName + 'tl_2022_24003_edges\tl_2022_24003_edges.shp';
     if (OpenNewDEM(LastDEMName) <> 0) then begin
-       {$IfDef RecordLabs} writeLineToDebugFile('Twmdem.GISdatasampler1Click load ' + LastDataBase); {$EndIf}
+       {$IfDef RecordLabs} WriteLineToDebugFile('Twmdem.GISdatasampler1Click load ' + LastDataBase); {$EndIf}
        DEMGlb[LastDEMLoaded].SelectionMap.LoadDataBaseFile(LastDataBase);
     end;
 {$EndIf}
@@ -5842,7 +5894,7 @@ end;
 
 procedure Twmdem.OpenScannedmap1Click(Sender: TObject);
 begin
-   {$IfDef RecordMenu} writeLineToDebugFile('Twmdem.OpenScannedmap1Click (from Open menu)'); {$EndIf}
+   {$IfDef RecordMenu} WriteLineToDebugFile('Twmdem.OpenScannedmap1Click (from Open menu)'); {$EndIf}
    PickAndOpenImagery(itDRG);
 end;
 
@@ -6234,7 +6286,7 @@ end;
 
 procedure Twmdem.Openshapefilemap1Click(Sender: TObject);
 begin
-   {$IfDef RecordOpenVectorMap} writeLineToDebugFile('Twmdem.Openshapefilemap1 in'); {$EndIf}
+   {$IfDef RecordOpenVectorMap} WriteLineToDebugFile('Twmdem.Openshapefilemap1 in'); {$EndIf}
    LoadBlankVectorMapAndOverlay(false,false);
 end;
 
@@ -6293,9 +6345,9 @@ finalization
    {$IfDef FullDrainageBasinStats} WriteLineToDebugFile('FullDrainageBasinStats active in Wmaindem'); {$EndIf}
    {$IfDef DrainageBasinStats} WriteLineToDebugFile('DrainageBasinStats active in Wmaindem'); {$EndIf}
    {$IfDef RecordUpdate} WriteLineToDebugFile('RecordUpdateProblem active in WMainDEM'): {$EndIf}
-   {$IfDef DrainageBasinStreamsInBasins} writeLineToDebugFile('DrainageBasinStreamsInBasins active in WMainDEM'); {$EndIf}
+   {$IfDef DrainageBasinStreamsInBasins} WriteLineToDebugFile('DrainageBasinStreamsInBasins active in WMainDEM'); {$EndIf}
    {$IfDef RecordButton} WriteLineToDebugFile('RecordButtonProblems active in WMainDEM'); {$EndIf}
-   {$IfDef RecordOpenVectorMap} writeLineToDebugFile('RecordOpenVectorMap active in WMainDEM'); {$EndIf}
+   {$IfDef RecordOpenVectorMap} WriteLineToDebugFile('RecordOpenVectorMap active in WMainDEM'); {$EndIf}
    {$IfDef RecordHelp} WriteLineToDebugFile('RecordHelp active in WMainDEM'); {$EndIf}
    {$IfDef RecordGeostats} WriteLineToDebugFile('RecordGeostats active in WMainDEM'); {$EndIf}
    {$IfDef RecordOceanography} WriteLineToDebugFile('RecordOceanography active in WMainDEM'); {$EndIf}

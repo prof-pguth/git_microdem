@@ -22,8 +22,6 @@ object dbFilterCreation: TdbFilterCreation
     Height = 103
     Align = alBottom
     TabOrder = 0
-    ExplicitTop = 237
-    ExplicitWidth = 515
     object BitBtn8: TBitBtn
       Left = 120
       Top = 38
@@ -35,7 +33,7 @@ object dbFilterCreation: TdbFilterCreation
     end
     object BitBtn1: TBitBtn
       Left = 15
-      Top = 9
+      Top = 6
       Width = 89
       Height = 25
       Caption = 'Apply Filter'
@@ -128,6 +126,15 @@ object dbFilterCreation: TdbFilterCreation
       Caption = 'Set USE on close'
       TabOrder = 7
     end
+    object CheckBox9: TCheckBox
+      Left = 408
+      Top = 80
+      Width = 97
+      Height = 17
+      Caption = 'Apply all DBs'
+      TabOrder = 8
+      OnClick = CheckBox9Click
+    end
   end
   object PageControl1: TPageControl
     Left = 0
@@ -137,14 +144,12 @@ object dbFilterCreation: TdbFilterCreation
     ActivePage = TabSheet1
     Align = alClient
     TabOrder = 1
-    ExplicitWidth = 531
-    ExplicitHeight = 260
     object TabSheet1: TTabSheet
       Caption = 'Main filter'
       object Panel2: TPanel
         Left = 0
         Top = 0
-        Width = 523
+        Width = 519
         Height = 90
         Align = alTop
         TabOrder = 0
@@ -298,7 +303,6 @@ object dbFilterCreation: TdbFilterCreation
         TabOrder = 1
         WordWrap = False
         OnChange = Memo1Change
-        ExplicitWidth = 507
       end
       object CheckBox1: TCheckBox
         Left = 3
@@ -347,7 +351,7 @@ object dbFilterCreation: TdbFilterCreation
       object Memo2: TMemo
         Left = 0
         Top = 0
-        Width = 523
+        Width = 519
         Height = 86
         Align = alTop
         Lines.Strings = (

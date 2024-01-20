@@ -102,9 +102,9 @@ const
    {$EndIf}
 
 type
-   tdbMode = (dbmDefault,dbmCDS,dbmForceDefault);
+   tmydbMode = (dbmyDefault,dbmCDS,dbmForceDefault);
 var
-   DesiredDBMode : tdbMode;
+   DesiredDBMode : tmydbMode;
 
 type
    {$IfDef UseTDBF}
@@ -147,7 +147,7 @@ type
        RecsTaggedDeletion,
        FiltRecsInDB,
        TotRecsInDB : integer;
-       constructor Create(var fName : PathStr; dbMode : tdbMode = dbmDefault);
+       constructor Create(var fName : PathStr; dbMode : tmydbMode = dbmyDefault);
        destructor Destroy;
         procedure ApplyFilter(TheFilter : ANSIstring); //inline;
         procedure First; inline;
@@ -211,6 +211,7 @@ type
         function IsFloatField(WantFieldName : ANSIString) : boolean;
         function IsIntegerField(WantFieldName : ANSIString) : boolean;
         function IsStringField(WantFieldName : ANSIString) : boolean;
+        function IsStringOrIntergerField(WantFieldName : ANSIString) : boolean;
 
         function FieldSum(FieldDesired : shortstring) : float64;
         function FieldAverage(FieldDesired : shortstring) : float64;
@@ -830,18 +831,18 @@ begin
 end;
 
 
-constructor tMyData.Create(var fName : PathStr; dbMode : tdbMode = dbmDefault);
+constructor tMyData.Create(var fName : PathStr; dbMode : tmydbMode = dbmyDefault);
 {$IfDef SQLiteDefaultDBs}
-var
-   fName2 : PathStr;
+   var
+      fName2 : PathStr;
 {$EndIf}
 {$IfDef UseTCLientDataSet}
-var
-   i : integer;
+   var
+      i : integer;
 {$EndIf}
 {$IfDef RecordOpenDB}
-var
-   Output : tStringList;
+   var
+      Output : tStringList;
 {$EndIf}
 
 begin
@@ -1711,16 +1712,11 @@ end;
 
 function tMyData.GetFieldPrecision(fName : ANSIString) : integer;
 var
-   //f : file;
-   //DBaseIIITableFileHeader : tDBaseIIITableFileHeader;
-   //TableFieldDescriptor : tTableFieldDescriptor;
-   //NumFields,
    i : integer;
-   //theName : ANSIString;
 begin
    Result := 0;
    {$IfDef BDELikeTables}
-      if (TheBDEdata <> Nil) or DBFmovedToRAM then begin
+      if (TheBDEdata <> Nil) {or DBFmovedToRAM} then begin
          for i := 0 to pred(FieldCount) do begin
             if (TheBDEdata.Fields[i].FieldName = fName) then begin
                Result := GetFieldPrecision(i);
@@ -1728,7 +1724,6 @@ begin
             end;
          end;
       end;
-
    {$EndIf}
 end;
 
@@ -1742,7 +1737,7 @@ var
 begin
    Result := 0;
    {$IfDef BDELikeTables}
-      if (TheBDEdata <> Nil) or DBFmovedToRAM then begin
+      if (TheBDEdata <> Nil) {or DBFmovedToRAM} then begin
          assignFile(f,FullTableName);
          reset(f,1);
          BlockRead(f, DBaseIIITableFileHeader, SizeOf(tDBaseIIITableFileHeader));
@@ -2062,7 +2057,7 @@ end;
 
 function tMyData.FieldStdDev(FieldDesired : shortstring) : float64;
 begin
-   Result := GetFieldStatistics(FieldDesired).Sdev;
+   Result := GetFieldStatistics(FieldDesired).std_dev;
 end;
 
 
@@ -2110,13 +2105,19 @@ end;
 
 function tMyData.IsIntegerField(WantFieldName : ANSIString) : boolean;
 begin
-    Result := GetFieldType(WantFieldName) in [ftInteger,ftSmallInt];
+    Result := GetFieldType(WantFieldName) in [ftInteger,ftSmallInt, ftLargeInt];
 end;
 
 function tMyData.IsStringField(WantFieldName : ANSIString) : boolean;
 begin
     Result := GetFieldType(WantFieldName) in [ftString];
 end;
+
+function tMyData.IsStringOrIntergerField(WantFieldName : ANSIString) : boolean;
+begin
+    Result := GetFieldType(WantFieldName) in [ftString, ftInteger, ftSmallInt, ftLargeInt];
+end;
+
 
 {$IfDef VCL}
 
@@ -2711,6 +2712,8 @@ finalization
    {$IfDef RecordSQLite} WriteLineToDebugFile('RecordSQLite active in petmar_db'); {$EndIf}
    {$IfDef TrackCDStiming} WriteLineToDebugFile('TrackCDStiming active in petmar_db'); {$EndIf}
 end.
+
+
 
 
 

@@ -236,7 +236,7 @@ begin
             for Band := 1 to MultiGridArray[i].NumGrids do begin
                ParallelRowsDone := 0;
                EditsDone := 0;
-               MaskStripFromSecondGrid(DEMGlb[MultiGridArray[i].Grids[Band]].FullDEMGridLimits,MultiGridArray[i].Grids[Band],MaskGrid,msSecondMissing);
+               MaskStripFromSecondGrid(MultiGridArray[i].Grids[Band],MaskGrid,msSecondMissing);
                DEMGlb[MultiGridArray[i].Grids[Band]].CheckMaxMinElev;
                fName := ChangeFileExt(DEMGlb[MultiGridArray[i].Grids[Band]].DEMFileName,'.dem');
                DEMGlb[MultiGridArray[i].Grids[Band]].WriteNewFormatDEM(fName);

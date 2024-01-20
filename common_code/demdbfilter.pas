@@ -20,7 +20,6 @@ uses
    Vcl.ComCtrls, Vcl.ExtCtrls, Vcl.StdCtrls, Vcl.Controls, Vcl.Buttons,
    System.Classes,
    Windows, SysUtils, Graphics, Forms,DB,
-
    demdatabase,Petmar_Types;
 
 type
@@ -78,6 +77,7 @@ type
     Edit3: TEdit;
     BitBtn13: TBitBtn;
     BitBtn7: TBitBtn;
+    CheckBox9: TCheckBox;
     procedure CheckBox23Click(Sender: TObject);
     procedure CheckBox20Click(Sender: TObject);
     procedure CheckBox21Click(Sender: TObject);
@@ -112,22 +112,24 @@ type
     procedure BitBtn12Click(Sender: TObject);
     procedure BitBtn13Click(Sender: TObject);
     procedure BitBtn7Click(Sender: TObject);
+    procedure CheckBox9Click(Sender: TObject);
   private
     { Private declarations }
     procedure CreateTimeFilter;
   public
-    { Public declarations }
+   { Public declarations }
      QuickFilter : boolean;
      WantedField : integer;
      WantedFieldName : ShortString;
-     GISDataBase : TGISdataBaseModule;
+     //GISDataBase : TGISdataBaseModule;
+     db : integer;
   end;
 
 var
   dbFilterCreation: TdbFilterCreation;
 
 
-procedure GetFilterString(GISDataBase : TGISdataBaseModule; var TheFilter : AnsiString; var ChangeUse : boolean; Quick : boolean = false; StartFieldName : Ansistring = '');
+procedure GetFilterString(inDB : integer; {GISDataBase : TGISdataBaseModule;} var TheFilter : AnsiString; var ChangeUse : boolean; Quick : boolean = false; StartFieldName : Ansistring = '');
 
 
 implementation
@@ -143,9 +145,9 @@ var
    WantedFilter : string;
 
 
-procedure GetFilterString(GISDataBase : TGISdataBaseModule; var TheFilter : AnsiString; var ChangeUse : boolean; Quick : boolean = false; StartFieldName : Ansistring = '');
+procedure GetFilterString(inDB : integer; {GISDataBase : TGISdataBaseModule;} var TheFilter : AnsiString; var ChangeUse : boolean; Quick : boolean = false; StartFieldName : Ansistring = '');
 begin
-   with GISDataBase do begin
+   with GISdb[indb] {GISDataBase} do begin
       {$IfDef RecordFilterProblems}
          WriteLineToDebugFile('GetFilterString in, MainFilter= "' + GISDataBase.dbOpts.MainFilter + '"');
          WriteLineToDebugFile('GetFilterString in, Geofilter= "' + GISDataBase.dbOpts.GeoFilter + '"');
@@ -153,14 +155,15 @@ begin
       {$EndIf}
       dbFilterCreation := TdbFilterCreation.Create(Application);
       dbFilterCreation.QuickFilter := Quick;
-      dbFilterCreation.Caption := 'DB filter ' + GISDataBase.dbName;
-      dbFilterCreation.GISDataBase := GISDataBase;
-      dbFilterCreation.TabSheet3.Enabled := GISDataBase.MyData.FieldExists('YEAR') or GISDataBase.MyData.FieldExists(GISDataBase.MonthFieldName);
-      dbFilterCreation.GroupBox1.Enabled := GISDataBase.MyData.FieldExists(GISDataBase.MonthFieldName);
-      dbFilterCreation.GroupBox2.Enabled := GISDataBase.MyData.FieldExists('YEAR');
+      dbFilterCreation.Caption := 'DB filter ' + GISdb[indb].dbName;
+      //dbFilterCreation.GISDataBase := GISDataBase;
+      dbFilterCreation.db := inDB;
+      dbFilterCreation.TabSheet3.Enabled := GISdb[indb].MyData.FieldExists('YEAR') or GISdb[indb].MyData.FieldExists(GISdb[indb].MonthFieldName);
+      dbFilterCreation.GroupBox1.Enabled := GISdb[indb].MyData.FieldExists(GISdb[indb].MonthFieldName);
+      dbFilterCreation.GroupBox2.Enabled := GISdb[indb].MyData.FieldExists('YEAR');
       dbFilterCreation.TabSheet1.Visible := true;
       dbFilterCreation.PageControl1.ActivePage := dbFilterCreation.TabSheet1;
-      dbFilterCreation.BitBtn8.Enabled := GISDataBase.TheMapOwner <> Nil;
+      dbFilterCreation.BitBtn8.Enabled := GISdb[indb].TheMapOwner <> Nil;
 
       with dbFilterCreation do begin
          CheckBox1.Checked := DEMDefs.MDDef.DBfilterCaseInSensitive;
@@ -182,7 +185,7 @@ begin
          if (dbOpts.TimeFilter <> '') then Memo3.Lines.Add(dbOpts.TimeFilter);
 
          Button1.Visible := false;
-         ComboBox1.Items := GISDataBase.MyData.FieldsInDataBase;
+         ComboBox1.Items := GISdb[indb].MyData.FieldsInDataBase;
          Button1.Visible := (ComboBox1.Items.Count < MyData.FieldCount);
 
          WantedField := -99;
@@ -190,7 +193,7 @@ begin
          if Quick then begin
             ComboBox1.Text := StartFieldName;
             ComboBox1Change(Nil);
-            if not GISDataBase.MyData.IsNumericField(StartFieldName) then begin
+            if not GISdb[indb].MyData.IsNumericField(StartFieldName) then begin
                BitBtn5Click(Nil);
                BitBtn2Click(Nil);
                BitBtn1Click(Nil);
@@ -233,10 +236,10 @@ var
    DataThere : tStringList;
    i         : integer;
 begin
-   if GISDataBase.MyData.GetFieldType(GISDataBase.MyData.GetFieldName(WantedField)) in [ftString,ftInteger,ftSmallInt] then begin
-      GISDataBase.EmpSource.Enabled := false;
-      DataThere := GISDataBase.MyData.UniqueEntriesInDB(WantedFieldName);
-      GISDataBase.EmpSource.Enabled := true;
+   if GISdb[db].MyData.GetFieldType(GISdb[db].MyData.GetFieldName(WantedField)) in [ftString,ftInteger,ftSmallInt,ftLargeInt] then begin
+      GISdb[db].EmpSource.Enabled := false;
+      DataThere := GISdb[db].MyData.UniqueEntriesInDB(WantedFieldName);
+      GISdb[db].EmpSource.Enabled := true;
       i := 0;
       GetFromListZeroBased('Desired value',i,DataThere);
       Edit2.Text := DataThere.Strings[i];
@@ -316,19 +319,24 @@ begin
 end;
 
 
+procedure TdbFilterCreation.CheckBox9Click(Sender: TObject);
+begin
+   MDDef.ApplyFilterToAllDBs := CheckBox9.Checked;
+end;
+
 procedure TdbFilterCreation.CreateTimeFilter;
 
    procedure AddMonth(cb : tCheckBox; Month : integer);
    begin
-       with GISDataBase,MyData do if cb.Checked then begin
-         if dbOpts.TimeFilter = '' then dbOpts.TimeFilter := '(' else dbOpts.TimeFilter := dbOpts.TimeFilter + ' OR ';
-         dbOpts.TimeFilter := dbOpts.TimeFilter + 'MONTH=' + IntToStr(Month);
+       {with GISdb[db].MyData do } if cb.Checked then begin
+         if GISdb[db].dbOpts.TimeFilter = '' then GISdb[db].dbOpts.TimeFilter := '(' else GISdb[db].dbOpts.TimeFilter := GISdb[db].dbOpts.TimeFilter + ' OR ';
+         GISdb[db].dbOpts.TimeFilter := GISdb[db].dbOpts.TimeFilter + 'MONTH=' + IntToStr(Month);
       end;
    end;
 
 begin
-   with GISDataBase,MyData do begin
-      dbOpts.TimeFilter := '';
+   //with GISDataBase,MyData do begin
+      GISdb[db].dbOpts.TimeFilter := '';
       AddMonth(CheckBox4,1);
       AddMonth(CheckBox5,2);
       AddMonth(CheckBox6,3);
@@ -341,37 +349,37 @@ begin
       AddMonth(CheckBox21,10);
       AddMonth(CheckBox20,11);
       AddMonth(CheckBox23,12);
-      if (dbOpts.TimeFilter <> '') then begin
-         dbOpts.TimeFilter := dbOpts.TimeFilter + ')';
+      if (GISdb[db].dbOpts.TimeFilter <> '') then begin
+         GISdb[db].dbOpts.TimeFilter := GISdb[db].dbOpts.TimeFilter + ')';
          BitBtn1.Enabled := true;
       end;
       Memo3.Lines.Clear;
-      Memo3.Lines.Add(dbOpts.TimeFilter);
-   end;
+      Memo3.Lines.Add(GISdb[db].dbOpts.TimeFilter);
+   //end;
 end;
 
 procedure TdbFilterCreation.ComboBox1Change(Sender: TObject);
 var
    i : integer;
 begin
-   with GISDataBase.MyData do begin
-      for i := 0 to pred(FieldCount) do begin
-         if (GetFieldName(i) = ComboBox1.Text) then begin
+   //with GISDataBase.MyData do begin
+      for i := 0 to pred(GISdb[db].MyData.FieldCount) do begin
+         if (GISdb[db].MyData.GetFieldName(i) = ComboBox1.Text) then begin
             WantedField := i;
             WantedFieldName := ComboBox1.Text;
             Edit1.Text := '';
             Edit2.Text := '';
-            if GetFieldType(WantedField) in [ftString] then
+            if GISdb[db].MyData.GetFieldType(WantedField) in [ftString] then
                if (ComboBox2.Text = '<') or (ComboBox2.Text = '<=') then ComboBox2.Text := '=';
-            BitBtn5.Enabled := GetFieldType(WantedField) in [ftString,ftInteger,ftSmallInt,ftLargeInt];
-            BitBtn7.Enabled := GetFieldType(WantedField) in [ftString,ftInteger,ftSmallInt,ftLargeInt];
-            Edit1.Enabled := GetFieldType(WantedField) in [ftFloat,ftInteger,ftSmallInt,ftLargeInt,ftDate];
+            BitBtn5.Enabled := GISdb[db].MyData.GetFieldType(WantedField) in [ftString,ftInteger,ftSmallInt,ftLargeInt];
+            BitBtn7.Enabled := GISdb[db].MyData.GetFieldType(WantedField) in [ftString,ftInteger,ftSmallInt,ftLargeInt];
+            Edit1.Enabled := GISdb[db].MyData.GetFieldType(WantedField) in [ftFloat,ftInteger,ftSmallInt,ftLargeInt,ftDate];
             ComboBox3.Enabled := Edit1.Enabled;
             Edit2.Enabled := true;
             exit;
          end;
       end;
-   end;
+   //end;
 end;
 
 
@@ -380,28 +388,28 @@ var
    f1,f2,f3,f4 : shortString;
    TStr,TStr2 : ShortString;
 begin
-   if (WantedField >= 0) then with GISDataBase.MyData do begin
+   if (WantedField >= 0) then begin
       f4 := '';
-      if (GetFieldType(WantedField) in [ftFloat,ftInteger,ftSmallInt,ftDate]) then begin
+      if (GISdb[db].MyData.GetFieldType(WantedField) in [ftFloat,ftInteger,ftSmallInt,ftLargeInt,ftDate]) then begin
          f1 := '';
          f2 := '';
          if Length(Edit1.Text) > 0 then begin
             if (ComboBox3.Text = '<') then TStr := '>' else TStr := '>=';
-            if GetFieldType(WantedField) in [ftDate] then TStr2 := QuotedStr(ptTrim(Edit1.Text))
+            if GISdb[db].MyData.GetFieldType(WantedField) in [ftDate] then TStr2 := QuotedStr(ptTrim(Edit1.Text))
             else TStr2 := Edit1.Text;
-            f1 := GetFieldName(WantedField) + TStr + TStr2;
+            f1 := GISdb[db].MyData.GetFieldName(WantedField) + TStr + TStr2;
          end;
          if (Length(Edit2.Text) > 0) then begin
-            if (GetFieldType(WantedField) in [ftDate]) then TStr2 := QuotedStr(ptTrim(Edit2.Text))
+            if (GISdb[db].MyData.GetFieldType(WantedField) in [ftDate]) then TStr2 := QuotedStr(ptTrim(Edit2.Text))
             else TStr2 := Edit2.Text;
-            f2 := GetFieldName(WantedField) + ComboBox2.Text + TStr2;
+            f2 := GISdb[db].MyData.GetFieldName(WantedField) + ComboBox2.Text + TStr2;
          end;
          if (f1 <> '') and (f2 <> '') then f3 := ' AND ' else f3 := '';
          f4 := f1 + f3 + f2;
          if (f1 <> '') and (f2 <> '') then f4 := '(' + f4 + ')';
       end
-      else if (GetFieldType(WantedField) in [ftString,ftDate]) then begin
-         f4 := GetFieldName(WantedField) + ComboBox2.Text + QuotedStr(ptTrim(Edit2.Text));
+      else if (GISdb[db].MyData.GetFieldType(WantedField) in [ftString,ftDate]) then begin
+         f4 := GISdb[db].MyData.GetFieldName(WantedField) + ComboBox2.Text + QuotedStr(ptTrim(Edit2.Text));
       end;
       if (f4 <> '') then begin
          Memo1.Lines.Add(f4);
@@ -421,7 +429,7 @@ end;
 procedure TdbFilterCreation.BitBtn10Click(Sender: TObject);
 begin
    BitBtn1Click(Sender);
-   GISDataBase.AddSymbolizationToLayerTable('');
+   GISdb[db].AddSymbolizationToLayerTable('');
 end;
 
 procedure TdbFilterCreation.BitBtn11Click(Sender: TObject);
@@ -439,7 +447,7 @@ end;
 
 procedure TdbFilterCreation.BitBtn13Click(Sender: TObject);
 begin
-   GISDataBase.dbOpts.TimeFilter := '';
+   GISdb[db].dbOpts.TimeFilter := '';
    Memo3.Lines.Clear;
 end;
 
@@ -463,27 +471,43 @@ procedure TdbFilterCreation.BitBtn1Click(Sender: TObject);
       if (WantedFilter <> '') then WantedFilter := '(' + WantedFilter + ')'
    end;
 
+var
+   i : integer;
 begin
    BuildFilter;
-   if (WantedFilter = '') and (GISDataBase.dbOpts.TimeFilter = '') and (GISDataBase.dbOpts.GeoFilter = '') and (Sender = BitBtn1) then if AnswerIsYes('No filter conditions selected; add condition being built') then begin
+   if (WantedFilter = '') and (GISdb[db].dbOpts.TimeFilter = '') and (GISdb[db].dbOpts.GeoFilter = '') and (Sender = BitBtn1) then if AnswerIsYes('No filter conditions selected; add condition being built') then begin
       BitBtn2Click(Sender);
       BuildFilter;
    end;
-   GISDataBase.dbOpts.MainFilter := WantedFilter;
-   GISDataBase.EmpSource.Enabled := false;
-   GISDataBase.AssembleGISFilter;
+   GISdb[db].dbOpts.MainFilter := WantedFilter;
+   GISdb[db].EmpSource.Enabled := false;
+   GISdb[db].AssembleGISFilter;
    {$IfDef RecordFilterProblems}
-      WriteLineToDebugFile('TdbFilterCreation.BitBtn1Click, MainFilter= "' + GISDataBase.dbOpts.MainFilter + '"');
-      WriteLineToDebugFile('TdbFilterCreation.BitBtn1Click, Geofilter= "' + GISDataBase.dbOpts.GeoFilter + '"');
-      WriteLineToDebugFile('TdbFilterCreation.BitBtn1Click, Timefilter= "' + GISDataBase.dbOpts.TimeFilter + '"');
+      WriteLineToDebugFile('TdbFilterCreation.BitBtn1Click, MainFilter= "' + GISdb[db].dbOpts.MainFilter + '"');
+      WriteLineToDebugFile('TdbFilterCreation.BitBtn1Click, Geofilter= "' + GISdb[db].dbOpts.GeoFilter + '"');
+      WriteLineToDebugFile('TdbFilterCreation.BitBtn1Click, Timefilter= "' + GISdb[db].dbOpts.TimeFilter + '"');
    {$EndIf}
    if (Sender = BitBtn1) or (Sender = BitBtn11) or (Sender = BitBtn12) or QuickFilter then begin
-      if (GISDataBase.theMapOwner <> Nil) then begin
-         GISDataBase.RedrawLayerOnMap;
+      if MDDef.ApplyFilterToAllDBs then begin
+          for i := 1 to MaxDataBase do begin
+            if ValidDB(i) then begin
+                GISdb[i].ApplyGISFilter(GISdb[db].MyData.Filter);
+                //if (GISdb[i].theMapOwner <> Nil) then begin
+                   GISdb[i].RedrawLayerOnMap;
+               //end;
+            end;
+          end;
+      end
+      else begin
+         //if (GISdb[db].theMapOwner <> Nil) then begin
+           GISdb[db].RedrawLayerOnMap;
+        //end;
       end;
+
+
       Close;
    end;
-   GISDataBase.EmpSource.Enabled := true;
+   GISdb[db].EmpSource.Enabled := true;
 end;
 
 
@@ -498,6 +522,7 @@ begin
    BitBtn1.Enabled := false;
    CheckBox2.Checked := MDDef.DBfilterClearLayer;
    CheckBox3.Checked := MDDef.DBfilterRedrawOnClose;
+   CheckBox9.Checked := MDDef.ApplyFilterToAllDBs;
    PlaceFormAtMousePosition(Self);
 end;
 
@@ -532,7 +557,7 @@ end;
 procedure TdbFilterCreation.BitBtn6Click(Sender: TObject);
 begin
    Memo2.Lines.Clear;
-   GISDataBase.dbOpts.GeoFilter := '';
+   GISdb[db].dbOpts.GeoFilter := '';
    BitBtn1Click(Sender);
 end;
 
@@ -542,15 +567,18 @@ var
    aFilter : shortstring;
    i : integer;
 begin
-   if GISDataBase.MyData.GetFieldType(GISDataBase.MyData.GetFieldName(WantedField)) in [ftString,ftInteger,ftSmallInt] then begin
-      GISDataBase.EmpSource.Enabled := false;
-      sl := GISDataBase.MyData.UniqueEntriesInDB(WantedFieldName);
-      GISDataBase.EmpSource.Enabled := true;
+   if (WantedFieldName = '') then begin
+      MessageToContinue('Pick DB field first');
+   end
+   else if GISdb[db].MyData.GetFieldType(GISdb[db].MyData.GetFieldName(WantedField)) in [ftString,ftInteger,ftSmallInt,ftLargeInt] then begin
+      GISdb[db].EmpSource.Enabled := false;
+      sl := GISdb[db].MyData.UniqueEntriesInDB(WantedFieldName);
+      GISdb[db].EmpSource.Enabled := true;
       PickSomeFromStringList(SL,'fields to add with OR');
-      if sl.Count > 1 then begin
+      if (sl.Count > 1) then begin
          aFilter := '';
          for i := 0 to pred(sl.Count) do begin
-            if GISDataBase.MyData.GetFieldType(GISDataBase.MyData.GetFieldName(WantedField)) in [ftString] then begin
+            if GISdb[db].MyData.GetFieldType(GISdb[db].MyData.GetFieldName(WantedField)) in [ftString] then begin
                aFilter := AddOrIfNeeded(aFilter) + WantedFieldName + '=' + QuotedStr(sl.Strings[i]);
             end
             else begin
@@ -575,7 +603,7 @@ var
    i : integer;
 begin
    ComboBox1.Items.Clear;
-   with GISDataBase.MyData do for i := 0 to pred(FieldCount) do ComboBox1.Items.Add(GetFieldName(i));
+   with GISdb[db].MyData do for i := 0 to pred(FieldCount) do ComboBox1.Items.Add(GetFieldName(i));
    Button1.Visible := false;
 end;
 

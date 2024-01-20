@@ -324,13 +324,14 @@ uses
   pick_several_dems in '..\common_code\pick_several_dems.pas' {tPickGridsForm},
   tiger_address in '..\gis_ops\tiger_address.pas' {TigerAddressForm},
   demix_cop_alos in '..\demix\demix_cop_alos.pas',
-  DEM_NLCD in '..\common_code\DEM_NLCD.pas',
-  MethodCallBack in '..\python4delphi\Source\MethodCallBack.pas',
-  VarPyth in '..\python4delphi\Source\VarPyth.pas',
-  WrapActions in '..\python4delphi\Source\WrapActions.pas',
-  Vcl.PythonGUIInputOutput in '..\python4delphi\Source\vcl\Vcl.PythonGUIInputOutput.pas',
-  Vcl.PythonReg in '..\python4delphi\Source\vcl\Vcl.PythonReg.pas',
-  simple_python in '..\python\simple_python.pas' {PythonForm1};
+  DEM_NLCD in '..\common_code\DEM_NLCD.pas';
+
+//MethodCallBack in '..\python4delphi\Source\MethodCallBack.pas',
+  //VarPyth in '..\python4delphi\Source\VarPyth.pas',
+  //WrapActions in '..\python4delphi\Source\WrapActions.pas',
+  //Vcl.PythonGUIInputOutput in '..\python4delphi\Source\vcl\Vcl.PythonGUIInputOutput.pas',
+  //Vcl.PythonReg in '..\python4delphi\Source\vcl\Vcl.PythonReg.pas',
+  //simple_python in '..\python\simple_python.pas' {PythonForm1};
 
 {$R *.RES}
 
