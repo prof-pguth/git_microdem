@@ -4,7 +4,7 @@ unit BaseGraf;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -2707,7 +2707,7 @@ begin
           GraphX := LeftMargin;
           exit;
        end;
-       GraphX := LeftMargin + round(dx / ScrHorizRange * (XWindowSize - LeftMargin-RightMargin));
+       GraphX := LeftMargin + round(dx / ScrHorizRange * (XWindowSize - LeftMargin - RightMargin));
    end;
 end;
 

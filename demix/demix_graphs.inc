@@ -2,7 +2,7 @@
 { Part of MICRODEM GIS Program       }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
-{ Copyright (c) 2023 Peter L. Guth   }
+{ Copyright (c) 2024 Peter L. Guth   }
 {------------------------------------}
 {    include file for demix_control  }
 {____________________________________}
@@ -19,6 +19,7 @@ end;
 procedure SlopeRoughnessWhiskerPlots(DBonTable : integer);
 var
    GraphImages : tStringList;
+   FieldWanted : shortstring;
 
       function OneGraph(Param : shortstring)  : tThisBaseGraph;
       var
@@ -31,17 +32,17 @@ var
             Stats := tStringList.Create;
             Stats.Add(MomentStr);
             for i := 1 to 15 do begin
-               GISdb[DBonTable].ApplyGISFilter('CLUSTER=' + IntToStr(i));
+               GISdb[DBonTable].ApplyGISFilter(FieldWanted + '=' + IntToStr(i));
                GISdb[DBonTable].EmpSource.Enabled := false;
                if GISdb[DBonTable].MyData.FiltRecsInDB > 0 then begin
                   MomentVar := GISdb[DBonTable].GetFieldStatistics(Param);
-                  Stats.Add('Cluster' + IntegerToString(i,3) + ' (n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + ')' +  MomentResultsToString(MomentVar));
+                  Stats.Add(FieldWanted + IntegerToString(i,3) + ' (n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + ')' +  MomentResultsToString(MomentVar));
                end;
             end;
-            fName := NextFileNumber(MDTempDir,'clusters_geomorph_','.dbf');
+            fName := NextFileNumber(MDTempDir,Param + '_','.dbf');
             db := StringList2CSVtoDB(Stats,fName);
-            Result := StartBoxPlot(db,Param);
-            fName := NextFileNumber(MDTempDir,'clusters_geomorph_','.bmp');
+            Result := StartBoxPlot(db);
+            fName := NextFileNumber(MDTempDir,Param + '_','.bmp');
             SaveImageAsBMP(Result.Image1,fName);
             GraphImages.Add(fName);
          end
@@ -50,6 +51,8 @@ var
 var
    Graph : array[1..7] of  tThisBaseGraph;
 begin
+   if GISdb[DBonTable].MyData.FieldExists('CLUSTER') then FieldWanted := 'CLUSTER'
+   else if GISdb[DBonTable].MyData.FieldExists('NUM_CLUSTR') then FieldWanted := 'NUM_CLUSTR';
    GraphImages := tStringList.Create;
    Graph[1] := OneGraph('AVG_SLOPE');
    Graph[2] := OneGraph('AVG_ROUGH');
@@ -59,6 +62,7 @@ begin
    Graph[6] := OneGraph('URBAN_PC');
    Graph[7] := OneGraph('FOREST_PC');
    MakeBigBitmap(GraphImages,'Cluster tile characteristics','',3);
+   GISdb[DBonTable].ClearGISFilter;
 end;
 
 
@@ -181,7 +185,7 @@ begin
          MeanLine := MeanLine + ',' + RealToString(MomentVar.Mean,-18,-6);
          MedianLine := MedianLine + ','  + RealToString(MomentVar.Median,-18,-6);
          MinLine := MinLine + ',' +  RealToString(MomentVar.MinZ,-18,-4);
-         STDLine := STDLine + ',' +  RealToString(MomentVar.sdev,-18,-6);
+         STDLine := STDLine + ',' +  RealToString(MomentVar.std_dev,-18,-6);
       end;
       Results.Add(MaxLine);
       Results.Add(MeanLine);
@@ -398,6 +402,7 @@ var
                Result.GraphDraw.GraphLeftLabels := tStringList.Create;
                Result.GraphDraw.SetShowAllPoints(false);
                Result.GraphDraw.LegendList := tStringList.Create;
+               Result.GraphDraw.HorizLabel := 'Dissimilarity/Fraction variance unexplained';
                if (aField = '') then DEMIX_SSIM_R2_GraphSettings(Result,What,NumCrits)
                else DEMIX_SSIM_R2_GraphSettings(Result,aField + ' ' + What,NCrits);
                GISdb[DBonTable].EmpSource.Enabled := false;
@@ -461,68 +466,6 @@ begin
    GISdb[DBonTable].ShowStatus;
 end;
 
-
-procedure DEMIX_SSIM_R2_transpose_kmeans_new_db(DBonTable : integer);
-//transpose the DB so it has one TILE/DEM pair on each line, the Criteria as columns
-var
-   values : array[1..9,1..NCrits] of float32;
-   Tile,Crit,aline : shortstring;
-   i,j,k,N,NDEM : integer;
-   rfile : file;
-   theTiles,sl : tStringList;
-   fName,OutPath : PathStr;
-begin
-   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_SSIM_R2_transpose_kmeans_new_db in'); {$EndIf}
-   GetDEMIXpaths;
-   GISdb[DBonTable].EmpSource.Enabled := false;
-   theTiles := GISdb[DBonTable].MyData.UniqueEntriesInDB('DEMIX_TILE');
-   OutPath := 'c:\temp\ssim_tile_summary\';
-
-   sl := tStringList.Create;
-   aline := 'DEMIX_TILE,DEM';
-   for I := 1 to NCrits do aline := aline + ',' + Crits[i];
-   sl.Add(Aline);
-
-   LoadDEMIXnames;
-   SafeMakeDir(OutPath);
-   StartProgress('SSIM summary');
-   for k := 0 to pred(theTiles.Count) do begin
-      if (k mod 10 = 0) then wmdem.SetPanelText(1,IntToStr(k) + '/' + IntToStr(TheTiles.Count) + ' tiles transpose');
-      Tile := theTiles[k];
-      GISdb[DBonTable].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(Tile));
-      GISdb[DBonTable].EmpSource.Enabled := false;
-      if (GISdb[DBonTable].MyData.FiltRecsinDB = NCrits) then begin
-         while not GISdb[DBonTable].MyData.eof do begin
-            Crit := UpperCase(GISdb[DBonTable].MyData.GetFieldByNameAsString('CRITERION'));
-            N := 1;
-            while (N < succ(NCrits)) and (Crit <> Crits[N]) do inc(N);
-            if (N <= NCrits) then begin
-               for I := 1 to NumDEMIXDEM do begin
-                   Values[i,N] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(DEMIXDEMTypeName[i]);
-               end;
-            end;
-            GISdb[DBonTable].MyData.Next;
-         end;
-
-         for I := 1 to NumDEMIXDEM do begin
-            aline := Tile + ',' + DEMIXDEMTypeName[i];
-            for j := 1 to NCrits do aline := aline + ',' + RealToString(Values[i,j],-10,6);
-            sl.Add(Aline);
-         end;
-      end;
-   end;
-
-   fName := NextFileNumber(MDTempDir,MDTempDir + 'ssim_r2_clustering','.dbf');
-   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_SSIM_R2_transpose_kmeans_new_db creating ' + fName); {$EndIf}
-
-   StringList2CSVtoDB(sl,fName);
-
-   EndProgress;
-   GISdb[DBonTable].ClearGISFilter;
-   GISdb[DBonTable].ShowStatus;
-   EndDEMIXProcessing;
-   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_SSIM_R2_transpose_kmeans_new_db out'); {$EndIf}
-end;
 
 
 function DEMIX_SSIM_R2_single_tile_graph(DBonTable : integer; tile : shortstring) :tThisBaseGraph;

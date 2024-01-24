@@ -2,7 +2,7 @@
 { Part of MICRODEM GIS Program       }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
-{ Copyright (c) 2023 Peter L. Guth   }
+{ Copyright (c) 2024 Peter L. Guth   }
 {------------------------------------}
 { include file for demcoord          }
 {____________________________________}
@@ -103,10 +103,10 @@ procedure tDEMDataSet.WriteNewFormatDEM(Limits : tGridLimits; var FileName : Pat
                    'elevunit=' + IntToStr(Ord(tElevUnit(NewHeadRecs.ElevUnits)))  + #13 +
                    'digdatum=' + IntToStr(Ord(tDigitizeDatum(NewHeadRecs.DigitizeDatum)))  + #13 +
                    'hemi=' + NewHeadRecs.LatHemi + #13 +
-                   'h_datum=' + DEMMapProjection.h_DatumCode  + #13 +
-                   'VertCSType=' + IntToStr(DEMheader.VerticalCSTypeGeoKey) + #13 +
-                   'pixel_is=' + IntToStr(DEMheader.RasterPixelIsGeoKey1025) + #13 +
-                   'wkt=' + DEMheader.wktString + #13;
+                   'h_datum=' + NewHeadRecs.h_DatumCode  + #13 +
+                   'VertCSType=' + IntToStr(NewHeadRecs.VerticalCSTypeGeoKey) + #13 +
+                   'pixel_is=' + IntToStr(NewHeadRecs.RasterPixelIsGeoKey1025) + #13 +
+                   'wkt=' + NewHeadRecs.wktString + #13;
           if (DEMMapProjection.GeoKeys.Code3075 <> 0) then begin
              Result := Result + '3075=' + IntToStr(DEMMapProjection.GeoKeys.Code3075) + #13;
              for I := 1 to DEMMapProjection.GeoKeys.NumKeys do

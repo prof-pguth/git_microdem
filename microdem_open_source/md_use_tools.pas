@@ -24,8 +24,8 @@ unit md_use_tools;
       //{$Define RecordOGR}
       //{$Define RecordGeoPDF}
       //{$Define RecordReformat}
-      {$Define RecordSAGA}
-      {$Define RecordSAGAFull}
+      //{$Define RecordSAGA}
+      //{$Define RecordSAGAFull}
    {$Else}
    {$EndIf}
 {$EndIf}

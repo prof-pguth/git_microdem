@@ -20,12 +20,10 @@ var
       function ReadTIFFDEM(var DEMFileName : PathStr) : boolean;
       var
          TiffImage : tTiffImage;
-         RegVars : tRegVars;
       begin
          {$If Defined(RecordReadDEM) or Defined(RecordGeotiff)} WriteLineToDebugFile('tDEMDataSet.ReadDEMNow ReadTIFFDEM in'); {$EndIf}
-         TiffImage := tTiffImage.CreateGeotiff(false,DEMMapProjection,RegVars,false,DEMFileName,Result,false,false);
-         {$If Defined(RecordGeotiff) or Defined(TrackHorizontalDatum)} WriteLineToDebugFile('DEM TiffImage created, datum=' + DEMMapProjection.h_DatumCode); {$EndIf}
-
+         TiffImage := tTiffImage.CreateGeotiff(false,false,DEMFileName,Result,false,false);
+         {$If Defined(RecordGeotiff) or Defined(TrackHorizontalDatum)} WriteLineToDebugFile('DEM TiffImage created, DEM datum=' + DEMMapProjection.h_DatumCode); {$EndIf}
          if Result then begin
             {$If Defined(RecordReadDEM) or Defined(RecordGeotiff)} WriteLineToDebugFile('Call TiffImage.CreateTiffDEM'); {$EndIf}
             Result := TiffImage.CreateTiffDEM(Self);
@@ -35,7 +33,7 @@ var
             {$If Defined(RecordReadDEM) or Defined(RecordGeotiff)} WriteLineToDebugFile('tDEMDataSet.ReadDEMNow ReadTIFFDEM error, ' + DEMFileName); {$EndIf}
          end;
          TiffImage.Destroy;
-         {$If Defined(RecordReadDEM) or Defined(RecordGeotiff)} WriteLineToDebugFile('tDEMDataSet.ReadDEMNow ReadTIFFDEM out, ' + DEMMapProjection.GetProjectionName); {$EndIf}
+         {$If Defined(RecordReadDEM) or Defined(RecordGeotiff)} WriteLineToDebugFile('tDEMDataSet.ReadDEMNow ReadTIFFDEM out, DEM=' + DEMMapProjection.GetProjectionName); {$EndIf}
       end;
    {$EndIf}
 
@@ -73,13 +71,10 @@ var
        RewriteDEM,
        ShowProgress : boolean;
        LogRecA : array[0..2048] of Byte;
-       //l1 : float64;
        BytesToRead,BytesRead,
-       //LogRecAOffset,   i,
        NumRead,HeaderSize,
-       x{,HeaderOffset,DEMOffset} : integer;
+       x : integer;
        Magic : shortstring;
-       //aTstr : ANSIString;
 
        {$IfDef AllowV1V2V3DEMHeaders}
           {$I read_old_md_headers.inc}
@@ -150,12 +145,8 @@ var
                    else if key = 'llx' then DEMheader.DEMSWCornerX := StrToFloat(NextLine)
                    else if key = 'lly' then DEMheader.DEMSWCornerY := StrToFloat(NextLine)
                    else if key = 'utmzone' then DEMheader.UTMZone := StrToInt(NextLine)
-                   else if key = 'fipszone' then
-                   else if (key = 'projtype') or (key = 'newproj') then begin
-                      DEMheader.DEMUsed := StrToInt(NextLine);
-                      if DEMheader.DEMUsed = UTMbasedDEM then DEMMapProjection.PName := UTMEllipsoidal;
-                      if DEMheader.DEMUsed = ArcSecDEM then DEMMapProjection.PName := PlateCaree;
-                   end
+                   //else if key = 'fipszone' then
+                   else if (key = 'projtype') or (key = 'newproj') then DEMheader.DEMUsed := StrToInt(NextLine)
                    else if key = 'precision' then DEMheader.DEMPrecision := tDEMprecision(StrToInt(NextLine))
                    else if key = 'spaceunit' then DEMheader.DataSpacing := tSpacingUnit(StrToInt(NextLine))
                    else if key = 'elevunit' then DEMheader.ElevUnits := tElevUnit(StrToInt(NextLine))
@@ -164,17 +155,15 @@ var
                       NextLine := UpperCase(NextLine);
                       if NextLine = 'N' then DEMheader.LatHemi := 'N' else DEMheader.LatHemi := 'S';
                    end
-                   else if key = 'h_datum' then DEMMapProjection.h_DatumCode  := NextLine
+                   else if key = 'h_datum' then DEMHeader.h_DatumCode  := NextLine
                    else if key = 'VertCSType' then DEMheader.VerticalCSTypeGeoKey := StrToInt(NextLine)
                    else if key = 'pixel_is' then DEMheader.RasterPixelIsGeoKey1025 := StrToInt(NextLine)
-                   else if key = 'wkt' then begin
-                      DEMheader.wktString := NextLine;
-                      if (DEMheader.wktString <> '') then DEMheader.DEMUsed := WKTDEM;
-                   end
+                   else if key = 'wkt' then DEMheader.wktString := NextLine
                    else begin
                        IntKey := StrToInt(Key);
                        KeyValue := StrToFloat(NextLine);
                        DEMmapProjection.SetProjectionParameterFromGeotiffKey(IntKey,KeyValue);
+                       MessageToContinue('Read MD format, key=' + IntToStr(IntKey) + '  value=' + RealToString(KeyValue,-12,-6));
                    end;
                    key := '';
                 end;
@@ -188,17 +177,8 @@ var
           end;
 
           {$IfDef RecordReadMDDEM} if not DEMMergeInProgress then WriteLineToDebugFile('Read new DEM call DefineDEMvariables'); {$EndIf}
+          DEMMapProjection.InitializeProjectionFromDEMHeader(DEMHeader);
           DefineDEMVariables(true);
-          DEMMapProjection.LatHemi := DEMheader.LatHemi;
-
-          if (DEMMapProjection.GeoKeys.Code3075 in [1,7,8,11,14,15,17]) or (DEMMapProjection.PName in [UTMEllipsoidal,PlateCaree]) then begin
-             DEMMapProjection.GetProjectParameters;
-          end
-          else if (DEMheader.DigitizeDatum = UK_OS_grid) then begin
-             DEMMapProjection.PName := UK_OS;
-             DEMMapProjection.GetProjectParameters;
-          end;
-
           DEMheader.MaxElev := zInMeters(DEMheader.StoredMaxElev);
           DEMheader.MinElev := zInMeters(DEMheader.StoredMinElev);
 
@@ -270,6 +250,7 @@ var
           {$IfDef TrackDEMCorners} WriteDEMCornersToDebugFile('Read MD format'); {$EndIf}
           {$IfDef RecordReadMDDEM} writeLineToDebugFile('Read DEM ' + AreaName + ' ' + DEMMapProjection.GetProjectionName); DEMMapProjection.ProjectionParamsToDebugFile('Ending read DEM'); {$EndIf}
           {$IfDef RecordDEMDigitizeDatum}  WriteLineToDebugFile('Leaving Read DEM Now, Digitize Datum=' + StringFromDatumCode(DEMheader.DigitizeDatum)); {$EndIf}
+          {$IfDef RecordDEMMapProjection} WriteLineToDebugFile('ReadDEM out, ' + DEMMapProjection.GetProjectionName); {$EndIf}
        end
        else begin
           {$IfDef RecordReadMDDEM} WriteLineToDebugFile('NOT acceptable MD DEM, Header=' + TStr); {$EndIf}
@@ -781,6 +762,7 @@ begin
       if StrUtils.AnsiContainsText(UpperCase(FileName),'_MM_UNITS') then zMult := 0.001;
 
       DEMheader.DigitizeDatum := WGS84d;
+      (*
       if UK_OS_projection(FileName) then begin
          DEMheader.DataSpacing := SpaceMeters;
          DEMheader.DEMUsed := UTMBasedDEM;
@@ -788,7 +770,8 @@ begin
          DEMheader.UTMZone := 1;
          CheckUK_OS;
       end
-      else if FileExists(Dir + 'rect.txt') then begin
+      else *)
+      if FileExists(Dir + 'rect.txt') then begin
         DEMheader.DataSpacing := SpaceMeters;
         DEMheader.DEMUsed := UTMBasedDEM;
         DEMheader.DigitizeDatum := Rectangular;
@@ -877,6 +860,8 @@ begin
          WriteLineToDebugFile('LoadNewDEM NewArea over, ' + DEMGlb[WantedDEM].AreaName + '  ' +  DEMGlb[WantedDEM].DEMMapProjection.h_DatumCode + '  ' +
            StringFromDatumCode(DEMGlb[WantedDEM].DEMheader.DigitizeDatum));
       {$EndIf}
+      {$IfDef RecordDEMMapProjection} WriteLineToDebugFile('After NewArea in LoadNewDEM, DEM proj=' + DEMGlb[WantedDEM].DEMMapProjection.GetProjectionName); {$EndIf}
+
       Result := true;
       if CreateMap then begin
         {$IfDef VCL}
@@ -888,7 +873,7 @@ begin
                AddOrSubtractOverlay(DEMGlb[WantedDEM].SelectionMap,ovoUSOUtlines,true);
                DEMGlb[WantedDEM].SelectionMap.DoFastMapRedraw;
             end;
-            {$If Defined(TrackHorizontalDatum)}  DEMGlb[WantedDEM].TrackHorizontalDatumDebugLog('LoadNewDEM map created,'); {$EndIf}
+            {$If Defined(TrackHorizontalDatum)} DEMGlb[WantedDEM].TrackHorizontalDatumDebugLog('LoadNewDEM map created,'); {$EndIf}
          {$EndIf}
       end;
    end
@@ -907,7 +892,7 @@ begin
    {$If Defined(RecordShortDefineDatum) or Defined(RecordReadDEM)  or Defined(TimeLoadDEM)}
       if (WantedDEM <> 0) then WriteLineToDebugFile('Exit LoadNewDEM=' + IntToStr(WantedDEM) + '  ' + DEMGlb[WantedDEM].KeyDEMParams(true));
    {$EndIf}
-   {$If Defined(TrackHorizontalDatum)}  DEMGlb[WantedDEM].TrackHorizontalDatumDebugLog('exit LoadNewDEM,'); {$EndIf}
+   {$If Defined(TrackHorizontalDatum)} DEMGlb[WantedDEM].TrackHorizontalDatumDebugLog('exit LoadNewDEM,'); {$EndIf}
 end;
 
 

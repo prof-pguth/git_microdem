@@ -2,7 +2,7 @@
 { Part of MICRODEM GIS Program       }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
-{ Copyright (c) 2023 Peter L. Guth   }
+{ Copyright (c) 2024 Peter L. Guth   }
 {------------------------------------}
 {   include file for demcoord.pas    }
 {____________________________________}
@@ -20,7 +20,7 @@
             {$IfDef FabricWavelengthAmplitude}
                WavelengthMean,WavelengthMedian,WavelengthStdDev,Lat1,Long1,Lat2,Long2,aMinVal,aMaxVal,
             {$EndIf}
-            HeightMean,HeightMedian,HeightStd,
+            //HeightMean,HeightMedian,//HeightStd,
             Lat,Long : float64;
             z : float32;
             TableName : PathStr;
@@ -519,7 +519,7 @@ begin
       Result := MomentVar.NPts > 5;
       if Result then begin
          moment(sl,MomentVar,msAfterStdDev);
-         Roughness := MomentVar.sdev;
+         Roughness := MomentVar.std_dev;
       end;
    end;
 end;
@@ -1208,7 +1208,7 @@ begin
       else Result := false;
       Dispose(zs);
       AvgElev := MomentVar.mean;
-      ElevStdDev := MomentVar.SDev;
+      ElevStdDev := MomentVar.std_dev;
    end
    else Result := false;
 end;
@@ -1338,7 +1338,7 @@ var
 begin
    MomentVar := ElevationMoments(FullDEMGridLimits);
    Mean := MomentVar.mean;
-   Std := MomentVar.sdev;
+   Std := MomentVar.std_dev;
    AveDev := MomentVar.avg_dev;
 end;
 
@@ -1359,6 +1359,7 @@ var
    NPts : int64;
    fName : PathStr;
 begin
+   {$IfDef RecordDEMstats} WriteLineToDebugFile('tDEMDataSet.CreatePartDEMHistogramn in'); {$EndIf}
    Distributions := tStringList.Create;
    Legends := tStringList.Create;
    New(Values);
@@ -1372,6 +1373,7 @@ begin
    BinSize := (Max - Min) / 200;
    //if (Max-Min > 25) then BinSize := round(BinSize);
    Result := CreateMultipleHistogram(MDDef.CountHistograms,Distributions,Legends,'', '',200,Min,Max,BinSize);
+   {$IfDef RecordDEMstats} WriteLineToDebugFile('tDEMDataSet.CreatePartDEMHistogramn out'); {$EndIf}
 end;
 
 
@@ -1987,7 +1989,8 @@ var
    i,Col,Row : integer;
    //SSOvars : tSSOvars;
    {$IfDef MultipleCurvatureMethods} PlanCurv,SlopeCurv : float64; {$EndIf}
-   {SlopeCurvature, PlanCurvature,crossc,MaxCurve,MinCurve,}MaxSlp,Upward,Downward : float64;
+   {SlopeCurvature, PlanCurvature,crossc,MaxCurve,MinCurve,}//MaxSlp,
+   Upward,Downward : float64;
    z : float32;
    SlopeAspectRec : tSlopeAspectRec;
 begin
@@ -2180,7 +2183,7 @@ begin
          if (MomentVar.NPts > 0) then begin
             Moment(xs,MomentVar,msAll);
             DEMGridToLatLongDegree(Col + succ(Boxsize div 2), Row + succ(Boxsize div 2),Lat,Long);
-            Results.Add(RealToString(Lat,-12,-7) + ',' + RealToString(Long,-12,-7) + ',' + RealToString(MomentVar.mean,-12,-2) + ',' + RealToString(MomentVar.SDev,-12,-2) + ',' + RealToString(MomentVar.Median,-12,-2) + ',' + IntToStr(MomentVar.NPts));
+            Results.Add(RealToString(Lat,-12,-7) + ',' + RealToString(Long,-12,-7) + ',' + RealToString(MomentVar.mean,-12,-2) + ',' + RealToString(MomentVar.std_dev,-12,-2) + ',' + RealToString(MomentVar.Median,-12,-2) + ',' + IntToStr(MomentVar.NPts));
          end;
          inc(Row,BoxSize);
       end;

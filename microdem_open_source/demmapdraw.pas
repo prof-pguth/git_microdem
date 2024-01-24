@@ -4,7 +4,7 @@
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -38,6 +38,7 @@
       //{$Define RecordSat}
       //{$Define AspectCheck}
       {$Define RecordShapeFileGroup}
+      {$Define RecordPlotDBrules}
       //{$Define RecordWorldOutline}
       //{$Define Track_f}
       //{$Define RecordMapResize}
@@ -61,7 +62,7 @@
       //{$Define RecordLegend}
       //{$Define RecordMapLayers}
       //{$Define ShowUTMZone}
-      //{$Define RecordFullShapeFileGroup}
+      {$Define RecordFullShapeFileGroup}
       //{$Define TigerTiming}
       //{$Define RecordTiming}
       //{$Define RecordLong0}
@@ -170,6 +171,7 @@ uses
 
 const
    OutsideBox = false;
+   HighlightOSMBridges : boolean = false;
 type
    tMapOverlays = record
      ovShapeFileGroup : PathStr;
@@ -267,11 +269,8 @@ type
      Long0_360,
      UsePercentiles,
      TigerSingleOverlayUp,
-     {$IfDef ExWMS}
-     {$Else}
-        WMSOverlayOnMap,
-     {$EndIf}
      GroundOnly,
+     UseDistortedRawLatLongScaling,
      LASlayerOnMap : boolean;
 
      OSMShapesUp : tStringList;
@@ -345,6 +344,11 @@ type
         WMSLayerfName : PathStr;
      {$EndIf}
 
+     {$IfDef ExWMS}
+     {$Else}
+        WMSOverlayOnMap : boolean,
+     {$EndIf}
+
      {$IfDef ExPointCloud}
      {$Else}
         LasMinAreaZ,
@@ -387,7 +391,7 @@ type
       procedure ResetMarginalia;
 
       function RecenterMap(Lat,Long : float64; Percent : integer) : boolean;
-      function ResizeMapByPercentage(Percent : integer{; SureAboutDraw : boolean = false}) : boolean;
+      function ResizeMapByPercentage(Percent : integer) : boolean;
 
       procedure MaximizeLatLongMapCoverage(uMinLat,uMinLong,uMaxLat,uMaxLong : float64; xsize: integer = -99; ysize : integer = -99); overload; {all in degrees}
       procedure MaximizeLatLongMapCoverage(bb : sfBoundBox; xsize: integer = -99; ysize : integer = -99); overload; {all in degrees}
@@ -1856,6 +1860,8 @@ begin
    MapDrawValid := false;
    ZeroOverlays;
 
+   UseDistortedRawLatLongScaling := false;
+
    {$IfDef ExWMS}
    {$Else}
       LastWMSService := '';
@@ -1966,6 +1972,8 @@ begin
    MapOverlays.ovTerrainCat  := tStringList.Create;
    MapOverlays.ovVectorFiles := tStringList.Create;
    MapOverlays.ConInt := MDdef.DefaultContourInterval;
+
+   PrimMapProj := tMapProjection.Create('new mapdraw prim proj');
 
    {$IfDef ExSat}
    {$Else}

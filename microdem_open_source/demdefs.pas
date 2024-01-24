@@ -817,6 +817,7 @@ type
       NumCol,NumRow  : int32;
       RasterPixelIsGeoKey1025 : byte;
       WKTString : ANSIString;
+      h_DatumCode : ShortString;
    end;
 
 {$IfDef AllowV1V2V3DEMHeaders}

@@ -19,7 +19,7 @@ unit basemap;
    {$IFDEF DEBUG}
       //{$Define RecordWKT}
       //{$Define RecordUKOS}
-
+      {$Define RecordDEMprojection}
       //{$Define RawProjectInverse}
       //{$Define ForwardProject}
       //{$Define RecordGridSize}
@@ -169,6 +169,7 @@ type
          procedure DefineDatumFromUTMZone(DatumCode : ShortString; UTMZone : byte; inLatHemi : ANSIchar;  Why : shortstring = '');
          function InitializeProjectionFromWKT(fName : PathStr) : boolean;
          function CheckForAllInDirectoryWKT(thePath : PathStr) : boolean;
+         function InitializeProjectionFromDEMHeader(DEMHeader : tDEMHeader) : boolean;
 
          function DecodeWKTProjectionFromString(TheProjectionString : Ansistring) : boolean;
          procedure StartUTMProjection(UTMZone : integer);
@@ -235,7 +236,6 @@ type
          {$IfDef RecordTMParameters}
             procedure TMDetails(Why : shortstring);
          {$EndIf}
-
 
    end;
 
@@ -341,6 +341,28 @@ const
 {$I basemap_datum.inc}
 
 {$I basemap_vincenty.inc}
+
+
+function tMapProjection.InitializeProjectionFromDEMHeader(DEMHeader : tDEMHeader) : boolean;
+begin
+   Result := true;
+   LatHemi := DEMheader.LatHemi;
+   h_DatumCode := DEMHeader.h_DatumCode;
+   projUTMZone := DEMheader.UTMZone;
+   if (DEMheader.DEMUsed = UTMbasedDEM) then PName := UTMEllipsoidal;
+   if (DEMheader.DEMUsed = ArcSecDEM) then PName := PlateCaree;
+   if (DEMheader.DigitizeDatum = UK_OS_grid) then PName := UK_OS;
+   if (DEMheader.wktString <> '') then begin
+      DEMheader.DEMUsed := WKTDEM;
+      InitializeProjectionFromWKT(DEMheader.wktString);
+      Result := DecodeWKTProjectionFromString(DEMheader.wktString);
+   end
+   else begin
+      GetProjectParameters;
+   end;
+   {$IfDef RecordDEMprojection} WriteLineToDebugFile('tMapProjection.InitializeProjectionFromDEMHeader, map ' + GetProjectionName); {$EndIf}
+end;
+
 
 
 function tMapProjection.ConvertGeoBoundBoxToUTMBoundBox(geoBox : sfBoundbox) : sfBoundBox;
@@ -727,6 +749,7 @@ begin
 end;
 
 
+
 procedure tMapProjection.StartUTMProjection(UTMZone : integer);
 begin
     PName := UTMEllipsoidal;
@@ -977,7 +1000,7 @@ end;
 
 procedure SetUpDefaultNewProjection(var inMapProjection : tMapProjection; SetCenter : boolean = true);
 begin
-   {$IfDef RecordProjectionParameters} WriteLineToDebugFile('SetUpDefaultNewProjection ' + inMapProjection.GetProjectionName); {$EndIf}
+   {$IfDef RecordProjectionParameters} WriteLineToDebugFile('SetUpDefaultNewProjection in ' + inMapProjection.GetProjectionName); {$EndIf}
    if SetCenter then inMapProjection.lat0 := 0;
    if SetCenter then inMapProjection.Long0 := 0;
    inMapProjection.False_East := 0;
@@ -1392,6 +1415,7 @@ begin
       GeneralTransverseMercator : Result := 'Transverse Mercator';
       EqualEarth : Result := 'Equal Earth';
       UndefinedProj : Result := 'Undefined';
+      else Result := 'Undefined ' + IntToStr(ord(PName));
    end {Case};
    //Result := Result +  '  Datum=' + h_DatumCode;
 end;

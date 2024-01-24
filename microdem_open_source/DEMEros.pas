@@ -137,6 +137,7 @@ type
             BMPFile : boolean;               //must be public
             BMPFileName : PathStr;
          {$EndIf}
+         RegVars : tRegVars;
          FullWorld,
          CanEnhance,
          UTMValidImage,
@@ -173,7 +174,7 @@ type
          Grays            : tRGBWordLookUp;
          GraysLookUp      : tColorIndex;
          ColorLookUp      : tColorLookUp;
-         RegVars          : tRegVars;
+         //RegVars          : tRegVars;
          ImageMapProjection : tMapProjection;
          DefRedTrue,DefGreenTrue,DefBlueTrue,DefIR2,
          DefRedFalse,DefGreenFalse,DefBlueFalse,
@@ -2068,7 +2069,9 @@ var
          Result := FileExists(FileName);
          if Result then begin
             TemporaryNewGeotiff := false;
-            TiffImage[BandNum] := tTiffImage.CreateGeotiff(false,ImageMapProjection,RegVars,false,FileName,Success,false,true,BandNum);
+            TiffImage[BandNum] := tTiffImage.CreateGeotiff(false,false,FileName,Success,false,true,BandNum);
+            RegVars := TiffImage[BandNum].RegVars;
+            ImageMapProjection := TiffImage[BandNum].MapProjection;
             BandRows[BandNum] := TiffImage[BandNum].TiffHeader.ImageLength;
             BandColumns[BandNum] := TiffImage[BandNum].TiffHeader.ImageWidth;
             BandXSpace[BandNum] := TiffImage[BandNum].TiffHeader.ScaleX;
@@ -2108,7 +2111,9 @@ var
             begin
                {$IfDef RecordLoadSat} WriteLineToDebugFile('ReadOrdinaryGeoTiff ' + IndexFileName); {$EndIf}
                TemporaryNewGeotiff := false;
-               TiffImage[1] := tTiffImage.CreateGeotiff(false,ImageMapProjection,RegVars,false,IndexFileName,Success);
+               TiffImage[1] := tTiffImage.CreateGeotiff(false,false,IndexFileName,Success);
+               ImageMapProjection := TiffImage[1].MapProjection;
+               RegVars := TiffImage[1].RegVars;
                if Success then begin
                   if (TIFFImage[1].TiffHeader.SampleFormat = sfIEEEfloat) then begin
                      ReadFailure := true;
@@ -2231,8 +2236,10 @@ var
                      inc(NumBands);
                      {$IfDef RecordProblems} WriteLineToDebugFile(Files.Strings[i]); {$EndIf}
                      TemporaryNewGeotiff := false;
-                     TiffImage[NumBands] := tTiffImage.CreateGeotiff(false,ImageMapProjection,RegVars,false,Files.Strings[i],Success,false,true,NumBands);
+                     TiffImage[NumBands] := tTiffImage.CreateGeotiff(false,false,Files.Strings[i],Success,false,true,NumBands);
+                     ImageMapProjection := TiffImage[Numbands].MapProjection;
                      BandLongName[NumBands] := ExtractFileNameNoExt(Files.Strings[i]);
+                     RegVars := TiffImage[NumBands].RegVars;
                      BandShortName[NumBands] := BandLongName[NumBands];
                      MultiTiff := true;
                      Data16Bit := (TIFFImage[1].TiffHeader.BitsPerSample in [15,16]);

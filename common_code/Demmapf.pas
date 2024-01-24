@@ -30,6 +30,7 @@
       //{$Define FanDrawProblems}
       //{$Define RawProjectInverse}  //must also be set in BaseMap
       {$Define RecordDEMIX}
+      //{$Define RecordDEMMapProjection}
       //{$Define RecordMatchMaps}
       //{$Define RecordSat}
       //{$Define RecordVAT}
@@ -2644,10 +2645,8 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure DropinthebucketfromGrids;
 
     procedure PlotNorthArrowLegend(x, y : integer);
-    //procedure LoadDataBaseFileWithMissingMessage(fName : PathStr);
     procedure PostPointCoordinates(Lat,Long : float64);
 
-    //procedure VerticalDatumShift(vdShift : tvdShift);
     procedure SetUpTopForm;
     procedure ChangeElevUnits(Units : tElevUnit);
 
@@ -2951,7 +2950,6 @@ const
    LockMaps : boolean = false;
 var
    EnsembleClassDB : integer;
-   //MergingDEMs,
    ClosingIsHappening : boolean;
    Sub,SteepestSlopeCol,SteepestSlopeRow,
    WantToEdit,
@@ -9654,7 +9652,6 @@ end;
 procedure TMapForm.FormCreate(Sender: TObject);
 begin
    {$IfDef RecordMapFormCreation} WriteLineToDebugFile('TMapForm.FormCreate enter'); {$EndIf}
-   {$IfDef HideHelpButtons} Help1.Visible := false;  {$EndIf}
    FormOperational := false;
 
    //only show map where drawing is complete
@@ -9707,7 +9704,6 @@ begin
    ShowAMenu := true;
    MapRedrawsAllowed := true;
    SavedMergeReflectanceDEM := 0;
-   //ScratchDEM := 0;
    FeaturesDB := 0;
    MapTOCIndex := 0;
 
@@ -11812,16 +11808,19 @@ begin
 
    if ValidDEM(MapDraw.DEMonMap) and (not LockStatusBar) then begin
       {$IfDef RecordAllMapRoam} WriteLineToDebugFile('Point 2.1'); {$EndIf}
-      DEMGlb[MapDraw.DEMonMap].LatLongDegreeToDEMGrid(Lat,Long,XGrid,YGrid);
 
-      if MDDef.ShowDEMGridCoords and (Panel3String = '') then Panel3String := DEMGridString(xgrid,ygrid) + ' ' + Panel3String;
+      if MDDef.ShowDEMGridCoords and (Panel3String = '') then begin
+         DEMGlb[MapDraw.DEMonMap].LatLongDegreeToDEMGrid(Lat,Long,XGrid,YGrid);
+         Panel3String := DEMGridString(xgrid,ygrid) + ' ' + Panel3String;
+      end;
 
       {$IfDef RecordAllMapRoam} WriteLineToDebugFile('Point 2.11'); {$EndIf}
 
-      if DEMGlb[MapDraw.DEMonMap].GetElevMeters(XGrid,YGrid,Elev) then begin
+      if DEMGlb[MapDraw.DEMonMap].GetElevFromLatLongDegree(Lat,Long,Elev) then begin
          {$IfDef RecordAllMapRoam} WriteLineToDebugFile('Point 2.111'); {$EndIf}
          CapStr := '';
          if (isSlopeMap(MapDraw.Maptype) or (MapDraw.MapType in [mtDEMaspect])) or (DEMNowDoing in [FirstSlopePoint,SecondSlopePoint]) then begin
+            DEMGlb[MapDraw.DEMonMap].LatLongDegreeToDEMGrid(Lat,Long,XGrid,YGrid);
             if DEMGlb[MapDraw.DEMonMap].GetSlopeAndAspect(round(xgrid),round(ygrid),SlopeAsp) then begin
                if (MapDraw.MapType = mtDEMaspect) then Panel2String := '  downhill' + RealToString(SlopeAsp.AspectDir,4,0) + '°'
                else Panel2String := RealToString(SlopeAsp.SlopePercent,8,0) + '% slope' + ' (' + RealToString(SlopeAsp.SlopeDegree,-4,-1) + '°)  ';
@@ -16165,7 +16164,6 @@ begin
    else if (MapDraw.VectorIndex <> 0) then exit;
    Closable := true;
    Close;
-   {$IfDef RecordDEMMapProjection} WriteStringListToDebugFile(DEMMapProjection.ProjectionParamtersList): {$EndIf}
 end;
 
 procedure TMapForm.Topographicgrain2Click(Sender: TObject);

@@ -3577,13 +3577,13 @@ var
   fName : PathStr;
   TiffImage : tTiffImage;
   Success : boolean;
-  MapProjection : tMapProjection;
-  RegVars : tRegVars;
+  //MapProjection : tMapProjection;
+  //RegVars : tRegVars;
 begin
    fName := MainMapData;
    if GetFileFromDirectory('ENVI or Geotiff multiband imagery','*.img;*.tif;*.hdr',FName) then begin
       if FileExtEquals(fName,'.TIF') then begin
-         TiffImage := tTiffImage.CreateGeotiff(false,MapProjection,RegVars,false,fName,success);
+         TiffImage := tTiffImage.CreateGeotiff(false,false,fName,success);
          MultiGridArray := tMultiGridArray.Create;
          MultiGridArray.LoadFromSingleFileGeotiff(TiffImage);
          MultiGridArray.Destroy;

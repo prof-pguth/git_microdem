@@ -2,7 +2,7 @@
 { Part of MICRODEM GIS Program       }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
-{ Copyright (c) 2023 Peter L. Guth   }
+{ Copyright (c) 2024 Peter L. Guth   }
 {------------------------------------}
 {   include file for demdatabase     }
 {____________________________________}
@@ -497,7 +497,7 @@ end;
 
             procedure TGISdataBaseModule.PlotDefaultSymbols(MapDraw : tMapDraw; var Bitmap : tMyBitmap);
             var
-               Recs,{x,y,}rc : integer;
+               Recs,rc : integer;
             begin
                {$IfDef RecordSym} WriteLineToDebugFile('tGISdataBaseModule.PlotDefaultSymbols ' + dbName); {$EndIf}
                {$IfDef RecordSymbolColor} WriteLineToDebugFile('TGISdataBaseModule.PlotDefaultSymbols out, color = ' + RGBString(dbOpts.Symbol.Color.rgbtRed,dbOpts.Symbol.Color.rgbtGreen,dbOpts.Symbol.Color.rgbtBlue)); {$EndIf}
@@ -751,7 +751,7 @@ end;
                FreeAndNil(TextMyBitmap);
                NeedCentroid := false;
                PointCGMName := '';
-               {$IfDef MICRODEM} WmDEM.StatusBar1.Panels[0].Text := ''; {$EndIf}
+               WmDEM.StatusBar1.Panels[0].Text := '';
             end;
 
 

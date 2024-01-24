@@ -2,7 +2,7 @@
 { Part of MICRODEM GIS Program       }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
-{ Copyright (c) 2023 Peter L. Guth   }
+{ Copyright (c) 2024 Peter L. Guth   }
 {------------------------------------}
 { include file for nevadia_main      }
 {____________________________________}
@@ -63,7 +63,7 @@ end;
 procedure Sentinel2Batch_dNBR;
 var
    fName : PathStr;
-   RefNBR,i,dNBRgrid : integer;
+   RefNBR,i,dNBRgrid,DEM : integer;
 begin
    {$IfDef FireStats} WriteLineToDebugFile('Sentinel2BatchdNBR in'); {$EndIf}
    HeavyDutyProcessing := true;
@@ -77,7 +77,8 @@ begin
          fName := StringReplace(DEMglb[i].DEMfileName,'_nbr','_dNBR',[rfReplaceAll, rfIgnoreCase]);
          DEMGlb[dNBRgrid].WriteNewFormatDEM(fName);
          //MessageToContinue('yes');
-         CloseSingleDEM(i);
+         DEM := i;
+         CloseSingleDEM(DEM);
          CloseSingleDEM(dNBRgrid);
       end;
    end;

@@ -139,8 +139,8 @@ end;
       {$IfDef ExExif}
       {$Else}
          ExifData: TExifData;
-         RegVar : tRegVars;
-         MapProj  : tMapProjection;
+         //RegVar : tRegVars;
+         //MapProj  : tMapProjection;
       {$EndIf}
 
       {$IfDef ExPNG}
@@ -164,11 +164,11 @@ end;
       {$IfDef ExTiff}
       {$Else}
          if ExtEquals(Ext, '.tif') or ExtEquals(Ext, '.tiff') then begin
-            MapProj := Nil;
-            TiffImage := tTIFFImage.CreateGeotiff(false,MapProj,RegVar,true,FName,Success);
+            //MapProj := Nil;
+            TiffImage := tTIFFImage.CreateGeotiff(false,true,FName,Success);
             Result := TiffImage.DisplayInBitmap;
             TiffImage.Destroy;
-            FreeAndNil(MapProj);
+            //FreeAndNil(MapProj);
             exit;
          end;
       {$EndIf}

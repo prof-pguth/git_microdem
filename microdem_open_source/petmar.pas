@@ -2742,7 +2742,7 @@ end;
          function WinExecAndWait32(FileName : ANSIstring; Wait : boolean = true; Log : boolean = true) : integer;
          var
            zAppName : array[0..1024] of char;  //[0..512] of char;
-           zCurDir : array[0..255] of char;
+           zCurDir : array[0..1024] of char;
            WorkDir : ANSIstring;
            StartupInfo : TStartupInfo;
            ProcessInfo : TProcessInformation;
@@ -2774,7 +2774,7 @@ end;
                 if Wait then WaitforSingleObject(ProcessInfo.hProcess,INFINITE);
                 Result := 0;
             end;
-            //ApplicationProcessMessages;
+            ApplicationProcessMessages;
             if Wait then ShowDefaultCursor;
             {$IfDef RecordShellExecute} if Log and (not HeavyDutyProcessing) then WriteLineToDebugFile('WinExecAndWait32 out, result=' + IntToStr(Result)); {$EndIf}
          end;

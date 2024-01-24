@@ -555,18 +555,16 @@ procedure GeotiffMetadata(MDVersion : tMDVersion; fName : PathStr);
 var
    success : boolean;
    TiffImage : tTIFFImage;
-   MapProjection : tMapProjection;
-   RegVars : tRegVars;
    cmd : shortstring;
    OutName : PathStr;
 begin
    if FileExists(fName) or GetFileFromDirectory('GeoTiff file','*.TIF;*.TIFF',FName) then begin
       if (MDversion= mdMicrodem) then begin
          {$IfDef RecordMetadata} WriteLineToDebugFile('MICRODEM GeotiffMetadata for ' + fName); {$EndIf}
-         MapProjection := tMapProjection.Create('geotiff metadata');
-         TiffImage := tTiffImage.CreateGeotiff(true,MapProjection,RegVars,false,fName,Success,true,false);
+         //MapProjection := tMapProjection.Create('geotiff metadata');
+         TiffImage := tTiffImage.CreateGeotiff(true,false,fName,Success,true,false);
          {$IfDef RecordMetadata} WriteLineToDebugFile('tTiffImage.CreateGeotiff completed'); {$EndIf}
-         MapProjection.Destroy;
+         //MapProjection.Destroy;
          TiffImage.Destroy;
       end
       else if (MDversion= mdWhiteBox) then WhiteBoxGeotiffMetadata(fName)
@@ -586,18 +584,14 @@ function GeotiffBBox(fName : PathStr) : sfBoundBox;
 var
    success : boolean;
    TiffImage : tTIFFImage;
-   MapProjection : tMapProjection;
-   RegVars : tRegVars;
 begin
    if FileExists(fName) then begin
-      MapProjection := tMapProjection.Create('geotiff metadata');
-      TiffImage := tTiffImage.CreateGeotiff(true,MapProjection,RegVars,false,fName,Success,false,false);
-      Result.XMin := RegVars.UpLeftX;
-      Result.YMax := RegVars.UpLeftY;
-      Result.XMax := RegVars.UpLeftX + RegVars.pr_deltaX * pred(TiffImage.TiffHeader.ImageWidth);
-      Result.YMin := RegVars.UpLeftY - RegVars.pr_deltaY * pred(TiffImage.TiffHeader.ImageLength);
+      TiffImage := tTiffImage.CreateGeotiff(true,false,fName,Success,false,false);
+      Result.XMin := TiffImage.RegVars.UpLeftX;
+      Result.YMax := TiffImage.RegVars.UpLeftY;
+      Result.XMax := TiffImage.RegVars.UpLeftX + TiffImage.RegVars.pr_deltaX * pred(TiffImage.TiffHeader.ImageWidth);
+      Result.YMin := TiffImage.RegVars.UpLeftY - TiffImage.RegVars.pr_deltaY * pred(TiffImage.TiffHeader.ImageLength);
       TiffImage.Destroy;
-      MapProjection.Destroy;
    end;
 end;
 

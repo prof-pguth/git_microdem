@@ -1,10 +1,13 @@
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{   file verified 7/30/2014       }
-{                                 }
-{ include file for demmapf        }
-{_________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2024 Peter L. Guth  }
+{___________________________________}
+{                                   }
+{ include file for demmapf          }
+{___________________________________}
+
 
 
 procedure MatchAnotherDEMMap(DEM,CurDEM : integer);
@@ -77,8 +80,8 @@ begin
     {$IfDef RecordMapResize} WriteLineToDebugFile('Subset and zoom, starting geo  ' + sfBoundBoxToString(MapDraw.MapCorners.BoundBoxGeo,4) + '  ' + sfBoundBoxSizeToString(MapDraw.MapCorners.BoundBoxGeo,2)); {$EndIf}
 
      NewCorners := MapDraw.MapCorners;
-     MapDraw.ScreenToProjectedCoords(NewX2,Newy2,NewCorners.BoundBoxProj.xMax, NewCorners.BoundBoxProj.YMin);        //lower right
-     MapDraw.ScreenToProjectedCoords(NewX1,Newy1,NewCorners.BoundBoxProj.xMin, NewCorners.BoundBoxProj.YMax);        //upper left, must go second because these are used in ScreenToProjectedCoords
+     MapDraw.ScreenToProjectedCoords(NewX2,Newy2,NewCorners.BoundBoxProj.xMax, NewCorners.BoundBoxProj.YMin); //lower right
+     MapDraw.ScreenToProjectedCoords(NewX1,Newy1,NewCorners.BoundBoxProj.xMin, NewCorners.BoundBoxProj.YMax); //upper left, must go second because these are used in ScreenToProjectedCoords
 
      {$If Defined(RecordSubsetZoom) or Defined(RecordMapResize)} WriteLineToDebugFile('Subset and zoom, desired projected  ' + sfBoundBoxToString(NewCorners.BoundBoxProj,4) + '  ' + sfBoundBoxSizeToString(NewCorners.BoundBoxProj,2)); {$EndIf}
      MapDraw.MapCorners := NewCorners;
@@ -144,6 +147,7 @@ begin
       hzZoomIn  : Result := MapDraw.RecenterMap(Lat,Long,50);
       hzNoZoom  : Result := MapDraw.RecenterMap(Lat,Long,100);
       hzZoomOut : Result := MapDraw.RecenterMap(Lat,Long,200);
+      hzFullZoom : Result := MapDraw.RecenterMap(Lat,Long,-99);
    end;
    if Result then begin
       FormResize(Nil);
@@ -185,7 +189,7 @@ begin
    end;
    {$IfDef ExSat}
    {$Else}
-      if (MapDraw.SatOnMap <> 0) then begin
+      if ValidSatImage(MapDraw.SatOnMap) then begin
          SatImage[MapDraw.SATonMap].ClipSatGrid(SatImage[MapDraw.SatOnMap].BandForSize,MapDraw.MapCorners.BoundBoxDataGrid.xmin,MapDraw.MapCorners.BoundBoxDataGrid.ymax);
          SatImage[MapDraw.SATonMap].ClipSatGrid(SatImage[MapDraw.SatOnMap].BandForSize,MapDraw.MapCorners.BoundBoxDataGrid.xmax,MapDraw.MapCorners.BoundBoxDataGrid.ymin);
       end;
@@ -223,7 +227,7 @@ var
 
 begin
    {$IfDef RecordDrape} WriteLineToDebugFile('TMapForm.DrapeMapFromTwoGridCorners enter'); {$EndIf}
-      if MapDraw.DEMMap or (MapDraw.SatOnMap <> 0) then begin
+      if MapDraw.DEMMap or ValidSatImage(MapDraw.SatOnMap) then begin
          MinOfPairFirst(xu1,xu4);
          MinOfPairFirst(yu1,yu4);
          MapDraw.MapCorners.BoundBoxDataGrid.xmin := xu1;

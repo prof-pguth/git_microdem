@@ -144,9 +144,7 @@ begin
          FormResize(nil);
          DoCompleteMapRedraw;
       end;
-
       MapDraw.ZeroTickInt;
-
       {$IfDef RecordOpenVectorMap} WriteLineToDebugFile('Drawing is next'); {$EndIf}
       if ItsTIGER and MDDef.TigrDef.ShowNeighborsOnTIGERCounty then AddOrSubtractOverlay(VectorMap[Result],ovoTiger,True);
    end;
@@ -195,7 +193,7 @@ begin
        MapDraw.VectorIndex := i;
        MapDraw.MakeMapGrayscale := MDDef.DefGrayVectMap;
        MapDraw.SubdueBase := MDDef.DefSubdueVectMap;
-       MapDraw.PrimMapProj := tMapProjection.Create('vect map prim proj');
+       //MapDraw.PrimMapProj := tMapProjection.Create('vect map prim proj');
        if (WantProjection <> undefinedProj) then begin
            SetProjection(WantProjection);
        end
@@ -284,15 +282,28 @@ var
 begin
    {$IfDef NoMapOptions}
    {$Else}
-      {$If Defined(RecordOpenMap) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('CreateDEMSelectionMap in, DEM=' + IntToStr(DEM)); {$EndIf}
-      {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('CreateDEMSelectionMap in, current maps=' + IntToStr(NumOpenMaps)); {$EndIf}
-      {$If Defined(TrackHorizontalDatum)} DEMGlb[DEM].TrackHorizontalDatumDebugLog('enter CreateDEMSelectionMap,'); {$EndIf}
-
       if not ValidDEM(DEM) then exit;
 
+      {$If Defined(RecordOpenMap) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('CreateDEMSelectionMap in, DEM=' + IntToStr(DEM) + ' ' + DEMglb[DEM].DEMMapProjection.GetProjectionName); {$EndIf}
+      {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('CreateDEMSelectionMap in, current maps=' + IntToStr(NumOpenMaps)); {$EndIf}
+      {$If Defined(TrackHorizontalDatum)} DEMGlb[DEM].TrackHorizontalDatumDebugLog('enter CreateDEMSelectionMap,'); {$EndIf}
+      {$IfDef RecordDEMMapProjection} WriteLineToDebugFile('CreateDEMSelectionMap in, DEM=' + DEMglb[DEM].DEMMapProjection.GetProjectionName); {$EndIf}
+
       DEMGlb[DEM].SelectionMap := TMapForm.Create(Application);
+      //DEMglb[DEM].DEMMapProjection.pName changes to 64 in the previous step, and I cannot track the change down
+      //DEMglb[DEM].DEMMapProjection.InitializeProjectionFromDEMHeader(DEMglb[DEM].DEMHeader);
+
+
+      {$IfDef RecordDEMMapProjection}
+         WriteLineToDebugFile('CreateDEMSelectionMap selection map created, DEM=' + DEMglb[DEM].DEMMapProjection.GetProjectionName + ' Map=' + DEMGlb[DEM].SelectionMap.MapDraw.PrimMapProj.GetProjectionName);
+      {$EndIf}
       {$If Defined(TrackHorizontalDatum)} DEMGlb[DEM].TrackHorizontalDatumDebugLog('CreateDEMSelectionMap map created,'); {$EndIf}
-      DEMGlb[DEM].SelectionMap.MapDraw.PrimMapProj := DEMGlb[DEM].DEMMapProjection;
+
+      DEMGlb[DEM].SelectionMap.MapDraw.PrimMapProj.InitializeProjectionFromDEMHeader(DEMGlb[DEM].DEMHeader);
+      {$IfDef RecordDEMMapProjection}
+         WriteLineToDebugFile('CreateDEMSelectionMap map projection set, DEM=' + DEMglb[DEM].DEMMapProjection.GetProjectionName + ' Map=' + DEMGlb[DEM].SelectionMap.MapDraw.PrimMapProj.GetProjectionName);
+      {$EndIf}
+
       {$If Defined(TrackHorizontalDatum)} DEMGlb[DEM].TrackHorizontalDatumDebugLog('CreateDEMSelectionMap projection set,'); {$EndIf}
       {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('CreateDEMSelectionMap map just created, current maps=' + IntToStr(NumOpenMaps)); {$EndIf}
       {$If Defined(track_f)}
@@ -306,6 +317,9 @@ begin
       {$If Defined(RecordOpenMap) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('CreateDEMSelectionMap out,' + DEMGlb[DEM].SelectionMap.MapDraw.MapSizeString); {$EndIf}
       {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('CreateDEMSelectionMap out, current maps=' + IntToStr(NumOpenMaps)); {$EndIf}
       {$If Defined(TrackHorizontalDatum)} DEMGlb[DEM].TrackHorizontalDatumDebugLog('exit CreateDEMSelectionMap,'); {$EndIf}
+      {$IfDef RecordDEMMapProjection}
+         WriteLineToDebugFile('CreateDEMSelectionMap out, DEM=' + DEMglb[DEM].DEMMapProjection.GetProjectionName + ' Map=' + DEMGlb[DEM].SelectionMap.MapDraw.PrimMapProj.GetProjectionName);
+      {$EndIf}
    {$EndIf}
 end;
 
@@ -325,6 +339,8 @@ procedure TMapForm.SetUpNewDEMMapWindow(CurDEM : integer; mt : tMapType; MapCapt
 begin
    {$If Defined(RecordSetup) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow, DEM=' + IntToStr(CurDEM) + '  maptype=' + IntToStr(ord(mt)) + '  ' + MapDraw.MapSizeString); {$EndIf}
    {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow in, current maps=' + IntToStr(NumOpenMaps)); {$EndIf}
+   {$IfDef RecordDEMMapProjection} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow in, DEM=' + DEMGlb[CurDEM].DEMMapProjection.GetProjectionName); {$EndIf}
+
    try
       if Selection then begin
          MapDraw.MapOwner := moDEMSelectionMap;
@@ -360,6 +376,8 @@ begin
    {$If Defined(RecordSetup) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow exit ' + MapCaption + '  ' + MapDraw.MapSizeString); {$EndIf}
    {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow out, current maps=' + IntToStr(NumOpenMaps)); {$EndIf}
    {$If Defined(TrackHorizontalDatum)} DEMGlb[CurDEM].TrackHorizontalDatumDebugLog('SetUpNewDEMMapWindow out'); {$EndIf}
+   {$IfDef RecordDEMMapProjection} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow out, DEM=' + DEMGlb[MapDraw.DEMonMap].DEMMapProjection.GetProjectionName); {$EndIf}
+   {$IfDef RecordDEMMapProjection} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow out, Map=' + MapDraw.PrimMapProj.GetProjectionName); {$EndIf}
 end;
 
 

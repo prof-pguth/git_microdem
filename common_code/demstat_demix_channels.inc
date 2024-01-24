@@ -10,10 +10,10 @@
 
 
 
-procedure ChannelSHPtoGrid(DEM,db : integer; OutDir : PathStr; PlotOrder : integer = 1);
-//need to have a DEM loaded, and the shape files with the channel network opened on it
+function ChannelSHPtoGrid(DEM,db : integer; OutDir : PathStr; PlotOrder : integer = 1) : integer;
 var
-   i,grid : integer;
+   //i,
+   grid : integer;
    Bitmap : tMyBitmap;
    fName : PathStr;
 
@@ -27,7 +27,7 @@ var
       GISdb[db].ApplyGISFilter('PLOT_ORDER > ' + IntToStr(PlotOrder));
       Grid := DEMGlb[DEM].SelectionMap.CreateGridToMatchMap(cgLatLong,true,ByteDEM,3600 * DEMGlb[DEM].DEMheader.DEMxSpacing,3600 * DEMGlb[DEM].DEMheader.DEMySpacing,-99,
          DEMGlb[DEM].DEMheader.RasterPixelIsGeoKey1025);
-      DEMGlb[Grid].AreaName := GISdb[i].dbName;
+      DEMGlb[Grid].AreaName := GISdb[db].dbName;
       DEMGlb[Grid].SelectionMap.MapDraw.UseDistortedRawLatLongScaling := true;
       DEMGlb[Grid].SelectionMap.MapDraw.ResizeMapByPercentage(100);
       DEMGlb[Grid].SelectionMap.DoCompleteMapRedraw;
@@ -44,27 +44,13 @@ var
       fName := OutDir + ExtractFileNameNoExt(GISdb[db].DBFullName) + NewExt + '.dem';
       DEMGlb[Grid].WriteNewFormatDEM(fName);
       GISdb[db].LayerIsOn := false;
+      Result := Grid;
    end;
 
 
 begin
     NakedMapOptions;
     DoDataBase;
-    (*
-    MDdef.DBsOnAllMaps := false;
-    for i := 1 to MaxDataBase do begin
-       if ValidDB(i) then begin
-          GISdb[i].LayerIsOn := false;
-       end;
-    end;
-
-    for i := 1 to MaxDataBase do begin
-       if ValidDB(i) then begin
-          DoDatabase(i,1);
-          //if StrUtils.AnsiContainsText(UpperCase(GISdb[i].dbName),'REF_') then DoDatabase(i,3);   //creates grid with buffer of 1 pixel from 3 pixel line width
-       end;
-    end;
-    *)
 end;
 
 
@@ -80,67 +66,97 @@ procedure CreateChannelNetworkGridsFromVectors;
       i,DEM,db,NewGrid : integer;
    begin
       TheFiles := nil;
-      SafeMakeDir(OutFolder);
-      StartProgress('Make raster channels for ' + what);
       Petmar.FindMatchingFiles(BaseFolder,'*.tif',TheFiles,1);
-      for i := 0 to pred(TheFiles.Count) do begin
-          if (i mod 10 = 0) then UpdateProgressBar(i/TheFiles.Count);
-          InName := TheFiles.Strings[i];
-          dbName := InFolder + 'saga_channels_' + ExtractFileNameNoExt(InName) + '.shp';
-          GridName := OutFolder + ExtractFileNameNoExt(dbName) + '.dem';
+      {$IfDef RecordDEMIX} WriteLineToDebugFile(What + ' file=' + IntToStr(TheFiles.Count)); {$EndIf}
+      if (TheFiles.Count > 0) then begin
+         SafeMakeDir(OutFolder);
+         //StartProgress('Make raster channels for ' + what);
+         for i := 0 to pred(TheFiles.Count) do begin
+             //if (i mod 10 = 0) then UpdateProgressBar(i/TheFiles.Count);
+             wmdem.SetPanelText(1,What + ' ' + IntToStr(i) + '/' + IntToStr(TheFiles.Count));
+             InName := TheFiles.Strings[i];
+             dbName := InFolder + 'saga_channels_' + ExtractFileNameNoExt(InName) + '.shp';
+             GridName := OutFolder + ExtractFileNameNoExt(dbName) + '.dem';
 
-          if (not FileExists(GridName)) {and FileExists(inName)} and FileExists(dbName) and (IsDEMaDSMorDTM(InName) = DEMisDTM) then begin
-             DEM := OpenNewDEM(InName,true);
-             db := DEMGlb[DEM].SelectionMap.OpenDBonMap('',dbName,true,false);
-             ChannelSHPtoGrid(DEM,db,OutFolder);
-             CloseSingleDEM(DEM);
-             //CloseSingleDEM(NewGrid);
-             CleanUpTempDirectory(false)
-          end;
+             if (IsDEMaDSMorDTM(InName) = DEMisDSM) then begin
+                File2Trash(InName);
+             end
+             else if not FileExists(dbName) then begin
+                {$IfDef RecordDEMIX} WriteLineToDebugFile('Missing file=' + dbName); {$EndIf}
+             end
+             else if (not FileExists(GridName)) and FileExists(dbName) {and (IsDEMaDSMorDTM(InName) = DEMisDTM)} then begin
+                //TemporaryNewGeotiff := false;
+                //RewriteGeotiffIfRequired(InName);
+                DEM := OpenNewDEM(InName,true);
+                db := DEMGlb[DEM].SelectionMap.OpenDBonMap('',dbName,true,false);
+                NewGrid := ChannelSHPtoGrid(DEM,db,OutFolder);
+                CloseSingleDEM(DEM);
+                CloseSingleDEM(NewGrid);
+                //CloseSingleDEM(NewGrid);
+                CleanUpTempDirectory(false)
+             end;
+         end;
+         TheFiles.Free;
+         //EndProgress;
       end;
-      TheFiles.Free;
-      EndProgress;
    end;
 
 begin
    {$IfDef RecordDEMIX} WriteLineToDebugFile('CreateChannelNetworkGridsFromVectors in'); {$EndIf}
-   Run(DEMIX_ref_DEMs_no_sink,DEMIX_ref_DEMs_channels,DEMIX_ref_DEMs_channel_grids,'Ref DEMs');
-   Run(DEMIX_test_DEMs_no_sink,DEMIX_test_DEMs_channels,DEMIX_test_DEMs_channel_grids,'Ref DEMs');
+   try
+      HeavyDutyProcessing := true;
+      Run(DEMIX_ref_DEMs_no_sink,DEMIX_ref_DEMs_channels,DEMIX_ref_DEMs_channel_grids,'Ref DEMs');
+      Run(DEMIX_test_DEMs_no_sink,DEMIX_test_DEMs_channels,DEMIX_test_DEMs_channel_grids,'Test DEMs');
+   finally
+      wmdem.SetPanelText(1,'');
+      HeavyDutyProcessing := false;
+   end;
    {$IfDef RecordDEMIX} WriteLineToDebugFile('CreateChannelNetworkGridsFromVectors out'); {$EndIf}
 end;
 
 
 
 procedure BatchCreateVectorChannelNewtwork;
-
+//var
+   //bfile : tStringList;
 
    procedure Run(InFolder,OutFolder : PathStr; what : shortstring);
    var
       TheFiles : tStringList;
       InName, OutName : PathStr;
-      i : integer;
+      i,NumDone : integer;
    begin
       TheFiles := nil;
-      SafeMakeDir(OutFolder);
-      StartProgress('Channel network for ' + what);
       Petmar.FindMatchingFiles(InFolder,'*.tif',TheFiles,1);
-      for i := 0 to pred(TheFiles.Count) do begin
-          if (i mod 10 = 0) then UpdateProgressBar(i/TheFiles.Count);
-          InName := TheFiles.Strings[i];
-          OutName := OutFolder + 'saga_channels_' + ExtractFileNameNoExt(InName) + '.shp';
-          if not FileExists(OutName) then SagaChannelShapefile(InName,OutName);
+      {$IfDef RecordDEMIX} WriteLineToDebugFile(What + ' file=' + IntToStr(TheFiles.Count)); {$EndIf}
+      if (TheFiles.Count > 0) then begin
+         SafeMakeDir(OutFolder);
+         NumDone := 0;
+         StartProgress('Channel network for ' + what);
+         for i := 0 to pred(TheFiles.Count) do begin
+             if (i mod 10 = 0) then UpdateProgressBar(i/TheFiles.Count);
+             InName := TheFiles.Strings[i];
+             OutName := OutFolder + 'saga_channels_' + ExtractFileNameNoExt(InName) + '.shp';
+             if (not FileExists(OutName)) and (IsDEMaDSMorDTM(InName) = DEMisDTM) then begin
+                SagaChannelShapefile(InName,OutName);
+                inc(NumDone);
+             end;
+         end;
+         TheFiles.Free;
+         EndProgress;
+         {$IfDef RecordDEMIX} WriteLineToDebugFile(What + ' shp file created=' + IntToStr(NumDone) + ' in ' + OutFolder); {$EndIf}
       end;
-      TheFiles.Free;
-      EndProgress;
    end;
 
 
 begin
    {$IfDef RecordDEMIX} WriteLineToDebugFile('BatchCreateVectorChannelNewtwork in'); {$EndIf}
+   //bfile := tStringList.Create;
    HeavyDutyProcessing := true;
    Run(DEMIX_ref_DEMs_no_sink,DEMIX_ref_DEMs_channels,' ref DEMs');
    Run(DEMIX_test_dems_no_sink,DEMIX_test_DEMs_channels,' test DEMs');
    HeavyDutyProcessing := false;
+   //bFile.SaveToFile('c:\temp\test.bat');
    {$IfDef RecordDEMIX} WriteLineToDebugFile('BatchCreateVectorChannelNewtwork out'); {$EndIf}
 end;
 
@@ -159,11 +175,12 @@ procedure BatchFillHolesInDEMIX_DEMS;
       SafeMakeDir(OutFolder);
       StartProgress('Remove sinks for ' + what);
       Petmar.FindMatchingFiles(InFolder,Ext,TheFiles,1);
+      {$IfDef RecordDEMIX} WriteLineToDebugFile(What + ' file=' + IntToStr(TheFiles.Count)); {$EndIf}
       for i := 0 to pred(TheFiles.Count) do begin
           if (i mod 10 = 0) then UpdateProgressBar(i/TheFiles.Count);
           InName := TheFiles.Strings[i];
           OutName := OutFolder + 'saga_sinks_removed_' + ExtractFileNameNoExt(InName) + '.tif';
-          if not FileExists(OutName) then SagaSinkRemoval(InName,OutName);
+          if (not FileExists(OutName)) and (IsDEMaDSMorDTM(InName) = DEMisDTM) then SagaSinkRemoval(InName,OutName);
       end;
       TheFiles.Free;
       EndProgress;
@@ -171,10 +188,12 @@ procedure BatchFillHolesInDEMIX_DEMS;
 
 
 begin
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('BatchFillHolesInDEMIX_DEMS in'); {$EndIf}
    HeavyDutyProcessing := true;
    Run(DEMIX_Ref_1sec,DEMIX_ref_DEMs_no_sink,'*.tif',' ref DEMs');
    Run(DEMIX_test_dems,DEMIX_test_DEMs_no_sink,'*.dem',' test DEMs');
    HeavyDutyProcessing := false;
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('BatchFillHolesInDEMIX_DEMS Out'); {$EndIf}
 end;
 
 

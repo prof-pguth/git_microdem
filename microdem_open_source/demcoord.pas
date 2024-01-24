@@ -288,17 +288,17 @@ type
          function CheckForUTMZones : boolean;
          procedure FilterStrip(NewDEM, FilterLap : integer; GridLimits : tGridLimits; FilterCategory : tFilterCat; Filter : FilterType);
       public
-         ThisDEM   : integer;  //to access the global array
+         ThisDEM   : integer;  //to access global array
          AreaName       : ShortString;
          ShortName      : string10;
          DEMstatus      : tDEMstatus;
          DEMheader      : tDEMheader;
          DEMMetadata    : tStringList;
-         DEMMapProjection  : BaseMap.tMapProjection;
+         DEMMapProjection : BaseMap.tMapProjection;
          DEMFileName,
-         VATFileName       : PathStr;
-         GeotiffImageDesc  : shortstring;
-         Zpercens           : ^floatarray1000;
+         VATFileName      : PathStr;
+         GeotiffImageDesc : shortstring;
+         Zpercens         : ^floatarray1000;
 
          LatSizeMap,               {size of area in latitude, in degrees}
          LongSizeMap,              {size of area in longitude, in degrees}
@@ -464,7 +464,7 @@ type
          procedure ReclassifyRange(MinRange, MaxRange, NewZ : float64);
          procedure ShiftGlobalDEM(NewLeftLong : float64);
 
-         procedure CheckUK_OS;
+        // procedure CheckUK_OS;
          function RGBfromLongWord(x,y : integer; var r,g,b : byte) : boolean;
          procedure RoundToByteRange;
          function ScaleZtoByte(z : float64) : byte;
@@ -2505,7 +2505,7 @@ begin {tDEMDataSet.DefineDEMVariables}
    AssignProjectionFromDEM(DEMMapProjection,AreaName);
    {$IfDef RecordCreateNewDEM} WriteLineToDebugFile('tDEMDataSet.DefineDEMVariables assigned projection=' + DEMMapProjection.GetProjectionName); {$EndIf}
 
-   CheckUK_OS;
+   //CheckUK_OS;
    InitializeDatum(TransformToPreferDatum);
    if (DEMheader.DigitizeDatum <> Rectangular) then  begin
       if (DEMheader.DEMUsed in [ArcSecDEM]) then begin
@@ -2849,6 +2849,7 @@ begin
 end;
 
 
+(*
 procedure tDEMDataSet.CheckUK_OS;
 begin
    if (DEMMapProjection.PName = UK_OS) then begin
@@ -2860,7 +2861,7 @@ begin
       end;
    end;
 end;
-
+*)
 
 procedure tDEMDataSet.LatLongDegreetoUTM(Lat,Long : float64; var XUTM,YUTM : float64);
 begin
@@ -3576,8 +3577,6 @@ begin
    end;
 
    if (UTMZone < 0) then begin
-      //MDdef.DefaultUTMZone := DEMMapProjection.projUTMZone;
-      //ReadDefault('UTM zone',MDdef.DefaultUTMZone);
       MDdef.DefaultUTMZone := DEMHeader.UTMzone;
    end
    else MDdef.DefaultUTMZone := UTMzone;

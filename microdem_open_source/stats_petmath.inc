@@ -1,9 +1,9 @@
 
 {^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of ianMICRODEM GIS Program    }
+{ Part of MICRODEM GIS Program       }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
-{ Copyright (c) 2023 Peter L. Guth   }
+{ Copyright (c) 2024 Peter L. Guth   }
 {____________________________________}
 {                                    }
 {       include file for petmath     }
@@ -82,7 +82,7 @@ TYPE
 {******************************************************}
 
 FUNCTION gammln(xx: extended): float64;
-//PLG note: p.157,p.704 "Numerical Recipes in Pascal"   retruns natural log of Gamma function
+//PLG note: p.157,p.704 "Numerical Recipes in Pascal"   returns natural log of Gamma function
 CONST
    stp = 2.50662827465;
    half = 0.5;
@@ -144,7 +144,6 @@ BEGIN
          gold := g
       END
    END;
-//   showmessage('pause in GCF - a too large, itmax too small'); //readln;                                                      *)adln;
 1:   gammcf := exp(-x+a*ln(x)-gln)*g
 END;
 
@@ -175,7 +174,6 @@ BEGIN
          sum := sum+del;
          IF (abs(del) < abs(sum)*eps) THEN GOTO 1
       END;
-      //writeln('pause in GSER - a too large, itmax too small'); readln;
 1:      gamser := sum*exp(-x+a*ln(x)-gln)
    END
 END;

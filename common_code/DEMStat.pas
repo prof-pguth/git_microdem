@@ -20,6 +20,7 @@ unit DEMStat;
       //{$Define NoParallelFor}
       //{$Define RecordDEMIX_colors}
       {$Define RecordSSIM}
+      {$Define RecordDEMIX}
       //{$Define RecordLag}
       //{$Define RecordPitsSpires}
       //{$Define RecordMapAlgebra}
@@ -189,7 +190,7 @@ type
 
 
 
-   procedure ChannelSHPToGrid(DEM,db : integer; OutDir : PathStr; PlotOrder : integer = 1);
+   function ChannelSHPToGrid(DEM,db : integer; OutDir : PathStr; PlotOrder : integer = 1) : integer;
    procedure CompareChannelNetworks;
    procedure ChannelNetworkMapComparison(BaseDEM,RefDEM, TestDEM : integer);
    procedure CreateChannelNetworkGridsFromVectors;
@@ -231,6 +232,7 @@ uses
    {$EndIf}
 
    DEMIX_Control,
+   Geotiff,
 
    DEMCoord,DEMOptions,
    PetDBUtils,
