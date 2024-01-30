@@ -51,6 +51,8 @@ inherited OptionsForm: TOptionsForm
     Align = alClient
     MultiLine = True
     TabOrder = 2
+    ExplicitWidth = 789
+    ExplicitHeight = 504
     object TabSheet1: TTabSheet
       Caption = 'Program'
       object RadioGroup7: TRadioGroup

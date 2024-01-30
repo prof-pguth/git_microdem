@@ -126,7 +126,7 @@ var
 
 //service functions and procedures
    function LoadDEMIXReferenceDEMs(AreaName : shortstring; var RefDEM : integer; OpenMaps : boolean = true) : boolean;
-   function LoadDEMIXCandidateDEMs(AreaName : ShortString; RefDEM : integer; OpenMaps : boolean = false; AllCandidates : boolean = true) : boolean;
+   function LoadDEMIXCandidateDEMs(AreaName : ShortString; aRefDEM : integer; OpenMaps : boolean = false; AllCandidates : boolean = true) : boolean;
    procedure LoadThisDEMIXTile(AreaName,TileName : shortstring; OpenMaps : boolean = true);
 
    procedure GetReferenceDEMsForTestDEM(TestSeries : shortstring; var UseDSM,UseDTM : integer);
@@ -147,7 +147,7 @@ var
    function DEMIXColorFromDEMName(DEMName : shortstring) : tPlatformColor;
    function WhatTestDEMisThis(fName : PathStr) : shortstring;
    function IsDEMaDSMorDTM(DEMName : ShortString) : integer;
-   function DEMIXTestDEMLegend : tMyBitmap;
+   function DEMIXTestDEMLegend(Horizontal : boolean = true) : tMyBitmap;
 
    procedure OpenDEMIXDatabaseForAnalysis;
    function GetDEMIXpaths(StartProcessing : boolean = true) : boolean;
@@ -277,12 +277,14 @@ var
    HalfSecRefDTM,HalfSecRefDSM,HalfSecDTM,HalfSecALOS,HalfSecCOP,
    DEMIXRefDEM,RefDTMpoint,RefDTMarea,RefDSMpoint,RefDSMarea, COPRefDTM, COPRefDSM : integer;
 
+   DEMIX_Ref_1sec,DEMIX_test_dems,DEMIX_Ref_Half_sec,
    DEMIX_Base_DB_Path,DEMIX_profile_test_dir,
    DEMIX_test_DEMs_channels, DEMIX_ref_DEMs_channels,
    DEMIX_test_DEMs_channel_grids, DEMIX_ref_DEMs_channel_grids,
-   DEMIX_Ref_Source,DEMIX_Ref_Merge,DEMIX_Ref_1sec,
-   DEMIX_test_dems,DEMIX_Ref_Half_sec,
+   DEMIX_Ref_Source,DEMIX_Ref_Merge,
    DEMIX_GIS_dbName_v3,
+   ChannelMissesDir,
+   SSIMresultsDir,
    DEMIX_test_DEMs_no_sink, DEMIX_ref_DEMs_no_sink,
    DEMIX_distrib_graph_dir,DEMIX_diff_maps_dir,DEMIX_3DEP_Dir,
 
@@ -1190,7 +1192,7 @@ end;
 
 
 
-function DEMIXTestDEMLegend : tMyBitmap;
+function DEMIXTestDEMLegend(Horizontal : boolean = true) : tMyBitmap;
 var
    i,Left,Top : integer;
 begin
@@ -1199,13 +1201,14 @@ begin
    Left := 25;
    Top := 10;
    for i := 1 to NumDEMIXDEM do begin
-      Result.Canvas.Pen.Color := ConvertPlatformColorToTColor(DEMIXColorFromDEMName(DEMIXDEMTypeName[i]));
+      Result.Canvas.Pen.Color := ConvertPlatformColorToTColor(DEMIXColorFromDEMName(DEMIXShort[i]));
       Result.Canvas.Brush.Color := Result.Canvas.Pen.Color;
       Result.Canvas.Brush.Style := bsSolid;
       Result.Canvas.Rectangle(Left,Top,Left + 15,Top + 15);
       Result.Canvas.Brush.Style := bsClear;
-      Result.Canvas.TextOut(Left + 20,Top,DEMIXDEMTypeName[i]);
-      Left := Left + 30 + Result.Canvas.TextWidth(DEMIXDEMTypeName[i]);
+      Result.Canvas.TextOut(Left + 20,Top,DEMIXShort[i]);
+      if Horizontal then Left := Left + 30 + Result.Canvas.TextWidth(DEMIXShort[i])
+     else Top := Top + 10 + Result.Canvas.TextHeight(DEMIXShort[i]);
    end;
    PutBitmapInBox(Result);
 end;
@@ -1255,9 +1258,6 @@ begin
       MDDef.LegendFont.Size := 20;
    {$If Defined(RecordDEMIXStart)} WriteLineToDebugFile('GetDEMIXpaths point 2'); {$EndIf}
 
-
-   {$If Defined(RecordDEMIXStart)} WriteLineToDebugFile('GetDEMIXpaths point 3'); {$EndIf}
-
    DEMIX_Ref_Source := DEMIX_Base_DB_Path + 'wine_contest_v2_ref_source\';
    DEMIX_Ref_Merge := DEMIX_Base_DB_Path + 'wine_contest_v2_ref_merge\';
    DEMIX_Ref_Half_sec := DEMIX_Base_DB_Path + 'wine_contest_v2_ref_0.5sec\';
@@ -1280,9 +1280,10 @@ begin
    DEMIX_ref_DEMs_no_sink := DEMIX_Base_DB_Path + 'area_ref_dems_no_sink\';
    DEMIX_test_DEMs_channels := DEMIX_Base_DB_Path + 'area_test_dems_channels\';
    DEMIX_ref_DEMs_channels := DEMIX_Base_DB_Path + 'area_ref_dems_channels\';
-   DEMIX_test_DEMs_channel_grids := DEMIX_Base_DB_Path + 'area_test_dems_channel_gridss\';
+   DEMIX_test_DEMs_channel_grids := DEMIX_Base_DB_Path + 'area_test_dems_channel_grids\';
    DEMIX_ref_DEMs_channel_grids := DEMIX_Base_DB_Path + 'area_ref_dems_channel_grids\';
-
+   ChannelMissesDir := DEMIX_Base_DB_Path + 'channel_misses\';
+   SSIMresultsDir := DEMIX_Base_DB_Path + 'SSIM_results\';
 
    //DEMIX_area_dbName_v2 := DEMIX_Base_DB_Path + 'wine_contest_v2_ref_source\demix_area_vert_datums.dbf';
    //DEMIXSettingsDir := DEMIX_Base_DB_Path + 'wine_contest_settings\';
@@ -1344,10 +1345,10 @@ var
 begin
    Result := tStringList.Create;
    if (AreaName = '') then begin
-      fName := DEMIXSettingsDir;
-      if GetExistingFileName('DEMIX areas','*.txt',fName) then begin
+      fName := DEMIXSettingsDir + 'areas_list.txt';
+      if FileExists(fName) or GetExistingFileName('DEMIX areas','*.txt',fName) then begin
          Result.LoadFromFile(fName);
-         if CanEditFile then GetFromListZeroBased('Areas to process', PickedNum,Result,false,true);
+         if CanEditFile then MultiSelectSingleColumnStringList('Areas to process', PickedNum,Result,false,true);
       end;
    end
    else begin
@@ -1847,7 +1848,7 @@ begin
 end;
 
 
-function LoadDEMIXCandidateDEMs(AreaName : ShortString; RefDEM : integer; OpenMaps : boolean = false; AllCandidates : boolean = true) : boolean;
+function LoadDEMIXCandidateDEMs(AreaName : ShortString; aRefDEM : integer; OpenMaps : boolean = false; AllCandidates : boolean = true) : boolean;
 var
    {$IfDef RecordDEMIX} AllDEMs, {$EndIf}
    WantSeries,ShortName : shortstring;
@@ -1894,9 +1895,9 @@ var
 
 
 begin
-   {$If Defined(RecordDEMIXLoad)} writeLineToDebugFile('LoadDEMIXCandidateDEMs in; Open DEMs=, ' + IntToStr(NumDEMdatasetsOpen) + '   RefDEM=' + IntToStr(RefDEM)); {$EndIf}
+   {$If Defined(RecordDEMIXLoad)} writeLineToDebugFile('LoadDEMIXCandidateDEMs in; Open DEMs=, ' + IntToStr(NumDEMdatasetsOpen) + '   RefDEM=' + IntToStr(aRefDEM)); {$EndIf}
    Result := false;
-   if not ValidDEM(RefDEM) then exit;
+   if not ValidDEM(aRefDEM) then exit;
 
    {$IfDef RecordDEMIX} AllDEMs := ''; {$EndIf}
    HeavyDutyProcessing := true;
@@ -1935,6 +1936,10 @@ begin
       {$If Defined(RecordDEMIXLoad)} writeLineToDebugFile('Reload LoadDEMIXCandidateDEMs in; Loaded only DEMs=, ' + IntToStr(Ser)); {$EndIf}
    end;
 
+
+
+
+
    GeoidGrid := OpenNewDEM(GeoidDiffFName,false,'geoid difference from EGM96 to EGM2008');  //to move DEMs from EGM96 to EGM2008
    GeoidDiffFName := DEMGlb[GeoidGrid].DEMFileName;
 
@@ -1950,7 +1955,7 @@ begin
       else if AllCandidates or (ShortName = 'COP') or (ShortName = 'ALOS') then begin
          {$If Defined(RecordFullDEMIX) or Defined(RecordDEMIXLoad)} writeLineToDebugFile('Try ' + WantSeries + ' ' + ShortName + '  ' + IntToStr(Ser) + '/' + IntToStr(IndexSeriesTable.FiltRecsInDB)); {$EndIf}
          {$If Defined(RecordFullDEMIX)} writeLineToDebugFile('Ref DEM=' + DEMGlb[RefDEM].AreaName + '  ' + sfBoundBoxToString(DEMGlb[RefDEM].DEMBoundBoxGeo,6)); {$EndIf}
-         if LoadMapLibraryBox(WantDEM,WantImage,true,DEMGlb[RefDEM].DEMBoundBoxGeo,WantSeries,false) and ValidDEM(WantDEM) then begin
+         if LoadMapLibraryBox(WantDEM,WantImage,true,DEMGlb[aRefDEM].DEMBoundBoxGeo,WantSeries,false) and ValidDEM(WantDEM) then begin
             {$If Defined(RecordDEMIXLoad)} writeLineToDebugFile('LoadDEMIXCandidateDEMs done LoadMapLib; Open DEMs=, ' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
             inc(Ser);
             TestDEMs[Ser] := WantDEM;
@@ -1958,8 +1963,8 @@ begin
             {$IfDef RecordDEMIXLoad} if (TestSeries[Ser] = 'ASTER') then writeLineToDebugFile('Loaded DEM:  ' + SaveName + ' ' + DEMGlb[TestDEMs[Ser]].PixelIsString); {$EndIf}
 
             {$IfDef RecordDEMIX}
-               if not AllOfBoxInAnotherBox(DEMGlb[RefDEM].DEMBoundBoxGeo,DEMGlb[WantDEM].DEMBoundBoxGeo) then begin
-                  AllDEMs := AllDEMs + TestSeries[Ser] + ' (partial  ' + sfBoundBoxToString(DEMGlb[RefDEM].DEMBoundBoxGeo) + ')  ';
+               if not AllOfBoxInAnotherBox(DEMGlb[aRefDEM].DEMBoundBoxGeo,DEMGlb[WantDEM].DEMBoundBoxGeo) then begin
+                  AllDEMs := AllDEMs + TestSeries[Ser] + ' (partial  ' + sfBoundBoxToString(DEMGlb[aRefDEM].DEMBoundBoxGeo) + ')  ';
                end;
             {$EndIf}
             DEMGlb[TestDEMs[Ser]].AreaName := TestSeries[Ser];
@@ -1972,8 +1977,8 @@ begin
             {$IfDef RecordDEMIXLoad} if TestSeries[Ser] = 'ASTER' then writeLineToDebugFile('EGM2003:  ' + SaveName + ' ' + DEMGlb[TestDEMs[Ser]].PixelIsString); {$EndIf}
             If OpenMaps or (AreaName <> '') then begin
                CreateDEMSelectionMap(TestDEMs[Ser],true,false,MDDef.DefDEMMap);
-               if ValidDEM(RefDEM) then begin
-                  DEMGlb[TestDEMs[Ser]].SelectionMap.ClipDEMtoregion(DEMGlb[RefDEM].DEMBoundBoxGeo);
+               if ValidDEM(aRefDEM) then begin
+                  DEMGlb[TestDEMs[Ser]].SelectionMap.ClipDEMtoregion(DEMGlb[aRefDEM].DEMBoundBoxGeo);
                   {$IfDef RecordDEMIXLoad} writeLineToDebugFile('Clipped:' + WantSeries + '  Open DEMs=' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
                end;
             end;

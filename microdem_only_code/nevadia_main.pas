@@ -543,7 +543,6 @@ type
     DiluviumDEMfortestareas1: TMenuItem;
     CreaterangereferenceDEMs1: TMenuItem;
     Addprefixtoallfilesindirectory1: TMenuItem;
-    channelnewtowk1: TMenuItem;
     InventoryreferenceDEMs1: TMenuItem;
     Inventorydifferencestats1: TMenuItem;
     N47: TMenuItem;
@@ -552,6 +551,10 @@ type
     FillholesintestareaDEMs1: TMenuItem;
     VectorchannelnetworksSAGA1: TMenuItem;
     Createchannelnetworkgrids1: TMenuItem;
+    Channelnetworkcomparison1: TMenuItem;
+    Channelnetworkmisspercentagesbytile1: TMenuItem;
+    SSIM1: TMenuItem;
+    SSIM2: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -929,13 +932,15 @@ type
     procedure DiluviumDEMfortestareas1Click(Sender: TObject);
     procedure CreaterangereferenceDEMs1Click(Sender: TObject);
     procedure Addprefixtoallfilesindirectory1Click(Sender: TObject);
-    procedure channelnewtowk1Click(Sender: TObject);
     procedure InventoryreferenceDEMs1Click(Sender: TObject);
     procedure Inventorydifferencestats1Click(Sender: TObject);
     procedure MergeDEMIXtilestats1Click(Sender: TObject);
     procedure FillholesintestareaDEMs1Click(Sender: TObject);
     procedure VectorchannelnetworksSAGA1Click(Sender: TObject);
     procedure Createchannelnetworkgrids1Click(Sender: TObject);
+    procedure Channelnetworkcomparison1Click(Sender: TObject);
+    procedure Channelnetworkmisspercentagesbytile1Click(Sender: TObject);
+    procedure SSIM1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1353,10 +1358,15 @@ begin
 end;
 
 
-procedure Twmdem.channelnewtowk1Click(Sender: TObject);
+procedure Twmdem.Channelnetworkcomparison1Click(Sender: TObject);
 begin
-   ChannelNetworkMapComparison(0,0,0);
+   ChannelNetworkMapComparison('lake_powell','cop');
+   ChannelNetworkMapComparison('lake_powell','aster');
+end;
 
+procedure Twmdem.Channelnetworkmisspercentagesbytile1Click(Sender: TObject);
+begin
+    ChannelNetworkMissPercentages;
 end;
 
 procedure Twmdem.CheckfilesizesforSSIMimagemismatches1Click(Sender: TObject);
@@ -1364,7 +1374,6 @@ var
    fName,fName2 : PathStr;
    sl,Findings : tStringList;
    i : Integer;
-   //aLine : shortstring;
    H1,H2,W1,W2 : integer;
 begin
    fName := 'C:\temp\ssim_global_norm\aster_size_mismatch.csv';
@@ -2504,7 +2513,7 @@ end;
 
 procedure Twmdem.Addversionnumbertoallfilesinapath1Click(Sender: TObject);
 begin
-    AddSuffixOrPrefixToFiles(false);
+   AddSuffixOrPrefixToFiles(false);
 end;
 
 
@@ -4939,6 +4948,11 @@ end;
 procedure Twmdem.SpeedButton9Click(Sender: TObject);
 begin
    OpenGazFile;
+end;
+
+procedure Twmdem.SSIM1Click(Sender: TObject);
+begin
+   AreaSSIMComputations;
 end;
 
 procedure Twmdem.LOS2Click(Sender: TObject);

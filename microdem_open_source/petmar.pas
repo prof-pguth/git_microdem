@@ -189,10 +189,10 @@ var
       function ExecuteFile(const FileName, Params, DefaultDir: ANSIstring): THandle;
       function WinExecAndWait32(FileName : ANSIstring; Wait : boolean = true; Log : boolean = true) : integer;
 
-      function GetFromListZeroBased(InMessage : ANSIstring; var PickedNum : integer; var InList : TStringList; CanCancel : boolean = false; MultiPick : boolean = false) : boolean;
+      function MultiSelectSingleColumnStringList(InMessage : ANSIstring; var PickedNum : integer; var InList : TStringList; CanCancel : boolean = false; MultiPick : boolean = false) : boolean;
+      function GetMultipleFromList(InMessage : ANSIstring; var PickedNum : integer; var InList : TStringList; CanCancel : boolean = false) : boolean;
       function GetFromList(InMessage : ANSIstring; var PickedNum : integer; InList : TStringList; CanCancel : boolean = false) : boolean;    overload;
       function GetFromList(InMessage : ANSIstring; InList : TStringList; CanCancel : boolean = false) : ShortString; overload;
-      function GetMultipleFromList(InMessage : ANSIstring; var PickedNum : integer; var InList : TStringList; CanCancel : boolean = false) : boolean;
 
       procedure GetString(Prompt : ShortString; var Input : ShortString; ForceCaps : boolean; ValidChars : characters);
       procedure GetValidDBfieldname(var fName2 : shortstring);
@@ -536,24 +536,28 @@ procedure AddSuffixOrPrefixToFiles(PrefixWanted : boolean; aPath : Pathstr = '')
 var
    FilesWanted : tStringList;
    j : integer;
-   ext : extStr;
+   //ext : extStr;
    version,what : shortstring;
    fName,NewName : PathStr;
 begin
    if aPath = '' then GetDOSPath('files to add ' + What,aPath);
-   Ext := '*.*';
+   //Ext := '*.*';
    if PrefixWanted then What := 'prefix' else what := 'suffix';
 
-   Version := '_v1';
-   Petmar.GetString('file name ' + What,Version,false,ValidDosFileNameChars);
    ShowHourglassCursor;
    FilesWanted := tStringList.Create;
-   FindMatchingFiles(aPath,Ext,FilesWanted,2);
-   for j := 0 to pred(FilesWanted.Count) do begin
-      fName := FilesWanted.Strings[j];
-      if PrefixWanted then  NewName := ExtractFilePath(fName) + Version + ExtractFileNameNoExt(fName) + ExtractFileExt(fName)
-      else NewName := ExtractFilePath(fName) + ExtractFileNameNoExt(fName) + Version + ExtractFileExt(fName);
-      RenameFile(fName, NewName);
+   FindMatchingFiles(aPath,'*.*',FilesWanted,2);
+   if FilesWanted.Count > 0 then begin
+      Version := LastSubDir(ExtractFilePath(FilesWanted.Strings[0])) + '_';
+      Petmar.GetString('file name ' + What,Version,false,ValidDosFileNameChars);
+      for j := 0 to pred(FilesWanted.Count) do begin
+         fName := FilesWanted.Strings[j];
+         if not StrUtils.AnsiContainsText(UpperCase(ExtractFileNameNoExt(fName)),UpperCase(version)) then begin
+            if PrefixWanted then NewName := ExtractFilePath(fName) + Version + ExtractFileNameNoExt(fName) + ExtractFileExt(fName)
+            else NewName := ExtractFilePath(fName) + ExtractFileNameNoExt(fName) + Version + ExtractFileExt(fName);
+            RenameFile(fName, NewName);
+         end;
+      end;
    end;
    FilesWanted.Free;
    ShowDefaultCursor;
@@ -562,8 +566,8 @@ end;
 
 procedure WriteOpenHandlestoDebugLog(Where : shortString);
 
-      function GetOpenHandles : DWORD;
-      //https://stackoverflow.com/questions/4966900/delphi-causes-of-system-error-1158-no-more-system-handles-for-current-process
+      function GetOpenHandles : DWORD; inline;
+      //from https://stackoverflow.com/questions/4966900/delphi-causes-of-system-error-1158-no-more-system-handles-for-current-process
       begin
          if not GetProcessHandleCount(GetCurrentProcess,Result) then RaiseLastOSError;
       end;
@@ -572,14 +576,14 @@ begin
    WriteLineToDebugFile(Where + '  handles open=' + IntToStr(GetOpenHandles));
 end;
 
+
 function FindDriveWithPath(var aPath : PathStr) : boolean;
 //used for data files on external hard drive, which can have different drive letters when moved
 var
    ch : ANSIchar;
 begin
    Result := PathIsValid(aPath);
-   //ch := 'a';
-   if not Result then begin
+   if (not Result) then begin
       for ch := 'c' to 'z' do begin
          aPath[1] := ch;
          if PathIsValid(aPath) then begin
@@ -1228,7 +1232,7 @@ end;
          function GetFromList(InMessage : ANSIstring; var PickedNum : integer; InList : TStringList; CanCancel : boolean = false) : boolean;
          begin
             PickedNum := pred(PickedNum);
-            Result := GetFromListZeroBased(InMessage,PickedNum,InList,CanCancel);
+            Result := MultiSelectSingleColumnStringList(InMessage,PickedNum,InList,CanCancel);
          end;
 
          function GetFromList(InMessage : ANSIstring; InList : TStringList; CanCancel : boolean = false) : ShortString;
@@ -1236,7 +1240,7 @@ end;
            PickedNum : integer;
          begin
             PickedNum := 1;
-            if GetFromListZeroBased(InMessage,PickedNum,InList,CanCancel) then Result := InList.Strings[PickedNum]
+            if MultiSelectSingleColumnStringList(InMessage,PickedNum,InList,CanCancel) then Result := InList.Strings[PickedNum]
             else Result := '';
          end;
 
@@ -1245,12 +1249,12 @@ end;
          begin
             {$IfDef RecordListPick} WriteLineToDebugFile('GetMultipleFromList in, choices=' + IntToStr(InList.Count)); {$EndIf}
             PickedNum := pred(PickedNum);
-            Result := GetFromListZeroBased(InMessage,PickedNum,InList,CanCancel,true);
+            Result := MultiSelectSingleColumnStringList(InMessage,PickedNum,InList,CanCancel,true);
             {$IfDef RecordListPick} WriteLineToDebugFile('GetMultipleFromList out, choices=' + IntToStr(InList.Count)); {$EndIf}
          end;
 
 
-         function GetFromListZeroBased(InMessage : ANSIstring; var PickedNum : integer; var InList : TStringList; CanCancel : boolean = false; MultiPick : boolean = false) : boolean;
+         function MultiSelectSingleColumnStringList(InMessage : ANSIstring; var PickedNum : integer; var InList : TStringList; CanCancel : boolean = false; MultiPick : boolean = false) : boolean;
          {$IfDef FMX}
          begin
             Result := false;

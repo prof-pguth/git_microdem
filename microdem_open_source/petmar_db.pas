@@ -6,7 +6,7 @@ unit petmar_db;
 { Part of MICRODEM GIS Program       }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
-{ Copyright (c) 2023 Peter L. Guth   }
+{ Copyright (c) 2024 Peter L. Guth   }
 {____________________________________}
 
 
@@ -2135,7 +2135,7 @@ end;
       if (FieldsInDB.Count = 0) then Result := ''
       else begin
          WantField := 0;
-         if GetFromListZeroBased('Database Field for ' + Mess,WantField,FieldsInDB,true) then begin
+         if MultiSelectSingleColumnStringList('Database Field for ' + Mess,WantField,FieldsInDB,true) then begin
             Result := FieldsInDB.Strings[WantField];
          end
          else Result := '';

@@ -397,6 +397,7 @@ type
 
          function FilledGridBox(var GridLimits : tGridLimits) : boolean;
          function SecondGridIdentical(Map2 : integer) : boolean;
+         function SecondGridJustOffset(DEM2 : integer; var xoffset,yoffset : integer) : boolean;
          function GetSamplingSize(GridLimits: tGridLimits)  : integer;
 
          procedure DEMCenterPoint(var Lat,Long : float64);
@@ -524,6 +525,7 @@ type
          function GridPointsIntervisible(xg1,yg1,ObsUp,xg2,yg2,TargetUp : float64; var Distance,BlockDistance : float64) : boolean;
          procedure MultiplyGridByConstant(Aconst : float64);
          procedure AddConstantToGrid(Aconst : float64);
+         procedure ClipToVerticalRange(Min,Max : float32);
 
          function MissingColorRGBTriple(x,y : float64) : tPlatformColor;
          procedure GetDEMPointsSum(var NPts : integer; var Sum : float64);
@@ -1336,7 +1338,7 @@ function tDEMDataSet.GeotiffDEMName : PathStr;
 begin
    Result := DEMfileName;
    if UpperCase(ExtractFileExt(Result)) <> '.TIF' then begin
-      Result := MDtempDir + 'temp_dem.tif';
+      Result := MDtempDir + AreaName + '.tif';
       SaveAsGeotiff(Result);
    end;
 end;
@@ -1357,8 +1359,8 @@ begin
    Headrecs.DigitizeDatum := WGS84d;
    HeadRecs.ElevUnits := euMeters;
    StringToByteArray(MDdef.PreferPrimaryDatum,HeadRecs.DMAMapDefinition.h_DatumCode);
-   Headrecs.UTMZone   := MDdef.DefaultUTMZone;
-   Headrecs.LatHemi   := MDdef.DefaultLatHemi;
+   Headrecs.UTMZone := MDdef.DefaultUTMZone;
+   Headrecs.LatHemi := MDdef.DefaultLatHemi;
    HeadRecs.VerticalCSTypeGeoKey := 0;
    HeadRecs.RasterPixelIsGeoKey1025 := 0;
    HeadRecs.wktString := '';
@@ -1370,7 +1372,7 @@ var
    z : float32;
 begin
    Result := True;
-   if (GridMaskDEM > 0) and (DEMGlb[GridMaskDEM] <> Nil) then begin
+   if ValidDEM(GridMaskDEM) then begin
        if DEMGlb[GridMaskDEM].GetElevMeters(Col,Row,z) then Result := (z >= MaskMinVal) and (z <= MaskMaxVal)
        else Result := false;
    end;
@@ -1708,7 +1710,7 @@ begin
             NLCDcats := Nil;
          except
             on Exception do begin
-               {$If Defined(RecordClosing) or Defined(RecordDEMClose)}  WriteLineToDebugFile('Problem disposing NLCDcats'); {$EndIf}
+               {$If Defined(RecordClosing) or Defined(RecordDEMClose)} WriteLineToDebugFile('Problem disposing NLCDcats'); {$EndIf}
             end;
          end;
       end;
@@ -1944,7 +1946,8 @@ end;
 
 function tDEMDataSet.LandCoverGrid : boolean;
 begin
-   Result := DEMheader.ElevUnits in [NLCD2001up,LandFire,NLCD1992,GLOBCOVER,GLC2000,CCAP,CCI_LC,S2GLC,NLCD_Change,GLCS_LC100,Meybeck,Geomorphon,Iwahashi,ESRI2020,euPennock,WorldCover10m,LCMAP,euSent2SLC];
+   Result := DEMheader.ElevUnits in [NLCD2001up,LandFire,NLCD1992,GLOBCOVER,GLC2000,CCAP,CCI_LC,S2GLC,NLCD_Change,GLCS_LC100,Meybeck,Geomorphon,Iwahashi,
+      ESRI2020,euPennock,WorldCover10m,LCMAP,euSent2SLC,euSimpleLandCover];
 end;
 
 function tDEMDataSet.ElevationGrid : boolean;
@@ -2026,8 +2029,7 @@ begin
    Result.XGridHigh := round(xhi+xtra);
    Result.YGridHigh := round(yhi+xtra);
    {$IfDef RecordsfBoundBox2tGridLimits}
-      WriteLineToDebugFile('Final: ' + GridLimitsToString(Result) + 'Rows=' + IntToStr((succ(Result.XGridHigh-Result.XGridLow))) +
-         'x' + IntToStr(succ(Result.YGridHigh-Result.YGridLow)));
+      WriteLineToDebugFile('Final: ' + GridLimitsToString(Result) + 'Rows=' + IntToStr((succ(Result.XGridHigh-Result.XGridLow))) + 'x' + IntToStr(succ(Result.YGridHigh-Result.YGridLow)));
    {$EndIf}
 end;
 
@@ -2291,6 +2293,7 @@ begin
       else if (DEMheader.ElevUnits in [LCMAP]) then TStr := 'LCMAP'
       else if (DEMheader.ElevUnits in [euSent2SLC]) then TStr := 'Sent-2_SLC'
       else if (DEMheader.ElevUnits in [NLCD_Change]) then TStr := 'NLCD-Change'
+      else if (DEMheader.ElevUnits in [euSimpleLandCover]) then TStr := 'Simplify'
       else TStr := 'LANDFIRE';                                               //this is in the DB for the filter
       //if not StrUtils.AnsiContainsText(UpperCase(AreaName),UpperCase(TStr)) then AreaName := AreaName + ' ' + TStr;
       {$IfDef RecordNLCD} WriteLineToDebugFile('tDEMDataSet.CheckForLandCover with NLCD=' + TStr); {$EndIf}
@@ -3378,7 +3381,7 @@ begin
       StringList := TStringList.Create;
       for s1 := FirstSlopeMethod to LastSlopeMethod do StringList.Add(SlopeMethodName(s1));
       i := ord(MDdef.SlopeAlg);
-      GetFromListZeroBased('Desired slope method ' + aMessage,i,StringList);
+      MultiSelectSingleColumnStringList('Desired slope method ' + aMessage,i,StringList);
       SlopeMethod := i;
       StringList.Free;
    {$EndIf}
@@ -3542,13 +3545,40 @@ begin
       WriteLineToDebugFile('  delta SW Y: ' + RealToString(abs(DEMheader.DEMSWCornerY - DEMGlb[Map2].DEMheader.DEMSWCornerY),-18,-6));
    {$EndIf}
    Tolerance := DEMheader.DEMxSpacing * 0.5;
-   Result := (DEMGlb[Map2] <> Nil) and (DEMheader.NumCol = DEMGlb[Map2].DEMheader.NumCol) and
+   Result := (ValidDEM(Map2) and (DEMheader.NumCol = DEMGlb[Map2].DEMheader.NumCol) and
       (DEMheader.NumRow = DEMGlb[Map2].DEMheader.NumRow) and
       (DEMheader.RasterPixelIsGeoKey1025 = DEMGlb[Map2].DEMheader.RasterPixelIsGeoKey1025) and
       (abs(DEMheader.DEMxSpacing - DEMGlb[Map2].DEMheader.DEMxSpacing) < Tolerance) and
       (abs(DEMheader.DEMSWCornerX - DEMGlb[Map2].DEMheader.DEMSWCornerX) < Tolerance) and
-      (abs(DEMheader.DEMSWCornerY - DEMGlb[Map2].DEMheader.DEMSWCornerY) < Tolerance);
+      (abs(DEMheader.DEMSWCornerY - DEMGlb[Map2].DEMheader.DEMSWCornerY) < Tolerance));
 end;
+
+
+function tDEMDataSet.SecondGridJustOffset(DEM2 : integer; var xoffset,yoffset : integer) : boolean;
+var
+   Tolerance,Lat,Long,x,y : float64;
+begin
+   {$IfDef RecordGridIdentical}
+      WriteLineToDebugFile('Compare DEMs ' + IntToStr(Map2));
+      WriteLineToDebugFile('  Rows: ' + IntToStr(DEMheader.NumRow) + '/' + IntToStr(DEMGlb[Map2].DEMheader.NumRow) + '  Cols: ' + IntToStr(DEMheader.NumCol) + '/' + IntToStr(DEMGlb[Map2].DEMheader.NumCol));
+      WriteLineToDebugFile('  delta long int : ' + RealToString(abs(DEMheader.DEMxSpacing - DEMGlb[Map2].DEMheader.DEMxSpacing),-18,-6));
+      WriteLineToDebugFile('  delta SW X: ' + RealToString(abs(DEMheader.DEMSWCornerX - DEMGlb[Map2].DEMheader.DEMSWCornerX),-18,-6));
+      WriteLineToDebugFile('  delta SW Y: ' + RealToString(abs(DEMheader.DEMSWCornerY - DEMGlb[Map2].DEMheader.DEMSWCornerY),-18,-6));
+   {$EndIf}
+
+   Tolerance := DEMheader.DEMxSpacing * 0.05;
+
+   Result := ValidDEM(DEM2) {and (DEMheader.RasterPixelIsGeoKey1025 = DEMGlb[DEM2].DEMheader.RasterPixelIsGeoKey1025)} and (DEMheader.DEMused = DEMGlb[DEM2].DEMheader.DEMUsed)
+       and (abs(DEMheader.DEMxSpacing - DEMGlb[DEM2].DEMheader.DEMxSpacing) < Tolerance);
+       { (DEMheader.RasterPixelIsGeoKey1025 = DEMGlb[DEM2].DEMheader.RasterPixelIsGeoKey1025) fails for ASTER}
+   if Result then begin
+      DEMGridToLatLongDegree(0,0,Lat,Long);
+      DEMGlb[DEM2].LatLongDegreeToDEMGrid(Lat,Long,x,y);
+      DEMGlb[DEM2].LatLongDegreeToDEMGridInteger(Lat,Long,xoffset,yoffset);
+      Result := (abs(x-xoffset) < 0.015) and (abs(y-yoffset) < 0.015);
+   end;
+end;
+
 
 
 procedure tDEMDataSet.SetNewDEM(var NewDEM : integer);

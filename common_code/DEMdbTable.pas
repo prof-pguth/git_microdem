@@ -997,6 +997,9 @@ type
     Comparerankingswithdifferentcriteria1: TMenuItem;
     DifferentrankingsbyCriteria1: TMenuItem;
     AssignDEMIXDEMcolors1: TMenuItem;
+    estDEMlegend1: TMenuItem;
+    estDEMlegend2: TMenuItem;
+    Vertical1: TMenuItem;
     //Pointfilter1: TMenuItem;
     //Pointfilter2: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
@@ -1760,6 +1763,8 @@ type
     procedure Comparerankingswithdifferentcriteria1Click(Sender: TObject);
     procedure DifferentrankingsbyCriteria1Click(Sender: TObject);
     procedure AssignDEMIXDEMcolors1Click(Sender: TObject);
+    procedure estDEMlegend1Click(Sender: TObject);
+    procedure Vertical1Click(Sender: TObject);
     //procedure Pointfilter2Click(Sender: TObject);
     //procedure Pointfilter1Click(Sender: TObject);
   private
@@ -8491,6 +8496,11 @@ begin
 end;
 
 
+procedure Tdbtablef.Vertical1Click(Sender: TObject);
+begin
+   DisplayBitmap(DEMIXTestDEMLegend(false),'Test DEMs');
+end;
+
 procedure Tdbtablef.Verticaldatumshift1Click(Sender: TObject);
 var
    i,GeoidGrid : Integer;
@@ -13179,6 +13189,11 @@ begin
    AllOptionsForFans := true;
 end;
 
+procedure Tdbtablef.estDEMlegend1Click(Sender: TObject);
+begin
+   DisplayBitmap(DEMIXTestDEMLegend,'Test DEMs');
+end;
+
 procedure Tdbtablef.Terrainfabric1Click(Sender: TObject);
 begin
    {$IfDef Exgeology}
@@ -13194,26 +13209,24 @@ var
    fName : PathStr;
    DefExt : integer;
 begin
-   //with GISdb[DBonTable] do begin
-      GISdb[DBonTable].zFieldName := GISdb[DBonTable].PickField('Z field',NumericFieldTypes);
-      DefExt := 1;
-      fName := ChangeFileExt(GISdb[DBonTable].dbFullName,'.xyz');
-      if GetFileNameDefaultExtSaveExt('output xyz','xyz file|*.xyz',FName,DefExt,false) then begin
-         Output := tStringList.Create;
-         Output.Add('Lat,Long,z');
-         GISdb[DBonTable].EmpSource.Enabled := false;
-         GISdb[DBonTable].MyData.First;
-         while not GISdb[DBonTable].MyData.eof do begin
-            OutPut.Add(RealToString(GISdb[DBonTable].MyData.GetFieldByNameAsFloat(GISdb[DBonTable].LatFieldName),-12,-8) + ',' +
-                       RealToString(GISdb[DBonTable].MyData.GetFieldByNameAsFloat(GISdb[DBonTable].LongFieldName),-12,-8) + ',' +
-                       RealToString(GISdb[DBonTable].MyData.GetFieldByNameAsFloat(GISdb[DBonTable].ZFieldName),-12,-8) );
-            GISdb[DBonTable].MyData.Next;
-         end;
-         Output.SaveToFile(fName);
-         Output.Free;
-         ShowStatus;
+   GISdb[DBonTable].zFieldName := GISdb[DBonTable].PickField('Z field',NumericFieldTypes);
+   DefExt := 1;
+   fName := ChangeFileExt(GISdb[DBonTable].dbFullName,'.xyz');
+   if GetFileNameDefaultExtSaveExt('output xyz','xyz file|*.xyz',FName,DefExt,false) then begin
+      Output := tStringList.Create;
+      Output.Add('Lat,Long,z');
+      GISdb[DBonTable].EmpSource.Enabled := false;
+      GISdb[DBonTable].MyData.First;
+      while not GISdb[DBonTable].MyData.eof do begin
+         OutPut.Add(RealToString(GISdb[DBonTable].MyData.GetFieldByNameAsFloat(GISdb[DBonTable].LatFieldName),-12,-8) + ',' +
+                    RealToString(GISdb[DBonTable].MyData.GetFieldByNameAsFloat(GISdb[DBonTable].LongFieldName),-12,-8) + ',' +
+                    RealToString(GISdb[DBonTable].MyData.GetFieldByNameAsFloat(GISdb[DBonTable].ZFieldName),-12,-8) );
+         GISdb[DBonTable].MyData.Next;
       end;
-   //end;
+      Output.SaveToFile(fName);
+      Output.Free;
+      ShowStatus;
+   end;
 end;
 
 procedure Tdbtablef.Exportlinetopointdatabase1Click(Sender: TObject);

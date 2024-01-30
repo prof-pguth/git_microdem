@@ -8,6 +8,9 @@ unit dem_nlcd;
 {___________________________________}
 
 
+//originally NLCD was the only land cover avaiable for MICRODEM
+//that has changed, but the name remains
+
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
@@ -51,7 +54,7 @@ type
       UseStat   : boolean;
       Height    : float64;
    end;
-   tNLCDarray = array[0..MaxLandCoverCategories] of float64;
+   //tNLCDarray = array[0..MaxLandCoverCategories] of float64;
    tNLCDCats = array[0..MaxLandCoverCategories] of tCategory;
 
 procedure SetUpNLCDCategories(AskLimit : boolean; LandCover : ShortString; var Categories : tNLCDCats);
@@ -63,9 +66,21 @@ function MakeAnNLCDLegend(DEM : integer;  theLabel : shortstring = ''; Stats : t
 
 function LoadLC100LandCover(fName : PathStr; bb : sfboundbox; var ErrorMessage : shortstring; OpenMap : boolean) : integer;
 
+function ReclassifyLandCover(LandCoverGrid,Value : integer) : integer;
 
 var
    LandCoverCatsUsed : array[0..MaxLandCoverCategories] of boolean;
+
+const
+   slcUndefined = 0;
+   slcForest = 1;
+   slcWater = 2;
+   slcUrban = 3;
+   slcBarren = 4;
+
+function SimplifiedLandCover(LandCoverGrid : integer; Lat,Long : float32; var Value : float32) : integer;
+
+
 
 implementation
 
@@ -79,6 +94,41 @@ uses
    DEMIX_control,
    petimage_form,
    PetImage,PetMath,PetDBUtils,Toggle_db_use,nevadia_main,DEMDef_routines;
+
+
+function ReclassifyLandCover(LandCoverGrid,Value : integer) : integer;
+begin
+   Result := slcUndefined;
+   if (LandCoverGrid <> 0) then begin
+      if (DEMGlb[LandCoverGrid].DEMHeader.ElevUnits = GLCS_LC100) then begin
+         if Value in [111..126] then Result := slcForest
+         else if Value in [30,60,70] then Result := slcBarren
+         else if Value in [50] then Result := slcUrban
+         else if Value in [80,200] then Result := slcWater;
+      end;
+   end;
+end;
+
+
+function SimplifiedLandCover(LandCoverGrid : integer; Lat,Long : float32; var Value : float32) : integer;
+var
+   z : float32;
+begin
+   Result := slcUndefined;
+   if (LandCoverGrid <> 0) then begin
+      if DEMGlb[LandCoverGrid].GetElevFromLatLongDegree(Lat,Long,z) then begin
+         if (DEMGlb[LandCoverGrid].DEMHeader.ElevUnits = GLCS_LC100) then begin
+            Result := ReclassifyLandCover(LandCoverGrid,round(z));
+            (*
+            if round(z) in [111..126] then Result := slcForest
+            else if round(z) in [30,60,70] then Result := slcBarren
+            else if round(z) in [50] then Result := slcUrban
+            else if round(z) in [80,200] then Result := slcWater;
+            *)
+         end;
+      end;
+   end;
+end;
 
 
 
@@ -519,7 +569,7 @@ var
    end;
 
 begin
-   {$IfDef RecordNLCDLegend}   WriteLineToDebugFile('tLandCoverImage.SetUpCategories, Landcover=' + LandCover); {$EndIf}
+   {$IfDef RecordNLCDLegend} WriteLineToDebugFile('tLandCoverImage.SetUpCategories, Landcover=' + LandCover); {$EndIf}
    CatTable := tMyData.Create(LandCoverSeriesFName);
    SetCategories(Categories,LandCover);
    CatTable.Destroy;

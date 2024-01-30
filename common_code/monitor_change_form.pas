@@ -4,7 +4,7 @@ unit monitor_change_form;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -25,9 +25,6 @@ uses
 
 type
   TChangeMapForm = class(TForm)
-    OKBtn: TButton;
-    HelpBtn: TButton;
-    RedrawSpeedButton12: TSpeedButton;
     PageControl1: TPageControl;
     Single: TTabSheet;
     Label1: TLabel;
@@ -39,12 +36,16 @@ type
     Edit4: TEdit;
     Edit5: TEdit;
     Label7: TLabel;
-    BitBtn1: TBitBtn;
-    BitBtn2: TBitBtn;
     Image1: TImage;
     Edit1: TEdit;
     Edit2: TEdit;
     Edit3: TEdit;
+    Panel1: TPanel;
+    BitBtn1: TBitBtn;
+    RedrawSpeedButton12: TSpeedButton;
+    HelpBtn: TButton;
+    BitBtn2: TBitBtn;
+    OKBtn: TButton;
     procedure OKBtnClick(Sender: TObject);
     procedure Edit1Change(Sender: TObject);
     procedure RedrawSpeedButton12Click(Sender: TObject);

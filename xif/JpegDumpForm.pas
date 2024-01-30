@@ -22,7 +22,7 @@
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 unit JpegDumpForm;
@@ -266,9 +266,12 @@ begin
          MyTable.SetFieldByNameAsString('FOCAL_35',FOriginalFrame.Focal35);
          MyTable.SetFieldByNameAsString('SHUTTER',FOriginalFrame.Shutter);
          MyTable.SetFieldByNameAsString('CAMERA',FOriginalFrame.CameraName);
-
-         EV100 := ln(sqr(StrToFloat(FOriginalFrame.fStop)) / FOriginalFrame.Speed) / ln(2)   + ln(100 / StrToFloat(FOriginalFrame.ISO)) / ln(2);
-         MyTable.SetFieldByNameAsFloat('EV100',EV100);
+         try
+            EV100 := ln(sqr(StrToFloat(FOriginalFrame.fStop)) / FOriginalFrame.Speed) / ln(2)   + ln(100 / StrToFloat(FOriginalFrame.ISO)) / ln(2);
+            MyTable.SetFieldByNameAsFloat('EV100',EV100);
+         except
+            on Exception do begin end;
+         end;
          MyTable.Post;
       end;
    end;

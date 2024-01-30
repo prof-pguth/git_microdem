@@ -4593,7 +4593,7 @@ begin
     HardLimitColorPaletteFName := ProgramRootDir + 'hard_limit_color_palettes' + DefaultDBExt;
     TableDefinitionsFileName := ProgramRootDir + 'MD_TABLE_DEF_v2' + DefaultDBExt;
     GazOptFName := ProgramRootDir + 'gaz_symbols_v3' + DefaultDBExt;
-    LandCoverSeriesFName := ProgramRootDir + 'land_cover_21' + DefaultDBExt;
+    LandCoverSeriesFName := ProgramRootDir + 'land_cover_22' + DefaultDBExt;
     RangeCircleSizesfName := ProgramRootDir + 'range_circles' + DefaultDBExt;
     WKT_GCS_Proj_fName := ProgramRootDir + 'wkt_proj\gcs_wgs84.prj';
     if PathIsValid(ProgramRootDir + 'esri_proj') then begin

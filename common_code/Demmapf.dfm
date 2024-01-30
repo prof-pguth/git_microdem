@@ -2462,6 +2462,10 @@ object MapForm: TMapForm
           Caption = 'Replace only valid values from second grid'
           OnClick = Replaceonlyvalidvaluesfromsecondgrid1Click
         end
+        object Landcover1: TMenuItem
+          Caption = 'Land cover'
+          OnClick = Landcover1Click
+        end
       end
       object Rmove1: TMenuItem
         Caption = 'Remove'
@@ -4162,10 +4166,16 @@ object MapForm: TMapForm
           Caption = 'SAGA VRM map (vector ruggedness)'
           OnClick = SAGAVRMmapvectorruggedness1Click
         end
-        object SAGAchannelnetwork1: TMenuItem
-          Caption = 'SAGA channel network'
-          Enabled = False
-          OnClick = SAGAchannelnetwork1Click
+        object SAGAremovesinks1: TMenuItem
+          Caption = 'SAGA remove sinks'
+          OnClick = SAGAremovesinks1Click
+        end
+        object SAGAChannelNetworkandBasins1: TMenuItem
+          Caption = 'SAGA  Channel Network Shapfile'
+          OnClick = SAGAChannelNetworkandBasins1Click
+        end
+        object N63: TMenuItem
+          Caption = '-'
         end
         object SAGAremovesinksallopenDEMs1: TMenuItem
           Caption = 'SAGA remove sinks all open DEMs'
@@ -4174,10 +4184,6 @@ object MapForm: TMapForm
         object SAGAchannelnetworkallopenDEMs1: TMenuItem
           Caption = 'SAGA Channel Network shapefile, all open DEMs'
           OnClick = SAGAchannelnetworkallopenDEMs1Click
-        end
-        object SAGAChannelNetworkandBasins1: TMenuItem
-          Caption = 'SAGA  Channel Network Shapfile'
-          OnClick = SAGAChannelNetworkandBasins1Click
         end
         object N46: TMenuItem
           Caption = '-'

@@ -402,7 +402,8 @@ end;
  procedure TMapDraw.SecondGridStrip(Limits : tGridLimits; BMPMemory :  tBMPMemory);
 var
    x,y : integer;
-   xg,yg,Lat,Long : float64;
+   xg,yg : float32;
+   Lat,Long : float64;
    z : float32;
    pUse : tRGBTriple;
 begin

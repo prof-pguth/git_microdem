@@ -19,13 +19,12 @@
 {**************************************************************************************}
 
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Modified as Part of ianMICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch                }
-{ Released under the MIT Licences                }
-{ Copyright (c) 2023 Peter L. Guth               }
-{________________________________________________}
-
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Modified as Part of MICRODEM GIS Program    }
+{ PETMAR Trilobite Breeding Ranch             }
+{ Released under the MIT Licences             }
+{ Copyright (c) 2024 Peter L. Guth            }
+{_____________________________________________}
 
 
 unit JpegDumpOutputFrame;
@@ -325,7 +324,6 @@ begin
 end;
 
 
-
 function DecodePossibleFractionFloat(TheStr : ANSIstring) : float32;
 var
    Part1,Part2 : float32;
@@ -457,11 +455,7 @@ begin
         AddBlankLine;
       end;
 
-   //PhotoAzimuth := DecodePossibleFloat(GPSImgDirection);
-   //PhotoAltitude := DecodePossibleFloat(GPSAltitude);
-   //FocalLength := DecodePossibleFloat(CameraFocalLength);
-
-   if false and (LatStr <> '') and (LongStr <> '') and (LatStr[1] in ['0'..'9','-']) and (LongStr[1] in ['0'..'9','-']) then begin
+   if {false and} (LatStr <> '') and (LongStr <> '') and (LatStr[1] in ['0'..'9','-']) and (LongStr[1] in ['0'..'9','-']) then begin
       PhotoLat := LatMult * ParseStringToDegrees(LatStr);
       PhotoLong := LongMult * ParseStringToDegrees(LongStr);
    end

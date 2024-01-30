@@ -1785,7 +1785,7 @@ end;
       if (FieldsInDB.Count = 0) then Result := ''
       else begin
          WantField := 0;
-         if GetFromListZeroBased('Database Field for ' + Mess,WantField,FieldsInDB,true) then begin
+         if MultiSelectSingleColumnStringList('Database Field for ' + Mess,WantField,FieldsInDB,true) then begin
             Result := FieldsInDB.Strings[WantField];
          end
          else Result := '';
@@ -3161,7 +3161,7 @@ end;
                      if GoodGeometry(i) or ((FieldNeeded = '') or GISdb[i].MyData.FieldExists(FieldNeeded)) then OpenDB.Add(IntToStr(i) + '  ' + GISdb[i].dbName);
                   end;
                end;
-               if (OpenDB.Count > 0) and GetFromListZeroBased(WhatFor,Result,OpenDB,true) then Val(ptTrim(Copy(OpenDB.Strings[Result],1,2)),Result,i)
+               if (OpenDB.Count > 0) and MultiSelectSingleColumnStringList(WhatFor,Result,OpenDB,true) then Val(ptTrim(Copy(OpenDB.Strings[Result],1,2)),Result,i)
                else Result := -99;
                OpenDB.Free;
             end;
@@ -3228,7 +3228,7 @@ end;
                      if MyData.FieldExists(Result) then Pickins.Add(Result);
                   end;
                   j := 0;
-                  Petmar.GetFromListZeroBased('Mask field to use',j,Pickins);
+                  Petmar.MultiSelectSingleColumnStringList('Mask field to use',j,Pickins);
                   Result := Pickins[j];
                   Pickins.Free;
                   EmpSource.Enabled := false;

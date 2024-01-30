@@ -1229,7 +1229,7 @@ end;
                     TheList.Add('Image ' + IntToStr(i) +': ' + SatImage[i].SceneTitle + ' (' + SatImage[i].SceneBaseName + ')');
                end;
                {$IfDef VCL}
-                  if (TheList.Count = 1) or GetFromListZeroBased('Image for ' + TheMessage,Wanted,TheList,CanCancel) then begin
+                  if (TheList.Count = 1) or MultiSelectSingleColumnStringList('Image for ' + TheMessage,Wanted,TheList,CanCancel) then begin
                      TStr := TheList.Strings[Wanted];
                      Val(Copy(TStr,7,2),ImageWanted,err);
                   end;
@@ -1353,7 +1353,7 @@ end;
             for i := 1 to MaxDEMDataSets do if (ValidDEM(i)) and (not DEMGlb[i].HiddenGrid) {and (ExcludeDEM <> i} then
                   TheList.Add('DEM' + IntegerToString(i,4) +': ' + DEMGlb[i].AreaName);
             {$IfDef VCL}
-               if (TheList.Count = 1) or GetFromListZeroBased('DEM for ' + TheMessage,Wanted,TheList,CanCancel) then begin
+               if (TheList.Count = 1) or MultiSelectSingleColumnStringList('DEM for ' + TheMessage,Wanted,TheList,CanCancel) then begin
                   Val(Copy(theList.Strings[Wanted],5,3),DEMWanted,err);
                end;
             {$EndIf}
@@ -1372,7 +1372,7 @@ end;
          for i := 0 to pred(WMDEM.MDIChildCount) do
             if (WMDEM.MDIChildren[i] is tMapForm) then Maps.Add(WMDEM.MDIChildren[i].Caption);
          Result := 0;
-         Petmar.GetFromListZeroBased(WhatFor,Result,Maps);
+         Petmar.MultiSelectSingleColumnStringList(WhatFor,Result,Maps);
       end;
 
 
@@ -1412,7 +1412,7 @@ end;
                if (WMDEM.MDIChildren[i] is tMapForm) and (WMDEM.MDIChildren[i].Caption = Maps.Strings[0]) then Result := i;
          end
          else if (Maps.Count > 1) then begin
-            Petmar.GetFromListZeroBased(WhatFor,j,Maps);
+            Petmar.MultiSelectSingleColumnStringList(WhatFor,j,Maps);
             for i := 0 to pred(WMDEM.MDIChildCount) do
                if (WMDEM.MDIChildren[i] is tMapForm) and (WMDEM.MDIChildren[i].Caption = Maps.Strings[j]) then Result := i;
          end;

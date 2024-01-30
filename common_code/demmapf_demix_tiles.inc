@@ -2,7 +2,7 @@
 { Part of MICRODEM GIS Program       }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
-{ Copyright (c) 2023 Peter L. Guth   }
+{ Copyright (c) 2024 Peter L. Guth   }
 {____________________________________}
 
 
@@ -68,6 +68,7 @@ const
              else if Lat < 85 then Result := 30
              else Result := 60;
           end;
+
 
 function CreateDEMIXTileShapefile(WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false) : shortstring;
 const
@@ -161,7 +162,7 @@ begin
    {$IfDef RecordDEMIXTiles} writeLineToDebugFile('DEMIXtileFill in, DEM=' + IntToStr(DEM)); {$EndIf}
    if ValidDEM(DEM) then try
       StartProgress('DEMIX tiles');
-      Result := LoadDEMIXtileOutlinesNoMap(AreaBox,true,OpenTable);
+      Result := DEMGLB[DEM].SelectionMap.LoadDEMIXtileOutlines(AreaBox,true,OpenTable);
 
       if (Result <> 0) then try
          {$IfDef RecordDEMIXTiles} writeLineToDebugFile('DEMIXtileFill, db created recs=' + IntToStr(GISdb[Result].MyData.TotRecsInDB)); {$EndIf}
@@ -193,7 +194,6 @@ begin
    finally
       EndProgress;
       if OpenTable then GISdb[Result].ShowStatus;
-      //else CloseAndNilNumberedDB(db);
    end;
    {$IfDef RecordDEMIXTiles} writeLineToDebugFile('DEM contains parts of tiles=' + IntToStr(GISdb[Result].MyData.TotRecsInDB)); {$EndIf}
 end;
@@ -287,7 +287,6 @@ function DEMIXtileBoundingBox(tName : shortString; PixelIsAreaSafe : boolean = f
 var
    i,MinIncr,BaseLat,BaseLong : integer;
 begin
-//N36YW003G
    tName := UpperCase(tName);
    if (Length(tname) = 9) then begin
       BaseLat := StrToInt(copy(tname,2,2));
@@ -319,7 +318,7 @@ var
 begin
    bb := DEMIXtileBoundingBox(tName);
    Long := 0.5 * (bb.xmin + bb.xmax);
-   Lat := 0.5 * (bb.ymin + bb.ymax);
+   Lat  := 0.5 * (bb.ymin + bb.ymax);
 end;
 
 

@@ -247,32 +247,35 @@ var
                GentleMomentVar.Npts := 0;
                SteepMomentVar.Npts := 0;
                CliffMomentVar.Npts := 0;
-
-               UrbanMomentVar.Npts := 0;
-               ForestMomentVar.Npts := 0;
-               BarrenMomentVar.Npts := 0;
             end;
 
 
-            procedure LandCover(Lat,Long : float32; Difference : float32);
+            procedure LandCover(LandCoverGrid : integer; Lat,Long : float32; Value : float32);
             //hard coded for a particular land cover data set, LC100 from Copernicus
             var
                z : float32;
+               slc : integer;
             begin
-               if (LandCoverGrid <> 0) and DEMGlb[LandCoverGrid].GetElevFromLatLongDegree(Lat,Long,z) then begin
-                  if round(z) in [111..126] then begin
-                     zsForest^[ForestMomentVar.NPts] := Difference;
+
+               slc := SimplifiedLandCover(LandCoverGrid,Lat,Long,Value);
+
+               //if (LandCoverGrid <> 0) and DEMGlb[LandCoverGrid].GetElevFromLatLongDegree(Lat,Long,z) then begin
+                  if slc = slcForest then begin
+                     zsForest^[ForestMomentVar.NPts] := Value;
                      inc(ForestMomentVar.Npts);
                   end
-                  else if round(z) in [30,60,70] then begin
-                     zsBarren^[BarrenMomentVar.NPts] := Difference;
+                  else if slc = slc then begin
+                     zsBarren^[BarrenMomentVar.NPts] := Value;
                      inc(BarrenMomentVar.Npts);
                   end
-                  else if round(z) in [50] then begin
-                     zsUrban^[UrbanMomentVar.NPts] := Difference;
+                  else if slc = slcUrban then begin
+                     zsUrban^[UrbanMomentVar.NPts] := Value;
                      inc(UrbanMomentVar.Npts);
+                  end
+                  else if slc= slcWater then begin
+                     //water
                   end;
-               end;
+               //end;
             end;
 
 
@@ -368,7 +371,7 @@ var
                                  if DEMGlb[RefDEM].GetSlopeAndAspect(xg,yg,SlopeAsp) then begin
                                     LandTypeDiff(Difference);
                                  end;
-                                 LandCover(Lat,long,Difference);
+                                 LandCover(LandCoverGrid,Lat,long,Difference);
                               end;
                            end;
                         end;
@@ -401,7 +404,7 @@ var
                               if DEMGlb[RefDEM].GetSlopeAndAspectFromLatLong(Lat,Long,SlopeAsp) then begin
                                  Difference := SlopeAspectTest.SlopePercent - SlopeAsp.SlopePercent;
                                  LandTypeDiff(Difference);
-                                 LandCover(Lat,Long,Difference);
+                                 LandCover(LandCoverGrid,Lat,Long,Difference);
                               end;
                            end;
                         end;
@@ -436,7 +439,7 @@ var
                                  if DEMGlb[RefDEM].GetSlopeAndAspect(xg,yg,SlopeAsp) then begin
                                     LandTypeDiff(Difference);
                                  end;
-                                 LandCover(Lat,long,Difference);
+                                 LandCover(LandCoverGrid,Lat,long,Difference);
                               end;
                            end;
                         end;
@@ -490,10 +493,14 @@ var
                Moment(zs^,RoughMomentVar,msAll);
 
                if (LandCoverGrid <> 0) then begin
+                  UrbanMomentVar.Npts := 0;
+                  ForestMomentVar.Npts := 0;
+                  BarrenMomentVar.Npts := 0;
+
                   for Col := bbgrid.xgridlow to bbgrid.xgridhigh do begin
                      for Row := bbgrid.ygridlow to bbgrid.ygridhigh do begin
                         DEMGlb[RefDEM].DEMGridToLatLongDegree(Col,Row,Lat,Long);
-                        LandCover(Lat,long,Difference);
+                        LandCover(LandCoverGrid,Lat,long,Difference);
                         inc(NPts);
                      end;
                   end;

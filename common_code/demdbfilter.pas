@@ -241,7 +241,7 @@ begin
       DataThere := GISdb[db].MyData.UniqueEntriesInDB(WantedFieldName);
       GISdb[db].EmpSource.Enabled := true;
       i := 0;
-      GetFromListZeroBased('Desired value',i,DataThere);
+      MultiSelectSingleColumnStringList('Desired value',i,DataThere);
       Edit2.Text := DataThere.Strings[i];
       DataThere.Free;
    end;

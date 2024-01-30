@@ -4,7 +4,7 @@ unit dem_computations;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
  {$I nevadia_defines.inc}
@@ -254,7 +254,7 @@ begin
              HeapSort(MomentVar.NPts,Values);
              Moment(Values,MomentVar,msAll);
              Results.Add(Param + ',' + Classes.Strings[j] + ',' + IntToStr(succ(j)) + ',' +
-                  RealToString(MomentVar.mean,-12,-4) + ',' + RealToString(MomentVar.sdev,-12,-4) + ',' +
+                  RealToString(MomentVar.mean,-12,-4) + ',' + RealToString(MomentVar.std_dev,-12,-4) + ',' +
                   RealToString(values[1],-12,-4) + ',' +
                   RealToString(Quantile(5,Values,MomentVar.NPts,true),-12,-4) + ',' +
                   RealToString(Quantile(10,Values,MomentVar.NPts,true),-12,-4) + ',' +

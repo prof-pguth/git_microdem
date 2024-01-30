@@ -19,7 +19,7 @@ unit basemap;
    {$IFDEF DEBUG}
       //{$Define RecordWKT}
       //{$Define RecordUKOS}
-      {$Define RecordDEMprojection}
+      //{$Define RecordDEMprojection}
       //{$Define RawProjectInverse}
       //{$Define ForwardProject}
       //{$Define RecordGridSize}

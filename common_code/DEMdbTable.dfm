@@ -24,6 +24,8 @@ object dbtablef: Tdbtablef
       item
         Width = 250
       end>
+    ExplicitTop = 964
+    ExplicitWidth = 1188
   end
   object Panel2: TPanel
     Left = 0
@@ -32,6 +34,7 @@ object dbtablef: Tdbtablef
     Height = 32
     Align = alTop
     TabOrder = 1
+    ExplicitWidth = 1188
     object BitBtn1: TBitBtn
       Left = 34
       Top = 1
@@ -226,6 +229,7 @@ object dbtablef: Tdbtablef
     Height = 41
     Align = alTop
     TabOrder = 2
+    ExplicitWidth = 1188
     object Label2: TLabel
       Left = 12
       Top = 12
@@ -276,6 +280,7 @@ object dbtablef: Tdbtablef
     Height = 41
     Align = alTop
     TabOrder = 4
+    ExplicitWidth = 1188
     object LOSButton: TSpeedButton
       Left = 40
       Top = 6
@@ -538,6 +543,7 @@ object dbtablef: Tdbtablef
     Height = 41
     Align = alTop
     TabOrder = 3
+    ExplicitWidth = 1188
     object RadioGroup2: TRadioGroup
       Left = 20
       Top = 0
@@ -3773,6 +3779,17 @@ object dbtablef: Tdbtablef
     object AssignDEMIXDEMcolors1: TMenuItem
       Caption = 'Assign DEMIX DEM colors'
       OnClick = AssignDEMIXDEMcolors1Click
+    end
+    object estDEMlegend2: TMenuItem
+      Caption = 'Test DEM legend'
+      object estDEMlegend1: TMenuItem
+        Caption = 'Vertical'
+        OnClick = estDEMlegend1Click
+      end
+      object Vertical1: TMenuItem
+        Caption = 'Vertical'
+        OnClick = Vertical1Click
+      end
     end
     object N49: TMenuItem
       Caption = '-'

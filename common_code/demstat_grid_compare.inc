@@ -283,7 +283,7 @@ end;
 
 function MakeDifferenceMapOfBoxRegion(Map1,Map2,GridResultionToUse,GridToMergeShading : integer; GridLimits: tGridLimits; ShowMap,ShowHistogram,ShowScatterplot : boolean; TheAreaName : ShortString = '') : integer;
 var
-   Col,Row,mt,OtherGrid,ThisGrid  : integer;
+   Col,Row,mt,OtherGrid,ThisGrid,xoff,yoff  : integer;
    z1,z2 : float32;
    fName : PathStr;
    ThisGraph : TThisBaseGraph;
@@ -291,7 +291,6 @@ var
    rFile : file;
 begin
    if ValidDEM(Map1) and ValidDEM(Map2) then begin
-
       try
          {$If Defined(RecordDEMCompare) or Defined(RecordDiffMap)}
             WriteLineToDebugFile('MakeDifferenceMapOfBoxRegion in, ' + DEMGlb[Map1].AreaName + ' ' + DEMGlb[Map1].zRange + ' minus ' + DEMGlb[Map2].AreaName + ' ' + DEMGlb[Map2].zRange);
@@ -329,15 +328,23 @@ begin
             ThisGraph.GraphDraw.HorizLabel := DEMGlb[Map1].AreaName;
             ThisGraph.GraphDraw.VertLabel := DEMGlb[Map2].AreaName;
          end;
-         IdenticalGrids := DEMGlb[Map1].SecondGridIdentical(Map2);
-
+         //IdenticalGrids := DEMGlb[Map1].SecondGridIdentical(Map2);
+         IdenticalGrids := DEMGlb[Map1].SecondGridJustOffset(Map2,xoff,yoff);
          StartProgress('Grid Differences');
          for Col := GridLimits.XGridLow to GridLimits.XGridHigh do begin
             if (Col mod 25 = 0) then UpdateProgressBar(Col / pred(DEMGlb[Map1].DEMheader.NumCol));
             for Row := GridLimits.YGridLow to GridLimits.YGridHigh do begin
-               if DEMGlb[ThisGrid].GetElevMetersFromThisAndSecondDEM(OtherGrid,Col,Row,z1,z2) then begin
-                  DEMGlb[Result].SetGridElevation(Col,Row,z1 - z2);
-                  if ShowScatterPlot then ThisGraph.AddPointToDataBuffer(rfile,z1,z2);
+               if IdenticalGrids then begin
+                  if DEMGlb[ThisGrid].GetElevMeters(Col,Row,z1) and DEMGlb[OtherGrid].GetElevMeters(Col+xoff,Row+yoff,z2) then begin
+                     DEMGlb[Result].SetGridElevation(Col,Row,z1 - z2);
+                     if ShowScatterPlot then ThisGraph.AddPointToDataBuffer(rfile,z1,z2);
+                  end;
+               end
+               else begin
+                  if DEMGlb[ThisGrid].GetElevMetersFromThisAndSecondDEM(OtherGrid,Col,Row,z1,z2) then begin
+                     DEMGlb[Result].SetGridElevation(Col,Row,z1 - z2);
+                     if ShowScatterPlot then ThisGraph.AddPointToDataBuffer(rfile,z1,z2);
+                  end;
                end;
             end {for Row};
          end {for Col};

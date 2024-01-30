@@ -663,8 +663,10 @@ type   //for DEM Header record
         DeadOption,Space10m,DeadSpaceTenthSecond,DeadSpaceTenThousandthDegree,SpaceIntFeet,SpaceUSFeet);
    tElevUnit = byte;
 const
+   //these are used the the DEMHeader.ElevUnits
    //these were initially types, using these values
    //over time some values were no longer used, and to keep the code simpler these were changed to constants
+   //since these are in headers for the MICRODEM and Geotiffs, the values need to remain as here
    euMeters = 0;
    Feet = 1;
    TenthMgal = 2;
@@ -729,22 +731,16 @@ const
    LCMAP = 61;
    euDNBR = 62;
    euSent2SLC = 63;
-   HighElevUnits = 63;  //same as last real one;  used only for loops through all the elevation units;
+   euSimpleLandCover = 64;
+   HighElevUnits = 64;  //same as last real one;  used only for loops through all the elevation units;
 
    VertCSEGM96 = 5773;
    VertCSEGM2008 = 3855;
    VertCSWGS84 = 4096;
    VertCSNAVD88 = 5703;
 
-
-{$IfDef MultipleCurvatureMethods}
-   type
-      tCurvatureMethod = (cmEvans,cmShary,cmHeerdegenAndBeran,cmZevenbergenAndThorne);
-   const
-      CurvatureMethodName : array[tCurvatureMethod] of ShortString = ('Evans','Shary','Heer&Ber','Zev&Thor');
-{$EndIf}
-
 const
+   //used for the digitizing datum
    //these go back a long way, and a number are no longer used
    //because they in the the DEM header, the numbering must be retained
    WGS72d = 0;
@@ -825,6 +821,14 @@ type
 {$EndIf}
 
 
+{$IfDef MultipleCurvatureMethods}
+   type
+      tCurvatureMethod = (cmEvans,cmShary,cmHeerdegenAndBeran,cmZevenbergenAndThorne);
+   const
+      CurvatureMethodName : array[tCurvatureMethod] of ShortString = ('Evans','Shary','Heer&Ber','Zev&Thor');
+{$EndIf}
+
+type
    tPrinterLegend = packed record
       ShowTitle,
       ShowScaleBar,
@@ -869,19 +873,15 @@ type
 const  {for ESRI shapefiles}
    sfMaxParts = 25000;
    sfMaxPoints = 5000000;
-
-const
    MaxSHXinMemory = 500000;
-type
-  tSHXindex = packed record
-     Offset,
-     ContentLength : int32;
-  end;
-  tshxindexarray = array[1..MaxSHXinMemory] of tSHXindex;
-  pshxindexarray = ^tshxindexarray;
-
 
 type   {for ESRI shapefiles}
+   tSHXindex = packed record
+     Offset,
+     ContentLength : int32;
+   end;
+   tshxindexarray = array[1..MaxSHXinMemory] of tSHXindex;
+   pshxindexarray = ^tshxindexarray;
    sfMainFileHeader = packed record
       FileCode : int32;
       Unused   : array[1..5] of int32;
@@ -905,7 +905,7 @@ type   {for ESRI shapefiles}
       NumParts,NumPoints : int32;
    end;
    sfPoints = packed record
-      x,y  : float64;
+      x,y : float64;
    end;
    sfPoints3D = packed record
       x,y,z : float64;
@@ -952,6 +952,7 @@ type //for MICRONET
    tBeachBallColors  = (bbcAll,bbcMs,bbcMw,bbcDepth);
 
    {$IfDef ExMICRONET}
+      //trying to exclude this is likely to require major rewrites because of extensive usage since the exclusion was considered
    {$Else}
       tMicronetDefaults = packed record
          DrawGridCircles     : tNetGrid;

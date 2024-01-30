@@ -220,6 +220,7 @@ type
     N16: TMenuItem;
     OGRmergeshapefiles1: TMenuItem;
     XTfiles1: TMenuItem;
+
     SOESTtidetimeseries1: TMenuItem;
     ConvertDEMstoGeotiffGDAL1: TMenuItem;
     N11: TMenuItem;
@@ -252,6 +253,7 @@ type
     VerticaldatumshiftoverwriteDEMgrid1: TMenuItem;
     XYZshifttoEGM2008withVDATUMresults1: TMenuItem;
     DiluviumDEMreprot1: TMenuItem;
+    emplatedownload1: TMenuItem;
     procedure ASCIIremovequotes1Click(Sender: TObject);
     procedure ASCII01Click(Sender: TObject);
     procedure HTMLcleanup1Click(Sender: TObject);
@@ -400,6 +402,7 @@ type
     procedure VerticaldatumshiftoverwriteDEMgrid1Click(Sender: TObject);
     procedure XYZshifttoEGM2008withVDATUMresults1Click(Sender: TObject);
     procedure DiluviumDEMreprot1Click(Sender: TObject);
+    procedure emplatedownload1Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -3568,6 +3571,39 @@ begin
 end;
 
 
+procedure TDemHandForm.emplatedownload1Click(Sender: TObject);
+//currently hardwired since we have only needed it one time
+var
+   fName1,fName2,workdir : PathStr;
+   sl1,sl2 : tStringList;
+   cmd,template : shortstring;
+  I: integer;
+begin
+   fName1 := 'G:\mapdata\indexed_data\dems\diluv\command_template.txt';
+   fName2 := 'G:\mapdata\indexed_data\dems\diluv\diluvium_5deg_grid.txt';
+   sl1 := tStringList.Create;
+   sl1.LoadFromFile(fName1);
+   sl2 := tStringList.Create;
+   sl2.LoadFromFile(fName2);
+   template := sl1.strings[0];
+   WorkDir := ExtractFilePath(fName1);
+   ChDir(WorkDir);
+   StartProgress('Download');
+   for I := 0 to sl2.Count do begin
+      UpDateProgressBar(i/sl2.Count);
+      if PathIsValid(WorkDir + sl2.Strings[i]) then begin
+      end
+      else begin
+         cmd :=  StringReplace(Template,'XXX',sl2.Strings[i],[rfReplaceAll]);
+         WriteLineToDebugFile(cmd);
+         DownloadFileFromWeb(cmd,WorkDir + sl2.Strings[i] + '.zip');
+      end;
+   end;
+   EndProgress;
+   sl1.Free;
+   sl2.Free;
+end;
+
 procedure TDemHandForm.ENVIHDRIMG1Click(Sender: TObject);
 {$IfDef ExSat}
 begin
@@ -3577,8 +3613,6 @@ var
   fName : PathStr;
   TiffImage : tTiffImage;
   Success : boolean;
-  //MapProjection : tMapProjection;
-  //RegVars : tRegVars;
 begin
    fName := MainMapData;
    if GetFileFromDirectory('ENVI or Geotiff multiband imagery','*.img;*.tif;*.hdr',FName) then begin

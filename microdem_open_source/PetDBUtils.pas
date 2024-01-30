@@ -959,7 +959,7 @@ begin
    {$IfDef VCL}
       DataThere := Table.UniqueEntriesInDB(FieldName);
       i := 0;
-      if GetFromListZeroBased(Prompt,i,DataThere,true) then begin
+      if MultiSelectSingleColumnStringList(Prompt,i,DataThere,true) then begin
          Result := DataThere.Strings[i];
          {$IfDef RecordStringFromTable} WriteLineToDebugFile('i=' + IntToStr(i) + '   ' + Result); {$EndIf}
       end;
@@ -1761,7 +1761,7 @@ begin
          if (FieldsInDB.Count = 1) then Result := FieldsInDB.Strings[0]
          else begin
             WantField := 0;
-            if GetFromListZeroBased('Database Field for ' + Mess,WantField,FieldsInDB,true) then begin
+            if MultiSelectSingleColumnStringList('Database Field for ' + Mess,WantField,FieldsInDB,true) then begin
                Result := FieldsInDB.Strings[WantField];
             end
             else Result := '';

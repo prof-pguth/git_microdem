@@ -242,11 +242,23 @@ ta_channels "Channel Network" -ELEVATION "C:/Users/pguth/AppData/Local/Temp/proc
                   ' -CHNLROUTE ' + MDTempDir + 'saga_channel_route' + ExtractFileNameNoExt(InName) + '.tif' +
                   ' -SHAPES ' + ChannelName;
              WinExecAndWait32(cmd);
-             CleanUpTempDirectory(false);
              {$IfDef RecordSAGAFull} WriteLineToDebugFile('SagaChannelShapefile in, ChannelName= ' + ChannelName); {$EndIf}
           end;
           //Result := SAGAMap(cmd,InName,'',Undefined,false);
        end;
+    end;
+
+
+    function SagaChannelNetwork(InName : PathStr; OutName : PathStr = ''; ShpName : PathStr = '') : integer;
+    var
+       cmd : shortstring;
+    begin
+       if (OutName = '') then OutName := MDTempDir + 'saga_channel_' + ExtractFileNameNoExt(InName) + '.tif';
+       if (ShpName = '') then ShpName := MDTempDir + 'saga_channel_' + ExtractFileNameNoExt(InName) + '.shp';
+       CMD := MDDef.SagaCMD + ' ta_channels "Channel Network" -ELEVATION ' + inName + ' -INIT_GRID ' + inName + ' -CHNLNTWRK ' + OutName;
+       Result := SAGAMap(cmd,InName,OutName,Undefined,false);
+       //WinExecAndWait32(cmd);
+       Result := 0;
     end;
 
 
@@ -283,20 +295,6 @@ ta_channels "Channel Network" -ELEVATION "C:/Users/pguth/AppData/Local/Temp/proc
           end;
         end;
     end;
-
-
-    function SagaChannelNetwork(InName : PathStr; OutName : PathStr = ''; ShpName : PathStr = '') : integer;
-    var
-       cmd : shortstring;
-    begin
-       if (OutName = '') then OutName := MDTempDir + 'saga_channel_' + ExtractFileNameNoExt(InName) + '.tif';
-       if (ShpName = '') then ShpName := MDTempDir + 'saga_channel_' + ExtractFileNameNoExt(InName) + '.shp';
-       CMD := MDDef.SagaCMD + ' ta_channels "Channel Network" -ELEVATION ' + inName + ' -INIT_GRID ' + inName + ' -CHNLNTWRK ' + OutName;
-       Result := SAGAMap(cmd,InName,OutName,Undefined,false);
-       //WinExecAndWait32(cmd);
-       Result := 0;
-    end;
-
 
 
     function SagaTRIMap(InName : PathStr) : integer;

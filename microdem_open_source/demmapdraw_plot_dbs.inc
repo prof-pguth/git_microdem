@@ -2,7 +2,7 @@
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 {                                   }
 { include file for demmapdraw       }
@@ -293,7 +293,7 @@ begin
 
                            if (GISDB[GISNum].MyData.Filter = '') then begin
                               {$IfDef RecordShapeFileGroup} WriteLineToDebugFile('Use GISDB[GISNum].aShapeFile.PlotAllRecords'); {$EndIf}
-                              GISDB[GISNum].aShapeFile.PlotAllRecords(Self,Bitmap);
+                              GISDB[GISNum].aShapeFile.PlotAllRecords(Self,Bitmap,GISDB[GISNum].ItsOSMShapeFile);
                            end
                            else begin
                               {$IfDef RecordShapeFileGroup} WriteLineToDebugFile('Use GISDB[GISNum].aShapeFile.PlotSingleRecord'); {$EndIf}
@@ -366,6 +366,8 @@ end;
              if OpenNumberedGISDataBase(adb,fName) then begin
                {$IfDef RecordShapeFileGroup} WriteLineToDebugFile('start roads'); {$EndIf}
                if GISdb[aDB].ItsOSMShapeFile then GISdb[adb].aShapeFile.BadPointCheck := MDDef.OSMCheck;
+               if Layer = 3 then HighlightOSMBridges := true;
+
                PlotDBOnMapFromRules(adb,Bitmap,OSMRoadRules);
                CloseAndNilNumberedDB(adb);
             end;
@@ -402,7 +404,9 @@ end;
                   if ItsOSMShapeFile then begin
                     {$IfDef RecordTiger} WriteLineToDebugFile('OSM shapefile, ' +  GISdb[DBNum].dbName); {$EndIf}
                     PlotDBOnMapFromRules(DBNum,Bitmap,OSMRoadRules);
-                  end;
+                    HighlightOSMBridges := true;
+                    PlotDBOnMapFromRules(DBNum,Bitmap,OSMRoadRules);
+                 end;
                {$EndIf}
 
                if ItsTigerShapeFile then begin
@@ -470,7 +474,7 @@ end;
             aFilter : ShortString;
          begin
             with GISdb[DBNum] do begin
-               {$IfDef RecordPlotDBRules} WriteLineToDebugFile('tGISDataBase.PlotDBOnMapFromRules in, with rules=' + ExtractFileName(Rules) + '  map pixel size=' + IntToStr(round(TheMapOwner.MapDraw.ScreenPixelSize))); {$EndIf}
+               {$IfDef RecordPlotDBRules} if (theMapOwner <> nil) then WriteLineToDebugFile('tGISDataBase.PlotDBOnMapFromRules in, with rules=' + ExtractFileName(Rules) + '  map pixel size=' + IntToStr(round(TheMapOwner.MapDraw.ScreenPixelSize))); {$EndIf}
                if FileExists(Rules) then begin
                    RulesForTheData := tMyData.Create(Rules);
                    ShowHourglassCursor;
@@ -481,9 +485,8 @@ end;
                        if (LineSize < 1) then LineSize := 1;
                        Bitmap.Canvas.Pen.Width := LineSize;
                    end;
-                   while not RulesForTheData.EOF do begin
+                   while (not RulesForTheData.EOF) do begin
                       {$IfDef RecordPlotDBRules} WriteLineToDebugFile(RulesForTheData.GetFieldByNameAsString('NAME')+'  plot beyond pixel size=' + IntToStr(round(RulesForTheData.GetFieldByNameAsInteger('PIXEL_SIZE'))));                     {$EndIf}
-
                       if (RulesForTheData.GetFieldByNameAsString('NAME') <> '') then begin
                         if (RulesForTheData.GetFieldByNameAsString('PLOT') = 'Y') then begin
                            if (not(MDDef.UsePixelSizeRules) or (ScreenPixelSize <= RulesForTheData.GetFieldByNameAsInteger('PIXEL_SIZE'))) then begin
@@ -499,8 +502,15 @@ end;
                                      Bitmap.Canvas.Pen.Color := Color;
                                   end;
                                end;
-
                                aFilter := PetDBUtils.AddAndIfNeeded(dbOpts.GeoFilter) + PetDBUtils.AddAndIfNeeded(dbOpts.MainFilter) + RulesForTheData.GetFieldByNameAsString('FILTER');
+                               if (Rules = OSMRoadRules) then begin
+                                  Bitmap.Canvas.Pen.Width := Bitmap.Canvas.Pen.Width * 2;
+                                  if HighlightOSMBridges then begin
+                                    afilter := afilter + ' AND BRIDGE=1';
+                                    Bitmap.Canvas.Pen.Color := clBlack;
+                                    Bitmap.Canvas.Pen.Width := 5;
+                                  end;
+                              end;
                                if (aFilter = '') then begin
                                   aShapeFile.PlotAllRecords(TheMapOwner.MapDraw,Bitmap);
                                end
@@ -513,6 +523,7 @@ end;
                                      MyData.Next;
                                   end;
                                end;
+                               if (Rules = OSMRoadRules) then Bitmap.Canvas.Pen.Width := Bitmap.Canvas.Pen.Width div 2;
                              end
                              else begin
                                {$IfDef RecordPlotDBRules} WriteLineToDebugFile('Not plot for size'); {$EndIf}
@@ -528,6 +539,7 @@ end;
                       RulesForTheData.Next;
                     end;
                     RulesForTheData.Destroy;
+                    HighlightOSMBridges := false;
                     MyData.ApplyFilter(dbOpts.MainFilter);
                     ShowDefaultCursor;
                     EmpSource.Enabled := true;
@@ -570,6 +582,7 @@ end;
                        {$Else}
                           OSMthread(1,fname,Bitmap);   //everything except roads
                           OSMthread(2,fname,Bitmap);   //roads
+                          OSMthread(3,fname,Bitmap);   //bridges
                           // 4/29/2018, threading did not increase speed
                           if SaveLayerAllowed then begin
                              OSMOverlayfName := NextFileNumber(MDTempDir, 'osm_overlay', OverlayFExt);

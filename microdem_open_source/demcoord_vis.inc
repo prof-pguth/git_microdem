@@ -2,7 +2,7 @@
 { Part of MICRODEM GIS Program       }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
-{ Copyright (c) 2023 Peter L. Guth   }
+{ Copyright (c) 2024 Peter L. Guth   }
 {------------------------------------}
 { include file for demcoord          }
 {____________________________________}
@@ -33,8 +33,8 @@ begin
    GetElevFromLatLongDegree(Lat,Long,z);
 
    {$IfDef RecordHorizon}
-      WriteLineToDebugFile('HorizonBlocking for ' + LatLongDegreeToString(Lat,Long) + '  z=' + RealToString(z,-12,1));
-      WriteLineToDebugFile('  ObsUp=' + RealToString(ObsUp,-12,1) + '  Azimuth (True)=' + RealToString(AzimuthTrue,-12,2) + '  Dist Out=' + RealToString(DistanceToGoOut,-12,1));
+      WriteLineToDebugFile('HorizonBlocking for ' + LatLongDegreeToString(Lat,Long) + ' z=' + RealToString(z,-12,1));
+      WriteLineToDebugFile('ObsUp=' + RealToString(ObsUp,-12,1) + ' Azimuth (True)=' + RealToString(AzimuthTrue,-12,2) + ' Dist Out=' + RealToString(DistanceToGoOut,-12,1));
    {$EndIf}
 
    z := z + ObsUp;

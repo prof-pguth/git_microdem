@@ -753,6 +753,10 @@ object DemHandForm: TDemHandForm
         Caption = 'IE list'
         OnClick = IElist1Click
       end
+      object emplatedownload1: TMenuItem
+        Caption = 'Template download'
+        OnClick = emplatedownload1Click
+      end
     end
     object Delete1: TMenuItem
       Caption = '&Delete'

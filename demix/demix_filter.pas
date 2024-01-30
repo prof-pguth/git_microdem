@@ -242,8 +242,8 @@ type
     procedure DifferenceMapsAllAreas(WhatFor : integer);
     procedure GetUsingStringLists;
     procedure MakeGeomorphometricMaps(What : shortstring; var  DEMSwanted : tDEMbooleanArray);
-    procedure SSIMprep(AreaName,WhatFor : shortstring; AllTiles: tStringList; GridCorrelations : tStringList);
     procedure SSIMComputations(Option : integer);
+    procedure SSIMprep(AreaName,WhatFor : shortstring; AllTiles: tStringList; GridCorrelations : tStringList);
   public
     { Public declarations }
     DB : integer;
@@ -1195,29 +1195,19 @@ var
             DEM : integer;
             bg : tGridLimits;
 
-                  (*
-                  procedure CycleForElevRange(WhichGrids : tDEMIXindexes);
-                  var
-                     DEM : integer;
-                  begin
-                     for DEM := 1 to MaxDemixDEM do begin
-                        if ValidDEM(WhichGrids[DEM]) then begin
-                           if (DEMGlb[WhichGrids[DEM]].DEMheader.MaxElev > Max) then Max := DEMGlb[WhichGrids[DEM]].DEMheader.MaxElev;
-                           if (DEMGlb[WhichGrids[DEM]].DEMheader.MinElev < Min) then Min := DEMGlb[WhichGrids[DEM]].DEMheader.MinElev;
-                        end;
-                     end;
-                  end;
-                  *)
-
                   procedure CycleToNormalize(WhichGrids : tDEMIXindexes);
                   var
                      DEM : integer;
                   begin
                      for DEM := 1 to MaxDemixDEM do begin
                         if ValidDEM(WhichGrids[DEM]) then begin
+                           NormalizeDEMforSSIM(WhichGrids[DEM],What);
+
+                           (*
                            DEMGlb[WhichGrids[DEM]].AddConstantToGrid(-Min);
                            DEMGlb[WhichGrids[DEM]].MultiplyGridByConstant(1/(Max-Min));
                            DEMGlb[WhichGrids[DEM]].CheckMaxMinElev;
+                           *)
                         end;
                      end;
                   end;
@@ -1233,12 +1223,7 @@ var
                WantShowProgress := false;
                SkipMenuUpdating := true;
                What := UpperCase(What);
-               //if TileNormalize then begin //normalize each tile, which was not as good
-                  //CycleForElevRange(TheDEMs);
-                  //CycleForElevRange(TheRefs);
-               //end
-               //else
-               begin //same normalization for all tiles
+                  (*
                   if (What = 'ELEV') then begin
                      Min := -5;
                      Max := 4000;
@@ -1263,7 +1248,7 @@ var
                      Min := 0;
                      Max := 125;
                   end;
-               end;
+                  *)
                CycleToNormalize(TheDEMs);
                CycleToNormalize(TheRefs);
             finally
@@ -1323,7 +1308,7 @@ var
          i,j,ThisRefDEM,ThisTestDEM,DEMProcessed : integer;
          bb : sfBoundBox;
          bgRef,bgTest : tGridLimits;
-         r,covar : float64;
+         r,covar,Mean1,Mean2,StdDev1,StdDev2 : float64;
          Line1,Line2 : shortstring;
       begin
          ThisRefDEM := 0;
@@ -1340,7 +1325,7 @@ var
                   if StrUtils.AnsiContainsText(DEMGlb[ThisTestDEM].AreaName,'ALOS') then bb := DEMIXtileBoundingBox(TileName,true)
                   else bb := DEMIXtileBoundingBox(TileName);
                   bgTest := DEMGlb[ThisTestDEM].sfBoundBox2tGridLimits(bb);
-                  if CovariancesFromTwoGrids(bgTest,ThisTestDEM,ThisRefDEM, r,covar) then begin
+                  if CovariancesFromTwoGrids(bgTest,ThisTestDEM,ThisRefDEM, r,covar,Mean1,Mean2,StdDev1,StdDev2) then begin
                      Line1 := Line1 + ',' + WhatTestDEMisThis(DEMGlb[ThisTestDEM].AreaName);
                      Line2 := Line2 + ',' + RealToString(sqr(r),-12,-6);
                      inc(DEMProcessed);
@@ -1378,8 +1363,6 @@ begin {TDemixFilterForm.SSIMprep}
          for i := 1 to MaxDemixDEM do ReinterpolateTestDEMtoHalfSec(TestDEMs[i],true);
       end
       else UsingRefDEMs := RefDEMs;
-
-      //OpenMap := false;
 
       if (not PathIsValid(OutPath)) or AnswerIsYes(OutPath + ' exists; redo area') then begin
          CurrentOperation.Text := 'Make geomorph grids';
@@ -1443,6 +1426,7 @@ begin {TDemixFilterForm.SSIMprep}
    end;
    {$If Defined(RecordDEMIX) or Defined(RecordSSIMprep)} WriteLineToDebugFile('SSIMprep out'); {$EndIf}
 end {TDemixFilterForm.SSIMprep};
+
 
 
 procedure TDemixFilterForm.BitBtn3Click(Sender: TObject);

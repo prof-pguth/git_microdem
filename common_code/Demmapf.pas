@@ -1493,7 +1493,6 @@ type
     PicksingleDEMseriesthisarea1: TMenuItem;
     DEMIXrangescales1: TMenuItem;
     SSIM1: TMenuItem;
-    SAGAchannelnetwork1: TMenuItem;
     SAGAremovesinksallopenDEMs1: TMenuItem;
     SAGAchannelnetworkallopenDEMs1: TMenuItem;
     SAGAChannelNetworkandBasins1: TMenuItem;
@@ -1501,6 +1500,9 @@ type
     Pureplatecareeprojectiondistorted1: TMenuItem;
     Rasterizedatabases1: TMenuItem;
     Comparechannelnetworks1: TMenuItem;
+    Landcover1: TMenuItem;
+    SAGAremovesinks1: TMenuItem;
+    N63: TMenuItem;
     //procedure HiresintervisibilityDEM1Click(Sender: TObject);
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
@@ -2603,6 +2605,8 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Pureplatecareeprojectiondistorted1Click(Sender: TObject);
     procedure Rasterizedatabases1Click(Sender: TObject);
     procedure Comparechannelnetworks1Click(Sender: TObject);
+    procedure Landcover1Click(Sender: TObject);
+    procedure SAGAremovesinks1Click(Sender: TObject);
     //procedure RescaleallDEMsforSSIM1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
@@ -5377,7 +5381,7 @@ end;
 
 procedure TMapForm.Comparechannelnetworks1Click(Sender: TObject);
 begin
-   CompareChannelNetworks;
+   //CompareChannelNetworks;
 end;
 
 procedure TMapForm.CompareDNconversions1Click(Sender: TObject);
@@ -5681,7 +5685,7 @@ function MakeRequiredAntennaMap(ProgTitle: shortString; CurDEM : integer; W_Lat,
 var
    Col,Row,StartCol,StartRow,EndCol,EndRow,xg,yg : integer;
    NeedZ,xgrids,ygrids,dists : ^Petmath.bfarray32;
-   wx,wy : float64;
+   wx,wy : float32;
 
          procedure DoRadial(x,y : integer);
          var
@@ -17744,6 +17748,27 @@ begin
 end;
 
 
+procedure TMapForm.Landcover1Click(Sender: TObject);
+var
+   x,y,Code : integer;
+   z : float32;
+begin
+   for x := 0 to pred(DEMGlb[1].DEMheader.NumCol) do begin
+      for y := 0 to pred(DEMGlb[1].DEMheader.NumRow) do begin
+         if DEMGlb[MapDraw.DEMOnMap].GetElevMetersOnGrid(x,y,z) then begin
+            Code := ReclassifyLandCover(MapDraw.DEMOnMap,round(z));
+            DEMGlb[MapDraw.DEMOnMap].SetGridElevation(x,y,Code);
+         end;
+      end;
+   end;
+   DEMGlb[MapDraw.DEMOnMap].DEMHeader.ElevUnits := euSimpleLandCover;
+   Dispose(DEMGlb[MapDraw.DEMOnMap].NLCDCats);
+   DEMGlb[MapDraw.DEMOnMap].CheckForLandCover;
+   //SetUpNLCDCategories(false,TStr,NLCDCats^);
+   DoBaseMapRedraw;
+end;
+
+
 procedure TMapForm.LAScategoriestoshow1Click(Sender: TObject);
 {$IfDef ExPointCloud}
 begin
@@ -17782,7 +17807,7 @@ var
    Title : shortstring;
    fName : PathStr;
    Results : tStringList;
-   Total{,Missing} : int64;
+   Total : int64;
    Count :  array[0..MaxLasCat] of int64;
 begin
     fName := ChangeFileExt(DEMGlb[MapDraw.DEMonMap].DEMfileName,'.dbf');//   Petmar.NextFileNumber(MDTempDir, Title + '_','.csv');
@@ -24090,6 +24115,7 @@ begin
    SagaChannelNetwork(DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
 end;
 
+
 procedure TMapForm.SAGAchannelnetworkallopenDEMs1Click(Sender: TObject);
 var
    i : integer;
@@ -24098,9 +24124,7 @@ begin
     for i := 1 to MaxDEMDataSets do begin
       if ValidDEM(i) then begin
          InName := DEMGlb[i].SelectionMap.GeotiffDEMNameOfMap;
-         //OutName := ChangeFileExt(InName,'_channels.tif');
          ShpName := ChangeFileExt(InName,'_channels.shp');
-         //SagaChannelNetwork(InName,OutName,ShpName);
          SagaChannelShapefile(InName,ShpName);
       end;
    end;
@@ -24109,10 +24133,17 @@ end;
 procedure TMapForm.SAGAChannelNetworkandBasins1Click(Sender: TObject);
 var
    InName,ChannelName : PathStr;
+   db : integer;
 begin
    InName := DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap;
-   ChannelName := ChangeFileExt(InName,'_channels.shp');
-   SagaChannelShapefile(InName,ChannelName);
+   ChannelName := MDTempDir + ExtractFileNameNoExt(InName) + '_channels.shp';
+   db := SagaChannelShapefile(InName,ChannelName);
+   OpenDBonMap('',ChannelName);
+end;
+
+procedure TMapForm.SAGAremovesinks1Click(Sender: TObject);
+begin
+   SagaSinkRemoval(DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
 end;
 
 procedure TMapForm.SAGAremovesinksallopenDEMs1Click(Sender: TObject);
@@ -24826,9 +24857,10 @@ var
    DEM1,DEM2 : integer;
    SSIM,Luminance,Contrast,Structure : float64;
 begin
-   if GetTwoCompatibleGrids('SSIM',true, DEM1,DEM2) then begin
-      ComputeSSIM(DEM1,DEM2,DEMGlb[DEM1].FullDEMGridLimits,DEMGlb[DEM2].FullDEMGridLimits,SSIM,Luminance,Contrast,Structure);
-   end;
+   GetTwoCompatibleGrids('SSIM',false, DEM1,DEM2,false);   // then begin
+      MakeSSIMMaps(DEM1,DEM2);
+      //ComputeSSIM(DEM1,DEM2,DEMGlb[DEM1].FullDEMGridLimits,DEMGlb[DEM2].FullDEMGridLimits,SSIM,Luminance,Contrast,Structure);
+   //end;
 end;
 
 procedure TMapForm.Overlays1Click(Sender: TObject);

@@ -196,12 +196,8 @@ const
                                            clPurple,clFuchsia,clBrown);
  var
    i,Higher,Lower : integer;
-   //zDEM2,zRefDEM,zDEM1,What : float32;
-   //Lat,Long : float64;
    x,y : integer;
-   //TStr : shortstring;
    HighHist,LowHist : tHist;
-   //DEM1high, DEM1low, DEM1good, DEM2high, DEM2low, DEM2good : boolean;
 
 
          procedure Finalize(Neigh : integer; Hist : tHist; aLabel : shortstring; ReverseColors : boolean);
@@ -1322,17 +1318,15 @@ end;
 function MakeMomentsGrid(CurDEM : integer; What : char; BoxSizeRadiusMeters : integer = -99; OpenMaps : boolean = true) : integer;
 var
    XBoxGridSize,YBoxGridSize,ThinFactor,i : integer;
-   //PartLimits :  tGridLimitsArray;
    TStr : ShortString;
    WantMapType : tMapType;
    fName,pName : PathStr;
-   //Stopwatch1 : TStopwatch;
 
 
        procedure NewGrid(var DEM : integer; Gridname : shortstring; ElevUnits : tElevUnit);
        begin
           Petmar.ReplaceCharacter(GridName,' ','_');
-          if ThinFactor > 1 then DEM := DEMGlb[CurDEM].ThinAndOpenGridSetMissing(ThinFactor,FloatingPointDEM,'md_' + GridName + '_' + DEMGlb[CurDEM].AreaName,ElevUnits)
+          if (ThinFactor > 1) then DEM := DEMGlb[CurDEM].ThinAndOpenGridSetMissing(ThinFactor,FloatingPointDEM,'md_' + GridName + '_' + DEMGlb[CurDEM].AreaName,ElevUnits)
           else DEM := DEMGlb[CurDEM].CloneAndOpenGridSetMissing(FloatingPointDEM,'md_' + GridName + '_' + DEMGlb[CurDEM].AreaName,ElevUnits);
 
           {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('Created DEM ' + IntToStr(DEM) + GridName + ' proj=' + DEMGlb[DEM].DEMMapProjection.ProjDebugName); {$EndIf}

@@ -4,8 +4,8 @@ object GridDiffForm: TGridDiffForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Grid Differences '
-  ClientHeight = 260
-  ClientWidth = 385
+  ClientHeight = 242
+  ClientWidth = 584
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -40,8 +40,8 @@ object GridDiffForm: TGridDiffForm
     TabOrder = 1
   end
   object OKBtn: TBitBtn
-    Left = 8
-    Top = 192
+    Left = 10
+    Top = 204
     Width = 77
     Height = 27
     Kind = bkOK
@@ -53,8 +53,8 @@ object GridDiffForm: TGridDiffForm
     IsControl = True
   end
   object HelpBtn: TBitBtn
-    Left = 93
-    Top = 192
+    Left = 101
+    Top = 204
     Width = 77
     Height = 27
     Kind = bkHelp
@@ -92,10 +92,9 @@ object GridDiffForm: TGridDiffForm
   object RadioGroup1: TRadioGroup
     Left = 8
     Top = 119
-    Width = 409
-    Height = 67
+    Width = 568
+    Height = 79
     Caption = 'Grid to copy for difference'
-    Columns = 3
     TabOrder = 7
   end
   object RadioGroup2: TRadioGroup

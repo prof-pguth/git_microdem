@@ -21,6 +21,7 @@ unit DEMStat;
       //{$Define RecordDEMIX_colors}
       {$Define RecordSSIM}
       {$Define RecordDEMIX}
+      //{$Define RecordSSIMNormalization}
       //{$Define RecordLag}
       //{$Define RecordPitsSpires}
       //{$Define RecordMapAlgebra}
@@ -35,7 +36,7 @@ unit DEMStat;
       //{$Define RecordDEMCompare}
       //{$Define RecordFullDEMCompare}
       //{$Define TrackZRange}
-      {$Define RecordStat}
+      //{$Define RecordStat}
       //{$Define RecordIceSat}
       //{$Define RecordGeoStat}
       //{$Define FullRecordBlockGeostats}
@@ -104,7 +105,7 @@ type
       function MakeDifferenceMap(Map1,Map2,GridResultionToUse,GridToMergeShading : integer; ShowMap,ShowHistogram,ShowScatterPlot : boolean; TheAreaName : ShortString = '') : integer;
       function MakeDifferenceMapOfBoxRegion(Map1,Map2,GridResultionToUse,GridToMergeShading : integer; GridLimits: tGridLimits; ShowMap,ShowHistogram,ShowScatterplot : boolean; TheAreaName : ShortString = '') : integer;
 
-      function CovariancesFromTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer; var r,covar : float64) : boolean;
+      function CovariancesFromTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer; var r,covar,Mean1,Mean2,StdDev1,StdDev2 : float64) : boolean;
       procedure ElevationSlopePlot(WhichDEMs : tDEMbooleanArray; DesiredBinSize : integer = 1; Memo : tMemo = Nil);
 
       procedure DoAnSSODiagram(CurDEM : integer; GridLimits : tGridLimits);
@@ -185,17 +186,20 @@ type
    procedure HistogramsFromVATDEM(DEMwithVAT,ElevMap,SlopeMap,RuffMap,AspMap : integer; var Graph1,Graph2,Graph3,Graph4 : tThisBaseGraph);
    procedure CreateGridHistograms(DEMSwanted : tDEMbooleanArray; TailCutoff : float32 = 0.5);
 
-   procedure ComputeSSIM(DEM1,DEM2 : integer; gl1,gl2 : tGridLimits; var SSIM,Luminance,Contrast,Structure : float64);
+   function ComputeSSIM(DEM1,DEM2 : integer; gl1,gl2 : tGridLimits; var SSIM,Luminance,Contrast,Structure : float64) : boolean;
+   procedure AreaSSIMComputations;
+   procedure NormalizeDEMforSSIM(DEM : integer; What : shortstring);
+   procedure MakeSSIMMaps(DEM1,DEM2 : integer);
 
 
-
-
+//channel network comparisons
    function ChannelSHPToGrid(DEM,db : integer; OutDir : PathStr; PlotOrder : integer = 1) : integer;
-   procedure CompareChannelNetworks;
-   procedure ChannelNetworkMapComparison(BaseDEM,RefDEM, TestDEM : integer);
+   procedure CompareChannelNetworks(Area : shortstring);
    procedure CreateChannelNetworkGridsFromVectors;
    procedure BatchFillHolesInDEMIX_DEMS;
    procedure BatchCreateVectorChannelNewtwork;
+   procedure ChannelNetworkMissPercentages;
+   procedure ChannelNetworkMapComparison(AreaName,TestDEMName : shortstring);
 
 
 var
@@ -1643,7 +1647,7 @@ var
    NewDEM,i,j,n,Band,NRot,NumVars : integer;
    EigenVectors,Correlations,VarCoVar   : tTrendMatrix;
    EigenValues   : tTrendVector;
-   Value,Lat,Long    : float64;
+   Value,Lat,Long,Mean1,Mean2,StdDev1,StdDev2    : float64;
    z : float32;
    FName,fName2,MGPath : PathStr;
    NewTable : tMyData;
@@ -1681,7 +1685,7 @@ begin
             VarTitle[i] := DEMGlb[MG.Grids[i]].AreaName;
             for j := 1 to MG.NumGrids do begin
                if (MG.Grids[j] <> 0) then begin
-                  CovariancesFromTwoGrids(DEMGlb[MG.Grids[i]].FullDEMGridLimits,MG.Grids[i],MG.Grids[j],Correlations[i,j],VarCoVar[i,j]);
+                  CovariancesFromTwoGrids(DEMGlb[MG.Grids[i]].FullDEMGridLimits,MG.Grids[i],MG.Grids[j],Correlations[i,j],VarCoVar[i,j],Mean1,Mean2,StdDev1,StdDev2);
                end;
             end;
          end;
@@ -1851,17 +1855,88 @@ end;
 
 
 
-function CovariancesFromTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer; var r,covar : float64) : boolean;
+function CovariancesFromTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer; var r,covar,Mean1,Mean2,StdDev1,StdDev2 : float64) : boolean;
 var
-   Col,Row,incr : integer;
+   Col,Row,incr,xoff,yoff,i : integer;
    NPts : int64;
    z1,z2,XGrid,YGrid : float32;
    Lat,Long : float64;
    IdenticalGrids : boolean;
-   x,y : ^bfarray32;
+   //x,y : ^bfarray32;
+   sum, sp : array[1..2] of float64;
+   spc : float64;
 begin
    {$IfDef RecordStat} WriteLineToDebugFile('CovariancesFromTwoGrids in, grids=' + IntToStr(DEM1) + ' and ' + IntToStr(DEM2)); {$EndIf}
-   IdenticalGrids := DEMGlb[DEM1].SecondGridIdentical(DEM2);
+   IdenticalGrids := DEMGlb[DEM1].SecondGridJustOffset(DEM2,xoff,yoff);
+   NPts := 0;
+
+   spc := 0;
+   for i := 1 to 2 do begin
+      sum[i] := 0;
+      sp[i] := 0;
+   end;
+
+
+   //New(x);
+   //New(y);
+   incr := 1;
+   while ( (GridLimitsDEM1.XGridHigh - GridLimitsDEM1.XGridLow) div incr) * ((GridLimitsDEM1.YGridHigh - GridLimitsDEM1.YGridLow) div Incr) > Petmath.bfArrayMaxSize do inc(incr);
+   Col := GridLimitsDEM1.XGridLow;
+   while (Col <= GridLimitsDEM1.XGridHigh) do begin
+      Row := GridLimitsDEM1.YGridLow;
+
+      while (Row <= GridLimitsDEM1.YGridHigh) do begin
+         if DEMGlb[DEM1].GetElevMeters(Col,Row,z1) then begin
+            if IdenticalGrids then begin
+               if DEMGlb[DEM2].GetElevMeters(Col+xoff,Row+yoff,z2) then begin
+                  //x^[NPts] := z1;
+                  //y^[NPts] := z2;
+                  Sum[1] := Sum[1] + z1;
+                  Sum[2] := Sum[2] + z2;
+                  sp[1] := sp[1] + z1 * z1;
+                  sp[2] := sp[2] + z2 * z2;
+                  SPc := SPc + z1 * z2;
+                  inc(NPts);
+               end;
+            end
+            else begin
+               DEMGlb[DEM1].DEMGridToLatLongDegree(Col,Row,Lat,Long);
+               if DEMGlb[DEM2].GetElevFromLatLongDegree(Lat,Long,z2) then begin
+                  //x^[NPts] := z1;
+                  //y^[NPts] := z2;
+                  Sum[1] := Sum[1] + z1;
+                  Sum[2] := Sum[2] + z2;
+                  sp[1] := sp[1] + z1 * z1;
+                  sp[2] := sp[2] + z2 * z2;
+                  SPc := SPc + z1 * z2;
+                  inc(NPts);
+               end;
+            end;
+         end;
+         inc(Row,incr);
+      end;
+      inc(Col,incr);
+   end;
+   Result := (NPts > 0);
+   if Result then begin
+      Mean1 := (Sum[1] / NPts);
+      StdDev1 := sqrt( (NPts * SP[1] - (sum[1] * sum[1]) ) / (NPts-1) / Npts );
+      Mean2 := (Sum[2] / NPts);
+      StdDev2 := sqrt( (NPts * SP[2] - (sum[2] * sum[2]) ) / (NPts-1) / Npts );
+
+      Covar := (NPts * SPc - Sum[1] * Sum[2]) / NPts / pred(NPts);
+      r := Covar / StdDev1 / StdDev2;
+   end;
+   //Newvarcovar(x^,y^,NPts,r,covar,Mean1,Mean2,StdDev1,StdDev2);
+   //Dispose(x);
+   //Dispose(y);
+   {$IfDef RecordStat} WriteLineToDebugFile('CovariancesFromTwoGrids out covar=' + RealToString(covar,-12,-4)); {$EndIf}
+
+
+
+(*
+   {$IfDef RecordStat} WriteLineToDebugFile('CovariancesFromTwoGrids in, grids=' + IntToStr(DEM1) + ' and ' + IntToStr(DEM2)); {$EndIf}
+   IdenticalGrids := DEMGlb[DEM1].SecondGridJustOffset(DEM2,xoff,yoff);
    NPts := 0;
    New(x);
    New(y);
@@ -1870,10 +1945,11 @@ begin
    Col := GridLimitsDEM1.XGridLow;
    while (Col <= GridLimitsDEM1.XGridHigh) do begin
       Row := GridLimitsDEM1.YGridLow;
+
       while (Row <= GridLimitsDEM1.YGridHigh) do begin
          if DEMGlb[DEM1].GetElevMeters(Col,Row,z1) then begin
             if IdenticalGrids then begin
-               if DEMGlb[DEM2].GetElevMeters(Col,Row,z2) then begin
+               if DEMGlb[DEM2].GetElevMeters(Col+xoff,Row+yoff,z2) then begin
                   x^[NPts] := z1;
                   y^[NPts] := z2;
                   inc(NPts);
@@ -1881,8 +1957,7 @@ begin
             end
             else begin
                DEMGlb[DEM1].DEMGridToLatLongDegree(Col,Row,Lat,Long);
-               DEMGlb[DEM2].LatLongDegreetoDEMGrid(Lat,Long,XGrid,YGrid);
-               if DEMGlb[DEM2].GetElevMeters(XGrid,YGrid,z2) then begin
+               if DEMGlb[DEM2].GetElevFromLatLongDegree(Lat,Long,z2) then begin
                   x^[NPts] := z1;
                   y^[NPts] := z2;
                   inc(NPts);
@@ -1894,10 +1969,42 @@ begin
       inc(Col,incr);
    end;
    Result := (NPts > 0);
-   if Result then varcovar(x^,y^,NPts,r,covar);
+   if Result then Newvarcovar(x^,y^,NPts,r,covar,Mean1,Mean2,StdDev1,StdDev2);
    Dispose(x);
    Dispose(y);
    {$IfDef RecordStat} WriteLineToDebugFile('CovariancesFromTwoGrids out covar=' + RealToString(covar,-12,-4)); {$EndIf}
+
+
+procedure Newvarcovar(var x,y : array of float32; NPts : integer; var correlation,covar,Mean1,Mean2,StdDev1,StdDev2 : float64);
+var
+   i : integer;
+   sum, sp : array[1..2] of float64;
+   spc : float64;
+begin
+   spc := 0;
+   for i := 1 to 2 do begin
+      sum[i] := 0;
+      sp[i] := 0;
+   end;
+   for i:= 0 to pred(NPts) do begin
+       Sum[1] := Sum[1] + x[i];
+       Sum[2] := Sum[2] + y[i];
+       sp[1] := sp[1] + x[i] * x[i];
+       sp[2] := sp[2] + y[i] * y[i];
+       SPc := SPc + x[i] * y[i];
+   end;
+
+   Mean1 := (Sum[1] / NPts);
+   StdDev1 := sqrt( (NPts * SP[1] - (sum[1] * sum[1]) ) / (NPts-1) / Npts );
+   Mean2 := (Sum[2] / NPts);
+   StdDev2 := sqrt( (NPts * SP[2] - (sum[2] * sum[2]) ) / (NPts-1) / Npts );
+
+   Covar := (NPts * SPc - Sum[1] * Sum[2]) / NPts / pred(NPts);
+   Correlation := Covar / StdDev1 / StdDev2;
+   {$IfDef RecordCovar} WriteLineToDebugFile('varcovar out, covar=' + RealToString(Covar,-12,4)); {$EndIf}
+end;
+*)
+
 end;
 
 
@@ -2956,7 +3063,7 @@ begin
 type
   tCorrs = array[1..MaxDEMDataSets,1..MaxDEMDataSets] of float64;
 var
-  r,covar : float64;
+  r,covar,Mean1,Mean2,StdDev1,StdDev2 : float64;
   i,n: Integer;
   j: Integer;
   Findings : tStringList;
@@ -2986,7 +3093,7 @@ begin
                   Corrs^[i,j] := 1;
                end
                else begin
-                  CovariancesFromTwoGrids(DEMGlb[i].FullDEMGridLimits,i,J,r,covar);
+                  CovariancesFromTwoGrids(DEMGlb[i].FullDEMGridLimits,i,J,r,covar,Mean1,Mean2,StdDev1,StdDev2);
                   Corrs^[i,j] := r;
                   Corrs^[j,i] := r;
                end;
@@ -2995,10 +3102,8 @@ begin
       end;
    end;
 
-   n := 0;
    for i := 1 to MaxDEMDataSets do begin
       if ValidDEM(i) then begin
-         inc(n);
          MenuStr := DEMGlb[i].AreaName;
          for j := 1 to MaxDEMDataSets do begin
             if ValidDEM(j) then begin
@@ -3011,7 +3116,7 @@ begin
 
    EndProgress;
    Dispose(Corrs);
-   fName := MDTempDir + 'grid_r_matrix.csv';
+   fName := Petmar.NextFileNumber(MDTempDir,'grid_r_matrix_', '.csv');
    Findings.SaveToFile(fName);
    Findings.Free;
    DEMStringGrid.OpenCorrelationMatrix('Correlation',fName);

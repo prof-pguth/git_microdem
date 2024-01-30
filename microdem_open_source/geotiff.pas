@@ -23,11 +23,11 @@ unit GeoTiff;
 
 
    {$IFDEF DEBUG}
-      {$Define RecordGeotiff}
+      //{$Define RecordGeotiff}
       //{$Define RecordGeotiffRewrite}
       //{$Define RecordJustMetadata}
       //{$Define RecordGeotiffFailures}
-      {$Define RecordInitializeDEM}
+      //{$Define RecordInitializeDEM}
       //{$Define RecordGeotiffFailures}
       //{$Define ReportKey258}  //happens with some Landsat, but does not appear to stop things
 
@@ -38,7 +38,7 @@ unit GeoTiff;
       //{$Define TrackHorizontalDatum}
       //{$Define RecordDEMMapProjection}
       //{$Define RecordGeotiffProjection}
-      {$Define RecordDefineDatum}
+      //{$Define RecordDefineDatum}
       //{$Define RecordGeotiffDestroy}
       //{$Define RecordUKOS}
       //{$Define TrackProjection}

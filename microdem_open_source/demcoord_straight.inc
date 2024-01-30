@@ -2,7 +2,7 @@
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -17,11 +17,9 @@ end;
 
 procedure tDEMDataSet.GetStraightRouteDEMGrid(Lat1,Long1,Lat2,Long2 : float64; StraightAlgorithm : tStraightAlgorithm;  var NumPoints : integer; var xgrids,ygrids,dists : Petmath.bfarray32);
 var
-   DeltaX,DeltaY,XStep,YStep,direction,
-   i,err,x,y,x1,x2,y1,y2 : integer;
+   err : integer;
    xg1,yg1,xg2,yg2 : float32;
-   SectLen,Bearing,
-   fd,yg,xg,Heading : float64;
+   SectLen,Bearing : float64;
    GridCoords : tStringList;
    TStr : ShortString;
 
@@ -70,7 +68,6 @@ begin
       end
       else LatLongDegreeToDEMGrid(Lat,Long,xgrids[i],ygrids[i]);
    end;
-
 
 (*
    if (StraightAlgorithm = saLatLong) then begin

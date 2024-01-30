@@ -34,6 +34,7 @@ object wmdem: Twmdem
     ButtonWidth = 34
     TabOrder = 0
     OnMouseDown = ToolBar1MouseDown
+    ExplicitWidth = 2018
     object SpeedButton2: TSpeedButton
       Left = 0
       Top = 0
@@ -1695,6 +1696,8 @@ object wmdem: Twmdem
     Visible = False
     OnClick = StatusBar1Click
     OnDblClick = StatusBar1DblClick
+    ExplicitTop = 1134
+    ExplicitWidth = 2018
   end
   object MainMenu1: TMainMenu
     Left = 136
@@ -2451,6 +2454,13 @@ object wmdem: Twmdem
         Caption = 'Advanced analysis'
         OnClick = Advancedanalysis1Click
       end
+      object SSIM2: TMenuItem
+        Caption = '-'
+      end
+      object SSIM1: TMenuItem
+        Caption = 'SSIM-R2'
+        OnClick = SSIM1Click
+      end
       object N48: TMenuItem
         Caption = '-'
       end
@@ -2465,6 +2475,14 @@ object wmdem: Twmdem
       object Createchannelnetworkgrids1: TMenuItem
         Caption = 'Create channel network grids'
         OnClick = Createchannelnetworkgrids1Click
+      end
+      object Channelnetworkmisspercentagesbytile1: TMenuItem
+        Caption = 'Channel network miss percentages by tile'
+        OnClick = Channelnetworkmisspercentagesbytile1Click
+      end
+      object Channelnetworkcomparison1: TMenuItem
+        Caption = 'Channel network map  comparison (currently hard wired)'
+        OnClick = Channelnetworkcomparison1Click
       end
       object N28: TMenuItem
         Caption = '-'
@@ -2535,11 +2553,6 @@ object wmdem: Twmdem
       Caption = 'Test'
       GroupIndex = 6
       OnClick = est1Click
-    end
-    object channelnewtowk1: TMenuItem
-      Caption = 'channel newtowk'
-      GroupIndex = 6
-      OnClick = channelnewtowk1Click
     end
   end
   object MetadataPopupMenu: TPopupMenu

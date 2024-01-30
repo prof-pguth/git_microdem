@@ -18,6 +18,7 @@ unit PETMATH;
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    //{$Define RecordFitProblems}
   {$Define TrackNegStdDev}
+   //{$Define RecordCovar}
    //{$Define RecordMatrixOps} //can really degrade performance
 {$EndIf}
 
@@ -91,7 +92,7 @@ type
    end;
    tMomentVar = record
       NPts,Missing : int64;
-      MinZ,MaxZ,mean,avg_dev,sdev,svar,skew,curt,median,rmse,mae,LE90,
+      MinZ,MaxZ,mean,avg_dev,std_dev,svar,skew,curt,median,rmse,mae,LE90,
       Q1,Q3,
       PC1,PC2,PC5,PC95,PC98,PC99 : float64;
    end;
@@ -192,6 +193,8 @@ function MomentResultsToString(MomentVar : tMomentVar) : shortstring;
 
 
 procedure VarCovar(var x,y : array of float32; NPts : integer; var correlation,covar : float64);
+procedure NewVarCovar(var x,y : array of float32; NPts : integer; var correlation,covar,Mean1,Mean2,StdDev1,StdDev2 : float64);
+
 
 procedure Fit(var x,y : array of float32; ndata : integer; var a,b,siga,sigb,r : float32);
 procedure FitOnRange(var x,y : array of float32; FirstPoint,LastPoint : integer; var ndata : integer; VAR a,b,siga,sigb,r : float32);
@@ -1030,8 +1033,16 @@ end;
 
 procedure varcovar(var x,y : array of float32; NPts : integer; var correlation,covar : float64);
 var
+  MeanX,MeanY,StdDevX,StdDevY : float64;
+begin
+   Newvarcovar(x,y,NPts,correlation,covar,MeanX,MeanY,StdDevX,StdDevY);
+end;
+
+
+procedure Newvarcovar(var x,y : array of float32; NPts : integer; var correlation,covar,Mean1,Mean2,StdDev1,StdDev2 : float64);
+var
    i : integer;
-   sum, Mean,StdDev,sp : array[1..2] of float64;
+   sum, sp : array[1..2] of float64;
    spc : float64;
 begin
    spc := 0;
@@ -1047,13 +1058,16 @@ begin
        SPc := SPc + x[i] * y[i];
    end;
 
-   for i := 1 to 2 do begin
-      Mean[i] := (Sum[i] / NPts);
-      StdDev[i] := sqrt( (NPts * SP[i] - (sum[i] * sum[i]) ) / (NPts-1) / Npts );
-   end {for i};
+   Mean1 := (Sum[1] / NPts);
+   StdDev1 := sqrt( (NPts * SP[1] - (sum[1] * sum[1]) ) / (NPts-1) / Npts );
+   Mean2 := (Sum[2] / NPts);
+   StdDev2 := sqrt( (NPts * SP[2] - (sum[2] * sum[2]) ) / (NPts-1) / Npts );
+
    Covar := (NPts * SPc - Sum[1] * Sum[2]) / NPts / pred(NPts);
-   Correlation := Covar / StdDev[1] / StdDev[2];
+   Correlation := Covar / StdDev1 / StdDev2;
+   {$IfDef RecordCovar} WriteLineToDebugFile('varcovar out, covar=' + RealToString(Covar,-12,4)); {$EndIf}
 end;
+
 
 procedure fit(var x,y : array of float32; ndata : integer; VAR a,b,siga,sigb,r : float32);
 begin
@@ -1970,7 +1984,7 @@ begin
    MomentVar.Missing := 0;
    MomentVar.mean := 0.0;
    MomentVar.avg_dev := 0.0;
-   MomentVar.sdev := 0.0;
+   MomentVar.std_dev := 0.0;
    MomentVar.svar := 0.0;
    MomentVar.skew := 0.0;
    MomentVar.curt := 0.0;
@@ -1987,6 +2001,10 @@ VAR
    s,p,s2 : float64;
 BEGIN
    if (MomentVar.Npts = 0) then exit;
+   if (MomentVar.Npts = 1) then begin
+      MomentVar.Mean := data[0];
+      exit;
+   end;
    s := 0.0;
    s2 := 0.0;
    FOR j := 0 to pred(MomentVar.Npts) DO begin
@@ -2009,9 +2027,9 @@ BEGIN
       MomentVar.MAE := MomentVar.MAE + abs(data[j]);
    END;
    MomentVar.svar := MomentVar.svar / (MomentVar.Npts-1);
-   MomentVar.sdev := sqrt(MomentVar.svar);
+   MomentVar.std_dev := sqrt(MomentVar.svar);
    {$If Defined(TrackNegStdDev)}
-      if (MomentVar.sdev < 0) then begin
+      if (MomentVar.std_dev < 0) then begin
          MessageToContinue('Negative standard deviation');
       end;
    {$EndIf}
@@ -2021,7 +2039,7 @@ BEGIN
    MomentVar.mae := MomentVar.mae / MomentVar.Npts;
    MomentVar.avg_dev := MomentVar.avg_dev / MomentVar.Npts;
    IF abs(MomentVar.svar) > 0.000001 then begin
-      MomentVar.skew := MomentVar.skew / (MomentVar.Npts*MomentVar.sdev*MomentVar.sdev*MomentVar.sdev);
+      MomentVar.skew := MomentVar.skew / (MomentVar.Npts*MomentVar.std_dev*MomentVar.std_dev*MomentVar.std_dev);
       MomentVar.curt := MomentVar.curt / (MomentVar.Npts*sqr(MomentVar.svar))-3.0;
    END;
    if (MomentStop = msBeforeMedian) then exit;
@@ -2034,6 +2052,7 @@ BEGIN
    MomentVar.PC1 := data[round(MomentVar.NPts * 1 / 100)];
    MomentVar.PC2 := data[round(MomentVar.NPts * 2 / 100)];
    MomentVar.PC5 := data[round(MomentVar.NPts * 5 / 100)];
+   MomentVar.LE90 := data[round(MomentVar.NPts * 90 / 100)];
 end;
 
 
@@ -2047,7 +2066,7 @@ begin
    StringGrid.Cells[OnColumn,OnLine] := RealToString(MomentVar.mean,-18,-2);
    inc(OnLine);
    StringGrid.Cells[0,OnLine] := Variable + ' std dev';
-   StringGrid.Cells[OnColumn,OnLine] := RealToString(MomentVar.sdev,-18,-2);
+   StringGrid.Cells[OnColumn,OnLine] := RealToString(MomentVar.std_dev,-18,-2);
    inc(OnLine);
    StringGrid.Cells[0,OnLine] := Variable + ' skewness';
    StringGrid.Cells[OnColumn,OnLine] := RealToString(MomentVar.skew,-18,-4);
@@ -2093,7 +2112,7 @@ begin
    Result := ',' + RealToString(MomentVar.MinZ,-18,-4) + ','  + RealToString(MomentVar.PC1,-18,-4) + ','  + RealToString(MomentVar.PC2,-18,-4) + ',' + RealToString(MomentVar.PC5,-18,-4) + ',' +
        RealToString(MomentVar.Q1,-18,-4) + ',' + RealToString(MomentVar.Median,-18,-4)  + ',' + RealToString(MomentVar.Mean,-18,-4)  + ',' + RealToString(MomentVar.Q3,-18,-4) + ',' +
        RealToString(MomentVar.PC95,-18,-4)  + ',' + RealToString(MomentVar.PC98,-18,-4) + ',' + RealToString(MomentVar.PC99,-18,-4) + ',' +  RealToString(MomentVar.MaxZ,-18,-4) + ',' +
-       RealToString(MomentVar.avg_dev,-8,2) + ',' + RealToString(MomentVar.sdev,-8,2) + ',' + RealToString(MomentVar.skew,-18,-4) + ',' +  RealToString(MomentVar.curt,-18,-4) + ',' +
+       RealToString(MomentVar.avg_dev,-8,2) + ',' + RealToString(MomentVar.std_dev,-8,2) + ',' + RealToString(MomentVar.skew,-18,-4) + ',' +  RealToString(MomentVar.curt,-18,-4) + ',' +
        IntToStr(MomentVar.NPts);
 end;
 

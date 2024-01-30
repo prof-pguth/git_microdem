@@ -45,6 +45,22 @@ begin
 end;
 
 
+procedure tDEMDataSet.ClipToVerticalRange(Min,Max : float32);
+var
+  x,y : integer;
+  z : float32;
+begin
+    for x := 0 to pred(DEMheader.NumCol) do begin
+       for y := 0 to pred(DEMheader.NumRow) do begin
+          if GetElevMetersOnGrid(x,y,z) then begin
+             if (z < Min) then SetGridElevation(x,y,Min)
+             else if (z > Max) then SetGridElevation(x,y,Max);
+          end;
+       end;
+    end;
+end;
+
+
 
 function tDEMDataSet.BoxCarDetrendDEM(OpenMap : boolean; GridLimits : tGridLimits; FilterRadius : integer = 2) : integer;
 var

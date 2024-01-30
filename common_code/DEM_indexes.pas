@@ -142,7 +142,8 @@ var
    Col,Row,db : integer;
    Pts,Coastal,Ocean,Highlands,DeepWater : int64;
    bbgrid : tGridLimits;
-   Full,z : float32;
+   //Full,
+   z : float32;
    bb : sfBoundBox;
 begin
    {$IfDef RecordDEMIXTiles} writeLineToDebugFile('DEMIXtileFill in, DEM=' + IntToStr(DEM)); {$EndIf}
@@ -202,7 +203,8 @@ end;
 procedure DiluviumDEMIXtileReport;
 var
    sl : tStringList;
-   db,DEM,i : integer;
+   //db,
+   DEM,i : integer;
    MapLib : tMyData;
    fName : PathStr;
 begin
@@ -263,7 +265,7 @@ begin
       Result := true;
    end
    else begin
-      if GetFromListZeroBased('Map index',PickedNum,Locations,true) then begin
+      if MultiSelectSingleColumnStringList('Map index',PickedNum,Locations,true) then begin
          Dir := Locations.Strings[PickedNum];
          MapLibDir := FromDriveLetter(Dir[1]);
          Result := true;
@@ -442,7 +444,7 @@ begin
       if (aList.Count = 0) then MessageToContinue('No indexed DEMs')
       else begin
          PickNum := 0;
-         if Petmar.GetFromListZeroBased('Series for ' + WhatFor,PickNum,alist, true) then sName := alist.Strings[PickNum]
+         if Petmar.MultiSelectSingleColumnStringList('Series for ' + WhatFor,PickNum,alist, true) then sName := alist.Strings[PickNum]
          else sName := '';
       end;
       aList.Free;
@@ -553,7 +555,7 @@ end;
 procedure CreateMapLibrary(Memo1 : tMemo);
 var
    IndexSeriesTable,DataTypeTable : tMyData;
-   DataType : string16;
+   //DataType : string16;
 
 
        procedure UpdateIndexSeriesTable(DataType,Series : shortstring; k,nf : integer);
@@ -830,7 +832,7 @@ begin
              if NumFieldColoring and (GISdb[db].NumericFields > 0) and AnswerIsYes('Color code from numeric field') then begin
                 PetdbUtils.GetFields(GISdb[db].MyData,GISdb[db].dbOpts.VisCols,NumericFieldTypes,FieldsInDB);
                 fNum := 0;
-                Petmar.GetFromListZeroBased('field to color',fNum,FieldsInDB);
+                Petmar.MultiSelectSingleColumnStringList('field to color',fNum,FieldsInDB);
                 TheGroupingIndex.SetFieldByNameAsString('FIELD_NAME',FieldsInDB.Strings[fNum]);
              end
              else begin
