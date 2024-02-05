@@ -56,6 +56,7 @@ type
   TDemixFilterForm = class(TForm)
     PageControl1: TPageControl;
     TabSheet1: TTabSheet;
+    LoadCurrentAreaBitBtn5: TBitBtn;
     CheckBox3: TCheckBox;
     LoadOneSecRefCheckBox: TCheckBox;
     CheckBox1: TCheckBox;
@@ -64,39 +65,10 @@ type
     ComboBox3: TComboBox;
     ComboBox2: TComboBox;
     ComboBox1: TComboBox;
-    TabSheet2: TTabSheet;
-    TabSheet3: TTabSheet;
-    GroupBox3: TGroupBox;
-    Memo3: TMemo;
-    GroupBox5: TGroupBox;
-    Memo5: TMemo;
-    GroupBox1: TGroupBox;
-    Memo1: TMemo;
-    GroupBox6: TGroupBox;
-    Memo6: TMemo;
-    BitBtn3: TBitBtn;
-    GroupBox2: TGroupBox;
-    Memo2: TMemo;
-    Load: TBitBtn;
-    GroupBox4: TGroupBox;
-    Memo4: TMemo;
-    BitBtn2: TBitBtn;
-    Edit2: TEdit;
-    Edit1: TEdit;
-    Label2: TLabel;
-    Label1: TLabel;
-    BitBtn1: TBitBtn;
-    ComboBox5: TComboBox;
-    ComboBox6: TComboBox;
-    ComboBox7: TComboBox;
-    StringGrid1: TStringGrid;
-    BitBtn6: TBitBtn;
-    ComboBox8: TComboBox;
     BitBtn7: TBitBtn;
     BitBtn8: TBitBtn;
     BitBtn9: TBitBtn;
     BitBtn10: TBitBtn;
-    //CheckBox4: TCheckBox;
     BitBtn11: TBitBtn;
     BitBtn12: TBitBtn;
     BitBtn13: TBitBtn;
@@ -116,53 +88,76 @@ type
     BitBtn24: TBitBtn;
     BitBtn25: TBitBtn;
     BitBtn26: TBitBtn;
+    BitBtn27: TBitBtn;
+    BitBtn28: TBitBtn;
+    GroupBox7: TGroupBox;
+    Label6: TLabel;
+    Label5: TLabel;
+    Label4: TLabel;
+    Edit5: TEdit;
+    Edit4: TEdit;
+    Edit3: TEdit;
+    BitBtn29: TBitBtn;
+    BitBtn30: TBitBtn;
+    BitBtn31: TBitBtn;
+    BitBtn5: TBitBtn;
+    BitBtn32: TBitBtn;
+    BitBtn34: TBitBtn;
+    BitBtn39: TBitBtn;
+    CheckBox4: TCheckBox;
+    CheckBox23: TCheckBox;
+    TabSheet3: TTabSheet;
+    Label2: TLabel;
+    Label1: TLabel;
+    GroupBox3: TGroupBox;
+    Memo3: TMemo;
+    GroupBox5: TGroupBox;
+    Memo5: TMemo;
+    GroupBox1: TGroupBox;
+    Memo1: TMemo;
+    GroupBox6: TGroupBox;
+    Memo6: TMemo;
+    BitBtn3: TBitBtn;
+    GroupBox2: TGroupBox;
+    Memo2: TMemo;
+    Load: TBitBtn;
+    GroupBox4: TGroupBox;
+    Memo4: TMemo;
+    BitBtn2: TBitBtn;
+    Edit2: TEdit;
+    Edit1: TEdit;
+    BitBtn1: TBitBtn;
+    GroupBox8: TGroupBox;
+    Memo7: TMemo;
+    RadioGroup2: TRadioGroup;
     Settings: TTabSheet;
     CheckBox2: TCheckBox;
     CheckBox7: TCheckBox;
     CheckBox8: TCheckBox;
-    BitBtn27: TBitBtn;
     threedembestrgm_checkbox: TCheckBox;
     CheckBox9: TCheckBox;
-    BitBtn28: TBitBtn;
-    GroupBox7: TGroupBox;
-    Label6: TLabel;
-    Edit5: TEdit;
-    Edit4: TEdit;
-    Label5: TLabel;
-    Edit3: TEdit;
-    Label4: TLabel;
-    BitBtn29: TBitBtn;
-    GroupBox8: TGroupBox;
-    Memo7: TMemo;
-    RadioGroup2: TRadioGroup;
     CheckBox10: TCheckBox;
-    BitBtn30: TBitBtn;
     CheckBox11: TCheckBox;
     GroupBox9: TGroupBox;
     CheckBox12: TCheckBox;
     CheckBox13: TCheckBox;
     CheckBox14: TCheckBox;
     CheckBox15: TCheckBox;
-    CheckBox16: TCheckBox;
-    BitBtn31: TBitBtn;
-    BitBtn5: TBitBtn;
     Hillshade: TCheckBox;
-    BitBtn32: TBitBtn;
+    CheckBox17: TCheckBox;
+    CheckBox16: TCheckBox;
     TabSheet4: TTabSheet;
+    Label3: TLabel;
     AreaProgress: TEdit;
     TileProgress: TEdit;
     CurrentOperation: TEdit;
     Memo8: TMemo;
-    Label3: TLabel;
     TabSheet5: TTabSheet;
     BitBtn33: TBitBtn;
-    BitBtn34: TBitBtn;
     BitBtn35: TBitBtn;
     BitBtn36: TBitBtn;
-    CheckBox17: TCheckBox;
     BitBtn37: TBitBtn;
-    BitBtn38: TBitBtn;
-    BitBtn39: TBitBtn;
+    BitBtn6: TBitBtn;
     procedure BitBtn1Click(Sender: TObject);
     procedure LoadClick(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
@@ -171,11 +166,6 @@ type
     procedure Edit2Change(Sender: TObject);
     procedure BitBtn3Click(Sender: TObject);
     procedure BitBtn4Click(Sender: TObject);
-    procedure BitBtn6Click(Sender: TObject);
-    procedure ComboBox5Change(Sender: TObject);
-    procedure ComboBox6Change(Sender: TObject);
-    procedure ComboBox7Change(Sender: TObject);
-    procedure ComboBox8Change(Sender: TObject);
     procedure BitBtn7Click(Sender: TObject);
     procedure BitBtn8Click(Sender: TObject);
     procedure BitBtn9Click(Sender: TObject);
@@ -230,8 +220,10 @@ type
     procedure BitBtn36Click(Sender: TObject);
     procedure CheckBox17Click(Sender: TObject);
     procedure BitBtn37Click(Sender: TObject);
-    procedure BitBtn38Click(Sender: TObject);
     procedure BitBtn39Click(Sender: TObject);
+    procedure CheckBox4Click(Sender: TObject);
+    procedure CheckBox23Click(Sender: TObject);
+    procedure BitBtn6Click(Sender: TObject);
     //procedure CheckBox4Click(Sender: TObject);
   private
     { Private declarations }
@@ -274,13 +266,13 @@ uses
 const
    SaveDifferenceDistribution : boolean = false;
 
-
 const
    ssimOneArea = 1;
    ssimAllAreas = 2;
    ssimDiluvium = 3;
 var
    SSIMOutPath : PathStr;
+   LoadRefDEMMaps,LoadTestDEMMaps : boolean;
 
 
 procedure TDemixFilterForm.SSIMComputations(Option : integer);
@@ -472,26 +464,27 @@ begin
    GetDEMIXpaths(false);
    DemixFilterForm := TDemixFilterForm.Create(Application);
    DemixFilterForm.db := db;
+   DEMIXFilterForm.Caption := 'DEMIX DB: ' + GISdb[db].dbName;
    DemixFilterForm.ZeroDEMs;
 
    if false then begin
       LoadComboBoxFromDBField(db,DemixFilterForm.ComboBox1,'DEMIX_TILE');
       LoadComboBoxFromDBField(db,DemixFilterForm.ComboBox4,'AREA');
-      LoadComboBoxFromDBField(db,DemixFilterForm.ComboBox5,'DEMIX_TILE');
-      LoadComboBoxFromDBField(db,DemixFilterForm.ComboBox6,'CRITERION');
+      //LoadComboBoxFromDBField(db,DemixFilterForm.ComboBox5,'DEMIX_TILE');
+      //LoadComboBoxFromDBField(db,DemixFilterForm.ComboBox6,'CRITERION');
    end
    else begin
       DemixFilterForm.ComboBox1.Items.LoadFromFile(DEMIXSettingsDir + 'tiles_list.txt');
       DemixFilterForm.ComboBox4.Items.LoadFromFile(DEMIXSettingsDir + 'areas_list.txt');
-      DemixFilterForm.ComboBox5.Items.LoadFromFile(DEMIXSettingsDir + 'tiles_list.txt');
-      DemixFilterForm.ComboBox6.Items.LoadFromFile(DEMIXSettingsDir + 'criteria_all.txt');
+      //DemixFilterForm.ComboBox5.Items.LoadFromFile(DEMIXSettingsDir + 'tiles_list.txt');
+      //DemixFilterForm.ComboBox6.Items.LoadFromFile(DEMIXSettingsDir + 'criteria_all.txt');
    end;
 
 
    DemixFilterForm.ComboBox1.Text := MDDef.DEMIX_default_tile;
    DemixFilterForm.ComboBox4.Text := MDDef.DEMIX_default_area;
-   DemixFilterForm.ComboBox5.Text := MDDef.DEMIX_default_tile;
-   DemixFilterForm.ComboBox6.ItemIndex := 0;
+   //DemixFilterForm.ComboBox5.Text := MDDef.DEMIX_default_tile;
+   //DemixFilterForm.ComboBox6.ItemIndex := 0;
 
    DemixFilterForm.Show;
    {$If Defined(RecordDEMIX) or Defined(TrackOpenHandles)} WriteOpenHandlestoDebugLog('DoDEMIXFilter out'); {$EndIf}
@@ -1056,11 +1049,6 @@ var
    DEMSwanted : tDEMbooleanArray;
 begin
    MakeGeomorphometricMaps('RRI',DEMSwanted);
-
-   (*
-   RescaleDEMs(DEMsWanted);
-   CreateGridHistograms(DEMSwanted);
-   *)
 end;
 
 procedure TDemixFilterForm.BitBtn36Click(Sender: TObject);
@@ -1076,16 +1064,6 @@ var
    DEMSwanted : tDEMbooleanArray;
 begin
    MakeGeomorphometricMaps('elev',DEMSwanted);
-end;
-
-
-procedure TDemixFilterForm.BitBtn38Click(Sender: TObject);
-var
-   j : integer;
-begin
-   for j := 0 to pred(ComboBox4.Items.Count) do begin
-      CreateTestDEMsForCurrentArea(ComboBox4.Items[j]);
-   end;
 end;
 
 
@@ -1428,7 +1406,6 @@ begin {TDemixFilterForm.SSIMprep}
 end {TDemixFilterForm.SSIMprep};
 
 
-
 procedure TDemixFilterForm.BitBtn3Click(Sender: TObject);
 var
    fName : PathStr;
@@ -1452,6 +1429,12 @@ begin
 end;
 
 
+procedure TDemixFilterForm.BitBtn6Click(Sender: TObject);
+begin
+   GetUsingStringLists;
+   GraphAverageScoresByTile(DB,TilesUsing,CriteriaUsing);
+end;
+
 procedure TDemixFilterForm.ZeroDEMs;
 var
    i : integer;
@@ -1466,38 +1449,6 @@ begin
    end;
 end;
 
-
-procedure TDemixFilterForm.BitBtn6Click(Sender: TObject);
-{$IfDef DEMIX_DB1}
-var
-   Filter : shortString;
-   i,j : integer;
-   v1,v2,diff : float32;
-begin
-   Filter := 'DEMIX_TILE=' + QuotedStr(ComboBox5.Text) + ' AND CRITERION=' + QuotedStr(ComboBox6.Text) +  ' AND REF_TYPE=' + QuotedStr(ComboBox7.Text) +  ' AND LAND_TYPE=' + QuotedStr(ComboBox8.Text);
-   {$IfDef RecordDEMIX} WriteLineToDebugFile('TDemixFilterForm.BitBtn6Click filter=' + Filter); {$EndIf}
-   gisDB[DEMIX_DB_v1].ApplyGISFilter(Filter);
-   gisDB[DEMIX_DB_v2].ApplyGISFilter(Filter);
-   if (GISdb[DEMIX_DB_v2].MyData.FiltRecsInDB = 1) and (GISdb[DEMIX_DB_v1].MyData.FiltRecsInDB = 1) then begin
-      for i := 1 to NumDEMIXDEM do begin
-         v1 := GISdb[DEMIX_DB_v1].MyData.GetFieldByNameAsFloat(DEMIXDEMTypeName[i]);
-         v2 := GISdb[DEMIX_DB_v2].MyData.GetFieldByNameAsFloat(DEMIXDEMTypeName[i]);
-         Diff := v2 - v1;
-         StringGrid1.Cells[i,1] := RealToString(v1,8,2);
-         StringGrid1.Cells[i,2] := RealToString(v2,8,2);
-         StringGrid1.Cells[i,3] := RealToString(Diff,8,2);
-      end;
-   end
-   else begin
-      for i := 1 to NumDEMIXDEM do begin
-         for j := 1 to 3 do
-            StringGrid1.Cells[i,j] := '';
-      end;
-   end;
-{$Else}
-begin
-{$EndIf}
-end;
 
 
 procedure TDemixFilterForm.BitBtn7Click(Sender: TObject);
@@ -1569,11 +1520,21 @@ begin
 end;
 
 
+procedure TDemixFilterForm.CheckBox23Click(Sender: TObject);
+begin
+   MDDef.LoadRefDEMMaps := CheckBox23.Checked;
+end;
+
 procedure TDemixFilterForm.CheckBox2Click(Sender: TObject);
 begin
    MDDef.MakeCOP_ALOS_diffMaps := CheckBox2.Checked;
 end;
 
+
+procedure TDemixFilterForm.CheckBox4Click(Sender: TObject);
+begin
+   MDDef.LoadTestDEMMaps := CheckBox4.Checked;
+end;
 
 procedure TDemixFilterForm.CheckBox7Click(Sender: TObject);
 begin
@@ -1599,27 +1560,6 @@ procedure TDemixFilterForm.ComboBox4Change(Sender: TObject);
 begin
    MDDef.DEMIX_default_area := ComboBox4.Text;
 end;
-
-procedure TDemixFilterForm.ComboBox5Change(Sender: TObject);
-begin
-   BitBtn6Click(Sender);
-end;
-
-procedure TDemixFilterForm.ComboBox6Change(Sender: TObject);
-begin
-   BitBtn6Click(Sender);
-end;
-
-procedure TDemixFilterForm.ComboBox7Change(Sender: TObject);
-begin
-   BitBtn6Click(Sender);
-end;
-
-procedure TDemixFilterForm.ComboBox8Change(Sender: TObject);
-begin
-   BitBtn6Click(Sender);
-end;
-
 
 procedure TDemixFilterForm.Edit1Change(Sender: TObject);
 begin
@@ -1658,12 +1598,6 @@ begin
    Edit3.Text := RealToString(MDDef.TopCutLevel,-8,-2);
    Edit4.Text := RealToString(MDDef.DEMIXSlopeTolerance,-8,-2);
    Edit5.Text := RealToString(MDDef.DEMIXRuffTolerance,-8,-2);
-   for i := 1 to NumDEMIXDEM do begin
-      StringGrid1.Cells[i,0] := DEMIXDEMTypeName[i];
-   end;
-   StringGrid1.Cells[0,1] := 'v1';
-   StringGrid1.Cells[0,2] := 'v2';
-   StringGrid1.Cells[0,3] := 'Difference';
 
    CheckBox2.Checked := MDDef.MakeCOP_ALOS_diffMaps;
    CheckBox8.Checked := MDDef.MakeCOP_ALOS_Cat_Maps;
@@ -1680,6 +1614,11 @@ begin
    CheckBox16.Checked := MDDef.DEMIX_open_ref_DSM;
    Hillshade.Checked := MDDef.SSIM_hill;
    CheckBox17.Checked := MDDef.SSIM_tpi;
+
+
+    CheckBox23.Checked := MDDef.LoadRefDEMMaps;
+    CheckBox4.Checked := MDDef.LoadTestDEMMaps;
+
 
    threedembestrgm_checkbox.Checked := MDDef.MakeRGB_Best_Map;
 
@@ -1972,7 +1911,6 @@ begin
 end;
 
 
-
 procedure TDemixFilterForm.BitBtn16Click(Sender: TObject);
 //has to be on form to loop through the params and RefDEM types
 var
@@ -2088,7 +2026,7 @@ var
    fName : PathStr;
 begin
    fName := DEMIXSettingsDir;
-   if GetExistingFileName('DEMIX tiles','*.txt',fName) then begin
+   if GetExistingFileName('DEMIX tiles','tile*.txt',fName) then begin
       Memo2.Lines.LoadFromFile(fName);
    end;
 end;
@@ -2099,7 +2037,7 @@ var
    AreaName : Petmar_types.shortstring;
 begin
    AreaName := ComboBox4.Text;
-   LoadDEMsForCurrentArea(AreaName,true,false);
+   LoadDEMsForCurrentArea(AreaName,MDDef.LoadRefDEMMaps,MDDef.LoadTestDEMMaps);
 end;
 
 

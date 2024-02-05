@@ -1372,17 +1372,6 @@ end;
 
             PETMARCommonForm.SaveDialog1.InitialDir := ExtractFilePath(FName);
             PETMARCommonForm.SaveDialog1.FileName := ExtractFileName(fName);
-
-(*
-            if FileExists(fName) or PathIsValid(ExtractFilePath(fName)) then begin
-               PETMARCommonForm.SaveDialog1.InitialDir := ExtractFilePath(FName);
-               PETMARCommonForm.SaveDialog1.FileName := ExtractFileName(fName);
-            end
-            else begin
-               PETMARCommonForm.SaveDialog1.InitialDir := Copy(fName,1,pred(Length(fName)));
-               PETMARCommonForm.SaveDialog1.FileName := '';
-            end;
-*)
             PETMARCommonForm.SaveDialog1.FilterIndex := 1;
 
             if PETMARCommonForm.SaveDialog1.Execute then begin

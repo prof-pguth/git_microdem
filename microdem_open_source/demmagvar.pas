@@ -4,7 +4,7 @@ unit DEMmagvar;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -62,8 +62,7 @@ var
    wmmfile : textFile;
    wMonth,wDay,wYear : word;
 begin
-   {$IfDef MessageStartUpUnitProblems} MessageToContinue('Startup demMagVar'); {$EndIf}
-   {$IfDef RecordInitialization} WriteLineToDebugFile('Call InitializeMagneticVariation');   {$EndIf}
+   {$If Defined( MessageStartUpUnitProblems) or Defined (RecordInitialization)} MessageToContinue('InitializeMagneticVariation in'); {$EndIf}
    MagModel := Nil;
 
    if FileExists(www_mag_mod_fName) then begin

@@ -53,7 +53,7 @@ unit DEMCoord;
       //{$Define RecordDEMDigitizeDatum}
       //{$Define TimeLoadDEM}
       //{$Define RecordZ2ndDEM}
-      //{$Define RecordDEMClose}
+      {$Define RecordDEMClose}
       //{$Define RecordNormalInit}
       //{$Define RecordMinMax}
       //{$Define RecordExtremeZ}
@@ -1700,7 +1700,13 @@ destructor tDEMDataSet.Destroy;
 var
    Action: TCloseAction;
 begin
-   {$If Defined(RecordClosing) or Defined(RecordDEMClose)} if (not DEMMergeInProgress) then WriteLineToDebugFile('tDEMDataSet.Destroy DEM ' + AreaName); {$EndIf}
+   {$If Defined(RecordClosing) or Defined(RecordDEMClose)} if (not DEMMergeInProgress) then WriteLineToDebugFile('tDEMDataSet.Destroy DEM=' + IntToStr(ThisDEM) + '  ' + AreaName); {$EndIf}
+
+   (*
+   if AreaName = '' then begin
+      MessageToContinue('Problem in tDEMDataSet.Destroy');
+   end;
+   *)
 
    {$IfDef EXNLCD}
    {$Else}
@@ -1722,9 +1728,12 @@ begin
    finally
       DEMMetadata := nil;
    end;
+   {$If Defined(RecordDEMClose)} if (not DEMMergeInProgress) then WriteLineToDebugFile('tDEMDataSet.Destroy Step 2, DEM=' + AreaName); {$EndIf}
 
-   if not DEMMapProjection.ProjectionSharedWithDataset then FreeAndNil(DEMMapProjection);
+   {if (not DEMMapProjection.ProjectionSharedWithDataset) then} if (DEMMapProjection <> nil) then FreeAndNil(DEMMapProjection);
+   {$If Defined(RecordDEMClose)} if (not DEMMergeInProgress) then WriteLineToDebugFile('tDEMDataSet.Destroy Step 3, DEM=' + AreaName); {$EndIf}
    FreeDEMMemory;
+   {$If Defined(RecordDEMClose)} if (not DEMMergeInProgress) then WriteLineToDebugFile('tDEMDataSet.Destroy Step 4, DEM=' + AreaName); {$EndIf}
    FreeAndNil(VatLegendStrings);
    {$IfDef ExVegDensity}
    {$Else}
@@ -1736,7 +1745,7 @@ begin
    {$IfDef NoMapOptions}
    {$Else}
        if CloseMap and Assigned(SelectionMap) then try
-          {$If Defined(RecordClosing) or Defined(RecordDEMClose)}  WriteLineToDebugFile('tDEMDataSet.Destroy has selection map'): {$EndIf}
+          {$If Defined(RecordClosing) or Defined(RecordDEMClose)}  WriteLineToDebugFile('tDEMDataSet.Destroy has selection map'); {$EndIf}
           SelectionMap.MapDraw.ClosingMapNow := true;
           SelectionMap.Closable := true;
           SelectionMap.FormClose(Nil,Action);
@@ -1745,7 +1754,6 @@ begin
           {$If Defined(RecordClosing) or Defined(RecordDEMClose)} WriteLineToDebugFile('tDEMDataSet.Destroy finished close selection map'); {$EndIf}
        end;
    {$EndIf}
-
 
    {$If Defined(RecordClosing) or Defined(RecordDEMClose)} if not DEMMergeInProgress then WriteLineToDebugFile('tDEMDataSet.Destroy done ' + AreaName); {$EndIf}
 end;
@@ -2270,10 +2278,10 @@ var
    TStr : shortstring;
 begin
   {$IfDef RecordNLCD} WriteLineToDebugFile('tDEMDataSet.CheckForLandCover in'); {$EndIf}
-   if (LandCoverGrid) then begin
+   if LandCoverGrid then begin
       if (NLCDCats <> Nil) then begin
          Dispose(NLCDCats);
-         NLCDCats := nil;
+         //NLCDCats := nil;
       end;
       New(NLCDCats);
       if (DEMheader.ElevUnits in [GLC2000]) then TStr := 'GLC-2000'

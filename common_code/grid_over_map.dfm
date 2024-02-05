@@ -4,8 +4,8 @@ object GridOverlayonMap: TGridOverlayonMap
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Geomorph atlas--classify'
-  ClientHeight = 448
-  ClientWidth = 498
+  ClientHeight = 445
+  ClientWidth = 486
   Color = cl3DLight
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -341,8 +341,8 @@ object GridOverlayonMap: TGridOverlayonMap
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 426
-    Width = 498
+    Top = 423
+    Width = 486
     Height = 22
     Panels = <
       item

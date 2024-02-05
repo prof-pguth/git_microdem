@@ -2,8 +2,8 @@ object MapForm: TMapForm
   Left = 45
   Top = 303
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1051
-  ClientWidth = 1928
+  ClientHeight = 1050
+  ClientWidth = 1924
   Color = clBtnHighlight
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -40,8 +40,8 @@ object MapForm: TMapForm
   object ScrollBox1: TScrollBox
     Left = 0
     Top = 27
-    Width = 1928
-    Height = 1024
+    Width = 1924
+    Height = 1023
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clRed
@@ -51,8 +51,6 @@ object MapForm: TMapForm
     ParentFont = False
     TabOrder = 0
     OnClick = ScrollBox1Click
-    ExplicitWidth = 1924
-    ExplicitHeight = 1023
     object Image1: TImage
       Left = 3
       Top = -247
@@ -334,12 +332,11 @@ object MapForm: TMapForm
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1928
+    Width = 1924
     Height = 27
     Align = alTop
     TabOrder = 1
     OnMouseDown = Panel1MouseDown
-    ExplicitWidth = 1924
     object AnnotateSpeedButton1: TSpeedButton
       Left = 31
       Top = -4
@@ -2249,6 +2246,10 @@ object MapForm: TMapForm
           Caption = 'SRTM water bodies'
           OnClick = SRTMwaterbodies2Click
         end
+        object LC100landcoverwaterbodies1: TMenuItem
+          Caption = 'LC100 landcover water bodies'
+          OnClick = LC100landcoverwaterbodies1Click
+        end
         object NonUSAregions1: TMenuItem
           Caption = 'Non-USA regions'
         end
@@ -4082,6 +4083,10 @@ object MapForm: TMapForm
           Caption = 'Whitebox Circular Variance Of Aspect'
           OnClick = WhiteboxCircularVarianceOfAspect1Click
         end
+        object Whiteboxdrainagebasins1: TMenuItem
+          Caption = 'Whitebox drainage basins'
+          OnClick = Whiteboxdrainagebasins1Click
+        end
         object N50: TMenuItem
           Caption = '-'
         end
@@ -4170,9 +4175,25 @@ object MapForm: TMapForm
           Caption = 'SAGA remove sinks'
           OnClick = SAGAremovesinks1Click
         end
+        object SAGAedgecontaminationmap1: TMenuItem
+          Caption = 'SAGA edge contamination map'
+          OnClick = SAGAedgecontaminationmap1Click
+        end
         object SAGAChannelNetworkandBasins1: TMenuItem
           Caption = 'SAGA  Channel Network Shapfile'
           OnClick = SAGAChannelNetworkandBasins1Click
+        end
+        object SAGADrainagebasins1: TMenuItem
+          Caption = 'SAGA Drainage basins'
+          OnClick = SAGADrainagebasins1Click
+        end
+        object SAGAwatershedbasinsWangLiu1: TMenuItem
+          Caption = 'SAGA watershed basins (Wang and Liu)'
+          OnClick = SAGAwatershedbasinsWangLiu1Click
+        end
+        object SAGAStrahlerordergrid1: TMenuItem
+          Caption = 'SAGA Strahler order grid'
+          OnClick = SAGAStrahlerordergrid1Click
         end
         object N63: TMenuItem
           Caption = '-'
@@ -6588,11 +6609,9 @@ object MapForm: TMapForm
     end
     object Recentworldpiracy1: TMenuItem
       Caption = 'Recent world piracy'
-      OnClick = Recentworldpiracy1Click
     end
     object idegaugesandsealevelrise1: TMenuItem
       Caption = 'Tide gauges and sea level rise'
-      OnClick = idegaugesandsealevelrise1Click
     end
     object Sunabovethehorizon2: TMenuItem
       Caption = 'Sun above the horizon'

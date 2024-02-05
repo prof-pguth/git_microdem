@@ -4,7 +4,7 @@ unit demtrendopt;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -53,6 +53,8 @@ type
     CheckBox7: TCheckBox;
     BitBtn1: TBitBtn;
     RedrawSpeedButton12: TSpeedButton;
+    Label1: TLabel;
+    Edit1: TEdit;
     procedure OKBtnClick(Sender: TObject);
     procedure HelpBtnClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -66,6 +68,7 @@ type
     procedure BitBtn1Click(Sender: TObject);
     procedure RedrawSpeedButton12Click(Sender: TObject);
     procedure CheckBox7Click(Sender: TObject);
+    procedure Edit1Change(Sender: TObject);
   private
     { Private declarations }
   public
@@ -126,6 +129,9 @@ end;
 
 procedure TTrendPick.RedrawSpeedButton12Click(Sender: TObject);
 begin
+  if (Edit1.Text <> '') then begin
+     CheckEditString(Edit1.Text,MDDef.CurOrdTrendSurf);
+  end;
   RawComputeTrendSurface(CurDB,CurDEM,GridLimits,theMapOwner);
 
   if MDDef.AutoIncGeoColor then begin
@@ -246,6 +252,14 @@ begin
    MDDef.TrendOpenMaps := CheckBox7.Checked;
 end;
 
+
+procedure TTrendPick.Edit1Change(Sender: TObject);
+begin
+   CheckEditString(Edit1.Text,MDDef.CurOrdTrendSurf);
+   if (MDDef.CurOrdTrendSurf > 12) then Edit1.Text := '12';  //2/2/2024, largest value currently working
+
+end;
+
 { tTrendSurf }
 
 procedure tTrendSurf.ComputeTrendSurface;
@@ -314,7 +328,7 @@ var
          i : integer;
          x,y : float64;
       begin
-         writeln(ResultsFile, '     n=',NumDataPoints);
+         writeln(ResultsFile, '  n=',NumDataPoints);
          writeln(ResultsFile);
          writeln(ResultsFile,'Order ', CurrentOrderTrendSurface,' Trend surface');
          if (CurrentOrderTrendSurface = 1) then begin
@@ -404,7 +418,6 @@ begin
          if not OpenAndZeroNewDEM(true,DEMGlb[CurDEM].DEMheader,DevDEM,'Deviations_from_trend_Surface_' + IntToStr(CurrentOrderTrendSurface),InitDEMmissing) then exit;
       end;
    end;
-
 
    New(A);
    C[1] := 1.0;

@@ -4,7 +4,7 @@ unit geomorph_region_size_graph;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -269,7 +269,7 @@ begin
             moment(zvs^,MomentVar,msBeforeMedian);
             case RadioGroup2.ItemIndex of
                0 : v[2] := MomentVar.mean;
-               1 : v[2] := MomentVar.sdev;
+               1 : v[2] := MomentVar.std_dev;
                2 : v[2] := MomentVar.skew;
                3 : v[2] := MomentVar.curt;
             end;

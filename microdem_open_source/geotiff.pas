@@ -272,7 +272,6 @@ begin
 end;
 
 
-
 function GeotiffBoudingBox(fName : PathStr; var bb : sfBoundBox) : boolean;
 var
    success : boolean;
@@ -315,7 +314,6 @@ begin
    else Result := 0;
    TiffImage.Destroy;
 end;
-
 
 
 function GeotiffTypeSize(ftype : integer) : integer;
@@ -680,7 +678,7 @@ end;
 
 function tTIFFImage.MakeWord : Word;
 var
-   i1,i2 : word;
+   //i1,i2 : word;
    v : array[1..2] of byte;
 begin
    FileRead(TiffHandle,v,2);
@@ -982,7 +980,7 @@ begin
          out:;
       end;
       EndProgress;
-      {$IfDef NoCSVImports} {$Else} StringList2CSVtoDB(Results,fName1,true); {$EndIf}
+      StringList2CSVtoDB(Results,fName1,true);
       {$IfDef RecordGeotiffHistogram} WriteLineToDebugFile('tTIFFImage.GetHistogramDBF written'); {$EndIf}
       for I := 1 to TiffHeader.SamplesPerPixel do Dispose(Hist[i]);
    end;
@@ -995,8 +993,6 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
 
          function InitializeTiffDEM(WantDEM : tDEMDataSet; ForceType : boolean = false; TypeWanted : tDEMprecision = ByteDEM) : boolean;
          var
-            //NLCD : boolean;
-            //sl : tStringList;
             LandCover : ShortString;
 
 
@@ -1115,7 +1111,6 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
             WantDEM.DEMheader.LatHemi := WantDEM.DEMMapProjection.LatHemi;
             {$If Defined(RecordGeotiffProjection)} WriteLineToDebugFile('DefineProjectionParameters out, DEM proj=' + WantDEM.DEMMapProjection.GetProjectionName); {$EndIf}
          end;
-
 
 
          begin
@@ -2355,53 +2350,62 @@ var
       end;
    {$EndIf}
 
-   procedure ReadTiffFileHeader;
+   function ReadTiffFileHeader : boolean;
    var
       b : array[1..16] of byte;
    begin
-      FileRead(TiffHandle,B,4);
-      (*
-      if (B[1] = 0) and (B[2] = 0) and (B[3] = 0) and (B[4] = 0) then begin
-         b[1] := 73;
-         B[2] := 73;
-         B[3] := 42;
-      end;
-      *)
-      if (B[3] = 43) or (B[4] = 43) then BigTiff := true
-      else if ((B[3] = 42) or (B[4] = 42)) then BigTiff := false
-      else begin
-         {$IfDef RecordGeotiffFailures} WriteLineToDebugFile('Header ' + IntToStr(B[1]) + '/' +IntToStr(B[2]) + '/' + IntToStr(B[3]) + '/' + IntToStr(B[4]) + ' Not TIFF ' + inFileName); {$EndIf}
-         if false then begin
-            Success := false;
-            CloseTiffFile;
+      try
+         FileRead(TiffHandle,B,4);
+         (*
+         if (B[1] = 0) and (B[2] = 0) and (B[3] = 0) and (B[4] = 0) then begin
+            b[1] := 73;
+            B[2] := 73;
+            B[3] := 42;
+            Result := false;
+            {$If Defined(RecordGeotiff) or Defined(RecordGeotiffFailures)} WriteLineToDebugFile('ReadTiffFileHeader failure: ' + inFileName); {$EndIf}
             exit;
          end;
-         BigTiff := true;
+         *)
+         if (B[3] = 43) or (B[4] = 43) then BigTiff := true
+         else if ((B[3] = 42) or (B[4] = 42)) then BigTiff := false
+         else begin
+            {$IfDef RecordGeotiffFailures} WriteLineToDebugFile('Header ' + IntToStr(B[1]) + '/' +IntToStr(B[2]) + '/' + IntToStr(B[3]) + '/' + IntToStr(B[4]) + ' Not TIFF ' + inFileName); {$EndIf}
+            if false then begin
+               Success := false;
+               CloseTiffFile;
+               exit;
+            end;
+            BigTiff := true;
+         end;
+
+         BigEndian := (b[1] = 77);
+         HeaderLogList.Add(inFileName);
+
+         if BigTiff then begin
+            OffsetByteSize := 8;
+            MakeWord;  //OffsetByteSize, has to be 8
+            MakeWord;  //has to be 0
+         end
+         else begin
+            OffsetByteSize := 4;  //not in header for original TIFF specs
+         end;
+
+         FirstIFD := MakeOffset;
+         //move to first IFD
+         FileSeek(TiffHandle,FirstIFD,0);
+         if BigTiff then TiffHeader.NumEnt := MakeUnsigned8Byte
+         else TiffHeader.NumEnt := MakeWord;
+
+         TStr := ',  entries=' + IntToStr(TiffHeader.NumEnt);
+         if BigEndian then TStr := 'Big Endian' + TStr
+         else TStr := 'Little Endian (Intel)' + TStr;
+         HeaderLogList.Add(TStr);
+         HeaderLogList.Add('First IFD offset ' + IntToStr(FirstIFD));
+         TStr := '';
+         Result := true;
+      Except
+         on Exception do Result := false;
       end;
-
-      BigEndian := (b[1] = 77);
-      HeaderLogList.Add(inFileName);
-
-      if BigTiff then begin
-         OffsetByteSize := MakeWord;  //OffsetByteSize, has to be 8
-         MakeWord;  //has to be 0
-      end
-      else begin
-         OffsetByteSize := 4;  //not in header for original TIFF specs
-      end;
-
-      FirstIFD := MakeOffset;
-      //move to first IFD
-      FileSeek(TiffHandle,FirstIFD,0);
-      if BigTiff then TiffHeader.NumEnt := MakeUnsigned8Byte
-      else TiffHeader.NumEnt := MakeWord;
-
-      TStr := ',  entries=' + IntToStr(TiffHeader.NumEnt);
-      if BigEndian then TStr := 'Big Endian' + TStr
-      else TStr := 'Little Endian (Intel)' + TStr;
-      HeaderLogList.Add(TStr);
-      HeaderLogList.Add('First IFD offset ' + IntToStr(FirstIFD));
-      TStr := '';
    end;
 
 
@@ -2436,15 +2440,22 @@ begin
    {$IfDef RecordGeotiffRestart} WriteLineToDebugFile('Start/RestartGeotiff ' + TIFFFileName); {$EndIf}
    InitializeValues;
    OpenTiffFile;
-   ReadTiffFileHeader;
+
+   if not ReadTiffFileHeader then begin
+      exit;
+   end;
+
+
    HeaderLogList.Add('');
    HeaderLogList.Add('Tag no/TiffTypeName/LengthIm/Offset/TiffTagName');
    HeaderLogList.Add('');
 
    if (TiffHeader.NumEnt > 100) or (TiffHeader.NumEnt < 10) then begin
       Success := false;
-      {$If Defined(RecordGeotiffFailures) or Defined(RecordProblems)} WriteLineToDebugFile('NumEnt problem ' + inFileName); {$EndIf}
-      goto SkipThumbnail;
+      {$If Defined(RecordGeotiffFailures) or Defined(RecordProblems)} WriteLineToDebugFile('NumEnt problem=' + IntToStr(TiffHeader.NumEnt) + '  ' + inFileName); {$EndIf}
+      Success := false;
+      CloseTiffFile;
+      exit;
    end;
 
    ReadTIFFtags;
@@ -2469,7 +2480,11 @@ begin
             GDALConvert4BitGeotiff(TIFFFileName);
          end
          else begin
-            if TemporaryNewGeotiff then GDALConvertSingleImageToGeotiff(TIFFFileName)
+            if TemporaryNewGeotiff then begin
+               if not GDALConvertSingleImageToGeotiff(TIFFFileName) then begin
+                  exit;
+               end;
+            end
             else GDALConvertImagesToGeotiff(TIFFFileName,true);
          end;
          {$If Defined(RecordGeotiffFailures) or Defined(RecordGeotiffRestart)} WriteLineToDebugFile('GDAL done; restart Geotiff'); {$EndIf}

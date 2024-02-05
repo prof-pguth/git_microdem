@@ -882,12 +882,23 @@ end;
    procedure ViewHeaderRecord(DEM : integer);
    var
       EditHeader : TDEMHeaderForm;
+      FileName : PathStr;
+      ReadDEM  : integer;
    begin
       {$IfDef RecordEdit} WriteLineToDebugFile('ViewHeaderRecord in, DEM=' + IntToStr(DEM)); {$EndIf}
+      if (DEM = 0) then begin
+         FileName := '';
+         NewArea(false,ReadDEM,'DEM header to edit',FileName);
+         if ValidDEM(ReadDEM) then begin
+            DEM := ReadDEM;
+         end
+         else exit;
+      end;
       EditHeader := TDEMHeaderForm.Create(Application);
       EditHeader.SetUpDEMHeaderForm(DEM);
       EditHeader.DisableEdits;
       EditHeader.ShowModal;
+      CloseSingleDEM(ReadDEM);
    end;
 
 
@@ -931,7 +942,7 @@ end;
       {$If Defined(RecordIniMemoryOverwrite) or Defined(TimeLoadDEM)} IniMemOverwriteCheck('start OpenNewDEM'); {$EndIf}
       Result := 0;
       try
-         DEMMergeInProgress := true;   //defined for the case of opening multiple DEMs with GetMultiple Files
+         DEMMergeInProgress := true;   //defined for case of opening multiple DEMs with GetMultiple Files
          if (FName <> '') then begin
            {$If Defined(TimeLoadDEM)} WriteLineToDebugFile('OpenNewDEM passed DEM: ' + fName); {$EndIf}
            LoadNewDEM(Result,fName,LoadMap,'DEM/grid for ' + WhatFor);

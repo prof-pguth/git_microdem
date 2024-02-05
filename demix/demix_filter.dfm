@@ -1,7 +1,7 @@
 object DemixFilterForm: TDemixFilterForm
   Left = 0
   Top = 0
-  Caption = 'Demix Filter Pick Graphs'
+  Caption = 'Overwrite if exists'
   ClientHeight = 477
   ClientWidth = 763
   Color = clBtnFace
@@ -22,6 +22,8 @@ object DemixFilterForm: TDemixFilterForm
     ActivePage = TabSheet1
     Align = alClient
     TabOrder = 0
+    ExplicitWidth = 759
+    ExplicitHeight = 476
     object TabSheet1: TTabSheet
       Caption = 'New options'
       object LoadCurrentAreaBitBtn5: TBitBtn
@@ -462,85 +464,32 @@ object DemixFilterForm: TDemixFilterForm
         TabOrder = 39
         OnClick = BitBtn34Click
       end
-      object BitBtn38: TBitBtn
-        Left = 632
-        Top = 88
-        Width = 121
-        Height = 25
-        Caption = 'Create test DEMs'
-        TabOrder = 40
-        OnClick = BitBtn38Click
-      end
       object BitBtn39: TBitBtn
         Left = 224
         Top = 304
         Width = 113
         Height = 25
         Caption = 'Diluvium'
-        TabOrder = 41
+        TabOrder = 40
         OnClick = BitBtn39Click
       end
-    end
-    object TabSheet2: TTabSheet
-      Caption = 'Compare v1 v2'
-      ImageIndex = 1
-      object ComboBox5: TComboBox
-        Left = 8
-        Top = 16
-        Width = 145
-        Height = 23
-        TabOrder = 0
-        Text = 'ComboBox5'
-        OnChange = ComboBox5Change
+      object CheckBox4: TCheckBox
+        Left = 360
+        Top = 112
+        Width = 97
+        Height = 17
+        Caption = 'Test DEM maps'
+        TabOrder = 41
+        OnClick = CheckBox4Click
       end
-      object ComboBox6: TComboBox
-        Left = 168
-        Top = 16
-        Width = 145
-        Height = 23
-        TabOrder = 1
-        Text = 'ComboBox6'
-        OnChange = ComboBox6Change
-      end
-      object ComboBox7: TComboBox
-        Left = 336
-        Top = 16
-        Width = 145
-        Height = 23
-        ItemIndex = 0
-        TabOrder = 2
-        Text = 'DTM'
-        OnChange = ComboBox7Change
-        Items.Strings = (
-          'DTM'
-          'DSM')
-      end
-      object StringGrid1: TStringGrid
-        Left = 3
-        Top = 80
-        Width = 478
-        Height = 169
-        ColCount = 7
-        RowCount = 4
-        TabOrder = 3
-      end
-      object BitBtn6: TBitBtn
-        Left = 208
-        Top = 48
-        Width = 105
-        Height = 25
-        Caption = 'Compare'
-        TabOrder = 4
-        OnClick = BitBtn6Click
-      end
-      object ComboBox8: TComboBox
-        Left = 504
-        Top = 16
-        Width = 145
-        Height = 23
-        TabOrder = 5
-        Text = 'ALL'
-        OnChange = ComboBox8Change
+      object CheckBox23: TCheckBox
+        Left = 360
+        Top = 136
+        Width = 97
+        Height = 17
+        Caption = 'Ref DEM maps'
+        TabOrder = 42
+        OnClick = CheckBox23Click
       end
     end
     object TabSheet3: TTabSheet
@@ -786,6 +735,15 @@ object DemixFilterForm: TDemixFilterForm
           'Sort by tile parameters, graph by criterion and DEM type')
         TabOrder = 10
         OnClick = RadioGroup2Click
+      end
+      object BitBtn6: TBitBtn
+        Left = 249
+        Top = 340
+        Width = 176
+        Height = 25
+        Caption = 'Graph average scores by tile'
+        TabOrder = 11
+        OnClick = BitBtn6Click
       end
     end
     object Settings: TTabSheet

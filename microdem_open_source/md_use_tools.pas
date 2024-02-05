@@ -108,6 +108,8 @@ uses
    function WhiteBox_TRI(InName : PathStr) : integer;
    function WhiteBox_AverageNormalVectorAngularDeviation(InName : PathStr; filtersize : integer) : integer;
    function WhiteBox_CircularVarianceOfAspect(InName : PathStr; filtersize : integer) : integer;
+   function WhiteBoxDrainageBasins(InName : PathStr) : integer;
+
 {$EndIf}
 
 
@@ -132,7 +134,11 @@ uses
    function SagaChannelNetwork(InName : PathStr; OutName : PathStr = ''; ShpName : PathStr = '') : integer;
    function SagaSinkRemoval(InName : PathStr; OutName : PathStr = '') : integer;
    function SagaChannelShapefile(InName : PathStr; ChannelName : PathStr = '') : integer;
+   function SAGAedgeContaminationMap(InName : PathStr; OutName : PathStr = '') : integer;
+   function SagaWatershedBasins(InName : PathStr; BasinGrid : PathStr = ''; ChannelNetwork : PathStr = ''; OutName : PathStr = '') : integer;
    procedure SAGA_all_DEMs_remove_sinks;
+   function SagaWatershedBasinsWangLiu(InName : PathStr) : integer;
+   function SAGAStrahlerOrderGrid(InName : PathStr; OutName : PathStr = '') : integer;
 {$EndIf}
 
 
@@ -170,166 +176,16 @@ const
    ClearGRASSdirectory = 'rd /S /Q c:\mapdata\temp\grass1';
 
 
+{$i saga_wrapper.inc}
+
+{$I wbt_wrapper.inc}
+
+
 function BBtoPathString(bb : sfBoundBox; Decs : integer = 2) : shortstring;
 begin
    Result := RealToString(bb.ymin,-8,Decs) + '_' + RealToString(bb.xmin,-8,Decs) + '_' + RealToString(bb.ymax,-8,Decs) + '_' + RealToString(bb.xmax,-8,Decs);
 end;
 
-
-
-
-{$IfDef ExSAGA}
-{$Else}
-
-//  https://sourceforge.net/p/saga-gis/wiki/Executing%20Modules%20with%20SAGA%20CMD/#:~:text=SAGA%20CMD%20is%20a%20command,application%20like%20a%20web%20server.
-
-(*
- Algorithm 'Sink Removal' starting…
-Input parameters:
-{ 'DEM' : 'C:/temp/canyon_range/canyon_range_COP.tif', 'DEM_PREPROC' : 'TEMPORARY_OUTPUT', 'METHOD' : 1, 'SINKROUTE' : None, 'THRESHOLD' : False, 'THRSHEIGHT' : 100 }
-
-ta_preprocessor "Sink Removal" -DEM "C:/Users/pguth/AppData/Local/Temp/processing_rDPKFj/f38374e4abec45d0b2951b2280afff43/canyonrangeCOP.sgrd" -METHOD 1 -THRESHOLD false -THRSHEIGHT 100.0 -DEM_PREPROC "C:/Users/pguth/AppData/Local/Temp/processing_rDPKFj/5e3826c0da1d4b1c994adef706c2d79a/DEM_PREPROC.sdat"
-
-
-
-Algorithm 'Channel Network' starting…
-Input parameters:
-{ 'CHNLNTWRK' : 'TEMPORARY_OUTPUT', 'CHNLROUTE' : 'TEMPORARY_OUTPUT', 'DIV_CELLS' : 5, 'DIV_GRID' : None, 'ELEVATION' : 'C:/temp/canyon_range/canyon_range_COP.tif', 'INIT_GRID' : 'C:/temp/canyon_range/canyon_range_COP.tif', 'INIT_METHOD' : 2, 'INIT_VALUE' : 0, 'MINLEN' : 10, 'SHAPES' : 'TEMPORARY_OUTPUT', 'SINKROUTE' : None, 'TRACE_WEIGHT' : None }
-
-ta_channels "Channel Network" -ELEVATION "C:/Users/pguth/AppData/Local/Temp/processing_rDPKFj/f38374e4abec45d0b2951b2280afff43/canyonrangeCOP.sgrd"
-  -INIT_GRID "C:/Users/pguth/AppData/Local/Temp/processing_rDPKFj/f38374e4abec45d0b2951b2280afff43/canyonrangeCOP.sgrd"
-  -INIT_METHOD 2 -INIT_VALUE 0.0 -DIV_CELLS 5 -MINLEN 10
-  -CHNLNTWRK "C:/Users/pguth/AppData/Local/Temp/processing_rDPKFj/78fcdc4180ba4343beafaf3dc5267ff2/CHNLNTWRK.sdat" -CHNLROUTE "C:/Users/pguth/AppData/Local/Temp/processing_rDPKFj/b8eeb6cc8a244aef9058514ad6e4b7ae/CHNLROUTE.sdat" -SHAPES "C:/Users/pguth/AppData/Local/Temp/processing_rDPKFj/578df69586ac4544b9e5384bd8e7650e/SHAPES.shp"
-*)
-
-
-    function IsSagaCMDthere : boolean;
-    begin
-       Result := FileExists(MDDef.SagaCMD) or GetExistingFileName('saga_cmd.exe','*.exe',MDDef.SagaCMD);
-    end;
-
-
-    function SAGAMap(cmd : shortstring; inName,OutName : shortstring; ZUnits : tElevUnit; OpenMap : boolean = true) : integer;
-    begin
-       if IsSagaCMDthere and FileExists(InName) then begin
-          {$IfDef RecordSAGA} WriteLineToDebugFile('SAGAMap in, cmd= ' + CMD); {$EndIf}
-          WinExecAndWait32(cmd);
-          if OpenMap and (OutName <> '') then begin
-            Result := OpenNewDEM(OutName,false);
-            if (Result <> 0) and OpenMap then begin
-               DEMGlb[Result].DEMheader.ElevUnits := zUnits;
-               CreateDEMSelectionMap(Result,true,true,mtElevSpectrum);
-            end;
-          end;
-       end
-       else Result := 0;
-    end;
-
-
-    function SagaChannelShapefile(InName : PathStr; ChannelName : PathStr = '') : integer;
-    var
-       cmd : shortstring;
-    begin
-       Result := 0;
-       if IsSagaCMDthere and FileExists(InName) then begin
-         {$IfDef RecordSAGAFull} WriteLineToDebugFile('SagaChannelShapefile in, InName= ' + InName); {$EndIf}
-          if (ChannelName = '') then ChannelName := MDTempDir + 'saga_channel_' + ExtractFileNameNoExt(InName) + '.shp';
-          if not FileExists(ChannelName) then begin
-             CMD := MDDef.SagaCMD + ' ta_channels 0' +
-                  ' -ELEVATION ' + inName +
-                  ' -INIT_GRID ' + inName +
-                  ' -CHNLNTWRK ' + MDTempDir + 'saga_channel_network' + ExtractFileNameNoExt(InName) + '.tif' +
-                  ' -CHNLROUTE ' + MDTempDir + 'saga_channel_route' + ExtractFileNameNoExt(InName) + '.tif' +
-                  ' -SHAPES ' + ChannelName;
-             WinExecAndWait32(cmd);
-             {$IfDef RecordSAGAFull} WriteLineToDebugFile('SagaChannelShapefile in, ChannelName= ' + ChannelName); {$EndIf}
-          end;
-          //Result := SAGAMap(cmd,InName,'',Undefined,false);
-       end;
-    end;
-
-
-    function SagaChannelNetwork(InName : PathStr; OutName : PathStr = ''; ShpName : PathStr = '') : integer;
-    var
-       cmd : shortstring;
-    begin
-       if (OutName = '') then OutName := MDTempDir + 'saga_channel_' + ExtractFileNameNoExt(InName) + '.tif';
-       if (ShpName = '') then ShpName := MDTempDir + 'saga_channel_' + ExtractFileNameNoExt(InName) + '.shp';
-       CMD := MDDef.SagaCMD + ' ta_channels "Channel Network" -ELEVATION ' + inName + ' -INIT_GRID ' + inName + ' -CHNLNTWRK ' + OutName;
-       Result := SAGAMap(cmd,InName,OutName,Undefined,false);
-       //WinExecAndWait32(cmd);
-       Result := 0;
-    end;
-
-
-    function SagaSinkRemoval(InName: PathStr; OutName : PathStr = '') : integer;
-    var
-       cmd : shortstring;
-    begin
-       if IsSagaCMDthere then begin
-          {$IfDef RecordSAGA} WriteLineToDebugFile('SagaSinkRemoval in, InName= ' + InName); {$EndIf}
-          if (OutName = '') then OutName := MDTempDir + 'saga_sinks_removed_' + ExtractFileNameNoExt(InName) + '.tif';
-          CMD := MDDef.SagaCMD + ' ta_preprocessor "Sink Removal" -DEM ' + inName + ' -DEM_PREPROC ' + OutName;
-          //TemporaryNewGeotiff := false;
-          Result := SAGAMap(cmd,InName,outname,euMeters,false);
-          {$IfDef RecordSAGA} WriteLineToDebugFile('SagaSinkRemoval out'); {$EndIf}
-       end
-       else Result := 0;;
-    end;
-
-
-    procedure SAGA_all_DEMs_remove_sinks;
-    var
-       i : integer;
-       InName,OutName : PathStr;
-    begin
-        {$IfDef RecordSAGA} WriteLineToDebugFile('SagaSinkRemoval in, InName= ' + InName); {$EndIf}
-        if IsSagaCMDthere then begin
-           for i := 1 to MaxDEMDataSets do begin
-             if ValidDEM(i) then begin
-                InName := DEMGlb[i].SelectionMap.GeotiffDEMNameOfMap;
-                OutName := ChangeFileExt(InName,'_no_sink.tif');
-                SagaSinkRemoval(InName,OutName);
-                GDALConvertImagesToGeotiff(OutName,true);
-             end;
-          end;
-        end;
-    end;
-
-
-    function SagaTRIMap(InName : PathStr) : integer;
-    var
-       cmd : shortstring;
-       OutName : shortstring;
-    begin
-       OutName := MDTempDir + 'saga_tri_' + ExtractFileNameNoExt(InName) + '.tif';
-       CMD := MDDef.SagaCMD + ' ta_morphometry 16 -DEM ' + inName + ' -TRI ' + OutName + ' -MODE 0';
-       Result := SAGAMap(cmd,InName,outname,euMeters);
-    end;
-
-
-    function SagaTPIMap(InName : PathStr) : integer;
-    var
-       cmd : shortstring;
-       OutName : shortstring;
-    begin
-       OutName := MDTempDir + 'saga_tpi_' + ExtractFileNameNoExt(InName) + '.tif';
-       CMD := MDDef.SagaCMD + ' ta_morphometry 18 -DEM ' + inName + ' -TPI ' + OutName;
-       Result := SAGAMap(cmd,InName,outname,euMeters);
-    end;
-
-
-    function SagaVectorRuggednessMap(InName : PathStr; Radius : integer) : integer;
-    var
-       cmd : shortstring;
-       OutName : shortstring;
-    begin
-       OutName := MDTempDir + 'saga_vrm_rad_' + FilterSizeStr(Radius) + '_' + ExtractFileNameNoExt(InName) + '.tif';
-       CMD := MDDef.SagaCMD + ' ta_morphometry 17 -DEM ' + inName + ' -VRM ' + OutName + ' -RADIUS ' + IntToStr(Radius);
-       Result := SAGAMap(cmd,InName,outname,Undefined);
-    end;
-
-{$EndIf}
 
 
 procedure AddEGMtoDBfromSphHarmonics(DBonTable : integer; Do2008 : boolean);
@@ -450,7 +306,7 @@ function GPSBabel_fit2gpx(inname,outname : PathStr) : boolean;
 var
    GPSBabelEXEName : PathStr;
 begin
-   GPSBabelEXEName := 'C:\Program Files\GPSBabel\gpsbabel.exe';
+   GPSBabelEXEName := 'G:\gis_software\gpsbabel\GPSBabel\gpsbabel.exe';
    Result := FileExists(GPSBabelExeName);
    if Result then begin
       WinExecAndWait32('"' + GPSBabelExeName + '" -i garmin_fit -o gpx -f ' + inName + ' -F ' + OutName);
@@ -718,312 +574,6 @@ begin
    Result := AssembleGrassCommand(InName,'grass_tangential_curvature_','r.slope.aspect elevation=mymap pcurvature=tcurve','tcurve','GrassTang_',euPerMeter,mtElevSpectrum);
 end;
 
-
-
-
-
-
-function WhiteBoxPresent : boolean;
-begin
-   if (WhiteBoxfName) = '' then WhiteBoxfName := ProgramRootDir + 'wbt\whitebox_tools.exe';
-   Result := FileExists(WhiteBoxfName);
-   if Not Result then begin
-      Result := GetExistingFileName('whitebox_tools.exe','*.exe',WhiteBoxfName);
-      if (Not Result) then MessageToContinue('WhiteBoxTools exe missing');
-   end;
-end;
-
-
-function WhiteBoxGroundClassify(InName,OutName : PathStr) : shortString;
-begin
-   Result := WhiteBoxfName + ' -r=LidarGroundPointFilter -v -i=' + InName + ' -o=' + OutName + ' --radius=' + RealToString(MDDef.WBGroundClassRadius,-12,1);
-end;
-
-
-function WhiteBoxLidarSegmentationBasedFilter(InName,OutName : PathStr) : shortString;
-begin
-   Result := WhiteBoxfName + ' -r=LidarSegmentationBasedFilter -v -i=' + InName + ' -o=' + OutName + ' --radius=' + RealToString(MDDef.WBSegFilterRadius,-12,1);
-end;
-
-
-function WhiteBoxDeNoise(InName,OutName : PathStr) : shortString;
-begin
-   Result := WhiteBoxfName + WBNoCompress + '-r=LidarRemoveOutliers -v -i=' + InName + ' -o=' + OutName + ' --radius=' + RealToString(MDDef.WBDeNoiseRadius,-12,1) + ' --elev_diff=' + RealToString(MDDef.WBDeNoiseElevDiff,-12,1);
-end;
-
-
-function ExecuteWBandOpenMap(cmd : ansistring; OutName : PathStr; TheElevUnits : tElevUnit; MapType :tMapType = mtElevRainbow) : integer;
-begin
-   {$IfDef RecordWBT} WriteLineToDebugFile('ExecuteWBandOpenMap, cmd=' + cmd); {$EndIf}
-   WinExecAndWait32(cmd);
-   {$IfDef RecordWBT} WriteLineToDebugFile('WinExecAndWait32 over'); {$EndIf}
-   if FileExists(OutName) then begin
-      if LoadNewDEM(Result,OutName,false) then begin
-         DEMGlb[Result].DEMheader.ElevUnits := TheElevUnits;
-         CreateDEMSelectionMap(Result,true,true,MapType);
-      end;
-      {$IfDef RecordWBT} WriteLineToDebugFile('ExecuteWBandOpenMap map opened'); {$EndIf}
-   end
-   else MessageToContinue('Whitebox failure, try command in DOS window: ' + cmd);
-   {$IfDef RecordWBT} WriteLineToDebugFile('ExecuteWBandOpenMap out'); {$EndIf}
-end;
-
-
-procedure WhiteBoxGridFillMissingData(InName : PathStr; TheElevUnits : tElevUnit);
-var
-   OutName : PathStr;
-   cmd : ansistring;
-begin
-   if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
-      OutName := MDTempDir + 'wbfill_holes_' + ExtractFileNameNoExt(InName) + '.tif';
-      cmd := WhiteBoxfName +  WBNoCompress + '-r=FillMissingData -v -i=' + InName + ' -o=' + OutName + ' --filter=' + IntToStr(MDdef.FillHoleRadius);
-      ExecuteWBandOpenMap(cmd,OutName,TheElevUnits);
-   end;
-end;
-
-
-function WhiteBoxSlopeMap(InName : PathStr) : integer;
-var
-   cmd : ansistring;
-   OutName : PathStr;
-begin
-  if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
-     OutName := MDTempDir + 'wb_slope_' + ExtractFileNameNoExt(InName) + '.tif';
-     cmd := WhiteBoxfName + WBNoCompress + '-r=Slope -v --dem=' + InName + ' -o=' + OutName + ' --units="percent"';
-     Result := ExecuteWBandOpenMap(cmd,OutName,PercentSlope);
-  end;
-end;
-
-
-function WhiteBox_TRI(InName : PathStr) : integer;
-var
-   cmd : ansistring;
-   OutName : PathStr;
-begin
-  if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
-     OutName := MDTempDir + 'WB_TRI_' + ExtractFileNameNoExt(InName) + '.tif';
-     cmd := WhiteBoxfName + WBNoCompress + '-r=RuggednessIndex -v --dem=' + InName + ' -o=' + OutName;
-     Result := ExecuteWBandOpenMap(cmd,OutName,euMeters);
-  end;
-end;
-
-function WhiteBox_AverageNormalVectorAngularDeviation(InName : PathStr; filtersize : integer) : integer;
-var
-   cmd : ansistring;
-   OutName : PathStr;
-begin
-  if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
-     OutName := MDTempDir + 'WB_avg_norm_vect_dev_' + FilterSizeStr(FilterSize) + '_' + ExtractFileNameNoExt(InName) + '.tif';
-     cmd := WhiteBoxfName + WBNoCompress + '-r=AverageNormalVectorAngularDeviation -v --dem=' + InName + ' -o=' + OutName + ' --filter=' + IntToStr(FilterSize);
-     Result := ExecuteWBandOpenMap(cmd,OutName,zDegrees,mtElevSpectrum);
-  end;
-end;
-
-function WhiteBox_CircularVarianceOfAspect(InName : PathStr; filtersize : integer) : integer;
-var
-   cmd : ansistring;
-   OutName : PathStr;
-begin
-  if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
-     OutName := MDTempDir + 'WB_circ_var_aspect_' + FilterSizeStr(FilterSize) + '_' + ExtractFileNameNoExt(InName) + '.tif';
-     cmd := WhiteBoxfName + WBNoCompress + '-r=CircularVarianceOfAspect -v --dem=' + InName + ' -o=' + OutName + ' --filter=' + IntToStr(FilterSize);
-     Result := ExecuteWBandOpenMap(cmd,OutName,undefined,mtElevSpectrum);
-  end;
-end;
-
-
-procedure WhiteBoxMultiscaleRoughness(InName : PathStr);
-var
-   cmd : ansistring;
-   NewGrid : integer;
-   OutName1,OutName2 : PathStr;
-begin
-  if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
-     OutName1 := MDTempDir + 'wb_ms_rough_mag_' + ExtractFileNameNoExt(InName) + '.tif';
-     OutName2 := MDTempDir + 'wb_ms_rough_scale_' + ExtractFileNameNoExt(InName) + '.tif';
-     cmd := WhiteBoxfName  + WBNoCompress + '-r=MultiScaleRoughness -v --dem=' + InName + ' -out_mag=' + OutName1 + ' -out_scale=' + OutName2 + ' --min_scale=1 --max_scale=1000 --step=5';
-     ExecuteWBandOpenMap(cmd,OutName1,euMeters);
-     if FileExists(OutName2) then begin
-        NewGrid := OpenNewDEM(OutName2);
-        {$IfDef RecordWBT} WriteLineToDebugFile('second map opened'); {$EndIf}
-     end;
-  end;
-end;
-
-
-procedure WhiteBoxAspectMap(InName : PathStr);
-var
-   cmd : ansistring;
-   OutName : PathStr;
-begin
-  if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
-     OutName := MDTempDir + 'wb_aspect_' + ExtractFileNameNoExt(InName) + '.tif';
-     cmd := WhiteBoxfName + WBNoCompress + '-r=Aspect -v --dem=' + InName + ' -o=' + OutName;   // + ' --units="percent"';
-     ExecuteWBandOpenMap(cmd,OutName,AspectDeg);
-  end;
-end;
-
-
-procedure WhiteBoxGeotiffMetadata(InName : PathStr);
-var
-   cmd : ansistring;
-   OutName : PathStr;
-   bFile : tStringList;
-begin
-  if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
-     OutName := MDTempDir + 'wb-metadata_' + ExtractFileNameNoExt(InName) + '.txt';
-     cmd := WhiteBoxfName + ' -r=PrintGeoTiffTags -v  --input=' + InName + ' >' + OutName;
-     bfile := tStringList.Create;
-     bfile.Add(cmd);
-     EndBatchFile(MDTempDir + 'wb_gt_meta.bat',bfile);
-     ShowInNotepadPlusPlus(OutName,ExtractFileName(OutName));
-  end;
-end;
-
-
-procedure WBNearNeighCreate(InName,OutName : PathStr; GridSize : float64);
-var
-   cmd : ansistring;
-begin
-  {$IfDef RecordUseOtherPrograms} WriteLineToDebugFile('WBNearNeighCreate, infile=' + InName + '  outfile=' + OutName); {$EndIf}
-  if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
-     cmd := WhiteBoxfName + WBNoCompress + '-r=LidarNearestNeighbourGridding -v -i=' + InName + ' -o=' + OutName + ' --resolution=' + RealToString(GridSize,-12,-1) + ' --radius=' + RealToString(GridSize * MDDef.FillHoleRadius,-12,-1);
-     ExecuteWBandOpenMap(cmd,OutName,euMeters);
-  end;
-end;
-
-
-procedure WBIDWCreate(InName,OutName : PathStr; GridSize : float64);
-var
-   cmd : ansistring;
-begin
-  {$IfDef RecordUseOtherPrograms} WriteLineToDebugFile('WBIDWCreate, infile=' + InName + '  outfile=' + OutName); {$EndIf}
-  if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
-     cmd := WhiteBoxfName  + WBNoCompress + '-r=LidarIdwInterpolation -v -i=' + InName + ' -o=' + OutName + ' --resolution=' + RealToString(GridSize,-12,-1) + ' --radius=' + RealToString(GridSize * MDDef.FillHoleRadius,-12,-1);
-     ExecuteWBandOpenMap(cmd,OutName,euMeters);
-  end;
-end;
-
-
-function WhiteBoxProfileCurvature(InName : PathStr) : integer;
-var
-   cmd : ansistring;
-   OutName : PathStr;
-begin
-  if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
-     OutName := MDTempDir + 'wb_profile_curvature_' + ExtractFileNameNoExt(InName) + '.tif';
-     cmd := WhiteBoxfName + WBNoCompress + '-r=ProfileCurvature -v --dem=' + InName + ' -o=' + OutName;
-     ExecuteWBandOpenMap(cmd,OutName,euPerMeter);
-  end;
-end;
-
-
-function WhiteBoxTangentialCurvature(InName : PathStr) : integer;
-var
-   cmd : ansistring;
-   OutName : PathStr;
-begin
-  if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
-     OutName := MDTempDir + 'wb_tangential_curvature_' + ExtractFileNameNoExt(InName) + '.tif';
-     cmd := WhiteBoxfName + WBNoCompress + '-r=TangentialCurvature -v --dem=' + InName + ' -o=' + OutName;
-     ExecuteWBandOpenMap(cmd,OutName,euPerMeter);
-  end;
-end;
-
-
-function WhiteBoxMinimalCurvature(InName : PathStr) : integer;
-var
-   cmd : ansistring;
-   OutName : PathStr;
-begin
-  if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
-     OutName := MDTempDir + 'wb_minimal_curvature_' + ExtractFileNameNoExt(InName) + '.tif';
-     cmd := WhiteBoxfName + WBNoCompress + '-r=MinimalCurvature -v --dem=' + InName + ' -o=' + OutName;
-     ExecuteWBandOpenMap(cmd,OutName,euPerMeter);
-  end;
-end;
-
-
-function WhiteBoxMaximalCurvature(InName : PathStr) : integer;
-var
-   cmd : ansistring;
-   OutName : PathStr;
-begin
-  if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
-     OutName := MDTempDir + 'wb_maximal_curvature_' + ExtractFileNameNoExt(InName) + '.tif';
-     cmd := WhiteBoxfName + WBNoCompress + '-r=MaximalCurvature -v --dem=' + InName + ' -o=' + OutName;
-     ExecuteWBandOpenMap(cmd,OutName,euPerMeter);
-  end;
-end;
-
-
-function WhiteBoxMeanCurvature(InName : PathStr) : integer;
-var
-   cmd : ansistring;
-   OutName : PathStr;
-begin
-  if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
-     OutName := MDTempDir + 'wb_mean_curvature_' + ExtractFileNameNoExt(InName) + '.tif';
-     cmd := WhiteBoxfName + WBNoCompress + '-r=MeanCurvature -v --dem=' + InName + ' -o=' + OutName;
-     ExecuteWBandOpenMap(cmd,OutName,euPerMeter);
-  end;
-end;
-
-
-function WhiteBoxGaussianCurvature(InName : PathStr) : integer;
-var
-   cmd : ansistring;
-   OutName : PathStr;
-begin
-  if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
-     OutName := MDTempDir + 'wb_gaussian_curvature_' + ExtractFileNameNoExt(InName) + '.tif';
-     cmd := WhiteBoxfName + WBNoCompress + '-r=GaussianCurvature -v --dem=' + InName + ' -o=' + OutName;
-     ExecuteWBandOpenMap(cmd,OutName,euPerMeter);
-  end;
-end;
-
-
-procedure WhiteBoxGeomorphons(InName : PathStr);
-var
-   OutName : PathStr;
-   bfile : tStringList;
-   cmd : ansistring;
-begin
-  {$IfDef RecordUseOtherPrograms} WriteLineToDebugFile('WhiteBoxGeomorphons, infile=' + InName + '  outfile=' + OutName); {$EndIf}
-  if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
-     OutName := NextFileNumber(MDTempDir,'wb_geomorphons_' + ExtractFileNameNoExt(InName) + '_','.tif');
-     bfile := tStringList.Create;
-     cmd := WhiteBoxfName  + WBNoCompress + ' -r=Geomorphons -v -i=' + InName + ' -o=' + OutName + ' --search=50 --threshold=0.0 --tdist=0 --forms=True';
-     bfile.Add(cmd);
-     EndBatchFile(MDTempDir + 'wb_geomorphon.bat',bfile);
-     {$IfDef RecordUseOtherPrograms} WriteLineToDebugFile('open outfile=' + OutName); {$EndIf}
-     OpenNewDEM(OutName);
-  end;
-  {$IfDef RecordUseOtherPrograms} WriteLineToDebugFile('WhiteBoxGeomorphons out'); {$EndIf}
-end;
-
-
-procedure WhiteBoxPennockLandformClass(InName : PathStr; SmoothFirst : boolean);
-var
-   tName,OutName : PathStr;
-   bfile : tStringList;
-begin
-  {$IfDef RecordUseOtherPrograms} WriteLineToDebugFile('WhiteBoxPennockLandformClass, infile=' + InName + '  outfile=' + OutName); {$EndIf}
-  if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
-     OutName := NextFileNumber(MDTempDir,'wb_pennock_' + ExtractFileNameNoExt(InName) + '_','.tif');
-     bfile := tStringList.Create;
-     if SmoothFirst then begin
-        tName := MDtempDir + 'denoise.tif';
-        bfile.Add(WhiteBoxfName + ' -r=FeaturePreservingSmoothing -v -i=' + InName + ' -o=' + tName);
-        inName := tName;
-     end;
-     bfile.Add(WhiteBoxfName  + WBNoCompress + '-r=PennockLandformClass -v -i=' + InName + ' -o=' + OutName);
-     EndBatchFile(MDTempDir + 'wb_pennock.bat',bfile);
-     {$IfDef RecordUseOtherPrograms} WriteLineToDebugFile('open outfile=' + OutName); {$EndIf}
-     OpenNewDEM(OutName);
-  end;
-  {$IfDef RecordUseOtherPrograms} WriteLineToDebugFile('WhiteBoxPennockLandformClass out'); {$EndIf}
-end;
 
 
 procedure RVTgrids(DEM : integer);

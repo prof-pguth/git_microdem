@@ -6,7 +6,7 @@ unit petmar_types;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -56,7 +56,7 @@ uses
    Math,Db,Classes,StrUtils;
 
 const
-   {$IF (CompilerVersion >= 36) and (CompilerVersion < 37)} DelphiCompiler = '11 Alexandria'; {$EndIf}
+   {$IF (CompilerVersion >= 36) and (CompilerVersion < 37)} DelphiCompiler = '12 '; {$EndIf}
    {$IF (CompilerVersion >= 35) and (CompilerVersion < 36)} DelphiCompiler = '11 Alexandria'; {$EndIf}
    {$IF (CompilerVersion >= 34) and (CompilerVersion < 35)} DelphiCompiler = '10.4 Sydney'; {$EndIf}
    {$IF (CompilerVersion >= 33) and (CompilerVersion < 34)} DelphiCompiler = '10.3 Rio'; {$EndIf}

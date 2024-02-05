@@ -116,8 +116,7 @@ var
        end;
        InsureFileIsNotReadOnly(DEMFileName);
        assignFile(fFile,DEMFileName);
-       HeaderSize := 1024;
-
+       HeaderSize := 2048;
        ReadHeader;
 
        {$IfDef RecordReadMDDEM} WriteLineToDebugFile('Recognition string=' + Magic); {$EndIf}
@@ -126,10 +125,12 @@ var
           {$If Defined(RecordReadMDDEM)} WriteLineToDebugFile('Acceptable MD DEM'); {$EndIf}
           AreaName := ExtractFileNameNoExt(DEMFileName);
           Result := true;
+          (*
           if (Magic ='*MICRODEMv5') then begin
               HeaderSize := 2048;
               ReadHeader;
           end;
+          *)
           if (Magic ='*MICRODEMv4') or (Magic ='*MICRODEMv5') then begin
              repeat
                 NextLine := Petmar_types.BeforeSpecifiedCharacter(TStr,#13,true,true);
@@ -145,7 +146,7 @@ var
                    else if key = 'llx' then DEMheader.DEMSWCornerX := StrToFloat(NextLine)
                    else if key = 'lly' then DEMheader.DEMSWCornerY := StrToFloat(NextLine)
                    else if key = 'utmzone' then DEMheader.UTMZone := StrToInt(NextLine)
-                   //else if key = 'fipszone' then
+                   else if key = 'fipszone' then  //needed so it does not go to the drop down
                    else if (key = 'projtype') or (key = 'newproj') then DEMheader.DEMUsed := StrToInt(NextLine)
                    else if key = 'precision' then DEMheader.DEMPrecision := tDEMprecision(StrToInt(NextLine))
                    else if key = 'spaceunit' then DEMheader.DataSpacing := tSpacingUnit(StrToInt(NextLine))
@@ -155,7 +156,7 @@ var
                       NextLine := UpperCase(NextLine);
                       if NextLine = 'N' then DEMheader.LatHemi := 'N' else DEMheader.LatHemi := 'S';
                    end
-                   else if key = 'h_datum' then DEMHeader.h_DatumCode  := NextLine
+                   else if key = 'h_datum' then DEMHeader.h_DatumCode := NextLine
                    else if key = 'VertCSType' then DEMheader.VerticalCSTypeGeoKey := StrToInt(NextLine)
                    else if key = 'pixel_is' then DEMheader.RasterPixelIsGeoKey1025 := StrToInt(NextLine)
                    else if key = 'wkt' then DEMheader.wktString := NextLine
@@ -167,7 +168,7 @@ var
                    end;
                    key := '';
                 end;
-             until (NextLine = '*END') or (NextLine = '') or (Copy(NextLine,1,5) = #0#0#0#0#0);
+             until (NextLine = '*END');   // or (NextLine = '') or (Copy(NextLine,1,5) = #0#0#0#0#0);
              {$IfDef RecordMinMax}  WriteLineToDebugFile(AreaName + '  header read, ' + zRange); {$EndIf}
           end
           else begin
@@ -353,8 +354,8 @@ begin
    if ExtEquals(Ext, '.DEM') then begin
       Error := not ReadNewMicroDEMFormat(DEMFileName);
       if Error then begin
+         {$If Defined(RecordReadDEM) or Defined(RecordProblems)} HighlightLineToDebugFile('Deleting broken file: ' +  DEMFileName); {$EndIf}
          File2Trash(DEMFileName);
-        {$If Defined(RecordReadDEM) or Defined(RecordProblems)} HighlightLineToDebugFile('Broken file deleted ' +  DEMFileName); {$EndIf}
       end;
    end
    else if ExtEquals(Ext,'.ASC') and (WKTFile <> '') then begin
@@ -365,12 +366,14 @@ begin
       Error := not ReadTIFFDEM(DEMFileName);
    end
    else if ExtEquals(Ext, '.TIF') or ExtEquals(Ext, '.TIFF') then begin
-      if StrUtils.AnsiContainsText(DEMFileName,'original_') and (not AnswerIsYes('GDAL has tried with the file already; are you sure you want to continue ' + DEMFileName)) then begin
+      if StrUtils.AnsiContainsText(DEMFileName,'original_') and (not AnswerIsYes('GDAL has tried with file already; sure you want to continue ' + DEMFileName)) then begin
          Result := false;
          exit;
       end;
       Error := not ReadTIFFDEM(DEMFileName);
-      {$If Defined(RecordUKOS) or Defined(RecordReadDEM)} WriteLineToDebugFile('Load Geotiff read ' + AreaName + '  ' + DEMMapProjection.GetProjectionName); {$EndIf}
+      if Error then exit;
+      
+      {$If Defined(RecordUKOS) or Defined(RecordReadDEM)} WriteLineToDebugFile('Load Geotiff read ' + AreaName + ' ' + DEMMapProjection.GetProjectionName); {$EndIf}
       {$If Defined(RecordUKOS)} DEMMapProjection.ShortProjInfo('AreaName Tiff Read'); {$EndIf}
    end
    else if ExtEquals(Ext, '.HGT') or ExtEquals(Ext, '.SWB') or ExtEquals(Ext, '.HGTS') or ExtEquals(Ext, '.NUM') or ExtEquals(Ext,'.BIN') then begin
@@ -415,7 +418,6 @@ var
    fName : PathStr;
    TStr : shortstring;
    xutm,yutm,LatUK,LongUK,LatWGS,LongWGS : array[1..4] of float64;
-   //i,
    NewDEM,Col,Row : integer;
    Lat,Long : float64;
    z : float32;
@@ -642,7 +644,6 @@ var
    Hemi : ANSIchar;
    MenuStr : ShortString;
    DatCode : ShortString;
-   //SPCSZone : shortstring;
    PName :  tProjectType;
    llCornerCoords,GeoLatLong : boolean;
 
@@ -841,7 +842,7 @@ begin
 
    {$IfDef VCL}
       if ValidDBfName(FullFileName) then begin
-         if not AnswerIsYes('File appears to be a vector dataset; are you sure you want to try to open it as a raster DEM/grid') then begin
+         if not AnswerIsYes('File appears to be vector dataset; sure you want to try to open it as raster DEM/grid') then begin
             exit;
          end;
       end;
@@ -855,9 +856,9 @@ begin
    {$IfDef RecordReadDEM} WriteLineToDebugFile('LoadNewDEM calling new area for ' + FullFileName); {$EndIf}
 
    if NewArea(True,WantedDEM,DEMMessage,FullFileName) then begin
-      {$If Defined(RecordZRange) or Defined(RecordReadDEM)} WriteLineToDebugFile('LoadNewDEM NewArea over, ' + DEMGlb[WantedDEM].AreaName + '  ' + DEMGlb[WantedDEM].Zrange); {$EndIf}
+      {$If Defined(RecordZRange) or Defined(RecordReadDEM)} WriteLineToDebugFile('LoadNewDEM NewArea over, ' + DEMGlb[WantedDEM].AreaName + ' ' + DEMGlb[WantedDEM].Zrange); {$EndIf}
       {$If Defined(TrackHorizontalDatum)}
-         WriteLineToDebugFile('LoadNewDEM NewArea over, ' + DEMGlb[WantedDEM].AreaName + '  ' +  DEMGlb[WantedDEM].DEMMapProjection.h_DatumCode + '  ' +
+         WriteLineToDebugFile('LoadNewDEM NewArea over, ' + DEMGlb[WantedDEM].AreaName + ' ' +  DEMGlb[WantedDEM].DEMMapProjection.h_DatumCode + ' ' +
            StringFromDatumCode(DEMGlb[WantedDEM].DEMheader.DigitizeDatum));
       {$EndIf}
       {$IfDef RecordDEMMapProjection} WriteLineToDebugFile('After NewArea in LoadNewDEM, DEM proj=' + DEMGlb[WantedDEM].DEMMapProjection.GetProjectionName); {$EndIf}
@@ -971,10 +972,10 @@ begin
 
    if (ImportingDEM <> 0) and FileExists(DEMGlb[ImportingDEM].MetadataFileName) then DEMGlb[ImportingDEM].DEMmetadata.LoadFromFile(DEMGlb[ImportingDEM].MetadataFileName);
    {$If Defined(RecordReadDEM) or Defined(TimeLoadDEM) or Defined(ShortDEMLoad)}
-      WriteLineToDebugFile('exit ReadDEMNow, ' + DEMGlb[ImportingDEM].AreaName + '  ' + DEMGlb[ImportingDEM].KeyDEMParams(true) + ' ' + DEMGlb[ImportingDEM].DEMHorizontalSpacingSummary);
+      WriteLineToDebugFile('exit ReadDEMNow, ' + DEMGlb[ImportingDEM].AreaName + ' ' + DEMGlb[ImportingDEM].KeyDEMParams(true) + ' ' + DEMGlb[ImportingDEM].DEMHorizontalSpacingSummary);
    {$EndIf}
    {$If Defined(TrackHorizontalDatum)}
-      WriteLineToDebugFile('exit ReadDEMNow, ' + DEMGlb[ImportingDEM].AreaName + '  ' +  DEMGlb[ImportingDEM].DEMMapProjection.h_DatumCode + '  ' +
+      WriteLineToDebugFile('exit ReadDEMNow, ' + DEMGlb[ImportingDEM].AreaName + ' ' +  DEMGlb[ImportingDEM].DEMMapProjection.h_DatumCode + ' ' +
         StringFromDatumCode(DEMGlb[ImportingDEM].DEMheader.DigitizeDatum));
    {$EndIf}
 end;

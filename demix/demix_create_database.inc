@@ -8,6 +8,86 @@
 {____________________________________}
 
 
+procedure MergeSSIMandR2DB;
+var
+   db1,db2 : integer;
+begin
+   //db1 :=
+end;
+
+
+
+procedure MakeDBForParamStats(Option,DBonTable : integer);
+var
+   Results,UsingFields,UniqueEntries : tStringList;
+   i,j : integer;
+   aLine,MaxLine,MeanLine,MedianLine,MinLine,stdLine,Common : shortstring;
+   MomentVar : tMomentVar;
+   aField : shortstring;
+   fName : PathStr;
+   Color : tColor;
+begin
+   GISdb[DBonTable].EmpSource.Enabled := false;
+   if (Option = opByCluster) then begin
+      aField := 'CLUSTER';
+      UniqueEntries := GISdb[DBonTable].MyData.UniqueEntriesInDB(aField);
+      SortStringListNumerically(UniqueEntries);
+   end
+   else if (Option = opByDEM) then begin
+      aField := 'DEM';
+      UniqueEntries := GISdb[DBonTable].MyData.UniqueEntriesInDB(aField);
+   end;
+
+   UsingFields := GISdb[DBonTable].GetAnalysisFields;
+
+   Results := tStringList.Create;
+   aline := aField + ',COLOR,N,METRIC';
+   for j := 0 to pred(UsingFields.Count) do begin
+      aline := aline + ',' + UsingFields.Strings[j];
+   end;
+   Results.Add(aLine);
+   for i := 0 to pred(UniqueEntries.Count) do begin
+      if Option = opByCluster then begin
+         GISdb[DBonTable].MyData.ApplyFilter(aField + '=' + UniqueEntries.Strings[i]);
+         Color := GISdb[DBonTable].MyData.GetFieldByNameAsInteger('COLOR');
+      end;
+      if Option = opByDEM then begin
+         GISdb[DBonTable].MyData.ApplyFilter(aField + '=' + QuotedStr(UniqueEntries.Strings[i]));
+         Color := ConvertPlatformColorToTColor(DEMIXColorFromDEMName(UniqueEntries.Strings[i]));
+      end;
+      GISdb[DBonTable].Empsource.Enabled := false;
+      Common := UniqueEntries.Strings[i] + ',' + IntToStr(Color) + ','  + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + ',' ;
+      MaxLine := Common + 'MAX' ;
+      MeanLine := Common + 'MEAN' ;
+      MedianLine := Common + 'MEDIAN';
+      MinLine := Common + 'MIN';
+      STDline := Common + 'StdDev';
+
+      for j := 0 to pred(UsingFields.Count) do begin
+         GISdb[DBonTable].EmpSource.Enabled := false;
+         MomentVar := GISdb[DBonTable].GetFieldStatistics(UsingFields.Strings[j]);
+         GISdb[DBonTable].Empsource.Enabled := false;
+         MaxLine := MaxLine + ',' + RealToString(MomentVar.MaxZ,-18,-4);
+         MeanLine := MeanLine + ',' + RealToString(MomentVar.Mean,-18,-6);
+         MedianLine := MedianLine + ','  + RealToString(MomentVar.Median,-18,-6);
+         MinLine := MinLine + ',' +  RealToString(MomentVar.MinZ,-18,-4);
+         STDLine := STDLine + ',' +  RealToString(MomentVar.std_dev,-18,-6);
+      end;
+      Results.Add(MaxLine);
+      Results.Add(MeanLine);
+      Results.Add(MedianLine);
+      Results.Add(MinLine);
+      Results.Add(STDLine);
+   end;
+   fName := Petmar.NextFileNumber(MDTempDir, 'stats_by_' + aField + '_' ,DefaultDBExt);
+   {$IfDef RecordClustering} WriteLineToDebugFile(fName); {$EndIf}
+   GISdb[DBonTable].theMapOwner.StringListToLoadedDatabase(Results,fName);
+   GISdb[DBonTable].ClearGISFilter;
+   GISdb[DBonTable].ShowStatus;
+end;
+
+
+
  procedure DEMIX_SSIM_R2_transpose_kmeans_new_db(DBonTable : integer);
 //transpose the DB so it has one TILE/DEM pair on each line, the Criteria as columns
 var
@@ -19,54 +99,53 @@ var
    fName,OutPath : PathStr;
 begin
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_SSIM_R2_transpose_kmeans_new_db in'); {$EndIf}
-   GetDEMIXpaths;
-   GISdb[DBonTable].EmpSource.Enabled := false;
-   theTiles := GISdb[DBonTable].MyData.UniqueEntriesInDB('DEMIX_TILE');
-   OutPath := 'c:\temp\ssim_tile_summary\';
-
-   sl := tStringList.Create;
-   aline := 'DEMIX_TILE,DEM';
-   for I := 1 to NCrits do aline := aline + ',' + Crits[i];
-   sl.Add(Aline);
-
-   LoadDEMIXnames;
-   SafeMakeDir(OutPath);
-   StartProgress('SSIM summary');
-   for k := 0 to pred(theTiles.Count) do begin
-      if (k mod 10 = 0) then wmdem.SetPanelText(1,IntToStr(k) + '/' + IntToStr(TheTiles.Count) + ' tiles transpose');
-      Tile := theTiles[k];
-      GISdb[DBonTable].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(Tile));
+   try
+      GetDEMIXpaths;
       GISdb[DBonTable].EmpSource.Enabled := false;
-      if (GISdb[DBonTable].MyData.FiltRecsinDB = NCrits) then begin
-         while not GISdb[DBonTable].MyData.eof do begin
-            Crit := UpperCase(GISdb[DBonTable].MyData.GetFieldByNameAsString('CRITERION'));
-            N := 1;
-            while (N < succ(NCrits)) and (Crit <> Crits[N]) do inc(N);
-            if (N <= NCrits) then begin
-               for I := 1 to NumDEMIXDEM do begin
-                   Values[i,N] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(DEMIXDEMTypeName[i]);
-               end;
-            end;
-            GISdb[DBonTable].MyData.Next;
-         end;
+      theTiles := GISdb[DBonTable].MyData.UniqueEntriesInDB('DEMIX_TILE');
+      OutPath := 'c:\temp\ssim_tile_summary\';
 
-         for I := 1 to NumDEMIXDEM do begin
-            aline := Tile + ',' + DEMIXDEMTypeName[i];
-            for j := 1 to NCrits do aline := aline + ',' + RealToString(Values[i,j],-10,6);
-            sl.Add(Aline);
+      sl := tStringList.Create;
+      aline := 'DEMIX_TILE,DEM';
+      for I := 1 to NCrits do aline := aline + ',' + Crits[i];
+      sl.Add(Aline);
+
+      LoadDEMIXnames;
+      SafeMakeDir(OutPath);
+      StartProgress('SSIM summary');
+      for k := 0 to pred(theTiles.Count) do begin
+         if (k mod 10 = 0) then wmdem.SetPanelText(1,IntToStr(k) + '/' + IntToStr(TheTiles.Count) + ' tiles transpose');
+         Tile := theTiles[k];
+         GISdb[DBonTable].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(Tile));
+         GISdb[DBonTable].EmpSource.Enabled := false;
+         if (GISdb[DBonTable].MyData.FiltRecsinDB = NCrits) then begin
+            while not GISdb[DBonTable].MyData.eof do begin
+               Crit := UpperCase(GISdb[DBonTable].MyData.GetFieldByNameAsString('CRITERION'));
+               N := 1;
+               while (N < succ(NCrits)) and (Crit <> Crits[N]) do inc(N);
+               if (N <= NCrits) then begin
+                  for I := 1 to NumDEMIXDEM do begin
+                      Values[i,N] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(DEMIXDEMTypeName[i]);
+                  end;
+               end;
+               GISdb[DBonTable].MyData.Next;
+            end;
+
+            for I := 1 to NumDEMIXDEM do begin
+               aline := Tile + ',' + DEMIXDEMTypeName[i];
+               for j := 1 to NCrits do aline := aline + ',' + RealToString(Values[i,j],-10,6);
+               sl.Add(Aline);
+            end;
          end;
       end;
+
+      fName := NextFileNumber(MDTempDir,MDTempDir + 'ssim_r2_clustering_','.dbf');
+      {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_SSIM_R2_transpose_kmeans_new_db creating ' + fName); {$EndIf}
+
+      StringList2CSVtoDB(sl,fName);
+   finally
+      EndDEMIXProcessing;
    end;
-
-   fName := NextFileNumber(MDTempDir,MDTempDir + 'ssim_r2_clustering_','.dbf');
-   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_SSIM_R2_transpose_kmeans_new_db creating ' + fName); {$EndIf}
-
-   StringList2CSVtoDB(sl,fName);
-
-   EndProgress;
-   GISdb[DBonTable].ClearGISFilter;
-   GISdb[DBonTable].ShowStatus;
-   EndDEMIXProcessing;
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_SSIM_R2_transpose_kmeans_new_db out'); {$EndIf}
 end;
 
@@ -253,29 +332,25 @@ var
             procedure LandCover(LandCoverGrid : integer; Lat,Long : float32; Value : float32);
             //hard coded for a particular land cover data set, LC100 from Copernicus
             var
-               z : float32;
+               //z : float32;
                slc : integer;
             begin
-
                slc := SimplifiedLandCover(LandCoverGrid,Lat,Long,Value);
-
-               //if (LandCoverGrid <> 0) and DEMGlb[LandCoverGrid].GetElevFromLatLongDegree(Lat,Long,z) then begin
-                  if slc = slcForest then begin
-                     zsForest^[ForestMomentVar.NPts] := Value;
-                     inc(ForestMomentVar.Npts);
-                  end
-                  else if slc = slc then begin
-                     zsBarren^[BarrenMomentVar.NPts] := Value;
-                     inc(BarrenMomentVar.Npts);
-                  end
-                  else if slc = slcUrban then begin
-                     zsUrban^[UrbanMomentVar.NPts] := Value;
-                     inc(UrbanMomentVar.Npts);
-                  end
-                  else if slc= slcWater then begin
-                     //water
-                  end;
-               //end;
+               if slc = slcForest then begin
+                  zsForest^[ForestMomentVar.NPts] := Value;
+                  inc(ForestMomentVar.Npts);
+               end
+               else if slc = slc then begin
+                  zsBarren^[BarrenMomentVar.NPts] := Value;
+                  inc(BarrenMomentVar.Npts);
+               end
+               else if slc = slcUrban then begin
+                  zsUrban^[UrbanMomentVar.NPts] := Value;
+                  inc(UrbanMomentVar.Npts);
+               end
+               else if slc= slcWater then begin
+                  //water will be added "soon"
+               end;
             end;
 
 
@@ -738,9 +813,9 @@ begin {procedure ComputeDEMIX_tile_stats}
       {$IfDef RecordDEMIXFull} WriteLineToDebugFile('All processing done'); {$EndIf}
       AreasWanted.Destroy;
    finally;
-      EndDEMIXProcessing;
       RestoreBackupDefaults;
       DisplayAndPurgeStringList(ErrorLog,'ComputeDEMIXstats_Problems');
+      EndDEMIXProcessing;
    end;
    {$IfDef RecordDEMIX} WriteLineToDebugFile('End ComputeDEMIXstats'); {$EndIf}
 end {ComputeDEMIX_tile_stats};
@@ -985,9 +1060,8 @@ begin
       {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMs ranked'); {$EndIf}
       //CloseAndNilNumberedDB(db);
    finally
-
-      EndDEMIXProcessing;
       DisplayAndPurgeStringList(ErrorLog,'DEMIX Create Database Problems');
+      EndDEMIXProcessing;
       //CloseAllDatabases;
    end;
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('MergeDEMIXCSV out, created ' + fName); {$EndIf}

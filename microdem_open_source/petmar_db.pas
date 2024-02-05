@@ -438,7 +438,7 @@ function tMyData.InsureFieldPresentAndAdded(ft : TFieldType; FieldName : ANSIStr
    {$IfDef UseTCLientDataSet}
       var
          NewClientDataSet :  tClientDataSet;
-         i,j,flen : integer;
+         i,{j,}flen : integer;
    {$EndIf}
    begin
       {$IfDef UseTCLientDataSet}
@@ -456,9 +456,9 @@ function tMyData.InsureFieldPresentAndAdded(ft : TFieldType; FieldName : ANSIStr
             {$IfDef RecordFieldPresent} WriteLineToDebugFile('NewClientDataSet opened'); {$EndIf}
 
              TheClientDataSet.First;
-             j := 0;
+             //j := 0;
              while not TheClientDataSet.eof do begin
-               inc(j);
+               //inc(j);
                 NewClientDataSet.Insert;
                 for i := 0 to pred(FieldCount) do begin
                    NewClientDataSet.Fields[i].Assign(theClientDataSet.Fields[i]);
@@ -2661,13 +2661,10 @@ end;
 
       if FileExists(fName) then begin
          Ext := UpperCase(ExtractFileExt(fName));
-         {$IfDef NoCSVImports}
-         {$Else}
-            if ExtEquals(Ext,'.CSV') then begin
-                DoCSVFileImport(fName);
-                fName := ChangeFileExt(fName,DefaultDBExt);
-            end;
-         {$EndIf}
+         if ExtEquals(Ext,'.CSV') then begin
+            DoCSVFileImport(fName);
+            fName := ChangeFileExt(fName,DefaultDBExt);
+         end;
 
          if ExtEquals(Ext,DefaultDBExt) then begin
            FirstError := true;

@@ -2,8 +2,8 @@ object dbtablef: Tdbtablef
   Left = 62
   Top = 306
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 984
-  ClientWidth = 1192
+  ClientHeight = 982
+  ClientWidth = 1184
   Color = clBtnFace
   ParentFont = True
   FormStyle = fsMDIChild
@@ -17,24 +17,21 @@ object dbtablef: Tdbtablef
   TextHeight = 15
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 965
-    Width = 1192
+    Top = 963
+    Width = 1184
     Height = 19
     Panels = <
       item
         Width = 250
       end>
-    ExplicitTop = 964
-    ExplicitWidth = 1188
   end
   object Panel2: TPanel
     Left = 0
     Top = 41
-    Width = 1192
+    Width = 1184
     Height = 32
     Align = alTop
     TabOrder = 1
-    ExplicitWidth = 1188
     object BitBtn1: TBitBtn
       Left = 34
       Top = 1
@@ -225,11 +222,10 @@ object dbtablef: Tdbtablef
   object Panel3: TPanel
     Left = 0
     Top = 73
-    Width = 1192
+    Width = 1184
     Height = 41
     Align = alTop
     TabOrder = 2
-    ExplicitWidth = 1188
     object Label2: TLabel
       Left = 12
       Top = 12
@@ -276,11 +272,10 @@ object dbtablef: Tdbtablef
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1192
+    Width = 1184
     Height = 41
     Align = alTop
     TabOrder = 4
-    ExplicitWidth = 1188
     object LOSButton: TSpeedButton
       Left = 40
       Top = 6
@@ -539,11 +534,10 @@ object dbtablef: Tdbtablef
   object Panel7: TPanel
     Left = 0
     Top = 114
-    Width = 1192
+    Width = 1184
     Height = 41
     Align = alTop
     TabOrder = 3
-    ExplicitWidth = 1188
     object RadioGroup2: TRadioGroup
       Left = 20
       Top = 0
@@ -564,8 +558,8 @@ object dbtablef: Tdbtablef
   object DBGrid1: TDBGrid
     Left = 0
     Top = 155
-    Width = 1192
-    Height = 810
+    Width = 1184
+    Height = 808
     Align = alClient
     TabOrder = 5
     TitleFont.Charset = DEFAULT_CHARSET
@@ -3783,7 +3777,7 @@ object dbtablef: Tdbtablef
     object estDEMlegend2: TMenuItem
       Caption = 'Test DEM legend'
       object estDEMlegend1: TMenuItem
-        Caption = 'Vertical'
+        Caption = 'Horizontal'
         OnClick = estDEMlegend1Click
       end
       object Vertical1: TMenuItem

@@ -4,7 +4,7 @@ unit demESRIshapefile;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -155,7 +155,7 @@ type
          procedure AreasCounterClockwise;
          function AreaWithHoles(RecNum : int32) : boolean;
 
-         procedure PlotAllRecords(MapDraw : tMapDraw; var Bitmap : tMyBitmap);
+         procedure PlotAllRecords(MapDraw : tMapDraw; var Bitmap : tMyBitmap; OSMdata : boolean = false);
          procedure SafePolygonOrPolyline(MapDraw : tMapDraw; Bitmap : tMyBitmap; PtsPolyLine : int32; var PolyLinePts : tPolyLinePts; APolygon : boolean);
 
          function LineLength(RecNum : int32; GetZs : boolean = false) : float64;
@@ -2244,7 +2244,7 @@ begin
 end;
 
 
-procedure tShapeFile.PlotAllRecords(MapDraw : tMapDraw; var Bitmap : tMyBitmap);
+procedure tShapeFile.PlotAllRecords(MapDraw : tMapDraw; var Bitmap : tMyBitmap; OSMdata : boolean = false);
 var
    i,nDrawn,j,RecsRead,x,y,OnBlock,BlocksNeeded,Track : int32;
    ShapePoints3D : ^tLotsOfPoints3D;
@@ -2309,15 +2309,19 @@ begin
          try
             ShapefileRandomAccess := false;
              for i := 1 to NumRecs do begin
+                if OSMdata then begin
+                   Bitmap.Canvas.Pen.Width := Bitmap.Canvas.Pen.Width * 2;
+                end;
                 if PlotSingleRecordMap(MapDraw,Bitmap,i) then inc(NDrawn)
                 else begin
                     {$IfDef TrackNoPlots} writeLineToDebugFile('tShapeFile.PlotAllRecords, fail to draw ' + IntToStr(i)); {$EndIf}
                 end;
-                //if DrawDonuts(MapDraw,Bitmap,i) then inc(NDrawn);
-
                 if ShowSatProgress and (i mod Track = 0) and (not ThreadsWorking) then begin
                    {$IfDef VCL} UpdateProgressBar(i/Numrecs); {$EndIf}
                    if WantOut then Break;
+                end;
+                if OSMdata then begin
+                   Bitmap.Canvas.Pen.Width := Bitmap.Canvas.Pen.Width div 2;
                 end;
              end;
           finally

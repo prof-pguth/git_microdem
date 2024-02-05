@@ -2,8 +2,8 @@ object wmdem: Twmdem
   Left = 0
   Top = 262
   Caption = 'GIS program loading'
-  ClientHeight = 1154
-  ClientWidth = 2022
+  ClientHeight = 1153
+  ClientWidth = 2018
   Color = clScrollBar
   DefaultMonitor = dmDesktop
   Font.Charset = DEFAULT_CHARSET
@@ -28,13 +28,13 @@ object wmdem: Twmdem
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 2022
+    Width = 2018
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34
     TabOrder = 0
     OnMouseDown = ToolBar1MouseDown
-    ExplicitWidth = 2018
+    ExplicitWidth = 2014
     object SpeedButton2: TSpeedButton
       Left = 0
       Top = 0
@@ -1676,8 +1676,8 @@ object wmdem: Twmdem
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 1135
-    Width = 2022
+    Top = 1134
+    Width = 2018
     Height = 19
     Panels = <
       item
@@ -1696,8 +1696,8 @@ object wmdem: Twmdem
     Visible = False
     OnClick = StatusBar1Click
     OnDblClick = StatusBar1DblClick
-    ExplicitTop = 1134
-    ExplicitWidth = 2018
+    ExplicitTop = 1133
+    ExplicitWidth = 2014
   end
   object MainMenu1: TMainMenu
     Left = 136
@@ -1727,27 +1727,22 @@ object wmdem: Twmdem
         object GISdatasampler1: TMenuItem
           Caption = 'Annapolis GIS data sampler (100 MB)'
           GroupIndex = 6
-          OnClick = GISdatasampler1Click
         end
         object AnnapolisTM8scene1: TMenuItem
           Caption = 'Annapolis TM8 scene (1 GB)'
           GroupIndex = 6
-          OnClick = AnnapolisTM8scene1Click
         end
         object Annapolislidar1: TMenuItem
           Caption = 'Annapolis lidar (8 GB)'
           GroupIndex = 6
-          OnClick = Annapolislidar1Click
         end
         object LASlidarpointcloudsamples1: TMenuItem
           Caption = 'LAS lidar point cloud samples'
           GroupIndex = 6
-          OnClick = LASlidarpointcloudsamples1Click
         end
         object HarpersFerryTerrainAnalysis1: TMenuItem
           Caption = 'Harper'#39's Ferry Terrain Analysis'
           GroupIndex = 6
-          OnClick = HarpersFerryTerrainAnalysis1Click
         end
         object Legislativeredistricting1: TMenuItem
           Caption = 'Legislative redistricting'
@@ -1784,11 +1779,9 @@ object wmdem: Twmdem
         GroupIndex = 6
         object Annapolisredistricting1: TMenuItem
           Caption = 'Annapolis redistricting'
-          OnClick = Annapolisredistricting1Click
         end
         object Duckbeachsurveys1: TMenuItem
           Caption = 'Duck beach surveys'
-          OnClick = Duckbeachsurveys1Click
         end
       end
       object Remotesensinglabs1: TMenuItem
@@ -2482,7 +2475,6 @@ object wmdem: Twmdem
       end
       object Channelnetworkcomparison1: TMenuItem
         Caption = 'Channel network map  comparison (currently hard wired)'
-        OnClick = Channelnetworkcomparison1Click
       end
       object N28: TMenuItem
         Caption = '-'
@@ -2558,26 +2550,15 @@ object wmdem: Twmdem
   object MetadataPopupMenu: TPopupMenu
     Left = 360
     Top = 336
-    object ESRIshapefile1: TMenuItem
-      Caption = 'ESRI shapefile'
-      OnClick = ESRIshapefile1Click
+    object MICRODEMgridformat1: TMenuItem
+      Caption = 'MICRODEM grid format'
+      OnClick = MICRODEMgridformat1Click
     end
-    object DBFfile1: TMenuItem
-      Caption = 'DBF file'
-      OnClick = DBFfile1Click
+    object DTED1: TMenuItem
+      Caption = 'DTED'
+      OnClick = DTED1Click
     end
-    object LAS1: TMenuItem
-      Caption = 'LAS'
-      object LASfile1: TMenuItem
-        Caption = 'via MICRODEM'
-        OnClick = LASfile1Click
-      end
-      object lasinfo1: TMenuItem
-        Caption = 'via lasinfo (also LAZ)'
-        OnClick = lasinfo1Click
-      end
-    end
-    object N16: TMenuItem
+    object N7: TMenuItem
       Caption = '-'
     end
     object Geotiff2: TMenuItem
@@ -2603,13 +2584,38 @@ object wmdem: Twmdem
       Caption = 'GDALinfo (GeoPDF or GeoTiff or IMG)'
       OnClick = GeoPDF1Click
     end
+    object GDALSRSinfo1: TMenuItem
+      Caption = 'GDAL SRS info'
+      OnClick = GDALSRSinfo1Click
+    end
     object OGRinfo1: TMenuItem
       Caption = 'OGRinfo'
       OnClick = OGRinfo1Click
     end
-    object GDALSRSinfo1: TMenuItem
-      Caption = 'GDAL SRS info'
-      OnClick = GDALSRSinfo1Click
+    object N16: TMenuItem
+      Caption = '-'
+    end
+    object ESRIshapefile1: TMenuItem
+      Caption = 'ESRI shapefile'
+      OnClick = ESRIshapefile1Click
+    end
+    object DBFfile1: TMenuItem
+      Caption = 'DBF file'
+      OnClick = DBFfile1Click
+    end
+    object N51: TMenuItem
+      Caption = '-'
+    end
+    object LAS1: TMenuItem
+      Caption = 'LAS'
+      object LASfile1: TMenuItem
+        Caption = 'via MICRODEM'
+        OnClick = LASfile1Click
+      end
+      object lasinfo1: TMenuItem
+        Caption = 'via lasinfo (also LAZ)'
+        OnClick = lasinfo1Click
+      end
     end
     object N17: TMenuItem
       Caption = '-'
@@ -2617,13 +2623,6 @@ object wmdem: Twmdem
     object EXIFimage1: TMenuItem
       Caption = 'EXIF image'
       OnClick = EXIFimage1Click
-    end
-    object N7: TMenuItem
-      Caption = '-'
-    end
-    object DTED1: TMenuItem
-      Caption = 'DTED'
-      OnClick = DTED1Click
     end
     object N22: TMenuItem
       Caption = '-'
@@ -3097,6 +3096,10 @@ object wmdem: Twmdem
         Caption = 'Add prefix to all files in a path'
         OnClick = Addprefixtoallfilesindirectory1Click
       end
+      object MergemultipleTXTCSVintoDB1: TMenuItem
+        Caption = 'Merge multiple TXT/CSV into DB'
+        OnClick = MergemultipleTXTCSVintoDB1Click
+      end
       object Openrecyclebin1: TMenuItem
         Caption = 'Open recycle bin'
         OnClick = Openrecyclebin1Click
@@ -3158,11 +3161,9 @@ object wmdem: Twmdem
       Caption = 'Close program, get debug version of the program (7 MB)'
       Enabled = False
       Visible = False
-      OnClick = Closeprogramgetdebugversionoftheprogram7MB1Click
     end
     object CloseprogramupdateEXEnewversion7MBdownload1: TMenuItem
       Caption = 'Close program, update EXE (new updater, 7 MB download)'
-      OnClick = CloseprogramupdateEXEnewversion7MBdownload1Click
     end
   end
   object Timer2: TTimer
@@ -3301,11 +3302,9 @@ object wmdem: Twmdem
     end
     object Sealevelrise1: TMenuItem
       Caption = 'Sea level rise'
-      OnClick = Sealevelrise1Click
     end
     object Lidarandbeacherosion1: TMenuItem
       Caption = 'Lidar and beach erosion'
-      OnClick = Lidarandbeacherosion1Click
     end
   end
   object PopupMenu8: TPopupMenu
@@ -3388,7 +3387,6 @@ object wmdem: Twmdem
     object TulaFracturezonemagnetics1: TMenuItem
       Caption = 'Tula Fracture zone magnetics'
       GroupIndex = 6
-      OnClick = TulaFracturezonemagnetics1Click
     end
     object Atlantis1: TMenuItem
       Caption = 'Atlantis'
@@ -3402,7 +3400,6 @@ object wmdem: Twmdem
     object Californiaoffshore1: TMenuItem
       Caption = 'California offshore'
       GroupIndex = 6
-      OnClick = Californiaoffshore1Click
     end
     object Seismicfencediagram1: TMenuItem
       Caption = 'Seismic fence diagram'
@@ -3431,7 +3428,6 @@ object wmdem: Twmdem
     object Afar1: TMenuItem
       Caption = 'Afar'
       GroupIndex = 6
-      OnClick = Afar1Click
     end
     object Trenchgeometry1: TMenuItem
       Caption = 'Trench geometry'
@@ -3455,17 +3451,14 @@ object wmdem: Twmdem
     object DEMIXindexhighresreferenceDEMs1: TMenuItem
       Caption = 'DEMIX index high res reference DEMs'
       Enabled = False
-      OnClick = DEMIXindexhighresreferenceDEMs1Click
     end
     object DEMIXreferencetilesurvey1: TMenuItem
       Caption = 'DEMIX reference tile survey'
       Enabled = False
-      OnClick = DEMIXreferencetilesurvey1Click
     end
     object DEMIXtiles1: TMenuItem
       Caption = 'DEMIX tiles geostats'
       Enabled = False
-      OnClick = DEMIXtiles1Click
     end
     object Modesofdifferencedistributions1: TMenuItem
       Caption = 'Modes of difference distributions'
@@ -3535,22 +3528,43 @@ object wmdem: Twmdem
       Enabled = False
       OnClick = Subsetlarge3DEPareas1Click
     end
-    object GDALshiftFor3DEP1: TMenuItem
-      Caption = 'Process GDAL shift for 3DEP'
-      OnClick = GDALshiftFor3DEP1Click
-    end
     object ProcessVDATUMshifts1: TMenuItem
       Caption = 'Process 3DEP VDATUM shifts'
       Enabled = False
       OnClick = ProcessVDATUMshifts1Click
     end
+    object GDALshiftFor3DEP1: TMenuItem
+      Caption = 'Process GDAL shift for 3DEP'
+      object Overwriteifexits3: TMenuItem
+        Caption = 'Overwrite if exits'
+        OnClick = Overwriteifexits3Click
+      end
+      object Skipifexits2: TMenuItem
+        Caption = 'Skip if exits'
+        OnClick = Skipifexits2Click
+      end
+    end
     object Create3DEP1secrefDEMs1: TMenuItem
       Caption = 'Create 3DEP 1 sec ref DEMs'
-      OnClick = Create3DEP1secrefDEMs1Click
+      object Overwriteifexists1: TMenuItem
+        Caption = 'Overwrite if exists'
+        OnClick = Overwriteifexists1Click
+      end
+      object Overwriteifexists2: TMenuItem
+        Caption = 'Skip if exists'
+        OnClick = Overwriteifexists2Click
+      end
     end
     object Merge3DEPreferenceDEMsbyarea1: TMenuItem
       Caption = 'Merge 3DEP reference DEMs by area'
-      OnClick = Merge3DEPreferenceDEMsbyarea1Click
+      object Overwriteifexits1: TMenuItem
+        Caption = 'Overwrite if exits'
+        OnClick = Overwriteifexits1Click
+      end
+      object Overwriteifexits2: TMenuItem
+        Caption = 'Skip if exists'
+        OnClick = Overwriteifexits2Click
+      end
     end
     object N42: TMenuItem
       Caption = '-'
@@ -3561,14 +3575,21 @@ object wmdem: Twmdem
     end
     object DEMIXreferenceDEMcreation1: TMenuItem
       Caption = 'Create 1 second reference DEMs'
-      OnClick = DEMIXreferenceDEMcreation1Click
+      object Overwirteifexists1: TMenuItem
+        Caption = 'Overwrite if exists'
+        OnClick = Overwirteifexists1Click
+      end
+      object Skipifexits1: TMenuItem
+        Caption = 'Skip if exits'
+        OnClick = Skipifexits1Click
+      end
     end
     object CreatehalfsecondreferenceDEMs1: TMenuItem
       Caption = 'Create half second reference DEMs'
       OnClick = CreatehalfsecondreferenceDEMs1Click
     end
     object CreaterangereferenceDEMs1: TMenuItem
-      Caption = 'Create range reference DEMs'
+      Caption = 'Create  reference DEMs for range pixel sizes'
       OnClick = CreaterangereferenceDEMs1Click
     end
     object N44: TMenuItem
@@ -3586,6 +3607,20 @@ object wmdem: Twmdem
     object Merge1secreferenceDEMsfromVisioterra1: TMenuItem
       Caption = 'Merge 1 sec reference DEMs from Visioterra'
       OnClick = Merge1secreferenceDEMsfromVisioterra1Click
+    end
+    object N49: TMenuItem
+      Caption = '-'
+    end
+    object CreatetestareaDEMs1: TMenuItem
+      Caption = 'Create test area DEMs'
+      object N50: TMenuItem
+        Caption = 'Create test area DEMs (overwrite if exists)'
+        OnClick = N50Click
+      end
+      object CreatetestareaDEMSskipifexists1: TMenuItem
+        Caption = 'Create test area DEMS (skip if exists)'
+        OnClick = CreatetestareaDEMSskipifexists1Click
+      end
     end
     object N43: TMenuItem
       Caption = '-'
@@ -3640,6 +3675,9 @@ object wmdem: Twmdem
       Caption = 'Clip DEMs to full DEMIX tiles'
       OnClick = N45Click
     end
+    object N52: TMenuItem
+      Caption = '-'
+    end
     object VerifySSIMfiles1: TMenuItem
       Caption = 'Verify all SSIM files exist for tile'
       OnClick = VerifySSIMfiles1Click
@@ -3649,8 +3687,12 @@ object wmdem: Twmdem
       OnClick = CheckfilesizesforSSIMimagemismatches1Click
     end
     object CheckreferenceDEMs1: TMenuItem
-      Caption = 'Check reference DEMs (number DTM/DSM by area)'
+      Caption = 'Inventory reference DEMs (number DTM/DSM by area)'
       OnClick = CheckreferenceDEMs1Click
+    end
+    object CheckreferenceDEMSareEGM2008withPixelIsset1: TMenuItem
+      Caption = 'Check reference DEMS are EGM2008 with Pixel-Is set'
+      OnClick = CheckreferenceDEMSareEGM2008withPixelIsset1Click
     end
     object ChecktestDEMs1: TMenuItem
       Caption = 'Check test DEMs (missing .DEM  by area)'

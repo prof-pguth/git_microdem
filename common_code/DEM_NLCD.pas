@@ -79,6 +79,8 @@ const
    slcBarren = 4;
 
 function SimplifiedLandCover(LandCoverGrid : integer; Lat,Long : float32; var Value : float32) : integer;
+procedure SimplifyLandCoverGrid(DEM : integer);
+procedure MarkWaterMissingInAllOpenDEMs(DEM : integer; All : boolean = true);
 
 
 
@@ -94,6 +96,65 @@ uses
    DEMIX_control,
    petimage_form,
    PetImage,PetMath,PetDBUtils,Toggle_db_use,nevadia_main,DEMDef_routines;
+
+
+procedure MarkWaterMissingInAllOpenDEMs(DEM : integer; All : boolean = true);
+const
+   OpenMap = false;   //available for debugging to watch
+var
+   j,lcGrid : integer;
+   ErrorMessage : shortstring;
+   Fixed : int64;
+begin
+    lcgrid :=  LoadLC100LandCover('',DEMGlb[DEM].DEMBoundBoxGeo,ErrorMessage,OpenMap);
+    if OpenMap then begin
+       DEMGlb[lcGrid].SelectionMap.DoBaseMapRedraw;
+       MessageToContinue('Land cover opened');
+    end;
+    SimplifyLandCoverGrid(lcGrid);
+    if OpenMap then MessageToContinue('Simplified');
+    DEMGLb[lcGrid].MarkInRangeMissing(slcWater-0.001,slcWater+0.001,Fixed,false);
+    if OpenMap then begin
+       DEMGlb[lcGrid].SelectionMap.DoBaseMapRedraw;
+       MessageToContinue('Water missing');
+    end;
+    if All then begin
+       for j := 1 to MaxDEMDataSets do begin
+          if ValidDEM(j) and (j <> lcGrid) then begin
+             MaskStripFromSecondGrid(j,lcGrid, msSecondMissing);
+             DEMGlb[j].CheckMaxMinElev;
+          end;
+       end;
+    end
+    else begin
+       MaskStripFromSecondGrid(DEM,lcGrid, msSecondMissing);
+       if (DEMGlb[DEM].SelectionMap <> Nil) then DEMGlb[DEM].SelectionMap.DoBaseMapRedraw;
+       if OpenMap then MessageToContinue('Water masked');
+    end;
+    CloseSingleDEM(lcGrid);
+end;
+
+
+
+
+procedure SimplifyLandCoverGrid(DEM : integer);
+var
+   x,y,Code : integer;
+   z : float32;
+begin
+   for x := 0 to pred(DEMGlb[DEM].DEMheader.NumCol) do begin
+      for y := 0 to pred(DEMGlb[DEM].DEMheader.NumRow) do begin
+         if DEMGlb[DEM].GetElevMetersOnGrid(x,y,z) then begin
+            Code := ReclassifyLandCover(DEM,round(z));
+            DEMGlb[DEM].SetGridElevation(x,y,Code);
+         end;
+      end;
+   end;
+   DEMGlb[DEM].DEMHeader.ElevUnits := euSimpleLandCover;
+   //Dispose(DEMGlb[DEM].NLCDCats);
+   DEMGlb[DEM].CheckForLandCover;
+   if (DEMGlb[DEM].SelectionMap <> Nil) then DEMGlb[DEM].SelectionMap.DoBaseMapRedraw;
+end;
 
 
 function ReclassifyLandCover(LandCoverGrid,Value : integer) : integer;

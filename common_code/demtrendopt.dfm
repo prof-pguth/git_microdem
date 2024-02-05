@@ -3,8 +3,8 @@ object TrendPick: TTrendPick
   Top = 487
   BorderIcons = []
   Caption = 'Trend Surface Options'
-  ClientHeight = 212
-  ClientWidth = 289
+  ClientHeight = 246
+  ClientWidth = 323
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -17,7 +17,7 @@ object TrendPick: TTrendPick
   TextHeight = 13
   object RedrawSpeedButton12: TSpeedButton
     Left = 68
-    Top = 191
+    Top = 216
     Width = 25
     Height = 22
     Hint = 'Force redraw'
@@ -31,6 +31,13 @@ object TrendPick: TTrendPick
       CCFFFCCFFFFFFFCCCCFFFCCCFFFFFFCCCCCFFCCCFFFFFCCCCCCFFFCCCCCCCCCC
       FCCFFFCCCCCCCCCFFCCFFFFFFFFFFFFFFCCFFFFFFFFFFFFFFFFF}
     OnClick = RedrawSpeedButton12Click
+  end
+  object Label1: TLabel
+    Left = 32
+    Top = 160
+    Width = 31
+    Height = 13
+    Caption = 'Higher'
   end
   object RadioGroup1: TRadioGroup
     Left = 8
@@ -73,7 +80,7 @@ object TrendPick: TTrendPick
   end
   object OKBtn: TBitBtn
     Left = 116
-    Top = 186
+    Top = 211
     Width = 77
     Height = 27
     Kind = bkOK
@@ -108,7 +115,7 @@ object TrendPick: TTrendPick
   end
   object HelpBtn: TBitBtn
     Left = 199
-    Top = 186
+    Top = 211
     Width = 77
     Height = 27
     Kind = bkHelp
@@ -139,7 +146,7 @@ object TrendPick: TTrendPick
   end
   object CheckBox7: TCheckBox
     Left = 99
-    Top = 163
+    Top = 188
     Width = 97
     Height = 17
     Caption = 'Open maps'
@@ -148,11 +155,20 @@ object TrendPick: TTrendPick
   end
   object BitBtn1: TBitBtn
     Left = 8
-    Top = 159
+    Top = 184
     Width = 85
     Height = 25
     Caption = 'Outcrop'
     TabOrder = 10
     OnClick = BitBtn1Click
+  end
+  object Edit1: TEdit
+    Left = 79
+    Top = 157
+    Width = 66
+    Height = 21
+    TabOrder = 11
+    Text = ' '
+    OnChange = Edit1Change
   end
 end

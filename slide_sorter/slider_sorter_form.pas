@@ -4,7 +4,7 @@ unit slider_sorter_form;
 { Part of MICRODEM GIS Program       }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
-{ Copyright (c) 2023 Peter L. Guth   }
+{ Copyright (c) 2024 Peter L. Guth   }
 {____________________________________}
 
 
@@ -83,6 +83,12 @@ type
     MenuItem14: TMenuItem;
     MenuItem15: TMenuItem;
     MenuItem16: TMenuItem;
+    GPSButton1: TButton;
+    GPSButton2: TButton;
+    GPSbutton3: TButton;
+    GPSbutton4: TButton;
+    MenuItem17: TMenuItem;
+    MenuItem19: TMenuItem;
     procedure FormResize(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure Button7Click(Sender: TObject);
@@ -128,6 +134,7 @@ type
     procedure ImageViewer4DblClick(Sender: TObject);
     procedure MenuItem14Click(Sender: TObject);
     procedure MenuItem15Click(Sender: TObject);
+    procedure MenuItem17Click(Sender: TObject);
   private
     { Private declarations }
     LastMouseX,LastMouseY,
@@ -222,7 +229,6 @@ begin
       TheFiles.Free;
    end;
 end;
-
 
 
 procedure TSlideSorterForm.DeleteAFile(Num : integer);
@@ -544,10 +550,11 @@ end;
 
 procedure TSlideSorterForm.LoadPictures;
 
-         procedure LoadEm(SlideNum,Curslide : integer; Viewer : tImageViewer; theLabel : tLabel);
+         procedure LoadEm(SlideNum,Curslide : integer; Viewer : tImageViewer; theLabel : tLabel; GPSButton : tButton);
          var
             Bitmap : tBitmap;
             TStr : shortstring;
+            Lat,Long : float64;
          begin
             while (SlideNum < FileNames.Count) and (SlideNum >= 0) and (not FileExists(FileNames[SlideNum])) do FileNames.Delete(SlideNum);
             if (SlideNum < FileNames.Count) and (SlideNum >= 0) then begin
@@ -561,6 +568,7 @@ procedure TSlideSorterForm.LoadPictures;
                      TStr := '  ' + PhotoDB.GetFieldByNameAsString('CAMERA') +'  focal=' + PhotoDB.GetFieldByNameAsString('FOCAL_LEN') + '  35mm=' + PhotoDB.GetFieldByNameAsString('FOCAL_35') +
                              '  ISO=' + PhotoDB.GetFieldByNameAsString('ISO') + '  f_stop=' + PhotoDB.GetFieldByNameAsString('F_STOP') +  '  shutter=' + PhotoDB.GetFieldByNameAsString('SHUTTER') +
                              '  EV100=' + PhotoDB.GetFieldByNameAsString('EV100');
+                     GPSButton.Visible := PhotoDB.ValidLatLongFromTable(Lat,Long);
                   end;
                   TStr := IntToStr(SlideNum+1) + '/' + IntToStr(FileNames.Count) + ' ' + ExtractFileName(FileNames[SlideNum]) + TStr;
                   theLabel.Text := TStr;
@@ -598,10 +606,10 @@ begin
          if (OnSlide > FileNames.Count - 1) then OnSlide := FileNames.Count - 1;
          if (OnSlide < -1) then OnSlide := -1;
       end;
-      LoadEm(OnSlide,1,ImageViewer1,Label1);
-      LoadEm(OnSlide+1*Advance,2,ImageViewer2,Label2);
-      LoadEm(OnSlide+2*Advance,3,ImageViewer3,Label3);
-      if FarRightPanel1.Visible then LoadEm(OnSlide+3*Advance,4,ImageViewer4,Label4);
+      LoadEm(OnSlide,1,ImageViewer1,Label1,GPSbutton1);
+      LoadEm(OnSlide+1*Advance,2,ImageViewer2,Label2,GPSbutton2);
+      LoadEm(OnSlide+2*Advance,3,ImageViewer3,Label3,GPSbutton3);
+      if FarRightPanel1.Visible then LoadEm(OnSlide+3*Advance,4,ImageViewer4,Label4,GPSbutton4);
   end;
    Working := false;
 end;
@@ -637,6 +645,12 @@ begin
       LoadPictures;
       Delay(50);
    until (Onslide =  FileNames.Count - 2);
+end;
+
+procedure TSlideSorterForm.MenuItem17Click(Sender: TObject);
+begin
+   AddSuffixOrPrefixToFiles(true);
+   MenuItem8Click(Sender);
 end;
 
 procedure TSlideSorterForm.MenuItem1Click(Sender: TObject);

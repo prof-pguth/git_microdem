@@ -163,13 +163,13 @@
         <Icon_MainIcon>..\icons\md_logo.ico</Icon_MainIcon>
         <DCC_ExeOutput>C:\microdem\</DCC_ExeOutput>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-        <VerInfo_MinorVer>1</VerInfo_MinorVer>
+        <VerInfo_MinorVer>2</VerInfo_MinorVer>
         <VerInfo_MajorVer>2024</VerInfo_MajorVer>
-        <VerInfo_Release>25</VerInfo_Release>
+        <VerInfo_Release>2</VerInfo_Release>
         <DCC_DcuOutput>C:\turbo\obj_files_64\</DCC_DcuOutput>
-        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2024.1.25.5;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2024.2.2.4;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
-        <VerInfo_Build>5</VerInfo_Build>
+        <VerInfo_Build>4</VerInfo_Build>
         <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
         <DCC_OutputDRCFile>false</DCC_OutputDRCFile>
         <DCC_RangeChecking>true</DCC_RangeChecking>
@@ -987,6 +987,9 @@
         <None Include="..\common_code\demstat_ssim.inc"/>
         <None Include="..\microdem_open_source\demmapdraw_legends.inc"/>
         <None Include="..\common_code\demstat_demix_channels.inc"/>
+        <None Include="..\microdem_open_source\saga_wrapper.inc"/>
+        <None Include="..\microdem_open_source\wbt_wrapper.inc"/>
+        <None Include="..\demix\demix_clusters.inc"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -1541,6 +1544,12 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="..\common_code\petmar_vcl.inc" Configuration="Release" Class="ProjectFile"/>
+                <DeployFile LocalName="..\demix\demix_clusters.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\demix\demix_create_database.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
                         <RemoteDir>.\</RemoteDir>
@@ -1831,6 +1840,12 @@
                 </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\petmar_types_db.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\petmar_types_db.inc" Configuration="Release" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\saga_wrapper.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\shapefile_creation.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\shapefile_creation.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
@@ -1841,6 +1856,12 @@
                 <DeployFile LocalName="..\microdem_open_source\shapefile_creation.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\stats_petmath.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\stats_petmath.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="..\microdem_open_source\wbt_wrapper.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>

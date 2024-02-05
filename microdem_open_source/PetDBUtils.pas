@@ -66,6 +66,7 @@ uses
       Windows, Messages, ClipBrd,
    {$EndIf}
 
+   DEMMapf,
    SysUtils,StrUtils, Classes,System.UITypes,
    DataBaseCreate,DEMDefs, PETMath,Petmar_types,petmar;
 
@@ -154,12 +155,12 @@ procedure QuickGraphFromStringList(var sl : tStringList; xf,yf,Capt : shortstrin
    procedure StringGridToCSVFile(fName : PathStr; StringGrid : tStringGrid; Results : tStringList = Nil);
 {$EndIf}
 
-{$IfDef NoCSVImports}
-{$Else}
+
    function DoCSVFileImport(fName : PathStr  = ''; SpecialGaz : tCSVImport = csvNormal) : PathStr;
    function StringList2CSVtoDB(Results : tstringList; fName : Pathstr = ''; CloseFile : boolean = false; SaveCSVfile : boolean = false; OpenTable : boolean = true) : integer;
    procedure MergeCSVFiles(var Fnames : tstringList; OutName : PathStr);
-{$EndIf}
+
+procedure MergeMultipleCSVorTextFiles(BaseMap : tMapForm = nil);
 
 
 {$IfDef ExDBImages}
@@ -193,6 +194,49 @@ uses
    PETImage;
 
 
+
+procedure MergeMultipleCSVorTextFiles(BaseMap : tMapForm = nil);
+var
+   FileNames : tStringList;
+   i,j : integer;
+   DefFil : byte;
+   fName : PathStr;
+   s11,slt : tStringList;
+   TStr : shortString;
+begin
+   FileNames := tStringList.Create;
+   FileNames.Add(LastDataBase);
+   DefFil := 1;
+   if GetMultipleFiles('CSV/TXT files to merge','files|*.txt;*.csv' ,FileNames,DefFil) then begin
+      s11 := tStringList.Create;
+      s11.LoadFromFile(FileNames.Strings[0]);
+      fName := ChangeFileExt(FileNames.Strings[0],'.dbf');
+      for i := 1 to pred(FileNames.Count) do begin
+          wmDEM.SetPanelText(0,TimeToStr(now) + '  ' + IntToStr(succ(i)) + '/' + IntToStr(FileNames.Count) + '  ' + ExtractFileName(FileNames.Strings[i]));
+          slt := tStringList.Create;
+          slt.LoadFromFile(FileNames.Strings[i]);
+          for j := 1 to pred(slt.Count) do begin
+             TStr := trim(slt.Strings[j]);
+             if (TStr <> '') then s11.Add(TStr);
+          end;
+          slt.Free;
+      end;
+   end;
+   if (FileNames.Count > 0) then begin
+      fName := ExtractFilePath(fname) + 'merge_' + ExtractFileNameNoExt(fName) + '.dbf';
+      if GetFileNameDefaultExt('Merged CSV files','*.dbf',FName) then begin
+         if (BaseMap = Nil) then StringList2CSVtoDB(s11,fName,true)
+         else BaseMap.StringListToLoadedDatabase(s11,fName);
+      end;
+      LastDataBase := fName;
+      wmDEM.SetPanelText(0,'');
+   end;
+   FileNames.Free;
+   EndProgress;
+end;
+
+
+
 procedure SafeAdjustGeoBoundBoxForPixelIsArea(var bb : sfBoundBox);
 const
    QuarterSec = 1 / (4 * 3600);
@@ -217,7 +261,7 @@ var
    Tstrl,OutPut : tStringList;
    Header1,Header : shortstring;
    fName : PathStr;
-   DefaultFilter : byte;
+   //DefaultFilter : byte;
    i,j : integer;
 begin
    {$IfDef RecordCSVMerge} writelinetoDebugFile(''); {$Endif}
@@ -455,9 +499,6 @@ end;
 
 
 
-{$IfDef NoCSVImports}
-{$Else}
-
    function StringList2CSVtoDB(Results : tstringList; fName : Pathstr = ''; CloseFile : boolean = false; SaveCSVfile : boolean = false; OpenTable : boolean = true) : integer;
    var
       fName2 : PathStr;
@@ -486,7 +527,6 @@ end;
       if (not SaveCSVFile) then File2Trash(fName2);
    end;
 
-{$EndIf}
 
 
 function NoStatsField(fName : ShortString) : boolean;

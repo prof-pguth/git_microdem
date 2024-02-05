@@ -1931,6 +1931,7 @@ type
       MakeRGB_Best_Map,
       RGBbestSeparates,
 
+      LoadRefDEMMaps,LoadTestDEMMaps,
       SSIM_elev,SSIM_slope,SSIM_ruff,SSIM_rri,SSIM_hill,SSIM_tpi,
       DEMIXCompositeImage,
       DEMIX_DoCHM,
@@ -3006,7 +3007,6 @@ var
    {$Else}
       GlobalWindsFName,
       GlobalCurrentsFName,
-      PiratesFName,
       MonthlyClimateFName,
       ClimateDir,
       WorldClimate2Dir,

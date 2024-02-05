@@ -1073,7 +1073,7 @@ begin
            if (StatOpts in [soTable,soGraph]) then begin
               Moment(Values,MomentVar,msAll);
               Results.Add(IntToStr(aClass) + ',' +  MyData.GetFieldByNameAsString('NAME') + ',' + IntToStr(MomentVar.NPts) + ',' +
-                  RealToString(MomentVar.mean,-12,-2) + ',' + RealToString(MomentVar.sdev,-12,-2) + ',' +
+                  RealToString(MomentVar.mean,-12,-2) + ',' + RealToString(MomentVar.std_dev,-12,-2) + ',' +
                   RealToString(values[1],-12,-2) + ',' + RealToString(Values[MomentVar.NPts],-12,-2) + ',' +
                   RealToString(MomentVar.Median,-12,-2) + ',' +
                   RealToString(Quantile(5,Values,MomentVar.NPts,true),-12,-2) + ',' + RealToString(Quantile(10,Values,MomentVar.NPts,true),-12,-2) + ',' +
@@ -1312,7 +1312,7 @@ end;
 procedure tMultiGridArray.LoadHyperion;
 var
    i,NumPts : int64;
-   SceneBaseName : ANSIstring;
+   //SceneBaseName : ANSIstring;
    TStr : shortstring;
    fName,HyperionDir,mgName{,MGPath} : PathStr;
    Table : tMyData;
@@ -1771,7 +1771,7 @@ procedure tMultiGridArray.ReinterpolateAllToSameResolution;
 var
    Band,BaseBand,NewGrid : integer;
    Resolution : float64;
-   fName : PathStr;
+   //fName : PathStr;
 begin
    {$IfDef RecordMultiGridsDetailed} WriteLineToDebugFile('tMultiGridArray.ReinterpolateAllToSameResolution in'); {$EndIf}
    Resolution := 9999;
@@ -1936,7 +1936,7 @@ var
    x,y,n,Band : integer;
    Sum : float64;
    z : float32;
-   Values : array[1..MaxGridsInMG] of float32;
+   //Values : array[1..MaxGridsInMG] of float32;
 begin
    If (SumGrid <> 0) then SumGrid := OpenNewGrid('Sum_' + MG_Name,DEMGlb[Grids[1]].DEMheader.ElevUnits,FloatingPointDEM);
    If (AvgGrid <> 0) then AvgGrid := OpenNewGrid('Average_value_' + MG_Name,DEMGlb[Grids[1]].DEMheader.ElevUnits,FloatingPointDEM);
@@ -2005,7 +2005,7 @@ procedure tMultiGridArray.FindHighValues(LowLimit,HighLimit : integer; MapOwner 
 label
    Done;
 var
-   x,y,n,Band,Band2 : integer;
+   x,y,Band,Band2{,n} : integer;
    Z : float32;
    Lat,Long : float64;
    Line : ANSIstring;
@@ -2118,15 +2118,15 @@ end;
 
 procedure tMultiGridArray.DrawPointGraph(var PointGraph : tThisBaseGraph; Lat,Long : float64; Redraw : boolean = true);
 var
-   Col,Row,
-   xg,yg,Band : integer;
+   //Col,Row,
+   xg,yg{,Band} : integer;
 
    procedure MakeGraphFile(x1,y1 : integer; Color : tColor);
    var
       Band : integer;
       Refs : array[1..500] of float32;
       rfile : file;
-      Max,x : float32;
+      Max{,x} : float32;
    begin
        PointGraph.OpenDataFile(rfile,true,Color);
        for Band := 1 to MaxGridsInMG do begin

@@ -2470,9 +2470,10 @@ var
          AParameter('DEMIX','SSIM_hill',SSIM_hill,true);
          AParameter('DEMIX','DEMIX_open_ref_DEM',DEMIX_open_ref_DSM,true);
          AParameter('DEMIX','DEMIX_Full',DEMIX_Full,100);
+         AParameter('DEMIX','LoadRefDEMMaps',LoadRefDEMMaps,true);
+         AParameter('DEMIX','LoadTestDEMMaps',LoadTestDEMMaps,true);
       end;
    end;
-
 
 
    procedure ProgramFileSettings;
@@ -2485,9 +2486,11 @@ var
             AParameter('Files','Last DB',LastDataBase,'');
             AParameter('Files','PhotoDir',PhotoDir,'');
             AParameter('Files','LastLidarMult',LastLidarMulti,'');
-            //AParameter('Files','LastOSMoverlay',LastOSMoverlay,'');
             AParameter('Files','MapLibDir',MapLibDir,'');
             AParameter('Files','lastools_bindir',lastools_bindir,'');
+            AParameter('Files','WhiteBoxfName',WhiteBoxfName,'');
+            AParameter('Files','SagaCMD',SagaCMD,'H:\gis_software\saga-8.2.1_x64\saga_cmd.exe');
+            AParameter('Files','WhiteBoxFName',WhiteBoxFName,'');
 
             {$IfDef ExGDAL}
             {$Else}
@@ -2496,9 +2499,6 @@ var
                AParameter('GDAL','RouteGeotiffExportGDAL',RouteGeotiffExportGDAL,true);
                AParameterShortFloat('GDAL','GDALThinFactor',GDALThinFactor,0.1);
             {$EndIf}
-
-            AParameter('Files','SagaCMD',SagaCMD,'H:\gis_software\saga-8.2.1_x64\saga_cmd.exe');
-            AParameter('Files','WhiteBoxFName',WhiteBoxFName,'');
 
             {$IfDef MSWindows}
                AParameter('Files','mcc_lidarFName',mcc_lidarFName,'');
@@ -2570,16 +2570,6 @@ var
                   AParameter('Files','Last_Hyp_file',LastHypFile,'');
                {$EndIf}
 
-               {$IfDef ExSidescan}
-               {$Else}
-                  AParameter('Files','SidescanFName',InputSideScanFileName,'');
-                  AParameter('Files','SidescanIndexName',SidescanIndexFName,'');
-                  AParameter('Files','ChirpPath',ChirpDataPath,'');
-                  AParameter('Files','SidescanPath',SideDataPath,'');
-                  AParameter('Files','Ocean Drift',OceanDriftFName,'');
-                  AParameter('Files','Ocean Tide',OceanTideFName,'');
-               {$EndIf}
-
                {$IfDef ExVegDensity}
                {$Else}
                   AParameter('Files','LastVegDensity1fName',LastVegDensity1fName,'');
@@ -2608,6 +2598,16 @@ var
                {$Else}
                   AParameter('Files','LastStratcol',LastStratColFile,'');
                   AParameter('Files','LithFileName',LithFileName,'');
+               {$EndIf}
+
+               {$IfDef ExSidescan}
+               {$Else}
+                  AParameter('Files','SidescanFName',InputSideScanFileName,'');
+                  AParameter('Files','SidescanIndexName',SidescanIndexFName,'');
+                  AParameter('Files','ChirpPath',ChirpDataPath,'');
+                  AParameter('Files','SidescanPath',SideDataPath,'');
+                  AParameter('Files','Ocean Drift',OceanDriftFName,'');
+                  AParameter('Files','Ocean Tide',OceanTideFName,'');
                {$EndIf}
 
                {$IfDef SQLiteDefaultDBs}
@@ -2659,11 +2659,9 @@ var
          AParameter('Misc','PictureMode',PictureMode,1);
 
          AParameter('Misc','VerifyAllWorldFiles',VerifyAllWorldFiles,false);
-         //AParameter('Misc','HydrologyEnforceProfile',HydrologyEnforceProfile,true);
          AParameter('Misc','tnHeight',tnHeight,150);
          AParameter('Misc','tnQuality',tnQuality,95);
          AParameter('Misc','AutoCloseIndexMaps',AutoCloseIndexMaps,false);
-         //AParameter('Misc','MaxBuildingGrid',MaxBuildingGrid,256);
          AParameter('Misc','TargetsAlongLine',TargetsAlongLine,true);
          AParameter('Misc','GrayScaleMerges',GrayScaleMerges,true);
          AParameter('Misc','TerrainCatPercentages',TerrainCatPercentages,false);
@@ -2698,7 +2696,6 @@ var
          AParameter('Misc','MergeInt',MergeInt,210);
          AParameter('Misc','MergeHue',MergeHue,195);
          AParameter('Misc','CumulativeGraph',CumulativeGraph,false);
-         //AParameter('Misc','ShowMapToolbar',ShowMapToolbar,true);
          AParameter('Misc','AutoElevationReset',AutoElevationReset,true);
          AParameter('Misc','AutomaticNewMovieNames',AutomaticNewMovieNames,false);
          AParameter('Misc','DrapeExactly',DrapeExactly,false);
@@ -2711,24 +2708,12 @@ var
          AParameter('Misc','StayAwake',StayAwake,true);
          AParameter('Misc','ReverseZFields',ReverseZFields,false);
 
-         {$IfDef VCL}
-         AParameter('Misc','SB1PanelWidths[0]',SB1PanelWidths[0],200);
-         AParameter('Misc','SB1PanelWidths[1]',SB1PanelWidths[1],360);
-         AParameter('Misc','SB1PanelWidths[2]',SB1PanelWidths[2],240);
-         AParameter('Misc','SB1PanelWidths[3]',SB1PanelWidths[3],300);
-         {$EndIf}
-
          AParameter('Misc','GrayscaleChannels',GrayscaleChannels,false);
          AParameter('Misc','MinRGBColor',MinRGBColor,50);
          AParameter('Misc','MaxRGBColor',MaxRGBColor,200);
          AParameter('Misc','RangeRGBColor',RangeRGBColor,150);
          AParameter('Misc','DefElevsPercentile',DefElevsPercentile,true);
 
-         {$IfDef VCL}
-         AParameter('Misc','MaxDebugLinesToKeep',MaxDebugLinesToKeep,5000);
-         {$Else}
-         AParameter('Misc','MaxDebugLinesToKeep',MaxDebugLinesToKeep,1250);
-         {$EndIf}
          AParameter('Misc','FinalLinesToKeep',FinalLinesToKeep,10);
          MDDef.InitialLinesToKeep := 7;
          AParameter('Misc','MDRecordDebugLog',MDRecordDebugLog,true);
@@ -2744,6 +2729,15 @@ var
          if (IniWhat = iniWrite) then IniFile.WriteInteger('Misc','ProgramOption',ord(ProgramOption));
          if (IniWhat = iniRead) then ProgramOption := tProgramOption(IniFile.ReadInteger('Misc','ProgramOption',ord(ExpertProgram)));
          if (iniWhat = iniInit) then ProgramOption := ExpertProgram;
+         {$IfDef VCL}
+            AParameter('Misc','SB1PanelWidths[0]',SB1PanelWidths[0],200);
+            AParameter('Misc','SB1PanelWidths[1]',SB1PanelWidths[1],360);
+            AParameter('Misc','SB1PanelWidths[2]',SB1PanelWidths[2],240);
+            AParameter('Misc','SB1PanelWidths[3]',SB1PanelWidths[3],300);
+            AParameter('Misc','MaxDebugLinesToKeep',MaxDebugLinesToKeep,5000);
+         {$Else}
+            AParameter('Misc','MaxDebugLinesToKeep',MaxDebugLinesToKeep,1250);
+         {$EndIf}
       end;
    end;
 
@@ -2760,11 +2754,8 @@ var
             AParameter('Geography','VerifyTimeZone',VerifyTimeZone,false);
             AParameter('Geography','UTCOffset',UTCOffset,-4);
             AParameter('Geography','TZFromLong',TZFromLong,true);
-            //AParameter('Geography','WindMonth',WindMonth0based,0);
-            //AParameter('Geography','SunExtremes',SunExtremes,false);
             AParameter('Geography','MoonPhase',MoonPhase,true);
             AParameter('Geography','RiseSet',RiseSet,true);
-            //AParameter('Geography','MoveGeographyDBMemory', MoveGeographyDBMemory,false);
 
             with KoppenOpts do begin
                AParameter('Koppen','Width',KopWidth,300);
@@ -2786,19 +2777,19 @@ var
    begin
       {$IfDef ExGazetteer}
       {$Else}
-      with MDIniFile,MDDef do begin
-         AParameter('Gaz','DefaultGazetteerType',DefaultGazetteerType,0);
-         AParameter('Gaz','ShiftGazPeaks',ShiftGazPeaks,true);
-         AParameter('Gaz','ShiftGazPeaksDist',ShiftGazPeaksDist,250);
-         AParameter('Gaz','GazPeakObsUp',GazPeakObsUp,25);
-         AParameter('Gaz','AutoLabelGaz',AutoLabelGaz,false);
-         AParameter('Gaz','LabelGazOnMap',LabelGazOnMap,true);
-         AParameter('Gaz','GazMarkPeaksPerspective',GazMarkPeaksPerspective,true);
-         AParameter('Gaz','GazMarkPeaksPerpsOnMap',GazMarkPeaksPerpsOnMap,true);
-         AParameter('Gaz','ConvergingViews',ConvergingViews,false);
-         AParameter('Files','LastGazFile',LastGazFile,'');
-         AParameter('Menus','UseGazetteer',UseGazetteer,true);
-      end;
+         with MDIniFile,MDDef do begin
+            AParameter('Gaz','DefaultGazetteerType',DefaultGazetteerType,0);
+            AParameter('Gaz','ShiftGazPeaks',ShiftGazPeaks,true);
+            AParameter('Gaz','ShiftGazPeaksDist',ShiftGazPeaksDist,250);
+            AParameter('Gaz','GazPeakObsUp',GazPeakObsUp,25);
+            AParameter('Gaz','AutoLabelGaz',AutoLabelGaz,false);
+            AParameter('Gaz','LabelGazOnMap',LabelGazOnMap,true);
+            AParameter('Gaz','GazMarkPeaksPerspective',GazMarkPeaksPerspective,true);
+            AParameter('Gaz','GazMarkPeaksPerpsOnMap',GazMarkPeaksPerpsOnMap,true);
+            AParameter('Gaz','ConvergingViews',ConvergingViews,false);
+            AParameter('Files','LastGazFile',LastGazFile,'');
+            AParameter('Menus','UseGazetteer',UseGazetteer,true);
+         end;
       {$EndIf}
    end;
 
@@ -2857,32 +2848,26 @@ var
             AParameterFloat('Micronet','MinContourConcentration',MinContourConcentration,0);
             AParameterFloat('Micronet','MaxContourConcentration',MaxContourConcentration,0);
 
-            //AParameter('Micronet','DrawGridCircles',DrawGridCircles,ngNone);
             if (IniWhat = iniWrite) then IniFile.WriteInteger('Micronet','DrawGridCircles',ord(DrawGridCircles));
             if (IniWhat = iniRead) then DrawGridCircles := tNetGrid(IniFile.ReadInteger('Micronet','DrawGridCircles',ord(ngNone)));
             if (iniWhat = iniInit) then DrawGridCircles := ngNone;
 
-            //AParameter('Micronet','NetUsed',NetUsed,Schmidt);
             if (IniWhat = iniWrite) then IniFile.WriteInteger('Micronet','NetUsed',ord(NetUsed));
             if (IniWhat = iniRead) then NetUsed := NetType(IniFile.ReadInteger('Micronet','NetUsed',ord(Schmidt)));
             if (iniWhat = iniInit) then NetUsed := Schmidt;
 
-            //AParameter('Micronet','HemiSphereUsed',HemiSphereUsed,Lower);
             if (IniWhat = iniWrite) then IniFile.WriteInteger('Micronet','HemiSphereUsed',ord(HemiSphereUsed));
             if (IniWhat = iniRead) then HemiSphereUsed := tHemiSphere(IniFile.ReadInteger('Micronet','HemiSphereUsed',ord(Lower)));
             if (iniWhat = iniInit) then HemiSphereUsed := Lower;
 
-            //AParameter('Micronet','InputDisplay',InputDisplay,Pole);
             if (IniWhat = iniWrite) then IniFile.WriteInteger('Micronet','InputDisplay',ord(InputDisplay));
             if (IniWhat = iniRead) then InputDisplay := tInputDisplay(IniFile.ReadInteger('Micronet','InputDisplay',ord(Pole)));
             if (iniWhat = iniInit) then InputDisplay := Pole;
 
-            //AParameter('Micronet','NetContourColors',NetContourColors,ColorBands);
             if (IniWhat = iniWrite) then IniFile.WriteInteger('Micronet','NetContourColors',ord(NetContourColors));
             if (IniWhat = iniRead) then NetContourColors := tNetContourColors(IniFile.ReadInteger('Micronet','NetContourColors',ord(Spectrum)));
             if (iniWhat = iniInit) then NetContourColors := Spectrum;
 
-            //AParameter('Micronet','BeachBallSize',BeachBallSize,bbsAll);
             if (IniWhat = iniWrite) then IniFile.WriteInteger('Micronet','BeachBallSize',ord(BeachBallSize));
             if (IniWhat = iniRead) then BeachBallSize := tBeachBallSize(IniFile.ReadInteger('Micronet','BeachBallSize',ord(bbsAll)));
             if (iniWhat = iniInit) then BeachBallSize := bbsAll;
@@ -2905,7 +2890,6 @@ var
          AColorParameter('Contour','DelaunayLineColor',DelaunayLineColor,claMaroon);
          AColorParameter('Contour','ContourLineColor',ContourLineColor,claLime);
          AParameter('Contour','ShowDelauneyTriangles',ShowDelauneyTriangles,false);
-         //AParameter('Contour','ExportContourShapeFile',ExportContourShapeFile,false);
          AParameter('Contour','LabelContours',LabelContours,false);
          AParameter('Contour','ContourLineWidth',ContourLineWidth,1);
          AParameter('Contour','DefaultContourInterval',DefaultContourInterval,50);
@@ -2983,10 +2967,8 @@ var
             if (IniWhat = iniRead) then PLSSFormat := tPLSSFormat(IniFile.ReadInteger('PLSS','PLSSFormat',ord(plssTRS)));
             if (iniWhat = iniInit) then PLSSFormat := plssTRS;
          end;
-
         {$IfDef RecordFont} WriteLineToDebugFile('PLSSSettings, town font: ' + MyFontToString(MDDef.PLSSDef.TownFont)); {$EndIf}
         {$IfDef RecordFont} WriteLineToDebugFile('PLSSSettings, sect font: ' + MyFontToString(MDDef.PLSSDef.SectFont)); {$EndIf}
-
       {$EndIf}
    end;
 
@@ -3036,7 +3018,6 @@ var
          AParameter('Menus','ShowDEMIX',ShowDEMIX,true);
          AParameter('Menus','ShowOpenGL',ShowOpenGL,true);
          AParameter('Menus','ShowMultigrids',ShowMultigrids,true);
-         //AParameter('Menus','ShowGISlabs',ShowGISLabs,false);
          AParameter('Menus','ShowLabs',ShowLabs,false);
       end;
       {$EndIf}
@@ -3056,8 +3037,6 @@ var
       AParameter('Display','aRotateAngle',aRotateAngle,0);
       AParameter('Display','ClipZColors',ClipZColors,false);
       AParameter('Display','GraphicalCoordVerify',GraphicalCoordVerify,true);
-      //AParameter('Display','ShowAllUnits',ShowAllUnits,true);
-     // AParameter('Display','AutoLabelTheGridBlowups',AutoLabelTheGridBlowups,false);
       AParameter('Display','AvoidTextOverprints',AvoidTextOverprints,true);
       AParameter('Display','ElevDisplayMeters',ElevDisplayMeters,true);
       AParameter('Display','PlotArrowHead',PlotArrowHead,true);
@@ -3123,45 +3102,43 @@ var
 
          {$IfDef ExGeology}
          {$Else}
-         AParameter('Geology','DefaultGeologySymbol',DefaultGeologySymbol,0);
-         AParameter('Geology','StructGeologyShowNet',StructGeologyShowNet,false);
-         AParameter('Geology','StructGeologyLabelVals',StructGeologyLabelVals,true);
-         AParameter('Geology','PlateRotateContCrust',PlateRotateContCrust,true);
-         AParameter('Geology','PlateRotateBoundaries',PlateRotateBoundaries,true);
-         AParameter('Geology','RotateVectMult',RotateVectMult,10);
-         AParameter('Geology','TernaryPercentageValues',TernaryPercentageValues,false);
-         AParameter('Geology','BeachBallSwitchPixelSize',BeachBallSwitchPixelSize,50);
-         AParameter('Geology','PlateVectors',PlateVectors,true);
-         AParameter('Geology','ResultantPlateVectors',ResultantPlateVectors,true);
-         AParameter('Geology','ShowContactsOnStereoNet',ShowContactsOnStereoNet,true);
-         AParameter('Geology','ShowPlateRotation',ShowPlateRotation,true);
-         AParameter('Geology','ShowSieve',ShowSieve,false);
-         AParameter('Geology','AutoIncGeoColor',AutoIncGeoColor,true);
-         AColorParameter('Geology','MapGeoSymColor', MapGeoSymColor,claBlack);
-         AParameter('Geology','PlateTectonicVelocity', PlateTectonicVelocity,true);
-         AParameter('Geology','PlateModel', PlateModel,'HS3-NUVEL-1A');
-         AParameter('Geology','PlateVelocityDiagram', PlateVelocityDiagram,true);
-         AParameter('Geology','PlateLabelVectors', PlateLabelVectors,true);
-         //AParameter('Geology','MoveGeologyDBMemory', MoveGeologyDBMemory,false);
+            AParameter('Geology','DefaultGeologySymbol',DefaultGeologySymbol,0);
+            AParameter('Geology','StructGeologyShowNet',StructGeologyShowNet,false);
+            AParameter('Geology','StructGeologyLabelVals',StructGeologyLabelVals,true);
+            AParameter('Geology','PlateRotateContCrust',PlateRotateContCrust,true);
+            AParameter('Geology','PlateRotateBoundaries',PlateRotateBoundaries,true);
+            AParameter('Geology','RotateVectMult',RotateVectMult,10);
+            AParameter('Geology','TernaryPercentageValues',TernaryPercentageValues,false);
+            AParameter('Geology','BeachBallSwitchPixelSize',BeachBallSwitchPixelSize,50);
+            AParameter('Geology','PlateVectors',PlateVectors,true);
+            AParameter('Geology','ResultantPlateVectors',ResultantPlateVectors,true);
+            AParameter('Geology','ShowContactsOnStereoNet',ShowContactsOnStereoNet,true);
+            AParameter('Geology','ShowPlateRotation',ShowPlateRotation,true);
+            AParameter('Geology','ShowSieve',ShowSieve,false);
+            AParameter('Geology','AutoIncGeoColor',AutoIncGeoColor,true);
+            AColorParameter('Geology','MapGeoSymColor', MapGeoSymColor,claBlack);
+            AParameter('Geology','PlateTectonicVelocity', PlateTectonicVelocity,true);
+            AParameter('Geology','PlateModel', PlateModel,'HS3-NUVEL-1A');
+            AParameter('Geology','PlateVelocityDiagram', PlateVelocityDiagram,true);
+            AParameter('Geology','PlateLabelVectors', PlateLabelVectors,true);
+            AParameter('Geology','PlateNumbers', PlateNumbers,false);
+            AColorParameter('Geology','ColorFP1', ColorFP1,claRed);
+            AColorParameter('Geology','ColorFP2', ColorFP2,claLime);
 
-         AParameter('Geology','PlateNumbers', PlateNumbers,false);
-         AColorParameter('Geology','ColorFP1', ColorFP1,claRed);
-         AColorParameter('Geology','ColorFP2', ColorFP2,claLime);
+            AParameter('Geology','FPMinSlope1',FPMinSlope1,15);
+            AParameter('Geology','FPMaxSlope1',FPMaxSlope1,45);
+            AParameter('Geology','FPMinAsp1',FPMinAsp1,0);
+            AParameter('Geology','FPMaxAsp1',FPMaxAsp1,180);
+            AParameter('Geology','FPMinSlope2',FPMinSlope2,15);
+            AParameter('Geology','FPMaxSlope2',FPMaxSlope2,45);
+            AParameter('Geology','FPMinAsp2',FPMinAsp2,180);
+            AParameter('Geology','FPMaxAsp2',FPMaxAsp2,360);
+            AParameter('Geology','MagLineWidth',MagLineWidth,2);
 
-         AParameter('Geology','FPMinSlope1',FPMinSlope1,15);
-         AParameter('Geology','FPMaxSlope1',FPMaxSlope1,45);
-         AParameter('Geology','FPMinAsp1',FPMinAsp1,0);
-         AParameter('Geology','FPMaxAsp1',FPMaxAsp1,180);
-         AParameter('Geology','FPMinSlope2',FPMinSlope2,15);
-         AParameter('Geology','FPMaxSlope2',FPMaxSlope2,45);
-         AParameter('Geology','FPMinAsp2',FPMinAsp2,180);
-         AParameter('Geology','FPMaxAsp2',FPMaxAsp2,360);
-         AParameter('Geology','MagLineWidth',MagLineWidth,2);
-
-         if (IniWhat = iniWrite) then IniFile.WriteInteger('Geology','BeachBallMap',ord(BeachBallMap));
-         if (IniWhat = iniRead) then BeachBallMap := tBeachBallMap(IniFile.ReadInteger('Geology','BeachBallMap',ord(bbmSwitch)));
-         if (iniWhat = iniInit) then BeachBallMap := bbmSwitch;
-      {$EndIf}
+            if (IniWhat = iniWrite) then IniFile.WriteInteger('Geology','BeachBallMap',ord(BeachBallMap));
+            if (IniWhat = iniRead) then BeachBallMap := tBeachBallMap(IniFile.ReadInteger('Geology','BeachBallMap',ord(bbmSwitch)));
+            if (iniWhat = iniInit) then BeachBallMap := bbmSwitch;
+         {$EndIf}
       end;
    end;
 
@@ -3191,7 +3168,6 @@ var
          AParameter('GISDB','TrackDatabaseRanges',TrackDatabaseRanges,true);
          AParameter('GISDB','AllowMemoryLinkDB',AllowMemoryLinkDB,true);
          AParameter('GISDB','AllowDBsToRAM',AllowDBstoRAM,true);
-         //AParameter('GISDB','TigertoCDS',TigertoCDS,true);
          AParameter('GISDB','DBRecShowToolbarTop',DBRecShowToolbarTop,true);
          AParameter('GISDB','AutoDBFieldNameFixes',MDDef.AutoDBFieldNameFixes,true);
          AParameterShortFloat('GISDB','DefCatPCforLegend',DefCatPCforLegend,0);
@@ -3302,11 +3278,9 @@ var
          AParameter('MapDraw','DefaultUTMGridSpacing',DefaultUTMGridSpacing,15);
          AParameter('MapDraw','UTMGridLineWidth',UTMGridLineWidth,1);
          AParameter('MapDraw','PanOverlap',PanOverlap,2);
-         //AParameter('MapDraw','UseBigElevationColorTables',UseBigElevationColorTables,false);
          AParameter('MapDraw','CartMovieSteps', CartMovieSteps,2);
          AParameter('MapDraw','InvertGrayScale',InvertGrayScale,false);
          AParameter('MapDraw','MonochromeColor',MonochromeColor,0);
-         //AParameter('MapDraw','LeftLatGlobalDEM',LeftLatGlobalDEM,0);
          AParameter('MapDraw','LargeScaleWorldOutlinePixelSize',LargeScaleWorldOutlinePixelSize,250);
          AParameter('MapDraw','MedScaleWorldOutlinePixelSize',MedScaleWorldOutlinePixelSize,1500);
          AParameter('MapDraw','SmallScaleWorldOutlinePixelSize',SmallScaleWorldOutlinePixelSize,10000);
@@ -3599,7 +3573,6 @@ begin
    OpenGraySettings;
    RedChangeSettings;
    GreenChangeSettings;
-
    TissotOptions;
 
    {$If Defined(RecordINIfiles) } WriteLineToDebugFile('INI files Breakpoint 1.5'); {$EndIf}
@@ -3725,9 +3698,6 @@ begin
 
       AColorParameter('Graph','DefaultGraphBackgroundColor',DefaultGraphBackgroundColor,claWhite);
 
-
-
-
       {$IfDef AllowGeomorphometry}
          AParameter('Graph','QuantileRanges',QuantileRanges,true);
          AParameter('Graph','CumFreqNormAxis',CumFreqNormAxis,true);
@@ -3795,7 +3765,6 @@ begin
       AParameter('LineDraw','ConnectArrows',ConnectArrows,false);
       AParameter('LineDraw','ConnectArrowSpacing',ConnectArrowSpacing,5);
 
-      //AParameter('MapMargin','SpecifyLegendX',SpecifyLegendX,0);
       AParameter('MapMargin','LegendSingleHeight',LegendSingleHeight,25);
       AParameter('MapMargin','LegendGraphWidth',LegendGraphWidth,50);
       AParameter('MapMargin','LegendBarWidth',LegendBarWidth,15);
@@ -3939,7 +3908,6 @@ begin
          AParameter('StateCountyMaps','US_River_Width',US_River_Width,1);
          AParameter('Carto','CloseCartFormOnOpen',CloseCartFormOnOpen,true);
       {$EndIf}
-
 
    {$If Defined(RecordINIfiles) or Defined(RecordINIfiles)} WriteLineToDebugFile('Breakpoint 10'); {$EndIf}
 
@@ -4198,39 +4166,39 @@ end;
 {$IfDef ExGazetteer}
 {$Else}
 
-procedure SetUpGazFile(var GazColors : tMyData; var NameStr : ShortString; FilterUse : boolean = true);
-var
-   USGSGaz,CanadianGaz : boolean;
-begin
-   {$IfDef RecordGazOps} WriteLineToDebugFile('SetUpGazFile ' + GazOptFName); {$EndIf}
-   GazColors := tMyData.Create(GazOptFName);
-   {$IfDef RecordGazOps} WriteLineToDebugFile('opened OK  check gaz type, ' + LastGazFile); {$EndIf}
-   USGSGaz := USGSGazeeteerFile(LastGazFile);
-   CanadianGaz := CanadianGazeeteerFile(LastGazFile);
-   if USGSGaz then NameStr := 'USGS'
-   else if CanadianGaz then NameStr := 'CCOG'
-   else NameStr := 'NGA';
-   If FilterUse then GazColors.ApplyFilter( 'GAZ=' + QuotedStr(NameStr) + ' AND USE=' + QuotedStr('Y'))
-   else GazColors.ApplyFilter( 'GAZ=' + QuotedStr(NameStr));
-   {$IfDef RecordGazOps} WriteLineToDebugFile('filtered OK'); {$EndIf}
-   if USGSGaz then NameStr := 'FEATURE'
-   else if CanadianGaz then NameStr := 'GEONAME'
-   else NameStr := 'NAME';
-   {$IfDef RecordGazOps} WriteLineToDebugFile('GazFilter=' + GazColors.Filter + '    Gaz NameStr=' + NameStr); {$EndIf}
-end;
+   procedure SetUpGazFile(var GazColors : tMyData; var NameStr : ShortString; FilterUse : boolean = true);
+   var
+      USGSGaz,CanadianGaz : boolean;
+   begin
+      {$IfDef RecordGazOps} WriteLineToDebugFile('SetUpGazFile ' + GazOptFName); {$EndIf}
+      GazColors := tMyData.Create(GazOptFName);
+      {$IfDef RecordGazOps} WriteLineToDebugFile('opened OK  check gaz type, ' + LastGazFile); {$EndIf}
+      USGSGaz := USGSGazeeteerFile(LastGazFile);
+      CanadianGaz := CanadianGazeeteerFile(LastGazFile);
+      if USGSGaz then NameStr := 'USGS'
+      else if CanadianGaz then NameStr := 'CCOG'
+      else NameStr := 'NGA';
+      If FilterUse then GazColors.ApplyFilter( 'GAZ=' + QuotedStr(NameStr) + ' AND USE=' + QuotedStr('Y'))
+      else GazColors.ApplyFilter( 'GAZ=' + QuotedStr(NameStr));
+      {$IfDef RecordGazOps} WriteLineToDebugFile('filtered OK'); {$EndIf}
+      if USGSGaz then NameStr := 'FEATURE'
+      else if CanadianGaz then NameStr := 'GEONAME'
+      else NameStr := 'NAME';
+      {$IfDef RecordGazOps} WriteLineToDebugFile('GazFilter=' + GazColors.Filter + '    Gaz NameStr=' + NameStr); {$EndIf}
+   end;
 
 
-procedure PickGazFeatures;
-var
-  Table : tMyData;
-  NameStr : ShortString;
-begin
-   SetUpGazFile(Table,NameStr,false);
-   {$IfDef VCL}
-      Toggle_db_use.VerifyRecordsToUse(Table,'NAME','Features to show');
-   {$EndIf}
-   Table.Destroy;
-end;
+   procedure PickGazFeatures;
+   var
+     Table : tMyData;
+     NameStr : ShortString;
+   begin
+      SetUpGazFile(Table,NameStr,false);
+      {$IfDef VCL}
+         Toggle_db_use.VerifyRecordsToUse(Table,'NAME','Features to show');
+      {$EndIf}
+      Table.Destroy;
+   end;
 
 {$EndIf}
 
@@ -4320,10 +4288,10 @@ end;
 
 {$IfDef ExGeography}
 {$Else}
-procedure SetKoppenOpts(var KoppenOpts :  tKoppenOpts);
-begin
-   ProcessIniFile(iniInit,'KOPPEN');
-end;
+   procedure SetKoppenOpts(var KoppenOpts :  tKoppenOpts);
+   begin
+      ProcessIniFile(iniInit,'KOPPEN');
+   end;
 {$EndIf}
 
 procedure SetLOSDefaults;
@@ -4403,181 +4371,179 @@ end;
 {$IfDef ExViewshed}
 {$Else}
 
-procedure RecolorFan(var Bitmap : tMyBitmap; Color : tPlatFormColor);
-{$IfDef VCL}
-var
-   x,y : integer;
-   p0 : prgb;
-begin
-   for y := 0 to pred(Bitmap.Height) do begin
-      p0 := Bitmap.Scanline[y];
-      for x := 0 to pred(Bitmap.Width) do begin
-         if (not SameColor(P0[x],RGBTripleWhite)) then p0[x] := Color;
-      end;
-   end;
-{$Else}
-begin
-{$EndIf}
-end;
-
-
-procedure ResetDefaultFanAlgorithm;
-begin
-   ProcessIniFile(iniInit,'WeapFanAlg');
-end;
-
-
-procedure InitializeWeaponsFanColors(var WeaponsFan : tWeaponsFan);
-begin
-   WeaponsFan.ThisFanColor := MDdef.FanColor;
-   WeaponsFan.ThisMaskColor := MDdef.MaskColor;
-   WeaponsFan.FanShowWhat  := MDDef.wf.FanShowVisible;
-end;
-
-
-procedure InitializeWeaponsFan(var WeaponsFan : tWeaponsFan);
-begin
-   InitializeWeaponsFanColors(WeaponsFan);
-   WeaponsFan.FanZoomFactor := MDDef.FanMapZoom;
-   WeaponsFan.w_Lat := 100;
-   WeaponsFan.Fan_Name := '';
-   WeaponsFan.W_Range  := MDdef.MaskObsRange;
-   if MDDef.DefaultObserverTerrainHug then WeaponsFan.W_Up := MDdef.ObsAboveGround
-   else WeaponsFan.W_Up := MDDef.DefaultObserverASL;
-
-   if MDDef.DefaultTargetTerrainHug then WeaponsFan.W_TargetUp := MDdef.TargetAboveGround
-   else WeaponsFan.W_TargetUp := MDDef.DefaultTargetASL;
-
-   WeaponsFan.StartAngle := MDdef.StartFanAngle;
-   WeaponsFan.EndAngle   := MDdef.EndFanAngle;
-   WeaponsFan.UpAngle    := MDDef.FanUpAngle;
-   WeaponsFan.DownAngle  := MDDef.FanDownAngle;
-   WeaponsFan.TargetTerrainHug := MDDef.DefaultTargetTerrainHug;
-   WeaponsFan.ObserverTerrainHug := MDDef.DefaultObserverTerrainHug;
-   WeaponsFan.noUseSensorNoTerrainBlock := false;
-   WeaponsFan.FanFileName := '';
-end;
-
-
-function WeaponsTableBasicParametersToFan(PrimaryMapDatum : tMapProjection; WeaponsTable : tMyData) : tWeaponsFan;
-var
-   Lat,Long : float32;
-begin
-   with WeaponsTable do begin
-      InitializeWeaponsFan(Result);
-      Lat := WeaponsTable.GetFieldByNameAsFloat('LAT');
-      Long := GetFieldByNameAsFloat('LONG');
-      MolodenskiyTransformation(Lat,Long,Result.W_Lat,Result.W_Long,WGS84DatumConstants,PrimaryMapDatum);
-
-      {$IfDef RecordFan}
-         WriteLineToDebugFile('Fan location in file (WGS84): ' + LatLongDegreeToString(Lat,Long));
-         WriteLineToDebugFile('Fan location for map: ' + LatLongDegreeToString(Result.W_Lat,Result.W_Long));
+      procedure RecolorFan(var Bitmap : tMyBitmap; Color : tPlatFormColor);
+      {$IfDef VCL}
+      var
+         x,y : integer;
+         p0 : prgb;
+      begin
+         for y := 0 to pred(Bitmap.Height) do begin
+            p0 := Bitmap.Scanline[y];
+            for x := 0 to pred(Bitmap.Width) do begin
+               if (not SameColor(P0[x],RGBTripleWhite)) then p0[x] := Color;
+            end;
+         end;
+      {$Else}
+      begin
       {$EndIf}
-
-      if WeaponsTable.FieldExists('NAME') then Result.Fan_Name := GetFieldByNameAsString('NAME')
-      else Result.Fan_Name := 'Sensor';
-      if WeaponsTable.FieldExists('IMAGE') then Result.FanFileName := GetFieldByNameAsString('IMAGE')
-      else Result.FanFileName := '';
-
-      Result.W_Range := GetFieldByNameAsFloat('SENSOR_RNG');
-      Result.W_Up := GetFieldByNameAsFloat('SENSOR_UP');
-
-      Result.StartAngle := GetFieldByNameAsInteger('LEFT_AZ');
-      Result.EndAngle := GetFieldByNameAsInteger('RIGHT_AZ');
-
-      Result.UpAngle := GetFieldByNameAsFloat('MAX_VERT');
-      Result.DownAngle  := GetFieldByNameAsFloat('MIN_VERT');
-
-      if WeaponsTable.FieldExists('MIN_RNG') then MDDef.DefWeaponsMinRange := GetFieldByNameAsFloat('MIN_RNG');
-      if WeaponsTable.FieldExists('TARGET_UP') then Result.W_TargetUp := GetFieldByNameAsFloat('TARGET_UP');
-   end;
-end;
+      end;
 
 
-function WeaponsTableToFan(PrimaryMapDatum : tMapProjection; WeaponsTable : tMyData) : tWeaponsFan;
-begin
-  {$IfDef RecordFan} WriteLineToDebugFile('WeaponsTableToFan enter'); {$EndIf}
-   with WeaponsTable do begin
-      Result := WeaponsTableBasicParametersToFan(PrimaryMapDatum,WeaponsTable);
-      if WeaponsTable.FieldExists('TERR_HUG') then Result.TargetTerrainHug := GetFieldByNameAsString('TERR_HUG') = 'Y';
-      if WeaponsTable.FieldExists('OBS_HUG') then Result.ObserverTerrainHug := GetFieldByNameAsString('OBS_HUG') = 'Y';
-      if WeaponsTable.FieldExists('NO_TERR_BL') then Result.noUseSensorNoTerrainBlock := GetFieldByNameAsString('NO_TERR_BL') = 'Y';
-      Result.ThisFanColor := ConvertTColorToPlatformColor(GetFieldByNameAsInteger('VIS_COLOR'));
-      Result.FanShowWhat := tFanshow(GetFieldByNameAsInteger('FAN_TYPE'));
-   end;
-  {$IfDef RecordFan} WriteLineToDebugFile('WeaponsTableToFan exit, fan at ' + LatLongDegreeToString(Result.W_Lat,Result.W_Long)); {$EndIf}
-end;
+      procedure ResetDefaultFanAlgorithm;
+      begin
+         ProcessIniFile(iniInit,'WeapFanAlg');
+      end;
 
 
-procedure WeaponsTableToMDdefaults(TheData : tMyData);
-begin
-   MDDef.wf.FanShowVisible := tFanshow(TheData.GetFieldByNameAsInteger('FAN_TYPE'));
-   MDDef.FanColor := ConvertTColorToPlatformColor(TheData.GetFieldByNameAsInteger('VIS_COLOR'));
-end;
+      procedure InitializeWeaponsFanColors(var WeaponsFan : tWeaponsFan);
+      begin
+         WeaponsFan.ThisFanColor := MDdef.FanColor;
+         WeaponsFan.ThisMaskColor := MDdef.MaskColor;
+         WeaponsFan.FanShowWhat  := MDDef.wf.FanShowVisible;
+      end;
 
 
-procedure AddMDDefaultsToWeaponsTable(var WeaponsTable : tMyData);
-begin
-   with WeaponsTable do begin
-      SetFieldByNameAsInteger('FAN_TYPE',ord(MDDef.wf.FanShowVisible));
-      SetFieldByNameAsInteger('VIS_COLOR',ConvertPlatformColorToTColor(MDDef.FanColor));
-      if MDDef.ShowFanLocation then SetFieldByNameAsString('SHOW_LOC','Y');
-      SetFieldByNameAsInteger('SYM_TYPE',ord(Cross));
-      SetFieldByNameAsInteger('SYM_SIZE',5);
-      SetFieldByNameAsInteger('SYM_COLOR',clBlack);
-   end;
-end;
+      procedure InitializeWeaponsFan(var WeaponsFan : tWeaponsFan);
+      begin
+         InitializeWeaponsFanColors(WeaponsFan);
+         WeaponsFan.FanZoomFactor := MDDef.FanMapZoom;
+         WeaponsFan.w_Lat := 100;
+         WeaponsFan.Fan_Name := '';
+         WeaponsFan.W_Range  := MDdef.MaskObsRange;
+         if MDDef.DefaultObserverTerrainHug then WeaponsFan.W_Up := MDdef.ObsAboveGround
+         else WeaponsFan.W_Up := MDDef.DefaultObserverASL;
+
+         if MDDef.DefaultTargetTerrainHug then WeaponsFan.W_TargetUp := MDdef.TargetAboveGround
+         else WeaponsFan.W_TargetUp := MDDef.DefaultTargetASL;
+
+         WeaponsFan.StartAngle := MDdef.StartFanAngle;
+         WeaponsFan.EndAngle   := MDdef.EndFanAngle;
+         WeaponsFan.UpAngle    := MDDef.FanUpAngle;
+         WeaponsFan.DownAngle  := MDDef.FanDownAngle;
+         WeaponsFan.TargetTerrainHug := MDDef.DefaultTargetTerrainHug;
+         WeaponsFan.ObserverTerrainHug := MDDef.DefaultObserverTerrainHug;
+         WeaponsFan.noUseSensorNoTerrainBlock := false;
+         WeaponsFan.FanFileName := '';
+      end;
 
 
-procedure AddFanToWeaponsTable(PrimaryMapDatum : tMapProjection; EditIt,AddBasicParameters : boolean; var WeaponsTable : tMyData; WeaponsFan : tWeaponsFan);
-var
-   Lat,Long : float64;
-begin
-   {$IfDef RecordFan} WriteLineToDebugFile('AddFanToWeaponsTable in, Fan location on map: ' + LatLongDegreeToString(WeaponsFan.w_Lat,WeaponsFan.w_Long)); {$EndIf}
-   if EditIt then WeaponsTable.Edit else WeaponsTable.Insert;
-   RedefineWGS84DatumConstants(WeaponsFan.w_Long);
-   MolodenskiyTransformation(WeaponsFan.w_Lat,WeaponsFan.w_Long,Lat,Long,PrimaryMapDatum,WGS84DatumConstants);
-   {$IfDef RecordFan} WriteLineToDebugFile('Fan location in file (WGS84): ' + LatLongDegreeToString(Lat,Long)); {$EndIf}
+      function WeaponsTableBasicParametersToFan(PrimaryMapDatum : tMapProjection; WeaponsTable : tMyData) : tWeaponsFan;
+      var
+         Lat,Long : float32;
+      begin
+         with WeaponsTable do begin
+            InitializeWeaponsFan(Result);
+            Lat := WeaponsTable.GetFieldByNameAsFloat('LAT');
+            Long := GetFieldByNameAsFloat('LONG');
+            MolodenskiyTransformation(Lat,Long,Result.W_Lat,Result.W_Long,WGS84DatumConstants,PrimaryMapDatum);
 
-   WeaponsTable.SetFieldByNameAsFloat('LAT',Lat);
-   WeaponsTable.SetFieldByNameAsFloat('LONG',Long);
+            {$IfDef RecordFan}
+               WriteLineToDebugFile('Fan location in file (WGS84): ' + LatLongDegreeToString(Lat,Long));
+               WriteLineToDebugFile('Fan location for map: ' + LatLongDegreeToString(Result.W_Lat,Result.W_Long));
+            {$EndIf}
 
-   WeaponsTable.SetFieldByNameAsString('USE','Y');
-   if (WeaponsFan.Fan_Name = '') then WeaponsFan.Fan_Name := 'S_' + IntToStr(WeaponsTable.RecordCount);
-   WeaponsTable.SetFieldByNameAsString('NAME',WeaponsFan.Fan_Name);
-   WeaponsTable.SetFieldByNameAsFloat('SENSOR_RNG',WeaponsFan.W_Range);
-   WeaponsTable.SetFieldByNameAsFloat('SENSOR_UP',WeaponsFan.W_UP);
-   WeaponsTable.SetFieldByNameAsFloat('TARGET_UP',WeaponsFan.W_TargetUp);
-   WeaponsTable.SetFieldByNameAsInteger('LEFT_AZ',round(WeaponsFan.StartAngle));
-   WeaponsTable.SetFieldByNameAsInteger('RIGHT_AZ',round(WeaponsFan.EndAngle));
-   WeaponsTable.SetFieldByNameAsString('USE','Y');
-   WeaponsTable.SetFieldByNameAsFloat('MAX_VERT',WeaponsFan.UpAngle);
-   WeaponsTable.SetFieldByNameAsFloat('MIN_VERT',WeaponsFan.DownAngle);
-   WeaponsTable.SetFieldByNameAsFloat('MIN_RNG',MDDef.DefWeaponsMinRange);
+            if WeaponsTable.FieldExists('NAME') then Result.Fan_Name := GetFieldByNameAsString('NAME')
+            else Result.Fan_Name := 'Sensor';
+            if WeaponsTable.FieldExists('IMAGE') then Result.FanFileName := GetFieldByNameAsString('IMAGE')
+            else Result.FanFileName := '';
 
-   if AddBasicParameters then AddMDDefaultsToWeaponsTable(WeaponsTable);
+            Result.W_Range := GetFieldByNameAsFloat('SENSOR_RNG');
+            Result.W_Up := GetFieldByNameAsFloat('SENSOR_UP');
 
-   if WeaponsTable.FieldExists('TERR_HUG') then begin
-      if WeaponsFan.TargetTerrainHug then WeaponsTable.SetFieldByNameAsString('TERR_HUG','Y')
-      else WeaponsTable.SetFieldByNameAsString('TERR_HUG','N');
-   end;
+            Result.StartAngle := GetFieldByNameAsInteger('LEFT_AZ');
+            Result.EndAngle := GetFieldByNameAsInteger('RIGHT_AZ');
 
-   if WeaponsTable.FieldExists('OBS_HUG') then begin
-      if WeaponsFan.TargetTerrainHug then WeaponsTable.SetFieldByNameAsString('OBS_HUG','Y')
-      else WeaponsTable.SetFieldByNameAsString('OBS_HUG','N');
-   end;
+            Result.UpAngle := GetFieldByNameAsFloat('MAX_VERT');
+            Result.DownAngle  := GetFieldByNameAsFloat('MIN_VERT');
 
-   if WeaponsTable.FieldExists('NO_TERR_BL') then begin
-      if WeaponsFan.noUseSensorNoTerrainBlock then WeaponsTable.SetFieldByNameAsString('NO_TERR_BL','Y')
-      else WeaponsTable.SetFieldByNameAsString('NO_TERR_BL','N');
-   end;
-   WeaponsTable.Post;
-   {$IfDef RecordFan} WriteLineToDebugFile('AddFanToWeaponsTable out'); {$EndIf}
-end;
+            if WeaponsTable.FieldExists('MIN_RNG') then MDDef.DefWeaponsMinRange := GetFieldByNameAsFloat('MIN_RNG');
+            if WeaponsTable.FieldExists('TARGET_UP') then Result.W_TargetUp := GetFieldByNameAsFloat('TARGET_UP');
+         end;
+      end;
+
+
+      function WeaponsTableToFan(PrimaryMapDatum : tMapProjection; WeaponsTable : tMyData) : tWeaponsFan;
+      begin
+        {$IfDef RecordFan} WriteLineToDebugFile('WeaponsTableToFan enter'); {$EndIf}
+         with WeaponsTable do begin
+            Result := WeaponsTableBasicParametersToFan(PrimaryMapDatum,WeaponsTable);
+            if WeaponsTable.FieldExists('TERR_HUG') then Result.TargetTerrainHug := GetFieldByNameAsString('TERR_HUG') = 'Y';
+            if WeaponsTable.FieldExists('OBS_HUG') then Result.ObserverTerrainHug := GetFieldByNameAsString('OBS_HUG') = 'Y';
+            if WeaponsTable.FieldExists('NO_TERR_BL') then Result.noUseSensorNoTerrainBlock := GetFieldByNameAsString('NO_TERR_BL') = 'Y';
+            Result.ThisFanColor := ConvertTColorToPlatformColor(GetFieldByNameAsInteger('VIS_COLOR'));
+            Result.FanShowWhat := tFanshow(GetFieldByNameAsInteger('FAN_TYPE'));
+         end;
+        {$IfDef RecordFan} WriteLineToDebugFile('WeaponsTableToFan exit, fan at ' + LatLongDegreeToString(Result.W_Lat,Result.W_Long)); {$EndIf}
+      end;
+
+
+      procedure WeaponsTableToMDdefaults(TheData : tMyData);
+      begin
+         MDDef.wf.FanShowVisible := tFanshow(TheData.GetFieldByNameAsInteger('FAN_TYPE'));
+         MDDef.FanColor := ConvertTColorToPlatformColor(TheData.GetFieldByNameAsInteger('VIS_COLOR'));
+      end;
+
+
+      procedure AddMDDefaultsToWeaponsTable(var WeaponsTable : tMyData);
+      begin
+         with WeaponsTable do begin
+            SetFieldByNameAsInteger('FAN_TYPE',ord(MDDef.wf.FanShowVisible));
+            SetFieldByNameAsInteger('VIS_COLOR',ConvertPlatformColorToTColor(MDDef.FanColor));
+            if MDDef.ShowFanLocation then SetFieldByNameAsString('SHOW_LOC','Y');
+            SetFieldByNameAsInteger('SYM_TYPE',ord(Cross));
+            SetFieldByNameAsInteger('SYM_SIZE',5);
+            SetFieldByNameAsInteger('SYM_COLOR',clBlack);
+         end;
+      end;
+
+
+      procedure AddFanToWeaponsTable(PrimaryMapDatum : tMapProjection; EditIt,AddBasicParameters : boolean; var WeaponsTable : tMyData; WeaponsFan : tWeaponsFan);
+      var
+         Lat,Long : float64;
+      begin
+         {$IfDef RecordFan} WriteLineToDebugFile('AddFanToWeaponsTable in, Fan location on map: ' + LatLongDegreeToString(WeaponsFan.w_Lat,WeaponsFan.w_Long)); {$EndIf}
+         if EditIt then WeaponsTable.Edit else WeaponsTable.Insert;
+         RedefineWGS84DatumConstants(WeaponsFan.w_Long);
+         MolodenskiyTransformation(WeaponsFan.w_Lat,WeaponsFan.w_Long,Lat,Long,PrimaryMapDatum,WGS84DatumConstants);
+         {$IfDef RecordFan} WriteLineToDebugFile('Fan location in file (WGS84): ' + LatLongDegreeToString(Lat,Long)); {$EndIf}
+
+         WeaponsTable.SetFieldByNameAsFloat('LAT',Lat);
+         WeaponsTable.SetFieldByNameAsFloat('LONG',Long);
+
+         WeaponsTable.SetFieldByNameAsString('USE','Y');
+         if (WeaponsFan.Fan_Name = '') then WeaponsFan.Fan_Name := 'S_' + IntToStr(WeaponsTable.RecordCount);
+         WeaponsTable.SetFieldByNameAsString('NAME',WeaponsFan.Fan_Name);
+         WeaponsTable.SetFieldByNameAsFloat('SENSOR_RNG',WeaponsFan.W_Range);
+         WeaponsTable.SetFieldByNameAsFloat('SENSOR_UP',WeaponsFan.W_UP);
+         WeaponsTable.SetFieldByNameAsFloat('TARGET_UP',WeaponsFan.W_TargetUp);
+         WeaponsTable.SetFieldByNameAsInteger('LEFT_AZ',round(WeaponsFan.StartAngle));
+         WeaponsTable.SetFieldByNameAsInteger('RIGHT_AZ',round(WeaponsFan.EndAngle));
+         WeaponsTable.SetFieldByNameAsString('USE','Y');
+         WeaponsTable.SetFieldByNameAsFloat('MAX_VERT',WeaponsFan.UpAngle);
+         WeaponsTable.SetFieldByNameAsFloat('MIN_VERT',WeaponsFan.DownAngle);
+         WeaponsTable.SetFieldByNameAsFloat('MIN_RNG',MDDef.DefWeaponsMinRange);
+
+         if AddBasicParameters then AddMDDefaultsToWeaponsTable(WeaponsTable);
+
+         if WeaponsTable.FieldExists('TERR_HUG') then begin
+            if WeaponsFan.TargetTerrainHug then WeaponsTable.SetFieldByNameAsString('TERR_HUG','Y')
+            else WeaponsTable.SetFieldByNameAsString('TERR_HUG','N');
+         end;
+
+         if WeaponsTable.FieldExists('OBS_HUG') then begin
+            if WeaponsFan.TargetTerrainHug then WeaponsTable.SetFieldByNameAsString('OBS_HUG','Y')
+            else WeaponsTable.SetFieldByNameAsString('OBS_HUG','N');
+         end;
+
+         if WeaponsTable.FieldExists('NO_TERR_BL') then begin
+            if WeaponsFan.noUseSensorNoTerrainBlock then WeaponsTable.SetFieldByNameAsString('NO_TERR_BL','Y')
+            else WeaponsTable.SetFieldByNameAsString('NO_TERR_BL','N');
+         end;
+         WeaponsTable.Post;
+         {$IfDef RecordFan} WriteLineToDebugFile('AddFanToWeaponsTable out'); {$EndIf}
+      end;
 
 {$EndIf}
-
-
 
 
 procedure SetRootDirectoryFiles;
@@ -4600,8 +4566,6 @@ begin
        RenameFile(ProgramRootDir + 'esri_proj', ExtractFilePath(WKT_GCS_Proj_fName));
     end;
 
-    //DEMIXSetDEMIXdirs;
-
     {$IfDef ExMagVar}
     {$Else}
        www_mag_mod_fName  := ProgramRootDir + 'wmm_2020.cof';
@@ -4611,6 +4575,7 @@ begin
     {$Else}
        PLSSMerfName := ProgramRootDir + 'plss_meridians' + DefaultDBExt;
     {$EndIf}
+
     {$IfDef ExTIGER}
     {$Else}
        TigerShapeRules := ProgramRootDir + 'tiger_rules_v6' + DefaultDBExt;
@@ -4626,7 +4591,6 @@ begin
     {$Else}
        WMS_servers_fName := ProgramRootDir + 'wms_servers_v8' + DefaultDBExt;
     {$EndIf}
-    //RecordDirs('end SetRootDirectoryFiles');
     {$IfDef RecordInitialization} WriteLineToDebugFile('SetRootDirectoryFiles out'); {$EndIf}
  end;
 
@@ -4707,7 +4671,6 @@ begin
       ClimateStationFName := ClimateDir + 'climate_station_v3' + DefaultDBExt;
       GlobalWindsFName := ClimateDir + '\global_winds_v2' + DefaultDBExt;
       GlobalCurrentsFName := ClimateDir + '\ocean_currents' + DefaultDBExt;
-      PiratesFName := DBDir + 'ASAM_21_JAN_16' + DefaultDBExt;
       MonthlyClimateFName := ProgramRootDir +  'monthly_climate_grids_v6.dbf';
       KoppenDefFName := ProgramRootDir + 'koppen_def_v4' + DefaultDBExt;
    {$EndIf}

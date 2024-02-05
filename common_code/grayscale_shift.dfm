@@ -2,8 +2,8 @@ object GrayscaleForm: TGrayscaleForm
   Left = 0
   Top = 0
   Caption = 'Set colors'
-  ClientHeight = 210
-  ClientWidth = 523
+  ClientHeight = 208
+  ClientWidth = 515
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

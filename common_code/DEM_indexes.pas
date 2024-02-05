@@ -17,9 +17,9 @@ unit dem_indexes;
      //{$Define RecordLoadMapLibraryBox}
      //{$Define MergeSummary}
      (*
-     {$Define TrackPixelIs}
-     {$Define TrackDEMCorners}
-     {$Define RecordIndex}
+     //{$Define TrackPixelIs}
+     //{$Define TrackDEMCorners}
+     //{$Define RecordIndex}
      *)
      //{$Define LoadLibrary}
      //{$Define RecordAutoZoom}

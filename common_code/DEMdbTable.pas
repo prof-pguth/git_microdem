@@ -1826,7 +1826,6 @@ type
 
 
 
-
 implementation
 
 {$R *.DFM}
@@ -2003,40 +2002,6 @@ var
    HighlightCycle : integer;
    BroadCastingFilterChanges : boolean;
 
-
-procedure SortDataBase(DBOnTable : integer; Ascending : boolean; aField : shortString = '');
-var
-   GridForm : tGridForm;
-   Report : tStringList;
-   fName : PathStr;
-   TStr : shortstring;
-   ft,col : integer;
-begin
-   if (aField = '') then aField := GISDB[DBonTable].PickField('field to sort on',[ftString,ftSmallInt,ftFloat,ftInteger]);
-   if (GISDB[DBonTable].MyData.GetFieldType(aField) = ftString) then ft := 0 else ft := 2;
-   GridForm := tGridForm.Create(Application);
-   GridForm.HideCorrelationControls;
-   GridForm.ShowSortingControls(true);
-   GridForm.Caption := 'Sorting';
-   Report := GISdb[DBonTable].ExtractDBtoCSV(1,',');
-   fName := NextFileNumber(MDtempDir,GISdb[DBonTable].dbName + '_sorted_','.csv');
-   Report.SaveToFile(fName);
-   Report.Free;
-   GridForm.ReadCSVFile(fName);
-
-   col := -1;
-   repeat
-      inc(Col);
-      TStr := GridForm.StringGrid1.Cells[Col,0];
-   until (TStr = aField);
-   GridForm.SetFormSize;
-   SortGrid(GridForm.StringGrid1,pred(Col),ft,Ascending);
-
-   StringGridToCSVFile(fName,GridForm.StringGrid1,Nil);
-   if (GISdb[DBonTable].theMapOwner <> nil) then GISdb[DBonTable].theMapOwner.OpenDBonMap('',fName)
-   else OpenMultipleDataBases('',fName);
-   GridForm.Close;
-end;
 
 
 type tPointInPolygon = (pipLabels,pipDelete,pipSetMask);
@@ -12237,7 +12202,7 @@ end;
 
 procedure Tdbtablef.Clusterwhiskerplotsforslopeandroughness1Click(Sender: TObject);
 begin
-   SlopeRoughnessWhiskerPlots(DBonTable);
+   TileCharateristicsWhiskerPlotsByCluster(DBonTable);
 end;
 
 procedure Tdbtablef.CalculateVolume1Click(Sender: TObject);

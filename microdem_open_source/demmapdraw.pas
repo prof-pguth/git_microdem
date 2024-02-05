@@ -37,8 +37,8 @@
       //{$Define RecordDrawGridLines}
       //{$Define RecordSat}
       //{$Define AspectCheck}
-      {$Define RecordShapeFileGroup}
-      {$Define RecordPlotDBrules}
+      //{$Define RecordShapeFileGroup}
+      //{$Define RecordPlotDBrules}
       //{$Define RecordWorldOutline}
       //{$Define Track_f}
       //{$Define RecordMapResize}
@@ -62,7 +62,7 @@
       //{$Define RecordLegend}
       //{$Define RecordMapLayers}
       //{$Define ShowUTMZone}
-      {$Define RecordFullShapeFileGroup}
+      //{$Define RecordFullShapeFileGroup}
       //{$Define TigerTiming}
       //{$Define RecordTiming}
       //{$Define RecordLong0}

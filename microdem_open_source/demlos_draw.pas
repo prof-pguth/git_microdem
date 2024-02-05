@@ -2,7 +2,7 @@
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 unit demlos_draw;
@@ -1651,11 +1651,11 @@ end;
                Moment(xs,MomentVar,msAll);
                WaveLengthMedian := MomentVar.Median;
                WavelengthMean := MomentVar.mean;
-               WaveLengthStdDev := MomentVar.sdev;
+               WaveLengthStdDev := MomentVar.std_dev;
                Moment(ys,MomentVar,msAll);
                HeightMedian := MomentVar.Median;
                HeightMean := MomentVar.mean;
-               HeightStd := MomentVar.sdev;
+               HeightStd := MomentVar.std_dev;
             end
             else begin
                {$IfDef RecordWaveLenghtHeight} WriteLineToDebugFile('NPts < MDDef.WaveHtValuesNeeded ' + IntToStr(Npts) + '<' + IntToStr(MDDef.WaveHtValuesNeeded)); {$EndIf}

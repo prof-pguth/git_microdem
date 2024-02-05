@@ -1503,6 +1503,12 @@ type
     Landcover1: TMenuItem;
     SAGAremovesinks1: TMenuItem;
     N63: TMenuItem;
+    LC100landcoverwaterbodies1: TMenuItem;
+    SAGAedgecontaminationmap1: TMenuItem;
+    SAGADrainagebasins1: TMenuItem;
+    Whiteboxdrainagebasins1: TMenuItem;
+    SAGAwatershedbasinsWangLiu1: TMenuItem;
+    SAGAStrahlerordergrid1: TMenuItem;
     //procedure HiresintervisibilityDEM1Click(Sender: TObject);
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
@@ -2091,7 +2097,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Integercode1Click(Sender: TObject);
     procedure KoppenClimateStations1Click(Sender: TObject);
     procedure Globalmonthlywinds1Click(Sender: TObject);
-    procedure Recentworldpiracy1Click(Sender: TObject);
+    //procedure Recentworldpiracy1Click(Sender: TObject);
     procedure Latitudinalscalebars1Click(Sender: TObject);
     procedure Koppengrid1Click(Sender: TObject);
     procedure Level0countries1Click(Sender: TObject);
@@ -2156,7 +2162,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Loadfeaturegrid1Click(Sender: TObject);
     procedure PNG1Click(Sender: TObject);
     procedure JSON1Click(Sender: TObject);
-    procedure idegaugesandsealevelrise1Click(Sender: TObject);
+   // procedure idegaugesandsealevelrise1Click(Sender: TObject);
     procedure Globalmonthlytemperatures1Click(Sender: TObject);
     procedure Globalmonthlyrain1Click(Sender: TObject);
     procedure Western1Click(Sender: TObject);
@@ -2607,6 +2613,12 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Comparechannelnetworks1Click(Sender: TObject);
     procedure Landcover1Click(Sender: TObject);
     procedure SAGAremovesinks1Click(Sender: TObject);
+    procedure LC100landcoverwaterbodies1Click(Sender: TObject);
+    procedure SAGAedgecontaminationmap1Click(Sender: TObject);
+    procedure SAGADrainagebasins1Click(Sender: TObject);
+    procedure Whiteboxdrainagebasins1Click(Sender: TObject);
+    procedure SAGAwatershedbasinsWangLiu1Click(Sender: TObject);
+    procedure SAGAStrahlerordergrid1Click(Sender: TObject);
     //procedure RescaleallDEMsforSSIM1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
@@ -3441,7 +3453,7 @@ end;
 procedure Bigimagewithallmaps(NumCols : integer = 3; FileName : PathStr = ''; MapsToUse : tStringList = Nil);
 var
    BottomMargin,
-   i,DEM : integer;
+   i,DEM,StartFont : integer;
    Findings : tStringlist;
    fName : PathStr;
    Bitmap : tMyBitmap;
@@ -3463,7 +3475,28 @@ var
 begin
    {$IfDef RecordBigMap} WriteLineToDebugFile('Bigimagewithallmaps in'); {$EndIf}
    Findings := tStringList.Create;
-   if MDDef.MapNameBelowComposite then BottomMargin := 55 else BottomMargin := 25;
+   if MDDef.MapNameBelowComposite then begin
+      BottomMargin := 55;
+      StartFont := 34;
+      for i := pred(WMDEM.MDIChildCount) downto 0 do begin
+         if (WMDEM.MDIChildren[i] is tMapForm) and (WMDEM.MDIChildren[i] as TMapForm).UseMapForMultipleMapOperations then begin
+            if (MapsToUse = Nil) or UseThisMap((WMDEM.MDIChildren[i] as TMapForm).Caption) then begin
+               CopyImageToBitmap((WMDEM.MDIChildren[i] as TMapForm).Image1,Bitmap);
+               Bitmap.Canvas.Font.Size := StartFont;
+               Bitmap.Canvas.Font.Style := [fsBold];
+               DEM := (WMDEM.MDIChildren[i] as TMapForm).MapDraw.DEMonMap;
+               if ValidDEM(DEM) then begin
+                  TStr := RemoveUnderScores(DEMGLB[DEM].AreaName);
+                  while Bitmap.Canvas.TextWidth(TStr) > Bitmap.Width - 10 do Bitmap.Canvas.Font.Size := Bitmap.Canvas.Font.Size - 1;
+                  StartFont := Bitmap.Canvas.Font.Size;
+               end;
+               Bitmap.Free;
+            end;
+         end;
+      end;
+   end
+   else BottomMargin := 25;
+
    for i := pred(WMDEM.MDIChildCount) downto 0 do begin
       if (WMDEM.MDIChildren[i] is tMapForm) and (WMDEM.MDIChildren[i] as TMapForm).UseMapForMultipleMapOperations then begin
          if (MapsToUse = Nil) or UseThisMap((WMDEM.MDIChildren[i] as TMapForm).Caption) then begin
@@ -3481,7 +3514,7 @@ begin
             Bitmap.Canvas.Rectangle(0,Bitmap.Height-BottomMargin,Bitmap.Width,Bitmap.Height);
             Bitmap.Canvas.Brush.Style := bsClear;
             if MDDef.MapNameBelowComposite then begin
-               Bitmap.Canvas.Font.Size := 34;
+               Bitmap.Canvas.Font.Size := StartFont;
                Bitmap.Canvas.Font.Style := [fsBold];
                DEM := (WMDEM.MDIChildren[i] as TMapForm).MapDraw.DEMonMap;
                if ValidDEM(DEM) then begin
@@ -3492,6 +3525,7 @@ begin
             end;
             fName := NextFileNumber(MDtempDir,(WMDEM.MDIChildren[i] as TMapForm).Caption + '_','.bmp');
             Bitmap.SaveToFile(fName);
+            Bitmap.Free;
             Findings.Add(fName);
          end;
       end;
@@ -8649,7 +8683,6 @@ begin
 
       SourceContours1.Visible := (MDdef.ProgramOption = ExpertProgram) and (MapDraw.PrimMapProj = Nil)and (MDDef.ShowDEMCompare);
 
-      CurrentsubsetMDDEM1.Visible := UnsubsetSpeedButton22.Enabled;
       RequiredAntennaHeight2.Visible := MapDraw.ValidDEMonMap and DEMGLB[MapDraw.DEMonMap].ElevationDEM;
       Addgrids1.Visible := (NumDEMDataSetsOpen > 1);
 
@@ -11766,7 +11799,7 @@ var
          end;
 
 begin
-   if ClosingIsHappening or LockStatusBar or MapDraw.ClosingMapNow or (WMDEM = Nil) or (MapDraw = Nil) or (Not MapDraw.MapDrawValid) or (DEMNowDoing in [Calculating]) then exit;
+   if HeavyDutyProcessing or ClosingIsHappening or LockStatusBar or MapDraw.ClosingMapNow or (WMDEM = Nil) or (MapDraw = Nil) or (Not MapDraw.MapDrawValid) or (DEMNowDoing in [Calculating]) then exit;
 
    MapDraw.ScreenToLatLongDegree(x,Y,Lat,Long);
    if IsNAN(Long) or (abs(Long) > 360) or (abs(Lat) > 90) then exit;
@@ -16364,7 +16397,7 @@ end;
 procedure TMapForm.ColumnsEastLimit1Click(Sender: TObject);
 var
    GridLimits : tGridLimits;
-   x,y : integer;
+   //x,y : integer;
 begin
    if (Sender = Offcurrentmap1) then begin
       GridLimits := MapDraw.MapAreaDEMGridLimits;
@@ -17749,6 +17782,7 @@ end;
 
 
 procedure TMapForm.Landcover1Click(Sender: TObject);
+(*
 var
    x,y,Code : integer;
    z : float32;
@@ -17765,7 +17799,10 @@ begin
    Dispose(DEMGlb[MapDraw.DEMOnMap].NLCDCats);
    DEMGlb[MapDraw.DEMOnMap].CheckForLandCover;
    //SetUpNLCDCategories(false,TStr,NLCDCats^);
-   DoBaseMapRedraw;
+*)
+begin
+   SimplifyLandCoverGrid(MapDraw.DEMOnMap);
+
 end;
 
 
@@ -17945,6 +17982,11 @@ begin
    Get_PLSS.GetPLSSLocation(PLSSString,Lat,Long,Self);
 end;
 
+
+procedure TMapForm.LC100landcoverwaterbodies1Click(Sender: TObject);
+begin
+   MarkWaterMissingInAllOpenDEMs(MapDraw.DEMonMap,false);
+end;
 
 procedure TMapForm.LCCstandardparallels1Click(Sender: TObject);
 var
@@ -18924,22 +18966,6 @@ begin
    else PopupMenu10.PopUp(Mouse.CursorPos.X,Mouse.CursorPos.Y);
 end;
 
-procedure TMapForm.Recentworldpiracy1Click(Sender: TObject);
-{$IfDef ExGeography}
-begin
-{$Else}
-begin
-   //if not FileExists(PiratesFName) then DownloadFileFromWeb(WebDataDownLoadDir + ExtractFileName(PiratesFName),PiratesFName);
-
-   PiratesDB := OpenDBonMap('',PiratesFName);
-   if (Sender = Nil) then begin
-      GISdb[PiratesDB].dbOpts.TimeFilter := 'MONTH=1';
-      GISdb[PiratesDB].AssembleGISFilter;
-   end;
-   AddOrSubtractOverlay(Self,ovoDatabases,True);
-   GISdb[PiratesDB].RedrawLayerOnMap;
-{$EndIf}
-end;
 
 procedure TMapForm.N0codes1Click(Sender: TObject);
 var
@@ -19159,41 +19185,10 @@ end;
 
 
 procedure TMapForm.MergemultipleCSVTXTfiles1Click(Sender: TObject);
-var
-   FileNames : tStringList;
-   i,j : integer;
-   DefFil : byte;
-   fName : PathStr;
-   s11,slt : tStringList;
-   TStr : shortString;
 begin
-   FileNames := tStringList.Create;
-   FileNames.Add(LastDataBase);
-   DefFil := 1;
-   if GetMultipleFiles('CSV/TXT files to merge','files|*.txt;*.csv' ,FileNames,DefFil) then begin
-      s11 := tStringList.Create;
-      s11.LoadFromFile(FileNames.Strings[0]);
-      fName := ChangeFileExt(FileNames.Strings[0],'.dbf');
-      for i := 1 to pred(FileNames.Count) do begin
-          wmDEM.SetPanelText(0,TimeToStr(now) + '  ' + IntToStr(succ(i)) + '/' + IntToStr(FileNames.Count) + '  ' + ExtractFileName(FileNames.Strings[i]));
-          slt := tStringList.Create;
-          slt.LoadFromFile(FileNames.Strings[i]);
-          for j := 1 to pred(slt.Count) do begin
-             TStr := trim(slt.Strings[j]);
-             if (TStr <> '') then s11.Add(TStr);
-          end;
-          slt.Free;
-      end;
-   end;
-   if (FileNames.Count > 0) then begin
-      fName := ExtractFilePath(fname) + 'merge_' + ExtractFileNameNoExt(fName) + '.dbf';
-      if GetFileNameDefaultExt('Merged CSV files','*.dbf',FName) then StringListToLoadedDatabase(s11,fName);
-      LastDataBase := fName;
-      wmDEM.SetPanelText(0,'');
-   end;
-   FileNames.Free;
-   EndProgress;
+    MergeMultipleCSVorTextFiles(Self);
 end;
+
 
 
 procedure tMapForm.MergeAnotherDEMreflectance(DEM : integer; MakeSticky : boolean = false; Opacity : byte = 40);
@@ -19516,6 +19511,11 @@ const
 begin
    ReadDefault('Filter Size (pixels)',FilterSize);
    WhiteBox_CircularVarianceOfAspect(GeotiffDEMNameOfMap,FilterSize);
+end;
+
+procedure TMapForm.Whiteboxdrainagebasins1Click(Sender: TObject);
+begin
+   WhiteBoxDrainageBasins(GeotiffDEMNameOfMap);
 end;
 
 procedure TMapForm.Whiteboxfillholes1Click(Sender: TObject);
@@ -20239,13 +20239,6 @@ begin
    end;
 end;
 
-procedure TMapForm.idegaugesandsealevelrise1Click(Sender: TObject);
-begin
-   {$IfDef Judomia}
-   {$Else}
-   wmdem.StartSealevelrise(self);
-   {$EndIf}
-end;
 
 
 procedure TMapForm.Steepestslope1Click(Sender: TObject);
@@ -20257,13 +20250,13 @@ var
   SlopeAsp : tSlopeAspectRec;
   MaxSlope : float64;
 begin
-  if (MapDraw.ValidDEMonMap) then with MapDraw,DEMGlb[DEMonMap] do begin
+  if (MapDraw.ValidDEMonMap) then {with MapDraw do} begin
      if ShowSatProgress then Startprogress('Slopes');
      MaxSlope := -99;
      for Col := round(MapDraw.MapCorners.BoundBoxDataGrid.xmin) to round(MapDraw.MapCorners.BoundBoxDataGrid.xmax) do begin
-        if ShowSatProgress and (col mod 25 = 0) then UpdateProgressBar(Col/DEMheader.NumCol);
+        if ShowSatProgress and (col mod 25 = 0) then UpdateProgressBar(Col/DEMGlb[MapDraw.DEMonMap].DEMheader.NumCol);
         for Row := round(MapDraw.MapCorners.BoundBoxDataGrid.ymin) to round(MapDraw.MapCorners.BoundBoxDataGrid.ymax) do begin
-           if GetSlopeAndAspect(Col,Row,SlopeAsp) and (SlopeAsp.SlopePercent > MaxSlope) then begin
+           if DEMGlb[MapDraw.DEMonMap].GetSlopeAndAspect(Col,Row,SlopeAsp) and (SlopeAsp.SlopePercent > MaxSlope) then begin
               SteepestSlopeCol := Col;
               SteepestSlopeRow := Row;
               MaxSlope := SlopeAsp.SlopePercent;
@@ -20271,7 +20264,7 @@ begin
         end;
      end;
      if ShowSatProgress then EndProgress;
-     DEMGridToScreen(SteepestSlopeCol,SteepestSlopeRow,x,y);
+     MapDraw.DEMGridToScreen(SteepestSlopeCol,SteepestSlopeRow,x,y);
      ScreenSymbol(Image1.Canvas,x,y,FilledBox,3,claRed);
      DEMGlb[MapDraw.DEMonMap].SlopeMethodsReport(SteepestSlopeCol,SteepestSlopeRow,'Steepest point in DEM');
   end;
@@ -22568,7 +22561,7 @@ end;
 
 procedure TMapForm.Dataheader2Click(Sender: TObject);
 begin
-   if (MapDraw.DEMonMap > 0) then ViewHeaderRecord(MapDraw.DEMonMap );
+   if (MapDraw.DEMonMap > 0) then ViewHeaderRecord(MapDraw.DEMonMap);
    {$IfDef ExSat}
    {$Else}
       if (MapDraw.SatOnMap > 0) then DEM_sat_Header.ViewSatHeader(MapDraw.SatOnMap);
@@ -24141,6 +24134,16 @@ begin
    OpenDBonMap('',ChannelName);
 end;
 
+procedure TMapForm.SAGADrainagebasins1Click(Sender: TObject);
+begin
+   SagaWatershedBasins(DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
+end;
+
+procedure TMapForm.SAGAedgecontaminationmap1Click(Sender: TObject);
+begin
+   SAGAedgeContaminationMap(DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
+end;
+
 procedure TMapForm.SAGAremovesinks1Click(Sender: TObject);
 begin
    SagaSinkRemoval(DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
@@ -24149,6 +24152,11 @@ end;
 procedure TMapForm.SAGAremovesinksallopenDEMs1Click(Sender: TObject);
 begin
    SAGA_all_DEMs_remove_sinks;
+end;
+
+procedure TMapForm.SAGAStrahlerordergrid1Click(Sender: TObject);
+begin
+   SAGAStrahlerOrderGrid(DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
 end;
 
 procedure TMapForm.SAGATPImap1Click(Sender: TObject);
@@ -24162,6 +24170,11 @@ const
 begin
    ReadDefault('Radius (pixels)',Radius);
    SagaVectorRuggednessMap(DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap,Radius);
+end;
+
+procedure TMapForm.SAGAwatershedbasinsWangLiu1Click(Sender: TObject);
+begin
+   SagaWatershedBasinsWangLiu(DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
 end;
 
 procedure TMapForm.RecolorMapWithElevationRange(Min,Max : float32);
@@ -24855,10 +24868,10 @@ end;
 procedure TMapForm.SSIM1Click(Sender: TObject);
 var
    DEM1,DEM2 : integer;
-   SSIM,Luminance,Contrast,Structure : float64;
+   //SSIM,Luminance,Contrast,Structure : float64;
 begin
    GetTwoCompatibleGrids('SSIM',false, DEM1,DEM2,false);   // then begin
-      MakeSSIMMaps(DEM1,DEM2);
+   MakeSSIMMaps(DEM1,DEM2);
       //ComputeSSIM(DEM1,DEM2,DEMGlb[DEM1].FullDEMGridLimits,DEMGlb[DEM2].FullDEMGridLimits,SSIM,Luminance,Contrast,Structure);
    //end;
 end;

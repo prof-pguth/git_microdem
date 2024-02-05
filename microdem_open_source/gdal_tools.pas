@@ -23,6 +23,7 @@ unit gdal_tools;
       {$Define RecordDEMIX}
       {$Define RecordSubsetGDAL}
       {$Define RecordGDALinfo}
+      {$Define RecordReformatCommand}
       //{$Define RecordDEMIXCompositeDatum}
       //{$Define RecordGDALOpen}
       //{$Define RecordUseOtherPrograms}
@@ -147,7 +148,7 @@ uses
    procedure GDALSubsetSatImageToMatchMap(MapOwner : tMapForm; GDAL_program : PathStr);
    function GDALsubsetGridAndOpen(bb : sfBoundBox; LatLongBox : boolean; fName : PathStr; OpenMap : boolean; BaseOutPath : PathStr = '') : integer;
    procedure GDALConvert4BitGeotiff(fName : PathStr);
-   procedure GDALConvertSingleImageToGeotiff(var fName : PathStr);
+   function GDALConvertSingleImageToGeotiff(var fName : PathStr) : boolean;
 
    procedure UseGDAL_VRT_to_merge(var MergefName,OutVRT : PathStr; OutNames : tStringList; Added : ShortString = '');
 
@@ -1027,19 +1028,8 @@ end;
             {$IfDef RecordSubsetOpen} WriteLineToDebugFile('GDALsubsetGridAndOpen ' + ExtractFileName(fname) + ' want out ' + sfBoundBoxToString(BB,4)); {$EndIf}
 
             Ext := UpperCase(ExtractFileExt(fName));
-
-(*
-            GetGDALinfo(fName, GDALinfo);
-            Imagebb.XMin := GDALInfo.xutm_low;
-            Imagebb.XMax := GDALInfo.xutm_hi;
-            Imagebb.YMin := GDALInfo.yutm_low;
-            Imagebb.YMax := GDALInfo.yutm_high;
-*)
-
-
             GeotiffBoudingBox(fName,Imagebb);
             {$IfDef RecordSubsetOpen} WriteLineToDebugFile('GDALsubsetGridAndOpen ' + ExtractFileName(fname) + ' in file ' + sfBoundBoxToString(ImageBB,4)); {$EndIf}
-
 
             if LatLongBox then begin
                ExtentBoxString := GDALextentBoxLatLong(bb);
@@ -1159,7 +1149,7 @@ end;
       end;
 
 
-      procedure GDALConvertSingleImageToGeotiff(var fName : PathStr);
+      function GDALConvertSingleImageToGeotiff(var fName : PathStr) : boolean;
       //if you want to keep compressed DEM and uncompress to temporary storage, use this
       var
          OutName : PathStr;
@@ -1175,8 +1165,11 @@ end;
                end;
             end;
             cmd := GDAL_translate_name + GDAL_Geotiff_str + fName + ' ' + OutName;
+            {$IfDef RecordReformatCommand} WriteLineToDebugFile('GDALConvertSingeImageToGeotiff, cmd=   ' + cmd); {$EndIf}
             WinExecAndWait32(cmd);
-            fName := OutName;
+            Result := FileExists(outName);
+            if Result then fName := OutName
+            else fName := '';;
             {$IfDef RecordReformat} WriteLineToDebugFile('GDALConvertSingeImageToGeotiff out, cmd=' + cmd); {$EndIf}
          end;
       end;

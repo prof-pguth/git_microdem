@@ -4,7 +4,7 @@ unit view3d_main;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -27,7 +27,7 @@ Takes two kinds of data; file extension tells program which it is dealing with:
     1.  .XYZB: Any map in MICRODEM with an associated DEM, exported with XYZ points, and a drape texture with 2D bitmap (this but not the next could use a mesh, which might not show holes when zooming in)
     2.  .XYXIB: Point cloud, with one 1D bitmap for lidar texture of classification or intensity
 
-Could be added to the open source FMX version of MICRODEM
+Added to MICRODEM code base
 ------------------------------------------------------------------------------}
 
 {$I nevadia_defines.inc}
@@ -250,8 +250,8 @@ end;
 procedure TView3DForm.DoMap(aMapDraw : tMapDraw);
 var
    x,y,Pts : integer;
-   Lat,Long,xu,yu,xgrid,ygrid : float64;
-   z : float32;
+   Lat,Long,xu,yu : float64;
+   z,xgrid,ygrid : float32;
    Good : boolean;
 begin
    if (CurCloud = MaxClouds) then begin

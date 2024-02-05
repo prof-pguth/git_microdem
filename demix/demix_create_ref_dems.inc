@@ -8,7 +8,7 @@
 {____________________________________}
 
 
-procedure DEMIX_Merge3DEPReferenceDEMs;
+procedure DEMIX_Merge3DEPReferenceDEMs(Overwrite : boolean; DataDir : PathStr = '');
 var
    Paths : tStringList;
    DirStatus : shortstring;
@@ -27,33 +27,38 @@ var
          begin
             AreaName := LastSubDir(aDir);
             DoneName := Outpath + AreaName + which + '.tif';
-            if DEMIXSkipFilesAlreadyDone and FileExists(DoneName) then begin
+            if (not Overwrite) and DEMIXSkipFilesAlreadyDone and FileExists(DoneName) then begin
                {$If Defined(Record3DEPX)} WriteLineToDebugFile('MakeRefDEMsForOneDir already done ' + DoneName ); {$EndIf}
             end
             else begin
                Files := nil;
                Petmar.FindMatchingFiles(aDir,'*.dem',Files,0);
-               {$If Defined(Record3DEPX)} WriteLineToDebugFile('OnePixelIs ' + aDir + ' Found DEMs=' + IntToStr(Files.Count)); {$EndIf}
-               RemoveFilesThatDoNotHaveString(Files,which);  //can only use DEMs with aggregated to 1 arc sec, for correct pixel-is
-               {$If Defined(Record3DEPX)} WriteLineToDebugFile('OnePixelIs Found aggregated ref DEMs=' + IntToStr(Files.Count)); {$EndIf}
-               if (Files.Count = 0) then begin
-                  Files.Destroy;
+
+               if DoAllFilesHaveSetEGMandPixelIs(Files) then begin
+                  {$If Defined(Record3DEPX)} WriteLineToDebugFile('OnePixelIs ' + aDir + ' Found DEMs=' + IntToStr(Files.Count)); {$EndIf}
+                  RemoveFilesThatDoNotHaveString(Files,which);  //can only use DEMs with aggregated to 1 arc sec, for correct pixel-is
+                  {$If Defined(Record3DEPX)} WriteLineToDebugFile('OnePixelIs Found aggregated ref DEMs=' + IntToStr(Files.Count)); {$EndIf}
+                  if (Files.Count = 0) then begin
+                     Files.Destroy;
+                  end
+                  else begin
+                     wmdem.SetPanelText(2, DirStatus + '  DEM: ' + IntToStr(succ(i)) + '/' + IntToStr(Files.Count));
+                     DEM := MergeMultipleDEMsHere(Files,false,false);
+                     {$If Defined(Record3DEPX)} WriteLineToDebugFile('Merged'); {$EndIf}
+                     DEMGlb[DEM].SavePartOfDEMWithData(DoneName);
+                     {$If Defined(Record3DEPX)} WriteLineToDebugFile('Data part saved'); {$EndIf}
+                     ClipTheDEMtoFullDEMIXTiles(DEM,DoneName);
+                     {$If Defined(Record3DEPX)} WriteLineToDebugFile('Clipped, ' + DoneName); {$EndIf}
+                  end;
                end
                else begin
-                  wmdem.SetPanelText(2, DirStatus + '  DEM: ' + IntToStr(succ(i)) + '/' + IntToStr(Files.Count));
-                  DEM := MergeMultipleDEMsHere(Files,false,false);
-                  {$If Defined(Record3DEPX)} WriteLineToDebugFile('Merged'); {$EndIf}
-                  DEMGlb[DEM].SavePartOfDEMWithData(DoneName);
-                  {$If Defined(Record3DEPX)} WriteLineToDebugFile('Data part saved'); {$EndIf}
-                  ClipTheDEMtoFullDEMIXTiles(DEM,DoneName);
-                  {$If Defined(Record3DEPX)} WriteLineToDebugFile('Clipped'); {$EndIf}
-                end;
+                  {$If Defined(Record3DEPX)} HighlightLineToDebugFile('File headers improperly defined in ' + aDir); {$EndIf}
+               end;
             end;
             CloseAllDEMs;
          end;
    begin
-      OutPath := aDir[1] + ':\us\';
-      SafeMakeDir(OutPath);
+      OutPath := DEMIX_Ref_1sec;
       OnePixelIs('_ref_1sec_point');
       OnePixelIs('_ref_1sec_area');
    end;
@@ -88,7 +93,7 @@ end;
 
 
 
-procedure DEMIX_Create3DEPReferenceDEMs(DataDir : PathStr = '');
+procedure DEMIX_Create3DEPReferenceDEMs(Overwrite : boolean; DataDir : PathStr = '');
 var
    Paths : tStringList;
    DirStatus : shortstring;
@@ -111,22 +116,23 @@ var
       for i := pred(Files.Count) downto 0 do begin
          fName := Files.Strings[i];
          DoneName := ChangeFileExt(fName,'_ref_1sec_point.tif');
-         if DEMIXSkipFilesAlreadyDone and {(FileExists(ChangeFileExt(fName,'_ref_1sec_point.tif')) or} (FileExists(ChangeFileExt(fName,'_ref_1sec_point.dem'))) then begin
+         if (not Overwrite) and  DEMIXSkipFilesAlreadyDone and (FileExists(ChangeFileExt(fName,'_ref_1sec_point.dem')) and FileExists(ChangeFileExt(fName,'_ref_1sec_area.dem'))) then begin
             Files.Delete(I);
          end;
       end;
       {$If Defined(Record3DEPX)} WriteLineToDebugFile('MakeRefDEMsForOneDir Found EGM2008 TIFs, not done yet=' + IntToStr(Files.Count)); {$EndIf}
+
       for i := 0 to pred(Files.Count) do begin
          fName := Files.Strings[i];
-         wmdem.SetPanelText(2, DirStatus + ' DEM: ' + IntToStr(succ(i)) + '/' + IntToStr(Files.Count));
         // DoneName := ChangeFileExt(fName,'_ref_1sec_point.tif');
           {$If Defined(Record3DEPXFull)} WriteLineToDebugFile('MakeRefDEMsForOneDir file=' + fName ); {$EndIf}
-          WantedDEM := OpenNewDEM(fName,true);   //need open map to create the subset
+          WantedDEM := OpenNewDEM(fName,true);   //need open map to create subset
           if ValidDEM(WantedDEM) then begin
-             wmdem.SetPanelText(3, DEMGlb[WantedDEM].AreaName);
+              wmdem.SetPanelText(2, 'DEM: ' + IntToStr(succ(i)) + '/' + IntToStr(Files.Count),true);
+             //wmdem.SetPanelText(3, DEMGlb[WantedDEM].AreaName,true);
              ResampleForDEMIXOneSecDEMs(WantedDEM,false,aDir,ResampleModeOneSec);
+             CloseSingleDEM(WantedDEM);
           end;
-          CloseSingleDEM(WantedDEM);
       end;
       CleanUpTempDirectory(True);
    end;
@@ -136,6 +142,9 @@ begin
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_Create3DEPReferenceDEMs in'); {$EndIf}
    try
       GetDEMIXPaths;
+      ReportErrors := false;
+      LockStatusBar := true;
+
       if PathIsValid(DataDir) then begin
          MakeRefDEMsForOneDir(DataDir);
       end
@@ -146,8 +155,9 @@ begin
          if GetMultipleDirectories('3DEP DEMs', Paths) then begin
             {$If Defined(Record3DEPX)} WriteLineToDebugFile('DEMIX_Create3DEPReferenceDEMs paths=' + IntToStr(Paths.Count)); {$EndIf}
             for I := 0 to pred(Paths.Count) do begin
-               DirStatus := 'Dir: ' + IntToStr(succ(i)) + '/' + IntToStr(Paths.Count);
-               wmdem.SetPanelText(3,DirStatus);
+               DirStatus := 'Area: ' + IntToStr(succ(i)) + '/' + IntToStr(Paths.Count) + '  ' + LastSubDir(Paths.Strings[i]);
+               wmdem.SetPanelText(3,DirStatus,true);
+               {$If Defined(Record3DEPX)} WriteLineToDebugFile(DirStatus); {$EndIf}
                MakeRefDEMsForOneDir(Paths.Strings[i]);
             end;
          end;
@@ -161,7 +171,7 @@ end;
 
 
 
-procedure BatchGDAL_3DEP_shift(DataDirs : tStringList = Nil);
+procedure BatchGDAL_3DEP_shift(Overwrite : boolean; DataDirs : tStringList = Nil);
 
    procedure OneDirectory(DataDir : PathStr);
    var
@@ -179,26 +189,39 @@ procedure BatchGDAL_3DEP_shift(DataDirs : tStringList = Nil);
         for I := pred(FilesWanted.Count) downto 0 do begin
            fName := FilesWanted.Strings[i];
            if StrUtils.AnsiContainsText(fName,'egm2008_egm2008') then begin
-               {$If Defined(Record3DEPXAlreadyDone)} WriteLineToDebugFile('Recycle EGM2008 shift ' + ExtractFileName(SaveName)); {$EndIf}
+               //this was processed earlier by mistake, and the check will be taken out eventually
                FilesWanted.Delete(I);
                File2Trash(fName);
            end
-           else if StrUtils.AnsiContainsText(fName,'ref_1sec') or StrUtils.AnsiContainsText(fName,'egm2008') or FileExists(ChangeFileExt(fName,'_egm2008.tif')) then begin
+           else if StrUtils.AnsiContainsText(fName,'ref_1sec') then begin
+               FilesWanted.Delete(I);
+           end
+           else if (StrUtils.AnsiContainsText(fName,'egm2008')) then begin
+               FilesWanted.Delete(I);
+           end
+           else if (Not OverWrite) and FileExists(ChangeFileExt(fName,'_egm2008.tif')) then begin
                FilesWanted.Delete(I);
            end;
         end;
         {$If Defined(Record3DEPX)} WriteLineToDebugFile('BatchGDAL_3DEP_shift TIF files to process=' + IntToStr(FilesWanted.Count)); {$EndIf}
         for I := 0 to pred(FilesWanted.Count) do begin
-            wmdem.SetPanelText(2,'GDAL 3DEP datum shift: ' + IntToStr(succ(i)) + '/' + IntToStr(FilesWanted.Count));
+            wmdem.SetPanelText(2,'File: ' + IntToStr(succ(i)) + '/' + IntToStr(FilesWanted.Count));
             fName := FilesWanted.Strings[i];
             SaveName := ChangeFileExt(fName,'_egm2008.tif');
+            {$If Defined(Record3DEPXFull)} WriteLineToDebugFile('Try to open ' + fName); {$EndIf}
             DEM := OpenNewDEM(fName,false);
-            InName := DEMGlb[DEM].GeotiffDEMName;
-            UTMZone := AddDayMonthLeadingZero(DEMGlb[DEM].DEMHeader.UTMzone);
-            s_SRSstring := ' -s_srs EPSG:269' + UTMzone + '+5703';
-            t_srsstring := ' -t_srs EPSG:326' + UTMzone + '+3855';
-            CompositeDatumShiftWithGDAL(InName,SaveName,s_SRSstring,t_srsstring);
-            CloseSingleDEM(DEM);
+            if ValidDEM(DEM) then begin
+               InName := DEMGlb[DEM].GeotiffDEMName;
+               UTMZone := AddDayMonthLeadingZero(DEMGlb[DEM].DEMHeader.UTMzone);
+               s_SRSstring := ' -s_srs EPSG:269' + UTMzone + '+5703';
+               t_srsstring := ' -t_srs EPSG:326' + UTMzone + '+3855';
+               {$If Defined(Record3DEPXFull)} WriteLineToDebugFile('Try composite shift ' + fName); {$EndIf}
+               CompositeDatumShiftWithGDAL(InName,SaveName,s_SRSstring,t_srsstring);
+               CloseSingleDEM(DEM);
+            end
+            else begin
+               {$If Defined(Record3DEPXFull)} HighlightLineToDebugFile('Error trying to create ' + SaveName); {$EndIf}
+            end;
             {$If Defined(Record3DEPX)} WriteLineToDebugFile('BatchGDAL_3DEP_shifted, ' + IntToStr(succ(i)) + '/' + IntToStr(FilesWanted.Count) + ' ' + ExtractFileName(SaveName)); {$EndIf}
          end;
       end;
@@ -212,6 +235,8 @@ var
 begin
    try
       GetDEMIXpaths;
+      ReportErrors := false;
+
       if (DataDirs = Nil) then begin
          DataDirs := tStringList.Create;
          DataDirs.Add(DEMIX_3DEP_Dir);
@@ -219,18 +244,12 @@ begin
       end;
       {$If Defined(Record3DEPX)} HighlightLineToDebugFile('BatchGDAL_3DEP_shift paths=' + IntToStr(DataDirs.Count)); {$EndIf}
 
-      WMdem.Color := clBlack;
-      MDDef.ShowMainToolbar := false;
-      MDDef.ShowMenus := false;
-
      for I := 0 to pred(DataDirs.Count) do begin
-         wmdem.SetPanelText(3,'Dir: ' + IntToStr(succ(i)) + '/' + IntToStr(DataDirs.Count) + ' ' + LastSubDir(DataDirs.Strings[i]));
+         wmdem.SetPanelText(1,'Dir: ' + IntToStr(succ(i)) + '/' + IntToStr(DataDirs.Count) + ' ' + LastSubDir(DataDirs.Strings[i]));
          OneDirectory(DataDirs.Strings[i]);
       end;
       DataDirs.Free;
    finally
-      MDDef.ShowMainToolbar := true;
-      MDDef.ShowMenus := true;
       EndDEMIXProcessing;
    end;
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('BatchGDAL_3DEP_shift out'); {$EndIf}
@@ -322,8 +341,8 @@ begin
       end;
       Areas.Free;
    finally
-      EndDEMIXProcessing;
       DisplayAndPurgeStringList(ErrorLog,'DEMIX_merge_Visioterra_source');
+      EndDEMIXProcessing;
    end;
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_merge_Visioterra_source'); {$EndIf}
 end;
@@ -444,15 +463,15 @@ begin
       end;
       Areas.Free;
    finally
-      EndDEMIXProcessing;
       CloseSingleDEM(WGS84toEGM2008);
       DisplayAndPurgeStringList(ErrorLog,'DEMIX_merge_source problems');
+      EndDEMIXProcessing;
    end;
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_merge_source out'); {$EndIf}
 end;
 
 
-procedure DEMIX_CreateReferenceDEMs(ResampleMode : byte; Areas : tStringList = Nil);
+procedure DEMIX_CreateReferenceDEMs(Overwrite : boolean; ResampleMode : byte; Areas : tStringList = Nil);
 var
    fName,AreaPath,AreaInventoryName,OutPath  : PathStr;
    ErrorLog : tStringList;
@@ -480,7 +499,7 @@ begin
               AreaName := LastSubDir(AreaPath);
               wmdem.SetPanelText(2, 'Area: ' + IntToStr(succ(i)) + '/' + IntToStr(Areas.Count) + '  ' + AreaName);
               fName := OutPath + AreaName + '_ref_1sec_area.tif';
-              if DEMIXSkipFilesAlreadyDone and FileExists(fName) then begin
+              if (not Overwrite) and DEMIXSkipFilesAlreadyDone and FileExists(fName) then begin
                  {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs already done ' + fName ); {$EndIf}
               end
               else begin
@@ -508,8 +527,8 @@ begin
       end;
    finally
       Areas.Free;
-      EndDEMIXProcessing;
       DisplayAndPurgeStringList(ErrorLog,'DEMIX_CreateReferenceDEMs Problems');
+      EndDEMIXProcessing;
    end;
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs out'); {$EndIf}
 end;
@@ -568,8 +587,8 @@ begin
       end;
    finally
       Areas.Free;
-      EndDEMIXProcessing;
       DisplayAndPurgeStringList(ErrorLog,'DEMIXCreateHalfSecRefDEMs Problems');
+      EndDEMIXProcessing;
    end;
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXCreateHalfSecRefDEMs out'); {$EndIf}
 end;

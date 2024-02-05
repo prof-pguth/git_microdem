@@ -16,8 +16,8 @@ unit make_grid;
 
    {$IfDef RecordProblems}   //normally only defined for debugging specific problems
       //$Define CreateAspectMap}
-      {$Define RecordDEMIX_VAt}
-      {$Define DEMIXmaps}
+      //{$Define RecordDEMIX_VAt}
+      //{$Define DEMIXmaps}
       //{$Define CreateSlopeMap}
       //{$Define TrackMapRange}
       //{$Define CreateGeomorphMaps}
