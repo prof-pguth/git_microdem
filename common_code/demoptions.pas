@@ -415,6 +415,7 @@ type
     Label41: TLabel;
     Edit36: TEdit;
     CheckBox106: TCheckBox;
+    CheckBox18: TCheckBox;
     procedure BitBtn32Click(Sender: TObject);
     procedure BitBtn13Click(Sender: TObject);
     procedure HelpBtnClick(Sender: TObject);
@@ -1048,6 +1049,8 @@ begin
    CheckBox13.Checked := MDdef.FilterGridsToEdge;
    CheckBox16.Checked := MDdef.UseSealevel;
    CheckBox17.Checked := MDdef.DBsOnAllMaps;
+   CheckBox18.Checked := MDDef.LogDOSoutput;
+
    CheckBox20.Checked := MDdef.MissingToSeaLevel;
    CheckBox21.Checked := MDdef.DeleteAuxTiffFiles;
    CheckBox22.Checked := MDdef.DefaultEditDBsInGrid;
@@ -1452,6 +1455,7 @@ begin
    MDdef.ShowPlateRotation := CheckBox15.Checked;
    MDdef.UseSealevel := CheckBox16.Checked;
    MDdef.DBsOnAllMaps := CheckBox17.Checked;
+   MDDef.LogDOSoutput := CheckBox18.Checked;
 
    MDdef.MissingToSeaLevel := CheckBox20.Checked;
    MDdef.DeleteAuxTiffFiles := CheckBox21.Checked;
@@ -2093,7 +2097,7 @@ end;
 
 procedure TOptionsForm.BitBtn41Click(Sender: TObject);
 begin
-   AdjustIntegratedDataBaseSeries;
+   AdjustMapLibraryDataBaseSeries;
 end;
 
 procedure TOptionsForm.BitBtn42Click(Sender: TObject);

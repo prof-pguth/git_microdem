@@ -29,12 +29,12 @@ object wmdem: Twmdem
     Left = 0
     Top = 0
     Width = 2018
+    Height = 29
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34
     TabOrder = 0
     OnMouseDown = ToolBar1MouseDown
-    ExplicitWidth = 2014
     object SpeedButton2: TSpeedButton
       Left = 0
       Top = 0
@@ -1696,8 +1696,6 @@ object wmdem: Twmdem
     Visible = False
     OnClick = StatusBar1Click
     OnDblClick = StatusBar1DblClick
-    ExplicitTop = 1133
-    ExplicitWidth = 2014
   end
   object MainMenu1: TMainMenu
     Left = 136
@@ -2450,9 +2448,16 @@ object wmdem: Twmdem
       object SSIM2: TMenuItem
         Caption = '-'
       end
-      object SSIM1: TMenuItem
-        Caption = 'SSIM-R2'
-        OnClick = SSIM1Click
+      object SSIMR21: TMenuItem
+        Caption = 'SSIM-R2 '
+        object SSIM1: TMenuItem
+          Caption = 'Overwrite if exists'
+          OnClick = SSIM1Click
+        end
+        object Skipifexists1: TMenuItem
+          Caption = 'Skip if exists'
+          OnClick = Skipifexists1Click
+        end
       end
       object N48: TMenuItem
         Caption = '-'
@@ -3534,7 +3539,7 @@ object wmdem: Twmdem
       OnClick = ProcessVDATUMshifts1Click
     end
     object GDALshiftFor3DEP1: TMenuItem
-      Caption = 'Process GDAL shift for 3DEP'
+      Caption = 'Process GDAL shift for 3DEP for 1 m tiles'
       object Overwriteifexits3: TMenuItem
         Caption = 'Overwrite if exits'
         OnClick = Overwriteifexits3Click
@@ -3545,7 +3550,7 @@ object wmdem: Twmdem
       end
     end
     object Create3DEP1secrefDEMs1: TMenuItem
-      Caption = 'Create 3DEP 1 sec ref DEMs'
+      Caption = 'Create 3DEP 1 sec ref DEMs for 1 m tiles'
       object Overwriteifexists1: TMenuItem
         Caption = 'Overwrite if exists'
         OnClick = Overwriteifexists1Click
@@ -3556,7 +3561,7 @@ object wmdem: Twmdem
       end
     end
     object Merge3DEPreferenceDEMsbyarea1: TMenuItem
-      Caption = 'Merge 3DEP reference DEMs by area'
+      Caption = 'Merge 3DEP 1 m tiles to 1 sec  reference DEMs by area'
       object Overwriteifexits1: TMenuItem
         Caption = 'Overwrite if exits'
         OnClick = Overwriteifexits1Click
@@ -3595,6 +3600,13 @@ object wmdem: Twmdem
     object N44: TMenuItem
       Caption = '-'
     end
+    object Merge1secreferenceDEMsfromVisioterra1: TMenuItem
+      Caption = 'Merge 1 sec reference DEMs from Visioterra'
+      OnClick = Merge1secreferenceDEMsfromVisioterra1Click
+    end
+    object N49: TMenuItem
+      Caption = '-'
+    end
     object Extract1: TMenuItem
       Caption = 'Extract EDTM for test areas'
       Enabled = False
@@ -3604,18 +3616,11 @@ object wmdem: Twmdem
       Caption = 'Diluvium DEM for test areas'
       OnClick = DiluviumDEMfortestareas1Click
     end
-    object Merge1secreferenceDEMsfromVisioterra1: TMenuItem
-      Caption = 'Merge 1 sec reference DEMs from Visioterra'
-      OnClick = Merge1secreferenceDEMsfromVisioterra1Click
-    end
-    object N49: TMenuItem
-      Caption = '-'
-    end
     object CreatetestareaDEMs1: TMenuItem
       Caption = 'Create test area DEMs'
-      object N50: TMenuItem
+      object Overwrite4: TMenuItem
         Caption = 'Create test area DEMs (overwrite if exists)'
-        OnClick = N50Click
+        OnClick = Overwrite4Click
       end
       object CreatetestareaDEMSskipifexists1: TMenuItem
         Caption = 'Create test area DEMS (skip if exists)'
@@ -3686,17 +3691,25 @@ object wmdem: Twmdem
       Caption = 'Check file sizes for SSIM image mismatches'
       OnClick = CheckfilesizesforSSIMimagemismatches1Click
     end
+    object Inventory3DEPtiles1: TMenuItem
+      Caption = 'Inventory 3DEP source DEM tiles'
+      OnClick = Inventory3DEPtiles1Click
+    end
     object CheckreferenceDEMs1: TMenuItem
       Caption = 'Inventory reference DEMs (number DTM/DSM by area)'
       OnClick = CheckreferenceDEMs1Click
     end
     object CheckreferenceDEMSareEGM2008withPixelIsset1: TMenuItem
-      Caption = 'Check reference DEMS are EGM2008 with Pixel-Is set'
+      Caption = 'Inventory reference DEMS (EGM2008 and Pixel-Is set)'
       OnClick = CheckreferenceDEMSareEGM2008withPixelIsset1Click
     end
     object ChecktestDEMs1: TMenuItem
-      Caption = 'Check test DEMs (missing .DEM  by area)'
+      Caption = 'Inventory test DEMs (missing .TIF by area)'
       OnClick = ChecktestDEMs1Click
+    end
+    object InventoryDILUVIUMbytestarea1: TMenuItem
+      Caption = 'Inventory DILUVIUM  by test area'
+      OnClick = InventoryDILUVIUMbytestarea1Click
     end
     object MergeSSIMandR2database1: TMenuItem
       Caption = 'Merge SSIM and R2 database'

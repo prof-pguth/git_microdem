@@ -38,7 +38,7 @@ begin
       if (NewName = '') then NewName := DEMGlb[DEM].DEMFileName;
       DEMGlb[DEM].SaveGridSubsetGeotiff(DEMGlb[DEM].sfBoundBox2tGridLimits(bb),NewName);
       DEMGlb[DEM].DEMFileName := NewName;
-      //DEMGlb[DEM].SelectionMap.ReloadDEMClick(Nil);
+      DEMGlb[DEM].SelectionMap.ReloadDEMClick(Nil);
       {$If Defined(RecordCarto)} aLine := aline + ' clipped ' + DEMGlb[DEM].ColsRowsString;   WriteLineToDebugFile(aLine); {$EndIf}
       CloseAndNilNumberedDB(db);
    end;
@@ -276,11 +276,11 @@ begin
        for y := 0 to pred(DEMGlb[Result].DEMHeader.NumRow) do begin
           if DEMGlb[CountGrid].GetElevMetersOnGrid(x,y,z) and (z > 0) and DEMGlb[Result].GetElevMetersOnGrid(x,y,z1) then begin
              avgz := z1/z;
-
+             (*
              if (avgz < DEMHeader.MinElev) then begin
                 WriteLineToDebugFile('x=' + IntToStr(x) + '  y=' + IntToStr(y) + ' z=' + RealToString(avgz,-8,-1));
              end;
-
+             *)
              DEMGlb[Result].SetGridElevation(x,y,avgz);
           end
 
@@ -291,7 +291,7 @@ begin
    end;
 
    if (SaveName <> '') then begin
-      SaveName := ChangeFileExt(SaveName,'.dem');
+      //SaveName := ChangeFileExt(SaveName,'.dem');
       {$If Defined(RecordDEMIXResample)} WriteLineToDebugFile('tDEMDataSet.ResampleByAveraging save=' + SaveName); {$EndIf}
       DEMGlb[Result].WriteNewFormatDEM(SaveName);
       {$IfDef RecordSaveAverageResampleDEMformat} SaveName := ChangeFileExt(SaveName,'.dem'); DEMGlb[Result].WriteNewFormatDEM(SaveName); {$EndIf}

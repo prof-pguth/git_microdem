@@ -160,7 +160,7 @@ procedure ComputeDEMIX_tile_stats(AreaName : shortstring = '');
 const
    MaxRefStore = 100;
 var
-   MomentVar,FlatMomentVar,SteepMomentVar,GentleMomentVar,CliffMomentVar,ForestMomentVar,UrbanMomentVar,BarrenMomentVar : tMomentVar;
+   MomentVar,FlatMomentVar,SteepMomentVar,GentleMomentVar,CliffMomentVar,ForestMomentVar,UrbanMomentVar,BarrenMomentVar,WaterMomentVar : tMomentVar;
    SlopeMomentVar,ElevMomentVar : array[1..MaxRefStore] of tMomentVar;
    NumPits,NumPeaks : array[1..MaxRefStore] of integer;
    DEMIXtileDB,LandCoverGrid : integer;
@@ -174,7 +174,7 @@ var
    ElevDiffStats,
    RufDiffStats,
    SlopeDiffStats  : tStringList;
-   zs,zsSteep,ZSFlat,zsGentle,zsCliff,zsForest,zsUrban,zsBarren : ^bfarray32;
+   zs,zsSteep,ZSFlat,zsGentle,zsCliff,zsForest,zsUrban,zsBarren,zsWater : ^bfarray32;
    SlopeAsp,SlopeAspectTest : tSlopeAspectRec;
    ErrorLog : tStringList;
    ElevFiles,LegendFiles : tStringList;
@@ -197,7 +197,7 @@ var
                ElevMomentsDiffString = 'EDIFF_MIN,EDIFF_Max,EDIFF_Mean,EDIFF_STD,EDIFF_SKEW,EDIFF_KURT,EDIFF_MED,EDIFF_N';
             {$EndIf}
 
-            TileStatsString = 'AREA,DEMIX_TILE,LAT,LONG,GRID_FULL,AVG_ELEV,AVG_SLOPE,AVG_ROUGH,RELIEF,FOREST_PC,URBAN_PC,BARREN_PC';
+            TileStatsString = 'AREA,DEMIX_TILE,LAT,LONG,GRID_FULL,AVG_ELEV,AVG_SLOPE,AVG_ROUGH,RELIEF,FOREST_PC,URBAN_PC,BARREN_PC,WATER_PC';
          begin
             TileStats := tStringList.Create;
             TileStats.Add(TileStatsString);
@@ -349,7 +349,8 @@ var
                   inc(UrbanMomentVar.Npts);
                end
                else if slc= slcWater then begin
-                  //water will be added "soon"
+                  zsWater^[WaterMomentVar.NPts] := Value;
+                  inc(WaterMomentVar.Npts);
                end;
             end;
 
@@ -410,6 +411,7 @@ var
                   WriteDifferenceResult('FOREST',WhichStats,DEM,RefDEM,zsForest^,ForestMomentVar,(100 * ForestMomentVar.NPts/MomentVar.NPts));
                   WriteDifferenceResult('URBAN',WhichStats,DEM,RefDEM,zsUrban^,UrbanMomentVar,(100 * UrbanMomentVar.NPts/MomentVar.NPts));
                   WriteDifferenceResult('BARREN',WhichStats,DEM,RefDEM,zsBarren^,BarrenMomentVar,(100 * BarrenMomentVar.NPts/MomentVar.NPts));
+                  WriteDifferenceResult('WATER',WhichStats,DEM,RefDEM,zsWater^,WaterMomentVar,(100 * WaterMomentVar.NPts/MomentVar.NPts));
                end;
                LandTypeMask := 'ALL';
            end;
@@ -553,7 +555,7 @@ var
          var
            ElevMomentVar,SlopeMomentVar,RoughMomentVar : tMomentVar;
            Col,Row,NPts : integer;
-           ForestPC,UrbanPC,BarrenPC : float32;
+           ForestPC,UrbanPC,BarrenPC,WaterPC : float32;
          begin
             if UseThisTile then begin
                bbgrid := GridBoundingBox(RefDEM,0);
@@ -571,6 +573,7 @@ var
                   UrbanMomentVar.Npts := 0;
                   ForestMomentVar.Npts := 0;
                   BarrenMomentVar.Npts := 0;
+                  WaterMomentVar.Npts := 0;
 
                   for Col := bbgrid.xgridlow to bbgrid.xgridhigh do begin
                      for Row := bbgrid.ygridlow to bbgrid.ygridhigh do begin
@@ -582,17 +585,20 @@ var
                   ForestPC := 100 * ForestMomentVar.Npts / NPts;
                   UrbanPC := 100 * UrbanMomentVar.Npts / NPts;
                   BarrenPC := 100 * BarrenMomentVar.Npts / NPts;
+                  WaterPC := 100 * WaterMomentVar.Npts / NPts;
                end
                else begin
                   ForestPC := -9999;
                   UrbanPC := -9999;
                   BarrenPC := -9999;
+                  WaterPC := -9999;
                end;
 
                TileHeader := AreaName + ',' + DEMIXTile + ',' + RealToString(LatCent,-12,-2) + ',' + RealToString(LongCent,-12,-2) + ',' +
                   RealToString(GridFull,-6,-2)   + ','  + RealToString(ElevMomentVar.Mean,-12,-2) + ',' +
                   RealToString(SlopeMomentVar.Mean,-12,-2)  + ',' + RealToString(RoughMomentVar.Mean,-12,-2)  + ',' +
-                  RealToString(ElevMomentVar.Maxz - ElevMomentVar.Minz,-12,-2) + ',' + RealToString(ForestPC,-12,-2)  + ',' + RealToString(UrbanPC,-12,-2) + ',' + RealToString(BarrenPC,-12,-2);
+                  RealToString(ElevMomentVar.Maxz - ElevMomentVar.Minz,-12,-2) + ',' + RealToString(ForestPC,-12,-2)  + ',' + RealToString(UrbanPC,-12,-2) + ','
+                  + RealToString(BarrenPC,-12,-2) + ',' + RealToString(WaterPC,-12,-2);
                TileStats.Add(TileHeader);
                TileHeader := TileHeader + ',';
             end
@@ -607,6 +613,7 @@ var
                New(zsForest);
                New(zsUrban);
                New(zsBarren);
+               New(zsWater);
             end;
 
             new(zs);
@@ -633,6 +640,7 @@ var
                   Dispose(zsForest);
                   Dispose(zsUrban);
                   Dispose(zsBarren);
+                  Dispose(zsWater);
                end;
                if ElevDiffHists then begin
                   ElevFiles.Destroy;
@@ -665,7 +673,7 @@ var
       wmdem.SetPanelText(3,'Load reference DEMs');
 
       if LoadDEMIXReferenceDEMs(AreaName,DEMIXRefDEM,DEMIXOpenMap) then begin
-         if LoadDEMIXCandidateDEMs(AreaName,DEMIXRefDEM,DEMIXOpenMap) then begin
+         if LoadDEMIXCandidateDEMs(AreaName,DEMIXOpenMap) then begin
             if MaskForDiluvium then MaskAllDEMsToDiluvium;
             DEMIXtileDB := DEMIXtileFill(DEMIXRefDEM,DEMGlb[DEMIXRefDEM].DEMBoundBoxGeo,false);
             GISdb[DEMIXtileDB].ApplyGISFilter('GRID_FULL<' + IntToStr(MDDef.DEMIX_Full));

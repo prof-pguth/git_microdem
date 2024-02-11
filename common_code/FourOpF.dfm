@@ -4,6 +4,7 @@ inherited FourierOptionsForm: TFourierOptionsForm
   Caption = 'Fourier Transform Options'
   ClientHeight = 283
   ClientWidth = 411
+  StyleElements = [seFont, seClient, seBorder]
   ExplicitWidth = 427
   ExplicitHeight = 322
   TextHeight = 15

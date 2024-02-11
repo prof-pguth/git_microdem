@@ -207,13 +207,11 @@ object MapForm: TMapForm
     end
     object BlendPanel: TPanel
       Left = 0
-      Top = 979
-      Width = 1924
+      Top = 978
+      Width = 1920
       Height = 41
       Align = alBottom
       TabOrder = 8
-      ExplicitTop = 978
-      ExplicitWidth = 1920
       object TrackBar2: TTrackBar
         Left = 289
         Top = 1
@@ -4087,6 +4085,29 @@ object MapForm: TMapForm
           Caption = 'Whitebox drainage basins'
           OnClick = Whiteboxdrainagebasins1Click
         end
+        object Whiteboxflowaccumulation1: TMenuItem
+          Caption = 'Whitebox flow accumulation'
+          object Whieboxflowaccumulationlog1: TMenuItem
+            Caption = 'D8, Log number cells'
+            OnClick = Whieboxflowaccumulationlog1Click
+          end
+          object Numbercells1: TMenuItem
+            Caption = 'D8, Number cells'
+            OnClick = Numbercells1Click
+          end
+          object FD8Lognumbercells1: TMenuItem
+            Caption = 'FD8, Log number cells'
+            OnClick = FD8Lognumbercells1Click
+          end
+          object FD8Lognumbercells2: TMenuItem
+            Caption = 'FD8, Number cells'
+            OnClick = FD8Lognumbercells2Click
+          end
+        end
+        object Whiteboxwetnessindex1: TMenuItem
+          Caption = 'Whitebox wetness index'
+          OnClick = Whiteboxwetnessindex1Click
+        end
         object N50: TMenuItem
           Caption = '-'
         end
@@ -4186,6 +4207,10 @@ object MapForm: TMapForm
         object SAGADrainagebasins1: TMenuItem
           Caption = 'SAGA Drainage basins'
           OnClick = SAGADrainagebasins1Click
+        end
+        object SAGAflowaccumulationParallelizable1: TMenuItem
+          Caption = 'SAGA flow accumulation (Parallelizable)'
+          OnClick = SAGAflowaccumulationParallelizable1Click
         end
         object SAGAwatershedbasinsWangLiu1: TMenuItem
           Caption = 'SAGA watershed basins (Wang and Liu)'

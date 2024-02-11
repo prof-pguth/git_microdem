@@ -4,7 +4,7 @@ unit dem_indexes;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -16,11 +16,9 @@ unit dem_indexes;
      //{$Define RecordMultipleFilesInBoundingBox}
      //{$Define RecordLoadMapLibraryBox}
      //{$Define MergeSummary}
-     (*
      //{$Define TrackPixelIs}
      //{$Define TrackDEMCorners}
      //{$Define RecordIndex}
-     *)
      //{$Define LoadLibrary}
      //{$Define RecordAutoZoom}
      //{$Define RecordImageIndex}
@@ -77,7 +75,7 @@ procedure ShowMapLibraryDataAtPoint(Lat,Long : float64);
 function GetListOfDataInBoxInSeries(Series : shortString; inNWLat,inNWLong,inSELat,inSELong : float64) : tStringList; overload;
 function GetListOfDataInBoxInSeries(Series : shortString; bb : sfBoundBox) : tStringList; overload;
 
-procedure AdjustIntegratedDataBaseSeries;
+procedure AdjustMapLibraryDataBaseSeries;
 procedure PickDEMSeries(var sName : ShortString; WhatFor : shortstring);
 
 procedure DefineShapeFileGrouping(fName : PathStr);
@@ -97,6 +95,10 @@ procedure CheckDEMFileForMapLibrary(TheTable : Petmar_db.tMyData; Series : PathS
 procedure VerifyMapLibraryFilesExist(theTable : Petmar_db.tMyData; Memo1 : tMemo = Nil);
 
 procedure DiluviumDEMIXtileReport;
+
+
+var
+   MergeSeriesName : shortstring;
 
 
 implementation
@@ -133,8 +135,6 @@ uses
    Nevadia_Main;
 
 
-var
-   MergeSeriesName : shortstring;
 
 
 procedure DiluviumDEMIXtileFill(DEM : integer; var sl : tStringList);
@@ -142,7 +142,6 @@ var
    Col,Row,db : integer;
    Pts,Coastal,Ocean,Highlands,DeepWater : int64;
    bbgrid : tGridLimits;
-   //Full,
    z : float32;
    bb : sfBoundBox;
 begin
@@ -417,7 +416,7 @@ begin
 end;
 
 
-procedure AdjustIntegratedDataBaseSeries;
+procedure AdjustMapLibraryDataBaseSeries;
 begin
    {$IfDef RecordIndex} WriteLineToDebugFile('AdjustIntegratedDataBaseSeries in, ' + SeriesIndexFileName); {$EndIf}
    Toggle_db_use.VerifyRecordsToUse(SeriesIndexFileName,'SERIES','Use indexed series ' + SeriesIndexFileName,'USE','DATA_TYPE','DATA_TYPE');
@@ -555,7 +554,6 @@ end;
 procedure CreateMapLibrary(Memo1 : tMemo);
 var
    IndexSeriesTable,DataTypeTable : tMyData;
-   //DataType : string16;
 
 
        procedure UpdateIndexSeriesTable(DataType,Series : shortstring; k,nf : integer);
@@ -563,7 +561,7 @@ var
             Series := UpperCase(Series);
             IndexSeriesTable.ApplyFilter('SERIES=' + QuotedStr(Series) + 'AND DATA_TYPE=' + QuotedStr(DataType));
             if (IndexSeriesTable.RecordCount = 0) then begin
-               {$IfDef RecordIndex} WriteLineToDebugFile('First example of series ' + Series);       {$EndIf}
+               {$IfDef RecordIndex} WriteLineToDebugFile('First example of series ' + Series); {$EndIf}
                IndexSeriesTable.Insert;
                IndexSeriesTable.SetFieldByNameAsString('DATA_TYPE',DataType);
                IndexSeriesTable.SetFieldByNameAsString('SERIES',Series);
@@ -580,7 +578,7 @@ var
        end;
 
 
-      procedure IntegratedIndex(var TheTable : tMyData);
+      procedure CreateUpdateIntegratedIndex(var TheTable : tMyData);
       var
          Dirs,RawData : TStringList;
          fName : PathStr;
@@ -643,7 +641,7 @@ var
               TheTable.ApplyFilter('SERIES=' + QuotedStr(Series));
               AlreadyIndexed := TheTable.UniqueEntriesInDB('FILENAME');
               try
-                 if (RawData.Count > TheTable.RecordCount) then begin
+                 if (RawData.Count <> TheTable.RecordCount) then begin
                     for i := 0 to pred(RawData.Count) do begin
                        if (i mod 50) = 0 then begin
                           wmDEM.SetPanelText(0,IntToStr(i) + '/' + IntToStr(pred(RawData.Count)));
@@ -706,21 +704,6 @@ var
             CreateDataUseTable(DataTypeFileName);
          end;
          fName := DataTypeFileName;
-         (*
-         DataTypeTable := tMyData.Create(fName);
-         DataTypeTableInsert('DEMS');
-         DataTypeTableInsert('IMAGERY');
-         DataTypeTableInsert('BATHY');
-         VerifyRecordsToUse(DataTypeTable,'DATA_TYPE');
-         DataTypeTable.ApplyFilter('USE=' + QuotedStr('Y'));
-         while not DataTypeTable.EOF do begin
-            DataType := Uppercase(DataTypeTable.GetFieldByNameAsString('DATA_TYPE'));
-            {$IfDef RecordIndex} WriteLineToDebugFile('Index ' + DataType); {$EndIf}
-            IndexMapLibraryDataType(DataType);
-            DataTypeTable.Next;
-         end;
-         DataTypeTable.Destroy;
-         *)
          IndexMapLibraryDataType('DEMS');
 
          {$IfDef RecordIndex} WriteLineToDebugFile('All data types done'); {$EndIf}
@@ -768,7 +751,7 @@ begin
          TheTable := Petmar_db.tMyData.Create(FName);
       end;
 
-      IntegratedIndex(TheTable);
+      CreateUpdateIntegratedIndex(TheTable);
       TheTable.Destroy;
       if (Memo1 <> Nil) then Memo1.Lines.Add(TimeToStr(Now) + ' Update over');
    finally
@@ -1015,7 +998,6 @@ var
             WMDEM.StatusBar1.Panels[0].Text := 'Merge still Check ' + IntToStr(succ(I)) + '/' + IntToStr(DEMList.Count);
             if FileExists(fName) then begin
                if NewArea(true,CurDEM,'',FName) then begin
-                  //WriteLineToDebugFile(DEMGlb[CurDEM].AreaName +
                   if (not SubsequentDEM) then begin
                      NewHeader := DEMGlb[CurDEM].DEMheader;
                      xmin := DEMGlb[CurDEM].DEMheader.DEMSWCornerX;
@@ -1068,7 +1050,7 @@ var
          NewHeader.ElevUnits := euMeters;
          if OpenAndZeroNewDEM(false,NewHeader,Result,'Merge',InitDEMmissing) then begin
             {$IfDef RecordMergeDetails} WriteLineToDebugFile('New DEM ' + IntToStr(Result) + ' opened'); {$EndIf}
-            if (MergeSeriesName = '') then DEMGlb[Result].AreaName := LastSubDir(ExtractFilePath(DEMList.Strings[0]))
+            if (MergeSeriesName = '') then DEMGlb[Result].AreaName := 'merge_from_' + LastSubDir(ExtractFilePath(DEMList.Strings[0]))
             else DEMGlb[Result].AreaName := MergeSeriesName;
             ReallyReadDEM := true;
             for i := 0 to pred(DEMList.Count) do begin
@@ -1088,7 +1070,7 @@ var
                      WMDEM.StatusBar1.Panels[0].Text := MenuStr;
                      {$IfDef RecordMergeDetails} WriteLineToDebugFile('Merging DEM=' + IntToStr(CurDEM) + '  ' + DEMGlb[CurDEM].AreaName); {$EndIf}
                      for Row := pred(DEMGlb[CurDEM].DEMheader.NumRow) downto 0 do begin
-                        if (Row mod (DEMGlb[CurDEM].DEMheader.NumRow div 100) = 0) then UpdateProgressBar((DEMGlb[CurDEM].DEMheader.NumRow-Row)/DEMGlb[CurDEM].DEMheader.NumRow);
+                        //if (Row mod (DEMGlb[CurDEM].DEMheader.NumRow div 100) = 0) then UpdateProgressBar((DEMGlb[CurDEM].DEMheader.NumRow-Row)/succ(DEMGlb[CurDEM].DEMheader.NumRow));
                         for Col := 0 to pred(DEMGlb[CurDEM].DEMheader.NumCol) do begin
                            if DEMGlb[CurDEM].GetElevMeters(Col,Row,zf) then begin
                               if {false and} UTMDEMs then begin //added Aug 2022, but unclear if this was the cause of problems

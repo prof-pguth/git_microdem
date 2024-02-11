@@ -4,7 +4,7 @@ unit dem_fan_compare;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -31,8 +31,7 @@ type
     procedure OKBtnClick(Sender: TObject);
     procedure RadioGroup1Click(Sender: TObject);
     procedure StringGrid1Click(Sender: TObject);
-    procedure StringGrid1MouseMove(Sender: TObject; Shift: TShiftState; X,
-      Y: Integer);
+    procedure StringGrid1MouseMove(Sender: TObject; Shift: TShiftState; X,Y : Integer);
   private
     { Private declarations }
      OnRow : integer;
@@ -71,8 +70,7 @@ begin
    RadioGroup1.ItemIndex := pred(MDDef.MultipleFanAlgorithmsToUse);
    StringGrid1.RowCount := succ(MDDef.MultipleFanAlgorithmsToUse);
    StringGrid1.Cells[0,0] := 'Fan algorithm';
-   for i := 1 to MDDef.MultipleFanAlgorithmsToUse do
-      StringGrid1.Cells[0,i] := IntervisiblityAlgorithmName(MDDef.CompareIVA[i]);
+   for i := 1 to MDDef.MultipleFanAlgorithmsToUse do StringGrid1.Cells[0,i] := IntervisiblityAlgorithmName(MDDef.CompareIVA[i]);
 end;
 
 procedure TFanCompareForm.OKBtnClick(Sender: TObject);

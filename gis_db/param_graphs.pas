@@ -4,7 +4,7 @@ unit param_graphs;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -19,6 +19,7 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Data.DB,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons, Vcl.ExtCtrls,
   baseGraf;
 
@@ -114,7 +115,7 @@ var
    end;
 
 begin
-   {$IfDef RecordPGraphs} WriteLineToDebugFile('TParamGraphForm.ComboBox1Change in');  {$EndIf}
+   {$IfDef RecordPGraphs} WriteLineToDebugFile('TParamGraphForm.ComboBox1Change in'); {$EndIf}
    Param := ComboBox1.Text;
    GISdb[theDB].MyData.ApplyFilter('PARAM=' + QuotedStr(Param));
    if (ThisGraph <> Nil) then ThisGraph.Close;

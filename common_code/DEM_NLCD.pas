@@ -81,6 +81,7 @@ const
 function SimplifiedLandCover(LandCoverGrid : integer; Lat,Long : float32; var Value : float32) : integer;
 procedure SimplifyLandCoverGrid(DEM : integer);
 procedure MarkWaterMissingInAllOpenDEMs(DEM : integer; All : boolean = true);
+procedure MarkWaterMissingInThisDEM(DEM : integer);
 
 
 
@@ -98,6 +99,12 @@ uses
    PetImage,PetMath,PetDBUtils,Toggle_db_use,nevadia_main,DEMDef_routines;
 
 
+procedure MarkWaterMissingInThisDEM(DEM : integer);
+begin
+   MarkWaterMissingInAllOpenDEMs(DEM,false);
+end;
+
+
 procedure MarkWaterMissingInAllOpenDEMs(DEM : integer; All : boolean = true);
 const
    OpenMap = false;   //available for debugging to watch
@@ -106,7 +113,7 @@ var
    ErrorMessage : shortstring;
    Fixed : int64;
 begin
-    lcgrid :=  LoadLC100LandCover('',DEMGlb[DEM].DEMBoundBoxGeo,ErrorMessage,OpenMap);
+    lcgrid := LoadLC100LandCover('',DEMGlb[DEM].DEMBoundBoxGeo,ErrorMessage,OpenMap);
     if OpenMap then begin
        DEMGlb[lcGrid].SelectionMap.DoBaseMapRedraw;
        MessageToContinue('Land cover opened');
@@ -128,12 +135,12 @@ begin
     end
     else begin
        MaskStripFromSecondGrid(DEM,lcGrid, msSecondMissing);
+       DEMGlb[DEM].CheckMaxMinElev;
        if (DEMGlb[DEM].SelectionMap <> Nil) then DEMGlb[DEM].SelectionMap.DoBaseMapRedraw;
        if OpenMap then MessageToContinue('Water masked');
     end;
     CloseSingleDEM(lcGrid);
 end;
-
 
 
 

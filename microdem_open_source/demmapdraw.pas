@@ -798,15 +798,15 @@ const
       {$I demmapdraw_grids.inc}
    {$EndIf}
 
-   {$IfDef ExWMS}
-   {$Else}
-      {$I demmapdraw_wms.inc}
-   {$EndIf}
-
    {$IfDef VCL}
       {$I demmapdraw_map_colors.inc}
       {$I demmapdraw_plot_dbs.inc}
       {$I demmapdraw_plot_vcl.inc}
+   {$EndIf}
+
+   {$IfDef ExWMS}
+   {$Else}
+      {$I demmapdraw_wms.inc}
    {$EndIf}
 
    {$I demmapdraw_coords.inc}
@@ -1362,10 +1362,6 @@ begin
                {$If Defined( RecordFullMapDraw) or Defined(RecordOverlays)} WriteLineToDebugFile('DrawMapOnBMP call DrawMapOverlays'); {$EndIf}
                {$If Defined(RecordLong0)} PrimMapProj.ProjectionParamsToDebugFile('tMapDraw.DrawMapOnBMP call draw overlays, MapDraw.PrimaryMapDatum'); {$EndIf}
 
-               DrawMapOverlays(Bitmap);
-
-               {$If Defined(RecordLong0)} PrimMapProj.ProjectionParamsToDebugFile('tMapDraw.DrawMapOnBMP done overlays, MapDraw.PrimaryMapDatum'); {$EndIf}
-
                {$IfDef ExIndexes}
                {$Else}
                   if (MapOwner in [moMapDataBase]) or ShowMapLibraryCoverage then begin
@@ -1373,6 +1369,10 @@ begin
                      PlotMapLibrary(Bitmap);
                   end;
                {$EndIf}
+
+               DrawMapOverlays(Bitmap);
+               {$If Defined(RecordLong0)} PrimMapProj.ProjectionParamsToDebugFile('tMapDraw.DrawMapOnBMP done overlays, MapDraw.PrimaryMapDatum'); {$EndIf}
+
 
                {$IfDef VCL}
                   if (RangeCirclesFName <> '') then begin

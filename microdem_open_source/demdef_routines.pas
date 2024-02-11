@@ -2472,6 +2472,9 @@ var
          AParameter('DEMIX','DEMIX_Full',DEMIX_Full,100);
          AParameter('DEMIX','LoadRefDEMMaps',LoadRefDEMMaps,true);
          AParameter('DEMIX','LoadTestDEMMaps',LoadTestDEMMaps,true);
+         AParameter('DEMIX','LoadRefDEMs',LoadRefDEMs,true);
+         AParameter('DEMIX','LoadTestDEMs',LoadTestDEMs,true);
+         AParameter('DEMIX','DEMIX_overwrite_enabled',DEMIX_overwrite_enabled,false);
       end;
    end;
 
@@ -3712,6 +3715,7 @@ begin
          AParameter('Hardware','UpdateDelay',UpdateDelay,4);
          AParameter('Hardware','ShowWinExec',ShowWinExec,true);
          AParameter('Hardware','LogDOSoutput',LogDOSoutput,false);
+         AParameter('Hardware','LogDOScommands',LogDOScommands,false);
       {$EndIf}
 
       AParameterShortFloat('Horizon','HorizonIncrement',HorizonIncrement,5);
@@ -4562,9 +4566,6 @@ begin
     LandCoverSeriesFName := ProgramRootDir + 'land_cover_22' + DefaultDBExt;
     RangeCircleSizesfName := ProgramRootDir + 'range_circles' + DefaultDBExt;
     WKT_GCS_Proj_fName := ProgramRootDir + 'wkt_proj\gcs_wgs84.prj';
-    if PathIsValid(ProgramRootDir + 'esri_proj') then begin
-       RenameFile(ProgramRootDir + 'esri_proj', ExtractFilePath(WKT_GCS_Proj_fName));
-    end;
 
     {$IfDef ExMagVar}
     {$Else}

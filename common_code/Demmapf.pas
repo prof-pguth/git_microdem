@@ -8,7 +8,6 @@
 {___________________________________}
 
 
-
 {$I nevadia_defines.inc}
 
 {$IFDEF DEBUG}
@@ -22,7 +21,6 @@
 
 //{$Define RecordMapResize}
 //{$Define RecordFormResize}
-
 
    {$IFDEF DEBUG}
       //{$Define RecordFan}
@@ -1509,6 +1507,13 @@ type
     Whiteboxdrainagebasins1: TMenuItem;
     SAGAwatershedbasinsWangLiu1: TMenuItem;
     SAGAStrahlerordergrid1: TMenuItem;
+    SAGAflowaccumulationParallelizable1: TMenuItem;
+    Whieboxflowaccumulationlog1: TMenuItem;
+    Whiteboxflowaccumulation1: TMenuItem;
+    Numbercells1: TMenuItem;
+    FD8Lognumbercells1: TMenuItem;
+    FD8Lognumbercells2: TMenuItem;
+    Whiteboxwetnessindex1: TMenuItem;
     //procedure HiresintervisibilityDEM1Click(Sender: TObject);
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
@@ -2619,6 +2624,12 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Whiteboxdrainagebasins1Click(Sender: TObject);
     procedure SAGAwatershedbasinsWangLiu1Click(Sender: TObject);
     procedure SAGAStrahlerordergrid1Click(Sender: TObject);
+    procedure SAGAflowaccumulationParallelizable1Click(Sender: TObject);
+    procedure Whieboxflowaccumulationlog1Click(Sender: TObject);
+    procedure Numbercells1Click(Sender: TObject);
+    procedure FD8Lognumbercells1Click(Sender: TObject);
+    procedure FD8Lognumbercells2Click(Sender: TObject);
+    procedure Whiteboxwetnessindex1Click(Sender: TObject);
     //procedure RescaleallDEMsforSSIM1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
@@ -2674,7 +2685,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     function OtherMapSameCoverage(om : tMapForm) : boolean;
 
 
-    {$IfDef ReordMapResize}
+    {$IfDef RecordMapResize}
        procedure DebugMapSize;
     {$EndIf}
 
@@ -4183,11 +4194,10 @@ begin
      {$EndIf}
      PixelSizeEdit.Text := RealToString(MapDraw.ScreenPixelSize,-12,-2) + ' m';
      CheckProperTix;
-     {$If Defined(RecordTimingProblems) or Defined(RecordMapDraw)} WriteLineToDebugFile('TMapForm.DoFastMapRedraw out, CheckProperTix done'); {$EndIf}
      WmDem.SetMenusForVersion;
-     {$If Defined(RecordTimingProblems) or Defined(RecordMapDraw)} WriteLineToDebugFile('TMapForm.DoFastMapRedraw out, WmDem.SetMenusForVersion done'); {$EndIf}
+     {$If Defined(RecordTimingProblems) or Defined(RecordMapDraw)} WriteLineToDebugFile('TMapForm.DoFastMapRedraw out'); {$EndIf}
   end;
-  {$IfDef ReordMapResize} DebugMapSize; {$EndIf}
+  {$IfDef RecordMapResize} DebugMapSize; {$EndIf}
 end;
 
 
@@ -7407,6 +7417,11 @@ begin
 end;
 
 
+procedure TMapForm.Numbercells1Click(Sender: TObject);
+begin
+   WBT_FlowAccumulation(True,False,True,GeotiffDEMNameOfMap);
+end;
+
 procedure TMapForm.Numberimmediateneighbors1Click(Sender: TObject);
 begin
    ThinDEM1Click(Sender);
@@ -7416,7 +7431,6 @@ end;
 procedure TMapForm.NumericgridwithVATtobytegridwithcodes1Click(Sender: TObject);
 var
    fName2 : PathStr;
-   //i,
    x,y,Code,NewDEM : integer;
    z : float32;
    Color : tRGBTriple;
@@ -11579,7 +11593,7 @@ begin
 end;
 
 
-{$IfDef ReordMapResize}
+{$IfDef RecordMapResize}
       procedure TMapForm.DebugMapSize;
       var
         Results : tStringList;
@@ -11717,7 +11731,7 @@ end;
 procedure TMapForm.DEMIX1secresamplebyaveraging1Click(Sender: TObject);
 begin
    {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('TMapForm.DEMIX1secresamplebyaveraging1Click in, ' + DEMGlb[MapDraw.DEMonMap].DEMFileName); {$EndIf}
-   ResampleForDEMIXOneSecDEMs(MapDraw.DEMonMap,true);
+   ResampleForDEMIXOneSecDEMs(false,MapDraw.DEMonMap,true);
    {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('TMapForm.DEMIX1secresamplebyaveraging1Click grids out'); {$EndIf}
 end;
 
@@ -11739,7 +11753,7 @@ end;
 
 procedure TMapForm.DEMIXrangescales1Click(Sender: TObject);
 begin
-   ResampleForDEMIXOneSecDEMs(MapDraw.DEMonMap,false,MDTempDir,ResampleModeRange);
+   ResampleForDEMIXOneSecDEMs(false,MapDraw.DEMonMap,false,MDTempDir,ResampleModeRange);
 end;
 
 procedure TMapForm.PlotGridPoint(xgrid,ygrid : float64; PlotColor : tPlatformColor);
@@ -16027,7 +16041,7 @@ end;
 
 procedure TMapForm.PickseriesandloadDEMsfromlibrary1Click(Sender: TObject);
 begin
-   AdjustIntegratedDataBaseSeries;
+   AdjustMapLibraryDataBaseSeries;
    LoadDEMsCoveringBox(MapDraw.MapCorners.BoundBoxGeo,true);
 end;
 
@@ -17985,7 +17999,7 @@ end;
 
 procedure TMapForm.LC100landcoverwaterbodies1Click(Sender: TObject);
 begin
-   MarkWaterMissingInAllOpenDEMs(MapDraw.DEMonMap,false);
+   MarkWaterMissingInThisDEM(MapDraw.DEMonMap);
 end;
 
 procedure TMapForm.LCCstandardparallels1Click(Sender: TObject);
@@ -19488,6 +19502,11 @@ begin
    {$EndIf}
 end;
 
+procedure TMapForm.Whieboxflowaccumulationlog1Click(Sender: TObject);
+begin
+   WBT_FlowAccumulation(True,True,True,GeotiffDEMNameOfMap);
+end;
+
 procedure TMapForm.Whitebox1Click(Sender: TObject);
 const
    FilterSize : integer = 5;
@@ -19545,6 +19564,11 @@ end;
 procedure TMapForm.WhiteboxTRI1Click(Sender: TObject);
 begin
    WhiteBox_TRI(GeotiffDEMNameOfMap);
+end;
+
+procedure TMapForm.Whiteboxwetnessindex1Click(Sender: TObject);
+begin
+   WBT_WetnessIndex(True,True,GeotiffDEMNameOfMap);
 end;
 
 procedure TMapForm.Winwcontestmaps1Click(Sender: TObject);
@@ -22982,7 +23006,7 @@ end;
 
 procedure TMapForm.COPandALOS1Click(Sender: TObject);
 begin
-   LoadDEMIXCandidateDEMs('',MapDraw.DEMonMap,true,false);
+   LoadDEMIXCandidateDEMs('',{MapDraw.DEMonMap,}true,false);
 end;
 
 procedure TMapForm.ASCIIArcGrid1Click(Sender: TObject);
@@ -23145,6 +23169,16 @@ end;
 procedure TMapForm.Fatfingers1Click(Sender: TObject);
 begin
    StartFatFingers(Self);
+end;
+
+procedure TMapForm.FD8Lognumbercells1Click(Sender: TObject);
+begin
+   WBT_FlowAccumulation(True,True,False,GeotiffDEMNameOfMap);
+end;
+
+procedure TMapForm.FD8Lognumbercells2Click(Sender: TObject);
+begin
+   WBT_FlowAccumulation(True,False,False,GeotiffDEMNameOfMap);
 end;
 
 procedure TMapForm.LocaddatumtoEGM20081Click(Sender: TObject);
@@ -24144,6 +24178,11 @@ begin
    SAGAedgeContaminationMap(DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
 end;
 
+procedure TMapForm.SAGAflowaccumulationParallelizable1Click(Sender: TObject);
+begin
+   SagaFlowAccumulationParallizeable(DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
+end;
+
 procedure TMapForm.SAGAremovesinks1Click(Sender: TObject);
 begin
    SagaSinkRemoval(DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
@@ -24587,7 +24626,7 @@ end;
 
 procedure TMapForm.All61Click(Sender: TObject);
 begin
-   LoadDEMIXCandidateDEMs('',MapDraw.DEMonMap,true,true);
+   LoadDEMIXCandidateDEMs('',{MapDraw.DEMonMap,}true,true);
 end;
 
 procedure TMapForm.AllbandsasGeotiffs1Click(Sender: TObject);
@@ -24957,7 +24996,7 @@ procedure TMapForm.Integrateddatabasesetup1Click(Sender: TObject);
 begin
    {$IfDef ExIndexes}
    {$Else}
-      AdjustIntegratedDataBaseSeries;
+      AdjustMapLibraryDataBaseSeries;
       DrawColoredMap1Click(Nil);
    {$EndIf}
 end;
@@ -24965,6 +25004,7 @@ end;
 procedure TMapForm.ReloadDEMClick(Sender: TObject);
 begin
     MapDraw.ClosingMapNow := true;
+    DEMGlb[MapDraw.DEMonMap].DEMAlreadyDefined := false;
     DEMGlb[MapDraw.DEMonMap].ReloadDEM(true);
     FullDEM1Click(Sender);
     MapDraw.ClosingMapNow := false;

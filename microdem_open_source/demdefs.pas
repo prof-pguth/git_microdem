@@ -1920,6 +1920,7 @@ type
       DEMIX_criterion_tolerance_fName : PathStr;
       DEMIX_default_area,
       DEMIX_default_tile   : shortstring;
+      DEMIX_overwrite_enabled,
       DEMIX_default_half_sec_ref : boolean;
 
       DEMIX_xsize,DEMIX_ysize : integer;
@@ -1932,6 +1933,7 @@ type
       RGBbestSeparates,
 
       LoadRefDEMMaps,LoadTestDEMMaps,
+      LoadRefDEMs,LoadTestDEMs,
       SSIM_elev,SSIM_slope,SSIM_ruff,SSIM_rri,SSIM_hill,SSIM_tpi,
       DEMIXCompositeImage,
       DEMIX_DoCHM,
@@ -1945,8 +1947,6 @@ type
       DEMIXSimpleTolerance,
       DEMIXSlopeTolerance,
       DEMIXRuffTolerance : float32;
-
-
 
       HistElevBinSize,
       HistSlopeBinSize,
@@ -2338,6 +2338,7 @@ type
 
        ShowWinExec,
        LogDOSoutput,
+       LogDOScommands,
        CommasToSemiColons,
        SatImageCoords,
        UseLongsTo360,

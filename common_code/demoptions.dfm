@@ -6,11 +6,12 @@ inherited OptionsForm: TOptionsForm
   ClientHeight = 563
   ClientWidth = 793
   Position = poDefaultPosOnly
+  StyleElements = [seFont, seClient, seBorder]
   OnClose = FormClose
   OnCreate = FormCreate
   OnResize = FormResize
-  ExplicitWidth = 805
-  ExplicitHeight = 601
+  ExplicitWidth = 809
+  ExplicitHeight = 602
   TextHeight = 15
   inherited Bevel1: TBevel
     Left = 0
@@ -47,12 +48,10 @@ inherited OptionsForm: TOptionsForm
     Top = 0
     Width = 793
     Height = 505
-    ActivePage = TabSheet15
+    ActivePage = TabSheet10
     Align = alClient
     MultiLine = True
     TabOrder = 2
-    ExplicitWidth = 789
-    ExplicitHeight = 504
     object TabSheet1: TTabSheet
       Caption = 'Program'
       object RadioGroup7: TRadioGroup
@@ -690,20 +689,12 @@ inherited OptionsForm: TOptionsForm
         Caption = 'Backup EXE before web update'
         TabOrder = 5
       end
-      object CheckBox80: TCheckBox
-        Left = 24
-        Top = 238
-        Width = 209
-        Height = 17
-        Caption = 'Record WMS requests in debug log'
-        TabOrder = 6
-      end
       object Edit1: TEdit
         Left = 128
         Top = 288
         Width = 361
         Height = 23
-        TabOrder = 7
+        TabOrder = 6
       end
     end
     object TabSheet7: TTabSheet
@@ -1597,6 +1588,14 @@ inherited OptionsForm: TOptionsForm
         Height = 17
         Caption = 'Stay awake (for GPS, bulk processing)'
         TabOrder = 7
+      end
+      object CheckBox18: TCheckBox
+        Left = 21
+        Top = 146
+        Width = 147
+        Height = 17
+        Caption = 'Log DOS commands'
+        TabOrder = 8
       end
     end
     object TabSheet11: TTabSheet
@@ -3257,8 +3256,6 @@ inherited OptionsForm: TOptionsForm
     Height = 58
     Align = alBottom
     TabOrder = 3
-    ExplicitTop = 504
-    ExplicitWidth = 789
     object BitBtn3: TBitBtn
       Left = 178
       Top = 6

@@ -31,28 +31,65 @@ ta_channels "Channel Network" -ELEVATION "C:/Users/pguth/AppData/Local/Temp/proc
 *)
 
 
-    function IsSagaCMDthere : boolean;
-    begin
-       Result := FileExists(MDDef.SagaCMD) or GetExistingFileName('saga_cmd.exe','*.exe',MDDef.SagaCMD);
-    end;
+ function IsSagaCMDthere : boolean;
+ begin
+    Result := FileExists(MDDef.SagaCMD) or GetExistingFileName('saga_cmd.exe','*.exe',MDDef.SagaCMD);
+ end;
 
 
-    function SAGAMap(cmd : shortstring; {inName,}OutName : shortstring; ZUnits : tElevUnit; OpenMap : boolean = true) : integer;
-    begin
-       if IsSagaCMDthere then begin
-          {$IfDef RecordSAGA} WriteLineToDebugFile('SAGAMap in, cmd= ' + CMD); {$EndIf}
-          WinExecAndWait32(cmd);
-          if OpenMap and (OutName <> '') then begin
-               Result := OpenNewDEM(OutName,false);
-               if (Result <> 0) and OpenMap then begin
-                  DEMGlb[Result].DEMheader.ElevUnits := zUnits;
-                  CreateDEMSelectionMap(Result,true,true,mtElevSpectrum);
-               end;
-          end;
-       end
-       else Result := 0;
-    end;
+ function SAGAMap(cmd : shortstring; {inName,}OutName : shortstring; ZUnits : tElevUnit; OpenMap : boolean = true) : integer;
+ begin
+    if IsSagaCMDthere then begin
+       {$IfDef RecordSAGA} WriteLineToDebugFile('SAGAMap in, cmd= ' + CMD); {$EndIf}
+       WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
+       if OpenMap and (OutName <> '') then begin
+            {$IfDef RecordSAGA} WriteLineToDebugFile('SAGAMap opening map'); {$EndIf}
+            Result := OpenNewDEM(OutName,false);
+            if (Result <> 0) and OpenMap then begin
+               DEMGlb[Result].DEMheader.ElevUnits := zUnits;
+               CreateDEMSelectionMap(Result,true,true,mtElevSpectrum);
+            end;
+       end;
+       {$IfDef RecordSAGA} WriteLineToDebugFile('SAGAMap out'); {$EndIf}
+    end
+    else Result := 0;
+ end;
 
+
+function SagaFlowAccumulationParallizeable(InName : PathStr; OutName : PathStr = '') : integer;
+//https://saga-gis.sourceforge.io/saga_tool_doc/9.3.1/ta_hydrology_29.html
+var
+    cmd : shortstring;
+begin
+   if (OutName = '') then OutName := MDTempDir + 'saga_flow_accumulation_' + ExtractFileNameNoExt(InName) + '.tif';
+   CMD := MDDef.SagaCMD + ' ta_hydrology 29' +
+         ' -DEM ' + inName +
+         ' -FLOW ' + OutName;
+   Result := SAGAMap(cmd,OutName,Undefined,true);
+end;
+
+(*
+Usage: saga_cmd ta_hydrology 29 [-DEM ] [-FLOW ] [-UPDATE ] [-METHOD ] [-CONVERGENCE ]
+  -DEM:           	Elevation
+	grid, input
+  -FLOW:          	Flow Accumulation
+	grid, output
+  -UPDATE:        	Update Frequency
+	integer number
+	Minimum: 0
+	Default: 0
+  -METHOD:        	Method
+	choice
+	Available Choices:
+	[0] D8
+	[1] Dinfinity
+	[2] MFD
+	Default: 2
+  -CONVERGENCE:	Convergence
+	floating point number
+	Minimum: 0.000000
+	Default: 1.100000
+*)
 
  function SagaWatershedBasinsWangLiu(InName : PathStr) : integer;
 // https://saga-gis.sourceforge.io/saga_tool_doc/8.3.0/ta_preprocessor_4.html
@@ -72,7 +109,7 @@ ta_channels "Channel Network" -ELEVATION "C:/Users/pguth/AppData/Local/Temp/proc
                ' -FILLED ' + FilledGrid +
                ' -FDIR ' + FlowDirections +
                ' -WSHED ' + WaterShedBasins;
-          WinExecAndWait32(cmd);
+          WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
           {$IfDef RecordSAGAFull} WriteLineToDebugFile('SagaWatershedBasinsWangLiu out'); {$EndIf}
        //end;
        //Result := SAGAMap(cmd,InName,'',Undefined,false);
@@ -124,7 +161,7 @@ end;
                   ' -CHNLNTWRK ' + MDTempDir + 'saga_channel_network_' + ExtractFileNameNoExt(InName) + '.tif' +
                   ' -CHNLROUTE ' + MDTempDir + 'saga_channel_route_' + ExtractFileNameNoExt(InName) + '.tif' +
                   ' -SHAPES ' + ChannelName;
-             WinExecAndWait32(cmd);
+             WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
              {$IfDef RecordSAGAFull} WriteLineToDebugFile('SagaChannelShapefile in, ChannelName= ' + ChannelName); {$EndIf}
           end;
           //Result := SAGAMap(cmd,InName,'',Undefined,false);
@@ -155,7 +192,7 @@ function SagaWatershedBasins(InName : PathStr; BasinGrid : PathStr = ''; Channel
             ' -BASIN ' + BasinGrid +
             ' -SEGMENT ' + BasinShape +
             ' -BASINS ' + BasinShape;
-       WinExecAndWait32(cmd);
+       WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
        {$IfDef RecordSAGAFull} WriteLineToDebugFile('SagaChannelShapefile in, ChannelName= ' + ChannelName); {$EndIf}
     end;
     //Result := SAGAMap(cmd,InName,'',Undefined,false);

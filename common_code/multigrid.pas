@@ -4,7 +4,7 @@ unit multigrid;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -1791,7 +1791,7 @@ begin
          end
          else begin
             NewGrid := DEMGlb[Grids[Band]].ReinterpolateUTMDEM(Resolution,-99,DEMGlb[Grids[Band]].DEMFileName);
-            DEMGlb[Grids[Band]].FreeDEMMemory;
+            //DEMGlb[Grids[Band]].FreeDEMMemory;
             DEMGlb[Grids[Band]].ReloadDEM(true);
             {$IfDef RecordMultiGridsDetailed} WriteLineToDebugFile('Reinterpolated ' + ExtractFileName(DEMGlb[Grids[Band]].DEMFileName)); {$EndIf}
          end;

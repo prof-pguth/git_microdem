@@ -557,7 +557,7 @@ type
     SSIM2: TMenuItem;
     MergemultipleTXTCSVintoDB1: TMenuItem;
     N49: TMenuItem;
-    N50: TMenuItem;
+    Overwrite4: TMenuItem;
     CreatetestareaDEMSskipifexists1: TMenuItem;
     CreatetestareaDEMs1: TMenuItem;
     Overwriteifexits1: TMenuItem;
@@ -572,6 +572,10 @@ type
     CheckreferenceDEMSareEGM2008withPixelIsset1: TMenuItem;
     Overwriteifexists1: TMenuItem;
     Overwriteifexists2: TMenuItem;
+    Inventory3DEPtiles1: TMenuItem;
+    SSIMR21: TMenuItem;
+    Skipifexists1: TMenuItem;
+    InventoryDILUVIUMbytestarea1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -950,7 +954,7 @@ type
     procedure Channelnetworkmisspercentagesbytile1Click(Sender: TObject);
     procedure SSIM1Click(Sender: TObject);
     procedure MergemultipleTXTCSVintoDB1Click(Sender: TObject);
-    procedure N50Click(Sender: TObject);
+    procedure Overwrite4Click(Sender: TObject);
     procedure CreatetestareaDEMSskipifexists1Click(Sender: TObject);
     procedure Overwriteifexits1Click(Sender: TObject);
     procedure Skipifexits1Click(Sender: TObject);
@@ -962,6 +966,9 @@ type
     procedure CheckreferenceDEMSareEGM2008withPixelIsset1Click(Sender: TObject);
     procedure Overwriteifexists1Click(Sender: TObject);
     procedure Overwriteifexists2Click(Sender: TObject);
+    procedure Inventory3DEPtiles1Click(Sender: TObject);
+    procedure Skipifexists1Click(Sender: TObject);
+    procedure InventoryDILUVIUMbytestarea1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1792,6 +1799,13 @@ begin
       Sieve1.Visible := MDDef.ShowSieve;
    {$EndIf}
 
+   OverwriteIfExists1.Enabled := MDDef.DEMIX_overwrite_enabled;
+   OverwirteIfExists1.Enabled := MDDef.DEMIX_overwrite_enabled;
+   OverwriteIfExits1.Enabled := MDDef.DEMIX_overwrite_enabled;
+   //OverwriteIfExists2.Enabled := MDDef.DEMIX_overwrite_enabled;
+   OverwriteIfExits3.Enabled := MDDef.DEMIX_overwrite_enabled;
+   Overwrite4.Enabled := MDDef.DEMIX_overwrite_enabled;
+   //OverwriteIfExits2.Enabled := MDDef.DEMIX_overwrite_enabled;
 
    if (not MDDef.ShowMenus) then begin
       File1.Visible := false;
@@ -2529,7 +2543,7 @@ begin
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Clip DEMs to DEMIX tile boundaries out'); {$EndIf}
 end;
 
-procedure Twmdem.N50Click(Sender: TObject);
+procedure Twmdem.Overwrite4Click(Sender: TObject);
 begin
    CreateTestAreaDEMs(True);
 end;
@@ -2969,6 +2983,11 @@ begin
 end;
 
 
+procedure Twmdem.Skipifexists1Click(Sender: TObject);
+begin
+   AreaSSIMComputations(False);
+end;
+
 procedure Twmdem.Skipifexits1Click(Sender: TObject);
 begin
    DEMIX_CreateReferenceDEMs(false,ResampleModeOneSec);
@@ -3243,12 +3262,21 @@ begin
 end;
 
 
+procedure Twmdem.Inventory3DEPtiles1Click(Sender: TObject);
+begin
+    Inventory3DEPtiles;
+end;
+
 procedure Twmdem.Inventorydifferencestats1Click(Sender: TObject);
 begin
    InventoryDEMIXdifferenceStats;
 end;
 
 
+procedure Twmdem.InventoryDILUVIUMbytestarea1Click(Sender: TObject);
+begin
+   CheckDiluviumAreas;
+end;
 
 procedure Twmdem.InventoryreferenceDEMs1Click(Sender: TObject);
 var
@@ -3448,9 +3476,7 @@ end;
 
 procedure Twmdem.Extract1Click(Sender: TObject);
 begin
-   {$IfDef AllowEDTM}
-      ExtractEDTMforTestAreas;
-   {$EndIf}
+   {$IfDef AllowEDTM} ExtractEDTMforTestAreas; {$EndIf}
 end;
 
 procedure Twmdem.CloseallDBs1Click(Sender: TObject);
@@ -4504,7 +4530,7 @@ end;
 
 procedure Twmdem.SSIM1Click(Sender: TObject);
 begin
-   AreaSSIMComputations;
+   AreaSSIMComputations(True);
 end;
 
 procedure Twmdem.LOS2Click(Sender: TObject);
@@ -5639,6 +5665,7 @@ begin
    {$If Defined(RecordMenu) or Defined(RecordMerge)} WriteLineToDebugFile('Enter MergeDEMs, mode=' + IntToStr(Mode)); {$EndIf}
    UseGDALvrt := Mode in [dmMergeGDAL,dmMergeDirectories];
    DEMList := tStringList.Create;
+   MergeSeriesName := '';
    if Mode in [dmMergeGDAL, dmMergeMDnative] then begin
       DEMList.Add(LastDEMName);
       if Petmar.GetMultipleFiles('DEMs to merge',DEMFilterMasks,DEMList,MDDef.DefaultDEMFilter) then begin

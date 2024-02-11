@@ -254,6 +254,7 @@ type
     XYZshifttoEGM2008withVDATUMresults1: TMenuItem;
     DiluviumDEMreprot1: TMenuItem;
     emplatedownload1: TMenuItem;
+    MICRODEMformat1: TMenuItem;
     procedure ASCIIremovequotes1Click(Sender: TObject);
     procedure ASCII01Click(Sender: TObject);
     procedure HTMLcleanup1Click(Sender: TObject);
@@ -403,6 +404,7 @@ type
     procedure XYZshifttoEGM2008withVDATUMresults1Click(Sender: TObject);
     procedure DiluviumDEMreprot1Click(Sender: TObject);
     procedure emplatedownload1Click(Sender: TObject);
+    procedure MICRODEMformat1Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -527,7 +529,6 @@ var
    LastCompressedFile,XYZName : PathStr;
 
 
-
 procedure CopyFiles(JustCopyNotMove : boolean);
 var
    CopyFilesFromDir,CopyFilesToDir,
@@ -536,29 +537,30 @@ var
    Files : tStringList;
    i,NumCopied : integer;
 begin
-   GetDOSPath('input directory',CopyFilesFromDir);
-   GetDOSPath('output directory',CopyFilesToDir);
    NameMustHave := 'dem';
-   PetMar.GetString('File name must contain',NameMustHave,false,ReasonableTextChars);
-   NameMustHave := UpperCase(NameMustHave);
-   NumCopied := 0;
-   StartProgressAbortOption('Copy');
-   Files := Nil;
-   Petmar.FindMatchingFiles(CopyFilesFromDir,'*.*',Files,6);
-   for I := 0 to pred(Files.Count) do begin
-     UpdateProgressBar(i/Files.Count);
-     SourceName := Files.Strings[i];
-     DestName := CopyFilesToDir + ExtractFileName(SourceName);
-     if (NameMustHave = '') or (StrUtils.AnsiContainsText(ExtractFileName(UpperCase(SourceName)),NameMustHave)) then begin
-        if JustCopyNotMove then Petmar.CopyFile(SourceName,DestName)
-        else Petmar.MoveFile(SourceName,DestName);
-        inc(NumCopied);
-     end;
-     if WantOut then break;
-   end;
-   Files.Free;
-   EndProgress;
-   MessageToContinue('Files copied: ' + IntToStr(NumCopied));
+   repeat
+      GetDOSPath('input directory',CopyFilesFromDir);
+      GetDOSPath('output directory',CopyFilesToDir);
+      PetMar.GetString('File name must contain',NameMustHave,false,ReasonableTextChars);
+      NameMustHave := UpperCase(NameMustHave);
+      NumCopied := 0;
+      StartProgressAbortOption('Copy');
+      Files := Nil;
+      Petmar.FindMatchingFiles(CopyFilesFromDir,'*.*',Files,6);
+      for I := 0 to pred(Files.Count) do begin
+        UpdateProgressBar(i/Files.Count);
+        SourceName := Files.Strings[i];
+        DestName := CopyFilesToDir + ExtractFileName(SourceName);
+        if (NameMustHave = '') or (StrUtils.AnsiContainsText(ExtractFileName(UpperCase(SourceName)),NameMustHave)) then begin
+           if JustCopyNotMove then Petmar.CopyFile(SourceName,DestName)
+           else Petmar.MoveFile(SourceName,DestName);
+           inc(NumCopied);
+        end;
+        if WantOut then break;
+      end;
+      Files.Free;
+      EndProgress;
+   until not AnswerIsYes('Files copied: ' + IntToStr(NumCopied) + '; try again');
 end;
 
 
@@ -2737,6 +2739,11 @@ begin
 end;
 
 
+procedure TDemHandForm.MICRODEMformat1Click(Sender: TObject);
+begin
+   BatchRenameDEMfiles(Sender);
+end;
+
 procedure TDemHandForm.Specifyshift1Click(Sender: TObject);
 begin
    Conictolatlong1Click(Sender);
@@ -3483,17 +3490,27 @@ var
 begin
    {$IfDef RecordReformat} WriteLineToDebugFile('TDemHandForm.ADFgrids1Click in'); {$EndIf}
 
-   if (Sender = BILdirectorytoMDDEM1) then TStr := '*.bil'
-   else if (Sender = IMGdirectorytoMDDEM1) then TStr := '*.img'
-   else if (Sender = ASCfiles1) then TStr := '*.asc'
-   else if (Sender = XTfiles1) then TStr := '*.txt'
-   else if (Sender = FLTfiles1) then TStr := '*.flt'
-   else if (Sender = IFfiles1) then TStr := '*.tif'
-   else TStr := 'w001001.adf';
+   if (Sender = IFfiles1) then begin
+      TStr := '*.tif';
+      OutF := '.dem';
+   end
+   else if (Sender = MICRODEMformat1) then begin
+       TStr := '*.dem';
+       OutF := '.tif'
+   end
+   else begin
+      if (Sender = BILdirectorytoMDDEM1) then TStr := '*.bil'
+      else if (Sender = IMGdirectorytoMDDEM1) then TStr := '*.img'
+      else if (Sender = ASCfiles1) then TStr := '*.asc'
+      else if (Sender = XTfiles1) then TStr := '*.txt'
+      else if (Sender = FLTfiles1) then TStr := '*.flt'
+      else TStr := 'w001001.adf';
+      if (Sender <> ASCfiles1) then if AnswerIsYes('Geotiff format rather than MD DEM') then OutF := '.tif' else OutF := '.dem';
+   end;
 
    if (DataPath = '') then DataPath := MainMapData;
    GetDOSPath('input DEMs with ' + TStr,DataPath);
-   if (Sender = ASCfiles1) then OutPath := DataPath  //these will replace the ASC files
+   if (Sender = ASCfiles1) or (Sender = MICRODEMformat1) then OutPath := DataPath  //these will replace the ASC files
    else GetDOSPath('DEM output',OutPath);
 
    TheFiles := Nil;
@@ -3506,15 +3523,14 @@ begin
       {$IfDef RecordReformat} WriteLineToDebugFile('No files found'); {$EndIf}
    end
    else begin
-      if (Sender <> ASCfiles1) then if AnswerIsYes('Geotiff format rather than MD DEM') then OutF := '.tif' else OutF := '.dem';
-
       for I := 0 to pred(TheFiles.Count) do begin
          fName := TheFiles.Strings[i];
          {$IfDef RecordReformat} WriteLineToDebugFile(fName); {$EndIf}
          FSplit(fName,Dir,bName,Ext);
          Memo1.Lines.Add(TimeToStr(Now) + ' Convert ' + IntToStr(i) + '/' + IntToStr(pred(TheFiles.Count)) + '  ' + ExtractFileName(fName));
          //ApplicationProcessMessages;
-         OutName := OutPath + bName + OutF;
+         if (Sender = MICRODEMformat1) then OutName := ChangeFileExt(fName,OutF)
+         else OutName := OutPath + bName + OutF;
 
          if (not FileExists(OutName)) then begin
             if StrUtils.AnsiContainsText(fName,'shd') then begin
@@ -3522,9 +3538,10 @@ begin
             else begin
                if (Sender <> BILdirectorytoMDDEM1) or FileExists(ChangeFileExt(fName,'.hdr')) then begin
                   LoadNewDEM(j,fName,false);
-                  if (j <> 0) and ValidDEM(j) then begin
+                  if ValidDEM(j) then begin
                      if (Sender <> ASCfiles1) then SaveIt;  //ASC files converted during LoadNewDEM
                      CloseSingleDEM(j);
+                     if (Sender = MICRODEMformat1) then File2Trash(fName);
                   end;
                end;
             end;
@@ -4160,7 +4177,7 @@ end;
 
 procedure TDemHandForm.Adjustseriescolorusage1Click(Sender: TObject);
 begin
-   AdjustIntegratedDataBaseSeries;
+   AdjustMapLibraryDataBaseSeries;
    Close;
 end;
 

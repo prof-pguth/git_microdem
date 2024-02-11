@@ -145,7 +145,6 @@ type
     CheckBox15: TCheckBox;
     Hillshade: TCheckBox;
     CheckBox17: TCheckBox;
-    CheckBox16: TCheckBox;
     TabSheet4: TTabSheet;
     Label3: TLabel;
     AreaProgress: TEdit;
@@ -158,6 +157,8 @@ type
     BitBtn36: TBitBtn;
     BitBtn37: TBitBtn;
     BitBtn6: TBitBtn;
+    CheckBox18: TCheckBox;
+    CheckBox16: TCheckBox;
     procedure BitBtn1Click(Sender: TObject);
     procedure LoadClick(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
@@ -224,6 +225,8 @@ type
     procedure CheckBox4Click(Sender: TObject);
     procedure CheckBox23Click(Sender: TObject);
     procedure BitBtn6Click(Sender: TObject);
+    procedure CheckBox18Click(Sender: TObject);
+    procedure CheckBox3Click(Sender: TObject);
     //procedure CheckBox4Click(Sender: TObject);
   private
     { Private declarations }
@@ -1520,6 +1523,11 @@ begin
 end;
 
 
+procedure TDemixFilterForm.CheckBox18Click(Sender: TObject);
+begin
+   MDDef.DEMIX_overwrite_enabled := CheckBox18.Checked;
+end;
+
 procedure TDemixFilterForm.CheckBox23Click(Sender: TObject);
 begin
    MDDef.LoadRefDEMMaps := CheckBox23.Checked;
@@ -1531,9 +1539,14 @@ begin
 end;
 
 
+procedure TDemixFilterForm.CheckBox3Click(Sender: TObject);
+begin
+   MDDef.LoadRefDEMs := CheckBox3.Checked;
+end;
+
 procedure TDemixFilterForm.CheckBox4Click(Sender: TObject);
 begin
-   MDDef.LoadTestDEMMaps := CheckBox4.Checked;
+   MDDef.LoadTestDEMs := CheckBox4.Checked;
 end;
 
 procedure TDemixFilterForm.CheckBox7Click(Sender: TObject);
@@ -1605,7 +1618,6 @@ begin
    CheckBox9.Checked := MDDef.MakeCOP_FABDEM_diffMaps;
    CheckBox10.Checked := MDDef.RGBbestSeparates;
    CheckBox11.Checked := MDDef.DEMIX_default_half_sec_ref;
-   LoadOneSecRefCheckBox.Checked := true;
 
    CheckBox12.Checked := MDDef.SSIM_elev;
    CheckBox13.Checked := MDDef.SSIM_slope;
@@ -1614,11 +1626,12 @@ begin
    CheckBox16.Checked := MDDef.DEMIX_open_ref_DSM;
    Hillshade.Checked := MDDef.SSIM_hill;
    CheckBox17.Checked := MDDef.SSIM_tpi;
+   CheckBox18.Checked := MDDef.DEMIX_overwrite_enabled;
 
-
-    CheckBox23.Checked := MDDef.LoadRefDEMMaps;
-    CheckBox4.Checked := MDDef.LoadTestDEMMaps;
-
+   CheckBox23.Checked := MDDef.LoadRefDEMMaps;
+   CheckBox4.Checked := MDDef.LoadTestDEMMaps;
+   LoadOneSecRefCheckBox.Checked := MDDef.LoadRefDEMs;
+   CheckBox3.Checked := MDDef.LoadRefDEMs;
 
    threedembestrgm_checkbox.Checked := MDDef.MakeRGB_Best_Map;
 
@@ -2035,9 +2048,15 @@ end;
 procedure TDemixFilterForm.LoadCurrentAreaBitBtn5Click(Sender: TObject);
 var
    AreaName : Petmar_types.shortstring;
+   DEMIXRefDEM : integer;
 begin
    AreaName := ComboBox4.Text;
-   LoadDEMsForCurrentArea(AreaName,MDDef.LoadRefDEMMaps,MDDef.LoadTestDEMMaps);
+   //LoadDEMsForCurrentArea(AreaName,MDDef.LoadRefDEMMaps,MDDef.LoadTestDEMMaps);
+
+   if MDDef.LoadRefDEMs then LoadDEMIXReferenceDEMs(AreaName,DEMIXRefDEM,MDDef.LoadRefDEMMaps);
+   if MDDef.LoadTestDEMs then LoadDEMIXCandidateDEMs(AreaName,MDDef.LoadTestDEMMaps);
+
+
 end;
 
 

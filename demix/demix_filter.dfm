@@ -2,8 +2,8 @@ object DemixFilterForm: TDemixFilterForm
   Left = 0
   Top = 0
   Caption = 'Overwrite if exists'
-  ClientHeight = 477
-  ClientWidth = 763
+  ClientHeight = 516
+  ClientWidth = 772
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -17,8 +17,8 @@ object DemixFilterForm: TDemixFilterForm
   object PageControl1: TPageControl
     Left = 0
     Top = 0
-    Width = 763
-    Height = 477
+    Width = 772
+    Height = 516
     ActivePage = TabSheet1
     Align = alClient
     TabOrder = 0
@@ -27,16 +27,16 @@ object DemixFilterForm: TDemixFilterForm
     object TabSheet1: TTabSheet
       Caption = 'New options'
       object LoadCurrentAreaBitBtn5: TBitBtn
-        Left = 502
-        Top = 138
-        Width = 155
+        Left = 531
+        Top = 131
+        Width = 121
         Height = 25
         Caption = 'Load area DEMs'
         TabOrder = 0
         OnClick = LoadCurrentAreaBitBtn5Click
       end
       object CheckBox3: TCheckBox
-        Left = 256
+        Left = 125
         Top = 146
         Width = 97
         Height = 17
@@ -44,9 +44,10 @@ object DemixFilterForm: TDemixFilterForm
         Checked = True
         State = cbChecked
         TabOrder = 1
+        OnClick = CheckBox3Click
       end
       object LoadOneSecRefCheckBox: TCheckBox
-        Left = 143
+        Left = 16
         Top = 146
         Width = 97
         Height = 17
@@ -57,7 +58,7 @@ object DemixFilterForm: TDemixFilterForm
       end
       object CheckBox1: TCheckBox
         Left = 16
-        Top = 146
+        Top = 443
         Width = 121
         Height = 17
         Caption = 'Source EGM2008'
@@ -180,7 +181,7 @@ object DemixFilterForm: TDemixFilterForm
       end
       object CheckBox5: TCheckBox
         Left = 16
-        Top = 169
+        Top = 466
         Width = 97
         Height = 17
         Caption = 'Reference 0.5"'
@@ -188,7 +189,7 @@ object DemixFilterForm: TDemixFilterForm
       end
       object CheckBox6: TCheckBox
         Left = 143
-        Top = 169
+        Top = 466
         Width = 97
         Height = 17
         Caption = 'COP && ALOS'
@@ -474,22 +475,31 @@ object DemixFilterForm: TDemixFilterForm
         OnClick = BitBtn39Click
       end
       object CheckBox4: TCheckBox
-        Left = 360
+        Left = 359
         Top = 112
-        Width = 97
+        Width = 113
         Height = 17
         Caption = 'Test DEM maps'
         TabOrder = 41
         OnClick = CheckBox4Click
       end
       object CheckBox23: TCheckBox
-        Left = 360
-        Top = 136
+        Left = 359
+        Top = 135
         Width = 97
         Height = 17
         Caption = 'Ref DEM maps'
         TabOrder = 42
         OnClick = CheckBox23Click
+      end
+      object CheckBox16: TCheckBox
+        Left = 224
+        Top = 146
+        Width = 113
+        Height = 17
+        Caption = 'Reference DSMs'
+        TabOrder = 43
+        OnClick = CheckBox16Click
       end
     end
     object TabSheet3: TTabSheet
@@ -874,14 +884,14 @@ object DemixFilterForm: TDemixFilterForm
           OnClick = CheckBox17Click
         end
       end
-      object CheckBox16: TCheckBox
+      object CheckBox18: TCheckBox
         Left = 40
-        Top = 187
-        Width = 177
+        Top = 240
+        Width = 265
         Height = 17
-        Caption = 'Open reference DSMs'
+        Caption = 'Enable file overwrites in DEMIX processing'
         TabOrder = 8
-        OnClick = CheckBox16Click
+        OnClick = CheckBox18Click
       end
     end
     object TabSheet4: TTabSheet

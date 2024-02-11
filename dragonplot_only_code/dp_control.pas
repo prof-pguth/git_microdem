@@ -4,7 +4,7 @@
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -219,7 +219,6 @@ type
     procedure CheckBox2Click(Sender: TObject);
     procedure BitBtn17Click(Sender: TObject);
     procedure DBGrid2DblClick(Sender: TObject);
-    //procedure SpeedButton1Click(Sender: TObject);
     procedure BitBtn21Click(Sender: TObject);
     procedure BitBtn23Click(Sender: TObject);
     procedure BitBtn25Click(Sender: TObject);
@@ -298,7 +297,6 @@ type
      DragonPlotInstance : integer;
      DEMPersF2,DEMPersF,DEMPersPan : TThreeDview;
      DEMLOSF,DEMLOSF2 : TDEMLOSF;
-     //ShotMode : tShotMode;
      AccessMap,TargetMap : tMapForm;
      SettingUp,
      FirstKML,
@@ -501,12 +499,6 @@ begin
    BitBtn21.Visible := false;   //GroupBox4.Visible;
    BitBtn32.Visible := false;   //GroupBox4.Visible;
    BitBtn33.Visible := false;   //GroupBox4.Visible;
-    //BitBtn15.Enabled := (LightningTable <> 0) and (MDDef.ProgramOption = ExpertProgram);
-    //BitBtn21.Enabled := (LightningTable <> 0) and (MDDef.ProgramOption = ExpertProgram);
-    //BitBtn31.Enabled := (LightningTable <> 0) and (MDDef.ProgramOption = ExpertProgram);
-    //BitBtn33.Enabled := (LightningTable <> 0) and (MDDef.ProgramOption = ExpertProgram);
-    //BitBtn18.Enabled := (LightningTable <> 0) and (MDDef.ProgramOption = ExpertProgram);
-    //BitBtn31.Enabled := (LightningTable <> 0) and (MDDef.ProgramOption = ExpertProgram);
 
    //disabled options, but open for a full GIS use case
    GroupBox4.Visible := TrilobiteComputer or (MDDef.ProgramOption = ExpertProgram) or DragonPlotDef.AdvancedOptions;

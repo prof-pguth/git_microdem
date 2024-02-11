@@ -15,16 +15,17 @@ unit md_use_tools;
 
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
+      //{$Define RecordWBT}
+      //{$Define RecordSAGA}
+
       //{$Define OpenLasTools}
       //{$Define RecordACOLITE}
       //{$Define RecordSubsetOpen}
       //{$Define RecordUseOtherPrograms}
       //{$Define RecordSaveProblems}
-      //{$Define RecordWBT}
       //{$Define RecordOGR}
       //{$Define RecordGeoPDF}
       //{$Define RecordReformat}
-      //{$Define RecordSAGA}
       //{$Define RecordSAGAFull}
    {$Else}
    {$EndIf}
@@ -65,14 +66,6 @@ uses
    DEMMapf,DEMMapDraw,DEMDefs,BaseMap,DEM_NLCD;
 
 
-{$IfDef ExOTB}
-{$Else}
-   procedure OTB_ConcatenateImages(InNames: tStringList; OutName : PathStr);
-   procedure OTB_KMeansClassification(InName, OutName : PathStr);
-   procedure OTB_Segmentation(InName, OutName : PathStr);
-   procedure OTB_PanSharpen(PanName,OrthoName, OutName : PathStr);
-{$EndIf}
-
 {$IfDef ExLAStools}
 {$Else}
    function GetLASToolsFileName(var fName : PathStr) : boolean;
@@ -109,7 +102,26 @@ uses
    function WhiteBox_AverageNormalVectorAngularDeviation(InName : PathStr; filtersize : integer) : integer;
    function WhiteBox_CircularVarianceOfAspect(InName : PathStr; filtersize : integer) : integer;
    function WhiteBoxDrainageBasins(InName : PathStr) : integer;
+   function WBT_FlowAccumulation(OpenMap,Log,D8 : boolean; InName : PathStr; OutName : PathStr = '') : integer;
+   function WBT_WetnessIndex(OpenMap,D8 : boolean; InName : PathStr; OutName : PathStr = '') : integer;
 
+{$EndIf}
+
+
+{$IfDef ExSAGA}
+{$Else}
+   function SagaTRIMap(InName : PathStr) : integer;
+   function SagaTPIMap(InName : PathStr) : integer;
+   function SagaVectorRuggednessMap(InName : PathStr; Radius : integer) : integer;
+   function SagaSinkRemoval(InName : PathStr; OutName : PathStr = '') : integer;
+   procedure SAGA_all_DEMs_remove_sinks;
+   function SagaChannelNetwork(InName : PathStr; OutName : PathStr = ''; ShpName : PathStr = '') : integer;
+   function SagaChannelShapefile(InName : PathStr; ChannelName : PathStr = '') : integer;
+   function SAGAedgeContaminationMap(InName : PathStr; OutName : PathStr = '') : integer;
+   function SagaWatershedBasins(InName : PathStr; BasinGrid : PathStr = ''; ChannelNetwork : PathStr = ''; OutName : PathStr = '') : integer;
+   function SagaWatershedBasinsWangLiu(InName : PathStr) : integer;
+   function SAGAStrahlerOrderGrid(InName : PathStr; OutName : PathStr = '') : integer;
+   function SagaFlowAccumulationParallizeable(InName : PathStr; OutName : PathStr = '') : integer;
 {$EndIf}
 
 
@@ -126,21 +138,13 @@ uses
 {$EndIf}
 
 
-{$IfDef ExSAGA}
+{$IfDef ExOTB}
 {$Else}
-   function SagaTRIMap(InName : PathStr) : integer;
-   function SagaTPIMap(InName : PathStr) : integer;
-   function SagaVectorRuggednessMap(InName : PathStr; Radius : integer) : integer;
-   function SagaChannelNetwork(InName : PathStr; OutName : PathStr = ''; ShpName : PathStr = '') : integer;
-   function SagaSinkRemoval(InName : PathStr; OutName : PathStr = '') : integer;
-   function SagaChannelShapefile(InName : PathStr; ChannelName : PathStr = '') : integer;
-   function SAGAedgeContaminationMap(InName : PathStr; OutName : PathStr = '') : integer;
-   function SagaWatershedBasins(InName : PathStr; BasinGrid : PathStr = ''; ChannelNetwork : PathStr = ''; OutName : PathStr = '') : integer;
-   procedure SAGA_all_DEMs_remove_sinks;
-   function SagaWatershedBasinsWangLiu(InName : PathStr) : integer;
-   function SAGAStrahlerOrderGrid(InName : PathStr; OutName : PathStr = '') : integer;
+   procedure OTB_ConcatenateImages(InNames: tStringList; OutName : PathStr);
+   procedure OTB_KMeansClassification(InName, OutName : PathStr);
+   procedure OTB_Segmentation(InName, OutName : PathStr);
+   procedure OTB_PanSharpen(PanName,OrthoName, OutName : PathStr);
 {$EndIf}
-
 
 procedure RVTgrids(DEM : integer);
 

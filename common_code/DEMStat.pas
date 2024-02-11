@@ -21,6 +21,8 @@ unit DEMStat;
       //{$Define RecordDEMIX_colors}
       {$Define RecordSSIM}
       {$Define RecordDEMIX}
+      //{$Define RecordCovariance}
+      //{$Define TrackSWCornerForComputations}  //must also be defined in DEMCoord
       //{$Define RecordSSIMNormalization}
       //{$Define RecordLag}
       //{$Define RecordPitsSpires}
@@ -187,7 +189,7 @@ type
    procedure CreateGridHistograms(DEMSwanted : tDEMbooleanArray; TailCutoff : float32 = 0.5);
 
    function ComputeSSIM(DEM1,DEM2 : integer; gl1,gl2 : tGridLimits; var SSIM,Luminance,Contrast,Structure : float64) : boolean;
-   procedure AreaSSIMComputations;
+   procedure AreaSSIMComputations(Overwrite : boolean);
    procedure NormalizeDEMforSSIM(DEM : integer; What : shortstring);
    procedure MakeSSIMMaps(DEM1,DEM2 : integer);
 
@@ -263,6 +265,70 @@ type
    PlotModeType = (Plain,Strahler,Cumulative,NormProb);
 var
    Count : array[1..MaxDEMDataSets] of ^CountType;
+
+const
+   NumPt = 6;
+   NumArea = 1;
+   PointNames : array[0..NumPt] of shortstring = ('REF_POINT','ASTER','COP','FABDEM','NASA','SRTM','TANDEM');
+   AreaNames : array[0..NumArea] of shortstring = ('REF_AREA','ALOS');
+type
+   tDEM_int_array = array [0..NumPt] of integer;
+var
+   PointDEMs : tDEM_int_array;   //0 is the reference, rest the test DEMs
+   AreaDEMs : tDEM_int_array;  //0 is the reference, rest the test DEMs
+
+
+function OpenBothPixelIsDEMs(Area,Prefix : shortstring; RefDir,TestDir : PathStr; OpenMaps : boolean) : boolean;
+//opens the reference DTMs, for both pixel-is-point and pixel-is-area
+const
+   Ext = '.tif';
+var
+   fName : PathStr;
+   i : integer;
+
+   procedure TryToOpen(fName : PathStr; var DEM : integer);
+   begin
+      //if not FileExists(fName) then fName := ChangeFileExt(fName,'.dem');
+      if FileExists(fName) then begin
+         DEM := OpenNewDEM(fName,OpenMaps);
+         {$IfDef TrackSWCornerForComputations} DEMGlb[DEM].WriteToDebugSWCornerForComputations('OpenBothPixelIsDEMs'); {$EndIf}
+      end
+      else begin
+         {$IfDef RecordDEMIX} WriteLineToDebugFile('Missing file ' + fName); {$EndIf};
+         Result := false;
+      end;
+   end;
+
+begin
+    Result := true;
+
+    fName := RefDir + Prefix + area + '_dtm_ref_1sec_point' + Ext;
+    if not FileExists(fName) then fName := RefDir + Prefix + area + '_ref_1sec_point' + Ext;
+
+    TryToOpen(fName,PointDEMs[0]);
+    for i := 1 to NumPt do begin
+       fName := TestDir + Prefix + Area + '_' + PointNames[i]  + Ext;
+       TryToOpen(fName,PointDEMs[i]);
+    end;
+
+    fName := RefDir + Prefix + Area + '_dtm_ref_1sec_area' + Ext;
+    if not FileExists(fName) then fName := RefDir + Prefix + area + '_ref_1sec_area' + Ext;
+
+
+    TryToOpen(fName,AreaDEMs[0]);
+    for i := 1 to NumArea do begin
+       fName := TestDir + Prefix + Area + '_' + AreaNames[i]  + Ext;
+       TryToOpen(fName,AreaDEMs[i]);
+    end;
+
+    //for i := 0 to NumPt do WriteLineToDebugFile('Point=' + IntToStr(i) + '  DEM=' + IntToStr(PointDEMs[i]) + '  ' + DEMglb[PointDEMs[i]].AreaName + '  ' + DEMglb[PointDEMs[i]].ColsRowsString);
+    //for i := 0 to NumArea do WriteLineToDebugFile(' Area=' + IntToStr(i) + '  DEM=' + IntToStr(AreaDEMs[i]) + '  ' + DEMglb[AreaDEMs[i]].AreaName + '  ' + DEMglb[AreaDEMs[i]].ColsRowsString);
+
+end;
+
+
+
+
 
 
 {$I demstat_global_dems.inc}
@@ -1857,16 +1923,15 @@ end;
 
 function CovariancesFromTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer; var r,covar,Mean1,Mean2,StdDev1,StdDev2 : float64) : boolean;
 var
-   Col,Row,incr,xoff,yoff,i : integer;
+   Col,Row,xoff,yoff,i : integer;
    NPts : int64;
    z1,z2,XGrid,YGrid : float32;
    Lat,Long : float64;
    IdenticalGrids : boolean;
-   //x,y : ^bfarray32;
    sum, sp : array[1..2] of float64;
    spc : float64;
 begin
-   {$IfDef RecordStat} WriteLineToDebugFile('CovariancesFromTwoGrids in, grids=' + IntToStr(DEM1) + ' and ' + IntToStr(DEM2)); {$EndIf}
+   {$If Defined(RecordCovariance)} HighlightLineToDebugFile('CovariancesFromTwoGrids in, grids=' + IntToStr(DEM1) + ' and ' + IntToStr(DEM2)); {$EndIf}
    IdenticalGrids := DEMGlb[DEM1].SecondGridJustOffset(DEM2,xoff,yoff);
    NPts := 0;
 
@@ -1876,21 +1941,20 @@ begin
       sp[i] := 0;
    end;
 
+   {$If Defined(RecordCovariance)}
+      WriteLineToDebugFile('DEM1, ' + DEMglb[DEM1].KeyDEMParams(true));
+      WriteLineToDebugFile('DEM2, ' + DEMglb[DEM2].KeyDEMParams(true));
+      if IdenticalGrids then  WriteLineToDebugFile('offset, x=' + IntToStr(xoff) + '  y=' + IntToStr(yoff));
+      WriteLineToDebugFile('DEM1 grid limits ' + GridLimitsToString(GridLimitsDEM1));
+   {$EndIf}
 
-   //New(x);
-   //New(y);
-   incr := 1;
-   while ( (GridLimitsDEM1.XGridHigh - GridLimitsDEM1.XGridLow) div incr) * ((GridLimitsDEM1.YGridHigh - GridLimitsDEM1.YGridLow) div Incr) > Petmath.bfArrayMaxSize do inc(incr);
    Col := GridLimitsDEM1.XGridLow;
    while (Col <= GridLimitsDEM1.XGridHigh) do begin
       Row := GridLimitsDEM1.YGridLow;
-
       while (Row <= GridLimitsDEM1.YGridHigh) do begin
          if DEMGlb[DEM1].GetElevMeters(Col,Row,z1) then begin
             if IdenticalGrids then begin
                if DEMGlb[DEM2].GetElevMeters(Col+xoff,Row+yoff,z2) then begin
-                  //x^[NPts] := z1;
-                  //y^[NPts] := z2;
                   Sum[1] := Sum[1] + z1;
                   Sum[2] := Sum[2] + z2;
                   sp[1] := sp[1] + z1 * z1;
@@ -1902,8 +1966,6 @@ begin
             else begin
                DEMGlb[DEM1].DEMGridToLatLongDegree(Col,Row,Lat,Long);
                if DEMGlb[DEM2].GetElevFromLatLongDegree(Lat,Long,z2) then begin
-                  //x^[NPts] := z1;
-                  //y^[NPts] := z2;
                   Sum[1] := Sum[1] + z1;
                   Sum[2] := Sum[2] + z2;
                   sp[1] := sp[1] + z1 * z1;
@@ -1913,9 +1975,9 @@ begin
                end;
             end;
          end;
-         inc(Row,incr);
+         inc(Row);
       end;
-      inc(Col,incr);
+      inc(Col);
    end;
    Result := (NPts > 0);
    if Result then begin
@@ -1923,14 +1985,18 @@ begin
       StdDev1 := sqrt( (NPts * SP[1] - (sum[1] * sum[1]) ) / (NPts-1) / Npts );
       Mean2 := (Sum[2] / NPts);
       StdDev2 := sqrt( (NPts * SP[2] - (sum[2] * sum[2]) ) / (NPts-1) / Npts );
-
       Covar := (NPts * SPc - Sum[1] * Sum[2]) / NPts / pred(NPts);
       r := Covar / StdDev1 / StdDev2;
+      {$If Defined(RecordCovariance)}
+         WriteLineToDebugFile('npts=' + IntToStr(NPts));
+         WriteLineToDebugFile('Mean1=' + RealToString(Mean1,8,2) + ' std dev1=' + RealToString(StdDev1,8,2) + '  ' + DEMglb[DEM1].AreaName);
+         WriteLineToDebugFile('Mean2=' + RealToString(Mean2,8,2) + ' std dev2=' + RealToString(StdDev2,8,2) + '  ' + DEMglb[DEM2].AreaName);
+      {$EndIf}
+      {$If Defined(RecordStat) or Defined(RecordCovariance)}  WriteLineToDebugFile('CovariancesFromTwoGrids out covar=' + RealToString(covar,-12,-4) + '  r=' + RealToString(r,-12,-6)); {$EndIf}
+   end
+   else begin
+      {$If Defined(RecordStat) or Defined(RecordCovariance)}  WriteLineToDebugFile('CovariancesFromTwoGrids failed, npts=' + IntToStr(NPts)); {$EndIf}
    end;
-   //Newvarcovar(x^,y^,NPts,r,covar,Mean1,Mean2,StdDev1,StdDev2);
-   //Dispose(x);
-   //Dispose(y);
-   {$IfDef RecordStat} WriteLineToDebugFile('CovariancesFromTwoGrids out covar=' + RealToString(covar,-12,-4)); {$EndIf}
 
 
 

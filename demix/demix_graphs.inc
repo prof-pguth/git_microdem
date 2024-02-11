@@ -103,12 +103,8 @@ begin
       for I := 1 to NumDEMIXDEM do Scores[i] := Scores[i] / CriteriaList.Count;
 
       for I := 1 to NumDEMIXDEM do begin
-          if (DEMIXShort[i] = 'COP') or (DEMIXShort[i] = 'SRTM') then extra := 0.15
-          else if (DEMIXShort[i] = 'FABDEM') or (DEMIXShort[i] = 'NASA') then extra := -0.15
-          else Extra := 0;
-
           v[1] := Scores[i];
-          v[2] := succ(Tile) + Extra;
+          v[2] := succ(Tile) + ExtraToSpreadDEMs(DEMIXShort[i],0.15);
           v[3] := ConvertPlatformColorToTColor(DEMIXColorFromDEMName(DEMIXShort[i]));
           BlockWrite(rfile,v,1);
       end;
@@ -162,7 +158,7 @@ var
 
       function GraphForOneCriterionWithTileNames(theCrit : shortstring) : tThisBaseGraph;
       var
-        y,i,DEM{,SaveDBNumber} : integer;
+        y,i,DEM : integer;
         fName : PathStr;
       begin
          {$If Defined(RecordDEMIX_evaluations_graph)} WriteLineToDebugFile('GraphForOneCriterionWithTileNames, Criterion=' + TheCrit + '  n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB)); {$EndIf}
@@ -191,7 +187,7 @@ var
             Result.GraphDraw.GraphLeftLabels.Add(IntToStr(y) + ',' + GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'));
             for I := 1 to NumDEMIXDEM do begin
                 v[1] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(DEMIXShort[i]);
-                v[2] := y;  //y + i;
+                v[2] := y + ExtraToSpreadDEMs(DEMIXShort[i], 1.5);
                 v[3] := ConvertPlatformColorToTColor(DEMIXColorFromDEMName(DEMIXShort[i]));
                 BlockWrite(rfile,v,1);
             end;
