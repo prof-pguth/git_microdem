@@ -3,13 +3,14 @@ inherited RangeCircleForm: TRangeCircleForm
   Top = 131
   BorderIcons = []
   Caption = 'Select Range Circles (Meters)'
-  ClientHeight = 250
-  ClientWidth = 394
+  ClientHeight = 248
+  ClientWidth = 386
   Position = poDefaultSizeOnly
+  StyleElements = [seFont, seClient, seBorder]
   OnCreate = FormCreate
-  ExplicitWidth = 412
-  ExplicitHeight = 297
-  TextHeight = 20
+  ExplicitWidth = 402
+  ExplicitHeight = 287
+  TextHeight = 15
   inherited Bevel1: TBevel
     Width = 185
     Height = 177
@@ -19,15 +20,15 @@ inherited RangeCircleForm: TRangeCircleForm
   object Label1: TLabel [1]
     Left = 32
     Top = 16
-    Width = 42
-    Height = 20
+    Width = 33
+    Height = 15
     Caption = 'Range'
   end
   object Label2: TLabel [2]
     Left = 104
     Top = 16
-    Width = 40
-    Height = 20
+    Width = 32
+    Height = 15
     Caption = 'Name'
   end
   inherited OKBtn: TButton

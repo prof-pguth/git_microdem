@@ -2,8 +2,8 @@ object SolorPosForm1: TSolorPosForm1
   Left = 49
   Top = 62
   Caption = 'Solar Position V2.0'
-  ClientHeight = 573
-  ClientWidth = 810
+  ClientHeight = 579
+  ClientWidth = 815
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -317,13 +317,15 @@ object SolorPosForm1: TSolorPosForm1
   end
   object StaticText1: TStaticText
     Left = 0
-    Top = 556
-    Width = 810
+    Top = 562
+    Width = 815
     Height = 17
     Cursor = crHandPoint
     Align = alBottom
     Alignment = taCenter
-    Caption = 'Copyright  '#169' 2003-2005, Gary Darby,  www.DelphiForFun.org'
+    Caption = 
+      'Copyright  '#169' 2003-2005, Gary Darby,  www.DelphiForFun.org   Some' +
+      ' changes to incorporate in MICRODEM'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlue
     Font.Height = -11
@@ -332,6 +334,6 @@ object SolorPosForm1: TSolorPosForm1
     ParentFont = False
     TabOrder = 5
     OnClick = StaticText1Click
-    ExplicitWidth = 293
+    ExplicitWidth = 514
   end
 end

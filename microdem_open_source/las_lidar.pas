@@ -83,7 +83,7 @@ type
    tLASHeader = packed record
       FileSignature : array[1..4] of ANSIchar;
       FileSourceID,
-      GlobalEncoding : word;      //bit 0 is standard GPS time minus 10^9, and bit 4 is WKT georef
+      GlobalEncoding : word;    //bit 0 is standard GPS time minus 10^9, and bit 4 is WKT georef
       GUID_data1 : cardinal;
       GUID_data2,
       GUID_data3 : word;
@@ -440,9 +440,6 @@ uses
       Thread_Timers,
       Slicer_3D,
       KML_Creator,
-   {$EndIf}
-   {$IfDef OldOpenGL}
-      //ogl_DEMOpenGLMain,
    {$EndIf}
    PetDBUtils,
    DEMCoord, DEMDef_routines,

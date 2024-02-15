@@ -901,7 +901,7 @@ begin
        LasName := NextFileNumber(MDtempDir, 'wbidw_dtm_','.las');
        LasFiles[i].ExtractGroundPoints(LasName);
        DTMname := NextFileNumber(MdtempDir, LasFiles[i].CloudName + '_wbidw_dtm_','.tif');
-       WBIDWCreate(LasName,DTMName,MDdef.DefLidarXGridSize);
+       WBT_IDWCreate(LasName,DTMName,MDdef.DefLidarXGridSize);
     end;
 end;
 
@@ -914,7 +914,7 @@ begin
        LasName := NextFileNumber(MDtempDir, 'wb_near_neigh_','.las');
        LasFiles[i].ExtractGroundPoints(LasName);
        DTMname := NextFileNumber(MdtempDir, LasFiles[i].CloudName + '_wb_near_neigh_dtm_','.tif');
-       WBNearNeighCreate(LasName,DTMName,MDdef.DefLidarXGridSize);
+       WBT_BNearNeighCreate(LasName,DTMName,MDdef.DefLidarXGridSize);
     end;
 end;
 
@@ -1995,7 +1995,7 @@ begin
          if CheckBox1.Checked then begin
             fName := ChangeFileExt(LasFiles[Cloud].LAS_fnames.Strings[0],DefaultDBExt);
             if OpenNumberedGISDataBase(GISNum,fName) then  begin
-               DEMDBFilter.GetFilterString(GISdb[GISNum],TheFilter,ChangeUse);
+               DEMDBFilter.GetFilterString(GISNum,TheFilter,ChangeUse);
                CloseAndNilNumberedDB(GISNum);
             end;
          end;
@@ -2525,9 +2525,9 @@ begin
       fName := LasFiles[1].LAS_fnames.strings[i];
       FinalName := NewDir + NewString + '_' + ExtractFilename(fName);
 
-      if (WhatProcess = wpWBClass) then cmd := WhiteBoxGroundClassify(fName,FinalName);
-      if (WhatProcess = wpWBSegClass) then cmd := WhiteBoxLidarSegmentationBasedFilter(fName,FinalName);
-      if (WhatProcess = wpWBDenoise) then cmd := WhiteBoxDenoise(fName,FinalName);
+      if (WhatProcess = wpWBClass) then cmd := WBT_GroundClassify(fName,FinalName);
+      if (WhatProcess = wpWBSegClass) then cmd := WBT_LidarSegmentationBasedFilter(fName,FinalName);
+      if (WhatProcess = wpWBDenoise) then cmd := WBT_DeNoise(fName,FinalName);
 
       if (WhatProcess = wpFusionClass) then cmd :=  ProgramRootDir + 'fusion\groundfilter ' + FinalName + ' ' + RealToString(MDdef.DefLidarXGridSize,-12,-29) + ' ' + fName;
 
@@ -3310,7 +3310,7 @@ begin
        LasName := NextFileNumber(MDtempDir, 'wbidw_dtm_','.las');
        LasFiles[i].ExtractGroundPoints(LasName);
        DTMname := NextFileNumber(MdtempDir, LasFiles[i].CloudName + '_wbidw_dtm_','.tif');
-       WBIDWCreate(LasName,DTMName,MDdef.DefLidarXGridSize);
+       WBT_IDWCreate(LasName,DTMName,MDdef.DefLidarXGridSize);
     end;
 end;
 

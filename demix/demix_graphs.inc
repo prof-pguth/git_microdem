@@ -8,71 +8,148 @@
 {____________________________________}
 
 
-      function OpenGraphForCriterionScoresOrEvaluations(DBonTable : integer; theCrit,theSort : shortstring; VertAxisNumerical,GraphEvaluation : boolean) : tThisBaseGraph;
-      var
-         i : integer;
-         aMinVal,aMaxVal : float64;
-         //TStr : shortstring;
-      begin
-         Result:= tThisBaseGraph.Create(Application);
-         Result.Width := 750;
-         Result.Height := 1500;
-         Result.GraphDraw.BottomMargin := 75;
-         Result.GraphDraw.ShowHorizAxis1 := true;
-         Result.GraphDraw.HorizLabel := theCrit;
-         Result.Caption := GISdb[DBonTable].DBName + ' ' + theCrit;
-         if VertAxisNumerical then begin
-            GISdb[DBonTable].MyData.FindFieldRange(theSort,aMinVal,aMaxVal);
-            Result.GraphDraw.MinVertAxis := aMinVal;
-            Result.GraphDraw.MaxVertAxis := aMaxVal;
-         end
-         else begin
-            Result.GraphDraw.MinVertAxis := 0;
-            Result.GraphDraw.MaxVertAxis := 10 * GISdb[DBonTable].MyData.FiltRecsInDB + 10;
-         end;
+function AdjustFilterForDTMandAll(DB : integer; Base : shortstring) : shortstring;
+begin
+   Result := Base;
+   if GISdb[DB].MyData.FieldExists('REF_TYPE') then Result := Result +  ' AND REF_TYPE=' + QuotedStr('DTM');
+   if GISdb[DB].MyData.FieldExists('LAND_TYPE') then Result := Result +  ' AND LAND_TYPE=' + QuotedStr('ALL');
+end;
 
-         Result.GraphDraw.MaxHorizAxis := -99999;
-         Result.GraphDraw.MinHorizAxis := 99999;
-         if GraphEvaluation then begin
-            //Tstr := '_SCR';
+type
+   tDEMIXfloats = array[1..MaxDEMIXDEM] of float32;
 
-            for i := 1 to NumDEMIXDEM do begin
-               GISdb[DBonTable].EmpSource.Enabled := false;
-               GISdb[DBonTable].MyData.FindFieldRange(DEMIXShort[i],aMinVal,aMaxVal);
-               if (aminVal < Result.GraphDraw.MinHorizAxis - 0.05) then Result.GraphDraw.MinHorizAxis := aMinVal - 0.05;
-               if (amaxval > Result.GraphDraw.MaxHorizAxis + 0.05) then Result.GraphDraw.MaxHorizAxis := aMaxVal + 0.05;
-            end;
+
+procedure ComputeAverageScoresForSelectedCriteria(db : integer; CriteriaList : tStringList; var Scores : tDEMIXfloats; var NumTies : integer; var WinnerString : shortstring);
+var
+   i,Opinions : integer;
+   Criterion : shortstring;
+   LowScore : float32;
+begin
+   GISdb[DB].EmpSource.Enabled := false;
+   for i := 1 to NumDEMIXDEM do Scores[i] := 0;
+   Opinions := 0;
+   while not GISdb[DB].MyData.eof do begin
+      Criterion := GISdb[DB].MyData.GetFieldByNameAsString('CRITERION');
+      if (CriteriaList.IndexOf(Criterion) <> -1) then begin
+         inc(Opinions);
+         for i := 1 to NumDEMIXDEM do begin
+            Scores[i] := Scores[i] + GISdb[DB].MyData.GetFieldByNameAsFloat(DEMIXShort[i] + '_SCR');
          end;
+      end;
+      GISdb[DB].MyData.Next;
+   end;
+   for I := 1 to NumDEMIXDEM do Scores[i] := Scores[i] / Opinions;
+   LowScore := 999;
+   WinnerString := '';
+   for I := 1 to NumDEMIXDEM do begin
+      if Scores[i] < LowScore - 0.001 then begin
+         LowScore := Scores[i];
+         WinnerString := DEMIXShort[i];
+         NumTies := 1;
+      end
+      else if Scores[i] < LowScore + 0.001 then begin
+         WinnerString := WinnerString + ';' + DEMIXShort[i];
+         inc(NumTies);
+      end;
+   end;
+end;
+
+
+function OpenGraphForCriterionScoresOrEvaluations(DBonTable : integer; theCrit,theSort : shortstring; VertAxisNumerical,GraphEvaluation : boolean) : tThisBaseGraph;
+var
+   i : integer;
+   aMinVal,aMaxVal,Range : float64;
+   bmp : tMyBitmap;
+begin
+   Result:= tThisBaseGraph.Create(Application);
+   Result.Width := 800;
+   Result.Height := 1500;
+   Result.GraphDraw.BottomMargin := 75;
+   Result.GraphDraw.ShowHorizAxis1 := true;
+   Result.GraphDraw.HorizLabel := theCrit;
+   Result.Caption := GISdb[DBonTable].DBName + ' ' + theCrit;
+   if VertAxisNumerical then begin
+      GISdb[DBonTable].MyData.FindFieldRange(theSort,aMinVal,aMaxVal);
+      Result.GraphDraw.MinVertAxis := aMinVal;
+      Result.GraphDraw.MaxVertAxis := aMaxVal;
+   end
+   else begin
+      Result.GraphDraw.MinVertAxis := 0;
+      Result.GraphDraw.MaxVertAxis := 10 * GISdb[DBonTable].MyData.FiltRecsInDB + 10;
+   end;
+
+   Result.GraphDraw.BottomLegendFName := MDtempDir + 'DEM_DEM_Legend.bmp';
+   Result.GraphDraw.BottomMargin := 125;
+   bmp := DEMIXTestDEMLegend;
+   bmp.SaveToFile(Result.GraphDraw.BottomLegendFName);
+   bmp.Destroy;
+
+   Result.GraphDraw.MaxHorizAxis := -99999;
+   Result.GraphDraw.MinHorizAxis := 99999;
+   if GraphEvaluation then begin
+      for i := 1 to NumDEMIXDEM do begin
          GISdb[DBonTable].EmpSource.Enabled := false;
+         GISdb[DBonTable].MyData.FindFieldRange(DEMIXShort[i],aMinVal,aMaxVal);
+         if (aminVal < Result.GraphDraw.MinHorizAxis) then Result.GraphDraw.MinHorizAxis := aMinVal;
+         if (amaxval > Result.GraphDraw.MaxHorizAxis) then Result.GraphDraw.MaxHorizAxis := aMaxVal;
       end;
+      Range := Result.GraphDraw.MaxHorizAxis - Result.GraphDraw.MinHorizAxis;
+      Result.GraphDraw.MinHorizAxis := Result.GraphDraw.MinHorizAxis - 0.05 * Range;
+      Result.GraphDraw.MaxHorizAxis := Result.GraphDraw.MaxHorizAxis + 0.05 * Range;
+   end;
+   GISdb[DBonTable].EmpSource.Enabled := false;
+end;
 
-      procedure SetHorizAxisForDEMIXscores(var Graph : tThisBaseGraph);
-      begin
-          Graph.GraphDraw.MinHorizAxis := 0.5;
-          Graph.GraphDraw.MaxHorizAxis := 6.5;
-      end;
+
+procedure SetHorizAxisForDEMIXscores(var Graph : tThisBaseGraph);
+begin
+    Graph.GraphDraw.MinHorizAxis := 0.5;
+    Graph.GraphDraw.MaxHorizAxis := NumDEMIXDEM + 0.5;
+end;
+
 
 
 
 function GraphAverageScoresByTile(DB : integer; TileList,CriteriaList : tStringList): tThisBaseGraph;
+//graph with all tiles in the TileList on the Y axis, and the average Score for each DEM for all criteria in the CriteriaList on the x axis
 var
-   Tile,Crit,i,j : integer;
-   Scores : array[1..MaxDEMIXDEM] of float32;
+   Tile,Crit,i,j,NumTies : integer;
+   Scores : tDEMIXfloats;
+   aline,Filter,OldFilter,WinnerString,
    Criterion : shortString;
-   Extra : float32;
+   Extra,LowScore : float32;
    rfile : file;
    v : array[1..3] of float32;
+   SummaryCSV : tStringList;
+   fName : PathStr;
 begin
+   OldFilter := GISdb[DB].MyData.Filter;
+   HeavyDutyProcessing := true;
+   if (CriteriaList = Nil) then  begin
+      GISdb[DB].EmpSource.Enabled := false;
+      CriteriaList := GISdb[DB].MyData.UniqueEntriesInDB('CRITERION');
+   end;
+   if (TileList = Nil) then begin
+      GISdb[DB].EmpSource.Enabled := false;
+      TileList := GISdb[DB].MyData.UniqueEntriesInDB('DEMIX_TILE');
+   end;
    {$If Defined(RecordDEMIX_evaluations_graph)}
       WriteLineToDebugFile('GraphAverageScoresByTile, Criteria=' + IntToStr(CriteriaList.Count) + ' tiles=' + IntToStr(TileList.Count));
       WriteStringListToDebugFile(CriteriaList);
    {$EndIf}
+
    ShowHourglassCursor;
+
+   SummaryCSV := tStringList.Create;
+   aLine :='DEMIX_TILE,AREA';
+   for i := 1 to NumDEMIXDEM do aline := aline + ',' + DEMIXShort[i] + '_SCR';
+   aline := aline + ',' + 'DEM_LOW_SC,NUM_TIES';
+   SummaryCSV.Add(aline);
 
    Result := OpenGraphForCriterionScoresOrEvaluations(DB,'','',false,false);
    SetHorizAxisForDEMIXscores(Result);
    Result.OpenXYColorFile(rfile);
-   Result.GraphDraw.HorizLabel := 'Average score, ' + IntToStr(CriteriaList.Count) + ' criteria';
+   Result.GraphDraw.HorizLabel := 'Average tile score, ' + IntToStr(CriteriaList.Count) + ' criteria';
    Result.GraphDraw.MaxVertAxis := TileList.Count + 1;
    Result.GraphDraw.ShowHorizAxis1 := false;
 
@@ -83,38 +160,121 @@ begin
    Result.GraphDraw.LeftMargin := 150;
 
    {$If Defined(RecordDEMIX_evaluations_graph)} WriteLineToDebugFile('GraphAverageScoresByTile graph set up'); {$EndIf}
-
+   //StartProgress('Tile average scores');
    for Tile := 0 to pred(TileList.Count) do begin
-      wmdem.SetPanelText(1,IntToStr(succ(Tile)) + '/' + IntToStr(TileList.Count) + '  ' + TileList.Strings[Tile]);
-      GISdb[DB].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(TileList.Strings[Tile]) + ' AND REF_TYPE=' + QuotedStr('DTM') + ' AND LAND_TYPE=' + QuotedStr('ALL'));
-      GISdb[DB].EmpSource.Enabled := false;
-      Result.GraphDraw.GraphLeftLabels.Add(IntToStr(Succ(Tile)) + ',' + GISdb[DB].MyData.GetFieldByNameAsString('DEMIX_TILE'));
-
-      for i := 1 to NumDEMIXDEM do Scores[i] := 0;
-      while not GISdb[DB].MyData.eof do begin
-         Criterion := GISdb[DB].MyData.GetFieldByNameAsString('CRITERION');
-         if (CriteriaList.IndexOf(Criterion) <> -1) then begin
-            for i := 1 to NumDEMIXDEM do begin
-               Scores[i] := Scores[i] + GISdb[DB].MyData.GetFieldByNameAsFloat(DEMIXShort[i] + '_SCR');
-            end;
-         end;
-         GISdb[DB].MyData.Next;
-      end;
-      for I := 1 to NumDEMIXDEM do Scores[i] := Scores[i] / CriteriaList.Count;
-
+      //UpdateProgressBar(succ(Tile) / TileList.Count);
+      WMDEM.SetPanelText(3,IntToStr(Tile) + '/' + IntToStr(TileList.Count) );
+      Filter := AdjustFilterForDTMandAll(DB,'DEMIX_TILE=' + QuotedStr(TileList.Strings[Tile]));
+      GISdb[DB].ApplyGISFilter(Filter);
+      Result.GraphDraw.GraphLeftLabels.Add(IntToStr(Succ(Tile)) + ',' + TileList.Strings[Tile]);
+      ComputeAverageScoresForSelectedCriteria(DB,CriteriaList,Scores,NumTies,WinnerString);
+      aline := TileList.Strings[Tile] + ',' + GISdb[DB].MyData.GetFieldByNameAsString('AREA');
       for I := 1 to NumDEMIXDEM do begin
+          aline := aline + ',' + RealToString(Scores[i],-12,-4);
           v[1] := Scores[i];
           v[2] := succ(Tile) + ExtraToSpreadDEMs(DEMIXShort[i],0.15);
           v[3] := ConvertPlatformColorToTColor(DEMIXColorFromDEMName(DEMIXShort[i]));
           BlockWrite(rfile,v,1);
       end;
+      SummaryCSV.Add(aline + ',' + WinnerString + ',' + IntToStr(NumTies));
    end;
    CloseFile(rfile);
    Result.RedrawDiagram11Click(Nil);
-   GISdb[DB].ClearGISFilter;
-   GISdb[DB].ShowStatus;
+   GISdb[DB].ApplyGISFilter(OldFilter);
+   //GISdb[DB].ShowStatus;
+
+   fName := NextFileNumber(MDTempDir,MDTempDir + GISDB[DB].DBName + '_tile_average_scores_','.dbf');
+   StringList2CSVtoDB(SummaryCSV,fName);
+   HeavyDutyProcessing := false;
+
    {$If Defined(RecordDEMIX_evaluations_graph)} WriteLineToDebugFile('GraphAverageScoresByTile graph out'); {$EndIf}
 end;
+
+
+
+procedure DEMIX_AreaAverageScores_graph(DBonTable : integer);
+//graph of average scores for all parameters, with area names
+var
+   Criteria,Areas : tStringList;
+   rfile : file;
+   pn,NumTies : integer;
+   v : array[1..3] of float32;
+   SaveFilter,WinnerString : shortstring;
+   Scores : tDEMIXfloats;
+
+      function Graph : tThisBaseGraph;
+      var
+        y,i,j,DEM : integer;
+        fName : PathStr;
+        bmp : tMyBitmap;
+        aline : shortstring;
+        SummaryCSV : tStringList;
+      begin
+         //{$If Defined(RecordDEMIX_evaluations_graph)} WriteLineToDebugFile('GraphForOneCriterionWithTileNames, Criterion=' + TheCrit + '  n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB)); {$EndIf}
+         SummaryCSV := tStringList.Create;
+         aLine :='AREA';
+         for i := 1 to NumDEMIXDEM do aline := aline + ',' + DEMIXShort[i] + '_SCR';
+         aline := aline + ',' + 'DEM_LOW_SC,NUM_TIES';
+         SummaryCSV.Add(aline);
+
+
+         Result := OpenGraphForCriterionScoresOrEvaluations(dbOnTable,'','',false,false);
+         Result.OpenXYColorFile(rfile);
+         Result.GraphDraw.ShowHorizAxis1 := false;
+         Result.GraphDraw.VertLabel := '';
+         Result.GraphDraw.GraphLeftLabels := tStringList.Create;
+         Result.GraphDraw.GraphAxes := XPartGridOnly;
+         Result.GraphDraw.LeftMargin := 150;
+         Result.GraphDraw.MinVertAxis := 0;
+         Result.GraphDraw.MaxVertAxis := Areas.Count * 10 + 15;
+         Result.GraphDraw.MinHorizAxis := 1;
+         Result.GraphDraw.MaxHorizAxis := 7;
+         Result.GraphDraw.HorizLabel := 'Average area score, ' + IntToStr(Criteria.Count) + ' criteria';
+
+         y := 5;
+
+         for j := 0 to pred(Areas.Count) do begin
+            WMDEM.SetPanelText(3,IntToStr(j) + '/' + IntToStr(Areas.Count)  + '  ' + Areas.Strings[j]);
+
+            GISdb[DBonTable].ApplyGISFilter('AREA=' + QuotedStr(Areas.Strings[j]));
+            Result.GraphDraw.GraphLeftLabels.Add(IntToStr(y) + ',' + Areas.Strings[j]);
+            ComputeAverageScoresForSelectedCriteria(DBonTable,Criteria,Scores,NumTies,WinnerString);
+            aline := Areas.Strings[j];
+            for I := 1 to NumDEMIXDEM do begin
+                aline := aline + ',' + RealToString(Scores[i],-12,-4);
+                v[1] := Scores[i];
+                v[2] := y + ExtraToSpreadDEMs(DEMIXShort[i], 1.5);
+                v[3] := ConvertPlatformColorToTColor(DEMIXColorFromDEMName(DEMIXShort[i]));
+                BlockWrite(rfile,v,1);
+            end;
+            SummaryCSV.Add(aline + ',' + WinnerString + ',' + IntToStr(NumTies));
+            y := y + 10;
+         end;
+         CloseFile(rfile);
+         Result.RedrawDiagram11Click(Nil);
+         fName := NextFileNumber(MDTempDir,MDTempDir + GISDB[DBonTable].DBName + '_test_area_average_scores_','.dbf');
+         StringList2CSVtoDB(SummaryCSV,fName);
+      end;
+
+begin {DEMIX_evaluations_graph}
+   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_AreaAverageScores_graph in,  n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB)); {$EndIf}
+   try
+      HeavyDutyProcessing := true;
+      LoadDEMIXnames;
+      SaveFilter := GISDB[DBonTable].MyData.Filter;
+      GISdb[DBonTable].EmpSource.Enabled := false;
+      Criteria := GISdb[DBonTable].MyData.UniqueEntriesInDB('CRITERION');
+      GISdb[DBonTable].EmpSource.Enabled := false;
+      Areas := GISdb[DBonTable].MyData.UniqueEntriesInDB('AREA');
+      Areas.Sort;
+      Graph;
+   finally
+      GISDB[DBonTable].MyData.Filter := SaveFilter;
+      GISdb[DBonTable].ShowStatus;
+      HeavyDutyProcessing := false;
+   end;
+end {DEMIX_evaluations_graph};
+
 
 
 procedure DEMIX_evaluations_graph(DBonTable : integer);
@@ -136,8 +296,7 @@ var
          Result.GraphDraw.GraphLeftLabels := tStringList.Create;
          Result.GraphDraw.MinVertAxis := 0;
          Result.GraphDraw.MaxVertAxis := 10 * GISdb[DBonTable].MyData.FiltRecsInDB + 10;
-         Result.GraphDraw.ShowHorizAxis1 := true;
-         Result.GraphDraw.BottomMargin := 75;
+         //Result.GraphDraw.ShowHorizAxis1 := true;
          Result.GraphDraw.ShowHorizAxis1 := false;
 
          GISdb[DBonTable].MyData.First;
@@ -160,25 +319,23 @@ var
       var
         y,i,DEM : integer;
         fName : PathStr;
+        bmp : tMyBitmap;
       begin
          {$If Defined(RecordDEMIX_evaluations_graph)} WriteLineToDebugFile('GraphForOneCriterionWithTileNames, Criterion=' + TheCrit + '  n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB)); {$EndIf}
-
-         (*
-         SaveDBNumber := DBonTable;
-         SortDataBase(DBOnTable,true,'DEMIX_TILE');
-         fName := NextFileNumber(MDTempDir,'sorted_','.dbf');
-         GISdb[DBonTable].SaveCurrentDBaseSubset(fName,1,true);
-         OpenNumberedGISDataBase(DBOnTable,fName);
-         *)
-
          Result := OpenGraphForCriterionScoresOrEvaluations(dbOnTable,theCrit,'',false,true);
+
          Result.OpenXYColorFile(rfile);
 
          Result.GraphDraw.VertLabel := '';
          Result.GraphDraw.GraphLeftLabels := tStringList.Create;
-
          Result.GraphDraw.GraphAxes := XPartGridOnly;
-         Result.GraphDraw.LeftMargin := 150;
+         if GISdb[DBonTable].MyData.FiltRecsInDB > 200 then begin
+            Result.GraphDraw.LeftMargin := 10;
+            Result.GraphDraw.ShowGraphLeftLabels := false;
+         end
+         else begin
+            Result.GraphDraw.LeftMargin := 150;
+         end;
 
          y := 5;
          GISdb[DBonTable].MyData.First;
@@ -189,15 +346,13 @@ var
                 v[1] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(DEMIXShort[i]);
                 v[2] := y + ExtraToSpreadDEMs(DEMIXShort[i], 1.5);
                 v[3] := ConvertPlatformColorToTColor(DEMIXColorFromDEMName(DEMIXShort[i]));
-                BlockWrite(rfile,v,1);
+                if (v[1] > -999) then BlockWrite(rfile,v,1);
             end;
             y := y + 10;
             GISdb[DBonTable].MyData.Next;
          end;
          CloseFile(rfile);
          Result.RedrawDiagram11Click(Nil);
-         //CloseAndNilNumberedDB(DBonTable);
-         //DBonTable := SaveDBNumber;
       end;
 
 
@@ -212,6 +367,8 @@ var
          if (TheSort = '') or GISdb[DBonTable].MyData.FieldExists(TheSort) then begin
             if (Criteria.Count > 1) then BigGraph := tstringList.Create;
             for j := 0 to pred(Criteria.Count) do begin
+               if (Criteria.Count > 1) then GISdb[DBonTable].ApplyGISFilter('CRITERION=' + QuotedStr(Criteria.Strings[j]));
+
                if (TheSort = '') then Graph := GraphForOneCriterionWithTileNames(Criteria.Strings[j])
                else Graph := SortedGraphForOneCriterion(Criteria.Strings[j],TheSort);
                if (Criteria.Count > 1) then begin
@@ -223,6 +380,7 @@ var
             if (Criteria.Count > 1) then begin
                fName := NextFileNumber(MDTempDir,GraphName + '_','.png');
                MakeBigBitmap(BigGraph,'',fName,Criteria.Count);
+               GISdb[DBonTable].ClearGISFilter;
             end;
          end;
       end;
@@ -231,7 +389,6 @@ begin {DEMIX_evaluations_graph}
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_evaluations_graph in,  n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB)); {$EndIf}
    try
       LoadDEMIXnames;
-      //GISdb[DBonTable].ClearGISfilter;
       GISdb[DBonTable].EmpSource.Enabled := false;
       Criteria := GISdb[DBonTable].MyData.UniqueEntriesInDB('CRITERION');
       Criteria.Sort;
@@ -241,7 +398,6 @@ begin {DEMIX_evaluations_graph}
          //MakeAllGraphs('RELIEF','Sort_by_relief');
       end;
    finally
-      //GISdb[DBonTable].ClearGISfilter;
       GISdb[DBonTable].ShowStatus;
    end;
 end {DEMIX_evaluations_graph};
@@ -250,7 +406,7 @@ end {DEMIX_evaluations_graph};
 procedure MultipleBestByParametersSortByValue(DBonTable,Option : integer; var DEMsTypeUsing,TilesUsing,LandTypesUsing,CandidateDEMsUsing,CriteriaUsing,TileParameters : tStringList; ByPointFilters : boolean = false);
 //Option = 0 Sort by tile parameters, DEM type, graph for each criterion
 //Option = 1 Sort by tile parameters, graph by DEM type and Land Type, merged all 15 criteria
-//Option = 2 Sort by tile paramaters, each criterion, and graph by DEM type and Land type
+//Option = 2 Sort by tile parameters, each criterion, and graph by DEM type and Land type
 //Option = 3 Sort by tile parameters, graph by criterion and DEM type
 var
    BigBitmap : tMyBitmap;

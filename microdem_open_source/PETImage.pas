@@ -1780,11 +1780,6 @@ var
    Starter,Ender,
    xp,yp : integer;
 begin
-   //Starter := -( (Size-3) div 2);
-   //if Starter < 1 then Starter := 1;
-   //Ender := ( (Size) div 2);
-   //if Ender < 1 then Ender := 1;
-   //if Size = 1 then b
    Starter := 0;
    Ender := 0;
    if Size >= 2 then dec(starter);

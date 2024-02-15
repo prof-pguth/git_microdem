@@ -176,6 +176,7 @@ type
 
          SatBands       : shortstring;
 
+         BottomLegendFName,
          DataFilesPlottedTable : PathStr;
          LegendList,
          HistogramFileList,
@@ -187,7 +188,7 @@ type
          XYColorFilesPlotted,
          DataFilesPlotted,
          DBFPointFilesPlotted,
-         DBFLineFilesPlotted      : tStringList;    {list of temporary files with data plotted on graph.  Files deleted when window closes.}
+         DBFLineFilesPlotted    : tStringList;    {list of temporary files with data plotted on graph.  Files deleted when window closes.}
 
           constructor Create;
           destructor Destroy;
@@ -433,7 +434,6 @@ type
      MouseIsDown : boolean;
      Symbol : tFullSymbolDeclaration;
      VertCompare,UserContourInterval,MaxZ,MinZ,MinZShow   : float32;
-     //BinSize,
      sx,sy,
      TernarySymSize,
      BoxLineWidth,
@@ -449,7 +449,8 @@ type
      GraphName,
      BaseCaption,
      RoseLegend,
-     DBFXFieldName,DBFYFieldName,
+     DBFXFieldName,
+     DBFYFieldName,
      GraphFilter : shortstring;
      DataBaseFilter : string;
      XField,YField : string[35];
@@ -2509,6 +2510,7 @@ var
 var
    x1,y1,i,y : integer;
    TStr : shortstring;
+   LegBMP : tMyBitmap;
 begin {proc CreateGraphAxes}
    {$If Defined(RecordGrafAxis)} WriteLineToDebugFile('tThisBaseGraph.CreateGraphAxes in, ' + GraphDraw.AxisRange); {$EndIf}
    with GraphDraw do begin
@@ -2618,6 +2620,15 @@ begin {proc CreateGraphAxes}
             end;
          end;
       end;
+
+      if (BottomLegendFName <> '') then begin
+         LegBMP := LoadBitmapFromFile(BottomLegendFName);
+         y1 := Bitmap.Height - LegBMP.Height - 4;
+         x1 := (Bitmap.Width - LegBMP.Width) div 2;
+         Bitmap.Canvas.Draw(X1,y1,LegBmp);
+         LegBMP.Free;
+      end;
+
 
       if (GraphDraw.GraphBottomLabels <> Nil) and (GraphDraw.GraphBottomLabels.Count > 0) and GraphDraw.ShowGraphBottomLabels then begin
          for I := 1 to GraphDraw.GraphBottomLabels.Count do begin
@@ -3752,6 +3763,7 @@ begin
      GraphDraw.GraphLeftLabels := Nil;
      GraphDraw.GraphBottomLabels := Nil;
      GraphDraw.DataFilesPlottedTable := '';
+     GraphDraw.BottomLegendFName := '';
      GraphDraw.ForcePrinterDPI := false;
      GraphDraw.UserSetVertCycles := false;
      GraphDraw.UserSetHorizCycles := false;
@@ -4583,6 +4595,8 @@ var
    j : integer;
    xutm,yutm : float32;
 begin
+   if HeavyDutyProcessing then exit;
+
     wmdem.StatusBar1.Panels[1].Text := 'graph x=' + RealToString(GraphDraw.InvGraphX(X),-12,2) + '  y=' + RealToString(GraphDraw.InvGraphY(Y),-12,2);
 
    if MouseIsDown and ScrollGraph and (GraphDoing = gdDoingNothing) and (not DragResize1.Checked) then begin

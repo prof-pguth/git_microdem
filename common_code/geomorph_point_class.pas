@@ -4,7 +4,7 @@ unit geomorph_point_class;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -306,7 +306,7 @@ end;
 
 procedure TPointClassForm.BitBtn7Click(Sender: TObject);
 begin
-   WhiteBoxPennockLandformClass(MapOwner.GeotiffDEMNameOfMap,CheckBox2.Checked);
+   WBT_PennockLandformClass(MapOwner.GeotiffDEMNameOfMap,CheckBox2.Checked);
 end;
 
 

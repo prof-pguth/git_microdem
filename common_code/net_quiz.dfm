@@ -2,8 +2,8 @@ object NetQuizForm: TNetQuizForm
   Left = 0
   Top = 0
   Caption = 'Stereo net quiz'
-  ClientHeight = 220
-  ClientWidth = 433
+  ClientHeight = 239
+  ClientWidth = 435
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -87,14 +87,14 @@ object NetQuizForm: TNetQuizForm
     OnClick = BitBtn2Click
   end
   object Memo1: TMemo
-    Left = 186
+    Left = 188
     Top = 0
     Width = 247
-    Height = 220
+    Height = 239
     Align = alRight
     TabOrder = 4
-    ExplicitLeft = 192
-    ExplicitHeight = 229
+    ExplicitLeft = 182
+    ExplicitHeight = 219
   end
   object BitBtn3: TBitBtn
     Left = 84

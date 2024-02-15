@@ -4,8 +4,8 @@ object PointClassForm: TPointClassForm
   Top = 401
   BorderIcons = []
   Caption = 'Point classification map'
-  ClientHeight = 549
-  ClientWidth = 500
+  ClientHeight = 570
+  ClientWidth = 519
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,15 +19,15 @@ object PointClassForm: TPointClassForm
   OnCreate = FormCreate
   TextHeight = 13
   object Memo1: TMemo
-    Left = 307
+    Left = 326
     Top = 0
     Width = 193
-    Height = 549
+    Height = 570
     Align = alRight
     ScrollBars = ssVertical
     TabOrder = 0
-    ExplicitLeft = 319
-    ExplicitHeight = 552
+    ExplicitLeft = 307
+    ExplicitHeight = 549
   end
   object PageControl1: TPageControl
     Left = 0

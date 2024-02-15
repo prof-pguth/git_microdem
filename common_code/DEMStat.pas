@@ -21,6 +21,7 @@ unit DEMStat;
       //{$Define RecordDEMIX_colors}
       {$Define RecordSSIM}
       {$Define RecordDEMIX}
+      {$Define RepeatProblematicComputations}
       //{$Define RecordCovariance}
       //{$Define TrackSWCornerForComputations}  //must also be defined in DEMCoord
       //{$Define RecordSSIMNormalization}
@@ -266,72 +267,9 @@ type
 var
    Count : array[1..MaxDEMDataSets] of ^CountType;
 
-const
-   NumPt = 6;
-   NumArea = 1;
-   PointNames : array[0..NumPt] of shortstring = ('REF_POINT','ASTER','COP','FABDEM','NASA','SRTM','TANDEM');
-   AreaNames : array[0..NumArea] of shortstring = ('REF_AREA','ALOS');
-type
-   tDEM_int_array = array [0..NumPt] of integer;
-var
-   PointDEMs : tDEM_int_array;   //0 is the reference, rest the test DEMs
-   AreaDEMs : tDEM_int_array;  //0 is the reference, rest the test DEMs
-
-
-function OpenBothPixelIsDEMs(Area,Prefix : shortstring; RefDir,TestDir : PathStr; OpenMaps : boolean) : boolean;
-//opens the reference DTMs, for both pixel-is-point and pixel-is-area
-const
-   Ext = '.tif';
-var
-   fName : PathStr;
-   i : integer;
-
-   procedure TryToOpen(fName : PathStr; var DEM : integer);
-   begin
-      //if not FileExists(fName) then fName := ChangeFileExt(fName,'.dem');
-      if FileExists(fName) then begin
-         DEM := OpenNewDEM(fName,OpenMaps);
-         {$IfDef TrackSWCornerForComputations} DEMGlb[DEM].WriteToDebugSWCornerForComputations('OpenBothPixelIsDEMs'); {$EndIf}
-      end
-      else begin
-         {$IfDef RecordDEMIX} WriteLineToDebugFile('Missing file ' + fName); {$EndIf};
-         Result := false;
-      end;
-   end;
-
-begin
-    Result := true;
-
-    fName := RefDir + Prefix + area + '_dtm_ref_1sec_point' + Ext;
-    if not FileExists(fName) then fName := RefDir + Prefix + area + '_ref_1sec_point' + Ext;
-
-    TryToOpen(fName,PointDEMs[0]);
-    for i := 1 to NumPt do begin
-       fName := TestDir + Prefix + Area + '_' + PointNames[i]  + Ext;
-       TryToOpen(fName,PointDEMs[i]);
-    end;
-
-    fName := RefDir + Prefix + Area + '_dtm_ref_1sec_area' + Ext;
-    if not FileExists(fName) then fName := RefDir + Prefix + area + '_ref_1sec_area' + Ext;
-
-
-    TryToOpen(fName,AreaDEMs[0]);
-    for i := 1 to NumArea do begin
-       fName := TestDir + Prefix + Area + '_' + AreaNames[i]  + Ext;
-       TryToOpen(fName,AreaDEMs[i]);
-    end;
-
-    //for i := 0 to NumPt do WriteLineToDebugFile('Point=' + IntToStr(i) + '  DEM=' + IntToStr(PointDEMs[i]) + '  ' + DEMglb[PointDEMs[i]].AreaName + '  ' + DEMglb[PointDEMs[i]].ColsRowsString);
-    //for i := 0 to NumArea do WriteLineToDebugFile(' Area=' + IntToStr(i) + '  DEM=' + IntToStr(AreaDEMs[i]) + '  ' + DEMglb[AreaDEMs[i]].AreaName + '  ' + DEMglb[AreaDEMs[i]].ColsRowsString);
-
-end;
-
-
-
-
-
 
 {$I demstat_global_dems.inc}
+
 {$I demstat_ssim.inc}
 
 {$IfDef ExWaveLengthHeight}

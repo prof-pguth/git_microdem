@@ -95,25 +95,25 @@ begin
 end;
 
 
-function WhiteBoxGroundClassify(InName,OutName : PathStr) : shortString;
+function WBT_GroundClassify(InName,OutName : PathStr) : shortString;
 begin
    Result := WhiteBoxfName + ' -r=LidarGroundPointFilter -v -i=' + InName + ' -o=' + OutName + ' --radius=' + RealToString(MDDef.WBGroundClassRadius,-12,1);
 end;
 
 
-function WhiteBoxLidarSegmentationBasedFilter(InName,OutName : PathStr) : shortString;
+function WBT_LidarSegmentationBasedFilter(InName,OutName : PathStr) : shortString;
 begin
    Result := WhiteBoxfName + ' -r=LidarSegmentationBasedFilter -v -i=' + InName + ' -o=' + OutName + ' --radius=' + RealToString(MDDef.WBSegFilterRadius,-12,1);
 end;
 
 
-function WhiteBoxDeNoise(InName,OutName : PathStr) : shortString;
+function WBT_DeNoise(InName,OutName : PathStr) : shortString;
 begin
    Result := WhiteBoxfName + WBNoCompress + '-r=LidarRemoveOutliers -v -i=' + InName + ' -o=' + OutName + ' --radius=' + RealToString(MDDef.WBDeNoiseRadius,-12,1) + ' --elev_diff=' + RealToString(MDDef.WBDeNoiseElevDiff,-12,1);
 end;
 
 
-procedure WhiteBoxGridFillMissingData(InName : PathStr; TheElevUnits : tElevUnit);
+procedure WBT_GridFillMissingData(InName : PathStr; TheElevUnits : tElevUnit);
 var
    OutName : PathStr;
    cmd : ansistring;
@@ -126,7 +126,7 @@ begin
 end;
 
 
-function WhiteBoxSlopeMap(InName : PathStr) : integer;
+function WBT_SlopeMap(InName : PathStr) : integer;
 var
    cmd : ansistring;
    OutName : PathStr;
@@ -139,7 +139,7 @@ begin
 end;
 
 
-function WhiteBox_TRI(InName : PathStr) : integer;
+function WBT_TRI(InName : PathStr) : integer;
 var
    cmd : ansistring;
    OutName : PathStr;
@@ -151,7 +151,7 @@ begin
   end;
 end;
 
-function WhiteBox_AverageNormalVectorAngularDeviation(InName : PathStr; filtersize : integer) : integer;
+function WBT_AvgNormVectAngDev(InName : PathStr; filtersize : integer) : integer;
 var
    cmd : ansistring;
    OutName : PathStr;
@@ -163,7 +163,7 @@ begin
   end;
 end;
 
-function WhiteBox_CircularVarianceOfAspect(InName : PathStr; filtersize : integer) : integer;
+function WBT_CircularVarianceOfAspect(InName : PathStr; filtersize : integer) : integer;
 var
    cmd : ansistring;
    OutName : PathStr;
@@ -176,7 +176,7 @@ begin
 end;
 
 
-function WhiteBoxDrainageBasins(InName : PathStr) : integer;
+function WBT_DrainageBasins(InName : PathStr) : integer;
 //   2/2/2024, this produces way too many basins with both tools; size does not make much difference
 var
    cmd : ansistring;
@@ -203,7 +203,7 @@ begin
 end;
 
 
-procedure WhiteBoxMultiscaleRoughness(InName : PathStr);
+procedure WBT_MultiscaleRoughness(InName : PathStr);
 var
    cmd : ansistring;
    NewGrid : integer;
@@ -222,7 +222,7 @@ begin
 end;
 
 
-procedure WhiteBoxAspectMap(InName : PathStr);
+procedure WBT_AspectMap(InName : PathStr);
 var
    cmd : ansistring;
    OutName : PathStr;
@@ -235,7 +235,7 @@ begin
 end;
 
 
-procedure WhiteBoxGeotiffMetadata(InName : PathStr);
+procedure WBT_GeotiffMetadata(InName : PathStr);
 var
    cmd : ansistring;
    OutName : PathStr;
@@ -252,7 +252,7 @@ begin
 end;
 
 
-procedure WBNearNeighCreate(InName,OutName : PathStr; GridSize : float64);
+procedure WBT_BNearNeighCreate(InName,OutName : PathStr; GridSize : float64);
 var
    cmd : ansistring;
 begin
@@ -264,7 +264,7 @@ begin
 end;
 
 
-procedure WBIDWCreate(InName,OutName : PathStr; GridSize : float64);
+procedure WBT_IDWCreate(InName,OutName : PathStr; GridSize : float64);
 var
    cmd : ansistring;
 begin
@@ -276,7 +276,7 @@ begin
 end;
 
 
-function WhiteBoxProfileCurvature(InName : PathStr) : integer;
+function WBT_ProfileCurvature(InName : PathStr) : integer;
 var
    cmd : ansistring;
    OutName : PathStr;
@@ -289,7 +289,7 @@ begin
 end;
 
 
-function WhiteBoxTangentialCurvature(InName : PathStr) : integer;
+function WBT_TangentialCurvature(InName : PathStr) : integer;
 var
    cmd : ansistring;
    OutName : PathStr;
@@ -302,7 +302,7 @@ begin
 end;
 
 
-function WhiteBoxMinimalCurvature(InName : PathStr) : integer;
+function WBT_MinimalCurvature(InName : PathStr) : integer;
 var
    cmd : ansistring;
    OutName : PathStr;
@@ -315,7 +315,7 @@ begin
 end;
 
 
-function WhiteBoxMaximalCurvature(InName : PathStr) : integer;
+function WBT_MaximalCurvature(InName : PathStr) : integer;
 var
    cmd : ansistring;
    OutName : PathStr;
@@ -328,7 +328,7 @@ begin
 end;
 
 
-function WhiteBoxMeanCurvature(InName : PathStr) : integer;
+function WBT_MeanCurvature(InName : PathStr) : integer;
 var
    cmd : ansistring;
    OutName : PathStr;
@@ -341,7 +341,7 @@ begin
 end;
 
 
-function WhiteBoxGaussianCurvature(InName : PathStr) : integer;
+function WBT_GaussianCurvature(InName : PathStr) : integer;
 var
    cmd : ansistring;
    OutName : PathStr;
@@ -354,7 +354,7 @@ begin
 end;
 
 
-procedure WhiteBoxGeomorphons(InName : PathStr);
+procedure WBT_Geomorphons(InName : PathStr);
 var
    OutName : PathStr;
    bfile : tStringList;
@@ -374,7 +374,7 @@ begin
 end;
 
 
-procedure WhiteBoxPennockLandformClass(InName : PathStr; SmoothFirst : boolean);
+procedure WBT_PennockLandformClass(InName : PathStr; SmoothFirst : boolean);
 var
    tName,OutName : PathStr;
    bfile : tStringList;

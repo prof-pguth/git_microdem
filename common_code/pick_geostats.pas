@@ -409,8 +409,8 @@ begin
          {$IfDef RecordMapMaking} WriteLineToDebugFile('TPickGeoStat.BitBtn20Click CreateRoughnessSlopeStandardDeviationMap done'); {$EndIf}
          SaveDEM(DEM);
          {$IfDef RecordMapMaking} WriteLineToDebugFile('TPickGeoStat.BitBtn20Click DEM saved'); {$EndIf}
-         WhiteBox_AverageNormalVectorAngularDeviation(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap,Box);
-         WhiteBox_CircularVarianceOfAspect(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap,Box);
+         WBT_AvgNormVectAngDev(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap,Box);
+         WBT_CircularVarianceOfAspect(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap,Box);
          SagaVectorRuggednessMap(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap,Box);
          GrassVectorRuggedness(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap,Box);
          {$IfDef RecordMapMaking} WriteLineToDebugFile('TPickGeoStat.BitBtn20Click loope done, radius=' + IntToStr(Radius)); {$EndIf}
@@ -463,7 +463,7 @@ begin
    DEMGlb[NewMap].AreaName := 'md_zt_slope';
    MatchAndSave;
 
-   NewMap := WhiteBoxSlopeMap(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
+   NewMap := WBT_SlopeMap(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
    MatchAndSave;
 
    NewMap := GRASSSlopeMap(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
@@ -498,7 +498,7 @@ begin
    GDAL_TRI_Riley(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
    GDAL_TRI_Wilson(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
    GDAL_TPI(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
-   Whitebox_TRI(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
+   WBT_TRI(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
    SagaTRIMap(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
    SagaTPIMap(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
    GRASSTRIMap(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);

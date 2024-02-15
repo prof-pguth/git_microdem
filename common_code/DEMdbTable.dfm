@@ -2,8 +2,8 @@ object dbtablef: Tdbtablef
   Left = 62
   Top = 306
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 982
-  ClientWidth = 1184
+  ClientHeight = 981
+  ClientWidth = 1180
   Color = clBtnFace
   ParentFont = True
   FormStyle = fsMDIChild
@@ -17,8 +17,8 @@ object dbtablef: Tdbtablef
   TextHeight = 15
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 963
-    Width = 1184
+    Top = 962
+    Width = 1180
     Height = 19
     Panels = <
       item
@@ -28,7 +28,7 @@ object dbtablef: Tdbtablef
   object Panel2: TPanel
     Left = 0
     Top = 41
-    Width = 1184
+    Width = 1180
     Height = 32
     Align = alTop
     TabOrder = 1
@@ -222,7 +222,7 @@ object dbtablef: Tdbtablef
   object Panel3: TPanel
     Left = 0
     Top = 73
-    Width = 1184
+    Width = 1180
     Height = 41
     Align = alTop
     TabOrder = 2
@@ -272,7 +272,7 @@ object dbtablef: Tdbtablef
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1184
+    Width = 1180
     Height = 41
     Align = alTop
     TabOrder = 4
@@ -534,7 +534,7 @@ object dbtablef: Tdbtablef
   object Panel7: TPanel
     Left = 0
     Top = 114
-    Width = 1184
+    Width = 1180
     Height = 41
     Align = alTop
     TabOrder = 3
@@ -558,8 +558,8 @@ object dbtablef: Tdbtablef
   object DBGrid1: TDBGrid
     Left = 0
     Top = 155
-    Width = 1184
-    Height = 808
+    Width = 1180
+    Height = 807
     Align = alClient
     TabOrder = 5
     TitleFont.Charset = DEFAULT_CHARSET
@@ -3689,6 +3689,14 @@ object dbtablef: Tdbtablef
     object Currenttest1: TMenuItem
       Caption = 'Graph by criteria, with tile names and parameter sorts'
       OnClick = Currenttest1Click
+    end
+    object Graphbyareawithaveragescoreforselectedcriteria1: TMenuItem
+      Caption = 'Graph by area, with average score for selected criteria'
+      OnClick = Graphbyareawithaveragescoreforselectedcriteria1Click
+    end
+    object Graphbytilewithaveragescoreforselectedcriteria1: TMenuItem
+      Caption = 'Graph by tile, with average score for selected criteria'
+      OnClick = Graphbytilewithaveragescoreforselectedcriteria1Click
     end
     object GraphSSIMR2bycluster1: TMenuItem
       Caption = 'Graph SSIM/R2 by cluster means'

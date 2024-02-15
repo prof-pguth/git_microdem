@@ -212,7 +212,7 @@ begin
                       end {if};
                    end {for y};
                 end {for x};
-               {$IfDef RecordBasinBreakdown} WriteLineToDebugFile('Pass ' + IntToStr(Pass) + '   found: ' + IntToStr(NPts)); {$EndIf}
+               {$IfDef RecordBasinBreakdown} WriteLineToDebugFile('Pass ' + IntToStr(Pass) + ' found: ' + IntToStr(NPts)); {$EndIf}
             until (not FoundNew) or (Pass = 50);
           end {if TheBasins.Count > 0};
           EndThreadTimers;
@@ -377,7 +377,7 @@ var
         TLine : ShortString;
         ShapeFileCreator : tShapeFileCreation;
      begin
-       {$IfDef RecordThalweg} WriteLineToDebugFile('Thalweg for ' + MyData.GetFieldByNameAsString('BASIN_ID'), true,true);   {$EndIf}
+       {$IfDef RecordThalweg} WriteLineToDebugFile('Thalweg for ' + MyData.GetFieldByNameAsString('BASIN_ID'),true,true); {$EndIf}
         ReportSBProgress('Thalweg',-999);
         fName2 := MDTempDir + 'thalweg_' + MyData.GetFieldByNameAsString('BASIN_ID') + DefaultDBExt;
         if FileExists(fName2) then exit;
@@ -418,7 +418,7 @@ var
              if (MainLine <> '') then begin
                  MyData.ApplyFilter('ARCID=' + MainLine);
                  aShapeFile.GetLineCoords(MyData.RecNo);
-                 {$IfDef RecordThalweg} writeLineToDebugFile(MainLine + '  pts=' + IntToStr(aShapeFile.CurrentPolyLineHeader.NumPoints));   {$EndIf}
+                 {$IfDef RecordThalweg} writeLineToDebugFile(MainLine + '  pts=' + IntToStr(aShapeFile.CurrentPolyLineHeader.NumPoints)); {$EndIf}
                  for j := pred(aShapeFile.CurrentPolyLineHeader.NumPoints) downto 0 do begin
                     ShapeFileCreator.AddPointToShapeStream(aShapeFile.CurrentLineCoords^[j].Lat,aShapeFile.CurrentLineCoords^[j].Long);
                  end;
@@ -435,7 +435,7 @@ var
         end;
 
         ThalTable.Edit;
-        ShapeFileCreator.ProcessRecordForShapeFile(ThalTable);  //(ShapeFileCreator.ShapeStreamCoords^,1,NumPtsThalweg,ShapeFileCreator.PartSize,ShapeFileCreator.zs^);
+        ShapeFileCreator.ProcessRecordForShapeFile(ThalTable);
         ThalTable.SetFieldByNameAsString('BASIN_ID',NodeTable.GetFieldByNameAsString('BASIN_ID'));
         ThalTable.Post;
         ShapeFileCreator.CloseShapeFiles(ThalTable);
@@ -487,7 +487,7 @@ begin
            MessageToContinue('Too many nodes=' + IntToStr(NodeTable.RecordCount));
         end;
 
-        {$IfDef RecordNetworkends} writeLineToDebugFile('Node entry complete');    {$EndIf}
+        {$IfDef RecordNetworkends} writeLineToDebugFile('Node entry complete'); {$EndIf}
 
         MarkThalweg;
 
@@ -510,7 +510,7 @@ begin
               PropogateDownStream(i);
            end {if};
         end {for i};
-        {$IfDef RecordNetworkends} writeLineToDebugFile('First order found'); {$EndIf}
+        {$IfDef RecordNetworkEnds} writeLineToDebugFile('First order found'); {$EndIf}
         {$IfDef RecordNetworkNodes} SaveCSVFile(MDTempDir + 'first_order.csv'); {$EndIf}
         PassNum := 0;
         repeat
@@ -542,13 +542,13 @@ begin
                    end;
                end;
             end {for i};
-           {$IfDef RecordNetworkends} WriteLineToDebugFile('ActiveNodes=' + IntToStr(ActiveNodes)'); {$EndIf}
+           {$IfDef RecordNetworkEnds} WriteLineToDebugFile('ActiveNodes=' + IntToStr(ActiveNodes)'); {$EndIf}
            {$IfDef RecordNetworkNodes} SaveCSVFile(MDTempDir + 'pass_' + IntToStr(PassNum) + '.csv'); {$EndIf}
         until (not StillWorking) or (LastActiveNodes = ActiveNodes);
         ActiveNodes := NumNodes;
         ThreadTimers.UpdateThreadStats(3,100);
 
-        {$IfDef RecordNetworkends} writeLineToDebugFile('Everything ordered, nodes= ' + IntToStr(NumNodes)); {$EndIf}
+        {$IfDef RecordNetworkRnds} writeLineToDebugFile('Everything ordered, nodes= ' + IntToStr(NumNodes)); {$EndIf}
         {$IfDef RecordNetworkNodes} SaveCSVFile(MDTempDir + 'all_orders.csv'); {$EndIf}
 
         NodeTable.First;
@@ -566,7 +566,7 @@ begin
 
         //this would be the slowdown.  to speed up, put the rivers into memory, and write sequentially
            if (RiverNetwork^[i].DOWN_ORD > 0) and (RiverNetwork^[i].DOWN <> '') then begin
-              {$IfDef RecordNetworkends} WriteLineToDebugFile('Filter for='+ RiverNetwork^[i].DOWN); {$EndIf}
+              {$IfDef RecordNetworkEnds} WriteLineToDebugFile('Filter for='+ RiverNetwork^[i].DOWN); {$EndIf}
               MyData.ApplyFilter('ARCID=' + QuotedStr(RiverNetwork^[i].DOWN));
               MyData.Edit;
               MyData.SetFieldByNameAsInteger('STRAHLER_O',RiverNetwork^[i].DOWN_ORD);
@@ -574,7 +574,7 @@ begin
            end {if};
         end {for i};
 
-        {$IfDef RecordNetworkends} writeLineToDebugFile('Getting memory=' + IntToStr(NodeTable.RecordCount)); {$EndIf}
+        {$IfDef RecordNetworkEnds} writeLineToDebugFile('Getting memory=' + IntToStr(NodeTable.RecordCount)); {$EndIf}
         Dispose(RiverNetwork);
         NodeTable.Destroy;
         EmpSource.Enabled := true;

@@ -62,17 +62,16 @@
 
 //{$Define AllowCurvatureStatistics}  //not recommended, and must be renabled here
 
-
 {$IfDef PlainMICRODEM}
    {$Define RecordTime}
    {$Define ExDTED}
-   {$Define  RecordIniMemoryOverwrite}
+   {$Define RecordIniMemoryOverwrite}
    {$Define microdem}
    //{$Define AllowV1V2DEMHeaders}   //must be in DEMDefs and DEMCoord
    //{$Define BasicOpens}
+   //{$Define AllowV1V2V3DEMHeaders}
 
    {$Define AllowOddballDEMs}
-   //{$Define AllowV1V2V3DEMHeaders}
    {$Define IncludeBILWrite}
    {$Define AllowGeomorphometry}
    {$Define AllowOddballDEMexports}

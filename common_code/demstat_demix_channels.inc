@@ -79,13 +79,12 @@ begin
     SafeMakeDir(ChannelMissesDir);
     SavefName := ChannelMissesDir + Area + '_Channel_Misses.csv';
     if not FileExists(savefName) then begin
-       wmdem.SetPanelText(2, 'Load DEMs');
+       wmdem.SetPanelText(2, 'Load DEMs',true);
 
        if OpenBothPixelIsDEMs(Area,'saga_channels_saga_sinks_removed_',DEMIX_ref_DEMs_channel_grids,DEMIX_test_DEMs_channel_grids,OpenMaps) then begin
           MissingFiles := false;
           //need a reference DEM to get the percentage full of the tiles
-             fName := DEMIX_ref_DEMs_no_sink + 'saga_sinks_removed_' + Area +'_dtm_ref_1sec_area.tif';
-             if not FileExists(fName) then fName := DEMIX_ref_DEMs_no_sink + 'saga_sinks_removed_' + Area + '_ref_1sec_area.tif';
+             fName := DEMIX_ref_DEMs_no_sink + 'saga_sinks_removed_' + Area +'_dtm' + Ref1SecAreaStr + '.tif';
              if FileExists(fName) then DEM := OpenNewDEM(fName,OpenMaps)
              else MissingFiles := true;
        end
@@ -96,7 +95,7 @@ begin
           {$IfDef RecordDEMIX} WriteLineToDebugFile('Missing files for area ' + Area); {$EndIf}
        end
        else begin
-          wmdem.SetPanelText(2, 'Mask water');
+          wmdem.SetPanelText(2, 'Mask water',true);
           MarkWaterMissingInAllOpenDEMs(DEM);
 
           Results := tStringList.Create;
@@ -115,7 +114,7 @@ begin
              if GridLimits.ygridlow < 0 then GridLimits.ygridlow := 0;
              if GridLimits.ygridhigh > pred(DEMGlb[AreaDEMs[0]].DEMheader.NumRow) then GridLimits.ygridhigh := pred(DEMGlb[AreaDEMs[0]].DEMheader.NumRow);
              TileName := GISdb[DEMIXtileDB].MyData.GetFieldByNameAsString('NAME');
-             wmdem.SetPanelText(2, TileName);
+             wmdem.SetPanelText(2, TileName,true);
 
              DoTolerance('CHAN_MISS1',0);
              DoTolerance('CHAN_MISS3',1);
@@ -141,6 +140,7 @@ var
    Area : shortstring;
    i : integer;
 begin
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('ChannelNetworkMissPercentages in'); {$EndIf}
    try
       GetDEMIXPaths(true);
       Areas := DEMIX_AreasWanted(true,Area);
@@ -152,6 +152,7 @@ begin
    finally
       EndDEMIXProcessing;
    end;
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('ChannelNetworkMissPercentages out'); {$EndIf}
 end;
 
 
@@ -181,7 +182,7 @@ begin
     TestDEM := OpenNewDEM(DEMIX_test_DEMs_channel_grids + 'saga_channels_saga_sinks_removed_' + AreaName + '_' + TestDEMName + '.dem',false);
     if UpperCase(TestDEMName) = 'ALOS' then TStr := 'area' else TStr := 'point';
     fName := DEMIX_ref_DEMs_channel_grids + 'saga_channels_saga_sinks_removed_' + AreaName + '_dtm_ref_1sec_' + Tstr + '.dem';
-    if Not FileExists(fName) then fName := DEMIX_ref_DEMs_channel_grids + 'saga_channels_saga_sinks_removed_' + AreaName + '_ref_1sec_point.dem';
+    //if Not FileExists(fName) then fName := DEMIX_ref_DEMs_channel_grids + 'saga_channels_saga_sinks_removed_' + AreaName + '_ref_1sec_point.dem';
     RefDEM := OpenNewDEM(fName,false);
 
     BaseDEM := OpenNewDEM(DEMIX_test_dems + areaName + '_' + TestDEMName + '.dem',false);
@@ -316,8 +317,6 @@ procedure CreateChannelNetworkGridsFromVectors;
                 {$IfDef RecordDEMIX} WriteLineToDebugFile('Missing file=' + dbName); {$EndIf}
              end
              else if (not FileExists(GridName)) and FileExists(dbName) {and (IsDEMaDSMorDTM(InName) = DEMisDTM)} then begin
-                //TemporaryNewGeotiff := false;
-                //RewriteGeotiffIfRequired(InName);
                 DEM := OpenNewDEM(InName,true);
                 db := DEMGlb[DEM].SelectionMap.OpenDBonMap('',dbName,true,false);
                 NewGrid := ChannelSHPtoGrid(DEM,db,OutFolder);
@@ -417,7 +416,7 @@ begin
    {$IfDef RecordDEMIX} WriteLineToDebugFile('BatchFillHolesInDEMIX_DEMS in'); {$EndIf}
    HeavyDutyProcessing := true;
    Run(DEMIX_Ref_1sec,DEMIX_ref_DEMs_no_sink,'*.tif',' ref DEMs');
-   Run(DEMIX_test_dems,DEMIX_test_DEMs_no_sink,'*.dem',' test DEMs');
+   Run(DEMIX_test_dems,DEMIX_test_DEMs_no_sink,'*.tif',' test DEMs');
    HeavyDutyProcessing := false;
    {$IfDef RecordDEMIX} WriteLineToDebugFile('BatchFillHolesInDEMIX_DEMS Out'); {$EndIf}
 end;

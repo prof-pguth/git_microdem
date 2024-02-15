@@ -61,6 +61,17 @@ begin
    WriteNewFormatDEM(Limits,FileName);
 end;
 
+procedure tDEMDataSet.SavePartOfDEMWithDataGeotiff(var FileName : PathStr);
+var
+   tName : PathStr;
+   NewDEM : integer;
+begin
+   tName := MDTempDir + 'temp_' + AreaName + '.dem';
+   SavePartOfDEMWithData(tName);
+   NewDEM := OpenNewDEM(tName,false);
+   DEMGlb[NewDEM].SaveAsGeotiff(FileName);
+   CloseSingleDEM(NewDEM);
+end;
 
 procedure tDEMDataSet.SavePartOfDEMWithData(var FileName : PathStr);
 var

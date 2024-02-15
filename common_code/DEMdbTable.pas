@@ -1000,6 +1000,8 @@ type
     estDEMlegend1: TMenuItem;
     estDEMlegend2: TMenuItem;
     Vertical1: TMenuItem;
+    Graphbyareawithaveragescoreforselectedcriteria1: TMenuItem;
+    Graphbytilewithaveragescoreforselectedcriteria1: TMenuItem;
     //Pointfilter1: TMenuItem;
     //Pointfilter2: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
@@ -1765,6 +1767,10 @@ type
     procedure AssignDEMIXDEMcolors1Click(Sender: TObject);
     procedure estDEMlegend1Click(Sender: TObject);
     procedure Vertical1Click(Sender: TObject);
+    procedure Graphbyareawithaveragescoreforselectedcriteria1Click(
+      Sender: TObject);
+    procedure Graphbytilewithaveragescoreforselectedcriteria1Click(
+      Sender: TObject);
     //procedure Pointfilter2Click(Sender: TObject);
     //procedure Pointfilter1Click(Sender: TObject);
   private
@@ -3565,10 +3571,10 @@ var
    RecID : integer;
    Findings : tStringList;
 begin
-   with GISdb[DBonTable] do begin
+   //with GISdb[DBonTable] do begin
       ShowHourglassCursor;
       Findings := tStringList.Create;
-      EmpSource.Enabled := false;
+      GISdb[DBonTable].EmpSource.Enabled := false;
       GISdb[DBonTable].MyData.First;
       while not GISdb[DBonTable].MyData.eof do begin
          aString := GISdb[DBonTable].MyData.GetFieldByNameAsString(SelectedColumn);
@@ -3579,12 +3585,12 @@ begin
          GISdb[DBonTable].MyData.Next;
       end;
       ShowStatus;
-      if Findings.Count = 0 then begin
+      if (Findings.Count = 0) then begin
          MessageToContinue('All records have numeric values in ' + SelectedColumn);
          Findings.Free;
       end
       else DisplayAndPurgeStringList(Findings,SelectedColumn + ' non numeric values=' + IntToStr(Findings.Count));
-   end;
+   //end;
 end;
 
 procedure Tdbtablef.BitBtn4Click(Sender: TObject);
@@ -3720,18 +3726,18 @@ end;
 
 procedure Tdbtablef.BitBtn8Click(Sender: TObject);
 begin
-   if ValidDB(DBonTable) then with GISdb[DBonTable] do begin
-        Vectoraverageinbox1.Enabled := GISdb[DBonTable].DEMwithDBsMap and  (dbOpts.MagField <> '') and (dbOpts.DirField<> '');
+   if ValidDB(DBonTable) then begin
+        Vectoraverageinbox1.Enabled := GISdb[DBonTable].DEMwithDBsMap and (GISdb[DBonTable].dbOpts.MagField <> '') and (GISdb[DBonTable].dbOpts.DirField<> '');
 
-        N3dGraph1.Visible := (NumericFields > 2);
-        N2dGraph1.Visible := (NumericFields > 1);
-        N2dGraph2series1.Visible := (NumericFields > 2);
-        N2Dgraphcolorcoded1.Visible := NumericFields > 1;
-        SumForOneField1.Visible := NumericFields > 0;
-        FieldCorrelations1.Visible := NumericFields > 0;
-        LineLength1.Visible := LineShapeFile(ShapeFileType);
+        N3dGraph1.Visible := (GISdb[DBonTable].NumericFields > 2);
+        N2dGraph1.Visible := (GISdb[DBonTable].NumericFields > 1);
+        N2dGraph2series1.Visible := (GISdb[DBonTable].NumericFields > 2);
+        N2Dgraphcolorcoded1.Visible := GISdb[DBonTable].NumericFields > 1;
+        SumForOneField1.Visible := GISdb[DBonTable].NumericFields > 0;
+        FieldCorrelations1.Visible := GISdb[DBonTable].NumericFields > 0;
+        LineLength1.Visible := LineShapeFile(GISdb[DBonTable].ShapeFileType);
 
-        AllDBs1.Visible := (NumericFields > 1) and (TotalNumOpenDatabase > 1);
+        AllDBs1.Visible := (GISdb[DBonTable].NumericFields > 1) and (TotalNumOpenDatabase > 1);
         TimeSeries1.Visible := MDDef.ShowDBDateTimeSeries;
         if NoStatsGraph then begin
            Histogram1.Visible := false;
@@ -3742,27 +3748,28 @@ begin
            N3dGraph1.Visible := false;
            RoseDiagram1.Visible := false;
         end;
-        FeatureStatistics1.Visible := (TheMapOwner <> Nil) and (TheMapOwner.MapDraw.DEMonMap <> 0) and (DEMGlb[TheMapOwner.MapDraw.DEMonMap].SelectionMap.MapDraw.FeatureGrid <> 0);
+        FeatureStatistics1.Visible := (GISdb[DBonTable].TheMapOwner <> Nil) and (GISdb[DBonTable].TheMapOwner.MapDraw.DEMonMap <> 0) and
+             (DEMGlb[GISdb[DBonTable].TheMapOwner.MapDraw.DEMonMap].SelectionMap.MapDraw.FeatureGrid <> 0);
         PlotallXYFiles1.Visible := GISdb[DBonTable].MyData.FieldExists('XY_FILE');
         Redistrict1.Visible := (MDDef.ProgramOption = ExpertProgram) and GISdb[DBonTable].MyData.FieldExists('BLACK1') and GISdb[DBonTable].MyData.FieldExists('WHITE1');
         Elevationsatbenchmarks1.Visible := GISdb[DBonTable].MyData.FieldExists('Z');
-        ShowJoin1.Visible := LinkTable <> Nil;
-        ClearJoin1.Visible := LinkTable <> Nil;
+        ShowJoin1.Visible := GISdb[DBonTable].LinkTable <> Nil;
+        ClearJoin1.Visible := GISdb[DBonTable].LinkTable <> Nil;
         ResetJoin1.Visible := FileExists(GISdb[DBonTable].dbOpts.LinkTableName);
-        SetJoin1.Visible := LinkTable = Nil;
-        LOSterrainprofile1.Visible := SecondLatLongFieldsPresent and GISdb[DBonTable].DEMwithDBsMap;
+        SetJoin1.Visible := GISdb[DBonTable].LinkTable = Nil;
+        LOSterrainprofile1.Visible := GISdb[DBonTable].SecondLatLongFieldsPresent and GISdb[DBonTable].DEMwithDBsMap;
         LOStopoprofile1.Visible := LOSterrainprofile1.Visible;
         ProfileallDEMs1 .Visible := LOSterrainprofile1.Visible;
-        TerrainProfiles1.Visible := ItsAShapeFile and LineShapeFile(ShapeFileType);
-        Linelength1.Visible := ItsAShapeFile and LineShapeFile(ShapeFileType);
-        Linelengthsforonefield1.Visible := ItsAShapeFile and LineShapeFile(ShapeFileType);
-        Arearecordstatistics1.Visible := ItsAShapeFile and LineOrAreaShapeFile(ShapeFileType);
+        TerrainProfiles1.Visible := GISdb[DBonTable].ItsAShapeFile and LineShapeFile(GISdb[DBonTable].ShapeFileType);
+        Linelength1.Visible := GISdb[DBonTable].ItsAShapeFile and LineShapeFile(GISdb[DBonTable].ShapeFileType);
+        Linelengthsforonefield1.Visible := GISdb[DBonTable].ItsAShapeFile and LineShapeFile(GISdb[DBonTable].ShapeFileType);
+        Arearecordstatistics1.Visible := GISdb[DBonTable].ItsAShapeFile and LineOrAreaShapeFile(GISdb[DBonTable].ShapeFileType);
         Oceanography2.Visible := MDDef.ShowOceanographyOptions;
         TidePredictions1.Visible := GISdb[DBonTable].MyData.FieldExists('AMPLITUDE') and GISdb[DBonTable].MyData.FieldExists('PHASE') and GISdb[DBonTable].MyData.FieldExists('SPEED');
-        Monthlyanalysis1.Visible := GISdb[DBonTable].MyData.FieldExists(MonthFieldName);
+        Monthlyanalysis1.Visible := GISdb[DBonTable].MyData.FieldExists(GISdb[DBonTable].MonthFieldName);
         Graphwithranges1.Visible := GISdb[DBonTable].MyData.FieldExists('CLASS') and GISdb[DBonTable].MyData.FieldExists('MEAN') and GISdb[DBonTable].MyData.FieldExists('STD_DEV');
-        GeomorphometryStats1.Visible := (ItsAShapeFile and AreaShapeFile(ShapeFileType)) and MDDef.AdvancedDBops and GISdb[DBonTable].DEMwithDBsMap;
-        Geomrophometrystaseachpointneighborhood1.Visible := ItsAPointDB and MDDef.AdvancedDBops and GISdb[DBonTable].DEMwithDBsMap;
+        GeomorphometryStats1.Visible := (GISdb[DBonTable].ItsAShapeFile and AreaShapeFile(GISdb[DBonTable].ShapeFileType)) and MDDef.AdvancedDBops and GISdb[DBonTable].DEMwithDBsMap;
+        Geomrophometrystaseachpointneighborhood1.Visible := GISdb[DBonTable].ItsAPointDB and MDDef.AdvancedDBops and GISdb[DBonTable].DEMwithDBsMap;
         MultipleLinearRegression1.Visible := MDDef.AdvancedDBops;
         MultipleGraphMatrix1.Visible := MDDef.AdvancedDBops;
         LongestString1.Visible := MDDef.AdvancedDBops;
@@ -3778,7 +3785,8 @@ begin
         LinkDataBase1.Visible := MDDef.AdvancedDBops;
         LVIS1.Visible := GISdb[DBonTable].MyData.FieldExists('RH99');
         ICESat21.Visible := GISdb[DBonTable].IsIcesat;
-        PointcloudstoanalyzeglobalDEMs1.Visible := (MyData.FieldExists('BEAM') and GISdb[DBonTable].MyData.FieldExists('TRACK_ID')) or (MyData.FieldExists('CLOUD_0_5') and GISdb[DBonTable].MyData.FieldExists('CLOUD_995'));
+        PointcloudstoanalyzeglobalDEMs1.Visible := (GISdb[DBonTable].MyData.FieldExists('BEAM') and GISdb[DBonTable].MyData.FieldExists('TRACK_ID')) or
+            (GISdb[DBonTable].MyData.FieldExists('CLOUD_0_5') and GISdb[DBonTable].MyData.FieldExists('CLOUD_995'));
 
         ClusterStatistics1.Enabled := GISdb[DBonTable].MyData.FieldExists('CLUSTER');
         ClusterFrequency1.Enabled := GISdb[DBonTable].MyData.FieldExists('CLUSTER');
@@ -3792,7 +3800,7 @@ begin
         {$IfDef ExGeography}
            Koppenlatitudestats1.Visible := false;
         {$Else}
-           Koppenlatitudestats1.Visible := KoppenPresent;
+           Koppenlatitudestats1.Visible := GISdb[DBonTable].KoppenPresent;
         {$EndIf}
 
         {$IfDef ExGeology}
@@ -3800,9 +3808,9 @@ begin
            StructuralGeology1.Visible := false;
            Insertdipdirectionsdipandstrike1.Visible := false;
         {$Else}
-           Earthquakefocalmechanisms2.Visible := FocalMechsPresent;
-           StructuralGeology1.Visible := MDDef.ShowGeologyOptions and ItsAPointDB;
-           Geomorphometryatlas1.Visible := MDDef.AdvancedDBops and ItsAPointDB and (MDDef.ProgramOption = ExpertProgram);
+           Earthquakefocalmechanisms2.Visible := GISdb[DBonTable].FocalMechsPresent;
+           StructuralGeology1.Visible := MDDef.ShowGeologyOptions and GISdb[DBonTable].ItsAPointDB;
+           Geomorphometryatlas1.Visible := MDDef.AdvancedDBops and GISdb[DBonTable].ItsAPointDB and (MDDef.ProgramOption = ExpertProgram);
            Insertdipdirectionsdipandstrike1.Visible := (not GISdb[DBonTable].MyData.FieldExists('FP1_DIPSTRK')) and (not GISdb[DBonTable].MyData.FieldExists('FP1_DIPDIR'));
         {$EndIf}
 
@@ -3815,7 +3823,8 @@ begin
         {$IfDef ExAdvancedSats}
            SupervisedClassification1.Visible := false;
         {$Else}
-           SupervisedClassification1.Visible := ((TheMapOwner <> Nil) and (TheMapOwner.MapDraw.MultiGridOnMap <> 0) and (MultiGridArray[TheMapOwner.MapDraw.MultiGridOnMap].TrainingPointsDB = DBNumber));
+           SupervisedClassification1.Visible := ((GISdb[DBonTable].TheMapOwner <> Nil) and (GISdb[DBonTable].TheMapOwner.MapDraw.MultiGridOnMap <> 0) and
+                (MultiGridArray[GISdb[DBonTable].TheMapOwner.MapDraw.MultiGridOnMap].TrainingPointsDB = GISdb[DBonTable].DBNumber));
         {$EndIf}
 
         {$IfDef ExPointCloud}
@@ -10029,6 +10038,17 @@ begin
          ShowStatus;
       end;
    //end;
+end;
+
+procedure Tdbtablef.Graphbyareawithaveragescoreforselectedcriteria1Click(Sender: TObject);
+begin
+   DEMIX_AreaAverageScores_graph(DBonTable);
+
+end;
+
+procedure Tdbtablef.Graphbytilewithaveragescoreforselectedcriteria1Click(Sender: TObject);
+begin
+   GraphAverageScoresByTile(DBonTable,Nil,Nil);
 end;
 
 procedure Tdbtablef.Graphfilters1Click(Sender: TObject);

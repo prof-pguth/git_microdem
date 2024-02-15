@@ -227,6 +227,7 @@ type
     procedure BitBtn6Click(Sender: TObject);
     procedure CheckBox18Click(Sender: TObject);
     procedure CheckBox3Click(Sender: TObject);
+    procedure LoadOneSecRefCheckBoxClick(Sender: TObject);
     //procedure CheckBox4Click(Sender: TObject);
   private
     { Private declarations }
@@ -482,7 +483,6 @@ begin
       //DemixFilterForm.ComboBox5.Items.LoadFromFile(DEMIXSettingsDir + 'tiles_list.txt');
       //DemixFilterForm.ComboBox6.Items.LoadFromFile(DEMIXSettingsDir + 'criteria_all.txt');
    end;
-
 
    DemixFilterForm.ComboBox1.Text := MDDef.DEMIX_default_tile;
    DemixFilterForm.ComboBox4.Text := MDDef.DEMIX_default_area;
@@ -1546,7 +1546,7 @@ end;
 
 procedure TDemixFilterForm.CheckBox4Click(Sender: TObject);
 begin
-   MDDef.LoadTestDEMs := CheckBox4.Checked;
+   MDDef.LoadTestDEMMaps := CheckBox4.Checked;
 end;
 
 procedure TDemixFilterForm.CheckBox7Click(Sender: TObject);
@@ -2052,11 +2052,8 @@ var
 begin
    AreaName := ComboBox4.Text;
    //LoadDEMsForCurrentArea(AreaName,MDDef.LoadRefDEMMaps,MDDef.LoadTestDEMMaps);
-
    if MDDef.LoadRefDEMs then LoadDEMIXReferenceDEMs(AreaName,DEMIXRefDEM,MDDef.LoadRefDEMMaps);
    if MDDef.LoadTestDEMs then LoadDEMIXCandidateDEMs(AreaName,MDDef.LoadTestDEMMaps);
-
-
 end;
 
 
@@ -2166,6 +2163,11 @@ begin
 end;
 
 
+
+procedure TDemixFilterForm.LoadOneSecRefCheckBoxClick(Sender: TObject);
+begin
+   MDDef.LoadRefDEMs := LoadOneSecRefCheckBox.Checked;
+end;
 
 initialization
 finalization

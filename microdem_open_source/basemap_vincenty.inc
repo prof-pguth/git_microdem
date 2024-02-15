@@ -10,7 +10,7 @@
 { include file for basemap}
 
 
-procedure VincentyFullCalculateDistanceBearing(StartLat,StartLong,EndLat,EndLong : float64; EllipsoidConstants : tMapProjection;  var Distance,Bearing : float64);
+procedure VincentyFullCalculateDistanceBearing(StartLat,StartLong,EndLat,EndLong : float64; EllipsoidConstants : tMapProjection;  var DistanceMeters,Bearing : float64);
 //from T. Vincenty, Survey Review, 23, No 176, p 88-93,1975 to calculate lines ranging from a few cm to nearly 20,000 km, with millimetre accuracy
 //verified with Excel spreadsheet from Geoscience Australia, http://www.auslig.gov.au/geodesy/datums/vincenty.xls  (http://www.auslig.gov.au/geodesy/datums/calcs.htm)
 //requires a and f for the ellipsoid, for WGS84
@@ -107,7 +107,7 @@ begin
    {$IfDef RecordGeodeticCalc} WriteLineToDebugFile('FullCalculateDistanceBearing in  Start:  ' + LatLongDegreeToString(StartLat,StartLong) + ' End:    ' + LatLongDegreeToString(EndLat,EndLong));  {$EndIf}
 
    if (abs(StartLat-EndLat) < 0.0000001) and (abs(StartLong-EndLong) < 0.0000001) then begin
-      Distance := 0;
+      DistanceMeters := 0;
       Bearing := 0;
       exit;
    end;
@@ -215,8 +215,8 @@ begin
    {$IfDef RecordGeotdeticCalcDetailed} WriteLineToDebugFile('Call Formula 19'); {$EndIf}
 
    //formula 19
-   Distance := b_ell * (sigma - delta_sigma) * A;
-   Distance := abs(Distance);  //added  1/15/2022; not sure why it is coming out negative
+   DistanceMeters := b_ell * (sigma - delta_sigma) * A;
+   DistanceMeters := abs(DistanceMeters);  //added  1/15/2022; not sure why it is coming out negative
 
    {$IfDef RecordGeotdeticCalcDetailed} RecordFinalValues; {$EndIf}
    {$IfDef RecordGeotdeticCalc} WriteLineToDebugFile('CalculateDistanceBearing out, Distance=' + RealToString(Distance,12,3) + '  Bearing=' + RealToString(Bearing,8,3)); {$EndIf}
@@ -364,13 +364,13 @@ end;
 
 
 
-procedure VincentyPointAtDistanceBearing(StartLat,StartLong,Distance,Bearing : float64; var Lat,Long : float64);
+procedure VincentyPointAtDistanceBearing(StartLat,StartLong,DistanceMeters,Bearing : float64; var Lat,Long : float64);
 begin
-   VincentyCalculatePointAtDistanceBearing(StartLat,StartLong,Distance,Bearing,WGS84DatumConstants,Lat,Long);
+   VincentyCalculatePointAtDistanceBearing(StartLat,StartLong,DistanceMeters,Bearing,WGS84DatumConstants,Lat,Long);
 end;
 
 
-procedure VincentyCalculateDistanceBearing(StartLat,StartLong,EndLat,EndLong : float64; var Distance,Bearing : float64);
+procedure VincentyCalculateDistanceBearing(StartLat,StartLong,EndLat,EndLong : float64; var DistanceMeters,Bearing : float64);
 var
    IntDistance,IntBearing : float64;
 begin
@@ -378,7 +378,7 @@ begin
    {$IfDef RecordGeotdeticCalc} WriteLineToDebugFile('CalculateDistanceBearing done   IntDistance=' + realToString(IntDistance,-18,2) + '  IntBearing=' + realToString(IntBearing,-18,2)); {$EndIf}
 
    //crash here in Android for the final conversion; could not fix, 10/18/2015
-   Distance := IntDistance;
+   DistanceMeters := IntDistance;
    Bearing := IntBearing;
 end;
 

@@ -576,6 +576,14 @@ type
     SSIMR21: TMenuItem;
     Skipifexists1: TMenuItem;
     InventoryDILUVIUMbytestarea1: TMenuItem;
+    Partialchannelnetworkprocessing1: TMenuItem;
+    Channelnetworkmultistep1: TMenuItem;
+    InsureallreferenceDTMscorrectlynamed1: TMenuItem;
+    N50: TMenuItem;
+    MaskwaterinreferenceDEMs1: TMenuItem;
+    ComputeDEMIXtilestats1: TMenuItem;
+    VerifytestDEMcoverages1: TMenuItem;
+    rimreferencedatatoDEMIXtiles1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -969,6 +977,12 @@ type
     procedure Inventory3DEPtiles1Click(Sender: TObject);
     procedure Skipifexists1Click(Sender: TObject);
     procedure InventoryDILUVIUMbytestarea1Click(Sender: TObject);
+    procedure Channelnetworkmultistep1Click(Sender: TObject);
+    procedure InsureallreferenceDTMscorrectlynamed1Click(Sender: TObject);
+    procedure MaskwaterinreferenceDEMs1Click(Sender: TObject);
+    procedure ComputeDEMIXtilestats1Click(Sender: TObject);
+    procedure VerifytestDEMcoverages1Click(Sender: TObject);
+    procedure rimreferencedatatoDEMIXtiles1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1387,6 +1401,13 @@ end;
 procedure Twmdem.Channelnetworkmisspercentagesbytile1Click(Sender: TObject);
 begin
     ChannelNetworkMissPercentages;
+end;
+
+procedure Twmdem.Channelnetworkmultistep1Click(Sender: TObject);
+begin
+   BatchFillHolesInDEMIX_DEMS;
+   BatchCreateVectorChannelNewtwork;
+   CreateChannelNetworkGridsFromVectors;
 end;
 
 procedure Twmdem.CheckfilesizesforSSIMimagemismatches1Click(Sender: TObject);
@@ -2736,7 +2757,7 @@ end;
 
 procedure Twmdem.Processdifferencestatisticspertile1Click(Sender: TObject);
 begin
-   ComputeDEMIX_tile_stats;  //('Almeria');
+   ComputeDEMIX_tile_stats;
 end;
 
 
@@ -2806,6 +2827,11 @@ begin
    {$IfDef Include2021datafusion} MakeLittleTiles; {$EndIf}
 end;
 
+
+procedure Twmdem.MaskwaterinreferenceDEMs1Click(Sender: TObject);
+begin
+   MaskWaterInReferenceDEMs;
+end;
 
 procedure Twmdem.Cancelpending1Click(Sender: TObject);
 begin
@@ -3251,6 +3277,25 @@ end;
 procedure Twmdem.InOutButtonClick(Sender: TObject);
 begin
    Data1Click(Sender);
+end;
+
+procedure Twmdem.InsureallreferenceDTMscorrectlynamed1Click(Sender: TObject);
+var
+   TheFiles : tStringList;
+   i : integer;
+   fName,NewName : PathStr;
+begin
+   TheFiles := Nil;
+   FindMatchingFiles(DEMIX_Ref_1sec,'*.tif',TheFiles);
+   for i := 0 to pred(TheFiles.Count) do begin
+      fName := theFiles.Strings[i];
+      if (not StrUtils.AnsiContainsText(fName,'_dtm')) and (not StrUtils.AnsiContainsText(fName,'_dsm')) then begin
+         if StrUtils.AnsiContainsText(fName,'_point') then NewName := StringReplace(fName,Ref1SecPointStr,'_dtm'+Ref1SecPointStr,[rfReplaceAll, rfIgnoreCase])
+         else NewName := StringReplace(fName,Ref1SecAreaStr,'_dtm' + Ref1SecAreaStr,[rfReplaceAll, rfIgnoreCase]);
+         SysUtils.RenameFile(fName,NewName);
+      end;
+   end;
+   TheFiles.Free;
 end;
 
 procedure Twmdem.IntDBSpeedButtonClick(Sender: TObject);
@@ -3922,6 +3967,11 @@ begin
    im.MakeRGBandgrayscaleseparates1Click(nil);
 end;
 
+
+procedure Twmdem.rimreferencedatatoDEMIXtiles1Click(Sender: TObject);
+begin
+   TrimReferenceDEMsToDEMIXtiles;
+end;
 
 procedure Twmdem.Trenchgeometry1Click(Sender: TObject);
 begin
@@ -5294,6 +5344,11 @@ begin
 end;
 
 
+procedure Twmdem.VerifytestDEMcoverages1Click(Sender: TObject);
+begin
+    VerifyTestDEMcoverages;
+end;
+
 procedure Twmdem.Verticalearthcurvature1Click(Sender: TObject);
 begin
    {$IfDef ExComplexGeoStats}
@@ -5779,6 +5834,13 @@ begin
       StopSplashing;
       Computations.DoComputations;
    {$EndIf}
+end;
+
+procedure Twmdem.ComputeDEMIXtilestats1Click(Sender: TObject);
+begin
+   JustTileStats := true;
+   ComputeDEMIX_tile_stats;
+   JustTileStats := false;
 end;
 
 procedure Twmdem.Openshapefilemap1Click(Sender: TObject);

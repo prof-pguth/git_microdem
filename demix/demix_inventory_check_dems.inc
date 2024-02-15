@@ -83,7 +83,6 @@ begin
 end;
 
 
-
 procedure CheckReferenceDEMs;
 var
    FilesWanted,Areas,Results : tStringList;
@@ -292,4 +291,160 @@ begin
    Areas.Free;
    EndDEMIXProcessing;
 end;
+
+
+procedure DEMIXTileSummary(DBonTable : integer);
+var
+   DEMsPresent,LandTypesPresent,Report,CriteriaPresent : tStringList;
+   j,k : integer;
+   aLine : shortstring;
+   fName : PathStr;
+begin
+   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXTileSummary in'); {$EndIf}
+   GISdb[DBonTable].EmpSource.Enabled := false;
+
+   DEMsPresent := tStringList.Create;
+   DEMsPresent.LoadFromFile(DEMIXSettingsDir + 'demix_dems.txt');
+
+   GISdb[DBonTable].EmpSource.Enabled := false;
+   LandTypesPresent := GISdb[DBonTable].MyData.UniqueEntriesInDB('LAND_TYPE');
+   GISdb[DBonTable].EmpSource.Enabled := false;
+   CriteriaPresent := GISdb[DBonTable].MyData.UniqueEntriesInDB('CRITERION');
+   {$If Defined(RecordDEMIXFull)} WriteLineToDebugFile('Land_Types present=' + IntToStr(LandTypesPresent.Count) + '  Criteria present=' + IntToStr(CriteriaPresent.Count)); {$EndIf}
+
+   Report := tStringList.Create;
+   aline := 'REF_TYPE,AREA';
+   for j := 0 to pred(LandTypesPresent.Count) do aLine := aLine + ',' + LandTypesPresent.strings[j];
+   Report.Add(Aline);
+
+   {$If Defined(RecordDEMIXFull)} WriteLineToDebugFile('DEMIXTileSummary ' + aline); {$EndIf}
+
+   for j := 2 downto 1 do begin
+      aline := RefDEMType[j];
+      GISdb[DBonTable].ApplyGISFilter('REF_TYPE=' + QuotedStr(RefDEMType[j]));
+      GISdb[DBonTable].EmpSource.Enabled := false;
+      aLine := aline + ',' + IntToStr(GISdb[DBonTable].MyData.NumUniqueEntriesInDB('AREA'));
+      GISdb[DBonTable].EmpSource.Enabled := false;
+      for k := 0 to pred(LandTypesPresent.Count) do begin
+         wmdem.SetPanelText(3,'DEM type=' + RefDEMType[j] + '  land type=' + LandTypesPresent[k]);
+         GISdb[DBonTable].EmpSource.Enabled := false;
+         GISdb[DBonTable].ApplyGISFilter('REF_TYPE=' + QuotedStr(RefDEMType[j]) + ' AND LAND_TYPE=' + QuotedStr(LandTypesPresent[k]));
+         aLine := aline + ',' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB div CriteriaPresent.Count);
+      end;
+      {$If Defined(RecordDEMIXFull)} WriteLineToDebugFile('DEMIXTileSummary ' + aline); {$EndIf}
+      Report.Add(aline);
+   end;
+
+   DEMsPresent.Free;
+   LandTypesPresent.Free;
+   CriteriaPresent.Free;
+   fName := NextFileNumber(MDTempDir,'demix_tile_summary_','.dbf');
+   StringList2CSVtoDB(Report,fName);
+   GISdb[DBonTable].ClearGISFilter;
+   GISdb[DBonTable].EmpSource.Enabled := true;
+   GISdb[DBonTable].ShowStatus;
+   wmdem.SetPanelText(3,'');
+   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXTileSummary out'); {$EndIf}
+end {DEMIXTileSummary};
+
+
+procedure DEMIXtile_inventory(DBonTable : integer);
+var
+   TileList,Findings,DEMs : tStringList;
+   TStr : shortstring;
+   fName : PathStr;
+   i : Integer;
+begin
+   GISdb[DBonTable].EmpSource.Enabled := false;
+   TileList := GISdb[DBonTable].MyData.UniqueEntriesInDB('DEMIX_TILE');
+   Findings := tStringList.Create;
+   Findings.Add('COUNTRY,AREA,DEMIX_TILE,DEMS');
+   StartProgress('Inventory tiles');
+   for i := 0 to pred(TileList.Count) do begin
+      wmdem.SetPanelText(3,'Tile ' + IntToStr(i) + '/' + IntToStr(TileList.Count));
+      GISdb[DBonTable].EmpSource.Enabled := false;
+      if (i mod 10 = 0) then UpdateProgressBar(i/TileList.Count);
+      GISdb[DBonTable].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(TileList.Strings[i]),false);
+      DEMs := GISdb[DBonTable].MyData.UniqueEntriesInDB('REF_TYPE');
+      TStr := DEMs[0];
+      if (DEMs.Count > 1) then TStr := TStr + ' + ' +  DEMs[1];
+      Findings.Add(GISdb[DBonTable].MyData.GetFieldByNameAsString('COUNTRY') + ',' + GISdb[DBonTable].MyData.GetFieldByNameAsString('AREA') + ',' +  TileList.Strings[i] + ',' + TStr);
+   end;
+   GISdb[DBonTable].ClearGISFilter;
+   fName := NextFileNumber(MDTempDir,'DEMIX_tile_inventory','.dbf');
+   StringList2CSVtoDB(Findings,fName);
+   GISdb[DBonTable].ShowStatus;
+   wmdem.SetPanelText(3,'');
+end;
+
+
+procedure VerifyTestDEMcoverages;
+var
+   Areas,Results : tStringList;
+   AreaName : shortstring;
+   fName : PathStr;
+   i,j,k,DEMs : Integer;
+   Lat,Long,Lat0,long0,distance,Bearing : float64;
+begin
+   GetDEMIXpaths(false);
+   Areas := DEMIX_AreasWanted(true);
+   Results := tStringList.Create;
+   Results.Add('AREA,DEM,DISTANCE');
+   for j := 0 to pred(Areas.Count) do begin
+      AreaName := Areas.Strings[j];
+      wmdem.SetPanelText(3,'Area ' + IntToStr(j) + '/' + IntToStr(Areas.Count) + '  ' + AreaName);
+      if OpenBothPixelIsDEMs(AreaName,'',DEMIX_Ref_1sec,DEMIX_test_dems,false) then begin
+         DEMGlb[PointDEMs[0]].DEMCenterPoint(Lat0,Long0);
+         for i := 1 to NumPt do begin
+            DEMGlb[PointDEMs[i]].DEMCenterPoint(Lat,Long);
+            VincentyCalculateDistanceBearing(Lat,Long,Lat0,Long0,Distance,Bearing);
+            Results.Add(AreaName + ',' + DEMGlb[PointDEMs[i]].AreaName + ',' + RealToString(0.001 * Distance,-12,-4));
+            if (Distance > 250) then DeleteFileIfExists(DEMGlb[PointDEMs[i]].DEMFileName);
+         end;
+         DEMGlb[AreaDEMs[0]].DEMCenterPoint(Lat0,Long0);
+         for i := 1 to NumArea do begin
+            DEMGlb[AreaDEMs[i]].DEMCenterPoint(Lat,Long);
+            VincentyCalculateDistanceBearing(Lat,Long,Lat0,Long0,Distance,Bearing);
+            Results.Add(AreaName + ',' + DEMGlb[AreaDEMs[i]].AreaName + ',' + RealToString(0.001 * Distance,-12,-4));
+            if (Distance > 250) then DeleteFileIfExists(DEMGlb[AreaDEMs[i]].DEMFileName);
+         end;
+         CloseAllDEMs;
+      end
+      else begin
+         //MessageToContinue('DEMs missing: ' + AreaName);
+      end;
+   end;
+   fName := NextFileNumber(MDTempDir,'test_dem_center_locations_','.dbf');
+   PetdbUtils.StringList2CSVtoDB(Results,fName);
+   Areas.Free;
+   EndDEMIXProcessing;
+end;
+
+
+procedure TrimReferenceDEMsToDEMIXtiles;
+var
+   Areas,Results : tStringList;
+   AreaName : shortstring;
+   fName : PathStr;
+   i,j,k,DEMs : Integer;
+   Lat,Long,Lat0,long0,distance,Bearing : float64;
+begin
+   GetDEMIXpaths(false);
+   Areas := DEMIX_AreasWanted(true);
+   for j := 0 to pred(Areas.Count) do begin
+      AreaName := Areas.Strings[j];
+      wmdem.SetPanelText(3,'Area ' + IntToStr(j) + '/' + IntToStr(Areas.Count) + '  ' + AreaName);
+      LoadDEMIXReferenceDEMs(AreaName,DEMIXRefDEM,true);
+      for i := 1 to MaxDEMDataSets do begin
+         if ValidDEM(i) then begin
+            ClipTheDEMtoFullDEMIXTiles(i);
+            DEMGlb[i].SaveAsGeotiff(DEMGlb[i].DEMFileName);
+         end;
+         CloseSingleDEM(i);
+      end;
+   end;
+   Areas.Free;
+   EndDEMIXProcessing;
+end;
+
 

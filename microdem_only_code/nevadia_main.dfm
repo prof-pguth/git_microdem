@@ -29,7 +29,6 @@ object wmdem: Twmdem
     Left = 0
     Top = 0
     Width = 2018
-    Height = 29
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34
@@ -2462,17 +2461,24 @@ object wmdem: Twmdem
       object N48: TMenuItem
         Caption = '-'
       end
-      object FillholesintestareaDEMs1: TMenuItem
-        Caption = 'Fill holes in test area DEMs (SAGA)'
-        OnClick = FillholesintestareaDEMs1Click
+      object Channelnetworkmultistep1: TMenuItem
+        Caption = 'Channel network multistep'
+        OnClick = Channelnetworkmultistep1Click
       end
-      object VectorchannelnetworksSAGA1: TMenuItem
-        Caption = 'Vector channel networks (SAGA)'
-        OnClick = VectorchannelnetworksSAGA1Click
-      end
-      object Createchannelnetworkgrids1: TMenuItem
-        Caption = 'Create channel network grids'
-        OnClick = Createchannelnetworkgrids1Click
+      object Partialchannelnetworkprocessing1: TMenuItem
+        Caption = 'Partial channel network processing'
+        object FillholesintestareaDEMs1: TMenuItem
+          Caption = 'Fill holes in test area DEMs (SAGA)'
+          OnClick = FillholesintestareaDEMs1Click
+        end
+        object VectorchannelnetworksSAGA1: TMenuItem
+          Caption = 'Vector channel networks (SAGA)'
+          OnClick = VectorchannelnetworksSAGA1Click
+        end
+        object Createchannelnetworkgrids1: TMenuItem
+          Caption = 'Create channel network grids'
+          OnClick = Createchannelnetworkgrids1Click
+        end
       end
       object Channelnetworkmisspercentagesbytile1: TMenuItem
         Caption = 'Channel network miss percentages by tile'
@@ -3619,11 +3625,11 @@ object wmdem: Twmdem
     object CreatetestareaDEMs1: TMenuItem
       Caption = 'Create test area DEMs'
       object Overwrite4: TMenuItem
-        Caption = 'Create test area DEMs (overwrite if exists)'
+        Caption = 'Overwrite if exists'
         OnClick = Overwrite4Click
       end
       object CreatetestareaDEMSskipifexists1: TMenuItem
-        Caption = 'Create test area DEMS (skip if exists)'
+        Caption = 'Skip if exists'
         OnClick = CreatetestareaDEMSskipifexists1Click
       end
     end
@@ -3669,28 +3675,6 @@ object wmdem: Twmdem
       Caption = 'Inventory difference stats'
       OnClick = Inventorydifferencestats1Click
     end
-    object MergeDEMIXtilestats1: TMenuItem
-      Caption = 'Merge DEMIX tile stats'
-      OnClick = MergeDEMIXtilestats1Click
-    end
-    object N47: TMenuItem
-      Caption = '-'
-    end
-    object N45: TMenuItem
-      Caption = 'Clip DEMs to full DEMIX tiles'
-      OnClick = N45Click
-    end
-    object N52: TMenuItem
-      Caption = '-'
-    end
-    object VerifySSIMfiles1: TMenuItem
-      Caption = 'Verify all SSIM files exist for tile'
-      OnClick = VerifySSIMfiles1Click
-    end
-    object CheckfilesizesforSSIMimagemismatches1: TMenuItem
-      Caption = 'Check file sizes for SSIM image mismatches'
-      OnClick = CheckfilesizesforSSIMimagemismatches1Click
-    end
     object Inventory3DEPtiles1: TMenuItem
       Caption = 'Inventory 3DEP source DEM tiles'
       OnClick = Inventory3DEPtiles1Click
@@ -3710,6 +3694,51 @@ object wmdem: Twmdem
     object InventoryDILUVIUMbytestarea1: TMenuItem
       Caption = 'Inventory DILUVIUM  by test area'
       OnClick = InventoryDILUVIUMbytestarea1Click
+    end
+    object MergeDEMIXtilestats1: TMenuItem
+      Caption = 'Merge DEMIX tile stats'
+      OnClick = MergeDEMIXtilestats1Click
+    end
+    object ComputeDEMIXtilestats1: TMenuItem
+      Caption = 'Compute DEMIX tile summary stats'
+      OnClick = ComputeDEMIXtilestats1Click
+    end
+    object N47: TMenuItem
+      Caption = '-'
+    end
+    object N45: TMenuItem
+      Caption = 'Clip DEMs to full DEMIX tiles'
+      OnClick = N45Click
+    end
+    object MaskwaterinreferenceDEMs1: TMenuItem
+      Caption = 'Mask water in reference DEMs'
+      OnClick = MaskwaterinreferenceDEMs1Click
+    end
+    object rimreferencedatatoDEMIXtiles1: TMenuItem
+      Caption = 'Trim reference data to DEMIX tiles'
+      OnClick = rimreferencedatatoDEMIXtiles1Click
+    end
+    object N52: TMenuItem
+      Caption = '-'
+    end
+    object VerifySSIMfiles1: TMenuItem
+      Caption = 'Verify all SSIM files exist for tile'
+      OnClick = VerifySSIMfiles1Click
+    end
+    object CheckfilesizesforSSIMimagemismatches1: TMenuItem
+      Caption = 'Check file sizes for SSIM image mismatches'
+      OnClick = CheckfilesizesforSSIMimagemismatches1Click
+    end
+    object InsureallreferenceDTMscorrectlynamed1: TMenuItem
+      Caption = 'Insure all reference DTMs correctly named'
+      OnClick = InsureallreferenceDTMscorrectlynamed1Click
+    end
+    object VerifytestDEMcoverages1: TMenuItem
+      Caption = 'Verify test DEM coverages (center locations)'
+      OnClick = VerifytestDEMcoverages1Click
+    end
+    object N50: TMenuItem
+      Caption = '-'
     end
     object MergeSSIMandR2database1: TMenuItem
       Caption = 'Merge SSIM and R2 database'

@@ -158,7 +158,6 @@ begin
       end;
    end;
    DEMGlb[DEM].DEMHeader.ElevUnits := euSimpleLandCover;
-   //Dispose(DEMGlb[DEM].NLCDCats);
    DEMGlb[DEM].CheckForLandCover;
    if (DEMGlb[DEM].SelectionMap <> Nil) then DEMGlb[DEM].SelectionMap.DoBaseMapRedraw;
 end;
@@ -183,16 +182,10 @@ var
    z : float32;
 begin
    Result := slcUndefined;
-   if (LandCoverGrid <> 0) then begin
+   if ValidDEM(LandCoverGrid) then begin
       if DEMGlb[LandCoverGrid].GetElevFromLatLongDegree(Lat,Long,z) then begin
          if (DEMGlb[LandCoverGrid].DEMHeader.ElevUnits = GLCS_LC100) then begin
             Result := ReclassifyLandCover(LandCoverGrid,round(z));
-            (*
-            if round(z) in [111..126] then Result := slcForest
-            else if round(z) in [30,60,70] then Result := slcBarren
-            else if round(z) in [50] then Result := slcUrban
-            else if round(z) in [80,200] then Result := slcWater;
-            *)
          end;
       end;
    end;

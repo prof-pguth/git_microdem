@@ -22,8 +22,6 @@ object DemixFilterForm: TDemixFilterForm
     ActivePage = TabSheet1
     Align = alClient
     TabOrder = 0
-    ExplicitWidth = 759
-    ExplicitHeight = 476
     object TabSheet1: TTabSheet
       Caption = 'New options'
       object LoadCurrentAreaBitBtn5: TBitBtn
@@ -55,6 +53,7 @@ object DemixFilterForm: TDemixFilterForm
         Checked = True
         State = cbChecked
         TabOrder = 2
+        OnClick = LoadOneSecRefCheckBoxClick
       end
       object CheckBox1: TCheckBox
         Left = 16

@@ -3,8 +3,8 @@ object ThisBaseGraph: TThisBaseGraph
   Top = 262
   Hint = 'Graph legend'
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 274
-  ClientWidth = 813
+  ClientHeight = 253
+  ClientWidth = 809
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -50,17 +50,16 @@ object ThisBaseGraph: TThisBaseGraph
   object ScrollBox1: TScrollBox
     Left = 0
     Top = 28
-    Width = 813
-    Height = 216
+    Width = 809
+    Height = 195
     Align = alClient
     TabOrder = 0
-    ExplicitWidth = 825
-    ExplicitHeight = 259
+    ExplicitHeight = 175
     object Image1: TImage
       Left = 0
       Top = 0
-      Width = 821
-      Height = 275
+      Width = 805
+      Height = 191
       Hint = 'Legend'
       Align = alClient
       OnDblClick = Image1DblClick
@@ -75,8 +74,8 @@ object ThisBaseGraph: TThisBaseGraph
   end
   object Panel1: TPanel
     Left = 0
-    Top = 244
-    Width = 813
+    Top = 223
+    Width = 809
     Height = 30
     Align = alBottom
     Caption = ' '
@@ -87,16 +86,14 @@ object ThisBaseGraph: TThisBaseGraph
     Font.Style = [fsBold]
     ParentFont = False
     TabOrder = 1
-    ExplicitTop = 287
-    ExplicitWidth = 825
+    ExplicitTop = 203
   end
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 813
+    Width = 809
     Height = 28
     TabOrder = 2
-    ExplicitWidth = 825
     object SpeedButton2: TSpeedButton
       Left = 0
       Top = 0

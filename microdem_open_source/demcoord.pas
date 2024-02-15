@@ -33,6 +33,7 @@ unit DEMCoord;
    {$IFDEF DEBUG}
       {$Define RecordDEMIX}
       //{$Define TrackSWCornerForComputations}
+      //{$Define RecordGridIdentical}
       //{$Define RecordUKOS}
       //{$Define SavePartDEM}
       //{$Define RecordMapType}
@@ -84,7 +85,6 @@ unit DEMCoord;
       //{$Define TimeLoadDEM}
       //{$Define RecordDefineDatum}
       //{$Define RecordDEMEdits}
-      //{$Define RecordGridIdentical}
       //{$Define RecordGetGridLimits}
       //{$Define RecordHiResDEM}
       //{$Define TriPrismErrors}
@@ -583,6 +583,7 @@ type
          procedure WriteNewFormatDEM(var FileName : PathStr; WhatFor : shortstring = '');  overload;
          procedure WriteNewFormatDEM(Limits : tGridLimits; var FileName : PathStr; WhatFor : shortstring = '');  overload;
          procedure SavePartOfDEMWithData(var FileName : PathStr);
+         procedure SavePartOfDEMWithDataGeotiff(var FileName : PathStr);
          procedure SaveSpecifiedPartOfDEM(var FileName : PathStr; Limits : tGridLimits);
          procedure CSVforVDatum(Delta : float64 = -99;fName : PathStr = '');
 
@@ -2908,20 +2909,6 @@ begin
 end;
 
 
-(*
-procedure tDEMDataSet.CheckUK_OS;
-begin
-   if (DEMMapProjection.PName = UK_OS) then begin
-      if UK_OS_projection(DEMFileName) or (DEMheader.DigitizeDatum = UK_OS_grid) then begin
-         {$IfDef UKOS} WriteLineToDebugFile('tDEMDataSet.CheckUK_OS, opening'); {$EndIf}
-         DEMMapProjection.PName := UK_OS;
-         DEMMapProjection.GetProjectParameters;
-         DEMheader.DigitizeDatum := UK_OS_grid;
-      end;
-   end;
-end;
-*)
-
 procedure tDEMDataSet.LatLongDegreetoUTM(Lat,Long : float64; var XUTM,YUTM : float64);
 begin
    DEMMapProjection.ForwardProjectDegrees(Lat,Long,XUTM,YUTM);
@@ -3630,6 +3617,7 @@ begin
          WriteLineToDebugFile('  delta SW X: ' + RealToString(abs(DEMheader.DEMSWCornerX - DEMGlb[DEM2].DEMheader.DEMSWCornerX),-18,-6));
          WriteLineToDebugFile('  delta SW Y: ' + RealToString(abs(DEMheader.DEMSWCornerY - DEMGlb[DEM2].DEMheader.DEMSWCornerY),-18,-6));
        {$EndIf}
+
        {$IfDef TrackSWCornerForComputations}
          WriteToDebugSWCornerForComputations('SecondGridJustOffset');
          DEMGlb[DEM2].WriteToDebugSWCornerForComputations('SecondGridJustOffset');

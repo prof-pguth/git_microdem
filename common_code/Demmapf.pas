@@ -1514,6 +1514,7 @@ type
     FD8Lognumbercells1: TMenuItem;
     FD8Lognumbercells2: TMenuItem;
     Whiteboxwetnessindex1: TMenuItem;
+    SAGALSfactor1: TMenuItem;
     //procedure HiresintervisibilityDEM1Click(Sender: TObject);
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
@@ -2630,6 +2631,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure FD8Lognumbercells1Click(Sender: TObject);
     procedure FD8Lognumbercells2Click(Sender: TObject);
     procedure Whiteboxwetnessindex1Click(Sender: TObject);
+    procedure SAGALSfactor1Click(Sender: TObject);
     //procedure RescaleallDEMsforSSIM1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
@@ -6075,7 +6077,7 @@ var
 begin
    {$IfDef NoExternalPrograms}
    {$Else}
-       NewGrid := WhiteBoxProfileCurvature(GeotiffDEMNameOfMap);
+       NewGrid := WBT_ProfileCurvature(GeotiffDEMNameOfMap);
        MatchAnotherDEMMap(NewGrid,MapDraw.DEMonMap);
    {$EndIf}
 end;
@@ -6169,7 +6171,7 @@ var
 begin
    {$IfDef NoExternalPrograms}
    {$Else}
-       NewGrid := WhiteBoxMinimalCurvature(GeotiffDEMNameOfMap);
+       NewGrid := WBT_MinimalCurvature(GeotiffDEMNameOfMap);
        MatchAnotherDEMMap(NewGrid,MapDraw.DEMonMap);
    {$EndIf}
 end;
@@ -7362,7 +7364,7 @@ var
 begin
    {$IfDef NoExternalPrograms}
    {$Else}
-       NewGrid := WhiteBoxMaximalCurvature(GeotiffDEMNameOfMap);
+       NewGrid := WBT_MaximalCurvature(GeotiffDEMNameOfMap);
        MatchAnotherDEMMap(NewGrid,MapDraw.DEMonMap);
    {$EndIf}
 end;
@@ -15764,7 +15766,7 @@ var
 begin
    {$IfDef NoExternalPrograms}
    {$Else}
-       NewGrid := WhiteBoxMeanCurvature(GeotiffDEMNameOfMap);
+       NewGrid := WBT_MeanCurvature(GeotiffDEMNameOfMap);
        MatchAnotherDEMMap(NewGrid,MapDraw.DEMonMap);
    {$EndIf}
 end;
@@ -16901,9 +16903,9 @@ begin
 
    if (DEMNowDoing in [SubsetByOutline]) and (StreamProfileResults <> Nil) then FreeAndNil(StreamProfileResults);
 
-   if (WmDEM <> Nil) then begin
+   if (WmDEM <> Nil) and (not LockStatusBar) then begin
       wmDEM.SetPanelText(0,NewTitle);
-      if (not LockStatusBar) then WmDEM.SetPanelText(3, '');
+      WmDEM.SetPanelText(3, '');
    end;
    if  not (DEMNowDoing in [GeodeticBearing]) then gbLatStart := -999;
 
@@ -19485,20 +19487,20 @@ procedure TMapForm.Whiteboxfillholes2Click(Sender: TObject);
 begin
    {$IfDef NoExternalPrograms}
    {$Else}
-      WhiteBoxGridFillMissingData(GeotiffDEMNameOfMap,DEMGlb[MapDraw.DEMonMap].DEMheader.ElevUnits);
+      WBT_GridFillMissingData(GeotiffDEMNameOfMap,DEMGlb[MapDraw.DEMonMap].DEMheader.ElevUnits);
    {$EndIf}
 end;
 
 procedure TMapForm.WhiteboxGeomorphons1Click(Sender: TObject);
 begin
-   WhiteBoxGeomorphons(GeotiffDEMNameOfMap);
+   WBT_Geomorphons(GeotiffDEMNameOfMap);
 end;
 
 procedure TMapForm.WhiteBoxmultiscaleroughness1Click(Sender: TObject);
 begin
    {$IfDef NoExternalPrograms}
    {$Else}
-      WhiteBoxMultiscaleRoughness(GeotiffDEMNameOfMap);
+      WBT_MultiscaleRoughness(GeotiffDEMNameOfMap);
    {$EndIf}
 end;
 
@@ -19512,7 +19514,7 @@ const
    FilterSize : integer = 5;
 begin
    ReadDefault('Filter Size (pixels)',FilterSize);
-   WhiteBox_AverageNormalVectorAngularDeviation(GeotiffDEMNameOfMap,FilterSize);
+   WBT_AvgNormVectAngDev(GeotiffDEMNameOfMap,FilterSize);
 end;
 
 
@@ -19520,7 +19522,7 @@ procedure TMapForm.Whiteboxaspectmap1Click(Sender: TObject);
 begin
    {$IfDef NoExternalPrograms}
    {$Else}
-      WhiteBoxAspectMap(GeotiffDEMNameOfMap);
+      WBT_AspectMap(GeotiffDEMNameOfMap);
    {$EndIf}
 end;
 
@@ -19529,25 +19531,25 @@ const
    FilterSize : integer = 5;
 begin
    ReadDefault('Filter Size (pixels)',FilterSize);
-   WhiteBox_CircularVarianceOfAspect(GeotiffDEMNameOfMap,FilterSize);
+   WBT_CircularVarianceOfAspect(GeotiffDEMNameOfMap,FilterSize);
 end;
 
 procedure TMapForm.Whiteboxdrainagebasins1Click(Sender: TObject);
 begin
-   WhiteBoxDrainageBasins(GeotiffDEMNameOfMap);
+   WBT_DrainageBasins(GeotiffDEMNameOfMap);
 end;
 
 procedure TMapForm.Whiteboxfillholes1Click(Sender: TObject);
 begin
    {$IfDef NoExternalPrograms}
    {$Else}
-      WhiteBoxGridFillMissingData(GeotiffDEMNameOfMap,DEMGlb[MapDraw.DEMonMap].DEMheader.ElevUnits);
+      WBT_GridFillMissingData(GeotiffDEMNameOfMap,DEMGlb[MapDraw.DEMonMap].DEMheader.ElevUnits);
    {$EndIf}
 end;
 
 procedure TMapForm.WhiteboxPennockClassification1Click(Sender: TObject);
 begin
-   WhiteBoxPennockLandformClass(GeotiffDEMNameOfMap,true);
+   WBT_PennockLandformClass(GeotiffDEMNameOfMap,true);
 end;
 
 procedure TMapForm.Whiteboxslopemape1Click(Sender: TObject);
@@ -19556,14 +19558,14 @@ var
 begin
    {$IfDef NoExternalPrograms}
    {$Else}
-       NewGrid := WhiteBoxSlopeMap(GeotiffDEMNameOfMap);
+       NewGrid := WBT_SlopeMap(GeotiffDEMNameOfMap);
        MatchAnotherDEMMap(NewGrid,MapDraw.DEMonMap);
    {$EndIf}
 end;
 
 procedure TMapForm.WhiteboxTRI1Click(Sender: TObject);
 begin
-   WhiteBox_TRI(GeotiffDEMNameOfMap);
+   WBT_TRI(GeotiffDEMNameOfMap);
 end;
 
 procedure TMapForm.Whiteboxwetnessindex1Click(Sender: TObject);
@@ -20355,7 +20357,7 @@ var
 begin
    {$IfDef NoExternalPrograms}
    {$Else}
-       NewGrid := WhiteBoxGaussianCurvature(GeotiffDEMNameOfMap);
+       NewGrid := WBT_GaussianCurvature(GeotiffDEMNameOfMap);
        MatchAnotherDEMMap(NewGrid,MapDraw.DEMonMap);
    {$EndIf}
 end;
@@ -23300,7 +23302,7 @@ var
 begin
    {$IfDef NoExternalPrograms}
    {$Else}
-       NewGrid := WhiteBoxTangentialCurvature(GeotiffDEMNameOfMap);
+       NewGrid := WBT_TangentialCurvature(GeotiffDEMNameOfMap);
        MatchAnotherDEMMap(NewGrid,MapDraw.DEMonMap);
    {$EndIf}
 end;
@@ -24180,7 +24182,12 @@ end;
 
 procedure TMapForm.SAGAflowaccumulationParallelizable1Click(Sender: TObject);
 begin
-   SagaFlowAccumulationParallizeable(DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
+   SAGA_FlowAccumulationParallizeable(DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
+end;
+
+procedure TMapForm.SAGALSfactor1Click(Sender: TObject);
+begin
+   SAGA_LSFactor(true,DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
 end;
 
 procedure TMapForm.SAGAremovesinks1Click(Sender: TObject);
@@ -24195,7 +24202,7 @@ end;
 
 procedure TMapForm.SAGAStrahlerordergrid1Click(Sender: TObject);
 begin
-   SAGAStrahlerOrderGrid(DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
+   SAGA_StrahlerOrderGrid(DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
 end;
 
 procedure TMapForm.SAGATPImap1Click(Sender: TObject);
@@ -24213,7 +24220,7 @@ end;
 
 procedure TMapForm.SAGAwatershedbasinsWangLiu1Click(Sender: TObject);
 begin
-   SagaWatershedBasinsWangLiu(DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
+   SAGA_WatershedBasinsWangLiu(DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
 end;
 
 procedure TMapForm.RecolorMapWithElevationRange(Min,Max : float32);

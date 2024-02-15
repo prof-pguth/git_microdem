@@ -3,8 +3,8 @@ object DEMHeaderForm: TDEMHeaderForm
   Top = 0
   BorderIcons = []
   Caption = 'DEMHeaderForm'
-  ClientHeight = 575
-  ClientWidth = 432
+  ClientHeight = 588
+  ClientWidth = 437
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

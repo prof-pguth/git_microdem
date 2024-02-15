@@ -37,26 +37,68 @@ ta_channels "Channel Network" -ELEVATION "C:/Users/pguth/AppData/Local/Temp/proc
  end;
 
 
- function SAGAMap(cmd : shortstring; {inName,}OutName : shortstring; ZUnits : tElevUnit; OpenMap : boolean = true) : integer;
+ function SAGAMap(cmd : shortstring; OutName : shortstring; ZUnits : tElevUnit; OpenMap : boolean = true) : integer;
  begin
     if IsSagaCMDthere then begin
        {$IfDef RecordSAGA} WriteLineToDebugFile('SAGAMap in, cmd= ' + CMD); {$EndIf}
        WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
-       if OpenMap and (OutName <> '') then begin
+       //if OpenMap and (OutName <> '') then begin
             {$IfDef RecordSAGA} WriteLineToDebugFile('SAGAMap opening map'); {$EndIf}
             Result := OpenNewDEM(OutName,false);
-            if (Result <> 0) and OpenMap then begin
+            if ValidDEM(Result) and OpenMap then begin
                DEMGlb[Result].DEMheader.ElevUnits := zUnits;
                CreateDEMSelectionMap(Result,true,true,mtElevSpectrum);
             end;
-       end;
-       {$IfDef RecordSAGA} WriteLineToDebugFile('SAGAMap out'); {$EndIf}
+      // end;
+       {$IfDef RecordSAGA} WriteLineToDebugFile('SAGAMap out, grid=' + IntToStr(Result)); {$EndIf}
     end
     else Result := 0;
  end;
 
 
-function SagaFlowAccumulationParallizeable(InName : PathStr; OutName : PathStr = '') : integer;
+function SAGA_LSFactor(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
+//  https://saga-gis.sourceforge.io/saga_tool_doc/8.2.1/ta_hydrology_22.html
+//  area from wetness index, https://saga-gis.sourceforge.io/saga_tool_doc/8.2.1/ta_hydrology_15.html
+
+//  slope in radians,  https://gis.stackexchange.com/questions/313659/ls-factor-in-saga-slope-units
+var
+    cmd : shortstring;
+    SlopeName,AreaName,TWIName : PathStr;
+begin
+   {$IfDef RecordSAGA} WriteLineToDebugFile('SAGA_LSFactor in, ' + InName); {$EndIf}
+   if (OutName = '') then OutName := MDTempDir + 'saga_ls_factor_' + ExtractFileNameNoExt(InName) + '.tif';
+   AreaName := MDTempDir + 'saga_catch_area_' + ExtractFileNameNoExt(InName) + '.tif';
+   TWIName := MDTempDir + 'saga_twi_' + ExtractFileNameNoExt(InName) + '.tif';
+   SlopeName := MDTempDir + 'saga_slope_rad_' + ExtractFileNameNoExt(InName) + '.tif';
+
+   cmd := MDDef.SagaCMD + ' ta_hydrology 15 -DEM ' + InName + ' -AREA ' + AreaName + ' TWI ' + TWIName;
+   {$IfDef RecordSAGA} WriteLineToDebugFile('LS_factor, ' + cmd); {$EndIf}
+   WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
+
+   cmd := MDDef.SagaCMD + ' ta_morphometry 0 -ELEVATION ' + InName + ' -SLOPE ' + SlopeName;
+   {$IfDef RecordSAGA} WriteLineToDebugFile('LS_factor, ' + cmd); {$EndIf}
+   WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
+
+   {$IfDef RecordSAGA} WriteLineToDebugFile('LS_factor, ' + cmd); {$EndIf}
+   CMD := MDDef.SagaCMD + ' ta_hydrology 22' +
+         ' -SLOPE ' + SlopeName +
+         ' -AREA ' + AreaName +
+         ' -LS ' + OutName;
+   //if OpenMap then begin
+      Result := SAGAMap(cmd,OutName,Undefined,OpenMap);
+   (*
+   end
+   else begin
+      WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
+      Result := OpenNewDEM(OutName,false);
+   end;
+   *)
+   {$If Defined(RecordSAGA) or Defined(RecordSAGAresult)} WriteLineToDebugFile(ExtractFileNameNoExt(InName) + '  SAGA_LSFactor out=' + IntToStr(Result)); {$EndIf}
+end;
+
+
+
+function SAGA_FlowAccumulationParallizeable(InName : PathStr; OutName : PathStr = '') : integer;
 //https://saga-gis.sourceforge.io/saga_tool_doc/9.3.1/ta_hydrology_29.html
 var
     cmd : shortstring;
@@ -91,7 +133,7 @@ Usage: saga_cmd ta_hydrology 29 [-DEM ] [-FLOW ] [-UPDATE ] [-METHOD ] [-CONVERG
 	Default: 1.100000
 *)
 
- function SagaWatershedBasinsWangLiu(InName : PathStr) : integer;
+ function SAGA_WatershedBasinsWangLiu(InName : PathStr) : integer;
 // https://saga-gis.sourceforge.io/saga_tool_doc/8.3.0/ta_preprocessor_4.html
  var
     cmd : shortstring;
@@ -129,7 +171,7 @@ begin
 end;
 
 
-function SAGAStrahlerOrderGrid(InName : PathStr; OutName : PathStr = '') : integer;
+function SAGA_StrahlerOrderGrid(InName : PathStr; OutName : PathStr = '') : integer;
 (*
 saga_cmd ta_channels 6 [-DEM <str>] [-STRAHLER <str>]
   -DEM:<str>     	Elevation

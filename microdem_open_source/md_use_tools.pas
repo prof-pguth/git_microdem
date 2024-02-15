@@ -17,6 +17,7 @@ unit md_use_tools;
    {$IFDEF DEBUG}
       //{$Define RecordWBT}
       //{$Define RecordSAGA}
+      //{$Define RecordSAGAresult}
 
       //{$Define OpenLasTools}
       //{$Define RecordACOLITE}
@@ -80,48 +81,48 @@ uses
 {$IfDef ExWhiteBox}
 {$Else}
    function WhiteBoxPresent : boolean;
-   function WhiteBoxGroundClassify(InName,OutName : PathStr) : shortString;
-   function WhiteBoxLidarSegmentationBasedFilter(InName,OutName : PathStr) : shortString;
-   procedure WBIDWCreate(InName,OutName : PathStr; GridSize : float64);
-   procedure WhiteBoxPennockLandformClass(InName : PathStr; SmoothFirst : boolean);
-   procedure WhiteBoxGeomorphons(InName : PathStr);
-   procedure WhiteBoxGridFillMissingData(InName : PathStr; TheElevUnits : tElevUnit);
-   procedure WBNearNeighCreate(InName,OutName : PathStr; GridSize : float64);
-   function WhiteBoxDeNoise(InName,OutName : PathStr) : shortString;
-   procedure WhiteBoxGeotiffMetadata(InName : PathStr);
-   function WhiteBoxSlopeMap(InName : PathStr) : integer;
-   procedure WhiteBoxAspectMap(InName : PathStr);
-   procedure WhiteBoxMultiscaleRoughness(InName : PathStr);
-   function WhiteBoxProfileCurvature(InName : PathStr): integer;
-   function WhiteBoxTangentialCurvature(InName : PathStr): integer;
-   function WhiteBoxMinimalCurvature(InName : PathStr): integer;
-   function WhiteBoxMaximalCurvature(InName : PathStr): integer;
-   function WhiteBoxMeanCurvature(InName : PathStr): integer;
-   function WhiteBoxGaussianCurvature(InName : PathStr): integer;
-   function WhiteBox_TRI(InName : PathStr) : integer;
-   function WhiteBox_AverageNormalVectorAngularDeviation(InName : PathStr; filtersize : integer) : integer;
-   function WhiteBox_CircularVarianceOfAspect(InName : PathStr; filtersize : integer) : integer;
-   function WhiteBoxDrainageBasins(InName : PathStr) : integer;
+   function WBT_GroundClassify(InName,OutName : PathStr) : shortString;
+   function WBT_LidarSegmentationBasedFilter(InName,OutName : PathStr) : shortString;
+   function WBT_DeNoise(InName,OutName : PathStr) : shortString;
+   function WBT_SlopeMap(InName : PathStr) : integer;
+   function WBT_ProfileCurvature(InName : PathStr): integer;
+   function WBT_TangentialCurvature(InName : PathStr): integer;
+   function WBT_MinimalCurvature(InName : PathStr): integer;
+   function WBT_MaximalCurvature(InName : PathStr): integer;
+   function WBT_MeanCurvature(InName : PathStr): integer;
+   function WBT_GaussianCurvature(InName : PathStr): integer;
+   function WBT_TRI(InName : PathStr) : integer;
+   function WBT_AvgNormVectAngDev(InName : PathStr; filtersize : integer) : integer;
+   function WBT_CircularVarianceOfAspect(InName : PathStr; filtersize : integer) : integer;
+   function WBT_DrainageBasins(InName : PathStr) : integer;
    function WBT_FlowAccumulation(OpenMap,Log,D8 : boolean; InName : PathStr; OutName : PathStr = '') : integer;
    function WBT_WetnessIndex(OpenMap,D8 : boolean; InName : PathStr; OutName : PathStr = '') : integer;
-
+   procedure WBT_IDWCreate(InName,OutName : PathStr; GridSize : float64);
+   procedure WBT_PennockLandformClass(InName : PathStr; SmoothFirst : boolean);
+   procedure WBT_Geomorphons(InName : PathStr);
+   procedure WBT_GridFillMissingData(InName : PathStr; TheElevUnits : tElevUnit);
+   procedure WBT_BNearNeighCreate(InName,OutName : PathStr; GridSize : float64);
+   procedure WBT_GeotiffMetadata(InName : PathStr);
+   procedure WBT_AspectMap(InName : PathStr);
+   procedure WBT_MultiscaleRoughness(InName : PathStr);
 {$EndIf}
 
 
 {$IfDef ExSAGA}
 {$Else}
+   procedure SAGA_all_DEMs_remove_sinks;
    function SagaTRIMap(InName : PathStr) : integer;
    function SagaTPIMap(InName : PathStr) : integer;
    function SagaVectorRuggednessMap(InName : PathStr; Radius : integer) : integer;
    function SagaSinkRemoval(InName : PathStr; OutName : PathStr = '') : integer;
-   procedure SAGA_all_DEMs_remove_sinks;
    function SagaChannelNetwork(InName : PathStr; OutName : PathStr = ''; ShpName : PathStr = '') : integer;
    function SagaChannelShapefile(InName : PathStr; ChannelName : PathStr = '') : integer;
    function SAGAedgeContaminationMap(InName : PathStr; OutName : PathStr = '') : integer;
    function SagaWatershedBasins(InName : PathStr; BasinGrid : PathStr = ''; ChannelNetwork : PathStr = ''; OutName : PathStr = '') : integer;
-   function SagaWatershedBasinsWangLiu(InName : PathStr) : integer;
-   function SAGAStrahlerOrderGrid(InName : PathStr; OutName : PathStr = '') : integer;
-   function SagaFlowAccumulationParallizeable(InName : PathStr; OutName : PathStr = '') : integer;
+   function SAGA_WatershedBasinsWangLiu(InName : PathStr) : integer;
+   function SAGA_StrahlerOrderGrid(InName : PathStr; OutName : PathStr = '') : integer;
+   function SAGA_FlowAccumulationParallizeable(InName : PathStr; OutName : PathStr = '') : integer;
+   function SAGA_LSFactor(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
 {$EndIf}
 
 

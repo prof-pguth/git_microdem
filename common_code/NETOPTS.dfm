@@ -4,8 +4,8 @@ object NetOptFm: TNetOptFm
   ActiveControl = OKBtn
   BorderStyle = bsDialog
   Caption = 'Stereo Net Options'
-  ClientHeight = 270
-  ClientWidth = 513
+  ClientHeight = 279
+  ClientWidth = 516
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack

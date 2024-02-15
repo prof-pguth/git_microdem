@@ -1,9 +1,11 @@
   unit sup_class_aux_grids;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{_________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2024 Peter L. Guth  }
+{___________________________________}
 
 
 {$I nevadia_defines.inc}
@@ -13,7 +15,6 @@
 {$EndIf}
 
 
-
 interface
 
 uses
@@ -21,15 +22,15 @@ uses
    Petmar_db,
    Data.DB,
    {$IfDef UseFireDacSQLlite}
-   FireDAC.Comp.Client, FireDAC.Comp.Dataset,FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteWrapper,
+      FireDAC.Comp.Client, FireDAC.Comp.Dataset,FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteWrapper,
    {$EndIf}
 
    {$IfDef UseTDBF}
-   dbf,
+      dbf,
    {$EndIf}
 
    {$IfDef UseTCLientDataSet}
-   DBClient,
+      DBClient,
    {$EndIf}
 
 
@@ -197,7 +198,6 @@ type
     ClassDEMS : array[1..MaxGeomorpFilters] of integer;
     LowVals,HighVals : array[1..MaxGeomorpFilters] of float64;
     procedure GridValuesAtPoint(Lat,Long : float64);
-
   end;
 
 
@@ -215,13 +215,13 @@ uses
    {$Else}
       DEMEros,
    {$EndIf}
-
-   DEMDefs,DEMCoord, DEMDef_Routines, BaseGraf,DEMDataBase,
-   PetImage,Petmar,
    {$IfDef ExGeoStats}
    {$Else}
       DEMStat,
    {$EndIf}
+
+   DEMDefs,DEMCoord, DEMDef_Routines, BaseGraf,DEMDataBase,
+   PetImage,Petmar,
    Mask_opts2,
    Make_Tables,
    rgb_colors_three_params,
@@ -618,7 +618,7 @@ end;
 
 procedure TSupClassAuxGrids.BitBtn12Click(Sender: TObject);
 var
-   xg1,yg1,N,Band{,NPts}     : integer;
+   xg1,yg1,N,Band  : integer;
    z : float32;
    TStr : ShortString;
    Hist : array[1..MaxGeomorpFilters] of integer;
@@ -663,7 +663,6 @@ begin
           LastMask := 0;
           ApplicationProcessMessages;
        end;
-
 
        LastMask := DEMGlb[ClassDEMs[1]].CloneAndOpenGridSetMissing(ByteDEM,'Mask',euIntCode);
 
@@ -1033,7 +1032,6 @@ begin
 end;
 
 
-
 procedure TSupClassAuxGrids.CancelBtnClick(Sender: TObject);
 begin
    Close;
@@ -1061,7 +1059,6 @@ procedure TSupClassAuxGrids.Edit4Change(Sender: TObject);
 begin
    TheClass := Edit4.Text;
 end;
-
 
 
 procedure TSupClassAuxGrids.CloseMaskingDEMs;
@@ -1108,11 +1105,10 @@ begin
 end;
 
 
-
 procedure TSupClassAuxGrids.BitBtn15Click(Sender: TObject);
 var
    NewHeadRecs : tDEMheader;
-   xg1,yg1,{N,Band,}NPts,NewMask     : integer;
+   xg1,yg1,NPts,NewMask     : integer;
    z : float32;
 
 
@@ -1191,13 +1187,12 @@ end;
 
 procedure TSupClassAuxGrids.BitBtn16Click(Sender: TObject);
 var
-   xg1,yg1,N,{Band,}NPts     : integer;
+   i,j,xg1,yg1,N,NPts     : integer;
    Lat,Long : float64;
    z : float32;
    TStr : ShortString;
    FName : PathStr;
    ClasseInDB,Results : tStringList;
-   i,j : Integer;
 begin
    {$IfDef SupClassAuxGrids} WriteLineToDebugFile('TSupClassAuxGrids.BitBtn16Click (mask) in'); {$EndIf}
 
@@ -1233,10 +1228,8 @@ begin
       fName := Petmar.NextFileNumber(MDTempDir, 'temp_','csv');
       BaseMap.StringListToLoadedDatabase(Results,fName);
    end;
-
    {$IfDef SupClassAuxGrids} WriteLineToDebugFile('TSupClassAuxGrids.BitBtn12Click out'); {$EndIf}
-
-end;
+ end;
 
 procedure TSupClassAuxGrids.BitBtn17Click(Sender: TObject);
 begin
@@ -1263,4 +1256,4 @@ initialization
 finalization
    {$IfDef SupClassAuxGrids} WriteLineToDebugFile('SupClassAuxGrids active in sup_class_aux_grids'); {$EndIf}
 end.
-
+       *

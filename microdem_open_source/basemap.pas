@@ -4,7 +4,7 @@ unit basemap;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -169,7 +169,7 @@ type
          procedure DefineDatumFromUTMZone(DatumCode : ShortString; UTMZone : byte; inLatHemi : ANSIchar;  Why : shortstring = '');
          function InitializeProjectionFromWKT(fName : PathStr) : boolean;
          function CheckForAllInDirectoryWKT(thePath : PathStr) : boolean;
-         function InitializeProjectionFromDEMHeader(DEMHeader : tDEMHeader) : boolean;
+         function InitializeProjectionFromDEMHeader(var DEMHeader : tDEMHeader; DebugName : shortstring = '') : boolean;
 
          function DecodeWKTProjectionFromString(TheProjectionString : Ansistring) : boolean;
          procedure StartUTMProjection(UTMZone : integer);
@@ -256,8 +256,8 @@ procedure SetUpDefaultNewProjection(var inMapProjection : tMapProjection; SetCen
 function CreateUKOSprojection : tMapProjection;
 function CreateIrishProjection : tMapProjection;
 
-procedure VincentyPointAtDistanceBearing(StartLat,StartLong,Distance,Bearing : float64; var Lat,Long : float64);
-procedure VincentyCalculateDistanceBearing(StartLat,StartLong,EndLat,EndLong : float64; var Distance,Bearing : float64);
+procedure VincentyPointAtDistanceBearing(StartLat,StartLong,DistanceMeters,Bearing : float64; var Lat,Long : float64);
+procedure VincentyCalculateDistanceBearing(StartLat,StartLong,EndLat,EndLong : float64; var DistanceMeters,Bearing : float64);
 function DistanceInKMLawOfCosines(Lat1,Long1,Lat2, Long2 : float64) : float64;
 function DistanceInKMHaversine(Lat1,Long1,Lat2, Long2 : float64) : float64;
 
@@ -343,23 +343,55 @@ const
 {$I basemap_vincenty.inc}
 
 
-function tMapProjection.InitializeProjectionFromDEMHeader(DEMHeader : tDEMHeader) : boolean;
+function tMapProjection.InitializeProjectionFromDEMHeader(var DEMHeader : tDEMHeader; DebugName : shortstring = '') : boolean;
 begin
+
+(*
+   if MapProjection.PName = UndefinedProj then begin
+      {$IfDef RecordCreateNewDEM} WriteLineToDebugFile('tDEMDataSet.AssignProjectionFromDEM in, projection=' + MapProjection.GetProjectionName); {$EndIf}
+      MapProjection.projUTMZone := DEMheader.UTMZone;
+      MapProjection.LatHemi := DEMheader.LatHemi;
+      if (DEMheader.wktString <> '') then begin
+         {$IfDef RecordProjectionParameters} MapProjection.ProjectionParamsToDebugFile('tDEMDataSet.AssignProjectionFromDEM, wkt=' + DEMheader.wktString); {$EndIf}
+         MapProjection.DecodeWKTProjectionFromString(DEMheader.wktString);
+      end
+      else if DEMheader.DEMUsed in [ArcSecDEM] then MapProjection.PName := PlateCaree
+      else if (DEMheader.DEMUsed = UTMBasedDEM) then begin
+         MapProjection.PName := UTMellipsoidal;
+         MapProjection.DefineDatumFromUTMZone(MapProjection.h_DatumCode,DEMheader.UTMZone,DEMMapProjection.LatHemi,'tDEMDataSet.DefineDEMVariables');
+         MapProjection.StartUTMProjection(DEMheader.UTMZone);
+      end;
+   end;
+   MapProjection.ProjDebugName := DebugName;
+*)
+   {$IfDef RecordProjectionParameters} MapProjection.ProjectionParamsToDebugFile('tDEMDataSet.AssignProjectionFromDEM, after definition'); {$EndIf}
+   {$IfDef RecordCreateNewDEM} WriteLineToDebugFile('tDEMDataSet.AssignProjectionFromDEM out, projection=' + MapProjection.GetProjectionName); {$EndIf}
+
    Result := true;
    LatHemi := DEMheader.LatHemi;
    h_DatumCode := DEMHeader.h_DatumCode;
    projUTMZone := DEMheader.UTMZone;
-   if (DEMheader.DEMUsed = UTMbasedDEM) then PName := UTMEllipsoidal;
-   if (DEMheader.DEMUsed = ArcSecDEM) then PName := PlateCaree;
-   if (DEMheader.DigitizeDatum = UK_OS_grid) then PName := UK_OS;
-   if (DEMheader.wktString <> '') then begin
-      DEMheader.DEMUsed := WKTDEM;
-      InitializeProjectionFromWKT(DEMheader.wktString);
-      Result := DecodeWKTProjectionFromString(DEMheader.wktString);
-   end
-   else begin
-      GetProjectParameters;
-   end;
+   //if (pName = UndefinedProj) then begin
+      if (DEMheader.DEMUsed = UTMbasedDEM) then begin
+         PName := UTMEllipsoidal;
+         DefineDatumFromUTMZone(h_DatumCode,DEMheader.UTMZone,LatHemi,'tDEMDataSet.DefineDEMVariables');
+         StartUTMProjection(DEMheader.UTMZone);
+         //GetProjectParameters;
+      end
+      else begin
+         if (DEMheader.DEMUsed = ArcSecDEM) then PName := PlateCaree;
+         if (DEMheader.DigitizeDatum = UK_OS_grid) then PName := UK_OS;
+         if (DEMheader.wktString <> '') then begin
+            DEMheader.DEMUsed := WKTDEM;
+            InitializeProjectionFromWKT(DEMheader.wktString);
+            Result := DecodeWKTProjectionFromString(DEMheader.wktString);
+         end
+         else begin
+            GetProjectParameters;
+         end;
+      end;
+   //end;
+   ProjDebugName := DebugName;
    {$IfDef RecordDEMprojection} WriteLineToDebugFile('tMapProjection.InitializeProjectionFromDEMHeader, map ' + GetProjectionName); {$EndIf}
 end;
 
@@ -642,7 +674,7 @@ begin
          Result := wktProjName;
       end
       else if (TiffOffset = 27700) then begin
-          PName := UK_OS;
+         PName := UK_OS;
       end
       else if (TiffOffset = 0) or (TiffOffset = 32662)  then begin
           PName := PlateCaree;
@@ -783,6 +815,9 @@ begin
       end;
       ProjData.Free;
       Result := DecodeWKTProjectionFromString(wktString);
+   end
+   else begin
+      MessageToContinue('WKT file required: ' + fName);
    end;
   {$If Defined(RecordWKT) or Defined(LongCent)} ShortProjInfo('tMapProjection.InitializeProjectionFromWKT out'); {$EndIf}
 end;

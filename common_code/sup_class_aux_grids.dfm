@@ -4,8 +4,8 @@ object SupClassAuxGrids: TSupClassAuxGrids
   BorderIcons = [biSystemMenu]
   BorderStyle = bsDialog
   Caption = 'Multiple grid masking'
-  ClientHeight = 644
-  ClientWidth = 806
+  ClientHeight = 642
+  ClientWidth = 798
   Color = cl3DLight
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -420,8 +420,8 @@ object SupClassAuxGrids: TSupClassAuxGrids
     OnClick = BitBtn6Click
   end
   object BitBtn7: TBitBtn
-    Left = 656
-    Top = 304
+    Left = 662
+    Top = 296
     Width = 89
     Height = 25
     Caption = 'Add single grid'

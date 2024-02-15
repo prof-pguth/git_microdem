@@ -16,6 +16,28 @@ begin
 end;
 
 
+procedure MaskWaterInReferenceDEMs;
+var
+   TheFiles,Results : tStringList;
+   i,DEM : integer;
+   fName : PathStr;
+begin
+   TheFiles := Nil;
+   FindMatchingFiles(DEMIX_Ref_1sec,'*.tif',TheFiles);
+   //StartProgress('Masking water');
+   for i := 0 to pred(TheFiles.Count) do begin
+      //UpdateProgressBar(i/TheFiles.Count);
+      fName := theFiles.Strings[i];
+      DEM := OpenNewDEM(fName,false);
+      MarkWaterMissingInThisDEM(DEM);
+      DEMglb[DEM].SaveAsGeotiff(DEMglb[DEM].DEMFileName);
+      CloseSingleDEM(DEM);
+   end;
+   //EndProgress;
+   TheFiles.Free;
+end;
+
+
 procedure DEMIX_Merge3DEPReferenceDEMs(Overwrite : boolean; DataDir : PathStr = '');
 var
    Paths : tStringList;
@@ -40,33 +62,37 @@ var
             end
             else begin
                Files := nil;
-               Petmar.FindMatchingFiles(aDir,'*.tif',Files,0);
+               Petmar.FindMatchingFiles(aDir, '*.tif',Files,0);
 
-               if DoAllFilesHaveSetEGMandPixelIs(Files) then begin
+               //if DoAllFilesHaveSetEGMandPixelIs(Files) then begin
                   {$If Defined(Record3DEPX)} WriteLineToDebugFile('OnePixelIs ' + aDir + ' Found DEMs=' + IntToStr(Files.Count)); {$EndIf}
                   RemoveFilesThatDoNotHaveString(Files,which);  //can only use DEMs with aggregated to 1 arc sec, for correct pixel-is
-                  {$If Defined(Record3DEPX)} WriteLineToDebugFile('OnePixelIs Found aggregated ref DEMs=' + IntToStr(Files.Count)); {$EndIf}
+                  {$If Defined(Record3DEPX)} WriteLineToDebugFile(Which + ' aggregated ref DEMs=' + IntToStr(Files.Count)); {$EndIf}
                   if (Files.Count = 0) then begin
                      Files.Destroy;
                   end
                   else begin
-                     DEM := MergeMultipleDEMsHere(Files,false,false);
+                     DEM := MergeMultipleDEMsHere(Files,true,false);
                      {$If Defined(Record3DEPX)} WriteLineToDebugFile('Merged'); {$EndIf}
                      DEMGlb[DEM].SavePartOfDEMWithData(DoneName);
                      {$If Defined(Record3DEPX)} WriteLineToDebugFile('Data part saved'); {$EndIf}
                      ClipTheDEMtoFullDEMIXTiles(DEM,DoneName);
+                     MarkWaterMissingInThisDEM(DEM);
+                     DEMglb[DEM].SaveAsGeotiff(DoneName);
                      {$If Defined(Record3DEPX)} WriteLineToDebugFile('Clipped, ' + DoneName); {$EndIf}
                   end;
+               (*
                end
                else begin
                   {$If Defined(Record3DEPX)} HighlightLineToDebugFile('File headers improperly defined in ' + aDir); {$EndIf}
                end;
+               *)
             end;
             CloseAllDEMs;
          end;
    begin
       OutPath := DEMIX_Ref_1sec;
-      OnePixelIs('_ref_1sec_point');
+      OnePixelIs(Ref1SecPointStr);
       OnePixelIs('_ref_1sec_area');
    end;
 
@@ -118,23 +144,14 @@ var
       {$If Defined(Record3DEPX)} WriteLineToDebugFile('MakeRefDEMsForOneDir Found EGM2008 TIFs=' + IntToStr(Files.Count)); {$EndIf}
       RemoveFilesThatDoHaveString(Files,'_REF_'); //cannot use DEMs already reference
       {$If Defined(Record3DEPX)} WriteLineToDebugFile('MakeRefDEMsForOneDir Found EGM2008 TIFs, not ref=' + IntToStr(Files.Count)); {$EndIf}
-(*
-      for i := pred(Files.Count) downto 0 do begin
-         fName := Files.Strings[i];
-         DoneName := ChangeFileExt(fName,'_ref_1sec_point.tif');
-         if (not Overwrite) and DEMIXSkipFilesAlreadyDone and (FileExists(ChangeFileExt(fName,'_ref_1sec_point.dem')) and FileExists(ChangeFileExt(fName,'_ref_1sec_area.dem'))) then begin
-            Files.Delete(I);
-         end;
-      end;
-*)
       {$If Defined(Record3DEPX)} WriteLineToDebugFile('MakeRefDEMsForOneDir Found EGM2008 TIFs, not done yet=' + IntToStr(Files.Count)); {$EndIf}
 
       for i := 0 to pred(Files.Count) do begin
           fName := Files.Strings[i];
           AreaName := LastSubDir(ExtractFilePath(fName));
           wmdem.SetPanelText(2, 'Area: ' + IntToStr(succ(i)) + '/' + IntToStr(Files.Count) + '  ' + AreaName);
-          fName2 := ChangeFileExt(fName,'_ref_1sec_point.tif');
-          fName := ChangeFileExt(fName, '_ref_1sec_area.tif');
+          fName2 := ChangeFileExt(fName,Ref1SecPointStr + '.tif');
+          fName := ChangeFileExt(fName, Ref1SecAreaStr + '.tif');
           if FileExists(fName) and FileExists(fName2) and (not Overwrite) then begin
           end
           else begin
@@ -343,9 +360,9 @@ begin
             wmdem.SetPanelText(2, 'Area: ' + IntToStr(succ(anArea)) + '/' + IntToStr(Areas.Count));
             AreaName := Areas.Strings[AnArea];
             AreaPath := DEMIX_Ref_Source + AreaName + '\';
-            AreaMergeName := DEMIX_Ref_1sec + AreaName + '_ref_1sec_area.tif';
+            AreaMergeName := DEMIX_Ref_1sec + AreaName + Ref1SecAreaStr + '.tif';
             Merge(AreaPath,'*_pia.tif',AreaMergeName);
-            AreaMergeName := DEMIX_Ref_1sec + AreaName + '_ref_1sec_point.tif';
+            AreaMergeName := DEMIX_Ref_1sec + AreaName + Ref1SecPointStr + '.tif';
             Merge(AreaPath,'*_pip.tif',AreaMergeName);
           end {for area};
       end;
@@ -507,8 +524,8 @@ begin
               AreaName := LastSubDir(AreaPath);
               //OutPath := ExtractFilePath(AreaInventoryName);
               wmdem.SetPanelText(2, 'Area: ' + IntToStr(succ(i)) + '/' + IntToStr(Areas.Count) + '  ' + AreaName);
-              fName := AreaPath + AreaName + '_ref_1sec_area.tif';
-              fName2 := AreaPath + AreaName + '_ref_1sec_point.tif';
+              fName := AreaPath + AreaName + 'dtm_' + Ref1SecAreaStr + '.tif';
+              fName2 := AreaPath + AreaName + 'dtm_' + Ref1SecPointStr + '.tif';
               if (not Overwrite) and FileExists(fName) and FileExists(fName2) then begin
                  {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs already done ' + fName ); {$EndIf}
               end
@@ -642,7 +659,7 @@ begin
       Ext := '.tif';
 
       if (OutPath = '') then OutPath := ExtractFilePath(DEMGlb[DEM].DEMFileName);
-      BaseName := DEMGlb[DEM].AreaName + '_ref_';
+      BaseName := DEMGlb[DEM].AreaName {+ '_ref_'};
 
       if ResampleMode in [ResampleModeRange] then begin
          {$If Defined(Record3DEPXFull)} WriteLineToDebugFile('Range scales'); {$EndIf}
@@ -659,8 +676,8 @@ begin
       end;
       if ResampleMode in [ResampleModeBoth,ResampleModeOneSec] then begin
          {$If Defined(Record3DEPXFull)} WriteLineToDebugFile('Start one sec'); {$EndIf}
-         CreateOneRefDEM(PixelIsPoint,1,1,OutPath + BaseName + '1sec_point' + Ext);
-         CreateOneRefDEM(PixelIsArea,1,1,OutPath + BaseName + '1sec_area' + Ext);
+         CreateOneRefDEM(PixelIsPoint,1,1,OutPath + BaseName + Ref1SecPointStr + Ext);
+         CreateOneRefDEM(PixelIsArea,1,1,OutPath + BaseName + Ref1SecAreaStr + Ext);
 
          if (DEMGlb[DEM].DEMSWcornerLat > 50) and (DEMGlb[DEM].DEMSWcornerLat < 60) then begin
             CreateOneRefDEM(PixelIsPoint,1.5,1,OutPath + BaseName + '1.5x1sec_point' + Ext);

@@ -1,11 +1,18 @@
 unit U_SolarPos2;
 
 
- {Copyright  © 2003-2005, Gary Darby,  www.DelphiForFun.org
-  This program may be used or modified for any non-commercial purpose
-  so long as this original notice remains in place.
-  All other rights are reserved
-  }
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2024 Peter L. Guth  }
+{___________________________________}
+
+
+//Based on the following code
+//  Copyright  © 2003-2005, Gary Darby,  www.DelphiForFun.org  This program may be used or modified for any non-commercial purpose
+//      so long as this original notice remains in place.  All other rights are reserved
+
 
  {SunPos displays solar position and sunrise/sunset infor for any given date
  and time at any given location on earth.
@@ -55,8 +62,7 @@ type
     procedure ShowBtnClick(Sender: TObject);
     procedure FormActivate(Sender: TObject);
     procedure AnalemmaBtnClick(Sender: TObject);
-    procedure DatePickerUserInput(Sender: TObject; const UserString: String; var DateAndTime: TDateTime;
-      var AllowChange: Boolean);
+    procedure DatePickerUserInput(Sender: TObject; const UserString: String; var DateAndTime: TDateTime; var AllowChange: Boolean);
     procedure PBoxPaint(Sender: TObject);
     procedure LongEdtExit(Sender: TObject);
     procedure StaticText1Click(Sender: TObject);
@@ -103,11 +109,12 @@ type
 
 
 var
-  SolorPosForm1: TSolorPosForm1;
+  SolorPosForm1 : TSolorPosForm1;
 
 implementation
 
 {$R *.DFM}
+
 Uses
    Petmar,PetDBUtils,Nevadia_Main,Petmar_types,DEMDefs,DEMDatabase,
    math;

@@ -4159,6 +4159,7 @@ object MapForm: TMapForm
         end
         object GDALTRIWilsonbathymetric1: TMenuItem
           Caption = 'GDAL TRI (Wilson, bathymetric)'
+          OnClick = GDALTRIWilsonbathymetric1Click
         end
         object GDALTRIRileyterrestrial1: TMenuItem
           Caption = 'GDAL TRI (Riley, terrestrial)'
@@ -4219,6 +4220,10 @@ object MapForm: TMapForm
         object SAGAStrahlerordergrid1: TMenuItem
           Caption = 'SAGA Strahler order grid'
           OnClick = SAGAStrahlerordergrid1Click
+        end
+        object SAGALSfactor1: TMenuItem
+          Caption = 'SAGA LS factor'
+          OnClick = SAGALSfactor1Click
         end
         object N63: TMenuItem
           Caption = '-'

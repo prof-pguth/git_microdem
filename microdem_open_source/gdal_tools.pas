@@ -15,15 +15,14 @@ unit gdal_tools;
 
 
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
-   //{$Define RecordGDALOpen}
-   {$Define RecordSubsetOpen}
 
    {$IFDEF DEBUG}
-      {$Define RecordSubsetOpen}
+      //{$Define RecordGDALOpen}
+      //{$Define RecordSubsetOpen}
       {$Define RecordDEMIX}
-      {$Define RecordSubsetGDAL}
-      {$Define RecordGDALinfo}
-      {$Define RecordReformatCommand}
+      //{$Define RecordSubsetGDAL}
+      //{$Define RecordGDALinfo}
+      //{$Define RecordReformatCommand}
       //{$Define RecordDEMIXCompositeDatum}
       //{$Define RecordGDALOpen}
       //{$Define RecordUseOtherPrograms}
@@ -1018,7 +1017,7 @@ end;
            OutPath,OutName : PathStr;
            LandCover,TStr,ExtentBoxString   : shortstring;
            Imagebb : sfBoundBox;
-           GDALinfo : tGDALinfo;
+           //GDALinfo : tGDALinfo;
            Ext : ExtStr;
          begin
             CheckFileNameForSpaces(fName);
@@ -1090,7 +1089,9 @@ end;
          {$IfDef RecordReformat} WriteLineToDebugFile('Enter GetFilesNamesForGDALtranslate, in=' + InName); {$EndIf}
          if (UpperCase(ExtractFileExt(InName)) = '.TIF') or (UpperCase(ExtractFileExt(InName)) = '.TIFF') then begin
              if TempStorage then begin
-                OutName := MDtempdir + ExtractFileName(InName);
+                if ExtractFilePath(InName) = MDtempDir then
+                     OutName := MDtempdir + 'rewritten_' + ExtractFileName(InName)
+                else OutName := MDtempdir + ExtractFileName(InName);
              end
              else begin
                 tName := ExtractFilePath(InName) + 'original_' + ExtractFileNameNoExt(InName) + '.tif';

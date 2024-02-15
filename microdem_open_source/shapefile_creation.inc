@@ -201,7 +201,7 @@ var
       end;
 
 begin
-   {$If Defined(RecordCreateShapeFileFull)}  FromDatum.ShortProjInfo('tShapeFileCreation.AddLineUTMToShapeFile'); {$EndIf}
+   {$If Defined(RecordCreateShapeFileFull)} FromDatum.ShortProjInfo('tShapeFileCreation.AddLineUTMToShapeFile'); {$EndIf}
    Convert := not (WGSEquivalentDatum(FromDatum.h_DatumCode) );
    InitializeBoundingBox(MainFileHeader.BoundBox);
    x := x1;
@@ -226,7 +226,6 @@ begin
       until (y >= y2 - Bitty);
    end;
    ProcessRecordForShapeFile;
-   //Offscale:;
 end;
 
 
@@ -312,7 +311,7 @@ var
 begin
    inc(RecsInShapeStream);
    GetPolyLineHeader(plHdr,zMin,zMax);
-   {$IfDef RecordShapeFileWrite} WriteLineToDebugFile('ProcessRecordForShapeFile rec=' + IntToStr(RecsInShapeStream) + '  Parts=' + IntToStr(plHdr.NumParts) + '    Pts=' + IntToStr(plHdr.NumPoints)); {$EndIf}
+   {$IfDef RecordShapeFileWrite} WriteLineToDebugFile('ProcessRecordForShapeFile rec=' + IntToStr(RecsInShapeStream) + ' Parts=' + IntToStr(plHdr.NumParts) + ' Pts=' + IntToStr(plHdr.NumPoints)); {$EndIf}
    Off := FileSize(glShapeFile) div 2;
    ConL := plHdr.ContentLength;
 
@@ -369,7 +368,7 @@ begin
    with PointsHeader do begin
       RecordNumber := RecsInShapeStream;
       ContentLength := 10;
-      {$IfDef RecordCreateShapeFile} WriteLineToDebugFile('Rec:  ' + IntToStr(RecordNumber) + '   long=' + IntToStr(ContentLength)); {$EndIf}
+      {$IfDef RecordCreateShapeFile} WriteLineToDebugFile('Rec=' + IntToStr(RecordNumber) + '  long=' + IntToStr(ContentLength)); {$EndIf}
       Int4Swap(RecordNumber);
       Int4Swap(ContentLength);
       ShapeType := 1;
@@ -398,7 +397,7 @@ begin
    with PointZsHeader do begin
       RecordNumber := RecsInShapeStream;
       ContentLength := 14;
-      {$IfDef RecordCreateShapeFile} WriteLineToDebugFile('Rec:  ' + IntToStr(RecordNumber) + '   long=' + IntToStr(ContentLength)); {$EndIf}
+      {$IfDef RecordCreateShapeFile} WriteLineToDebugFile('Rec=' + IntToStr(RecordNumber) + '  long=' + IntToStr(ContentLength)); {$EndIf}
       Int4Swap(RecordNumber);
       Int4Swap(ContentLength);
       ShapeType := 11;
@@ -460,12 +459,12 @@ var
 
 begin
    inc(RecsInShapeStream);
-   {$IfDef RecordShapeFileWrite} WriteLineToDebugFile('oldProcessRecordForShapeFile rec=' + IntToStr(RecsInShapeStream) + '  Parts=' + IntToStr(NumParts) + '    Pts=' + IntToStr(NumPts)); {$EndIf}
+   {$IfDef RecordShapeFileWrite} WriteLineToDebugFile('oldProcessRecordForShapeFile rec=' + IntToStr(RecsInShapeStream) + ' Parts=' + IntToStr(NumParts) + '  Pts=' + IntToStr(NumPts)); {$EndIf}
    OldGetPolyLineHeader(dCoord,NumParts,NumPts,Parts,zs,LastRecPolyLineHeader,zmin,zmax);
    with LastRecPolyLineHeader do begin
       Off := FileSize(glShapeFile) div 2;
       ConL := LastRecPolyLineHeader.ContentLength;
-      {$IfDef RecordShapeFileWrite} WriteLineToDebugFile('offset=' + intToStr(Off) + '  size=' + IntToStr(LastRecPolyLineHeader.ContentLength)); {$EndIf}
+      {$IfDef RecordShapeFileWrite} WriteLineToDebugFile('offset=' + intToStr(Off) + ' size=' + IntToStr(LastRecPolyLineHeader.ContentLength)); {$EndIf}
 
       Int4Swap(LastRecPolyLineHeader.RecordNumber);
       Int4Swap(LastRecPolyLineHeader.ContentLength);
@@ -498,7 +497,7 @@ end;
 function tShapeFileCreation.CloseShapeFiles : integer;
 begin
    with glMainFileHeader do begin
-      {$IfDef RecordCreateShapeFile} WriteLineToDebugFile('Close new shape file, records: ' + IntToStr(RecsInShapeStream) + '   SW corner: ' + LatLongDegreeToString(BoundBox.YMin,BoundBox.XMin) + '   NE corner: ' + LatLongDegreeToString(BoundBox.YMax,BoundBox.XMax)); {$EndIf}
+      {$IfDef RecordCreateShapeFile} WriteLineToDebugFile('Close new shape file, records: ' + IntToStr(RecsInShapeStream) + '  SW corner: ' + LatLongDegreeToString(BoundBox.YMin,BoundBox.XMin) + '   NE corner: ' + LatLongDegreeToString(BoundBox.YMax,BoundBox.XMax)); {$EndIf}
 
       FileLength := RecsInShapeStream * 4 + 50;
       Int4Swap(FileLength);

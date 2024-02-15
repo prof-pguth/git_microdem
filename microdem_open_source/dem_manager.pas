@@ -567,7 +567,7 @@ begin
          //MapProjection.Destroy;
          TiffImage.Destroy;
       end
-      else if (MDversion= mdWhiteBox) then WhiteBoxGeotiffMetadata(fName)
+      else if (MDversion= mdWhiteBox) then WBT_GeotiffMetadata(fName)
       else if (MDversion= mdListGeo) then begin
           OutName := MDTempDir + extractFileNameNoExt(fname) + '_metadata.txt';
           cmd := ProgramRootDir + 'listgeo\listgeo.exe ' + fname + ' > ' + Outname;
