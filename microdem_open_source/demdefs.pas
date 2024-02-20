@@ -1932,9 +1932,12 @@ type
       MakeRGB_Best_Map,
       RGBbestSeparates,
 
+
+      DoSSIM,
+      DoR2,
       LoadRefDEMMaps,LoadTestDEMMaps,
       LoadRefDEMs,LoadTestDEMs,
-      SSIM_elev,SSIM_slope,SSIM_ruff,SSIM_rri,SSIM_hill,SSIM_tpi,
+      SSIM_elev,SSIM_slope,SSIM_ruff,SSIM_rri,SSIM_hill,SSIM_tpi,SSIM_flow,SSIM_LS,SSIM_Wet,
       DEMIXCompositeImage,
       DEMIX_DoCHM,
       DEMIX_DoAirOrDirt,
@@ -3137,7 +3140,7 @@ var
    {$EndIf}
 
    DEMStatsString : String;
-   IndexDataOnLine : tMyData;
+   //IndexDataOnLine : tMyData;
    LastDEMLoaded,
    LastVectorMap : integer;
 

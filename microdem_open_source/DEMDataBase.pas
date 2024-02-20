@@ -874,7 +874,11 @@ uses
 
    DP_control,Dragon_Plot_init,
 
-   DEMIX_control,
+   {$IfDef ExDEMIX}
+   {$Else}
+      demix_definitions,
+      DEMIX_Control,
+   {$EndIf}
 
    Make_Tables,
    GPS_strings,
@@ -5085,7 +5089,7 @@ function TGISdataBaseModule.LatLongFieldsPresent : boolean;
 
       procedure GetlatLongFieldNames(Table : tMyData; var LatFieldName,LongFieldName : ShortString);
       begin
-         if Table.FieldExists('LONG') and Table.IsNumericField('LONG') and Table.FieldExists('LAT') and Table.IsNumericField('LAT') then begin
+         if Table.FieldExists('LONG',true,ftfloat) and Table.FieldExists('LAT',true,ftfloat) then begin
             LatFieldName := 'LAT';
             LongFieldName := 'LONG';
             exit;
@@ -5100,6 +5104,7 @@ function TGISdataBaseModule.LatLongFieldsPresent : boolean;
          if Table.FieldExists('DEC_LONG',true,ftFloat) then LongFieldName := 'DEC_LONG';
          if Table.FieldExists('LONG1',true,ftFloat) then LongFieldName := 'LONG1';
          if Table.FieldExists('LONG_',true,ftFloat) then LongFieldName := 'LONG_';
+         if Table.FieldExists('LONG_CENT',true,ftFloat) then LongFieldName := 'LONG_CENT';
          if Table.FieldExists('LONG',true,ftFloat) then LongFieldName := 'LONG';
 
          LatFieldName := '';
@@ -5112,6 +5117,7 @@ function TGISdataBaseModule.LatLongFieldsPresent : boolean;
          if Table.FieldExists('DEC_LAT',true,ftFloat) then LatFieldName := 'DEC_LAT';
          if Table.FieldExists('LAT1',true,ftFloat) then LatFieldName := 'LAT1';
          if Table.FieldExists('LAT_',true,ftFloat) then LatFieldName := 'LAT_';
+         if Table.FieldExists('LAT_CENT',true,ftFloat) then LatFieldName := 'LAT_CENT';
          if Table.FieldExists('LAT',true,ftFloat) then LatFieldName := 'LAT';
       end;
 
@@ -5738,6 +5744,7 @@ end;
          dbTablef.DBonTable := 0;
          Action := caFree;
          dbTablef.FormClose(nil,Action);
+         dbTablef.Destroy;
          dbTablef := Nil;
       end;
       if Reopen then begin

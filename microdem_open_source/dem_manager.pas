@@ -267,7 +267,12 @@ uses
    {$EndIf}
 
    toggle_db_use,
-   DEMIX_Control,
+
+   {$IfDef ExDEMIX}
+   {$Else}
+      demix_definitions,
+      DEMIX_Control,
+   {$EndIf}
 
    Make_Tables,
    Map_overlays,
@@ -646,7 +651,7 @@ end;
          while not Table.eof do begin
             inc(i);
             CompareDEMNames[i] := Table.GetFieldByNameAsString('SERIES');
-            LoadMapLibraryBox(CompareDEMIndexes[i],WantImage,true,bb.ymax,bb.xmin,bb.ymin,bb.xmax,CompareDEMNames[i],false);
+            LoadMapLibraryBox(CompareDEMIndexes[i],WantImage,true,bb{bb.ymax,bb.xmin,bb.ymin,bb.xmax},CompareDEMNames[i],false);
             if (CompareDEMIndexes[i] = 0) then begin
                dec(i);
             end

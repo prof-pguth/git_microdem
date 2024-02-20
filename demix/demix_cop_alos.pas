@@ -78,7 +78,7 @@ implementation
 
 uses
    Nevadia_Main,
-   DEMIX_Control,
+   demix_definitions,
    DEMstat,Make_grid,PetImage,PetImage_form,new_petmar_movie,DEMdatabase,PetDButils,Pick_several_dems,
    DEMCoord,DEMdefs,DEMMapf,DEMDef_routines,DEM_Manager,DEM_indexes,PetMath;
 

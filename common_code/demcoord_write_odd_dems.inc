@@ -394,7 +394,7 @@ procedure tDEMDataSet.WriteBILFormatDEM(var FileName : PathStr);
 var
    fFile : file;
    x,y    : integer;
-   Mean,Std,AveDev,z : float32;
+   Mean,Std,z : float32;
    Dir      : DirStr;
    Name     : NameStr;
    Ext      : ExtStr;
@@ -433,7 +433,7 @@ begin
    Header.SaveToFile(Dir + Name + '.BLW');
    Header.Clear;
    {$IfDef RecordWriteDEM}   WriteLineToDebugFile('blw written'); {$EndIf}
-   ElevationStatistics(Mean,Std,AveDev,true);
+   ElevationStatistics(FullDEMGridLimits, Mean,Std);
    Header.Add('1 ' + RealToString(ZinMeters(DEMheader.MinElev),-12,0) + ' ' + RealToString(ZinMeters(DEMheader.MaxElev),-12,0) + ' ' +  RealToString(Mean,-12,1) + ' ' + RealToString(Std,-12,1)  );
    Header.SaveToFile(Dir + Name + '.STX');
    Header.Free;

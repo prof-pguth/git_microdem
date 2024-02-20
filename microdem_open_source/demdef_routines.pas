@@ -26,7 +26,7 @@
       //{$Define RecordFindUTM}
       //{$Define RecordGDAL}
       //{$Define RecordNaturalEarthFileNames}
-      //{$Define RecordInitialization}
+      {$Define RecordInitialization}
       //{$IfDef RecordInitializationDetailed}
       //{$Define RecordINIfiles}
       //{$Define Options}
@@ -2462,19 +2462,27 @@ var
          AParameter('DEMIX','MakeRGB_Best_Map',MakeRGB_Best_Map,true);
          AParameter('DEMIX','RGBbestSeparates',RGBbestSeparates,true);
          AParameter('DEMIX','DEMIX_default_half_sec_ref',DEMIX_default_half_sec_ref,false);
-         AParameter('DEMIX','SSIM_elev',SSIM_elev,true);
-         AParameter('DEMIX','SSIM_slope',SSIM_slope,true);
-         AParameter('DEMIX','SSIM_ruff',SSIM_ruff,true);
-         AParameter('DEMIX','SSIM_rri',SSIM_rri,true);
-         AParameter('DEMIX','SSIM_tpi',SSIM_tpi,true);
-         AParameter('DEMIX','SSIM_hill',SSIM_hill,true);
          AParameter('DEMIX','DEMIX_open_ref_DEM',DEMIX_open_ref_DSM,true);
          AParameter('DEMIX','DEMIX_Full',DEMIX_Full,100);
          AParameter('DEMIX','LoadRefDEMMaps',LoadRefDEMMaps,true);
          AParameter('DEMIX','LoadTestDEMMaps',LoadTestDEMMaps,true);
          AParameter('DEMIX','LoadRefDEMs',LoadRefDEMs,true);
          AParameter('DEMIX','LoadTestDEMs',LoadTestDEMs,true);
-         AParameter('DEMIX','DEMIX_overwrite_enabled',DEMIX_overwrite_enabled,false);
+
+         AParameter('DEMIX','SSIM_elev',SSIM_elev,true);
+         AParameter('DEMIX','SSIM_slope',SSIM_slope,true);
+         AParameter('DEMIX','SSIM_ruff',SSIM_ruff,true);
+         AParameter('DEMIX','SSIM_rri',SSIM_rri,true);
+         AParameter('DEMIX','SSIM_tpi',SSIM_tpi,true);
+         AParameter('DEMIX','SSIM_hill',SSIM_hill,true);
+
+         AParameter('DEMIX','SSIM_LS',SSIM_LS,true);
+         AParameter('DEMIX','SSIM_flow',SSIM_Flow,true);
+         AParameter('DEMIX','SSIM_wet',SSIM_wet,true);
+
+         AParameter('DEMIX','DoSSIM',DoSSIM,true);
+         AParameter('DEMIX','DoR2',DoR2,true);
+
       end;
    end;
 

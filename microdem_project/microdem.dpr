@@ -319,12 +319,14 @@ uses
   U_SolarPos2 in '..\SolarPosSource\U_SolarPos2.pas' {SolorPosForm1},
   ufrmMain in '..\FireMonkey3DGlobalRotate\ufrmMain.pas' {frmMain},
   demix_filter in '..\demix\demix_filter.pas' {DemixFilterForm},
-  demix_control in '..\demix\demix_control.pas',
   monitor_change_form in '..\common_code\monitor_change_form.pas' {ChangeMapForm},
   pick_several_dems in '..\common_code\pick_several_dems.pas' {tPickGridsForm},
   tiger_address in '..\gis_ops\tiger_address.pas' {TigerAddressForm},
   demix_cop_alos in '..\demix\demix_cop_alos.pas',
-  DEM_NLCD in '..\common_code\DEM_NLCD.pas';
+  DEM_NLCD in '..\common_code\DEM_NLCD.pas',
+  demix_definitions in '..\demix\demix_definitions.pas',
+  demix_control in '..\demix\demix_control.pas',
+  demix_graphs in '..\demix\demix_graphs.pas';
 
 //MethodCallBack in '..\python4delphi\Source\MethodCallBack.pas',
   //VarPyth in '..\python4delphi\Source\VarPyth.pas',

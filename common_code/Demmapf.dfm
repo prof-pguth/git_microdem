@@ -1617,7 +1617,7 @@ object MapForm: TMapForm
           GroupIndex = 1
         end
         object GeoTIFF1: TMenuItem
-          Caption = 'GeoTIFF'
+          Caption = 'Entire DEM/grid, GeoTIFF'
           GroupIndex = 1
           OnClick = GeoTIFF1Click
         end
@@ -1625,6 +1625,15 @@ object MapForm: TMapForm
           Caption = 'Current subset, Geotiff'
           GroupIndex = 1
           OnClick = CurrentsubsetGeotiff1Click
+        end
+        object PortionwithdataGeotiff1: TMenuItem
+          Caption = 'Portion with data, Geotiff'
+          GroupIndex = 1
+          OnClick = PortionwithdataGeotiff1Click
+        end
+        object N64: TMenuItem
+          Caption = '-'
+          GroupIndex = 1
         end
         object DTED1: TMenuItem
           Caption = 'DTED'
@@ -2092,7 +2101,6 @@ object MapForm: TMapForm
       object Exportmaplibrary1: TMenuItem
         Caption = 'Export map library'
         GroupIndex = 1
-        OnClick = Exportmaplibrary1Click
       end
       object Deletesavedbasemaps1: TMenuItem
         Caption = 'Delete saved base maps'
@@ -4439,6 +4447,14 @@ object MapForm: TMapForm
           Caption = 'COP/ALOS 9 categories'
           OnClick = COPALOS9categories1Click
         end
+        object SSIMcheckthinning1: TMenuItem
+          Caption = 'SSIM check thinning'
+          OnClick = SSIMcheckthinning1Click
+        end
+        object SSIMcheckwindowsize1: TMenuItem
+          Caption = 'SSIM check window size'
+          OnClick = SSIMcheckwindowsize1Click
+        end
       end
     end
     object Imageanalysis1: TMenuItem
@@ -4905,19 +4921,6 @@ object MapForm: TMapForm
       Caption = 'Test3d'
       GroupIndex = 1
       OnClick = TestMD1Click
-    end
-    object DEMIX1: TMenuItem
-      Caption = 'DEMIX'
-      GroupIndex = 1
-      object Datumshiftcomparison1: TMenuItem
-        Caption = 'Datum shift comparison (only Stateline)'
-      end
-      object Shiftfilecomparison1: TMenuItem
-        Caption = 
-          'Shift file comparison (in progress, compare 1 and 5 minute EGM20' +
-          '08 grids)'
-        OnClick = Shiftfilecomparison1Click
-      end
     end
   end
   object SaveDialog1: TSaveDialog

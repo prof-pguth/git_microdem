@@ -696,7 +696,7 @@ type
             procedure GetBothOpennessInLongArray(GridLimits: tGridLimits; var NPts : int64; var UpValues,DownValues : Petmath.bfarray32; IncludeSeaLevel : boolean = true);
             {$IfDef MultipleCurvatureMethods} function GetCurvature(Col,Row : integer; var PlanCurvature,SlopeCurvature : float64) : boolean; {$EndIf}
             procedure GetDEMMeanStd;
-            procedure ElevationStatistics(var Mean,Std,AveDev : float32; UseZero : boolean);
+            procedure ElevationStatistics(GridLimits: tGridLimits; var Mean,Std : float32);
             function ElevationMoments(GridLimits: tGridLimits) : tMomentVar;
             procedure ElevationMomentsWithArray(GridLimits: tGridLimits; var MomentVar : tMomentVar; var zvs : bfarray32);
 
@@ -1787,7 +1787,7 @@ begin
           SelectionMap.Closable := true;
           SelectionMap.FormClose(Nil,Action);
        finally
-          SelectionMap := Nil;
+          //SelectionMap := Nil;
           {$If Defined(RecordClosing) or Defined(RecordDEMClose)} WriteLineToDebugFile('tDEMDataSet.Destroy finished close selection map'); {$EndIf}
        end;
    {$EndIf}

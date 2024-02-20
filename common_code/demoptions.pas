@@ -617,6 +617,13 @@ uses
       Dragon_plot_init,
   {$EndIf}
 
+   {$IfDef ExDEMIX}
+   {$Else}
+      demix_definitions,
+      DEMIX_Control,
+   {$EndIf}
+
+
    gdal_tools,
    PetEd32,
    DEM_Digit_opts,
@@ -630,7 +637,7 @@ uses
    USOutlines,
    PETMAR,PETMath,PETGraphColors, Petmar_ini_file,
    DEM_indexes,
-   Nevadia_Main, demix_control;
+   Nevadia_Main;
 
 var
    MainMap,
@@ -838,15 +845,11 @@ begin
 
    OnRow := 0;
    DrawRow(MainMap,'Main map directory',MainMapData);
+   DrawRow(SAGArow,'SAGA EXE name',MDDef.SagaCMD);
    DrawRow(EtopoRow,'ETOPO DEM',ETOPODEMName);
    DrawRow(Viewsheds,'Viewshed dir',SaveViewShedDir);
-   DrawRow(SAGArow,'SAGA EXE name',MDDef.SagaCMD);
    DrawRow(VectorMap,'Vector map name',VectorMapName);
-
-   {$IfDef ExGDAL}
-   {$Else}
-      DrawRow(FWT,'GDAL',GDALtools_Dir);
-   {$EndIf}
+   DrawRow(FWT,'GDAL',GDALtools_Dir);
 
    //DrawRow(DEMIXbase,'DEMIX',MDDef.Demix_base_dir);
    //DrawRow(TauDEM,'TauDEM',TauDEMDir);
@@ -871,14 +874,11 @@ begin
       if Arow = ViewSheds then GetDOSPath('Viewshed dir',SaveViewShedDir);
       if Arow = VectorMap then GetFileFromDirectory('Vector map name','*.prj',VectorMapName);
       if Arow = SAGArow then GetFileFromDirectory('SAGA exe','*.exe',MDDef.SagaCMD);
-      {$IfDef ExGDAL}
-      {$Else}
-         if (Arow = FWT) then begin
-            GDALtools_Dir := '';
-            GetGDALFileNames;
-         end;
-      {$EndIf}
-      //if Arow = DEMIXbase then DEMIX_control.SetDEMIXdirs(true);
+      if (Arow = FWT) then begin
+         GDALtools_Dir := '';
+         GetGDALFileNames;
+      end;
+      //if Arow = DEMIXbase then demix_definitions.SetDEMIXdirs(true);
       //if Arow = TauDEM then GetDOSPath('TauDEM',TauDEMDir);
    end;
    LabelDirectories;

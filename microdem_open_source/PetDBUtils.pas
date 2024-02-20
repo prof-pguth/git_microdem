@@ -1118,8 +1118,18 @@ end;
 
 
 function MakeCornersGeoFilter(bBox : sfBoundBox) : AnsiString;
+var
+   TStr : shortstring;
 begin
-   Result := MakeCornersGeoFilter(bBox.YMax,bBox.XMin,bBox.YMin,bBox.xMax);
+   //Result := MakeCornersGeoFilter(bBox.YMax,bBox.XMin,bBox.YMin,bBox.xMax);
+
+   LongitudeAngleInRange(bbox.xmin);
+   LongitudeAngleInRange(bbox.xmax);
+   if (bbox.xmin < bbox.xmax) then TStr := 'LONG_LOW<=' + RealToString(bbox.xmax,-18,6) + ' AND LONG_HI>=' + RealToString(bbox.xmin,-18,6)
+   else TStr := '((LONG_LOW<=' + RealToString(bbox.xmax,-18,6) + ' AND LONG_HI>=' + RealToString(bbox.xmin,-18,6) + ') OR ' +
+                 '(LONG_LOW<=' + RealToString(bbox.xmin,-18,6) + ' AND LONG_HI<=' + RealToString(bbox.xmax,-18,6) + ')';
+   Result := '(LAT_LOW<=' + RealToString(bbox.ymax,-18,6) + ' AND LAT_HI>=' + RealToString(bbox.ymin,-18,6) + ' AND ' + TStr + ')';
+
 end;
 
 

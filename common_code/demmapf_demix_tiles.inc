@@ -70,7 +70,7 @@ const
           end;
 
 
-function CreateDEMIXTileShapefile(WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false) : shortstring;
+procedure CreateDEMIXTileShapefile(var fName : PathStr; WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false);
 const
    SegsPerSide = 1;
 var
@@ -87,9 +87,10 @@ begin
    if (WantBoundBoxGeo.xMin < 0) then FirstLong := trunc(WantBoundBoxGeo.xMin - 1)
    else FirstLong := trunc(WantBoundBoxGeo.xMin);
    LastLong := trunc(WantBoundBoxGeo.xMax+1);
-   Result := Petmar.NextFileNumber(MDTempDir, 'demix_tiles_',DefaultDBExt);
 
-   ShapeFileCreator := tShapeFileCreation.Create(WGS84DatumConstants,Result,true,5);
+   if (fName = '') then fName := Petmar.NextFileNumber(MDTempDir, 'demix_tiles_',DefaultDBExt);
+
+   ShapeFileCreator := tShapeFileCreation.Create(WGS84DatumConstants,fName,true,5);
    ShapeFileCreator.Table.InsureFieldPresentAndAdded(ftString,'LETTERS',2);
    if AddGridFull then ShapeFileCreator.Table.InsureFieldPresentAndAdded(ftFloat,'GRID_FULL',9,2);
    if AddTileSize then begin
@@ -145,7 +146,7 @@ begin
       end;
    end;
    ShapeFileCreator.CloseShapeFiles;
-   AddProjectionFile(Result);
+   AddProjectionFile(fName);
    EndProgress;
    {$If Defined(RecordCarto)} WriteLineToDebugFile('TMapForm.LoadDEMIXtileOutlines out '+ sfBoundBoxToString(WantBoundBoxGeo)); {$EndIf}
 end;
@@ -158,11 +159,14 @@ var
    bbgrid : tGridLimits;
    Full : float32;
    bb : sfBoundBox;
+   fName : PathStr;
 begin
    {$IfDef RecordDEMIXTiles} writeLineToDebugFile('DEMIXtileFill in, DEM=' + IntToStr(DEM)); {$EndIf}
    if ValidDEM(DEM) then try
       StartProgress('DEMIX tiles');
-      Result := DEMGLB[DEM].SelectionMap.LoadDEMIXtileOutlines(AreaBox,true,OpenTable);
+      fName := NextFileNumber(MDtempDir,DEMGLB[DEM].AreaName+ '_demix_tile_fill_','.dbf');
+      //Result := DEMGLB[DEM].SelectionMap.LoadDEMIXtileOutlines(fName,AreaBox,true,OpenTable);
+      Result := LoadDEMIXtileOutlinesNoMap(FName,AreaBox,true,OpenTable);
 
       if (Result <> 0) then try
          {$IfDef RecordDEMIXTiles} writeLineToDebugFile('DEMIXtileFill, db created recs=' + IntToStr(GISdb[Result].MyData.TotRecsInDB)); {$EndIf}
@@ -199,23 +203,19 @@ begin
 end;
 
 
-function LoadDEMIXtileOutlinesNoMap(WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false; OpenTable : boolean = true) : integer;
-var
-   DEMIXFName : PathStr;
+function LoadDEMIXtileOutlinesNoMap(var DEMIXFName : PathStr; WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false; OpenTable : boolean = true) : integer;
 begin
    {$If Defined(RecordCarto)} WriteLineToDebugFile('LoadDEMIXtileOutlinesNoMap in ' + sfBoundBoxToString(WantBoundBoxGeo)); {$EndIf}
-   DEMIXFName := CreateDEMIXTileShapefile(WantBoundBoxGeo,AddGridFull,AddTileSize);
+   CreateDEMIXTileShapefile(DEMIXFName,WantBoundBoxGeo,AddGridFull,AddTileSize);
    OpenNumberedGISDataBase(Result,DEMIXFName,OpenTable);
    {$If Defined(RecordCarto)} WriteLineToDebugFile('LoadDEMIXtileOutlinesNoMap out'); {$EndIf}
 end;
 
 
-function TMapForm.LoadDEMIXtileOutlines(WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false; OpenTable : boolean = true) : integer;
-var
-   DEMIXFName : PathStr;
+function TMapForm.LoadDEMIXtileOutlines(var DEMIXFName : PathStr; WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false; OpenTable : boolean = true) : integer;
 begin
    {$If Defined(RecordCarto)} WriteLineToDebugFile('TMapForm.LoadDEMIXtileOutlines in ' + sfBoundBoxToString(MapDraw.MapCorners.BoundBoxGeo)); {$EndIf}
-   DEMIXFName := CreateDEMIXTileShapefile(WantBoundBoxGeo,AddGridFull,AddTileSize);
+   CreateDEMIXTileShapefile(DEMIXFName,WantBoundBoxGeo,AddGridFull,AddTileSize);
    Result := LoadDataBaseFile(DEMIXFName,OpenTable);
    {$If Defined(RecordCarto)} WriteLineToDebugFile('TMapForm.LoadDEMIXtileOutlines out'); {$EndIf}
 end;
@@ -259,6 +259,7 @@ var
    bb : sfBoundBox;
    db : integer;
    Name : shortstring;
+   fName : PathStr;
 begin
    Result := tStringList.Create;
    bb := MapDraw.MapCorners.BoundBoxGeo;
@@ -268,7 +269,8 @@ begin
       GISdb[DB].Empsource.Enabled := false;
    end
    else begin
-      LoadDEMIXtileOutlines(bb,False,False,False);
+      fName := NextFileNumber(MDtempDir,'demix_tile_fill_','.dbf');
+      LoadDEMIXtileOutlines(fName,bb,False,False,False);
    end;
    {$If Defined(RecordCarto)} WriteLineToDebugFile('TMapForm.DEMIXtilesOnMap, tiles=' + IntToStr(GISdb[db].MyData.FiltRecsInDB)); {$EndIf}
    while not GISdb[db].MyData.Eof do begin

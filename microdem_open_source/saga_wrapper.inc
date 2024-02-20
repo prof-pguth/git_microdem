@@ -33,7 +33,15 @@ ta_channels "Channel Network" -ELEVATION "C:/Users/pguth/AppData/Local/Temp/proc
 
  function IsSagaCMDthere : boolean;
  begin
-    Result := FileExists(MDDef.SagaCMD) or GetExistingFileName('saga_cmd.exe','*.exe',MDDef.SagaCMD);
+    Result := FileExists(MDDef.SagaCMD);
+    if (not Result) then begin
+       FindDriveWithFile(MDDef.SagaCMD);
+       Result := FileExists(MDDef.SagaCMD);
+       if (not Result) then begin
+          Result := GetExistingFileName('saga_cmd.exe','*.exe',MDDef.SagaCMD);
+       end;
+       if Result then SaveMDdefaults;
+    end;
  end;
 
 
@@ -42,14 +50,14 @@ ta_channels "Channel Network" -ELEVATION "C:/Users/pguth/AppData/Local/Temp/proc
     if IsSagaCMDthere then begin
        {$IfDef RecordSAGA} WriteLineToDebugFile('SAGAMap in, cmd= ' + CMD); {$EndIf}
        WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
-       //if OpenMap and (OutName <> '') then begin
+       if OpenMap and (OutName <> '') then begin
             {$IfDef RecordSAGA} WriteLineToDebugFile('SAGAMap opening map'); {$EndIf}
             Result := OpenNewDEM(OutName,false);
             if ValidDEM(Result) and OpenMap then begin
                DEMGlb[Result].DEMheader.ElevUnits := zUnits;
                CreateDEMSelectionMap(Result,true,true,mtElevSpectrum);
             end;
-      // end;
+       end;
        {$IfDef RecordSAGA} WriteLineToDebugFile('SAGAMap out, grid=' + IntToStr(Result)); {$EndIf}
     end
     else Result := 0;

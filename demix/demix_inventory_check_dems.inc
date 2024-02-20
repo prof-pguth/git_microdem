@@ -4,8 +4,95 @@
 { Released under the MIT Licences    }
 { Copyright (c) 2024 Peter L. Guth   }
 {------------------------------------}
-{    include file for demix_control  }
+{ include file for demix_definitions }
 {____________________________________}
+
+
+
+procedure InventoryChannelDataByArea;
+var
+   Areas,Results : tStringList;
+   AreaName : shortstring;
+   i : integer;
+   fName : PathStr;
+   FileList : array[1..7] of tStringList;
+
+   function CountOfFiles(ID : integer; Area : shortString) : integer;
+   var
+      j : integer;
+      fName : PathStr;
+   begin
+      Result := 0;
+      for j := 0 to pred(FileList[ID].Count) do begin
+         fName := UpperCase(FileList[ID].Strings[j]);
+         if (StrUtils.AnsiContainsText(fName,UpperCase(Area) )) then inc(Result);
+      end;
+   end;
+
+   procedure LoadFiles(ID : integer; Dir : PathStr; Ext : shortString);
+   begin
+      FileList[ID] := Nil;
+      FindMatchingFiles(Dir,Ext,FileList[ID]);
+      {$If Defined(RecordDEMIX)} WriteLineToDebugFile(Dir + '  ' + Ext + '  files=' + IntToStr(FileList[ID].Count)); {$EndIf}
+   end;
+
+
+begin
+   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('InventoryChannelDataByArea in'); {$EndIf}
+   GetDEMIXPaths;
+   Areas := tStringList.Create;
+   Areas.LoadFromFile(DEMIXSettingsDir + 'areas_list.txt');
+
+   Results := tStringList.Create;
+   Results.Add('AREA,REF_NOS,TEST_NOS,REF_SHP,TEST_SHP,REF_GRID,TEST_GRID,MISS_CSV');
+   LoadFiles(1,DEMIX_ref_DEMs_no_sink,'*.tif');
+   LoadFiles(2,DEMIX_test_DEMs_no_sink,'*.tif');
+   LoadFiles(3,DEMIX_ref_DEMs_channels,'*.shp');
+   LoadFiles(4,DEMIX_test_DEMs_channels,'*.shp');
+   LoadFiles(5,DEMIX_ref_DEMs_channel_grids,'*.tif');
+   LoadFiles(6,DEMIX_test_DEMs_channel_grids,'*.tif');
+   LoadFiles(7,ChannelMissesDir,'*.csv');
+   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('InventoryChannelDataByArea loaded'); {$EndIf}
+
+   for i := 0 to pred(Areas.Count) do begin
+      AreaName := Areas.Strings[i];
+      Results.Add(AreaName + ',' + IntToStr(CountOfFiles(1,AreaName)) + ',' +
+                                   IntToStr(CountOfFiles(2,AreaName)) + ',' +
+                                   IntToStr(CountOfFiles(3,AreaName)) + ',' +
+                                   IntToStr(CountOfFiles(4,AreaName)) + ',' +
+                                   IntToStr(CountOfFiles(5,AreaName)) + ',' +
+                                   IntToStr(CountOfFiles(6,AreaName)) + ',' +
+                                   IntToStr(CountOfFiles(7,AreaName)));
+
+   end;
+
+
+   Areas.Destroy;
+   fName := NextFileNumber(MDTempDir,'status_channel_files_','.dbf');
+   PetdbUtils.StringList2CSVtoDB(Results,fName);
+   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('InventoryChannelDataByArea out'); {$EndIf}
+end;
+
+procedure InventoryListRefereneDTMbyArea;
+var
+   TheFiles,Results : tStringList;
+   i : integer;
+   fName : PathStr;
+begin
+   TheFiles := Nil;
+   FindMatchingFiles(DEMIX_Ref_1sec,'*.tif',TheFiles);
+   Results := tStringList.Create;
+   Results.Sorted := true;
+   for i := 0 to pred(TheFiles.Count) do begin
+      fName := theFiles.Strings[i];
+      if (StrUtils.AnsiContainsText(fName,'_point')) and (not StrUtils.AnsiContainsText(fName,'_dsm'))then begin
+         fName := AreaNameFromRefDEMName(fName);
+         fName := StringReplace(fName,'_dtm','',[rfReplaceAll, rfIgnoreCase]);
+         Results.Add(fName);
+      end;
+   end;
+   DisplayAndPurgeStringList(Results,'DEMIX test areas with reference DTM (point; n=' + IntToStr(Results.Count) + ')');
+end;
 
 
 procedure InventoryDEMIXdifferenceStats;
@@ -83,7 +170,7 @@ begin
 end;
 
 
-procedure CheckReferenceDEMs;
+procedure InventoryDBwithDSMandDTMbyArea;
 var
    FilesWanted,Areas,Results : tStringList;
    AreaName : shortstring;
@@ -105,19 +192,6 @@ begin
          fName := FilesWanted.Strings[j];
          if StrUtils.AnsiContainsText(UpperCase(fname),UpperCase(AreaName)) then begin
             JustName := ExtractFileName(fname);
-
-            //when sure all the file names are harmonized, this can be removed
-            if (not StrUtils.AnsiContainsText(UpperCase(JustName),'REF')) then begin
-               NewName := '';
-               if StrUtils.AnsiContainsText(UpperCase(JustName),'1sec') then NewName := StringReplace(JustName, '1sec', 'ref_1sec',[rfIgnoreCase]);
-               if StrUtils.AnsiContainsText(UpperCase(JustName),'1.5') then NewName := StringReplace(JustName, '1.5', 'ref_1.5',[rfIgnoreCase]);
-               if (NewName <> '') then begin
-                  NewName := ExtractFilePath(fName) + NewName;
-                  RenameFile(fName,NewName);
-                  fName := NewName;
-               end;
-            end;
-
             if StrUtils.AnsiContainsText(UpperCase(fname),'DSM') then inc(DSMs)
             else inc(DTMs);
          end;
@@ -210,7 +284,7 @@ var
    j,k : integer;
 begin
    FilesWanted := tStringList.Create;
-   FindMatchingFiles(DEMIX_test_dems,'*.dem',FilesWanted,1);
+   FindMatchingFiles(DEMIX_test_dems,'*.tif',FilesWanted,1);
    RemoveFilesThatDoNotHaveString(FilesWanted,AreaName);
    DEMs := 0;
    Missing := '-';
@@ -239,41 +313,26 @@ var
    ProblemAreas,FilesWanted,Areas,Results : tStringList;
    AreaName,Missing,Found : shortstring;
    fName,NewName,JustName : PathStr;
-   i,j,k,DEMs : Integer;
+   i,j,k,DEMs,Refs : Integer;
 begin
    GetDEMIXpaths(false);
    ProblemAreas := tStringList.Create;
    Areas := tStringList.Create;
    Areas.LoadFromFile(DEMIXSettingsDir + 'areas_list.txt');
    Results := tStringList.Create;
-   Results.Add('AREA,TEST_DEMs,MISS_DEM');
+   Results.Add('AREA,REF_DEMS,TEST_DEMs,MISS_DEM');
    for i := 0 to pred(Areas.Count) do begin
       AreaName := Areas.Strings[i];
       if TestDEMsAllPresent(AreaName,DEMs,Missing) then ProblemAreas.Add(AreaName);
-      Results.Add(AreaName + ',' + IntToStr(DEMs) + ',' + Missing);
-(*
-      DEMs := 0;
-      Found := '';
-      for j := 0 to pred(FilesWanted.Count) do begin
-         fName := FilesWanted.Strings[j];
-         if StrUtils.AnsiContainsText(UpperCase(fname),UpperCase(AreaName)) then begin
-            inc(DEMs);
-            Found := Found + UpperCase(ExtractFileNameNoExt(fName));
-         end;
-      end;
-      Missing := '-';
-      if (DEMs <> RequiredTestDEMs) then begin
-         for k := 1 to NumDemixDEM do begin
-            if not StrUtils.AnsiContainsText(Found,UpperCase(DEMIXShort[k])) then Missing := Missing + DEMIXShort[k] + '-';
-         end;
-         ProblemAreas.Add(AreaName);
-      end;
 
-      if True then
-  *)
-      Results.Add(AreaName + ',' + IntToStr(DEMs) + ',' + Missing);
+      FilesWanted := tStringList.Create;
+      FindMatchingFiles(DEMIX_Ref_1sec,'*.tif',FilesWanted,1);
+      RemoveFilesThatDoNotHaveString(FilesWanted,AreaName);
+      Refs := FilesWanted.Count;
+      FilesWanted.Free;
+
+      Results.Add(AreaName + ',' + IntToStr(Refs) + ',' + IntToStr(DEMs) + ',' + Missing);
    end;
-   //FilesWanted.Free;
 
    fName := NextFileNumber(MDTempDir,'test_dem_status_','.dbf');
    PetdbUtils.StringList2CSVtoDB(Results,fName);
@@ -426,7 +485,7 @@ var
    Areas,Results : tStringList;
    AreaName : shortstring;
    fName : PathStr;
-   i,j,k,DEMs : Integer;
+   i,j,k,DEMs,DEM : Integer;
    Lat,Long,Lat0,long0,distance,Bearing : float64;
 begin
    GetDEMIXpaths(false);
@@ -440,11 +499,62 @@ begin
             ClipTheDEMtoFullDEMIXTiles(i);
             DEMGlb[i].SaveAsGeotiff(DEMGlb[i].DEMFileName);
          end;
-         CloseSingleDEM(i);
+         DEM := i;
+         CloseSingleDEM(DEM);
       end;
    end;
    Areas.Free;
    EndDEMIXProcessing;
 end;
+
+
+procedure VerifyAllMapsReadyForSSIM;
+const
+   NCrits = 6;
+   Crits : array[1..NCrits] of shortstring = ('ELEV_','RRI_','SLOPE_','HILL_','RUFF_','TPI_');
+   NDEMs = 9;
+   DEMs : array[1..NDEMs] of shortstring = ('COP','FABDEM','NASA','SRTM','ASTER','ALOS','DILUV','dtm_ref_area','dtm_ref_point');
+var
+   Dirs,GoodTiles,BadTiles,TheFiles : tStringList;
+   i,j,k : Integer;
+   fName,fName2 : PathStr;
+   Error,Tile : shortstring;
+begin
+   Dirs := tStringList.Create;
+   GoodTiles := tStringList.Create;
+   BadTiles := tStringList.Create;
+   fName2 := 'C:\temp\ssim_global_norm\';
+   Dirs := GetSubDirsInDirectory(fName2);
+   StartProgress('Verify');
+   for i := 0 to pred(Dirs.Count) do begin
+      UpdateProgressBar(i/Dirs.Count);
+      Tile := Dirs[i];
+      if (Tile[1] = 'N') or (Tile[1] = 'S') then begin //in case other folders selected
+         Error := '';
+         TheFiles := Nil;
+         FindMatchingFiles(fName2 + Tile,'*.tif',TheFiles);
+         for k := 1 to NCrits do begin
+            for j := 1 to NDEMs do begin
+               fName := Crits[k] + DEMs[j] + '_norm.tif';
+               if TheFiles.IndexOf(fName2 + Tile + '\' + fName) < 0 then begin
+                  if (Error = '') then Error := 'files=' + IntToStr(TheFiles.Count) + '  ';
+                  Error := Error + fName + '  ';
+               end;
+            end;
+         end;
+         TheFiles.Free;
+         if (Error = '') then GoodTiles.Add(Tile)
+         else begin
+            BadTiles.Add(Tile + '  ' + Error);
+            WriteLineToDebugFile(Tile + '  ' + Error);
+         end;
+      end;
+   end;
+   EndProgress;
+   Dirs.Free;
+   DisplayAndPurgeStringList(GoodTiles,'Good tiles=' + IntToStr(GoodTiles.Count));
+   DisplayAndPurgeStringList(BadTiles,'Problem tiles=' + IntToStr(BadTiles.Count));
+end;
+
 
 

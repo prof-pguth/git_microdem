@@ -180,7 +180,6 @@ type
    SingleBytes = array[1..4] of byte;
    tFloatRow = array[0..MaxElevArraySize] of SingleBytes;
 var
-   //TStr: ShortString;
    Row : ^aRow;
    Row8bit : ^bRow;
    fRow : ^tFloatRow;

@@ -117,23 +117,22 @@ uses
    procedure GDALGeotiffToWKT(fName : PathStr);
 
    procedure GDAL_ConvertGPXToSHP(var fName : pathStr);
+   procedure GDALGeodatabasetoshapefile;
+   procedure GDAL_Convert_Shapefile_2_geopackage(fName : pathStr);
    procedure GDALreprojectshapefile;
+   procedure GeneralConvertToWGS84Shapefile(fName : pathStr);
+   function OGRrewriteShapefile(fName : pathStr) : PathStr;
+   function ReprojectShapeFileToGeographic(var fName : Pathstr; aDir : PathStr) : boolean;
+   function ExtractMapCoverageToWGS84Shapefile(fName : pathStr; BoundBox : sfBoundBox) : PathStr;
 
    procedure CallGDALMerge(var MergefName : PathStr; OutNames : tStringList; MissingData : integer = 255);
    function GDAL_translateUTM(InName,OutName : PathStr; WGS84,NHemi : boolean;  UTMzone : int16) : shortstring;
    procedure GDALBandExtraction;
    procedure GDALcreatemultibandTIFF;
-   procedure GDALGeodatabasetoshapefile;
    procedure GDAL_dual_UTM(DEM : integer);
 
-   procedure GDAL_Convert_Shapefile_2_geopackage(fName : pathStr);
 
    procedure GDALAssignDEMProjection(DEMName,ProjName : PathStr);
-
-   procedure GeneralConvertToWGS84Shapefile(fName : pathStr);
-   function OGRrewriteShapefile(fName : pathStr) : PathStr;
-   function ReprojectShapeFileToGeographic(var fName : Pathstr; aDir : PathStr) : boolean;
-   function ExtractMapCoverageToWGS84Shapefile(fName : pathStr; BoundBox : sfBoundBox) : PathStr;
 
    procedure GDALConvertImagesToGeotiff(fName : PathStr = ''; Recycle : boolean = true);
    function GDAL_Translate_2_geotiff(fName : PathStr; OutName : PathStr = ''; ExtraOptions : ANSIString = ''; TrashOriginal : boolean = true) : PathStr;
@@ -155,7 +154,8 @@ uses
 
    procedure GDAL_Raster_Calculator(Expression : shortstring);
 
-   procedure MergeDEMsForDEMIX;
+   //procedure MergeDEMsForDEMIX;
+
    procedure CompositeDatumShiftWithGDAL(var InName,SaveName : shortstring; s_SRSstring,t_srsstring : shortstring);
 
    procedure TestPythonFile;
@@ -1442,6 +1442,9 @@ begin
 end;
 
 
+(*
+//removed Feb 2024
+//hard wired for UTM and specific horizontal and vertical datums
 procedure MergeDEMsForDEMIX;
 var
    DEMList : tStringList;
@@ -1469,7 +1472,7 @@ begin
    {$IfDef TrackDEMCorners} DEMGlb[NewDEM].WriteDEMCornersToDebugFile('Merge DEMs, mode=' + IntToStr(Mode)); {$EndIf}
    {$If Defined(RecordMenu) or Defined(RecordMerge)} WriteLineToDebugFile('Exit MergeDEMs, mode=' + IntToStr(Mode)); {$EndIf}
 end;
-
+*)
 
 
       procedure UseGDAL_VRT_to_merge(var MergefName,OutVRT : PathStr; OutNames : tStringList; Added : ShortString = '');
@@ -1500,9 +1503,6 @@ end;
             HeavyDutyProcessing := false;
          end;
       end;
-
-
-
 
       function GDALinfoOutputFName(fname : PathStr) : PathStr;
       begin

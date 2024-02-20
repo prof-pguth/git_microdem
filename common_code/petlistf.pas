@@ -22,12 +22,14 @@ type
     Panel1: TPanel;
     Panel2: TPanel;
     Panel3: TPanel;
+    BitBtn1: TBitBtn;
     procedure ListBox1Click(Sender: TObject);
     procedure HelpBtnClick(Sender: TObject);
     procedure ListBox1DblClick(Sender: TObject);
     procedure CancelBtnClick(Sender: TObject);
     procedure OKBtnClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure BitBtn1Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -41,7 +43,8 @@ implementation
 {$R *.DFM}
 
 uses
-   PETMAR;
+   PETMAR,Petmar_types;
+
 
 procedure TPetList.ListBox1Click(Sender: TObject);
 begin
@@ -59,6 +62,16 @@ begin
       Panel3.Caption := ListBox1.Items[ListBox1.ItemIndex];
       Cancel := false;
       Close;
+   end;
+end;
+
+procedure TPetList.BitBtn1Click(Sender: TObject);
+var
+   fName : PathStr;
+begin
+   if GetExistingFileName('File with entries','*.txt',fName) then begin
+      ListBox1.Items.Clear;
+      ListBox1.Items.LoadFromFile(fName);
    end;
 end;
 

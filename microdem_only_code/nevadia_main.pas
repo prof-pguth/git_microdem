@@ -502,8 +502,7 @@ type
     Addversionnumbertoallfilesinapath1: TMenuItem;
     DEMIXdbCreatePopupMenu: TPopupMenu;
     CreateDEMIXdatabase1: TMenuItem;
-    N39: TMenuItem;
-    Fullprocessingchain1: TMenuItem;
+    //Fullprocessingchain1: TMenuItem;
     Perpendicularshortprofilesthroughpoint1: TMenuItem;
     N40: TMenuItem;
     N41: TMenuItem;
@@ -584,6 +583,16 @@ type
     ComputeDEMIXtilestats1: TMenuItem;
     VerifytestDEMcoverages1: TMenuItem;
     rimreferencedatatoDEMIXtiles1: TMenuItem;
+    N53: TMenuItem;
+    Full3DEPprocessingchair1: TMenuItem;
+    Partial3DEPsteps1: TMenuItem;
+    Overwriteifexists3: TMenuItem;
+    Overwriteifexists4: TMenuItem;
+    OvOverwriteifexists1: TMenuItem;
+    Skipifexists2: TMenuItem;
+    N39: TMenuItem;
+    N54: TMenuItem;
+    Inventorychanneldatabyarea1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -921,7 +930,7 @@ type
     procedure OpenDEMIXdatabase1Click(Sender: TObject);
     procedure Addversionnumbertoallfilesinapath1Click(Sender: TObject);
     procedure CreateDEMIXdatabase1Click(Sender: TObject);
-    procedure Fullprocessingchain1Click(Sender: TObject);
+    //procedure Fullprocessingchain1Click(Sender: TObject);
     procedure Perpendicularshortprofilesthroughpoint1Click(Sender: TObject);
     procedure N41Click(Sender: TObject);
     procedure SummarizeverticaldatumshiftforEGM96testDEMs1Click(Sender: TObject);
@@ -977,12 +986,17 @@ type
     procedure Inventory3DEPtiles1Click(Sender: TObject);
     procedure Skipifexists1Click(Sender: TObject);
     procedure InventoryDILUVIUMbytestarea1Click(Sender: TObject);
-    procedure Channelnetworkmultistep1Click(Sender: TObject);
     procedure InsureallreferenceDTMscorrectlynamed1Click(Sender: TObject);
     procedure MaskwaterinreferenceDEMs1Click(Sender: TObject);
     procedure ComputeDEMIXtilestats1Click(Sender: TObject);
     procedure VerifytestDEMcoverages1Click(Sender: TObject);
     procedure rimreferencedatatoDEMIXtiles1Click(Sender: TObject);
+    procedure Partial3DEPsteps1Click(Sender: TObject);
+    procedure Overwriteifexists3Click(Sender: TObject);
+    procedure Overwriteifexists4Click(Sender: TObject);
+    procedure OvOverwriteifexists1Click(Sender: TObject);
+    procedure Skipifexists2Click(Sender: TObject);
+    procedure Inventorychanneldatabyarea1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1208,8 +1222,13 @@ uses
    {$IfDef IncludePython}
       Simple_Python,
    {$EndIf}
-   DEMIX_control,
-   DEMIX_cop_alos,
+
+   {$IfDef ExDEMIX}
+   {$Else}
+      demix_definitions,
+      DEMIX_Control,
+      DEMIX_cop_alos,
+   {$EndIf}
 
    ufrmMain,
 
@@ -1297,7 +1316,7 @@ end;
 
 procedure Twmdem.FillholesintestareaDEMs1Click(Sender: TObject);
 begin
-   BatchFillHolesInDEMIX_DEMS;
+   BatchRemoveSinksInDEMIX_DEMS(False);
 end;
 
  procedure Twmdem.Findmatchingfiles1Click(Sender: TObject);
@@ -1346,7 +1365,7 @@ end;
 
 procedure Twmdem.VectorchannelnetworksSAGA1Click(Sender: TObject);
 begin
-   BatchCreateVectorChannelNewtwork;
+   BatchCreateVectorChannelNewtwork(False);
 end;
 
 
@@ -1400,14 +1419,7 @@ end;
 
 procedure Twmdem.Channelnetworkmisspercentagesbytile1Click(Sender: TObject);
 begin
-    ChannelNetworkMissPercentages;
-end;
-
-procedure Twmdem.Channelnetworkmultistep1Click(Sender: TObject);
-begin
-   BatchFillHolesInDEMIX_DEMS;
-   BatchCreateVectorChannelNewtwork;
-   CreateChannelNetworkGridsFromVectors;
+    ChannelNetworkMissPercentages(False);
 end;
 
 procedure Twmdem.CheckfilesizesforSSIMimagemismatches1Click(Sender: TObject);
@@ -1436,13 +1448,14 @@ end;
 
 procedure Twmdem.CheckreferenceDEMs1Click(Sender: TObject);
 begin
-   CheckReferenceDEMs;
+   InventoryDBwithDSMandDTMbyArea;
 end;
 
 procedure Twmdem.CheckreferenceDEMSareEGM2008withPixelIsset1Click(Sender: TObject);
 begin
    CheckReferenceDEMsAreEGMandPixelIs;
 end;
+
 
 procedure Twmdem.ChecktestDEMs1Click(Sender: TObject);
 begin
@@ -1529,12 +1542,13 @@ end;
 procedure Twmdem.DEMIXtilesizebylatitude1Click(Sender: TObject);
 var
    WantBoundBoxGeo : sfBoundBox;
+   fName : PathStr;
 begin
    WantBoundBoxGeo.XMin := 0.01;
    WantBoundBoxGeo.XMax := 0.02;
    WantBoundBoxGeo.YMin := -85;
    WantBoundBoxGeo.YMax := 85;
-   CreateDEMIXTileShapefile(WantBoundBoxGeo,false,true);
+   CreateDEMIXTileShapefile(fName,WantBoundBoxGeo,false,true);
 end;
 
 
@@ -3014,6 +3028,11 @@ begin
    AreaSSIMComputations(False);
 end;
 
+procedure Twmdem.Skipifexists2Click(Sender: TObject);
+begin
+   MultistepChannelNetworks(False);
+end;
+
 procedure Twmdem.Skipifexits1Click(Sender: TObject);
 begin
    DEMIX_CreateReferenceDEMs(false,ResampleModeOneSec);
@@ -3021,7 +3040,7 @@ end;
 
 procedure Twmdem.Skipifexits2Click(Sender: TObject);
 begin
-   BatchGDAL_3DEP_shift(false);
+   DEMIX_GDAL_3DEP_datum_shift(false);
 end;
 
 procedure Twmdem.NewDEMButtonClick(Sender: TObject);
@@ -3222,7 +3241,7 @@ end;
 
 procedure Twmdem.Createchannelnetworkgrids1Click(Sender: TObject);
 begin
-   CreateChannelNetworkGridsFromVectors;
+   CreateChannelNetworkGridsFromVectors(False);
 end;
 
 
@@ -3312,6 +3331,11 @@ begin
     Inventory3DEPtiles;
 end;
 
+procedure Twmdem.Inventorychanneldatabyarea1Click(Sender: TObject);
+begin
+   InventoryChannelDataByArea;
+end;
+
 procedure Twmdem.Inventorydifferencestats1Click(Sender: TObject);
 begin
    InventoryDEMIXdifferenceStats;
@@ -3324,24 +3348,8 @@ begin
 end;
 
 procedure Twmdem.InventoryreferenceDEMs1Click(Sender: TObject);
-var
-   TheFiles,Results : tStringList;
-   i : integer;
-   fName : PathStr;
 begin
-   TheFiles := Nil;
-   FindMatchingFiles(DEMIX_Ref_1sec,'*.tif',TheFiles);
-   Results := tStringList.Create;
-   Results.Sorted := true;
-   for i := 0 to pred(TheFiles.Count) do begin
-      fName := theFiles.Strings[i];
-      if (StrUtils.AnsiContainsText(fName,'_point')) and (not StrUtils.AnsiContainsText(fName,'_dsm'))then begin
-         fName := AreaNameFromRefDEMName(fName);
-         fName := StringReplace(fName,'_dtm','',[rfReplaceAll, rfIgnoreCase]);
-         Results.Add(fName);
-      end;
-   end;
-   DisplayAndPurgeStringList(Results,'DEMIX test areas (n=' + IntToStr(Results.Count) + ')');
+   InventoryListRefereneDTMbyArea;
 end;
 
 
@@ -3481,6 +3489,18 @@ begin
    DEMIX_Create3DEPReferenceDEMs(false);
 end;
 
+procedure Twmdem.Overwriteifexists3Click(Sender: TObject);
+begin
+   DEMIX_3DEP_full_chain(true);
+end;
+
+procedure Twmdem.Overwriteifexists4Click(Sender: TObject);
+begin
+   DEMIX_3DEP_full_chain(false);
+end;
+
+
+
 procedure Twmdem.Overwriteifexits1Click(Sender: TObject);
 begin
    DEMIX_Merge3DEPReferenceDEMs(True);
@@ -3493,7 +3513,12 @@ end;
 
 procedure Twmdem.Overwriteifexits3Click(Sender: TObject);
 begin
-   BatchGDAL_3DEP_shift(true);
+   DEMIX_GDAL_3DEP_datum_shift(true);
+end;
+
+procedure Twmdem.OvOverwriteifexists1Click(Sender: TObject);
+begin
+   MultistepChannelNetworks(True);
 end;
 
 procedure Twmdem.Exitprogram2Click(Sender: TObject);
@@ -4509,11 +4534,6 @@ begin
 end;
 
 
-procedure Twmdem.Fullprocessingchain1Click(Sender: TObject);
-begin
-   SequentialProcessAnArea;
-end;
-
 procedure Twmdem.Fullworldimage1Click(Sender: TObject);
 var
    fName : PathStr;
@@ -5125,6 +5145,11 @@ end;
 procedure Twmdem.PanoramaSpeedButtonClick(Sender: TObject);
 begin
    ChangeDEMNowDoing(SeekingFirstNewPanorama);
+end;
+
+procedure Twmdem.Partial3DEPsteps1Click(Sender: TObject);
+begin
+
 end;
 
 (*
@@ -5777,7 +5802,7 @@ end;
 
 procedure Twmdem.OpenandmergeDEMswithfullDEMIXcoverage1Click(Sender: TObject);
 begin
-   MergeDEMsForDEMIX;
+   //MergeDEMsForDEMIX;
 end;
 
 procedure Twmdem.OpenandmergeGeotiffs1Click(Sender: TObject);
@@ -5838,9 +5863,11 @@ end;
 
 procedure Twmdem.ComputeDEMIXtilestats1Click(Sender: TObject);
 begin
-   JustTileStats := true;
-   ComputeDEMIX_tile_stats;
-   JustTileStats := false;
+   //JustTileStats := true;
+   //ComputeDEMIX_tile_stats;
+   //JustTileStats := false;
+
+   ComputeDEMIX_Summary_stats;
 end;
 
 procedure Twmdem.Openshapefilemap1Click(Sender: TObject);

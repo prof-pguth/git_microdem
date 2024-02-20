@@ -490,8 +490,11 @@
                   xc,yc : integer;
                   SeriesTable : tMyData;
                   Series : shortstring;
+                  IndexDataOnline : tMyData;
+                  fName : PathStr;
                begin
-                  OpenIndexDataOnline;
+                  fName := MapLibraryFName;
+                  IndexDataOnline := tMyData.Create(fName);
                   Bitmap.Canvas.Pen.Width := 2;
                   if Fill then begin
                      Bitmap.Canvas.Brush.Color := clLime;
@@ -523,7 +526,7 @@
                      SeriesTable.Next;
                   until SeriesTable.eof;
                   SeriesTable.Destroy;
-                  CloseIndexDataOnline;
+                  IndexDataOnline.Destroy;
                end;
 
          begin

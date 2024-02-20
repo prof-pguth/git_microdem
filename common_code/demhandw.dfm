@@ -3,8 +3,8 @@ object DemHandForm: TDemHandForm
   Top = 244
   BorderIcons = [biSystemMenu]
   Caption = 'Data Manipulation'
-  ClientHeight = 515
-  ClientWidth = 862
+  ClientHeight = 514
+  ClientWidth = 858
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,8 +19,8 @@ object DemHandForm: TDemHandForm
   object Memo1: TMemo
     Left = 0
     Top = 0
-    Width = 862
-    Height = 496
+    Width = 858
+    Height = 495
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -34,8 +34,8 @@ object DemHandForm: TDemHandForm
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 496
-    Width = 862
+    Top = 495
+    Width = 858
     Height = 19
     Panels = <
       item
@@ -390,6 +390,10 @@ object DemHandForm: TDemHandForm
           Caption = 'TIF files'
           OnClick = IFfiles1Click
         end
+        object MICRODEMformat1: TMenuItem
+          Caption = 'MICRODEM format (replace DEM file)'
+          OnClick = MICRODEMformat1Click
+        end
         object FLTfiles1: TMenuItem
           Caption = 'FLT files'
           OnClick = FLTfiles1Click
@@ -538,6 +542,12 @@ object DemHandForm: TDemHandForm
         object Adjustseriescolorusage1: TMenuItem
           Caption = 'Adjust series color/usage'
           OnClick = Adjustseriescolorusage1Click
+        end
+        object N8: TMenuItem
+          Caption = '-'
+        end
+        object N9: TMenuItem
+          Caption = 'Purge small Diluvium DEM files which will not open'
         end
       end
       object TIGERindex1: TMenuItem

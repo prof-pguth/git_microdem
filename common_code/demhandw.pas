@@ -255,6 +255,8 @@ type
     DiluviumDEMreprot1: TMenuItem;
     emplatedownload1: TMenuItem;
     MICRODEMformat1: TMenuItem;
+    N8: TMenuItem;
+    N9: TMenuItem;
     procedure ASCIIremovequotes1Click(Sender: TObject);
     procedure ASCII01Click(Sender: TObject);
     procedure HTMLcleanup1Click(Sender: TObject);

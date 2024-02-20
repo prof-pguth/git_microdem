@@ -20,6 +20,8 @@
 
 {$Define PlainMICRODEM}
 
+{$Define ExDEMIXexperimentalOptions}
+
 //deleted 5/8/2023 in anticipation of USNA website going down
    {$Define ExGeologyDownload}
 

@@ -257,7 +257,12 @@ uses
    DataBaseCreate,
    DEM_Manager,
    Toggle_DB_Use,
-   DEMIX_control,
+
+   {$IfDef ExDEMIX}
+   {$Else}
+      demix_definitions,
+      DEMIX_Control,
+   {$EndIf}
 
    {$IfDef ExPointCloud}
    {$Else}

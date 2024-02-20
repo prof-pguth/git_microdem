@@ -27,8 +27,9 @@ unit GeoTiff;
       //{$Define RecordGeotiffRewrite}
       //{$Define RecordJustMetadata}
       //{$Define RecordGeotiffFailures}
+      //{$Define RecordFullGeotiff}
       //{$Define RecordInitializeDEM}
-      //{$Define RecordGeotiffFailures}
+      //{$Define Record_h_datum_code}
       //{$Define ReportKey258}  //happens with some Landsat, but does not appear to stop things
 
       //{$Define TrackPixelIs}
@@ -47,7 +48,6 @@ unit GeoTiff;
       //{$Define RecordTiePoints}
       //{$Define RecordGeotiffRestart}
       //{$Define TrackModelType}
-      //{$Define RecordFullGeotiff}
       //{$Define RecordTffDisplayInBitmap}
       //{$Define GeotiffSave}
       //{$Define RecordBitPerPixel}
@@ -100,10 +100,10 @@ type
       PhotometricInterpretation,ExtraSample,
       Threshholding,NumEnt,
       Num,Den,NewSubfileType,VertDatum,
-      RowsPerStrip,StripsPerImage,StripByteCounts,
+      StripsPerImage,StripByteCounts,
       BitsPerSampleCount,MDZtype : int32;
       FirstImageOffset,CellWidth,CellLength,
-      TileWidth,TileHeight,
+      RowsPerStrip,TileWidth,TileHeight,
       ImageWidth,ImageLength,StripOffsets : int64;
       SMin,SMax,Factor : float64;
       ResolutionUnit   : ResolutionUnitType;
@@ -153,9 +153,9 @@ type
          TiffOpen,
          TIFFImageColorDefined  : boolean;
          OffsetByteSize : word;
-         OffsetArraySize : int64;
-         FirstIFD,
-         ImageBytesPerRow : int32;
+         OffsetArraySize,
+         ImageBytesPerRow  : int64;
+         FirstIFD : int32;
          TiffHandle : THandle;
          TIFFFileName   : PathStr;
          TIFFImageColor : Petmar_types.TRGBLookUp;
@@ -741,7 +741,6 @@ procedure tTIFFImage.SeekFileOffset({Band,}Row : int64);
 var
    TheOffset,LinesNeeded : int64;
 begin
-
 //restored from 6/20/23
    OpenTiffFile;
    if (TiffHeader.PhotometricInterpretation = 2) then begin  //color image
@@ -764,40 +763,17 @@ begin
    end;
    FileSeek(TiffHandle,TheOffset,0);
    {$IfDef RecordGeotiffRow} if (Row mod 100 = 0) then WriteLineToDebugFile('Seek file offset, Band=' + IntToStr(Band) + '   Row=' + IntToStr(Row) + '   Offset=' + IntToStr(TheOffset)); {$EndIf}
-
-
-(*
-//   8/13/23 version which is not working
-   OpenTiffFile;
-   if (TiffHeader.StripOffsets <> 0) then begin
-      TheOffset := TiffHeader.StripOffsets + (Row * TiffHeader.ImageWidth * TiffHeader.BytesPerSample * TiffHeader.SamplesPerPixel);
-   end
-   else begin
-      if (TiffHeader.PhotometricInterpretation = 2) or (TiffHeader.RowsPerStrip = 1) then begin
-         TheOffset := TiffHeader.OffsetArray^[(Row div TiffHeader.RowsPerStrip)];
-      end
-      else begin
-         LinesNeeded := (Row mod TiffHeader.RowsPerStrip);
-         TheOffset := TiffHeader.OffsetArray^[Row div TiffHeader.RowsPerStrip] + LinesNeeded * TiffHeader.ImageWidth * TiffHeader.BytesPerSample;
-      end;
-   end;
-   FileSeek(TiffHandle,TheOffset,0);
-   {$IfDef RecordGeotiffRow} if (Row mod 100 = 0) then WriteLineToDebugFile('Seek file offset, Band=' + IntToStr(Band) + '   Row=' + IntToStr(Row) + '   Offset=' + IntToStr(TheOffset)); {$EndIf}
-*)
 end;
 
 
 procedure tTIFFImage.GetPointReflectances(Column, Row: integer;  var Reflectances : tAllRefs);
 var
    x : integer;
-   //BigRow : ^tWordBigRow;
 begin
    if (TiffHeader.BitsPerSample in [15,16]) and (TiffHeader.SamplesPerPixel > 1) then begin
       SeekFileOffset({1,}Row);
-      //New(BigRow);
       FileRead(TiffHandle,BigRow^,ImageBytesPerRow);
       for x := 1 to TiffHeader.SamplesPerPixel do Reflectances[x] := BigRow^[Column*TiffHeader.SamplesPerPixel+ pred(x)];
-      //Dispose(BigRow);
       if BigEndian then for x := 0 to pred(TiffHeader.ImageWidth) do Reflectances[x] := swap(Reflectances[x]);
    end;
 end;
@@ -1065,51 +1041,55 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
             {$If Defined(RecordGeotiffProjection)} WriteLineToDebugFile('DefineProjectionParameters, TiffFile=' + MapProjection.GetProjectionName); {$EndIf}
             WantDEM.DEMMapProjection.PName := MapProjection.pName;
             WantDEM.DEMHeader.h_DatumCode := MapProjection.h_DatumCode;
+            {$If Defined(Record_h_datum_code)} if MapProjection.h_DatumCode = '' then MessageToContinue('DefineProjectionParameters h_datum_code blank'); {$EndIf}
             WantDEM.DEMheader.UTMZone := MapProjection.projUTMZone;
             WantDEM.DEMheader.LatHemi := MapProjection.LatHemi;
             if (WantDEM.DEMMapProjection.PName = UK_OS) then begin
                //this is likely not to work
-               {$IfDef RecordUKOS} WriteLineToDebugFile('CreateTiffDEM Loading WKT for osgb_1936'); {$EndIf}
+               {$IfDef RecordUKOS} WriteLineToDebugFile('DefineProjectionParameters Loading WKT for osgb_1936'); {$EndIf}
                WantDEM.DEMMapProjection.InitializeProjectionFromWKT(ProgramRootDir + 'wkt_proj\osgb_1936.wkt');
                WantDEM.DEMheader.DEMUsed := UTMBasedDEM;
                WantDEM.DEMheader.DataSpacing := SpaceMeters;
                WantDEM.DEMheader.DigitizeDatum := UK_OS_grid;
-            end
-            else if (WantDEM.DEMMapProjection.EPSGCode3072 = 2193) then begin
-               //this is likely not to work
-               WantDEM.DEMMapProjection.InitializeProjectionFromWKT(ProgramRootDir + 'wkt_proj\nzgd2000_epsg_2193.wkt');
-               WantDEM.DEMheader.DEMUsed := UTMBasedDEM;
-               WantDEM.DEMheader.DataSpacing := SpaceMeters;
-               WantDEM.DEMheader.DEMUsed := WKTDEM;
-            end
-            else if (WantDEM.DEMMapProjection.PName = PlateCaree) or (TiffHeader.ModelType = 2) then begin
-               WantDEM.DEMheader.DEMUsed := ArcSecDEM;
-               if (WantDEM.DEMheader.DEMSWCornerX > 180) then WantDEM.DEMheader.DEMSWCornerX := WantDEM.DEMheader.DEMSWCornerX - 360;
-               WantDEM.DEMheader.UTMZone := GetUTMZone(WantDEM.DEMheader.DEMSWCornerX + 0.5 * WantDEM.DEMheader.NumCol * WantDEM.DEMheader.DEMxSpacing);
-            end
-            else if (WantDEM.DEMMapProjection.PName = UTMEllipsoidal) then begin
-               WantDEM.DEMheader.DEMUsed := UTMBasedDEM;
-               WantDEM.DEMheader.DataSpacing := SpaceMeters;
-            end
-            else if (WantDEM.DEMMapProjection.wktString <> '') then begin
-               WantDEM.DEMheader.DEMUsed := WKTDEM;
-               WantDEM.DEMheader.DataSpacing := SpaceMeters;
-            end
-            else if (WantDEM.DEMMapProjection.Pname in [AlbersEqAreaConicalEllipsoid,PolarStereographicEllipsoidal,LambertConformalConicEllipse,LamAzEqAreaEllipsoidal,CylindricalEqualAreaEllipsoidal,AzimuthalEquidistantEllipsoidal]) then begin
-               WantDEM.DEMheader.DEMUsed := WKTDEM;
-               WantDEM.DEMheader.DataSpacing := SpaceMeters;
+               {$IfDef RecordUKOS} WriteLineToDebugFile('DefineProjectionParameters Loading WKT, pName=' + WantDEM.DEMMapProjection.GetProjectionName); {$EndIf}
             end
             else begin
-               WantDEM.DEMheader.DEMUsed := UTMBasedDEM;
-               WantDEM.DEMheader.DataSpacing := SpaceMeters;
-               WantDEM.DEMheader.DigitizeDatum := ddDefined;
-               {$IfDef RecordInitializeDEM} WriteLineToDebugFile('DEM SW Corner: ' + RealToString(WantDEM.DEMheader.DEMSWCornerX,-18,-6) + RealToString(WantDEM.DEMheader.DEMSWCornerY,18,-6) + '  UTM zone:' + IntToStr(WantDEM.DEMheader.UTMzone)); {$EndIf}
+               if (WantDEM.DEMMapProjection.EPSGCode3072 = 2193) then begin
+                  //this is likely not to work
+                  WantDEM.DEMMapProjection.InitializeProjectionFromWKT(ProgramRootDir + 'wkt_proj\nzgd2000_epsg_2193.wkt');
+                  WantDEM.DEMheader.DEMUsed := UTMBasedDEM;
+                  WantDEM.DEMheader.DataSpacing := SpaceMeters;
+                  WantDEM.DEMheader.DEMUsed := WKTDEM;
+               end
+               else if (WantDEM.DEMMapProjection.PName = PlateCaree) or (TiffHeader.ModelType = 2) then begin
+                  WantDEM.DEMheader.DEMUsed := ArcSecDEM;
+                  if (WantDEM.DEMheader.DEMSWCornerX > 180) then WantDEM.DEMheader.DEMSWCornerX := WantDEM.DEMheader.DEMSWCornerX - 360;
+                  WantDEM.DEMheader.UTMZone := GetUTMZone(WantDEM.DEMheader.DEMSWCornerX + 0.5 * WantDEM.DEMheader.NumCol * WantDEM.DEMheader.DEMxSpacing);
+               end
+               else if (WantDEM.DEMMapProjection.PName = UTMEllipsoidal) then begin
+                  WantDEM.DEMheader.DEMUsed := UTMBasedDEM;
+                  WantDEM.DEMheader.DataSpacing := SpaceMeters;
+               end
+               else if (WantDEM.DEMMapProjection.wktString <> '') then begin
+                  WantDEM.DEMheader.DEMUsed := WKTDEM;
+                  WantDEM.DEMheader.DataSpacing := SpaceMeters;
+               end
+               else if (WantDEM.DEMMapProjection.Pname in [AlbersEqAreaConicalEllipsoid,PolarStereographicEllipsoidal,LambertConformalConicEllipse,LamAzEqAreaEllipsoidal,CylindricalEqualAreaEllipsoidal,AzimuthalEquidistantEllipsoidal]) then begin
+                  WantDEM.DEMheader.DEMUsed := WKTDEM;
+                  WantDEM.DEMheader.DataSpacing := SpaceMeters;
+               end
+               else begin
+                  WantDEM.DEMheader.DEMUsed := UTMBasedDEM;
+                  WantDEM.DEMheader.DataSpacing := SpaceMeters;
+                  WantDEM.DEMheader.DigitizeDatum := ddDefined;
+                  {$IfDef RecordInitializeDEM} WriteLineToDebugFile('DEM SW Corner: ' + RealToString(WantDEM.DEMheader.DEMSWCornerX,-18,-6) + RealToString(WantDEM.DEMheader.DEMSWCornerY,18,-6) + '  UTM zone:' + IntToStr(WantDEM.DEMheader.UTMzone)); {$EndIf}
+               end;
+               if (WantDEM.DEMMapProjection.h_DatumCode <> '') then WantDEM.DEMheader.DigitizeDatum := DatumCodeFromString(WantDEM.DEMMapProjection.h_DatumCode);
+               WantDEM.DEMMapProjection.InitializeProjectionFromDEMHeader(WantDEM.DEMHeader);
+               WantDEM.DEMheader.UTMZone := WantDEM.DEMMapProjection.projUTMZone;
+               WantDEM.DEMheader.LatHemi := WantDEM.DEMMapProjection.LatHemi;
             end;
-            if (WantDEM.DEMMapProjection.h_DatumCode <> '') then WantDEM.DEMheader.DigitizeDatum := DatumCodeFromString(WantDEM.DEMMapProjection.h_DatumCode);
-            WantDEM.DEMMapProjection.InitializeProjectionFromDEMHeader(WantDEM.DEMHeader);
-            WantDEM.DEMheader.UTMZone := WantDEM.DEMMapProjection.projUTMZone;
-            WantDEM.DEMheader.LatHemi := WantDEM.DEMMapProjection.LatHemi;
-            {$If Defined(RecordGeotiffProjection)} WriteLineToDebugFile('DefineProjectionParameters out, DEM proj=' + WantDEM.DEMMapProjection.GetProjectionName); {$EndIf}
+            {$If Defined(RecordGeotiffProjection) or Defined(RecordUKOS)} WriteLineToDebugFile('DefineProjectionParameters out, DEM proj=' + WantDEM.DEMMapProjection.GetProjectionName); {$EndIf}
          end;
 
 
@@ -1146,7 +1126,9 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
                SetCornersAndSpacing;
                DefineProjectionParameters;
 
-              {$IfDef RecordInitializeDEM} WriteLineToDebugFile(WantDEM.GridDefinition); {$EndIf}
+              {$If Defined(RecordInitializeDEM) or Defined(RecordUKOS)}
+                 WriteLineToDebugFile('after define proj, ' + WantDEM.GridDefinition + ' pName=' + WantDEM.DEMMapProjection.GetProjectionName);
+              {$EndIf}
               {$If Defined(RecordInitializeDEM)} WriteLineToDebugFile('tTIFFImage.CreateDEM Header set, ' + sfBoundBoxToString(WantDEM.DEMBoundBoxProjected,6)); {$EndIf}
 
                if IsThisLandCover(TIFFFileName,LandCover) then begin
@@ -1156,6 +1138,7 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
                {$IfDef RecordInitializeDEM} WriteLineToDebugFile('Call define DEM variables ' + WantDEM.AreaName + '  ' + sfBoundBoxToString(WantDEM.DEMBoundBoxProjected,4)); {$EndIf}
                WantDEM.DefineDEMvariables(true);
                {$IfDef RecordInitializeDEM} WriteLineToDebugFile('Back from define DEM variables '  + WantDEM.AreaName + '  ' + sfBoundBoxToString(WantDEM.DEMBoundBoxProjected,4)); {$EndIf}
+               {$If Defined(RecordUKOS)} WriteLineToDebugFile('After DefineDEMvariable, pName=' + WantDEM.DEMMapProjection.GetProjectionName); {$EndIf}
 
                Result := true;
                if ReallyReadDEM and (not WantDEM.AllocateDEMMemory(InitDEMnone)) then begin
@@ -1167,6 +1150,7 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
               {$IfDef TrackA} WriteLineToDebugFile('tTIFFImage.CreateTiffDEM out, a=' + RealToString(WantDEM.DEMMapProjection.a,-18,-2)); {$EndIf}
               {$If Defined(RecordInitializeDEM) or Defined(RecordDEMMapProjection)} WantDEM.DEMMapProjection.ShortProjInfo('tTIFFImage.InitializeDEM in'); {$EndIf}
               {$IfDef RecordNLCD} WriteLineToDebugFile('Initialize TIFF DEM out, ' + WantDEM.AreaName + '  data=' + ElevUnitsAre(WantDEM.DEMheader.ElevUnits)); {$EndIf}
+              {$If Defined(RecordUKOS)} WriteLineToDebugFile('Initialize TIFF DEM out, pName=' + WantDEM.DEMMapProjection.GetProjectionName); {$EndIf}
          end;
 
 var
@@ -1195,143 +1179,144 @@ begin {tTIFFImage.CreateTiffDEM}
       end;
 
       Result := InitializeTiffDEM(WantDEM);
-      {$If Defined(RecordGeotiffProjection)} WriteLineToDebugFile('After InitializeTiffDEM back, Projection=' + WantDEM.DEMMapProjection.GetProjectionName); {$EndIf}
+      {$If Defined(RecordGeotiffProjection) or Defined(RecordUKOS)} WriteLineToDebugFile('After InitializeTiffDEM back, pname=' + WantDEM.DEMMapProjection.GetProjectionName); {$EndIf}
       WantDEM.GeotiffImageDesc := GeotiffImageDesc;
       {$If Defined(TrackHorizontalDatum)} WriteLineToDebugFile('tTIFFImage.CreateDEM read DEM, ' + WantDEM.AreaName + '  ' + WantDEM.DEMMapProjection.h_DatumCode);   {$EndIf}
       if Result and ReallyReadDEM then begin
-            {$If Defined(RecordInitializeDEM)} WriteLineToDebugFile('tTIFFImage.CreateDEM initialization done'); {$EndIf}
-            if (WantDEM.AreaName = 'EXISTING_VEGETATION_HEIGHT') or (WantDEM.AreaName = 'CANOPY_BASE_HEIGHT') or (WantDEM.AreaName = 'CANOPY_HEIGHT') then TiffHeader.Factor := 0.1;
-            if (WantDEM.DEMheader.NumRow > 10000) then ShowDEMReadingProgress := true;
-            if ShowDEMReadingProgress then StartProgress('Read grid: ' + ExtractFileNameNoExt(TIFFFileName));
+         {$If Defined(RecordInitializeDEM)} WriteLineToDebugFile('tTIFFImage.CreateDEM initialization done and reading DEM'); {$EndIf}
+         if (WantDEM.AreaName = 'EXISTING_VEGETATION_HEIGHT') or (WantDEM.AreaName = 'CANOPY_BASE_HEIGHT') or (WantDEM.AreaName = 'CANOPY_HEIGHT') then TiffHeader.Factor := 0.1;
+         if (WantDEM.DEMheader.NumRow > 10000) then ShowDEMReadingProgress := true;
+         if ShowDEMReadingProgress then StartProgress('Read grid: ' + ExtractFileNameNoExt(TIFFFileName));
 
-            bs := TiffHeader.BytesPerSample * WantDEM.DEMheader.NumCol;
-            if (TiffHeader.BitsPerSample = 64) then New(DoubleRow)
-            else if (TiffHeader.BitsPerSample = 32) then begin
-               if (TiffHeader.SampleFormat = sfIEEEfloat) then New(FloatRow)
-               else New(Int32Row);
+         bs := TiffHeader.BytesPerSample * WantDEM.DEMheader.NumCol;
+         if (TiffHeader.BitsPerSample = 64) then New(DoubleRow)
+         else if (TiffHeader.BitsPerSample = 32) then begin
+            if (TiffHeader.SampleFormat = sfIEEEfloat) then New(FloatRow)
+            else New(Int32Row);
+         end
+         else if (TiffHeader.BitsPerSample in [15,16]) then begin
+            if WantDEM.DEMheader.DEMPrecision = SmallIntDEM then New(IntRow) else New(WordRow);
+         end
+         else if (TiffHeader.BitsPerSample in [4,8]) then begin
+            New(ByteRow);
+            if (TiffHeader.BitsPerSample in [4]) then bs := WantDEM.DEMheader.NumCol div 2;
+         end;
+
+         {$If Defined(TrackZ)} WantDEM.TrackElevationRange('start Geotiff read'); {$EndIf}
+
+         OpenTiffFile;
+         if (TiffHeader.OffsetArray = Nil) then FileSeek(TiffHandle,TiffHeader.StripOffsets,0);
+
+         rc := ProgressIncrement(WantDEM.DEMheader.NumRow);
+         for Row := 0 to pred(WantDEM.DEMheader.NumRow) do  begin
+            if (Row mod rc = 0) and ShowDEMReadingProgress then begin
+               UpdateProgressBar(Row/WantDEM.DEMheader.NumRow);
+               {$If Defined(FullDEMinit)} WriteLineToDebugFile('Row: ' + IntToStr(Row) + '/' + IntToStr(WantDEM.DEMheader.NumRow)); {$EndIf}
+            end;
+            if (TiffHeader.Orientation = 1) then begin
+               dRow := pred(WantDEM.DEMheader.NumRow) - Row;
             end
-            else if (TiffHeader.BitsPerSample in [15,16]) then begin
-               if WantDEM.DEMheader.DEMPrecision = SmallIntDEM then New(IntRow) else New(WordRow);
-            end
-            else if (TiffHeader.BitsPerSample in [4,8]) then begin
-               New(ByteRow);
-               if (TiffHeader.BitsPerSample in [4]) then bs := WantDEM.DEMheader.NumCol div 2;
+            else dRow := Row;
+
+            if (TiffHeader.OffsetArray <> Nil) and (Row mod TiffHeader.RowsPerStrip = 0) then begin
+               FileSeek(TiffHandle,TiffHeader.OffsetArray^[(Row div TiffHeader.RowsPerStrip)],0);
+               {$If Defined(FullDEMinit)} WriteLineToDebugFile('Seek: ' + IntToStr(Row div TiffHeader.RowsPerStrip) + '/' + IntToStr(WantDEM.DEMheader.NumRow)); {$EndIf}
             end;
 
-            {$If Defined(TrackZ)} WantDEM.TrackElevationRange('start Geotiff read'); {$EndIf}
-
-            OpenTiffFile;
-            if (TiffHeader.OffsetArray = Nil) then FileSeek(TiffHandle,TiffHeader.StripOffsets,0);
-
-            rc := ProgressIncrement(WantDEM.DEMheader.NumRow);
-            for Row := 0 to pred(WantDEM.DEMheader.NumRow) do  begin
-               if (Row mod rc = 0) and ShowDEMReadingProgress then begin
-                  UpdateProgressBar(Row/WantDEM.DEMheader.NumRow);
-                  {$If Defined(FullDEMinit)} WriteLineToDebugFile('Row: ' + IntToStr(Row) + '/' + IntToStr(WantDEM.DEMheader.NumRow)); {$EndIf}
-               end;
-               if (TiffHeader.Orientation = 1) then begin
-                  dRow := pred(WantDEM.DEMheader.NumRow) - Row;
-               end
-               else dRow := Row;
-
-               if (TiffHeader.OffsetArray <> Nil) and (Row mod TiffHeader.RowsPerStrip = 0) then begin
-                  FileSeek(TiffHandle,TiffHeader.OffsetArray^[(Row div TiffHeader.RowsPerStrip)],0);
-                  {$If Defined(FullDEMinit)} WriteLineToDebugFile('Seek: ' + IntToStr(Row div TiffHeader.RowsPerStrip) + '/' + IntToStr(WantDEM.DEMheader.NumRow)); {$EndIf}
-               end;
-
-               try
-                  if (TiffHeader.BitsPerSample = 32) then begin
-                     if (TiffHeader.SampleFormat = sfIEEEfloat) then begin
-                        RecsRead := FileRead(TiffHandle,FloatRow^,bs);
-                        for Col := 0 to pred(WantDEM.DEMheader.NumCol) do begin
-                           z := FloatRow^[Col];
-                           if BigEndian then SwapToShortFloat(z);
-                           if ValidZ(z) then begin
-                              WantDEM.SetGridElevation(Col,dRow,z * TiffHeader.Factor);
-                           end
-                           else WantDEM.SetGridMissing(Col,dRow);
-                        end;
-                     end
-                     else begin
-                        RecsRead := FileRead(TiffHandle,Int32Row^,bs);
-                        for Col := 0 to pred(WantDEM.DEMheader.NumCol) do begin
-                           z := Int32Row^[Col];
-                           if ValidZ(z) then WantDEM.SetGridElevation(Col,dRow,z * TiffHeader.Factor)
-                           else WantDEM.SetGridMissing(Col,dRow);
-                        end;
-                     end;
-                  end
-                  else if (TiffHeader.BitsPerSample in [15,16]) then begin
-                     if (WantDEM.DEMheader.DEMPrecision = SmallIntDEM) then begin
-                        RecsRead := FileRead(TiffHandle,IntRow^,bs);
-                        for Col := 0 to pred(WantDEM.DEMheader.NumCol) do begin
-                           if BigEndian then zi := Swap(IntRow^[Col])
-                           else zi := IntRow^[Col];
-                           if ValidZ(zi) then WantDEM.SetGridElevation(Col,dRow,zi)
-                           else WantDEM.SetGridMissing(Col,dRow);
-                        end;
-                     end
-                     else begin
-                        RecsRead := FileRead(TiffHandle,WordRow^,bs);
-                        for Col := 0 to pred(WantDEM.DEMheader.NumCol) do begin
-                           if BigEndian then zw := Swap(WordRow^[Col])
-                           else zw := WordRow^[Col];
-                           if ValidZ(zw) then WantDEM.SetGridElevation(Col,dRow,zw)
-                           else WantDEM.SetGridMissing(Col,dRow);
-                        end;
-                     end;
-                  end
-                  else if (TiffHeader.BitsPerSample = 64) then begin
-                     RecsRead := FileRead(TiffHandle,DoubleRow^,bs);
+            try
+               if (TiffHeader.BitsPerSample = 32) then begin
+                  if (TiffHeader.SampleFormat = sfIEEEfloat) then begin
+                     RecsRead := FileRead(TiffHandle,FloatRow^,bs);
                      for Col := 0 to pred(WantDEM.DEMheader.NumCol) do begin
-                        z := DoubleRow^[Col];
+                        z := FloatRow^[Col];
+                        if BigEndian then SwapToShortFloat(z);
                         if ValidZ(z) then begin
                            WantDEM.SetGridElevation(Col,dRow,z * TiffHeader.Factor);
                         end
-                        else WantDEM.SetGridMissing(Col,dRow);;
+                        else WantDEM.SetGridMissing(Col,dRow);
                      end;
                   end
-                  else if (TiffHeader.BitsPerSample in [8]) then begin
-                     RecsRead := FileRead(TiffHandle,ByteRow^,bs);
+                  else begin
+                     RecsRead := FileRead(TiffHandle,Int32Row^,bs);
                      for Col := 0 to pred(WantDEM.DEMheader.NumCol) do begin
-                        zb := ByteRow^[Col];
-                        WantDEM.SetGridElevation(Col,dRow,zb);
-                     end;
-                  end
-                  else if (TiffHeader.BitsPerSample in [4]) then begin
-                     RecsRead := FileRead(TiffHandle,ByteRow^,bs div 2);
-                     for Col := 0 to pred(WantDEM.DEMheader.NumCol) div 2 do begin
-                        zb := ByteRow^[Col] div 16;
-                        WantDEM.SetGridElevation(2*Col,dRow,zb);
-                        zb := ByteRow^[Col] mod 16;
-                        WantDEM.SetGridElevation(succ(2*Col),dRow,zb);
+                        z := Int32Row^[Col];
+                        if ValidZ(z) then WantDEM.SetGridElevation(Col,dRow,z * TiffHeader.Factor)
+                        else WantDEM.SetGridMissing(Col,dRow);
                      end;
                   end;
-               except
-                   on exception do Result := false;
+               end
+               else if (TiffHeader.BitsPerSample in [15,16]) then begin
+                  if (WantDEM.DEMheader.DEMPrecision = SmallIntDEM) then begin
+                     RecsRead := FileRead(TiffHandle,IntRow^,bs);
+                     for Col := 0 to pred(WantDEM.DEMheader.NumCol) do begin
+                        if BigEndian then zi := Swap(IntRow^[Col])
+                        else zi := IntRow^[Col];
+                        if ValidZ(zi) then WantDEM.SetGridElevation(Col,dRow,zi)
+                        else WantDEM.SetGridMissing(Col,dRow);
+                     end;
+                  end
+                  else begin
+                     RecsRead := FileRead(TiffHandle,WordRow^,bs);
+                     for Col := 0 to pred(WantDEM.DEMheader.NumCol) do begin
+                        if BigEndian then zw := Swap(WordRow^[Col])
+                        else zw := WordRow^[Col];
+                        if ValidZ(zw) then WantDEM.SetGridElevation(Col,dRow,zw)
+                        else WantDEM.SetGridMissing(Col,dRow);
+                     end;
+                  end;
+               end
+               else if (TiffHeader.BitsPerSample = 64) then begin
+                  RecsRead := FileRead(TiffHandle,DoubleRow^,bs);
+                  for Col := 0 to pred(WantDEM.DEMheader.NumCol) do begin
+                     z := DoubleRow^[Col];
+                     if ValidZ(z) then begin
+                        WantDEM.SetGridElevation(Col,dRow,z * TiffHeader.Factor);
+                     end
+                     else WantDEM.SetGridMissing(Col,dRow);;
+                  end;
+               end
+               else if (TiffHeader.BitsPerSample in [8]) then begin
+                  RecsRead := FileRead(TiffHandle,ByteRow^,bs);
+                  for Col := 0 to pred(WantDEM.DEMheader.NumCol) do begin
+                     zb := ByteRow^[Col];
+                     WantDEM.SetGridElevation(Col,dRow,zb);
+                  end;
+               end
+               else if (TiffHeader.BitsPerSample in [4]) then begin
+                  RecsRead := FileRead(TiffHandle,ByteRow^,bs div 2);
+                  for Col := 0 to pred(WantDEM.DEMheader.NumCol) div 2 do begin
+                     zb := ByteRow^[Col] div 16;
+                     WantDEM.SetGridElevation(2*Col,dRow,zb);
+                     zb := ByteRow^[Col] mod 16;
+                     WantDEM.SetGridElevation(succ(2*Col),dRow,zb);
+                  end;
                end;
+            except
+                on exception do Result := false;
             end;
+         end;
 
-            if (TiffHeader.BitsPerSample = 64) then Dispose(DoubleRow)
-            else if (TiffHeader.BitsPerSample = 32) then begin
-               if (TiffHeader.SampleFormat <> sfIEEEfloat) then Dispose(Int32Row);
-               if (TiffHeader.SampleFormat = sfIEEEfloat) then Dispose(FloatRow);
-            end
-            else if (TiffHeader.BitsPerSample in [15,16]) then begin
-               if (WantDEM.DEMheader.DEMPrecision = SmallIntDEM) then Dispose(IntRow) else Dispose(WordRow);
-            end
-            else Dispose(ByteRow);
+         if (TiffHeader.BitsPerSample = 64) then Dispose(DoubleRow)
+         else if (TiffHeader.BitsPerSample = 32) then begin
+            if (TiffHeader.SampleFormat <> sfIEEEfloat) then Dispose(Int32Row);
+            if (TiffHeader.SampleFormat = sfIEEEfloat) then Dispose(FloatRow);
+         end
+         else if (TiffHeader.BitsPerSample in [15,16]) then begin
+            if (WantDEM.DEMheader.DEMPrecision = SmallIntDEM) then Dispose(IntRow) else Dispose(WordRow);
+         end
+         else Dispose(ByteRow);
 
-            CloseTiffFile;
-            if ShowDEMReadingProgress then EndProgress;
-            {$If Defined(RecordFullGeotiff) or Defined(RecordGeotiffProjection)} WriteLineToDebugFile('DEM read over, DEM=' + WantDEM.DEMMapProjection.GetProjectionName); {$EndIf}
-            WantDEM.CheckMaxMinElev;
-            {$If Defined(RecordFullGeotiff) or Defined(ShowKeyDEM) or Defined(TrackZ)} WantDEM.TrackElevationRange('Geotiff DEM CheckMaxMinElev over ' + WantDEM.Zrange); {$EndIf}
+         CloseTiffFile;
+         if ShowDEMReadingProgress then EndProgress;
+         WantDEM.CheckMaxMinElev;
+         {$If Defined(RecordFullGeotiff) or Defined(ShowKeyDEM) or Defined(TrackZ) or Defined(RecordUKOS)} WantDEM.TrackElevationRange('Geotiff DEM CheckMaxMinElev over ' + WantDEM.Zrange); {$EndIf}
       end;
    {$If Defined(RecordGeotiff) or Defined(RecordInitializeDEM)} WriteLineToDebugFile('tTIFFImage.CreateDEM out, ' + sfBoundBoxToString(WantDEM.DEMBoundBoxProjected,4)); {$EndIf}
-   {$If Defined(RecordDefineDatum) or Defined(RecordGeotiff)} WriteLineToDebugFile('tTIFFImage.CreateDEM out, DEM=' + WantDEM.DEMMapProjection.GetProjectionName); {$EndIf}
+   {$If Defined(RecordDefineDatum) or Defined(RecordGeotiff) or Defined(RecordFullGeotiff) or Defined(RecordGeotiffProjection) or Defined(RecordUKOS)}
+      WriteLineToDebugFile('tTIFFImage.CreateDEM out, DEM=' + WantDEM.DEMMapProjection.GetProjectionName);
+   {$EndIf}
    {$If Defined(RecordDEMMapProjection) or Defined(RecordInitializeDEM) or Defined(TrackProjection)} WantDEM.DEMMapProjection.ProjectionParamsToDebugFile('SetUpDefaultNewProjection out'); {$EndIf}
-   {$If Defined(TrackHorizontalDatum)} WriteLineToDebugFile('tTIFFImage.CreateDEM out, ' + WantDEM.AreaName + '  DEM=' + WantDEM.DEMMapProjection.h_DatumCode);   {$EndIf}
+   {$If Defined(TrackHorizontalDatum)} WriteLineToDebugFile('tTIFFImage.CreateDEM out, ' + WantDEM.AreaName + '  DEM=' + WantDEM.DEMMapProjection.h_DatumCode); {$EndIf}
 end  {tTIFFImage.CreateTiffDEM};
 
 

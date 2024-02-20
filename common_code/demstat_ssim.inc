@@ -9,6 +9,70 @@
 {___________________________________}
 
 
+procedure SSIMcheck(DoThinning : boolean);
+const
+   Windows : array[1..5] of integer = (7,9,11,13,15);
+var
+   DEM1,DEM2,thin,i,db : integer;
+   Grids : array[1..5] of integer;
+   bb : sfBoundBox;
+   Mean,Std : float32;
+   aLine,AreaName : shortstring;
+   Results : tStringList;
+   gl1,gl2 : tGridLimits;
+   SSIM,Luminance,Contrast,Structure : float64;
+begin
+   GetTwoCompatibleGrids('SSIM',false, DEM1,DEM2,false);
+   Thin := 1;
+   Results := tStringList.Create;
+
+   if DoThinning then begin
+      for i := 1 to 5 do begin
+         Grids[i] := MakeSSIMMap(true,false,DEM1,DEM2,1,11,Thin);
+         Thin := Thin * 2;
+      end;
+      Results.Add('DEMIX_TILE,LAT,LONG,TILE_AVG,POINTS_1,POINTS_2,POINTS_4,POINTS_8,POINTS_16');
+   end
+   else begin
+      for i := 1 to 5 do begin
+         AreaName := 'SSIM_window_' + IntToStr(Windows[i]) + 'x' + IntToStr(Windows[i]);
+         Grids[i] := MakeSSIMMap(true,false,DEM1,DEM2,1,Windows[i],Thin,AreaName);
+      end;
+      Results.Add('DEMIX_TILE,LAT,LONG,W_7x7,W_9x9,W_11x11,W_13x13,W_15x15');
+   end;
+
+   //fName := '';
+
+   db := DEMIXtileFill(DEM1,DEMGlb[DEM1].DEMBoundBoxGeo);
+
+   GISdb[db].ApplyGISFilter('GRID_FULL>' + IntToStr(MDDef.DEMIX_Full));
+
+    while not GISdb[db].MyData.eof do begin
+       bb := GISdb[db].MyData.GetRecordBoundingBox;
+
+       gl1 := DEMglb[DEM1].sfBoundBox2tGridLimits(bb);
+       gl2 := DEMglb[DEM2].sfBoundBox2tGridLimits(bb);
+
+       aLine := GISdb[db].MyData.GetFieldByNameAsString('NAME') + ',' + RealToString(0.5*(bb.YMin + bb.YMax),-12,-4)  + ',' + RealToString(0.5*(bb.xMin + bb.xMax),-12,-4);
+
+       if DoThinning then begin
+          ComputeSSIM(DEM1,DEM2,gl1,gl2,SSIM,Luminance,Contrast,Structure);
+          aLine := aline + ',' + RealToString(SSIM,-12,-8);
+       end;
+
+       for i := 1 to 5 do begin
+          gl1 := DEMglb[Grids[i]].sfBoundBox2tGridLimits(bb);
+          DEMglb[Grids[i]].ElevationStatistics(gl1,Mean,Std);
+          aLine := aline + ',' + RealToString(Mean,-12,-8);
+       end;
+       Results.Add(aLine);
+       GISdb[db].MyData.Next;
+    end;
+    DEMglb[DEM1].SelectionMap.StringListToLoadedDatabase(Results,Petmar.NextFileNumber(MDTempDir,'SSMI_comparison_','.dbf'));
+end;
+
+
+
 procedure NormalizeDEMforSSIM(DEM : integer; What : shortstring);
 var
    Min,Max : float32;
@@ -55,6 +119,7 @@ end;
 
 
 function ComputeSSIM(DEM1,DEM2 : integer; gl1,gl2 : tGridLimits; var SSIM,Luminance,Contrast,Structure : float64) : boolean;
+//grid should have been normalized before calling
 const
   MaxIntensity = 1;
   c1 = 0.01;    //C1 := sqr(0.01 * MaxIntensity);
@@ -64,7 +129,7 @@ var
   r,covar,Mean1,Mean2,StdDev1,StdDev2 : float64;
 begin
    {$IfDef RecordSSIMFull} WriteLineToDebugFile('ComputeSSIM '  + DEMGlb[DEM1].AreaName + ',' + DEMGlb[DEM2].AreaName); {$EndIf}
-   Result := CovariancesFromTwoGrids(gl1, DEM1,DEM2, r,covar,Mean1,Mean2,StdDev1,StdDev2);
+   Result := CovariancesFromTwoGrids(gl1,DEM1,DEM2,r,covar,Mean1,Mean2,StdDev1,StdDev2);
    if Result then begin
       {$IfDef RecordSSIMFull} WriteLineToDebugFile('Covariance done, covar=' + RealToString(Covar,-12,2)); {$EndIf}
       Luminance := (2 * Mean1 * Mean2 + C1) / (Sqr(Mean1) + Sqr(Mean2) + C1);
@@ -78,58 +143,74 @@ begin
 end;
 
 
-procedure MakeSSIMMaps(DEM1,DEM2 : integer);
+function MakeSSIMMap(OpenMap,AlreadyNormalized : boolean; DEM1,DEM2,NumberOfGrids,WindowSize : integer; ThinFactor : integer = 1; AreaName : shortstring = '') : integer;
+//assumes an elevation grid for the normalization
+//this normalizes the two grids, but then reloads them
 const
-  MaxIntensity = 1;
-  c1 = 0.01;    //C1 := sqr(0.01 * MaxIntensity);
-  c2 = 0.03;    //C2 := sqr(0.03 * MaxIntensity);
-  c3 = 0.015;   //C3 := c2 / 2;
+   Names : array[1..4] of shortstring = ('SSIM','Luminance','Contrast','Structure');
 var
-  r,covar,Mean1,Mean2,StdDev1,StdDev2,SSIM,Luminance,Contrast,Structure : float64;
-  xoffset,yoffset,x,y,NewGrid,xl,yl,ThinFactor : integer;
+  r,covar,Mean1,Mean2,StdDev1,StdDev2{,SSIM,Luminance,Contrast,Structure} : float64;
+  xoffset,yoffset,x,y,xl,yl,i : integer;
   gl1,gl2 : tGridLimits;
-  AreaName : shortString;
+  ng : array[1..4] of integer;
+  nv : array[1..4] of float64;
 begin
-   AreaName := 'SSIM_' + DEMGlb[DEM1].AreaName + '_' + DEMGlb[DEM2].AreaName;
-   {$IfDef RecordSSIMFull} WriteLineToDebugFile('ComputeSSIM in, '  + AreaName); {$EndIf}
+  {$IfDef RecordSSIMFull} WriteLineToDebugFile('ComputeSSIM in, '  + AreaName); {$EndIf}
    if DEMglb[DEM1].SecondGridJustOffset(DEM2,xoffset,yoffset) then begin
       HeavyDutyProcessing := true;
-      NormalizeDEMforSSIM(DEM1,'Elev');
-      NormalizeDEMforSSIM(DEM2,'Elev');
+      if not AlreadyNormalized then begin
+         NormalizeDEMforSSIM(DEM1,'Elev');
+         NormalizeDEMforSSIM(DEM2,'Elev');
+      end;
 
-      ThinFactor := 4;
-      if (ThinFactor > 1) then NewGrid := DEMGlb[DEM1].ThinAndOpenGridSetMissing(ThinFactor,FloatingPointDEM,AreaName,Undefined)
-      else NewGrid := DEMGlb[DEM1].CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName,Undefined);
+      if (ThinFactor > 1) then begin
+         if (AreaName = '') then AreaName := 'SSIM_thin_' + IntToStr(ThinFactor) + '_' + DEMGlb[DEM1].AreaName + '_' + DEMGlb[DEM2].AreaName;
+         ng[1] := DEMGlb[DEM1].ThinAndOpenGridSetMissing(ThinFactor,FloatingPointDEM,AreaName,Undefined);
+      end
+      else begin
+         for i := 1 to NumberOfGrids do begin
+            if (AreaName = '') then AreaName := Names[i] + '_' + DEMGlb[DEM1].AreaName + '_' + DEMGlb[DEM2].AreaName;
+            ng[i] := DEMGlb[DEM1].CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName,Undefined);
+         end;
+      end;
 
+      WindowSize := WindowSize div 2;
       StartProgress('Make SSIM Map');
       x := 0;
-      while x <= pred(DEMglb[NewGrid].DEMHeader.NumCol) do begin
-         gl1.XGridLow := ThinFactor * x - 5;
-         gl1.XGridHigh := ThinFactor * x + 5;
-         gl2.XGridLow := ThinFactor * x + yoffset - 5;
-         gl2.XGridHigh := ThinFactor * x +yoffset + 5;
+      while x <= pred(DEMglb[ng[1]].DEMHeader.NumCol) do begin
+         gl1.XGridLow := ThinFactor * x - WindowSize;
+         gl1.XGridHigh := ThinFactor * x + WindowSize;
+         gl2.XGridLow := ThinFactor * x + yoffset - WindowSize;
+         gl2.XGridHigh := ThinFactor * x + yoffset + WindowSize;
 
-         {if (x mod 10 = 0) then} UpdateProgressBar(x/DEMglb[DEM1].DEMHeader.NumCol);
+         UpdateProgressBar(x/DEMglb[DEM1].DEMHeader.NumCol);
          y := 0;
-         while y <= pred(DEMglb[NewGrid].DEMHeader.NumRow) do begin
-             gl1.YGridLow := ThinFactor * y - 5;
-             gl1.YGridHigh := ThinFactor * y + 5;
-             gl2.YGridLow := ThinFactor * y + yoffset - 5;
-             gl2.YGridHigh := ThinFactor * y + yoffset + 5;
-             if ComputeSSIM(DEM1,DEM2,gl1,gl2,SSIM,Luminance,Contrast,Structure) then begin
-                DEMGlb[NewGrid].SetGridElevation(x,y,SSIM);
+         while y <= pred(DEMglb[ng[1]].DEMHeader.NumRow) do begin
+             gl1.YGridLow := ThinFactor * y - WindowSize;
+             gl1.YGridHigh := ThinFactor * y + WindowSize;
+             gl2.YGridLow := ThinFactor * y + yoffset - WindowSize;
+             gl2.YGridHigh := ThinFactor * y + yoffset + WindowSize;
+             if ComputeSSIM(DEM1,DEM2,gl1,gl2,nv[1],nv[2],nv[3],nv[4]{SSIM,Luminance,Contrast,Structure}) then begin
+                for i := 1 to NumberOfGrids do begin
+                   DEMGlb[ng[i]].SetGridElevation(x,y,nv[i]);
+                end;
              end;
              inc(y,1);
          end;
          inc(x,1);
       end;
-      DEMglb[NewGrid].CheckMaxMinElev;
-      DEMglb[NewGrid].SetUpMap(NewGrid,true,mtElevSpectrum);
-      DEMGlb[DEM1].ReloadDEM(true);
-      DEMGlb[DEM2].ReloadDEM(true);
+      for i := 1 to NumberOfGrids do begin
+         DEMglb[ng[i]].CheckMaxMinElev;
+         if OpenMap then DEMglb[ng[i]].SetUpMap(ng[i],true,mtElevSpectrum);
+      end;
+      if not AlreadyNormalized then begin
+         DEMGlb[DEM1].ReloadDEM(true);
+         DEMGlb[DEM2].ReloadDEM(true);
+      end;
+      Result := ng[1];
       HeavyDutyProcessing := false;
    end;
-   {$IfDef RecordSSIMFull} WriteLineToDebugFile('ComputeSSIM out, '  + AreaName); {$EndIf}
+   {$IfDef RecordSSIM} WriteLineToDebugFile('ComputeSSIM out,grid= ' + IntToStr(Result) + '  ' + AreaName); {$EndIf}
 end;
 
 
@@ -194,11 +275,14 @@ end;
          Criterion2 : shortstring;
          RefGridLimits,TestGridLimits : tGridLimits;
          What : shortstring;
+         gl1 : tGridLimits;
+         Mean,Std : float32;
+         PtSSIMGrids, AreaSSIMGrids : tDEM_int_array;
       begin
           {$IfDef RecordDEMIX} HighLightLineToDebugFile('Criterion=' + Criterion); {$EndIf}
           wmdem.SetPanelText(3, Criterion + ' ' + Count,true);
 
-          if DoR2 then begin
+          if MDDef.DoR2 then begin
              GISdb[DEMIXtileDB].MyData.First;
              while not GISdb[DEMIXtileDB].MyData.eof do begin
                //do correlation coefficients before normalizing grids
@@ -219,23 +303,50 @@ end;
              end;
           end;;
 
-          if DoSSIM then begin
+          if MDDef.DoSSIM then begin
               //normalize grids for SSIM
               What := BeforeSpecifiedCharacterAnsi(Criterion,'_');
               for i := 0 to NumPt do NormalizeDEMforSSIM(PointGrids[i],What);
               for i := 0 to NumArea do NormalizeDEMforSSIM(AreaGrids[i],What);
 
+              //for i := 1 to NumPt do PtSSIMGrids := MakeSSIMMap(false, true,PointGrids[0],PointGrids[i],11);
+              //for i := 1 to NumArea do AreaSSIMGrids := MakeSSIMMap(false, true,AreaGrids[0],AreaGrids[i],11);
+                for i := 1 to NumPt do begin
+                   wmdem.SetPanelText(3, Criterion + ' ' + Count + ' Points=' + IntToStr(i),true);
+                   PtSSIMGrids[i] := MakeSSIMMap(false, true,PointGrids[0],PointGrids[i],1,11);
+                end;
+                for i := 1 to NumArea do begin
+                   wmdem.SetPanelText(3, Criterion + ' ' + Count + ' Areas=' + IntToStr(i),true);
+                   AreaSSIMGrids[i] := MakeSSIMMap(false, true,AreaGrids[0],AreaGrids[i],1,11);
+                end;
+
+
+             wmdem.SetPanelText(3, Criterion + ' ' + Count + ' average tiles',true);
              GISdb[DEMIXtileDB].MyData.First;
              while not GISdb[DEMIXtileDB].MyData.eof do begin
                 bb := GISdb[DEMIXtileDB].MyData.GetRecordBoundingBox;
                 TileName := GISdb[DEMIXtileDB].MyData.GetFieldByNameAsString('NAME');
                 wmdem.SetPanelText(2, TileName + ' SSIM',true);
                 aLine := TileName + ',' + Area + ',' + RealToString(0.5*(bb.YMin+bb.YMax),-12,4) + ',' + RealToString(0.5*(bb.xMin+bb.xMax),-12,4) + ',' + Criterion;
+                (*
                 for i := 1 to NumPt do aLine := aline + ',' + RealToString(ProcessDEMTileSSIM(PointGrids[0],PointGrids[i],bb),-12,6);
                 for i := 1 to NumArea do aLine := aline + ',' + RealToString(ProcessDEMTileSSIM(AreaGrids[0],AreaGrids[i],bb),-12,6);
+                *)
+                for i := 1 to NumPt do begin
+                   gl1 := DEMglb[PtSSIMGrids[i]].sfBoundBox2tGridLimits(bb);
+                   DEMglb[PtSSIMGrids[i]].ElevationStatistics(gl1,Mean,Std);
+                   aLine := aline + ',' + RealToString(1-Mean,-12,6);
+                end;
+                for i := 1 to NumArea do begin
+                   gl1 := DEMglb[AreaSSIMGrids[i]].sfBoundBox2tGridLimits(bb);
+                   DEMglb[AreaSSIMGrids[i]].ElevationStatistics(gl1,Mean,Std);
+                   aLine := aline + ',' + RealToString(1-Mean,-12,6);
+                end;
                 Results.Add(aline);
                 GISdb[DEMIXtileDB].MyData.Next;
              end;
+             for i := 1 to NumPt do CloseSingleDEM(PtSSIMGrids[i]);
+             for i := 1 to NumArea do CloseSingleDEM(AreaSSIMGrids[i]);
           end;
       end;
 
@@ -249,7 +360,7 @@ end;
       end;
 
    begin {procedure DoSSIMandR2ForAnArea}
-       {$IfDef RecordDEMIX} HighLightLineToDebugFile('AreaSSIMComputations area=' + AreaName); {$EndIf}
+       {$IfDef RecordDEMIX} WriteLineToDebugFile('AreaSSIMComputations area=' + AreaName); {$EndIf}
        SaveFName := SSIMresultsDir + AreaName + '_ssim_results.csv';
        if (not Overwrite) and FileExists(SaveFName) then begin
           {$IfDef RecordDEMIXFull} HighLightLineToDebugFile('Area=' + AreaName + '  file exists=' + SaveFName); {$EndIf}
@@ -267,55 +378,80 @@ end;
              DEMIXtileDB := DEMIXtileFill(PointDEMs[0],DEMGlb[PointDEMs[0]].DEMBoundBoxGeo,true);
              GISdb[DEMIXtileDB].ApplyGISFilter('GRID_FULL>' + IntToStr(MDDef.DEMIX_Full));
 
-             wmdem.SetPanelText(3, 'Compute TPI',true);
-             for i := 0 to NumPt do PointGrids[i] := DEMGlb[PointDEMs[i]].BoxCarDetrendDEM(false,DEMGlb[PointDEMs[i]].FullDEMGridLimits,3);
-             for i := 0 to NumArea do AreaGrids[i] := DEMGlb[AreaDEMs[i]].BoxCarDetrendDEM(false,DEMGlb[AreaDEMs[i]].FullDEMGridLimits,3);
-             DoCriterion('TPI_SSIM','1/8',PointGrids,AreaGrids);
-             ClearDerivedGrids;
+             if MDDef.SSIM_rri then begin
+                wmdem.SetPanelText(3, 'Compute RRI',true);
+                for i := 0 to NumPt do PointGrids[i] := MakeTRIGrid(PointDEMs[i],nmRRI,false);
+                for i := 0 to NumArea do AreaGrids[i] := MakeTRIGrid(AreaDEMs[i],nmRRI,false);
+                DoCriterion('RRI_SSIM','5/8',PointGrids,AreaGrids);
+                ClearDerivedGrids;
+             end;
 
-             wmdem.SetPanelText(3, 'Compute slope/roughness',true);
-             for i := 0 to NumPt do PointGrids2[i] := 0;    //so slope grids are returned
-             for i := 0 to NumArea do AreaGrids2[i] := 0;  //so slope grids are returned
-             for i := 0 to NumPt do PointGrids[i] := CreateSlopeRoughnessSlopeStandardDeviationMap(PointDEMs[i],5,PointGrids2[i],false);
-             for i := 0 to NumArea do AreaGrids[i] := CreateSlopeRoughnessSlopeStandardDeviationMap(AreaDEMs[i],5,AreaGrids2[i],false);
-             DoCriterion('SLOPE_SSIM','2/8',PointGrids2,AreaGrids2);
-             DoCriterion('RUFF_SSIM','3/8',PointGrids,AreaGrids);
-             ClearDerivedGrids;
-             for i := 0 to NumPt do CloseSingleDEM(PointGrids2[i]);
-             for i := 0 to NumArea do CloseSingleDEM(AreaGrids2[i]);
+             if MDDef.SSIM_LS then begin
+                wmdem.SetPanelText(3, 'Compute LS factor',true);
+                for i := 0 to NumPt do PointGrids[i] := SAGA_LSFactor(false,DEMGlb[PointDEMs[i]].GeotiffDEMName);
+                for i := 0 to NumArea do AreaGrids[i] := SAGA_LSFactor(false,DEMGlb[AreaDEMs[i]].GeotiffDEMName);
+                DoCriterion('LS_SSIM','8/8',PointGrids,AreaGrids);
+                ClearDerivedGrids;
+             end;
 
-             wmdem.SetPanelText(3, 'Compute Hillshade',true);
-             for i := 0 to NumPt do PointGrids[i] := MakeSingleNewDerivativeMap('R',PointDEMs[i],0,false);
-             for i := 0 to NumArea do AreaGrids[i] := MakeSingleNewDerivativeMap('R',AreaDEMs[i],0,false);
-             DoCriterion('HILL_SSIM','4/8',PointGrids,AreaGrids);
-             ClearDerivedGrids;
+             if MDDef.SSIM_TPI then begin
+                wmdem.SetPanelText(3, 'Compute TPI',true);
+                for i := 0 to NumPt do PointGrids[i] := DEMGlb[PointDEMs[i]].BoxCarDetrendDEM(false,DEMGlb[PointDEMs[i]].FullDEMGridLimits,3);
+                for i := 0 to NumArea do AreaGrids[i] := DEMGlb[AreaDEMs[i]].BoxCarDetrendDEM(false,DEMGlb[AreaDEMs[i]].FullDEMGridLimits,3);
+                DoCriterion('TPI_SSIM','1/8',PointGrids,AreaGrids);
+                ClearDerivedGrids;
+             end;
 
-             wmdem.SetPanelText(3, 'Compute RRI',true);
-             for i := 0 to NumPt do PointGrids[i] := MakeTRIGrid(PointDEMs[i],nmRRI,false);
-             for i := 0 to NumArea do AreaGrids[i] := MakeTRIGrid(AreaDEMs[i],nmRRI,false);
-             DoCriterion('RRI_SSIM','5/8',PointGrids,AreaGrids);
-             ClearDerivedGrids;
+             if MDDef.SSIM_Slope or MDDef.SSIM_ruff then begin
+                wmdem.SetPanelText(3, 'Compute slope/roughness',true);
+                for i := 0 to NumPt do PointGrids2[i] := 0;    //so slope grids are returned
+                for i := 0 to NumArea do AreaGrids2[i] := 0;  //so slope grids are returned
+                for i := 0 to NumPt do PointGrids[i] := CreateSlopeRoughnessSlopeStandardDeviationMap(PointDEMs[i],5,PointGrids2[i],false);
+                for i := 0 to NumArea do AreaGrids[i] := CreateSlopeRoughnessSlopeStandardDeviationMap(AreaDEMs[i],5,AreaGrids2[i],false);
+                DoCriterion('SLOPE_SSIM','2/8',PointGrids2,AreaGrids2);
+                DoCriterion('RUFF_SSIM','3/8',PointGrids,AreaGrids);
+                ClearDerivedGrids;
+                for i := 0 to NumPt do CloseSingleDEM(PointGrids2[i]);
+                for i := 0 to NumArea do CloseSingleDEM(AreaGrids2[i]);
+             end;
 
-             wmdem.SetPanelText(3, 'Compute flow accumulation',true);
-             for i := 0 to NumPt do PointGrids[i] := WBT_FlowAccumulation(False,True,True,DEMGlb[PointDEMs[i]].GeotiffDEMName);
-             for i := 0 to NumArea do AreaGrids[i] := WBT_FlowAccumulation(False,True,True,DEMGlb[AreaDEMs[i]].GeotiffDEMName);
-             DoCriterion('ACCUM_SSIM','6/8',PointGrids,AreaGrids);
-             ClearDerivedGrids;
+             if MDDef.SSIM_hill then begin
+                wmdem.SetPanelText(3, 'Compute Hillshade',true);
+                for i := 0 to NumPt do PointGrids[i] := MakeSingleNewDerivativeMap('R',PointDEMs[i],0,false);
+                for i := 0 to NumArea do AreaGrids[i] := MakeSingleNewDerivativeMap('R',AreaDEMs[i],0,false);
+                DoCriterion('HILL_SSIM','4/8',PointGrids,AreaGrids);
+                ClearDerivedGrids;
+             end;
 
-             wmdem.SetPanelText(3, 'Compute wetness index',true);
-             for i := 0 to NumPt do PointGrids[i] := WBT_WetnessIndex(false,true,DEMGlb[PointDEMs[i]].GeotiffDEMName);
-             for i := 0 to NumArea do AreaGrids[i] := WBT_WetnessIndex(false,true,DEMGlb[AreaDEMs[i]].GeotiffDEMName);
-             DoCriterion('WETIN_SSIM','7/8',PointGrids,AreaGrids);
-             ClearDerivedGrids;
+             if MDDef.SSIM_RRI then begin
+                wmdem.SetPanelText(3, 'Compute RRI',true);
+                for i := 0 to NumPt do PointGrids[i] := MakeTRIGrid(PointDEMs[i],nmRRI,false);
+                for i := 0 to NumArea do AreaGrids[i] := MakeTRIGrid(AreaDEMs[i],nmRRI,false);
+                DoCriterion('RRI_SSIM','5/8',PointGrids,AreaGrids);
+                ClearDerivedGrids;
+             end;
 
-             wmdem.SetPanelText(3, 'Compute LS factor',true);
-             for i := 0 to NumPt do PointGrids[i] := SAGA_LSFactor(false,DEMGlb[PointDEMs[i]].GeotiffDEMName);
-             for i := 0 to NumArea do AreaGrids[i] := SAGA_LSFactor(false,DEMGlb[AreaDEMs[i]].GeotiffDEMName);
-             DoCriterion('LS_SSIM','8/8',PointGrids,AreaGrids);
-             ClearDerivedGrids;
+             if MDDef.SSIM_flow then begin
+                wmdem.SetPanelText(3, 'Compute flow accumulation',true);
+                for i := 0 to NumPt do PointGrids[i] := WBT_FlowAccumulation(False,True,True,DEMGlb[PointDEMs[i]].GeotiffDEMName);
+                for i := 0 to NumArea do AreaGrids[i] := WBT_FlowAccumulation(False,True,True,DEMGlb[AreaDEMs[i]].GeotiffDEMName);
+                DoCriterion('ACCUM_SSIM','6/8',PointGrids,AreaGrids);
+                ClearDerivedGrids;
+             end;
 
-             //Elevation is done last, so we no longer need elevation to create derived grids, and can normalize it
-             DoCriterion('ELEV_SSIM','9/8',PointDEMs,AreaDEMs);
+             if MDDef.SSIM_wet then begin
+                wmdem.SetPanelText(3, 'Compute wetness index',true);
+                for i := 0 to NumPt do PointGrids[i] := WBT_WetnessIndex(false,true,DEMGlb[PointDEMs[i]].GeotiffDEMName);
+                for i := 0 to NumArea do AreaGrids[i] := WBT_WetnessIndex(false,true,DEMGlb[AreaDEMs[i]].GeotiffDEMName);
+                DoCriterion('WETIN_SSIM','7/8',PointGrids,AreaGrids);
+                ClearDerivedGrids;
+             end;
+
+             if MDDef.SSIM_elev then begin
+                wmdem.SetPanelText(3, 'Compute elevation',true);
+                //Elevation is done last, so we no longer need elevation to create derived grids, and can normalize it
+                DoCriterion('ELEV_SSIM','9/8',PointDEMs,AreaDEMs);
+             end;
 
              Results.SaveToFile(SavefName);
              Results.Free;
@@ -323,7 +459,7 @@ end;
              CloseAndNilNumberedDB(DEMIXtileDB);
           end
           else begin
-             {$IfDef RecordDEMIX} HighLightLineToDebugFile('Missing files for area ' + AreaName); {$EndIf}
+             {$IfDef RecordDEMIX} HighLightLineToDebugFile('Missing DEM files for area ' + AreaName); {$EndIf}
           end;
        end;
    end {procedure DoSSIMandR2ForAnArea};
@@ -336,10 +472,10 @@ var
    Area  : shortstring;
    i     : integer;
 begin {procedure AreaSSIMComputations}
-   {$IfDef RecordDEMIX} HighLightLineToDebugFile('AreaSSIMComputations in'); {$EndIf}
    try
       GetDEMIXPaths(true);
       Areas := DEMIX_AreasWanted(true,Area);
+      {$IfDef RecordDEMIX} HighLightLineToDebugFile('AreaSSIMComputations in, selected areas=' + IntToStr(Areas.Count)); {$EndIf}
       SafeMakeDir(SSIMresultsDir);
       LockStatusBar := true;
       wmdem.SetPanelText(0, 'Started ' + TimeToStr(Now),true);
@@ -355,8 +491,6 @@ begin {procedure AreaSSIMComputations}
    end;
    {$IfDef RecordDEMIX} HighLightLineToDebugFile('AreaSSIMComputations out'); {$EndIf}
 end {procedure AreaSSIMComputations};
-
-
 
 
 

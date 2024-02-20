@@ -1989,6 +1989,7 @@ uses
     {$EndIf}
 
     DEMIX_filter,
+    demix_definitions,
     DEMIX_Control,
 
    map_overlays,
@@ -2150,7 +2151,10 @@ end;
 
 procedure Tdbtablef.NormalizeddifferencesfromreferenceDEM1Click(Sender: TObject);
 begin
+{$IfDef ExDEMIXexperimentalOptions}
+{$Else}
    DEMIXwineContestCriterionGraph(dgNormalizedDiff,DBonTable);
+{$EndIf}
 end;
 
 procedure Tdbtablef.Normalizefield1Click(Sender: TObject);
@@ -3013,7 +3017,10 @@ end;
 
 procedure Tdbtablef.Wins1Click(Sender: TObject);
 begin
+{$IfDef ExDEMIXexperimentalOptions}
+{$Else}
    WinsAndTies(DBonTable);
+{$EndIf}
 end;
 
 procedure Tdbtablef.woorthreefieldRGB1Click(Sender: TObject);
@@ -5894,7 +5901,10 @@ end;
 
 procedure Tdbtablef.Allcriteriavalues1Click(Sender: TObject);
 begin
+{$IfDef ExDEMIXexperimentalOptions}
+{$Else}
    DEMIXwineContestCriterionGraph(dgAllValues,DBonTable);
+{$EndIf}
 end;
 
 procedure Tdbtablef.AllDBs1Click(Sender: TObject);
@@ -6292,7 +6302,10 @@ end;
 
 procedure Tdbtablef.SSIMR2graphforthistile1Click(Sender: TObject);
 begin
+{$IfDef ExDEMIXexperimentalOptions}
+{$Else}
    DEMIX_SSIM_R2_single_tile_graph(DBonTable,GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'));
+{$EndIf}
 end;
 
 procedure Tdbtablef.SSIMtodissimilarity1Click(Sender: TObject);
@@ -6502,7 +6515,10 @@ end;
 
 procedure Tdbtablef.N7Elevationdifferencecriteria1Click(Sender: TObject);
 begin
+{$IfDef ExDEMIXexperimentalOptions}
+{$Else}
    DEMIXwineContestCriterionGraph(dg7Params,DBonTable);
+{$EndIf}
 end;
 
 
@@ -6954,7 +6970,10 @@ end;
 
 procedure Tdbtablef.Currenttest1Click(Sender: TObject);
 begin
+{$IfDef ExDEMIXexperimentalOptions}
+{$Else}
    DEMIX_evaluations_graph(DBonTable);
+{$EndIf}
 end;
 
 
@@ -8059,7 +8078,10 @@ end;
 
 procedure Tdbtablef.Averageranksbyarea1Click(Sender: TObject);
 begin
+{$IfDef ExDEMIXexperimentalOptions}
+{$Else}
    DEMIXwineContestCriterionGraph(dgArea,DBonTable);
+{$EndIf}
 end;
 
 procedure Tdbtablef.AverageStandarddeviation1Click(Sender: TObject);
@@ -9610,7 +9632,10 @@ end;
 
 procedure Tdbtablef.COPoALOS1Click(Sender: TObject);
 begin
+{$IfDef ExDEMIXexperimentalOptions}
+{$Else}
    DEMIXisCOPorALOSbetter(DBonTable);
+{$EndIf}
 end;
 
 procedure Tdbtablef.N2Dgraphcolorcodetext1Click(Sender: TObject);
@@ -10042,13 +10067,18 @@ end;
 
 procedure Tdbtablef.Graphbyareawithaveragescoreforselectedcriteria1Click(Sender: TObject);
 begin
+{$IfDef ExDEMIXexperimentalOptions}
+{$Else}
    DEMIX_AreaAverageScores_graph(DBonTable);
-
+{$EndIf}
 end;
 
 procedure Tdbtablef.Graphbytilewithaveragescoreforselectedcriteria1Click(Sender: TObject);
 begin
+{$IfDef ExDEMIXexperimentalOptions}
+{$Else}
    GraphAverageScoresByTile(DBonTable,Nil,Nil);
+{$EndIf}
 end;
 
 procedure Tdbtablef.Graphfilters1Click(Sender: TObject);
@@ -10092,18 +10122,27 @@ end;
 
 procedure Tdbtablef.GraphsbestDEMpertilebycriteriasortbytilecharacteristics1Click(Sender: TObject);
 begin
+{$IfDef ExDEMIXexperimentalOptions}
+{$Else}
    DEMIX_graph_best_in_Tile(DBonTable,false);
+{$EndIf}
 end;
 
 procedure Tdbtablef.GraphSSIMR2bycluster1Click(Sender: TObject);
 begin
+{$IfDef ExDEMIXexperimentalOptions}
+{$Else}
    DEMIX_SSIM_R2_clusters_graph(DBonTable);
+{$EndIf}
 end;
 
 
 procedure Tdbtablef.GraphSSIMR2byDEM1Click(Sender: TObject);
 begin
+{$IfDef ExDEMIXexperimentalOptions}
+{$Else}
    DEMIX_SSIM_R2_clusters_graph(DBonTable);
+{$EndIf}
 end;
 
 procedure Tdbtablef.TransposeSSIMR2forclusters1Click(Sender: TObject);
@@ -11654,13 +11693,19 @@ end;
 
 procedure Tdbtablef.BestDEMbycategory1Click(Sender: TObject);
 begin
+{$IfDef ExDEMIXexperimentalOptions}
+{$Else}
    BestDEMSbyCategory(DBonTable);
+{$EndIf}
 end;
 
 
 procedure Tdbtablef.BestDEMpertilebycriteria1Click(Sender: TObject);
 begin
+{$IfDef ExDEMIXexperimentalOptions}
+{$Else}
    DEMIX_graph_best_in_Tile(DBonTable,true);
+{$EndIf}
 end;
 
 procedure Tdbtablef.Showarearecords1Click(Sender: TObject);
@@ -11835,7 +11880,7 @@ begin
        bbox.YMin := Lat - Extra;
        bbox.XMax := Long + extra;
    end;
-   LoadMapLibraryBox(WantDEM,WantImage,true, bbox.YMax,bbox.XMin,bbox.YMin,bbox.YMax);
+   LoadMapLibraryBox(WantDEM,WantImage,true, bbox);  //bbox.YMax,bbox.XMin,bbox.YMin,bbox.YMax);
 end;
 
 procedure Tdbtablef.LoadMSTfiles1Click(Sender: TObject);
@@ -13222,38 +13267,36 @@ var
    fName : PathStr;
    Table : tMyData;
 begin
-   {$IfDef RecordTerrainProfiles} WriteLineToDebugFile('Tdbtablef.Downhilluphillsegments1Click'); {$EndIf}
-   //with GISdb[DBonTable] do begin
-      if ShapeFile3D(GISdb[DBonTable].ShapeFileType) then GISdb[DBonTable].aShapeFile.GetLineCoordsAndZsFromDEM(GISdb[DBonTable].TheMapOwner.MapDraw.DEMonMap,GISdb[DBonTable].MyData.RecNo)
-      else GISdb[DBonTable].aShapeFile.GetLineCoords(GISdb[DBonTable].MyData.RecNo,true);
-      fName := Petmar.NextFileNumber(MDTempDir, 'temp_prof_',DefaultDBExt);
-      CreateThalwegFile(fName);
-      Table := tMyData.Create(fName);
-      for i := 0 to pred(GISdb[DBonTable].aShapeFile.CurrentPolyLineHeader.NumPoints) do begin
-         Lat := GISdb[DBonTable].aShapeFile.CurrentLineCoords^[i].Lat;
-         Long := GISdb[DBonTable].aShapeFile.CurrentLineCoords^[i].Long;
-         z := GISdb[DBonTable].aShapeFile.CurrentLineZs^[i];
+   {$IfDef RecordTerrainProfiles} WriteLineToDebugFile('Tdbtablef.Exportlinetopointdatabase1Click'); {$EndIf}
+   if ShapeFile3D(GISdb[DBonTable].ShapeFileType) then GISdb[DBonTable].aShapeFile.GetLineCoordsAndZsFromDEM(GISdb[DBonTable].TheMapOwner.MapDraw.DEMonMap,GISdb[DBonTable].MyData.RecNo)
+   else GISdb[DBonTable].aShapeFile.GetLineCoords(GISdb[DBonTable].MyData.RecNo,true);
+   fName := Petmar.NextFileNumber(MDTempDir, 'temp_prof_',DefaultDBExt);
+   CreateThalwegFile(fName);
+   Table := tMyData.Create(fName);
+   for i := 0 to pred(GISdb[DBonTable].aShapeFile.CurrentPolyLineHeader.NumPoints) do begin
+      Lat := GISdb[DBonTable].aShapeFile.CurrentLineCoords^[i].Lat;
+      Long := GISdb[DBonTable].aShapeFile.CurrentLineCoords^[i].Long;
+      z := GISdb[DBonTable].aShapeFile.CurrentLineZs^[i];
 
-         if i >0 then begin
-            VincentyCalculateDistanceBearing(Lat,Long,LastLat,LastLong,Dist,Az);
-            CumDist := CumDist + 0.001 * Dist;
-         end
-         else CumDist := 0;
+      if (i > 0) then begin
+         VincentyCalculateDistanceBearing(Lat,Long,LastLat,LastLong,Dist,Az);
+         CumDist := CumDist + 0.001 * Dist;
+      end
+      else CumDist := 0;
 
-         Table.Insert;
-         Table.SetFieldByNameAsFloat('LAT',Lat);
-         Table.SetFieldByNameAsFloat('LONG',Long);
-         Table.SetFieldByNameAsFloat('ELEV_M',z);
-         Table.SetFieldByNameAsFloat('DIST_KM',CumDist);
-         Table.Post;
+      Table.Insert;
+      Table.SetFieldByNameAsFloat('LAT',Lat);
+      Table.SetFieldByNameAsFloat('LONG',Long);
+      Table.SetFieldByNameAsFloat('ELEV_M',z);
+      Table.SetFieldByNameAsFloat('DIST_KM',CumDist);
+      Table.Post;
 
-         LastLat := Lat;
-         LastLong := Long;
-         LastZ := z;
-      end;
-      Table.Destroy;
-      GISdb[DBonTable].TheMapOwner.LoadDataBaseFile(fName)
-   //end;
+      LastLat := Lat;
+      LastLong := Long;
+      LastZ := z;
+   end;
+   Table.Destroy;
+   GISdb[DBonTable].TheMapOwner.LoadDataBaseFile(fName)
 end;
 
 
@@ -13708,7 +13751,7 @@ begin
    with GISdb[DBonTable] do begin
       bBox := GISdb[DBonTable].MyData.GetRecordBoundingBox;
       PickDEMSeries(WantSeries,'DEM blowup');
-      LoadMapLibraryBox(WantDEM,WantImage,true,bBox.YMax,bBox.XMin,bBox.YMin,bBox.XMax,WantSeries);
+      LoadMapLibraryBox(WantDEM,WantImage,true,bbox,{bBox.YMax,bBox.XMin,bBox.YMin,bBox.XMax,}WantSeries);
       if AnswerIsYes('clip to DEM to record outline') then begin
          DEMDef_Routines.SaveBackupDefaults;
          MDDef.MissingDataColor := claWhite;
@@ -14523,7 +14566,10 @@ end;
 
 procedure Tdbtablef.PercentageofcriteriawhereDEMisbest1Click(Sender: TObject);
 begin
+{$IfDef ExDEMIXexperimentalOptions}
+{$Else}
    DEMIXwineContestCriterionGraph(dgPercentBest,DBonTable);
+{$EndIf}
 end;
 
 procedure Tdbtablef.Percentfield1Click(Sender: TObject);
@@ -14629,7 +14675,10 @@ end;
 
 procedure Tdbtablef.PickParam1Click(Sender: TObject);
 begin
+{$IfDef ExDEMIXexperimentalOptions}
+{$Else}
    DEMIXwineContestCriterionGraph(dgPick,DBonTable);
+{$EndIf}
 end;
 
 
@@ -15023,8 +15072,11 @@ end;
 
 procedure Tdbtablef.Meanandmedianhistograms1Click(Sender: TObject);
 begin
+{$IfDef ExDEMIXexperimentalOptions}
+{$Else}
    //DEMIXMeanMedianHistograms(dbOnTable);
    DEMIXMeanMedianModeHistograms(dbOnTable);
+{$EndIf}
 end;
 
 procedure Tdbtablef.Meanfilterfilter1Click(Sender: TObject);
@@ -15213,7 +15265,10 @@ end;
 
 procedure Tdbtablef.Modestandarddeviationplots1Click(Sender: TObject);
 begin
+{$IfDef ExDEMIXexperimentalOptions}
+{$Else}
    ModeSTDPlot(DBonTable);
+{$EndIf}
 end;
 
 procedure Tdbtablef.Monthlyprecipitation1Click(Sender: TObject);

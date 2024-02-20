@@ -81,7 +81,7 @@ var
 begin
    for j := MaxDataBase downto 1 do begin
       i := DBPlotOrder[j];
-      if (GISdb[i] <> Nil )and (GISdb[i].MyData <> Nil) and (GISdb[i].MyData.FiltRecsInDB > 0) then begin
+      if ValidDB(i) and (GISdb[i].MyData.FiltRecsInDB > 0) then begin
          if (GISdb[i].LayerIsOn) and DBPlotNow[i] and ( (DBonThisMap[i]) or (MDdef.DBsOnAllMaps and ( not GISdb[i].ShowLocalMapOnly))) then begin
             PlotDBLegend(i,Bitmap);
          end;

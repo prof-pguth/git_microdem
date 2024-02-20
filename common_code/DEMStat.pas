@@ -21,7 +21,8 @@ unit DEMStat;
       //{$Define RecordDEMIX_colors}
       {$Define RecordSSIM}
       {$Define RecordDEMIX}
-      {$Define RepeatProblematicComputations}
+      //{$Define RecordDEMIXFull}
+      //{$Define RepeatProblematicComputations}  //put in breakpoint, and then follow debugger
       //{$Define RecordCovariance}
       //{$Define TrackSWCornerForComputations}  //must also be defined in DEMCoord
       //{$Define RecordSSIMNormalization}
@@ -189,20 +190,24 @@ type
    procedure HistogramsFromVATDEM(DEMwithVAT,ElevMap,SlopeMap,RuffMap,AspMap : integer; var Graph1,Graph2,Graph3,Graph4 : tThisBaseGraph);
    procedure CreateGridHistograms(DEMSwanted : tDEMbooleanArray; TailCutoff : float32 = 0.5);
 
+
+//ssim operations
    function ComputeSSIM(DEM1,DEM2 : integer; gl1,gl2 : tGridLimits; var SSIM,Luminance,Contrast,Structure : float64) : boolean;
    procedure AreaSSIMComputations(Overwrite : boolean);
    procedure NormalizeDEMforSSIM(DEM : integer; What : shortstring);
-   procedure MakeSSIMMaps(DEM1,DEM2 : integer);
-
+   function MakeSSIMMap(OpenMap,AlreadyNormalized : boolean; DEM1,DEM2,NumberOfGrids,WindowSize : integer; ThinFactor : integer = 1; AreaName : shortstring = '') : integer;
+   procedure SSIMcheck(DoThinning : boolean);
 
 //channel network comparisons
    function ChannelSHPToGrid(DEM,db : integer; OutDir : PathStr; PlotOrder : integer = 1) : integer;
    procedure CompareChannelNetworks(Area : shortstring);
-   procedure CreateChannelNetworkGridsFromVectors;
-   procedure BatchFillHolesInDEMIX_DEMS;
-   procedure BatchCreateVectorChannelNewtwork;
-   procedure ChannelNetworkMissPercentages;
+   procedure CreateChannelNetworkGridsFromVectors(Overwrite : boolean; AreasWanted : tstringlist = nil);
+   procedure BatchRemoveSinksInDEMIX_DEMS(Overwrite : boolean; AreasWanted : tstringlist = nil);
+   procedure BatchCreateVectorChannelNewtwork(Overwrite : boolean; AreasWanted : tstringlist = nil);
+   procedure ChannelNetworkMissPercentages(Overwrite : boolean; AreasWanted : tstringlist = nil);
    procedure ChannelNetworkMapComparison(AreaName,TestDEMName : shortstring);
+   procedure MultistepChannelNetworks(Overwrite : boolean);
+
 
 
 var
@@ -238,7 +243,12 @@ uses
       demdatabase,
    {$EndIf}
 
-   DEMIX_Control,
+   {$IfDef ExDEMIX}
+   {$Else}
+      demix_definitions,
+      DEMIX_Control,
+   {$EndIf}
+
    Geotiff,
 
    DEMCoord,DEMOptions,
@@ -1394,7 +1404,7 @@ var
    MVClusterClientDataSet : TMVClusterClientDataSet;
    BestClass,Sampler,i,j,x,y,NPts,db : integer;
    Limits : tGridLimits;
-   AveDev,aMin,zf : float32;
+   aMin,zf : float32;
    FieldsUsed : byte;
    FieldsToUse : array[1..MaxBands] of AnsiString;
    z,Mean,Std : array[1..MaxDEMDataSets] of float32;
@@ -1436,7 +1446,7 @@ begin
              MVClusterClientDataSet.FieldDefs.Add('DEM_' + IntToStr(i),ftFloat, 0, False);
              inc(FieldsUsed);
              FieldsToUse[FieldsUsed] := 'DEM_' + IntToStr(i);
-             DEMGlb[i].ElevationStatistics(Mean[i],Std[i],AveDev,true);
+             DEMGlb[i].ElevationStatistics(DEMGlb[i].FullDEMGridLimits,Mean[i],Std[i]);
              {$IfDef RecordClustering} WriteLineToDebugFile(DEMGlb[i].AreaName + '   DEM ' + IntToStr(i) + ' mean=' + RealToString(Mean[i],-18,-5) + '  std=' + RealToString(STD[i],-12,-5)); {$EndIf}
           end;
       end;

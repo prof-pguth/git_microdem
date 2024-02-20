@@ -16,7 +16,7 @@ unit petmar;
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$Define RecordShellExecute} //this should generally be on; if not desired, shut down in Windows defaults
-   //D{$Define RecordWebDownloads}
+   //{$Define RecordWebDownloads}
 
    {$IfDef Debug}
       //{$Define RecordColorPalette}
@@ -318,6 +318,8 @@ procedure ReadDefault(Prompt : ShortString;  var WordVal : word); overload;
       function GetFileSize(FileName : String) : Int64;
       function LastSubDir(Dir : AnsiString) : PathStr;
 
+      function FindPath(What,NeededName : shortstring; var TheDir : PathStr) : boolean;
+
       function GetParentDirectory(path : Ansistring) : Ansistring;
       procedure StripInvalidPathNameChars(var fName : PathStr);
       function CopyFile(SourceFile,DestinationFile : string):  boolean;
@@ -530,6 +532,45 @@ uses
 
 var
    TerrainCuts : array[0..4,1..3] of integer;
+
+function FindPath(What,NeededName : shortstring; var TheDir : PathStr) : boolean;
+var
+   ch : ansichar;
+   Locations : tStringList;
+   Dir : PathStr;
+   PickedNum : integer;
+
+   function FromDriveLetter(ch : ansichar) : Pathstr;
+   begin
+      Result := ch + NeededName;
+   end;
+
+begin
+   Locations := tStringList.Create;
+   TheDir := '';
+   Result := false;
+   for ch := 'A' to 'Z' do begin
+      Dir := FromDriveLetter(ch);
+      if PathIsValid(dir) then Locations.Add(Dir + '  (' + GetVolumeName(ch) + ')');
+   end;
+   if (Locations.Count = 0) then begin
+      {$IfDef WarnMapIndexes} MessageToContinue('No map indexes found'); {$EndIf}
+   end
+   else if (Locations.Count = 1) then begin
+      Dir := Locations.Strings[0];
+      TheDir := FromDriveLetter(Dir[1]);
+      Result := true;
+   end
+   else begin
+      if MultiSelectSingleColumnStringList(What,PickedNum,Locations,true) then begin
+         Dir := Locations.Strings[PickedNum];
+         TheDir := FromDriveLetter(Dir[1]);
+         Result := true;
+      end;
+      exit;
+   end;
+   Locations.Destroy;
+end;
 
 
 procedure AddSuffixOrPrefixToFiles(PrefixWanted : boolean; aPath : Pathstr = '');

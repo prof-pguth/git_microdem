@@ -21,11 +21,9 @@ object PetList: TPetList
     Height = 41
     Align = alBottom
     TabOrder = 0
-    ExplicitTop = 266
-    ExplicitWidth = 511
     object CancelBtn: TBitBtn
-      Left = 124
-      Top = 6
+      Left = 100
+      Top = 5
       Width = 77
       Height = 27
       Enabled = False
@@ -38,8 +36,8 @@ object PetList: TPetList
       IsControl = True
     end
     object OKBtn: TBitBtn
-      Left = 40
-      Top = 6
+      Left = 16
+      Top = 5
       Width = 77
       Height = 27
       Kind = bkOK
@@ -51,8 +49,8 @@ object PetList: TPetList
       IsControl = True
     end
     object HelpBtn: TBitBtn
-      Left = 208
-      Top = 6
+      Left = 184
+      Top = 5
       Width = 77
       Height = 27
       Kind = bkHelp
@@ -62,6 +60,16 @@ object PetList: TPetList
       TabOrder = 2
       OnClick = HelpBtnClick
       IsControl = True
+    end
+    object BitBtn1: TBitBtn
+      Left = 296
+      Top = 6
+      Width = 97
+      Height = 25
+      Caption = 'Load test file'
+      TabOrder = 3
+      Visible = False
+      OnClick = BitBtn1Click
     end
   end
   object Panel2: TPanel
@@ -89,7 +97,6 @@ object PetList: TPetList
       Height = 41
       Align = alTop
       TabOrder = 1
-      ExplicitWidth = 509
     end
   end
 end

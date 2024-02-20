@@ -78,7 +78,7 @@
       //{$Define RecordDatumShift}
       //{$Define RecordElevationScaling}
       //{$Define RecordMultiGrids}
-      //{$Define RecordMapClosing}
+      {$Define RecordMapClosing}
       //{$Define RecordGridToDBFSave}
       //{$Define RecordIndex}
       //{$Define RecordGISDB}
@@ -1290,7 +1290,7 @@ type
     Mapdirectsolarillumination1: TMenuItem;
     Sunandsatellitevisibilityandblocking1: TMenuItem;
     Geoid1: TMenuItem;
-    Exportmaplibrary1: TMenuItem;
+    //Exportmaplibrary1: TMenuItem;
     Pixelsize1: TMenuItem;
     Cartographu1: TMenuItem;
     EGM1996toEGM20081: TMenuItem;
@@ -1466,9 +1466,6 @@ type
     NAVD881: TMenuItem;
     EGM2008: TMenuItem;
     Other1: TMenuItem;
-    DEMIX1: TMenuItem;
-    Datumshiftcomparison1: TMenuItem;
-    Shiftfilecomparison1: TMenuItem;
     CSVforVDATUM1: TMenuItem;
     DEMIXhalfsecto2onesec1: TMenuItem;
     Removequickoverlayhillshade1: TMenuItem;
@@ -1515,6 +1512,10 @@ type
     FD8Lognumbercells2: TMenuItem;
     Whiteboxwetnessindex1: TMenuItem;
     SAGALSfactor1: TMenuItem;
+    PortionwithdataGeotiff1: TMenuItem;
+    N64: TMenuItem;
+    SSIMcheckthinning1: TMenuItem;
+    SSIMcheckwindowsize1: TMenuItem;
     //procedure HiresintervisibilityDEM1Click(Sender: TObject);
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
@@ -2442,7 +2443,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Sunandsatellitevisibilityandblocking1Click(Sender: TObject);
     procedure Geoid1Click(Sender: TObject);
     procedure Mapdirectsolarillumination1Click(Sender: TObject);
-    procedure Exportmaplibrary1Click(Sender: TObject);
+    //procedure Exportmaplibrary1Click(Sender: TObject);
     procedure Pixelsize1Click(Sender: TObject);
     procedure EGM1996toEGM20081Click(Sender: TObject);
     procedure Horizontalshift1Click(Sender: TObject);
@@ -2584,8 +2585,6 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure NAVD881Click(Sender: TObject);
     procedure EGM2008Click(Sender: TObject);
     procedure Other1Click(Sender: TObject);
-    //procedure Datumshiftcomparison1Click(Sender: TObject);
-    procedure Shiftfilecomparison1Click(Sender: TObject);
     procedure CSVforVDATUM1Click(Sender: TObject);
     procedure DEMIXhalfsecto2onesec1Click(Sender: TObject);
     procedure Removequickoverlayhillshade1Click(Sender: TObject);
@@ -2632,6 +2631,9 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure FD8Lognumbercells2Click(Sender: TObject);
     procedure Whiteboxwetnessindex1Click(Sender: TObject);
     procedure SAGALSfactor1Click(Sender: TObject);
+    procedure PortionwithdataGeotiff1Click(Sender: TObject);
+    procedure SSIMcheckthinning1Click(Sender: TObject);
+    procedure SSIMcheckwindowsize1Click(Sender: TObject);
     //procedure RescaleallDEMsforSSIM1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
@@ -2830,7 +2832,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
 
     procedure RedrawMapDefaultsSize;
 
-    function LoadDEMIXtileOutlines(WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false; OpenTable : boolean = true) : integer;
+    function LoadDEMIXtileOutlines(var DEMIXfName : PathStr; WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false; OpenTable : boolean = true) : integer;
     function DEMIXtilesOnMap(RecordFill : tStringList = Nil) : tStringList;
     procedure ClipDEMtoFullDEMIXTiles(NewName : PathStr = '');
 
@@ -3062,11 +3064,11 @@ function LoadBlankVectorMapAndOverlay(ItsTiger,ItsGazetteer : boolean; fName : P
    procedure CreateNewSatWindow(inSatView : tSatView; var ResultMap : tMapForm; CurSat : integer; mt : tMapType; MapCaption : ShortString; Selection : boolean; UseDEM : integer = 0);
 {$EndIf}
 
-function CreateDEMIXTileShapefile(WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false) : shortstring;
+procedure CreateDEMIXTileShapefile(var fName : PathStr; WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false);
 function DEMIXtileFill(DEM : integer; AreaBox : sfBoundBox; OpenTable : boolean = true) : integer;
 function DEMIXtileBoundingBox(tName : shortString; PixelIsAreaSafe : boolean = false) : sfBoundBox;
 procedure DEMIXtileCentroid(tName : shortString; var Lat,Long : float32);
-function LoadDEMIXtileOutlinesNoMap(WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false; OpenTable : boolean = true) : integer;
+function LoadDEMIXtileOutlinesNoMap(var DEMIXfName : PathStr; WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false; OpenTable : boolean = true) : integer;
 function DEMIXtilesOnDEM(DEM : integer; RecordFill : tStringList = Nil) : tStringList;
 
 
@@ -3368,7 +3370,9 @@ uses
       MD_use_tools,
    {$EndIf}
 
-   DEMIX_control,
+   demix_definitions,
+   DEMIX_Control,
+
    DEMcoord,
    DEMIX_cop_alos,
    pick_several_dems ,
@@ -5677,14 +5681,19 @@ end;
 
       procedure TMapForm.CheckIndexMouseUp(NWLat,NWLong,SELat,SELong : float64);
       var
-      WantedDEM,WantImage : integer;
+         WantedDEM,WantImage : integer;
+         bb : sfBoundBox;
       begin
-      LoadMapLibraryBox(WantedDEM,WantImage,DEMNowDoing in [OpenMapsFromLibrary],NWLat,NWLong,SELat,SELong);
-      if (WantedDEM <> 0) then begin
-         CreateDEMSelectionMap(WantedDEM);
-      end;
-      if MDdef.AutoCloseIndexMaps then Close;
-      wmdem.SetMenusForVersion;
+         bb.XMin := NWLong;
+         bb.XMax := SELong;
+         bb.YMin := SELat;
+         bb.YMax := NWLat;
+         LoadMapLibraryBox(WantedDEM,WantImage,DEMNowDoing in [OpenMapsFromLibrary],bb);  //NWLat,NWLong,SELat,SELong);
+         if (WantedDEM <> 0) then begin
+            CreateDEMSelectionMap(WantedDEM);
+         end;
+         if MDdef.AutoCloseIndexMaps then Close;
+         wmdem.SetMenusForVersion;
       end;
 
 {$EndIf}
@@ -8484,7 +8493,7 @@ begin
       GADM1.Visible := Level0countries1.Visible or Level1stateprovince1.Visible;
       SpeedButton3.Visible := Level1stateprovince1.Visible;
 
-      Exportmaplibrary1.Visible := (MDDef.ProgramOption = ExpertProgram);
+      //Exportmaplibrary1.Visible := (MDDef.ProgramOption = ExpertProgram);
 
       {$IfDef ExAdvancedGIS}
          Colorsfromgridcategories1.Visible := false;
@@ -9876,12 +9885,11 @@ var
    end;
 
 begin
-   {$If Defined(RecordClosing) or Defined(RecordMapClosing)}  WriteLineToDebugFile('Enter TMapForm.formClose for ' + Caption); {$EndIf}
+   {$If Defined(RecordClosing) or Defined(RecordMapClosing)} WriteLineToDebugFile('Enter TMapForm.formClose for ' + Caption); {$EndIf}
    CloseMapTableOfContents(Self);
 
    if (MapDraw <> Nil) then MapDraw.ClosingMapNow := true;
-   //Action := caFree;
-   ApplicationProcessMessages;
+   //ApplicationProcessMessages;
 
    if (BlendPanel.Height > 0) then BitBtn1Click(Nil);
 
@@ -9918,7 +9926,7 @@ begin
       end;
    end;
 
-   {$If Defined(RecordClosing) or Defined(RecordMapClosing)}  WriteLineToDebugFile('TMapForm.formClose MapDraw'); {$EndIf}
+   {$If Defined(RecordClosing) or Defined(RecordMapClosing)} WriteLineToDebugFile('TMapForm.formClose closing MapDraw'); {$EndIf}
    if (MapDraw <> Nil) then begin
       MapDraw.MapDrawValid := false;
       MapDraw.Destroy;
@@ -9936,16 +9944,23 @@ begin
        VegGraph := Nil;
    end;
 
-   {$If Defined(RecordClosing) or Defined(RecordMapClosing)}  WriteLineToDebugFile('TMapForm.formClose WMDEM'); {$EndIf}
+   {$If Defined(RecordClosing) or Defined(RecordMapClosing)}  WriteLineToDebugFile('TMapForm.formClose WMDEM form ops'); {$EndIf}
    if (WMDEM <> Nil) then begin
       if (not LockStatusBar) then wmDEM.ClearStatusBarPanelText;
       WmDem.SetMenusForVersion;
    end;
 
+   {$If Defined(RecordClosing) or Defined(RecordMapClosing)} WriteLineToDebugFile('TMapForm.formClose zoom window'); {$EndIf}
    if (ZoomWindow <> Nil) and (ZoomWindow.Handle = Self.Handle) then ZoomWindow := Nil;
+   {$If Defined(RecordClosing) or Defined(RecordMapClosing)} WriteLineToDebugFile('TMapForm.formClose self destroy'); {$EndIf}
    Self.Destroy;
-   Self := Nil;
-   {$If Defined(RecordClosing) or Defined(RecordMapClosing)}  WriteLineToDebugFile('Closed map window ' + Caption); {$EndIf}
+
+   //{$If Defined(RecordClosing) or Defined(RecordMapClosing)} WriteLineToDebugFile('TMapForm.formClose self Nil'); {$EndIf}
+   //Self := Nil;
+
+   Action := caFree;
+
+   {$If Defined(RecordClosing) or Defined(RecordMapClosing)} WriteLineToDebugFile('Closed map window ' + Caption); {$EndIf}
 end;
 
 
@@ -11719,21 +11734,27 @@ end;
 
 
 procedure TMapForm.DEMIX10Ktile1Click(Sender: TObject);
+var
+   fName : PathStr;
 begin
-   LoadDEMIXtileOutlines(PointBoundBoxGeo(RightClickLat,RightClickLong),false,true);
+   fName := '';
+   LoadDEMIXtileOutlines(fName,PointBoundBoxGeo(RightClickLat,RightClickLong),false,true);
 end;
 
 
 procedure TMapForm.DEMIX10ktiles1Click(Sender: TObject);
+var
+   fName : PathStr;
 begin
+   fName := '';
    if ValidDEM(MapDraw.DEMonMap) then DEMIXtileFill(MapDraw.DEMonMap, MapDraw.MapCorners.BoundBoxGeo)
-   else LoadDEMIXtileOutlines(MapDraw.MapCorners.BoundBoxGeo);
+   else LoadDEMIXtileOutlines(fName,MapDraw.MapCorners.BoundBoxGeo);
 end;
 
 procedure TMapForm.DEMIX1secresamplebyaveraging1Click(Sender: TObject);
 begin
    {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('TMapForm.DEMIX1secresamplebyaveraging1Click in, ' + DEMGlb[MapDraw.DEMonMap].DEMFileName); {$EndIf}
-   ResampleForDEMIXOneSecDEMs(false,MapDraw.DEMonMap,true);
+   ResampleForDEMIXOneSecDEMs(false,MapDraw.DEMonMap,true,'',ResampleModeOneSec);
    {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('TMapForm.DEMIX1secresamplebyaveraging1Click grids out'); {$EndIf}
 end;
 
@@ -16048,10 +16069,7 @@ begin
 end;
 
 procedure TMapForm.PicksingleDEMseriesthisarea1Click(Sender: TObject);
-//var
-   //sName : ShortString;
 begin
-   //PickDEMSeries(sName,'DEM series to load for this map area');
    DEMfromseries1Click(Sender);
 end;
 
@@ -18583,6 +18601,16 @@ begin
    DEMGlb[MapDraw.DEMonMap].SavePartOfDEMWithData(FileName);
    DoFastMapRedraw;
 end;
+
+procedure TMapForm.PortionwithdataGeotiff1Click(Sender: TObject);
+var
+   FileName : PathStr;
+begin
+   FileName := '';
+   DEMGlb[MapDraw.DEMonMap].SavePartOfDEMWithDataGeotiff(FileName);
+   DoFastMapRedraw;
+end;
+
 
 procedure TMapForm.Mapdistortion1Click(Sender: TObject);
 begin
@@ -21653,30 +21681,6 @@ begin
    MonthlyInsolationGraph(MapDraw.DEMonMap,RightClickLat,RightClickLong);
 end;
 
-procedure TMapForm.Shiftfilecomparison1Click(Sender: TObject);
-var
-   LocalToWGS84,WGS84toEGM2008 : integer;
-
-   procedure DoOne(fName : PathStr);
-   begin
-      Geoid2008FName := fName;
-      LoadDatumShiftGrids(LocalToWGS84,WGS84toEGM2008);
-      //need to add code here to do the datum shift for the grid in question
-      CloseSingleDEM(LocalToWGS84);
-      CloseSingleDEM(WGS84toEGM2008);
-   end;
-
-
-begin
-   SaveBackupDefaults;
-   TemporaryNewGeotiff := false; //so transformation grid will be untiled, uncompressed
-   GeoidWGS84ellipsoidToLocalVDatum := 'd:\gis_software\OSGeo4W\share\proj\us_noaa_g2012bu0.tif';
-   DoOne('D:\geoid\egm2008-1.tif');
-   LoadDatumShiftGrids(LocalToWGS84,WGS84toEGM2008);
-   DoOne('D:\geoid\egm2008-2.5.tif');
-   RestoreBackupDefaults;
-end;
-
 procedure TMapForm.Shipmotion1Click(Sender: TObject);
 {$IfDef ExLabs}
 begin
@@ -23448,16 +23452,18 @@ end;
 procedure TMapForm.DEMfromseries1Click(Sender: TObject);
 var
     WantedDEM,WantImage : integer;
-    LatHigh,LatLow,LongHigh,LongLow : float64;
+    //LatHigh,LatLow,LongHigh,LongLow : float64;
     DEMSeries : ShortString;
 begin
     PickDEMSeries(DEMSeries,'DEM to match display area');
+    (*
     LatHigh := MapDraw.MapCorners.BoundBoxGeo.ymax;
     LatLow := MapDraw.MapCorners.BoundBoxGeo.ymin;
     LongHigh := MapDraw.MapCorners.BoundBoxGeo.xmax;
     LongLow := MapDraw.MapCorners.BoundBoxGeo.xmin;
-    LoadMapLibraryBox(WantedDEM,WantImage,true,LatHigh,LongLow,LatLow,LongHigh,DEMSeries,True);
-    MatchMapToThisOne(DEMGlb[WantedDEM].SelectionMap);
+    *)
+    LoadMapLibraryBox(WantedDEM,WantImage,true,MapDraw.MapCorners.BoundBoxGeo {LatHigh,LongLow,LatLow,LongHigh},DEMSeries,True);
+    if ValidDEM(WantedDEM) then MatchMapToThisOne(DEMGlb[WantedDEM].SelectionMap);
 end;
 
 
@@ -24877,10 +24883,11 @@ begin
    CSV_Export.ExportCSVLatLongGrid(Self);
 end;
 
+(*
 procedure TMapForm.Exportmaplibrary1Click(Sender: TObject);
 begin
-   CopyMapLibraryBox(MapDraw.Mapcorners.BoundBoxGeo);
 end;
+*)
 
 procedure TMapForm.SRTMwaterbodies2Click(Sender: TObject);
 var
@@ -24914,12 +24921,21 @@ end;
 procedure TMapForm.SSIM1Click(Sender: TObject);
 var
    DEM1,DEM2 : integer;
-   //SSIM,Luminance,Contrast,Structure : float64;
 begin
-   GetTwoCompatibleGrids('SSIM',false, DEM1,DEM2,false);   // then begin
-   MakeSSIMMaps(DEM1,DEM2);
-      //ComputeSSIM(DEM1,DEM2,DEMGlb[DEM1].FullDEMGridLimits,DEMGlb[DEM2].FullDEMGridLimits,SSIM,Luminance,Contrast,Structure);
-   //end;
+   GetTwoCompatibleGrids('SSIM',false, DEM1,DEM2,false);
+   MakeSSIMMap(true,false,DEM1,DEM2,1,11);
+end;
+
+procedure TMapForm.SSIMcheckthinning1Click(Sender: TObject);
+begin
+   SSIMcheck(true);
+end;
+
+
+
+procedure TMapForm.SSIMcheckwindowsize1Click(Sender: TObject);
+begin
+   SSIMcheck(False);
 end;
 
 procedure TMapForm.Overlays1Click(Sender: TObject);

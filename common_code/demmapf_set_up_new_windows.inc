@@ -289,15 +289,15 @@ begin
       {$If Defined(TrackHorizontalDatum)} DEMGlb[DEM].TrackHorizontalDatumDebugLog('enter CreateDEMSelectionMap,'); {$EndIf}
       {$IfDef RecordDEMMapProjection} WriteLineToDebugFile('CreateDEMSelectionMap in, DEM=' + DEMglb[DEM].DEMMapProjection.GetProjectionName); {$EndIf}
 
-      DEMGlb[DEM].SelectionMap := TMapForm.Create(Application);
+      if (DEMGlb[DEM].SelectionMap = nil) then begin
+         DEMGlb[DEM].SelectionMap := TMapForm.Create(Application);
+         {$IfDef RecordDEMMapProjection}
+            WriteLineToDebugFile('CreateDEMSelectionMap selection map created, DEM=' + DEMglb[DEM].DEMMapProjection.GetProjectionName + ' Map=' + DEMGlb[DEM].SelectionMap.MapDraw.PrimMapProj.GetProjectionName);
+         {$EndIf}
+         {$If Defined(TrackHorizontalDatum)} DEMGlb[DEM].TrackHorizontalDatumDebugLog('CreateDEMSelectionMap map created,'); {$EndIf}
+      end;
       //DEMglb[DEM].DEMMapProjection.pName changes to 64 in the previous step, and I cannot track the change down
       //DEMglb[DEM].DEMMapProjection.InitializeProjectionFromDEMHeader(DEMglb[DEM].DEMHeader);
-
-
-      {$IfDef RecordDEMMapProjection}
-         WriteLineToDebugFile('CreateDEMSelectionMap selection map created, DEM=' + DEMglb[DEM].DEMMapProjection.GetProjectionName + ' Map=' + DEMGlb[DEM].SelectionMap.MapDraw.PrimMapProj.GetProjectionName);
-      {$EndIf}
-      {$If Defined(TrackHorizontalDatum)} DEMGlb[DEM].TrackHorizontalDatumDebugLog('CreateDEMSelectionMap map created,'); {$EndIf}
 
       DEMGlb[DEM].SelectionMap.MapDraw.PrimMapProj.InitializeProjectionFromDEMHeader(DEMGlb[DEM].DEMHeader);
       {$IfDef RecordDEMMapProjection}

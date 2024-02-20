@@ -50,7 +50,7 @@ uses
   System.SysUtils, System.Variants, System.Classes,
   StrUtils,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons, Vcl.ComCtrls, Vcl.Grids, Vcl.Graphics,Vcl.ExtCtrls,
-  Petmar_types,DEMDefs,DEMIX_Control;
+  Petmar_types,DEMDefs,demix_definitions,Demix_control;
 
 type
   TDemixFilterForm = class(TForm)
@@ -159,6 +159,11 @@ type
     BitBtn6: TBitBtn;
     CheckBox18: TCheckBox;
     CheckBox16: TCheckBox;
+    CheckBox19: TCheckBox;
+    CheckBox20: TCheckBox;
+    CheckBox21: TCheckBox;
+    CheckBox22: TCheckBox;
+    CheckBox24: TCheckBox;
     procedure BitBtn1Click(Sender: TObject);
     procedure LoadClick(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
@@ -228,6 +233,11 @@ type
     procedure CheckBox18Click(Sender: TObject);
     procedure CheckBox3Click(Sender: TObject);
     procedure LoadOneSecRefCheckBoxClick(Sender: TObject);
+    procedure CheckBox19Click(Sender: TObject);
+    procedure CheckBox20Click(Sender: TObject);
+    procedure CheckBox21Click(Sender: TObject);
+    procedure CheckBox22Click(Sender: TObject);
+    procedure CheckBox24Click(Sender: TObject);
     //procedure CheckBox4Click(Sender: TObject);
   private
     { Private declarations }
@@ -265,7 +275,8 @@ uses
    Petmar,PetMath,PetImage,PetImage_form,BaseGraf,
    DEMDatabase,DEMDbTable,DEMdef_routines,DEMcoord,
    DEM_Manager,DEMstat,BaseMap,DEMlosw,Make_Grid,
-   DEMmapf, nevadia_main, PetDBUtils;
+   DEMmapf, nevadia_main, PetDBUtils,
+   DEMIX_Graphs;
 
 const
    SaveDifferenceDistribution : boolean = false;
@@ -315,9 +326,9 @@ var
       var
          fName : PathStr;
          Areas : tStringList;
-         Area  : shortstring;
+         //Area  : shortstring;
          db : TMyData;
-         i,j : integer;
+         i{,j} : integer;
          OpenMaps : boolean;
       begin
          {$IfDef RecordDEMIX} WriteLineToDebugFile('TDemixFilterForm.BitBtn39Click in'); {$EndIf}
@@ -464,7 +475,6 @@ var
   DemixFilterForm: TDemixFilterForm;
 begin
    {$If Defined(RecordDEMIX) or Defined(TrackOpenHandles)} WriteOpenHandlestoDebugLog('DoDEMIXFilter in'); {$EndIf}
-
    GetDEMIXpaths(false);
    DemixFilterForm := TDemixFilterForm.Create(Application);
    DemixFilterForm.db := db;
@@ -1422,7 +1432,10 @@ end;
 
 procedure TDemixFilterForm.BitBtn4Click(Sender: TObject);
 begin
+{$IfDef ExDEMIXexperimentalOptions}
+{$Else}
    MakeHistogramOfDifferenceDistribution(ComboBox1.Items[ComboBox1.ItemIndex],ComboBox2.Items[ComboBox2.ItemIndex],ComboBox3.Items[ComboBox3.ItemIndex]);
+{$EndIf}
 end;
 
 
@@ -1434,8 +1447,11 @@ end;
 
 procedure TDemixFilterForm.BitBtn6Click(Sender: TObject);
 begin
+{$IfDef ExDEMIXexperimentalOptions}
+{$Else}
    GetUsingStringLists;
    GraphAverageScoresByTile(DB,TilesUsing,CriteriaUsing);
+{$EndIf}
 end;
 
 procedure TDemixFilterForm.ZeroDEMs;
@@ -1528,9 +1544,34 @@ begin
    MDDef.DEMIX_overwrite_enabled := CheckBox18.Checked;
 end;
 
+procedure TDemixFilterForm.CheckBox19Click(Sender: TObject);
+begin
+   MDDef.SSIM_flow := CheckBox19.Checked;
+end;
+
+procedure TDemixFilterForm.CheckBox20Click(Sender: TObject);
+begin
+   MDDef.SSIM_wet := CheckBox20.Checked;
+end;
+
+procedure TDemixFilterForm.CheckBox21Click(Sender: TObject);
+begin
+   MDdef.SSIM_ls := CheckBox21.Checked;
+end;
+
+procedure TDemixFilterForm.CheckBox22Click(Sender: TObject);
+begin
+   MDDef.DoSSIM := CheckBox22.Checked;
+end;
+
 procedure TDemixFilterForm.CheckBox23Click(Sender: TObject);
 begin
    MDDef.LoadRefDEMMaps := CheckBox23.Checked;
+end;
+
+procedure TDemixFilterForm.CheckBox24Click(Sender: TObject);
+begin
+   MDDef.DoR2 := CheckBox24.Checked;
 end;
 
 procedure TDemixFilterForm.CheckBox2Click(Sender: TObject);
@@ -1541,7 +1582,7 @@ end;
 
 procedure TDemixFilterForm.CheckBox3Click(Sender: TObject);
 begin
-   MDDef.LoadRefDEMs := CheckBox3.Checked;
+   MDDef.LoadTestDEMs := CheckBox3.Checked;
 end;
 
 procedure TDemixFilterForm.CheckBox4Click(Sender: TObject);
@@ -1627,6 +1668,11 @@ begin
    Hillshade.Checked := MDDef.SSIM_hill;
    CheckBox17.Checked := MDDef.SSIM_tpi;
    CheckBox18.Checked := MDDef.DEMIX_overwrite_enabled;
+   CheckBox19.Checked := MDDef.SSIM_flow;
+   CheckBox20.Checked := MDDef.SSIM_wet;
+   CheckBox21.Checked := MDdef.SSIM_ls;
+   CheckBox22.Checked := MDDef.DoSSIM;
+   CheckBox24.Checked := MDDef.DoR2;
 
    CheckBox23.Checked := MDDef.LoadRefDEMMaps;
    CheckBox4.Checked := MDDef.LoadTestDEMMaps;
@@ -1902,6 +1948,9 @@ end;
 
 procedure TDemixFilterForm.BitBtn15Click(Sender: TObject);
 //has to be on form to loop through the params types
+{$IfDef ExDEMIXexperimentalOptions}
+begin
+{$Else}
 var
    i : integer;
    graph : array[0..2] of tThisBaseGraph;
@@ -1921,11 +1970,16 @@ begin
    end;
    fName := NextFileNumber(MDTempDir,ComboBox1.Text + '_difference_distrib_graphs_','.png');
    MakeBigBitmap(FileList,'',fName,3);
+{$EndIf}
 end;
 
 
 procedure TDemixFilterForm.BitBtn16Click(Sender: TObject);
 //has to be on form to loop through the params and RefDEM types
+{$IfDef ExDEMIXexperimentalOptions}
+begin
+{$Else}
+
 var
    i,j : integer;
    graph : array[0..1,0..2] of tThisBaseGraph;
@@ -1947,6 +2001,7 @@ begin
    end;
    fName := NextFileNumber(DEMIX_distrib_graph_dir,ComboBox1.Text + '_difference_distrib_graphs_','.png');
    MakeBigBitmap(FileList,'',fName,3);
+{$EndIf}
 end;
 
 
@@ -1990,6 +2045,9 @@ end;
 
 
 procedure TDemixFilterForm.BitBtn1Click(Sender: TObject);
+{$IfDef ExDEMIXexperimentalOptions}
+begin
+{$Else}
 var
    NumGraph: integer;
 begin
@@ -2004,6 +2062,7 @@ begin
       MultipleBestByParametersSortByValue(DB, RadioGroup2.ItemIndex, DEMsTypeUsing,TilesUsing,LandTypesUsing,CandidateDEMsUsing,CriteriaUsing,TileParameters);
    end;
    //DoCriteriaGraph;
+{$EndIf}
 end;
 
 
@@ -2051,7 +2110,6 @@ var
    DEMIXRefDEM : integer;
 begin
    AreaName := ComboBox4.Text;
-   //LoadDEMsForCurrentArea(AreaName,MDDef.LoadRefDEMMaps,MDDef.LoadTestDEMMaps);
    if MDDef.LoadRefDEMs then LoadDEMIXReferenceDEMs(AreaName,DEMIXRefDEM,MDDef.LoadRefDEMMaps);
    if MDDef.LoadTestDEMs then LoadDEMIXCandidateDEMs(AreaName,MDDef.LoadTestDEMMaps);
 end;

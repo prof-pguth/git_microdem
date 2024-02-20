@@ -94,7 +94,11 @@ uses
       DEMEROS,
    {$EndIf}
    DEM_Manager, gdal_tools,DEMcoord,DEMdatabase,
-   DEMIX_control,
+   {$IfDef ExDEMIX}
+   {$Else}
+      demix_definitions,
+      DEMIX_Control,
+   {$EndIf}
    petimage_form,
    PetImage,PetMath,PetDBUtils,Toggle_db_use,nevadia_main,DEMDef_routines;
 

@@ -193,6 +193,7 @@ type
         function NumUniqueEntriesInDB(FieldName : ANSIString) : integer;
         function FieldsInDataBase : tStringList;
         function GetFieldName(i : integer) : ANSIString;
+        function GetFieldIndex(FieldName : ANSIString) : integer;
         function GetFieldType(fName : ANSIString) : tFieldType; overload;
         function GetFieldType(i : integer) : tFieldType; overload;
         function GetFieldLength(WantFieldName : ANSIString) : integer;
@@ -773,6 +774,21 @@ begin
     {$EndIf}
 end;
 
+
+function tMyData.GetFieldIndex(FieldName : ANSIString) : integer;
+var
+   i : integer;
+   fName : ANSIstring;
+begin
+   for i := 0 to pred(FieldCount) do begin
+      fName := GetFieldName(i);
+      if (fName = FieldName) then begin
+         Result := i;
+         exit;
+      end;
+   end;
+   Result := -1;
+end;
 
 function tMyData.GetFieldName(i : integer) : ANSIString;
 begin
@@ -2709,6 +2725,7 @@ finalization
    {$IfDef RecordSQLite} WriteLineToDebugFile('RecordSQLite active in petmar_db'); {$EndIf}
    {$IfDef TrackCDStiming} WriteLineToDebugFile('TrackCDStiming active in petmar_db'); {$EndIf}
 end.
+
 
 
 

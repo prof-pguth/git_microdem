@@ -19,7 +19,7 @@ object DemixFilterForm: TDemixFilterForm
     Top = 0
     Width = 772
     Height = 516
-    ActivePage = TabSheet1
+    ActivePage = Settings
     Align = alClient
     TabOrder = 0
     object TabSheet1: TTabSheet
@@ -822,11 +822,11 @@ object DemixFilterForm: TDemixFilterForm
         OnClick = CheckBox11Click
       end
       object GroupBox9: TGroupBox
-        Left = 272
-        Top = 16
+        Left = 312
+        Top = 0
         Width = 185
-        Height = 165
-        Caption = 'SSIM parameters'
+        Height = 233
+        Caption = 'SSIM/R2 parameters'
         TabOrder = 7
         object CheckBox12: TCheckBox
           Left = 16
@@ -882,15 +882,60 @@ object DemixFilterForm: TDemixFilterForm
           TabOrder = 5
           OnClick = CheckBox17Click
         end
+        object CheckBox19: TCheckBox
+          Left = 16
+          Top = 161
+          Width = 129
+          Height = 17
+          Caption = 'Flow accumulation'
+          TabOrder = 6
+          OnClick = CheckBox19Click
+        end
+        object CheckBox20: TCheckBox
+          Left = 16
+          Top = 184
+          Width = 97
+          Height = 17
+          Caption = 'Wetness index'
+          TabOrder = 7
+          OnClick = CheckBox20Click
+        end
+        object CheckBox21: TCheckBox
+          Left = 16
+          Top = 207
+          Width = 97
+          Height = 17
+          Caption = 'LS factor'
+          TabOrder = 8
+          OnClick = CheckBox21Click
+        end
       end
       object CheckBox18: TCheckBox
         Left = 40
-        Top = 240
+        Top = 280
         Width = 265
         Height = 17
         Caption = 'Enable file overwrites in DEMIX processing'
         TabOrder = 8
         OnClick = CheckBox18Click
+      end
+      object CheckBox22: TCheckBox
+        Left = 544
+        Top = 16
+        Width = 137
+        Height = 17
+        Caption = 'Do SSIM criteria'
+        TabOrder = 9
+        OnClick = CheckBox22Click
+      end
+      object CheckBox24: TCheckBox
+        Left = 544
+        Top = 39
+        Width = 137
+        Height = 17
+        Caption = 'Do R squared criteria'
+        TabOrder = 10
+        OnClick = CheckBox24Click
       end
     end
     object TabSheet4: TTabSheet

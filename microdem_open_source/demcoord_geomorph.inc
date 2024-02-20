@@ -1332,22 +1332,19 @@ begin
    moment(zvs,MomentVar,msAll);
 end;
 
-procedure tDEMDataSet.ElevationStatistics(var Mean,Std,AveDev : float32; UseZero : boolean);
+procedure tDEMDataSet.ElevationStatistics(GridLimits: tGridLimits; var Mean,Std : float32);
 var
    MomentVar : tMomentVar;
 begin
-   MomentVar := ElevationMoments(FullDEMGridLimits);
+   MomentVar := ElevationMoments(GridLimits);   //FullDEMGridLimits);
    Mean := MomentVar.mean;
    Std := MomentVar.std_dev;
-   AveDev := MomentVar.avg_dev;
 end;
 
 
 procedure tDEMDataSet.GetDEMMeanStd;
-var
-   AveDev : float32;
 begin
-   ElevationStatistics(Z_Mean,Z_Std,AveDev,true);
+   ElevationStatistics(FullDEMGridLimits,Z_Mean,Z_Std);
 end;
 
 

@@ -2,7 +2,7 @@ object wmdem: Twmdem
   Left = 0
   Top = 262
   Caption = 'GIS program loading'
-  ClientHeight = 1153
+  ClientHeight = 1173
   ClientWidth = 2018
   Color = clScrollBar
   DefaultMonitor = dmDesktop
@@ -29,6 +29,7 @@ object wmdem: Twmdem
     Left = 0
     Top = 0
     Width = 2018
+    Height = 29
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34
@@ -1675,7 +1676,7 @@ object wmdem: Twmdem
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 1134
+    Top = 1154
     Width = 2018
     Height = 19
     Panels = <
@@ -2463,7 +2464,14 @@ object wmdem: Twmdem
       end
       object Channelnetworkmultistep1: TMenuItem
         Caption = 'Channel network multistep'
-        OnClick = Channelnetworkmultistep1Click
+        object OvOverwriteifexists1: TMenuItem
+          Caption = 'Overwrite if exists'
+          OnClick = OvOverwriteifexists1Click
+        end
+        object Skipifexists2: TMenuItem
+          Caption = 'Skip if exists'
+          OnClick = Skipifexists2Click
+        end
       end
       object Partialchannelnetworkprocessing1: TMenuItem
         Caption = 'Partial channel network processing'
@@ -2479,10 +2487,10 @@ object wmdem: Twmdem
           Caption = 'Create channel network grids'
           OnClick = Createchannelnetworkgrids1Click
         end
-      end
-      object Channelnetworkmisspercentagesbytile1: TMenuItem
-        Caption = 'Channel network miss percentages by tile'
-        OnClick = Channelnetworkmisspercentagesbytile1Click
+        object Channelnetworkmisspercentagesbytile1: TMenuItem
+          Caption = 'Channel network miss percentages by tile'
+          OnClick = Channelnetworkmisspercentagesbytile1Click
+        end
       end
       object Channelnetworkcomparison1: TMenuItem
         Caption = 'Channel network map  comparison (currently hard wired)'
@@ -2735,6 +2743,7 @@ object wmdem: Twmdem
     end
     object OpenandmergeDEMswithfullDEMIXcoverage1: TMenuItem
       Caption = 'Open and merge DEMs with full DEMIX coverage'
+      Visible = False
       OnClick = OpenandmergeDEMswithfullDEMIXcoverage1Click
     end
     object OpenDEMwithoutmap1: TMenuItem
@@ -3534,47 +3543,52 @@ object wmdem: Twmdem
   object DEMIXdbCreatePopupMenu: TPopupMenu
     Left = 896
     Top = 336
-    object Subsetlarge3DEPareas1: TMenuItem
-      Caption = 'Subset large 3DEP areas'
-      Enabled = False
-      OnClick = Subsetlarge3DEPareas1Click
-    end
-    object ProcessVDATUMshifts1: TMenuItem
-      Caption = 'Process 3DEP VDATUM shifts'
-      Enabled = False
-      OnClick = ProcessVDATUMshifts1Click
-    end
-    object GDALshiftFor3DEP1: TMenuItem
-      Caption = 'Process GDAL shift for 3DEP for 1 m tiles'
-      object Overwriteifexits3: TMenuItem
-        Caption = 'Overwrite if exits'
-        OnClick = Overwriteifexits3Click
-      end
-      object Skipifexits2: TMenuItem
-        Caption = 'Skip if exits'
-        OnClick = Skipifexits2Click
-      end
-    end
-    object Create3DEP1secrefDEMs1: TMenuItem
-      Caption = 'Create 3DEP 1 sec ref DEMs for 1 m tiles'
-      object Overwriteifexists1: TMenuItem
+    object Full3DEPprocessingchair1: TMenuItem
+      Caption = 'Full 3DEP processing chain'
+      object Overwriteifexists3: TMenuItem
         Caption = 'Overwrite if exists'
-        OnClick = Overwriteifexists1Click
+        OnClick = Overwriteifexists3Click
       end
-      object Overwriteifexists2: TMenuItem
+      object Overwriteifexists4: TMenuItem
         Caption = 'Skip if exists'
-        OnClick = Overwriteifexists2Click
+        OnClick = Overwriteifexists4Click
       end
     end
-    object Merge3DEPreferenceDEMsbyarea1: TMenuItem
-      Caption = 'Merge 3DEP 1 m tiles to 1 sec  reference DEMs by area'
-      object Overwriteifexits1: TMenuItem
-        Caption = 'Overwrite if exits'
-        OnClick = Overwriteifexits1Click
+    object Partial3DEPsteps1: TMenuItem
+      Caption = 'Partial 3DEP steps'
+      OnClick = Partial3DEPsteps1Click
+      object GDALshiftFor3DEP1: TMenuItem
+        Caption = 'Process GDAL shift for 3DEP for 1 m tiles'
+        object Overwriteifexits3: TMenuItem
+          Caption = 'Overwrite if exits'
+          OnClick = Overwriteifexits3Click
+        end
+        object Skipifexits2: TMenuItem
+          Caption = 'Skip if exits'
+          OnClick = Skipifexits2Click
+        end
       end
-      object Overwriteifexits2: TMenuItem
-        Caption = 'Skip if exists'
-        OnClick = Overwriteifexits2Click
+      object Create3DEP1secrefDEMs1: TMenuItem
+        Caption = 'Create 3DEP 1 sec ref DEMs for 1 m tiles'
+        object Overwriteifexists1: TMenuItem
+          Caption = 'Overwrite if exists'
+          OnClick = Overwriteifexists1Click
+        end
+        object Overwriteifexists2: TMenuItem
+          Caption = 'Skip if exists'
+          OnClick = Overwriteifexists2Click
+        end
+      end
+      object Merge3DEPreferenceDEMsbyarea1: TMenuItem
+        Caption = 'Merge 3DEP 1 m tiles to 1 sec  reference DEMs by area'
+        object Overwriteifexits1: TMenuItem
+          Caption = 'Overwrite if exits'
+          OnClick = Overwriteifexits1Click
+        end
+        object Overwriteifexits2: TMenuItem
+          Caption = 'Skip if exists'
+          OnClick = Overwriteifexits2Click
+        end
       end
     end
     object N42: TMenuItem
@@ -3622,6 +3636,9 @@ object wmdem: Twmdem
       Caption = 'Diluvium DEM for test areas'
       OnClick = DiluviumDEMfortestareas1Click
     end
+    object N54: TMenuItem
+      Caption = '-'
+    end
     object CreatetestareaDEMs1: TMenuItem
       Caption = 'Create test area DEMs'
       object Overwrite4: TMenuItem
@@ -3644,21 +3661,8 @@ object wmdem: Twmdem
       Caption = 'Create database (merge and transpose CSV files)'
       OnClick = DEMIXmergeCSVfiles1Click
     end
-    object N39: TMenuItem
-      Caption = '-'
-    end
-    object Fullprocessingchain1: TMenuItem
-      Caption = 'Full processing chain'
-      Enabled = False
-      OnClick = Fullprocessingchain1Click
-    end
     object N40: TMenuItem
       Caption = '-'
-    end
-    object N41: TMenuItem
-      Caption = 'Summarize VDATUM shift for US areas'
-      Enabled = False
-      OnClick = N41Click
     end
     object SummarizeverticaldatumshiftforEGM96testDEMs1: TMenuItem
       Caption = 'Summarize vertical datum shift for EGM96 test DEMs'
@@ -3667,24 +3671,22 @@ object wmdem: Twmdem
     object N36: TMenuItem
       Caption = '-'
     end
-    object InventoryreferenceDEMs1: TMenuItem
-      Caption = 'Inventory reference DEMs'
-      OnClick = InventoryreferenceDEMs1Click
-    end
-    object Inventorydifferencestats1: TMenuItem
-      Caption = 'Inventory difference stats'
-      OnClick = Inventorydifferencestats1Click
-    end
     object Inventory3DEPtiles1: TMenuItem
       Caption = 'Inventory 3DEP source DEM tiles'
       OnClick = Inventory3DEPtiles1Click
+    end
+    object InventoryreferenceDEMs1: TMenuItem
+      Caption = 'Inventory list reference DTMs by area'
+      OnClick = InventoryreferenceDEMs1Click
     end
     object CheckreferenceDEMs1: TMenuItem
       Caption = 'Inventory reference DEMs (number DTM/DSM by area)'
       OnClick = CheckreferenceDEMs1Click
     end
     object CheckreferenceDEMSareEGM2008withPixelIsset1: TMenuItem
-      Caption = 'Inventory reference DEMS (EGM2008 and Pixel-Is set)'
+      Caption = 
+        'Inventory reference DEMS by area (Tiles, Centroid, Pixel-Is, Ver' +
+        't datum)'
       OnClick = CheckreferenceDEMSareEGM2008withPixelIsset1Click
     end
     object ChecktestDEMs1: TMenuItem
@@ -3695,13 +3697,33 @@ object wmdem: Twmdem
       Caption = 'Inventory DILUVIUM  by test area'
       OnClick = InventoryDILUVIUMbytestarea1Click
     end
-    object MergeDEMIXtilestats1: TMenuItem
-      Caption = 'Merge DEMIX tile stats'
-      OnClick = MergeDEMIXtilestats1Click
+    object VerifytestDEMcoverages1: TMenuItem
+      Caption = 'Verify test DEM coverages (center locations)'
+      OnClick = VerifytestDEMcoverages1Click
+    end
+    object Inventorydifferencestats1: TMenuItem
+      Caption = 'Inventory difference stats'
+      OnClick = Inventorydifferencestats1Click
+    end
+    object Inventorychanneldatabyarea1: TMenuItem
+      Caption = 'Inventory channel data by area'
+      OnClick = Inventorychanneldatabyarea1Click
+    end
+    object InsureallreferenceDTMscorrectlynamed1: TMenuItem
+      Caption = 'Insure all reference DTMs correctly named'
+      Enabled = False
+      OnClick = InsureallreferenceDTMscorrectlynamed1Click
+    end
+    object N53: TMenuItem
+      Caption = '-'
     end
     object ComputeDEMIXtilestats1: TMenuItem
       Caption = 'Compute DEMIX tile summary stats'
       OnClick = ComputeDEMIXtilestats1Click
+    end
+    object MergeDEMIXtilestats1: TMenuItem
+      Caption = 'Merge DEMIX tile stats'
+      OnClick = MergeDEMIXtilestats1Click
     end
     object N47: TMenuItem
       Caption = '-'
@@ -3729,14 +3751,6 @@ object wmdem: Twmdem
       Caption = 'Check file sizes for SSIM image mismatches'
       OnClick = CheckfilesizesforSSIMimagemismatches1Click
     end
-    object InsureallreferenceDTMscorrectlynamed1: TMenuItem
-      Caption = 'Insure all reference DTMs correctly named'
-      OnClick = InsureallreferenceDTMscorrectlynamed1Click
-    end
-    object VerifytestDEMcoverages1: TMenuItem
-      Caption = 'Verify test DEM coverages (center locations)'
-      OnClick = VerifytestDEMcoverages1Click
-    end
     object N50: TMenuItem
       Caption = '-'
     end
@@ -3751,6 +3765,24 @@ object wmdem: Twmdem
     object DiluviumDEMandDEMIXDBoverlap1: TMenuItem
       Caption = 'Diluvium DEM and DEMIX DB overlap'
       OnClick = DiluviumDEMandDEMIXDBoverlap1Click
+    end
+    object N39: TMenuItem
+      Caption = '-'
+    end
+    object Subsetlarge3DEPareas1: TMenuItem
+      Caption = 'Subset large 3DEP areas'
+      Enabled = False
+      OnClick = Subsetlarge3DEPareas1Click
+    end
+    object ProcessVDATUMshifts1: TMenuItem
+      Caption = 'Process 3DEP VDATUM shifts'
+      Enabled = False
+      OnClick = ProcessVDATUMshifts1Click
+    end
+    object N41: TMenuItem
+      Caption = 'Summarize VDATUM shift for US areas'
+      Enabled = False
+      OnClick = N41Click
     end
   end
 end

@@ -4,7 +4,7 @@
 { Released under the MIT Licences    }
 { Copyright (c) 2024 Peter L. Guth   }
 {------------------------------------}
-{include file for demix_control.pas  }
+{ include file for demix_definitions }
 {____________________________________}
 
 
@@ -38,12 +38,12 @@ begin
 end;
 
 
-procedure DEMIX_Merge3DEPReferenceDEMs(Overwrite : boolean; DataDir : PathStr = '');
+procedure DEMIX_Merge3DEPReferenceDEMs(Overwrite : boolean; DataDirs : tStringList = Nil);
 var
-   Paths : tStringList;
    DirStatus : shortstring;
    i : integer;
    OutPath : PathStr;
+   LocalList : boolean;
 
 
    procedure MergeRefDEMsForOneDir(aDir : PathStr);
@@ -64,7 +64,6 @@ var
                Files := nil;
                Petmar.FindMatchingFiles(aDir, '*.tif',Files,0);
 
-               //if DoAllFilesHaveSetEGMandPixelIs(Files) then begin
                   {$If Defined(Record3DEPX)} WriteLineToDebugFile('OnePixelIs ' + aDir + ' Found DEMs=' + IntToStr(Files.Count)); {$EndIf}
                   RemoveFilesThatDoNotHaveString(Files,which);  //can only use DEMs with aggregated to 1 arc sec, for correct pixel-is
                   {$If Defined(Record3DEPX)} WriteLineToDebugFile(Which + ' aggregated ref DEMs=' + IntToStr(Files.Count)); {$EndIf}
@@ -81,12 +80,6 @@ var
                      DEMglb[DEM].SaveAsGeotiff(DoneName);
                      {$If Defined(Record3DEPX)} WriteLineToDebugFile('Clipped, ' + DoneName); {$EndIf}
                   end;
-               (*
-               end
-               else begin
-                  {$If Defined(Record3DEPX)} HighlightLineToDebugFile('File headers improperly defined in ' + aDir); {$EndIf}
-               end;
-               *)
             end;
             CloseAllDEMs;
          end;
@@ -101,20 +94,25 @@ begin
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_Create3DEPReferenceDEMs in'); {$EndIf}
    try
       GetDEMIXPaths;
+      (*
       if PathIsValid(DataDir) then begin
          MergeRefDEMsForOneDir(DataDir);
       end
       else begin
+      *)
          {$If Defined(Record3DEPX)} WriteLineToDebugFile('DEMIX_Create3DEPReferenceDEMs getting data paths'); {$EndIf}
-         Get3DEPDataDirs(Paths);
-            {$If Defined(Record3DEPX)} HighlightLineToDebugFile('DEMIX_Create3DEPReferenceDEMs paths=' + IntToStr(Paths.Count)); {$EndIf}
-            for I := 0 to pred(Paths.Count) do begin
-               DirStatus := 'Dir: ' + IntToStr(succ(i)) + '/' + IntToStr(Paths.Count);
+         LocalList := DataDirs = nil;
+         if LocalList then begin
+            Get3DEPDataDirs(DataDirs);
+         end;
+            {$If Defined(Record3DEPX)} HighlightLineToDebugFile('DEMIX_Create3DEPReferenceDEMs paths=' + IntToStr(DataDirs.Count)); {$EndIf}
+            for I := 0 to pred(DataDirs.Count) do begin
+               DirStatus := 'Dir: ' + IntToStr(succ(i)) + '/' + IntToStr(DataDirs.Count);
                wmdem.SetPanelText(3,DirStatus);
-               MergeRefDEMsForOneDir(Paths.Strings[i]);
+               MergeRefDEMsForOneDir(DataDirs.Strings[i]);
             end;
-         Paths.Free;
-      end;
+         if LocalList then DataDirs.Free;
+      //end;
    finally
       EndDEMIXProcessing;
    end;
@@ -123,11 +121,12 @@ end;
 
 
 
-procedure DEMIX_Create3DEPReferenceDEMs(Overwrite : boolean; DataDir : PathStr = '');
+procedure DEMIX_Create3DEPReferenceDEMs(Overwrite : boolean; DataDirs : tStringList = Nil);
 var
-   Paths : tStringList;
+   //Paths : tStringList;
    DirStatus : shortstring;
    i : integer;
+   LocalList : boolean;
 
 
    procedure MakeRefDEMsForOneDir(aDir : PathStr);
@@ -170,37 +169,42 @@ var
    end;
 
 
-begin
+begin {procedure DEMIX_Create3DEPReferenceDEMs}
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_Create3DEPReferenceDEMs in'); {$EndIf}
    try
       GetDEMIXPaths;
       ReportErrors := false;
       LockStatusBar := true;
 
+      (*
       if PathIsValid(DataDir) then begin
          MakeRefDEMsForOneDir(DataDir);
       end
       else begin
-         {$If Defined(Record3DEPX)} WriteLineToDebugFile('DEMIX_Create3DEPReferenceDEMs getting data paths'); {$EndIf}
-         Get3DEPDataDirs(Paths);
-            {$If Defined(Record3DEPX)} WriteLineToDebugFile('DEMIX_Create3DEPReferenceDEMs paths=' + IntToStr(Paths.Count)); {$EndIf}
-            for I := 0 to pred(Paths.Count) do begin
-               DirStatus := 'Area: ' + IntToStr(succ(i)) + '/' + IntToStr(Paths.Count) + '  ' + LastSubDir(Paths.Strings[i]);
+      *)
+         LocalList := (DataDirs = Nil);
+         if LocalList then begin
+            {$If Defined(Record3DEPX)} WriteLineToDebugFile('DEMIX_Create3DEPReferenceDEMs getting data paths'); {$EndIf}
+            Get3DEPDataDirs(DataDirs);
+         end;
+            {$If Defined(Record3DEPX)} WriteLineToDebugFile('DEMIX_Create3DEPReferenceDEMs paths=' + IntToStr(DataDirs.Count)); {$EndIf}
+            for I := 0 to pred(DataDirs.Count) do begin
+               DirStatus := 'Area: ' + IntToStr(succ(i)) + '/' + IntToStr(DataDirs.Count) + '  ' + LastSubDir(DataDirs.Strings[i]);
                wmdem.SetPanelText(3,DirStatus,true);
                {$If Defined(Record3DEPX)} WriteLineToDebugFile(DirStatus); {$EndIf}
-               MakeRefDEMsForOneDir(Paths.Strings[i]);
+               MakeRefDEMsForOneDir(DataDirs.Strings[i]);
             end;
-         Paths.Free;
-      end;
+         if LocalList then DataDirs.Free;
+
    finally
       EndDEMIXProcessing;
    end;
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_Create3DEPReferenceDEMs out'); {$EndIf}
-end;
+end {procedure DEMIX_Create3DEPReferenceDEMs};
 
 
 
-procedure BatchGDAL_3DEP_shift(Overwrite : boolean; DataDirs : tStringList = Nil);
+procedure DEMIX_GDAL_3DEP_datum_shift(Overwrite : boolean; DataDirs : tStringList = Nil);
 
    procedure OneDirectory(DataDir : PathStr);
    var
@@ -261,12 +265,13 @@ procedure BatchGDAL_3DEP_shift(Overwrite : boolean; DataDirs : tStringList = Nil
 
 var
    I : Integer;
-begin
+   LocalList : boolean;
+begin {procedure DEMIX_GDAL_3DEP_datum_shift}
    try
       GetDEMIXpaths;
       ReportErrors := false;
-
-      if (DataDirs = Nil) then begin
+      LocalList := (DataDirs = Nil);
+      if LocalList then begin
          Get3DEPDataDirs(DataDirs);
       end;
       {$If Defined(Record3DEPX)} HighlightLineToDebugFile('BatchGDAL_3DEP_shift paths=' + IntToStr(DataDirs.Count)); {$EndIf}
@@ -275,12 +280,27 @@ begin
          wmdem.SetPanelText(1,'Dir: ' + IntToStr(succ(i)) + '/' + IntToStr(DataDirs.Count) + ' ' + LastSubDir(DataDirs.Strings[i]));
          OneDirectory(DataDirs.Strings[i]);
       end;
-      DataDirs.Free;
+     if LocalList then DataDirs.Free;
    finally
       EndDEMIXProcessing;
    end;
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('BatchGDAL_3DEP_shift out'); {$EndIf}
+end {procedure DEMIX_GDAL_3DEP_datum_shift};
+
+
+
+procedure DEMIX_3DEP_full_chain(overwrite : boolean);
+var
+   DataDirs : tStringList;
+begin
+   GetDEMIXpaths;
+   Get3DEPDataDirs(DataDirs);
+
+   DEMIX_GDAL_3DEP_datum_shift(Overwrite,DataDirs);
+   DEMIX_Create3DEPReferenceDEMs(Overwrite,DataDirs);
+   DEMIX_Merge3DEPReferenceDEMs(Overwrite,DataDirs);
 end;
+
 
 
 procedure ConvertASCtoGeotiffDEMs(aPath : PathStr);
@@ -659,7 +679,17 @@ begin
       Ext := '.tif';
 
       if (OutPath = '') then OutPath := ExtractFilePath(DEMGlb[DEM].DEMFileName);
-      BaseName := DEMGlb[DEM].AreaName {+ '_ref_'};
+      BaseName := DEMGlb[DEM].AreaName;
+
+      if ResampleMode in [ResampleModeBoth,ResampleModeOneSec] then begin
+         {$If Defined(Record3DEPXFull)} WriteLineToDebugFile('Start one sec'); {$EndIf}
+         CreateOneRefDEM(PixelIsPoint,1,1,OutPath + BaseName + Ref1SecPointStr + Ext);
+         CreateOneRefDEM(PixelIsArea,1,1,OutPath + BaseName + Ref1SecAreaStr + Ext);
+
+         if (DEMGlb[DEM].DEMSWcornerLat > 50) and (DEMGlb[DEM].DEMSWcornerLat < 60) then begin
+            CreateOneRefDEM(PixelIsPoint,1.5,1,OutPath + BaseName + '1.5x1sec_point' + Ext);
+         end;
+      end;
 
       if ResampleMode in [ResampleModeRange] then begin
          {$If Defined(Record3DEPXFull)} WriteLineToDebugFile('Range scales'); {$EndIf}
@@ -672,16 +702,7 @@ begin
 
       if ResampleMode in [ResampleModeBoth,ResampleModeHalfSec] then begin
          {$If Defined(Record3DEPXFull)} WriteLineToDebugFile('Half sec'); {$EndIf}
-         NewDEM := CreateOneRefDEM(PixelIsPoint,0.5,0.5,DEMIX_Ref_Half_sec + BaseName + '0.5sec' + Ext);
-      end;
-      if ResampleMode in [ResampleModeBoth,ResampleModeOneSec] then begin
-         {$If Defined(Record3DEPXFull)} WriteLineToDebugFile('Start one sec'); {$EndIf}
-         CreateOneRefDEM(PixelIsPoint,1,1,OutPath + BaseName + Ref1SecPointStr + Ext);
-         CreateOneRefDEM(PixelIsArea,1,1,OutPath + BaseName + Ref1SecAreaStr + Ext);
-
-         if (DEMGlb[DEM].DEMSWcornerLat > 50) and (DEMGlb[DEM].DEMSWcornerLat < 60) then begin
-            CreateOneRefDEM(PixelIsPoint,1.5,1,OutPath + BaseName + '1.5x1sec_point' + Ext);
-         end;
+         NewDEM := CreateOneRefDEM(PixelIsPoint,0.5,0.5,OutPath + BaseName + '0.5sec' + Ext);
       end;
    finally
       if CloseAfter then CloseAllDEMs;

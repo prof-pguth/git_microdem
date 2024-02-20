@@ -1196,7 +1196,7 @@ end;
 
 function tMultiGridArray.BasicStats : integer;
 var
-   Mean,Std,AveDev : float32;
+   Mean,Std : float32;
    i : integer;
    Results : tStringList;
    fName : PathStr;
@@ -1213,7 +1213,7 @@ begin
       for i := 1 to MaxGridsInMG do begin
          if ValidDEM(Grids[i]) then begin
             UpdateProgressBar(i/NumGrids);
-            DEMGlb[Grids[i]].ElevationStatistics(Mean,Std,AveDev,not MDDef.IgnoreHistogramZero);
+            DEMGlb[Grids[i]].ElevationStatistics(DEMGlb[Grids[i]].FullDEMGridLimits,Mean,Std);
             if (abs(DEMGlb[Grids[i]].DEMheader.MaxElev - DEMGlb[Grids[i]].DEMheader.MinElev) > 0.5) then ch := 'Y' else ch := 'N';
             Results.Add(DEMGlb[Grids[i]].AreaName + ',' + IntToStr(round(DEMGlb[Grids[i]].DEMheader.MinElev)) + ',' + IntToStr(round(DEMGlb[Grids[i]].DEMheader.MaxElev)) + ',' + RealToString(Mean,-12,-2) + ',' + RealToString(Std,-12,-2)+ ',' + ch);
          end;
