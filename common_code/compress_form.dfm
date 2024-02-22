@@ -30,8 +30,6 @@ object petcompressform: Tpetcompressform
     ParentFont = False
     ScrollBars = ssVertical
     TabOrder = 0
-    ExplicitWidth = 836
-    ExplicitHeight = 340
   end
   object StatusBar1: TStatusBar
     Left = 0
@@ -45,8 +43,6 @@ object petcompressform: Tpetcompressform
       item
         Width = 250
       end>
-    ExplicitTop = 340
-    ExplicitWidth = 836
   end
   object MainMenu1: TMainMenu
     Left = 24

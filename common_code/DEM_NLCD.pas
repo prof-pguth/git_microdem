@@ -15,6 +15,7 @@ unit dem_nlcd;
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    //{$Define RecordNLCDProblems}
+   //{$Define TrackWaterMasking}  //generally not needed, but helped finding a bad LC100 tile
    //{$Define RecordNLCDLegend}
    //{$Define RecordBarGraphs}
    //{$Define RecordDEMIX}
@@ -110,25 +111,25 @@ end;
 
 
 procedure MarkWaterMissingInAllOpenDEMs(DEM : integer; All : boolean = true);
-const
-   OpenMap = false;   //available for debugging to watch
 var
    j,lcGrid : integer;
    ErrorMessage : shortstring;
    Fixed : int64;
+   OpenMap : boolean;
 begin
+    {$IfDef TrackWaterMasking} OpenMap := True; {$Else} OpenMap := false; {$EndIf}
     lcgrid := LoadLC100LandCover('',DEMGlb[DEM].DEMBoundBoxGeo,ErrorMessage,OpenMap);
-    if OpenMap then begin
+    {$IfDef TrackWaterMasking}
        DEMGlb[lcGrid].SelectionMap.DoBaseMapRedraw;
        MessageToContinue('Land cover opened');
-    end;
+    {$EndIf}
     SimplifyLandCoverGrid(lcGrid);
-    if OpenMap then MessageToContinue('Simplified');
+    {$IfDef TrackWaterMasking} MessageToContinue('Simplified'); {$EndIf}
     DEMGLb[lcGrid].MarkInRangeMissing(slcWater-0.001,slcWater+0.001,Fixed,false);
-    if OpenMap then begin
+    {$IfDef TrackWaterMasking}
        DEMGlb[lcGrid].SelectionMap.DoBaseMapRedraw;
-       MessageToContinue('Water missing');
-    end;
+       MessageToContinue('Water missing on water');
+    {$EndIf}
     if All then begin
        for j := 1 to MaxDEMDataSets do begin
           if ValidDEM(j) and (j <> lcGrid) then begin
@@ -141,7 +142,7 @@ begin
        MaskStripFromSecondGrid(DEM,lcGrid, msSecondMissing);
        DEMGlb[DEM].CheckMaxMinElev;
        if (DEMGlb[DEM].SelectionMap <> Nil) then DEMGlb[DEM].SelectionMap.DoBaseMapRedraw;
-       if OpenMap then MessageToContinue('Water masked');
+       {$IfDef TrackWaterMasking} MessageToContinue('Water masked');  {$EndIf}
     end;
     CloseSingleDEM(lcGrid);
 end;

@@ -126,10 +126,6 @@ end;
 
 procedure DEMIX_SSIM_R2_clusters_diversity_graphs(DBonTable : integer; ColorByDEM : boolean = true);
 //Makes one graph per cluster of the evaluation for each criterion, with every Tile/DEM that belongs to the cluster
-{$IfDef ExDEMIXexperimentalOptions}
-begin
-{$Else}
-
 var
    Tile,Crit,aline : shortstring;
    NCrit,NDEM : integer;
@@ -242,15 +238,11 @@ begin
    EndProgress;
    GISdb[DBonTable].ClearGISFilter;
    GISdb[DBonTable].ShowStatus;
-{$EndIf}
 end;
 
 
 function DEMIX_SSIM_R2_cluster_sensitivity_graph(DBonTable : integer) : tThisBaseGraph;
 //graphs showing how the number of cluster changes results
-{$IfDef ExDEMIXexperimentalOptions}
-begin
-{$Else}
 
          function OneGraph(MaxCluster : integer): tThisBaseGraph;
          var
@@ -296,16 +288,11 @@ begin
 
    GISdb[DBonTable].ClearGISFilter;
    GISdb[DBonTable].ShowStatus;
-{$EndIf}
 end;
 
 
 function DEMIX_SSIM_R2_clusters_graph(DBonTable : integer) : tThisBaseGraph;
 //makes graph of each cluster with criteria on y axis and evaluation on x axis
-{$IfDef ExDEMIXexperimentalOptions}
-begin
-{$Else}
-
 var
    Crit,aline,aField : shortstring;
    j,k,NCrit,NDEM,Cluster : integer;
@@ -386,7 +373,6 @@ begin
 
    GISdb[DBonTable].ClearGISFilter;
    GISdb[DBonTable].ShowStatus;
-{$EndIf}
 end;
 
 

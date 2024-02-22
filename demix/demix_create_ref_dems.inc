@@ -39,6 +39,8 @@ end;
 
 
 procedure DEMIX_Merge3DEPReferenceDEMs(Overwrite : boolean; DataDirs : tStringList = Nil);
+const
+   ShowMapWhileMerging = false;   //help to track done problematic data sets
 var
    DirStatus : shortstring;
    i : integer;
@@ -56,7 +58,7 @@ var
             AreaName : shortstring;
          begin
             AreaName := LastSubDir(aDir);
-            DoneName := Outpath + AreaName + which + '.tif';
+            DoneName := Outpath + AreaName + '_dtm' + which + '.tif';
             if (not Overwrite) and DEMIXSkipFilesAlreadyDone and FileExists(DoneName) then begin
                {$If Defined(Record3DEPX)} WriteLineToDebugFile('MakeRefDEMsForOneDir already done ' + DoneName ); {$EndIf}
             end
@@ -71,14 +73,17 @@ var
                      Files.Destroy;
                   end
                   else begin
-                     DEM := MergeMultipleDEMsHere(Files,true,false);
+                     DEM := MergeMultipleDEMsHere(Files,true,ShowMapWhileMerging);
                      {$If Defined(Record3DEPX)} WriteLineToDebugFile('Merged'); {$EndIf}
-                     DEMGlb[DEM].SavePartOfDEMWithData(DoneName);
+                     if ShowMapWhileMerging then MessageToContinue('Merged');
                      {$If Defined(Record3DEPX)} WriteLineToDebugFile('Data part saved'); {$EndIf}
                      ClipTheDEMtoFullDEMIXTiles(DEM,DoneName);
+                     if ShowMapWhileMerging then MessageToContinue('Clipped to DEM tiles');
                      MarkWaterMissingInThisDEM(DEM);
-                     DEMglb[DEM].SaveAsGeotiff(DoneName);
-                     {$If Defined(Record3DEPX)} WriteLineToDebugFile('Clipped, ' + DoneName); {$EndIf}
+                     if ShowMapWhileMerging then MessageToContinue('Mask water');
+                     //DEMglb[DEM].SaveAsGeotiff(DoneName);
+                     DEMGlb[DEM].SavePartOfDEMWithDataGeotiff(DoneName);
+                     {$If Defined(Record3DEPX)} WriteLineToDebugFile('Saved, ' + DoneName); {$EndIf}
                   end;
             end;
             CloseAllDEMs;
@@ -86,7 +91,7 @@ var
    begin
       OutPath := DEMIX_Ref_1sec;
       OnePixelIs(Ref1SecPointStr);
-      OnePixelIs('_ref_1sec_area');
+      OnePixelIs(Ref1SecAreaStr);
    end;
 
 

@@ -3581,6 +3581,10 @@ object dbtablef: Tdbtablef
         end
       end
     end
+    object Singlefieldarithmetic1: TMenuItem
+      Caption = 'Single field arithmetic'
+      OnClick = Singlefieldarithmetic1Click
+    end
     object Hide1: TMenuItem
       Caption = 'Hide'
       OnClick = Hide1Click
@@ -3687,7 +3691,9 @@ object dbtablef: Tdbtablef
       Caption = '-'
     end
     object Currenttest1: TMenuItem
-      Caption = 'Graph by criteria, with tile names and parameter sorts'
+      Caption = 
+        'Graph by evaluation criteria, with tile names and parameter sort' +
+        's'
       OnClick = Currenttest1Click
     end
     object Graphbyareawithaveragescoreforselectedcriteria1: TMenuItem
@@ -3908,6 +3914,22 @@ object dbtablef: Tdbtablef
     object Wins1: TMenuItem
       Caption = 'Wins and Ties'
       OnClick = Wins1Click
+    end
+  end
+  object SingleFieldArithmeticPopupMenu: TPopupMenu
+    Left = 624
+    Top = 304
+    object Addconstanttofield2: TMenuItem
+      Caption = 'Add constant to field'
+      OnClick = Addconstanttofield2Click
+    end
+    object Addconstanttofield3: TMenuItem
+      Caption = 'Multiply field by constant'
+      OnClick = Addconstanttofield3Click
+    end
+    object Dividefieldbyconstant2: TMenuItem
+      Caption = 'Divide field by constant'
+      OnClick = Dividefieldbyconstant2Click
     end
   end
 end

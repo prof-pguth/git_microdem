@@ -21,7 +21,7 @@ unit DEMStat;
       //{$Define RecordDEMIX_colors}
       {$Define RecordSSIM}
       {$Define RecordDEMIX}
-      //{$Define RecordDEMIXFull}
+      {$Define RecordDEMIXFull}
       //{$Define RepeatProblematicComputations}  //put in breakpoint, and then follow debugger
       //{$Define RecordCovariance}
       //{$Define TrackSWCornerForComputations}  //must also be defined in DEMCoord

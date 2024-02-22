@@ -48,7 +48,6 @@
       //{$Define StatusBarFormResize}
       //{$Define DrainageBasinStats}
       //{$Define RecordNodeIssues}
-      //{$Define DrainageBasinStreamsInBasins}
       //{$Define FullDrainageBasinStats}
       //{$Define RecordOceanography}
       //{$Define RecordGeomorphDB}
@@ -302,7 +301,6 @@ type
     Landsatfullsceneindex1: TMenuItem;
     Satellitepredictions1: TMenuItem;
     Subset81Ssidescan1: TMenuItem;
-    GISdatasampler1: TMenuItem;
     N15: TMenuItem;
     Sealevelrise1: TMenuItem;
     N29: TMenuItem;
@@ -313,10 +311,8 @@ type
     Fontsinstalled1: TMenuItem;
     Unicodeicongenerator1: TMenuItem;
     UKOSgrid2: TMenuItem;
-    HarpersFerryTerrainAnalysis1: TMenuItem;
     Nyquist1: TMenuItem;
     Onlinehelp1: TMenuItem;
-    AnnapolisTM8scene1: TMenuItem;
     Introductorytutorials1: TMenuItem;
     N30: TMenuItem;
     OpenandmergeDEMdirectories1: TMenuItem;
@@ -340,7 +336,6 @@ type
     OpenGeoPDFimagelayer1: TMenuItem;
     OpenUSTopoGeoPDF1: TMenuItem;
     Allindividuallayers1: TMenuItem;
-    LASlidarpointcloudsamples1: TMenuItem;
     Legislativeredistricting1: TMenuItem;
     Zipatoneeditor1: TMenuItem;
     LASdata1: TMenuItem;
@@ -418,11 +413,10 @@ type
     OpenandmergeGeotiffs1: TMenuItem;
     N14: TMenuItem;
     DragonPlot1: TMenuItem;
-    Annapolislidar1: TMenuItem;
     OpenSentinen2image1: TMenuItem;
     Openlidarmatchedgrids1: TMenuItem;
     Photos1: TMenuItem;
-    Importfromcamera1: TMenuItem;
+    //Importfromcamera1: TMenuItem;
     RenameJPRGswithbasenamenumber1: TMenuItem;
     RenameJPEGSwithbaseandcreationtime1: TMenuItem;
     Labs1: TMenuItem;
@@ -504,7 +498,6 @@ type
     CreateDEMIXdatabase1: TMenuItem;
     //Fullprocessingchain1: TMenuItem;
     Perpendicularshortprofilesthroughpoint1: TMenuItem;
-    N40: TMenuItem;
     N41: TMenuItem;
     SummarizeverticaldatumshiftforEGM96testDEMs1: TMenuItem;
     GDALshiftFor3DEP1: TMenuItem;
@@ -567,7 +560,6 @@ type
     N51: TMenuItem;
     Overwriteifexits3: TMenuItem;
     Skipifexits2: TMenuItem;
-    N52: TMenuItem;
     CheckreferenceDEMSareEGM2008withPixelIsset1: TMenuItem;
     Overwriteifexists1: TMenuItem;
     Overwriteifexists2: TMenuItem;
@@ -2422,11 +2414,6 @@ begin
 
    {$IfDef IncludeGeologyLabs}
    {$Else}
-       GISdatasampler1.Visible := false;
-       AnnapolisTM8scene1.Visible := false;
-       Annapolislidar1.Visible := false;
-       LASlidarpointcloudsamples1.Visible := false;
-       HarpersFerryTerrainAnalysis1.Visible := false;
    {$EndIf}
    {$IfDef AllowUSNAdataDownloads}
    {$Else}
@@ -5863,10 +5850,6 @@ end;
 
 procedure Twmdem.ComputeDEMIXtilestats1Click(Sender: TObject);
 begin
-   //JustTileStats := true;
-   //ComputeDEMIX_tile_stats;
-   //JustTileStats := false;
-
    ComputeDEMIX_Summary_stats;
 end;
 
@@ -5883,36 +5866,10 @@ begin
 end;
 
 
-(*
-procedure Twmdem.Importfromcamera1Click(Sender: TObject);
-var
-   FilesWanted : TStringList;
-   DefaultFilter : byte;
-   i : integer;
-begin
-   DefaultFilter := 1;
-   FilesWanted := tStringList.Create;
-   if GetMultipleFiles('Import pictures from camera','AnyFile|*.jpg',FilesWanted,DefaultFilter) then begin
-      GetDOSPath('import location',PhotoDir);
-      StartProgress('Import photos');
-      for i := 0 to pred(FilesWanted.Count) do begin
-         UpDateProgressBar(i/FilesWanted.Count);
-         Petmar.MoveFile(FilesWanted.Strings[i],PhotoDir + ExtractFileName(FilesWanted.Strings[i]));
-      end;
-      FilesWanted.Free;
-      EndProgress;
-      MessageToContinue('Turn off camera');
-      Slidesorter1Click(Sender);
-   end;
-end;
-*)
-
 initialization
    {$IfDef MessageStartup} MessageToContinue('start wmaindem initialization'); {$EndIf}
    WMDEM := Nil;
    FirstRun := true;
-   //OnVasaPage := 0;
-   //ShowLoadButtons := true;
    SkipMenuUpdating := false;
    LockStatusBar := false;
    ClosingEverything := false;
@@ -5927,11 +5884,9 @@ finalization
    {$IfDef RecordMenu} WriteLineToDebugFile('RecordMenu active in Wmaindem'); {$EndIf}
    {$IfDef RecordLag} WriteLineToDebugFile('RecordLagProblems active in Wmaindem'); {$EndIf}
    {$IfDef RecordFullLag} WriteLineToDebugFile('RecordFullLagProblems active in Wmaindem'); {$EndIf}
-   {$IfDef RecordMrSidStartup} WriteLineToDebugFile('RecordMrSidStartupProblems  active in Wmaindem');{$EndIf}
    {$IfDef FullDrainageBasinStats} WriteLineToDebugFile('FullDrainageBasinStats active in Wmaindem'); {$EndIf}
    {$IfDef DrainageBasinStats} WriteLineToDebugFile('DrainageBasinStats active in Wmaindem'); {$EndIf}
    {$IfDef RecordUpdate} WriteLineToDebugFile('RecordUpdateProblem active in WMainDEM'): {$EndIf}
-   {$IfDef DrainageBasinStreamsInBasins} WriteLineToDebugFile('DrainageBasinStreamsInBasins active in WMainDEM'); {$EndIf}
    {$IfDef RecordButton} WriteLineToDebugFile('RecordButtonProblems active in WMainDEM'); {$EndIf}
    {$IfDef RecordOpenVectorMap} WriteLineToDebugFile('RecordOpenVectorMap active in WMainDEM'); {$EndIf}
    {$IfDef RecordHelp} WriteLineToDebugFile('RecordHelp active in WMainDEM'); {$EndIf}

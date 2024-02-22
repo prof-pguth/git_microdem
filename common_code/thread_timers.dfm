@@ -164,7 +164,5 @@ object ThreadTimerForm: TThreadTimerForm
       item
         Width = 250
       end>
-    ExplicitTop = 242
-    ExplicitWidth = 279
   end
 end

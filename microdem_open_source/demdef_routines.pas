@@ -139,11 +139,6 @@ procedure SetStructuralGeologyDefaults;
 procedure SetPhysicalGeographyDefaults;
 procedure SetRemoteSensingDefaults;
 
-(*
-procedure SetEconDefaults;
-procedure SetShipwrecksDefaults;
-*)
-
 procedure HideAllOceanOptions;
 procedure SetDefaultMapSizeToScreen;
 
@@ -2482,6 +2477,7 @@ var
 
          AParameter('DEMIX','DoSSIM',DoSSIM,true);
          AParameter('DEMIX','DoR2',DoR2,true);
+         AParameter('DEMIX','DEMIX_overwrite_enabled',DEMIX_overwrite_enabled,true);
 
       end;
    end;

@@ -336,16 +336,6 @@ begin
 
    fName := NextFileNumber(MDTempDir,'test_dem_status_','.dbf');
    PetdbUtils.StringList2CSVtoDB(Results,fName);
-   (*
-   if (ProblemAreas.Count > 0) then begin
-      if AnswerIsYes('Create test area DEMs for those not complete') then begin
-         for I := 0 to pred(ProblemAreas.Count) do begin
-            AreaName := ProblemAreas.Strings[i];
-            //LoadDEMsForCurrentArea(AreaName,true,false);
-         end;
-      end;
-   end;
-   *)
    ProblemAreas.Free;
    Areas.Free;
    EndDEMIXProcessing;

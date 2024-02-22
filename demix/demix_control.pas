@@ -21,7 +21,7 @@ unit demix_control;
    {$Define RecordDEMIX_evaluations_graph}
    {$Define RecordDiluviumFull}
    //{$Define Rec_DEMIX_Landcover}
-   //{$Define RecordDEMIXStart}
+   {$Define RecordDEMIXStart}
    //{$Define RecordDEMIXsave}
    //{$Define RecordCreateHalfSec}
    //{$Define RecordHalfSec}
@@ -142,7 +142,8 @@ var
    AreaDEMs : tDEM_int_array;  //0 is the reference, rest the test DEMs
 *)
 
-
+const
+   DEMIX_initialized : boolean = false;
 
    function GetDEMIXpaths(StartProcessing : boolean = true) : boolean;
    procedure EndDEMIXProcessing(db : integer = 0);
@@ -204,6 +205,8 @@ procedure DiluviumDEMforTestAreas(Overwrite : boolean = true);
 procedure CompareRankings(DBonTable : integer);
 procedure DifferentRankingsByCriteria(DBonTable : integer);
 
+   procedure WinsAndTies(DBonTable : integer);
+   procedure DEMIXisCOPorALOSbetter(DBonTable : integer);
 
 
 //procedure ModeOfDifferenceDistributions;
@@ -211,9 +214,7 @@ procedure DifferentRankingsByCriteria(DBonTable : integer);
 (*
 //DEMIX wine contest procedures based on database
    function DEMIXwineContestScoresGraph(DBonTable : integer; XScalelabel : shortstring; MinHoriz : float32 = 0.5; MaxHoriz : float32 = 5.5) : tThisBaseGraph;
-   procedure WinsAndTies(DBonTable : integer);
    procedure DEMIX_graph_best_in_Tile(DBonTable : integer; SortByArea : boolean);
-   procedure DEMIXisCOPorALOSbetter(DBonTable : integer);
    procedure BestDEMSbyCategory(DBonTable : integer);
    procedure ModeSTDPlot(DBonTable : integer);
    procedure DEMIXMeanMedianModeHistograms(db : integer);
@@ -324,7 +325,8 @@ uses
    Nevadia_Main,
    DEMstat,Make_grid,PetImage,PetImage_form,new_petmar_movie,DEMdatabase,PetDButils,Pick_several_dems,
    Geotiff, BaseMap, GDAL_tools, DEMIX_filter, DEMstringgrid,DEM_NLCD,
-   DEMCoord,DEMMapf,DEMDef_routines,DEM_Manager,DEM_indexes,PetMath;
+   DEMCoord,DEMMapf,DEMDef_routines,DEM_Manager,DEM_indexes,PetMath,
+   DEMIX_graphs;
 
 var
    vd_path,DEMIX_area_dbName_v2 : PathStr;
@@ -984,14 +986,21 @@ end;
 
 function PickWineContestLocation : boolean;
 begin
-   Result := FindPath('DEMIX Wine contest location',':\Wine_contest\',DEMIX_Base_DB_Path);
+   if PathIsValid(DEMIX_Base_DB_Path) then Result := true
+   else Result := FindPath('DEMIX Wine contest location',':\Wine_contest\',DEMIX_Base_DB_Path);
 end;
 
 
 function GetDEMIXpaths(StartProcessing : boolean = true) : boolean;
 begin
    {$If Defined(RecordDEMIXStart)} WriteLineToDebugFile('GetDEMIXpaths in'); {$EndIf}
-   Result := PickWineContestLocation;
+   if DEMIX_initialized then Result := true
+   else Result := PickWineContestLocation;
+
+   if (not Result) then exit;
+   DEMIX_initialized := true;
+
+   {$If Defined(RecordDEMIXStart)} WriteLineToDebugFile('Wine contest location done'); {$EndIf}
 
    if StartProcessing then begin
       HeavyDutyProcessing := true;
@@ -1241,10 +1250,6 @@ end;
 
 
 procedure DEMIXisCOPorALOSbetter(DBonTable : integer);
-{$IfDef ExDEMIXexperimentalOptions}
-begin
-{$Else}
-
 var
    RefFilter : shortstring;
    Compare,i,j,Opinions,db : integer;
@@ -1357,7 +1362,6 @@ begin
       GISdb[DBonTable].ShowStatus;
    end;
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXisCOPorALOSbetter out'); {$EndIf}
-{$EndIf}
 end;
 
 

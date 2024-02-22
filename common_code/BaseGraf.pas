@@ -460,10 +460,10 @@ type
      HistogramGraphNumbers : boolean;
      PointDataBuffer : ^tPointDataBuffer;
 
-     procedure OpenDataFile(var rfile : file; ActuallyOpen : boolean = true; Color : tColor = -1);
-     procedure OpenPointFile(var rfile : file; Symbol : tFullSymbolDeclaration);
-     procedure OpenXYZFile(var rfile : file);
-     procedure OpenXYColorFile(var rfile: file);
+     procedure OpenDataFile(var rfile : file; ActuallyOpen : boolean = true; Color : tColor = -1; fName : shortstring = '');
+     procedure OpenPointFile(var rfile : file; Symbol : tFullSymbolDeclaration; fName : shortstring = '');
+     procedure OpenXYZFile(var rfile : file; fName : shortstring = '');
+     procedure OpenXYColorFile(var rfile: file; fName : shortstring = '');
      procedure AddPointToDataBuffer(var rfile : file; v : tFloatPoint); overload;
      procedure AddPointToDataBuffer(var rfile : file; x,y : float32); overload;
      procedure ClosePointDataFile(var rfile : file);
@@ -3900,16 +3900,16 @@ begin
 end;
 
 
-procedure tThisBaseGraph.OpenDataFile(var rfile : file; ActuallyOpen : boolean = true; Color : tColor = -1);
-var
-   TStr : ShortString;
+procedure tThisBaseGraph.OpenDataFile(var rfile : file; ActuallyOpen : boolean = true; Color : tColor = -1; fName : shortstring = '');
 begin
    if ActuallyOpen then begin
-       TStr := NextFileNumber(MDTempDir, 'bf-pet', '.tmp');
+       if (fName = '') then fname := 'bf-pet';
+       fName := NextFileNumber(MDTempDir, fname,'.tmp');
+       //TStr := NextFileNumber(MDTempDir, 'bf-pet', '.tmp');
        {$IfDef RecordGraf} WriteLineToDebugFile('created graph file: ' + TStr); {$EndIf}
-       assignFile(rfile,Tstr);
+       assignFile(rfile,fName);
        rewrite(rfile,2*SizeOf(float32));
-       GraphDraw.DataFilesPlotted.Add(Tstr);
+       GraphDraw.DataFilesPlotted.Add(fName);
        if (Color <> -1) and (GraphDraw.DataFilesPlotted.Count <= 255) then begin
           if GraphDraw.DataFilesPlotted.Count <= 15 then GraphDraw.Symbol[GraphDraw.DataFilesPlotted.Count].Color := ConvertTColorToPlatformColor(color);
           GraphDraw.FileColors256[GraphDraw.DataFilesPlotted.Count] := ConvertTColorToPlatformColor(color);
@@ -3922,34 +3922,33 @@ begin
 end;
 
 
-procedure tThisBaseGraph.OpenPointFile(var rfile : file; Symbol : tFullSymbolDeclaration);
+procedure tThisBaseGraph.OpenPointFile(var rfile : file; Symbol : tFullSymbolDeclaration; fName : shortstring = '');
 begin
-   OpenDataFile(rfile);
+   OpenDataFile(rfile,true,-1,fName);
    GraphDraw.LineSize256[GraphDraw.DataFilesPlotted.Count] := 0;
    GraphDraw.FileColors256[GraphDraw.DataFilesPlotted.Count] := Symbol.color;
    GraphDraw.Symbol[(GraphDraw.DataFilesPlotted.Count)] := Symbol;
 end;
 
 
-procedure tThisBaseGraph.OpenXYZFile(var rfile : file);
-var
-   TStr : ShortString;
+procedure tThisBaseGraph.OpenXYZFile(var rfile : file; fName : shortstring = '');
 begin
-   TStr := NextFileNumber(MDTempDir, 'bf-pet','.tmp');
-   assignFile(rfile,Tstr);
+   if (fName = '') then fname := 'bf-pet_';
+   fName := NextFileNumber(MDTempDir, fname,'.tmp');
+   assignFile(rfile,fName);
    rewrite(rfile,3*SizeOf(float32));
-   GraphDraw.XYZFilesPlotted.Add(Tstr);
+   GraphDraw.XYZFilesPlotted.Add(fName);
 end;
 
-procedure tThisBaseGraph.OpenXYColorFile(var rfile : file);
+procedure tThisBaseGraph.OpenXYColorFile(var rfile : file; fName : shortstring = '');
 var
-   TStr : ShortString;
    i : integer;
 begin
-   TStr := NextFileNumber(MDTempDir, 'bf-pet','.tmp');
-   assignFile(rfile,Tstr);
+   if (fName = '') then fname := 'bf-pet_';
+   fName := NextFileNumber(MDTempDir, fname,'.tmp');
+   assignFile(rfile,fName);
    rewrite(rfile,3*SizeOf(float32));
-   GraphDraw.XYColorFilesPlotted.Add(Tstr);
+   GraphDraw.XYColorFilesPlotted.Add(fName);
    for i := 1 to 14 do GraphDraw.Symbol[i].size := 4;
 end;
 

@@ -164,6 +164,7 @@ type
     CheckBox21: TCheckBox;
     CheckBox22: TCheckBox;
     CheckBox24: TCheckBox;
+    BitBtn38: TBitBtn;
     procedure BitBtn1Click(Sender: TObject);
     procedure LoadClick(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
@@ -238,6 +239,7 @@ type
     procedure CheckBox21Click(Sender: TObject);
     procedure CheckBox22Click(Sender: TObject);
     procedure CheckBox24Click(Sender: TObject);
+    procedure BitBtn38Click(Sender: TObject);
     //procedure CheckBox4Click(Sender: TObject);
   private
     { Private declarations }
@@ -1079,6 +1081,11 @@ begin
    MakeGeomorphometricMaps('elev',DEMSwanted);
 end;
 
+
+procedure TDemixFilterForm.BitBtn38Click(Sender: TObject);
+begin
+   SaveMDdefaults;
+end;
 
 procedure TDemixFilterForm.BitBtn39Click(Sender: TObject);
 begin

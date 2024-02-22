@@ -50,9 +50,9 @@ ta_channels "Channel Network" -ELEVATION "C:/Users/pguth/AppData/Local/Temp/proc
     if IsSagaCMDthere then begin
        {$IfDef RecordSAGA} WriteLineToDebugFile('SAGAMap in, cmd= ' + CMD); {$EndIf}
        WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
-       if OpenMap and (OutName <> '') then begin
+       if (OutName <> '') then begin
             {$IfDef RecordSAGA} WriteLineToDebugFile('SAGAMap opening map'); {$EndIf}
-            Result := OpenNewDEM(OutName,false);
+            Result := OpenNewDEM(OutName,OpenMap);
             if ValidDEM(Result) and OpenMap then begin
                DEMGlb[Result].DEMheader.ElevUnits := zUnits;
                CreateDEMSelectionMap(Result,true,true,mtElevSpectrum);
@@ -92,15 +92,7 @@ begin
          ' -SLOPE ' + SlopeName +
          ' -AREA ' + AreaName +
          ' -LS ' + OutName;
-   //if OpenMap then begin
-      Result := SAGAMap(cmd,OutName,Undefined,OpenMap);
-   (*
-   end
-   else begin
-      WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
-      Result := OpenNewDEM(OutName,false);
-   end;
-   *)
+   Result := SAGAMap(cmd,OutName,Undefined,OpenMap);
    {$If Defined(RecordSAGA) or Defined(RecordSAGAresult)} WriteLineToDebugFile(ExtractFileNameNoExt(InName) + '  SAGA_LSFactor out=' + IntToStr(Result)); {$EndIf}
 end;
 

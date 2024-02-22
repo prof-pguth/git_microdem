@@ -3,8 +3,8 @@ object slopegraphopts: Tslopegraphopts
   Top = 205
   BorderIcons = []
   Caption = 'Elevation/Slope Graph options'
-  ClientHeight = 254
-  ClientWidth = 330
+  ClientHeight = 269
+  ClientWidth = 356
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -55,7 +55,7 @@ object slopegraphopts: Tslopegraphopts
   end
   object CheckBox5: TCheckBox
     Left = 8
-    Top = 146
+    Top = 165
     Width = 161
     Height = 17
     Caption = 'Aspect rose'
@@ -71,7 +71,7 @@ object slopegraphopts: Tslopegraphopts
   end
   object CheckBox7: TCheckBox
     Left = 8
-    Top = 169
+    Top = 188
     Width = 169
     Height = 17
     Caption = 'Text results'
@@ -79,7 +79,7 @@ object slopegraphopts: Tslopegraphopts
   end
   object CheckBox8: TCheckBox
     Left = 8
-    Top = 192
+    Top = 211
     Width = 217
     Height = 17
     Caption = 'Color legend'
@@ -95,7 +95,7 @@ object slopegraphopts: Tslopegraphopts
   end
   object HelpBtn: TBitBtn
     Left = 126
-    Top = 215
+    Top = 234
     Width = 83
     Height = 27
     Kind = bkHelp
@@ -108,7 +108,7 @@ object slopegraphopts: Tslopegraphopts
   end
   object OKBtn: TBitBtn
     Left = 32
-    Top = 215
+    Top = 234
     Width = 73
     Height = 27
     Kind = bkOK
@@ -126,5 +126,13 @@ object slopegraphopts: Tslopegraphopts
     Height = 21
     TabOrder = 11
     Text = 'Edit1'
+  end
+  object CheckBox10: TCheckBox
+    Left = 8
+    Top = 146
+    Width = 145
+    Height = 17
+    Caption = 'Elevation roughness'
+    TabOrder = 12
   end
 end

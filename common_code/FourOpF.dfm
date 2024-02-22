@@ -57,7 +57,7 @@ inherited FourierOptionsForm: TFourierOptionsForm
     Left = 32
     Top = 24
     Width = 89
-    Height = 81
+    Height = 98
     Caption = 'Window'
     TabOrder = 3
     object RadioButton1: TRadioButton
@@ -209,14 +209,14 @@ inherited FourierOptionsForm: TFourierOptionsForm
     Left = 74
     Top = 216
     Width = 65
-    Height = 28
+    Height = 23
     TabOrder = 8
   end
   object Edit2: TEdit
     Left = 224
     Top = 215
     Width = 57
-    Height = 28
+    Height = 23
     TabOrder = 9
   end
 end

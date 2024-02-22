@@ -310,6 +310,7 @@ const
    function CreateAndOpenTable(var TheData : tMyTable; fName : PathStr) : boolean;
 {$EndIf}
 
+function IsFieldVisible(db : integer; fName : ansistring; var VisCols :  Array100Boolean) : boolean;
 
 
 implementation
@@ -329,8 +330,17 @@ uses
    BaseMap,
    DEMDefs,
    DEMDef_routines,
-   //Petmath,
    Petmar;
+
+
+function IsFieldVisible(db : integer; fName : ansistring; var VisCols :  Array100Boolean) : boolean;
+var
+   ID : integer;
+begin
+   ID := GISdb[DB].MyData.GetFieldIndex(fName);
+   Result := (ID in [0..100]) and (VisCols[ID]);
+end;
+
 
 
 function ftIsNumeric(ft : tFieldType) : boolean;

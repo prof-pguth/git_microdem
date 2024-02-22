@@ -3,8 +3,8 @@ object MilIconsForm: TMilIconsForm
   Top = 281
   BorderIcons = [biSystemMenu]
   Caption = 'MICRODEM Icon Composer'
-  ClientHeight = 684
-  ClientWidth = 968
+  ClientHeight = 683
+  ClientWidth = 964
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,25 +19,23 @@ object MilIconsForm: TMilIconsForm
   object TabControl1: TTabControl
     Left = 0
     Top = 0
-    Width = 748
-    Height = 684
+    Width = 744
+    Height = 683
     Align = alClient
     TabOrder = 0
     OnChange = TabControl1Change
     object ScrollBox1: TScrollBox
       Left = 4
       Top = 6
-      Width = 740
-      Height = 674
+      Width = 736
+      Height = 673
       Align = alClient
       TabOrder = 0
-      ExplicitWidth = 744
-      ExplicitHeight = 675
       object Image1: TImage
         Left = 0
         Top = 0
-        Width = 746
-        Height = 680
+        Width = 732
+        Height = 669
         Align = alClient
         AutoSize = True
         OnDblClick = Image1DblClick
@@ -48,14 +46,12 @@ object MilIconsForm: TMilIconsForm
     end
   end
   object Panel1: TPanel
-    Left = 748
+    Left = 744
     Top = 0
     Width = 220
-    Height = 684
+    Height = 683
     Align = alRight
     TabOrder = 1
-    ExplicitLeft = 752
-    ExplicitHeight = 685
     object Image2: TImage
       Left = 2
       Top = 0
@@ -157,27 +153,13 @@ object MilIconsForm: TMilIconsForm
       TabOrder = 2
       OnClick = RadioGroup1Click
     end
-    object RadioGroup5: TRadioGroup
-      Left = 114
-      Top = 156
-      Width = 88
-      Height = 89
-      Caption = 'Infrastructure'
-      Items.Strings = (
-        'Unknown'
-        'Operational'
-        'Damaged'
-        'Destroyed')
-      TabOrder = 3
-      OnClick = RadioGroup5Click
-    end
     object BitBtn3: TBitBtn
       Left = 2
       Top = 334
       Width = 71
       Height = 25
       Caption = 'Symbol'
-      TabOrder = 4
+      TabOrder = 3
       OnClick = BitBtn3Click
     end
     object BitBtn1: TBitBtn
@@ -186,7 +168,7 @@ object MilIconsForm: TMilIconsForm
       Width = 71
       Height = 25
       Caption = 'Fill'
-      TabOrder = 5
+      TabOrder = 4
       OnClick = BitBtn1Click
     end
     object BitBtn2: TBitBtn
@@ -195,7 +177,7 @@ object MilIconsForm: TMilIconsForm
       Width = 75
       Height = 25
       Caption = 'Close'
-      TabOrder = 6
+      TabOrder = 5
       OnClick = BitBtn2Click
     end
     object RadioGroup2: TRadioGroup
@@ -212,7 +194,7 @@ object MilIconsForm: TMilIconsForm
         '1/2'
         '3/4'
         'Full')
-      TabOrder = 7
+      TabOrder = 6
       OnClick = RadioGroup2Click
     end
     object BitBtn4: TBitBtn
@@ -221,7 +203,7 @@ object MilIconsForm: TMilIconsForm
       Width = 75
       Height = 25
       Caption = '+ Map'
-      TabOrder = 8
+      TabOrder = 7
       OnClick = BitBtn4Click
     end
     object Edit1: TEdit
@@ -229,7 +211,7 @@ object MilIconsForm: TMilIconsForm
       Top = 156
       Width = 49
       Height = 21
-      TabOrder = 9
+      TabOrder = 8
       Text = ' '
       OnChange = Edit1Change
     end
@@ -238,7 +220,7 @@ object MilIconsForm: TMilIconsForm
       Top = 183
       Width = 49
       Height = 21
-      TabOrder = 10
+      TabOrder = 9
       OnChange = Edit2Change
     end
     object Edit4: TEdit
@@ -246,7 +228,7 @@ object MilIconsForm: TMilIconsForm
       Top = 237
       Width = 45
       Height = 21
-      TabOrder = 11
+      TabOrder = 10
       OnChange = Edit4Change
     end
     object Edit3: TEdit
@@ -254,7 +236,7 @@ object MilIconsForm: TMilIconsForm
       Top = 213
       Width = 45
       Height = 21
-      TabOrder = 12
+      TabOrder = 11
       OnChange = Edit3Change
     end
     object BitBtn5: TBitBtn
@@ -263,7 +245,7 @@ object MilIconsForm: TMilIconsForm
       Width = 71
       Height = 25
       Caption = 'Text'
-      TabOrder = 13
+      TabOrder = 12
       OnClick = BitBtn5Click
     end
   end

@@ -327,6 +327,10 @@ var
                GentleMomentVar.Npts := 0;
                SteepMomentVar.Npts := 0;
                CliffMomentVar.Npts := 0;
+               UrbanMomentVar.Npts := 0;
+               ForestMomentVar.Npts := 0;
+               BarrenMomentVar.Npts := 0;
+               WaterMomentVar.Npts := 0;
             end;
 
 
@@ -1367,9 +1371,7 @@ procedure ComputeDEMIX_Summary_stats(AreaName : shortstring = '');
 const
    MaxRefStore = 100;
 var
-   MomentVar,{FlatMomentVar,SteepMomentVar,GentleMomentVar,CliffMomentVar,}ForestMomentVar,UrbanMomentVar,BarrenMomentVar,WaterMomentVar : tMomentVar;
-   //SlopeMomentVar,ElevMomentVar : array[1..MaxRefStore] of tMomentVar;
-   //NumPits,NumPeaks : array[1..MaxRefStore] of integer;
+   MomentVar,ForestMomentVar,UrbanMomentVar,BarrenMomentVar,WaterMomentVar : tMomentVar;
    DEMIXtileDB,LandCoverGrid : integer;
    bbgrid : tGridLimits;
    fName : PathStr;
@@ -1378,15 +1380,8 @@ var
    ,AreaAveRelief,AreaForestPC, AreaUrbanPC,AreaBarrenPC,AreaWaterPC,
    LatCent,LongCent,
    GridFull,Lat,Long : float64;
-   //zRef : float32;
    TileStats,AreaStats : tStringList;
-   //ElevDiffStats,
-   //RufDiffStats,
-   //SlopeDiffStats  : tStringList;
    zs : ^bfarray32;
-   //SlopeAsp,SlopeAspectTest : tSlopeAspectRec;
-   //ErrorLog : tStringList;
-   //ElevFiles,LegendFiles : tStringList;
 
          procedure InitializeStringLists;
          const
@@ -1404,8 +1399,10 @@ var
                begin
                   {$IfDef RecordFullDEMIX} WriteLineToDebugFile(fName + '  lines=' + IntToStr(sl.Count)); {$EndIf}
                   if (sl.count > 1) then begin
-                     fName := DEMIXresultsDir + AreaName + fname + '.csv';
-                     sl.SaveToFile(fName);
+                     fName := DEMIXresultsDir + 'Summary' + fname + '.csv';
+                     StringList2CSVtoDB(sl,fName);
+                     //sl.SaveToFile(fName);
+                     {$IfDef RecordDEMIX} HighlightLineToDebugFile('Summary stats written to ' + fName); {$EndIf}
                   end
                   else fName := '';
                   sl.Destroy;
@@ -1451,18 +1448,6 @@ var
             {$IfDef RecordUseTile} if not Result then WriteLineToDebugFile('Not doing tile=' + DEMIXTile + '  fill=' + IntToStr(round(GridFull))); {$EndIf}
          end;
 
-            //procedure ZeroMomentVar;
-            //begin
-               //MomentVar.Npts := 0;
-               (*
-               FlatMomentVar.Npts := 0;
-               GentleMomentVar.Npts := 0;
-               SteepMomentVar.Npts := 0;
-               CliffMomentVar.Npts := 0;
-               *)
-            //end;
-
-
             procedure LandCover(LandCoverGrid : integer; Lat,Long : float32; Value : float32);
             var
                slc : integer;
@@ -1482,7 +1467,6 @@ var
          begin
             if UseThisTile then begin
                bbgrid := GridBoundingBox(RefDEM,0);
-               //ZeroMomentVar;
                ElevMomentVar.Npts := 0;
                SlopeMomentVar.Npts := 0;
                RoughMomentVar.Npts := 0;
@@ -1610,18 +1594,6 @@ var
                end;
                GISdb[DEMIXtileDB].MyData.Next;
             end;
-
-(*
-               AreaGridFull := AreaGridFull + GridFull;
-               AreaAveElev := AreaAveElev + ElevMomentVar.Mean;
-               AreaAveSlope := AreaAveSlope + SlopeMomentVar.Mean;
-               AreaAveRuff := AreaAveRuff + RoughMomentVar.Mean;
-               AreaAveRelief := AreaAveRelief + ElevMomentVar.Maxz - ElevMomentVar.Minz;
-               AreaForestPC := AreaForestPC + ForestPC;
-               AreaUrbanPC := AreaUrbanPC + UrbanPC;
-               AreaBarrenPC := AreaBarrenPC + BarrenPC;
-               AreaWaterPC := AreaWaterPC + WaterPC;
-*)
                j := GISdb[DEMIXtileDB].MyData.FiltRecsInDB;
                DEMGlb[DEMIXRefDEM].DEMCenterPoint(LatCent,LongCent);
                TileHeader := AreaName + ',' + IntToStr(j) + ',' + RealToString(LatCent,-12,-2) + ',' + RealToString(LongCent,-12,-2) + ',' +

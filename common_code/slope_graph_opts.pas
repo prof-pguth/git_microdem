@@ -4,7 +4,7 @@ unit slope_graph_opts;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -35,6 +35,7 @@ type
     OKBtn: TBitBtn;
     Label1: TLabel;
     Edit1: TEdit;
+    CheckBox10: TCheckBox;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure OKBtnClick(Sender: TObject);
@@ -70,6 +71,7 @@ begin
    CheckBox6.Checked := MDDef.ShowElevSlopeDeg;
    CheckBox8.Checked := MDDef.ShowColorLegend;
    CheckBox9.Checked := MDDef.ShowSDonElevSlope;
+   CheckBox10.Checked := MDDef.ShowElevRough;
    Edit1.Text := IntToStr(MDDef.ElevBinSize);
 end;
 
@@ -78,6 +80,7 @@ procedure Tslopegraphopts.HelpBtnClick(Sender: TObject);
 begin
    DisplayHTMLTopic('html\elev_slope_graph.htm');
 end;
+
 
 procedure Tslopegraphopts.OKBtnClick(Sender: TObject);
 begin
@@ -89,6 +92,7 @@ begin
    MDDef.ShowElevSlopeDeg := CheckBox6.Checked;
    MDDef.ShowColorLegend := CheckBox8.Checked;
    MDDef.ShowSDonElevSlope := CheckBox9.Checked;
+   MDDef.ShowElevRough := CheckBox10.Checked;
    CheckEditString(Edit1.Text,MDDef.ElevBinSize);
    Close;
 end;

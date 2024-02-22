@@ -9,8 +9,6 @@
 {___________________________________}
 
 
-
-
 procedure ChannelNetworkMissPercentages(Overwrite : boolean; AreasWanted : tstringlist = nil);
 var
    AreaName : shortstring;
@@ -20,7 +18,6 @@ begin
    try
       GetDEMIXPaths(true);
       if (AreasWanted = Nil) then AreasWanted := DEMIX_AreasWanted(true,AreaName);
-
       for i := 0 to pred(AreasWanted.Count) do begin
          AreaName := AreasWanted.Strings[i];
          wmdem.SetPanelText(3, 'Channel misses: ' + IntToStr(succ(i)) + '/' + IntToStr(AreasWanted.Count) + '  ' + AreaName,true);
@@ -199,7 +196,7 @@ var
                 end;
              end;
           end;
-          Result := 100 - (100 * TestOnRef / NumRef);
+          Result := 1 - (TestOnRef / NumRef);
        end
        else Result := -999;
    end;
@@ -209,8 +206,8 @@ var
           i : integer;
        begin
           aLine := TileName + ',' + Area + ',' + RealToString(0.5*(bb.YMin+bb.YMax),-12,4) + ',' + RealToString(0.5*(bb.xMin+bb.xMax),-12,4) + ',' + Criterion;
-          for i := 1 to NumPt do aLine := aline + ',' + RealToString(ProcessDEMTile(PointDEMs[0],PointDEMs[i],Buffer),-12,2);
-          for i := 1 to NumArea do aLine := aline + ',' + RealToString(ProcessDEMTile(AreaDEMs[0],AreaDEMs[i],Buffer),-12,2);
+          for i := 1 to NumPt do aLine := aline + ',' + RealToString(ProcessDEMTile(PointDEMs[0],PointDEMs[i],Buffer),-12,6);
+          for i := 1 to NumArea do aLine := aline + ',' + RealToString(ProcessDEMTile(AreaDEMs[0],AreaDEMs[i],Buffer),-12,6);
           aLine := aline + ',' + IntToStr(NumRef);
           Results.Add(aline);
        end;
@@ -219,7 +216,6 @@ var
 const
    OpenMaps = false;  //available for debugging
 begin
-    //HeavyDutyProcessing := true;
     SafeMakeDir(ChannelMissesDir);
     SavefName := ChannelMissesDir + Area + '_Channel_Misses.csv';
     if not FileExists(savefName) then begin

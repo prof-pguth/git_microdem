@@ -4,7 +4,7 @@ unit dem_milicon;
 { Part of MICRODEM GIS Program       }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
-{ Copyright (c) 2023 Peter L. Guth   }
+{ Copyright (c) 2024 Peter L. Guth   }
 {____________________________________}
 
 
@@ -63,7 +63,6 @@ type
     UpDown2: TUpDown;
     UpDown1: TUpDown;
     RadioGroup1: TRadioGroup;
-    RadioGroup5: TRadioGroup;
     BitBtn3: TBitBtn;
     BitBtn1: TBitBtn;
     BitBtn2: TBitBtn;
@@ -125,11 +124,12 @@ type
      SavingName : PathStr;
      CurMilIcon : tMilIcon;
      procedure DrawSymbol;
+     procedure HideLots;
   end;
 
 
 var
-  MilIconsForm: TMilIconsForm;
+  MilIconsForm : TMilIconsForm;
 
 
 function CreateMilIcon(CurMilIcon : tMilIcon) : tMyBitmap;
@@ -168,16 +168,7 @@ procedure PickFontAndCharacter(var FontName : ANSIString; var ch : AnsiChar);
 begin
   MilIconsForm := TMilIconsForm.Create(Application);
   with MilIconsForm do begin
-     RadioGroup1.Visible := false;
-     RadioGroup2.Visible := false;
-     Edit1.Visible := false;
-     Edit2.Visible := false;
-     UpDown1.Visible := false;
-     UpDown2.Visible := false;
-     Label1.Visible := false;
-     Label2.Visible := false;
-     Label3.Visible := false;
-     Label4.Visible := false;
+     MilIconsForm.HideLots;
      ShowModal;
      FontName := CurMilIcon.MilSymFont;
      ch := AnsiChar(CurMilIcon.CharNum);
@@ -189,15 +180,6 @@ procedure PickFontAndCharacterAndColorAndSize(var FontName : ANSIString; var ch 
 begin
   MilIconsForm := TMilIconsForm.Create(Application);
   with MilIconsForm do begin
-     RadioGroup1.Visible := false;
-     RadioGroup2.Visible := false;
-     Edit1.Visible := false;
-     Edit2.Visible := false;
-     UpDown2.Visible := false;
-     Label1.Visible := false;
-     Label2.Visible := false;
-     Label3.Visible := false;
-     Label4.Visible := false;
      with CurMilIcon do begin
          MilSymFont := FontName;
          MilSymColor := inColor;
@@ -205,6 +187,7 @@ begin
          TabControl1Change(nil);
          DrawSymbol;
      end;
+     MilIconsForm.HideLots;
      ShowModal;
      FontName := CurMilIcon.MilSymFont;
      ch := AnsiChar(CurMilIcon.CharNum);
@@ -278,6 +261,19 @@ begin
 end;
 
 
+procedure TMilIconsForm.HideLots;
+begin
+     RadioGroup1.Visible := false;
+     RadioGroup2.Visible := false;
+     Edit1.Visible := false;
+     Edit2.Visible := false;
+     UpDown2.Visible := false;
+     Label1.Visible := false;
+     Label2.Visible := false;
+     Label3.Visible := false;
+     Label4.Visible := false;
+end;
+
 procedure TMilIconsForm.TabControl1Change(Sender: TObject);
 var
    Bitmap : tMyBitmap;
@@ -291,17 +287,8 @@ begin
       CurMilIcon.MilSymFont := TStr;
       RadioGroup1.Visible := false;
       RadioGroup2.Visible := false;
-      RadioGroup5.Visible := false;
       BitBtn1.Visible := false;
-      if (TStr = 'DRMS T1') then begin
-         RadioGroup1.Visible := false;
-         RadioGroup2.Visible := false;
-         RadioGroup5.Visible := true;
-         Label1.Caption := 'Left';
-         Label2.Caption := 'Right';
-         RadioGroup2.ItemIndex := 0;
-      end
-      else if (TStr = 'MapSym-FR-Land') or (TStr = 'MapSym-EN-Land') or (TStr = 'MapSym-NU-Land') then begin
+      if (TStr = 'MapSym-FR-Land') or (TStr = 'MapSym-EN-Land') or (TStr = 'MapSym-NU-Land') then begin
          RadioGroup1.Visible := true;
          RadioGroup2.Visible := true;
          RadioGroup1.Enabled := true;
@@ -380,11 +367,8 @@ begin
       AddTab('MapSym-EN-Air');
       AddTab('MapSym-NU-Air');
    end;
-
-   AddTab('DRMS T1');
-   AddTab('Mapsymbs - Map Icons2');
-   AddTab('Milpics');
    AddTab('WingDings');
+
 
    SafeMakeDir(MainMapData + 'Icons\');
    TabControl1Change(Nil);
@@ -405,8 +389,7 @@ begin
    if (StampBitmap <> Nil) then StampBitmap.Free;
    CreateBitmap(StampBitmap,200,200);
    with CurMilIcon do begin
-      if RadioGroup5.Visible then UnitLevel := RadioGroup5.ItemIndex
-      else UnitLevel := RadioGroup1.ItemIndex;
+      UnitLevel := RadioGroup1.ItemIndex;
       FillLevel := RadioGroup2.ItemIndex;
       UnitName := Edit1.Text;
       ParentName := Edit2.Text;

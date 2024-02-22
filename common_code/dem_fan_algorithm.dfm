@@ -114,8 +114,6 @@ object FanAlgParams: TFanAlgParams
     Height = 41
     Align = alBottom
     TabOrder = 6
-    ExplicitTop = 455
-    ExplicitWidth = 508
     object OKBtn: TBitBtn
       Left = 8
       Top = 6

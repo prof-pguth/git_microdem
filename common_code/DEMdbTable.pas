@@ -1002,6 +1002,11 @@ type
     Vertical1: TMenuItem;
     Graphbyareawithaveragescoreforselectedcriteria1: TMenuItem;
     Graphbytilewithaveragescoreforselectedcriteria1: TMenuItem;
+    SingleFieldArithmeticPopupMenu: TPopupMenu;
+    Addconstanttofield2: TMenuItem;
+    Addconstanttofield3: TMenuItem;
+    Dividefieldbyconstant2: TMenuItem;
+    Singlefieldarithmetic1: TMenuItem;
     //Pointfilter1: TMenuItem;
     //Pointfilter2: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
@@ -1771,6 +1776,10 @@ type
       Sender: TObject);
     procedure Graphbytilewithaveragescoreforselectedcriteria1Click(
       Sender: TObject);
+    procedure Addconstanttofield2Click(Sender: TObject);
+    procedure Addconstanttofield3Click(Sender: TObject);
+    procedure Dividefieldbyconstant2Click(Sender: TObject);
+    procedure Singlefieldarithmetic1Click(Sender: TObject);
     //procedure Pointfilter2Click(Sender: TObject);
     //procedure Pointfilter1Click(Sender: TObject);
   private
@@ -1785,6 +1794,8 @@ type
     procedure ThreeDGraph(NoVertExag: boolean);
     procedure SetFonts;
     procedure Distributionsummary(Title : shortstring);
+    procedure SingleFieldArithmetic(DBonTable,Operation : integer; CheckField : shortstring);
+
   public
      DBonTable,
      xdrawspot,ydrawspot : integer;
@@ -1991,6 +2002,7 @@ uses
     DEMIX_filter,
     demix_definitions,
     DEMIX_Control,
+    DEMIX_graphs,
 
    map_overlays,
    db_display_options,
@@ -2009,7 +2021,60 @@ var
    HighlightCycle : integer;
    BroadCastingFilterChanges : boolean;
 
+   const
+   sfaMult = 1;
+   sfaAdd = 2;
+   sfaDiv = 3;
 
+
+procedure Tdbtablef.SingleFieldArithmetic(DBonTable,Operation : integer; CheckField : shortstring);
+var
+   TStr  : shortString;
+   RecCount,i  : integer;
+   Mult : float64;
+   Value : float32;
+   ItsFloatField : boolean;
+begin
+   with GISdb[DBonTable] do begin
+       if (Operation = sfaMult) then TStr := 'multiply'
+       else if (Operation = sfaDiv) then TStr := 'divide'
+       else TStr := 'add';
+       if (CheckField = '') then CheckField := GISDB[DBonTable].PickField(TStr + ' by constant',NumericFieldTypes);
+       if (CheckField = '') then exit;
+
+       Mult := -1;
+       ReadDefault('Constant to ' + Tstr,Mult);
+       if (Operation = sfaDiv) then Mult := 1 / Mult;
+       ItsFloatField := GISdb[DBonTable].MyData.IsFloatField(CheckField);
+       GISdb[DBonTable].MyData.First;
+       i := 0;
+       RecCount := GISdb[DBonTable].MyData.RecordCount;
+       StartProgress(TStr);
+       while not GISdb[DBonTable].MyData.EOF do begin
+          if (i mod 100 = 0) then begin
+             EmpSource.Enabled := false;
+             UpdateProgressBar(i/RecCount);
+          end;
+          inc(i);
+          GISdb[DBonTable].MyData.Edit;
+          if GetFloat32FromTableLinkPossible(CheckField,Value) then begin
+             if (Operation = sfaMult) or (Operation = sfaDiv) then Value := Value * Mult
+             else Value := Value + Mult;
+             if ItsFloatField then GISdb[DBonTable].MyData.SetFieldByNameAsFloat(CheckField,Value)
+             else GISdb[DBonTable].MyData.SetFieldByNameAsInteger(CheckField,round(Value));
+          end;
+          GISdb[DBonTable].MyData.Next;
+       end;
+       ClearFieldRange(CheckField);
+       ShowStatus;
+    end;
+end;
+
+
+procedure Tdbtablef.Singlefieldarithmetic1Click(Sender: TObject);
+begin
+   SingleFieldArithmeticPopupMenu.Popup(Mouse.CursorPos.X,Mouse.CursorPos.Y);
+end;
 
 type tPointInPolygon = (pipLabels,pipDelete,pipSetMask);
 
@@ -2151,10 +2216,7 @@ end;
 
 procedure Tdbtablef.NormalizeddifferencesfromreferenceDEM1Click(Sender: TObject);
 begin
-{$IfDef ExDEMIXexperimentalOptions}
-{$Else}
    DEMIXwineContestCriterionGraph(dgNormalizedDiff,DBonTable);
-{$EndIf}
 end;
 
 procedure Tdbtablef.Normalizefield1Click(Sender: TObject);
@@ -3017,10 +3079,7 @@ end;
 
 procedure Tdbtablef.Wins1Click(Sender: TObject);
 begin
-{$IfDef ExDEMIXexperimentalOptions}
-{$Else}
    WinsAndTies(DBonTable);
-{$EndIf}
 end;
 
 procedure Tdbtablef.woorthreefieldRGB1Click(Sender: TObject);
@@ -4941,9 +5000,19 @@ end;
 
 procedure Tdbtablef.Addconstanttofield1Click(Sender: TObject);
 begin
-   Mutliple1Click(Sender);
+   SingleFieldArithmetic(DBonTable,sfaAdd,'');
 end;
 
+
+procedure Tdbtablef.Addconstanttofield2Click(Sender: TObject);
+begin
+   SingleFieldArithmetic(DBonTable,sfaAdd,SelectedColumn);
+end;
+
+procedure Tdbtablef.Addconstanttofield3Click(Sender: TObject);
+begin
+   SingleFieldArithmetic(DBonTable,sfaMult,SelectedColumn);
+end;
 
 procedure Tdbtablef.AddDBsfieldrange1Click(Sender: TObject);
 var
@@ -6970,10 +7039,7 @@ end;
 
 procedure Tdbtablef.Currenttest1Click(Sender: TObject);
 begin
-{$IfDef ExDEMIXexperimentalOptions}
-{$Else}
    DEMIX_evaluations_graph(DBonTable);
-{$EndIf}
 end;
 
 
@@ -10067,18 +10133,12 @@ end;
 
 procedure Tdbtablef.Graphbyareawithaveragescoreforselectedcriteria1Click(Sender: TObject);
 begin
-{$IfDef ExDEMIXexperimentalOptions}
-{$Else}
    DEMIX_AreaAverageScores_graph(DBonTable);
-{$EndIf}
 end;
 
 procedure Tdbtablef.Graphbytilewithaveragescoreforselectedcriteria1Click(Sender: TObject);
 begin
-{$IfDef ExDEMIXexperimentalOptions}
-{$Else}
    GraphAverageScoresByTile(DBonTable,Nil,Nil);
-{$EndIf}
 end;
 
 procedure Tdbtablef.Graphfilters1Click(Sender: TObject);
@@ -13152,7 +13212,12 @@ end;
 
 procedure Tdbtablef.Dividefieldbyconstant1Click(Sender: TObject);
 begin
-   Mutliple1Click(Sender);
+   SingleFieldArithmetic(DBonTable,sfaDiv,'');
+end;
+
+procedure Tdbtablef.Dividefieldbyconstant2Click(Sender: TObject);
+begin
+   SingleFieldArithmetic(DBonTable,sfaDiv,SelectedColumn);
 end;
 
 procedure Tdbtablef.Dividethreefields1Click(Sender: TObject);
@@ -15540,47 +15605,11 @@ begin
 end;
 
 procedure Tdbtablef.Mutliple1Click(Sender: TObject);
-var
-   CheckField,TStr  : shortString;
-   RecCount,i  : integer;
-   Mult : float64;
-   Value : float32;
-   ItsFloatField : boolean;
 begin
-   with GISdb[DBonTable] do begin
-       if (Sender = Mutliple1) then TStr := 'multiply'
-       else if (Sender = Dividefieldbyconstant1) then TStr := 'divide'
-       else TStr := 'add';
-       CheckField := GISDB[DBonTable].PickField(TStr + ' by constant',NumericFieldTypes);
-       if (CheckField = '') then exit;
-
-       Mult := -1;
-       ReadDefault('Constant',Mult);
-       if (Sender = Dividefieldbyconstant1) then Mult := 1 / Mult;
-       ItsFloatField := GISdb[DBonTable].MyData.IsFloatField(CheckField);
-       GISdb[DBonTable].MyData.First;
-       i := 0;
-       RecCount := GISdb[DBonTable].MyData.RecordCount;
-       StartProgress(TStr);
-       while not GISdb[DBonTable].MyData.EOF do begin
-          if (i mod 100 = 0) then begin
-             EmpSource.Enabled := false;
-             UpdateProgressBar(i/RecCount);
-          end;
-          inc(i);
-          GISdb[DBonTable].MyData.Edit;
-          if GetFloat32FromTableLinkPossible(CheckField,Value) then begin
-             if (Sender = Mutliple1) or (Sender = Dividefieldbyconstant1) then Value := Value * Mult
-             else Value := Value + Mult;
-             if ItsFloatField then GISdb[DBonTable].MyData.SetFieldByNameAsFloat(CheckField,Value)
-             else GISdb[DBonTable].MyData.SetFieldByNameAsInteger(CheckField,round(Value));
-          end;
-          GISdb[DBonTable].MyData.Next;
-       end;
-       ClearFieldRange(CheckField);
-       ShowStatus;
-    end;
+   SingleFieldArithmetic(DBonTable,sfaMult,'');
 end;
+
+
 
 procedure Tdbtablef.Fieldstatistics1Click(Sender: TObject);
 begin

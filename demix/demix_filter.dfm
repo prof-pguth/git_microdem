@@ -937,6 +937,15 @@ object DemixFilterForm: TDemixFilterForm
         TabOrder = 10
         OnClick = CheckBox24Click
       end
+      object BitBtn38: TBitBtn
+        Left = 528
+        Top = 288
+        Width = 113
+        Height = 25
+        Caption = 'Save defaults'
+        TabOrder = 11
+        OnClick = BitBtn38Click
+      end
     end
     object TabSheet4: TTabSheet
       Caption = 'Current progress'

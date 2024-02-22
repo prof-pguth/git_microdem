@@ -29,7 +29,6 @@ object wmdem: Twmdem
     Left = 0
     Top = 0
     Width = 2018
-    Height = 29
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34
@@ -1722,26 +1721,6 @@ object wmdem: Twmdem
       object Introductorytutorials1: TMenuItem
         Caption = 'Introductory tutorials'
         GroupIndex = 6
-        object GISdatasampler1: TMenuItem
-          Caption = 'Annapolis GIS data sampler (100 MB)'
-          GroupIndex = 6
-        end
-        object AnnapolisTM8scene1: TMenuItem
-          Caption = 'Annapolis TM8 scene (1 GB)'
-          GroupIndex = 6
-        end
-        object Annapolislidar1: TMenuItem
-          Caption = 'Annapolis lidar (8 GB)'
-          GroupIndex = 6
-        end
-        object LASlidarpointcloudsamples1: TMenuItem
-          Caption = 'LAS lidar point cloud samples'
-          GroupIndex = 6
-        end
-        object HarpersFerryTerrainAnalysis1: TMenuItem
-          Caption = 'Harper'#39's Ferry Terrain Analysis'
-          GroupIndex = 6
-        end
         object Legislativeredistricting1: TMenuItem
           Caption = 'Legislative redistricting'
           GroupIndex = 6
@@ -3609,14 +3588,6 @@ object wmdem: Twmdem
         OnClick = Skipifexits1Click
       end
     end
-    object CreatehalfsecondreferenceDEMs1: TMenuItem
-      Caption = 'Create half second reference DEMs'
-      OnClick = CreatehalfsecondreferenceDEMs1Click
-    end
-    object CreaterangereferenceDEMs1: TMenuItem
-      Caption = 'Create  reference DEMs for range pixel sizes'
-      OnClick = CreaterangereferenceDEMs1Click
-    end
     object N44: TMenuItem
       Caption = '-'
     end
@@ -3654,19 +3625,14 @@ object wmdem: Twmdem
       Caption = '-'
     end
     object Processdifferencestatisticspertile1: TMenuItem
-      Caption = 'Process difference statistics per tile'
+      Caption = 
+        'Process difference distribution statistics per tile (DEMIX-class' +
+        'ic)'
       OnClick = Processdifferencestatisticspertile1Click
     end
     object DEMIXmergeCSVfiles1: TMenuItem
-      Caption = 'Create database (merge and transpose CSV files)'
+      Caption = 'Create database (merge and transpose DEMIX-classic CSV files)'
       OnClick = DEMIXmergeCSVfiles1Click
-    end
-    object N40: TMenuItem
-      Caption = '-'
-    end
-    object SummarizeverticaldatumshiftforEGM96testDEMs1: TMenuItem
-      Caption = 'Summarize vertical datum shift for EGM96 test DEMs'
-      OnClick = SummarizeverticaldatumshiftforEGM96testDEMs1Click
     end
     object N36: TMenuItem
       Caption = '-'
@@ -3702,7 +3668,7 @@ object wmdem: Twmdem
       OnClick = VerifytestDEMcoverages1Click
     end
     object Inventorydifferencestats1: TMenuItem
-      Caption = 'Inventory difference stats'
+      Caption = 'Inventory difference distribution  stats (DEMIX-classic DB)'
       OnClick = Inventorydifferencestats1Click
     end
     object Inventorychanneldatabyarea1: TMenuItem
@@ -3718,7 +3684,7 @@ object wmdem: Twmdem
       Caption = '-'
     end
     object ComputeDEMIXtilestats1: TMenuItem
-      Caption = 'Compute DEMIX tile summary stats'
+      Caption = 'Compute DEMIX tile and area summary stats'
       OnClick = ComputeDEMIXtilestats1Click
     end
     object MergeDEMIXtilestats1: TMenuItem
@@ -3739,17 +3705,6 @@ object wmdem: Twmdem
     object rimreferencedatatoDEMIXtiles1: TMenuItem
       Caption = 'Trim reference data to DEMIX tiles'
       OnClick = rimreferencedatatoDEMIXtiles1Click
-    end
-    object N52: TMenuItem
-      Caption = '-'
-    end
-    object VerifySSIMfiles1: TMenuItem
-      Caption = 'Verify all SSIM files exist for tile'
-      OnClick = VerifySSIMfiles1Click
-    end
-    object CheckfilesizesforSSIMimagemismatches1: TMenuItem
-      Caption = 'Check file sizes for SSIM image mismatches'
-      OnClick = CheckfilesizesforSSIMimagemismatches1Click
     end
     object N50: TMenuItem
       Caption = '-'
@@ -3783,6 +3738,26 @@ object wmdem: Twmdem
       Caption = 'Summarize VDATUM shift for US areas'
       Enabled = False
       OnClick = N41Click
+    end
+    object CreatehalfsecondreferenceDEMs1: TMenuItem
+      Caption = 'Create half second reference DEMs'
+      OnClick = CreatehalfsecondreferenceDEMs1Click
+    end
+    object CreaterangereferenceDEMs1: TMenuItem
+      Caption = 'Create  reference DEMs for range pixel sizes'
+      OnClick = CreaterangereferenceDEMs1Click
+    end
+    object SummarizeverticaldatumshiftforEGM96testDEMs1: TMenuItem
+      Caption = 'Summarize vertical datum shift for EGM96 test DEMs'
+      OnClick = SummarizeverticaldatumshiftforEGM96testDEMs1Click
+    end
+    object VerifySSIMfiles1: TMenuItem
+      Caption = 'Verify all SSIM files exist for tile (for Python)'
+      OnClick = VerifySSIMfiles1Click
+    end
+    object CheckfilesizesforSSIMimagemismatches1: TMenuItem
+      Caption = 'Check file sizes for SSIM image mismatches (for Python)'
+      OnClick = CheckfilesizesforSSIMimagemismatches1Click
     end
   end
 end

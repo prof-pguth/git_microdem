@@ -239,6 +239,8 @@ var
 procedure MaskWaterInReferenceDEMs;
 procedure TrimReferenceDEMsToDEMIXtiles;
 
+function AreDEMIXscoresInDB(db : integer) : boolean;
+procedure ComputeAverageScoresForSelectedCriteria(db : integer; CriteriaList : tStringList; var Scores : tDEMIXfloats; var NumTies : integer; var WinnerString : shortstring);
 
 
 implementation
@@ -248,7 +250,7 @@ uses
    DEMstat,Make_grid,PetImage,PetImage_form,new_petmar_movie,DEMdatabase,PetDButils,Pick_several_dems,
    Geotiff, BaseMap, GDAL_tools, DEMIX_filter, DEMstringgrid,DEM_NLCD,
    DEMCoord,DEMMapf,DEMDef_routines,DEM_Manager,DEM_indexes,PetMath,
-   DEMIX_control;
+   DEMIX_control,DEMIX_graphs;
 
 
 {$include demix_create_database.inc}
@@ -260,6 +262,62 @@ uses
 {$include demix_create_test_dems.inc}
 
 {$include demix_inventory_check_dems.inc}
+
+
+function AreDEMIXscoresInDB(db : integer) : boolean;
+var
+   i : integer;
+begin
+   Result := true;
+   for I := 1 to NumDEMIXDEM do begin
+      if not GISdb[db].MyData.FieldExists(DEMIXShort[i] + '_SCR') then begin
+         Result := false;
+         exit;
+      end;
+   end;
+end;
+
+procedure ComputeAverageScoresForSelectedCriteria(db : integer; CriteriaList : tStringList; var Scores : tDEMIXfloats; var NumTies : integer; var WinnerString : shortstring);
+var
+   i,Opinions : integer;
+   Criterion : shortstring;
+   LowScore : float32;
+begin
+   if (not AreDEMIXscoresInDB(DB)) then begin
+      RankDEMS(db);
+   end;
+
+   GISdb[DB].EmpSource.Enabled := false;
+   for i := 1 to NumDEMIXDEM do Scores[i] := 0;
+   Opinions := 0;
+   while not GISdb[DB].MyData.eof do begin
+      Criterion := GISdb[DB].MyData.GetFieldByNameAsString('CRITERION');
+      if (CriteriaList.IndexOf(Criterion) <> -1) then begin
+         inc(Opinions);
+         for i := 1 to NumDEMIXDEM do begin
+            Scores[i] := Scores[i] + GISdb[DB].MyData.GetFieldByNameAsFloat(DEMIXShort[i] + '_SCR');
+         end;
+      end;
+      GISdb[DB].MyData.Next;
+   end;
+   for I := 1 to NumDEMIXDEM do Scores[i] := Scores[i] / Opinions;
+   LowScore := 999;
+   WinnerString := '';
+   for I := 1 to NumDEMIXDEM do begin
+      if Scores[i] < LowScore - 0.001 then begin
+         LowScore := Scores[i];
+         WinnerString := DEMIXShort[i];
+         NumTies := 1;
+      end
+      else if Scores[i] < LowScore + 0.001 then begin
+         WinnerString := WinnerString + ';' + DEMIXShort[i];
+         inc(NumTies);
+      end;
+   end;
+end;
+
+
+
 
 
 initialization

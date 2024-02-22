@@ -1,10 +1,10 @@
 unit contgraf;
 
 {^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of ianMICRODEM GIS Program    }
+{ Part of MICRODEM GIS Program       }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
-{ Copyright (c) 2023 Peter L. Guth   }
+{ Copyright (c) 2024 Peter L. Guth   }
 {____________________________________}
 
 
@@ -366,10 +366,7 @@ end;
 procedure TThisContourGraph.FormCreate(Sender: TObject);
 begin
    inherited;
-   {$IfDef ExTin}
-   {$Else}
-      TIN := Nil;
-   {$EndIf}
+   {$IfDef ExTin} {$Else} TIN := Nil; {$EndIf}
    IntCf := IntMapColorFunct;
    GraphDraw.AxisColor := clBlack;
    WhatsOnGraph := NothingSpecial;
