@@ -79,13 +79,14 @@ uses
 
 const
    DEMIXSkipFilesAlreadyDone = true;
-   FilterOutSeaLevel = false;
+   //FilterOutSeaLevel = false;
    JustTileStats : boolean = false;
    MaskForDiluvium = false;
 
 const
    Ref1SecPointStr = '_ref_1sec_point';
    Ref1SecAreaStr =  '_ref_1sec_area';
+   DEMIX_vert_datum_code : integer = 0;
 
 const
    DEMIXOpenMap = false;
@@ -105,7 +106,7 @@ const
    TileCharacters : array[1..NumTileCharacters] of shortstring = ('AVG_ELEV','AVG_ROUGH','AVG_SLOPE','BARREN_PC','FOREST_PC','RELIEF','URBAN_PC','WATER_PC');
 
    NCrits = 12;
-   Crits : array[1..NCrits] of shortstring = ('ELEV_SSIM','RRI_SSIM','SLOPE_SSIM','HILL_SSIM','RUFF_SSIM','TPI_SSIM','ELEV_R2','SLOPE_R2','HILL_R2','RUFF_R2','TPI_R2','RRI_R2');
+   Crits : array[1..NCrits] of shortstring = ('ELEV_SSIM','RRI_SSIM','SLOPE_SSIM','HILL_SSIM','RUFF_SSIM','TPI_SSIM','ELEV_FUV','SLOPE_FUV','HILL_FUV','RUFF_FUV','TPI_FUV','RRI_FUV');
 
    RefDEMType : array[1..2] of shortstring = ('DSM','DTM');
 
@@ -131,15 +132,35 @@ var
    DEMIXDEMcolors : array[1..MaxDEMIXDEM] of tPlatformColor;
 
 const
-   NumPt = 6;
-   NumArea = 1;
-   PointNames : array[0..NumPt] of shortstring = ('REF_POINT','ASTER','COP','FABDEM','NASA','SRTM','TANDEM');
-   AreaNames : array[0..NumArea] of shortstring = ('REF_AREA','ALOS');
+   MaxPossGrids = 8;
+   NumPt : integer = 6;
+   NumArea : integer = 1;
+   PossPt = 6;
+   PossArea = 2;
+   PointNames : array[0..PossPt] of shortstring = ('REF_POINT','ASTER','COP','FABDEM','NASA','SRTM','TANDEM');
+   AreaNames : array[0..PossArea] of shortstring = ('REF_AREA','ALOS','DILUV');
 type
-   tDEM_int_array = array [0..NumPt] of integer;
+   tDEM_int_array = array [0..MaxPossGrids] of integer;
 var
-   PointDEMs : tDEM_int_array;   //0 is the reference, rest the test DEMs
+   PointDEMs : tDEM_int_array; //0 is the reference, rest the test DEMs
    AreaDEMs : tDEM_int_array;  //0 is the reference, rest the test DEMs
+
+
+const
+   yasName = 0;
+   yasSlope = 1;
+   yasRuff = 2;
+   yasRelief = 3;
+   xawEvaluation = 0;
+   xawScore = 1;
+   yawArea = 0;
+   yawTile = 1;
+   DEMIX_combined_graph : boolean = true;
+   PanelsByTestDEM : boolean = true;
+   MovieByTestDEM : boolean = true;
+var
+   XAxisWhat,YAxisWhat,YAxisSort,YaxisTileOrArea : integer;
+
 
 var
    RefDEMs,TestDEMs,
@@ -153,7 +174,12 @@ var
    HalfSecRefDTM,HalfSecRefDSM,HalfSecDTM,HalfSecALOS,HalfSecCOP,
    DEMIXRefDEM,RefDTMpoint,RefDTMarea,RefDSMpoint,RefDSMarea, COPRefDTM, COPRefDSM : integer;
 
-   DEMIX_Ref_1sec,DEMIX_test_dems,DEMIX_Ref_Half_sec,
+   SSIMresultsDir,  //used internally, and set to one of the next two depending on which version is on
+   DiluvSSIMresultsDir, RegularSSIMresultsDir,
+
+   DEMIX_Ref_1sec,DEMIX_test_dems,DEMIX_diluvium_dems,  //locations for the 1" DEMs used in comparison
+
+   DEMIX_Ref_Half_sec,
    DEMIX_Base_DB_Path,DEMIX_profile_test_dir,
 
   //directories for the channel criterion calculations
@@ -162,11 +188,15 @@ var
    DEMIX_test_DEMs_channel_grids, DEMIX_ref_DEMs_channel_grids,
    ChannelMissesDir,DEMIX_diff_dist,DEMIX_area_lc100,
 
+
+   DEMIX_area_dbName,
    DEMIX_Ref_Source,DEMIX_Ref_Merge,
    DEMIX_GIS_dbName,
-   SSIMresultsDir,
-   DEMIX_diluvium_dems,
+
+   AreaListFName,
+
    DEMIX_distrib_graph_dir,DEMIX_diff_maps_dir,DEMIX_3DEP_Dir,
+
 
    GeodeticFName, IceSatFName, LandCoverFName,
    LocalDatumAddFName,LocalDatumSubFName,
@@ -180,7 +210,7 @@ var
 
 //create or edit database
    procedure MakeDBForParamStats(Option,DBonTable : integer);
-   procedure DEMIX_SSIM_R2_transpose_kmeans_new_db(DBonTable : integer);
+   procedure DEMIX_SSIM_FUV_transpose_kmeans_new_db(DBonTable : integer);
    procedure ComputeDEMIX_tile_stats(AreaName : shortstring = '');
    procedure CreateDEMIX_GIS_database(AreaName : shortstring = '');
    procedure RankDEMS(DBonTable : integer);
@@ -188,7 +218,7 @@ var
    procedure ModeOfDifferenceDistributions;
    procedure ComputeDEMIX_Summary_stats(AreaName : shortstring = '');
    procedure AddTileCharacteristics(DBonTable : integer);
-   procedure SwitchSSIMorR2Scoring(DBonTable : integer);
+   procedure SwitchSSIMorFUVScoring(DBonTable : integer);
    procedure EvaluationRangeForCriterion(DBonTable : integer);
 
 
@@ -197,16 +227,20 @@ var
    procedure DEMIX_COP_clusters_tile_stats(DBonTable : integer);
    procedure DEMIX_clusters_per_tile(DBonTable : integer);
 
-   procedure DEMIX_SSIM_R2_clusters_diversity_graphs(DBonTable : integer; ColorByDEM : boolean = true);
-   function DEMIX_SSIM_R2_cluster_sensitivity_graph(DBonTable : integer) : tThisBaseGraph;
-   function DEMIX_SSIM_R2_clusters_graph(DBonTable : integer) : tThisBaseGraph;
+   procedure DEMIX_SSIM_FUV_clusters_diversity_graphs(DBonTable : integer; ColorByDEM : boolean = true);
+   function DEMIX_SSIM_FUV_cluster_sensitivity_graph(DBonTable : integer) : tThisBaseGraph;
+   function DEMIX_SSIM_FUV_clusters_graph(DBonTable : integer) : tThisBaseGraph;
 
 
 //create reference DEMs, 3DEP
-   procedure DEMIX_Merge3DEPReferenceDEMs(Overwrite : boolean; DataDirs : tStringList = Nil);
    procedure DEMIX_Create3DEPReferenceDEMs(Overwrite : boolean; DataDirs : tStringList = Nil);
    procedure DEMIX_GDAL_3DEP_datum_shift(Overwrite : boolean; DataDirs : tStringList = Nil);
    procedure DEMIX_3DEP_full_chain(overwrite : boolean);
+
+   procedure ShifDEMsto_UTM_WGS84_EGM2008;
+   procedure DEMIX_MergeReferenceDEMs(Overwrite : boolean; DataDirs : tStringList = Nil);
+
+
 
 //create reference DEMs, non-3DEP
    procedure DEMIX_merge_Visioterra_source(AreaName : shortstring = '');
@@ -235,6 +269,8 @@ var
    procedure VerifyAllMapsReadyForSSIM;
    procedure VerifyTestDEMcoverages;
 
+procedure AddStatisticsToDEMIXdb(db : integer);
+
 
 procedure MaskWaterInReferenceDEMs;
 procedure TrimReferenceDEMsToDEMIXtiles;
@@ -262,6 +298,42 @@ uses
 {$include demix_create_test_dems.inc}
 
 {$include demix_inventory_check_dems.inc}
+
+
+procedure AddStatisticsToDEMIXdb(db : integer);
+var
+   StatsFName : PathStr;
+   TheFields : tStringList;
+begin
+   if GISdb[db].MyData.FieldExists('AVG_SLOPE') and GISdb[db].MyData.FieldExists('AVG_ROUGH') and GISdb[db].MyData.FieldExists('RELIEF') then begin
+
+   end
+   else begin
+      TheFields := tStringList.Create;
+      TheFields.Add('AVG_SLOPE');
+      TheFields.Add('AVG_ROUGH');
+      TheFields.Add('RELIEF');
+      if GISdb[db].MyData.FieldExists('AREA') then begin
+         if GISdb[db].MyData.FieldExists('DEMIX_TILE') then begin
+            GISdb[DB].dbOpts.LinkTableName :=  DEMIXSettingsDir + 'tile_statistics.dbf';
+            GISdb[DB].dbOpts.LinkFieldThisDB := 'DEMIX_TILE';
+         end
+         else begin
+            GISdb[DB].dbOpts.LinkTableName :=  DEMIXSettingsDir + 'area_statistics.dbf';
+         end;
+         GISdb[DB].dbOpts.LinkFieldOtherDB := GISdb[DB].dbOpts.LinkTableName;
+         GISdb[DB].dbOpts.LinkFieldThisDB := 'AREA';
+         GISdb[DB].LinkTable := tMyData.Create(GISdb[DB].dbOpts.LinkTableName);
+         GISdb[DB].FillFieldsFromJoinedTable(TheFields,false);
+      end
+      else begin
+         exit;
+      end;
+     TheFields.Destroy;
+   end;
+end;
+
+
 
 
 function AreDEMIXscoresInDB(db : integer) : boolean;

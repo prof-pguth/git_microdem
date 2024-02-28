@@ -585,6 +585,10 @@ type
     N39: TMenuItem;
     N54: TMenuItem;
     Inventorychanneldatabyarea1: TMenuItem;
+    DatumshiftCanadianDEMs1: TMenuItem;
+    MergeCanadianLidar1: TMenuItem;
+    Reference1secDTMsfromCanadianlidar1: TMenuItem;
+    Graphevaluationandscores1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -989,6 +993,10 @@ type
     procedure OvOverwriteifexists1Click(Sender: TObject);
     procedure Skipifexists2Click(Sender: TObject);
     procedure Inventorychanneldatabyarea1Click(Sender: TObject);
+    procedure DatumshiftCanadianDEMs1Click(Sender: TObject);
+    procedure MergeCanadianLidar1Click(Sender: TObject);
+    procedure Reference1secDTMsfromCanadianlidar1Click(Sender: TObject);
+    procedure Graphevaluationandscores1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1220,6 +1228,7 @@ uses
       demix_definitions,
       DEMIX_Control,
       DEMIX_cop_alos,
+      demix_evals_scores_graphs,
    {$EndIf}
 
    ufrmMain,
@@ -1492,6 +1501,12 @@ begin
    {$EndIf}
 end;
 
+
+procedure Twmdem.DatumshiftCanadianDEMs1Click(Sender: TObject);
+begin
+   DEMIX_vert_datum_code := 6647;
+   ShifDEMsto_UTM_WGS84_EGM2008;
+end;
 
 procedure Twmdem.DBFfile1Click(Sender: TObject);
 begin
@@ -1997,14 +2012,9 @@ begin
       end;
    end;
 
-   if Action = 'DEMIX-CRITERIA' then begin
-      //ComputeDEMIX_tile_stats(FileList);
-   end;
-
    if Action = 'DEMIX-CREATE-REF' then begin
       BatchResampleForDEMIX(FileList);
    end;
-
 
    if Action = 'OPENMAP' then begin
       if OpenADEM then begin
@@ -2140,7 +2150,7 @@ begin
 
    if FirstRun then begin
      InitializeMICRODEM;
-     GetDEMIXpaths(false);
+     //GetDEMIXpaths(false);
 
      FirstRun := false;
      {$IfDef RecordFormActivate} WriteLineToDebugFile('Twmdem.FormActivate, initialize MD over'); {$EndIf}
@@ -2711,6 +2721,15 @@ begin
    {$EndIf}
 end;
 
+procedure Twmdem.Graphevaluationandscores1Click(Sender: TObject);
+var
+   db : integer;
+begin
+   StopSplashing;
+   db := OpenMultipleDataBases('DEMIX graphs');
+   if ValidDB(db) then StartDEMIXgraphs(DB);
+end;
+
 procedure Twmdem.Graysgame1Click(Sender: TObject);
 var
    GrayGameForm : TGrayGameForm;
@@ -3027,6 +3046,7 @@ end;
 
 procedure Twmdem.Skipifexits2Click(Sender: TObject);
 begin
+   DEMIX_vert_datum_code := 5703;
    DEMIX_GDAL_3DEP_datum_shift(false);
 end;
 
@@ -3490,16 +3510,17 @@ end;
 
 procedure Twmdem.Overwriteifexits1Click(Sender: TObject);
 begin
-   DEMIX_Merge3DEPReferenceDEMs(True);
+   DEMIX_MergeReferenceDEMs(True);
 end;
 
 procedure Twmdem.Overwriteifexits2Click(Sender: TObject);
 begin
-   DEMIX_Merge3DEPReferenceDEMs(false);
+   DEMIX_MergeReferenceDEMs(false);
 end;
 
 procedure Twmdem.Overwriteifexits3Click(Sender: TObject);
 begin
+   DEMIX_vert_datum_code := 5703;
    DEMIX_GDAL_3DEP_datum_shift(true);
 end;
 
@@ -3893,6 +3914,11 @@ begin
 end;
 
 
+procedure Twmdem.Reference1secDTMsfromCanadianlidar1Click(Sender: TObject);
+begin
+   DEMIX_Create3DEPReferenceDEMs(false);
+end;
+
 procedure Twmdem.RenameJPEGSwithbaseandcreationtime1Click(Sender: TObject);
 var
    FilesWanted : TStringList;
@@ -4112,6 +4138,11 @@ end;
 procedure Twmdem.Merge1secreferenceDEMsfromVisioterra1Click(Sender: TObject);
 begin
    DEMIX_merge_Visioterra_source;
+end;
+
+procedure Twmdem.MergeCanadianLidar1Click(Sender: TObject);
+begin
+   DEMIX_MergeReferenceDEMs(false);
 end;
 
 procedure Twmdem.MergeDEMIXtilestats1Click(Sender: TObject);

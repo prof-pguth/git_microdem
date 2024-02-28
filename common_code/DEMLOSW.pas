@@ -22,8 +22,8 @@ unit demlosw;
       //{$Define RecordClosing}
       //{$Define RecordUTMZones}
       //{$Define RecordSlopeCalc}
-      {$Define RecordLOSLegend}
-      {$Define RecordHideProfiles}
+      //{$Define RecordLOSLegend}
+      //{$Define RecordHideProfiles}
       //{$Define RecordLOSProblems}
       //{$Define RecordLOSPrettyDrawing}
       //{$Define RecordRandomProfiles}
@@ -534,8 +534,6 @@ procedure TDEMLOSF.Hideprofiles1Click(Sender: TObject);
 var
    i : integer;
 begin
-   {$IfDef SupClassAuxGrids} WriteLineToDebugFile('TSupClassAuxGrids.BitBtn10Click (Pick open grids) in'); {$EndIf}
-
    {$IfDef RecordHideProfiles} ShowThoseToDraw('Enter TDEMLOSF.Hideprofiles1Click'); {$EndIf}
    GetMultipleDEMsFromList('DEMs to include in profile',LOSDraw.ShowProfile);
    {$IfDef RecordHideProfiles} ShowThoseToDraw('Mid TDEMLOSF.Hideprofiles1Click'); {$EndIf}

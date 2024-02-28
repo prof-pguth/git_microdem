@@ -32,6 +32,7 @@ unit DEMCoord;
 
    {$IFDEF DEBUG}
       {$Define RecordDEMIX}
+      {$Define RecordMaskFromSecondGrid}
       //{$Define TrackSWCornerForComputations}
       //{$Define RecordGridIdentical}
       //{$Define RecordUKOS}
@@ -383,7 +384,6 @@ type
          function DEMLocationString(XGrid,YGrid : float64) : ShortString;
          function PixelSize(Col,Row : integer) : shortstring;
 
-
          function PercentileOfPoint(xloc,yloc : integer; GridLimits: tGridLimits) : float64;
          function PercentileOfElevation(z : float64) : float64;
          function FindPercentileElevation(Percentile : float64) : float64;
@@ -451,6 +451,8 @@ type
 
          function GetElevMetersFromSecondDEM(IdenticalGrids : boolean; Dem2,Col,Row : integer; var z  : float32) : boolean;
          function GetElevMetersFromThisAndSecondDEM(Dem2,Col,Row : integer; var z1,z2  : float32) : boolean;
+         function GetElevMetersFromSecondDEMLatLong(Dem2,Col,Row : integer; var z2  : float32) : boolean;
+
          function GetSlopeAspectFromSecondDEM(Dem2 : integer; Col,Row : int32; var SlopeAspectRec : tSlopeAspectRec) : boolean;
 
          function GetElevSquareMeters(XGrid,YGrid : float64; var Elev : tElevFloatArray) : boolean; inline;
@@ -776,8 +778,7 @@ procedure GetSampleBoxSize(WhichDEM : integer; var BoxSize : integer);
 
 function RectSpacingFactor(DataSpacing : tSpacingUnit) : float64;
 
-procedure ClipTheDEMtoFullDEMIXTiles(DEM : integer; NewName : PathStr = '');
-
+function ClipTheDEMtoFullDEMIXTiles(DEM : integer; NewName : PathStr = '') : boolean;
 
 {$IfDef NoMapOptions}
 {$Else}
@@ -1222,47 +1223,59 @@ begin
 end;
 
 
+
 procedure MaskStripFromSecondGrid(FirstGrid,SecondGrid : integer;  HowMask : tMaskGrid);
 var
-   Col,Row: integer;
+   Col,Row,xoffset,yoffset,Unchanged,AlreadyMiss : integer;
    z1,z2 : float32;
-   SameGrid : boolean;
+   SameGrid,Found : boolean;
 begin
-   SameGrid := DEMGlb[FirstGrid].SecondGridIdentical(SecondGrid);
+   {$IfDef RecordMaskFromSecondGrid}  WriteLineToDebugFile('Masking ' + DEMGlb[FirstGrid].AreaName + ' with ' +  DEMGlb[SecondGrid].AreaName); {$EndIf}
+   SameGrid := DEMGlb[FirstGrid].SecondGridJustOffset(SecondGrid,xoffset,yoffset);
+   Unchanged := 0;
+   AlreadyMiss := 0;
    for Row := 0 to pred(DEMGlb[FirstGrid].DEMHeader.NumRow) do begin
-      TInterlocked.Increment(ParallelRowsDone);
+      //TInterlocked.Increment(ParallelRowsDone);
       if (ParallelRowsDone Mod 250 = 0) then UpdateProgressBar(ParallelRowsDone / DEMGlb[FirstGrid].DEMheader.NumRow);
       for Col := 0 to pred(DEMGlb[FirstGrid].DEMHeader.NumCol) do begin
-         if (not DEMGlb[FirstGrid].MissingDataInGrid(Col,Row)) then begin
-            if DEMGlb[FirstGrid].GetElevMetersFromSecondDEM(SameGrid,SecondGrid,Col,Row,z2) then begin
+         if DEMGlb[FirstGrid].GetElevMetersOnGrid(Col,Row,z1) then begin
+            if SameGrid then Found := DEMGlb[SecondGrid].GetElevMetersOnGrid(Col+Xoffset,Row+YOffset,z2)
+            else begin
+               Found := DEMGlb[FirstGrid].GetElevMetersFromSecondDEMLatLong(SecondGrid,Col,Row,z2);
+            end;
+            if Found then begin
                if (HowMask = msSecondValid) then begin
                   DEMGlb[FirstGrid].SetGridMissing(Col,Row);
-                  TInterlocked.Increment(EditsDone);
+                  //TInterlocked.Increment(EditsDone);
+                  inc(EditsDone);
                end
                else if (HowMask = msSeaLevel) then begin
                   if abs(z2) < 0.001 then begin
                      DEMGlb[FirstGrid].SetGridMissing(Col,Row);
-                     TInterlocked.Increment(EditsDone);
+                     //TInterlocked.Increment(EditsDone);
+                     inc(EditsDone);
                   end;
                end
-               else begin
-                  if DEMGlb[FirstGrid].GetElevMetersOnGrid(Col,Row,z1) then begin
-                     if ((HowMask = msAboveSecond) and (z1 > z2)) or ((HowMask = msBelowSecond) and (z1 < z2)) then begin
-                        DEMGlb[FirstGrid].SetGridMissing(Col,Row);
-                        TInterlocked.Increment(EditsDone);
-                     end;
-                  end;
-               end;
+               else if ((HowMask = msAboveSecond) and (z1 > z2)) or ((HowMask = msBelowSecond) and (z1 < z2)) then begin
+                  DEMGlb[FirstGrid].SetGridMissing(Col,Row);
+                  //TInterlocked.Increment(EditsDone);
+                  inc(EditsDone);
+               end
+               else inc(Unchanged);
             end
             else begin
                if (HowMask = msSecondMissing) then begin
                   DEMGlb[FirstGrid].SetGridMissing(Col,Row);
-                  TInterlocked.Increment(EditsDone);
-               end;
+                  //TInterlocked.Increment(EditsDone);
+                  inc(EditsDone);
+               end
+               else inc(Unchanged);
             end;
-         end;
+         end
+         else inc(AlreadyMiss);
       end;
    end;
+   {$IfDef RecordMaskFromSecondGrid}  WriteLineToDebugFile('Mask strip: already missing=' + IntToStr(AlreadyMiss) + ' deleted=' + IntToStr(EditsDone) + ' left=' + IntToStr(Unchanged)) {$EndIf}
 end;
 
 
@@ -1860,6 +1873,20 @@ begin
 end;
 
 
+function tDEMDataSet.GetElevMetersFromSecondDEMLatLong(Dem2,Col,Row : integer; var z2  : float32) : boolean;
+var
+   Lat,Long : float64;
+begin
+   DEMGridToLatLongDegree(Col,Row,Lat,Long);
+   Result := DEMGlb[DEM2].GetElevFromLatLongDegree(Lat,Long, z2);
+      {$IfDef RecordZ2ndDEM} //repeat for debugging
+         if not Result then begin
+            Result := DEMGlb[DEM2].GetElevFromLatLongDegree(Lat,Long, z);
+         end;
+      {$EndIf}
+end;
+
+
 function tDEMDataSet.GetElevMetersFromThisAndSecondDEM(Dem2,Col,Row : integer; var z1,z2  : float32) : boolean;
 //added 30 Oct 22 when GetElevMetersFromSecondDEM ran much too slowly for one DEM in a series
 var
@@ -1867,8 +1894,9 @@ var
 begin
    Result := GetElevMeters(Col,Row,z1);
    if Result then begin
-      DEMGridToLatLongDegree(Col,Row,Lat,Long);
-      Result := DEMGlb[DEM2].GetElevFromLatLongDegree(Lat,Long, z2);
+      Result := GetElevMetersFromSecondDEMLatLong(Dem2,Col,Row,z2);
+      //DEMGridToLatLongDegree(Col,Row,Lat,Long);
+      //Result := DEMGlb[DEM2].GetElevFromLatLongDegree(Lat,Long, z2);
    end;
 end;
 
@@ -1879,13 +1907,9 @@ var
 begin
    if IdenticalGrids then Result := DEMGlb[DEM2].GetElevMeters(Col,Row,z)
    else begin
-      DEMGridToLatLongDegree(Col,Row,Lat,Long);
-      Result := DEMGlb[DEM2].GetElevFromLatLongDegree(Lat,Long, z);
-      {$IfDef RecordZ2ndDEM}
-         if not Result then begin
-            Result := DEMGlb[DEM2].GetElevFromLatLongDegree(Lat,Long, z);
-         end;
-      {$EndIf}
+      Result := GetElevMetersFromSecondDEMLatLong(Dem2,Col,Row,z);
+      //DEMGridToLatLongDegree(Col,Row,Lat,Long);
+      //Result := DEMGlb[DEM2].GetElevFromLatLongDegree(Lat,Long, z);
    end;
 end;
 
@@ -2033,7 +2057,7 @@ var
 begin
    Result := LatLongDegreeToDEMGrid(Lat,Long,xg,yg);
    if Result then Result := GetElevMeters(xg,yg,z)
-   else z := 0;
+   else z := ThisDEMMissingValue;
 end;
 
 function tDEMDataSet.GetElevFromUTM(x,y : float64; var z : float32) : boolean;

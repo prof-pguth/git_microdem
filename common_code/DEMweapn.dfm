@@ -21,8 +21,6 @@ object PickWeapon: TPickWeapon
     Height = 74
     Align = alBottom
     TabOrder = 0
-    ExplicitTop = 348
-    ExplicitWidth = 386
     object Label11: TLabel
       Left = 16
       Top = 8
@@ -61,8 +59,6 @@ object PickWeapon: TPickWeapon
     Height = 41
     Align = alBottom
     TabOrder = 1
-    ExplicitTop = 422
-    ExplicitWidth = 386
     object CancelBtn: TBitBtn
       Left = 144
       Top = 6

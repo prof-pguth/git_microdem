@@ -361,7 +361,7 @@ uses
    {$Else}
       MD_Use_tools,
    {$EndIf}
-
+   DEMIX_definitions,
    PETMath,
    PetImage,
    PetDBUtils,
@@ -842,6 +842,7 @@ end;
 
 
 {$IfDef VCL}
+
 procedure EndBatchFile(fName : PathStr; var BatchFile : tStringList; Wait : boolean = true; Log : boolean = true);
 begin
    BatchFile.SaveToFile(fName);
@@ -2474,10 +2475,13 @@ var
          AParameter('DEMIX','SSIM_LS',SSIM_LS,true);
          AParameter('DEMIX','SSIM_flow',SSIM_Flow,true);
          AParameter('DEMIX','SSIM_wet',SSIM_wet,true);
+         AParameter('DEMIX','SSIM_HAND',SSIM_HAND,true);
 
          AParameter('DEMIX','DoSSIM',DoSSIM,true);
-         AParameter('DEMIX','DoR2',DoR2,true);
+         AParameter('DEMIX','DoFUV',DoFUV,true);
          AParameter('DEMIX','DEMIX_overwrite_enabled',DEMIX_overwrite_enabled,true);
+         AParameter('DEMIX','DEMIX_Base_DB_Path',DEMIX_Base_DB_Path,'');
+
 
       end;
    end;

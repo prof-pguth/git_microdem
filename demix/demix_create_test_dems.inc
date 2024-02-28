@@ -38,6 +38,7 @@ begin
                if LoadMapLibraryBox(NewDEM,WantImage,true,DEMGlb[RefDEM].DEMBoundBoxGeo,'DILUV',false) and ValidDEM(NewDEM) then begin
                   DEMGlb[NewDEM].DEMHeader.VerticalCSTypeGeoKey := VertCSEGM2008;
                   {$If Defined(RecordDiluviumFull)} WriteLineToDebugFile('Loaded: ' + DEMGlb[NewDEM].KeyDEMParams(true)); {$EndIf}
+                  EditsDone := 0;
                   MaskStripFromSecondGrid(NewDEM,RefDEM,msSecondMissing);
                   MarkWaterMissingInThisDEM(NewDEM);
                   {$If Defined(RecordDiluvium)} WriteLineToDebugFile('Water mask: ' + DEMGlb[NewDEM].KeyDEMParams(true)); {$EndIf}
@@ -172,6 +173,7 @@ begin {CreateDEMIXTestDEMsForArea}
                   MoveFromEGM96toEGM2008(TestDEMs[Ser]);
                end;
                {$IfDef RecordDEMIXLoad} if (TestSeries[Ser] = 'ASTER') then writeLineToDebugFile('EGM2003:  ' + SaveName + ' ' + DEMGlb[TestDEMs[Ser]].PixelIsString); {$EndIf}
+               EditsDone := 0;
                MaskStripFromSecondGrid(TestDEMs[Ser],aRefDEM, msSecondMissing);
                DEMGlb[TestDEMs[Ser]].SavePartOfDEMWithDataGeotiff(SaveName);
                Result := true;

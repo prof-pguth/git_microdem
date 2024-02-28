@@ -4,7 +4,7 @@
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -12,8 +12,8 @@
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
-      {$Define RecordMakeGrid}
-      {$Define RecordMakeBaseMap}
+      //{$Define RecordMakeGrid}
+      //{$Define RecordMakeBaseMap}
       //{$Define TrackPointCloud}
       //{$Define RecordExtractPoints}
       //{$Define Slicer}
@@ -25,11 +25,11 @@
       //{$Define TimePointCloud}
       //{$Define RecordGridFileNames}
       //{$Define OGLexport}
-      {$Define PointCloudMap}
-      {$Define PointCloudOutlines}
+      //{$Define PointCloudMap}
+      //{$Define PointCloudOutlines}
       //{$Define RecordPointCloudViewing}
       //{$Define RecordLASfilesRedraw}
-      {$Define RecordLASOpen}
+      //{$Define RecordLASOpen}
       //{$Define RecordPointCloudOptionsForm}
       //{$Define RecordPointCloudViewing}
       //{$Define RecordNewGrids}

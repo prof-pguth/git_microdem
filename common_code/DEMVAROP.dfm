@@ -4,6 +4,7 @@ inherited VariogramOptions: TVariogramOptions
   Caption = 'Variogram options'
   ClientHeight = 198
   ClientWidth = 464
+  StyleElements = [seFont, seClient, seBorder]
   OnCreate = FormCreate
   ExplicitWidth = 480
   ExplicitHeight = 237
@@ -83,28 +84,28 @@ inherited VariogramOptions: TVariogramOptions
     Left = 272
     Top = 85
     Width = 57
-    Height = 28
+    Height = 23
     TabOrder = 5
   end
   object Edit2: TEdit
     Left = 272
     Top = 109
     Width = 57
-    Height = 28
+    Height = 23
     TabOrder = 6
   end
   object Edit3: TEdit
     Left = 272
     Top = 133
     Width = 57
-    Height = 28
+    Height = 23
     TabOrder = 7
   end
   object Edit4: TEdit
     Left = 272
     Top = 157
     Width = 57
-    Height = 28
+    Height = 23
     TabOrder = 8
   end
   object CheckBox3: TCheckBox

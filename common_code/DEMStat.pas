@@ -208,7 +208,8 @@ type
    procedure ChannelNetworkMapComparison(AreaName,TestDEMName : shortstring);
    procedure MultistepChannelNetworks(Overwrite : boolean);
 
-
+const
+   SSIM_fudge : float64 = 1.0;
 
 var
    IPColor : array[1..16] of Graphics.tColor;

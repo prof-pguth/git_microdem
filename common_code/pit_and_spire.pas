@@ -4,7 +4,7 @@ unit pit_and_spire;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 //PLG note, 2/25/2023: other than pit and spire, the other routines have not been recently tested and may not work well.  Use at your own risk

@@ -8,7 +8,7 @@
 {____________________________________}
 
 
-procedure MergeSSIMandR2DB;
+procedure MergeSSIMandFUVDB;
 var
    db1,db2 : integer;
 begin
@@ -88,7 +88,7 @@ end;
 
 
 
- procedure DEMIX_SSIM_R2_transpose_kmeans_new_db(DBonTable : integer);
+ procedure DEMIX_SSIM_FUV_transpose_kmeans_new_db(DBonTable : integer);
 //transpose the DB so it has one TILE/DEM pair on each line, the Criteria as columns
 var
    values : array[1..9,1..NCrits] of float32;
@@ -98,7 +98,7 @@ var
    theTiles,sl : tStringList;
    fName,OutPath : PathStr;
 begin
-   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_SSIM_R2_transpose_kmeans_new_db in'); {$EndIf}
+   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_SSIM_FUV_transpose_kmeans_new_db in'); {$EndIf}
    try
       GetDEMIXpaths;
       GISdb[DBonTable].EmpSource.Enabled := false;
@@ -139,14 +139,14 @@ begin
          end;
       end;
 
-      fName := NextFileNumber(MDTempDir,MDTempDir + 'ssim_r2_clustering_','.dbf');
-      {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_SSIM_R2_transpose_kmeans_new_db creating ' + fName); {$EndIf}
+      fName := NextFileNumber(MDTempDir,MDTempDir + 'ssim_FUV_clustering_','.dbf');
+      {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_SSIM_FUV_transpose_kmeans_new_db creating ' + fName); {$EndIf}
 
       StringList2CSVtoDB(sl,fName);
    finally
       EndDEMIXProcessing;
    end;
-   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_SSIM_R2_transpose_kmeans_new_db out'); {$EndIf}
+   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_SSIM_FUV_transpose_kmeans_new_db out'); {$EndIf}
 end;
 
 
@@ -154,7 +154,7 @@ end;
 procedure ComputeDEMIX_tile_stats(AreaName : shortstring = '');
 //a number of experimental options for criteria are disabled, and would require changes to the code to get working again
 //this has one DEM per record, with all the criteria
-//in hindsight, it might have been better to create this is the desired final format, as is done for the SSIM and R2 criteria;
+//in hindsight, it might have been better to create this is the desired final format, as is done for the SSIM and FUV criteria;
 //but this works, so why change it?
 //also, if we want to try clustering the tiles, we need it this way
 const
@@ -257,7 +257,6 @@ var
             ProcessStringList('_elev_diff_stats',ElevDiffStats,true);
             ProcessStringList('_ruff_diff_stats',RufDiffStats,true);
             ProcessStringList('_slope_diff_stats',SlopeDiffStats,true);
-
             {$IfDef ExperimentalCriteria} ProcessExperimentalStringLists; {$EndIf}
          end;
 
@@ -684,7 +683,7 @@ var
 
       if LoadDEMIXReferenceDEMs(AreaName,DEMIXRefDEM,DEMIXOpenMap) then begin
          if LoadDEMIXCandidateDEMs(AreaName,DEMIXOpenMap) then begin
-            if MaskForDiluvium then MaskAllDEMsToDiluvium;
+            //if MaskForDiluvium then MaskAllDEMsToDiluvium;
             DEMIXtileDB := DEMIXtileFill(DEMIXRefDEM,DEMGlb[DEMIXRefDEM].DEMBoundBoxGeo,false);
             GISdb[DEMIXtileDB].ApplyGISFilter('GRID_FULL<' + IntToStr(MDDef.DEMIX_Full));
             {$IfDef RecordDEMIX} WriteLineToDebugFile('DTM tiles=' + IntToStr(GISdb[DEMIXtileDB].MyData.FiltRecsInDB)); {$EndIf}
@@ -1547,11 +1546,10 @@ var
       AreaBarrenPC := 0;
       AreaWaterPC := 0;
 
-
       wmdem.SetPanelText(3,'Load reference DEM');
       DEMIXRefDEM := OpenNewDEM(RefDTMpointFName,false);
       if ValidDEM(DEMIXRefDEM) then begin
-         if MaskForDiluvium then MaskAllDEMsToDiluvium;
+         //if MaskForDiluvium then MaskAllDEMsToDiluvium;
          DEMIXtileDB := DEMIXtileFill(DEMIXRefDEM,DEMGlb[DEMIXRefDEM].DEMBoundBoxGeo,false);
          GISdb[DEMIXtileDB].ApplyGISFilter('GRID_FULL>' + IntToStr(MDDef.DEMIX_Full));
          {$IfDef RecordDEMIX} WriteLineToDebugFile('DTM tiles=' + IntToStr(GISdb[DEMIXtileDB].MyData.FiltRecsInDB)); {$EndIf}
@@ -1678,7 +1676,7 @@ begin
 end;
 
 
-procedure SwitchSSIMorR2Scoring(DBonTable : integer);
+procedure SwitchSSIMorFUVScoring(DBonTable : integer);
 //for 0-1 values with high score wins, reverses so low score wins
 var
    i,j : integer;

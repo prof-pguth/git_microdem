@@ -174,8 +174,6 @@ end {BestDEMSbyCategory};
 
 
 
-
-
 procedure DEMIXMeanMedianHistograms(db : integer);
 var
    Min,Max,BinSize : float32;
@@ -1134,7 +1132,7 @@ end {procedure MultipleBestByParametersSortByValue};
 
 
 
-function DEMIX_SSIM_R2_single_tile_graph(DBonTable : integer; tile : shortstring) :tThisBaseGraph;
+function DEMIX_SSIM_FUV_single_tile_graph(DBonTable : integer; tile : shortstring) :tThisBaseGraph;
 var
    DEM : shortstring;
    i,j,k,NCrit,NDEM : integer;
@@ -1161,7 +1159,7 @@ begin
          GISdb[DBonTable].MyData.Next;
       end;
 
-      DEMIX_SSIM_R2_GraphSettings(Result,Tile,NCrits);
+      DEMIX_SSIM_FUV_GraphSettings(Result,Tile,NCrits);
       Result.RedrawDiagram11Click(Nil);
    end;
 end;
@@ -1283,9 +1281,7 @@ begin
 
    Result.GraphDraw.VertLabel := '';
    Result.GraphDraw.GraphLeftLabels := tStringList.Create;
-
    Result.GraphDraw.GraphAxes := XPartGridOnly;
-   Result.GraphDraw.LeftMargin := 150;
 
    {$If Defined(RecordDEMIX_evaluations_graph)} WriteLineToDebugFile('GraphAverageScoresByTile graph set up'); {$EndIf}
    for Tile := 0 to pred(TileList.Count) do begin
@@ -1402,7 +1398,8 @@ begin {DEMIX_evaluations_graph}
    finally
       GISDB[DBonTable].ApplyGISFilter(SaveFilter);
       //GISdb[DBonTable].ClearGISFilter;
-      HeavyDutyProcessing := false;
+      //HeavyDutyProcessing := false;
+      EndDEMIXProcessing;
    end;
 end {DEMIX_evaluations_graph};
 

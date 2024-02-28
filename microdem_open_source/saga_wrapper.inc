@@ -67,7 +67,6 @@ ta_channels "Channel Network" -ELEVATION "C:/Users/pguth/AppData/Local/Temp/proc
 function SAGA_LSFactor(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
 //  https://saga-gis.sourceforge.io/saga_tool_doc/8.2.1/ta_hydrology_22.html
 //  area from wetness index, https://saga-gis.sourceforge.io/saga_tool_doc/8.2.1/ta_hydrology_15.html
-
 //  slope in radians,  https://gis.stackexchange.com/questions/313659/ls-factor-in-saga-slope-units
 var
     cmd : shortstring;
@@ -101,7 +100,7 @@ end;
 function SAGA_FlowAccumulationParallizeable(InName : PathStr; OutName : PathStr = '') : integer;
 //https://saga-gis.sourceforge.io/saga_tool_doc/9.3.1/ta_hydrology_29.html
 var
-    cmd : shortstring;
+   cmd : shortstring;
 begin
    if (OutName = '') then OutName := MDTempDir + 'saga_flow_accumulation_' + ExtractFileNameNoExt(InName) + '.tif';
    CMD := MDDef.SagaCMD + ' ta_hydrology 29' +
@@ -110,30 +109,8 @@ begin
    Result := SAGAMap(cmd,OutName,Undefined,true);
 end;
 
-(*
-Usage: saga_cmd ta_hydrology 29 [-DEM ] [-FLOW ] [-UPDATE ] [-METHOD ] [-CONVERGENCE ]
-  -DEM:           	Elevation
-	grid, input
-  -FLOW:          	Flow Accumulation
-	grid, output
-  -UPDATE:        	Update Frequency
-	integer number
-	Minimum: 0
-	Default: 0
-  -METHOD:        	Method
-	choice
-	Available Choices:
-	[0] D8
-	[1] Dinfinity
-	[2] MFD
-	Default: 2
-  -CONVERGENCE:	Convergence
-	floating point number
-	Minimum: 0.000000
-	Default: 1.100000
-*)
 
- function SAGA_WatershedBasinsWangLiu(InName : PathStr) : integer;
+function SAGA_WatershedBasinsWangLiu(InName : PathStr) : integer;
 // https://saga-gis.sourceforge.io/saga_tool_doc/8.3.0/ta_preprocessor_4.html
  var
     cmd : shortstring;
@@ -172,13 +149,6 @@ end;
 
 
 function SAGA_StrahlerOrderGrid(InName : PathStr; OutName : PathStr = '') : integer;
-(*
-saga_cmd ta_channels 6 [-DEM <str>] [-STRAHLER <str>]
-  -DEM:<str>     	Elevation
-	Grid, input
-  -STRAHLER:<str>	Strahler Order
-	Grid, output
-*)
 var
     cmd : shortstring;
 begin
@@ -188,27 +158,29 @@ begin
 end;
 
 
-    function SagaChannelShapefile(InName : PathStr; ChannelName : PathStr = '') : integer;
-    var
-       cmd : shortstring;
-    begin
-       Result := 0;
-       if IsSagaCMDthere and FileExists(InName) then begin
-         {$IfDef RecordSAGAFull} WriteLineToDebugFile('SagaChannelShapefile in, InName= ' + InName); {$EndIf}
-          if (ChannelName = '') then ChannelName := MDTempDir + 'saga_channel_' + ExtractFileNameNoExt(InName) + '.shp';
-          if not FileExists(ChannelName) then begin
-             CMD := MDDef.SagaCMD + ' ta_channels 0' +
-                  ' -ELEVATION ' + inName +
-                  ' -INIT_GRID ' + inName +
-                  ' -CHNLNTWRK ' + MDTempDir + 'saga_channel_network_' + ExtractFileNameNoExt(InName) + '.tif' +
-                  ' -CHNLROUTE ' + MDTempDir + 'saga_channel_route_' + ExtractFileNameNoExt(InName) + '.tif' +
-                  ' -SHAPES ' + ChannelName;
-             WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
-             {$IfDef RecordSAGAFull} WriteLineToDebugFile('SagaChannelShapefile in, ChannelName= ' + ChannelName); {$EndIf}
-          end;
-          //Result := SAGAMap(cmd,InName,'',Undefined,false);
+function SagaChannelShapefile(InName : PathStr; ChannelName : PathStr = '') : integer;
+//https://saga-gis.sourceforge.io/saga_tool_doc/8.2.1/ta_channels_0.html
+//  2/26/24, both grids are empty: CHNLNTWRK and CHNLROUTE, reason we go vector
+var
+   cmd : shortstring;
+begin
+    Result := 0;
+    if IsSagaCMDthere and FileExists(InName) then begin
+      {$IfDef RecordSAGAFull} WriteLineToDebugFile('SagaChannelShapefile in, InName= ' + InName); {$EndIf}
+       if (ChannelName = '') then ChannelName := MDTempDir + 'saga_channel_' + ExtractFileNameNoExt(InName) + '.shp';
+       if not FileExists(ChannelName) then begin
+          CMD := MDDef.SagaCMD + ' ta_channels 0' +
+               ' -ELEVATION ' + inName +
+               ' -INIT_GRID ' + inName +
+               ' -CHNLNTWRK ' + MDTempDir + 'saga_channel_network_' + ExtractFileNameNoExt(InName) + '.tif' +
+               ' -CHNLROUTE ' + MDTempDir + 'saga_channel_route_' + ExtractFileNameNoExt(InName) + '.tif' +
+               ' -SHAPES ' + ChannelName;
+          WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
+          {$IfDef RecordSAGAFull} WriteLineToDebugFile('SagaChannelShapefile in, ChannelName= ' + ChannelName); {$EndIf}
        end;
+       //Result := SAGAMap(cmd,InName,'',Undefined,false);
     end;
+end;
 
 
 function SagaWatershedBasins(InName : PathStr; BasinGrid : PathStr = ''; ChannelNetwork : PathStr = ''; OutName : PathStr = '') : integer;
@@ -295,7 +267,7 @@ function SagaWatershedBasins(InName : PathStr; BasinGrid : PathStr = ''; Channel
     begin
        OutName := MDTempDir + 'saga_tri_' + ExtractFileNameNoExt(InName) + '.tif';
        CMD := MDDef.SagaCMD + ' ta_morphometry 16 -DEM ' + inName + ' -TRI ' + OutName + ' -MODE 0';
-       Result := SAGAMap(cmd,{InName,}outname,euMeters);
+       Result := SAGAMap(cmd,outname,euMeters);
     end;
 
 
@@ -306,7 +278,7 @@ function SagaWatershedBasins(InName : PathStr; BasinGrid : PathStr = ''; Channel
     begin
        OutName := MDTempDir + 'saga_tpi_' + ExtractFileNameNoExt(InName) + '.tif';
        CMD := MDDef.SagaCMD + ' ta_morphometry 18 -DEM ' + inName + ' -TPI ' + OutName;
-       Result := SAGAMap(cmd,{InName,}outname,euMeters);
+       Result := SAGAMap(cmd,outname,euMeters);
     end;
 
 
@@ -317,7 +289,55 @@ function SagaWatershedBasins(InName : PathStr; BasinGrid : PathStr = ''; Channel
     begin
        OutName := MDTempDir + 'saga_vrm_rad_' + FilterSizeStr(Radius) + '_' + ExtractFileNameNoExt(InName) + '.tif';
        CMD := MDDef.SagaCMD + ' ta_morphometry 17 -DEM ' + inName + ' -VRM ' + OutName + ' -RADIUS ' + IntToStr(Radius);
-       Result := SAGAMap(cmd,{InName,}outname,Undefined);
+       Result := SAGAMap(cmd,outname,Undefined);
     end;
 
+(*
+SAGA_valley_depth
+//https://saga-gis.sourceforge.io/saga_tool_doc/8.2.1/ta_channels_7.html
+ Usage: saga_cmd ta_channels 7 [-ELEVATION <str>] [-VALLEY_DEPTH <str>] [-RIDGE_LEVEL <str>] [-THRESHOLD <double>] [-MAXITER <num>] [-NOUNDERGROUND <str>] [-ORDER <num>]
+  -ELEVATION:<str>    	Elevation
+	Grid, input
+  -VALLEY_DEPTH:<str> 	Valley Depth
+	Grid, output
+  -RIDGE_LEVEL:<str>  	Ridge Level
+	Grid, output, optional
+  -THRESHOLD:<double> 	Tension Threshold
+	Floating point
+	Minimum: 0.000000
+	Default: 1.000000
+  -MAXITER:<num>      	Maximum Iterations
+	Integer
+	Minimum: 0
+	Default: 0
+  -NOUNDERGROUND:<str>	Keep Ridge Level above Surface
+	Boolean
+	Default: 1
+  -ORDER:<num>        	Ridge Detection Threshold
+	Integer
+	Minimum: 1
+	Maximum: 7
+	Default: 4
+
+
+SAGA_Convergence Index
+https://saga-gis.sourceforge.io/saga_tool_doc/8.2.1/ta_morphometry_1.html
+Usage: saga_cmd ta_morphometry 1 [-ELEVATION <str>] [-RESULT <str>] [-METHOD <str>] [-NEIGHBOURS <str>]
+  -ELEVATION:<str> 	Elevation
+	Grid, input
+  -RESULT:<str>    	Convergence Index
+	Grid, output
+  -METHOD:<str>    	Method
+	Choice
+	Available Choices:
+	[0] Aspect
+	[1] Gradient
+	Default: 0
+  -NEIGHBOURS:<str>	Gradient Calculation
+	Choice
+	Available Choices:
+	[0] 2 x 2
+	[1] 3 x 3
+	Default: 0
+*)
 

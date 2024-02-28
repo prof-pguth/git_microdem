@@ -326,7 +326,8 @@ uses
   DEM_NLCD in '..\common_code\DEM_NLCD.pas',
   demix_definitions in '..\demix\demix_definitions.pas',
   demix_control in '..\demix\demix_control.pas',
-  demix_graphs in '..\demix\demix_graphs.pas';
+  demix_graphs in '..\demix\demix_graphs.pas',
+  demix_evals_scores_graphs in '..\demix\demix_evals_scores_graphs.pas' {eval_scores_graph_form};
 
 //MethodCallBack in '..\python4delphi\Source\MethodCallBack.pas',
   //VarPyth in '..\python4delphi\Source\VarPyth.pas',

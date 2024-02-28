@@ -1,6 +1,5 @@
 ﻿unit demdbtable;
 
-
 {^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
@@ -985,10 +984,7 @@ type
     CreateDBwithparametersbyDEM1: TMenuItem;
     DEMIX2: TMenuItem;
     LoadtestandreferenceDEMs1: TMenuItem;
-    GraphSSIMR2bycluster1: TMenuItem;
-    GraphSSIMR2byDEM1: TMenuItem;
     BitBtn13: TBitBtn;
-    SSIMR2graphforthistile1: TMenuItem;
     N51: TMenuItem;
     N52: TMenuItem;
     Createnewtables1: TMenuItem;
@@ -1007,6 +1003,9 @@ type
     Addconstanttofield3: TMenuItem;
     Dividefieldbyconstant2: TMenuItem;
     Singlefieldarithmetic1: TMenuItem;
+    GraphSSIMFUVbyclustermeans1: TMenuItem;
+    GraphSSIMFUVbyDEMmeans1: TMenuItem;
+    AddsloperoughnessrelieftoDB1: TMenuItem;
     //Pointfilter1: TMenuItem;
     //Pointfilter2: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
@@ -1754,7 +1753,7 @@ type
     procedure Loadtile1Click(Sender: TObject);
     //procedure GraphSSIMR2foratile1Click(Sender: TObject);
     procedure Clustercomposition1Click(Sender: TObject);
-    procedure TransposeSSIMR2forclusters1Click(Sender: TObject);
+    procedure TransposeSSIMFUVforclusters1Click(Sender: TObject);
     procedure ilecharacteristicsbytileforCopDEM1Click(Sender: TObject);
     procedure ClustersperDEMIXtile1Click(Sender: TObject);
     procedure Clusterdiversity1Click(Sender: TObject);
@@ -1763,23 +1762,22 @@ type
     procedure Clusterwhiskerplotsforslopeandroughness1Click(Sender: TObject);
     procedure CreateDBwithparametersbyDEM1Click(Sender: TObject);
     procedure LoadtestandreferenceDEMs1Click(Sender: TObject);
-    procedure GraphSSIMR2bycluster1Click(Sender: TObject);
-    procedure GraphSSIMR2byDEM1Click(Sender: TObject);
+    procedure GraphSSIMFUVbycluster1Click(Sender: TObject);
     procedure BitBtn13Click(Sender: TObject);
-    procedure SSIMR2graphforthistile1Click(Sender: TObject);
+    procedure SSIMFUVgraphforthistile1Click(Sender: TObject);
     procedure Comparerankingswithdifferentcriteria1Click(Sender: TObject);
     procedure DifferentrankingsbyCriteria1Click(Sender: TObject);
     procedure AssignDEMIXDEMcolors1Click(Sender: TObject);
     procedure estDEMlegend1Click(Sender: TObject);
     procedure Vertical1Click(Sender: TObject);
-    procedure Graphbyareawithaveragescoreforselectedcriteria1Click(
-      Sender: TObject);
-    procedure Graphbytilewithaveragescoreforselectedcriteria1Click(
-      Sender: TObject);
+    procedure Graphbyareawithaveragescoreforselectedcriteria1Click(Sender: TObject);
+    procedure Graphbytilewithaveragescoreforselectedcriteria1Click(Sender: TObject);
     procedure Addconstanttofield2Click(Sender: TObject);
     procedure Addconstanttofield3Click(Sender: TObject);
     procedure Dividefieldbyconstant2Click(Sender: TObject);
     procedure Singlefieldarithmetic1Click(Sender: TObject);
+    procedure GraphSSIMFUVbyclustermeans1Click(Sender: TObject);
+    procedure AddsloperoughnessrelieftoDB1Click(Sender: TObject);
     //procedure Pointfilter2Click(Sender: TObject);
     //procedure Pointfilter1Click(Sender: TObject);
   private
@@ -3858,8 +3856,8 @@ begin
         ClusterFrequency1.Enabled := GISdb[DBonTable].MyData.FieldExists('CLUSTER');
         ClusterMapLocations1.Enabled := GISdb[DBonTable].MyData.FieldExists('CLUSTER') and (GISdb[DBonTable].theMapOwner <> nil);
         ilecharacteristicsbytileforCopDEM1.Enabled := GISdb[DBonTable].MyData.FieldExists('CLUSTER') and GISdb[DBonTable].MyData.FieldExists('DEM') ;
-        GraphSSIMR2bycluster1.Enabled := GISdb[DBonTable].MyData.FieldExists('CLUSTER') and GISdb[DBonTable].MyData.FieldExists('METRIC');
-        GraphSSIMR2byDEM1.Enabled := GISdb[DBonTable].MyData.FieldExists('DEM') and GISdb[DBonTable].MyData.FieldExists('METRIC');
+        //GraphSSIMR2bycluster1.Enabled := GISdb[DBonTable].MyData.FieldExists('CLUSTER') and GISdb[DBonTable].MyData.FieldExists('METRIC');
+        //GraphSSIMR2byDEM1.Enabled := GISdb[DBonTable].MyData.FieldExists('DEM') and GISdb[DBonTable].MyData.FieldExists('METRIC');
 
         TransposeSSIMR2forclusters1.Enabled := true;  //{GISdb[DBonTable].MyData.FieldExists('CLUSTER') and} GISdb[DBonTable].MyData.FieldExists('METRIC');
    
@@ -5561,6 +5559,11 @@ begin
 end;
 
 
+procedure Tdbtablef.AddsloperoughnessrelieftoDB1Click(Sender: TObject);
+begin
+   AddStatisticsToDEMIXdb(dbOnTable);
+end;
+
 procedure Tdbtablef.Addspeedfromxyoruvcomponents1Click(Sender: TObject);
 var
    x,y : float64;
@@ -6369,17 +6372,17 @@ begin
 end;
 
 
-procedure Tdbtablef.SSIMR2graphforthistile1Click(Sender: TObject);
+procedure Tdbtablef.SSIMFUVgraphforthistile1Click(Sender: TObject);
 begin
-{$IfDef ExDEMIXexperimentalOptions}
-{$Else}
-   DEMIX_SSIM_R2_single_tile_graph(DBonTable,GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'));
-{$EndIf}
+   {$IfDef ExDEMIXexperimentalOptions}
+   {$Else}
+      DEMIX_SSIM_FUV_single_tile_graph(DBonTable,GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'));
+   {$EndIf}
 end;
 
 procedure Tdbtablef.SSIMtodissimilarity1Click(Sender: TObject);
 begin
-   SwitchSSIMorR2Scoring(DBonTable);
+   SwitchSSIMorFUVScoring(DBonTable);
 end;
 
 procedure Tdbtablef.Statisticsgroupedbyonefield1Click(Sender: TObject);
@@ -10182,33 +10185,33 @@ end;
 
 procedure Tdbtablef.GraphsbestDEMpertilebycriteriasortbytilecharacteristics1Click(Sender: TObject);
 begin
-{$IfDef ExDEMIXexperimentalOptions}
-{$Else}
-   DEMIX_graph_best_in_Tile(DBonTable,false);
-{$EndIf}
+   {$IfDef ExDEMIXexperimentalOptions}
+   {$Else}
+      DEMIX_graph_best_in_Tile(DBonTable,false);
+   {$EndIf}
 end;
 
-procedure Tdbtablef.GraphSSIMR2bycluster1Click(Sender: TObject);
+procedure Tdbtablef.GraphSSIMFUVbycluster1Click(Sender: TObject);
 begin
-{$IfDef ExDEMIXexperimentalOptions}
-{$Else}
-   DEMIX_SSIM_R2_clusters_graph(DBonTable);
-{$EndIf}
+   {$IfDef ExDEMIXexperimentalOptions}
+   {$Else}
+      DEMIX_SSIM_FUV_clusters_graph(DBonTable);
+   {$EndIf}
 end;
 
 
-procedure Tdbtablef.GraphSSIMR2byDEM1Click(Sender: TObject);
+procedure Tdbtablef.GraphSSIMFUVbyclustermeans1Click(Sender: TObject);
 begin
-{$IfDef ExDEMIXexperimentalOptions}
-{$Else}
-   DEMIX_SSIM_R2_clusters_graph(DBonTable);
-{$EndIf}
+   {$IfDef ExDEMIXexperimentalOptions}
+   {$Else}
+      DEMIX_SSIM_FUV_clusters_graph(DBonTable);
+   {$EndIf}
 end;
 
-procedure Tdbtablef.TransposeSSIMR2forclusters1Click(Sender: TObject);
+procedure Tdbtablef.TransposeSSIMFUVforclusters1Click(Sender: TObject);
 begin
-    //DEMIX_SSIM_R2_clusters_graph(DBonTable);
-    DEMIX_SSIM_R2_transpose_kmeans_new_db(DBonTable);
+    //DEMIX_SSIM_FUV_clusters_graph(DBonTable);
+    DEMIX_SSIM_FUV_transpose_kmeans_new_db(DBonTable);
 end;
 
 procedure Tdbtablef.Graphwithranges1Click(Sender: TObject);
@@ -12185,7 +12188,7 @@ end;
 
 procedure Tdbtablef.Clusterdiversity1Click(Sender: TObject);
 begin
-    DEMIX_SSIM_R2_clusters_diversity_graphs(DBonTable);
+    DEMIX_SSIM_FUV_clusters_diversity_graphs(DBonTable);
 end;
 
 procedure Tdbtablef.Clusterfrequency1Click(Sender: TObject);
@@ -12310,7 +12313,7 @@ end;
 
 procedure Tdbtablef.Clustersensitivity1Click(Sender: TObject);
 begin
-   DEMIX_SSIM_R2_cluster_sensitivity_graph(DBonTable);
+   DEMIX_SSIM_FUV_cluster_sensitivity_graph(DBonTable);
 end;
 
 procedure Tdbtablef.ClustersperDEMIXtile1Click(Sender: TObject);
@@ -13547,16 +13550,14 @@ var
    WantedFieldName : string10;
    WantedValue : shortString;
 begin
-  // with GISdb[DBonTable] do begin
-      if (Sender = FillField1) and (SelectedColumn <> '') then WantedFieldName := SelectedColumn
-      else WantedFieldName := GISDB[DBonTable].PickField('field to fill',[ftString,ftSmallInt,ftFloat,ftInteger]);
-      if (WantedFieldName <> '') then begin
-         WantedValue := '';
-         if (Sender <> Clearfield1) then GetString('value for field ' + WantedFieldName,WantedValue,false,ReasonableTextChars);
-         GISdb[DBonTable].EmpSource.Enabled := false;
-         GISdb[DBonTable].FillFieldWithValue(WantedFieldName,WantedValue);
-      end;
-  // end;
+   if (Sender = FillField1) and (SelectedColumn <> '') then WantedFieldName := SelectedColumn
+   else WantedFieldName := GISDB[DBonTable].PickField('field to fill',[ftString,ftSmallInt,ftFloat,ftInteger]);
+   if (WantedFieldName <> '') then begin
+      WantedValue := '';
+      if (Sender <> Clearfield1) then GetString('value for field ' + WantedFieldName,WantedValue,false,ReasonableTextChars);
+      GISdb[DBonTable].EmpSource.Enabled := false;
+      GISdb[DBonTable].FillFieldWithValue(WantedFieldName,WantedValue);
+   end;
    ShowStatus;
 end;
 

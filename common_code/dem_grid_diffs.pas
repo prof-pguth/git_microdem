@@ -60,7 +60,6 @@ begin
    GridDiffForm.CheckBox3.Checked := MDDef.ShowScatterplot;
    GridDiffForm.CheckBox2.Checked := MDDef.ShowGridDiffMap;
    GridDiffForm.CheckBox1.Checked := MDDef.ShowGridDiffHistogram;
-   //GridDiffForm.CheckBox4.Checked := MDDef.HighlightDiffMap;
    GridDiffForm.CheckBox5.Checked := MDDef.AutoMergeStartDEM;
    GridDiffForm.Edit1.Text := RealToString(abs(MDDef.TopCutLevel),-8,-2);
    GridDiffForm.Caption := 'Difference ' + DEMGlb[DEM1].AreaName + ' minus ' + DEMGlb[DEM2].AreaName;
@@ -90,8 +89,6 @@ end;
 procedure TGridDiffForm.RadioGroup2Click(Sender: TObject);
 begin
    MDDef.HighlightDiffMap := RadioGroup2.ItemIndex;
-   //Label1.Enabled := MDDef.HighlightDiffMap;
-   //Edit1.Enabled := MDDef.HighlightDiffMap;
 end;
 
 procedure TGridDiffForm.FormClose(Sender: TObject;  var Action: TCloseAction);

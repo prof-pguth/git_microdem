@@ -23,8 +23,6 @@ object RGB_form: TRGB_form
     Height = 130
     Align = alBottom
     TabOrder = 0
-    ExplicitTop = 127
-    ExplicitWidth = 580
     object Label11: TLabel
       Left = 277
       Top = 69

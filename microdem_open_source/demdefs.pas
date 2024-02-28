@@ -29,31 +29,21 @@ uses
    Petmar_types,petmar,PetMar_db,Petmath;
 
 const
-   //WebProgramDownLoadDir = 'https://www.usna.edu/Users/oceano/pguth/microdem/win32/';
-   //WebDataDownLoadDir = 'https://www.usna.edu/Users/oceano/pguth/downloads/';
    GoogleAPIsURL = 'https://maps.googleapis.com/maps/api/geocode/xml?';   //need for geocoding
    PythonEXEname = 'C:\OSGeo4W\apps\Python39\python.exe';
    PythonScriptDir = 'C:\OSGeo4W\apps\Python39\Scripts\';
 
    {$IfDef VCL}
-      {$IfDef Win64}
-         {$IfDef MonsterGrids}
-            MaxElevArraySize = 500000;
-            MaxColsInRAM = 500000;
-         {$Else}
-            MaxElevArraySize = 124000;
-            MaxColsInRAM = 250000;
-         {$EndIf}
-         TheMaxPointsMemPtCloud = 96000000; //64,000,000
-         MaxDEMDataSets = 2500;
-         MaxDEMsToMerge = 2500;
+      {$IfDef MonsterGrids}
+         MaxElevArraySize = 500000;
+         MaxColsInRAM = 500000;
       {$Else}
-         MaxColsInRAM = 92000;
-         MaxElevArraySize = 30000;
-         TheMaxPointsMemPtCloud = 16000000; //16,000,000
-         MaxDEMDataSets = 400;
-         MaxDEMsToMerge = 500;
+         MaxElevArraySize = 124000;
+         MaxColsInRAM = 250000;
       {$EndIf}
+      TheMaxPointsMemPtCloud = 96000000; //64,000,000
+      MaxDEMDataSets = 2500;
+      MaxDEMsToMerge = 6000;
       OverlayFExt = '.bmp';  //much faster than PNG
       MovieFileExt = '.bmp';
       MaxGridsInMG = 242;
@@ -780,7 +770,7 @@ type
    tProjectType = (AlbersEqAreaConicalEllipsoid,Cassini,EquiDistantCylindrical,Gnomonic,HammerProj,LamAzEqArea,Mercator,MercatorEllipsoid,Mollweide,
       OrthoProj,PolarStereographicEllipsoidal,SinusProj,SinusEllipsoidal,OldStereographic,UTMEllipsoidal,VanDerGrinten,MillerCylindrical,
       CylindricalEqualArea,LambertConformalConicEllipse,UK_OS,Finn_GK,GeneralTransverseMercator,PlateCaree,LamAzEqAreaEllipsoidal,SphericalStereographic,
-      WebMercator,IrishGrid,UndefinedProj,EqualEarth,CylindricalEqualAreaEllipsoidal,AzimuthalEquidistantEllipsoidal);
+      WebMercator,IrishGrid,UndefinedProj,EqualEarth,CylindricalEqualAreaEllipsoidal,AzimuthalEquidistantEllipsoidal,ObliqueStereoGraphic);
 
    tDMAMapRawDefinition = packed record
       h_Adat,
@@ -1934,10 +1924,10 @@ type
 
 
       DoSSIM,
-      DoR2,
+      DoFUV,
       LoadRefDEMMaps,LoadTestDEMMaps,
       LoadRefDEMs,LoadTestDEMs,
-      SSIM_elev,SSIM_slope,SSIM_ruff,SSIM_rri,SSIM_hill,SSIM_tpi,SSIM_flow,SSIM_LS,SSIM_Wet,
+      SSIM_elev,SSIM_slope,SSIM_ruff,SSIM_rri,SSIM_hill,SSIM_tpi,SSIM_flow,SSIM_LS,SSIM_Wet,SSIM_HAND,
       DEMIXCompositeImage,
       DEMIX_DoCHM,
       DEMIX_DoAirOrDirt,

@@ -625,7 +625,7 @@ end;
 function tMapProjection.ProcessTiff3075(TiffOffset : int16) : shortString;
 begin
     ProjCoordTransGeoKey := TiffOffset;
-    if TiffOffset in [1,7,8,10,11,12,14,15,17] then begin //(6.3.3.3 codes)
+    if (TiffOffset in [1,7,8,10,11,12,14,15,17]) then begin //(6.3.3.3 codes)
        projUTMZone := 0;
        if (TiffOffset = 1) then PName := GeneralTransverseMercator;
        if (TiffOffset = 7) then PName := MercatorEllipsoid;
@@ -638,6 +638,10 @@ begin
        if (TiffOffset = 17) then PName := EquiDistantCylindrical;     // aka Equirectangular;
        GeoKeys.Code3075 := TiffOffset;
        Result := GetProjectionName;
+    end
+    else if (TiffOffset = 16) then begin
+       PName := ObliqueStereographic;
+       Result := 'Unsupported TIFF 3075 Projection Option, Oblique Stereographic';
     end
     else Result := 'Unsupported TIFF 3075 Projection Option, offset=' + IntToStr(TiffOffset);
     {$If Defined(RecordGeotiffCodes)} WriteLineToDebugFile('tMapProjection.ProcessTiff3075 out, Projection=' + Result); {$EndIf}

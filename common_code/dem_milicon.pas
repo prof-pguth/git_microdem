@@ -350,7 +350,7 @@ begin
    BaseMap := Nil;
 
    ShowAirSymbols1.Checked := MDDef.MilAirIcons;
-   Shownavalsymbols1.Checked := MDDef.MilSeaIcons;
+   ShowNavalsymbols1.Checked := MDDef.MilSeaIcons;
    TabControl1.Tabs.Clear;
    if MDDef.MilLandIcons then begin
       AddTab('MapSym-FR-Land');

@@ -4,7 +4,7 @@ unit dem_tin;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -116,7 +116,7 @@ uses
 {$IfDef ExTINGraph}
 {$Else}
 var
-   PlotForm2 : TThisContourGraph;    //can't go into tTIN due to circular references
+   PlotForm2 : TThisContourGraph; //can't go into tTIN due to circular references
 {$EndIf}
 
 function SmallEnoughTriangle(x1,x2,x3,y1,y2,y3 : float32) : boolean;
@@ -421,9 +421,6 @@ begin
 end;
 
 
-
-
-
 procedure tTIN.ShowTrianglesOnMap;
 var
    x,y,xs1,ys1,xs2,ys2,xs3,ys3 : integer;
@@ -448,7 +445,6 @@ begin
       end;
    end;
 end;
-
 
 
 procedure tTIN.GetRangeInFile(var TheMinLat,TheMinLong,LatRange,LongRange : float64);
@@ -503,19 +499,19 @@ begin
 
    {$IfDef ExTINGraph}
    {$Else}
-         {$IfDef RecordTINProblems} WriteLineToDebugFile('tTIN.create CreateNewGraph(PlotForm2)'); {$EndIf}
-         CreateNewGraph(PlotForm2);
-         PlotForm2.MinZ := ContourData^.zMin;
-         PlotForm2.MaxZ := ContourData^.zMax;
-         PlotForm2.WhatsOnGraph := TriangulationContour;
-         PlotForm2.TinfName:= TriFName;
-         PlotForm2.TIN := self;
-         PlotForm2.Contour;
-         PlotForm2.TINInterpolateButton.Visible := true;
-         PlotForm2.Panel1.Visible := true;
-         PlotForm2.Panel1.Height := 35;
-         PlotForm2 := Nil;
-         TinTable := tMyData.Create(TriFName);
+      {$IfDef RecordTINProblems} WriteLineToDebugFile('tTIN.create CreateNewGraph(PlotForm2)'); {$EndIf}
+      CreateNewGraph(PlotForm2);
+      PlotForm2.MinZ := ContourData^.zMin;
+      PlotForm2.MaxZ := ContourData^.zMax;
+      PlotForm2.WhatsOnGraph := TriangulationContour;
+      PlotForm2.TinfName:= TriFName;
+      PlotForm2.TIN := self;
+      PlotForm2.Contour;
+      PlotForm2.TINInterpolateButton.Visible := true;
+      PlotForm2.Panel1.Visible := true;
+      PlotForm2.Panel1.Height := 35;
+      PlotForm2 := Nil;
+      TinTable := tMyData.Create(TriFName);
    {$EndIf}
 
    UpDateBaseMap;
@@ -732,7 +728,6 @@ begin
       end;
    end;
 end;
-
 
 
 function tTIN.InterpolateZ(x,y : float64) : float64;

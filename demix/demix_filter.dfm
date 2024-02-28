@@ -825,7 +825,7 @@ object DemixFilterForm: TDemixFilterForm
         Left = 312
         Top = 0
         Width = 185
-        Height = 233
+        Height = 257
         Caption = 'SSIM/R2 parameters'
         TabOrder = 7
         object CheckBox12: TCheckBox
@@ -908,6 +908,15 @@ object DemixFilterForm: TDemixFilterForm
           Caption = 'LS factor'
           TabOrder = 8
           OnClick = CheckBox21Click
+        end
+        object HAND: TCheckBox
+          Left = 16
+          Top = 230
+          Width = 97
+          Height = 17
+          Caption = 'HAND'
+          TabOrder = 9
+          OnClick = HANDClick
         end
       end
       object CheckBox18: TCheckBox

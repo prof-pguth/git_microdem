@@ -23,7 +23,7 @@ unit dem_indexes;
      //{$Define RecordAutoZoom}
      //{$Define RecordImageIndex}
      //{$Define RecordIndexFileNames}
-     //{$Define RecordMerge}
+     {$Define RecordMerge}
      //{$Define RecordMergeDetails}
      //{$Define RecordTimeMerge}
      //{$Define RecordIndexImagery}
@@ -61,18 +61,12 @@ uses
 
 
 function LoadMapLibraryBox(var WantDEM,WantImage : integer; Load : boolean; bb : sfBoundBox; WantSeries : shortstring = ''; DisplayIt : boolean = true) : boolean; //overload;
-//function LoadMapLibraryBox(var WantDEM,WantImage : integer; Load : boolean; inNWLat,inNWLong,inSELat,inSELong : float64; WantSeries : shortstring = ''; DisplayIt : boolean = true) : boolean;  overload;
 function LoadMapLibraryPoint(var WantDEM,WantImage : integer; Load : boolean; Lat,Long : float64; WantSeries : shortstring = ''; DisplayIt : boolean = true) : boolean;
 
-//procedure CopyMapLibraryBox(bb : sfBoundBox);
-
-//procedure OpenIndexDataOnline;
-//procedure CloseIndexDataOnline;
 procedure GetMapLibraryDataLimits(var MinLat,MaxLat,MinLong,MaxLong : float64);
 procedure CreateMapLibrary(Memo1 : tMemo);
 procedure ShowMapLibraryDataAtPoint(Lat,Long : float64);
 
-//function GetListOfDataInBoxInSeries(Series : shortString; inNWLat,inNWLong,inSELat,inSELong : float64) : tStringList; overload;
 function GetListOfDataInBoxInSeries(Series : shortString; bb : sfBoundBox) : tStringList; //overload;
 
 procedure AdjustMapLibraryDataBaseSeries;
@@ -179,11 +173,9 @@ begin
             end;
 
             if (Coastal > 1) then begin
-
                sl.Add(GISdb[db].MyData.GetFieldByNameAsString('NAME') + ',' +
                       RealToString(0.5 * (bb.YMax + bb.YMin),-12,-3)+ ',' +
                       RealToString(0.5 * (bb.xMax + bb.xMin),-12,-3)+ ',' +
-
                       RealToString(100 * Ocean / Pts,-12,-3)+ ',' +
                       RealToString(100 * DeepWater / Pts,-12,-3)+ ',' +
                       RealToString(100 * Coastal / Pts,-12,-3)+ ',' +
@@ -963,7 +955,7 @@ var
         i,Row,Col : integer;
       begin
          {$If Defined(RecordMerge) or Defined(RecordMergeDetails) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('MD merge for DEM'); {$EndIf}
-         if (DEMList.Count > MaxDEMsToMerge) then MessageToContinue('Trying to merge too many DEMs');
+         if (DEMList.Count > MaxDEMsToMerge) then MessageToContinue('Trying to merge too many DEMs--' + IntToStr(DEMList.Count) + '  and limit=' + IntToStr(MaxDEMsToMerge));
          OldDEMName := LastDEMName;
          SubsequentDEM := false;
          ReallyReadDEM := false;
@@ -1090,7 +1082,7 @@ begin
       if GDALversion and GDALGridFormat(ExtractFileExt(aName),false) then begin
          {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('GDAL options for DEM'); {$EndIf}
          ProjName := '';
-         if FileExtEquals(aName,'.ASC') then begin //Spanish and Trento DEMs have no projection in the ASC files, and user must put WKT file in directory
+         if FileExtEquals(aName,'.ASC') then begin //Spanish and Trento DEMs have no projection in the ASC files, and user must put WKT file in directory  (Spain now Geotiff)
             {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('ASC reprojection'); {$EndIf}
             ProjName := FindSingleWKTinDirectory(ExtractFilePath(aName));
             if (ProjName <> '') then ProjName := '-a_srs ' + ProjName;

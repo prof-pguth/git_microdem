@@ -2,7 +2,7 @@ object wmdem: Twmdem
   Left = 0
   Top = 262
   Caption = 'GIS program loading'
-  ClientHeight = 1173
+  ClientHeight = 1193
   ClientWidth = 2018
   Color = clScrollBar
   DefaultMonitor = dmDesktop
@@ -1675,7 +1675,7 @@ object wmdem: Twmdem
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 1154
+    Top = 1174
     Width = 2018
     Height = 19
     Panels = <
@@ -2423,6 +2423,10 @@ object wmdem: Twmdem
       object Advancedanalysis1: TMenuItem
         Caption = 'Advanced analysis'
         OnClick = Advancedanalysis1Click
+      end
+      object Graphevaluationandscores1: TMenuItem
+        Caption = 'Graph evaluation and scores'
+        OnClick = Graphevaluationandscores1Click
       end
       object SSIM2: TMenuItem
         Caption = '-'
@@ -3574,7 +3578,7 @@ object wmdem: Twmdem
       Caption = '-'
     end
     object Mergesourcedatatiles1: TMenuItem
-      Caption = 'Merge source data tiles'
+      Caption = 'Merge source data tiles and shift to EGM2008'
       OnClick = Mergesourcedatatiles1Click
     end
     object DEMIXreferenceDEMcreation1: TMenuItem
@@ -3591,9 +3595,17 @@ object wmdem: Twmdem
     object N44: TMenuItem
       Caption = '-'
     end
-    object Merge1secreferenceDEMsfromVisioterra1: TMenuItem
-      Caption = 'Merge 1 sec reference DEMs from Visioterra'
-      OnClick = Merge1secreferenceDEMsfromVisioterra1Click
+    object DatumshiftCanadianDEMs1: TMenuItem
+      Caption = 'Datum shift DEMs via GDAL to EGM2088 WGS UTM'
+      OnClick = DatumshiftCanadianDEMs1Click
+    end
+    object Reference1secDTMsfromCanadianlidar1: TMenuItem
+      Caption = 'Reference 1 sec DTMs from EGM2008'
+      OnClick = Reference1secDTMsfromCanadianlidar1Click
+    end
+    object MergeCanadianLidar1: TMenuItem
+      Caption = 'Merge 1 sec Reference DEMs'
+      OnClick = MergeCanadianLidar1Click
     end
     object N49: TMenuItem
       Caption = '-'
@@ -3606,6 +3618,10 @@ object wmdem: Twmdem
     object DiluviumDEMfortestareas1: TMenuItem
       Caption = 'Diluvium DEM for test areas'
       OnClick = DiluviumDEMfortestareas1Click
+    end
+    object Merge1secreferenceDEMsfromVisioterra1: TMenuItem
+      Caption = 'Merge 1 sec reference DEMs from Visioterra'
+      OnClick = Merge1secreferenceDEMsfromVisioterra1Click
     end
     object N54: TMenuItem
       Caption = '-'

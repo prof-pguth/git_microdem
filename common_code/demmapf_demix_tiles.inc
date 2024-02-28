@@ -165,8 +165,8 @@ begin
    if ValidDEM(DEM) then try
       StartProgress('DEMIX tiles');
       fName := NextFileNumber(MDtempDir,DEMGLB[DEM].AreaName+ '_demix_tile_fill_','.dbf');
-      //Result := DEMGLB[DEM].SelectionMap.LoadDEMIXtileOutlines(fName,AreaBox,true,OpenTable);
-      Result := LoadDEMIXtileOutlinesNoMap(FName,AreaBox,true,OpenTable);
+      if DEMGLB[DEM].SelectionMap = Nil then Result := LoadDEMIXtileOutlinesNoMap(FName,AreaBox,true,OpenTable)
+      else  Result := DEMGLB[DEM].SelectionMap.LoadDEMIXtileOutlines(fName,AreaBox,true,OpenTable);
 
       if (Result <> 0) then try
          {$IfDef RecordDEMIXTiles} writeLineToDebugFile('DEMIXtileFill, db created recs=' + IntToStr(GISdb[Result].MyData.TotRecsInDB)); {$EndIf}

@@ -95,7 +95,7 @@ uses
    function WBT_AvgNormVectAngDev(InName : PathStr; filtersize : integer) : integer;
    function WBT_CircularVarianceOfAspect(InName : PathStr; filtersize : integer) : integer;
    function WBT_DrainageBasins(InName : PathStr) : integer;
-   function WBT_FlowAccumulation(OpenMap,Log,D8 : boolean; InName : PathStr; OutName : PathStr = '') : integer;
+   function WBT_FlowAccumulation(OpenMap,Log,D8 : boolean; InName : PathStr; var FlowAccName : PathStr) : integer;
    function WBT_WetnessIndex(OpenMap,D8 : boolean; InName : PathStr; OutName : PathStr = '') : integer;
    procedure WBT_IDWCreate(InName,OutName : PathStr; GridSize : float64);
    procedure WBT_PennockLandformClass(InName : PathStr; SmoothFirst : boolean);
@@ -105,6 +105,9 @@ uses
    procedure WBT_GeotiffMetadata(InName : PathStr);
    procedure WBT_AspectMap(InName : PathStr);
    procedure WBT_MultiscaleRoughness(InName : PathStr);
+   function WBT_breach_depression(InName : PathStr; var BreachName : PathStr) : integer;
+   function WBT_extract_streams(OpenMap : boolean; InName : PathStr; var StreamName : PathStr) : integer;
+   function WBT_ElevAboveStream(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
 {$EndIf}
 
 
@@ -450,23 +453,6 @@ const
    GetGrassExtensions : boolean = false;
 
 
-procedure StartGrassBatchFile(var BatchFile : tStringList; InName : PathStr);
-begin
-   BatchFile := tStringList.Create;
-   BatchFile.Add(ClearGrassDirectory);
-
-   if (GrassEXE = 'grass78') then begin
-      BatchFile.Add('call "C:\OSGeo4W\bin\o4w_env.bat"');
-      BatchFile.Add(SetGDALdataStr);
-      BatchFile.Add('set USE_PATH_FOR_GDAL_PYTHON=YES');
-      BatchFile.Add('grass78 -c ' + InName + ' c:\mapdata\temp\grass1\ --exec r.in.gdal input=' + InName + ' output=mymap |more');
-   end
-   else begin
-      //this is not yet working
-      //BatchFile.Add('call ' + GrassPath + 'grass82.bat');
-   end;
-end;
-
 
 function ExecuteGrassAndOpenMap(var BatchFile : tstringList; BatchName,OutName : PathStr; eu : tElevUnit; mt : tMapType) : integer;
 begin
@@ -492,6 +478,25 @@ function AssembleGrassCommand(InName : PathStr; GridName,CommandName,NewLayer,Ba
 var
    OutName : PathStr;
    BatchFile : tStringList;
+
+      procedure StartGrassBatchFile(var BatchFile : tStringList; InName : PathStr);
+      begin
+         BatchFile := tStringList.Create;
+         BatchFile.Add(ClearGrassDirectory);
+
+         if (GrassEXE = 'grass78') then begin
+            BatchFile.Add('call "C:\OSGeo4W\bin\o4w_env.bat"');
+            BatchFile.Add(SetGDALdataStr);
+            BatchFile.Add('set USE_PATH_FOR_GDAL_PYTHON=YES');
+            BatchFile.Add('grass78 -c ' + InName + ' c:\mapdata\temp\grass1\ --exec r.in.gdal input=' + InName + ' output=mymap |more');
+         end
+         else begin
+            //this is not yet working  for GRASS 8.2, which makes some major changes
+            //BatchFile.Add('call ' + GrassPath + 'grass82.bat');
+         end;
+      end;
+
+
 begin
   if FileExistsErrorMessage(InName) then begin
      OutName := MDTempDir + GridName + ExtractFileNameNoExt(InName) + '.tif';
@@ -499,8 +504,8 @@ begin
 
      BatchFile.Add(GrassEXE + ' c:\mapdata\temp\grass1\PERMANENT --exec ' + CommandName  + ' |more');
      BatchFile.Add(GrassEXE + ' c:\mapdata\temp\grass1\PERMANENT --exec r.out.gdal input=' + NewLayer + ' out=' + OutName + ' type=Float' + TypeStr + ' --overwrite --quiet |more');
-     //add these to get the extensions; they need to be done with a grass workspace set up
-     if GetGrassExtensions then begin
+
+     if GetGrassExtensions then begin   //add these to get the extensions; they need to be done with a grass workspace set up
         BatchFile.Add(GrassEXE + ' c:\mapdata\temp\grass1\PERMANENT --exec g.extension r.vector.ruggedness |more');
         BatchFile.Add(GrassEXE + ' c:\mapdata\temp\grass1\PERMANENT --exec g.extension r.tri |more');
         BatchFile.Add(GrassEXE + ' c:\mapdata\temp\grass1\PERMANENT --exec g.extension r.tpi |more');
@@ -509,6 +514,7 @@ begin
      Result := ExecuteGrassAndOpenMap(BatchFile,BatchName,OutName,eu,mt);
   end;
 end;
+
 
 function GrassVectorRuggedness(InName : PathStr; WindowSize : integer) : integer;
 var

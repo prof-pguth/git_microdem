@@ -38,7 +38,121 @@ begin
 end;
 
 
-procedure DEMIX_Merge3DEPReferenceDEMs(Overwrite : boolean; DataDirs : tStringList = Nil);
+procedure ShiftToUTM_WGS84_EGM2008(inName,SaveName : PathStr; SourceEPSG,TargetEPSG : shortString);
+var
+   s_SRSstring,t_srsstring : shortstring;
+begin
+   s_SRSstring := ' -s_srs EPSG:' + SourceEPSG;
+   t_srsstring := ' -t_srs EPSG:' + TargetEPSG;
+   CompositeDatumShiftWithGDAL(InName,SaveName,s_SRSstring,t_srsstring);
+end;
+
+
+procedure ShifDEMsto_UTM_WGS84_EGM2008;
+var
+   VertCode,HorizCode,UTMzone,s_SRSstring,t_srsstring : shortstring;
+   AreaProjectionInfo : tMyData;
+
+         procedure ShiftAFile(fName : PathStr);
+         var
+            InName,SaveName : PathStr;
+            DEM : integer;
+
+            procedure OpenAndCheck(Starter : shortstring);
+            begin
+               DEM := OpenNewDEM(fName,false);
+               if ValidDEM(DEM) then begin
+                  InName := DEMGlb[DEM].GeotiffDEMName;
+                  UTMZone := AddDayMonthLeadingZero(DEMGlb[DEM].DEMHeader.UTMzone);
+                  HorizCode := Starter + UTMZone;
+                  CloseSingleDEM(DEM);
+                  AreaProjectionInfo.Edit;
+                  AreaProjectionInfo.SetFieldByNameAsString('UTM_ZONE',UTMzone);
+                  AreaProjectionInfo.Post;
+               end;
+            end;
+
+         begin
+            {$If Defined(Record3DEPX)} WriteLineToDebugFile('ShiftAFile=' + fName); {$EndIf}
+            SaveName := ChangeFileExt(fName,'_egm2008.tif');
+            InName := fName;
+            if not FileExists(SaveName) then begin
+               if HorizCode = 'NAD83' then begin
+                  if (UTMZone = '') then OpenAndCheck('269');
+               end
+               else if HorizCode = 'ETRS89' then begin
+                  if (UTMZone = '') then OpenAndCheck('258');
+               end;
+            end;
+            if VertCode = '5774' then begin //Luxembourg has no official geoid transformation
+               s_SRSstring := HorizCode;
+               t_srsstring := '326' + UTMzone;          //WGS84
+            end
+            else begin
+               s_SRSstring := HorizCode + '+' + VertCode;
+               t_srsstring := '326' + UTMzone + '+3855';          //WGS84 + EGM2008
+            end;
+            ShiftToUTM_WGS84_EGM2008(inName,SaveName,s_SRSstring,t_srsstring);
+         end;
+
+
+var
+   DataDirs,Files : tStringList;
+   i,j : integer;
+   AreaName : ShortString;
+   DirName,fName : PathStr;
+begin
+   try
+      GetDEMIXPaths;
+      Get3DEPDataDirs(DataDirs);
+
+      AreaProjectionInfo := tMyData.Create(DEMIX_area_dbName);
+
+      DEMIX_vert_datum_code := 6647;
+
+      ShowHourglassCursor;
+      {$If Defined(Record3DEPX)} HighlightLineToDebugFile('DEMIX_Create3DEPReferenceDEMs paths=' + IntToStr(DataDirs.Count)); {$EndIf}
+      for I := 0 to pred(DataDirs.Count) do begin
+         DirName := DataDirs.Strings[i];
+         AreaName := LastSubDir(ExtractFilePath(DirName));
+         wmdem.SetPanelText(3,'Dir: ' + IntToStr(succ(i)) + '/' + IntToStr(DataDirs.Count) + ' ' + AreaName);
+
+         AreaProjectionInfo.ApplyFilter('AREA=' + QuotedStr(AreaName));
+         if AreaProjectionInfo.FiltRecsInDB = 1 then begin
+            VertCode := AreaProjectionInfo.GetFieldByNameAsString('VERT_CS');
+            HorizCode := AreaProjectionInfo.GetFieldByNameAsString('HORIZ_CS');
+            UTMZone := AreaProjectionInfo.GetFieldByNameAsString('UTM_ZONE');
+            if (VertCode = '') then begin
+               MessageToContinue('Area ' + AreaName + ' missing VERT_CS in ' + DEMIX_area_dbName);
+            end
+            else begin
+               Files := Nil;
+               Petmar.FindMatchingFiles(DirName,'*.tif',Files,0);
+               RemoveFilesThatDoHaveString(Files,'EGM2008');  //cannot use DEMs with datum shift already, which is what we are creating
+               RemoveFilesThatDoHaveString(Files,'REF_1sec_');  //cannot use DEMs already reference, which is what we are creating
+
+               for j := 0 to pred(Files.Count) do begin
+                   fName := Files.Strings[j];
+                   wmdem.SetPanelText(2, 'File: ' + IntToStr(succ(j)) + '/' + IntToStr(Files.Count));
+                   ShiftAFile(Fname);
+               end;
+               Files.Free;
+            end;
+         end
+         else begin
+            MessageToContinue('Area ' + AreaName + ' missing in ' + DEMIX_area_dbName);
+         end;
+      end;
+   finally
+      AreaProjectionInfo.Destroy;
+      DataDirs.Free;
+      EndDEMIXProcessing;
+      DEMIX_vert_datum_code := 0;
+   end;
+end;
+
+
+procedure DEMIX_MergeReferenceDEMs(Overwrite : boolean; DataDirs : tStringList = Nil);
 const
    ShowMapWhileMerging = false;   //help to track done problematic data sets
 var
@@ -76,14 +190,20 @@ var
                      DEM := MergeMultipleDEMsHere(Files,true,ShowMapWhileMerging);
                      {$If Defined(Record3DEPX)} WriteLineToDebugFile('Merged'); {$EndIf}
                      if ShowMapWhileMerging then MessageToContinue('Merged');
-                     {$If Defined(Record3DEPX)} WriteLineToDebugFile('Data part saved'); {$EndIf}
-                     ClipTheDEMtoFullDEMIXTiles(DEM,DoneName);
-                     if ShowMapWhileMerging then MessageToContinue('Clipped to DEM tiles');
-                     MarkWaterMissingInThisDEM(DEM);
-                     if ShowMapWhileMerging then MessageToContinue('Mask water');
-                     //DEMglb[DEM].SaveAsGeotiff(DoneName);
-                     DEMGlb[DEM].SavePartOfDEMWithDataGeotiff(DoneName);
-                     {$If Defined(Record3DEPX)} WriteLineToDebugFile('Saved, ' + DoneName); {$EndIf}
+                     if ClipTheDEMtoFullDEMIXTiles(DEM,DoneName) then begin
+                        {$If Defined(Record3DEPX)} WriteLineToDebugFile('Clipped'); {$EndIf}
+                        if ShowMapWhileMerging then MessageToContinue('Clipped to DEM tiles');
+                        MarkWaterMissingInThisDEM(DEM);
+                        {$If Defined(Record3DEPX)} WriteLineToDebugFile('Water masked'); {$EndIf}
+                        if ShowMapWhileMerging then MessageToContinue('Mask water');
+                        //DEMglb[DEM].SaveAsGeotiff(DoneName);
+                        DEMGlb[DEM].SavePartOfDEMWithDataGeotiff(DoneName);
+                        {$If Defined(Record3DEPX)} WriteLineToDebugFile('Saved, ' + DoneName); {$EndIf}
+                     end
+                     else begin
+                        {$If Defined(RecordProblems)} HighLightLineToDebugFile('No filled DEMIX tiles in ' + AreaName); {$EndIf}
+                        DEMGlb[DEM].SavePartOfDEMWithDataGeotiff(DoneName);
+                     end;
                   end;
             end;
             CloseAllDEMs;
@@ -99,25 +219,18 @@ begin
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_Create3DEPReferenceDEMs in'); {$EndIf}
    try
       GetDEMIXPaths;
-      (*
-      if PathIsValid(DataDir) then begin
-         MergeRefDEMsForOneDir(DataDir);
-      end
-      else begin
-      *)
-         {$If Defined(Record3DEPX)} WriteLineToDebugFile('DEMIX_Create3DEPReferenceDEMs getting data paths'); {$EndIf}
-         LocalList := DataDirs = nil;
-         if LocalList then begin
-            Get3DEPDataDirs(DataDirs);
+      {$If Defined(Record3DEPX)} WriteLineToDebugFile('DEMIX_Create3DEPReferenceDEMs getting data paths'); {$EndIf}
+      LocalList := DataDirs = nil;
+      if LocalList then begin
+         Get3DEPDataDirs(DataDirs);
+      end;
+         {$If Defined(Record3DEPX)} HighlightLineToDebugFile('DEMIX_Create3DEPReferenceDEMs paths=' + IntToStr(DataDirs.Count)); {$EndIf}
+         for I := 0 to pred(DataDirs.Count) do begin
+            DirStatus := 'Dir: ' + IntToStr(succ(i)) + '/' + IntToStr(DataDirs.Count);
+            wmdem.SetPanelText(3,DirStatus);
+            MergeRefDEMsForOneDir(DataDirs.Strings[i]);
          end;
-            {$If Defined(Record3DEPX)} HighlightLineToDebugFile('DEMIX_Create3DEPReferenceDEMs paths=' + IntToStr(DataDirs.Count)); {$EndIf}
-            for I := 0 to pred(DataDirs.Count) do begin
-               DirStatus := 'Dir: ' + IntToStr(succ(i)) + '/' + IntToStr(DataDirs.Count);
-               wmdem.SetPanelText(3,DirStatus);
-               MergeRefDEMsForOneDir(DataDirs.Strings[i]);
-            end;
-         if LocalList then DataDirs.Free;
-      //end;
+      if LocalList then DataDirs.Free;
    finally
       EndDEMIXProcessing;
    end;
@@ -128,7 +241,6 @@ end;
 
 procedure DEMIX_Create3DEPReferenceDEMs(Overwrite : boolean; DataDirs : tStringList = Nil);
 var
-   //Paths : tStringList;
    DirStatus : shortstring;
    i : integer;
    LocalList : boolean;
@@ -142,13 +254,14 @@ var
       AreaName : ShortString;
    begin
       Files := nil;
+      ShowHourglassCursor;
       Petmar.FindMatchingFiles(aDir,'*.tif',Files,0);
       {$If Defined(Record3DEPX)} HighlightLineToDebugFile('MakeRefDEMsForOneDir ' + aDir + ' Found TIFs=' + IntToStr(Files.Count)); {$EndIf}
       RemoveFilesThatDoNotHaveString(Files,'EGM2008');  //can only use DEMs with datum shift
       {$If Defined(Record3DEPX)} WriteLineToDebugFile('MakeRefDEMsForOneDir Found EGM2008 TIFs=' + IntToStr(Files.Count)); {$EndIf}
-      RemoveFilesThatDoHaveString(Files,'_REF_'); //cannot use DEMs already reference
-      {$If Defined(Record3DEPX)} WriteLineToDebugFile('MakeRefDEMsForOneDir Found EGM2008 TIFs, not ref=' + IntToStr(Files.Count)); {$EndIf}
-      {$If Defined(Record3DEPX)} WriteLineToDebugFile('MakeRefDEMsForOneDir Found EGM2008 TIFs, not done yet=' + IntToStr(Files.Count)); {$EndIf}
+      RemoveFilesThatDoHaveString(Files,'Ref1SecPointStr'); //cannot use DEMs already reference
+      RemoveFilesThatDoHaveString(Files,'Ref1SecAreaStr'); //cannot use DEMs already reference
+      {$If Defined(Record3DEPX)} WriteLineToDebugFile('MakeRefDEMsForOneDir Found EGM2008 TIFs, REF not done yet=' + IntToStr(Files.Count)); {$EndIf}
 
       for i := 0 to pred(Files.Count) do begin
           fName := Files.Strings[i];
@@ -161,7 +274,7 @@ var
           else begin
              {$If Defined(Record3DEPXFull)} WriteLineToDebugFile('MakeRefDEMsForOneDir file=' + fName ); {$EndIf}
              fName := Files.Strings[i];
-             WantedDEM := OpenNewDEM(fName,true);  //map is needed to create the new grids covering the same area
+             WantedDEM := OpenNewDEM(fName,true);  //map is needed to create new grids covering same area
              if ValidDEM(WantedDEM) then begin
                  wmdem.SetPanelText(2, 'DEM: ' + IntToStr(succ(i)) + '/' + IntToStr(Files.Count),true);
                 //wmdem.SetPanelText(3, DEMGlb[WantedDEM].AreaName,true);
@@ -169,6 +282,7 @@ var
                 //CloseSingleDEM(WantedDEM);
              end;
           end;
+          wmdem.SetPanelText(2, '',true);
       end;
       CleanUpTempDirectory(True);
    end;
@@ -180,27 +294,19 @@ begin {procedure DEMIX_Create3DEPReferenceDEMs}
       GetDEMIXPaths;
       ReportErrors := false;
       LockStatusBar := true;
-
-      (*
-      if PathIsValid(DataDir) then begin
-         MakeRefDEMsForOneDir(DataDir);
-      end
-      else begin
-      *)
-         LocalList := (DataDirs = Nil);
-         if LocalList then begin
-            {$If Defined(Record3DEPX)} WriteLineToDebugFile('DEMIX_Create3DEPReferenceDEMs getting data paths'); {$EndIf}
-            Get3DEPDataDirs(DataDirs);
-         end;
-            {$If Defined(Record3DEPX)} WriteLineToDebugFile('DEMIX_Create3DEPReferenceDEMs paths=' + IntToStr(DataDirs.Count)); {$EndIf}
-            for I := 0 to pred(DataDirs.Count) do begin
-               DirStatus := 'Area: ' + IntToStr(succ(i)) + '/' + IntToStr(DataDirs.Count) + '  ' + LastSubDir(DataDirs.Strings[i]);
-               wmdem.SetPanelText(3,DirStatus,true);
-               {$If Defined(Record3DEPX)} WriteLineToDebugFile(DirStatus); {$EndIf}
-               MakeRefDEMsForOneDir(DataDirs.Strings[i]);
-            end;
-         if LocalList then DataDirs.Free;
-
+      LocalList := (DataDirs = Nil);
+      if LocalList then begin
+         {$If Defined(Record3DEPX)} WriteLineToDebugFile('DEMIX_Create3DEPReferenceDEMs getting data paths'); {$EndIf}
+         Get3DEPDataDirs(DataDirs);
+      end;
+      {$If Defined(Record3DEPX)} WriteLineToDebugFile('DEMIX_Create3DEPReferenceDEMs paths=' + IntToStr(DataDirs.Count)); {$EndIf}
+      for I := 0 to pred(DataDirs.Count) do begin
+         DirStatus := 'Area: ' + IntToStr(succ(i)) + '/' + IntToStr(DataDirs.Count) + '  ' + LastSubDir(DataDirs.Strings[i]);
+         wmdem.SetPanelText(3,DirStatus,true);
+         {$If Defined(Record3DEPX)} WriteLineToDebugFile(DirStatus); {$EndIf}
+         MakeRefDEMsForOneDir(DataDirs.Strings[i]);
+       end;
+      if LocalList then DataDirs.Free;
    finally
       EndDEMIXProcessing;
    end;
@@ -210,6 +316,8 @@ end {procedure DEMIX_Create3DEPReferenceDEMs};
 
 
 procedure DEMIX_GDAL_3DEP_datum_shift(Overwrite : boolean; DataDirs : tStringList = Nil);
+//currently only does NAD83 to WGS84 for the horizontal datum
+//this was initially for US 3DEP, but now works with CGVD2013 for the vertical datum
 
    procedure OneDirectory(DataDir : PathStr);
    var
@@ -245,13 +353,13 @@ procedure DEMIX_GDAL_3DEP_datum_shift(Overwrite : boolean; DataDirs : tStringLis
         for I := 0 to pred(FilesWanted.Count) do begin
             wmdem.SetPanelText(2,'File: ' + IntToStr(succ(i)) + '/' + IntToStr(FilesWanted.Count));
             fName := FilesWanted.Strings[i];
-            SaveName := ChangeFileExt(fName,'_egm2008.tif');
             {$If Defined(Record3DEPXFull)} WriteLineToDebugFile('Try to open ' + fName); {$EndIf}
             DEM := OpenNewDEM(fName,false);
             if ValidDEM(DEM) then begin
                InName := DEMGlb[DEM].GeotiffDEMName;
+               SaveName := ChangeFileExt(fName,'_egm2008.tif');
                UTMZone := AddDayMonthLeadingZero(DEMGlb[DEM].DEMHeader.UTMzone);
-               s_SRSstring := ' -s_srs EPSG:269' + UTMzone + '+5703';
+               s_SRSstring := ' -s_srs EPSG:269' + UTMzone + '+' + IntToStr(DEMIX_vert_datum_code);
                t_srsstring := ' -t_srs EPSG:326' + UTMzone + '+3855';
                {$If Defined(Record3DEPXFull)} WriteLineToDebugFile('Try composite shift ' + fName); {$EndIf}
                CompositeDatumShiftWithGDAL(InName,SaveName,s_SRSstring,t_srsstring);
@@ -279,8 +387,13 @@ begin {procedure DEMIX_GDAL_3DEP_datum_shift}
       if LocalList then begin
          Get3DEPDataDirs(DataDirs);
       end;
+
       {$If Defined(Record3DEPX)} HighlightLineToDebugFile('BatchGDAL_3DEP_shift paths=' + IntToStr(DataDirs.Count)); {$EndIf}
 
+     if (DEMIX_vert_datum_code = 0) then begin
+        ReadDefault('EPSG vertical datum code for input DEMs (5703 for NAVD, 6647 for CGVD2013, 0 to exit)',DEMIX_vert_datum_code);
+        if (DEMIX_vert_datum_code = 0) then exit;
+     end;
      for I := 0 to pred(DataDirs.Count) do begin
          wmdem.SetPanelText(1,'Dir: ' + IntToStr(succ(i)) + '/' + IntToStr(DataDirs.Count) + ' ' + LastSubDir(DataDirs.Strings[i]));
          OneDirectory(DataDirs.Strings[i]);
@@ -288,6 +401,7 @@ begin {procedure DEMIX_GDAL_3DEP_datum_shift}
      if LocalList then DataDirs.Free;
    finally
       EndDEMIXProcessing;
+      DEMIX_vert_datum_code := 0;
    end;
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('BatchGDAL_3DEP_shift out'); {$EndIf}
 end {procedure DEMIX_GDAL_3DEP_datum_shift};
@@ -300,10 +414,10 @@ var
 begin
    GetDEMIXpaths;
    Get3DEPDataDirs(DataDirs);
-
+   DEMIX_vert_datum_code := 5703;
    DEMIX_GDAL_3DEP_datum_shift(Overwrite,DataDirs);
    DEMIX_Create3DEPReferenceDEMs(Overwrite,DataDirs);
-   DEMIX_Merge3DEPReferenceDEMs(Overwrite,DataDirs);
+   DEMIX_MergeReferenceDEMs(Overwrite,DataDirs);
 end;
 
 
@@ -347,13 +461,6 @@ var
                if (DEMs.Count = 1) then NewDEM := OpenNewDEM(DEMs.Strings[0],false)
                else NewDEM := MergeMultipleDEMsHere(DEMs,false,false);  //Frees DEMs
                {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Merge files over, MinZ=' + RealToString(DEMGlb[NewDEM].DEMheader.MinElev,-12,-2)); {$EndIf}
-               if FilterOutSeaLevel then begin
-                  if (abs(DEMGlb[NewDEM].DEMheader.MinElev) < 0.001) then begin
-                     //mark sea level as missing for analysis along coast
-                     DEMGlb[NewDEM].MarkInRangeMissing(-0.001,0.001,Fixed);
-                     {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Sea level missing done, pts removed=' + IntToStr(Fixed)); {$EndIf}
-                  end;
-               end;
                DEMGlb[NewDEM].DEMheader.VerticalCSTypeGeoKey := VertCSEGM2008;
                ShowHourglassCursor;
                wmdem.SetPanelText(3, 'Write DEM ' + AreaMergeName);
@@ -404,8 +511,8 @@ procedure DEMIX_merge_source(Areas : tStringList = Nil);
 var
    DEMs,ErrorLog : tStringList;
    Fixed : int64;
-   VDatumCode,NewDEM,AnArea,LocalToWGS84,WGS84toEGM2008 : integer;
-   AreaInventoryName,AreaMergeName, AreaPath : PathStr;
+   VDatumCode,NewDEM,AnArea{,LocalToWGS84,WGS84toEGM2008} : integer;
+   AreaInventoryName,AreaMergeName, AreaPath,DEMName,OutVRT : PathStr;
    AreaName,TStr : shortstring;
    AreaInventory : tMyData;
 begin
@@ -419,20 +526,24 @@ begin
          GetMultipleDirectories('Non-3DEP DEMs', Areas);
       end;
 
+//put the black box back up for this since it takes so long
+
+
       if (Areas.Count = 0) then begin
          {$If Defined(RecordDEMIX)} WriteLineToDebugFile('No areas selected'); {$EndIf}
       end
       else begin
-         LocalToWGS84 := 0;
-         WGS84toEGM2008 := 0;
-         AreaInventoryName := 'G:\v3_new_dems\v3_areas.dbf';
+         //LocalToWGS84 := 0;
+         //WGS84toEGM2008 := 0;
+         AreaInventoryName := DEMIX_area_dbName;
          if FileExists(AreaInventoryName) or GetFileFromDirectory('New DEMIX area inventory','*.dbf',AreaInventoryName) then begin
             AreaInventory := tMyData.Create(AreaInventoryName);
             for anArea := 0 to pred(Areas.Count) do begin
                AreaName := LastSubDir(Areas.Strings[AnArea]);
+               AreaName := RemoveDTMorDSMfromAreaName(AreaName);
                AreaPath := ExtractFilePath(Areas.Strings[AnArea]);
                wmdem.SetPanelText(2, 'Area: ' + IntToStr(succ(anArea)) + '/' + IntToStr(Areas.Count) + ' ' + AreaName);
-               AreaMergeName := AreaPath + AreaName + '.dem';
+               AreaMergeName := AreaPath + AreaName + '.tif';
                if DEMIXSkipFilesAlreadyDone and FileExists(AreaMergeName) then begin
                   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('File Existed ' + AreaMergeName); {$EndIf}
                end
@@ -448,41 +559,27 @@ begin
                   wmdem.SetPanelText(3, 'Convert ASC to Geotiff');
                   ConvertASCtoGeotiffDEMs(Areas.Strings[AnArea]);
 
+                  (*
                   if (VDatumCode = 0) then begin
                      ErrorLog.Add(AreaName + ' undefined VDatumCode');
+                     ReadDefault('Vertical datum code for ' + AreaName,VDatumCode);
                   end
                   else begin
+                  *)
                      DEMs := Nil;
                      FindMatchingFiles(AreaPath,'*.tif',DEMs,5);
-                     if (DEMs.Count > 0) then begin
+                     if (DEMs.Count > 1) then begin
                         wmdem.SetPanelText(3, 'Merge DEMs=' + IntToStr(DEMs.Count));
                         {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Merge files= ' + IntToStr(DEMs.Count) + ' for ' + AreaMergeName); {$EndIf}
-                        if (DEMs.Count = 1) then NewDEM := OpenNewDEM(DEMs.Strings[0],false)
-                        else NewDEM := MergeMultipleDEMsHere(DEMs,false,false);  //Frees DEMs
+                        //if (DEMs.Count = 1) then NewDEM := OpenNewDEM(DEMs.Strings[0],false)
+                        //else NewDEM := MergeMultipleDEMsHere(DEMs,false,false);  //Frees DEMs
+                       UseGDAL_VRT_to_merge(AreaMergeName,OutVRT,DEMs);
+
+(*
                         {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Merge files over, MinZ=' + RealToString(DEMGlb[NewDEM].DEMheader.MinElev,-12,-2)); {$EndIf}
-                        if FilterOutSeaLevel then begin
-                           if (abs(DEMGlb[NewDEM].DEMheader.MinElev) < 0.001) then begin
-                              //mark sea level as missing for analysis along coast
-                              DEMGlb[NewDEM].MarkInRangeMissing(-0.001,0.001,Fixed);
-                              {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Sea level missing done, pts removed=' + IntToStr(Fixed)); {$EndIf}
-                           end;
-                        end;
                         DEMGlb[NewDEM].DEMheader.VerticalCSTypeGeoKey := VDatumCode;
                         DEMGlb[NewDEM].CheckMaxMinElev;
                         DEMGlb[NewDEM].WriteNewFormatDEM(AreaMergeName);
-                        (*
-                        if (VDatumCode = VertCSNAVD88)  then begin
-                           //no longer doing this, but using GDAL
-                           fName := vd_path + AreaName + '.csv';
-                           if not FileExists(fName) then begin
-                              DEMGlb[NewDEM].CSVforVDatum(0.2,fName);
-                              TStr := AreaName + ' VDatumCSV created for NAVD88; run through NOAA VDATUM';
-                              {$If Defined(RecordDEMIX)} WriteLineToDebugFile(TStr); {$EndIf}
-                              ErrorLog.Add(TStr);
-                           end;
-                        end
-                        else
-                        *)
                         if (VDatumCode <> VertCSEGM2008) then begin //shift to EGM2008
                            if (AreaInventory.FiltRecsInDB = 1) then begin
                               wmdem.SetPanelText(3, 'Vertical datum shift ' + AreaMergeName);
@@ -500,6 +597,7 @@ begin
                            {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Merge saved to ' + AreaMergeName); {$EndIf}
                         end;
                         CloseSingleDEM(NewDEM);
+*)
                         CleanUpTempDirectory;  //might be many tiled or compressed DEMs expanded
                      end
                      else begin
@@ -507,7 +605,7 @@ begin
                         {$If Defined(RecordDEMIX)} WriteLineToDebugFile(TStr); {$EndIf}
                         ErrorLog.Add(TStr);
                      end;
-                  end;
+                  //end;
                end;
             end {for area};
          end;
@@ -515,7 +613,7 @@ begin
       end;
       Areas.Free;
    finally
-      CloseSingleDEM(WGS84toEGM2008);
+      //CloseSingleDEM(WGS84toEGM2008);
       DisplayAndPurgeStringList(ErrorLog,'DEMIX_merge_source problems');
       EndDEMIXProcessing;
    end;
@@ -535,7 +633,7 @@ begin
       GetDEMIXPaths;
       ErrorLog := tStringList.Create;
 
-      AreaInventoryName := 'd:\v3_new_dems\v3_areas.dbf';
+      AreaInventoryName := DEMIX_area_dbName;
       if FileExists(AreaInventoryName) or GetFileFromDirectory('New DEMIX area inventory','*.dbf',AreaInventoryName) then begin
          if (Areas = nil) then begin
             Areas := tStringList.Create;
@@ -545,12 +643,14 @@ begin
 
          if (Areas.Count > 0) then begin
            for i := 0 to pred(Areas.Count) do begin
-              AreaPath := Areas.Strings[i];
+              AreaName := LastSubDir(Areas.Strings[i]);
+              //AreaName := RemoveDTMorDSMfromAreaName(AreaName);
+              AreaPath := ExtractFilePath(Areas.Strings[i]);
               AreaName := LastSubDir(AreaPath);
               //OutPath := ExtractFilePath(AreaInventoryName);
               wmdem.SetPanelText(2, 'Area: ' + IntToStr(succ(i)) + '/' + IntToStr(Areas.Count) + '  ' + AreaName);
-              fName := AreaPath + AreaName + 'dtm_' + Ref1SecAreaStr + '.tif';
-              fName2 := AreaPath + AreaName + 'dtm_' + Ref1SecPointStr + '.tif';
+              fName := AreaPath + AreaName + '_dtm_' + Ref1SecAreaStr + '.tif';
+              fName2 := AreaPath + AreaName + '_dtm_' + Ref1SecPointStr + '.tif';
               if (not Overwrite) and FileExists(fName) and FileExists(fName2) then begin
                  {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs already done ' + fName ); {$EndIf}
               end
@@ -560,7 +660,7 @@ begin
                  if FileExists(fName) then begin
                     WantedDEM := OpenNewDEM(fName,true);   //need to open map to create the subset
                     if (DEMGlb[WantedDEM].DEMheader.VerticalCSTypeGeoKey = VertCSEGM2008) then begin
-                       {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Call ResampleForDEMIXOneSecDEMs ' + AreaName); {$EndIf}
+                       {$If Defined(RecordDEMIXFull)} WriteLineToDebugFile('Call ResampleForDEMIXOneSecDEMs ' + AreaName); {$EndIf}
                        ResampleForDEMIXOneSecDEMs(true,WantedDEM,false,AreaPath,ResampleMode);
                     end
                     else CloseSingleDEM(WantedDEM);
@@ -611,7 +711,7 @@ begin
               if FileExists(fName) then begin
                  WantedDEM := OpenNewDEM(fName,true);   //need to open map to create the subset
                  if (DEMGlb[WantedDEM].DEMheader.VerticalCSTypeGeoKey = VertCSEGM2008) then begin
-                    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Call ResampleForDEMIXOneSecDEMs ' + AreaName); {$EndIf}
+                    {$If Defined(RecordDEMIXFull)} WriteLineToDebugFile('Call ResampleForDEMIXOneSecDEMs ' + AreaName); {$EndIf}
                     ResampleForDEMIXOneSecDEMs(true,WantedDEM,false,DEMIX_Ref_1sec,ResampleModeHalfSec);
                  end
                  else begin
@@ -672,7 +772,7 @@ var
 
 
 begin
-   {$If Defined(Record3DEPX) or Defined(Record3DEPXFull)} WriteLineToDebugFile(''); WriteLineToDebugFile('ResampleForDEMIX DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
+   {$If Defined(Record3DEPXFull)} WriteLineToDebugFile(''); WriteLineToDebugFile('ResampleForDEMIX DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
    if (DEMGlb[DEM].DEMFileName = '') then begin
       DEMGlb[DEM].WriteNewFormatDEM(DEMGlb[DEM].DEMFileName,' save DEM before resampling');
    end;

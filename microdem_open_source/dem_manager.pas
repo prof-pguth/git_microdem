@@ -110,8 +110,6 @@ procedure MakeDEMSummaryTable;
 
    procedure CheckGeoidNames;
 
-{$IfDef ExSat}
-{$Else}
    procedure CloseAllImagery;
    procedure CloseSingleSatelliteImage(var j : integer);
    function OpenSatImageFromDirectory(LastSatDir : PathStr) : integer;
@@ -120,7 +118,6 @@ procedure MakeDEMSummaryTable;
       procedure PickAndOpenImagery(ImageType : tImageType);
       procedure PickSatDirToOpen;
    {$EndIf}
-{$EndIf}
 
 {$IfDef ExPointCloud}
 {$Else}
@@ -144,7 +141,6 @@ function LoadDatumShiftGrids(var LocalToWGS84,WGS84toEGM2008 : integer) : boolea
    function PickADifferentMap(WhatFor,ThisMapCaption : shortstring) : integer;
    procedure PickMaps(var Maps : tStringList; aCaption : ShortString);
    procedure PickMapsFromDEMsWanted(var Maps : tStringList; DEMSwanted : tDEMbooleanArray);
-
 
    function EditHeaderRecord(DEM : integer; AllowChangeType : boolean) : boolean;
    procedure ViewHeaderRecord(DEM : integer);
@@ -804,7 +800,7 @@ begin
          {$IfDef RecordClosingData} WriteLineToDebugFile('Try close DEM ' + IntToStr(j)); {$EndIf}
          CloseSingleDEM(j,true,false);
       end;
-      ApplicationProcessMessages;
+      //ApplicationProcessMessages;
    end;
    {$IfDef RecordClosingData} WriteLineToDebugFile('All DEMs now closed'); {$EndIf}
 end;

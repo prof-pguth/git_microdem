@@ -2135,7 +2135,6 @@ object dbtablef: Tdbtablef
       end
       object SSIMR2graphforthistile1: TMenuItem
         Caption = 'SSIM/R2 graph for this tile'
-        OnClick = SSIMR2graphforthistile1Click
       end
     end
     object Insertnewrecordatdistancebearing1: TMenuItem
@@ -3704,16 +3703,15 @@ object dbtablef: Tdbtablef
       Caption = 'Graph by tile, with average score for selected criteria'
       OnClick = Graphbytilewithaveragescoreforselectedcriteria1Click
     end
-    object GraphSSIMR2bycluster1: TMenuItem
-      Caption = 'Graph SSIM/R2 by cluster means'
-      OnClick = GraphSSIMR2bycluster1Click
+    object GraphSSIMFUVbyclustermeans1: TMenuItem
+      Caption = 'Graph SSIM/FUV by cluster means'
+      OnClick = GraphSSIMFUVbyclustermeans1Click
     end
-    object GraphSSIMR2byDEM1: TMenuItem
-      Caption = 'Graph SSIM/R2 by DEM means'
-      OnClick = GraphSSIMR2byDEM1Click
+    object GraphSSIMFUVbyDEMmeans1: TMenuItem
+      Caption = 'Graph SSIM/FUV by DEM means'
     end
     object Clusterdiversity1: TMenuItem
-      Caption = 'Graphs all SSIM/R2 range by DEMs and clusters (very slow)'
+      Caption = 'Graphs all SSIM/FUV range by DEMs and clusters (very slow)'
       OnClick = Clusterdiversity1Click
     end
     object Clustersensitivity1: TMenuItem
@@ -3731,7 +3729,6 @@ object dbtablef: Tdbtablef
       Caption = 'Create new tables'
       object TransposeSSIMR2forclusters1: TMenuItem
         Caption = 'Transpose SSIM/R2 means for K-means cluster'
-        OnClick = TransposeSSIMR2forclusters1Click
       end
       object ClustersperDEMIXtile1: TMenuItem
         Caption = 'Number of clusters per DEMIX tile'
@@ -3755,6 +3752,10 @@ object dbtablef: Tdbtablef
       object Addtilecharacteristics1: TMenuItem
         Caption = 'Add tile characteristics to DB'
         OnClick = Addtilecharacteristics1Click
+      end
+      object AddsloperoughnessrelieftoDB1: TMenuItem
+        Caption = 'Add slope, roughness, relief to DB'
+        OnClick = AddsloperoughnessrelieftoDB1Click
       end
       object AddcountryfieldtoDB1: TMenuItem
         Caption = 'Add country field to DB'

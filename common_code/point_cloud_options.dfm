@@ -35,8 +35,6 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
     Height = 41
     Align = alBottom
     TabOrder = 0
-    ExplicitTop = 397
-    ExplicitWidth = 469
     object CancelBtn: TBitBtn
       Left = 290
       Top = 6
@@ -115,8 +113,6 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
     ActivePage = TabSheet6
     Align = alClient
     TabOrder = 1
-    ExplicitWidth = 469
-    ExplicitHeight = 228
     object General: TTabSheet
       Caption = 'General'
       object Label6: TLabel
@@ -1665,8 +1661,6 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
     Height = 169
     Align = alBottom
     TabOrder = 2
-    ExplicitTop = 228
-    ExplicitWidth = 469
     object RadioGroup1: TRadioGroup
       Left = 10
       Top = 2

@@ -133,12 +133,14 @@ begin
     if All then begin
        for j := 1 to MaxDEMDataSets do begin
           if ValidDEM(j) and (j <> lcGrid) then begin
+             EditsDone := 0;
              MaskStripFromSecondGrid(j,lcGrid, msSecondMissing);
              DEMGlb[j].CheckMaxMinElev;
           end;
        end;
     end
     else begin
+       EditsDone := 0;
        MaskStripFromSecondGrid(DEM,lcGrid, msSecondMissing);
        DEMGlb[DEM].CheckMaxMinElev;
        if (DEMGlb[DEM].SelectionMap <> Nil) then DEMGlb[DEM].SelectionMap.DoBaseMapRedraw;

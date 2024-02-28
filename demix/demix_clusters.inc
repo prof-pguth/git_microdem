@@ -124,7 +124,7 @@ begin
 end;
 
 
-procedure DEMIX_SSIM_R2_clusters_diversity_graphs(DBonTable : integer; ColorByDEM : boolean = true);
+procedure DEMIX_SSIM_FUV_clusters_diversity_graphs(DBonTable : integer; ColorByDEM : boolean = true);
 //Makes one graph per cluster of the evaluation for each criterion, with every Tile/DEM that belongs to the cluster
 var
    Tile,Crit,aline : shortstring;
@@ -161,7 +161,7 @@ var
    begin
       for i := 1 to DEMs.Count do begin
          StartGraph(i);
-         DEMIX_SSIM_R2_GraphSettings(Graph[i],'DEM= ' + DEMs.Strings[pred(i)],NCrits);
+         DEMIX_SSIM_FUV_GraphSettings(Graph[i],'DEM= ' + DEMs.Strings[pred(i)],NCrits);
 
          GISdb[DBonTable].ApplyGISFilter('DEM=' + QuotedStr(DEMs.Strings[pred(i)]));
          Color := ConvertPlatformColorToTColor(DEMIXColorFromDEMName(GISdb[DBonTable].MyData.GetFieldByNameAsString('DEM')));
@@ -185,7 +185,7 @@ var
    begin
       for I := 1 to Clusters.Count do begin
          StartGraph(i);
-         DEMIX_SSIM_R2_GraphSettings(Graph[i],'Cluster ' + Clusters.Strings[pred(i)] + '  n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB),NCrits);
+         DEMIX_SSIM_FUV_GraphSettings(Graph[i],'Cluster ' + Clusters.Strings[pred(i)] + '  n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB),NCrits);
 
          UpdateProgressBar(i/Clusters.Count);
          GISdb[DBonTable].ApplyGISFilter('CLUSTER=' + Clusters.Strings[pred(i)]);
@@ -241,7 +241,7 @@ begin
 end;
 
 
-function DEMIX_SSIM_R2_cluster_sensitivity_graph(DBonTable : integer) : tThisBaseGraph;
+function DEMIX_SSIM_FUV_cluster_sensitivity_graph(DBonTable : integer) : tThisBaseGraph;
 //graphs showing how the number of cluster changes results
 
          function OneGraph(MaxCluster : integer): tThisBaseGraph;
@@ -257,7 +257,7 @@ function DEMIX_SSIM_R2_cluster_sensitivity_graph(DBonTable : integer) : tThisBas
                Result.GraphDraw.GraphLeftLabels := tStringList.Create;
                Result.GraphDraw.SetShowAllPoints(false);
                Result.GraphDraw.LegendList := tStringList.Create;
-               DEMIX_SSIM_R2_GraphSettings(Result,'Cluster ' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + '/' + IntToStr(MaxCluster),Ncrits);
+               DEMIX_SSIM_FUV_GraphSettings(Result,'Cluster ' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + '/' + IntToStr(MaxCluster),Ncrits);
                Result.GraphDraw.LeftMargin := 175;
                GISdb[DBonTable].EmpSource.Enabled := false;
                while not GISdb[DBonTable].MyData.eof do begin
@@ -291,7 +291,7 @@ begin
 end;
 
 
-function DEMIX_SSIM_R2_clusters_graph(DBonTable : integer) : tThisBaseGraph;
+function DEMIX_SSIM_FUV_clusters_graph(DBonTable : integer) : tThisBaseGraph;
 //makes graph of each cluster with criteria on y axis and evaluation on x axis
 var
    Crit,aline,aField : shortstring;
@@ -312,8 +312,8 @@ var
                Result.GraphDraw.SetShowAllPoints(false);
                Result.GraphDraw.LegendList := tStringList.Create;
                Result.GraphDraw.HorizLabel := 'Dissimilarity/Fraction variance unexplained';
-               if (aField = '') then DEMIX_SSIM_R2_GraphSettings(Result,What,NumCrits)
-               else DEMIX_SSIM_R2_GraphSettings(Result,aField + ' ' + What,NCrits);
+               if (aField = '') then DEMIX_SSIM_FUV_GraphSettings(Result,What,NumCrits)
+               else DEMIX_SSIM_FUV_GraphSettings(Result,aField + ' ' + What,NCrits);
                GISdb[DBonTable].EmpSource.Enabled := false;
                while not GISdb[DBonTable].MyData.eof do begin
                   if (aField = 'CLUSTER') or (aField = '') then begin

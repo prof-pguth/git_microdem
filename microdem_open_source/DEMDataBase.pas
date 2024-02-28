@@ -2141,7 +2141,7 @@ end;
 
              if (dbOpts.LinkFieldThisDB = '') or (dbOpts.LinkFieldOtherDB = '') then begin
                {$IfDef RecordLinkTable} WriteLineToDebugFile('TGISDataBase.LinkSecondaryTable no valid link'); {$EndIf}
-                ClearLinkTable(true);
+               ClearLinkTable(true);
              end
              else begin
                 dbOpts.LinkTableName := FileWanted;

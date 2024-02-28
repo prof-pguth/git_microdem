@@ -99,7 +99,7 @@ uses
 
 procedure CreateNewMovie;
 var
-  FormAnimate : TFormAnimate;
+   FormAnimate : TFormAnimate;
 begin
    {$IfDef RecordMovie} WriteLineToDebugFile('CreateNewMovie in'); {$EndIf}
    FormAnimate := TFormAnimate.Create(Application);

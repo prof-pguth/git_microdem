@@ -41,7 +41,7 @@ begin
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('InventoryChannelDataByArea in'); {$EndIf}
    GetDEMIXPaths;
    Areas := tStringList.Create;
-   Areas.LoadFromFile(DEMIXSettingsDir + 'areas_list.txt');
+   Areas.LoadFromFile(AreaListFName);
 
    Results := tStringList.Create;
    Results.Add('AREA,REF_NOS,TEST_NOS,REF_SHP,TEST_SHP,REF_GRID,TEST_GRID,MISS_CSV');
@@ -106,7 +106,6 @@ begin
    TheFiles := Nil;
    FindMatchingFiles(DEMIXresultsDir,'*.csv',TheFiles);
    Results := tStringList.Create;
-   //Results.Sorted := true;
    for j := pred(Areas.Count) downto 0 do begin
       for i := 0 to pred(TheFiles.Count) do begin
          fName := UpperCase(ExtractFileNameNoExt(TheFiles.Strings[i]));
@@ -179,7 +178,7 @@ var
 begin
    GetDEMIXpaths(false);
    Areas := tStringList.Create;
-   Areas.LoadFromFile(DEMIXSettingsDir + 'areas_list.txt');
+   Areas.LoadFromFile(AreaListFName);
    Results := tStringList.Create;
    Results.Add('AREA,REF_DTMs,REF_DSMs');
    FilesWanted := tStringList.Create;
@@ -318,7 +317,7 @@ begin
    GetDEMIXpaths(false);
    ProblemAreas := tStringList.Create;
    Areas := tStringList.Create;
-   Areas.LoadFromFile(DEMIXSettingsDir + 'areas_list.txt');
+   Areas.LoadFromFile(AreaListFName);
    Results := tStringList.Create;
    Results.Add('AREA,REF_DEMS,TEST_DEMs,MISS_DEM');
    for i := 0 to pred(Areas.Count) do begin

@@ -78,7 +78,7 @@
       //{$Define RecordDatumShift}
       //{$Define RecordElevationScaling}
       //{$Define RecordMultiGrids}
-      {$Define RecordMapClosing}
+      //{$Define RecordMapClosing}
       //{$Define RecordGridToDBFSave}
       //{$Define RecordIndex}
       //{$Define RecordGISDB}
@@ -1516,6 +1516,9 @@ type
     N64: TMenuItem;
     SSIMcheckthinning1: TMenuItem;
     SSIMcheckwindowsize1: TMenuItem;
+    SSIMcheckconstants1: TMenuItem;
+    Whiteboxstreamnetwork1: TMenuItem;
+    Whiteboxelevationabovestream1: TMenuItem;
     //procedure HiresintervisibilityDEM1Click(Sender: TObject);
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
@@ -2634,6 +2637,9 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure PortionwithdataGeotiff1Click(Sender: TObject);
     procedure SSIMcheckthinning1Click(Sender: TObject);
     procedure SSIMcheckwindowsize1Click(Sender: TObject);
+    procedure SSIMcheckconstants1Click(Sender: TObject);
+    procedure Whiteboxstreamnetwork1Click(Sender: TObject);
+    procedure Whiteboxelevationabovestream1Click(Sender: TObject);
     //procedure RescaleallDEMsforSSIM1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
@@ -7429,8 +7435,10 @@ end;
 
 
 procedure TMapForm.Numbercells1Click(Sender: TObject);
+var
+   GridName : PathStr;
 begin
-   WBT_FlowAccumulation(True,False,True,GeotiffDEMNameOfMap);
+   WBT_FlowAccumulation(True,False,True,GeotiffDEMNameOfMap,GridName);
 end;
 
 procedure TMapForm.Numberimmediateneighbors1Click(Sender: TObject);
@@ -19533,8 +19541,10 @@ begin
 end;
 
 procedure TMapForm.Whieboxflowaccumulationlog1Click(Sender: TObject);
+var
+   GridName : PathStr;
 begin
-   WBT_FlowAccumulation(True,True,True,GeotiffDEMNameOfMap);
+   WBT_FlowAccumulation(True,True,True,GeotiffDEMNameOfMap,GridName);
 end;
 
 procedure TMapForm.Whitebox1Click(Sender: TObject);
@@ -19567,6 +19577,14 @@ begin
    WBT_DrainageBasins(GeotiffDEMNameOfMap);
 end;
 
+procedure TMapForm.Whiteboxelevationabovestream1Click(Sender: TObject);
+var
+   Outname : PathStr;
+begin
+   OutName := '';
+   WBT_ElevAboveStream(true, GeotiffDEMNameOfMap,Outname);
+end;
+
 procedure TMapForm.Whiteboxfillholes1Click(Sender: TObject);
 begin
    {$IfDef NoExternalPrograms}
@@ -19589,6 +19607,13 @@ begin
        NewGrid := WBT_SlopeMap(GeotiffDEMNameOfMap);
        MatchAnotherDEMMap(NewGrid,MapDraw.DEMonMap);
    {$EndIf}
+end;
+
+procedure TMapForm.Whiteboxstreamnetwork1Click(Sender: TObject);
+var
+   StreamName : PathStr;
+begin
+   WBT_extract_streams(True,GeotiffDEMNameOfMap, StreamName);
 end;
 
 procedure TMapForm.WhiteboxTRI1Click(Sender: TObject);
@@ -23178,13 +23203,17 @@ begin
 end;
 
 procedure TMapForm.FD8Lognumbercells1Click(Sender: TObject);
+var
+   GridName : PathStr;
 begin
-   WBT_FlowAccumulation(True,True,False,GeotiffDEMNameOfMap);
+   WBT_FlowAccumulation(True,True,False,GeotiffDEMNameOfMap,GridName);
 end;
 
 procedure TMapForm.FD8Lognumbercells2Click(Sender: TObject);
+var
+   GridName : PathStr;
 begin
-   WBT_FlowAccumulation(True,False,False,GeotiffDEMNameOfMap);
+   WBT_FlowAccumulation(True,False,False,GeotiffDEMNameOfMap,GridName);
 end;
 
 procedure TMapForm.LocaddatumtoEGM20081Click(Sender: TObject);
@@ -24924,6 +24953,19 @@ var
 begin
    GetTwoCompatibleGrids('SSIM',false, DEM1,DEM2,false);
    MakeSSIMMap(true,false,DEM1,DEM2,1,11);
+end;
+
+procedure TMapForm.SSIMcheckconstants1Click(Sender: TObject);
+var
+   DEM1,DEM2 : integer;
+begin
+   GetTwoCompatibleGrids('SSIM',false, DEM1,DEM2,false);
+   SSIM_fudge := 0.01;
+   MakeSSIMMap(true,false,DEM1,DEM2,1,11,1,'Reduced_constants_by_100');
+   SSIM_fudge := 0.1;
+   MakeSSIMMap(true,false,DEM1,DEM2,1,11,1,'Reduced_constants_by_10');
+   SSIM_fudge := 1;
+   MakeSSIMMap(true,false,DEM1,DEM2,1,11,1,'Standard_constants');
 end;
 
 procedure TMapForm.SSIMcheckthinning1Click(Sender: TObject);

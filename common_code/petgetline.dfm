@@ -2,8 +2,8 @@ object lineparamsform: Tlineparamsform
   Left = 678
   Top = 491
   Caption = 'Line Parameters'
-  ClientHeight = 93
-  ClientWidth = 224
+  ClientHeight = 122
+  ClientWidth = 248
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

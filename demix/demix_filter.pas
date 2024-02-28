@@ -14,7 +14,7 @@ unit demix_filter;
   //{$Define RecordDEMIXLoad}
   {$Define RecordSSIMprep}
   {$Define RecordDEMIX}
-  //{$Define TrackR2}    //should probably use only when doing a single tile
+  //{$Define TrackFUV}    //should probably use only when doing a single tile
   //{$Define RecordSSIMprepFull}
   //{$Define RecordDEMIXDiffMaps}
   //{$Define TrackOpenHandles}
@@ -165,6 +165,7 @@ type
     CheckBox22: TCheckBox;
     CheckBox24: TCheckBox;
     BitBtn38: TBitBtn;
+    HAND: TCheckBox;
     procedure BitBtn1Click(Sender: TObject);
     procedure LoadClick(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
@@ -240,6 +241,7 @@ type
     procedure CheckBox22Click(Sender: TObject);
     procedure CheckBox24Click(Sender: TObject);
     procedure BitBtn38Click(Sender: TObject);
+    procedure HANDClick(Sender: TObject);
     //procedure CheckBox4Click(Sender: TObject);
   private
     { Private declarations }
@@ -357,7 +359,7 @@ var
             AreaName := Areas[i];
             AreaProgress.Text := IntToStr(succ(i)) + '/' + IntToStr(Areas.Count) + '  ' + AreaName;
             if LoadDEMsForCurrentArea(AreaName,DEMIXOpenMap,DEMIXOpenMap) then begin
-               MaskAllDEMsToDiluvium;
+               //MaskAllDEMsToDiluvium;
                ProcessOneArea(AreaName,Correlations,TileFill);
             end;
          end;
@@ -403,7 +405,7 @@ begin
          {$IfDef RecordDEMIX} WriteLineToDebugFile('TileFill=' + fName); {$EndIf}
       end;
 
-      fName := NextFileNumber(SSIMOutPath,'r2_grid_correlations_','.dbf');
+      fName := NextFileNumber(SSIMOutPath,'FUV_grid_correlations_','.dbf');
       StringList2CSVtoDB(Correlations,fName);
       {$IfDef RecordDEMIX} WriteLineToDebugFile('Correlations=' + fName); {$EndIf}
    finally
@@ -491,7 +493,7 @@ begin
    end
    else begin
       DemixFilterForm.ComboBox1.Items.LoadFromFile(DEMIXSettingsDir + 'tiles_list.txt');
-      DemixFilterForm.ComboBox4.Items.LoadFromFile(DEMIXSettingsDir + 'areas_list.txt');
+      DemixFilterForm.ComboBox4.Items.LoadFromFile(AreaListFName);
       //DemixFilterForm.ComboBox5.Items.LoadFromFile(DEMIXSettingsDir + 'tiles_list.txt');
       //DemixFilterForm.ComboBox6.Items.LoadFromFile(DEMIXSettingsDir + 'criteria_all.txt');
    end;
@@ -871,7 +873,7 @@ begin
 
          Correlations := tStringList.Create;
          SSIMprep(AreaName,'Single tile ' + ComboBox1.Text, AllTiles,Correlations);
-         fName := NextFileNumber('c:\temp\ssim\','r2_grid_correlations_','.dbf');
+         fName := NextFileNumber('c:\temp\ssim\','FUV_grid_correlations_','.dbf');
          StringList2CSVtoDB(Correlations,fName);
          {$IfDef RecordDEMIX} WriteLineToDebugFile('TDemixFilterForm.BitBtn31Click out (single tile SSIM)'); {$EndIf}
       end;
@@ -1312,7 +1314,7 @@ var
          ThisRefDEM := 0;
          ThisTestDEM := 0;
          Line1 := 'DEMIX_TILE,AREA,REF_TYPE,CRITERION';
-         Line2 := TileName + ',' + AreaName + ',DTM,' + What + '_R2';
+         Line2 := TileName + ',' + AreaName + ',DTM,' + What + '_FUV';
          DEMProcessed := 0;
          for i := 1 to MaxDemixDEM do begin
             ThisTestDEM := TestDEMs[i];
@@ -1327,7 +1329,7 @@ var
                      Line1 := Line1 + ',' + WhatTestDEMisThis(DEMGlb[ThisTestDEM].AreaName);
                      Line2 := Line2 + ',' + RealToString(sqr(r),-12,-6);
                      inc(DEMProcessed);
-                     {$IfDef TrackR2}
+                     {$IfDef TrackFUV}
                         if StrUtils.AnsiContainsText(DEMGlb[ThisTestDEM].AreaName,'ALOS') then begin
                            WriteLineToDebugFile('Test=' + DEMGlb[ThisTestDEM].AreaName + '  Ref=' + DEMGlb[ThisRefDEM].AreaName + RealToString(r,12,6));
                         end;
@@ -1578,7 +1580,7 @@ end;
 
 procedure TDemixFilterForm.CheckBox24Click(Sender: TObject);
 begin
-   MDDef.DoR2 := CheckBox24.Checked;
+   MDDef.DoFUV := CheckBox24.Checked;
 end;
 
 procedure TDemixFilterForm.CheckBox2Click(Sender: TObject);
@@ -1673,13 +1675,14 @@ begin
    CheckBox15.Checked := MDDef.SSIM_rri;
    CheckBox16.Checked := MDDef.DEMIX_open_ref_DSM;
    Hillshade.Checked := MDDef.SSIM_hill;
+   HAND.Checked := MDDef.SSIM_HAND;
    CheckBox17.Checked := MDDef.SSIM_tpi;
    CheckBox18.Checked := MDDef.DEMIX_overwrite_enabled;
    CheckBox19.Checked := MDDef.SSIM_flow;
    CheckBox20.Checked := MDDef.SSIM_wet;
    CheckBox21.Checked := MDdef.SSIM_ls;
    CheckBox22.Checked := MDDef.DoSSIM;
-   CheckBox24.Checked := MDDef.DoR2;
+   CheckBox24.Checked := MDDef.DoFUV;
 
    CheckBox23.Checked := MDDef.LoadRefDEMMaps;
    CheckBox4.Checked := MDDef.LoadTestDEMMaps;
@@ -2094,6 +2097,11 @@ begin
    DoOne(Memo7,TileParameters);
 end;
 
+
+procedure TDemixFilterForm.HANDClick(Sender: TObject);
+begin
+   MDDef.SSIM_hill := HAND.Checked;
+end;
 
 procedure TDemixFilterForm.HillshadeClick(Sender: TObject);
 begin

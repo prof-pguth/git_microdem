@@ -4,7 +4,7 @@ unit demdbfilter;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 {$I nevadia_defines.inc}
@@ -121,7 +121,6 @@ type
      QuickFilter : boolean;
      WantedField : integer;
      WantedFieldName : ShortString;
-     //GISDataBase : TGISdataBaseModule;
      db : integer;
   end;
 
@@ -129,8 +128,7 @@ var
   dbFilterCreation: TdbFilterCreation;
 
 
-procedure GetFilterString(inDB : integer; {GISDataBase : TGISdataBaseModule;} var TheFilter : AnsiString; var ChangeUse : boolean; Quick : boolean = false; StartFieldName : Ansistring = '');
-
+procedure GetFilterString(inDB : integer;  var TheFilter : AnsiString; var ChangeUse : boolean; Quick : boolean = false; StartFieldName : Ansistring = '');
 
 implementation
 

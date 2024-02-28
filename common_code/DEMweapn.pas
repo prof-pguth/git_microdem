@@ -4,7 +4,7 @@ unit Demweapn;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -111,7 +111,7 @@ uses
 
 function GetWeaponParameters(DEMonMap : integer; var inWeaponsFan : tWeaponsFan; LimitOptions : boolean = false; AmbushMovie : boolean = false; BackBitmap : tMyBitmap = Nil; ItsJustAFan : boolean = true;  NameEdit : boolean = true; RouteLength : float64 = 0) : boolean;
 var
-   xg,yg    : float64;
+   xg,yg    : float32;
    PickWeapon: TPickWeapon;
 begin
    {$If Defined(RecordLOSProblems) or Defined(RecordFanOptions)} WriteLineToDebugFile('GetWeaponParameters in, fan at ' + LatLongDegreeToString(inWeaponsFan.W_Lat,inWeaponsFan.W_Long)); {$EndIf}

@@ -10,8 +10,11 @@ unit gdal_tools;
 
 {$I nevadia_defines.inc}
 
-
-//{$Define ConvertDBFtoDB}
+//these use Python from OSGeo4W and its batch file to set up environment
+//   gdal_merge
+//   gdal_edit
+//   gdal_fillnodata
+//   gdal_calc
 
 
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
@@ -40,7 +43,7 @@ unit gdal_tools;
 interface
 
 uses
-//needed for inline of the core DB functions
+//needed for inline of core DB functions
    Petmar_db,
    Data.DB,
    {$IfDef UseFireDacSQLlite}
@@ -158,7 +161,9 @@ uses
 
    procedure CompositeDatumShiftWithGDAL(var InName,SaveName : shortstring; s_SRSstring,t_srsstring : shortstring);
 
-   procedure TestPythonFile;
+   {$IfDef IncludePython}
+      procedure TestPythonFile;
+   {$EndIf}
 
 
    {$IfDef ExGeoPDF}
@@ -192,7 +197,7 @@ const
       {$I geopdf.inc}
    {$EndIf}
 
-
+   {$IfDef IncludePython}
       procedure TestPythonFile;
       var
          BatchFile : tStringList;
@@ -204,7 +209,7 @@ const
          fName := Petmar.NextFileNumber(MDTempDir, 'pytest_','.bat');
          EndBatchFile(fName,BatchFile);
       end;
-
+   {$EndIf}
 
 
 
@@ -434,8 +439,8 @@ var
    cmd : shortString;
    BatchFile : tStringList;
 begin
-   cmd := PythonEXEname + ' ' + PythonScriptDir + 'gdal_edit.py -a_srs ' + ProjName + ' ' + DEMName;
    StartGDALbatchFile(BatchFile);
+   cmd := PythonEXEname + ' ' + PythonScriptDir + 'gdal_edit.py -a_srs ' + ProjName + ' ' + DEMName;
    BatchFile.Add(cmd);
    bfile := Petmar.NextFileNumber(MDTempDir, 'gdal_assign_proj_','.bat');
    EndBatchFile(bfile ,batchfile);
@@ -1017,7 +1022,6 @@ end;
            OutPath,OutName : PathStr;
            LandCover,TStr,ExtentBoxString   : shortstring;
            Imagebb : sfBoundBox;
-           //GDALinfo : tGDALinfo;
            Ext : ExtStr;
          begin
             CheckFileNameForSpaces(fName);
@@ -1477,6 +1481,8 @@ end;
 
       procedure UseGDAL_VRT_to_merge(var MergefName,OutVRT : PathStr; OutNames : tStringList; Added : ShortString = '');
       //GDAL_VRT was about three times faster than other options tested
+      //OutVRT has the VRT table if you want to look at it
+      //added allows adding a projection of the files are lacking them, say for ASC input DEMs
       var
          aName : PathStr;
          cmd : shortstring;
@@ -1488,10 +1494,10 @@ end;
             aName := Petmar.NextFileNumber(MDTempDir, 'gdal_merge_file_list_','.txt');
             OutNames.SaveToFile(aName);
             OutVRT := Petmar.NextFileNumber(MDTempDir, 'gdal_vrt_','.vrt');
-            cmd := GDALtools_Dir + 'gdalbuildvrt ' + Added + ' -input_file_list ' + aName + ' ' + OutVRT;
 
             StartGDALbatchFile(BatchFile);
             BatchFile.Add('REM create VRT');
+            cmd := GDALtools_Dir + 'gdalbuildvrt ' + Added + ' -input_file_list ' + aName + ' ' + OutVRT;
             BatchFile.Add(cmd);
             cmd := GDALtools_Dir + 'gdal_translate -of GTiff ' + OutVrt + ' ' + MergefName;
             BatchFile.Add(cmd);

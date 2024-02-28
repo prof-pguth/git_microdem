@@ -329,11 +329,6 @@ var
    claNearWhite : tPlatformColor;
 {$EndIf}
 
-
-//function MyDataPath : PathStr;
-//function FullGetHomePath : PathStr;
-//function FullGetTempPath : PathStr;
-
 procedure SafeMakeDir(DirName : PathStr);
 function PathIsValid(Path : PathStr) : boolean;
 function ParsePath(FName : PathStr) : tStringList;

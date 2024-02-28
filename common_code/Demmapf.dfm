@@ -4093,6 +4093,14 @@ object MapForm: TMapForm
           Caption = 'Whitebox drainage basins'
           OnClick = Whiteboxdrainagebasins1Click
         end
+        object Whiteboxstreamnetwork1: TMenuItem
+          Caption = 'Whitebox stream network'
+          OnClick = Whiteboxstreamnetwork1Click
+        end
+        object Whiteboxelevationabovestream1: TMenuItem
+          Caption = 'Whitebox elevation above stream'
+          OnClick = Whiteboxelevationabovestream1Click
+        end
         object Whiteboxflowaccumulation1: TMenuItem
           Caption = 'Whitebox flow accumulation'
           object Whieboxflowaccumulationlog1: TMenuItem
@@ -4454,6 +4462,10 @@ object MapForm: TMapForm
         object SSIMcheckwindowsize1: TMenuItem
           Caption = 'SSIM check window size'
           OnClick = SSIMcheckwindowsize1Click
+        end
+        object SSIMcheckconstants1: TMenuItem
+          Caption = 'SSIM check constants'
+          OnClick = SSIMcheckconstants1Click
         end
       end
     end
