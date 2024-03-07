@@ -447,7 +447,6 @@ type
     Subsamplecomparethinaverage1: TMenuItem;
     Createcompositebitmap1: TMenuItem;
     Arcsecondrectangularpixels1: TMenuItem;
-    DEMIXtiles1: TMenuItem;
     DEMcornerstable1: TMenuItem;
     netcdf1: TMenuItem;
     ACOLITEallopensatelliteimages1: TMenuItem;
@@ -463,8 +462,6 @@ type
     DEMIXmergeCSVfiles1: TMenuItem;
     DEMIXtilesizebylatitude1: TMenuItem;
     DEMIXreferenceDEMcreation1: TMenuItem;
-    DEMIXindexhighresreferenceDEMs1: TMenuItem;
-    DEMIXreferencetilesurvey1: TMenuItem;
     Python1: TMenuItem;
     OpenSentinel1radarimagery1: TMenuItem;
     DEMIX1: TMenuItem;
@@ -479,8 +476,6 @@ type
     Pixelbypixelmapstatistics1: TMenuItem;
     COPALOShighlowgeomorphometry1: TMenuItem;
     Metadata2: TMenuItem;
-    OpenDEMIXridges1: TMenuItem;
-    LoadDEMIXareareferenceDEMs1: TMenuItem;
     N37: TMenuItem;
     N38: TMenuItem;
     Pickdatadirectory1: TMenuItem;
@@ -495,7 +490,6 @@ type
     OpenDEMIXdatabase1: TMenuItem;
     Addversionnumbertoallfilesinapath1: TMenuItem;
     DEMIXdbCreatePopupMenu: TPopupMenu;
-    CreateDEMIXdatabase1: TMenuItem;
     //Fullprocessingchain1: TMenuItem;
     Perpendicularshortprofilesthroughpoint1: TMenuItem;
     N41: TMenuItem;
@@ -514,7 +508,6 @@ type
     DEMIXhelp1: TMenuItem;
     Landformcategorieslegends1: TMenuItem;
     Extract1: TMenuItem;
-    N42: TMenuItem;
     N43: TMenuItem;
     N44: TMenuItem;
     Pythontestrun1: TMenuItem;
@@ -535,9 +528,7 @@ type
     DiluviumDEMfortestareas1: TMenuItem;
     CreaterangereferenceDEMs1: TMenuItem;
     Addprefixtoallfilesindirectory1: TMenuItem;
-    InventoryreferenceDEMs1: TMenuItem;
     Inventorydifferencestats1: TMenuItem;
-    N47: TMenuItem;
     MergeDEMIXtilestats1: TMenuItem;
     N48: TMenuItem;
     FillholesintestareaDEMs1: TMenuItem;
@@ -589,6 +580,16 @@ type
     MergeCanadianLidar1: TMenuItem;
     Reference1secDTMsfromCanadianlidar1: TMenuItem;
     Graphevaluationandscores1: TMenuItem;
+    CleardoubleprocessedreferenceDEMtiles1: TMenuItem;
+    Inventories1: TMenuItem;
+    EditreferenceandtestDEMs1: TMenuItem;
+    Experimentaltargetsforelimination1: TMenuItem;
+    Fullchain1: TMenuItem;
+    Partialprocessing1: TMenuItem;
+    Overwirte1: TMenuItem;
+    Skipeifpresent1: TMenuItem;
+    Overwirte2: TMenuItem;
+    Overwirte3: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -921,11 +922,9 @@ type
     procedure Creatediffrencemaps1Click(Sender: TObject);
     procedure Mergesourcedatatiles1Click(Sender: TObject);
     procedure ProcessVDATUMshifts1Click(Sender: TObject);
-    procedure Processdifferencestatisticspertile1Click(Sender: TObject);
     procedure VDATUMshiftinUSA1Click(Sender: TObject);
     procedure OpenDEMIXdatabase1Click(Sender: TObject);
     procedure Addversionnumbertoallfilesinapath1Click(Sender: TObject);
-    procedure CreateDEMIXdatabase1Click(Sender: TObject);
     //procedure Fullprocessingchain1Click(Sender: TObject);
     procedure Perpendicularshortprofilesthroughpoint1Click(Sender: TObject);
     procedure N41Click(Sender: TObject);
@@ -957,7 +956,6 @@ type
     procedure DiluviumDEMfortestareas1Click(Sender: TObject);
     procedure CreaterangereferenceDEMs1Click(Sender: TObject);
     procedure Addprefixtoallfilesindirectory1Click(Sender: TObject);
-    procedure InventoryreferenceDEMs1Click(Sender: TObject);
     procedure Inventorydifferencestats1Click(Sender: TObject);
     procedure MergeDEMIXtilestats1Click(Sender: TObject);
     procedure FillholesintestareaDEMs1Click(Sender: TObject);
@@ -997,6 +995,12 @@ type
     procedure MergeCanadianLidar1Click(Sender: TObject);
     procedure Reference1secDTMsfromCanadianlidar1Click(Sender: TObject);
     procedure Graphevaluationandscores1Click(Sender: TObject);
+    procedure CleardoubleprocessedreferenceDEMtiles1Click(Sender: TObject);
+    procedure Overwirte1Click(Sender: TObject);
+    procedure Skipeifpresent1Click(Sender: TObject);
+    procedure DEMIX2Click(Sender: TObject);
+    procedure Overwirte2Click(Sender: TObject);
+    procedure Overwirte3Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1274,7 +1278,6 @@ uses
 {$I nevadia_main_batch.inc}
 
 
-
 procedure InsureFormOnScreen(Form4 : tForm; x,y : integer);
 begin
    if y + Form4.Height < wmDEM.ClientHeight then Form4.Top := y
@@ -1287,6 +1290,11 @@ end;
 procedure Twmdem.FormPlacementInCorner(TheForm : Forms.tForm; FormPosition :  byte = lpSEMap);
 begin
    PlaceFormInCorner(Self,TheForm,FormPosition);
+end;
+
+procedure Twmdem.CleardoubleprocessedreferenceDEMtiles1Click(Sender: TObject);
+begin
+   ClearDoubleProcessed;
 end;
 
 procedure Twmdem.ClearStatusBarPanelText;
@@ -1504,8 +1512,8 @@ end;
 
 procedure Twmdem.DatumshiftCanadianDEMs1Click(Sender: TObject);
 begin
-   DEMIX_vert_datum_code := 6647;
-   ShifDEMsto_UTM_WGS84_EGM2008;
+   //DEMIX_vert_datum_code := 6647;
+   ShifDEMsto_UTM_WGS84_EGM2008(True);
 end;
 
 procedure Twmdem.DBFfile1Click(Sender: TObject);
@@ -1530,6 +1538,12 @@ begin
 end;
 
 
+
+procedure Twmdem.DEMIX2Click(Sender: TObject);
+begin
+   StopSplashing;
+   DEMIXdbCreatePopupMenu.Popup(Mouse.CursorPos.X,Mouse.CursorPos.Y);
+end;
 
 procedure Twmdem.DEMIXhelp1Click(Sender: TObject);
 begin
@@ -2775,12 +2789,6 @@ begin
 end;
 
 
-procedure Twmdem.Processdifferencestatisticspertile1Click(Sender: TObject);
-begin
-   ComputeDEMIX_tile_stats;
-end;
-
-
 procedure Twmdem.ProcessVDATUMshifts1Click(Sender: TObject);
 begin
    {$IfDef Old3DEP}
@@ -3029,6 +3037,11 @@ begin
 end;
 
 
+procedure Twmdem.Skipeifpresent1Click(Sender: TObject);
+begin
+   DEMIX_Ref_DEM_full_chain(false);
+end;
+
 procedure Twmdem.Skipifexists1Click(Sender: TObject);
 begin
    AreaSSIMComputations(False);
@@ -3047,7 +3060,7 @@ end;
 procedure Twmdem.Skipifexits2Click(Sender: TObject);
 begin
    DEMIX_vert_datum_code := 5703;
-   DEMIX_GDAL_3DEP_datum_shift(false);
+   DEMIX_GDAL_Ref_DEM_datum_shift(false);
 end;
 
 procedure Twmdem.NewDEMButtonClick(Sender: TObject);
@@ -3257,13 +3270,6 @@ begin
    RestoreBigCompositeBitmap('');
 end;
 
-procedure Twmdem.CreateDEMIXdatabase1Click(Sender: TObject);
-begin
-   StopSplashing;
-   DEMIXdbCreatePopupMenu.Popup(Mouse.CursorPos.X,Mouse.CursorPos.Y);
-end;
-
-
 procedure Twmdem.CreateDEMsfromlidar1Click(Sender: TObject);
 begin
    CreateDEMsfromLidar;
@@ -3353,12 +3359,6 @@ procedure Twmdem.InventoryDILUVIUMbytestarea1Click(Sender: TObject);
 begin
    CheckDiluviumAreas;
 end;
-
-procedure Twmdem.InventoryreferenceDEMs1Click(Sender: TObject);
-begin
-   InventoryListRefereneDTMbyArea;
-end;
-
 
 procedure Twmdem.Italyfocalmechs1Click(Sender: TObject);
 begin
@@ -3481,6 +3481,21 @@ begin
   {$EndIf}
 end;
 
+procedure Twmdem.Overwirte1Click(Sender: TObject);
+begin
+   DEMIX_Ref_DEM_full_chain(True);
+end;
+
+procedure Twmdem.Overwirte2Click(Sender: TObject);
+begin
+   ComputeDEMIX_tile_stats(true);
+end;
+
+procedure Twmdem.Overwirte3Click(Sender: TObject);
+begin
+   ComputeDEMIX_tile_stats(false);
+end;
+
 procedure Twmdem.Overwirteifexists1Click(Sender: TObject);
 begin
    DEMIX_CreateReferenceDEMs(true,ResampleModeOneSec);
@@ -3488,22 +3503,22 @@ end;
 
 procedure Twmdem.Overwriteifexists1Click(Sender: TObject);
 begin
-    DEMIX_Create3DEPReferenceDEMs(true);
+    DEMIX_CreateReferenceDEMsFromSource(true);
 end;
 
 procedure Twmdem.Overwriteifexists2Click(Sender: TObject);
 begin
-   DEMIX_Create3DEPReferenceDEMs(false);
+   DEMIX_CreateReferenceDEMsFromSource(false);
 end;
 
 procedure Twmdem.Overwriteifexists3Click(Sender: TObject);
 begin
-   DEMIX_3DEP_full_chain(true);
+   //DEMIXRef_DEM_create_full_chain(true);
 end;
 
 procedure Twmdem.Overwriteifexists4Click(Sender: TObject);
 begin
-   DEMIX_3DEP_full_chain(false);
+   //DEMIXRef_DEM_create_full_chain(false);
 end;
 
 
@@ -3521,7 +3536,7 @@ end;
 procedure Twmdem.Overwriteifexits3Click(Sender: TObject);
 begin
    DEMIX_vert_datum_code := 5703;
-   DEMIX_GDAL_3DEP_datum_shift(true);
+   DEMIX_GDAL_Ref_DEM_datum_shift(true);
 end;
 
 procedure Twmdem.OvOverwriteifexists1Click(Sender: TObject);
@@ -3916,7 +3931,7 @@ end;
 
 procedure Twmdem.Reference1secDTMsfromCanadianlidar1Click(Sender: TObject);
 begin
-   DEMIX_Create3DEPReferenceDEMs(false);
+   DEMIX_CreateReferenceDEMsFromSource(true);
 end;
 
 procedure Twmdem.RenameJPEGSwithbaseandcreationtime1Click(Sender: TObject);
@@ -4142,7 +4157,7 @@ end;
 
 procedure Twmdem.MergeCanadianLidar1Click(Sender: TObject);
 begin
-   DEMIX_MergeReferenceDEMs(false);
+   DEMIX_MergeReferenceDEMs(true);
 end;
 
 procedure Twmdem.MergeDEMIXtilestats1Click(Sender: TObject);
@@ -5829,11 +5844,11 @@ begin
 {$Else}
 var
    MergefName : PathStr;
-   OutNames : tStringList;
+   //OutNames : tStringList;
 begin
    MergeFName := '';
-   OutNames := Nil;
-   CallGDALMerge(MergefName,OutNames);
+   //OutNames := Nil;
+   CallGDALMerge(MergefName,Nil);  //,OutNames);
    OpenAndDisplaySatelliteScene(Nil,MergefName,true,true,true);
 {$EndIf}
 end;
@@ -5881,7 +5896,7 @@ end;
 
 procedure Twmdem.ComputeDEMIXtilestats1Click(Sender: TObject);
 begin
-   ComputeDEMIX_Summary_stats;
+   ComputeDEMIX_Summary_stats_DB;
 end;
 
 procedure Twmdem.Openshapefilemap1Click(Sender: TObject);
