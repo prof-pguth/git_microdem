@@ -32,7 +32,7 @@ unit DEMCoord;
 
    {$IFDEF DEBUG}
       {$Define RecordDEMIX}
-      {$Define RecordMaskFromSecondGrid}
+      //{$Define RecordMaskFromSecondGrid}
       //{$Define TrackSWCornerForComputations}
       //{$Define RecordGridIdentical}
       //{$Define RecordUKOS}
@@ -2518,7 +2518,7 @@ var
          Lat,Long1,Long2,Distance,Bearing,Sum : float64;
          i : integer;
       begin
-         {$IfDef RecordLatSpacingValues} WriteLineToDebugFile('tDEMDataSet.LatLongMapSpacing in SW corner of map ' + LatLongDegreeToString(BaseLat,BaseLong)); {$EndIf}
+         {$IfDef RecordLatSpacingValues} WriteLineToDebugFile('tDEMDataSet.LatLongMapSpacing in, SW corner ' + LatLongDegreeToString(DEMSWcornerLat,DEMSWcornerLong) + ' ' + KeyDEMParams(True)); {$EndIf}
          LatSizeMap := pred(DEMheader.NumRow) * DEMheader.DEMySpacing;
          LongSizeMap := pred(DEMheader.NumCol) * DEMheader.DEMxSpacing;
 
@@ -2540,12 +2540,14 @@ var
               XSpaceByDEMrow^[i] := Distance * 0.5;
               DiagSpaceByDEMrow^[i] := sqrt(sqr(XSpaceByDEMrow^[i])+ sqr(AverageYSpace));
               Sum := Sum + XSpaceByDEMrow^[i];
-              {$IfDef RecordLatSpacingValues} if (i mod 50 = 0) then WriteLineToDebugFile(IntegerToString(i,5) + RealToString(Lat,12,8) + RealToString(ExactXSpace^[i],10,4) + RealToString(ExactDiaSpace^[i],10,4)); {$EndIf}
+              {$IfDef RecordLatSpacingValues}
+                 if (i mod 250 = 0) then WriteLineToDebugFile(IntegerToString(i,5) + RealToString(Lat,12,8) + RealToString(XSpaceByDEMrow^[i],10,4) + RealToString(DiagSpaceByDEMrow^[i],10,4));
+              {$EndIf}
            end;
            AverageXSpace := Sum / DEMheader.NumRow;
          end;
          AverageSpace := 0.5 * (AverageXSpace + AverageYSpace);
-         {$IfDef RecordReadDEM} if not DEMMergeInProgress then WriteLineToDebugFile('AverageXSpace=' + RealToString(AverageXSpace,12,2) + '  AverageYSpace=' + RealToString(AverageYSpace,12,2) ); {$EndIf}
+         {$IfDef RecordReadDEM} if not DEMMergeInProgress then WriteLineToDebugFile('AverageXSpace=' + RealToString(AverageXSpace,12,2) + ' AverageYSpace=' + RealToString(AverageYSpace,12,2)); {$EndIf}
       end {proc LatLongMapSpacing};
 
 
@@ -3033,7 +3035,7 @@ begin
       YGrid := (Yproj - DEMBoundBoxProjected.ymin) / DEMheader.DEMySpacing;
    end;
    Result := GridInDataSet(XGrid,YGrid);
-end {proc LatLongToDEMGrid\};
+end {proc LatLongToDEMGrid};
 
 
 function tDEMDataSet.LatLongDegreeToDEMGridInteger(Lat,Long : float64; var XGrid,YGrid : integer) : boolean;

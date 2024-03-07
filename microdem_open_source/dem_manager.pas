@@ -1258,8 +1258,10 @@ procedure CloseAllDatabases;
 var
    i,j : integer;
 begin
+(* removed 3/2/2024, to see if it is causing shutdown problem
    for i := pred(WMDEM.MDIChildCount) downto 0 do
-      if WMDEM.MDIChildren[i] is Tdbtablef then (WMDEM.MDIChildren[i] as Tdbtablef).Close;
+      if (WMDEM.MDIChildren[i] is Tdbtablef) then (WMDEM.MDIChildren[i] as Tdbtablef).Close;
+*)
 
    for i := 1 to MaxDataBase do begin
       j := i;

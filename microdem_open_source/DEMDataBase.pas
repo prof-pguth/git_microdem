@@ -477,7 +477,6 @@ type
      function AddNavFieldDefinitions : boolean;
      procedure LimitFieldDecimals(SelectedColumn : shortstring; NumDec : integer);
 
-
      procedure AssignSymbol(aSymbol : tFullSymbolDeclaration);
      procedure AddSymbolToDB;
      procedure AddSymbolizationToLayerTable(Caption : shortstring);
@@ -511,6 +510,7 @@ type
      procedure DBFieldUniqueEntries(FieldName : shortstring; var FieldsInDB : tStringList);
 
      procedure MarkRecordsOnDEM(fName : shortstring; DEM : integer);
+     procedure PutInQuartilesBasedOnExistingSort;
 
      procedure ExportToXML(fName : PathStr);
      procedure ExportToSQLite;
@@ -637,14 +637,14 @@ type
      {$IfDef NoDBGrafs}
      {$Else}
          procedure HistogramByCategory(WantXField,FilterField : shortstring; AutoRescale : boolean; Summary : tStringList = nil);
+         function OldCreateHistogramFromDataBase(RegHist: boolean;  WantXField, WantYField, WantZField : shortString; AllDBs: boolean; MinUse : float64 = 1; MaxUse : float64 = -1; BinSize : float64 = -99): TThisBaseGraph;
+         function CreateHistogramFromDataBase(RegHist: boolean; Fields : tStringList; AllDBs: boolean; MinUse : float64 = 1; MaxUse : float64 = -1; BinSize : float64 = -99): TThisBaseGraph;
+         function CreateHistogramFromClustersInDataBase(WantXField: shortString;  UseClusters: boolean): TThisBaseGraph;
+
          procedure SingleRose(AddTitle : shortString; Field1,Field2 : ShortString);
          function WaveFormGraph(SingleGraph : boolean) : tThisBaseGraph;
          function CreateScatterGram(anXField, anYField: ShortString; Connect : boolean = false; Capt : shortstring = ''; H_lab : shortstring = ''; V_lab : shortString = ''; NormProb : boolean = false) : TThisbasegraph;
          procedure AddSeriesToScatterGram(Graph : TThisbasegraph; Color : tColor; anXField,anYField : ShortString; Connect : boolean = false);
-         function OldCreateHistogramFromDataBase(RegHist: boolean;  WantXField, WantYField, WantZField : shortString; AllDBs: boolean; MinUse : float64 = 1; MaxUse : float64 = -1; BinSize : float64 = -99): TThisBaseGraph;
-         function CreateHistogramFromDataBase(RegHist: boolean; Fields : tStringList; AllDBs: boolean; MinUse : float64 = 1; MaxUse : float64 = -1; BinSize : float64 = -99): TThisBaseGraph;
-
-         function CreateHistogramFromClustersInDataBase(WantXField: shortString;  UseClusters: boolean): TThisBaseGraph;
          function Stationtimeseries : tThisBaseGraph;
          function MakeGraph(Graphtype : tdbGraphType; Ask : boolean = true) : TThisbasegraph;
          function ActuallyDrawGraph(Graphtype : tdbGraphType) : TThisbasegraph;
@@ -750,18 +750,12 @@ procedure DoKMeansClustering(DBonTable : integer);
 procedure ComputeVDatumShift(dbOnTable : integer);
 function AnalyzeVDatumShift(CSVName : PathStr; ErrorLog : tStringList = Nil) : integer;
 
-procedure SortDataBase(DBOnTable : integer; Ascending : boolean; aField : shortString = '');
+function SortDataBase(DBOnTable : integer; Ascending : boolean; aField : shortString = ''; OutputDir : PathStr = '') : integer;
 
 
 {$IfDef ExRiverNetworks}
 {$Else}
    procedure LoadNodeTableToMemory(NodeTable : tMyData; var NumNodes : integer; var RiverNetwork : pRiverNetwork; ReadLinks,ReadCont,ReadOrders : boolean);
-{$EndIf}
-
-{$IfDef AllowSX_index}
-   procedure CreateSX(TableX: tMyTable; cindexName,cFieldname: ShortString; Descending : boolean = false);
-   procedure DeleteSX(TableX : TMyTable); overload;
-   procedure DeleteSX(TableX : tMyTable; cindexName : ShortString);  overload;
 {$EndIf}
 
 
@@ -919,7 +913,7 @@ uses
    {$include demdatabase_drainage_basin.inc}
 {$EndIf}
 
-procedure SortDataBase(DBOnTable : integer; Ascending : boolean; aField : shortString = '');
+function SortDataBase(DBOnTable : integer; Ascending : boolean; aField : shortString = ''; OutputDir : PathStr = '') : integer;
 var
    GridForm : tGridForm;
    Report : tStringList;
@@ -934,7 +928,9 @@ begin
    GridForm.ShowSortingControls(true);
    GridForm.Caption := 'Sorting';
    Report := GISdb[DBonTable].ExtractDBtoCSV(1,',');
-   fName := NextFileNumber(MDtempDir,GISdb[DBonTable].dbName + '_sorted_','.csv');
+   if OutputDir = '' then OutPutDir := mdTempDir;
+
+   fName := NextFileNumber(OutputDir,GISdb[DBonTable].dbName + '_sorted_' + AField + '_' ,'.csv');
    Report.SaveToFile(fName);
    Report.Free;
    GridForm.ReadCSVFile(fName);
@@ -948,8 +944,8 @@ begin
    SortGrid(GridForm.StringGrid1,pred(Col),ft,Ascending);
 
    StringGridToCSVFile(fName,GridForm.StringGrid1,Nil);
-   if (GISdb[DBonTable].theMapOwner <> nil) then GISdb[DBonTable].theMapOwner.OpenDBonMap('',fName)
-   else OpenMultipleDataBases('',fName);
+   if (GISdb[DBonTable].theMapOwner <> nil) then Result := GISdb[DBonTable].theMapOwner.OpenDBonMap('',fName)
+   else OpenNumberedGISDataBase(Result,fName,true);
    GridForm.Close;
 end;
 
@@ -4376,91 +4372,6 @@ begin
 end;
 
 
-{$IfDef AllowSX_index}
-
-      procedure CreateSX(TableX: tMyData; cindexName,cFieldname : ShortString; Descending : boolean = false);
-      // from http://www.delphi3000.com/articles/article_1199.asp?SK=
-      label
-         IndexExists;
-      var
-         IndexOptions : TIndexOptions;
-         i : integer;
-      begin
-        with TableX do begin
-           {$IfDef RecordDBindexes} WriteLineToDebugFile('Create SX, Index count=' + IntToStr(IndexDefs.Count) + ' cindexName=' + cindexName + '   cFieldName=' + cFieldName); {$EndIf}
-          // table must be open with exclusive
-          Active := False;
-          Exclusive := True;
-          IndexDefs.Update;
-          Active := True;
-          // if Fieldname not exists create this secondary index new
-          if indexdefs.indexof(cFieldName) = -1 then begin
-            IndexOptions := [];
-            {$IfDef RecordDBindexes} WriteLineToDebugFile('Now create index'); {$EndIf}
-            addindex(cIndexName, cFieldname, IndexOptions);
-          end;
-         IndexExists:;
-          // close table and reset exclusive
-          Active := false;
-          exclusive := False;
-          IndexDefs.Update;
-          TableX.Open;
-         {$IfDef RecordDBindexes} WriteLineToDebugFile('Create SX out, Index count=' + IntToStr(IndexDefs.Count)); {$EndIf}
-        end;
-      end;
-
-
-      procedure DeleteSX(TableX : tMyData; cindexName : ShortString);
-      // from http://www.delphi3000.com/articles/article_1199.asp?SK=
-      var
-        I : Integer;
-      begin
-        {$IfDef RecordDBindexes} WriteLineToDebugFile('Delete SX in ' + cIndexName); {$EndIf}
-        TableX.active := False;
-        TableX.IndexDefs.update;
-        // Look for all Indizes
-        for I := TableX.IndexDefs.Count - 1 downto 0 do begin
-          {$IfDef RecordDBindexes} WriteLineToDebugFile('Check:' + TableX.IndexDefs.Items[I].Name); {$EndIf}
-          if TableX.IndexDefs.Items[I].Name = cIndexName then begin
-             {$IfDef RecordDBindexes} WriteLineToDebugFile('Delete:' + TableX.IndexDefs.Items[I].Name); {$EndIf}
-             TableX.DeleteIndex(TableX.IndexDefs.Items[I].Name);
-          end;
-        end;
-          TableX.Active := false;
-          TableX.exclusive := False;
-          TableX.IndexDefs.Update;
-          TableX.Open;
-        {$IfDef RecordDBindexes} WriteLineToDebugFile('Delete SX out'); {$EndIf}
-      end;
-
-
-      procedure DeleteSX(TableX : TMyTable);
-      // from http://www.delphi3000.com/articles/article_1199.asp?SK=
-      var
-        I : Integer;
-      begin
-        {$IfDef RecordDBindexes} WriteLineToDebugFile('Delete SX in'); {$EndIf}
-        TableX.active := False;
-        TableX.IndexDefs.update;
-        // Look for all Indizes
-        for I := pred(TableX.IndexDefs.Count) downto 0 do begin
-          // ignore primary Index
-          if (TableX.IndexDefs.Items[I].options * [ixPrimary]) <> ([ixPrimary]) then begin
-            // This is an secondary index. Delete it.
-             {$IfDef RecordDBindexes} WriteLineToDebugFile('Delete:' + TableX.IndexDefs.Items[I].Name); {$EndIf}
-             TableX.DeleteIndex(TableX.IndexDefs.Items[I].fields);
-          end;
-        end;
-          TableX.Active := false;
-          TableX.exclusive := False;
-          TableX.IndexDefs.Update;
-          TableX.Open;
-        {$IfDef RecordDBindexes} WriteLineToDebugFile('Delete SX out'); {$EndIf}
-      end;
-
-{$EndIf}
-
-
 procedure AdjustGazFeatureName(var FeatureName : ShortString);
 begin
    if Copy(FeatureName,length(FeatureName)-6,7) = ', Mount' then begin
@@ -5818,12 +5729,6 @@ begin
    end;
 
    if (MyData <> Nil) then begin
-      {$IfDef AllowSX_index}
-         if MDDef.ClearSecondaryIndexes then begin
-            DeleteSX(TheData);
-            DeleteFile(ChangeFileExt(dbFullName,'.mdx'));
-         end;
-      {$EndIf}
       MyData.Destroy;
       MyData := Nil;
    end;

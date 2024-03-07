@@ -223,6 +223,8 @@ var
 
 begin
    {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResample)} writeLineToDebugFile('tDEMDataSet.ResampleByAveraging in, ' + AreaName + '  ' + KeyDEMParams); {$EndIf}
+   if (SelectionMap = nil) then CreateDEMSelectionMap(ThisDEM);
+
    NewGrid := SelectionMap.MakeTempGrid;
    {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResample)} WriteLineToDebugFile('ResampleByAveraging ' + DEMGlb[NewGrid].AreaName + '  ' + DEMGlb[NewGrid].KeyDEMParams); {$EndIf}
    NewHeadRecs := DEMGlb[NewGrid].DEMheader;

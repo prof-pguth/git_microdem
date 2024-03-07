@@ -719,8 +719,6 @@ begin
      {$IfDef RecordDataBaseTiming} WriteLineToDebugFile('TGISDataBase.CreateHistogram done prep'); {$EndIf}
 
      Result := CreateMultipleHistogram(UseNumbers,FilesList,LegendList,MenuStr,'Histogram ' + MenuStr + TheDBName + ' ' + MyData.Filter,100,MinUse,MaxUse,BinSize);
-     //FilesList.Free;
-     //LegendList.Free;
      {$IfDef RecordDataBaseTiming} WriteLineToDebugFile('TGISDataBase.CreateHistogram out'); {$EndIf}
 end;
 
@@ -728,6 +726,7 @@ end;
 function TGISdataBaseModule.CreateHistogramFromDataBase(RegHist: boolean; Fields : tStringList; AllDBs: boolean; MinUse : float64 = 1; MaxUse : float64 = -1; BinSize : float64 = -99): TThisBaseGraph;
 var
    j : integer;
+   Min,Max : float64;
    FilesList,
    LegendList : tStringList;
 
@@ -746,6 +745,10 @@ var
             New(Values);
             LegendList.Add(RemoveUnderScores(Fields[pred(i)]));
             GISDB[db].GetPointArrayForDBField(Fields[pred(i)],Values^,NPts,MinUse,MaxUse);
+            HeapSort(Npts,Values^);
+            if Values^[0] < Min then Min := Values^[0];
+            if Values^[pred(NPts)] > Max then Max := Values^[pred(NPts)];
+
             fName := BaseGraf.SaveSingleValueSeries(Npts,Values^{,0,Npts});
             {$IfDef RecordDBPlot} writeLineToDebugFile('save: ' + fName); {$EndIf}
             FilesList.Add(fName);
@@ -755,7 +758,8 @@ var
 
 begin
   {$IfDef RecordDataBaseTiming} WriteLineToDebugFile('TGISDataBase.CreateHistogram start'); {$EndIf}
-
+  Min := 99e39;
+  Max := -99e30;
   if AllDBs then begin
      for j := 1 to MaxDataBase do if ValidDB(j) then begin
         DoOneDB(j);
@@ -767,7 +771,7 @@ begin
 
   {$IfDef RecordDataBaseTiming} WriteLineToDebugFile('TGISDataBase.CreateHistogram done prep'); {$EndIf}
 
-  Result := CreateMultipleHistogram(True,FilesList,LegendList,'','Histogram ' +  MyData.Filter,100,MinUse,MaxUse,BinSize);
+  Result := CreateMultipleHistogram(True,FilesList,LegendList,'','Histogram ' +  MyData.Filter,100,Min,Max,BinSize);
   {$IfDef RecordDataBaseTiming} WriteLineToDebugFile('TGISDataBase.CreateHistogram out'); {$EndIf}
 end;
 

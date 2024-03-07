@@ -71,6 +71,28 @@ begin
 end;
 
 
+procedure tGISdataBaseModule.PutInQuartilesBasedOnExistingSort;
+const
+   NumQ : integer = 4;
+var
+   i : integer;
+begin
+   ReadDefault('Categories to use',NumQ);
+   AddFieldToDataBase(ftInteger,'CLUSTER',8);
+   MyData.First;
+   EmpSource.Enabled := false;
+   i := 0;
+   while not MyData.eof do begin
+      inc(i);
+      MyData.Edit;
+      MyData.SetFieldByNameAsInteger('CLUSTER',succ(pred(i)  * NumQ div MyData.FiltRecsInDB));
+      MyData.Next;
+   end;
+   ShowStatus;
+end;
+
+
+
 procedure tGISdataBaseModule.AddLatLong;
 begin
    AddFieldToDataBase(ftFloat,'LAT',12,8);
