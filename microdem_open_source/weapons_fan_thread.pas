@@ -1,13 +1,11 @@
 unit weapons_fan_thread;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
-{___________________________________}
-
-
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program       }
+{ PETMAR Trilobite Breeding Ranch    }
+{ Released under the MIT Licences    }
+{ Copyright (c) 2024 Peter L. Guth   }
+{____________________________________}
 
 {$I nevadia_defines.inc}
 
@@ -48,9 +46,6 @@ uses
   System.UITypes,System.SyncObjs,System.Math,
   {$IfDef VCL}
      Forms,Graphics,
-  {$EndIf}
-  {$IfDef ExFMX3D}
-     FMX.Graphics,
   {$EndIf}
   {$IfDef MSWindows}
      Windows,
