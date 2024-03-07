@@ -8,6 +8,30 @@
 {____________________________________}
 
 
+procedure CriteriaInSSIM_FUV_db(db : integer);
+var
+   Areas,Criteria,Results : tStringList;
+   fName : PathStr;
+   i : integer;
+begin
+   GISdb[db].EmpSource.Enabled := false;
+   Areas := GISdb[db].MyData.UniqueEntriesInDB('AREA');
+   Results := tStringList.Create;
+   Results.Add('AREA,CRITERIA');
+   for I := 0 to pred(Areas.Count) do begin
+      GISdb[db].ApplyGISFilter('AREA=' + QuotedStr(Areas.Strings[i]));
+      GISdb[db].EmpSource.Enabled := false;
+      Criteria :=  GISdb[db].MyData.UniqueEntriesInDB('CRITERION');
+      Results.Add(Areas.Strings[i] + ',' + IntToStr(Criteria.Count));
+      Criteria.Free;
+   end;
+   Areas.Free;
+   fName := NextFileNumber(MDTempDir,'ssim-fuv_inventory_','.dbf');
+   PetdbUtils.StringList2CSVtoDB(Results,fName);
+   GISdb[db].ClearGISFilter;
+   GISdb[db].EmpSource.Enabled := true;
+end;
+
 
 procedure InventoryChannelDataByArea;
 var
@@ -73,26 +97,6 @@ begin
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('InventoryChannelDataByArea out'); {$EndIf}
 end;
 
-procedure InventoryListRefereneDTMbyArea;
-var
-   TheFiles,Results : tStringList;
-   i : integer;
-   fName : PathStr;
-begin
-   TheFiles := Nil;
-   FindMatchingFiles(DEMIX_Ref_1sec,'*.tif',TheFiles);
-   Results := tStringList.Create;
-   Results.Sorted := true;
-   for i := 0 to pred(TheFiles.Count) do begin
-      fName := theFiles.Strings[i];
-      if (StrUtils.AnsiContainsText(fName,'_point')) and (not StrUtils.AnsiContainsText(fName,'_dsm'))then begin
-         fName := AreaNameFromRefDEMName(fName);
-         fName := StringReplace(fName,'_dtm','',[rfReplaceAll, rfIgnoreCase]);
-         Results.Add(fName);
-      end;
-   end;
-   DisplayAndPurgeStringList(Results,'DEMIX test areas with reference DTM (point; n=' + IntToStr(Results.Count) + ')');
-end;
 
 
 procedure InventoryDEMIXdifferenceStats;
@@ -101,7 +105,7 @@ var
    i,j,n : integer;
    fName : PathStr;
 begin
-   Areas := DEMIX_AreasWanted(true);
+   Areas := DEMIX_AreasWanted;
    n := Areas.Count;
    TheFiles := Nil;
    FindMatchingFiles(DEMIXresultsDir,'*.csv',TheFiles);
@@ -120,6 +124,43 @@ begin
    TheFiles.Free;
 end;
 
+
+procedure ClearDoubleProcessed;
+//removes files that were double processed
+//would be good to stop this from happening, which will happen at some point
+//in the interim, this works
+var
+   FilesWanted,Results,Paths : tStringList;
+   AreaName,DirStatus : shortstring;
+   fName,NewName,JustName : PathStr;
+   Problems,i,j : Integer;
+begin
+   try
+      GetDEMIXPaths;
+      ReportErrors := false;
+      LockStatusBar := true;
+      {$If Defined(Record3DEPX)} WriteLineToDebugFile('ClearDoubleProcessed getting data paths'); {$EndIf}
+      Get3DEPDataDirs(Paths);
+      {$If Defined(Record3DEPX)} WriteLineToDebugFile('ClearDoubleProcessed paths=' + IntToStr(Paths.Count)); {$EndIf}
+      Problems := 0;
+      for I := 0 to pred(Paths.Count) do begin
+         FilesWanted := tStringList.Create;
+         FindMatchingFiles(Paths[i],'*.tif',FilesWanted,1);
+         for j := 0 to pred(FilesWanted.Count) do begin
+             fName := ExtractFileNameNoExt(FilesWanted.Strings[j]);
+             if StrUtils.AnsiContainsText(fName,Ref1SecPointStr + Ref1SecPointStr) or StrUtils.AnsiContainsText(fName,Ref1SecAreaStr + Ref1SecAreaStr) then begin
+                DeleteFileIfExists(fName);
+                inc(Problems);
+             end;
+         end;
+         FilesWanted.Free;
+      end;
+      Paths.Free;
+      MessageToContinue('Double processed removed=' + IntToStr(Problems));
+   finally
+      EndDEMIXProcessing;
+   end;
+end;
 
 procedure Inventory3DEPtiles;
 //table with the number of tiffs in four categories for the source 3DEP
@@ -152,7 +193,7 @@ begin
             for j := 0 to pred(FilesWanted.Count) do begin
                 fName := ExtractFileNameNoExt(FilesWanted.Strings[j]);
                 JustName := UpperCase(fName);
-                if StrUtils.AnsiContainsText(JustName,'REF_1SEC_POINT') then inc(Num1secPoint)
+                if StrUtils.AnsiContainsText(JustName,Ref1SecPointStr) then inc(Num1secPoint)
                 else if StrUtils.AnsiContainsText(JustName,'REF_1SEC_AREA') then inc(Num1secArea)
                 else if StrUtils.AnsiContainsText(JustName,'EGM2008') then inc(NumEGM)
                 else inc(Num1m);
@@ -323,13 +364,11 @@ begin
    for i := 0 to pred(Areas.Count) do begin
       AreaName := Areas.Strings[i];
       if TestDEMsAllPresent(AreaName,DEMs,Missing) then ProblemAreas.Add(AreaName);
-
       FilesWanted := tStringList.Create;
       FindMatchingFiles(DEMIX_Ref_1sec,'*.tif',FilesWanted,1);
       RemoveFilesThatDoNotHaveString(FilesWanted,AreaName);
       Refs := FilesWanted.Count;
       FilesWanted.Free;
-
       Results.Add(AreaName + ',' + IntToStr(Refs) + ',' + IntToStr(DEMs) + ',' + Missing);
    end;
 
@@ -435,7 +474,7 @@ var
    Lat,Long,Lat0,long0,distance,Bearing : float64;
 begin
    GetDEMIXpaths(false);
-   Areas := DEMIX_AreasWanted(true);
+   Areas := DEMIX_AreasWanted;
    Results := tStringList.Create;
    Results.Add('AREA,DEM,DISTANCE');
    for j := 0 to pred(Areas.Count) do begin
@@ -478,7 +517,7 @@ var
    Lat,Long,Lat0,long0,distance,Bearing : float64;
 begin
    GetDEMIXpaths(false);
-   Areas := DEMIX_AreasWanted(true);
+   Areas := DEMIX_AreasWanted;
    for j := 0 to pred(Areas.Count) do begin
       AreaName := Areas.Strings[j];
       wmdem.SetPanelText(3,'Area ' + IntToStr(j) + '/' + IntToStr(Areas.Count) + '  ' + AreaName);

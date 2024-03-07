@@ -1150,7 +1150,7 @@ begin
       while not GISdb[DBonTable].MyData.eof do begin
          DEM := GISdb[DBonTable].MyData.GetFieldByNameAsString('DEM');
          Result.GraphDraw.LegendList.Add(DEM);
-         Result.OpenDataFile(rfile,true,ConvertPlatformColorToTColor(DEMIXColorFromDEMName(DEM)));
+         Result.OpenDataFile(rfile,ConvertPlatformColorToTColor(DEMIXColorFromDEMName(DEM)));
 
          for j := 1 to NCrits do begin
             Result.AddPointToDataBuffer(rfile,GISdb[DBonTable].MyData.GetFieldByNameAsFloat(Crits[j]),j);
@@ -1352,11 +1352,7 @@ var
          aLine := 'Average area score, ' + IntToStr(Criteria.Count) + ' criteria  ' + Criteria.Strings[0];
          for i := 1 to pred(Criteria.Count) do aline := aline + '+' + Criteria.Strings[i];
          Result.GraphDraw.HorizLabel := aLine;
-
-         //Result.GraphDraw.HorizLabel := 'Average area score, ' + IntToStr(Criteria.Count) + ' criteria';
-
          y := 5;
-
          for j := 0 to pred(Areas.Count) do begin
             WMDEM.SetPanelText(3,IntToStr(j) + '/' + IntToStr(Areas.Count)  + '  ' + Areas.Strings[j]);
             GISdb[DBonTable].ApplyGISFilter('AREA=' + QuotedStr(Areas.Strings[j]));
@@ -1397,8 +1393,6 @@ begin {DEMIX_evaluations_graph}
       Graph;
    finally
       GISDB[DBonTable].ApplyGISFilter(SaveFilter);
-      //GISdb[DBonTable].ClearGISFilter;
-      //HeavyDutyProcessing := false;
       EndDEMIXProcessing;
    end;
 end {DEMIX_evaluations_graph};

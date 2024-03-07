@@ -12,7 +12,7 @@ unit demix_filter;
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    //{$Define RecordFullDEMIX}
   //{$Define RecordDEMIXLoad}
-  {$Define RecordSSIMprep}
+  //{$Define RecordSSIMprep}
   {$Define RecordDEMIX}
   //{$Define TrackFUV}    //should probably use only when doing a single tile
   //{$Define RecordSSIMprepFull}
@@ -1202,12 +1202,6 @@ var
                      for DEM := 1 to MaxDemixDEM do begin
                         if ValidDEM(WhichGrids[DEM]) then begin
                            NormalizeDEMforSSIM(WhichGrids[DEM],What);
-
-                           (*
-                           DEMGlb[WhichGrids[DEM]].AddConstantToGrid(-Min);
-                           DEMGlb[WhichGrids[DEM]].MultiplyGridByConstant(1/(Max-Min));
-                           DEMGlb[WhichGrids[DEM]].CheckMaxMinElev;
-                           *)
                         end;
                      end;
                   end;
@@ -1223,32 +1217,6 @@ var
                WantShowProgress := false;
                SkipMenuUpdating := true;
                What := UpperCase(What);
-                  (*
-                  if (What = 'ELEV') then begin
-                     Min := -5;
-                     Max := 4000;
-                  end
-                  else if (What = 'RRI') then begin
-                     Min := 0;
-                     Max := 200;
-                  end
-                  else if (What = 'HILL') then begin
-                     Min := 0;
-                     Max := 255;
-                  end
-                  else if (What = 'SLOPE') then begin
-                     Min := 0;
-                     Max := 1000;
-                  end
-                  else if (What = 'TPI') then begin
-                     Min := -50;
-                     Max := 50;
-                  end
-                  else if (What = 'RUFF') then begin
-                     Min := 0;
-                     Max := 125;
-                  end;
-                  *)
                CycleToNormalize(TheDEMs);
                CycleToNormalize(TheRefs);
             finally
@@ -2100,7 +2068,7 @@ end;
 
 procedure TDemixFilterForm.HANDClick(Sender: TObject);
 begin
-   MDDef.SSIM_hill := HAND.Checked;
+   MDDef.SSIM_HAND := HAND.Checked;
 end;
 
 procedure TDemixFilterForm.HillshadeClick(Sender: TObject);
