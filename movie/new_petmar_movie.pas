@@ -85,7 +85,7 @@ type
   end;
 
 
-procedure CreateNewMovie(fName : PathStr = ''; CreateNew : boolean = false);
+procedure CreateNewMovie(fName : PathStr = ''; CreateNew : boolean = false; SaveName : PathStr = '');
 
 
 implementation
@@ -116,9 +116,11 @@ begin
          MovieName := fName;
          MoviePath := ExtractFilePath(fName);
       end;
-
       FormAnimate.ButtonAnimateClick(Nil);
       FormAnimate.Show;
+   end;
+   if (SaveName <> '') then begin
+      FormAnimate.ImageAnimate.Picture.SaveToFile(SaveName);
    end;
 end;
 

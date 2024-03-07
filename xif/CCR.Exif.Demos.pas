@@ -19,12 +19,12 @@
 {**************************************************************************************}
 
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Modified as Part of ianMICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch                }
-{ Released under the MIT Licences                }
-{ Copyright (c) 2023 Peter L. Guth               }
-{________________________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Modified as Part of MICRODEM GIS Program    }
+{ PETMAR Trilobite Breeding Ranch             }
+{ Released under the MIT Licences             }
+{ Copyright (c) 2024 Peter L. Guth            }
+{_____________________________________________}
 
 
 unit CCR.Exif.Demos;
