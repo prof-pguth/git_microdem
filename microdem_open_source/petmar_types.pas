@@ -933,7 +933,7 @@ end;
       end;
    end;
 
-   function OKwriteDebugLog : boolean;
+   function OKwriteDebugLog : boolean;  inline;
    begin
       Result := MDdef.MDRecordDebugLog and (DebugFileName <> '') and (not ThreadsWorking) and (TheDebugLog <> Nil);
    end;
@@ -944,7 +944,6 @@ end;
       WriteLineToDebugFile('**********');
       WriteLineToDebugFile(TheLine);
       WriteLineToDebugFile('**********');
-      //WriteLineToDebugFile('');
    end;
 
    procedure WriteLineToDebugFile(TheLine : AnsiString);

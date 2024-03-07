@@ -1912,7 +1912,7 @@ type
       DEMIX_default_tile   : shortstring;
       DEMIX_overwrite_enabled,
       DEMIX_default_half_sec_ref : boolean;
-
+      DEMIXlegendFontSize,
       DEMIX_xsize,DEMIX_ysize : integer;
       DEMIX_open_ref_DSM,
       MakeCOP_ALOS_diffMaps,
@@ -1927,7 +1927,8 @@ type
       DoFUV,
       LoadRefDEMMaps,LoadTestDEMMaps,
       LoadRefDEMs,LoadTestDEMs,
-      SSIM_elev,SSIM_slope,SSIM_ruff,SSIM_rri,SSIM_hill,SSIM_tpi,SSIM_flow,SSIM_LS,SSIM_Wet,SSIM_HAND,
+      SSIM_elev,SSIM_slope,SSIM_ruff,SSIM_rri,SSIM_hill,SSIM_tpi,
+      SSIM_flow,SSIM_LS,SSIM_Wet,SSIM_HAND,
       DEMIXCompositeImage,
       DEMIX_DoCHM,
       DEMIX_DoAirOrDirt,

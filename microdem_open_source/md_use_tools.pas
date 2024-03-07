@@ -314,14 +314,14 @@ function GPSBabel_fit2gpx(inname,outname : PathStr) : boolean;
 var
    GPSBabelEXEName : PathStr;
 begin
-   GPSBabelEXEName := 'G:\gis_software\gpsbabel\GPSBabel\gpsbabel.exe';
+   GPSBabelEXEName := 'j:\gis_software\gpsbabel\gpsbabel.exe';
    Result := FileExists(GPSBabelExeName);
    if Result then begin
       WinExecAndWait32('"' + GPSBabelExeName + '" -i garmin_fit -o gpx -f ' + inName + ' -F ' + OutName);
       if MDDef.DeleteFIT and FileExists(OutName) then File2Trash(InName);
    end
    else begin
-      MessageToContinue('Failure, Missing: ' + GPSBabelExeName);
+      MessageToContinue('Failure, Missing GPSbabel');
    end;
 end;
 
@@ -363,8 +363,6 @@ var
 
 
 begin
-//S2A_MSIL1C_20210507T162901_N0300_R083_T16RCU_20210507T204152.SAFE
-//S2A_MSI_2021_09_24_16_45_14_T16RCU_L2W_chl_re_mishra.tif
    {$IfDef RecordACOLITE} WriteLineToDebugFile('ACOLITEprocessing in '); {$EndIf}
    if (UpperCase(ExtractFileExt(MDDef.acolite_fName)) <> '.EXE') then MDDef.acolite_fName := '';
    if not FileExists(MDDef.acolite_fName) then begin
@@ -616,7 +614,6 @@ end;
 
 {$IfDef ExOTB}
 {$Else}
-
 
     procedure StartOTBbatchFile(var BatchFile : tstringList);
     var

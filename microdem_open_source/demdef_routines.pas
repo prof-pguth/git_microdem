@@ -255,7 +255,7 @@ function sfBoundBoxSizeMinutesToString(Limits : sfBoundBox) : shortstring;
    procedure BackupProgramEXE(sname : shortstring = '');
    procedure RestorePreviousEXE;
    procedure PickForNotePadPlusPlus(DefFilt : byte);
-   procedure EndBatchFile(fName : PathStr; var BatchFile : tStringList; Wait : boolean = true; Log : boolean = true);
+   function EndBatchFile(fName : PathStr; var BatchFile : tStringList; Wait : boolean = true; Log : boolean = true) : integer;
 {$EndIf}
 
 
@@ -843,11 +843,11 @@ end;
 
 {$IfDef VCL}
 
-procedure EndBatchFile(fName : PathStr; var BatchFile : tStringList; Wait : boolean = true; Log : boolean = true);
+function EndBatchFile(fName : PathStr; var BatchFile : tStringList; Wait : boolean = true; Log : boolean = true) : integer;
 begin
    BatchFile.SaveToFile(fName);
    {$IfDef RecordGDAL} if not HeavyDutyProcessing then WriteLineToDebugFile('EndBatchFile created,fname=' + fname); {$EndIf}
-   WinExecAndWait32(fName,Wait,log);
+   Result := WinExecAndWait32(fName,Wait,log);
    {$IfDef RecordGDAL} if not HeavyDutyProcessing then WriteLineToDebugFile('EndBatchFile done'); {$EndIf}
    BatchFile.Free;
 end;
@@ -1112,7 +1112,7 @@ procedure InitializeMICRODEM;
 var
    wYear,wmonth,wDay : word;
 begin
-    MDDef.MDRecordDebugLog := true;
+    //MDDef.MDRecordDebugLog := true;
     MDDef.MaxDebugLinesToKeep := 1250;
     MDDef.FinalLinesToKeep := 10;
     MDDef.InitialLinesToKeep := 7;
@@ -2481,8 +2481,7 @@ var
          AParameter('DEMIX','DoFUV',DoFUV,true);
          AParameter('DEMIX','DEMIX_overwrite_enabled',DEMIX_overwrite_enabled,true);
          AParameter('DEMIX','DEMIX_Base_DB_Path',DEMIX_Base_DB_Path,'');
-
-
+         AParameter('DEMIX','DEMIXlegendFontSize',DEMIXlegendFontSize,18);
       end;
    end;
 
@@ -5243,10 +5242,7 @@ begin
       TrySettingDefaultfName(LargeScaleWorldOutlines,DBDir + 'Natural_Earth_Vector\NE_10M_VECTORS' + DefaultDBExt);
 
       {$IfDef RecordNaturalEarthFileNames}
-         WriteLineToDebugFile('After TrySettingDefaultfName');
-         WriteLineToDebugFile('   small: ' + SmallScaleWorldOutlines);
-         WriteLineToDebugFile('  medium: ' + MedScaleWorldOutlines);
-         WriteLineToDebugFile('   large: ' + LargeScaleWorldOutlines);
+         WriteLineToDebugFile('After TrySettingDefaultfName'+ ' small: ' + SmallScaleWorldOutlines + ' medium: ' + MedScaleWorldOutlines + ' large: ' + LargeScaleWorldOutlines);
       {$EndIf}
 
       TrySettingDefaultFName(StateGISFileName,DBDir + 'us\states\STATESP020' + DefaultDBExt);
@@ -5290,10 +5286,10 @@ procedure SaveMDdefaults;
 begin
    {$IfDef RecordProgramMode} WriteLineToDebugFile('SaveMDdefaults ProgramMode=' + IntToStr(ord(MDdef.ProgramOption ))); {$EndIf}
    {$IfDef RecordProjects} WriteLineToDebugFile('SaveMDdefaults LastDESKtop=' + LastDesktop); {$EndIf}
+   {$IfDef RecordIniMemoryOverwrite} IniMemOverwriteCheck('SaveMDdefaults'); {$EndIf}
    {$IfDef FMX}
       SysUtils.DeleteFile(IniFileName);
    {$EndIf}
-   {$IfDef RecordIniMemoryOverwrite} IniMemOverwriteCheck('SaveMDdefaults'); {$EndIf}
    ProcessIniFile(iniWrite);
 end;
 
@@ -5331,6 +5327,7 @@ finalization
    {$IfDef RecordParallelLoops} WriteLineToDebugFile('RecordParallelLoops in demdef_routines'); {$EndIf}
    {$IfDef RecordFont} WriteLineToDebugFile('RecordFont in demdef_routines'); {$EndIf}
 end.
+
 
 
 

@@ -1304,7 +1304,7 @@ var
    OnLine,i,k,n,Len,Decs,BadFieldNames : integer;
    LongV : float64;
    SepChar : Char;
-   AskAboutBadFieldNames,RecIDExists,
+   AskAboutBadFieldNames,RecIDExists,SaveToDebugLog,
    IsString,IsFloat,IsLeadingZero : boolean;
    TStr,Str,MenuStr,LastLine : String;
    t2,aStr : shortstring;
@@ -1335,7 +1335,7 @@ var
               end;
          end;
 
-         procedure ProcessLine(MenuStr : string; j : integer);
+        procedure ProcessLine(MenuStr : string; j : integer);
         {$IfDef RecordProcessLine}
         const
            RecsDone : integer = 0;
@@ -1383,7 +1383,7 @@ var
 
 begin
   {$If Defined(RecordShortCSV) or Defined(RecordCSVProblems)} WriteLineToDebugFile('DoCSVFileImport enter for ' + fName); {$EndIf}
-
+  {$IfDef RecordProcessLine} SaveToDebugLog := MDdef.MDRecordDebugLog; {$EndIf}
    if (FName = '') then begin
       fName := ProgramRootDir;
       if not GetFileFromDirectory('CSV file','*.txt;*.csv',fName) then exit;
@@ -1759,6 +1759,7 @@ begin
       LocalStringGrid.Free;
       CreateDataBase.Destroy;
       EndProgress;
+      {$IfDef RecordProcessLine} MDdef.MDRecordDebugLog := SaveToDebugLog; {$EndIf}
 end;
 
 
@@ -1787,7 +1788,7 @@ begin
             RecordValues.Add(ptTrim(StringGrid1.Cells[i,j]));
          end;
       end;
-      if (CreateDataBase.AddRecID) then  RecordValues.Add(IntToStr(j));
+      if (CreateDataBase.AddRecID) then RecordValues.Add(IntToStr(j));
       CreateDataBase.AddCorrectRecordFromStringList(RecordValues);
       RecordValues.Free;
       {$IfDef RecordFullCSV} WriteLineToDebugFile(''); {$EndIf}

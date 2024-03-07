@@ -58,8 +58,8 @@ begin
           DEMGridToLatLongDegree(fxgrids^[i],fygrids^[i],BlockLat,BlockLong);
           BlockDist := fDists^[i];
          {$IfDef RecordHorizon}
-              WriteLineToDebugFile(' elevs^[0] =' + RealToString(elevs^[0] ,-12,2) + ' elevs^[i]=' + RealToString(elevs^[i],-12,2));
-              WriteLineToDebugFile(' fDists^[i]=' + RealToString(fDists^[i],-12,2)) + ' BlockAngle=' + RealToString(BlockAngle,-12,2) + ' BlockDist=' + RealToString(BlockDist,-12,0));
+            WriteLineToDebugFile(' elevs^[0] =' + RealToString(elevs^[0] ,-12,2) + ' elevs^[i]=' + RealToString(elevs^[i],-12,2));
+            WriteLineToDebugFile(' fDists^[i]=' + RealToString(fDists^[i],-12,2)) + ' BlockAngle=' + RealToString(BlockAngle,-12,2) + ' BlockDist=' + RealToString(BlockDist,-12,0));
          {$EndIf}
           break;
       end;
@@ -69,8 +69,8 @@ begin
    Dispose(fdists);
    Dispose(Elevs);
    {$IfDef RecordHorizon}
-     WriteLineToDebugFile(' BlockAngle=' + RealToString(BlockAngle,-12,2) + ' BlockDist=' + RealToString(BlockDist,-12,0));
-     WriteLineToDebugFile(' Curvature=' + RealToString(DropEarthCurve(BlockDist),-12,2)) + ' Blocked=' + LatLongDegreeToString(BlockLat,BlockLong,DecMinutes));
+      WriteLineToDebugFile(' BlockAngle=' + RealToString(BlockAngle,-12,2) + ' BlockDist=' + RealToString(BlockDist,-12,0));
+      WriteLineToDebugFile(' Curvature=' + RealToString(DropEarthCurve(BlockDist),-12,2)) + ' Blocked=' + LatLongDegreeToString(BlockLat,BlockLong,DecMinutes));
    {$EndIf}
 end;
 
