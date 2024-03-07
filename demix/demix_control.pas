@@ -15,14 +15,14 @@ unit demix_control;
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$Define RecordDEMIX}
-   {$Define RecordDEMIXLoad}
+   //{$Define RecordDEMIXLoad}
    {$Define RecordDiluvium}
-   {$Define Record3DEPX}
+   //{$Define Record3DEPX}
    {$Define RecordDEMIX_evaluations_graph}
    {$Define RecordDiluviumFull}
    //{$Define ShowOpenBothPixelIsDEMs}   //see how opening and masking for Diluvium DEM is going; don't use unless there is a a problem
    //{$Define Rec_DEMIX_Landcover}
-   {$Define RecordDEMIXStart}
+   //{$Define RecordDEMIXStart}
    //{$Define RecordDEMIXsave}
    //{$Define RecordCreateHalfSec}
    //{$Define RecordHalfSec}
@@ -91,6 +91,7 @@ const
    function IsDEMaDSMorDTM(DEMName : ShortString) : integer;
    function DEMIXTestDEMLegend(Horizontal : boolean = true) : tMyBitmap;
 
+   procedure WhoIsBetter(DBonTable : integer);
 
 //service functions and procedures
    function LoadDEMIXReferenceDEMs(AreaName : shortstring; var RefDEM : integer; OpenMaps : boolean = true) : boolean;
@@ -102,7 +103,7 @@ const
    function GetReferenceDEMforTestDEM(ThisTestDEM : integer; RefDEMs : tDEMIXindexes) : integer;
    function CriterionTieTolerance(Criterion : shortstring) : float32;
    procedure GetFilterAndHeader(i,j : integer; var aHeader,aFilter : shortString);
-   function DEMIX_AreasWanted(CanEditFile : boolean; AreaName : shortstring = '') : tStringList;
+   function DEMIX_AreasWanted(CanLimitAreas : boolean = true) : tStringList;
 
    function GetAreaNameForDEMIXTile(DB : integer; DemixTile : shortstring) : shortstring;
 
@@ -116,8 +117,6 @@ const
    function SymbolFromDEMName(DEMName : shortstring) : tFullSymbolDeclaration;
 
    procedure OpenDEMIXDatabaseForAnalysis;
-
-   //procedure ComputeDEMIX_Summary_stats(AreaName : shortstring = '');
 
 
    procedure AddCountryToDB(DB : integer);
@@ -205,7 +204,7 @@ var
 
 function OpenBothPixelIsDEMs(Area,Prefix : shortstring; RefDir,TestDir : PathStr; OpenMaps : boolean) : boolean;
 //opens reference DTMs, for both pixel-is-point and pixel-is-area
-//0 in the array is the reference data
+//0 in the array is the reference data, -1 is the 1.5 sec data
 const
    Ext = '.tif';
 var
@@ -807,6 +806,7 @@ var
 begin
    CreateBitmap(Result,1500,250);
    LoadMyFontIntoWindowsFont(MDDef.LegendFont,Result.Canvas.Font);
+   Result.Canvas.Font.Size := MDDef.DEMIXlegendFontSize;
    Left := 25;
    Top := 10;
    for i := 1 to NumDEMIXDEM do begin
@@ -983,21 +983,16 @@ end;
 *)
 
 
-function DEMIX_AreasWanted(CanEditFile : boolean; AreaName : shortstring = '') : tStringList;
+function DEMIX_AreasWanted(CanLimitAreas : boolean = true) : tStringList;
 var
    fName : PathStr;
    PickedNum : integer;
 begin
    Result := tStringList.Create;
-   if (AreaName = '') then begin
-      fName := AreaListFName;
-      if FileExists(fName) or GetExistingFileName('DEMIX areas','*.txt',fName) then begin
-         Result.LoadFromFile(fName);
-         if CanEditFile then MultiSelectSingleColumnStringList('Areas to process',PickedNum,Result,false,true);
-      end;
-   end
-   else begin
-      Result.Add(AreaName);
+   fName := AreaListFName;
+   if FileExists(fName) or GetExistingFileName('DEMIX areas','*.txt',fName) then begin
+      Result.LoadFromFile(fName);
+      if CanLimitAreas then MultiSelectSingleColumnStringList('Areas to process',PickedNum,Result,false,true);
    end;
 end;
 
@@ -1118,6 +1113,39 @@ begin
    TieToleranceTable.ApplyFilter('CRITERION=' + QuotedStr(Criterion));
    Result := TieToleranceTable.GetFieldByNameAsFloat('TOLERANCE');
    TieToleranceTable.Destroy;
+end;
+
+
+procedure WhoIsBetter(DBonTable : integer);
+
+
+   procedure OnePair(DEM1,DEM2 : shortstring);
+   var
+      eval1,eval2,tolerance : float32;
+      tStr,fName : shortstring;
+   begin
+      fName := DEM1 + '_' + DEM2;
+      GISdb[dbOnTable].AddFieldToDataBase(ftstring,fName,12);
+      GISdb[dbOnTable].MyData.First;
+      GISdb[dbOnTable].EmpSource.Enabled := false;
+      while not GISdb[dbOnTable].MyData.eof do begin
+         eval1 := GISdb[dbOnTable].MyData.GetFieldByNameAsFloat(DEM1);
+         eval2 := GISdb[dbOnTable].MyData.GetFieldByNameAsFloat(DEM2);
+         tolerance := GISdb[dbOnTable].MyData.GetFieldByNameAsFloat('TOLERANCE');
+         if eval1 + Tolerance < Eval2 then tStr := DEM1
+         else if eval2 + Tolerance < Eval1 then tStr := DEM2
+         else tStr := 'TIE';
+         GISdb[dbOnTable].MyData.Edit;
+         GISdb[dbOnTable].MyData.SetFieldByNameAsString(fName,tStr);
+         GISdb[dbOnTable].MyData.Next;
+      end;
+   end;
+
+begin
+   OnePair('COP','ALOS');
+   OnePair('COP','FABDEM');
+   OnePair('COP','TANDEM');
+   GISdb[dbOnTable].EmpSource.Enabled := true;
 end;
 
 

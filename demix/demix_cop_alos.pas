@@ -154,8 +154,8 @@ begin
 
    Stopwatch := TStopwatch.StartNew;
 
-   RefDTMpoint := OpenHalfSec(DEMIXhalfSecDir + 'ref_1sec.dem','ref dem');
-   RefDTMarea := OpenHalfSec(DEMIXhalfSecDir + 'ref_1sec_area.dem','ref dem');
+   RefDTMpoint := OpenHalfSec(DEMIXhalfSecDir + Ref1SecPointStr + '.dem','ref dem');
+   RefDTMarea := OpenHalfSec(DEMIXhalfSecDir + Ref1SecAreaStr + '.dem','ref dem');
 
    for I := 1 to NumDEMIXDEM do begin
       TestDEMs[i] := OpenHalfSec(DEMIXhalfSecDir + DEMIXDEMTypeName[i] + '.dem',DEMIXDEMTypeName[i]);
@@ -319,8 +319,6 @@ begin
       DEMGlb[DEM[i]].SelectionMap.MergeAnotherDEMreflectance(RefDTMHalfSec);
    end;
    {$If Defined(StartCOPALOSmaps)} WriteLineToDebugFile('BestMapCOPALOSThreeParams hillshade merges dones'); {$EndIf}
-
-   {$If Defined(StartCOPALOSmaps)} WriteLineToDebugFile('BestMapCOPALOSThreeParams histograms dones'); {$EndIf}
    BigImagewithallmaps(3,ImageDir + ThisArea + '_cop_or_alos_better.png');
    MakeHistograms(DEM);
    {$If Defined(StartCOPALOSmaps)} WriteLineToDebugFile('BestMapCOPALOSThreeParams big image map done'); {$EndIf}
