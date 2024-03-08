@@ -2,8 +2,8 @@ object GridForm: TGridForm
   Left = 100
   Top = 261
   Caption = 'GridForm'
-  ClientHeight = 523
-  ClientWidth = 1011
+  ClientHeight = 597
+  ClientWidth = 1368
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -20,13 +20,13 @@ object GridForm: TGridForm
   object StringGrid1: TStringGrid
     Left = 0
     Top = 41
-    Width = 1011
-    Height = 482
+    Width = 1368
+    Height = 556
     Align = alClient
     DefaultColWidth = 100
     TabOrder = 0
-    ExplicitWidth = 1005
-    ExplicitHeight = 491
+    ExplicitWidth = 1007
+    ExplicitHeight = 481
     ColWidths = (
       100
       100
@@ -43,20 +43,20 @@ object GridForm: TGridForm
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1011
+    Width = 1368
     Height = 41
     Align = alTop
     TabOrder = 1
-    ExplicitWidth = 1005
+    ExplicitWidth = 1007
     object Label1: TLabel
-      Left = 714
+      Left = 785
       Top = 22
       Width = 45
       Height = 13
       Caption = 'Cell width'
     end
     object BitBtn1: TBitBtn
-      Left = 476
+      Left = 526
       Top = 10
       Width = 75
       Height = 25
@@ -65,7 +65,7 @@ object GridForm: TGridForm
       OnClick = BitBtn1Click
     end
     object Edit1: TEdit
-      Left = 557
+      Left = 607
       Top = 14
       Width = 49
       Height = 21
@@ -82,7 +82,7 @@ object GridForm: TGridForm
       OnClick = BitBtn2Click
     end
     object BitBtn3: TBitBtn
-      Left = 95
+      Left = 159
       Top = 10
       Width = 34
       Height = 25
@@ -91,7 +91,7 @@ object GridForm: TGridForm
       OnClick = BitBtn3Click
     end
     object BitBtn4: TBitBtn
-      Left = 612
+      Left = 662
       Top = 10
       Width = 89
       Height = 25
@@ -100,7 +100,7 @@ object GridForm: TGridForm
       OnClick = BitBtn4Click
     end
     object Edit2: TEdit
-      Left = 773
+      Left = 844
       Top = 14
       Width = 28
       Height = 21
@@ -108,7 +108,7 @@ object GridForm: TGridForm
       Text = '100'
     end
     object BitBtn5: TBitBtn
-      Left = 55
+      Left = 119
       Top = 10
       Width = 34
       Height = 25
@@ -117,7 +117,7 @@ object GridForm: TGridForm
       OnClick = BitBtn5Click
     end
     object BitBtn6: TBitBtn
-      Left = 336
+      Left = 407
       Top = 10
       Width = 57
       Height = 25
@@ -126,7 +126,7 @@ object GridForm: TGridForm
       OnClick = BitBtn6Click
     end
     object BitBtn7: TBitBtn
-      Left = 408
+      Left = 470
       Top = 10
       Width = 50
       Height = 25
@@ -135,7 +135,7 @@ object GridForm: TGridForm
       OnClick = BitBtn7Click
     end
     object CheckBox1: TCheckBox
-      Left = 807
+      Left = 878
       Top = 18
       Width = 97
       Height = 17
@@ -144,7 +144,7 @@ object GridForm: TGridForm
       OnClick = CheckBox1Click
     end
     object BitBtn8: TBitBtn
-      Left = 239
+      Left = 303
       Top = 10
       Width = 46
       Height = 25
@@ -162,7 +162,7 @@ object GridForm: TGridForm
       OnClick = BitBtn8Click
     end
     object BitBtn9: TBitBtn
-      Left = 284
+      Left = 355
       Top = 10
       Width = 46
       Height = 25
@@ -180,7 +180,7 @@ object GridForm: TGridForm
       OnClick = BitBtn9Click
     end
     object BitBtn19: TBitBtn
-      Left = 135
+      Left = 199
       Top = 10
       Width = 46
       Height = 25
@@ -198,7 +198,7 @@ object GridForm: TGridForm
       OnClick = BitBtn8Click
     end
     object BitBtn20: TBitBtn
-      Left = 187
+      Left = 251
       Top = 10
       Width = 46
       Height = 25
@@ -216,7 +216,7 @@ object GridForm: TGridForm
       OnClick = BitBtn9Click
     end
     object CheckBox2: TCheckBox
-      Left = 872
+      Left = 943
       Top = 13
       Width = 97
       Height = 17
@@ -231,13 +231,22 @@ object GridForm: TGridForm
       OnClick = CheckBox2Click
     end
     object BitBtn10: TBitBtn
-      Left = 928
+      Left = 999
       Top = 10
       Width = 75
       Height = 25
       Caption = 'Decimals'
       TabOrder = 15
       OnClick = BitBtn10Click
+    end
+    object BitBtn11: TBitBtn
+      Left = 55
+      Top = 10
+      Width = 58
+      Height = 25
+      Caption = 'DBF'
+      TabOrder = 16
+      OnClick = BitBtn11Click
     end
   end
 end

@@ -4,12 +4,12 @@ unit demstringgrid;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
 {-----------------------------------------------------------------------------------------------------------------}
-{originally based on:                                                                                             }
+{originally based on, but now heavily revised:                                                                    }
 {Copyright  © 2002-2005, Gary Darby, www.DelphiForFun.org                                                         }
 {Program may be used or modified for any non-commercial purpose so long as this original notice remains in place. }
 {All other rights are reserved                                                                                    }
@@ -53,6 +53,7 @@ type
     BitBtn20: TBitBtn;
     CheckBox2: TCheckBox;
     BitBtn10: TBitBtn;
+    BitBtn11: TBitBtn;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure BitBtn1Click(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
@@ -68,6 +69,7 @@ type
     procedure BitBtn9Click(Sender: TObject);
     procedure CheckBox2Click(Sender: TObject);
     procedure BitBtn10Click(Sender: TObject);
+    procedure BitBtn11Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -98,7 +100,8 @@ implementation
 {$R *.dfm}
 
 uses
-   PetDBUtils,PetImage,BaseGraf, Petimage_form,nevadia_main;
+   PetDBUtils,PetImage,BaseGraf, Petimage_form,
+   DEMdatabase,nevadia_main;
 
 
 procedure Mergesort(Grid:TStringgrid; var Vals: array of integer; sortcol,datatype : integer; ascending : boolean);
@@ -214,7 +217,7 @@ begin
    {$IfDef StringGridSortProblems} WriteLineToDebugFile('call mergesort'); {$EndIf}
    MergeSort(Grid, list,sortcol+1,datatype, ascending);
    {$IfDef StringGridSortProblems} WriteLineToDebugFile('back from mergesort'); {$EndIf}
-   for i:=0 to Grid.rowcount-Grid.fixedrows-1 do begin
+   for i := 0 to Grid.rowcount-Grid.fixedrows-1 do begin
       Grid.rows[i+Grid.fixedrows].assign(tempgrid.rows[list[i]])
    end;
    Grid.row:=Grid.fixedrows;
@@ -276,6 +279,17 @@ begin
          StringGrid1.Cells[i,j] := RealToString(r[i,j],8,NumDec);
       end;
    end;
+end;
+
+procedure TGridForm.BitBtn11Click(Sender: TObject);
+var
+   fName : PathStr;
+   db : integer;
+begin
+  fName := NextFileNumber(MDTempDir,'string_grid_export_','.csv');
+  StringGridToCSVFile(fName,StringGrid1,Nil);
+  OpenNumberedGISDataBase(db,fName,true);
+  //DoCSVFileImport(fName);
 end;
 
 procedure TGridForm.BitBtn1Click(Sender: TObject);

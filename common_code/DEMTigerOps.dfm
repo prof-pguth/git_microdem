@@ -402,6 +402,8 @@ object TigerOverlayOptions: TTigerOverlayOptions
       Left = 4
       Top = 24
       Caption = 'Autoscaling'
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Label1: TLabel
         Left = 0
         Top = 8
