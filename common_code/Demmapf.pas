@@ -1519,6 +1519,9 @@ type
     SSIMcheckconstants1: TMenuItem;
     Whiteboxstreamnetwork1: TMenuItem;
     Whiteboxelevationabovestream1: TMenuItem;
+    GDALupsampling1: TMenuItem;
+    Bilinnear1: TMenuItem;
+    Bilinnear2: TMenuItem;
     //procedure HiresintervisibilityDEM1Click(Sender: TObject);
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
@@ -2640,6 +2643,8 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure SSIMcheckconstants1Click(Sender: TObject);
     procedure Whiteboxstreamnetwork1Click(Sender: TObject);
     procedure Whiteboxelevationabovestream1Click(Sender: TObject);
+    procedure Bilinnear1Click(Sender: TObject);
+    procedure Bilinnear2Click(Sender: TObject);
     //procedure RescaleallDEMsforSSIM1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
@@ -10765,7 +10770,7 @@ var
                x : integer;
             begin
               with SatImage[MapDraw.SATonMap] do begin
-                  PointSatReflectanceGraph.OpenDataFile(rfile,true,Color);
+                  PointSatReflectanceGraph.OpenDataFile(rfile,Color);
                   TiffImage[1].GetPointReflectances(Col,Row,Refs);
                   for x := 1 to NumBands do begin
                      PointSatReflectanceGraph.AddPointToDataBuffer(rfile,BandAxisValue(x),Refs[x]);
@@ -20600,6 +20605,16 @@ begin
     MDDef.MapOverlayOpacity := TrackBar2.Position;
 end;
 
+
+procedure TMapForm.Bilinnear1Click(Sender: TObject);
+begin
+    GDAL_upsample_DEM(MapDraw.DEMonMap,true,MapDraw.MapType);
+end;
+
+procedure TMapForm.Bilinnear2Click(Sender: TObject);
+begin
+   GDAL_upsample_DEM(MapDraw.DEMonMap,false,MapDraw.MapType);
+end;
 
 procedure TMapForm.BitBtn1Click(Sender: TObject);
 begin

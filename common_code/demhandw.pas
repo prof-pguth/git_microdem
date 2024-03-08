@@ -257,6 +257,7 @@ type
     MICRODEMformat1: TMenuItem;
     N8: TMenuItem;
     N9: TMenuItem;
+    Verifyfilesinmaplibrary1: TMenuItem;
     procedure ASCIIremovequotes1Click(Sender: TObject);
     procedure ASCII01Click(Sender: TObject);
     procedure HTMLcleanup1Click(Sender: TObject);
@@ -407,6 +408,7 @@ type
     procedure DiluviumDEMreprot1Click(Sender: TObject);
     procedure emplatedownload1Click(Sender: TObject);
     procedure MICRODEMformat1Click(Sender: TObject);
+    procedure Verifyfilesinmaplibrary1Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -3655,6 +3657,20 @@ end;
 procedure TDemHandForm.ShiftXYZcoordinates1Click(Sender: TObject);
 begin
    Conictolatlong1Click(Sender);
+end;
+
+
+procedure TDemHandForm.Verifyfilesinmaplibrary1Click(Sender: TObject);
+var
+   TheTable : tMyData;
+   fName : PathStr;
+begin
+   if FileExists(MapLibraryFName) then begin
+      fName := MapLibraryFName;
+      TheTable := Petmar_db.tMyData.Create(fName);
+      VerifyMapLibraryFilesExist(theTable,Memo1);
+      theTable.Destroy;
+   end
 end;
 
 

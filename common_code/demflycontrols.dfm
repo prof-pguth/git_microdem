@@ -4,7 +4,7 @@ object FlightControlForm: TFlightControlForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Flight Controls'
-  ClientHeight = 236
+  ClientHeight = 256
   ClientWidth = 361
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET

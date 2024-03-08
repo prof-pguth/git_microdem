@@ -536,6 +536,10 @@ object DemHandForm: TDemHandForm
           Caption = 'Create/update map library'
           OnClick = Createexternaldrive1Click
         end
+        object Verifyfilesinmaplibrary1: TMenuItem
+          Caption = 'Verify files in map library'
+          OnClick = Verifyfilesinmaplibrary1Click
+        end
         object N4: TMenuItem
           Caption = '-'
         end

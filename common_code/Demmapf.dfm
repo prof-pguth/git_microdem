@@ -51,6 +51,7 @@ object MapForm: TMapForm
     ParentFont = False
     TabOrder = 0
     OnClick = ScrollBox1Click
+    ExplicitLeft = 122
     object Image1: TImage
       Left = 3
       Top = -247
@@ -1769,6 +1770,7 @@ object MapForm: TMapForm
           object GDALbilinearbicubictoUTM1: TMenuItem
             Caption = 'GDAL bilinear/bicubic to UTM'
             GroupIndex = 1
+            OnClick = GDALbilinearbicubictoUTM1Click
           end
         end
         object Pickmode1: TMenuItem
@@ -4158,6 +4160,17 @@ object MapForm: TMapForm
         object N45: TMenuItem
           Caption = '-'
         end
+        object GDALupsampling1: TMenuItem
+          Caption = 'GDAL upsampling'
+          object Bilinnear1: TMenuItem
+            Caption = 'Bilinear'
+            OnClick = Bilinnear1Click
+          end
+          object Bilinnear2: TMenuItem
+            Caption = 'Biculbic'
+            OnClick = Bilinnear2Click
+          end
+        end
         object GDALslopemap1: TMenuItem
           Caption = 'GDAL slope map (Zevenbergen -Thorne)'
         end
@@ -6275,7 +6288,7 @@ object MapForm: TMapForm
       OnClick = Both1Click
     end
     object MenuItem3: TMenuItem
-      Caption = '&Reflectance'
+      Caption = 'Reflectance/hillshade'
       OnClick = MenuItem3Click
     end
     object erraincategory1: TMenuItem

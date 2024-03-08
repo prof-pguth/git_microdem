@@ -130,7 +130,7 @@ end;
 
 procedure TMapForm.GDALupsample1Click(Sender: TObject);
 begin
-   GDAL_upsample_DEM(MapDraw.DEMonMap);
+   GDAL_upsample_DEM(MapDraw.DEMonMap,true);
 end;
 
 procedure TMapForm.GDALwarpsubset1Click(Sender: TObject);
