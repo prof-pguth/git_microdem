@@ -6,10 +6,11 @@ inherited EROSContrastForm: TEROSContrastForm
   ClientWidth = 622
   FormStyle = fsStayOnTop
   Position = poDefaultSizeOnly
+  StyleElements = [seFont, seClient, seBorder]
   OnClose = FormClose
   OnCreate = FormCreate
-  ExplicitWidth = 634
-  ExplicitHeight = 378
+  ExplicitWidth = 638
+  ExplicitHeight = 379
   TextHeight = 15
   inherited Bevel1: TBevel
     Width = 409

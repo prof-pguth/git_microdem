@@ -6,6 +6,7 @@ inherited OptionsForm: TOptionsForm
   ClientHeight = 563
   ClientWidth = 793
   Position = poDefaultPosOnly
+  StyleElements = [seFont, seClient, seBorder]
   OnClose = FormClose
   OnCreate = FormCreate
   OnResize = FormResize
@@ -47,7 +48,7 @@ inherited OptionsForm: TOptionsForm
     Top = 0
     Width = 793
     Height = 505
-    ActivePage = TabSheet3
+    ActivePage = TabSheet10
     Align = alClient
     MultiLine = True
     TabOrder = 2

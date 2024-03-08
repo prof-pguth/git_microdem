@@ -1063,15 +1063,9 @@ begin
    {$EndIf}
 
    CheckBox25.Checked := MDDef.DEMIX_DoElevParamGraphs;
-   //CheckBox26.Checked := MDdef.WrapETOPO;
    CheckBox29.Checked := MDdef.AutoAssignNameField;
    CheckBox30.Checked := MDdef.MGRSandLatLongWhileRoam;
-
-   {$IfDef RecordProblems}
-      CheckBox31.Checked := MDdef.MDRecordDebugLog;
-   {$Else}
-      CheckBox31.Visible := false;
-   {$EndIf}
+   CheckBox31.Checked := MDdef.MDRecordDebugLog;
 
    CheckBox32.Checked := MDdef.ShowDBOnly;
    CheckBox33.Checked := MDdef.AutoFillHoles;
@@ -1350,9 +1344,7 @@ begin
       MDDef.RouteGeotiffExportGDAL := CheckBox23.Checked;
    {$EndIf}
 
-   {$IfDef RecordProblems}
-      MDdef.MDRecordDebugLog := CheckBox31.Checked;
-   {$EndIf}
+   MDdef.MDRecordDebugLog := CheckBox31.Checked;
 
    {$IfDef ExSidescan}
    {$Else}
