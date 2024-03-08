@@ -30,8 +30,9 @@ inherited SlopeCategoryEditor: TSlopeCategoryEditor
     0000000000000000000000000000000000000000000000000000000000000000
     0000000000000000000000000000000000000000000000000000000000000000
     000000000000000000000000000000000000000000000000000000000000}
-  ExplicitWidth = 469
-  ExplicitHeight = 489
+  StyleElements = [seFont, seClient, seBorder]
+  ExplicitWidth = 473
+  ExplicitHeight = 490
   TextHeight = 15
   inherited Bevel1: TBevel
     Width = 265

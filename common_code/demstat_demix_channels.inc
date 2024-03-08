@@ -17,7 +17,7 @@ begin
    {$IfDef RecordDEMIX} WriteLineToDebugFile('ChannelNetworkMissPercentages in'); {$EndIf}
    try
       GetDEMIXPaths(true);
-      if (AreasWanted = Nil) then AreasWanted := DEMIX_AreasWanted(true,AreaName);
+      if (AreasWanted = Nil) then AreasWanted := DEMIX_AreasWanted;
       for i := 0 to pred(AreasWanted.Count) do begin
          AreaName := AreasWanted.Strings[i];
          wmdem.SetPanelText(3, 'Channel misses: ' + IntToStr(succ(i)) + '/' + IntToStr(AreasWanted.Count) + '  ' + AreaName,true);
@@ -50,7 +50,7 @@ begin
     TestDEM := OpenNewDEM(DEMIX_test_DEMs_channel_grids + 'saga_channels_saga_sinks_removed_' + AreaName + '_' + TestDEMName + '.tif',false);
     if UpperCase(TestDEMName) = 'ALOS' then TStr := 'area' else TStr := 'point';
     fName := DEMIX_ref_DEMs_channel_grids + 'saga_channels_saga_sinks_removed_' + AreaName + '_dtm_ref_1sec_' + Tstr + '.tif';
-    //if Not FileExists(fName) then fName := DEMIX_ref_DEMs_channel_grids + 'saga_channels_saga_sinks_removed_' + AreaName + '_ref_1sec_point.dem';
+    //if Not FileExists(fName) then fName := DEMIX_ref_DEMs_channel_grids + 'saga_channels_saga_sinks_removed_' + AreaName + Ref1SecPointStr + '.dem';
     RefDEM := OpenNewDEM(fName,false);
 
     BaseDEM := OpenNewDEM(DEMIX_test_dems + areaName + '_' + TestDEMName + '.tif',false);
@@ -234,9 +234,6 @@ begin
           {$IfDef RecordDEMIX} WriteLineToDebugFile('Missing files for area ' + Area); {$EndIf}
        end
        else begin
-          //wmdem.SetPanelText(2, 'Mask water',true);
-          //MarkWaterMissingInAllOpenDEMs(DEM);    //this should not be needed
-
           Results := tStringList.Create;
           aline := 'DEMIX_TILE,AREA,LAT,LONG,CRITERION';
           for i := 1 to NumPt do aLine := aline + ',' + PointNames[i];
@@ -325,7 +322,7 @@ var
 begin
    {$IfDef RecordDEMIX} WriteLineToDebugFile('CreateChannelNetworkGridsFromVectors in'); {$EndIf}
    try
-      if (AreasWanted = Nil) then AreasWanted := DEMIX_AreasWanted(true,AreaName);
+      if (AreasWanted = Nil) then AreasWanted := DEMIX_AreasWanted;
       for i := 0 to pred(AreasWanted.Count) do begin
          AreaName := AreasWanted.Strings[i];
          Run(DEMIX_ref_DEMs_no_sink,DEMIX_ref_DEMs_channels,DEMIX_ref_DEMs_channel_grids,'Ref DEMs');
@@ -374,7 +371,6 @@ var
              end;
          end;
          TheFiles.Free;
-         //EndProgress;
          {$IfDef RecordDEMIX} WriteLineToDebugFile(What + ' shp file created=' + IntToStr(NumDone) + ' in ' + OutFolder); {$EndIf}
       end;
    end;
@@ -384,7 +380,7 @@ var
 begin
    {$IfDef RecordDEMIX} WriteLineToDebugFile('BatchCreateVectorChannelNewtwork in'); {$EndIf}
    //HeavyDutyProcessing := true;
-   if (AreasWanted = Nil) then AreasWanted := DEMIX_AreasWanted(true,AreaName);
+   if (AreasWanted = Nil) then AreasWanted := DEMIX_AreasWanted;
    for i := 0 to pred(AreasWanted.Count) do begin
       AreaName := AreasWanted.Strings[i];
       Run(DEMIX_ref_DEMs_no_sink,DEMIX_ref_DEMs_channels,' ref DEMs');
@@ -429,7 +425,7 @@ var
 
 
 begin
-   if (AreasWanted = Nil) then AreasWanted := DEMIX_AreasWanted(true,AreaName);
+   if (AreasWanted = Nil) then AreasWanted := DEMIX_AreasWanted;
    for i := 0 to pred(AreasWanted.Count) do begin
       AreaName := AreasWanted.Strings[i];
       {$IfDef RecordDEMIX} WriteLineToDebugFile('BatchRemoveSinksInDEMIX_DEMS start test DEMs'); {$EndIf}
@@ -450,8 +446,7 @@ begin
       GetDEMIXpaths;
       HeavyDutyProcessing := true;
       LockStatusBar := true;
-      AreasWanted := DEMIX_AreasWanted(true,AreaName);
-
+      AreasWanted := DEMIX_AreasWanted;
       BatchRemoveSinksInDEMIX_DEMS(Overwrite,AreasWanted);
       BatchCreateVectorChannelNewtwork(Overwrite,AreasWanted);
       CreateChannelNetworkGridsFromVectors(Overwrite,AreasWanted);
