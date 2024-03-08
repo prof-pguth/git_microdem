@@ -697,10 +697,12 @@ var
 var
    TheTable : Petmar_db.tMyData;
    fname : PathStr;
+   SavingDebugLog : Boolean;
 begin
    {$IfDef RecordIndex} WriteLineToDebugFile('CreateMapLibrary in'); {$EndIf}
    try
       ReportErrors := false;
+      SavingDebugLog := MDdef.MDRecordDebugLog;
       MDdef.MDRecordDebugLog := false;
       if (Memo1 <> Nil) then Memo1.Visible := true;
       PickMapIndexLocation;
@@ -708,7 +710,6 @@ begin
       fName := MapLibraryFName;
       if FileExists(MapLibraryFName) then begin
          TheTable := Petmar_db.tMyData.Create(FName);
-         if AnswerIsYes('Verify files are present') then VerifyMapLibraryFilesExist(theTable,Memo1);
       end
       else begin
          CreateIntegratedDataBaseTable(MapLibraryFName);
@@ -716,11 +717,11 @@ begin
       end;
 
       CreateUpdateIntegratedIndex(TheTable);
-      TheTable.Destroy;
       if (Memo1 <> Nil) then Memo1.Lines.Add(TimeToStr(Now) + ' Update over');
    finally
+      MDdef.MDRecordDebugLog := SavingDebugLog;
       ReportErrors := true;
-      MDdef.MDRecordDebugLog := true;
+      TheTable.Destroy;
       {$IfDef RecordIndex} WriteLineToDebugFile('CreateMapLibrary out'); {$EndIf}
    end;
 end;
@@ -1082,7 +1083,7 @@ begin
       if GDALversion and GDALGridFormat(ExtractFileExt(aName),false) then begin
          {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('GDAL options for DEM'); {$EndIf}
          ProjName := '';
-         if FileExtEquals(aName,'.ASC') then begin //Spanish and Trento DEMs have no projection in the ASC files, and user must put WKT file in directory  (Spain now Geotiff)
+         if FileExtEquals(aName,'.ASC') then begin //Spanish and Trento and French DEMs have no projection in the ASC files, and user must put WKT file in directory  (Spain now Geotiff)
             {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('ASC reprojection'); {$EndIf}
             ProjName := FindSingleWKTinDirectory(ExtractFilePath(aName));
             if (ProjName <> '') then ProjName := '-a_srs ' + ProjName;

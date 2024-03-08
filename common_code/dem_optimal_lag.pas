@@ -1,12 +1,11 @@
 unit dem_optimal_lag;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
-{___________________________________}
-
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program       }
+{ PETMAR Trilobite Breeding Ranch    }
+{ Released under the MIT Licences    }
+{ Copyright (c) 2024 Peter L. Guth   }
+{____________________________________}
 
 {$I nevadia_defines.inc}
 
@@ -78,7 +77,7 @@ implementation
 {$R *.dfm}
 
 uses
-   Petmar,PetMath,// SystemCriticalU,
+   Petmar,PetMath,
    BaseGraf,Thread_timers,
    Petmar_db,
    BaseMap,
@@ -155,7 +154,7 @@ begin
          for i := 0 to pred(DEMs.Count) do begin
             GISDB[db].ApplyGISFilter('DEM=' + QuotedStr(DEMs.Strings[i]));
             MomentVar := GISdb[db].GetFieldStatistics('TOTAL_LAG');
-            TStr := DEMs.strings[i] + ' avg lag=' + RealToString(MomentVar.mean,-18,-4) + ' std lag=' + RealToString(MomentVar.sdev,-18,-4) + '  max lag=' + RealToString(MomentVar.MaxZ,-18,-4) + ' npts=' + IntToStr(MomentVar.NPts);
+            TStr := DEMs.strings[i] + ' avg lag=' + RealToString(MomentVar.mean,-18,-4) + ' std lag=' + RealToString(MomentVar.std_dev,-18,-4) + '  max lag=' + RealToString(MomentVar.MaxZ,-18,-4) + ' npts=' + IntToStr(MomentVar.NPts);
             Findings.Add(TStr);
             Memo1.Lines.Add(TStr);
          end;
@@ -214,8 +213,8 @@ var
       Lag_and_Shift(x,y,MainDEM,SubDEM,GridLimits,NPts,xLag,YLag,MaxR,NoLagR,zRange,AvgSlope,BestA,BestB,CorrelationMatrix);
 
       if AddToTable then Memo1.Lines.Add(IntegerToString(LagsOut,4) + RealToString(2*LagsOut*DEMGlb[MainDEM].AverageSpace,8,1) +
-          RealToString(MaxR,8,4) + IntegerToString(xLag,4) + IntegerToString(yLag,6) + RealToString(sqrt(sqr(xlag)+sqr(ylag)),6,2)  + RealToString(zRange,8,1) + RealToString(AvgSlope,8,2)
-          + RealToString(BestA,15,4) + RealToString(BestB,15,4)   );
+          RealToString(MaxR,8,4) + IntegerToString(xLag,4) + IntegerToString(yLag,6) + RealToString(sqrt(sqr(xlag)+sqr(ylag)),6,2)  +
+          RealToString(zRange,8,1) + RealToString(AvgSlope,8,2)  + RealToString(BestA,15,4) + RealToString(BestB,15,4)   );
    end;
 
 begin
