@@ -2932,6 +2932,10 @@ object dbtablef: Tdbtablef
         Caption = 'EGM96'
         OnClick = EGM961Click
       end
+      object QuartilesinCLUSTERfieldbasedonsort1: TMenuItem
+        Caption = 'Quartiles in CLUSTER field based on sort'
+        OnClick = QuartilesinCLUSTERfieldbasedonsort1Click
+      end
     end
     object Stringfields1: TMenuItem
       Caption = 'String field operations'
@@ -3596,14 +3600,6 @@ object dbtablef: Tdbtablef
       Caption = 'Mask field by sub-string'
       OnClick = Maskfieldbystring1Click
     end
-    object Sort1: TMenuItem
-      Caption = 'Sort table (ascending)'
-      OnClick = Sort1Click
-    end
-    object Sorttabledescending1: TMenuItem
-      Caption = 'Sort table (descending)'
-      OnClick = Sorttabledescending1Click
-    end
     object Clusterlegend1: TMenuItem
       Caption = 'Cluster legend'
       OnClick = Clusterlegend1Click
@@ -3619,6 +3615,19 @@ object dbtablef: Tdbtablef
     object Updaterecordnumbers1: TMenuItem
       Caption = 'Update record numbers'
       OnClick = Updaterecordnumbers1Click
+    end
+    object Copycolumntoclipboard1: TMenuItem
+      Bitmap.Data = {
+        F6000000424DF600000000000000760000002800000010000000100000000100
+        0400000000008000000000000000000000001000000010000000000000000000
+        80000080000000808000800000008000800080800000C0C0C000808080000000
+        FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00FFFFFFFFFFFF
+        FFFFFFF0000000000FFFFF0FFFFFFFFFF0FFFF0FFFFFFFFFF0FFFF0F9FFFFFFF
+        F0FFFF0FF9FFFFFFF0FF9999999FFFFFF0FF99999999FFFFF0FF99999999FFFF
+        F0FF9999999FFFFFF0FFFF0FF9FFFFFFF0FFFF0F9FFFFFFFF0FFFF0FFFDDDDFF
+        F0FFFFF000DDDD000FFFFFFFFDDFFDDFFFFFFFFFFFDDDDFFFFFF}
+      Caption = 'Copy column to clipboard'
+      OnClick = Copycolumntoclipboard1Click
     end
   end
   object PopupMenu10: TPopupMenu
@@ -3742,12 +3751,15 @@ object dbtablef: Tdbtablef
         Caption = 'Create DB with criteria by DEM'
         OnClick = CreateDBwithparametersbyDEM1Click
       end
+      object CopHeadtoheadrecord1: TMenuItem
+        Caption = 'Cop Head to head record by criterion'
+        OnClick = CopHeadtoheadrecord1Click
+      end
     end
     object Modifythistable1: TMenuItem
       Caption = 'Modify this table'
       object SSIMtodissimilarity1: TMenuItem
         Caption = 'Convert SSIM/R2 evaluations to dissimilarity'
-        OnClick = SSIMtodissimilarity1Click
       end
       object Addtilecharacteristics1: TMenuItem
         Caption = 'Add tile characteristics to DB'
@@ -3762,12 +3774,16 @@ object dbtablef: Tdbtablef
         OnClick = AddcountryfieldtoDB1Click
       end
       object Evaluationrangeforcriterion1: TMenuItem
-        Caption = 'Add evaluation range (max - min) for criterion and tile'
+        Caption = 'Add best evaluation and range (max - min) for criterion and tile'
         OnClick = Evaluationrangeforcriterion1Click
       end
       object AddIMAGEfieldfordifferencedistributiongraphs1: TMenuItem
         Caption = 'Add IMAGE field for difference distribution graphs'
         OnClick = AddIMAGEfieldfordifferencedistributiongraphs1Click
+      end
+      object CiompareCOPtorivals1: TMenuItem
+        Caption = 'Compare COP to rivals'
+        OnClick = CiompareCOPtorivals1Click
       end
     end
     object Filterthistable1: TMenuItem
@@ -3781,8 +3797,12 @@ object dbtablef: Tdbtablef
         OnClick = Filterforjustsignedcrirteria1Click
       end
       object FilterforDEMIXtiles1: TMenuItem
-        Caption = 'Filter for DEMIX tiles'
+        Caption = 'Filter for DEMIX tiles, single record per tile'
         OnClick = FilterforDEMIXtiles1Click
+      end
+      object Filterfor999valuesinanyevaluation1: TMenuItem
+        Caption = 'Filter for -999 values in any evaluation'
+        OnClick = Filterfor999valuesinanyevaluation1Click
       end
     end
     object AssignDEMIXDEMcolors1: TMenuItem
@@ -3799,6 +3819,10 @@ object dbtablef: Tdbtablef
         Caption = 'Vertical'
         OnClick = Vertical1Click
       end
+    end
+    object InventoryFUVSSIMcriteriainDB1: TMenuItem
+      Caption = 'Inventory FUV/SSIM criteria in DB'
+      OnClick = InventoryFUVSSIMcriteriainDB1Click
     end
     object N49: TMenuItem
       Caption = '-'

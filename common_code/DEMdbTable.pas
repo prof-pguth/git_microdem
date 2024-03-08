@@ -484,8 +484,6 @@ type
     Markholes1: TMenuItem;
     Recordswithholes1: TMenuItem;
     Arearecordstatistics1: TMenuItem;
-    Sort1: TMenuItem;
-    Sorttabledescending1: TMenuItem;
     Find1: TMenuItem;
     FindDialog1: TFindDialog;
     Sinuosity1: TMenuItem;
@@ -966,7 +964,7 @@ type
     MaskallopenDEMgrids1: TMenuItem;
     Currenttest1: TMenuItem;
     Evaluationrangeforcriterion1: TMenuItem;
-    SSIMtodissimilarity1: TMenuItem;
+    //SSIMtodissimilarity1: TMenuItem;
     Addtilecharacteristics1: TMenuItem;
     Sorttable1: TMenuItem;
     Ascending2: TMenuItem;
@@ -1006,6 +1004,12 @@ type
     GraphSSIMFUVbyclustermeans1: TMenuItem;
     GraphSSIMFUVbyDEMmeans1: TMenuItem;
     AddsloperoughnessrelieftoDB1: TMenuItem;
+    Filterfor999valuesinanyevaluation1: TMenuItem;
+    CiompareCOPtorivals1: TMenuItem;
+    CopHeadtoheadrecord1: TMenuItem;
+    InventoryFUVSSIMcriteriainDB1: TMenuItem;
+    Copycolumntoclipboard1: TMenuItem;
+    QuartilesinCLUSTERfieldbasedonsort1: TMenuItem;
     //Pointfilter1: TMenuItem;
     //Pointfilter2: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
@@ -1328,8 +1332,6 @@ type
     procedure Dayssincefullmoon1Click(Sender: TObject);
     procedure Markholes1Click(Sender: TObject);
     procedure Recordswithholes1Click(Sender: TObject);
-    procedure Sort1Click(Sender: TObject);
-    procedure Sorttabledescending1Click(Sender: TObject);
     procedure Find1Click(Sender: TObject);
     procedure FindDialog1Find(Sender: TObject);
     procedure Sinuosity1Click(Sender: TObject);
@@ -1746,7 +1748,7 @@ type
     procedure MaskallopenDEMgrids1Click(Sender: TObject);
     procedure Currenttest1Click(Sender: TObject);
     procedure Evaluationrangeforcriterion1Click(Sender: TObject);
-    procedure SSIMtodissimilarity1Click(Sender: TObject);
+    //procedure SSIMtodissimilarity1Click(Sender: TObject);
     procedure Addtilecharacteristics1Click(Sender: TObject);
     procedure Ascending2Click(Sender: TObject);
     procedure Descending2Click(Sender: TObject);
@@ -1778,6 +1780,12 @@ type
     procedure Singlefieldarithmetic1Click(Sender: TObject);
     procedure GraphSSIMFUVbyclustermeans1Click(Sender: TObject);
     procedure AddsloperoughnessrelieftoDB1Click(Sender: TObject);
+    procedure Filterfor999valuesinanyevaluation1Click(Sender: TObject);
+    procedure CiompareCOPtorivals1Click(Sender: TObject);
+    procedure CopHeadtoheadrecord1Click(Sender: TObject);
+    procedure InventoryFUVSSIMcriteriainDB1Click(Sender: TObject);
+    procedure Copycolumntoclipboard1Click(Sender: TObject);
+    procedure QuartilesinCLUSTERfieldbasedonsort1Click(Sender: TObject);
     //procedure Pointfilter2Click(Sender: TObject);
     //procedure Pointfilter1Click(Sender: TObject);
   private
@@ -3480,11 +3488,6 @@ begin
    FlipBinNames1.Visible  := (SelectedColumn = 'BIN_NAME');
    Plotwithcolorsfromthisfield1.Visible := NumericField;
    EditField1.Visible := CheckBox1.Checked;
-   {$IfDef AllowSX_index}
-   {$Else}
-      Sort1.Visible := false;
-      SortTableDescending1.Visible := false;
-   {$EndIf}
    FieldTitlePopupMenu7.PopUp(Mouse.CursorPos.X,Mouse.CursorPos.Y);
 end;
 
@@ -4757,7 +4760,7 @@ begin
                ThisGraph.OpenPointFile(rfile,ThisGraph.Symbol);
             end
             else if (Sender = N2Dgraphallopendatabaseslines1) then begin
-               ThisGraph.OpenDataFile(rfile,true,ConvertPlatformColorToTColor(GISdb[j].dbOpts.LineColor));
+               ThisGraph.OpenDataFile(rfile,ConvertPlatformColorToTColor(GISdb[j].dbOpts.LineColor));
             end
             else begin
                ThisGraph.OpenDataFile(rfile);
@@ -6256,22 +6259,6 @@ begin
 end;
 
 
-procedure Tdbtablef.Sort1Click(Sender: TObject);
-begin
-{$IfDef AllowSX_index}
-   {$IfDef RecordSortTable} WriteLineToDebugFile('Tdbtablef.Sort1Click in'); {$EndIf}
-    GISdb[DBonTable].MyData.TheData.IndexFieldNames := '';
-    GISdb[DBonTable].TheData.IndexDefs.Update;
-
-    if GISdb[DBonTable].TheData.indexdefs.indexof(SelectedColumn) = -1 then begin//DeleteSX(MyData,SelectedColumn);
-       CreateSX(GISdb[DBonTable].TheData,SelectedColumn,SelectedColumn,Sender= Sorttabledescending1);
-    end;
-   {$IfDef RecordSortTable} WriteLineToDebugFile('Set GISdb[DBonTable].MyData.IndexFieldNames=' + SelectedColumn); {$EndIf}
-    GISdb[DBonTable].MyData.TheData.IndexFieldNames := SelectedColumn;
-   {$IfDef RecordSortTable} WriteLineToDebugFile('Tdbtablef.Sort1Click out'); {$EndIf}
-{$EndIf}
-end;
-
 procedure Tdbtablef.Sortfield1Click(Sender: TObject);
 var
    i,NPts : int64;
@@ -6288,11 +6275,6 @@ begin
    ShowStatus;
 end;
 
-
-procedure Tdbtablef.Sorttabledescending1Click(Sender: TObject);
-begin
-   Sort1Click(Sender);
-end;
 
 procedure Tdbtablef.Soundvelocity1Click(Sender: TObject);
 begin
@@ -6380,10 +6362,6 @@ begin
    {$EndIf}
 end;
 
-procedure Tdbtablef.SSIMtodissimilarity1Click(Sender: TObject);
-begin
-   SwitchSSIMorFUVScoring(DBonTable);
-end;
 
 procedure Tdbtablef.Statisticsgroupedbyonefield1Click(Sender: TObject);
 begin
@@ -6514,10 +6492,17 @@ end;
 
 
 procedure Tdbtablef.Historgram1Click(Sender: TObject);
+var
+   Fields : tStringList;
 begin
    {$IfDef NoDBGrafs}
    {$Else}
-      GISdb[DBonTable].OldCreateHistogramFromDatabase(true,SelectedColumn,'','',false);
+      Fields := tStringList.Create;
+      Fields.Add(SelectedColumn);
+      //GISdb[DBonTable].OldCreateHistogramFromDatabase(true,SelectedColumn,'','',false);
+      //CreateHistogramFromDataBase(RegHist: boolean; Fields : tStringList; AllDBs: boolean; MinUse : float64 = 1; MaxUse : float64 = -1; BinSize : float64 = -99): TThisBaseGraph;
+      GISdb[DBonTable].CreateHistogramFromDataBase(true,Fields,false);
+      Fields.Destroy;
    {$EndIf}
 end;
 
@@ -9699,6 +9684,11 @@ begin
 end;
 
 
+procedure Tdbtablef.CopHeadtoheadrecord1Click(Sender: TObject);
+begin
+   CopHeadToHead(dbOnTable);
+end;
+
 procedure Tdbtablef.COPoALOS1Click(Sender: TObject);
 begin
 {$IfDef ExDEMIXexperimentalOptions}
@@ -10292,6 +10282,18 @@ begin
    DBEditting := DBonTable;
 end;
 
+procedure Tdbtablef.Copycolumntoclipboard1Click(Sender: TObject);
+var
+   sl : tstringlist;
+begin
+   GISdb[DBonTable].EmpSource.Enabled := false;
+   sl := GISdb[DBonTable].MyData.UniqueEntriesInDB(SelectedColumn);
+   Clipboard.AsText := sl.Text;
+   sl.Destroy;
+   GISdb[DBonTable].EmpSource.Enabled := true;
+end;
+
+
 procedure Tdbtablef.CopyCoordinatesClick(Sender: TObject);
 var
    NParts : integer;
@@ -10792,7 +10794,7 @@ function Tdbtablef.DrawDEMTerrainprofile(Sender: TObject) : tThisBaseGraph;
 var
   i,j,rc : integer;
   rFile : file;
-  MaxDist,Lat,Long,Lat2,Long2,Distance,Bearing,CumDist,MaxDensity{,LastZ} : float64;
+  MaxDist,Lat,Long,Lat2,Long2,Distance,Bearing,CumDist,MaxDensity : float64;
   v : tFloatPoint;
   v3 : array[1..3] of float64;
   u1,u2 : ShortString;
@@ -10809,7 +10811,7 @@ var
              aShapeFile.ShapeFileDEM := TheMapOwner.MapDraw.DEMonMap;
              MaxDist := 0.001 * aShapeFile.LineLength(MyData.RecNo,True);
              if aShapeFile.CurrentPolyLineHeader.NumPoints < 2 then exit;
-             Result.OpenDataFile(rfile,(Sender <> Allnormalizedprofiles1));
+             Result.OpenDataFile(rfile);
              MinZ := aShapeFile.CurrentLineZRange[1];
              MaxZ := aShapeFile.CurrentLineZRange[2];
                for i := 0 to pred(aShapeFile.CurrentPolyLineHeader.NumPoints) do begin
@@ -10895,7 +10897,7 @@ var
 
 
 begin
-   with GISdb[DBonTable]{,MyData} do begin
+   with GISdb[DBonTable] do begin
         if (Sender = AllProfiles1) and (MyData.RecordCount > 35) then begin
            if Not AnswerIsYes('Proceed with ' + IntToStr(MyData.RecordCount) + ' records') then exit;
         end;
@@ -10976,7 +10978,7 @@ begin
             end;
             CloseFile(rfile);
 
-           Result.OpenDataFile(rfile,true);
+           Result.OpenDataFile(rfile);
             for i := 0 to 100 do begin
                v[1] := 0.01 * i;
                v[2] := 0;
@@ -11680,6 +11682,11 @@ end;
 procedure Tdbtablef.Integer2Click(Sender: TObject);
 begin
    GISdb[DBonTable].AddAndFillFieldFromDEM(adElevNearestInt);
+end;
+
+procedure Tdbtablef.InventoryFUVSSIMcriteriainDB1Click(Sender: TObject);
+begin
+   CriteriaInSSIM_FUV_db(dbOnTable);
 end;
 
 procedure Tdbtablef.Editrecordsingrid1Click(Sender: TObject);
@@ -12751,6 +12758,11 @@ begin
    ShowStatus;
 end;
 
+procedure Tdbtablef.QuartilesinCLUSTERfieldbasedonsort1Click(Sender: TObject);
+begin
+   GISdb[DBonTable].PutInQuartilesBasedOnExistingSort;
+end;
+
 procedure Tdbtablef.Quickfilter1Click(Sender: TObject);
 begin
    GISdb[DBonTable].DisplayTable(SelectedColumn);
@@ -13612,6 +13624,19 @@ begin
    //end;
 end;
 
+procedure Tdbtablef.Filterfor999valuesinanyevaluation1Click(Sender: TObject);
+var
+   i : integer;
+   aFilter : shortstring;
+begin
+   aFilter := '';
+   for i := 1 to NumDEMIXDEM do begin
+      if i > 1 then aFilter := aFilter + ' OR ';
+      aFilter := aFilter + DEMIXshort[i] + '= -999';
+   end;
+   GISdb[DBonTable].ApplyGISFilter(aFilter);
+end;
+
 procedure Tdbtablef.FilterforDEMIXtiles1Click(Sender: TObject);
 begin
    GISdb[DBonTable].ApplyGISFilter('REF_TYPE=' + QuotedStr('DTM') + ' AND LAND_TYPE=' + QuotedStr('ALL') + ' AND CRITERION=' + QuotedStr('ELVD_AVD'));
@@ -13702,6 +13727,11 @@ begin
    {$IfDef RecordEditDB} WriteLineToDebugFile('CheckBox1Click (dbedit) out');{$EndIf}
 end;
 
+
+procedure Tdbtablef.CiompareCOPtorivals1Click(Sender: TObject);
+begin
+   WhoIsBetter(DBonTable);
+end;
 
 procedure Tdbtablef.Animatefield1Click(Sender: TObject);
 begin
@@ -14872,7 +14902,7 @@ end;
 
 procedure Tdbtablef.Evaluationrangeforcriterion1Click(Sender: TObject);
 begin
-    EvaluationRangeForCriterion(DBonTable);
+   EvaluationRangeForCriterion(DBonTable);
 end;
 
 procedure Tdbtablef.PlotClick(Sender: TObject);
