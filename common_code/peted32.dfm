@@ -91,7 +91,6 @@ object PetEditf: TPetEditf
     ParentShowHint = False
     ShowHint = True
     TabOrder = 0
-    ExplicitWidth = 483
     object SpeedButton5: TSpeedButton
       Left = 0
       Top = 0
@@ -136,7 +135,7 @@ object PetEditf: TPetEditf
       NumGlyphs = 2
       OnClick = SpeedButton7Click
     end
-    object SpeedButton4: TSpeedButton
+    object SpeedButton1: TSpeedButton
       Left = 50
       Top = 0
       Width = 25
@@ -156,6 +155,23 @@ object PetEditf: TPetEditf
         99337F3FF7F3733777F30F08F0F0337999337F7737F73F7777330FFFF0039999
         93337FFFF7737777733300000033333333337777773333333333}
       NumGlyphs = 2
+      OnClick = SpeedButton1Click
+    end
+    object SpeedButton4: TSpeedButton
+      Left = 75
+      Top = 0
+      Width = 25
+      Height = 22
+      Hint = 'Save file'
+      Glyph.Data = {
+        F6000000424DF600000000000000760000002800000010000000100000000100
+        0400000000008000000000000000000000001000000010000000000000000000
+        80000080000000808000800000008000800080800000C0C0C000808080000000
+        FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00FFFFFFFFFFFF
+        FFFFFFF0000000000FFFFF0FFFFFFFFFF0FFFF0FFFFFFFFFF0FFFF0F9FFFFFFF
+        F0FFFF0FF9FFFFFFF0FF9999999FFFFFF0FF99999999FFFFF0FF99999999FFFF
+        F0FF9999999FFFFFF0FFFF0FF9FFFFFFF0FFFF0F9FFFFFFFF0FFFF0FFFDDDDFF
+        F0FFFFF000DDDD000FFFFFFFFDDFFDDFFFFFFFFFFFDDDDFFFFFF}
       OnClick = SpeedButton4Click
     end
   end
@@ -174,6 +190,7 @@ object PetEditf: TPetEditf
     PlainText = True
     ScrollBars = ssBoth
     TabOrder = 1
+    ExplicitHeight = 241
   end
   object MainMenu1: TMainMenu
     Left = 73

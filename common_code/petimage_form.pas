@@ -383,10 +383,10 @@ uses
    Zipatone,
 {$EndIf}
 
-   {$IfDef ExZipatone}
-   {$Else}
-     sc_ColLith,
-   {$EndIf}
+{$IfDef ExZipatone}
+{$Else}
+  sc_ColLith,
+{$EndIf}
 
 
 {$IfDef ExGraphs}
@@ -453,7 +453,7 @@ var
    AskCols : boolean;
    x,y : integer;
 begin
-   {$IfDef RecordBigBitmap}  WriteLineToDebugFile('MakeBigBitmap in'); {$EndIf}
+   {$IfDef RecordBigBitmap} WriteLineToDebugFile('MakeBigBitmap in'); {$EndIf}
    Result := nil;
    if (TheFiles.Count > 0) then begin
      AskCols := (Cols < 0);
@@ -483,11 +483,11 @@ begin
          if AskCols then Result.Changecolumns1Click(nil)
          else Result.RedrawSpeedButton12Click(Nil);
          BigBMP.Free;
-         {$IfDef RecordBigBitmap}  WriteLineToDebugFile('MakeBigBitmap out, imageform created'); {$EndIf}
+         {$IfDef RecordBigBitmap} WriteLineToDebugFile('MakeBigBitmap out, imageform created'); {$EndIf}
       end;
    end
    else begin
-      {$IfDef RecordBigBitmap}  WriteLineToDebugFile('Nothing in string list'); {$EndIf}
+      {$IfDef RecordBigBitmap} WriteLineToDebugFile('Nothing in string list'); {$EndIf}
    end;
    theFiles.Destroy;
 end;
@@ -503,13 +503,10 @@ end;
 
 
 procedure DoBitmapDifference(bmp1,bmp2 : tMyBitmap; var Difference : float64; Display : boolean = true);
-//const
-  //GoGrayscale = false;
 var
    xstart,ystart,xend,yend,
    x,y,ChangeCount : integer;
    MaxDiff,Red1,Red2,Green1,Green2,Blue1,Blue2,Red3 : byte;
-   //Gray1,Gray2,Gray3 : byte;
    Diffs : array[0..255] of integer;
    BMP3 : tMyBitmap;
    BMPMemory,BMPMemory2,BMPMemory3 : tBMPMemory;
@@ -623,9 +620,6 @@ begin
       {$IfDef RecordProblems} WriteLineToDebugFile('DifferenceTwoBitmaps out');     {$EndIf}
    end
    else begin
-      fName1 := 'C:\Temp\fox\fox_captures\' + 'IMG_20180726_200659.jpg';
-      fName2 := 'C:\Temp\fox\fox_captures\' + 'IMG_20180726_200705.jpg';
-
       GetFileFromDirectory('Image 1 to compare',GraphicsFilters,fName1);
       GetFileFromDirectory('Image 2 to compare',GraphicsFilters,fName2);
       bmp1 := LoadBitmapFromFile(fName1);
@@ -671,7 +665,6 @@ begin
    Bitmap := DefaultHorizontalLegendOnBitmap(Min,Max,Units,'',Legend,ChloroplethScheme);
    DisplayBitmap(Bitmap,'Legend');
    Bitmap.Free;
-   //Bitmap := Nil;
 end;
 
 

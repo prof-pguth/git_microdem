@@ -26,6 +26,7 @@ object ImageDisplayForm: TImageDisplayForm
     Height = 267
     Align = alClient
     TabOrder = 0
+    ExplicitHeight = 247
     object Image1: TImage
       Left = -2
       Top = 3
@@ -46,6 +47,7 @@ object ImageDisplayForm: TImageDisplayForm
     Align = alBottom
     Caption = 'Panel1'
     TabOrder = 1
+    ExplicitTop = 273
   end
   object ToolBar1: TToolBar
     Left = 0
@@ -357,6 +359,7 @@ object ImageDisplayForm: TImageDisplayForm
       item
         Width = 50
       end>
+    ExplicitTop = 273
   end
   object Panel2: TPanel
     Left = 0
@@ -365,6 +368,7 @@ object ImageDisplayForm: TImageDisplayForm
     Height = 41
     Align = alBottom
     TabOrder = 4
+    ExplicitTop = 273
     object TrackBar1: TTrackBar
       Left = 240
       Top = 6

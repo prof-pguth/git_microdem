@@ -45,6 +45,7 @@ type
     NewFile1: TMenuItem;
     FileOpen1: TMenuItem;
     Addlinenumbers1: TMenuItem;
+    SpeedButton1: TSpeedButton;
     procedure Addlinenumbers1Click(Sender: TObject);
     procedure NewFile1Click(Sender: TObject);
     procedure FileOpenClick(Sender: TObject);
@@ -63,6 +64,7 @@ type
     procedure SpeedButton4Click(Sender: TObject);
     procedure SpeedButton5Click(Sender: TObject);
     procedure SpeedButton7Click(Sender: TObject);
+    procedure SpeedButton1Click(Sender: TObject);
   private
     procedure WMClearListeningWindow(var Msg : TMessage); message WM_ClearListeningWindow;
   public
@@ -367,9 +369,14 @@ begin
 end;
 
 
-procedure TPetEditf.SpeedButton4Click(Sender: TObject);
+procedure TPetEditf.SpeedButton1Click(Sender: TObject);
 begin
    Save1Click(Sender);
+end;
+
+procedure TPetEditf.SpeedButton4Click(Sender: TObject);
+begin
+   RichEdit1.CopyToClipboard;
 end;
 
 procedure TPetEditf.SpeedButton5Click(Sender: TObject);
