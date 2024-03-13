@@ -1338,7 +1338,7 @@ var
    DEMIXtileDB,LandCoverGrid : integer;
    bbgrid : tGridLimits;
    fName : PathStr;
-   AreaName,DEMIXtile,LandTypeMask,TileHeader : shortstring;
+   Country,AreaName,DEMIXtile,LandTypeMask,TileHeader : shortstring;
    AreaGridFull,
    AreaAveElev,AreaAveSlope,AreaAveRuff,AreaAveRelief,
    AreaForestPC, AreaUrbanPC,AreaBarrenPC,AreaWaterPC,
@@ -1349,7 +1349,7 @@ var
 
          procedure InitializeStringLists;
          const
-            TileStatsString = ',LAT,LONG,GRID_FULL,AVG_ELEV,AVG_SLOPE,AVG_ROUGH,RELIEF,FOREST_PC,URBAN_PC,BARREN_PC,WATER_PC';
+            TileStatsString = ',COUNTRY,LAT,LONG,GRID_FULL,AVG_ELEV,AVG_SLOPE,AVG_ROUGH,RELIEF,FOREST_PC,URBAN_PC,BARREN_PC,WATER_PC';
          begin
             TileStats := tStringList.Create;
             TileStats.Add('AREA,DEMIX_TILE' + TileStatsString);
@@ -1363,7 +1363,10 @@ var
                begin
                   {$IfDef RecordDEMIX} WriteLineToDebugFile(fName + '  lines=' + IntToStr(sl.Count)); {$EndIf}
                   if (sl.count > 1) then begin
-                     fName := DEMIXresultsDir + 'Summary' + fname + '.csv';
+                     fName := DEMIXSettingsDir + fname + '.dbf';
+                     DeleteFileIfExists(fName);
+                     fName := ChangeFileExt(fName,'.csv');
+                     DeleteFileIfExists(fName);
                      StringList2CSVtoDB(sl,fName);
                      {$IfDef RecordDEMIX} HighlightLineToDebugFile('Summary stats written to ' + fName); {$EndIf}
                   end
@@ -1373,8 +1376,10 @@ var
 
          begin
             {$IfDef RecordFullDEMIX} WriteLineToDebugFile('DEMIX start string list processing'); {$EndIf}
-            ProcessStringList('_DEMIX_tiles_used',TileStats);
-            ProcessStringList('_DEMIX_areas_used',AreaStats);
+            TileStats.SaveToFile('c:\temp\tilestats.csv');
+            AreaStats.SaveToFile('c:\temp\areastats.csv');
+            ProcessStringList('DEMIX_tiles_statictics',TileStats);
+            ProcessStringList('DEMIX_area_statistics',AreaStats);
          end;
 
 
@@ -1476,7 +1481,7 @@ var
                AreaBarrenPC := AreaBarrenPC + BarrenPC;
                AreaWaterPC := AreaWaterPC + WaterPC;
 
-               TileHeader := AreaName + ',' + DEMIXTile + ',' + RealToString(LatCent,-12,-2) + ',' + RealToString(LongCent,-12,-2) + ',' +
+               TileHeader := AreaName + ',' + DEMIXTile + ',' + Country + ',' + RealToString(LatCent,-12,-2) + ',' + RealToString(LongCent,-12,-2) + ',' +
                   RealToString(GridFull,-6,-2)   + ','  + RealToString(ElevMomentVar.Mean,-12,-2) + ',' +
                   RealToString(SlopeMomentVar.Mean,-12,-2)  + ',' + RealToString(RoughMomentVar.Mean,-12,-2)  + ',' +
                   RealToString(ElevMomentVar.Maxz - ElevMomentVar.Minz,-12,-2) + ',' + RealToString(ForestPC,-12,-2)  + ',' + RealToString(UrbanPC,-12,-2) + ','
@@ -1557,7 +1562,7 @@ var
             end;
                j := GISdb[DEMIXtileDB].MyData.FiltRecsInDB;
                DEMGlb[DEMIXRefDEM].DEMCenterPoint(LatCent,LongCent);
-               TileHeader := AreaName + ',' + IntToStr(j) + ',' + RealToString(LatCent,-12,-2) + ',' + RealToString(LongCent,-12,-2) + ',' +
+               TileHeader := AreaName + ',' + IntToStr(j) + ',' + Country + ',' + RealToString(LatCent,-12,-2) + ',' + RealToString(LongCent,-12,-2) + ',' +
                   RealToString(AreaGridFull / j,-6,-2)   + ','  + RealToString(AreaAveElev / j,-12,-2) + ',' +
                   RealToString(AreaAveSlope / j,-12,-2)  + ',' + RealToString(AreaAveRuff / j,-12,-2)  + ',' +
                   RealToString(AreaAveRelief / j,-12,-2) + ',' + RealToString(AreaForestPC / j,-12,-2)  + ',' + RealToString(AreaUrbanPC / j,-12,-2) + ','
@@ -1590,6 +1595,7 @@ begin {procedure ComputeDEMIX_Summary_stats}
       InitializeStringLists;
       for i := 0 to pred(AreasWanted.Count) do begin
          AreaName := AreasWanted.Strings[i];
+         Country := GetCountryForArea(AreaName);
          wmdem.SetPanelText(1,'Area: ' + IntToStr(succ(i)) + '/' + IntToStr(AreasWanted.Count) + '  ' + AreaName);
          GetAreaDEMNames(AreaName);
          if FileExists(RefDTMPointFName) then begin
@@ -1631,31 +1637,76 @@ begin
 end;
 
 
+procedure AddFieldsToDEMIXDB(DBonTable : integer; theFields : tStringList);
+begin
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('AddFieldsToDEMIXDB, fields=' + IntToStr(TheFields.Count)); {$EndIf}
+   //if not FileExists(GISdb[DBonTable].dbOpts.LinkTableName) then begin
+   GISdb[DBonTable].ClearLinkTable(true);
+      GISdb[DBonTable].dbOpts.LinkTableName := DEMIXSettingsDir + 'demix_tiles_statistics.dbf';
+      GISdb[DBonTable].dbOpts.LinkFieldThisDB := 'DEMIX_TILE';
+      GISdb[DBonTable].dbOpts.LinkFieldOtherDB := 'DEMIX_TILE';
+   //end;
+
+   GISDb[DBonTable].ClearGISFilter;
+   GISDb[DBonTable].EmpSource.Enabled := false;
+   ShowHourglassCursor;
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('AddFieldsToDEMIXDB point 2'); {$EndIf}
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('AddFieldsToDEMIXDB point 3'); {$EndIf}
+   GISdb[DBonTable].LinkSecondaryTable(GISdb[DBonTable].dbOpts.LinkTableName);
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('AddFieldsToDEMIXDB point 4'); {$EndIf}
+   GISdb[DBonTable].FillFieldsFromJoinedTable(TheFields,true);
+   GISDb[DBonTable].ShowStatus;
+   //TheFields.Destroy;
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('AddFieldsToDEMIXDB done'); {$EndIf}
+end;
+
 
 procedure AddTileCharacteristics(DBonTable : integer);
 var
    theFields : tStringList;
    i : integer;
 begin
-   if not FileExists(GISdb[DBonTable].dbOpts.LinkTableName) then begin
-      GISdb[DBonTable].dbOpts.LinkTableName := DEMIXSettingsDir + 'demix_tiles_characteristics.dbf';
-      GISdb[DBonTable].dbOpts.LinkFieldThisDB := 'DEMIX_TILE';
-      GISdb[DBonTable].dbOpts.LinkFieldOtherDB := 'DEMIX_TILE';
-   end;
-
-   GISDb[DBonTable].ClearGISFilter;
-   GISDb[DBonTable].EmpSource.Enabled := false;
-   ShowHourglassCursor;
-   GISdb[DBonTable].ClearLinkTable(true);
-   GISdb[DBonTable].LinkSecondaryTable(GISdb[DBonTable].dbOpts.LinkTableName);
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('AddTileCharacteristics'); {$EndIf}
    theFields := tStringList.Create;
-
    theFields.Add('LAT');
    theFields.Add('LONG');
    for I := 1 to NumTileCharacters do theFields.Add(TileCharacters[i]);
-   GISdb[DBonTable].FillFieldsFromJoinedTable(TheFields,true);
-   GISDb[DBonTable].ShowStatus;
+   AddFieldsToDEMIXDB(DBonTable,theFields);
 end;
+
+
+procedure AddStatisticsToDEMIXdb(db : integer);
+var
+   StatsFName : PathStr;
+   TheFields : tStringList;
+begin
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('AddStatisticsToDEMIXds'); {$EndIf}
+   if GISdb[db].MyData.FieldExists('AVG_SLOPE') and GISdb[db].MyData.FieldExists('AVG_ROUGH') and GISdb[db].MyData.FieldExists('RELIEF') then begin
+      if not AnswerIsYes('Overwrite') then exit;
+   end;
+   //if GISdb[db].MyData.FieldExists('AREA') then begin
+(*
+      if GISdb[db].MyData.FieldExists('DEMIX_TILE') then begin
+         GISdb[DB].dbOpts.LinkTableName :=  DEMIXSettingsDir + 'tile_statistics.dbf';
+         GISdb[DB].dbOpts.LinkFieldThisDB := 'DEMIX_TILE';
+      end
+      else begin
+         GISdb[DB].dbOpts.LinkTableName :=  DEMIXSettingsDir + 'area_statistics.dbf';
+         GISdb[DB].dbOpts.LinkFieldThisDB := 'AREA';
+      end;
+      GISdb[DB].dbOpts.LinkFieldOtherDB := GISdb[DB].dbOpts.LinkTableName;
+      GISdb[DB].LinkTable := tMyData.Create(GISdb[DB].dbOpts.LinkTableName);
+*)
+      TheFields := tStringList.Create;
+      TheFields.Add('AVG_SLOPE');
+      TheFields.Add('AVG_ROUGH');
+      TheFields.Add('RELIEF');
+      AddFieldsToDEMIXDB(DB,theFields);
+      //GISdb[DB].FillFieldsFromJoinedTable(TheFields,false);
+      //TheFields.Destroy;
+   //end;
+end;
+
 
 
 (*

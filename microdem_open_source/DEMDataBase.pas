@@ -16,7 +16,7 @@
    {$IfDef RecordProblems}  //normally only defined for debugging specific problems
       //{$Define RecordCloseDB}
       {$Define RecordDEMIX}
-      //{$Define RecordCopyFieldLinkDB}
+      {$Define RecordCopyFieldLinkDB}
       //{$Define RecordClustering}
       //{$Define RecordLegend}
       //{$Define RecordDBNumericPlot}
@@ -1179,10 +1179,15 @@ end;
 
 
 function TGISdataBaseModule.FindValidJoin(TheFilter : string) : boolean;
+var
+   aFilter : shortstring;
+   Recs : integer;
 begin
-   if LinkTable.IsStringField(dbOpts.LinkFieldOtherDB) then LinkTable.ApplyFilter(dbOpts.LinkFieldOtherDB + '=' + QuotedStr(TheFilter))
-   else LinkTable.ApplyFilter(dbOpts.LinkFieldOtherDB + '=' + TheFilter);
-   Result := (LinkTable.RecordCount = 1) or ((LinkTable.RecordCount > 1) and MDDef.AllowFirstOfMultipleJoins);
+   if LinkTable.IsStringField(dbOpts.LinkFieldOtherDB) then aFilter := dbOpts.LinkFieldOtherDB + '=' + QuotedStr(TheFilter)
+   else aFilter := dbOpts.LinkFieldOtherDB + '=' + TheFilter;
+   LinkTable.ApplyFilter(aFilter);
+   Recs := LinkTable.RecordCount;
+   Result := (Recs = 1) or ((Recs > 1) and MDDef.AllowFirstOfMultipleJoins);
 end;
 
 

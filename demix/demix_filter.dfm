@@ -19,7 +19,7 @@ object DemixFilterForm: TDemixFilterForm
     Top = 0
     Width = 772
     Height = 516
-    ActivePage = Settings
+    ActivePage = TabSheet1
     Align = alClient
     TabOrder = 0
     object TabSheet1: TTabSheet
@@ -752,7 +752,6 @@ object DemixFilterForm: TDemixFilterForm
         Height = 25
         Caption = 'Graph average scores by tile'
         TabOrder = 11
-        OnClick = BitBtn6Click
       end
     end
     object Settings: TTabSheet

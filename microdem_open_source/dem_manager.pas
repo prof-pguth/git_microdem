@@ -333,7 +333,7 @@ begin
    Results.Add('DEM,PIXEL_IS,NOM_CORNER,HORIZ_DATM,VERT_DATUM,LAT,LONG_CENT,MIN_Z,MAX_Z,SW_POINTX,SW_POINTY,SW_CornerX,SW_CornerY,NW_CornerX,NW_CornerY,DX,DY,NUM_COL,NUM_ROW,AVG_X_M,AVG_Y_M,AVG_SP_M');
    for i := 1 to MaxDEMDataSets do if ValidDEM(i) then begin
       if (DEMGlb[i].DEMheader.DEMUsed = UTMBasedDEM) then Decs := -2 else Decs := -8;
-      Results.Add(DEMGlb[i].AreaName + ',' + PixelIsString(DEMGlb[i].DEMheader.RasterPixelIsGeoKey1025) + ',' + DEMGlb[i].NominalCorner + ',' +
+      Results.Add(DEMGlb[i].AreaName + ',' + PixelIsString(DEMGlb[i].DEMheader.RasterPixelIsGeoKey1025) + ',' + DEMGlb[i].GridCornerModel + ',' +
           DEMGlb[i].DEMMapProjection.h_DatumCode + ',' + VertDatumName(DEMGlb[i].DEMheader.VerticalCSTypeGeoKey) + ',' +
           RealToString(DEMGlb[i].DEMSWcornerLat + 0.5 * DEMGlb[i].LatSizeMap,-12,-3) + ',' +
           RealToString(DEMGlb[i].DEMSWcornerLong + 0.5 * DEMGlb[i].LongSizeMap,-12,-3)  + ',' +

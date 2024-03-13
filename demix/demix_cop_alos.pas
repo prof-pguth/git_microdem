@@ -20,7 +20,6 @@ unit demix_cop_alos;
    {$Define RecordCreateHalfSec}
    {$Define StartCOPALOSmaps}
    {$Define Differencemaps}
-   {$Define RecordDEMIXVDatum}
    //{$Define RecordDEMIXMovies}
    //{$Define RecordFullDEMIX}
    //{$Define ShowDEMIXWhatsOpen}

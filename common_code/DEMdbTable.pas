@@ -1010,6 +1010,7 @@ type
     InventoryFUVSSIMcriteriainDB1: TMenuItem;
     Copycolumntoclipboard1: TMenuItem;
     QuartilesinCLUSTERfieldbasedonsort1: TMenuItem;
+    AddareafieldtoDB1: TMenuItem;
     //Pointfilter1: TMenuItem;
     //Pointfilter2: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
@@ -14662,10 +14663,10 @@ end;
 
 procedure Tdbtablef.PercentageofcriteriawhereDEMisbest1Click(Sender: TObject);
 begin
-{$IfDef ExDEMIXexperimentalOptions}
-{$Else}
-   DEMIXwineContestCriterionGraph(dgPercentBest,DBonTable);
-{$EndIf}
+   {$IfDef ExDEMIXexperimentalOptions}
+   {$Else}
+      DEMIXwineContestCriterionGraph(dgPercentBest,DBonTable);
+   {$EndIf}
 end;
 
 procedure Tdbtablef.Percentfield1Click(Sender: TObject);

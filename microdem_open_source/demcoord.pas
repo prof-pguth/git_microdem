@@ -35,6 +35,7 @@ unit DEMCoord;
       //{$Define RecordMaskFromSecondGrid}
       //{$Define TrackSWCornerForComputations}
       //{$Define RecordGridIdentical}
+      //{$Define RecordGridIdenticalProblems}
       //{$Define RecordUKOS}
       //{$Define SavePartDEM}
       //{$Define RecordMapType}
@@ -380,7 +381,9 @@ type
          function DEMSizeString : shortstring;
          function ColsRowsString : ShortString;
          function ZRange : ShortString;
-         function NominalCorner : shortstring;
+         function GridCornerModel : shortstring;
+         function GridCornerModelAndPixelIsString : shortstring;
+
          function DEMLocationString(XGrid,YGrid : float64) : ShortString;
          function PixelSize(Col,Row : integer) : shortstring;
 
@@ -980,15 +983,23 @@ var
    end;
 {$EndIf}
 
-function tDEMDataSet.NominalCorner : shortstring;
+
+
+function tDEMDataSet.GridCornerModelAndPixelIsString : shortstring;
+begin
+   Result := RasterPixelIsString(DEMHeader.RasterPixelIsGeoKey1025) + '   and     Grid Corner Model=' + GridCornerModel;
+end;
+
+
+function tDEMDataSet.GridCornerModel : shortstring;
 var
    xg,yg,f : float32;
 begin
     LatLongDegreeToDEMGrid( round(DEMSWcornerLat),round(DEMSWcornerLong),xg,yg);
     f := abs(frac(xg));
-    if (f < 0.0001) or (f > 0.9999) then Result := 'Corner'
-    else if (f-0.5) < 0.0001 then Result := 'Centroid'
-    else Result := 'Random';
+    if (f < 0.0001) or (f > 0.9999) then Result := 'SRTM'
+    else if (f-0.5) < 0.0001 then Result := 'ALOS'
+    else Result := 'Other';
 end;
 
 
@@ -3632,18 +3643,10 @@ end;
 function tDEMDataSet.SecondGridJustOffset(DEM2 : integer; var xoffset,yoffset : integer) : boolean;
 var
    Tolerance,Lat,Long,x,y : float64;
+   {$IfDef RecordGridIdenticalProblems} DeltaSWx,DeltaSWy : float64; {$EndIf}
 begin
    Result := ValidDEM(DEM2);
    if Result then begin
-      {$IfDef RecordGridIdentical}
-         WriteLineToDebugFile('SecondGridJustOffset, Compare DEM ' + IntToStr(DEM2));
-         WriteLineToDebugFile('  Rows: ' + IntToStr(DEMheader.NumRow) + '/' + IntToStr(DEMGlb[DEM2].DEMheader.NumRow) + '  Cols: ' + IntToStr(DEMheader.NumCol) + '/' + IntToStr(DEMGlb[DEM2].DEMheader.NumCol));
-         WriteLineToDebugFile('  delta x spacing : ' + RealToString(abs(DEMheader.DEMxSpacing - DEMGlb[DEM2].DEMheader.DEMxSpacing),-18,-6));
-         WriteLineToDebugFile('  delta y spacing : ' + RealToString(abs(DEMheader.DEMySpacing - DEMGlb[DEM2].DEMheader.DEMySpacing),-18,-6));
-         WriteLineToDebugFile('  delta SW X: ' + RealToString(abs(DEMheader.DEMSWCornerX - DEMGlb[DEM2].DEMheader.DEMSWCornerX),-18,-6));
-         WriteLineToDebugFile('  delta SW Y: ' + RealToString(abs(DEMheader.DEMSWCornerY - DEMGlb[DEM2].DEMheader.DEMSWCornerY),-18,-6));
-       {$EndIf}
-
        {$IfDef TrackSWCornerForComputations}
          WriteToDebugSWCornerForComputations('SecondGridJustOffset');
          DEMGlb[DEM2].WriteToDebugSWCornerForComputations('SecondGridJustOffset');
@@ -3657,6 +3660,23 @@ begin
          DEMGlb[DEM2].LatLongDegreeToDEMGrid(Lat,Long,x,y);
          DEMGlb[DEM2].LatLongDegreeToDEMGridInteger(Lat,Long,xoffset,yoffset);
          Result := (abs(x-xoffset) < 0.015) and (abs(y-yoffset) < 0.015);
+      end;
+      if not Result then begin
+         {$IfDef RecordGridIdenticalProblems}
+            WriteLineToDebugFile('Problem SecondGridJustOffset, Compare DEM1= ' + AreaName + ' to ' + DEMGlb[DEM2].AreaName);
+            WriteLineToDebugFile('  Rows: ' + IntToStr(DEMheader.NumRow) + '/' + IntToStr(DEMGlb[DEM2].DEMheader.NumRow) + '  Cols: ' + IntToStr(DEMheader.NumCol) + '/' + IntToStr(DEMGlb[DEM2].DEMheader.NumCol));
+            WriteLineToDebugFile('  delta x spacing : ' + RealToString(abs(DEMheader.DEMxSpacing - DEMGlb[DEM2].DEMheader.DEMxSpacing),-18,-6));
+            WriteLineToDebugFile('  delta y spacing : ' + RealToString(abs(DEMheader.DEMySpacing - DEMGlb[DEM2].DEMheader.DEMySpacing),-18,-6));
+            DeltaSWx := abs(DEMheader.DEMSWCornerX - DEMGlb[DEM2].DEMheader.DEMSWCornerX);
+            DeltaSWy := abs(DEMheader.DEMSWCornerY - DEMGlb[DEM2].DEMheader.DEMSWCornerY);
+            WriteLineToDebugFile('  delta SW X: ' + RealToString(DeltaSWx,-18,-6) + ' or pixels=' + RealToString(DeltaSWx / DEMheader.DEMxSpacing, -12,2));
+            WriteLineToDebugFile('  delta SW Y: ' + RealToString(DeltaSWy,-18,-6) + ' or pixels=' + RealToString(DeltaSWy / DEMheader.DEMySpacing, -12,2));
+
+            DeltaSWx := abs(ComputeSWCornerX - DEMGlb[DEM2].ComputeSWCornerX);
+            DeltaSWy := abs(ComputeSWCornerY - DEMGlb[DEM2].ComputeSWCornerY);
+            WriteLineToDebugFile('  delta SW X: ' + RealToString(DeltaSWx,-18,-6) + ' or pixels=' + RealToString(DeltaSWx / DEMheader.DEMxSpacing, -12,2));
+            WriteLineToDebugFile('  delta SW Y: ' + RealToString(DeltaSWy,-18,-6) + ' or pixels=' + RealToString(DeltaSWy / DEMheader.DEMySpacing, -12,2));
+          {$EndIf}
       end;
    end;
 end;

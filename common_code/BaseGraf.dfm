@@ -653,6 +653,10 @@ object ThisBaseGraph: TThisBaseGraph
       Caption = 'Grayscale graph'
       OnClick = Grayscalegraph1Click
     end
+    object Animate1: TMenuItem
+      Caption = 'Animate'
+      OnClick = Animate1Click
+    end
     object Saveimage2: TMenuItem
       Caption = 'Save image'
       OnClick = Saveimage2Click

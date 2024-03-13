@@ -3758,11 +3758,8 @@ object dbtablef: Tdbtablef
     end
     object Modifythistable1: TMenuItem
       Caption = 'Modify this table'
-      object SSIMtodissimilarity1: TMenuItem
-        Caption = 'Convert SSIM/R2 evaluations to dissimilarity'
-      end
       object Addtilecharacteristics1: TMenuItem
-        Caption = 'Add tile characteristics to DB'
+        Caption = 'Add all 8 tile characteristics to DB'
         OnClick = Addtilecharacteristics1Click
       end
       object AddsloperoughnessrelieftoDB1: TMenuItem
@@ -3772,6 +3769,9 @@ object dbtablef: Tdbtablef
       object AddcountryfieldtoDB1: TMenuItem
         Caption = 'Add country field to DB'
         OnClick = AddcountryfieldtoDB1Click
+      end
+      object AddareafieldtoDB1: TMenuItem
+        Caption = 'Add area field to DB'
       end
       object Evaluationrangeforcriterion1: TMenuItem
         Caption = 'Add best evaluation and range (max - min) for criterion and tile'
@@ -3784,6 +3784,10 @@ object dbtablef: Tdbtablef
       object CiompareCOPtorivals1: TMenuItem
         Caption = 'Compare COP to rivals'
         OnClick = CiompareCOPtorivals1Click
+      end
+      object RankDEMs1: TMenuItem
+        Caption = 'Rank DEMs and find best by criterion and tile'
+        OnClick = RankDEMs1Click
       end
     end
     object Filterthistable1: TMenuItem
@@ -3870,10 +3874,6 @@ object dbtablef: Tdbtablef
     object Sumscores1: TMenuItem
       Caption = 'Sum scores based on active filters'
       OnClick = Sumscores1Click
-    end
-    object RankDEMs1: TMenuItem
-      Caption = 'Rank DEMs and find best by criterion and tile'
-      OnClick = RankDEMs1Click
     end
     object Graphmeanmedianbyterraincategory1: TMenuItem
       Caption = 'Graphs with various filters (experimental, untested recently)'

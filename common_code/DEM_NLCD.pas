@@ -337,8 +337,8 @@ begin
       EndDEMIXProcessing;
       {$If Defined(RecordBatch) or Defined(RecordDEMIX)} WriteLineToDebugFile('LandCoverBarGraphs out'); {$EndIf}
    end;
-
 end;
+
 
 procedure LandCoverBarGraphs(UseTable : boolean; Legend : boolean = true; MaxCat : boolean = true);
 const

@@ -20,9 +20,12 @@ unit DEMStat;
       //{$Define NoParallelFor}
       //{$Define RecordDEMIX_colors}
       {$Define RecordSSIM}
+      //{$Define RecordSSIMFull}
       {$Define RecordDEMIX}
       {$Define RecordDEMIXFull}
-      //{$Define RepeatProblematicComputations}  //put in breakpoint, and then follow debugger
+      {$Define TrackPixelIs}
+
+      //{$Define RepeatProblematicComputations}  //put in breakpoint, and then follow debugger but may have issues
       //{$Define RecordCovariance}
       //{$Define TrackSWCornerForComputations}  //must also be defined in DEMCoord
       //{$Define RecordSSIMNormalization}

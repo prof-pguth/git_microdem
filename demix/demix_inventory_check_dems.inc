@@ -8,6 +8,66 @@
 {____________________________________}
 
 
+
+
+procedure DeleteFilesForATestArea;
+var
+   TestArea : shortstring;
+
+
+   procedure ClearOutFolder(Dir : PathStr);
+   var
+      FilesWanted : tstringlist;
+      i,Deletes : integer;
+      fName : PathStr;
+   begin
+      FilesWanted := nil;
+      FindMatchingFiles(Dir,'*.*',FilesWanted,2);
+      Deletes := 0;
+      for I := 0 to pred(FilesWanted.Count) do begin
+         fName := UpperCase(FilesWanted.Strings[i]);
+         if StrUtils.ANSIContainsText(fName,TestArea) then begin
+            DeleteFileIfExists(fName);
+            inc(Deletes);
+         end;
+      end;
+      FilesWanted.Destroy;
+      if Deletes > 0 then WriteLineToDebugFile(IntToStr(Deletes) + ' files deleted in ' + Dir);
+   end;
+
+
+begin
+   GetDEMIXPaths;
+   TestArea := 'sheridan_wy';
+
+   TestArea := UpperCase(TestArea);
+   ShowHourglassCursor;
+   ClearOutFolder(DEMIXresultsDir);
+   ClearOutFolder(DEMIX_diff_dist);
+   ClearOutFolder(DEMIX_diff_maps_dir);
+   ClearOutFolder(DEMIX_area_lc100);
+   ClearOutFolder(DEMIX_profile_test_dir);
+   ClearOutFolder(DEMIX_distrib_graph_dir);
+
+   ClearOutFolder(DEMIX_test_DEMs_no_sink);
+   ClearOutFolder(DEMIX_ref_DEMs_no_sink);
+   ClearOutFolder(DEMIX_test_DEMs_channels);
+   ClearOutFolder(DEMIX_ref_DEMs_channels);
+   ClearOutFolder(DEMIX_test_DEMs_channel_grids);
+   ClearOutFolder(DEMIX_ref_DEMs_channel_grids);
+   ClearOutFolder(ChannelMissesDir);
+
+   ClearOutFolder(RegularSSIMresultsDir);
+   ClearOutFolder(DiluvSSIMresultsDir);
+
+   ClearOutFolder(DEMIX_Ref_1sec);
+   ClearOutFolder(DEMIX_test_dems);
+   ClearOutFolder(DEMIX_diluvium_dems);
+   ShowDefaultCursor;
+   EndDEMIXProcessing;
+end;
+
+
 procedure CriteriaInSSIM_FUV_db(db : integer);
 var
    Areas,Criteria,Results : tStringList;
@@ -98,7 +158,6 @@ begin
 end;
 
 
-
 procedure InventoryDEMIXdifferenceStats;
 var
    TheFiles,Results,Areas : tStringList;
@@ -115,12 +174,38 @@ begin
          fName := UpperCase(ExtractFileNameNoExt(TheFiles.Strings[i]));
          if StrUtils.AnsiContainsText(fName,UpperCase(Areas.Strings[j])) then begin
             Areas.Delete(j);
-            break
+            break;
          end;
       end;
    end;
    if (Results.Count = 0) then MessageToContinue('Difference stats done for all areas, n=' + IntToStr (N))
    else DisplayAndPurgeStringList(Results,'Areas Missing DEMIX difference stats (n=' + IntToStr(Results.Count) + ')');
+   TheFiles.Free;
+end;
+
+
+procedure InventoryDEMIX_SSIM_FUV_Stats;
+var
+   TheFiles,Results,Areas : tStringList;
+   i,j,n : integer;
+   fName : PathStr;
+begin
+   Areas := DEMIX_AreasWanted;
+   n := Areas.Count;
+   TheFiles := Nil;
+   FindMatchingFiles(SSIMresultsDir,'*.csv',TheFiles);
+   Results := tStringList.Create;
+   for j := pred(Areas.Count) downto 0 do begin
+      for i := 0 to pred(TheFiles.Count) do begin
+         fName := UpperCase(ExtractFileNameNoExt(TheFiles.Strings[i]));
+         if StrUtils.AnsiContainsText(fName,UpperCase(Areas.Strings[j])) then begin
+            Areas.Delete(j);
+            break;
+         end;
+      end;
+   end;
+   if (Results.Count = 0) then MessageToContinue('SSIM/FUV stats done for all areas, n=' + IntToStr (N))
+   else DisplayAndPurgeStringList(Results,'Areas Missing SSIM/FUV stats (n=' + IntToStr(Results.Count) + ')');
    TheFiles.Free;
 end;
 
@@ -244,33 +329,41 @@ begin
 end;
 
 
-function DoAllFilesHaveSetEGMandPixelIs(FilesWanted : tStringList; Results : tstringList = nil) : boolean;
+function DoAllFilesHaveSetEGMandPixelIs(FilesWanted : tStringList; var Results : tstringList) : boolean;
 var
+   Tiles75,Tiles50,Tiles25,
    j,WantedDEM,DEMIXtileDB : Integer;
    fName : PathStr;
    Lat,Long : float64;
 begin
    Result := true;
+   Results := tStringList.Create;
+   Results.Add('AREA_DEM,TILES_75,TILES_50,TILES_25,LAT_CENT,LONG_CENT,PIXEL_IS,VERT_DATUM');
    for j := 0 to pred(FilesWanted.Count) do begin
       fName := FilesWanted.Strings[j];
       wmdem.SetPanelText(2, 'File: ' + IntToStr(succ(j)) + '/' + IntToStr(FilesWanted.Count) + '  ' + ExtractFileNameNoExt(fName));
+      WantedDEM := 0;
       if NewArea(true,WantedDEM,'',FName,WantedDEM) and ValidDEM(WantedDEM) then begin
-         if (Results <> nil) then begin
-            DEMGlb[WantedDEM].DEMCenterPoint(Lat,Long);
-            DEMIXtileDB := DEMIXtileFill(WantedDEM,DEMGlb[WantedDEM].DEMBoundBoxGeo,true);
-            GISdb[DEMIXtileDB].ApplyGISFilter('GRID_FULL>' + IntToStr(MDDef.DEMIX_Full));
-            Results.Add(DEMGlb[WantedDEM].AreaName + ',' + IntToStr(GISdb[DEMIXtileDB].MyData.FiltRecsinDB) + ',' + RealToString(Lat,-12,-3) + ',' + RealToString(Long,-12,-3) + ',' +
-               IntToStr(DEMGlb[WantedDEM].DEMHeader.RasterPixelIsGeoKey1025) + ',' + IntToStr(DEMGlb[WantedDEM].DEMHeader.VerticalCSTypeGeoKey));
-         end;
+         DEMGlb[WantedDEM].DEMCenterPoint(Lat,Long);
+         DEMIXtileDB := DEMIXtileFill(WantedDEM,DEMGlb[WantedDEM].DEMBoundBoxGeo,true);
+         GISdb[DEMIXtileDB].ApplyGISFilter('GRID_FULL>75');
+         Tiles75 := GISdb[DEMIXtileDB].MyData.FiltRecsinDB;
+         GISdb[DEMIXtileDB].ApplyGISFilter('GRID_FULL>50');
+         Tiles50 := GISdb[DEMIXtileDB].MyData.FiltRecsinDB;
+         GISdb[DEMIXtileDB].ApplyGISFilter('GRID_FULL>25');
+         Tiles25 := GISdb[DEMIXtileDB].MyData.FiltRecsinDB;
+
+         Results.Add(DEMGlb[WantedDEM].AreaName + ',' + IntToStr(Tiles75)  + ',' + IntToStr(Tiles50) + ',' + IntToStr(Tiles25) + ',' + RealToString(Lat,-12,-3) + ',' + RealToString(Long,-12,-3) + ',' +
+            IntToStr(DEMGlb[WantedDEM].DEMHeader.RasterPixelIsGeoKey1025) + ',' + IntToStr(DEMGlb[WantedDEM].DEMHeader.VerticalCSTypeGeoKey));
          if (DEMGlb[WantedDEM].DEMHeader.RasterPixelIsGeoKey1025 = 0) or (DEMGlb[WantedDEM].DEMHeader.VerticalCSTypeGeoKey = 0) then begin
             File2Trash(fName);
             Result := false;
             {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Recycle due to DEM header issues: ' + fName); {$EndIf}
          end;
+         CloseSingleDEM(WantedDEM);
       end;
    end;
 end;
-
 
 
 procedure CheckDiluviumAreas;
@@ -279,8 +372,6 @@ var
    fName : PathStr;
 begin
    GetDEMIXpaths(false);
-   Results := tStringList.Create;
-   Results.Add('AREA_DEM,DEMIX_TILES,LAT_CENT,LONG_CENT,PIXEL_IS,VERT_DATUM');
    FilesWanted := tStringList.Create;
    FindMatchingFiles(DEMIX_diluvium_dems,'*.tif',FilesWanted,1);
    FilesWanted.Sort;
@@ -291,6 +382,21 @@ begin
    EndDEMIXProcessing;
 end;
 
+procedure CheckDeltaDTMAreas;
+var
+   FilesWanted,Results : tStringList;
+   fName : PathStr;
+begin
+   GetDEMIXpaths(false);
+   FilesWanted := tStringList.Create;
+   FindMatchingFiles(DEMIX_delta_dtms,'*.tif',FilesWanted,1);
+   //FilesWanted.Sort;
+   DoAllFilesHaveSetEGMandPixelIs(FilesWanted,Results);
+   FilesWanted.Free;
+   fName := NextFileNumber(MDTempDir,'delta_area_status_','.dbf');
+   PetdbUtils.StringList2CSVtoDB(Results,fName);
+   EndDEMIXProcessing;
+end;
 
 
 procedure CheckReferenceDEMsAreEGMandPixelIs;
@@ -299,8 +405,6 @@ var
    fName : PathStr;
 begin
    GetDEMIXpaths(false);
-   Results := tStringList.Create;
-   Results.Add('AREA_DEM,DEMIX_TILES,LAT_CENT,LONG_CENT,PIXEL_IS,VERT_DATUM');
    FilesWanted := tStringList.Create;
    FindMatchingFiles(DEMIX_Ref_1sec,'*.tif',FilesWanted,1);
    FilesWanted.Sort;
@@ -310,7 +414,6 @@ begin
    FilesWanted.Free;
    fName := NextFileNumber(MDTempDir,'ref_dem_status_','.dbf');
    PetdbUtils.StringList2CSVtoDB(Results,fName);
-   //ReallyReadDEM := true;
    EndDEMIXProcessing;
 end;
 

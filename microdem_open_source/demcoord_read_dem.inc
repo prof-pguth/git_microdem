@@ -125,12 +125,10 @@ var
           {$If Defined(RecordReadMDDEM)} WriteLineToDebugFile('Acceptable MD DEM'); {$EndIf}
           AreaName := ExtractFileNameNoExt(DEMFileName);
           Result := true;
-          (*
-          if (Magic ='*MICRODEMv5') then begin
-              HeaderSize := 2048;
+          if (Magic ='*MICRODEMv4') then begin
+              HeaderSize := 1024;
               ReadHeader;
           end;
-          *)
           if (Magic ='*MICRODEMv4') or (Magic ='*MICRODEMv5') then begin
              repeat
                 NextLine := Petmar_types.BeforeSpecifiedCharacter(TStr,#13,true,true);
@@ -372,9 +370,14 @@ begin
       end;
       Error := not ReadTIFFDEM(DEMFileName);
       if Error then exit;
-      
-      {$If Defined(RecordUKOS) or Defined(RecordReadDEM)} WriteLineToDebugFile('Load Geotiff read ' + AreaName + ' ' + DEMMapProjection.GetProjectionName); {$EndIf}
-      {$If Defined(RecordUKOS)} DEMMapProjection.ShortProjInfo('AreaName Tiff Read'); {$EndIf}
+
+      {$If Defined(RecordReadDEM)} WriteLineToDebugFile('Load Geotiff read ' + AreaName + ' ' + DEMMapProjection.GetProjectionName); {$EndIf}
+      {$If Defined(RecordUKOS)}
+         if (DEMMapProjection.pName = UK_OS) then begin
+            WriteLineToDebugFile('Load Geotiff read ' + AreaName + ' ' + KeyDEMParams(true));
+            DEMMapProjection.ShortProjInfo(AreaName +' Tiff Read');
+         end;
+      {$EndIf}
    end
    else if ExtEquals(Ext, '.HGT') or ExtEquals(Ext, '.SWB') or ExtEquals(Ext, '.HGTS') or ExtEquals(Ext, '.NUM') or ExtEquals(Ext,'.BIN') then begin
       ReadSRTMHGTField(DEMFileName,Error);
@@ -408,7 +411,7 @@ begin
    DefineDEMVariables(TransformToNewDatum);
    DEMstatus := dsSaved;
    {$If Defined(RecordUKOS)} DEMMapProjection.ShortProjInfo('Exit NewArea for ' + AreaName); {$EndIf}
-   {$IfDef TrackPixelIs} WriteLineToDebugFile('tDEMDataSet.ReadDEMNow exit, Pixel is = ' + RasterPixelIsString(DEMHeader.RasterPixelIsGeoKey1025)); {$EndIf}
+   {$IfDef TrackPixelIs} WriteLineToDebugFile('tDEMDataSet.ReadDEMNow exit, ' + GridCornerModelAndPixelIsString); {$EndIf}
    {$IfDef RecordReadDEM} WriteLineToDebugFile('exit NewArea with DEM: ' + AreaName + '  ' + HorizontalDEMSpacing); {$EndIf}
 end;
 

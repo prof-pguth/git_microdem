@@ -156,7 +156,7 @@ type
     BitBtn35: TBitBtn;
     BitBtn36: TBitBtn;
     BitBtn37: TBitBtn;
-    BitBtn6: TBitBtn;
+    //BitBtn6: TBitBtn;
     CheckBox18: TCheckBox;
     CheckBox16: TCheckBox;
     CheckBox19: TCheckBox;
@@ -231,7 +231,7 @@ type
     procedure BitBtn39Click(Sender: TObject);
     procedure CheckBox4Click(Sender: TObject);
     procedure CheckBox23Click(Sender: TObject);
-    procedure BitBtn6Click(Sender: TObject);
+   // procedure BitBtn6Click(Sender: TObject);
     procedure CheckBox18Click(Sender: TObject);
     procedure CheckBox3Click(Sender: TObject);
     procedure LoadOneSecRefCheckBoxClick(Sender: TObject);
@@ -591,10 +591,6 @@ var
    RefPointOrArea,SeriesName,AreaName : shortstring;
 begin
    {$If Defined(RecordDEMIX) or Defined(TrackOpenHandles)} WriteOpenHandlestoDebugLog('TDemixFilterForm.MakeDifferenceMaps in, type=' + IntToStr(WhatType)); {$EndIf}
-   //UncheckAllLoadCheckboxes;
-   //LoadOneSecRefCheckBox.Checked := (WhatType in [ElevSpecified,ElevAll,SlopeAll,RuffAll,AllAll]);
-   //CheckBox3.Checked := true;
-   //CheckBox4.Checked := (WhatType = ElevV1);
    AreaName := ComboBox4.Text;
    LoadDEMsForCurrentArea(AreaName,true,true);  //needs hillshade maps for background on difference maps
    SaveBackupDefaults;
@@ -1422,15 +1418,6 @@ begin
 end;
 
 
-procedure TDemixFilterForm.BitBtn6Click(Sender: TObject);
-begin
-{$IfDef ExDEMIXexperimentalOptions}
-{$Else}
-   GetUsingStringLists;
-   GraphAverageScoresByTile(DB,TilesUsing,CriteriaUsing);
-{$EndIf}
-end;
-
 procedure TDemixFilterForm.ZeroDEMs;
 var
    i : integer;
@@ -1631,6 +1618,7 @@ begin
    Edit5.Text := RealToString(MDDef.DEMIXRuffTolerance,-8,-2);
 
    CheckBox2.Checked := MDDef.MakeCOP_ALOS_diffMaps;
+   CheckBox3.Checked := MDDef.LoadTestDEMs;
    CheckBox8.Checked := MDDef.MakeCOP_ALOS_Cat_Maps;
    CheckBox7.Checked := MDDef.MakeCOP_ALOS_Best_Map;
    CheckBox9.Checked := MDDef.MakeCOP_FABDEM_diffMaps;
@@ -1668,7 +1656,6 @@ begin
       TileParameters := tStringList.Create;
    end;
    ZeroMapIndexes;
-   {$IfDef DEMIX_DB1} BitBtn6.Visible := false;  {$EndIf}
    PageControl1.ActivePage := TabSheet1;
 end;
 

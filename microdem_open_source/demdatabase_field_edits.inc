@@ -509,20 +509,24 @@ begin
        MyData.First;
        while not MyData.eof do begin
           inc(i);
-          if (i mod 100 = 0) then begin
+          if (i mod 500 = 0) then begin
               ThreadTimers.UpdateThreadStats(1,round(100 * i/MyData.FiltRecsInDB));
               EmpSource.Enabled := false;
+              {$IfDef RecordCopyFieldLinkDB} WriteLineToDebugFile('Copied, recs done=' + IntToStr(i)); {$EndIf}
           end;
 
           TStr := MyData.GetFieldByNameAsString(dbOpts.LinkFieldThisDB);
-             if (TStr <> '') and FindValidJoin(TStr) then begin
-                MyData.Edit;
-                for j := 0 to pred(TheFields.Count) do begin
-                   MyData.SetFieldByNameAsString(TheFields.Strings[j],LinkTable.GetFieldByNameAsString(TheFields.Strings[j]));
-                end;
+          if (TStr <> '') and FindValidJoin(TStr) then begin
+             MyData.Edit;
+             for j := 0 to pred(TheFields.Count) do begin
+                MyData.SetFieldByNameAsString(TheFields.Strings[j],LinkTable.GetFieldByNameAsString(TheFields.Strings[j]));
              end;
+          end
+          else begin
+             J := 1;
+          end;
           MyData.Next;
-       end {while};
+      end {while};
       EndThreadTimers;
     end;
     TheFields.Free;

@@ -59,13 +59,17 @@ begin
    if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
       BreachName := '';
       WBT_breach_depression(InName,BreachName);
-
-      TStr := 'num_cells_';
-      if Log then TStr3 := ' --log' else TStr3 := '';
-      if D8 then TStr2 := 'D8' else TStr2 := 'FD8';
-      if (FlowAccName = '') then FlowAccName := MDTempDir + 'wbt_flow_accumulation_' + TStr2 + '_' + TStr + ExtractFileNameNoExt(InName) + '.tif';
-      cmd := WhiteBoxfName +  WBNoCompress + '-r=' + TStr2 +'FlowAccumulation -v -dem=' + BreachName + ' -o=' + FlowAccName + ' --out_type=cells' + TStr3;
-      Result := ExecuteWBandOpenMap(cmd,FlowAccName,Undefined,mtElevRainbow,OpenMap);
+      if FileExists(BreachName) then begin
+         TStr := 'num_cells_';
+         if Log then TStr3 := ' --log' else TStr3 := '';
+         if D8 then TStr2 := 'D8' else TStr2 := 'FD8';
+         if (FlowAccName = '') then FlowAccName := MDTempDir + 'wbt_flow_accumulation_' + TStr2 + '_' + TStr + ExtractFileNameNoExt(InName) + '.tif';
+         cmd := WhiteBoxfName +  WBNoCompress + '-r=' + TStr2 +'FlowAccumulation -v -dem=' + BreachName + ' -o=' + FlowAccName + ' --out_type=cells' + TStr3;
+         Result := ExecuteWBandOpenMap(cmd,FlowAccName,Undefined,mtElevRainbow,OpenMap);
+      end
+      else begin
+         Result := 0;
+      end;
    end;
 end;
 
@@ -77,6 +81,7 @@ var
    cmd : ansistring;
 begin
    FlowAccName := '';
+   //function WBT_FlowAccumulation(OpenMap,Log,D8 : boolean; InName : PathStr; var FlowAccName : PathStr) : integer;
    WBT_FlowAccumulation(false,false,True,InName,FlowAccName);
    StreamName := MDTempDir + 'wbt_streams_' + ExtractFileNameNoExt(InName) + '.tif';
    if FileExists(StreamName) then begin

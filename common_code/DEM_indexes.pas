@@ -17,13 +17,14 @@ unit dem_indexes;
      //{$Define RecordLoadMapLibraryBox}
      //{$Define MergeSummary}
      //{$Define TrackPixelIs}
+     //{$Define RecordDuplicatesInIndex}
      //{$Define TrackDEMCorners}
      //{$Define RecordIndex}
      //{$Define LoadLibrary}
      //{$Define RecordAutoZoom}
      //{$Define RecordImageIndex}
      //{$Define RecordIndexFileNames}
-     {$Define RecordMerge}
+     //{$Define RecordMerge}
      //{$Define RecordMergeDetails}
      //{$Define RecordTimeMerge}
      //{$Define RecordIndexImagery}
@@ -478,7 +479,6 @@ begin
    NumFound := 0;
    NumRenamed := 0;
    Tested := 0;
-
    StartProgress('Check for missing files');
    while not TheTable.Eof do begin
        inc(Tested);
@@ -607,8 +607,9 @@ var
               try
                  if (RawData.Count <> TheTable.RecordCount) then begin
                     for i := 0 to pred(RawData.Count) do begin
-                       if (i mod 50) = 0 then begin
+                       if (i mod 25) = 0 then begin
                           wmDEM.SetPanelText(0,IntToStr(i) + '/' + IntToStr(pred(RawData.Count)));
+                          CleanUpTempDirectory(false);
                           {$IfDef RecordIndex} if (i mod 500) = 0 then  WriteLineToDebugFile(IntToStr(i) + '/' + IntToStr(pred(RawData.Count))); {$EndIf}
                        end;
                        fName := RawData.Strings[i];
@@ -697,13 +698,10 @@ var
 var
    TheTable : Petmar_db.tMyData;
    fname : PathStr;
-   SavingDebugLog : Boolean;
 begin
    {$IfDef RecordIndex} WriteLineToDebugFile('CreateMapLibrary in'); {$EndIf}
    try
       ReportErrors := false;
-      SavingDebugLog := MDdef.MDRecordDebugLog;
-      MDdef.MDRecordDebugLog := false;
       if (Memo1 <> Nil) then Memo1.Visible := true;
       PickMapIndexLocation;
 
@@ -719,7 +717,6 @@ begin
       CreateUpdateIntegratedIndex(TheTable);
       if (Memo1 <> Nil) then Memo1.Lines.Add(TimeToStr(Now) + ' Update over');
    finally
-      MDdef.MDRecordDebugLog := SavingDebugLog;
       ReportErrors := true;
       TheTable.Destroy;
       {$IfDef RecordIndex} WriteLineToDebugFile('CreateMapLibrary out'); {$EndIf}
@@ -967,6 +964,8 @@ var
             WMDEM.StatusBar1.Panels[0].Text := 'Merge still Check ' + IntToStr(succ(I)) + '/' + IntToStr(DEMList.Count);
             if FileExists(fName) then begin
                if NewArea(true,CurDEM,'',FName) then begin
+                  {$If Defined(TrackPixelIs)} WriteLineToDebugFile('merge ' + DEMGlb[CurDEM].AreaName + '  ' + DEMGlb[CurDEM].GridCornerModelAndPixelIsString); {$EndIf}
+
                   if (not SubsequentDEM) then begin
                      NewHeader := DEMGlb[CurDEM].DEMheader;
                      xmin := DEMGlb[CurDEM].DEMheader.DEMSWCornerX;
@@ -1021,6 +1020,7 @@ var
             {$IfDef RecordMergeDetails} WriteLineToDebugFile('New DEM ' + IntToStr(Result) + ' opened'); {$EndIf}
             if (MergeSeriesName = '') then DEMGlb[Result].AreaName := 'merge_from_' + LastSubDir(ExtractFilePath(DEMList.Strings[0]))
             else DEMGlb[Result].AreaName := MergeSeriesName;
+            {$If Defined(TrackPixelIs)} WriteLineToDebugFile('merge is ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].GridCornerModelAndPixelIsString); {$EndIf}
             ReallyReadDEM := true;
             for i := 0 to pred(DEMList.Count) do begin
                FName := DEMList.Strings[i];
@@ -1065,7 +1065,9 @@ var
             LastDEMName := OldDEMName;
             DEMList.Free;
             if SaveIt then DEMGlb[Result].WriteNewFormatDEM(MergefDir,'merged DEM');
-            {$If Defined(RecordMerge) or Defined(RecordMergeDetails) or Defined(RecordTimeMerge) } WriteLineToDebugFile('MD merge done, DEM=' + IntToStr(Result)); {$EndIf}
+            {$If Defined(RecordMerge) or Defined(RecordMergeDetails) or Defined(RecordTimeMerge)  or Defined(RecordPixelIs)}
+               WriteLineToDebugFile('MD merge done, DEM=' + IntToStr(Result) + '  ' + DEMGlb[Result].GridCornerModelAndPixelIsString);
+            {$EndIf}
           end;
      end;
 
@@ -1104,7 +1106,7 @@ begin
       end;
 
     if ValidDEM(Result) then begin
-         {$IfDef TrackPixelIs} WriteLineToDebugFile('MergeMultipleDEMsHere defined, Pixel is = ' + RasterPixelIsString(DEMGlb[Result].DEMHeader.RasterPixelIsGeoKey1025)); {$EndIf}
+         {$IfDef TrackPixelIs} WriteLineToDebugFile('MergeMultipleDEMsHere defined, ' + DEMGlb[Result].GridCornerModelAndPixelIsString); {$EndIf}
          {$If Defined(RecordMerge) or Defined(RecordTimeMerge) } WriteLineToDebugFile('Merge set up, Result=' + IntToStr(Result)); {$EndIf}
          if MDdef.AutoFillHoles then begin
             DEMGlb[Result].InterpolateAcrossHoles(false);
@@ -1128,7 +1130,7 @@ begin
       UpdateMenusForAllMaps;
       DEMMergeInProgress := false;
       SubsequentDEM := false;
-      {$If Defined(RecordMerge) or Defined(MergeSummary) or Defined(RecordTimeMerge)}
+      {$If Defined(RecordMerge) or Defined(MergeSummary) or Defined(RecordTimeMerge) or Defined(RecordPixelIs)}
           if Result <> 0 then WriteLineToDebugFile('MergeMultipleDEMsHere out, merged  ' + DEMGlb[Result].AreaName)
           else WriteLineToDebugFile('MergeMultipleDEMsHere out, failure');
       {$EndIf}
@@ -1147,8 +1149,9 @@ var
             fName : PathStr;
             i : integer;
          begin
-             {$IfDef RecordIndex} WriteLineToDebugFile('Enter LoadTheDEMs, count='+IntToStr(LoadList.Count)); {$EndIf}
+             {$If Defined(RecordIndex) or Defined (RecordDuplicatesInIndex)} WriteLineToDebugFile('Enter LoadTheDEMs, count='+IntToStr(LoadList.Count)); {$EndIf}
              SortAndRemoveDuplicates(LoadList);
+             {$If Defined(RecordIndex) or Defined (RecordDuplicatesInIndex)} WriteLineToDebugFile('Sorted LoadTheDEMs, count='+IntToStr(LoadList.Count)); {$EndIf}
              if not FileExists(LoadList.Strings[0]) then begin
                 LoadList.Sorted := false;
                 for i := 0 to pred(LoadList.Count) do begin
@@ -1174,6 +1177,7 @@ var
              end;
              Loadone := true;
              if (WantDEM <> 0) then DEMGlb[WantDEM].AreaName := MergedName;
+             {$If Defined(TrackPixelIs)} WriteLineToDebugFile('Loaded ' + DEMGlb[WantDEM].AreaName + '  ' + DEMGlb[WantDEM].GridCornerModelAndPixelIsString); {$EndIf}
              {$If Defined(RecordIndex) or Defined(RecordLoadMapLibraryBox)} WriteLineToDebugFile('Exit LoadTheDEMs, WantDEM=' + IntToStr(WantDEM)); {$EndIf}
          end;
 

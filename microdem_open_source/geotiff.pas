@@ -18,9 +18,7 @@ unit GeoTiff;
 
  //{$Define InlineGeotiff}    //turn off to debug inline functions
 
-
 {$IfDef Recordproblems}  //normally only defined for debugging specific problems
-
 
    {$IFDEF DEBUG}
       //{$Define RecordGeotiff}
@@ -140,7 +138,6 @@ type
          function TiledImage : boolean;
          function TiffMustBeRewritten : boolean;
 
-
          {$IfDef ExSat}
          {$Else}
             procedure GetHistogramDBF(SingleFileBand : integer);
@@ -163,8 +160,7 @@ type
          procedure OpenTiffFile;   //inline;
          procedure CloseTiffFile;  //inline;
 
-         constructor CreateGeotiff(Metadataonly : boolean; NoGeo : boolean; inFileName : PathStr;
-            var Success : boolean; ShowHeader : boolean = false; GetHistogram : boolean = true; BandNum : integer = 0);
+         constructor CreateGeotiff(Metadataonly : boolean; NoGeo : boolean; inFileName : PathStr; var Success : boolean; ShowHeader : boolean = false; GetHistogram : boolean = true; BandNum : integer = 0);
          function CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
          destructor Destroy; override;
          procedure GetTiffRow(Band,Row : integer; var TheRow : tImageRow);
@@ -387,8 +383,6 @@ end;
       Offset := Offset + Length * GeotiffTypeSize(TypeField);
       //{$IfDef GeotiffSave} WriteLineToDebugFile('    Offset increased to Offset=' + IntToStr(Offset)); {$EndIf}
    end;
-
-
 
 
 function tTIFFImage.ValidZ(z : float64) : boolean; //inline;
@@ -1317,6 +1311,7 @@ begin {tTIFFImage.CreateTiffDEM}
    {$EndIf}
    {$If Defined(RecordDEMMapProjection) or Defined(RecordInitializeDEM) or Defined(TrackProjection)} WantDEM.DEMMapProjection.ProjectionParamsToDebugFile('SetUpDefaultNewProjection out'); {$EndIf}
    {$If Defined(TrackHorizontalDatum)} WriteLineToDebugFile('tTIFFImage.CreateDEM out, ' + WantDEM.AreaName + '  DEM=' + WantDEM.DEMMapProjection.h_DatumCode); {$EndIf}
+   {$If Defined(TrackPixelIs)} WriteLineToDebugFile('tTIFFImage.CreateDEM out, ' + WantDEM.AreaName + '  ' + WantDEM.GridCornerModelAndPixelIsString); {$EndIf}
 end  {tTIFFImage.CreateTiffDEM};
 
 
@@ -2149,6 +2144,10 @@ var
                   1025 : begin
                             TiffHeader.RasterPixelIs := TiffOffset;
                             TStr := RasterPixelIsString(TiffOffset);
+                            if StrUtils.AnsiContainsText(TIFFFileName,'ASTGTMV003') then begin
+                               TiffHeader.RasterPixelIs := PixelIsArea;
+                               if TiffOffset <> PixelIsArea then TStr := RasterPixelIsString(PixelIsPoint) + ' corrected by MICRODEM';
+                            end;
                          end;
                   1026 : TStr := ASCIIStr;
                   2048 : begin
@@ -2563,7 +2562,7 @@ begin
    {$IfDef TrackA} WriteLineToDebugFile('read Geotiff out, a=' + RealToString(MapProjection.a,-18,-2) + '  f=' + RealToString(MapProjection.h_f,-18,-6) + '  datum=' + MapProjection.H_datumCode); {$EndIf}
    {$IfDef TrackProjection} MapProjection.ProjectionParamsToDebugFile('ReadGeotiffTags out'); {$EndIf}
    {$IfDef TrackHorizontalDatum} WriteLineToDebugFile('GeoSuccess and NeedToLoadGeotiffProjection out, datum=' + MapProjection.h_DatumCode); {$EndIf}
-   {$IfDef TrackPixelIs} WriteLineToDebugFile('read Geotiff ' + ExtractFileName(InFileName) + ' out, Pixel is = ' + RasterPixelIsString(TiffHeader.RasterPixelIs)); {$EndIf}
+   {$IfDef TrackPixelIs} WriteLineToDebugFile('read Geotiff ' + ExtractFileName(InFileName) + ' out, ' + RasterPixelIsString(TiffHeader.RasterPixelIs)); {$EndIf}
 
    if ShowHeader then begin
       ShowInNotepadPlusPlus(HeaderLogList,'MD_metadata_' + ExtractFileName(InFileName));

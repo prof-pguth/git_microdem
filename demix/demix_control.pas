@@ -20,6 +20,8 @@ unit demix_control;
    //{$Define Record3DEPX}
    {$Define RecordDEMIX_evaluations_graph}
    {$Define RecordDiluviumFull}
+   //{$Define TrackPixelIs}
+
    //{$Define ShowOpenBothPixelIsDEMs}   //see how opening and masking for Diluvium DEM is going; don't use unless there is a a problem
    //{$Define Rec_DEMIX_Landcover}
    //{$Define RecordDEMIXStart}
@@ -82,7 +84,7 @@ uses
 const
    DEMIX_initialized : boolean = false;
 
-   function GetDEMIXpaths(StartProcessing : boolean = true) : boolean;
+   function GetDEMIXpaths(StartProcessing : boolean = true; DB : integer = 0) : boolean;
    procedure EndDEMIXProcessing(db : integer = 0);
    procedure LoadDEMIXnames;
 
@@ -97,7 +99,6 @@ const
    function LoadDEMIXReferenceDEMs(AreaName : shortstring; var RefDEM : integer; OpenMaps : boolean = true) : boolean;
    function LoadDEMIXCandidateDEMs(AreaName : ShortString;  OpenMaps : boolean = false; AllCandidates : boolean = true) : boolean;
    procedure LoadThisDEMIXTile(AreaName,TileName : shortstring; OpenMaps : boolean = true);
-
 
    procedure GetReferenceDEMsForTestDEM(TestSeries : shortstring; var UseDSM,UseDTM : integer);
    function GetReferenceDEMforTestDEM(ThisTestDEM : integer; RefDEMs : tDEMIXindexes) : integer;
@@ -120,7 +121,7 @@ const
 
 
    procedure AddCountryToDB(DB : integer);
-   //function MakeHistogramOfDifferenceDistribution(Tile,param,Ref : shortstring) : tThisBaseGraph;
+   function GetCountryForArea(Area : shortString) : shortstring;
    procedure SummarizeEGM96toEGM2008shifts;
    procedure SetDirtAirballBackground(var Result : tThisBaseGraph; DEMType : shortstring);   //brown dirtball for STM, blue airball for DSM
 
@@ -244,32 +245,43 @@ var
             {$IfDef ShowOpenBothPixelIsDEMs} if OpenMaps then DEMGlb[DEM].SelectionMap.DoBaseMapRedraw; {$EndIf};
          end;
 
+var
+   DataDir : PathStr;
 begin
     {$IfDef ShowOpenBothPixelIsDEMs} OpenMaps := true; {$EndIf};
     Result := true;
 
     TryToOpen(RefDir + Prefix + area + '_dtm' + Ref1SecPointStr + Ext,PointDEMs[0]);
-    for i := 1 to NumPt do begin
-       TryToOpen(TestDir + Prefix + Area + '_' + PointNames[i]  + Ext,PointDEMs[i]);
+    if DEMGlb[PointDEMs[0]].DEMSWcornerLat > 50 then begin
+       TryToOpen(RefDir + Prefix + area + '_dtm' + Ref1_5SecPointStr + Ext,PointDEMs[-1]);
     end;
+    for i := 1 to NumPt do begin
+       if PointNames[i] = 'DELTA' then DataDir := DEMIX_delta_dtms else DataDir := TestDir;
+       TryToOpen(DataDir + Prefix + Area + '_' + PointNames[i]  + Ext,PointDEMs[i]);
+    end;
+    if ValidDEM(PointDEMs[-1]) then dmxFirstPoint := -1 else dmxFirstPoint := 0;
 
     TryToOpen(RefDir + Prefix + Area + '_dtm' + Ref1SecAreaStr + Ext,AreaDEMs[0]);
     for i := 1 to NumArea do begin
-       if (i = 2) then TryToOpen(DEMIX_diluvium_dems + Prefix + Area + '_' + AreaNames[i]  + Ext,AreaDEMs[i])
-       else TryToOpen(TestDir + Prefix + Area + '_' + AreaNames[i]  + Ext,AreaDEMs[i]);
+       if (AreaNames[i] = 'DILUV') then DataDir := DEMIX_diluvium_dems else DataDir := TestDir;
+       TryToOpen(DataDir + Prefix + Area + '_' + AreaNames[i]  + Ext,AreaDEMs[i]);
     end;
+   if ValidDEM(AreaDEMs[-1]) then dmxFirstArea := -1 else dmxFirstArea := 0;
+
    {$IfDef ShowOpenBothPixelIsDEMs} wmdem.Tile; MessageToContinue('After loading'); {$EndIf};
 
     //using Diluvium DEM, so have to mask everything to elevations under 80 m
     if (NumArea = 2) then begin
-       for i := 0 to NumPt do MaskToMatchDiluvium(PointDEMs[i]);
-       for i := 0 to 1 do MaskToMatchDiluvium(AreaDEMs[i]);
+       for i := dmxFirstPoint to NumPt do MaskToMatchDiluvium(PointDEMs[i]);
+       for i := dmxFirstArea to 1 do MaskToMatchDiluvium(AreaDEMs[i]);
        {$IfDef ShowOpenBothPixelIsDEMs} wmdem.Tile; MessageToContinue('After masking'); {$EndIf};
 
-       for i := 0 to NumPt do TrimDEM(PointDEMs[i]);
-       for i := 0 to 2 do TrimDEM(AreaDEMs[i]);
+       for i := dmxFirstPoint to NumPt do TrimDEM(PointDEMs[i]);
+       for i := dmxFirstArea to 2 do TrimDEM(AreaDEMs[i]);
        {$IfDef ShowOpenBothPixelIsDEMs} wmdem.Tile; MessageToContinue('After trimming'); {$EndIf};
     end;
+
+    {$IfDef TrackPixelIs} ShowDEMIXgrids('OpenBothPixelIsDEMs', PointDEMs,AreaDEMs); {$EndIf};
     {$IfDef ShowOpenBothPixelIsDEMs} wmdem.Tile; MessageToContinue('Check maps'); {$EndIf};
 end;
 
@@ -467,6 +479,7 @@ begin
    if (StrUtils.AnsiContainsText(fName,'EDTM')) then fName := 'EDTM';
    if (StrUtils.AnsiContainsText(fName,'DILUV')) then fName := 'DILUV';
    if (StrUtils.AnsiContainsText(fName,'TANDEM')) then fName := 'TANDEM';
+   if (StrUtils.AnsiContainsText(fName,'DELTA')) then fName := 'DELTA';
 end;
 
 
@@ -476,7 +489,7 @@ var
 begin
    ExtractDEMIXDEMName(DEMName);
    Result := RGBtrip(185,185,185);
-   if DEMName = 'TIE' then Result := claBrown
+   if (DEMName = 'TIE') then Result := claBrown
    else begin
       for I := 1 to NumDEMIXDEM do
          if (Uppercase(DEMIXShort[i]) = DEMName) then Result := DEMIXDEMcolors[i];
@@ -644,7 +657,7 @@ begin
    fName := DEMIXSettingsDir + 'demix_dems.dbf';
    if (NumDEMIXDEM = 0) and FileExists(fName) then begin
       Table := tMyData.Create(fName);
-      Table.ApplyFilter('USE=' + QuotedStr('Y'));
+      //Table.ApplyFilter('USE=' + QuotedStr('Y'));
       NumDEMIXDEM := Table.FiltRecsInDB;
       RequiredTestDEMs := Table.FiltRecsInDB;
       for I := 1 to NumDEMIXDEM do begin
@@ -823,7 +836,6 @@ begin
 end;
 
 
-
 procedure SetDirtAirballBackground(var Result : tThisBaseGraph; DEMType : shortstring);
 begin
     if (DEMtype = 'DSM') then Result.GraphDraw.GraphBackgroundColor := RGB(219,236,237)
@@ -838,7 +850,33 @@ begin
 end;
 
 
-function GetDEMIXpaths(StartProcessing : boolean = true) : boolean;
+procedure SetParamsForDEMIXmode;
+begin
+   //DEMIX_mode = dmClassic then begin
+      NumPt := 6;
+      NumArea := 1;
+      SSIMresultsDir := RegularSSIMresultsDir;
+      AreaListFName := DEMIXSettingsDir + 'areas_list.txt';
+   if DEMIX_mode = dmAddDiluvium then begin
+      NumArea := 2;
+      SSIMresultsDir := DiluvSSIMresultsDir;
+      AreaListFName := DEMIXSettingsDir + 'areas_diluvium.txt';
+   end
+   else if DEMIX_mode = dmAddDelta then begin
+      NumPt := 7;
+   end;
+end;
+
+procedure RecognizeDEMIXVersion(DB : integer);
+begin
+   DEMIX_mode := dmClassic;
+   if GISDB[db].MyData.FieldExists('DILUV') then DEMIX_mode := dmAddDiluvium
+   else if GISDB[db].MyData.FieldExists('DELTA') then DEMIX_mode := dmAddDelta;
+   SetParamsForDEMIXmode;
+end;
+
+
+function GetDEMIXpaths(StartProcessing : boolean = true; DB : integer = 0) : boolean;
 begin
    {$If Defined(RecordDEMIXStart)} WriteLineToDebugFile('GetDEMIXpaths in'); {$EndIf}
    if DEMIX_initialized then Result := true
@@ -849,7 +887,6 @@ begin
 
    if (not Result) then exit;
    DEMIX_initialized := true;
-
 
    {$If Defined(RecordDEMIXStart)} WriteLineToDebugFile('Wine contest location done'); {$EndIf}
 
@@ -863,6 +900,7 @@ begin
    //settings that can be changed, but constant here for DB creation
       ElevDiffHists := true;
       DoHorizontalShift := false;
+      MDdef.MDRecordDebugLog := true;
 
       MDDef.DEMIX_Full := 75;
       MDDef.SlopeFlatBoundary := 12.5;
@@ -903,34 +941,31 @@ begin
 
    RegularSSIMresultsDir := DEMIX_Base_DB_Path + 'SSIM_results\';
    DiluvSSIMresultsDir := DEMIX_Base_DB_Path + 'diluvium_SSIM_results\';
+   DeltaSSIMresultsDir := DEMIX_Base_DB_Path + 'delta_SSIM_results\';
 
    DEMIX_Ref_1sec := DEMIX_Base_DB_Path + 'wine_contest_v2_ref_1sec\';
    DEMIX_test_dems := DEMIX_Base_DB_Path + 'wine_contest_v2_test_dems\';
    DEMIX_diluvium_dems := DEMIX_Base_DB_Path + 'diluvium_test_dems\';
+   DEMIX_delta_dtms := DEMIX_Base_DB_Path + 'delta_test_dtms\';
 
    {$If Defined(RecordDEMIXStart)} WriteLineToDebugFile('GetDEMIXpaths point 4'); {$EndIf}
-
-   if (SSIMresultsDir = '') then begin
-      if false and AnswerIsYes('Use low elevation (Diluvium DEM) data only') then begin
-         NumPt := 6;
-         NumArea := 2;
-         SSIMresultsDir := DiluvSSIMresultsDir;
-         AreaListFName := DEMIXSettingsDir + 'areas_diluvium.txt';
-      end
-      else begin
-         NumPt := 6;
-         NumArea := 1;
-         SSIMresultsDir := RegularSSIMresultsDir;
-         AreaListFName := DEMIXSettingsDir + 'areas_list.txt';
-      end;
-   end;
-
-
 
    Geoid2008FName := 'g:\geoid\egm2008-1-vdatum.tif';
    FindDriveWithFile(Geoid2008FName);
    GeoidDiffFName := 'g:\geoid\egm96_to_egm2008.tif';
    FindDriveWithFile(GeoidDiffFName);
+
+   if ValidDB(DB) then begin
+      RecognizeDEMIXVersion(DB);
+   end
+   else if DEMIX_mode = dmNotYetDefined then begin
+      if AnswerIsYes('Classic DEMIX') then DEMIX_Mode := dmClassic
+      else if AnswerIsYes('Add diluvium') then DEMIX_Mode := dmAddDiluvium
+      else DEMIX_Mode := dmAddDelta;
+      SetParamsForDEMIXmode;
+   end;
+
+
 
    LoadDEMIXnames;
 
@@ -940,6 +975,9 @@ end;
 
 procedure EndDEMIXProcessing(db : integer = 0);
 begin
+   if HeavyDutyProcessing then begin
+      CleanUpTempDirectory(false);
+   end;
    HeavyDutyProcessing := false;
    DEMIXProcessing := false;
    WMdem.Color := clScrollBar;
@@ -997,16 +1035,30 @@ begin
 end;
 
 
+function GetCountryForArea(Area : shortString) : shortstring;
+var
+   Table : tMyData;
+   Tile  : shortstring;
+begin
+   if FileExists(DEMIX_area_dbName) then begin
+     Table := tMyData.Create(DEMIX_area_dbName);
+     Table.ApplyFilter('AREA=' + QuotedStr(Area));
+     if Table.FiltRecsInDB = 0 then Result := ''
+     else Result := Table.GetFieldByNameAsString('COUNTRY');
+   end;
+   Table.Destroy;
+end;
+
+
 
 procedure AddCountryToDB(DB : integer);
 var
    Table : tMyData;
-   Area,Country : shortstring;
+   Tile,Area,Country : shortstring;
    i : integer;
 begin
    GetDEMIXPaths;
-
-   if FileExists(DEMIX_area_dbName) then begin
+   if FileExists(DEMIX_area_dbName) and GISdb[db].MyData.FieldExists('AREA') then begin
      Table := tMyData.Create(DEMIX_area_dbName);
      GISdb[db].AddFieldToDatabase(ftString,'COUNTRY',16);
      i := 0;
@@ -1015,21 +1067,29 @@ begin
         GISdb[db].EmpSource.Enabled := false;
         Country := Table.GetFieldByNameAsString('COUNTRY');
         Area := Table.GetFieldByNameAsString('AREA');
+        wmdem.SetPanelText(2, 'Tile: ' + IntToStr(succ(i)) + '/' + IntToStr(Table.FiltRecsInDB) + ' ' + Tile);
         wmdem.SetPanelText(2, 'Area: ' + IntToStr(succ(i)) + '/' + IntToStr(Table.FiltRecsInDB) + ' ' + Area);
-        if StrUtils.AnsiContainsText(UpperCase(Area),'_DSM') then begin
-
-        end
-        else begin
-           GISdb[db].ApplyGISFilter('AREA=' + QuotedStr(Area));
-           GISdb[db].FillFieldWithValue('COUNTRY',Country);
-        end;
-        Table.Next;
+        GISdb[db].ApplyGISFilter('AREA=' + QuotedStr(Area));
+        GISdb[db].FillFieldWithValue('COUNTRY',Country);
      end;
      Table.Destroy;
      wmdem.SetPanelText(2,'');
      GISdb[db].ClearGISFilter;
      GISdb[db].ShowStatus;
+  end
+(*
+  else if FileExists(DEMIX_area_dbName) and GISdb[db].MyData.FieldExists('DEMIX_TILE') then begin
+
+        else begin
+           Tile := Table.GetFieldByNameAsString('DEMIX_TILE');
+           wmdem.SetPanelText(2, 'Tile: ' + IntToStr(succ(i)) + '/' + IntToStr(Table.FiltRecsInDB) + ' ' + Tile);
+             GISdb[db].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(Tile));
+              GISdb[db].FillFieldWithValue('COUNTRY',Country);
+        end;
+        Table.Next;
+     end;
    end
+*)
    else begin
        {$If Defined(RecordDEMIX)} WriteLineToDebugFile('AddCountryToDB fail, missing ' + DEMIX_area_dbName); {$EndIf}
    end;
@@ -1088,19 +1148,12 @@ end;
 
 
 
-
-
 procedure OpenDEMIXDatabaseForAnalysis;
 begin
-   GetDEMIXpaths(false);
    if not FileExists(DEMIX_GIS_dbName) then Petmar.GetExistingFileName('DEMIX db version','*.dbf',DEMIX_GIS_dbName);
-   {$IfDef DEMIX_DB1} if not FileExists(DEMIX_GIS_dbName_v1) then Petmar.GetExistingFileName('DEMIX db version 1','*.dbf',DEMIX_GIS_dbName_v1); {$EndIf}
    OpenNumberedGISDataBase(DEMIX_DB,DEMIX_GIS_dbName,false);
+   GetDEMIXpaths(false,DEMIX_DB);
    GISdb[DEMIX_DB].LayerIsOn := false;
-   {$IfDef DEMIX_DB1}
-      OpenNumberedGISDataBase(DEMIX_DB_v1,DEMIX_GIS_dbName_v1,false);
-      GISdb[DEMIX_DB_v1].LayerIsOn := false;
-   {$EndIf}
    DoDEMIXFilter(DEMIX_DB);
 end;
 
@@ -1124,20 +1177,22 @@ procedure WhoIsBetter(DBonTable : integer);
       eval1,eval2,tolerance : float32;
       tStr,fName : shortstring;
    begin
-      fName := DEM1 + '_' + DEM2;
-      GISdb[dbOnTable].AddFieldToDataBase(ftstring,fName,12);
-      GISdb[dbOnTable].MyData.First;
-      GISdb[dbOnTable].EmpSource.Enabled := false;
-      while not GISdb[dbOnTable].MyData.eof do begin
-         eval1 := GISdb[dbOnTable].MyData.GetFieldByNameAsFloat(DEM1);
-         eval2 := GISdb[dbOnTable].MyData.GetFieldByNameAsFloat(DEM2);
-         tolerance := GISdb[dbOnTable].MyData.GetFieldByNameAsFloat('TOLERANCE');
-         if eval1 + Tolerance < Eval2 then tStr := DEM1
-         else if eval2 + Tolerance < Eval1 then tStr := DEM2
-         else tStr := 'TIE';
-         GISdb[dbOnTable].MyData.Edit;
-         GISdb[dbOnTable].MyData.SetFieldByNameAsString(fName,tStr);
-         GISdb[dbOnTable].MyData.Next;
+      if GISdb[dbOnTable].MyData.FieldExists(DEM1) and GISdb[dbOnTable].MyData.FieldExists(DEM2) then begin
+         fName := DEM1 + '_' + DEM2;
+         GISdb[dbOnTable].AddFieldToDataBase(ftstring,fName,12);
+         GISdb[dbOnTable].MyData.First;
+         GISdb[dbOnTable].EmpSource.Enabled := false;
+         while not GISdb[dbOnTable].MyData.eof do begin
+            eval1 := GISdb[dbOnTable].MyData.GetFieldByNameAsFloat(DEM1);
+            eval2 := GISdb[dbOnTable].MyData.GetFieldByNameAsFloat(DEM2);
+            tolerance := GISdb[dbOnTable].MyData.GetFieldByNameAsFloat('TOLERANCE');
+            if eval1 + Tolerance < Eval2 then tStr := DEM1
+            else if eval2 + Tolerance < Eval1 then tStr := DEM2
+            else tStr := 'TIE';
+            GISdb[dbOnTable].MyData.Edit;
+            GISdb[dbOnTable].MyData.SetFieldByNameAsString(fName,tStr);
+            GISdb[dbOnTable].MyData.Next;
+         end;
       end;
    end;
 
@@ -1145,6 +1200,8 @@ begin
    OnePair('COP','ALOS');
    OnePair('COP','FABDEM');
    OnePair('COP','TANDEM');
+   OnePair('COP','DILUV');
+   OnePair('COP','DELTA');
    GISdb[dbOnTable].EmpSource.Enabled := true;
 end;
 

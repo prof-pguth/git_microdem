@@ -439,6 +439,8 @@ function ArrayOfCharToString(LenArray : integer; var Chars : array of ANSIchar) 
 
 const
    QuietActions : boolean = false;
+   DEMMergeInProgress : boolean = false;
+
    clBrown = 8732621;   //RGB(205,133,63);
    clMagenta = 255*256*256 + 255;
 
@@ -2781,7 +2783,7 @@ end;
            StartupInfo : TStartupInfo;
            ProcessInfo : TProcessInformation;
          begin
-            {$IfDef RecordShellExecute} if Log and (not HeavyDutyProcessing) then WriteLineToDebugFile('WinExecAndWait32 in, cmd=' + FileName ); {$EndIf}
+            {$IfDef RecordShellExecute} if Log and (not HeavyDutyProcessing) and (not DEMMergeInProgress) then WriteLineToDebugFile('WinExecAndWait32 in, cmd=' + FileName ); {$EndIf}
             if Wait then ShowHourglassCursor;
             StrPCopy(zAppName,FileName);
             GetDir(0,WorkDir);
@@ -2810,7 +2812,7 @@ end;
             end;
             ApplicationProcessMessages;
             if Wait then ShowDefaultCursor;
-            {$IfDef RecordShellExecute} if Log and (not HeavyDutyProcessing) then WriteLineToDebugFile('WinExecAndWait32 out, result=' + IntToStr(Result)); {$EndIf}
+            {$IfDef RecordShellExecute} if Log and (not HeavyDutyProcessing) and (not DEMMergeInProgress) then WriteLineToDebugFile('WinExecAndWait32 out, result=' + IntToStr(Result)); {$EndIf}
          end;
 
 

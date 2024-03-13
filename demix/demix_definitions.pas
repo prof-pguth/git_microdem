@@ -15,11 +15,12 @@ unit demix_definitions;
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$Define RecordDEMIX}
-   {$Define RecordDEMIXLoad}
+   //{$Define RecordDEMIXLoad}
    {$Define RecordDiluvium}
    {$Define Record3DEPX}
+   //{$Define Record3DEPXFull}
    {$Define RecordDEMIX_evaluations_graph}
-   {$Define RecordDiluviumFull}
+   //{$Define RecordDiluviumFull}
    //{$Define Rec_DEMIX_Landcover}
    //{$Define RecordDEMIXStart}
    //{$Define RecordDEMIXsave}
@@ -78,14 +79,10 @@ uses
     DEMDefs;
 
 const
-   DEMIXSkipFilesAlreadyDone = true;
-   //FilterOutSeaLevel = false;
    JustTileStats : boolean = false;
    MaskForDiluvium = false;
 
 const
-   Ref1SecPointStr = '_ref_1sec_point';
-   Ref1SecAreaStr =  '_ref_1sec_area';
    DEMIX_vert_datum_code : integer = 0;
 
 const
@@ -125,25 +122,49 @@ type
    tDEMIXindexes = array[1..MaxDEMIXDEM] of integer;
    tDEMIXfloats = array[1..MaxDEMIXDEM] of float32;
 
-
 var
    DEMIXDEMTypeName : array[1..MaxDEMIXDEM] of shortstring;
    DEMIXshort : array[1..MaxDEMIXDEM] of shortstring;
    DEMIXDEMcolors : array[1..MaxDEMIXDEM] of tPlatformColor;
 
 const
-   MaxPossGrids = 8;
-   NumPt : integer = 6;
-   NumArea : integer = 1;
-   PossPt = 6;
-   PossArea = 2;
-   PointNames : array[0..PossPt] of shortstring = ('REF_POINT','ASTER','COP','FABDEM','NASA','SRTM','TANDEM');
-   AreaNames : array[0..PossArea] of shortstring = ('REF_AREA','ALOS','DILUV');
-type
-   tDEM_int_array = array [0..MaxPossGrids] of integer;
-var
-   PointDEMs : tDEM_int_array; //0 is the reference, rest the test DEMs
-   AreaDEMs : tDEM_int_array;  //0 is the reference, rest the test DEMs
+   Ref1SecPointStr = '_ref_1sec_point';
+   Ref1SecAreaStr =  '_ref_1sec_area';
+   Ref1_5SecPointStr = '1.5x1sec_point';
+
+//this should be rolled into a DEMIX_grid object; for now it is global variables
+         const
+            MaxPossGrids = 8;
+            NumPt : integer = 6;
+            NumArea : integer = 1;
+            PossPt = 7;
+            PossArea = 2;
+
+            DEMIX_Mode : integer = 0;
+            dmNotYetDefined = 0;
+            dmClassic = 1;
+            dmAddDiluvium = 2;
+            dmAddDelta = 3;
+
+         //the newer code using a set of arrays for the point and area DEMs, which can have corresponding array for derived grids like slope
+         //-1 for the high latitude (currently none for area grid),
+         //0 for the 1" reference,
+         //the rest for the test DEMs
+         const
+            PointNames : array[-1..PossPt] of shortstring = ('REF_HI_PNT','REF_POINT','COP','TANDEM','FABDEM','NASA','SRTM','ASTER','DELTA');
+            AreaNames : array[-1..PossArea] of shortstring = ('REF_HI_AREA','REF_AREA','ALOS','DILUV');
+         type
+            tDEM_int_array = array [-1..MaxPossGrids] of integer;
+         var
+            PointDEMs,AreaDEMs,
+            AreaGrids,PointGrids,AreaGrids2,PointGrids2,
+            PtSSIMGrids, AreaSSIMGrids : tDEM_int_array;
+            dmxFirstPoint,dmxFirstArea : integer;
+
+         procedure ZeroPointAndAreaGrids(var PointGrids,AreaGrids : tDEM_int_array);
+         procedure CreateDEMIXhillshadeGrids;
+         function RefGridForThisPointGrid(WhatGroup : tDEM_int_array; i : integer) : integer;
+         procedure ShowDEMIXgrids(WhatFor : shortstring; PointGrids,AreaGrids : tDEM_int_array);
 
 
 const
@@ -151,16 +172,16 @@ const
    yasSlope = 1;
    yasRuff = 2;
    yasRelief = 3;
+   yasBestEval = 4;
    xawEvaluation = 0;
    xawScore = 1;
    yawArea = 0;
    yawTile = 1;
    DEMIX_combined_graph : boolean = true;
-   PanelsByTestDEM : boolean = true;
    MovieByTestDEM : boolean = true;
 var
    XAxisWhat,YAxisWhat,YAxisSort,YaxisTileOrArea : integer;
-
+   DEMIXVertAxisLabel : ANSIstring;
 
 var
    RefDEMs,TestDEMs,
@@ -174,10 +195,10 @@ var
    HalfSecRefDTM,HalfSecRefDSM,HalfSecDTM,HalfSecALOS,HalfSecCOP,
    DEMIXRefDEM,RefDTMpoint,RefDTMarea,RefDSMpoint,RefDSMarea, COPRefDTM, COPRefDSM : integer;
 
-   SSIMresultsDir,  //used internally, and set to one of the next two depending on which version is on
-   DiluvSSIMresultsDir, RegularSSIMresultsDir,
+   SSIMresultsDir,  //used internally, and set to one of the next three depending on which version is on
+   DeltaSSIMresultsDir, DiluvSSIMresultsDir, RegularSSIMresultsDir,
 
-   DEMIX_Ref_1sec,DEMIX_test_dems,DEMIX_diluvium_dems,  //locations for the 1" DEMs used in comparison
+   DEMIX_Ref_1sec,DEMIX_test_dems,DEMIX_diluvium_dems,DEMIX_delta_dtms,  //locations for the 1" DEMs used in comparison
 
    DEMIX_Ref_Half_sec,
    DEMIX_Base_DB_Path,DEMIX_profile_test_dir,
@@ -188,7 +209,6 @@ var
    DEMIX_test_DEMs_channel_grids, DEMIX_ref_DEMs_channel_grids,
    ChannelMissesDir,DEMIX_diff_dist,DEMIX_area_lc100,
 
-
    DEMIX_area_dbName,
    DEMIX_Ref_Source,DEMIX_Ref_Merge,
    DEMIX_GIS_dbName,
@@ -197,28 +217,22 @@ var
 
    DEMIX_distrib_graph_dir,DEMIX_diff_maps_dir,DEMIX_3DEP_Dir,
 
-
    GeodeticFName, IceSatFName, LandCoverFName,
    LocalDatumAddFName,LocalDatumSubFName,
    RefDSMPointFName,RefDSMareaFName,RefDTMPointFName,RefDTMareaFName, COPRefDTMFName,COPRefDSMFName : PathStr;
-
-   {$IfDef DEMIX_DB1}
-      DEMIX_DB_v1 : integer;
-      DEMIX_GIS_dbName_v1 : PathStr;
-   {$EndIf}
 
 
 //create or edit database
    procedure MakeDBForParamStats(Option,DBonTable : integer);
    procedure DEMIX_SSIM_FUV_transpose_kmeans_new_db(DBonTable : integer);
-   procedure ComputeDEMIX_tile_stats(AreaName : shortstring = '');
-   procedure CreateDEMIX_GIS_database(AreaName : shortstring = '');
+   procedure ComputeDEMIX_tile_stats(Overwrite : boolean);
+   procedure CreateDEMIX_GIS_database;
    procedure RankDEMS(DBonTable : integer);
    procedure SumsOfRankDEMS(DBonTable : integer);
+   procedure AddFilteredRankID(DBonTable : integer);
    procedure ModeOfDifferenceDistributions;
-   procedure ComputeDEMIX_Summary_stats(AreaName : shortstring = '');
    procedure AddTileCharacteristics(DBonTable : integer);
-   procedure SwitchSSIMorFUVScoring(DBonTable : integer);
+   //procedure SwitchSSIMorFUVScoring(DBonTable : integer);
    procedure EvaluationRangeForCriterion(DBonTable : integer);
 
 
@@ -232,14 +246,13 @@ var
    function DEMIX_SSIM_FUV_clusters_graph(DBonTable : integer) : tThisBaseGraph;
 
 
-//create reference DEMs, 3DEP
-   procedure DEMIX_Create3DEPReferenceDEMs(Overwrite : boolean; DataDirs : tStringList = Nil);
-   procedure DEMIX_GDAL_3DEP_datum_shift(Overwrite : boolean; DataDirs : tStringList = Nil);
-   procedure DEMIX_3DEP_full_chain(overwrite : boolean);
-
-   procedure ShifDEMsto_UTM_WGS84_EGM2008;
+//create reference DEMs
+   procedure DEMIX_CreateReferenceDEMsFromSource(Overwrite : boolean; DataDirs : tStringList = Nil);
+   procedure DEMIX_GDAL_Ref_DEM_datum_shift(Overwrite : boolean; DataDirs : tStringList = Nil);
+   //procedure DEMIXRef_DEM_create_full_chain(overwrite : boolean);
+   procedure DEMIX_Ref_DEM_full_chain(overwrite : boolean);
+   procedure ShifDEMsto_UTM_WGS84_EGM2008(Overwrite : boolean; DataDirs : tStringList = Nil);
    procedure DEMIX_MergeReferenceDEMs(Overwrite : boolean; DataDirs : tStringList = Nil);
-
 
 
 //create reference DEMs, non-3DEP
@@ -253,10 +266,10 @@ var
 //create test DEMs
    function CreateDEMIXTestDEMsForArea(Overwrite : boolean; AreaName : ShortString; AreaRefDEM,PointRefDEM : integer) : boolean;
    procedure DiluviumDEMforTestAreas(Overwrite : boolean = true);
+   procedure DeltaDTMforTestAreas(Overwrite : boolean = true);
    procedure CreateTestAreaDEMs(Overwrite : boolean);
 
 //inventory and reports
-   procedure InventoryListRefereneDTMbyArea;
    procedure DEMIXTileSummary(DBonTable : integer);
    procedure DEMIXtile_inventory(DBonTable : integer);
    procedure InventoryDBwithDSMandDTMbyArea;
@@ -266,10 +279,16 @@ var
    procedure CheckReferenceDEMsAreEGMandPixelIs;
    procedure InventoryChannelDataByArea;
    procedure CheckDiluviumAreas;
+   procedure CheckDeltaDTMAreas;
    procedure VerifyAllMapsReadyForSSIM;
    procedure VerifyTestDEMcoverages;
+   procedure ComputeDEMIX_Summary_stats_DB;
+   procedure InventoryDEMIX_SSIM_FUV_Stats;
+   procedure DeleteFilesForATestArea;
 
 procedure AddStatisticsToDEMIXdb(db : integer);
+
+procedure ClearDoubleProcessed;
 
 
 procedure MaskWaterInReferenceDEMs;
@@ -277,6 +296,10 @@ procedure TrimReferenceDEMsToDEMIXtiles;
 
 function AreDEMIXscoresInDB(db : integer) : boolean;
 procedure ComputeAverageScoresForSelectedCriteria(db : integer; CriteriaList : tStringList; var Scores : tDEMIXfloats; var NumTies : integer; var WinnerString : shortstring);
+
+procedure CopHeadToHead(db : integer);
+procedure CriteriaInSSIM_FUV_db(db : integer);
+
 
 
 implementation
@@ -300,40 +323,127 @@ uses
 {$include demix_inventory_check_dems.inc}
 
 
-procedure AddStatisticsToDEMIXdb(db : integer);
-var
-   StatsFName : PathStr;
-   TheFields : tStringList;
-begin
-   if GISdb[db].MyData.FieldExists('AVG_SLOPE') and GISdb[db].MyData.FieldExists('AVG_ROUGH') and GISdb[db].MyData.FieldExists('RELIEF') then begin
+       function RefGridForThisPointGrid(WhatGroup : tDEM_int_array; i : integer) : integer;
+       var
+          AreaName : shortstring;
+       begin
+          if ValidDEM(i) then begin
+             AreaName := UpperCase(DEMglb[i].AreaName);
+             if (DEMglb[i].DEMSWcornerLat > 50) and (StrUtils.AnsiContainsText(AreaName,'COP') or StrUtils.AnsiContainsText(AreaName,'TANDEM')) then Result := WhatGroup[-1]
+             else Result := WhatGroup[0];
+          end
+          else begin
+             {$IfDef RecordDEMIX} WriteLineToDebugFile('Invaild DEM=' + IntToStr(i) + ' in RefGridForThisPointGrid'); {$EndIf}
+          end;
+       end;
 
-   end
-   else begin
-      TheFields := tStringList.Create;
-      TheFields.Add('AVG_SLOPE');
-      TheFields.Add('AVG_ROUGH');
-      TheFields.Add('RELIEF');
-      if GISdb[db].MyData.FieldExists('AREA') then begin
-         if GISdb[db].MyData.FieldExists('DEMIX_TILE') then begin
-            GISdb[DB].dbOpts.LinkTableName :=  DEMIXSettingsDir + 'tile_statistics.dbf';
-            GISdb[DB].dbOpts.LinkFieldThisDB := 'DEMIX_TILE';
-         end
-         else begin
-            GISdb[DB].dbOpts.LinkTableName :=  DEMIXSettingsDir + 'area_statistics.dbf';
-         end;
-         GISdb[DB].dbOpts.LinkFieldOtherDB := GISdb[DB].dbOpts.LinkTableName;
-         GISdb[DB].dbOpts.LinkFieldThisDB := 'AREA';
-         GISdb[DB].LinkTable := tMyData.Create(GISdb[DB].dbOpts.LinkTableName);
-         GISdb[DB].FillFieldsFromJoinedTable(TheFields,false);
-      end
-      else begin
-         exit;
-      end;
-     TheFields.Destroy;
-   end;
+
+procedure ShowDEMIXgrids(WhatFor : shortstring; PointGrids,AreaGrids : tDEM_int_array);
+var
+   i : integer;
+begin
+    HighlightLineToDebugFile(WhatFor);
+    for i := -1 to NumPt do
+       if ValidDEM(PointGrids[i]) then
+          WriteLineToDebugFile(IntegerToString(PointGrids[i],3) + '  ' + DEMglb[PointGrids[i]].AreaName + '  ' + DEMglb[PointGrids[i]].GridCornerModelAndPixelIsString);
+    for i := -1 to NumArea do
+       if ValidDEM(AreaGrids[i]) then
+          WriteLineToDebugFile(IntegerToString(AreaGrids[i],3) + '  ' + DEMglb[AreaGrids[i]].AreaName + '  ' + DEMglb[AreaGrids[i]].GridCornerModelAndPixelIsString);
 end;
 
 
+
+procedure CreateDEMIXhillshadeGrids;
+var
+   i : integer;
+begin
+    wmdem.SetPanelText(3, 'Compute Hillshade',true);
+    for i := dmxFirstPoint to NumPt do begin
+       PointGrids[i] := MakeSingleNewDerivativeMap('R',PointDEMs[i],0,false);
+       {$IfDef RecordDEMIXFull} WriteLineToDebugFile('Grid=' + IntToStr(PointGrids[i]) + ' Hillshade for ' + DEMGlb[PointDEMs[i]].AreaName); {$EndIf}
+    end;
+    for i := dmxFirstArea to NumArea do begin
+       {$IfDef RecordDEMIXFull} WriteLineToDebugFile('Hillshade for ' + DEMGlb[AreaDEMs[i]].AreaName); {$EndIf}
+       AreaGrids[i] := MakeSingleNewDerivativeMap('R',AreaDEMs[i],0,false);
+       {$IfDef RecordDEMIXFull} WriteLineToDebugFile('Grid=' + IntToStr(AreaGrids[i]) + ' Hillshade for ' + DEMGlb[PointDEMs[i]].AreaName); {$EndIf}
+    end;
+end;
+
+
+
+procedure ZeroPointAndAreaGrids(var PointGrids,AreaGrids : tDEM_int_array);
+var
+   i : integer;
+begin
+   for i := -1 to MaxPossGrids do PointGrids[i] := 0;
+   for i := -1 to MaxPossGrids do AreaGrids[i] := 0;
+end;
+
+
+procedure CopHeadToHead(db : integer);
+const
+   Outcomes : array[1..9] of shortstring = ('COP beats ALOS','COP ties ALOS','COP loses to ALOS',
+                                       'COP beats FABDEM','COP ties FABDEM','COP loses to FABDEM',
+                                       'COP beats TANDEM-X','COP ties TANDEM-X','COP loses to TANDEM-X');
+var
+   Counts : array[1..9,0..25] of integer;
+   Win : shortstring;
+   Criteria,Results : tStringList;
+   aline,Criterion : shortstring;
+   i,j,theIndex : integer;
+   fName : PathStr;
+
+         procedure BoxScore(offset,TheIndex : integer; Win : shortstring);
+         begin
+            if Win = 'COP' then begin
+               inc(Counts[1 + Offset,Criteria.Count]);
+               inc(Counts[1 + Offset,theIndex]);
+            end
+            else if Win = 'TIE' then begin
+               inc(Counts[2 + Offset,Criteria.Count]);
+               inc(Counts[2 + Offset,theIndex]);
+            end
+            else begin
+               inc(Counts[3 + Offset,Criteria.Count]);
+               inc(Counts[3 + Offset,theIndex]);
+            end;
+         end;
+
+
+begin
+   GISdb[DB].EmpSource.Enabled := false;
+   Criteria := GISdb[DB].MyData.UniqueEntriesInDB('CRITERION');
+   Results := tStringList.Create;
+   aLine := 'OUTCOME';
+   for i := 0 to pred(Criteria.Count) do aline := aline + ',' + Criteria.Strings[i];
+   Results.Add(aline + ',ALL');
+   for i := 1 to 9 do
+      for j := 0 to 25 do Counts[i,j] := 0;
+   GISdb[DB].EmpSource.Enabled := false;
+   GISdb[DB].MyData.First;
+   while not GISdb[DB].MyData.eof do begin
+      Criterion := GISdb[DB].MyData.GetFieldByNameAsString('CRITERION');
+      theIndex := Criteria.IndexOf(Criterion);
+      Win := GISdb[DB].MyData.GetFieldByNameAsString('COP_ALOS');
+      BoxScore(0,TheIndex,Win);
+      Win := GISdb[DB].MyData.GetFieldByNameAsString('COP_FABDEM');
+      BoxScore(3,TheIndex,Win);
+      Win := GISdb[DB].MyData.GetFieldByNameAsString('COP_TANDEM');
+      BoxScore(6,TheIndex,Win);
+      GISdb[DB].MyData.Next;
+   end;
+   for I := 1 to 9 do begin
+      aLine := Outcomes[i];
+      for j := 0 to Criteria.Count do begin
+         //if j <> 0 then aline := aline + ',';
+         aline := aline + ',' + IntToStr(Counts[i,j])
+      end;
+      Results.Add(aline);
+   end;
+   fName := NextFileNumber(MDTempDir,'cop_boxscore_','.dbf');
+   PetdbUtils.StringList2CSVtoDB(Results,fName);
+   GISdb[DB].EmpSource.Enabled := true;
+end;
 
 
 function AreDEMIXscoresInDB(db : integer) : boolean;
@@ -387,8 +497,6 @@ begin
       end;
    end;
 end;
-
-
 
 
 

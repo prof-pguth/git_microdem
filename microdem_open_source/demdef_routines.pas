@@ -1112,7 +1112,6 @@ procedure InitializeMICRODEM;
 var
    wYear,wmonth,wDay : word;
 begin
-    //MDDef.MDRecordDebugLog := true;
     MDDef.MaxDebugLinesToKeep := 1250;
     MDDef.FinalLinesToKeep := 10;
     MDDef.InitialLinesToKeep := 7;

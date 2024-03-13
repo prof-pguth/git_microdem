@@ -3533,6 +3533,10 @@ object wmdem: Twmdem
       Caption = 'Diluvium DEM for test areas'
       OnClick = DiluviumDEMfortestareas1Click
     end
+    object DeltaDTMfortestareas1: TMenuItem
+      Caption = 'Delta DTM for test areas'
+      OnClick = DeltaDTMfortestareas1Click
+    end
     object Merge1secreferenceDEMsfromVisioterra1: TMenuItem
       Caption = 'Merge 1 sec reference DEMs from Visioterra'
       OnClick = Merge1secreferenceDEMsfromVisioterra1Click
@@ -3594,10 +3598,6 @@ object wmdem: Twmdem
         Caption = 'Inventory test DEMs (missing .TIF by area)'
         OnClick = ChecktestDEMs1Click
       end
-      object InventoryDILUVIUMbytestarea1: TMenuItem
-        Caption = 'Inventory DILUVIUM  by test area'
-        OnClick = InventoryDILUVIUMbytestarea1Click
-      end
       object VerifytestDEMcoverages1: TMenuItem
         Caption = 'Verify test DEM coverages (center locations)'
         OnClick = VerifytestDEMcoverages1Click
@@ -3609,6 +3609,32 @@ object wmdem: Twmdem
       object Inventorychanneldatabyarea1: TMenuItem
         Caption = 'Inventory channel data by area'
         OnClick = Inventorychanneldatabyarea1Click
+      end
+      object InventorySSIMFUVCSVfiles1: TMenuItem
+        Caption = 'Inventory SSIM/FUV CSV files'
+        OnClick = InventorySSIMFUVCSVfiles1Click
+      end
+      object N40: TMenuItem
+        Caption = '-'
+      end
+      object InventoryDILUVIUMbytestarea1: TMenuItem
+        Caption = 'Inventory DILUVIUM  by test area'
+        OnClick = InventoryDILUVIUMbytestarea1Click
+      end
+      object DiluviumDEMandDEMIXDBoverlap1: TMenuItem
+        Caption = 'Diluvium DEM and DEMIX DB overlap'
+        OnClick = DiluviumDEMandDEMIXDBoverlap1Click
+      end
+      object InventoryDeltaDTMbytestarea1: TMenuItem
+        Caption = 'Inventory Delta DTM by test area'
+        OnClick = InventoryDeltaDTMbytestarea1Click
+      end
+      object N47: TMenuItem
+        Caption = '-'
+      end
+      object N42: TMenuItem
+        Caption = 'Delete files for a test area'
+        OnClick = N42Click
       end
     end
     object EditreferenceandtestDEMs1: TMenuItem
@@ -3653,13 +3679,6 @@ object wmdem: Twmdem
       Caption = 'Merge SSIM and R2 database'
       Enabled = False
       OnClick = MergeSSIMandR2database1Click
-    end
-    object N46: TMenuItem
-      Caption = '-'
-    end
-    object DiluviumDEMandDEMIXDBoverlap1: TMenuItem
-      Caption = 'Diluvium DEM and DEMIX DB overlap'
-      OnClick = DiluviumDEMandDEMIXDBoverlap1Click
     end
     object N39: TMenuItem
       Caption = '-'

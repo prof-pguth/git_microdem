@@ -310,7 +310,6 @@ var
    WGS84DatumConstants   : tMapProjection;
    ReportErrors,
    UseDefaultDatumZone,
-   DEMMergeInProgress,
    ReallyReadDEM  : boolean;
    SaveFileName : PathStr;
 

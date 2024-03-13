@@ -521,7 +521,6 @@ type
     VerifySSIMfiles1: TMenuItem;
     MergeSSIMandR2database1: TMenuItem;
     CheckfilesizesforSSIMimagemismatches1: TMenuItem;
-    N46: TMenuItem;
     DiluviumDEMandDEMIXDBoverlap1: TMenuItem;
     CheckreferenceDEMs1: TMenuItem;
     ChecktestDEMs1: TMenuItem;
@@ -590,6 +589,12 @@ type
     Skipeifpresent1: TMenuItem;
     Overwirte2: TMenuItem;
     Overwirte3: TMenuItem;
+    InventorySSIMFUVCSVfiles1: TMenuItem;
+    N40: TMenuItem;
+    N42: TMenuItem;
+    N47: TMenuItem;
+    DeltaDTMfortestareas1: TMenuItem;
+    InventoryDeltaDTMbytestarea1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -1001,6 +1006,10 @@ type
     procedure DEMIX2Click(Sender: TObject);
     procedure Overwirte2Click(Sender: TObject);
     procedure Overwirte3Click(Sender: TObject);
+    procedure InventorySSIMFUVCSVfiles1Click(Sender: TObject);
+    procedure N42Click(Sender: TObject);
+    procedure DeltaDTMfortestareas1Click(Sender: TObject);
+    procedure InventoryDeltaDTMbytestarea1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1524,6 +1533,11 @@ end;
 procedure Twmdem.DecemberSolstice1Click(Sender: TObject);
 begin
     SunViews(2);
+end;
+
+procedure Twmdem.DeltaDTMfortestareas1Click(Sender: TObject);
+begin
+   DeltaDTMforTestAreas;
 end;
 
 procedure Twmdem.DEMcornerstable1Click(Sender: TObject);
@@ -2567,6 +2581,11 @@ begin
    {$EndIf}
 end;
 
+procedure Twmdem.N42Click(Sender: TObject);
+begin
+   DeleteFilesForATestArea;
+end;
+
 procedure Twmdem.N45Click(Sender: TObject);
 var
    FilesWanted : tStringList;
@@ -3349,6 +3368,11 @@ begin
    InventoryChannelDataByArea;
 end;
 
+procedure Twmdem.InventoryDeltaDTMbytestarea1Click(Sender: TObject);
+begin
+   CheckDeltaDTMAreas;
+end;
+
 procedure Twmdem.Inventorydifferencestats1Click(Sender: TObject);
 begin
    InventoryDEMIXdifferenceStats;
@@ -3358,6 +3382,11 @@ end;
 procedure Twmdem.InventoryDILUVIUMbytestarea1Click(Sender: TObject);
 begin
    CheckDiluviumAreas;
+end;
+
+procedure Twmdem.InventorySSIMFUVCSVfiles1Click(Sender: TObject);
+begin
+   InventoryDEMIX_SSIM_FUV_Stats;
 end;
 
 procedure Twmdem.Italyfocalmechs1Click(Sender: TObject);
@@ -5844,11 +5873,9 @@ begin
 {$Else}
 var
    MergefName : PathStr;
-   //OutNames : tStringList;
 begin
    MergeFName := '';
-   //OutNames := Nil;
-   CallGDALMerge(MergefName,Nil);  //,OutNames);
+   CallGDALMerge(MergefName,Nil);
    OpenAndDisplaySatelliteScene(Nil,MergefName,true,true,true);
 {$EndIf}
 end;
