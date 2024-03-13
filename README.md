@@ -1,6 +1,6 @@
 # git_microdem
  
-Last changes posted 7 March 2024, which only partly worked.  Last full commit was 28 Feb, so this might not compile because of the mixed dates.  I will try again to update.
+Last changes posted 13 March 2024
 
 MICRODEM help file at https://www.usna.edu/Users/oceano/pguth/md_help/html/microdem.htm
 
