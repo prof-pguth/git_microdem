@@ -3758,6 +3758,25 @@ object dbtablef: Tdbtablef
     end
     object Modifythistable1: TMenuItem
       Caption = 'Modify this table'
+      object Addmultiplefields1: TMenuItem
+        Caption = 'Add multiple fields'
+        OnClick = Addmultiplefields1Click
+      end
+      object N54: TMenuItem
+        Caption = '-'
+      end
+      object RankDEMs1: TMenuItem
+        Caption = 'Rank DEMs (scores/opinions) and list best by criterion and tile'
+        OnClick = RankDEMs1Click
+      end
+      object Evaluationrangeforcriterion1: TMenuItem
+        Caption = 'Add best evaluation and range (max - min) for criterion and tile'
+        OnClick = Evaluationrangeforcriterion1Click
+      end
+      object CiompareCOPtorivals1: TMenuItem
+        Caption = 'Compare COP to rivals'
+        OnClick = CiompareCOPtorivals1Click
+      end
       object Addtilecharacteristics1: TMenuItem
         Caption = 'Add all 8 tile characteristics to DB'
         OnClick = Addtilecharacteristics1Click
@@ -3773,21 +3792,16 @@ object dbtablef: Tdbtablef
       object AddareafieldtoDB1: TMenuItem
         Caption = 'Add area field to DB'
       end
-      object Evaluationrangeforcriterion1: TMenuItem
-        Caption = 'Add best evaluation and range (max - min) for criterion and tile'
-        OnClick = Evaluationrangeforcriterion1Click
-      end
       object AddIMAGEfieldfordifferencedistributiongraphs1: TMenuItem
         Caption = 'Add IMAGE field for difference distribution graphs'
         OnClick = AddIMAGEfieldfordifferencedistributiongraphs1Click
       end
-      object CiompareCOPtorivals1: TMenuItem
-        Caption = 'Compare COP to rivals'
-        OnClick = CiompareCOPtorivals1Click
+      object N50: TMenuItem
+        Caption = '-'
       end
-      object RankDEMs1: TMenuItem
-        Caption = 'Rank DEMs and find best by criterion and tile'
-        OnClick = RankDEMs1Click
+      object N53: TMenuItem
+        Caption = 'Coffee break--add everything'
+        OnClick = N53Click
       end
     end
     object Filterthistable1: TMenuItem
@@ -3805,7 +3819,7 @@ object dbtablef: Tdbtablef
         OnClick = FilterforDEMIXtiles1Click
       end
       object Filterfor999valuesinanyevaluation1: TMenuItem
-        Caption = 'Filter for -999 values in any evaluation'
+        Caption = 'Filter for -9999 values in any evaluation'
         OnClick = Filterfor999valuesinanyevaluation1Click
       end
     end

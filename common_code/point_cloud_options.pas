@@ -1018,7 +1018,7 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
              NewHeadRecs := DEMGlb[TempDEM].DEMheader;
              NewHeadRecs.RasterPixelIsGeoKey1025 := MDDef.LasDEMPixelIs;
              NewHeadRecs.DEMPrecision := LongWordDEM;
-             NewHeadRecs.ElevUnits := Undefined;
+             NewHeadRecs.ElevUnits := euUndefined;
 
              if (PCGridMaker in [pcgmAllIntensity,pcgmClass,pcgmPointCount,pcgmThreeKeyDensities,pcgmMeanStd,pcgmMeanFirst]) then MissingDataGrid(NewDensity,NewGridname('Total_pt_density_'),InitDEMzero);
              if (PCGridMaker = pcgmSecondRet) then MissingDataGrid(SecondReturnDEM,NewGridname('Second_return_density_'),InitDEMzero);
@@ -1075,7 +1075,7 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
                 StartProgress('open');
                 for i := 1 to MDDef.VegDensityHeights do begin
                    NewHeadRecs.DEMPrecision := ByteDEM;
-                   NewHeadRecs.ElevUnits := Undefined;
+                   NewHeadRecs.ElevUnits := euUndefined;
                    UpdateProgressBar(i/MaxVegLayers);
                    OpenAndZeroNewDEM(true,NewHeadRecs,VegDensity[i],'Voxel up to ' + IntToStr(i),InitDEMvalue,0);
                 end;
@@ -1090,7 +1090,7 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
                 StartProgress('open');
                 for i := 1 to MaxVegLayers do begin
                    NewHeadRecs.DEMPrecision := SmallIntDEM;
-                   NewHeadRecs.ElevUnits := Undefined;
+                   NewHeadRecs.ElevUnits := euUndefined;
                    UpdateProgressBar(i/MaxVegLayers);
                    OpenAndZeroNewDEM(true,NewHeadRecs,VegDensity[i],'Voxel height ' + IntToStr(i * MDDef.VoxBinHeight),InitDEMvalue,0);
                 end;
@@ -1099,12 +1099,12 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
              end
              else if (PCGridMaker in [pcgmScanAngle]) then begin
                 NewHeadRecs.DEMPrecision := SmallIntDEM;  //byte would work for scan angle, but we need negatives; and intensities go over 255
-                NewHeadRecs.ElevUnits := Undefined;
+                NewHeadRecs.ElevUnits := euUndefined;
                 OpenAndZeroNewDEM(true,NewHeadRecs,MinScanAngleDEM,NewGridname('Min_scan_angle_'),InitDEMvalue,-9999);
                 OpenAndZeroNewDEM(true,NewHeadRecs,MaxScanAngleDEM,NewGridname('Max_scan_angle_'),InitDEMvalue,9999);
              end
              else if (PCGridMaker in [pcgmPointSourceID,pcgmUserData]) then begin
-                NewHeadRecs.ElevUnits := Undefined;
+                NewHeadRecs.ElevUnits := euUndefined;
                 NewHeadRecs.DEMPrecision := WordDEM;
                 MissingDataGrid(NewPointIDDEM,NewGridname('Point_ID_'));
                 NewHeadRecs.DEMPrecision := ByteDEM;
@@ -1123,7 +1123,7 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
              end
              else if (PCGridMaker in [pcgmClass]) then begin
                 NewHeadRecs.DEMPrecision := WordDEM;
-                NewHeadRecs.ElevUnits := Undefined;
+                NewHeadRecs.ElevUnits := euUndefined;
                 OpenAndZeroNewDEM(true,NewHeadRecs,NewDensity,NewGridname('total_density'),InitDEMvalue,0);
                 if (PCGridMaker = pcgmClass) then begin
                    OpenAndZeroNewDEM(true,NewHeadRecs,NewVegDEM,NewGridname('Vegetation_density_'),InitDEMvalue,0);

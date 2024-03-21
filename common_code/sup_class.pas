@@ -4,7 +4,7 @@ unit sup_class;
 { Part of MICRODEM GIS Program       }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
-{ Copyright (c) 2023 Peter L. Guth   }
+{ Copyright (c) 2024 Peter L. Guth   }
 {____________________________________}
 
 {$I nevadia_defines.inc}
@@ -185,7 +185,7 @@ var
                         if (MomentVar.NPts > 1) then with MomentVar do begin
                            moment(zs^,MomentVar,msAll);
                            Classes^[i].Mean[Band] := mean;
-                           Classes^[i].StdDev[Band] := sdev;
+                           Classes^[i].StdDev[Band] := std_dev;
                            q95 := Quantile(95,zs^,MomentVar.NPts,true);
                            q90 := Quantile(90,zs^,MomentVar.NPts,true);
                            q10 := Quantile(10,zs^,MomentVar.NPts,true);
@@ -207,7 +207,7 @@ var
                                 RealToString(q90,-12,-2)  + ',' +
                                 RealToString(q95,-12,-2)  + ',' +
                                 RealToString(max,-12,-2)  + ',' +
-                                RealToString(MomentVar.sdev,-12,-2);
+                                RealToString(MomentVar.std_dev,-12,-2);
                         {$IfDef RecordSatClass} WriteLineToDebugFile(Line); {$EndIf}
                     end;
                     GISDB[TrainingPointsDB].MyData.Next;
@@ -218,7 +218,6 @@ var
        GISDB[TrainingPointsDB].ClearGISFilter;
        GISDB[TrainingPointsDB].dbTablef.ShowStatus;
     end;
-
 
 
 begin
@@ -377,7 +376,7 @@ begin
    ClassName := ExtractFileNameNoExt(fName2);
    {$IfDef RecordUnsupClass} WriteLineToDebugFile('Directory created'); {$EndIf}
    ApplicationProcessMessages;
-   ClassDEM := DEMGlb[MultiGridArray[MGUsed].Grids[MultiGridArray[MGUsed].FirstValidGrid]].CloneAndOpenGridSetMissing(byteDEM,ClassName,UnDefined);
+   ClassDEM := DEMGlb[MultiGridArray[MGUsed].Grids[MultiGridArray[MGUsed].FirstValidGrid]].CloneAndOpenGridSetMissing(byteDEM,ClassName,euUnDefined);
 
    {$IfDef RecordUnsupClass} WriteLineToDebugFile('New grid created'); {$EndIf}
 
@@ -713,7 +712,7 @@ begin
    {$EndIf}
 
    fName2 := NextFileNumber(MultiGridArray[UseMG].SupClassDir, 'sc_' ,'.dem');
-   ClassDEM := DEMGlb[MultiGridArray[UseMG].Grids[1]].CloneAndOpenGridSetMissing(byteDEM,ClassName,Undefined);
+   ClassDEM := DEMGlb[MultiGridArray[UseMG].Grids[1]].CloneAndOpenGridSetMissing(byteDEM,ClassName,euUndefined);
 
    try
       {$IfDef RecordSatTrainProblems} WriteLineToDebugFile('DisplayClassifiedBand 2'); {$EndIf}
@@ -755,7 +754,7 @@ begin
        Results.Add('Unclassified,255,' + IntToStr(ClassUnclassified) + ',Y,' + IntToStr(ConvertPlatformColorToTColor(MDDef.MissingDataColor)));
        fName := ChangeFileExt(fName2,'.vat.csv');
        Results.SaveToFile(fName);
-       DoCSVFileImport(fName);
+       CSVFileImportToDB(fName);
        SysUtils.DeleteFile(fName);
        {$IfDef RecordSatTrainProblems} WriteLineToDebugFile('Save VAT  ' + fName); {$EndIf}
        ApplicationProcessMessages;

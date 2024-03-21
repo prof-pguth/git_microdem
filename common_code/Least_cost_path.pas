@@ -192,8 +192,8 @@ begin
    {$IfDef RecordBasicsAccumPath} WritelineToDebugFile('Start buffer CreateCostPathSurface'); {$EndIf}
    StatusBar1.Panels[0].Text := 'Buffering';
    for I := 1 to MDDef.BufferRounds do begin
-      if MDDef.LCP_LeastCost then BufferDEM := DEMGlb[NewDEM].CloneAndOpenGridSetMissing(SmallIntDEM,'Buffered',Undefined);
-      if MDDef.LCP_ShortestDistance then Buffer2DEM := DEMGlb[NewDEM].CloneAndOpenGridSetMissing(SmallIntDEM,'Buffered',Undefined);
+      if MDDef.LCP_LeastCost then BufferDEM := DEMGlb[NewDEM].CloneAndOpenGridSetMissing(SmallIntDEM,'Buffered',euUndefined);
+      if MDDef.LCP_ShortestDistance then Buffer2DEM := DEMGlb[NewDEM].CloneAndOpenGridSetMissing(SmallIntDEM,'Buffered',euUndefined);
       StartProgress('Buffer cost surface');
       for x := 0 to pred(DEMGlb[NewDEM].DEMHeader.NumCol) do begin
          if (x mod 50 = 0) then UpDateProgressBar(x/DEMGlb[NewDEM].DEMHeader.NumCol);
@@ -500,7 +500,7 @@ begin
    {$IfDef RecordBasicsAccumPath} WritelineToDebugFile('Create new grids ' + fName); {$EndIf}
 
    NewHeadrecs := DEMGlb[CostPassageDEM].DEMheader;
-   NewHeadRecs.ElevUnits := Undefined;
+   NewHeadRecs.ElevUnits := euUndefined;
 
    NewHeadRecs.DEMPrecision := ByteDEM;
    if not OpenAndZeroNewDEM(true,NewHeadRecs,DownCostDEM,'',InitDEMvalue,0) then exit;

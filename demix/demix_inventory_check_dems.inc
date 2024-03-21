@@ -8,6 +8,100 @@
 {____________________________________}
 
 
+procedure FixFilesWith42112;
+var
+   TheBytes : array[0..4000] of byte;
+   FilesWanted,Results,Paths : tStringList;
+   Tag : shortstring;
+   fName,fName2,NewName,JustName,BaseDir : PathStr;
+   Num1m,NumEGM,Num1secArea,Num1secPoint,
+   i,j,DTMs,DSMs,DEM : Integer;
+   Tag2114Offset,Tag2114Length : int64;
+   TiffHandle : THandle;
+   TStr : ansistring;
+begin
+   try
+      {$If Defined(Record3DEPX)} WriteLineToDebugFile('DEMIX_Create3DEPReferenceDEMs getting data paths'); {$EndIf}
+      GetDosPath('3DEP files',BaseDir);
+      FilesWanted := tStringList.Create;
+      FindMatchingFiles(BaseDir,'*.tif',FilesWanted,3);
+      RemoveFilesThatDoHaveString(FilesWanted,'_egm2008');
+      StartProgress('Checking Geotiffs');
+      for I := 0 to pred(FilesWanted.Count) do begin
+         if (i mod 25 = 0) then UpdateProgressBar(i/FilesWanted.Count);
+         fName := FilesWanted.Strings[i];
+         if GetGeotiffTag42114(fName,Tag,Tag2114Offset,Tag2114Length) then begin
+            if StrUtils.ANSIContainsText(Tag,'foot') or StrUtils.ANSIContainsText(Tag,'pied') then begin
+               TiffHandle := FileOpen(fName,fmOpenReadWrite);
+               FileSeek(TiffHandle,Tag2114Offset,0);
+               FileRead(TiffHandle,TheBytes[1],Tag2114Length);
+               TStr := ByteArrayToString(TheBytes,Tag2114Length);
+               TStr := StringReplace(TStr,'pied','foot',[rfReplaceAll, rfIgnoreCase]);
+               TStr := StringReplace(TStr,'US survey foot</Item>','metre</Item>         ',[rfReplaceAll, rfIgnoreCase]);
+
+               StringToByteArray(TStr,TheBytes);
+               FileSeek(TiffHandle,Tag2114Offset,0);
+               FileWrite(TiffHandle,TheBytes[1],Tag2114Length);
+               FileClose(Tiffhandle);
+               (*
+               DEM := OpenNewDEM(fName,false);
+               if ValidDEM(DEM) then begin
+                  DEMGlb[DEM].SaveAsGeotiff(fName);
+                  CloseSingleDEM(DEM);
+               end;
+               *)
+               //GDAL_replace_42112_tag(fName,'MICRODEM replaced pieds');  not working 3/17/2024
+               fName2 := ExtractFilePath(fName) + extractFileNameNoExt(fName) + '_egm2008.tif';
+               DeleteFileIfExists(fName2);
+               fName2 := ExtractFilePath(fName) + extractFileNameNoExt(fName) + '_egm2008' + Ref1SecPointStr + '.tif';
+               DeleteFileIfExists(fName2);
+               fName2 := ExtractFilePath(fName) + extractFileNameNoExt(fName) + '_egm2008' + Ref1SecAreaStr + '.tif';
+               DeleteFileIfExists(fName2);
+
+            end;
+         end;
+      end;
+   finally
+      EndProgress;
+   end;
+end;
+
+
+procedure FindFilesWith42112;
+var
+   FilesWanted,Results,Paths : tStringList;
+   Tag : shortstring;
+   fName,NewName,JustName,BaseDir : PathStr;
+   Num1m,NumEGM,Num1secArea,Num1secPoint,
+   i,j,DTMs,DSMs : Integer;
+   Tag2114Offset,Tag2114Length : int64;
+begin
+   try
+      Results := tStringList.Create;
+      Results.Add('FILE,TAG42114');
+      {$If Defined(Record3DEPX)} WriteLineToDebugFile('DEMIX_Create3DEPReferenceDEMs getting data paths'); {$EndIf}
+      GetDosPath('3DEP files',BaseDir);
+      FilesWanted := tStringList.Create;
+      FindMatchingFiles(BaseDir,'*.tif',FilesWanted,3);
+      RemoveFilesThatDoHaveString(FilesWanted,'_egm2008');
+      StartProgress('Checking Geotiffs');
+      for I := 0 to pred(FilesWanted.Count) do begin
+         if (i mod 25 = 0) then UpdateProgressBar(i/FilesWanted.Count);
+         fName := FilesWanted.Strings[i];
+         if GetGeotiffTag42114(fName,Tag,Tag2114Offset,Tag2114Length) then begin
+            if StrUtils.ANSIContainsText(Tag,'foot') then begin
+               Results.Add(fName + ',' + Tag);
+            end;
+         end;
+      end;
+      fName := NextFileNumber(MDTempDir,'files_with_tag_42112_','.dbf');
+      PetdbUtils.StringList2CSVtoDB(Results,fName);
+   finally
+      EndProgress;
+   end;
+end;
+
+
 
 
 procedure DeleteFilesForATestArea;
@@ -230,12 +324,13 @@ begin
       Problems := 0;
       for I := 0 to pred(Paths.Count) do begin
          FilesWanted := tStringList.Create;
-         FindMatchingFiles(Paths[i],'*.tif',FilesWanted,1);
+         FindMatchingFiles(Paths[i],'*.tif',FilesWanted,3);
          for j := 0 to pred(FilesWanted.Count) do begin
-             fName := ExtractFileNameNoExt(FilesWanted.Strings[j]);
-             if StrUtils.AnsiContainsText(fName,Ref1SecPointStr + Ref1SecPointStr) or StrUtils.AnsiContainsText(fName,Ref1SecAreaStr + Ref1SecAreaStr) then begin
-                DeleteFileIfExists(fName);
-                inc(Problems);
+             fName := FilesWanted.Strings[j];
+             if StrUtils.AnsiContainsText(fName,Ref1SecPointStr + Ref1SecPointStr) or StrUtils.AnsiContainsText(fName,Ref1SecAreaStr + Ref1SecAreaStr) or
+                StrUtils.AnsiContainsText(fName,Ref1SecAreaStr + Ref1SecPointStr) or StrUtils.AnsiContainsText(fName,Ref1SecPointStr + Ref1SecAreaStr) then begin
+                   DeleteFileIfExists(fName);
+                   inc(Problems);
              end;
          end;
          FilesWanted.Free;
@@ -431,7 +526,7 @@ begin
    RemoveFilesThatDoNotHaveString(FilesWanted,AreaName);
    DEMs := 0;
    Missing := '-';
-   for k := 1 to NumDemixDEM do begin
+   for k := 1 to NumDEMIXtestDEM do begin
       Found := false;
       for j := 0 to pred(FilesWanted.Count) do begin
          fName := FilesWanted.Strings[j];
@@ -442,7 +537,7 @@ begin
       end;
       if not Found then Missing := Missing + DEMIXShort[k] + '-';
    end;
-  Result := (DEMS = RequiredTestDEMs);
+  Result := (DEMS = NumDEMIXtestDEM);
   if not Result then begin
 
   end;
@@ -643,8 +738,8 @@ procedure VerifyAllMapsReadyForSSIM;
 const
    NCrits = 6;
    Crits : array[1..NCrits] of shortstring = ('ELEV_','RRI_','SLOPE_','HILL_','RUFF_','TPI_');
-   NDEMs = 9;
-   DEMs : array[1..NDEMs] of shortstring = ('COP','FABDEM','NASA','SRTM','ASTER','ALOS','DILUV','dtm_ref_area','dtm_ref_point');
+   NDEMs = 10;
+   DEMs : array[1..NDEMs] of shortstring = ('COP','FABDEM','TANDEM','NASA','SRTM','ASTER','ALOS','DILUV','dtm_ref_area','dtm_ref_point');
 var
    Dirs,GoodTiles,BadTiles,TheFiles : tStringList;
    i,j,k : Integer;

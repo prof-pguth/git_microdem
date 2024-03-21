@@ -1107,7 +1107,8 @@ begin
       Grazingangles1.Visible := (MDDef.ProgramOption in [ExpertProgram]) and (not MultiProf) and MDDef.ShowGeomorphometry;
       GrainAlongProfile1.Visible := (MDDef.ProgramOption in [ExpertProgram]) and (not MultiProf);
       Parallelprofiles1.Visible := ((LOSVariety in [losVanilla,losSimpleOne]) or (MDDef.ProgramOption in [GeologyProgram])) and (not MultiProf);
-      Magneticmodel1.Visible := (MDDef.ProgramOption in [ExpertProgram,GeologyProgram]) or (DEMGlb[DEMonView].DEMheader.ElevUnits in [TenthMgal,Milligal,TenthGamma,Gammas,HundredthMGal,Nanotesla]);
+      Magneticmodel1.Visible := (MDDef.ProgramOption in [ExpertProgram,GeologyProgram]) or
+          (DEMGlb[DEMonView].DEMheader.ElevUnits in [euTenthMgal,euMilligal,euTenthGamma,euGammas,euHundredthMGal,euNanotesla]);
 
       Wavelengthheight1.Visible := (LOSProfileDB <> 0) and MDDef.ShowGeomorphometry and (MDDef.ProgramOption in [ExpertProgram]);
       Linesizeandcolors1.Visible := MultiProf;

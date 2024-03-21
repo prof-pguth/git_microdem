@@ -1011,6 +1011,10 @@ type
     Copycolumntoclipboard1: TMenuItem;
     QuartilesinCLUSTERfieldbasedonsort1: TMenuItem;
     AddareafieldtoDB1: TMenuItem;
+    N50: TMenuItem;
+    N53: TMenuItem;
+    Addmultiplefields1: TMenuItem;
+    N54: TMenuItem;
     //Pointfilter1: TMenuItem;
     //Pointfilter2: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
@@ -1787,6 +1791,8 @@ type
     procedure InventoryFUVSSIMcriteriainDB1Click(Sender: TObject);
     procedure Copycolumntoclipboard1Click(Sender: TObject);
     procedure QuartilesinCLUSTERfieldbasedonsort1Click(Sender: TObject);
+    procedure N53Click(Sender: TObject);
+    procedure Addmultiplefields1Click(Sender: TObject);
     //procedure Pointfilter2Click(Sender: TObject);
     //procedure Pointfilter1Click(Sender: TObject);
   private
@@ -5506,6 +5512,15 @@ begin
    AddUTMcoordfields1Click(Sender);
 end;
 
+procedure Tdbtablef.Addmultiplefields1Click(Sender: TObject);
+begin
+   RankDEMS(DBonTable);
+   EvalRangeAndBestEvalForCriterion(DBonTable);
+   CompareSeriousCompetitors(DBonTable);
+   AddTileCharacteristicsToDB(DBonTable);
+   AddCountryToDB(DBonTable);
+end;
+
 procedure Tdbtablef.AddnearestelevationfromDEM1Click(Sender: TObject);
 begin
    GISdb[DBonTable].AddAndFillFieldFromDEM(adElevNearest);
@@ -5600,8 +5615,9 @@ end;
 
 procedure Tdbtablef.Addtilecharacteristics1Click(Sender: TObject);
 begin
-   AddTileCharacteristics(DBonTable);
+   AddTileCharacteristicsToDB(DBonTable);
 end;
+
 
 procedure Tdbtablef.AddUTMcoordfields1Click(Sender: TObject);
 var
@@ -6569,6 +6585,14 @@ procedure Tdbtablef.N45Click(Sender: TObject);
 begin
    {$IfDef RecordIceSat} WriteLineToDebugFile('ICESat2filecleanup1Click'); {$EndIf}
    IcesatProcessCanopy(DBonTable,false,true);
+end;
+
+procedure Tdbtablef.N53Click(Sender: TObject);
+begin
+   RankDEMS(DBonTable);
+   AddTileCharacteristicsToDB(DBonTable);
+   EvalRangeAndBestEvalForCriterion(DBonTable);
+   CompareSeriousCompetitors(DBonTable);
 end;
 
 procedure Tdbtablef.N7Elevationdifferencecriteria1Click(Sender: TObject);
@@ -12534,7 +12558,7 @@ begin
            fName := GISdb[DBonTable].DBAuxDir + ChangeFileExt(fName,'.csv');
            {$IfDef FindNeighbors} WriteLineToDebugFile('Tdbtablef.Centr1Click call StringGridToCSVFile ' + fName); {$EndIf}
            StringGridToCSVFile(fName,GridForm.StringGrid1,Nil);
-           DoCSVFileImport(fName);
+           CSVFileImportToDB(fName);
 
            fName := ChangeFileExt(fName,DefaultDBExt);
            GISdb[DBonTable].NeighborTable := tMyData.Create(fName);
@@ -13625,15 +13649,18 @@ begin
    //end;
 end;
 
+
 procedure Tdbtablef.Filterfor999valuesinanyevaluation1Click(Sender: TObject);
 var
    i : integer;
    aFilter : shortstring;
 begin
    aFilter := '';
-   for i := 1 to NumDEMIXDEM do begin
-      if i > 1 then aFilter := aFilter + ' OR ';
-      aFilter := aFilter + DEMIXshort[i] + '= -999';
+   for i := 1 to NumDEMIXtestDEM do begin
+      if GISdb[DBonTable].MyData.FieldExists(DEMIXshort[i]) then begin
+         if length(aFilter) > 0 then aFilter := aFilter + ' OR ';
+         aFilter := aFilter + DEMIXshort[i] + '= -9999';
+      end;
    end;
    GISdb[DBonTable].ApplyGISFilter(aFilter);
 end;
@@ -13641,8 +13668,8 @@ end;
 procedure Tdbtablef.FilterforDEMIXtiles1Click(Sender: TObject);
 begin
    GISdb[DBonTable].ApplyGISFilter('REF_TYPE=' + QuotedStr('DTM') + ' AND LAND_TYPE=' + QuotedStr('ALL') + ' AND CRITERION=' + QuotedStr('ELVD_AVD'));
-   //ShowStatus;
 end;
+
 
 procedure Tdbtablef.Filterforjustsignedcrirteria1Click(Sender: TObject);
 begin
@@ -13731,7 +13758,7 @@ end;
 
 procedure Tdbtablef.CiompareCOPtorivals1Click(Sender: TObject);
 begin
-   WhoIsBetter(DBonTable);
+   CompareSeriousCompetitors(DBonTable);
 end;
 
 procedure Tdbtablef.Animatefield1Click(Sender: TObject);
@@ -13958,7 +13985,7 @@ begin
    if (HowCreate = cgPointDensity) then begin
       Result := GISdb[DBOnTable].TheMapOwner.CreateGridToMatchMap(cgUTM,true,SmallIntDEM,GridSize);
       DEMGlb[Result].AreaName := GISdb[DBonTable].dbName + '_pt_density';
-      DEMGlb[Result].DEMheader.ElevUnits := Undefined;
+      DEMGlb[Result].DEMheader.ElevUnits := euUndefined;
       DEMGlb[Result].MissingDataToConstantVelue;
 
       StartProgress('Density');
@@ -14903,7 +14930,7 @@ end;
 
 procedure Tdbtablef.Evaluationrangeforcriterion1Click(Sender: TObject);
 begin
-   EvaluationRangeForCriterion(DBonTable);
+   EvalRangeAndBestEvalForCriterion(DBonTable);
 end;
 
 procedure Tdbtablef.PlotClick(Sender: TObject);
@@ -14920,14 +14947,11 @@ var
    Lat,Long : float64;
    fName : PathStr;
    Table : tMyData;
-   //ShapeFileCreator : tShapeFileCreation;
 begin
    with GISdb[DBonTable] do begin
      FName := NextFileNumber(MDTempDir, 'Range_circles', DefaultDBExt);
      Make_Tables.MakeRangeCircleTable(FName);
      Table := tMyData.Create(FName);
-     //ShapeFileCreator := tShapeFileCreation.Create(FName,5);
-     //ShapeFileCreator.Table := tMyData.Create(FName);
      GISdb[DBonTable].MyData.First;
      while not GISdb[DBonTable].MyData.eof do begin
          if ValidLatLongFromTable(Lat,Long) then begin
@@ -14943,7 +14967,6 @@ begin
          end;
          GISdb[DBonTable].MyData.Next;
      end;
-     //ShapeFileCreator.CloseShapeFiles;
      TheMapOwner.LoadDataBaseFile(fName);
    end;
 end;

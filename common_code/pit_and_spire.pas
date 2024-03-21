@@ -268,7 +268,7 @@ begin
    if (RoadNeighGrid <> 0) then CloseSingleDEM(RoadNeighGrid);
    UpdateValues;
 
-   RoadNeighGrid := DEMGlb[MapOwner.MapDraw.DEMonMap].CloneAndOpenGridSetMissing(ByteDEM,'Road neighbors',Undefined);
+   RoadNeighGrid := DEMGlb[MapOwner.MapDraw.DEMonMap].CloneAndOpenGridSetMissing(ByteDEM,'Road neighbors',euUndefined);
 
    XBoxSize := round(MDDef.RoadTrendRegion / 2 / DEMGlb[RoadNeighGrid].AverageXSpace);
    YBoxSize := round(MDDef.RoadTrendRegion / 2 / DEMGlb[RoadNeighGrid].AverageYSpace);
@@ -310,7 +310,7 @@ begin
    UpdateValues;
    CheckEditString(Edit26.Text,PixWide);
 
-   RoadNeighGrid := DEMGlb[MapOwner.MapDraw.DEMonMap].CloneAndOpenGridSetMissing(SmallIntDEM,'Road neighbors',Undefined);
+   RoadNeighGrid := DEMGlb[MapOwner.MapDraw.DEMonMap].CloneAndOpenGridSetMissing(SmallIntDEM,'Road neighbors',euUndefined);
    if RoadNeighGrid <> 0 then begin
       XBoxSize := round(MDDef.RoadTrendRegion / 2 / DEMGlb[RoadNeighGrid].AverageXSpace);
       YBoxSize := round(MDDef.RoadTrendRegion / 2 / DEMGlb[RoadNeighGrid].AverageYSpace);

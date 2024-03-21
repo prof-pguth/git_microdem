@@ -329,8 +329,8 @@ begin
                TStr := ptTrim(UpperCase(TStr));
                for i := length(TStr) downto 1 do
                   if not (TStr[i] in ['A'..'Z']) then Delete(TStr,i,1);
-               if TStr = 'DECIMETER' then ElevUnits := DeciMeters;
-               if TStr = 'CENTIMETER' then ElevUnits := CentiMeters;
+               if TStr = 'DECIMETER' then ElevUnits := euDeciMeters;
+               if TStr = 'CENTIMETER' then ElevUnits := euCentiMeters;
                if TStr = 'METER' then ElevUnits := euMeters;
             end;
             if UpperCase(ptCopy(TStr,1,5)) = 'DATUM' then begin

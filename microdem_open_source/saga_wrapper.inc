@@ -91,7 +91,7 @@ begin
          ' -SLOPE ' + SlopeName +
          ' -AREA ' + AreaName +
          ' -LS ' + OutName;
-   Result := SAGAMap(cmd,OutName,Undefined,OpenMap);
+   Result := SAGAMap(cmd,OutName,euUndefined,OpenMap);
    {$If Defined(RecordSAGA) or Defined(RecordSAGAresult)} WriteLineToDebugFile(ExtractFileNameNoExt(InName) + '  SAGA_LSFactor out=' + IntToStr(Result)); {$EndIf}
 end;
 
@@ -106,7 +106,7 @@ begin
    CMD := MDDef.SagaCMD + ' ta_hydrology 29' +
          ' -DEM ' + inName +
          ' -FLOW ' + OutName;
-   Result := SAGAMap(cmd,OutName,Undefined,true);
+   Result := SAGAMap(cmd,OutName,euUndefined,true);
 end;
 
 
@@ -144,7 +144,7 @@ var
 begin
     if (OutName = '') then OutName := MDTempDir + 'saga_channel_' + ExtractFileNameNoExt(InName) + '.tif';
     CMD := MDDef.SagaCMD + ' ta_hydrology 13 -ELEVATION ' + inName + ' -CONTAMINATION ' + OutName;
-    Result := SAGAMap(cmd,{InName,}OutName,Undefined,true);
+    Result := SAGAMap(cmd,{InName,}OutName,euUndefined,true);
 end;
 
 
@@ -154,7 +154,7 @@ var
 begin
     if (OutName = '') then OutName := MDTempDir + 'saga_strahler_order_' + ExtractFileNameNoExt(InName) + '.tif';
     CMD := MDDef.SagaCMD + ' ta_channels 6 -DEM ' + inName + ' -STRAHLER ' + OutName;
-    Result := SAGAMap(cmd,{InName,}OutName,Undefined,true);
+    Result := SAGAMap(cmd,{InName,}OutName,euUndefined,true);
 end;
 
 
@@ -220,7 +220,7 @@ function SagaWatershedBasins(InName : PathStr; BasinGrid : PathStr = ''; Channel
        if (OutName = '') then OutName := MDTempDir + 'saga_channel_' + ExtractFileNameNoExt(InName) + '.tif';
        if (ShpName = '') then ShpName := MDTempDir + 'saga_channel_' + ExtractFileNameNoExt(InName) + '.shp';
        CMD := MDDef.SagaCMD + ' ta_channels "Channel Network" -ELEVATION ' + inName + ' -INIT_GRID ' + inName + ' -CHNLNTWRK ' + OutName;
-       Result := SAGAMap(cmd,{InName,}OutName,Undefined,false);
+       Result := SAGAMap(cmd,{InName,}OutName,euUndefined,false);
        Result := 0;
     end;
 
@@ -289,7 +289,7 @@ function SagaWatershedBasins(InName : PathStr; BasinGrid : PathStr = ''; Channel
     begin
        OutName := MDTempDir + 'saga_vrm_rad_' + FilterSizeStr(Radius) + '_' + ExtractFileNameNoExt(InName) + '.tif';
        CMD := MDDef.SagaCMD + ' ta_morphometry 17 -DEM ' + inName + ' -VRM ' + OutName + ' -RADIUS ' + IntToStr(Radius);
-       Result := SAGAMap(cmd,outname,Undefined);
+       Result := SAGAMap(cmd,outname,euUndefined);
     end;
 
 (*

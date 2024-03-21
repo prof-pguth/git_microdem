@@ -647,7 +647,7 @@ end;
          while not Table.eof do begin
             inc(i);
             CompareDEMNames[i] := Table.GetFieldByNameAsString('SERIES');
-            LoadMapLibraryBox(CompareDEMIndexes[i],WantImage,true,bb{bb.ymax,bb.xmin,bb.ymin,bb.xmax},CompareDEMNames[i],false);
+            LoadMapLibraryBox(CompareDEMIndexes[i],WantImage,true,bb,CompareDEMNames[i],false);
             if (CompareDEMIndexes[i] = 0) then begin
                dec(i);
             end

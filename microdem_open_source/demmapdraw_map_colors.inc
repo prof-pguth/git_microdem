@@ -215,7 +215,7 @@ begin
       for i := 0 to pred(MapXSize) do begin
          if OnScreen(i,j) then begin
             ScreenToDEMGrid(i,j,XG,yg);
-            if (DEMGlb[DEMonMap].DEMheader.ElevUnits in [AspectDeg]) or (MapType = mtFlowDir360)  then begin
+            if (DEMGlb[DEMonMap].DEMheader.ElevUnits in [euAspectDeg]) or (MapType = mtFlowDir360)  then begin
                if DEMGlb[DEMonMap].GetElevMeters(xg,yg,z) then BMPMemory.SetPixelColor(i,j,AspColor[round(z)]);
             end
             else if DEMGlb[DEMonMap].GetSlopeAndAspect(xg,yg,SlopeAspectRec) then begin

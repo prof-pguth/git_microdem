@@ -1226,7 +1226,7 @@ begin
                else if ValidDEMMap then begin
                   if (BaseTitle = '') then begin
                      if DEMGlb[DEMonMap].LandcoverGrid then BaseTitle := 'Land cover'
-                     else if DEMGlb[DEMonMap].ElevationGrid then BaseTitle := 'DEM'
+                     else if DEMGlb[DEMonMap].ElevationDEM then BaseTitle := 'DEM'
                      else BaseTitle := 'Grid';
                      BaseTitle := BaseTitle + ': ' + RemoveUnderscores(DEMGlb[DEMonMap].AreaName);
                      if (MapType = mtDEMContour) then BaseTitle := RemoveUnderscores(DEMGlb[DEMonMap].AreaName) + ' with ' + RealToString(DEMGlb[DEMonMap].ZinMeters(MapOverlays.ConInt),-6,-1) + ' m contours';
@@ -1243,7 +1243,7 @@ begin
                       DrawContoursInArea(BitMap,MapOverlays.ConInt,DEMonMap);
                       {$EndIf}
                   end
-                  else if isSlopeMap(MapType) or (MapType in [mtDEMaspectSlope,mtDEMAspect,mtFlowDir360,mtFlowDirArc,mtFlowDirTau]) or (DEMGlb[DEMonMap].DEMheader.ElevUnits in [AspectDeg]) then begin
+                  else if isSlopeMap(MapType) or (MapType in [mtDEMaspectSlope,mtDEMAspect,mtFlowDir360,mtFlowDirArc,mtFlowDirTau]) or (DEMGlb[DEMonMap].DEMheader.ElevUnits in [euAspectDeg]) then begin
                      if isSlopeMap(MapType) then BaseTitle := 'Slope Map (' + SlopeMethodName(MDdef.SlopeAlg) + ')'
                      else BaseTitle := 'Aspect Map';
                      BaseTitle :=  RemoveUnderscores(DEMGlb[DEMonMap].AreaName) + ' ' + BaseTitle;
@@ -1639,7 +1639,7 @@ begin
    if ValidDEMonMap then begin
       MinMapElev := DEMGlb[DEMonMap].DEMheader.MinElev;
       MaxMapElev := DEMGlb[DEMonMap].DEMheader.MaxElev;
-      if UsePercentiles or (DEMGlb[DEMonMap].DEMheader.ElevUnits in [Nanotesla]) then begin
+      if UsePercentiles or (DEMGlb[DEMonMap].DEMheader.ElevUnits in [euNanotesla]) then begin
          MinMapElev := DEMGLB[DEMonMap].FindPercentileElevation(MDDef.MinElevPercentile);
          MaxMapElev := DEMGLB[DEMonMap].FindPercentileElevation(MDDef.MaxElevPercentile);
          {$IfDef RecordElevationScaling} WriteLineToDebugFile('TMapDraw.ScaleMapElevationsToDEM percentiles' + MapZRangeString); {$EndIf}

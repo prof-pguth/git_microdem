@@ -355,7 +355,7 @@ var
    begin
       if StrUtils.AnsiContainsText(fName,Check) then begin
          Result := OpenNewDEM(fName);
-         DEMGlb[Result].DEMheader.ElevUnits := unDefined;
+         DEMGlb[Result].DEMheader.ElevUnits := euUndefined;
          DEMGlb[Result].SelectionMap.MapDraw.MapType := mtElevSpectrum;
          DEMGlb[Result].SelectionMap.DoBaseMapRedraw;
       end;
@@ -525,7 +525,7 @@ begin
    *)
    PartialResults := 'size=' + IntToStr(WindowSize);
    Result := AssembleGrassCommand(InName,'grass_vector_ruggedness_' + FilterSizeStr(WindowSize) + '_','r.vector.ruggedness elevation=mymap output=rugged ' +
-      PartialResults +  ' nprocs=-1','rugged','GrassVectorRugged_',Undefined,mtElevSpectrum);
+      PartialResults +  ' nprocs=-1','rugged','GrassVectorRugged_',euUndefined,mtElevSpectrum);
    //Result := AssembleGrassCommand(InName,'grass_vector_ruggedness_','r.vector.ruggedness elevation=mymap slope=slope aspect=aspect output=rugged nprocs=-1','rugged','GrassRugged_',Undefined,mtElevSpectrum);
 end;
 
@@ -533,7 +533,7 @@ end;
 procedure GetGrassExtensionsNow(InName : PathStr);
 begin
    GetGrassExtensions := true;
-   AssembleGrassCommand(InName,'grass_slope_','r.slope.aspect elevation=mymap slope=slope format=percent','slope','GrassSlope_',PercentSlope,mtElevSpectrum);
+   AssembleGrassCommand(InName,'grass_slope_','r.slope.aspect elevation=mymap slope=slope format=percent','slope','GrassSlope_',euPercentSlope,mtElevSpectrum);
 end;
 
 
@@ -547,7 +547,7 @@ end;
 
 function GrassTRIMap(InName : PathStr) : integer;
 begin
-   Result := AssembleGrassCommand(InName,'grass_TRI_','r.tri input=mymap output=tri ','tri','GrassTRI_',Undefined,mtElevSpectrum);
+   Result := AssembleGrassCommand(InName,'grass_TRI_','r.tri input=mymap output=tri ','tri','GrassTRI_',euUndefined,mtElevSpectrum);
 end;
 
 function GrassTPIMap(InName : PathStr) : integer;
@@ -557,18 +557,18 @@ begin
 //variants of the option below, trying to get for just a single radius, failed
 //Result := AssembleGrassCommand(InName,'grass_TPI_','r.tpi input=mymap minradius=1 maxradius=5 steps=2 output=tpi','tpi','GrassTPI_',Undefined,mtElevSpectrum,'64');
 
-   Result := AssembleGrassCommand(InName,'grass_TPI_','r.tpi input=mymap minradius=1 maxradius=15 steps=5 output=tpi','tpi','GrassTPI_',Undefined,mtElevSpectrum,'64');
+   Result := AssembleGrassCommand(InName,'grass_TPI_','r.tpi input=mymap minradius=1 maxradius=15 steps=5 output=tpi','tpi','GrassTPI_',euUndefined,mtElevSpectrum,'64');
 end;
 
 
 function GrassSlopeMap(InName : PathStr) : integer;
 begin
-   Result := AssembleGrassCommand(InName,'grass_slope_','r.slope.aspect elevation=mymap slope=slope format=percent','slope','GrassSlope_',PercentSlope,mtElevSpectrum);
+   Result := AssembleGrassCommand(InName,'grass_slope_','r.slope.aspect elevation=mymap slope=slope format=percent','slope','GrassSlope_',euPercentSlope,mtElevSpectrum);
 end;
 
 function GrassAspectMap(InName : PathStr) : integer;
 begin
-   Result := AssembleGrassCommand(InName,'grass_aspect_','r.slope.aspect elevation=mymap aspect=aspect format=percent -n','aspect','GrassAspect_',AspectDeg,mtDEMaspect);
+   Result := AssembleGrassCommand(InName,'grass_aspect_','r.slope.aspect elevation=mymap aspect=aspect format=percent -n','aspect','GrassAspect_',euAspectDeg,mtDEMaspect);
 end;
 
 

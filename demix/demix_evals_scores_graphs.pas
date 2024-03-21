@@ -20,7 +20,6 @@ type
     RadioGroup1: TRadioGroup;
     BitBtn1: TBitBtn;
     RadioGroup2: TRadioGroup;
-    RadioGroup3: TRadioGroup;
     CheckBox1: TCheckBox;
     BitBtn2: TBitBtn;
     CheckBox2: TCheckBox;
@@ -40,6 +39,9 @@ type
     BitBtn8: TBitBtn;
     BitBtn9: TBitBtn;
     BitBtn10: TBitBtn;
+    RadioGroup5: TRadioGroup;
+    BitBtn11: TBitBtn;
+    BitBtn12: TBitBtn;
     procedure BitBtn1Click(Sender: TObject);
     procedure RadioGroup3Click(Sender: TObject);
     procedure RadioGroup1Click(Sender: TObject);
@@ -61,6 +63,9 @@ type
     procedure BitBtn8Click(Sender: TObject);
     procedure BitBtn9Click(Sender: TObject);
     procedure BitBtn10Click(Sender: TObject);
+    procedure RadioGroup5Click(Sender: TObject);
+    procedure BitBtn11Click(Sender: TObject);
+    procedure BitBtn12Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -88,12 +93,15 @@ uses
    DEMIX_definitions;
 
 
-
 procedure StartDEMIXgraphs(DB : integer);
 var
   eval_scores_graph_form : Teval_scores_graph_form;
+  i : integer;
 begin
    GetDEMIXpaths(false,db);
+   for i := 1 to NumDEMIXtestDEM do
+      if DEMIXShort[i] <> '' then
+         DEMIXDEMinUse[i] := GISdb[db].MyData.FieldExists(DEMIXshort[i]);
    eval_scores_graph_form := Teval_scores_graph_form.Create(Application);
    eval_scores_graph_form.db := db;
    eval_scores_graph_form.Show;
@@ -105,12 +113,25 @@ begin
    WinningPercentages(db);
 end;
 
+procedure Teval_scores_graph_form.BitBtn11Click(Sender: TObject);
+begin
+   YaxisWhat := yasBarren;
+   DEMIX_evaluations_graph(DB,true);
+end;
+
+procedure Teval_scores_graph_form.BitBtn12Click(Sender: TObject);
+begin
+   HistogramsByQuantile(DB);
+end;
+
 procedure Teval_scores_graph_form.BitBtn1Click(Sender: TObject);
 begin
    //DEMIXVertAxisLabel := GISdb[db].DBName;
-   if StrUtils.AnsiContainsText(UpperCase(GISdb[db].DBName),'SORT_') then begin
-      DEMIXVertAxisLabel := GISdb[db].DBName;
-      while (Copy(DEMIXVertAxisLabel,2,5) <> '_sort') do Delete(DEMIXVertAxisLabel,1,1);
+   if StrUtils.AnsiContainsText(UpperCase(GISdb[db].DBName),'_SORTED_') then begin
+      DEMIXVertAxisLabel := 'Sorted by best evaluation in tile';
+      YAxisSort := yasBestEval;
+      YAxisWhat := yasBestEval;
+      DEMIX_evaluations_graph(DB,true);
    end
    else begin
       MessageToContinue('Sort database first');
@@ -211,7 +232,7 @@ procedure Teval_scores_graph_form.FormCreate(Sender: TObject);
 begin
    XAxisWhat := RadioGroup1.ItemIndex;
    YAxisWhat := RadioGroup2.ItemIndex;
-   YAxisSort := RadioGroup3.ItemIndex;
+   //YAxisSort := RadioGroup3.ItemIndex;
 
    CheckBox1.Checked := DEMIX_combined_graph;
    //CheckBox2.Checked := PanelsByTestDEM;
@@ -235,7 +256,7 @@ procedure Teval_scores_graph_form.RadioGroup3Click(Sender: TObject);
 var
    SortField : shortstring;
 begin
-   YAxisSort := RadioGroup3.ItemIndex;
+   //YAxisSort := RadioGroup3.ItemIndex;
    case YaxisSort of
       yasSlope : SortField := 'AVG_SLOPE';
       yasRuff  : SortField := 'AVG_RUFF';
@@ -247,7 +268,7 @@ begin
    if (SortField <> '') and (not StrUtils.AnsiContainsText(GISdb[db].dbName,'_sorted_')) then begin
       if (not GISdb[db].MyData.FieldExists(SortField)) then begin
          //AddStatisticsToDEMIXdb(db);
-         EvaluationRangeForCriterion(DB);
+         EvalRangeAndBestEvalForCriterion(DB);
          OriginalDB := db;
       end;
       db := SortDataBase(DB,true,SortField,ExtractFilePath(GISdb[db].dbFullName));
@@ -261,6 +282,11 @@ end;
 procedure Teval_scores_graph_form.RadioGroup4Click(Sender: TObject);
 begin
    SSIM_FUV_scatterplot(db,RadioGroup4.Items[RadioGroup4.ItemIndex]);
+end;
+
+procedure Teval_scores_graph_form.RadioGroup5Click(Sender: TObject);
+begin
+   DemixSymSize := RadioGroup5.ItemIndex + 3;
 end;
 
 initialization

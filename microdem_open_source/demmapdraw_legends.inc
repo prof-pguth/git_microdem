@@ -288,7 +288,7 @@ end;
                end;
             end;
 
-            if (MapType in [mtDEMaspect,mtFlowDir360,mtDEMAspectSlope]) or (DEMGlb[DEMonMap].DEMHeader.ElevUnits = AspectDeg) then begin
+            if (MapType in [mtDEMaspect,mtFlowDir360,mtDEMAspectSlope]) or (DEMGlb[DEMonMap].DEMHeader.ElevUnits = euAspectDeg) then begin
                if (MapType in [mtDEMAspectSlope]) then TStr := 'Slope/aspect' else TStr := 'Aspect';
                Radius := 50 * MDDef.GridLegendLocation.LegendSize;
                CreateBitmap(Result,2*Radius+15,2*Radius+15);

@@ -561,7 +561,7 @@ begin
                DEMGlb[MultiGridArray[ThisOne].Grids[i]].AreaName := MonthName[i] + ' ' + Parameter;
                if Copy(ElevUnits,1,2) = 'mm' then DEMGlb[MultiGridArray[ThisOne].Grids[i]].DEMheader.ElevUnits := euMM
                else if (ElevUnits = 'm/s') or (ElevUnits = 'm/sec') then DEMGlb[MultiGridArray[ThisOne].Grids[i]].DEMheader.ElevUnits := euMetersPerSec
-               else DEMGlb[MultiGridArray[ThisOne].Grids[i]].DEMheader.ElevUnits := Undefined;
+               else DEMGlb[MultiGridArray[ThisOne].Grids[i]].DEMheader.ElevUnits := euUndefined;
                {$IfDef RecordMultiGridFulls} WriteLineToDebugFile(IntToStr(i) + '  z range ' + RealToString(DEMGlb[MultiGridArray[ThisOne].Grids[i]].DEMheader.MinElev, -12, -2) + ' to ' + RealToString(DEMGlb[MultiGridArray[ThisOne].Grids[i]].DEMheader.MinElev, -12, -2)); {$EndIf}
             end;
             if OpenMaps then begin
@@ -604,7 +604,7 @@ var
       if (MG <> 0) then begin
          inc(Plots);
          Result.GraphDraw.ShowLine[Plots] := true;
-         Result.OpenDataFile(rfile,true,MultiGridArray[MG].Color);
+         Result.OpenDataFile(rfile,MultiGridArray[MG].Color);
          for i := 1 to 12 do begin
             if DEMGlb[MultiGridArray[MG].Grids[i]].GetElevFromLatLongDegree(Lat,Long,z1) then begin
                Result.AddPointToDataBuffer(rfile,i,z1);
@@ -1495,8 +1495,8 @@ var
    Z : float32;
    xf,yf : array[1..MaxGridsInMG] of float32;
 begin
-   R_DEM := OpenNewGrid('r-squared',Undefined,FloatingPointDEM);
-   Slope_DEM := OpenNewGrid('slope',Undefined,FloatingPointDEM);
+   R_DEM := OpenNewGrid('r-squared',euUndefined,FloatingPointDEM);
+   Slope_DEM := OpenNewGrid('slope',euUndefined,FloatingPointDEM);
    for x := 1 to NumGrids do xf[x] := x;
    for x := 0 to pred(DEMGlb[Grids[1]].DEMheader.NumCol) do begin
       if (x mod 50 = 0) then UpDateProgressBar(x/DEMGlb[Grids[1]].DEMheader.NumCol);
@@ -2128,7 +2128,7 @@ var
       rfile : file;
       Max{,x} : float32;
    begin
-       PointGraph.OpenDataFile(rfile,true,Color);
+       PointGraph.OpenDataFile(rfile,Color);
        for Band := 1 to MaxGridsInMG do begin
           if ValidDEM(Grids[Band]) then begin
              DEMGlb[Grids[Band]].GetElevMetersOnGrid(x1,y1,Refs[Band]);

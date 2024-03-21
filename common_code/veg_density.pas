@@ -316,7 +316,7 @@ begin
        StartProgress('Wires');
        NewHeadRecs := DEMGlb[DEMonMap].DEMheader;
        NewHeadRecs.DEMPrecision := ByteDEM;
-       NewHeadRecs.ElevUnits := Undefined;
+       NewHeadRecs.ElevUnits := euUndefined;
        OpenAndZeroNewDEM(true,NewHeadRecs,NewDEM,'Occupied_layers_above_clear_zone',InitDEMmissing);
        OpenAndZeroNewDEM(true,NewHeadRecs,OccupiedLayersDEM,'Occupied_veg_layers',InitDEMmissing);
 

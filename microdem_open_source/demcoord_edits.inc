@@ -238,7 +238,7 @@ begin
    {$If Defined(RecordCreateNewDEMSWCorner)} RecordSWCorner('Snapped'); {$EndIf}
    NewHeadRecs.RasterPixelIsGeoKey1025 := MDDef.LasDEMPixelIs;
    NewHeadRecs.DEMPrecision := LongWordDEM;
-   NewHeadRecs.ElevUnits := Undefined;
+   NewHeadRecs.ElevUnits := euUndefined;
 
    if not OpenAndZeroNewDEM(true,NewHeadRecs,CountGrid,MDTempDir + NewAreaName + '_resample_density',InitDEMvalue,0) then begin
       {$If Defined(RecordProblems)} HighLightLineToDebugFile('ResampleByAveraging Fail to open ' + DEMGlb[CountGrid].AreaName); {$EndIf}

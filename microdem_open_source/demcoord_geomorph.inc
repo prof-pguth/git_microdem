@@ -575,28 +575,28 @@ var
 begin
    {$IfDef RecordProblems} WriteLineToDebugFile('tDEMDataSet.CarlosLopezSlopeMaps in'); {$EndIf}
 
-   Slope3x3Grid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_slope3x3',PercentSlope);
-   slope5x5Grid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_slope5x5',PercentSlope);
-   slope7x7Grid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_slope7x7',PercentSlope);
-   Slope4thGrid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_slope_4th',PercentSlope);
-   Slope6thGrid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_slope_6th',PercentSlope);
-   SlopeErrorBoundGrid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_slope_error',PercentSlope);
-   SlopeUncertaintyGrid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_slope_uncertainty',PercentSlope);
-   TruncationErrorGrid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_truncation_error',Undefined);
+   Slope3x3Grid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_slope3x3',euPercentSlope);
+   slope5x5Grid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_slope5x5',euPercentSlope);
+   slope7x7Grid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_slope7x7',euPercentSlope);
+   Slope4thGrid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_slope_4th',euPercentSlope);
+   Slope6thGrid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_slope_6th',euPercentSlope);
+   SlopeErrorBoundGrid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_slope_error',euPercentSlope);
+   SlopeUncertaintyGrid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_slope_uncertainty',euPercentSlope);
+   TruncationErrorGrid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_truncation_error',euUndefined);
 
-   Aspect_3x3Grid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_aspect3x3',AspectDeg);
-   Aspect_5x5Grid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_aspect5x5',AspectDeg);
-   Aspect4thGrid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_aspect_4th',AspectDeg);
-   Aspect_7x7grid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_aspect7x7',AspectDeg);
-   Aspect6thGrid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_aspect_6th',AspectDeg);
+   Aspect_3x3Grid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_aspect3x3',euAspectDeg);
+   Aspect_5x5Grid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_aspect5x5',euAspectDeg);
+   Aspect4thGrid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_aspect_4th',euAspectDeg);
+   Aspect_7x7grid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_aspect7x7',euAspectDeg);
+   Aspect6thGrid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_aspect_6th',euAspectDeg);
 
    {$IfDef MakePartialGrids}
-      dxGrid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_dzdx3x3',PercentSlope);
-      dyGrid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_dzdy3x3',PercentSlope);
-      dx2Grid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_dzdx5x5',PercentSlope);
-      dy2Grid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_dzdy5x5',PercentSlope);
-      dx3Grid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_dzdx7x7',PercentSlope);
-      dy3Grid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_dzdy7x7',PercentSlope);
+      dxGrid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_dzdx3x3',euPercentSlope);
+      dyGrid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_dzdy3x3',euPercentSlope);
+      dx2Grid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_dzdx5x5',euPercentSlope);
+      dy2Grid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_dzdy5x5',euPercentSlope);
+      dx3Grid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_dzdx7x7',euPercentSlope);
+      dy3Grid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_dzdy7x7',euPercentSlope);
    {$EndIf}
 
    //grid containing DEM is zero based, 0,0 at the SW corner

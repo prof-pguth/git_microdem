@@ -4,7 +4,7 @@ unit sun_position;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -81,7 +81,6 @@ type
 function MoonPostionFromUSNO(Lat,Long : float32; iyear,imonth,iday : integer; var HTML : PathStr) : tStringList;
 var
    URL : shortstring;
-   //FoundIt : boolean;
    Month,Day,year : word;
 begin
    if (iyear = -99) then begin
@@ -414,13 +413,13 @@ function HoursSolarIlluminationGrid(MapForm : tMapForm; JulianDay : integer) : i
 var
    BlockAngle,BlockLength,BlockLat,BlockLong,Lat,Long, SunRise,SunSet, az,alt, hrtime : float64;
    z : float32;
-   NewGrid,x,y, tz,SunUp{,db} : integer;
+   NewGrid,x,y, tz,SunUp : integer;
 begin
    {$IfDef RecordHorizon} WriteLineToDebugFile('HoursSolarIlluminationGrid JDay=' + IntToStr(JulianDay)); {$EndIf}
 
    tz := round(MapForm.MapDraw.MapCorners.BoundBoxGeo.xmin / 15);
    NewGrid := MapForm.MakeTempGrid;
-   DEMGlb[NewGrid].DEMheader.ElevUnits := Undefined;
+   DEMGlb[NewGrid].DEMheader.ElevUnits := euUndefined;
    DEMGlb[NewGrid].AreaName := 'Hours_direct_illumination_Julian_day_' + IntToStr(JulianDay);
    {$IfDef RecordHorizon} WriteLineToDebugFile('New grid=' + DEMGlb[NewGrid].KeyDEMParams(true)); {$EndIf}
    StartProgressAbortOption('Hours daylight map, Julian day=' + IntToStr(JulianDay));
@@ -454,9 +453,8 @@ end;
 function HoursSolarIlluminationGraph(DEM : integer; Lat,Long : float64) : TThisBaseGraph;
 var
    SunRise,SunSet,
-   //SunAppears,SunDisappears,DurationDirectLight,DurationDayLight,TerrainMasking,
    az,alt, hrtime,HoursDaylight : float64;
-   i,{Month,}tz,SunUp,db : integer;
+   i,tz,SunUp,db : integer;
    SunResults : tStringList;
    fName : PathStr;
 
@@ -752,7 +750,6 @@ var
 begin {proc SunRiseSunSet}
    DecodeDate(now,wYear,wmonth,wDay);
    WhatIsIt := 'Sunrise/sunset';
-   //if TheSun then WhatIsIt := 'Sunrise/sunset' else WhatIsIt := 'Moonrise/Moonset';
 
    if (Lat > pred(MaxInt)) then GetLatLong(WGS84DatumConstants,WhatIsIt,Lat,Long);
    Year := wYear;
@@ -886,7 +883,7 @@ end;
 function SunAndHorizon(BaseMap : tMapForm; DEM : integer; Latitude,Longitude : float64; ShowToday : boolean = true; ShowKeyDays : boolean = true) : TNetForm;
 var
    SunRise,SunSet,
-   SunAppears,SunDisappears,{DurationDirectLight,}DurationDayLight,
+   SunAppears,SunDisappears,DurationDayLight,
    az,alt, hrtime : float64;
    Month,DayMonth,Year,Day,SymSize,NumDay,tz,xd,yd,SunUp,SunMasked,db : integer;
    TStr : ShortString;
@@ -961,10 +958,7 @@ begin
    NumDay := 0;
    if (DEM <> 0) then GetBlockAngles(DEM,0,Latitude,Longitude,BlockAngles);
 
-   //Result := nil;
-   //if (Result = nil) then begin
-       Result := TNetForm.Create(Application);
-   //end;
+   Result := TNetForm.Create(Application);
    Result.Caption := 'Sun Positions, equinox/solstice at ' + LatLongDegreeToString(Latitude,Longitude);
    Result.nd.LLcornerText := LatLongDegreeToString(Latitude,Longitude,VeryShortDegrees);
    Result.nd.NewNet;

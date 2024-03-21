@@ -168,7 +168,7 @@ begin
    TStr := ByteArrayToString(EditHeadRec.DMAMapDefinition.h_DatumCode);
    Label6.Caption := DatumName(TStr);
    ComboBox2.Text := DatumName(TStr);
-   for zu := 0 to HighElevUnits do begin
+   for zu := 0 to euHighElevUnits do begin
       TStr := ElevUnitsAre(zu);
       if (TStr <> '') then ComboBox3.Items.Add(ElevUnitsAre(zu));
    end;

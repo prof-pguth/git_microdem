@@ -653,77 +653,76 @@ type   //for DEM Header record
         DeadOption,Space10m,DeadSpaceTenthSecond,DeadSpaceTenThousandthDegree,SpaceIntFeet,SpaceUSFeet);
    tElevUnit = byte;
 const
-   //these are used the the DEMHeader.ElevUnits
-   //these were initially types, using these values
-   //over time some values were no longer used, and to keep the code simpler these were changed to constants
-   //since these are in headers for the MICRODEM and Geotiffs, the values need to remain as here
+   //these include
+   //   DEM elevation units
+   //   land cover categories
+   //   common derived grids like slope and aspect
+   //   gemorphometric parameters like geomorphons
+   //   satellite products like NDVI or NBR
+   //these allow software to make correct interpretations, and smart automatic display
+   //these are stored in the MICRODEM DEMHeader.ElevUnits, at the beginning of a MICRODEM DEM
+   //MICRODEM puts them in Geotiff 34737 when it writes Tiff output, such as
+   //     “Geotiff GeoASCIIParams  Map from MICRODEM Geographic (Lat/Lon)|Units = dd|OK|mdz=0/ m" with both the integer code and a short text
+   //these were initially Pascal types, using this order
+   //over time some values were no longer used, and to keep the code simpler they were all changed to constants, but gaps were left in the sequence
+   //since these are in headers for the MICRODEM and Geotiffs, the values need to remain as here to be able to read old files
    euMeters = 0;
-   Feet = 1;
-   TenthMgal = 2;
-   Milligal = 3;
-   TenthGamma = 4;
-   Decimeters = 5;
-   Gammas = 6;
-   HundredthMGal = 7;
-   DeciFeet = 8;
-   Centimeters = 9;
-   //Unused10 = 10;
-   HundredthMa = 11;
-   PercentSlope = 12;
-   Undefined = 13;
-   zDegrees = 14;
-   Unused0 = 15;
-   lnElev = 16;
-   LogElev = 17;
-   //Unused1 = 18;
-   //Unused2 = 19;
+   euFeet = 1;
+   euTenthMgal = 2;
+   euMilligal = 3;
+   euTenthGamma = 4;
+   euDecimeters = 5;
+   euGammas = 6;
+   euHundredthMGal = 7;
+   euDeciFeet = 8;
+   euCentimeters = 9;
+   euHundredthMa = 11;
+   euPercentSlope = 12;
+   euUndefined = 13;
+   euzDegrees = 14;
+   eulnElev = 16;
+   euLogElev = 17;
    euPercent = 20;
-   //Unused3 = 21;
-   //Unused4 = 22;
-   //Unused5 = 23;
-   //Unused6 = 24;
-   //Unused7 = 25;
-   NLCD2001up = 26;
-   LandFire = 27;
-   Nanotesla = 28;
-   NLCD1992 = 29;
+   euNLCD2001up = 26;
+   euLandFire = 27;
+   euNanotesla = 28;
+   euNLCD1992 = 29;
    euIntCode = 30;
-   //unused8 = 31;
-   //unused9 = 32;
-   GLOBCOVER = 33;
-   GLC2000 = 34;
+   euGLOBCOVER = 33;
+   euGLC2000 = 34;
    euImagery = 35;
    euMM = 36;
    euMetersPerSec = 37;
-   zMperM = 38;
+   euzMperM = 38;
    euKM = 39;
-   CCAP = 40;
+   euCCAP = 40;
    euLASclass13 = 41;
    euLASclass14 = 42;
    euRGB = 43;
    euMonth = 44;
-   CCI_LC = 45;
-   S2GLC = 46;
-   NLCD_Change = 47;
-   GLCS_LC100 = 48;
-   Meybeck = 49;
-   Geomorphon = 50;
-   Iwahashi = 51;
-   ESRI2020 = 52;
-   AspectDeg = 53;
+   euCCI_LC = 45;
+   euS2GLC = 46;
+   euNLCD_Change = 47;
+   euGLCS_LC100 = 48;
+   euMeybeck = 49;
+   euGeomorphon = 50;
+   euIwahashi = 51;
+   euESRI2020 = 52;
+   euAspectDeg = 53;
    euPennock = 54;
    euPerMeter = 55;
-   WorldCover10m = 56;
+   euWorldCover10m = 56;
    euNDVI = 57;
    euNBR = 58;
    euDifference = 59;
    euElevDiff = 60;
-   LCMAP = 61;
+   euLCMAP = 61;
    euDNBR = 62;
    euSent2SLC = 63;
    euSimpleLandCover = 64;
-   HighElevUnits = 64;  //same as last real one;  used only for loops through all the elevation units;
+   euHighElevUnits = 64;  //same as last real one;  used only for loops through all the elevation units;
 
+const
    VertCSEGM96 = 5773;
    VertCSEGM2008 = 3855;
    VertCSWGS84 = 4096;

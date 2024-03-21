@@ -3508,6 +3508,7 @@ object wmdem: Twmdem
     end
     object Partialprocessing1: TMenuItem
       Caption = 'Partial processing'
+      OnClick = Partialprocessing1Click
       object DatumshiftCanadianDEMs1: TMenuItem
         Caption = 'Datum shift DEMs via GDAL to EGM2088 WGS UTM'
         OnClick = DatumshiftCanadianDEMs1Click
@@ -3572,8 +3573,21 @@ object wmdem: Twmdem
       end
     end
     object DEMIXmergeCSVfiles1: TMenuItem
-      Caption = 'Create database (merge and transpose DEMIX-classic CSV files)'
+      Caption = 'Merge and transpose DEMIX-classic CSV files by area'
+      Enabled = False
       OnClick = DEMIXmergeCSVfiles1Click
+      object Overwrite1: TMenuItem
+        Caption = 'Overwrite'
+        OnClick = Overwrite1Click
+      end
+      object Skipifexists3: TMenuItem
+        Caption = 'Skip if exists'
+        OnClick = Skipifexists3Click
+      end
+    end
+    object CreatefinalDB1: TMenuItem
+      Caption = 'Create final DB'
+      OnClick = CreatefinalDB1Click
     end
     object N36: TMenuItem
       Caption = '-'
@@ -3636,6 +3650,10 @@ object wmdem: Twmdem
         Caption = 'Delete files for a test area'
         OnClick = N42Click
       end
+      object N3DEPfileswithtag421121: TMenuItem
+        Caption = '3DEP files with tag 42112'
+        OnClick = N3DEPfileswithtag421121Click
+      end
     end
     object EditreferenceandtestDEMs1: TMenuItem
       Caption = 'Edit reference and test DEMs'
@@ -3659,6 +3677,10 @@ object wmdem: Twmdem
       object CleardoubleprocessedreferenceDEMtiles1: TMenuItem
         Caption = 'Clear double processed reference DEM tiles'
         OnClick = CleardoubleprocessedreferenceDEMtiles1Click
+      end
+      object Fixtileswith42114foottag1: TMenuItem
+        Caption = 'Fix tiles with 42114 foot tag'
+        OnClick = Fixtileswith42114foottag1Click
       end
     end
     object N53: TMenuItem
@@ -3717,7 +3739,6 @@ object wmdem: Twmdem
       object Partial3DEPsteps1: TMenuItem
         Caption = 'Partial 3DEP steps'
         Enabled = False
-        OnClick = Partial3DEPsteps1Click
         object GDALshiftFor3DEP1: TMenuItem
           Caption = 'Process GDAL shift for 3DEP for 1 m tiles'
           object Overwriteifexits3: TMenuItem

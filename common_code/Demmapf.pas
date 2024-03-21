@@ -3446,10 +3446,23 @@ var
 {$I demmapf_resize_map.inc}
 {$I demmapf_demix_tiles.inc}
 
+
 {$IfDef ExGeology}
 {$Else}
     {$I demmapf_geology.inc}
 {$EndIf}
+
+
+procedure ForceRedrawAllMaps;
+var
+   i : integer;
+begin
+   for i := 0 to pred(WMDEM.MDIChildCount) do
+      if WMDEM.MDIChildren[i] is tMapForm then begin
+         (WMDEM.MDIChildren[i] as TMapForm).DoCompleteMapRedraw;
+      end;
+end;
+
 
 procedure MatchAnotherMapThisPixelSize(ThisMap,OtherMap : tMapForm);
 begin
@@ -3486,6 +3499,7 @@ var
    fName : PathStr;
    Bitmap : tMyBitmap;
    TStr : shortstring;
+   MouseRoamAllMaps : boolean;
 
    function UseThisMap(MapCaption : shortstring) : boolean;
    var
@@ -3502,6 +3516,9 @@ var
 
 begin
    {$IfDef RecordBigMap} WriteLineToDebugFile('Bigimagewithallmaps in'); {$EndIf}
+   MouseRoamAllMaps := MDDef.ShowRoamOnAllMaps;
+   MDDef.ShowRoamOnAllMaps := false;
+   ForceRedrawAllMaps;
    Findings := tStringList.Create;
    if MDDef.MapNameBelowComposite then begin
       BottomMargin := 55;
@@ -3562,6 +3579,8 @@ begin
       {$IfDef  RecordBigMap} WriteLineToDebugFile('Bigimagewithallmaps in, maps=' + IntToStr(Findings.Count)); {$EndIf}
       MakeBigBitmap(Findings,'',FileName,NumCols);
    end;
+   MDDef.ShowRoamOnAllMaps := MouseRoamAllMaps;
+
 end;
 
 
@@ -3581,7 +3600,7 @@ end;
 
 procedure TMapForm.Bigimagewithallmaps1Click(Sender: TObject);
 begin
-    Bigimagewithallmaps;
+   Bigimagewithallmaps;
 end;
 
 
@@ -3946,8 +3965,8 @@ var
    z : float32;
    Agreement,Lat,Long : float64;
 begin
-   ProbDEM := DEMGlb[1].CloneAndOpenGridSetMissing(ByteDEM,'Ensemble probability',Undefined);
-   ClassDEM := DEMGlb[1].CloneAndOpenGridSetMissing(ByteDEM,'Ensemble classification',Undefined);
+   ProbDEM := DEMGlb[1].CloneAndOpenGridSetMissing(ByteDEM,'Ensemble probability',euUndefined);
+   ClassDEM := DEMGlb[1].CloneAndOpenGridSetMissing(ByteDEM,'Ensemble classification',euUndefined);
    StartProgress('Ensemble classify');
    for x := 0 to pred(DEMGlb[1].DEMheader.NumCol) do begin
      UpdateProgressBar(x/DEMGlb[1].DEMheader.NumCol);
@@ -5828,7 +5847,7 @@ begin
    FlyDEM := 0;
 
    if MDDef.DoEarthCurvature then  begin
-      CurveDEM := DEMGlb[CurDEM].CloneAndOpenGridSetMissing(FloatingPointDEM,'Earth curvature (m)',Undefined);
+      CurveDEM := DEMGlb[CurDEM].CloneAndOpenGridSetMissing(FloatingPointDEM,'Earth curvature (m)',euUndefined);
    end;
 
    if MDDef.DoReqAntHigh then begin
@@ -5839,7 +5858,7 @@ begin
    if MDDef.DoReqFlyHigh then FlyDEM  := DEMGlb[CurDEM].CloneAndOpenGridSetMissing(FloatingPointDEM,'Flying height (m)',euMeters);
 
    if MDDef.DoGrazingAngle then begin
-      GrazeDEM := DEMGlb[CurDEM].CloneAndOpenGridSetMissing(FloatingPointDEM, 'Grazing angle (' + DegSym + ')',zDegrees);
+      GrazeDEM := DEMGlb[CurDEM].CloneAndOpenGridSetMissing(FloatingPointDEM, 'Grazing angle (' + DegSym + ')',euzDegrees);
    end;
 
     StartProgress(ProgTitle + ' Cols (1/2)');
@@ -6445,7 +6464,7 @@ begin
    if (DEMGlb[MapDraw.DEMonMap].SelectionMap.MapDraw.FeatureGrid = 0) then UseDEM := MapDraw.DEMonMap
    else UseDEM := DEMGlb[MapDraw.DEMonMap].SelectionMap.MapDraw.FeatureGrid;
 
-   NewDEM := DEMGlb[UseDEM].CloneAndOpenGridSetMissing(FloatingPointDEM,WantedField,Undefined);
+   NewDEM := DEMGlb[UseDEM].CloneAndOpenGridSetMissing(FloatingPointDEM,WantedField,euUndefined);
    i := 0;
    StartProgress('Features');
    GISdb[FeaturesDB].MyData.First;
@@ -8253,7 +8272,7 @@ begin
       CurrentsubsetMDDEM1.Visible := FullMapSpeedButton.Enabled;
       CurrentsubsetGeotiff1.Visible := FullMapSpeedButton.Enabled;
       FixedPaletteStats1.Visible := (MapDraw.MapType = mtElevFromTable);
-      GeologicAges1.Visible := (MapDraw.ValidDEMonMap) and (DEMGlb[MapDraw.DEMonMap].DEMheader.ElevUnits = HundredthMa);
+      GeologicAges1.Visible := (MapDraw.ValidDEMonMap) and (DEMGlb[MapDraw.DEMonMap].DEMheader.ElevUnits = euHundredthMa);
       Saveallmapsasimage1.Visible := (MDDef.ProgramOption in [ExpertProgram]) and (NumOpenMaps > 1);
 
       Dataheader2.Visible := ((MapDraw.DEMonMap > 0) or (MapDraw.SatOnMap > 0)) and (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]);
@@ -8261,9 +8280,9 @@ begin
       ElevationsExtremes1.Checked := (ExtremeZDEM <> 0);
       Missingdatacolor1.Visible := (MapDraw.ValidDEMonMap) or ValidSatImage(MapDraw.SatonMap);
       Lntransform1.Visible := ExpertDEMVersion and (DEMGlb[MapDraw.DEMonMap].DEMheader.MaxElev > 0);
-      Vectoraverage1.Visible := ExpertDEMVersion and (DEMGlb[MapDraw.DEMonMap].DEMheader.ElevUnits = zDegrees);
+      Vectoraverage1.Visible := ExpertDEMVersion and (DEMGlb[MapDraw.DEMonMap].DEMheader.ElevUnits = euzDegrees);
 
-      Aspectrosediagram1.Visible := ExpertDEMVersion and ( (DEMGlb[MapDraw.DEMonMap].DEMheader.ElevUnits in [zDegrees,AspectDeg]) or ((DEMGlb[MapDraw.DEMonMap].DEMheader.MaxElev <= 360) and (DEMGlb[MapDraw.DEMonMap].DEMheader.MaxElev >= 0) ));
+      Aspectrosediagram1.Visible := ExpertDEMVersion and ( (DEMGlb[MapDraw.DEMonMap].DEMheader.ElevUnits in [euzDegrees,euAspectDeg]) or ((DEMGlb[MapDraw.DEMonMap].DEMheader.MaxElev <= 360) and (DEMGlb[MapDraw.DEMonMap].DEMheader.MaxElev >= 0) ));
 
       RGBgridfillholes1.Visible := ExpertDEMVersion and (DEMGlb[MapDraw.DEMonMap].DEMheader.ElevUnits = euRGB);
       Logbase10transform1.Visible := Lntransform1.Visible;
@@ -8976,7 +8995,7 @@ var
             ReadDefault('Heat map grid size (arc sec)',GridSize);
             HeatGrid := CreateGridToMatchMap(cgLatLong,true,WordDEM,GridSize/3600,GridSize/3600,MapDraw.PrimMapProj.projUTMZone);
          end;
-         DEMGlb[HeatGrid].DEMHeader.ElevUnits := Undefined;
+         DEMGlb[HeatGrid].DEMHeader.ElevUnits := euUndefined;
          DEMGlb[HeatGrid].AreaName := 'Heat_map';
       end;
 
@@ -11823,14 +11842,14 @@ var
                    Panel3String := DEMGlb[DEM].VatLegendStrings.Strings[round(Elev)];
                 end
                 else case DEMGlb[DEM].DEMheader.ElevUnits of
-                   Undefined,euImagery  : Result := ' z=' + RealToString(Elev,6,2);
+                   euUndefined,euImagery  : Result := ' z=' + RealToString(Elev,6,2);
                    euMM : Result := ' z=' + RealToString(Elev,6,2) + ' mm';
-                   HundredthMa  : Result := ' z=' + RealToString(Elev,6,2) + ' Ma';
-                   PercentSlope : Result := ' z=' + RealToString(Elev,6,1) + '%';
+                   euHundredthMa  : Result := ' z=' + RealToString(Elev,6,2) + ' Ma';
+                   euPercentSlope : Result := ' z=' + RealToString(Elev,6,1) + '%';
                    euPercent : Result := ' z=' + RealToString(Elev,6,2) + '%';
-                   zDegrees : Result := ' z=' + RealToString(Elev,6,2) + '°';
-                   lnElev : Result := 'ln z=' + RealToString(Elev,5,3) + '  z=' + RealToString(Math.Power(e,Elev),-18,-2);
-                   LogElev : Result := 'log z=' + RealToString(Elev,5,3) + '  z=' + RealToString(Math.Power(10,Elev),-18,-2);
+                   euzDegrees : Result := ' z=' + RealToString(Elev,6,2) + '°';
+                   eulnElev : Result := 'ln z=' + RealToString(Elev,5,3) + '  z=' + RealToString(Math.Power(e,Elev),-18,-2);
+                   euLogElev : Result := 'log z=' + RealToString(Elev,5,3) + '  z=' + RealToString(Math.Power(10,Elev),-18,-2);
                    else begin
                       if (DEMGlb[DEM].AverageSpace > 250) then Dec := 0
                       else if (DEMGlb[DEM].AverageSpace < 7) then Dec := 2 else Dec := 1;
@@ -13243,7 +13262,7 @@ begin
    Copyimagecoordinatestoclipboard1.Visible := MapDraw.ValidSatOnMap;
    GridgraticluetoGoogleEarth1.Visible := MDDef.MapTicks <> tixNone;
    CopyVegprofiletoclipboard1.Visible := (VegGraph <> Nil);
-   Aspectoptions1.Visible := ValidDEM(MapDraw.DEMonMap) and ((MapDraw.MapType in [mtDEMAspect]) or (DEMGlb[MapDraw.DEMonMap].DEMheader.ElevUnits in [AspectDeg]));
+   Aspectoptions1.Visible := ValidDEM(MapDraw.DEMonMap) and ((MapDraw.MapType in [mtDEMAspect]) or (DEMGlb[MapDraw.DEMonMap].DEMheader.ElevUnits in [euAspectDeg]));
 
    PLSSlocation1.Visible := MDDef.ShowPLSS;
    errainsunblocking1.Visible := ValidDEM(MapDraw.DEMonMap);
@@ -14036,10 +14055,12 @@ begin
    ContourOptions.Label4.Caption := ElevUnitsAre(DEMGlb[MapDraw.DEMonMap].DEMheader.ElevUnits);
 
    if (ContourOptions.ShowModal <> idCancel) then begin
+      (*  //removed March 2024, since there are not many DEMs with these units, and all the DEM manipulation now converts to meters early in the processing chain
       case DEMGLB[MapDraw.DEMonMap].DEMheader.ElevUnits of
-         Decimeters : MDdef.DefaultContourInterval := (MDdef.DefaultContourInterval * 10);
-         Centimeters : MDdef.DefaultContourInterval := (MDdef.DefaultContourInterval * 100);
+         euDecimeters : MDdef.DefaultContourInterval := (MDdef.DefaultContourInterval * 10);
+         euCentimeters : MDdef.DefaultContourInterval := (MDdef.DefaultContourInterval * 100);
       end;
+      *)
       {$IfDef RecordMapDraw} WriteLineToDebugFile('TMapForm.Contourinterval1Click contour interval=' + IntToStr(MDdef.DefaultContourInterval)): {$EndIf}
       MapDraw.MapOverlays.ConInt := MDdef.DefaultContourInterval;
       DoCompleteMapRedraw;
@@ -16991,7 +17012,7 @@ end;
 
 procedure TMapForm.Undefined1Click(Sender: TObject);
 begin
-   ChangeElevUnits(Undefined);
+   ChangeElevUnits(euUndefined);
 end;
 
 procedure TMapForm.UndoSpeedButtonClick(Sender: TObject);
@@ -17272,7 +17293,7 @@ var
       begin
          if (DEM <> 0) then  begin
             DEMGlb[DEM].AreaName := TheName;
-            DEMGlb[DEM].DEMheader.ElevUnits := Undefined;
+            DEMGlb[DEM].DEMheader.ElevUnits := euUndefined;
             DEMGlb[DEM].SetUpMap(DEM,true,mtElevSpectrum);
          end;
       end;
@@ -21826,13 +21847,13 @@ end;
 
 procedure TMapForm.NLCD19921Click(Sender: TObject);
 begin
-   ChangeElevUnits(NLCD1992);
+   ChangeElevUnits(euNLCD1992);
 end;
 
 
 procedure TMapForm.NLCD20011Click(Sender: TObject);
 begin
-   ChangeElevUnits(NLCD2001up);
+   ChangeElevUnits(euNLCD2001up);
 end;
 
 procedure TMapForm.NLCDLegend1Click(Sender: TObject);
@@ -22146,14 +22167,10 @@ begin
 end;
 
 procedure TMapForm.ForceAllRedraw1Click(Sender: TObject);
-var
-   i : integer;
 begin
-   for i := 0 to pred(WMDEM.MDIChildCount) do
-      if WMDEM.MDIChildren[i] is tMapForm and (WmDEM.MDIChildren[i].Handle <> Handle) then begin
-         (WMDEM.MDIChildren[i] as TMapForm).DoCompleteMapRedraw;
-      end;
+   ForceRedrawAllMaps;
 end;
+
 
 procedure TMapForm.N51Click(Sender: TObject);
 begin
@@ -22740,7 +22757,7 @@ begin
    if GetMultipleFiles('Files to drop in the bucket','Shapefiles|*.shp|Database files|*.db;*.dbf|All files|*.*',FilesWanted,DefaultFilter) then begin
       DensityGrid := CreateGridToMatchMap(GridChoice,true,SmallIntDEM,Spacing);
       DEMGlb[DensityGrid].AreaName := 'pt density';
-      DEMGlb[DensityGrid].DEMheader.ElevUnits := Undefined;
+      DEMGlb[DensityGrid].DEMheader.ElevUnits := euUndefined;
       DEMGlb[DensityGrid].SetEntireGridToConstant(0);
 
       MinGrid := CreateGridToMatchMap(GridChoice,true,FloatingPointDEM,Spacing);
@@ -24456,7 +24473,7 @@ end;
 
 procedure TMapForm.CCAP1Click(Sender: TObject);
 begin
-   ChangeElevUnits(CCAP);
+   ChangeElevUnits(euCCAP);
 end;
 
 

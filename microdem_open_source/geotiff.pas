@@ -42,7 +42,7 @@ unit GeoTiff;
       //{$Define RecordUKOS}
       //{$Define TrackProjection}
       //{$Define ShowKeyDEM}
-      //{$Define TrackZ}
+      {$Define TrackZ}
       //{$Define RecordTiePoints}
       //{$Define RecordGeotiffRestart}
       //{$Define TrackModelType}
@@ -109,6 +109,7 @@ type
       SampleFormat : tSampleFormat;
       OffsetArray : ^tOffsetArray;
       TieBoundBox : sfBoundBox;
+      FootDEM : boolean;
 
       //tGeoTiffHeader unique values
          HemiChar   : AnsiChar;
@@ -157,6 +158,8 @@ type
          TIFFFileName   : PathStr;
          TIFFImageColor : Petmar_types.TRGBLookUp;
          CurrentMissing : float32;
+         Tag42114 : shortstring;
+         Tag2114Offset,Tag2114Length : int64;
          procedure OpenTiffFile;   //inline;
          procedure CloseTiffFile;  //inline;
 
@@ -180,10 +183,11 @@ type
 
 procedure CaptureBMPInGeoTIFF(MapDraw : tMapDraw; FileName : PathStr; Image1 : tImage; MonoImage : boolean = false);
 function BandsInGeotiff(fName : PathStr) : integer;
-function GeotiffImageSize(fName : PathStr; Width,Height : integer) : boolean;
+function GeotiffImageSize(fName : PathStr; var Width,Height : integer) : boolean;
 function GeotiffBoudingBox(fName : PathStr; var bb : sfBoundBox) : boolean;
 
 procedure RewriteGeotiffIfRequired(var TIFFFileName : PathStr);
+function GetGeotiffTag42114(fName : PathStr; var Tag : shortstring; var Tag2114Offset,Tag2114Length : int64) : boolean;
 
 
 {$IfDef VCL}
@@ -268,6 +272,22 @@ begin
 end;
 
 
+function GetGeotiffTag42114(fName : PathStr; var Tag : shortstring; var Tag2114Offset,Tag2114Length : int64) : boolean;
+var
+   success : boolean;
+   TiffImage : tTIFFImage;
+begin
+   Result := FileExists(fName);
+   if Result then begin
+      TiffImage := tTiffImage.CreateGeotiff(true,false,fName,Success,false,false);
+      Tag := TiffImage.Tag42114;
+      Tag2114Offset := TiffImage.Tag2114Offset;
+      Tag2114Length := TiffImage.Tag2114Length;
+      Result := Tag <> '';
+      TiffImage.Destroy;
+   end;
+end;
+
 function GeotiffBoudingBox(fName : PathStr; var bb : sfBoundBox) : boolean;
 var
    success : boolean;
@@ -285,7 +305,7 @@ begin
 end;
 
 
-function GeotiffImageSize(fName : PathStr; Width,Height : integer) : boolean;
+function GeotiffImageSize(fName : PathStr; var Width,Height : integer) : boolean;
 var
    success : boolean;
    TiffImage : tTIFFImage;
@@ -731,7 +751,7 @@ begin
 end;
 
 
-procedure tTIFFImage.SeekFileOffset({Band,}Row : int64);
+procedure tTIFFImage.SeekFileOffset(Row : int64);
 var
    TheOffset,LinesNeeded : int64;
 begin
@@ -781,12 +801,10 @@ begin
    SeekFileOffset(Row);
    if (TiffHeader.BitsPerSample in [15,16]) then begin
       if (TiffHeader.SamplesPerPixel > 1) then begin
-         //New(BigRow);
          FileRead(TiffHandle,BigRow^,ImageBytesPerRow);
          for x := 0 to pred(TiffHeader.ImageWidth) do begin
             Row16Bit[x] := BigRow^[x*(TiffHeader.SamplesPerPixel) + pred(Band)];
          end;
-         //Dispose(BigRow);
       end
       else begin
          FileRead(TiffHandle,Row16bit,ImageBytesPerRow);
@@ -1004,26 +1022,26 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
                   {$Else}
                      {$IfDef RecordNLCD} WriteLineToDebugFile('Geotiff DEM with NLCD=' + LandCover); {$EndIf}
                      LandCover := UpperCase(LandCover);
-                     if (LandCover = 'NLCD-CHANGE') then WantDEM.DEMheader.ElevUnits := NLCD_Change;
-                     if (LandCover = 'CCI-LC') then WantDEM.DEMheader.ElevUnits := CCI_LC;
-                     if (LandCover = 'GLOBCOVER') then WantDEM.DEMheader.ElevUnits := GLOBCOVER;
-                     if (LandCover = 'NLCD-1990') or (LandCover = 'NLCD-1992') then WantDEM.DEMheader.ElevUnits := NLCD1992;
-                     if (LandCover = 'NLCD-2001UP') then WantDEM.DEMheader.ElevUnits := NLCD2001up;
-                     if (LandCover = 'S2GLC') then WantDEM.DEMheader.ElevUnits := S2GLC;
-                     if (LandCover = 'WORLDCOVER10M') then WantDEM.DEMheader.ElevUnits := WorldCover10m;
-                     if (LandCover = 'LANDFIRE') then WantDEM.DEMheader.ElevUnits := LandFire;
-                     if (LandCover = 'CGLS-LC100') then WantDEM.DEMheader.ElevUnits := GLCS_LC100;
-                     if (LandCover = 'CCAP') then WantDEM.DEMheader.ElevUnits := CCAP;
-                     if (LandCover = 'MEYBECK') then WantDEM.DEMheader.ElevUnits := Meybeck;
-                     if (LandCover = 'ESRI2020') then WantDEM.DEMheader.ElevUnits := ESRI2020;
-                     if (LandCover = 'IWAHASHI') then WantDEM.DEMheader.ElevUnits := Iwahashi;
-                     if (LandCover = 'GEOMORPHON') then WantDEM.DEMheader.ElevUnits := Geomorphon;
+                     if (LandCover = 'NLCD-CHANGE') then WantDEM.DEMheader.ElevUnits := euNLCD_Change;
+                     if (LandCover = 'CCI-LC') then WantDEM.DEMheader.ElevUnits := euCCI_LC;
+                     if (LandCover = 'GLOBCOVER') then WantDEM.DEMheader.ElevUnits := euGLOBCOVER;
+                     if (LandCover = 'NLCD-1990') or (LandCover = 'NLCD-1992') then WantDEM.DEMheader.ElevUnits := euNLCD1992;
+                     if (LandCover = 'NLCD-2001UP') then WantDEM.DEMheader.ElevUnits := euNLCD2001up;
+                     if (LandCover = 'S2GLC') then WantDEM.DEMheader.ElevUnits := euS2GLC;
+                     if (LandCover = 'WORLDCOVER10M') then WantDEM.DEMheader.ElevUnits := euWorldCover10m;
+                     if (LandCover = 'LANDFIRE') then WantDEM.DEMheader.ElevUnits := euLandFire;
+                     if (LandCover = 'CGLS-LC100') then WantDEM.DEMheader.ElevUnits := euGLCS_LC100;
+                     if (LandCover = 'CCAP') then WantDEM.DEMheader.ElevUnits := euCCAP;
+                     if (LandCover = 'MEYBECK') then WantDEM.DEMheader.ElevUnits := euMeybeck;
+                     if (LandCover = 'ESRI2020') then WantDEM.DEMheader.ElevUnits := euESRI2020;
+                     if (LandCover = 'IWAHASHI') then WantDEM.DEMheader.ElevUnits := euIwahashi;
+                     if (LandCover = 'GEOMORPHON') then WantDEM.DEMheader.ElevUnits := euGeomorphon;
                      if (LandCover = 'PENNOCK') then WantDEM.DEMheader.ElevUnits := euPennock;
-                     if (LandCover = 'LCMAP') then WantDEM.DEMheader.ElevUnits := LCMAP;
+                     if (LandCover = 'LCMAP') then WantDEM.DEMheader.ElevUnits := euLCMAP;
                      if (LandCover = 'SENT2SLC') then WantDEM.DEMheader.ElevUnits := euSent2SLC;
                      if (LandCover = 'GLC2000') or (LandCover = 'GLC-2000')  then begin
                         WantDEM.DEMheader.DEMUsed := ArcSecDEM;
-                        WantDEM.DEMheader.ElevUnits := GLC2000;
+                        WantDEM.DEMheader.ElevUnits := euGLC2000;
                         TiffHeader.ModelType := 2;
                      end;
                   {$EndIf}
@@ -1182,6 +1200,9 @@ begin {tTIFFImage.CreateTiffDEM}
          if (WantDEM.DEMheader.NumRow > 10000) then ShowDEMReadingProgress := true;
          if ShowDEMReadingProgress then StartProgress('Read grid: ' + ExtractFileNameNoExt(TIFFFileName));
 
+         {$If Defined(TrackZ)} WriteLineToDebugFile('TiffHeader.Factor=' + RealToString(TiffHeader.Factor,-12,-2)); {$EndIf}
+
+
          bs := TiffHeader.BytesPerSample * WantDEM.DEMheader.NumCol;
          if (TiffHeader.BitsPerSample = 64) then New(DoubleRow)
          else if (TiffHeader.BitsPerSample = 32) then begin
@@ -1303,7 +1324,7 @@ begin {tTIFFImage.CreateTiffDEM}
          CloseTiffFile;
          if ShowDEMReadingProgress then EndProgress;
          WantDEM.CheckMaxMinElev;
-         {$If Defined(RecordFullGeotiff) or Defined(ShowKeyDEM) or Defined(TrackZ) or Defined(RecordUKOS)} WantDEM.TrackElevationRange('Geotiff DEM CheckMaxMinElev over ' + WantDEM.Zrange); {$EndIf}
+         {$If Defined(RecordFullGeotiff) or Defined(ShowKeyDEM) or Defined(TrackZ) or Defined(RecordUKOS)} WantDEM.TrackElevationRange('Geotiff DEM CheckMaxMinElev over '); {$EndIf}
       end;
    {$If Defined(RecordGeotiff) or Defined(RecordInitializeDEM)} WriteLineToDebugFile('tTIFFImage.CreateDEM out, ' + sfBoundBoxToString(WantDEM.DEMBoundBoxProjected,4)); {$EndIf}
    {$If Defined(RecordDefineDatum) or Defined(RecordGeotiff) or Defined(RecordFullGeotiff) or Defined(RecordGeotiffProjection) or Defined(RecordUKOS)}
@@ -1361,6 +1382,7 @@ begin
       34735 : Result := 'Geotiff GeoKeyDirectoryOffset';
       34736 : Result := 'Geotiff GeoDoubleParamsTag';
       34737 : Result := 'Geotiff GeoASCIIParams';
+      42112 : Result := 'Metadata (GDAL)';
       42113 : Result := 'Missing data (GDAL)';
       else Result := 'Unspecified';
    end {case};
@@ -1408,7 +1430,6 @@ begin
       4098 : Result := 'VerticalDatumGeoKey (Section 6.3.4.2 codes)';
       4099 : Result := 'VerticalUnitsGeoKey (Section 6.3.1.3 codes)';
       5120 : Result := 'CoordinateEpochGeoKey';
-      42112 : Result := '';
       else Result := 'Unspecified';
    end {case};
 end;
@@ -2019,6 +2040,11 @@ var
                       end;
               42112 : begin
                          TStr := LogASCIIdata(TiffKeys[j].KeyOffset,TiffKeys[j].LengthIm);
+                         {$If Defined(TrackZ)} WriteLineToDebugFile('Key 42112 ' + TStr); {$EndIf}
+                         if StrUtils.AnsiContainsText(UpperCase(Tstr),'FOOT') then FootDEM := true;
+                         Tag42114 := TStr;
+                         Tag2114Offset := TiffKeys[j].KeyOffset;
+                         Tag2114Length := TiffKeys[j].LengthIm;
                       end;
               42113 : begin
                          if TiffKeys[j].LittleString <> '' then begin
@@ -2087,6 +2113,8 @@ var
       TiffHeader.MDZtype := 0;
       TiffHeader.OffsetArray := Nil;
       TiffHeader.StripOffsets := 0;
+      TiffHeader.FootDEM := false;
+      Tag42114 := '';
       DatCode := -99;
    end;
 

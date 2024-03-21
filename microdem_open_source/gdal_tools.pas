@@ -118,8 +118,10 @@ uses
    function GDAL_upsample_DEM(DEM : integer; Bilinear : boolean; Spacing : float32 = -99) : integer;
    function GDAL_downsample_DEM_1sec(DEM : integer; OutName : PathStr) : integer;
 
-
    procedure GDALGeotiffToWKT(fName : PathStr);
+
+   procedure GDAL_replace_42112_tag(DEMName : PathStr; ReplaceStr : shortstring = '');
+
 
    procedure GDAL_ConvertGPXToSHP(var fName : pathStr);
    procedure GDALGeodatabasetoshapefile;
@@ -191,7 +193,7 @@ const
    ogr2ogr_params = ' -skipfailures -overwrite -progress -t_srs EPSG:4326';
    GDAL_Geotiff_str = ' -of Gtiff -co TILED=NO -co COMPRESS=NONE ';
    AddWKT = ' -wkt_format WKT2';
-
+   RunDOSwindow  = ' run batch file in DOS window to see error message: ';
 
    {$IfDef ExGeoPDF}
    {$Else}
@@ -280,7 +282,7 @@ label
      begin
          Result := SetGDALprogramName('gdal_translate.exe',GDAL_translate_name) and SetGDALprogramName('gdal_contour.exe',GDAL_contour_name) and SetGDALprogramName('gdalwarp.exe',GDAL_warp_name) and
                    SetGDALprogramName('gdaldem.exe',GDAL_dem_name) and SetGDALprogramName('ogr2ogr.exe',GDAL_ogr_name) and SetGDALprogramName('gdalinfo.exe',GDAL_info_name) and
-                   SetGDALprogramName('gdalsrsinfo.exe',GDAL_info_Name) and SetGDALprogramName('gdal_rasterize.exe',GDAL_rasterize);
+                   SetGDALprogramName('gdalsrsinfo.exe',GDAL_srs_info_Name) and SetGDALprogramName('gdal_rasterize.exe',GDAL_rasterize);
          if (not Result) then begin
             MessageToContinue('GDAL files are missing; consider reinstalling OSGEO4W');
             {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('user recommended reinstalling'); {$EndIf}
@@ -368,7 +370,7 @@ begin
 end;
 
 
-function GDAL_DEM_command(InputDEM : integer; cmd : ANSIstring; OutName : PathStr; mt : byte = mtElevSpectrum; ElevUnits : byte = Undefined) : integer;
+function GDAL_DEM_command(InputDEM : integer; cmd : ANSIstring; OutName : PathStr; mt : byte = mtElevSpectrum; ElevUnits : byte = euUndefined) : integer;
 begin
     if WinExecAndWait32(cmd) = -1 then begin
       {$IfDef RecordProblems} HighlightLineToDebugFile('Failure GDALCommand, cmd = ' + cmd); {$EndIf}
@@ -376,7 +378,7 @@ begin
     else if FileExists(OutName) then begin
        Result := OpenNewDEM(OutName,false);
        if ValidDEM(InputDEM) then begin
-          if (ElevUnits = Undefined) then DEMGlb[Result].DEMheader.ElevUnits := DEMGlb[InputDEM].DEMheader.ElevUnits;
+          if (ElevUnits = euUndefined) then DEMGlb[Result].DEMheader.ElevUnits := DEMGlb[InputDEM].DEMheader.ElevUnits;
           DEMGlb[Result].DEMheader.VerticalCSTypeGeoKey := DEMGlb[InputDEM].DEMheader.VerticalCSTypeGeoKey;
           DEMGlb[Result].WriteNewFormatDEM(DEMGlb[Result].DEMFileName);
        end;
@@ -384,7 +386,7 @@ begin
     end
     else begin
        Result := 0;
-       MessageToContinue('GDAL failure,see error messages running command in DOS window: ' + cmd);
+       MessageToContinue('GDAL failure, ' + RunDOSwindow + cmd);
     end;
 end;
 
@@ -438,6 +440,25 @@ end;
 
 
 
+procedure GDAL_replace_42112_tag(DEMName : PathStr; ReplaceStr : shortstring = '');
+// not working, 3/17/2024
+var
+   bfile : PathStr;
+   cmd : shortString;
+   BatchFile : tStringList;
+begin
+   StartGDALbatchFile(BatchFile);
+   cmd := PythonEXEname + ' ' + PythonScriptDir + 'gdal_edit.py -unsetmd 42112 -mo 42112="' + ReplaceStr + '" ' + DEMName;
+   BatchFile.Add(cmd);
+   bfile := Petmar.NextFileNumber(MDTempDir, 'gdal_remove_42112_','.bat');
+   EndBatchFile(bfile ,batchfile);
+   if FileExists(DEMName) then begin
+   end
+   else MessageToContinue('GDAL_remove_42112_tag failure,' + RunDOSwindow + bfile);
+end;
+
+
+
 procedure GDALAssignDEMProjection(DEMName,ProjName : PathStr);
 var
    bfile : PathStr;
@@ -451,7 +472,7 @@ begin
    EndBatchFile(bfile ,batchfile);
    if FileExists(DEMName) then begin
    end
-   else MessageToContinue('GDALAssignProjection failure, to see error messages try batch file in DOS window: ' + bfile);
+   else MessageToContinue('GDALAssignProjection failure,' + RunDOSwindow + bfile);
 end;
 
 
@@ -472,7 +493,7 @@ begin
       if FileExists(OutName) then begin
          OpenNewDEM(OutName);
       end
-      else MessageToContinue('GDAL_Fill_Holes failure, to see error messages try batch file in DOS window: ' + bfile);
+      else MessageToContinue('GDAL_Fill_Holes failure,' + RunDOSwindow + bfile);
    end;
 end;
 
@@ -538,7 +559,7 @@ begin
    if FileExistsErrorMessage(InName) then begin
       if sf <> '' then sf := ' -s ' + sf + ' ';
       if (Outname = '') then OutName := MDTempDir + 'gdal_slope_zt_' + ExtractFileNameNoExt(InName) + '.tif';
-      Result := GDAL_DEM_command(0,GDAL_dem_name + ' slope ' + InName + ' ' + OutName +  ' -p -alg ZevenbergenThorne' + sf, OutName,mtElevSpectrum,PercentSlope);
+      Result := GDAL_DEM_command(0,GDAL_dem_name + ' slope ' + InName + ' ' + OutName +  ' -p -alg ZevenbergenThorne' + sf, OutName,mtElevSpectrum,euPercentSlope);
    end;
 end;
 
@@ -548,7 +569,7 @@ begin
    if FileExistsErrorMessage(InName) then begin
       if sf <> '' then sf := ' -s ' + sf + ' ';
       if (Outname = '') then OutName := MDTempDir + 'gdal_slope_horn_' + ExtractFileNameNoExt(InName) + '.tif';
-      Result := GDAL_DEM_command(0,GDAL_dem_name + ' slope ' + InName + ' ' + OutName +  ' -p ' + sf, OutName,mtElevSpectrum,PercentSlope);
+      Result := GDAL_DEM_command(0,GDAL_dem_name + ' slope ' + InName + ' ' + OutName +  ' -p ' + sf, OutName,mtElevSpectrum,euPercentSlope);
    end;
 end;
 
@@ -558,7 +579,7 @@ begin
    if FileExistsErrorMessage(InName) then begin
       if sf <> '' then sf := ' -s ' + sf + ' ';
       if (Outname = '') then OutName := MDTempDir + 'gdal_aspect_horn_' + ExtractFileNameNoExt(InName) + '.tif';
-      Result := GDAL_DEM_command(0,GDAL_dem_name + ' aspect ' + InName + ' ' + OutName + sf, OutName,mtElevSpectrum,AspectDeg);
+      Result := GDAL_DEM_command(0,GDAL_dem_name + ' aspect ' + InName + ' ' + OutName + sf, OutName,mtElevSpectrum,euAspectDeg);
    end;
 end;
 
@@ -569,7 +590,7 @@ begin
    if FileExistsErrorMessage(InName) then begin
       if sf <> '' then sf := ' -s ' + sf + ' ';
       if (Outname = '') then OutName := MDTempDir + 'gdal_aspect_zt_' + ExtractFileNameNoExt(InName) + '.tif';
-      Result := GDAL_DEM_command(0,GDAL_dem_name + ' aspect ' + InName + ' ' + OutName +  ' -alg ZevenbergenThorne' + sf, OutName,mtElevSpectrum,AspectDeg);
+      Result := GDAL_DEM_command(0,GDAL_dem_name + ' aspect ' + InName + ' ' + OutName +  ' -alg ZevenbergenThorne' + sf, OutName,mtElevSpectrum,euAspectDeg);
    end;
 end;
 

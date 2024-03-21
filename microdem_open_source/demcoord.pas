@@ -331,7 +331,7 @@ type
          Over30PercentSlope,
          Over50PercentSlope   : float64;
          DEMAlreadyDefined,
-         ElevationDEM,
+         //ElevationDEM,
          DEMMemoryAlreadyAllocated,
          HiddenGrid,
          UTMValidDEM        : boolean;
@@ -359,7 +359,7 @@ type
          procedure FreeDEMPointers;
 
          function LandCoverGrid : boolean;
-         function ElevationGrid : boolean;
+         function ElevationDEM : boolean;
          function ReadDEMNow(var tFile : PathStr; transformtoNewDatum : boolean) : boolean;
          function ReloadDEM(transformtoNewDatum : boolean) : boolean;
          procedure SetNewDEM(var NewDEM : integer);
@@ -2026,13 +2026,13 @@ end;
 
 function tDEMDataSet.LandCoverGrid : boolean;
 begin
-   Result := DEMheader.ElevUnits in [NLCD2001up,LandFire,NLCD1992,GLOBCOVER,GLC2000,CCAP,CCI_LC,S2GLC,NLCD_Change,GLCS_LC100,Meybeck,Geomorphon,Iwahashi,
-      ESRI2020,euPennock,WorldCover10m,LCMAP,euSent2SLC,euSimpleLandCover];
+   Result := DEMheader.ElevUnits in [euNLCD2001up,euLandFire,euNLCD1992,euGLOBCOVER,euGLC2000,euCCAP,euCCI_LC,euS2GLC,euNLCD_Change,euGLCS_LC100,euMeybeck,euGeomorphon,euIwahashi,
+      euESRI2020,euPennock,euWorldCover10m,euLCMAP,euSent2SLC,euSimpleLandCover];
 end;
 
-function tDEMDataSet.ElevationGrid : boolean;
+function tDEMDataSet.ElevationDEM : boolean;
 begin
-   Result := DEMheader.ElevUnits in [euMeters,Feet,Decimeters,DeciFeet,Centimeters];
+   Result := DEMheader.ElevUnits in [euMeters,euFeet,euDecimeters,euDeciFeet,euCentimeters];
 end;
 
 
@@ -2253,7 +2253,7 @@ begin
    end;
    {$IfDef RecordFilter} WriteLineToDebugFile('tDEMDataSet.FindEdgeThisDEM in, dir=' + TStr): {$EndIf}
 
-   NewDEM := CloneAndOpenGridSetMissing(ByteDEM,AreaName + TStr + '_edge',Undefined);
+   NewDEM := CloneAndOpenGridSetMissing(ByteDEM,AreaName + TStr + '_edge',euUndefined);
 
    DEMGlb[NewDEM].AreaName := TStr + ' edge (gap size = ' + IntToStr(MDDef.EdgeFilterGap) + ') ' + AreaName;
    StartProgress('Edge filter');
@@ -2332,11 +2332,11 @@ end;
 procedure tDEMDataSet.SetElevationMultiple;
 begin
   case DEMheader.ElevUnits of
-      Decimeters  : ElevationMultiple := 0.1;
-      HundredthMa,
-      Centimeters : ElevationMultiple := 0.01;
-      DeciFeet    : ElevationMultiple := 0.1 * FeetToMeters;
-      Feet        : ElevationMultiple := FeetToMeters;
+      euDecimeters  : ElevationMultiple := 0.1;
+      euHundredthMa,
+      euCentimeters : ElevationMultiple := 0.01;
+      euDeciFeet    : ElevationMultiple := 0.1 * FeetToMeters;
+      euFeet        : ElevationMultiple := FeetToMeters;
       else ElevationMultiple := 1;
    end;
    {$IfDef RecordMinMax} WriteLineToDebugFile('tDEMDataSet.SetElevationMultiple ' + RealToString(ElevationMultiple,-12,-2)); {$EndIf}
@@ -2356,23 +2356,23 @@ begin
          //NLCDCats := nil;
       end;
       New(NLCDCats);
-      if (DEMheader.ElevUnits in [GLC2000]) then TStr := 'GLC-2000'
-      else if (DEMheader.ElevUnits in [GLCS_LC100]) then TStr := 'GLCS-LC100'
-      else if (DEMheader.ElevUnits in [S2GLC]) then TStr := 'S2GLC'
-      else if (DEMheader.ElevUnits in [GLOBCOVER]) then TStr := 'GlobCover'
-      else if (DEMheader.ElevUnits in [CCI_LC]) then TStr := 'CCI-LC'
-      else if (DEMheader.ElevUnits in [NLCD2001up]) then TStr := 'NLCD-2001up'
-      else if (DEMheader.ElevUnits in [NLCD1992]) then TStr := 'NLCD-1990'
-      else if (DEMheader.ElevUnits in [WORLDCover10m]) then TStr := 'WORLDCOVER10M'
-      else if (DEMheader.ElevUnits in [CCAP]) then TStr := 'C-CAP'
-      else if (DEMheader.ElevUnits in [Meybeck]) then TStr := 'MEYBECK'
-      else if (DEMheader.ElevUnits in [ESRI2020]) then TStr := 'ESRI2020'
-      else if (DEMheader.ElevUnits in [Iwahashi]) then TStr := 'IWAHASHI'
-      else if (DEMheader.ElevUnits in [Geomorphon]) then TStr := 'GEOMORPHON'
+      if (DEMheader.ElevUnits in [euGLC2000]) then TStr := 'GLC-2000'
+      else if (DEMheader.ElevUnits in [euGLCS_LC100]) then TStr := 'GLCS-LC100'
+      else if (DEMheader.ElevUnits in [euS2GLC]) then TStr := 'S2GLC'
+      else if (DEMheader.ElevUnits in [euGLOBCOVER]) then TStr := 'GlobCover'
+      else if (DEMheader.ElevUnits in [euCCI_LC]) then TStr := 'CCI-LC'
+      else if (DEMheader.ElevUnits in [euNLCD2001up]) then TStr := 'NLCD-2001up'
+      else if (DEMheader.ElevUnits in [euNLCD1992]) then TStr := 'NLCD-1990'
+      else if (DEMheader.ElevUnits in [euWORLDCover10m]) then TStr := 'WORLDCOVER10M'
+      else if (DEMheader.ElevUnits in [euCCAP]) then TStr := 'C-CAP'
+      else if (DEMheader.ElevUnits in [euMeybeck]) then TStr := 'MEYBECK'
+      else if (DEMheader.ElevUnits in [euESRI2020]) then TStr := 'ESRI2020'
+      else if (DEMheader.ElevUnits in [euIwahashi]) then TStr := 'IWAHASHI'
+      else if (DEMheader.ElevUnits in [euGeomorphon]) then TStr := 'GEOMORPHON'
       else if (DEMheader.ElevUnits in [euPennock]) then TStr := 'PENNOCK'
-      else if (DEMheader.ElevUnits in [LCMAP]) then TStr := 'LCMAP'
+      else if (DEMheader.ElevUnits in [euLCMAP]) then TStr := 'LCMAP'
       else if (DEMheader.ElevUnits in [euSent2SLC]) then TStr := 'Sent-2_SLC'
-      else if (DEMheader.ElevUnits in [NLCD_Change]) then TStr := 'NLCD-Change'
+      else if (DEMheader.ElevUnits in [euNLCD_Change]) then TStr := 'NLCD-Change'
       else if (DEMheader.ElevUnits in [euSimpleLandCover]) then TStr := 'Simplify'
       else TStr := 'LANDFIRE';                                               //this is in the DB for the filter
       //if not StrUtils.AnsiContainsText(UpperCase(AreaName),UpperCase(TStr)) then AreaName := AreaName + ' ' + TStr;
@@ -2579,7 +2579,7 @@ begin {tDEMDataSet.DefineDEMVariables}
       CheckForLandCover;
    {$EndIf}
 
-   ElevationDEM := DEMheader.ElevUnits in [Feet,euMeters,DeciMeters,DeciFeet,Centimeters];
+   //ElevationDEM := ElevationGrid;
    if not (DEMheader.LatHemi in ['N','S']) then DEMheader.LatHemi := MDDef.DefaultLatHemi;
    SetElevationMultiple;
    DEMheader.MinElev := DEMheader.StoredMinElev * ElevationMultiple;;

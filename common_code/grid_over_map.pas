@@ -1060,7 +1060,7 @@ begin
       with DEMGlb[MaskDEM],DEMheader do begin
          //AreaName := 'Mask';
          ShortName := 'Mask';
-         DEMheader.ElevUnits := Undefined;
+         DEMheader.ElevUnits := euUndefined;
          DefineDEMVariables(true);
       end {with};
 

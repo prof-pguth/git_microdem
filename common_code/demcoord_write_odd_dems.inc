@@ -125,10 +125,10 @@ begin
          oldSpaceSeconds : Rec1024[534] := '3';
       end;
       case ElevUnits of
-         Decimeters,
-         Centimeters,
+         euDecimeters,
+         euCentimeters,
          euMeters : Rec1024[540] := '2';
-         Feet   : Rec1024[540] := '1';
+         euFeet   : Rec1024[540] := '1';
       end;
       Rec1024[546] := '4'; {sides of polygon}
 

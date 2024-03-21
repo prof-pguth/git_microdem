@@ -201,15 +201,6 @@ type
    function MakeSSIMMap(OpenMap,AlreadyNormalized : boolean; DEM1,DEM2,NumberOfGrids,WindowSize : integer; ThinFactor : integer = 1; AreaName : shortstring = '') : integer;
    procedure SSIMcheck(DoThinning : boolean);
 
-//channel network comparisons
-   function ChannelSHPToGrid(DEM,db : integer; OutDir : PathStr; PlotOrder : integer = 1) : integer;
-   procedure CompareChannelNetworks(Area : shortstring);
-   procedure CreateChannelNetworkGridsFromVectors(Overwrite : boolean; AreasWanted : tstringlist = nil);
-   procedure BatchRemoveSinksInDEMIX_DEMS(Overwrite : boolean; AreasWanted : tstringlist = nil);
-   procedure BatchCreateVectorChannelNewtwork(Overwrite : boolean; AreasWanted : tstringlist = nil);
-   procedure ChannelNetworkMissPercentages(Overwrite : boolean; AreasWanted : tstringlist = nil);
-   procedure ChannelNetworkMapComparison(AreaName,TestDEMName : shortstring);
-   procedure MultistepChannelNetworks(Overwrite : boolean);
 
 const
    SSIM_fudge : float64 = 1.0;
@@ -296,7 +287,6 @@ var
    {$I demstat_grid_compare.inc}
 {$EndIf}
 
-{$I demstat_demix_channels.inc}
 
 
 procedure CreateGridHistograms(DEMSwanted : tDEMbooleanArray; TailCutoff : float32 = 0.5);
@@ -774,7 +764,7 @@ procedure AllAspects;
     BMPlist := tStringList.Create;
     for DEM := 1 to MaxDEMDataSets do begin
        if ValidDEM(DEM) then begin
-           if (DEMGlb[DEM].DEMHeader.ElevUnits = AspectDeg) then begin
+           if (DEMGlb[DEM].DEMHeader.ElevUnits = euAspectDeg) then begin
               rg := CreateAspectRose(DEM);
            end;
        end;
@@ -1505,7 +1495,7 @@ begin
      if not OpenAndZeroNewDEM(true,NewHeadRecs,Result,'Clusters',InitDEMvalue,0) then exit;
         with DEMGlb[Result],DEMheader do begin
            ShortName := 'Clusters';
-           DEMheader.ElevUnits := Undefined;
+           DEMheader.ElevUnits := euUndefined;
            DefineDEMVariables(true);
            StartProgress('Classify');
            for y := 0 to pred(NumRow) do begin
@@ -1852,7 +1842,7 @@ begin
                   end {for j};
                end;
                EndProgress;
-               DEMGlb[NewDEM].DEMheader.ElevUnits := Undefined;   //Imagery;
+               DEMGlb[NewDEM].DEMheader.ElevUnits := euUndefined;   //Imagery;
                DEMGlb[NewDEM].CheckMaxMinElev;
                DEMGlb[NewDEM].WriteNewFormatDEM(fName);
                if MDDef.LoadPCBands then begin

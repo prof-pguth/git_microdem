@@ -93,7 +93,7 @@ const
    function IsDEMaDSMorDTM(DEMName : ShortString) : integer;
    function DEMIXTestDEMLegend(Horizontal : boolean = true) : tMyBitmap;
 
-   procedure WhoIsBetter(DBonTable : integer);
+   procedure CompareSeriousCompetitors(DBonTable : integer);
 
 //service functions and procedures
    function LoadDEMIXReferenceDEMs(AreaName : shortstring; var RefDEM : integer; OpenMaps : boolean = true) : boolean;
@@ -120,7 +120,6 @@ const
    procedure OpenDEMIXDatabaseForAnalysis;
 
 
-   procedure AddCountryToDB(DB : integer);
    function GetCountryForArea(Area : shortString) : shortstring;
    procedure SummarizeEGM96toEGM2008shifts;
    procedure SetDirtAirballBackground(var Result : tThisBaseGraph; DEMType : shortstring);   //brown dirtball for STM, blue airball for DSM
@@ -439,7 +438,7 @@ begin
           n := Crits.IndexOf(Crit);
           if (n >= 0) then begin
             Scores := '';
-            for DEM := 1 to NumDEMIXDEM do begin
+            for DEM := 1 to NumDEMIXtestDEM do begin
                 Scores := Scores + GISdb[DBonTable].MyData.GetFieldByNameAsString(DEMIXShort[DEM] + '_SCR') + '-';
              end;
              ScoreSheet[n] := Scores;
@@ -491,7 +490,7 @@ begin
    Result := RGBtrip(185,185,185);
    if (DEMName = 'TIE') then Result := claBrown
    else begin
-      for I := 1 to NumDEMIXDEM do
+      for I := 1 to NumDEMIXtestDEM do
          if (Uppercase(DEMIXShort[i]) = DEMName) then Result := DEMIXDEMcolors[i];
    end;
    {$IfDef RecordDEMIX_colors} WriteLineToDebugFile('DEMIX color  ' + DEMName + '  ' + ColorStringFromPlatformColor(Result)); {$EndIf}
@@ -650,30 +649,38 @@ end;
 procedure LoadDEMIXnames;
 var
    table : tMyData;
-   fName : PathStr;
+   fName,fName2 : PathStr;
    i : integer;
+   TheDEMs : tStringList;
    aLine : shortstring;
 begin
-   fName := DEMIXSettingsDir + 'demix_dems.dbf';
-   if (NumDEMIXDEM = 0) and FileExists(fName) then begin
+   //if (NumDEMIXDEM = 0) and FileExists(fName) then begin
+   (*
+    if DEMIX_Mode = dmNotYetDefined then begin
+
+    end;
+   *)
+      TheDEMs := tStringList.Create;
+      TheDEMs.LoadFromFile(DEMListFName);
+      fName := DEMIXSettingsDir + 'demix_dems.dbf';
       Table := tMyData.Create(fName);
-      //Table.ApplyFilter('USE=' + QuotedStr('Y'));
-      NumDEMIXDEM := Table.FiltRecsInDB;
-      RequiredTestDEMs := Table.FiltRecsInDB;
-      for I := 1 to NumDEMIXDEM do begin
+      for I := 1 to TheDEMs.Count do begin
+         Table.ApplyFilter('SHORT_NAME=' + QuotedStr(TheDEMs.Strings[pred(i)]));
          DEMIXDEMTypeName[i] := Table.GetFieldByNameAsString('DEM_NAME');
          DEMIXshort[i] := Table.GetFieldByNameAsString('SHORT_NAME');
          DEMIXDEMcolors[i] := Table.PlatformColorFromTable;
-         {$IfDef RecordDEMIX_colors} WriteLineToDebugFile('DEMStat ' +DEMIXshort[i] + '  ' + ColorStringFromPlatformColor(DEMIXDEMcolors[i])); {$EndIf}
-         Table.Next;
       end;
+      NumDEMIXtestDEM := TheDEMs.Count;
+      //equiredTestDEMs := TheDEMs.Count;
+
       {$IfDef RecordDEMIXNames}
           aLine := IntToStr(NumDEMIXDEM);
           for I := 1 to NumDEMIXDEM do aline := aline + '  ' + DEMIXshort[i];
           HighlightLineToDebugFile('LoadDEMIXNames=' + aLine);
       {$EndIf}
       Table.Destroy;
-   end;
+      TheDEMs.Destroy;
+   //end;
 end;
 
 
@@ -695,7 +702,7 @@ begin
    Result := '';
    if StrUtils.AnsiContainsText(fname,'REF') then exit;
    fName := UpperCase(fName);
-   for i := 1 to NumDEMIXDEM do begin
+   for i := 1 to NumDEMIXtestDEM do begin
       if StrUtils.AnsiContainsText(fname,UpperCase(DEMIXShort[i])) then begin
          Result := DEMIXShort[i];
          exit;
@@ -822,15 +829,17 @@ begin
    Result.Canvas.Font.Size := MDDef.DEMIXlegendFontSize;
    Left := 25;
    Top := 10;
-   for i := 1 to NumDEMIXDEM do begin
-      Result.Canvas.Pen.Color := ConvertPlatformColorToTColor(DEMIXColorFromDEMName(DEMIXShort[i]));
-      Result.Canvas.Brush.Color := Result.Canvas.Pen.Color;
-      Result.Canvas.Brush.Style := bsSolid;
-      Result.Canvas.Rectangle(Left,Top,Left + 15,Top + 15);
-      Result.Canvas.Brush.Style := bsClear;
-      Result.Canvas.TextOut(Left + 20,Top,DEMIXShort[i]);
-      if Horizontal then Left := Left + 30 + Result.Canvas.TextWidth(DEMIXShort[i])
-     else Top := Top + 10 + Result.Canvas.TextHeight(DEMIXShort[i]);
+   for i := 1 to NumDEMIXtestDEM do begin
+      if DEMIXDEMinUse[i] then begin
+         Result.Canvas.Pen.Color := ConvertPlatformColorToTColor(DEMIXColorFromDEMName(DEMIXShort[i]));
+         Result.Canvas.Brush.Color := Result.Canvas.Pen.Color;
+         Result.Canvas.Brush.Style := bsSolid;
+         Result.Canvas.Rectangle(Left,Top,Left + 15,Top + 15);
+         Result.Canvas.Brush.Style := bsClear;
+         Result.Canvas.TextOut(Left + 20,Top,DEMIXShort[i]);
+         if Horizontal then Left := Left + 30 + Result.Canvas.TextWidth(DEMIXShort[i])
+         else Top := Top + 10 + Result.Canvas.TextHeight(DEMIXShort[i]);
+      end;
    end;
    PutBitmapInBox(Result);
 end;
@@ -857,13 +866,16 @@ begin
       NumArea := 1;
       SSIMresultsDir := RegularSSIMresultsDir;
       AreaListFName := DEMIXSettingsDir + 'areas_list.txt';
-   if DEMIX_mode = dmAddDiluvium then begin
+      DEMListFName := DEMIXSettingsDir + 'dems_classic.txt';
+   if (DEMIX_mode = dmAddDiluvium) then begin
       NumArea := 2;
       SSIMresultsDir := DiluvSSIMresultsDir;
       AreaListFName := DEMIXSettingsDir + 'areas_diluvium.txt';
+      DEMListFName := DEMIXSettingsDir + 'dems_add_diluvium.txt';
    end
-   else if DEMIX_mode = dmAddDelta then begin
+   else if (DEMIX_mode = dmAddDelta) then begin
       NumPt := 7;
+      DEMListFName := DEMIXSettingsDir + 'dems_add_delta.txt';
    end;
 end;
 
@@ -958,15 +970,12 @@ begin
    if ValidDB(DB) then begin
       RecognizeDEMIXVersion(DB);
    end
-   else if DEMIX_mode = dmNotYetDefined then begin
+   else if (DEMIX_mode = dmNotYetDefined) then begin
       if AnswerIsYes('Classic DEMIX') then DEMIX_Mode := dmClassic
       else if AnswerIsYes('Add diluvium') then DEMIX_Mode := dmAddDiluvium
       else DEMIX_Mode := dmAddDelta;
-      SetParamsForDEMIXmode;
    end;
-
-
-
+   SetParamsForDEMIXmode;
    LoadDEMIXnames;
 
    {$If Defined(RecordDEMIXStart)} WriteLineToDebugFile('GetDEMIXpaths out'); {$EndIf}
@@ -1051,51 +1060,6 @@ end;
 
 
 
-procedure AddCountryToDB(DB : integer);
-var
-   Table : tMyData;
-   Tile,Area,Country : shortstring;
-   i : integer;
-begin
-   GetDEMIXPaths;
-   if FileExists(DEMIX_area_dbName) and GISdb[db].MyData.FieldExists('AREA') then begin
-     Table := tMyData.Create(DEMIX_area_dbName);
-     GISdb[db].AddFieldToDatabase(ftString,'COUNTRY',16);
-     i := 0;
-     while not Table.eof do begin
-        inc(i);
-        GISdb[db].EmpSource.Enabled := false;
-        Country := Table.GetFieldByNameAsString('COUNTRY');
-        Area := Table.GetFieldByNameAsString('AREA');
-        wmdem.SetPanelText(2, 'Tile: ' + IntToStr(succ(i)) + '/' + IntToStr(Table.FiltRecsInDB) + ' ' + Tile);
-        wmdem.SetPanelText(2, 'Area: ' + IntToStr(succ(i)) + '/' + IntToStr(Table.FiltRecsInDB) + ' ' + Area);
-        GISdb[db].ApplyGISFilter('AREA=' + QuotedStr(Area));
-        GISdb[db].FillFieldWithValue('COUNTRY',Country);
-     end;
-     Table.Destroy;
-     wmdem.SetPanelText(2,'');
-     GISdb[db].ClearGISFilter;
-     GISdb[db].ShowStatus;
-  end
-(*
-  else if FileExists(DEMIX_area_dbName) and GISdb[db].MyData.FieldExists('DEMIX_TILE') then begin
-
-        else begin
-           Tile := Table.GetFieldByNameAsString('DEMIX_TILE');
-           wmdem.SetPanelText(2, 'Tile: ' + IntToStr(succ(i)) + '/' + IntToStr(Table.FiltRecsInDB) + ' ' + Tile);
-             GISdb[db].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(Tile));
-              GISdb[db].FillFieldWithValue('COUNTRY',Country);
-        end;
-        Table.Next;
-     end;
-   end
-*)
-   else begin
-       {$If Defined(RecordDEMIX)} WriteLineToDebugFile('AddCountryToDB fail, missing ' + DEMIX_area_dbName); {$EndIf}
-   end;
-end;
-
-
 procedure SummarizeEGM96toEGM2008shifts;
 var
    Files,Summary : tStringList;
@@ -1169,13 +1133,13 @@ begin
 end;
 
 
-procedure WhoIsBetter(DBonTable : integer);
+procedure CompareSeriousCompetitors(DBonTable : integer);
 
 
    procedure OnePair(DEM1,DEM2 : shortstring);
    var
       eval1,eval2,tolerance : float32;
-      tStr,fName : shortstring;
+      tStr,fName,Criterion : shortstring;
    begin
       if GISdb[dbOnTable].MyData.FieldExists(DEM1) and GISdb[dbOnTable].MyData.FieldExists(DEM2) then begin
          fName := DEM1 + '_' + DEM2;
@@ -1183,20 +1147,27 @@ procedure WhoIsBetter(DBonTable : integer);
          GISdb[dbOnTable].MyData.First;
          GISdb[dbOnTable].EmpSource.Enabled := false;
          while not GISdb[dbOnTable].MyData.eof do begin
-            eval1 := GISdb[dbOnTable].MyData.GetFieldByNameAsFloat(DEM1);
-            eval2 := GISdb[dbOnTable].MyData.GetFieldByNameAsFloat(DEM2);
-            tolerance := GISdb[dbOnTable].MyData.GetFieldByNameAsFloat('TOLERANCE');
-            if eval1 + Tolerance < Eval2 then tStr := DEM1
-            else if eval2 + Tolerance < Eval1 then tStr := DEM2
-            else tStr := 'TIE';
-            GISdb[dbOnTable].MyData.Edit;
-            GISdb[dbOnTable].MyData.SetFieldByNameAsString(fName,tStr);
+            Criterion := GISdb[dbOnTable].MyData.GetFieldByNameAsString('CRITERION');
+            if not IsDEMIX_signedCriterion(Criterion) then begin
+               eval1 := GISdb[dbOnTable].MyData.GetFieldByNameAsFloat(DEM1);
+               eval2 := GISdb[dbOnTable].MyData.GetFieldByNameAsFloat(DEM2);
+               tolerance := GISdb[dbOnTable].MyData.GetFieldByNameAsFloat('TOLERANCE');
+               if eval1 + Tolerance < Eval2 then tStr := DEM1
+               else if eval2 + Tolerance < Eval1 then tStr := DEM2
+               else tStr := 'TIE';
+               GISdb[dbOnTable].MyData.Edit;
+               GISdb[dbOnTable].MyData.SetFieldByNameAsString(fName,tStr);
+            end;
             GISdb[dbOnTable].MyData.Next;
          end;
       end;
    end;
 
 begin
+   if not GISdb[DBonTable].MyData.FieldExists('CRITERION') then begin
+      RankDEMS(DBonTable);
+   end;
+
    OnePair('COP','ALOS');
    OnePair('COP','FABDEM');
    OnePair('COP','TANDEM');
@@ -1565,7 +1536,7 @@ begin
       TestSeries[i] := '';
    end;
    Ser := 0;
-   for I := 1 to NumDEMIXDEM do begin
+   for I := 1 to NumDEMIXtestDEM do begin
       fName := DEMIX_test_dems + AreaName + '_' + DEMIXShort[i] + '.tif';
       if FileExists(fname) then begin
          inc(Ser);
@@ -1577,7 +1548,7 @@ begin
       end;
    end;
 
-   Result := (Ser = NumDEMIXDEM);
+   Result := (Ser = NumDEMIXtestDEM);
    {$If Defined(RecordDEMIXLoad)} if not Result then writeLineToDebugFile('Reload LoadDEMIXCandidateDEMs in; Loaded only DEMs=, ' + IntToStr(Ser)); {$EndIf}
 end;
 
@@ -1634,8 +1605,5 @@ initialization
    SSIMresultsDir := '';
 finalization
 end.
-
-
-
 
 

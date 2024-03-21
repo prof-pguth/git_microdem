@@ -595,6 +595,11 @@ type
     N47: TMenuItem;
     DeltaDTMfortestareas1: TMenuItem;
     InventoryDeltaDTMbytestarea1: TMenuItem;
+    Overwrite1: TMenuItem;
+    Skipifexists3: TMenuItem;
+    CreatefinalDB1: TMenuItem;
+    N3DEPfileswithtag421121: TMenuItem;
+    Fixtileswith42114foottag1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -904,8 +909,7 @@ type
     procedure Horizontalimageslider1Click(Sender: TObject);
     procedure OpensingleLandsatband1Click(Sender: TObject);
     procedure listgeo1Click(Sender: TObject);
-    procedure DEMIXmergeCSVfiles1Click(Sender: TObject);
-    procedure DEMIXmergeandtransposewithmeanmedian1Click(Sender: TObject);
+    //procedure DEMIXmergeandtransposewithmeanmedian1Click(Sender: TObject);
     procedure DEMIXtilesizebylatitude1Click(Sender: TObject);
     procedure Python1Click(Sender: TObject);
     procedure OpenSentinel1radarimagery1Click(Sender: TObject);
@@ -990,7 +994,6 @@ type
     procedure ComputeDEMIXtilestats1Click(Sender: TObject);
     procedure VerifytestDEMcoverages1Click(Sender: TObject);
     procedure rimreferencedatatoDEMIXtiles1Click(Sender: TObject);
-    procedure Partial3DEPsteps1Click(Sender: TObject);
     procedure Overwriteifexists3Click(Sender: TObject);
     procedure Overwriteifexists4Click(Sender: TObject);
     procedure OvOverwriteifexists1Click(Sender: TObject);
@@ -1010,6 +1013,13 @@ type
     procedure N42Click(Sender: TObject);
     procedure DeltaDTMfortestareas1Click(Sender: TObject);
     procedure InventoryDeltaDTMbytestarea1Click(Sender: TObject);
+    procedure Overwrite1Click(Sender: TObject);
+    procedure Skipifexists3Click(Sender: TObject);
+    procedure CreatefinalDB1Click(Sender: TObject);
+    procedure N3DEPfileswithtag421121Click(Sender: TObject);
+    procedure Fixtileswith42114foottag1Click(Sender: TObject);
+    procedure DEMIXmergeCSVfiles1Click(Sender: TObject);
+    procedure Partialprocessing1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1564,15 +1574,18 @@ begin
    DisplayHTMLTopic('demix_sg2\wine_contest.html');
 end;
 
-procedure Twmdem.DEMIXmergeandtransposewithmeanmedian1Click(Sender: TObject);
-begin
-   CreateDEMIX_GIS_database;
-end;
-
 procedure Twmdem.DEMIXmergeCSVfiles1Click(Sender: TObject);
 begin
-   CreateDEMIX_GIS_database;
+
 end;
+
+(*
+procedure Twmdem.DEMIXmergeandtransposewithmeanmedian1Click(Sender: TObject);
+begin
+   CreateDEMIX_GIS_database_by_transposing;
+end;
+*)
+
 
 procedure Twmdem.DEMIXtilesizebylatitude1Click(Sender: TObject);
 var
@@ -2569,6 +2582,11 @@ begin
 end;
 
 
+procedure Twmdem.N3DEPfileswithtag421121Click(Sender: TObject);
+begin
+   FindFilesWith42112;
+end;
+
 procedure Twmdem.N3OpenDEMs1Click(Sender: TObject);
 begin
    OpenHalfSecCopALOS(false);
@@ -2606,6 +2624,11 @@ begin
      end;
    end;
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Clip DEMs to DEMIX tile boundaries out'); {$EndIf}
+end;
+
+procedure Twmdem.Overwrite1Click(Sender: TObject);
+begin
+   CreateDEMIX_GIS_database_by_transposing(True);
 end;
 
 procedure Twmdem.Overwrite4Click(Sender: TObject);
@@ -3071,6 +3094,11 @@ begin
    MultistepChannelNetworks(False);
 end;
 
+procedure Twmdem.Skipifexists3Click(Sender: TObject);
+begin
+   CreateDEMIX_GIS_database_by_transposing(False);
+end;
+
 procedure Twmdem.Skipifexits1Click(Sender: TObject);
 begin
    DEMIX_CreateReferenceDEMs(false,ResampleModeOneSec);
@@ -3203,7 +3231,7 @@ begin
 *)
    if FileExists(dName + fName) then begin
       OpenNewDEM(dName + fName,false);
-      DEMGlb[LastDEMLoaded].DEMheader.ElevUnits := Nanotesla;
+      DEMGlb[LastDEMLoaded].DEMheader.ElevUnits := euNanotesla;
       CreateDEMSelectionMap(LastDEMLoaded,true,true);
    end
    else begin
@@ -3300,6 +3328,11 @@ begin
    CreateDifferenceMaps;
 end;
 
+
+procedure Twmdem.CreatefinalDB1Click(Sender: TObject);
+begin
+   CreateFinalDB;
+end;
 
 procedure Twmdem.CreatehalfsecondreferenceDEMs1Click(Sender: TObject);
 begin
@@ -4260,7 +4293,7 @@ var
                   DataSpacing := SpaceDegrees;
                   DEMUsed := ArcSecDEM;
                   DEMheader.UTMZone := GetUTMZone(DEMSWCornerX + 0.5 * NumCol * DEMxSpacing);
-                  ElevUnits  := Undefined;
+                  ElevUnits  := euUndefined;
                   AllocateDEMMemory(InitDEMMissing);
                   DefineDEMVariables(true);
                   {$IfDef RecordGeostats} WriteLineToDebugFile('New grid created ' + IntToStr(ParamDEMs[i])); {$EndIf}
@@ -5073,6 +5106,11 @@ begin
 end;
 
 
+procedure Twmdem.Fixtileswith42114foottag1Click(Sender: TObject);
+begin
+   FixFilesWith42112;
+end;
+
 procedure Twmdem.Conicconversions1Click(Sender: TObject);
 begin
    FinnishGaussKruger1Click(Sender);
@@ -5209,7 +5247,7 @@ begin
    ChangeDEMNowDoing(SeekingFirstNewPanorama);
 end;
 
-procedure Twmdem.Partial3DEPsteps1Click(Sender: TObject);
+procedure Twmdem.Partialprocessing1Click(Sender: TObject);
 begin
 
 end;

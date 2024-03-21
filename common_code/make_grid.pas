@@ -91,7 +91,6 @@ function MakeAspectMap(ElevMap : integer) : integer;
 
 procedure NumHighLowNeighborsMaps(DEM,Radius : integer; Tolerance : float32; var HighNeigh,LowNeigh : integer);
 
-
 function CreateStandardDeviationMap(DEM,Radius : integer) : integer;
 
 procedure ModeFilterDEM(DEM,BufferSize : integer; JustDoHoles : boolean);
@@ -729,7 +728,7 @@ begin
    ReturnSlopeMap := (SlopeMap = 0);
    SlopeMap := CreateSlopeMap(DEM,OpenMap);
    fName := 'md_ruff_slope_std_' + FilterSizeStr(DiameterMustBeOdd) + '_' + DEMGlb[DEM].AreaName;
-   Result := DEMGlb[DEM].CloneAndOpenGridSetMissing(FloatingPointDEM,fName,PercentSlope);
+   Result := DEMGlb[DEM].CloneAndOpenGridSetMissing(FloatingPointDEM,fName,euPercentSlope);
    Radius := DiameterMustBeOdd div 2;
    StartProgressAbortOption('Slope and roughness ' + DEMGlb[DEM].AreaName);
    for x := Radius to pred(DEMGlb[DEM].DEMheader.NumCol - Radius) do begin
@@ -1349,70 +1348,70 @@ begin
       if MDDef.DoBaseLevel then NewGrid(MomentDEMs[3], 'Erosion_base_level_m' + TStr,DEMGlb[CurDEM].DEMheader.ElevUnits);
       if MDDef.DoGeophysical then NewGrid(MomentDEMs[4], 'Geophysical_relief_m' + TStr,DEMGlb[CurDEM].DEMheader.ElevUnits);
       if MDDef.DoDropoff then NewGrid(MomentDEMs[5], 'Dropoff_m' + TStr,DEMGlb[CurDEM].DEMheader.ElevUnits);
-      if MDDef.DoElevRelief then NewGrid(MomentDEMs[6], 'Elev_relief' + TStr,Undefined);
+      if MDDef.DoElevRelief then NewGrid(MomentDEMs[6], 'Elev_relief' + TStr,euUndefined);
    end
    else if (What = 'R') then  begin
       ThinFactor := MDDef.ReliefCalcThin;
       if MDDef.DoRelief1 then NewGrid(MomentDEMs[1], 'Relief' + TStr,DEMGlb[CurDEM].DEMheader.ElevUnits);
       if MDDef.DoAvgElev then NewGrid(MomentDEMs[2], 'Average_Elev' + TStr,DEMGlb[CurDEM].DEMheader.ElevUnits);
       if MDDef.DoElevStd then NewGrid(MomentDEMs[3], 'Std Dev Elev' + TStr,DEMGlb[CurDEM].DEMheader.ElevUnits);
-      if MDDef.DoREL then NewGrid(MomentDEMs[4], 'REL' + TStr,Undefined);
-      if MDDef.DoTPI then NewGrid(MomentDEMs[5], 'TPI' + TStr,Undefined);
+      if MDDef.DoREL then NewGrid(MomentDEMs[4], 'REL' + TStr,euUndefined);
+      if MDDef.DoTPI then NewGrid(MomentDEMs[5], 'TPI' + TStr,euUndefined);
    end
    {$IfDef MultipleCurvatureMethods}
    else if (What = 'A') then begin
       TStr := '_curvature--' + CurvatureMethodName[MDDef.CurvatureMethod] +' (' + IntToStr(MDDef.CurvRegionSize) + ')';
-      NewGrid(DEMs[1], '_slope' + TStr,UnDefined);
-      NewGrid(DEMs[2], '_plan' + TStr,UnDefined);
+      NewGrid(DEMs[1], '_slope' + TStr,euUndefined);
+      NewGrid(DEMs[2], '_plan' + TStr,euUndefined);
    end
    {$EndIf}
    else if (What = 'C') then  begin
-      if MDDef.DoSlopeCurve then NewGrid(MomentDEMs[1], 'Slope_curvature',UnDefined);
-      if MDDef.DoPlanCurve then NewGrid(MomentDEMs[2], 'Plan_curvature',UnDefined);
-      if MDDef.DoCrossCurve then NewGrid(MomentDEMs[3], 'Cross_sectional_curvature',UnDefined);
-      if MDDef.DoMinCurve then NewGrid(MomentDEMs[4], 'Min_curvature',UnDefined);
-      if MDDef.DoMaxCurve then NewGrid(MomentDEMs[5], 'Max_curvature',UnDefined);
+      if MDDef.DoSlopeCurve then NewGrid(MomentDEMs[1], 'Slope_curvature',euUndefined);
+      if MDDef.DoPlanCurve then NewGrid(MomentDEMs[2], 'Plan_curvature',euUndefined);
+      if MDDef.DoCrossCurve then NewGrid(MomentDEMs[3], 'Cross_sectional_curvature',euUndefined);
+      if MDDef.DoMinCurve then NewGrid(MomentDEMs[4], 'Min_curvature',euUndefined);
+      if MDDef.DoMaxCurve then NewGrid(MomentDEMs[5], 'Max_curvature',euUndefined);
       Result := MomentDEMs[1];
    end
    else if (What = 'O') then begin
       WantMapType := mtElevGray;
       ThinFactor := MDDef.OpennessCalcThin;
-      if MDDef.DoUpOpen then NewGrid(MomentDEMs[1], 'Upward openness' + TStr,zDegrees);
-      if MDDef.DoDownOpen then NewGrid(MomentDEMs[2], 'Downward openness' + TStr,zDegrees);
-      if MDDef.DoDiffOpen then NewGrid(MomentDEMs[3], 'Difference openness' + TStr,zDegrees);
+      if MDDef.DoUpOpen then NewGrid(MomentDEMs[1], 'Upward openness' + TStr,euzDegrees);
+      if MDDef.DoDownOpen then NewGrid(MomentDEMs[2], 'Downward openness' + TStr,euzDegrees);
+      if MDDef.DoDiffOpen then NewGrid(MomentDEMs[3], 'Difference openness' + TStr,euzDegrees);
    end
    else if (What in ['F','Q']) then begin
       ThinFactor := MDDef.FabricCalcThin;
       if (What = 'F') then  begin
-         if MDDef.DoS2S3 then NewGrid(MomentDEMs[1], 'Organization_Strength' + Tstr,UnDefined);
-         if MDDef.DoFabDir90 then NewGrid(MomentDEMs[2], 'Organization_Direction_90' + TStr,zDegrees);
-         if MDDef.DoS1S2 then NewGrid(MomentDEMs[3], 'Flatness_Strength' + TStr,Undefined);
-         if MDDef.DoRoughness then NewGrid(MomentDEMs[4], 'Roughness' + TStr,Undefined);
-         if MDDef.DoFabDir180 then NewGrid(MomentDEMs[5], 'Organization_Direction_180' + TStr,zDegrees);
-         if MDDef.DoFabDir360 then NewGrid(MomentDEMs[6], 'Organization_Direction_360' + TStr,zDegrees);
-         if MDDEF.DoAvgVectStrength then NewGrid(MomentDEMs[7], 'avg_aspect_strength' + TStr,Undefined);
+         if MDDef.DoS2S3 then NewGrid(MomentDEMs[1], 'Organization_Strength' + Tstr,euUndefined);
+         if MDDef.DoFabDir90 then NewGrid(MomentDEMs[2], 'Organization_Direction_90' + TStr,euzDegrees);
+         if MDDef.DoS1S2 then NewGrid(MomentDEMs[3], 'Flatness_Strength' + TStr,euUndefined);
+         if MDDef.DoRoughness then NewGrid(MomentDEMs[4], 'Roughness' + TStr,euUndefined);
+         if MDDef.DoFabDir180 then NewGrid(MomentDEMs[5], 'Organization_Direction_180' + TStr,euzDegrees);
+         if MDDef.DoFabDir360 then NewGrid(MomentDEMs[6], 'Organization_Direction_360' + TStr,euzDegrees);
+         if MDDEF.DoAvgVectStrength then NewGrid(MomentDEMs[7], 'avg_aspect_strength' + TStr,euUndefined);
          Result := MomentDEMs[4];
       end
       else if (What = 'Q') then  begin
          NewGrid(MomentDEMs[1],'Most organized region (m)' + TStr, DEMGlb[CurDEM].DEMheader.ElevUnits);
-         NewGrid(MomentDEMs[2],'Largest S2S3 ' + TStr, Undefined);
-         NewGrid(MomentDEMs[3],'Organization Direction 360 ' + TStr,zDegrees);
+         NewGrid(MomentDEMs[2],'Largest S2S3 ' + TStr, euUndefined);
+         NewGrid(MomentDEMs[3],'Organization Direction 360 ' + TStr,euzDegrees);
          NewGrid(MomentDEMs[4],'Relief (m) ' + TStr, DEMGlb[CurDEM].DEMheader.ElevUnits);
       end
    end
    else if (What = 'S') then begin
-       if MDDef.DoSlopePC then NewGrid(MomentDEMs[1], ShortSlopeMethodName(MDDef.SlopeAlg) +'_Slope_percent',PercentSlope);
-       if MDDef.DoSlopeDeg then NewGrid(MomentDEMs[2],ShortSlopeMethodName(MDDef.SlopeAlg) + '_Slope_degree)',zDegrees);
-       if MDDef.DoSlopeSin then NewGrid(MomentDEMs[3],ShortSlopeMethodName(MDDef.SlopeAlg) + '_Sin_slope',Undefined);
-       if MDDef.DoSlopeLogTan then NewGrid(MomentDEMs[4],ShortSlopeMethodName(MDDef.SlopeAlg) + '_log_tan_slope',Undefined);
-       if MDDef.DoSlopeSqrtSin then NewGrid(MomentDEMs[5],ShortSlopeMethodName(MDDef.SlopeAlg) + '_sqrt_sin_slope',Undefined);
-       if MDDef.DoAspect then NewGrid(MomentDEMs[6],ShortSlopeMethodName(MDDef.SlopeAlg) + '_Aspect_degree',AspectDeg);
-       if MDDef.DoAspectNS then NewGrid(MomentDEMs[7],ShortSlopeMethodName(MDDef.SlopeAlg) + '_Aspect_NS',Undefined);
-       if MDDef.DoAspectEW then NewGrid(MomentDEMs[8],ShortSlopeMethodName(MDDef.SlopeAlg) + '_Aspect_EW',Undefined);
-       if MDDef.DoSlopeLnTan then NewGrid(MomentDEMs[9],ShortSlopeMethodName(MDDef.SlopeAlg) + '_ln_tan_slope',Undefined);
-       if MDDef.DoSlopeMperM then NewGrid(MomentDEMs[10],ShortSlopeMethodName(MDDef.SlopeAlg) + '_m_per_m',zMperM);
-       if MDDef.DoNSSlope then NewGrid(MomentDEMs[11],ShortSlopeMethodName(MDDef.SlopeAlg) + '_NS_comp',PercentSlope);
-       if MDDef.DoEWSlope then NewGrid(MomentDEMs[12],ShortSlopeMethodName(MDDef.SlopeAlg) + '_EW_comp',PercentSlope);
+       if MDDef.DoSlopePC then NewGrid(MomentDEMs[1], ShortSlopeMethodName(MDDef.SlopeAlg) +'_Slope_percent',euPercentSlope);
+       if MDDef.DoSlopeDeg then NewGrid(MomentDEMs[2],ShortSlopeMethodName(MDDef.SlopeAlg) + '_Slope_degree)',euzDegrees);
+       if MDDef.DoSlopeSin then NewGrid(MomentDEMs[3],ShortSlopeMethodName(MDDef.SlopeAlg) + '_Sin_slope',euUndefined);
+       if MDDef.DoSlopeLogTan then NewGrid(MomentDEMs[4],ShortSlopeMethodName(MDDef.SlopeAlg) + '_log_tan_slope',euUndefined);
+       if MDDef.DoSlopeSqrtSin then NewGrid(MomentDEMs[5],ShortSlopeMethodName(MDDef.SlopeAlg) + '_sqrt_sin_slope',euUndefined);
+       if MDDef.DoAspect then NewGrid(MomentDEMs[6],ShortSlopeMethodName(MDDef.SlopeAlg) + '_Aspect_degree',euAspectDeg);
+       if MDDef.DoAspectNS then NewGrid(MomentDEMs[7],ShortSlopeMethodName(MDDef.SlopeAlg) + '_Aspect_NS',euUndefined);
+       if MDDef.DoAspectEW then NewGrid(MomentDEMs[8],ShortSlopeMethodName(MDDef.SlopeAlg) + '_Aspect_EW',euUndefined);
+       if MDDef.DoSlopeLnTan then NewGrid(MomentDEMs[9],ShortSlopeMethodName(MDDef.SlopeAlg) + '_ln_tan_slope',euUndefined);
+       if MDDef.DoSlopeMperM then NewGrid(MomentDEMs[10],ShortSlopeMethodName(MDDef.SlopeAlg) + '_m_per_m',euzMperM);
+       if MDDef.DoNSSlope then NewGrid(MomentDEMs[11],ShortSlopeMethodName(MDDef.SlopeAlg) + '_NS_comp',euPercentSlope);
+       if MDDef.DoEWSlope then NewGrid(MomentDEMs[12],ShortSlopeMethodName(MDDef.SlopeAlg) + '_EW_comp',euPercentSlope);
        for i := 1 to 12 do if ValidDEM(i) then begin
           Result := MomentDEMs[i];
           break;
@@ -1719,16 +1718,16 @@ begin
 
          if (ch in ['1','2','o','s','+','-']) then MDDef.WoodRegionRadiusPixels := 1;
 
-         if (ch = 'E') then DEMGlb[Result].DEMheader.ElevUnits := LnElev
-         else if (ch = 'L') then DEMGlb[Result].DEMheader.ElevUnits := LogElev
-         else if (ch in ['B','n','C','+','-','P','p','1','2','s','N','W','X','Y','Z']) then DEMGlb[Result].DEMheader.ElevUnits := Undefined
+         if (ch = 'E') then DEMGlb[Result].DEMheader.ElevUnits := euLnElev
+         else if (ch = 'L') then DEMGlb[Result].DEMheader.ElevUnits := euLogElev
+         else if (ch in ['B','n','C','+','-','P','p','1','2','s','N','W','X','Y','Z']) then DEMGlb[Result].DEMheader.ElevUnits := euUndefined
          else if (ch = 'R') then begin
-            DEMGlb[Result].DEMheader.ElevUnits := Undefined;
+            DEMGlb[Result].DEMheader.ElevUnits := euUndefined;
             //ChangeReflectanceOptions(DEMGlb[CurDEM].SelectionMap);
          end
-         else if (ch = 'S') then DEMGlb[Result].DEMheader.ElevUnits := PercentSlope
+         else if (ch = 'S') then DEMGlb[Result].DEMheader.ElevUnits := euPercentSlope
          else if (ch in ['H','M','g','i']) then DEMGlb[Result].DEMheader.ElevUnits := euMeters
-         else if (ch in ['A','o','c']) then DEMGlb[Result].DEMheader.ElevUnits := zDegrees
+         else if (ch in ['A','o','c']) then DEMGlb[Result].DEMheader.ElevUnits := euzDegrees
          else if (ch = 'T') then  begin
             DEMGlb[CurDEM].InitializeTerrainCategory(TerrainCat);
             GetTerrainCategory(tcNormal,DEMGlb[CurDEM].SelectionMap,CurDEM,TerrainCat,DEMGlb[Result].ElevationDEM);
@@ -1910,7 +1909,7 @@ begin
    {$EndIf}
 begin
    {$IfDef RecordPointClass} WriteLineToDebugFile('CreateAspectDifferenceMap in'); {$EndIf}
-     Result := DEMGlb[WhichDEM].CloneAndOpenGridSetMissing(ByteDEM,DEMGlb[WhichDem].AreaName + '_aspect_difference_' + IntToStr(succ(2*RegionRadius))+ 'x'+IntToStr(succ(2*RegionRadius)),zDegrees);
+     Result := DEMGlb[WhichDEM].CloneAndOpenGridSetMissing(ByteDEM,DEMGlb[WhichDem].AreaName + '_aspect_difference_' + IntToStr(succ(2*RegionRadius))+ 'x'+IntToStr(succ(2*RegionRadius)),euzDegrees);
      {$IfDef RecordPointClass} WriteLineToDebugFile('New grid created'); {$EndIf}
      StartProgressAbortOption('Aspect difference');
      CountInStrips := 0;

@@ -109,15 +109,15 @@ const
 
    NumLandTypes = 8;
    LandTypes : array[1..NumLandTypes] of shortstring = ('ALL','FLAT','GENTLE','STEEP','CLIFF','URBAN','FOREST','BARREN');
+   opByCluster = 1;
+   opByDEM = 2;
 
+
+
+const
    MaxDEMIXDEM = 10;
-
-   RequiredTestDEMs : integer = 6;
-   NumDEMIXDEM : integer = 0;
-
-  opByCluster = 1;
-  opByDEM = 2;
-
+   //RequiredTestDEMs : integer = 6;
+   NumDEMIXtestDEM : integer = 0;
 type
    tDEMIXindexes = array[1..MaxDEMIXDEM] of integer;
    tDEMIXfloats = array[1..MaxDEMIXDEM] of float32;
@@ -126,6 +126,7 @@ var
    DEMIXDEMTypeName : array[1..MaxDEMIXDEM] of shortstring;
    DEMIXshort : array[1..MaxDEMIXDEM] of shortstring;
    DEMIXDEMcolors : array[1..MaxDEMIXDEM] of tPlatformColor;
+   DEMIXDEMinUse : array[1..MaxDEMIXDEM] of boolean;
 
 const
    Ref1SecPointStr = '_ref_1sec_point';
@@ -145,6 +146,8 @@ const
             dmClassic = 1;
             dmAddDiluvium = 2;
             dmAddDelta = 3;
+
+            DEMIXsymsize : integer = 5;
 
          //the newer code using a set of arrays for the point and area DEMs, which can have corresponding array for derived grids like slope
          //-1 for the high latitude (currently none for area grid),
@@ -173,6 +176,7 @@ const
    yasRuff = 2;
    yasRelief = 3;
    yasBestEval = 4;
+   yasBarren = 5;
    xawEvaluation = 0;
    xawScore = 1;
    yawArea = 0;
@@ -214,6 +218,7 @@ var
    DEMIX_GIS_dbName,
 
    AreaListFName,
+   DEMListFName,
 
    DEMIX_distrib_graph_dir,DEMIX_diff_maps_dir,DEMIX_3DEP_Dir,
 
@@ -226,18 +231,21 @@ var
    procedure MakeDBForParamStats(Option,DBonTable : integer);
    procedure DEMIX_SSIM_FUV_transpose_kmeans_new_db(DBonTable : integer);
    procedure ComputeDEMIX_tile_stats(Overwrite : boolean);
-   procedure CreateDEMIX_GIS_database;
+   procedure CreateDEMIX_GIS_database_by_transposing(Overwrite : boolean);
    procedure RankDEMS(DBonTable : integer);
    procedure SumsOfRankDEMS(DBonTable : integer);
    procedure AddFilteredRankID(DBonTable : integer);
    procedure ModeOfDifferenceDistributions;
-   procedure AddTileCharacteristics(DBonTable : integer);
+   procedure AddTileCharacteristicsToDB(DBonTable : integer);
    //procedure SwitchSSIMorFUVScoring(DBonTable : integer);
-   procedure EvaluationRangeForCriterion(DBonTable : integer);
+   procedure EvalRangeAndBestEvalForCriterion(DBonTable : integer);
+   procedure CreateFinalDB;
+   procedure AddCountryToDB(DB : integer);
+
 
 
 //clusters function
-   procedure TileCharateristicsWhiskerPlotsByCluster(DBonTable : integer);
+   procedure TileCharateristicsWhiskerPlotsByCluster(DBonTable : integer; BaseTitle : shortstring = '');
    procedure DEMIX_COP_clusters_tile_stats(DBonTable : integer);
    procedure DEMIX_clusters_per_tile(DBonTable : integer);
 
@@ -285,6 +293,19 @@ var
    procedure ComputeDEMIX_Summary_stats_DB;
    procedure InventoryDEMIX_SSIM_FUV_Stats;
    procedure DeleteFilesForATestArea;
+   procedure FindFilesWith42112;
+   procedure FixFilesWith42112;
+
+
+//channel network comparisons
+   function ChannelSHPToGrid(DEM,db : integer; OutDir : PathStr; PlotOrder : integer = 1) : integer;
+   procedure CompareChannelNetworks(Area : shortstring);
+   procedure CreateChannelNetworkGridsFromVectors(Overwrite : boolean; AreasWanted : tstringlist = nil);
+   procedure BatchRemoveSinksInDEMIX_DEMS(Overwrite : boolean; AreasWanted : tstringlist = nil);
+   procedure BatchCreateVectorChannelNewtwork(Overwrite : boolean; AreasWanted : tstringlist = nil);
+   procedure ChannelNetworkMissPercentages(Overwrite : boolean; AreasWanted : tstringlist = nil);
+   procedure ChannelNetworkMapComparison(AreaName,TestDEMName : shortstring);
+   procedure MultistepChannelNetworks(Overwrite : boolean);
 
 procedure AddStatisticsToDEMIXdb(db : integer);
 
@@ -300,6 +321,7 @@ procedure ComputeAverageScoresForSelectedCriteria(db : integer; CriteriaList : t
 procedure CopHeadToHead(db : integer);
 procedure CriteriaInSSIM_FUV_db(db : integer);
 
+function IsDEMIX_signedCriterion(Criterion : shortstring) : boolean;
 
 
 implementation
@@ -309,6 +331,7 @@ uses
    DEMstat,Make_grid,PetImage,PetImage_form,new_petmar_movie,DEMdatabase,PetDButils,Pick_several_dems,
    Geotiff, BaseMap, GDAL_tools, DEMIX_filter, DEMstringgrid,DEM_NLCD,
    DEMCoord,DEMMapf,DEMDef_routines,DEM_Manager,DEM_indexes,PetMath,
+   MD_use_tools,
    DEMIX_control,DEMIX_graphs;
 
 
@@ -321,6 +344,15 @@ uses
 {$include demix_create_test_dems.inc}
 
 {$include demix_inventory_check_dems.inc}
+
+{$include demix_channels.inc}
+
+
+
+function IsDEMIX_signedCriterion(Criterion : shortstring) : boolean;
+begin
+   Result := StrUtils.AnsiContainsText(Criterion,'MEAN') or StrUtils.AnsiContainsText(Criterion,'MED');
+end;
 
 
        function RefGridForThisPointGrid(WhatGroup : tDEM_int_array; i : integer) : integer;
@@ -411,6 +443,10 @@ var
 
 
 begin
+   if not GISdb[DB].MyData.FieldExists('CRITERION') then begin
+      RankDEMS(DB);
+   end;
+
    GISdb[DB].EmpSource.Enabled := false;
    Criteria := GISdb[DB].MyData.UniqueEntriesInDB('CRITERION');
    Results := tStringList.Create;
@@ -451,7 +487,7 @@ var
    i : integer;
 begin
    Result := true;
-   for I := 1 to NumDEMIXDEM do begin
+   for I := 1 to NumDEMIXtestDEM do begin
       if not GISdb[db].MyData.FieldExists(DEMIXShort[i] + '_SCR') then begin
          Result := false;
          exit;
@@ -470,22 +506,22 @@ begin
    end;
 
    GISdb[DB].EmpSource.Enabled := false;
-   for i := 1 to NumDEMIXDEM do Scores[i] := 0;
+   for i := 1 to NumDEMIXtestDEM do Scores[i] := 0;
    Opinions := 0;
    while not GISdb[DB].MyData.eof do begin
       Criterion := GISdb[DB].MyData.GetFieldByNameAsString('CRITERION');
       if (CriteriaList.IndexOf(Criterion) <> -1) then begin
          inc(Opinions);
-         for i := 1 to NumDEMIXDEM do begin
+         for i := 1 to NumDEMIXtestDEM do begin
             Scores[i] := Scores[i] + GISdb[DB].MyData.GetFieldByNameAsFloat(DEMIXShort[i] + '_SCR');
          end;
       end;
       GISdb[DB].MyData.Next;
    end;
-   for I := 1 to NumDEMIXDEM do Scores[i] := Scores[i] / Opinions;
+   for I := 1 to NumDEMIXtestDEM do Scores[i] := Scores[i] / Opinions;
    LowScore := 999;
    WinnerString := '';
-   for I := 1 to NumDEMIXDEM do begin
+   for I := 1 to NumDEMIXtestDEM do begin
       if Scores[i] < LowScore - 0.001 then begin
          LowScore := Scores[i];
          WinnerString := DEMIXShort[i];

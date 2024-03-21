@@ -174,7 +174,7 @@ function ReclassifyLandCover(LandCoverGrid,Value : integer) : integer;
 begin
    Result := slcUndefined;
    if (LandCoverGrid <> 0) then begin
-      if (DEMGlb[LandCoverGrid].DEMHeader.ElevUnits = GLCS_LC100) then begin
+      if (DEMGlb[LandCoverGrid].DEMHeader.ElevUnits = euGLCS_LC100) then begin
          if Value in [111..126] then Result := slcForest
          else if Value in [30,60,70] then Result := slcBarren
          else if Value in [50] then Result := slcUrban
@@ -191,7 +191,7 @@ begin
    Result := slcUndefined;
    if ValidDEM(LandCoverGrid) then begin
       if DEMGlb[LandCoverGrid].GetElevFromLatLongDegree(Lat,Long,z) then begin
-         if (DEMGlb[LandCoverGrid].DEMHeader.ElevUnits = GLCS_LC100) then begin
+         if (DEMGlb[LandCoverGrid].DEMHeader.ElevUnits = euGLCS_LC100) then begin
             Result := ReclassifyLandCover(LandCoverGrid,round(z));
          end;
       end;
@@ -211,7 +211,7 @@ begin
    if FileExists(LandCoverFName) then begin
       Result := GDALsubsetGridAndOpen(bb,true,LandCoverFName,OpenMap);
       if ValidDEM(Result) then begin
-         DEMGlb[Result].DEMHeader.ElevUnits := GLCS_LC100;
+         DEMGlb[Result].DEMHeader.ElevUnits := euGLCS_LC100;
          if (fName = '') then fName := Petmar.NextFileNumber(MDtempDir,'lcc100_','.dem');
          DEMGlb[Result].WriteNewFormatDEM(fName);
       end

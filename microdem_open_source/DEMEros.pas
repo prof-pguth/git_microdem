@@ -999,7 +999,7 @@ begin
 
    if (NewBand = nsbNDVI) then DEMGlb[Result].DEMheader.ElevUnits := euNDVI
    else if (NewBand = nsbNBRNormalizedburnindex) then DEMGlb[Result].DEMheader.ElevUnits := euNBR
-   else DEMGlb[Result].DEMheader.ElevUnits := Undefined;
+   else DEMGlb[Result].DEMheader.ElevUnits := euUndefined;
 
    {$IfDef RecordNewSat} WriteLineToDebugFile('band1=' + IntToStr(Band1) + '  band2=' + IntToStr(Band2) + '  band3=' + IntToStr(Band3)); {$EndIf}
 

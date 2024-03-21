@@ -43,7 +43,7 @@ begin
        DEMGlb[Result].DEMheader.ElevUnits := DEMGlb[MapDraw.DEMonMap].DEMheader.ElevUnits;
     end
     else begin
-       DEMGlb[Result].DEMheader.ElevUnits := Undefined;
+       DEMGlb[Result].DEMheader.ElevUnits := euUndefined;
     end;
     DEMGlb[Result].AreaName := 'new_grid';
    {$IfDef RecordMakeGrid} WriteLineToDebugFile('MakeTempGrid out, TempDEM=' + IntToStr(Result) + ' ' + DEMGlb[Result].GridDefinition + ' ' + DEMGlb[Result].DEMSizeString + ' ' + DEMGlb[Result].ColsRowsString); {$EndIf}
@@ -256,7 +256,7 @@ var
          end
          else if IsThisSentinel2(DEMGlb[DEM].DEMFileName) or IsLandsat(DEMGlb[DEM].DEMFileName, MPath) or (DEMGlb[DEM].DEMheader.ElevUnits in [euImagery,euNBR]) then Result := mtElevGray
          else if (DEMGlb[DEM].DEMheader.ElevUnits in [euRGB]) then Result := mtRGBimagery
-         else if (DEMGlb[DEM].DEMheader.ElevUnits in [AspectDeg]) then Result := mtDEMaspect
+         else if (DEMGlb[DEM].DEMheader.ElevUnits in [euAspectDeg]) then Result := mtDEMaspect
          else if (DEMGlb[DEM].DEMheader.ElevUnits in [euIntCode]) or (abs(DEMGlb[DEM].DEMheader.MaxElev - DEMGlb[DEM].DEMheader.MinElev) < 0.00001) then Result := mtElevContrast
          {$IfDef ExPointCloud}
          {$Else}
@@ -272,8 +272,8 @@ var
             fName2 := UpperCase(DEMGlb[DEM].DEMFileName);
             if (StrUtils.AnsiContainsText(fName2,'NIGHT') and StrUtils.AnsiContainsText(fName2,'LIGHT')) or StrUtils.AnsiContainsText(fName2,'BAND') then begin
                Result := mtElevGray;
-               DEMGlb[DEM].DEMheader.ElevUnits := Undefined;
-               DEMGlb[DEM].ElevationDEM := false;
+               DEMGlb[DEM].DEMheader.ElevUnits := euUndefined;
+               //DEMGlb[DEM].ElevationDEM := false;
             end;
          end;
       end;

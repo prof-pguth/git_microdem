@@ -306,7 +306,7 @@ begin
          DEMGlb[Result].DEMMapProjection.ProjectionSharedWithDataset := true;
          if DEMGlb[Result].DEMheader.DEMPrecision = ByteDEM then DEMGlb[Result].DEMheader.DEMPrecision := SmallIntDEM
          else DEMGlb[Result].DEMheader.DEMPrecision := FloatingPointDEM;;
-         if DEMGlb[Map1].ElevationGrid and DEMGlb[Map2].ElevationGrid then DEMGlb[Result].DEMheader.ElevUnits := euElevDiff else DEMGlb[Result].DEMheader.ElevUnits := euDifference;
+         if DEMGlb[Map1].ElevationDEM and DEMGlb[Map2].ElevationDEM then DEMGlb[Result].DEMheader.ElevUnits := euElevDiff else DEMGlb[Result].DEMheader.ElevUnits := euDifference;
 
          DEMGlb[Result].DEMstatus := dsUnsaved;
          if (GridResultionToUse = Map1) then begin
@@ -433,7 +433,7 @@ begin
    IdenticalGrids := DEMGlb[RefDEM].SecondGridIdentical(TestDEM);
 
    NewHeader := DEMGlb[RefDEM].DEMheader;
-   NewHeader.ElevUnits := Undefined;
+   NewHeader.ElevUnits := euUndefined;
    NewHeader.DEMPrecision := FloatingPointDEM;
    if OpenAndZeroNewDEM(true,NewHeader,Result,fName,InitDEMmissing) then begin
       StartProgress('Percent difference');
@@ -466,7 +466,7 @@ begin
    IdenticalGrids := DEMGlb[Map1Num].SecondGridIdentical(Map2Den);
 
    NewHeader := DEMGlb[Map2Den].DEMheader;
-   NewHeader.ElevUnits := Undefined;
+   NewHeader.ElevUnits := euUndefined;
    NewHeader.DEMPrecision := FloatingPointDEM;
    if OpenAndZeroNewDEM(true,NewHeader,Result,'Ratio: ' + DEMGlb[Map1Num].AreaName + ' / ' + DEMGlb[Map2Den].AreaName,InitDEMmissing) then begin
       StartProgress('Ratio');
@@ -502,7 +502,7 @@ begin
    DEMGlb[Result].AreaName := 'Change map: ' + DEMGlb[Map2].AreaName + ' to ' + DEMGlb[Map1].AreaName;
    DEMGlb[Result].DEMheader := DEMGlb[Map1].DEMheader;
    DEMGlb[Result].DEMheader.DEMPrecision := ByteDEM;
-   if DEMGlb[Map1].ElevationGrid and DEMGlb[Map2].ElevationGrid then DEMGlb[Result].DEMheader.ElevUnits := euElevDiff else DEMGlb[Result].DEMheader.ElevUnits := euDifference;
+   if DEMGlb[Map1].ElevationDEM and DEMGlb[Map2].ElevationDEM then DEMGlb[Result].DEMheader.ElevUnits := euElevDiff else DEMGlb[Result].DEMheader.ElevUnits := euDifference;
 
    DEMGlb[Result].DEMstatus := dsUnsaved;
 
@@ -568,10 +568,10 @@ begin
    IdenticalGrids := DEMGlb[DEM1].SecondGridIdentical(DEM2);
 
    Diffs[1] := OpenOneResult( 'Elev_Diff_' + DEMGlb[DEM2].AreaName + '-' + DEMGlb[DEM1].AreaName,euMeters);
-   Diffs[2] := OpenOneResult( 'Slope_Diff_' + DEMGlb[DEM2].AreaName + '-' + DEMGlb[DEM1].AreaName,PercentSlope);
-   Diffs[3] := OpenOneResult( 'Aspect_Diff_' + DEMGlb[DEM2].AreaName + '-' + DEMGlb[DEM1].AreaName,zDegrees);
-   Diffs[4] := OpenOneResult( 'Vector_Normal_Diff_' + DEMGlb[DEM2].AreaName + '-' + DEMGlb[DEM1].AreaName,zDegrees);
-   Diffs[5] := OpenOneResult( 'Vector_Downhill_Diff_' + DEMGlb[DEM2].AreaName + '-' + DEMGlb[DEM1].AreaName,zDegrees);
+   Diffs[2] := OpenOneResult( 'Slope_Diff_' + DEMGlb[DEM2].AreaName + '-' + DEMGlb[DEM1].AreaName,euPercentSlope);
+   Diffs[3] := OpenOneResult( 'Aspect_Diff_' + DEMGlb[DEM2].AreaName + '-' + DEMGlb[DEM1].AreaName,euzDegrees);
+   Diffs[4] := OpenOneResult( 'Vector_Normal_Diff_' + DEMGlb[DEM2].AreaName + '-' + DEMGlb[DEM1].AreaName,euzDegrees);
+   Diffs[5] := OpenOneResult( 'Vector_Downhill_Diff_' + DEMGlb[DEM2].AreaName + '-' + DEMGlb[DEM1].AreaName,euzDegrees);
    //Diffs[6] := OpenOneResult( 'Roughness_Diff_' + DEMGlb[DEM2].AreaName + '-' + DEMGlb[DEM1].AreaName,zDegrees);
    StartProgress('Diffs');
    for Col := 0 to pred(DEMGlb[DEM1].DEMheader.NumCol) do begin
