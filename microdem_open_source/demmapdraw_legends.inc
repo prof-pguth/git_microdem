@@ -11,36 +11,44 @@
 
 function MakeChangeMapLegend(DEMonMap : integer) : tMyBitmap;
 var
-   TStr : shortstring;
+   TStr,MStr : shortstring;
    CatHeight,Cat : integer;
 begin
    CreateBitmap(Result,1200,800);
    LoadMyFontIntoWindowsFont(MDDef.LegendFont,Result.Canvas.Font);
-   CatHeight := 6 * Result.Canvas.TextHeight('Wy') div 5;
-   Cat := 1;
-
-   ClearBitmap(Result,clNearWhite);
    Result.Canvas.Font.Style := [fsBold];
+   ClearBitmap(Result,clNearWhite);
+   CatHeight := 6 * Result.Canvas.TextHeight('Wy') div 5;
 
-   Result.Canvas.TextOut(5,1,RemoveUnderscores(DEMGlb[DEMonMap].AreaName));
-   Result.Canvas.TextOut(5,Cat*CatHeight + 4,'       % of area      Category');
-   inc(Cat);
-   Result.Canvas.Pen.Color := clLime;
-   Result.Canvas.Brush.Color := clLime;
-   Result.Canvas.Brush.Style := bsSolid;
-   Result.Canvas.Rectangle(5,Cat*CatHeight,40,succ(Cat)*CatHeight);
-   Result.Canvas.Brush.Style := bsClear;
-   Tstr := RealToString(100-DEMGlb[DEMonMap].PercentileOfElevation(MDDef.TopCutLevel),9,2) + '%   Positive Difference > ' + RealToString(MDDef.TopCutLevel,-8,-2);
-   Result.Canvas.TextOut(45,Cat*CatHeight + 4, TStr);
+   if true then begin
+      Cat := 0;
+   end
+   else begin
+      Cat := 1;
+      Result.Canvas.TextOut(5,1,RemoveUnderscores(DEMGlb[DEMonMap].AreaName));
+      Result.Canvas.TextOut(5,Cat*CatHeight + 4,'       % of area      Category');
+      inc(Cat);
+   end;
+   MStr := ElevUnitsAre(DEMGlb[DEMonMap].DEMHeader.ElevUnits);
+   Delete(MStr,1,4);
 
-   inc(Cat);
-   Result.Canvas.Pen.Color := clRed;
-   Result.Canvas.Brush.Color := clRed;
-   Result.Canvas.Brush.Style := bsSolid;
-   Result.Canvas.Rectangle(5,Cat*CatHeight,40,succ(Cat)*CatHeight);
-   Result.Canvas.Brush.Style := bsClear;
-   TStr := RealToString(DEMGlb[DEMonMap].PercentileOfElevation(MDDef.BottomCutLevel),9,2) + '%   Negative Difference < ' + RealToString(MDDef.BottomCutLevel,-8,-2);
-   Result.Canvas.TextOut(45,Cat*CatHeight + 4,TStr);
+      Result.Canvas.Pen.Color := clLime;
+      Result.Canvas.Brush.Color := clLime;
+      Result.Canvas.Brush.Style := bsSolid;
+      Result.Canvas.Rectangle(5,Cat*CatHeight,40,succ(Cat)*CatHeight);
+      Result.Canvas.Brush.Style := bsClear;
+      Tstr := RealToString(100-DEMGlb[DEMonMap].PercentileOfElevation(MDDef.TopCutLevel),9,2) + '%   Diff > ' + RealToString(MDDef.TopCutLevel,-8,-2) + MStr;
+      Result.Canvas.TextOut(45,Cat*CatHeight + 4, TStr);
+
+      inc(Cat);
+      Result.Canvas.Pen.Color := clRed;
+      Result.Canvas.Brush.Color := clRed;
+      Result.Canvas.Brush.Style := bsSolid;
+      Result.Canvas.Rectangle(5,Cat*CatHeight,40,succ(Cat)*CatHeight);
+      Result.Canvas.Brush.Style := bsClear;
+      TStr := RealToString(DEMGlb[DEMonMap].PercentileOfElevation(MDDef.BottomCutLevel),9,2) + '%  Diff < ' + RealToString(MDDef.BottomCutLevel,-8,-2) + MStr;
+      Result.Canvas.TextOut(45,Cat*CatHeight + 4,TStr);
+
    PutBitmapInBox(Result);
 end;
 

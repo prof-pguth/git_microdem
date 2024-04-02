@@ -13,6 +13,7 @@ unit BaseGraf;
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
        {$Define NoInLine}
+       {$Define RecordAnimateGraph}
        //{$Define RecordGraphMemoryAlocations}
        //{$Define RecordGrafProblems}
        //{$Define RecordScaling}
@@ -320,6 +321,7 @@ type
     Pasteontograph2: TMenuItem;
     Copytoclipboardwithaddedlegend1: TMenuItem;
     Animate1: TMenuItem;
+    Imagewithseparatalayers1: TMenuItem;
     procedure IDSpeedButtonClick(Sender: TObject);
     procedure LegendSpeedButtonClick(Sender: TObject);
     procedure Bestfitlinecolor1Click(Sender: TObject);
@@ -409,6 +411,7 @@ type
     procedure Pasteontograph2Click(Sender: TObject);
     procedure Copytoclipboardwithaddedlegend1Click(Sender: TObject);
     procedure Animate1Click(Sender: TObject);
+    procedure Imagewithseparatalayers1Click(Sender: TObject);
   private
     { Private declarations }
      DataPlotsVisible : array[0..50] of boolean;
@@ -487,7 +490,7 @@ type
      procedure PlotPointOnGraph(x,y : float32; Symbol : tFullSymbolDeclaration);
 
      procedure ViewGraphData(infName : PathStr = '');
-     procedure AnimateGraph;
+     procedure AnimateGraph(Movie : boolean; MovieName : ShortString = '');
 
      procedure SetUpGraphForm;
      procedure AutoScaleAndRedrawDiagram(DoVert : boolean = true; DoHoriz : boolean = true; PadX : boolean = true; PadY : boolean = true);
@@ -918,6 +921,7 @@ begin
 
       {$IfDef RecordHistogram} WriteLineToDebugFile('CreateMultipleHistograms settings over, NumBins=' + IntToStr(HistogramNumBins) + '  ' + GraphDraw.AxisRange); {$EndIf}
       First := true;
+      MaxCount := 0;
       for I := 0 to pred(GraphDraw.HistogramFileList.Count) do begin
          if ProcessSeries(GraphDraw.HistogramFileList.Strings[i]) and (i < MaxGraphSeries) then begin
             {$IfDef RecordHistogram} WriteLineToDebugFile('Process series ' + IntToStr(i) + ' ' + GraphDraw.HistogramFileList.Strings[i]); {$EndIf}
@@ -950,6 +954,7 @@ begin
       Result.GraphDraw.HistogramFileList := FileList;
       Result.GraphDraw.MinHorizAxis := Min;
       Result.GraphDraw.MaxHorizAxis := Max;
+      Result.GraphDraw.HorizLabel := ParamName;
       Result.HistogramBinSize := BinSize;
       Result.HistogramNumBins := NumBins;
       Result.HistogramGraphNumbers := GraphNumbers;
@@ -1043,7 +1048,7 @@ begin
       end;
       *)
    end;
-   FreeAndNil(LegendList);
+   if (LegendList <> Nil) then FreeAndNil(LegendList);
 end;
 
 
@@ -1067,7 +1072,7 @@ begin
       TStr := RemoveUnderscores(GISdb[DataBaseOnGraph].MyData.GetFieldByNameAsString('NAME'));
       Bitmap.Canvas.TextOut(2,yi - Bitmap.Canvas.TextHeight(TStr) div 2,TStr);
       Color := ConvertTColorToPlatformColor(WinGraphColors[round(y) mod 15]);
-      if StrUtils.AnsiContainsText(TStr,'(n=1)') then begin
+      if StrUtils.AnsiContainsText(TStr,'(n=1)') or StrUtils.AnsiContainsText(TStr,'(n=2)') then begin
          ScreenSymbol(Bitmap.Canvas,GraphDraw.GraphX(GISdb[DataBaseOnGraph].MyData.GetFieldByNameAsFloat('MEAN') ),Yi,FilledBox,3,Color);
       end
       else begin
@@ -4127,40 +4132,60 @@ end;
 
 procedure TThisBaseGraph.Animate1Click(Sender: TObject);
 begin
-   AnimateGraph;
+   AnimateGraph(True);
 end;
 
-procedure TThisBaseGraph.AnimateGraph;
+procedure TThisBaseGraph.AnimateGraph(Movie : boolean; MovieName : ShortString = '');
 var
-   Movie : tStringList;
+   aMovie : tStringList;
    Bitmap : tMyBitmap;
-   j,Start : integer;
+   j,Start,SaveLeftMargin,SaveGraphWidth : integer;
    fName,fName2 : PathStr;
+   SaveVertLabel : shortstring;
 begin
-   Movie := tStringList.Create;
-
+   {$IfDef RecordAnimateGraph} WritelineToDebugFile('TThisBaseGraph.AnimateGraph in, movie=' + MovieName); {$EndIf}
+   if (MovieName = '') then MovieName := 'graph_movie';
+   aMovie := tStringList.Create;
    for j := 0 to 50 do DataPlotsVisible[j] := false;
-
+   SaveLeftMargin := GraphDraw.LeftMargin;
+   SaveGraphWidth := Width;  //GraphDraw.XWindowSize;
+   SaveVertLabel := GraphDraw.VertLabel;
    if ShowFirstLayerOnAnimation then begin
       DataPlotsVisible[0] := true;
       Start := 1;
    end
    else Start := 0;
-   for j := 1 to pred(GraphDraw.DataFilesPlotted.Count) do begin
+   for j := Start to pred(GraphDraw.DataFilesPlotted.Count) do begin
       DataPlotsVisible[j] := true;
+      if (not Movie) and (j = succ(Start)) then begin
+         Width := SaveGraphWidth - SaveLeftMargin;
+         GraphDraw.LeftMargin := 0;
+         GraphDraw.VertLabel := '';
+      end;
       RedrawDiagram11Click(Nil);
       DataPlotsVisible[j] := false;
       CopyImageToBitmap(Image1,Bitmap);
-      fName := NextFileNumber(MDtempDir,'demix_movie_frame_','.bmp');
+      fName := NextFileNumber(MDtempDir,'_frame_','.bmp');
       Bitmap.SaveToFile(fName);
-      Movie.Add(fName);
+      aMovie.Add(fName);
       Bitmap.Free;
    end;
-   fName := NextFileNumber(MDtempDir,'demix_movie_','.mov');
-   Movie.SaveToFile(fName);
-   fName2 := MovieDir + 'demix_movie.gif';
-   CreateNewMovie(fName,false,fname2);
+   {$IfDef RecordAnimateGraph} WritelineToDebugFile('TThisBaseGraph.AnimateGraph in, frames created'); {$EndIf}
+   if Movie then begin
+      fName := NextFileNumber(MDtempDir,MovieName + '_','.mov');
+      aMovie.SaveToFile(fName);
+      fName2 := MovieDir + MovieName + '.gif';
+      CreateNewMovie(fName,false,fname2);
+   {$IfDef RecordAnimateGraph} WritelineToDebugFile('TThisBaseGraph.AnimateGraph in, movie created'); {$EndIf}
+   end
+   else begin
+      fName := NextFileNumber(MDtempDir,MovieName + '_','.png');
+      MakeBigBitmap(aMovie,'',fName,12);
+   end;
    for j := 0 to 50 do DataPlotsVisible[j] := true;
+   GraphDraw.LeftMargin := SaveLeftMargin;
+   Width := SaveGraphWidth;
+   GraphDraw.VertLabel := SaveVertLabel;
    RedrawDiagram11Click(Nil);
 end;
 
@@ -4800,6 +4825,11 @@ begin
     end;
     MouseIsDown := false;
     ShowDefaultCursor;
+end;
+
+procedure TThisBaseGraph.Imagewithseparatalayers1Click(Sender: TObject);
+begin
+   AnimateGraph(False);
 end;
 
 procedure TThisBaseGraph.SpeedButton10Click(Sender: TObject);

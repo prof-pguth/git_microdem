@@ -254,7 +254,7 @@ var
 function AnswerIsYes(Prompt : ANSIstring) : boolean; overload;
 procedure MessageToContinue(Mess : ANSIstring; SaveOutPut : boolean = true);
 
-function CurrentTimeForFileName : PathStr;
+function CurrentTimeForFileName(IncludeHours : boolean = true) : PathStr;
 
 
 procedure DisplayHTMLTopic(Name : AnsiString);
@@ -4212,11 +4212,12 @@ end;
 
 
 
-function CurrentTimeForFileName : PathStr;
+function CurrentTimeForFileName(IncludeHours : boolean = true) : PathStr;
 var
   i : integer;
 begin
-   Result := DateToStr(now) + '_' + CurrentMilitaryTime(true);
+   Result := DateToStr(now);
+   if IncludeHours then Result := Result + '_' + CurrentMilitaryTime(true);
    for i := 1 to length(Result) do if Result[i] in ['/',':'] then Result[i] := '_';
 end;
 
@@ -4316,6 +4317,7 @@ var
 begin
     StripBlanks(fName);
     CleanUpFileName(fName);
+    if (fName[length(fName)] <> '_') then fName := fName + '_';
     i := 0;
     repeat
        inc(i);

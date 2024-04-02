@@ -137,7 +137,7 @@ object dbtablef: Tdbtablef
     object HelpBtn: TBitBtn
       Left = 464
       Top = 1
-      Width = 49
+      Width = 58
       Height = 25
       Caption = 'Help'
       Kind = bkHelp
@@ -217,6 +217,15 @@ object dbtablef: Tdbtablef
       Enabled = False
       TabOrder = 15
       OnClick = BitBtn13Click
+    end
+    object BitBtn24: TBitBtn
+      Left = 711
+      Top = 1
+      Width = 66
+      Height = 25
+      Caption = 'DEMIX'
+      TabOrder = 16
+      OnClick = BitBtn24Click
     end
   end
   object Panel3: TPanel
@@ -658,24 +667,28 @@ object dbtablef: Tdbtablef
     object Cluster2: TMenuItem
       Caption = 'K-means Clustering'
       object Cluster1: TMenuItem
-        Caption = 'Create cluster'
+        Caption = 'Create clusters'
         OnClick = Cluster1Click
       end
       object Clusterfrequency1: TMenuItem
-        Caption = 'Cluster frequency'
+        Caption = 'Cluster frequency (clusters in columns)'
         OnClick = Clusterfrequency1Click
+      end
+      object Clustercomposition1: TMenuItem
+        Caption = 'Cluster composition by DB field (clusters in rows)'
+        OnClick = Clustercomposition1Click
       end
       object Clustermaplocations1: TMenuItem
         Caption = 'Cluster map locations'
         OnClick = Clustermaplocations1Click
       end
       object Clusterstatistics1: TMenuItem
-        Caption = 'Create DB with cluster statistics'
+        Caption = 'Create DB with cluster statistics (Mean, Std Dev, etc.)'
         OnClick = Clusterstatistics1Click
       end
-      object Clustercomposition1: TMenuItem
-        Caption = 'Cluster composition by DB field'
-        OnClick = Clustercomposition1Click
+      object Clustermeangraphs1: TMenuItem
+        Caption = 'Cluster mean graphs by parameter'
+        OnClick = Clustermeangraphs1Click
       end
     end
     object SupervisedClassification1: TMenuItem
@@ -2130,11 +2143,26 @@ object dbtablef: Tdbtablef
     object DEMIX2: TMenuItem
       Caption = 'DEMIX'
       object LoadtestandreferenceDEMs1: TMenuItem
-        Caption = 'Load test and reference DEMs'
+        Caption = 'Load test and reference DEMs for tile'
         OnClick = LoadtestandreferenceDEMs1Click
       end
+      object Loadmapsforthisarea1: TMenuItem
+        Caption = 'Load maps for this area'
+        OnClick = Loadmapsforthisarea1Click
+      end
+      object CopDEMandLandcoverforthistile1: TMenuItem
+        Caption = 'CopDEM and Land cover for this tile'
+        OnClick = CopDEMandLandcoverforthistile1Click
+      end
+      object LoadCopDEMandLandcoverforarea1: TMenuItem
+        Caption = 'Load CopDEM and Landcover for area'
+        OnClick = LoadCopDEMandLandcoverforarea1Click
+      end
+      object N52: TMenuItem
+        Caption = '-'
+      end
       object SSIMR2graphforthistile1: TMenuItem
-        Caption = 'SSIM/R2 graph for this tile'
+        Caption = 'SSIM/FUV graph for this tile'
       end
     end
     object Insertnewrecordatdistancebearing1: TMenuItem
@@ -3691,13 +3719,6 @@ object dbtablef: Tdbtablef
   object DEMIXPopupMenu1: TPopupMenu
     Left = 368
     Top = 480
-    object Loadtile1: TMenuItem
-      Caption = 'Load maps for this tile'
-      OnClick = Loadtile1Click
-    end
-    object N52: TMenuItem
-      Caption = '-'
-    end
     object Currenttest1: TMenuItem
       Caption = 
         'Graph by evaluation criteria, with tile names and parameter sort' +
@@ -3729,7 +3750,18 @@ object dbtablef: Tdbtablef
     end
     object Clusterwhiskerplotsforslopeandroughness1: TMenuItem
       Caption = 'Cluster whisker plots for tile characteristics'
-      OnClick = Clusterwhiskerplotsforslopeandroughness1Click
+      object Alltiles1: TMenuItem
+        Caption = 'All tiles'
+        OnClick = Alltiles1Click
+      end
+      object Byclusters1: TMenuItem
+        Caption = 'By clusters'
+        OnClick = Byclusters1Click
+      end
+    end
+    object Areasinclusters1: TMenuItem
+      Caption = 'Areas in clusters'
+      OnClick = Areasinclusters1Click
     end
     object N51: TMenuItem
       Caption = '-'
@@ -3737,7 +3769,8 @@ object dbtablef: Tdbtablef
     object Createnewtables1: TMenuItem
       Caption = 'Create new tables'
       object TransposeSSIMR2forclusters1: TMenuItem
-        Caption = 'Transpose SSIM/R2 means for K-means cluster'
+        Caption = 'Transpose SSIM/FUV means for K-means cluster'
+        OnClick = TransposeSSIMR2forclusters1Click
       end
       object ClustersperDEMIXtile1: TMenuItem
         Caption = 'Number of clusters per DEMIX tile'
@@ -3754,6 +3787,10 @@ object dbtablef: Tdbtablef
       object CopHeadtoheadrecord1: TMenuItem
         Caption = 'Cop Head to head record by criterion'
         OnClick = CopHeadtoheadrecord1Click
+      end
+      object Evaluationrangebycriterion1: TMenuItem
+        Caption = 'Evaluation range by criterion'
+        OnClick = Evaluationrangebycriterion1Click
       end
     end
     object Modifythistable1: TMenuItem
@@ -3791,6 +3828,11 @@ object dbtablef: Tdbtablef
       end
       object AddareafieldtoDB1: TMenuItem
         Caption = 'Add area field to DB'
+        OnClick = AddareafieldtoDB1Click
+      end
+      object AddCOPALOSpercentprimarydata1: TMenuItem
+        Caption = 'Add COP/ALOS percent primary data'
+        OnClick = AddCOPALOSpercentprimarydata1Click
       end
       object AddIMAGEfieldfordifferencedistributiongraphs1: TMenuItem
         Caption = 'Add IMAGE field for difference distribution graphs'
@@ -3819,7 +3861,7 @@ object dbtablef: Tdbtablef
         OnClick = FilterforDEMIXtiles1Click
       end
       object Filterfor999valuesinanyevaluation1: TMenuItem
-        Caption = 'Filter for -9999 values in any evaluation'
+        Caption = 'Filter for -999 values in any evaluation'
         OnClick = Filterfor999valuesinanyevaluation1Click
       end
     end
@@ -3838,9 +3880,24 @@ object dbtablef: Tdbtablef
         OnClick = Vertical1Click
       end
     end
-    object InventoryFUVSSIMcriteriainDB1: TMenuItem
-      Caption = 'Inventory FUV/SSIM criteria in DB'
-      OnClick = InventoryFUVSSIMcriteriainDB1Click
+    object Inventory1: TMenuItem
+      Caption = 'Inventory and data summary'
+      object InventoryFUVSSIMcriteriainDB1: TMenuItem
+        Caption = 'Inventory FUV/SSIM criteria in DB'
+        OnClick = InventoryFUVSSIMcriteriainDB1Click
+      end
+      object DEMIXtileinvertory1: TMenuItem
+        Caption = 'DEMIX tile invertory'
+        OnClick = DEMIXtileinvertory1Click
+      end
+      object DEMIXtilesummary1: TMenuItem
+        Caption = 'DEMIX tile characteristic summary (one record per tile)'
+        OnClick = DEMIXtilesummary1Click
+      end
+      object N1degreetilestocoverrecordsintable1: TMenuItem
+        Caption = 'List of 1 degree tiles to cover records in table'
+        OnClick = N1degreetilestocoverrecordsintable1Click
+      end
     end
     object N49: TMenuItem
       Caption = '-'
@@ -3856,18 +3913,6 @@ object dbtablef: Tdbtablef
     object Graphfilters1: TMenuItem
       Caption = 'Graph filters'
       OnClick = Graphfilters1Click
-    end
-    object DEMIXtileinvertory1: TMenuItem
-      Caption = 'DEMIX tile invertory'
-      OnClick = DEMIXtileinvertory1Click
-    end
-    object DEMIXtilesummary1: TMenuItem
-      Caption = 'DEMIX tile characteristic summary (one record per tile)'
-      OnClick = DEMIXtilesummary1Click
-    end
-    object N1degreetilestocoverrecordsintable1: TMenuItem
-      Caption = '1 degree tiles to cover records in table'
-      OnClick = N1degreetilestocoverrecordsintable1Click
     end
     object Bestbysortedgeomorphometry1: TMenuItem
       Caption = 'Best by sorted geomorphometry values'

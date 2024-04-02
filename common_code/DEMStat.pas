@@ -24,10 +24,13 @@ unit DEMStat;
       {$Define RecordDEMIX}
       {$Define RecordDEMIXFull}
       {$Define TrackPixelIs}
+      {$Define RecordCovarianceFail}
+      //{$Define RecordDEMIXSSIMGrid}
+
 
       //{$Define RepeatProblematicComputations}  //put in breakpoint, and then follow debugger but may have issues
       //{$Define RecordCovariance}
-      //{$Define TrackSWCornerForComputations}  //must also be defined in DEMCoord
+      //{$Define TrackSWcorner}  //must also be defined in DEMCoord
       //{$Define RecordSSIMNormalization}
       //{$Define RecordLag}
       //{$Define RecordPitsSpires}
@@ -112,7 +115,7 @@ type
       function MakeDifferenceMap(Map1,Map2,GridResultionToUse,GridToMergeShading : integer; ShowMap,ShowHistogram,ShowScatterPlot : boolean; TheAreaName : ShortString = '') : integer;
       function MakeDifferenceMapOfBoxRegion(Map1,Map2,GridResultionToUse,GridToMergeShading : integer; GridLimits: tGridLimits; ShowMap,ShowHistogram,ShowScatterplot : boolean; TheAreaName : ShortString = '') : integer;
 
-      function CovariancesFromTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer; var r,covar,Mean1,Mean2,StdDev1,StdDev2 : float64) : boolean;
+      function CovariancesFromTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer; var r,covar,Mean1,Mean2,StdDev1,StdDev2 : float64; NoteFailure : boolean = true) : boolean;    inline;
       procedure ElevationSlopePlot(WhichDEMs : tDEMbooleanArray; DesiredBinSize : integer = 1; Memo : tMemo = Nil);
 
       procedure DoAnSSODiagram(CurDEM : integer; GridLimits : tGridLimits);
@@ -195,7 +198,7 @@ type
 
 
 //ssim operations
-   function ComputeSSIM(DEM1,DEM2 : integer; gl1,gl2 : tGridLimits; var SSIM,Luminance,Contrast,Structure : float64) : boolean;
+   function ComputeSSIM(DEM1,DEM2 : integer; gl1,gl2 : tGridLimits; var SSIM,Luminance,Contrast,Structure : float64) : boolean;   inline;
    procedure AreaSSIMComputations(Overwrite : boolean);
    procedure NormalizeDEMforSSIM(DEM : integer; What : shortstring);
    function MakeSSIMMap(OpenMap,AlreadyNormalized : boolean; DEM1,DEM2,NumberOfGrids,WindowSize : integer; ThinFactor : integer = 1; AreaName : shortstring = '') : integer;
@@ -1863,7 +1866,7 @@ end;
 
 
 
-function CovariancesFromTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer; var r,covar,Mean1,Mean2,StdDev1,StdDev2 : float64) : boolean;
+function CovariancesFromTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer; var r,covar,Mean1,Mean2,StdDev1,StdDev2 : float64; NoteFailure : boolean = true) : boolean;
 var
    Col,Row,xoff,yoff,i : integer;
    NPts : int64;
@@ -1937,7 +1940,9 @@ begin
       {$If Defined(RecordStat) or Defined(RecordCovariance)}  WriteLineToDebugFile('CovariancesFromTwoGrids out covar=' + RealToString(covar,-12,-4) + '  r=' + RealToString(r,-12,-6)); {$EndIf}
    end
    else begin
-      {$If Defined(RecordStat) or Defined(RecordCovariance)}  WriteLineToDebugFile('CovariancesFromTwoGrids failed, npts=' + IntToStr(NPts)); {$EndIf}
+      {$If Defined(RecordStat) or Defined(RecordCovariance) or Defined(RecordCovarianceFail)}
+         if NoteFailure then WriteLineToDebugFile('CovariancesFromTwoGrids failed, npts=' + IntToStr(NPts) + ' DEM1=' + DEMglb[DEM1].AreaName +  ' DEM2=' + DEMglb[DEM2].AreaName );
+      {$EndIf}
    end;
 
 

@@ -455,7 +455,7 @@ var
 begin
    {$IfDef RecordBigBitmap} WriteLineToDebugFile('MakeBigBitmap in'); {$EndIf}
    Result := nil;
-   if (TheFiles.Count > 0) then begin
+   if (TheFiles <> Nil) and (TheFiles.Count > 0) then begin
      AskCols := (Cols < 0);
      if AskCols then begin
         Cols := MDDef.BigBM_nc;
@@ -469,13 +469,14 @@ begin
            y := BigBmp.Height - 10 - BigBmp.Canvas.TextHeight(Capt);
            BigBmp.Canvas.TextOut(x,y,Capt);
         end;
-        if (SaveName <> '') then begin
-            {$IfDef RecordBigBitmap} WriteLineToDebugFile('MakeBigBitmap save in ' + SaveName); {$EndIf}
-            SaveBitmap(BigBmp,SaveName);
-         end;
          Result := TImageDisplayForm.Create(Application);
          Result.LoadImage(BigBmp,true);
-         fName := Petmar.NextFileNumber(MDtempDir,'big_bmp_files_','.txt');
+         if (SaveName <> '') then begin
+            {$IfDef RecordBigBitmap} WriteLineToDebugFile('MakeBigBitmap save in ' + SaveName); {$EndIf}
+            SaveBitmap(BigBmp,SaveName);
+            Result.Caption := ExtractFileNameNoExt(SaveName);
+         end;
+         fName := Petmar.NextFileNumber(MDtempDir,'big_bmp_files','.txt');
          theFiles.SaveToFile(fName);
          Result.BigBM_Capt := Capt;
          Result.BigBM_files := fName;
@@ -485,11 +486,11 @@ begin
          BigBMP.Free;
          {$IfDef RecordBigBitmap} WriteLineToDebugFile('MakeBigBitmap out, imageform created'); {$EndIf}
       end;
+      theFiles.Destroy;
    end
    else begin
       {$IfDef RecordBigBitmap} WriteLineToDebugFile('Nothing in string list'); {$EndIf}
    end;
-   theFiles.Destroy;
 end;
 
 

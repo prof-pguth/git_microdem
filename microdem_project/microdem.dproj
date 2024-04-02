@@ -165,11 +165,11 @@
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_MinorVer>3</VerInfo_MinorVer>
         <VerInfo_MajorVer>2024</VerInfo_MajorVer>
-        <VerInfo_Release>10</VerInfo_Release>
+        <VerInfo_Release>29</VerInfo_Release>
         <DCC_DcuOutput>C:\turbo\obj_files_64\</DCC_DcuOutput>
-        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2024.3.10.2;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2024.3.29.6;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
-        <VerInfo_Build>2</VerInfo_Build>
+        <VerInfo_Build>6</VerInfo_Build>
         <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
         <DCC_OutputDRCFile>false</DCC_OutputDRCFile>
         <DCC_RangeChecking>true</DCC_RangeChecking>
@@ -922,6 +922,10 @@
             <Form>eval_scores_graph_form</Form>
             <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="..\demix\pick_demix_mode.pas">
+            <Form>PickDEMIXmodeForm</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <None Include="nevadia_defines.inc"/>
         <None Include="..\common_code\demdatabase_maps.inc"/>
         <None Include="..\common_code\demdatabase_vcl.inc"/>
@@ -992,7 +996,7 @@
         <None Include="..\microdem_open_source\petimage_vcl.inc"/>
         <None Include="..\common_code\demstat_ssim.inc"/>
         <None Include="..\microdem_open_source\demmapdraw_legends.inc"/>
-        <None Include="..\common_code\demstat_demix_channels.inc"/>
+        <None Include="..\demix\demix_channels.inc"/>
         <None Include="..\microdem_open_source\saga_wrapper.inc"/>
         <None Include="..\microdem_open_source\wbt_wrapper.inc"/>
         <None Include="..\demix\demix_clusters.inc"/>
@@ -1508,12 +1512,6 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="..\common_code\demmapf_set_up_new_windows.inc" Configuration="Release" Class="ProjectFile"/>
-                <DeployFile LocalName="..\common_code\demstat_demix_channels.inc" Configuration="Debug" Class="ProjectFile">
-                    <Platform Name="Win64">
-                        <RemoteDir>.\</RemoteDir>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
                 <DeployFile LocalName="..\common_code\demstat_global_dems.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demstat_global_dems.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
@@ -1552,6 +1550,12 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="..\common_code\petmar_vcl.inc" Configuration="Release" Class="ProjectFile"/>
+                <DeployFile LocalName="..\demix\demix_channels.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\demix\demix_clusters.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
                         <RemoteDir>.\</RemoteDir>

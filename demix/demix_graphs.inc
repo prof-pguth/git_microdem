@@ -190,30 +190,30 @@ var
    begin
       Dist := tStringList.Create;
       Legs := tStringList.Create;
-      for DEM := 1 to NumDEMIXDEM  do begin
+      for DEM := 1 to NumDEMIXtestDEM  do begin
          Legs.Add(DEMIXDEMTypeName[DEM]);
       end;
       GISdb[DB].ApplyGISFilter('REF_TYPE=' + QuotedStr(DEMtype) + ' AND LAND_TYPE=' + QuotedStr('ALL') + ' AND CRITERION=' + QuotedStr(Param));
       GISdb[DB].EmpSource.Enabled := false;
-      for I := 1 to NumDEMIXDEM  do New(zvs[i]);
+      for I := 1 to NumDEMIXtestDEM  do New(zvs[i]);
       npts := 0;
        GISdb[DB].MyData.First;
        while not GISdb[DB].MyData.eof do begin
-          for DEM := 1 to NumDEMIXDEM  do begin
+          for DEM := 1 to NumDEMIXtestDEM  do begin
              zvs[DEM]^[npts] := GISdb[DB].MyData.GetFieldByNameAsFloat(DEMIXDEMTypeName[DEM]);
           end;
           inc(Npts);
           GISdb[DB].MyData.Next;
        end;
 
-       for I := 1 to NumDEMIXDEM  do begin
+       for I := 1 to NumDEMIXtestDEM  do begin
           Dist.Add(SaveSingleValueSeries(npts,zvs[i]^));
           Dispose(zvs[i]);
        end;
        TStr := Param + ' compared to reference ' + DEMtype;
        Graph := CreateMultipleHistogram(MDDef.CountHistograms,Dist,Legs,TStr,TStr,100,Min,Max,BinSize);
 
-      for I := 1 to NumDEMIXDEM  do begin
+      for I := 1 to NumDEMIXtestDEM  do begin
          Graph.GraphDraw.FileColors256[i] := DEMIXColorFromDEMName(Graph.GraphDraw.LegendList[pred(i)]);
       end;
       Graph.GraphDraw.InsideMarginLegend := Corner;
@@ -281,7 +281,7 @@ var
                 var
                    DEM : integer;
                 begin
-                    for DEM := 1 to NumDEMIXDEM do begin
+                    for DEM := 1 to NumDEMIXtestDEM do begin
                        if (Best = DEMIXDEMTypeName[DEM]) then begin
                           v[2] := CurrentY;
                           v[1] := Center;
@@ -321,7 +321,7 @@ var
       Graph := tThisBaseGraph.Create(Application);
 
       Graph.GraphDraw.LegendList := tStringList.Create;
-      for DEM := 1 to NumDEMIXDEM do begin
+      for DEM := 1 to NumDEMIXtestDEM do begin
          Symbol := SymbolFromDEMName(DEMIXDEMTypeName[DEM]);
          Symbol.DrawingSymbol := FilledBox;
          Graph.OpenPointFile(rfile[DEM],Symbol);
@@ -408,7 +408,7 @@ var
           if (TileList.Count > 0) then dec(CurrentY,InterAreaSkip);  //add a blank line between areas, but only if this area had tiles
        end;
 
-       for DEM := 1 to NumDEMIXDEM do begin
+       for DEM := 1 to NumDEMIXtestDEM do begin
           CloseFile(rfile[DEM]);
        end;
 
@@ -497,7 +497,7 @@ begin
             ThisGraph[i].GraphDraw.VertLabel := 'Standard Deviation';
             ThisGraph[i].OpenXYColorFile(rfile[i]);
             while not MyData.eof do begin
-               for j := 1 to NumDEMIXDEM do begin
+               for j := 1 to NumDEMIXtestDEM do begin
                    v[1] := MyData.GetFieldByNameAsFloat(DEMIXshort[j] + '_MODE');
                    v[2] := MyData.GetFieldByNameAsFloat(DEMIXshort[j] + '_STD');
                    v[3] := ConvertPlatformColorToTColor(DEMIXColorFromDEMName(DEMIXDEMTypeName[j]));
@@ -551,7 +551,7 @@ var
       Stat := Stats[i2];
       Dist := tStringList.Create;
       Legs := tStringList.Create;
-      for DEM := 1 to NumDEMIXDEM do begin
+      for DEM := 1 to NumDEMIXtestDEM do begin
          Legs.Add(DEMIXDEMTypeName[DEM]);
       end;
       GISdb[DB].ApplyGISFilter('REF_TYPE=' + QuotedStr('DTM') + ' AND CRITERION=' + QuotedStr(Param + Stat));
@@ -560,25 +560,25 @@ var
          {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Nothing for ' + GISdb[db].MyData.Filter); {$EndIf}
       end
       else begin
-         for I := 1 to NumDEMIXDEM do New(zvs[i]);
+         for I := 1 to NumDEMIXtestDEM do New(zvs[i]);
          npts := 0;
           GISdb[DB].MyData.First;
           while not GISdb[DB].MyData.eof do begin
-             for DEM := 1 to NumDEMIXDEM do begin
+             for DEM := 1 to NumDEMIXtestDEM do begin
                 zvs[DEM]^[npts] := GISdb[DB].MyData.GetFieldByNameAsFloat(DEMIXshort[DEM]);   //  + '_' + Stat );
              end;
              inc(Npts);
              GISdb[DB].MyData.Next;
           end;
 
-          for I := 1 to NumDEMIXDEM do begin
+          for I := 1 to NumDEMIXtestDEM do begin
              Dist.Add(SaveSingleValueSeries(npts,zvs[i]^));
              Dispose(zvs[i]);
           end;
           TStr := StatsLong[i2] + '_' + Paramslong[j2] + '_difference_compared_to_reference_DTM';
           Graph := CreateMultipleHistogram(MDDef.CountHistograms,Dist,Legs,TStr,TStr,100,Min,Max,BinSize);
 
-         for I := 1 to NumDEMIXDEM do begin
+         for I := 1 to NumDEMIXtestDEM do begin
             Graph.GraphDraw.FileColors256[i] := DEMIXColorFromDEMName(Graph.GraphDraw.LegendList[pred(i)]);
          end;
          Graph.GraphDraw.InsideMarginLegend := Corner;
@@ -945,7 +945,7 @@ var
          begin
              if (Criterion = '') then CriterionFilter := CreateFilterOutSignedCriteria(DBonTable)
              else CriterionFilter := 'CRITERION=' + QuotedStr(Criterion);
-             for i := 1 to NumDEMIXDEM do BestCount[i] := 0;
+             for i := 1 to NumDEMIXtestDEM do BestCount[i] := 0;
              TotalPoss := 0;
              GISdb[DBonTable].ApplyGISFilter('REF_TYPE=' + QuotedStr(DEMType) + ' AND LAND_TYPE=' + QuotedStr(LandType) + ' AND ' + CriterionFilter);
              {$If Defined(RecordDEMIXSortGraph)}
@@ -966,7 +966,7 @@ var
                 TileValue := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(TileParam);
                 Winners := GISdb[DBonTable].MyData.GetFieldByNameAsString('DEM_LOW_SC');
                 inc(TotalPoss);
-                for i := 1 to NumDEMIXDEM do begin
+                for i := 1 to NumDEMIXtestDEM do begin
                    if StrUtils.AnsiContainsText(Winners,DEMIXDEMTypeName[i]) then begin
                       v[3] := ConvertPlatformColorToTColor(DEMIXColorFromDEMName(DEMIXDEMTypeName[i]));
                       v[2] := TileValue;
@@ -989,7 +989,7 @@ var
              Result.RedrawDiagram11Click(Nil);
 
              Winners := VertLabel + ',' + DEMType + ',' + LandType + ',' + IntToStr(TotalPoss);
-             for i := 1 to NumDEMIXDEM do Winners := Winners + ',' + RealToString(100 * BestCount[i] / TotalPoss,-8,-2);
+             for i := 1 to NumDEMIXtestDEM do Winners := Winners + ',' + RealToString(100 * BestCount[i] / TotalPoss,-8,-2);
              Statistics.Add(Winners);
          end;
 
@@ -1051,7 +1051,7 @@ begin {procedure MultipleBestByParametersSortByValue}
    {$If Defined(RecordDEMIXSortGraph)} WriteLineToDebugFile('MultipleBestByParameters in, table=' + IntToStr(DBontable)); {$EndIf}
    Statistics := tStringList.Create;
    aline := 'GRAPH,REF_TYPE,LAND_TYPE,OPINIONS';
-   for i := 1 to NumDEMIXDEM do aLine := aLine + ',' + DEMIXDEMTypeName[i];
+   for i := 1 to NumDEMIXtestDEM do aLine := aLine + ',' + DEMIXDEMTypeName[i];
    Statistics.Add(aLine);
 
    if (Option = 0) then begin
@@ -1138,6 +1138,8 @@ var
    i,j,k,NCrit,NDEM : integer;
    rfile : file;
 begin
+   MessageToContinue('Disabled at the moment');
+(*
    GISdb[DBonTable].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(Tile));
    if (GISdb[DBonTable].MyData.FiltRecsInDB > 0) then begin
       GISdb[DBonTable].EmpSource.Enabled := false;
@@ -1162,6 +1164,7 @@ begin
       DEMIX_SSIM_FUV_GraphSettings(Result,Tile,NCrits);
       Result.RedrawDiagram11Click(Nil);
    end;
+*)
 end;
 
 
@@ -1190,7 +1193,7 @@ begin
          if UseTile then begin
             {$If Defined(RecordDEMIX)} WriteLineToDebugFile('MakeGraphOfDifferenceDistribution use ' + fName); {$EndIf}
             Distributions.Add(fName);
-            for j := 1 to NumDEMIXDEM do begin
+            for j := 1 to NumDEMIXtestDEM do begin
                if StrUtils.AnsiContainsText(fname,UpperCase(DEMIXDEMTypeName[j])) then begin
                   Legends.Add(DEMIXDEMTypeName[j]);
                end;
@@ -1266,7 +1269,7 @@ begin
 
    SummaryCSV := tStringList.Create;
    aLine :='DEMIX_TILE,AREA';
-   for i := 1 to NumDEMIXDEM do aline := aline + ',' + DEMIXShort[i] + '_SCR';
+   for i := 1 to NumDEMIXtestDEM do aline := aline + ',' + DEMIXShort[i] + '_SCR';
    aline := aline + ',' + 'DEM_LOW_SC,NUM_TIES';
    SummaryCSV.Add(aline);
 
@@ -1291,7 +1294,7 @@ begin
       Result.GraphDraw.GraphLeftLabels.Add(IntToStr(Succ(Tile)) + ',' + TileList.Strings[Tile]);
       ComputeAverageScoresForSelectedCriteria(DB,CriteriaList,Scores,NumTies,WinnerString);
       aline := TileList.Strings[Tile] + ',' + GISdb[DB].MyData.GetFieldByNameAsString('AREA');
-      for I := 1 to NumDEMIXDEM do begin
+      for I := 1 to NumDEMIXtestDEM do begin
           aline := aline + ',' + RealToString(Scores[i],-12,-4);
           v[1] := Scores[i];
           v[2] := succ(Tile) + ExtraToSpreadDEMs(DEMIXShort[i],0.15);
@@ -1333,7 +1336,7 @@ var
          //{$If Defined(RecordDEMIX_evaluations_graph)} WriteLineToDebugFile('GraphForOneCriterionWithTileNames, Criterion=' + TheCrit + '  n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB)); {$EndIf}
          SummaryCSV := tStringList.Create;
          aLine :='AREA';
-         for i := 1 to NumDEMIXDEM do aline := aline + ',' + DEMIXShort[i] + '_SCR';
+         for i := 1 to NumDEMIXtestDEM do aline := aline + ',' + DEMIXShort[i] + '_SCR';
          aline := aline + ',' + 'DEM_LOW_SC,NUM_TIES';
          SummaryCSV.Add(aline);
 
@@ -1348,7 +1351,7 @@ var
          Result.GraphDraw.MinVertAxis := 0;
          Result.GraphDraw.MaxVertAxis := Areas.Count * 10 + 15;
          Result.GraphDraw.MinHorizAxis := 0.5;
-         Result.GraphDraw.MaxHorizAxis := NumDEMIXDEM + 0.5;
+         Result.GraphDraw.MaxHorizAxis := NumDEMIXtestDEM + 0.5;
          aLine := 'Average area score, ' + IntToStr(Criteria.Count) + ' criteria  ' + Criteria.Strings[0];
          for i := 1 to pred(Criteria.Count) do aline := aline + '+' + Criteria.Strings[i];
          Result.GraphDraw.HorizLabel := aLine;
@@ -1359,7 +1362,7 @@ var
             Result.GraphDraw.GraphLeftLabels.Add(IntToStr(y) + ',' + Areas.Strings[j]);
             ComputeAverageScoresForSelectedCriteria(DBonTable,Criteria,Scores,NumTies,WinnerString);
             aline := Areas.Strings[j];
-            for I := 1 to NumDEMIXDEM do begin
+            for I := 1 to NumDEMIXtestDEM do begin
                 aline := aline + ',' + RealToString(Scores[i],-12,-4);
                 v[1] := Scores[i];
                 v[2] := y + ExtraToSpreadDEMs(DEMIXShort[i], 1.5);

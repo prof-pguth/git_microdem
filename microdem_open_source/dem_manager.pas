@@ -1138,7 +1138,7 @@ end;
       TheFiles : tStringList;
       Prompt,Masks : ANSIString;
       Filter : byte;
-      LandCover : shortstring;
+      LandCover : integer;
       fName : PathStr;
       i,NewSatImage : integer;
    begin
@@ -1162,7 +1162,7 @@ end;
       if GetMultipleFiles(Prompt,Masks,TheFiles,Filter) then begin
          for I := 0 to pred(TheFiles.Count) do begin
             fName := TheFiles.Strings[i];
-            if IsThisLandCover(fName,LandCover) and AnswerIsYes('This appears to be landcover (' + Landcover + '); do you want to open as grid') then begin
+            if IsThisLandCover(fName,LandCover) and AnswerIsYes('This appears to be landcover; do you want to open as grid') then begin
                 OpenNewDEM(fName);
             end
             else begin

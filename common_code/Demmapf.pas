@@ -5956,6 +5956,7 @@ begin
       end;
       CloseSingleDEM(MapDraw.DEMonMap);
    end;
+   ShowDefaultCursor;
 {$EndIf}
 end;
 
@@ -9009,20 +9010,13 @@ begin
      FileNames.Add(LastDataBase);
      if GetMultipleFiles('Data bases for heat map',DBMaskString,FileNames,MDDef.DefDBFilter) then begin
         MakeHeatMap;
-        //CopyImageToBitmap(Image1,bmp);
-        //BMPMem := tBMPMemory.Create(bmp);
         StartProgress('Heat map');
         for i := 0 to pred(FileNames.Count) do begin
            UpdateProgressBar(i/FileNames.Count);
            OpenNumberedGISDataBase(db,FileNames.Strings[i]);
            ProcessDB(HeatGrid,db);
-           //DrawOnBitmap2;
            CloseAndNilNumberedDB(db);
         end;
-        //BMPMem.Destroy;
-        //Image1.Picture.Graphic := bmp;
-        //bmp.savetoFile(mdtempdir + 'map.bmp');
-        //bmp.free;
         EndProgress;
         {$IfDef RecordHeatMap} WriteLineToDebugFile('TMapForm.MakeHeatMap, done files=' + IntToStr(FileNames.Count)); {$EndIf}
         FileNames.Destroy;
@@ -11841,8 +11835,11 @@ var
                    Result := ' ';  // +
                    Panel3String := DEMGlb[DEM].VatLegendStrings.Strings[round(Elev)];
                 end
+                else if DEMGlb[DEM].LandCoverGrid then begin
+                   Result := ' cat=' + RealToString(Elev,-6,-2);
+                end
                 else case DEMGlb[DEM].DEMheader.ElevUnits of
-                   euUndefined,euImagery  : Result := ' z=' + RealToString(Elev,6,2);
+                   euUndefined,euImagery  : Result := ' z=' + RealToString(Elev,6,-2);
                    euMM : Result := ' z=' + RealToString(Elev,6,2) + ' mm';
                    euHundredthMa  : Result := ' z=' + RealToString(Elev,6,2) + ' Ma';
                    euPercentSlope : Result := ' z=' + RealToString(Elev,6,1) + '%';
@@ -11945,8 +11942,9 @@ begin
          {$IfDef ExSat}
          {$Else}
             if (DEMGlb[MapDraw.DEMonMap].LandCoverGrid) and (DEMGlb[MapDraw.DEMonMap].NLCDCats <> Nil) then begin
-               if DEMGlb[MapDraw.DEMonMap].GetElevMeters(round(XGrid),round(YGrid),Elev) and (Elev > 0) and (Elev < MaxLandCoverCategories) then
-                  Panel2String := DEMGlb[MapDraw.DEMonMap].NLCDCats^[round(Elev)].LongName + '  z=' + RealToString( DEMGlb[MapDraw.DEMonMap].NLCDCats^[round(Elev)].Height,-7,-1);
+               if {DEMGlb[MapDraw.DEMonMap].GetElevMeters(round(XGrid),round(YGrid),Elev) and} (Elev > 0) and (Elev < MaxLandCoverCategories) then begin
+                  Panel2String := DEMGlb[MapDraw.DEMonMap].NLCDCats^[round(Elev)].LongName + '  z=' + RealToString(Elev,-7,0);
+               end;
             end;
          {$EndIf}
       end;
@@ -11961,13 +11959,13 @@ begin
       {$IfDef RecordAllMapRoam} WriteLineToDebugFile('Point 2.3'); {$EndIf}
    end;
 
-      if ValidMultiGrid(TempMG) and ValidMultiGrid(PrecipMG) then begin
-         ClimateData.Lat := Lat;
-         ClimateData.Long := Long;
-         LoadClimateData(ClimateData);
-         if ClassifyClimate(ClimateData) then Panel2String := 'Koppen: ' + ClimateData.L1 + ClimateData.L2 + ClimateData.L3
-         else Panel2String := '';
-      end;
+   if ValidMultiGrid(TempMG) and ValidMultiGrid(PrecipMG) then begin
+      ClimateData.Lat := Lat;
+      ClimateData.Long := Long;
+      LoadClimateData(ClimateData);
+      if ClassifyClimate(ClimateData) then Panel2String := 'Koppen: ' + ClimateData.L1 + ClimateData.L2 + ClimateData.L3
+      else Panel2String := '';
+   end;
 
    WmDEM.SetPanelText(1, Panel1String);
    WmDEM.SetPanelText(2, Panel2String);
@@ -17850,27 +17848,8 @@ end;
 
 
 procedure TMapForm.Landcover1Click(Sender: TObject);
-(*
-var
-   x,y,Code : integer;
-   z : float32;
-begin
-   for x := 0 to pred(DEMGlb[1].DEMheader.NumCol) do begin
-      for y := 0 to pred(DEMGlb[1].DEMheader.NumRow) do begin
-         if DEMGlb[MapDraw.DEMOnMap].GetElevMetersOnGrid(x,y,z) then begin
-            Code := ReclassifyLandCover(MapDraw.DEMOnMap,round(z));
-            DEMGlb[MapDraw.DEMOnMap].SetGridElevation(x,y,Code);
-         end;
-      end;
-   end;
-   DEMGlb[MapDraw.DEMOnMap].DEMHeader.ElevUnits := euSimpleLandCover;
-   Dispose(DEMGlb[MapDraw.DEMOnMap].NLCDCats);
-   DEMGlb[MapDraw.DEMOnMap].CheckForLandCover;
-   //SetUpNLCDCategories(false,TStr,NLCDCats^);
-*)
 begin
    SimplifyLandCoverGrid(MapDraw.DEMOnMap);
-
 end;
 
 
@@ -22229,10 +22208,8 @@ end;
 
 
 procedure TMapForm.N62Click(Sender: TObject);
-var
-   ErrorMessage : shortstring;
 begin
-   LoadLC100LandCover('',MapDraw.MapCorners.BoundBoxGeo,ErrorMessage,true);
+   LoadLC100LandCover('',MapDraw.MapCorners.BoundBoxGeo,true);
 end;
 
 procedure TMapForm.N7x7region1Click(Sender: TObject);

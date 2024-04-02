@@ -1134,7 +1134,7 @@ var
    i,x,y,Band,NumRead : integer;
    Value : word;
    BigRow : ^tWordBigRow;
-   ByteRow : ^tImageRow;
+   ByteRow : ^tRow8Bit;
    fName  : pathStr;
 begin
    {$IfDef RecordMultiGrids} WriteLineToDebugFile('tTIFFImage.LoadFromGeotiff in'); {$EndIf}
@@ -1370,7 +1370,7 @@ var
    i,x,y,Band,NumRead,Offset : integer;
    Value : word;
    BigRow : ^tWordBigRow;
-   ByteRow : ^tImageRow;
+   ByteRow : ^tRow8Bit;
    DEMHeader : tDEMheader;
    Header : tStringList;
    aLine,oneVal : ANSIstring;

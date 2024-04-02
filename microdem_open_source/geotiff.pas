@@ -42,7 +42,7 @@ unit GeoTiff;
       //{$Define RecordUKOS}
       //{$Define TrackProjection}
       //{$Define ShowKeyDEM}
-      {$Define TrackZ}
+      //{$Define TrackZ}
       //{$Define RecordTiePoints}
       //{$Define RecordGeotiffRestart}
       //{$Define TrackModelType}
@@ -94,14 +94,14 @@ type
     tTiffHeader = record
       SamplesPerPixel,BitsPerSample,BytesPerSample,
       xResolutionOffset,yResolutionOffset,
-      Orientation,PlanarConfiguration,Compression,SubFileType,FillOrder,
+      Orientation,PlanarConfiguration,SubFileType,FillOrder,
       PhotometricInterpretation,ExtraSample,
       Threshholding,NumEnt,
       Num,Den,NewSubfileType,VertDatum,
       StripsPerImage,StripByteCounts,
       BitsPerSampleCount,MDZtype : int32;
       FirstImageOffset,CellWidth,CellLength,
-      RowsPerStrip,TileWidth,TileHeight,
+      RowsPerStrip,TileWidth,TileHeight,Compression,
       ImageWidth,ImageLength,StripOffsets : int64;
       SMin,SMax,Factor : float64;
       ResolutionUnit   : ResolutionUnitType;
@@ -158,15 +158,15 @@ type
          TIFFFileName   : PathStr;
          TIFFImageColor : Petmar_types.TRGBLookUp;
          CurrentMissing : float32;
-         Tag42114 : shortstring;
-         Tag2114Offset,Tag2114Length : int64;
+         Tag42112 : shortstring;
+         Tag42112Offset,Tag42112Length : int64;
          procedure OpenTiffFile;   //inline;
          procedure CloseTiffFile;  //inline;
 
          constructor CreateGeotiff(Metadataonly : boolean; NoGeo : boolean; inFileName : PathStr; var Success : boolean; ShowHeader : boolean = false; GetHistogram : boolean = true; BandNum : integer = 0);
          function CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
          destructor Destroy; override;
-         procedure GetTiffRow(Band,Row : integer; var TheRow : tImageRow);
+         procedure GetTiffRow(Band,Row : integer; var TheRow : tRow8Bit);
          procedure GetPointReflectances(Column,Row : integer; var Reflectances : tAllRefs);
          procedure GetTiffRow16bit(Band,Row : integer; var Row16bit : tWordRow16Bit);
 
@@ -187,7 +187,7 @@ function GeotiffImageSize(fName : PathStr; var Width,Height : integer) : boolean
 function GeotiffBoudingBox(fName : PathStr; var bb : sfBoundBox) : boolean;
 
 procedure RewriteGeotiffIfRequired(var TIFFFileName : PathStr);
-function GetGeotiffTag42114(fName : PathStr; var Tag : shortstring; var Tag2114Offset,Tag2114Length : int64) : boolean;
+function GetGeotiffTag42112(fName : PathStr; var Tag : shortstring; var Tag42112Offset,Tag42112Length : int64) : boolean;
 
 
 {$IfDef VCL}
@@ -272,7 +272,7 @@ begin
 end;
 
 
-function GetGeotiffTag42114(fName : PathStr; var Tag : shortstring; var Tag2114Offset,Tag2114Length : int64) : boolean;
+function GetGeotiffTag42112(fName : PathStr; var Tag : shortstring; var Tag42112Offset,Tag42112Length : int64) : boolean;
 var
    success : boolean;
    TiffImage : tTIFFImage;
@@ -280,9 +280,9 @@ begin
    Result := FileExists(fName);
    if Result then begin
       TiffImage := tTiffImage.CreateGeotiff(true,false,fName,Success,false,false);
-      Tag := TiffImage.Tag42114;
-      Tag2114Offset := TiffImage.Tag2114Offset;
-      Tag2114Length := TiffImage.Tag2114Length;
+      Tag := TiffImage.Tag42112;
+      Tag42112Offset := TiffImage.Tag42112Offset;
+      Tag42112Length := TiffImage.Tag42112Length;
       Result := Tag <> '';
       TiffImage.Destroy;
    end;
@@ -596,7 +596,7 @@ end;
       procedure tTIFFImage.GetTIFFRowRGB(Row : integer; var TheRow : tLongRGB);
       var
          x : integer;
-         TheRawRow : ^tImageRow;
+         TheRawRow : ^tRow8Bit;
       begin
          SeekFileOffset(Row);
          if (TiffHeader.PhotometricInterpretation in [1,2]) and (TiffHeader.SamplesPerPixel > 1) then begin
@@ -604,9 +604,9 @@ end;
              //this has problems 8/13/23
                FileRead(TiffHandle,Row16bit^,ImageBytesPerRow);
                for x := 0 to pred(TiffHeader.ImageWidth) do begin
-                   TheRow[x].rgbtRed := Row16bit^[x*TiffHeader.SamplesPerPixel] mod 256;
-                   TheRow[x].rgbtGreen := Row16bit^[x*TiffHeader.SamplesPerPixel+1] mod 256;
-                   TheRow[x].rgbtBlue := Row16bit^[x*TiffHeader.SamplesPerPixel+2] mod 256;
+                   TheRow[x].rgbtRed := Row16bit^[x*TiffHeader.SamplesPerPixel] div 256;
+                   TheRow[x].rgbtGreen := Row16bit^[x*TiffHeader.SamplesPerPixel+1] div 256;
+                   TheRow[x].rgbtBlue := Row16bit^[x*TiffHeader.SamplesPerPixel+2] div 256;
                    (*
                    TheRow[x].rgbtBlue := Row16bit^[x*TiffHeader.SamplesPerPixel] div 256;
                    TheRow[x].rgbtGreen := Row16bit^[x*TiffHeader.SamplesPerPixel+1] div 256;
@@ -796,7 +796,7 @@ end;
 procedure tTIFFImage.GetTiffRow16bit(Band,Row : integer; var Row16bit : tWordRow16Bit);
 var
    x : integer;
-   TheRow : ^tImageRow;
+   //TheRow : ^tRow8Bit;
 begin
    SeekFileOffset(Row);
    if (TiffHeader.BitsPerSample in [15,16]) then begin
@@ -812,15 +812,15 @@ begin
       if BigEndian then for x := 0 to pred(TiffHeader.ImageWidth) do Row16bit[x] := swap(Row16bit[x]);
    end
    else begin
-      New(TheRow);
-      GetTiffRow(Band,Row,TheRow^);
-      for x := 0 to TiffHeader.ImageWidth do Row16Bit[x] := TheRow^[x];
-      Dispose(TheRow);
+      //New(TheRow);
+      GetTiffRow(Band,Row,Row8Bit^);
+      for x := 0 to TiffHeader.ImageWidth do Row16Bit[x] := Row8Bit^[x];
+      //Dispose(TheRow);
    end;
 end;
 
 
-procedure tTIFFImage.GetTiffRow(Band,Row : integer; var TheRow : tImageRow);
+procedure tTIFFImage.GetTiffRow(Band,Row : integer; var TheRow : tRow8Bit);
 var
    NumRead,x,MemNeed  : integer;
 begin
@@ -875,12 +875,13 @@ var
    Line : ANSIString;
    i,x,y,Band,Band2,Value,Start    : integer;
    TotalPts : int64;
-   Row16Bit  : tWordRow16Bit;
-   Row8Bit   : tImageRow;
+   //Row16Bit  : tWordRow16Bit;
+   //Row8Bit   : tRow8Bit;
    cum,PC : float64;
    Hist  : array[1..MaxBands] of ^tWordValues;
    Results : tStringList;
    fName1 : PathStr;
+   TheRow : tRow8Bit;
 begin
    {$IfDef RecordGeotiffHistogram} WriteLineToDebugFile('tTIFFImage.GetHistogramDBF enter ' + ExtractFileName(TiffFileName)); {$EndIf}
 
@@ -903,13 +904,15 @@ begin
           for x := 0 to MaxWord16 do Hist[i]^[x] := 0;
        end;
 
-       if (TiffHeader.BitsPerSample in [8]) then begin
+//GetTiffRow(Band,Row : integer; var TheRow : tRow8Bit);
+
+       if (TiffHeader.BitsPerSample in [15,16]) then begin
            for y := 0 to pred(TiffHeader.ImageLength) do begin
               if (y mod 500 = 0) then UpdateProgressBar(y/TiffHeader.ImageLength);
               for Band := 1 to TiffHeader.SamplesPerPixel do begin
-                 GetTiffRow(Band,y, Row8bit);
+                 GetTiffRow16bit(Band,y, Row16bit^);
                  for x := 0 to pred(TiffHeader.ImageWidth) do begin
-                    inc(Hist[Band]^[Row8Bit[x]]);
+                    inc(Hist[Band]^[Row16bit[x]]);
                  end;
               end;
            end;
@@ -918,9 +921,9 @@ begin
            for y := 0 to pred(TiffHeader.ImageLength) do begin
               if (y mod 500 = 0) then UpdateProgressBar(y/TiffHeader.ImageLength);
               for Band := 1 to TiffHeader.SamplesPerPixel do begin
-                 GetTiffRow16bit(Band,y, Row16bit);
+                 GetTiffRow(Band,y, Row8bit^);
                  for x := 0 to pred(TiffHeader.ImageWidth) do begin
-                    inc(Hist[Band]^[Row16bit[x]]);
+                    inc(Hist[Band]^[Row8Bit[x]]);
                  end;
               end;
            end;
@@ -981,7 +984,7 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
 
          function InitializeTiffDEM(WantDEM : tDEMDataSet; ForceType : boolean = false; TypeWanted : tDEMprecision = ByteDEM) : boolean;
          var
-            LandCover : ShortString;
+            LandCover : integer;
 
 
             procedure SetCornersAndSpacing;
@@ -1021,6 +1024,8 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
                   {$IfDef ExNLCD}
                   {$Else}
                      {$IfDef RecordNLCD} WriteLineToDebugFile('Geotiff DEM with NLCD=' + LandCover); {$EndIf}
+                     WantDEM.DEMheader.ElevUnits := LandCover;
+(*
                      LandCover := UpperCase(LandCover);
                      if (LandCover = 'NLCD-CHANGE') then WantDEM.DEMheader.ElevUnits := euNLCD_Change;
                      if (LandCover = 'CCI-LC') then WantDEM.DEMheader.ElevUnits := euCCI_LC;
@@ -1039,11 +1044,12 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
                      if (LandCover = 'PENNOCK') then WantDEM.DEMheader.ElevUnits := euPennock;
                      if (LandCover = 'LCMAP') then WantDEM.DEMheader.ElevUnits := euLCMAP;
                      if (LandCover = 'SENT2SLC') then WantDEM.DEMheader.ElevUnits := euSent2SLC;
-                     if (LandCover = 'GLC2000') or (LandCover = 'GLC-2000')  then begin
+*)
+                     if WantDEM.DEMheader.ElevUnits = euGLC2000 then begin
                         WantDEM.DEMheader.DEMUsed := ArcSecDEM;
-                        WantDEM.DEMheader.ElevUnits := euGLC2000;
                         TiffHeader.ModelType := 2;
                      end;
+//
                   {$EndIf}
                end;
 
@@ -1591,7 +1597,8 @@ var
                if StrUtils.AnsiContainsText(TStr,'mdz=') then begin
                   UTMString := TStr;
                   while Copy(TStr,1,4) <> 'mdz=' do Delete(TStr,1,1);
-                  TStr := TStr[5];
+                  Delete(TStr,1,4);
+                  TStr := Petmar_types.BeforeSpecifiedCharacterANSI(Tstr,'/');
                   TiffHeader.MDZtype := StrToInt(TStr);
                   exit;
                end;
@@ -2042,9 +2049,9 @@ var
                          TStr := LogASCIIdata(TiffKeys[j].KeyOffset,TiffKeys[j].LengthIm);
                          {$If Defined(TrackZ)} WriteLineToDebugFile('Key 42112 ' + TStr); {$EndIf}
                          if StrUtils.AnsiContainsText(UpperCase(Tstr),'FOOT') then FootDEM := true;
-                         Tag42114 := TStr;
-                         Tag2114Offset := TiffKeys[j].KeyOffset;
-                         Tag2114Length := TiffKeys[j].LengthIm;
+                         Tag42112 := TStr;
+                         Tag42112Offset := TiffKeys[j].KeyOffset;
+                         Tag42112Length := TiffKeys[j].LengthIm;
                       end;
               42113 : begin
                          if TiffKeys[j].LittleString <> '' then begin
@@ -2114,7 +2121,7 @@ var
       TiffHeader.OffsetArray := Nil;
       TiffHeader.StripOffsets := 0;
       TiffHeader.FootDEM := false;
-      Tag42114 := '';
+      Tag42112 := '';
       DatCode := -99;
    end;
 
@@ -2518,22 +2525,6 @@ begin
          exit;
       end;
 
-      {$IfDef ExSat}
-      {$Else}
-         if (TiffHeader.BitsPerSample in [8,15,16]) and GetHistogram then begin
-            {$IfDef RecordMinMax} WriteLineToDebugFile('Point 1,   Min sample='+IntToStr(MinSampleValue[1]) + ' Max sample='+IntToStr(MaxSampleValue[1])); {$EndIf}
-            if (not FileExists(HistogramLandsatName(TIFFFileName))) then begin
-               GetHistogramDBF(BandNum);
-               {$IfDef RecordMinMax}
-                  for i := 1 to SamplesPerPixel do begin
-                     HeaderLogList.Add('Sample range after 16 bit histogram, Band ' + IntToStr(i)  + RealToString(MinSampleValue[i],12,-4) + RealToString(MaxSampleValue[i],12,-4));
-                  end;
-               {$EndIf}
-            end;
-            {$IfDef RecordMinMax} WriteLineToDebugFile('Point 2  Min sample='+IntToStr(TiffHeader.MinSampleValue[1]) + ' Max sample=' + IntToStr(TiffHeader.MaxSampleValue[1]); {$EndIf}
-         end;
-      {$EndIf}
-
        {$IfDef RecordPlateCaree} WriteLineToDebugFile('Line 1950, '  + MapProjection.GetProjectionName); {$EndIf}
        if GeoSuccess then begin
           {$IfDef RecordFullGeotiff} WriteLineToDebugFile('GEOTIFF image keys analyzed OK ' + MapProjection.GetProjectionName) {$EndIf}
@@ -2559,7 +2550,8 @@ begin
       if (TiffHeader.BitsPerSample in [15,16]) and (TiffHeader.SamplesPerPixel > 1) then begin
          New(BigRow);
       end;
-      if (TiffHeader.PhotometricInterpretation = 2) or (TiffHeader.SamplesPerPixel > 1) then begin    //color image
+      (*
+      else if (TiffHeader.PhotometricInterpretation = 2) or (TiffHeader.SamplesPerPixel > 1) then begin    //color image
          if (TiffHeader.BitsPerSample in [15,16]) then begin
             new(Row16Bit);
          end
@@ -2568,13 +2560,29 @@ begin
          end;
       end
       else begin  //single band image
-         if (TiffHeader.BitsPerSample in [15, 16]) then begin
+      *)
+         if (TiffHeader.BitsPerSample in [15,16]) then begin
             new(Row16Bit);
          end
          else if (TiffHeader.BitsPerSample in [4,8]) then begin
             new(Row8Bit);
          end;
-      end;
+      //end;
+
+      {$IfDef ExSat}
+      {$Else}
+         if (TiffHeader.BitsPerSample in [8,15,16]) and GetHistogram then begin
+            {$IfDef RecordMinMax} WriteLineToDebugFile('Point 1,   Min sample='+IntToStr(MinSampleValue[1]) + ' Max sample='+IntToStr(MaxSampleValue[1])); {$EndIf}
+            if (not FileExists(HistogramLandsatName(TIFFFileName))) then begin
+               GetHistogramDBF(BandNum);
+               {$IfDef RecordMinMax}
+                  for i := 1 to SamplesPerPixel do begin
+                     HeaderLogList.Add('Sample range after 16 bit histogram, Band ' + IntToStr(i)  + RealToString(MinSampleValue[i],12,-4) + RealToString(MaxSampleValue[i],12,-4));
+                  end;
+               {$EndIf}
+            end;
+         end;
+      {$EndIf}
    end;
 
    TemporaryNewGeotiff := true;

@@ -64,7 +64,7 @@ begin
       end;
       Areas.Free;
       if Results.Count > 1 then begin
-         fName := NextFileNumber(MDTempDir,'diluv_dem_status_','.dbf');
+         fName := NextFileNumber(MDTempDir,'diluv_dem_status','.dbf');
          PetdbUtils.StringList2CSVtoDB(Results,fName);
       end
       else begin
@@ -137,7 +137,7 @@ begin
       end;
       Areas.Free;
       if (Results.Count > 1) then begin
-         fName := NextFileNumber(MDTempDir,'delta_dtm_status_','.dbf');
+         fName := NextFileNumber(MDTempDir,'delta_dtm_status','.dbf');
          PetdbUtils.StringList2CSVtoDB(Results,fName);
       end
       else begin
@@ -215,11 +215,11 @@ begin {CreateDEMIXTestDEMsForArea}
       GeoidGrid := 0;
 
       Ser := 0;
-      for I := 1 to NumDEMIXDEM do begin
+      for I := 1 to NumDEMIXtestDEM do begin
          WantSeries := DEMIXDEMTypeName[i];
          ShortName := DEMIXShort[i];
          SaveName := DEMIX_test_dems + AreaName + '_' + shortname + '.tif';
-         wmdem.SetPanelText(3,'Load candidate DEM ' + ShortName + '  ' + IntToStr(i) + '/' + IntToStr(NumDEMIXDEM));
+         wmdem.SetPanelText(3,'Load candidate DEM ' + ShortName + '  ' + IntToStr(i) + '/' + IntToStr(NumDEMIXtestDEM));
          if Overwrite or (not FileExists(SaveName)) then begin
             {$If Defined(RecordFullDEMIX) or Defined(RecordDEMIXLoad)} writeLineToDebugFile('Try ' + WantSeries + ' ' + ShortName + '  ' + IntToStr(i) + '/' + IntToStr(NumDEMIXDEM)); {$EndIf}
             {$If Defined(RecordFullDEMIX)} writeLineToDebugFile('Ref DEM=' + DEMGlb[PointRefDEM].AreaName + '  ' + sfBoundBoxToString(DEMGlb[PointRefDEM].DEMBoundBoxGeo,6)); {$EndIf}
@@ -297,7 +297,6 @@ begin
       end;
    finally
       EndDEMIXProcessing;
-      HeavyDutyProcessing := false;
    end;
    {$IfDef RecordDEMIX} WriteLineToDebugFile('CreateTestAreaDEMs out'); {$EndIf}
 end;

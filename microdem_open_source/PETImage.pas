@@ -654,6 +654,7 @@ var
    bmp : tMyBitmap;
    Left,Right,Top,Bottom,
    BigWidth,BigHeight,
+   LeftPos,
    n,nr : integer;
 begin
    Result := nil;
@@ -671,12 +672,26 @@ begin
          end;
       end;
       CreateBitmap(Result,nc * BigWidth + 10,nr * BigHeight + 60);
-      for n := 0 to pred(theFiles.Count) do begin
-         if FileExists(theFiles.Strings[n]) then begin
-            bmp := LoadBitmapFromFile(theFiles.Strings[n]);
-            FindImagePartOfBitmap(Bmp,Left,Right,Top,Bottom);
-            Result.Canvas.Draw((n mod nc) * BigWidth + 5, (n div nc) * BigHeight + 15,bmp);
-            bmp.Free;
+      if (nr = 1) then begin
+         LeftPos := 5;
+         for n := 0 to pred(theFiles.Count) do begin
+            if FileExists(theFiles.Strings[n]) then begin
+               bmp := LoadBitmapFromFile(theFiles.Strings[n]);
+               FindImagePartOfBitmap(Bmp,Left,Right,Top,Bottom);
+               Result.Canvas.Draw(LeftPos,15,bmp);
+               LeftPos := LeftPos + bmp.Width + 5;
+               bmp.Free;
+            end;
+         end;
+      end
+      else begin
+         for n := 0 to pred(theFiles.Count) do begin
+            if FileExists(theFiles.Strings[n]) then begin
+               bmp := LoadBitmapFromFile(theFiles.Strings[n]);
+               FindImagePartOfBitmap(Bmp,Left,Right,Top,Bottom);
+               Result.Canvas.Draw((n mod nc) * BigWidth + 5, (n div nc) * BigHeight + 15,bmp);
+               bmp.Free;
+            end;
          end;
       end;
       if (Result <> nil) then begin

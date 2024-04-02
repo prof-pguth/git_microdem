@@ -233,7 +233,7 @@ type
 
    ClassesType = array[1..MaxClass] of ClassType;
 
-   tImageRow  = array[0..pred(MaxSatCols)] of byte;
+   //tImageRow  = array[0..pred(MaxSatCols)] of byte;
 
    tMergeLas = (mlOnMap,mlOnMask,mlDEMCovered,mlInBox,mlThin,mlTranslate,mlScaleUp,mlRGBFilter);
 
@@ -273,12 +273,14 @@ type
    tHoleFill = (hfSeaLevel,hfOnlyHole,hfEverything,hfOnlyValid,hfJustReferencePostings);
    tDTMoption = byte;
 
+
    tAngUnits = (auRadian,auDegree,auArcMin,auArcSec);
    tPointType = (EdgePoint,MissingPoint,FlatPoint,PitPoint,PeakPoint,RidgePoint,ValleyPoint,OtherPoint,PassPoint);
    tElevInterpolation = (piBilinear,piBicubicVT,piBicubicNR,piTriangle,piWeightedR,piWeightedR2,piNearestGrid,piSWGrid);
    tCompassDirection = (cdN,cdNE,cdE,cdSE,cdS,cdSW,cdW,cdNW,cdFlat,cdPit);
    tFilterCat =(fcMin,fcMax,fcMean,fcMedian,fcParamIsotrop,fcSum,fcSTD,fcNeighbors,fcNumNeigh,fcSaveByte,fcSaveSmallInt,fcSaveWord,fcSaveFloatingPoint,fcDissimilarNeighbors,fcFilFile,fcVectAvg);
    tSpeedUnit =(spMPS,spKPH,spMPH,spKnots);
+   tAspectDir = array[2..4] of tCompassDirection;
 const
    CompassDirectionNames : array[tCompassDirection] of ShortString = ('N','NE','E','SE','S','SW','W','NW','Flat','Pit');
    NominalCompassDirection : array[tCompassDirection] of integer = (0,45,90,135,180,225,270,315,-99,-99);
@@ -470,7 +472,7 @@ type
    tSlopeAspectRec = record
        z,znw,zw,zsw,zn,zs,zne,ze,zse,
        dzdx,dzdy,
-       dx,dy,
+       dx,dy,dia_space,
        GridTrueAngle,
        Slope,
        SlopePercent,
@@ -720,7 +722,10 @@ const
    euDNBR = 62;
    euSent2SLC = 63;
    euSimpleLandCover = 64;
-   euHighElevUnits = 64;  //same as last real one;  used only for loops through all the elevation units;
+   euCOPEDM = 65;
+   euCOPFLM = 66;
+   euTANEDM = 67;
+   euHighElevUnits = 67;  //same as last real one;  used only for loops through all the elevation units;
 
 const
    VertCSEGM96 = 5773;

@@ -50,6 +50,7 @@
       //{$Define ShowProjectedLimits}
       //{$Define RecordElevRange}
       //{$Define RecordMapDraw}
+      {$Define RecordNLCD}
       //{$Define RecordRefMapColors}
 
       //{$Define RecordMapBlow}        //needs to be off for threaded fan drawing
@@ -96,7 +97,6 @@
       //{$Define RecordTerrCatOverlays}
       //{$Define RecordMapLimits}
       //{$Define RecordElevColorFromTable}
-      //{$Define RecordNLCD}
       //{$Define RecordPrinter}
       //{$Define RecordFullTissot}
       //{$Define RecordGridToScreen} //major slowdown
@@ -474,8 +474,8 @@ type
 
       procedure BoxToContainFan(Lat,Long,Range : float64; var uMinLat,uMinLong,uMaxLat,uMaxLong : float64);
 
-      function GetElevColor(x,y : float64) : tPlatformColor;
-      function QuickElevColor(x,y : integer) : tPlatformColor;
+      function GetElevColor(x,y : float64) : tPlatformColor;  inline;
+      function QuickElevColor(x,y : integer) : tPlatformColor; inline;
       procedure SetUpElevationColorTable;
       procedure DefineSlopeColors;
       procedure ColorTintedElevationMap(var inBitmap : tMyBitmap);

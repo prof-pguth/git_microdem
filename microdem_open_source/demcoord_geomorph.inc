@@ -525,22 +525,17 @@ begin
 end;
 
 
-
 procedure tDEMDataSet.RichardsonExtrapolationSlopeMaps(Save : boolean = false);
 //Extrapolated Evans-Young method (López-Vázquez, 2022), using Richardson extrapolation
 //Carlos López-Vázquez (2022) Uncertainty interval estimates for computing slope and aspect from a gridded digital elevation model,
 //   International Journal of Geographical Information Science, 36:8, 1601-1628, DOI: 10.1080/13658816.2022.2063294
 
-
-//the DEM is entirely in memory, and could be stored as bytes, short integers, long integers, unsigned integers, or floats
+//DEM is entirely in memory, and could be stored as bytes, short integers, long integers, unsigned integers, or floats
 //while some of these do not make sense for a DEM, they do for other grids, where it does not make sense to store bytes as floats
 //calls to get elevations sort out the storage issues and return floats for all the internal computations
 
 //there is error trapping code, with a conditional compilation directive, to store intermediate values for debugging with the partial derivatives
 //this creates a lot of grids, which are not necessarily easy to interpret or immediately useful
-
-//var
-  //bmplist : tStringList;
 
     procedure MapAndSave(DEM : integer);
     begin
@@ -799,56 +794,69 @@ begin
 end;
 
 
-
-function tDEMDataSet.GetSlopeAndAspect(Col,Row : integer; var SlopeAsp : tSlopeAspectRec) : boolean;
-//based on coordinates in the DEM grid, which start in the SW corner
+procedure MaxDownHill(z,z1,z2,Dist : float64; var Max : float64; Dir1,Dir2 : tCompassDirection; var AspDir : tCompassDirection);  inline;
+//used only for MaxDownhillSlope, not recommended
 var
-   sl     : array[1..4] of float64;
-   AspDir : array[2..4] of tCompassDirection;
-   UseDiaSpace : float64;
+   d1,d2 : float64;
+begin {proc MaxDownHill}
+   d1 := (z - z1);
+   d2 := (z - z2);
+   if (d1 = d2) then if Odd(Random(100)) then d1 := 0 else d2 := 0;
+   if (d1 > d2) and (d1 > 0) then begin
+      AspDir := Dir1;
+      Max := d1 / Dist;
+   end
+   else if (d2 > d1) and (d2 > 0) then begin
+      AspDir := Dir2;
+      Max := d2 / Dist;
+   end
+   else begin
+      Max := 0;
+      AspDir := cdPit;
+   end;
+end {proc MaxSlope};
 
 
-         procedure AddSlope(z,z1,z2,Dist : float64);
-         //used only for average neighbors method, not recommended
-         var
-            d1,d2 : float64;
+function IsPit(var SlopeAsp : tSlopeAspectRec) : boolean; inline;
+begin
+   Result := (SlopeAsp.z < SlopeAsp.zne) and (SlopeAsp.z < SlopeAsp.znw) and (SlopeAsp.z < SlopeAsp.zn) and (SlopeAsp.z < SlopeAsp.ze) and
+         (SlopeAsp.z < SlopeAsp.zw) and (SlopeAsp.z < SlopeAsp.zse) and (SlopeAsp.z < SlopeAsp.zsw) and (SlopeAsp.z < SlopeAsp.zs);
+end;
+
+         procedure GetAspect(var SlopeAsp : tSlopeAspectRec); inline;
          begin
-            d1 := (z - z1);
-            d2 := (z - z2);
-            d1 := abs(d1);
-            SlopeAsp.Slope := SlopeAsp.Slope + d1 / Dist;
-            d2 := abs(d2);
-            SlopeAsp.Slope := SlopeAsp.Slope + d2 / Dist;
+            if (abs(SlopeAsp.dzdx) < 0.001) and (abs(SlopeAsp.dzdy) < 0.001) then begin
+               SlopeAsp.AspectDir := MaxSmallInt;
+               SlopeAsp.AspectDirGrid := MaxSmallInt;
+               SlopeAsp.Dir := cdFlat;
+            end
+            else begin
+               //modified atan2 function
+               //   standard math convention puts 0 on the x axis and angles increases counterclockwise,
+               //   use geographic conventions, where N (0) is on the y axis, and angles increase clockwise
+               SlopeAsp.AspectDirGrid := HeadingOfLine(SlopeAsp.dzdx,SlopeAsp.dzdy) + 180;
+               if (SlopeAsp.AspectDirGrid > 360) then SlopeAsp.AspectDirGrid := SlopeAsp.AspectDirGrid - 360;
+               if (SlopeAsp.AspectDirGrid < 0) then SlopeAsp.AspectDirGrid := SlopeAsp.AspectDirGrid + 360;
+
+               SlopeAsp.AspectDir := SlopeAsp.AspectDirGrid + SlopeAsp.GridTrueAngle;
+               if (SlopeAsp.AspectDir > 360) then SlopeAsp.AspectDir := SlopeAsp.AspectDir - 360;
+               if (SlopeAsp.AspectDir < 0) then SlopeAsp.AspectDir := SlopeAsp.AspectDir + 360;
+
+               if IsPit(SlopeAsp) then begin
+                  SlopeAsp.Dir := cdPit;
+               end
+               else begin
+                  SlopeAsp.Dir := AspectDir8FromAspect(SlopeAsp.AspectDir);
+               end;
+            end;
          end;
 
 
-         procedure MaxDownHill(z,z1,z2,Dist : float64; var Max : float64; Dir1,Dir2 : tCompassDirection; var AspDir : tCompassDirection);    inline;
-         //used only for MaxDownhillSlope, not recommended
-         var
-            d1,d2 : float64;
-         begin {proc MaxDownHill}
-            d1 := (z - z1);
-            d2 := (z - z2);
-            if (d1 = d2) then if Odd(Random(100)) then d1 := 0 else d2 := 0;
-            if (d1 > d2) and (d1 > 0) then begin
-               AspDir := Dir1;
-               Max := d1 / Dist;
-            end
-            else if (d2 > d1) and (d2 > 0) then begin
-               AspDir := Dir2;
-               Max := d2 / Dist;
-            end
-            else begin
-               Max := 0;
-               AspDir := cdPit;
-            end;
-         end {proc MaxSlope};
-
-
-         procedure MaxSlopeComputations;
+         procedure MaxSlopeComputations(var SlopeAsp : tSlopeAspectRec; var sl : tFourFloats; var AspDir : tAspectDir);
          //used only for SteepestNeighbor,AverageNeighbor; not recommended
+         //not inline because if you want to use it you can take the performance hit
 
-                  procedure MaxSlope(z,z1,z2,Dist : float64; var Max : float64; Dir1,Dir2 : tCompassDirection; var AspDir : tCompassDirection); inline;
+                  procedure MaxSlope(z,z1,z2,Dist : float64; var Max : float64; Dir1,Dir2 : tCompassDirection; var AspDir : tCompassDirection);
                   const
                      Opp : array[tCompassDirection] of tCompassDirection = (cdS,cdSW,cdW,cdNW,cdN,cdNE,cdE,cdSE,cdFlat,cdPit);
                   var
@@ -873,56 +881,28 @@ var
          begin
              MaxSlope(SlopeAsp.z,SlopeAsp.zs,SlopeAsp.zn,SlopeAsp.dy,sl[1],cdS,cdN,SlopeAsp.Dir);
              MaxSlope(SlopeAsp.z,SlopeAsp.zw,SlopeAsp.ze,SlopeAsp.dx,sl[2],cdW,cdE,AspDir[2]);
-             MaxSlope(SlopeAsp.z,SlopeAsp.zsw,SlopeAsp.znw,UseDiaSpace,sl[3],cdSW,cdNW,AspDir[3]);
-             MaxSlope(SlopeAsp.z,SlopeAsp.zse,SlopeAsp.zne,UseDiaSpace,sl[4],cdSE,cdNE,AspDir[4]);
+             MaxSlope(SlopeAsp.z,SlopeAsp.zsw,SlopeAsp.znw,SlopeAsp.Dia_Space,sl[3],cdSW,cdNW,AspDir[3]);
+             MaxSlope(SlopeAsp.z,SlopeAsp.zse,SlopeAsp.zne,SlopeAsp.Dia_Space,sl[4],cdSE,cdNE,AspDir[4]);
          end;
 
-
-         function IsPit(var SlopeAsp : tSlopeAspectRec) : boolean; inline;
+         procedure AddSlope(var SlopeAsp : tSlopeAspectRec; z,z1,z2,Dist : float64);  inline;
+         //used only for average neighbors method, not recommended
+         var
+            d1,d2 : float64;
          begin
-            Result := (SlopeAsp.z < SlopeAsp.zne) and (SlopeAsp.z < SlopeAsp.znw) and (SlopeAsp.z < SlopeAsp.zn) and (SlopeAsp.z < SlopeAsp.ze) and
-                  (SlopeAsp.z < SlopeAsp.zw) and (SlopeAsp.z < SlopeAsp.zse) and (SlopeAsp.z < SlopeAsp.zsw) and (SlopeAsp.z < SlopeAsp.zs);
-         end;
-
-         procedure GetAspect(var SlopeAsp : tSlopeAspectRec); //inline;
-         begin
-            if (abs(SlopeAsp.dzdx) < 0.001) and (abs(SlopeAsp.dzdy) < 0.001) then begin
-               SlopeAsp.AspectDir := MaxSmallInt;
-               SlopeAsp.AspectDirGrid := MaxSmallInt;
-               SlopeAsp.Dir := cdFlat;
-            end
-            else begin
-               //modified atan2 function
-               //   standard math convention puts 0 on the x axis and angles increases counterclockwise,
-               //   use geographic conventions, where N (0) is on the y axis, and angles increase clockwise
-               SlopeAsp.AspectDirGrid := HeadingOfLine(SlopeAsp.dzdx,SlopeAsp.dzdy) + 180;
-               if (SlopeAsp.AspectDirGrid > 360) then SlopeAsp.AspectDirGrid := SlopeAsp.AspectDirGrid - 360;
-               if (SlopeAsp.AspectDirGrid < 0) then SlopeAsp.AspectDirGrid := SlopeAsp.AspectDirGrid + 360;
-
-               SlopeAsp.AspectDir := SlopeAsp.AspectDirGrid + SlopeAsp.GridTrueAngle;
-               if (SlopeAsp.AspectDir > 360) then SlopeAsp.AspectDir := SlopeAsp.AspectDir - 360;
-               if (SlopeAsp.AspectDir < 0) then SlopeAsp.AspectDir := SlopeAsp.AspectDir + 360;
-
-               if IsPit(SlopeAsp) then begin
-                  SlopeAsp.Dir := cdPit;
-               end
-               else begin
-                  (*
-                  if (SlopeAsp.AspectDir < 22.5) or (SlopeAsp.AspectDir > 337.5) then SlopeAsp.Dir := cdN
-                  else if (SlopeAsp.AspectDir < 67.5) then SlopeAsp.Dir := cdNE
-                  else if (SlopeAsp.AspectDir < 112.5) then SlopeAsp.Dir := cdE
-                  else if (SlopeAsp.AspectDir < 157.5) then SlopeAsp.Dir := cdSE
-                  else if (SlopeAsp.AspectDir < 202.5) then SlopeAsp.Dir := cdS
-                  else if (SlopeAsp.AspectDir < 247.5) then SlopeAsp.Dir := cdSW
-                  else if (SlopeAsp.AspectDir < 292.5) then SlopeAsp.Dir := cdW
-                  else SlopeAsp.Dir := cdNW;
-                  *)
-                  SlopeAsp.Dir := AspectDir8FromAspect(SlopeAsp.AspectDir);
-               end;
-            end;
+            d1 := (z - z1);
+            d2 := (z - z2);
+            d1 := abs(d1);
+            SlopeAsp.Slope := SlopeAsp.Slope + d1 / Dist;
+            d2 := abs(d2);
+            SlopeAsp.Slope := SlopeAsp.Slope + d2 / Dist;
          end;
 
 
+function tDEMDataSet.GetSlopeAndAspect(Col,Row : integer; var SlopeAsp : tSlopeAspectRec) : boolean;
+var
+   sl     : tFourFloats;
+   AspDir : tAspectDir;
 var
    j : integer;
    Lat,Long : float64;
@@ -969,9 +949,9 @@ begin
          GetAspect(SlopeAsp);
       end
       else begin //these methods probably have no good reasons to recommend them any longer
-         UseDiaSpace := DiagSpaceByDEMrow^[Row] * MDDef.SlopeRegionRadius;
+         SlopeAsp.Dia_Space := DiagSpaceByDEMrow^[Row] * MDDef.SlopeRegionRadius;
          if (MDDef.SlopeAlg in [smGuthHybrid]) then begin  //no longer recommended
-             MaxSlopeComputations;
+             MaxSlopeComputations(SlopeAsp,sl,AspDir);
              for j := 2 to 4 do if sl[j] > sl[1] then sl[1] := sl[j];
              SlopeAsp.Slope := Sl[1];
              SlopeAsp.dzdx := (SlopeAsp.zne + SlopeAsp.ze + SlopeAsp.zse - SlopeAsp.zsw - SlopeAsp.zw - SlopeAsp.znw) / 6 / SlopeAsp.dx;
@@ -979,7 +959,7 @@ begin
              GetAspect(SlopeAsp);
          end
          else if (MDDef.SlopeAlg in [smSteepestNeighbor,smAverageNeighbor]) then begin
-            MaxSlopeComputations;
+            MaxSlopeComputations(SlopeAsp,sl,AspDir);
             for j := 2 to 4 do if sl[j] > sl[1] then begin
                 sl[1] := sl[j];
                 SlopeAsp.Dir := AspDir[j];
@@ -988,18 +968,18 @@ begin
             SlopeAsp.AspectDir := 45.0 * Ord(SlopeAsp.Dir);
             if (MDDef.SlopeAlg = smAverageNeighbor) then begin
                SlopeAsp.Slope := 0;
-               AddSlope(SlopeAsp.z,SlopeAsp.zs,SlopeAsp.zn,SlopeAsp.dy);
-               AddSlope(SlopeAsp.z,SlopeAsp.zw,SlopeAsp.ze,SlopeAsp.dx);
-               AddSlope(SlopeAsp.z,SlopeAsp.zsw,SlopeAsp.znw,UseDiaSpace);
-               AddSlope(SlopeAsp.z,SlopeAsp.zse,SlopeAsp.zne,UseDiaSpace);
+               AddSlope(SlopeAsp,SlopeAsp.z,SlopeAsp.zs,SlopeAsp.zn,SlopeAsp.dy);
+               AddSlope(SlopeAsp,SlopeAsp.z,SlopeAsp.zw,SlopeAsp.ze,SlopeAsp.dx);
+               AddSlope(SlopeAsp,SlopeAsp.z,SlopeAsp.zsw,SlopeAsp.znw,SlopeAsp.Dia_Space);
+               AddSlope(SlopeAsp,SlopeAsp.z,SlopeAsp.zse,SlopeAsp.zne,SlopeAsp.Dia_Space);
                SlopeAsp.Slope := SlopeAsp.Slope / 8;
             end;
          end
          else if (MDDef.SlopeAlg = smMaxDownhillSlope) then begin
             MaxDownHill(SlopeAsp.z,SlopeAsp.zs,SlopeAsp.zn,SlopeAsp.dy,sl[1],cdS,cdN,SlopeAsp.Dir);
             MaxDownHill(SlopeAsp.z,SlopeAsp.zw,SlopeAsp.ze,SlopeAsp.dx,sl[2],cdW,cdE,AspDir[2]);
-            MaxDownHill(SlopeAsp.z,SlopeAsp.zsw,SlopeAsp.znw,UseDiaSpace,sl[3],cdSW,cdNW,AspDir[3]);
-            MaxDownHill(SlopeAsp.z,SlopeAsp.zse,SlopeAsp.zne,UseDiaSpace,sl[4],cdSE,cdNE,AspDir[4]);
+            MaxDownHill(SlopeAsp.z,SlopeAsp.zsw,SlopeAsp.znw,SlopeAsp.Dia_Space,sl[3],cdSW,cdNW,AspDir[3]);
+            MaxDownHill(SlopeAsp.z,SlopeAsp.zse,SlopeAsp.zne,SlopeAsp.Dia_Space,sl[4],cdSE,cdNE,AspDir[4]);
             for j := 2 to 4 do if sl[j] > sl[1] then begin
                 sl[1] := sl[j];
                 SlopeAsp.Dir := AspDir[j];
@@ -1361,15 +1341,15 @@ begin
    Legends := tStringList.Create;
    New(Values);
    GetElevationsInLongArray(GridLimits,NPts,Values^);
-   Max := DEMHeader.MaxElev;
-   Min := DEMHeader.MinElev;
+   HeapSort(NPts,Values^);
+   Max := Values^[pred(NPts)];
+   Min := Values^[0];
    fName := Petmar.NextFileNumber(MDtempDir,AreaName + '_' ,'.z');
    Distributions.Add(SaveSingleValueSeries(npts,Values^,fName));
    Legends.Add(AreaName);
    Dispose(Values);
    BinSize := (Max - Min) / 200;
-   //if (Max-Min > 25) then BinSize := round(BinSize);
-   Result := CreateMultipleHistogram(MDDef.CountHistograms,Distributions,Legends,'', '',200,Min,Max,BinSize);
+   Result := CreateMultipleHistogram(MDDef.CountHistograms,Distributions,Legends,ElevUnitsAre(DEMHeader.ElevUnits),AreaName + ' histogram',200,Min,Max,BinSize);
    {$IfDef RecordDEMstats} WriteLineToDebugFile('tDEMDataSet.CreatePartDEMHistogramn out'); {$EndIf}
 end;
 

@@ -600,6 +600,13 @@ type
     CreatefinalDB1: TMenuItem;
     N3DEPfileswithtag421121: TMenuItem;
     Fixtileswith42114foottag1: TMenuItem;
+    MergeSSIMFUV1: TMenuItem;
+    Onedegreetilestocovertestareas1: TMenuItem;
+    N46: TMenuItem;
+    GetrangesforSSIMhydro1: TMenuItem;
+    OpenmapsforDEMIXtestarea1: TMenuItem;
+    LoadCpopDEMandLNDCOERFORTEXTAREA1: TMenuItem;
+    Createlandcovergrids1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -1020,6 +1027,12 @@ type
     procedure Fixtileswith42114foottag1Click(Sender: TObject);
     procedure DEMIXmergeCSVfiles1Click(Sender: TObject);
     procedure Partialprocessing1Click(Sender: TObject);
+    procedure MergeSSIMFUV1Click(Sender: TObject);
+    procedure Onedegreetilestocovertestareas1Click(Sender: TObject);
+    procedure GetrangesforSSIMhydro1Click(Sender: TObject);
+    procedure OpenmapsforDEMIXtestarea1Click(Sender: TObject);
+    procedure LoadCpopDEMandLNDCOERFORTEXTAREA1Click(Sender: TObject);
+    procedure Createlandcovergrids1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1605,6 +1618,11 @@ begin
    MakeDEMsummaryTable;
 end;
 
+
+procedure Twmdem.LoadCpopDEMandLNDCOERFORTEXTAREA1Click(Sender: TObject);
+begin
+   OpenCopDEMandLandcoverForArea;
+end;
 
 procedure Twmdem.Loadimage1Click(Sender: TObject);
 begin
@@ -3339,6 +3357,11 @@ begin
    DEMIXCreateHalfSecRefDEMs;
 end;
 
+procedure Twmdem.Createlandcovergrids1Click(Sender: TObject);
+begin
+   CreateLandCoverGrids;
+end;
+
 procedure Twmdem.CreaterangereferenceDEMs1Click(Sender: TObject);
 begin
    DEMIX_CreateReferenceDEMs(false,ResampleModeRange);
@@ -3814,6 +3837,11 @@ begin
 end;
 
 
+procedure Twmdem.Onedegreetilestocovertestareas1Click(Sender: TObject);
+begin
+   OneDegreeTilesToCoverTestAreas;
+end;
+
 procedure Twmdem.Onlinehelp1Click(Sender: TObject);
 begin
    {$IfDef AllowUSNAhelp}
@@ -4252,6 +4280,11 @@ begin
     //MergeSSIMandR2DB;
 end;
 
+procedure Twmdem.MergeSSIMFUV1Click(Sender: TObject);
+begin
+   MergeCSVtoCreateFinalDB(true);
+end;
+
 procedure Twmdem.MergewavelengthheightDBFs1Click(Sender: TObject);
 {$IfDef ExComplexGeoStats}
 begin
@@ -4511,6 +4544,11 @@ begin
    GeotiffMetadata(mdMicrodem,ExtractFilePath(LastImageName));
 end;
 
+procedure Twmdem.GetrangesforSSIMhydro1Click(Sender: TObject);
+begin
+   GetRangesForSSIM;
+end;
+
 procedure Twmdem.OpenGeoPDF1Click(Sender: TObject);
 begin
    {$If Defined(ExGDAL) or Defined(ExGeoPDF)}
@@ -4577,6 +4615,11 @@ begin
    {$EndIf}
 end;
 
+
+procedure Twmdem.OpenmapsforDEMIXtestarea1Click(Sender: TObject);
+begin
+   OpenDEMIXAreaMaps;
+end;
 
 procedure Twmdem.Openmultigrids1Click(Sender: TObject);
 begin

@@ -242,8 +242,7 @@ var
       ClusterSummary := tStringList.Create;
       MVClusterClientDataSet.KMeansClustering(ClusterSummary,FieldsToUse, FieldsUsed, MDTempDir + 'Cluster_Results.HTML');
 
-
-      {$IfDef RecordClusteringFull} WriteLineToDebugFile('Rank the clusters'); {$EndIf}
+      {$IfDef RecordClusteringFull} WriteLineToDebugFile('Rank clusters'); {$EndIf}
           for j := 1 to MVClusterClientDataSet.NClusters do if (MVClusterClientDataSet.ClsCounts[j] > 0) then begin
              aSum[j] := 0;
              for i := 1 to FieldsUsed do begin
@@ -254,10 +253,9 @@ var
              {$IfDef RecordClusteringFull} WriteLineToDebugFile(intToStr(j) + ',' + RealToString(asum[j],-12,-4)); {$EndIf}
           end;
 
-      {$IfDef RecordClusteringFull} WriteLineToDebugFile('Renumber the clusters in order'); {$EndIf}
+      {$IfDef RecordClusteringFull} WriteLineToDebugFile('Renumber clusters in order'); {$EndIf}
           for j := 1 to MVClusterClientDataSet.NClusters do if (MVClusterClientDataSet.ClsCounts[j] > 0) then begin
              ThisSum := 99999;
-             //OrderedCluster[j] := 0;
              for i := 1 to MVClusterClientDataSet.NClusters do if (MVClusterClientDataSet.ClsCounts[i] > 0) then begin
                 if asum[i] < ThisSum then begin
                    OrderedCluster[j] := i;
@@ -302,6 +300,7 @@ var
       {$IfDef RecordClustering} WriteLineToDebugFile('Cluster Number'); {$EndIf}
       for i := 1 to MDDef.NumClusters do begin
          GISdb[DBonTable].MyData.ApplyFilter(ClusterField + '=' + IntToStr(i));
+         GISdb[DBonTable].Empsource.Enabled := false;
          NinCluster := GISdb[DBonTable].MyData.RecordCount;
          if (NinCluster > 0) then begin
             inc(NClustersUsed);
@@ -310,6 +309,7 @@ var
 
             if GISdb[DBonTable].MyData.FieldExists('MASK') then begin
                GISdb[DBonTable].MyData.ApplyFilter('CLUSTER=' + IntToStr(i) + ' AND MASK=' + QuotedStr('Y'));
+               GISdb[DBonTable].Empsource.Enabled := false;
                NinClusterAndMask := GISdb[DBonTable].MyData.RecordCount;
                if (NinClusterAndMask > 0) then begin
                   inc(ClustersWithMask);
@@ -351,6 +351,7 @@ var
          if MDDef.ShowClusterHistograms then MakeBigHistogram(true);
          if MDDef.ShowMaskHistograms then MakeBigHistogram(false);
          MakeScatterPlots;
+         {$IfDef RecordClustering} WriteLineToDebugFile('Plots complete'); {$EndIf}
       end;
 
       NewDB := tStringList.Create;
@@ -361,8 +362,8 @@ var
       for I := 0 to pred(FieldsUsed) do TStr := TStr + ',' + FieldsToUse[i];
       NewDB.Add(TStr);
       GISdb[DBonTable].MyData.First;
-      while not GISdb[DBonTable].MyData.eof do
-      begin
+      GISdb[DBonTable].Empsource.Enabled := false;
+      while not GISdb[DBonTable].MyData.eof do begin
          if GISdb[DBonTable].LatLongFieldsPresent then TStr := GISdb[DBonTable].MyData.GetFieldByNameAsString(GISdb[DBonTable].LatFieldName) + ',' +
                  GISdb[DBonTable].MyData.GetFieldByNameAsString(GISdb[DBonTable].LongFieldName) + ','
          else TStr := '';
@@ -373,6 +374,8 @@ var
          NewDB.Add(TStr);
          GISdb[DBonTable].MyData.Next;
       end;
+
+      {$IfDef RecordClustering} WriteLineToDebugFile('DB created'); {$EndIf}
 
       if GISdb[DBonTable].LatLongFieldsPresent and (GISdb[DBonTable].TheMapOwner <> Nil) then begin
          fName := Petmar.NextFileNumber(ExtractFilePath(GISdb[DBonTable].dbFullName),GISdb[DBonTable].dbName + '_cluster_',DefaultDBExt);
@@ -401,56 +404,14 @@ begin {DoKMeansClustering}
             MDDef.ShowMaskScatterPlots:= false;
             MDDef.ShowMaskHistograms := false;
          end;
-
-        (*
-        //unclear if this works or was fully implemented; it has been commented out for a long time
-         if false and (UsingFields.Count > 5) and (AnswerIsYes('Find best combination')) then begin
-            MDDef.ShowClusterScatterPlots  := false;
-            MDDef.ShowMaskScatterPlots  := false;
-            MDDef.ShowClusterHistograms  := false;
-            MDDef.ShowMaskHistograms  := false;
-
-            for I := 0 to pred(UsingFields.Count) - 4 do  begin
-               wmDEM.SetPanelText(0,IntToStr(i) + '/' + IntToStr(pred(UsingFields.Count) - 4));
-               {$IfDef RecordClustering}
-               WriteLineToDebugFile('i=' + IntToStr(i));
-               {$EndIf}
-               for j := succ(i) to pred(UsingFields.Count) - 3 do begin
-                  wmdem.StatusBar1.Panels[1].Text := IntToStr(j) + '/' + IntToStr(pred(UsingFields.Count) - 3);
-                  ApplicationProcessMessages;
-                  for k := succ(j) to pred(UsingFields.Count) - 2 do begin
-                     for l := succ(k) to pred(UsingFields.Count) - 1 do  begin
-                        for m := succ(l) to pred(UsingFields.Count) do begin
-                            FieldsUsed := 5;
-                            SetLength(FieldsToUse,FieldsUsed);
-                            FieldsToUse[0] := UsingFields.Strings[i];
-                            FieldsToUse[1] := UsingFields.Strings[j];
-                            FieldsToUse[2] := UsingFields.Strings[k];
-                            FieldsToUse[3] := UsingFields.Strings[l];
-                            FieldsToUse[4] := UsingFields.Strings[m];
-                            ProcessClustering;
-                        end;
-                     end;
-                  end;
-               end;
-            end;
-            UsingFields.Free;
-            {$IfDef RecordClustering} WriteLineToDebugFile('Big Loops over'); {$EndIf}
-         end
-         else *)
-         begin
-            FieldsUsed := UsingFields.Count;
-            SetLength(FieldsToUse,FieldsUsed);
-            for j := 0 to pred(FieldsUsed) do FieldsToUse[j] := UsingFields.Strings[j];
-            ProcessClustering;
-            UsingFields.Free;
-         end;
+         FieldsUsed := UsingFields.Count;
+         SetLength(FieldsToUse,FieldsUsed);
+         for j := 0 to pred(FieldsUsed) do FieldsToUse[j] := UsingFields.Strings[j];
+         ProcessClustering;
+         UsingFields.Free;
       end;
-      //DEMDef_routines.RestoreBackupDefaults;
       GISdb[DBonTable].dbTablef.RestoreHiddenColumns;
       GISdb[DBonTable].dbTablef.ShowStatus;
-      //GISdb[DBonTable].dbTablef.UnHideColumns;
-
       if (ClusterSuccess <> Nil) and (ClusterSuccess.Count > 0) then Petmar.DisplayAndPurgeStringList(ClusterSuccess,'Cluster results');
       {$IfDef RecordClustering} WriteLineToDebugFile('DoKMeansClustering over'); {$EndIf}
    end;

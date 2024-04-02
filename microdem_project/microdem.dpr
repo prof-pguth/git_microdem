@@ -327,7 +327,8 @@ uses
   demix_definitions in '..\demix\demix_definitions.pas',
   demix_control in '..\demix\demix_control.pas',
   demix_graphs in '..\demix\demix_graphs.pas',
-  demix_evals_scores_graphs in '..\demix\demix_evals_scores_graphs.pas' {eval_scores_graph_form};
+  demix_evals_scores_graphs in '..\demix\demix_evals_scores_graphs.pas' {eval_scores_graph_form},
+  pick_demix_mode in '..\demix\pick_demix_mode.pas' {PickDEMIXmodeForm};
 
 //MethodCallBack in '..\python4delphi\Source\MethodCallBack.pas',
   //VarPyth in '..\python4delphi\Source\VarPyth.pas',
@@ -350,8 +351,9 @@ begin
   end
   else begin
     try
-      if (GetLastError = ERROR_ALREADY_EXISTS) then
-        MessageToContinue('Program already running.  Closing...')
+      if (GetLastError = ERROR_ALREADY_EXISTS) then begin
+        MessageToContinue('Program already running.  Closing...');
+      end
       else begin
          {$IfDef MessageStartUpProblems} MessageToContinue('Startup microdem.dpr'); {$EndIf}
          ReportMemoryLeaksOnShutdown := (DebugHook <> 0);
@@ -359,7 +361,7 @@ begin
          Application.Title := '';
          Application.HelpFile := 'microdem.chm';
          Application.CreateForm(Twmdem, wmdem);
-  Application.Run;
+         Application.Run;
       end;
     finally
        CloseHandle(FMutex);

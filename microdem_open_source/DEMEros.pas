@@ -18,7 +18,7 @@
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IfDef Debug}
       //{$Define RecordLoadSat}
-      {$Define RecordEOBrowser}
+      //{$Define RecordEOBrowser}
       //{$Define RecordKeyDraw}
       //{$Define RecordTMSat}
       //{$Define RecordShortLandsat}
@@ -210,7 +210,7 @@ type
 
          procedure DisplayImage(SatView : tSatView; MapDraw : tMapDraw; Bitmap : tMyBitmap);
 
-         procedure GetSatRow(Band,Row : integer; var TheRow : tImageRow);  {$IfDef AllowInlines} inline; {$EndIf}
+         procedure GetSatRow(Band,Row : integer; var TheRow : tRow8Bit);  {$IfDef AllowInlines} inline; {$EndIf}
          procedure GetSatRow16bit(Band,Row : integer; var TheRow : tWordRow16bit); {$IfDef AllowInlines} inline; {$EndIf}
          function GetSatPointValue(Band,Col,Row : integer) : integer;
          function ConvertDN(DN : word; Band : integer; HowConvert : tDNconvert = dncMDDefault) : float64; {$IfDef ConvertDNInline} inline; {$EndIf}
@@ -1123,7 +1123,7 @@ end;
 procedure tSatImage.SatSceneStatistics(var n : integer; var Correlations,VarCoVar : tTrendMatrix; var Mean,Min,Max,StdDev : tMaxBandsArray);
 var
    i,j,Row,Col,Band : integer;
-   Vals : array[1..MaxBands] of ^tImageRow;
+   Vals : array[1..MaxBands] of ^tRow8Bit;
    Sum : tMaxBandsArray;
    SP : ^tTrendMatrix;
 begin
@@ -1757,7 +1757,7 @@ end;
 
 procedure tSatImage.GetSatRow16bit(Band,Row : integer; var TheRow : tWordRow16bit);
 var
-   Row8bit : tImageRow;
+   Row8bit : tRow8Bit;
    i : integer;
 begin
    if Data16Bit then begin
@@ -1770,7 +1770,7 @@ begin
 end;
 
 
-procedure tSatImage.GetSatRow(Band,Row : integer; var TheRow : tImageRow);
+procedure tSatImage.GetSatRow(Band,Row : integer; var TheRow : tRow8Bit);
 {$IfDef ExSat}
 begin
 {$Else}
@@ -2007,7 +2007,7 @@ var
    FName : PathStr;
    i     : integer;
    Bitmap : tMyBitmap;
-   LandCover : ShortString;
+   LandCover : integer;
    ReadFailure : boolean;
 
 
@@ -2692,7 +2692,7 @@ var
    Sampler,i,x,y : integer;
    Lat,Long : float64;
    Table   : tMyData;
-   RowVals : array[1..MaxBands] of ^tImageRow;
+   RowVals : array[1..MaxBands] of ^tRow8Bit;
 begin
     fName := ExtractFilePath(OriginalFileName) + SceneBaseName + '_refs.dbf';
     Make_Tables.MakeSatelliteTable(fName,NumBands);

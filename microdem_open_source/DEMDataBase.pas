@@ -16,13 +16,12 @@
    {$IfDef RecordProblems}  //normally only defined for debugging specific problems
       //{$Define RecordCloseDB}
       {$Define RecordDEMIX}
-      {$Define RecordCopyFieldLinkDB}
-      //{$Define RecordClustering}
+      //{$Define RecordCopyFieldLinkDB}
+      {$Define RecordClustering}
       //{$Define RecordLegend}
       //{$Define RecordDBNumericPlot}
       //{$Define RecordHyperion}
       //{$Define RecordDEMIXFull}
-      //{$Define RecordDEMIXties}   //only enable for small test DB
       //{$Define RecordSymbolColor}
       //{$Define RecordRedistrict}
       //{$Define RecordDataBaseTiming}
@@ -41,7 +40,7 @@
 
       //{$Define RecordSym}
       //{$Define RecordDBPlotDetailed}
-      {$Define RecordShapeFileGroup}
+      //{$Define RecordShapeFileGroup}
       //{$Define RecordFullOpenDB}
       //{$Define RecordFullShapeFileGroup}
       //{$Define RecordMonthlyFilter}
@@ -510,7 +509,7 @@ type
      procedure DBFieldUniqueEntries(FieldName : shortstring; var FieldsInDB : tStringList);
 
      procedure MarkRecordsOnDEM(fName : shortstring; DEM : integer);
-     procedure PutInQuartilesBasedOnExistingSort;
+     procedure PutInQuartilesBasedOnExistingSort(NumQ : integer = 0);
 
      procedure ExportToXML(fName : PathStr);
      procedure ExportToSQLite;
@@ -913,6 +912,7 @@ uses
    {$include demdatabase_drainage_basin.inc}
 {$EndIf}
 
+
 function SortDataBase(DBOnTable : integer; Ascending : boolean; aField : shortString = ''; OutputDir : PathStr = '') : integer;
 var
    GridForm : tGridForm;
@@ -920,7 +920,17 @@ var
    fName : PathStr;
    TStr : shortstring;
    ft,col : integer;
+   NeedRestore : boolean;
 begin
+   NeedRestore := false;
+   if (GISDB[DBonTable].dbtablef <> Nil) and GISDB[DBonTable].dbtablef.AnyHiddenColumns then begin
+      If not AnswerIsYes('Sort without hidden fields') then begin
+         GISdb[DBonTable].dbTableF.SaveHiddenColumns;
+         GISdb[DBonTable].dbTableF.UnHideColumns;
+         NeedRestore := true;
+      end;
+   end;
+
    if (aField = '') then aField := GISDB[DBonTable].PickField('field to sort on',[ftString,ftSmallInt,ftFloat,ftInteger]);
    if (GISDB[DBonTable].MyData.GetFieldType(aField) = ftString) then ft := 0 else ft := 2;
    GridForm := tGridForm.Create(Application);
@@ -947,6 +957,11 @@ begin
    if (GISdb[DBonTable].theMapOwner <> nil) then Result := GISdb[DBonTable].theMapOwner.OpenDBonMap('',fName)
    else OpenNumberedGISDataBase(Result,fName,true);
    GridForm.Close;
+   if NeedRestore then begin
+      GISdb[DBonTable].dbTableF.RestoreHiddenColumns;
+      GISdb[DBonTable].dbTableF.HideColumns;
+      GISdb[DBonTable].dbTableF.ShowStatus;
+   end;
 end;
 
 
@@ -2597,6 +2612,10 @@ end;
                dbTablef.BaseMapBitmap := Nil;
                dbTablef.Restrictbymapscale1.Visible := ItsTigerShapeFile or ItsOSMShapeFile;
                dbTablef.Restrictbymapscale1.Checked := MDDef.UsePixelSizeRules;
+
+               dbTablef.DEMIX1.Visible := MDDef.ShowDEMIX and ((MyData.FieldExists('COP') and MyData.FieldExists('ALOS')) or StrUtils.AnsiContainsText(dbName,'DEMIX'));
+               dbTablef.BitBtn24.Visible := dbTablef.DEMIX1.Visible;
+
                if MDDef.DBMinimizeOnOpen then dbTablef.WindowState := wsMinimized;
 
                if MyData.FieldExists('BEAM') and MyData.FieldExists('TRACK_ID') then begin
@@ -5222,7 +5241,7 @@ begin
           end;
           NewFile := Dir + bName + DefaultDBExt;
           if AutoOverwriteDBF or (not FileExists(NewFile)) or AnswerIsYes(NewFile + ' already exists; overwrite') then begin
-             DoCSVFileImport(FileWanted);
+             CSVFileImportToDB(FileWanted);
              WasCSVImport := true;
           end;
           FileWanted := Dir + bName + DefaultDBExt;
@@ -5751,7 +5770,6 @@ begin
     MyData.ApplyFilter(MyData.Filter);
     ShowStatus;
 end;
-
 
 
 procedure TGISdataBaseModule.ApplyGISFilter(fString : AnsiString; DoShowStatus : boolean = true);

@@ -656,41 +656,17 @@ begin
       if (MapType = mtFlowDir360) then begin
          DefineSlopeColors;
       end
-      else if (MapType = mtFlowDirArc) then begin
-         pPal[1] := AspColorE;
-         pPal[2] := AspColorSE;
-         pPal[4] := AspColorS;
-         pPal[8] := AspColorSW;
-         pPal[16] := AspColorW;
-         pPal[32] := AspColorNW;
-         pPal[64] := AspColorN;
-         pPal[128] := AspColorNE;
-      end
-      else if (MapType = mtFlowDirTau) then begin
-         pPal[1] := AspColorE;
-         pPal[8] := AspColorSE;
-         pPal[7] := AspColorS;
-         pPal[6] := AspColorSW;
-         pPal[5] := AspColorW;
-         pPal[4] := AspColorNW;
-         pPal[3] := AspColorN;
-         pPal[2] := AspColorNE;
-      end;
    end
-
-   {$IfDef ExNLCD}
-   {$Else}
    else if (MapType = mtLandCover) then begin
       {$IfDef RecordNLCD} WriteLineToDebugFile('LandCoverGrid on DEM Map'); {$EndIf}
       for I := 1 to MaxLandCoverCategories do begin
          if DEMGlb[DEMonMap].NLCDCats^[i].UseCat then begin
-            {$IfDef RecordNLCD} WriteLineToDebugFile(IntegerToString(i,3) + IntegerToString(DEMGlb[DEMonMap].NLCDCats^[i].Color,12)); {$EndIf}
+            {$IfDef RecordNLCD} WriteLineToDebugFile(IntegerToString(i,3) + IntegerToString(ConvertPlatformColorToTColor(DEMGlb[DEMonMap].NLCDCats^[i].Color),12) + ' ' + DEMGlb[DEMonMap].NLCDCats^[i].ShortName); {$EndIf}
             pPal[i] := DEMGlb[DEMonMap].NLCDCats^[i].Color;
          end
          else pPal[i] := MDDef.MissingDataColor;
       end;
    end
-   {$EndIf}
    else if (MapType in [mtElevDefinedPalette]) then begin
       if not DefineColorTableValues(MDDef.ElevPalName,MinMapElev,MaxMapElev,ZColorTable) then exit;
       ColorsForLegends;
@@ -782,6 +758,26 @@ begin
          pPal[254] := ConvertTColorToPlatFormColor(clWhite);
       end
    {$EndIf}
+   else if (MapType = mtFlowDirArc) then begin
+      pPal[1] := AspColorE;
+      pPal[2] := AspColorSE;
+      pPal[4] := AspColorS;
+      pPal[8] := AspColorSW;
+      pPal[16] := AspColorW;
+      pPal[32] := AspColorNW;
+      pPal[64] := AspColorN;
+      pPal[128] := AspColorNE;
+   end
+   else if (MapType = mtFlowDirTau) then begin
+      pPal[1] := AspColorE;
+      pPal[8] := AspColorSE;
+      pPal[7] := AspColorS;
+      pPal[6] := AspColorSW;
+      pPal[5] := AspColorW;
+      pPal[4] := AspColorNW;
+      pPal[3] := AspColorN;
+      pPal[2] := AspColorNE;
+   end
    else begin
       if (MapType = mtElevIHS) then for i := 0 to 255 do pPal[i] := RGBtripFromHSI(TheHue(MDDef.MergeHue,i),MDDef.MergeSat,MDDef.MergeInt);
       if (MapType = mtElevRainbow) then for i := 0 to 255 do pPal[i] := RainbowRGBFunct(i,1,254);

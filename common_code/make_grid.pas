@@ -20,7 +20,7 @@ unit make_grid;
       //{$Define DEMIXmaps}
       //{$Define CreateSlopeMap}
       //{$Define TrackMapRange}
-      //{$Define CreateGeomorphMaps}
+      {$Define CreateGeomorphMaps}
       //{$Define RecordTimeGridCreate}
       //{$Define RecordPointClass}
       //{$Define RecordDEMCompare}
@@ -720,6 +720,7 @@ function CreateSlopeRoughnessSlopeStandardDeviationMap(DEM,DiameterMustBeOdd : i
 var
    x,y,i,j,Radius : integer;
    Slope : float32;
+   s,s2 : float64;
    fName : PathStr;
    MomentVar : tMomentVar;
    ReturnSlopeMap : boolean;
@@ -730,32 +731,39 @@ begin
    fName := 'md_ruff_slope_std_' + FilterSizeStr(DiameterMustBeOdd) + '_' + DEMGlb[DEM].AreaName;
    Result := DEMGlb[DEM].CloneAndOpenGridSetMissing(FloatingPointDEM,fName,euPercentSlope);
    Radius := DiameterMustBeOdd div 2;
-   StartProgressAbortOption('Slope and roughness ' + DEMGlb[DEM].AreaName);
+   StartProgressAbortOption('Roughness ' + DEMGlb[DEM].AreaName);
    for x := Radius to pred(DEMGlb[DEM].DEMheader.NumCol - Radius) do begin
       UpdateProgressBar(x/DEMGlb[DEM].DEMheader.NumCol);
       for y := Radius to pred(DEMGlb[DEM].DEMheader.NumRow - Radius) do begin
          MomentVar.Npts := 0;
+         s := 0;
+         s2 := 0;
          for I := x-Radius to x+Radius do begin
             for J := y-Radius to y+Radius do begin
                if DEMGlb[SlopeMap].GetElevMetersOnGrid(i,j,Slope) then begin
                   inc(MomentVar.Npts);
                   sl[MomentVar.Npts] := Slope;
+                  s := s + slope;
+                  s2 := s2 + sqr(slope);
                end;
             end;
          end;
          if (MomentVar.NPts > 5) then begin
-            moment(sl,MomentVar,msAfterStdDev);
+            MomentVar.Mean := s / MomentVar.Npts;
+            for j :=1 to MomentVar.Npts do begin
+               s := sl[j]-MomentVar.Mean;
+               MomentVar.svar := MomentVar.svar + s*s;
+            end;
+            MomentVar.svar := MomentVar.svar / (MomentVar.Npts-1);
+            MomentVar.std_dev := sqrt(MomentVar.svar);
+            //moment(sl,MomentVar,msAfterStdDev);
             DEMglb[Result].SetGridElevation(x,y,MomentVar.std_dev);
          end;
       end;
    end;
-   DEMglb[Result].CheckMaxMinElev;
+   //DEMglb[Result].CheckMaxMinElev;
    if OpenMap then DEMglb[Result].SetUpMap(Result,true,mtElevSpectrum);
-   if ReturnSlopeMap then begin
-      //DEMglb[SlopeMap].CheckMaxMinElev;
-      //if OpenMap then DEMglb[SlopeMap].SetUpMap(Result,true,mtElevSpectrum);
-   end
-   else begin
+   if not ReturnSlopeMap then begin
       CloseSingleDEM(SlopeMap);
       SlopeMap := 0;
    end;
@@ -1107,11 +1115,11 @@ begin
           end;
        end;
     end;
-    DEMGlb[Result].CheckMaxMinElev;
     if ShowSatProgress then EndProgress;
     if OpenMap then begin
        DEMGlb[Result].SetUpMap(Result,true,mtElevSpectrum);
-    end;
+    end
+    else DEMGlb[Result].CheckMaxMinElev;
     {$IfDef RecordTimeGridCreate} WriteLineToDebugFile('Make TRIGrid took ' + RealToString(Stopwatch1.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
 end;
 
@@ -1183,7 +1191,32 @@ begin
           Limits.XGridLow := (x - XBoxGridSize div 2);
           Limits.XGridHigh := (x + XBoxGridSize div 2);
 
-          if (What = 'G') then begin
+          if (What = 'S') then  begin
+               if DEMGlb[CurDEM].GetSlopeAndAspect(x,y,SlopeAspectRec) then begin
+                 PostResults(DEMs[1],x,y,GridInc,SlopeAspectRec.SlopePercent);
+                 PostResults(DEMs[2],x,y,GridInc,SlopeAspectRec.SlopeDegree);
+                 PostResults(DEMs[3],x,y,GridInc,SinDeg(SlopeAspectRec.SlopeDegree));
+                 PostResults(DEMs[4],x,y,GridInc,log10(TanDeg(SlopeAspectRec.SlopeDegree)));
+                 PostResults(DEMs[5],x,y,GridInc,sqrt(SinDeg(SlopeAspectRec.SlopeDegree)));
+                 PostResults(DEMs[9],x,y,GridInc,ln(TanDeg(SlopeAspectRec.SlopeDegree)));
+                 PostResults(DEMs[10],x,y,GridInc,SinDeg(SlopeAspectRec.SlopeDegree)/CosDeg(SlopeAspectRec.SlopeDegree));
+                 if MDDef.SignedSlopeComponents then begin
+                    PostResults(DEMs[11],x,y,GridInc, 100 * SlopeAspectRec.dzdy);
+                    PostResults(DEMs[12],x,y,GridInc, 100 * SlopeAspectRec.dzdx);
+                 end
+                 else begin
+                    PostResults(DEMs[11],x,y,GridInc, abs(100 * SlopeAspectRec.dzdy));
+                    PostResults(DEMs[12],x,y,GridInc, abs(100 * SlopeAspectRec.dzdx));
+                 end;
+
+                 if (SlopeAspectRec.AspectDir < 365) then begin
+                    PostResults(DEMs[6],x,y,GridInc,round(SlopeAspectRec.AspectDir));
+                    PostResults(DEMs[7],x,y,GridInc,sinDeg(SlopeAspectRec.AspectDir));
+                    PostResults(DEMs[8],x,y,GridInc,cosDeg(SlopeAspectRec.AspectDir));
+                 end;
+              end;
+          end
+          else if (What = 'G') then begin
              if DEMGlb[CurDEM].QuickRelief(x,y,Limits,zr,zsummit,zbase,GeoRelief,Dropoff,elev_relief) then begin
                PostResults(DEMs[1],x,y,Gridinc,zr);
                PostResults(DEMs[2],x,y,Gridinc,zsummit);
@@ -1217,31 +1250,6 @@ begin
                 PostResults(DEMs[4],x,y,Gridinc,MinCurve);
                 PostResults(DEMs[5],x,y,GridInc,MaxCurve);
              end;
-          end
-          else if (What = 'S') then  begin
-               if DEMGlb[CurDEM].GetSlopeAndAspect(x,y,SlopeAspectRec) then begin
-                 PostResults(DEMs[1],x,y,GridInc,SlopeAspectRec.SlopePercent);
-                 PostResults(DEMs[2],x,y,GridInc,SlopeAspectRec.SlopeDegree);
-                 PostResults(DEMs[3],x,y,GridInc,SinDeg(SlopeAspectRec.SlopeDegree));
-                 PostResults(DEMs[4],x,y,GridInc,log10(TanDeg(SlopeAspectRec.SlopeDegree)));
-                 PostResults(DEMs[5],x,y,GridInc,sqrt(SinDeg(SlopeAspectRec.SlopeDegree)));
-                 PostResults(DEMs[9],x,y,GridInc,ln(TanDeg(SlopeAspectRec.SlopeDegree)));
-                 PostResults(DEMs[10],x,y,GridInc,SinDeg(SlopeAspectRec.SlopeDegree)/CosDeg(SlopeAspectRec.SlopeDegree));
-                 if MDDef.SignedSlopeComponents then begin
-                    PostResults(DEMs[11],x,y,GridInc, 100 * SlopeAspectRec.dzdy);
-                    PostResults(DEMs[12],x,y,GridInc, 100 * SlopeAspectRec.dzdx);
-                 end
-                 else begin
-                    PostResults(DEMs[11],x,y,GridInc, abs(100 * SlopeAspectRec.dzdy));
-                    PostResults(DEMs[12],x,y,GridInc, abs(100 * SlopeAspectRec.dzdx));
-                 end;
-
-                 if (SlopeAspectRec.AspectDir < 365) then begin
-                    PostResults(DEMs[6],x,y,GridInc,round(SlopeAspectRec.AspectDir));
-                    PostResults(DEMs[7],x,y,GridInc,sinDeg(SlopeAspectRec.AspectDir));
-                    PostResults(DEMs[8],x,y,GridInc,cosDeg(SlopeAspectRec.AspectDir));
-                 end;
-              end;
           end
           else if (What = 'F') then begin
            // if DEMGlb[CurDEM].SimplePointSSOComputations(false,x,y,MDDef.SSOBoxSizeMeters, s1s2,s2s3,Trend,rf) then begin
@@ -1327,7 +1335,6 @@ var
           Petmar.ReplaceCharacter(GridName,' ','_');
           if (ThinFactor > 1) then DEM := DEMGlb[CurDEM].ThinAndOpenGridSetMissing(ThinFactor,FloatingPointDEM,'md_' + GridName + '_' + DEMGlb[CurDEM].AreaName,ElevUnits)
           else DEM := DEMGlb[CurDEM].CloneAndOpenGridSetMissing(FloatingPointDEM,'md_' + GridName + '_' + DEMGlb[CurDEM].AreaName,ElevUnits);
-
           {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('Created DEM ' + IntToStr(DEM) + GridName + ' proj=' + DEMGlb[DEM].DEMMapProjection.ProjDebugName); {$EndIf}
        end;
 
@@ -1458,7 +1465,7 @@ begin
 
     for i := 1 to MaxGrids do begin
        if ValidDEM(MomentDEMs[i]) then begin
-          DEMGlb[MomentDEMs[i]].CheckMaxMinElev;
+          //DEMGlb[MomentDEMs[i]].CheckMaxMinElev;
           (*  //removed 6/4/2023
           fName := MDTempDir + DEMGlb[MomentDEMs[i]].AreaName + '.dem';
           DEMGlb[MomentDEMs[i]].WriteNewFormatDEM(fName,'difference map');
@@ -1629,7 +1636,6 @@ begin
    MDDef.DoEWSlope := Components;
    Result := MakeMomentsGrid(WhichDEM,'S',-99,OpenMap);
    RestoreBackupDefaults;
-
    {$If Defined(CreateSlopeMap)} WriteLineToDebugFile('CreateSlopeMap=' + IntToStr(Result) + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].zRange); {$EndIf}
    {$IfDef  Defined(CreateGeomorphMaps)} WriteLineToDebugFile('CreateSlopeMap, InGrid=' + IntToStr(WhichDEM) + '  NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProjection.ProjDebugName); {$EndIf}
 end;

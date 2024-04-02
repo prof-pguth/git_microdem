@@ -8,11 +8,100 @@
 {____________________________________}
 
 
-procedure TileCharateristicsWhiskerPlotsByCluster(DBonTable : integer);
+procedure ClusterCompositionByDBfield(DBonTable : integer);
+var
+   i,j : integer;
+   WantedField,aLine : ShortString;
+   UniqueEntries1,UniqueEntries2,Results : tStringList;
+   fName : PathStr;
+begin
+   {$IfDef RecordClustering} WriteLineToDebugFile('Tdbtablef.ClusterComposition1Click'); {$EndIf}
+   if GISdb[DBonTable].MyData.FieldExists('CLUSTER') then begin
+      if GISdb[DBonTable].MyData.Filtered then MessageToContinue('Results apply to entire database');
+      GISdb[DBonTable].ClearGISFilter;
+      GISdb[DBonTable].EmpSource.Enabled := false;
+      UniqueEntries1 := GISdb[DBonTable].MyData.UniqueEntriesInDB('CLUSTER');
+      SortStringListNumerically(UniqueEntries1);
+      GISdb[DBonTable].EmpSource.Enabled := false;
+      WantedField := GISdb[DBonTable].PickField('cluster membership statistics' ,[ftString],true);
+      UniqueEntries2 := GISdb[DBonTable].MyData.UniqueEntriesInDB(WantedField);
+
+      Results := tStringList.Create;
+      aLine := 'CLUSTER';
+      for I := 0 to pred(UniqueEntries2.Count) do aLine := aLine + ',' + UniqueEntries2.Strings[i];
+      Results.Add(aline);
+
+      for j := 0 to pred(UniqueEntries1.Count) do begin
+         aLine := 'Cluster ' + UniqueEntries1.Strings[j];
+         for I := 0 to pred(UniqueEntries2.Count) do begin
+            GISdb[DBonTable].ApplyGISFilter('CLUSTER=' + UniqueEntries1.Strings[j] + ' AND ' + WantedField + '=' + QuotedStr(UniqueEntries2.Strings[i]));
+            aLine := aLine + ',' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB);
+         end;
+         Results.Add(aline);
+      end;
+
+      fName := Petmar.NextFileNumber(MDTempDir, 'Cluster_freq_',DefaultDBExt);
+      {$IfDef RecordClustering} WriteLineToDebugFile('Created: ' + fName); {$EndIf}
+      StringList2CSVtoDB(Results,fName);
+   end;
+   GISdb[DBonTable].ClearGISFilter;
+   GISdb[DBonTable].dbTablef.UnHideColumns;
+   GISdb[DBonTable].ShowStatus;
+end;
+
+
+
+procedure ClusterFrequencyForSelectedField(DBonTable : integer);
+var
+   MinX,MaxX : float64;
+   i,j : integer;
+   WantedField : ShortString;
+   UniqueEntries,Results : tStringList;
+   TStr,f1 : AnsiString;
+   fName : PathStr;
+begin
+   {$IfDef RecordClustering} WriteLineToDebugFile('Tdbtablef.Clusterfrequency1Click'); {$EndIf}
+   if GISdb[DBonTable].MyData.Filtered then MessageToContinue('Results apply to entire database');
+   GISdb[DBonTable].ClearGISFilter;
+   GISdb[DBonTable].dbTableF.SaveHiddenColumns;
+   GISdb[DBonTable].dbTablef.UnHideColumns;
+   GISdb[DBonTable].EmpSource.Enabled := false;
+   GISdb[DBonTable].MyData.FindFieldRange('CLUSTER',MinX,MaxX);
+   WantedField := GISdb[DBonTable].PickField('unique values' ,[ftString,ftInteger]);
+   GISdb[DBonTable].EmpSource.Enabled := false;
+   UniqueEntries := GISdb[DBonTable].MyData.UniqueEntriesInDB(WantedField);
+   Results := tStringList.Create;
+   TStr := WantedField;
+   for i := round(MinX) to round(MaxX) do TStr := TStr + ',CLUSTER_' + IntToStr(i);
+   Results.Add(TStr);
+   for j := 0 to pred(UniqueEntries.Count) do begin
+      GISdb[DBonTable].EmpSource.Enabled := false;
+      TStr := UniqueEntries.Strings[j];
+      for i := round(MinX) to round(MaxX) do  begin
+         f1 := WantedField + '=' + QuotedStr(UniqueEntries.Strings[j]) + ' AND CLUSTER=' + IntToStr(i);
+         GISdb[DBonTable].MyData.ApplyFilter(f1);
+         {$IfDef RecordClustering} WriteLineToDebugFile(f1); {$EndIf}
+         TStr := TStr + ',' + IntToStr(GISdb[DBonTable].MyData.RecordCount);
+      end;
+      Results.Add(TStr);
+      {$IfDef RecordClustering} WriteLineToDebugFile(TStr); {$EndIf}
+   end;
+   fName := Petmar.NextFileNumber(MDTempDir, 'Cluster_freq_',DefaultDBExt);
+   {$IfDef RecordClustering} WriteLineToDebugFile(fName); {$EndIf}
+   GISdb[DBonTable].theMapOwner.StringListToLoadedDatabase(Results,fName);
+   GISdb[DBonTable].ClearGISFilter;
+   GISdb[DBonTable].dbTableF.RestoreHiddenColumns;
+   GISdb[DBonTable].ShowStatus;
+end;
+
+
+
+procedure TileCharateristicsWhiskerPlotsByCluster(DBonTable : integer; NoFiltering : boolean; SingleCriterion : shortstring = '');
 //makes 7 graphs, one per tile characteristic, for all of the clusters
+//if no filtering, does for all the tiles in the DB
 var
    GraphImages : tStringList;
-   FieldWanted : shortstring;
+   FieldWanted,BaseFilter : shortstring;
 
       function OneGraph(Param : shortstring)  : tThisBaseGraph;
       var
@@ -20,42 +109,64 @@ var
          i,db : integer;
          Stats : tStringList;
          fName : PathStr;
+         aFilter : shortstring;
+
+         procedure DoOneCluster(aFilter : shortstring; ClusterName : shortstring);
+         begin
+            GISdb[DBonTable].ApplyGISFilter(aFilter);
+            GISdb[DBonTable].EmpSource.Enabled := false;
+            if (GISdb[DBonTable].MyData.FiltRecsInDB > 0) then begin
+               MomentVar := GISdb[DBonTable].GetFieldStatistics(Param);
+               Stats.Add(ClusterName + ' (n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + ')' +  MomentResultsToString(MomentVar));
+            end;
+         end;
+
       begin
          if GISdb[DBonTable].MyData.FieldExists(Param) then begin
             Stats := tStringList.Create;
             Stats.Add(MomentStr);
-            for i := 1 to 15 do begin
-               GISdb[DBonTable].ApplyGISFilter(FieldWanted + '=' + IntToStr(i));
-               GISdb[DBonTable].EmpSource.Enabled := false;
-               if GISdb[DBonTable].MyData.FiltRecsInDB > 0 then begin
-                  MomentVar := GISdb[DBonTable].GetFieldStatistics(Param);
-                  Stats.Add(FieldWanted + IntegerToString(i,3) + ' (n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + ')' +  MomentResultsToString(MomentVar));
+            if NoFiltering then begin
+               DoOneCluster(BaseFilter,DEMIX_mode_abbreviation(DEMIX_mode) + ' tiles');
+            end
+            else begin
+               for i := 1 to 15 do begin  //loop through clusters, quantiles
+                  aFilter := FieldWanted + '=' + IntToStr(i);
+                  if (BaseFilter <> '') then aFilter := BaseFilter + ' AND ' + aFilter;
+                  DoOneCluster(aFilter,FieldWanted + IntegerToString(i,3));
                end;
             end;
-            fName := NextFileNumber(MDTempDir,Param + '_','.dbf');
+            fName := NextFileNumber(MDTempDir,DEMIX_mode_abbreviation(DEMIX_mode) + '_' + SingleCriterion + '_' + Param,'.dbf');
             db := StringList2CSVtoDB(Stats,fName);
             Result := StartBoxPlot(db);
-            fName := NextFileNumber(MDTempDir,Param + '_','.bmp');
+            fName := MDTempDir + SingleCriterion + Param + '.bmp';
             SaveImageAsBMP(Result.Image1,fName);
             GraphImages.Add(fName);
          end
          else Result := Nil;
       end;
+
 var
    Graph : array[1..7] of  tThisBaseGraph;
+   i : integer;
+   fName : PathStr;
 begin
-   if GISdb[DBonTable].MyData.FieldExists('CLUSTER') then FieldWanted := 'CLUSTER'
-   else if GISdb[DBonTable].MyData.FieldExists('NUM_CLUSTR') then FieldWanted := 'NUM_CLUSTR';
+   if (SingleCriterion <> '') then BaseFilter := 'CRITERION=' + QuotedStr(SingleCriterion)
+   else BaseFilter := GISdb[DBonTable].MyData.Filter;
+   if not NoFiltering then begin
+      if GISdb[DBonTable].MyData.FieldExists('CLUSTER') then FieldWanted := 'CLUSTER'
+      else if GISdb[DBonTable].MyData.FieldExists('NUM_CLUSTR') then FieldWanted := 'NUM_CLUSTR'
+      else if GISdb[DBonTable].MyData.FieldExists('QUARTILE') then FieldWanted := 'QUARTILE'
+      else FieldWanted := '';
+   end;
    GraphImages := tStringList.Create;
-   Graph[1] := OneGraph('AVG_SLOPE');
-   Graph[2] := OneGraph('AVG_ROUGH');
-   Graph[3] := OneGraph('AVG_ELEV');
-   Graph[4] := OneGraph('RELIEF');
-   Graph[5] := OneGraph('BARREN_PC');
-   Graph[6] := OneGraph('URBAN_PC');
-   Graph[7] := OneGraph('FOREST_PC');
-   MakeBigBitmap(GraphImages,'Cluster tile characteristics','',3);
-   GISdb[DBonTable].ClearGISFilter;
+   for i := 1 to 7 do Graph[i] := OneGraph(TileCharacters[i]);
+   fName := MDTempDir + DEMIX_mode_abbreviation(DEMIX_mode) + SingleCriterion + '_tile_characters.png';
+   if (GraphImages.Count = 0) then begin
+      MessageToContinue('Add tile characteristics to DB');
+      GraphImages.Destroy;
+   end
+   else MakeBigBitmap(GraphImages,'',fName,3);
+   GISdb[DBonTable].ApplyGISFilter(BaseFilter);
 end;
 
 
@@ -135,7 +246,7 @@ var
    Color : tColor;
    Graph : array[1..15] of tThisBaseGraph;
 
-
+(*
       procedure StartGraph(i : integer);
       var
          J : integer;
@@ -219,8 +330,13 @@ var
          EndGraph(i);
       end;
    end;
+*)
+
 
 begin
+   MessageToContinue('Disabled for now');
+
+(*
    ColorByDEM := false;
 
    GISdb[DBonTable].EmpSource.Enabled := false;
@@ -238,12 +354,13 @@ begin
    EndProgress;
    GISdb[DBonTable].ClearGISFilter;
    GISdb[DBonTable].ShowStatus;
+*)
 end;
 
 
 function DEMIX_SSIM_FUV_cluster_sensitivity_graph(DBonTable : integer) : tThisBaseGraph;
-//graphs showing how the number of cluster changes results
-
+//graphs showing how the number of clusters changes results
+(*
          function OneGraph(MaxCluster : integer): tThisBaseGraph;
          var
             Crit,aline : shortstring;
@@ -274,10 +391,13 @@ function DEMIX_SSIM_FUV_cluster_sensitivity_graph(DBonTable : integer) : tThisBa
                Result.RedrawDiagram11Click(Nil);
             end;
          end;
+*)
 
 var
    i : integer;
 begin
+   MessageToContinue('Temporarily disabled');
+(*
    GISdb[DBonTable].EmpSource.Enabled := false;
    LoadDEMIXnames;
    ShowHourglassCursor;
@@ -288,16 +408,18 @@ begin
 
    GISdb[DBonTable].ClearGISFilter;
    GISdb[DBonTable].ShowStatus;
+*)
 end;
 
 
 function DEMIX_SSIM_FUV_clusters_graph(DBonTable : integer) : tThisBaseGraph;
 //makes graph of each cluster with criteria on y axis and evaluation on x axis
+//compare with https://plotly.com/python/parallel-coordinates-plot/
 var
    Crit,aline,aField : shortstring;
    j,k,NCrit,NDEM,Cluster : integer;
    rfile : file;
-   fName,OutPath : PathStr;
+   fName : PathStr;
    NumCrits : integer;
    TheCrits : array[1..100] of shortstring;
 
@@ -309,11 +431,12 @@ var
             if (GISdb[DBonTable].MyData.FiltRecsInDB > 0) then begin
                Result:= tThisBaseGraph.Create(Application);
                Result.GraphDraw.GraphLeftLabels := tStringList.Create;
+               Result.GraphDraw.BottomMargin := 75;
                Result.GraphDraw.SetShowAllPoints(false);
                Result.GraphDraw.LegendList := tStringList.Create;
                Result.GraphDraw.HorizLabel := 'Dissimilarity/Fraction variance unexplained';
                if (aField = '') then DEMIX_SSIM_FUV_GraphSettings(Result,What,NumCrits)
-               else DEMIX_SSIM_FUV_GraphSettings(Result,aField + ' ' + What,NCrits);
+               else DEMIX_SSIM_FUV_GraphSettings(Result,aField + ' ' + What,NumCrits);
                GISdb[DBonTable].EmpSource.Enabled := false;
                while not GISdb[DBonTable].MyData.eof do begin
                   if (aField = 'CLUSTER') or (aField = '') then begin
@@ -332,9 +455,11 @@ var
                      end;
                   end
                   else begin
-                     for j := 1 to NCrits do begin
+                     (*
+                     for j := 1 to NumCrits do begin
                         Result.AddPointToDataBuffer(rfile,GISdb[DBonTable].MyData.GetFieldByNameAsFloat(Crits[j]),j);
                      end;
+                     *)
                   end;
                   Result.ClosePointDataFile(rfile);
                   GISdb[DBonTable].MyData.Next;
@@ -343,36 +468,37 @@ var
                   for j := 1 to NumCrits do Result.GraphDraw.GraphLeftLabels.Add(IntToStr(j) + ',' + TheCrits[j]);
                end
                else begin
+                  (*
                   for j := 1 to NCrits do Result.GraphDraw.GraphLeftLabels.Add(IntToStr(j) + ',' + Crits[j]);
+                  *)
                end;
                Result.RedrawDiagram11Click(Nil);
             end;
          end;
 
 begin
-   GISdb[DBonTable].EmpSource.Enabled := false;
-   if GISdb[DBonTable].MyData.FieldExists('CLUSTER') and GISdb[DBonTable].MyData.FieldExists(Crits[1]) then aField := 'CLUSTER'
-   else if GISdb[DBonTable].MyData.FieldExists('DEM') then aField := 'DEM'
-   else begin
-      aField := '';
-      NumCrits := 0;
-      for j := 0 to pred(GISdb[DBonTable].MyData.FieldCount) do begin
-         if GISdb[DBonTable].MyData.GetFieldType(j) = ftFloat then begin
-            inc(NumCrits);
-            TheCrits[NumCrits] := GISdb[DBonTable].MyData.GetFieldName(j);
+   if GISdb[DBonTable].MyData.FieldExists('METRIC') then begin
+      GISdb[DBonTable].EmpSource.Enabled := false;
+      (*
+      if GISdb[DBonTable].MyData.FieldExists('CLUSTER') and GISdb[DBonTable].MyData.FieldExists(Crits[1]) then aField := 'CLUSTER'
+      else if GISdb[DBonTable].MyData.FieldExists('DEM') then aField := 'DEM'
+      else *) begin
+         aField := '';
+         NumCrits := 0;
+         for j := 0 to pred(GISdb[DBonTable].MyData.FieldCount) do begin
+            if (GISdb[DBonTable].MyData.GetFieldType(j) = ftFloat) then begin
+               inc(NumCrits);
+               TheCrits[NumCrits] := GISdb[DBonTable].MyData.GetFieldName(j);
+            end;
          end;
       end;
-   end;
-
-   SafeMakeDir(OutPath);
-   LoadDEMIXnames;
-   ShowHourglassCursor;
-
-   Result := OneGraph('Mean');
-   //OneGraph('Median');
-
-   GISdb[DBonTable].ClearGISFilter;
-   GISdb[DBonTable].ShowStatus;
+      LoadDEMIXnames;
+      ShowHourglassCursor;
+      Result := OneGraph('Mean');
+      GISdb[DBonTable].ClearGISFilter;
+      GISdb[DBonTable].ShowStatus;
+   end
+   else MessageToContinue('Create cluster metrics table first');
 end;
 
 

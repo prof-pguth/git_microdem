@@ -3442,11 +3442,19 @@ object wmdem: Twmdem
       Caption = 'Graph evaluation and scores'
       OnClick = Graphevaluationandscores1Click
     end
+    object OpenmapsforDEMIXtestarea1: TMenuItem
+      Caption = 'Open maps for DEMIX test area'
+      OnClick = OpenmapsforDEMIXtestarea1Click
+    end
+    object LoadCpopDEMandLNDCOERFORTEXTAREA1: TMenuItem
+      Caption = 'Load CopDEM and landcover for test area'
+      OnClick = LoadCpopDEMandLNDCOERFORTEXTAREA1Click
+    end
     object SSIM2: TMenuItem
       Caption = '-'
     end
     object SSIMR21: TMenuItem
-      Caption = 'SSIM-R2 '
+      Caption = 'SSIM-FUV'
       object SSIM1: TMenuItem
         Caption = 'Overwrite if exists'
         OnClick = SSIM1Click
@@ -3455,6 +3463,10 @@ object wmdem: Twmdem
         Caption = 'Skip if exists'
         OnClick = Skipifexists1Click
       end
+    end
+    object MergeSSIMFUV1: TMenuItem
+      Caption = 'Merge SSIM-FUV'
+      OnClick = MergeSSIMFUV1Click
     end
     object N48: TMenuItem
       Caption = '-'
@@ -3556,6 +3568,10 @@ object wmdem: Twmdem
         OnClick = CreatetestareaDEMSskipifexists1Click
       end
     end
+    object Createlandcovergrids1: TMenuItem
+      Caption = 'Create land cover grids'
+      OnClick = Createlandcovergrids1Click
+    end
     object N43: TMenuItem
       Caption = '-'
     end
@@ -3654,6 +3670,13 @@ object wmdem: Twmdem
         Caption = '3DEP files with tag 42112'
         OnClick = N3DEPfileswithtag421121Click
       end
+      object N46: TMenuItem
+        Caption = '-'
+      end
+      object GetrangesforSSIMhydro1: TMenuItem
+        Caption = 'Get ranges for SSIM hydro'
+        OnClick = GetrangesforSSIMhydro1Click
+      end
     end
     object EditreferenceandtestDEMs1: TMenuItem
       Caption = 'Edit reference and test DEMs'
@@ -3693,6 +3716,10 @@ object wmdem: Twmdem
     object MergeDEMIXtilestats1: TMenuItem
       Caption = 'Merge DEMIX tile stats'
       OnClick = MergeDEMIXtilestats1Click
+    end
+    object Onedegreetilestocovertestareas1: TMenuItem
+      Caption = 'One degree tiles to cover test areas'
+      OnClick = Onedegreetilestocovertestareas1Click
     end
     object N50: TMenuItem
       Caption = '-'

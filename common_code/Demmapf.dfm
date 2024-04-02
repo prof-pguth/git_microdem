@@ -51,7 +51,6 @@ object MapForm: TMapForm
     ParentFont = False
     TabOrder = 0
     OnClick = ScrollBox1Click
-    ExplicitLeft = 122
     object Image1: TImage
       Left = 3
       Top = -247

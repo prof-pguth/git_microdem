@@ -8,7 +8,6 @@ unit demix_evals_scores_graphs;
 {___________________________________}
 
 
-
 interface
 
 uses
@@ -42,6 +41,7 @@ type
     RadioGroup5: TRadioGroup;
     BitBtn11: TBitBtn;
     BitBtn12: TBitBtn;
+    BitBtn13: TBitBtn;
     procedure BitBtn1Click(Sender: TObject);
     procedure RadioGroup3Click(Sender: TObject);
     procedure RadioGroup1Click(Sender: TObject);
@@ -66,11 +66,13 @@ type
     procedure RadioGroup5Click(Sender: TObject);
     procedure BitBtn11Click(Sender: TObject);
     procedure BitBtn12Click(Sender: TObject);
+    procedure BitBtn13Click(Sender: TObject);
   private
     { Private declarations }
   public
     { Public declarations }
      db,originalDB : integer;
+     Criteria : tStringList;
   end;
 
 var
@@ -99,11 +101,17 @@ var
   i : integer;
 begin
    GetDEMIXpaths(false,db);
+   (*
    for i := 1 to NumDEMIXtestDEM do
-      if DEMIXShort[i] <> '' then
+      if (DEMIXShort[i] <> '') then
          DEMIXDEMinUse[i] := GISdb[db].MyData.FieldExists(DEMIXshort[i]);
+   *)
    eval_scores_graph_form := Teval_scores_graph_form.Create(Application);
    eval_scores_graph_form.db := db;
+   GISdb[db].EmpSource.Enabled := false;
+   eval_scores_graph_form.Criteria := GISdb[db].MyData.UniqueEntriesInDB('CRITERION');
+   eval_scores_graph_form.RadioGroup4.Enabled := (eval_scores_graph_form.Criteria.IndexOf('ELEV_SSIM') >= 0);
+   eval_scores_graph_form.BitBtn13.Enabled := GISdb[DB].MyData.FieldExists('BARREN_PC') and GISdb[DB].MyData.FieldExists('AVG_SLOPE');
    eval_scores_graph_form.Show;
 end;
 
@@ -122,6 +130,11 @@ end;
 procedure Teval_scores_graph_form.BitBtn12Click(Sender: TObject);
 begin
    HistogramsByQuantile(DB);
+end;
+
+procedure Teval_scores_graph_form.BitBtn13Click(Sender: TObject);
+begin
+    BestBySlopeRough(db);
 end;
 
 procedure Teval_scores_graph_form.BitBtn1Click(Sender: TObject);
@@ -205,7 +218,7 @@ end;
 
 procedure Teval_scores_graph_form.CheckBox2Click(Sender: TObject);
 begin
-   //PanelsByTestDEM := CheckBox2.Checked;
+   PanelsByTestDEM := CheckBox2.Checked;
 end;
 
 procedure Teval_scores_graph_form.CheckBox3Click(Sender: TObject);
@@ -235,7 +248,7 @@ begin
    //YAxisSort := RadioGroup3.ItemIndex;
 
    CheckBox1.Checked := DEMIX_combined_graph;
-   //CheckBox2.Checked := PanelsByTestDEM;
+   CheckBox2.Checked := PanelsByTestDEM;
    CheckBox3.Checked := MovieByTestDEM;
    Edit1.Text := IntToStr(MDDef.DEMIXlegendFontSize);
    Edit2.Text := IntToStr(MDDef.DEMIX_ysize);

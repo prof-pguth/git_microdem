@@ -2688,7 +2688,7 @@ end;
       if FileExists(fName) then begin
          Ext := UpperCase(ExtractFileExt(fName));
          if ExtEquals(Ext,'.CSV') then begin
-            DoCSVFileImport(fName);
+            CSVFileImportToDB(fName);
             fName := ChangeFileExt(fName,DefaultDBExt);
          end;
 
@@ -2735,6 +2735,7 @@ finalization
    {$IfDef RecordSQLite} WriteLineToDebugFile('RecordSQLite active in petmar_db'); {$EndIf}
    {$IfDef TrackCDStiming} WriteLineToDebugFile('TrackCDStiming active in petmar_db'); {$EndIf}
 end.
+
 
 
 

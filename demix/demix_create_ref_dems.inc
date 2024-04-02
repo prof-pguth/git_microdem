@@ -8,6 +8,40 @@
 {____________________________________}
 
 
+procedure CreateLandCoverGrids;
+var
+   Areas : tStringList;
+   DEM,grid,j : integer;
+   fName,GridName : PathStr;
+   Area : shortstring;
+   bb : sfBoundBox;
+begin
+   try
+      GetDEMIXPaths;
+      LockStatusBar := true;
+      Areas := DEMIX_AreasWanted;
+      for j := 0 to pred(Areas.Count) do begin
+         Area := Areas.Strings[j];
+         wmdem.SetPanelText(3,IntToStr(succ(j)) + '/  ' + IntToStr(Areas.Count) + '  ' + Area,true);
+         fName := DEMIX_Ref_1sec + Area + '_dtm' + Ref1SecPointStr + '.tif';
+         GridName := DEMIX_area_lc100 + Area + '.tif';
+         if FileExists(fName) then begin
+            DEM := OpenNewDEM(fName,false);
+            bb := DEMGlb[DEM].DEMBoundBoxGeo;
+            Grid := LoadLC100LandCover(GridName,bb,false);
+         end
+         else begin
+            {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Ref DTM missing=' + fName); {$EndIf}
+         end;
+         CloseAllDEMs;
+      end;
+  finally
+     EndDEMIXProcessing
+  end;
+end;
+
+
+
 procedure Get3DEPDataDirs(var DataDirs : tStringList);
 begin
    DataDirs := tStringList.Create;
@@ -162,6 +196,7 @@ begin {ShifDEMsto_UTM_WGS84_EGM2008}
 end {ShifDEMsto_UTM_WGS84_EGM2008};
 
 
+
 procedure DEMIX_MergeReferenceDEMs(Overwrite : boolean; DataDirs : tStringList = Nil);
 const
    ShowMapWhileMerging = false;   //help to track done problematic data sets
@@ -206,7 +241,6 @@ var
                      MarkWaterMissingInThisDEM(DEM);
                      {$If Defined(Record3DEPX)} WriteLineToDebugFile('Water masked'); {$EndIf}
                      if ShowMapWhileMerging then MessageToContinue('Mask water');
-                     //DEMglb[DEM].SaveAsGeotiff(DoneName);
                      DEMGlb[DEM].SavePartOfDEMWithDataGeotiff(DoneName);
                      {$If Defined(Record3DEPX)} WriteLineToDebugFile('Saved, ' + DoneName); {$EndIf}
                   end
@@ -218,6 +252,7 @@ var
             end;
             CloseAllDEMs;
          end;
+
    begin
       OutPath := DEMIX_Ref_1sec;
       OnePixelIs(Ref1SecPointStr);
@@ -287,10 +322,8 @@ var
              //fName := Files.Strings[i];
              WantedDEM := OpenNewDEM(fName,true);  //map needed to create new grids covering same area
              if ValidDEM(WantedDEM) then begin
-                 wmdem.SetPanelText(2, 'DEM: ' + IntToStr(succ(i)) + '/' + IntToStr(Files.Count),true);
-                //wmdem.SetPanelText(3, DEMGlb[WantedDEM].AreaName,true);
+                wmdem.SetPanelText(2, 'DEM: ' + IntToStr(succ(i)) + '/' + IntToStr(Files.Count),true);
                 ResampleForDEMIXOneSecDEMs(true,WantedDEM,false,aDir,ResampleModeOneSec);
-                //CloseSingleDEM(WantedDEM);
              end;
           end;
           wmdem.SetPanelText(2, '',true);
@@ -791,7 +824,6 @@ var
             {$If Defined(TrackDEMCorners)} DEMGlb[Result].WriteDEMCornersToDebugFile('ResampleForDEMIXOneSecDEMs, new DEM=' + IntToStr(Result)); {$EndIf}
          end;
       end;
-
 
 begin
    {$If Defined(Record3DEPXFull)} WriteLineToDebugFile(''); WriteLineToDebugFile('ResampleForDEMIX DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName); {$EndIf}

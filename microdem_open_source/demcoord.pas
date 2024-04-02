@@ -16,10 +16,10 @@ unit DEMCoord;
 
 
 {$IFDEF DEBUG}
-   //{$Define NoInline}
+   //{$Define NoCoordInline}
    //{$Define NoParallelFor}
 {$ELSE}
-   //{$Define NoInline}
+   //{$Define NoCoordInline}
    //{$Define NoParallelFor}
 {$ENDIF}
 
@@ -33,7 +33,7 @@ unit DEMCoord;
    {$IFDEF DEBUG}
       {$Define RecordDEMIX}
       //{$Define RecordMaskFromSecondGrid}
-      //{$Define TrackSWCornerForComputations}
+      //{$Define TrackSWcorner}
       //{$Define RecordGridIdentical}
       //{$Define RecordGridIdenticalProblems}
       //{$Define RecordUKOS}
@@ -363,7 +363,6 @@ type
          function ReadDEMNow(var tFile : PathStr; transformtoNewDatum : boolean) : boolean;
          function ReloadDEM(transformtoNewDatum : boolean) : boolean;
          procedure SetNewDEM(var NewDEM : integer);
-         //procedure FreeDEMMemory;
          procedure NilAllDEMPointers;
 
       //strings describing aspects of the DEM
@@ -433,22 +432,22 @@ type
          procedure DEMGridToLatLongDegree(XGrid,YGrid : float64; var Lat,Long : float64);
 
          procedure LatLongDegreetoUTM(Lat,Long : float64; var XUTM,YUTM : float64);
-         function LatLongDegreeToDEMGrid(Lat,Long : float64; var XGrid,YGrid : float32) : boolean; overload; {$IfDef NoInLine} {$Else} inline; {$EndIf}
-         function LatLongDegreeToDEMGrid(Lat,Long : float64; var XGrid,YGrid : float64) : boolean; overload; {$IfDef NoInLine} {$Else} inline; {$EndIf}
+         function LatLongDegreeToDEMGrid(Lat,Long : float64; var XGrid,YGrid : float32) : boolean; overload; {$IfDef NoCoordInline} {$Else} inline; {$EndIf}
+         function LatLongDegreeToDEMGrid(Lat,Long : float64; var XGrid,YGrid : float64) : boolean; overload; {$IfDef NoCoordInline} {$Else} inline; {$EndIf}
 
-         function LatLongDegreeToDEMGridInteger(Lat,Long : float64; var XGrid,YGrid : int32) : boolean; {$IfDef NoInLine} {$Else} inline; {$EndIf}
+         function LatLongDegreeToDEMGridInteger(Lat,Long : float64; var XGrid,YGrid : int32) : boolean; {$IfDef NoCoordInline} {$Else} inline; {$EndIf}
 
          procedure ClipDEMGrid(var x,y : float64);  overload;
          procedure ClipDEMGrid(var x,y : float32);  overload;
          procedure ClipDEMGrid(var x,y : int32);    overload;
 
-         function GridInDataSet(XGrid,YGrid : int32) : boolean; overload; {$IfDef NoInLine} {$Else} inline; {$EndIf}
-         function GridInDataSet(XGrid,YGrid : float64) : boolean; overload; {$IfDef NoInLine} {$Else} inline; {$EndIf}
+         function GridInDataSet(XGrid,YGrid : int32) : boolean; overload; {$IfDef NoCoordInline} {$Else} inline; {$EndIf}
+         function GridInDataSet(XGrid,YGrid : float64) : boolean; overload; {$IfDef NoCoordInline} {$Else} inline; {$EndIf}
          function LatLongDegreeInDEM(Lat,Long : float64) : boolean;
          function LatLongNearestGridPointInDEM(Lat,Long : float64) : boolean;
 
-         function GetElevMeters(XGrid,YGrid : float64; var z  : float32) : boolean;  overload; {$IfDef NoInLine} {$Else} inline; {$EndIf}   {interpolates from grid coordinates in DEM to return elevation of a point}
-         function GetElevMetersOnGrid(x,y : int32; var z  : float32) : boolean;  overload; {$IfDef NoInLine} {$Else} inline; {$EndIf}       {grid coordinates in DEM to return elevation of a point}
+         function GetElevMeters(XGrid,YGrid : float64; var z  : float32) : boolean;  overload; {$IfDef NoCoordInline} {$Else} inline; {$EndIf}   {interpolates from grid coordinates in DEM to return elevation of a point}
+         function GetElevMetersOnGrid(x,y : int32; var z  : float32) : boolean;  overload; {$IfDef NoCoordInline} {$Else} inline; {$EndIf}       {grid coordinates in DEM to return elevation of a point}
          function GetElevFromUTM(x,y : float64; var z : float32) : boolean;
          function GetElevFromLatLongDegree(Lat,Long : float64; var z : float32) : boolean;
 
@@ -482,32 +481,31 @@ type
          function BoxAroundPointFromFullSizeMeters(Col,Row,BoxSize : integer) : tGridLimits;
 
          function SetGridElevationLatLongDegree(Lat,Long : float64; z : float64) : boolean;
-         function SetGridElevation(Col,Row : int32; z : float64) : boolean;
-         procedure IncrementGridValue(Col,Row : int32);
-         procedure SetGridMissing(Col,Row : int32); overload;
-         procedure SetGridMissing(x,y : float64); overload;
+         function SetGridElevation(Col,Row : int32; z : float64) : boolean; {$IfDef NoCoordInline} {$Else} inline; {$EndIf}
+         procedure IncrementGridValue(Col,Row : int32); {$IfDef NoCoordInline} {$Else} inline; {$EndIf}
+         procedure SetGridMissing(Col,Row : int32); overload; {$IfDef NoCoordInline} {$Else} inline; {$EndIf}
+         procedure SetGridMissing(x,y : float64); overload; {$IfDef NoCoordInline} {$Else} inline; {$EndIf}
          procedure SetGridMissingOutsideBox(Col1,Row1,Col2,Row2 : integer);
          procedure SetEntireGridMissing;
          procedure SetEntireGridToConstant(z : float64);
          procedure ReclassifyRange(MinRange, MaxRange, NewZ : float64);
          procedure ShiftGlobalDEM(NewLeftLong : float64);
 
-        // procedure CheckUK_OS;
          function RGBfromLongWord(x,y : integer; var r,g,b : byte) : boolean;
          procedure RoundToByteRange;
          function ScaleZtoByte(z : float64) : byte;
 
-         procedure PixelSpacingAndRotation(Col,Row : integer; var Lat,Long : float64; var xdistance,ydistance,GridTrueAngle : float32; Quick : boolean = true);
+         procedure PixelSpacingAndRotation(Col,Row : integer; var Lat,Long : float64; var xdistance,ydistance,GridTrueAngle : float32; Quick : boolean = true); inline;
          procedure GridSpacingDetails(Region : sfBoundBox; var AverageX,AverageY,AverageSpacing,AverageGridTrue : float64);
 
          procedure CheckMaxMinElev;
 
-         function DistanceMetersBetweenPoints(xg1,yg1,xgrid,ygrid : float64; var Heading : float64) : float64;      {distance in meters, heading in degrees}
+         function DistanceMetersBetweenPoints(xg1,yg1,xgrid,ygrid : float64; var Heading : float64) : float64; {distance in meters, heading in degrees}
 
          function SeaLevelCell(x,y : integer) : boolean;
          function LakePoint(X,Y : integer) : boolean;
-         function IsSurroundedPoint(Col,Row : integer) : boolean;
-         function SurroundedPointElevs(Col,Row : integer; var znw,zw,zsw,zn,z,zs,zne,ze,zse : float32; RegionSize : integer = 1) : boolean; {determines point can be safely interpolated, surrounded by valid data points and not missing values}
+         function IsSurroundedPoint(Col,Row : integer) : boolean; inline;
+         function SurroundedPointElevs(Col,Row : integer; var znw,zw,zsw,zn,z,zs,zne,ze,zse : float32; RegionSize : integer = 1) : boolean; inline; {determines point can be safely interpolated, surrounded by valid data points and not missing values}
 
          procedure SetUpMap(DEMNumber : integer; CheckElevs : boolean; inMapType : tMapType = mtDEMBlank; UsePC : boolean = true);
 
@@ -544,7 +542,7 @@ type
             procedure DrawCrossTrackProfile(var Graf : tThisBaseGraph; inLat,inLong,Azimuth,Distance,Spacing : float64);
          {$EndIf}
 
-         {$IfDef TrackSWCornerForComputations}
+         {$IfDef TrackSWcorner}
              procedure WriteToDebugSWCornerForComputations(Where : shortstring);
          {$EndIf}
 
@@ -567,7 +565,7 @@ type
          procedure ReflectanceParams(Min : float64 = -9999; Max : float64 = -9999);
 
      //slope and aspect
-         function GetSlopeAndAspect(Col,Row : integer; var SlopeAsp : tSlopeAspectRec) : boolean;
+         function GetSlopeAndAspect(Col,Row : integer; var SlopeAsp : tSlopeAspectRec) : boolean;   inline;
          function GetSlopeAndAspectFromLatLong(Lat,Long : float64; var SlopeAspectRec : tSlopeAspectRec) : boolean;
          function SlopePercent(XGrid,YGrid : integer) : float64;
          function SlopePercentFromLatLong(Lat,Long : float64) : float64;
@@ -588,13 +586,13 @@ type
          procedure WriteNewFormatDEM(var FileName : PathStr; WhatFor : shortstring = '');  overload;
          procedure WriteNewFormatDEM(Limits : tGridLimits; var FileName : PathStr; WhatFor : shortstring = '');  overload;
          procedure SavePartOfDEMWithData(var FileName : PathStr);
-         procedure SavePartOfDEMWithDataGeotiff(var FileName : PathStr);
          procedure SaveSpecifiedPartOfDEM(var FileName : PathStr; Limits : tGridLimits);
          procedure CSVforVDatum(Delta : float64 = -99;fName : PathStr = '');
 
          {$IfDef ExGeotiffWrite}
          {$Else}
             procedure SaveAsGeotiff(SaveName : PathStr = '');
+            procedure SavePartOfDEMWithDataGeotiff(var FileName : PathStr);
             procedure SaveGridSubsetGeotiff(DEMGridLimits : tGridLimits; fName : PathStr = '');
          {$EndIf}
 
@@ -765,6 +763,8 @@ type
             {$EndIf}
         {$EndIf}
    end;
+
+   procedure MaxSlopeComputations(var SlopeAsp : tSlopeAspectRec; var sl : tFourFloats; var AspDir : tAspectDir);
 
 
 type
@@ -1019,7 +1019,7 @@ begin
       Tstr := ' half pixel shift applied';
    end;
    {$If Defined(TrackDEMCorners) or Defined(RecordHalfPixelShift)} WriteDEMCornersToDebugFile('SetRasterPixelIsGeoKey1025' + TStr); {$EndIf}
-   {$IfDef TrackSWCornerForComputations} WriteToDebugSWCornerForComputations('SetRasterPixelIsGeoKey1025'); {$EndIf}
+   {$IfDef TrackSWcorner} WriteToDebugSWCornerForComputations('SetRasterPixelIsGeoKey1025'); {$EndIf}
 
 end;
 
@@ -2027,7 +2027,7 @@ end;
 function tDEMDataSet.LandCoverGrid : boolean;
 begin
    Result := DEMheader.ElevUnits in [euNLCD2001up,euLandFire,euNLCD1992,euGLOBCOVER,euGLC2000,euCCAP,euCCI_LC,euS2GLC,euNLCD_Change,euGLCS_LC100,euMeybeck,euGeomorphon,euIwahashi,
-      euESRI2020,euPennock,euWorldCover10m,euLCMAP,euSent2SLC,euSimpleLandCover];
+      euESRI2020,euPennock,euWorldCover10m,euLCMAP,euSent2SLC,euSimpleLandCover,euCOPEDM,euCOPFLM,euTANEDM];
 end;
 
 function tDEMDataSet.ElevationDEM : boolean;
@@ -2346,16 +2346,14 @@ end;
 {$IfDef ExNLCD}
 {$Else}
 procedure tDEMDataSet.CheckForLandCover;
-var
-   TStr : shortstring;
 begin
   {$IfDef RecordNLCD} WriteLineToDebugFile('tDEMDataSet.CheckForLandCover in'); {$EndIf}
    if LandCoverGrid then begin
       if (NLCDCats <> Nil) then begin
          Dispose(NLCDCats);
-         //NLCDCats := nil;
       end;
       New(NLCDCats);
+(*
       if (DEMheader.ElevUnits in [euGLC2000]) then TStr := 'GLC-2000'
       else if (DEMheader.ElevUnits in [euGLCS_LC100]) then TStr := 'GLCS-LC100'
       else if (DEMheader.ElevUnits in [euS2GLC]) then TStr := 'S2GLC'
@@ -2374,10 +2372,11 @@ begin
       else if (DEMheader.ElevUnits in [euSent2SLC]) then TStr := 'Sent-2_SLC'
       else if (DEMheader.ElevUnits in [euNLCD_Change]) then TStr := 'NLCD-Change'
       else if (DEMheader.ElevUnits in [euSimpleLandCover]) then TStr := 'Simplify'
-      else TStr := 'LANDFIRE';                                               //this is in the DB for the filter
+      else if (DEMheader.ElevUnits in [euLandfire]) thenTStr := 'LANDFIRE';                                               //this is in the DB for the filter
       //if not StrUtils.AnsiContainsText(UpperCase(AreaName),UpperCase(TStr)) then AreaName := AreaName + ' ' + TStr;
       {$IfDef RecordNLCD} WriteLineToDebugFile('tDEMDataSet.CheckForLandCover with NLCD=' + TStr); {$EndIf}
-      DEM_NLCD.SetUpNLCDCategories(false,TStr,NLCDCats^);
+*)
+      DEM_NLCD.SetUpNLCDCategories(false,DEMheader.ElevUnits,NLCDCats^);
    end;
   {$IfDef RecordNLCD} WriteLineToDebugFile('tDEMDataSet.CheckForLandCover out'); {$EndIf}
 end;
@@ -2624,7 +2623,7 @@ begin {tDEMDataSet.DefineDEMVariables}
    {$If Defined(RecordUKOS)} WriteLineToDebugFile('tDEMDataSet.DefineDEMVariables out, pname=' + DEMMapProjection.GetProjectionName); {$EndIf}
 
    {$If Defined(RecordUKOS)} WriteLineToDebugFile('tDEMDataSet.DefineDEMVariables out, pname=' + DEMMapProjection.GetProjectionName); {$EndIf}
-   {$IfDef TrackSWCornerForComputations} WriteToDebugSWCornerForComputations('DefineDEMVariables out'); {$EndIf}
+   {$IfDef TrackSWcorner} WriteToDebugSWCornerForComputations('DefineDEMVariables out'); {$EndIf}
 end;
 
 
@@ -3633,7 +3632,7 @@ begin
       (abs(DEMheader.DEMSWCornerY - DEMGlb[Map2].DEMheader.DEMSWCornerY) < Tolerance));
 end;
 
-{$IfDef TrackSWCornerForComputations}
+{$IfDef TrackSWcorner}
    procedure tDEMDataSet.WriteToDebugSWCornerForComputations(Where : shortstring);
    begin
       WriteLineToDebugFile(Where + ' ' + AreaName + '  compute SW, x=' + RealToString(ComputeSWCornerX,-12,6) + '  ' + '  y=' + RealToString(ComputeSWCornerY,-12,6));
@@ -3647,7 +3646,7 @@ var
 begin
    Result := ValidDEM(DEM2);
    if Result then begin
-       {$IfDef TrackSWCornerForComputations}
+       {$IfDef TrackSWcorner}
          WriteToDebugSWCornerForComputations('SecondGridJustOffset');
          DEMGlb[DEM2].WriteToDebugSWCornerForComputations('SecondGridJustOffset');
        {$EndIf}
@@ -4292,7 +4291,7 @@ finalization
    {$IfDef RecordDEMEdits} WriteLineToDebugFile('RecordDEMEdits in demcoord'); {$EndIf}
    {$IfDef RecordNLCD} WriteLineToDebugFile('RecordNLCD in demcoord'); {$EndIf}
    {$IfDef NoParallelFor} WriteLineToDebugFile('NoParallelFor in demcoord'); {$EndIf}
-   {$IfDef NoInline} WriteLineToDebugFile('NoInline in demcoord'); {$EndIf}
+   {$IfDef NoCoordInline} WriteLineToDebugFile('NoCoordInline in demcoord'); {$EndIf}
    {$IfDef RecordMoments} WriteLineToDebugFile('RecordMoments in demcoord'); {$EndIf}
    {$IfDef RecordDEMMapProjection} WriteLineToDebugFile('RecordDEMMapProjection'); {$EndIf}
 end {unit}.

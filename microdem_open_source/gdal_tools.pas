@@ -1045,7 +1045,8 @@ end;
         function DoOneGrid(fName : PathStr) : integer;
         var
            OutPath,OutName : PathStr;
-           LandCover,TStr,ExtentBoxString   : shortstring;
+           LandCover : integer;
+           TStr,ExtentBoxString   : shortstring;
            Imagebb : sfBoundBox;
            Ext : ExtStr;
          begin
@@ -1184,14 +1185,14 @@ end;
       var
          OutName : PathStr;
          cmd : shortstring;
-         LandCover : ShortString;
+         LandCover : integer;
       begin
          {$IfDef RecordReformat} WriteLineToDebugFile('GDALConvertSingeImageToGeotiff in ' + fName); {$EndIf}
          if IsGDALFilePresent(GDAL_translate_name) then begin
             GetFilesNamesForGDALtranslate(fName,OutName,true);
             if not IsThisLandCover(ExtractFileName(fName),LandCover) then begin
                if IsThisLandCover(fName,LandCover) then begin
-                  Outname := ExtractFilePath(OutName) + LandCover + '_' + ExtractFileName(fName);
+                  Outname := ExtractFilePath(OutName) + 'LandCover_' + IntToStr(LandCover) + '_' + ExtractFileName(fName);
                end;
             end;
             cmd := GDAL_translate_name + GDAL_Geotiff_str + fName + ' ' + OutName;
@@ -1457,51 +1458,20 @@ end;
 
 
 procedure CompositeDatumShiftWithGDAL(var InName,SaveName : PathStr; s_SRSstring,t_srsstring : shortstring);
+const
+   NoUnitShift = '-wo MULT_FACTOR_VERTICAL_SHIFT=1 ';
 var
    BatchFile : tstringList;
    cmd : shortstring;
    aName : PathStr;
 begin
    StartGDALbatchFile(BatchFile);
-   cmd := GDAL_warp_name + ' --config GDAL_CACHEMAX 1000 -wm 1000 --debug on -overwrite -multi -wo NUM_THREADS=8 -ot float32 ' + InName + ' ' + SaveName + s_SRSString + t_srsstring;
+   cmd := GDAL_warp_name + ' --config GDAL_CACHEMAX 1000 -wm 1000 --debug on -overwrite -multi -wo NUM_THREADS=8 -ot float32 ' + NoUnitShift + InName + ' ' + SaveName + s_SRSString + t_srsstring;
    {$If Defined(RecordDEMIXCompositeDatum)} WriteLineToDebugFile('VerticalDatumShiftWithGDAL cmd=' + cmd); {$EndIf}
    BatchFile.Add(cmd);
    aName := Petmar.NextFileNumber(MDTempDir, 'gdal_datumshift_','.bat');
    EndBatchFile(aName,BatchFile);
 end;
-
-
-(*
-//removed Feb 2024
-//hard wired for UTM and specific horizontal and vertical datums
-procedure MergeDEMsForDEMIX;
-var
-   DEMList : tStringList;
-   UTMZone : integer;
-   MergefName,OutVRT,SaveName : PathStr;
-begin
-   {$If Defined(RecordMenu) or Defined(RecordMerge) or Defined(RecordDEMIX)} WriteLineToDebugFile('Enter MergeDEMsforDEMIX'); {$EndIf}
-
- //need to get from the files (there is WKT in the VRT)
-   UTMzone := 17;
-   DEMList := tStringList.Create;
-   DEMList.Add(LastDEMName);
-   if Petmar.GetMultipleFiles('DEMs to merge',DEMFilterMasks,DEMList,MDDef.DefaultDEMFilter) then begin
-      {$IfDef RecordMenu} WriteStringListToDebugFile(DEMList); {$EndIf}
-      MergefName := Petmar.NextFileNumber(MDTempDir,LastSubDir(ExtractFilePath(DEMList.Strings[0])) + '_','.tif');
-      UseGDAL_VRT_to_merge(MergefName,OutVRT,DEMlist);
-      {$If Defined(RecordMenu) or Defined(RecordMerge) or Defined(RecordDEMIX)} WriteLineToDebugFile('UseGDAL_VRT_to_merge done'); {$EndIf}
-
-      SaveName := Petmar.NextFileNumber(MDTempDir,LastSubDir(ExtractFilePath(DEMList.Strings[0])) + '_egm2008_','.tif');
-      CompositeDatumShiftWithGDAL(MergefName,SaveName,' -s_srs EPSG:269' + IntToStr(UTMZone) + '+5703', ' -t_srs EPSG:326' + IntToStr(UTMZone) + '+3855');
-      {$If Defined(RecordMenu) or Defined(RecordMerge) or Defined(RecordDEMIX)} WriteLineToDebugFile('CompositeDatumShiftWithGDAL done'); {$EndIf}
-   end;
-   StopSplashing;
-   WMDEM.SetMenusForVersion;
-   {$IfDef TrackDEMCorners} DEMGlb[NewDEM].WriteDEMCornersToDebugFile('Merge DEMs, mode=' + IntToStr(Mode)); {$EndIf}
-   {$If Defined(RecordMenu) or Defined(RecordMerge)} WriteLineToDebugFile('Exit MergeDEMs, mode=' + IntToStr(Mode)); {$EndIf}
-end;
-*)
 
 
       procedure UseGDAL_VRT_to_merge(var MergefName,OutVRT : PathStr; OutNames : tStringList; Added : ShortString = '');

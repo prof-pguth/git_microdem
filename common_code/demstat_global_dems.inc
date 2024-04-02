@@ -182,7 +182,7 @@ begin
    for j := 1 to MaxLandCoverCategories do begin
       CatUsed[j] := false;
    end;
-   SetUpNLCDCategories(false,'GLCS-LC100',Categories);
+   SetUpNLCDCategories(false,euSent2SLC,Categories);
    CreateBitmap(Bitmap,1600,1850);
    Top := 0;
    for j := 1 to MaxDataBase do if ValidDB(j) then begin

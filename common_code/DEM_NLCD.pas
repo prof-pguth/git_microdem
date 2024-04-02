@@ -58,14 +58,14 @@ type
    //tNLCDarray = array[0..MaxLandCoverCategories] of float64;
    tNLCDCats = array[0..MaxLandCoverCategories] of tCategory;
 
-procedure SetUpNLCDCategories(AskLimit : boolean; LandCover : ShortString; var Categories : tNLCDCats);
-function IsThisLandCover(fName : PathStr;  var LandCover : ShortString) : boolean;
+procedure SetUpNLCDCategories(AskLimit : boolean; LandCover : integer; var Categories : tNLCDCats);
+function IsThisLandCover(fName : PathStr;  var LandCover : integer) : boolean;
 procedure LandCoverBarGraphs(UseTable : boolean; Legend : boolean = true; MaxCat : boolean = true);
 procedure LandCoverBarGraphLegends;
 
 function MakeAnNLCDLegend(DEM : integer;  theLabel : shortstring = ''; Stats : tstringlist = nil) : integer;
 
-function LoadLC100LandCover(fName : PathStr; bb : sfboundbox; var ErrorMessage : shortstring; OpenMap : boolean) : integer;
+function LoadLC100LandCover(fName : PathStr; bb : sfboundbox;OpenMap : boolean) : integer;
 
 function ReclassifyLandCover(LandCoverGrid,Value : integer) : integer;
 
@@ -113,12 +113,12 @@ end;
 procedure MarkWaterMissingInAllOpenDEMs(DEM : integer; All : boolean = true);
 var
    j,lcGrid : integer;
-   ErrorMessage : shortstring;
+   //ErrorMessage : shortstring;
    Fixed : int64;
    OpenMap : boolean;
 begin
     {$IfDef TrackWaterMasking} OpenMap := True; {$Else} OpenMap := false; {$EndIf}
-    lcgrid := LoadLC100LandCover('',DEMGlb[DEM].DEMBoundBoxGeo,ErrorMessage,OpenMap);
+    lcgrid := LoadLC100LandCover('',DEMGlb[DEM].DEMBoundBoxGeo,OpenMap);
     {$IfDef TrackWaterMasking}
        DEMGlb[lcGrid].SelectionMap.DoBaseMapRedraw;
        MessageToContinue('Land cover opened');
@@ -200,7 +200,7 @@ end;
 
 
 
-function LoadLC100LandCover(fName : PathStr; bb : sfboundbox; var ErrorMessage : shortstring; OpenMap : boolean) : integer;
+function LoadLC100LandCover(fName : PathStr; bb : sfboundbox; OpenMap : boolean) : integer;
 var
    Lat,Long : float32;
 begin
@@ -213,7 +213,7 @@ begin
       if ValidDEM(Result) then begin
          DEMGlb[Result].DEMHeader.ElevUnits := euGLCS_LC100;
          if (fName = '') then fName := Petmar.NextFileNumber(MDtempDir,'lcc100_','.dem');
-         DEMGlb[Result].WriteNewFormatDEM(fName);
+         DEMGlb[Result].SaveAsGeotiff(fName);
       end
       else begin
          {$IfDef RecordDEMIX} HighlightLineToDebugFile('Landcover load fail ' + LandCoverfName + '  ' + LatLongDegreeToString(Lat,Long)); {$EndIf}
@@ -571,40 +571,44 @@ end;
 
 
 
-function IsThisLandCover(fName : PathStr;  var LandCover : ShortString) : boolean;
+function IsThisLandCover(fName : PathStr;  var LandCover : integer) : boolean;
 begin
-   Landcover := '';
+   Landcover := 0;
    if (fName <> '') then begin
       fName := UpperCase(FName);
-      if StrUtils.AnsiContainsText(fName,'CHANGE') and StrUtils.AnsiContainsText(fName,'NLCD') then LandCover := 'NLCD-change'
-      else if UpperCase(Copy(ExtractFileName(fName),1,7)) = 'NLCD_20' then LandCover := 'NLCD-2001up'
-      else if StrUtils.AnsiContainsText(fName,'GLC-2000') then LandCover := 'GLC-2000'
-      else if (StrUtils.AnsiContainsText(fName,'NLCD') and StrUtils.AnsiContainsText(fName,'1990')) then LandCover := 'NLCD-1990'
-      else if StrUtils.AnsiContainsText(fName,'NLCD') then LandCover := 'NLCD-2001up'
-      else if StrUtils.AnsiContainsText(fName,'LANDFIRE') and (not StrUtils.AnsiContainsText(fName,'EVT')) then LandCover := 'LANDFIRE'
-      else if StrUtils.AnsiContainsText(fName,'S2GLC') then LandCover := 'S2GLC'
-      else if StrUtils.AnsiContainsText(fName,'ESRI2020') then LandCover := 'ESRI2020'
-      else if StrUtils.AnsiContainsText(fName,'ESACCI-LC-L4-LCCS') then LandCover := 'CCI-LC'
-      else if StrUtils.AnsiContainsText(fName,'LC100_GLOBAL') then LandCover := 'CGLS-LC100'
-      else if StrUtils.AnsiContainsText(fName,'ESA_WORLDCOVER_10M') then LandCover := 'WorldCover10m'
-      else if StrUtils.AnsiContainsText(fName,'GLOBCOVER') then LandCover := 'GLOBCOVER'
-      else if StrUtils.AnsiContainsText(fName,'CCAP') then LandCover := 'CCAP'
-      else if StrUtils.AnsiContainsText(fName,'GEOMORPHON') then LandCover := 'GEOMORPHON'
-      else if StrUtils.AnsiContainsText(fName,'PENNOCK') then LandCover := 'PENNOCK'
-      else if StrUtils.AnsiContainsText(fName,'IWAHASHI') then LandCover := 'IWAHASHI'
-      else if StrUtils.AnsiContainsText(fName,'MEYBECK') then LandCover := 'MEYBECK'
-      //else if StrUtils.AnsiContainsText(fName,'Sentinel-2_L2A_Scene_classification_map') then LandCover := 'Sent2SLC'         //it is a 3 color scene
-      else if StrUtils.AnsiContainsText(fName,'LCMAP') then LandCover := 'LCMAP';
+      if StrUtils.AnsiContainsText(fName,'CHANGE') and StrUtils.AnsiContainsText(fName,'NLCD') then LandCover := euNLCD_Change
+      else if UpperCase(Copy(ExtractFileName(fName),1,7)) = 'NLCD_20' then LandCover := euNLCD2001up
+      else if StrUtils.AnsiContainsText(fName,'GLC-2000') then LandCover := euGLC2000
+      else if (StrUtils.AnsiContainsText(fName,'NLCD') and StrUtils.AnsiContainsText(fName,'1990')) then LandCover := euNLCD1992
+      else if StrUtils.AnsiContainsText(fName,'NLCD') then LandCover := euNLCD2001up
+      else if StrUtils.AnsiContainsText(fName,'LANDFIRE') and (not StrUtils.AnsiContainsText(fName,'EVT')) then LandCover := euLandFire
+      else if StrUtils.AnsiContainsText(fName,'S2GLC') then LandCover := euS2GLC
+      else if StrUtils.AnsiContainsText(fName,'ESRI2020') then LandCover := euESRI2020
+      else if StrUtils.AnsiContainsText(fName,'ESACCI-LC-L4-LCCS') then LandCover := euCCI_LC
+      else if StrUtils.AnsiContainsText(fName,'LC100_GLOBAL') then LandCover := euGLCS_LC100
+      else if StrUtils.AnsiContainsText(fName,'ESA_WORLDCOVER_10M') then LandCover := euWorldCover10m
+      else if StrUtils.AnsiContainsText(fName,'GLOBCOVER') then LandCover := euGLOBCOVER
+      else if StrUtils.AnsiContainsText(fName,'CCAP') then LandCover := euCCAP
+      else if StrUtils.AnsiContainsText(fName,'GEOMORPHON') then LandCover := euGeomorphon
+      else if StrUtils.AnsiContainsText(fName,'PENNOCK') then LandCover := euPennock
+      else if StrUtils.AnsiContainsText(fName,'IWAHASHI') then LandCover := euIwahashi
+      else if StrUtils.AnsiContainsText(fName,'MEYBECK') then LandCover := euMeybeck
+      else if (StrUtils.AnsiContainsText(fName,'COPERNICUS_DSM') and StrUtils.AnsiContainsText(fName,'EDM.TIF')) then LandCover := euCOPEDM
+      else if (StrUtils.AnsiContainsText(fName,'TDM1_EDEM_') and StrUtils.AnsiContainsText(fName,'EDM.TIF')) then LandCover := euTANEDM
+      else if (StrUtils.AnsiContainsText(fName,'COPERNICUS_DSM') and StrUtils.AnsiContainsText(fName,'FLM.TIF')) then LandCover := euCOPFLM
+      //else if StrUtils.AnsiContainsText(fName,'Sentinel-2_L2A_Scene_classification_map') then LandCover := euSent2SLC      //it is a 3 color scene
+      else if StrUtils.AnsiContainsText(fName,'LCMAP') then LandCover := euLCMAP;
    end;
-   Result := (LandCover <> '');
+   Result := (LandCover <> 0);
 end;
 
 
-procedure SetUpNLCDCategories(AskLimit : boolean; LandCover : ShortString; var Categories : tNLCDCats);
+
+procedure SetUpNLCDCategories(AskLimit : boolean; LandCover : integer; var Categories : tNLCDCats);
 var
    CatTable : tMyData;
 
-   procedure SetCategories(var Categories : tNLCDCats; LandCover : ShortString);
+   procedure SetCategories(var Categories : tNLCDCats; LandCoverName : shortstring);
    var
       i : integer;
    begin
@@ -615,7 +619,7 @@ var
          Categories[i].UseCat    := false;
          Categories[i].UseStat   := false;
       end;
-      CatTable.ApplyFilter( 'SERIES = ' + QuotedStr(LandCover));
+      CatTable.ApplyFilter( 'SERIES = ' + QuotedStr(LandCoverName));
       if (CatTable.RecordCount > 0) then begin
          if AskLimit then VerifyRecordsToUse(CatTable,'LONG_NAME','Fields to mask');
          {$IfDef RecordNLCDLegend} WriteLineToDebugFile('CatTable.Filter: ' + CatTable.Filter); {$EndIf}
@@ -632,14 +636,45 @@ var
          until CatTable.eof;
       end
       else begin
-          MessageToContinue('Land cover ' + LandCover + ' missing in ' + LandCoverFName);
+          MessageToContinue('Land cover ' + IntToStr(LandCover) + ' missing in ' + LandCoverFName);
       end;
    end;
+
+   function LandCoverName(LandCover : integer) : shortstring;
+   begin
+      case LandCover of
+         euNLCD_Change  : Result := 'NLCD-change';
+         euCCI_LC  : Result := 'CCI-LC';
+         euGLOBCOVER  : Result := 'GLOBCOVER';
+         euNLCD1992  : Result := 'NLCD-1990';
+         euNLCD2001up  : Result := 'NLCD-2001up';
+         euS2GLC  : Result := 'S2GLC';
+         euWorldCover10m  : Result := 'WorldCover10m';
+         euLandFire  : Result :=  'LANDFIRE'   ;
+         //euGLCS_LC100  : Result := 'CGLS-LC100';
+         euCCAP  : Result :=  'CCAP';
+         euMeybeck  : Result := 'MEYBECK';
+         euESRI2020  : Result := 'ESRI2020';
+         euIwahashi  : Result := 'IWAHASHI';
+         euGeomorphon  : Result := 'GEOMORPHON';
+         euPennock  : Result := 'PENNOCK';
+         euLCMAP  : Result := 'LCMAP';
+         //euSent2SLC  : Result := 'Sent2SLC';
+         //euCOP  : Result :=     ;
+         euCOPEDM : Result := 'COP-EDM';
+         euCOPFLM : Result := 'COP-FLM';
+         euGLC2000 : Result := 'GLC2000';
+         euGLCS_LC100 : Result := 'GLCS-LC100';
+         euSent2SLC : Result := 'L2A_scene_class';
+         euTANEDM : Result := 'TAN-EDM';
+      end;
+   end;
+
 
 begin
    {$IfDef RecordNLCDLegend} WriteLineToDebugFile('tLandCoverImage.SetUpCategories, Landcover=' + LandCover); {$EndIf}
    CatTable := tMyData.Create(LandCoverSeriesFName);
-   SetCategories(Categories,LandCover);
+   SetCategories(Categories,LandCoverName(LandCover));
    CatTable.Destroy;
    {$IfDef RecordNLCDLegend} WriteLineToDebugFile('tLandCoverImage.SetUpCategories out'); {$EndIf}
 end;
