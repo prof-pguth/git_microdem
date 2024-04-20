@@ -254,12 +254,10 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
       object Panel2: TPanel
         Left = 0
         Top = 0
-        Width = 465
-        Height = 201
+        Width = 437
+        Height = 194
         Align = alClient
         TabOrder = 0
-        ExplicitWidth = 461
-        ExplicitHeight = 200
         object Label1: TLabel
           Left = 296
           Top = 16

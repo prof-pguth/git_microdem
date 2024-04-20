@@ -172,7 +172,6 @@ begin
          Edit16.Text := RealToString(OwningGraph.HistogramBinSize,-12,-3);
          Edit17.Text := RealToString(OwningGraph.HistogramNumBins,-12,-3);
 
-
          if (DBFLineFilesPlotted.Count > 0) then begin
             ComboBox3.Visible := true;
             fName := DBFLineFilesPlotted.Strings[0];
@@ -299,7 +298,7 @@ begin
       end;
       for i := 0 to pred(ComboBox1.Items.Count) do
          if ComboBox1.Items.Strings[i] = ComboBox1.Text then
-            GraphAxes := AxesType(i);
+            GraphAxes := tGraphAxes(i);
 
       if GraphAxes in [XTimeYFullGrid,XTimeYPartGrid] then begin
          MinHorizAxis := JulDay(Month1,Day1,Year1);

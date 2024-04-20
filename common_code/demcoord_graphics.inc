@@ -354,7 +354,7 @@ var
    lat,Long : float64;
 begin
    DEMGridToLatLongDegree(xg,yg,Lat,Long);
-   GetLatLn.GetLatLongDefault(DEMMapProjection,Mess,Lat,Long);
+   GetLatLn.GetLatLongDefault(DEMMapProj,Mess,Lat,Long);
    LatLongDegreeToDEMGrid(Lat,Long,xg,yg);
    DEMGridToUTM(xg,yg,xutm,yutm);
 end;
@@ -387,7 +387,7 @@ begin
                       ',"dy":' + RealToString(DEMheader.DEMySpacing,-18,-6) +
                       ',"proj":';
        if DEMheader.DEMUsed = ArcSecDEM then  JSONString := JSONString  + '"GCS"'
-       else JSONString := JSONString + '"UTM' + IntToStr(DEMheader.UTMZone) +  DEMMapProjection.LatHemi + '"';
+       else JSONString := JSONString + '"UTM' + IntToStr(DEMheader.UTMZone) +  DEMMapProj.LatHemi + '"';
 
        JSONString := JSONString + ',"data":[';
        for j := pred(DEMheader.NumRow) downto 0 do begin

@@ -2,7 +2,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
   Left = 0
   Top = 0
   Caption = 'DEMIX evaluations/scores graphs'
-  ClientHeight = 441
+  ClientHeight = 470
   ClientWidth = 624
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -12,6 +12,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
   Font.Style = []
   FormStyle = fsStayOnTop
   Visible = True
+  OnActivate = FormActivate
   OnCreate = FormCreate
   TextHeight = 15
   object Label1: TLabel
@@ -22,14 +23,14 @@ object eval_scores_graph_form: Teval_scores_graph_form
     Caption = 'Legend font size'
   end
   object Label2: TLabel
-    Left = 128
+    Left = 208
     Top = 335
     Width = 63
     Height = 15
     Caption = 'Graph y size'
   end
   object Label3: TLabel
-    Left = 128
+    Left = 208
     Top = 309
     Width = 63
     Height = 15
@@ -50,8 +51,8 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnClick = RadioGroup1Click
   end
   object BitBtn1: TBitBtn
-    Left = 24
-    Top = 400
+    Left = 8
+    Top = 8
     Width = 145
     Height = 25
     Caption = 'Graph by best evaluation'
@@ -81,22 +82,13 @@ object eval_scores_graph_form: Teval_scores_graph_form
     TabOrder = 3
     OnClick = CheckBox1Click
   end
-  object BitBtn2: TBitBtn
-    Left = 232
-    Top = 223
-    Width = 121
-    Height = 25
-    Caption = 'Add stats to DB'
-    TabOrder = 4
-    OnClick = BitBtn2Click
-  end
   object CheckBox2: TCheckBox
     Left = 376
     Top = 384
     Width = 177
     Height = 17
     Caption = 'Panels by test DEM'
-    TabOrder = 5
+    TabOrder = 4
     OnClick = CheckBox2Click
   end
   object CheckBox3: TCheckBox
@@ -105,7 +97,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
     Width = 145
     Height = 17
     Caption = 'Movie by test DEM '
-    TabOrder = 6
+    TabOrder = 5
     OnClick = CheckBox3Click
   end
   object BitBtn3: TBitBtn
@@ -114,7 +106,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
     Width = 161
     Height = 25
     Caption = 'Cloise graphs and images'
-    TabOrder = 7
+    TabOrder = 6
     OnClick = BitBtn3Click
   end
   object Edit1: TEdit
@@ -122,35 +114,35 @@ object eval_scores_graph_form: Teval_scores_graph_form
     Top = 47
     Width = 69
     Height = 23
-    TabOrder = 8
+    TabOrder = 7
     Text = 'Edit1'
     OnChange = Edit1Change
   end
   object Edit2: TEdit
-    Left = 208
+    Left = 288
     Top = 327
     Width = 65
     Height = 23
-    TabOrder = 9
+    TabOrder = 8
     Text = 'Edit2'
     OnChange = Edit2Change
   end
   object Edit3: TEdit
-    Left = 208
+    Left = 288
     Top = 306
     Width = 65
     Height = 23
-    TabOrder = 10
+    TabOrder = 9
     Text = 'Edit1'
     OnChange = Edit3Change
   end
   object BitBtn4: TBitBtn
-    Left = 24
-    Top = 233
+    Left = 8
+    Top = 296
     Width = 161
     Height = 25
     Caption = 'Average multiple criteria'
-    TabOrder = 11
+    TabOrder = 10
     OnClick = BitBtn4Click
   end
   object BitBtn5: TBitBtn
@@ -159,7 +151,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
     Width = 75
     Height = 25
     Caption = 'Scatterplot'
-    TabOrder = 12
+    TabOrder = 11
     OnClick = BitBtn5Click
   end
   object RadioGroup4: TRadioGroup
@@ -179,7 +171,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
       'WETIN'
       'HAND'
       'LS')
-    TabOrder = 13
+    TabOrder = 12
     OnClick = RadioGroup4Click
   end
   object BitBtn6: TBitBtn
@@ -188,43 +180,43 @@ object eval_scores_graph_form: Teval_scores_graph_form
     Width = 75
     Height = 25
     Caption = 'Histograms'
-    TabOrder = 14
+    TabOrder = 13
     OnClick = BitBtn6Click
   end
   object BitBtn7: TBitBtn
-    Left = 24
-    Top = 109
-    Width = 137
+    Left = 8
+    Top = 132
+    Width = 145
     Height = 25
     Caption = 'Graph by average slope'
-    TabOrder = 15
+    TabOrder = 14
     OnClick = BitBtn7Click
   end
   object BitBtn8: TBitBtn
-    Left = 24
-    Top = 140
-    Width = 167
+    Left = 8
+    Top = 163
+    Width = 145
     Height = 25
-    Caption = 'Graph by average roughness'
-    TabOrder = 16
+    Caption = 'Graph by avg roughness'
+    TabOrder = 15
     OnClick = BitBtn8Click
   end
   object BitBtn9: TBitBtn
-    Left = 24
-    Top = 78
-    Width = 130
+    Left = 8
+    Top = 101
+    Width = 145
     Height = 25
     Caption = 'Graph by relief'
-    TabOrder = 17
+    TabOrder = 16
     OnClick = BitBtn9Click
   end
   object BitBtn10: TBitBtn
-    Left = 24
-    Top = 171
+    Left = 8
+    Top = 234
     Width = 121
     Height = 25
     Caption = 'Winning perentages'
-    TabOrder = 18
+    TabOrder = 17
     OnClick = BitBtn10Click
   end
   object RadioGroup5: TRadioGroup
@@ -238,34 +230,70 @@ object eval_scores_graph_form: Teval_scores_graph_form
       '3'
       '4'
       '5')
-    TabOrder = 19
+    TabOrder = 18
     OnClick = RadioGroup5Click
   end
   object BitBtn11: TBitBtn
-    Left = 24
-    Top = 47
+    Left = 8
+    Top = 39
     Width = 145
     Height = 25
     Caption = 'Graph by tile barren %'
-    TabOrder = 20
+    TabOrder = 19
     OnClick = BitBtn11Click
   end
   object BitBtn12: TBitBtn
-    Left = 24
-    Top = 202
-    Width = 177
+    Left = 8
+    Top = 265
+    Width = 185
     Height = 25
     Caption = 'Quantile histograms by parameter'
-    TabOrder = 21
+    TabOrder = 20
     OnClick = BitBtn12Click
   end
   object BitBtn13: TBitBtn
-    Left = 24
-    Top = 16
+    Left = 192
+    Top = 380
     Width = 137
     Height = 25
     Caption = 'Best by slope/barren'
-    TabOrder = 22
+    TabOrder = 21
     OnClick = BitBtn13Click
+  end
+  object CheckBox4: TCheckBox
+    Left = 376
+    Top = 440
+    Width = 161
+    Height = 17
+    Caption = 'Graph retired DEMs'
+    TabOrder = 22
+    OnClick = CheckBox4Click
+  end
+  object BitBtn14: TBitBtn
+    Left = 8
+    Top = 70
+    Width = 145
+    Height = 25
+    Caption = 'Graph by tile forest %'
+    TabOrder = 23
+    OnClick = BitBtn14Click
+  end
+  object BitBtn15: TBitBtn
+    Left = 24
+    Top = 440
+    Width = 145
+    Height = 25
+    Caption = 'Best eval by criterion'
+    TabOrder = 24
+    OnClick = BitBtn15Click
+  end
+  object BitBtn16: TBitBtn
+    Left = 192
+    Top = 440
+    Width = 145
+    Height = 25
+    Caption = 'Best eval colored by slope'
+    TabOrder = 25
+    OnClick = BitBtn16Click
   end
 end

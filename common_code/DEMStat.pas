@@ -19,15 +19,13 @@ unit DEMStat;
    {$IfDef Debug }
       //{$Define NoParallelFor}
       //{$Define RecordDEMIX_colors}
-      {$Define RecordSSIM}
+      //{$Define RecordSSIM}
       //{$Define RecordSSIMFull}
       {$Define RecordDEMIX}
       {$Define RecordDEMIXFull}
-      {$Define TrackPixelIs}
+      //{$Define TrackPixelIs}
       {$Define RecordCovarianceFail}
       //{$Define RecordDEMIXSSIMGrid}
-
-
       //{$Define RepeatProblematicComputations}  //put in breakpoint, and then follow debugger but may have issues
       //{$Define RecordCovariance}
       //{$Define TrackSWcorner}  //must also be defined in DEMCoord
@@ -198,8 +196,8 @@ type
 
 
 //ssim operations
-   function ComputeSSIM(DEM1,DEM2 : integer; gl1,gl2 : tGridLimits; var SSIM,Luminance,Contrast,Structure : float64) : boolean;   inline;
-   procedure AreaSSIMComputations(Overwrite : boolean);
+   function ComputeSSIM(DEM1,DEM2 : integer; gl1,gl2 : tGridLimits; var SSIM,Luminance,Contrast,Structure : float64) : boolean; //inline;
+   procedure AreaSSIMandFUVComputations(Overwrite : boolean);
    procedure NormalizeDEMforSSIM(DEM : integer; What : shortstring);
    function MakeSSIMMap(OpenMap,AlreadyNormalized : boolean; DEM1,DEM2,NumberOfGrids,WindowSize : integer; ThinFactor : integer = 1; AreaName : shortstring = '') : integer;
    procedure SSIMcheck(DoThinning : boolean);
@@ -1877,9 +1875,8 @@ var
    spc : float64;
 begin
    {$If Defined(RecordCovariance)} HighlightLineToDebugFile('CovariancesFromTwoGrids in, grids=' + IntToStr(DEM1) + ' and ' + IntToStr(DEM2)); {$EndIf}
-   IdenticalGrids := DEMGlb[DEM1].SecondGridJustOffset(DEM2,xoff,yoff);
+   IdenticalGrids := DEMGlb[DEM1].SecondGridJustOffset(DEM2,xoff,yoff,true);
    NPts := 0;
-
    spc := 0;
    for i := 1 to 2 do begin
       sum[i] := 0;
@@ -1944,80 +1941,6 @@ begin
          if NoteFailure then WriteLineToDebugFile('CovariancesFromTwoGrids failed, npts=' + IntToStr(NPts) + ' DEM1=' + DEMglb[DEM1].AreaName +  ' DEM2=' + DEMglb[DEM2].AreaName );
       {$EndIf}
    end;
-
-
-
-(*
-   {$IfDef RecordStat} WriteLineToDebugFile('CovariancesFromTwoGrids in, grids=' + IntToStr(DEM1) + ' and ' + IntToStr(DEM2)); {$EndIf}
-   IdenticalGrids := DEMGlb[DEM1].SecondGridJustOffset(DEM2,xoff,yoff);
-   NPts := 0;
-   New(x);
-   New(y);
-   incr := 1;
-   while ( (GridLimitsDEM1.XGridHigh - GridLimitsDEM1.XGridLow) div incr) * ((GridLimitsDEM1.YGridHigh - GridLimitsDEM1.YGridLow) div Incr) > Petmath.bfArrayMaxSize do inc(incr);
-   Col := GridLimitsDEM1.XGridLow;
-   while (Col <= GridLimitsDEM1.XGridHigh) do begin
-      Row := GridLimitsDEM1.YGridLow;
-
-      while (Row <= GridLimitsDEM1.YGridHigh) do begin
-         if DEMGlb[DEM1].GetElevMeters(Col,Row,z1) then begin
-            if IdenticalGrids then begin
-               if DEMGlb[DEM2].GetElevMeters(Col+xoff,Row+yoff,z2) then begin
-                  x^[NPts] := z1;
-                  y^[NPts] := z2;
-                  inc(NPts);
-               end;
-            end
-            else begin
-               DEMGlb[DEM1].DEMGridToLatLongDegree(Col,Row,Lat,Long);
-               if DEMGlb[DEM2].GetElevFromLatLongDegree(Lat,Long,z2) then begin
-                  x^[NPts] := z1;
-                  y^[NPts] := z2;
-                  inc(NPts);
-               end;
-            end;
-         end;
-         inc(Row,incr);
-      end;
-      inc(Col,incr);
-   end;
-   Result := (NPts > 0);
-   if Result then Newvarcovar(x^,y^,NPts,r,covar,Mean1,Mean2,StdDev1,StdDev2);
-   Dispose(x);
-   Dispose(y);
-   {$IfDef RecordStat} WriteLineToDebugFile('CovariancesFromTwoGrids out covar=' + RealToString(covar,-12,-4)); {$EndIf}
-
-
-procedure Newvarcovar(var x,y : array of float32; NPts : integer; var correlation,covar,Mean1,Mean2,StdDev1,StdDev2 : float64);
-var
-   i : integer;
-   sum, sp : array[1..2] of float64;
-   spc : float64;
-begin
-   spc := 0;
-   for i := 1 to 2 do begin
-      sum[i] := 0;
-      sp[i] := 0;
-   end;
-   for i:= 0 to pred(NPts) do begin
-       Sum[1] := Sum[1] + x[i];
-       Sum[2] := Sum[2] + y[i];
-       sp[1] := sp[1] + x[i] * x[i];
-       sp[2] := sp[2] + y[i] * y[i];
-       SPc := SPc + x[i] * y[i];
-   end;
-
-   Mean1 := (Sum[1] / NPts);
-   StdDev1 := sqrt( (NPts * SP[1] - (sum[1] * sum[1]) ) / (NPts-1) / Npts );
-   Mean2 := (Sum[2] / NPts);
-   StdDev2 := sqrt( (NPts * SP[2] - (sum[2] * sum[2]) ) / (NPts-1) / Npts );
-
-   Covar := (NPts * SPc - Sum[1] * Sum[2]) / NPts / pred(NPts);
-   Correlation := Covar / StdDev1 / StdDev2;
-   {$IfDef RecordCovar} WriteLineToDebugFile('varcovar out, covar=' + RealToString(Covar,-12,4)); {$EndIf}
-end;
-*)
-
 end;
 
 
@@ -2034,7 +1957,6 @@ const
    MaxSlopeValue = 250;
 type
    TheArrayType = array[MinSlopeValue..MaxSlopeValue] of float64;
-   //tCountType    = array[MinSlopeValue..MaxSlopeValue] of LongInt;
    GraphType    = (ElevFreq,SlopeFreq,ElevSlope,AspectFreq,CumSlope,AspectRose,ElevSlopeDeg,ElevRuff);
 var
    Graph : GraphType;

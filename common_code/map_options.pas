@@ -4,7 +4,7 @@ unit map_options;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 {$I nevadia_defines.inc}
@@ -92,7 +92,7 @@ begin
        theMapOwner := MapForm;
        if (MapDraw.TerrainShadowsDEM <> 0) then RadioGroup1.ItemIndex := 4
        else RadioGroup1.ItemIndex := ord(MapDraw.MapMerge);
-       RadioGroup1.Enabled := MapDraw.DemOnMap <> 0;
+       RadioGroup1.Enabled := ValidDEM(MapDraw.DemOnMap);
        if (MapDraw.DemOnMap = 0) then RadioGroup1.ItemIndex := 0;
        CheckBox1.Checked := MapDraw.MakeMapGrayscale;
        CheckBox2.Checked := MapDraw.GrayscaleSubdueOverlays;

@@ -284,11 +284,11 @@ var
    dx_min,dx_max,dy_min,dy_max,grid_true_min,grid_true_max,Lat,Long : float64;
    dx,dy,GridTrueAngle : float32;
 
-            procedure AddOne(CurDEM,x,y : integer);
+            procedure AddOne(Where : shortstring; CurDEM,x,y : integer);
             begin
                DEMGlb[CurDEM].PixelSpacingAndRotation(x,y,Lat,Long,dx,dy,GridTrueAngle,false);
                inc(RecID);
-               Results.Add(RealToString(Lat,-12,-7) + ',' + RealToString(Long,-12,-7)  + ',' + IntToStr(x) + ',' + IntToStr(y) + ',' + RealToString(dx,-12,-3) + ',' + RealToString(dy,-12,-3)
+               Results.Add(Where + ',' + RealToString(Lat,-12,-7) + ',' + RealToString(Long,-12,-7)  + ',' + IntToStr(x) + ',' + IntToStr(y) + ',' + RealToString(dx,-12,-3) + ',' + RealToString(dy,-12,-3)
                                 + ',' + RealToString(GridTrueAngle,-12,-3) + ',' + RealToString(dx * dy,-12,-3) + ',' + RealToString(100 * dx / dy,-12,-3) + ',' + IntToStr(RecID) );
             end;
 
@@ -299,26 +299,26 @@ var
    begin
       RecID := 0;
       Results := tStringList.Create;
-      Results.Add('LAT,LONG,GRID_COL,GRID_ROW,DX_M,DY_M,GRID_TRUE,AREA,DIFF_PC,REC_ID');
+      Results.Add('LOCATION,LAT,LONG,GRID_COL,GRID_ROW,DX_M,DY_M,GRID_TRUE,AREA,DIFF_PC,REC_ID');
       if JustCorners then begin
-         AddOne(CurDEM,0,pred(DEMGlb[CurDEM].DEMHeader.NumRow));
-         AddOne(CurDEM,pred(DEMGlb[CurDEM].DEMHeader.NumCol),pred(DEMGlb[CurDEM].DEMHeader.NumRow));
-         AddOne(CurDEM,pred(DEMGlb[CurDEM].DEMHeader.NumCol),pred(DEMGlb[CurDEM].DEMHeader.NumRow) div 2);
-         AddOne(CurDEM,0,0);
-         AddOne(CurDEM,pred(DEMGlb[CurDEM].DEMHeader.NumCol),0);
+         AddOne('NW corner',CurDEM,0,pred(DEMGlb[CurDEM].DEMHeader.NumRow));
+         AddOne('NE corner',CurDEM,pred(DEMGlb[CurDEM].DEMHeader.NumCol),pred(DEMGlb[CurDEM].DEMHeader.NumRow));
+         AddOne('Center',CurDEM,pred(DEMGlb[CurDEM].DEMHeader.NumCol) div 2,pred(DEMGlb[CurDEM].DEMHeader.NumRow) div 2);
+         AddOne('SW corner',CurDEM,0,0);
+         AddOne('SE corner',CurDEM,pred(DEMGlb[CurDEM].DEMHeader.NumCol),0);
       end
       else begin
          x := 1;
          while x < pred(DEMGlb[CurDEM].DEMheader.NumCol) do begin
             y := 1;
             while y < pred(DEMGlb[CurDEM].DEMheader.NumRow) do begin
-               AddOne(CurDEM,x,y);
+               AddOne(DEMGlb[CurDEM].AreaName,CurDEM,x,y);
                inc(y,GridInc);
             end;
             inc(x,GridInc);
          end;
       end;
-      fName := Petmar.NextFileNumber(MDTempDir, 'Grid_spacing_','.dbf');
+      fName := Petmar.NextFileNumber(MDTempDir, DEMGlb[CurDEM].AreaName + '_Grid_spacing_','.dbf');
       db := DEMGlb[CurDEM].SelectionMap.StringListToLoadedDatabase(Results,fName);
       GISDB[db].EmpSource.Enabled := false;
       GISDB[db].MyData.FindFieldRange('DX_M',dx_min,dx_max);
@@ -338,7 +338,7 @@ begin
 
    if (CurDEM <> 0) then begin
       JustCorners := AnswerIsYes('Just corners and center');
-      if Not JustCorners then begin
+      if (Not JustCorners) then begin
          GridInc := 25;
          ReadDefault('Grid increment for computations',GridInc);
       end;
@@ -451,7 +451,7 @@ var
             Results := tStringList.Create;
             Results.Add('DEM: ' + DEMGlb[CurDEM].AreaName);
             Results.Add('Map center: ' + LatLongDegreeToString(Lat1,Long1,MDDef.OutPutLatLongMethod));
-            Results.Add(' UTM zone: ' + IntToStr(DEMGlb[CurDEM].DEMMapProjection.projUTMZone));
+            Results.Add(' UTM zone: ' + IntToStr(DEMGlb[CurDEM].DEMMapProj.projUTMZone));
             Results.Add('');
             Results.Add('Distance/Bearing   UTM/Lat-Long   UTM/Vincenty   Vincenty/LatLong');
 
@@ -487,16 +487,16 @@ begin
 
    if DoMovie then begin
       Lat1 := DEMGlb[CurDEM].DEMSWcornerLat + 0.5 * DEMGlb[CurDEM].LatSizeMap;
-      Long1 := UTMZoneCentralLong(DEMGlb[CurDEM].DEMMapProjection.projUTMZone) - 2.995;
+      Long1 := UTMZoneCentralLong(DEMGlb[CurDEM].DEMMapProj.projUTMZone) - 2.995;
       ResultsForOneLocation;
 
-      Long1 := UTMZoneCentralLong(DEMGlb[CurDEM].DEMMapProjection.projUTMZone) - 3;
+      Long1 := UTMZoneCentralLong(DEMGlb[CurDEM].DEMMapProj.projUTMZone) - 3;
       repeat
          Long1 := Long1 + 0.5;
          ResultsForOneLocation;
-      until Long1 > UTMZoneCentralLong(DEMGlb[CurDEM].DEMMapProjection.projUTMZone) + 2.45;
+      until Long1 > UTMZoneCentralLong(DEMGlb[CurDEM].DEMMapProj.projUTMZone) + 2.45;
 
-      Long1 := UTMZoneCentralLong(DEMGlb[CurDEM].DEMMapProjection.projUTMZone) + 2.995;
+      Long1 := UTMZoneCentralLong(DEMGlb[CurDEM].DEMMapProj.projUTMZone) + 2.995;
       ResultsForOneLocation;
 
       {$IfDef ExMovie}
@@ -515,7 +515,7 @@ begin
          if i = 0 then Lat1 := 5;
          if DoUTMGeodetic then begin
             for j := 0 to 4 do begin
-               Long1 := UTMZoneCentralLong(DEMGlb[CurDEM].DEMMapProjection.projUTMZone) + LongVal[j];
+               Long1 := UTMZoneCentralLong(DEMGlb[CurDEM].DEMMapProj.projUTMZone) + LongVal[j];
                ResultsForOneLocation;
                CopyImageToBitmap(ThisGraph.Image1,bmp);
                bmp.savetofile(MDTempDir + 'temmpbmp' + OverlayFExt);
@@ -527,7 +527,7 @@ begin
          end
          else begin
             for j := 0 to 2 do begin
-               Long1 := UTMZoneCentralLong(DEMGlb[CurDEM].DEMMapProjection.projUTMZone);
+               Long1 := UTMZoneCentralLong(DEMGlb[CurDEM].DEMMapProj.projUTMZone);
                case j of
                   0 : MaxVertValue := 30;
                   1 : MaxVertValue := 250;

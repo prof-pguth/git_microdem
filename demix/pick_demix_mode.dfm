@@ -2,7 +2,7 @@ object PickDEMIXmodeForm: TPickDEMIXmodeForm
   Left = 0
   Top = 0
   Caption = 'Pick DEMIX mode'
-  ClientHeight = 186
+  ClientHeight = 208
   ClientWidth = 437
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -12,21 +12,22 @@ object PickDEMIXmodeForm: TPickDEMIXmodeForm
   Font.Style = []
   TextHeight = 15
   object RadioGroup1: TRadioGroup
-    Left = 16
-    Top = 24
+    Left = 8
+    Top = 8
     Width = 401
-    Height = 105
+    Height = 137
     Caption = 'DEMIX mode'
     Items.Strings = (
       'Not yet defined'
       'Classic--Cop, ALOS, SRTM, NASA, ASTER, FABDEM, TANDEM'
+      'Add Coastal (below 120 m elevation)'
       'Add Dilumium (only  below 80 m elevation)'
       'Add Delta (only below 10 m elevation)')
     TabOrder = 0
   end
   object BitBtn1: TBitBtn
-    Left = 168
-    Top = 143
+    Left = 176
+    Top = 169
     Width = 57
     Height = 25
     Caption = 'OK'

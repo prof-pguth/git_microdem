@@ -20,8 +20,8 @@ begin
       if (AreasWanted = Nil) then AreasWanted := DEMIX_AreasWanted;
       for i := 0 to pred(AreasWanted.Count) do begin
          AreaName := AreasWanted.Strings[i];
-         wmdem.SetPanelText(3, 'Channel misses: ' + IntToStr(succ(i)) + '/' + IntToStr(AreasWanted.Count) + '  ' + AreaName,true);
-         CompareChannelNetworks(AreaName);
+         wmdem.SetPanelText(1, 'Channel misses: ' + IntToStr(succ(i)) + '/' + IntToStr(AreasWanted.Count) + '  ' + AreaName,true);
+         CompareChannelNetworks(Overwrite,AreaName);
       end;
    finally
       EndDEMIXProcessing;
@@ -30,7 +30,7 @@ begin
 end;
 
 
-procedure ChannelNetworkMapComparison(AreaName,TestDEMName : shortstring);
+procedure ChannelNetworkMapComparison(Overwrite : boolean; AreaName,TestDEMName : shortstring);
 const
    MakeGrid = false;
    Color1 = clLime;   //Green: channel reference, not test
@@ -107,50 +107,7 @@ begin
 end;
 
 
-function ChannelSHPtoGrid(DEM,db : integer; OutDir : PathStr; PlotOrder : integer = 1) : integer;
-var
-   grid : integer;
-   Bitmap : tMyBitmap;
-   fName : PathStr;
-
-   procedure DoDatabase(LineWidth : integer = 1);
-   var
-      NewExt : shortstring;
-   begin
-      GISdb[db].LayerIsOn := true;
-      GISdb[db].dbOpts.LineWidth := LineWidth;
-      GISdb[db].dbOpts.LineColor := claBlack;
-      GISdb[db].ApplyGISFilter('PLOT_ORDER > ' + IntToStr(PlotOrder));
-      Grid := DEMGlb[DEM].SelectionMap.CreateGridToMatchMap(cgLatLong,true,ByteDEM,3600 * DEMGlb[DEM].DEMheader.DEMxSpacing,3600 * DEMGlb[DEM].DEMheader.DEMySpacing,-99,
-         DEMGlb[DEM].DEMheader.RasterPixelIsGeoKey1025);
-      DEMGlb[Grid].AreaName := GISdb[db].dbName;
-      DEMGlb[Grid].SelectionMap.MapDraw.UseDistortedRawLatLongScaling := true;
-      DEMGlb[Grid].SelectionMap.MapDraw.ResizeMapByPercentage(100);
-      DEMGlb[Grid].SelectionMap.DoCompleteMapRedraw;
-      DEMGlb[Grid].SelectionMap.MapDraw.MapType := mtElevRainbow;
-      CopyImageToBitmap(DEMGlb[Grid].SelectionMap.Image1,Bitmap);
-      GISdb[db].PlotDefaultSymbols(DEMGlb[Grid].SelectionMap.MapDraw,Bitmap);
-      DEMGlb[Grid].SelectionMap.Image1.Picture.Graphic := Bitmap;
-
-      WriteLineToDebugFile(DEMGlb[Grid].AreaName + ',' + IntToStr(PixelsWithThisColor(Bitmap,claBlack)));
-      Bitmap.Free;
-      DEMGlb[Grid].SelectionMap.EditGridViaColor(emvcSetElevation,clBlack,1,false,false);
-      DEMGlb[Grid].SelectionMap.MaskFromSecondGrid(DEM, msSecondMissing);
-      if (LineWidth > 1) then NewExt := '_buffer_' + IntToStr(LineWidth) else NewExt := '';
-      fName := OutDir + ExtractFileNameNoExt(GISdb[db].DBFullName) + NewExt + '.tif';
-      DEMGlb[Grid].WriteNewFormatDEM(fName);
-      GISdb[db].LayerIsOn := false;
-      Result := Grid;
-   end;
-
-
-begin
-    NakedMapOptions;
-    DoDataBase;
-end;
-
-
-procedure CompareChannelNetworks(Area : shortstring);
+procedure CompareChannelNetworks(Overwrite : boolean; Area : shortstring);
 var
    DEM,DEMIXtileDB,NumRef,i,j : integer;
    Results : tStringList;
@@ -197,7 +154,7 @@ var
           end;
           Result := 1 - (TestOnRef / NumRef);
        end
-       else Result := -9999;
+       else Result := -999;
    end;
 
        procedure DoTolerance(Criterion : shortstring; Buffer : integer);
@@ -217,7 +174,7 @@ const
 begin
     SafeMakeDir(ChannelMissesDir);
     SavefName := ChannelMissesDir + Area + '_Channel_Misses.csv';
-    if not FileExists(savefName) then begin
+    if Overwrite or (not FileExists(savefName)) then begin
        wmdem.SetPanelText(2, 'Load DEMs',true);
 
        if OpenBothPixelIsDEMs(Area,'saga_channels_saga_sinks_removed_',DEMIX_ref_DEMs_channel_grids,DEMIX_test_DEMs_channel_grids,OpenMaps) then begin
@@ -230,7 +187,7 @@ begin
        else MissingFiles := true;
 
        if MissingFiles then begin
-          {$IfDef RecordDEMIX} WriteLineToDebugFile('Missing files for area ' + Area); {$EndIf}
+          {$IfDef RecordDEMIX} WriteLineToDebugFile('CompareChannelNetworks missing sinks removed for area ' + Area); {$EndIf}
        end
        else begin
           Results := tStringList.Create;
@@ -240,17 +197,17 @@ begin
           Results.Add(aLine + ',CHAN_PIX');
 
           DEMIXtileDB := DEMIXtileFill(DEM,DEMGlb[DEM].DEMBoundBoxGeo,true);
-          GISdb[DEMIXtileDB].ApplyGISFilter('GRID_FULL>' + IntToStr(MDDef.DEMIX_Full));
+          GISdb[DEMIXtileDB].ApplyGISFilter('GRID_FULL>' + IntToStr(DEMIX_Tile_Full));
 
           GISdb[DEMIXtileDB].MyData.First;
           while not GISdb[DEMIXtileDB].MyData.eof do begin
              bb := GISdb[DEMIXtileDB].MyData.GetRecordBoundingBox;
              DEMGlb[DEM].LatLongDegreeToDEMGridInteger(bb.ymin,bb.xmin,GridLimits.xgridlow,GridLimits.ygridlow);
              DEMGlb[DEM].LatLongDegreeToDEMGridInteger(bb.ymax,bb.xmax,GridLimits.xgridhigh,GridLimits.ygridhigh);
-             if GridLimits.xgridlow < 0 then GridLimits.xgridlow := 0;
-             if GridLimits.xgridhigh > pred(DEMGlb[AreaDEMs[0]].DEMheader.NumCol) then GridLimits.xgridhigh := pred(DEMGlb[AreaDEMs[0]].DEMheader.NumCol);
-             if GridLimits.ygridlow < 0 then GridLimits.ygridlow := 0;
-             if GridLimits.ygridhigh > pred(DEMGlb[AreaDEMs[0]].DEMheader.NumRow) then GridLimits.ygridhigh := pred(DEMGlb[AreaDEMs[0]].DEMheader.NumRow);
+             if (GridLimits.xgridlow < 0) then GridLimits.xgridlow := 0;
+             if (GridLimits.xgridhigh > pred(DEMGlb[AreaDEMs[0]].DEMheader.NumCol)) then GridLimits.xgridhigh := pred(DEMGlb[AreaDEMs[0]].DEMheader.NumCol);
+             if (GridLimits.ygridlow < 0) then GridLimits.ygridlow := 0;
+             if (GridLimits.ygridhigh > pred(DEMGlb[AreaDEMs[0]].DEMheader.NumRow)) then GridLimits.ygridhigh := pred(DEMGlb[AreaDEMs[0]].DEMheader.NumRow);
              TileName := GISdb[DEMIXtileDB].MyData.GetFieldByNameAsString('NAME');
              wmdem.SetPanelText(2, TileName,true);
 
@@ -258,13 +215,15 @@ begin
              DoTolerance('CHAN_MISS3',1);
              GISdb[DEMIXtileDB].MyData.Next;
           end;
-          Results.SaveToFile(SavefName);
+          if (Results.Count > 1) then Results.SaveToFile(SavefName)
+          else begin
+             {$IfDef RecordDEMIX} WriteLineToDebugFile('CompareChannelNetworks difference fail for area ' + Area); {$EndIf}
+          end;
           Results.Free;
           if OpenMaps then begin
              wmdem.tile;
              //MessageToContinue('Look at maps');
           end;
-
           CloseAllDEMs;
        end;
     end;
@@ -272,11 +231,56 @@ end;
 
 
 
-
 procedure CreateChannelNetworkGridsFromVectors(Overwrite : boolean; AreasWanted : tstringlist = nil);
 var
    AreaName : shortstring;
    i : integer;
+
+
+      function ChannelSHPtoGrid(DEM,db : integer; fName : PathStr; PlotOrder : integer = 1) : integer;
+      var
+         grid : integer;
+         Bitmap : tMyBitmap;
+
+         procedure DoDatabase(LineWidth : integer = 1);
+         var
+            NewExt : shortstring;
+         begin
+            GISdb[db].LayerIsOn := true;
+            GISdb[db].dbOpts.LineWidth := LineWidth;
+            GISdb[db].dbOpts.LineColor := claBlack;
+            GISdb[db].ApplyGISFilter('PLOT_ORDER > ' + IntToStr(PlotOrder));
+            Grid := DEMGlb[DEM].SelectionMap.CreateGridToMatchMap(cgLatLong,true,ByteDEM,3600 * DEMGlb[DEM].DEMheader.DEMxSpacing,3600 * DEMGlb[DEM].DEMheader.DEMySpacing,-99,
+               DEMGlb[DEM].DEMheader.RasterPixelIsGeoKey1025);
+            DEMGlb[Grid].AreaName := GISdb[db].dbName;
+            DEMGlb[Grid].SelectionMap.MapDraw.UseDistortedRawLatLongScaling := true;
+            DEMGlb[Grid].SelectionMap.MapDraw.ResizeMapByPercentage(100);
+            DEMGlb[Grid].SelectionMap.DoCompleteMapRedraw;
+            DEMGlb[Grid].SelectionMap.MapDraw.MapType := mtElevRainbow;
+            CopyImageToBitmap(DEMGlb[Grid].SelectionMap.Image1,Bitmap);
+            GISdb[db].PlotDefaultSymbols(DEMGlb[Grid].SelectionMap.MapDraw,Bitmap);
+            DEMGlb[Grid].SelectionMap.Image1.Picture.Graphic := Bitmap;
+
+            WriteLineToDebugFile(DEMGlb[Grid].AreaName + ',' + IntToStr(PixelsWithThisColor(Bitmap,claBlack)));
+            Bitmap.Free;
+            DEMGlb[Grid].SelectionMap.EditGridViaColor(emvcSetElevation,clBlack,1,false,false);
+            DEMGlb[Grid].SelectionMap.MaskFromSecondGrid(DEM, msSecondMissing);
+            if (LineWidth > 1) then NewExt := '_buffer_' + IntToStr(LineWidth) else NewExt := '';
+            DEMGlb[Grid].WriteNewFormatDEM(fName);
+            GISdb[db].LayerIsOn := false;
+            Result := Grid;
+         end;
+
+
+      begin
+          if ValidDEM(DEM) and ValidDB(db) then begin
+             NakedMapOptions;
+             DoDataBase;
+          end
+          else Result := 0;
+      end;
+
+
 
    procedure Run(BaseFolder,InFolder,OutFolder : PathStr; what : shortstring);
    var
@@ -288,46 +292,54 @@ var
       TheFiles := nil;
       Petmar.FindMatchingFiles(BaseFolder,'*.tif',TheFiles,1);
       RemoveFilesThatDoNotHaveString(TheFiles,AreaName);
-
-      {$IfDef RecordDEMIX} WriteLineToDebugFile(What + ' file=' + IntToStr(TheFiles.Count) + '  ' + AreaName); {$EndIf}
       if (TheFiles.Count > 0) then begin
          SafeMakeDir(OutFolder);
          for i := 0 to pred(TheFiles.Count) do begin
              wmdem.SetPanelText(2,What + ' ' + IntToStr(i) + '/' + IntToStr(TheFiles.Count),true);
              InName := TheFiles.Strings[i];
              dbName := InFolder + 'saga_channels_' + ExtractFileNameNoExt(InName) + '.shp';
-             GridName := OutFolder + ExtractFileNameNoExt(dbName) + '.tif';
-
-             if (IsDEMaDSMorDTM(InName) = DEMisDSM) then begin
-                File2Trash(InName);
-             end
-             else if not FileExists(dbName) then begin
-                {$IfDef RecordDEMIX} WriteLineToDebugFile('Missing file=' + dbName); {$EndIf}
-             end
-             else if ((not FileExists(GridName)) or Overwrite) then begin
-                DEM := OpenNewDEM(InName,true);
-                db := DEMGlb[DEM].SelectionMap.OpenDBonMap('',dbName,true,false);
-                NewGrid := ChannelSHPtoGrid(DEM,db,OutFolder);
-                CloseSingleDEM(DEM);
-                CloseSingleDEM(NewGrid);
-                CleanUpTempDirectory(false);
-             end;
+             if FileExists(InName) and FileExists(dbName) then begin
+                GridName := OutFolder + ExtractFileNameNoExt(dbName) + '.tif';
+                if ((not FileExists(GridName)) or Overwrite) then begin
+                   if (IsDEMaDSMorDTM(InName) = DEMisDSM) then begin
+                      File2Trash(InName);
+                   end
+                   else begin
+                      DEM := OpenNewDEM(InName,true);
+                      db := DEMGlb[DEM].SelectionMap.OpenDBonMap('',dbName,true,false);
+                      NewGrid := ChannelSHPtoGrid(DEM,db,GridName);
+                      CloseSingleDEM(DEM);
+                      CloseSingleDEM(NewGrid);
+                      CleanUpTempDirectory(false);
+                   end;
+                end;
+            end
+            else begin
+               {$IfDef RecordDEMIX} if not FileExists(dbName) then WriteLineToDebugFile('CreateChannelNetworkGridsFromVectors Missing=' + dbName); {$EndIf}
+               {$IfDef RecordDEMIX} if not FileExists(InName) then WriteLineToDebugFile('CreateChannelNetworkGridsFromVectors Missing=' + InName); {$EndIf}
+            end;
          end;
          TheFiles.Free;
+      end
+      else begin
+         {$IfDef RecordDEMIX} if not FileExists(dbName) then WriteLineToDebugFile('CreateChannelNetworkGridsFromVectors .tif Missing for ' + BaseFolder); {$EndIf}
       end;
    end;
 
 begin
    {$IfDef RecordDEMIX} WriteLineToDebugFile('CreateChannelNetworkGridsFromVectors in'); {$EndIf}
    try
+      GetDEMIXpaths;
       if (AreasWanted = Nil) then AreasWanted := DEMIX_AreasWanted;
       LockStatusBar := true;
       for i := 0 to pred(AreasWanted.Count) do begin
          AreaName := AreasWanted.Strings[i];
-         Run(DEMIX_ref_DEMs_no_sink,DEMIX_ref_DEMs_channels,DEMIX_ref_DEMs_channel_grids,'Ref DEMs');
+         wmdem.SetPanelText(1, 'Channel grids: ' + IntToStr(succ(i)) + '/' + IntToStr(AreasWanted.Count) + ' ' + AreaName,true);
          Run(DEMIX_test_DEMs_no_sink,DEMIX_test_DEMs_channels,DEMIX_test_DEMs_channel_grids,'Test DEMs');
+         Run(DEMIX_ref_DEMs_no_sink,DEMIX_ref_DEMs_channels,DEMIX_ref_DEMs_channel_grids,'Ref DEMs');
       end;
    finally
+      EndDEMIXProcessing;
    end;
    {$IfDef RecordDEMIX} WriteLineToDebugFile('CreateChannelNetworkGridsFromVectors out'); {$EndIf}
 end;
@@ -348,9 +360,10 @@ var
       TheFiles := nil;
       Petmar.FindMatchingFiles(InFolder,'*.tif',TheFiles,1);
       RemoveFilesThatDoNotHaveString(TheFiles,AreaName);
-
-      {$IfDef RecordDEMIX} WriteLineToDebugFile(What + ' file=' + IntToStr(TheFiles.Count)); {$EndIf}
-      if (TheFiles.Count > 0) then begin
+      if (TheFiles.Count = 0) then begin
+         {$IfDef RecordDEMIX} HighlightLineToDebugFile('BatchCreateVectorChannelNewtwork no tif files for ' + AreaName + ' in ' + InFolder); {$EndIf}
+      end
+      else begin
          SafeMakeDir(OutFolder);
          NumDone := 0;
          for i := 0 to pred(TheFiles.Count) do begin
@@ -366,21 +379,26 @@ var
              end;
          end;
          TheFiles.Free;
-         {$IfDef RecordDEMIX} WriteLineToDebugFile(What + ' shp file created=' + IntToStr(NumDone) + ' in ' + OutFolder); {$EndIf}
+         {$IfDef RecordDEMIX} if (NumDone > 0) then WriteLineToDebugFile(What + ' shp file created=' + IntToStr(NumDone) + ' in ' + OutFolder + ' for ' + AreaName); {$EndIf}
       end;
    end;
 
 var
    i : integer;
 begin
-   {$IfDef RecordDEMIX} WriteLineToDebugFile('BatchCreateVectorChannelNewtwork in'); {$EndIf}
-   if (AreasWanted = Nil) then AreasWanted := DEMIX_AreasWanted;
-   LockStatusBar := true;
-   for i := 0 to pred(AreasWanted.Count) do begin
-      AreaName := AreasWanted.Strings[i];
-      wmdem.SetPanelText(1, 'Areas: ' + IntToStr(succ(i)) + '/' + IntToStr(AreasWanted.Count) + ' ' + AreaName,true);
-      Run(DEMIX_ref_DEMs_no_sink,DEMIX_ref_DEMs_channels,' ref DEMs');
-      Run(DEMIX_test_dems_no_sink,DEMIX_test_DEMs_channels,' test DEMs');
+   try
+      GetDEMIXpaths;
+      {$IfDef RecordDEMIX} WriteLineToDebugFile('BatchCreateVectorChannelNewtwork in'); {$EndIf}
+      if (AreasWanted = Nil) then AreasWanted := DEMIX_AreasWanted;
+      LockStatusBar := true;
+      for i := 0 to pred(AreasWanted.Count) do begin
+         AreaName := AreasWanted.Strings[i];
+         wmdem.SetPanelText(1, 'Areas: ' + IntToStr(succ(i)) + '/' + IntToStr(AreasWanted.Count) + ' ' + AreaName,true);
+         Run(DEMIX_ref_DEMs_no_sink,DEMIX_ref_DEMs_channels,' ref DEMs');
+         Run(DEMIX_test_dems_no_sink,DEMIX_test_DEMs_channels,' test DEMs');
+      end;
+   finally
+      EndDEMIXProcessing;
    end;
    {$IfDef RecordDEMIX} WriteLineToDebugFile('BatchCreateVectorChannelNewtwork out'); {$EndIf}
 end;
@@ -396,7 +414,7 @@ var
          var
             TheFiles : tStringList;
             InName, OutName : PathStr;
-            i : integer;
+            i,NumDone : integer;
          begin
             wmdem.SetPanelText(3, 'Remove sinks ' + What + ' ' + AreaName,true);
             TheFiles := nil;
@@ -404,6 +422,7 @@ var
             Petmar.FindMatchingFiles(InFolder,Ext,TheFiles,1);
             RemoveFilesThatDoNotHaveString(TheFiles,AreaName);
             {$IfDef RecordDEMIXFull} WriteLineToDebugFile(What + ' file=' + IntToStr(TheFiles.Count)); {$EndIf}
+            NumDone := 0;
             for i := 0 to pred(TheFiles.Count) do begin
                 wmdem.SetPanelText(1, 'DEM: ' + IntToStr(succ(i)) + '/' + IntToStr(TheFiles.Count),true);
                 InName := TheFiles.Strings[i];
@@ -411,26 +430,33 @@ var
                    OutName := OutFolder + 'saga_sinks_removed_' + ExtractFileNameNoExt(InName) + '.tif';
                    if (not FileExists(OutName)) or Overwrite then begin
                       SagaSinkRemoval(InName,OutName);
+                      inc(NumDone);
                    end;
                 end;
             end;
+            {$IfDef RecordDEMIX} if NumDone > 0 then WriteLineToDebugFile(AreaName + ' ' + what + ' files done=' + IntToStr(NumDone)); {$EndIf}
             TheFiles.Free;
             EndProgress;
          end;
 
 
 begin
+   {$IfDef RecordDEMIX} HighlightLineToDebugFile('BatchRemoveSinksInDEMIX_DEMS Out'); {$EndIf}
    if (AreasWanted = Nil) then AreasWanted := DEMIX_AreasWanted;
-   LockStatusBar := true;
-   for i := 0 to pred(AreasWanted.Count) do begin
-      AreaName := AreasWanted.Strings[i];
-      wmdem.SetPanelText(2, 'Area: ' + IntToStr(succ(i)) + '/' + IntToStr(AreasWanted.Count) + ' ' + AreaName,true);
-      {$IfDef RecordDEMIX} WriteLineToDebugFile('BatchRemoveSinksInDEMIX_DEMS start test DEMs'); {$EndIf}
-      Run(DEMIX_test_dems,DEMIX_test_DEMs_no_sink,'*.tif',' test DEMs');
-      {$IfDef RecordDEMIX} WriteLineToDebugFile('BatchRemoveSinksInDEMIX_DEMS start ref DEMs'); {$EndIf}
-      Run(DEMIX_Ref_1sec,DEMIX_ref_DEMs_no_sink,'*.tif',' ref DEMs');
+   try
+      GetDEMIXpaths;
+      LockStatusBar := true;
+      for i := 0 to pred(AreasWanted.Count) do begin
+         AreaName := AreasWanted.Strings[i];
+         wmdem.SetPanelText(2, 'Area: ' + IntToStr(succ(i)) + '/' + IntToStr(AreasWanted.Count) + ' ' + AreaName,true);
+         {$IfDef RecordDEMIXFull} WriteLineToDebugFile('BatchRemoveSinksInDEMIX_DEMS start test DEMs'); {$EndIf}
+         Run(DEMIX_test_dems,DEMIX_test_DEMs_no_sink,'*.tif',' test DEMs');
+         Run(DEMIX_Ref_1sec,DEMIX_ref_DEMs_no_sink,'*.tif',' ref DEMs');
+      end;
+   finally
+      EndDEMIXProcessing;
    end;
-   {$IfDef RecordDEMIX} WriteLineToDebugFile('BatchRemoveSinksInDEMIX_DEMS Out'); {$EndIf}
+   {$IfDef RecordDEMIX} HighLightLineToDebugFile('BatchRemoveSinksInDEMIX_DEMS Out'); {$EndIf}
 end;
 
 
@@ -448,8 +474,6 @@ begin
       CreateChannelNetworkGridsFromVectors(Overwrite,AreasWanted);
       ChannelNetworkMissPercentages(Overwrite,AreasWanted);
    finally
-      //HeavyDutyProcessing := false;
-      //LockStatusBar := false;
       EndDEMIXProcessing;
    end;
 end;

@@ -1494,7 +1494,7 @@ type
     GDALrasterizehapfiels1: TMenuItem;
     Pureplatecareeprojectiondistorted1: TMenuItem;
     Rasterizedatabases1: TMenuItem;
-    Comparechannelnetworks1: TMenuItem;
+    //Comparechannelnetworks1: TMenuItem;
     Landcover1: TMenuItem;
     SAGAremovesinks1: TMenuItem;
     N63: TMenuItem;
@@ -1522,6 +1522,13 @@ type
     GDALupsampling1: TMenuItem;
     Bilinnear1: TMenuItem;
     Bilinnear2: TMenuItem;
+    LC100landcover1: TMenuItem;
+    LC100landcover2: TMenuItem;
+    SAGAchannelsgridandshapefile1: TMenuItem;
+    SAGAchannelsnetwork1: TMenuItem;
+    GDALslope1: TMenuItem;
+    GDALaspectmap1: TMenuItem;
+    GDALTRI1: TMenuItem;
     //procedure HiresintervisibilityDEM1Click(Sender: TObject);
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
@@ -2614,14 +2621,13 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure PicksingleDEMseriesthisarea1Click(Sender: TObject);
     procedure DEMIXrangescales1Click(Sender: TObject);
     procedure SSIM1Click(Sender: TObject);
-    procedure SAGAchannelnetwork1Click(Sender: TObject);
     procedure SAGAremovesinksallopenDEMs1Click(Sender: TObject);
     procedure SAGAchannelnetworkallopenDEMs1Click(Sender: TObject);
     procedure SAGAChannelNetworkandBasins1Click(Sender: TObject);
     procedure GDALrasterizehapfiels1Click(Sender: TObject);
     procedure Pureplatecareeprojectiondistorted1Click(Sender: TObject);
     procedure Rasterizedatabases1Click(Sender: TObject);
-    procedure Comparechannelnetworks1Click(Sender: TObject);
+    //procedure Comparechannelnetworks1Click(Sender: TObject);
     procedure Landcover1Click(Sender: TObject);
     procedure SAGAremovesinks1Click(Sender: TObject);
     procedure LC100landcoverwaterbodies1Click(Sender: TObject);
@@ -2645,6 +2651,8 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Whiteboxelevationabovestream1Click(Sender: TObject);
     procedure Bilinnear1Click(Sender: TObject);
     procedure Bilinnear2Click(Sender: TObject);
+    procedure LC100landcover1Click(Sender: TObject);
+    procedure SAGAchannelsgridandshapefile1Click(Sender: TObject);
     //procedure RescaleallDEMsforSSIM1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
@@ -5458,11 +5466,14 @@ begin
     ResizeByPercentage(Blowup);
 end;
 
+(*
 
 procedure TMapForm.Comparechannelnetworks1Click(Sender: TObject);
 begin
    //CompareChannelNetworks;
 end;
+*)
+
 
 procedure TMapForm.CompareDNconversions1Click(Sender: TObject);
 
@@ -5628,7 +5639,7 @@ end;
 
 procedure TMapForm.Globaltectonicsmap1Click(Sender: TObject);
 begin
-   {$If Defined(ExGeology) or Defined(ExGeologyDownload)}
+   {$If Defined(ExGeology) or Defined(ExLabDownloads)}
    {$Else}
       {$IfDef RecordGeologyMap} WriteLineToDebugFile('TMapForm.Globaltectonicsmap1Click in'); {$EndIf}
       GetETOPO1;
@@ -8416,7 +8427,7 @@ begin
          Newband1.Visible := MapDraw.ValidSatOnMap and (SatImage[MapDraw.SATonMap] <> Nil);
          NLCD1.Visible := false;
          MrSidSpeedButton.Visible := MapDraw.ValidSatOnMap and (SatImage[MapDraw.SatOnMap].CurrentSidName <> '');
-         Satellitehistograms1.Visible := MapDraw.ValidSatOnMap and  SatImage[MapDraw.SatOnMap].CanEnhance;
+         Satellitehistograms1.Visible := MapDraw.ValidSatOnMap and SatImage[MapDraw.SatOnMap].CanEnhance;
          Allmapsmatchthiscoveragearea1.Visible := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]) and ((NumOpenMaps > 1) or (WMDEM.MDIChildCount > 1));
          NLCDLegend1.Visible := (MDDef.ProgramOption in [ExpertProgram,GeographyProgram,RemoteSensingProgram]) and (MapDraw.ValidDEMonMap and (DEMGlb[MapDraw.DEMonMap].LandCoverGrid));
          Landsatmetadata1.Visible := MapDraw.ValidSatOnMap and (SatImage[MapDraw.SatOnMap].LandsatNumber <> 0);
@@ -8754,7 +8765,7 @@ begin
 
       {$If Defined(RecordCheckProperTix)} WriteLineToDebugFile('CheckProperTix geography'); {$EndIf}
 
-      Convertcoordinates1.Visible := (MapDraw.VectorIndex <> 0) and (MDdef.ProgramOption = ExpertProgram) or (MapDraw.DEMMap and (DEMGlb[MapDraw.DEMonMap].DEMMapProjection <> Nil));
+      Convertcoordinates1.Visible := (MapDraw.VectorIndex <> 0) and (MDdef.ProgramOption = ExpertProgram) or (MapDraw.DEMMap and (DEMGlb[MapDraw.DEMonMap].DEMMapProj <> Nil));
 
       {$If Defined(RecordCheckProperTix)} WriteLineToDebugFile('CheckProperTix coords vis'); {$EndIf}
 
@@ -9915,15 +9926,15 @@ begin
    CloseMapTableOfContents(Self);
 
    if (MapDraw <> Nil) then MapDraw.ClosingMapNow := true;
-   //ApplicationProcessMessages;
-
    if (BlendPanel.Height > 0) then BitBtn1Click(Nil);
 
+(*
    If (NumOpenMaps = 1) then begin
       {$IfDef RecordClosing} WriteLineToDebugFile('TMapForm.formClose CloseAllDataBases'); {$EndIf}
       CloseAllDataBases;
    end
    else begin
+*)
       for i := 1 to MaxDataBase do begin
          if (ValidDB(i)) then begin
             {$If Defined(RecordClosing) or Defined(RecordMapClosing)}  WriteLineToDebugFile('TMapForm.formClose Close db=' + IntToStr(i)); {$EndIf}
@@ -9940,7 +9951,7 @@ begin
             end;
          end;
       end;
-   end;
+//   end;
    BackToWandering;
 
    {$If Defined(RecordClosing) or Defined(RecordMapClosing)}  WriteLineToDebugFile('TMapForm.formClose Tdb_display_opts'); {$EndIf}
@@ -15125,7 +15136,7 @@ begin
          if DEMMap then begin
             Result.Add('DEM=' + DEMGlb[DEMonMap].AreaName + MessLineBreak +  DEMGlb[DEMonMap].KeyDEMParams);
             if (DEMGlb[DEMonMap].DEMheader.DEMUsed = UTMbasedDEM) then TStr := 'UTM grid (zone ' + IntToStr(DEMGlb[DEMonMap].DEMheader.UTMZone) + ')' else TStr := 'True';
-            if (DEMGlb[DEMonMap].DEMMapProjection = Nil) then TStr := TStr +  ' north at top of map' + MessLineBreak
+            if (DEMGlb[DEMonMap].DEMMapProj = Nil) then TStr := TStr +  ' north at top of map' + MessLineBreak
             else TStr := '';
             Result.Add(TStr + MessLineBreak + DashLine);
          end
@@ -15653,7 +15664,7 @@ end;
 procedure TMapForm.WGS84elllipsoid1Click(Sender: TObject);
 begin
    DEMGlb[MapDraw.DEMonMap].DEMheader.VerticalCSTypeGeoKey := VertCSWGS84;
-   DEMGlb[MapDraw.DEMonMap].DEMMapProjection.h_DatumCode := 'WGS84';
+   DEMGlb[MapDraw.DEMonMap].DEMMapProj.h_DatumCode := 'WGS84';
 end;
 
 procedure TMapForm.WGS84elllipsoidtoEGM200081Click(Sender: TObject);
@@ -18030,6 +18041,11 @@ begin
 end;
 
 
+procedure TMapForm.LC100landcover1Click(Sender: TObject);
+begin
+   LoadLC100LandCover('',MapDraw.MapCorners.BoundBoxGeo,true);
+end;
+
 procedure TMapForm.LC100landcoverwaterbodies1Click(Sender: TObject);
 begin
    MarkWaterMissingInThisDEM(MapDraw.DEMonMap);
@@ -19583,11 +19599,11 @@ begin
 end;
 
 procedure TMapForm.Whiteboxelevationabovestream1Click(Sender: TObject);
-var
-   Outname : PathStr;
+const
+   Threshhold : float32 = 100;
 begin
-   OutName := '';
-   WBT_ElevAboveStream(true, GeotiffDEMNameOfMap,Outname);
+   ReadDefault('Stream network threshhold',ThreshHold);
+   WBT_ElevAboveStream(true, GeotiffDEMNameOfMap,'',Threshhold);
 end;
 
 procedure TMapForm.Whiteboxfillholes1Click(Sender: TObject);
@@ -19615,10 +19631,13 @@ begin
 end;
 
 procedure TMapForm.Whiteboxstreamnetwork1Click(Sender: TObject);
+const
+   Threshhold : float32 = 100;
 var
    StreamName : PathStr;
 begin
-   WBT_extract_streams(True,GeotiffDEMNameOfMap, StreamName);
+   ReadDefault('Stream network threshhold',ThreshHold);
+   WBT_extract_streams(True,GeotiffDEMNameOfMap, StreamName,Threshhold);
 end;
 
 procedure TMapForm.WhiteboxTRI1Click(Sender: TObject);
@@ -21123,6 +21142,7 @@ begin
 end;
 
 
+
 function TMapForm.CreateGridToMatchMap(What : tCreateGrid;  OpenMap : boolean = true; Resolution : tDEMprecision = FloatingPointDEM; SpacingX : float64 = -99; SpacingY : float64 = -99; DesiredUTMZone : integer = -99; RasterPixelIs : byte = 1) : integer;
 var
    Lat,Long : float64;
@@ -22260,13 +22280,13 @@ end;
 procedure TMapForm.NAVD881Click(Sender: TObject);
 begin
    DEMGlb[MapDraw.DEMonMap].DEMheader.VerticalCSTypeGeoKey := VertCSNAVD88;
-   DEMGlb[MapDraw.DEMonMap].DEMMapProjection.h_DatumCode := 'NAD83';
+   DEMGlb[MapDraw.DEMonMap].DEMMapProj.h_DatumCode := 'NAD83';
 end;
 
 procedure TMapForm.EGM2008Click(Sender: TObject);
 begin
    DEMGlb[MapDraw.DEMonMap].DEMheader.VerticalCSTypeGeoKey := VertCSEGM2008;
-   DEMGlb[MapDraw.DEMonMap].DEMMapProjection.h_DatumCode := 'EGM2008';
+   DEMGlb[MapDraw.DEMonMap].DEMMapProj.h_DatumCode := 'EGM2008';
 end;
 
 procedure TMapForm.NBR1Click(Sender: TObject);
@@ -23014,7 +23034,7 @@ var
 begin
    ConvertForm := TUKOSConvertForm.Create(Application);
    ConvertForm.Caption := 'Coordinate converter';
-   if MapDraw.DEMMap then ConvertForm.This_projection := DEMGlb[MapDraw.DEMonMap].DEMMapProjection
+   if MapDraw.DEMMap then ConvertForm.This_projection := DEMGlb[MapDraw.DEMonMap].DEMMapProj
    else ConvertForm.This_projection := MapDraw.PrimMapProj;
    ConvertForm.Parameters.TabVisible := false;
    ConvertForm.ShowParams;
@@ -24183,12 +24203,6 @@ begin
 end;
 
 
-procedure TMapForm.SAGAchannelnetwork1Click(Sender: TObject);
-begin
-   SagaChannelNetwork(DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
-end;
-
-
 procedure TMapForm.SAGAchannelnetworkallopenDEMs1Click(Sender: TObject);
 var
    i : integer;
@@ -24212,6 +24226,11 @@ begin
    ChannelName := MDTempDir + ExtractFileNameNoExt(InName) + '_channels.shp';
    db := SagaChannelShapefile(InName,ChannelName);
    OpenDBonMap('',ChannelName);
+end;
+
+procedure TMapForm.SAGAchannelsgridandshapefile1Click(Sender: TObject);
+begin
+   SagaChannelNetworkGrid(true,DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
 end;
 
 procedure TMapForm.SAGADrainagebasins1Click(Sender: TObject);

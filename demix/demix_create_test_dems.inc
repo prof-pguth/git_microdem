@@ -19,8 +19,7 @@ begin
    {$If Defined(RecordDEMIX) or Defined(RecordDiluvium)} WriteLineToDebugFile('DiluviumDEMforTestAreas in'); {$EndIf}
    try
       GetDEMIXpaths(true);
-      HeavyDutyProcessing := true;
-      SafeMakeDir(DEMIX_diluvium_dems);
+      SafeMakeDir(DEMIX_diluvium_dtms);
       Areas := DEMIX_AreasWanted;
       Results := tStringList.Create;
       Results.Add('AREA,LAT,LONG,NUM_TILES');
@@ -28,7 +27,7 @@ begin
          AreaName := Areas.Strings[i];
          {$If Defined(RecordDEMIX) or Defined(RecordDiluvium)} WriteLineToDebugFile('Start area: ' + AreaName); {$EndIf}
          wmdem.SetPanelText(2,IntToStr(i) + '/' + IntToStr(Areas.Count) + '  ' +  AreaName);
-         SaveName := DEMIX_diluvium_dems + AreaName + '_DILUV' + '.tif';
+         SaveName := DEMIX_diluvium_dtms + AreaName + '_DILUV' + '.tif';
          if (not FileExists(SaveName)) or Overwrite then begin
             fName := DEMIX_Ref_1sec + AreaName + '_dtm' + Ref1SecPointStr + '.tif';
             RefDEM := OpenNewDEM(fName,false);
@@ -39,21 +38,17 @@ begin
                   {$If Defined(RecordDiluviumFull)} WriteLineToDebugFile('Loaded: ' + DEMGlb[NewDEM].KeyDEMParams(true)); {$EndIf}
                   EditsDone := 0;
                   MaskStripFromSecondGrid(NewDEM,RefDEM,msSecondMissing);
-                  //MarkWaterMissingInThisDEM(NewDEM);
-                  //{$If Defined(RecordDiluvium)} WriteLineToDebugFile('Water mask: ' + DEMGlb[NewDEM].KeyDEMParams(true)); {$EndIf}
                   nt := DEMIXtilesOnDEM(NewDEM);
-                  nt.Destroy;
                   if (nt.Count = 0) then begin
                      {$If Defined(RecordDiluviumFull)} WriteLineToDebugFile('No full DEMIX tiles in ' + AreaName); {$EndIf}
                   end;
-                  //else begin
-                     DEMGlb[NewDEM].DEMCenterPoint(Lat,Long);
-                     TStr := AreaName + ',' + RealToString(Lat,-12,4) +  ',' + RealToString(Long,-12,4) +  IntToStr(nt.Count);
-                     Results.Add(AreaName);
-                     {$If Defined(RecordDiluviumFull)} WriteLineToDebugFile(TStr); {$EndIf}
-                     DEMGlb[NewDEM].SavePartOfDEMWithDataGeotiff(SaveName);
-                  //end;
+                  DEMGlb[NewDEM].DEMCenterPoint(Lat,Long);
+                  TStr := AreaName + ',' + RealToString(Lat,-12,4) +  ',' + RealToString(Long,-12,4) + ',' + IntToStr(nt.Count);
+                  Results.Add(AreaName);
+                  {$If Defined(RecordDiluviumFull)} WriteLineToDebugFile(TStr); {$EndIf}
+                  DEMGlb[NewDEM].SavePartOfDEMWithDataGeotiff(SaveName);
                   CloseSingleDEM(NewDEM);
+                  nt.Destroy;
                end
                else begin
                   {$If Defined(RecordDiluvium)} WriteLineToDebugFile('No diluvium DEM for ' + AreaName); {$EndIf}
@@ -63,7 +58,7 @@ begin
          end;
       end;
       Areas.Free;
-      if Results.Count > 1 then begin
+      if (Results.Count > 1) then begin
          fName := NextFileNumber(MDTempDir,'diluv_dem_status','.dbf');
          PetdbUtils.StringList2CSVtoDB(Results,fName);
       end
@@ -90,7 +85,6 @@ begin
    {$If Defined(RecordDEMIX) or Defined(RecordDiluvium)} WriteLineToDebugFile('DeltaDTMforTestAreas in'); {$EndIf}
    try
       GetDEMIXpaths(true);
-      HeavyDutyProcessing := true;
       SafeMakeDir(DEMIX_delta_dtms);
       Areas := DEMIX_AreasWanted;
       Results := tStringList.Create;
@@ -112,10 +106,7 @@ begin
                   {$If Defined(RecordDiluviumFull)} WriteLineToDebugFile('Loaded: ' + DEMGlb[NewDEM].KeyDEMParams(true)); {$EndIf}
                   EditsDone := 0;
                   MaskStripFromSecondGrid(NewDEM,RefDEM,msSecondMissing);
-                  //MarkWaterMissingInThisDEM(NewDEM);
-                  //{$If Defined(RecordDiluvium)} WriteLineToDebugFile('Water mask: ' + DEMGlb[NewDEM].KeyDEMParams(true)); {$EndIf}
                   nt := DEMIXtilesOnDEM(NewDEM);
-                  nt.Destroy;
                   if (nt.Count = 0) then begin
                      {$If Defined(RecordDiluviumFull)} WriteLineToDebugFile('No full DEMIX tiles in ' + AreaName); {$EndIf}
                   end;
@@ -126,6 +117,7 @@ begin
                      {$If Defined(RecordDiluviumFull)} WriteLineToDebugFile(TStr); {$EndIf}
                      DEMGlb[NewDEM].SavePartOfDEMWithDataGeotiff(SaveName);
                   //end;
+                  nt.Destroy;
                   CloseSingleDEM(NewDEM);
                end
                else begin
@@ -274,7 +266,6 @@ var
 begin
    {$IfDef RecordDEMIX} WriteLineToDebugFile('CreateTestAreaDEMs in, dir=' + DEMIX_test_dems); {$EndIf}
    try
-      HeavyDutyProcessing := true;
       GetDEMIXPaths(true);
       SafeMakeDir(DEMIX_test_dems);
       Areas := DEMIX_AreasWanted;

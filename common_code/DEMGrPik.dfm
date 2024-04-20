@@ -3,18 +3,19 @@ inherited PickGrid: TPickGrid
   Top = 214
   BorderIcons = [biSystemMenu]
   Caption = 'Grid Options'
-  ClientHeight = 486
-  ClientWidth = 407
+  ClientHeight = 482
+  ClientWidth = 391
   Position = poDefaultSizeOnly
+  StyleElements = [seFont, seClient, seBorder]
   OnCreate = FormCreate
-  ExplicitWidth = 423
-  ExplicitHeight = 525
+  ExplicitWidth = 407
+  ExplicitHeight = 521
   TextHeight = 15
   inherited Bevel1: TBevel
     Left = 0
     Top = 0
-    Width = 407
-    Height = 486
+    Width = 391
+    Height = 482
     Align = alClient
     ExplicitLeft = 0
     ExplicitTop = 0

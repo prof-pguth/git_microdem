@@ -580,8 +580,8 @@ end;
 procedure DefineTowerDatum(TowerLong : float64);
 begin
    if (DEMGlb[1] <> Nil) then begin
-      DEMGlb[1].DEMMapProjection.DefineDatumFromUTMZone(MDdef.PreferPrimaryDatum,GetUTMZone(TowerLong),'N');
-      DEMGlb[1].DEMMapProjection.DefineDatumFromUTMZone(MDdef.PreferSecondaryDatum,GetUTMZone(TowerLong),'N');
+      DEMGlb[1].DEMMapProj.DefineDatumFromUTMZone(MDdef.PreferPrimaryDatum,GetUTMZone(TowerLong),'N');
+      DEMGlb[1].DEMMapProj.DefineDatumFromUTMZone(MDdef.PreferSecondaryDatum,GetUTMZone(TowerLong),'N');
    end;
 end;
 
@@ -1124,15 +1124,15 @@ end;
 
 
 procedure TDragonPlotForm.ArchiveShot;
-var
-   TStr : ShortString;
-   i : integer;
+//var
+   //TStr : ShortString;
+   //i : integer;
 begin
    if (Memo1.Lines.Count > 0) and ValidDB(TowerTable) then begin
        {$IfDef RecordDP} WriteLineToDebugFile('ArchiveShot in, MainMapData=' + MainMapData); {$EndIf}
-       TStr := DateToStr(now) + '--' + CurrentMilitaryTime(true);
-       for i := 1 to length(TStr) do if TStr[i] in ['/',':'] then TStr[i] := '-';
-       Memo1.Lines.SaveToFile(ArchiveDirectory + TStr + '.txt');
+       //TStr := DateToStr(now) + '--' + CurrentMilitaryTime(true);
+       //for i := 1 to length(TStr) do if TStr[i] in ['/',':'] then TStr[i] := '-';
+       Memo1.Lines.SaveToFile(ArchiveDirectory + CurrentTimeForFileName + '.txt');
        //GISdb[TowerTable].MyData.ApplyFilter('USE=' + QuotedStr('Y'));
        {$IfDef RecordDP} WriteLineToDebugFile('ArchiveShot out'); {$EndIf}
    end;

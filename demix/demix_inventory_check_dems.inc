@@ -46,6 +46,131 @@ begin
 end;
 
 
+procedure InventoryCriteriaEachDEMIXtile(DB : integer);
+const
+   MaxTiles = 2500;
+   MaxCriteria = 25;
+var
+   Tiles,Results,Criteria : tStringList;
+   Tile,Criterion,Aline : shortstring;
+   i,j,TileIndex,CriterionIndex : integer;
+   fName : PathStr;
+   Stats : array[0..MaxTiles,0..MaxCriteria] of integer;
+begin
+   if GISdb[db].MyData.FieldExists('DEMIX_TILE') and GISdb[db].MyData.FieldExists('CRITERION') then begin
+      GISdb[db].EmpSource.Enabled := false;
+      Tiles := GISdb[db].MyData.UniqueEntriesInDB('DEMIX_TILE');
+      GISdb[db].EmpSource.Enabled := false;
+      Criteria := GISdb[db].MyData.UniqueEntriesInDB('CRITERION');
+      GISdb[db].ClearGISFilter;
+      GISdb[db].EmpSource.Enabled := false;
+      for i := 0 to MaxTiles do
+         for J := 0 to MaxCriteria do
+           Stats[i,j] := 0;
+      GISdb[db].MyData.First;
+      while not GISdb[db].MyData.eof do begin
+         Tile := GISdb[db].MyData.GetFieldByNameAsString('DEMIX_TILE');
+         Criterion := GISdb[db].MyData.GetFieldByNameAsString('CRITERION');
+         TileIndex := Tiles.IndexOf(Tile);
+         CriterionIndex := Criteria.IndexOf(Criterion);
+         if (TileIndex <> -1) then begin
+            inc(Stats[TileIndex,0]);
+            inc(Stats[TileIndex,succ(CriterionIndex)]);
+         end;
+         GISdb[db].MyData.Next;
+      end;
+      Results := tStringList.Create;
+      aline := 'DEMIX_TILE,TOTAL';
+      for I := 1 to Criteria.Count do begin
+         aline := aline + ',' + Criteria.Strings[pred(i)];
+      end;
+      Results.Add(aline);
+      for I := 0 to pred(Tiles.Count) do begin
+         aline := Tiles.Strings[i] + ',' + IntToStr(Stats[i,0]);
+         for j := 1 to Criteria.Count do begin
+            aline := aline + ',' + IntToStr(Stats[i,j]);
+         end;
+         Results.Add(aline);
+      end;
+      fName := NextFileNumber(MDTempDir,'Criteria_each_cluster','.dbf');
+      PetdbUtils.StringList2CSVtoDB(Results,fName);
+
+      GISdb[db].EmpSource.Enabled := true;
+      Tiles.Destroy;
+      Criteria.Destroy;
+   end
+   else begin
+      MessageToContinue('Requires fields DEMIX_TILE and CRITERION');
+   end;
+end;
+
+
+procedure InventoryPercentileByCriterionEachDEMIXtile(DB : integer);
+const
+   MaxTiles = 2500;
+   MaxCriteria = 25;
+var
+   Tiles,Results,Criteria : tStringList;
+   Tile,Criterion,Aline : shortstring;
+   i,j,k,n,tileIndex,CriterionIndex : integer;
+   fName : PathStr;
+   Stats : array[0..MaxTiles,0..MaxCriteria] of float32;
+begin
+   if GISdb[db].MyData.FieldExists('DEMIX_TILE') and GISdb[db].MyData.FieldExists('CRITERION') then begin
+      GISdb[db].EmpSource.Enabled := false;
+      Tiles := GISdb[db].MyData.UniqueEntriesInDB('DEMIX_TILE');
+      GISdb[db].EmpSource.Enabled := false;
+      Criteria := GISdb[db].MyData.UniqueEntriesInDB('CRITERION');
+      GISdb[db].ClearGISFilter;
+      GISdb[db].EmpSource.Enabled := false;
+      for i := 0 to MaxTiles do
+         for J := 0 to MaxCriteria do
+           Stats[i,j] := 0;
+      for k := 0 to pred(Criteria.Count) do begin
+         GISdb[db].ApplyGISfilter('CRITERION=' + QuotedStr(Criteria.Strings[k]));
+         GISdb[db].EmpSource.Enabled := false;
+         GISdb[db].MyData.First;
+         n := 0;
+         while not GISdb[db].MyData.eof do begin
+            Tile := GISdb[db].MyData.GetFieldByNameAsString('DEMIX_TILE');
+            //riterion := GISdb[db].MyData.GetFieldByNameAsString('CRITERION');
+            TileIndex := Tiles.IndexOf(Tile);
+            //CriterionIndex := Criteria.IndexOf(Criterion);
+            inc(n);
+            //if (TileIndex <> -1) then begin
+               //inc(Stats[TileIndex,0]);
+               Stats[TileIndex,k] := {n / GISdb[db].MyData.FiltRecsInDB;}  GISdb[db].MyData.GetFieldByNameAsFloat('COP');
+            //end;
+            GISdb[db].MyData.Next;
+         end;
+      end;
+      Results := tStringList.Create;
+      aline := 'DEMIX_TILE,DEM';
+      for I := 1 to Criteria.Count do begin
+         aline := aline + ',' + Criteria.Strings[pred(i)];
+      end;
+      Results.Add(aline);
+      for I := 0 to pred(Tiles.Count) do begin
+         aline := Tiles.Strings[i] + ',COP';
+         for j := 0 to pred(Criteria.Count) do begin
+            aline := aline + ',' + RealToString(Stats[i,j],-12,-6);
+         end;
+         Results.Add(aline);
+      end;
+      fName := NextFileNumber(MDTempDir,'Percentile_criteria_each_cluster','.dbf');
+      PetdbUtils.StringList2CSVtoDB(Results,fName);
+
+      GISdb[db].EmpSource.Enabled := true;
+      GISdb[db].ClearGISfilter;
+      Tiles.Destroy;
+      Criteria.Destroy;
+   end
+   else begin
+      MessageToContinue('Requires fields DEMIX_TILE and CRITERION');
+   end;
+end;
+
+
 procedure AreasInClusters(DB : integer);
 const
    MaxAreas = 250;
@@ -72,7 +197,7 @@ begin
          Area := GISdb[db].MyData.GetFieldByNameAsString('AREA');
          Cluster := GISdb[db].MyData.GetFieldByNameAsInteger('CLUSTER');
          AreaIndex := Areas.IndexOf(Area);
-         if AreaIndex <> -1 then begin
+         if (AreaIndex <> -1) then begin
             inc(Stats[AreaIndex,0]);
             inc(Stats[AreaIndex,Cluster]);
          end;
@@ -121,15 +246,14 @@ begin
    for j := 0 to pred(Areas.Count) do begin
       wmdem.SetPanelText(2, 'Area: ' + IntToStr(succ(j)) + '/' + IntToStr(Areas.Count) + '  ' + Areas.Strings[j]);
       fName := DEMIX_test_dems + Areas.Strings[j] + '_cop.tif';
-      //fName := 'J:\wine_contest\diluvium_test_dems\'  + Areas.Strings[j] + '_diluv.tif';
       DEM := OpenNewDEM(fName,false);
       Tiles := GetListOfDataInBoxInSeries('SRTM_GL1_srtm',DEMGlb[DEM].DEMBoundBoxGeo);
       for i := 0 to pred(Tiles.Count) do Results.Add(Areas.Strings[j] + ',' + ExtractFileNameNoExt(Tiles.strings[i]));
       CloseSingleDEM(DEM);
       Tiles.Destroy;
    end;
+   Areas.Destroy;
    wmdem.SetPanelText(2,'');
-   //Results.SaveToFile('C:\temp\test.csv');
    fName := NextFileNumber(MDTempDir,'One_degree_tiles_needed','.dbf');
    PetdbUtils.StringList2CSVtoDB(Results,fName);
    EndDEMIXProcessing;
@@ -165,26 +289,16 @@ begin
                FileRead(TiffHandle,TheBytes[1],Tag42112Length);
                TStr := ByteArrayToString(TheBytes,Tag42112Length);
                TStr := StringReplace(TStr,'US survey foot</Item>','metre</Item>         ',[rfReplaceAll, rfIgnoreCase]);
-
                StringToByteArray(TStr,TheBytes);
                FileSeek(TiffHandle,Tag42112Offset,0);
                FileWrite(TiffHandle,TheBytes[1],Tag42112Length);
                FileClose(Tiffhandle);
-               (*
-               DEM := OpenNewDEM(fName,false);
-               if ValidDEM(DEM) then begin
-                  DEMGlb[DEM].SaveAsGeotiff(fName);
-                  CloseSingleDEM(DEM);
-               end;
-               *)
-               //GDAL_replace_42112_tag(fName,'MICRODEM replaced pieds');  not working 3/17/2024
                fName2 := ExtractFilePath(fName) + extractFileNameNoExt(fName) + '_egm2008.tif';
                DeleteFileIfExists(fName2);
                fName2 := ExtractFilePath(fName) + extractFileNameNoExt(fName) + '_egm2008' + Ref1SecPointStr + '.tif';
                DeleteFileIfExists(fName2);
                fName2 := ExtractFilePath(fName) + extractFileNameNoExt(fName) + '_egm2008' + Ref1SecAreaStr + '.tif';
                DeleteFileIfExists(fName2);
-
             end;
          end;
       end;
@@ -378,6 +492,8 @@ begin
    Areas.Destroy;
    fName := NextFileNumber(MDTempDir,'status_channel_files','.dbf');
    PetdbUtils.StringList2CSVtoDB(Results,fName);
+   for i := 1 to 7 do FileList[i].Destroy;
+
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('InventoryChannelDataByArea out'); {$EndIf}
 end;
 
@@ -598,7 +714,7 @@ var
 begin
    GetDEMIXpaths(false);
    FilesWanted := tStringList.Create;
-   FindMatchingFiles(DEMIX_diluvium_dems,'*.tif',FilesWanted,1);
+   FindMatchingFiles(DEMIX_diluvium_dtms,'*.tif',FilesWanted,1);
    FilesWanted.Sort;
    DoAllFilesHaveSetEGMandPixelIs(FilesWanted,Results);
    FilesWanted.Free;
@@ -615,7 +731,6 @@ begin
    GetDEMIXpaths(false);
    FilesWanted := tStringList.Create;
    FindMatchingFiles(DEMIX_delta_dtms,'*.tif',FilesWanted,1);
-   //FilesWanted.Sort;
    DoAllFilesHaveSetEGMandPixelIs(FilesWanted,Results);
    FilesWanted.Free;
    fName := NextFileNumber(MDTempDir,'delta_area_status_','.dbf');

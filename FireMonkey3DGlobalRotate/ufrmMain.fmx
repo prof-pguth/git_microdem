@@ -63,6 +63,7 @@ object frmMain: TfrmMain
     Size.PlatformDefault = False
     TabOrder = 2
     Text = 'Reset Camera'
+    TextSettings.Trimming = None
     OnClick = btnResetCameraClick
   end
   object TextureMaterialSource1: TTextureMaterialSource
@@ -77,6 +78,7 @@ object frmMain: TfrmMain
     Size.PlatformDefault = False
     TabOrder = 4
     Text = 'June solstice'
+    TextSettings.Trimming = None
     OnClick = Button1Click
   end
   object Button2: TButton
@@ -87,6 +89,7 @@ object frmMain: TfrmMain
     Size.PlatformDefault = False
     TabOrder = 5
     Text = 'Equinox'
+    TextSettings.Trimming = None
     OnClick = Button2Click
   end
   object Button3: TButton
@@ -97,6 +100,7 @@ object frmMain: TfrmMain
     Size.PlatformDefault = False
     TabOrder = 6
     Text = 'December solstice'
+    TextSettings.Trimming = None
     OnClick = Button3Click
   end
   object Button4: TButton
@@ -107,6 +111,7 @@ object frmMain: TfrmMain
     Size.PlatformDefault = False
     TabOrder = 8
     Text = 'Stop'
+    TextSettings.Trimming = None
     OnClick = Button4Click
   end
   object Button5: TButton
@@ -117,6 +122,7 @@ object frmMain: TfrmMain
     Size.PlatformDefault = False
     TabOrder = 9
     Text = 'Start'
+    TextSettings.Trimming = None
     OnClick = Button5Click
   end
   object TrackBar1: TTrackBar

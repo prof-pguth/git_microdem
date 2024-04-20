@@ -34,7 +34,7 @@ type
     { Public declarations }
   end;
 
-procedure PickDEMIXMode(var DEMIX_Mode : integer);
+procedure PickDEMIXMode;
 
 
 implementation
@@ -42,19 +42,19 @@ implementation
 {$R *.dfm}
 
 uses
-   Petmar,Petmar_types,DEMIX_definitions;
+   Petmar,Petmar_types,DEMdefs,DEMIX_definitions;
 
-procedure PickDEMIXMode(var DEMIX_Mode : integer);
+procedure PickDEMIXMode;
 var
   PickDEMIXmodeForm: TPickDEMIXmodeForm;
 begin
-  {$IfDef RecordDEMIX} WriteLineToDebugFile('PickDEMIXMode in, DEMIX_mode=' + IntToStr(DEMIX_mode)); {$EndIf}
+  {$IfDef RecordDEMIX} WriteLineToDebugFile('PickDEMIXMode in, DEMIX_mode=' + IntToStr(MDDef.DEMIX_mode)); {$EndIf}
   PickDEMIXmodeForm := TPickDEMIXmodeForm.Create(Application);
-  PickDEMIXmodeForm.RadioGroup1.ItemIndex := DEMIX_mode;
+  PickDEMIXmodeForm.RadioGroup1.ItemIndex := MDDef.DEMIX_mode;
   PickDEMIXmodeForm.ShowModal;
-  DEMIX_mode := PickDEMIXmodeForm.RadioGroup1.ItemIndex;
-  if DEMIX_Mode = dmNotYetDefined then begin
-     DEMIX_Mode := dmClassic;
+  MDDef.DEMIX_mode := PickDEMIXmodeForm.RadioGroup1.ItemIndex;
+  if MDDef.DEMIX_mode = dmNotYetDefined then begin
+     MDDef.DEMIX_mode := dmClassic;
      MessageToContinue('Set to classic; it has to be defined');
   end;
   PickDEMIXmodeForm.Destroy;

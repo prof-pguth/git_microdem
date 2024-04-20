@@ -302,8 +302,8 @@ begin
          else DEMGlb[Result].AreaName := TheAreaName;
          DEMGlb[Result].DEMheader := DEMGlb[GridResultionToUse].DEMheader;
          DEMGlb[Result].DEMheader.VerticalCSTypeGeoKey := 0;  //difference not referred to a datum
-         DEMGlb[Result].DEMMapProjection := DEMGlb[GridResultionToUse].DEMMapProjection;
-         DEMGlb[Result].DEMMapProjection.ProjectionSharedWithDataset := true;
+         DEMGlb[Result].DEMMapProj := DEMGlb[GridResultionToUse].DEMMapProj;
+         DEMGlb[Result].DEMMapProj.ProjectionSharedWithDataset := true;
          if DEMGlb[Result].DEMheader.DEMPrecision = ByteDEM then DEMGlb[Result].DEMheader.DEMPrecision := SmallIntDEM
          else DEMGlb[Result].DEMheader.DEMPrecision := FloatingPointDEM;;
          if DEMGlb[Map1].ElevationDEM and DEMGlb[Map2].ElevationDEM then DEMGlb[Result].DEMheader.ElevUnits := euElevDiff else DEMGlb[Result].DEMheader.ElevUnits := euDifference;
@@ -328,7 +328,6 @@ begin
             ThisGraph.GraphDraw.HorizLabel := DEMGlb[Map1].AreaName;
             ThisGraph.GraphDraw.VertLabel := DEMGlb[Map2].AreaName;
          end;
-         //IdenticalGrids := DEMGlb[Map1].SecondGridIdentical(Map2);
          IdenticalGrids := DEMGlb[Map1].SecondGridJustOffset(Map2,xoff,yoff);
          StartProgress('Grid Differences');
          for Col := GridLimits.XGridLow to GridLimits.XGridHigh do begin
@@ -555,7 +554,7 @@ var
                OpenDEMDataStructures(Result);
                DEMGlb[Result].AreaName := NewName;
                DEMGlb[Result].DEMheader := DEMGlb[DEM1].DEMheader;
-               DEMGlb[Result].DEMMapProjection := DEMGlb[DEM1].DEMMapProjection;
+               DEMGlb[Result].DEMMapProj := DEMGlb[DEM1].DEMMapProj;
                DEMGlb[Result].DEMheader.DEMPrecision := FloatingPointDEM;
                DEMGlb[Result].DEMheader.ElevUnits := gt;
                DEMGlb[Result].DEMstatus := dsUnsaved;

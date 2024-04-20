@@ -1273,7 +1273,7 @@ begin
    aline := aline + ',' + 'DEM_LOW_SC,NUM_TIES';
    SummaryCSV.Add(aline);
 
-   Result := OpenGraphForCriterionScoresOrEvaluations(DB,'','',false,false);
+   Result := OpenGraphForCriterionScoresOrEvaluations(DB,'','',false,false,false);
    SetHorizAxisForDEMIXscores(Result);
    Result.OpenXYColorFile(rfile,'tile_average_scores_');
    aLine := 'Average tile score, ' + IntToStr(CriteriaList.Count) + ' criteria  ' + CriteriaList.Strings[0];
@@ -1340,7 +1340,7 @@ var
          aline := aline + ',' + 'DEM_LOW_SC,NUM_TIES';
          SummaryCSV.Add(aline);
 
-         Result := OpenGraphForCriterionScoresOrEvaluations(dbOnTable,'','',false,false);
+         Result := OpenGraphForCriterionScoresOrEvaluations(dbOnTable,'','',false,false,false);
          Result.OpenXYColorFile(rfile,'area_average_scores_');
          Result.GraphDraw.ShowHorizAxis1 := false;
          Result.GraphDraw.VertLabel := '';

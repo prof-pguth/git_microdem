@@ -4,7 +4,7 @@
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 {$I nevadia_defines.inc}
@@ -51,10 +51,12 @@ implementation
 
 uses
    DEM_PLSS,Get_PLss,DEM_indexes,DEMDefs,Petmath,Petmar,GetLatLn,BaseMap,US_properties,
+   (*
    {$IfDef ExSats}
    {$Else}
       DEMEros,
    {$EndIf}
+   *)
    Nevadia_Main,
    Petmar_types,
    DEM_Manager,

@@ -20,7 +20,6 @@ type
     BitBtn1: TBitBtn;
     RadioGroup2: TRadioGroup;
     CheckBox1: TCheckBox;
-    BitBtn2: TBitBtn;
     CheckBox2: TCheckBox;
     CheckBox3: TCheckBox;
     BitBtn3: TBitBtn;
@@ -42,13 +41,16 @@ type
     BitBtn11: TBitBtn;
     BitBtn12: TBitBtn;
     BitBtn13: TBitBtn;
+    CheckBox4: TCheckBox;
+    BitBtn14: TBitBtn;
+    BitBtn15: TBitBtn;
+    BitBtn16: TBitBtn;
     procedure BitBtn1Click(Sender: TObject);
     procedure RadioGroup3Click(Sender: TObject);
     procedure RadioGroup1Click(Sender: TObject);
     procedure RadioGroup2Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure CheckBox1Click(Sender: TObject);
-    procedure BitBtn2Click(Sender: TObject);
     procedure CheckBox2Click(Sender: TObject);
     procedure CheckBox3Click(Sender: TObject);
     procedure BitBtn3Click(Sender: TObject);
@@ -67,6 +69,11 @@ type
     procedure BitBtn11Click(Sender: TObject);
     procedure BitBtn12Click(Sender: TObject);
     procedure BitBtn13Click(Sender: TObject);
+    procedure FormActivate(Sender: TObject);
+    procedure CheckBox4Click(Sender: TObject);
+    procedure BitBtn14Click(Sender: TObject);
+    procedure BitBtn15Click(Sender: TObject);
+    procedure BitBtn16Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -101,11 +108,6 @@ var
   i : integer;
 begin
    GetDEMIXpaths(false,db);
-   (*
-   for i := 1 to NumDEMIXtestDEM do
-      if (DEMIXShort[i] <> '') then
-         DEMIXDEMinUse[i] := GISdb[db].MyData.FieldExists(DEMIXshort[i]);
-   *)
    eval_scores_graph_form := Teval_scores_graph_form.Create(Application);
    eval_scores_graph_form.db := db;
    GISdb[db].EmpSource.Enabled := false;
@@ -137,10 +139,28 @@ begin
     BestBySlopeRough(db);
 end;
 
+procedure Teval_scores_graph_form.BitBtn14Click(Sender: TObject);
+begin
+   YaxisWhat := yasForest;
+   DEMIX_evaluations_graph(DB,true);
+end;
+
+procedure Teval_scores_graph_form.BitBtn15Click(Sender: TObject);
+begin
+   YaxisWhat := yasBestEvalByCriterion;
+   DEMIX_evaluations_graph(DB,true);
+end;
+
+procedure Teval_scores_graph_form.BitBtn16Click(Sender: TObject);
+begin
+   YaxisWhat := yasBestEvalBySlope;
+   DEMIX_evaluations_graph(DB,true);
+end;
+
 procedure Teval_scores_graph_form.BitBtn1Click(Sender: TObject);
 begin
    //DEMIXVertAxisLabel := GISdb[db].DBName;
-   if StrUtils.AnsiContainsText(UpperCase(GISdb[db].DBName),'_SORTED_') then begin
+   if StrUtils.AnsiContainsText(UpperCase(GISdb[db].DBName),'_SORT') then begin
       DEMIXVertAxisLabel := 'Sorted by best evaluation in tile';
       YAxisSort := yasBestEval;
       YAxisWhat := yasBestEval;
@@ -164,11 +184,6 @@ begin
 end;
 
 
-
-procedure Teval_scores_graph_form.BitBtn2Click(Sender: TObject);
-begin
-   AddStatisticsToDEMIXdb(db);
-end;
 
 procedure Teval_scores_graph_form.BitBtn3Click(Sender: TObject);
 begin
@@ -226,6 +241,14 @@ begin
    MovieByTestDEM := CheckBox3.Checked;
 end;
 
+procedure Teval_scores_graph_form.CheckBox4Click(Sender: TObject);
+var
+   i : integer;
+begin
+   MDDef.DEMIX_graph_Retired_DEMs := CheckBox4.Checked;
+   for I := 1 to NumDEMIXtestDEM do UseRetiredDEMs[i] := MDDef.DEMIX_graph_Retired_DEMs or ((DEMIXshort[i] <> 'ASTER') and (DEMIXshort[i] <> 'NASA') and (DEMIXshort[i] <> 'SRTM'));
+end;
+
 procedure Teval_scores_graph_form.Edit1Change(Sender: TObject);
 begin
    CheckEditString(Edit1.Text, MDDef.DEMIXlegendFontSize);
@@ -241,6 +264,11 @@ begin
    CheckEditString(Edit3.Text, MDDef.DEMIX_xsize);
 end;
 
+procedure Teval_scores_graph_form.FormActivate(Sender: TObject);
+begin
+   RecognizeDEMIXVersion(DB);
+end;
+
 procedure Teval_scores_graph_form.FormCreate(Sender: TObject);
 begin
    XAxisWhat := RadioGroup1.ItemIndex;
@@ -250,6 +278,7 @@ begin
    CheckBox1.Checked := DEMIX_combined_graph;
    CheckBox2.Checked := PanelsByTestDEM;
    CheckBox3.Checked := MovieByTestDEM;
+   CheckBox4.Checked := MDDef.DEMIX_graph_Retired_DEMs;
    Edit1.Text := IntToStr(MDDef.DEMIXlegendFontSize);
    Edit2.Text := IntToStr(MDDef.DEMIX_ysize);
    Edit3.Text := IntToStr(MDDef.DEMIX_xsize);

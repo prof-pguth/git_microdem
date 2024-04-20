@@ -126,7 +126,7 @@ var
             Stats := tStringList.Create;
             Stats.Add(MomentStr);
             if NoFiltering then begin
-               DoOneCluster(BaseFilter,DEMIX_mode_abbreviation(DEMIX_mode) + ' tiles');
+               DoOneCluster(BaseFilter,DEMIX_mode_abbreviation(MDDef.DEMIX_mode) + ' tiles');
             end
             else begin
                for i := 1 to 15 do begin  //loop through clusters, quantiles
@@ -135,7 +135,7 @@ var
                   DoOneCluster(aFilter,FieldWanted + IntegerToString(i,3));
                end;
             end;
-            fName := NextFileNumber(MDTempDir,DEMIX_mode_abbreviation(DEMIX_mode) + '_' + SingleCriterion + '_' + Param,'.dbf');
+            fName := NextFileNumber(MDTempDir,DEMIX_mode_abbreviation(MDDef.DEMIX_mode) + '_' + SingleCriterion + '_' + Param,'.dbf');
             db := StringList2CSVtoDB(Stats,fName);
             Result := StartBoxPlot(db);
             fName := MDTempDir + SingleCriterion + Param + '.bmp';
@@ -160,7 +160,7 @@ begin
    end;
    GraphImages := tStringList.Create;
    for i := 1 to 7 do Graph[i] := OneGraph(TileCharacters[i]);
-   fName := MDTempDir + DEMIX_mode_abbreviation(DEMIX_mode) + SingleCriterion + '_tile_characters.png';
+   fName := MDTempDir + DEMIX_mode_abbreviation(MDDef.DEMIX_mode) + SingleCriterion + '_tile_characters.png';
    if (GraphImages.Count = 0) then begin
       MessageToContinue('Add tile characteristics to DB');
       GraphImages.Destroy;

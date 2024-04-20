@@ -166,6 +166,7 @@ type
     CheckBox24: TCheckBox;
     BitBtn38: TBitBtn;
     HAND: TCheckBox;
+    CheckBox25: TCheckBox;
     procedure BitBtn1Click(Sender: TObject);
     procedure LoadClick(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
@@ -242,6 +243,7 @@ type
     procedure CheckBox24Click(Sender: TObject);
     procedure BitBtn38Click(Sender: TObject);
     procedure HANDClick(Sender: TObject);
+    procedure CheckBox25Click(Sender: TObject);
     //procedure CheckBox4Click(Sender: TObject);
   private
     { Private declarations }
@@ -252,8 +254,8 @@ type
     procedure DifferenceMapsAllAreas(WhatFor : integer);
     procedure GetUsingStringLists;
     procedure MakeGeomorphometricMaps(What : shortstring; var  DEMSwanted : tDEMbooleanArray);
-    procedure SSIMComputations(Option : integer);
-    procedure SSIMprep(AreaName,WhatFor : shortstring; AllTiles: tStringList; GridCorrelations : tStringList);
+    //procedure SSIMComputations(Option : integer);
+    //procedure SSIMprep(AreaName,WhatFor : shortstring; AllTiles: tStringList; GridCorrelations : tStringList);
   public
     { Public declarations }
     DB : integer;
@@ -293,7 +295,7 @@ var
    SSIMOutPath : PathStr;
    LoadRefDEMMaps,LoadTestDEMMaps : boolean;
 
-
+(*
 procedure TDemixFilterForm.SSIMComputations(Option : integer);
 var
    Correlations,TileFill : tStringList;
@@ -416,7 +418,7 @@ begin
       CurrentOperation.Text := '';
    end;
 end;
-
+*)
 
 
 procedure ExpandCumulativeRangeForThisGrid(DEM : integer; var Min,Max : float32);
@@ -609,7 +611,7 @@ begin
          if ValidDEM(TestDEMs[i]) then begin
             //wmdem.SetPanelText(1,'i=' + IntToStr(i) + '  j=' + IntToStr(j));
             DEMArea := UpperCase(DEMGlb[TestDEMs[i]].AreaName);
-            for k := 1 to NumDEMIXDEM do if StrUtils.AnsiContainsText(DEMArea,DEMIXDEMTypeName[k]) then SeriesName := DEMIXDEMTypeName[k];
+            for k := 1 to NumDEMIXtestDEM do if StrUtils.AnsiContainsText(DEMArea,DEMIXDEMTypeName[k]) then SeriesName := DEMIXDEMTypeName[k];
             if StrUtils.AnsiContainsText(DEMArea,'ALOS') then RefPointOrArea := 'AREA' else RefPointOrArea := 'POINT';
             if (WhatType = AllAll) then begin
                GetRefDEMDifferenceMap(ElevAll,i,DEMArea,RefPointOrArea,RefDEMType[j],SeriesName);
@@ -845,12 +847,13 @@ end;
 
 procedure TDemixFilterForm.BitBtn30Click(Sender: TObject);
 begin
-   SSIMComputations(ssimOneArea);
+   //SSIMComputations(ssimOneArea);
 end;
 
 
 procedure TDemixFilterForm.BitBtn31Click(Sender: TObject);
-var
+begin
+(*var
    AllTiles, Correlations : tStringList;
    fName : PathStr;
    AreaName : shortstring;
@@ -879,6 +882,7 @@ begin
       TileProgress.Text := '';
       CurrentOperation.Text := '';
    end;
+   *)
 end;
 
 
@@ -1087,10 +1091,10 @@ end;
 
 procedure TDemixFilterForm.BitBtn39Click(Sender: TObject);
 begin
-   SSIMComputations(ssimDiluvium);
+   //SSIMComputations(ssimDiluvium);
 end;
 
-
+(*
 procedure TDemixFilterForm.SSIMprep(AreaName,WhatFor : shortstring; AllTiles : tStringList; GridCorrelations : tStringList);
 const
    TileNormalize = false;
@@ -1171,7 +1175,7 @@ var
                OldSetting := WantShowProgress;
                WantShowProgress := false;
                SkipMenuUpdating := true;
-               if DEMsinIndex(TheTestDEMs) <> RequiredTestDEMs then begin
+               if DEMsinIndex(TheTestDEMs) <> NumDEMIXtestDEM then begin
                   {$IfDef RecordSSIMprep} HighlightLineToDebugFile(TileName + ' ' + What + ' only TestDEMs=' + IntToStr(DEMsinIndex(TheTestDEMs))); {$EndIf}
                end;
                SaveOneDEMindex(false,TheTestDEMs);
@@ -1302,7 +1306,7 @@ var
                end;
             end;
          end;
-         if (DEMProcessed = RequiredTestDEMs) then begin
+         if (DEMProcessed = NumDEMIXtestDEM) then begin
             if (GridCorrelations.Count = 0) then GridCorrelations.Add(Line1);
             GridCorrelations.Add(Line2);
          end
@@ -1390,6 +1394,7 @@ begin {TDemixFilterForm.SSIMprep}
    end;
    {$If Defined(RecordDEMIX) or Defined(RecordSSIMprep)} WriteLineToDebugFile('SSIMprep out'); {$EndIf}
 end {TDemixFilterForm.SSIMprep};
+*)
 
 
 procedure TDemixFilterForm.BitBtn3Click(Sender: TObject);
@@ -1414,7 +1419,7 @@ end;
 
 procedure TDemixFilterForm.BitBtn5Click(Sender: TObject);
 begin
-   SSIMComputations(ssimAllAreas);
+   //SSIMComputations(ssimAllAreas);
 end;
 
 
@@ -1538,6 +1543,11 @@ begin
    MDDef.DoFUV := CheckBox24.Checked;
 end;
 
+procedure TDemixFilterForm.CheckBox25Click(Sender: TObject);
+begin
+   MDDef.OpenMapsFUVSSIM := CheckBox25.Checked;
+end;
+
 procedure TDemixFilterForm.CheckBox2Click(Sender: TObject);
 begin
    MDDef.MakeCOP_ALOS_diffMaps := CheckBox2.Checked;
@@ -1638,9 +1648,10 @@ begin
    CheckBox20.Checked := MDDef.SSIM_wet;
    CheckBox21.Checked := MDdef.SSIM_ls;
    CheckBox22.Checked := MDDef.DoSSIM;
-   CheckBox24.Checked := MDDef.DoFUV;
-
    CheckBox23.Checked := MDDef.LoadRefDEMMaps;
+   CheckBox24.Checked := MDDef.DoFUV;
+   CheckBox25.Checked := MDDef.OpenMapsFUVSSIM;
+
    CheckBox4.Checked := MDDef.LoadTestDEMMaps;
    LoadOneSecRefCheckBox.Checked := MDDef.LoadRefDEMs;
    CheckBox3.Checked := MDDef.LoadRefDEMs;
@@ -2121,7 +2132,7 @@ var
                      end
                   end
                   else begin
-                     for i := 1 to NumDEMIXDEM do begin
+                     for i := 1 to NumDEMIXtestDEM do begin
                         if StrUtils.AnsiContainsText(fname,UpperCase(DEMIXShort[i])) then begin
                            inc(DEMs);
                            Which[i] := OpenNewDEM(fName,LoadMaps);
@@ -2150,8 +2161,8 @@ begin
    if CheckBox3.Checked then begin
       LoadFromPath(TestDEMs,DEMIX_test_dems,'*.dem',LoadTestDEMmaps,'Test');
 
-      if (DEMsinIndex(TestDEMs) <> RequiredTestDEMs) then begin
-         TStr := 'Found: ' + IntToStr(DEMsinIndex(TestDEMs)) + ' test DEMs; need ' + IntToStr(RequiredTestDEMs) + ' for ' + AreaName;
+      if (DEMsinIndex(TestDEMs) <> NumDEMIXtestDEM) then begin
+         TStr := 'Found: ' + IntToStr(DEMsinIndex(TestDEMs)) + ' test DEMs; need ' + IntToStr(NumDEMIXtestDEM) + ' for ' + AreaName;
          Memo8.Lines.Add(TStr);
          {$IfDef RecordDEMIX}
             HighlightLineToDebugFile(TStr);

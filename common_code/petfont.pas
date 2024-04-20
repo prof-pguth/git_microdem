@@ -99,7 +99,6 @@ begin
       Angle := FontRotationAngle;
       while Angle < 0 do inc(Angle,360);
       while Angle > 360 do dec(Angle,360);
-      //LoadedImageForm.Image1.Picture.LoadFromFile(MDTempDir + 'BACKUP.BMP');
       OwningCanvas.Font := FontDialog1.Font;
       with OwningCanvas do begin
          if CheckBox1.Checked then Brush.Style := bsClear

@@ -1038,16 +1038,10 @@ var
                      {$IfDef RecordMergeDetails} WriteLineToDebugFile(MenuStr); {$EndIf}
                      WMDEM.StatusBar1.Panels[0].Text := MenuStr;
                      {$IfDef RecordMergeDetails} WriteLineToDebugFile('Merging DEM=' + IntToStr(CurDEM) + '  ' + DEMGlb[CurDEM].AreaName); {$EndIf}
-                     for Row := pred(DEMGlb[CurDEM].DEMheader.NumRow) downto 0 do begin
-                        //if (Row mod (DEMGlb[CurDEM].DEMheader.NumRow div 100) = 0) then UpdateProgressBar((DEMGlb[CurDEM].DEMheader.NumRow-Row)/succ(DEMGlb[CurDEM].DEMheader.NumRow));
+                     for Row := 0 to pred(DEMGlb[CurDEM].DEMheader.NumRow) do begin
                         for Col := 0 to pred(DEMGlb[CurDEM].DEMheader.NumCol) do begin
                            if DEMGlb[CurDEM].GetElevMeters(Col,Row,zf) then begin
-                              if {false and} UTMDEMs then begin //added Aug 2022, but unclear if this was the cause of problems
-                                (*
-                                DEMGlb[CurDEM].DEMGridToUTM(Col,Row,xutm,yutm);
-                                DEMGlb[Result].UTMToDEMGrid(XUTM,YUTM,XGrid,YGrid,InBounds);
-                                if InBounds then DEMGlb[Result].SetGridElevation(round(xgrid),round(Ygrid),zf);
-                                *)
+                              if UTMDEMs then begin
                                 DEMGlb[Result].SetGridElevation(Col + TileX,Row + TileY,zf);
                               end
                               else begin

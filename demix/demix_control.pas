@@ -15,13 +15,14 @@ unit demix_control;
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$Define RecordDEMIX}
-   {$Define RecordDEMIXStart}
-   //{$Define RecordDEMIXLoad}
+   //{$Define RecordDEMIXStart}
+   {$Define RecordDEMIXLoad}
+   //{$Define TrackDEMboundingBox}      //must also be enabled in DEMCoord
    //{$Define Record3DEPX}
    {$Define RecordDiluvium}
    {$Define RecordDEMIX_evaluations_graph}
    {$Define RecordDiluviumFull}
-   //{$Define TrackPixelIs}
+   {$Define TrackPixelIs}
 
    //{$Define ShowOpenBothPixelIsDEMs}   //see how opening and masking for Diluvium DEM is going; don't use unless there is a a problem
    {$Define Rec_DEMIX_Landcover}
@@ -118,6 +119,7 @@ const
    function SymbolFromDEMName(DEMName : shortstring) : tFullSymbolDeclaration;
 
    procedure OpenDEMIXDatabaseForAnalysis;
+   procedure RecognizeDEMIXVersion(DB : integer);
 
 
    function GetCountryForArea(Area : shortString) : shortstring;
@@ -133,7 +135,9 @@ procedure DifferentRankingsByCriteria(DBonTable : integer);
    procedure DEMIXisCOPorALOSbetter(DBonTable : integer);
 
    function LoadLandcoverForDEMIXarea(AreaName : shortstring; OpenMap : boolean = true) : integer;
+function ClipTheDEMtoFullDEMIXTiles(DEM : integer; NewName : PathStr = '') : boolean;
 
+procedure SetParamsForDEMIXmode;
 
 
 procedure ReinterpolateTestDEMtoHalfSec(var DEM : integer; OpenMap : boolean);
@@ -203,6 +207,50 @@ var
 {$EndIf}
 
 
+function ClipTheDEMtoFullDEMIXTiles(DEM : integer; NewName : PathStr = '') : boolean;
+const
+   Fudge = 0.001;
+var
+   bb,bb2 : sfBoundBox;
+   db : integer;
+   {$If Defined(RecordCarto)} aLine : shortString; {$EndIf}
+begin
+   if ValidDEM(DEM) then begin
+      {$If Defined(RecordCarto)} aLine := DEMGlb[DEM].AreaName + ' initial ' + DEMGlb[DEM].ColsRowsString; {$EndIf}
+      bb := DEMGlb[DEM].DEMBoundBoxGeo;
+      {$If Defined(RecordCartoFull)} WriteLineToDebugFile('TMapForm.ClipDEMtoFullDEMIXTiles, DEM in ' + sfBoundBoxToString(bb,8)); {$EndIf}
+      db := DEMIXtileFill(DEM,bb,False);
+      GISdb[DB].Empsource.Enabled := false;
+      GISdb[DB].ApplyGISFilter('GRID_FULL >' + IntToStr(DEMIX_Tile_Full));
+      if (GISdb[DB].MyData.FiltRecsInDB = 0) then begin
+         Result := false;
+      end
+      else begin
+         //GISdb[DB].DeleteAllSelectedRecords;
+         bb2.xmax := GISdb[DB].MyData.FindFieldMax('LONG_HI') + Fudge;
+         bb2.xmin := GISdb[DB].MyData.FindFieldMin('LONG_LOW') - Fudge;
+         bb2.ymax := GISdb[DB].MyData.FindFieldMax('LAT_HI') + Fudge;
+         bb2.ymin := GISdb[DB].MyData.FindFieldMin('LAT_LOW') - Fudge;
+         {$If Defined(RecordCartoFull)} WriteLineToDebugFile('TMapForm.ClipDEMtoFullDEMIXTiles, tile boundaries ' + sfBoundBoxToString(bb2,8)); {$EndIf}
+         bb.xmax := Petmath.MinFloat(bb.xMax,bb2.xMax);
+         bb.xmin := Petmath.MaxFloat(bb.xmin,bb2.xMin);
+         bb.ymax := Petmath.MinFloat(bb.yMax,bb2.yMax);
+         bb.ymin := Petmath.MaxFloat(bb.yMin,bb2.YMin);
+         {$If Defined(RecordCartoFull)} WriteLineToDebugFile('TMapForm.ClipDEMtoFullDEMIXTiles, map full tiles ' + sfBoundBoxToString(bb,8)); {$EndIf}
+         //SubsetAndZoomMapFromGeographicBounds(bb);
+         if (NewName = '') then NewName := DEMGlb[DEM].DEMFileName;
+         DEMGlb[DEM].SaveGridSubsetGeotiff(DEMGlb[DEM].sfBoundBox2tGridLimits(bb),NewName);
+         DEMGlb[DEM].DEMFileName := NewName;
+         DEMGlb[DEM].SelectionMap.ReloadDEMClick(Nil);
+         {$If Defined(RecordCarto)} aLine := aline + ' clipped ' + DEMGlb[DEM].ColsRowsString;   WriteLineToDebugFile(aLine); {$EndIf}
+         Result := true;
+      end;
+      CloseAndNilNumberedDB(db);
+   end;
+end;
+
+
+
 procedure OpenDEMIXAreaMaps;
 var
    Areas : tStringList;
@@ -257,7 +305,7 @@ var
                {$IfDef TrackSWcorner} DEMGlb[DEM].WriteToDebugSWCornerForComputations('OpenBothPixelIsDEMs'); {$EndIf}
             end
             else begin
-               {$IfDef RecordDEMIX} WriteLineToDebugFile('Missing file ' + fName); {$EndIf};
+               {$IfDef RecordDEMIX} HighlightLineToDebugFile('Missing file ' + fName); {$EndIf};
                Result := false;
             end;
          end;
@@ -281,7 +329,7 @@ var
                EditsDone := 0;
                MaskStripFromSecondGrid(DEM,MaskDEM,msSecondMissing);
                DEMGlb[DEM].CheckMaxMinElev;
-            {$IfDef ShowOpenBothPixelIsDEMs} if OpenMaps then DEMGlb[DEM].SelectionMap.DoBaseMapRedraw; {$EndIf};
+               {$IfDef ShowOpenBothPixelIsDEMs} if OpenMaps then DEMGlb[DEM].SelectionMap.DoBaseMapRedraw; {$EndIf};
             end;
          end;
 
@@ -292,7 +340,8 @@ begin
     Result := true;
 
     TryToOpen(RefDir + Prefix + area + '_dtm' + Ref1SecPointStr + Ext,PointDEMs[0]);
-    if DEMGlb[PointDEMs[0]].DEMSWcornerLat > 50 then begin
+    //with 1 sec open, see if 1.5 sec needed
+    if ValidDEM(PointDEMs[0]) and (DEMGlb[PointDEMs[0]].DEMSWcornerLat > 49.999) then begin
        TryToOpen(RefDir + Prefix + area + '_dtm' + Ref1_5SecPointStr + Ext,PointDEMs[-1]);
     end;
     for i := 1 to NumPtDEMs do begin
@@ -303,28 +352,32 @@ begin
 
     TryToOpen(RefDir + Prefix + Area + '_dtm' + Ref1SecAreaStr + Ext,AreaDEMs[0]);
     for i := 1 to NumAreaDEMs do begin
-       if (AreaNames[i] = 'DILUV') then DataDir := DEMIX_diluvium_dems else DataDir := TestDir;
+       if (AreaNames[i] = 'DILUV') then DataDir := DEMIX_diluvium_dtms
+       else if (AreaNames[i] = 'COAST') then DataDir := DEMIX_coastal_dtms
+       else DataDir := TestDir;
        TryToOpen(DataDir + Prefix + Area + '_' + AreaNames[i]  + Ext,AreaDEMs[i]);
     end;
    if ValidDEM(AreaDEMs[-1]) then dmxFirstArea := -1 else dmxFirstArea := 0;
 
-   {$IfDef ShowOpenBothPixelIsDEMs} wmdem.Tile; MessageToContinue('After loading'); {$EndIf};
+   {$IfDef ShowOpenBothPixelIsDEMs} if OpenMaps then wmdem.Tile; MessageToContinue('After loading'); {$EndIf};
 
-    if DEMIX_Mode in [dmAddDiluvium,dmAddDelta] then begin
-       if DEMIX_Mode in [dmAddDiluvium] then MaskDEM := AreaDEMs[2];
-       if DEMIX_Mode in [dmAddDelta] then MaskDEM := PointDEMs[7];
+    if MDDef.DEMIX_mode in [dmAddDiluvium,dmAddDelta,dmAddCoastal] then begin
+       if MDDef.DEMIX_mode in [dmAddCoastal] then MaskDEM := AreaDEMs[2];
+       if MDDef.DEMIX_mode in [dmAddDiluvium] then MaskDEM := AreaDEMs[3];
+       if MDDef.DEMIX_mode in [dmAddDelta] then MaskDEM := PointDEMs[7];
+       if ValidDEM(MaskDEM) then begin
+          for i := dmxFirstPoint to NumPtDEMs do MaskToMatchDiluvium(PointDEMs[i]);
+          for i := dmxFirstArea to NumAreaDEMs do MaskToMatchDiluvium(AreaDEMs[i]);
+          {$IfDef ShowOpenBothPixelIsDEMs} wmdem.Tile; MessageToContinue('After masking'); {$EndIf};
 
-       for i := dmxFirstPoint to NumPtDEMs do MaskToMatchDiluvium(PointDEMs[i]);
-       for i := dmxFirstArea to NumAreaDEMs do MaskToMatchDiluvium(AreaDEMs[i]);
-       {$IfDef ShowOpenBothPixelIsDEMs} wmdem.Tile; MessageToContinue('After masking'); {$EndIf};
-
-       for i := dmxFirstPoint to NumPtDEMs do TrimDEM(PointDEMs[i]);
-       for i := dmxFirstArea to NumAreaDEMs do TrimDEM(AreaDEMs[i]);
-       {$IfDef ShowOpenBothPixelIsDEMs} wmdem.Tile; MessageToContinue('After trimming'); {$EndIf};
+          for i := dmxFirstPoint to NumPtDEMs do TrimDEM(PointDEMs[i]);
+          for i := dmxFirstArea to NumAreaDEMs do TrimDEM(AreaDEMs[i]);
+          {$IfDef ShowOpenBothPixelIsDEMs} if OpenMaps then wmdem.Tile; MessageToContinue('After trimming'); {$EndIf};
+       end;
     end;
 
     {$IfDef TrackPixelIs} ShowDEMIXgrids('OpenBothPixelIsDEMs', PointDEMs,AreaDEMs); {$EndIf};
-    {$IfDef ShowOpenBothPixelIsDEMs} wmdem.Tile; MessageToContinue('Check maps'); {$EndIf};
+    {$IfDef ShowOpenBothPixelIsDEMs} if OpenMaps then wmdem.Tile; MessageToContinue('Check maps'); {$EndIf};
 end;
 
 
@@ -704,9 +757,10 @@ begin
    if (TileName <> '') then bb := DEMIXtileBoundingBox(TileName);
    for I := 1 to MaxDEMIXDEM do begin
       if ValidDEM(RefDEMs[i]) then begin
+         {$If Defined(TrackDEMboundingBox)} DEMGlb[RefDEMs[i]].TrackDEMBoundingBox('LoadThisDEMIXTile');  {$EndIf}
          DEMGlb[RefDEMs[i]].AreaName := StringReplace(DEMGlb[RefDEMs[i]].AreaName, AreaName, TileName,[rfIgnoreCase]);
          DEMGlb[RefDEMs[i]].AreaName := StringReplace(DEMGlb[RefDEMs[i]].AreaName, '_1sec', '',[rfIgnoreCase]);
-         if (DEMGlb[RefDEMs[i]].SelectionMap <> Nil) then DEMGlb[RefDEMs[i]].SelectionMap.SubsetAndZoomMapFromGeographicBounds(bb);
+         if (TileName <> '') and (DEMGlb[RefDEMs[i]].SelectionMap <> Nil) then DEMGlb[RefDEMs[i]].SelectionMap.SubsetAndZoomMapFromGeographicBounds(bb);
       end;
    end;
 
@@ -716,7 +770,7 @@ begin
    for I := 1 to MaxDEMIXDEM do begin
       if ValidDEM(TestDEMs[i]) then begin
          DEMGlb[TestDEMs[i]].AreaName := StringReplace(DEMGlb[TestDEMs[i]].AreaName, AreaName, TileName,[rfIgnoreCase]);
-         if (DEMGlb[TestDEMs[i]].SelectionMap <> Nil) then DEMGlb[TestDEMs[i]].SelectionMap.SubsetAndZoomMapFromGeographicBounds(bb);
+         if (TileName <> '') and (DEMGlb[TestDEMs[i]].SelectionMap <> Nil) then DEMGlb[TestDEMs[i]].SelectionMap.SubsetAndZoomMapFromGeographicBounds(bb);
       end;
    end;
    ShowDefaultCursor;
@@ -745,6 +799,7 @@ begin
                DEMIXDEMTypeName[i] := Table.GetFieldByNameAsString('DEM_NAME');
                DEMIXshort[i] := Table.GetFieldByNameAsString('SHORT_NAME');
                DEMIXDEMcolors[i] := Table.PlatformColorFromTable;
+               UseRetiredDEMs[i] := MDDef.DEMIX_graph_Retired_DEMs or ((DEMIXshort[i] <> 'ASTER') and (DEMIXshort[i] <> 'NASA') and (DEMIXshort[i] <> 'SRTM'));
             end
             else begin
                {$If Defined(RecordDEMIXStart)} WriteLineToDebugFile('LoadDEMIXnames problem DEM=' + TheDEMs.Strings[pred(i)]); {$EndIf}
@@ -917,7 +972,7 @@ begin
    Left := 25;
    Top := 10;
    for i := 1 to NumDEMIXtestDEM do begin
-      //if DEMIXDEMinUse[i] then begin
+      if UseRetiredDEMs[i] then begin
          Result.Canvas.Pen.Color := ConvertPlatformColorToTColor(DEMIXColorFromDEMName(DEMIXShort[i]));
          Result.Canvas.Brush.Color := Result.Canvas.Pen.Color;
          Result.Canvas.Brush.Style := bsSolid;
@@ -926,7 +981,7 @@ begin
          Result.Canvas.TextOut(Left + 20,Top,DEMIXShort[i]);
          if Horizontal then Left := Left + 30 + Result.Canvas.TextWidth(DEMIXShort[i])
          else Top := Top + 10 + Result.Canvas.TextHeight(DEMIXShort[i]);
-      //end;
+      end;
    end;
    PutBitmapInBox(Result);
 end;
@@ -948,53 +1003,78 @@ end;
 
 procedure SetParamsForDEMIXmode;
 begin
-   {$If Defined(RecordDEMIXStart)} WriteLineToDebugFile('SetParamsForDEMIXmode in, DEMIX_mode=' + IntToStr(DEMIX_Mode)); {$EndIf}
-   //DEMIX_mode = dmClassic then begin
+   {$If Defined(RecordDEMIXStart)} WriteLineToDebugFile('SetParamsForDEMIXmode in, DEMIX_mode=' + IntToStr(MDDef.DEMIX_mode)); {$EndIf}
+
+   if MDDef.DEMIX_mode = dmClassic then begin
       NumPtDEMs := 6;
       NumAreaDEMs := 1;
       SSIMresultsDir := RegularSSIMresultsDir;
       AreaListFName := DEMIXSettingsDir + 'areas_list.txt';
       DEMListFName := DEMIXSettingsDir + 'dems_classic.txt';
-   if (DEMIX_mode = dmAddDiluvium) then begin
-      NumAreaDEMs := 2; //adds dilumium
+      DEMIX_Tile_Full := MDDef.DEMIX_full_all;
+   end
+   else if (MDDef.DEMIX_mode = dmAddCoastal) then begin
+      NumPtDEMs := 6;
+      NumAreaDEMs := 2;  //adds dilumium
+      SSIMresultsDir := CoastalSSIMresultsDir;
+      AreaListFName := DEMIXSettingsDir + 'areas_coastal.txt';
+      DEMListFName := DEMIXSettingsDir + 'dems_add_coastal.txt';
+      DEMIX_Tile_Full := MDDef.DEMIX_full_U120;
+   end
+   else if (MDDef.DEMIX_mode = dmAddDiluvium) then begin
+      NumPtDEMs := 6;    //adds delta
+      NumAreaDEMs := 3; //adds dilumium, coastal
       SSIMresultsDir := DiluvSSIMresultsDir;
       AreaListFName := DEMIXSettingsDir + 'areas_diluvium.txt';
       DEMListFName := DEMIXSettingsDir + 'dems_add_diluvium.txt';
+      DEMIX_Tile_Full := MDDef.DEMIX_full_U80;
    end
-   else if (DEMIX_mode = dmAddDelta) then begin
+   else if (MDDef.DEMIX_mode = dmAddDelta) then begin
       NumPtDEMs := 7;    //adds delta
-      NumAreaDEMs := 2;  //adds dilumium
+      NumAreaDEMs := 3;  //adds dilumium,coastal
       SSIMresultsDir := DeltaSSIMresultsDir;
       AreaListFName := DEMIXSettingsDir + 'areas_delta.txt';
       DEMListFName := DEMIXSettingsDir + 'dems_add_delta.txt';
+      DEMIX_Tile_Full := MDDef.DEMIX_full_U10;
    end;
-   {$If Defined(RecordDEMIXStart)} WriteLineToDebugFile('SetParamsForDEMIXmode out'); {$EndIf}
+
+   DEMIX_Tile_Full := 25;
+   {$If Defined(RecordDEMIXStart)} WriteLineToDebugFile('SetParamsForDEMIXmode out, DEMIX_mode=' + IntToStr(MDDef.DEMIX_mode)); {$EndIf}
 end;
 
 
 procedure RecognizeDEMIXVersion(DB : integer);
 begin
-   if StrUtils.ANSIcontainsText(UpperCase(GISDB[db].DBName),'DEMIX') then begin
-      if StrUtils.ANSIcontainsText(UpperCase(GISDB[db].DBName),'ALL') then DEMIX_mode := dmClassic
-      else if StrUtils.ANSIcontainsText(UpperCase(GISDB[db].DBName),'U80') then DEMIX_mode := dmAddDiluvium
-      else if StrUtils.ANSIcontainsText(UpperCase(GISDB[db].DBName),'U10') then DEMIX_mode := dmAddDelta
-   end
-   else begin
-      DEMIX_mode := dmClassic;
-      if GISDB[db].MyData.FieldExists('DELTA') then DEMIX_mode := dmAddDelta
-      else if GISDB[db].MyData.FieldExists('DILUV') then DEMIX_mode := dmAddDiluvium;
+   if ValidDB(DB) then begin
+      if StrUtils.ANSIcontainsText(UpperCase(GISDB[db].DBName),'DEMIX') then begin
+         if StrUtils.ANSIcontainsText(UpperCase(GISDB[db].DBName),'ALL') then MDDef.DEMIX_mode := dmClassic
+         else if StrUtils.ANSIcontainsText(UpperCase(GISDB[db].DBName),'U120') then MDDef.DEMIX_mode := dmAddCoastal
+         else if StrUtils.ANSIcontainsText(UpperCase(GISDB[db].DBName),'U80') then MDDef.DEMIX_mode := dmAddDiluvium
+         else if StrUtils.ANSIcontainsText(UpperCase(GISDB[db].DBName),'U10') then MDDef.DEMIX_mode := dmAddDelta
+      end
+      else begin
+         MDDef.DEMIX_mode := dmClassic;
+         if GISDB[db].MyData.FieldExists('COAST') then MDDef.DEMIX_mode := dmAddCoastal
+         else if GISDB[db].MyData.FieldExists('DELTA') then MDDef.DEMIX_mode := dmAddDelta
+         else if GISDB[db].MyData.FieldExists('DILUV') then MDDef.DEMIX_mode := dmAddDiluvium;
+      end;
+      SetParamsForDEMIXmode;
    end;
-   SetParamsForDEMIXmode;
 end;
 
 
 function GetDEMIXpaths(StartProcessing : boolean = true; DB : integer = 0) : boolean;
 begin
    {$If Defined(RecordDEMIXStart)} WriteLineToDebugFile('GetDEMIXpaths in'); {$EndIf}
+   if ValidDB(DB) then begin
+      {$If Defined(RecordDEMIXStart)} WriteLineToDebugFile('GetDEMIXpaths Check DB'); {$EndIf}
+      RecognizeDEMIXVersion(DB);
+   end;
    if DEMIX_initialized then Result := true
    else begin
       {$If Defined(RecordDEMIXStart)} WriteLineToDebugFile('GetDEMIXpaths off to PickWineContestLocation'); {$EndIf}
       Result := PickWineContestLocation;
+      PickDEMIXMode;
    end;
 
    if (not Result) then exit;
@@ -1014,7 +1094,6 @@ begin
       DoHorizontalShift := false;
       MDdef.MDRecordDebugLog := true;
 
-      MDDef.DEMIX_Full := 75;
       MDDef.SlopeFlatBoundary := 12.5;
       MDDef.SlopeGentleBoundary := 25;
       MDDef.SlopeSteepBoundary := 50;
@@ -1034,13 +1113,15 @@ begin
    DEMIX_Ref_Merge := DEMIX_Base_DB_Path + 'wine_contest_v2_ref_merge\';
    DEMIX_Ref_Half_sec := DEMIX_Base_DB_Path + 'wine_contest_v2_ref_0.5sec\';
    vd_path := DEMIX_Base_DB_Path + 'wine_contest_v2_vdatum\';
-   DEMIXresultsDir := DEMIX_Base_DB_Path + 'wine_contest_v2_tile_stats\';
    DEMIX_diff_dist  := DEMIX_Base_DB_Path + 'wine_contest_v2_diff_dist\';
-   DEMIX_diff_maps_dir  := DEMIX_Base_DB_Path + 'wine_contest_difference_maps\';
-   DEMIX_area_lc100  := DEMIX_Base_DB_Path + 'wine_contest_v2_lc100\';
    DEMIX_profile_test_dir := DEMIX_Base_DB_Path + 'wine_contest_v2_topo_profiles\';
    DEMIX_distrib_graph_dir := DEMIX_Base_DB_Path + 'wine_contest_v2_difference_distrib_graphs\';
    DEMIX_3DEP_Dir := DEMIX_Base_DB_Path + 'wine_contest_v2_3dep\';
+
+
+   DEMIXresultsDir := DEMIX_Base_DB_Path + 'wine_contest_tile_stats\';
+   DEMIX_diff_maps_dir  := DEMIX_Base_DB_Path + 'wine_contest_difference_maps\';
+   DEMIX_area_lc100  := DEMIX_Base_DB_Path + 'wine_contest_lc100\';
    DEMIX_GIS_dbName := DEMIX_Base_DB_Path + 'wine_contest_database\demix_gis_db_v2.5.dbf';
 
    DEMIX_test_DEMs_no_sink := DEMIX_Base_DB_Path + 'area_test_dems_no_sink\';
@@ -1052,15 +1133,17 @@ begin
    ChannelMissesDir := DEMIX_Base_DB_Path + 'channel_misses\';
 
    RegularSSIMresultsDir := DEMIX_Base_DB_Path + 'SSIM_results\';
+   CoastalSSIMresultsDir := DEMIX_Base_DB_Path + 'coastal_SSIM_results\';
    DiluvSSIMresultsDir := DEMIX_Base_DB_Path + 'diluvium_SSIM_results\';
    DeltaSSIMresultsDir := DEMIX_Base_DB_Path + 'delta_SSIM_results\';
 
    DEMIX_final_DB_dir := DEMIX_Base_DB_Path + 'wine_contest_database\';
 
-   DEMIX_Ref_1sec := DEMIX_Base_DB_Path + 'wine_contest_v2_ref_1sec\';
-   DEMIX_test_dems := DEMIX_Base_DB_Path + 'wine_contest_v2_test_dems\';
-   DEMIX_diluvium_dems := DEMIX_Base_DB_Path + 'diluvium_test_dems\';
-   DEMIX_delta_dtms := DEMIX_Base_DB_Path + 'delta_test_dtms\';
+   DEMIX_Ref_1sec := DEMIX_Base_DB_Path + 'wine_contest_ref_1sec\';
+   DEMIX_test_dems := DEMIX_Base_DB_Path + 'wine_contest_test_dems\';
+   DEMIX_diluvium_dtms := DEMIX_Base_DB_Path + 'diluvium_test_dems\';
+   DEMIX_delta_dtms := DEMIX_Base_DB_Path + 'delta_test_dems\';
+   DEMIX_coastal_dtms := DEMIX_Base_DB_Path + 'coastal_test_dems\';
 
    {$If Defined(RecordDEMIXStart)} WriteLineToDebugFile('GetDEMIXpaths point 4'); {$EndIf}
 
@@ -1069,21 +1152,12 @@ begin
    GeoidDiffFName := 'g:\geoid\egm96_to_egm2008.tif';
    FindDriveWithFile(GeoidDiffFName);
 
-   if ValidDB(DB) then begin
-      {$If Defined(RecordDEMIXStart)} WriteLineToDebugFile('GetDEMIXpaths Check DB'); {$EndIf}
-      RecognizeDEMIXVersion(DB);
-   end
-   else if (DEMIX_mode = dmNotYetDefined) then begin
-      {$If Defined(RecordDEMIXStart)} WriteLineToDebugFile('GetDEMIXpaths user PickDEMIXMode'); {$EndIf}
-      PickDEMIXMode(DEMIX_Mode);
-   end
-   else begin
-      {$If Defined(RecordDEMIXStart)} WriteLineToDebugFile('GetDEMIXpaths already set DEMIX_Mode'); {$EndIf}
-   end;
    SetParamsForDEMIXmode;
    LoadDEMIXnames;
 
-   {$If Defined(RecordDEMIXStart)} WriteLineToDebugFile('GetDEMIXpaths out, DEMIX_mode=' + IntToStr(DEMIX_Mode)); {$EndIf}
+   {$If Defined(RecordDEMIXStart) or Defined(RecordDEMIX)}
+      WriteLineToDebugFile('GetDEMIXpaths out, DEMIX_mode=' + IntToStr(MDDef.DEMIX_mode) + ' ' + DEMIX_mode_abbreviation(MDDef.DEMIX_mode));
+   {$EndIf}
 end;
 
 
@@ -1098,41 +1172,12 @@ begin
    ReportErrors := true;
    LockStatusBar := false;
    wmdem.ClearStatusBarPanelText;
-   //ShowDefaultCursor;
    EndProgress;
    if ValidDB(db) then begin
       GISdb[DB].ClearGISFilter;
       GISdb[DB].ShowStatus;
    end;
 end;
-
-
-(*
-function DEMIXLoadRefDEMFromPath(AreaName : shortstring; LoadMap : boolean) : integer;
-var
-   FilesWanted : tStringList;
-   j : integer;
-   fName : PathStr;
-begin
-   FilesWanted := tStringList.Create;
-   FindMatchingFiles(DEMIX_Ref_1sec,'*.tif',FilesWanted,1);
-   for j := 0 to pred(FilesWanted.Count) do begin
-      fName := FilesWanted.Strings[j];
-      if StrUtils.AnsiContainsText(UpperCase(fname),UpperCase(AreaName)) then begin
-         Result := OpenNewDEM(fName,LoadMap);
-         exit;
-      end;
-   end;
-   FilesWanted.Free;
-end;
-
-
-function ShortTestAreaName(TestAreaName : shortstring) : shortstring;
-begin
-   Result := StringReplace(TestAreaName,'_dtm','',[rfReplaceAll, rfIgnoreCase]);
-   Result := StringReplace(Result,'_dsm','',[rfReplaceAll, rfIgnoreCase]);
-end;
-*)
 
 
 function DEMIX_AreasWanted(CanLimitAreas : boolean = true) : tStringList;
@@ -1144,7 +1189,7 @@ begin
    fName := AreaListFName;
    if FileExists(fName) or GetExistingFileName('DEMIX areas','*.txt',fName) then begin
       Result.LoadFromFile(fName);
-      if CanLimitAreas then MultiSelectSingleColumnStringList('Areas to process',PickedNum,Result,false,true);
+      if CanLimitAreas then MultiSelectSingleColumnStringList(DEMIX_mode_abbreviation(MDDef.DEMIX_mode) + ' Areas to process',PickedNum,Result,false,true);
    end;
 end;
 
@@ -1157,7 +1202,7 @@ begin
    if FileExists(DEMIX_area_dbName) then begin
      Table := tMyData.Create(DEMIX_area_dbName);
      Table.ApplyFilter('AREA=' + QuotedStr(Area));
-     if Table.FiltRecsInDB = 0 then Result := ''
+     if (Table.FiltRecsInDB = 0) then Result := ''
      else Result := Table.GetFieldByNameAsString('COUNTRY');
    end;
    Table.Destroy;
@@ -1703,7 +1748,6 @@ begin
       {$IfDef RecordDEMIXload} HighlightLineToDebugFile('Failure, to open ref DEMs'); {$EndIf}
    end;
 end;
-
 
 
 initialization

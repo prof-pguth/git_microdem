@@ -5,8 +5,8 @@ object FontDlg: TFontDlg
   BorderIcons = [biHelp]
   BorderStyle = bsDialog
   Caption = 'Font Overlay'
-  ClientHeight = 201
-  ClientWidth = 276
+  ClientHeight = 206
+  ClientWidth = 297
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack

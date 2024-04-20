@@ -360,8 +360,7 @@ procedure PopUpDefaultHorizontalLegendOnBitmap(Min,Max : float64;  Units : short
 procedure PutMyBitmapIntoImage(fname : PathStr; Image : tImage);
 procedure AlphaMatchBitmaps(Bitmap,Bitmap2 : tMyBitmap);
 
-function MakeBigBitmap(var theFiles : tStringList; Capt : shortstring; SaveName : PathStr = ''; Cols : integer = -1) : TImageDisplayForm;
-
+function MakeBigBitmap(var theFiles : tStringList; Capt : shortstring; SaveName : PathStr = ''; Cols : integer = -1; Legend : PathStr ='') : TImageDisplayForm;
 
 procedure DifferenceTwoBitmaps;
 
@@ -446,9 +445,9 @@ var
    FirstX,FirstY,LastX,LastY : integer;
 
 
-function MakeBigBitmap(var theFiles : tStringList; Capt : shortstring; SaveName : PathStr = ''; Cols : integer = -1) : TImageDisplayForm;
+function MakeBigBitmap(var theFiles : tStringList; Capt : shortstring; SaveName : PathStr = ''; Cols : integer = -1; Legend : PathStr ='') : TImageDisplayForm;
 var
-   bigbmp : tMyBitmap;
+   bigbmp,LegBMP : tMyBitmap;
    fName : PathStr;
    AskCols : boolean;
    x,y : integer;
@@ -469,12 +468,24 @@ begin
            y := BigBmp.Height - 10 - BigBmp.Canvas.TextHeight(Capt);
            BigBmp.Canvas.TextOut(x,y,Capt);
         end;
+        if (Legend <> '') then begin
+            LegBMP := LoadBitmapFromFile(Legend);
+            BigBmp.Height := BigBmp.Height + LegBMP.Height + 8;
+            y := BigBmp.Height - LegBMP.Height - 4;
+            x := (BigBmp.Width - LegBMP.Width) div 2;
+            BigBmp.Canvas.Draw(X,y,LegBmp);
+            LegBMP.Free;
+        end;
+
          Result := TImageDisplayForm.Create(Application);
-         Result.LoadImage(BigBmp,true);
          if (SaveName <> '') then begin
             {$IfDef RecordBigBitmap} WriteLineToDebugFile('MakeBigBitmap save in ' + SaveName); {$EndIf}
             SaveBitmap(BigBmp,SaveName);
-            Result.Caption := ExtractFileNameNoExt(SaveName);
+            //Result.Caption := ExtractFileNameNoExt(SaveName);
+            Result.LoadImage(SaveName,true);
+         end
+         else begin
+            Result.LoadImage(BigBmp,true);
          end;
          fName := Petmar.NextFileNumber(MDtempDir,'big_bmp_files','.txt');
          theFiles.SaveToFile(fName);
@@ -1690,7 +1701,9 @@ end;
 procedure TImageDisplayForm.LoadImage(var Bitmap : tMyBitmap; PickSize : boolean = false);
 begin
    Image1.Picture.Graphic := Bitmap;
-   LoadedFileName := NextFileNumber(MDTempDir,'loaded_image_','.bmp');
+   if LoadedFileName = '' then LoadedFileName := 'loaded_image.bmp';
+
+   LoadedFileName := NextFileNumber(MDTempDir,ExtractFileNameNoExt(LoadedFileName) + '_','.bmp');
    Bitmap.SaveToFile(LoadedFileName);
    XBMPSize := Bitmap.Width;
    YBMPSize := Bitmap.Height;
@@ -1708,7 +1721,7 @@ begin
    if PickSize then begin
       ImageBlowup := 100;
       while (YBMPSize * ImageBlowUp div 100) > wmdem.ClientHeight do begin
-          dec(ImageBlowup,10);
+         dec(ImageBlowup,10);
       end;
       ComboBox1.Text := IntToStr(ImageBlowUp)  + '%';
    end;

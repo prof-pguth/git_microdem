@@ -18,7 +18,6 @@ begin
 
     if GetParameters then begin
        if ValidDEM(MapDraw.DEMonMap) then MDDef.LasDEMPixelIs := DEMGlb[MapDraw.DEMonMap].DEMHeader.RasterPixelIsGeoKey1025;
-
        GetGridParameters;
        UTMzone := MDdef.DefaultUTMZone;
        LatCh := MDdef.DefaultLatHemi;
@@ -223,7 +222,6 @@ begin
 end;
 
 
-
 procedure CreateDEMSelectionMap(DEM : integer; DrawIt : boolean = true; usePC : boolean = true; inMapType : tMapType = mtElevRainbow);
 var
    mt : tMapType;
@@ -273,7 +271,6 @@ var
             if (StrUtils.AnsiContainsText(fName2,'NIGHT') and StrUtils.AnsiContainsText(fName2,'LIGHT')) or StrUtils.AnsiContainsText(fName2,'BAND') then begin
                Result := mtElevGray;
                DEMGlb[DEM].DEMheader.ElevUnits := euUndefined;
-               //DEMGlb[DEM].ElevationDEM := false;
             end;
          end;
       end;
@@ -296,8 +293,6 @@ begin
          {$EndIf}
          {$If Defined(TrackHorizontalDatum)} DEMGlb[DEM].TrackHorizontalDatumDebugLog('CreateDEMSelectionMap map created,'); {$EndIf}
       end;
-      //DEMglb[DEM].DEMMapProjection.pName changes to 64 in the previous step, and I cannot track the change down
-      //DEMglb[DEM].DEMMapProjection.InitializeProjectionFromDEMHeader(DEMglb[DEM].DEMHeader);
 
       DEMGlb[DEM].SelectionMap.MapDraw.PrimMapProj.InitializeProjectionFromDEMHeader(DEMGlb[DEM].DEMHeader);
       {$IfDef RecordDEMMapProjection}

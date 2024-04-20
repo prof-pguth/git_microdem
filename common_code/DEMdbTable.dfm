@@ -617,6 +617,10 @@ object dbtablef: Tdbtablef
         Caption = 'Sum for one field'
         OnClick = Sumforonefield1Click
       end
+      object Sumforallnumericfields1: TMenuItem
+        Caption = 'Sum for all numeric fields'
+        OnClick = Sumforallnumericfields1Click
+      end
       object Allrecordsmatchingsinglefield1: TMenuItem
         Caption = 'All records matching single field'
         OnClick = Allrecordsmatchingsinglefield1Click
@@ -3717,7 +3721,7 @@ object dbtablef: Tdbtablef
     end
   end
   object DEMIXPopupMenu1: TPopupMenu
-    Left = 368
+    Left = 624
     Top = 480
     object Currenttest1: TMenuItem
       Caption = 
@@ -3815,12 +3819,8 @@ object dbtablef: Tdbtablef
         OnClick = CiompareCOPtorivals1Click
       end
       object Addtilecharacteristics1: TMenuItem
-        Caption = 'Add all 8 tile characteristics to DB'
+        Caption = 'Add tile characteristics to DB'
         OnClick = Addtilecharacteristics1Click
-      end
-      object AddsloperoughnessrelieftoDB1: TMenuItem
-        Caption = 'Add slope, roughness, relief to DB'
-        OnClick = AddsloperoughnessrelieftoDB1Click
       end
       object AddcountryfieldtoDB1: TMenuItem
         Caption = 'Add country field to DB'
@@ -3864,6 +3864,10 @@ object dbtablef: Tdbtablef
         Caption = 'Filter for -999 values in any evaluation'
         OnClick = Filterfor999valuesinanyevaluation1Click
       end
+      object Filterfor0valuesinanyevaluation1: TMenuItem
+        Caption = 'Filter for 0 values in any evaluation'
+        OnClick = Filterfor0valuesinanyevaluation1Click
+      end
     end
     object AssignDEMIXDEMcolors1: TMenuItem
       Caption = 'Assign DEMIX DEM colors'
@@ -3897,6 +3901,14 @@ object dbtablef: Tdbtablef
       object N1degreetilestocoverrecordsintable1: TMenuItem
         Caption = 'List of 1 degree tiles to cover records in table'
         OnClick = N1degreetilestocoverrecordsintable1Click
+      end
+      object CriteriaforeachDEMIXtile1: TMenuItem
+        Caption = 'Criteria for each DEMIX tile'
+        OnClick = CriteriaforeachDEMIXtile1Click
+      end
+      object PercentilesforCOPbycriterionforeachtile1: TMenuItem
+        Caption = 'Percentiles for COP by criterion for each tile'
+        OnClick = PercentilesforCOPbycriterionforeachtile1Click
       end
     end
     object N49: TMenuItem

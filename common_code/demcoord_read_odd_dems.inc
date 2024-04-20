@@ -434,7 +434,7 @@ end;
          DEMheader.DataSpacing := SpaceMeters;
          DEMheader.DEMUsed := UTMBasedDEM;
          DEMheader.DigitizeDatum := UK_OS_grid;
-         DEMMapProjection := CreateUKOSprojection;
+         DEMMapProj := CreateUKOSprojection;
          ReadASCIIArcGrid(DEMFileName,Self,Result,true);
       end;
 {$EndIf}

@@ -218,6 +218,9 @@ begin
       else begin
          {$IfDef RecordDEMIX} HighlightLineToDebugFile('Landcover load fail ' + LandCoverfName + '  ' + LatLongDegreeToString(Lat,Long)); {$EndIf}
       end;
+   end
+   else begin
+      MessageToContinue('Missing land cover file ' + LandCoverFName);
    end;
 end;
 

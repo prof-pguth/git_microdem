@@ -393,7 +393,7 @@ type
     BitBtn41: TBitBtn;
     BitBtn42: TBitBtn;
     GroupBox18: TGroupBox;
-    Edit12: TEdit;
+    //Edit12: TEdit;
     DTfilllabel: TLabel;
     CheckBox5: TCheckBox;
     CheckBox154: TCheckBox;
@@ -416,6 +416,7 @@ type
     Edit36: TEdit;
     CheckBox106: TCheckBox;
     CheckBox18: TCheckBox;
+    CheckBox80: TCheckBox;
     procedure BitBtn32Click(Sender: TObject);
     procedure BitBtn13Click(Sender: TObject);
     procedure HelpBtnClick(Sender: TObject);
@@ -987,7 +988,7 @@ begin
    Edit6.Text := RealToString(MDdef.MercShiftLongLimit,-12,-4);
    Edit8.Text := IntToStr(MDdef.FillHoleRadius);
    Edit11.Text := IntToStr(MDDef.JPEGQuality);
-   Edit12.Text := IntToStr(MDDef.DEMIX_full);
+   //Edit12.Text := IntToStr(MDDef.DEMIX_full);
 
    CheckBox28.Checked := MDDef.ShowPLSS;
 
@@ -1107,6 +1108,7 @@ begin
    CheckBox73.Checked := MDDef.TransparentGIF;
    CheckBox76.Checked := MDDef.TernaryPercentageValues;
    CheckBox79.Checked := MDDef.DeleteFIT;
+   CheckBox80.Checked := MDDef.DefElevsPercentile;
 
    CheckBox82.Checked := MDDef.DBMinimizeOnOpen;
    CheckBox83.Checked := MDDef.CleanKMLDirOnClosing;
@@ -1505,6 +1507,8 @@ begin
 
    MDDef.TransparentGIF := CheckBox73.Checked;
    MDDef.TernaryPercentageValues := CheckBox76.Checked;
+   MDDef.DefElevsPercentile := CheckBox80.Checked;
+
    MDdef.ConfirmDBEdits := CheckBox81.Checked;
 
    MDDef.DBMinimizeOnOpen := CheckBox82.Checked;
@@ -1625,7 +1629,7 @@ begin
 
    CheckEditString(Edit8.Text,MDdef.FillHoleRadius);
    CheckEditString(Edit11.Text,MDDef.JPEGQuality);
-   CheckEditString(Edit12.Text,MDDef.DEMIX_full);
+   //CheckEditString(Edit12.Text,MDDef.DEMIX_full);
 
    MDDef.DefaultServerIP := Edit13.Text;
    MDDef.DefaultServerPort := StrToInt(Edit14.Text);
@@ -1677,7 +1681,7 @@ begin
       if (MDdef.ProgramOption = GeologyProgram) then begin
          SetStructuralGeologyDefaults;
          {$IfDef AllowUSNAdataDownloads}
-            {$If Defined(ExGeology) or Defined(ExGeologyDownload)}
+            {$If Defined(ExGeology) or Defined(ExLabDownloads)}
             {$Else}
                GetNaturalEarthData;
                GeologyGetData;
@@ -1959,7 +1963,7 @@ end;
 
 procedure TOptionsForm.BitBtn21Click(Sender: TObject);
 begin
-  {$If Defined(ExGeology) or Defined(ExGeologyDownload)}
+  {$If Defined(ExGeology) or Defined(ExLabDownloads)}
   {$Else}
      GeologyGetData(true);
   {$EndIf}

@@ -1,4 +1,4 @@
-﻿unit point_cloud_options;
+unit point_cloud_options;
 
 {^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
 { Part of MICRODEM GIS Program      }
@@ -1402,8 +1402,6 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
         end;
 
 
-
-
     begin
        {$If Defined(RecordMakeGrid) or Defined(TrackPointCloud)} WriteLineToDebugFile(''); WriteLineToDebugFile('Tpt_cloud_opts_fm.BitBtn9Click (Make grid) in, ' + IntToStr(ord(PCGridMaker))); {$EndIf}
 
@@ -1508,16 +1506,13 @@ var
            var
               NumNoiseOverlap,OutsideBlock,NumWrongReturn,OutsideNewGrid,GoodInBlock : int64;
               TilesUsed,ThinFactor,xf,yf,ff,
-              //xp,yp,
               buf,k,i,j,RecsRead,xgrid,ygrid,xg,yg,ColHi,RowHi : integer;
               fName : PathStr;
               NeedTile{,NoFilter} : boolean;
               LasData : Las_Lidar.tLAS_data;
               bb : sfBoundBox;
               Proceed{,p1,p2} : boolean;
-              //Lat,Long,
               xutm,yutm : float64;
-              //x,y : array[1..4] of float64;
            begin
               {$IfDef RecordNewGrids} WriteLineToDebugFile(aLabel + '  layer=' + IntToStr(Layer) + ' col=' + IntToStr(Col) + ' row=' + IntToStr(Row) ); {$EndIf}
               {$IfDef ShowNewGridsMap} BaseMap.DoFastMapRedraw; {$EndIf}
@@ -1845,7 +1840,6 @@ begin
    {$IfDef PointCloudOutlines} WriteLineToDebugFile('Tpt_cloud_opts_fm.MapCallOutlineClouds in'); {$EndIf}
    for Cloud := 1 to MaxClouds do if UsePC[Cloud] and (LasFiles[Cloud] <> Nil) then begin
       if (LasFiles[Cloud].LAS_fnames.Count > 0) then  begin
-         //BaseMap.Image1.Canvas.Pen.Color := ConvertPlatformColorToTColor(MDDef.CloudSymbol[Cloud].Color);
          BaseMap.Image1.Canvas.Pen.Width := 3;
          BaseMap.Image1.Canvas.Brush.Style := bsClear;
          {$IfDef PointCloudOutlines} WriteLineToDebugFile('Cloud=' + IntToStr(Cloud) + '  files=' + IntToStr(LasFiles[Cloud].LAS_fnames.Count) + '  color=' + IntToStr(BaseMap.Image1.Canvas.Pen.Color)); {$EndIf}
@@ -2320,7 +2314,7 @@ procedure Tpt_cloud_opts_fm.RedrawAllLayers;
 var
    Cloud : integer;
    TStr : shortstring;
-begin
+begin {Tpt_cloud_opts_fm.RedrawAllLayers}
    if (NumOpenClouds > 0) then begin
       if (MDdef.ls.ColorCoding = lasccElevation) then begin
          CheckEditString(Edit5.Text, BaseMap.MapDraw.LasMaxAreaZ);
@@ -2346,7 +2340,7 @@ begin
        EndProgress;
        {$If Defined(RecordPointCloudViewing) or Defined(TrackPointCloud)} WriteLineToDebugFile('Tpt_cloud_opts_fm.RedrawAllLayers out'); {$EndIf}
    end;
-end;
+end {Tpt_cloud_opts_fm.RedrawAllLayers};
 
 
 procedure Tpt_cloud_opts_fm.BitBtn1Click(Sender: TObject);
@@ -4136,7 +4130,6 @@ var
    OK,
    ViewMultiple,ExportDone,AlreadyLoaded,LASDestroy : Boolean;
    ColorsFName,fName : array[1..5] of PathStr;
-   //LasData : Las_Lidar.tLAS_data;
    i : Integer;
 
       procedure ExportCloud(Cloud : integer; var fName,ColorName : PathStr; BaseName : PathStr; ExportFilter : tLASClassificationCategory = lccAll);
@@ -4145,22 +4138,6 @@ var
             if AlreadyLoaded then exit;
             FName := Petmar.NextFileNumber(MDTempDir, BaseName + '_','.xyzib');
             OK := LasFiles[Cloud].ExportBinary(mlOnMask,BaseMap,Cloud,FName,ColorName,ExportFilter);
-            (*
-            wmdem.SetPanelText(0,'Export=' + IntToStr(Cloud) + ' ' + BaseName);
-            LasFiles[Cloud].ShowLASProgress := true;
-            {$If Defined(RecordPointCloudViewing) or Defined(OGLexport)} WriteLineToDebugFile('call OpenGLLasPoints, Cloud=' + IntToStr(Cloud) + ' ' + BaseName); {$EndIf}
-            fName := '';
-            if LasFiles[Cloud].OpenGLLasPoints(fName,BaseMap,Nil) then begin
-               {$If Defined(RecordPointCloudViewing) or Defined(OGLexport)} WriteLineToDebugFile('call Las_Lidar.tLAS_data.Create'); {$EndIf}
-               LasData := Las_Lidar.tLAS_data.Create(FName);
-               {$If Defined(RecordPointCloudViewing) or Defined(OGLexport)} WriteLineToDebugFile('call exportbinary'); {$EndIf}
-               FName := Petmar.NextFileNumber(MDTempDir, BaseName + '_','.xyzib');
-               if LasData.OldExportBinary(Cloud,FName,ColorName,ExportFilter) then OK := true
-               else fName := '';
-               if LASdestroy then LasData.Destroy;
-               {$If Defined(RecordPointCloudViewing) or Defined(OGLexport)} WriteLineToDebugFile(' cloud=' + IntToStr(Cloud) + '  ' + fName); {$EndIf}
-            end;
-            *)
          end;
       end;
 

@@ -48,7 +48,7 @@ inherited OptionsForm: TOptionsForm
     Top = 0
     Width = 793
     Height = 505
-    ActivePage = TabSheet10
+    ActivePage = TabSheet4
     Align = alClient
     MultiLine = True
     TabOrder = 2
@@ -448,6 +448,14 @@ inherited OptionsForm: TOptionsForm
         Height = 17
         Caption = 'Map name below composite maps'
         TabOrder = 24
+      end
+      object CheckBox80: TCheckBox
+        Left = 16
+        Top = 310
+        Width = 225
+        Height = 17
+        Caption = 'Elevation percentile color limits'
+        TabOrder = 25
       end
     end
     object TabSheet5: TTabSheet

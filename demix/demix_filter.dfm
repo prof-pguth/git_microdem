@@ -425,6 +425,7 @@ object DemixFilterForm: TDemixFilterForm
         Width = 113
         Height = 25
         Caption = 'SSIM prep, area'
+        Enabled = False
         TabOrder = 35
         OnClick = BitBtn30Click
       end
@@ -434,6 +435,7 @@ object DemixFilterForm: TDemixFilterForm
         Width = 113
         Height = 25
         Caption = 'SSIM prep, tile'
+        Enabled = False
         TabOrder = 36
         OnClick = BitBtn31Click
       end
@@ -443,6 +445,7 @@ object DemixFilterForm: TDemixFilterForm
         Width = 113
         Height = 25
         Caption = 'SSIM prep, all areas'
+        Enabled = False
         TabOrder = 37
         OnClick = BitBtn5Click
       end
@@ -470,6 +473,7 @@ object DemixFilterForm: TDemixFilterForm
         Width = 113
         Height = 25
         Caption = 'Diluvium'
+        Enabled = False
         TabOrder = 40
         OnClick = BitBtn39Click
       end
@@ -941,7 +945,7 @@ object DemixFilterForm: TDemixFilterForm
         Top = 39
         Width = 137
         Height = 17
-        Caption = 'Do R squared criteria'
+        Caption = 'Do FUV criteria'
         TabOrder = 10
         OnClick = CheckBox24Click
       end
@@ -953,6 +957,15 @@ object DemixFilterForm: TDemixFilterForm
         Caption = 'Save defaults'
         TabOrder = 11
         OnClick = BitBtn38Click
+      end
+      object CheckBox25: TCheckBox
+        Left = 544
+        Top = 69
+        Width = 185
+        Height = 17
+        Caption = 'Open maps during SSIM/FUV'
+        TabOrder = 12
+        OnClick = CheckBox25Click
       end
     end
     object TabSheet4: TTabSheet

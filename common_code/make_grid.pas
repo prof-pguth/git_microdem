@@ -703,7 +703,7 @@ begin
    end;
    DEMglb[Result].CheckMaxMinElev;
    DEMglb[Result].SetUpMap(Result,true,mtElevSpectrum);
-   {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateRoughnessMap2, NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProjection.ProjDebugName); {$EndIf}
+   {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateRoughnessMap2, NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProj.ProjDebugName); {$EndIf}
 end;
 
 
@@ -768,7 +768,7 @@ begin
       SlopeMap := 0;
    end;
    EndProgress;
-   {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateRoughnessMap2, NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProjection.ProjDebugName); {$EndIf}
+   {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateRoughnessMap2, NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProj.ProjDebugName); {$EndIf}
 end;
 
 
@@ -826,7 +826,7 @@ begin
    DEMglb[Result].CheckMaxMinElev;
    if OpenMap then DEMglb[Result].SetUpMap(Result,OpenMap,mtElevSpectrum);
    if (not SaveSlopeMap) then CloseSingleDEM(SlopeGrid);
-   {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateSpecifiedRoughnessMap out, NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProjection.ProjDebugName); {$EndIf}
+   {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateSpecifiedRoughnessMap out, NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProj.ProjDebugName); {$EndIf}
 end;
 
 
@@ -1335,7 +1335,7 @@ var
           Petmar.ReplaceCharacter(GridName,' ','_');
           if (ThinFactor > 1) then DEM := DEMGlb[CurDEM].ThinAndOpenGridSetMissing(ThinFactor,FloatingPointDEM,'md_' + GridName + '_' + DEMGlb[CurDEM].AreaName,ElevUnits)
           else DEM := DEMGlb[CurDEM].CloneAndOpenGridSetMissing(FloatingPointDEM,'md_' + GridName + '_' + DEMGlb[CurDEM].AreaName,ElevUnits);
-          {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('Created DEM ' + IntToStr(DEM) + GridName + ' proj=' + DEMGlb[DEM].DEMMapProjection.ProjDebugName); {$EndIf}
+          {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('Created DEM ' + IntToStr(DEM) + GridName + ' proj=' + DEMGlb[DEM].DEMMapProj.ProjDebugName); {$EndIf}
        end;
 
 
@@ -1622,7 +1622,7 @@ begin
    MDDef.DoSlopeCurve := true;
    Result := MakeMomentsGrid(WhichDEM,'C',-99,OpenMap);
    RestoreBackupDefaults;
-   {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateProfileConvexityMap, InGrid=' + IntToStr(WhichDEM) + '  NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProjection.ProjDebugName); {$EndIf}
+   {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateProfileConvexityMap, InGrid=' + IntToStr(WhichDEM) + '  NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProj.ProjDebugName); {$EndIf}
 end;
 
 

@@ -6,7 +6,7 @@ unit DEMTiger;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -56,7 +56,7 @@ uses
 
 var
    TigerIndex : PathStr;
-   RoadMaskColor : tColor;
+   //RoadMaskColor : tColor;
 
 procedure FindTIGERinBox(bb : sfBoundBox;  var TigerNames : tStringList);
 function GetTIGERCounty(var fNames : TStringList; var inLat1,inLong1,inLat2,inLong2 : float64; var CountyName : ShortString) : boolean;
@@ -93,7 +93,6 @@ procedure IndexTigerFiles;
 var
    fname,DirStr : PathStr;
    Count, Year  : integer;
-   //Present : boolean;
    TStr : ShortString;
    i,GISNum,IndexNum : integer;
    bBox : sfBoundBox;
@@ -108,7 +107,6 @@ begin
       GISdb[IndexNum].ClearGISFilter;
       StartProgress('Index');
       SaveBackupDefaults;
-      //MDDef.TigerToCDS := false;
       Count := 0;
       i := 0;
       StartProgress('TIGER index');
@@ -171,62 +169,47 @@ var
       begin
          with GISdb[GISNum],MyData do begin
             Filter := '';
-            (*
-            if Census2020  then begin
-               if Blocks then NeededFilter := 'TRACTCE20 = ' + QuotedStr(Tract) + ' AND BLOCKCE20 = ' + QuotedStr(Block)
+            if Census2010 then begin
+               Tract := ptTrim(Copy(Line1,55,6));
+               BlkGrp := ptTrim(Copy(Line1,62,1));
+               Block := ptTrim(Copy(Line1,62,4));
+               if Blocks then NeededFilter := 'TRACTCE10 = ' + QuotedStr(Tract) + ' AND BLOCKCE10 = ' + QuotedStr(Block)
                else begin
                   if (Tract = '') and (BlkGrp = '') then NeededFilter := ''
                   else begin
-                     if (Tract = '') then NeededFilter := 'BLKGRPCE20 = ' + QuotedStr(BlkGrp)
-                     else if (BlkGrp = '') then NeededFilter := 'TRACTCE20= ' + QuotedStr(Tract)
-                     else NeededFilter := 'TRACTCE20= ' + QuotedStr(Tract) + ' AND BLKGRPCE20 = ' + QuotedStr(BlkGrp);
+                     if (Tract = '') then NeededFilter := 'BLKGRPCE10 = ' + QuotedStr(BlkGrp)
+                     else if (BlkGrp = '') then NeededFilter := 'TRACTCE10= ' + QuotedStr(Tract)
+                     else NeededFilter := 'TRACTCE10= ' + QuotedStr(Tract) + ' AND BLKGRPCE10 = ' + QuotedStr(BlkGrp);
                   end;
                end;
             end
             else begin
-            *)
-               if Census2010 then begin
-                  Tract := ptTrim(Copy(Line1,55,6));
-                  BlkGrp := ptTrim(Copy(Line1,62,1));
-                  Block := ptTrim(Copy(Line1,62,4));
-                  if Blocks then NeededFilter := 'TRACTCE10 = ' + QuotedStr(Tract) + ' AND BLOCKCE10 = ' + QuotedStr(Block)
-                  else begin
-                     if (Tract = '') and (BlkGrp = '') then NeededFilter := ''
-                     else begin
-                        if (Tract = '') then NeededFilter := 'BLKGRPCE10 = ' + QuotedStr(BlkGrp)
-                        else if (BlkGrp = '') then NeededFilter := 'TRACTCE10= ' + QuotedStr(Tract)
-                        else NeededFilter := 'TRACTCE10= ' + QuotedStr(Tract) + ' AND BLKGRPCE10 = ' + QuotedStr(BlkGrp);
-                     end;
-                  end;
-               end
-               else begin
-                  Tract := Copy(Line1,56,6);
-                  Block := ptTrim(Copy(Line1,63,4));
-                  if Blocks then NeededFilter :=  'TRACTCE00 = ' + QuotedStr(Tract) + ' AND BLOCKCE00 = ' + QuotedStr(Block)
-                  else NeededFilter := 'TRACTCE00 = ' + QuotedStr(Tract);
+               Tract := Copy(Line1,56,6);
+               Block := ptTrim(Copy(Line1,63,4));
+               if Blocks then NeededFilter :=  'TRACTCE00 = ' + QuotedStr(Tract) + ' AND BLOCKCE00 = ' + QuotedStr(Block)
+               else NeededFilter := 'TRACTCE00 = ' + QuotedStr(Tract);
+            end;
+            if (NeededFilter <> '') then begin
+               MyData.ApplyFilter(NeededFilter);
+               if (RecordCount = 1) then begin
+                  Edit;
+                  for i := 1 to 5 do TStr := BeforeSpecifiedCharacterANSI(Line2,',',true,true);
+                  Value := StrToInt(BeforeSpecifiedCharacterANSI(Line2,',',true,true));  //there are 5 header fields, then total pop, P1-1
+                  SetFieldByNameAsInteger('POP',GetFieldByNameAsInteger('POP') + Value);
+                  for i := 1 to 1 do TStr := BeforeSpecifiedCharacterANSI(Line2,',',true,true);
+                  Value := StrToInt(BeforeSpecifiedCharacterANSI(Line2,',',true,true));  //after population of just 1 race, we get whitle only, P1-3
+                  SetFieldByNameAsInteger('WHITE1',GetFieldByNameAsInteger('WHITE1') + Value);
+                  Value := StrToInt(BeforeSpecifiedCharacterANSI(Line2,',',true,true));                     //black only follows, P1-4
+                  SetFieldByNameAsInteger('BLACK1',GetFieldByNameAsInteger('BLACK1') + Value);
+                  for i := 1 to 1 do TStr := BeforeSpecifiedCharacterANSI(Line2,',',true,true);
+                  Value := StrToInt(BeforeSpecifiedCharacterANSI(Line2,',',true,true));
+                  SetFieldByNameAsInteger('ASIAN1',GetFieldByNameAsInteger('ASIAN1') + Value);
+                  for i := 1 to 66 do TStr := BeforeSpecifiedCharacterANSI(Line2,',',true,true);
+                  Value := StrToInt(BeforeSpecifiedCharacterANSI(Line2,',',true,true)); //skip P1-5 to P1-71,P2-1, and read P2-2, Hispanic
+                  SetFieldByNameAsInteger('HISPANIC',GetFieldByNameAsInteger('HISPANIC') + Value);
+                  Post;
                end;
-               if (NeededFilter <> '') then begin
-                  MyData.ApplyFilter(NeededFilter);
-                  if (RecordCount = 1) then begin
-                     Edit;
-                     for i := 1 to 5 do TStr := BeforeSpecifiedCharacterANSI(Line2,',',true,true);
-                     Value := StrToInt(BeforeSpecifiedCharacterANSI(Line2,',',true,true));  //there are 5 header fields, then total pop, P1-1
-                     SetFieldByNameAsInteger('POP',GetFieldByNameAsInteger('POP') + Value);
-                     for i := 1 to 1 do TStr := BeforeSpecifiedCharacterANSI(Line2,',',true,true);
-                     Value := StrToInt(BeforeSpecifiedCharacterANSI(Line2,',',true,true));  //after population of just 1 race, we get whitle only, P1-3
-                     SetFieldByNameAsInteger('WHITE1',GetFieldByNameAsInteger('WHITE1') + Value);
-                     Value := StrToInt(BeforeSpecifiedCharacterANSI(Line2,',',true,true));                     //black only follows, P1-4
-                     SetFieldByNameAsInteger('BLACK1',GetFieldByNameAsInteger('BLACK1') + Value);
-                     for i := 1 to 1 do TStr := BeforeSpecifiedCharacterANSI(Line2,',',true,true);
-                     Value := StrToInt(BeforeSpecifiedCharacterANSI(Line2,',',true,true));
-                     SetFieldByNameAsInteger('ASIAN1',GetFieldByNameAsInteger('ASIAN1') + Value);
-                     for i := 1 to 66 do TStr := BeforeSpecifiedCharacterANSI(Line2,',',true,true);
-                     Value := StrToInt(BeforeSpecifiedCharacterANSI(Line2,',',true,true)); //skip P1-5 to P1-71,P2-1, and read P2-2, Hispanic
-                     SetFieldByNameAsInteger('HISPANIC',GetFieldByNameAsInteger('HISPANIC') + Value);
-                     Post;
-                  end;
-               end;
-            //end;
+            end;
          end;
       end;
 
@@ -420,7 +403,7 @@ end;
 
 
 procedure FindTIGERinBox(bb : sfBoundBox; var TigerNames : tStringList);
-{using a database of the TIGER county files, determines counties within a box defined by lat/long}
+{using database of TIGER county files, determines counties within a box defined by lat/long}
 label
    Restart;
 var
@@ -436,8 +419,6 @@ begin
       GISdb[TigerDB].dbOpts.MainFilter := 'ON_HAND=' + QuotedStr('Y');
       GISdb[TigerDB].AssembleGISFilter;
       {$IfDef RecordTigerIndex} WriteLineToDebugFile('Onhand recs in TIGER database: ' + IntToStr(GISdb[TigerDB].MyData.RecordCount)); {$EndIf}
-
-      //GISdb[TigerDB].QueryGeoBox(bb,false);
 
       GISdb[TigerDB].ApplyGISFilter(MakeCornersGeoFilter(bB));
       {$IfDef RecordTigerIndex} WriteLineToDebugFile('Filter: ' + GISdb[TigerDB].MyData.Filter); {$EndIf}
@@ -465,7 +446,7 @@ end;
 
 
 initialization
-   RoadMaskColor := clBlack;
+   //RoadMaskColor := clBlack;
 finalization
    {$IfDef RecordClosingProblems} WriteLineToDebugFile('Closing demtiger in'); {$EndIf}
    {$IfDef RecordTiger} WriteLineToDebugFile('RecordTiger active in DEMTiger'); {$EndIf}

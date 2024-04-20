@@ -18,6 +18,7 @@ unit demix_definitions;
    //{$Define RecordDEMIXLoad}
    {$Define RecordDiluvium}
    {$Define Record3DEPX}
+   {$Define RecordDEMIXRefDEM}
    //{$Define Record3DEPXFull}
    {$Define RecordDEMIX_evaluations_graph}
    //{$Define RecordDiluviumFull}
@@ -99,8 +100,8 @@ const
    DiffParams : array[1..3] of shortstring = ('ELVD','SLPD','RUFD');
    ParamSuffixes : array[1..5] of shortstring = ('_AVD','_STD','_RMSE','_MAE','_LE90');
 
-   NumTileCharacters = 8;
-   TileCharacters : array[1..NumTileCharacters] of shortstring = ('AVG_ELEV','AVG_ROUGH','AVG_SLOPE','BARREN_PC','FOREST_PC','RELIEF','URBAN_PC','WATER_PC');
+   NumTileCharacters = 10;
+   TileCharacters : array[1..NumTileCharacters] of shortstring = ('AVG_ELEV','AVG_ROUGH','AVG_SLOPE','BARREN_PC','FOREST_PC','RELIEF','URBAN_PC','WATER_PC','MIN_ELEV','MAX_ELEV');
 
    //NCrits = 12;
    //Crits : array[1..NCrits] of shortstring = ('ELEV_SSIM','RRI_SSIM','SLOPE_SSIM','HILL_SSIM','RUFF_SSIM','TPI_SSIM','ELEV_FUV','SLOPE_FUV','HILL_FUV','RUFF_FUV','TPI_FUV','RRI_FUV');
@@ -125,7 +126,7 @@ var
    DEMIXDEMTypeName : array[1..MaxDEMIXDEM] of shortstring;
    DEMIXshort : array[1..MaxDEMIXDEM] of shortstring;
    DEMIXDEMcolors : array[1..MaxDEMIXDEM] of tPlatformColor;
-
+   UseRetiredDEMs : array[1..MaxDEMIXDEM] of boolean;
 const
    Ref1SecPointStr = '_ref_1sec_point';
    Ref1SecAreaStr =  '_ref_1sec_area';
@@ -133,17 +134,11 @@ const
 
 //this should be rolled into a DEMIX_grid object; for now it is global variables
          const
-            MaxPossGrids = 8;
+            MaxPossGrids = 10;
             NumPtDEMs : integer = 6;
             NumAreaDEMs : integer = 1;
             PossPt = 7;
-            PossArea = 2;
-
-            DEMIX_Mode : integer = 0;
-            dmNotYetDefined = 0;
-            dmClassic = 1;
-            dmAddDiluvium = 2;
-            dmAddDelta = 3;
+            PossArea = 3;
 
             DEMIXsymsize : integer = 5;
 
@@ -153,7 +148,7 @@ const
          //the rest for the test DEMs
          const
             PointNames : array[-1..PossPt] of shortstring = ('REF_HI_PNT','REF_POINT','COP','TANDEM','FABDEM','NASA','SRTM','ASTER','DELTA');
-            AreaNames : array[-1..PossArea] of shortstring = ('REF_HI_AREA','REF_AREA','ALOS','DILUV');
+            AreaNames : array[-1..PossArea] of shortstring = ('REF_HI_AREA','REF_AREA','ALOS','COAST','DILUV');
          type
             tDEM_int_array = array [-1..MaxPossGrids] of integer; //-1 for high latitude ref DEM, 0 for ref DEMs, others for the test DEMs
          var
@@ -164,8 +159,8 @@ const
             dmxFirstPoint,dmxFirstArea : integer;
 
          procedure ZeroPointAndAreaGrids(var PointGrids,AreaGrids : tDEM_int_array);
-         procedure CreateDEMIXhillshadeGrids;
-         procedure CreateDEMIXSlopeRoughnessGrids;
+         procedure CreateDEMIXhillshadeGrids(OpenMaps : boolean = false);
+         procedure CreateDEMIXSlopeRoughnessGrids(OpenMaps : boolean = false);
          function RefGridForThisPointGrid(WhatGroup : tDEM_int_array; i : integer) : integer;
          procedure ShowDEMIXgrids(WhatFor : shortstring; PointGrids,AreaGrids : tDEM_int_array);
 
@@ -177,6 +172,9 @@ const
    yasRelief = 3;
    yasBestEval = 4;
    yasBarren = 5;
+   yasForest = 6;
+   yasBestEvalByCriterion = 7;
+   yasBestEvalBySlope = 8;
    xawEvaluation = 0;
    xawScore = 1;
    yawArea = 0;
@@ -184,6 +182,7 @@ const
    DEMIX_combined_graph : boolean = false;
    MovieByTestDEM : boolean = false;
    PanelsByTestDEM : boolean = false;
+   DEMIX_Tile_Full : byte = 75;
 var
    XAxisWhat,YAxisWhat,YAxisSort,YaxisTileOrArea : integer;
    DEMIXVertAxisLabel : ANSIstring;
@@ -204,9 +203,9 @@ var
    DEMIX_final_DB_dir,
 
    SSIMresultsDir,  //used internally, and set to one of the next three depending on which version is on
-   DeltaSSIMresultsDir, DiluvSSIMresultsDir, RegularSSIMresultsDir,
+   DeltaSSIMresultsDir, DiluvSSIMresultsDir, RegularSSIMresultsDir,CoastalSSIMresultsDir,
 
-   DEMIX_Ref_1sec,DEMIX_test_dems,DEMIX_diluvium_dems,DEMIX_delta_dtms,  //locations for the 1" DEMs used in comparison
+   DEMIX_Ref_1sec,DEMIX_test_dems,DEMIX_diluvium_dtms,DEMIX_delta_dtms,DEMIX_coastal_dtms,  //locations for the 1" DEMs used in comparison
 
    DEMIX_Ref_Half_sec,
    DEMIX_Base_DB_Path,DEMIX_profile_test_dir,
@@ -249,7 +248,8 @@ function DEMIX_mode_abbreviation(DEMIX_mode : integer) : shortstring;
    procedure EvalRangeAndBestEvalForCriterion(DBonTable : integer);
    procedure CreateFinalDB;
    procedure AddCountryToDB(DB : integer);
-   procedure MergeCSVtoCreateFinalDB(SSIM_FUV : boolean);
+   //procedure MergeCSVtoCreateFinalDB(SSIM_FUV : boolean);
+   procedure MergeCSVtoCreateFinalDB(CSVdir : PathStr;FileDescription,dbName : shortstring);
    procedure AddPercentPrimaryData(DBonTable : integer);
    procedure AddAreaToDB(DBonTable : integer);
 
@@ -307,19 +307,22 @@ function DEMIX_mode_abbreviation(DEMIX_mode : integer) : shortstring;
    procedure FixFilesWith42112;
    procedure EvalRangeAndStatsByCriterion(DBonTable : integer);
    procedure GetRangesForSSIM;
+   procedure InventoryCriteriaEachDEMIXtile(DB : integer);
+   procedure InventoryPercentileByCriterionEachDEMIXtile(DB : integer);
+   procedure FindTilesInAreaForCoast;
 
 
 //channel network comparisons
-   function ChannelSHPToGrid(DEM,db : integer; OutDir : PathStr; PlotOrder : integer = 1) : integer;
-   procedure CompareChannelNetworks(Area : shortstring);
+  // function ChannelSHPToGrid(DEM,db : integer; fName : PathStr; PlotOrder : integer = 1) : integer;
+   procedure CompareChannelNetworks(Overwrite : boolean; Area : shortstring);
    procedure CreateChannelNetworkGridsFromVectors(Overwrite : boolean; AreasWanted : tstringlist = nil);
    procedure BatchRemoveSinksInDEMIX_DEMS(Overwrite : boolean; AreasWanted : tstringlist = nil);
    procedure BatchCreateVectorChannelNewtwork(Overwrite : boolean; AreasWanted : tstringlist = nil);
    procedure ChannelNetworkMissPercentages(Overwrite : boolean; AreasWanted : tstringlist = nil);
-   procedure ChannelNetworkMapComparison(AreaName,TestDEMName : shortstring);
+   procedure ChannelNetworkMapComparison(Overwrite : boolean; AreaName,TestDEMName : shortstring);
    procedure MultistepChannelNetworks(Overwrite : boolean);
 
-procedure AddStatisticsToDEMIXdb(db : integer);
+//procedure AddStatisticsToDEMIXdb(db : integer);
 
 procedure ClearDoubleProcessed;
 
@@ -341,6 +344,8 @@ function IsDEMIX_signedCriterion(Criterion : shortstring) : boolean;
 procedure ClusterCompositionByDBfield(DBonTable : integer);
 procedure ClusterFrequencyForSelectedField(DBonTable : integer);
 procedure AreasInClusters(DB : integer);
+
+procedure FilterTableForDEMIXevaluation(DBonTable,Value : integer);
 
 
 implementation
@@ -366,15 +371,32 @@ uses
 
 {$include demix_channels.inc}
 
+
+
 function DEMIX_mode_abbreviation(DEMIX_mode : integer) : shortstring;
 begin
    case DEMIX_mode of
       dmClassic : Result := 'ALL';
+      dmAddCoastal : Result := 'U120';
       dmAddDiluvium : Result := 'U80';
       dmAddDelta : Result := 'U10';
    end;
 end;
 
+procedure FilterTableForDEMIXevaluation(DBonTable,Value : integer);
+var
+   i : integer;
+   aFilter : shortstring;
+begin
+   aFilter := '';
+   for i := 1 to NumDEMIXtestDEM do begin
+      if GISdb[DBonTable].MyData.FieldExists(DEMIXshort[i]) then begin
+         if length(aFilter) > 0 then aFilter := aFilter + ' OR ';
+         aFilter := aFilter + DEMIXshort[i] + '=' + IntToStr(Value);
+      end;
+   end;
+   GISdb[DBonTable].ApplyGISFilter(aFilter);
+end;
 
 
 function IsDEMIX_signedCriterion(Criterion : shortstring) : boolean;
@@ -384,14 +406,12 @@ end;
 
 
 function RefGridForThisPointGrid(WhatGroup : tDEM_int_array; i : integer) : integer;
-var
-   AreaName : shortstring;
 begin
     if ValidDEM(i) then begin
-       AreaName := UpperCase(DEMglb[i].AreaName);
-       //if (DEMglb[i].DEMSWcornerLat > 50) and (StrUtils.AnsiContainsText(AreaName,'COP') or StrUtils.AnsiContainsText(AreaName,'TANDEM')) then Result := WhatGroup[-1]
-       if (DEMglb[i].DEMHeader.DEMxSpacing > 1.01/3600) then Result := WhatGroup[-1]
+       {$IfDef RecordDEMIXRefDEM} WriteLineToDebugFile(DEMGlb[WhatGroup[i]].AreaName + ' ' + RealToString(3600 * DEMglb[WhatGroup[i]].DEMHeader.DEMxSpacing,-8,-2) + 'sec'); {$EndIf}
+       if (DEMglb[WhatGroup[i]].DEMHeader.DEMxSpacing > 1.05/3600) then Result := WhatGroup[-1]
        else Result := WhatGroup[0];
+       {$IfDef RecordDEMIXRefDEM} WriteLineToDebugFile('Ref DEM for ' + DEMGlb[WhatGroup[i]].AreaName + ' is ' + DEMGlb[Result].AreaName); {$EndIf}
     end
     else begin
        {$IfDef RecordDEMIX} WriteLineToDebugFile('Invaild DEM=' + IntToStr(i) + ' in RefGridForThisPointGrid'); {$EndIf}
@@ -414,32 +434,32 @@ end;
 
 
 
-procedure CreateDEMIXhillshadeGrids;
+procedure CreateDEMIXhillshadeGrids(OpenMaps : boolean = false);
 var
    i : integer;
 begin
     wmdem.SetPanelText(3, 'Compute Hillshade',true);
     for i := dmxFirstPoint to NumPtDEMs do begin
-       PointGrids[i] := MakeSingleNewDerivativeMap('R',PointDEMs[i],0,false);
+       PointGrids[i] := MakeSingleNewDerivativeMap('R',PointDEMs[i],0,OpenMaps);
        {$IfDef RecordDEMIXFull} WriteLineToDebugFile('Grid=' + IntToStr(PointGrids[i]) + ' Hillshade for ' + DEMGlb[PointDEMs[i]].AreaName); {$EndIf}
     end;
     for i := dmxFirstArea to NumAreaDEMs do begin
        {$IfDef RecordDEMIXFull} WriteLineToDebugFile('Hillshade for ' + DEMGlb[AreaDEMs[i]].AreaName); {$EndIf}
-       AreaGrids[i] := MakeSingleNewDerivativeMap('R',AreaDEMs[i],0,false);
+       AreaGrids[i] := MakeSingleNewDerivativeMap('R',AreaDEMs[i],0,OpenMaps);
        {$IfDef RecordDEMIXFull} WriteLineToDebugFile('Grid=' + IntToStr(AreaGrids[i]) + ' Hillshade for ' + DEMGlb[PointDEMs[i]].AreaName); {$EndIf}
     end;
 end;
 
 
-procedure CreateDEMIXSlopeRoughnessGrids;
+procedure CreateDEMIXSlopeRoughnessGrids(OpenMaps : boolean = false);
 var
    i : integer;
 begin
     wmdem.SetPanelText(3, 'Compute slope/roughness',true);
     for i := dmxFirstPoint to NumPtDEMs do PointGrids2[i] := 0;  //so slope grids are returned
     for i := dmxFirstArea to NumAreaDEMs do AreaGrids2[i] := 0;  //so slope grids are returned
-    for i := dmxFirstPoint to NumPtDEMs do PointGrids[i] := CreateSlopeRoughnessSlopeStandardDeviationMap(PointDEMs[i],5,PointGrids2[i],false);
-    for i := dmxFirstArea to NumAreaDEMs do AreaGrids[i] := CreateSlopeRoughnessSlopeStandardDeviationMap(AreaDEMs[i],5,AreaGrids2[i],false);
+    for i := dmxFirstPoint to NumPtDEMs do PointGrids[i] := CreateSlopeRoughnessSlopeStandardDeviationMap(PointDEMs[i],5,PointGrids2[i],OpenMaps);
+    for i := dmxFirstArea to NumAreaDEMs do AreaGrids[i] := CreateSlopeRoughnessSlopeStandardDeviationMap(AreaDEMs[i],5,AreaGrids2[i],OpenMaps);
 end;
 
 
