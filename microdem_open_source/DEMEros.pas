@@ -1,4 +1,4 @@
-﻿unit DEMEROS;
+unit DEMEROS;
 
 {^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
 { Part of MICRODEM GIS Program      }
@@ -18,6 +18,8 @@
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IfDef Debug}
       //{$Define RecordLoadSat}
+      //{$Define RecordUTM}
+      {$Define RecordSentinel}
       //{$Define RecordEOBrowser}
       //{$Define RecordKeyDraw}
       //{$Define RecordTMSat}
@@ -174,7 +176,6 @@ type
          Grays            : tRGBWordLookUp;
          GraysLookUp      : tColorIndex;
          ColorLookUp      : tColorLookUp;
-         //RegVars          : tRegVars;
          ImageMapProjection : tMapProjection;
          DefRedTrue,DefGreenTrue,DefBlueTrue,DefIR2,
          DefRedFalse,DefGreenFalse,DefBlueFalse,
@@ -352,10 +353,17 @@ function IsThisSentinel2(fName : PathStr) : boolean;
 //  L1C_T37TCN_A027360_20220602T082807           {inside granule folder}
 begin
    fName := UpperCase(fName);
-   Result := {StrUtils.AnsiContainsText(UpperCase(fName),'SENTINEL') or}
-            (StrUtils.AnsiContainsText(fName,'_B') and (StrUtils.AnsiContainsText(fName,'L1C_T') or StrUtils.AnsiContainsText(fName,'L 1C_'))) or
-            StrUtils.AnsiContainsText(fName,'S2A_MSI_') or
-            StrUtils.AnsiContainsText(fName,'S2B_MSI_');
+   Result := (StrUtils.AnsiContainsText(fName,'_B') and (StrUtils.AnsiContainsText(fName,'L1C_T') or StrUtils.AnsiContainsText(fName,'L 1C_'))) or
+             (StrUtils.AnsiContainsText(fName,'_B') and StrUtils.AnsiContainsText(fName,'L2A_')) or
+             StrUtils.AnsiContainsText(fName,'S2A_MSI_') or
+             StrUtils.AnsiContainsText(fName,'S2B_MSI_');
+end;
+
+
+procedure FileNamesForSentinel2Levels;
+begin
+   //"J:\china_desert\level_1c\S2A_MSIL1C_20230605T051651_N0509_R062_T44SNH_20230605T070628.SAFE\GRANULE\L1C_T44SNH_A041529_20230605T051754\IMG_DATA\T44SNH_20230605T051651_B02.tif"
+   //"J:\china_desert\level_2a\S2A_MSIL2A_20230913T051651_N0509_R062_T44SNH_20230913T105102.SAFE\GRANULE\L2A_T44SNH_A042959_20230913T051654\IMG_DATA\R10m\T44SNH_20230913T051651_B02_10m.tif"
 end;
 
 
@@ -802,7 +810,8 @@ var
 
       function RatName : ANSIstring;
       begin
-         Result := ', (' + BandShortName[Band1] + '-' + BandShortName[Band2] + ') / (' + BandShortName[Band1] + '+' + BandShortName[Band2] + ')';
+         Result := '';
+         //Result := ', (' + BandShortName[Band1] + '-' + BandShortName[Band2] + ') / (' + BandShortName[Band1] + '+' + BandShortName[Band2] + ')';
       end;
 
       procedure PickBands;
@@ -870,7 +879,7 @@ begin
       repeat
          ReadDefault('second band factor',SecondFactor);
       until abs(SecondFactor) > 0.01;
-      NewBandTitle := 'Sum ' + BandShortName[Band1] + ' and ' + BandShortName[Band2];
+      NewBandTitle := 'Sum_' + BandShortName[Band1] + '_and_' + BandShortName[Band2];
    end
    else if (NewBand = nsbNDVI) then begin
       Band1 := NIRBand;
@@ -894,13 +903,13 @@ begin
       Band2 := NIRBand;
       if (Band1 = 0) or (Band2 = 0) then PickBands;
       if (NewBand = nsbNDSIsoil) then NewBandTitle := 'NDSI (soil)' + RatName
-      else NewBandTitle := 'NDBI (building)' + RatName;
+      else NewBandTitle := 'NDBI_(building)' + RatName;
    end
    else if (NewBand = nsbNDSIsnow) then begin  //Dozier, 1989, Remote Sensing Environment
       Band1 := RedBand;
       Band2 := IR2Band;
       if (Band1 = 0) or (Band2 = 0) then PickBands;
-      NewBandTitle := 'NDSI (snow)' + RatName;
+      NewBandTitle := 'NDSI_(snow)' + RatName;
    end
    else if (NewBand = nsbNDWI) then begin
       Band1 := GreenBand;
@@ -968,12 +977,12 @@ begin
          PickBand('blue band',Band2);
       end;
       if (NewBand = nsbVARI) then NewBandTitle := 'VARI'
-      else NewBandTitle := 'RGB grayscale';
+      else NewBandTitle := 'RGB_grayscale';
    end
    else if (NewBand = nsbRatio) then begin
       PickBand('ratio numerator',Band1);
       PickBand('ratio denominator',Band2);
-      NewBandTitle := 'Ratio ' + BandShortName[Band1] + ' over ' + BandShortName[Band2];;
+      NewBandTitle := 'Ratio ' + BandShortName[Band1] + '_over_' + BandShortName[Band2];;
    end;
    if (Band2 <> 0) and (BandXSpace[Band1] <> BandXSpace[Band2]) then begin
       ThinFactor := round(BandXSpace[Band1]/BandXSpace[Band2]);
@@ -1052,7 +1061,7 @@ begin
 
    if (LandsatNumber in [1..9]) then DEMGlb[Result].AreaName := NewBandTitle + '_' + ShortLandsatName(SceneBaseName)
    else if IsSentinel2 then DEMGlb[Result].AreaName := NewBandTitle + '_' + ImageDateString + '_Sentinel-2'
-   else DEMGlb[Result].AreaName := NewBandTitle + ' ' + SceneBaseName;
+   else DEMGlb[Result].AreaName := NewBandTitle + '_' + SceneBaseName;
    DEMGlb[Result].CheckMaxMinElev;
    {$IfDef RecordNewSat} WriteLineToDebugFile('Band range: ' + DEMGlb[Result].zRange); {$EndIf}
 
@@ -1963,7 +1972,7 @@ begin
    else if (LandsatNumber in [8,9]) then begin
       DefIR2 := 6;
    end
-   else if SatelliteName = 'Sentinel-2' then begin
+   else if (SatelliteName = 'Sentinel-2') then begin
       DefIR2 := 12;  //Band 11
    end;
 
@@ -2087,7 +2096,7 @@ var
             {$EndIf}
          end
          else begin
-             {$If Defined(RecordTMSatFull) or Defined(RecordTMSat) or Defined(RecordShortLandsat)} WriteLineToDebugFile('ReadTiffBand: ' + IntToStr(BandNum) +  ' missing ' + ExtractFileName(IndexFileName)); {$EndIf}
+             {$If Defined(RecordTMSat) or Defined(RecordShortLandsat) or Defined(RecordSentinel)} WriteLineToDebugFile('ReadTiffBand: ' + IntToStr(BandNum) +  ' missing ' + ExtractFileName(IndexFileName)); {$EndIf}
          end;
       end;
 
@@ -2289,8 +2298,9 @@ var
                var
                   i : integer;
                   BaseName : PathStr;
+                  Resolution : shortstring;
                begin
-                  {$IfDef RecordTMSat} WriteLineToDebugFile('OpenSentinel2 in ' + IndexFileName); {$EndIf}
+                  {$If Defined(RecordTMSat) or Defined(RecordSentinel)} WriteLineToDebugFile('OpenSentinel2 in ' + IndexFileName); {$EndIf}
                      IsSentinel2 := true;
                      Data16Bit := true;
                      MultiTiff := true;
@@ -2298,12 +2308,33 @@ var
                      ReadBandData('Sentinel-2',SatView);
                      SingleTiff := false;
                      SatelliteName := 'Sentinel-2';
+
+   //"J:\china_desert\level_1c\S2A_MSIL1C_20230605T051651_N0509_R062_T44SNH_20230605T070628.SAFE\GRANULE\L1C_T44SNH_A041529_20230605T051754\IMG_DATA\T44SNH_20230605T051651_B02.tif"
+   //"J:\china_desert\level_2a\S2A_MSIL2A_20230913T051651_N0509_R062_T44SNH_20230913T105102.SAFE\GRANULE\L2A_T44SNH_A042959_20230913T051654\IMG_DATA\R10m\T44SNH_20230913T051651_B02_10m.tif"
+
                      BaseName := ExtractFilePath(IndexFileName) + ExtractFileNameNoExt(IndexFileName);
-                     while (BaseName[length(BaseName)] <> '_') do Delete(BaseName,Length(BaseName),1);
+
+                     if ANSIcontainsText(IndexFileName,'L2A') then begin
+                        BaseName := StringReplace(BaseName, '20m','10m',[rfReplaceAll]);
+                        BaseName := StringReplace(BaseName, '60m','10m',[rfReplaceAll]);
+                     end
+                     else begin
+                        while (BaseName[length(BaseName)] <> '_') do Delete(BaseName,Length(BaseName),1);
+                     end;
+
                      for i := 1 to NumBands do begin
+                        if ANSIcontainsText(IndexFileName,'L2A') then begin
+                           if i in [2,3,4,8] then Resolution := '10m'
+                           else if i in [5,6,7,12,13] then Resolution := '20m'
+                           else if i in [1,10,11] then Resolution := '60m';
+                           bFileName[i] := StringReplace(BaseName, '10m',Resolution,[rfReplaceAll]) + '.tif';
+                           bFileName[i] := StringReplace(bFileName[i], 'B01',BandShortName[i],[]);
+                        end
+                        else begin
+                           bFileName[i] := BaseName + BandShortName[i] + '.tif';
+                        end;
                         NeedToLoadGeoTiffProjection := true;
-                        bFileName[i] := BaseName + BandShortName[i] + '.tif';
-                        {$IfDef RecordTMSat} WriteLineToDebugFile('IndexFileName='+bFileName[i]); {$EndIf}
+                        {$If Defined(RecordTMSat) or Defined(RecordSentinel)} WriteLineToDebugFile('IndexFileName=' + bFileName[i]); {$EndIf}
                         ReadTiffBand(bFileName[i],i,SatelliteName);
                      end;
                      NumSatCol := BandColumns[2];
@@ -2311,7 +2342,7 @@ var
                      RegVars.pr_deltaY  := BandYSpace[2];
                      RegVars.pr_deltaX  := BandXSpace[2];
                      NeedToLoadGeotiffProjection := true;
-                 {$IfDef RecordTMSat} WriteLineToDebugFile('OpenSentinel2 out'); {$EndIf}
+                 {$If Defined(RecordTMSat) or Defined(RecordSentinel)} WriteLineToDebugFile('OpenSentinel2 out'); {$EndIf}
                end;
 
 
@@ -2427,6 +2458,7 @@ var
       {$IfDef ExGDAL}
          Result := false;
       {$Else}
+         {$If Defined(RecordSentinel)} WriteLineToDebugFile('ProcessGDAL in=' + IndexFileName); {$EndIf}
          if GDALImageFormat(Ext) then begin
             if GDALImageFormat(Ext,true) then begin
                {$IfDef RecordGDAL} WriteLineToDebugFile('GDAL for ' + IndexFileName); {$EndIf}
@@ -2437,12 +2469,11 @@ var
                   IndexFileName := GDAL_Translate_2_geotiff(IndexFileName);
                end;
                Ext := '.TIF';
-               {$IfDef RecordGDAL} WriteLineToDebugFile('DEMeros GDAL over for ' + IndexFileName); {$EndIf}
+               {$If Defined(RecordGDAL) or Defined(RecordSentinel)} WriteLineToDebugFile('DEMeros GDAL over for ' + IndexFileName); {$EndIf}
             end;
-            {$If Defined(RecordLoadSat) or Defined(RecordTMSat)} WriteLineToDebugFile('TIFF=' + IndexFileName + '  Scene base name = ' + SceneBaseName); {$EndIf}
+            {$If Defined(RecordLoadSat) or Defined(RecordTMSat) or Defined(RecordSentinel)} WriteLineToDebugFile('TIFF=' + IndexFileName + '  Scene base name = ' + SceneBaseName); {$EndIf}
 
             if FileExists(IndexFileName) then begin
-
                LandsatSceneMetadata(IndexFilename,LandsatNumber,SceneBaseName);
                if (LandsatNumber <> 0) then begin
                   if StrUtils.AnsiContainsText(IndexFileName,'BQA') then begin
@@ -2493,7 +2524,7 @@ var
                      MultiTiff := false;
                   end;
                end;
-               CanEnhance := (NumBands >= 1) and (TiffImage[1] <> Nil) and TIFFImage[1].CanEnhance and (not LandsatLook);
+               //CanEnhance := (NumBands >= 1) and (TiffImage[1] <> Nil) and TIFFImage[1].CanEnhance and (not LandsatLook);
                Success := not ReadFailure;
 
                if Success then begin
@@ -2680,6 +2711,8 @@ begin
       {$IfDef RecordLoadSat} WriteLineToDebugFile('Call load histogram, NumBands=' + IntToStr(NumBands)); {$EndIf}
       LoadHistogram;
    end;
+  {$IfDef RecordUTM} WriteLineToDebugFile('tSatImage.Create out ' + SceneBaseName + ' UTM zone=' + IntToStr(ImageMapProjection.projUTMzone)); {$EndIf}
+
    {$If Defined(RecordLoadSat) or Defined(RecordEOBrowser)} WriteLineToDebugFile('tSatImage.Create out ' + SceneBaseName + '  can enhance=' + TrueOrFalse(CanEnhance) + '  ' + ImageMapProjection.GetProjectionName); {$EndIf}
 end;
 

@@ -8,47 +8,6 @@
 {____________________________________}
 
 
-function ClipTheDEMtoFullDEMIXTiles(DEM : integer; NewName : PathStr = '') : boolean;
-const
-   Fudge = 0.001;
-var
-   bb,bb2 : sfBoundBox;
-   db : integer;
-   {$If Defined(RecordCarto)} aLine : shortString; {$EndIf}
-begin
-   if ValidDEM(DEM) then begin
-      {$If Defined(RecordCarto)} aLine := DEMGlb[DEM].AreaName + ' initial ' + DEMGlb[DEM].ColsRowsString; {$EndIf}
-      bb := DEMGlb[DEM].DEMBoundBoxGeo;
-      {$If Defined(RecordCartoFull)} WriteLineToDebugFile('TMapForm.ClipDEMtoFullDEMIXTiles, DEM in ' + sfBoundBoxToString(bb,8)); {$EndIf}
-      db := DEMIXtileFill(DEM,bb,False);
-      GISdb[DB].Empsource.Enabled := false;
-      GISdb[DB].ApplyGISFilter('GRID_FULL >' + IntToStr(MDDef.DEMIX_Full));
-      if (GISdb[DB].MyData.FiltRecsInDB = 0) then begin
-         Result := false;
-      end
-      else begin
-         //GISdb[DB].DeleteAllSelectedRecords;
-         bb2.xmax := GISdb[DB].MyData.FindFieldMax('LONG_HI') + Fudge;
-         bb2.xmin := GISdb[DB].MyData.FindFieldMin('LONG_LOW') - Fudge;
-         bb2.ymax := GISdb[DB].MyData.FindFieldMax('LAT_HI') + Fudge;
-         bb2.ymin := GISdb[DB].MyData.FindFieldMin('LAT_LOW') - Fudge;
-         {$If Defined(RecordCartoFull)} WriteLineToDebugFile('TMapForm.ClipDEMtoFullDEMIXTiles, tile boundaries ' + sfBoundBoxToString(bb2,8)); {$EndIf}
-         bb.xmax := Petmath.MinFloat(bb.xMax,bb2.xMax);
-         bb.xmin := Petmath.MaxFloat(bb.xmin,bb2.xMin);
-         bb.ymax := Petmath.MinFloat(bb.yMax,bb2.yMax);
-         bb.ymin := Petmath.MaxFloat(bb.yMin,bb2.YMin);
-         {$If Defined(RecordCartoFull)} WriteLineToDebugFile('TMapForm.ClipDEMtoFullDEMIXTiles, map full tiles ' + sfBoundBoxToString(bb,8)); {$EndIf}
-         //SubsetAndZoomMapFromGeographicBounds(bb);
-         if (NewName = '') then NewName := DEMGlb[DEM].DEMFileName;
-         DEMGlb[DEM].SaveGridSubsetGeotiff(DEMGlb[DEM].sfBoundBox2tGridLimits(bb),NewName);
-         DEMGlb[DEM].DEMFileName := NewName;
-         DEMGlb[DEM].SelectionMap.ReloadDEMClick(Nil);
-         {$If Defined(RecordCarto)} aLine := aline + ' clipped ' + DEMGlb[DEM].ColsRowsString;   WriteLineToDebugFile(aLine); {$EndIf}
-         Result := true;
-      end;
-      CloseAndNilNumberedDB(db);
-   end;
-end;
 
 
 procedure tDEMDataSet.ClipToVerticalRange(Min,Max : float32);
@@ -203,6 +162,150 @@ end;
 
 
 
+
+function CreateGridToMatchDEM(DEM : integer; What : tCreateGrid;  OpenMap : boolean = true; Resolution : tDEMprecision = FloatingPointDEM; SpacingX : float64 = -99; SpacingY : float64 = -99; DesiredUTMZone : integer = -99; RasterPixelIs : byte = 1) : integer;
+var
+   Lat,Long : float64;
+   NewHeader : tDEMheader;
+   NewName : shortstring;
+   fName : PathStr;
+   Perimeter : integer;
+   Projection : tMapProjection;
+   xmin,xmax,ymin,ymax,
+   x,y : float64;
+begin
+   //MapDraw.MapCorners.BoundBoxGeo := MapDraw.GetBoundBoxGeo;
+
+   {$IfDef RecordNewMaps} WriteLineToDebugFile('TMapForm.CreateGridToMatchMap in, Map geo limits: ' + sfBoundBoxToString(MapDraw.MapCorners.BoundBoxGeo,4)); {$EndIf}
+   Result := 0;
+   ZeroDEMHeader(NewHeader, (What = cgUTM) or (What = cgSpecifyUTM) );
+   NewHeader.RasterPixelIsGeoKey1025 := RasterPixelIs;
+   NewHeader.DEMPrecision := Resolution;
+   NewHeader.LatHemi := DEMGlb[DEM].DEMMapProj.LatHemi;
+   NewHeader.VerticalCSTypeGeoKey := DEMGlb[DEM].DEMheader.VerticalCSTypeGeoKey;
+   NewHeader.ElevUnits := DEMGlb[DEM].DEMheader.ElevUnits;
+
+    if (DesiredUTMZone > 0) then begin
+       NewHeader.UTMZone := DesiredUTMZone;
+    end
+    else begin
+       NewHeader.UTMZone := DEMGlb[DEM].DEMheader.UTMZone;
+    end;
+
+    if (What = cgUTM) or (What = cgSpecifyUTM) then begin
+       WGS84DatumConstants.DefineDatumFromUTMZone('WGS84',NewHeader.UTMZone,NewHeader.LatHemi,'CreateGridToMatchMap');
+       //DEMGlb[DEM].DEMBoundBoxUTM;
+      // MapDraw.MapCorners.BoundBoxUTM := MapDraw.GetBoundBoxUTM;
+       {$IfDef RecordNewMaps} WriteLineToDebugFile('Make UTM for  limits: ' +  sfBoundBoxToString(MapDraw.MapCorners.BoundBoxUTM,4)); {$EndIf}
+       if (What = cgSpecifyUTM) then begin
+          PickUTMZone(NewHeader.UTMzone);
+       end;
+        if (SpacingX < 0) then begin
+           NewHeader.DEMxSpacing := MDDef.PreferUTMSpace;
+           ReadDefault('Data spacing (m) for new grid',NewHeader.DEMxSpacing);
+        end
+        else NewHeader.DEMxSpacing := SpacingX;
+        if SpacingY < 0 then NewHeader.DEMySpacing := NewHeader.DEMxSpacing
+        else NewHeader.DEMySpacing := SpacingY;
+        NewHeader.DEMSWCornerX := trunc(DEMGlb[DEM].DEMBoundBoxUTM.XMin / NewHeader.DEMxSpacing) * NewHeader.DEMxSpacing;
+        NewHeader.DEMSWCornerY := trunc(DEMGlb[DEM].DEMBoundBoxUTM.YMin / NewHeader.DEMySpacing) * NewHeader.DEMySpacing;
+        NewHeader.NumCol := round((DEMGlb[DEM].DEMBoundBoxUTM.XMax - DEMGlb[DEM].DEMBoundBoxUTM.XMin) / NewHeader.DEMxSpacing);
+        NewHeader.NumRow := round((DEMGlb[DEM].DEMBoundBoxUTM.YMax - DEMGlb[DEM].DEMBoundBoxUTM.YMin) / NewHeader.DEMySpacing);
+        if (not (NewHeader.NumRow <= MaxElevArraySize) and (NewHeader.NumCol <= DEMDefs.MaxColsInRAM)) then begin
+           MessageToContinue('Grid spacing would require ' + IntToStr(NewHeader.NumCol) + 'x' + IntToStr(NewHeader.NumRow) + '  increase grid spacing or decrease grid extent');
+           exit;
+        end;
+        NewName := 'UTM projection zone ' + IntToStr(NewHeader.UTMzone) + NewHeader.LatHemi;
+    end
+    else if (What = cgLatLong) then begin
+        if (SpacingX < 0) then begin
+           NewHeader.DEMxSpacing := MDDef.PreferArcSecSpace;
+           ReadDefault('Data spacing (arc sec)',NewHeader.DEMxSpacing);
+        end
+        else NewHeader.DEMxSpacing := SpacingX;
+        if SpacingY < 0 then NewHeader.DEMySpacing := NewHeader.DEMxSpacing
+        else NewHeader.DEMySpacing := SpacingY;
+
+        NewHeader.DEMySpacing := NewHeader.DEMySpacing / 3600;
+        NewHeader.DEMxSpacing := NewHeader.DEMxSpacing / 3600;
+        NewHeader.DEMSWCornerX := trunc(DEMGlb[DEM].DEMBoundBoxGeo.xmin / NewHeader.DEMxSpacing) * NewHeader.DEMxSpacing;
+        NewHeader.DEMSWCornerY := trunc(DEMGlb[DEM].DEMBoundBoxGeo.ymin / NewHeader.DEMySpacing) * NewHeader.DEMySpacing;
+        NewHeader.NumCol := round((DEMGlb[DEM].DEMBoundBoxGeo.xmax - NewHeader.DEMSWCornerX) / NewHeader.DEMxSpacing);
+        NewHeader.NumRow := round((DEMGlb[DEM].DEMBoundBoxGeo.ymax - NewHeader.DEMSWCornerY) / NewHeader.DEMySpacing);
+        if not (NewHeader.NumRow <= MaxElevArraySize) and (NewHeader.NumCol <= DEMDefs.MaxColsInRAM) then begin
+           MessageToContinue(ImpGridIncSpace + ' would require ' + IntToStr(NewHeader.NumCol) + 'x' + IntToStr(NewHeader.NumRow));
+           exit;
+        end;
+       NewName := 'geographic coordinates';
+    end
+    else if (What = cgWKT) then begin
+       Result := 0;
+       MessageToContinue('WKT option not allowed here');
+       exit;
+(*
+       fName := MDDef.WKTLidarProj;
+       Projection := tMapProjection.Create;
+       Projection.InitializeProjectionFromWKT(fName);
+       NewHeader.WKTString := Projection.WKTString;
+
+       {$IfDef RecordNewWKT} WriteLineToDebugFile(''); Projection.ProjectionParamsToDebugFile('Projection initialized',true); {$EndIf}
+
+       if (SpacingX < 0) then begin
+          ReadDefault('Data spacing (projected meters) for new grid', MDDef.PreferWKTSpace);
+          NewHeader.DEMxSpacing := MDDef.PreferWKTSpace;
+       end
+       else NewHeader.DEMxSpacing := SpacingX;
+       if (SpacingY < 0) then NewHeader.DEMySpacing := NewHeader.DEMxSpacing
+       else NewHeader.DEMySpacing := SpacingY;
+
+       Perimeter := MapDraw.MapPerimeter;
+       xmin := 99e39;
+       xmax := -99e39;
+       ymin := 99e39;
+       ymax := -99e39;
+       while not GISDB[Perimeter].MyData.eof do begin
+           if GISDB[Perimeter].ValidLatLongFromTable(Lat,Long) then begin
+              Projection.ForwardProjectDegrees(Lat,Long,x,y);
+              {$IfDef RecordNewWKTFull} WriteLineToDebugFile(LatLongDegreeToString(Lat,Long) + RealToString(x,15,2)  + RealToString(y,15,2)); {$EndIf}
+              Petmath.CompareValueToExtremes(x,xmin,xmax);
+              Petmath.CompareValueToExtremes(y,ymin,ymax);
+           end;
+           GISDB[Perimeter].MyData.Next;
+       end;
+       CloseAndNilNumberedDB(Perimeter);
+
+       {$IfDef RecordNewWKT}
+          Projection.InverseProjectDegrees(xmin,ymin,Lat,Long);
+          Projection.ForwardProjectDegrees(Lat,Long,xmin,ymin);
+          WriteLineToDebugFile('SW corner:  ' + LatLongDegreeToString(Lat,Long) + RealToString(xmin,15,2)  + RealToString(ymin,15,2));
+          WriteLineToDebugFile('x range=:  ' + RealToString(xmin,-15,2) + ' to ' + RealToString(xmax,-15,2) + '  yrange=' + RealToString(ymin,-15,2) + ' to '  + RealToString(ymax,-15,2));
+          WriteLineToDebugFile('NewHeader.WKTString=' + NewHeader.WKTString);
+       {$EndIf}
+
+       NewHeader.DEMUsed := WKTDEM;
+       NewHeader.DEMSWCornerX := trunc(xmin / NewHeader.DEMxSpacing) * NewHeader.DEMxSpacing;
+       NewHeader.DEMSWCornerY := trunc(ymin / NewHeader.DEMySpacing) * NewHeader.DEMySpacing;
+       NewHeader.NumCol := round((xmax-xmin) / NewHeader.DEMxSpacing);
+       NewHeader.NumRow := round((ymax-ymin) / NewHeader.DEMxSpacing);
+       Projection.Destroy;
+       NewName := ExtractFileName(fName);
+*)
+    end;
+
+    {$IfDef RecordNewMaps} WriteLineToDebugFile('Variables set DEM size: ' + IntToStr(NewHeader.NumCol) + 'x' + IntToStr(NewHeader.NumRow) + '  ' + NewHeader.WKTString); {$EndIf}
+    OpenAndZeroNewDEM(false,NewHeader,Result,'Grid with ' + NewName, InitDEMmissing);
+    {$IfDef RecordNewMaps} WriteLineToDebugFile('OpenAndZeroNewDEM done, DEM=' + IntToStr(Result) + '  Projection ' + DEMGlb[Result].DEMMapProjection.GetProjectionName); {$EndIf}
+
+    if OpenMap then begin
+       DEMGlb[Result].SetUpMap(Result,false,MDDef.DefDEMMap);
+       {$IfDef RecordNewMaps} WriteLineToDebugFile('TMapForm.CreateGridToMatchMap out ' + DEMGlb[Result].SelectionMap.MapDraw.PrimMapProj.KeyDatumParams); {$EndIf}
+    end;
+   {$IfDef RecordNewMaps} WriteLineToDebugFile('TMapForm.CreateGridToMatchMap out ' + DEMGlb[Result].FullDEMParams); {$EndIf}
+end;
+
+
+
+
 function tDEMDataSet.ResampleByAveraging(OpenMap : boolean; SaveCountGrid : boolean = true; SaveName : PathStr = '') : integer;
 var
    NewGrid,CountGrid,x,y,xi,yi : integer;
@@ -210,6 +313,8 @@ var
    z,z1,avgz : float32;
    NewHeadRecs : tDEMheader;
    NewAreaName : shortstring;
+   UTMzone : integer;
+   LatCh : ANSIchar;
 
    {$If Defined(RecordCreateNewDEMSWCorner)}
       procedure RecordSWCorner(What : shortstring);
@@ -223,12 +328,26 @@ var
 
 begin
    {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResample)} writeLineToDebugFile('tDEMDataSet.ResampleByAveraging in, ' + AreaName + '  ' + KeyDEMParams); {$EndIf}
+(*
    if (SelectionMap = nil) then CreateDEMSelectionMap(ThisDEM);
-
    NewGrid := SelectionMap.MakeTempGrid;
    {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResample)} WriteLineToDebugFile('ResampleByAveraging ' + DEMGlb[NewGrid].AreaName + '  ' + DEMGlb[NewGrid].KeyDEMParams); {$EndIf}
    NewHeadRecs := DEMGlb[NewGrid].DEMheader;
    CloseSingleDEM(NewGrid);
+*)
+
+    UTMzone := DEMMapProj.projUTMZone;
+    LatCh := DEMMapProj.LatHemi;
+    WGS84DatumConstants.DefineDatumFromUTMZone('WGS84',UTMZone,LatCh,'');
+    if (MDDef.LidarGridProjection = UTMBasedDEM) then begin
+       NewGrid := CreateGridToMatchDEM(ThisDEM,cgUTM,OpenMap,FloatingPointDEM,MDDef.DefLidarXGridSize,MDDef.DefLidarYGridSize,UTMZone,MDDef.LasDEMPixelIs);
+    end
+    else if (MDDef.LidarGridProjection = ArcSecDEM) then begin
+       NewGrid := CreateGridToMatchDEM(ThisDEM,cgLatLong,OpenMap,FloatingPointDEM,MDDef.DefLidarGeoGridSizeX,MDDef.DefLidarGeoGridSizeY,UTMZone,MDDef.LasDEMPixelIs);
+    end;
+   {$IfDef RecordMakeGrid} WriteLineToDebugFile('MakeTempGrid out, TempDEM=' + IntToStr(Result) + ' ' + DEMGlb[Result].GridDefinition + ' ' + DEMGlb[Result].DEMSizeString + ' ' + DEMGlb[Result].ColsRowsString); {$EndIf}
+
+
    if (SaveName = '') then NewAreaName := AreaName
    else NewAreaName := ExtractFileNameNoExt(SaveName);
 
@@ -284,14 +403,8 @@ begin
        for y := 0 to pred(DEMGlb[Result].DEMHeader.NumRow) do begin
           if DEMGlb[CountGrid].GetElevMetersOnGrid(x,y,z) and (z > 0) and DEMGlb[Result].GetElevMetersOnGrid(x,y,z1) then begin
              avgz := z1/z;
-             (*
-             if (avgz < DEMHeader.MinElev) then begin
-                WriteLineToDebugFile('x=' + IntToStr(x) + '  y=' + IntToStr(y) + ' z=' + RealToString(avgz,-8,-1));
-             end;
-             *)
              DEMGlb[Result].SetGridElevation(x,y,avgz);
           end
-
           else begin
              DEMGlb[Result].SetGridMissing(x,y);
           end;
@@ -299,7 +412,6 @@ begin
    end;
 
    if (SaveName <> '') then begin
-      //SaveName := ChangeFileExt(SaveName,'.dem');
       {$If Defined(RecordDEMIXResample)} WriteLineToDebugFile('tDEMDataSet.ResampleByAveraging save=' + SaveName); {$EndIf}
       DEMGlb[Result].WriteNewFormatDEM(SaveName);
       {$IfDef RecordSaveAverageResampleDEMformat} SaveName := ChangeFileExt(SaveName,'.dem'); DEMGlb[Result].WriteNewFormatDEM(SaveName); {$EndIf}

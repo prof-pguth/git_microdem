@@ -4,7 +4,7 @@ unit DataBaseCreate;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -193,7 +193,7 @@ type
       ft : TFieldType;
       Length,Decimals : int32;
    end;
-   tFieldsToAdd = array[1..MaxFieldsToAdd] of tSingleFieldToAdd;
+   tFieldsToAdd = array[0..MaxFieldsToAdd] of tSingleFieldToAdd;
 
 type
    tCreateDataBase = class
@@ -881,7 +881,7 @@ procedure tCreateDataBase.AddCorrectRecordFromStringList(TheData: tStringList);
           for i := 0 to pred(TheData.Count) do begin
              TStr := ptTrim(TheData.Strings[i]);
              FixFieldValue(ftstring, -99,TStr);
-             {$IfDef RecordCreateDBProblemsFull} WriteLineToDebugFile(NewDB.GetFieldName(i) + '=' + TStr); {$EndIf}
+             {$IfDef RecordCreateDBProblemsFull} WriteLineToDebugFile(NewDBF.GetFieldName(i) + '=' + TStr); {$EndIf}
              NewDBF.SetFieldByNameAsString(NewDBF.GetFieldName(i),TStr);
           end;
           NewDBF.Post;

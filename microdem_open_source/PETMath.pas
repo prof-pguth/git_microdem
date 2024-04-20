@@ -226,8 +226,8 @@ procedure SwapPair(var v1,v2 : float64); overload;
 procedure SwapPair32(var v1,v2 : float32);
 procedure SwapPair(var v1,v2 : integer); overload;
 procedure CompareValueToExtremes(value : float64; var MinV,MaxV : float64);  inline; overload;
-procedure CompareValueToExtremes(value : integer; var MinV,MaxV : integer);  inline; overload;
 procedure CompareValueToExtremes(value : float32; var MinV,MaxV : float32);  inline; overload;
+procedure CompareValueToExtremes(value : integer; var MinV,MaxV : integer);  inline; overload;
 
 procedure ValueInRange(var n : integer; Min,Max : integer); inline; overload;
 procedure ValueInRange(var n : float64; Min,Max : float64); inline; overload;
@@ -310,7 +310,7 @@ end;
 
 
 (*
-// bing results: I can try to write a pascal program for bicubic interpolation, but I cannot guarantee that it will be correct or efficient. Here is what I came up with based on some online sources²³:
+// bing results: I can try to write a pascal program for bicubic interpolation, but I cannot guarantee that it will be correct or efficient. Here is what I came up with based on some online sourcesÂ²Â³:
 
 //bard would only do bilinear
 //ChatGPT had a mismatch in the number of parameters in the function and in the call, and the meaning

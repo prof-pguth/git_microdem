@@ -3465,7 +3465,7 @@ object wmdem: Twmdem
       end
     end
     object MergeSSIMFUV1: TMenuItem
-      Caption = 'Merge SSIM-FUV'
+      Caption = 'Merge SSIM-FUV evaluations'
       OnClick = MergeSSIMFUV1Click
     end
     object N48: TMenuItem
@@ -3501,6 +3501,10 @@ object wmdem: Twmdem
         OnClick = Channelnetworkmisspercentagesbytile1Click
       end
     end
+    object Mergechannelnetworkevaluations1: TMenuItem
+      Caption = 'Merge channel network evaluations'
+      OnClick = Mergechannelnetworkevaluations1Click
+    end
     object Channelnetworkcomparison1: TMenuItem
       Caption = 'Channel network map  comparison (currently hard wired)'
     end
@@ -3519,7 +3523,7 @@ object wmdem: Twmdem
       end
     end
     object Partialprocessing1: TMenuItem
-      Caption = 'Partial processing'
+      Caption = 'Partial processing reference DTMs'
       OnClick = Partialprocessing1Click
       object DatumshiftCanadianDEMs1: TMenuItem
         Caption = 'Datum shift DEMs via GDAL to EGM2088 WGS UTM'
@@ -3531,7 +3535,14 @@ object wmdem: Twmdem
       end
       object MergeCanadianLidar1: TMenuItem
         Caption = 'Merge 1 sec Reference DEMs'
-        OnClick = MergeCanadianLidar1Click
+        object Overwirte4: TMenuItem
+          Caption = 'Overwrite'
+          OnClick = Overwirte4Click
+        end
+        object Skiipifpresent1: TMenuItem
+          Caption = 'Skip if present'
+          OnClick = Skiipifpresent1Click
+        end
       end
     end
     object N49: TMenuItem
@@ -3591,7 +3602,6 @@ object wmdem: Twmdem
     object DEMIXmergeCSVfiles1: TMenuItem
       Caption = 'Merge and transpose DEMIX-classic CSV files by area'
       Enabled = False
-      OnClick = DEMIXmergeCSVfiles1Click
       object Overwrite1: TMenuItem
         Caption = 'Overwrite'
         OnClick = Overwrite1Click
@@ -3658,6 +3668,10 @@ object wmdem: Twmdem
       object InventoryDeltaDTMbytestarea1: TMenuItem
         Caption = 'Inventory Delta DTM by test area'
         OnClick = InventoryDeltaDTMbytestarea1Click
+      end
+      object DEMIXtilesperareaandcoastalsubset1: TMenuItem
+        Caption = 'DEMIX tiles per area and coastal subset'
+        OnClick = DEMIXtilesperareaandcoastalsubset1Click
       end
       object N47: TMenuItem
         Caption = '-'
@@ -3838,6 +3852,10 @@ object wmdem: Twmdem
     end
     object N28: TMenuItem
       Caption = '-'
+    end
+    object Changemode1: TMenuItem
+      Caption = 'Change mode'
+      OnClick = Changemode1Click
     end
     object DEMIXhelp1: TMenuItem
       Caption = 'DEMIX help'

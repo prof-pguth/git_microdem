@@ -1,4 +1,4 @@
-{$F+}
+﻿{$F+}
 
 unit petmar_types;
 
@@ -56,7 +56,8 @@ uses
    Math,Db,Classes,StrUtils;
 
 const
-   {$IF (CompilerVersion >= 36) and (CompilerVersion < 37)} DelphiCompiler = '12 '; {$EndIf}
+   {$IF (CompilerVersion = 36) and System.RTLVersion121} DelphiCompiler = '12.1 Athens'; {$EndIf}
+   {$IF (CompilerVersion = 36) and (not System.RTLVersion121)} DelphiCompiler = '12.0 Delphi'; {$EndIf}
    {$IF (CompilerVersion >= 35) and (CompilerVersion < 36)} DelphiCompiler = '11 Alexandria'; {$EndIf}
    {$IF (CompilerVersion >= 34) and (CompilerVersion < 35)} DelphiCompiler = '10.4 Sydney'; {$EndIf}
    {$IF (CompilerVersion >= 33) and (CompilerVersion < 34)} DelphiCompiler = '10.3 Rio'; {$EndIf}
@@ -209,7 +210,7 @@ const
       ElevColors : tColorArray = (clNavy,clBlue,clDkGray,clSilver,clFuchsia,clPurple,clAqua,clTeal,clGreen,clLime,clYellow,clOlive,clRed,clMaroon,ClWhite,clBlack);
    {$EndIf}
 
-   DegSym = '�';
+   DegSym = #248;  //'°';
    MaskBit     : array[0..7] of byte = (128,64,32,16,8,4,2,1);
    ReverseMask : array[0..7] of byte = (127,191,223,239,247,251,253,254);
    MaxContoursPerGrid = 25;

@@ -2432,6 +2432,9 @@ var
    procedure DEMIXSettings;
    begin
       with MDIniFile,MDDef do begin
+         AParameter('DEMIX','DEMIX_mode',DEMIX_Mode,dmNotYetDefined);
+         AParameter('DEMIX','DEMIX_high',DEMIX_highlat,true);
+
          AParameter('DEMIX','DEMIX_criterion_tolerance_fName',DEMIX_criterion_tolerance_fName,'');
          AParameter('DEMIX','DEMIX_base_dir',DEMIX_base_dir,'');
          AParameter('DEMIX','DEMIX_default_area',DEMIX_default_area,'');
@@ -2458,12 +2461,16 @@ var
          AParameter('DEMIX','RGBbestSeparates',RGBbestSeparates,true);
          AParameter('DEMIX','DEMIX_default_half_sec_ref',DEMIX_default_half_sec_ref,false);
          AParameter('DEMIX','DEMIX_open_ref_DEM',DEMIX_open_ref_DSM,true);
-         AParameter('DEMIX','DEMIX_Full',DEMIX_Full,100);
+         AParameter('DEMIX','DEMIX_Full_all',DEMIX_Full_all,75);
+         AParameter('DEMIX','DEMIX_Full_U120',DEMIX_Full_all,75);
+         AParameter('DEMIX','DEMIX_Full_U80',DEMIX_Full_all,75);
+         AParameter('DEMIX','DEMIX_Full_U10',DEMIX_Full_all,50);
          AParameter('DEMIX','LoadRefDEMMaps',LoadRefDEMMaps,true);
          AParameter('DEMIX','LoadTestDEMMaps',LoadTestDEMMaps,true);
          AParameter('DEMIX','LoadRefDEMs',LoadRefDEMs,true);
          AParameter('DEMIX','LoadTestDEMs',LoadTestDEMs,true);
-
+         AParameter('DEMIX','OpenMapsFUVSSIM',OpenMapsFUVSSIM,false);
+         AParameter('DEMIX','DEMIX_graph_Retired_DEMs',DEMIX_graph_Retired_DEMs,false);
          AParameter('DEMIX','SSIM_elev',SSIM_elev,true);
          AParameter('DEMIX','SSIM_slope',SSIM_slope,true);
          AParameter('DEMIX','SSIM_ruff',SSIM_ruff,true);

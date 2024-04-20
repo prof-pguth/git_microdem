@@ -1375,7 +1375,7 @@ begin
    {$EndIf}
 
    UserInputName := false;
-
+   //StripInvalidPathNameChars(SaveName);
    {$IfDef VCL}
       if (SaveName = '') or PathIsValid(SaveName) then begin
          if (ImageDir = MDtempDir) then ImageDir := MainMapData + 'images\';
@@ -1994,6 +1994,9 @@ finalization
 
    {$IfDef MessageShutdownUnitProblems} MessageToContinue('Closing petimage'); {$EndIf}
 end.
+
+
+
 
 
 

@@ -291,7 +291,6 @@ procedure RandomizeStringList(var TheList : tStringList; SpareFirst : boolean = 
 procedure RemoveFilesThatDoNotHaveString(var Files : tStringList; What : shortstring);
 procedure RemoveFilesThatDoHaveString(var Files : tStringList; What : shortstring);
 
-
 function GetFromRequest(InString : ANSIstring; WantField : shortstring) : shortstring;
 function GetFloatFromRequest(InString : ANSIstring; WantField : shortstring) : float64;
 function GetIntegerFromRequest(InString : ANSIstring; WantField : shortstring) : integer;
@@ -4263,7 +4262,7 @@ procedure UpdateProgressBar(HowFar : float64);
 begin
    {$IfDef VCL}
       if WantShowProgress and (PETProgF <> Nil) and (not Math.IsNAN(HowFar)) and (not Math.IsInfinite(HowFar)) then begin
-         ApplicationProcessMessages;
+         //ApplicationProcessMessages;
          PetProgF.Gauge1.Progress := round(100.0 * HowFar);
          if HeavyDutyProcessing then begin
             PetProgF.Top := 10;

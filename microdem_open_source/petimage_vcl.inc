@@ -164,11 +164,9 @@ end;
       {$IfDef ExTiff}
       {$Else}
          if ExtEquals(Ext, '.tif') or ExtEquals(Ext, '.tiff') then begin
-            //MapProj := Nil;
             TiffImage := tTIFFImage.CreateGeotiff(false,true,FName,Success);
             Result := TiffImage.DisplayInBitmap;
             TiffImage.Destroy;
-            //FreeAndNil(MapProj);
             exit;
          end;
       {$EndIf}

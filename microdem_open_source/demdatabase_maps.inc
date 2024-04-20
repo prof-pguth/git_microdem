@@ -58,8 +58,6 @@ begin
      TheMapOwner.DoCompleteMapRedraw;
   end
   else begin
-     //xf := MDDef.LatLongCushion;
-     //extra := xf * (XMax - xmin);
      TheMapOwner.SubsetAndZoomMapFromGeographicBounds(dbBoundBox);
   end;
 end;
@@ -789,10 +787,7 @@ end;
                    else begin
                       Bitmap.Canvas.Pen.Color := ConvertPlatFormColorToTColor(dbOpts.LineColor);
                    end;
-                   {$IfDef ExRedistrict}
-                   {$Else}
-                      if Redistricting then SetRedistrictPattern(Bitmap);
-                   {$EndIf}
+                   {$IfDef ExRedistrict} {$Else} if Redistricting then SetRedistrictPattern(Bitmap); {$EndIf}
                    DisplayCurrentRecordOnMap(TheMapOwner.MapDraw,Bitmap);
                    MyData.Next;
                    if WantOut then break;
@@ -924,10 +919,6 @@ end;
 
 
             procedure TGISdataBaseModule.GISProportionalSymbols(dbShow : byte);
-            //var
-               //i : integer;
-               //ShortName : ShortString;
-               //UseLink : boolean;
 
                   procedure FillComboBoxes;
                   var
@@ -972,7 +963,6 @@ end;
                      end;
                      FreeAndNil(FieldsInDB);
                   end;
-
 
             begin
                {$If Defined(RecordSym) or Defined(RecordDBPlot)} WriteLineToDebugFile('GISProportionalSymbols in, dbOpts.dbAutoShow=' + IntToStr(dbShow)); {$EndIf}
@@ -1223,8 +1213,3 @@ end;
                Bitmap.Canvas.Brush.Style := bsSolid;
                aShapeFile.PlotSingleRecordMap(NewMap.MapDraw,Bitmap,MyData.RecNo);
             end;
-
-
-
-
-

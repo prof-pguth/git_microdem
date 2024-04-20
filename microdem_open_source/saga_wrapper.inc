@@ -51,11 +51,12 @@ ta_channels "Channel Network" -ELEVATION "C:/Users/pguth/AppData/Local/Temp/proc
        {$IfDef RecordSAGA} WriteLineToDebugFile('SAGAMap in, cmd= ' + CMD); {$EndIf}
        WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
        if (OutName <> '') then begin
-            {$IfDef RecordSAGA} WriteLineToDebugFile('SAGAMap opening map'); {$EndIf}
+            {$IfDef RecordSAGA} WriteLineToDebugFile('SAGAMap opening map ' + OutName); {$EndIf}
             Result := OpenNewDEM(OutName,OpenMap);
             if ValidDEM(Result) and OpenMap then begin
                DEMGlb[Result].DEMheader.ElevUnits := zUnits;
                CreateDEMSelectionMap(Result,true,true,mtElevSpectrum);
+               UpdateMenusForAllMaps;
             end;
        end;
        {$IfDef RecordSAGA} WriteLineToDebugFile('SAGAMap out, grid=' + IntToStr(Result)); {$EndIf}
@@ -92,7 +93,7 @@ begin
          ' -AREA ' + AreaName +
          ' -LS ' + OutName;
    Result := SAGAMap(cmd,OutName,euUndefined,OpenMap);
-   {$If Defined(RecordSAGA) or Defined(RecordSAGAresult)} WriteLineToDebugFile(ExtractFileNameNoExt(InName) + '  SAGA_LSFactor out=' + IntToStr(Result)); {$EndIf}
+   {$If Defined(RecordSAGA) or Defined(RecordSAGA_JustResult)} WriteLineToDebugFile(ExtractFileNameNoExt(InName) + '  SAGA_LSFactor out=' + IntToStr(Result)); {$EndIf}
 end;
 
 
@@ -122,15 +123,13 @@ function SAGA_WatershedBasinsWangLiu(InName : PathStr) : integer;
        FilledGrid      := MDTempDir + 'saga_wang_liu_filled_grid_' + ExtractFileNameNoExt(InName) + '.tif';
        FlowDirections  := MDTempDir + 'saga_wang_liu_flow_dir_' + ExtractFileNameNoExt(InName) + '.tif';
        WaterShedBasins := MDTempDir + 'saga_wang_liu_watershed_' + ExtractFileNameNoExt(InName) + '.tif';
-       //if not FileExists(ChannelName) then begin
-          CMD := MDDef.SagaCMD + ' ta_preprocessor 4' +
-               ' -ELEV ' + inName +
-               ' -FILLED ' + FilledGrid +
-               ' -FDIR ' + FlowDirections +
-               ' -WSHED ' + WaterShedBasins;
-          WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
-          {$IfDef RecordSAGAFull} WriteLineToDebugFile('SagaWatershedBasinsWangLiu out'); {$EndIf}
-       //end;
+       CMD := MDDef.SagaCMD + ' ta_preprocessor 4' +
+            ' -ELEV ' + inName +
+            ' -FILLED ' + FilledGrid +
+            ' -FDIR ' + FlowDirections +
+            ' -WSHED ' + WaterShedBasins;
+       WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
+       {$IfDef RecordSAGAFull} WriteLineToDebugFile('SagaWatershedBasinsWangLiu out'); {$EndIf}
        //Result := SAGAMap(cmd,InName,'',Undefined,false);
     end;
  end;
@@ -144,7 +143,7 @@ var
 begin
     if (OutName = '') then OutName := MDTempDir + 'saga_channel_' + ExtractFileNameNoExt(InName) + '.tif';
     CMD := MDDef.SagaCMD + ' ta_hydrology 13 -ELEVATION ' + inName + ' -CONTAMINATION ' + OutName;
-    Result := SAGAMap(cmd,{InName,}OutName,euUndefined,true);
+    Result := SAGAMap(cmd,OutName,euUndefined,true);
 end;
 
 
@@ -154,7 +153,7 @@ var
 begin
     if (OutName = '') then OutName := MDTempDir + 'saga_strahler_order_' + ExtractFileNameNoExt(InName) + '.tif';
     CMD := MDDef.SagaCMD + ' ta_channels 6 -DEM ' + inName + ' -STRAHLER ' + OutName;
-    Result := SAGAMap(cmd,{InName,}OutName,euUndefined,true);
+    Result := SAGAMap(cmd,OutName,euUndefined,true);
 end;
 
 
@@ -173,7 +172,7 @@ begin
                ' -ELEVATION ' + inName +
                ' -INIT_GRID ' + inName +
                ' -CHNLNTWRK ' + MDTempDir + 'saga_channel_network_' + ExtractFileNameNoExt(InName) + '.tif' +
-               ' -CHNLROUTE ' + MDTempDir + 'saga_channel_route_' + ExtractFileNameNoExt(InName) + '.tif' +
+               //' -CHNLROUTE ' + MDTempDir + 'saga_channel_route_' + ExtractFileNameNoExt(InName) + '.tif' +
                ' -SHAPES ' + ChannelName;
           WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
           {$IfDef RecordSAGAFull} WriteLineToDebugFile('SagaChannelShapefile in, ChannelName= ' + ChannelName); {$EndIf}
@@ -185,9 +184,9 @@ end;
 
 function SagaWatershedBasins(InName : PathStr; BasinGrid : PathStr = ''; ChannelNetwork : PathStr = ''; OutName : PathStr = '') : integer;
 //  https://hydrology.usu.edu/taudem/taudem5/help53/StreamReachAndWatershed.html
-   // issues with display of the grids in both QGIS and MD
-   // shapefiles work, but the basins produces way to many basins
 //  https://saga-gis.sourceforge.io/saga_tool_doc/8.2.1/ta_channels_1.html  --attempts to use this led to problems with the CHANNELS parameter, 1/31/2024
+   // issues with display of grids in both QGIS and MD
+   // shapefiles work, but basins produces way too many basins
  var
     cmd : shortstring;
     OrderName,BasinShape,SegmentName : PathStr;
@@ -213,15 +212,16 @@ function SagaWatershedBasins(InName : PathStr; BasinGrid : PathStr = ''; Channel
  end;
 
 
-    function SagaChannelNetwork(InName : PathStr; OutName : PathStr = ''; ShpName : PathStr = '') : integer;
+    function SagaChannelNetworkGrid(OpenMap : boolean; InName : PathStr; OutGridName : PathStr = '') : integer;
+    //https://saga-gis.sourceforge.io/saga_tool_doc/8.2.1/ta_channels_0.html
     var
        cmd : shortstring;
     begin
-       if (OutName = '') then OutName := MDTempDir + 'saga_channel_' + ExtractFileNameNoExt(InName) + '.tif';
-       if (ShpName = '') then ShpName := MDTempDir + 'saga_channel_' + ExtractFileNameNoExt(InName) + '.shp';
-       CMD := MDDef.SagaCMD + ' ta_channels "Channel Network" -ELEVATION ' + inName + ' -INIT_GRID ' + inName + ' -CHNLNTWRK ' + OutName;
-       Result := SAGAMap(cmd,{InName,}OutName,euUndefined,false);
-       Result := 0;
+       if (OutGridName = '') then OutGridName := MDTempDir + 'saga_channel_' + ExtractFileNameNoExt(InName) + '.tif';
+       //if (ShpName = '') then ShpName := MDTempDir + 'saga_channel_' + ExtractFileNameNoExt(InName) + '.shp';
+       CMD := MDDef.SagaCMD + ' ta_channels "Channel Network" -ELEVATION ' + inName + ' -INIT_GRID ' + inName + ' -CHNLNTWRK ' + OutGridName ;
+       Result := SAGAMap(cmd,OutGridName,euUndefined,OpenMap);
+       //Result := 0;
     end;
 
 

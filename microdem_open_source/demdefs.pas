@@ -116,6 +116,14 @@ const
     Linear_Foot_9002 = 9002;
     Linear_Foot_US_Survey_9003 = 9003;
 
+const
+   dmNotYetDefined = 0;
+   dmClassic = 1;
+   dmAddCoastal = 2;
+   dmAddDiluvium = 3;
+   dmAddDelta = 4;
+
+
 type
    tAllRefs = array[1..MaxBands] of integer;
    tElevColType  = array[0..MaxElevArraySize] of SmallInt;  {runs S->N}
@@ -1909,12 +1917,17 @@ type
       WBDeNoiseRadius,
       WBDenoiseElevDiff  : float32;
 
-      DEMIX_Full : byte;
+      DEMIX_Mode,
+      DEMIX_full_all,
+      DEMIX_full_U120,
+      DEMIX_full_U80,
+      DEMIX_full_U10 : byte;
       DEMIX_base_dir,
       DEMIX_criterion_tolerance_fName : PathStr;
       DEMIX_default_area,
       DEMIX_default_tile   : shortstring;
       DEMIX_overwrite_enabled,
+      DEMIX_highlat,
       DEMIX_default_half_sec_ref : boolean;
       DEMIXlegendFontSize,
       DEMIX_xsize,DEMIX_ysize : integer;
@@ -1925,14 +1938,14 @@ type
       MakeCOP_ALOS_Best_Map,
       MakeRGB_Best_Map,
       RGBbestSeparates,
-
-
+      OpenMapsFUVSSIM,
       DoSSIM,
       DoFUV,
       LoadRefDEMMaps,LoadTestDEMMaps,
       LoadRefDEMs,LoadTestDEMs,
       SSIM_elev,SSIM_slope,SSIM_ruff,SSIM_rri,SSIM_hill,SSIM_tpi,
       SSIM_flow,SSIM_LS,SSIM_Wet,SSIM_HAND,
+      DEMIX_graph_Retired_DEMs,
       DEMIXCompositeImage,
       DEMIX_DoCHM,
       DEMIX_DoAirOrDirt,

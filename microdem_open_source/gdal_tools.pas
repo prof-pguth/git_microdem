@@ -23,10 +23,10 @@ unit gdal_tools;
       //{$Define RecordGDALOpen}
       //{$Define RecordSubsetOpen}
       {$Define RecordDEMIX}
+      {$Define RecordDEMIXCompositeDatum}
       //{$Define RecordSubsetGDAL}
       //{$Define RecordGDALinfo}
       //{$Define RecordReformatCommand}
-      {$Define RecordDEMIXCompositeDatum}
       //{$Define RecordGDALOpen}
       //{$Define RecordUseOtherPrograms}
       //{$Define RecordSaveProblems}
@@ -406,7 +406,7 @@ procedure CallGDALMerge(var MergefName : PathStr; InNames : tStringList; Missing
 var
    BatchFile : tStringList;
    cmd : ANSIString;
-   i : integer;
+   //i : integer;
    DefFilter : byte;
    fName : PathStr;
 begin

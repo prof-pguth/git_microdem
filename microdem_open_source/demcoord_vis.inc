@@ -135,14 +135,11 @@ begin
    MaxViewPort := TanDeg(MaxViewPort);
    TargetCushionUp := W_TargetUp + 0.0001;
    veg_ht := 0;
-   {$IfDef RecordGetVisiblePoints} WriteLineToDebugFile('tDEMDataSet.GetVisiblePoints PointsPerRay=' + IntToStr(PointsPerRay));  {$EndIf}
+   {$IfDef RecordGetVisiblePoints} WriteLineToDebugFile('tDEMDataSet.GetVisiblePoints PointsPerRay=' + IntToStr(PointsPerRay)); {$EndIf}
    For PointOnRay := 1 to PointsPerRay do begin
       VisPoints[PointOnRay] := false;
       if GetElevMeters(xgrids[PointOnRay],ygrids[PointOnRay],elevs[PointOnRay]) then begin
-         {$IfDef ExVegDensity}
-         {$Else}
-            if (VegGrid[1] > 0) then DEMGlb[VegGrid[1]].GetJustVegHeight(xgrids[PointOnRay],ygrids[PointOnRay],veg_ht);
-         {$EndIf}
+         {$IfDef ExVegDensity} {$Else} if (VegGrid[1] > 0) then DEMGlb[VegGrid[1]].GetJustVegHeight(xgrids[PointOnRay],ygrids[PointOnRay],veg_ht); {$EndIf}
          if TargetTerrainHug then begin
             zt := elevs[PointOnRay] + W_TargetUp;
             AboveVeg := (TargetCushionUp > Veg_ht);
@@ -163,7 +160,7 @@ begin
       end;
       if (NewTanAngle > MaxTanAngle) and (Dists[PointOnRay] > MDDef.wf.ClosestBlockingDistance) then MaxTanAngle := NewTanAngle;
    end;
-   {$IfDef RecordGetVisiblePoints} if VisPoints[PointsPerRay] then TStr := 'visible' else TStr := 'masked';  WriteLineToDebugFile('tDEMDataSet.GetVisiblePoints, last pt= ' + tStr);  {$EndIf}
+   {$IfDef RecordGetVisiblePoints} if VisPoints[PointsPerRay] then TStr := 'visible' else TStr := 'masked';  WriteLineToDebugFile('tDEMDataSet.GetVisiblePoints, last pt= ' + tStr); {$EndIf}
 end;
 
 

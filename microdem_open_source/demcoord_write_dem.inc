@@ -118,10 +118,10 @@ procedure tDEMDataSet.WriteNewFormatDEM(Limits : tGridLimits; var FileName : Pat
                    'VertCSType=' + IntToStr(NewHeadRecs.VerticalCSTypeGeoKey) + #13 +
                    'pixel_is=' + IntToStr(NewHeadRecs.RasterPixelIsGeoKey1025) + #13 +
                    'wkt=' + NewHeadRecs.wktString + #13;
-          if (DEMMapProjection.GeoKeys.Code3075 <> 0) then begin
-             Result := Result + '3075=' + IntToStr(DEMMapProjection.GeoKeys.Code3075) + #13;
-             for I := 1 to DEMMapProjection.GeoKeys.NumKeys do
-                Result := Result + IntToStr(DEMMapProjection.GeoKeys.KeyCode[i]) + '=' + RealToString(DEMMapProjection.GeoKeys.KeyVal[i],-18,-8) + #13;
+          if (DEMMapProj.GeoKeys.Code3075 <> 0) then begin
+             Result := Result + '3075=' + IntToStr(DEMMapProj.GeoKeys.Code3075) + #13;
+             for I := 1 to DEMMapProj.GeoKeys.NumKeys do
+                Result := Result + IntToStr(DEMMapProj.GeoKeys.KeyCode[i]) + '=' + RealToString(DEMMapProj.GeoKeys.KeyVal[i],-18,-8) + #13;
           end;
           Result := Result + '*END' + #13;
       end;
@@ -390,7 +390,7 @@ begin
    MissingStr := RealToString(MDDef.GeotiffMissingValue,-12,-2) + #0;
    MissingSize := Length(MissingStr);
 
-   if (DEMheader.DEMUsed = UTMbasedDEM) or ((DEMMapProjection <> Nil) and (DEMMapProjection.PName = UK_OS)) then wfield := 1
+   if (DEMheader.DEMUsed = UTMbasedDEM) or ((DEMMapProj <> Nil) and (DEMMapProj.PName = UK_OS)) then wfield := 1
    else wField := 2;
    if (DEMheader.DEMPrecision = ByteDEM) then Missing := 255
    else Missing := MDDef.GeotiffMissingValue;
@@ -465,9 +465,9 @@ begin
    StreamWordFieldEntry(TIFFFile,1025,0,1,DEMheader.RasterPixelIsGeoKey1025); {1=RasterPixelIsArea, 2=RasterPixelIsPoint}
    StreamWordFieldEntry(TIFFFile,1026,34737,12,0);
 
-   if (DEMMapProjection <> Nil) and (DEMMapProjection.PName = UK_OS) then StreamWordFieldEntry(TIFFFile,3072,0,1,27700)
-   else if (DEMheader.DEMUsed = UTMbasedDEM) then StreamWordFieldEntry(TIFFFile,3072,0,1,GetUTMDatumCode(DEMMapProjection))
-   else StreamWordFieldEntry(TIFFFile,2048,0,1,GetGeoDatumCode(DEMMapProjection));
+   if (DEMMapProj <> Nil) and (DEMMapProj.PName = UK_OS) then StreamWordFieldEntry(TIFFFile,3072,0,1,27700)
+   else if (DEMheader.DEMUsed = UTMbasedDEM) then StreamWordFieldEntry(TIFFFile,3072,0,1,GetUTMDatumCode(DEMMapProj))
+   else StreamWordFieldEntry(TIFFFile,2048,0,1,GetGeoDatumCode(DEMMapProj));
 
    StreamWordFieldEntry(TIFFFile,4096,0,1,DEMheader.VerticalCSTypeGeoKey);
 
@@ -590,7 +590,7 @@ begin
                WGS84DatumConstants.ForwardProjectDegrees(Lat,Long,XUTM,YUTM);
                case ASCIIFormat of
                   UTMFormat  :  ZStr := RealToString(xutm,-15,-UTMDecimals) +  RealToString(yutm,-15,-UTMDecimals) + ',' + ZStr;
-                  MGRSFormat :  ZStr:= DEMMapProjection.CalculateMGRS(Xutm,Yutm,10) + ',' + ZStr;
+                  MGRSFormat :  ZStr:= DEMMapProj.CalculateMGRS(Xutm,Yutm,10) + ',' + ZStr;
                   GenerateFormat : ZStr := '1,'+ RealToString(xutm,-15,-UTMDecimals) + ',' + RealToString(yutm,-15,-UTMDecimals) + ',' + ZStr;
                   Recenter : ZStr := RealToString(xutm - xc,-12,-UTMDecimals) + ',' + RealToString(yutm - yc,-12,-UTMDecimals) + ',' + RealToString(z - zc,-12,ElevationDecimals);
                end {case};

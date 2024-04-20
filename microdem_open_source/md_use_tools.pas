@@ -15,9 +15,9 @@ unit md_use_tools;
 
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
-      //{$Define RecordWBT}
-      //{$Define RecordSAGA}
-      //{$Define RecordSAGAresult}
+      {$Define RecordWBT}
+      {$Define RecordSAGA}
+      //{$Define RecordSAGA_JustResult}
 
       //{$Define OpenLasTools}
       //{$Define RecordACOLITE}
@@ -106,8 +106,8 @@ uses
    procedure WBT_AspectMap(InName : PathStr);
    procedure WBT_MultiscaleRoughness(InName : PathStr);
    function WBT_breach_depression(InName : PathStr; var BreachName : PathStr) : integer;
-   function WBT_extract_streams(OpenMap : boolean; InName : PathStr; var StreamName : PathStr) : integer;
-   function WBT_ElevAboveStream(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
+   function WBT_extract_streams(OpenMap : boolean; InName : PathStr; var StreamName : PathStr; Threshhold : float32 = 100.0) : integer;
+   function WBT_ElevAboveStream(OpenMap : boolean; InName : PathStr; OutName : PathStr = ''; Threshhold : float32 = 100.0) : integer;
 {$EndIf}
 
 
@@ -118,7 +118,7 @@ uses
    function SagaTPIMap(InName : PathStr) : integer;
    function SagaVectorRuggednessMap(InName : PathStr; Radius : integer) : integer;
    function SagaSinkRemoval(InName : PathStr; OutName : PathStr = '') : integer;
-   function SagaChannelNetwork(InName : PathStr; OutName : PathStr = ''; ShpName : PathStr = '') : integer;
+   function SagaChannelNetworkGrid(OpenMap : boolean; InName : PathStr; OutGridName : PathStr = '') : integer;
    function SagaChannelShapefile(InName : PathStr; ChannelName : PathStr = '') : integer;
    function SAGAedgeContaminationMap(InName : PathStr; OutName : PathStr = '') : integer;
    function SagaWatershedBasins(InName : PathStr; BasinGrid : PathStr = ''; ChannelNetwork : PathStr = ''; OutName : PathStr = '') : integer;

@@ -49,7 +49,6 @@ var
       end;
    {$EndIf}
 
-
    {$IfDef AllowOddballDEMs}
       {$I ..\common_code\demcoord_read_odd_dems.inc}
    {$EndIf}
@@ -161,7 +160,7 @@ var
                    else begin
                        IntKey := StrToInt(Key);
                        KeyValue := StrToFloat(NextLine);
-                       DEMmapProjection.SetProjectionParameterFromGeotiffKey(IntKey,KeyValue);
+                       DEMMapProj.SetProjectionParameterFromGeotiffKey(IntKey,KeyValue);
                        MessageToContinue('Read MD format, key=' + IntToStr(IntKey) + '  value=' + RealToString(KeyValue,-12,-6));
                    end;
                    key := '';
@@ -176,7 +175,7 @@ var
           end;
 
           {$IfDef RecordReadMDDEM} if not DEMMergeInProgress then WriteLineToDebugFile('Read new DEM call DefineDEMvariables'); {$EndIf}
-          DEMMapProjection.InitializeProjectionFromDEMHeader(DEMHeader);
+          DEMMapProj.InitializeProjectionFromDEMHeader(DEMHeader);
           DefineDEMVariables(true);
           DEMheader.MaxElev := zInMeters(DEMheader.StoredMaxElev);
           DEMheader.MinElev := zInMeters(DEMheader.StoredMinElev);
@@ -409,6 +408,8 @@ begin
    DeleteMissingDataPoints;
    if (MDdef.AutoFillHoles) and (not DEMMergeInProgress) then InterpolateAcrossHoles(false);
    DefineDEMVariables(TransformToNewDatum);
+
+
    DEMstatus := dsSaved;
    {$If Defined(RecordUKOS)} DEMMapProjection.ShortProjInfo('Exit NewArea for ' + AreaName); {$EndIf}
    {$IfDef TrackPixelIs} WriteLineToDebugFile('tDEMDataSet.ReadDEMNow exit, ' + GridCornerModelAndPixelIsString); {$EndIf}
@@ -724,7 +725,7 @@ begin
       fName2 := ChangeFileExt(FileName,'.prj');
       if not FileExists(fName2) then fName2 := ChangeFileExt(FileName,'.wkt');
       if FileExists(fName2) then begin
-         DEMMapProjection.InitializeProjectionFromWKT(fName2);
+         DEMMapProj.InitializeProjectionFromWKT(fName2);
       end;
 
       assignFile(InputFile,FileName);
@@ -784,10 +785,10 @@ begin
       else if (abs(xBase) > 180) then begin
          fName2 := Dir + Name + '.prj';
          if FileExists(fName2) then begin
-            DEMMapProjection.InitializeProjectionFromWKT(fName2);
-            DEMMapProjection.DefineDatumFromUTMZone(DEMMapProjection.h_DatumCode,GetUTMZone(DEMMapProjection.Long0 / DegToRad),MDDef.DefaultLatHemi,'read dem 3');
+            DEMMapProj.InitializeProjectionFromWKT(fName2);
+            DEMMapProj.DefineDatumFromUTMZone(DEMMapProj.h_DatumCode,GetUTMZone(DEMMapProj.Long0 / DegToRad),MDDef.DefaultLatHemi,'read dem 3');
          end
-         else if not DEMMapProjection.CheckForAllInDirectoryWKT(Dir) then begin
+         else if not DEMMapProj.CheckForAllInDirectoryWKT(Dir) then begin
             DatCode := 'WGS84';
             Hemi := MDDef.DefaultLatHemi;
             if DEMMergeInProgress and SubsequentDEM then begin
@@ -809,7 +810,7 @@ begin
       else begin
          DEMheader.DEMUsed := ArcSecDEM;
          DEMheader.DataSpacing := SpaceDegrees;
-         WantedDEM.DEMMapProjection.PName := PlateCaree;
+         WantedDEM.DEMMapProj.PName := PlateCaree;
       end;
 
       DEMheader.DEMxSpacing := Spacing * RectSpacingFactor(DEMheader.DataSpacing);
@@ -940,7 +941,9 @@ function NewArea(TransformToNewDatum : boolean; var ImportingDEM : integer; DEMM
 var
    NumPts : int64;
 begin
-   {$If Defined(RecordReadDEM) or Defined(TimeLoadDEM) or Defined(BasicOpens)} if (TFile <> '') and not FileExists(TFile) then WriteLineToDebugFile('NewArea enter, missing File=' + TFile) else WriteLineToDebugFile('NewArea enter ' + tFile); {$EndIf}
+   {$If Defined(RecordReadDEM) or Defined(TimeLoadDEM) or Defined(BasicOpens)}
+      if (TFile <> '') and not FileExists(TFile) then WriteLineToDebugFile('NewArea enter, missing File=' + TFile) else WriteLineToDebugFile('NewArea enter ' + tFile);
+   {$EndIf}
    DEMStatsString := '';
    if not FileExists(TFile) then tFile := '';
 
@@ -981,6 +984,10 @@ begin
       WriteLineToDebugFile('exit ReadDEMNow, ' + DEMGlb[ImportingDEM].AreaName + ' ' +  DEMGlb[ImportingDEM].DEMMapProjection.h_DatumCode + ' ' +
         StringFromDatumCode(DEMGlb[ImportingDEM].DEMheader.DigitizeDatum));
    {$EndIf}
+
+   {$If Defined(TrackDEMboundingBox)} DEMGlb[ImportingDEM].TrackDEMBoundingBox('exit ReadDEMNow'); {$EndIf}
+
+
 end;
 
 

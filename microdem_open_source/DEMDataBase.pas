@@ -1782,8 +1782,8 @@ begin
    {$IfDef VCL}
       if (DBTablef <> Nil) then DBTablef.ShowStatus;
    {$EndIf}
-   ShowDefaultCursor;
    EmpSource.Enabled := true;
+   //ShowDefaultCursor;
    EndProgress;
 end;
 
@@ -2162,7 +2162,7 @@ end;
              else begin
                 dbOpts.LinkTableName := FileWanted;
                 //if MDDef.AllowMemoryLinkDB then DesiredDBMode := dbmCDS;
-                LinkTable := tMyData.Create(dbOpts.LinkTableName);   //,DesiredDBMode);
+                LinkTable := tMyData.Create(dbOpts.LinkTableName);
                 LinkTable.AssignEmpSource(LinkSource1);
                 DesiredDBMode := dbmyDefault;
                 {$IfDef RecordLinkTable}
@@ -2613,7 +2613,8 @@ end;
                dbTablef.Restrictbymapscale1.Visible := ItsTigerShapeFile or ItsOSMShapeFile;
                dbTablef.Restrictbymapscale1.Checked := MDDef.UsePixelSizeRules;
 
-               dbTablef.DEMIX1.Visible := MDDef.ShowDEMIX and ((MyData.FieldExists('COP') and MyData.FieldExists('ALOS')) or StrUtils.AnsiContainsText(dbName,'DEMIX'));
+               dbTablef.DEMIX1.Visible := MDDef.ShowDEMIX and ((MyData.FieldExists('COP') and MyData.FieldExists('ALOS'))
+                           or StrUtils.AnsiContainsText(dbName,'DEMIX') or MyData.FieldExists('DEMIX_TILE'));
                dbTablef.BitBtn24.Visible := dbTablef.DEMIX1.Visible;
 
                if MDDef.DBMinimizeOnOpen then dbTablef.WindowState := wsMinimized;

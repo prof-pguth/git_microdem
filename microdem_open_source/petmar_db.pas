@@ -142,8 +142,8 @@ type
        CheckDeletes,
        DBFmovedToRAM,
        FieldWidthIssues : boolean;
-       FullTableName,
-       TableName : PathStr;
+       FullTableName : PathStr;
+       TableName     : shortstring;
        RecsTaggedDeletion,
        FiltRecsInDB,
        TotRecsInDB : integer;
@@ -413,7 +413,7 @@ function tMyData.InsureFieldPresentAndAdded(ft : TFieldType; FieldName : ANSIStr
 
             {$IfDef RecordFullOpenDB}
                Output := GetTableStructure;
-               WriteLineToDebugFile('Structure after reopen for ' +  ExtractFileName(TableName) + '  recs=' + IntToStr(RecordCount));
+               WriteLineToDebugFile('Structure after reopen for ' +  TableName + '  recs=' + IntToStr(RecordCount));
                WriteStringListToDebugFile(Output);
                Output.Free;
             {$EndIf}
@@ -428,7 +428,7 @@ function tMyData.InsureFieldPresentAndAdded(ft : TFieldType; FieldName : ANSIStr
    begin
       {$IfDef UseFireDacSQLlite}
          if (dbMain <> Nil) then begin
-            aline := 'ALTER TABLE ' + ExtractFileNameNoExt(TableName) + ' ADD COLUMN ' + FieldName + ' ' + SQLTypeDefString(ft,FieldLength);
+            aline := 'ALTER TABLE ' + TableName + ' ADD COLUMN ' + FieldName + ' ' + SQLTypeDefString(ft,FieldLength);
             {$IfDef RecordFieldPresent} WriteLineToDebugFile('sql=' + aline); {$EndIf}
             dbMain.ExecSQL(aLine);
             if (fdTable <> Nil) then  begin
@@ -440,7 +440,7 @@ function tMyData.InsureFieldPresentAndAdded(ft : TFieldType; FieldName : ANSIStr
                dbMain := Nil;
             end;
             aLine := '';
-            OpenSQLLiteFiles(TableName,dbMain,fdTable,aLine);
+            OpenSQLLiteFiles(FullTableName,dbMain,fdTable,aLine);
          end;
       {$EndIf}
    end;
@@ -492,11 +492,11 @@ function tMyData.InsureFieldPresentAndAdded(ft : TFieldType; FieldName : ANSIStr
 begin
    FieldName := UpperCase(FieldName);
    if FieldExists(FieldName) then begin
-      {$IfDef RecordFieldPresent} WriteLineToDebugFile('InsureFieldPresentAndAdded, field already present ' + FieldName + ' in ' + ExtractFileName(TableName)); {$EndIf}
+      {$IfDef RecordFieldPresent} WriteLineToDebugFile('InsureFieldPresentAndAdded, field already present ' + FieldName + ' in ' + TableName); {$EndIf}
       Result := false;
    end
    else begin
-      {$IfDef RecordFieldPresent} WriteLineToDebugFile('InsureFieldPresentAndAdded, Must Add field ' + FieldName + ' to ' + ExtractFileName(TableName)); {$EndIf}
+      {$IfDef RecordFieldPresent} WriteLineToDebugFile('InsureFieldPresentAndAdded, Must Add field ' + FieldName + ' to ' + TableName); {$EndIf}
       FileChanged := true;
 
       CheckBDETable;
@@ -913,7 +913,7 @@ begin
    if (FName <> '') and FileExists(fName) then begin
        CheckFileNameForSpaces(fName);
        FullTableName := fName;
-       TableName := fName;
+       TableName := ExtractFileNameNoExt(fName);
 
        {$IfDef UseTCLientDataSet}
           if FileExtEquals(fName,'.xml') or FileExtEquals(fName,'.cds') then begin
@@ -2575,7 +2575,7 @@ var
    f2Name : ANSIString;
 begin
    if (fName = '') then begin
-      fName := TableName + '.xml';
+      fName := ChangeFileExt(FullTableName,'.xml');
       if not GetFileNameDefaultExt('xml database file','XML file|*.xml|Client data set|*.cds',fName) then exit;
    end;
    if FileExtEquals(fName, '.XML') then format := dfXML
@@ -2735,6 +2735,7 @@ finalization
    {$IfDef RecordSQLite} WriteLineToDebugFile('RecordSQLite active in petmar_db'); {$EndIf}
    {$IfDef TrackCDStiming} WriteLineToDebugFile('TrackCDStiming active in petmar_db'); {$EndIf}
 end.
+
 
 
 

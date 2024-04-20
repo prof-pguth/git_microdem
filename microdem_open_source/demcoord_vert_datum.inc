@@ -80,7 +80,7 @@ begin
       s_SRSstring := ' -s_srs EPSG:4326+5773';
       t_srsstring := ' -t_srs EPSG:4326+3855';
    end
-   else if (DEMGlb[DEM].DEMMapProjection.h_DatumCode = 'NAD83') then begin
+   else if (DEMGlb[DEM].DEMMapProj.h_DatumCode = 'NAD83') then begin
       //this goes from NAD83 NAVD88 to WGS84 EGM2008
       UTMZone := AddDayMonthLeadingZero(DEMGlb[DEM].DEMHeader.UTMzone);
       s_SRSstring := ' -s_srs EPSG:269' + UTMzone + '+5703';
@@ -94,7 +94,7 @@ begin
    end
    *)
    else begin
-      MessageToContinue('Not yet supported for ' + DEMGlb[DEM].DEMMapProjection.h_DatumCode);
+      MessageToContinue('Not yet supported for ' + DEMGlb[DEM].DEMMapProj.h_DatumCode);
       exit;
    end;
    CompositeDatumShiftWithGDAL(InName,SaveName,s_SRSstring,t_srsstring);

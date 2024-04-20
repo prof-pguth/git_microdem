@@ -3,7 +3,7 @@
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 {                                   }
 { include file for demmapdraw       }
@@ -14,11 +14,11 @@ procedure tMapDraw.BoundingBoxGeoToDataGrid;
 var
    bb : sfBoundBox;
 begin
-   if DEMMap then begin  //starts at the SW corner
+   if DEMMap then begin  //starts at SW corner
       LatLongDegreeToDataGrid(MapCorners.BoundBoxGeo.ymin,MapCorners.BoundBoxGeo.xmin,MapCorners.BoundBoxDataGrid.xmin,MapCorners.BoundBoxDataGrid.ymin);
       LatLongDegreeToDataGrid(MapCorners.BoundBoxGeo.ymax,MapCorners.BoundBoxGeo.xmax,MapCorners.BoundBoxDataGrid.xmax,MapCorners.BoundBoxDataGrid.ymax);
    end
-   else begin           //starts at the NW corner
+   else begin           //starts at NW corner
       LatLongDegreeToDataGrid(MapCorners.BoundBoxGeo.ymin,MapCorners.BoundBoxGeo.xmin,bb.xmin,bb.ymax);
       LatLongDegreeToDataGrid(MapCorners.BoundBoxGeo.ymax,MapCorners.BoundBoxGeo.xmax,bb.xmax,bb.ymin);
       MapCorners.BoundBoxDataGrid := bb;
@@ -36,11 +36,11 @@ end;
 
 procedure tMapDraw.BoundingBoxDataGridToGeo;
 begin
-   if DEMMap then begin  //starts at the SW corner
+   if DEMMap then begin  //starts at SW corner
       DataGridToLatLongDegree(MapCorners.BoundBoxDataGrid.xmin,MapCorners.BoundBoxDataGrid.ymin,MapCorners.BoundBoxGeo.ymin,MapCorners.BoundBoxGeo.xmin);
       DataGridToLatLongDegree(MapCorners.BoundBoxDataGrid.xmax,MapCorners.BoundBoxDataGrid.ymax,MapCorners.BoundBoxGeo.ymax,MapCorners.BoundBoxGeo.xmax);
    end
-   else begin           //starts at the NW corner
+   else begin           //starts at NW corner
       DataGridToLatLongDegree(MapCorners.BoundBoxDataGrid.xmin,MapCorners.BoundBoxDataGrid.ymax,MapCorners.BoundBoxGeo.ymin,MapCorners.BoundBoxGeo.xmin);
       DataGridToLatLongDegree(MapCorners.BoundBoxDataGrid.xmax,MapCorners.BoundBoxDataGrid.ymin,MapCorners.BoundBoxGeo.ymax,MapCorners.BoundBoxGeo.xmax);
    end;
@@ -48,11 +48,11 @@ end;
 
 procedure tMapDraw.BoundingBoxProjToDataGrid;
 begin
-   if DEMMap then begin  //starts at the SW corner
+   if DEMMap then begin  //starts at SW corner
       ProjectedCoordsToDataGrid(MapCorners.BoundBoxProj.xmin,MapCorners.BoundBoxProj.ymin,MapCorners.BoundBoxDataGrid.xmin,MapCorners.BoundBoxDataGrid.ymin);
       ProjectedCoordsToDataGrid(MapCorners.BoundBoxProj.xmax,MapCorners.BoundBoxProj.ymax,MapCorners.BoundBoxDataGrid.xmax,MapCorners.BoundBoxDataGrid.ymax);
    end
-   else begin           //starts at the NW corner
+   else begin           //starts at NW corner
       ProjectedCoordsToDataGrid(MapCorners.BoundBoxProj.xmin,MapCorners.BoundBoxProj.ymin,MapCorners.BoundBoxDataGrid.xmin,MapCorners.BoundBoxDataGrid.ymax);
       ProjectedCoordsToDataGrid(MapCorners.BoundBoxProj.xmax,MapCorners.BoundBoxProj.ymax,MapCorners.BoundBoxDataGrid.xmax,MapCorners.BoundBoxDataGrid.ymin);
    end;
@@ -62,11 +62,11 @@ end;
 
 procedure tMapDraw.BoundingBoxDataGridToProj;
 begin
-   if DEMMap then begin  //starts at the SW corner
+   if DEMMap then begin  //starts at SW corner
       DataGridToProjectedCoords(MapCorners.BoundBoxDataGrid.xmin,MapCorners.BoundBoxDataGrid.ymin,MapCorners.BoundBoxProj.xmin,MapCorners.BoundBoxProj.ymin);
       DataGridToProjectedCoords(MapCorners.BoundBoxDataGrid.xmax,MapCorners.BoundBoxDataGrid.ymax,MapCorners.BoundBoxProj.xmax,MapCorners.BoundBoxProj.ymax);
    end
-   else begin           //starts at the NW corner
+   else begin           //starts at NW corner
       DataGridToProjectedCoords(MapCorners.BoundBoxDataGrid.xmin,MapCorners.BoundBoxDataGrid.ymax,MapCorners.BoundBoxProj.xmin,MapCorners.BoundBoxProj.ymin);
       DataGridToProjectedCoords(MapCorners.BoundBoxDataGrid.xmax,MapCorners.BoundBoxDataGrid.ymin,MapCorners.BoundBoxProj.xmax,MapCorners.BoundBoxProj.ymax);
    end;
@@ -89,6 +89,7 @@ begin
       ScaleMapElevationsToDEM;
       MapCorners.BoundBoxDataGrid := DEMGlb[DEMonMap].DEMBoundBoxDataGrid;
       MapCorners.BoundBoxProj := DEMGlb[DEMonMap].DEMBoundBoxProjected;
+      MapCorners.BoundBoxGeo := DEMGlb[DEMonMap].DEMBoundBoxGeo;
       {$If Defined(RecordElevationScaling)} WriteLineToDebugFile('TMapDraw.SetFullMapCoverage final ' + MapZRangeString); {$EndIf}
    end;
    {$IfDef ExSat}
@@ -96,6 +97,7 @@ begin
       if ValidSatOnMap then begin
          MapCorners.BoundBoxDataGrid := SatImage[SatOnMap].SatelliteBoundBoxDataGrid(SatImage[SatOnMap].BandForSize);
          MapCorners.BoundBoxProj := SatImage[SatOnMap].SatelliteBoundBoxProj(SatImage[SatOnMap].BandForSize);
+         MapCorners.BoundBoxGeo := SatImage[SatOnMap].SatelliteBoundBoxGeo(SatImage[SatOnMap].BandForSize);
       end;
    {$EndIf}
    MapAspectCheck;
@@ -135,13 +137,19 @@ var
    D1,D2,Bear1,Bear2,Lat,Long : float64;
 begin
    if (BasicProjection = bpLatLong) then begin
-       {$If Defined(AspectCheck)} WriteLineToDebugFile('tMapDraw.GetMapAspectRatio in, geo box=' + sfBoundBoxToString(MapCorners.BoundBoxProj)); {$EndIf}
-       Long := MapCorners.BoundBoxProj.XMin + 0.5*(MapCorners.BoundBoxProj.XMax - MapCorners.BoundBoxProj.XMin);  //center of the map
-       Lat := MapCorners.BoundBoxProj.YMin + 0.5*(MapCorners.BoundBoxProj.YMax - MapCorners.BoundBoxProj.YMin);  //center of the map
-       VincentyCalculateDistanceBearing(Lat,Long,Lat,MapCorners.BoundBoxProj.XMax,D1,Bear1);
-       VincentyCalculateDistanceBearing(Lat,Long,MapCorners.BoundBoxProj.YMax,Long,D2,Bear2);
-       Result := D1/D2;
-       {$If Defined(AspectCheck)} WriteLineToDebugFile('tMapDraw.GetMapAspectRatio out, D1=' + RealToString(D1,-12,-2) + ' at=' + RealToString(Bear1,-8,1) + '  D2=' + RealToString(D2,-12,-2)+ ' at=' + RealToString(Bear2,-8,1)); {$EndIf}
+       if UseDistortedRawLatLongScaling then begin
+          Result := (MapCorners.BoundBoxProj.XMax-MapCorners.BoundBoxProj.XMin) / (MapCorners.BoundBoxProj.YMax-MapCorners.BoundBoxProj.YMin);
+       end
+       else begin
+         {$If Defined(AspectCheck)} WriteLineToDebugFile(BaseTitle + ' tMapDraw.GetMapAspectRatio in, geo box=' + sfBoundBoxToString(MapCorners.BoundBoxGeo)); {$EndIf}
+         {$If Defined(AspectCheck)} WriteLineToDebugFile(BaseTitle + ' tMapDraw.GetMapAspectRatio in, proj box=' + sfBoundBoxToString(MapCorners.BoundBoxProj)); {$EndIf}
+         Long := MapCorners.BoundBoxProj.XMin + 0.5*(MapCorners.BoundBoxProj.XMax - MapCorners.BoundBoxProj.XMin);  //center of the map
+         Lat := MapCorners.BoundBoxProj.YMin + 0.5*(MapCorners.BoundBoxProj.YMax - MapCorners.BoundBoxProj.YMin);  //center of the map
+         VincentyCalculateDistanceBearing(Lat,Long,Lat,MapCorners.BoundBoxProj.XMax,D1,Bear1);
+         VincentyCalculateDistanceBearing(Lat,Long,MapCorners.BoundBoxProj.YMax,Long,D2,Bear2);
+         Result := D1/D2;
+         {$If Defined(AspectCheck)} WriteLineToDebugFile('tMapDraw.GetMapAspectRatio D1=' + RealToString(D1,-12,-2) + ' at=' + RealToString(Bear1,-8,1) + '  D2=' + RealToString(D2,-12,-2)+ ' at=' + RealToString(Bear2,-8,1)); {$EndIf}
+       end;
    end
    else begin
       Result := (MapCorners.BoundBoxProj.XMax-MapCorners.BoundBoxProj.XMin) / (MapCorners.BoundBoxProj.YMax-MapCorners.BoundBoxProj.YMin);
@@ -161,7 +169,7 @@ var
       begin
          PrimMapProj.InverseProjectDegrees(MapCorners.BoundBoxProj.XMin,MapCorners.BoundBoxProj.YMax,uMaxLat,uMinLong);
          PrimMapProj.InverseProjectDegrees(MapCorners.BoundBoxProj.XMax,MapCorners.BoundBoxProj.YMin,uMinLat,uMaxLong);
-         if MDDef.ShiftMercToUTM and (PrimMapProj.PName in [MercatorEllipsoid]) then begin
+         if MDDef.ShiftMercToUTM then begin
             if ((uMaxLong-uMinLong) < MDDef.MercShiftLongLimit) and ((not MDDef.MercShiftSingleZone) or (GetUTMZone(uMaxLong) = GetUTMZone(uMinLong))) then begin
                PrimMapProj.PName := UTMEllipsoidal;
                PrimMapProj.h_DatumCode := MDdef.PreferPrimaryDatum;
@@ -178,8 +186,10 @@ var
 
 begin
    {$If Defined(RecordMaximizeMapCoverage) or Defined(AspectCheck) or Defined(RecordMapResize)} WriteLineToDebugFile('tMapDraw.MapAspectCheck in, ' + MapSizeString); {$EndIf}
-   {$If Defined(ShowProjectedLimits) or Defined(AspectCheck) or Defined(RecordMapResize)} WriteLineToDebugFile('MapAspectCheck in, proj ' +  sfBoundBoxToString(MapCorners.BoundBoxProj)); {$EndIf}
-   {$If Defined(AspectCheck)} if (VectorIndex = 0) then WriteLineToDebugFile('MapAspectCheck in, data: ' +  sfBoundBoxToString(MapCorners.BoundBoxDataGrid,1)); {$EndIf}
+   {$If Defined(ShowProjectedLimits) or Defined(AspectCheck) or Defined(RecordMapResize)} WriteLineToDebugFile('MapAspectCheck in, MapCorners proj ' + sfBoundBoxToString(MapCorners.BoundBoxProj)); {$EndIf}
+   {$If Defined(ShowProjectedLimits) or Defined(AspectCheck) or Defined(RecordMapResize)} WriteLineToDebugFile('MapAspectCheck in, MapCorners geo ' + sfBoundBoxToString(MapCorners.BoundBoxGeo)); {$EndIf}
+   {$If Defined(AspectCheck)} if (VectorIndex = 0) then WriteLineToDebugFile('MapAspectCheck in, mapcorners data grid: ' +  sfBoundBoxToString(MapCorners.BoundBoxDataGrid,1)); {$EndIf}
+   {$If Defined(TrackDEMboundingBox)} if ValidDEM(DEMonMap) then DEMGlb[DEMonMap].TrackDEMBoundingBox('MapAspectCheck in, '); {$EndIf}
 
    if PrimMapProj.Pname = UTMEllipsoidal then BasicProjection := bpUTM
    else if PrimMapProj.Pname = PlateCaree then BasicProjection := bpLatLong
@@ -189,7 +199,7 @@ begin
 
    AspectRatio := GetMapAspectRatio;
    ScreenRatio := MapXSize / MapYSize;
-   {$If Defined(AspectCheck)} WriteLineToDebugFile('Aspect ratio=' + RealToString(AspectRatio,-12,-4) + '  Screen Ratio=' + RealToString(ScreenRatio,-12,-4) + '  ' + MapSizeString); {$EndIf}
+   {$If Defined(AspectCheck)} WriteLineToDebugFile(BaseTitle + ' Aspect ratio=' + RealToString(AspectRatio,-12,-4) + '  Screen Ratio=' + RealToString(ScreenRatio,-12,-4) + '  ' + MapSizeString); {$EndIf}
 
    if (AspectRatio < ScreenRatio) then MapXSize := abs(round(MapXSize * AspectRatio / ScreenRatio))
    else MapYSize := abs(round(MapYSize / AspectRatio * ScreenRatio));
@@ -213,7 +223,7 @@ begin
    {$If Defined(ShowProjectedLimits)} WriteLineToDebugFile('MapAspectCheck out, geo: ' +  sfBoundBoxToString(MapCorners.BoundBoxGeo,6)); {$EndIf}
    {$If Defined(ShowProjectedLimits)} WriteLineToDebugFile('MapAspectCheck out, proj: ' +  sfBoundBoxToString(MapCorners.BoundBoxProj,2)); {$EndIf}
    {$If Defined(ShowProjectedLimits)} if (VectorIndex = 0) then WriteLineToDebugFile('MapAspectCheck out, data: ' +  sfBoundBoxToString(MapCorners.BoundBoxDataGrid,1)); {$EndIf}
-   {$If Defined(AspectCheck)} WriteLineToDebugFile('tMapDraw.MapAspectCheck out, ' + MapSizeString); {$EndIf}
+   {$If Defined(AspectCheck)} WriteLineToDebugFile(BaseTitle + ' tMapDraw.MapAspectCheck out, ' + MapSizeString); {$EndIf}
 end;
 
 
@@ -290,16 +300,27 @@ begin
        exit;
     end;
    Result := true;
-   xs := (MapCorners.BoundBoxProj.xmax - MapCorners.BoundBoxProj.xmin) * Percent * 0.01 / 2;
-   ys := (MapCorners.BoundBoxProj.ymax - MapCorners.BoundBoxProj.ymin) * Percent * 0.01 / 2;
-   PrimMapProj.ForwardProjectDegrees(Lat,Long,xproj,yproj);
-   MapCorners.BoundBoxProj.xmin := xproj - xs;
-   MapCorners.BoundBoxProj.xmax := xproj + xs;
-   MapCorners.BoundBoxProj.ymin := yproj - ys;
-   MapCorners.BoundBoxProj.ymax := yproj + ys;
+   if (Percent < -1) then begin
+     LatLongDegreeToDataGrid(Lat,Long,xproj,yproj);
+     xs := round(MDDef.DefaultMapXSize * 2 / MapCorners.GridDX);
+     ys := round(MDDef.DefaultMapYSize * 2 / MapCorners.GridDY);
+     MapCorners.BoundBoxDataGrid.xmin := xproj - xs;
+     MapCorners.BoundBoxDataGrid.xmax := xproj + xs;
+     MapCorners.BoundBoxDataGrid.ymin := yproj - ys;
+     MapCorners.BoundBoxDataGrid.ymax := yproj + ys;
+   end
+   else begin
+     PrimMapProj.ForwardProjectDegrees(Lat,Long,xproj,yproj);
+     xs := (MapCorners.BoundBoxProj.xmax - MapCorners.BoundBoxProj.xmin) * Percent * 0.01 / 2;
+     ys := (MapCorners.BoundBoxProj.ymax - MapCorners.BoundBoxProj.ymin) * Percent * 0.01 / 2;
+     MapCorners.BoundBoxProj.xmin := xproj - xs;
+     MapCorners.BoundBoxProj.xmax := xproj + xs;
+     MapCorners.BoundBoxProj.ymin := yproj - ys;
+     MapCorners.BoundBoxProj.ymax := yproj + ys;
 
-   if (VectorIndex = 0) then begin
-      BoundingBoxProjToDataGrid;
+     if (VectorIndex = 0) then begin
+        BoundingBoxProjToDataGrid;
+     end;
    end;
    MapAspectCheck;
 end;
@@ -330,6 +351,8 @@ var
    TStr : ANSIString;
 begin
    if ValidDEM(CurDEM) then begin
+      {$If Defined(TrackHorizontalDatum)} DEMGlb[CurDEM].TrackHorizontalDatumDebugLog('TMapDraw.DefineNewDEMMap in'); {$EndIf}
+
       {$If Defined(ShowUTMZone)} WriteLineToDebugFile('TMapDraw.DefineNewDEMMap in, UTM=' + IntToStr(DEMGLB[CurDEM].DEMheader.UTMZone) + DEMGLB[CurDEM].DEMheader.LatHemi); {$EndIf}
       if DEMGLB[CurDEM].ElevationDEM then TStr := 'DEM' else TStr := 'Grid';
       BaseTitle := RemoveUnderscores(TStr + ': ' + DEMGLB[CurDEM].AreaName);
@@ -339,10 +362,12 @@ begin
          MapMerge := mmElevation;
       end;
       MapType := mt;
-      AdjustProjectionForUTMZone('DefineNewDEMMap mid',MDDef.PreferPrimaryDatum,DEMGLB[CurDEM].DEMheader.UTMZone,DEMGLB[CurDEM].DEMheader.LatHemi);
+      {$If Defined(TrackHorizontalDatum)} DEMGlb[CurDEM].TrackHorizontalDatumDebugLog('TMapDraw.DefineNewDEMMap mid'); {$EndIf}
+      AdjustProjectionForUTMZone('DefineNewDEMMap mid',DEMGlb[CurDEM].DEMMapProj.h_DatumCode,DEMGLB[CurDEM].DEMheader.UTMZone,DEMGLB[CurDEM].DEMheader.LatHemi);
       SetFullMapCoverage;
       {$If Defined(ShowProjectedLimits) or Defined(ShowUTMZone)} WriteLineToDebugFile('TMapDraw.DefineNewDEMMap out, UTM=' + PrimMapProj.UTMZoneString); {$EndIf}
       {$If Defined(ShowProjectedLimits) or Defined(RecordShortDefineDatum)} WriteLineToDebugFile('Map data grid limits: ' +  sfBoundBoxToString(MapCorners.BoundBoxDataGrid)); {$EndIf}
+      {$If Defined(TrackHorizontalDatum)} DEMGlb[CurDEM].TrackHorizontalDatumDebugLog('TMapDraw.DefineNewDEMMap out'); {$EndIf}
    end;
 end;
 

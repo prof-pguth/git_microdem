@@ -607,6 +607,11 @@ type
     OpenmapsforDEMIXtestarea1: TMenuItem;
     LoadCpopDEMandLNDCOERFORTEXTAREA1: TMenuItem;
     Createlandcovergrids1: TMenuItem;
+    Mergechannelnetworkevaluations1: TMenuItem;
+    Changemode1: TMenuItem;
+    DEMIXtilesperareaandcoastalsubset1: TMenuItem;
+    Overwirte4: TMenuItem;
+    Skiipifpresent1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -952,7 +957,6 @@ type
     procedure Modesofdifferencedistributions1Click(Sender: TObject);
     procedure Advancedanalysis1Click(Sender: TObject);
     procedure MultipledNBRmaps1Click(Sender: TObject);
-    procedure Piracywindsandrain1Click(Sender: TObject);
     procedure DEMIXhelp1Click(Sender: TObject);
     procedure Landformcategorieslegends1Click(Sender: TObject);
     procedure Extract1Click(Sender: TObject);
@@ -1007,7 +1011,6 @@ type
     procedure Skipifexists2Click(Sender: TObject);
     procedure Inventorychanneldatabyarea1Click(Sender: TObject);
     procedure DatumshiftCanadianDEMs1Click(Sender: TObject);
-    procedure MergeCanadianLidar1Click(Sender: TObject);
     procedure Reference1secDTMsfromCanadianlidar1Click(Sender: TObject);
     procedure Graphevaluationandscores1Click(Sender: TObject);
     procedure CleardoubleprocessedreferenceDEMtiles1Click(Sender: TObject);
@@ -1025,7 +1028,6 @@ type
     procedure CreatefinalDB1Click(Sender: TObject);
     procedure N3DEPfileswithtag421121Click(Sender: TObject);
     procedure Fixtileswith42114foottag1Click(Sender: TObject);
-    procedure DEMIXmergeCSVfiles1Click(Sender: TObject);
     procedure Partialprocessing1Click(Sender: TObject);
     procedure MergeSSIMFUV1Click(Sender: TObject);
     procedure Onedegreetilestocovertestareas1Click(Sender: TObject);
@@ -1033,6 +1035,11 @@ type
     procedure OpenmapsforDEMIXtestarea1Click(Sender: TObject);
     procedure LoadCpopDEMandLNDCOERFORTEXTAREA1Click(Sender: TObject);
     procedure Createlandcovergrids1Click(Sender: TObject);
+    procedure Mergechannelnetworkevaluations1Click(Sender: TObject);
+    procedure Changemode1Click(Sender: TObject);
+    procedure DEMIXtilesperareaandcoastalsubset1Click(Sender: TObject);
+    procedure Overwirte4Click(Sender: TObject);
+    procedure Skiipifpresent1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1458,10 +1465,17 @@ begin
 end;
 
 
+procedure Twmdem.Changemode1Click(Sender: TObject);
+begin
+   MDDef.DEMIX_Mode := dmNotYetDefined;
+   GetDEMIXPaths(false);
+end;
+
 procedure Twmdem.Channelnetworkmisspercentagesbytile1Click(Sender: TObject);
 begin
     ChannelNetworkMissPercentages(False);
 end;
+
 
 procedure Twmdem.CheckfilesizesforSSIMimagemismatches1Click(Sender: TObject);
 var
@@ -1560,7 +1574,7 @@ end;
 
 procedure Twmdem.DeltaDTMfortestareas1Click(Sender: TObject);
 begin
-   DeltaDTMforTestAreas;
+   DeltaDTMforTestAreas(false);
 end;
 
 procedure Twmdem.DEMcornerstable1Click(Sender: TObject);
@@ -1575,7 +1589,6 @@ begin
 end;
 
 
-
 procedure Twmdem.DEMIX2Click(Sender: TObject);
 begin
    StopSplashing;
@@ -1586,19 +1599,6 @@ procedure Twmdem.DEMIXhelp1Click(Sender: TObject);
 begin
    DisplayHTMLTopic('demix_sg2\wine_contest.html');
 end;
-
-procedure Twmdem.DEMIXmergeCSVfiles1Click(Sender: TObject);
-begin
-
-end;
-
-(*
-procedure Twmdem.DEMIXmergeandtransposewithmeanmedian1Click(Sender: TObject);
-begin
-   CreateDEMIX_GIS_database_by_transposing;
-end;
-*)
-
 
 procedure Twmdem.DEMIXtilesizebylatitude1Click(Sender: TObject);
 var
@@ -1612,6 +1612,11 @@ begin
    CreateDEMIXTileShapefile(fName,WantBoundBoxGeo,false,true);
 end;
 
+
+procedure Twmdem.DEMIXtilesperareaandcoastalsubset1Click(Sender: TObject);
+begin
+   FindTilesInAreaForCoast;
+end;
 
 procedure Twmdem.DEMsummarytable1Click(Sender: TObject);
 begin
@@ -2269,7 +2274,7 @@ begin
     {$IfDef RecordProblems} WriteLineToDebugFile('MDdef.AutoOpen=' + IntToStr(ord(MDdef.AutoOpen)) + '  MDdef.ProgramOption=' + IntToStr(ord(MDdef.ProgramOption)) ); {$EndIf}
 
       if MDdef.ProgramOption in [GeologyProgram] then begin
-         {$If Defined(ExGeology) or Defined(ExGeologyDownload)}
+         {$If Defined(ExGeology) or Defined(ExLabDownloads)}
          {$Else}
             {$IfDef RecordProblems} WriteLineToDebugFile('StructuralGeologyProgram, call GeologyGetData'); {$EndIf}
             GeologyGetData;
@@ -3097,6 +3102,11 @@ begin
 end;
 
 
+procedure Twmdem.Skiipifpresent1Click(Sender: TObject);
+begin
+   DEMIX_MergeReferenceDEMs(false);
+end;
+
 procedure Twmdem.Skipeifpresent1Click(Sender: TObject);
 begin
    DEMIX_Ref_DEM_full_chain(false);
@@ -3104,7 +3114,7 @@ end;
 
 procedure Twmdem.Skipifexists1Click(Sender: TObject);
 begin
-   AreaSSIMComputations(False);
+   AreaSSIMandFUVComputations(False);
 end;
 
 procedure Twmdem.Skipifexists2Click(Sender: TObject);
@@ -3237,18 +3247,11 @@ end;
 
 procedure Twmdem.MagMapButtonClick(Sender: TObject);
 var
-   dName,fName : PathStr;
+   fName : PathStr;
 begin
-   dName := MainMapData + 'geology\geology_grids\';
-   fName := 'EMAG2_V2.tif';
-(*
-   if not FileExists(dName + fName) then begin
-      {$IfDef RecordMGT} WriteLineToDebugFile('Did not find, and try to download ' + fName); {$EndIf}
-      DownloadFileFromWeb(WebDataDownLoadDir + fName,dName + fName);
-   end;
-*)
-   if FileExists(dName + fName) then begin
-      OpenNewDEM(dName + fName,false);
+   fName := MainMapData + 'geology\geology_grids\EMAG2_V2.tif';
+   if FileExists(fName) then begin
+      OpenNewDEM(fName,false);
       DEMGlb[LastDEMLoaded].DEMheader.ElevUnits := euNanotesla;
       CreateDEMSelectionMap(LastDEMLoaded,true,true);
    end
@@ -3483,6 +3486,7 @@ begin
         {$EndIf}
          if (Sender = IntDBSpeedButton) then begin
             {$IfDef RecordOpenVectorMap} WriteLineToDebugFile('Twmdem.VectorMapButtonClick to VectorMap[LastVectorMap].Maplibrary1Click'); {$EndIf}
+            ShowHourglassCursor;
             VectorMap[LastVectorMap].Maplibrary1Click(Sender);
          end;
          if (Sender = LASdata1) or (Sender = OpenLASpointcloud1) then begin
@@ -3579,6 +3583,11 @@ end;
 procedure Twmdem.Overwirte3Click(Sender: TObject);
 begin
    ComputeDEMIX_tile_stats(false);
+end;
+
+procedure Twmdem.Overwirte4Click(Sender: TObject);
+begin
+   DEMIX_MergeReferenceDEMs(true);
 end;
 
 procedure Twmdem.Overwirteifexists1Click(Sender: TObject);
@@ -3876,28 +3885,6 @@ begin
    OpenHalfSecCopALOS(True);
 end;
 
-procedure Twmdem.Piracywindsandrain1Click(Sender: TObject);
-begin
-end;
-
-(*
-procedure Twmdem.Piracywindsandrain1Click(Sender: TObject);
-var
-   fName : PathStr;
-begin
-   VectorMapButtonClick(Sender);
-   fName := DBDir + 'somali_piracy_jan_2016_v2' + DefaultDBExt;
-   if not FileExists(FName) then begin
-      DownloadFileFromWeb(WebDataDownLoadDir + ExtractFileName(FName),FName);
-   end;
-   VectorMap[LastVectorMap].OpenDBonMap('',FName,true,true);
-   VectorMap[LastVectorMap].Globalmonthlywinds1Click(nil);
-   db_display_options.OpenMapTableOfContents(VectorMap[LastVectorMap],true);
-   MDDef.ApplySameFilterAllDBs := true;
-   OpenMonthlyMultiGrids('Precipitation');
-end;
-*)
-
 procedure Twmdem.Pixelbypixelmapstatistics1Click(Sender: TObject);
 begin
    PixelByPixelCopAlos;
@@ -4049,6 +4036,7 @@ begin
       end;
    end;
 end;
+
 
 procedure Twmdem.RenameJPEGswithcreationtime1Click(Sender: TObject);
 begin
@@ -4245,10 +4233,12 @@ begin
    DEMIX_merge_Visioterra_source;
 end;
 
-procedure Twmdem.MergeCanadianLidar1Click(Sender: TObject);
+procedure Twmdem.Mergechannelnetworkevaluations1Click(Sender: TObject);
 begin
-   DEMIX_MergeReferenceDEMs(true);
+   GetDEMIXpaths;
+   MergeCSVtoCreateFinalDB(ChannelMissesDir,'_Channel_Misses.csv','_channel_misses_' );
 end;
+
 
 procedure Twmdem.MergeDEMIXtilestats1Click(Sender: TObject);
 begin
@@ -4281,9 +4271,16 @@ begin
 end;
 
 procedure Twmdem.MergeSSIMFUV1Click(Sender: TObject);
+var
+   TStr : shortstring;
 begin
-   MergeCSVtoCreateFinalDB(true);
+   GetDEMIXpaths;
+   TStr := '';
+   if MDDef.DoFUV then TStr := '_fuv';
+   if MDDef.DoSSIM then TStr := TStr + '_ssim';
+   MergeCSVtoCreateFinalDB(SSIMresultsDir,'_ssim_results.csv',TStr + '_demix_db_');
 end;
+
 
 procedure Twmdem.MergewavelengthheightDBFs1Click(Sender: TObject);
 {$IfDef ExComplexGeoStats}
@@ -4498,7 +4495,7 @@ end;
 
 procedure Twmdem.Geology2Click(Sender: TObject);
 begin
-   {$If Defined(ExGeology) or Defined(ExGeologyDownload)}
+   {$If Defined(ExGeology) or Defined(ExLabDownloads)}
    {$Else}
       GeologyGetData(true);
    {$EndIf}
@@ -4738,7 +4735,7 @@ end;
 
 procedure Twmdem.SSIM1Click(Sender: TObject);
 begin
-   AreaSSIMComputations(True);
+   AreaSSIMandFUVComputations(True);
 end;
 
 procedure Twmdem.LOS2Click(Sender: TObject);
@@ -4790,7 +4787,7 @@ end;
 
 procedure Twmdem.DiluviumDEMfortestareas1Click(Sender: TObject);
 begin
-   DiluviumDEMforTestAreas;
+   DiluviumDEMforTestAreas(false);
 end;
 
 procedure Twmdem.Discussionforum1Click(Sender: TObject);
@@ -4902,7 +4899,7 @@ end;
 
 procedure Twmdem.Sedimenttypegrid1Click(Sender: TObject);
 begin
-   {$If Defined(ExGeology) or Defined(ExGeologyDownload)}
+   {$If Defined(ExGeology) or Defined(ExLabDownloads)}
   {$Else}
       if (SedTypeDEM <> 0) and (DEMGlb[SedTypeDEM] <> Nil) and (DEMGlb[SedTypeDEM].DEMFileName = SedTypeFile) then begin
       end
@@ -4928,7 +4925,7 @@ end;
 
 procedure Twmdem.SedThickButtonClick(Sender: TObject);
 begin
-   {$If Defined(ExGeology) or Defined(ExGeologyDownload)}
+   {$If Defined(ExGeology) or Defined(ExLabDownloads)}
    {$Else}
       if not ValidDEM(SedThickDEM) then begin
          GeologyGetData;
@@ -5482,12 +5479,12 @@ procedure Twmdem.Opengl1tofrontClick(Sender: TObject);
 begin
    {$IfDef ExFMX3D}
    {$Else}
-      if Map3D <> Nil then begin
+      if (Map3D <> Nil) then begin
          Map3D.BringToFront;
          Map3D.Left := Self.Left + 10;
          Map3D.Top := Self.Top + 10;
       end;
-      if View3DForm <> Nil then begin
+      if (View3DForm <> Nil) then begin
          View3DForm.BringToFront;
          View3DForm.Left := Self.Left + 10;
          View3DForm.Top := Self.Top + 10;

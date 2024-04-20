@@ -37,6 +37,7 @@
       //{$Define RecordDrawGridLines}
       //{$Define RecordSat}
       //{$Define AspectCheck}
+      //{$Define TrackDEMboundingBox}    //must also be defined in DEMcoord
       //{$Define RecordShapeFileGroup}
       //{$Define RecordPlotDBrules}
       //{$Define RecordWorldOutline}
@@ -50,7 +51,7 @@
       //{$Define ShowProjectedLimits}
       //{$Define RecordElevRange}
       //{$Define RecordMapDraw}
-      {$Define RecordNLCD}
+      //{$Define RecordNLCD}
       //{$Define RecordRefMapColors}
 
       //{$Define RecordMapBlow}        //needs to be off for threaded fan drawing
@@ -1044,7 +1045,7 @@ begin
    if (VectorIndex <> 0) then begin
       Result := (PrimMapProj.PName in [AlbersEqAreaConicalEllipsoid,MercatorEllipsoid,PolarStereographicEllipsoidal,LambertConformalConicEllipse,UK_OS,Finn_GK,GeneralTransverseMercator,LamAzEqAreaEllipsoidal,IrishGrid]);
    end;
-   if DEMMap and (DEMGlb[DEMonMap].DEMMapProjection <> Nil) then begin
+   if DEMMap and (DEMGlb[DEMonMap].DEMMapProj <> Nil) then begin
       Result := true;
    end;
 
@@ -1225,15 +1226,17 @@ begin
                end
                else if ValidDEMMap then begin
                   if (BaseTitle = '') then begin
+                     (*
                      if DEMGlb[DEMonMap].LandcoverGrid then BaseTitle := 'Land cover'
                      else if DEMGlb[DEMonMap].ElevationDEM then BaseTitle := 'DEM'
                      else BaseTitle := 'Grid';
-                     BaseTitle := BaseTitle + ': ' + RemoveUnderscores(DEMGlb[DEMonMap].AreaName);
-                     if (MapType = mtDEMContour) then BaseTitle := RemoveUnderscores(DEMGlb[DEMonMap].AreaName) + ' with ' + RealToString(DEMGlb[DEMonMap].ZinMeters(MapOverlays.ConInt),-6,-1) + ' m contours';
+                     *)
+                     BaseTitle := DEMGlb[DEMonMap].AreaName;
+                     if (MapType = mtDEMContour) then BaseTitle := DEMGlb[DEMonMap].AreaName + ' with ' + RealToString(DEMGlb[DEMonMap].ZinMeters(MapOverlays.ConInt),-6,-1) + ' m contours';
                      if isReflectanceMap(MapType) then begin
                         if MDDef.UseRefDirs = 1 then
-                            BaseTitle := RemoveUnderscores(DEMGlb[DEMonMap].AreaName) + ': Sun Az=' + RealToString(MDdef.RefPhi,-4,0) + '°, Elev='+ RealToString(MDDef.RefTheta,-4,0) + DegSym
-                        else BaseTitle := RemoveUnderscores(DEMGlb[DEMonMap].AreaName) + ' multidirectional hillshade';
+                            BaseTitle := DEMGlb[DEMonMap].AreaName + '_Sun Az=' + RealToString(MDdef.RefPhi,-4,0) + '_Elev='+ RealToString(MDDef.RefTheta,-4,0) + DegSym
+                        else BaseTitle := DEMGlb[DEMonMap].AreaName + '_multidirectional hillshade';
                      end;
                   end;
 
@@ -1246,7 +1249,7 @@ begin
                   else if isSlopeMap(MapType) or (MapType in [mtDEMaspectSlope,mtDEMAspect,mtFlowDir360,mtFlowDirArc,mtFlowDirTau]) or (DEMGlb[DEMonMap].DEMheader.ElevUnits in [euAspectDeg]) then begin
                      if isSlopeMap(MapType) then BaseTitle := 'Slope Map (' + SlopeMethodName(MDdef.SlopeAlg) + ')'
                      else BaseTitle := 'Aspect Map';
-                     BaseTitle :=  RemoveUnderscores(DEMGlb[DEMonMap].AreaName) + ' ' + BaseTitle;
+                     BaseTitle := DEMGlb[DEMonMap].AreaName + '_'+ BaseTitle;
                      DrawSlopeMap(BitMap);
                      {$If Defined(RecordFullMapDraw)} WriteLineToDebugFile('after DrawSlopeMap, bmp=' + MapSizeString); {$EndIf}
                   end
@@ -1260,8 +1263,8 @@ begin
                      {$IfDef ExVegDensity}
                      {$Else}
                      if (DEMGlb[DEMonMap].VegGrid[1] <> 0) and (MDDef.VegOptionMap in [voVeg,voDSM]) then begin
-                        if MDDef.VegOptionMap in [voVeg] then BaseTitle := 'Veg Ht ' + RemoveUnderscores(DEMGlb[DEMonMap].AreaName)
-                        else BaseTitle := 'DSM ' + RemoveUnderscores(DEMGlb[DEMonMap].AreaName);
+                        if MDDef.VegOptionMap in [voVeg] then BaseTitle := 'Veg_ht_' + DEMGlb[DEMonMap].AreaName
+                        else BaseTitle := 'DSM_' + DEMGlb[DEMonMap].AreaName;
                         ShowVegOnMap(Bitmap);
                      end
                      else {$EndIf}
@@ -1397,7 +1400,7 @@ begin
          {$IfDef RecordFullMapDraw} WriteLineToDebugFile('tMapDraw.DrawMapOnBMP exit pentultimate finally block'); {$EndIf}
       end;
 
-      if (FullMapfName = '') then FullMapfName := NextFileNumber(MDTempDir, 'Full_map_', OverlayFExt);
+      if (FullMapfName = '') then FullMapfName := NextFileNumber(MDTempDir, BaseTitle + '_full_map_', OverlayFExt);
       {$If Defined( RecordFullMapDraw) or Defined(RecordOverlays)} WriteLineToDebugFile('tMapDraw.DrawMapOnBMP saving  ' + FullMapfName); {$EndIf}
       Bitmap.SaveToFile(FullMapfName);
    finally
@@ -2098,8 +2101,11 @@ end;
 
 procedure TMapDraw.SaveLayerBitmap(Bitmap : tMyBitmap; var FName : PathStr);
 begin
-   fName := NextFileNumber(MDTempDir, 'Map_layer', OverlayFExt);
+   fName := NextFileNumber(MDTempDir, BaseTitle + '_map_layer', OverlayFExt);
    {$IfDef Defined(RecordFullMapDraw) or Defined(RecordOverlays)} WriteLineToDebugFile('TMapDraw.SaveLayerBitmap, fname=' + FName); {$EndIf}
+   //StripInvalidPathNameChars(fName);
+
+
    PetImage.SaveBitmap(Bitmap,fName);
    {$IfDef Defined(RecordFullMapDraw) or Defined(RecordOverlays)} WriteLineToDebugFile('  save OK'); {$EndIf}
 end;
@@ -2230,11 +2236,9 @@ begin
 
     EndProgress;
 
-   {$IfDef FMX}
-   Bitmap.Canvas.EndScene;
-   {$EndIf}
+   {$IfDef FMX} Bitmap.Canvas.EndScene; {$EndIf}
 
-   {$IfDef RecordGeology}  Bitmap.SaveToFile(MDTempDir + 'geology.png'); {$EndIf}
+   {$IfDef RecordGeology} Bitmap.SaveToFile(MDTempDir + 'geology.png'); {$EndIf}
 *)
 end;
 
@@ -2248,9 +2252,9 @@ end;
 
 procedure TMapDraw.DeleteMapSavedLayers;
 begin
-    {$IfDef VCL}
-       DeleteSingleMapLayer(BaseMapFName);
-    {$EndIf}
+   {$IfDef VCL}
+      DeleteSingleMapLayer(BaseMapFName);
+   {$EndIf}
    {$IfDef ExWMS}
    {$Else}
        DeleteSingleMapLayer(WMSLayerfName);
@@ -2298,11 +2302,7 @@ end;
 
 function TMapDraw.AFullWorldMap : boolean;
 begin
-   Result := ((VectorIndex <> 0) and (PrimMapProj.FullWorld)) or (DEMMap and (DEMGlb[DEMonMap].LongSizeMap > 300))
-           {$IfDef ExSat}
-           {$Else}
-           or ((SatOnMap > 0) and (SatImage[SatOnMap].FullWorld))
-           {$EndIf};
+   Result := ((VectorIndex <> 0) and (PrimMapProj.FullWorld)) or (DEMMap and (DEMGlb[DEMonMap].LongSizeMap > 300)) or ((SatOnMap > 0) and (SatImage[SatOnMap].FullWorld));
 end;
 
 
@@ -2666,8 +2666,8 @@ procedure tMapDraw.GetMapScaleFactor(var Lat,Long,Maph,Mapk: float64; var Prime 
 
  begin
       if ((VectorIndex <> 0) and PrimMapProj.TissotEnabled) then DrawDepending(PrimMapProj);
-      if (DEMMap and (DEMGlb[DEMonMap].DEMMapProjection <> Nil) and
-         DEMGlb[DEMonMap].DEMMapProjection.TissotEnabled) then DrawDepending(DEMGlb[DEMonMap].DEMMapProjection);
+      if (DEMMap and (DEMGlb[DEMonMap].DEMMapProj <> Nil) and
+         DEMGlb[DEMonMap].DEMMapProj.TissotEnabled) then DrawDepending(DEMGlb[DEMonMap].DEMMapProj);
       if (ValidSatOnMap and (SatImage[SatOnMap].ImageMapProjection <> nil)) then DrawDepending(SatImage[SatOnMap].ImageMapProjection);
  {$EndIf}
  end;
@@ -2812,6 +2812,7 @@ finalization
    {$If Defined(TimePLSS)} WriteLineToDebugFile('TimePLSS in demmapdraw'); {$EndIf}
    {$IfDef RecordFullDrawGridLines} WriteLineToDebugFile('TimePLSS in demmapdraw'); {$EndIf}
 end.
+
 
 
 

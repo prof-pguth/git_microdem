@@ -1109,9 +1109,9 @@ begin
     PetImage.DrawLine(Bitmap,XP,ProfileBot,StartLOSLeft,ProfileBot);     //bottom of profile
 
     if MDDef.LabelMultipleProf then begin
-        TStr := DEMGlb[DEMonView].DEMMapProjection.PreferLocationString(LatLeft,LongLeft);
+        TStr := DEMGlb[DEMonView].DEMMapProj.PreferLocationString(LatLeft,LongLeft);
         BitmapTextOut(Bitmap,0,0,TStr + ' ' + SensorName);
-        TStr := DEMGlb[DEMonView].DEMMapProjection.PreferLocationString(LatRight,LongRight);
+        TStr := DEMGlb[DEMonView].DEMMapProj.PreferLocationString(LatRight,LongRight);
         TStr := TStr + ' ' + TargetName;
         BitmapTextOut(Bitmap,PixLong - round(Bitmap.Canvas.TextWidth(TStr)),0,TStr);
     end;

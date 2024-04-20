@@ -463,22 +463,30 @@ end;
 
 procedure TGISdataBaseModule.FillFieldsFromJoinedTable(var TheFields : tStringList; ForceOverWrite : boolean);
 var
-   aCopyFieldThisDB,aCopyFieldOtherDB : ShortString;
+   CopyField{aCopyFieldThisDB,aCopyFieldOtherDB} : ShortString;
    Overwrite : boolean;
    TStr : ShortString;
    ft : tFieldType;
    fLength,Decs,i,j : integer;
 begin
     if (TheFields.Count > 0) then begin
-       {$IfDef RecordCopyFieldLinkDB} WriteLineToDebugFile('TGISdataBaseModule.FillFieldsFromJoinedTable in, add fields=' + IntToStr(TheFields.Count)); {$EndIf}
+       {$IfDef RecordCopyFieldLinkDB} WriteLineToDebugFile('TGISdataBaseModule.FillFieldsFromJoinedTable in, add fields=' + IntToStr(TheFields.Count) + ' from ' + LinkTable.FullTableName); {$EndIf}
        Overwrite := true;
+       for j := pred(TheFields.Count) downto 0 do begin
+         CopyField := TheFields.Strings[j];
+         if not LinkTable.FieldExists(CopyField) then begin
+            MessageToContinue('Field ' + CopyField + ' missing in ' + LinkTable.FullTableName + ', not copied');
+            TheFields.Delete(j);
+            //if (TheFields.Count = 1) then Overwrite := AnswerIsYes('Overwrite field ' + CopyField + ' if filled');
+         end;
+       end;
        if not ForceOverwrite then begin
          for j := pred(TheFields.Count) downto 0 do begin
-            aCopyFieldOtherDB := TheFields.Strings[j];
+            CopyField := TheFields.Strings[j];
             {$IfDef RecordCopyFieldLinkDB} WriteLineToDebugFile('Field: ' + aCopyFieldOtherDB); {$EndIf}
-            if MyData.FieldExists(aCopyFieldOtherDB) then begin
-               if not AnswerIsYes('Field ' + aCopyFieldOtherDB + ' already exists; proceed') then TheFields.Delete(j);
-               if (TheFields.Count = 1) then Overwrite := AnswerIsYes('Overwrite field ' + aCopyFieldOtherDB + ' if filled');
+            if MyData.FieldExists(CopyField) then begin
+               if not AnswerIsYes('Field ' + CopyField + ' already exists; proceed and overwrite') then TheFields.Delete(j);
+               //if (TheFields.Count = 1) then Overwrite := AnswerIsYes('Overwrite field ' + CopyField + ' if filled');
             end;
          end;
        end;
@@ -486,22 +494,23 @@ begin
        StartThreadTimers('DB Fields from join',1);
        for j := 0 to pred(TheFields.Count) do begin
          ThreadTimers.OverallGauge9.Progress := round(100 * j/TheFields.Count);
-         aCopyFieldOtherDB := TheFields.Strings[j];
-         ThreadTimers.EnableGauge(1,true,aCopyFieldOtherDB);
-         aCopyFieldThisDB := aCopyFieldOtherDB;
+         //aCopyFieldOtherDB := TheFields.Strings[j];
+         CopyField := TheFields.Strings[j];
+         ThreadTimers.EnableGauge(1,true,CopyField);
+         //aCopyFieldThisDB := aCopyFieldOtherDB;
 
-         if not MyData.FieldExists(aCopyFieldOtherDB) then begin
-            fLength := LinkTable.GetFieldLength(aCopyFieldOtherDB);
-            ft := LinkTable.GetFieldType(aCopyFieldOtherDB);
+         if not MyData.FieldExists(CopyField) then begin
+            fLength := LinkTable.GetFieldLength(CopyField);
+            ft := LinkTable.GetFieldType(CopyField);
             if (ft = ftFloat) then begin
-               Decs := LinkTable.GetFieldPrecision(aCopyFieldOtherDB);
+               Decs := LinkTable.GetFieldPrecision(CopyField);
             end
             else Decs := 0;
-            {$IfDef RecordCopyFieldLinkDB} WriteLineToDebugFile('field=' + TheFields.Strings[j] + '  fieldType=' + FieldTypeStr(ft) + '  fieldLength=' + IntToStr(fLength) +   '  decs=' + IntToStr(Decs)); {$EndIf}
-            AddFieldToDataBase(ft,aCopyFieldThisDB,fLength,Decs);
+            {$IfDef RecordCopyFieldLinkDB} WriteLineToDebugFile('field=' + CopyField + '  fieldType=' + FieldTypeStr(ft) + '  fieldLength=' + IntToStr(fLength) +   '  decs=' + IntToStr(Decs)); {$EndIf}
+            AddFieldToDataBase(ft,CopyField,fLength,Decs);
          end
          else begin
-            {$IfDef RecordCopyFieldLinkDB} WriteLineToDebugFile('field alredy present, ' + TheFields.Strings[j]); {$EndIf}
+            {$IfDef RecordCopyFieldLinkDB} WriteLineToDebugFile('field alredy present, ' + CopyField); {$EndIf}
          end;
          EmpSource.Enabled := false;
       end {for j};

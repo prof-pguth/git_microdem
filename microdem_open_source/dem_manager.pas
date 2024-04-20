@@ -125,7 +125,6 @@ procedure MakeDEMSummaryTable;
 {$EndIf}
 
 procedure GeotiffMetadata(MDVersion : tMDVersion; fName : PathStr);
-function GeotiffBBox(fName : PathStr) : sfBoundBox;
 
 function LoadDatumShiftGrids(var LocalToWGS84,WGS84toEGM2008 : integer) : boolean;
 
@@ -180,7 +179,7 @@ const
        procedure ClimateGetData(ForceDownload : boolean = false);
     {$EndIf}
 
-    {$If Defined(ExGeology) or Defined(ExGeologyDownload)}
+    {$If Defined(ExGeology) or Defined(ExLabDownloads)}
     {$Else}
        procedure GeologyGetData(ForceDownload : boolean = false);
     {$EndIf}
@@ -330,17 +329,17 @@ var
 begin
    ShowHourglassCursor;
    Results := tStringList.Create;
-   Results.Add('DEM,PIXEL_IS,NOM_CORNER,HORIZ_DATM,VERT_DATUM,LAT,LONG_CENT,MIN_Z,MAX_Z,SW_POINTX,SW_POINTY,SW_CornerX,SW_CornerY,NW_CornerX,NW_CornerY,DX,DY,NUM_COL,NUM_ROW,AVG_X_M,AVG_Y_M,AVG_SP_M');
+   Results.Add('DEM,PIXEL_IS,NOM_CORNER,HORIZ_DATM,VERT_DATUM,LAT_CENT,LONG_CENT,MIN_Z,MAX_Z,NW_CornerX,NW_CornerY,SW_POINTX,SW_POINTY,SW_CornerX,SW_CornerY,DX,DY,NUM_COL,NUM_ROW,AVG_X_M,AVG_Y_M,AVG_SP_M');
    for i := 1 to MaxDEMDataSets do if ValidDEM(i) then begin
       if (DEMGlb[i].DEMheader.DEMUsed = UTMBasedDEM) then Decs := -2 else Decs := -8;
       Results.Add(DEMGlb[i].AreaName + ',' + PixelIsString(DEMGlb[i].DEMheader.RasterPixelIsGeoKey1025) + ',' + DEMGlb[i].GridCornerModel + ',' +
-          DEMGlb[i].DEMMapProjection.h_DatumCode + ',' + VertDatumName(DEMGlb[i].DEMheader.VerticalCSTypeGeoKey) + ',' +
+          DEMGlb[i].DEMMapProj.h_DatumCode + ',' + VertDatumName(DEMGlb[i].DEMheader.VerticalCSTypeGeoKey) + ',' +
           RealToString(DEMGlb[i].DEMSWcornerLat + 0.5 * DEMGlb[i].LatSizeMap,-12,-3) + ',' +
           RealToString(DEMGlb[i].DEMSWcornerLong + 0.5 * DEMGlb[i].LongSizeMap,-12,-3)  + ',' +
           RealToString(DEMGlb[i].DEMheader.MinElev,-12,2)  + ',' +  RealToString(DEMGlb[i].DEMheader.MaxElev,-12,2)  + ',' +
+          RealToString(DEMGlb[i].GeotiffNWCornerX,-12,Decs)  + ',' +RealToString(DEMGlb[i].GeotiffNWCornerY,-12,Decs)  + ',' +
           RealToString(DEMGlb[i].ComputeSWCornerX,-12,Decs)  + ',' +RealToString(DEMGlb[i].ComputeSWCornerY,-12,Decs)  + ',' +
           RealToString(DEMGlb[i].DEMheader.DEMSWCornerX,-12,Decs)  + ',' +RealToString(DEMGlb[i].DEMheader.DEMSWCornerY,-12,Decs)  + ',' +
-          RealToString(DEMGlb[i].GeotiffNWCornerX,-12,Decs)  + ',' +RealToString(DEMGlb[i].GeotiffNWCornerY,-12,Decs)  + ',' +
           RealToString(DEMGlb[i].DEMheader.DEMxSpacing,-12,Decs) + ',' + RealToString(DEMGlb[i].DEMheader.DEMySpacing,-12,Decs)  + ',' +
           IntToStr(DEMGlb[i].DEMheader.NumCol) + ',' + IntToStr(DEMGlb[i].DEMheader.NumRow) + ',' +
           RealToString(DEMGlb[i].AverageXSpace,-12,-2) + ',' + RealToString(DEMGlb[i].AverageYSpace,-12,-2)  + ',' + RealToString(DEMGlb[i].AverageSpace,-12,-2));
@@ -488,7 +487,7 @@ begin
 
                if (SatImage[Result].LandsatNumber <> 0) or SatImage[Result].LandsatLook then TStr := ShortLandsatName(SatImage[Result].SceneBaseName)
                else if SatImage[Result].IsSentinel2 then begin
-                  TStr := Copy(SatImage[Result].SceneBaseName,1,6) + ' ' + Copy(SatImage[Result].SceneBaseName,8,4) + '/' + Copy(SatImage[Result].SceneBaseName,12,2) + '/' + Copy(SatImage[Result].SceneBaseName,14,2);
+                  TStr := Copy(SatImage[Result].SceneBaseName,1,6) + '_' + Copy(SatImage[Result].SceneBaseName,8,4) + '-' + Copy(SatImage[Result].SceneBaseName,12,2) + '-' + Copy(SatImage[Result].SceneBaseName,14,2);
                end
                else TStr := SatImage[Result].SceneBaseName;
 
@@ -499,7 +498,7 @@ begin
                   end
                   else mt := mtUnenhancedRGB;
                end;
-               CreateNewSatWindow(OpenSatView,SatImage[Result].SelectionMap,Result,mt,'Image: ' + TStr,true,DEMToAssociate);
+               CreateNewSatWindow(OpenSatView,SatImage[Result].SelectionMap,Result,mt,{'Image: ' +} TStr,true,DEMToAssociate);
             end;
          end
          else begin
@@ -580,21 +579,6 @@ begin
    end;
 end;
 
-
-function GeotiffBBox(fName : PathStr) : sfBoundBox;
-var
-   success : boolean;
-   TiffImage : tTIFFImage;
-begin
-   if FileExists(fName) then begin
-      TiffImage := tTiffImage.CreateGeotiff(true,false,fName,Success,false,false);
-      Result.XMin := TiffImage.RegVars.UpLeftX;
-      Result.YMax := TiffImage.RegVars.UpLeftY;
-      Result.XMax := TiffImage.RegVars.UpLeftX + TiffImage.RegVars.pr_deltaX * pred(TiffImage.TiffHeader.ImageWidth);
-      Result.YMin := TiffImage.RegVars.UpLeftY - TiffImage.RegVars.pr_deltaY * pred(TiffImage.TiffHeader.ImageLength);
-      TiffImage.Destroy;
-   end;
-end;
 
 
 {$IfDef ExIndexes}
@@ -1323,6 +1307,8 @@ end;
 {$IfDef VCL}
 
       function GetTwoCompatibleGrids(WhatFor : shortString; CheckUnits : boolean; var DEM1,DEM2 : integer; WarnIfIncompatible : boolean = true;  AlwaysAsk : boolean = false) : boolean;
+      var
+         xoffset,yoffset : integer;
       begin
          if (NumDEMDataSetsOpen < 2) then begin
             Result := false;
@@ -1345,6 +1331,7 @@ end;
                   end
                end;
             until (DEM1 <> DEM2);
+            //Result := DEMGlb[DEM1].SecondGridJustOffset(DEM2,xoffset,yoffset);
             Result := DEMGlb[DEM1].SecondGridIdentical(DEM2);
             {$IfDef RecordGet2DEMs} WriteLineToDebugFile('Identical grids=' + TrueOrFalse(Result)); {$EndIf}
             if CheckUnits then Result := Result and (DEMGlb[DEM1].DEMheader.ElevUnits = DEMGlb[DEM2].DEMheader.ElevUnits);
@@ -1483,7 +1470,7 @@ end;
       {$EndIf}
 
 
-      {$If Defined(ExGeology) or Defined(ExGeologyDownload)}
+      {$If Defined(ExGeology) or Defined(ExLabDownloads)}
       {$Else}
          procedure GeologyGetData(ForceDownload : boolean = false);
          begin

@@ -22,6 +22,8 @@ end;
 
 
 function ExecuteWBandOpenMap(cmd : ansistring; OutName : PathStr; TheElevUnits : tElevUnit; MapType :tMapType = mtElevRainbow; OpenMap : boolean = false) : integer;
+var
+   TStr : shortstring;
 begin
    {$IfDef RecordWBT} WriteLineToDebugFile('ExecuteWBandOpenMap, cmd=' + cmd); {$EndIf}
    WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
@@ -30,21 +32,28 @@ begin
       if LoadNewDEM(Result,OutName,false) then begin
          DEMGlb[Result].DEMheader.ElevUnits := TheElevUnits;
          if OpenMap then CreateDEMSelectionMap(Result,true,true,MapType);
+         UpdateMenusForAllMaps;
       end;
       {$IfDef RecordWBT} WriteLineToDebugFile('ExecuteWBandOpenMap map opened'); {$EndIf}
    end
-   else MessageToContinue('Whitebox failure, try command in DOS window: ' + cmd);
+   else begin
+      TStr := 'Whitebox failure, try command in DOS window: ' + cmd;
+      if HeavyDutyProcessing then HighlightLineToDebugFile(TStr)
+      else MessageToContinue(TStr);
+   end;
    {$IfDef RecordWBT} WriteLineToDebugFile('ExecuteWBandOpenMap out'); {$EndIf}
 end;
 
 
 function WBT_breach_depression(InName : PathStr; var BreachName : PathStr) : integer;
+//https://www.whiteboxgeo.com/manual/wbt_book/available_tools/hydrological_analysis.html#BreachDepressionsLeastCost
 var
    cmd : ansistring;
 begin
    BreachName := MDTempDir + 'wbt_breach_' + ExtractFileNameNoExt(InName)  + '.tif';
    if not FileExists(BreachName) then begin
-      cmd := WhiteBoxfName + WBNoCompress + ' -r=BreachDepressionsLeastCost -v --dem=' + InName + ' -o=' + BreachName + ' --dist=1000 --max_cost=100.0 --min_dist';
+      cmd := WhiteBoxfName + WBNoCompress + ' -r=BreachDepressionsLeastCost -v --dem=' + InName + ' -o=' + BreachName + ' --dist=1000 --max_cost=100.0 --flat_increment=0.001 --fill_deps=True';  //--min_dist removed, added last two 4/29/24
+      {$IfDef RecordWBT} WriteLineToDebugFile('WBT_breach_depression cmd=' + cmd); {$EndIf}
       WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
    end;
 end;
@@ -65,6 +74,7 @@ begin
          if D8 then TStr2 := 'D8' else TStr2 := 'FD8';
          if (FlowAccName = '') then FlowAccName := MDTempDir + 'wbt_flow_accumulation_' + TStr2 + '_' + TStr + ExtractFileNameNoExt(InName) + '.tif';
          cmd := WhiteBoxfName +  WBNoCompress + '-r=' + TStr2 +'FlowAccumulation -v -dem=' + BreachName + ' -o=' + FlowAccName + ' --out_type=cells' + TStr3;
+         {$IfDef RecordWBT} WriteLineToDebugFile('WBT_FlowAccumulation cmd=' + cmd); {$EndIf}
          Result := ExecuteWBandOpenMap(cmd,FlowAccName,euUndefined,mtElevRainbow,OpenMap);
       end
       else begin
@@ -74,29 +84,29 @@ begin
 end;
 
 
-function WBT_extract_streams(OpenMap : boolean; InName : PathStr; var StreamName : PathStr) : integer;
+function WBT_extract_streams(OpenMap : boolean; InName : PathStr; var StreamName : PathStr; Threshhold : float32 = 100.0) : integer;
 // whitebox_tools -r=ExtractStreams -v --wd="/path/to/data/" --flow_accum='d8accum.tif' -o='output.tif' --threshold=100.0 --zero_background=false
 var
    FlowAccName : PathStr;
    cmd : ansistring;
 begin
    FlowAccName := '';
-   //function WBT_FlowAccumulation(OpenMap,Log,D8 : boolean; InName : PathStr; var FlowAccName : PathStr) : integer;
    WBT_FlowAccumulation(false,false,True,InName,FlowAccName);
    StreamName := MDTempDir + 'wbt_streams_' + ExtractFileNameNoExt(InName) + '.tif';
    if FileExists(StreamName) then begin
       LoadNewDEM(Result,StreamName,OpenMap);
    end
    else begin
-      cmd := WhiteBoxfName + WBNoCompress + '-r=ExtractStreams -v --flow_accum=' + FlowAccName + ' -o=' + StreamName + ' --threshold=100.0 --zero_background=false';
-      //WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
+      cmd := WhiteBoxfName + WBNoCompress + '-r=ExtractStreams -v --flow_accum=' + FlowAccName + ' -o=' + StreamName + ' --threshold=' + RealToString(Threshhold,-8,1) + ' --zero_background=false';
+      {$IfDef RecordWBT} WriteLineToDebugFile('WBT_extract_streams cmd=' + cmd); {$EndIf}
       Result := ExecuteWBandOpenMap(cmd,StreamName,euUndefined,mtElevRainbow,OpenMap);
    end;
 end;
 
 
-function WBT_ElevAboveStream(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
+function WBT_ElevAboveStream(OpenMap : boolean; InName : PathStr; OutName : PathStr = ''; Threshhold : float32 = 100.0) : integer;
 // whitebox_tools -r=ElevationAboveStream -v --wd="/path/to/data/" --dem='dem.tif' --streams='streams.tif' -o='output.tif'
+// calls extract streams (threshhold 100), which calls flow accumulation (d8, not log), which calls depression breaching (dist=1000, max_cost=100.0)
 var
    StreamName : PathStr;
    cmd : ansistring;
@@ -105,10 +115,11 @@ begin
       {$IfDef RecordWBT} WriteLineToDebugFile('WBT_ElevAboveStream in, ' + InName); {$EndIf}
 
       StreamName := '';
-      WBT_extract_streams(false,InName,StreamName);
+      WBT_extract_streams(false,InName,StreamName,Threshhold);
 
       if (OutName = '') then Outname := MDTempDir + 'wbt_elev_above_stream_' + ExtractFileNameNoExt(InName) + '.tif';
       cmd := WhiteBoxfName + WBNoCompress + '-r=ElevationAboveStream -v --dem=' + InName + ' --streams=' + StreamName + ' -o=' + OutName;
+      {$IfDef RecordWBT} WriteLineToDebugFile('WBT_ElevAboveStream cmd=' + cmd); {$EndIf}
       Result := ExecuteWBandOpenMap(cmd,OutName,euUndefined,mtElevRainbow,OpenMap);
       {$IfDef RecordWBT} WriteLineToDebugFile('WBT_ElevAboveStream out, ' + OutName); {$EndIf}
    end;
@@ -118,7 +129,7 @@ end;
 function WBT_WetnessIndex(OpenMap,D8 : boolean; InName : PathStr; OutName : PathStr = '') : integer;
 //whitebox_tools -r=WetnessIndex -v --wd="/path/to/data/" --sca='flow_accum.tif' --slope='slope.tif' -o=output.tif
 var
-   SlopeName,{BreachName,}FlowAccName : PathStr;
+   SlopeName,FlowAccName : PathStr;
    cmd : ansistring;
 begin
    if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin

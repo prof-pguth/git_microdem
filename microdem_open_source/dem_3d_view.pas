@@ -4,7 +4,7 @@ unit dem_3d_view;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -1440,7 +1440,7 @@ begin
           if PersOpts.NapEarth then TStr := RealToString(PersOpts.PersObsUp,6,1) + ' m up'
           else TStr := SmartDistanceMetersFormat(ObsElev) + ' elev';
           VertExag := (ViewHFOV / Bitmap.Width) / (ViewVFOV /Bitmap.Height);
-          if (SpecifiedCaption = '') then ViewCaption := DEMGlb[DEMonView].DEMMapProjection.PreferLocationString(ViewerLat,ViewerLong) + '    ' + TStr
+          if (SpecifiedCaption = '') then ViewCaption := DEMGlb[DEMonView].DEMMapProj.PreferLocationString(ViewerLat,ViewerLong) + '    ' + TStr
           else ViewCaption := SpecifiedCaption;
 
           FastScreen[1].Destroy;
