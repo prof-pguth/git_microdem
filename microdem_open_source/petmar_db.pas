@@ -189,7 +189,7 @@ type
         function CarefullyGetFieldByNameAsInteger(FieldName : ANSIString; var Value : integer) : boolean; //inline;
 
         function FieldTypeAndLength(WantFieldName : ANSIString) : AnsiString;
-        function UniqueEntriesInDB(FieldName : ANSIString) : tStringList;
+        function ListUniqueEntriesInDB(FieldName : ANSIString) : tStringList;
         function NumUniqueEntriesInDB(FieldName : ANSIString) : integer;
         function FieldsInDataBase : tStringList;
         function GetFieldName(i : integer) : ANSIString;
@@ -1595,7 +1595,7 @@ begin
 end;
 
 
-function tMyData.UniqueEntriesInDB(FieldName : ANSIString) : tStringList;
+function tMyData.ListUniqueEntriesInDB(FieldName : ANSIString) : tStringList;
 begin
    PetDBUtils.FindUniqueEntries(Self,FieldName,Result);
 end;
@@ -1605,7 +1605,7 @@ function tMyData.NumUniqueEntriesInDB(FieldName : ANSIString) : integer;
 var
    sl : tStringList;
 begin
-   sl := UniqueEntriesInDB(FieldName);
+   sl := ListUniqueEntriesInDB(FieldName);
    Result := sl.count;
    sl.Free;
 end;

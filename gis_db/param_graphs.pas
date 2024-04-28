@@ -66,7 +66,7 @@ begin
    with ParamGraphForm do begin
        GISdb[theDB].MyData.ApplyFilter('');
        GISdb[theDB].EmpSource.Enabled := false;
-       ParamList := GISdb[theDB].MyData.UniqueEntriesInDB('PARAM');
+       ParamList := GISdb[theDB].MyData.ListUniqueEntriesInDB('PARAM');
        for I := 0 to pred(ParamList.Count) do begin
           {$IfDef RecordPGraphs} WriteLineToDebugFile(ParamList.Strings[i]); {$EndIf}
           ComboBox1.Items.Add(ParamList.Strings[i]);

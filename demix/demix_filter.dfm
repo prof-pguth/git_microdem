@@ -19,7 +19,7 @@ object DemixFilterForm: TDemixFilterForm
     Top = 0
     Width = 772
     Height = 516
-    ActivePage = TabSheet1
+    ActivePage = Settings
     Align = alClient
     TabOrder = 0
     object TabSheet1: TTabSheet
@@ -824,13 +824,58 @@ object DemixFilterForm: TDemixFilterForm
         TabOrder = 6
         OnClick = CheckBox11Click
       end
+      object CheckBox18: TCheckBox
+        Left = 40
+        Top = 280
+        Width = 265
+        Height = 17
+        Caption = 'Enable file overwrites in DEMIX processing'
+        TabOrder = 7
+        OnClick = CheckBox18Click
+      end
+      object CheckBox22: TCheckBox
+        Left = 544
+        Top = 16
+        Width = 137
+        Height = 17
+        Caption = 'Do SSIM criteria'
+        TabOrder = 8
+        OnClick = CheckBox22Click
+      end
+      object CheckBox24: TCheckBox
+        Left = 544
+        Top = 39
+        Width = 137
+        Height = 17
+        Caption = 'Do FUV criteria'
+        TabOrder = 9
+        OnClick = CheckBox24Click
+      end
+      object BitBtn38: TBitBtn
+        Left = 528
+        Top = 288
+        Width = 113
+        Height = 25
+        Caption = 'Save defaults'
+        TabOrder = 10
+        OnClick = BitBtn38Click
+      end
+      object CheckBox25: TCheckBox
+        Left = 544
+        Top = 69
+        Width = 185
+        Height = 17
+        Caption = 'Open maps during SSIM/FUV'
+        TabOrder = 11
+        OnClick = CheckBox25Click
+      end
       object GroupBox9: TGroupBox
         Left = 312
         Top = 0
         Width = 185
-        Height = 257
-        Caption = 'SSIM/R2 parameters'
-        TabOrder = 7
+        Height = 313
+        Caption = 'SSIM/FUV parameters'
+        TabOrder = 12
         object CheckBox12: TCheckBox
           Left = 16
           Top = 23
@@ -921,51 +966,33 @@ object DemixFilterForm: TDemixFilterForm
           TabOrder = 9
           OnClick = HANDClick
         end
-      end
-      object CheckBox18: TCheckBox
-        Left = 40
-        Top = 280
-        Width = 265
-        Height = 17
-        Caption = 'Enable file overwrites in DEMIX processing'
-        TabOrder = 8
-        OnClick = CheckBox18Click
-      end
-      object CheckBox22: TCheckBox
-        Left = 544
-        Top = 16
-        Width = 137
-        Height = 17
-        Caption = 'Do SSIM criteria'
-        TabOrder = 9
-        OnClick = CheckBox22Click
-      end
-      object CheckBox24: TCheckBox
-        Left = 544
-        Top = 39
-        Width = 137
-        Height = 17
-        Caption = 'Do FUV criteria'
-        TabOrder = 10
-        OnClick = CheckBox24Click
-      end
-      object BitBtn38: TBitBtn
-        Left = 528
-        Top = 288
-        Width = 113
-        Height = 25
-        Caption = 'Save defaults'
-        TabOrder = 11
-        OnClick = BitBtn38Click
-      end
-      object CheckBox25: TCheckBox
-        Left = 544
-        Top = 69
-        Width = 185
-        Height = 17
-        Caption = 'Open maps during SSIM/FUV'
-        TabOrder = 12
-        OnClick = CheckBox25Click
+        object CheckBox26: TCheckBox
+          Left = 16
+          Top = 253
+          Width = 129
+          Height = 17
+          Caption = 'Profile curvature'
+          TabOrder = 10
+          OnClick = CheckBox26Click
+        end
+        object CheckBox27: TCheckBox
+          Left = 16
+          Top = 272
+          Width = 97
+          Height = 22
+          Caption = 'Plan curvature'
+          TabOrder = 11
+          OnClick = CheckBox27Click
+        end
+        object CheckBox28: TCheckBox
+          Left = 16
+          Top = 293
+          Width = 137
+          Height = 17
+          Caption = 'Tangential curvature'
+          TabOrder = 12
+          OnClick = CheckBox28Click
+        end
       end
     end
     object TabSheet4: TTabSheet

@@ -169,7 +169,7 @@ begin
              if (BaseFilter = '') then UseFilter := ''
              else UseFilter := BaseFilter +  ' AND ';
              if (dbOpts.LabelField = '') or (MyData.GetFieldType(dbOpts.LabelField) <> ftstring) then dbOpts.LabelField := PickField('unique values' ,[ftString,ftInteger,ftSmallInt]);
-             FieldsInDB := MyData.UniqueEntriesInDB(dbOpts.LabelField);
+             FieldsInDB := MyData.ListUniqueEntriesInDB(dbOpts.LabelField);
              SaveFilterStatus(false);
 
              CreateBitmap(Result,BitmapMaxWidth,20*FieldsInDB.Count+5);

@@ -1340,6 +1340,19 @@ begin
             {$EndIf}
          end;
 
+         {$IfDef ExPointCloud}
+         {$Else}
+            if (pt_cloud_opts_fm <> Nil) and MDdef.AutoRedrawMapLAS then begin
+               if (LasLayerOnMap) then begin
+                  {$If Defined(RecordFullMapDraw) or Defined(RecordOverlays) or Defined(RecordLAS)} WriteLineToDebugFile('DrawMapOnBMP, BackgroundPlotLASFilesOnMap'); {$EndIf}
+                   BackgroundPlotLASFilesOnMap(Bitmap);
+               end
+               else begin
+                  {$If Defined(RecordFullMapDraw) or Defined(RecordOverlays) or Defined(RecordLAS)} WriteLineToDebugFile('DrawMapOnBMP no LasLayerOnMap'); {$EndIf}
+               end;
+            end;
+         {$EndIf}
+
          {$IfDef NoOverlays}
          {$Else}
             if DrawOverlays then begin
@@ -1347,19 +1360,6 @@ begin
 
                {$IfDef VCL}
                   if DEMGridRedraw then ShowDEMGrid(Bitmap);
-               {$EndIf}
-
-               {$IfDef ExPointCloud}
-               {$Else}
-                  if (pt_cloud_opts_fm <> Nil) and MDdef.AutoRedrawMapLAS then begin
-                     if (LasLayerOnMap) then begin
-                        {$If Defined(RecordFullMapDraw) or Defined(RecordOverlays) or Defined(RecordLAS)} WriteLineToDebugFile('DrawMapOnBMP, BackgroundPlotLASFilesOnMap'); {$EndIf}
-                         BackgroundPlotLASFilesOnMap(Bitmap);
-                     end
-                     else begin
-                        {$If Defined(RecordFullMapDraw) or Defined(RecordOverlays) or Defined(RecordLAS)} WriteLineToDebugFile('DrawMapOnBMP no LasLayerOnMap'); {$EndIf}
-                     end;
-                  end;
                {$EndIf}
 
                {$If Defined( RecordFullMapDraw) or Defined(RecordOverlays)} WriteLineToDebugFile('DrawMapOnBMP call DrawMapOverlays'); {$EndIf}

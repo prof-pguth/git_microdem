@@ -150,14 +150,16 @@ object TMapOptsForm: TTMapOptsForm
       Height = 17
       Caption = 'Grayscale'
       TabOrder = 0
+      OnClick = CheckBox4Click
     end
     object CheckBox5: TCheckBox
       Left = 89
-      Top = 16
+      Top = 21
       Width = 66
       Height = 17
       Caption = 'Subdue'
       TabOrder = 1
+      OnClick = CheckBox5Click
     end
   end
   object GroupBox2: TGroupBox
@@ -214,6 +216,7 @@ object TMapOptsForm: TTMapOptsForm
       Height = 17
       Caption = 'Grayscale'
       TabOrder = 0
+      OnClick = CheckBox7Click
     end
     object CheckBox8: TCheckBox
       Left = 105
@@ -222,6 +225,7 @@ object TMapOptsForm: TTMapOptsForm
       Height = 17
       Caption = 'Subdue'
       TabOrder = 1
+      OnClick = CheckBox8Click
     end
   end
   object GroupBox4: TGroupBox
@@ -238,6 +242,7 @@ object TMapOptsForm: TTMapOptsForm
       Height = 17
       Caption = 'Grayscale'
       TabOrder = 0
+      OnClick = CheckBox9Click
     end
     object CheckBox10: TCheckBox
       Left = 105
@@ -246,6 +251,7 @@ object TMapOptsForm: TTMapOptsForm
       Height = 17
       Caption = 'Subdue'
       TabOrder = 1
+      OnClick = CheckBox10Click
     end
   end
   object CheckBox11: TCheckBox

@@ -54,7 +54,6 @@ object ThisBaseGraph: TThisBaseGraph
     Height = 195
     Align = alClient
     TabOrder = 0
-    ExplicitHeight = 175
     object Image1: TImage
       Left = 0
       Top = 0
@@ -86,7 +85,6 @@ object ThisBaseGraph: TThisBaseGraph
     Font.Style = [fsBold]
     ParentFont = False
     TabOrder = 1
-    ExplicitTop = 203
   end
   object ToolBar1: TToolBar
     Left = 0
@@ -647,6 +645,10 @@ object ThisBaseGraph: TThisBaseGraph
       object Pasteontograph2: TMenuItem
         Caption = 'New window'
         OnClick = Pasteontograph2Click
+      end
+      object Copytoclipboard3: TMenuItem
+        Caption = 'Copy to clipboard'
+        OnClick = Copytoclipboard3Click
       end
     end
     object Grayscalegraph1: TMenuItem

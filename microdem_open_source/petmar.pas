@@ -1372,7 +1372,7 @@ end;
             if FileExists(fName) then begin
                ColorTable := tMyData.Create(fName);
                ColorTable.ApplyFilter('USE=' + QuotedStr('Y'));
-               DataThere := ColorTable.UniqueEntriesInDB('PALETTE');
+               DataThere := ColorTable.ListUniqueEntriesInDB('PALETTE');
                for i := 0 to pred(DataThere.Count) do ComboBox1.Items.Add(DataThere.Strings[i]);
                ColorTable.Destroy;
                DataThere.Free;

@@ -54,7 +54,7 @@ var
    Icesat_filter : TIcesat_filter;
 begin
    Icesat_filter := TIcesat_filter.Create(Application);
-   InsureFormOnScreen(Icesat_filter,Mouse.CursorPos.X,Mouse.CursorPos.Y);
+   InsureFormOnScreenCurrentLocation(Icesat_filter,Mouse.CursorPos.X,Mouse.CursorPos.Y);
    Icesat_filter.ShowModal;
 end;
 

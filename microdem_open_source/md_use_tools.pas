@@ -15,8 +15,8 @@ unit md_use_tools;
 
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
-      {$Define RecordWBT}
-      {$Define RecordSAGA}
+      //{$Define RecordWBT}
+      //{$Define RecordSAGA}
       //{$Define RecordSAGA_JustResult}
 
       //{$Define OpenLasTools}
@@ -84,30 +84,31 @@ uses
    function WBT_GroundClassify(InName,OutName : PathStr) : shortString;
    function WBT_LidarSegmentationBasedFilter(InName,OutName : PathStr) : shortString;
    function WBT_DeNoise(InName,OutName : PathStr) : shortString;
-   function WBT_SlopeMap(InName : PathStr) : integer;
-   function WBT_ProfileCurvature(InName : PathStr): integer;
-   function WBT_TangentialCurvature(InName : PathStr): integer;
-   function WBT_MinimalCurvature(InName : PathStr): integer;
-   function WBT_MaximalCurvature(InName : PathStr): integer;
-   function WBT_MeanCurvature(InName : PathStr): integer;
-   function WBT_GaussianCurvature(InName : PathStr): integer;
-   function WBT_TRI(InName : PathStr) : integer;
+   function WBT_SlopeMap(OpenMap : boolean; InName : PathStr) : integer;
+   function WBT_ProfileCurvature(OpenMap : boolean; InName : PathStr): integer;
+   function WBT_PlanCurvature(OpenMap : boolean; InName : PathStr): integer;
+   function WBT_TangentialCurvature(OpenMap : boolean; InName : PathStr): integer;
+   function WBT_MinimalCurvature(OpenMap : boolean; InName : PathStr): integer;
+   function WBT_MaximalCurvature(OpenMap : boolean; InName : PathStr): integer;
+   function WBT_MeanCurvature(OpenMap : boolean; InName : PathStr): integer;
+   function WBT_GaussianCurvature(OpenMap : boolean; InName : PathStr): integer;
+   function WBT_TRI(OpenMap : boolean; InName : PathStr) : integer;
    function WBT_AvgNormVectAngDev(InName : PathStr; filtersize : integer) : integer;
-   function WBT_CircularVarianceOfAspect(InName : PathStr; filtersize : integer) : integer;
+   function WBT_CircularVarianceOfAspect(OpenMap : boolean; InName : PathStr; filtersize : integer) : integer;
    function WBT_DrainageBasins(InName : PathStr) : integer;
-   function WBT_FlowAccumulation(OpenMap,Log,D8 : boolean; InName : PathStr; var FlowAccName : PathStr) : integer;
-   function WBT_WetnessIndex(OpenMap,D8 : boolean; InName : PathStr; OutName : PathStr = '') : integer;
-   procedure WBT_IDWCreate(InName,OutName : PathStr; GridSize : float64);
+   procedure WBT_IDWCreate(OpenMap : boolean; InName,OutName : PathStr; GridSize : float64);
    procedure WBT_PennockLandformClass(InName : PathStr; SmoothFirst : boolean);
    procedure WBT_Geomorphons(InName : PathStr);
    procedure WBT_GridFillMissingData(InName : PathStr; TheElevUnits : tElevUnit);
-   procedure WBT_BNearNeighCreate(InName,OutName : PathStr; GridSize : float64);
+   function WBT_BNearNeighCreate(OpenMap : boolean; InName,OutName : PathStr; GridSize : float64) : integer;
    procedure WBT_GeotiffMetadata(InName : PathStr);
-   procedure WBT_AspectMap(InName : PathStr);
+   function WBT_AspectMap(OpenMap : boolean; InName : PathStr) : integer;
    procedure WBT_MultiscaleRoughness(InName : PathStr);
-   function WBT_breach_depression(InName : PathStr; var BreachName : PathStr) : integer;
-   function WBT_extract_streams(OpenMap : boolean; InName : PathStr; var StreamName : PathStr; Threshhold : float32 = 100.0) : integer;
-   function WBT_ElevAboveStream(OpenMap : boolean; InName : PathStr; OutName : PathStr = ''; Threshhold : float32 = 100.0) : integer;
+   function WBT_WetnessIndex(OpenMap,D8 : boolean; DEMName : PathStr; var WetnessName : PathStr) : integer;
+   function WBT_breach_depression(DEMName : PathStr; var BreachName : PathStr) : integer;
+   function WBT_FlowAccumulation(OpenMap,Log,D8 : boolean; DEMName : PathStr; var BreachName, FlowAccName : PathStr) : integer;
+   function WBT_extract_streams(OpenMap : boolean; DEMName : PathStr; var BreachName,FlowAccumulationName,StreamName : PathStr; Threshhold : float32 = 100.0) : integer;
+   function WBT_ElevAboveStream(OpenMap : boolean; DEMName : PathStr; BreachName,FlowAccumulationName,StreamName,HANDName : PathStr; Threshhold : float32 = 100.0) : integer;
 {$EndIf}
 
 

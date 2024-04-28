@@ -507,7 +507,7 @@ var
 begin
    {$IfDef RecordSupClass} WriteLineToDebugFile('Tsupclasform.FindClasses in'); {$EndIf}
    GISdb[MultiGridArray[UseMG].TrainingPointsDB].EmpSource.Enabled := false;
-   DataThere := GISdb[MultiGridArray[UseMG].TrainingPointsDB].MyData.UniqueEntriesInDB('CLASS');
+   DataThere := GISdb[MultiGridArray[UseMG].TrainingPointsDB].MyData.ListUniqueEntriesInDB('CLASS');
    if (DataThere.Count > 0) then begin
       ComboBox1.Items := DataThere;
       ComboBox1.Text := DataThere[0];

@@ -93,14 +93,11 @@ var
                     zone : integer;
                   begin
                      zone := Geotiff_UTMzone(fName);
-                        //InName := DEMGlb[DEM].GeotiffDEMName;
-                        UTMZone := AddDayMonthLeadingZero(zone);
-                        HorizCode := Starter + UTMZone;
-                        //CloseSingleDEM(DEM);
-                        AreaProjectionInfo.Edit;
-                        AreaProjectionInfo.SetFieldByNameAsString('UTM_ZONE',UTMzone);
-                        AreaProjectionInfo.Post;
-                     //end;
+                     UTMZone := AddDayMonthLeadingZero(zone);
+                     HorizCode := Starter + UTMZone;
+                     AreaProjectionInfo.Edit;
+                     AreaProjectionInfo.SetFieldByNameAsString('UTM_ZONE',UTMzone);
+                     AreaProjectionInfo.Post;
                   end;
 
          begin
@@ -120,6 +117,9 @@ var
                   else if HorizCode = 'ETRS89' then begin
                      if (UTMZone = '') then OpenAndCheck('258')
                      else HorizCode := '258' + UTMZone;
+                  end
+                  else if (HorizCode = 'GCS_WGS') then begin
+                     HorizCode := '4326'
                   end
                   else if (HorizCode = '') then begin
                      {$If Defined(Record3DEPX)} HighlightLineToDebugFile('ShiftAFile=' + fName + ' undefined or unsupported ' + HorizCode); {$EndIf}
@@ -310,10 +310,10 @@ var
           end
           else begin
              {$If Defined(Record3DEPXFull)} WriteLineToDebugFile('MakeRefDEMsForOneDir file=' + fName ); {$EndIf}
-             WantedDEM := OpenNewDEM(fName,true);  //map needed to create new grids covering same area
+             WantedDEM := OpenNewDEM(fName,false);
              if ValidDEM(WantedDEM) then begin
                 wmdem.SetPanelText(2, 'DEM: ' + IntToStr(succ(i)) + '/' + IntToStr(Files.Count),true);
-                ResampleForDEMIXOneSecDEMs(true,WantedDEM,false,aDir,ResampleModeOneSec);
+                ResampleForDEMIXOneSecDEMs(Overwrite,true,WantedDEM,false,aDir,ResampleModeOneSec);
              end;
           end;
           wmdem.SetPanelText(2, '',true);
@@ -487,7 +487,7 @@ begin
    ASCIIDEMs.Free;
 end;
 
-
+(*
 procedure DEMIX_merge_Visioterra_source(AreaName : shortstring = '');
 var
    Areas,ErrorLog : tStringList;
@@ -552,13 +552,13 @@ begin
    end;
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_merge_Visioterra_source'); {$EndIf}
 end;
-
+*)
 
 procedure DEMIX_merge_source(Areas : tStringList = Nil);
 var
    DEMs,ErrorLog : tStringList;
    Fixed : int64;
-   VDatumCode,NewDEM,AnArea{,LocalToWGS84,WGS84toEGM2008} : integer;
+   VDatumCode,NewDEM,AnArea : integer;
    AreaInventoryName,AreaMergeName, AreaPath,DEMName,OutVRT : PathStr;
    AreaName,TStr : shortstring;
    AreaInventory : tMyData;
@@ -703,10 +703,10 @@ begin
                  {$If Defined(RecordDEMIX)} HighlightLineToDebugFile('DEMIXreferenceDEMs for ' + AreaName); {$EndIf}
                  fName := AreaPath + AreaName + '.tif';
                  if FileExists(fName) then begin
-                    WantedDEM := OpenNewDEM(fName,true);   //need to open map to create the subset
+                    WantedDEM := OpenNewDEM(fName,false);
                     if (DEMGlb[WantedDEM].DEMheader.VerticalCSTypeGeoKey = VertCSEGM2008) then begin
                        {$If Defined(RecordDEMIXFull)} WriteLineToDebugFile('Call ResampleForDEMIXOneSecDEMs ' + AreaName); {$EndIf}
-                       ResampleForDEMIXOneSecDEMs(true,WantedDEM,false,AreaPath,ResampleMode);
+                       ResampleForDEMIXOneSecDEMs(Overwrite,true,WantedDEM,false,AreaPath,ResampleMode);
                     end
                     else CloseSingleDEM(WantedDEM);
                  end
@@ -717,9 +717,6 @@ begin
                  end;
               end;
            end;
-         end
-         else begin
-            {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs, no areas ' + DEMIX_Ref_Merge); {$EndIf}
          end;
       end;
    finally
@@ -757,12 +754,12 @@ begin
                  WantedDEM := OpenNewDEM(fName,true);   //need to open map to create the subset
                  if (DEMGlb[WantedDEM].DEMheader.VerticalCSTypeGeoKey = VertCSEGM2008) then begin
                     {$If Defined(RecordDEMIXFull)} WriteLineToDebugFile('Call ResampleForDEMIXOneSecDEMs ' + AreaName); {$EndIf}
-                    ResampleForDEMIXOneSecDEMs(true,WantedDEM,false,DEMIX_Ref_1sec,ResampleModeHalfSec);
+                    ResampleForDEMIXOneSecDEMs(True,true,WantedDEM,false,DEMIX_Ref_1sec,ResampleModeHalfSec);
                  end
                  else begin
                     TStr := DEMGlb[WantedDEM].AreaName  + ' not EGM2008; vert datum=' + IntToStr(DEMGlb[WantedDEM].DEMheader.VerticalCSTypeGeoKey);
                     if AnswerIsYes(TStr + '  Proceed anyway') then begin
-                       ResampleForDEMIXOneSecDEMs(true,WantedDEM,false,DEMIX_Ref_1sec,ResampleModeHalfSec);
+                       ResampleForDEMIXOneSecDEMs(true,true,WantedDEM,false,DEMIX_Ref_1sec,ResampleModeHalfSec);
                     end
                     else begin
                        {$If Defined(RecordDEMIX)} WriteLineToDebugFile(TStr); {$EndIf}
@@ -778,9 +775,6 @@ begin
               end;
            end;
         end;
-      end
-      else begin
-          {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXreferenceDEMs, no areas ' + DEMIX_Ref_Merge); {$EndIf}
       end;
    finally
       Areas.Free;
@@ -792,7 +786,7 @@ end;
 
 
 
-procedure ResampleForDEMIXOneSecDEMs(CloseAfter : boolean; DEM : integer; OpenMap : boolean = false; OutPath : PathStr = ''; ResampleMode : byte = 1);
+procedure ResampleForDEMIXOneSecDEMs(OverWrite : boolean; CloseAfter : boolean; DEM : integer; OpenMap : boolean = false; OutPath : PathStr = ''; ResampleMode : byte = 1);
 var
    NewDEM : integer;
    fName,BaseName : PathStr;
@@ -801,7 +795,7 @@ var
 
       function CreateOneRefDEM(PixelIs : byte; xgridsize,ygridsize : float32; fName : PathStr) : integer;
       begin
-         if FileExists(fName) then begin
+         if (not Overwrite) and FileExists(fName) then begin
             Result := OpenNewDEM(fName);
          end
          else begin

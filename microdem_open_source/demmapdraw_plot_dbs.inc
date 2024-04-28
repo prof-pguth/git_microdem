@@ -67,9 +67,7 @@ begin
          GISDB[GISNum].aShapeFile.PlotAllRecords(Self,Bitmap);
       end;
 
-      {$IfDef FMX}
-      Bitmap.Canvas.EndScene;
-      {$EndIf}
+      {$IfDef FMX} Bitmap.Canvas.EndScene; {$EndIf}
       CloseAndNilNumberedDB(GISNum);
    end;
 end;
@@ -153,11 +151,6 @@ begin
                if dbOpts.Subdue then MakeTheBitmapSubdued(Bitmap);
             end;
          {$EndIf}
-
-        {$IfDef ExSidescan}
-        {$Else}
-           // if SideScanIndex then PlotSideScanCoverage(Bitmap);
-        {$EndIf}
       end;
       ShowStatus;
    end;

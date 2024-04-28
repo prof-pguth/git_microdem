@@ -486,7 +486,7 @@ begin
    Result := -1;
    Table := tMyData.Create(MonthlyClimateFName);
    if (Parameter = '') then begin
-      Options:= Table.UniqueEntriesInDB('PARAMETER');
+      Options:= Table.ListUniqueEntriesInDB('PARAMETER');
       Parameter := GetFromList('Monthly time series',Options,True);
       Options.Free;
       if (Parameter = '') then exit;

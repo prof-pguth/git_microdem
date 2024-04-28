@@ -324,6 +324,7 @@ type
     Copytoclipboardwithaddedlegend1: TMenuItem;
     Animate1: TMenuItem;
     Imagewithseparatalayers1: TMenuItem;
+    Copytoclipboard3: TMenuItem;
     procedure IDSpeedButtonClick(Sender: TObject);
     procedure LegendSpeedButtonClick(Sender: TObject);
     procedure Bestfitlinecolor1Click(Sender: TObject);
@@ -414,6 +415,7 @@ type
     procedure Copytoclipboardwithaddedlegend1Click(Sender: TObject);
     procedure Animate1Click(Sender: TObject);
     procedure Imagewithseparatalayers1Click(Sender: TObject);
+    procedure Copytoclipboard3Click(Sender: TObject);
   private
     { Private declarations }
      DataPlotsVisible : array[0..50] of boolean;
@@ -2127,7 +2129,7 @@ const
 var
    LastLabelEnd : integer;
 
-      procedure SetRegularAxis(AxisFunctionType : tAxisFunction; var AxisFunct : RealToRealFunction;  var CycleCuts : tCycleCut; var NumCycles : integer;  var MinAxis,MaxAxis : float32);
+      procedure SetNormalProbabilityAxis(AxisFunctionType : tAxisFunction; var AxisFunct : RealToRealFunction;  var CycleCuts : tCycleCut; var NumCycles : integer;  var MinAxis,MaxAxis : float32);
       var
          i : integer;
       begin
@@ -2517,7 +2519,7 @@ begin {proc CreateGraphAxes}
       if GraphDraw.NormalCartesianX then LastLabelEnd := 0
       else LastLabelEnd := Bitmap.Width;
 
-      SetRegularAxis(GraphDraw.HorizAxisFunctionType,GraphDraw.HorizAxisFunct,GraphDraw.HorizCycleCuts,GraphDraw.NumHorizCycles,GraphDraw.MinHorizAxis,GraphDraw.MaxHorizAxis);
+      SetNormalProbabilityAxis(GraphDraw.HorizAxisFunctionType,GraphDraw.HorizAxisFunct,GraphDraw.HorizCycleCuts,GraphDraw.NumHorizCycles,GraphDraw.MinHorizAxis,GraphDraw.MaxHorizAxis);
       GraphDraw.ScrMaxHorizAxis := GraphDraw.HorizAxisFunct(GraphDraw.MaxHorizAxis);
       GraphDraw.ScrMinHorizAxis := GraphDraw.HorizAxisFunct(GraphDraw.MinHorizAxis);
       GraphDraw.ScrHorizRange := (GraphDraw.ScrMaxHorizAxis - GraphDraw.ScrMinHorizAxis);
@@ -2571,7 +2573,7 @@ begin {proc CreateGraphAxes}
          {$If Defined(RecordGrafAxis)} WriteLineToDebugFile('tThisBaseGraph.CreateGraphAxes 2d y axis set'); {$EndIf}
       end;
 
-      SetRegularAxis(VertAxisFunctionType,VertAxisFunct,VertCycleCuts,NumVertCycles,MinVertAxis,MaxVertAxis);
+      SetNormalProbabilityAxis(VertAxisFunctionType,VertAxisFunct,VertCycleCuts,NumVertCycles,MinVertAxis,MaxVertAxis);
       ScrMaxVertAxis := VertAxisFunct(MaxVertAxis);
       ScrMinVertAxis := VertAxisFunct(MinVertAxis);
       ScrVertRange := (ScrMaxVertAxis - ScrMinVertAxis);
@@ -3013,7 +3015,8 @@ end;
 
 procedure TThisBaseGraph.Pasteontograph1Click(Sender: TObject);
 begin
-   Legend1Click(Sender);
+   //xxx  Legend1Click(Sender);
+   Pastefromclipboard1Click(Sender);
 end;
 
 procedure TThisBaseGraph.Pasteontograph2Click(Sender: TObject);
@@ -4137,6 +4140,7 @@ begin
    AnimateGraph(True);
 end;
 
+
 procedure TThisBaseGraph.AnimateGraph(Movie : boolean; MovieName : ShortString = '');
 var
    aMovie : tStringList;
@@ -4162,14 +4166,15 @@ begin
       DataPlotsVisible[j] := true;
       if (not Movie) and (j = succ(Start)) then begin
          Width := SaveGraphWidth - SaveLeftMargin;
-         GraphDraw.LeftMargin := 0;
+         GraphDraw.LeftMargin := 2;
          GraphDraw.VertLabel := '';
       end;
-      if (GraphDraw.LegendList <> Nil) then GraphDraw.VertLabel := GraphDraw.LegendList.Strings[j] + ' ' + SaveVertLabel;
+      //if (GraphDraw.LegendList <> Nil) then GraphDraw.VertLabel := GraphDraw.LegendList.Strings[j] + ' ' + SaveVertLabel;
       GraphDraw.MultiPanelGraph := not Movie;
       RedrawDiagram11Click(Nil);
       DataPlotsVisible[j] := false;
       CopyImageToBitmap(Image1,Bitmap);
+      Bitmap.Width := Bitmap.Width + 10;
       fName := NextFileNumber(MDtempDir,'_frame_','.bmp');
       Bitmap.SaveToFile(fName);
       aMovie.Add(fName);
@@ -5751,7 +5756,7 @@ begin
 begin
    if (GraphDraw.DBFLineFilesPlotted.Count > 0) then MakeThisLegend(GraphDraw.DBFLineFilesPlotted,true);
    if (GraphDraw.LegendList <> Nil) then MakeThisLegend(GraphDraw.LegendList,false);
-   Pastefromclipboard1Click(Sender);
+   if (Sender <> CopyToClipboard3) then Pastefromclipboard1Click(Sender);
 {$EndIf}
 end;
 
@@ -5817,18 +5822,22 @@ begin
    Copytoclipboard1Click(Sender);
 end;
 
+procedure TThisBaseGraph.Copytoclipboard3Click(Sender: TObject);
+begin
+   Legend1Click(Sender);
+end;
+
 procedure TThisBaseGraph.Copytoclipboardwithaddedlegend1Click(Sender: TObject);
 var
    Bitmap,bmp : tMyBitmap;
    x : integer;
 begin
    CopyImageToBitmap(Image1,Bitmap);
-
-      bmp := MakeLegend(GraphDraw.LegendList,false);
-      x := Bitmap.Width + 10;
-      Bitmap.Width := x + bmp.Width;
-      Bitmap.Canvas.Draw(x,Bitmap.Height - 10 - bmp.Height,bmp);
-      bmp.Free;
+   bmp := MakeLegend(GraphDraw.LegendList,false);
+   x := Bitmap.Width + 10;
+   Bitmap.Width := x + bmp.Width;
+   Bitmap.Canvas.Draw(x,Bitmap.Height - 10 - bmp.Height,bmp);
+   bmp.Free;
   AssignBitmapToClipBoard(Bitmap);
   //Bitmap.Free;
 end;

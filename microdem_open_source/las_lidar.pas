@@ -607,7 +607,7 @@ var
    NoFilter : boolean;
    ColorRGB : tPlatformColor;
 begin
-   if {true or} IsLASFileOnMap(BaseMapDraw) then begin
+   if true or IsLASFileOnMap(BaseMapDraw) then begin
       {$If Defined(RecordLASplot)} writelineToDebugFile('tLAS_data.PlotOnMap ' + ExtractFileNameNoExt(LasFileName) + ' LAS proj=' + sfBoundBoxToString(LAS_Proj_Box,1)); {$EndIf}
       NoFilter := NoFilterWanted;
       pplot := 0;

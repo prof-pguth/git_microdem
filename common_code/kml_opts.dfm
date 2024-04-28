@@ -3,8 +3,8 @@ object kml_opts_fm: Tkml_opts_fm
   Top = 0
   BorderIcons = []
   Caption = 'KML database export options'
-  ClientHeight = 398
-  ClientWidth = 531
+  ClientHeight = 396
+  ClientWidth = 539
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -149,8 +149,8 @@ object kml_opts_fm: Tkml_opts_fm
     TabOrder = 5
   end
   object HelpBtn: TBitBtn
-    Left = 274
-    Top = 352
+    Left = 410
+    Top = 351
     Width = 77
     Height = 27
     Kind = bkHelp
@@ -162,8 +162,8 @@ object kml_opts_fm: Tkml_opts_fm
     IsControl = True
   end
   object OKBtn: TBitBtn
-    Left = 32
-    Top = 352
+    Left = 8
+    Top = 351
     Width = 93
     Height = 27
     Caption = 'Save KML'
@@ -197,8 +197,8 @@ object kml_opts_fm: Tkml_opts_fm
     TabOrder = 8
   end
   object BitBtn2: TBitBtn
-    Left = 175
-    Top = 352
+    Left = 317
+    Top = 351
     Width = 77
     Height = 27
     Caption = 'OK'

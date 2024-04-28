@@ -420,7 +420,7 @@ begin
       GISdb[TigerDB].AssembleGISFilter;
       {$IfDef RecordTigerIndex} WriteLineToDebugFile('Onhand recs in TIGER database: ' + IntToStr(GISdb[TigerDB].MyData.RecordCount)); {$EndIf}
 
-      GISdb[TigerDB].ApplyGISFilter(MakeCornersGeoFilter(bB));
+      GISdb[TigerDB].ApplyGISFilter(MakeGeoFilterFromBoundingBox(bB));
       {$IfDef RecordTigerIndex} WriteLineToDebugFile('Filter: ' + GISdb[TigerDB].MyData.Filter); {$EndIf}
 
       GISdb[TigerDB].MyData.First;

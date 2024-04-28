@@ -75,6 +75,12 @@ type
     procedure CheckBox7Click(Sender: TObject);
   private
     { Private declarations }
+    FieldsInDB : tStringList;
+    DBonTable : integer;
+    LocalKML,SingleRecordOnly : boolean;
+    kml : KML_Creator.tKMLCreator;
+    SepExpField : ShortString;
+    function DoExport : PathStr;
   public
     { Public declarations }
      IconFName : PathStr;
@@ -111,6 +117,7 @@ uses
    {$IfDef ExGeography} {$Else} KoppenGr, {$EndIf}
    Petmar,DEMCoord,DEMDefs,DEMDatabase,DEMESRIShapefile,PETDBUtils,
    PETImage, nevadia_main;
+
 
 
 function ControlChar(Input : string; i : integer) : boolean;
@@ -337,18 +344,97 @@ begin
 end;
 
 
+
 function ConvertToKML(DBonTable : integer; ThumbNailDir : PathStr; kml : KML_Creator.tKMLCreator = Nil; SingleRecordOnly : boolean = false; SepExpField : ShortString = '') : PathStr;
 var
    kml_opts_fm: Tkml_opts_fm;
-   //fname : PathStr;
+   i : integer;
+begin {function ConvertToKML}
+   {$IfDef KMLProblems} WriteLinetoDebugFile('ConvertToKML enter,  db=' + IntToStr(DBOnTable) + '  ThumbNailDir=' + ThumbNailDir); {$EndIf}
+
+   kml_opts_fm := Tkml_opts_fm.Create(Application);
+   kml_opts_fm.IconFName := ExtractFilePath(GISdb[DBonTable].dbFullName);
+   GISdb[DBonTable].EmpSource.Enabled := false;
+   kml_opts_fm.FieldsInDB := Nil;
+   kml_opts_fm.dbOnTable := DBonTable;
+   kml_opts_fm.SingleRecordOnly := SingleRecordOnly;
+   kml_opts_fm.SepExpField := SepExpField;
+   kml_opts_fm.kml := kml;
+   with GISdb[DBonTable] do begin
+      kml_opts_fm.Edit1.Text := dbName;
+      GetFieldsLinkPossible(MyData,LinkTable,dbOpts.VisCols,[ftString],kml_opts_fm.FieldsInDB);
+      if (kml_opts_fm.FieldsInDB.Count > 0) then begin
+         kml_opts_fm.ComboBox3.Items := kml_opts_fm.FieldsInDB;
+         kml_opts_fm.ComboBox4.Items := kml_opts_fm.FieldsInDB;
+         kml_opts_fm.ComboBox6.Items := kml_opts_fm.FieldsInDB;
+         kml_opts_fm.ComboBox7.Items := kml_opts_fm.FieldsInDB;
+         kml_opts_fm.ComboBox3.Text := SepExpField;
+         if MDDef.KMLTimeAnimations then begin
+            if MyData.FieldExists('START_DATE') then kml_opts_fm.ComboBox6.Text := 'START_DATE';
+            if MyData.FieldExists('END_DATE') then kml_opts_fm.ComboBox7.Text := 'END_DATE';
+         end;
+         kml_opts_fm.ComboBox8.Items := kml_opts_fm.FieldsInDB;
+         if MDDef.KMLLabelExports then begin
+            if MyData.FieldExists('NAME') then kml_opts_fm.ComboBox4.Text := 'NAME'
+            else kml_opts_fm.ComboBox4.Text := kml_opts_fm.FieldsInDB.Strings[0];
+         end;
+         if MyData.FieldExists('TEXT') then kml_opts_fm.ComboBox8.Text := 'TEXT';
+      end;
+      kml_opts_fm.FieldsInDB.Free;
+      kml_opts_fm.ComboBox1.Enabled := false;
+      kml_opts_fm.Edit3.Enabled := false;
+      kml_opts_fm.Label3.Enabled := false;
+      kml_opts_fm.ComboBox2.Enabled := false;
+      kml_opts_fm.Edit4.Enabled := false;
+      kml_opts_fm.Label4.Enabled := false;
+
+      for i := 1 to 5 do if (ImageFieldNames[i] <> '') then begin
+         kml_opts_fm.ComboBox1.Items.Add(ImageFieldNames[i]);
+         kml_opts_fm.ComboBox1.Enabled := true;
+         kml_opts_fm.Edit3.Enabled := true;
+         kml_opts_fm.Label3.Enabled := true;
+         kml_opts_fm.ComboBox1.Text := ImageFieldNames[i];
+      end;
+      for i := 1 to 5 do if (WWWFieldNames[i] <> '') then begin
+         kml_opts_fm.ComboBox2.Items.Add(WWWFieldNames[i]);
+         kml_opts_fm.ComboBox2.Enabled := true;
+         kml_opts_fm.Edit4.Enabled := true;
+         kml_opts_fm.Label4.Enabled := true;
+         kml_opts_fm.ComboBox2.Text := WWWFieldNames[i];
+      end;
+      for i := 1 to 5 do if (IconFieldNames[i] <> '') then begin
+         kml_opts_fm.ComboBox5.Items.Add(IconFieldNames[i]);
+         kml_opts_fm.ComboBox5.Enabled := true;
+         kml_opts_fm.ComboBox5.Text := IconFieldNames[i];
+      end;
+   end;
+
+   kml_opts_fm.LocalKML := (KML = Nil);
+   if kml_opts_fm.LocalKML then kml_opts_fm.BitBtn2.Visible := false
+   else begin
+      kml_opts_fm.OKBtn.Visible := false;
+   end;
+
+   if (not MDDef.KMLDefaultDB) then kml_opts_fm.ShowModal;
+
+   Result := kml_opts_fm.DoExport;
+
+   kml_opts_fm.Free;
+   {$IfDef KMLProblems} WriteLinetoDebugFile('ConvertToKML out'); {$EndIf}
+end {function ConvertToKML};
+
+
+
+
+function Tkml_opts_fm.DoExport : PathStr;
+var
    NameField,FolderName,FolderDesc,IconName,
    MenuStr,TStr : shortstring;
    Options,Desc : string;
    IconScaleFactor,Lat,Long : float64;
    z : float32;
    i : integer;
-   AllFilters,AllIcons,TStrl,FieldsInDB : tStringList;
-   LocalKML : boolean;
+   AllFilters,AllIcons,TStrl : tStringList;
 
 
       function KML_FixDate(TheDate : string35) : string35;
@@ -374,9 +460,9 @@ var
          i : integer;
       begin
          Result := '';
-         if (kml_opts_fm.ComboBox6.Text = '') or (not kml_opts_fm.CheckBox3.Checked) then exit;
-         BeginTime := KML_FixDate(GISdb[DBonTable].MyData.GetFieldByNameAsString(kml_opts_fm.ComboBox6.Text));
-         if (kml_opts_fm.ComboBox7.Text <> '') then EndTime := KML_FixDate(GISdb[DBonTable].MyData.GetFieldByNameAsString(kml_opts_fm.ComboBox7.Text))
+         if (ComboBox6.Text = '') or (not CheckBox3.Checked) then exit;
+         BeginTime := KML_FixDate(GISdb[DBonTable].MyData.GetFieldByNameAsString(ComboBox6.Text));
+         if (ComboBox7.Text <> '') then EndTime := KML_FixDate(GISdb[DBonTable].MyData.GetFieldByNameAsString(ComboBox7.Text))
          else EndTime := '';
          if (BeginTime <> '') or (EndTime <> '') then begin
             if (EndTime = '') then begin
@@ -475,7 +561,7 @@ var
              AllLines := Nil;
              EmpSource.Enabled := false;
              if LineShapeFile(ShapeFileType) and MyData.FieldExists('LINE_COLOR') then begin
-                AllLines := MyData.UniqueEntriesInDB('LINE_COLOR');
+                AllLines := MyData.ListUniqueEntriesInDB('LINE_COLOR');
                 for i := 0 to pred(AllLines.Count) do begin
                    Color := StrToInt(AllLines.Strings[i]);
                    GetRGBfromTColor(Color,r,g,b);
@@ -483,15 +569,15 @@ var
                    KML.KMLStringList.Add(' <Style id="Line' + IntToStr(DBonTable) + '-' + IntToStr(i) + '">' + '<LineStyle>' + '<color>' + ColorStr + '</color>' + '<width>4</width>' + '</LineStyle>' + '</Style>');
                 end;
              end
-             else if (kml_opts_fm.ComboBox5.Text <> '') or (FileExists(kml_opts_fm.IconFName)) or (GISdb[DBonTable].dbOpts.DBAutoShow =  dbasIconAll) then begin
+             else if (ComboBox5.Text <> '') or (FileExists(IconFName)) or (GISdb[DBonTable].dbOpts.DBAutoShow =  dbasIconAll) then begin
                 {$IfDef KMLProblems} WriteLinetoDebugFile('Copy Icons'); {$EndIf}
                 IconScaleFactor := 1.1;
-                CheckEditString(kml_opts_fm.Edit7.Text,IconScaleFactor);
+                CheckEditString(Edit7.Text,IconScaleFactor);
                 if (GISdb[DBonTable].dbOpts.DBAutoShow =  dbasIconAll) then begin
                    DoAnIcon('c:\mapdata\icons\' + GISdb[DBonTable].dbOpts.AllIconFName);
                 end
-                else if (not PathIsValid(kml_opts_fm.IconFName)) and (FileExists(kml_opts_fm.IconFName)) then begin
-                   DoAnIcon(kml_opts_fm.IconFName);
+                else if (not PathIsValid(IconFName)) and (FileExists(IconFName)) then begin
+                   DoAnIcon(IconFName);
                 end
                 else begin
                    if SingleRecordOnly then begin
@@ -510,13 +596,13 @@ var
                        end;
                    end
                    else begin
-                      AllIcons := MyData.UniqueEntriesInDB(kml_opts_fm.ComboBox5.Text);
+                      AllIcons := MyData.ListUniqueEntriesInDB(ComboBox5.Text);
                       GISdb[DBonTable].EmpSource.Enabled := false;
                       for i := 0 to pred(AllIcons.Count) do begin
                          IconName := AllIcons.Strings[i];
                          if MyData.FieldExists('ICON_SCALE') then begin
                             MyData.First;
-                            while (MyData.GetFieldByNameAsString(kml_opts_fm.ComboBox5.Text) <> IconName) do MyData.Next;
+                            while (MyData.GetFieldByNameAsString(ComboBox5.Text) <> IconName) do MyData.Next;
                             IconScaleFactor := MyData.GetFieldByNameAsFloat('ICON_SCALE');
                          end;
                          CopyIconGraphicsFile;
@@ -526,11 +612,11 @@ var
                 end;
             end;
 
-            if (kml_opts_fm.ComboBox6.Text <> '') then KML.KMLStringList.Add(TimeSpanString);
+            if (ComboBox6.Text <> '') then KML.KMLStringList.Add(TimeSpanString);
             KML.KMLStringList.Add('');
-            CheckEditString(kml_opts_fm.Edit6.Text,MDDef.ThumbSize);
-            NameField := kml_opts_fm.ComboBox4.Text;
-            ThinFactor := StrToInt(kml_opts_fm.Edit8.Text);
+            CheckEditString(Edit6.Text,MDDef.ThumbSize);
+            NameField := ComboBox4.Text;
+            ThinFactor := StrToInt(Edit8.Text);
             EmpSource.Enabled := false;
             if (not SingleRecordOnly) then begin
                StartProgress('Export DB');
@@ -547,7 +633,7 @@ var
                InTag := false;
                Desc := '';
 
-               if MDDef.KML_DB_tables or (kml_opts_fm.ComboBox1.Enabled and (kml_opts_fm.ComboBox1.Text <> '')) or (kml_opts_fm.ComboBox2.Enabled and (kml_opts_fm.ComboBox2.Text <> '')) or (kml_opts_fm.ComboBox8.Enabled and (kml_opts_fm.ComboBox8.Text <> '')) then begin
+               if MDDef.KML_DB_tables or (ComboBox1.Enabled and (ComboBox1.Text <> '')) or (ComboBox2.Enabled and (ComboBox2.Text <> '')) or (ComboBox8.Enabled and (ComboBox8.Text <> '')) then begin
                   Desc := '<![CDATA[' + Desc;
 
                  {$IfDef ExGeography}
@@ -561,20 +647,20 @@ var
                      end;
                   {$EndIf}
 
-                  if (kml_opts_fm.ComboBox1.Enabled and (kml_opts_fm.ComboBox1.Text <> '')) and (not MDDef.KML_DB_tables) then begin
-                     Desc := Desc + MyData.MakeImageTag(ThumbnailDir, kml_opts_fm.ComboBox1.Text);
+                  if (ComboBox1.Enabled and (ComboBox1.Text <> '')) and (not MDDef.KML_DB_tables) then begin
+                     Desc := Desc + MyData.MakeImageTag(ThumbnailDir, ComboBox1.Text);
                   end;
 
-                  if (kml_opts_fm.ComboBox2.Enabled and (kml_opts_fm.ComboBox2.Text <> '')) then begin
-                     fName := MyData.GetFieldByNameAsString(kml_opts_fm.ComboBox2.Text);
+                  if (ComboBox2.Enabled and (ComboBox2.Text <> '')) then begin
+                     fName := MyData.GetFieldByNameAsString(ComboBox2.Text);
                      if ExtEquals(ExtractFilePath(fName),'.PDF') then begin
                         CopyFile(FName,KML.KMLOutputPath + fName);
                      end;
-                     Desc := Desc + '<a href="' + fName + '"><br />' + kml_opts_fm.Edit4.Text  + '</a><br />';
+                     Desc := Desc + '<a href="' + fName + '"><br />' + Edit4.Text  + '</a><br />';
                   end;
 
-                 if kml_opts_fm.ComboBox8.Enabled and (kml_opts_fm.ComboBox8.Text <> '') then begin
-                     fName := MyData.GetFieldByNameAsString(kml_opts_fm.ComboBox8.Text);
+                 if ComboBox8.Enabled and (ComboBox8.Text <> '') then begin
+                     fName := MyData.GetFieldByNameAsString(ComboBox8.Text);
                      if not FileExists(fName) then fName := ExtractFilePath(GISdb[DBonTable].dbFullName) + fName;
                      CleanUpFileName(fname);
                      if FileExists(fName) then begin
@@ -608,12 +694,12 @@ var
                if SimplePointFile then begin
                   if ValidLatLongFromTable(Lat,Long) then begin
                      Options := '';
-                     if (GISdb[DBonTable].dbOpts.DBAutoShow = dbasIconAll) or (FileExists(kml_opts_fm.IconFName)) then begin
+                     if (GISdb[DBonTable].dbOpts.DBAutoShow = dbasIconAll) or (FileExists(IconFName)) then begin
                         Options := Options + '<styleUrl>#I' + IntToStr(DBonTable) + '-1' + '</styleUrl>';
                      end
-                     else if (kml_opts_fm.ComboBox5.Text <> '') then begin
+                     else if (ComboBox5.Text <> '') then begin
                         if SingleRecordOnly then i := 0
-                        else i := AllIcons.IndexOf(MyData.GetFieldByNameAsString(kml_opts_fm.ComboBox5.Text));
+                        else i := AllIcons.IndexOf(MyData.GetFieldByNameAsString(ComboBox5.Text));
                         Options := '<styleUrl>#I' + IntToStr(DBonTable) + '-' + IntToStr(i) + '</styleUrl>';
                      end;
                      KML.AddPlaceMark(Lat,Long, TStr,Desc,'',0,Options);
@@ -654,7 +740,8 @@ var
         {$IfDef KMLProblems}   WriteLinetoDebugFile('ProcessDataBase out'); {$EndIf}
        end;
 
-
+   var
+      fName2 : shortstring;
    begin
      {$IfDef KMLProblems} WriteLinetoDebugFile('CreateDocument for KML in'); {$EndIf}
      {$IfDef ExGeography}
@@ -668,14 +755,16 @@ var
          end;
       {$EndIf}
 
-      if (kml_opts_fm.ComboBox3.Text = '') then begin
+      if (ComboBox3.Text = '') then begin
          ProcessDataBase;
       end
       else begin
-         AllFilters := GISdb[DBonTable].MyData.UniqueEntriesInDB(kml_opts_fm.ComboBox3.Text);
+         AllFilters := GISdb[DBonTable].MyData.ListUniqueEntriesInDB(ComboBox3.Text);
+         fName2 := ComboBox3.Text;
          for i := 0 to pred(AllFilters.Count) do begin
             wmDEM.SetPanelText(0, IntToStr(i) + '/' + IntToStr(AllFilters.Count));
-            ItsName := kml_opts_fm.ComboBox3.Text + '=' + QuotedStr(AllFilters.Strings[i]);
+            if ftIsNumeric(GISdb[DBonTable].MyData.GetFieldType(fName2)) then ItsName := fName2 + '=' + AllFilters.Strings[i]
+            else ItsName := fName2 + '=' + QuotedStr(AllFilters.Strings[i]);
             GISdb[DBonTable].MyData.ApplyFilter(ItsName);
             ItsName := ItsName + '  n=' + IntToStr(GISdb[DBonTable].MyData.RecordCount);
             KML.AddFolder(ItsName,'');
@@ -691,74 +780,11 @@ var
 
 
 begin
-   {$IfDef KMLProblems} WriteLinetoDebugFile('ConvertToKML enter,  db=' + IntToStr(DBOnTable) + '  ThumbNailDir=' + ThumbNailDir); {$EndIf}
-
-   kml_opts_fm := Tkml_opts_fm.Create(Application);
-   kml_opts_fm.IconFName := ExtractFilePath(GISdb[DBonTable].dbFullName);
-   GISdb[DBonTable].EmpSource.Enabled := false;
-   FieldsInDB := Nil;
-   with GISdb[DBonTable] do begin
-      kml_opts_fm.Edit1.Text := dbName;
-      GetFieldsLinkPossible(MyData,LinkTable,dbOpts.VisCols,[ftString],FieldsInDB);
-      if (FieldsInDB.Count > 0) then begin
-         kml_opts_fm.ComboBox3.Items := FieldsInDB;
-         kml_opts_fm.ComboBox4.Items := FieldsInDB;
-         kml_opts_fm.ComboBox6.Items := FieldsInDB;
-         kml_opts_fm.ComboBox7.Items := FieldsInDB;
-         kml_opts_fm.ComboBox3.Text := SepExpField;
-         if MDDef.KMLTimeAnimations then begin
-            if MyData.FieldExists('START_DATE') then kml_opts_fm.ComboBox6.Text := 'START_DATE';
-            if MyData.FieldExists('END_DATE') then kml_opts_fm.ComboBox7.Text := 'END_DATE';
-         end;
-         kml_opts_fm.ComboBox8.Items := FieldsInDB;
-         if MDDef.KMLLabelExports then begin
-            if MyData.FieldExists('NAME') then kml_opts_fm.ComboBox4.Text := 'NAME'
-            else kml_opts_fm.ComboBox4.Text := FieldsInDB.Strings[0];
-         end;
-         if MyData.FieldExists('TEXT') then kml_opts_fm.ComboBox8.Text := 'TEXT';
-      end;
-      FieldsInDB.Free;
-      kml_opts_fm.ComboBox1.Enabled := false;
-      kml_opts_fm.Edit3.Enabled := false;
-      kml_opts_fm.Label3.Enabled := false;
-      kml_opts_fm.ComboBox2.Enabled := false;
-      kml_opts_fm.Edit4.Enabled := false;
-      kml_opts_fm.Label4.Enabled := false;
-
-      for i := 1 to 5 do if (ImageFieldNames[i] <> '') then begin
-         kml_opts_fm.ComboBox1.Items.Add(ImageFieldNames[i]);
-         kml_opts_fm.ComboBox1.Enabled := true;
-         kml_opts_fm.Edit3.Enabled := true;
-         kml_opts_fm.Label3.Enabled := true;
-         kml_opts_fm.ComboBox1.Text := ImageFieldNames[i];
-      end;
-      for i := 1 to 5 do if (WWWFieldNames[i] <> '') then begin
-         kml_opts_fm.ComboBox2.Items.Add(WWWFieldNames[i]);
-         kml_opts_fm.ComboBox2.Enabled := true;
-         kml_opts_fm.Edit4.Enabled := true;
-         kml_opts_fm.Label4.Enabled := true;
-         kml_opts_fm.ComboBox2.Text := WWWFieldNames[i];
-      end;
-      for i := 1 to 5 do if (IconFieldNames[i] <> '') then begin
-         kml_opts_fm.ComboBox5.Items.Add(IconFieldNames[i]);
-         kml_opts_fm.ComboBox5.Enabled := true;
-         kml_opts_fm.ComboBox5.Text := IconFieldNames[i];
-      end;
-   end;
-
-   LocalKML := (KML = Nil);
-   if LocalKML then kml_opts_fm.BitBtn2.Visible := false
-   else begin
-      kml_opts_fm.OKBtn.Visible := false;
-   end;
-
-   if not MDDef.KMLDefaultDB then kml_opts_fm.ShowModal;
-
    {$IfDef KMLProblems} WriteLinetoDebugFile('Options selected'); {$EndIf}
 
    GISdb[DBonTable].EmpSource.Enabled := false;
-   FolderName := kml_opts_fm.Edit1.Text;
-   FolderDesc := kml_opts_fm.Edit2.Text;
+   FolderName := Edit1.Text;
+   FolderDesc := Edit2.Text;
 
    if LocalKML then begin
       kml := tKMLCreator.Create('');
@@ -768,14 +794,14 @@ begin
    LastKMLDir :=  KML.KMLOutputPath;
 
    GISdb[DBonTable].EmpSource.Enabled := false;
-   if (kml_opts_fm.ComboBox6.Text = '') or (not kml_opts_fm.CheckBox3.Checked) then begin  //no time animateion
+   if (ComboBox6.Text = '') or (not CheckBox3.Checked) then begin  //no time animateion
       CreateDocument(GISdb[DBonTable].dbName);
    end
    else begin  //time animation
-      FieldsInDB := GISdb[DBonTable].MyData.UniqueEntriesInDB(kml_opts_fm.ComboBox6.Text);
+      FieldsInDB := GISdb[DBonTable].MyData.ListUniqueEntriesInDB(ComboBox6.Text);
       for i := 0 to pred(FieldsInDB.Count) do begin
          GISdb[DBonTable].EmpSource.Enabled := false;
-         GISdb[DBonTable].MyData.ApplyFilter( kml_opts_fm.ComboBox6.Text + '=' + QuotedStr(FieldsInDB.Strings[i]));
+         GISdb[DBonTable].MyData.ApplyFilter( ComboBox6.Text + '=' + QuotedStr(FieldsInDB.Strings[i]));
          if GISdb[DBonTable].MyData.FieldExists('DATE_LABEL') then
             TStr := GISdb[DBonTable].MyData.GetFieldByNameAsString('DATE_LABEL')
          else TStr := FieldsInDB.Strings[i];
@@ -793,9 +819,8 @@ begin
      kml.Destroy;
   end;
   GISdb[DBonTable].EmpSource.Enabled := true;
-  kml_opts_fm.Free;
-  {$IfDef KMLProblems} WriteLinetoDebugFile('ConvertToKML out'); {$EndIf}
 end;
+
 
 
 procedure Tkml_opts_fm.BitBtn3Click(Sender: TObject);

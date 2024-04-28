@@ -378,7 +378,7 @@ var
       {$IfDef RecordClustering} WriteLineToDebugFile('DB created'); {$EndIf}
 
       if GISdb[DBonTable].LatLongFieldsPresent and (GISdb[DBonTable].TheMapOwner <> Nil) then begin
-         fName := Petmar.NextFileNumber(ExtractFilePath(GISdb[DBonTable].dbFullName),GISdb[DBonTable].dbName + '_cluster_',DefaultDBExt);
+         fName := Petmar.NextFileNumber(ExtractFilePath(GISdb[DBonTable].dbFullName),'Cluster_stats_' + GISdb[DBonTable].dbName + '_',DefaultDBExt);
          {$IfDef RecordClustering} WriteLineToDebugFile('save and open ' + fName); {$EndIf}
          GISdb[DBonTable].TheMapOwner.StringListToLoadedDatabase(NewDB,fName);
          GISdb[DBonTable].dbOpts.FloatColorField := 'CLUSTER';
@@ -395,7 +395,6 @@ var
 begin {DoKMeansClustering}
    with GISdb[DBonTable] do begin
       {$IfDef RecordClustering} WriteLineToDebugFile('DoKMeansClustering in'); {$EndIf}
-      //DEMDef_routines.SaveBackupDefaults;
       ClusterRuns := 0;
       if SetUpRun then begin
          ClusterSuccess := Nil;

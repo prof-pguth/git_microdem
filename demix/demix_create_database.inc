@@ -29,12 +29,12 @@ begin
    GISdb[DBonTable].EmpSource.Enabled := false;
    if (Option = opByCluster) then begin
       aField := 'CLUSTER';
-      UniqueEntries := GISdb[DBonTable].MyData.UniqueEntriesInDB(aField);
+      UniqueEntries := GISdb[DBonTable].MyData.ListUniqueEntriesInDB(aField);
       SortStringListNumerically(UniqueEntries);
    end
    else if (Option = opByDEM) then begin
       aField := 'DEM';
-      UniqueEntries := GISdb[DBonTable].MyData.UniqueEntriesInDB(aField);
+      UniqueEntries := GISdb[DBonTable].MyData.ListUniqueEntriesInDB(aField);
    end;
 
    UsingFields := GISdb[DBonTable].GetAnalysisFields;
@@ -100,9 +100,11 @@ begin
    try
       GetDEMIXpaths;
       GISdb[DBonTable].EmpSource.Enabled := false;
-      theTiles := GISdb[DBonTable].MyData.UniqueEntriesInDB('DEMIX_TILE');
+      theTiles := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('DEMIX_TILE');
       GISdb[DBonTable].EmpSource.Enabled := false;
-      Criteria := GISdb[DBonTable].MyData.UniqueEntriesInDB('CRITERION');
+      Criteria := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('CRITERION');
+      {$If Defined(RecordDEMIX)} WriteLineToDebugFile('   tiles=' + IntToStr(TheTiles.Count)); {$EndIf}
+      {$If Defined(RecordDEMIX)} WriteLineToDebugFile('   criteria=' + IntToStr(Criteria.Count)); {$EndIf}
 
       sl := tStringList.Create;
       aline := 'DEMIX_TILE,DEM';
@@ -116,19 +118,24 @@ begin
          Tile := theTiles[k];
          GISdb[DBonTable].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(Tile));
          GISdb[DBonTable].EmpSource.Enabled := false;
-         while not GISdb[DBonTable].MyData.eof do begin
-            Crit := UpperCase(GISdb[DBonTable].MyData.GetFieldByNameAsString('CRITERION'));
-            N := Criteria.IndexOf(Crit);
+         if GISdb[DBonTable].MyData.FiltRecsInDB = Criteria.Count then begin
+            for i := 1 to 9 do
+               for j := 0 to 25 do
+                  values[i,j] := -999;
+            while not GISdb[DBonTable].MyData.eof do begin
+               Crit := UpperCase(GISdb[DBonTable].MyData.GetFieldByNameAsString('CRITERION'));
+               N := Criteria.IndexOf(Crit);
                for I := 1 to NumDEMIXtestDEM do begin
                   Values[i,N] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(DEMIXShort[i]);
                end;
-            GISdb[DBonTable].MyData.Next;
-         end;
+               GISdb[DBonTable].MyData.Next;
+            end;
 
-         for I := 1 to NumDEMIXtestDEM do begin
-            aline := Tile + ',' + DEMIXShort[i];
-            for j := 0 to  pred(Criteria.Count) do aline := aline + ',' + RealToString(Values[i,j],-18,6);
-            sl.Add(Aline);
+            for I := 1 to NumDEMIXtestDEM do begin
+               aline := Tile + ',' + DEMIXShort[i];
+               for j := 0 to  pred(Criteria.Count) do aline := aline + ',' + RealToString(Values[i,j],-18,6);
+               sl.Add(Aline);
+            end;
          end;
       end;
 
@@ -530,12 +537,8 @@ var
                      end;
                   end;
 
-
             begin
-               if (RefDEM = 0) then begin
-                  //this is probably for DSM when we don't have one, so we won't log
-               end
-               else begin
+               if ValidDEM(RefDEM) then begin  //don't log for DSM when we don't have one
                   {$If Defined(RecordFullDEMIX) or Defined(RecordGridCompare)} WriteLineToDebugFile('Comparison to reference=' + DEMGLB[RefDEM].AreaName + '  test=' + DEMGLB[DEM].AreaName); {$EndIf}
                   bbgrid := GridBoundingBox(DEM,RefDEM,true);
                   DoElevations;
@@ -546,20 +549,6 @@ var
                   {$If Defined(RecordTileProcessing) or Defined(RecordFullDEMIX)} WriteLineToDebugFile(TStr); {$EndIf}
                end;
             end;
-
-
-         (*
-         procedure GetTileStatistics(RefDEM : integer);
-         begin
-            TileHeader := AreaName + ',' + DEMIXTile + ',' + RealToString(LatCent,-12,-2) + ',' + RealToString(LongCent,-12,-2) + ',';
-            if UseThisTile then begin
-               bbgrid := GridBoundingBox(RefDEM,0);
-            end
-            else begin
-               {$IfDef RecordTileStats} WriteLineToDebugFile('Not doing tile=' + DEMIXTile); {$EndIf}
-            end;
-         end;
-         *)
 
          procedure OpenDataStructures;
          begin
@@ -638,32 +627,7 @@ var
             end
             else begin
                {$If Defined(RecordFullDEMIX) or Defined(TrackDEMIX_DEMs) or Defined(Rec_DEMIX_Landcover)} OpenDEMsToDebugFile('Land cover loading'); {$EndIf}
-
                LoadLandcoverForDEMIXarea(AreaName,false);
-(*
-
-               fName := DEMIX_area_lc100 + AreaName + '.tif';
-               if FileExists(fname) then begin
-                  LandCoverGrid := OpenNewDEM(fName,false);
-                  if (DEMGlb[LandCoverGrid].DEMHeader.ElevUnits <> euGLCS_LC100) then begin
-                     DEMGlb[LandCoverGrid].DEMHeader.ElevUnits := euGLCS_LC100;
-                     DEMGlb[LandCoverGrid].WriteNewFormatDEM(fName);
-                  end;
-                  {$If Defined(Rec_DEMIX_Landcover)} OpenDEMsToDebugFile('Land cover already loaded ' + fName); {$EndIf}
-               end
-               else begin
-                  bb := DEMGlb[DEMIXRefDEM].DEMBoundBoxGeo;
-                  LandCoverGrid := LoadLC100LandCover(fName,bb,Tstr,DEMIXopenMap);
-                  if ValidDEM(LandCoverGrid) then begin
-                     {$If Defined(Rec_DEMIX_Landcover)} OpenDEMsToDebugFile('Land cover just loaded ' + fName); {$EndIf}
-                  end
-                  else begin
-                     ErrorLog.Add(TStr);
-                     {$IfDef RecordDEMIX} WriteLineToDebugFile(TStr); {$EndIf}
-                     //goto NoLandCover;
-                  end;
-               end;
-*)
                {$If Defined(Rec_DEMIX_Landcover)} if ValidDEM(LandCoverGrid) then WriteLineToDebugFile('Land cover area=' + sfBoundBoxToString(DEMGlb[LandCoverGrid].DEMBoundBoxGeo,2)); {$EndIf}
                {$If Defined(RecordFullDEMIX) or Defined(TrackDEMIX_DEMs)} OpenDEMsToDebugFile('comparing'); {$EndIf}
                OpenDataStructures;
@@ -674,7 +638,6 @@ var
                   inc(j);
                   wmdem.SetPanelText(2,'Tile: ' + IntToStr(j) + '/' + IntToStr(GISdb[DEMIXtileDB].MyData.FiltRecsinDB));
                   if UseThisTile then begin
-                     //GetTileStatistics(DEMIXRefDEM);
                      TileHeader := AreaName + ',' + DEMIXTile + ',' + RealToString(LatCent,-12,-2) + ',' + RealToString(LongCent,-12,-2) + ',';
                      bbgrid := GridBoundingBox(DEMIXRefDEM,0);
                      for i := 1 to NumDEMIXtestDEM do begin
@@ -745,7 +708,7 @@ var
          fName := MDtempDir + ExtractFileName(csvFile);
          CopyFile(csvFile,fName);
          Table := tMyData.Create(fName);
-         DEMs := Table.UniqueEntriesInDB('DEM');
+         DEMs := Table.ListUniqueEntriesInDB('DEM');
 
          CriteriaFile := DEMIXSettingsDir + 'criteria_all.txt';
          Criteria := tStringList.Create;
@@ -764,7 +727,7 @@ var
          end;
          Output.Add(Line);
 
-         Tiles := Table.UniqueEntriesInDB('DEMIX_TILE');
+         Tiles := Table.ListUniqueEntriesInDB('DEMIX_TILE');
 
          Cycles := Tiles.Count * 2 * NumLandTypes;
          Done := 0;
@@ -807,19 +770,6 @@ var
                            end;
                            if GoodData then Output.Add(Line);
                         end;
-                     end
-                     else begin
-                        {$If Defined(RecordDEMIXFull)}  //this is to track down why some tiles do not have 6 records
-                           if (Table.FiltRecsInDB > 0) then begin  //if it was 0, it was something like CLIFF in the flatlands
-                              Missing := '  Present: ';
-                              Table.First;
-                              while not Table.eof do begin
-                                 Missing := Missing + Table.GetFieldByNameAsString('DEM') + ', ';
-                                 Table.Next;
-                              end;
-                              WriteLineToDebugFile('filter=' + Table.Filter + '   Matches=' + IntToStr(Table.FiltRecsInDB) + Missing);
-                           end;
-                        {$EndIf}
                      end;
                   //end;
                end;
@@ -860,14 +810,22 @@ begin {procedure ComputeDEMIX_tile_stats}
 
       {$IfDef RecordDEMIX} WriteLineToDebugFile('Areas to process in selected list=' + IntToStr(AreasWanted.Count)); {$EndIf}
 
-      if not Overwrite {and (not JustTileStats)} then begin
+      if Overwrite then begin
+         DeleteFileIfExists(DEMIXresultsDir + AreaName + '_Elev_diff_stats.csv');
+         DeleteFileIfExists(DEMIXresultsDir + AreaName + '_Slope_diff_stats.csv');
+         DeleteFileIfExists(DEMIXresultsDir + AreaName + '_Ruff_diff_stats.csv');
+         DeleteFileIfExists(DEMIXresultsDir + AreaName + '_Elev_diff_stats.dbf');
+         DeleteFileIfExists(DEMIXresultsDir + AreaName + '_Slope_diff_stats.dbf');
+         DeleteFileIfExists(DEMIXresultsDir + AreaName + '_Ruff_diff_stats.dbf');
+         DeleteFileIfExists(DEMIXresultsDir + AreaName + '_merge_transpose.csv');
+      end
+      else begin
          for i := pred(AreasWanted.Count) downto 0 do begin
             AreaName := AreasWanted.Strings[i];
             if FileExists(DEMIXresultsDir + AreaName + '_Elev_diff_stats.csv') and
                FileExists(DEMIXresultsDir + AreaName + '_Slope_diff_stats.csv') and
                FileExists(DEMIXresultsDir + AreaName + '_Ruff_diff_stats.csv') then begin
                AreasWanted.Delete(i);
-               {$IfDef RecordDEMIX} WriteLineToDebugFile(AreaName + ' already processed'); {$EndIf}
             end;
          end;
          {$IfDef RecordDEMIX} WriteLineToDebugFile('Areas not yet processed=' + IntToStr(AreasWanted.Count)); {$EndIf}
@@ -876,22 +834,19 @@ begin {procedure ComputeDEMIX_tile_stats}
       for i := 0 to pred(AreasWanted.Count) do begin
          AreaName := AreasWanted.Strings[i];
          wmdem.SetPanelText(1,'Area: ' + IntToStr(succ(i)) + '/' + IntToStr(AreasWanted.Count) + '  ' + AreaName);
-         DeleteFileIfExists(DEMIXresultsDir + AreaName + '_Elev_diff_stats.csv');
-         DeleteFileIfExists(DEMIXresultsDir + AreaName + '_Slope_diff_stats.csv');
-         DeleteFileIfExists(DEMIXresultsDir + AreaName + '_Ruff_diff_stats.csv');
-         DeleteFileIfExists(DEMIXresultsDir + AreaName + '_Elev_diff_stats.dbf');
-         DeleteFileIfExists(DEMIXresultsDir + AreaName + '_Slope_diff_stats.dbf');
-         DeleteFileIfExists(DEMIXresultsDir + AreaName + '_Ruff_diff_stats.dbf');
          ProcessAnArea(AreaName);
 
          MergeName := DEMIXresultsDir + AreaName + '_merge_transpose.csv';
-         if Overwrite or (not FileExists(MergeName)) then begin
+         if (not FileExists(MergeName)) then begin
             fname := DEMIXresultsDir + AreaName + '_ELEV_DIFF_STATS.csv';
             TransposeNames := tStringList.Create;
-            TransposeNames.Add(TransposeDEMIXcriteria(DEMIXresultsDir + AreaName + '_ELEV_DIFF_STATS.csv'));
-            TransposeNames.Add(TransposeDEMIXcriteria(DEMIXresultsDir + AreaName + '_SLOPE_DIFF_STATS.csv'));
-            TransposeNames.Add(TransposeDEMIXcriteria(DEMIXresultsDir + AreaName + '_RUFF_DIFF_STATS.csv'));
-            MergeCSVFiles(TransposeNames,MergeName);
+            fName := TransposeDEMIXcriteria(DEMIXresultsDir + AreaName + '_ELEV_DIFF_STATS.csv');
+            if FileExists(fName) then TransposeNames.Add(fName);
+            fName := TransposeDEMIXcriteria(DEMIXresultsDir + AreaName + '_ELEV_SLOPE_STATS.csv');
+            if FileExists(fName) then TransposeNames.Add(fName);
+            fName := TransposeDEMIXcriteria(DEMIXresultsDir + AreaName + '_RUFF_DIFF_STATS.csv');
+            if FileExists(fName) then TransposeNames.Add(fName);
+            if TransposeNames.Count > 1 then MergeCSVFiles(TransposeNames,MergeName);
             TransposeNames.Destroy;
          end;
       end;
@@ -936,7 +891,7 @@ var
          fName := MDtempDir + ExtractFileName(csvFile);
          CopyFile(csvFile,fName);
          Table := tMyData.Create(fName);
-         DEMs := Table.UniqueEntriesInDB('DEM');
+         DEMs := Table.ListUniqueEntriesInDB('DEM');
 
          CriteriaFile := DEMIXSettingsDir + 'criteria_all.txt';
          Criteria := tStringList.Create;
@@ -957,7 +912,7 @@ var
 
          //GISdb[DBonTable].ClearGISFilter;
          //GISdb[DBonTable].EmpSource.Enabled := false;
-         Tiles := Table.UniqueEntriesInDB('DEMIX_TILE');
+         Tiles := Table.ListUniqueEntriesInDB('DEMIX_TILE');
 
          Cycles := Tiles.Count * 2 * NumLandTypes;
          Done := 0;
@@ -1623,8 +1578,9 @@ var
                TileHeader := AreaName + ',' + IntToStr(j) + ',' + Country + ',' + RealToString(LatCent,-12,-2) + ',' + RealToString(LongCent,-12,-2) + ',' +
                   RealToString(AreaGridFull / j,-6,-2)   + ','  + RealToString(AreaAveElev / j,-12,-2) + ',' +
                   RealToString(AreaAveSlope / j,-12,-2)  + ',' + RealToString(AreaAveRuff / j,-12,-2)  + ',' +
-                  RealToString(AreaAveRelief / j,-12,-2) + ',' + RealToString(AreaForestPC / j,-12,-2)  + ',' + RealToString(AreaUrbanPC / j,-12,-2) + ','
-                  + RealToString(AreaBarrenPC / j,-12,-2) + ',' + RealToString(AreaWaterPC / j,-12,-2);
+                  RealToString(AreaAveRelief / j,-12,-2) + ',' + RealToString(AreaForestPC / j,-12,-2)  + ',' + RealToString(AreaUrbanPC / j,-12,-2) + ',' +
+                  RealToString(AreaBarrenPC / j,-12,-2) + ',' + RealToString(AreaWaterPC / j,-12,-2) + ',' +
+                  RealToString(DEMglb[DEMIXRefDEM].DEMHeader.MinElev / j,-12,-2) + ',' + RealToString(DEMglb[DEMIXRefDEM].DEMHeader.MaxElev / j,-12,-2);
                AreaStats.Add(TileHeader);
 
             {$If Defined(RecordFullDEMIX)} for i := 1 to 2 do writeLineToDebugFile(''); {$EndIf}
@@ -1676,9 +1632,6 @@ begin {procedure ComputeDEMIX_Summary_stats}
 end {procedure ComputeDEMIX_Summary_stats};
 
 
-
-
-
 procedure FindTilesInAreaForCoast;
 const
    FilterHeight : array[2..4] of float64  = (120,80,10);
@@ -1689,7 +1642,6 @@ var
    Findings : tStringList;
    aLine,AreaName : shortstring;
    fName : PathStr;
-
 begin {FindTilesInAreaForCoast}
    {$IfDef RecordDEMIX} WriteLineToDebugFile('Start FindTilesInAreaForCoast'); {$EndIf}
    try
@@ -1894,7 +1846,7 @@ var
    Tol : float32;
 begin
    GISdb[DBonTable].EmpSource.Enabled := false;
-   Criteria := GISdb[DBonTable].MyData.UniqueEntriesInDB('CRITERION');
+   Criteria := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('CRITERION');
    Findings := tStringList.Create;
    Findings.Add('CRITERION,MIN,PC5,PC25,MEDIAN,MEAN,PC75,PC95,MAX,N,TOLERANCE');
    for i := 0 to pred(Criteria.Count) do begin

@@ -154,7 +154,7 @@ begin
       WasFiltered := (OldFilter <> '');
       if (LimField <> '') then begin
          DataThere := Nil;
-         DataThere := TheTable.UniqueEntriesInDB(LimField);
+         DataThere := TheTable.ListUniqueEntriesInDB(LimField);
          for i := 0 to pred(DataThere.Count) do ComboBox1.Items.Add(DataThere.Strings[i]);
          DataThere.Free;
          ComboBox1.Visible := true;

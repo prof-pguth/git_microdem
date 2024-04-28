@@ -32,6 +32,7 @@ unit DEMCoord;
 
    {$IFDEF DEBUG}
       {$Define RecordDEMIX}
+      //{$Define RecordDEMIXResample}
       //{$Define RecordMaskFromSecondGrid}
       //{$Define TrackSWcorner}
       //{$Define RecordGridIdenticalProblems}
@@ -41,7 +42,6 @@ unit DEMCoord;
       //{$Define RecordMapType}
       //{$Define RecordDEMstats}
       //{$Define TimePointParameters}
-      //{$Define RecordDEMIXResample}
       //{$Define RecordsfBoundBox2tGridLimits}     //use with care; trashes the debug file
       //{$Define TrackHorizontalDatum}
       //{$Define RecordVertDatumShift}
@@ -1022,10 +1022,10 @@ begin
    if IsNan(GeotiffNWCornerY) then GeotiffNWCornerY := DEMHeader.DEMSWCornerY + DEMHeader.DEMySpacing * pred(DEMHeader.NumRow);
    TStr := '';
    if DoHalfPixelShift and (DEMHeader.RasterPixelIsGeoKey1025 in [PixelIsUndefined,PixelIsArea]) then begin
-      {$IfDef TrackSWcorner} WriteToDebugSWCornerForComputations('SetRasterPixelIsGeoKey1025 before shift'); {$EndIf}
+      {$IfDef TrackSWcorner} WriteToDebugSWCornerForComputations(AreaName + ' SetRasterPixelIsGeoKey1025 before shift'); {$EndIf}
       ComputeSWCornerX := DEMHeader.DEMSWCornerX + 0.5 * DEMHeader.DEMxSpacing;
       ComputeSWCornerY := DEMHeader.DEMSWCornerY - 0.5 * DEMHeader.DEMySpacing;
-      Tstr := ' half pixel shift applied';
+      Tstr := AreaName + ' half pixel shift applied';
    end
    else TStr := ' no half pixel shift';
    {$If Defined(TrackDEMCorners) or Defined(RecordHalfPixelShift)} WriteDEMCornersToDebugFile('SetRasterPixelIsGeoKey1025' + TStr); {$EndIf}
@@ -2522,10 +2522,10 @@ var
            DEMBoundBoxGeo := DEMBoundBoxProjected;
          end
          else begin
-            DEMGridToLatLongDegree(0,0,x[1],y[1]);
-            DEMGridToLatLongDegree(0,pred(DEMheader.NumRow),x[2],y[2]);
-            DEMGridToLatLongDegree(pred(DEMheader.NumCol),0,x[3],y[3]);
-            DEMGridToLatLongDegree(pred(DEMheader.NumCol),pred(DEMheader.NumRow),x[4],y[4]);
+            DEMGridToLatLongDegree(0,0,y[1],x[1]);
+            DEMGridToLatLongDegree(0,pred(DEMheader.NumRow),y[2],x[2]);
+            DEMGridToLatLongDegree(pred(DEMheader.NumCol),0,y[3],x[3]);
+            DEMGridToLatLongDegree(pred(DEMheader.NumCol),pred(DEMheader.NumRow),y[4],x[4]);
             DEMBoundBoxGeo.xMin := MinFloat(x[1],x[2],x[3],x[4]);
             DEMBoundBoxGeo.xMax := MaxFloat(x[1],x[2],x[3],x[4]);
             DEMBoundBoxGeo.yMin := MinFloat(y[1],y[2],y[3],y[4]);

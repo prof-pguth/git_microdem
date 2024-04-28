@@ -3896,6 +3896,10 @@ object MapForm: TMapForm
         end
         object Whiteboxcurvature1: TMenuItem
           Caption = 'Whitebox curvature'
+          object Plan1: TMenuItem
+            Caption = 'Plan'
+            OnClick = Plan1Click
+          end
           object Profile1: TMenuItem
             Caption = 'Profile'
             OnClick = Profile1Click

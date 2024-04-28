@@ -9,104 +9,6 @@
 {___________________________________}
 
 
-procedure ChannelNetworkMissPercentages(Overwrite : boolean; AreasWanted : tstringlist = nil);
-var
-   AreaName : shortstring;
-   i : integer;
-begin
-   {$IfDef RecordDEMIX} WriteLineToDebugFile('ChannelNetworkMissPercentages in'); {$EndIf}
-   try
-      GetDEMIXPaths(true);
-      if (AreasWanted = Nil) then AreasWanted := DEMIX_AreasWanted;
-      for i := 0 to pred(AreasWanted.Count) do begin
-         AreaName := AreasWanted.Strings[i];
-         wmdem.SetPanelText(1, 'Channel misses: ' + IntToStr(succ(i)) + '/' + IntToStr(AreasWanted.Count) + '  ' + AreaName,true);
-         CompareChannelNetworks(Overwrite,AreaName);
-      end;
-   finally
-      EndDEMIXProcessing;
-   end;
-   {$IfDef RecordDEMIX} WriteLineToDebugFile('ChannelNetworkMissPercentages out'); {$EndIf}
-end;
-
-
-procedure ChannelNetworkMapComparison(Overwrite : boolean; AreaName,TestDEMName : shortstring);
-const
-   MakeGrid = false;
-   Color1 = clLime;   //Green: channel reference, not test
-   Color2 = clRed;    //Red: channel test, not reference
-   Color3 = clBlue;   //Blue channel test and reference
-var
-   db,BaseDEM,RefDEM, TestDEM,CompDEM,x,y : integer;
-   GridLimits : tGridLimits;
-   ValidRef,ValidTest : boolean;
-   Lat,Long : float64;
-   Legend,VectorResults : tStringList;
-   fName : PathStr;
-   Color : tColor;
-   TStr : shortstring;
-begin
-   MDdef.DBsOnAllMaps := false;
-    TestDEM := OpenNewDEM(DEMIX_test_DEMs_channel_grids + 'saga_channels_saga_sinks_removed_' + AreaName + '_' + TestDEMName + '.tif',false);
-    if UpperCase(TestDEMName) = 'ALOS' then TStr := 'area' else TStr := 'point';
-    fName := DEMIX_ref_DEMs_channel_grids + 'saga_channels_saga_sinks_removed_' + AreaName + '_dtm_ref_1sec_' + Tstr + '.tif';
-    RefDEM := OpenNewDEM(fName,false);
-    BaseDEM := OpenNewDEM(DEMIX_test_dems + areaName + '_' + TestDEMName + '.tif',false);
-    CreateDEMSelectionMap(BaseDEM,true,true,mtGrayReflect);
-
-    if MakeGrid then CompDEM := DEMGlb[BaseDEM].SelectionMap.CreateGridToMatchMap(cgLatLong,true,ByteDEM,3600 * DEMGlb[RefDEM].DEMheader.DEMxSpacing,3600 * DEMGlb[RefDEM].DEMheader.DEMySpacing,-99,
-         DEMGlb[RefDEM].DEMheader.RasterPixelIsGeoKey1025)
-    else CompDEM := 0;
-    GridLimits := DEMGlb[BaseDEM].FullDEMGridLimits;
-    VectorResults := tStringList.Create;
-    VectorResults.Add('LAT,LONG,COLOR');
-    for x := GridLimits.XGridLow to GridLimits.XGridHigh do begin
-       for y := GridLimits.YGridLow to GridLimits.YGridHigh do begin
-          ValidRef := (not DEMGlb[RefDEM].MissingDataInGrid(x,y));
-          ValidTest := (not DEMGlb[TestDEM].MissingDataInGrid(x,y));
-          if ValidTest or ValidRef then begin
-             DEMGlb[RefDEM].DEMGridToLatLongDegree(x,y,Lat,Long);
-             if ValidTest and ValidRef then begin
-                if (CompDEM <> 0) then DEMGlb[CompDEM].SetGridElevation(x,y,3);
-                Color := Color3;
-             end
-             else if ValidTest then begin
-                if (CompDEM <> 0) then DEMGlb[CompDEM].SetGridElevation(x,y,2);
-                Color := Color2;
-             end
-             else if ValidRef then begin
-                if (CompDEM <> 0) then DEMGlb[CompDEM].SetGridElevation(x,y,1);
-                Color := Color1;
-             end;
-             VectorResults.Add(RealToString(Lat,-12,-6) + ',' + RealToString(Long,-12,-6) + ',' + IntToStr(Color));
-          end;
-       end;
-    end;
-    if (CompDEM <> 0) then begin
-       DEMGlb[CompDEM].CheckMaxMinElev;
-       fName := NextFileNumber(MDtempDir,TestDEMName + '_' + AreaName + '_channels_', '.tif');
-       DEMGlb[CompDEM].WriteNewFormatDEM(fName,'');
-
-       Legend := tStringList.Create;
-       Legend.Add('COUNT,VALUE,NAME,COLOR');
-       Legend.Add('99999,1,Under predictions (miss),' + IntToStr(Color2));
-       Legend.Add('99999,2,Over predictions (false positive),' + IntToStr(Color1));
-       Legend.Add('99999,3,Correct channels (hit),' + IntToStr(Color3));
-
-       fName := ChangeFileExt(fName,'.vat.dbf');
-       StringList2CSVtoDB(Legend,fName,true,false,false);
-       DEMGlb[CompDEM].SelectionMap.MapDraw.MapType := mtDEMVATTable;
-       DEMGlb[CompDEM].SelectionMap.DoBaseMapRedraw;
-    end;
-
-    fName := NextFileNumber(MDtempDir,TestDEMName + '_' + AreaName + '_channels_', '.dbf');
-    db := DEMGlb[BaseDEM].SelectionMap.StringListToLoadedDatabase(VectorResults,fName,false);
-    GISdb[db].dbOpts.dbAutoShow := dbasColorField;
-    GISdb[db].dbOpts.Symbol.Size := 1;
-    GISdb[db].RedrawLayerOnMap;
-end;
-
-
 procedure CompareChannelNetworks(Overwrite : boolean; Area : shortstring);
 var
    DEM,DEMIXtileDB,NumRef,i,j : integer;
@@ -171,12 +73,14 @@ var
 
 const
    OpenMaps = false;  //available for debugging
-begin
+begin {procedure CompareChannelNetworks}
+    {$IfDef RecordDEMIX} WriteLineToDebugFile('CompareChannelNetworks in'); {$EndIf}
     SafeMakeDir(ChannelMissesDir);
     SavefName := ChannelMissesDir + Area + '_Channel_Misses.csv';
     if Overwrite or (not FileExists(savefName)) then begin
        wmdem.SetPanelText(2, 'Load DEMs',true);
 
+(*
        if OpenBothPixelIsDEMs(Area,'saga_channels_saga_sinks_removed_',DEMIX_ref_DEMs_channel_grids,DEMIX_test_DEMs_channel_grids,OpenMaps) then begin
           MissingFiles := false;
           //need reference DEM to get percentage full of the tiles
@@ -185,15 +89,26 @@ begin
              else MissingFiles := true;
        end
        else MissingFiles := true;
+*)
+
+       if OpenBothPixelIsDEMs(Area,'streams_',DEMIX_wbt_test_DEM_output,DEMIX_wbt_ref_DEM_output,OpenMaps) then begin
+          MissingFiles := false;
+          //need reference DEM to get percentage full of the tiles
+             fName := DEMIX_Ref_1sec + Area +'_dtm' + Ref1SecAreaStr + '.tif';
+             if FileExists(fName) then DEM := OpenNewDEM(fName,OpenMaps)
+             else MissingFiles := true;
+       end
+       else MissingFiles := true;
+
 
        if MissingFiles then begin
-          {$IfDef RecordDEMIX} WriteLineToDebugFile('CompareChannelNetworks missing sinks removed for area ' + Area); {$EndIf}
+          {$IfDef RecordDEMIX} WriteLineToDebugFile('CompareChannelNetworks missing for area ' + Area); {$EndIf}
        end
        else begin
           Results := tStringList.Create;
           aline := 'DEMIX_TILE,AREA,LAT,LONG,CRITERION';
-          for i := 1 to NumPtDEMs do aLine := aline + ',' + PointNames[i];
-          for i := 1 to NumAreaDEMs do aLine := aline + ',' + AreaNames[i];
+          for i := 1 to NumPtDEMs do aLine := aline + ',' + SRTM_centroid_names[i];
+          for i := 1 to NumAreaDEMs do aLine := aline + ',' + ALOS_centroid_names[i];
           Results.Add(aLine + ',CHAN_PIX');
 
           DEMIXtileDB := DEMIXtileFill(DEM,DEMGlb[DEM].DEMBoundBoxGeo,true);
@@ -227,8 +142,108 @@ begin
           CloseAllDEMs;
        end;
     end;
+end {procedure CompareChannelNetworks};
+
+
+
+procedure ChannelNetworkMissPercentages(Overwrite : boolean; AreasWanted : tstringlist = nil);
+var
+   AreaName : shortstring;
+   i : integer;
+begin
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('ChannelNetworkMissPercentages in'); {$EndIf}
+   try
+      GetDEMIXPaths(true);
+      if (AreasWanted = Nil) then AreasWanted := DEMIX_AreasWanted;
+      for i := 0 to pred(AreasWanted.Count) do begin
+         AreaName := AreasWanted.Strings[i];
+         wmdem.SetPanelText(1, 'Channel misses: ' + IntToStr(succ(i)) + '/' + IntToStr(AreasWanted.Count) + '  ' + AreaName,true);
+         CompareChannelNetworks(Overwrite,AreaName);
+      end;
+   finally
+      EndDEMIXProcessing;
+   end;
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('ChannelNetworkMissPercentages out'); {$EndIf}
 end;
 
+
+
+{$IfDef DEMIX_SAGA_channels}
+      procedure ChannelNetworkMapComparison(Overwrite : boolean; AreaName,TestDEMName : shortstring);
+      const
+         MakeGrid = false;
+         Color1 = clLime;   //Green: channel reference, not test
+         Color2 = clRed;    //Red: channel test, not reference
+         Color3 = clBlue;   //Blue channel test and reference
+      var
+         db,BaseDEM,RefDEM, TestDEM,CompDEM,x,y : integer;
+         GridLimits : tGridLimits;
+         ValidRef,ValidTest : boolean;
+         Lat,Long : float64;
+         Legend,VectorResults : tStringList;
+         fName : PathStr;
+         Color : tColor;
+         TStr : shortstring;
+      begin
+         MDdef.DBsOnAllMaps := false;
+          TestDEM := OpenNewDEM(DEMIX_test_DEMs_channel_grids + 'saga_channels_saga_sinks_removed_' + AreaName + '_' + TestDEMName + '.tif',false);
+          if UpperCase(TestDEMName) = 'ALOS' then TStr := 'area' else TStr := 'point';
+          fName := DEMIX_ref_DEMs_channel_grids + 'saga_channels_saga_sinks_removed_' + AreaName + '_dtm_ref_1sec_' + Tstr + '.tif';
+          RefDEM := OpenNewDEM(fName,false);
+          BaseDEM := OpenNewDEM(DEMIX_test_dems + areaName + '_' + TestDEMName + '.tif',false);
+          CreateDEMSelectionMap(BaseDEM,true,true,mtGrayReflect);
+
+          if MakeGrid then CompDEM := DEMGlb[BaseDEM].SelectionMap.CreateGridToMatchMap(cgLatLong,true,ByteDEM,3600 * DEMGlb[RefDEM].DEMheader.DEMxSpacing,3600 * DEMGlb[RefDEM].DEMheader.DEMySpacing,-99,
+               DEMGlb[RefDEM].DEMheader.RasterPixelIsGeoKey1025)
+          else CompDEM := 0;
+          GridLimits := DEMGlb[BaseDEM].FullDEMGridLimits;
+          VectorResults := tStringList.Create;
+          VectorResults.Add('LAT,LONG,COLOR');
+          for x := GridLimits.XGridLow to GridLimits.XGridHigh do begin
+             for y := GridLimits.YGridLow to GridLimits.YGridHigh do begin
+                ValidRef := (not DEMGlb[RefDEM].MissingDataInGrid(x,y));
+                ValidTest := (not DEMGlb[TestDEM].MissingDataInGrid(x,y));
+                if ValidTest or ValidRef then begin
+                   DEMGlb[RefDEM].DEMGridToLatLongDegree(x,y,Lat,Long);
+                   if ValidTest and ValidRef then begin
+                      if (CompDEM <> 0) then DEMGlb[CompDEM].SetGridElevation(x,y,3);
+                      Color := Color3;
+                   end
+                   else if ValidTest then begin
+                      if (CompDEM <> 0) then DEMGlb[CompDEM].SetGridElevation(x,y,2);
+                      Color := Color2;
+                   end
+                   else if ValidRef then begin
+                      if (CompDEM <> 0) then DEMGlb[CompDEM].SetGridElevation(x,y,1);
+                      Color := Color1;
+                   end;
+                   VectorResults.Add(RealToString(Lat,-12,-6) + ',' + RealToString(Long,-12,-6) + ',' + IntToStr(Color));
+                end;
+             end;
+          end;
+          if (CompDEM <> 0) then begin
+             DEMGlb[CompDEM].CheckMaxMinElev;
+             fName := NextFileNumber(MDtempDir,TestDEMName + '_' + AreaName + '_channels_', '.tif');
+             DEMGlb[CompDEM].WriteNewFormatDEM(fName,'');
+
+             Legend := tStringList.Create;
+             Legend.Add('COUNT,VALUE,NAME,COLOR');
+             Legend.Add('99999,1,Under predictions (miss),' + IntToStr(Color2));
+             Legend.Add('99999,2,Over predictions (false positive),' + IntToStr(Color1));
+             Legend.Add('99999,3,Correct channels (hit),' + IntToStr(Color3));
+
+             fName := ChangeFileExt(fName,'.vat.dbf');
+             StringList2CSVtoDB(Legend,fName,true,false,false);
+             DEMGlb[CompDEM].SelectionMap.MapDraw.MapType := mtDEMVATTable;
+             DEMGlb[CompDEM].SelectionMap.DoBaseMapRedraw;
+          end;
+
+          fName := NextFileNumber(MDtempDir,TestDEMName + '_' + AreaName + '_channels_', '.dbf');
+          db := DEMGlb[BaseDEM].SelectionMap.StringListToLoadedDatabase(VectorResults,fName,false);
+          GISdb[db].dbOpts.dbAutoShow := dbasColorField;
+          GISdb[db].dbOpts.Symbol.Size := 1;
+          GISdb[db].RedrawLayerOnMap;
+      end;
 
 
 procedure CreateChannelNetworkGridsFromVectors(Overwrite : boolean; AreasWanted : tstringlist = nil);
@@ -479,5 +494,7 @@ begin
 end;
 
 
+
+{$EndIf}
 
 

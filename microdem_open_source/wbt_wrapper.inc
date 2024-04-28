@@ -45,109 +45,98 @@ begin
 end;
 
 
-function WBT_breach_depression(InName : PathStr; var BreachName : PathStr) : integer;
+function WBT_breach_depression(DEMName : PathStr; var BreachName : PathStr) : integer;
 //https://www.whiteboxgeo.com/manual/wbt_book/available_tools/hydrological_analysis.html#BreachDepressionsLeastCost
 var
    cmd : ansistring;
 begin
-   BreachName := MDTempDir + 'wbt_breach_' + ExtractFileNameNoExt(InName)  + '.tif';
+   if (BreachName = '') then BreachName := MDTempDir + 'wbt_breach_' + ExtractFileNameNoExt(DEMName)  + '.tif';
    if not FileExists(BreachName) then begin
-      cmd := WhiteBoxfName + WBNoCompress + ' -r=BreachDepressionsLeastCost -v --dem=' + InName + ' -o=' + BreachName + ' --dist=1000 --max_cost=100.0 --flat_increment=0.001 --fill_deps=True';  //--min_dist removed, added last two 4/29/24
+      cmd := WhiteBoxfName + WBNoCompress + ' -r=BreachDepressionsLeastCost -v --dem=' + DEMName + ' -o=' + BreachName + ' --dist=1000 --max_cost=100.0 --flat_increment=0.001 --fill_deps=True';  //--min_dist removed, added last two 4/29/24
       {$IfDef RecordWBT} WriteLineToDebugFile('WBT_breach_depression cmd=' + cmd); {$EndIf}
       WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
    end;
 end;
 
 
-function WBT_FlowAccumulation(OpenMap,Log,D8 : boolean; InName : PathStr; var FlowAccName : PathStr) : integer;
+function WBT_FlowAccumulation(OpenMap,Log,D8 : boolean; DEMName : PathStr; var BreachName, FlowAccName : PathStr) : integer;
 var
-   BreachName : PathStr;
    cmd : ansistring;
    TStr,TStr2,TStr3 : shortstring;
 begin
-   if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
-      BreachName := '';
-      WBT_breach_depression(InName,BreachName);
-      if FileExists(BreachName) then begin
-         TStr := 'num_cells_';
-         if Log then TStr3 := ' --log' else TStr3 := '';
-         if D8 then TStr2 := 'D8' else TStr2 := 'FD8';
-         if (FlowAccName = '') then FlowAccName := MDTempDir + 'wbt_flow_accumulation_' + TStr2 + '_' + TStr + ExtractFileNameNoExt(InName) + '.tif';
-         cmd := WhiteBoxfName +  WBNoCompress + '-r=' + TStr2 +'FlowAccumulation -v -dem=' + BreachName + ' -o=' + FlowAccName + ' --out_type=cells' + TStr3;
-         {$IfDef RecordWBT} WriteLineToDebugFile('WBT_FlowAccumulation cmd=' + cmd); {$EndIf}
-         Result := ExecuteWBandOpenMap(cmd,FlowAccName,euUndefined,mtElevRainbow,OpenMap);
-      end
-      else begin
-         Result := 0;
-      end;
+   if WhiteBoxPresent and FileExistsErrorMessage(DEMName) then begin
+      //BreachName := '';
+      Result := 0;
+      if not FileExists(BreachName) then WBT_breach_depression(DEMName,BreachName);
+      TStr := 'num_cells_';
+      if Log then TStr3 := ' --log' else TStr3 := '';
+      if D8 then TStr2 := 'D8' else TStr2 := 'FD8';
+      if (FlowAccName = '') then FlowAccName := MDTempDir + 'wbt_flow_accumulation_' + TStr2 + '_' + TStr + ExtractFileNameNoExt(DEMName) + '.tif';
+      cmd := WhiteBoxfName +  WBNoCompress + '-r=' + TStr2 +'FlowAccumulation -v -dem=' + BreachName + ' -o=' + FlowAccName + ' --out_type=cells' + TStr3;
+      {$IfDef RecordWBT} WriteLineToDebugFile('WBT_FlowAccumulation cmd=' + cmd); {$EndIf}
+      Result := ExecuteWBandOpenMap(cmd,FlowAccName,euUndefined,mtElevRainbow,OpenMap);
    end;
 end;
 
 
-function WBT_extract_streams(OpenMap : boolean; InName : PathStr; var StreamName : PathStr; Threshhold : float32 = 100.0) : integer;
+function WBT_extract_streams(OpenMap : boolean; DEMName : PathStr; var BreachName,FlowAccumulationName,StreamName : PathStr; Threshhold : float32 = 100.0) : integer;
 // whitebox_tools -r=ExtractStreams -v --wd="/path/to/data/" --flow_accum='d8accum.tif' -o='output.tif' --threshold=100.0 --zero_background=false
 var
    FlowAccName : PathStr;
    cmd : ansistring;
 begin
-   FlowAccName := '';
-   WBT_FlowAccumulation(false,false,True,InName,FlowAccName);
-   StreamName := MDTempDir + 'wbt_streams_' + ExtractFileNameNoExt(InName) + '.tif';
+   WBT_FlowAccumulation(false,false,True,DEMName,BreachName,FlowAccName);
+   if StreamName = '' then StreamName := MDTempDir + 'wbt_streams_' + ExtractFileNameNoExt(DEMName) + '.tif';
    if FileExists(StreamName) then begin
       LoadNewDEM(Result,StreamName,OpenMap);
    end
    else begin
-      cmd := WhiteBoxfName + WBNoCompress + '-r=ExtractStreams -v --flow_accum=' + FlowAccName + ' -o=' + StreamName + ' --threshold=' + RealToString(Threshhold,-8,1) + ' --zero_background=false';
+      cmd := WhiteBoxfName + WBNoCompress + '-r=ExtractStreams -v --flow_accum=' + FlowAccName + ' -o=' + StreamName + ' --threshold=' + RealToString(Threshhold,-8,1);  // + ' --zero_background=false';
       {$IfDef RecordWBT} WriteLineToDebugFile('WBT_extract_streams cmd=' + cmd); {$EndIf}
       Result := ExecuteWBandOpenMap(cmd,StreamName,euUndefined,mtElevRainbow,OpenMap);
    end;
 end;
 
 
-function WBT_ElevAboveStream(OpenMap : boolean; InName : PathStr; OutName : PathStr = ''; Threshhold : float32 = 100.0) : integer;
+function WBT_ElevAboveStream(OpenMap : boolean; DEMName : PathStr; BreachName,FlowAccumulationName,StreamName,HANDName : PathStr; Threshhold : float32 = 100.0) : integer;
 // whitebox_tools -r=ElevationAboveStream -v --wd="/path/to/data/" --dem='dem.tif' --streams='streams.tif' -o='output.tif'
 // calls extract streams (threshhold 100), which calls flow accumulation (d8, not log), which calls depression breaching (dist=1000, max_cost=100.0)
 var
-   StreamName : PathStr;
    cmd : ansistring;
 begin
-   if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
-      {$IfDef RecordWBT} WriteLineToDebugFile('WBT_ElevAboveStream in, ' + InName); {$EndIf}
-
-      StreamName := '';
-      WBT_extract_streams(false,InName,StreamName,Threshhold);
-
-      if (OutName = '') then Outname := MDTempDir + 'wbt_elev_above_stream_' + ExtractFileNameNoExt(InName) + '.tif';
-      cmd := WhiteBoxfName + WBNoCompress + '-r=ElevationAboveStream -v --dem=' + InName + ' --streams=' + StreamName + ' -o=' + OutName;
+   if WhiteBoxPresent and FileExistsErrorMessage(DEMName) then begin
+      {$IfDef RecordWBT} WriteLineToDebugFile('WBT_ElevAboveStream in, ' + DEMName); {$EndIf}
+      if not FileExists(BreachName) then WBT_breach_depression(DEMName,BreachName);
+      WBT_extract_streams(false,DEMName,BreachName,FlowAccumulationName,StreamName,Threshhold);
+      if (HANDName = '') then HandName := MDTempDir + 'wbt_elev_above_stream_' + ExtractFileNameNoExt(DEMName) + '.tif';
+      cmd := WhiteBoxfName + WBNoCompress + '-r=ElevationAboveStream -v --dem=' + BreachName + ' --streams=' + StreamName + ' -o=' + HANDName;
       {$IfDef RecordWBT} WriteLineToDebugFile('WBT_ElevAboveStream cmd=' + cmd); {$EndIf}
-      Result := ExecuteWBandOpenMap(cmd,OutName,euUndefined,mtElevRainbow,OpenMap);
-      {$IfDef RecordWBT} WriteLineToDebugFile('WBT_ElevAboveStream out, ' + OutName); {$EndIf}
+      Result := ExecuteWBandOpenMap(cmd,HandName,euUndefined,mtElevRainbow,OpenMap);
+      {$IfDef RecordWBT} WriteLineToDebugFile('WBT_ElevAboveStream out, ' + HandName); {$EndIf}
    end;
 end;
 
 
-function WBT_WetnessIndex(OpenMap,D8 : boolean; InName : PathStr; OutName : PathStr = '') : integer;
+function WBT_WetnessIndex(OpenMap,D8 : boolean; DEMName : PathStr; var WetnessName : PathStr) : integer;
 //whitebox_tools -r=WetnessIndex -v --wd="/path/to/data/" --sca='flow_accum.tif' --slope='slope.tif' -o=output.tif
 var
-   SlopeName,FlowAccName : PathStr;
+   SlopeName,FlowAccName,BreachName : PathStr;
    cmd : ansistring;
 begin
-   if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
-      {$IfDef RecordWBT} WriteLineToDebugFile('WBT_WetnessIndex in, ' + InName); {$EndIf}
-      //BreachName := '';
-      //WBT_breach_depression(InName,BreachName);
-
+   if WhiteBoxPresent and FileExistsErrorMessage(DEMName) then begin
+      {$IfDef RecordWBT} WriteLineToDebugFile('WBT_WetnessIndex in, ' + DEMName); {$EndIf}
       FlowAccName := '';
-      WBT_FlowAccumulation(false,D8,false,InName,FlowAccName);
+      BreachName := '';
+      WBT_FlowAccumulation(false,D8,false,DEMName,BreachName,FlowAccName);
 
-      SlopeName := MDTempDir + 'wbt_slope_deg_' + ExtractFileNameNoExt(InName) + '.tif';
-      cmd := WhiteBoxfName + WBNoCompress + '-r=Slope -v --dem=' + InName + ' -o=' + SlopeName + ' --units="degrees"';
+      SlopeName := MDTempDir + 'wbt_slope_deg_' + ExtractFileNameNoExt(DEMName) + '.tif';
+      cmd := WhiteBoxfName + WBNoCompress + '-r=Slope -v --dem=' + BreachName + ' -o=' + SlopeName + ' --units="degrees"';
       WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
 
-      if (OutName = '') then Outname := MDTempDir + 'wbt_wetness_index_' + ExtractFileNameNoExt(InName) + '.tif';
-      cmd := WhiteBoxfName + WBNoCompress + '-r=WetnessIndex -v --sca=' + FlowAccName + ' --slope=' + SlopeName + ' -o=' + OutName + ' --units="degrees"';
-      Result := ExecuteWBandOpenMap(cmd,OutName,euUndefined,mtElevRainbow,OpenMap);
-      {$IfDef RecordWBT} WriteLineToDebugFile('WBT_WetnessIndex out, ' + OutName); {$EndIf}
+      if (WetnessName = '') then WetnessName := MDTempDir + 'wbt_wetness_index_' + ExtractFileNameNoExt(DEMName) + '.tif';
+      cmd := WhiteBoxfName + WBNoCompress + '-r=WetnessIndex -v --sca=' + FlowAccName + ' --slope=' + SlopeName + ' -o=' + WetnessName + ' --units="degrees"';
+      Result := ExecuteWBandOpenMap(cmd,WetnessName,euUndefined,mtElevRainbow,OpenMap);
+      {$IfDef RecordWBT} WriteLineToDebugFile('WBT_WetnessIndex out, ' + WetnessName); {$EndIf}
    end;
 end;
 
@@ -183,7 +172,7 @@ begin
 end;
 
 
-function WBT_SlopeMap(InName : PathStr) : integer;
+function WBT_SlopeMap(OpenMap : boolean; InName : PathStr) : integer;
 var
    cmd : ansistring;
    OutName : PathStr;
@@ -191,12 +180,12 @@ begin
   if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
      OutName := MDTempDir + 'wbt_slope_percent_' + ExtractFileNameNoExt(InName) + '.tif';
      cmd := WhiteBoxfName + WBNoCompress + '-r=Slope -v --dem=' + InName + ' -o=' + OutName + ' --units="percent"';
-     Result := ExecuteWBandOpenMap(cmd,OutName,euPercentSlope);
+     Result := ExecuteWBandOpenMap(cmd,OutName,euPercentSlope,MDDef.DefSlopeMap,OpenMap);
   end;
 end;
 
 
-function WBT_TRI(InName : PathStr) : integer;
+function WBT_TRI(OpenMap : boolean; InName : PathStr) : integer;
 var
    cmd : ansistring;
    OutName : PathStr;
@@ -204,7 +193,7 @@ begin
   if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
      OutName := MDTempDir + 'wbt_TRI_' + ExtractFileNameNoExt(InName) + '.tif';
      cmd := WhiteBoxfName + WBNoCompress + '-r=RuggednessIndex -v --dem=' + InName + ' -o=' + OutName;
-     Result := ExecuteWBandOpenMap(cmd,OutName,euMeters);
+     Result := ExecuteWBandOpenMap(cmd,OutName,euMeters,mtElevRainbow,OpenMap);
   end;
 end;
 
@@ -220,7 +209,7 @@ begin
   end;
 end;
 
-function WBT_CircularVarianceOfAspect(InName : PathStr; filtersize : integer) : integer;
+function WBT_CircularVarianceOfAspect(OpenMap : boolean; InName : PathStr; filtersize : integer) : integer;
 var
    cmd : ansistring;
    OutName : PathStr;
@@ -228,7 +217,7 @@ begin
   if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
      OutName := MDTempDir + 'wbt_circ_var_aspect_' + FilterSizeStr(FilterSize) + '_' + ExtractFileNameNoExt(InName) + '.tif';
      cmd := WhiteBoxfName + WBNoCompress + '-r=CircularVarianceOfAspect -v --dem=' + InName + ' -o=' + OutName + ' --filter=' + IntToStr(FilterSize);
-     Result := ExecuteWBandOpenMap(cmd,OutName,euUndefined,mtElevSpectrum);
+     Result := ExecuteWBandOpenMap(cmd,OutName,euUndefined,mtElevSpectrum,OpenMap);
   end;
 end;
 
@@ -255,7 +244,7 @@ begin
       Result := ExecuteWBandOpenMap(cmd,BasinName,euUndefined,mtElevSpectrum);
 
       cmd := WhiteBoxfName + WBNoCompress + ' -r=Isobasins -v --dem=' + BreachName + ' -o=' + IsobasinName + ' --size=100000';
-      Result := ExecuteWBandOpenMap(cmd,ISOBasinName,euUndefined,mtElevSpectrum);
+      Result := ExecuteWBandOpenMap(cmd,ISOBasinName,euUndefined,mtElevSpectrum,true);
    end;
 end;
 
@@ -270,7 +259,7 @@ begin
      OutName1 := MDTempDir + 'wbt_ms_rough_mag_' + ExtractFileNameNoExt(InName) + '.tif';
      OutName2 := MDTempDir + 'wbt_ms_rough_scale_' + ExtractFileNameNoExt(InName) + '.tif';
      cmd := WhiteBoxfName  + WBNoCompress + '-r=MultiScaleRoughness -v --dem=' + InName + ' -out_mag=' + OutName1 + ' -out_scale=' + OutName2 + ' --min_scale=1 --max_scale=1000 --step=5';
-     ExecuteWBandOpenMap(cmd,OutName1,euMeters);
+     ExecuteWBandOpenMap(cmd,OutName1,euMeters,mtElevSpectrum,true);
      if FileExists(OutName2) then begin
         NewGrid := OpenNewDEM(OutName2);
         {$IfDef RecordWBT} WriteLineToDebugFile('second map opened'); {$EndIf}
@@ -279,7 +268,7 @@ begin
 end;
 
 
-procedure WBT_AspectMap(InName : PathStr);
+function WBT_AspectMap(OpenMap : boolean; InName : PathStr) : integer;
 var
    cmd : ansistring;
    OutName : PathStr;
@@ -287,7 +276,7 @@ begin
   if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
      OutName := MDTempDir + 'wbt_aspect_' + ExtractFileNameNoExt(InName) + '.tif';
      cmd := WhiteBoxfName + WBNoCompress + '-r=Aspect -v --dem=' + InName + ' -o=' + OutName;   // + ' --units="percent"';
-     ExecuteWBandOpenMap(cmd,OutName,euAspectDeg);
+     Result := ExecuteWBandOpenMap(cmd,OutName,euAspectDeg,mtDEMAspect,OpenMap);
   end;
 end;
 
@@ -309,31 +298,31 @@ begin
 end;
 
 
-procedure WBT_BNearNeighCreate(InName,OutName : PathStr; GridSize : float64);
+function WBT_BNearNeighCreate(OpenMap : boolean; InName,OutName : PathStr; GridSize : float64) : integer;
 var
    cmd : ansistring;
 begin
   {$IfDef RecordUseOtherPrograms} WriteLineToDebugFile('WBNearNeighCreate, infile=' + InName + '  outfile=' + OutName); {$EndIf}
   if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
      cmd := WhiteBoxfName + WBNoCompress + '-r=LidarNearestNeighbourGridding -v -i=' + InName + ' -o=' + OutName + ' --resolution=' + RealToString(GridSize,-12,-1) + ' --radius=' + RealToString(GridSize * MDDef.FillHoleRadius,-12,-1);
-     ExecuteWBandOpenMap(cmd,OutName,euMeters);
+     Result := ExecuteWBandOpenMap(cmd,OutName,euMeters,mtElevSpectrum,OpenMap);
   end;
 end;
 
 
-procedure WBT_IDWCreate(InName,OutName : PathStr; GridSize : float64);
+procedure WBT_IDWCreate(OpenMap : boolean; InName,OutName : PathStr; GridSize : float64);
 var
    cmd : ansistring;
 begin
   {$IfDef RecordUseOtherPrograms} WriteLineToDebugFile('WBIDWCreate, infile=' + InName + '  outfile=' + OutName); {$EndIf}
   if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
      cmd := WhiteBoxfName  + WBNoCompress + '-r=LidarIdwInterpolation -v -i=' + InName + ' -o=' + OutName + ' --resolution=' + RealToString(GridSize,-12,-1) + ' --radius=' + RealToString(GridSize * MDDef.FillHoleRadius,-12,-1);
-     ExecuteWBandOpenMap(cmd,OutName,euMeters);
+     ExecuteWBandOpenMap(cmd,OutName,euMeters,mtElevSpectrum,OpenMap);
   end;
 end;
 
 
-function WBT_ProfileCurvature(InName : PathStr) : integer;
+function WBT_ProfileCurvature(OpenMap : boolean; InName : PathStr) : integer;
 var
    cmd : ansistring;
    OutName : PathStr;
@@ -341,12 +330,24 @@ begin
   if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
      OutName := MDTempDir + 'wbt_profile_curvature_' + ExtractFileNameNoExt(InName) + '.tif';
      cmd := WhiteBoxfName + WBNoCompress + '-r=ProfileCurvature -v --dem=' + InName + ' -o=' + OutName;
-     ExecuteWBandOpenMap(cmd,OutName,euPerMeter);
+     Result := ExecuteWBandOpenMap(cmd,OutName,euPerMeter,mtElevSpectrum,OpenMap);
+  end;
+end;
+
+function WBT_PlanCurvature(OpenMap : boolean; InName : PathStr) : integer;
+var
+   cmd : ansistring;
+   OutName : PathStr;
+begin
+  if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
+     OutName := MDTempDir + 'wbt_profile_curvature_' + ExtractFileNameNoExt(InName) + '.tif';
+     cmd := WhiteBoxfName + WBNoCompress + '-r=PlanCurvature -v --dem=' + InName + ' -o=' + OutName;
+     Result := ExecuteWBandOpenMap(cmd,OutName,euPerMeter,mtElevSpectrum,OpenMap);
   end;
 end;
 
 
-function WBT_TangentialCurvature(InName : PathStr) : integer;
+function WBT_TangentialCurvature(OpenMap : boolean; InName : PathStr) : integer;
 var
    cmd : ansistring;
    OutName : PathStr;
@@ -354,12 +355,12 @@ begin
   if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
      OutName := MDTempDir + 'wbt_tangential_curvature_' + ExtractFileNameNoExt(InName) + '.tif';
      cmd := WhiteBoxfName + WBNoCompress + '-r=TangentialCurvature -v --dem=' + InName + ' -o=' + OutName;
-     ExecuteWBandOpenMap(cmd,OutName,euPerMeter);
+     Result := ExecuteWBandOpenMap(cmd,OutName,euPerMeter,mtElevSpectrum,OpenMap);
   end;
 end;
 
 
-function WBT_MinimalCurvature(InName : PathStr) : integer;
+function WBT_MinimalCurvature(OpenMap : boolean; InName : PathStr) : integer;
 var
    cmd : ansistring;
    OutName : PathStr;
@@ -367,12 +368,12 @@ begin
   if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
      OutName := MDTempDir + 'wbt_minimal_curvature_' + ExtractFileNameNoExt(InName) + '.tif';
      cmd := WhiteBoxfName + WBNoCompress + '-r=MinimalCurvature -v --dem=' + InName + ' -o=' + OutName;
-     ExecuteWBandOpenMap(cmd,OutName,euPerMeter);
+     Result := ExecuteWBandOpenMap(cmd,OutName,euPerMeter,mtElevSpectrum,OpenMap);
   end;
 end;
 
 
-function WBT_MaximalCurvature(InName : PathStr) : integer;
+function WBT_MaximalCurvature(OpenMap : boolean; InName : PathStr) : integer;
 var
    cmd : ansistring;
    OutName : PathStr;
@@ -380,12 +381,12 @@ begin
   if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
      OutName := MDTempDir + 'wbt_maximal_curvature_' + ExtractFileNameNoExt(InName) + '.tif';
      cmd := WhiteBoxfName + WBNoCompress + '-r=MaximalCurvature -v --dem=' + InName + ' -o=' + OutName;
-     ExecuteWBandOpenMap(cmd,OutName,euPerMeter);
+     Result := ExecuteWBandOpenMap(cmd,OutName,euPerMeter,mtElevSpectrum,OpenMap);
   end;
 end;
 
 
-function WBT_MeanCurvature(InName : PathStr) : integer;
+function WBT_MeanCurvature(OpenMap : boolean; InName : PathStr) : integer;
 var
    cmd : ansistring;
    OutName : PathStr;
@@ -393,12 +394,12 @@ begin
   if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
      OutName := MDTempDir + 'wbt_mean_curvature_' + ExtractFileNameNoExt(InName) + '.tif';
      cmd := WhiteBoxfName + WBNoCompress + '-r=MeanCurvature -v --dem=' + InName + ' -o=' + OutName;
-     ExecuteWBandOpenMap(cmd,OutName,euPerMeter);
+     Result := ExecuteWBandOpenMap(cmd,OutName,euPerMeter,mtElevSpectrum,OpenMap);
   end;
 end;
 
 
-function WBT_GaussianCurvature(InName : PathStr) : integer;
+function WBT_GaussianCurvature(OpenMap : boolean; InName : PathStr) : integer;
 var
    cmd : ansistring;
    OutName : PathStr;
@@ -406,7 +407,7 @@ begin
   if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
      OutName := MDTempDir + 'wbt_gaussian_curvature_' + ExtractFileNameNoExt(InName) + '.tif';
      cmd := WhiteBoxfName + WBNoCompress + '-r=GaussianCurvature -v --dem=' + InName + ' -o=' + OutName;
-     ExecuteWBandOpenMap(cmd,OutName,euPerMeter);
+     Result := ExecuteWBandOpenMap(cmd,OutName,euPerMeter,mtElevSpectrum,OpenMap);
   end;
 end;
 

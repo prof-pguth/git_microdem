@@ -15,6 +15,7 @@
    {$IfDef Debug}
        {$Define RecordDEMIX}
        {$Define RecordDetailedDEMIX}
+       {$Define RecordClosing}
        //{$Define RecordDataBaseSaveFiles}
        //{$Define RecordDBPlot}
        //{$Define RecordCSVOut}
@@ -60,18 +61,17 @@
        //{$Define RecordDataSaveStatus}
        //{$Define RecordDataBase}
        //{$Define RecordDataBaseImage}
-       //{$Define RecordClosing}
        //{$Define RecordGeology}
        //{$Define RecordShapeFileEdits}
        //{$Define ExportCoords}
        //{$Define RecordMakeLineArea}
-       {$Define RecordDBfilter}
+       //{$Define RecordDBfilter}
        //{$Define RecordOpenGL}
        //{$Define FindNeighbors}
        //{$Define RecordFont}
        //{$Define AverageNeighbors}
        //{$Define AverageNeighborsFull}
-       {$Define CountUniqueValues}
+       //{$Define CountUniqueValues}
        //{$Define RecordCurrentRecord}
    {$EndIf}
 {$EndIf}
@@ -1028,6 +1028,10 @@ type
     CriteriaforeachDEMIXtile1: TMenuItem;
     PercentilesforCOPbycriterionforeachtile1: TMenuItem;
     Sumforallnumericfields1: TMenuItem;
+    SortbyBESTEVAL1: TMenuItem;
+    AddlatlongfieldstoDB1: TMenuItem;
+    N55: TMenuItem;
+    MapsbyclusterandDEM1: TMenuItem;
     //Pointfilter1: TMenuItem;
     //Pointfilter2: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
@@ -1820,6 +1824,9 @@ type
     procedure CriteriaforeachDEMIXtile1Click(Sender: TObject);
     procedure PercentilesforCOPbycriterionforeachtile1Click(Sender: TObject);
     procedure Sumforallnumericfields1Click(Sender: TObject);
+    procedure SortbyBESTEVAL1Click(Sender: TObject);
+    procedure AddlatlongfieldstoDB1Click(Sender: TObject);
+    procedure MapsbyclusterandDEM1Click(Sender: TObject);
     //procedure Pointfilter2Click(Sender: TObject);
     //procedure Pointfilter1Click(Sender: TObject);
   private
@@ -2809,25 +2816,23 @@ var
    tName : PathStr;
    OldText,NewText : ShortString;
 begin
-   //with GISdb[DBonTable] do begin
-      GISdb[DBonTable].MyData.First;
-      if (Sender = Nil) then WantedFieldName := SelectedColumn
-      else WantedFieldName := GISdb[DBonTable].PickField('Translation',[ftString]);
-      if GetFileFromDirectory('file with translations',DefaultDBMask,tName) then begin
-         ShowHourglassCursor;
-         Table := tMyData.Create(tName);
-         OldText := GISdb[DBonTable].PickField('Text to replace',[ftString]);
-         NewText := GISdb[DBonTable].PickField('Text to replace with',[ftString]);
-         while not Table.eof do begin
-            Before := Table.GetFieldByNameAsString(OldText);
-            After := Table.GetFieldByNameAsString(NewText);
-            if (After <> '') and (Before <> '') then SearchAndReplace(WantedFieldName,Before,After,Changed);
-            Table.Next;
-         end;
-         Table.Destroy;
+   GISdb[DBonTable].MyData.First;
+   if (Sender = Nil) then WantedFieldName := SelectedColumn
+   else WantedFieldName := GISdb[DBonTable].PickField('Translation',[ftString]);
+   if GetFileFromDirectory('file with translations',DefaultDBMask,tName) then begin
+      ShowHourglassCursor;
+      Table := tMyData.Create(tName);
+      OldText := GISdb[DBonTable].PickField('Text to replace',[ftString]);
+      NewText := GISdb[DBonTable].PickField('Text to replace with',[ftString]);
+      while not Table.eof do begin
+         Before := Table.GetFieldByNameAsString(OldText);
+         After := Table.GetFieldByNameAsString(NewText);
+         if (After <> '') and (Before <> '') then SearchAndReplace(WantedFieldName,Before,After,Changed);
+         Table.Next;
       end;
-      ShowStatus;
-   //end;
+      Table.Destroy;
+   end;
+   ShowStatus;
 end;
 
 
@@ -3594,6 +3599,8 @@ end;
 
 procedure Tdbtablef.BitBtn24Click(Sender: TObject);
 begin
+   Areasinclusters1.Visible := GISdb[DBonTable].MyData.FieldExists('AREA') and GISdb[DBonTable].MyData.FieldExists('CLUSTER');
+
    DEMIX1Click(Sender);
 end;
 
@@ -3751,8 +3758,13 @@ begin
    end
    else begin
       if ValidDB(DBonTable) then begin
+         {$IfDef RecordClosing} WriteLineToDebugFile('Tdbtablef.FormCloseQuery has valid DB'); {$EndIf}
          CanClose := CanCloseIt;
-         if CanClose then CloseAndNilNumberedDB(DBonTable);
+         if CanClose then begin
+            {$IfDef RecordClosing} WriteLineToDebugFile('Tdbtablef.FormCloseQuery call CloseAndNilNumberedDB'); {$EndIf}
+            CloseAndNilNumberedDB(DBonTable);
+            {$IfDef RecordClosing} WriteLineToDebugFile('Tdbtablef.FormCloseQuery closed'); {$EndIf}
+         end;
       end;
    end;
    {$IfDef RecordClosing} WriteLineToDebugFile('Tdbtablef.FormCloseQuery out'); {$EndIf}
@@ -5227,7 +5239,7 @@ procedure Tdbtablef.AddelevationfromDEMseries1Click(Sender: TObject);
 var
    z : float32;
    Lat,Long : float64;
-   WantedDEM,WantImage: integer;
+   WantedDEM : integer;
    DEMSeries : ShortString;
 begin
    with GISdb[DBonTable] do begin
@@ -5239,23 +5251,27 @@ begin
       repeat
          EmpSource.Enabled := false;
          if ValidLatLongFromTable(Lat,Long) then begin
-             LoadMapLibraryPoint(WantedDEM,WantImage,true,Lat,Long,DEMSeries,false);
-             {$IfDef RecordFillDEM} WriteLineToDebugFile(DEMGlb[WantedDEM].AreaName); {$EndIf}
-             with DEMGlb[WantedDEM] do begin
-                 GISdb[DBonTable].MyData.ApplyFilter(LatFieldName +  '<=' + RealToString(DEMBoundBoxGeo.YMax,-12,-6) + ' AND ' + LatFieldName +  '>=' + RealToString(DEMBoundBoxGeo.YMin,-12,-6) + ' AND ' +
-                                   LongFieldName +  '<=' + RealToString(DEMBoundBoxGeo.XMax,-12,-6) + ' AND ' + LongFieldName +  '>=' + RealToString(DEMBoundBoxGeo.XMin,-12,-6));
+             WantedDEM := LoadMapLibraryPoint(true,Lat,Long,DEMSeries,false);
+             if ValidDEM(WantedDEM) then begin
+                {$IfDef RecordFillDEM} WriteLineToDebugFile(DEMGlb[WantedDEM].AreaName); {$EndIf}
+                //th DEMGlb[WantedDEM] do begin
+                    GISdb[DBonTable].MyData.ApplyFilter(MakeGeoFilterFromBoundingBox(DEMGlb[WantedDEM].DEMBoundBoxGeo));
+
+                    //LatFieldName +  '<=' + RealToString(DEMBoundBoxGeo.YMax,-12,-6) + ' AND ' + LatFieldName +  '>=' + RealToString(DEMBoundBoxGeo.YMin,-12,-6) + ' AND ' +
+                                      //ngFieldName +  '<=' + RealToString(DEMBoundBoxGeo.XMax,-12,-6) + ' AND ' + LongFieldName +  '>=' + RealToString(DEMBoundBoxGeo.XMin,-12,-6));
+                //d;
+                {$IfDef RecordFillDEM} WriteLineToDebugFile('Recs check=' + IntToStr(GISDataBase[DBonTable].MyData.RecordCount) + '  Filter=' +  GISDataBase[DBonTable].MyData.Filter); {$EndIf}
+                while not GISdb[DBonTable].MyData.eof do begin
+                   EmpSource.Enabled := false;
+                   GISdb[DBonTable].MyData.Edit;
+                   if GetLatLongToRepresentRecord(Lat,Long) and DEMGlb[WantedDEM].GetElevFromLatLongDegree(Lat,Long,z) then begin
+                      GISdb[DBonTable].MyData.SetFieldByNameAsFloat('ELEV_M',z);
+                   end
+                   else GISdb[DBonTable].MyData.SetFieldByNameAsString('ELEV_M','');
+                   GISdb[DBonTable].MyData.Next;
+                end;
+                CloseSingleDEM(WantedDEM);
              end;
-             {$IfDef RecordFillDEM} WriteLineToDebugFile('Recs check=' + IntToStr(GISDataBase[DBonTable].MyData.RecordCount) + '  Filter=' +  GISDataBase[DBonTable].MyData.Filter); {$EndIf}
-             while not GISdb[DBonTable].MyData.eof do begin
-                EmpSource.Enabled := false;
-                GISdb[DBonTable].MyData.Edit;
-                if GetLatLongToRepresentRecord(Lat,Long) and DEMGlb[WantedDEM].GetElevFromLatLongDegree(Lat,Long,z) then begin
-                   GISdb[DBonTable].MyData.SetFieldByNameAsFloat('ELEV_M',z);
-                end
-                else GISdb[DBonTable].MyData.SetFieldByNameAsString('ELEV_M','');
-                GISdb[DBonTable].MyData.Next;
-             end;
-             CloseSingleDEM(WantedDEM);
          end
          else begin
              GISdb[DBonTable].MyData.Edit;
@@ -5451,6 +5467,18 @@ begin
    AddUTMcoordfields1Click(Sender);
 end;
 
+procedure Tdbtablef.AddlatlongfieldstoDB1Click(Sender: TObject);
+var
+   theFields : tStringList;
+   i : integer;
+begin
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('AddTileCharacteristics'); {$EndIf}
+   theFields := tStringList.Create;
+   theFields.Add('LAT');
+   theFields.Add('LONG');
+   AddFieldsToDEMIXDB(DBonTable,theFields);
+end;
+
 procedure Tdbtablef.Addlatlongfromlinkeddatabase1Click(Sender: TObject);
 var
    Lat,Long : float64;
@@ -5639,13 +5667,13 @@ var
    NewField,Leader : shortstring;
    i : integer;
 begin
-   with GISdb[DBonTable] do begin
+   //with GISdb[DBonTable] do begin
       Leader := '';
       Petmar.GetString('ID string',Leader,false,ReasonableTextChars);
       NewField := RecNoFName;
       NewField := AddNewField(GISdb[DBonTable], NewField,ftString,5 + Length(Leader));
 
-      EmpSource.Enabled := false;
+      GISdb[DBonTable].EmpSource.Enabled := false;
       GISdb[DBonTable].MyData.First;
       i := 0;
       while not GISdb[DBonTable].MyData.eof do begin
@@ -5655,7 +5683,7 @@ begin
          GISdb[DBonTable].MyData.Next;
       end;
       ShowStatus;
-   end;
+   //end;
 end;
 
 procedure Tdbtablef.AddslopefromDEM1Click(Sender: TObject);
@@ -5669,12 +5697,12 @@ var
    x,y : float64;
    i,rc : integer;
 begin
-   with GISdb[DBonTable] do begin
-      PickNumericFields(dbgtUnspecified,2,'x component','y component','');
-      dbOpts.MagField := dbOpts.XField;
-      dbOpts.DirField := dbOpts.YField;
-      AddFieldToDataBase(ftFloat,'SPEED',8,3);
-      EmpSource.Enabled := false;
+   //with GISdb[DBonTable] do begin
+      GISdb[DBonTable].PickNumericFields(dbgtUnspecified,2,'x component','y component','');
+      GISdb[DBonTable].dbOpts.MagField := GISdb[DBonTable].dbOpts.XField;
+      GISdb[DBonTable].dbOpts.DirField := GISdb[DBonTable].dbOpts.YField;
+      GISdb[DBonTable].AddFieldToDataBase(ftFloat,'SPEED',8,3);
+      GISdb[DBonTable].EmpSource.Enabled := false;
       i := 0;
       rc := GISdb[DBonTable].MyData.RecordCount;
       StartProgress('Speed');
@@ -5683,15 +5711,15 @@ begin
          inc(i);
          if (i mod 1000 = 0) then UpdateProgressBar(i/rc);
 
-         if GISdb[DBonTable].MyData.CarefullyGetFieldByNameAsFloat64(dbOpts.MagField,x) and
-             GISdb[DBonTable].MyData.CarefullyGetFieldByNameAsFloat64(dbOpts.DirField,y) then begin
+         if GISdb[DBonTable].MyData.CarefullyGetFieldByNameAsFloat64(GISdb[DBonTable].dbOpts.MagField,x) and
+             GISdb[DBonTable].MyData.CarefullyGetFieldByNameAsFloat64(GISdb[DBonTable].dbOpts.DirField,y) then begin
              GISdb[DBonTable].MyData.Edit;
              GISdb[DBonTable].MyData.SetFieldByNameAsFloat('SPEED',sqrt(x*x+y*y));
          end;
          GISdb[DBonTable].MyData.Next;
       end;
       ShowStatus;
-   end;
+   //end;
 end;
 
 procedure Tdbtablef.Addtilecharacteristics1Click(Sender: TObject);
@@ -5885,7 +5913,7 @@ begin
       else AddXYZfields;
       EmpSource.Enabled := false;
       FieldsInDB := Nil;
-      FieldsInDB := GISdb[DBonTable].MyData.UniqueEntriesInDB(dbOpts.LinkFieldThisDB);
+      FieldsInDB := GISdb[DBonTable].MyData.ListUniqueEntriesInDB(dbOpts.LinkFieldThisDB);
       ShowHourglassCursor;
       rc := FieldsInDB.Count;
       StartProgress('Add xyz');
@@ -5993,7 +6021,7 @@ begin
       LineTable := tMyData.Create(fName);
       fName := 'DECK';
       Values := Nil;
-      Values := LineTable.UniqueEntriesInDB(fName);
+      Values := LineTable.ListUniqueEntriesInDB(fName);
       ShowHourglassCursor;
       for i := 0 to pred(Values.Count) do begin
          LineTable.ApplyFilter(fName + '=' + QuotedStr(Values.Strings[i]));
@@ -6074,10 +6102,10 @@ end;
 
 procedure Tdbtablef.Allcriteriavalues1Click(Sender: TObject);
 begin
-{$IfDef ExDEMIXexperimentalOptions}
-{$Else}
-   DEMIXwineContestCriterionGraph(dgAllValues,DBonTable);
-{$EndIf}
+   {$IfDef ExDEMIXexperimentalOptions}
+   {$Else}
+      DEMIXwineContestCriterionGraph(dgAllValues,DBonTable);
+   {$EndIf}
 end;
 
 procedure Tdbtablef.AllDBs1Click(Sender: TObject);
@@ -6105,12 +6133,12 @@ var
    WantedField : shortstring;
    i : integer;
 begin
-   {$IfDef RecordDBPlot} WriteLineToDebugFile('Tdbtablef.AllDBsbynumericfield1Click in,'); {$EndIf}
+   {$IfDef RecordDBPlot} WriteLineRoDebugFile('Tdbtablef.AllDBsbynumericfield1Click in,'); {$EndIf}
    with GISdb[DBonTable] do begin
       WantedField := PickField('coloring',NumericFieldTypes);
       for i := 1 to MaxDataBase do begin
          if (GISdb[i] <> nil) then begin
-            {$IfDef RecordDBPlot} WriteLineToDebugFile('Plot ' + GISdb[i].dbName); {$EndIf}
+            {$IfDef RecordDBPlot} WriteLineRoDebugFile('Plot ' + GISdb[i].dbName); {$EndIf}
             GISdb[i].PlotFieldOnMap(WantedField);
          end;
       end;
@@ -6367,6 +6395,11 @@ begin
   GISdb[DBonTable].AddGeometry(asSinuousity);
 end;
 
+
+procedure Tdbtablef.SortbyBESTEVAL1Click(Sender: TObject);
+begin
+   SortDataBase(DBonTable,true,'BEST_EVAL',ExtractFilePath(GISdb[DBonTable].dbFullName));
+end;
 
 procedure Tdbtablef.Sortfield1Click(Sender: TObject);
 var
@@ -6675,7 +6708,7 @@ end;
 
 procedure Tdbtablef.N45Click(Sender: TObject);
 begin
-   {$IfDef RecordIceSat} WriteLineToDebugFile('ICESat2filecleanup1Click'); {$EndIf}
+   {$IfDef RecordIceSat} WriteLineRoDebugFile('ICESat2filecleanup1Click'); {$EndIf}
    IcesatProcessCanopy(DBonTable,false,true);
 end;
 
@@ -6760,7 +6793,7 @@ var
    ch : AnsiChar;
    fname : PathStr;
 begin
-   {$IfDef RecordCSVOut} WriteLineToDebugFile('Tdbtablef.Text1Click in'); {$EndIf}
+   {$IfDef RecordCSVOut} WriteLineRoDebugFile('Tdbtablef.Text1Click in'); {$EndIf}
 
    //with GISdb[DBonTable] do begin
       GISdb[DBonTable].dbIsUnsaved := false;
@@ -6792,19 +6825,19 @@ end;
 
 procedure Tdbtablef.HTML1Click(Sender: TObject);
 begin
-   {$IfDef RecordHTML} WriteLineToDebugFile('Tdbtablef.HTML1Click in'); {$EndIf}
+   {$IfDef RecordHTML} WriteLineRoDebugFile('Tdbtablef.HTML1Click in'); {$EndIf}
    GISdb[DBonTable].EmpSource.Enabled := false;
    HTMLReport(GISdb[DBonTable].MyData,GISdb[DBonTable].EmpSource,GISdb[DBonTable].dbOpts.VisCols);
    ShowStatus;
-   {$IfDef RecordHTML} WriteLineToDebugFile('Tdbtablef.HTML1Click out'); {$EndIf}
+   {$IfDef RecordHTML} WriteLineRoDebugFile('Tdbtablef.HTML1Click out'); {$EndIf}
 end;
 
 
 procedure Tdbtablef.HTMLtableperrecord1Click(Sender: TObject);
 begin
-   {$IfDef RecordHTML} WriteLineToDebugFile('Tdbtablef.HTMLtableperrecord1Click in'); {$EndIf}
+   {$IfDef RecordHTML} WriteLineRoDebugFile('Tdbtablef.HTMLtableperrecord1Click in'); {$EndIf}
    SingleRecordHTMLReport(true,GISdb[DBonTable].MyData,GISdb[DBonTable].dbOpts.VisCols);
-   {$IfDef RecordHTML} WriteLineToDebugFile('Tdbtablef.HTMLtableperrecord1Click out'); {$EndIf}
+   {$IfDef RecordHTML} WriteLineRoDebugFile('Tdbtablef.HTMLtableperrecord1Click out'); {$EndIf}
 end;
 
 procedure Tdbtablef.Tincontour1Click(Sender: TObject);
@@ -6889,7 +6922,7 @@ end;
 
 procedure Tdbtablef.BitBtn7Click(Sender: TObject);
 begin
-   {$IfDef RecordDataBase} WriteLineToDebugFile('Tdbtablef.BitBtn7Click--map query'); {$EndIf}
+   {$IfDef RecordDataBase} WriteLineRoDebugFile('Tdbtablef.BitBtn7Click--map query'); {$EndIf}
    DBEditting := DBonTable;
    NearTIGERroads1.Visible := MDDef.AdvancedDBops and (GISdb[DBonTable].TheMapOwner <> Nil) and (GISdb[DBonTable].ItsAPointDB);
    AwayfromTIGERroads1.Visible := NearTIGERroads1.Visible;
@@ -6911,10 +6944,10 @@ var
    i,j,Col,Row,DN,rc : integer;
    fName : ShortString;
 begin
-   {$IfDef RecordSatellite} WriteLineToDebugFile('Tdbtablef.Satelliteaddreflectance1Click in'); {$EndIf}
+   {$IfDef RecordSatellite} WriteLineRoDebugFile('Tdbtablef.Satelliteaddreflectance1Click in'); {$EndIf}
    //with GISdb[DBonTable] do begin
       for j := 1 to SatImage[GISdb[DBonTable].TheMapOwner.MapDraw.SATonMap].NumBands do begin
-         {$IfDef RecordSatellite} WriteLineToDebugFile('add ' + 'BAND_' + IntToStr(j)); {$EndIf}
+         {$IfDef RecordSatellite} WriteLineRoDebugFile('add ' + 'BAND_' + IntToStr(j)); {$EndIf}
          GISdb[DBonTable].AddFieldToDataBase(ftInteger,'BAND_' + IntToStr(j),6);
       end;
       ShowHourglassCursor;
@@ -7000,7 +7033,7 @@ end;
 
 procedure Tdbtablef.SelectionRegion1Click(Sender: TObject);
 begin
-   {$IfDef RecordDataBase} WriteLineToDebugFile('Tdbtablef.Selectionregion1Click--DB map query in'); {$EndIf}
+   {$IfDef RecordDataBase} WriteLineRoDebugFile('Tdbtablef.Selectionregion1Click--DB map query in'); {$EndIf}
 
    if PointShapeFile(GISdb[DBonTable].ShapeFileType) and (not GISdb[DBonTable].LatLongFieldsPresent) then begin
       AddXYZfromshpfile1Click(Addlatlongfromshpfile1);
@@ -7019,27 +7052,27 @@ begin
       if (GISdb[DBonTable].theGraphOwner <> Nil) then ChangeGraphDoing(gdGraphDBBoxFilter);
    {$EndIf}
    ShowStatus;
-   {$IfDef RecordDataBase} WriteLineToDebugFile('Tdbtablef.Selectionregion1Click--DB map query out'); {$EndIf}
+   {$IfDef RecordDataBase} WriteLineRoDebugFile('Tdbtablef.Selectionregion1Click--DB map query out'); {$EndIf}
 end;
 
 
 procedure Tdbtablef.Selectradiusaboutpoint1Click(Sender: TObject);
 begin
-   {$IfDef RecordDataBase} WriteLineToDebugFile('Tdbtablef.Selectradiusaboutpoint1Click'); {$EndIf}
+   {$IfDef RecordDataBase} WriteLineRoDebugFile('Tdbtablef.Selectradiusaboutpoint1Click'); {$EndIf}
    ChangeDEMNowDoing(RadiusDBEdit);
 end;
 
 
 procedure Tdbtablef.Setjoin1Click(Sender: TObject);
 begin
-   {$IfDef RecordDataBase} WriteLineToDebugFile(' Tdbtablef.Linkdatabase1Click'); {$EndIf}
+   {$IfDef RecordDataBase} WriteLineRoDebugFile(' Tdbtablef.Linkdatabase1Click'); {$EndIf}
    GISdb[DBonTable].ClearLinkTable(true);
    GISdb[DBonTable].LinkSecondaryTable(GISdb[DBonTable].dbOpts.LinkTableName);
 end;
 
 procedure Tdbtablef.Selectirregularregion1Click(Sender: TObject);
 begin
-   {$IfDef RecordDataBase} WriteLineToDebugFile('Tdbtablef.Selectradiusaboutpoint1Click'); {$EndIf}
+   {$IfDef RecordDataBase} WriteLineRoDebugFile('Tdbtablef.Selectradiusaboutpoint1Click'); {$EndIf}
    GISdb[DBonTable].dbOpts.GeoFilter := '';
    GISdb[DBonTable].theMapOwner.StartShapeFile(OutlineDBIrregularMask);
 end;
@@ -7072,7 +7105,7 @@ begin
   sField := GISdb[DBonTable].PickField('sort',[ftString]);
 
   Subs := nil;
-  Subs := GISdb[DBonTable].MyData.UniqueEntriesInDB(sField);
+  Subs := GISdb[DBonTable].MyData.ListUniqueEntriesInDB(sField);
 
   GISdb[DBonTable].EmpSource.Enabled := false;
 
@@ -7137,7 +7170,7 @@ end;
 
 procedure Tdbtablef.Currentmaparea1Click(Sender: TObject);
 begin
-   {$IfDef RecordDataBase} WriteLineToDebugFile('Tdbtablef.Currentmaparea1Click'); {$EndIf}
+   {$IfDef RecordDataBase} WriteLineRoDebugFile('Tdbtablef.Currentmaparea1Click'); {$EndIf}
    GISdb[DBonTable].LimitDBtoMapArea;
 end;
 
@@ -7290,7 +7323,7 @@ end;
 
 procedure Tdbtablef.Lineshapefile1Click(Sender: TObject);
 begin
-   {$IfDef RecordMakeLineArea} WriteLineToDebugFile('Tdbtablef.Createlineshapefilefrompoints1Click ' + GISDataBase[DBonTable].dbname); {$EndIf}
+   {$IfDef RecordMakeLineArea} WriteLineRoDebugFile('Tdbtablef.Createlineshapefilefrompoints1Click ' + GISDataBase[DBonTable].dbname); {$EndIf}
    MakeLinesFromPoints(GISdb[DBonTable],'',3);
    ShowStatus;
 end;
@@ -7303,7 +7336,7 @@ end;
 procedure Tdbtablef.Button4Click(Sender: TObject);
 begin
    with GISdb[DBonTable] do begin
-      {$IfDef RecordEditDB} WriteLineToDebugFile('Tdbtablef.Button4Click (edit) in'); {$EndIf}
+      {$IfDef RecordEditDB} WriteLineRoDebugFile('Tdbtablef.Button4Click (edit) in'); {$EndIf}
       AddSequentialIndex(RecNoFName,false);
       Colorallrecords1.Visible := ColorPresent;
       Coloruncoloredrecords1.Visible := ColorPresent;
@@ -7409,7 +7442,7 @@ procedure Tdbtablef.Colorallrecords1Click(Sender: TObject);
 var
    fName : ShortString;
 begin
-   {$IfDef RecordEditDB} WriteLineToDebugFile('Tdbtablef.Colorallrecords1Click in'); {$EndIf}
+   {$IfDef RecordEditDB} WriteLineRoDebugFile('Tdbtablef.Colorallrecords1Click in'); {$EndIf}
    with GISdb[DBonTable] do begin
       if MyData.FieldExists('COLOR') then fName := 'COLOR'
       else fName := 'LINE_COLOR';
@@ -7426,7 +7459,7 @@ begin
       end;
       ShowStatus;
    end;
-   {$IfDef RecordEditDB} WriteLineToDebugFile('Tdbtablef.Colorallrecords1Click out'); {$EndIf}
+   {$IfDef RecordEditDB} WriteLineRoDebugFile('Tdbtablef.Colorallrecords1Click out'); {$EndIf}
 end;
 
 procedure Tdbtablef.Colorallrecords2Click(Sender: TObject);
@@ -7530,7 +7563,7 @@ procedure Tdbtablef.ShowFilteredDB(ShowFilter,ShowN : boolean);
 var
    ff : shortstring;
 begin
-  {$IfDef RecordQuickFilter} WriteLineToDebugFile('Tdbtablef.ShowFilteredDB in'); {$EndIf}
+  {$IfDef RecordQuickFilter} WriteLineRoDebugFile('Tdbtablef.ShowFilteredDB in'); {$EndIf}
    GISdb[DBonTable].EmpSource.Enabled := false;
    if (GISdb[DBonTable].TheMapOwner <> Nil) then begin
       GISdb[DBonTable].RedrawLayerOnMap;
@@ -7559,7 +7592,7 @@ begin
       {$EndIf}
    end;
    ShowStatus;
-  {$IfDef RecordQuickFilter} WriteLineToDebugFile('Tdbtablef.ShowFilteredDB out'); {$EndIf}
+  {$IfDef RecordQuickFilter} WriteLineRoDebugFile('Tdbtablef.ShowFilteredDB out'); {$EndIf}
 end;
 
 
@@ -7670,7 +7703,7 @@ var
   WantedFieldName : shortstring;
   i : integer;
 begin
-   {$IfDef RecordEditDB} WriteLineToDebugFile('Tdbtablef.Colorbasedonfield1Click in'); {$EndIf}
+   {$IfDef RecordEditDB} WriteLineRoDebugFile('Tdbtablef.Colorbasedonfield1Click in'); {$EndIf}
    with GISdb[DBonTable] do begin
      if (Sender = Colorbasedonfield1) then WantedFieldName := PickField('unique values',[ftString,ftInteger,ftSmallInt])
      else WantedFieldName := dbOpts.LinkFieldThisDB;
@@ -7694,7 +7727,7 @@ begin
         ShowStatus;
      end;
    end;
-   {$IfDef RecordEditDB} WriteLineToDebugFile('Tdbtablef.Colorbasedonfield1Click out'); {$EndIf}
+   {$IfDef RecordEditDB} WriteLineRoDebugFile('Tdbtablef.Colorbasedonfield1Click out'); {$EndIf}
 end;
 
 procedure Tdbtablef.Colorbasedonjoinedtable1Click(Sender: TObject);
@@ -7704,7 +7737,7 @@ end;
 
 procedure Tdbtablef.Button5Click(Sender: TObject);
 begin
-   {$IfDef RecordDataBase} WriteLineToDebugFile('Tdbtablef.Button5Click'); {$EndIf}
+   {$IfDef RecordDataBase} WriteLineRoDebugFile('Tdbtablef.Button5Click'); {$EndIf}
     ChangeDEMNowDoing(IDDataBaseOne);
     DBEditting := DBonTable;
     if (GISdb[DBonTable].TheMapOwner <> Nil) then GISdb[DBonTable].theMapOwner.SetFocus;
@@ -7868,7 +7901,7 @@ begin
 var
    wfan : tWeaponsFan;
 begin
-   {$IfDef RecordDataBase} WriteLineToDebugFile('Fanproperties1Click'); {$EndIf}
+   {$IfDef RecordDataBase} WriteLineRoDebugFile('Fanproperties1Click'); {$EndIf}
       wFan := WeaponsTableToFan(GISdb[DBonTable].TheMapOwner.MapDraw.PrimMapProj,GISdb[DBonTable].MyData);
       DeleteFileIfExists(wFan.FanFileName);
       wFan.FanFileName := '';
@@ -8127,14 +8160,14 @@ var
    Sum : float64;
 begin
    if ValidDB(DBonTable) and (GISdb[DBonTable].theMapOwner <> Nil) then begin
-      {$IfDef AverageNeighbors} WriteLineToDebugFile('Tdbtablef.Averageofneighbors1Click in'); {$EndIf}
+      {$IfDef AverageNeighbors} WriteLineRoDebugFile('Tdbtablef.Averageofneighbors1Click in'); {$EndIf}
       with GISdb[DBonTable] do begin
          if (Sender = Sumofneighbors1) then Words := 'sum' else words := 'average';
          AvField := PickField(Words + ' neighbor value' ,NumericFieldTypes);
 
          if (AvField = '') then exit;
 
-         {$IfDef AverageNeighbors} WriteLineToDebugFile('Average field: ' + AvField); {$EndIf}
+         {$IfDef AverageNeighbors} WriteLineRoDebugFile('Average field: ' + AvField); {$EndIf}
 
          NewField := AvField;
          LinkedField(NewField);
@@ -8143,7 +8176,7 @@ begin
          else NewField := 'NA_' + NewField;
          NewField := GetFieldNameForDB('New Field',True,NewField);
 
-         {$IfDef AverageNeighbors} WriteLineToDebugFile('New field: ' + NewField); {$EndIf}
+         {$IfDef AverageNeighbors} WriteLineRoDebugFile('New field: ' + NewField); {$EndIf}
 
          AddFieldToDataBase(ftFloat,NewField,18,6);
 
@@ -8161,7 +8194,7 @@ begin
             inc(k);
             UpdateProgressBar(k/rc);
             LinkValue := GISdb[DBonTable].MyData.GetFieldByNameAsString(NeighborLinkField);
-            {$IfDef AverageNeighborsFull} WriteLineToDebugFile('LinkValue: ' + LinkValue); {$EndIf}
+            {$IfDef AverageNeighborsFull} WriteLineRoDebugFile('LinkValue: ' + LinkValue); {$EndIf}
 
             NeighborTable.ApplyFilter(NeighborLinkField + '=' + QuotedStr(LinkValue));
 
@@ -8174,7 +8207,7 @@ begin
                n := 0;
                for i := 1 to NumNeigh do begin
                   LinkValue := NeighborTable.GetFieldByNameAsString('NEIGH_' + IntToStr(i));
-                  {$IfDef AverageNeighborsFull} writeLineToDebugFile('Neighbor: ' + LinkValue); {$EndIf}
+                  {$IfDef AverageNeighborsFull} WriteLineRoDebugFile('Neighbor: ' + LinkValue); {$EndIf}
                   GISdb[NewGIS].MyData.ApplyFilter(NeighborLinkField + '=' + QuotedStr(LinkValue));
 
                   if GISdb[NewGIS].GetFloat32FromTableLinkPossible(AvField,x) then begin
@@ -8193,7 +8226,7 @@ begin
          CloseAndNilNumberedDB(NewGIS);
          ShowStatus;
       end;
-      {$IfDef AverageNeighbors} WriteLineToDebugFile('Tdbtablef.Averageofneighbors1Click out'); {$EndIf}
+      {$IfDef AverageNeighbors} WriteLineRoDebugFile('Tdbtablef.Averageofneighbors1Click out'); {$EndIf}
    end;
 end;
 
@@ -8553,18 +8586,18 @@ var
    AllVis : boolean;
    fName : PathStr;
 begin
-   {$IfDef RecordDataBaseSaveFiles} WriteLineToDebugFile('Tdbtablef.DBFfile1Click in'); {$EndIf}
-   with GISdb[DBonTable] do begin
+   {$IfDef RecordDataBaseSaveFiles} WriteLineRoDebugFile('Tdbtablef.DBFfile1Click in'); {$EndIf}
+   //with GISdb[DBonTable] do begin
       if (Sender <> DataDBFonlynogeometry1) then begin
-         if ItsAShapeFile and LineOrAreaShapeFile(GISdb[DBonTable].ShapeFileType) then exit;
+         if GISdb[DBonTable].ItsAShapeFile and LineOrAreaShapeFile(GISdb[DBonTable].ShapeFileType) then exit;
       end;
       AllVis := true;
-      for j := 0 to MaxFieldsInDB do if (not dbOpts.VisCols[j]) then AllVis := false;
+      for j := 0 to MaxFieldsInDB do if (not GISdb[DBonTable].dbOpts.VisCols[j]) then AllVis := false;
       if (not GISdb[DBonTable].MyData.Filtered) and AllVis then begin
-         if (dbFullName = '') or dbIsUnsaved then fName := Caption
-         else fName := ExtractFilePath(dbFullName) + 'copy-' + ExtractFileName(dbFullName);
+         if (GISdb[DBonTable].dbFullName = '') or GISdb[DBonTable].dbIsUnsaved then fName := Caption
+         else fName := ExtractFilePath(GISdb[DBonTable].dbFullName) + 'copy-' + ExtractFileName(GISdb[DBonTable].dbFullName);
          Petmar.GetFileNameDefaultExt('Copy of DB',DefaultDBMask,fName);
-         Petmar.CopyFile(dbFullName,fName);
+         Petmar.CopyFile(GISdb[DBonTable].dbFullName,fName);
       end
       else begin
          if (not AllVis) and GISdb[DBonTable].MyData.Filtered then begin
@@ -8576,10 +8609,10 @@ begin
          end;
          GISdb[DBonTable].SaveCurrentDBaseSubset('');
       end;
-      dbIsUnsaved := false;
-   end;
-   ShowStatus;
-   {$IfDef RecordDataBaseSaveFiles} WriteLineToDebugFile('Tdbtablef.DBFfile1Click out'); {$EndIf}
+      GISdb[DBonTable].dbIsUnsaved := false;
+   //end;
+      ShowStatus;
+   {$IfDef RecordDataBaseSaveFiles} WriteLineRoDebugFile('Tdbtablef.DBFfile1Click out'); {$EndIf}
 end;
 
 
@@ -8598,7 +8631,7 @@ var
    Results : tStringList;
    fName : PathStr;
 begin
-   {$IfDef AverageNeighbors} WriteLineToDebugFile('Tdbtablef.Vectoraverageinbox1Click in'); {$EndIf}
+   {$IfDef AverageNeighbors} WriteLineRoDebugFile('Tdbtablef.Vectoraverageinbox1Click in'); {$EndIf}
    with GISdb[DBonTable] do begin
      BoxLimits := DEMGlb[TheMapOwner.MapDraw.DEMonMap].FullDEMGridLimits;
      ReadDefault('Half box size (DEM grid postings)',MDDef.HalfBoxSize);
@@ -8612,7 +8645,7 @@ begin
 
      x := BoxLimits.XGridLow + MDDef.HalfBoxSize;
      while x <= BoxLimits.XGridHigh - MDDef.LagSearchRadius do begin
-        {$IfDef AverageNeighbors} writeLineToDebugFile('x=' + IntToStr(x)); {$EndIf}
+        {$IfDef AverageNeighbors} WriteLineRoDebugFile('x=' + IntToStr(x)); {$EndIf}
         ThreadTimers.UpdateThreadStats(9, round(100 * (x - BoxLimits.XGridLow) / (BoxLimits.XGridHigh-BoxLimits.XGridLow)));
         y := BoxLimits.YGridLow + MDDef.HalfBoxSize;
         while y <= BoxLimits.YGridHigh - MDDef.HalfBoxSize do begin
@@ -8643,16 +8676,16 @@ begin
         end;
         inc(x,2 * MDDef.HalfBoxSize);
      end;
-     {$IfDef AverageNeighbors} writeLineToDebugFile('loop done'); {$EndIf}
+     {$IfDef AverageNeighbors} WriteLineRoDebugFile('loop done'); {$EndIf}
      EndThreadTimers;
      ShowSatProgress := true;
      fName := MDTempDir + GISdb[DBonTable].DBName + '_vector_average.csv';
-     {$IfDef AverageNeighbors} WriteLineToDebugFile('fName=' + fName): {$EndIf}
+     {$IfDef AverageNeighbors} WriteLineRoDebugFile('fName=' + fName): {$EndIf}
      theMapOwner.StringListToLoadedDatabase(Results,fName);
      GISdb[DBonTable].MyData.ApplyFilter('');
      ShowStatus;
   end;
-   {$IfDef AverageNeighbors} writeLineToDebugFile('Tdbtablef.Vectoraverageinbox1Click out'); {$EndIf}
+   {$IfDef AverageNeighbors} WriteLineRoDebugFile('Tdbtablef.Vectoraverageinbox1Click out'); {$EndIf}
 {$Else}
 begin
 {$EndIf}
@@ -9050,12 +9083,12 @@ var
    i,rc : integer;
    Address : shortString;
 begin
-   {$IfDef RecordGeoCoding} WriteLineToDebugFile('Tdbtablef.Geocodelatlong1Click in'); {$EndIf}
+   {$IfDef RecordGeoCoding} WriteLineRoDebugFile('Tdbtablef.Geocodelatlong1Click in'); {$EndIf}
    with GISdb[DBonTable] do begin
       AddLatLong;
       EmpSource.Enabled := false;
       AddFieldToDataBase(ftString,'ADDRESS',128);
-      {$IfDef RecordGeoCoding} WriteLineToDebugFile('field added'); {$EndIf}
+      {$IfDef RecordGeoCoding} WriteLineRoDebugFile('field added'); {$EndIf}
       EmpSource.Enabled := false;
 
       StartProgressAbortOption('Geocode');
@@ -9069,7 +9102,7 @@ begin
          end;
          inc(i);
          if ValidLatLongFromTable(Lat,Long) then begin
-           {$IfDef RecordGeoCoding} WriteLineToDebugFile('do record ' + LatLongDegreeToString(Lat,long)); {$EndIf}
+           {$IfDef RecordGeoCoding} WriteLineRoDebugFile('do record ' + LatLongDegreeToString(Lat,long)); {$EndIf}
            Address := '';
            TheMapOwner.AddressGeocode(true,true,Address,Lat,Long,false);
            if (Address <> '') then begin
@@ -9374,7 +9407,7 @@ procedure Tdbtablef.ShowStatus;
 var
    tstr : shortstring;
 begin
-   {$IfDef RecordShowStatus} WriteLineToDebugFile('ShowStatus in, db=' + IntToStr(dbOnTable)); {$EndIf}
+   {$IfDef RecordShowStatus} WriteLineRoDebugFile('ShowStatus in, db=' + IntToStr(dbOnTable)); {$EndIf}
    if (Closing <> true) and ValidDB(DBonTable) then begin
       if GISdb[DBonTable].dbIsUnsaved then TStr := 'Unsaved--'
       else TStr := '';
@@ -9388,17 +9421,19 @@ begin
       Button5.Enabled := GISdb[DBonTable].LatLongFieldsPresent or GISdb[DBonTable].LatLongCornersPresent;
       Button1.Enabled := (GISdb[DBonTable].MyData <> Nil) and GISdb[DBonTable].MyData.Filtered;
       BitBtn13.Enabled :=  AnyHiddenColumns;
+      {$IfDef ExSidescan} BitBtn17.Visible := false; {$EndIf}
+
       Zstatistics1.Visible := GISdb[DBonTable].ShapeFileType in [13,23];
       Addfontdefinition1.Visible := not GISdb[DBonTable].FontFieldExists;
       Insertpointsymbol1.Visible := not GISdb[DBonTable].PointSymbolFieldsPresent;
-      {$IfDef RecordShowStatus} WriteLineToDebugFile('check num recs'); {$EndIf}
+      {$IfDef RecordShowStatus} WriteLineRoDebugFile('check num recs'); {$EndIf}
       if GISdb[DBonTable].MyData.Filtered then begin
          if (GISdb[DBonTable].MyData.FiltRecsInDB = 0) then TStr := 'No Records match filter, from ' + IntToStr(GISdb[DBonTable].MyData.TotRecsInDB)
          else TStr := 'Records displayed: ' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + '/' + IntToStr(GISdb[DBonTable].MyData.TotRecsInDB);
       end
       else TStr := 'All Records displayed: ' + IntToStr(GISdb[DBonTable].MyData.TotRecsInDB);
       StatusBar1.Panels[0].Text := TStr;
-      {$IfDef RecordShowStatus} WriteLineToDebugFile('call arrange buttons'); {$EndIf}
+      {$IfDef RecordShowStatus} WriteLineRoDebugFile('call arrange buttons'); {$EndIf}
       ArrangeButtons;
       if GISdb[DBonTable].LayerIsOn then  begin
          BitBtn28.Caption := '√';
@@ -9408,13 +9443,13 @@ begin
          BitBtn28.Caption := 'X';
          BitBtn28.Font.Color := clRed;
       end;
-      {$IfDef RecordShowStatus} WriteLineToDebugFile('call hide columns'); {$EndIf}
+      {$IfDef RecordShowStatus} WriteLineRoDebugFile('call hide columns'); {$EndIf}
       HideColumns;
       EndProgress;
       ShowDefaultCursor;
-      {$IfDef RecordStatus} WriteLineToDebugFile('UpdateStatus EmpSource.Enabled=' + TrueOrFalse(GISdb[DBonTable].EmpSource.Enabled) + '  DBGrid1.Enabled=' + TrueOrFalse(DBGrid1.Enabled)): {$EndIf}
+      {$IfDef RecordStatus} WriteLineRoDebugFile('UpdateStatus EmpSource.Enabled=' + TrueOrFalse(GISdb[DBonTable].EmpSource.Enabled) + '  DBGrid1.Enabled=' + TrueOrFalse(DBGrid1.Enabled)): {$EndIf}
    end;
-   {$IfDef RecordShowStatus} WriteLineToDebugFile('ShowStatus out'); {$EndIf}
+   {$IfDef RecordShowStatus} WriteLineRoDebugFile('ShowStatus out'); {$EndIf}
  end;
 
 
@@ -9459,7 +9494,7 @@ var
    aName : shortstring;
    fName : PathStr;
 begin
-   {$IfDef RecordMultigrid} WriteLineToDebugFile('Tdbtablef.Reflectancespectrasingleclass1Click in'); {$EndIf}
+   {$IfDef RecordMultigrid} WriteLineRoDebugFile('Tdbtablef.Reflectancespectrasingleclass1Click in'); {$EndIf}
    InList := GetMultipleEntriesFromTableField('Class reflectance spectra', 'NAME');
    //with GISdb[DBonTable] do begin
       if (InList.Count > 1) then MovieSL := tStringList.Create;
@@ -9659,7 +9694,7 @@ var
    NewName : ShortString;
    FieldsInDB : tStringList;
 begin
-   {$IfDef RecordFieldRename} WriteLineToDebugFile('Tdbtablef.Renamefieldsfromreferencetable1Click in',true); {$EndIf}
+   {$IfDef RecordFieldRename} WriteLineRoDebugFile('Tdbtablef.Renamefieldsfromreferencetable1Click in',true); {$EndIf}
 
    tName := ProgramRootDir + 'DP_TableDescriptions' + DefaultDBExt;
    if GetFileFromDirectory('file with name subsitutions',DefaultDBMask,tName) then begin
@@ -9673,14 +9708,14 @@ begin
       if (Not Table.FieldExists(NewFieldName)) then NewFieldName := OrigPickField(Table,'Field name to replace with',[ftString]);
 
       for i := 0 to pred(FieldsInDB.Count) do begin
-         {$IfDef RecordFieldRename} WriteLineToDebugFile('check field=' + FieldsInDB.Strings[i], true): {$EndIf}
+         {$IfDef RecordFieldRename} WriteLineRoDebugFile('check field=' + FieldsInDB.Strings[i], true): {$EndIf}
          GISdb[DBonTable].EmpSource.Enabled := false;
          Table.ApplyFilter(OldFieldName + '=' + QuotedStr(ptTrim(FieldsInDB.Strings[i])));
-         {$IfDef RecordFieldRename} WriteLineToDebugFile('filter=' + Table.Filter); {$EndIf}
+         {$IfDef RecordFieldRename} WriteLineRoDebugFile('filter=' + Table.Filter); {$EndIf}
          if (Table.RecordCount = 1) then begin
             NewName := ptTrim(Table.GetFieldByNameAsString(NewFieldName));
             if (NewName <> '') then begin
-               {$IfDef RecordFieldRename} WriteLineToDebugFile(FieldsInDB.Strings[i] + ' becomes ' + NewName); {$EndIf}
+               {$IfDef RecordFieldRename} WriteLineRoDebugFile(FieldsInDB.Strings[i] + ' becomes ' + NewName); {$EndIf}
                GISdb[DBonTable].RenameField(FieldsInDB.Strings[i],NewName);
                inc(FieldsRenamed);
             end;
@@ -9690,7 +9725,7 @@ begin
       MessageToContinue('Fields renamed: ' + IntToStr(FieldsRenamed));
    end;
    ShowStatus;
-   {$IfDef RecordFieldRename} WriteLineToDebugFile('Tdbtablef.Renamefieldsfromreferencetable1Click out'); {$EndIf}
+   {$IfDef RecordFieldRename} WriteLineRoDebugFile('Tdbtablef.Renamefieldsfromreferencetable1Click out'); {$EndIf}
 end;
 
 
@@ -9959,7 +9994,7 @@ begin
       if not AssignField(dbOpts.ZField,'SILT') then AssignField(dbOpts.ZField,'SILT_PCT');
 
       if (Sender <> Nil) then GISdb[DBonTable].PickNumericFields(dbgtUnspecified,3,'Top corner','Lower left corner','Lower right corner');
-      {$IfDef RecordDataBase} WriteLineToDebugFile('Ternary: ' + dbOpts.XField + '/' + dbOpts.YField + '/' + dbOpts.ZField); {$EndIf}
+      {$IfDef RecordDataBase} WriteLineRoDebugFile('Ternary: ' + dbOpts.XField + '/' + dbOpts.YField + '/' + dbOpts.ZField); {$EndIf}
       TernaryPlotUp := true;
       theMapOwner.DoFastMapRedraw;
 
@@ -10217,14 +10252,14 @@ var
    Last4Grad,This4Grad,Lat,Long,LastLat,LastLong,Az,Dist : float64;
    f1,f2,TStr : ShortString;
 begin
-   {$IfDef RecordNavigation} WriteLineToDebugFile('Tdbtablef.Gradient1Click in'); {$EndIf}
+   {$IfDef RecordNavigation} WriteLineRoDebugFile('Tdbtablef.Gradient1Click in'); {$EndIf}
    //with GISdb[DBonTable] do begin
       if (Sender = Gradient1) then begin
          f1 := GISdb[DBonTable].PickField('Field for gradient',NumericFieldTypes);
          f2 := f1 + 'GRAD';
          GetString('new gradient field',f2,true,DBaseFieldNameChars);
          GISdb[DBonTable].AddFieldToDataBase(ftFloat,f2,12,4);
-         {$IfDef RecordNavigation} WriteLineToDebugFile('(Sender = Gradient1), f1=' + f1 + '   and f2=' + f2); {$EndIf}
+         {$IfDef RecordNavigation} WriteLineRoDebugFile('(Sender = Gradient1), f1=' + f1 + '   and f2=' + f2); {$EndIf}
 
          GISdb[DBonTable].EmpSource.Enabled := false;
          GISdb[DBonTable].MyData.First;
@@ -10420,7 +10455,7 @@ var
    sl : tstringlist;
 begin
    GISdb[DBonTable].EmpSource.Enabled := false;
-   sl := GISdb[DBonTable].MyData.UniqueEntriesInDB(SelectedColumn);
+   sl := GISdb[DBonTable].MyData.ListUniqueEntriesInDB(SelectedColumn);
    Clipboard.AsText := sl.Text;
    sl.Destroy;
    GISdb[DBonTable].EmpSource.Enabled := true;
@@ -10631,7 +10666,7 @@ end;
 
 procedure Tdbtablef.Coloralllinesegments1Click(Sender: TObject);
 begin
-   {$IfDef RecordEditDB} WriteLineToDebugFile('Tdbtablef.Coloralllinesegments1Click in'); {$EndIf}
+   {$IfDef RecordEditDB} WriteLineRoDebugFile('Tdbtablef.Coloralllinesegments1Click in'); {$EndIf}
    Insertlinecolorwidthfields1Click(Sender);
    with GISdb[DBonTable] do begin
       PickLineSizeAndColor('db record',Nil,dbOpts.LineColor,dbOpts.LineWidth);
@@ -10646,7 +10681,7 @@ begin
       until GISdb[DBonTable].MyData.EOF;
      ShowStatus;
    end;
-   {$IfDef RecordEditDB} WriteLineToDebugFile('Tdbtablef.Coloralllinesegments1Click out'); {$EndIf}
+   {$IfDef RecordEditDB} WriteLineRoDebugFile('Tdbtablef.Coloralllinesegments1Click out'); {$EndIf}
 end;
 
 
@@ -10859,7 +10894,7 @@ begin
       EmpSource.Enabled := false;
       while Lat >= -88 do begin
          ApplyFilter('LAT <' + IntToStr(Lat+2) + ' AND LAT > ' + IntToStr(Lat-2));
-         {$IfDef RecordKoppen} WriteLineToDebugFile(MyData.Filter,true); {$EndIf}
+         {$IfDef RecordKoppen} WriteLineRoDebugFile(MyData.Filter,true); {$EndIf}
          A := 0;
          BS := 0;
          BW := 0;
@@ -10877,7 +10912,7 @@ begin
             Next;
          end;
          Results.Add(IntegerToString(Lat,3) + IntegerToString(A,8) + IntegerToString(BS,8)+ IntegerToString(BW,8)+ IntegerToString(C,8)+ IntegerToString(D,8) + IntegerToString(E,8));
-         {$IfDef RecordKoppen} WriteLineToDebugFile(IntegerToString(Lat,3) + IntegerToString(A,8) + IntegerToString(BS,8)+ IntegerToString(BW,8)+ IntegerToString(C,8)+ IntegerToString(D,8) + IntegerToString(E,8)); {$EndIf}
+         {$IfDef RecordKoppen} WriteLineRoDebugFile(IntegerToString(Lat,3) + IntegerToString(A,8) + IntegerToString(BS,8)+ IntegerToString(BW,8)+ IntegerToString(C,8)+ IntegerToString(D,8) + IntegerToString(E,8)); {$EndIf}
          dec(Lat,2*LatInc);
       end;
       Petmar.DisplayAndPurgeStringList(Results,'Koppen stats');
@@ -11301,13 +11336,13 @@ end;
 
 procedure Tdbtablef.ICESat2canopyaddDEMdata1Click(Sender: TObject);
 begin
-   {$IfDef RecordIceSat} WriteLineToDebugFile('ICESat2canopyaddDEMdata1Click'); {$EndIf}
+   {$IfDef RecordIceSat} WriteLineRoDebugFile('ICESat2canopyaddDEMdata1Click'); {$EndIf}
    IcesatProcessCanopy(DBonTable,true);
 end;
 
 procedure Tdbtablef.ICESat2filecleanup1Click(Sender: TObject);
 begin
-   {$IfDef RecordIceSat} WriteLineToDebugFile('ICESat2filecleanup1Click'); {$EndIf}
+   {$IfDef RecordIceSat} WriteLineRoDebugFile('ICESat2filecleanup1Click'); {$EndIf}
    IcesatProcessCanopy(DBonTable,false);
 end;
 
@@ -11433,11 +11468,11 @@ begin
    for i := 0 to pred(TheFiles.Count) do begin
       UpdateProgressBar(i/TheFiles.Count);
       fName2 := TheFiles.Strings[i];
-      {$IfDef RecordSideScan} WriteLineToDebugFile(fName2); {$EndIf}
+      {$IfDef RecordSideScan} WriteLineRoDebugFile(fName2); {$EndIf}
       GISdb[SideIndexDB].dbOpts.MainFilter := 'FILENAME=' + QuotedStr(fName2);
       GISdb[SideIndexDB].AssembleGISFilter;
       if (GISdb[SideIndexDB].MyData.RecordCount = 0) then begin
-         {$IfDef RecordSideScan} WriteLineToDebugFile('  need to add to index'); {$EndIf}
+         {$IfDef RecordSideScan} WriteLineRoDebugFile('  need to add to index'); {$EndIf}
          fName := ChangeFileExt(fName2,DefaultDBExt);
          Table2 := tMyData.Create(fName);
          repeat
@@ -11764,14 +11799,14 @@ end;
 
 procedure Tdbtablef.Insertrecord1Click(Sender: TObject);
 begin
-   {$IfDef RecordEditDB} WriteLineToDebugFile('Tdbtablef.Insertrecord1Click in'); {$EndIf}
+   {$IfDef RecordEditDB} WriteLineRoDebugFile('Tdbtablef.Insertrecord1Click in'); {$EndIf}
    with GISdb[DBonTable] do begin
       GISdb[DBonTable].MyData.CopyRecordToEndOfTable;
       GISdb[DBonTable].MyData.Last;
       ApplicationProcessMessages;
       DisplayTheRecord(MyData.RecordCount,true,true);
    end;
-   {$IfDef RecordEditDB} WriteLineToDebugFile('Tdbtablef.Insertrecord1Click out'); {$EndIf}
+   {$IfDef RecordEditDB} WriteLineRoDebugFile('Tdbtablef.Insertrecord1Click out'); {$EndIf}
 end;
 
 
@@ -11799,7 +11834,7 @@ var
    FieldName1,FieldName2 : ShortString;
    Percentages : boolean;
 begin
-   {$IfDef RecordCorrelationMatrix} WriteLineToDebugFile('Tdbtablef.Integer1Click in'); {$EndIf}
+   {$IfDef RecordCorrelationMatrix} WriteLineRoDebugFile('Tdbtablef.Integer1Click in'); {$EndIf}
    GISdb[DBonTable].EmpSource.Enabled := false;
    FieldName1 := GISdb[DBonTable].PickField('first field',[ftInteger,ftSmallInt]);
    if (FieldName1 = '') then exit;
@@ -11874,12 +11909,12 @@ begin
       while (rc div Thin > MDDef.NetDef.MaxNumBeachBalls) do inc(Thin);
 
        if (rc > MDDef.NetDef.MaxNumBeachBalls) then begin
-          {$IfDef RecordBeachBall} WriteLineToDebugFile('Over MDDef.NetDef.MaxNumBeachBalls records'); {$EndIf}
+          {$IfDef RecordBeachBall} WriteLineRoDebugFile('Over MDDef.NetDef.MaxNumBeachBalls records'); {$EndIf}
           if AnswerIsYes('Proceed with ' + IntToStr(rc) + ' records, thin by factor of ' + IntToStr(Thin)) then begin
              //GISdb[DBonTable].RedrawLayerOnMap;
           end
           else begin
-             {$IfDef RecordBeachBall} WriteLineToDebugFile('Bailed because recs=' + IntToStr(rc)); {$EndIf}
+             {$IfDef RecordBeachBall} WriteLineRoDebugFile('Bailed because recs=' + IntToStr(rc)); {$EndIf}
              GISdb[DBonTable].dbOpts.DBAutoShow := dbasQuakeMechColor;
           end;
        end;
@@ -11998,7 +12033,7 @@ var
   ch : char;
   aName : ShortString;
 begin
-   {$IfDef RecordFan} WriteLineToDebugFile('Tdbtablef.BitBtn-10Click in'); {$EndIf}
+   {$IfDef RecordFan} WriteLineRoDebugFile('Tdbtablef.BitBtn-10Click in'); {$EndIf}
    with GISdb[DBonTable],TheMapOwner.MapDraw do begin
       DBFieldUniqueEntries('NAME',FieldsInDB);
       if (FieldsInDB.Count <> GISdb[DBonTable].MyData.RecordCount) then begin
@@ -12017,7 +12052,7 @@ begin
          for i := 0 to pred(FieldsInDB.Count) do begin
             GISdb[DBonTable].MyData.ApplyFilter('NAME=' + QuotedStr(FieldsInDB.Strings[i]));
             ch := 'A';
-            {$IfDef RecordFan} WriteLineToDebugFile(FieldsInDB.Strings[i] + '  n=' + IntToStr(MyData.RecordCount)); {$EndIf}
+            {$IfDef RecordFan} WriteLineRoDebugFile(FieldsInDB.Strings[i] + '  n=' + IntToStr(MyData.RecordCount)); {$EndIf}
             while (MyData.RecordCount > 1) do begin
                aName := GISdb[DBonTable].MyData.GetFieldByNameAsString('NAME');
                if Length(aName)+ 1 < GISdb[DBonTable].MyData.GetFieldLength('NAME') then begin
@@ -12039,7 +12074,7 @@ begin
       BitBtn6Click(Nil);
       theMapOwner.DoFastMapRedraw;
    end;
-   {$IfDef RecordFan} WriteLineToDebugFile('Tdbtablef.BitBtn-10Click out'); {$EndIf}
+   {$IfDef RecordFan} WriteLineRoDebugFile('Tdbtablef.BitBtn-10Click out'); {$EndIf}
 end;
 
 
@@ -12059,9 +12094,9 @@ end;
 
 procedure Tdbtablef.Font1Click(Sender: TObject);
 begin
-   {$IfDef RecordFont} WriteLineToDebugFile('Tdbtablef.Font1Click in  Gis font 1: ' + MyFontToString(MDDef.GisLabelFont1)); {$EndIf}
+   {$IfDef RecordFont} WriteLineRoDebugFile('Tdbtablef.Font1Click in  Gis font 1: ' + MyFontToString(MDDef.GisLabelFont1)); {$EndIf}
    EditMyFont(GISdb[DBonTable].dbOpts.GisLabelFont1);
-   {$IfDef RecordFont} WriteLineToDebugFile('Tdbtablef.Font1Click out Gis font 1: ' + MyFontToString(MDDef.GisLabelFont1)); {$EndIf}
+   {$IfDef RecordFont} WriteLineRoDebugFile('Tdbtablef.Font1Click out Gis font 1: ' + MyFontToString(MDDef.GisLabelFont1)); {$EndIf}
 end;
 
 
@@ -12075,7 +12110,7 @@ procedure Tdbtablef.Loadfrommaplibrary1Click(Sender: TObject);
 const
    Extra = 0.0001;
 var
-   WantDEM,WantImage : integer;
+   WantDEM : integer;
    Lat,Long : float64;
    bbox : sfBoundBox;
 begin
@@ -12089,7 +12124,7 @@ begin
        bbox.YMin := Lat - Extra;
        bbox.XMax := Long + extra;
    end;
-   LoadMapLibraryBox(WantDEM,WantImage,true, bbox);  //bbox.YMax,bbox.XMin,bbox.YMin,bbox.YMax);
+   WantDEM := LoadMapLibraryBox(true, bbox);  //bbox.YMax,bbox.XMin,bbox.YMin,bbox.YMax);
 end;
 
 procedure Tdbtablef.Loadmapsforthisarea1Click(Sender: TObject);
@@ -12144,7 +12179,7 @@ var
    Lat,Long : float64;
    Color : tPlatformColor;
 begin
-   {$IfDef RecordTerrainProfiles} WriteLineToDebugFile('Tdbtablef.Downhilluphillsegments1Click'); {$EndIf}
+   {$IfDef RecordTerrainProfiles} WriteLineRoDebugFile('Tdbtablef.Downhilluphillsegments1Click'); {$EndIf}
    with GISdb[DBonTable] do begin
       if ShapeFileType in [13,15,23,25] then aShapeFile.GetLineCoords(MyData.RecNo,true)
       else aShapeFile.GetLineCoordsAndZsFromDEM(TheMapOwner.MapDraw.DEMonMap,MyData.RecNo);
@@ -12243,7 +12278,7 @@ procedure Tdbtablef.Cleargeographicfilter1Click(Sender: TObject);
 var
    i : integer;
 begin
-{$IfDef RecordDataBase} WriteLineToDebugFile('Tdbtablef.Cleargeographicfilter1Click'); {$EndIf}
+{$IfDef RecordDataBase} WriteLineRoDebugFile('Tdbtablef.Cleargeographicfilter1Click'); {$EndIf}
    for i := 1 to MaxDataBase do begin
      if (GISdb[i] <> Nil) then begin
         GISdb[i].dbOpts.GeoFilter := '';
@@ -12345,7 +12380,7 @@ var
    fName : PathStr;
    Bitmap : tMyBitmap;
 begin
-   {$IfDef RecordClustering} WriteLineToDebugFile('Clustermaplocations1Click in'); {$EndIf}
+   {$IfDef RecordClustering} WriteLineRoDebugFile('Clustermaplocations1Click in'); {$EndIf}
 
    SaveBackupDefaults;
       GISdb[DBonTable].ClearGISFilter;
@@ -12353,7 +12388,7 @@ begin
       //UnHideColumns;
       Results := tStringList.Create;
       GISdb[DBonTable].EmpSource.Enabled := false;
-      UniqueEntries := GISdb[DBonTable].MyData.UniqueEntriesInDB('CLUSTER');
+      UniqueEntries := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('CLUSTER');
       for i := 0 to pred(UniqueEntries.Count) do begin
          GISdb[DBonTable].MyData.ApplyFilter('CLUSTER=' + UniqueEntries.Strings[i]);
          MDDef.MapNameLocation.DrawItem := true;
@@ -12380,7 +12415,7 @@ begin
    RestoreBackupDefaults;
    GISdb[DBonTable].theMapOwner.DoCompleteMapRedraw;
    ShowStatus;
-   {$IfDef RecordClustering} WriteLineToDebugFile('Clustermaplocations1Click out'); {$EndIf}
+   {$IfDef RecordClustering} WriteLineRoDebugFile('Clustermaplocations1Click out'); {$EndIf}
 end;
 
 procedure Tdbtablef.Clustermeangraphs1Click(Sender: TObject);
@@ -12442,7 +12477,7 @@ var
    TStr,TStr2 : shortString;
    ExtentTable : tMyData;
 begin
-   {$IfDef FindNeighbors} WriteLineToDebugFile('Tdbtablef.Centr1Click in'); {$EndIf}
+   {$IfDef FindNeighbors} WriteLineRoDebugFile('Tdbtablef.Centr1Click in'); {$EndIf}
 
    fName := GISdb[DBonTable].DBAuxDir + 'neigh_' + ExtractFileName(GISdb[DBonTable].dbFullName);
    DeleteFileIfExists(fName);
@@ -12450,7 +12485,7 @@ begin
    DeleteFileIfExists(fName);
    if (Sender <> Centr1) then begin
        NewGIS := CopyDatabaseAndOpen(GISdb[DBonTable],false);
-       {$IfDef FindNeighbors} WriteLineToDebugFile('Copied and opened'); {$EndIf}
+       {$IfDef FindNeighbors} WriteLineRoDebugFile('Copied and opened'); {$EndIf}
         IDField :=  GISdb[DBonTable].PickField('ID Field' ,[ftString,ftInteger,ftSmallInt]);
         GridForm := tGridForm.Create(Application);
         GridForm.HideCorrelationControls;
@@ -12462,7 +12497,7 @@ begin
         GISdb[DBonTable].MyData.First;
         rc := GISdb[DBonTable].MyData.RecordCount;
         if (Sender = Centr1) then begin
-          {$IfDef FindNeighbors} WriteLineToDebugFile('Centroids option'); {$EndIf}
+          {$IfDef FindNeighbors} WriteLineRoDebugFile('Centroids option'); {$EndIf}
            GridForm.Caption := GISdb[DBonTable].dbName + ' centroid separations';
            StartProgress('Centroids');
            j := 0;
@@ -12483,7 +12518,7 @@ begin
            end;
         end
         else begin
-          {$IfDef FindNeighbors} WriteLineToDebugFile('Neighbors option'); {$EndIf}
+          {$IfDef FindNeighbors} WriteLineRoDebugFile('Neighbors option'); {$EndIf}
            with GISdb[DBonTable] do DBFieldUniqueEntries(IDField,FieldsInDB);
            GridForm.Caption := GISdb[DBonTable].dbName + ' neighbors';
            StartProgress('Neighbors phase 1');
@@ -12494,7 +12529,7 @@ begin
            for k := 0 to pred(FieldsInDB.Count) do begin
                GISdb[DBonTable].EmpSource.Enabled := false;
                if (k mod 100 = 0) then begin
-                  {$IfDef FindNeighbors} WriteLineToDebugFile('Phase 1, k=' + IntToStr(k)); {$EndIf}
+                  {$IfDef FindNeighbors} WriteLineRoDebugFile('Phase 1, k=' + IntToStr(k)); {$EndIf}
                   UpdateProgressBar(k/FieldsInDB.Count);
                end;
                CloneImageToBitmap(GISdb[DBonTable].TheMapOwner.Image1,RecBitmap);
@@ -12540,7 +12575,7 @@ begin
            StartProgress('Neighbors phase 2');
            for k := 0 to pred(FieldsInDB.Count) do begin
                if (k mod 100 = 0) then begin
-                  {$IfDef FindNeighbors} WriteLineToDebugFile('Phase 2, k=' + IntToStr(k)); {$EndIf}
+                  {$IfDef FindNeighbors} WriteLineRoDebugFile('Phase 2, k=' + IntToStr(k)); {$EndIf}
                   UpdateProgressBar(k/FieldsInDB.Count);
                end;
                TStr := FieldsInDB.Strings[k];
@@ -12551,7 +12586,7 @@ begin
                LongLow := ExtentTable.GetFieldByNameAsFloat('LONG_LOW');
 
                RecBitmap := PetImage.LoadBitmapFromFile(MDTempDir + 'rec_' + TStr + '.gif');
-               ExtentTable.ApplyFilter( PetDBUtils.MakeCornersGeoFilter(LatHi,LongLow,LatLow,LongHi));
+               ExtentTable.ApplyFilter( PetDBUtils.MakeGeoFilterFromCorners(LatHi,LongLow,LatLow,LongHi));
                GridForm.StringGrid1.Cells[0,succ(k)] := TStr;
                //i := 0;
                NeighList := tStringList.Create;
@@ -12591,12 +12626,12 @@ begin
            GridForm.StringGrid1.RowCount := succ(FieldsInDB.Count);
            GridForm.StringGrid1.Cells[0,0] := IDField;
            GridForm.StringGrid1.Cells[1,0] := 'Num_Neigh';
-           {$IfDef FindNeighbors} WriteLineToDebugFile('Tdbtablef.Centr1Click MaxNeighbors=' + IntToStr(MaxNeighbors)); {$EndIf}
+           {$IfDef FindNeighbors} WriteLineRoDebugFile('Tdbtablef.Centr1Click MaxNeighbors=' + IntToStr(MaxNeighbors)); {$EndIf}
 
            for i := 1 to MaxNeighbors do GridForm.StringGrid1.Cells[succ(i),0] := 'Neigh_' + IntToStr(i);
            fName := 'neigh_' + ExtractFileName(GISdb[DBonTable].dbFullName);
            fName := GISdb[DBonTable].DBAuxDir + ChangeFileExt(fName,'.csv');
-           {$IfDef FindNeighbors} WriteLineToDebugFile('Tdbtablef.Centr1Click call StringGridToCSVFile ' + fName); {$EndIf}
+           {$IfDef FindNeighbors} WriteLineRoDebugFile('Tdbtablef.Centr1Click call StringGridToCSVFile ' + fName); {$EndIf}
            StringGridToCSVFile(fName,GridForm.StringGrid1,Nil);
            CSVFileImportToDB(fName);
 
@@ -12609,7 +12644,7 @@ begin
         GISdb[DBonTable].ClearGISFilter;
         CloseAndNilNumberedDB(NewGIS);
    end;
-   {$IfDef FindNeighbors} WriteLineToDebugFile('Tdbtablef.Centr1Click out'); {$EndIf}
+   {$IfDef FindNeighbors} WriteLineRoDebugFile('Tdbtablef.Centr1Click out'); {$EndIf}
 end;
 
 
@@ -12749,7 +12784,7 @@ procedure Tdbtablef.FindrecordsonDEM1Click(Sender: TObject);
 var
    TheField : shortstring;
 begin
-   {$IfDef RecordOnDEM} writelinetodebugFile('Tdbtablef.FindrecordsonDEM1Click in'); {$EndIf}
+   {$IfDef RecordOnDEM} WriteLineRoDebugFile('Tdbtablef.FindrecordsonDEM1Click in'); {$EndIf}
    with GISdb[DBonTable],MyData do begin
       TheField := PickField('Name' ,[ftString]);
       EmpSource.Enabled := false;
@@ -12869,7 +12904,7 @@ end;
 
 procedure Tdbtablef.Quotienttwofields1Click(Sender: TObject);
 begin
-   {$IfDef RecordEditsDone} WriteLineToDebugFile('Quotient two fields (ratio)'); {$EndIf}
+   {$IfDef RecordEditsDone} WriteLineRoDebugFile('Quotient two fields (ratio)'); {$EndIf}
    Sumtwofields1Click(Sender);
 end;
 
@@ -12892,16 +12927,16 @@ var
    ViewshedSummary : tStringList;
    fName : PathStr;
 begin
-   {$IfDef RecordFan} WriteLineToDebugFile('Tdbtablef.BitBtn-6Click in)'); {$EndIf}
+   {$IfDef RecordFan} WriteLineRoDebugFile('Tdbtablef.BitBtn-6Click in)'); {$EndIf}
    GISdb[DBonTable].FilterDBByUseAndDisable(true);
 
    if (Sender = BitBtn14) or (Sender = Nil) then begin
-      {$IfDef RecordFan} WriteLineToDebugFile('composite layer, filter=' + GISdb[DBonTable].MyData.Filter); {$EndIf}
+      {$IfDef RecordFan} WriteLineRoDebugFile('composite layer, filter=' + GISdb[DBonTable].MyData.Filter); {$EndIf}
       GISdb[DBonTable].TheMapOwner.MapDraw.DeleteSingleMapLayer(GISdb[DBonTable].TheMapOwner.MapDraw.AllFansCoverageFName);
       GISdb[DBonTable].TheMapOwner.MapDraw.AllFansCoverageFName := MDTempDir +  'all_fans' + OverlayFExt;
    end
    else begin
-      {$IfDef RecordFan} WriteLineToDebugFile('number covering, filter=' + GISdb[DBonTable].MyData.Filter); {$EndIf}
+      {$IfDef RecordFan} WriteLineRoDebugFile('number covering, filter=' + GISdb[DBonTable].MyData.Filter); {$EndIf}
       ViewshedSummary := tStringList.Create;
       GISdb[DBonTable].TheMapOwner.MapDraw.ComputeMultiSensorCoverage(GISdb[DBonTable].TheMapOwner.MapDraw.AllFansCoverageFName,GISdb[DBonTable].MyData,ViewShedSummary);
       fName := MDTempDir + 'Viewshed_multiple_coverage.csv';
@@ -12910,19 +12945,19 @@ begin
    AddOrSubtractOverlay(GISdb[DBonTable].TheMapOwner,ovoFans,true);
    GISdb[DBonTable].TheMapOwner.DoFastMapRedraw;
    ShowStatus;
-   {$IfDef RecordFan} WriteLineToDebugFile('Tdbtablef.BitBtn-6Click out,AllFansCoverageFName=' + GISdb[DBonTable].TheMapOwner.MapDraw.AllFansCoverageFName); {$EndIf}
+   {$IfDef RecordFan} WriteLineRoDebugFile('Tdbtablef.BitBtn-6Click out,AllFansCoverageFName=' + GISdb[DBonTable].TheMapOwner.MapDraw.AllFansCoverageFName); {$EndIf}
 end;
 
 
 procedure Tdbtablef.BitBtn14Click(Sender: TObject);
 begin
-   {$IfDef RecordFan} WriteLineToDebugFile('Tdbtablef.BitBtn-14Click in'); {$EndIf}
+   {$IfDef RecordFan} WriteLineRoDebugFile('Tdbtablef.BitBtn-14Click in'); {$EndIf}
    BitBtn6Click(Sender);
 end;
 
 procedure Tdbtablef.BitBtn15Click(Sender: TObject);
 begin
-   {$IfDef RecordFan} WriteLineToDebugFile('Tdbtablef.BitBtn15Click in'); {$EndIf}
+   {$IfDef RecordFan} WriteLineRoDebugFile('Tdbtablef.BitBtn15Click in'); {$EndIf}
    Requiredantennaheight1Click(Sender);
 end;
 
@@ -12966,7 +13001,7 @@ procedure Tdbtablef.BitBtn18Click(Sender: TObject);
 var
    Target : integer;
 begin
-   {$IfDef RecordFan} WriteLineToDebugFile('Tdbtablef.BitBtn18Click'); {$EndIf}
+   {$IfDef RecordFan} WriteLineRoDebugFile('Tdbtablef.BitBtn18Click'); {$EndIf}
    Target := PickOpenGISDataBase('Targets for Fan coverage',DBonTable);
    if (Target = -99) then MessageToContinue('Open desired target area shapefile')
    else ViewshedTargetCoverage(Target);
@@ -12984,12 +13019,12 @@ var
    Answer : string;
    MyTable : tMyData;
 begin
-   {$IfDef RecordFan} WriteLineToDebugFile('Tdbtablef.ViewshedTargetCoverage, Sensors filter=' + GISDB[Target].MyData.Filter); {$EndIf}
+   {$IfDef RecordFan} WriteLineRoDebugFile('Tdbtablef.ViewshedTargetCoverage, Sensors filter=' + GISDB[Target].MyData.Filter); {$EndIf}
    if (Target <> 0) and (Target <> DBonTable) then with GISdb[DBonTable] do begin
       GISdb[DBonTable].MyData.ApplyFilter('USE=' + QuotedStr('Y'));
       TheMapOwner.DoFastMapRedraw;
       if GISdb[Target].ItsAPointDB then begin
-         {$IfDef RecordFan} WriteLineToDebugFile('Points targets'); {$EndIf}
+         {$IfDef RecordFan} WriteLineRoDebugFile('Points targets'); {$EndIf}
          GISdb[DBonTable].EmpSource.Enabled := false;
          GISdb[Target].EmpSource.Enabled := false;
          if (fName = '') then fName := NextFileNumber(MDTempDir, 'sensor_target',DefaultDBExt);
@@ -13031,7 +13066,7 @@ begin
          ShowStatus;
       end
       else begin
-         {$IfDef RecordFan} WriteLineToDebugFile('Line/area targets'); {$EndIf}
+         {$IfDef RecordFan} WriteLineRoDebugFile('Line/area targets'); {$EndIf}
           if (TheMapOwner.MapDraw.DBOverlayfName[Target] <> '') and (TheMapOwner.MapDraw.AllFansCoverageFName <> '') then begin
              bm1 := PetImage.LoadBitmapFromFile(TheMapOwner.MapDraw.DBOverlayfName[Target]);
              bm2 := PetImage.LoadBitmapFromFile(TheMapOwner.MapDraw.AllFansCoverageFName);
@@ -13381,7 +13416,7 @@ var
    fName : PathStr;
    Table : tMyData;
 begin
-   {$IfDef RecordTerrainProfiles} WriteLineToDebugFile('Tdbtablef.Exportlinetopointdatabase1Click'); {$EndIf}
+   {$IfDef RecordTerrainProfiles} WriteLineRoDebugFile('Tdbtablef.Exportlinetopointdatabase1Click'); {$EndIf}
    if ShapeFile3D(GISdb[DBonTable].ShapeFileType) then GISdb[DBonTable].aShapeFile.GetLineCoordsAndZsFromDEM(GISdb[DBonTable].TheMapOwner.MapDraw.DEMonMap,GISdb[DBonTable].MyData.RecNo)
    else GISdb[DBonTable].aShapeFile.GetLineCoords(GISdb[DBonTable].MyData.RecNo,true);
    fName := Petmar.NextFileNumber(MDTempDir, 'temp_prof_',DefaultDBExt);
@@ -13432,7 +13467,7 @@ var
    i : integer;
    Header : shortstring;
 begin
-   {$IfDef RecordCSVOut} WriteLineToDebugFile('Tdbtablef.Text1Click in'); {$EndIf}
+   {$IfDef RecordCSVOut} WriteLineRoDebugFile('Tdbtablef.Text1Click in'); {$EndIf}
 
    //with GISdb[DBonTable] do begin
       fName := ChangeFileExt(GISdb[DBonTable].DBFullName,'.csv');
@@ -13552,7 +13587,7 @@ procedure Tdbtablef.f1Click(Sender: TObject);
 var
    TheFields : tStringList;
 begin
-   {$IfDef RecordCopyFieldLinkDB} WriteLineToDebugFile('Tdbtablef.f1Click enter (Copy fields from linked db)'); {$EndIf}
+   {$IfDef RecordCopyFieldLinkDB} WriteLineRoDebugFile('Tdbtablef.f1Click enter (Copy fields from linked db)'); {$EndIf}
    if (GISdb[DBonTable].MyData.Filtered) then begin
       if not  AnswerIsYes('Apply only to filtered records') then begin
          GISdb[DBonTable].ClearGISFilter;
@@ -13561,7 +13596,7 @@ begin
 
    TheFields := GISdb[DBonTable].LinkTable.FieldsInDataBase;
    PickSomeFromStringList(TheFields,'joined fields to merge into DB');
-   {$IfDef RecordCopyFieldLinkDB} WriteLineToDebugFile('Fields picked, n=' + IntToStr(TheFields.Count)); {$EndIf}
+   {$IfDef RecordCopyFieldLinkDB} WriteLineRoDebugFile('Fields picked, n=' + IntToStr(TheFields.Count)); {$EndIf}
    GISdb[DBonTable].FillFieldsFromJoinedTable(TheFields,false);
    ShowStatus;
 end;
@@ -13741,10 +13776,10 @@ end;
 
 procedure Tdbtablef.CheckBox1Click(Sender: TObject);
 begin
-   {$IfDef RecordEditDB} WriteLineToDebugFile('CheckBox1Click (db edit) in'); {$EndIf}
+   {$IfDef RecordEditDB} WriteLineRoDebugFile('CheckBox1Click (db edit) in'); {$EndIf}
    if CheckBox1.Enabled and ValidDB(DBonTable) { <> 0) and (GISdb[DBonTable] <> Nil)} then begin
       if StrUtils.AnsiContainsText(GISdb[DBonTable].DBFullName,' ') then begin
-         {$IfDef RecordEditDB} WriteLineToDebugFile('Space in file name');{$EndIf}
+         {$IfDef RecordEditDB} WriteLineRoDebugFile('Space in file name');{$EndIf}
          MessageToContinue('Cannot edit shapefile with space in file path or name ' + MessLineBreak + GISdb[DBonTable].DBFullName);
          Button4.Visible := false;
          CheckBox1.Enabled := false;
@@ -13753,7 +13788,7 @@ begin
       else begin
          Button4.Enabled := CheckBox1.Checked;
          BackupDB1Click(Sender);
-         {$IfDef RecordEditDB} WriteLineToDebugFile('Backup done');{$EndIf}
+         {$IfDef RecordEditDB} WriteLineRoDebugFile('Backup done');{$EndIf}
          if PointShapeFile(GISdb[DBonTable].ShapeFileType) then begin
             DeleteFileIfExists(ChangeFileExt(GISdb[DBonTable].DBFullName,'.shp'));
             DeleteFileIfExists(ChangeFileExt(GISdb[DBonTable].DBFullName,'.shx'));
@@ -13763,7 +13798,7 @@ begin
       end;
       GISdb[DBonTable].AddSequentialIndex(RecNoFName,false);
    end;
-   {$IfDef RecordEditDB} WriteLineToDebugFile('CheckBox1Click (dbedit) out');{$EndIf}
+   {$IfDef RecordEditDB} WriteLineRoDebugFile('CheckBox1Click (dbedit) out');{$EndIf}
 end;
 
 
@@ -13818,7 +13853,7 @@ end;
 
 procedure Tdbtablef.Areashapefile1Click(Sender: TObject);
 begin
-   {$IfDef RecordMakeLineArea} WriteLineToDebugFile('Tdbtablef.Createlineshapefilefrompoints1Click ' + GISDataBase[DBonTable].dbname); {$EndIf}
+   {$IfDef RecordMakeLineArea} WriteLineRoDebugFile('Tdbtablef.Createlineshapefilefrompoints1Click ' + GISDataBase[DBonTable].dbname); {$EndIf}
    MakeLinesFromPoints(GISdb[DBonTable],'',5);
    ShowStatus;
 end;
@@ -13884,14 +13919,14 @@ procedure Tdbtablef.CreateDEM1Click(Sender: TObject);
 var
    bbox : sfBoundBox;
    WantSeries : ShortString;
-   WantDEM,WantImage : integer;
+   WantDEM : integer;
    Bitmap : tMyBitmap;
    fName : PathStr;
 begin
    with GISdb[DBonTable] do begin
       bBox := GISdb[DBonTable].MyData.GetRecordBoundingBox;
       PickDEMSeries(WantSeries,'DEM blowup');
-      LoadMapLibraryBox(WantDEM,WantImage,true,bbox,{bBox.YMax,bBox.XMin,bBox.YMin,bBox.XMax,}WantSeries);
+      WantDEM := LoadMapLibraryBox(true,bbox,WantSeries);
       if AnswerIsYes('clip to DEM to record outline') then begin
          DEMDef_Routines.SaveBackupDefaults;
          MDDef.MissingDataColor := claWhite;
@@ -14170,12 +14205,17 @@ begin
 end;
 
 
+procedure Tdbtablef.MapsbyclusterandDEM1Click(Sender: TObject);
+begin
+   MapsByClusterAndDEM(DBonTable);
+end;
+
 function Tdbtablef.GetMultipleEntriesFromTableField(WhatFor,aName : shortstring) : tStringList;
 var
    PickedNum : integer;
 begin
    GISdb[DBonTable].EmpSource.Enabled := false;
-   Result := GISdb[DBonTable].MyData.UniqueEntriesInDB(aName);
+   Result := GISdb[DBonTable].MyData.ListUniqueEntriesInDB(aName);
    PickedNum := 1;
    if not GetMultipleFromList(WhatFor,PickedNum,Result,True) then Result.Clear;
 end;
@@ -14186,7 +14226,7 @@ var
    Results : tStringList;
 begin
    GISdb[DBonTable].EmpSource.Enabled := false;
-   Results := GISdb[DBonTable].MyData.UniqueEntriesInDB(aName);
+   Results := GISdb[DBonTable].MyData.ListUniqueEntriesInDB(aName);
    Result := GetFromList(WhatFor,Results,True);
    Results.Free;
 end;
@@ -14208,7 +14248,7 @@ var
    aName : shortstring;
    TStr : shortString;
 begin
-   {$IfDef RecordMultigrid} WriteLineToDebugFile('Tdbtablef.Creategriddistancetoclasscentroid1Click in'); {$EndIf}
+   {$IfDef RecordMultigrid} WriteLineRoDebugFile('Tdbtablef.Creategriddistancetoclasscentroid1Click in'); {$EndIf}
    if (Sender = Creategridnumberofbandswithclassbox1) then TStr := 'Bands in class box'
    else TStr := 'Distance to grid centroid';
    InList := GetMultipleEntriesFromTableField(TStr, 'NAME');
@@ -15145,18 +15185,18 @@ begin
 var
    SingleRecord,UseDEM : integer;
 begin
-   {$IfDef RecordMaskDEMShapeFile} WriteLineToDebugFile('MaskDEMfromshapefile1Click in'); {$EndIf}
+   {$IfDef RecordMaskDEMShapeFile} WriteLineRoDebugFile('MaskDEMfromshapefile1Click in'); {$EndIf}
    if GetDEM(UseDEM,true,'masking from DB') then begin
-     {$IfDef RecordMaskDEMShapeFile} WriteLineToDebugFile('UseDEM=' + IntToStr(UseDEM) + '  ' + DEMGlb[UseDEM].AreaName); {$EndIf}
+     {$IfDef RecordMaskDEMShapeFile} WriteLineRoDebugFile('UseDEM=' + IntToStr(UseDEM) + '  ' + DEMGlb[UseDEM].AreaName); {$EndIf}
       GISdb[DBonTable].TheMapOwner := DEMGlb[UseDEM].SelectionMap;
       if (Sender = MaskDEMgrid1) then begin
          SingleRecord := GISdb[DBonTable].MyData.RecNo;
          Zoommaptorecord1Click(Sender);
-         {$IfDef RecordCurrentRecord} WriteLineToDebugFile('Tdbtablef.MaskDEMfromshapefile1Click, RecNo=' + IntToStr(SingleRecord)); {$EndIf}
+         {$IfDef RecordCurrentRecord} WriteLineRoDebugFile('Tdbtablef.MaskDEMfromshapefile1Click, RecNo=' + IntToStr(SingleRecord)); {$EndIf}
       end
       else SingleRecord := 0;
       GetMaskingOptions(false,(Sender <> Maskdatabasewithgazetteer1));
-      {$IfDef RecordMaskDEMShapeFile} WriteLineToDebugFile('Got masking options'); {$EndIf}
+      {$IfDef RecordMaskDEMShapeFile} WriteLineRoDebugFile('Got masking options'); {$EndIf}
       MaskDEMFromShapeFile(UseDEM,DBonTable,(Sender <> Nil),MDDef.MaskShapesIn,SingleRecord,MDDef.MaskDistance);
       if (DEMGlb[UseDEM].SelectionMap <> Nil) and (GISdb[DBonTable].TheMapOwner.MapDraw.ValidDEMonMap and (DEMGlb[UseDEM].LandCoverGrid)) then begin
          DEMGlb[UseDEM].SelectionMap.NLCDLegend1Click(Nil);
@@ -15164,9 +15204,9 @@ begin
       ShowStatus;
    end
    else begin
-      {$IfDef RecordMaskDEMShapeFile} WriteLineToDebugFile('Failed to get grid'); {$EndIf}
+      {$IfDef RecordMaskDEMShapeFile} WriteLineRoDebugFile('Failed to get grid'); {$EndIf}
    end;
-   {$IfDef RecordMaskDEMShapeFile} WriteLineToDebugFile('MaskDEMfromshapefile1Click out'); {$EndIf}
+   {$IfDef RecordMaskDEMShapeFile} WriteLineRoDebugFile('MaskDEMfromshapefile1Click out'); {$EndIf}
 {$EndIf}
 end;
 
@@ -15782,9 +15822,9 @@ finalization
    {$IfDef RecordCopyFieldLinkDB} WriteLineToDebugFile('RecordCopyFieldLinkDB active in demdbtable'); {$EndIf}
    {$IfDef RecordFillDEM} WriteLineToDebugFile('RecordFillDEMProblems active in demdbtable'); {$EndIf}
    {$IfDef RecordDBfilter} WriteLineToDebugFile('RecordDBfilterProblems active in demdbtable'); {$EndIf}
+   {$IfDef CountUniqueValues} WriteLineToDebugFile('CountUniqueValues active in demdbtable'); {$EndIf}
    {$IfDef RecordTiger} WriteLineToDebugFile('RecordTigerProblems active in demdbtable'); {$EndIf}
    {$IfDef RecordKoppen} WriteLineToDebugFile('RecordKoppen active in demdbtable'); {$EndIf}
-   {$IfDef CountUniqueValues} WriteLineToDebugFile('CountUniqueValues active in demdbtable'); {$EndIf}
    {$IfDef RecordCurrentRecord} WriteLineToDebugFile('RecordCurrentRecord active in demdbtable'); {$EndIf}
    {$IfDef RecordQuickFilter} WriteLineToDebugFile('RecordQuickFilterProblems active in demdbtable'); {$EndIf}
    {$IfDef RecordGraph} WriteLineToDebugFile('RecordGraphProblems active in demdbtable'); {$EndIf}

@@ -20,7 +20,7 @@ unit make_grid;
       //{$Define DEMIXmaps}
       //{$Define CreateSlopeMap}
       //{$Define TrackMapRange}
-      {$Define CreateGeomorphMaps}
+      //{$Define CreateGeomorphMaps}
       //{$Define RecordTimeGridCreate}
       //{$Define RecordPointClass}
       //{$Define RecordDEMCompare}
@@ -388,7 +388,6 @@ var
    Lat,Long : float64;
    x,y : integer;
    VAT : tStringList;
-   //TStr : shortstring;
    Hist : array[1..3] of int64;
 begin
    {$IfDef DEMIXmaps} WriteLineToDebugFile('BestCopOrALOSmap in'); {$EndIf}
@@ -540,7 +539,6 @@ const
 var
    i : integer;
    z2,What : float32;
-   //Lat,Long : float64;
    x,y : integer;
    VAT : tStringList;
    TStr : shortstring;
@@ -682,9 +680,9 @@ begin
    Radius := Radius div 2;
    Result := DEMGlb[DEM].CloneAndOpenGridSetMissing(FloatingPointDEM,'md_elev_std_' + FilterSizeStr(Radius) + '_' + DEMGlb[DEM].AreaName,DEMGlb[DEM].DEMheader.ElevUnits);   //,false,1);
    Radius := Radius div 2;
-   StartProgressAbortOption('std dev grid');
+   if ShowSatProgress then StartProgressAbortOption('std dev grid');
    for x := 0 to pred(DEMGlb[DEM].DEMheader.NumCol) do begin
-      UpdateProgressBar(x/DEMGlb[DEM].DEMheader.NumCol);
+      if ShowSatProgress then UpdateProgressBar(x/DEMGlb[DEM].DEMheader.NumCol);
       for y := 0 to pred(DEMGlb[DEM].DEMheader.NumRow) do begin
          MomentVar.NPts := 0;
          for I := -Radius to Radius do begin
@@ -703,6 +701,7 @@ begin
    end;
    DEMglb[Result].CheckMaxMinElev;
    DEMglb[Result].SetUpMap(Result,true,mtElevSpectrum);
+   if ShowSatProgress then EndProgress;
    {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateRoughnessMap2, NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProj.ProjDebugName); {$EndIf}
 end;
 
@@ -731,9 +730,9 @@ begin
    fName := 'md_ruff_slope_std_' + FilterSizeStr(DiameterMustBeOdd) + '_' + DEMGlb[DEM].AreaName;
    Result := DEMGlb[DEM].CloneAndOpenGridSetMissing(FloatingPointDEM,fName,euPercentSlope);
    Radius := DiameterMustBeOdd div 2;
-   StartProgressAbortOption('Roughness ' + DEMGlb[DEM].AreaName);
+   if ShowSatProgress then StartProgressAbortOption('Roughness ' + DEMGlb[DEM].AreaName);
    for x := Radius to pred(DEMGlb[DEM].DEMheader.NumCol - Radius) do begin
-      UpdateProgressBar(x/DEMGlb[DEM].DEMheader.NumCol);
+      if ShowSatProgress then UpdateProgressBar(x/DEMGlb[DEM].DEMheader.NumCol);
       for y := Radius to pred(DEMGlb[DEM].DEMheader.NumRow - Radius) do begin
          MomentVar.Npts := 0;
          s := 0;
@@ -767,7 +766,7 @@ begin
       CloseSingleDEM(SlopeMap);
       SlopeMap := 0;
    end;
-   EndProgress;
+   if ShowSatProgress then EndProgress;
    {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateRoughnessMap2, NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProj.ProjDebugName); {$EndIf}
 end;
 
@@ -1751,12 +1750,12 @@ begin
 
          DEMGlb[Result].DefineDEMVariables(true);
 
-         StartProgressAbortOption(DEMGlb[Result].AreaName);
+         if ShowSatProgress then StartProgressAbortOption(DEMGlb[Result].AreaName);
          TotalNumDone := 0;
          CumDone := 0;
          Col := GridLimits.XGridLow;
          while (Col <= GridLimits.XGridHigh) do begin
-            UpdateProgressBar((Col-GridLimits.XGridLow)/(GridLimits.XGridHigh-GridLimits.XGridLow));
+            if ShowSatProgress then UpdateProgressBar((Col-GridLimits.XGridLow)/(GridLimits.XGridHigh-GridLimits.XGridLow));
             NumDone := 0;
             MadeAChange := false;
             Row := GridLimits.YGridLow;
@@ -1825,7 +1824,7 @@ begin
             if WantOut then break;
             inc(Col,MDDef.StatSampleIncr);
          end;
-         EndProgress;
+         if ShowSatProgress then EndProgress;
 
          {$IfDef RecordMakeNewMapProblems} WriteLineToDebugFile('  compute over');   {$EndIf}
 

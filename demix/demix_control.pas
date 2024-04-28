@@ -22,10 +22,10 @@ unit demix_control;
    {$Define RecordDiluvium}
    {$Define RecordDEMIX_evaluations_graph}
    {$Define RecordDiluviumFull}
-   {$Define TrackPixelIs}
+   //{$Define TrackPixelIs}
 
    //{$Define ShowOpenBothPixelIsDEMs}   //see how opening and masking for Diluvium DEM is going; don't use unless there is a a problem
-   {$Define Rec_DEMIX_Landcover}
+   //{$Define Rec_DEMIX_Landcover}
    //{$Define RecordDEMIXsave}
    //{$Define RecordCreateHalfSec}
    //{$Define RecordHalfSec}
@@ -150,6 +150,7 @@ procedure OpenDEMIXAreaMaps;
 procedure GetAreaDEMNames(TestAreaName : shortstring);
 
 function ExtraToSpreadDEMs(DEMName : shortString; Extra : float32) : float32;
+function PickWineContestLocation : boolean;
 
 
 
@@ -345,26 +346,27 @@ begin
        TryToOpen(RefDir + Prefix + area + '_dtm' + Ref1_5SecPointStr + Ext,PointDEMs[-1]);
     end;
     for i := 1 to NumPtDEMs do begin
-       if PointNames[i] = 'DELTA' then DataDir := DEMIX_delta_dtms else DataDir := TestDir;
-       TryToOpen(DataDir + Prefix + Area + '_' + PointNames[i]  + Ext,PointDEMs[i]);
+       if (SRTM_centroid_names[i] = 'COAST') then DataDir := DEMIX_coastal_dtms
+       else if (SRTM_centroid_names[i] = 'DELTA') then DataDir := DEMIX_delta_dtms
+       else DataDir := TestDir;
+       TryToOpen(DataDir + Prefix + Area + '_' + SRTM_centroid_names[i]  + Ext,PointDEMs[i]);
     end;
     if ValidDEM(PointDEMs[-1]) then dmxFirstPoint := -1 else dmxFirstPoint := 0;
 
     TryToOpen(RefDir + Prefix + Area + '_dtm' + Ref1SecAreaStr + Ext,AreaDEMs[0]);
     for i := 1 to NumAreaDEMs do begin
-       if (AreaNames[i] = 'DILUV') then DataDir := DEMIX_diluvium_dtms
-       else if (AreaNames[i] = 'COAST') then DataDir := DEMIX_coastal_dtms
+       if (ALOS_centroid_names[i] = 'DILUV') then DataDir := DEMIX_diluvium_dtms
        else DataDir := TestDir;
-       TryToOpen(DataDir + Prefix + Area + '_' + AreaNames[i]  + Ext,AreaDEMs[i]);
+       TryToOpen(DataDir + Prefix + Area + '_' + ALOS_centroid_names[i]  + Ext,AreaDEMs[i]);
     end;
    if ValidDEM(AreaDEMs[-1]) then dmxFirstArea := -1 else dmxFirstArea := 0;
 
    {$IfDef ShowOpenBothPixelIsDEMs} if OpenMaps then wmdem.Tile; MessageToContinue('After loading'); {$EndIf};
 
     if MDDef.DEMIX_mode in [dmAddDiluvium,dmAddDelta,dmAddCoastal] then begin
-       if MDDef.DEMIX_mode in [dmAddCoastal] then MaskDEM := AreaDEMs[2];
-       if MDDef.DEMIX_mode in [dmAddDiluvium] then MaskDEM := AreaDEMs[3];
-       if MDDef.DEMIX_mode in [dmAddDelta] then MaskDEM := PointDEMs[7];
+       if MDDef.DEMIX_mode in [dmAddCoastal] then MaskDEM := PointDEMs[7];
+       if MDDef.DEMIX_mode in [dmAddDiluvium] then MaskDEM := AreaDEMs[2];
+       if MDDef.DEMIX_mode in [dmAddDelta] then MaskDEM := PointDEMs[8];
        if ValidDEM(MaskDEM) then begin
           for i := dmxFirstPoint to NumPtDEMs do MaskToMatchDiluvium(PointDEMs[i]);
           for i := dmxFirstArea to NumAreaDEMs do MaskToMatchDiluvium(AreaDEMs[i]);
@@ -500,7 +502,7 @@ begin
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('CompareRankings in'); {$EndIf}
    GetDEMIXpaths;
    GISdb[DBonTable].EmpSource.Enabled := false;
-   theTiles := GISdb[DBonTable].MyData.UniqueEntriesInDB('DEMIX_TILE');
+   theTiles := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('DEMIX_TILE');
 
    Crits := tStringList.Create;
    sl := tStringList.Create;
@@ -715,7 +717,7 @@ var
 begin
    fName := DEMIX_area_lc100 + AreaName + '.tif';
    if FileExists(fname) then begin
-      Result := OpenNewDEM(fName,true);
+      Result := OpenNewDEM(fName,OpenMap);
       {$If Defined(Rec_DEMIX_Landcover)} WriteLineToDebugFile('Land cover loaded ' + fName); {$EndIf}
    end
    else begin
@@ -1014,24 +1016,24 @@ begin
       DEMIX_Tile_Full := MDDef.DEMIX_full_all;
    end
    else if (MDDef.DEMIX_mode = dmAddCoastal) then begin
-      NumPtDEMs := 6;
-      NumAreaDEMs := 2;  //adds dilumium
+      NumPtDEMs := 7;   //adds coastal
+      NumAreaDEMs := 1;
       SSIMresultsDir := CoastalSSIMresultsDir;
       AreaListFName := DEMIXSettingsDir + 'areas_coastal.txt';
       DEMListFName := DEMIXSettingsDir + 'dems_add_coastal.txt';
       DEMIX_Tile_Full := MDDef.DEMIX_full_U120;
    end
    else if (MDDef.DEMIX_mode = dmAddDiluvium) then begin
-      NumPtDEMs := 6;    //adds delta
-      NumAreaDEMs := 3; //adds dilumium, coastal
+      NumPtDEMs := 7;    //adds coatal
+      NumAreaDEMs := 2; //adds dilumium
       SSIMresultsDir := DiluvSSIMresultsDir;
       AreaListFName := DEMIXSettingsDir + 'areas_diluvium.txt';
       DEMListFName := DEMIXSettingsDir + 'dems_add_diluvium.txt';
       DEMIX_Tile_Full := MDDef.DEMIX_full_U80;
    end
    else if (MDDef.DEMIX_mode = dmAddDelta) then begin
-      NumPtDEMs := 7;    //adds delta
-      NumAreaDEMs := 3;  //adds dilumium,coastal
+      NumPtDEMs := 3;    //adds coastal, delta
+      NumAreaDEMs := 2;  //adds diluvium
       SSIMresultsDir := DeltaSSIMresultsDir;
       AreaListFName := DEMIXSettingsDir + 'areas_delta.txt';
       DEMListFName := DEMIXSettingsDir + 'dems_add_delta.txt';
@@ -1109,7 +1111,7 @@ begin
    DEMIXSettingsDir := ProgramRootDir + 'demix\';
    DEMIX_area_dbName := DEMIXSettingsDir + 'demix_test_areas_v3.dbf';
 
-   DEMIX_Ref_Source := DEMIX_Base_DB_Path + 'wine_contest_v2_ref_source\';
+   //DEMIX_Ref_Source := DEMIX_Base_DB_Path + 'wine_contest_v2_ref_source\';
    DEMIX_Ref_Merge := DEMIX_Base_DB_Path + 'wine_contest_v2_ref_merge\';
    DEMIX_Ref_Half_sec := DEMIX_Base_DB_Path + 'wine_contest_v2_ref_0.5sec\';
    vd_path := DEMIX_Base_DB_Path + 'wine_contest_v2_vdatum\';
@@ -1124,12 +1126,18 @@ begin
    DEMIX_area_lc100  := DEMIX_Base_DB_Path + 'wine_contest_lc100\';
    DEMIX_GIS_dbName := DEMIX_Base_DB_Path + 'wine_contest_database\demix_gis_db_v2.5.dbf';
 
-   DEMIX_test_DEMs_no_sink := DEMIX_Base_DB_Path + 'area_test_dems_no_sink\';
-   DEMIX_ref_DEMs_no_sink := DEMIX_Base_DB_Path + 'area_ref_dems_no_sink\';
-   DEMIX_test_DEMs_channels := DEMIX_Base_DB_Path + 'area_test_dems_channels\';
-   DEMIX_ref_DEMs_channels := DEMIX_Base_DB_Path + 'area_ref_dems_channels\';
-   DEMIX_test_DEMs_channel_grids := DEMIX_Base_DB_Path + 'area_test_dems_channel_grids\';
-   DEMIX_ref_DEMs_channel_grids := DEMIX_Base_DB_Path + 'area_ref_dems_channel_grids\';
+   {$IfDef DEMIX_SAGA_channels}
+      DEMIX_test_DEMs_no_sink := DEMIX_Base_DB_Path + 'area_test_dems_no_sink\';
+      DEMIX_ref_DEMs_no_sink := DEMIX_Base_DB_Path + 'area_ref_dems_no_sink\';
+      DEMIX_test_DEMs_channels := DEMIX_Base_DB_Path + 'area_test_dems_channels\';
+      DEMIX_ref_DEMs_channels := DEMIX_Base_DB_Path + 'area_ref_dems_channels\';
+      DEMIX_test_DEMs_channel_grids := DEMIX_Base_DB_Path + 'area_test_dems_channel_grids\';
+      DEMIX_ref_DEMs_channel_grids := DEMIX_Base_DB_Path + 'area_ref_dems_channel_grids\';
+   {$EndIf}
+
+   DEMIX_wbt_test_DEM_output := DEMIX_Base_DB_Path + 'wbt_out_ref_areas\';
+   DEMIX_wbt_ref_DEM_output := DEMIX_Base_DB_Path + 'wbt_out_test_areas\';
+
    ChannelMissesDir := DEMIX_Base_DB_Path + 'channel_misses\';
 
    RegularSSIMresultsDir := DEMIX_Base_DB_Path + 'SSIM_results\';
@@ -1389,7 +1397,7 @@ begin
    try
       GISdb[DBonTable].ApplyGISFilter('');
       ShowHourglassCursor;
-      Criteria := GISdb[DBonTable].MyData.UniqueEntriesInDB('CRITERION');
+      Criteria := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('CRITERION');
       DEMs := tStringList.Create;
       DEMs.LoadFromFile(DEMIXSettingsDir + 'demix_dems.txt');
 

@@ -88,7 +88,7 @@ begin
    ChangeMapForm.Edit2.Text := RealToString(MDDef.TopCutLevel,-12,-3);
    ChangeMapForm.Edit3.Text := RealToString(MDDef.BottomCutLevel,-12,-3);
    ChangeMapForm.Changed := false;
-   InsureFormOnScreen(ChangeMapForm,Mouse.CursorPos.X,Mouse.CursorPos.Y);
+   InsureFormOnScreenCurrentLocation(ChangeMapForm,Mouse.CursorPos.X,Mouse.CursorPos.Y);
    ChangeMapForm.Captions;
    ChangeMapForm.Show;
 end;

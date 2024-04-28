@@ -1529,6 +1529,7 @@ type
     GDALslope1: TMenuItem;
     GDALaspectmap1: TMenuItem;
     GDALTRI1: TMenuItem;
+    Plan1: TMenuItem;
     //procedure HiresintervisibilityDEM1Click(Sender: TObject);
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
@@ -2653,6 +2654,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Bilinnear2Click(Sender: TObject);
     procedure LC100landcover1Click(Sender: TObject);
     procedure SAGAchannelsgridandshapefile1Click(Sender: TObject);
+    procedure Plan1Click(Sender: TObject);
     //procedure RescaleallDEMsforSSIM1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
@@ -5722,15 +5724,15 @@ end;
 
       procedure TMapForm.CheckIndexMouseUp(NWLat,NWLong,SELat,SELong : float64);
       var
-         WantedDEM,WantImage : integer;
+         WantedDEM : integer;
          bb : sfBoundBox;
       begin
          bb.XMin := NWLong;
          bb.XMax := SELong;
          bb.YMin := SELat;
          bb.YMax := NWLat;
-         LoadMapLibraryBox(WantedDEM,WantImage,DEMNowDoing in [OpenMapsFromLibrary],bb);  //NWLat,NWLong,SELat,SELong);
-         if (WantedDEM <> 0) then begin
+         WantedDEM := LoadMapLibraryBox(DEMNowDoing in [OpenMapsFromLibrary],bb);
+         if ValidDEM(WantedDEM) then begin
             CreateDEMSelectionMap(WantedDEM);
          end;
          if MDdef.AutoCloseIndexMaps then Close;
@@ -6128,7 +6130,7 @@ var
 begin
    {$IfDef NoExternalPrograms}
    {$Else}
-       NewGrid := WBT_ProfileCurvature(GeotiffDEMNameOfMap);
+       NewGrid := WBT_ProfileCurvature(true,GeotiffDEMNameOfMap);
        MatchAnotherDEMMap(NewGrid,MapDraw.DEMonMap);
    {$EndIf}
 end;
@@ -6146,6 +6148,17 @@ begin
    {$IfDef ExGeostats}
    {$Else}
       MakeMomentsGrid(MapDraw.DEMonMap,'r',MDDef.MomentsBoxSizeMeters);
+   {$EndIf}
+end;
+
+procedure TMapForm.Plan1Click(Sender: TObject);
+var
+   NewGrid : integer;
+begin
+   {$IfDef NoExternalPrograms}
+   {$Else}
+       NewGrid := WBT_PlanCurvature(true,GeotiffDEMNameOfMap);
+       MatchAnotherDEMMap(NewGrid,MapDraw.DEMonMap);
    {$EndIf}
 end;
 
@@ -6222,7 +6235,7 @@ var
 begin
    {$IfDef NoExternalPrograms}
    {$Else}
-       NewGrid := WBT_MinimalCurvature(GeotiffDEMNameOfMap);
+       NewGrid := WBT_MinimalCurvature(true,GeotiffDEMNameOfMap);
        MatchAnotherDEMMap(NewGrid,MapDraw.DEMonMap);
    {$EndIf}
 end;
@@ -7415,7 +7428,7 @@ var
 begin
    {$IfDef NoExternalPrograms}
    {$Else}
-       NewGrid := WBT_MaximalCurvature(GeotiffDEMNameOfMap);
+       NewGrid := WBT_MaximalCurvature(true,GeotiffDEMNameOfMap);
        MatchAnotherDEMMap(NewGrid,MapDraw.DEMonMap);
    {$EndIf}
 end;
@@ -7472,9 +7485,9 @@ end;
 
 procedure TMapForm.Numbercells1Click(Sender: TObject);
 var
-   GridName : PathStr;
+   GridName,BreachName : PathStr;
 begin
-   WBT_FlowAccumulation(True,False,True,GeotiffDEMNameOfMap,GridName);
+   WBT_FlowAccumulation(True,False,True,GeotiffDEMNameOfMap,BreachName,GridName);
 end;
 
 procedure TMapForm.Numberimmediateneighbors1Click(Sender: TObject);
@@ -11791,7 +11804,7 @@ end;
 procedure TMapForm.DEMIX1secresamplebyaveraging1Click(Sender: TObject);
 begin
    {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('TMapForm.DEMIX1secresamplebyaveraging1Click in, ' + DEMGlb[MapDraw.DEMonMap].DEMFileName); {$EndIf}
-   ResampleForDEMIXOneSecDEMs(false,MapDraw.DEMonMap,true,'',ResampleModeOneSec);
+   ResampleForDEMIXOneSecDEMs(true,false,MapDraw.DEMonMap,true,'',ResampleModeOneSec);
    {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('TMapForm.DEMIX1secresamplebyaveraging1Click grids out'); {$EndIf}
 end;
 
@@ -11813,7 +11826,7 @@ end;
 
 procedure TMapForm.DEMIXrangescales1Click(Sender: TObject);
 begin
-   ResampleForDEMIXOneSecDEMs(false,MapDraw.DEMonMap,false,MDTempDir,ResampleModeRange);
+   ResampleForDEMIXOneSecDEMs(true,false,MapDraw.DEMonMap,false,MDTempDir,ResampleModeRange);
 end;
 
 procedure TMapForm.PlotGridPoint(xgrid,ygrid : float64; PlotColor : tPlatformColor);
@@ -15830,7 +15843,7 @@ var
 begin
    {$IfDef NoExternalPrograms}
    {$Else}
-       NewGrid := WBT_MeanCurvature(GeotiffDEMNameOfMap);
+       NewGrid := WBT_MeanCurvature(true,GeotiffDEMNameOfMap);
        MatchAnotherDEMMap(NewGrid,MapDraw.DEMonMap);
    {$EndIf}
 end;
@@ -19563,9 +19576,9 @@ end;
 
 procedure TMapForm.Whieboxflowaccumulationlog1Click(Sender: TObject);
 var
-   GridName : PathStr;
+   GridName,BreachName : PathStr;
 begin
-   WBT_FlowAccumulation(True,True,True,GeotiffDEMNameOfMap,GridName);
+   WBT_FlowAccumulation(True,True,True,GeotiffDEMNameOfMap,BreachName,GridName);
 end;
 
 procedure TMapForm.Whitebox1Click(Sender: TObject);
@@ -19581,7 +19594,7 @@ procedure TMapForm.Whiteboxaspectmap1Click(Sender: TObject);
 begin
    {$IfDef NoExternalPrograms}
    {$Else}
-      WBT_AspectMap(GeotiffDEMNameOfMap);
+      WBT_AspectMap(true,GeotiffDEMNameOfMap);
    {$EndIf}
 end;
 
@@ -19590,7 +19603,7 @@ const
    FilterSize : integer = 5;
 begin
    ReadDefault('Filter Size (pixels)',FilterSize);
-   WBT_CircularVarianceOfAspect(GeotiffDEMNameOfMap,FilterSize);
+   WBT_CircularVarianceOfAspect(true,GeotiffDEMNameOfMap,FilterSize);
 end;
 
 procedure TMapForm.Whiteboxdrainagebasins1Click(Sender: TObject);
@@ -19601,9 +19614,15 @@ end;
 procedure TMapForm.Whiteboxelevationabovestream1Click(Sender: TObject);
 const
    Threshhold : float32 = 100;
+var
+   BreachName,FlowAccumulationName,StreamName,HANDName : PathStr;
 begin
-   ReadDefault('Stream network threshhold',ThreshHold);
-   WBT_ElevAboveStream(true, GeotiffDEMNameOfMap,'',Threshhold);
+   //ReadDefault('Stream network threshhold',ThreshHold);
+   BreachName := '';
+   FlowAccumulationName  := '';
+   StreamName := '';
+   HANDName := '';
+   WBT_ElevAboveStream(true, GeotiffDEMNameOfMap,BreachName,FlowAccumulationName,StreamName,HANDName,Threshhold);
 end;
 
 procedure TMapForm.Whiteboxfillholes1Click(Sender: TObject);
@@ -19625,7 +19644,7 @@ var
 begin
    {$IfDef NoExternalPrograms}
    {$Else}
-       NewGrid := WBT_SlopeMap(GeotiffDEMNameOfMap);
+       NewGrid := WBT_SlopeMap(true,GeotiffDEMNameOfMap);
        MatchAnotherDEMMap(NewGrid,MapDraw.DEMonMap);
    {$EndIf}
 end;
@@ -19634,20 +19653,26 @@ procedure TMapForm.Whiteboxstreamnetwork1Click(Sender: TObject);
 const
    Threshhold : float32 = 100;
 var
-   StreamName : PathStr;
+   BreachName,FlowAccumulationName,StreamName : PathStr;
 begin
-   ReadDefault('Stream network threshhold',ThreshHold);
-   WBT_extract_streams(True,GeotiffDEMNameOfMap, StreamName,Threshhold);
+   //ReadDefault('Stream network threshhold',ThreshHold);
+   BreachName := '';
+   FlowAccumulationName  := '';
+   StreamName  := '';
+   WBT_extract_streams(True,GeotiffDEMNameOfMap,BreachName,FlowAccumulationName,StreamName,Threshhold);
 end;
 
 procedure TMapForm.WhiteboxTRI1Click(Sender: TObject);
 begin
-   WBT_TRI(GeotiffDEMNameOfMap);
+   WBT_TRI(true,GeotiffDEMNameOfMap);
 end;
 
 procedure TMapForm.Whiteboxwetnessindex1Click(Sender: TObject);
+var
+   WetnessName : PathStr;
 begin
-   WBT_WetnessIndex(True,True,GeotiffDEMNameOfMap);
+   WetnessName := '';
+   WBT_WetnessIndex(True,True,GeotiffDEMNameOfMap,WetnessName);
 end;
 
 procedure TMapForm.Winwcontestmaps1Click(Sender: TObject);
@@ -20434,7 +20459,7 @@ var
 begin
    {$IfDef NoExternalPrograms}
    {$Else}
-       NewGrid := WBT_GaussianCurvature(GeotiffDEMNameOfMap);
+       NewGrid := WBT_GaussianCurvature(true,GeotiffDEMNameOfMap);
        MatchAnotherDEMMap(NewGrid,MapDraw.DEMonMap);
    {$EndIf}
 end;
@@ -23233,16 +23258,16 @@ end;
 
 procedure TMapForm.FD8Lognumbercells1Click(Sender: TObject);
 var
-   GridName : PathStr;
+   GridName,BreachName : PathStr;
 begin
-   WBT_FlowAccumulation(True,True,False,GeotiffDEMNameOfMap,GridName);
+   WBT_FlowAccumulation(True,True,False,GeotiffDEMNameOfMap,BreachName,GridName);
 end;
 
 procedure TMapForm.FD8Lognumbercells2Click(Sender: TObject);
 var
-   GridName : PathStr;
+   GridName,BreachName : PathStr;
 begin
-   WBT_FlowAccumulation(True,False,False,GeotiffDEMNameOfMap,GridName);
+   WBT_FlowAccumulation(True,False,False,GeotiffDEMNameOfMap,BreachName,GridName);
 end;
 
 procedure TMapForm.LocaddatumtoEGM20081Click(Sender: TObject);
@@ -23364,7 +23389,7 @@ var
 begin
    {$IfDef NoExternalPrograms}
    {$Else}
-       NewGrid := WBT_TangentialCurvature(GeotiffDEMNameOfMap);
+       NewGrid := WBT_TangentialCurvature(true,GeotiffDEMNameOfMap);
        MatchAnotherDEMMap(NewGrid,MapDraw.DEMonMap);
    {$EndIf}
 end;
@@ -23509,18 +23534,11 @@ end;
 
 procedure TMapForm.DEMfromseries1Click(Sender: TObject);
 var
-    WantedDEM,WantImage : integer;
-    //LatHigh,LatLow,LongHigh,LongLow : float64;
+    WantedDEM : integer;
     DEMSeries : ShortString;
 begin
     PickDEMSeries(DEMSeries,'DEM to match display area');
-    (*
-    LatHigh := MapDraw.MapCorners.BoundBoxGeo.ymax;
-    LatLow := MapDraw.MapCorners.BoundBoxGeo.ymin;
-    LongHigh := MapDraw.MapCorners.BoundBoxGeo.xmax;
-    LongLow := MapDraw.MapCorners.BoundBoxGeo.xmin;
-    *)
-    LoadMapLibraryBox(WantedDEM,WantImage,true,MapDraw.MapCorners.BoundBoxGeo {LatHigh,LongLow,LatLow,LongHigh},DEMSeries,True);
+    WantedDEM := LoadMapLibraryBox(true,MapDraw.MapCorners.BoundBoxGeo,DEMSeries,True);
     if ValidDEM(WantedDEM) then MatchMapToThisOne(DEMGlb[WantedDEM].SelectionMap);
 end;
 

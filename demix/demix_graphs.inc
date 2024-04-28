@@ -356,7 +356,7 @@ var
           WMDEM.SetPanelText(1,RefFilter);
           if SortByArea then AreaFilter := ' AND AREA=' + QuotedStr(AreaList.Strings[i]);
           GISdb[DBonTable].ApplyGISFilter(RefFilter + AreaFilter);
-          TileList := GISdb[DBonTable].MyData.UniqueEntriesInDB('DEMIX_TILE');
+          TileList := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('DEMIX_TILE');
 
           if SortByArea and (TileList.Count > 0) then begin
              TStr := IntToStr(CurrentY-TileList.Count div 2) + ',' + GISdb[DBonTable].MyData.GetFieldByNameAsString('AREA');
@@ -709,7 +709,7 @@ var
                 WMDEM.SetPanelText(0,IntToStr(i) + '/' + IntToStr(AreaList.Count) );
                 WMDEM.SetPanelText(1,RefFilter);
                 if (GISdb[DBonTable].MyData.FiltRecsInDB > 0) then begin
-                   TileList := GISdb[DBonTable].MyData.UniqueEntriesInDB('DEMIX_TILE');
+                   TileList := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('DEMIX_TILE');
                    Graph.GraphDraw.GraphLeftLabels.Add(IntToStr(CurrentY-TileList.Count div 2) + ',' + GISdb[DBonTable].MyData.GetFieldByNameAsString('AREA'));
                    for j := 0 to pred(TileList.Count) do begin
                       dec(CurrentY);
@@ -864,7 +864,7 @@ begin {DEMIXwineContestMeanMedianGraph}
 
    if (LandTypePresent = Nil) then begin
       GISdb[DBonTable].EmpSource.Enabled := false;
-      LandTypePresent := GISdb[DBonTable].MyData.UniqueEntriesInDB('LAND_TYPE');
+      LandTypePresent := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('LAND_TYPE');
    end;
 
    GISdb[DBonTable].EmpSource.Enabled := false;
@@ -872,7 +872,7 @@ begin {DEMIXwineContestMeanMedianGraph}
 
    if What in [dgAllValues,dgAllScores] then begin
       GISdb[DBonTable].EmpSource.Enabled := false;
-      AllTiles := GISdb[DBonTable].MyData.UniqueEntriesInDB('DEMIX_TILE');
+      AllTiles := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('DEMIX_TILE');
       ThisTile := GetFromList('DEMIX tile to plot',AllTiles);
       FreeAndNil(AllTiles);
    end;
@@ -1254,11 +1254,11 @@ begin
    HeavyDutyProcessing := true;
    if (CriteriaList = Nil) then  begin
       GISdb[DB].EmpSource.Enabled := false;
-      CriteriaList := GISdb[DB].MyData.UniqueEntriesInDB('CRITERION');
+      CriteriaList := GISdb[DB].MyData.ListUniqueEntriesInDB('CRITERION');
    end;
    if (TileList = Nil) then begin
       GISdb[DB].EmpSource.Enabled := false;
-      TileList := GISdb[DB].MyData.UniqueEntriesInDB('DEMIX_TILE');
+      TileList := GISdb[DB].MyData.ListUniqueEntriesInDB('DEMIX_TILE');
    end;
    {$If Defined(RecordDEMIX_evaluations_graph)}
       WriteLineToDebugFile('GraphAverageScoresByTile, Criteria=' + IntToStr(CriteriaList.Count) + ' tiles=' + IntToStr(TileList.Count));
@@ -1389,9 +1389,9 @@ begin {DEMIX_evaluations_graph}
       LoadDEMIXnames;
       SaveFilter := GISDB[DBonTable].MyData.Filter;
       GISdb[DBonTable].EmpSource.Enabled := false;
-      Criteria := GISdb[DBonTable].MyData.UniqueEntriesInDB('CRITERION');
+      Criteria := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('CRITERION');
       GISdb[DBonTable].EmpSource.Enabled := false;
-      Areas := GISdb[DBonTable].MyData.UniqueEntriesInDB('AREA');
+      Areas := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('AREA');
       Areas.Sort;
       Graph;
    finally

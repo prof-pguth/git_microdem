@@ -76,7 +76,7 @@ begin
    Form4.TheMap := Map;
    Form4.ColorScale := ColorScale;
    Form4.SetupForm;
-   InsureFormOnScreen(Form4,Mouse.CursorPos.X,Mouse.CursorPos.Y);
+   InsureFormOnScreenCurrentLocation(Form4,Mouse.CursorPos.X,Mouse.CursorPos.Y);
    Form4.ShowModal;
 end;
 

@@ -14,6 +14,7 @@ unit dem_indexes;
   //{$Define WarnMapIndexes}
   {$IFDEF DEBUG}
      //{$Define RecordMultipleFilesInBoundingBox}
+     //{$Define RecordIndexProhlems}
      //{$Define RecordLoadMapLibraryBox}
      //{$Define MergeSummary}
      //{$Define TrackPixelIs}
@@ -61,8 +62,8 @@ uses
    Petmar_types,PETMAR,PETMath,DEMDefs,BaseMap;
 
 
-function LoadMapLibraryBox(var WantDEM,WantImage : integer; Load : boolean; bb : sfBoundBox; WantSeries : shortstring = ''; DisplayIt : boolean = true) : boolean; //overload;
-function LoadMapLibraryPoint(var WantDEM,WantImage : integer; Load : boolean; Lat,Long : float64; WantSeries : shortstring = ''; DisplayIt : boolean = true) : boolean;
+function LoadMapLibraryBox(Load : boolean; bb : sfBoundBox; WantSeries : shortstring = ''; DisplayIt : boolean = true) : integer; //overload;
+function LoadMapLibraryPoint(Load : boolean; Lat,Long : float64; WantSeries : shortstring = ''; DisplayIt : boolean = true) : integer;
 
 procedure GetMapLibraryDataLimits(var MinLat,MaxLat,MinLong,MaxLong : float64);
 procedure CreateMapLibrary(Memo1 : tMemo);
@@ -300,6 +301,16 @@ begin
          exit;
       end;
 
+      if StrUtils.AnsiContainsText(WorkName,'DiluviumDEM') then begin
+{
+DiluviumDEM_N00_00_E006_00.tif
+}
+         WorkingString := Copy(WorkName,13,3) + Copy(WorkName,20,4);
+         Result := decode;
+         exit;
+      end;
+
+
       if (WorkName[4] = '_') then begin  //srtm n09_e038_1arc_v3.tif
          WorkingString := Copy(WorkName,1,3) + Copy(WorkName,5,4);
          Result := decode;
@@ -400,7 +411,7 @@ begin
       fName := SeriesIndexFileName;
       Table := tMyData.Create(fName);
       Table.ApplyFilter('DATA_TYPE=' + QuotedStr('DEMS') + ' AND NUM_FILES > 0');
-      aList := Table.UniqueEntriesInDB('SERIES');
+      aList := Table.ListUniqueEntriesInDB('SERIES');
       Table.Destroy;
       {$IfDef RecordIndex} WriteLineToDebugFile('DEM series count=' + IntToStr(aList.Count)); {$EndIf}
       if (aList.Count = 0) then MessageToContinue('No indexed DEMs')
@@ -469,16 +480,20 @@ begin
    end;
 end;
 
+
 procedure VerifyMapLibraryFilesExist(theTable : Petmar_db.tMyData; Memo1 : tMemo = Nil);
 var
    NumFound,Tested,NumRenamed : integer;
    fName : PathStr;
+   Missing : tStringList;
 begin
    {$IfDef RecordIndex} WriteLineToDebugFile('TDemHandForm.Verifyfilesexist1Click'); {$EndIf}
    if (Memo1 <> nil) then Memo1.Lines.Add('Check Map Library ' + MapLibraryFName);
+   WMdem.Color := clInactiveCaption;
    NumFound := 0;
    NumRenamed := 0;
    Tested := 0;
+   Missing := tStringList.Create;
    StartProgress('Check for missing files');
    while not TheTable.Eof do begin
        inc(Tested);
@@ -492,6 +507,7 @@ begin
              inc(NumRenamed);
           end
           else begin
+             Missing.Add(fName);
              TheTable.Delete;
              inc(NumFound);
           end;
@@ -510,7 +526,9 @@ begin
       if (NumRenamed > 0) then Memo1.Lines.Add('Renamed on wrong drive: ' + IntToStr(NumRenamed));
       Memo1.Lines.Add('Valid files remaining: ' + IntToStr(TheTable.RecordCount));
    end;
+   DisplayAndPurgeStringList(Missing,'Missing files',true);
    EndProgress;
+   WMdem.Color := clScrollBar;
 end;
 
 
@@ -553,6 +571,7 @@ var
 
            {$IfDef ExSat}
            {$Else}
+              (*
               procedure CheckImageryFile(fName : PathStr);
               var
                  Success : boolean;
@@ -567,6 +586,7 @@ var
                         SatImage[1].Destroy;
                      end;
                 end;
+                *)
              {$EndIf}
 
 
@@ -603,7 +623,7 @@ var
               {$IfDef RecordIndex} WriteLineToDebugFile('Index series=' + Series); {$EndIf}
               ReallyReadDEM := false;
               TheTable.ApplyFilter('SERIES=' + QuotedStr(Series));
-              AlreadyIndexed := TheTable.UniqueEntriesInDB('FILENAME');
+              AlreadyIndexed := TheTable.ListUniqueEntriesInDB('FILENAME');
               try
                  if (RawData.Count <> TheTable.RecordCount) then begin
                     for i := 0 to pred(RawData.Count) do begin
@@ -621,12 +641,14 @@ var
 
                           {$ifDef ExSat}
                           {$Else}
+                             (*
                              if ((DataType = 'IMAGERY') or (DataType = 'DRGS') ) and ValidImageryExt(ext) then begin
                                 CheckImageryFile(fName);
                              end;
+                             *)
                           {$EndIf}
 
-                          if ((DataType = 'DEMS') or (DataType = 'BATHY')) and ValidDEMExt(ext) then begin
+                          if (DataType = 'DEMS') {or (DataType = 'BATHY'))} and ValidDEMExt(ext) then begin
                              if StrUtils.AnsiContainsText(fName,'original_') then begin
                                 SysUtils.DeleteFile(fName);
                              end
@@ -698,9 +720,10 @@ var
 var
    TheTable : Petmar_db.tMyData;
    fname : PathStr;
-begin
+begin {procedure CreateMapLibrary}
    {$IfDef RecordIndex} WriteLineToDebugFile('CreateMapLibrary in'); {$EndIf}
    try
+      WMdem.Color := clInactiveCaption;
       ReportErrors := false;
       if (Memo1 <> Nil) then Memo1.Visible := true;
       PickMapIndexLocation;
@@ -719,9 +742,10 @@ begin
    finally
       ReportErrors := true;
       TheTable.Destroy;
+      WMdem.Color := clScrollBar;
       {$IfDef RecordIndex} WriteLineToDebugFile('CreateMapLibrary out'); {$EndIf}
    end;
-end;
+end {procedure CreateMapLibrary};
 
 
 procedure CreateShapeFileGrouping(var fName : PathStr; var TheGroupingIndex : tMyData; Long : boolean; ShapeType : integer = 0);
@@ -831,28 +855,6 @@ begin
    {$If Defined(RecordIndex) or Defined(RecordImageIndex)} WriteLineToDebugFile('GetMapLibraryDataLimits  NW corner: ' + LatLongDegreeToString(MaxLat,MinLong) + '  SE corner: ' + LatLongDegreeToString(MinLat,MaxLong)); {$EndIf}
 end;
 
-(*
-procedure OpenIndexDataOnline;
-var
-   fName : PathStr;
-begin
-   if (IndexDataOnline = Nil) then begin
-      if (MapLibDir = '') or (not PathIsValid(MapLibDir)) or (not FileExists(MapLibraryFName)) then PickMapIndexLocation;
-      fName := MapLibraryFName;
-      IndexDataOnline := tMyData.Create(fName);
-      {$IfDef RecordIndex} WriteLineToDebugFile('OpenIndexDataOnline ' + MapLibraryFName + ' Recs=' + IntToStr(IndexDataOnline.FiltRecsInDB)); {$EndIf}
-   end;
-end;
-
-procedure CloseIndexDataOnline;
-begin
-   {$IfDef RecordIndex} WriteLineToDebugFile('CloseIndexDataOnline'); {$EndIf}
-   if (IndexDataOnline <> nil) then begin
-      IndexDataOnline.Destroy;
-      IndexDataOnline := Nil;
-   end;
-end;
-*)
 
 procedure ShowMapLibraryDataAtPoint(Lat,Long : float64);
 const
@@ -865,7 +867,7 @@ var
 begin
    fName := MapLibraryFName;
    IndexDataOnline := tMyData.Create(fName);
-   IndexDataOnline.ApplyFilter(MakeCornersGeoFilter(Lat+Tolerance,Long-Tolerance,Lat-Tolerance,Long+Tolerance));
+   IndexDataOnline.ApplyFilter(MakeGeoFilterFromCorners(Lat+Tolerance,Long-Tolerance,Lat-Tolerance,Long+Tolerance));
    Findings := tStringList.Create;
    for i := 1 to IndexDataOnline.RecordCount do begin
       Findings.Add(IndexDataOnline.GetFieldByNameAsString('SERIES') + ':   ' + IndexDataOnline.GetFieldByNameAsString('FILENAME'));
@@ -878,7 +880,7 @@ end;
 
 
 
-function LoadMapLibraryPoint(var WantDEM,WantImage : integer; Load : boolean; Lat,Long : float64; WantSeries : shortstring = ''; DisplayIt : boolean = true) : boolean; overload;
+function LoadMapLibraryPoint(Load : boolean; Lat,Long : float64; WantSeries : shortstring = ''; DisplayIt : boolean = true) : integer;
 const
    extra = 0.0001;
 var
@@ -888,7 +890,7 @@ begin
    bb.XMin := Long-extra;
    bb.YMin := Lat-extra;
    bb.XMax := Long+extra;
-   Result := LoadMapLibraryBox(WantDEM,WantImage,Load,bb,WantSeries,DisplayIt);
+   Result := LoadMapLibraryBox(Load,bb,WantSeries,DisplayIt);
 end;
 
 
@@ -901,7 +903,7 @@ function GetListOfDataInBoxInSeries(Series : shortString; bb : sfBoundBox) : tSt
          fName : PathStr;
          IndexDataOnline : tMyData;
       begin
-         {$If Defined(RecordIndex) or Defined(RecordImageIndex)} WriteLineToDebugFile('GetDataInBoundingBox in DB filter: ' + theFilter); {$EndIf}
+         {$If Defined(RecordIndex) or Defined(RecordImageIndex) or Defined(RecordIndexProhlems)} WriteLineToDebugFile('GetDataInBoundingBox in DB filter: ' + theFilter); {$EndIf}
          fName := MapLibraryFName;
          IndexDataOnline := tMyData.Create(fName);
          IndexDataOnline.ApplyFilter(theFilter);
@@ -928,7 +930,7 @@ function GetListOfDataInBoxInSeries(Series : shortString; bb : sfBoundBox) : tSt
       end;
 
 begin
-   Result := GetMapLibraryDataInBoundingBox('(' + MakeCornersGeoFilter(bb) + ') AND SERIES = ' + QuotedStr(Series));
+   Result := GetMapLibraryDataInBoundingBox('(' + MakeGeoFilterFromBoundingBox(bb) + ') AND SERIES = ' + QuotedStr(Series));
 end;
 
 
@@ -1132,11 +1134,9 @@ begin
 end;
 
 
-function LoadMapLibraryBox(var WantDEM,WantImage : integer; Load : boolean; bb : sfBoundBox; WantSeries : shortstring = ''; DisplayIt : boolean = true) : boolean;
+function LoadMapLibraryBox(Load : boolean; bb : sfBoundBox; WantSeries : shortstring = ''; DisplayIt : boolean = true) : integer;
 var
    MergedName : ShortString;
-   LoadOne : boolean;
-
 
          procedure LoadTheDEMs(var LoadList : tStringList);
          var
@@ -1155,22 +1155,34 @@ var
                 end;
              end;
 
-             if (LoadList.Count > 1) then begin
-                {$IfDef RecordIndex} WriteLineToDebugFile('call MergeDEMs, count=' + IntToStr(LoadList.Count)); {$EndIf}
-                WantDEM := MergeMultipleDEMsHere(LoadList,DisplayIt,false);  //May 2023, set to use old MICRODEM merge
-                DEMGlb[WantDEM].DEMFileName := NextFileNumber(MDTempDir, MergeSeriesName + '_','.dem');
-                DEMGlb[WantDEM].WriteNewFormatDEM(DEMGlb[WantDEM].DEMFileName);
-             end
-             else begin
+             for i := pred(LoadList.Count) downto 0 do begin
+                fName := LoadList.Strings[i];
+                if not FileExists(fName) then begin
+                   MessageToContinue('File missing: ' + fName);
+                   LoadList.Delete(i);
+                end;
+             end;
+             if LoadList.Count = 0 then begin
+                LoadList.Destroy;
+                exit;
+             end;
+
+             if (LoadList.Count = 1) then begin
                 if (LoadList.Count) = 1 then begin
                    fName := LoadList.Strings[0];
                    {$IfDef RecordIndex} WriteLineToDebugFile('load single DEM=' + ExtractFileName(fName)); {$EndIf}
-                   LoadNewDEM(WantDem,fName,DisplayIt);
+                   LoadNewDEM(Result,fName,DisplayIt);
                 end;
                 LoadList.Destroy;
+             end
+             else begin
+                {$IfDef RecordIndex} WriteLineToDebugFile('call MergeDEMs, count=' + IntToStr(LoadList.Count)); {$EndIf}
+                Result := MergeMultipleDEMsHere(LoadList,DisplayIt,false);  //May 2023, set to use old MICRODEM merge
+                DEMGlb[Result].DEMFileName := NextFileNumber(MDTempDir, MergeSeriesName + '_','.dem');
+                DEMGlb[Result].WriteNewFormatDEM(DEMGlb[Result].DEMFileName);
              end;
-             Loadone := true;
-             if (WantDEM <> 0) then DEMGlb[WantDEM].AreaName := MergedName;
+             //Loadone := true;
+             if ValidDEM(Result) then DEMGlb[Result].AreaName := MergedName;
              {$If Defined(TrackPixelIs)} WriteLineToDebugFile('Loaded ' + DEMGlb[WantDEM].AreaName + '  ' + DEMGlb[WantDEM].GridCornerModelAndPixelIsString); {$EndIf}
              {$If Defined(RecordIndex) or Defined(RecordLoadMapLibraryBox)} WriteLineToDebugFile('Exit LoadTheDEMs, WantDEM=' + IntToStr(WantDEM)); {$EndIf}
          end;
@@ -1186,9 +1198,8 @@ begin
    try
       LoadingFromMapLibrary := true;
       ShowHourglassCursor;
-      LoadOne := false;
-      WantDEM := 0;
-      WantImage := 0;
+      //LoadOne := false;
+      Result := 0;
       MDDef.MissingToSeaLevel := false;
       OpenIndexedSeriesTable(IndexSeriesTable);
       if (WantSeries = '') then IndexSeriesTable.ApplyFilter('(USE = ' + QuotedStr('Y') + ')')
@@ -1200,31 +1211,17 @@ begin
          if IndexSeriesTable.FieldExists('SHORT_NAME') then MergedName := IndexSeriesTable.GetFieldByNameAsString('SHORT_NAME');
          if (MergedName = '') then MergedName := MergeSeriesName;
          {$If Defined(RecordIndex) or Defined(LoadLibrary)} WriteLineToDebugFile('Merge Series: ' + MergeSeriesName); {$EndIf}
-         DataInSeries := GetListOfDataInBoxInSeries(MergeSeriesName,bb);  //inNWLat,inNWLong,inSELat,inSELong);
+         DataInSeries := GetListOfDataInBoxInSeries(MergeSeriesName,bb);
          {$If Defined(RecordIndex) or Defined(LoadLibrary)} WriteLineToDebugFile('Files found: ' + IntToStr(DataInSeries.Count)); {$EndIf}
          if (DataInSeries.Count > 0) then begin
             DataType := UpperCase(IndexSeriesTable.GetFieldByNameAsString('DATA_TYPE'));
-            if (DataType = 'DEMS') then begin
-               LoadTheDEMs(DataInSeries);
-               {$If Defined(RecordMerge) or Defined(LoadLibrary)} WriteLineToDebugFile('LoadTheDEMs completed'); {$EndIf}
-            end
-            else begin
-               {$ifDef ExSat}
-               {$Else}
-                  for I := 0 to pred(DataInSeries.Count) do begin
-                      fName := DataInSeries.Strings[i];
-                      {$If Defined(RecordIndex) or Defined(RecordImageIndex)} WriteLineToDebugFile('Load ' + fName); {$EndIf}
-                      OpenAndDisplaySatelliteScene(nil,fName,true,true,(not GlobalDRGMap));
-                   end;
-                   DataInSeries.Destroy;
-               {$EndIf}
-            end;
+            LoadTheDEMs(DataInSeries);
+            {$If Defined(RecordMerge) or Defined(LoadLibrary)} WriteLineToDebugFile('LoadTheDEMs completed'); {$EndIf}
          end;
          IndexSeriesTable.Next;
       end;
       IndexSeriesTable.Destroy;
       ShowDefaultCursor;
-      Result := LoadOne;
    finally
       LoadingFromMapLibrary := false;
    end;

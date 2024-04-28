@@ -95,8 +95,8 @@ function AddOrIfNeeded(Filter : Ansistring) : AnsiString;
 procedure GPXtoDBF(inName : PathStr; var OutName : PathStr);
 
 function PointInBoxGeoFilter(Lat,Long : float64) : AnsiString;
-function MakeCornersGeoFilter(HiLat,LowLong,LowLat,HighLong : float64) : AnsiString;  overload;
-function MakeCornersGeoFilter(bBox : sfBoundBox) : AnsiString;  overload;
+function MakeGeoFilterFromCorners(HiLat,LowLong,LowLat,HighLong : float64) : AnsiString;  //overload;
+function MakeGeoFilterFromBoundingBox(bBox : sfBoundBox) : AnsiString;  //overload;
 function MakePointGeoFilter(LatFieldName,LongFieldName : string16; HiLat,LowLong,LowLat,HighLong : float64) : AnsiString;
 function PointVeryCloseGeoFilter(LatFieldName,LongFieldName : string16; Lat,Long : float64; Bit : float64 = 0.0001) : AnsiString;
 
@@ -156,7 +156,7 @@ procedure QuickGraphFromStringList(var sl : tStringList; xf,yf,Capt : shortstrin
 {$EndIf}
 
 
-   function DoCSVFileImport(fName : PathStr  = ''; SpecialGaz : tCSVImport = csvNormal) : PathStr;
+   function CSVFileImportToDB(fName : PathStr  = ''; SpecialGaz : tCSVImport = csvNormal) : PathStr;
    function StringList2CSVtoDB(Results : tstringList; fName : Pathstr = ''; CloseFile : boolean = false; SaveCSVfile : boolean = false; OpenTable : boolean = true) : integer;
    procedure MergeCSVFiles(var Fnames : tstringList; OutName : PathStr);
 
@@ -261,7 +261,6 @@ var
    Tstrl,OutPut : tStringList;
    Header1,Header : shortstring;
    fName : PathStr;
-   //DefaultFilter : byte;
    i,j : integer;
 begin
    {$IfDef RecordCSVMerge} writelinetoDebugFile(''); {$Endif}
@@ -984,7 +983,7 @@ function NumberUniqueEntries(Table : tMyData; FieldName : ShortString) : integer
 var
    DataThere : tStringList;
 begin
-   DataThere := Table.UniqueEntriesInDB(FieldName);
+   DataThere := Table.ListUniqueEntriesInDB(FieldName);
    Result := DataThere.Count;
    DataThere.Free;
 end;
@@ -997,7 +996,7 @@ var
 begin
    Result := '';
    {$IfDef VCL}
-      DataThere := Table.UniqueEntriesInDB(FieldName);
+      DataThere := Table.ListUniqueEntriesInDB(FieldName);
       i := 0;
       if MultiSelectSingleColumnStringList(Prompt,i,DataThere,true) then begin
          Result := DataThere.Strings[i];
@@ -1117,7 +1116,7 @@ begin
 end;
 
 
-function MakeCornersGeoFilter(bBox : sfBoundBox) : AnsiString;
+function MakeGeoFilterFromBoundingBox(bBox : sfBoundBox) : AnsiString;
 var
    TStr : shortstring;
 begin
@@ -1133,7 +1132,7 @@ begin
 end;
 
 
-function MakeCornersGeoFilter(HiLat,LowLong,LowLat,HighLong : float64) : AnsiString;
+function MakeGeoFilterFromCorners(HiLat,LowLong,LowLat,HighLong : float64) : AnsiString;
 var
    TStr : shortstring;
 begin
@@ -1291,7 +1290,7 @@ end;
 
 {$IfDef VCL}
 
-function DoCSVFileImport(fName : PathStr  = ''; SpecialGaz : tCSVImport = csvNormal) : PathStr;
+function CSVFileImportToDB(fName : PathStr  = ''; SpecialGaz : tCSVImport = csvNormal) : PathStr;
 var
    CreateDataBase : tCreateDataBase;
    ZeroPadLen : tZeroPadLen;

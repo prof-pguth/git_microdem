@@ -55,6 +55,12 @@ type
     procedure FormCreate(Sender: TObject);
     procedure RedrawSpeedButton12Click(Sender: TObject);
     procedure CheckBox11Click(Sender: TObject);
+    procedure CheckBox4Click(Sender: TObject);
+    procedure CheckBox5Click(Sender: TObject);
+    procedure CheckBox9Click(Sender: TObject);
+    procedure CheckBox10Click(Sender: TObject);
+    procedure CheckBox7Click(Sender: TObject);
+    procedure CheckBox8Click(Sender: TObject);
   private
     { Private declarations }
     theMapowner : tMapForm;
@@ -93,6 +99,10 @@ begin
        if (MapDraw.TerrainShadowsDEM <> 0) then RadioGroup1.ItemIndex := 4
        else RadioGroup1.ItemIndex := ord(MapDraw.MapMerge);
        RadioGroup1.Enabled := ValidDEM(MapDraw.DemOnMap);
+       GroupBox1.Enabled := MapForm.OverlayUp(ovoWorldOutlines);
+       GroupBox3.Enabled := MapForm.OverlayUp(ovoOSM);
+       GroupBox4.Enabled := MapForm.OverlayUp(ovoTiger);
+
        if (MapDraw.DemOnMap = 0) then RadioGroup1.ItemIndex := 0;
        CheckBox1.Checked := MapDraw.MakeMapGrayscale;
        CheckBox2.Checked := MapDraw.GrayscaleSubdueOverlays;
@@ -177,6 +187,11 @@ begin
    {$EndIf}
 end;
 
+procedure TTMapOptsForm.CheckBox10Click(Sender: TObject);
+begin
+   theMapOwner.MapDraw.DeleteSingleMapLayer(theMapOwner.MapDraw.TigerOverlayFName);
+end;
+
 procedure TTMapOptsForm.CheckBox11Click(Sender: TObject);
 begin
    If CheckBox11.Checked then begin
@@ -186,6 +201,31 @@ begin
    else CheckBox11.Caption := 'Elevations from another DEM';
 end;
 
+
+procedure TTMapOptsForm.CheckBox4Click(Sender: TObject);
+begin
+   theMapOwner.MapDraw.DeleteSingleMapLayer(theMapOwner.MapDraw.NaturalEarthOverlayFName);
+end;
+
+procedure TTMapOptsForm.CheckBox5Click(Sender: TObject);
+begin
+   theMapOwner.MapDraw.DeleteSingleMapLayer(theMapOwner.MapDraw.NaturalEarthOverlayFName);
+end;
+
+procedure TTMapOptsForm.CheckBox7Click(Sender: TObject);
+begin
+   theMapOwner.MapDraw.DeleteSingleMapLayer(theMapOwner.MapDraw.OSMOverlayfName);
+end;
+
+procedure TTMapOptsForm.CheckBox8Click(Sender: TObject);
+begin
+   theMapOwner.MapDraw.DeleteSingleMapLayer(theMapOwner.MapDraw.OSMOverlayfName);
+end;
+
+procedure TTMapOptsForm.CheckBox9Click(Sender: TObject);
+begin
+   theMapOwner.MapDraw.DeleteSingleMapLayer(theMapOwner.MapDraw.TigerOverlayFName);
+end;
 
 procedure TTMapOptsForm.FormCreate(Sender: TObject);
 begin

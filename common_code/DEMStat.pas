@@ -22,9 +22,10 @@ unit DEMStat;
       //{$Define RecordSSIM}
       //{$Define RecordSSIMFull}
       {$Define RecordDEMIX}
-      {$Define RecordDEMIXFull}
+      {$Define RecordFUVsteps}
+      //{$Define RecordDEMIXFull}
       //{$Define TrackPixelIs}
-      {$Define RecordCovarianceFail}
+      //{$Define RecordCovarianceFail}
       //{$Define RecordDEMIXSSIMGrid}
       //{$Define RepeatProblematicComputations}  //put in breakpoint, and then follow debugger but may have issues
       //{$Define RecordCovariance}
@@ -86,7 +87,7 @@ uses
 //end core DB functions definitions
 
    SysUtils,Forms,Classes,Controls,Graphics,ExtCtrls,Math,StdCtrls,
-   System.Threading,System.SyncObjs,System.UITypes,System.IOUtils, StrUtils,
+   System.Threading,System.SyncObjs,System.UITypes,System.IOUtils, StrUtils,System.Diagnostics,
    WinAPI.Windows,
 
    {$IfDef ExSat}
@@ -197,7 +198,7 @@ type
 
 //ssim operations
    function ComputeSSIM(DEM1,DEM2 : integer; gl1,gl2 : tGridLimits; var SSIM,Luminance,Contrast,Structure : float64) : boolean; //inline;
-   procedure AreaSSIMandFUVComputations(Overwrite : boolean);
+   procedure AreaSSIMandFUVComputations(Overwrite : boolean; Areas : tStringList = nil);
    procedure NormalizeDEMforSSIM(DEM : integer; What : shortstring);
    function MakeSSIMMap(OpenMap,AlreadyNormalized : boolean; DEM1,DEM2,NumberOfGrids,WindowSize : integer; ThinFactor : integer = 1; AreaName : shortstring = '') : integer;
    procedure SSIMcheck(DoThinning : boolean);

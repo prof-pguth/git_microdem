@@ -610,7 +610,6 @@ end;
 
    function LoadDEMsCoveringBox(bb : sfBoundBox; LoadMap : boolean = false) : integer;
    var
-      WantImage : integer;
       Table : tMyData;
       fName : PathStr;
       i : integer;
@@ -631,11 +630,8 @@ end;
          while not Table.eof do begin
             inc(i);
             CompareDEMNames[i] := Table.GetFieldByNameAsString('SERIES');
-            LoadMapLibraryBox(CompareDEMIndexes[i],WantImage,true,bb,CompareDEMNames[i],false);
-            if (CompareDEMIndexes[i] = 0) then begin
-               dec(i);
-            end
-            else begin
+            CompareDEMIndexes[i] := LoadMapLibraryBox(true,bb,CompareDEMNames[i],false);
+            if ValidDEM(CompareDEMIndexes[i]) then begin
                if Table.FieldExists('SHORT_NAME') then CompareDEMNames[i] := Table.GetFieldByNameAsString('SHORT_NAME');
                DEMGlb[CompareDEMIndexes[i]].DEMheader.VerticalCSTypeGeoKey := Table.GetFieldByNameAsInteger('VERT_DATUM');
                {$IfDef LoadDEMsCovering} WriteLineToDebugFile('Series=' + CompareDEMNames[i] +  '   DEM=' + IntToStr(CompareDEMIndexes[i])); {$EndIf}
@@ -644,12 +640,11 @@ end;
                LikeDTED[i] := (DEMGlb[CompareDEMIndexes[i]].DEMHeader.RasterPixelIsGeoKey1025 = 2) or (DEMGlb[CompareDEMIndexes[i]].AreaName = 'ASTER');
                {$IfDef LoadDEMsCovering} WriteLineToDebugFile(DEMGlb[CompareDEMIndexes[i]].AreaName + ' ' + DEMGlb[CompareDEMIndexes[i]].PixelIsString); {$EndIf}
                if LoadMap then CreateDEMSelectionMap(CompareDEMIndexes[i],true,MDDef.DefElevsPercentile,MDdef.DefDEMMap);
+            end
+            else begin
+               dec(i);
             end;
             Table.Next;
-            if (Result=MaxCompare) then begin
-               if not Table.EOF then MessageToContinue('Could not load all series');
-               break;
-            end;
           end;
           Table.Destroy;
          {$IfDef LoadDEMsCovering} WriteLineToDebugFile('LoadDEMsCoveringBox, dems loaded=' + IntToStr(Result)); {$EndIf}

@@ -901,7 +901,7 @@ begin
        LasName := NextFileNumber(MDtempDir, 'wbidw_dtm_','.las');
        LasFiles[i].ExtractGroundPoints(LasName);
        DTMname := NextFileNumber(MdtempDir, LasFiles[i].CloudName + '_wbidw_dtm_','.tif');
-       WBT_IDWCreate(LasName,DTMName,MDdef.DefLidarXGridSize);
+       WBT_IDWCreate(true,LasName,DTMName,MDdef.DefLidarXGridSize);
     end;
 end;
 
@@ -914,7 +914,7 @@ begin
        LasName := NextFileNumber(MDtempDir, 'wb_near_neigh_','.las');
        LasFiles[i].ExtractGroundPoints(LasName);
        DTMname := NextFileNumber(MdtempDir, LasFiles[i].CloudName + '_wb_near_neigh_dtm_','.tif');
-       WBT_BNearNeighCreate(LasName,DTMName,MDdef.DefLidarXGridSize);
+       WBT_BNearNeighCreate(true,LasName,DTMName,MDdef.DefLidarXGridSize);
     end;
 end;
 
@@ -3304,7 +3304,7 @@ begin
        LasName := NextFileNumber(MDtempDir, 'wbidw_dtm_','.las');
        LasFiles[i].ExtractGroundPoints(LasName);
        DTMname := NextFileNumber(MdtempDir, LasFiles[i].CloudName + '_wbidw_dtm_','.tif');
-       WBT_IDWCreate(LasName,DTMName,MDdef.DefLidarXGridSize);
+       WBT_IDWCreate(true,LasName,DTMName,MDdef.DefLidarXGridSize);
     end;
 end;
 

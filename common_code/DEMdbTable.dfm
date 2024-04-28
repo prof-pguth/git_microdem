@@ -2943,6 +2943,10 @@ object dbtablef: Tdbtablef
           Caption = 'Lat/long fields'
           OnClick = Latlongfields1Click
         end
+        object AddrecordIDfield1: TMenuItem
+          Caption = 'Add record ID field'
+          OnClick = AddrecordIDfield1Click
+        end
       end
       object Addintegercodefield1: TMenuItem
         Caption = 'Add integer code field'
@@ -3002,10 +3006,6 @@ object dbtablef: Tdbtablef
       object Translatefromtable1: TMenuItem
         Caption = 'Translate from table'
         OnClick = Translatefromtable1Click
-      end
-      object AddrecordIDfield1: TMenuItem
-        Caption = 'Add record ID field'
-        OnClick = AddrecordIDfield1Click
       end
       object Extractfiename1: TMenuItem
         Caption = 'Extract file name'
@@ -3750,6 +3750,7 @@ object dbtablef: Tdbtablef
     end
     object Clustersensitivity1: TMenuItem
       Caption = 'Cluster sensitivity'
+      Enabled = False
       OnClick = Clustersensitivity1Click
     end
     object Clusterwhiskerplotsforslopeandroughness1: TMenuItem
@@ -3773,7 +3774,7 @@ object dbtablef: Tdbtablef
     object Createnewtables1: TMenuItem
       Caption = 'Create new tables'
       object TransposeSSIMR2forclusters1: TMenuItem
-        Caption = 'Transpose SSIM/FUV means for K-means cluster'
+        Caption = 'Transpose SSIM/FUV for K-means cluster'
         OnClick = TransposeSSIMR2forclusters1Click
       end
       object ClustersperDEMIXtile1: TMenuItem
@@ -3796,6 +3797,10 @@ object dbtablef: Tdbtablef
         Caption = 'Evaluation range by criterion'
         OnClick = Evaluationrangebycriterion1Click
       end
+      object SortbyBESTEVAL1: TMenuItem
+        Caption = 'Sort by BEST_EVAL'
+        OnClick = SortbyBESTEVAL1Click
+      end
     end
     object Modifythistable1: TMenuItem
       Caption = 'Modify this table'
@@ -3817,6 +3822,10 @@ object dbtablef: Tdbtablef
       object CiompareCOPtorivals1: TMenuItem
         Caption = 'Compare COP to rivals'
         OnClick = CiompareCOPtorivals1Click
+      end
+      object AddlatlongfieldstoDB1: TMenuItem
+        Caption = 'Add lat/long fields to DB'
+        OnClick = AddlatlongfieldstoDB1Click
       end
       object Addtilecharacteristics1: TMenuItem
         Caption = 'Add tile characteristics to DB'
@@ -3938,6 +3947,13 @@ object dbtablef: Tdbtablef
     object BestDEMbycategory1: TMenuItem
       Caption = 'Graph best DEM (average score) for criteria and filters '
       OnClick = BestDEMbycategory1Click
+    end
+    object N55: TMenuItem
+      Caption = '-'
+    end
+    object MapsbyclusterandDEM1: TMenuItem
+      Caption = 'Maps by cluster and DEM'
+      OnClick = MapsbyclusterandDEM1Click
     end
     object N48: TMenuItem
       Caption = '-'

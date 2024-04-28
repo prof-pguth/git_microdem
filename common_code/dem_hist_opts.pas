@@ -61,7 +61,7 @@ var
   HistOptForm : THistOptForm;
 begin
    HistOptForm := THistOptForm.Create(Application);
-   InsureFormOnScreen(HistOptForm,Mouse.CursorPos.X,Mouse.CursorPos.Y);
+   InsureFormOnScreenCurrentLocation(HistOptForm,Mouse.CursorPos.X,Mouse.CursorPos.Y);
    HistOptForm.ShowModal;
    HistOptForm.Free;
 end;

@@ -138,13 +138,6 @@ type
     CheckBox9: TCheckBox;
     CheckBox10: TCheckBox;
     CheckBox11: TCheckBox;
-    GroupBox9: TGroupBox;
-    CheckBox12: TCheckBox;
-    CheckBox13: TCheckBox;
-    CheckBox14: TCheckBox;
-    CheckBox15: TCheckBox;
-    Hillshade: TCheckBox;
-    CheckBox17: TCheckBox;
     TabSheet4: TTabSheet;
     Label3: TLabel;
     AreaProgress: TEdit;
@@ -159,14 +152,24 @@ type
     //BitBtn6: TBitBtn;
     CheckBox18: TCheckBox;
     CheckBox16: TCheckBox;
-    CheckBox19: TCheckBox;
-    CheckBox20: TCheckBox;
-    CheckBox21: TCheckBox;
     CheckBox22: TCheckBox;
     CheckBox24: TCheckBox;
     BitBtn38: TBitBtn;
-    HAND: TCheckBox;
     CheckBox25: TCheckBox;
+    GroupBox9: TGroupBox;
+    CheckBox12: TCheckBox;
+    CheckBox13: TCheckBox;
+    CheckBox14: TCheckBox;
+    CheckBox15: TCheckBox;
+    Hillshade: TCheckBox;
+    CheckBox17: TCheckBox;
+    CheckBox19: TCheckBox;
+    CheckBox20: TCheckBox;
+    CheckBox21: TCheckBox;
+    HAND: TCheckBox;
+    CheckBox26: TCheckBox;
+    CheckBox27: TCheckBox;
+    CheckBox28: TCheckBox;
     procedure BitBtn1Click(Sender: TObject);
     procedure LoadClick(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
@@ -244,6 +247,9 @@ type
     procedure BitBtn38Click(Sender: TObject);
     procedure HANDClick(Sender: TObject);
     procedure CheckBox25Click(Sender: TObject);
+    procedure CheckBox26Click(Sender: TObject);
+    procedure CheckBox27Click(Sender: TObject);
+    procedure CheckBox28Click(Sender: TObject);
     //procedure CheckBox4Click(Sender: TObject);
   private
     { Private declarations }
@@ -470,7 +476,7 @@ end;
 procedure LoadComboBoxFromDBField(db : integer; ComboBox : tComboBox; aField : shortstring);
 begin
    GISdb[DB].EmpSource.Enabled := false;
-   ComboBox.Items := GISdb[db].MyData.UniqueEntriesInDB(aField);
+   ComboBox.Items := GISdb[db].MyData.ListUniqueEntriesInDB(aField);
    ComboBox.ItemIndex := 0;
    GISdb[DB].EmpSource.Enabled := true;
 end;
@@ -1548,6 +1554,21 @@ begin
    MDDef.OpenMapsFUVSSIM := CheckBox25.Checked;
 end;
 
+procedure TDemixFilterForm.CheckBox26Click(Sender: TObject);
+begin
+   MDDef.SSIM_ProfC := CheckBox26.Checked;
+end;
+
+procedure TDemixFilterForm.CheckBox27Click(Sender: TObject);
+begin
+   MDDef.SSIM_PlanC := CheckBox27.Checked;
+end;
+
+procedure TDemixFilterForm.CheckBox28Click(Sender: TObject);
+begin
+   MDDef.SSIM_TangC := CheckBox28.Checked;
+end;
+
 procedure TDemixFilterForm.CheckBox2Click(Sender: TObject);
 begin
    MDDef.MakeCOP_ALOS_diffMaps := CheckBox2.Checked;
@@ -1651,6 +1672,10 @@ begin
    CheckBox23.Checked := MDDef.LoadRefDEMMaps;
    CheckBox24.Checked := MDDef.DoFUV;
    CheckBox25.Checked := MDDef.OpenMapsFUVSSIM;
+   CheckBox26.Checked := MDdef.SSIM_ProfC;
+   CheckBox27.Checked := MDdef.SSIM_PlanC;
+   CheckBox28.Checked := MDDef.SSIM_TangC;
+
 
    CheckBox4.Checked := MDDef.LoadTestDEMMaps;
    LoadOneSecRefCheckBox.Checked := MDDef.LoadRefDEMs;

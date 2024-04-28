@@ -111,7 +111,7 @@ begin
    eval_scores_graph_form := Teval_scores_graph_form.Create(Application);
    eval_scores_graph_form.db := db;
    GISdb[db].EmpSource.Enabled := false;
-   eval_scores_graph_form.Criteria := GISdb[db].MyData.UniqueEntriesInDB('CRITERION');
+   eval_scores_graph_form.Criteria := GISdb[db].MyData.ListUniqueEntriesInDB('CRITERION');
    eval_scores_graph_form.RadioGroup4.Enabled := (eval_scores_graph_form.Criteria.IndexOf('ELEV_SSIM') >= 0);
    eval_scores_graph_form.BitBtn13.Enabled := GISdb[DB].MyData.FieldExists('BARREN_PC') and GISdb[DB].MyData.FieldExists('AVG_SLOPE');
    eval_scores_graph_form.Show;
@@ -158,10 +158,11 @@ begin
 end;
 
 procedure Teval_scores_graph_form.BitBtn1Click(Sender: TObject);
+var
+   aFilter : shortstring;
 begin
-   //DEMIXVertAxisLabel := GISdb[db].DBName;
    if StrUtils.AnsiContainsText(UpperCase(GISdb[db].DBName),'_SORT') then begin
-      DEMIXVertAxisLabel := 'Sorted by best evaluation in tile';
+      DEMIXVertAxisLabel := 'Sorted by best evaluation in tile ' + GISdb[db].MyData.Filter;
       YAxisSort := yasBestEval;
       YAxisWhat := yasBestEval;
       DEMIX_evaluations_graph(DB,true);

@@ -42,7 +42,7 @@ implementation
 {$R *.dfm}
 
 uses
-   Petmar,Petmar_types,DEMdefs,DEMIX_definitions;
+   Petmar,Petmar_types,DEMdefs,DEMIX_definitions,Nevadia_Main;
 
 procedure PickDEMIXMode;
 var
@@ -51,6 +51,7 @@ begin
   {$IfDef RecordDEMIX} WriteLineToDebugFile('PickDEMIXMode in, DEMIX_mode=' + IntToStr(MDDef.DEMIX_mode)); {$EndIf}
   PickDEMIXmodeForm := TPickDEMIXmodeForm.Create(Application);
   PickDEMIXmodeForm.RadioGroup1.ItemIndex := MDDef.DEMIX_mode;
+  InsureFormOnScreenCurrentLocation(PickDEMIXmodeForm,Mouse.CursorPos.X,Mouse.CursorPos.Y);
   PickDEMIXmodeForm.ShowModal;
   MDDef.DEMIX_mode := PickDEMIXmodeForm.RadioGroup1.ItemIndex;
   if MDDef.DEMIX_mode = dmNotYetDefined then begin

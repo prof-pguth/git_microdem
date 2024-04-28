@@ -1,12 +1,11 @@
 unit moment_opts;
  
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
-{___________________________________}
-
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program       }
+{ PETMAR Trilobite Breeding Ranch    }
+{ Released under the MIT Licences    }
+{ Copyright (c) 2024 Peter L. Guth   }
+{____________________________________}
 
 {$I nevadia_defines.inc}
 
@@ -61,7 +60,7 @@ var
    MomentOptsForm: TMomentOptsForm;
 begin
    MomentOptsForm := TMomentOptsForm.Create(Application);
-   InsureFormOnScreen(MomentOptsForm,Mouse.CursorPos.X,Mouse.CursorPos.Y);
+   InsureFormOnScreenCurrentLocation(MomentOptsForm,Mouse.CursorPos.X,Mouse.CursorPos.Y);
    MomentOptsForm.ShowModal;
    MomentOptsForm.Free;
 end;

@@ -111,8 +111,8 @@ begin
         fName := FilesWanted.Strings[i];
         LoadNewDEM(DEM,fName,true);
         if ValidDEM(DEM) then begin
-           ResampleForDEMIXOneSecDEMs(DEM);
-           CloseSingleDEM(DEM);
+           ResampleForDEMIXOneSecDEMs(true,true,DEM);
+           //CloseSingleDEM(DEM);
         end;
       end;
    finally

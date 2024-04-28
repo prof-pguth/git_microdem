@@ -4,7 +4,7 @@
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 {$I nevadia_defines.inc}
@@ -246,8 +246,6 @@ var
    i : integer;
    DataThere : tStringList;
 begin
-   //if not FileExists(CurrentMotionsFile) then DownloadFileFromWeb(WebDataDownLoadDir + ExtractFileName(CurrentMotionsFile),CurrentMotionsFile);
-
    RotLineSize := 3;
    RotLineColor := claPurple;
    DesiredRecord := 1;
@@ -266,13 +264,13 @@ begin
    OpenNumberedGISDataBase(MotionTable,CurrentMotionsFile);
    OpenNumberedGISDataBase(PoleTable,PlatePolesFile);
 
-    DataThere := GISDB[MotionTable].MyData.UniqueEntriesInDB('MODEL');
+    DataThere := GISDB[MotionTable].MyData.ListUniqueEntriesInDB('MODEL');
     for i := 0 to pred(DataThere.Count) do ModelComboBox.Items.Add(DataThere.Strings[i]);
     ModelComboBox.Text := MDDef.PlateModel;
     DataThere.Free;
     ModelComboBoxChange(Nil);
 
-    DataThere := GISDB[PoleTable].MyData.UniqueEntriesInDB('MODEL');
+    DataThere := GISDB[PoleTable].MyData.ListUniqueEntriesInDB('MODEL');
 
     for i := 0 to pred(DataThere.Count) do TotalPolesComboBox.Items.Add(DataThere.Strings[i]);
     TotalPolesComboBox.Text := TotalPolesComboBox.Items[0];
@@ -332,7 +330,7 @@ var
    Bitmap : tMyBitmap;
    i : integer;
 begin
-   {$IfDef RecordPlateRotations} WriteLineToDebugFile('TPickRotationForm.BitBtn5Click in, cont=' + ContinentComboBox.Text + '  TheDB=' + GISdb[PlatesDB].MyData.TableName);  {$EndIf}
+   {$IfDef RecordPlateRotations} WriteLineToDebugFile('TPickRotationForm.BitBtn5Click in, cont=' + ContinentComboBox.Text + '  TheDB=' + GISdb[PlatesDB].MyData.TableName); {$EndIf}
    if (ContinentComboBox.Text <> '') then begin
       MapForm.DoFastMapRedraw;
       ShowHourglassCursor;
@@ -341,7 +339,7 @@ begin
       GISdb[PlatesDB].MyData.ApplyFilter('NAME=' + QuotedStr(UpperCase(ContinentComboBox.Text)));
       if (GISdb[PlatesDB].MyData.RecordCount > 0) then begin
          DesiredRecord := GISdb[PlatesDB].MyData.RecNo;
-         {$IfDef RecordPlateRotations}  WriteLineToDebugFile('  DesiredRecord=' + IntToStr(DesiredRecord));{$EndIf}
+         {$IfDef RecordPlateRotations}  WriteLineToDebugFile('  DesiredRecord=' + IntToStr(DesiredRecord)); {$EndIf}
          if not CopyImageToBitmap(MapForm.Image1,Bitmap) then exit;
          Bitmap.Canvas.Pen.Width := RotLineSize;
          while not GISdb[PoleTable].MyData.Eof do begin
@@ -499,7 +497,7 @@ procedure TPickRotationForm.RadioGroup1Click(Sender: TObject);
              end
              else begin
                 if (GISdb[PoleTable] <> Nil) then begin
-                   DataThere := GISdb[PoleTable].MyData.UniqueEntriesInDB('PLATE');
+                   DataThere := GISdb[PoleTable].MyData.ListUniqueEntriesInDB('PLATE');
                    DataThere.Sorted := true;
                 end;
              end;
@@ -828,8 +826,8 @@ begin
     {$IfDef RecordPlateRotations} WriteLineToDebugFile('TPickRotationForm.ModelComboBoxChange in ' + ModelComboBox.Text); {$EndIf}
     MDDef.PlateModel := ModelComboBox.Text;
     GISdb[MotionTable].MyData.ApplyFilter( 'MODEL=' + QuotedStr(ModelComboBox.Text));
-    DataThere := GISdb[MotionTable].MyData.UniqueEntriesInDB('PLATE_NAME');
-    {$IfDef RecordPlateRotations}  WriteLineToDebugFile(' continents in model= ' + IntToStr(DataThere.Count));  {$EndIf}
+    DataThere := GISdb[MotionTable].MyData.ListUniqueEntriesInDB('PLATE_NAME');
+    {$IfDef RecordPlateRotations}  WriteLineToDebugFile(' continents in model= ' + IntToStr(DataThere.Count)); {$EndIf}
     FillComboBox(Plate1ComboBox,0);
     FillComboBox(Plate2ComboBox,1);
     FillComboBox(Plate3ComboBox,2);
@@ -844,7 +842,7 @@ var
    Values    : array[0..100] of float64;
 begin
     GISdb[PoleTable].MyData.ApplyFilter( 'MODEL=' + QuotedStr(TotalPolesComboBox.Text));
-    DataThere := GISdb[PoleTable].MyData.UniqueEntriesInDB('TIME');
+    DataThere := GISdb[PoleTable].MyData.ListUniqueEntriesInDB('TIME');
     for i := 0 to pred(DataThere.Count) do Values[i] := StrToFloat(DataThere.Strings[i]);
     HeapSort(DataThere.Count,Values);
     TimeComboBox.Items.Clear;

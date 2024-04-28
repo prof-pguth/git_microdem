@@ -530,12 +530,11 @@ type
     Inventorydifferencestats1: TMenuItem;
     MergeDEMIXtilestats1: TMenuItem;
     N48: TMenuItem;
-    FillholesintestareaDEMs1: TMenuItem;
-    VectorchannelnetworksSAGA1: TMenuItem;
-    Createchannelnetworkgrids1: TMenuItem;
+   // FillholesintestareaDEMs1: TMenuItem;
+    //VectorchannelnetworksSAGA1: TMenuItem;
+    //Createchannelnetworkgrids1: TMenuItem;
    // Channelnetworkcomparison1: TMenuItem;
     Channelnetworkmisspercentagesbytile1: TMenuItem;
-    SSIM1: TMenuItem;
     SSIM2: TMenuItem;
     MergemultipleTXTCSVintoDB1: TMenuItem;
     N49: TMenuItem;
@@ -555,7 +554,6 @@ type
     Overwriteifexists2: TMenuItem;
     Inventory3DEPtiles1: TMenuItem;
     SSIMR21: TMenuItem;
-    Skipifexists1: TMenuItem;
     InventoryDILUVIUMbytestarea1: TMenuItem;
     Partialchannelnetworkprocessing1: TMenuItem;
     Channelnetworkmultistep1: TMenuItem;
@@ -570,8 +568,8 @@ type
     Partial3DEPsteps1: TMenuItem;
     Overwriteifexists3: TMenuItem;
     Overwriteifexists4: TMenuItem;
-    OvOverwriteifexists1: TMenuItem;
-    Skipifexists2: TMenuItem;
+    //OvOverwriteifexists1: TMenuItem;
+    //Skipifexists2: TMenuItem;
     N39: TMenuItem;
     N54: TMenuItem;
     Inventorychanneldatabyarea1: TMenuItem;
@@ -594,7 +592,6 @@ type
     N42: TMenuItem;
     N47: TMenuItem;
     DeltaDTMfortestareas1: TMenuItem;
-    InventoryDeltaDTMbytestarea1: TMenuItem;
     Overwrite1: TMenuItem;
     Skipifexists3: TMenuItem;
     CreatefinalDB1: TMenuItem;
@@ -612,6 +609,10 @@ type
     DEMIXtilesperareaandcoastalsubset1: TMenuItem;
     Overwirte4: TMenuItem;
     Skiipifpresent1: TMenuItem;
+    InventoryallDEMIXdatafiles1: TMenuItem;
+    Combineallcombinedimages1: TMenuItem;
+    CoastalDEMfortestareas1: TMenuItem;
+    OverwriteallthreecoastalDTMS1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -978,12 +979,11 @@ type
     procedure Addprefixtoallfilesindirectory1Click(Sender: TObject);
     procedure Inventorydifferencestats1Click(Sender: TObject);
     procedure MergeDEMIXtilestats1Click(Sender: TObject);
-    procedure FillholesintestareaDEMs1Click(Sender: TObject);
-    procedure VectorchannelnetworksSAGA1Click(Sender: TObject);
-    procedure Createchannelnetworkgrids1Click(Sender: TObject);
+    //procedure FillholesintestareaDEMs1Click(Sender: TObject);
+    //procedure VectorchannelnetworksSAGA1Click(Sender: TObject);
+    //procedure Createchannelnetworkgrids1Click(Sender: TObject);
     //procedure Channelnetworkcomparison1Click(Sender: TObject);
     procedure Channelnetworkmisspercentagesbytile1Click(Sender: TObject);
-    procedure SSIM1Click(Sender: TObject);
     procedure MergemultipleTXTCSVintoDB1Click(Sender: TObject);
     procedure Overwrite4Click(Sender: TObject);
     procedure CreatetestareaDEMSskipifexists1Click(Sender: TObject);
@@ -998,7 +998,6 @@ type
     procedure Overwriteifexists1Click(Sender: TObject);
     procedure Overwriteifexists2Click(Sender: TObject);
     procedure Inventory3DEPtiles1Click(Sender: TObject);
-    procedure Skipifexists1Click(Sender: TObject);
     procedure InventoryDILUVIUMbytestarea1Click(Sender: TObject);
     procedure InsureallreferenceDTMscorrectlynamed1Click(Sender: TObject);
     procedure MaskwaterinreferenceDEMs1Click(Sender: TObject);
@@ -1007,8 +1006,8 @@ type
     procedure rimreferencedatatoDEMIXtiles1Click(Sender: TObject);
     procedure Overwriteifexists3Click(Sender: TObject);
     procedure Overwriteifexists4Click(Sender: TObject);
-    procedure OvOverwriteifexists1Click(Sender: TObject);
-    procedure Skipifexists2Click(Sender: TObject);
+    //procedure OvOverwriteifexists1Click(Sender: TObject);
+    //procedure Skipifexists2Click(Sender: TObject);
     procedure Inventorychanneldatabyarea1Click(Sender: TObject);
     procedure DatumshiftCanadianDEMs1Click(Sender: TObject);
     procedure Reference1secDTMsfromCanadianlidar1Click(Sender: TObject);
@@ -1022,7 +1021,6 @@ type
     procedure InventorySSIMFUVCSVfiles1Click(Sender: TObject);
     procedure N42Click(Sender: TObject);
     procedure DeltaDTMfortestareas1Click(Sender: TObject);
-    procedure InventoryDeltaDTMbytestarea1Click(Sender: TObject);
     procedure Overwrite1Click(Sender: TObject);
     procedure Skipifexists3Click(Sender: TObject);
     procedure CreatefinalDB1Click(Sender: TObject);
@@ -1040,6 +1038,12 @@ type
     procedure DEMIXtilesperareaandcoastalsubset1Click(Sender: TObject);
     procedure Overwirte4Click(Sender: TObject);
     procedure Skiipifpresent1Click(Sender: TObject);
+    procedure InventorytestandrefereneDEMsbytestarea1Click(Sender: TObject);
+    procedure InventoryallDEMIXdatafiles1Click(Sender: TObject);
+    procedure Combineallcombinedimages1Click(Sender: TObject);
+    procedure CoastalDEMfortestareas1Click(Sender: TObject);
+    procedure OverwriteallthreecoastalDTMS1Click(Sender: TObject);
+    procedure SSIMR21Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1066,7 +1070,7 @@ var
 
 
 function OpenGazFile(fName : PathStr = '') : integer;
-procedure InsureFormOnScreen(Form4 : tForm; x,y : integer);
+procedure InsureFormOnScreenCurrentLocation(Form4 : tForm; x,y : integer);
 
 
 implementation
@@ -1272,6 +1276,7 @@ uses
       DEMIX_Control,
       DEMIX_cop_alos,
       demix_evals_scores_graphs,
+      ssim_fuv_control,
    {$EndIf}
 
    ufrmMain,
@@ -1317,7 +1322,7 @@ uses
 {$I nevadia_main_batch.inc}
 
 
-procedure InsureFormOnScreen(Form4 : tForm; x,y : integer);
+procedure InsureFormOnScreenCurrentLocation(Form4 : tForm; x,y : integer);
 begin
    if y + Form4.Height < wmDEM.ClientHeight then Form4.Top := y
    else Form4.Top := wmDEM.ClientHeight - Form4.Height - 10;
@@ -1362,12 +1367,7 @@ begin
 end;
 
 
-procedure Twmdem.FillholesintestareaDEMs1Click(Sender: TObject);
-begin
-   BatchRemoveSinksInDEMIX_DEMS(False);
-end;
-
- procedure Twmdem.Findmatchingfiles1Click(Sender: TObject);
+procedure Twmdem.Findmatchingfiles1Click(Sender: TObject);
 var
    ThePath : PathStr;
    Ext : extstr;
@@ -1409,13 +1409,6 @@ procedure Twmdem.VDATUMshiftinUSA1Click(Sender: TObject);
 begin
    AnalyzeVDatumShift('');
 end;
-
-
-procedure Twmdem.VectorchannelnetworksSAGA1Click(Sender: TObject);
-begin
-   BatchCreateVectorChannelNewtwork(False);
-end;
-
 
 
 procedure Twmdem.Vectormap1Click(Sender: TObject);
@@ -1473,7 +1466,7 @@ end;
 
 procedure Twmdem.Channelnetworkmisspercentagesbytile1Click(Sender: TObject);
 begin
-    ChannelNetworkMissPercentages(False);
+    ChannelNetworkMissPercentages(True);
 end;
 
 
@@ -2659,6 +2652,21 @@ begin
    CreateTestAreaDEMs(True);
 end;
 
+procedure Twmdem.OverwriteallthreecoastalDTMS1Click(Sender: TObject);
+var
+   Areas : tStringList;
+   Overwrite : boolean;
+begin
+   GetDEMIXpaths(true);
+   Areas := DEMIX_AreasWanted;
+   Overwrite := false;
+
+   //must go in this order
+   CoastalDTMforTestAreas(Overwrite,Areas);
+   DiluviumDTMforTestAreas(Overwrite,Areas);
+   DeltaDTMforTestAreas(Overwrite,Areas);
+end;
+
 procedure Twmdem.N81Sfileviewer1Click(Sender: TObject);
 begin
    {$IfDef ExSidescan}
@@ -2805,6 +2813,7 @@ var
    db : integer;
 begin
    StopSplashing;
+   LastDataBase :=DEMIX_final_DB_dir;
    db := OpenMultipleDataBases('DEMIX graphs');
    if ValidDB(db) then StartDEMIXgraphs(DB);
 end;
@@ -3112,16 +3121,6 @@ begin
    DEMIX_Ref_DEM_full_chain(false);
 end;
 
-procedure Twmdem.Skipifexists1Click(Sender: TObject);
-begin
-   AreaSSIMandFUVComputations(False);
-end;
-
-procedure Twmdem.Skipifexists2Click(Sender: TObject);
-begin
-   MultistepChannelNetworks(False);
-end;
-
 procedure Twmdem.Skipifexists3Click(Sender: TObject);
 begin
    CreateDEMIX_GIS_database_by_transposing(False);
@@ -3327,12 +3326,6 @@ begin
 end;
 
 
-procedure Twmdem.Createchannelnetworkgrids1Click(Sender: TObject);
-begin
-   CreateChannelNetworkGridsFromVectors(False);
-end;
-
-
 procedure Twmdem.Createcompositebitmap1Click(Sender: TObject);
 begin
    RestoreBigCompositeBitmap('');
@@ -3422,14 +3415,14 @@ begin
     Inventory3DEPtiles;
 end;
 
-procedure Twmdem.Inventorychanneldatabyarea1Click(Sender: TObject);
+procedure Twmdem.InventoryallDEMIXdatafiles1Click(Sender: TObject);
 begin
-   InventoryChannelDataByArea;
+   InventoryAllDEMIXdata;
 end;
 
-procedure Twmdem.InventoryDeltaDTMbytestarea1Click(Sender: TObject);
+procedure Twmdem.Inventorychanneldatabyarea1Click(Sender: TObject);
 begin
-   CheckDeltaDTMAreas;
+   {$IfDef DEMIX_SAGA_channels} InventoryChannelDataByArea; {$EndIf}
 end;
 
 procedure Twmdem.Inventorydifferencestats1Click(Sender: TObject);
@@ -3440,12 +3433,17 @@ end;
 
 procedure Twmdem.InventoryDILUVIUMbytestarea1Click(Sender: TObject);
 begin
-   CheckDiluviumAreas;
+   CheckLowElevationAreas;
 end;
 
 procedure Twmdem.InventorySSIMFUVCSVfiles1Click(Sender: TObject);
 begin
    InventoryDEMIX_SSIM_FUV_Stats;
+end;
+
+procedure Twmdem.InventorytestandrefereneDEMsbytestarea1Click(Sender: TObject);
+begin
+   //InventoryTestAndReferenceDEMs;
 end;
 
 procedure Twmdem.Italyfocalmechs1Click(Sender: TObject);
@@ -3633,10 +3631,6 @@ begin
    DEMIX_GDAL_Ref_DEM_datum_shift(true);
 end;
 
-procedure Twmdem.OvOverwriteifexists1Click(Sender: TObject);
-begin
-   MultistepChannelNetworks(True);
-end;
 
 procedure Twmdem.Exitprogram2Click(Sender: TObject);
 begin
@@ -4230,7 +4224,7 @@ end;
 
 procedure Twmdem.Merge1secreferenceDEMsfromVisioterra1Click(Sender: TObject);
 begin
-   DEMIX_merge_Visioterra_source;
+   //DEMIX_merge_Visioterra_source;
 end;
 
 procedure Twmdem.Mergechannelnetworkevaluations1Click(Sender: TObject);
@@ -4271,14 +4265,17 @@ begin
 end;
 
 procedure Twmdem.MergeSSIMFUV1Click(Sender: TObject);
-var
-   TStr : shortstring;
+//var
+   //TStr : shortstring;
 begin
    GetDEMIXpaths;
-   TStr := '';
-   if MDDef.DoFUV then TStr := '_fuv';
-   if MDDef.DoSSIM then TStr := TStr + '_ssim';
-   MergeCSVtoCreateFinalDB(SSIMresultsDir,'_ssim_results.csv',TStr + '_demix_db_');
+   //TStr := '';
+   if MDDef.DoFUV then MergeCSVtoCreateFinalDB(SSIMresultsDir,'_fuv_results.csv','_fuv_demix_db_');
+   if MDDef.DoSSIM then MergeCSVtoCreateFinalDB(SSIMresultsDir,'_ssim_results.csv','_ssim_demix_db_');
+
+   //TStr := '_fuv';
+   //if MDDef.DoSSIM then TStr := TStr + '_ssim';
+
 end;
 
 
@@ -4733,9 +4730,9 @@ begin
    OpenGazFile;
 end;
 
-procedure Twmdem.SSIM1Click(Sender: TObject);
+procedure Twmdem.SSIMR21Click(Sender: TObject);
 begin
-   AreaSSIMandFUVComputations(True);
+   FUV_SSIM_work;
 end;
 
 procedure Twmdem.LOS2Click(Sender: TObject);
@@ -4787,7 +4784,7 @@ end;
 
 procedure Twmdem.DiluviumDEMfortestareas1Click(Sender: TObject);
 begin
-   DiluviumDEMforTestAreas(false);
+   DiluviumDTMforTestAreas(false);
 end;
 
 procedure Twmdem.Discussionforum1Click(Sender: TObject);
@@ -5247,8 +5244,6 @@ begin
    Unicodeicongenerator1.Visible := MDDef.ProgramOption = ExpertProgram;
    Zipatoneeditor1.Visible := MDDef.ProgramOption = ExpertProgram;
    Fileoperations1.Visible := MDDef.ProgramOption = ExpertProgram;
-   //Sentinel2dataprep1.Visible := MDDef.ProgramOption = ExpertProgram;
-   //OpenTCPinterface1.Visible := MDDef.ProgramOption = ExpertProgram;
    BackupprogramEXE1.Visible := MDDef.ProgramOption in [ExpertProgram];
    ToolsPopupMenu3.PopUp(Mouse.CursorPos.X,Mouse.CursorPos.Y);
 end;
@@ -5978,6 +5973,33 @@ end;
 procedure Twmdem.OpenDatabasewithoutmap1Click(Sender: TObject);
 begin
    OpenDatabase1Click(Sender);
+end;
+
+
+procedure Twmdem.CoastalDEMfortestareas1Click(Sender: TObject);
+begin
+   CoastalDTMforTestAreas(false);
+end;
+
+procedure Twmdem.Combineallcombinedimages1Click(Sender: TObject);
+var
+   i : integer;
+   Findings : tStringList;
+begin
+   Findings := tStringList.Create;
+   for i := pred(WMDEM.MDIChildCount) downto 0 do begin
+      if WMDEM.MDIChildren[i] is TImageDisplayForm then begin
+        Findings.Add( (WMDEM.MDIChildren[i] as TImageDisplayForm).LoadedFileName);
+      end;
+   end;
+   if (Findings.Count > 0) then begin
+      MakeBigBitmap(Findings,'','',1);
+      {$IfDef RecordBigBitmap}  WriteLineToDebugFile('AllGraphsOneImage out'); {$EndIf}
+   end
+   else begin
+      Findings.Free;
+      {$IfDef RecordBigBitmap}  WriteLineToDebugFile('No graphs found, AllGraphsOneImage out'); {$EndIf}
+   end;
 end;
 
 

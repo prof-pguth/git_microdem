@@ -21,7 +21,7 @@
 //{$Define ExDEMIXexperimentalOptions}
 
 
-{$Define TrackDEMboundingBox}
+//{$Define TrackDEMboundingBox}
 
 
  //deleted 4/19/2023 to track down problems; they are not key options

@@ -14,7 +14,7 @@
 
 {$IFDEF DEBUG}
    {$IfDef RecordProblems}  //normally only defined for debugging specific problems
-      //{$Define RecordCloseDB}
+      {$Define RecordCloseDB}
       {$Define RecordDEMIX}
       //{$Define RecordCopyFieldLinkDB}
       {$Define RecordClustering}
@@ -698,7 +698,6 @@ type
         function DrawFocalMechanism(NetRadius : integer) : tMyBitmap;
         procedure PlotDipsAndStrikes(Bitmap : tMyBitmap);
     {$EndIf}
-
   end;
 
 procedure InitializeDEMdbs;
@@ -938,7 +937,7 @@ begin
    GridForm.ShowSortingControls(true);
    GridForm.Caption := 'Sorting';
    Report := GISdb[DBonTable].ExtractDBtoCSV(1,',');
-   if OutputDir = '' then OutPutDir := mdTempDir;
+   if (OutputDir = '') then OutPutDir := mdTempDir;
 
    fName := NextFileNumber(OutputDir,GISdb[DBonTable].dbName + '_sorted_' + AField + '_' ,'.csv');
    Report.SaveToFile(fName);
@@ -2130,7 +2129,7 @@ end;
                end
                else begin
                   EmpSource.Enabled := false;
-                  FieldValues := MyData.UniqueEntriesInDB(Field);
+                  FieldValues := MyData.ListUniqueEntriesInDB(Field);
                   if aft in [ftInteger,ftSmallInt,ftFloat] then SortStringListNumerically(FieldValues);
                   EmpSource.Enabled := true;
                   ComboBox.Sorted := false;
@@ -3490,7 +3489,7 @@ end;
                   repeat
                      TheMapOwner.MapDraw.ScreenToLatLongDegree(xpic-Tol,ypic-Tol,LatHigh,LongLow);
                      TheMapOwner.MapDraw.ScreenToLatLongDegree(xpic+Tol,ypic+Tol,LatLow,LongHigh);
-                     dbOpts.GeoFilter := MakeCornersGeoFilter(LatHigh,LongLow,LatLow,LongHigh);
+                     dbOpts.GeoFilter := MakeGeoFilterFromCorners(LatHigh,LongLow,LatLow,LongHigh);
                      AssembleGISFilter;
                      {$IfDef RecordID} WriteLineToDebugFile('Filter tolerance =' + RealToString(Tol,-18,-6) + '   record count =' + IntToStr(MyData.FiltRecsInDB)); {$EndIf}
                      inc(Tol);
@@ -3848,12 +3847,12 @@ var
   ClosingDB : integer;
 begin
    If ValidDB(i) then begin
-      {$IfDef RecordCloseDB} WriteLineToDebugFile('CloseAndNilNumberedDB: ' + IntToStr(i)); {$EndIf}
+      {$IfDef RecordCloseDB} WriteLineToDebugFile('CloseAndNilNumberedDB: ' + IntToStr(i) + '  '  + GISDB[i].dbName); {$EndIf}
       ClosingDB := i;
       GISdb[i].CloseDataBase;
-      GISdb[ClosingDB] := Nil;
+      if (i <> 0) then GISdb[i] := Nil;
       i := 0;
-      {$IfDef RecordCloseDB} WriteLineToDebugFile('CloseAndNilNumberedDB out'); {$EndIf}
+      {$IfDef RecordCloseDB} WriteLineToDebugFile('CloseAndNilNumberedDB out ' + IntToStr(i)); {$EndIf}
    end;
 end;
 
@@ -4788,7 +4787,7 @@ begin
    else if LineShapeFile(ShapeFileType) then begin
       aShapeFile.LineCenter(MyData.RecNo,Long,Lat);
    end
-   else if AreaShapeFile(ShapeFileType) then begin
+   else if AreaShapeFile(ShapeFileType) and (aShapefile <> Nil) then begin
       {$IfDef VCL}
       aShapeFile.AreaAndCentroid(TheMapOwner.MapDraw.PrimMapProj,MyData.RecNo,Lat,Long)
       {$EndIf}
@@ -5644,7 +5643,7 @@ begin
       WriteLineToDebugFile('TGISDataBase.MarkRecordsOnDEM, fName=' + FName);
       WriteLineToDebugFile('filter=' + MakeCornersGeoFilter(DEMGlb[DEM].DEMBoundBoxGeo) + ' AND ' + MyData.GetFieldByNameAsString(fName) + '=' + QuotedStr(''));
    {$EndIf}
-   MyData.ApplyFilter(MakeCornersGeoFilter(DEMGlb[DEM].DEMBoundBoxGeo));   // + ' AND ' + fName + '=' + QuotedStr(''));
+   MyData.ApplyFilter(MakeGeoFilterFromBoundingBox(DEMGlb[DEM].DEMBoundBoxGeo));   // + ' AND ' + fName + '=' + QuotedStr(''));
    if LineShapeFile(ShapeFileType) then begin
      MyData.First;
      while not MyData.eof do begin
@@ -5675,13 +5674,14 @@ end;
       Action : TCloseAction;
    begin
       if (dbTablef <> Nil) then begin
-         {$IfDef RecordCloseDB} WriteLineToDebugFile('TGISdataBaseModule.CloseDBtableF'); {$EndIf}
+         {$IfDef RecordCloseDB} WriteLineToDebugFile('TGISdataBaseModule.CloseDBtableF in'); {$EndIf}
          if (dbTablef.GraphOwnerBitmap <> Nil) then FreeAndNil(dbTablef.GraphOwnerBitmap);
          dbTablef.DBonTable := 0;
          Action := caFree;
          dbTablef.FormClose(nil,Action);
          dbTablef.Destroy;
          dbTablef := Nil;
+         {$IfDef RecordCloseDB} WriteLineToDebugFile('TGISdataBaseModule.CloseDBtableF done'); {$EndIf}
       end;
       if Reopen then begin
          DisplayTable;
@@ -5724,8 +5724,8 @@ begin
    {$IfDef RecordFont} WriteLineToDebugFile('TGISDataBase.CloseDataBase Gis font 1: ' + MyFontToString(dbOpts.GisLabelFont1) + '  font 2: ' + MyFontToString(dbOpts.GisLabelFont2)); {$EndIf}
 
    {$IfDef VCL}
-      CloseDBtableF;
       CloseGisScaledForm;
+      CloseDBtableF;
    {$EndIf}
 
    if (aShapeFile <> Nil) then begin
@@ -5760,7 +5760,7 @@ begin
 
    Self.Destroy;
 
-   {$IfDef RecordCloseDB} WriteLineToDebugFile(' closed OK'); {$EndIf}
+   {$IfDef RecordCloseDB} WriteLineToDebugFile('TGISdataBaseModule.CloseDataBase closed OK'); {$EndIf}
 end;
 
 
@@ -5836,7 +5836,7 @@ begin
        //else ps := 500;
 
        if LatLongCornersPresent then begin
-          dbOpts.GeoFilter := PetDBUtils.MakeCornersGeoFilter(HiLat,LowLong,LowLat,HighLong{,ps});
+          dbOpts.GeoFilter := PetDBUtils.MakeGeoFilterFromCorners(HiLat,LowLong,LowLat,HighLong{,ps});
        end
        else if LatLongFieldsPresent then dbOpts.GeoFilter := PetDBUtils.MakePointGeoFilter(LatFieldName,LongFieldName,HiLat,LowLong,LowLat,HighLong);
 

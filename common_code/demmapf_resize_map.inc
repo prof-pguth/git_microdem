@@ -12,7 +12,7 @@
 
 procedure MatchAnotherDEMMap(DEM,CurDEM : integer);
 begin
-   if ValidDEM(DEM) and ValidDEM(CurDEM) then begin
+   if ValidDEM(DEM) and ValidDEM(CurDEM) and (DEMGlb[DEM].SelectionMap <> Nil) and (DEMGlb[DEM].SelectionMap <> Nil) then begin
       if DEMGlb[CurDEM].SelectionMap.FullMapSpeedButton.Enabled then begin
          DEMGlb[DEM].SelectionMap.MapDraw.MapCorners.BoundBoxProj := DEMGlb[CurDEM].SelectionMap.MapDraw.MapCorners.BoundBoxProj;
          DEMGlb[DEM].SelectionMap.SubsetAndZoomMapFromProjectedBounds;

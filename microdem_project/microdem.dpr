@@ -328,7 +328,8 @@ uses
   demix_control in '..\demix\demix_control.pas',
   demix_graphs in '..\demix\demix_graphs.pas',
   demix_evals_scores_graphs in '..\demix\demix_evals_scores_graphs.pas' {eval_scores_graph_form},
-  pick_demix_mode in '..\demix\pick_demix_mode.pas' {PickDEMIXmodeForm};
+  pick_demix_mode in '..\demix\pick_demix_mode.pas' {PickDEMIXmodeForm},
+  ssim_fuv_control in '..\demix\ssim_fuv_control.pas' {fuv_ssim_control};
 
 //MethodCallBack in '..\python4delphi\Source\MethodCallBack.pas',
   //VarPyth in '..\python4delphi\Source\VarPyth.pas',

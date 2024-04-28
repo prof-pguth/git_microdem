@@ -236,7 +236,7 @@ var
 begin
    if GISdb[db].MyData.GetFieldType(GISdb[db].MyData.GetFieldName(WantedField)) in [ftString,ftInteger,ftSmallInt,ftLargeInt] then begin
       GISdb[db].EmpSource.Enabled := false;
-      DataThere := GISdb[db].MyData.UniqueEntriesInDB(WantedFieldName);
+      DataThere := GISdb[db].MyData.ListUniqueEntriesInDB(WantedFieldName);
       GISdb[db].EmpSource.Enabled := true;
       i := 0;
       MultiSelectSingleColumnStringList('Desired value',i,DataThere);
@@ -570,7 +570,7 @@ begin
    end
    else if GISdb[db].MyData.GetFieldType(GISdb[db].MyData.GetFieldName(WantedField)) in [ftString,ftInteger,ftSmallInt,ftLargeInt] then begin
       GISdb[db].EmpSource.Enabled := false;
-      sl := GISdb[db].MyData.UniqueEntriesInDB(WantedFieldName);
+      sl := GISdb[db].MyData.ListUniqueEntriesInDB(WantedFieldName);
       GISdb[db].EmpSource.Enabled := true;
       PickSomeFromStringList(SL,'fields to add with OR');
       if (sl.Count > 1) then begin

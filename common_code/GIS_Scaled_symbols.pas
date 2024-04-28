@@ -1269,7 +1269,7 @@ var
 begin
    GISdb[theDB].EmpSource.Enabled := false;
    GISdb[theDB].MyData.ApplyFilter('');
-   DataThere := GISdb[theDB].MyData.UniqueEntriesInDB(ComboBox10.Text);
+   DataThere := GISdb[theDB].MyData.ListUniqueEntriesInDB(ComboBox10.Text);
    ListBox2.Items := DataThere;
    DataThere.Free;
    ListBox2.ItemIndex := 0;
@@ -1605,7 +1605,7 @@ var
 begin
    CheckEditString(Edit7.Text,Req);
    GISdb[theDB].EmpSource.Enabled := false;
-   DataThere := GISdb[theDB].MyData.UniqueEntriesInDB(ComboBox10.Text);
+   DataThere := GISdb[theDB].MyData.ListUniqueEntriesInDB(ComboBox10.Text);
    if (Req > 1) then begin
       for I := pred(DataThere.Count) downto 0 do begin
          GISdb[theDB].MyData.ApplyFilter( ComboBox10.Text + '=' + DataThere.Strings[i]);

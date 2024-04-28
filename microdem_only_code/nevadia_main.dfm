@@ -2913,6 +2913,10 @@ object wmdem: Twmdem
         OnClick = Noaddedlegends2Click
       end
     end
+    object Combineallcombinedimages1: TMenuItem
+      Caption = 'Combine all combined images'
+      OnClick = Combineallcombinedimages1Click
+    end
     object Experimental1: TMenuItem
       Caption = 'Experimental'
       object Differencetwobitmaps1: TMenuItem
@@ -3450,19 +3454,44 @@ object wmdem: Twmdem
       Caption = 'Load CopDEM and landcover for test area'
       OnClick = LoadCpopDEMandLNDCOERFORTEXTAREA1Click
     end
+    object N43: TMenuItem
+      Caption = '-'
+    end
+    object Processdifferencestatisticspertile1: TMenuItem
+      Caption = 
+        'Process difference distribution statistics per tile (DEMIX-class' +
+        'ic)'
+      object Overwirte2: TMenuItem
+        Caption = 'Overwrite'
+        OnClick = Overwirte2Click
+      end
+      object Overwirte3: TMenuItem
+        Caption = 'Skip if present'
+        OnClick = Overwirte3Click
+      end
+    end
+    object DEMIXmergeCSVfiles1: TMenuItem
+      Caption = 'Merge and transpose DEMIX-classic CSV files by area'
+      Enabled = False
+      object Overwrite1: TMenuItem
+        Caption = 'Overwrite'
+        OnClick = Overwrite1Click
+      end
+      object Skipifexists3: TMenuItem
+        Caption = 'Skip if exists'
+        OnClick = Skipifexists3Click
+      end
+    end
+    object CreatefinalDB1: TMenuItem
+      Caption = 'Create final DB'
+      OnClick = CreatefinalDB1Click
+    end
     object SSIM2: TMenuItem
       Caption = '-'
     end
     object SSIMR21: TMenuItem
       Caption = 'SSIM-FUV'
-      object SSIM1: TMenuItem
-        Caption = 'Overwrite if exists'
-        OnClick = SSIM1Click
-      end
-      object Skipifexists1: TMenuItem
-        Caption = 'Skip if exists'
-        OnClick = Skipifexists1Click
-      end
+      OnClick = SSIMR21Click
     end
     object MergeSSIMFUV1: TMenuItem
       Caption = 'Merge SSIM-FUV evaluations'
@@ -3473,33 +3502,33 @@ object wmdem: Twmdem
     end
     object Channelnetworkmultistep1: TMenuItem
       Caption = 'Channel network multistep'
+      Enabled = False
       object OvOverwriteifexists1: TMenuItem
         Caption = 'Overwrite if exists'
-        OnClick = OvOverwriteifexists1Click
       end
       object Skipifexists2: TMenuItem
         Caption = 'Skip if exists'
-        OnClick = Skipifexists2Click
       end
     end
     object Partialchannelnetworkprocessing1: TMenuItem
       Caption = 'Partial channel network processing'
+      Enabled = False
       object FillholesintestareaDEMs1: TMenuItem
         Caption = 'Fill holes in test area DEMs (SAGA)'
-        OnClick = FillholesintestareaDEMs1Click
+        Enabled = False
       end
       object VectorchannelnetworksSAGA1: TMenuItem
         Caption = 'Vector channel networks (SAGA)'
-        OnClick = VectorchannelnetworksSAGA1Click
+        Enabled = False
       end
       object Createchannelnetworkgrids1: TMenuItem
         Caption = 'Create channel network grids'
-        OnClick = Createchannelnetworkgrids1Click
+        Enabled = False
       end
-      object Channelnetworkmisspercentagesbytile1: TMenuItem
-        Caption = 'Channel network miss percentages by tile'
-        OnClick = Channelnetworkmisspercentagesbytile1Click
-      end
+    end
+    object Channelnetworkmisspercentagesbytile1: TMenuItem
+      Caption = 'Channel network miss percentages by tile'
+      OnClick = Channelnetworkmisspercentagesbytile1Click
     end
     object Mergechannelnetworkevaluations1: TMenuItem
       Caption = 'Merge channel network evaluations'
@@ -3507,6 +3536,7 @@ object wmdem: Twmdem
     end
     object Channelnetworkcomparison1: TMenuItem
       Caption = 'Channel network map  comparison (currently hard wired)'
+      Enabled = False
     end
     object N44: TMenuItem
       Caption = '-'
@@ -3548,10 +3578,9 @@ object wmdem: Twmdem
     object N49: TMenuItem
       Caption = '-'
     end
-    object Extract1: TMenuItem
-      Caption = 'Extract EDTM for test areas'
-      Enabled = False
-      OnClick = Extract1Click
+    object CoastalDEMfortestareas1: TMenuItem
+      Caption = 'Coastal DEM for test areas'
+      OnClick = CoastalDEMfortestareas1Click
     end
     object DiluviumDEMfortestareas1: TMenuItem
       Caption = 'Diluvium DEM for test areas'
@@ -3561,8 +3590,18 @@ object wmdem: Twmdem
       Caption = 'Delta DTM for test areas'
       OnClick = DeltaDTMfortestareas1Click
     end
+    object OverwriteallthreecoastalDTMS1: TMenuItem
+      Caption = 'Overwrite all three coastal DTMS'
+      OnClick = OverwriteallthreecoastalDTMS1Click
+    end
+    object Extract1: TMenuItem
+      Caption = 'Extract EDTM for test areas'
+      Enabled = False
+      OnClick = Extract1Click
+    end
     object Merge1secreferenceDEMsfromVisioterra1: TMenuItem
       Caption = 'Merge 1 sec reference DEMs from Visioterra'
+      Enabled = False
       OnClick = Merge1secreferenceDEMsfromVisioterra1Click
     end
     object N54: TMenuItem
@@ -3583,43 +3622,15 @@ object wmdem: Twmdem
       Caption = 'Create land cover grids'
       OnClick = Createlandcovergrids1Click
     end
-    object N43: TMenuItem
-      Caption = '-'
-    end
-    object Processdifferencestatisticspertile1: TMenuItem
-      Caption = 
-        'Process difference distribution statistics per tile (DEMIX-class' +
-        'ic)'
-      object Overwirte2: TMenuItem
-        Caption = 'Overwrite'
-        OnClick = Overwirte2Click
-      end
-      object Overwirte3: TMenuItem
-        Caption = 'Skiip if present'
-        OnClick = Overwirte3Click
-      end
-    end
-    object DEMIXmergeCSVfiles1: TMenuItem
-      Caption = 'Merge and transpose DEMIX-classic CSV files by area'
-      Enabled = False
-      object Overwrite1: TMenuItem
-        Caption = 'Overwrite'
-        OnClick = Overwrite1Click
-      end
-      object Skipifexists3: TMenuItem
-        Caption = 'Skip if exists'
-        OnClick = Skipifexists3Click
-      end
-    end
-    object CreatefinalDB1: TMenuItem
-      Caption = 'Create final DB'
-      OnClick = CreatefinalDB1Click
-    end
     object N36: TMenuItem
       Caption = '-'
     end
     object Inventories1: TMenuItem
       Caption = 'Inventories'
+      object InventoryallDEMIXdatafiles1: TMenuItem
+        Caption = 'Inventory all DEMIX data files'
+        OnClick = InventoryallDEMIXdatafiles1Click
+      end
       object Inventory3DEPtiles1: TMenuItem
         Caption = 'Inventory 3DEP source DEM tiles'
         OnClick = Inventory3DEPtiles1Click
@@ -3635,7 +3646,9 @@ object wmdem: Twmdem
         OnClick = CheckreferenceDEMSareEGM2008withPixelIsset1Click
       end
       object ChecktestDEMs1: TMenuItem
-        Caption = 'Inventory test DEMs (missing .TIF by area)'
+        Caption = 
+          'Inventory test and referene DEMs by test area (missing .TIF by a' +
+          'rea)'
         OnClick = ChecktestDEMs1Click
       end
       object VerifytestDEMcoverages1: TMenuItem
@@ -3648,6 +3661,7 @@ object wmdem: Twmdem
       end
       object Inventorychanneldatabyarea1: TMenuItem
         Caption = 'Inventory channel data by area'
+        Enabled = False
         OnClick = Inventorychanneldatabyarea1Click
       end
       object InventorySSIMFUVCSVfiles1: TMenuItem
@@ -3658,16 +3672,12 @@ object wmdem: Twmdem
         Caption = '-'
       end
       object InventoryDILUVIUMbytestarea1: TMenuItem
-        Caption = 'Inventory DILUVIUM  by test area'
+        Caption = 'Inventory low elevation test area'
         OnClick = InventoryDILUVIUMbytestarea1Click
       end
       object DiluviumDEMandDEMIXDBoverlap1: TMenuItem
         Caption = 'Diluvium DEM and DEMIX DB overlap'
         OnClick = DiluviumDEMandDEMIXDBoverlap1Click
-      end
-      object InventoryDeltaDTMbytestarea1: TMenuItem
-        Caption = 'Inventory Delta DTM by test area'
-        OnClick = InventoryDeltaDTMbytestarea1Click
       end
       object DEMIXtilesperareaandcoastalsubset1: TMenuItem
         Caption = 'DEMIX tiles per area and coastal subset'

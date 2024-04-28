@@ -208,7 +208,7 @@ begin
    GridsDB := OpenMultipleDataBases('',ExtractFilePath(GridDir) + 'param_stats.dbf');
 
    db := OpenMultipleDataBases('training set points');
-   Classes := GISdb[db].MyData.UniqueEntriesInDB('NAME');
+   Classes := GISdb[db].MyData.ListUniqueEntriesInDB('NAME');
 
    TheFiles := Nil;
    Petmar.FindMatchingFiles(GridDir,'*.dem',TheFiles,0);

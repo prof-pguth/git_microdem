@@ -20,11 +20,11 @@ begin
       if GISdb[DBonTable].MyData.Filtered then MessageToContinue('Results apply to entire database');
       GISdb[DBonTable].ClearGISFilter;
       GISdb[DBonTable].EmpSource.Enabled := false;
-      UniqueEntries1 := GISdb[DBonTable].MyData.UniqueEntriesInDB('CLUSTER');
+      UniqueEntries1 := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('CLUSTER');
       SortStringListNumerically(UniqueEntries1);
       GISdb[DBonTable].EmpSource.Enabled := false;
       WantedField := GISdb[DBonTable].PickField('cluster membership statistics' ,[ftString],true);
-      UniqueEntries2 := GISdb[DBonTable].MyData.UniqueEntriesInDB(WantedField);
+      UniqueEntries2 := GISdb[DBonTable].MyData.ListUniqueEntriesInDB(WantedField);
 
       Results := tStringList.Create;
       aLine := 'CLUSTER';
@@ -43,10 +43,10 @@ begin
       fName := Petmar.NextFileNumber(MDTempDir, 'Cluster_freq_',DefaultDBExt);
       {$IfDef RecordClustering} WriteLineToDebugFile('Created: ' + fName); {$EndIf}
       StringList2CSVtoDB(Results,fName);
+      GISdb[DBonTable].ClearGISFilter;
+      GISdb[DBonTable].dbTablef.UnHideColumns;
+      GISdb[DBonTable].ShowStatus;
    end;
-   GISdb[DBonTable].ClearGISFilter;
-   GISdb[DBonTable].dbTablef.UnHideColumns;
-   GISdb[DBonTable].ShowStatus;
 end;
 
 
@@ -61,15 +61,17 @@ var
    fName : PathStr;
 begin
    {$IfDef RecordClustering} WriteLineToDebugFile('Tdbtablef.Clusterfrequency1Click'); {$EndIf}
-   if GISdb[DBonTable].MyData.Filtered then MessageToContinue('Results apply to entire database');
-   GISdb[DBonTable].ClearGISFilter;
+   if GISdb[DBonTable].MyData.Filtered then begin
+      MessageToContinue('Results apply to entire database');
+      GISdb[DBonTable].ClearGISFilter;
+   end;
    GISdb[DBonTable].dbTableF.SaveHiddenColumns;
    GISdb[DBonTable].dbTablef.UnHideColumns;
    GISdb[DBonTable].EmpSource.Enabled := false;
    GISdb[DBonTable].MyData.FindFieldRange('CLUSTER',MinX,MaxX);
    WantedField := GISdb[DBonTable].PickField('unique values' ,[ftString,ftInteger]);
    GISdb[DBonTable].EmpSource.Enabled := false;
-   UniqueEntries := GISdb[DBonTable].MyData.UniqueEntriesInDB(WantedField);
+   UniqueEntries := GISdb[DBonTable].MyData.ListUniqueEntriesInDB(WantedField);
    Results := tStringList.Create;
    TStr := WantedField;
    for i := round(MinX) to round(MaxX) do TStr := TStr + ',CLUSTER_' + IntToStr(i);
@@ -93,7 +95,6 @@ begin
    GISdb[DBonTable].dbTableF.RestoreHiddenColumns;
    GISdb[DBonTable].ShowStatus;
 end;
-
 
 
 procedure TileCharateristicsWhiskerPlotsByCluster(DBonTable : integer; NoFiltering : boolean; SingleCriterion : shortstring = '');
@@ -184,7 +185,7 @@ begin
    ShowHourglassCursor;
    Results := tStringList.Create;
    Results.Add('DEMIX_TILE,NUM_CLUSTR');
-   Tiles := GISdb[DBonTable].MyData.UniqueEntriesInDB('DEMIX_TILE');
+   Tiles := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('DEMIX_TILE');
    for I := 0 to pred(Tiles.Count) do begin
       GISdb[DBonTable].EmpSource.Enabled := false;
       GISdb[DBonTable].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(Tiles.Strings[i]));
@@ -213,7 +214,7 @@ begin
    ShowHourglassCursor;
    Results := tStringList.Create;
    aline := 'CLUSTER,N';
-   Clusters := GISdb[DBonTable].MyData.UniqueEntriesInDB('CLUSTER');
+   Clusters := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('CLUSTER');
    for I := 1 to NumTileCharacters do aline := aline + ',' + TileCharacters[i];
    Results.Add(aline);
 
@@ -340,10 +341,10 @@ begin
    ColorByDEM := false;
 
    GISdb[DBonTable].EmpSource.Enabled := false;
-   Clusters := GISdb[DBonTable].MyData.UniqueEntriesInDB('CLUSTER');
+   Clusters := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('CLUSTER');
    SortStringListNumerically(Clusters);
    GISdb[DBonTable].EmpSource.Enabled := false;
-   DEMs := GISdb[DBonTable].MyData.UniqueEntriesInDB('DEM');
+   DEMs := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('DEM');
    LoadDEMIXnames;
    StartProgress('Cluster');
    GraphByDEMs;
@@ -415,6 +416,8 @@ end;
 function DEMIX_SSIM_FUV_clusters_graph(DBonTable : integer) : tThisBaseGraph;
 //makes graph of each cluster with criteria on y axis and evaluation on x axis
 //compare with https://plotly.com/python/parallel-coordinates-plot/
+const
+   FUVordered : array[1..12] of shortstring = ('ELEV_FUV','HILL_FUV','SLOPE_FUV','RUFF_FUV','HAND_FUV','TPI_FUV','WETIN_FUV','RRI_FUV','PROFC_FUV','LS_FUV','ACCUM_FUV','PLANC_FUV');
 var
    Crit,aline,aField : shortstring;
    j,k,NCrit,NDEM,Cluster : integer;
@@ -450,8 +453,13 @@ var
 
                   Result.OpenDataFile(rfile,GISdb[DBonTable].MyData.GetFieldByNameAsInteger('COLOR'));
                   if (aField = '') then begin
+                     (*r
                      for j := 1 to NumCrits do begin
                         Result.AddPointToDataBuffer(rfile,GISdb[DBonTable].MyData.GetFieldByNameAsFloat(TheCrits[j]),j);
+                     end;
+                     *)
+                     for j := 1 to 12 do begin
+                        Result.AddPointToDataBuffer(rfile,GISdb[DBonTable].MyData.GetFieldByNameAsFloat(FUVordered[j]),j);
                      end;
                   end
                   else begin
@@ -465,7 +473,8 @@ var
                   GISdb[DBonTable].MyData.Next;
                end;
                if (aField = '') then begin
-                  for j := 1 to NumCrits do Result.GraphDraw.GraphLeftLabels.Add(IntToStr(j) + ',' + TheCrits[j]);
+                  //for j := 1 to NumCrits do Result.GraphDraw.GraphLeftLabels.Add(IntToStr(j) + ',' + TheCrits[j]);
+                  for j := 1 to NumCrits do Result.GraphDraw.GraphLeftLabels.Add(IntToStr(j) + ',' + FUVordered[j]);
                end
                else begin
                   (*

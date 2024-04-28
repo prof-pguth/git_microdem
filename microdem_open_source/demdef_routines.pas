@@ -2477,7 +2477,9 @@ var
          AParameter('DEMIX','SSIM_rri',SSIM_rri,true);
          AParameter('DEMIX','SSIM_tpi',SSIM_tpi,true);
          AParameter('DEMIX','SSIM_hill',SSIM_hill,true);
-
+         AParameter('DEMIX','SSIM_PLANC',SSIM_PLANC,true);
+         AParameter('DEMIX','SSIM_PROFC',SSIM_PROFC,true);
+         AParameter('DEMIX','SSIM_TANGC',SSIM_TANGC,true);
          AParameter('DEMIX','SSIM_LS',SSIM_LS,true);
          AParameter('DEMIX','SSIM_flow',SSIM_Flow,true);
          AParameter('DEMIX','SSIM_wet',SSIM_wet,true);
@@ -2485,6 +2487,8 @@ var
 
          AParameter('DEMIX','DoSSIM',DoSSIM,true);
          AParameter('DEMIX','DoFUV',DoFUV,true);
+         AParameter('DEMIX','DEMIX_all_areas',DEMIX_all_areas,true);
+
          AParameter('DEMIX','DEMIX_overwrite_enabled',DEMIX_overwrite_enabled,true);
          AParameter('DEMIX','DEMIX_Base_DB_Path',DEMIX_Base_DB_Path,'');
          AParameter('DEMIX','DEMIXlegendFontSize',DEMIXlegendFontSize,18);
