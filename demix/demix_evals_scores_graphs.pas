@@ -45,6 +45,7 @@ type
     BitBtn14: TBitBtn;
     BitBtn15: TBitBtn;
     BitBtn16: TBitBtn;
+    BitBtn2: TBitBtn;
     procedure BitBtn1Click(Sender: TObject);
     procedure RadioGroup3Click(Sender: TObject);
     procedure RadioGroup1Click(Sender: TObject);
@@ -74,8 +75,10 @@ type
     procedure BitBtn14Click(Sender: TObject);
     procedure BitBtn15Click(Sender: TObject);
     procedure BitBtn16Click(Sender: TObject);
+    procedure BitBtn2Click(Sender: TObject);
   private
     { Private declarations }
+    procedure ChangeDBonForm(Newdb : integer);
   public
     { Public declarations }
      db,originalDB : integer;
@@ -94,7 +97,7 @@ implementation
 
 uses
    Nevadia_main,
-   Petmar,Petmar_types,Petmar_db,
+   Petmar,Petmar_types,Petmar_db,Petimage_form,
    DEMdataBase,
    DEMdefs,
    DEMIX_graphs,
@@ -108,19 +111,26 @@ var
   i : integer;
 begin
    GetDEMIXpaths(false,db);
+   GISdb[db].dbtablef.OpenDEMIXgraphs1.Enabled := false;
    eval_scores_graph_form := Teval_scores_graph_form.Create(Application);
-   eval_scores_graph_form.db := db;
-   GISdb[db].EmpSource.Enabled := false;
-   eval_scores_graph_form.Criteria := GISdb[db].MyData.ListUniqueEntriesInDB('CRITERION');
-   eval_scores_graph_form.RadioGroup4.Enabled := (eval_scores_graph_form.Criteria.IndexOf('ELEV_SSIM') >= 0);
-   eval_scores_graph_form.BitBtn13.Enabled := GISdb[DB].MyData.FieldExists('BARREN_PC') and GISdb[DB].MyData.FieldExists('AVG_SLOPE');
+   eval_scores_graph_form.ChangeDBonForm(db);
    eval_scores_graph_form.Show;
 end;
 
 
+procedure Teval_scores_graph_form.ChangeDBonForm(Newdb : integer);
+begin
+   db := NewDB;
+   Caption := 'DEMIX graphs: ' + GISdb[db].dbName;
+   GISdb[db].EmpSource.Enabled := false;
+   Criteria := GISdb[db].MyData.ListUniqueEntriesInDB('CRITERION');
+   RadioGroup4.Enabled := (Criteria.IndexOf('ELEV_SSIM') >= 0);
+   BitBtn13.Enabled := GISdb[DB].MyData.FieldExists('BARREN_PC') and GISdb[DB].MyData.FieldExists('AVG_SLOPE');
+end;
+
 procedure Teval_scores_graph_form.BitBtn10Click(Sender: TObject);
 begin
-   WinningPercentages(db);
+   WinningPercentagesComparedToCOP(db);
 end;
 
 procedure Teval_scores_graph_form.BitBtn11Click(Sender: TObject);
@@ -131,7 +141,7 @@ end;
 
 procedure Teval_scores_graph_form.BitBtn12Click(Sender: TObject);
 begin
-   HistogramsByQuantile(DB);
+   WhiskerPlotsByCluster(DB);
 end;
 
 procedure Teval_scores_graph_form.BitBtn13Click(Sender: TObject);
@@ -185,6 +195,11 @@ begin
 end;
 
 
+
+procedure Teval_scores_graph_form.BitBtn2Click(Sender: TObject);
+begin
+   CombineAllPanelGraphs;
+end;
 
 procedure Teval_scores_graph_form.BitBtn3Click(Sender: TObject);
 begin

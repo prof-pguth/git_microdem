@@ -72,7 +72,7 @@ type
 
 
 procedure SetGraphColors(inTheGraph : tThisBaseGraph);
-procedure DefaultGraphColors(var Symbol : tSymbols15; var FileColors : tPlatformColors256; var LineSize :  tBytes256);
+procedure DefaultGraphColors(var Symbol : tSymbols256; var FileColors : tPlatformColors256; var LineSize :  tBytes256);
 
 
 implementation
@@ -120,7 +120,7 @@ begin
 end;
 
 
-procedure DefaultGraphColors(var Symbol : tSymbols15; var FileColors : tPlatformColors256; var LineSize :  tbytes256);
+procedure DefaultGraphColors(var Symbol : tSymbols256; var FileColors : tPlatformColors256; var LineSize :  tbytes256);
 var
    i : integer;
 begin
@@ -137,6 +137,7 @@ begin
       Symbol[i].Color := ConvertTColorToPlatformColor(WinGraphColors[i]);
    end;
 
+   Symbol[0].DrawingSymbol := FilledBox;
    Symbol[1].DrawingSymbol := FilledBox;
    Symbol[2].DrawingSymbol := FilledDiamond;
    Symbol[3].DrawingSymbol := FilledUpTri;
@@ -152,6 +153,7 @@ begin
    Symbol[13].DrawingSymbol := EX;
    Symbol[14].DrawingSymbol := Cross;
    Symbol[15].DrawingSymbol := Dot;
+   for i := 16 to 255 do Symbol[i].DrawingSymbol := FilledBox;
 end;
 
 

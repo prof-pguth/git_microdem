@@ -28,6 +28,7 @@
       //{$Define FanDrawProblems}
       //{$Define RawProjectInverse}  //must also be set in BaseMap
       {$Define RecordDEMIX}
+      {$Define RecordDerivedGrids}
       //{$Define RecordDEMMapProjection}
       //{$Define RecordMatchMaps}
       //{$Define RecordSat}
@@ -1286,7 +1287,6 @@ type
     Downsampling1: TMenuItem;
     hinaveragingcomparison1: TMenuItem;
     N45: TMenuItem;
-    N46: TMenuItem;
     Mapdirectsolarillumination1: TMenuItem;
     Sunandsatellitevisibilityandblocking1: TMenuItem;
     Geoid1: TMenuItem;
@@ -1488,8 +1488,6 @@ type
     PicksingleDEMseriesthisarea1: TMenuItem;
     DEMIXrangescales1: TMenuItem;
     SSIM1: TMenuItem;
-    SAGAremovesinksallopenDEMs1: TMenuItem;
-    SAGAchannelnetworkallopenDEMs1: TMenuItem;
     SAGAChannelNetworkandBasins1: TMenuItem;
     GDALrasterizehapfiels1: TMenuItem;
     Pureplatecareeprojectiondistorted1: TMenuItem;
@@ -1530,6 +1528,9 @@ type
     GDALaspectmap1: TMenuItem;
     GDALTRI1: TMenuItem;
     Plan1: TMenuItem;
+    SAGAconvergenceindex1: TMenuItem;
+    SAGAprofilecurvature1: TMenuItem;
+    SAGAplancurvature1: TMenuItem;
     //procedure HiresintervisibilityDEM1Click(Sender: TObject);
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
@@ -2622,8 +2623,6 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure PicksingleDEMseriesthisarea1Click(Sender: TObject);
     procedure DEMIXrangescales1Click(Sender: TObject);
     procedure SSIM1Click(Sender: TObject);
-    procedure SAGAremovesinksallopenDEMs1Click(Sender: TObject);
-    procedure SAGAchannelnetworkallopenDEMs1Click(Sender: TObject);
     procedure SAGAChannelNetworkandBasins1Click(Sender: TObject);
     procedure GDALrasterizehapfiels1Click(Sender: TObject);
     procedure Pureplatecareeprojectiondistorted1Click(Sender: TObject);
@@ -2655,6 +2654,9 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure LC100landcover1Click(Sender: TObject);
     procedure SAGAchannelsgridandshapefile1Click(Sender: TObject);
     procedure Plan1Click(Sender: TObject);
+    procedure SAGAconvergenceindex1Click(Sender: TObject);
+    procedure SAGAprofilecurvature1Click(Sender: TObject);
+    procedure SAGAplancurvature1Click(Sender: TObject);
     //procedure RescaleallDEMsforSSIM1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
@@ -3991,7 +3993,7 @@ begin
      end;
    end;
    EndProgress;
-   DEMGlb[ProbDEM].SetUpMap(ClassDEM,true,mtElevSpectrum);
+   DEMGlb[ClassDEM].SetUpMap(ClassDEM,true,mtElevSpectrum);
    DEMGlb[ProbDEM].SetUpMap(ProbDEM,true,mtElevSpectrum);
 end;
 
@@ -6030,8 +6032,9 @@ procedure TMapForm.Slope1Click(Sender: TObject);
 begin
    {$IfDef ExGeoStats}
    {$Else}
-      CreateSlopeMap(MapDraw.DEMonMap);
+      //CreateSlopeMap(MapDraw.DEMonMap);
    {$EndIf}
+   CreateSlopeMapPercent(true,MapDraw.DEMonMap);
 end;
 
 procedure TMapForm.Aspect2Click(Sender: TObject);
@@ -6182,11 +6185,12 @@ end;
 
 
 procedure TMapForm.MenuItem3Click(Sender: TObject);
+var
+   Grid : integer;
 begin
-   {$IfDef ExGeoStats}
-   {$Else}
-      MakeSingleNewDerivativeMap('R',MapDraw.DEMonMap);
-   {$EndIf}
+   {$If Defined(RecordDerivedGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
+   Grid := CreateHillshadeMap(true, MapDraw.DEMonMap);
+   {$If Defined(RecordDerivedGrids)} WriteLineToDebugFile('Hillsade created   ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec  '  + DEMglb[grid].KeyDEMParams(true)); {$EndIf}
 end;
 
 procedure TMapForm.MenuItem2Click(Sender: TObject);
@@ -7129,11 +7133,16 @@ begin
 end;
 
 procedure TMapForm.Both1Click(Sender: TObject);
+var
+   i,Upward,DownWard,Difference : integer;
 begin
-   {$IfDef ExGeostats}
-   {$Else}
-      CreateOpennessMap(MapDraw.DEMonMap,true,true);
-   {$EndIf}
+    GetSampleBoxSize(MapDraw.DEMonMap,MDDef.OpenBoxSizeMeters);
+    if MDDef.ConfirmOpennesDirections then Check_8_Dirs.GetDirectionsToUse(MDDef.OpennessDirs)
+    else for I := 1 to 8 do MDDef.OpennessDirs[i] := true;
+    Upward := -1;
+    DownWard  := -1;
+    Difference := -1;
+    CreateOpennessMap(true,MapDraw.DEMonMap,MDDef.OpenBoxSizeMeters,Upward,DownWard,Difference);
 end;
 
 
@@ -19087,33 +19096,6 @@ begin
    //AverageResampleThisDEM(NewDEM,0);
 end;
 
-(*
-procedure TMapForm.RescaleallDEMsforSSIM1Click(Sender: TObject);
-var
-   DEM : integer;
-   Min,Max : float32;
-   fName : PathStr;
-begin
-   Min := 99e39;
-   Max := -99e39;
-   for DEM := 1 to MaxDEMDataSets do begin
-      //get elevation range
-      if ValidDEM(DEM) then begin
-         if DEMGlb[DEM].DEMheader.MaxElev > Max then Max := DEMGlb[DEM].DEMheader.MaxElev;
-         if DEMGlb[DEM].DEMheader.MinElev < Min then Min := DEMGlb[DEM].DEMheader.MinElev;
-      end;
-   end;
-   for DEM := 1 to MaxDEMDataSets do begin
-      //rescale to 0-1 range
-      if ValidDEM(DEM) then begin
-         DEMGlb[DEM].AddConstantToGrid(-Min);
-         DEMGlb[DEM].MultiplyGridByConstant(1/(Max-Min));
-         fName := 'c:\temp\' + DEMGlb[DEM].AreaName + '_ssim.tif';
-         DEMGlb[DEM].SaveGridSubsetGeotiff(MapDraw.MapAreaDEMGridLimits,fName);
-      end;
-   end;
-end;
-*)
 
 procedure TMapForm.Resoremenus1Click(Sender: TObject);
 begin
@@ -19563,7 +19545,7 @@ end;
 
 procedure TMapForm.WhiteboxGeomorphons1Click(Sender: TObject);
 begin
-   WBT_Geomorphons(GeotiffDEMNameOfMap);
+   WBT_Geomorphons(true,GeotiffDEMNameOfMap);
 end;
 
 procedure TMapForm.WhiteBoxmultiscaleroughness1Click(Sender: TObject);
@@ -22651,13 +22633,14 @@ begin
    StdDevinregion2Click(Sender);
 end;
 
+
 procedure TMapForm.StdDevinregion2Click(Sender: TObject);
 var
-   Radius : integer;
+   BoxSize : integer;
 begin
-   Radius := 1;
-   ReadDefault('Region size (pixels)',Radius);
-   CreateStandardDeviationMap(MapDraw.DEMonMap,Radius);
+   BoxSize := 3;
+   ReadDefault('Region size (pixels)',BoxSize);
+   CreateStandardDeviationMap(True,MapDraw.DEMonMap,BoxSize);
 end;
 
 procedure TMapForm.Dataheader1Click(Sender: TObject);
@@ -24221,20 +24204,6 @@ begin
 end;
 
 
-procedure TMapForm.SAGAchannelnetworkallopenDEMs1Click(Sender: TObject);
-var
-   i : integer;
-   InName,OutName,SHPName : PathStr;
-begin
-    for i := 1 to MaxDEMDataSets do begin
-      if ValidDEM(i) then begin
-         InName := DEMGlb[i].SelectionMap.GeotiffDEMNameOfMap;
-         ShpName := ChangeFileExt(InName,'_channels.shp');
-         SagaChannelShapefile(InName,ShpName);
-      end;
-   end;
-end;
-
 procedure TMapForm.SAGAChannelNetworkandBasins1Click(Sender: TObject);
 var
    InName,ChannelName : PathStr;
@@ -24249,6 +24218,11 @@ end;
 procedure TMapForm.SAGAchannelsgridandshapefile1Click(Sender: TObject);
 begin
    SagaChannelNetworkGrid(true,DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
+end;
+
+procedure TMapForm.SAGAconvergenceindex1Click(Sender: TObject);
+begin
+   SAGA_ConvergenceIndex(true,DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
 end;
 
 procedure TMapForm.SAGADrainagebasins1Click(Sender: TObject);
@@ -24271,14 +24245,19 @@ begin
    SAGA_LSFactor(true,DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
 end;
 
+procedure TMapForm.SAGAplancurvature1Click(Sender: TObject);
+begin
+   SAGA_PlanCurvature(true,DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
+end;
+
+procedure TMapForm.SAGAprofilecurvature1Click(Sender: TObject);
+begin
+   SAGA_ProfileCurvature(true,DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
+end;
+
 procedure TMapForm.SAGAremovesinks1Click(Sender: TObject);
 begin
    SagaSinkRemoval(DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
-end;
-
-procedure TMapForm.SAGAremovesinksallopenDEMs1Click(Sender: TObject);
-begin
-   SAGA_all_DEMs_remove_sinks;
 end;
 
 procedure TMapForm.SAGAStrahlerordergrid1Click(Sender: TObject);
@@ -24786,42 +24765,42 @@ begin
    else begin
       NakedMapOptions;   //which calls SaveBackupDefaults;
       DEMNowDoing := Calculating;
-      NewDEM := 0;
-      if (Sender = Filter1) or (Sender = PickFilter1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcFilFile,NewDEM);
-      if (Sender = Numberimmediateneighbors1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcNumNeigh,NewDEM);
-      if (Sender = Medianfilter1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcMedian,NewDEM);
-      if (Sender = Vectoraverage1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcVectAvg,NewDEM);
-      if (Sender = Meanfilter1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcMean,NewDEM);
-      if (Sender = MinimumFilter1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcMin,NewDEM);
-      if (Sender = MaximumFilter1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcMax,NewDEM);
-      if (Sender = Filledneighborhood1) then begin
-         ReadDefault('Min neighbors required to retain',MDDef.ExpandNeighborsRequired);
-         DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcNeighbors,NewDEM);
-      end;
-      if (Sender = Suminbox1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcSum,NewDEM);
-      if (Sender = StdDevinbox1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcSTD,NewDEM);
-      if (Sender = Parametricisotropicsmoothing1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcParamIsotrop,NewDEM);
-      if (Sender = RemoveTooFewSimilarNeighbors1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcDissimilarNeighbors,NewDEM);
-      if (Sender = Bytes1) then NewDEM := DEMGlb[MapDraw.DEMonMap].ResaveNewResolution(fcSaveByte);
-      if (Sender = Integer161) then NewDEM := DEMGlb[MapDraw.DEMonMap].ResaveNewResolution(fcSaveSmallInt);
-      if (Sender = Word1) then NewDEM := DEMGlb[MapDraw.DEMonMap].ResaveNewResolution(fcSaveWord);
-      if (Sender = FloatingPoint1) then NewDEM := DEMGlb[MapDraw.DEMonMap].ResaveNewResolution(fcSaveFloatingPoint);
-      if (Sender = Western1) then DEMGlb[MapDraw.DEMonMap].FindEdgeThisDEM(NewDEM,cdW);
-      if (Sender = Eastern1) then DEMGlb[MapDraw.DEMonMap].FindEdgeThisDEM(NewDEM,cdE);
-      if (Sender = SouthWestern1) then DEMGlb[MapDraw.DEMonMap].FindEdgeThisDEM(NewDEM,cdSW);
-      //if (Sender = ResampleDEMgridbyaveraging1) then
       if (Sender = DetrendDEMgrid1) then begin
          Radius := 3;
          ReadDefault('radius to filter (pixels)',Radius);
-         NewDEM := DEMGlb[MapDraw.DEMonMap].BoxcarDetrendDEM(true,DEMGlb[MapDraw.DEMonMap].FullDEMGridLimits, Radius);
-         exit;
-         //NewDEM := DEMGlb[MapDraw.DEMonMap].DetrendDEM(true,Radius);
-      end;
+         NewDEM := BoxcarDetrendDEM(true,MapDraw.DEMonMap,DEMGlb[MapDraw.DEMonMap].FullDEMGridLimits, Radius);
+      end
+      else begin
+         NewDEM := 0;
+         if (Sender = Filter1) or (Sender = PickFilter1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcFilFile,NewDEM);
+         if (Sender = Numberimmediateneighbors1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcNumNeigh,NewDEM);
+         if (Sender = Medianfilter1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcMedian,NewDEM);
+         if (Sender = Vectoraverage1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcVectAvg,NewDEM);
+         if (Sender = Meanfilter1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcMean,NewDEM);
+         if (Sender = MinimumFilter1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcMin,NewDEM);
+         if (Sender = MaximumFilter1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcMax,NewDEM);
+         if (Sender = Filledneighborhood1) then begin
+            ReadDefault('Min neighbors required to retain',MDDef.ExpandNeighborsRequired);
+            DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcNeighbors,NewDEM);
+         end;
+         if (Sender = Suminbox1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcSum,NewDEM);
+         if (Sender = StdDevinbox1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcSTD,NewDEM);
+         if (Sender = Parametricisotropicsmoothing1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcParamIsotrop,NewDEM);
+         if (Sender = RemoveTooFewSimilarNeighbors1) then DEMGlb[MapDraw.DEMonMap].FilterThisDEM(fcDissimilarNeighbors,NewDEM);
+         if (Sender = Bytes1) then NewDEM := DEMGlb[MapDraw.DEMonMap].ResaveNewResolution(fcSaveByte);
+         if (Sender = Integer161) then NewDEM := DEMGlb[MapDraw.DEMonMap].ResaveNewResolution(fcSaveSmallInt);
+         if (Sender = Word1) then NewDEM := DEMGlb[MapDraw.DEMonMap].ResaveNewResolution(fcSaveWord);
+         if (Sender = FloatingPoint1) then NewDEM := DEMGlb[MapDraw.DEMonMap].ResaveNewResolution(fcSaveFloatingPoint);
+         if (Sender = Western1) then DEMGlb[MapDraw.DEMonMap].FindEdgeThisDEM(NewDEM,cdW);
+         if (Sender = Eastern1) then DEMGlb[MapDraw.DEMonMap].FindEdgeThisDEM(NewDEM,cdE);
+         if (Sender = SouthWestern1) then DEMGlb[MapDraw.DEMonMap].FindEdgeThisDEM(NewDEM,cdSW);
+         //if (Sender = ResampleDEMgridbyaveraging1) then
 
-      if (NewDEM <> 0) then begin
-         DEMGlb[NewDEM].SetUpMap(NewDEM,true,MapDraw.MapType);
-         fName := '';
-         if MDdef.PromptToSaveNewDEMs then DEMGlb[NewDEM].WriteNewFormatDEM(fName);
+         if (NewDEM <> 0) then begin
+            DEMGlb[NewDEM].SetUpMap(NewDEM,true,MapDraw.MapType);
+            fName := '';
+            if MDdef.PromptToSaveNewDEMs then DEMGlb[NewDEM].WriteNewFormatDEM(fName);
+         end;
       end;
       ChangeDEMNowDoing(JustWandering);
       RestoreBackupDefaults;

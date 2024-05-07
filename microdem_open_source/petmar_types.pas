@@ -280,7 +280,7 @@ type
 
    tLegendColors = integer;  //(LegGrays,LegRainbows,LegTerrain,LegSpectrum,LegChloropleth);
 
-   tSymbols15  = array[1..15] of tFullSymbolDeclaration;
+   tSymbols256  = array[0..255] of tFullSymbolDeclaration;
    tColors15   = array[1..15] of tColor;
    tIntegers15 = array[1..15] of integer;
    tbytes15 = array[1..15] of byte;

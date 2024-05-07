@@ -613,6 +613,14 @@ type
     Combineallcombinedimages1: TMenuItem;
     CoastalDEMfortestareas1: TMenuItem;
     OverwriteallthreecoastalDTMS1: TMenuItem;
+    InventoryWbWfilesbyarea1: TMenuItem;
+    N52: TMenuItem;
+    N55: TMenuItem;
+    Overwrite2: TMenuItem;
+    Skipifpresent1: TMenuItem;
+    Mergegeomorphonevaluatioins1: TMenuItem;
+    Overwrite3: TMenuItem;
+    Skipifdone1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -1042,8 +1050,13 @@ type
     procedure InventoryallDEMIXdatafiles1Click(Sender: TObject);
     procedure Combineallcombinedimages1Click(Sender: TObject);
     procedure CoastalDEMfortestareas1Click(Sender: TObject);
-    procedure OverwriteallthreecoastalDTMS1Click(Sender: TObject);
     procedure SSIMR21Click(Sender: TObject);
+    procedure InventoryWbWfilesbyarea1Click(Sender: TObject);
+    procedure Overwrite2Click(Sender: TObject);
+    procedure Skipifpresent1Click(Sender: TObject);
+    procedure Mergegeomorphonevaluatioins1Click(Sender: TObject);
+    procedure Overwrite3Click(Sender: TObject);
+    procedure Skipifdone1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -2073,6 +2086,7 @@ begin
       BatchResampleForDEMIX(FileList);
    end;
 
+(*
    if Action = 'OPENMAP' then begin
       if OpenADEM then begin
          {$IfDef RecordCommandLine} WriteLineToDebugFile('dem opened'); {$EndIf}
@@ -2094,6 +2108,7 @@ begin
          DEMGlb[DEM].RichardsonExtrapolationSlopeMaps(true);
       end;
    end;
+*)
 
    {$IfDef ExPointCloud}
    {$Else}
@@ -2207,8 +2222,6 @@ begin
 
    if FirstRun then begin
      InitializeMICRODEM;
-     //GetDEMIXpaths(false);
-
      FirstRun := false;
      {$IfDef RecordFormActivate} WriteLineToDebugFile('Twmdem.FormActivate, initialize MD over'); {$EndIf}
 
@@ -2647,24 +2660,19 @@ begin
    CreateDEMIX_GIS_database_by_transposing(True);
 end;
 
+procedure Twmdem.Overwrite2Click(Sender: TObject);
+begin
+   GeomorphonsPercentages(true);
+end;
+
+procedure Twmdem.Overwrite3Click(Sender: TObject);
+begin
+   AllHallucinatingDTMsforCoastalAreas(true);
+end;
+
 procedure Twmdem.Overwrite4Click(Sender: TObject);
 begin
    CreateTestAreaDEMs(True);
-end;
-
-procedure Twmdem.OverwriteallthreecoastalDTMS1Click(Sender: TObject);
-var
-   Areas : tStringList;
-   Overwrite : boolean;
-begin
-   GetDEMIXpaths(true);
-   Areas := DEMIX_AreasWanted;
-   Overwrite := false;
-
-   //must go in this order
-   CoastalDTMforTestAreas(Overwrite,Areas);
-   DiluviumDTMforTestAreas(Overwrite,Areas);
-   DeltaDTMforTestAreas(Overwrite,Areas);
 end;
 
 procedure Twmdem.N81Sfileviewer1Click(Sender: TObject);
@@ -3111,6 +3119,11 @@ begin
 end;
 
 
+procedure Twmdem.Skipifdone1Click(Sender: TObject);
+begin
+   AllHallucinatingDTMsforCoastalAreas(false);
+end;
+
 procedure Twmdem.Skiipifpresent1Click(Sender: TObject);
 begin
    DEMIX_MergeReferenceDEMs(false);
@@ -3135,6 +3148,11 @@ procedure Twmdem.Skipifexits2Click(Sender: TObject);
 begin
    DEMIX_vert_datum_code := 5703;
    DEMIX_GDAL_Ref_DEM_datum_shift(false);
+end;
+
+procedure Twmdem.Skipifpresent1Click(Sender: TObject);
+begin
+   GeomorphonsPercentages(false);
 end;
 
 procedure Twmdem.NewDEMButtonClick(Sender: TObject);
@@ -3444,6 +3462,11 @@ end;
 procedure Twmdem.InventorytestandrefereneDEMsbytestarea1Click(Sender: TObject);
 begin
    //InventoryTestAndReferenceDEMs;
+end;
+
+procedure Twmdem.InventoryWbWfilesbyarea1Click(Sender: TObject);
+begin
+    InventoryWbWfilesByArea;
 end;
 
 procedure Twmdem.Italyfocalmechs1Click(Sender: TObject);
@@ -4240,6 +4263,12 @@ begin
 end;
 
 
+procedure Twmdem.Mergegeomorphonevaluatioins1Click(Sender: TObject);
+begin
+   GetDEMIXpaths;
+   MergeCSVtoCreateFinalDB(GeomorphonsDir,'_channel_misses.csv','_geomorphons_demix_db_');
+end;
+
 procedure Twmdem.Mergemasp1Click(Sender: TObject);
 begin
    {$If Defined(ExGDAL) or Defined(ExGeoPDF)}
@@ -4265,17 +4294,10 @@ begin
 end;
 
 procedure Twmdem.MergeSSIMFUV1Click(Sender: TObject);
-//var
-   //TStr : shortstring;
 begin
    GetDEMIXpaths;
-   //TStr := '';
    if MDDef.DoFUV then MergeCSVtoCreateFinalDB(SSIMresultsDir,'_fuv_results.csv','_fuv_demix_db_');
    if MDDef.DoSSIM then MergeCSVtoCreateFinalDB(SSIMresultsDir,'_ssim_results.csv','_ssim_demix_db_');
-
-   //TStr := '_fuv';
-   //if MDDef.DoSSIM then TStr := TStr + '_ssim';
-
 end;
 
 
@@ -4613,6 +4635,7 @@ end;
 procedure Twmdem.OpenmapsforDEMIXtestarea1Click(Sender: TObject);
 begin
    OpenDEMIXAreaMaps;
+   //CreateDEMIX_GeomorphonGrids(true);
 end;
 
 procedure Twmdem.Openmultigrids1Click(Sender: TObject);
@@ -5982,24 +6005,8 @@ begin
 end;
 
 procedure Twmdem.Combineallcombinedimages1Click(Sender: TObject);
-var
-   i : integer;
-   Findings : tStringList;
 begin
-   Findings := tStringList.Create;
-   for i := pred(WMDEM.MDIChildCount) downto 0 do begin
-      if WMDEM.MDIChildren[i] is TImageDisplayForm then begin
-        Findings.Add( (WMDEM.MDIChildren[i] as TImageDisplayForm).LoadedFileName);
-      end;
-   end;
-   if (Findings.Count > 0) then begin
-      MakeBigBitmap(Findings,'','',1);
-      {$IfDef RecordBigBitmap}  WriteLineToDebugFile('AllGraphsOneImage out'); {$EndIf}
-   end
-   else begin
-      Findings.Free;
-      {$IfDef RecordBigBitmap}  WriteLineToDebugFile('No graphs found, AllGraphsOneImage out'); {$EndIf}
-   end;
+   CombineAllPanelGraphs;
 end;
 
 

@@ -162,7 +162,7 @@ function CreateLOS(inLOSVariety : tLOSVariety; inBaseMap : tMapDraw; DEMonMap : 
 
 
 var
-   Symbol : tSymbols15;
+   Symbol : tSymbols256;
    LineColors256 : tPlatformColors256;
    LineSize256 :  tbytes256;
 

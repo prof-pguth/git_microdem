@@ -417,6 +417,7 @@ type
     CheckBox106: TCheckBox;
     CheckBox18: TCheckBox;
     CheckBox80: TCheckBox;
+    CheckBox161: TCheckBox;
     procedure BitBtn32Click(Sender: TObject);
     procedure BitBtn13Click(Sender: TObject);
     procedure HelpBtnClick(Sender: TObject);
@@ -646,11 +647,7 @@ var
    ViewSheds,
    VectorMap,
    SAGArow,
-   //BlowUpDEM,
-   //BlowUpVeg,
    FWT : integer;
-   //DEMIXbase,
-   //TauDEM : integer;
 
 
 
@@ -664,7 +661,7 @@ begin
 end;
 
 
-procedure ChangeOptions;
+procedure ChangeOptions(DesiredPage : integer = 0);
 var
   OptionsForm : TOptionsForm;
 begin
@@ -672,9 +669,9 @@ begin
    if (DesiredPage <> 0) then begin
       case DesiredPage of
           2 : OptionsForm.PageControl1.ActivePage := OptionsForm.TabSheet2;  //LAS
-          9 : OptionsForm.PageControl1.ActivePage := OptionsForm.TabSheet9;
-         10 : OptionsForm.PageControl1.ActivePage := OptionsForm.TabSheet10;
-         17 : OptionsForm.PageControl1.ActivePage := OptionsForm.TabSheet17;
+          9 : OptionsForm.PageControl1.ActivePage := OptionsForm.TabSheet9;  //views
+         10 : OptionsForm.PageControl1.ActivePage := OptionsForm.TabSheet10; //Hardware
+         17 : OptionsForm.PageControl1.ActivePage := OptionsForm.TabSheet17; //grids
       end;
    end;
    OptionsForm.ShowModal;
@@ -1193,7 +1190,7 @@ begin
 
    CheckBox157.Checked := MDDef.ShowWinExec;
    CheckBox159.Checked := MDDef.MapLimitDB;
-   //CheckBox161.Checked := MDDef.TigertoCDS;
+   CheckBox161.Checked := MDDef.ProcessLoopsForward;
    CheckBox181.Checked := MDDef.DEMIXCompositeImage;
 
    CheckBox300.Checked := MDDef.SeaLevelToMissing;
@@ -1607,6 +1604,9 @@ begin
    //MDDef.AspectContinuous := CheckBox158.Checked;
    MDDef.MapLimitDB := CheckBox159.Checked;
    MDDef.AutoGrayScaleReflectance := CheckBox160.Checked;
+
+   MDDef.ProcessLoopsForward := CheckBox161.Checked;
+
 
 
    MDDef.DEMIX_DoCHM := CheckBox5.Checked;

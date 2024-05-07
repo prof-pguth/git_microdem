@@ -1171,7 +1171,7 @@ begin
 
      {$IfDef MSWindows}
         MDTempDir := MainMapData + 'temp\';
-        {$IfDef RecordInitialization} WriteLineToDebugFile('InitializeMICRODEM Call clean up tempdir'); {$EndIf}
+        {$IfDef RecordInitialization} WriteLineToDebugFile('InitializeMICRODEM Call clean up tempdir ' + MDTempDir); {$EndIf}
         CleanUpTempDirectory(true);
      {$Else}
         {$If Defined(Android) or Defined(MacOS)}
@@ -2473,9 +2473,12 @@ var
          AParameter('DEMIX','DEMIX_graph_Retired_DEMs',DEMIX_graph_Retired_DEMs,false);
          AParameter('DEMIX','SSIM_elev',SSIM_elev,true);
          AParameter('DEMIX','SSIM_slope',SSIM_slope,true);
+         AParameter('DEMIX','SSIM_Openness',SSIM_Openness,true);
          AParameter('DEMIX','SSIM_ruff',SSIM_ruff,true);
          AParameter('DEMIX','SSIM_rri',SSIM_rri,true);
+         AParameter('DEMIX','SSIM_ConvergeIndex',SSIM_ConvergeIndex,true);
          AParameter('DEMIX','SSIM_tpi',SSIM_tpi,true);
+         AParameter('DEMIX','SSIM_rotor',SSIM_rotor,true);
          AParameter('DEMIX','SSIM_hill',SSIM_hill,true);
          AParameter('DEMIX','SSIM_PLANC',SSIM_PLANC,true);
          AParameter('DEMIX','SSIM_PROFC',SSIM_PROFC,true);
@@ -2484,7 +2487,7 @@ var
          AParameter('DEMIX','SSIM_flow',SSIM_Flow,true);
          AParameter('DEMIX','SSIM_wet',SSIM_wet,true);
          AParameter('DEMIX','SSIM_HAND',SSIM_HAND,true);
-
+         AParameter('DEMIX','ProcessLoopsForward',ProcessLoopsForward,true);
          AParameter('DEMIX','DoSSIM',DoSSIM,true);
          AParameter('DEMIX','DoFUV',DoFUV,true);
          AParameter('DEMIX','DEMIX_all_areas',DEMIX_all_areas,true);
@@ -4149,6 +4152,7 @@ procedure ToggleShowProgress(ShowIt : boolean);
 begin
    ShowSatProgress := ShowIt;
    ShowDEMReadingProgress := ShowIt;
+   WantShowProgress := ShowIt;
    {$IfDef VCL}
       SkipMenuUpdating := not ShowIt;
    {$EndIf}

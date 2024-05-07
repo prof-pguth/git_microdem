@@ -1,7 +1,6 @@
 object eval_scores_graph_form: Teval_scores_graph_form
   Left = 0
   Top = 0
-  Caption = 'DEMIX evaluations/scores graphs'
   ClientHeight = 470
   ClientWidth = 624
   Color = clBtnFace
@@ -17,7 +16,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
   TextHeight = 15
   object Label1: TLabel
     Left = 376
-    Top = 48
+    Top = 68
     Width = 86
     Height = 15
     Caption = 'Legend font size'
@@ -101,17 +100,17 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnClick = CheckBox3Click
   end
   object BitBtn3: TBitBtn
-    Left = 424
-    Top = 16
+    Left = 432
+    Top = 8
     Width = 161
     Height = 25
-    Caption = 'Cloise graphs and images'
+    Caption = 'Close graphs and images'
     TabOrder = 6
     OnClick = BitBtn3Click
   end
   object Edit1: TEdit
     Left = 468
-    Top = 47
+    Top = 67
     Width = 69
     Height = 23
     TabOrder = 7
@@ -213,9 +212,9 @@ object eval_scores_graph_form: Teval_scores_graph_form
   object BitBtn10: TBitBtn
     Left = 8
     Top = 234
-    Width = 121
+    Width = 209
     Height = 25
-    Caption = 'Winning perentages'
+    Caption = 'Winning perentages versus COP'
     TabOrder = 17
     OnClick = BitBtn10Click
   end
@@ -245,9 +244,9 @@ object eval_scores_graph_form: Teval_scores_graph_form
   object BitBtn12: TBitBtn
     Left = 8
     Top = 265
-    Width = 185
+    Width = 209
     Height = 25
-    Caption = 'Quantile histograms by parameter'
+    Caption = 'Whisker plots by parameter/criterion'
     TabOrder = 20
     OnClick = BitBtn12Click
   end
@@ -295,5 +294,14 @@ object eval_scores_graph_form: Teval_scores_graph_form
     Caption = 'Best eval colored by slope'
     TabOrder = 25
     OnClick = BitBtn16Click
+  end
+  object BitBtn2: TBitBtn
+    Left = 432
+    Top = 40
+    Width = 161
+    Height = 25
+    Caption = 'Merge graph panels'
+    TabOrder = 26
+    OnClick = BitBtn2Click
   end
 end

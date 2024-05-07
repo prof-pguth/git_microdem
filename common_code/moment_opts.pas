@@ -54,7 +54,6 @@ implementation
 uses
    DEMDefs,Petmar,Nevadia_Main;
 
-
 procedure SetMomentOptions;
 var
    MomentOptsForm: TMomentOptsForm;

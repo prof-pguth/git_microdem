@@ -60,6 +60,7 @@ end;
 
 
 function WBT_FlowAccumulation(OpenMap,Log,D8 : boolean; DEMName : PathStr; var BreachName, FlowAccName : PathStr) : integer;
+//https://www.whiteboxgeo.com/manual/wbt_book/available_tools/hydrological_analysis.html#D8FlowAccumulation
 var
    cmd : ansistring;
    TStr,TStr2,TStr3 : shortstring;
@@ -412,7 +413,7 @@ begin
 end;
 
 
-procedure WBT_Geomorphons(InName : PathStr);
+function WBT_Geomorphons(OpenMap : boolean; InName : PathStr) : integer;
 var
    OutName : PathStr;
    bfile : tStringList;
@@ -421,12 +422,8 @@ begin
   {$IfDef RecordUseOtherPrograms} WriteLineToDebugFile('WhiteBoxGeomorphons, infile=' + InName + '  outfile=' + OutName); {$EndIf}
   if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
      OutName := NextFileNumber(MDTempDir,'wbt_geomorphons_' + ExtractFileNameNoExt(InName) + '_','.tif');
-     bfile := tStringList.Create;
      cmd := WhiteBoxfName  + WBNoCompress + ' -r=Geomorphons -v -i=' + InName + ' -o=' + OutName + ' --search=50 --threshold=0.0 --tdist=0 --forms=True';
-     bfile.Add(cmd);
-     EndBatchFile(MDTempDir + 'wbt_geomorphon.bat',bfile);
-     {$IfDef RecordUseOtherPrograms} WriteLineToDebugFile('open outfile=' + OutName); {$EndIf}
-     OpenNewDEM(OutName);
+     Result := ExecuteWBandOpenMap(cmd,OutName,euGeomorphon,mtElevSpectrum,OpenMap);
   end;
   {$IfDef RecordUseOtherPrograms} WriteLineToDebugFile('WhiteBoxGeomorphons out'); {$EndIf}
 end;

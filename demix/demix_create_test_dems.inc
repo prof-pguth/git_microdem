@@ -8,6 +8,21 @@
 {____________________________________}
 
 
+
+procedure AllHallucinatingDTMsforCoastalAreas(Overwrite : boolean);
+var
+   Areas : tStringList;
+begin
+   GetDEMIXpaths(true);
+   Areas := DEMIX_AreasWanted;
+   Overwrite := true;
+
+   //must go in this order, as the Areas list will get progressively smaller
+   CoastalDTMforTestAreas(Overwrite,Areas);
+   DiluviumDTMforTestAreas(Overwrite,Areas);
+   DeltaDTMforTestAreas(Overwrite,Areas);
+end;
+
 procedure RemoveHighDEMs(var Areas : tStringList; ElevMin : float32);
 var
    Table : tMyData;

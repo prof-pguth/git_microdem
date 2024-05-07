@@ -417,13 +417,13 @@ function DEMIX_SSIM_FUV_clusters_graph(DBonTable : integer) : tThisBaseGraph;
 //makes graph of each cluster with criteria on y axis and evaluation on x axis
 //compare with https://plotly.com/python/parallel-coordinates-plot/
 const
-   FUVordered : array[1..12] of shortstring = ('ELEV_FUV','HILL_FUV','SLOPE_FUV','RUFF_FUV','HAND_FUV','TPI_FUV','WETIN_FUV','RRI_FUV','PROFC_FUV','LS_FUV','ACCUM_FUV','PLANC_FUV');
+   NumCrits : integer = 13;
+   FUVordered : array[1..13] of shortstring = ('ELEV_FUV','SLOPE_FUV','RUFF_FUV','HAND_FUV','OPENU_FUV','OPEND_FUV','TPI_FUV','WETIN_FUV','RRI_FUV','TANGC_FUV','PROFC_FUV','ACCUM_FUV','PLANC_FUV');
 var
    Crit,aline,aField : shortstring;
    j,k,NCrit,NDEM,Cluster : integer;
    rfile : file;
    fName : PathStr;
-   NumCrits : integer;
    TheCrits : array[1..100] of shortstring;
 
          function OneGraph(What : shortstring): tThisBaseGraph;
@@ -458,7 +458,7 @@ var
                         Result.AddPointToDataBuffer(rfile,GISdb[DBonTable].MyData.GetFieldByNameAsFloat(TheCrits[j]),j);
                      end;
                      *)
-                     for j := 1 to 12 do begin
+                     for j := 1 to NumCrits do begin
                         Result.AddPointToDataBuffer(rfile,GISdb[DBonTable].MyData.GetFieldByNameAsFloat(FUVordered[j]),j);
                      end;
                   end

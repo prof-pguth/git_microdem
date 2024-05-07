@@ -219,16 +219,20 @@ end;
 procedure TBlockOpsForm.BitBtn4Click(Sender: TObject);
 begin
     CheckSettings;
+
+(*
     if MDDef.DoUpOpen or MDDef.DoDownOpen then MakeMomentsGrid(DEM, 'O',MDDef.OpenBoxSizeMeters);
+    if MDDef.SlopeCurvMoments then MakeMomentsGrid(DEM, 'r',MDDef.MomentsBoxSizeMeters);
+    if MDDef.DoCrossCurve or MDDef.DoMaxCurve or MDDef.DoMinCurve or MDDef.DoSlopeCurve or MDDef.DoPlanCurve then MakeMomentsGrid(DEM, 'C');
+*)
+
     if MDDef.DoRelief1 or MDDef.DoAvgElev or MDDef.DoElevStd or MDDef.DoREL or MDDef.DoTPI then MakeMomentsGrid(DEM, 'R',MDDef.ReliefBoxSizeMeters);
     if MDDef.DoRelief2 or MDDef.DoSummit or MDDef.DoBaseLevel or MDDef.DoGeophysical or MDDef.DoDropoff or MDDef.DoElevRelief then MakeMomentsGrid(DEM, 'G',MDDef.ReliefBoxSizeMeters);
     BitBtn8Click(Sender);
     if MDDef.ElevMoments then MakeMomentsGrid(DEM, 'e',MDDef.MomentsBoxSizeMeters);
     if MDDef.SlopeMoments then MakeMomentsGrid(DEM, 's',MDDef.MomentsBoxSizeMeters);
     if MDDef.PlanCurvMoments then MakeMomentsGrid(DEM, 'l',MDDef.MomentsBoxSizeMeters);
-    if MDDef.SlopeCurvMoments then MakeMomentsGrid(DEM, 'r',MDDef.MomentsBoxSizeMeters);
 
-    if MDDef.DoCrossCurve or MDDef.DoMaxCurve or MDDef.DoMinCurve or MDDef.DoSlopeCurve or MDDef.DoPlanCurve then MakeMomentsGrid(DEM, 'C');
     if MDDef.DoSlopePC or MDDef.DoSlopeDeg or MDDef.DoSlopeSin or MDDef.DoSlopeLogTan or MDDef.DoSlopeLnTan or MDDef.DoSlopeSqrtSin or
         MDDef.DoAspect or MDDef.DoAspectNS or MDDef.DoAspectEW or MDDef.DoNSSlope or MDDef.DoEWSlope then MakeMomentsGrid(DEM, 'S');
 end;

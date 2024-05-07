@@ -77,7 +77,7 @@ implementation
 
 uses
    Nevadia_Main,
-   demix_definitions,
+   demix_definitions, DEMIX_control,
    DEMstat,Make_grid,PetImage,PetImage_form,new_petmar_movie,DEMdatabase,PetDButils,Pick_several_dems,
    DEMCoord,DEMdefs,DEMMapf,DEMDef_routines,DEM_Manager,DEM_indexes,PetMath;
 
@@ -156,7 +156,7 @@ begin
    RefDTMpoint := OpenHalfSec(DEMIXhalfSecDir + Ref1SecPointStr + '.dem','ref dem');
    RefDTMarea := OpenHalfSec(DEMIXhalfSecDir + Ref1SecAreaStr + '.dem','ref dem');
 
-   for I := 1 to NumDEMIXDEM do begin
+   for I := 1 to NumDEMIXtestDEM do begin
       TestDEMs[i] := OpenHalfSec(DEMIXhalfSecDir + DEMIXDEMTypeName[i] + '.dem',DEMIXDEMTypeName[i]);
       TestSeries[i] := DEMIXDEMTypeName[i];
    end;

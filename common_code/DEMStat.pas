@@ -58,6 +58,8 @@ unit DEMStat;
       //{$Define RecordHistogram}
       //{$Define RecordGridScatterGram}
    {$Else}
+      {$Define RecordDEMIX}
+      {$Define RecordFUVsteps}
    {$EndIf}
 {$EndIf}
 
@@ -3217,7 +3219,7 @@ var
                   TotalNumberPoints := Size;
                   Double := false;
                   PowerTables := false;
-                  ShowProgress := false;
+                  ShowGraphProgress := false;
                   BinTime := AverageSpace;
                   BinUnits := ' (' + ElevUnitsAre(DEMGlb[WantedDEM].DEMheader.ElevUnits) + ')';
                end;

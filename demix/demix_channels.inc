@@ -77,8 +77,9 @@ begin {procedure CompareChannelNetworks}
     {$IfDef RecordDEMIX} WriteLineToDebugFile('CompareChannelNetworks in'); {$EndIf}
     SafeMakeDir(ChannelMissesDir);
     SavefName := ChannelMissesDir + Area + '_Channel_Misses.csv';
+
     if Overwrite or (not FileExists(savefName)) then begin
-       wmdem.SetPanelText(2, 'Load DEMs',true);
+       wmdem.SetPanelText(3, 'Load DEMs',true);
 
 (*
        if OpenBothPixelIsDEMs(Area,'saga_channels_saga_sinks_removed_',DEMIX_ref_DEMs_channel_grids,DEMIX_test_DEMs_channel_grids,OpenMaps) then begin
@@ -99,8 +100,6 @@ begin {procedure CompareChannelNetworks}
              else MissingFiles := true;
        end
        else MissingFiles := true;
-
-
        if MissingFiles then begin
           {$IfDef RecordDEMIX} WriteLineToDebugFile('CompareChannelNetworks missing for area ' + Area); {$EndIf}
        end
@@ -164,6 +163,116 @@ begin
       EndDEMIXProcessing;
    end;
    {$IfDef RecordDEMIX} WriteLineToDebugFile('ChannelNetworkMissPercentages out'); {$EndIf}
+end;
+
+
+procedure CompareGeomorphons(Overwrite : boolean; AreaName : shortstring);
+var
+   DEM,DEMIXtileDB,NumRef,i,j,UsingRef : integer;
+   Results : tStringList;
+   fName,SavefName : PathStr;
+   aLine,TileName : shortstring;
+   bb : sfBoundBox;
+   MissingFiles : boolean;
+   GridLimits : tGridLimits;
+
+   function GeomorphDifference(Ref,Test : integer) : float32;
+   var
+      x,y,xl,yl,xoffset,yoffset,match,miss : integer;
+      z1,z2 : float32;
+   begin
+       if ValidDEM(Ref) and ValidDEM(Test) then begin
+          DEMglb[ref].SecondGridJustOffset(Test,xoffset,yoffset);
+          Match := 0;
+          Miss := 0;
+          for x := GridLimits.XGridLow to GridLimits.XGridHigh do begin
+             for y := GridLimits.YGridLow to GridLimits.YGridHigh do begin
+                if DEMglb[Ref].GetElevMetersOnGrid(x,y,z1) and DEMglb[Test].GetElevMetersOnGrid(x+xoffset,y+yoffset,z2) then begin
+                   if abs(z1-z2) < 0.01 then inc(Match)
+                   else inc(Miss);
+                end;
+             end;
+          end;
+          if Miss + Match = 0 then Result := -999
+          else Result := Miss / (Miss + Match);
+       end
+       else Result := -999;
+   end;
+
+
+const
+   OpenMaps = false;  //available for debugging
+begin {procedure CompareGeomorphons}
+    {$IfDef RecordDEMIX} WriteLineToDebugFile('CompareGeomorphons in'); {$EndIf}
+    SafeMakeDir(GeomorphonsDir);
+    SavefName := GeomorphonsDir + AreaName + '_geomorphons.csv';
+    if Overwrite or (not FileExists(savefName)) then begin
+      wmdem.SetPanelText(3, 'Load DEMs',true);
+      if OpenBothPixelIsDEMs(AreaName,'',DEMIX_Ref_1sec,DEMIX_test_dems,false) then begin
+         wmdem.SetPanelText(3, 'Geomorphons',true);
+         CreateDEMIX_GeomorphonGrids(false);
+         {$IfDef RecordDEMIX} WriteLineToDebugFile('Geomorphons created'); {$EndIf}
+          Results := tStringList.Create;
+          aline := 'DEMIX_TILE,AREA,LAT,LONG,CRITERION';
+          for i := 1 to NumPtDEMs do aLine := aline + ',' + SRTM_centroid_names[i];
+          for i := 1 to NumAreaDEMs do aLine := aline + ',' + ALOS_centroid_names[i];
+          Results.Add(aLine);
+
+          DEMIXtileDB := DEMIXtileFill(PointDEMs[0],DEMGlb[PointDEMs[0]].DEMBoundBoxGeo,false);
+          GISdb[DEMIXtileDB].ApplyGISFilter('GRID_FULL>' + IntToStr(DEMIX_Tile_Full));
+
+
+          GISdb[DEMIXtileDB].MyData.First;
+          while not GISdb[DEMIXtileDB].MyData.eof do begin
+             bb := GISdb[DEMIXtileDB].MyData.GetRecordBoundingBox;
+             TileName := GISdb[DEMIXtileDB].MyData.GetFieldByNameAsString('NAME');
+             wmdem.SetPanelText(2, TileName,true);
+
+             aLine := TileName  + ',' + AreaName + ',' + RealToString(0.5*(bb.YMin+bb.YMax),-12,4) + ',' + RealToString(0.5*(bb.xMin+bb.xMax),-12,4) + ',' + 'GEOMF';
+
+             GridLimits := DEMglb[AreaGrids[0]].sfBoundBox2tGridLimits(bb);
+             for i := 1 to NumAreaDEMs do begin
+                aLine := aline + ',' + RealToString(GeomorphDifference(AreaGrids[0],AreaGrids[i]),-12,8);
+             end;
+
+             for i := 1 to NumPtDEMs do begin
+                UsingRef := RefGridForThisPointGrid(PointGrids,i);
+                GridLimits := DEMglb[UsingRef].sfBoundBox2tGridLimits(bb);
+                aLine := aline + ',' + RealToString(GeomorphDifference(UsingRef,PointGrids[i]),-12,8);
+             end;
+             Results.Add(aline);
+             GISdb[DEMIXtileDB].MyData.Next;
+          end;
+          if (Results.Count > 1) then Results.SaveToFile(SavefName)
+          else begin
+             {$IfDef RecordDEMIX} WriteLineToDebugFile('CompareGeomorphons difference fail for area ' + AreaName); {$EndIf}
+          end;
+          Results.Free;
+          CloseAllDEMs;
+       end;
+    end;
+end {procedure CompareGeomorphons};
+
+
+
+procedure GeomorphonsPercentages(Overwrite : boolean; AreasWanted : tstringlist = nil);
+var
+   AreaName : shortstring;
+   i : integer;
+begin
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('GeomorphonsPercentages in'); {$EndIf}
+   try
+      GetDEMIXPaths(true);
+      if (AreasWanted = Nil) then AreasWanted := DEMIX_AreasWanted;
+      for i := 0 to pred(AreasWanted.Count) do begin
+         AreaName := AreasWanted.Strings[i];
+         wmdem.SetPanelText(1, 'GeomorphonsPercentages: ' + IntToStr(succ(i)) + '/' + IntToStr(AreasWanted.Count) + '  ' + AreaName,true);
+         CompareGeomorphons(Overwrite,AreaName);
+      end;
+   finally
+      EndDEMIXProcessing;
+   end;
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('GeomorphonsPercentages out'); {$EndIf}
 end;
 
 

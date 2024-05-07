@@ -1,17 +1,16 @@
 unit moon_montenbruk_pfleger;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
-{___________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program       }
+{ PETMAR Trilobite Breeding Ranch    }
+{ Released under the MIT Licences    }
+{ Copyright (c) 2024 Peter L. Guth   }
+{____________________________________}
 
 
 { from Montenbruck, O., and Pfleger, T., 1991, Astronomy on the personal computer: Springer-Verlag, 255 p.}
 
 interface
-
 
 
 procedure MoonRise(stMonth,stDay,stYear,Duration : integer; Lat,Long : float64);

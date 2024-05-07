@@ -1,8 +1,9 @@
 inherited FFTGraph: TFFTGraph
   ClientHeight = 469
   ClientWidth = 827
+  StyleElements = [seFont, seClient, seBorder]
   ExplicitWidth = 843
-  ExplicitHeight = 528
+  ExplicitHeight = 508
   TextHeight = 16
   inherited ScrollBox1: TScrollBox
     Width = 827
@@ -19,6 +20,7 @@ inherited FFTGraph: TFFTGraph
   inherited Panel1: TPanel
     Top = 439
     Width = 827
+    StyleElements = [seFont, seClient, seBorder]
     ExplicitTop = 418
     ExplicitWidth = 823
   end

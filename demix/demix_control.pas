@@ -16,12 +16,12 @@ unit demix_control;
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$Define RecordDEMIX}
    //{$Define RecordDEMIXStart}
-   {$Define RecordDEMIXLoad}
+   //{$Define RecordDEMIXLoad}
    //{$Define TrackDEMboundingBox}      //must also be enabled in DEMCoord
    //{$Define Record3DEPX}
-   {$Define RecordDiluvium}
-   {$Define RecordDEMIX_evaluations_graph}
-   {$Define RecordDiluviumFull}
+   //{$Define RecordDiluvium}
+   //{$Define RecordDEMIX_evaluations_graph}
+   //{$Define RecordDiluviumFull}
    //{$Define TrackPixelIs}
 
    //{$Define ShowOpenBothPixelIsDEMs}   //see how opening and masking for Diluvium DEM is going; don't use unless there is a a problem
@@ -73,7 +73,7 @@ uses
    {$EndIf}
 //end core DB functions definitions
 
-    System.SysUtils,System.Classes,System.UITypes,
+    System.SysUtils,System.Classes,System.UITypes,System.Diagnostics,
     StrUtils,dbGrids,
     VCL.ExtCtrls,VCL.Forms, VCL.Graphics, VCL.Controls,
     WinAPI.Windows,
@@ -150,7 +150,14 @@ procedure OpenDEMIXAreaMaps;
 procedure GetAreaDEMNames(TestAreaName : shortstring);
 
 function ExtraToSpreadDEMs(DEMName : shortString; Extra : float32) : float32;
-function PickWineContestLocation : boolean;
+function PickWineContestDBLocation : boolean;
+
+//demix maps
+   function AirBallDirtBallMap(DEMonMap,DSM,DTM : integer; fName : PathStr = '') : integer;
+   function TwoDEMHighLowMap(RefDEM,ALOS,COP : integer; SimpleTolerance : float32; FourCats : boolean; fName2 : PathStr; ShowMap : boolean = true) : integer;
+   function BestCopOrALOSmap(RefDEM,ALOS,Cop : integer; Tolerance : float32; AName : shortString) : integer;
+   function RGBBestOfThreeMap(RefDEM,ALOS,Cop,Fab,Merge : integer; Tolerance : float32; AName : shortString) : integer;
+   procedure NumHighLowNeighborsMaps(DEM,Radius : integer; Tolerance : float32; var HighNeigh,LowNeigh : integer);
 
 
 
@@ -191,6 +198,7 @@ var
    vd_path : PathStr;
    DoHorizontalShift : boolean;
 
+   {$I demix_maps.inc}
 
 
 {$IfDef Old3DEP}
@@ -338,6 +346,9 @@ var
    DataDir : PathStr;
 begin
     {$IfDef ShowOpenBothPixelIsDEMs} OpenMaps := true; {$EndIf};
+
+    {$If Defined(RecordDEMIX)} Stopwatch := TStopwatch.StartNew; {$EndIf}
+
     Result := true;
 
     TryToOpen(RefDir + Prefix + area + '_dtm' + Ref1SecPointStr + Ext,PointDEMs[0]);
@@ -377,6 +388,7 @@ begin
           {$IfDef ShowOpenBothPixelIsDEMs} if OpenMaps then wmdem.Tile; MessageToContinue('After trimming'); {$EndIf};
        end;
     end;
+  	 {$If Defined(RecordDEMIX)} WriteLineToDebugFile('OpenBothPixelIsDEMs for ' + Area + '  ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
 
     {$IfDef TrackPixelIs} ShowDEMIXgrids('OpenBothPixelIsDEMs', PointDEMs,AreaDEMs); {$EndIf};
     {$IfDef ShowOpenBothPixelIsDEMs} if OpenMaps then wmdem.Tile; MessageToContinue('Check maps'); {$EndIf};
@@ -397,7 +409,7 @@ var
    FName : PathStr;
 begin
    Result := tStringList.Create;
-   FindMatchingFiles(DEMIXresultsDir,'*.csv',Result);
+   FindMatchingFiles(all_difference_results_dir,'*.csv',Result);
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('GetListOfDEMIXtileStats, total csv files=' + IntToStr(Result.Count)); {$EndIf}
    for i := pred(Result.Count) downto 0 do begin
       fName := UpperCase(ExtractFileNameNoExt(Result.Strings[i]));
@@ -421,7 +433,7 @@ begin
    TheFiles := GetListOfDEMIXtileStats;
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Twmdem.MergeDEMIXtilestats1 tile stat files=' + IntToStr(TheFiles.Count)); {$EndIf}
    if (TheFiles.Count > 1) then begin
-      fName := DEMIXresultsDir + 'DEMIX_TILES_USED_SUMMARY.dbf';
+      fName := all_difference_results_dir + 'DEMIX_TILES_USED_SUMMARY.dbf';
       StringList2CSVtoDB(TheFiles,fName,true);
    end
    else TheFiles.Free;
@@ -996,7 +1008,7 @@ begin
 end;
 
 
-function PickWineContestLocation : boolean;
+function PickWineContestDBLocation : boolean;
 begin
    if PathIsValid(DEMIX_Base_DB_Path) then Result := true
    else Result := FindPath('DEMIX Wine contest location',':\Wine_contest\',DEMIX_Base_DB_Path);
@@ -1011,6 +1023,7 @@ begin
       NumPtDEMs := 6;
       NumAreaDEMs := 1;
       SSIMresultsDir := RegularSSIMresultsDir;
+      FUVresultsDir := RegularFUVresultsDir;
       AreaListFName := DEMIXSettingsDir + 'areas_list.txt';
       DEMListFName := DEMIXSettingsDir + 'dems_classic.txt';
       DEMIX_Tile_Full := MDDef.DEMIX_full_all;
@@ -1019,6 +1032,7 @@ begin
       NumPtDEMs := 7;   //adds coastal
       NumAreaDEMs := 1;
       SSIMresultsDir := CoastalSSIMresultsDir;
+      FUVresultsDir := CoastalFUVresultsDir;
       AreaListFName := DEMIXSettingsDir + 'areas_coastal.txt';
       DEMListFName := DEMIXSettingsDir + 'dems_add_coastal.txt';
       DEMIX_Tile_Full := MDDef.DEMIX_full_U120;
@@ -1027,6 +1041,7 @@ begin
       NumPtDEMs := 7;    //adds coatal
       NumAreaDEMs := 2; //adds dilumium
       SSIMresultsDir := DiluvSSIMresultsDir;
+      FUVresultsDir := DILUVFUVresultsDir;
       AreaListFName := DEMIXSettingsDir + 'areas_diluvium.txt';
       DEMListFName := DEMIXSettingsDir + 'dems_add_diluvium.txt';
       DEMIX_Tile_Full := MDDef.DEMIX_full_U80;
@@ -1035,6 +1050,7 @@ begin
       NumPtDEMs := 3;    //adds coastal, delta
       NumAreaDEMs := 2;  //adds diluvium
       SSIMresultsDir := DeltaSSIMresultsDir;
+      FUVresultsDir := DeltaFUVresultsDir;
       AreaListFName := DEMIXSettingsDir + 'areas_delta.txt';
       DEMListFName := DEMIXSettingsDir + 'dems_add_delta.txt';
       DEMIX_Tile_Full := MDDef.DEMIX_full_U10;
@@ -1075,8 +1091,8 @@ begin
    if DEMIX_initialized then Result := true
    else begin
       {$If Defined(RecordDEMIXStart)} WriteLineToDebugFile('GetDEMIXpaths off to PickWineContestLocation'); {$EndIf}
-      Result := PickWineContestLocation;
-      PickDEMIXMode;
+      Result := PickWineContestDBLocation;
+      if (MDDef.DEMIX_mode = dmNotYetDefined) then PickDEMIXMode;
    end;
 
    if (not Result) then exit;
@@ -1088,6 +1104,7 @@ begin
       HeavyDutyProcessing := true;
       WMdem.Color := clInactiveCaption;
       DEMIXProcessing := true;
+      ToggleShowProgress(false);
    end;
    StopSplashing;
 
@@ -1121,7 +1138,7 @@ begin
    DEMIX_3DEP_Dir := DEMIX_Base_DB_Path + 'wine_contest_v2_3dep\';
 
 
-   DEMIXresultsDir := DEMIX_Base_DB_Path + 'wine_contest_tile_stats\';
+   all_difference_results_dir := DEMIX_Base_DB_Path + 'all_difference_tile_stats\';
    DEMIX_diff_maps_dir  := DEMIX_Base_DB_Path + 'wine_contest_difference_maps\';
    DEMIX_area_lc100  := DEMIX_Base_DB_Path + 'wine_contest_lc100\';
    DEMIX_GIS_dbName := DEMIX_Base_DB_Path + 'wine_contest_database\demix_gis_db_v2.5.dbf';
@@ -1135,15 +1152,21 @@ begin
       DEMIX_ref_DEMs_channel_grids := DEMIX_Base_DB_Path + 'area_ref_dems_channel_grids\';
    {$EndIf}
 
-   DEMIX_wbt_test_DEM_output := DEMIX_Base_DB_Path + 'wbt_out_ref_areas\';
-   DEMIX_wbt_ref_DEM_output := DEMIX_Base_DB_Path + 'wbt_out_test_areas\';
+   DEMIX_wbt_test_DEM_output := DEMIX_Base_DB_Path + 'wbt_out_test_areas\';
+   DEMIX_wbt_ref_DEM_output := DEMIX_Base_DB_Path + 'wbt_out_ref_areas\';
 
    ChannelMissesDir := DEMIX_Base_DB_Path + 'channel_misses\';
+   GeomorphonsDir := DEMIX_Base_DB_Path + 'geomorphons\';
 
-   RegularSSIMresultsDir := DEMIX_Base_DB_Path + 'SSIM_results\';
+   RegularSSIMresultsDir := DEMIX_Base_DB_Path + 'all_ssim_results\';
    CoastalSSIMresultsDir := DEMIX_Base_DB_Path + 'coastal_SSIM_results\';
    DiluvSSIMresultsDir := DEMIX_Base_DB_Path + 'diluvium_SSIM_results\';
    DeltaSSIMresultsDir := DEMIX_Base_DB_Path + 'delta_SSIM_results\';
+
+   RegularFUVresultsDir := DEMIX_Base_DB_Path + 'all_fuv_results\';
+   CoastalFUVresultsDir := DEMIX_Base_DB_Path + 'coastal_fuv_results\';
+   DiluvFUVresultsDir := DEMIX_Base_DB_Path + 'diluvium_fuv_results\';
+   DeltaFUVresultsDir := DEMIX_Base_DB_Path + 'delta_fuv_results\';
 
    DEMIX_final_DB_dir := DEMIX_Base_DB_Path + 'wine_contest_database\';
 
@@ -1173,9 +1196,10 @@ procedure EndDEMIXProcessing(db : integer = 0);
 begin
    if HeavyDutyProcessing then begin
       CleanUpTempDirectory(false);
+      HeavyDutyProcessing := false;
    end;
-   HeavyDutyProcessing := false;
    DEMIXProcessing := false;
+   ToggleShowProgress(true);
    WMdem.Color := clScrollBar;
    ReportErrors := true;
    LockStatusBar := false;
@@ -1329,8 +1353,12 @@ begin
    OnePair('COP','ALOS');
    OnePair('COP','FABDEM');
    OnePair('COP','TANDEM');
+   OnePair('COP','NASA');
+   OnePair('COP','SRTM');
+   OnePair('COP','ASTER');
    OnePair('COP','DILUV');
    OnePair('COP','DELTA');
+   OnePair('COP','COAST');
    GISdb[dbOnTable].EmpSource.Enabled := true;
 end;
 

@@ -68,7 +68,7 @@ var
        KeyValue : float64;
        TStr,NextLine,key  : String;
        RewriteDEM,
-       ShowProgress : boolean;
+       NowShowProgress : boolean;
        LogRecA : array[0..2048] of Byte;
        BytesToRead,BytesRead,
        NumRead,HeaderSize,
@@ -196,10 +196,10 @@ var
           *)
 
           if ReallyReadDEM and AllocateDEMMemory(InitDEMNone) then begin
-             Showprogress := WantShowProgress and (DEMheader.NumCol > 4000) and ShowDEMReadingProgress;
-             if ShowProgress then StartProgress('Read DEM ' + AreaName);
+             NowShowprogress := WantShowProgress and ShowDEMReadingProgress and (DEMheader.NumCol > 4000);
+             if NowShowProgress then StartProgress('Read DEM ' + AreaName);
              for x := 0 to pred(DEMheader.NumCol) do begin
-                if ShowProgress and (x mod 1000 = 0) then UpDateProgressBar(x/pred(DEMheader.NumCol));
+                if NowShowProgress and (x mod 1000 = 0) then UpDateProgressBar(x/pred(DEMheader.NumCol));
                 if (DEMheader.DEMPrecision = FloatingPointDEM) then begin
                    BytesToRead := 4 * DEMheader.NumRow;
                    BlockRead(Ffile,ShortFloatElevations^[x]^,BytesToRead,BytesRead);
@@ -239,7 +239,7 @@ var
           *)
 
          Cleanup:;
-          if ShowProgress then EndProgress;
+          if NowShowProgress then EndProgress;
           CloseFile(Ffile);
 
           if RewriteDEM then begin

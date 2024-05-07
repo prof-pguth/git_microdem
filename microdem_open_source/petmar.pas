@@ -497,6 +497,7 @@ function GetVolumeName(DriveLetter: ANSIChar): shortstring;
 procedure OpenRecycleBin;
 
 procedure WriteOpenHandlestoDebugLog(Where : shortString);
+function DoubleQuotedString(str : ANSIString) : ANSIstring;
 
 
 implementation
@@ -533,6 +534,11 @@ uses
 
 var
    TerrainCuts : array[0..4,1..3] of integer;
+
+function DoubleQuotedString(str : ANSIString) : ANSIstring;
+begin
+   Result := '"' + str + '"';
+end;
 
 function FindPath(What,NeededName : shortstring; var TheDir : PathStr) : boolean;
 var
@@ -4403,22 +4409,24 @@ begin
         if (Last = pred(Dirs.Count)) then break;
      end;
 
-     {$IfDef RecordFindFiles} WriteLineToDebugFile('PETMAR.FindMatchingFiles'); {$EndIf}
-     fName := System.IOUtils.TPath.Combine(MDTempDir,'templisting.txt');
+     {$IfDef RecordFindFiles} WriteLineToDebugFile('PETMAR.FindMatchingFiles, Dirs=' + IntToStr(Dirs.Count)); {$EndIf}
      Count := 0;
      for i := pred(Dirs.Count) downto 0 do begin
-        {$IfDef RecordFindFiles} WriteLineToDebugFile(Dirs.Strings[i] + Mask); {$EndIf}
+        {$IfDef RecordFindFiles} WriteLineToDebugFile('Looking in: ' + Dirs.Strings[i] + Mask); {$EndIf}
         if FindFirst(Dirs.Strings[i] + Mask,faAnyFile,DirInfo) = 0 then repeat
             if (DirInfo.Attr and faDirectory = 0) then begin
                inc(Count);
-               if (Count < Max) then TheFiles.Add(Dirs.Strings[i] + DirInfo.Name)
-               else begin
-                  if (Count = Max) then begin
-                     TheFiles.SaveToFile(fname);
-                     TheFiles.Clear;
-                     assignFile(tFile,fName);
-                     append(tfile);
-                  end;
+               if (Count < Max) then begin
+                  TheFiles.Add(Dirs.Strings[i] + DirInfo.Name)
+               end
+               else if (Count = Max) then begin
+                  fName := System.IOUtils.TPath.Combine(MDTempDir,'templisting.txt');
+                  TheFiles.SaveToFile(fname);
+                  TheFiles.Clear;
+                  assignFile(tFile,fName);
+                  append(tfile);
+               end
+               else if (Count > Max) then begin
                   writeln(tfile,Dirs.Strings[i] + DirInfo.Name);
                end;
             end;
@@ -4426,13 +4434,13 @@ begin
         {$IfDef RecordFindFiles} WriteLineToDebugFile('Cum files: ' + IntegerToString(Count,6) + '   Dir: ' + Dirs.Strings[i]);   {$EndIf}
      end;
      {$IfDef RecordFindFiles} WriteLineToDebugFile(''); {$EndIf}
-  SysUtils.FindClose(DirInfo);
-  Dirs.Free;
-  if (Count >= Max) then begin
-     closeFile(Tfile);
-     TheFiles.LoadFromFile(fName);
-     SysUtils.DeleteFile(fname);
-  end;
+     SysUtils.FindClose(DirInfo);
+     Dirs.Free;
+     if (Count >= Max) then begin
+        closeFile(Tfile);
+        TheFiles.LoadFromFile(fName);
+        SysUtils.DeleteFile(fname);
+     end;
 end;
 
 

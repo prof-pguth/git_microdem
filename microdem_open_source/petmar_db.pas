@@ -191,7 +191,7 @@ type
         function FieldTypeAndLength(WantFieldName : ANSIString) : AnsiString;
         function ListUniqueEntriesInDB(FieldName : ANSIString) : tStringList;
         function NumUniqueEntriesInDB(FieldName : ANSIString) : integer;
-        function FieldsInDataBase : tStringList;
+        function FieldsInDataBase(Alphabetize : boolean = false) : tStringList;
         function GetFieldName(i : integer) : ANSIString;
         function GetFieldIndex(FieldName : ANSIString) : integer;
         function GetFieldType(fName : ANSIString) : tFieldType; overload;
@@ -1885,12 +1885,13 @@ begin
 end;
 
 
-function tMyData.FieldsInDataBase : tStringList;
+function tMyData.FieldsInDataBase(Alphabetize : boolean = false) : tStringList;
 var
    i : integer;
 begin
    Result := tStringList.Create;
-   {$IfDef BDELikeTables}
+   Result.Sorted := Alphabetize;
+  {$IfDef BDELikeTables}
       if (TheBDEdata <> Nil) then begin
          for i := 0 to pred(FieldCount) do Result.Add(TheBDEdata.Fields[i].FieldName);
       end;
@@ -1912,7 +1913,7 @@ begin
          for i := 0 to pred(FieldCount) do Result.Add(Fields[i].FieldName);
       end;
    {$EndIf}
-end;
+ end;
 
 
 function tMyData.GetFieldLength(WantFieldName : ANSIString) : integer;
@@ -2339,10 +2340,10 @@ begin
    OldTable := tMyData.Create(OldName);
    NewTable := tMyData.Create(NewName);
    CheckDeletes := CheckDeletes and OldTable.FieldExists(RecNoFName);
-   {$IfDef VCL} StartProgress('Fill fields ' + ExtractFileName(NewName)); {$EndIf}
+   {$IfDef VCL} if ShowSatProgress then StartProgress('Fill fields ' + ExtractFileName(NewName)); {$EndIf}
    j := 0;
    while Not OldTable.eof do begin
-      {$IfDef VCL} if (j mod 100 = 0) then UpdateProgressBar(j/OldTable.TotRecsInDB); {$EndIf}
+      {$IfDef VCL} if ShowSatProgress and (j mod 100 = 0) then UpdateProgressBar(j/OldTable.TotRecsInDB); {$EndIf}
       if (not CheckDeletes) or (OldTable.GetFieldByNameAsInteger(RecNoFName) > 0)  then begin
          NewTable.Insert;
          for i := 0 to pred(OldTable.FieldCount) do begin
@@ -2364,7 +2365,7 @@ begin
    end;
    NewTable.Destroy;
    OldTable.Destroy;
-   {$IfDef VCL} EndProgress; {$EndIf}
+   {$IfDef VCL} if ShowSatProgress then EndProgress; {$EndIf}
    {$IfDef DBrewrite} WriteLineToDebugFile('FillNewDBF out, recs written='  + IntToStr(j)); {$EndIf}
 end;
 
@@ -2597,10 +2598,10 @@ begin
        ClientDataSet.Open;
        First;
        j := 0;
-       StartProgress('Save ' + ExtractFileExt(fName));
+       if ShowSatProgress then StartProgress('Save ' + ExtractFileExt(fName));
        while not EOF do begin
           inc(j);
-          if (j mod 500 = 0) then UpdateProgressBar(j/RecordCount);
+          if ShowSatProgress and (j mod 500 = 0) then UpdateProgressBar(j/RecordCount);
           ClientDataSet.Append;
           for i := 0 to pred(FieldCount) do begin
              f2Name := GetFieldName(i);
@@ -2610,7 +2611,7 @@ begin
           ClientDataSet.Post;
           Next;
        end;
-       EndProgress;
+       if ShowSatProgress then EndProgress;
        ClientDataSet.SaveToFile(fName,Format);
        ClientDataset.Free;
    end;

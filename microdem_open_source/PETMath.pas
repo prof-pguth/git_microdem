@@ -1,4 +1,4 @@
-{$N+,E+,F+}
+﻿{$N+,E+,F+}
 
 unit PETMATH;
 
@@ -104,7 +104,7 @@ function HeadingOfLine(dx,dy : float64) : float64; inline;
       function SinDeg(angle : float64) : float64; inline;
       function TanDeg(angle : float64) : float64; inline;
       function CotDeg(angle : float64) : float64; inline
-      function ATan2(a1,a2 : float64) : float64;  {result in radians}
+      function ATan2(a1,a2 : float64) : float64;  inline; {result in radians}
       function ArcCos(Angle : float64) : float64;
       function ArcSin(x : float64) : float64;
       function TanH(x : float64) : float64;
@@ -246,7 +246,7 @@ function YearLength(Year : integer) : integer;
 Function IsNumeric(s: AnsiString) : Boolean;
 
 function RadToDegString(rads : float64) : shortstring;
-function FilterSizeStr(i : integer) : shortstring;
+function FilterSizeStr(BoxSize : integer) : shortstring;
 
 {$IfDef IncludeFriedman}
    function Friedman(DBonTable : integer; DEMs : tStringList; Alpha : float64 = 95) : boolean;
@@ -297,9 +297,9 @@ END {IsInfinity};
 {$EndIf}
 
 
-function FilterSizeStr(i : integer) : shortstring;
+function FilterSizeStr(BoxSize : integer) : shortstring;
 begin
-   Result := IntToStr(i) + 'x' + IntToStr(i);
+   Result := IntToStr(BoxSize) + 'x' + IntToStr(BoxSize);
 end;
 
 

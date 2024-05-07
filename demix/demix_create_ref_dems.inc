@@ -22,7 +22,7 @@ begin
       Areas := DEMIX_AreasWanted;
       for j := 0 to pred(Areas.Count) do begin
          Area := Areas.Strings[j];
-         wmdem.SetPanelText(3,IntToStr(succ(j)) + '/  ' + IntToStr(Areas.Count) + '  ' + Area,true);
+         wmdem.SetPanelText(3,'Land cover grids ' + IntToStr(succ(j)) + '/  ' + IntToStr(Areas.Count) + '  ' + Area,true);
          fName := DEMIX_Ref_1sec + Area + '_dtm' + Ref1SecPointStr + '.tif';
          GridName := DEMIX_area_lc100 + Area + '.tif';
          if FileExists(fName) then begin
@@ -87,14 +87,14 @@ var
          var
             InName,SaveName : PathStr;
             s_SRSstring,t_srsstring : shortstring;
+            zone : int16;
 
                   procedure OpenAndCheck(Starter : shortstring);
-                  var
-                    zone : integer;
                   begin
-                     zone := Geotiff_UTMzone(fName);
+                     if (Starter = '') then PickUTMZone(Zone)
+                     else zone := Geotiff_UTMzone(fName);
                      UTMZone := AddDayMonthLeadingZero(zone);
-                     HorizCode := Starter + UTMZone;
+                     if (Starter <> '') then HorizCode := Starter + UTMZone;
                      AreaProjectionInfo.Edit;
                      AreaProjectionInfo.SetFieldByNameAsString('UTM_ZONE',UTMzone);
                      AreaProjectionInfo.Post;
@@ -124,6 +124,9 @@ var
                   else if (HorizCode = '') then begin
                      {$If Defined(Record3DEPX)} HighlightLineToDebugFile('ShiftAFile=' + fName + ' undefined or unsupported ' + HorizCode); {$EndIf}
                      exit;
+                  end
+                  else if (UTMZone = '') then begin
+                     OpenAndCheck('');
                   end;
                end;
                s_SRSstring := HorizCode + '+' + VertCode;
@@ -154,7 +157,7 @@ begin {ShifDEMsto_UTM_WGS84_EGM2008}
       for I := 0 to pred(DataDirs.Count) do begin
          DirName := DataDirs.Strings[i];
          AreaName := LastSubDir(ExtractFilePath(DirName));
-         TStr := 'Dir: ' + IntToStr(succ(i)) + '/' + IntToStr(DataDirs.Count) + ' ' + AreaName;
+         TStr := 'Datum shift, dir: ' + IntToStr(succ(i)) + '/' + IntToStr(DataDirs.Count) + ' ' + AreaName;
          wmdem.SetPanelText(3,TStr,true);
          AreaProjectionInfo.ApplyFilter('AREA=' + QuotedStr(AreaName));
          if (AreaProjectionInfo.FiltRecsInDB = 1) then begin
@@ -206,7 +209,7 @@ var
    AreaName : shortstring;
 
 
-         procedure OnePixelIs(which : shortstring);
+         procedure OnePixelIs(di : integer; which : shortstring);
          var
             DoneName : PathStr;
             Files : tStringList;
@@ -214,6 +217,9 @@ var
          begin
             DoneName := Outpath + AreaName + '_dtm' + which + '.tif';
             if Overwrite or (not FileExists(DoneName)) then begin
+               DirStatus := 'Merge Ref DEMs: ' + IntToStr(succ(di)) + '/' + IntToStr(DataDirs.Count) + '  ' + AreaName;
+               wmdem.SetPanelText(3,DirStatus,true);
+               wmdem.SetPanelText(2,Which,true);
                Files := nil;
                Petmar.FindMatchingFiles(aDir, '*.tif',Files,0);
                {$If Defined(Record3DEPX)} WriteLineToDebugFile('OnePixelIs ' + aDir + ' Found DEMs=' + IntToStr(Files.Count)); {$EndIf}
@@ -259,13 +265,11 @@ begin {DEMIX_MergeReferenceDEMs}
          {$If Defined(Record3DEPX)} HighlightLineToDebugFile('DEMIX_MergeReferenceDEMs paths=' + IntToStr(DataDirs.Count)); {$EndIf}
          for I := 0 to pred(DataDirs.Count) do begin
             AreaName := LastSubDir(DataDirs.Strings[i]);
-            DirStatus := 'Dir: ' + IntToStr(succ(i)) + '/' + IntToStr(DataDirs.Count) + '  ' + AreaName;
-            wmdem.SetPanelText(3,DirStatus);
             aDir := DataDirs.Strings[i];
             OutPath := DEMIX_Ref_1sec;
-            OnePixelIs(Ref1SecPointStr);
-            OnePixelIs(Ref1SecAreaStr);
-            OnePixelIs(Ref1_5SecPointStr);
+            OnePixelIs(i,Ref1SecPointStr);
+            OnePixelIs(i,Ref1SecAreaStr);
+            OnePixelIs(i,Ref1_5SecPointStr);
          end;
       if LocalList then DataDirs.Free;
    finally
@@ -298,12 +302,11 @@ var
       {$If Defined(Record3DEPX)} WriteLineToDebugFile('MakeRefDEMsForOneDir Found EGM2008 TIFs=' + IntToStr(Files.Count)); {$EndIf}
       RemoveFilesThatDoHaveString(Files,Ref1SecPointStr); //cannot use DEMs already reference
       RemoveFilesThatDoHaveString(Files,Ref1SecAreaStr); //cannot use DEMs already reference
+      RemoveFilesThatDoHaveString(Files,Ref1_5SecPointStr); //cannot use DEMs already reference
       {$If Defined(Record3DEPX)} WriteLineToDebugFile('MakeRefDEMsForOneDir Found EGM2008 TIFs, REF not done yet=' + IntToStr(Files.Count)); {$EndIf}
-
       for i := 0 to pred(Files.Count) do begin
           fName := Files.Strings[i];
           AreaName := LastSubDir(ExtractFilePath(fName));
-          wmdem.SetPanelText(2, 'Area: ' + IntToStr(succ(i)) + '/' + IntToStr(Files.Count) + '  ' + AreaName);
           fName2 := ChangeFileExt(fName,Ref1SecPointStr + '.tif');
           fName3 := ChangeFileExt(fName, Ref1SecAreaStr + '.tif');
           if FileExists(fName3) and FileExists(fName2) and (not Overwrite) then begin
@@ -335,7 +338,7 @@ begin {procedure DEMIX_Create3DEPReferenceDEMs}
       end;
       {$If Defined(Record3DEPX)} WriteLineToDebugFile('DEMIX_Create3DEPReferenceDEMs paths=' + IntToStr(DataDirs.Count)); {$EndIf}
       for I := 0 to pred(DataDirs.Count) do begin
-         DirStatus := 'Area: ' + IntToStr(succ(i)) + '/' + IntToStr(DataDirs.Count) + '  ' + LastSubDir(DataDirs.Strings[i]);
+         DirStatus := 'Ref DEM aggregation Area: ' + IntToStr(succ(i)) + '/' + IntToStr(DataDirs.Count) + '  ' + LastSubDir(DataDirs.Strings[i]);
          wmdem.SetPanelText(3,DirStatus,true);
          {$If Defined(Record3DEPX)} WriteLineToDebugFile(DirStatus); {$EndIf}
          MakeRefDEMsForOneDir(DataDirs.Strings[i]);
@@ -745,7 +748,7 @@ begin
         for i := 0 to pred(Areas.Count) do begin
            AreaName := Areas.Strings[i];
            wmdem.SetPanelText(2, 'Area: ' + IntToStr(succ(i)) + '/' + IntToStr(Areas.Count));
-           wmdem.SetPanelText(3, AreaName);
+           wmdem.SetPanelText(3,'Half sec ref DEM ' +  AreaName);
            {$If Defined(RecordDEMIX)} HighlightLineToDebugFile('DEMIXreferenceDEMs for ' + AreaName); {$EndIf}
            fName := DEMIX_Ref_Half_sec + AreaName + '_ref_0.5sec.tif';
            if not FileExists(fName) then begin

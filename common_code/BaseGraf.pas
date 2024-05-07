@@ -170,7 +170,7 @@ type
 
          ThirdPlaneConstant,ThirdPlaneThickness : float32;
          TernaryGrid : tTernaryGrid;
-         Symbol         : tSymbols15;
+         Symbol         : tSymbols256;
          ShowLine,
          ShowPoints     : array[1..MaxGraphSeries] of boolean;
 
@@ -436,7 +436,7 @@ type
      ScrollGraph,
      SettingsChanged,
      CanCloseGraph,
-     ShowProgress,
+     ShowGraphProgress,
      RedrawingNow,
      RedrawNow,
      SizingWindow,
@@ -1255,12 +1255,12 @@ begin
          TotNum := GetFileSize(inf) div (2*SizeOf(float32));
          assignFile(tf,inf);
          reset(tf,2*SizeOf(float32));
-         if ShowProgress then StartProgressAbortOption('Points');
+         if ShowGraphProgress then StartProgressAbortOption('Points');
          NumDone := 0;
          while not EOF(tf) do begin
             BlockRead(tf,Coords^,ASize,Numread);
             inc(NumDone,NumRead);
-            if ShowProgress then UpdateProgressBar(NumDone/TotNum);
+            if ShowGraphProgress then UpdateProgressBar(NumDone/TotNum);
             for x := 1 to NumRead do begin
                xf := Coords^[pred(2*x)];
                yf := Coords^[2*x];
@@ -3002,7 +3002,8 @@ end;
 procedure TThisBaseGraph.Pastefromclipboard1Click(Sender: TObject);
 begin
    LegendBitmap := tMyBitmap.Create;
-   LegendBitmap.Assign(ClipBoard);
+   //LegendBitmap.Assign(ClipBoard);
+   AssignBitmapToClipBoard(LegendBitmap);
    if (LegendBitmap.Width = Image1.Width) and (LegendBitmap.Height = Image1.Height)  then begin
       Image1.Picture.Graphic := LegendBitmap;
       FreeAndNil(LegendBitmap);
@@ -3045,7 +3046,7 @@ begin
    reset(tf,2*SizeOf(float32));
    new(Coords);
    First := true;
-   if ShowProgress then StartProgressAbortOption('Series ' + IntToStr(Count));
+   if ShowGraphProgress then StartProgressAbortOption('Series ' + IntToStr(Count));
    NumDone := 0;
    Numyears := 0;
    while not EOF(tf) do begin
@@ -3053,7 +3054,7 @@ begin
       BlockRead(tf,Coords^,ASize,Numread);
       {$IfDef RecordPlotFiles} WriteLineToDebugFile('Did read=' + IntToStr(NumRead)); {$EndIf}
       inc(NumDone,NumRead);
-      if ShowProgress then UpdateProgressBar(NumDone/TotNum);
+      if ShowGraphProgress then UpdateProgressBar(NumDone/TotNum);
       for i := 1 to NumRead do  begin
          if GraphDraw.VertAxisFunctionType in [ShortCumNormalAxis,LongCumulativeNormalAxis,LongerCumulativeNormalAxis,CumulativeNormalAxis] then begin
             if Coords^[2*i] < GraphDraw.MinVertAxis then Coords^[2*i] := GraphDraw.MinVertAxis;
@@ -3111,12 +3112,12 @@ begin
    assignFile(tf,inf);
    reset(tf,2*SizeOf(float32));
    new(Coords);
-   if ShowProgress then StartProgressAbortOption('Points');
+   if ShowGraphProgress then StartProgressAbortOption('Points');
    NumDone := 0;
    while not EOF(tf) do begin
       BlockRead(tf,Coords^,MaxPointsInBuffer,Numread);
       inc(NumDone,NumRead);
-      if ShowProgress then UpdateProgressBar(NumDone/TotNum);
+      if ShowGraphProgress then UpdateProgressBar(NumDone/TotNum);
       for i := 1 to NumRead do begin
          xf := Coords^[i][1];
          yf := Coords^[i][2];
@@ -3150,7 +3151,7 @@ begin
        while not EOF(tf) do begin
           BlockRead(tf,Coords^,ASize,Numread);
           inc(NumDone,NumRead);
-          if ShowProgress then UpdateProgressBar(NumDone/TotNum);
+          if ShowGraphProgress then UpdateProgressBar(NumDone/TotNum);
           for i := 1 to NumRead do begin
              xf := Coords^[(3*i)-2];
              yf := Coords^[pred(3*i)];
@@ -3251,7 +3252,7 @@ begin
             sBitmap.Free;
          end;
 
-         if ShowProgress then StartProgressAbortOption('Points');
+         if ShowGraphProgress then StartProgressAbortOption('Points');
          if ASCII then begin
             assignFile(afile,inf);
             reset(afile);
@@ -3278,7 +3279,7 @@ begin
                while not EOF(tf) do  begin
                   BlockRead(tf,Coords^,ASize,Numread);
                   inc(NumDone,NumRead);
-                  if ShowProgress then UpdateProgressBar(NumDone/TotNum);
+                  if ShowGraphProgress then UpdateProgressBar(NumDone/TotNum);
                   for i := 1 to NumRead do begin
                      xf := Coords^[(3*i)-2];
                      yf := Coords^[pred(3*i)];
@@ -5059,8 +5060,10 @@ var
    x1,x2,y : float32;
    Color : tColor;
    aLabel : shortstring;
+   UseStyle : boolean;
 begin
    Table := tMyData.Create(BarGraphDBName);
+   UseStyle := Table.FieldExists('BS_STYLE');
    //('X1,X2,Y,COLOR,LABEL');
    while not Table.eof do begin
       x1 := Table.GetFieldByNameAsFloat('X1');
@@ -5069,6 +5072,9 @@ begin
       Color := Table.GetFieldByNameAsInteger('COLOR');
       Bitmap.Canvas.Brush.Color := Color;
       Bitmap.Canvas.Brush.Style := bsSolid;
+      if UseStyle then begin
+         if Table.GetFieldByNameAsInteger('BS_STYLE') = 1 then Bitmap.Canvas.Brush.Style := bsDiagCross;
+      end;
       Bitmap.Canvas.Rectangle(GraphDraw.GraphX(x1),GraphDraw.Graphy(y-0.4),GraphDraw.GraphX(x2),GraphDraw.Graphy(y+0.4));
       aLabel := Table.GetFieldByNameAsString('LABEL');
       if (aLabel <> '') then Bitmap.Canvas.TextOut(5,GraphDraw.GraphY(y) - Bitmap.Canvas.TextHeight(aLabel) div 2,aLabel);
@@ -5289,6 +5295,7 @@ begin
                    if (GraphDraw.GraphTopLabels <> Nil) and GraphDraw.LabelPointsAtop then begin
                       Bitmap.Canvas.Pen.Color := clRed;
                       Bitmap.Canvas.Pen.Width := 3;
+                      //Bitmap.Canvas.Brush.Style := bsClear;
                       for i := 0 to pred(GraphDraw.GraphTopLabels.Count) do begin
                           MenuStr := GraphDraw.GraphTopLabels[i];
                           Val(copy(MenuStr,1,12),x,err);
@@ -5335,6 +5342,7 @@ begin
              Bitmap.Canvas.TextOut(GraphDraw.LeftMargin + 12, GraphDraw.TopMargin + 8, RemoveUnderScores(GraphDraw.UpperLeftText));
           end;
           if (GraphDraw.TopLabel <> '') then begin
+             Bitmap.Canvas.Brush.Style := bsClear;
              Bitmap.Canvas.TextOut((Bitmap.Width-Bitmap.Canvas.TextWidth(GraphDraw.TopLabel)) div 2, 5, RemoveUnderScores(GraphDraw.TopLabel));
           end;
           if (GraphDraw.TopLeftLabel <> '') then begin

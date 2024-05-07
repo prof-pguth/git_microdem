@@ -440,9 +440,9 @@ var
       if (ovrlap) then for j := 1 to m do if EOF(FFTfile) then w2^[j] := 0
       else read(FFTfile,w2^[j]);
 
-      if ShowProgress then StartProgress('FFT segments');
+      if ShowGraphProgress then StartProgress('FFT segments');
       for kk := 1 to k do begin
-         if ShowProgress then UpdateProgressBar(kk/k);
+         if ShowGraphProgress then UpdateProgressBar(kk/k);
          for joff := -1 to 0 do begin
             if (ovrlap) then begin
                for j := 1 to m do w1^[joff+j+j] := w2^[j];
@@ -471,7 +471,7 @@ var
          end;
          den := den+sumw;
       end {for kk};
-      EndProgress;
+      if ShowGraphProgress then EndProgress;
       den := m4*den;
       for j := 1 to m do p[j] := p[j]/den;
       FreeMem(w1,round(4.0 * SizeOf(float64)*m));
@@ -502,9 +502,9 @@ var
       end {for i};
 
       if reorder then begin
-         if ShowProgress then StartProgress('Order');
+         if ShowGraphProgress then StartProgress('Order');
          for j := 1 to pred(SegSize) do begin
-            if ShowProgress then UpdateProgressBar(j/SegSize);
+            if ShowGraphProgress then UpdateProgressBar(j/SegSize);
             for i := 1 to (SegSize-j) do begin
                if (p2^[i] < p2^[succ(i)]) then begin
                   t := p2^[i];
@@ -516,7 +516,7 @@ var
                end {if};
             end;
          end;
-         EndProgress;
+         if ShowGraphProgress then EndProgress;
          TStr2 := ' by power';
       end
       else TStr2 := ' by period';
@@ -836,7 +836,6 @@ begin
    end;
    finally
    end;
-   EndProgress;
    Dispose(Coords);
    closeFile(tf);
    writeln(Ofile);

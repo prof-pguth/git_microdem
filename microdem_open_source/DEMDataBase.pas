@@ -14,8 +14,9 @@
 
 {$IFDEF DEBUG}
    {$IfDef RecordProblems}  //normally only defined for debugging specific problems
-      {$Define RecordCloseDB}
+      //{$Define RecordCloseDB}
       {$Define RecordDEMIX}
+      {$Define RecordDBsort}
       //{$Define RecordCopyFieldLinkDB}
       {$Define RecordClustering}
       //{$Define RecordLegend}
@@ -921,6 +922,7 @@ var
    ft,col : integer;
    NeedRestore : boolean;
 begin
+   {$IfDef RecordDBsort} WriteLineToDebugFile('SortDataBase ' + GISDB[DBonTable].dbName + '  ' + aField); {$EndIf}
    NeedRestore := false;
    if (GISDB[DBonTable].dbtablef <> Nil) and GISDB[DBonTable].dbtablef.AnyHiddenColumns then begin
       If not AnswerIsYes('Sort without hidden fields') then begin
@@ -938,8 +940,14 @@ begin
    GridForm.Caption := 'Sorting';
    Report := GISdb[DBonTable].ExtractDBtoCSV(1,',');
    if (OutputDir = '') then OutPutDir := mdTempDir;
-
-   fName := NextFileNumber(OutputDir,GISdb[DBonTable].dbName + '_sorted_' + AField + '_' ,'.csv');
+   TStr := '_sorted_' + AField + '_';
+   fName := NextFileNumber(OutputDir,GISdb[DBonTable].dbName + TStr ,'.csv');
+   if StrUtils.AnsiContainsText(fName,TStr + TStr) then begin
+      fName := StringReplace(fName,TStr + TStr,TStr,[rfReplaceAll, rfIgnoreCase]);
+      fName := ExtractFileNameNoExt(fName);
+      while fName[length(fName)] in ['0'..'9'] do Delete(fName,length(fName),1);
+      fName := NextFileNumber(OutputDir,fName,'.csv');
+   end;
    Report.SaveToFile(fName);
    Report.Free;
    GridForm.ReadCSVFile(fName);
@@ -955,6 +963,7 @@ begin
    StringGridToCSVFile(fName,GridForm.StringGrid1,Nil);
    if (GISdb[DBonTable].theMapOwner <> nil) then Result := GISdb[DBonTable].theMapOwner.OpenDBonMap('',fName)
    else OpenNumberedGISDataBase(Result,fName,true);
+   {$IfDef RecordDBsort} WriteLineToDebugFile('SortDataBase ' + GISDB[DBonTable].dbName + ' created ' + fName); {$EndIf}
    GridForm.Close;
    if NeedRestore then begin
       GISdb[DBonTable].dbTableF.RestoreHiddenColumns;
@@ -962,7 +971,6 @@ begin
       GISdb[DBonTable].dbTableF.ShowStatus;
    end;
 end;
-
 
 
 procedure MakeLinesFromPoints(GISDataBase : TGISdataBaseModule; fName : PathStr = ''; ShapeTypeWanted : integer = -99; Thin : integer = -1);
@@ -980,19 +988,17 @@ var
    var
       Lat,Long : float64;
    begin
-     // with GISDataBase do begin
-           if GISDataBase.ValidLatLongFromTable(Lat,Long) then begin
-              if (abs(LastLat - Lat) > 0.00000001) or (abs(LastLong - Long) > 0.00000001) then begin
-                  if ThreeD then begin
-                     if (GISDataBase.MyData.GetFieldByNameAsString(Field3D) <> '') then
-                        ShapeFileCreator.AddPointWithZToShapeStream(Lat,Long,GISDataBase.MyData.GetFieldByNameAsFloat(Field3D));
-                  end
-                  else ShapeFileCreator.AddPointToShapeStream(Lat,Long);
-                  LastLat := Lat;
-                  LastLong := Long;
-              end;
+        if GISDataBase.ValidLatLongFromTable(Lat,Long) then begin
+           if (abs(LastLat - Lat) > 0.00000001) or (abs(LastLong - Long) > 0.00000001) then begin
+               if ThreeD then begin
+                  if (GISDataBase.MyData.GetFieldByNameAsString(Field3D) <> '') then
+                     ShapeFileCreator.AddPointWithZToShapeStream(Lat,Long,GISDataBase.MyData.GetFieldByNameAsFloat(Field3D));
+               end
+               else ShapeFileCreator.AddPointToShapeStream(Lat,Long);
+               LastLat := Lat;
+               LastLong := Long;
            end;
-      ///end;
+        end;
    end;
 
      procedure DoALine(LineName : string35; RecNum : integer);
@@ -1001,39 +1007,36 @@ var
         Lat1,Lat2,Long1,Long2 : float64;
         Time1,Time2 : shortstring;
       begin
-         //with GISDataBase do begin
-            ShowHourglassCursor;
-            GISDataBase.MyData.First;
-            GISDataBase.ValidLatLongFromTable(Lat1,Long1);
-            if (TimeField) then Time1 := GISDataBase.MyData.GetFieldByNameAsString(TimeFName);
-            GISDataBase.EmpSource.Enabled := false;
-            while not GISDataBase.MyData.eof do begin
-               DoPoint;                 //this will have the first point
-               for i := 1 to Thin do GISDataBase.MyData.Next;
+         ShowHourglassCursor;
+         GISDataBase.MyData.First;
+         GISDataBase.ValidLatLongFromTable(Lat1,Long1);
+         if (TimeField) then Time1 := GISDataBase.MyData.GetFieldByNameAsString(TimeFName);
+         GISDataBase.EmpSource.Enabled := false;
+         while not GISDataBase.MyData.eof do begin
+            DoPoint;                 //this will have the first point
+            for i := 1 to Thin do GISDataBase.MyData.Next;
+         end;
+         if (Thin > 1) then DoPoint;   //insure last point is included
+         GISDataBase.ValidLatLongFromTable(Lat2,Long2);
+         if (TimeField) then Time2 := GISDataBase.MyData.GetFieldByNameAsString(TimeFName);
+         if ShapeFileCreator.PtsInShapeStream > 0 then begin
+            NewTable.Insert;
+            NewTable.SetFieldByNameAsInteger(RecNoFName,RecNum);
+            NewTable.SetFieldByNameAsString('NAME',LineName);
+            if TimeField then begin
+               NewTable.SetFieldByNameAsString('TIME_START',Time1);
+               NewTable.SetFieldByNameAsString('TIME_END',Time2);
             end;
-            if (Thin > 1) then DoPoint;   //insure last point is included
-            GISDataBase.ValidLatLongFromTable(Lat2,Long2);
-            if (TimeField) then Time2 := GISDataBase.MyData.GetFieldByNameAsString(TimeFName);
-            if ShapeFileCreator.PtsInShapeStream > 0 then begin
-               NewTable.Insert;
-               NewTable.SetFieldByNameAsInteger(RecNoFName,RecNum);
-               NewTable.SetFieldByNameAsString('NAME',LineName);
-               if TimeField then begin
-                  NewTable.SetFieldByNameAsString('TIME_START',Time1);
-                  NewTable.SetFieldByNameAsString('TIME_END',Time2);
-               end;
-               if LineEndPoints then begin
-                  NewTable.SetFieldByNameAsFloat('LAT_START',Lat1);
-                  NewTable.SetFieldByNameAsFloat('LONG_START',Long1);
-                  NewTable.SetFieldByNameAsFloat('LAT_END',Lat2);
-                  NewTable.SetFieldByNameAsFloat('LONG_END',Long2);
-               end;
-               NewTable.Post;
-               ShapeFileCreator.ProcessShapeFileRecord;
-            //end;
+            if LineEndPoints then begin
+               NewTable.SetFieldByNameAsFloat('LAT_START',Lat1);
+               NewTable.SetFieldByNameAsFloat('LONG_START',Long1);
+               NewTable.SetFieldByNameAsFloat('LAT_END',Lat2);
+               NewTable.SetFieldByNameAsFloat('LONG_END',Long2);
+            end;
+            NewTable.Post;
+            ShapeFileCreator.ProcessShapeFileRecord;
          end;
       end;
-
 
 begin
    LastLat := 99;
@@ -1117,7 +1120,7 @@ var
 begin
    Ext := UpperCase(ExtractFileExt(fName));
    Result := (Ext = '.DBF') or (Ext = '.CSV') or (Ext = '.KML') or (Ext = '.DB') or (Ext = '.SDB') or (Ext = '.SHZ') or (Ext = '.FIT') or (Ext = '.SHP')
-             or (Ext = '.TXT')   or (Ext = '.XML')  or (Ext = '.KML')  or (Ext = '.CDS') or (Ext = '.XYZ') or (Ext = '.GPX');
+          or (Ext = '.TXT')   or (Ext = '.XML')  or (Ext = '.KML')  or (Ext = '.CDS') or (Ext = '.XYZ') or (Ext = '.GPX');
 end;
 
 
@@ -2613,7 +2616,7 @@ end;
                dbTablef.Restrictbymapscale1.Checked := MDDef.UsePixelSizeRules;
 
                dbTablef.DEMIX1.Visible := MDDef.ShowDEMIX and ((MyData.FieldExists('COP') and MyData.FieldExists('ALOS'))
-                           or StrUtils.AnsiContainsText(dbName,'DEMIX') or MyData.FieldExists('DEMIX_TILE'));
+                           or StrUtils.AnsiContainsText(dbName,'DEMIX') or MyData.FieldExists('DEMIX_TILE') or MyData.FieldExists('COP_WIN'));
                dbTablef.BitBtn24.Visible := dbTablef.DEMIX1.Visible;
 
                if MDDef.DBMinimizeOnOpen then dbTablef.WindowState := wsMinimized;

@@ -48,7 +48,7 @@ inherited OptionsForm: TOptionsForm
     Top = 0
     Width = 793
     Height = 505
-    ActivePage = TabSheet4
+    ActivePage = TabSheet10
     Align = alClient
     MultiLine = True
     TabOrder = 2
@@ -1952,6 +1952,14 @@ inherited OptionsForm: TOptionsForm
           TabOrder = 2
           Text = 'Edit3'
         end
+      end
+      object CheckBox161: TCheckBox
+        Left = 584
+        Top = 386
+        Width = 153
+        Height = 17
+        Caption = 'Process loops forward'
+        TabOrder = 19
       end
     end
     object TabSheet13: TTabSheet

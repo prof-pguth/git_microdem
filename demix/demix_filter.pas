@@ -152,24 +152,7 @@ type
     //BitBtn6: TBitBtn;
     CheckBox18: TCheckBox;
     CheckBox16: TCheckBox;
-    CheckBox22: TCheckBox;
-    CheckBox24: TCheckBox;
     BitBtn38: TBitBtn;
-    CheckBox25: TCheckBox;
-    GroupBox9: TGroupBox;
-    CheckBox12: TCheckBox;
-    CheckBox13: TCheckBox;
-    CheckBox14: TCheckBox;
-    CheckBox15: TCheckBox;
-    Hillshade: TCheckBox;
-    CheckBox17: TCheckBox;
-    CheckBox19: TCheckBox;
-    CheckBox20: TCheckBox;
-    CheckBox21: TCheckBox;
-    HAND: TCheckBox;
-    CheckBox26: TCheckBox;
-    CheckBox27: TCheckBox;
-    CheckBox28: TCheckBox;
     procedure BitBtn1Click(Sender: TObject);
     procedure LoadClick(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
@@ -216,21 +199,15 @@ type
     procedure BitBtn30Click(Sender: TObject);
     procedure ComboBox4Change(Sender: TObject);
     procedure CheckBox11Click(Sender: TObject);
-    procedure CheckBox12Click(Sender: TObject);
-    procedure CheckBox13Click(Sender: TObject);
-    procedure CheckBox14Click(Sender: TObject);
-    procedure CheckBox15Click(Sender: TObject);
     procedure CheckBox16Click(Sender: TObject);
     procedure BitBtn31Click(Sender: TObject);
     procedure LoadCurrentAreaBitBtn5Click(Sender: TObject);
     procedure BitBtn5Click(Sender: TObject);
-    procedure HillshadeClick(Sender: TObject);
     procedure BitBtn32Click(Sender: TObject);
     procedure BitBtn33Click(Sender: TObject);
     procedure BitBtn34Click(Sender: TObject);
     procedure BitBtn35Click(Sender: TObject);
     procedure BitBtn36Click(Sender: TObject);
-    procedure CheckBox17Click(Sender: TObject);
     procedure BitBtn37Click(Sender: TObject);
     procedure BitBtn39Click(Sender: TObject);
     procedure CheckBox4Click(Sender: TObject);
@@ -239,17 +216,16 @@ type
     procedure CheckBox18Click(Sender: TObject);
     procedure CheckBox3Click(Sender: TObject);
     procedure LoadOneSecRefCheckBoxClick(Sender: TObject);
-    procedure CheckBox19Click(Sender: TObject);
-    procedure CheckBox20Click(Sender: TObject);
-    procedure CheckBox21Click(Sender: TObject);
-    procedure CheckBox22Click(Sender: TObject);
-    procedure CheckBox24Click(Sender: TObject);
+    //procedure CheckBox19Click(Sender: TObject);
+    //procedure CheckBox20Click(Sender: TObject);
+    //procedure CheckBox21Click(Sender: TObject);
+    //procedure CheckBox22Click(Sender: TObject);
+    //procedure CheckBox24Click(Sender: TObject);
     procedure BitBtn38Click(Sender: TObject);
-    procedure HANDClick(Sender: TObject);
-    procedure CheckBox25Click(Sender: TObject);
-    procedure CheckBox26Click(Sender: TObject);
-    procedure CheckBox27Click(Sender: TObject);
-    procedure CheckBox28Click(Sender: TObject);
+    //procedure CheckBox25Click(Sender: TObject);
+    //procedure CheckBox26Click(Sender: TObject);
+    //procedure CheckBox27Click(Sender: TObject);
+    //procedure CheckBox28Click(Sender: TObject);
     //procedure CheckBox4Click(Sender: TObject);
   private
     { Private declarations }
@@ -988,12 +964,12 @@ begin
                DEMSWanted[RefRRI[i]] := true;
             end;
             if UpperCase(What) = 'RUFF' then begin
-               RefRuffMap[i] := DEMGlb[RefDEMs[i]].BoxCarDetrendDEM(true,GridLimits,3);
-               DEMGlb[RefRuffMap[i]].AreaName := DEMGlb[RefDEMs[i]].AreaName + '_Ruff';
+               RefRuffMap[i] := BoxCarDetrendDEM(true,RefDEMs[i],GridLimits,3);
+               DEMGlb[RefRuffMap[i]].AreaName := DEMglb[RefDEMs[i]].AreaName + '_Ruff';
                DEMSWanted[RefRuffMap[i]] := true;
             end;
             if What = 'TPI' then begin
-               RefTPI[i] := DEMGlb[RefDEMs[i]].BoxCarDetrendDEM(true,GridLimits,3);
+               RefTPI[i] := BoxCarDetrendDEM(true,RefDEMs[i],GridLimits,3);
                DEMGlb[RefTPI[i]].AreaName := DEMGlb[RefDEMs[i]].AreaName + '_TPI';
                DEMSWanted[RefTPI[i]] := true;
             end;
@@ -1010,13 +986,13 @@ begin
                DEMSWanted[TestRRI[i]] := true;
             end;
             if UpperCase(What) = 'RUFF' then begin
-               TestRuffMap[i] := DEMGlb[TestDEMs[i]].BoxCarDetrendDEM(true,GridLimits,3);
+               TestRuffMap[i] := BoxCarDetrendDEM(true,TestDEMs[i],GridLimits,3);
                DEMGlb[TestRuffMap[i]].AreaName := DEMGlb[TestDEMs[i]].AreaName + '_Ruff';
                DEMSWanted[TestRuffMap[i]] := true;
             end;
 
             if What = 'TPI' then begin
-               TestTPI[i] := DEMGlb[TestDEMs[i]].BoxCarDetrendDEM(true,GridLimits,3);
+               TestTPI[i] := BoxCarDetrendDEM(true,TestDEMs[i],GridLimits,3);
                DEMGlb[TestTPI[i]].AreaName := DEMGlb[TestDEMs[i]].AreaName + '_TPI';
                DEMSWanted[TestTPI[i]] := true;
             end;
@@ -1483,34 +1459,9 @@ begin
    MDDef.DEMIX_default_half_sec_ref := CheckBox11.Checked;
 end;
 
-procedure TDemixFilterForm.CheckBox12Click(Sender: TObject);
-begin
-   MDDef.SSIM_elev := CheckBox12.Checked;
-end;
-
-procedure TDemixFilterForm.CheckBox13Click(Sender: TObject);
-begin
-   MDDef.SSIM_slope := CheckBox13.Checked;
-end;
-
-procedure TDemixFilterForm.CheckBox14Click(Sender: TObject);
-begin
-   MDDef.SSIM_ruff := CheckBox14.Checked;
-end;
-
-procedure TDemixFilterForm.CheckBox15Click(Sender: TObject);
-begin
-   MDDef.SSIM_rri := CheckBox15.Checked;
-end;
-
 procedure TDemixFilterForm.CheckBox16Click(Sender: TObject);
 begin
    MDDef.DEMIX_open_ref_DSM := CheckBox16.Checked;
-end;
-
-procedure TDemixFilterForm.CheckBox17Click(Sender: TObject);
-begin
-   MDDef.SSIM_tpi := CheckBox17.Checked;
 end;
 
 
@@ -1519,55 +1470,12 @@ begin
    MDDef.DEMIX_overwrite_enabled := CheckBox18.Checked;
 end;
 
-procedure TDemixFilterForm.CheckBox19Click(Sender: TObject);
-begin
-   MDDef.SSIM_flow := CheckBox19.Checked;
-end;
-
-procedure TDemixFilterForm.CheckBox20Click(Sender: TObject);
-begin
-   MDDef.SSIM_wet := CheckBox20.Checked;
-end;
-
-procedure TDemixFilterForm.CheckBox21Click(Sender: TObject);
-begin
-   MDdef.SSIM_ls := CheckBox21.Checked;
-end;
-
-procedure TDemixFilterForm.CheckBox22Click(Sender: TObject);
-begin
-   MDDef.DoSSIM := CheckBox22.Checked;
-end;
 
 procedure TDemixFilterForm.CheckBox23Click(Sender: TObject);
 begin
    MDDef.LoadRefDEMMaps := CheckBox23.Checked;
 end;
 
-procedure TDemixFilterForm.CheckBox24Click(Sender: TObject);
-begin
-   MDDef.DoFUV := CheckBox24.Checked;
-end;
-
-procedure TDemixFilterForm.CheckBox25Click(Sender: TObject);
-begin
-   MDDef.OpenMapsFUVSSIM := CheckBox25.Checked;
-end;
-
-procedure TDemixFilterForm.CheckBox26Click(Sender: TObject);
-begin
-   MDDef.SSIM_ProfC := CheckBox26.Checked;
-end;
-
-procedure TDemixFilterForm.CheckBox27Click(Sender: TObject);
-begin
-   MDDef.SSIM_PlanC := CheckBox27.Checked;
-end;
-
-procedure TDemixFilterForm.CheckBox28Click(Sender: TObject);
-begin
-   MDDef.SSIM_TangC := CheckBox28.Checked;
-end;
 
 procedure TDemixFilterForm.CheckBox2Click(Sender: TObject);
 begin
@@ -1656,26 +1564,9 @@ begin
    CheckBox10.Checked := MDDef.RGBbestSeparates;
    CheckBox11.Checked := MDDef.DEMIX_default_half_sec_ref;
 
-   CheckBox12.Checked := MDDef.SSIM_elev;
-   CheckBox13.Checked := MDDef.SSIM_slope;
-   CheckBox14.Checked := MDDef.SSIM_ruff;
-   CheckBox15.Checked := MDDef.SSIM_rri;
    CheckBox16.Checked := MDDef.DEMIX_open_ref_DSM;
-   Hillshade.Checked := MDDef.SSIM_hill;
-   HAND.Checked := MDDef.SSIM_HAND;
-   CheckBox17.Checked := MDDef.SSIM_tpi;
    CheckBox18.Checked := MDDef.DEMIX_overwrite_enabled;
-   CheckBox19.Checked := MDDef.SSIM_flow;
-   CheckBox20.Checked := MDDef.SSIM_wet;
-   CheckBox21.Checked := MDdef.SSIM_ls;
-   CheckBox22.Checked := MDDef.DoSSIM;
    CheckBox23.Checked := MDDef.LoadRefDEMMaps;
-   CheckBox24.Checked := MDDef.DoFUV;
-   CheckBox25.Checked := MDDef.OpenMapsFUVSSIM;
-   CheckBox26.Checked := MDdef.SSIM_ProfC;
-   CheckBox27.Checked := MDdef.SSIM_PlanC;
-   CheckBox28.Checked := MDDef.SSIM_TangC;
-
 
    CheckBox4.Checked := MDDef.LoadTestDEMMaps;
    LoadOneSecRefCheckBox.Checked := MDDef.LoadRefDEMs;
@@ -2088,16 +1979,6 @@ begin
    DoOne(Memo7,TileParameters);
 end;
 
-
-procedure TDemixFilterForm.HANDClick(Sender: TObject);
-begin
-   MDDef.SSIM_HAND := HAND.Checked;
-end;
-
-procedure TDemixFilterForm.HillshadeClick(Sender: TObject);
-begin
-   MDDef.SSIM_hill := Hillshade.Checked;
-end;
 
 procedure TDemixFilterForm.LoadClick(Sender: TObject);
 var

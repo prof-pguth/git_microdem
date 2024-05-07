@@ -44,6 +44,11 @@ type
     CheckBox22: TCheckBox;
     BitBtn1: TBitBtn;
     BitBtn38: TBitBtn;
+    CheckBox7: TCheckBox;
+    CheckBox8: TCheckBox;
+    CheckBox9: TCheckBox;
+    CheckBox10: TCheckBox;
+    CheckBox157: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure BitBtn1Click(Sender: TObject);
     procedure BitBtn38Click(Sender: TObject);
@@ -92,65 +97,78 @@ begin
    CheckBox26.Checked := MDdef.SSIM_ProfC;
    CheckBox27.Checked := MDdef.SSIM_PlanC;
    CheckBox28.Checked := MDDef.SSIM_TangC;
+   CheckBox7.Checked := MDDef.SSIM_rotor;
+   CheckBox8.Checked := MDDef.SSIM_Openness;
+   CheckBox10.Checked := MDDef.SSIM_ConvergeIndex;
    CheckBox5.Checked := MDDef.DEMIX_overwrite_enabled;
    CheckBox25.Checked := MDDef.OpenMapsFUVSSIM;
    CheckBox6.Checked := MDDef.DEMIX_all_areas;
+   CheckBox1.Checked := true;
+   CheckBox9.Checked := MDDef.ProcessLoopsForward;
+   CheckBox157.Checked := MDDef.ShowWinExec;
 end;
 
 
 procedure Tfuv_ssim_control.BitBtn1Click(Sender: TObject);
-var
-   Areas : tStringList;
+
+   procedure DoOne(Mode : byte);
+   var
+      Areas : tStringList;
+   begin
+      MDDef.DEMIX_mode := Mode;
+      SetParamsForDEMIXmode;
+      Areas := DEMIX_AreasWanted(not MDDef.DEMIX_all_areas);
+      AreaSSIMandFUVComputations(MDDef.DEMIX_overwrite_enabled,Areas);
+      Areas.Destroy;
+   end;
+
+
 begin
    CheckParameters;
-   PickWineContestLocation;
+   MDDef.DEMIX_mode := dmClassic;
+   PickWineContestDBLocation;
+   GetDEMIXpaths;
    DEMIX_initialized := true;
-   Areas := DEMIX_AreasWanted(not MDDef.DEMIX_all_areas);
-   ShowSatProgress := false;
-   if CheckBox1.Checked then begin
-      MDDef.DEMIX_mode := dmClassic;
-      AreaSSIMandFUVComputations(MDDef.DEMIX_overwrite_enabled,Areas);
-   end;
-   if CheckBox2.Checked then begin
-      MDDef.DEMIX_mode := dmAddCoastal;
-      AreaSSIMandFUVComputations(MDDef.DEMIX_overwrite_enabled,Areas);
-   end;
-   if CheckBox3.Checked then begin
-      MDDef.DEMIX_mode := dmAddDiluvium;
-      AreaSSIMandFUVComputations(MDDef.DEMIX_overwrite_enabled,Areas);
-   end;
-   if CheckBox4.Checked then begin
-      MDDef.DEMIX_mode := dmAddDelta;
-      AreaSSIMandFUVComputations(MDDef.DEMIX_overwrite_enabled,Areas);
-   end;
-   ShowSatProgress := true;
+   ToggleShowProgress(false);
+   if CheckBox1.Checked then DoOne(dmClassic);
+   if CheckBox2.Checked then DoOne(dmAddCoastal);
+   if CheckBox3.Checked then DoOne(dmAddDiluvium);
+   if CheckBox4.Checked then DoOne(dmAddDelta);
+   ToggleShowProgress(true);
 end;
 
 
 procedure Tfuv_ssim_control.BitBtn38Click(Sender: TObject);
 begin
+    CheckParameters;
     SaveMDdefaults;
 end;
 
 procedure Tfuv_ssim_control.CheckParameters;
 begin
-   MDDef.OpenMapsFUVSSIM := CheckBox25.Checked;
    MDDef.SSIM_elev := CheckBox12.Checked;
    MDDef.SSIM_slope := CheckBox13.Checked;
    MDDef.SSIM_ruff := CheckBox14.Checked;
    MDDef.SSIM_rri := CheckBox15.Checked;
    MDDef.SSIM_tpi := CheckBox17.Checked;
-   MDDef.DEMIX_overwrite_enabled := CheckBox5.Checked;
    MDDef.SSIM_flow := CheckBox19.Checked;
    MDDef.SSIM_wet := CheckBox20.Checked;
    MDdef.SSIM_ls := CheckBox21.Checked;
    MDDef.DoSSIM := CheckBox22.Checked;
    MDDef.DoFUV := CheckBox24.Checked;
-   MDDef.OpenMapsFUVSSIM := CheckBox25.Checked;
    MDDef.SSIM_ProfC := CheckBox26.Checked;
    MDDef.SSIM_PlanC := CheckBox27.Checked;
    MDDef.SSIM_TangC := CheckBox28.Checked;
+   MDDef.SSIM_rotor := CheckBox7.Checked;
+   MDDef.SSIM_Openness := CheckBox8.Checked;
+   MDDef.SSIM_ConvergeIndex := CheckBox10.Checked;
+
+   MDDef.OpenMapsFUVSSIM := CheckBox25.Checked;
+   MDDef.DEMIX_overwrite_enabled := CheckBox5.Checked;
    MDDef.DEMIX_all_areas := CheckBox6.Checked;
+   MDDef.OpenMapsFUVSSIM := CheckBox25.Checked;
+   MDDef.ShowWinExec := CheckBox157.Checked;
+   MDDef.ProcessLoopsForward := CheckBox9.Checked;
 end;
 
 

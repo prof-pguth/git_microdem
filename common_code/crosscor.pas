@@ -10,7 +10,6 @@ unit crosscor;
 
 {$I nevadia_defines.inc}
 
-
 interface
 
 uses

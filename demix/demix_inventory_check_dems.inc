@@ -20,6 +20,7 @@ begin
    end;
 end;
 
+
 procedure InventoryAllDEMIXdata;
 var
    Areas,Results,SSIMareas,FUVareas,RefDEMs,TestDEMs,ChannelAreas,DiffDist : tStringList;
@@ -49,7 +50,7 @@ begin
          ChannelAreas := tStringList.Create;
          FindMatchingFiles(ChannelMissesDir, '*.csv',Channelareas,1);
          DiffDist := tStringList.Create;
-         FindMatchingFiles(DEMIXresultsDir, '*.csv',DiffDist,1);
+         FindMatchingFiles(all_difference_results_dir, '*.csv',DiffDist,1);
 
          for j := 0 to pred(Areas.Count) do begin
             Area := Areas.Strings[j];
@@ -73,7 +74,6 @@ begin
    finally
       EndDEMIXProcessing;
    end;
-
 end;
 
 
@@ -342,7 +342,7 @@ begin
       GetDosPath('3DEP files',BaseDir);
       FilesWanted := tStringList.Create;
       FindMatchingFiles(BaseDir,'*.tif',FilesWanted,3);
-      RemoveFilesThatDoHaveString(FilesWanted,'_egm2008');
+      RemoveFilesThatDoHaveString(FilesWanted,'_egm2008');  //only check the original files
       StartProgress('Checking Geotiffs');
       for I := 0 to pred(FilesWanted.Count) do begin
          if (i mod 25 = 0) then UpdateProgressBar(i/FilesWanted.Count);
@@ -358,6 +358,7 @@ begin
                FileSeek(TiffHandle,Tag42112Offset,0);
                FileWrite(TiffHandle,TheBytes[1],Tag42112Length);
                FileClose(Tiffhandle);
+               //now delete any files that had bad elevation conversion in GDAL
                fName2 := ExtractFilePath(fName) + extractFileNameNoExt(fName) + '_egm2008.tif';
                DeleteFileIfExists(fName2);
                fName2 := ExtractFilePath(fName) + extractFileNameNoExt(fName) + '_egm2008' + Ref1SecPointStr + '.tif';
@@ -375,21 +376,24 @@ end;
 
 procedure FindFilesWith42112;
 var
-   FilesWanted,Results,Paths : tStringList;
+   FilesWanted,Results{,Paths} : tStringList;
    Tag : shortstring;
-   fName,NewName,JustName,BaseDir : PathStr;
-   Num1m,NumEGM,Num1secArea,Num1secPoint,
-   i,j,DTMs,DSMs : Integer;
+   fName,{NewName,JustName}BaseDir : PathStr;
+   i{,j,DTMs,DSMs} : Integer;
    Tag42112Offset,Tag42112Length : int64;
 begin
    try
       Results := tStringList.Create;
       Results.Add('FILE,TAG42114');
-      {$If Defined(Record3DEPX)} WriteLineToDebugFile('DEMIX_Create3DEPReferenceDEMs getting data paths'); {$EndIf}
       GetDosPath('3DEP files',BaseDir);
+      {$If Defined(RecordDEMIX)} WriteLineToDebugFile('FindFilesWith42112s getting data path ' + BaseDir); {$EndIf}
       FilesWanted := tStringList.Create;
       FindMatchingFiles(BaseDir,'*.tif',FilesWanted,3);
+      {$If Defined(RecordDEMIX)} WriteLineToDebugFile('FindFilesWith42112s DEM tiles=' + IntToStr(FilesWanted.Count)); {$EndIf}
       RemoveFilesThatDoHaveString(FilesWanted,'_egm2008');
+      {$If Defined(RecordDEMIX)} WriteLineToDebugFile('FindFilesWith42112s no egm2008=' + IntToStr(FilesWanted.Count)); {$EndIf}
+      RemoveFilesThatDoHaveString(FilesWanted,'_ref_1sec');
+      {$If Defined(RecordDEMIX)} WriteLineToDebugFile('FindFilesWith42112s no ref_1sec=' + IntToStr(FilesWanted.Count)); {$EndIf}
       StartProgress('Checking Geotiffs');
       for I := 0 to pred(FilesWanted.Count) do begin
          if (i mod 25 = 0) then UpdateProgressBar(i/FilesWanted.Count);
@@ -400,8 +404,14 @@ begin
             end;
          end;
       end;
-      fName := NextFileNumber(MDTempDir,'files_with_tag_42112','.dbf');
-      PetdbUtils.StringList2CSVtoDB(Results,fName);
+      if Results.Count = 1 then begin
+         Results.Free;
+         MessageToContinue('No problematic DEMs with TIFF tag 42112');
+      end
+      else begin
+         fName := NextFileNumber(MDTempDir,'files_with_tag_42112','.dbf');
+         PetdbUtils.StringList2CSVtoDB(Results,fName);
+      end;
    finally
       EndProgress;
    end;
@@ -420,6 +430,7 @@ var
             i,Deletes : integer;
             fName : PathStr;
          begin
+            wmdem.SetPanelText(3,Dir,true);
             FilesWanted := nil;
             FindMatchingFiles(Dir,'*.*',FilesWanted,2);
             Deletes := 0;
@@ -436,15 +447,16 @@ var
 
 begin
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DeleteFilesForATestArea in'); {$EndIf}
+   MDDef.DEMIX_mode := dmClassic;
    GetDEMIXPaths;
    Areas := DEMIX_AreasWanted;
    for j := 0 to pred(Areas.Count) do begin
       TestArea := UpperCase(Areas.Strings[j]);
+      wmdem.SetPanelText(2,'Clear ' + IntToStr(succ(j)) + '/' + IntToStr(Areas.Count) + '  ' +  TestArea,true);
       ShowHourglassCursor;
-      ClearOutFolder(DEMIXresultsDir);
+      ClearOutFolder(all_difference_results_dir);
       ClearOutFolder(DEMIX_diff_dist);
       ClearOutFolder(DEMIX_diff_maps_dir);
-      ClearOutFolder(DEMIX_area_lc100);
       ClearOutFolder(DEMIX_profile_test_dir);
       ClearOutFolder(DEMIX_distrib_graph_dir);
 
@@ -462,11 +474,15 @@ begin
       ClearOutFolder(RegularSSIMresultsDir);
       ClearOutFolder(DiluvSSIMresultsDir);
       ClearOutFolder(DeltaSSIMresultsDir);
+      ClearOutFolder(CoastalSSIMresultsDir);
 
       (*
+      ClearOutFolder(DEMIX_area_lc100);
       ClearOutFolder(DEMIX_Ref_1sec);
       ClearOutFolder(DEMIX_test_dems);
       ClearOutFolder(DEMIX_diluvium_dems);
+      ClearOutFolder(DEMIX_delta_dems);
+      ClearOutFolder(DEMIX_coastal_dems);
       *)
    end;
    EndDEMIXProcessing;
@@ -577,7 +593,7 @@ begin
    Areas := DEMIX_AreasWanted;
    n := Areas.Count;
    TheFiles := Nil;
-   FindMatchingFiles(DEMIXresultsDir,'*.csv',TheFiles);
+   FindMatchingFiles(all_difference_results_dir,'*.csv',TheFiles);
    Results := tStringList.Create;
    for j := pred(Areas.Count) downto 0 do begin
       for i := 0 to pred(TheFiles.Count) do begin
@@ -593,6 +609,44 @@ begin
    TheFiles.Free;
 end;
 
+procedure InventoryWbWfilesByArea;
+var
+   TestDEMFiles,RefDEMfiles,Results,Areas : tStringList;
+   i,j,n : integer;
+   Area,aLine : shortstring;
+   fName : PathStr;
+begin
+   GetDEMIXPaths;
+   Areas := tStringList.Create;
+   Areas.LoadFromFile(AreaListFName);
+   n := Areas.Count;
+   TestDEMFiles := tStringList.Create;
+   FindMatchingFiles(DEMIX_wbt_test_DEM_output,'*.tif',TestDEMfiles);
+   RefDEMfiles := tStringList.Create;
+   FindMatchingFiles(DEMIX_wbt_ref_DEM_output,'*.tif',RefDEMfiles);
+   Results := tStringList.Create;
+   Results.Add('AREA,FLOW_REF,HAND_REF,ROTOR_REF,STREAM_REF,FLOW_TEST,HAND_TEST,ROTOR_TEST,STREAM_TEST');
+   for j := pred(Areas.Count) downto 0 do begin
+      Area := Areas.Strings[j];
+      aline := Area + ',' + IntToStr(NumberOfStringsWithSubstring(RefDEMfiles,'flow_accum_' + Area)) + ',' +
+                            IntToStr(NumberOfStringsWithSubstring(RefDEMfiles,'HAND_' + Area)) + ',' +
+                            IntToStr(NumberOfStringsWithSubstring(RefDEMfiles,'rotor_log_' + Area)) + ',' +
+                            IntToStr(NumberOfStringsWithSubstring(RefDEMfiles,'streams_' + Area)) + ',' +
+                            IntToStr(NumberOfStringsWithSubstring(TestDEMfiles,'flow_accum_' + Area)) + ',' +
+                            IntToStr(NumberOfStringsWithSubstring(TestDEMfiles,'HAND_' + Area)) + ',' +
+                            IntToStr(NumberOfStringsWithSubstring(TestDEMfiles,'rotor_log_' + Area)) + ',' +
+                            IntToStr(NumberOfStringsWithSubstring(TestDEMfiles,'streams_' + Area)) ;
+      Results.Add(aline);
+   end;
+  fName := NextFileNumber(MDTempDir,'WbE_data_inventory','.dbf');
+  PetdbUtils.StringList2CSVtoDB(Results,fName);
+  TestDEMFiles.Free;
+  RefDEMfiles.Free;
+  Results.Free;
+  Areas.Free;
+end;
+
+
 
 procedure InventoryDEMIX_SSIM_FUV_Stats;
 var
@@ -600,6 +654,7 @@ var
    i,j,n : integer;
    fName : PathStr;
 begin
+   GetDEMIXPaths;
    Areas := DEMIX_AreasWanted;
    n := Areas.Count;
    TheFiles := Nil;
@@ -644,6 +699,9 @@ begin
          for j := 0 to pred(FilesWanted.Count) do begin
              fName := FilesWanted.Strings[j];
              if StrUtils.AnsiContainsText(fName,Ref1SecPointStr + Ref1SecPointStr) or StrUtils.AnsiContainsText(fName,Ref1SecAreaStr + Ref1SecAreaStr) or
+                StrUtils.AnsiContainsText(fName,Ref1SecPointStr + Ref1_5SecPointStr) or StrUtils.AnsiContainsText(fName,Ref1SecAreaStr + Ref1_5SecPointStr) or
+                StrUtils.AnsiContainsText(fName,Ref1_5SecPointStr + Ref1SecPointStr) or StrUtils.AnsiContainsText(fName,Ref1_5SecPointStr + Ref1SecAreaStr) or
+                StrUtils.AnsiContainsText(fName,Ref1_5SecPointStr + Ref1_5SecPointStr) or
                 StrUtils.AnsiContainsText(fName,Ref1SecAreaStr + Ref1SecPointStr) or StrUtils.AnsiContainsText(fName,Ref1SecPointStr + Ref1SecAreaStr) then begin
                    DeleteFileIfExists(fName);
                    inc(Problems);

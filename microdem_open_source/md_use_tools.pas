@@ -18,7 +18,7 @@ unit md_use_tools;
       //{$Define RecordWBT}
       //{$Define RecordSAGA}
       //{$Define RecordSAGA_JustResult}
-
+      //{$Define RecordSAGALS}
       //{$Define OpenLasTools}
       //{$Define RecordACOLITE}
       //{$Define RecordSubsetOpen}
@@ -61,7 +61,7 @@ uses
       Forms, Graphics,ExtCtrls,Grids,Controls,
    {$EndIf}
 
-   System.IOutils,System.UITypes,System.Math,System.UIConsts,
+   System.IOutils,System.UITypes,System.Math,System.UIConsts,System.Diagnostics,
    SysUtils, Classes,StrUtils,
    petmar,Petmar_types,PetMath,
    DEMMapf,DEMMapDraw,DEMDefs,BaseMap,DEM_NLCD;
@@ -98,7 +98,7 @@ uses
    function WBT_DrainageBasins(InName : PathStr) : integer;
    procedure WBT_IDWCreate(OpenMap : boolean; InName,OutName : PathStr; GridSize : float64);
    procedure WBT_PennockLandformClass(InName : PathStr; SmoothFirst : boolean);
-   procedure WBT_Geomorphons(InName : PathStr);
+   function WBT_Geomorphons(OpenMap : boolean; InName : PathStr) : integer;
    procedure WBT_GridFillMissingData(InName : PathStr; TheElevUnits : tElevUnit);
    function WBT_BNearNeighCreate(OpenMap : boolean; InName,OutName : PathStr; GridSize : float64) : integer;
    procedure WBT_GeotiffMetadata(InName : PathStr);
@@ -126,7 +126,10 @@ uses
    function SAGA_WatershedBasinsWangLiu(InName : PathStr) : integer;
    function SAGA_StrahlerOrderGrid(InName : PathStr; OutName : PathStr = '') : integer;
    function SAGA_FlowAccumulationParallizeable(InName : PathStr; OutName : PathStr = '') : integer;
-   function SAGA_LSFactor(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
+   function SAGA_LSFactor(OpenMap : boolean; InName : PathStr; LSGridName : PathStr = '') : integer;
+   function SAGA_ConvergenceIndex(OpenMap : boolean; InName : PathStr; ConIndexGridName : PathStr = '') : integer;
+   function SAGA_PlanCurvature(OpenMap : boolean; InName : PathStr; PlanCurvatureFName : PathStr = '') : integer;
+   function SAGA_ProfileCurvature(OpenMap : boolean; InName : PathStr; ProfileCurvatureFName : PathStr = '') : integer;
 {$EndIf}
 
 

@@ -47,10 +47,11 @@ ta_channels "Channel Network" -ELEVATION "C:/Users/pguth/AppData/Local/Temp/proc
 
  function SAGAMap(cmd : shortstring; OutName : shortstring; ZUnits : tElevUnit; OpenMap : boolean = true) : integer;
  begin
+    Result := 0;
     if IsSagaCMDthere then begin
        {$IfDef RecordSAGA} WriteLineToDebugFile('SAGAMap in, cmd= ' + CMD); {$EndIf}
        WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
-       if (OutName <> '') then begin
+       if FileExists(OutName) then begin
             {$IfDef RecordSAGA} WriteLineToDebugFile('SAGAMap opening map ' + OutName); {$EndIf}
             Result := OpenNewDEM(OutName,OpenMap);
             if ValidDEM(Result) and OpenMap then begin
@@ -60,42 +61,149 @@ ta_channels "Channel Network" -ELEVATION "C:/Users/pguth/AppData/Local/Temp/proc
             end;
        end;
        {$IfDef RecordSAGA} WriteLineToDebugFile('SAGAMap out, grid=' + IntToStr(Result)); {$EndIf}
-    end
-    else Result := 0;
+    end;
  end;
+
+
+function SAGA_LSFactor(OpenMap : boolean; InName : PathStr; LSgridName : PathStr = '') : integer;
+//  https://saga-gis.sourceforge.io/saga_tool_doc/8.2.1/ta_compound_0.html
+// this is very slow
+var
+   cmd : shortstring;
+   {$If Defined(RecordSAGALS)} Stopwatch : tStopwatch; {$EndIf}
+begin
+   if IsSagaCMDthere then begin
+      if (LSGridName = '') then LSGridName := MDTempDir + 'saga_ls_factor_' + ExtractFileNameNoExt(InName) + '.tif';
+      {$If Defined(RecordSAGALS)} Stopwatch := TStopwatch.StartNew; {$EndIf}
+      cmd := MDDef.SagaCMD + ' ta_compound 0 -ELEVATION ' + InName + ' -LSFACTOR ' + LSGridName;
+      {$IfDef RecordSAGA} WriteLineToDebugFile('LS_factor, ' + cmd); {$EndIf}
+      //WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
+      Result := SAGAMap(cmd,LSGridName,euUndefined,OpenMap);
+      {$If Defined(RecordSAGALS)} WriteLineToDebugFile('Saga ls created   ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
+   end;
+end;
+
+
+function SAGA_ConvergenceIndex(OpenMap : boolean; InName : PathStr; ConIndexGridName : PathStr = '') : integer;
+//  https://saga-gis.sourceforge.io/saga_tool_doc/8.2.1/ta_compound_0.html
+// this is very slow
+var
+   cmd : shortstring;
+   {$If Defined(RecordSAGALS)} Stopwatch : tStopwatch; {$EndIf}
+begin
+   if IsSagaCMDthere then begin
+      if (ConIndexGridName = '') then ConIndexGridName := MDTempDir + 'saga_ls_factor_' + ExtractFileNameNoExt(InName) + '.tif';
+      {$If Defined(RecordSAGALS)} Stopwatch := TStopwatch.StartNew; {$EndIf}
+      cmd := MDDef.SagaCMD + ' ta_compound 0 -ELEVATION ' + InName + ' -CONVERGENCE ' + ConIndexGridName;
+      Result := SAGAMap(cmd,ConIndexGridName,euUndefined,OpenMap);
+      {$If Defined(RecordSAGALS)} WriteLineToDebugFile('Saga ls created   ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
+   end;
+end;
+
+function SAGA_PlanCurvature(OpenMap : boolean; InName : PathStr; PlanCurvatureFName : PathStr = '') : integer;
+//  https://saga-gis.sourceforge.io/saga_tool_doc/8.2.1/ta_compound_0.html
+var
+   cmd : shortstring;
+   {$If Defined(RecordSAGALS)} Stopwatch : tStopwatch; {$EndIf}
+begin
+   if IsSagaCMDthere then begin
+      if (PlanCurvatureFName = '') then PlanCurvatureFName := MDTempDir + 'saga_plan_curvature_' + ExtractFileNameNoExt(InName) + '.tif';
+      {$If Defined(RecordSAGALS)} Stopwatch := TStopwatch.StartNew; {$EndIf}
+      cmd := MDDef.SagaCMD + ' ta_compound 0 -ELEVATION ' + InName + ' -HCURV '  + PlanCurvatureFName;
+      Result := SAGAMap(cmd,PlanCurvatureFName,euUndefined,OpenMap);
+      {$If Defined(RecordSAGALS)} WriteLineToDebugFile('Saga plan curvature   ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
+   end;
+end;
+
+
+function SAGA_ProfileCurvature(OpenMap : boolean; InName : PathStr; ProfileCurvatureFName : PathStr = '') : integer;
+//  https://saga-gis.sourceforge.io/saga_tool_doc/8.2.1/ta_compound_0.html
+var
+   cmd : shortstring;
+   {$If Defined(RecordSAGALS)} Stopwatch : tStopwatch; {$EndIf}
+begin
+   if IsSagaCMDthere then begin
+      if (ProfileCurvatureFName = '') then ProfileCurvatureFName := MDTempDir + 'saga_profile_curvature_' + ExtractFileNameNoExt(InName) + '.tif';
+      {$If Defined(RecordSAGALS)} Stopwatch := TStopwatch.StartNew; {$EndIf}
+      cmd := MDDef.SagaCMD + ' ta_compound 0 -ELEVATION ' + InName + ' -VCURV ' + ProfileCurvatureFName;
+      Result := SAGAMap(cmd,ProfileCurvatureFName,euUndefined,OpenMap);
+      {$If Defined(RecordSAGALS)} WriteLineToDebugFile('Saga profile curvature   ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
+   end;
+end;
+
+
+(*
+function SAGA_LSFactor_FieldBased(OpenMap : boolean; InName : PathStr; LSGridName : PathStr = '') : integer;
+//https://saga-gis.sourceforge.io/saga_tool_doc/8.2.1/ta_hydrology_25.html
+//this produced a blank grid
+var
+   cmd : shortstring;
+begin
+   if IsSagaCMDthere then begin
+      if (LSGridName = '') then LSGridName := MDTempDir + 'saga_ls_factor_' + ExtractFileNameNoExt(InName) + '.tif';
+      {$If Defined(RecordSAGALS)} Stopwatch := TStopwatch.StartNew; {$EndIf}
+      cmd := MDDef.SagaCMD + ' ta_hydrology 25 -DEM ' + InName + ' -LS_FACTOR ' + LSGridName;
+      {$IfDef RecordSAGA} WriteLineToDebugFile('LS_factor, catchment area ' + cmd); {$EndIf}
+      Result := SAGAMap(cmd,LSGridName,euUndefined,OpenMap);
+
+      //WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
+      {$If Defined(RecordSAGALS)} WriteLineToDebugFile('Saga ls_field based created   ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
+   end;
+end;
 
 
 function SAGA_LSFactor(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
 //  https://saga-gis.sourceforge.io/saga_tool_doc/8.2.1/ta_hydrology_22.html
-//  area from wetness index, https://saga-gis.sourceforge.io/saga_tool_doc/8.2.1/ta_hydrology_15.html
+//  catchment area from wetness index, https://saga-gis.sourceforge.io/saga_tool_doc/8.2.1/ta_hydrology_15.html
+
+
+//  https://sourceforge.net/p/saga-gis/discussion/790705/thread/695ccc2180/
+//  https://sourceforge.net/p/saga-gis/discussion/354013/thread/0d107bd8/
 //  slope in radians,  https://gis.stackexchange.com/questions/313659/ls-factor-in-saga-slope-units
+
+      { chain steps from https://gis.stackexchange.com/questions/419398/saga-or-grass-tools-for-rusle-ls-factor-in-qgis
+      Slope, Aspect, Curvature tool  Input: DEM  Output: Slope (measured in radian)
+      Fill Sink (Wang & Liu) tool  Input: DEM  Output: DEM without sink
+      Catchment Area tool Input: DEM without sink  Output: Flow Accumulation (Total catchment area)
+      Flow width and specific catchment area tool  Input: DEM without sink, Flow Accumulation (Total catchment area) Output: Specific catchment area
+      LS-factor tool  Input: Slope, Specific catchment area  Output: LS-factor
+      To speed up the process, you can try Basic terrain analysis tool, which is in the SAGA - Terrain Analysis - Morphometry group. It does all the necessary steps automatically to produce LS-factor.
+       }
+
 var
     cmd : shortstring;
     SlopeName,AreaName,TWIName : PathStr;
+    {$If Defined(RecordSAGALS)} SagaStopwatch : TStopwatch; {$EndIf}
 begin
-   {$IfDef RecordSAGA} WriteLineToDebugFile('SAGA_LSFactor in, ' + InName); {$EndIf}
-   if (OutName = '') then OutName := MDTempDir + 'saga_ls_factor_' + ExtractFileNameNoExt(InName) + '.tif';
-   AreaName := MDTempDir + 'saga_catch_area_' + ExtractFileNameNoExt(InName) + '.tif';
-   TWIName := MDTempDir + 'saga_twi_' + ExtractFileNameNoExt(InName) + '.tif';
-   SlopeName := MDTempDir + 'saga_slope_rad_' + ExtractFileNameNoExt(InName) + '.tif';
+   if IsSagaCMDthere then begin
+      {$IfDef RecordSAGA} WriteLineToDebugFile('SAGA_LSFactor in, ' + InName); {$EndIf}
+      if (OutName = '') then OutName := MDTempDir + 'saga_ls_factor_' + ExtractFileNameNoExt(InName) + '.tif';
+      AreaName := MDTempDir + 'saga_catch_area_' + ExtractFileNameNoExt(InName) + '.tif';
+      TWIName := MDTempDir + 'saga_twi_' + ExtractFileNameNoExt(InName) + '.tif';
+      SlopeName := MDTempDir + 'saga_slope_rad_' + ExtractFileNameNoExt(InName) + '.tif';
 
-   cmd := MDDef.SagaCMD + ' ta_hydrology 15 -DEM ' + InName + ' -AREA ' + AreaName + ' TWI ' + TWIName;
-   {$IfDef RecordSAGA} WriteLineToDebugFile('LS_factor, ' + cmd); {$EndIf}
-   WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
+      {$If Defined(RecordSAGALS)} SagaStopwatch := TStopwatch.StartNew; {$EndIf}
+      cmd := MDDef.SagaCMD + ' ta_hydrology 15 -DEM ' + InName + ' -AREA ' + AreaName + ' TWI ' + TWIName;
+      {$IfDef RecordSAGA} WriteLineToDebugFile('LS_factor, catchment area ' + cmd); {$EndIf}
+      WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
+      {$If Defined(RecordSAGALS)} WriteLineToDebugFile('Saga TWI created   ' + RealToString(SAGAStopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
 
-   cmd := MDDef.SagaCMD + ' ta_morphometry 0 -ELEVATION ' + InName + ' -SLOPE ' + SlopeName;
-   {$IfDef RecordSAGA} WriteLineToDebugFile('LS_factor, ' + cmd); {$EndIf}
-   WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
+      {$If Defined(RecordSAGALS)} SagaStopwatch := TStopwatch.StartNew; {$EndIf}
+      cmd := MDDef.SagaCMD + ' ta_morphometry 0 -ELEVATION ' + InName + ' -SLOPE ' + SlopeName;
+      {$IfDef RecordSAGA} WriteLineToDebugFile('LS_factor, slope, ' + cmd); {$EndIf}
+      WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
+      {$If Defined(RecordSAGALS)} WriteLineToDebugFile('Saga slope radians created   ' + RealToString(SAGAStopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
 
-   {$IfDef RecordSAGA} WriteLineToDebugFile('LS_factor, ' + cmd); {$EndIf}
-   CMD := MDDef.SagaCMD + ' ta_hydrology 22' +
-         ' -SLOPE ' + SlopeName +
-         ' -AREA ' + AreaName +
-         ' -LS ' + OutName;
-   Result := SAGAMap(cmd,OutName,euUndefined,OpenMap);
-   {$If Defined(RecordSAGA) or Defined(RecordSAGA_JustResult)} WriteLineToDebugFile(ExtractFileNameNoExt(InName) + '  SAGA_LSFactor out=' + IntToStr(Result)); {$EndIf}
+      {$If Defined(RecordSAGALS)} SagaStopwatch := TStopwatch.StartNew; {$EndIf}
+      CMD := MDDef.SagaCMD + ' ta_hydrology 22' + ' -SLOPE ' + SlopeName + ' -AREA ' + AreaName + ' -LS ' + OutName;
+      {$IfDef RecordSAGA} WriteLineToDebugFile('LS_factor command itself, ' + cmd); {$EndIf}
+      Result := SAGAMap(cmd,OutName,euUndefined,OpenMap);
+      {$If Defined(RecordSAGALS)}  WriteLineToDebugFile('Saga LS created   ' + RealToString(SAGAStopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
+
+      {$If Defined(RecordSAGA) or Defined(RecordSAGA_JustResult)} WriteLineToDebugFile(ExtractFileNameNoExt(InName) + '  SAGA_LSFactor out grid=' + IntToStr(Result)); {$EndIf}
+   end;
 end;
-
+*)
 
 
 function SAGA_FlowAccumulationParallizeable(InName : PathStr; OutName : PathStr = '') : integer;

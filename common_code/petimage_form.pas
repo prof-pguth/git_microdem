@@ -361,6 +361,7 @@ procedure PutMyBitmapIntoImage(fname : PathStr; Image : tImage);
 procedure AlphaMatchBitmaps(Bitmap,Bitmap2 : tMyBitmap);
 
 function MakeBigBitmap(var theFiles : tStringList; Capt : shortstring; SaveName : PathStr = ''; Cols : integer = -1; Legend : PathStr ='') : TImageDisplayForm;
+procedure CombineAllPanelGraphs;
 
 procedure DifferenceTwoBitmaps;
 
@@ -443,6 +444,30 @@ type
 
 var
    FirstX,FirstY,LastX,LastY : integer;
+
+procedure CombineAllPanelGraphs;
+var
+   i : integer;
+   Findings : tStringList;
+begin
+   Findings := tStringList.Create;
+   for i := pred(WMDEM.MDIChildCount) downto 0 do begin
+      if WMDEM.MDIChildren[i] is TImageDisplayForm then begin
+        Findings.Add( (WMDEM.MDIChildren[i] as TImageDisplayForm).LoadedFileName);
+      end;
+   end;
+   if (Findings.Count > 0) then begin
+      MakeBigBitmap(Findings,'','',1);
+      {$IfDef RecordBigBitmap}  WriteLineToDebugFile('AllGraphsOneImage out'); {$EndIf}
+   end
+   else begin
+      Findings.Free;
+      {$IfDef RecordBigBitmap}  WriteLineToDebugFile('No graphs found, AllGraphsOneImage out'); {$EndIf}
+   end;
+end;
+
+
+
 
 
 function MakeBigBitmap(var theFiles : tStringList; Capt : shortstring; SaveName : PathStr = ''; Cols : integer = -1; Legend : PathStr ='') : TImageDisplayForm;

@@ -14,10 +14,10 @@ object fuv_ssim_control: Tfuv_ssim_control
   OnCreate = FormCreate
   TextHeight = 15
   object GroupBox9: TGroupBox
-    Left = 400
-    Top = 32
-    Width = 185
-    Height = 321
+    Left = 304
+    Top = 8
+    Width = 241
+    Height = 386
     Caption = 'SSIM/FUV parameters'
     TabOrder = 0
     object CheckBox12: TCheckBox
@@ -124,10 +124,34 @@ object fuv_ssim_control: Tfuv_ssim_control
       Caption = 'Tangential curvature'
       TabOrder = 12
     end
+    object CheckBox7: TCheckBox
+      Left = 16
+      Top = 312
+      Width = 97
+      Height = 17
+      Caption = 'Rotor'
+      TabOrder = 13
+    end
+    object CheckBox8: TCheckBox
+      Left = 16
+      Top = 335
+      Width = 209
+      Height = 17
+      Caption = 'Openness (upward and downward)'
+      TabOrder = 14
+    end
+    object CheckBox10: TCheckBox
+      Left = 16
+      Top = 358
+      Width = 169
+      Height = 17
+      Caption = 'Convergence index'
+      TabOrder = 15
+    end
   end
   object GroupBox1: TGroupBox
     Left = 24
-    Top = 40
+    Top = 8
     Width = 185
     Height = 124
     Caption = 'Elevation ranges'
@@ -217,12 +241,28 @@ object fuv_ssim_control: Tfuv_ssim_control
     OnClick = BitBtn1Click
   end
   object BitBtn38: TBitBtn
-    Left = 472
-    Top = 384
+    Left = 469
+    Top = 400
     Width = 113
     Height = 25
     Caption = 'Save defaults'
     TabOrder = 8
     OnClick = BitBtn38Click
+  end
+  object CheckBox9: TCheckBox
+    Left = 40
+    Top = 328
+    Width = 185
+    Height = 17
+    Caption = 'Process loops foward '
+    TabOrder = 9
+  end
+  object CheckBox157: TCheckBox
+    Left = 40
+    Top = 351
+    Width = 199
+    Height = 17
+    Caption = 'Show WinExec window'
+    TabOrder = 10
   end
 end

@@ -1,11 +1,11 @@
 ﻿Unit MVClusterClientDataSet;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
-{___________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program       }
+{ PETMAR Trilobite Breeding Ranch    }
+{ Released under the MIT Licences    }
+{ Copyright (c) 2024 Peter L. Guth   }
+{____________________________________}
 
 
 //used in demdatabase_special_cases.inc for MICRODEM perform K-means clustering
@@ -79,9 +79,7 @@ Uses
   SysUtils, Classes, Math,Dialogs,
   Petmar_types;
 
-
 {These were in GeneralFuncs, and have been moved here}
-
 
 const
    RANGE1to10          = [1..10];

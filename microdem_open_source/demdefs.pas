@@ -1944,8 +1944,8 @@ type
       DEMIX_all_areas,
       LoadRefDEMMaps,LoadTestDEMMaps,
       LoadRefDEMs,LoadTestDEMs,
-      SSIM_elev,SSIM_slope,SSIM_ruff,SSIM_rri,SSIM_hill,SSIM_tpi,
-      SSIM_flow,SSIM_LS,SSIM_Wet,SSIM_HAND,SSIM_PLANC,SSIM_PROFC,SSIM_TANGC,
+      SSIM_elev,SSIM_slope,SSIM_ruff,SSIM_rri,SSIM_hill,SSIM_tpi,SSIM_Rotor,SSIM_ConvergeIndex,
+      SSIM_flow,SSIM_LS,SSIM_Wet,SSIM_HAND,SSIM_PLANC,SSIM_PROFC,SSIM_TANGC,SSIM_Openness,
       DEMIX_graph_Retired_DEMs,
       DEMIXCompositeImage,
       DEMIX_DoCHM,
@@ -1954,7 +1954,8 @@ type
       DEMIX_DoSlopeDiff,
       DEMIX_DoRuffDiff,
       DEMIX_DoElevParamGraphs,
-      DEMIX_DoHalfSecDEMs : boolean;
+      DEMIX_DoHalfSecDEMs,
+      ProcessLoopsForward : boolean;
 
       DEMIXSimpleTolerance,
       DEMIXSlopeTolerance,
@@ -2892,7 +2893,7 @@ var
    ShowDEMReadingProgress : boolean;
 
    DEMIXSettingsDir,
-   DEMIXresultsDir,
+   all_difference_results_dir,
    DEMIXrefDataDir,
    DEMIXtempfiles,
 

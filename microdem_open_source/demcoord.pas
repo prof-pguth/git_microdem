@@ -292,6 +292,7 @@ type
          function InterpolateBiCubicNumericalRecipes(xgrid,ygrid : float32; var z : float32) : boolean;
          function CheckForUTMZones : boolean;
          procedure FilterStrip(NewDEM, FilterLap : integer; GridLimits : tGridLimits; FilterCategory : tFilterCat; Filter : FilterType);
+         function CreateThinnedHeader(ThinFactor : integer) : tDEMheader;
       public
          ThisDEM   : integer;  //to access global array
          AreaName       : ShortString;
@@ -450,11 +451,11 @@ type
          function GetElevFromUTM(x,y : float64; var z : float32) : boolean;
          function GetElevFromLatLongDegree(Lat,Long : float64; var z : float32) : boolean;
 
-         function GetElevMetersFromSecondDEM(IdenticalGrids : boolean; Dem2,Col,Row : integer; var z  : float32) : boolean;
-         function GetElevMetersFromThisAndSecondDEM(Dem2,Col,Row : integer; var z1,z2  : float32) : boolean;
-         function GetElevMetersFromSecondDEMLatLong(Dem2,Col,Row : integer; var z2  : float32) : boolean;
-
-         function GetSlopeAspectFromSecondDEM(Dem2 : integer; Col,Row : int32; var SlopeAspectRec : tSlopeAspectRec) : boolean;
+         //routines to get value from another grid
+            function GetElevMetersFromSecondDEM(IdenticalGrids : boolean; Dem2,Col,Row : integer; var z  : float32) : boolean;
+            function GetElevMetersFromThisAndSecondDEM(Dem2,Col,Row : integer; var z1,z2  : float32) : boolean;
+            function GetElevMetersFromSecondDEMLatLong(Dem2,Col,Row : integer; var z2  : float32) : boolean;
+            function GetSlopeAspectFromSecondDEM(Dem2 : integer; Col,Row : int32; var SlopeAspectRec : tSlopeAspectRec) : boolean;
 
          function GetElevSquareMeters(XGrid,YGrid : float64; var Elev : tElevFloatArray) : boolean; inline;
          function GetElev3x3Meters(XGrid,YGrid : int32; var Elev : tElevBoxArray) : boolean;  inline;
@@ -497,7 +498,7 @@ type
          procedure PixelSpacingAndRotation(Col,Row : integer; var Lat,Long : float64; var xdistance,ydistance,GridTrueAngle : float32; Quick : boolean = true); inline;
          procedure GridSpacingDetails(Region : sfBoundBox; var AverageX,AverageY,AverageSpacing,AverageGridTrue : float64);
 
-         procedure CheckMaxMinElev;
+         procedure CheckMaxMinElev; inline;
 
          function DistanceMetersBetweenPoints(xg1,yg1,xgrid,ygrid : float64; var Heading : float64) : float64; {distance in meters, heading in degrees}
 
@@ -558,21 +559,23 @@ type
 
       //reflectance/hillshade operations
          function ReflectanceColor(TintedReflectance : tMapType; x,y : integer) : tcolor;
-         function ReflectanceValue(x,y : integer) : integer;
+         function ReflectanceValueFloat(x,y : integer; var z : float32) : boolean;  inline;
+         function ReflectanceValue(x,y : integer; var z : byte) : boolean;  inline;
          function RGBReflectanceColor(TintedReflectance : tMapType; Col,Row : integer) : tPlatformColor;
-         function InterpolateReflectanceValue(x,y :  float64) : integer;
+         //function InterpolateReflectanceValue(x,y :  float64) : integer;
          procedure ReflectanceParams(Min : float64 = -9999; Max : float64 = -9999);
 
      //slope and aspect
          function GetSlopeAndAspect(Col,Row : integer; var SlopeAsp : tSlopeAspectRec) : boolean;   inline;
          function GetSlopeAndAspectFromLatLong(Lat,Long : float64; var SlopeAspectRec : tSlopeAspectRec) : boolean;
-         function SlopePercent(XGrid,YGrid : integer) : float64;
+         function SlopePercent(XGrid,YGrid : integer) : float64;  inline;
          function SlopePercentFromLatLong(Lat,Long : float64) : float64;
          procedure RichardsonExtrapolationSlopeMaps(Save : boolean = false);
 
          function RoughnessFromSlopeSTD(x,y,Radius : integer; var Roughness : float32) : boolean;
 
-         function FigureOpenness(Col,Row,RegionSizeMeters : integer; var  Upward,Downward : float64; Findings : tStringList = Nil) : boolean;
+         function FigureOpenness(Col,Row,RegionSizeMeters : integer; var  Upward,Downward : float64; Findings : tStringList = Nil) : boolean;  inline;
+         procedure OpennessOneDirection(Col,Row,RegionSizeMeters,dx,dy : integer; Spacing : float64; Dir : ShortString; var UpAngle,DownAngle,zp : float32; var RaysUsed : integer; Findings : tStringList);
 
          function AllocateDEMMemory(InitDEM : byte; InitVal : float64 = 0) : boolean;
 
@@ -623,7 +626,7 @@ type
          procedure RGBFilterDEM(BufferSize : integer; JustDoHoles : boolean);
 
          function DetrendDEM(Normalize : boolean = true; FilterRadius : integer = 2) : integer;
-         function BoxcarDetrendDEM(OpenMap : boolean; GridLimits : tGridLimits; FilterRadius : integer = 2) : integer;
+         //function BoxcarDetrendDEM(OpenMap : boolean; GridLimits : tGridLimits; FilterRadius : integer = 2) : integer;
          function ResaveNewResolution(FilterCategory : tFilterCat) : integer;
 
          function RectangleSubsetDEM(GridLimits : tGridLimits; FileName : PathStr = '') : PathStr; overload;
@@ -1048,6 +1051,15 @@ begin
    Result := 1.0 / (111320.0 * CosDeg(0.5* LatSizeMap + DEMSWcornerLat));
 end;
 
+function tDEMDataSet.CreateThinnedHeader(ThinFactor : integer) : tDEMheader;
+begin
+   Result := DEMheader;
+   Result.NumCol := DEMheader.NumCol div ThinFactor;
+   Result.NumRow := DEMheader.NumRow div ThinFactor;
+   Result.DEMySpacing := DEMheader.DEMySpacing * ThinFactor;
+   Result.DEMxSpacing := DEMheader.DEMxSpacing * ThinFactor;
+end;
+
 
 function tDEMDataSet.ThinThisDEM(fName : PathStr = ''; ThinFactor : integer = 0; DoItByAveraging : boolean = false; Offset : integer = 0) : integer;
 var
@@ -1067,11 +1079,8 @@ begin
       end;
    end;
 
-   NewHeadRecs := DEMheader;
-   NewHeadRecs.NumCol := DEMheader.NumCol div ThinFactor;
-   NewHeadRecs.NumRow := DEMheader.NumRow div ThinFactor;
-   NewHeadRecs.DEMySpacing := DEMheader.DEMySpacing * ThinFactor;
-   NewHeadRecs.DEMxSpacing := DEMheader.DEMxSpacing * ThinFactor;
+   NewHeadRecs := CreateThinnedHeader(ThinFactor);
+
    if DoItByAveraging then begin
       NewHeadRecs.DEMSWCornerX := DEMheader.DEMSWCornerX + DEMheader.DEMxSpacing * 0.5 * ThinFactor;
       NewHeadRecs.DEMSWCornerY := DEMheader.DEMSWCornerY + DEMheader.DEMySpacing * 0.5 * ThinFactor;
@@ -1105,25 +1114,23 @@ begin
    end {while};
    DEMGlb[Result].CheckMaxMinElev;
    EndProgress;
+   DEMGlb[Result].SetUpMap(Result,false,SelectionMap.MapDraw.MapType);
 end;
 
 
 
 function tDEMDataSet.HalfPixelAggregation(fName : PathStr; PixelIs : byte; SaveFile : boolean; Offset : integer = 0) : integer;
 var
-   Col,Row,{x,y,Npts,}bx,by,ThinFactor : integer;
+   Col,Row,bx,by,ThinFactor : integer;
    znw,zw,zsw,zn,z,zs,zne,ze,zse : float32;
    NewHeadRecs : tDEMheader;
    TStr : shortstring;
 begin
    ThinFactor := 2;
 
-   NewHeadRecs := DEMheader;
+   NewHeadRecs := CreateThinnedHeader(ThinFactor);
+
    NewHeadRecs.RasterPixelIsGeoKey1025 := PixelIs;
-   NewHeadRecs.NumCol := (DEMheader.NumCol - Offset) div ThinFactor;
-   NewHeadRecs.NumRow := (DEMheader.NumRow - Offset) div ThinFactor;
-   NewHeadRecs.DEMySpacing := DEMheader.DEMySpacing * ThinFactor;
-   NewHeadRecs.DEMxSpacing := DEMheader.DEMxSpacing * ThinFactor;
 
    if (Offset = 1) then begin
       NewHeadRecs.DEMSWCornerX := DEMheader.DEMSWCornerX + DEMheader.DEMxSpacing * ThinFactor - DEMheader.DEMxSpacing * Offset;
@@ -1152,11 +1159,10 @@ begin
          end;
       end;
    end {while};
-   DEMGlb[Result].CheckMaxMinElev;
-   DEMGlb[Result].SetUpMap(Result,true,SelectionMap.MapDraw.MapType);
-   if SaveFile then  DEMGlb[Result].WriteNewFormatDEM(fName);
-
    EndProgress;
+   DEMGlb[Result].CheckMaxMinElev;
+   DEMGlb[Result].SetUpMap(Result,false,SelectionMap.MapDraw.MapType);
+   if SaveFile then  DEMGlb[Result].WriteNewFormatDEM(fName);
 end;
 
 
@@ -1164,12 +1170,8 @@ function tDEMDataSet.ThinAndOpenGridSetMissing(ThinFactor : integer; NewPrecisio
 var
    NewHeadRecs : tDEMheader;
 begin
-   NewHeadRecs := DEMheader;
+   NewHeadRecs := CreateThinnedHeader(ThinFactor);
    NewHeadRecs.DEMPrecision := NewPrecision;
-   NewHeadRecs.NumCol := DEMheader.NumCol div ThinFactor;
-   NewHeadRecs.NumRow := DEMheader.NumRow div ThinFactor;
-   NewHeadRecs.DEMySpacing := DEMheader.DEMySpacing * ThinFactor;
-   NewHeadRecs.DEMxSpacing := DEMheader.DEMxSpacing * ThinFactor;
    OpenAndZeroNewDEM(true,NewHeadRecs,Result,'Thin_' + IntToStr(ThinFactor) + '_' + AreaName,InitDEMmissing);
 end;
 
@@ -1928,8 +1930,6 @@ begin
    if IdenticalGrids then Result := DEMGlb[DEM2].GetElevMeters(Col,Row,z)
    else begin
       Result := GetElevMetersFromSecondDEMLatLong(Dem2,Col,Row,z);
-      //DEMGridToLatLongDegree(Col,Row,Lat,Long);
-      //Result := DEMGlb[DEM2].GetElevFromLatLongDegree(Lat,Long, z);
    end;
 end;
 
@@ -1964,12 +1964,8 @@ begin
 end;
 
 
-function tDEMDataSet.FigureOpenness(Col,Row,RegionSizeMeters : integer; var  Upward,Downward : float64; Findings : tStringList = Nil) : boolean;
-var
-   UpAngle,DownAngle,zp : float32;
-   RaysUsed : integer;
-
-   procedure OneDirection(dx,dy : integer; Spacing : float64; Dir : ShortString);
+   procedure tDEMDataSet.OpennessOneDirection(Col,Row,RegionSizeMeters,dx,dy : integer; Spacing : float64; Dir : ShortString; var UpAngle,DownAngle,zp : float32; var RaysUsed : integer; Findings : tStringList);
+   //done like this so it can be inline
    var
       TanAngle,MinTanAngle,MaxTanAngle,PointElev : float32;
       i : integer;
@@ -1986,15 +1982,21 @@ var
          end;
       end {i loop};
       if FoundOne then begin
-         if (Findings <> Nil) then begin
-            Findings.Add(Dir + RealToString(90 - ArcTan(MaxTanAngle) / DegToRad,16,2) + DegSym + RealToString(90 + ArcTan(MinTanAngle) / DegToRad,18,2) + DegSym);
-         end;
          UpAngle := UpAngle + MaxTanAngle;
          DownAngle := DownAngle + MinTanAngle;
          inc(RaysUsed);
+         if (Findings <> Nil) then begin
+            Findings.Add(Dir + RealToString(90 - ArcTan(MaxTanAngle) / DegToRad,16,2) + DegSym + RealToString(90 + ArcTan(MinTanAngle) / DegToRad,18,2) + DegSym);
+         end;
       end;
    end;
 
+
+
+function tDEMDataSet.FigureOpenness(Col,Row,RegionSizeMeters : integer; var  Upward,Downward : float64; Findings : tStringList = Nil) : boolean;
+var
+   UpAngle,DownAngle,zp : float32;
+   RaysUsed : integer;
 begin
    Result := IsSurroundedPoint(Col,Row);
    if Not Result then exit;
@@ -2003,22 +2005,22 @@ begin
    DownAngle := 0;
    GetElevMeters(Col,Row,zp);
    case MDDef.OpennessHt of
-       opAboveGround    : zp := zp + MDDef.OpennessHowHigh;
-       opConstantHeight : zp := MDDef.OpennessHowHigh;
+      opAboveGround    : zp := zp + MDDef.OpennessHowHigh;
+      opConstantHeight : zp := MDDef.OpennessHowHigh;
    end;
 
    if (Findings <> Nil) then begin
       Findings.Add('Direction Upward Openness   Downward Openness');
    end;
 
-   if MDDef.OpennessDirs[1] then OneDirection(0,1,AverageYSpace,'N ');
-   if MDDef.OpennessDirs[2] then OneDirection(1,1,AverageDiaSpace,'NE');
-   if MDDef.OpennessDirs[3] then OneDirection(1,0,AverageXSpace,'E ');
-   if MDDef.OpennessDirs[4] then OneDirection(1,-1,AverageDiaSpace,'SE');
-   if MDDef.OpennessDirs[5] then OneDirection(0,-1,AverageYSpace,'S ');
-   if MDDef.OpennessDirs[6] then OneDirection(-1,-1,AverageDiaSpace,'SW');
-   if MDDef.OpennessDirs[7] then OneDirection(-1,0,AverageXSpace,'W ');
-   if MDDef.OpennessDirs[8] then OneDirection(-1,1,AverageDiaSpace,'NW');
+   if MDDef.OpennessDirs[1] then OpennessOneDirection(Col,Row,RegionSizeMeters,0,1,AverageYSpace,'N ',UpAngle,DownAngle,zp,RaysUsed,Findings);
+   if MDDef.OpennessDirs[2] then OpennessOneDirection(Col,Row,RegionSizeMeters,1,1,AverageDiaSpace,'NE',UpAngle,DownAngle,zp,RaysUsed,Findings);
+   if MDDef.OpennessDirs[3] then OpennessOneDirection(Col,Row,RegionSizeMeters,1,0,AverageXSpace,'E ',UpAngle,DownAngle,zp,RaysUsed,Findings);
+   if MDDef.OpennessDirs[4] then OpennessOneDirection(Col,Row,RegionSizeMeters,1,-1,AverageDiaSpace,'SE',UpAngle,DownAngle,zp,RaysUsed,Findings);
+   if MDDef.OpennessDirs[5] then OpennessOneDirection(Col,Row,RegionSizeMeters,0,-1,AverageYSpace,'S ',UpAngle,DownAngle,zp,RaysUsed,Findings);
+   if MDDef.OpennessDirs[6] then OpennessOneDirection(Col,Row,RegionSizeMeters,-1,-1,AverageDiaSpace,'SW',UpAngle,DownAngle,zp,RaysUsed,Findings);
+   if MDDef.OpennessDirs[7] then OpennessOneDirection(Col,Row,RegionSizeMeters,-1,0,AverageXSpace,'W ',UpAngle,DownAngle,zp,RaysUsed,Findings);
+   if MDDef.OpennessDirs[8] then OpennessOneDirection(Col,Row,RegionSizeMeters,-1,1,AverageDiaSpace,'NW',UpAngle,DownAngle,zp,RaysUsed,Findings);
 
    Upward := 90 - ArcTan(UpAngle / RaysUsed) / DegToRad;
    Downward := 90 + ArcTan(DownAngle / RaysUsed) / DegToRad;
@@ -3152,18 +3154,23 @@ const
    Azimuth3 : array[1..3] of float32 = (350,15,270);
    Alt3 : array[1..3] of float32 = (70,60,55);
    Weight3 : array[1..3] of float32 = (0.35,0.325,0.325);   //my approximation of their transparency settings
-   //WBT
+   //WbT
    Azimuth4 : array[1..4] of float32 = (225, 270, 315,360);
    Weight4 : array[1..4] of float32 = (0.1, 0.4, 0.4,0.1);
-   //WBT full 360
+   //WbT full 360
    Azimuth8 : array[1..8] of float32 = (0, 45, 90, 135, 180, 225, 270, 315);
    Weight8 : array[1..8] of float32 = (0.15, 0.125, 0.1, 0.05, 0.1, 0.125, 0.15, 0.2);
 var
    i : integer;
 begin
    {$If Defined(RecordMultipleRefDirs)} WriteLineToDebugFile('tDEMDataSet.ReflectanceParams in, DEM=' + AreaName); {$EndIf}
-
-   if (MDDef.MultShadeReliefMode = mhsFourFixed) then begin
+   if (MDDef.MultShadeReliefMode = mhsSingleDirection) then begin
+      MDdef.UseRefDirs := 1;
+      RefPhi[1] := MDdef.RefPhi;
+      RefAlt[1] := (90-MDdef.RefTheta);
+      RefWeight[1] := 1;
+   end
+   else if (MDDef.MultShadeReliefMode = mhsFourFixed) then begin
       MDdef.UseRefDirs := 4;
       for I := 1 to MDdef.UseRefDirs do begin
          RefPhi[i] := Azimuth4[i];
@@ -3187,12 +3194,6 @@ begin
          RefWeight[i] := Weight3[i];
         {$If Defined(RecordMultipleRefDirs)} WriteLineToDebugFile(' dir ' + IntToStr(i) + RealToString(RefPhi[i],8,3)); {$EndIf}
       end;
-   end
-   else if (MDDef.MultShadeReliefMode = mhsSingleDirection) then begin
-      MDdef.UseRefDirs := 1;
-      RefPhi[1] := MDdef.RefPhi;
-      RefAlt[1] := (90-MDdef.RefTheta);
-      RefWeight[1] := 1;
    end
    else if (MDDef.MultShadeReliefMode = mhsPick) then begin
       for I := 1 to MDdef.UseRefDirs do begin
@@ -3219,7 +3220,7 @@ begin
 end;
 
 
-function tDEMDataSet.ReflectanceValue(x,y : integer) : integer;
+function tDEMDataSet.ReflectanceValueFloat(x,y : integer; var z : float32) : boolean;
 {heavily modified for multidirectional hillshade}
 {returns reflectance value that ranges from 0 (black) to 255 (white); MaxSmallInt if undefined}
 {originally after Pelton, Colin, 1987, A computer program for hill-shading digital topographic data sets: Computers & Geosciences, vol.13, no.5, p.545-548.}
@@ -3231,53 +3232,57 @@ var
    i : integer;
    SlopeAsp : tSlopeAspectRec;
 begin
-   Result := MaxSmallInt;
-   if GetSlopeAndAspect(x,y,SlopeAsp) then begin
-      // (SlopeAsp.AspectDir <= 360) or (SlopeAsp.AspectDir >= 0) then SlopeAsp.AspectDir := 180;  //deal with undefined case for flat pixel
+   //Result := MaxSmallInt;
+   Result := GetSlopeAndAspect(x,y,SlopeAsp);
+   if Result then begin
       try
          Sum := 0;
          for I := 1 to MDdef.UseRefDirs do begin
-            //allows multi-directions
+            //allows multi-directions if i > 1
             Value := RefWeight[i] * ( (cosAlt[i] * cosDeg(MDDef.RefVertExag * SlopeAsp.SlopeDegree)) + (sinAlt[i] * sinDeg(MDDef.RefVertExag * SlopeAsp.SlopeDegree * cosDeg(RefPhi[i] - SlopeAsp.AspectDir))));
             Sum := sum + Value;
          end;
-         //Result := round(Sum / MDdef.UseRefDirs);
-         Result := ValidByteRange(round(255 * Sum));
+         z := 255 * Sum;
       except
-          on Exception do Result := MaxSmallInt;
+          on Exception do Result := false;
       end;
    end;
 end;
 
-
-function tDEMDataSet.InterpolateReflectanceValue(x,y : float64) : integer;
+function tDEMDataSet.ReflectanceValue(x,y : integer; var z : byte) : boolean;
+{heavily modified for multidirectional hillshade}
+{returns reflectance value that ranges from 0 (black) to 255 (white); MaxSmallInt if undefined}
+{originally after Pelton, Colin, 1987, A computer program for hill-shading digital topographic data sets: Computers & Geosciences, vol.13, no.5, p.545-548.}
+//https://desktop.arcgis.com/en/arcmap/10.3/tools/spatial-analyst-toolbox/how-hillshade-works.htm
+//Hillshade = 255.0 * ((cos(Zenith_rad) * cos(Slope_rad)) + (sin(Zenith_rad) * sin(Slope_rad) * cos(Azimuth_rad - Aspect_rad)))
+//If the calculation of the hillshade value is < 0, the output cell value will be = 0.
 var
-   Refs : array[1..4] of integer;
-   xt,yt : integer;
-   XIncr,YIncr : float64;
+   zf : float32;
+   //sum,value  : float64;
+   //i : integer;
+   //SlopeAsp : tSlopeAspectRec;
 begin
-   YIncr := frac(Y);
-   XIncr := frac(X);
-   if ((abs(XIncr) < 0.01) and (abs(YIncr) < 0.01)) or
-      ((abs(XIncr) > 0.99) and (abs(YIncr) > 0.99)) then begin
-      result := ReflectanceValue(round(x),round(y));
-   end
-   else begin
-       xt := trunc(x);
-       yt := trunc(y);
-       Refs[1] := ReflectanceValue(xt,yt);
-       Refs[2] := ReflectanceValue(succ(xt),yt);
-       Refs[3] := ReflectanceValue(succ(xt),succ(yt));
-       Refs[4] := ReflectanceValue(xt,succ(yt));
-       if (Refs[1] = MaxSmallInt) or (Refs[2] = MaxSmallInt) or (Refs[3] = MaxSmallInt) or (Refs[4] = MaxSmallInt) then begin
-          Result := MaxSmallInt;
-       end
-       else Result := round(  (1-XIncr) * (1-YIncr) * Refs[1]
-                  +           (1-XIncr) *    YIncr  * Refs[4]
-                  +              XIncr  * (1-YIncr) * Refs[2]
-                  +              XIncr  *    YIncr  * Refs[3]);
+   Result := ReflectanceValueFloat(x,y,zf);
+   if Result then z := ValidByteRange(round(zf));
+(*
+   //Result := MaxSmallInt;
+   Result := GetSlopeAndAspect(x,y,SlopeAsp);
+   if Result then begin
+      try
+         Sum := 0;
+         for I := 1 to MDdef.UseRefDirs do begin
+            //allows multi-directions if i > 1
+            Value := RefWeight[i] * ( (cosAlt[i] * cosDeg(MDDef.RefVertExag * SlopeAsp.SlopeDegree)) + (sinAlt[i] * sinDeg(MDDef.RefVertExag * SlopeAsp.SlopeDegree * cosDeg(RefPhi[i] - SlopeAsp.AspectDir))));
+            Sum := sum + Value;
+         end;
+         z := ValidByteRange(round(255 * Sum));
+      except
+          on Exception do Result := false;
+      end;
    end;
+*)
 end;
+
 
 
 function tDEMDataSet.ReflectanceColor(TintedReflectance : tMapType; x,y : integer) : tcolor;
@@ -3290,7 +3295,8 @@ end;
 
 function tDEMDataSet.RGBReflectanceColor(TintedReflectance : tMapType; Col,Row : integer) : tPlatformColor;
 var
-   red,green,blue,zi,r : integer;
+   red,green,blue,zi : integer;
+   r : byte;
    zv : float32;
 begin
    GetElevMeters(Col,Row,zv);
@@ -3298,8 +3304,8 @@ begin
       Result := MDdef.WaterColor;
    end
    else begin
-      R := ReflectanceValue(Col,Row);
-      if (R < MaxSmallInt) and (abs(RefMaxElev - RefMinElev) > 0.001) then begin
+      //R := ReflectanceValue(Col,Row,R);
+      if ReflectanceValue(Col,Row,R) and (abs(RefMaxElev - RefMinElev) > 0.001) then begin
          if (TintedReflectance in [mtGrayReflect]) then begin
             Result := GrayRGBTrip(r);
          end

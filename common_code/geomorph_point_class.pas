@@ -127,6 +127,7 @@ uses
    DEMDef_Routines,DEMCoord,BaseMap,
    DEM_Manager,
    MD_use_tools,
+   DEMIX_Control,
    nevadia_main;
 
 
@@ -237,7 +238,7 @@ procedure TPointClassForm.BitBtn10Click(Sender: TObject);
 var
    n1,n2 : integer;
 begin
-   Make_grid.NumHighLowNeighborsMaps(CurDEM,MDDef.WoodRegionRadiusPixels,MDdef.MinDeltaZToClassify,n1,n2);
+   DEMIX_control.NumHighLowNeighborsMaps(CurDEM,MDDef.WoodRegionRadiusPixels,MDdef.MinDeltaZToClassify,n1,n2);
 end;
 
 procedure TPointClassForm.BitBtn1Click(Sender: TObject);

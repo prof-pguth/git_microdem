@@ -1284,6 +1284,7 @@ begin
 
    Result.GraphDraw.VertLabel := '';
    Result.GraphDraw.GraphLeftLabels := tStringList.Create;
+   Result.GraphDraw.ShowGraphLeftLabels := true;
    Result.GraphDraw.GraphAxes := XPartGridOnly;
 
    {$If Defined(RecordDEMIX_evaluations_graph)} WriteLineToDebugFile('GraphAverageScoresByTile graph set up'); {$EndIf}

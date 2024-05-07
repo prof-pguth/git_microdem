@@ -917,7 +917,7 @@ begin
       SlopeAsp.dy := SlopeAsp.dy * MDDef.SlopeRegionRadius;
 
       if (MDDef.SlopeAlg in [smEightNeighborsUnweighted,smFourNeighbors,smEightNeighborsWeighted,smEightNeighborsWeightedByDistance,smFrameFiniteDifference,smSimpleDifference,smONeillAndMark]) then begin
-         if (MDDef.SlopeAlg in [smEightNeighborsUnweighted]) then begin //this is the preferred method, Evans
+         if (MDDef.SlopeAlg in [smEightNeighborsUnweighted]) then begin //preferred method, Evans
             SlopeAsp.dzdx := (+SlopeAsp.zne+SlopeAsp.ze+SlopeAsp.zse-SlopeAsp.znw-SlopeAsp.zw-SlopeAsp.zsw) / SlopeAsp.dx / 6;
             SlopeAsp.dzdy := (+SlopeAsp.znw+SlopeAsp.zn+SlopeAsp.zne-SlopeAsp.zsw-SlopeAsp.zs-SlopeAsp.zse) / SlopeAsp.dy / 6;
          end

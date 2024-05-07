@@ -21,6 +21,8 @@ unit demix_definitions;
    //{$Define RecordDEMIXRefDEM}
    //{$Define Record3DEPXFull}
    {$Define RecordDEMIX_evaluations_graph}
+   //{$Define RecordDEMIXLSgrids}
+   {//$Define RecordDEMIXhillshades}
    //{$Define RecordDiluviumFull}
    //{$Define Rec_DEMIX_Landcover}
    //{$Define RecordDEMIXStart}
@@ -138,7 +140,7 @@ var
 const
    Ref1SecPointStr = '_ref_1sec_point';
    Ref1SecAreaStr =  '_ref_1sec_area';
-   Ref1_5SecPointStr = '1.5x1sec_point';
+   Ref1_5SecPointStr = '_ref_1.5x1sec_point';
 
 //this should be rolled into a DEMIX_grid object; for now it is global variables
          const
@@ -167,8 +169,13 @@ const
             dmxFirstPoint,dmxFirstArea : integer;
 
          procedure ZeroPointAndAreaGrids(var PointGrids,AreaGrids : tDEM_int_array);
+
+
          procedure CreateDEMIXhillshadeGrids(OpenMaps : boolean = false);
          procedure CreateDEMIXSlopeRoughnessGrids(OpenMaps : boolean = false);
+         procedure CreateDEMIXOpennessGrids(OpenMaps : boolean = false);
+         function CreateDEMIX_LS_Grids(AreaName,aParam : shortstring; OpenMaps : boolean = false) : boolean;
+
          function RefGridForThisPointGrid(WhatGroup : tDEM_int_array; i : integer) : integer;
          procedure ShowDEMIXgrids(WhatFor : shortstring; PointGrids,AreaGrids : tDEM_int_array);
 
@@ -209,8 +216,9 @@ var
 
    DEMIX_final_DB_dir,
 
-   SSIMresultsDir,  //used internally, and set to one of the next three depending on which version is on
+   SSIMresultsDir, FUVresultsDir, //used internally, and set to one of the next three depending on which version is on
    DeltaSSIMresultsDir, DiluvSSIMresultsDir, RegularSSIMresultsDir,CoastalSSIMresultsDir,
+   DeltaFUVresultsDir, DiluvFUVresultsDir, RegularFUVresultsDir,CoastalFUVresultsDir,
 
    DEMIX_Ref_1sec,DEMIX_test_dems,DEMIX_diluvium_dtms,DEMIX_delta_dtms,DEMIX_coastal_dtms,  //locations for the 1" DEMs used in comparison
 
@@ -226,7 +234,7 @@ var
 
 
    DEMIX_wbt_test_DEM_output,DEMIX_wbt_ref_DEM_output,
-   ChannelMissesDir,DEMIX_diff_dist,
+   GeomorphonsDir,ChannelMissesDir,DEMIX_diff_dist,
 
    DEMIX_area_lc100,
 
@@ -258,6 +266,7 @@ function DEMIX_mode_abbreviation(DEMIX_mode : integer) : shortstring;
    procedure ModeOfDifferenceDistributions;
    procedure AddTileCharacteristicsToDB(DBonTable : integer);
    procedure AddFieldsToDEMIXDB(DBonTable : integer; theFields : tStringList);
+   procedure MakeWinsDB(DBonTable : integer; aField : shortstring);
 
    //procedure SwitchSSIMorFUVScoring(DBonTable : integer);
    procedure EvalRangeAndBestEvalForCriterion(DBonTable : integer);
@@ -302,6 +311,8 @@ function DEMIX_mode_abbreviation(DEMIX_mode : integer) : shortstring;
    procedure DeltaDTMforTestAreas(Overwrite : boolean; Areas : tStringList = Nil);
    procedure CoastalDTMforTestAreas(Overwrite : boolean; Areas : tStringList = Nil);
    procedure CreateTestAreaDEMs(Overwrite : boolean);
+   procedure AllHallucinatingDTMsforCoastalAreas(Overwrite : boolean);
+
 
 //inventory and reports
    procedure DEMIXTileSummary(DBonTable : integer);
@@ -327,6 +338,9 @@ function DEMIX_mode_abbreviation(DEMIX_mode : integer) : shortstring;
    procedure InventoryPercentileByCriterionEachDEMIXtile(DB : integer);
    procedure FindTilesInAreaForCoast;
    procedure InventoryAllDEMIXdata;
+   procedure InventoryWbWfilesByArea;
+
+procedure GeomorphonsPercentages(Overwrite : boolean; AreasWanted : tstringlist = nil);
 
 
 //channel network comparisons
@@ -364,11 +378,16 @@ procedure ClusterFrequencyForSelectedField(DBonTable : integer);
 procedure AreasInClusters(DB : integer);
 
 procedure FilterTableForDEMIXevaluation(DBonTable,Value : integer);
+function OpenGridsCreatedByExternalProgram(aProgram,AreaName,Param : shortString) : boolean;
 procedure CreateDEMIX_HANDGrids(OpenMaps : boolean = false);
 procedure CreateDEMIX_Flow_AccumulationGrids(OpenMaps : boolean = false);
+procedure CreateDEMIX_GeomorphonGrids(OpenMaps : boolean = false);
+function SAGACreateDEMIX_ConIn_Grids(OpenMaps : boolean; AreaName,aParam : shortstring) : boolean;
+
 
 procedure MapsByClusterAndDEM(DBonTable : integer);
 
+procedure ClearDerivedGrids;
 
 
 implementation
@@ -394,6 +413,7 @@ uses
 
 {$include demix_channels.inc}
 
+{$include demix_external_program_derived_grids.inc}
 
 
 procedure MapsByClusterAndDEM(DBonTable : integer);
@@ -483,6 +503,7 @@ begin
 end;
 
 
+
 procedure ShowDEMIXgrids(WhatFor : shortstring; PointGrids,AreaGrids : tDEM_int_array);
 var
    i : integer;
@@ -502,15 +523,17 @@ procedure CreateDEMIXhillshadeGrids(OpenMaps : boolean = false);
 var
    i : integer;
 begin
-    wmdem.SetPanelText(3, 'Compute Hillshade',true);
     for i := dmxFirstPoint to NumPtDEMs do begin
-       PointGrids[i] := MakeSingleNewDerivativeMap('R',PointDEMs[i],0,OpenMaps);
-       {$IfDef RecordDEMIXFull} WriteLineToDebugFile('Grid=' + IntToStr(PointGrids[i]) + ' Hillshade for ' + DEMGlb[PointDEMs[i]].AreaName); {$EndIf}
+       PointGrids[i] := CreateHillshadeMap(OpenMaps,PointDEMs[i]);
+       {$If Defined(RecordDEMIXFull) or Defined(RecordDEMIXhillshades)}
+          WriteLineToDebugFile('Grid=' + IntToStr(PointGrids[i]) + ' Hillshade for ' + DEMGlb[PointDEMs[i]].AreaName + ' ' + DEMGlb[PointGrids[i]].KeyDEMParams(true));
+       {$EndIf}
     end;
     for i := dmxFirstArea to NumAreaDEMs do begin
-       {$IfDef RecordDEMIXFull} WriteLineToDebugFile('Hillshade for ' + DEMGlb[AreaDEMs[i]].AreaName); {$EndIf}
-       AreaGrids[i] := MakeSingleNewDerivativeMap('R',AreaDEMs[i],0,OpenMaps);
-       {$IfDef RecordDEMIXFull} WriteLineToDebugFile('Grid=' + IntToStr(AreaGrids[i]) + ' Hillshade for ' + DEMGlb[PointDEMs[i]].AreaName); {$EndIf}
+       AreaGrids[i] := CreateHillshadeMap(OpenMaps,AreaDEMs[i]);
+       {$If Defined(RecordDEMIXFull) or Defined(RecordDEMIXhillshades)}
+          WriteLineToDebugFile('Grid=' + IntToStr(AreaGrids[i]) + ' Hillshade for ' + DEMGlb[PointDEMs[i]].AreaName + ' ' + DEMGlb[AreaGrids[i]].KeyDEMParams(true));
+       {$EndIf}
     end;
 end;
 
@@ -519,58 +542,26 @@ procedure CreateDEMIXSlopeRoughnessGrids(OpenMaps : boolean = false);
 var
    i : integer;
 begin
-    wmdem.SetPanelText(3, 'Compute slope/roughness',true);
     for i := dmxFirstPoint to NumPtDEMs do PointGrids2[i] := 0;  //so slope grids are returned
     for i := dmxFirstArea to NumAreaDEMs do AreaGrids2[i] := 0;  //so slope grids are returned
     for i := dmxFirstPoint to NumPtDEMs do PointGrids[i] := CreateSlopeRoughnessSlopeStandardDeviationMap(PointDEMs[i],5,PointGrids2[i],OpenMaps);
     for i := dmxFirstArea to NumAreaDEMs do AreaGrids[i] := CreateSlopeRoughnessSlopeStandardDeviationMap(AreaDEMs[i],5,AreaGrids2[i],OpenMaps);
 end;
 
-
-procedure CreateDEMIX_HANDGrids(OpenMaps : boolean = false);
+procedure CreateDEMIXOpennessGrids(OpenMaps : boolean = false);
 var
-   i : integer;
-   BreachName,FlowAccumulationName,StreamName,HANDName  : PathStr;
+   i,ad : integer;
 begin
-   for i := dmxFirstPoint to NumPtDEMs do begin
-      BreachName := '';
-      FlowAccumulationName  := '';
-      StreamName := '';
-      HANDName := '';
-      PointGrids[i] := WBT_ElevAboveStream(OpenMaps,DEMGlb[PointDEMs[i]].GeotiffDEMName,BreachName,FlowAccumulationName,StreamName,HANDName);
-   end;
-   for i := dmxFirstArea to NumAreaDEMs do begin
-      BreachName := '';
-      FlowAccumulationName  := '';
-      StreamName := '';
-      HANDName := '';
-      AreaGrids[i] := WBT_ElevAboveStream(OpenMaps,DEMGlb[AreaDEMs[i]].GeotiffDEMName,BreachName,FlowAccumulationName,StreamName,HandName);
-   end;
+    for i := dmxFirstPoint to NumPtDEMs do PointGrids2[i] := -1;  //so grids are returned
+    for i := dmxFirstArea to NumAreaDEMs do AreaGrids2[i] := -1;  //so grids are returned
+    for i := dmxFirstPoint to NumPtDEMs do PointGrids[i] := -1;  //so grids are returned
+    for i := dmxFirstArea to NumAreaDEMs do AreaGrids[i] := -1;  //so grids are returned
+
+    ad := 0;
+    for i := dmxFirstPoint to NumPtDEMs do CreateOpennessMap(OpenMaps,PointDEMs[i],250,PointGrids[i],PointGrids2[i],ad);
+    for i := dmxFirstArea to NumAreaDEMs do CreateOpennessMap(OpenMaps,AreaDEMs[i],250,AreaGrids[i],AreaGrids2[i],ad);
 end;
 
-
-procedure CreateDEMIX_Flow_AccumulationGrids(OpenMaps : boolean = false);
-var
-   i : integer;
-   BreachName,FlowAccumulationName,StreamName,HANDName  : PathStr;
-begin
-    //using Log, and using D8
-    for i := dmxFirstPoint to NumPtDEMs do begin
-      BreachName := '';
-      FlowAccumulationName  := '';
-      StreamName := '';
-      HANDName := '';
-       PointGrids[i] := WBT_FlowAccumulation(OpenMaps,True,True,DEMGlb[PointDEMs[i]].GeotiffDEMName,BreachName,FlowAccumulationName);
-    end;
-    for i := dmxFirstArea to NumAreaDEMs do begin
-      BreachName := '';
-      FlowAccumulationName  := '';
-      StreamName := '';
-      HANDName := '';
-       AreaGrids[i] := WBT_FlowAccumulation(OpenMaps,True,True,DEMGlb[AreaDEMs[i]].GeotiffDEMName,BreachName,FlowAccumulationName);
-    end;
-    {$IfDef RecordDEMIXFull} WriteLineToDebugFile('Flow accumulation grids created'); {$EndIf}
-end;
 
 
 

@@ -3538,6 +3538,24 @@ object wmdem: Twmdem
       Caption = 'Channel network map  comparison (currently hard wired)'
       Enabled = False
     end
+    object N52: TMenuItem
+      Caption = '-'
+    end
+    object N55: TMenuItem
+      Caption = 'Geomorphons map comparison'
+      object Overwrite2: TMenuItem
+        Caption = 'Overwrite'
+        OnClick = Overwrite2Click
+      end
+      object Skipifpresent1: TMenuItem
+        Caption = 'Skip if present'
+        OnClick = Skipifpresent1Click
+      end
+    end
+    object Mergegeomorphonevaluatioins1: TMenuItem
+      Caption = 'Merge geomorphon evaluatioins'
+      OnClick = Mergegeomorphonevaluatioins1Click
+    end
     object N44: TMenuItem
       Caption = '-'
     end
@@ -3591,8 +3609,15 @@ object wmdem: Twmdem
       OnClick = DeltaDTMfortestareas1Click
     end
     object OverwriteallthreecoastalDTMS1: TMenuItem
-      Caption = 'Overwrite all three coastal DTMS'
-      OnClick = OverwriteallthreecoastalDTMS1Click
+      Caption = 'Test DEM for all three coastal DTMS'
+      object Overwrite3: TMenuItem
+        Caption = 'Overwrite'
+        OnClick = Overwrite3Click
+      end
+      object Skipifdone1: TMenuItem
+        Caption = 'Skip if done'
+        OnClick = Skipifdone1Click
+      end
     end
     object Extract1: TMenuItem
       Caption = 'Extract EDTM for test areas'
@@ -3650,6 +3675,10 @@ object wmdem: Twmdem
           'Inventory test and referene DEMs by test area (missing .TIF by a' +
           'rea)'
         OnClick = ChecktestDEMs1Click
+      end
+      object InventoryWbWfilesbyarea1: TMenuItem
+        Caption = 'Inventory WbW files by area'
+        OnClick = InventoryWbWfilesbyarea1Click
       end
       object VerifytestDEMcoverages1: TMenuItem
         Caption = 'Verify test DEM coverages (center locations)'

@@ -27,41 +27,6 @@ end;
 
 
 
-function tDEMDataSet.BoxCarDetrendDEM(OpenMap : boolean; GridLimits : tGridLimits; FilterRadius : integer = 2) : integer;
-var
-   x,y,xr,yr,n : integer;
-   Sum,zt,z : float32;
-begin
-   Result := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_detrend_residual',DEMHeader.ElevUnits);
-   if (FilterRadius < 1) then ReadDefault('radius to filter (pixels)',FilterRadius);
-   StartProgress('Detrend/residual ' + AreaName);
-   for x := GridLimits.XGridLow to GridLimits.XGridHigh do begin
-      if (x mod 50 = 0) then UpDateProgressBar(x/pred(DEMheader.NumCol));
-      for y := GridLimits.YGridLow to GridLimits.YGridHigh do begin
-         Sum := 0;
-         n := 0;
-         if GetElevMetersOnGrid(x,y,zt) then begin
-            for xr := (x - FilterRadius) to (x + FilterRadius) do begin
-               for yr := (y - FilterRadius) to (y + FilterRadius) do begin
-                  if GetElevMetersOnGrid(xr,yr,z) then begin
-                     Sum := Sum + z;
-                     inc(n);
-                  end;
-               end;
-            end;
-            if (n > 0) then begin
-               zt := zt - (sum / n);
-               DEMGlb[Result].SetGridElevation(x,y,zt);
-            end;
-         end;
-      end;
-   end;
-   if OpenMap then DEMGlb[Result].SetUpMap(Result,true,mtElevSpectrum)
-   else DEMGlb[Result].CheckMaxMinElev;
-end;
-
-
-
 function tDEMDataSet.DetrendDEM(Normalize : boolean = true; FilterRadius : integer = 2) : integer;
 var
    x,y : integer;

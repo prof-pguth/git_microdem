@@ -4,7 +4,7 @@ unit clusterOptions;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 {$I nevadia_defines.inc}
@@ -95,9 +95,6 @@ begin
       CheckBox3.Checked := MDDef.ShowClusterHistograms;
       CheckBox4.Checked := MDDef.ShowMaskHistograms;
 
-      //CheckBox6.Checked := MDDef.ShowClusterResults;
-      //CheckBox7.Checked := MDDef.IncludeClusterStatistics;
-
       CheckBox5.Checked := MDDef.UnSupSamplesFullImage;
       CheckBox8.Checked := MDDef.UnSupClassFullImage;
       CheckBox9.Checked := MDDef.ClusterSensitivity;
@@ -109,8 +106,6 @@ begin
       CheckBox2.Enabled := All;
       CheckBox3.Enabled := true;
       CheckBox4.Enabled := All;
-      //CheckBox6.Enabled := All;
-      //CheckBox7.Enabled := All;
 
       ShowModal;
       if Aborted then begin

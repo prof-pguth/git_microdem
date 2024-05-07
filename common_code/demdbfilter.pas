@@ -183,7 +183,7 @@ begin
          if (dbOpts.TimeFilter <> '') then Memo3.Lines.Add(dbOpts.TimeFilter);
 
          Button1.Visible := false;
-         ComboBox1.Items := GISdb[indb].MyData.FieldsInDataBase;
+         ComboBox1.Items := GISdb[indb].MyData.FieldsInDataBase(true);
          Button1.Visible := (ComboBox1.Items.Count < MyData.FieldCount);
 
          WantedField := -99;

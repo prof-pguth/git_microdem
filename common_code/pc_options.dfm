@@ -3,17 +3,15 @@ object pc_opts_form: Tpc_opts_form
   Top = 0
   BorderIcons = []
   Caption = 'Principal components options'
-  ClientHeight = 275
-  ClientWidth = 241
+  ClientHeight = 276
+  ClientWidth = 251
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = False
   Position = poMainFormCenter
-  PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
     Left = 32

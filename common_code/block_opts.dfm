@@ -521,6 +521,7 @@ object BlockOpsForm: TBlockOpsForm
           Width = 97
           Height = 17
           Caption = 'Plan curvature'
+          Enabled = False
           TabOrder = 2
         end
         object CheckBox50: TCheckBox
@@ -529,6 +530,7 @@ object BlockOpsForm: TBlockOpsForm
           Width = 97
           Height = 17
           Caption = 'Profile curvature'
+          Enabled = False
           TabOrder = 3
         end
         object Edit9: TEdit
@@ -594,6 +596,7 @@ object BlockOpsForm: TBlockOpsForm
         Height = 114
         Caption = 'Curvature'
         Color = clGradientInactiveCaption
+        Enabled = False
         ParentBackground = False
         ParentColor = False
         TabOrder = 4
@@ -603,6 +606,7 @@ object BlockOpsForm: TBlockOpsForm
           Width = 97
           Height = 17
           Caption = 'Plan'
+          Enabled = False
           TabOrder = 0
         end
         object CheckBox18: TCheckBox
@@ -611,6 +615,7 @@ object BlockOpsForm: TBlockOpsForm
           Width = 97
           Height = 17
           Caption = 'Minimum'
+          Enabled = False
           TabOrder = 1
         end
         object CheckBox19: TCheckBox
@@ -619,6 +624,7 @@ object BlockOpsForm: TBlockOpsForm
           Width = 97
           Height = 17
           Caption = 'Maximum'
+          Enabled = False
           TabOrder = 2
         end
         object CheckBox20: TCheckBox
@@ -627,6 +633,7 @@ object BlockOpsForm: TBlockOpsForm
           Width = 97
           Height = 17
           Caption = 'Cross'
+          Enabled = False
           TabOrder = 3
         end
         object CheckBox16: TCheckBox
@@ -635,6 +642,7 @@ object BlockOpsForm: TBlockOpsForm
           Width = 97
           Height = 17
           Caption = 'Profile'
+          Enabled = False
           TabOrder = 4
         end
       end
@@ -645,6 +653,7 @@ object BlockOpsForm: TBlockOpsForm
         Height = 163
         Caption = 'Openness'
         Color = clGradientInactiveCaption
+        Enabled = False
         ParentBackground = False
         ParentColor = False
         TabOrder = 5
@@ -668,14 +677,16 @@ object BlockOpsForm: TBlockOpsForm
           Width = 97
           Height = 16
           Caption = 'Upward'
+          Enabled = False
           TabOrder = 0
         end
         object CheckBox15: TCheckBox
           Left = 21
-          Top = 40
+          Top = 35
           Width = 97
           Height = 17
           Caption = 'Downward'
+          Enabled = False
           TabOrder = 1
         end
         object Edit2: TEdit
@@ -708,6 +719,7 @@ object BlockOpsForm: TBlockOpsForm
           Width = 97
           Height = 17
           Caption = 'Difference'
+          Enabled = False
           TabOrder = 5
         end
       end

@@ -4,7 +4,7 @@ object CartMovieOptsForm: TCartMovieOptsForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Rotation Movie Options'
-  ClientHeight = 217
+  ClientHeight = 210
   ClientWidth = 294
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET

@@ -12,6 +12,7 @@ unit dem_manager;
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
       //{$Define RecordCloseDEM}
+      //{$Define RecordCleanUpTempDir}
       //{$Define TrackHorizontalDatum}
       //{$Define ShortRecordCloseDEM}
       //{$Define RecordClosingData}
@@ -1632,21 +1633,27 @@ begin
    {$EndIf}
 
    if PathIsValid('c:\mapdata\temp\grass1') then begin
+      {$IfDef RecordCleanUpTempDir} WriteLineToDebugFile('CleanUpTempDirectory, start GRASS'); {$EndIf}
       bf := tstringlist.Create;
       bf.Add( 'rd /S /Q c:\mapdata\temp\grass1');
       EndBatchFile(MDTempdir + 'clear_grass.bat',bf);
    end;
 
    if (MDTempDir <> '') then begin
+      {$IfDef RecordCleanUpTempDir} WriteLineToDebugFile('CleanUpTempDirectory, start main'); {$EndIf}
       ChDir(MDTempDir);
       DeleteMultipleFiles(MDTempDir, '*.*');
       DeleteMultipleFiles(MDTempDir + 'ts\', '*.*');
       DeleteMultipleFiles(MDTempDir + 'db_aux\', '*.*');
       DeleteMultipleFiles(MainMapData + 'Icons\','beach_ball_*.*');
       if MDDef.CleanKMLDirOnClosing then CleanOutDirectory(MainMapData + 'kml\');
-      if IncudeDirs then CleanOutDirectory(MDTempDir);
+      if IncudeDirs then begin
+         {$IfDef RecordCleanUpTempDir} WriteLineToDebugFile('CleanUpTempDirectory, call CleanOutDirectory'); {$EndIf}
+         CleanOutDirectory(MDTempDir);
+      end;
    end;
    ShowDefaultCursor;
+   {$IfDef RecordCleanUpTempDir} WriteLineToDebugFile('CleanUpTempDirectory out'); {$EndIf}
 end;
 
 

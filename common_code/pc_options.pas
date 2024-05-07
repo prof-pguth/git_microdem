@@ -1,10 +1,11 @@
 unit pc_options;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{   file verified 4/3/2016        }
-{_________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program      }
+{ PETMAR Trilobite Breeding Ranch   }
+{ Released under the MIT Licences   }
+{ Copyright (c) 2024 Peter L. Guth  }
+{___________________________________}
 
 {$I nevadia_defines.inc}
 
@@ -21,7 +22,6 @@ type
   Tpc_opts_form = class(TForm)
     HelpBtn: TBitBtn;
     OKBtn: TBitBtn;
-    //CheckBox1: TCheckBox;
     CheckBox2: TCheckBox;
     CheckBox3: TCheckBox;
     CheckBox4: TCheckBox;
@@ -54,7 +54,6 @@ var
 begin
   pc_opts_form := Tpc_opts_form.Create(Application);
   with pc_opts_form do begin
-     //CheckBox1.Checked := MDDef.PCBasicStats;
      CheckBox2.Checked := MDDef.PCCorrelation;
      CheckBox3.Checked := MDDef.PCVarCovar;
      CheckBox4.Checked := MDDef.PCEigenValues;
@@ -63,7 +62,6 @@ begin
      Edit1.Text := IntToStr(MDDef.MaxPCBands);
      Edit2.Text := RealToString(MDDef.MinPCtoShow,-18,-2);
      ShowModal;
-     //MDDef.PCBasicStats := CheckBox1.Checked;
      MDDef.PCCorrelation := CheckBox2.Checked;
      MDDef.PCVarCovar := CheckBox3.Checked;
      MDDef.PCEigenValues := CheckBox4.Checked;

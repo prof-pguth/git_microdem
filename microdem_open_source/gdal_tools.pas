@@ -1466,7 +1466,7 @@ var
    aName : PathStr;
 begin
    StartGDALbatchFile(BatchFile);
-   cmd := GDAL_warp_name + ' --config GDAL_CACHEMAX 1000 -wm 1000 --debug on -overwrite -multi -wo NUM_THREADS=8 -ot float32 ' + NoUnitShift + InName + ' ' + SaveName + s_SRSString + t_srsstring;
+   cmd := GDAL_warp_name + ' --config GDAL_CACHEMAX 1000 -wm 1000 --debug on -overwrite -multi -wo NUM_THREADS=8 -ot float32 ' + NoUnitShift + DoubleQuotedString(InName) + ' ' + DoubleQuotedString(SaveName) + s_SRSString + t_srsstring;
    {$If Defined(RecordDEMIXCompositeDatum)} WriteLineToDebugFile('VerticalDatumShiftWithGDAL cmd=' + cmd); {$EndIf}
    BatchFile.Add(cmd);
    aName := Petmar.NextFileNumber(MDTempDir, 'gdal_datumshift_','.bat');

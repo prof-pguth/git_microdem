@@ -4132,18 +4132,19 @@ object MapForm: TMapForm
           Caption = 'SAGA LS factor'
           OnClick = SAGALSfactor1Click
         end
+        object SAGAconvergenceindex1: TMenuItem
+          Caption = 'SAGA convergence index'
+          OnClick = SAGAconvergenceindex1Click
+        end
+        object SAGAprofilecurvature1: TMenuItem
+          Caption = 'SAGA profile curvature'
+          OnClick = SAGAprofilecurvature1Click
+        end
+        object SAGAplancurvature1: TMenuItem
+          Caption = 'SAGA plan curvature'
+          OnClick = SAGAplancurvature1Click
+        end
         object N63: TMenuItem
-          Caption = '-'
-        end
-        object SAGAremovesinksallopenDEMs1: TMenuItem
-          Caption = 'SAGA remove sinks all open DEMs'
-          OnClick = SAGAremovesinksallopenDEMs1Click
-        end
-        object SAGAchannelnetworkallopenDEMs1: TMenuItem
-          Caption = 'SAGA Channel Network shapefile, all open DEMs'
-          OnClick = SAGAchannelnetworkallopenDEMs1Click
-        end
-        object N46: TMenuItem
           Caption = '-'
         end
         object LinedetectionHoughtransform1: TMenuItem
@@ -6207,6 +6208,7 @@ object MapForm: TMapForm
     end
     object Curvature1: TMenuItem
       Caption = 'Curvature'
+      Enabled = False
       object Allcurvatures1: TMenuItem
         Caption = 'All 5 curvatures'
         OnClick = Allcurvatures1Click

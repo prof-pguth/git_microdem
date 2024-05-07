@@ -3723,6 +3723,13 @@ object dbtablef: Tdbtablef
   object DEMIXPopupMenu1: TPopupMenu
     Left = 624
     Top = 480
+    object OpenDEMIXgraphs1: TMenuItem
+      Caption = 'Open DEMIX graphs'
+      OnClick = OpenDEMIXgraphs1Click
+    end
+    object N58: TMenuItem
+      Caption = '-'
+    end
     object Currenttest1: TMenuItem
       Caption = 
         'Graph by evaluation criteria, with tile names and parameter sort' +
@@ -3768,6 +3775,10 @@ object dbtablef: Tdbtablef
       Caption = 'Areas in clusters'
       OnClick = Areasinclusters1Click
     end
+    object GraphwinningpercentagebyDEM1: TMenuItem
+      Caption = 'Graph winning percentage by DEM'
+      OnClick = GraphwinningpercentagebyDEM1Click
+    end
     object N51: TMenuItem
       Caption = '-'
     end
@@ -3776,6 +3787,17 @@ object dbtablef: Tdbtablef
       object TransposeSSIMR2forclusters1: TMenuItem
         Caption = 'Transpose SSIM/FUV for K-means cluster'
         OnClick = TransposeSSIMR2forclusters1Click
+      end
+      object SortbyBESTEVAL1: TMenuItem
+        Caption = 'Sort by BEST_EVAL'
+        OnClick = SortbyBESTEVAL1Click
+      end
+      object Averagetilecharacteristicsbycluster1: TMenuItem
+        Caption = 'Average tile characteristics by cluster'
+        OnClick = Averagetilecharacteristicsbycluster1Click
+      end
+      object N56: TMenuItem
+        Caption = '-'
       end
       object ClustersperDEMIXtile1: TMenuItem
         Caption = 'Number of clusters per DEMIX tile'
@@ -3797,9 +3819,13 @@ object dbtablef: Tdbtablef
         Caption = 'Evaluation range by criterion'
         OnClick = Evaluationrangebycriterion1Click
       end
-      object SortbyBESTEVAL1: TMenuItem
-        Caption = 'Sort by BEST_EVAL'
-        OnClick = SortbyBESTEVAL1Click
+      object Winpercentagebycriterion1: TMenuItem
+        Caption = 'Win percentage by criterion'
+        OnClick = Winpercentagebycriterion1Click
+      end
+      object Winpercentagesbyarea1: TMenuItem
+        Caption = 'Win percentages by area'
+        OnClick = Winpercentagesbyarea1Click
       end
     end
     object Modifythistable1: TMenuItem
@@ -3846,6 +3872,13 @@ object dbtablef: Tdbtablef
       object AddIMAGEfieldfordifferencedistributiongraphs1: TMenuItem
         Caption = 'Add IMAGE field for difference distribution graphs'
         OnClick = AddIMAGEfieldfordifferencedistributiongraphs1Click
+      end
+      object N57: TMenuItem
+        Caption = '-'
+      end
+      object Removerowsmissinganyevaluations1: TMenuItem
+        Caption = 'Remove rows missing any evaluations'
+        OnClick = Removerowsmissinganyevaluations1Click
       end
       object N50: TMenuItem
         Caption = '-'

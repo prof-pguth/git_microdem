@@ -19,7 +19,7 @@ object DemixFilterForm: TDemixFilterForm
     Top = 0
     Width = 772
     Height = 516
-    ActivePage = Settings
+    ActivePage = TabSheet4
     Align = alClient
     TabOrder = 0
     object TabSheet1: TTabSheet
@@ -833,166 +833,14 @@ object DemixFilterForm: TDemixFilterForm
         TabOrder = 7
         OnClick = CheckBox18Click
       end
-      object CheckBox22: TCheckBox
-        Left = 544
-        Top = 16
-        Width = 137
-        Height = 17
-        Caption = 'Do SSIM criteria'
-        TabOrder = 8
-        OnClick = CheckBox22Click
-      end
-      object CheckBox24: TCheckBox
-        Left = 544
-        Top = 39
-        Width = 137
-        Height = 17
-        Caption = 'Do FUV criteria'
-        TabOrder = 9
-        OnClick = CheckBox24Click
-      end
       object BitBtn38: TBitBtn
         Left = 528
         Top = 288
         Width = 113
         Height = 25
         Caption = 'Save defaults'
-        TabOrder = 10
+        TabOrder = 8
         OnClick = BitBtn38Click
-      end
-      object CheckBox25: TCheckBox
-        Left = 544
-        Top = 69
-        Width = 185
-        Height = 17
-        Caption = 'Open maps during SSIM/FUV'
-        TabOrder = 11
-        OnClick = CheckBox25Click
-      end
-      object GroupBox9: TGroupBox
-        Left = 312
-        Top = 0
-        Width = 185
-        Height = 313
-        Caption = 'SSIM/FUV parameters'
-        TabOrder = 12
-        object CheckBox12: TCheckBox
-          Left = 16
-          Top = 23
-          Width = 97
-          Height = 17
-          Caption = 'Elevation'
-          TabOrder = 0
-          OnClick = CheckBox12Click
-        end
-        object CheckBox13: TCheckBox
-          Left = 16
-          Top = 46
-          Width = 97
-          Height = 17
-          Caption = 'Slope'
-          TabOrder = 1
-          OnClick = CheckBox13Click
-        end
-        object CheckBox14: TCheckBox
-          Left = 16
-          Top = 69
-          Width = 97
-          Height = 17
-          Caption = 'Roughness'
-          TabOrder = 2
-          OnClick = CheckBox14Click
-        end
-        object CheckBox15: TCheckBox
-          Left = 16
-          Top = 92
-          Width = 97
-          Height = 17
-          Caption = 'RRI'
-          TabOrder = 3
-          OnClick = CheckBox15Click
-        end
-        object Hillshade: TCheckBox
-          Left = 16
-          Top = 115
-          Width = 97
-          Height = 17
-          Caption = 'Hillshade'
-          TabOrder = 4
-          OnClick = HillshadeClick
-        end
-        object CheckBox17: TCheckBox
-          Left = 16
-          Top = 138
-          Width = 166
-          Height = 17
-          Caption = 'TPI (detrended elevation)'
-          TabOrder = 5
-          OnClick = CheckBox17Click
-        end
-        object CheckBox19: TCheckBox
-          Left = 16
-          Top = 161
-          Width = 129
-          Height = 17
-          Caption = 'Flow accumulation'
-          TabOrder = 6
-          OnClick = CheckBox19Click
-        end
-        object CheckBox20: TCheckBox
-          Left = 16
-          Top = 184
-          Width = 97
-          Height = 17
-          Caption = 'Wetness index'
-          TabOrder = 7
-          OnClick = CheckBox20Click
-        end
-        object CheckBox21: TCheckBox
-          Left = 16
-          Top = 207
-          Width = 97
-          Height = 17
-          Caption = 'LS factor'
-          TabOrder = 8
-          OnClick = CheckBox21Click
-        end
-        object HAND: TCheckBox
-          Left = 16
-          Top = 230
-          Width = 97
-          Height = 17
-          Caption = 'HAND'
-          TabOrder = 9
-          OnClick = HANDClick
-        end
-        object CheckBox26: TCheckBox
-          Left = 16
-          Top = 253
-          Width = 129
-          Height = 17
-          Caption = 'Profile curvature'
-          TabOrder = 10
-          OnClick = CheckBox26Click
-        end
-        object CheckBox27: TCheckBox
-          Left = 16
-          Top = 272
-          Width = 97
-          Height = 22
-          Caption = 'Plan curvature'
-          TabOrder = 11
-          OnClick = CheckBox27Click
-        end
-        object CheckBox28: TCheckBox
-          Left = 16
-          Top = 293
-          Width = 137
-          Height = 17
-          Caption = 'Tangential curvature'
-          TabOrder = 12
-          OnClick = CheckBox28Click
-        end
       end
     end
     object TabSheet4: TTabSheet

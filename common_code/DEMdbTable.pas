@@ -1032,6 +1032,15 @@ type
     AddlatlongfieldstoDB1: TMenuItem;
     N55: TMenuItem;
     MapsbyclusterandDEM1: TMenuItem;
+    N56: TMenuItem;
+    Removerowsmissinganyevaluations1: TMenuItem;
+    N57: TMenuItem;
+    Averagetilecharacteristicsbycluster1: TMenuItem;
+    Winpercentagebycriterion1: TMenuItem;
+    Winpercentagesbyarea1: TMenuItem;
+    GraphwinningpercentagebyDEM1: TMenuItem;
+    OpenDEMIXgraphs1: TMenuItem;
+    N58: TMenuItem;
     //Pointfilter1: TMenuItem;
     //Pointfilter2: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
@@ -1827,6 +1836,12 @@ type
     procedure SortbyBESTEVAL1Click(Sender: TObject);
     procedure AddlatlongfieldstoDB1Click(Sender: TObject);
     procedure MapsbyclusterandDEM1Click(Sender: TObject);
+    procedure Removerowsmissinganyevaluations1Click(Sender: TObject);
+    procedure Averagetilecharacteristicsbycluster1Click(Sender: TObject);
+    procedure Winpercentagebycriterion1Click(Sender: TObject);
+    procedure Winpercentagesbyarea1Click(Sender: TObject);
+    procedure GraphwinningpercentagebyDEM1Click(Sender: TObject);
+    procedure OpenDEMIXgraphs1Click(Sender: TObject);
     //procedure Pointfilter2Click(Sender: TObject);
     //procedure Pointfilter1Click(Sender: TObject);
   private
@@ -2050,6 +2065,7 @@ uses
     demix_definitions,
     DEMIX_Control,
     DEMIX_graphs,
+    DEMIX_evals_scores_graphs,
 
    map_overlays,
    db_display_options,
@@ -2622,6 +2638,11 @@ begin
 end;
 
 
+procedure Tdbtablef.OpenDEMIXgraphs1Click(Sender: TObject);
+begin
+   StartDEMIXgraphs(DBonTable);
+end;
+
 procedure Tdbtablef.Outlinecameraview1Click(Sender: TObject);
 begin
    GISdb[DBonTable].TheMapOwner.DoFastMapRedraw;
@@ -3147,6 +3168,16 @@ begin
    GISdb[DBonTable].dbOpts.XField := 'WAVELENGTH';
    GISdb[DBonTable].dbOpts.YField := 'STD_DEV';
    N2Dgraphallopendatabases1Click(Sender);
+end;
+
+procedure Tdbtablef.Winpercentagebycriterion1Click(Sender: TObject);
+begin
+   MakeWinsDB(DBonTable,'CRITERION');
+end;
+
+procedure Tdbtablef.Winpercentagesbyarea1Click(Sender: TObject);
+begin
+   MakeWinsDB(DBonTable,'AREA');
 end;
 
 procedure Tdbtablef.Wins1Click(Sender: TObject);
@@ -8360,6 +8391,11 @@ begin
 end;
 
 
+procedure Tdbtablef.Averagetilecharacteristicsbycluster1Click(Sender: TObject);
+begin
+   MakeDBForParamStats(opByCluster,DBonTable);
+end;
+
 procedure Tdbtablef.AWATERtoAWATERKM21Click(Sender: TObject);
 begin
    ALANDtoALANDKM21Click(Sender);
@@ -9660,6 +9696,12 @@ begin
    Removelowercasecharacters1Click(Sender);
 end;
 
+procedure Tdbtablef.Removerowsmissinganyevaluations1Click(Sender: TObject);
+begin
+   FilterTableForDEMIXevaluation(DBonTable,0);
+   GISdb[DBonTable].DeleteAllSelectedRecords;
+end;
+
 procedure Tdbtablef.Removesubstringandfollowingcharacters1Click(Sender: TObject);
 begin
    Removelowercasecharacters1Click(Sender);
@@ -10370,6 +10412,11 @@ end;
 procedure Tdbtablef.TransposeSSIMR2forclusters1Click(Sender: TObject);
 begin
     DEMIX_SSIM_FUV_transpose_kmeans_new_db(DBonTable);
+end;
+
+procedure Tdbtablef.GraphwinningpercentagebyDEM1Click(Sender: TObject);
+begin
+   DEMWinningPercentageGraph(DBonTable,'');
 end;
 
 procedure Tdbtablef.Graphwithranges1Click(Sender: TObject);
