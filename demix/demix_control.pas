@@ -89,9 +89,10 @@ const
    procedure LoadDEMIXnames;
 
    function DEMIXColorFromDEMName(DEMName : shortstring) : tPlatformColor;
+   function DEMIXColorForCriterion(Criterion : shortstring) : tColor;
    function WhatTestDEMisThis(fName : PathStr) : shortstring;
    function IsDEMaDSMorDTM(DEMName : ShortString) : integer;
-   function DEMIXTestDEMLegend(Horizontal : boolean = true) : tMyBitmap;
+   function DEMIXTestDEMLegend(Horizontal : boolean = true; DEMsUsed : tstringList = nil) : tMyBitmap;
 
    procedure CompareSeriousCompetitors(DBonTable : integer);
 
@@ -215,6 +216,17 @@ var
    {$I open_demix_area.inc}
 {$EndIf}
 
+function DEMIXColorForCriterion(Criterion : shortstring) : tColor;
+var
+   Table : tMyData;
+begin
+   Table := tMyData.Create(DEMIX_criteria_dbName);
+   Table.ApplyFilter('CRITERION=' + QuotedStr(Criterion));
+   if Table.FiltRecsInDB = 1 then Result := Table.TColorFromTable
+   else Result := clRed;
+   Table.Destroy;
+end;
+
 
 function ClipTheDEMtoFullDEMIXTiles(DEM : integer; NewName : PathStr = '') : boolean;
 const
@@ -271,6 +283,7 @@ begin
       for I := 0 to pred(Areas.Count) do begin
          OpenBothPixelIsDEMs(Areas.Strings[i],'',DEMIX_Ref_1sec,DEMIX_test_dems,true);
          LoadLandcoverForDEMIXarea(Areas.Strings[i]);
+         WBT_CreateDEMIX_GeomorphonGrids(true);
       end;
    finally
       Areas.Destroy;
@@ -346,11 +359,8 @@ var
    DataDir : PathStr;
 begin
     {$IfDef ShowOpenBothPixelIsDEMs} OpenMaps := true; {$EndIf};
-
     {$If Defined(RecordDEMIX)} Stopwatch := TStopwatch.StartNew; {$EndIf}
-
     Result := true;
-
     TryToOpen(RefDir + Prefix + area + '_dtm' + Ref1SecPointStr + Ext,PointDEMs[0]);
     //with 1 sec open, see if 1.5 sec needed
     if ValidDEM(PointDEMs[0]) and (DEMGlb[PointDEMs[0]].DEMSWcornerLat > 49.999) then begin
@@ -370,15 +380,21 @@ begin
        else DataDir := TestDir;
        TryToOpen(DataDir + Prefix + Area + '_' + ALOS_centroid_names[i]  + Ext,AreaDEMs[i]);
     end;
-   if ValidDEM(AreaDEMs[-1]) then dmxFirstArea := -1 else dmxFirstArea := 0;
+   if ValidDEM(AreaDEMs[-1]) then dmxFirstArea := -1 else dmxFirstArea := 0;      //this will not happen yet since we have not used high-lat ALOS
 
    {$IfDef ShowOpenBothPixelIsDEMs} if OpenMaps then wmdem.Tile; MessageToContinue('After loading'); {$EndIf};
 
     if MDDef.DEMIX_mode in [dmAddDiluvium,dmAddDelta,dmAddCoastal] then begin
        if MDDef.DEMIX_mode in [dmAddCoastal] then MaskDEM := PointDEMs[7];
        if MDDef.DEMIX_mode in [dmAddDiluvium] then MaskDEM := AreaDEMs[2];
-       if MDDef.DEMIX_mode in [dmAddDelta] then MaskDEM := PointDEMs[8];
-       if ValidDEM(MaskDEM) then begin
+       if MDDef.DEMIX_mode in [dmAddDelta] then begin
+          MaskDEM := PointDEMs[8];
+          if (NumFilledDEMIXtilesOnDEM(MaskDEM) = 0) then begin
+             Result := false;
+             {$If Defined(RecordDEMIX)} HighlightLineToDebugFile('No filled Delta DEM tiles in ' + Area); {$EndIf}
+          end;
+       end;
+       if Result and ValidDEM(MaskDEM) then begin
           for i := dmxFirstPoint to NumPtDEMs do MaskToMatchDiluvium(PointDEMs[i]);
           for i := dmxFirstArea to NumAreaDEMs do MaskToMatchDiluvium(AreaDEMs[i]);
           {$IfDef ShowOpenBothPixelIsDEMs} wmdem.Tile; MessageToContinue('After masking'); {$EndIf};
@@ -593,15 +609,24 @@ end;
 function DEMIXColorFromDEMName(DEMName : shortstring) : tPlatformColor;
 var
    i : integer;
+   table : tMyData;
+   fName,fName2 : PathStr;
+   TheDEMs : tStringList;
+   aLine : shortstring;
 begin
    ExtractDEMIXDEMName(DEMName);
    Result := RGBtrip(185,185,185);
    if (DEMName = 'TIE') then Result := claBrown
    else begin
-      for I := 1 to NumDEMIXtestDEM do
-         if (Uppercase(DEMIXShort[i]) = DEMName) then Result := DEMIXDEMcolors[i];
+      fName := DEMIXSettingsDir + 'demix_dems.dbf';
+      if FileExists(fName) then begin
+         Table := tMyData.Create(fName);
+         Table.ApplyFilter('SHORT_NAME=' + QuotedStr(DEMname));
+         if (Table.FiltRecsInDB = 1) then begin
+            Result := Table.PlatformColorFromTable;
+         end;
+      end;
    end;
-   {$IfDef RecordDEMIX_colors} WriteLineToDebugFile('DEMIX color  ' + DEMName + '  ' + ColorStringFromPlatformColor(Result)); {$EndIf}
 end;
 
 
@@ -976,25 +1001,38 @@ end;
 
 
 
-function DEMIXTestDEMLegend(Horizontal : boolean = true) : tMyBitmap;
+function DEMIXTestDEMLegend(Horizontal : boolean = true; DEMsUsed : tstringList = nil) : tMyBitmap;
 var
    i,Left,Top : integer;
+
+         procedure AnEntry(DEM : shortString);
+         begin
+            Result.Canvas.Pen.Color := ConvertPlatformColorToTColor(DEMIXColorFromDEMName(DEM));
+            Result.Canvas.Brush.Color := Result.Canvas.Pen.Color;
+            Result.Canvas.Brush.Style := bsSolid;
+            Result.Canvas.Rectangle(Left,Top,Left + 15,Top + 15);
+            Result.Canvas.Brush.Style := bsClear;
+            Result.Canvas.TextOut(Left + 20,Top,DEM);
+            if Horizontal then Left := Left + 30 + Result.Canvas.TextWidth(DEM)
+            else Top := Top + 10 + Result.Canvas.TextHeight(DEM);
+         end;
+
 begin
    CreateBitmap(Result,1500,250);
    LoadMyFontIntoWindowsFont(MDDef.LegendFont,Result.Canvas.Font);
    Result.Canvas.Font.Size := MDDef.DEMIXlegendFontSize;
    Left := 25;
    Top := 10;
-   for i := 1 to NumDEMIXtestDEM do begin
-      if UseRetiredDEMs[i] then begin
-         Result.Canvas.Pen.Color := ConvertPlatformColorToTColor(DEMIXColorFromDEMName(DEMIXShort[i]));
-         Result.Canvas.Brush.Color := Result.Canvas.Pen.Color;
-         Result.Canvas.Brush.Style := bsSolid;
-         Result.Canvas.Rectangle(Left,Top,Left + 15,Top + 15);
-         Result.Canvas.Brush.Style := bsClear;
-         Result.Canvas.TextOut(Left + 20,Top,DEMIXShort[i]);
-         if Horizontal then Left := Left + 30 + Result.Canvas.TextWidth(DEMIXShort[i])
-         else Top := Top + 10 + Result.Canvas.TextHeight(DEMIXShort[i]);
+   if (DEMsUsed <> Nil) then begin
+      for i := 0 to pred(DEMsUsed.Count) do begin
+         AnEntry(DEMsUsed.Strings[i]);
+      end;
+   end
+   else begin
+      for i := 1 to NumDEMIXtestDEM do begin
+         if UseRetiredDEMs[i] then begin
+            AnEntry(DEMIXShort[i]);
+         end;
       end;
    end;
    PutBitmapInBox(Result);
@@ -1027,6 +1065,7 @@ begin
       AreaListFName := DEMIXSettingsDir + 'areas_list.txt';
       DEMListFName := DEMIXSettingsDir + 'dems_classic.txt';
       DEMIX_Tile_Full := MDDef.DEMIX_full_all;
+      DEMIXModeName := 'ALL';
    end
    else if (MDDef.DEMIX_mode = dmAddCoastal) then begin
       NumPtDEMs := 7;   //adds coastal
@@ -1036,6 +1075,7 @@ begin
       AreaListFName := DEMIXSettingsDir + 'areas_coastal.txt';
       DEMListFName := DEMIXSettingsDir + 'dems_add_coastal.txt';
       DEMIX_Tile_Full := MDDef.DEMIX_full_U120;
+      DEMIXModeName := 'U120';
    end
    else if (MDDef.DEMIX_mode = dmAddDiluvium) then begin
       NumPtDEMs := 7;    //adds coatal
@@ -1045,15 +1085,17 @@ begin
       AreaListFName := DEMIXSettingsDir + 'areas_diluvium.txt';
       DEMListFName := DEMIXSettingsDir + 'dems_add_diluvium.txt';
       DEMIX_Tile_Full := MDDef.DEMIX_full_U80;
+      DEMIXModeName := 'U80';
    end
    else if (MDDef.DEMIX_mode = dmAddDelta) then begin
-      NumPtDEMs := 3;    //adds coastal, delta
+      NumPtDEMs := 8;    //adds coastal, delta
       NumAreaDEMs := 2;  //adds diluvium
       SSIMresultsDir := DeltaSSIMresultsDir;
       FUVresultsDir := DeltaFUVresultsDir;
       AreaListFName := DEMIXSettingsDir + 'areas_delta.txt';
       DEMListFName := DEMIXSettingsDir + 'dems_add_delta.txt';
       DEMIX_Tile_Full := MDDef.DEMIX_full_U10;
+      DEMIXModeName := 'U10';
    end;
 
    DEMIX_Tile_Full := 25;
@@ -1127,6 +1169,7 @@ begin
 
    DEMIXSettingsDir := ProgramRootDir + 'demix\';
    DEMIX_area_dbName := DEMIXSettingsDir + 'demix_test_areas_v3.dbf';
+   DEMIX_criteria_dbName := DEMIXSettingsDir + 'demix_criteria.dbf';
 
    //DEMIX_Ref_Source := DEMIX_Base_DB_Path + 'wine_contest_v2_ref_source\';
    DEMIX_Ref_Merge := DEMIX_Base_DB_Path + 'wine_contest_v2_ref_merge\';
@@ -1136,7 +1179,6 @@ begin
    DEMIX_profile_test_dir := DEMIX_Base_DB_Path + 'wine_contest_v2_topo_profiles\';
    DEMIX_distrib_graph_dir := DEMIX_Base_DB_Path + 'wine_contest_v2_difference_distrib_graphs\';
    DEMIX_3DEP_Dir := DEMIX_Base_DB_Path + 'wine_contest_v2_3dep\';
-
 
    all_difference_results_dir := DEMIX_Base_DB_Path + 'all_difference_tile_stats\';
    DEMIX_diff_maps_dir  := DEMIX_Base_DB_Path + 'wine_contest_difference_maps\';
@@ -1157,6 +1199,14 @@ begin
 
    ChannelMissesDir := DEMIX_Base_DB_Path + 'channel_misses\';
    GeomorphonsDir := DEMIX_Base_DB_Path + 'geomorphons\';
+
+   MD_out_ref_dir := DEMIX_Base_DB_Path + 'md_out_ref_areas\';
+   MD_out_test_dir := DEMIX_Base_DB_Path + 'md_out_test_areas\';
+   wbt_out_ref_dir  := DEMIX_Base_DB_Path + 'wbt_out_ref_areas\';
+   wbt_out_test_dir := DEMIX_Base_DB_Path + 'wbt_out_test_areas\';
+   saga_out_ref_dir := DEMIX_Base_DB_Path + 'saga_out_ref_areas\';
+   saga_out_test_dir := DEMIX_Base_DB_Path + 'saga_out_test_areas\';
+
 
    RegularSSIMresultsDir := DEMIX_Base_DB_Path + 'all_ssim_results\';
    CoastalSSIMresultsDir := DEMIX_Base_DB_Path + 'coastal_SSIM_results\';
@@ -1221,7 +1271,7 @@ begin
    fName := AreaListFName;
    if FileExists(fName) or GetExistingFileName('DEMIX areas','*.txt',fName) then begin
       Result.LoadFromFile(fName);
-      if CanLimitAreas then MultiSelectSingleColumnStringList(DEMIX_mode_abbreviation(MDDef.DEMIX_mode) + ' Areas to process',PickedNum,Result,false,true);
+      if CanLimitAreas then MultiSelectSingleColumnStringList(DEMIX_mode_abbreviation(MDDef.DEMIX_mode) + ' Areas to process',PickedNum,Result,true,true);
    end;
 end;
 

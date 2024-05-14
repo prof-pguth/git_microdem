@@ -232,8 +232,8 @@ object fuv_ssim_control: Tfuv_ssim_control
     TabOrder = 6
   end
   object BitBtn1: TBitBtn
-    Left = 40
-    Top = 384
+    Left = 24
+    Top = 400
     Width = 105
     Height = 25
     Caption = 'Process'
@@ -264,5 +264,24 @@ object fuv_ssim_control: Tfuv_ssim_control
     Height = 17
     Caption = 'Show WinExec window'
     TabOrder = 10
+  end
+  object BitBtn2: TBitBtn
+    Left = 150
+    Top = 400
+    Width = 107
+    Height = 25
+    Caption = 'Merge Areas'
+    TabOrder = 11
+    OnClick = BitBtn2Click
+  end
+  object BitBtn3: TBitBtn
+    Left = 280
+    Top = 400
+    Width = 105
+    Height = 25
+    Caption = 'Make MD grids'
+    Enabled = False
+    TabOrder = 12
+    OnClick = BitBtn3Click
   end
 end

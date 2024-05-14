@@ -3734,6 +3734,7 @@ object dbtablef: Tdbtablef
       Caption = 
         'Graph by evaluation criteria, with tile names and parameter sort' +
         's'
+      Enabled = False
       OnClick = Currenttest1Click
     end
     object Graphbyareawithaveragescoreforselectedcriteria1: TMenuItem
@@ -3846,7 +3847,7 @@ object dbtablef: Tdbtablef
         OnClick = Evaluationrangeforcriterion1Click
       end
       object CiompareCOPtorivals1: TMenuItem
-        Caption = 'Compare COP to rivals'
+        Caption = 'Compare COP win/loss/tie to rivals'
         OnClick = CiompareCOPtorivals1Click
       end
       object AddlatlongfieldstoDB1: TMenuItem

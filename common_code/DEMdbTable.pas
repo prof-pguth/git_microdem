@@ -6284,19 +6284,20 @@ var
    i,j,MaskDB,OldRecs : integer;
 begin
    MaskDB := PickOpenGISDataBase('Mask area database');
-   if (MaskDB = -99) then exit;
-   j := 0;
-   for i := 1 to MaxDataBase do if (i <> MaskDB) and (GISdb[i] <> Nil) then begin
-       inc(j);
-       OldRecs := GISdb[i].MyData.TotRecsInDB;
-       wmDEM.SetPanelText(0,'Deleting ' + IntToStr(j)+  '/' + IntToStr(NumOpenDB));
-       MarkPointInPolygon(PipDelete,i,MaskDB,'','');
-       GISdb[i].DeleteAllSelectedRecords;
-       GISdb[i].theMapOwner.DoFastMapRedraw;
-       WriteLineToDebugFile(GISdb[i].dbName + ' recs deleted = ' + IntToStr(OldRecs - GISdb[i].MyData.TotRecsInDB));
-    end;
-    wmDEM.SetPanelText(0,'');
-   ShowStatus;
+   if ValidDB(MaskDB) then begin
+      j := 0;
+      for i := 1 to MaxDataBase do if (i <> MaskDB) and (GISdb[i] <> Nil) then begin
+          inc(j);
+          OldRecs := GISdb[i].MyData.TotRecsInDB;
+          wmDEM.SetPanelText(0,'Deleting ' + IntToStr(j)+  '/' + IntToStr(NumOpenDB));
+          MarkPointInPolygon(PipDelete,i,MaskDB,'','');
+          GISdb[i].DeleteAllSelectedRecords;
+          GISdb[i].theMapOwner.DoFastMapRedraw;
+          WriteLineToDebugFile(GISdb[i].dbName + ' recs deleted = ' + IntToStr(OldRecs - GISdb[i].MyData.TotRecsInDB));
+       end;
+      wmDEM.SetPanelText(0,'');
+      ShowStatus;
+   end;
 end;
 
 procedure Tdbtablef.Allprofiles1Click(Sender: TObject);
@@ -6316,7 +6317,6 @@ begin
    aFilter := GISdb[DBonTable].MyData.Filter;
    GISdb[DBonTable].ApplyGISFilter('CRITERION=' + QuotedStr('ELEV_FUV'));
    TileCharateristicsWhiskerPlotsByCluster(DBonTable,true);
-
    GISdb[DBonTable].MyData.Filter := aFilter;
 end;
 
@@ -6745,10 +6745,16 @@ end;
 
 procedure Tdbtablef.N53Click(Sender: TObject);
 begin
-   RankDEMS(DBonTable);
-   AddTileCharacteristicsToDB(DBonTable);
-   EvalRangeAndBestEvalForCriterion(DBonTable);
-   CompareSeriousCompetitors(DBonTable);
+   try
+      GetDEMIXPaths(true);
+      Removerowsmissinganyevaluations1Click(Sender);
+      RankDEMS(DBonTable);
+      AddTileCharacteristicsToDB(DBonTable);
+      EvalRangeAndBestEvalForCriterion(DBonTable);
+      CompareSeriousCompetitors(DBonTable);
+   finally
+      EndDEMIXProcessing;
+   end;
 end;
 
 procedure Tdbtablef.N7Elevationdifferencecriteria1Click(Sender: TObject);
@@ -7208,7 +7214,7 @@ end;
 
 procedure Tdbtablef.Currenttest1Click(Sender: TObject);
 begin
-   DEMIX_evaluations_graph(DBonTable);
+   //DEMIX_evaluations_graph(DBonTable);
 end;
 
 
@@ -9699,7 +9705,10 @@ end;
 procedure Tdbtablef.Removerowsmissinganyevaluations1Click(Sender: TObject);
 begin
    FilterTableForDEMIXevaluation(DBonTable,0);
-   GISdb[DBonTable].DeleteAllSelectedRecords;
+   if GISdb[DBonTable].MyData.FiltRecsInDB = 0 then begin
+      MessageToContinue('No records with missing data');
+   end
+   else GISdb[DBonTable].DeleteAllSelectedRecords;
 end;
 
 procedure Tdbtablef.Removesubstringandfollowingcharacters1Click(Sender: TObject);
@@ -9892,7 +9901,7 @@ end;
 
 procedure Tdbtablef.CopHeadtoheadrecord1Click(Sender: TObject);
 begin
-   CopHeadToHead(dbOnTable);
+   CreateCopHeadToHeaddb(dbOnTable);
 end;
 
 procedure Tdbtablef.COPoALOS1Click(Sender: TObject);

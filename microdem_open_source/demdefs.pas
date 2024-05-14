@@ -1918,6 +1918,7 @@ type
       WBDenoiseElevDiff  : float32;
 
       DEMIX_Mode,
+      DEMIX_groupWonLost,
       DEMIX_full_all,
       DEMIX_full_U120,
       DEMIX_full_U80,
@@ -1956,7 +1957,7 @@ type
       DEMIX_DoElevParamGraphs,
       DEMIX_DoHalfSecDEMs,
       ProcessLoopsForward : boolean;
-
+      DEMIXUseBins : byte;
       DEMIXSimpleTolerance,
       DEMIXSlopeTolerance,
       DEMIXRuffTolerance : float32;
@@ -1977,6 +1978,8 @@ type
        RotateVectMult : byte;
        AddFitNav,
        ApplyFilterToAllDBs,ConfirmDBEdits : boolean;
+       TwoParameterVisualization,
+       NumGraphCols,
        AspectMapMode : byte;
        XAspect,YAspect : int32;
 
@@ -2522,6 +2525,7 @@ type
       DBfilterCaseInSensitive : boolean;
       FilterGridsToEdge : boolean;
       RecNumToShowDBProgress : int16;
+      SummarySymbol,
       DefMarginLegend : byte;
       DefaultGraphXSize,DefaultGraphYSize : int32;
       NoHistFreqLabels : boolean;

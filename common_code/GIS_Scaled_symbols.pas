@@ -4,7 +4,7 @@ unit GIS_Scaled_symbols;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 {$I nevadia_defines.inc}
@@ -1770,7 +1770,6 @@ begin
    end
    else begin
       GISdb[theDB].EmpSource.Enabled := false;
-      //if MakeTimeFilter(theDB) then GISdb[theDB].RedrawLayerOnMap;
       GISdb[theDB].MakeNewMonthlyFilterAndRedraw(Month);
       GISdb[theDB].DBTablef.ShowStatus;
    end;
@@ -1800,7 +1799,6 @@ finalization
    {$IfDef RecordFormSetup} WriteLineToDebugFile('RecordFormSetup active in gis_scaled_symbols'); {$EndIf}
    {$IfDef RecordColorPalette} WriteLineToDebugFile('RecordColorPalette active in gis_scaled_symbols'); {$EndIf}
    {$IfDef RecordQuickFilter} WriteLineToDebugFile('RecordQuickFilter active in gis_scaled_symbols'); {$EndIf}
-
 end.
 
 

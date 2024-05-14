@@ -210,7 +210,7 @@ begin {procedure CompareGeomorphons}
       wmdem.SetPanelText(3, 'Load DEMs',true);
       if OpenBothPixelIsDEMs(AreaName,'',DEMIX_Ref_1sec,DEMIX_test_dems,false) then begin
          wmdem.SetPanelText(3, 'Geomorphons',true);
-         CreateDEMIX_GeomorphonGrids(false);
+         WBT_CreateDEMIX_GeomorphonGrids(false);
          {$IfDef RecordDEMIX} WriteLineToDebugFile('Geomorphons created'); {$EndIf}
           Results := tStringList.Create;
           aline := 'DEMIX_TILE,AREA,LAT,LONG,CRITERION';

@@ -3435,7 +3435,7 @@ object wmdem: Twmdem
     Left = 896
     Top = 336
     object OpenDEMIXdatabase1: TMenuItem
-      Caption = 'Open DEMIX database'
+      Caption = 'Open DEMIX database for map analysis'
       OnClick = OpenDEMIXdatabase1Click
     end
     object Advancedanalysis1: TMenuItem
@@ -3706,6 +3706,7 @@ object wmdem: Twmdem
       end
       object DiluviumDEMandDEMIXDBoverlap1: TMenuItem
         Caption = 'Diluvium DEM and DEMIX DB overlap'
+        Enabled = False
         OnClick = DiluviumDEMandDEMIXDBoverlap1Click
       end
       object DEMIXtilesperareaandcoastalsubset1: TMenuItem

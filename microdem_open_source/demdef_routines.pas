@@ -2434,11 +2434,12 @@ var
       with MDIniFile,MDDef do begin
          AParameter('DEMIX','DEMIX_mode',DEMIX_Mode,dmNotYetDefined);
          AParameter('DEMIX','DEMIX_high',DEMIX_highlat,true);
-
+         AParameter('DEMIX','TwoParameterVisualization',TwoParameterVisualization,0);
          AParameter('DEMIX','DEMIX_criterion_tolerance_fName',DEMIX_criterion_tolerance_fName,'');
          AParameter('DEMIX','DEMIX_base_dir',DEMIX_base_dir,'');
          AParameter('DEMIX','DEMIX_default_area',DEMIX_default_area,'');
          AParameter('DEMIX','DEMIX_default_tile',DEMIX_default_tile,'');
+         AParameter('DEMIX','DEMIX_groupWonLost',DEMIX_groupWonLost,0);
 
          AParameter('DEMIX','DEMIX_xsize',DEMIX_xsize,900);
          AParameter('DEMIX','DEMIX_ysize',DEMIX_ysize,600);
@@ -2495,6 +2496,7 @@ var
          AParameter('DEMIX','DEMIX_overwrite_enabled',DEMIX_overwrite_enabled,true);
          AParameter('DEMIX','DEMIX_Base_DB_Path',DEMIX_Base_DB_Path,'');
          AParameter('DEMIX','DEMIXlegendFontSize',DEMIXlegendFontSize,18);
+         AParameter('DEMIX','DEMIXUseBins',DEMIXUseBins,6);
       end;
    end;
 
@@ -3694,6 +3696,7 @@ begin
 
       AParameterShortFloat('Graph','GraphDensityXBlock',GraphDensityXBlock,1);
       AParameterShortFloat('Graph','GraphDensityYBlock',GraphDensityYBlock,1);
+      AParameter('Graph','SummarySymbol',SummarySymbol,0);
       AParameter('Graph','FrameLineWidth',FrameLineWidth,2);
       AParameter('Graph','TransparentGIF',TransparentGIF,true);
       AParameter('Graph','TransparentPNG',TransparentPNG,true);
@@ -3703,6 +3706,7 @@ begin
       AParameter('Graph','GIFDefaultSize',GIFFontSize,18);
       AParameter('Graph','GIFfileLabels',GIFfileLabels,false);
       AParameter('Graph','DefMarginLegend',DefMarginLegend,0);
+      AParameter('Graph','NumGraphCols',NumGraphCols,3);
 
       AParameter('Graph','JPEGQuality',JPEGQuality,50);
       AParameter('Graph','DefaultGraphXSize',DefaultGraphXSize,600);

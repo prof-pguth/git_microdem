@@ -254,6 +254,21 @@ begin
 end;
 
 
+function NumFilledDEMIXtilesOnDEM(DEM : integer) : integer;
+var
+   db : integer;
+   Name : shortstring;
+begin
+   if ValidDEM(DEM) then begin
+      db := DEMIXtileFill(DEM,DEMGlb[DEM].DEMBoundBoxGeo,False);
+      GISdb[DB].ApplyGISFilter('GRID_FULL >' + IntToStr(DEMIX_Tile_Full));
+      Result := GISdb[db].MyData.FiltRecsInDB;
+      CloseAndNilNumberedDB(db);
+   end
+   else Result := 0;
+end;
+
+
 function TMapForm.DEMIXtilesOnMap(RecordFill : tStringList = Nil) : tStringList;
 var
    bb : sfBoundBox;

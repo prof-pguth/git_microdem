@@ -153,6 +153,7 @@ type
     CheckBox18: TCheckBox;
     CheckBox16: TCheckBox;
     BitBtn38: TBitBtn;
+    BitBtn40: TBitBtn;
     procedure BitBtn1Click(Sender: TObject);
     procedure LoadClick(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
@@ -212,21 +213,11 @@ type
     procedure BitBtn39Click(Sender: TObject);
     procedure CheckBox4Click(Sender: TObject);
     procedure CheckBox23Click(Sender: TObject);
-   // procedure BitBtn6Click(Sender: TObject);
     procedure CheckBox18Click(Sender: TObject);
     procedure CheckBox3Click(Sender: TObject);
     procedure LoadOneSecRefCheckBoxClick(Sender: TObject);
-    //procedure CheckBox19Click(Sender: TObject);
-    //procedure CheckBox20Click(Sender: TObject);
-    //procedure CheckBox21Click(Sender: TObject);
-    //procedure CheckBox22Click(Sender: TObject);
-    //procedure CheckBox24Click(Sender: TObject);
     procedure BitBtn38Click(Sender: TObject);
-    //procedure CheckBox25Click(Sender: TObject);
-    //procedure CheckBox26Click(Sender: TObject);
-    //procedure CheckBox27Click(Sender: TObject);
-    //procedure CheckBox28Click(Sender: TObject);
-    //procedure CheckBox4Click(Sender: TObject);
+    procedure BitBtn40Click(Sender: TObject);
   private
     { Private declarations }
     procedure ZeroDEMs;
@@ -236,8 +227,6 @@ type
     procedure DifferenceMapsAllAreas(WhatFor : integer);
     procedure GetUsingStringLists;
     procedure MakeGeomorphometricMaps(What : shortstring; var  DEMSwanted : tDEMbooleanArray);
-    //procedure SSIMComputations(Option : integer);
-    //procedure SSIMprep(AreaName,WhatFor : shortstring; AllTiles: tStringList; GridCorrelations : tStringList);
   public
     { Public declarations }
     DB : integer;
@@ -411,7 +400,7 @@ end;
 
 
 procedure RescaleDEMs(DEMsWanted : tDEMbooleanArray);
-   //this moves all the RRI maps to the same color scale, but does not work very well
+   //this moves all RRI maps to same color scale, but does not work very well
 var
    Max,Min : float32;
    i : integer;
@@ -472,20 +461,14 @@ begin
    if false then begin
       LoadComboBoxFromDBField(db,DemixFilterForm.ComboBox1,'DEMIX_TILE');
       LoadComboBoxFromDBField(db,DemixFilterForm.ComboBox4,'AREA');
-      //LoadComboBoxFromDBField(db,DemixFilterForm.ComboBox5,'DEMIX_TILE');
-      //LoadComboBoxFromDBField(db,DemixFilterForm.ComboBox6,'CRITERION');
    end
    else begin
       DemixFilterForm.ComboBox1.Items.LoadFromFile(DEMIXSettingsDir + 'tiles_list.txt');
       DemixFilterForm.ComboBox4.Items.LoadFromFile(AreaListFName);
-      //DemixFilterForm.ComboBox5.Items.LoadFromFile(DEMIXSettingsDir + 'tiles_list.txt');
-      //DemixFilterForm.ComboBox6.Items.LoadFromFile(DEMIXSettingsDir + 'criteria_all.txt');
    end;
 
    DemixFilterForm.ComboBox1.Text := MDDef.DEMIX_default_tile;
    DemixFilterForm.ComboBox4.Text := MDDef.DEMIX_default_area;
-   //DemixFilterForm.ComboBox5.Text := MDDef.DEMIX_default_tile;
-   //DemixFilterForm.ComboBox6.ItemIndex := 0;
 
    DemixFilterForm.Show;
    {$If Defined(RecordDEMIX) or Defined(TrackOpenHandles)} WriteOpenHandlestoDebugLog('DoDEMIXFilter out'); {$EndIf}
@@ -1389,6 +1372,12 @@ begin
    end;
 end;
 
+
+procedure TDemixFilterForm.BitBtn40Click(Sender: TObject);
+begin
+//cannot be enabled until area is loaded via the new structure
+   WBT_CreateDEMIX_GeomorphonGrids(true);
+end;
 
 procedure TDemixFilterForm.BitBtn4Click(Sender: TObject);
 begin

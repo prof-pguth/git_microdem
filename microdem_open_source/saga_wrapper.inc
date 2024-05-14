@@ -11,25 +11,6 @@
 
 //  https://sourceforge.net/p/saga-gis/wiki/Executing%20Modules%20with%20SAGA%20CMD/#:~:text=SAGA%20CMD%20is%20a%20command,application%20like%20a%20web%20server.
 
-(*
- Algorithm 'Sink Removal' starting…
-Input parameters:
-{ 'DEM' : 'C:/temp/canyon_range/canyon_range_COP.tif', 'DEM_PREPROC' : 'TEMPORARY_OUTPUT', 'METHOD' : 1, 'SINKROUTE' : None, 'THRESHOLD' : False, 'THRSHEIGHT' : 100 }
-
-ta_preprocessor "Sink Removal" -DEM "C:/Users/pguth/AppData/Local/Temp/processing_rDPKFj/f38374e4abec45d0b2951b2280afff43/canyonrangeCOP.sgrd" -METHOD 1 -THRESHOLD false -THRSHEIGHT 100.0 -DEM_PREPROC "C:/Users/pguth/AppData/Local/Temp/processing_rDPKFj/5e3826c0da1d4b1c994adef706c2d79a/DEM_PREPROC.sdat"
-
-
-
-Algorithm 'Channel Network' starting…
-Input parameters:
-{ 'CHNLNTWRK' : 'TEMPORARY_OUTPUT', 'CHNLROUTE' : 'TEMPORARY_OUTPUT', 'DIV_CELLS' : 5, 'DIV_GRID' : None, 'ELEVATION' : 'C:/temp/canyon_range/canyon_range_COP.tif', 'INIT_GRID' : 'C:/temp/canyon_range/canyon_range_COP.tif', 'INIT_METHOD' : 2, 'INIT_VALUE' : 0, 'MINLEN' : 10, 'SHAPES' : 'TEMPORARY_OUTPUT', 'SINKROUTE' : None, 'TRACE_WEIGHT' : None }
-
-ta_channels "Channel Network" -ELEVATION "C:/Users/pguth/AppData/Local/Temp/processing_rDPKFj/f38374e4abec45d0b2951b2280afff43/canyonrangeCOP.sgrd"
-  -INIT_GRID "C:/Users/pguth/AppData/Local/Temp/processing_rDPKFj/f38374e4abec45d0b2951b2280afff43/canyonrangeCOP.sgrd"
-  -INIT_METHOD 2 -INIT_VALUE 0.0 -DIV_CELLS 5 -MINLEN 10
-  -CHNLNTWRK "C:/Users/pguth/AppData/Local/Temp/processing_rDPKFj/78fcdc4180ba4343beafaf3dc5267ff2/CHNLNTWRK.sdat" -CHNLROUTE "C:/Users/pguth/AppData/Local/Temp/processing_rDPKFj/b8eeb6cc8a244aef9058514ad6e4b7ae/CHNLROUTE.sdat" -SHAPES "C:/Users/pguth/AppData/Local/Temp/processing_rDPKFj/578df69586ac4544b9e5384bd8e7650e/SHAPES.shp"
-*)
-
 
  function IsSagaCMDthere : boolean;
  begin
@@ -92,7 +73,7 @@ var
    {$If Defined(RecordSAGALS)} Stopwatch : tStopwatch; {$EndIf}
 begin
    if IsSagaCMDthere then begin
-      if (ConIndexGridName = '') then ConIndexGridName := MDTempDir + 'saga_ls_factor_' + ExtractFileNameNoExt(InName) + '.tif';
+      if (ConIndexGridName = '') then ConIndexGridName := MDTempDir + 'saga_CONIN_' + ExtractFileNameNoExt(InName) + '.tif';
       {$If Defined(RecordSAGALS)} Stopwatch := TStopwatch.StartNew; {$EndIf}
       cmd := MDDef.SagaCMD + ' ta_compound 0 -ELEVATION ' + InName + ' -CONVERGENCE ' + ConIndexGridName;
       Result := SAGAMap(cmd,ConIndexGridName,euUndefined,OpenMap);

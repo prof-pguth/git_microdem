@@ -19,7 +19,7 @@ object DemixFilterForm: TDemixFilterForm
     Top = 0
     Width = 772
     Height = 516
-    ActivePage = TabSheet4
+    ActivePage = TabSheet1
     Align = alClient
     TabOrder = 0
     object TabSheet1: TTabSheet
@@ -503,6 +503,16 @@ object DemixFilterForm: TDemixFilterForm
         Caption = 'Reference DSMs'
         TabOrder = 43
         OnClick = CheckBox16Click
+      end
+      object BitBtn40: TBitBtn
+        Left = 632
+        Top = 80
+        Width = 129
+        Height = 25
+        Caption = 'Load Geomorphons'
+        Enabled = False
+        TabOrder = 44
+        OnClick = BitBtn40Click
       end
     end
     object TabSheet3: TTabSheet

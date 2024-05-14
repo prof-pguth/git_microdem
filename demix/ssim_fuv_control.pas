@@ -49,9 +49,13 @@ type
     CheckBox9: TCheckBox;
     CheckBox10: TCheckBox;
     CheckBox157: TCheckBox;
+    BitBtn2: TBitBtn;
+    BitBtn3: TBitBtn;
     procedure FormCreate(Sender: TObject);
     procedure BitBtn1Click(Sender: TObject);
     procedure BitBtn38Click(Sender: TObject);
+    procedure BitBtn2Click(Sender: TObject);
+    procedure BitBtn3Click(Sender: TObject);
   private
     { Private declarations }
     procedure CheckParameters;
@@ -112,13 +116,35 @@ end;
 procedure Tfuv_ssim_control.BitBtn1Click(Sender: TObject);
 
    procedure DoOne(Mode : byte);
+   (*
+         const
+            SRTM_centroid_names : array[-1..PossPt] of shortstring = ('REF_HI_PNT','REF_POINT','COP','TANDEM','FABDEM','NASA','SRTM','ASTER','COAST','DELTA');
+            ALOS_centroid_names : array[-1..PossArea] of shortstring = ('REF_HI_AREA','REF_AREA','ALOS','DILUV');
+   *)
+
    var
       Areas : tStringList;
    begin
       MDDef.DEMIX_mode := Mode;
       SetParamsForDEMIXmode;
-      Areas := DEMIX_AreasWanted(not MDDef.DEMIX_all_areas);
-      AreaSSIMandFUVComputations(MDDef.DEMIX_overwrite_enabled,Areas);
+      if (Sender = BitBtn1) or (Sender = BitBtn3) then Areas := DEMIX_AreasWanted(not MDDef.DEMIX_all_areas);
+      if (Sender = BitBtn1) then begin
+         AreaSSIMandFUVComputations(MDDef.DEMIX_overwrite_enabled,Areas);
+      end
+      else if (Sender = BitBtn3) then begin
+(*
+         case Mode of
+            dmClassic : Make_MD_derivedGrids(Areas);
+            dmAddCoastal : MakeTerrainGridsFromMICRODEM('J:\wine_contest\coastal_test_dems',7,true);
+            dmAddDiluvium : MakeTerrainGridsFromMICRODEM('J:\wine_contest\diluvium_test_dems',2,false);
+            dmAddDelta : MakeTerrainGridsFromMICRODEM('J:\wine_contest\delta_test_dems',8,true);
+         end;
+*)
+      end
+      else begin
+         if MDDef.DoFUV then MergeCSVtoCreateFinalDB(FUVresultsDir,'_fuv_results.csv','_fuv_demix_db_');
+         if MDDef.DoSSIM then MergeCSVtoCreateFinalDB(SSIMresultsDir,'_ssim_results.csv','_ssim_demix_db_');
+      end;
       Areas.Destroy;
    end;
 
@@ -138,10 +164,20 @@ begin
 end;
 
 
+procedure Tfuv_ssim_control.BitBtn2Click(Sender: TObject);
+begin
+   BitBtn1Click(Sender);
+end;
+
 procedure Tfuv_ssim_control.BitBtn38Click(Sender: TObject);
 begin
     CheckParameters;
     SaveMDdefaults;
+end;
+
+procedure Tfuv_ssim_control.BitBtn3Click(Sender: TObject);
+begin
+   BitBtn1Click(Sender);
 end;
 
 procedure Tfuv_ssim_control.CheckParameters;

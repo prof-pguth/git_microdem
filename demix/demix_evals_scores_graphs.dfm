@@ -2,7 +2,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
   Left = 0
   Top = 0
   ClientHeight = 470
-  ClientWidth = 624
+  ClientWidth = 1071
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -15,8 +15,8 @@ object eval_scores_graph_form: Teval_scores_graph_form
   OnCreate = FormCreate
   TextHeight = 15
   object Label1: TLabel
-    Left = 376
-    Top = 68
+    Left = 528
+    Top = 339
     Width = 86
     Height = 15
     Caption = 'Legend font size'
@@ -35,11 +35,25 @@ object eval_scores_graph_form: Teval_scores_graph_form
     Height = 15
     Caption = 'Graph x size'
   end
+  object Label4: TLabel
+    Left = 680
+    Top = 300
+    Width = 107
+    Height = 15
+    Caption = 'Complex graph bins'
+  end
+  object Label5: TLabel
+    Left = 904
+    Top = 40
+    Width = 81
+    Height = 15
+    Caption = 'Graph columns'
+  end
   object RadioGroup1: TRadioGroup
-    Left = 368
+    Left = 416
     Top = 96
-    Width = 185
-    Height = 89
+    Width = 137
+    Height = 73
     Caption = 'Graph on x-axis'
     Enabled = False
     ItemIndex = 0
@@ -59,10 +73,10 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnClick = BitBtn1Click
   end
   object RadioGroup2: TRadioGroup
-    Left = 368
-    Top = 191
-    Width = 185
-    Height = 90
+    Left = 416
+    Top = 175
+    Width = 137
+    Height = 74
     Caption = 'Graph on y axis'
     Enabled = False
     ItemIndex = 1
@@ -109,8 +123,8 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnClick = BitBtn3Click
   end
   object Edit1: TEdit
-    Left = 468
-    Top = 67
+    Left = 620
+    Top = 338
     Width = 69
     Height = 23
     TabOrder = 7
@@ -154,8 +168,8 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnClick = BitBtn5Click
   end
   object RadioGroup4: TRadioGroup
-    Left = 207
-    Top = 8
+    Left = 583
+    Top = 81
     Width = 130
     Height = 209
     Caption = 'Scatter plot SSIM/FUV'
@@ -251,11 +265,11 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnClick = BitBtn12Click
   end
   object BitBtn13: TBitBtn
-    Left = 192
-    Top = 380
-    Width = 137
+    Left = 184
+    Top = 409
+    Width = 145
     Height = 25
-    Caption = 'Best by slope/barren'
+    Caption = 'Cop wins,  slope/barren'
     TabOrder = 21
     OnClick = BitBtn13Click
   end
@@ -287,8 +301,8 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnClick = BitBtn15Click
   end
   object BitBtn16: TBitBtn
-    Left = 192
-    Top = 440
+    Left = 568
+    Top = 437
     Width = 145
     Height = 25
     Caption = 'Best eval colored by slope'
@@ -303,5 +317,192 @@ object eval_scores_graph_form: Teval_scores_graph_form
     Caption = 'Merge graph panels'
     TabOrder = 26
     OnClick = BitBtn2Click
+  end
+  object Memo1: TMemo
+    Left = 184
+    Top = 8
+    Width = 121
+    Height = 220
+    Lines.Strings = (
+      'Memo1')
+    ScrollBars = ssVertical
+    TabOrder = 27
+  end
+  object BitBtn18: TBitBtn
+    Left = 311
+    Top = 39
+    Width = 75
+    Height = 25
+    Caption = 'Pick'
+    TabOrder = 28
+    OnClick = BitBtn18Click
+  end
+  object BitBtn19: TBitBtn
+    Left = 320
+    Top = 72
+    Width = 75
+    Height = 25
+    Caption = 'Load file'
+    TabOrder = 29
+    OnClick = BitBtn19Click
+  end
+  object BitBtn20: TBitBtn
+    Left = 320
+    Top = 112
+    Width = 75
+    Height = 25
+    Caption = 'Save to file'
+    TabOrder = 30
+    OnClick = BitBtn20Click
+  end
+  object BitBtn21: TBitBtn
+    Left = 320
+    Top = 144
+    Width = 75
+    Height = 25
+    Caption = 'All in DB'
+    TabOrder = 31
+    OnClick = BitBtn21Click
+  end
+  object BitBtn17: TBitBtn
+    Left = 24
+    Top = 409
+    Width = 145
+    Height = 25
+    Caption = 'Best eval filtered by slope'
+    TabOrder = 32
+    OnClick = BitBtn17Click
+  end
+  object BitBtn22: TBitBtn
+    Left = 128
+    Top = 368
+    Width = 193
+    Height = 25
+    Caption = 'Win vs Cop, filtered by slope'
+    TabOrder = 33
+    OnClick = BitBtn22Click
+  end
+  object BitBtn23: TBitBtn
+    Left = 607
+    Top = 39
+    Width = 90
+    Height = 25
+    Caption = 'Merge graphs'
+    TabOrder = 34
+    OnClick = BitBtn23Click
+  end
+  object BitBtn24: TBitBtn
+    Left = 744
+    Top = 370
+    Width = 185
+    Height = 25
+    Caption = 'Best eval, by slope/barren'
+    TabOrder = 35
+    OnClick = BitBtn24Click
+  end
+  object Edit4: TEdit
+    Left = 808
+    Top = 306
+    Width = 65
+    Height = 23
+    TabOrder = 36
+    Text = 'Edit4'
+    OnChange = Edit4Change
+  end
+  object RadioGroup3: TRadioGroup
+    Left = 744
+    Top = 32
+    Width = 113
+    Height = 65
+    Caption = 'Symbols'
+    ItemIndex = 0
+    Items.Strings = (
+      'Squares'
+      'Circles')
+    TabOrder = 37
+    OnClick = RadioGroup3Click
+  end
+  object RadioGroup6: TRadioGroup
+    Left = 744
+    Top = 112
+    Width = 113
+    Height = 65
+    Caption = '2 Geomorph Plots'
+    ItemIndex = 0
+    Items.Strings = (
+      'Pie charts'
+      'All points')
+    TabOrder = 38
+    OnClick = RadioGroup6Click
+  end
+  object BitBtn25: TBitBtn
+    Left = 744
+    Top = 432
+    Width = 185
+    Height = 25
+    Caption = 'COP FUV by slope/barren'
+    TabOrder = 39
+    OnClick = BitBtn25Click
+  end
+  object BitBtn26: TBitBtn
+    Left = 744
+    Top = 401
+    Width = 185
+    Height = 25
+    Caption = 'ALOS FUV by slope/barren'
+    TabOrder = 40
+    OnClick = BitBtn26Click
+  end
+  object Edit5: TEdit
+    Left = 991
+    Top = 37
+    Width = 42
+    Height = 23
+    TabOrder = 41
+    Text = 'Edit5'
+    OnChange = Edit5Change
+  end
+  object BitBtn27: TBitBtn
+    Left = 920
+    Top = 72
+    Width = 75
+    Height = 25
+    Caption = 'New DB'
+    TabOrder = 42
+    OnClick = BitBtn27Click
+  end
+  object RadioGroup7: TRadioGroup
+    Left = 744
+    Top = 184
+    Width = 113
+    Height = 75
+    Caption = 'Group Won/Lost'
+    ItemIndex = 0
+    Items.Strings = (
+      'By test DEM'
+      'By criteriion')
+    TabOrder = 43
+    OnClick = RadioGroup7Click
+  end
+  object Memo2: TMemo
+    Left = 887
+    Top = 133
+    Width = 114
+    Height = 89
+    Lines.Strings = (
+      '(None)'
+      'AVG_SLOPE>30'
+      'AVG_SLOPE>5'
+      'BARREN_PC>40')
+    TabOrder = 44
+  end
+  object BitBtn28: TBitBtn
+    Left = 912
+    Top = 232
+    Width = 121
+    Height = 25
+    Caption = 'Best evzl with filters'
+    TabOrder = 45
+    OnClick = BitBtn28Click
   end
 end

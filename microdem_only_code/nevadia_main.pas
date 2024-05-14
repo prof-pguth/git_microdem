@@ -2821,7 +2821,7 @@ var
    db : integer;
 begin
    StopSplashing;
-   LastDataBase :=DEMIX_final_DB_dir;
+   LastDataBase := DEMIX_final_DB_dir;
    db := OpenMultipleDataBases('DEMIX graphs');
    if ValidDB(db) then StartDEMIXgraphs(DB);
 end;
@@ -4296,7 +4296,7 @@ end;
 procedure Twmdem.MergeSSIMFUV1Click(Sender: TObject);
 begin
    GetDEMIXpaths;
-   if MDDef.DoFUV then MergeCSVtoCreateFinalDB(SSIMresultsDir,'_fuv_results.csv','_fuv_demix_db_');
+   if MDDef.DoFUV then MergeCSVtoCreateFinalDB(FUVresultsDir,'_fuv_results.csv','_fuv_demix_db_');
    if MDDef.DoSSIM then MergeCSVtoCreateFinalDB(SSIMresultsDir,'_ssim_results.csv','_ssim_demix_db_');
 end;
 
@@ -4635,7 +4635,6 @@ end;
 procedure Twmdem.OpenmapsforDEMIXtestarea1Click(Sender: TObject);
 begin
    OpenDEMIXAreaMaps;
-   //CreateDEMIX_GeomorphonGrids(true);
 end;
 
 procedure Twmdem.Openmultigrids1Click(Sender: TObject);

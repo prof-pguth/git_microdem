@@ -3093,6 +3093,7 @@ function DEMIXtileBoundingBox(tName : shortString; PixelIsAreaSafe : boolean = f
 procedure DEMIXtileCentroid(tName : shortString; var Lat,Long : float32);
 function LoadDEMIXtileOutlinesNoMap(var DEMIXfName : PathStr; WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false; OpenTable : boolean = true) : integer;
 function DEMIXtilesOnDEM(DEM : integer; RecordFill : tStringList = Nil) : tStringList;
+function NumFilledDEMIXtilesOnDEM(DEM : integer) : integer;
 
 
 procedure CreateDEMSelectionMap(DEM : integer; DrawIt : boolean = true; usePC : boolean = true; inMapType : tMapType = mtElevRainbow);

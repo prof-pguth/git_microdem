@@ -1211,7 +1211,7 @@ var
                 GISdb[DBonTable].MyData.SetFieldByNameAsFloat(RankDEMs[i] + '_WIN',StartDEM);
              end
              else begin
-                WriteLineToDebugFile(IntToStr(i) + '  ' + RankDEMs[i] + RealToString(BestScore/NumTies,6,-2) + RealToString(Values[i],8,2));
+                WriteLineToDebugFile(IntToStr(i) + '  ' + RankDEMs[i] + '  ' + RealToString(BestScore/NumTies,6,-2) + RealToString(Values[i],8,2));
                 MessageToContinue('check this out!!');
              end;
              {$If Defined(RecordDEMIXties)} WriteLineToDebugFile(RankDEMs[i] + RealToString(BestScore/NumTies,6,-2) + RealToString(Values[i],8,2)); {$EndIf}
@@ -1233,9 +1233,12 @@ begin {procedure RankDEMS}
     GISdb[DBonTable].AddFieldToDataBase(ftString,'DEM_LOW_SC',48);
     if GISdb[DBonTable].MyData.GetFieldLength('DEM_LOW_SC') < 48 then GISdb[DBonTable].MyData.TrimField('DEM_LOW_SC',48);
 
-    for DEM := 1 to NumDEMIXtestDEM do begin
-       GISdb[DBonTable].AddFieldToDataBase(ftFloat,DEMIXshort[DEM] + '_SCR',6,2);
-       GISdb[DBonTable].AddFieldToDataBase(ftFloat,DEMIXshort[DEM] + '_WIN',6,2);
+    //for DEM := 1 to NumDEMIXtestDEM do begin
+    for DEM := 1 to MaxDEMIXDEM do begin
+       if GISdb[DBonTable].MyData.FieldExists(AllDEMIXTheDEMs[DEM]) then begin
+          GISdb[DBonTable].AddFieldToDataBase(ftFloat,AllDEMIXTheDEMs[DEM] + '_SCR',6,2);
+          GISdb[DBonTable].AddFieldToDataBase(ftFloat,AllDEMIXTheDEMs[DEM] + '_WIN',6,2);
+       end;
     end;
     GISdb[DBonTable].AddFieldToDataBase(ftFloat,'TOLERANCE',9,6);
     GISdb[DBonTable].AddFieldToDataBase(ftInteger,'NUM_TIES',2);
@@ -1263,11 +1266,14 @@ begin {procedure RankDEMS}
           else begin
              //extract scores
              UsedDEMs := 0;
-             for DEM := 1 to NumDEMIXtestDEM do begin
-                inc(UsedDEMs);
-                RankDEMs[UsedDEMs] := DEMIXShort[DEM];
-                Values[UsedDEMs] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(DEMIXShort[DEM]);
-                {$If Defined(RecordDEMIXties)} WriteLineToDebugFile(aLine); {$EndIf}
+             //for DEM := 1 to NumDEMIXtestDEM do begin
+             for DEM := 1 to MaxDEMIXDEM do begin
+                if GISdb[DBonTable].MyData.FieldExists(AllDEMIXTheDEMs[DEM]) then begin
+                   inc(UsedDEMs);
+                   RankDEMs[UsedDEMs] := AllDEMIXTheDEMs[DEM];
+                   Values[UsedDEMs] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(AllDEMIXTheDEMs[DEM]);                                           //rank dems is not being set
+                   {$If Defined(RecordDEMIXties)} WriteLineToDebugFile(aLine); {$EndIf}
+                end;
              end;
 
              //Bubble sort scores
@@ -1307,7 +1313,7 @@ begin {procedure RankDEMS}
        end;
     end
     else begin
-        MessageToContinue('Table must have fields "CRITERION" and "TOLERANCE"');
+       MessageToContinue('Table must have fields "CRITERION" and "TOLERANCE"');
     end;
     TieToleranceTable.Destroy;
     GISdb[DBonTable].ShowStatus;
@@ -1641,16 +1647,15 @@ var
                end;
                GISdb[DEMIXtileDB].MyData.Next;
             end;
-               j := GISdb[DEMIXtileDB].MyData.FiltRecsInDB;
-               DEMGlb[DEMIXRefDEM].DEMCenterPoint(LatCent,LongCent);
-               TileHeader := AreaName + ',' + IntToStr(j) + ',' + Country + ',' + RealToString(LatCent,-12,-2) + ',' + RealToString(LongCent,-12,-2) + ',' +
-                  RealToString(AreaGridFull / j,-6,-2)   + ','  + RealToString(AreaAveElev / j,-12,-2) + ',' +
-                  RealToString(AreaAveSlope / j,-12,-2)  + ',' + RealToString(AreaAveRuff / j,-12,-2)  + ',' +
-                  RealToString(AreaAveRelief / j,-12,-2) + ',' + RealToString(AreaForestPC / j,-12,-2)  + ',' + RealToString(AreaUrbanPC / j,-12,-2) + ',' +
-                  RealToString(AreaBarrenPC / j,-12,-2) + ',' + RealToString(AreaWaterPC / j,-12,-2) + ',' +
-                  RealToString(DEMglb[DEMIXRefDEM].DEMHeader.MinElev / j,-12,-2) + ',' + RealToString(DEMglb[DEMIXRefDEM].DEMHeader.MaxElev / j,-12,-2);
-               AreaStats.Add(TileHeader);
-
+            j := GISdb[DEMIXtileDB].MyData.FiltRecsInDB;
+            DEMGlb[DEMIXRefDEM].DEMCenterPoint(LatCent,LongCent);
+            TileHeader := AreaName + ',' + IntToStr(j) + ',' + Country + ',' + RealToString(LatCent,-12,-2) + ',' + RealToString(LongCent,-12,-2) + ',' +
+               RealToString(AreaGridFull / j,-6,-2)   + ','  + RealToString(AreaAveElev / j,-12,-2) + ',' +
+               RealToString(AreaAveSlope / j,-12,-2)  + ',' + RealToString(AreaAveRuff / j,-12,-2)  + ',' +
+               RealToString(AreaAveRelief / j,-12,-2) + ',' + RealToString(AreaForestPC / j,-12,-2)  + ',' + RealToString(AreaUrbanPC / j,-12,-2) + ',' +
+               RealToString(AreaBarrenPC / j,-12,-2) + ',' + RealToString(AreaWaterPC / j,-12,-2) + ',' +
+               RealToString(DEMglb[DEMIXRefDEM].DEMHeader.MinElev / j,-12,-2) + ',' + RealToString(DEMglb[DEMIXRefDEM].DEMHeader.MaxElev / j,-12,-2);
+            AreaStats.Add(TileHeader);
             {$If Defined(RecordFullDEMIX)} for i := 1 to 2 do writeLineToDebugFile(''); {$EndIf}
          end;
          {$If Defined(RecordCriteriaEvaluation)} WriteLineToDebugFile('call CloseAndNilNumberedDB(DEMIXtileDB)'); {$EndIf}
@@ -1715,14 +1720,12 @@ begin {FindTilesInAreaForCoast}
    try
       GetDEMIXpaths;
       AreasWanted := DEMIX_AreasWanted;
-
       Findings := tStringList.Create;
       Findings.Add('AREA,COUNTRY,ALL_75,ALL_50,ALL_25,U120_75,U120_50,U120_25,U80_75,U80_50,U80_25,U10_75,U10_50,U10_25');
       for i := 0 to pred(AreasWanted.Count) do begin
          AreaName := AreasWanted.Strings[i];
          aLine := AreaName + ',' + GetCountryForArea(AreaName);
          wmdem.SetPanelText(1,'Area: ' + IntToStr(succ(i)) + '/' + IntToStr(AreasWanted.Count) + '  ' + AreaName);
-
          fName := DEMIX_Ref_1sec + AreaName + '_dtm' + Ref1SecPointStr + '.tif';
          DEM := OpenNewDEM(fName);
          for j := 1 to 4 do begin
@@ -1741,7 +1744,6 @@ begin {FindTilesInAreaForCoast}
       end;
       fName := MDtempDir + 'area_tiles_by_elevation.dbf';
       StringList2CSVtoDB(Findings,fName);
-
       AreasWanted.Destroy;
    finally;
       EndDEMIXProcessing;

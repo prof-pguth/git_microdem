@@ -426,6 +426,7 @@ end;
 
 
 function CreateSlopeRoughnessSlopeStandardDeviationMap(DEM,DiameterMustBeOdd : integer; var SlopeMap : integer; OpenMap : boolean = true) : integer;
+//to return slope map, the input value should be 0; otherwise it will be destroyed here
 var
    fName : PathStr;
    ReturnSlopeMap : boolean;

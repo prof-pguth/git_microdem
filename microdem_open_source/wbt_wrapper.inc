@@ -423,7 +423,7 @@ begin
   if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
      OutName := NextFileNumber(MDTempDir,'wbt_geomorphons_' + ExtractFileNameNoExt(InName) + '_','.tif');
      cmd := WhiteBoxfName  + WBNoCompress + ' -r=Geomorphons -v -i=' + InName + ' -o=' + OutName + ' --search=50 --threshold=0.0 --tdist=0 --forms=True';
-     Result := ExecuteWBandOpenMap(cmd,OutName,euGeomorphon,mtElevSpectrum,OpenMap);
+     Result := ExecuteWBandOpenMap(cmd,OutName,euGeomorphon,mtLandCover,OpenMap);
   end;
   {$IfDef RecordUseOtherPrograms} WriteLineToDebugFile('WhiteBoxGeomorphons out'); {$EndIf}
 end;

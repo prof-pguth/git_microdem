@@ -219,7 +219,7 @@ const
 procedure ResampleSentinel_1(Path : PathStr; Recycle : boolean = false);
 // based on https://asf.alaska.edu/how-to/data-recipes/geocode-sentinel-1-with-gdal/
 var
-   fName,{fName2,}outName : PathStr;
+   fName,outName : PathStr;
    BatchFile,TheFiles: tStringList;
    UTMspace : float32;
    i,j : Integer;

@@ -8,17 +8,73 @@
 {____________________________________}
 
 
-function NumberOfStringsWithSubstring(var sl : tStringList; ss : shortstring) : integer;
+procedure MakeTerrainGridsFromMICRODEM(DataDir : PathStr; DEMIndex : integer; IsPoint : boolean);
 var
-   i : integer;
+   TestDEMs : tStringList;
+   i,DEM,ad : integer;
+   AreaName : shortstring;
+   fName,fName2 : PathStr;
+   PointGrids : array[1..7] of integer;
 begin
-   Result := 0;
-   for I := 0 to pred(sl.count) do begin
-      if StrUtils.AnsiContainsText(UpperCase(ExtractFileNameNoExt(sl.strings[i])),Uppercase(ss)) then begin
-         inc(Result);
-      end;
+   try
+      GetDEMIXPaths;
+      TestDEMs := Nil;
+      FindMatchingFiles(DataDir, '*.tif',TestDEMs,1);
+      wmdem.SetPanelText(0, 'Started ' + TimeToStr(Now),true);
+      for i := 0 to pred(TestDEMs.Count) do begin
+          fName := TestDEMs.Strings[i];
+          DEM := OpenNewDEM(fName,false);
+          AreaName := DEMglb[DEM].AreaName;
+          wmdem.SetPanelText(1, IntToStr(succ(i)) + '/' + IntToStr(TestDEMs.Count) + '  ' + AreaName,true);
+
+          if (NumFilledDEMIXtilesOnDEM(DEM) = 0) then begin
+             {$If Defined(RecordDEMMIX)} HighlightLineToDebugFile('No filled tiles in ' + ExtractFileName(fName)); {$EndIf}
+          end
+          else begin
+             {$If Defined(RecordDEMIX)} Stopwatch := TStopwatch.StartNew; {$EndIf}
+
+             wmdem.SetPanelText(3,DEMIXModeName + ' Hillshade',true);
+             fName := ExternalProgramOutPutFile(DEMIndex,'MD','HILL_',AreaName,IsPoint);
+             PointGrids[1] := CreateHillshadeMap(false,DEM);
+             DEMglb[PointGrids[1]].SaveAsGeotiff(fName);
+
+             wmdem.SetPanelText(3,DEMIXModeName + ' Slope/Ruff',true);
+             fName2 := ExternalProgramOutPutFile(DEMIndex,'MD','SLOPE_',AreaName,IsPoint);
+             fName := ExternalProgramOutPutFile(DEMIndex,'MD','ROUGH_',AreaName,IsPoint);
+             PointGrids[3] := 0;
+             PointGrids[2] := CreateSlopeRoughnessSlopeStandardDeviationMap(DEM,5,PointGrids[3],false);
+             DEMglb[PointGrids[3]].SaveAsGeotiff(fName2);
+             DEMglb[PointGrids[2]].SaveAsGeotiff(fName);
+
+             wmdem.SetPanelText(3,DEMIXModeName + ' RRI',true);
+             fName := ExternalProgramOutPutFile(DEMIndex,'MD','RRI_',AreaName,IsPoint);
+             PointGrids[4] := MakeTRIGrid(DEM,nmRRI,false);
+             DEMglb[PointGrids[4]].SaveAsGeotiff(fName);
+
+             wmdem.SetPanelText(3,DEMIXModeName + ' TPI',true);
+             fName := ExternalProgramOutPutFile(DEMIndex,'MD','TPI_',AreaName,IsPoint);
+             PointGrids[5] := BoxCarDetrendDEM(MDDef.OpenMapsFUVSSIM,DEM,DEMGlb[DEM].FullDEMGridLimits,3);
+             DEMglb[PointGrids[5]].SaveAsGeotiff(fName);
+
+             wmdem.SetPanelText(3,DEMIXModeName + ' Openness',true);
+             fName2 := ExternalProgramOutPutFile(DEMIndex,'MD','OPEND_',AreaName,IsPoint);
+             fName := ExternalProgramOutPutFile(DEMIndex,'MD','OPENU_',AreaName,IsPoint);
+             PointGrids[6] := -1;
+             PointGrids[7] := -1;
+             ad := 0;   //we don't want openness difference
+             CreateOpennessMap(False,DEM,250,PointGrids[6],PointGrids[7],ad);
+             DEMglb[PointGrids[7]].SaveAsGeotiff(fName2);
+             DEMglb[PointGrids[6]].SaveAsGeotiff(fName);
+             CloseAllDEMs;
+           	 {$If Defined(RecordDEMIX)} WriteLineToDebugFile(AreaName + ' MD grids created   ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
+          end;
+       end;
+   finally
+      TestDEMs.Destroy;
+      EndDEMIXProcessing;
    end;
 end;
+
 
 
 procedure InventoryAllDEMIXdata;
@@ -469,12 +525,24 @@ begin
          ClearOutFolder(DEMIX_ref_DEMs_channel_grids);
       {$EndIf}
 
+      ClearOutFolder(MD_out_ref_dir);
+      ClearOutFolder(MD_out_test_dir);
+      ClearOutFolder(wbt_out_ref_dir);
+      ClearOutFolder(wbt_out_test_dir);
+      ClearOutFolder(saga_out_ref_dir);
+      ClearOutFolder(saga_out_test_dir);
+
       ClearOutFolder(ChannelMissesDir);
 
       ClearOutFolder(RegularSSIMresultsDir);
       ClearOutFolder(DiluvSSIMresultsDir);
       ClearOutFolder(DeltaSSIMresultsDir);
       ClearOutFolder(CoastalSSIMresultsDir);
+
+      ClearOutFolder(RegularFUVresultsDir);
+      ClearOutFolder(DiluvFUVresultsDir);
+      ClearOutFolder(DeltaFUVresultsDir);
+      ClearOutFolder(CoastalFUVresultsDir);
 
       (*
       ClearOutFolder(DEMIX_area_lc100);
@@ -611,7 +679,7 @@ end;
 
 procedure InventoryWbWfilesByArea;
 var
-   TestDEMFiles,RefDEMfiles,Results,Areas : tStringList;
+   TestDEMFiles,RefDEMfiles,Results,Areas,MissingAreas : tStringList;
    i,j,n : integer;
    Area,aLine : shortstring;
    fName : PathStr;
@@ -620,22 +688,34 @@ begin
    Areas := tStringList.Create;
    Areas.LoadFromFile(AreaListFName);
    n := Areas.Count;
+
    TestDEMFiles := tStringList.Create;
    FindMatchingFiles(DEMIX_wbt_test_DEM_output,'*.tif',TestDEMfiles);
+
+   MissingAreas := tStringList.Create;
    RefDEMfiles := tStringList.Create;
+   for j := pred(Areas.Count) downto 0 do begin
+      Area := Areas.Strings[j];
+      if NumberOfStringsWithSubstring(RefDEMfiles,'flow_accum_' + Area) = 0 then begin
+         MissingAreas.Add(Area);
+      end;
+   end;
+
    FindMatchingFiles(DEMIX_wbt_ref_DEM_output,'*.tif',RefDEMfiles);
    Results := tStringList.Create;
-   Results.Add('AREA,FLOW_REF,HAND_REF,ROTOR_REF,STREAM_REF,FLOW_TEST,HAND_TEST,ROTOR_TEST,STREAM_TEST');
+   Results.Add('AREA,FLOW_REF,HAND_REF,ROTOR_REF,STREAM_REF,SED_TR_REF,FLOW_TEST,HAND_TEST,ROTOR_TEST,STREAM_TEST,SED_TR_TEST');
    for j := pred(Areas.Count) downto 0 do begin
       Area := Areas.Strings[j];
       aline := Area + ',' + IntToStr(NumberOfStringsWithSubstring(RefDEMfiles,'flow_accum_' + Area)) + ',' +
                             IntToStr(NumberOfStringsWithSubstring(RefDEMfiles,'HAND_' + Area)) + ',' +
                             IntToStr(NumberOfStringsWithSubstring(RefDEMfiles,'rotor_log_' + Area)) + ',' +
+                            IntToStr(NumberOfStringsWithSubstring(RefDEMfiles,'sed_trans_' + Area)) + ',' +
                             IntToStr(NumberOfStringsWithSubstring(RefDEMfiles,'streams_' + Area)) + ',' +
                             IntToStr(NumberOfStringsWithSubstring(TestDEMfiles,'flow_accum_' + Area)) + ',' +
                             IntToStr(NumberOfStringsWithSubstring(TestDEMfiles,'HAND_' + Area)) + ',' +
                             IntToStr(NumberOfStringsWithSubstring(TestDEMfiles,'rotor_log_' + Area)) + ',' +
-                            IntToStr(NumberOfStringsWithSubstring(TestDEMfiles,'streams_' + Area)) ;
+                            IntToStr(NumberOfStringsWithSubstring(TestDEMfiles,'streams_' + Area)) + ',' +
+                            IntToStr(NumberOfStringsWithSubstring(TestDEMfiles,'sed_trans_' + Area));
       Results.Add(aline);
    end;
   fName := NextFileNumber(MDTempDir,'WbE_data_inventory','.dbf');
@@ -644,6 +724,12 @@ begin
   RefDEMfiles.Free;
   Results.Free;
   Areas.Free;
+  if MissingAreas.Count > 0 then begin
+     DisplayAndPurgeStringList(MissingAreas,'Areas missing from WbW');
+  end
+  else begin
+     MissingAreas.Free;
+  end;
 end;
 
 
@@ -833,6 +919,8 @@ begin
       end;
    end;
 end;
+
+
 
 
 procedure CheckLowAltitudeDEMs(Dir : PathStr; Name : shortstring);
