@@ -113,7 +113,6 @@ end;
 procedure MarkWaterMissingInAllOpenDEMs(DEM : integer; All : boolean = true);
 var
    j,lcGrid : integer;
-   //ErrorMessage : shortstring;
    Fixed : int64;
    OpenMap : boolean;
 begin
@@ -123,32 +122,33 @@ begin
        DEMGlb[lcGrid].SelectionMap.DoBaseMapRedraw;
        MessageToContinue('Land cover opened');
     {$EndIf}
-    SimplifyLandCoverGrid(lcGrid);
-    {$IfDef TrackWaterMasking} MessageToContinue('Simplified'); {$EndIf}
-    DEMGLb[lcGrid].MarkInRangeMissing(slcWater-0.001,slcWater+0.001,Fixed,false);
-    {$IfDef TrackWaterMasking}
-       DEMGlb[lcGrid].SelectionMap.DoBaseMapRedraw;
-       MessageToContinue('Water missing on water');
-    {$EndIf}
-    if All then begin
-       for j := 1 to MaxDEMDataSets do begin
-          if ValidDEM(j) and (j <> lcGrid) then begin
-             EditsDone := 0;
-             MaskStripFromSecondGrid(j,lcGrid, msSecondMissing);
-             DEMGlb[j].CheckMaxMinElev;
+    if ValidDEM(lcGrid) then begin
+       SimplifyLandCoverGrid(lcGrid);
+       {$IfDef TrackWaterMasking} MessageToContinue('Simplified'); {$EndIf}
+       DEMGLb[lcGrid].MarkInRangeMissing(slcWater-0.001,slcWater+0.001,Fixed,false);
+       {$IfDef TrackWaterMasking}
+          DEMGlb[lcGrid].SelectionMap.DoBaseMapRedraw;
+          MessageToContinue('Water missing on water');
+       {$EndIf}
+       if All then begin
+          for j := 1 to MaxDEMDataSets do begin
+             if ValidDEM(j) and (j <> lcGrid) then begin
+                EditsDone := 0;
+                MaskStripFromSecondGrid(j,lcGrid, msSecondMissing);
+                DEMGlb[j].CheckMaxMinElev;
+             end;
           end;
+       end
+       else begin
+          EditsDone := 0;
+          MaskStripFromSecondGrid(DEM,lcGrid, msSecondMissing);
+          DEMGlb[DEM].CheckMaxMinElev;
+          if (DEMGlb[DEM].SelectionMap <> Nil) then DEMGlb[DEM].SelectionMap.DoBaseMapRedraw;
+          {$IfDef TrackWaterMasking} MessageToContinue('Water masked');  {$EndIf}
        end;
-    end
-    else begin
-       EditsDone := 0;
-       MaskStripFromSecondGrid(DEM,lcGrid, msSecondMissing);
-       DEMGlb[DEM].CheckMaxMinElev;
-       if (DEMGlb[DEM].SelectionMap <> Nil) then DEMGlb[DEM].SelectionMap.DoBaseMapRedraw;
-       {$IfDef TrackWaterMasking} MessageToContinue('Water masked');  {$EndIf}
+       CloseSingleDEM(lcGrid);
     end;
-    CloseSingleDEM(lcGrid);
 end;
-
 
 
 procedure SimplifyLandCoverGrid(DEM : integer);
@@ -197,7 +197,6 @@ begin
       end;
    end;
 end;
-
 
 
 function LoadLC100LandCover(fName : PathStr; bb : sfboundbox; OpenMap : boolean) : integer;

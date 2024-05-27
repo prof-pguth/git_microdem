@@ -50,23 +50,49 @@ begin
 end;
 
 
-procedure MaskWaterInReferenceDEMs;
+procedure MaskWaterInReferenceAndTestDEMs;
 var
-   TheFiles,Results : tStringList;
-   i,DEM : integer;
-   fName : PathStr;
+   Areas : tStringList;
+   i,j,lc : integer;
+   Fixed1,Fixed2 : int64;
+   AreaName : shortstring;
 begin
-   TheFiles := Nil;
-   FindMatchingFiles(DEMIX_Ref_1sec,'*.tif',TheFiles);
-   for i := 0 to pred(TheFiles.Count) do begin
-      fName := theFiles.Strings[i];
-      DEM := OpenNewDEM(fName,false);
-      MarkWaterMissingInThisDEM(DEM);
-      DEMglb[DEM].SaveAsGeotiff(DEMglb[DEM].DEMFileName);
-      CloseSingleDEM(DEM);
+   try
+      GetDEMIXPaths;
+      Areas := DEMIX_AreasWanted;
+      for i := 0 to pred(Areas.Count) do begin
+         AreaName := Areas.Strings[i];
+         wmdem.SetPanelText(3,'Load: ' + IntToStr(i) + '/' + IntToStr(Areas.Count) + '  ' + AreaName,true);
+         OpenBothPixelIsDEMs(AreaName,'',DEMIX_Ref_1sec,DEMIX_test_dems,false);
+         lc := LoadLandcoverForDEMIXarea(AreaName,false);
+         if ValidDEM(lc) then begin
+            wmdem.SetPanelText(3,'Mask: ' + IntToStr(i) + '/' + IntToStr(Areas.Count) + '  ' + AreaName,true);
+            DEMglb[lc].MarkInRangeMissing(79.99,80.01,Fixed1,false);  //80 is the open water value
+            DEMglb[lc].MarkInRangeMissing(199.99,200.01,Fixed2,false);  //200 is the ocean value
+            if (Fixed1 > 0) or (Fixed2 > 0) then begin
+               for j := dmxFirstPoint to NumPtDEMs do begin
+                  MaskStripFromSecondGrid(PointDEMs[j],lc,msSecondMissing);
+                  DEMglb[PointDEMs[j]].CheckMaxMinElev;
+                  DEMglb[PointDEMs[j]].SaveAsGeotiff(DEMglb[PointDEMs[j]].DEMFileName);
+               end;
+
+               for j := dmxFirstArea to NumAreaDEMs do begin
+                  MaskStripFromSecondGrid(AreaDEMs[j],lc,msSecondMissing);
+                  DEMglb[AreaDEMs[j]].CheckMaxMinElev;
+                  DEMglb[AreaDEMs[j]].SaveAsGeotiff(DEMglb[AreaDEMs[j]].DEMFileName);
+               end;
+            end;
+         end
+         else begin
+            {$If Defined(RecordDEMIX)} HighlightLineToDebugFile('LC missing for ' + AreaName); {$EndIf}
+         end;
+      end;
+      CloseAllDEMs;
+   finally
+      EndDEMIXProcessing;
    end;
-   TheFiles.Free;
 end;
+
 
 
 procedure ShiftToUTM_WGS84_EGM2008(inName,SaveName : PathStr; SourceEPSG,TargetEPSG : shortString);

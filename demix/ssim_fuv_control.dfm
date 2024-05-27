@@ -59,6 +59,7 @@ object fuv_ssim_control: Tfuv_ssim_control
       Height = 17
       Caption = 'Hillshade'
       TabOrder = 4
+      OnClick = HillshadeClick
     end
     object CheckBox17: TCheckBox
       Left = 16
@@ -99,6 +100,7 @@ object fuv_ssim_control: Tfuv_ssim_control
       Height = 17
       Caption = 'HAND'
       TabOrder = 9
+      OnClick = HANDClick
     end
     object CheckBox26: TCheckBox
       Left = 16
@@ -161,7 +163,7 @@ object fuv_ssim_control: Tfuv_ssim_control
       Top = 24
       Width = 97
       Height = 17
-      Caption = 'All'
+      Caption = 'Full'
       TabOrder = 0
     end
     object CheckBox2: TCheckBox

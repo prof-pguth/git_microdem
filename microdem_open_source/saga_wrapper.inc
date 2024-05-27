@@ -46,6 +46,58 @@
  end;
 
 
+function SAGA_HillValleyIndexes(OpenMap : boolean; DEMName : PathStr; ValleyIndexName : PathStr = ''; HillIndexName : PathStr = '') : integer;
+ //https://saga-gis.sourceforge.io/saga_tool_doc/8.2.1/ta_morphometry_24.html
+ //Usage: saga_cmd ta_morphometry 24 [-DEM <str>] [-VALLEY <str>] [-HILL <str>] [-VALLEY_IDX <str>] [-HILL_IDX <str>] [-SLOPE_IDX <str>] [-RADIUS_VALLEY <double>] [-RADIUS_HILL <double>] [-THRESHOLD <double>] [-METHOD <str>]
+ //both using the SAGA GUI and calling from MICRODEM leads to the program hanging (or it is just incredibly slow)
+ var
+   cmd : shortstring;
+   RadValley,RadHill,Threshhold,
+   DEM2 : integer;
+   {$If Defined(RecordSAGALS)} Stopwatch : tStopwatch; {$EndIf}
+begin
+   if IsSagaCMDthere then begin
+     (*
+      //suggested in https://sourceforge.net/p/saga-gis/discussion/790705/thread/ca9ff9c8b7/?limit=25, but did not really help
+      RadValley := 10;
+      RadHill := 10;
+      Threshhold := 2;
+
+      //defaults divided by 10, still problem
+      RadValley := 100;
+      RadHill := 100;
+      Threshhold := 10;
+
+      //defaults testing  for arc second which hangs
+      RadValley := 30;
+      RadHill := 30;
+      Threshhold := 30;  //3 did not work either
+     *)
+      //defaults which work for the gross differences for UTM grids
+      RadValley := 1000;
+      RadHill := 1000;
+      Threshhold := 100;
+
+      if (ValleyIndexName = '') then ValleyIndexName := MDTempDir + 'saga_valley_index_' + ExtractFileNameNoExt(DEMName) + '.tif';
+      if (HillIndexName = '') then HillIndexName := MDTempDir + 'saga_hill_index_' + ExtractFileNameNoExt(DEMName) + '.tif';
+      {$If Defined(RecordSAGALS)} Stopwatch := TStopwatch.StartNew; {$EndIf}
+      cmd := MDDef.SagaCMD + ' ta_morphometry 24  -DEM ' + DEMName + ' -VALLEY_IDX ' + ValleyIndexName + ' -HILL_IDX ' + HillIndexName +
+           ' -RADIUS_VALLEY ' + IntToStr(RadValley) + ' -RADIUS_HILL  ' + IntToStr(RadHill) + ' -THRESHOLD ' + IntToStr(ThreshHold);
+      {$If Defined(RecordSAGA) or Defined(SAGA_HillValley)} WriteLineToDebugFile('Hill valley index:   ' + cmd); {$EndIf}
+      Result := SAGAMap(cmd,ValleyIndexName,euUndefined,OpenMap);
+      if OpenMap then begin
+         DEM2 := OpenNewDEM(HillIndexName,OpenMap);
+         if ValidDEM(DEM2) then begin
+            DEMGlb[DEM2].DEMheader.ElevUnits := euUndefined;
+            CreateDEMSelectionMap(DEM2,true,true,mtElevSpectrum);
+            UpdateMenusForAllMaps;
+         end;
+      end;
+      {$If Defined(RecordSAGALS)} WriteLineToDebugFile('Hill valley index created   ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
+   end;
+end;
+
+
 function SAGA_LSFactor(OpenMap : boolean; InName : PathStr; LSgridName : PathStr = '') : integer;
 //  https://saga-gis.sourceforge.io/saga_tool_doc/8.2.1/ta_compound_0.html
 // this is very slow
@@ -76,10 +128,50 @@ begin
       if (ConIndexGridName = '') then ConIndexGridName := MDTempDir + 'saga_CONIN_' + ExtractFileNameNoExt(InName) + '.tif';
       {$If Defined(RecordSAGALS)} Stopwatch := TStopwatch.StartNew; {$EndIf}
       cmd := MDDef.SagaCMD + ' ta_compound 0 -ELEVATION ' + InName + ' -CONVERGENCE ' + ConIndexGridName;
+      {$If Defined(RecordSAGALS)} WriteLineToDebugFile(cmd); {$EndIf}
       Result := SAGAMap(cmd,ConIndexGridName,euUndefined,OpenMap);
-      {$If Defined(RecordSAGALS)} WriteLineToDebugFile('Saga ls created   ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
+      {$If Defined(RecordSAGALS)} WriteLineToDebugFile('Saga conin created   ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
    end;
 end;
+
+function SAGA_CurvatureClassification(OpenMap : boolean; DEMName : PathStr; CurvatureClassFName : PathStr = '') : integer;
+//https://saga-gis.sourceforge.io/saga_tool_doc/8.2.1/ta_morphometry_4.html
+//saga_cmd ta_morphometry 4 [-DEM <str>] [-CLASSES <str>]
+var
+   cmd : shortstring;
+   {$If Defined(RecordSAGALS)} Stopwatch : tStopwatch; {$EndIf}
+begin
+   if IsSagaCMDthere then begin
+      if (CurvatureClassFName = '') then CurvatureClassFName := MDTempDir + 'saga_curvature_class_' + ExtractFileNameNoExt(DEMName) + '.tif';
+      {$If Defined(RecordSAGALS)} Stopwatch := TStopwatch.StartNew; {$EndIf}
+      cmd := MDDef.SagaCMD + ' ta_morphometry 4 -DEM ' + DEMName + ' -CLASSES '  + CurvatureClassFName;
+      Result := SAGAMap(cmd,CurvatureClassFName,euIntCode,OpenMap);
+      {$If Defined(RecordSAGALS)} WriteLineToDebugFile('Saga curvature class  ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
+   end;
+end;
+
+function SAGA_IwahashiAndPikeClassification(OpenMap : boolean; DEMName : PathStr; Classes : integer = 12; ClassFName : PathStr = '') : integer;
+//https://saga-gis.sourceforge.io/saga_tool_doc/8.2.1/ta_morphometry_22.html
+//saga_cmd ta_morphometry 22 [-DEM <str>] [-SLOPE <str>] [-CONVEXITY <str>] [-CONV_RECALC <str>] [-TEXTURE <str>] [-TEXT_RECALC <str>] [-LANDFORMS <str>]
+//how to find what the codes mean, https://sourceforge.net/p/saga-gis/discussion/790705/thread/2f6e99e6b4/
+var
+   cmd : shortstring;
+   {$If Defined(RecordSAGALS)} Stopwatch : tStopwatch; {$EndIf}
+begin
+   if IsSagaCMDthere then begin
+      if Classes = 8 then Classes := 0
+      else if Classes = 12 then Classes := 1
+      else if Classes = 16 then Classes := 2
+      else Classes := 1;
+
+      if (ClassFName = '') then ClassFName := MDTempDir + 'saga_IwahashiAndPike_class_' + ExtractFileNameNoExt(DEMName) + '.tif';
+      {$If Defined(RecordSAGALS)} Stopwatch := TStopwatch.StartNew; {$EndIf}
+      cmd := MDDef.SagaCMD + ' ta_morphometry 22 -DEM ' + DEMName + ' -LANDFORMS '  + ClassFName + 'TYPE ' + IntToStr(Classes);
+      Result := SAGAMap(cmd,ClassFName,euIntCode,OpenMap);
+      {$If Defined(RecordSAGALS)} WriteLineToDebugFile('Saga curvature class  ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
+   end;
+end;
+
 
 function SAGA_PlanCurvature(OpenMap : boolean; InName : PathStr; PlanCurvatureFName : PathStr = '') : integer;
 //  https://saga-gis.sourceforge.io/saga_tool_doc/8.2.1/ta_compound_0.html

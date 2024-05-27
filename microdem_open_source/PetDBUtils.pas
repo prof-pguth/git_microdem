@@ -303,7 +303,7 @@ begin
     fName := NextFileNumber(MDTempDir,'qg_','.csv');
     sl.SaveToFile(fName);
     if OpenNumberedGISDataBase(db,fName) then begin
-        GISdb[db].CreateScatterGram(xf,yf,false,Capt);
+        GISdb[db].CreateScatterGram(xf,yf,clRed,false,Capt);
     end;
    CloseAndNilNumberedDB(db);
    sl.Destroy;

@@ -570,7 +570,7 @@ begin
      end;
      fName := Petmar.NextFileNumber(MDtempDir,'las_hist_','.dbf');
      db := BaseMap.StringListtoLoadedDatabase(sl,fname);
-     TheGraph := GISDB[db].CreateScatterGram('TOTAL','ELEV_M',true,'LAS elevation histogram');
+     TheGraph := GISDB[db].CreateScatterGram('TOTAL','ELEV_M',clRed,true,'LAS elevation histogram');
      GISDB[db].AddSeriesToScatterGram(TheGraph,clLime,'VEG','ELEV_M',true);
      GISDB[db].AddSeriesToScatterGram(TheGraph,clBrown,'GROUND','ELEV_M',true);
      GISDB[db].AddSeriesToScatterGram(TheGraph,clAqua,'BUILDING','ELEV_M',true);

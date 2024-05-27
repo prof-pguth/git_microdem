@@ -445,7 +445,7 @@ type
      HighlightBox,
      SlicerOverlay,
      HistogramChanged,
-     ShowFirstLayerOnAnimation,
+     //ShowFirstLayerOnAnimation,
      MouseIsDown : boolean;
      Symbol : tFullSymbolDeclaration;
      VertCompare,UserContourInterval,MaxZ,MinZ,MinZShow   : float32;
@@ -496,7 +496,7 @@ type
      procedure PlotPointOnGraph(x,y : float32; Symbol : tFullSymbolDeclaration);
 
      procedure ViewGraphData(infName : PathStr = '');
-     procedure AnimateGraph(Movie : boolean; MovieName : ShortString = '');
+     procedure AnimateGraph(Movie : boolean; ShowFirstLayerOnAnimation : boolean = true; MovieName : ShortString = '');
 
      procedure SetUpGraphForm;
      procedure AutoScaleAndRedrawDiagram(DoVert : boolean = true; DoHoriz : boolean = true; PadX : boolean = true; PadY : boolean = true);
@@ -3883,7 +3883,6 @@ begin
      SlicerOverlay := false;
      HistogramChanged := false;
      GraphDraw.ResetMargins := false;
-     ShowFirstLayerOnAnimation := true;
 
      for i := 0 to 50 do DataPlotsVisible[i] := true;
 
@@ -4230,7 +4229,7 @@ begin
 end;
 
 
-procedure TThisBaseGraph.AnimateGraph(Movie : boolean; MovieName : ShortString = '');
+procedure TThisBaseGraph.AnimateGraph(Movie : boolean; ShowFirstLayerOnAnimation : boolean = true; MovieName : ShortString = '');
 var
    aMovie : tStringList;
    Bitmap,LegBMP : tMyBitmap;
@@ -5152,7 +5151,6 @@ var
 begin
    Table := tMyData.Create(BarGraphDBName);
    UseStyle := Table.FieldExists('BS_STYLE');
-   //('X1,X2,Y,COLOR,LABEL');
    while not Table.eof do begin
       x1 := Table.GetFieldByNameAsFloat('X1');
       x2 := Table.GetFieldByNameAsFloat('X2');

@@ -19,6 +19,7 @@ unit md_use_tools;
       //{$Define RecordSAGA}
       //{$Define RecordSAGA_JustResult}
       //{$Define RecordSAGALS}
+      //{$Define SAGA_HillValley}
       //{$Define OpenLasTools}
       //{$Define RecordACOLITE}
       //{$Define RecordSubsetOpen}
@@ -84,6 +85,7 @@ uses
    function WBT_GroundClassify(InName,OutName : PathStr) : shortString;
    function WBT_LidarSegmentationBasedFilter(InName,OutName : PathStr) : shortString;
    function WBT_DeNoise(InName,OutName : PathStr) : shortString;
+
    function WBT_SlopeMap(OpenMap : boolean; InName : PathStr) : integer;
    function WBT_ProfileCurvature(OpenMap : boolean; InName : PathStr): integer;
    function WBT_PlanCurvature(OpenMap : boolean; InName : PathStr): integer;
@@ -96,19 +98,21 @@ uses
    function WBT_AvgNormVectAngDev(InName : PathStr; filtersize : integer) : integer;
    function WBT_CircularVarianceOfAspect(OpenMap : boolean; InName : PathStr; filtersize : integer) : integer;
    function WBT_DrainageBasins(InName : PathStr) : integer;
-   procedure WBT_IDWCreate(OpenMap : boolean; InName,OutName : PathStr; GridSize : float64);
-   procedure WBT_PennockLandformClass(InName : PathStr; SmoothFirst : boolean);
-   function WBT_Geomorphons(OpenMap : boolean; InName : PathStr) : integer;
-   procedure WBT_GridFillMissingData(InName : PathStr; TheElevUnits : tElevUnit);
-   function WBT_BNearNeighCreate(OpenMap : boolean; InName,OutName : PathStr; GridSize : float64) : integer;
-   procedure WBT_GeotiffMetadata(InName : PathStr);
+   function WBT_Geomorphons(OpenMap : boolean; InName : PathStr; Search : integer=50; Skip : integer = 0) : integer;
    function WBT_AspectMap(OpenMap : boolean; InName : PathStr) : integer;
-   procedure WBT_MultiscaleRoughness(InName : PathStr);
+   function WBT_BNearNeighCreate(OpenMap : boolean; InName,OutName : PathStr; GridSize : float64) : integer;
    function WBT_WetnessIndex(OpenMap,D8 : boolean; DEMName : PathStr; var WetnessName : PathStr) : integer;
    function WBT_breach_depression(DEMName : PathStr; var BreachName : PathStr) : integer;
    function WBT_FlowAccumulation(OpenMap,Log,D8 : boolean; DEMName : PathStr; var BreachName, FlowAccName : PathStr) : integer;
    function WBT_extract_streams(OpenMap : boolean; DEMName : PathStr; var BreachName,FlowAccumulationName,StreamName : PathStr; Threshhold : float32 = 100.0) : integer;
    function WBT_ElevAboveStream(OpenMap : boolean; DEMName : PathStr; BreachName,FlowAccumulationName,StreamName,HANDName : PathStr; Threshhold : float32 = 100.0) : integer;
+
+   procedure WBT_IDWCreate(OpenMap : boolean; InName,OutName : PathStr; GridSize : float64);
+   procedure WBT_PennockLandformClass(InName : PathStr; SmoothFirst : boolean);
+   procedure WBT_GridFillMissingData(InName : PathStr; TheElevUnits : tElevUnit);
+   procedure WBT_GeotiffMetadata(InName : PathStr);
+   procedure WBT_MultiscaleRoughness(InName : PathStr);
+   procedure WBT_KappaIndex(ClassifiedName,ReferenceName : PathStr; HTMLname : PathStr = '');
 {$EndIf}
 
 
@@ -130,6 +134,10 @@ uses
    function SAGA_ConvergenceIndex(OpenMap : boolean; InName : PathStr; ConIndexGridName : PathStr = '') : integer;
    function SAGA_PlanCurvature(OpenMap : boolean; InName : PathStr; PlanCurvatureFName : PathStr = '') : integer;
    function SAGA_ProfileCurvature(OpenMap : boolean; InName : PathStr; ProfileCurvatureFName : PathStr = '') : integer;
+   function SAGA_CurvatureClassification(OpenMap : boolean; DEMName : PathStr; CurvatureClassFName : PathStr = '') : integer;
+   function SAGA_IwahashiAndPikeClassification(OpenMap : boolean; DEMName : PathStr; Classes : integer = 12; ClassFName : PathStr = '') : integer;
+   function SAGA_HillValleyIndexes(OpenMap : boolean; DEMName : PathStr; ValleyIndexName : PathStr = ''; HillIndexName : PathStr = '') : integer;
+
 {$EndIf}
 
 

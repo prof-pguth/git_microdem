@@ -976,7 +976,6 @@ type
     Clusterdiversity1: TMenuItem;
     N49: TMenuItem;
     Clustersensitivity1: TMenuItem;
-    AddcountryfieldtoDB1: TMenuItem;
     Clusterwhiskerplotsforslopeandroughness1: TMenuItem;
     CreateDBwithparametersbyDEM1: TMenuItem;
     DEMIX2: TMenuItem;
@@ -1008,7 +1007,6 @@ type
     InventoryFUVSSIMcriteriainDB1: TMenuItem;
     Copycolumntoclipboard1: TMenuItem;
     QuartilesinCLUSTERfieldbasedonsort1: TMenuItem;
-    AddareafieldtoDB1: TMenuItem;
     N50: TMenuItem;
     N53: TMenuItem;
     Addmultiplefields1: TMenuItem;
@@ -1041,6 +1039,13 @@ type
     GraphwinningpercentagebyDEM1: TMenuItem;
     OpenDEMIXgraphs1: TMenuItem;
     N58: TMenuItem;
+    Graphofcriteriaforareaortile1: TMenuItem;
+    GraphofPrimaryDataFractionbyClusters1: TMenuItem;
+    AddcountryareafieldstoDB1: TMenuItem;
+    AddcolorsforFULLU120U80U101: TMenuItem;
+    SortandreplaceDB1: TMenuItem;
+    SortandreplaceDB2: TMenuItem;
+    Descending3: TMenuItem;
     //Pointfilter1: TMenuItem;
     //Pointfilter2: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
@@ -1790,7 +1795,6 @@ type
     procedure ClustersperDEMIXtile1Click(Sender: TObject);
     procedure Clusterdiversity1Click(Sender: TObject);
     procedure Clustersensitivity1Click(Sender: TObject);
-    procedure AddcountryfieldtoDB1Click(Sender: TObject);
     procedure CreateDBwithparametersbyDEM1Click(Sender: TObject);
     procedure LoadtestandreferenceDEMs1Click(Sender: TObject);
     procedure GraphSSIMFUVbycluster1Click(Sender: TObject);
@@ -1825,7 +1829,7 @@ type
     procedure Clustermeangraphs1Click(Sender: TObject);
     procedure Areasinclusters1Click(Sender: TObject);
     procedure AddCOPALOSpercentprimarydata1Click(Sender: TObject);
-    procedure AddareafieldtoDB1Click(Sender: TObject);
+    //procedure AddareafieldtoDB1Click(Sender: TObject);
     procedure CopDEMandLandcoverforthistile1Click(Sender: TObject);
     procedure Loadmapsforthisarea1Click(Sender: TObject);
     procedure LoadCopDEMandLandcoverforarea1Click(Sender: TObject);
@@ -1842,6 +1846,12 @@ type
     procedure Winpercentagesbyarea1Click(Sender: TObject);
     procedure GraphwinningpercentagebyDEM1Click(Sender: TObject);
     procedure OpenDEMIXgraphs1Click(Sender: TObject);
+    procedure Graphofcriteriaforareaortile1Click(Sender: TObject);
+    procedure GraphofPrimaryDataFractionbyClusters1Click(Sender: TObject);
+    procedure AddcountryareafieldstoDB1Click(Sender: TObject);
+    procedure AddcolorsforFULLU120U80U101Click(Sender: TObject);
+    procedure SortandreplaceDB2Click(Sender: TObject);
+    procedure Descending3Click(Sender: TObject);
     //procedure Pointfilter2Click(Sender: TObject);
     //procedure Pointfilter1Click(Sender: TObject);
   private
@@ -4860,7 +4870,7 @@ begin
      if (Sender = N2Dgraphallopendatabaseslines1) then begin
         for i := 1 to 255 do begin
            ThisGraph.GraphDraw.LineSize256[i] := 2;
-           if i < 15 then ThisGraph.GraphDraw.Symbol[i].Size := 0;
+           if (i < 15) then ThisGraph.GraphDraw.Symbol[i].Size := 0;
         end;
      end;
    //end;
@@ -5070,11 +5080,6 @@ begin
 end;
 
 
-procedure Tdbtablef.AddareafieldtoDB1Click(Sender: TObject);
-begin
-   AddAreaToDB(DBonTable);
-end;
-
 procedure Tdbtablef.Addaverageelevationinwindow1Click(Sender: TObject);
 begin
    GISdb[DBonTable].AddAndFillFieldFromDEM(adAvgElevInWindow);
@@ -5129,6 +5134,11 @@ begin
    GISdb[DBonTable].AddBoundingBox;
 end;
 
+
+procedure Tdbtablef.AddcolorsforFULLU120U80U101Click(Sender: TObject);
+begin
+   AddColorsForUnderDBs(DBonTable);
+end;
 
 procedure Tdbtablef.Addconstanttofield1Click(Sender: TObject);
 begin
@@ -5394,9 +5404,9 @@ begin
 end;
 
 
-procedure Tdbtablef.AddcountryfieldtoDB1Click(Sender: TObject);
+procedure Tdbtablef.AddcountryareafieldstoDB1Click(Sender: TObject);
 begin
-   AddCountryToDB(DBonTable);
+   AddCountryAreaToDB(DBonTable);
 end;
 
 procedure Tdbtablef.Addfromsubstring1Click(Sender: TObject);
@@ -5663,7 +5673,7 @@ begin
    EvalRangeAndBestEvalForCriterion(DBonTable);
    CompareSeriousCompetitors(DBonTable);
    AddTileCharacteristicsToDB(DBonTable);
-   AddCountryToDB(DBonTable);
+   AddCountryAreaToDB(DBonTable);
 end;
 
 procedure Tdbtablef.AddnearestelevationfromDEM1Click(Sender: TObject);
@@ -6426,6 +6436,11 @@ begin
   GISdb[DBonTable].AddGeometry(asSinuousity);
 end;
 
+
+procedure Tdbtablef.SortandreplaceDB2Click(Sender: TObject);
+begin
+   SortAndReplaceDataBase(DBOnTable,true);
+end;
 
 procedure Tdbtablef.SortbyBESTEVAL1Click(Sender: TObject);
 begin
@@ -9705,7 +9720,7 @@ end;
 procedure Tdbtablef.Removerowsmissinganyevaluations1Click(Sender: TObject);
 begin
    FilterTableForDEMIXevaluation(DBonTable,0);
-   if GISdb[DBonTable].MyData.FiltRecsInDB = 0 then begin
+   if (GISdb[DBonTable].MyData.FiltRecsInDB = 0) then begin
       MessageToContinue('No records with missing data');
    end
    else GISdb[DBonTable].DeleteAllSelectedRecords;
@@ -10388,6 +10403,17 @@ begin
 end;
 
 
+procedure Tdbtablef.Graphofcriteriaforareaortile1Click(Sender: TObject);
+begin
+   LinkedGraphofCriteriaEvaluations(DBonTable,GISdb[dbOnTable].MyData.Filter,false);
+end;
+
+
+procedure Tdbtablef.GraphofPrimaryDataFractionbyClusters1Click(Sender: TObject);
+begin
+   MultipleScatterPlotsForCluster(dbOnTable);
+end;
+
 procedure Tdbtablef.GraphsbestDEMpertilebycriteriasortbytilecharacteristics1Click(Sender: TObject);
 begin
    {$IfDef ExDEMIXexperimentalOptions}
@@ -10407,10 +10433,7 @@ end;
 
 procedure Tdbtablef.GraphSSIMFUVbyclustermeans1Click(Sender: TObject);
 begin
-   //{$IfDef ExDEMIXexperimentalOptions}
-   //{$Else}
-      DEMIX_SSIM_FUV_clusters_graph(DBonTable);
-   //{$EndIf}
+   DEMIX_SSIM_FUV_clusters_graph(DBonTable);
 end;
 
 procedure Tdbtablef.TransposeSSIMFUVforclusters1Click(Sender: TObject);
@@ -11249,6 +11272,11 @@ begin
    SortDataBase(DBOnTable,false,SelectedColumn);
 end;
 
+procedure Tdbtablef.Descending3Click(Sender: TObject);
+begin
+   SortAndReplaceDataBase(DBOnTable,false);
+end;
+
 procedure Tdbtablef.Deadreckoning1Click(Sender: TObject);
 var
    Lat,Long,Speed,Heading,Distance,Time : float64;
@@ -11942,7 +11970,7 @@ end;
 
 procedure Tdbtablef.BackupDB1Click(Sender: TObject);
 begin
-   CopyFile(GISdb[DBonTable].DBFullName,GISdb[DBonTable].MyData.DBBakDir + GISdb[DBonTable].DBName +  '_bak_' + CurrentTimeForFileName + DefaultDBExt);
+   GISdb[DBonTable].BackupDB;
 end;
 
 

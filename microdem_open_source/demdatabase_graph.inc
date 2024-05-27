@@ -258,6 +258,8 @@ begin
         Result.Linearfit1Click(Nil);
      end
      else begin
+        if (dbTablef <> nil) and (dbTablef.BitBtn24.Enabled) then AddTopLabelToGraph(Result,DBnumber);
+
         Result.AutoScaleAndRedrawDiagram(true,true,false,false);
      end;
     {$IfDef RecordDBGraphs} WriteLineToDebugFile('Graph draw over'); {$EndIf}
@@ -603,7 +605,6 @@ end;
 procedure TGISdataBaseModule.AddSeriesToScatterGram(Graph : TThisbasegraph; Color : tColor; anXField,anYField : ShortString;  Connect : boolean = false);
 var
   rFile : file;
-  //j : integer;
   v : array[1..2] of float32;
 begin
    ShowHourglassCursor;
@@ -629,7 +630,8 @@ begin
 end;
 
 
-function TGISdataBaseModule.CreateScatterGram(anXField,anYField : ShortString; Connect : boolean = false; Capt : shortstring = ''; H_lab : shortstring = ''; V_lab : shortString = ''; NormProb : boolean = false) : TThisbasegraph;
+function TGISdataBaseModule.CreateScatterGram(anXField,anYField : ShortString; Color : tColor = clRed; Connect : boolean = false; Capt : shortstring = '';
+    H_lab : shortstring = ''; V_lab : shortString = ''; NormProb : boolean = false) : TThisbasegraph;
 begin
    {$IfDef RecordDBGraphs} writeLineToDebugFile('TGISdataBaseModule.CreateScatterGram in'); {$EndIf}
    EmpSource.Enabled := false;
@@ -642,14 +644,13 @@ begin
    end;
    Result.GraphDraw.SetShowAllLines(Connect);
    Result.GraphDraw.LineSize256[1] := 1;
-   //Result.GraphDraw.ShowLine[1] := true;
    Result.SetUpGraphForm;
    if (H_lab = '') then Result.GraphDraw.HorizLabel := RemoveUnderscores(anXField)
    else Result.GraphDraw.HorizLabel := H_Lab;
    if (V_lab = '') then Result.GraphDraw.VertLabel := RemoveUnderscores(anYField)
    else Result.GraphDraw.VertLabel := V_Lab;
    {$IfDef RecordDBGraphs} writeLineToDebugFile('TGISdataBaseModule.CreateScatterGram labels set'); {$EndIf}
-   AddSeriesToScatterGram(Result,clRed,anXField,anYField,Connect);
+   if (Color > 0) then AddSeriesToScatterGram(Result,Color,anXField,anYField,Connect);
    {$IfDef RecordDBGraphs} writeLineToDebugFile('TGISdataBaseModule.CreateScatterGram out'); {$EndIf}
 end;
 

@@ -410,7 +410,10 @@ type
      procedure SetUpRangeTable(BaseName : PathStr; var Table : tMyData; ForceNew : boolean = false);
      function DBhasMapOrGraph : boolean;
      function CanPlot : boolean;
-     function IsICESat : boolean;
+
+     //is this a special kind of database
+        function IsICESat : boolean;
+        function IsThisDEMIXdatabase : boolean;
 
      procedure RespondToChangedDB;
      procedure ToggleLayer(LayerOn : boolean);
@@ -453,33 +456,58 @@ type
         function GetStringFromTableLink(FieldDesired : ShortString) : ShortString;
         function GetStringFromTableLinkPossible(FieldDesired : ShortString) : ShortString;
 
-         function GetIntegerFromTableLink(FieldDesired : ShortString; var Value : integer) : boolean;
-         function GetFloatFromTableLink(FieldDesired : shortstring; var Value : float64) : boolean;
+        function GetIntegerFromTableLink(FieldDesired : ShortString; var Value : integer) : boolean;
+        function GetFloatFromTableLink(FieldDesired : shortstring; var Value : float64) : boolean;
 
-         function FindFieldRangeLinkPossible(FieldDesired : shortString; var aMinVal,aMaxVal : float64) : boolean;  overload;
-         function FindFieldRangeLinkPossible(FieldDesired : shortString; var Num,Valid  : integer; var Sum,aMinVal,aMaxVal : float64) : boolean; overload;
-         function FindValidJoin(TheFilter : string) : boolean;
+        function FindFieldRangeLinkPossible(FieldDesired : shortString; var aMinVal,aMaxVal : float64) : boolean;  overload;
+        function FindFieldRangeLinkPossible(FieldDesired : shortString; var Num,Valid  : integer; var Sum,aMinVal,aMaxVal : float64) : boolean; overload;
+        function FindValidJoin(TheFilter : string) : boolean;
 
         procedure ClearLinkTable(ZeroNames : boolean);
         function FieldSum(FieldDesired : shortstring; ReEnable : boolean = true) : float64;
 
-  //add fields
-     procedure AddSequentialIndex(fName : shortstring; Fill : boolean = true);
-     procedure AddXYZfields;
-     procedure AddImage;
-     procedure AddWWW;
-     procedure AddLatLong;
-     function AddFieldToDataBase(ft : TFieldType; FName : ShortString; Length : integer; Decimals : integer = 0) : boolean;
-     procedure AddConcatenatedField(NewField,WantedFieldName,SecondFieldName,ThirdFieldName,Preceder,Separator,SecondSeparator,Follower  : shortstring);
-     procedure AddFieldGroupToTable(What : shortstring);
-     procedure FillFieldsFromJoinedTable(var TheFields : tStringList; ForceOverWrite : boolean);
-     procedure AddNavFields;
-     function AddNavFieldDefinitions : boolean;
-     procedure LimitFieldDecimals(SelectedColumn : shortstring; NumDec : integer);
+     //add fields
+        procedure AddSequentialIndex(fName : shortstring; Fill : boolean = true);
+        procedure AddXYZfields;
+        procedure AddImage;
+        procedure AddWWW;
+        procedure AddLatLong;
+        function AddFieldToDataBase(ft : TFieldType; FName : ShortString; Length : integer; Decimals : integer = 0) : boolean;
+        procedure AddConcatenatedField(NewField,WantedFieldName,SecondFieldName,ThirdFieldName,Preceder,Separator,SecondSeparator,Follower  : shortstring);
+        procedure AddFieldGroupToTable(What : shortstring);
+        procedure FillFieldsFromJoinedTable(var TheFields : tStringList; ForceOverWrite : boolean);
+        procedure AddNavFields;
+        function AddNavFieldDefinitions : boolean;
+        procedure LimitFieldDecimals(SelectedColumn : shortstring; NumDec : integer);
 
-     procedure AssignSymbol(aSymbol : tFullSymbolDeclaration);
-     procedure AddSymbolToDB;
-     procedure AddSymbolizationToLayerTable(Caption : shortstring);
+        procedure AssignSymbol(aSymbol : tFullSymbolDeclaration);
+        procedure AddSymbolToDB;
+        procedure AddSymbolizationToLayerTable(Caption : shortstring);
+
+     //edit fields
+        procedure RemoveLeadingZerosInField(Table : tMyData; WantedFieldName : ShortString);
+        procedure TrimStringFields(theField : ANSIString = '');
+        procedure FillFieldWithValue(WantedFieldName : ShortString; WantedValue : shortString; ShowProgress : boolean = true);
+        procedure FillUseField(UnfilterFirst : boolean; ch : char);
+        procedure TrimOneStringField(SelectedColumn : shortstring);
+        procedure TrimAllStringFields;
+
+     //export database
+        procedure ExportToXML(fName : PathStr);
+        procedure ExportToSQLite;
+        function ExportToKML(Ask,Default : boolean; SepExpField : ShortString = '') : PathStr;
+
+     //legend routines
+         function StringFieldLegend : tMyBitmap;
+         function ChloroplethLegend(aLabel : shortString) : tMyBitmap;
+         procedure DrawLayerLegend(MinX, MaxX: float64; aField: ShortString);
+         procedure DoTheLegend(var Bitmap : tMyBitmap);
+         function BarGraphLegend(Display : boolean = true; theLabel : shortstring = '') : tMyBitmap;
+         function CreateDataBaseLegend(SimpleLegend : boolean = false) : tMyBitmap;
+         procedure CreatePopupLegend(Title : shortstring = ''; SaveName : PathStr = '');
+
+
+
 
      procedure DefineColorTable;
      function ComputeColorFromRecord(var Color : tColor) : boolean;
@@ -499,22 +527,10 @@ type
      function GetFullImageName(var fName : PathStr) : boolean;
      function GetRotatedImage(var bmp : tMyBitmap; var fName : PathStr) : boolean;
 
-  //edit fields
-     procedure RemoveLeadingZerosInField(Table : tMyData; WantedFieldName : ShortString);
-     procedure TrimStringFields(theField : ANSIString = '');
-     procedure FillFieldWithValue(WantedFieldName : ShortString; WantedValue : shortString; ShowProgress : boolean = true);
-     procedure FillUseField(UnfilterFirst : boolean; ch : char);
-     procedure TrimOneStringField(SelectedColumn : shortstring);
-     procedure TrimAllStringFields;
-
      procedure DBFieldUniqueEntries(FieldName : shortstring; var FieldsInDB : tStringList);
 
      procedure MarkRecordsOnDEM(fName : shortstring; DEM : integer);
      procedure PutInQuartilesBasedOnExistingSort(NumQ : integer = 0);
-
-     procedure ExportToXML(fName : PathStr);
-     procedure ExportToSQLite;
-     function ExportToKML(Ask,Default : boolean; SepExpField : ShortString = '') : PathStr;
 
      procedure MergeDataBases(FileNames : tStringList);
 
@@ -540,25 +556,21 @@ type
      function FieldRMSE(fName : shortString) : float64;
 
      procedure CalculateAreaorCentroid(DoCentroid : boolean);
-
+     procedure BackupDB;
 
      {$IfDef NoDBMaps}
      {$Else}
          procedure PlotDefaultSymbols(MapDraw : tMapDraw; var Bitmap : tMyBitmap);
-         function StringFieldLegend : tMyBitmap;
          function DEMwithDBsMap : boolean;
-         function ChloroplethLegend(aLabel : shortString) : tMyBitmap;
+
          procedure MakeNewMonthlyFilterAndRedraw(Month : integer);
          procedure AssociateMap(MapForm : tMapForm);
-         procedure DoTheLegend(var Bitmap : tMyBitmap);
-         function BarGraphLegend(Display : boolean = true; theLabel : shortstring = '') : tMyBitmap;
          procedure PlotDBStringField(var Bitmap : tMyBitmap; WantField : shortstring = '');
          procedure PlotDBNumericField(var Bitmap : tMyBitmap);
          procedure PlotFieldOnMap(aField : shortstring; Minx : float64 = 9999; MaxX : float64 = -9999);
          procedure PlotSingleMonth(Month : integer);
          procedure QueryBox(MapDraw : tMapDraw; x1,y1,x2,y2 : integer; DisplayOnTable : boolean);
          procedure LabelRecordsOnMap(var Bitmap : tMyBitmap);
-         procedure DrawLayerLegend(MinX, MaxX: float64; aField: ShortString);
          procedure IdentifyRecord(xpic,ypic : integer; Lat,Long : float64; var RecsFound : integer;  ShowRec,LabelRec : boolean; var FeatureName : ShortString; ShowItModal : boolean = true; JustFilterDB : boolean = false);
          function FindAreaRecordWithPoint(Lat,Long : float64; AlreadyFiltered : boolean = true) : boolean;
          procedure ConnectSequentialPoints(Bitmap : tMyBitmap);
@@ -589,7 +601,7 @@ type
          procedure ZoomToDBCoverageOnMap;
      {$EndIf}
 
-     {$IfDef VCL}
+     {$IfDef VCL}   //long time since testing for another operating system, so be ready for work to make it work
         procedure AddMultiFieldStats(WhatFor : shortstring; What : tMultiFieldStats; TheFields : tStringList = Nil; NewFName : shortstring = '');
         procedure AddIcon(Fill : boolean = true);
         procedure AddGeometry(What : tAddGeometry);
@@ -615,8 +627,6 @@ type
          procedure ChangeFieldDecimals(OldName : ShortString; NewDecimals : byte);
 
          procedure LinkSecondaryTable(var FileWanted : PathStr);
-         function CreateDataBaseLegend(SimpleLegend : boolean = false) : tMyBitmap;
-         procedure CreatePopupLegend(Title : shortstring = ''; SaveName : PathStr = '');
          function GetElevationField(CheckOverWrite : boolean = true) : shortstring;
          procedure LimitDBtoMapArea;
          procedure ColorButtonForSymbol(BitBtn1 : tBitBtn; Capt : shortString = '');
@@ -643,7 +653,8 @@ type
 
          procedure SingleRose(AddTitle : shortString; Field1,Field2 : ShortString);
          function WaveFormGraph(SingleGraph : boolean) : tThisBaseGraph;
-         function CreateScatterGram(anXField, anYField: ShortString; Connect : boolean = false; Capt : shortstring = ''; H_lab : shortstring = ''; V_lab : shortString = ''; NormProb : boolean = false) : TThisbasegraph;
+         function CreateScatterGram(anXField, anYField: ShortString; Color : tColor = clRed; Connect : boolean = false; Capt : shortstring = '';
+            H_lab : shortstring = ''; V_lab : shortString = ''; NormProb : boolean = false) : TThisbasegraph;
          procedure AddSeriesToScatterGram(Graph : TThisbasegraph; Color : tColor; anXField,anYField : ShortString; Connect : boolean = false);
          function Stationtimeseries : tThisBaseGraph;
          function MakeGraph(Graphtype : tdbGraphType; Ask : boolean = true) : TThisbasegraph;
@@ -750,6 +761,7 @@ procedure ComputeVDatumShift(dbOnTable : integer);
 function AnalyzeVDatumShift(CSVName : PathStr; ErrorLog : tStringList = Nil) : integer;
 
 function SortDataBase(DBOnTable : integer; Ascending : boolean; aField : shortString = ''; OutputDir : PathStr = '') : integer;
+procedure SortAndReplaceDataBase(DBOnTable : integer; Ascending : boolean; aField : shortString = '');
 
 
 {$IfDef ExRiverNetworks}
@@ -790,26 +802,26 @@ uses
       Nevadia_Main,
    {$EndIf}
 
-{$IfDef ExRedistrict}
-{$Else}
-   demredistrict,
-{$EndIf}
+   {$IfDef ExRedistrict}
+   {$Else}
+      demredistrict,
+   {$EndIf}
 
-{$IfDef ExGeography}
-{$Else}
-   KoppenGr,
-{$EndIf}
+   {$IfDef ExGeography}
+   {$Else}
+      KoppenGr,
+   {$EndIf}
 
-{$IfDef ExSat}
-{$Else}
-   DEMEROS,
-{$EndIf}
+   {$IfDef ExSat}
+   {$Else}
+      DEMEROS,
+   {$EndIf}
 
-{$IfDef ExGeology}
-{$Else}
-   sc_Colmain,
-   Petmar_geology,
-{$EndIf}
+   {$IfDef ExGeology}
+   {$Else}
+      sc_Colmain,
+      Petmar_geology,
+   {$EndIf}
 
    {$IfDef NoClustering}
    {$Else}
@@ -870,6 +882,7 @@ uses
    {$IfDef ExDEMIX}
    {$Else}
       demix_definitions,
+      DEMIX_graphs,
       DEMIX_Control,
    {$EndIf}
 
@@ -913,11 +926,18 @@ uses
 {$EndIf}
 
 
+procedure TGISdataBaseModule.BackupDB;
+begin
+   CopyFile(DBFullName,MyData.DBBakDir + DBName +  '_bak_' + CurrentTimeForFileName + DefaultDBExt);
+end;
+
+
+
 function SortDataBase(DBOnTable : integer; Ascending : boolean; aField : shortString = ''; OutputDir : PathStr = '') : integer;
 var
    GridForm : tGridForm;
    Report : tStringList;
-   fName : PathStr;
+   SortedfName : PathStr;
    TStr : shortstring;
    ft,col : integer;
    NeedRestore : boolean;
@@ -941,16 +961,16 @@ begin
    Report := GISdb[DBonTable].ExtractDBtoCSV(1,',');
    if (OutputDir = '') then OutPutDir := mdTempDir;
    TStr := '_sorted_' + AField + '_';
-   fName := NextFileNumber(OutputDir,GISdb[DBonTable].dbName + TStr ,'.csv');
-   if StrUtils.AnsiContainsText(fName,TStr + TStr) then begin
-      fName := StringReplace(fName,TStr + TStr,TStr,[rfReplaceAll, rfIgnoreCase]);
-      fName := ExtractFileNameNoExt(fName);
-      while fName[length(fName)] in ['0'..'9'] do Delete(fName,length(fName),1);
-      fName := NextFileNumber(OutputDir,fName,'.csv');
+   SortedfName := NextFileNumber(OutputDir,GISdb[DBonTable].dbName + TStr ,'.csv');
+   if StrUtils.AnsiContainsText(SortedfName,TStr + TStr) then begin
+      SortedfName := StringReplace(SortedfName,TStr + TStr,TStr,[rfReplaceAll, rfIgnoreCase]);
+      SortedfName := ExtractFileNameNoExt(SortedfName);
+      while SortedfName[length(SortedfName)] in ['0'..'9'] do Delete(SortedfName,length(SortedfName),1);
+      SortedfName := NextFileNumber(OutputDir,SortedfName,'.csv');
    end;
-   Report.SaveToFile(fName);
+   Report.SaveToFile(SortedfName);
    Report.Free;
-   GridForm.ReadCSVFile(fName);
+   GridForm.ReadCSVFile(SortedfName);
 
    col := -1;
    repeat
@@ -960,16 +980,34 @@ begin
    GridForm.SetFormSize;
    SortGrid(GridForm.StringGrid1,pred(Col),ft,Ascending);
 
-   StringGridToCSVFile(fName,GridForm.StringGrid1,Nil);
-   if (GISdb[DBonTable].theMapOwner <> nil) then Result := GISdb[DBonTable].theMapOwner.OpenDBonMap('',fName)
-   else OpenNumberedGISDataBase(Result,fName,true);
-   {$IfDef RecordDBsort} WriteLineToDebugFile('SortDataBase ' + GISDB[DBonTable].dbName + ' created ' + fName); {$EndIf}
+   StringGridToCSVFile(SortedfName,GridForm.StringGrid1,Nil);
+   if (GISdb[DBonTable].theMapOwner <> nil) then Result := GISdb[DBonTable].theMapOwner.OpenDBonMap('',SortedfName)
+   else OpenNumberedGISDataBase(Result,SortedfName,true);
+   {$IfDef RecordDBsort} WriteLineToDebugFile('SortDataBase ' + GISDB[DBonTable].dbName + ' created ' + SortedfName); {$EndIf}
    GridForm.Close;
+
    if NeedRestore then begin
       GISdb[DBonTable].dbTableF.RestoreHiddenColumns;
       GISdb[DBonTable].dbTableF.HideColumns;
       GISdb[DBonTable].dbTableF.ShowStatus;
    end;
+end;
+
+
+procedure SortAndReplaceDataBase(DBOnTable : integer; Ascending : boolean; aField : shortString = '');
+var
+   NewDB : integer;
+   SortedFName{,OutputDir} : PathStr;
+begin
+   //OutputDir := ExtractFilePath(GISdb[DBonTable].DBfullName);
+   NewDB := SortDataBase(DBOnTable,Ascending,aField);  //,OutputDir);
+   SortedFName := GISdb[NewDB].DBfullName;
+   CloseAndNilNumberedDB(NewDB);
+   GISdb[DBonTable].BackupDB;
+   DeleteFileIfExists(GISdb[DBonTable].DBfullName);
+   MoveFile(SortedFName,GISdb[DBonTable].DBfullName);
+   GISdb[DBonTable].MyData.ClearBDEdata;
+   GISdb[DBonTable].MyData.ReopenDatabase(GISdb[DBonTable].DBfullName);
 end;
 
 
@@ -2599,6 +2637,13 @@ end;
              dbTablef.Caption := TStr + ' gazetteer: ' + ExtractFileName(dbFullName);
          end;
 
+         function TGISdataBaseModule.IsThisDEMIXdatabase : boolean;
+         begin
+             Result := (MyData.FieldExists('COP') and MyData.FieldExists('ALOS')) or
+                       StrUtils.AnsiContainsText(dbName,'DEMIX') or
+                       (MyData.FieldExists('U120_TILES') and MyData.FieldExists('U80_TILES')) or
+                       MyData.FieldExists('DEMIX_TILE') or MyData.FieldExists('COP_WIN')
+         end;
 
          procedure TGISdataBaseModule.DisplayTable(fString : AnsiString = 'NONE'; CompleteFilter : boolean = false);
          var
@@ -2615,8 +2660,7 @@ end;
                dbTablef.Restrictbymapscale1.Visible := ItsTigerShapeFile or ItsOSMShapeFile;
                dbTablef.Restrictbymapscale1.Checked := MDDef.UsePixelSizeRules;
 
-               dbTablef.DEMIX1.Visible := MDDef.ShowDEMIX and ((MyData.FieldExists('COP') and MyData.FieldExists('ALOS'))
-                           or StrUtils.AnsiContainsText(dbName,'DEMIX') or MyData.FieldExists('DEMIX_TILE') or MyData.FieldExists('COP_WIN'));
+               dbTablef.DEMIX1.Visible := MDDef.ShowDEMIX and IsThisDEMIXdatabase;
                dbTablef.BitBtn24.Visible := dbTablef.DEMIX1.Visible;
 
                if MDDef.DBMinimizeOnOpen then dbTablef.WindowState := wsMinimized;
@@ -5153,8 +5197,8 @@ begin
              Result := false;
              exit;
           end;
-         LastDataBase := FileWanted;
-         {$IfDef RecordOpenDataBase} WriteLineToDebugFile('TGISDataBase.InitializeTheData, picked: ' + FileWanted); {$EndIf}
+          LastDataBase := FileWanted;
+          {$IfDef RecordOpenDataBase} WriteLineToDebugFile('TGISDataBase.InitializeTheData, picked: ' + FileWanted); {$EndIf}
        end;
     {$EndIf}
 
@@ -5166,47 +5210,54 @@ begin
     {$IfDef ExGDAL}
     {$Else}
        if ExtEquals(Ext,'.gpx') or ExtEquals(Ext,'.fit')  then begin
-          BasePath := 'c:\mapdata\tracks\';
-          SafeMakeDir(BasePath);
-          MDdef.Add3DDist := false;
-          if ExtEquals(Ext,'.gpx') then begin
-             {$IfDef RecordFIT} WriteLineToDebugFile('open GPX, picked: ' + FileWanted); {$EndIf}
-             tName := MDtempDir + ExtractFileNameNoExt(FileWanted) + '.gpx';
-             CopyFile(FileWanted,tName);
-          end;
-          if ExtEquals(Ext,'.fit') then begin
-             {$IfDef RecordFIT} WriteLineToDebugFile('open FIT, picked: ' + FileWanted); {$EndIf}
-             tName := BasePath + ExtractFileName(FileWanted);
-             MoveFile(FileWanted,tName);
-             FileWanted := tName;
-             {$IfDef RecordFIT} WriteLineToDebugFile('open FIT, copied to: ' + FileWanted); {$EndIf}
-             tName := MDtempDir + ExtractFileNameNoExt(FileWanted) + '.gpx';
-             if GPSBabel_fit2gpx(FileWanted,tName) then begin
-                if GetFileSize(tName) < 500 then begin
-                   {$IfDef RecordFIT} WriteLineToDebugFile('FIT only ' + SmartMemorySizeBytes(GetFileSize(tName))); {$EndIf}
-                   if not AnswerIsYes('File very small, probably has no locations (indoor activity?).  Try to import anyway') then begin
-                      Result := false;
-                      exit;
+          try
+             HeavyDutyProcessing := true;
+             WMdem.Color := clInactiveCaption;
+             BasePath := 'c:\mapdata\tracks\';
+             SafeMakeDir(BasePath);
+             MDdef.Add3DDist := false;
+             if ExtEquals(Ext,'.gpx') then begin
+                {$IfDef RecordFIT} WriteLineToDebugFile('open GPX, picked: ' + FileWanted); {$EndIf}
+                tName := MDtempDir + ExtractFileNameNoExt(FileWanted) + '.gpx';
+                CopyFile(FileWanted,tName);
+             end;
+             if ExtEquals(Ext,'.fit') then begin
+                {$IfDef RecordFIT} WriteLineToDebugFile('open FIT, picked: ' + FileWanted); {$EndIf}
+                tName := BasePath + ExtractFileName(FileWanted);
+                MoveFile(FileWanted,tName);
+                FileWanted := tName;
+                {$IfDef RecordFIT} WriteLineToDebugFile('open FIT, copied to: ' + FileWanted); {$EndIf}
+                tName := MDtempDir + ExtractFileNameNoExt(FileWanted) + '.gpx';
+                if GPSBabel_fit2gpx(FileWanted,tName) then begin
+                   if GetFileSize(tName) < 500 then begin
+                      {$IfDef RecordFIT} WriteLineToDebugFile('FIT only ' + SmartMemorySizeBytes(GetFileSize(tName))); {$EndIf}
+                      if not AnswerIsYes('File very small, probably has no locations (indoor activity?). Try import anyway') then begin
+                         Result := false;
+                         exit;
+                      end;
                    end;
-                end;
+                end
+                else exit;
+             end;
+             if FileExists(tName) then begin
+                {$IfDef RecordFIT} WriteLineToDebugFile('GPSBabel_fit2gpx created ' + tName); {$EndIf}
+                FileWanted := BasePath;
+                SaveBackupDefaults;
+                MDDef.UseMeters := false;
+                MDdef.AddSpeed := true;
+                {$IfDef RecordFIT} WriteLineToDebugFile('call GPXtoDBF'); {$EndIf}
+                GPXtoDBF(tName,FileWanted);
+                {$IfDef RecordFIT} WriteLineToDebugFile('FIT processed ' + FileWanted); {$EndIf}
+                RestoreBackupDefaults;
              end
-             else exit;
-          end;
-          if FileExists(tName) then begin
-             {$IfDef RecordFIT} WriteLineToDebugFile('GPSBabel_fit2gpx created ' + tName); {$EndIf}
-             FileWanted := BasePath;
-             SaveBackupDefaults;
-             MDDef.UseMeters := false;
-             MDdef.AddSpeed := true;
-             {$IfDef RecordFIT} WriteLineToDebugFile('call GPXtoDBF'); {$EndIf}
-             GPXtoDBF(tName,FileWanted);
-             {$IfDef RecordFIT} WriteLineToDebugFile('FIT processed ' + FileWanted); {$EndIf}
-             RestoreBackupDefaults;
-          end
-          else begin
-             {$IfDef RecordFIT} WriteLineToDebugFile('GPSBabel_fit2gpx failed'); {$EndIf}
-             Result := false;
-             exit;
+             else begin
+                {$IfDef RecordFIT} WriteLineToDebugFile('GPSBabel_fit2gpx failed'); {$EndIf}
+                Result := false;
+                exit;
+             end;
+          finally
+             HeavyDutyProcessing := false;
+             WMdem.Color := clScrollBar;
           end;
        end;
     {$EndIf}

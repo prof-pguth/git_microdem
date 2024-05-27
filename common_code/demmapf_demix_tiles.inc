@@ -92,7 +92,10 @@ begin
 
    ShapeFileCreator := tShapeFileCreation.Create(WGS84DatumConstants,fName,true,5);
    ShapeFileCreator.Table.InsureFieldPresentAndAdded(ftString,'LETTERS',2);
-   if AddGridFull then ShapeFileCreator.Table.InsureFieldPresentAndAdded(ftFloat,'GRID_FULL',9,2);
+   if AddGridFull then begin
+      ShapeFileCreator.Table.InsureFieldPresentAndAdded(ftFloat,'GRID_FULL',9,2);
+      ShapeFileCreator.Table.InsureFieldPresentAndAdded(ftFloat,'RELIEF',9,2);
+   end;
    if AddTileSize then begin
       ShapeFileCreator.Table.InsureFieldPresentAndAdded(ftFloat,'TILE_WIDE',9,3);
       ShapeFileCreator.Table.InsureFieldPresentAndAdded(ftFloat,'TILE_HIGH',9,3);
@@ -157,7 +160,7 @@ var
    Col,Row : integer;
    Pts,Valid : int64;
    bbgrid : tGridLimits;
-   Full : float32;
+   Full,z,ElevMin,ElevMax,Relief : float32;
    bb : sfBoundBox;
    fName : PathStr;
 begin
@@ -165,7 +168,7 @@ begin
    if ValidDEM(DEM) then try
       StartProgress('DEMIX tiles');
       fName := NextFileNumber(MDtempDir,DEMGLB[DEM].AreaName+ '_demix_tile_fill_','.dbf');
-      if DEMGLB[DEM].SelectionMap = Nil then Result := LoadDEMIXtileOutlinesNoMap(FName,AreaBox,true,false,OpenTable)
+      if (DEMGLB[DEM].SelectionMap = Nil) then Result := LoadDEMIXtileOutlinesNoMap(FName,AreaBox,true,false,OpenTable)
       else Result := DEMGLB[DEM].SelectionMap.LoadDEMIXtileOutlines(fName,AreaBox,true,OpenTable);
 
       if (Result <> 0) then try
@@ -175,6 +178,8 @@ begin
          while not GISdb[Result].MyData.eof do begin
             Pts := 0;
             Valid := 0;
+            ElevMin := 99e39;
+            ElevMax := -99e39;
             bb := GISdb[Result].MyData.GetRecordBoundingBox;
             DEMGlb[DEM].LatLongDegreeToDEMGridInteger(bb.ymin,bb.xmin,bbgrid.xgridlow,bbgrid.ygridlow);
             DEMGlb[DEM].LatLongDegreeToDEMGridInteger(bb.ymax,bb.xmax,bbgrid.xgridhigh,bbgrid.ygridhigh);
@@ -182,14 +187,17 @@ begin
                UpdateProgressBar((bbgrid.xgridhigh - Col) / (bbgrid.xgridhigh - bbgrid.xgridlow));
                for Row := bbgrid.ygridlow to bbgrid.ygridhigh do begin
                   inc(Pts);
-                  if DEMGlb[DEM].GridInDataSet(Col,Row) and ((not DEMGlb[DEM].MissingDataInGrid(Col,Row))) then begin
+                  if DEMGlb[DEM].GetElevMetersOnGrid(Col,Row,z) then begin  //GridInDataSet(Col,Row) and ((not DEMGlb[DEM].MissingDataInGrid(Col,Row))) then begin
                      inc(valid);
+                     PetMath.CompareValueToExtremes(z,ElevMin,ElevMax);
                   end;
                end;
             end;
             GISdb[Result].MyData.Edit;
             Full := 100 * Valid / Pts;
             GISdb[Result].MyData.CarefullySetFloat32('GRID_FULL',Full,0.01);
+            Relief := (ElevMax-ElevMin);
+            GISdb[Result].MyData.CarefullySetFloat32('RELIEF',Relief,0.01);
             {$IfDef RecordDEMIXTiles} writeLineToDebugFile('File boundary, ' + GridLimitsToString(bbgrid) + RealToString(Full,8,2)); {$EndIf}
             GISdb[Result].MyData.Next;
          end;

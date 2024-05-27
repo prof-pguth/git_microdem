@@ -80,7 +80,7 @@ uses
    procedure DEMIXwineContestCriterionGraph(What,DBonTable : integer; AreaList : tStringList = nil; CriteriaUsed : tStringList = nil; LandTypePresent : tStringList = nil; DEMsPresent : tStringList = nil);
 {$EndIf}
 
-procedure DEMIX_SSIM_FUV_GraphSettings(var Graph : tThisBaseGraph; lltext : shortstring; Ncrits : integer);
+procedure DEMIX_SSIM_FUV_GraphSettings(var Graph : tThisBaseGraph; DBonTable : integer; lltext : shortstring; Ncrits : integer);
 procedure SSIM_FUV_scatterplot(db : integer; theCrit : shortstring);
 procedure HistogramsAllCriteria(db : integer);
 procedure WinningPercentagesComparedToCOP(db : integer; Criteria : tStringList);
@@ -90,6 +90,11 @@ procedure WhiskerPlotsByCluster(DB : integer);
 procedure DEMWinningPercentageGraph(DBonTable : integer; aField : shortstring);
 
 procedure BestBySlopeRough(dbOnTable : integer; Criteria : tStringList; Winners : boolean; Param1,Param2,ValueParam : shortstring);
+procedure MultipleScatterPlotsForCluster(dbOnTable : integer);
+procedure ScatterPlotForClusters(DBonTable : integer;  Field1,Field2 : shortstring);
+
+
+procedure AddTopLabelToGraph(var Graph : tThisBaseGraph; DBonTable : integer);
 
 
 implementation
@@ -120,7 +125,7 @@ begin
          for i := 0 to Pred(Criteria.Count) do begin
             GISdb[DB].EmpSource.Enabled := false;
             GISdb[db].ApplyGISFilter('CRITERION=' + QuotedStr(Criteria.Strings[i]));
-            GISdb[db].PutInQuartilesBasedOnExistingSort(10);
+            GISdb[db].PutInQuartilesBasedOnExistingSort(4);
             TileCharateristicsWhiskerPlotsByCluster(DB,false,Criteria.Strings[i]);
          end;
       end;
@@ -135,7 +140,10 @@ end;
 procedure AddTopLabelToGraph(var Graph : tThisBaseGraph; DBonTable : integer);
 begin
    Graph.GraphDraw.TopLabel := GISdb[DBontable].dbName  +  ' (' + DateToStr(Now) + ')';
-   if (GISdb[DBonTable].MyData.Filter <> '') then Graph.GraphDraw.TopLabel := Graph.GraphDraw.TopLabel  + '  ' +  GISdb[DBontable].MyData.Filter;
+   if (GISdb[DBonTable].MyData.Filter <> '') then begin
+      Graph.GraphDraw.TopLabel := Graph.GraphDraw.TopLabel  + '  ' +  GISdb[DBontable].MyData.Filter + ' (n=' + IntToStr(GISdb[DBontable].MyData.FiltRecsInDB) +
+                       '/' + IntToStr(GISdb[DBontable].MyData.TotRecsInDB) + ')';
+   end;
    Graph.GraphDraw.TopMargin := 45;
 end;
 
@@ -167,7 +175,7 @@ begin
 end;
 
 
-procedure DEMIX_SSIM_FUV_GraphSettings(var Graph : tThisBaseGraph; lltext : shortstring; Ncrits : integer);
+procedure DEMIX_SSIM_FUV_GraphSettings(var Graph : tThisBaseGraph; DBonTable : integer; lltext : shortstring; Ncrits : integer);
 begin
    Graph.GraphDraw.GraphAxes := XPartGridOnly;
    Graph.GraphDraw.LeftMargin := 175;
@@ -177,6 +185,7 @@ begin
    Graph.GraphDraw.MinHorizAxis := -0.01;
    Graph.GraphDraw.SetShowAllLines(true);
    Graph.GraphDraw.LLcornerText := llText;
+   AddTopLabelToGraph(Graph,DBonTable);
 end;
 
 procedure SetHorizAxisForSSIM(dbOnTable : integer; var Graph : tThisBaseGraph; theCrit : shortstring);
@@ -316,10 +325,7 @@ end;
 
 var
    rfile : array[0..MaxDEMs] of File;
-   bfa : array[0..MaxTiles,1..MaxDEMs,1..2] of float32;
-
-const
-   GridParams : array[1..NumGridParams] of shortstring = ('ELEV','HILL','SLOPE','RUFF','RRI','TPI','ACCUM','WETIN','HAND','LS');
+   demix_bfa : array[0..MaxTiles,1..MaxDEMs,1..2] of float32;
 
 
 procedure ZeroBFA;
@@ -329,7 +335,7 @@ begin
    for I := 0 to MaxTiles do
       for j := 1 to MaxDEMs do
          for k := 1 to 2 do
-            bfa[i,j,k] := 0;
+            demix_bfa[i,j,k] := 0;
 end;
 
 
@@ -355,9 +361,7 @@ procedure WinningPercentagesComparedToCOP(db : integer; Criteria : tStringList);
 const
    MaxCrit = 25;
    DEM1 = 'COP';
-
    CompDEM = 9;
-   //TheDEMs : array[1..CompDEM] of shortstring = ('ALOS','FABDEM','TANDEM','COAST','DILUV','DELTA','SRTM','NASA','ASTER');
 var
    Criterion,TStr,Outcome : shortstring;
    i,j,k,CritID,Total,NumDEMs : integer;
@@ -753,9 +757,9 @@ begin
          for i := 1 to NumDEMIXtestDEM do begin
             if UseRetiredDEMs[i] and GISdb[DBonTable].MyData.FieldExists(DEMIXShort[i]) then begin
                val := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(DEMIXShort[i]);
-               bfa[TileID,i,1] := val;
-               if (theSort = '') then bfa[TileID,i,2] := 100 * y / GISdb[DBonTable].MyData.FiltRecsInDB
-               else bfa[TileID,i,2] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(theSort);
+               demix_bfa[TileID,i,1] := val;
+               if (theSort = '') then demix_bfa[TileID,i,2] := 100 * y / GISdb[DBonTable].MyData.FiltRecsInDB
+               else demix_bfa[TileID,i,2] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(theSort);
             end;
          end;
       end;
@@ -765,9 +769,9 @@ begin
 
    for I := 0 to pred(Tiles.Count) do begin
       for j := 1 to NumDEMIXtestDEM do if UseRetiredDEMs[j] then begin
-         if GISdb[DBonTable].MyData.FieldExists(DEMIXShort[j]) and (bfa[i,j,1] > 0) then begin
-             v[1] := bfa[i,j,1];
-             v[2] := bfa[i,j,2];
+         if GISdb[DBonTable].MyData.FieldExists(DEMIXShort[j]) and (demix_bfa[i,j,1] > 0) then begin
+             v[1] := demix_bfa[i,j,1];
+             v[2] := demix_bfa[i,j,2];
              BlockWrite(rfile[j],V,1);
              BlockWrite(rfile[0],V,1);
              if (j = 1) then inc(NPts);
@@ -802,6 +806,7 @@ var
          Result := OpenGraphForCriterionScoresOrEvaluations(dbOnTable,theCrit,TheSort,Numerical,Evaluations,AllCriteria);
          if (DEMIXVertAxisLabel = '') then Result.GraphDraw.VertLabel := GraphName
          else Result.GraphDraw.VertLabel := RemoveUnderscores(DEMIXVertAxisLabel) + '  ' + GISdb[dbOnTable].MyData.Filter;
+         AddTopLabelToGraph(Result,DBonTable);
          Result.GraphDraw.ShowHorizAxis1 := false;
          Result.GraphDraw.GraphLeftLabels := tStringList.Create;
          Result.GraphDraw.DrawInsideLines := false;
@@ -829,10 +834,10 @@ var
                Graph := GraphForOneCriterion(Numerical,false,Criteria.Strings[j],theSort,GraphName);
                fName := DEMIX_mode_abbreviation(MDDef.DEMIX_mode) + '_' + Criteria.Strings[j] + '_' + theSort;
                if MovieByTestDEM then begin
-                  Graph.AnimateGraph(true,fName);
+                  Graph.AnimateGraph(true,true,fName);
                end;
                if PanelsByTestDEM then begin
-                  Graph.AnimateGraph(false,fName);
+                  Graph.AnimateGraph(false,true,fName);
                end;
                if (Criteria.Count > 1) and DEMIX_combined_graph then begin
                   BigGraph.Add(fName);
@@ -858,10 +863,11 @@ var
          v : array[1..2] of float32;
          rfile : file;
          Symbol : tFullSymbolDeclaration;
-         Criterion : shortstring;
+         Criterion,HL : shortstring;
       begin
+         HL := Petmar_types.BeforeSpecifiedString(GISdb[DBonTable].dbName,'demix');
          Graph := nil;
-         Graph := GraphForOneCriterion(false,true,' Critera FUV','','Best evaluation sort (%) ' + RestoreFilter + ' Tiles=' + IntToStr(GISdb[DBonTable].MyData.NumUniqueEntriesInDB('DEMIX_TILE')));
+         Graph := GraphForOneCriterion(false,true,HL,'','Best evaluation sort (%) ' + RestoreFilter + ' Tiles=' + IntToStr(GISdb[DBonTable].MyData.NumUniqueEntriesInDB('DEMIX_TILE')));
          AddTopLabelToGraph(Graph,DBonTable);
 
          Graph.GraphDraw.LegendList := tStringList.Create;
@@ -885,7 +891,8 @@ var
             end;
             CloseFile(rfile);
          end;
-         Graph.AutoScaleAndRedrawDiagram;
+         Graph.GraphDraw.MaxHorizAxis := 1.1;
+         Graph.AutoScaleAndRedrawDiagram(false,false,false,false);
       end;
 
 
@@ -898,11 +905,12 @@ var
             Graph : tThisBaseGraph;
             v : array[1..2] of float32;
             rfile : file;
-            aFilter,TStr,Criterion : shortstring;
+            aFilter,TStr,Criterion,HL : shortstring;
             Symbol : tFullSymbolDeclaration;
          begin
+            HL := Petmar_types.BeforeSpecifiedString(GISdb[DBonTable].dbName,'demix');
             Graph := nil;
-            Graph := GraphForOneCriterion(false,true,' Critera FUV','','Best evaluation sort (%) ' + Criteria.Strings[Crit]);
+            Graph := GraphForOneCriterion(false,true,HL,'','Best evaluation sort (%) ' + Criteria.Strings[Crit]);
             AddTopLabelToGraph(Graph,DBonTable);
             Graph.GraphDraw.LegendList := tStringList.Create;
             for k := 1 to nFilter do begin
@@ -931,7 +939,8 @@ var
                end;
                CloseFile(rfile);
             end;
-            Graph.AutoScaleAndRedrawDiagram;
+            Graph.GraphDraw.MaxHorizAxis := 1.1;
+            Graph.AutoScaleAndRedrawDiagram(false,false,false,false);
          end;
 
 
@@ -1001,8 +1010,6 @@ begin {DEMIX_evaluations_graph}
       {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_evaluations_graph in,  n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB)); {$EndIf}
       GetDEMIXpaths(False);
       GISdb[DBonTable].EmpSource.Enabled := false;
-      //Criteria := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('CRITERION');
-      //if (Criteria.Count = 1) or MultiSelectSingleColumnStringList('Criteria to graph',pn,Criteria,true,true) then begin
          if (YAxisWhat = yasBestEvalByCriterion) then JustOneGraph
          else if (YAxisWhat = yasBestEvalFilteredBySlope) then FilterJustOneGraph
          else if (YAxisWhat = yasBestEvalColoredBySlope) then GraphsColoredByTile
@@ -1061,7 +1068,7 @@ begin
          if (Crit = Criterion1) then CritID := 1 else CritID := 2;
          for i := 1 to NumDEMIXtestDEM do begin
             val := GISdb[DB].MyData.GetFieldByNameAsFloat(DEMIXShort[i]);
-            bfa[TileID,i,CritID] := val;
+            demix_bfa[TileID,i,CritID] := val;
          end;
       end;
       GISdb[DB].MyData.Next;
@@ -1072,9 +1079,9 @@ begin
    NPts := 0;
    for I := 0 to MaxTiles do
       for j := 1 to NumDEMIXtestDEM do begin
-         if (bfa[i,j,1] > 0) and (bfa[i,j,2] > 0) then begin
-             v[1] := bfa[i,j,1];
-             v[2] := bfa[i,j,2];
+         if (demix_bfa[i,j,1] > 0) and (demix_bfa[i,j,2] > 0) then begin
+             v[1] := demix_bfa[i,j,1];
+             v[2] := demix_bfa[i,j,2];
              BlockWrite(rfile[j],V,1);
              BlockWrite(rfile[0],V,1);
              if (j = 1) then inc(NPts);
@@ -1104,8 +1111,8 @@ begin
    for I := 0 to pred(Criteria.Count) do begin
       GISdb[DB].ApplyGISFilter('CRITERION=' + QuotedStr(Criteria.Strings[i]));
       Graph := GISdb[DB].CreateHistogramFromDataBase(true,DEMs,false);
+
       for j := 1 to NumDEMIXtestDEM do begin
-         //Graph.GraphDraw.    := ConvertPlatformColorToTColor(DEMIXColorFromDEMName(DEMIXShort[i]));
          Graph.GraphDraw.Symbol[j].Color := (DEMIXColorFromDEMName(DEMIXShort[j]));
          Graph.GraphDraw.FileColors256[j] := (DEMIXColorFromDEMName(DEMIXShort[j]));
       end;
@@ -1118,6 +1125,47 @@ begin
 end;
 
     {$I demix_graphs.inc}
+
+
+procedure ScatterPlotForClusters(DBonTable : integer;  Field1,Field2 : shortstring);
+var
+   i : integer;
+   Color : tColor;
+   Graph : tThisBaseGraph;
+   RealLegend : tStringList;
+begin
+   if GISdb[DBonTable].MyData.FieldExists('CLUSTER') and GISdb[DBonTable].MyData.FieldExists(Field1) then begin
+       for I := 1 to 15 do begin
+         GISdb[DBonTable].ApplyGISFilter('DEM=' + QuotedStr('COP') + ' AND CLUSTER=' + IntToStr(i));
+         if (GISdb[DBonTable].MyData.FiltRecsInDB > 0) then begin
+            GISdb[DBonTable].EmpSource.Enabled := false;
+            Color := GISdb[DBonTable].MyData.TColorFromTable;
+            if (i=1) then begin
+               Graph := GISdb[DBonTable].CreateScatterGram(Field1,Field2,Color);
+               Graph.GraphDraw.LegendList := tStringList.Create;
+               RealLegend := tStringList.Create;
+            end
+            else GISdb[DBonTable].AddSeriesToScatterGram(Graph,Color,Field1,Field2);
+            RealLegend.Add(GISdb[DBonTable].MyData.Filter + ' (n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + ')');
+         end;
+      end;
+      Graph.GraphDraw.LegendList.Clear;
+      for i := 0 to pred(RealLegend.Count) do Graph.GraphDraw.LegendList.Add(RealLegend.Strings[i]);
+      AddTopLabelToGraph(Graph,DBonTable);
+      Graph.AnimateGraph(False,false);
+   end;
+   GISdb[DBonTable].EmpSource.Enabled := true;
+   GISdb[DBonTable].ClearGISFilter;
+end;
+
+procedure MultipleScatterPlotsForCluster(dbOnTable : integer);
+begin
+   ScatterPlotForClusters(DBonTable,'COP_PDF', 'ALOS_PDF');
+   ScatterPlotForClusters(DBonTable,'BARREN_PC', 'AVG_SLOPE');
+   ScatterPlotForClusters(DBonTable,'FOREST_PC', 'AVG_SLOPE');
+   CombineAllPanelGraphs;
+end;
+
 
 
 end.

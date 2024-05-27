@@ -413,22 +413,6 @@ begin
 end;
 
 
-function WBT_Geomorphons(OpenMap : boolean; InName : PathStr) : integer;
-var
-   OutName : PathStr;
-   bfile : tStringList;
-   cmd : ansistring;
-begin
-  {$IfDef RecordUseOtherPrograms} WriteLineToDebugFile('WhiteBoxGeomorphons, infile=' + InName + '  outfile=' + OutName); {$EndIf}
-  if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
-     OutName := NextFileNumber(MDTempDir,'wbt_geomorphons_' + ExtractFileNameNoExt(InName) + '_','.tif');
-     cmd := WhiteBoxfName  + WBNoCompress + ' -r=Geomorphons -v -i=' + InName + ' -o=' + OutName + ' --search=50 --threshold=0.0 --tdist=0 --forms=True';
-     Result := ExecuteWBandOpenMap(cmd,OutName,euGeomorphon,mtLandCover,OpenMap);
-  end;
-  {$IfDef RecordUseOtherPrograms} WriteLineToDebugFile('WhiteBoxGeomorphons out'); {$EndIf}
-end;
-
-
 procedure WBT_PennockLandformClass(InName : PathStr; SmoothFirst : boolean);
 var
    tName,OutName : PathStr;
@@ -450,3 +434,38 @@ begin
   end;
   {$IfDef RecordUseOtherPrograms} WriteLineToDebugFile('WhiteBoxPennockLandformClass out'); {$EndIf}
 end;
+
+
+
+procedure WBT_KappaIndex(ClassifiedName,ReferenceName : PathStr; HTMLname : PathStr = '');
+var
+   cmd : shortstring;
+begin
+  if WhiteBoxPresent and FileExistsErrorMessage(ClassifiedName) and FileExistsErrorMessage(ReferenceName) then begin
+     if HTMLName = '' then HTMLname :=  NextFileNumber(MDtempDir,'wbt_kappa_index_' + ExtractFileNameNoExt(ClassifiedName) + '_', '.html');
+     cmd := WhiteBoxfName + ' -r=KappaIndex -v --i1=' + ClassifiedName + ' --i2=' + ReferenceName + ' -o=' + HTMLName;
+     WriteLineToDebugFile(cmd);
+     WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
+  end;
+end;
+
+
+function WBT_Geomorphons(OpenMap : boolean; InName : PathStr; Search : integer=50; Skip : integer = 0) : integer;
+// https://www.whiteboxgeo.com/manual/wbt_book/available_tools/geomorphometric_analysis.html#Geomorphons
+var
+   OutName : PathStr;
+   bfile : tStringList;
+   cmd : ansistring;
+begin
+  {$If Defined(RecordUseOtherPrograms) or Defined(RecordWBT)} WriteLineToDebugFile('WhiteBoxGeomorphons, infile=' + InName + '  outfile=' + OutName); {$EndIf}
+  if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
+     OutName := NextFileNumber(MDTempDir,'wbt_geomorphons_search_' + IntToStr(Search) + '_skip_' + IntToStr(Skip) + '_' + ExtractFileNameNoExt(InName) + '_','.tif');
+     cmd := WhiteBoxfName  + WBNoCompress + ' -r=Geomorphons -v -i=' + InName + ' -o=' + OutName + ' --search=' + IntToStr(Search) + ' --threshold=0.0 --skip=' + IntToStr(Skip) + ' --forms=True';
+     {$If Defined(RecordWBT)} WriteLineToDebugFile(cmd); {$EndIf}
+     Result := ExecuteWBandOpenMap(cmd,OutName,euGeomorphon,mtLandCover,OpenMap);
+  end;
+   {$If Defined(RecordUseOtherPrograms) or Defined(RecordWBT)} WriteLineToDebugFile('WhiteBoxGeomorphons out'); {$EndIf}
+end;
+
+
+

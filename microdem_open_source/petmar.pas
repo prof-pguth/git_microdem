@@ -1068,8 +1068,11 @@ end;
                          end;
                       end;
                    end;
-               end;
-               PetList.Destroy;
+                end
+                else begin
+                   InList.Clear;
+                end;
+                PetList.Destroy;
             end;
          {$EndIf}
          end;

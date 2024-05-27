@@ -23,9 +23,10 @@ unit DEMStat;
       //{$Define RecordSSIMFull}
       {$Define RecordDEMIX}
       {$Define RecordFUVsteps}
+      {$Define TimeGridsForArea}
       //{$Define RecordDEMIXFull}
       //{$Define TrackPixelIs}
-      //{$Define RecordCovarianceFail}
+      {$Define RecordCovarianceFail}
       //{$Define RecordDEMIXSSIMGrid}
       //{$Define RepeatProblematicComputations}  //put in breakpoint, and then follow debugger but may have issues
       //{$Define RecordCovariance}
@@ -197,9 +198,10 @@ type
    procedure HistogramsFromVATDEM(DEMwithVAT,ElevMap,SlopeMap,RuffMap,AspMap : integer; var Graph1,Graph2,Graph3,Graph4 : tThisBaseGraph);
    procedure CreateGridHistograms(DEMSwanted : tDEMbooleanArray; TailCutoff : float32 = 0.5);
 
+   procedure ComputeKappa(RefGrid,TestGrid : integer; RefGridLimits : tGridLimits; var Kappa,OverallAccuracy,AvgUsers,AvgProd : float32);
 
 //ssim operations
-   function ComputeSSIM(DEM1,DEM2 : integer; gl1,gl2 : tGridLimits; var SSIM,Luminance,Contrast,Structure : float64) : boolean; //inline;
+   function ComputeSSIM(DEM1,DEM2 : integer; gl1{,gl2} : tGridLimits; var SSIM,Luminance,Contrast,Structure : float64) : boolean; //inline;
    procedure AreaSSIMandFUVComputations(Overwrite : boolean; Areas : tStringList = nil);
    procedure NormalizeDEMforSSIM(DEM : integer; What : shortstring);
    function MakeSSIMMap(OpenMap,AlreadyNormalized : boolean; DEM1,DEM2,NumberOfGrids,WindowSize : integer; ThinFactor : integer = 1; AreaName : shortstring = '') : integer;
@@ -818,7 +820,7 @@ begin
    aCapt := 'Slopes by region at ' + Location;
 
    StringList2CSVtoDB(Findings,TStr);
-   Graph := GISDB[db].CreateScatterGram(xField,yField,true,aCapt);
+   Graph := GISDB[db].CreateScatterGram(xField,yField,clRed,true,aCapt);
    Graph.GraphDraw.MinVertAxis := 0;
    Graph.GraphDraw.LLCornerText := Location;
    Graph.RedrawDiagram11Click(Nil);
@@ -1933,6 +1935,12 @@ begin
       StdDev2 := sqrt( (NPts * SP[2] - (sum[2] * sum[2]) ) / (NPts-1) / Npts );
       Covar := (NPts * SPc - Sum[1] * Sum[2]) / NPts / pred(NPts);
       r := Covar / StdDev1 / StdDev2;
+
+      if IsNAN(r) then begin
+         {$If Defined(RecordCovarianceFail)} HighLightLineToDebugFile('CovariancesFromTwoGrids is Nan'); {$EndIf}
+         r := 0;
+      end;
+
       {$If Defined(RecordCovariance)}
          WriteLineToDebugFile('npts=' + IntToStr(NPts));
          WriteLineToDebugFile('Mean1=' + RealToString(Mean1,8,2) + ' std dev1=' + RealToString(StdDev1,8,2) + '  ' + DEMglb[DEM1].AreaName);
@@ -1941,6 +1949,7 @@ begin
       {$If Defined(RecordStat) or Defined(RecordCovariance)}  WriteLineToDebugFile('CovariancesFromTwoGrids out covar=' + RealToString(covar,-12,-4) + '  r=' + RealToString(r,-12,-6)); {$EndIf}
    end
    else begin
+      {$If Defined(RecordCovarianceFail)} HighLightLineToDebugFile('CovariancesFromTwoGrids fail, npts=' + IntToStr(NPts) + ' DEM1=' + DEMglb[DEM1].AreaName +  ' DEM2=' + DEMglb[DEM2].AreaName); {$EndIf}
       {$If Defined(RecordStat) or Defined(RecordCovariance) or Defined(RecordCovarianceFail)}
          if NoteFailure then WriteLineToDebugFile('CovariancesFromTwoGrids failed, npts=' + IntToStr(NPts) + ' DEM1=' + DEMglb[DEM1].AreaName +  ' DEM2=' + DEMglb[DEM2].AreaName );
       {$EndIf}
@@ -3135,12 +3144,12 @@ begin
    if DEMGlb[WhichDEM].DEMheader.ElevUnits = euImagery then TStr := 'DNs '
    else TStr := 'Elevation ';
    if Quick or MDDef.ShowRegularHistogram then begin
-      if MDDef.CountHistograms then GISDB[theDB].CreateScatterGram('CONCENT','Z',true,DEMGlb[WhichDEM].AreaName +  ' ' + TStr + ' Histogram',
+      if MDDef.CountHistograms then GISDB[theDB].CreateScatterGram('CONCENT','Z',clRed,true,DEMGlb[WhichDEM].AreaName +  ' ' + TStr + ' Histogram',
            'Concentration (Fraction of Uniform)',  TStr + '(' + ElevUnitsAre(DEMGlb[WhichDEM].DEMheader.ElevUnits)  + ')')
       else begin
          if (DEMGlb[WhichDEM].DEMheader.ElevUnits = euImagery) then
-              GISDB[theDB].CreateScatterGram('Z','NPTS',true,DEMGlb[WhichDEM].AreaName +  ' ' + TStr + 'Histogram', TStr + '(' + ElevUnitsAre(DEMGlb[WhichDEM].DEMheader.ElevUnits)  + ')','Number of Points')
-         else GISDB[theDB].CreateScatterGram('NPTS','Z',true,DEMGlb[WhichDEM].AreaName +  ' ' + TStr + 'Histogram','Number of Points', TStr + '(' + ElevUnitsAre(DEMGlb[WhichDEM].DEMheader.ElevUnits)  + ')');
+              GISDB[theDB].CreateScatterGram('Z','NPTS',clRed,true,DEMGlb[WhichDEM].AreaName +  ' ' + TStr + 'Histogram', TStr + '(' + ElevUnitsAre(DEMGlb[WhichDEM].DEMheader.ElevUnits)  + ')','Number of Points')
+         else GISDB[theDB].CreateScatterGram('NPTS','Z',clRed,true,DEMGlb[WhichDEM].AreaName +  ' ' + TStr + 'Histogram','Number of Points', TStr + '(' + ElevUnitsAre(DEMGlb[WhichDEM].DEMheader.ElevUnits)  + ')');
       end;
    end;
 
@@ -3148,14 +3157,14 @@ begin
       CloseAndNilNumberedDB(theDB);
    end
    else begin
-      if MDDef.ShowCumulativeHistogram then GISDB[theDB].CreateScatterGram('CUM_PC','Z',true,DEMGlb[WhichDEM].AreaName +  ' Cumulative Elevation Distribution',
+      if MDDef.ShowCumulativeHistogram then GISDB[theDB].CreateScatterGram('CUM_PC','Z',clRed,true,DEMGlb[WhichDEM].AreaName +  ' Cumulative Elevation Distribution',
           'Cumulative Percentage', 'Elevation (' + ElevUnitsAre(DEMGlb[WhichDEM].DEMheader.ElevUnits)  + ')');
 
-      if MDDef.ShowStrahlerHistogram then GISDB[theDB].CreateScatterGram('PROP_AREA','PROP_HGT',true,DEMGlb[WhichDEM].AreaName +  ' Strahler Elevation Distribution',
+      if MDDef.ShowStrahlerHistogram then GISDB[theDB].CreateScatterGram('PROP_AREA','PROP_HGT',clRed,true,DEMGlb[WhichDEM].AreaName +  ' Strahler Elevation Distribution',
        'Proportion of Area', 'Proportion of Basin Height');
 
        if MDDef.ShowNormalHistogram then begin
-          GISDB[theDB].CreateScatterGram('Z','CUM_PC',true,DEMGlb[WhichDEM].AreaName +  ' Cumulative ' + TStr + 'Distribution',
+          GISDB[theDB].CreateScatterGram('Z','CUM_PC',clRed,true,DEMGlb[WhichDEM].AreaName +  ' Cumulative ' + TStr + 'Distribution',
             TStr + '(' + ElevUnitsAre(DEMGlb[WhichDEM].DEMheader.ElevUnits)  + ')','Cumulative Percentage',true);
        end;
 
@@ -3403,6 +3412,76 @@ begin
          MessageToContinue('No scattergram matches ' + DEMGlb[DEM1].AreaName + ' and ' + DEMGlb[DEM2].AreaName);
       end;
    end;
+end;
+
+
+procedure ComputeKappa(RefGrid,TestGrid : integer; RefGridLimits : tGridLimits; var Kappa,OverallAccuracy,AvgUsers,AvgProd : float32);
+//results verified with WbT
+const
+   MaxClass = 16;
+var
+   ConfusionMatrix : array[1..MaxClass,1..MaxClass] of int64;
+   RowTotal,ColumnTotal : array[1..MaxClass] of int64;
+   Users,Producers : array[1..MaxClass] of float64;
+   i,j,n,Col,Row,Ref,Test,xoffset,yoffset : integer;
+   z1,z2 : float32;
+   SumProducts : float64;
+   TotalN,SumCorrect : int64;
+begin
+   for i := 1 to MaxClass do begin
+      RowTotal[i] := 0;
+      ColumnTotal[i] := 0;
+      for j := 1 to MaxClass do
+         ConfusionMatrix[i,j] := 0;
+   end;
+
+   DEMglb[refGrid].SecondGridJustOffset(TestGrid,xoffset,yoffset);
+   TotalN := 0;
+   for Col := RefGridLimits.XGridLow to RefGridLimits.XGridHigh do begin
+      for Row := RefGridLimits.YGridLow to RefGridLimits.YGridHigh do begin
+          if DEMGlb[RefGrid].GetElevMetersOnGrid(Col,Row,z1) and DEMGlb[TestGrid].GetElevMetersOnGrid(Col+xoffset,Row+yoffset,z2) then begin
+             Ref := round(z1);
+             inc(ColumnTotal[Ref]);
+             Test := round(z2);
+             inc(RowTotal[Test]);
+             inc(ConfusionMatrix[Test,Ref]);
+             inc(TotalN);
+          end;
+      end;
+   end;
+
+   SumCorrect := 0;
+   for i := 1 to MaxClass do
+      SumCorrect := SumCorrect + ConfusionMatrix[i,i];
+
+   SumProducts := 0;
+   for i := 1 to MaxClass do
+      SumProducts := SumProducts + 1.0 * RowTotal[i] * ColumnTotal[i];
+
+   Kappa := ((TotalN * SumCorrect) - SumProducts) / (sqr(TotalN) - SumProducts);
+   OverallAccuracy := SumCorrect / TotalN;
+
+   AvgUsers := 0;
+   n := 0;
+   for i := 1 to MaxClass do begin
+       if (RowTotal[i] <> 0) then begin
+          Users[i] := ConfusionMatrix[i,i] / RowTotal[i];
+          AvgUsers := AvgUsers + Users[i];
+          inc(n);
+       end;
+   end;
+   AvgUsers := AvgUsers / n;
+
+   AvgProd := 0;
+   n := 0;
+   for j := 1 to MaxClass do begin
+       if ColumnTotal[j] <> 0 then begin
+          Producers[j] := ConfusionMatrix[j,j] / ColumnTotal[j];
+          AvgProd := AvgProd + Producers[j];
+          inc(n);
+       end;
+   end;
+   AvgProd := AvgProd / n;
 end;
 
 

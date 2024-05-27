@@ -153,7 +153,7 @@ var
 begin
    if (SingleCriterion <> '') then BaseFilter := 'CRITERION=' + QuotedStr(SingleCriterion)
    else BaseFilter := GISdb[DBonTable].MyData.Filter;
-   if not NoFiltering then begin
+   if (not NoFiltering) then begin
       if GISdb[DBonTable].MyData.FieldExists('CLUSTER') then FieldWanted := 'CLUSTER'
       else if GISdb[DBonTable].MyData.FieldExists('NUM_CLUSTR') then FieldWanted := 'NUM_CLUSTR'
       else if GISdb[DBonTable].MyData.FieldExists('QUARTILE') then FieldWanted := 'QUARTILE'
@@ -161,6 +161,8 @@ begin
    end;
    GraphImages := tStringList.Create;
    for i := 1 to 7 do Graph[i] := OneGraph(TileCharacters[i]);
+   if GISdb[DBonTable].MyData.FieldExists('COP_PDF') then OneGraph('COP_PDF');
+   if GISdb[DBonTable].MyData.FieldExists('COP_PDF') then OneGraph('ALOS_PDF');
    fName := MDTempDir + DEMIX_mode_abbreviation(MDDef.DEMIX_mode) + SingleCriterion + '_tile_characters.png';
    if (GraphImages.Count = 0) then begin
       MessageToContinue('Add tile characteristics to DB');
@@ -180,22 +182,27 @@ var
    Tiles,Results : tstringList;
    fName : PathStr;
 begin
-   GISdb[DBonTable].EmpSource.Enabled := false;
-   LoadDEMIXnames;
-   ShowHourglassCursor;
-   Results := tStringList.Create;
-   Results.Add('DEMIX_TILE,NUM_CLUSTR');
-   Tiles := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('DEMIX_TILE');
-   for I := 0 to pred(Tiles.Count) do begin
+   try
+      GetDEMIXpaths(False);
+      LoadDEMIXnames;
+      ShowHourglassCursor;
+      Results := tStringList.Create;
+      Results.Add('DEMIX_TILE,NUM_CLUSTR');
       GISdb[DBonTable].EmpSource.Enabled := false;
-      GISdb[DBonTable].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(Tiles.Strings[i]));
-      Results.Add(Tiles.Strings[i] + ',' + IntToStr(GISdb[DBonTable].MyData.NumUniqueEntriesInDB('CLUSTER')));
+      Tiles := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('DEMIX_TILE');
+      for I := 0 to pred(Tiles.Count) do begin
+         GISdb[DBonTable].EmpSource.Enabled := false;
+         GISdb[DBonTable].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(Tiles.Strings[i]));
+         Results.Add(Tiles.Strings[i] + ',' + IntToStr(GISdb[DBonTable].MyData.NumUniqueEntriesInDB('CLUSTER')));
+      end;
+      fName := NextFileNumber(MDTempDir,MDTempDir + 'clusters_per_tile','.dbf');
+      StringList2CSVtoDB(Results,fName);
+      Tiles.Destroy;
+   finally
+      GISdb[DBonTable].ClearGISFilter;
+      EndDEMIXProcessing;
+      GISdb[DBonTable].ShowStatus;
    end;
-   fName := NextFileNumber(MDTempDir,MDTempDir + 'clusters_per_tile','.dbf');
-   StringList2CSVtoDB(Results,fName);
-   Tiles.Destroy;
-   GISdb[DBonTable].ClearGISFilter;
-   GISdb[DBonTable].ShowStatus;
 end;
 
 
@@ -209,30 +216,35 @@ var
    fName : PathStr;
    MomentVar : tMomentVar;
 begin
-   GISdb[DBonTable].EmpSource.Enabled := false;
-   LoadDEMIXnames;
-   ShowHourglassCursor;
-   Results := tStringList.Create;
-   aline := 'CLUSTER,N';
-   Clusters := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('CLUSTER');
-   for I := 1 to NumTileCharacters do aline := aline + ',' + TileCharacters[i];
-   Results.Add(aline);
-
-   for I := 0 to pred(Clusters.Count) do begin
-      GISdb[DBonTable].ApplyGISFilter('DEM=' + QuotedStr('COP') + ' AND CLUSTER=' + Clusters.Strings[i]);
+   try
+      GetDEMIXpaths(False);
       GISdb[DBonTable].EmpSource.Enabled := false;
-      aline := Clusters.Strings[i] + ',' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB);
-      for j := 1 to NumTileCharacters do begin
-         MomentVar := GISdb[DBonTable].GetFieldStatistics(TileCharacters[j]);
-         aline := aline + ',' + RealToString(MomentVar.Mean,-12,-6);
-      end;
+      LoadDEMIXnames;
+      ShowHourglassCursor;
+      Results := tStringList.Create;
+      aline := 'CLUSTER,N';
+      Clusters := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('CLUSTER');
+      for I := 1 to NumTileCharacters do aline := aline + ',' + TileCharacters[i];
       Results.Add(aline);
+
+      for I := 0 to pred(Clusters.Count) do begin
+         GISdb[DBonTable].ApplyGISFilter('DEM=' + QuotedStr('COP') + ' AND CLUSTER=' + Clusters.Strings[i]);
+         GISdb[DBonTable].EmpSource.Enabled := false;
+         aline := Clusters.Strings[i] + ',' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB);
+         for j := 1 to NumTileCharacters do begin
+            MomentVar := GISdb[DBonTable].GetFieldStatistics(TileCharacters[j]);
+            aline := aline + ',' + RealToString(MomentVar.Mean,-12,-6);
+         end;
+         Results.Add(aline);
+      end;
+      fName := NextFileNumber(MDTempDir,MDTempDir + 'cop_tile_clusters_','.dbf');
+      StringList2CSVtoDB(Results,fName);
+      Clusters.Destroy;
+   finally
+      GISdb[DBonTable].ClearGISFilter;
+      EndDEMIXProcessing;
+      GISdb[DBonTable].ShowStatus;
    end;
-   fName := NextFileNumber(MDTempDir,MDTempDir + 'cop_tile_clusters_','.dbf');
-   StringList2CSVtoDB(Results,fName);
-   Clusters.Destroy;
-   GISdb[DBonTable].ClearGISFilter;
-   GISdb[DBonTable].ShowStatus;
 end;
 
 
@@ -413,97 +425,64 @@ begin
 end;
 
 
-function DEMIX_SSIM_FUV_clusters_graph(DBonTable : integer) : tThisBaseGraph;
-//makes graph of each cluster with criteria on y axis and evaluation on x axis
-//compare with https://plotly.com/python/parallel-coordinates-plot/
-const
-   NumCrits : integer = 13;
-   FUVordered : array[1..13] of shortstring = ('ELEV_FUV','SLOPE_FUV','RUFF_FUV','HAND_FUV','OPENU_FUV','OPEND_FUV','TPI_FUV','WETIN_FUV','RRI_FUV','TANGC_FUV','PROFC_FUV','ACCUM_FUV','PLANC_FUV');
-var
-   Crit,aline,aField : shortstring;
-   j,k,NCrit,NDEM,Cluster : integer;
-   rfile : file;
-   fName : PathStr;
-   TheCrits : array[1..100] of shortstring;
 
-         function OneGraph(What : shortstring): tThisBaseGraph;
+         function LinkedGraphofCriteriaEvaluations(DBonTable : integer; What : shortstring; ClusterOption : boolean): tThisBaseGraph;
          var
-            j,n : integer;
+            CritList : tStringList;
+            DEM : shortstring;
+            j,k,n,Cluster : integer;
+            rfile : file;
          begin
-            GISdb[DBonTable].ApplyGISFilter('METRIC=' + QuotedStr(UpperCase(What)));
+            CritList := tStringList.Create;
+            CritList.LoadFromFile(DEMIXSettingsDir + 'sorted_fuv_criteria.txt');
+            for j := pred(CritList.Count) downto 0 do begin
+               if not GISdb[DBonTable].MyData.FieldExists(CritList.Strings[j]) then CritList.Delete(j);
+            end;
+
             if (GISdb[DBonTable].MyData.FiltRecsInDB > 0) then begin
                Result:= tThisBaseGraph.Create(Application);
+               DEMIX_SSIM_FUV_GraphSettings(Result,DBonTable,What,CritList.Count);
                Result.GraphDraw.GraphLeftLabels := tStringList.Create;
                Result.GraphDraw.BottomMargin := 75;
                Result.GraphDraw.SetShowAllPoints(false);
                Result.GraphDraw.LegendList := tStringList.Create;
-               Result.GraphDraw.HorizLabel := 'Dissimilarity/Fraction variance unexplained';
-               if (aField = '') then DEMIX_SSIM_FUV_GraphSettings(Result,What,NumCrits)
-               else DEMIX_SSIM_FUV_GraphSettings(Result,aField + ' ' + What,NumCrits);
+               Result.GraphDraw.HorizLabel := 'Fraction variance unexplained';
                GISdb[DBonTable].EmpSource.Enabled := false;
                while not GISdb[DBonTable].MyData.eof do begin
-                  if (aField = 'CLUSTER') or (aField = '') then begin
+                  if ClusterOption then begin
                      Cluster := GISdb[DBonTable].MyData.GetFieldByNameAsInteger('CLUSTER');
                      n := GISdb[DBonTable].MyData.GetFieldByNameAsInteger('N');
                      Result.GraphDraw.LegendList.Add('Cluster ' + IntToStr(Cluster) + ' (n=' + IntToStr(n) + ')');
-                  end;
-                  if (aField = 'DEM') then begin
-                     Result.GraphDraw.LegendList.Add(GISdb[DBonTable].MyData.GetFieldByNameAsString('DEM'));
-                  end;
-
-                  Result.OpenDataFile(rfile,GISdb[DBonTable].MyData.GetFieldByNameAsInteger('COLOR'));
-                  if (aField = '') then begin
-                     (*r
-                     for j := 1 to NumCrits do begin
-                        Result.AddPointToDataBuffer(rfile,GISdb[DBonTable].MyData.GetFieldByNameAsFloat(TheCrits[j]),j);
-                     end;
-                     *)
-                     for j := 1 to NumCrits do begin
-                        Result.AddPointToDataBuffer(rfile,GISdb[DBonTable].MyData.GetFieldByNameAsFloat(FUVordered[j]),j);
-                     end;
+                     Result.OpenDataFile(rfile,GISdb[DBonTable].MyData.GetFieldByNameAsInteger('COLOR'));
                   end
                   else begin
-                     (*
-                     for j := 1 to NumCrits do begin
-                        Result.AddPointToDataBuffer(rfile,GISdb[DBonTable].MyData.GetFieldByNameAsFloat(Crits[j]),j);
-                     end;
-                     *)
+                     DEM := GISdb[DBonTable].MyData.GetFieldByNameAsString('DEM');
+                     Result.OpenDataFile(rfile,ConvertPlatformColorToTColor(DEMIXColorFromDEMName(DEM)));
+                  end;
+                  for j := 0 to pred(CritList.Count) do begin
+                     Result.AddPointToDataBuffer(rfile,GISdb[DBonTable].MyData.GetFieldByNameAsFloat(CritList.Strings[j]),succ(j));
                   end;
                   Result.ClosePointDataFile(rfile);
                   GISdb[DBonTable].MyData.Next;
                end;
-               if (aField = '') then begin
-                  //for j := 1 to NumCrits do Result.GraphDraw.GraphLeftLabels.Add(IntToStr(j) + ',' + TheCrits[j]);
-                  for j := 1 to NumCrits do Result.GraphDraw.GraphLeftLabels.Add(IntToStr(j) + ',' + FUVordered[j]);
-               end
-               else begin
-                  (*
-                  for j := 1 to NCrits do Result.GraphDraw.GraphLeftLabels.Add(IntToStr(j) + ',' + Crits[j]);
-                  *)
-               end;
+               for j := 1 to CritList.Count do Result.GraphDraw.GraphLeftLabels.Add(IntToStr(j) + ',' + CritList.Strings[pred(j)]);
                Result.RedrawDiagram11Click(Nil);
             end;
          end;
 
+
+
+function DEMIX_SSIM_FUV_clusters_graph(DBonTable : integer) : tThisBaseGraph;
+//makes graph of each cluster with criteria on y axis and evaluation on x axis
+//compare with https://plotly.com/python/parallel-coordinates-plot/
 begin
    if GISdb[DBonTable].MyData.FieldExists('METRIC') then begin
-      GISdb[DBonTable].EmpSource.Enabled := false;
-      (*
-      if GISdb[DBonTable].MyData.FieldExists('CLUSTER') and GISdb[DBonTable].MyData.FieldExists(Crits[1]) then aField := 'CLUSTER'
-      else if GISdb[DBonTable].MyData.FieldExists('DEM') then aField := 'DEM'
-      else *) begin
-         aField := '';
-         NumCrits := 0;
-         for j := 0 to pred(GISdb[DBonTable].MyData.FieldCount) do begin
-            if (GISdb[DBonTable].MyData.GetFieldType(j) = ftFloat) then begin
-               inc(NumCrits);
-               TheCrits[NumCrits] := GISdb[DBonTable].MyData.GetFieldName(j);
-            end;
-         end;
-      end;
       LoadDEMIXnames;
+      GetDEMIXpaths(false);
+      GISdb[DBonTable].EmpSource.Enabled := false;
       ShowHourglassCursor;
-      Result := OneGraph('Mean');
+      GISdb[DBonTable].ApplyGISFilter('METRIC=' + QuotedStr('MEAN'));
+      Result := LinkedGraphofCriteriaEvaluations(DBonTable,'Mean',true);
       GISdb[DBonTable].ClearGISFilter;
       GISdb[DBonTable].ShowStatus;
    end

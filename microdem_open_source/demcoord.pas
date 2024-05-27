@@ -103,7 +103,7 @@ unit DEMCoord;
       //{$Define RecordASCIIExport}
       //{$Define RecordDEMHeader}
       //{$Define RecordFullWriteDEM}
-      //{$Define RecordOpenMap}
+      {$Define RecordOpenMap}
       //{$Define RecordWorldFile}
       //{$Define RecordCloseDEM}
       //{$Define RecordGDAL}
@@ -1807,12 +1807,6 @@ var
    i : integer;
 begin
    {$If Defined(RecordClosing) or Defined(RecordDEMClose)} if (not DEMMergeInProgress) then WriteLineToDebugFile('tDEMDataSet.Destroy DEM=' + IntToStr(ThisDEM) + '  ' + AreaName); {$EndIf}
-
-   (*
-   if AreaName = '' then begin
-      MessageToContinue('Problem in tDEMDataSet.Destroy');
-   end;
-   *)
    FreeDEMPointers;
    {$IfDef NoMapOptions}
    {$Else}
@@ -1822,11 +1816,9 @@ begin
           SelectionMap.Closable := true;
           SelectionMap.FormClose(Nil,Action);
        finally
-          //SelectionMap := Nil;
           {$If Defined(RecordClosing) or Defined(RecordDEMClose)} WriteLineToDebugFile('tDEMDataSet.Destroy finished close selection map'); {$EndIf}
        end;
    {$EndIf}
-
    {$If Defined(RecordClosing) or Defined(RecordDEMClose)} if not DEMMergeInProgress then WriteLineToDebugFile('tDEMDataSet.Destroy done ' + AreaName); {$EndIf}
 end;
 

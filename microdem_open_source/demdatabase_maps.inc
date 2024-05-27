@@ -109,7 +109,7 @@ end;
             var
                NoRedraw : boolean;
             begin
-               if (TheMapOwner <> Nil) and dbPlotted then begin
+               if (TheMapOwner <> Nil) {and dbPlotted} then begin
                   NoRedraw := (theMapOwner <> Nil) and theMapOwner.MapDraw.ClosingMapNow;
                   TheMapOwner.MapDraw.ClearGISLayer(DBNumber);
                   if (not NoRedraw) then begin

@@ -419,43 +419,13 @@ object DemixFilterForm: TDemixFilterForm
           OnClick = BitBtn29Click
         end
       end
-      object BitBtn30: TBitBtn
-        Left = 224
-        Top = 233
-        Width = 113
-        Height = 25
-        Caption = 'SSIM prep, area'
-        Enabled = False
-        TabOrder = 35
-        OnClick = BitBtn30Click
-      end
-      object BitBtn31: TBitBtn
-        Left = 224
-        Top = 264
-        Width = 113
-        Height = 25
-        Caption = 'SSIM prep, tile'
-        Enabled = False
-        TabOrder = 36
-        OnClick = BitBtn31Click
-      end
-      object BitBtn5: TBitBtn
-        Left = 224
-        Top = 202
-        Width = 113
-        Height = 25
-        Caption = 'SSIM prep, all areas'
-        Enabled = False
-        TabOrder = 37
-        OnClick = BitBtn5Click
-      end
       object BitBtn32: TBitBtn
         Left = 167
         Top = 115
         Width = 129
         Height = 25
         Caption = 'Load areas from list'
-        TabOrder = 38
+        TabOrder = 35
         OnClick = BitBtn32Click
       end
       object BitBtn34: TBitBtn
@@ -464,18 +434,8 @@ object DemixFilterForm: TDemixFilterForm
         Width = 137
         Height = 25
         Caption = 'Load tile DEMs'
-        TabOrder = 39
+        TabOrder = 36
         OnClick = BitBtn34Click
-      end
-      object BitBtn39: TBitBtn
-        Left = 224
-        Top = 304
-        Width = 113
-        Height = 25
-        Caption = 'Diluvium'
-        Enabled = False
-        TabOrder = 40
-        OnClick = BitBtn39Click
       end
       object CheckBox4: TCheckBox
         Left = 359
@@ -483,7 +443,7 @@ object DemixFilterForm: TDemixFilterForm
         Width = 113
         Height = 17
         Caption = 'Test DEM maps'
-        TabOrder = 41
+        TabOrder = 37
         OnClick = CheckBox4Click
       end
       object CheckBox23: TCheckBox
@@ -492,7 +452,7 @@ object DemixFilterForm: TDemixFilterForm
         Width = 97
         Height = 17
         Caption = 'Ref DEM maps'
-        TabOrder = 42
+        TabOrder = 38
         OnClick = CheckBox23Click
       end
       object CheckBox16: TCheckBox
@@ -501,7 +461,7 @@ object DemixFilterForm: TDemixFilterForm
         Width = 113
         Height = 17
         Caption = 'Reference DSMs'
-        TabOrder = 43
+        TabOrder = 39
         OnClick = CheckBox16Click
       end
       object BitBtn40: TBitBtn
@@ -511,7 +471,7 @@ object DemixFilterForm: TDemixFilterForm
         Height = 25
         Caption = 'Load Geomorphons'
         Enabled = False
-        TabOrder = 44
+        TabOrder = 40
         OnClick = BitBtn40Click
       end
     end

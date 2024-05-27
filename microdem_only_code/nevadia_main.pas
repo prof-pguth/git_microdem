@@ -621,6 +621,9 @@ type
     Mergegeomorphonevaluatioins1: TMenuItem;
     Overwrite3: TMenuItem;
     Skipifdone1: TMenuItem;
+    DeletereferenceDTMswithoutDTMinfilename1: TMenuItem;
+    MovereferenceDSMs1: TMenuItem;
+    DEMIXtilesineachareaforFULLU120U80andandU101: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -1057,6 +1060,10 @@ type
     procedure Mergegeomorphonevaluatioins1Click(Sender: TObject);
     procedure Overwrite3Click(Sender: TObject);
     procedure Skipifdone1Click(Sender: TObject);
+    procedure DeletereferenceDTMswithoutDTMinfilename1Click(Sender: TObject);
+    procedure MovereferenceDSMs1Click(Sender: TObject);
+    procedure DEMIXtilesineachareaforFULLU120U80andandU101Click(
+      Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1578,6 +1585,11 @@ begin
     SunViews(2);
 end;
 
+procedure Twmdem.DeletereferenceDTMswithoutDTMinfilename1Click(Sender: TObject);
+begin
+    PruneMisnamedReferenceDTMs;
+end;
+
 procedure Twmdem.DeltaDTMfortestareas1Click(Sender: TObject);
 begin
    DeltaDTMforTestAreas(false);
@@ -1604,6 +1616,11 @@ end;
 procedure Twmdem.DEMIXhelp1Click(Sender: TObject);
 begin
    DisplayHTMLTopic('demix_sg2\wine_contest.html');
+end;
+
+procedure Twmdem.DEMIXtilesineachareaforFULLU120U80andandU101Click(Sender: TObject);
+begin
+   TilesInEachElevRangeForTestAreas;
 end;
 
 procedure Twmdem.DEMIXtilesizebylatitude1Click(Sender: TObject);
@@ -2662,7 +2679,7 @@ end;
 
 procedure Twmdem.Overwrite2Click(Sender: TObject);
 begin
-   GeomorphonsPercentages(true);
+   ClassificationAgreement(true);
 end;
 
 procedure Twmdem.Overwrite3Click(Sender: TObject);
@@ -2940,7 +2957,7 @@ end;
 
 procedure Twmdem.MaskwaterinreferenceDEMs1Click(Sender: TObject);
 begin
-   MaskWaterInReferenceDEMs;
+   MaskWaterInReferenceAndTestDEMs;
 end;
 
 procedure Twmdem.Cancelpending1Click(Sender: TObject);
@@ -3152,7 +3169,7 @@ end;
 
 procedure Twmdem.Skipifpresent1Click(Sender: TObject);
 begin
-   GeomorphonsPercentages(false);
+   ClassificationAgreement(false);
 end;
 
 procedure Twmdem.NewDEMButtonClick(Sender: TObject);
@@ -3331,6 +3348,11 @@ begin
 end;
 
 
+procedure Twmdem.MovereferenceDSMs1Click(Sender: TObject);
+begin
+   MoveReferenceDSMs;
+end;
+
 procedure Twmdem.Correlationmatrix1Click(Sender: TObject);
 var
    fName : PathStr;
@@ -3466,7 +3488,7 @@ end;
 
 procedure Twmdem.InventoryWbWfilesbyarea1Click(Sender: TObject);
 begin
-    InventoryWbWfilesByArea;
+    InventoryWbWSaagaMDsavedGridsByArea;
 end;
 
 procedure Twmdem.Italyfocalmechs1Click(Sender: TObject);
@@ -3598,12 +3620,12 @@ end;
 
 procedure Twmdem.Overwirte2Click(Sender: TObject);
 begin
-   ComputeDEMIX_tile_stats(true);
+   ComputeDEMIX_Diff_Dist_tile_stats(true);
 end;
 
 procedure Twmdem.Overwirte3Click(Sender: TObject);
 begin
-   ComputeDEMIX_tile_stats(false);
+   ComputeDEMIX_Diff_Dist_tile_stats(false);
 end;
 
 procedure Twmdem.Overwirte4Click(Sender: TObject);
@@ -4252,6 +4274,9 @@ end;
 
 procedure Twmdem.Mergechannelnetworkevaluations1Click(Sender: TObject);
 begin
+   MDDef.DEMIX_all_areas := true;
+   PickDEMIXMode;
+   SetParamsForDEMIXmode;
    GetDEMIXpaths;
    MergeCSVtoCreateFinalDB(ChannelMissesDir,'_Channel_Misses.csv','_channel_misses_' );
 end;
@@ -4265,8 +4290,11 @@ end;
 
 procedure Twmdem.Mergegeomorphonevaluatioins1Click(Sender: TObject);
 begin
+   MDDef.DEMIX_all_areas := true;
+   PickDEMIXMode;
+   SetParamsForDEMIXmode;
    GetDEMIXpaths;
-   MergeCSVtoCreateFinalDB(GeomorphonsDir,'_channel_misses.csv','_geomorphons_demix_db_');
+   MergeCSVtoCreateFinalDB(GeomorphonsDir,'_geomorphons.csv','_pt_class_demix_db_');
 end;
 
 procedure Twmdem.Mergemasp1Click(Sender: TObject);
@@ -4295,6 +4323,9 @@ end;
 
 procedure Twmdem.MergeSSIMFUV1Click(Sender: TObject);
 begin
+   MDDef.DEMIX_all_areas := true;
+   PickDEMIXMode;
+   SetParamsForDEMIXmode;
    GetDEMIXpaths;
    if MDDef.DoFUV then MergeCSVtoCreateFinalDB(FUVresultsDir,'_fuv_results.csv','_fuv_demix_db_');
    if MDDef.DoSSIM then MergeCSVtoCreateFinalDB(SSIMresultsDir,'_ssim_results.csv','_ssim_demix_db_');
@@ -5462,7 +5493,7 @@ end;
 procedure Twmdem.Batchchangepartoffilenames1Click(Sender: TObject);
 var
    fName,NewName,BaseName : PathStr;
-   i : integer;
+   i,Changed : integer;
    NameContains,ChangeTo : shortString;
    FilesWanted : TStringList;
    DefaultFilter : byte;
@@ -5475,6 +5506,7 @@ begin
    repeat
       FilesWanted := tStringList.Create;
       FilesWanted.Add(BaseName);
+      Changed := 0;
       if GetMultipleFiles('Change file name','AnyFile|*.*',FilesWanted, DefaultFilter) then begin
          Petmar.GetString('phrase to replace',NameContains,false,ValidDosFileNameChars);
          Petmar.GetString('replacement phrase',ChangeTo,false,ValidDosFileNameChars);
@@ -5482,13 +5514,16 @@ begin
          BaseName := ExtractFilePath(FilesWanted.Strings[0]);
          for i := 0 to pred(FilesWanted.Count) do begin
             fName := FilesWanted.Strings[i];
-            NewName := BaseName + StringReplace(ExtractFileNameNoExt(fName),NameContains,ChangeTo,[rfReplaceAll, rfIgnoreCase]) + ExtractFileExt(fName);
-            RenameFile(fName,NewName);
+            if StrUtils.AnsiContainsText(fName,NameContains) then begin
+            inc(Changed);
+               NewName := BaseName + StringReplace(ExtractFileName(fName),NameContains,ChangeTo,[rfReplaceAll, rfIgnoreCase]);
+               RenameFile(fName,NewName);
+            end;
          end;
       end;
       FilesWanted.Free;
       ShowDefaultCursor;
-   until not AnswerIsYes('More files');
+   until not AnswerIsYes('Changed ' + IntToStr(Changed) + ' file names.  Change more files');
 end;
 
 

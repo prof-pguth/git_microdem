@@ -321,19 +321,22 @@ end;
 
 function CreateANewDEMMapWindow(CurDEM : integer; DrawIt : boolean; mt : tMapType; MapCaption : ShortString) : tMapForm;
 begin
-   {$If Defined(RecordSetup) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('CreateANewDEMMapWindow, DEM=' + IntToStr(CurDEM) + '  maptype=' + IntToStr(ord(mt)) ); {$EndIf}
+   {$If Defined(RecordSetup) or Defined(RecordCreateSelectionMap) or Defined(RecordNumberOpenMaps) }
+      WriteLineToDebugFile('CreateANewDEMMapWindow in, DEM=' + IntToStr(CurDEM) + '  maptype=' + IntToStr(ord(mt)) + '  current maps=' + IntToStr(NumOpenMaps));
+   {$EndIf}
    Result := TMapForm.Create(Application);
    DEMGlb[CurDEM].SelectionMap.MapDraw.CopyMapParams(Result.MapDraw,false);
    Result.MapDraw.FirstMapDrawing := false;
    Result.SetUpNewDEMMapWindow(CurDEM,mt,MapCaption,false,DrawIt,false);
-   {$If Defined(RecordSetup) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('CreateANewDEMMapWindow out'); {$EndIf}
+   {$If Defined(RecordSetup) or Defined(RecordCreateSelectionMap) or Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('CreateANewDEMMapWindow out current maps=' + IntToStr(NumOpenMaps)); {$EndIf}
 end;
 
 
 procedure TMapForm.SetUpNewDEMMapWindow(CurDEM : integer; mt : tMapType; MapCaption : ShortString; Selection,DrawIt,UsePC : boolean);
 begin
-   {$If Defined(RecordSetup) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow, DEM=' + IntToStr(CurDEM) + '  maptype=' + IntToStr(ord(mt)) + '  ' + MapDraw.MapSizeString); {$EndIf}
-   {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow in, current maps=' + IntToStr(NumOpenMaps)); {$EndIf}
+   {$If Defined(RecordSetup) or Defined(RecordCreateSelectionMap) or Defined(RecordNumberOpenMaps)}
+      WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow in, DEM=' + IntToStr(CurDEM) + '  maptype=' + IntToStr(ord(mt)) + '  ' +  MapDraw.MapSizeString  + ' current maps=' + IntToStr(NumOpenMaps));
+   {$EndIf}
    {$IfDef RecordDEMMapProjection} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow in, DEM=' + DEMGlb[CurDEM].DEMMapProjection.GetProjectionName); {$EndIf}
 
    try
@@ -348,12 +351,16 @@ begin
       {$If Defined(TrackHorizontalDatum)} DEMGlb[CurDEM].TrackHorizontalDatumDebugLog('SetUpNewDEMMapWindow in'); {$EndIf}
 
       MapDraw.DefineNewDEMMap(CurDEM,mt);
+      {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow after DefineNewDEMmap current maps=' + IntToStr(NumOpenMaps)); {$EndIf}
+
       {$If Defined(TrackHorizontalDatum)} DEMGlb[CurDEM].TrackHorizontalDatumDebugLog('SetUpNewDEMMapWindow New map defined'); {$EndIf}
       {$If Defined(RecordSetup) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow DefineNewDEMMap over, mt=' + IntToStr(mt)); {$EndIf}
       if MDDef.NEAutoDEM then AddOverlay(Self,ovoWorldOutlines);
       SetMapOverlays;
       MapDraw.ResetMarginalia;
+      {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow after ResetMarginalia current maps=' + IntToStr(NumOpenMaps)); {$EndIf}
       MapDraw.PrimMapProj.ProjectionSharedWithDataset := true;
+      {$If Defined(RecordSetup) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow before DrawIt, mt=' + IntToStr(mt)); {$EndIf}
       if DrawIt then begin
          try
             {$If Defined(RecordSetup) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow Drawing'); {$EndIf}
@@ -369,10 +376,11 @@ begin
       ShowDefaultCursor;
    end;
    {$If Defined(RecordSetup) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow exit ' + MapCaption + '  ' + MapDraw.MapSizeString); {$EndIf}
-   {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow out, current maps=' + IntToStr(NumOpenMaps)); {$EndIf}
+   {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow out for ' + DEMGlb[CurDEM].AreaName + ' current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
    {$If Defined(TrackHorizontalDatum)} DEMGlb[CurDEM].TrackHorizontalDatumDebugLog('SetUpNewDEMMapWindow out'); {$EndIf}
-   {$IfDef RecordDEMMapProjection} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow out, DEM=' + DEMGlb[MapDraw.DEMonMap].DEMMapProjection.GetProjectionName); {$EndIf}
-   {$IfDef RecordDEMMapProjection} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow out, Map=' + MapDraw.PrimMapProj.GetProjectionName); {$EndIf}
+   {$IfDef RecordDEMMapProjection}
+      WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow out, DEM=' + DEMGlb[MapDraw.DEMonMap].DEMMapProjection.GetProjectionName + '  Map=' + MapDraw.PrimMapProj.GetProjectionName);
+   {$EndIf}
 end;
 
 

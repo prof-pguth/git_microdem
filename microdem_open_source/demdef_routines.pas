@@ -2462,10 +2462,10 @@ var
          AParameter('DEMIX','RGBbestSeparates',RGBbestSeparates,true);
          AParameter('DEMIX','DEMIX_default_half_sec_ref',DEMIX_default_half_sec_ref,false);
          AParameter('DEMIX','DEMIX_open_ref_DEM',DEMIX_open_ref_DSM,true);
-         AParameter('DEMIX','DEMIX_Full_all',DEMIX_Full_all,75);
-         AParameter('DEMIX','DEMIX_Full_U120',DEMIX_Full_all,75);
-         AParameter('DEMIX','DEMIX_Full_U80',DEMIX_Full_all,75);
-         AParameter('DEMIX','DEMIX_Full_U10',DEMIX_Full_all,50);
+         AParameter('DEMIX','DEMIX_Tile_Full',DEMIX_Tile_Full,25);
+         //AParameter('DEMIX','DEMIX_Full_U120',DEMIX_Full_all,75);
+         //AParameter('DEMIX','DEMIX_Full_U80',DEMIX_Full_all,75);
+         //AParameter('DEMIX','DEMIX_Full_U10',DEMIX_Full_all,50);
          AParameter('DEMIX','LoadRefDEMMaps',LoadRefDEMMaps,true);
          AParameter('DEMIX','LoadTestDEMMaps',LoadTestDEMMaps,true);
          AParameter('DEMIX','LoadRefDEMs',LoadRefDEMs,true);

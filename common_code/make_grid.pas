@@ -1770,9 +1770,9 @@ begin
    DEMGlb[Result].CheckMaxMinElev;
    EndProgress;
 
-    TotPts := 0;
-    for i := 1 to MDDef.IwashPikeCats do TotPts := TotPts + ClassNPts[i];
-    for i := 1 to MDDef.IwashPikeCats do ClassPC[i] := 100 * ClassNPts[i]/TotPts;
+   TotPts := 0;
+   for i := 1 to MDDef.IwashPikeCats do TotPts := TotPts + ClassNPts[i];
+   for i := 1 to MDDef.IwashPikeCats do ClassPC[i] := 100 * ClassNPts[i]/TotPts;
 
    VAT := tStringList.Create;
    VAT.Add('N,PERCENT,VALUE,COLOR');

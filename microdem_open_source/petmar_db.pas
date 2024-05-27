@@ -58,7 +58,7 @@ uses
    {$EndIf}
 
    {$IfDef UseFireDacSQLlite}
-      FireDAC.Comp.Client, FireDAC.Comp.Dataset,FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteWrapper,
+      FireDAC.Comp.Client, FireDAC.Comp.Dataset,FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteWrapper,FireDAC.VCLUI.Wait,   //FireDAC.Comp.UI.TFDGUIxWaitCursor,
    {$EndIf}
 
    {$IfDef UseTDBF}
@@ -172,6 +172,8 @@ type
         function  DBBakDir : PathStr;
         procedure MarkRecordForDeletion;
         function PurgeDeletedRecords : boolean;
+        procedure ClearBDEdata;
+        procedure ReopenDatabase(fName : PathStr);
 
         function FieldExists(WantFieldName : ANSIString; NeedAType : boolean = false; NeedType : tFieldType = ftFloat) : boolean; inline;
         function GetFieldByNameAsFloat(FieldName : ANSIString) : float64; inline;
@@ -390,6 +392,67 @@ end;
 
 function tMyData.InsureFieldPresentAndAdded(ft : TFieldType; FieldName : ANSIString; FieldLength : integer; FieldDecimals : integer = 0) : boolean;
 
+      {$IfDef UseFireDacSQLlite}
+      procedure CheckSQLLite;
+      var
+         aline : ANSIstring;
+      begin
+         if (dbMain <> Nil) then begin
+            aline := 'ALTER TABLE ' + TableName + ' ADD COLUMN ' + FieldName + ' ' + SQLTypeDefString(ft,FieldLength);
+            {$IfDef RecordFieldPresent} WriteLineToDebugFile('sql=' + aline); {$EndIf}
+            dbMain.ExecSQL(aLine);
+            if (fdTable <> Nil) then  begin
+               fdTable.Destroy;
+               fdTable := Nil;
+            end;
+            if (dbMain <> Nil) then begin
+               dbMain.Destroy;
+               dbMain := Nil;
+            end;
+            aLine := '';
+            OpenSQLLiteFiles(FullTableName,dbMain,fdTable,aLine);
+         end;
+      end;
+   {$EndIf}
+
+   {$IfDef UseTCLientDataSet}
+      procedure CheckTCLientDataSet;
+      var
+         NewClientDataSet :  tClientDataSet;
+         i,flen : integer;
+      begin
+         if (TheClientDataSet <> Nil) then begin
+            {$IfDef RecordFieldPresent} WriteLineToDebugFile('TheClientDataSet start'); {$EndIf}
+             NewClientDataSet := tClientDataSet.Create(application);
+             for i := 0 to pred(FieldCount) do begin
+                ft := GetFieldType(i);
+                if (ft in [ftString]) then fLen := GetFieldDataSize(i)
+                else fLen := 0;
+                NewClientDataSet.FieldDefs.Add(GetFieldName(i), ft, fLen,False );
+             end;
+             NewClientDataSet.CreateDataset;
+             NewClientDataSet.Open;
+            {$IfDef RecordFieldPresent} WriteLineToDebugFile('NewClientDataSet opened'); {$EndIf}
+
+             TheClientDataSet.First;
+             while not TheClientDataSet.eof do begin
+                NewClientDataSet.Insert;
+                for i := 0 to pred(FieldCount) do begin
+                   NewClientDataSet.Fields[i].Assign(theClientDataSet.Fields[i]);
+                end;
+                TheClientDataSet.Next;
+             end;
+             theClientDataset.Free;
+             NewClientDataSet.SaveToFile(FullTableName);
+             NewClientDataSet.Free;
+
+             TheClientDataSet := tClientDataSet.Create(Application);
+             TheClientDataSet.LoadFromFile(FullTableName);
+             TheClientDataSet.LogChanges := false;
+             {$IfDef RecordFieldPresent} WriteLineToDebugFile('Done ' + IntToStr(j) + ' '); {$EndIf}
+          end;
+      end;
+   {$EndIf}
 
    procedure CheckBDETable;
    var
@@ -422,73 +485,6 @@ function tMyData.InsureFieldPresentAndAdded(ft : TFieldType; FieldName : ANSIStr
    end;
 
 
-   procedure CheckSQLLite;
-   var
-      aline : ANSIstring;
-   begin
-      {$IfDef UseFireDacSQLlite}
-         if (dbMain <> Nil) then begin
-            aline := 'ALTER TABLE ' + TableName + ' ADD COLUMN ' + FieldName + ' ' + SQLTypeDefString(ft,FieldLength);
-            {$IfDef RecordFieldPresent} WriteLineToDebugFile('sql=' + aline); {$EndIf}
-            dbMain.ExecSQL(aLine);
-            if (fdTable <> Nil) then  begin
-               fdTable.Destroy;
-               fdTable := Nil;
-            end;
-            if (dbMain <> Nil) then begin
-               dbMain.Destroy;
-               dbMain := Nil;
-            end;
-            aLine := '';
-            OpenSQLLiteFiles(FullTableName,dbMain,fdTable,aLine);
-         end;
-      {$EndIf}
-   end;
-
-   procedure CheckTCLientDataSet;
-   {$IfDef UseTCLientDataSet}
-      var
-         NewClientDataSet :  tClientDataSet;
-         i,{j,}flen : integer;
-   {$EndIf}
-   begin
-      {$IfDef UseTCLientDataSet}
-         if (TheClientDataSet <> Nil) then begin
-            {$IfDef RecordFieldPresent} WriteLineToDebugFile('TheClientDataSet start'); {$EndIf}
-             NewClientDataSet := tClientDataSet.Create(application);
-             for i := 0 to pred(FieldCount) do begin
-                ft := GetFieldType(i);
-                if (ft in [ftString]) then fLen := GetFieldDataSize(i)
-                else fLen := 0;
-                NewClientDataSet.FieldDefs.Add(GetFieldName(i), ft, fLen,False );
-             end;
-             NewClientDataSet.CreateDataset;
-             NewClientDataSet.Open;
-            {$IfDef RecordFieldPresent} WriteLineToDebugFile('NewClientDataSet opened'); {$EndIf}
-
-             TheClientDataSet.First;
-             //j := 0;
-             while not TheClientDataSet.eof do begin
-               //inc(j);
-                NewClientDataSet.Insert;
-                for i := 0 to pred(FieldCount) do begin
-                   NewClientDataSet.Fields[i].Assign(theClientDataSet.Fields[i]);
-                end;
-                TheClientDataSet.Next;
-             end;
-             theClientDataset.Free;
-             NewClientDataSet.SaveToFile(FullTableName);
-             NewClientDataSet.Free;
-
-             TheClientDataSet := tClientDataSet.Create(Application);
-             TheClientDataSet.LoadFromFile(FullTableName);
-             TheClientDataSet.LogChanges := false;
-             {$IfDef RecordFieldPresent} WriteLineToDebugFile('Done ' + IntToStr(j) + ' '); {$EndIf}
-          end;
-       {$EndIf}
-      end;
-
-
 begin
    FieldName := UpperCase(FieldName);
    if FieldExists(FieldName) then begin
@@ -498,10 +494,9 @@ begin
    else begin
       {$IfDef RecordFieldPresent} WriteLineToDebugFile('InsureFieldPresentAndAdded, Must Add field ' + FieldName + ' to ' + TableName); {$EndIf}
       FileChanged := true;
-
       CheckBDETable;
-      CheckSQLlite;
-      CheckTCLientDataSet
+      {$IfDef UseTCLientDataSet} CheckSQLlite; {$EndIf}
+      {$IfDef UseTCLientDataSet} CheckTCLientDataSet {$EndIf}
       {$IfDef UseFDMemTable}
          if (FDMemTable <> nil) then begin
             MessageToContine('Not enabled');
@@ -2302,6 +2297,21 @@ begin
 end;
 
 
+procedure tMyData.ClearBDEdata;
+begin
+   TheBDEdata.Close;
+   TheBDEdata.Destroy;
+   TheBDEdata := Nil;
+end;
+
+procedure  tMyData.ReopenDatabase(fName : PathStr);
+begin
+   CreateAndOpenTable(Self.TheBDEdata,fName);
+   TotRecsInDB := Self.TheBDEdata.RecordCount;
+   CheckDeletes := false;
+end;
+
+
 {$IfDef VCL}
 procedure tMyData.StartRewrite(var OldName : PathStr);
 var
@@ -2311,10 +2321,7 @@ begin
    OldName := DBbakDir + ExtractFileNameNoExt(fName) + '_bak_' + CurrentTimeForFileName + DefaultDBExt;
 
    {$IfDef DBrewrite} WriteLineToDebugFile('tMyData.StartRewrite OldName= ' + ExtractFileName(OldName) + '  recs=' + IntToStr(RecordCount)); {$EndIf}
-
-   TheBDEdata.Close;
-   TheBDEdata.Destroy;
-   TheBDEdata := Nil;
+   ClearBDEdata;
    {$IfDef DBrewrite} WriteLineToDebugFile('TheBDEdata close and nil; now copy and delete=' + ExtractFileName(fName)); {$EndIf}
 
    CopyFile(fName,OldName);
@@ -2329,48 +2336,47 @@ begin
     until (not System.SysUtils.DeleteFile(fName));
 end;
 
-
-procedure FillNewDBF(OldName,NewName : PathStr; CheckDeletes : boolean = false);
-var
-   i,j : integer;
-   OldTable,NewTable : tMyData;
-   TStr,NewValues : shortString;
-begin
-   {$IfDef DBrewrite} WriteLineToDebugFile('FillNewDBF in ' + ExtractFileName(OldName) + ' to ' + ExtractFileName(NewName)); {$EndIf}
-   OldTable := tMyData.Create(OldName);
-   NewTable := tMyData.Create(NewName);
-   CheckDeletes := CheckDeletes and OldTable.FieldExists(RecNoFName);
-   {$IfDef VCL} if ShowSatProgress then StartProgress('Fill fields ' + ExtractFileName(NewName)); {$EndIf}
-   j := 0;
-   while Not OldTable.eof do begin
-      {$IfDef VCL} if ShowSatProgress and (j mod 100 = 0) then UpdateProgressBar(j/OldTable.TotRecsInDB); {$EndIf}
-      if (not CheckDeletes) or (OldTable.GetFieldByNameAsInteger(RecNoFName) > 0)  then begin
-         NewTable.Insert;
-         for i := 0 to pred(OldTable.FieldCount) do begin
-               tStr := OldTable.GetFieldName(i);
-               if NewTable.FieldExists(tstr) then begin
-                  if tStr = 'REC_ID' then begin
-                     NewTable.SetFieldByNameAsInteger(TStr,j);
-                  end
-                  else begin
-                     NewValues := OldTable.GetFieldByNameAsString(TStr);
-                     if (NewValues <> '') then NewTable.SetFieldByNameAsString(TStr,NewValues);
-                  end;
-               end;
-         end;
-         NewTable.Post;
-         inc(j);
-      end;
-      OldTable.Next;
-   end;
-   NewTable.Destroy;
-   OldTable.Destroy;
-   {$IfDef VCL} if ShowSatProgress then EndProgress; {$EndIf}
-   {$IfDef DBrewrite} WriteLineToDebugFile('FillNewDBF out, recs written='  + IntToStr(j)); {$EndIf}
-end;
-
-
 procedure tMyData.EndRewrite(var OldName,fName : PathStr);
+
+         procedure FillNewDBF(OldName,NewName : PathStr; CheckDeletes : boolean = false);
+         var
+            i,j : integer;
+            OldTable,NewTable : tMyData;
+            TStr,NewValues : shortString;
+         begin
+            {$IfDef DBrewrite} WriteLineToDebugFile('FillNewDBF in ' + ExtractFileName(OldName) + ' to ' + ExtractFileName(NewName)); {$EndIf}
+            OldTable := tMyData.Create(OldName);
+            NewTable := tMyData.Create(NewName);
+            CheckDeletes := CheckDeletes and OldTable.FieldExists(RecNoFName);
+            {$IfDef VCL} if ShowSatProgress then StartProgress('Fill fields ' + ExtractFileName(NewName)); {$EndIf}
+            j := 0;
+            while Not OldTable.eof do begin
+               {$IfDef VCL} if ShowSatProgress and (j mod 100 = 0) then UpdateProgressBar(j/OldTable.TotRecsInDB); {$EndIf}
+               if (not CheckDeletes) or (OldTable.GetFieldByNameAsInteger(RecNoFName) > 0)  then begin
+                  NewTable.Insert;
+                  for i := 0 to pred(OldTable.FieldCount) do begin
+                        tStr := OldTable.GetFieldName(i);
+                        if NewTable.FieldExists(tstr) then begin
+                           if (tStr = 'REC_ID') then begin
+                              NewTable.SetFieldByNameAsInteger(TStr,j);
+                           end
+                           else begin
+                              NewValues := OldTable.GetFieldByNameAsString(TStr);
+                              if (NewValues <> '') then NewTable.SetFieldByNameAsString(TStr,NewValues);
+                           end;
+                        end;
+                  end;
+                  NewTable.Post;
+                  inc(j);
+               end;
+               OldTable.Next;
+            end;
+            NewTable.Destroy;
+            OldTable.Destroy;
+            {$IfDef VCL} if ShowSatProgress then EndProgress; {$EndIf}
+            {$IfDef DBrewrite} WriteLineToDebugFile('FillNewDBF out, recs written='  + IntToStr(j)); {$EndIf}
+         end;
+
 begin
    {$IfDef DBrewrite} WriteLineToDebugFile('tMyData.EndRewrite in, old=' + OldName + ' new=' + fName); {$EndIf}
    FillNewDBF(OldName,fName,CheckDeletes);
@@ -2380,11 +2386,11 @@ begin
          {$IfDef RecordFieldPresent} WriteLineToDebugFile('failed to delete= ' + OldName + '  error = '+ IntToStr(GetLastError)); {$EndIf}
       end;
    end;
-   CreateAndOpenTable(Self.TheBDEdata,fName);
-   TotRecsInDB := Self.TheBDEdata.RecordCount;
-   CheckDeletes := false;
+   ReopenDatabase(fName);
    {$IfDef DBrewrite} WriteLineToDebugFile('tMyData.EndRewrite out'); {$EndIf}
-end;
+end {procedure tMyData.EndRewrite};
+
+
 {$EndIf}
 
 

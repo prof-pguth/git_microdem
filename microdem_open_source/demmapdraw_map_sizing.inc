@@ -351,6 +351,7 @@ var
    TStr : ANSIString;
 begin
    if ValidDEM(CurDEM) then begin
+      {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('TMapDraw.DefineNewDEMMap in, DEM=' + IntToStr(CurDEM) + '  maptype=' + IntToStr(ord(mt)) + ' current maps=' + IntToStr(NumOpenMaps)); {$EndIf}
       {$If Defined(TrackHorizontalDatum)} DEMGlb[CurDEM].TrackHorizontalDatumDebugLog('TMapDraw.DefineNewDEMMap in'); {$EndIf}
 
       {$If Defined(ShowUTMZone)} WriteLineToDebugFile('TMapDraw.DefineNewDEMMap in, UTM=' + IntToStr(DEMGLB[CurDEM].DEMheader.UTMZone) + DEMGLB[CurDEM].DEMheader.LatHemi); {$EndIf}
@@ -368,6 +369,7 @@ begin
       {$If Defined(ShowProjectedLimits) or Defined(ShowUTMZone)} WriteLineToDebugFile('TMapDraw.DefineNewDEMMap out, UTM=' + PrimMapProj.UTMZoneString); {$EndIf}
       {$If Defined(ShowProjectedLimits) or Defined(RecordShortDefineDatum)} WriteLineToDebugFile('Map data grid limits: ' +  sfBoundBoxToString(MapCorners.BoundBoxDataGrid)); {$EndIf}
       {$If Defined(TrackHorizontalDatum)} DEMGlb[CurDEM].TrackHorizontalDatumDebugLog('TMapDraw.DefineNewDEMMap out'); {$EndIf}
+      {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('TMapDraw.DefineNewDEMMap out, DEM=' + IntToStr(CurDEM) + '  maptype=' + IntToStr(ord(mt)) + ' current maps=' + IntToStr(NumOpenMaps)); {$EndIf}
    end;
 end;
 

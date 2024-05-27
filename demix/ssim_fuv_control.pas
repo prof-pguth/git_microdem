@@ -56,6 +56,8 @@ type
     procedure BitBtn38Click(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
     procedure BitBtn3Click(Sender: TObject);
+    procedure HillshadeClick(Sender: TObject);
+    procedure HANDClick(Sender: TObject);
   private
     { Private declarations }
     procedure CheckParameters;
@@ -113,23 +115,28 @@ begin
 end;
 
 
+procedure Tfuv_ssim_control.HANDClick(Sender: TObject);
+begin
+   MDDef.SSIM_HAND := HAND.Checked;
+end;
+
+procedure Tfuv_ssim_control.HillshadeClick(Sender: TObject);
+begin
+   MDDef.SSIM_hill := Hillshade.Checked;
+end;
+
 procedure Tfuv_ssim_control.BitBtn1Click(Sender: TObject);
 
    procedure DoOne(Mode : byte);
-   (*
-         const
-            SRTM_centroid_names : array[-1..PossPt] of shortstring = ('REF_HI_PNT','REF_POINT','COP','TANDEM','FABDEM','NASA','SRTM','ASTER','COAST','DELTA');
-            ALOS_centroid_names : array[-1..PossArea] of shortstring = ('REF_HI_AREA','REF_AREA','ALOS','DILUV');
-   *)
-
    var
       Areas : tStringList;
    begin
       MDDef.DEMIX_mode := Mode;
       SetParamsForDEMIXmode;
-      if (Sender = BitBtn1) or (Sender = BitBtn3) then Areas := DEMIX_AreasWanted(not MDDef.DEMIX_all_areas);
       if (Sender = BitBtn1) then begin
+         Areas := DEMIX_AreasWanted(not MDDef.DEMIX_all_areas);
          AreaSSIMandFUVComputations(MDDef.DEMIX_overwrite_enabled,Areas);
+         Areas.Destroy;
       end
       else if (Sender = BitBtn3) then begin
 (*
@@ -145,7 +152,6 @@ procedure Tfuv_ssim_control.BitBtn1Click(Sender: TObject);
          if MDDef.DoFUV then MergeCSVtoCreateFinalDB(FUVresultsDir,'_fuv_results.csv','_fuv_demix_db_');
          if MDDef.DoSSIM then MergeCSVtoCreateFinalDB(SSIMresultsDir,'_ssim_results.csv','_ssim_demix_db_');
       end;
-      Areas.Destroy;
    end;
 
 

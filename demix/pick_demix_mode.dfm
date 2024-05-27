@@ -19,10 +19,10 @@ object PickDEMIXmodeForm: TPickDEMIXmodeForm
     Caption = 'DEMIX mode'
     Items.Strings = (
       'Not yet defined'
-      'Classic--Cop, ALOS, SRTM, NASA, ASTER, FABDEM, TANDEM'
-      'Add Coastal (below 120 m elevation)'
-      'Add Dilumium (only  below 80 m elevation)'
-      'Add Delta (only below 10 m elevation)')
+      'FULL--Cop, ALOS, SRTM, NASA, ASTER, FABDEM, TANDEM'
+      'U120--Add Coastal (below 120 m elevation)'
+      'U80--Add Dilumium (only  below 80 m elevation)'
+      'U10--Add Delta (only below 10 m elevation)')
     TabOrder = 0
   end
   object BitBtn1: TBitBtn

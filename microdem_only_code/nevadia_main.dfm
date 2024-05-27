@@ -3542,7 +3542,7 @@ object wmdem: Twmdem
       Caption = '-'
     end
     object N55: TMenuItem
-      Caption = 'Geomorphons map comparison'
+      Caption = 'Classification map agreement'
       object Overwrite2: TMenuItem
         Caption = 'Overwrite'
         OnClick = Overwrite2Click
@@ -3553,7 +3553,7 @@ object wmdem: Twmdem
       end
     end
     object Mergegeomorphonevaluatioins1: TMenuItem
-      Caption = 'Merge geomorphon evaluatioins'
+      Caption = 'Merge classification map agreement'
       OnClick = Mergegeomorphonevaluatioins1Click
     end
     object N44: TMenuItem
@@ -3651,7 +3651,7 @@ object wmdem: Twmdem
       Caption = '-'
     end
     object Inventories1: TMenuItem
-      Caption = 'Inventories'
+      Caption = 'Inventories and file management'
       object InventoryallDEMIXdatafiles1: TMenuItem
         Caption = 'Inventory all DEMIX data files'
         OnClick = InventoryallDEMIXdatafiles1Click
@@ -3677,7 +3677,7 @@ object wmdem: Twmdem
         OnClick = ChecktestDEMs1Click
       end
       object InventoryWbWfilesbyarea1: TMenuItem
-        Caption = 'Inventory WbW files by area'
+        Caption = 'Inventory WbW, SAGA, MD saved grids by area'
         OnClick = InventoryWbWfilesbyarea1Click
       end
       object VerifytestDEMcoverages1: TMenuItem
@@ -3710,19 +3710,31 @@ object wmdem: Twmdem
         OnClick = DiluviumDEMandDEMIXDBoverlap1Click
       end
       object DEMIXtilesperareaandcoastalsubset1: TMenuItem
-        Caption = 'DEMIX tiles per area and coastal subset'
+        Caption = 'DEMIX estimated tiles per area and coastal subset'
         OnClick = DEMIXtilesperareaandcoastalsubset1Click
+      end
+      object DEMIXtilesineachareaforFULLU120U80andandU101: TMenuItem
+        Caption = 'DEMIX tiles in each area for FULL, U120, U80, and and U10'
+        OnClick = DEMIXtilesineachareaforFULLU120U80andandU101Click
       end
       object N47: TMenuItem
         Caption = '-'
       end
       object N42: TMenuItem
-        Caption = 'Delete files for a test area'
+        Caption = 'Delete computed files for test area'
         OnClick = N42Click
+      end
+      object DeletereferenceDTMswithoutDTMinfilename1: TMenuItem
+        Caption = 'Delete reference DTMs without DTM in file name'
+        OnClick = DeletereferenceDTMswithoutDTMinfilename1Click
       end
       object N3DEPfileswithtag421121: TMenuItem
         Caption = '3DEP files with tag 42112'
         OnClick = N3DEPfileswithtag421121Click
+      end
+      object MovereferenceDSMs1: TMenuItem
+        Caption = 'Move reference DSMs'
+        OnClick = MovereferenceDSMs1Click
       end
       object N46: TMenuItem
         Caption = '-'
@@ -3739,7 +3751,7 @@ object wmdem: Twmdem
         OnClick = N45Click
       end
       object MaskwaterinreferenceDEMs1: TMenuItem
-        Caption = 'Mask water in reference DEMs'
+        Caption = 'Mask water in reference and test DEMs'
         OnClick = MaskwaterinreferenceDEMs1Click
       end
       object rimreferencedatatoDEMIXtiles1: TMenuItem

@@ -28,8 +28,10 @@ function ExternalProgramOutPutFile(i : integer; aProgram,Param,AreaName : shorts
 var
   RefAreaDir,TestAreaDir : PathStr;
 begin
-   FindPath(Aprogram + ' files for reference DEMs',':\wine_contest\' + aProgram + '_out_ref_areas\',RefAreaDir);
-   FindPath(Aprogram + ' files for reference DEMs',':\wine_contest\' + aProgram + '_out_test_areas\',TestAreaDir);
+   //FindPath(Aprogram + ' files for reference DEMs',':\wine_contest\' + aProgram + '_out_ref_areas\',RefAreaDir);
+   //FindPath(Aprogram + ' files for test DEMs',':\wine_contest\' + aProgram + '_out_test_areas\',TestAreaDir);
+   RefAreaDir := DEMIX_Base_DB_Path + aProgram + '_out_ref_areas\';
+   TestAreaDir := DEMIX_Base_DB_Path + aProgram + '_out_test_areas\';
    if isPoint then begin
        if i = -1 then Result := RefAreaDir + Param + AreaName + '_dtm_ref_1.5x1sec_point.tif'
        else if i = 0 then Result := RefAreaDir + Param + AreaName + '_dtm_ref_1sec_point.tif'
@@ -87,16 +89,17 @@ begin
 end;
 
 
-function OpenGridsCreatedByExternalProgram(aProgram,AreaName,Param : shortString; var PointGrids,AreaGrids : tDEM_int_array) : boolean;
+function OpenGridsCreatedByExternalProgram(OpenMaps : boolean; aProgram,AreaName,Param : shortString; var PointGrids,AreaGrids : tDEM_int_array) : boolean;
 var
    i : integer;
    fName2 : PathStr;
 begin
-     Result := false;
+    Result := false;
+    ZeroPointAndAreaGrids(PointGrids,AreaGrids);
     {$If Defined(RecordFUVsteps)} Stopwatch := TStopwatch.StartNew; {$EndIf}
     for i := dmxFirstPoint to NumPtDEMs do begin
        fName2 := ExternalProgramOutPutFile(i,aProgram,Param,AreaName,true);
-       if FileExists(fName2) then LoadNewDEM(PointGrids[i],fName2,MDDef.OpenMapsFUVSSIM)
+       if FileExists(fName2) then LoadNewDEM(PointGrids[i],fName2,OpenMaps)
        else begin
           {$If Defined(RecordDEMIXFull)} WriteLineToDebugFile('External program open, Missing file: ' + fName2); {$EndIf}
           exit;
@@ -104,7 +107,7 @@ begin
     end;
     for i := dmxFirstArea to NumAreaDEMs do begin
        fName2 := ExternalProgramOutPutFile(i,aProgram,Param,AreaName,false);
-       if FileExists(fName2) then LoadNewDEM(AreaGrids[i],fName2,MDDef.OpenMapsFUVSSIM)
+       if FileExists(fName2) then LoadNewDEM(AreaGrids[i],fName2,OpenMaps)
        else begin
           {$If Defined(RecordDEMIXFull)} WriteLineToDebugFile('External program open, Missing file: ' + fName2); {$EndIf}
           exit;
@@ -121,6 +124,7 @@ var
    fName : PathStr;
 begin
     HowDone := ' opened ';
+    ZeroPointAndAreaGrids(PointGrids,AreaGrids);
     for i := dmxFirstPoint to NumPtDEMs do begin
        fName := ExternalProgramOutPutFile(i,'MD','HILL_',AreaName,true);
        if FileExists(fName) then begin
@@ -152,7 +156,7 @@ begin
 end;
 
 
-procedure CreateDEMIXSlopeRoughnessGrids(AreaName : shortstring; OpenMaps : boolean = false; SaveMaps : boolean = false);
+procedure CreateDEMIXSlopeRoughnessGrids(AreaName : shortstring; var HowDone : shortstring; OpenMaps : boolean = false; SaveMaps : boolean = false);
 var
    i : integer;
    fName,fName2 : PathStr;
@@ -198,6 +202,7 @@ var
    i : integer;
    fName : PathStr;
 begin
+    ZeroPointAndAreaGrids(PointGrids,AreaGrids);
     for i := dmxFirstPoint to NumPtDEMs do begin
        fName := ExternalProgramOutPutFile(i,'MD','RRI_',AreaName,true);
        if FileExists(fName) then begin
@@ -227,6 +232,7 @@ var
    fName : PathStr;
 begin
     HowDone := ' opened ';
+    ZeroPointAndAreaGrids(PointGrids,AreaGrids);
     for i := dmxFirstPoint to NumPtDEMs do begin
        fName := ExternalProgramOutPutFile(i,'MD','TPI_',AreaName,true);
        if FileExists(fName) then begin
@@ -305,18 +311,27 @@ end;
 
 
 function SAGACreateDEMIX_ConIn_Grids(OpenMaps : boolean; AreaName,aParam : shortstring) : boolean;
+//these are automatically saved
 var
    i : integer;
+   fName : PathStr;
 begin
+    {$IfDef RecordDEMIX_CONIN} WriteLineToDebugFile('SAGACreateDEMIX_ConIn_Grids in'); {$EndIf}
     for i := dmxFirstPoint to NumPtDEMs do begin
-       PointGrids[i] := SAGA_ConvergenceIndex(MDDef.OpenMapsFUVSSIM,DEMGlb[PointDEMs[i]].GeotiffDEMName,ExternalProgramOutPutFile(i,'SAGA',aParam,AreaName,true));
+       fName := ExternalProgramOutPutFile(i,'SAGA',aParam,AreaName,true);
+       {$IfDef RecordDEMIX_CONIN} WriteLineToDebugFile(fname + '  start'); {$EndIf}
+       if FileExists(fName) then LoadNewDEM(PointGrids[i],fName,MDDef.OpenMapsFUVSSIM)
+       else PointGrids[i] := SAGA_ConvergenceIndex(MDDef.OpenMapsFUVSSIM,DEMGlb[PointDEMs[i]].GeotiffDEMName,fName);
     end;
     for i := dmxFirstArea to NumAreaDEMs do begin
-       AreaGrids[i] := SAGA_ConvergenceIndex(MDDef.OpenMapsFUVSSIM,DEMGlb[AreaDEMs[i]].GeotiffDEMName,ExternalProgramOutPutFile(i,'SAGA',aParam,AreaName,false));
+       fName := ExternalProgramOutPutFile(i,'SAGA',aParam,AreaName,false);
+       {$IfDef RecordDEMIX_CONIN} WriteLineToDebugFile(fname + '  start'); {$EndIf}
+       if FileExists(fName) then LoadNewDEM(AreaGrids[i],fName,MDDef.OpenMapsFUVSSIM)
+       else AreaGrids[i] := SAGA_ConvergenceIndex(MDDef.OpenMapsFUVSSIM,DEMGlb[AreaDEMs[i]].GeotiffDEMName,fName);
     end;
     Result := true;
+    {$IfDef RecordDEMIX_CONIN} WriteLineToDebugFile('SAGACreateDEMIX_ConIn_Grids out'); {$EndIf}
 end;
-
 
 
 function SAGACreateDEMIX_LS_Grids(AreaName,aParam : shortstring; OpenMaps : boolean = false) : boolean;

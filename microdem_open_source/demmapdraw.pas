@@ -26,6 +26,7 @@
    //{$Define RecordKeyMap}         //don't use if there will be a lot of map drawing
 
    {$IfDef Debug}
+      //{$Define RecordNumberOpenMaps}
       //{$Define TrackHorizontalDatum}
       //{$Define RecordFan}
       //{$Define RecordVAT}
@@ -1183,7 +1184,7 @@ begin
    {$If Defined(RecordMapDraw)} WriteLineToDebugFile('deltas=' + RealToString(MapCorners.Projdx,-12,-6) +  '/' + RealToString(MapCorners.Projdy,-12,-6) + '  ' + MapSizeString); {$EndIf}
 
    try
-      if (NoDrawingNow) then exit;
+      if (NoDrawingNow) or ClosingEveryThing then exit;
 
       try
          MapDrawValid := true;

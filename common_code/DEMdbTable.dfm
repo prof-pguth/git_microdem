@@ -2754,6 +2754,18 @@ object dbtablef: Tdbtablef
     object N1: TMenuItem
       Caption = '-'
     end
+    object SortandreplaceDB1: TMenuItem
+      Caption = 'Sort and replace DB'
+      Enabled = False
+      object SortandreplaceDB2: TMenuItem
+        Caption = 'Ascending'
+        OnClick = SortandreplaceDB2Click
+      end
+      object Descending3: TMenuItem
+        Caption = 'Descending'
+        OnClick = Descending3Click
+      end
+    end
     object Creategrid4: TMenuItem
       Caption = 'Create grid'
       OnClick = Creategrid4Click
@@ -3752,6 +3764,10 @@ object dbtablef: Tdbtablef
     object GraphSSIMFUVbyDEMmeans1: TMenuItem
       Caption = 'Graph SSIM/FUV by DEM means'
     end
+    object Graphofcriteriaforareaortile1: TMenuItem
+      Caption = 'Graph of criteria evaluations for area or tile'
+      OnClick = Graphofcriteriaforareaortile1Click
+    end
     object Clusterdiversity1: TMenuItem
       Caption = 'Graphs all SSIM/FUV range by DEMs and clusters (very slow)'
       OnClick = Clusterdiversity1Click
@@ -3760,6 +3776,10 @@ object dbtablef: Tdbtablef
       Caption = 'Cluster sensitivity'
       Enabled = False
       OnClick = Clustersensitivity1Click
+    end
+    object GraphofPrimaryDataFractionbyClusters1: TMenuItem
+      Caption = 'Graph of Primary Data Fraction by Clusters'
+      OnClick = GraphofPrimaryDataFractionbyClusters1Click
     end
     object Clusterwhiskerplotsforslopeandroughness1: TMenuItem
       Caption = 'Cluster whisker plots for tile characteristics'
@@ -3858,21 +3878,21 @@ object dbtablef: Tdbtablef
         Caption = 'Add tile characteristics to DB'
         OnClick = Addtilecharacteristics1Click
       end
-      object AddcountryfieldtoDB1: TMenuItem
-        Caption = 'Add country field to DB'
-        OnClick = AddcountryfieldtoDB1Click
-      end
-      object AddareafieldtoDB1: TMenuItem
-        Caption = 'Add area field to DB'
-        OnClick = AddareafieldtoDB1Click
+      object AddcountryareafieldstoDB1: TMenuItem
+        Caption = 'Add country/area fields to DB'
+        OnClick = AddcountryareafieldstoDB1Click
       end
       object AddCOPALOSpercentprimarydata1: TMenuItem
-        Caption = 'Add COP/ALOS percent primary data'
+        Caption = 'Add COP/ALOS PDF (percent primary data fraction)'
         OnClick = AddCOPALOSpercentprimarydata1Click
       end
       object AddIMAGEfieldfordifferencedistributiongraphs1: TMenuItem
         Caption = 'Add IMAGE field for difference distribution graphs'
         OnClick = AddIMAGEfieldfordifferencedistributiongraphs1Click
+      end
+      object AddcolorsforFULLU120U80U101: TMenuItem
+        Caption = 'Add colors for FULL, U120, U80, U10'
+        OnClick = AddcolorsforFULLU120U80U101Click
       end
       object N57: TMenuItem
         Caption = '-'

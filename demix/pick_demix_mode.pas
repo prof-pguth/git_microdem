@@ -34,7 +34,6 @@ type
     { Public declarations }
   end;
 
-procedure PickDEMIXMode;
 
 
 implementation
@@ -43,24 +42,6 @@ implementation
 
 uses
    Petmar,Petmar_types,DEMdefs,DEMIX_definitions,Nevadia_Main;
-
-procedure PickDEMIXMode;
-var
-  PickDEMIXmodeForm: TPickDEMIXmodeForm;
-begin
-  {$IfDef RecordDEMIX} WriteLineToDebugFile('PickDEMIXMode in, DEMIX_mode=' + IntToStr(MDDef.DEMIX_mode)); {$EndIf}
-  PickDEMIXmodeForm := TPickDEMIXmodeForm.Create(Application);
-  PickDEMIXmodeForm.RadioGroup1.ItemIndex := MDDef.DEMIX_mode;
-  InsureFormOnScreenCurrentLocation(PickDEMIXmodeForm,Mouse.CursorPos.X,Mouse.CursorPos.Y);
-  PickDEMIXmodeForm.ShowModal;
-  MDDef.DEMIX_mode := PickDEMIXmodeForm.RadioGroup1.ItemIndex;
-  if MDDef.DEMIX_mode = dmNotYetDefined then begin
-     MDDef.DEMIX_mode := dmClassic;
-     MessageToContinue('Set to classic; it has to be defined');
-  end;
-  PickDEMIXmodeForm.Destroy;
-  {$IfDef RecordDEMIX} WriteLineToDebugFile('PickDEMIXMode out'); {$EndIf}
-end;
 
 
 procedure TPickDEMIXmodeForm.BitBtn1Click(Sender: TObject);

@@ -2471,7 +2471,7 @@ object MapForm: TMapForm
           OnClick = Replaceonlyvalidvaluesfromsecondgrid1Click
         end
         object Landcover1: TMenuItem
-          Caption = 'Land cover'
+          Caption = 'Simpllify LC100 land cover'
           OnClick = Landcover1Click
         end
       end
@@ -3222,6 +3222,147 @@ object MapForm: TMapForm
         Caption = 'Scribble on map'
         GroupIndex = 1
         OnClick = Scribbleonmap1Click
+      end
+    end
+    object Cartography1: TMenuItem
+      Caption = 'Cartography'
+      GroupIndex = 1
+      object Gridgraticule2: TMenuItem
+        Caption = 'Grid/graticule'
+        OnClick = Gridgraticule2Click
+      end
+      object Mapdistortion1: TMenuItem
+        Caption = 'Map distortion (pick Tissot locations)'
+        OnClick = Mapdistortion1Click
+      end
+      object Datumshift1: TMenuItem
+        Caption = 'Datum shift'
+      end
+      object Sunrisesunsettimes1: TMenuItem
+        Caption = 'Sunrise/sunset times'
+        OnClick = Sunrisesunsettimes1Click
+      end
+      object Magneticvariation1: TMenuItem
+        Caption = 'Magnetic variation values'
+        OnClick = Magneticvariation1Click
+      end
+      object UTMgridtruenorthdeclination1: TMenuItem
+        Caption = 'UTM grid-true north declination'
+        OnClick = UTMgridtruenorthdeclination1Click
+      end
+      object Horizontalearthcurvature1: TMenuItem
+        Caption = 'Horizontal earth curvature'
+        OnClick = Horizontalearthcurvature1Click
+      end
+      object N13: TMenuItem
+        Caption = '-'
+      end
+      object Magneticdeclination1: TMenuItem
+        Caption = 'Magnetic declination overlay'
+        OnClick = Magneticdeclination1Click
+      end
+      object Truenorthlines1: TMenuItem
+        Caption = 'True north lines'
+        OnClick = Truenorthlines1Click
+      end
+      object Magneticnorthlines1: TMenuItem
+        Caption = 'Magnetic north lines'
+        OnClick = Magneticnorthlines1Click
+      end
+      object Tissotindicatrix1: TMenuItem
+        Caption = 'Tissot indicatrix (grid)'
+        OnClick = Tissotindicatrix1Click
+      end
+      object StatePlaneCoordinateSystem1: TMenuItem
+        Caption = 'State Plane Coordinate System'
+      end
+      object Latitudinalscalebars1: TMenuItem
+        Caption = 'Latitudinal scalebars'
+        OnClick = Latitudinalscalebars1Click
+      end
+      object LCCstandardparallels1: TMenuItem
+        Caption = 'Overlay conic standard parallels'
+        OnClick = LCCstandardparallels1Click
+      end
+      object Northarrow1: TMenuItem
+        Caption = 'North arrow'
+        OnClick = Northarrow1Click
+      end
+      object Geoidgrids1: TMenuItem
+        Caption = 'Geoid grids'
+        OnClick = Geoidgrids1Click
+      end
+      object Mapprojectionzones1: TMenuItem
+        Caption = 'Map projection zones'
+        object MGRSUSNG6x8zones1: TMenuItem
+          Caption = 'MGRS/USNG 6x8 zones'
+        end
+        object UTM100Kzones1: TMenuItem
+          Caption = 'UTM 100K zones'
+        end
+        object CombinedMGRSpolygons1: TMenuItem
+          Caption = 'Combined MGRS polygons'
+          OnClick = CombinedMGRSpolygons1Click
+        end
+        object USSPCS1: TMenuItem
+          Caption = 'US SPCS'
+        end
+        object DEMIX10ktiles1: TMenuItem
+          Caption = 'DEMIX 10k tiles'
+          OnClick = DEMIX10ktiles1Click
+        end
+      end
+      object N31: TMenuItem
+        Caption = '-'
+      end
+      object Exportcomputations1: TMenuItem
+        Caption = 'Export computations'
+        OnClick = Exportcomputations1Click
+      end
+      object Gridspacinganddeclination1: TMenuItem
+        Caption = 'Grid spacing and declination'
+        OnClick = Gridspacinganddeclination1Click
+      end
+      object N22: TMenuItem
+        Caption = '-'
+      end
+      object Earthrotation1: TMenuItem
+        Caption = 'Earth rotation'
+        object BlueMarble1: TMenuItem
+          Caption = 'Blue Marble'
+          OnClick = BlueMarble1Click
+        end
+        object Globaltopography1: TMenuItem
+          Caption = 'Global topography'
+          OnClick = Globaltopography1Click
+        end
+        object Predictedseafloorages1: TMenuItem
+          Caption = 'Predicted sea floor ages'
+          OnClick = Predictedseafloorages1Click
+        end
+        object OtherDEM1: TMenuItem
+          Caption = 'Other DEM'
+          OnClick = OtherDEM1Click
+        end
+        object Vectoroutlines2: TMenuItem
+          Caption = 'Vector outlines'
+          OnClick = Vectoroutlines2Click
+        end
+        object Openimage1: TMenuItem
+          Caption = 'Open image'
+          OnClick = Openimage1Click
+        end
+      end
+      object N3Drotatingglobe1: TMenuItem
+        Caption = '3D rotating globe'
+        OnClick = N3Drotatingglobe1Click
+      end
+      object imecoordinateconversion1: TMenuItem
+        Caption = 'Time coordinate conversion'
+      end
+      object Checkprojectionresults1: TMenuItem
+        Caption = 'Check projection results'
+        OnClick = Checkprojectionresults1Click
       end
     end
     object Calculate1: TMenuItem
@@ -3988,6 +4129,10 @@ object MapForm: TMapForm
           Caption = 'Whitebox wetness index grid'
           OnClick = Whiteboxwetnessindex1Click
         end
+        object Whiteboxkappaindex1: TMenuItem
+          Caption = 'Whitebox kappa index'
+          OnClick = Whiteboxkappaindex1Click
+        end
         object N50: TMenuItem
           Caption = '-'
         end
@@ -4143,6 +4288,18 @@ object MapForm: TMapForm
         object SAGAplancurvature1: TMenuItem
           Caption = 'SAGA plan curvature'
           OnClick = SAGAplancurvature1Click
+        end
+        object SAGAcurvatureclassification1: TMenuItem
+          Caption = 'SAGA curvature classification'
+          OnClick = SAGAcurvatureclassification1Click
+        end
+        object SAGAIwahashiandPikeclassification1: TMenuItem
+          Caption = 'SAGA Iwahashi and Pike classification'
+          OnClick = SAGAIwahashiandPikeclassification1Click
+        end
+        object SAGAtophatvalleyridgedetection1: TMenuItem
+          Caption = 'SAGA top hat valley ridge detection'
+          OnClick = SAGAtophatvalleyridgedetection1Click
         end
         object N63: TMenuItem
           Caption = '-'
@@ -4328,6 +4485,10 @@ object MapForm: TMapForm
       object DEMIXtilestatistics1: TMenuItem
         Caption = 'DEMIX tile statistics'
       end
+      object Geomorphonalgorithmsensitivity1: TMenuItem
+        Caption = 'Geomorphon algorithm sensitivity'
+        OnClick = Geomorphonalgorithmsensitivity1Click
+      end
       object Experimental1: TMenuItem
         Caption = 'Experimental'
         object BestglobalDEM1: TMenuItem
@@ -4358,147 +4519,6 @@ object MapForm: TMapForm
           Caption = 'SSIM check constants'
           OnClick = SSIMcheckconstants1Click
         end
-      end
-    end
-    object Cartography1: TMenuItem
-      Caption = 'Cartography'
-      GroupIndex = 1
-      object Gridgraticule2: TMenuItem
-        Caption = 'Grid/graticule'
-        OnClick = Gridgraticule2Click
-      end
-      object Mapdistortion1: TMenuItem
-        Caption = 'Map distortion (pick Tissot locations)'
-        OnClick = Mapdistortion1Click
-      end
-      object Datumshift1: TMenuItem
-        Caption = 'Datum shift'
-      end
-      object Sunrisesunsettimes1: TMenuItem
-        Caption = 'Sunrise/sunset times'
-        OnClick = Sunrisesunsettimes1Click
-      end
-      object Magneticvariation1: TMenuItem
-        Caption = 'Magnetic variation values'
-        OnClick = Magneticvariation1Click
-      end
-      object UTMgridtruenorthdeclination1: TMenuItem
-        Caption = 'UTM grid-true north declination'
-        OnClick = UTMgridtruenorthdeclination1Click
-      end
-      object Horizontalearthcurvature1: TMenuItem
-        Caption = 'Horizontal earth curvature'
-        OnClick = Horizontalearthcurvature1Click
-      end
-      object N13: TMenuItem
-        Caption = '-'
-      end
-      object Magneticdeclination1: TMenuItem
-        Caption = 'Magnetic declination overlay'
-        OnClick = Magneticdeclination1Click
-      end
-      object Truenorthlines1: TMenuItem
-        Caption = 'True north lines'
-        OnClick = Truenorthlines1Click
-      end
-      object Magneticnorthlines1: TMenuItem
-        Caption = 'Magnetic north lines'
-        OnClick = Magneticnorthlines1Click
-      end
-      object Tissotindicatrix1: TMenuItem
-        Caption = 'Tissot indicatrix (grid)'
-        OnClick = Tissotindicatrix1Click
-      end
-      object StatePlaneCoordinateSystem1: TMenuItem
-        Caption = 'State Plane Coordinate System'
-      end
-      object Latitudinalscalebars1: TMenuItem
-        Caption = 'Latitudinal scalebars'
-        OnClick = Latitudinalscalebars1Click
-      end
-      object LCCstandardparallels1: TMenuItem
-        Caption = 'Overlay conic standard parallels'
-        OnClick = LCCstandardparallels1Click
-      end
-      object Northarrow1: TMenuItem
-        Caption = 'North arrow'
-        OnClick = Northarrow1Click
-      end
-      object Geoidgrids1: TMenuItem
-        Caption = 'Geoid grids'
-        OnClick = Geoidgrids1Click
-      end
-      object Mapprojectionzones1: TMenuItem
-        Caption = 'Map projection zones'
-        object MGRSUSNG6x8zones1: TMenuItem
-          Caption = 'MGRS/USNG 6x8 zones'
-        end
-        object UTM100Kzones1: TMenuItem
-          Caption = 'UTM 100K zones'
-        end
-        object CombinedMGRSpolygons1: TMenuItem
-          Caption = 'Combined MGRS polygons'
-          OnClick = CombinedMGRSpolygons1Click
-        end
-        object USSPCS1: TMenuItem
-          Caption = 'US SPCS'
-        end
-        object DEMIX10ktiles1: TMenuItem
-          Caption = 'DEMIX 10k tiles'
-          OnClick = DEMIX10ktiles1Click
-        end
-      end
-      object N31: TMenuItem
-        Caption = '-'
-      end
-      object Exportcomputations1: TMenuItem
-        Caption = 'Export computations'
-        OnClick = Exportcomputations1Click
-      end
-      object Gridspacinganddeclination1: TMenuItem
-        Caption = 'Grid spacing and declination'
-        OnClick = Gridspacinganddeclination1Click
-      end
-      object N22: TMenuItem
-        Caption = '-'
-      end
-      object Earthrotation1: TMenuItem
-        Caption = 'Earth rotation'
-        object BlueMarble1: TMenuItem
-          Caption = 'Blue Marble'
-          OnClick = BlueMarble1Click
-        end
-        object Globaltopography1: TMenuItem
-          Caption = 'Global topography'
-          OnClick = Globaltopography1Click
-        end
-        object Predictedseafloorages1: TMenuItem
-          Caption = 'Predicted sea floor ages'
-          OnClick = Predictedseafloorages1Click
-        end
-        object OtherDEM1: TMenuItem
-          Caption = 'Other DEM'
-          OnClick = OtherDEM1Click
-        end
-        object Vectoroutlines2: TMenuItem
-          Caption = 'Vector outlines'
-          OnClick = Vectoroutlines2Click
-        end
-        object Openimage1: TMenuItem
-          Caption = 'Open image'
-          OnClick = Openimage1Click
-        end
-      end
-      object N3Drotatingglobe1: TMenuItem
-        Caption = '3D rotating globe'
-        OnClick = N3Drotatingglobe1Click
-      end
-      object imecoordinateconversion1: TMenuItem
-        Caption = 'Time coordinate conversion'
-      end
-      object Checkprojectionresults1: TMenuItem
-        Caption = 'Check projection results'
-        OnClick = Checkprojectionresults1Click
       end
     end
     object Imageanalysis1: TMenuItem

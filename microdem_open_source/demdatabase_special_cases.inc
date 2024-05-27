@@ -266,7 +266,6 @@ var
              asum[OrderedCluster[j]] := 9999;
           end;
 
-
       {$IfDef RecordClusteringFull} WriteLineToDebugFile('Update DB with clusters'); {$EndIf}
       wmDEM.SetPanelText(0,'Update DB with clusters');
       GISdb[DBonTable].EmpSource.Enabled := false;

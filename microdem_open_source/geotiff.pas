@@ -1650,7 +1650,11 @@ var
                      end;
                    end
                    else begin
-                       if StrUtils.AnsiContainsText(TStr,'OSGB') and StrUtils.AnsiContainsText(TStr,'1936') then MapProjection.H_datumCode := 'OGB-M';
+                       if StrUtils.AnsiContainsText(TStr,'OSGB') and StrUtils.AnsiContainsText(TStr,'1936') then MapProjection.H_datumCode := 'OGB-M'
+                       else if FindUTMZone(TStr,MapProjection.projUTMZone,MapProjection.LatHemi) then begin
+                           MapProjection.StartUTMProjection(MapProjection.projUTMZone);
+                           ProjectionDefined := true;
+                        end;
                    end;
                end;
 
@@ -2055,6 +2059,7 @@ var
                                  HaveRegistration := true;
                              end
                              else if StrUtils.AnsiContainsText(UpperCase(TStr),'UTM') then begin
+                                 //among possible others, this if for RDN2008, Italy one zone
                                  {$IfDef RecordPlateCaree} WriteLineToDebugFile('UTM, from 34737'); {$EndIf}
                                  ProcessASCIIstringForProjection(TStr);
                                  HaveRegistration := true;

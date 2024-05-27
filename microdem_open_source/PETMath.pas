@@ -188,8 +188,9 @@ const
 procedure Moment(var data : array of float32; var MomentVar : tMomentVar; MomentStop : tMomentStop);
 procedure InitializeMomentVar(var MomentVar : tMomentVar);
 procedure MomentsToStringGrid(StringGrid : tStringGrid; var OnLine,OnColumn : integer; Variable : shortString; MomentVar : tMomentVar; LongVersion : boolean = false);
-procedure MomentReport(Variable : shortString; var data : Petmath.bfarray32; n : integer; {DoHist : boolean = false;} Title : ShortString = ''; StringGrid : tStringGrid = nil; OnLine : integer = -99; OnCol : integer = -99);
+procedure MomentReport(Variable : shortString; var data : Petmath.bfarray32; n : integer; Title : ShortString = ''; StringGrid : tStringGrid = nil; OnLine : integer = -99; OnCol : integer = -99);
 function MomentResultsToString(MomentVar : tMomentVar) : shortstring;
+function ShortMomentResultsToString(MomentVar : tMomentVar) : shortstring;
 
 
 procedure VarCovar(var x,y : array of float32; NPts : integer; var correlation,covar : float64);
@@ -2114,6 +2115,12 @@ begin
        RealToString(MomentVar.PC95,-18,-4)  + ',' + RealToString(MomentVar.PC98,-18,-4) + ',' + RealToString(MomentVar.PC99,-18,-4) + ',' +  RealToString(MomentVar.MaxZ,-18,-4) + ',' +
        RealToString(MomentVar.avg_dev,-8,2) + ',' + RealToString(MomentVar.std_dev,-8,2) + ',' + RealToString(MomentVar.skew,-18,-4) + ',' +  RealToString(MomentVar.curt,-18,-4) + ',' +
        IntToStr(MomentVar.NPts);
+end;
+
+
+function ShortMomentResultsToString(MomentVar : tMomentVar) : shortstring;
+begin
+   Result := RealToString(MomentVar.Mean,-18,-4) + ','  + RealToString(MomentVar.MinZ,-18,-4) + ','  + RealToString(MomentVar.MaxZ,-18,-4) + ',' + RealToString(MomentVar.std_dev,-8,2) + ',' +  IntToStr(MomentVar.NPts);
 end;
 
 

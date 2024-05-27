@@ -26,15 +26,13 @@ object PointClassForm: TPointClassForm
     Align = alRight
     ScrollBars = ssVertical
     TabOrder = 0
-    ExplicitLeft = 307
-    ExplicitHeight = 549
   end
   object PageControl1: TPageControl
     Left = 0
     Top = 0
     Width = 312
     Height = 416
-    ActivePage = TabSheet1
+    ActivePage = Tabsheet2
     TabOrder = 1
     object TabSheet1: TTabSheet
       AlignWithMargins = True

@@ -1918,11 +1918,11 @@ type
       WBDenoiseElevDiff  : float32;
 
       DEMIX_Mode,
-      DEMIX_groupWonLost,
-      DEMIX_full_all,
-      DEMIX_full_U120,
-      DEMIX_full_U80,
-      DEMIX_full_U10 : byte;
+      DEMIX_groupWonLost : byte;
+      //DEMIX_full_all,
+      //DEMIX_full_U120,
+      //DEMIX_full_U80,
+      //DEMIX_full_U10 : byte;
       DEMIX_base_dir,
       DEMIX_criterion_tolerance_fName : PathStr;
       DEMIX_default_area,
@@ -2897,7 +2897,7 @@ var
    ShowDEMReadingProgress : boolean;
 
    DEMIXSettingsDir,
-   all_difference_results_dir,
+   Diff_dist_results_dir,
    DEMIXrefDataDir,
    DEMIXtempfiles,
 

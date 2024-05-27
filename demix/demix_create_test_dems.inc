@@ -9,6 +9,76 @@
 
 
 
+procedure TilesInEachElevRangeForTestAreas;
+//creates table with tiles in each for for FULL, U120, U80, and U10
+//deletes and DEMs with no tiles
+var
+   Results,Areas : tStringList;
+   AreaName,aLine : Shortstring;
+   //NumPts : int64;
+   fName : PathStr;
+   Lat,Long : float64;
+   //Local : boolean;
+   i,nt,NewDEM : Integer;
+
+         procedure CheckSeries(fName : PathStr);
+         begin
+            if FileExists(fName) then begin
+               NewDEM := OpenNewDEM(fName,false);
+               if ValidDEM(NewDEM) then begin
+                  nt := NumFilledDEMIXtilesOnDEM(NewDEM);
+                  if (nt = 0) then begin
+                     File2Trash(fName);
+                  end;
+               end
+               else nt := 0;
+               if (aLine = '') then begin
+                  DEMGlb[NewDEM].DEMCenterPoint(Lat,Long);
+                  aLine := AreaName + ',' + RealToString(Lat,-12,4) +  ',' + RealToString(Long,-12,4);
+               end;
+               aLine := aline + ',' + IntToStr(nt);
+               CloseSingleDEM(NewDEM);
+            end
+            else aLine := aline + ',0';
+         end;
+
+
+begin
+   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('TilesInEachElevRangeForTestAreas in'); {$EndIf}
+   try
+      GetDEMIXpaths(true);
+      SafeMakeDir(DEMIX_delta_dtms);
+      Areas := DEMIX_AreasWanted;
+      Results := tStringList.Create;
+      Results.Add('AREA,LAT,LONG,FULL_TILES,U120_TILES,U80_TILES,U10_TILES');
+      for i := 0 to pred(Areas.Count) do begin
+         AreaName := Areas.Strings[i];
+         {$If Defined(RecordDEMIX) or Defined(RecordDiluvium)} WriteLineToDebugFile('Start area: ' + AreaName); {$EndIf}
+         wmdem.SetPanelText(2,IntToStr(succ(i)) + '/' + IntToStr(Areas.Count) + '  ' +  AreaName);
+         aLine := '';
+         CheckSeries(DEMIX_Ref_1sec + AreaName + '_dtm' + Ref1SecPointStr + '.tif');
+         CheckSeries(DEMIX_coastal_dtms + AreaName + '_COAST' + '.tif');
+         CheckSeries(DEMIX_diluvium_dtms + AreaName + '_DILUV' + '.tif');
+         CheckSeries(DEMIX_delta_dtms + AreaName + '_DELTA' + '.tif');
+         Results.Add(aLine);
+      end;
+      if (Results.Count > 1) then begin
+         fName := NextFileNumber(MDTempDir,'tiles_in_areas_and_series','.dbf');
+         PetdbUtils.StringList2CSVtoDB(Results,fName);
+      end
+      else begin
+         Results.Destroy;
+         {$If Defined(RecordDiluvium) or Defined(RecordDEMIX)} WriteLineToDebugFile('No Areas with filled DEMIX tiles'); {$EndIf}
+      end;
+   finally
+      EndDEMIXProcessing;
+   end;
+   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('TilesInEachElevRangeForTestAreas out'); {$EndIf}
+end;
+
+
+
+
 procedure AllHallucinatingDTMsforCoastalAreas(Overwrite : boolean);
 var
    Areas : tStringList;
@@ -263,6 +333,7 @@ begin
 end;
 
 
+
 function CreateDEMIXTestDEMsForArea(Overwrite : boolean; AreaName : ShortString; AreaRefDEM,PointRefDEM : integer) : boolean;
 var
    {$IfDef RecordDEMIX} AllDEMs, {$EndIf}
@@ -330,6 +401,8 @@ begin {CreateDEMIXTestDEMsForArea}
       for I := 1 to NumDEMIXtestDEM do begin
          WantSeries := DEMIXDEMTypeName[i];
          ShortName := DEMIXShort[i];
+//if ShortName = 'TANDEM' then begin
+
          SaveName := DEMIX_test_dems + AreaName + '_' + shortname + '.tif';
          wmdem.SetPanelText(3,'Load candidate DEM ' + ShortName + '  ' + IntToStr(i) + '/' + IntToStr(NumDEMIXtestDEM));
          if Overwrite or (not FileExists(SaveName)) then begin
@@ -372,6 +445,7 @@ begin {CreateDEMIXTestDEMsForArea}
       CloseSingleDEM(GeoidGrid);
       {$IfDef RecordDEMIX} if (AllDEMs <> '') then HighlightLineToDebugFile(AreaName + ' DEM problem, ' + AllDEMs); {$EndIf}
       {$IfDef RecordDEMIXLoad} WriteLineRoDebugFile('CreateDEMIXCandidateDEMs out; Open DEMs=, ' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
+//end;
    end
    else begin
       {$IfDef RecordDEMIX} HighlightLineToDebugFile(AreaName + ' CreateDEMIXCandidateDEMs fails, no reference DEMs'); {$EndIf}

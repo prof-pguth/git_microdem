@@ -28,7 +28,7 @@
       //{$Define FanDrawProblems}
       //{$Define RawProjectInverse}  //must also be set in BaseMap
       {$Define RecordDEMIX}
-      {$Define RecordDerivedGrids}
+      //{$Define RecordDerivedGrids}
       //{$Define RecordDEMMapProjection}
       //{$Define RecordMatchMaps}
       //{$Define RecordSat}
@@ -99,7 +99,7 @@
       //{$Define RecordOpenVectorMap}
       //{$Define RecordPrinter}
       //{$Define RecordKMLexport}
-      //{$Define RecordClosing}
+      {$Define RecordClosing}
       //{$Define RecordCollarMapMargins}
       //{$Define RecordPitsSpires}
       //{$Define RecordFresnel}
@@ -149,7 +149,7 @@
       //{$Define RecordDrape}
       //{$Define RecordPLSS}
       //{$Define RecordPlateRotations}
-      //{$Define RecordMapFormCreation}
+      {$Define RecordMapFormCreation}
       //{$Define RecordReqAnt}
       //{$Define MouseMoving}
       //{$Define RecordButton}
@@ -1531,6 +1531,11 @@ type
     SAGAconvergenceindex1: TMenuItem;
     SAGAprofilecurvature1: TMenuItem;
     SAGAplancurvature1: TMenuItem;
+    Geomorphonalgorithmsensitivity1: TMenuItem;
+    SAGAcurvatureclassification1: TMenuItem;
+    SAGAIwahashiandPikeclassification1: TMenuItem;
+    SAGAtophatvalleyridgedetection1: TMenuItem;
+    Whiteboxkappaindex1: TMenuItem;
     //procedure HiresintervisibilityDEM1Click(Sender: TObject);
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
@@ -2657,6 +2662,11 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure SAGAconvergenceindex1Click(Sender: TObject);
     procedure SAGAprofilecurvature1Click(Sender: TObject);
     procedure SAGAplancurvature1Click(Sender: TObject);
+    procedure Geomorphonalgorithmsensitivity1Click(Sender: TObject);
+    procedure SAGAcurvatureclassification1Click(Sender: TObject);
+    procedure SAGAIwahashiandPikeclassification1Click(Sender: TObject);
+    procedure SAGAtophatvalleyridgedetection1Click(Sender: TObject);
+    procedure Whiteboxkappaindex1Click(Sender: TObject);
     //procedure RescaleallDEMsforSSIM1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
@@ -4130,6 +4140,7 @@ begin
         Stopwatch := TStopwatch.StartNew;
         WriteLineToDebugFile('TMapForm.DoFastMapRedraw in, maptype=' + IntToStr(MapDraw.MapType) + '  ' + MapDraw.MapSizeString + ' Map UTM zone=' + IntToStr(MapDraw.PrimMapProj.projUTMZone));
      {$EndIf}
+     {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('tMapForm.DoFastMapRedraw out, current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
 
      if (SavedMapImage <> Nil) then FreeAndNil(SavedMapImage);
      AssignMapOwnerToPLSS(self);
@@ -4154,6 +4165,7 @@ begin
            Bitmap := Nil;
            MapDraw.DrawMapOnBMP(Bitmap);
            {$If Defined(RecordPixelSize) or Defined(RecordTimingProblems)} WriteLineToDebugFile('TMapForm.DoFastMapRedraw, point 2 ' + MapDraw.MapSizeString); {$EndIf}
+           {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('tMapForm.DoFastMapRedraw after MapDraw.DrawMapOnBMP, current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
 
            if (Not MapDraw.FastMapDraw) and (MapDraw.SectorOutlines <> '') then begin
               MapDraw.OutlineSectors(Bitmap.Canvas);
@@ -4161,6 +4173,8 @@ begin
            end;
 
            if FullDraw then FormResize(Nil);
+           {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('tMapForm.DoFastMapRedraw after FormResize, current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
+
         finally
            if (Bitmap <> Nil) then begin
               Self.Image1.Picture.Graphic := Bitmap;
@@ -4198,11 +4212,9 @@ begin
               if AutoAnaglyphRedraw then Draw3Dmap(Self);
            {$EndIf}
         end;
-        {$IfDef ExRedistrict}
-        {$Else}
-           if (RedistrictForm <> Nil) and (not MapDraw.FastMapDraw) then RedistrictForm.BitBtn4Click(Nil);
-        {$EndIf}
-     end;
+        {$IfDef ExRedistrict} {$Else} if (RedistrictForm <> Nil) and (not MapDraw.FastMapDraw) then RedistrictForm.BitBtn4Click(Nil); {$EndIf}
+        {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('tMapForm.DoFastMapRedraw after miscellaneous drawing, current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
+      end;
      if ValidDEM(SavedMergeReflectanceDEM) then MergeAnotherDEMreflectance(SavedMergeReflectanceDEM);
 
      MapDraw.MapDrawValid := true;
@@ -4242,12 +4254,17 @@ begin
         WriteLineToDebugFile('TMapForm.DoFastMapRedraw out, Maptype= ' + MapTypeName(MapDraw.MapType) + '  ' + MapDraw.MapSizeString + '   ' + RealToString(Elapsed.TotalSeconds,-12,-4) + ' sec');
      {$EndIf}
      PixelSizeEdit.Text := RealToString(MapDraw.ScreenPixelSize,-12,-2) + ' m';
+     {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('tMapForm.DoFastMapRedraw before menu adjustment, current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
      CheckProperTix;
+     {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('tMapForm.DoFastMapRedraw after CheckProperTix, current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
      WmDem.SetMenusForVersion;
-     {$If Defined(RecordTimingProblems) or Defined(RecordMapDraw)} WriteLineToDebugFile('TMapForm.DoFastMapRedraw out'); {$EndIf}
+     {$If Defined(RecordTimingProblems) or Defined(RecordMapDraw) or Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('tMapForm.DoFastMapRedraw out, current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
+  end
+  else begin
+      {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('tMapForm.DoFastMapRedraw  not allowed, current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
   end;
   {$IfDef RecordMapResize} DebugMapSize; {$EndIf}
-end;
+end {tMapForm.DoFastMapRedraw;};
 
 
 procedure tMapForm.DoBaseMapRedraw;
@@ -4263,11 +4280,16 @@ end;
 procedure tMapForm.DoCompleteMapRedraw;
 begin
    if MapRedrawsAllowed then begin
+      {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('tMapForm.DoCompleteMapRedraw in, current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
       {$If Defined(RecordMapDraw) or Defined(RecordMapResize)} WriteLineToDebugFile('tMapForm.DoCompleteMapRedraw in'); {$EndIf}
       MapDraw.DeleteMapSavedLayers;
       {$If Defined(RecordMapDraw) or Defined(RecordMapResize)} WriteLineToDebugFile('tMapForm.DoCompleteMapRedraw DeleteMapSavedLayers'); {$EndIf}
       DoFastMapRedraw;
       {$If Defined(RecordMapDraw) or Defined(RecordMapResize)} WriteLineToDebugFile('tMapForm.DoCompleteMapRedraw out'); {$EndIf}
+      {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('tMapForm.DoCompleteMapRedraw out, current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
+   end
+   else begin
+      {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('tMapForm.DoCompleteMapRedraw no MapRedrawsAllowed, current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
    end;
 end;
 
@@ -7005,7 +7027,7 @@ begin
    end;
    Fname := Petmar.NextFileNumber(MDTempDir,DEMGlb[MapDraw.DEMonMap].AreaName + '_percentiles_',DefaultDBExt);
    db := StringListToLoadedDatabase(Results,fName);
-   Graph := GISdb[db].CreateScatterGram('PERCENTILE','VALUE',true);
+   Graph := GISdb[db].CreateScatterGram('PERCENTILE','VALUE',clRed,true);
    Graph.GraphDraw.LLcornerText := DEMGlb[MapDraw.DEMonMap].AreaName;
    Graph.RedrawDiagram11Click(Nil);
 end;
@@ -8275,13 +8297,28 @@ procedure TMapForm.CheckProperTix;
          Popuplegends1.Visible := LegendOptionsAvailable > 0;
       end;
 
-
 var
    i : integer;
 begin
    {$If Defined(RecordCheckProperTix)} WriteLineToDebugFile(Caption + ' CheckProperTix in'); {$EndIf}
+   {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('tMapForm.CheckProperTix in, current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
 
-   if SkipMenuUpdating or Help1.Visible or (MapDraw = Nil) then exit;
+   if (FormStyle = fsNormal) and (not CreateHiddenMap) then begin
+      FormStyle := fsMDIChild;
+      if (MapDraw <> Nil) then begin
+         ClientWidth := MapDraw.MapXSize;
+         ClientHeight := MapDraw.MapYSize;
+      end;
+      {$If Defined(RecordNumberOpenMaps) or Defined(RecordCheckProperTix)} WriteLineToDebugFile('tMapForm.CheckProperTix out, current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
+   end
+   else begin
+      {$If Defined(RecordNumberOpenMaps) or Defined(RecordCheckProperTix)} WriteLineToDebugFile('tMapForm.CheckProperTix cannot make MDI child, current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
+   end;
+
+   if SkipMenuUpdating or Help1.Visible or (MapDraw = Nil) then begin
+      {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('tMapForm.CheckProperTix quick out, current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
+      exit;
+   end;
 
    if MDDef.ShowMapToolbar then Panel1.Height := 27
    else Panel1.Height := 0;
@@ -8473,9 +8510,7 @@ begin
          Peakislandarea1.Visible := false;
       {$EndIf}
 
-
-
-{$If Defined(RecordCheckProperTix)} WriteLineToDebugFile('CheckProperTix finish sats'); {$EndIf}
+     {$If Defined(RecordNumberOpenMaps) or Defined(RecordCheckProperTix)} WriteLineToDebugFile('tMapForm.CheckProperTix finish sats, current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
 
       LASclassificationlegend1.Visible := ValidDEM(MapDraw.DEMonMap) and (DEMGlb[MapDraw.DEMonMap].DEMHeader.ElevUnits in [euLASclass13]);
       Editshapefilegroup1.Visible := MapDraw.MapOverlays.ovShapeFileGroup <> '';
@@ -8531,7 +8566,7 @@ begin
 
       SpeedButton2.Visible := (MDDef.ProgramOption = ExpertProgram);
 
-{$If Defined(RecordCheckProperTix)} WriteLineToDebugFile('CheckProperTix start vegies'); {$EndIf}
+      {$If Defined(RecordNumberOpenMaps) or Defined(RecordCheckProperTix)} WriteLineToDebugFile('tMapForm.CheckProperTix start vegies, current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
 
       {$IfDef ExVegDensity}
           LoadVegetation1.Visible := false;
@@ -8609,7 +8644,7 @@ begin
          ViewExifimages1.Visible := (MDdef.ProgramOption = ExpertProgram);
       {$EndIf}
 
-      {$If Defined(RecordCheckProperTix)} WriteLineToDebugFile('CheckProperTix start point clouds'); {$EndIf}
+      {$If Defined(RecordNumberOpenMaps) or Defined(RecordCheckProperTix)} WriteLineToDebugFile('tMapForm.CheckProperTix start point clouds, current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
 
       {$IfDef ExPointCloud}
          PointCloud1.Visible := false;
@@ -8737,7 +8772,7 @@ begin
       MDDEM1.Visible := MapDraw.ValidDEMonMap;
 
       Geomorphometrybycategories1.Visible := MapDraw.ValidDEMonMap and (DEMGlb[MapDraw.DEMonMap].VATfileName <> '');
-      {$If Defined(RecordCheckProperTix)} WriteLineToDebugFile('CheckProperTix tissot'); {$EndIf}
+      {$If Defined(RecordNumberOpenMaps) or Defined(RecordCheckProperTix)} WriteLineToDebugFile('tMapForm.CheckProperTix terrain cats, current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
 
       TerrainCategories1.Visible := MapDraw.ValidDEMonMap and ((MDDef.ProgramOption in [ExpertProgram,GeologyProgram]) or (MDDef.ShowConversionAndAnalyze));
       TerrainCategories2.Visible := TerrainCategories1.Visible;
@@ -8763,7 +8798,7 @@ begin
 
       SaveMapAsImage1.Visible := (MDdef.ProgramOption in [ExpertProgram,RemoteSensingProgram]) and (MapDraw.PrimMapProj.PName in [UTMEllipsoidal,PlateCaree]);
 
-      {$If Defined(RecordCheckProperTix)} WriteLineToDebugFile('CheckProperTix weapons fans'); {$EndIf}
+      {$If Defined(RecordNumberOpenMaps) or Defined(RecordCheckProperTix)} WriteLineToDebugFile('tMapForm.CheckProperTix weapons fans, current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
 
       Loadweaponsfans1.Visible := ExpertDEMVersion and MDDef.ShowIntervisibility;
       EditWeaponsFan1.Visible := (MDdef.ProgramOption = ExpertProgram) and (MapDraw.CurrentFansTable <> 0) and MDDef.ShowIntervisibility;
@@ -8786,7 +8821,7 @@ begin
 
       SpeedButton5.Visible := ExpertDEMVersion;
 
-      {$If Defined(RecordCheckProperTix)} WriteLineToDebugFile('CheckProperTix geography'); {$EndIf}
+      {$If Defined(RecordNumberOpenMaps) or Defined(RecordCheckProperTix)} WriteLineToDebugFile('tMapForm.CheckProperTix geography, current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
 
       Convertcoordinates1.Visible := (MapDraw.VectorIndex <> 0) and (MDdef.ProgramOption = ExpertProgram) or (MapDraw.DEMMap and (DEMGlb[MapDraw.DEMonMap].DEMMapProj <> Nil));
 
@@ -8811,7 +8846,7 @@ begin
       KoppenLegend2.Visible := false;
       Koppenclimograph1.Visible := false;
 
-      {$If Defined(RecordCheckProperTix)} WriteLineToDebugFile('CheckProperTix start dbs'); {$EndIf}
+      {$If Defined(RecordNumberOpenMaps) or Defined(RecordCheckProperTix)} WriteLineToDebugFile('tMapForm.CheckProperTix start dbs, current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
 
       for i := 1 to MaxDataBase do begin
          if ValidDB(i) and ((GISdb[i].theMapOwner = Self) or (MDDef.DBsOnAllMaps)) then begin
@@ -8865,7 +8900,7 @@ begin
          RasterGIS1.Visible := false;
       end;
 
-     {$If Defined(RecordCheckProperTix)} WriteLineToDebugFile('CheckProperTix start map owner types'); {$EndIf}
+     {$If Defined(RecordNumberOpenMaps) or Defined(RecordCheckProperTix)} WriteLineToDebugFile('tMapForm.CheckProperTix start map owner, current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
 
       if MapDraw.MapOwner in [moIndexMap,moMapDatabase,moEditMap] then begin
          GeologySpeedButton1.Visible := false;
@@ -8938,21 +8973,13 @@ begin
          SaveSpeedButton.Visible := false;
       end;
 
-      {$If Defined(RecordCheckProperTix)} WriteLineToDebugFile('CheckProperTix start arrange buttons'); {$EndIf}
+      {$If Defined(RecordNumberOpenMaps) or Defined(RecordCheckProperTix)} WriteLineToDebugFile('tMapForm.CheckProperTix arrange buttons, current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
 
       ArrangeButtons;
       SetPanButtons;
 
    ShowDefaultCursor;
-   if (FormStyle = fsNormal) and (not CreateHiddenMap) then begin
-      FormStyle := fsMDIChild;
-      if MapDraw <> Nil then begin
-         ClientWidth := MapDraw.MapXSize;
-         ClientHeight := MapDraw.MapYSize;
-      end;
-   end;
-   {$IfDef RecordCheckProperTix} WriteLineToDebugFile(Caption + ' CheckProperTix out'); {$EndIf}
-end;
+end {CheckProperTix};
 
 
 
@@ -9773,7 +9800,7 @@ end;
 
 procedure TMapForm.FormCreate(Sender: TObject);
 begin
-   {$IfDef RecordMapFormCreation} WriteLineToDebugFile('TMapForm.FormCreate enter'); {$EndIf}
+   {$If Defined(RecordMapFormCreation) or Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('TMapForm.FormCreate enter, current maps=' + IntToStr(NumOpenMaps)); {$EndIf}
    FormOperational := false;
 
    //only show map where drawing is complete
@@ -9835,11 +9862,11 @@ begin
 
    SavedMapImage := Nil;
    DEMEditForm := Nil;
+   OverlayOpaqueBMP := nil;
+   MapBaseBMP := nil;
 
    NoMovingForm := false;
    VariableOpaqueOverlays := false;
-   OverlayOpaqueBMP := nil;
-   MapBaseBMP := nil;
    SizingWindow := false;
 
    EraserSize := 3;
@@ -9858,7 +9885,7 @@ begin
    FullMapSpeedButton.Enabled := false;
    ZoomWindow := Nil;
    FormOperational := true;
-   {$If Defined(RecordMapFormCreation) or Defined(RecordFullMapDrawProblems)} WriteLineToDebugFile('out of TMapForm.FormCreate'); {$EndIf}
+   {$If Defined(RecordMapFormCreation) or Defined(RecordFullMapDrawProblems)} WriteLineToDebugFile('TMapForm.FormCreate out, currently open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
 end;
 
 
@@ -15796,7 +15823,6 @@ procedure TMapForm.Geomorphometrybycategories1Click(Sender: TObject);
 var
    ElevMap,SlopeMap,RuffMap,AspMap : integer;
    Graph1,Graph2,Graph3,Graph4 : tThisBaseGraph;
-
 begin
    GetDEM(ElevMap,true,'elevation histogram');
    SlopeMap := 0;
@@ -15805,6 +15831,18 @@ begin
    RuffMap := CreateSlopeRoughnessSlopeStandardDeviationMap(ElevMap,3,SlopeMap);
    AspMap := MakeAspectMap(ElevMap);
    HistogramsFromVATDEM(MapDraw.DEMonMap,ElevMap,SlopeMap,RuffMap,AspMap,Graph1,Graph2,Graph3,Graph4);
+end;
+procedure TMapForm.Geomorphonalgorithmsensitivity1Click(Sender: TObject);
+var
+   GeomorphGrids : array[1..6] of integer;
+begin
+//Testing with Search 100 and 250 led to really bad results
+   GeomorphGrids[1] := WBT_Geomorphons(true,GeotiffDEMNameOfMap,50,0); //default  Search : integer=50; Dist : integer = 0) : integer;
+   GeomorphGrids[2] := WBT_Geomorphons(true,GeotiffDEMNameOfMap,50,1);
+   GeomorphGrids[3] := WBT_Geomorphons(true,GeotiffDEMNameOfMap,50,2);
+   GeomorphGrids[4] := WBT_Geomorphons(true,GeotiffDEMNameOfMap,25,1);
+   GeomorphGrids[5] := WBT_Geomorphons(true,GeotiffDEMNameOfMap,25,2);
+   GeomorphGrids[6] := WBT_Geomorphons(true,GeotiffDEMNameOfMap,25,3);
 end;
 
 procedure TMapForm.Rasteraftersubsettomatchthismapextent1Click(Sender: TObject);
@@ -16171,7 +16209,7 @@ begin
             DEMGlb[i].LatLongDegreeToDEMGridInteger(bb.ymax,bb.xmax,gl.XGridHigh,gl.YGridHigh);
             mv := DEMGlb[i].ElevationMoments(gl);
             DEMGlb[i].GetElevFromLatLongDegree(Lat,Long,z);
-            if mv.NPts > 0 then begin
+            if (mv.NPts > 0) then begin
                Results.Add(DEMGlb[i].AreaName + '  nearest z=' + RealToString(z,-8,-2) + '     pt in pixel=' + IntToStr(mv.Npts) + '  mean z=' + RealToString(mv.Mean,-8,-2));
             end;
          end;
@@ -19547,6 +19585,11 @@ end;
 procedure TMapForm.WhiteboxGeomorphons1Click(Sender: TObject);
 begin
    WBT_Geomorphons(true,GeotiffDEMNameOfMap);
+end;
+
+procedure TMapForm.Whiteboxkappaindex1Click(Sender: TObject);
+begin
+   WBT_KappaIndex(ClassifiedName,ReferenceName : PathStr;
 end;
 
 procedure TMapForm.WhiteBoxmultiscaleroughness1Click(Sender: TObject);
@@ -23195,7 +23238,7 @@ begin
    EndProgress;
    fName := Petmar.NextFileNumber(MDTempDir,'param_by_lat_','.csv');
    db := StringListToLoadedDatabase(Findings, fName);
-   sg := GISdb[db].CreateScatterGram('PARAMETER','LAT',true);
+   sg := GISdb[db].CreateScatterGram('PARAMETER','LAT',clRed,true);
    sg.Caption := DEMGlb[MapDraw.DEMonMap].AreaName;
 {$EndIf}
 end;
@@ -24226,6 +24269,11 @@ begin
    SAGA_ConvergenceIndex(true,DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
 end;
 
+procedure TMapForm.SAGAcurvatureclassification1Click(Sender: TObject);
+begin
+   SAGA_CurvatureClassification(true,DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
+end;
+
 procedure TMapForm.SAGADrainagebasins1Click(Sender: TObject);
 begin
    SagaWatershedBasins(DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
@@ -24239,6 +24287,11 @@ end;
 procedure TMapForm.SAGAflowaccumulationParallelizable1Click(Sender: TObject);
 begin
    SAGA_FlowAccumulationParallizeable(DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
+end;
+
+procedure TMapForm.SAGAIwahashiandPikeclassification1Click(Sender: TObject);
+begin
+   SAGA_IwahashiAndPikeClassification(true,DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
 end;
 
 procedure TMapForm.SAGALSfactor1Click(Sender: TObject);
@@ -24264,6 +24317,11 @@ end;
 procedure TMapForm.SAGAStrahlerordergrid1Click(Sender: TObject);
 begin
    SAGA_StrahlerOrderGrid(DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
+end;
+
+procedure TMapForm.SAGAtophatvalleyridgedetection1Click(Sender: TObject);
+begin
+  SAGA_HillValleyIndexes(true,DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
 end;
 
 procedure TMapForm.SAGATPImap1Click(Sender: TObject);

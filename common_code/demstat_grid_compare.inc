@@ -13,36 +13,6 @@ type
    tIntMatrix256 = array[0..255,0..255] of integer;
 
 
-procedure AddSubtractGrid(Map1,Multiple : integer);
-var
-   Map2,Col,Row  : integer;
-   z1,z2 : float32;
-   //ThisGraph : TThisBaseGraph;
-   IdenticalGrids,OK : boolean;
-   rFile : file;
-begin
-   {$IfDef RecordDEMCompare} WriteLineToDebugFile('AddSubtractGrid in'); {$EndIf}
-   IdenticalGrids := DEMGlb[Map1].SecondGridIdentical(Map2);
-   StartProgress('Grid Differences');
-   for Col := 0 to pred(DEMGlb[Map1].DEMheader.NumCol) do begin
-      for Row := 0 to pred(DEMGlb[Map1].DEMheader.NumRow) do begin
-         if ((GridMaskDEM = 0) or MaskValidPoint(Col,Row)) then begin
-            if DEMGlb[Map1].GetElevMeters(Col,Row,z1) and DEMGlb[Map1].GetElevMetersFromSecondDEM(IdenticalGrids,Map2,Col,Row,z2) then begin
-               DEMGlb[Map1].SetGridElevation(Col,Row,z2 - z1);
-            end
-            else begin
-               DEMGlb[Map1].SetGridMissing(Col,Row);
-            end;
-         end;
-      end {for Row};
-      if (Col mod 25 = 0) then UpdateProgressBar(Col / pred(DEMGlb[Map1].DEMheader.NumCol));
-   end {for Col};
-   EndProgress;
-   DEMGlb[Map1].SelectionMap.RespondToChangedDEM;
-   {$IfDef RecordDEMCompare} WriteLineToDebugFile('AddSubtractGrid out'); {$EndIf}
-end;
-
-
 procedure ZeroCoOccurrence(var Dist1,Dist2 : tIntVector256; var CoOccur  : tIntMatrix256);
 var
    Col,Row : integer;
@@ -145,8 +115,6 @@ var
    z1,z2 : float32;
    IdenticalGrids : boolean;
    GridLimits : tGridLimits;
-   //Dist1,Dist2 : tIntVector256;
-   //CoOccur  : tIntMatrix256;
    sl : tStringList;
    Name1,Name2 : shortstring;
 begin
@@ -163,7 +131,6 @@ begin
       while Length(Name2) > 10 do begin
          GetValidDBfieldname(Name2);
       end;
-
 
       sl := tStringList.Create;
       sl.add('LAT,LONG,' + Name1 + ',' + Name2);
@@ -184,7 +151,7 @@ begin
             end;
          end;
       end;
-      if sl.Count = 1 then begin
+      if (sl.Count = 1) then begin
          sl.Destroy;
          MessageToContinue('No points missing in just one grid');
       end

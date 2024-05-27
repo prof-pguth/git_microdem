@@ -500,7 +500,7 @@ begin
    fName := Petmar.NextFileNumber(MDTempDir,'hours_sun_' + LatLongToStringForFileName(Lat,Long) + '_','.dbf');
    db := StringList2CSVtoDB(SunResults, fName);
 
-   Result := GISdb[db].CreateScatterGram('JULIAN_DAY','HOURS_ILL',true);
+   Result := GISdb[db].CreateScatterGram('JULIAN_DAY','HOURS_ILL',clRed,true);
    GISdb[db].AddSeriesToScatterGram(Result,clLime,'JULIAN_DAY','HOUR_LIGHT',true);
 
    Result.GraphDraw.LegendList := tStringList.Create;
@@ -589,7 +589,7 @@ begin
     GISdb[db].RedrawLayerOnMap;
 
     if AngleGraph then begin
-       Graph1 := GISdb[db].CreateScatterGram('AZIMUTH','ELEV_DEG',true);
+       Graph1 := GISdb[db].CreateScatterGram('AZIMUTH','ELEV_DEG',clRed,true);
        Graph1.GraphDraw.FileColors256[1] := MDDef.HorizonColor;
        if MDDef.ShowSolstices then begin
           Graph1.GraphDraw.LegendList := tStringList.Create;
@@ -603,7 +603,7 @@ begin
        Graph1.GraphDraw.SetShowAllPoints(false);
        Graph1.AutoScaleAndRedrawDiagram;
     end;
-    if RangeGraph then GISdb[db].CreateScatterGram('AZIMUTH','BLOCK_M',true);
+    if RangeGraph then GISdb[db].CreateScatterGram('AZIMUTH','BLOCK_M',clRed,true);
 
     if MDDef.HorizonSkyMap then begin
        Result.UpdateDisplay;
@@ -634,7 +634,7 @@ begin
    EndProgress;
    fName := Petmar.NextFileNumber(MDTempDir, 'sun_altitude_noon_',DefaultDBExt);
    db := BaseMap.StringListToLoadedDatabase(SunResults,fName);
-   TheGraph := GISdb[db].CreateScatterGram('JULIAN_DAY','MAX_ALT',false,'Local noon solar altitude ' + LatLongDegreeToString(Latitude,Longitude,VeryShortDegrees));
+   TheGraph := GISdb[db].CreateScatterGram('JULIAN_DAY','MAX_ALT',clRed,false,'Local noon solar altitude ' + LatLongDegreeToString(Latitude,Longitude,VeryShortDegrees));
    TheGraph.GraphDraw.MaxVertAxis := 90;
    TheGraph.GraphDraw.MinVertAxis := -15;
    TheGraph.GraphDraw.MaxHorizAxis := 365;
@@ -859,7 +859,7 @@ begin
    end;
    fName := Petmar.NextFileNumber(MDTempDir, 'sunrise_',DefaultDBExt);
    db := MapForm.StringListToLoadedDatabase(Results,fName);
-   TheGraph := GISDB[db].CreateScatterGram('JULIAN_DAY','DAY_HOURS',false,'Daylight duration at ' + LatLongDegreeToString(Latitude,Longitude,VeryShortDegrees));
+   TheGraph := GISDB[db].CreateScatterGram('JULIAN_DAY','DAY_HOURS',clRed,false,'Daylight duration at ' + LatLongDegreeToString(Latitude,Longitude,VeryShortDegrees));
    TheGraph.GraphDraw.MaxVertAxis := 24;
    TheGraph.GraphDraw.MinVertAxis := 0;
    TheGraph.GraphDraw.MaxHorizAxis := 365;
@@ -1027,7 +1027,7 @@ begin
       fName := Petmar.NextFileNumber(MDTempDir, 'terrain_mask_',DefaultDBExt);
       db := BaseMap.StringListToLoadedDatabase(SunResults,fName);
       {$IfDef RecordHorizon} WriteLineToDebugFile('DB created and loaded'); {$EndIf}
-      TheGraph := GISdb[db].CreateScatterGram('JULIAN_DAY','DAYLIGHT',false,'Daylight duration at ' + LatLongDegreeToString(Latitude,Longitude,VeryShortDegrees));
+      TheGraph := GISdb[db].CreateScatterGram('JULIAN_DAY','DAYLIGHT',clRed,false,'Daylight duration at ' + LatLongDegreeToString(Latitude,Longitude,VeryShortDegrees));
       TheGraph.GraphDraw.MaxVertAxis := 24;
       TheGraph.GraphDraw.MinVertAxis := 0;
       TheGraph.GraphDraw.MaxHorizAxis := 365;

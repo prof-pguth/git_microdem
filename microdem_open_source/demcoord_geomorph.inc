@@ -1262,10 +1262,10 @@ begin
       Row := GridLimits.YGridLow;
       while (Row <= GridLimits.YGridHigh) do begin
           if RoughnessFromSlopeSTD(Col,Row,MDDef.RoughnessBox,Ruff1) then begin
-            if GetSlopeAndAspect(Col,Row,SlopeAspectRec) then begin
+            //if GetSlopeAndAspect(Col,Row,SlopeAspectRec) then begin
                Values[Npts] := Ruff1;
                inc(NPts);
-            end;
+            //end;
          end;
          inc(Row,Incr);
       end;
