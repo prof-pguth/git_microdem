@@ -24,7 +24,7 @@ object wmdem: Twmdem
   OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
   OnResize = FormResize
-  TextHeight = 16
+  TextHeight = 20
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
@@ -2594,9 +2594,6 @@ object wmdem: Twmdem
       Caption = 'WKT projection'
       OnClick = WKTprojection1Click
     end
-    object Stateplanecoordinatesystem1: TMenuItem
-      Caption = 'State plane coordinate system'
-    end
     object UKOSgrid1: TMenuItem
       Caption = 'UK OS grid'
       OnClick = UKOSgrid1Click
@@ -3434,17 +3431,20 @@ object wmdem: Twmdem
   object DEMIXdbCreatePopupMenu: TPopupMenu
     Left = 896
     Top = 336
+    object Graphevaluationandscores1: TMenuItem
+      Caption = 'Open DEMIX databae for graph evaluation and scores'
+      OnClick = Graphevaluationandscores1Click
+    end
+    object Open4elevationrangeDEMIXDBs1: TMenuItem
+      Caption = 'Open 4 elevation range DEMIX DBs'
+      OnClick = Open4elevationrangeDEMIXDBs1Click
+    end
     object OpenDEMIXdatabase1: TMenuItem
       Caption = 'Open DEMIX database for map analysis'
       OnClick = OpenDEMIXdatabase1Click
     end
-    object Advancedanalysis1: TMenuItem
-      Caption = 'Advanced analysis'
-      OnClick = Advancedanalysis1Click
-    end
-    object Graphevaluationandscores1: TMenuItem
-      Caption = 'Graph evaluation and scores'
-      OnClick = Graphevaluationandscores1Click
+    object N56: TMenuItem
+      Caption = '-'
     end
     object OpenmapsforDEMIXtestarea1: TMenuItem
       Caption = 'Open maps for DEMIX test area'
@@ -3454,13 +3454,19 @@ object wmdem: Twmdem
       Caption = 'Load CopDEM and landcover for test area'
       OnClick = LoadCpopDEMandLNDCOERFORTEXTAREA1Click
     end
+    object Compareconvergenceindexfortestarea1: TMenuItem
+      Caption = 'Compare convergence index for test area'
+      OnClick = Compareconvergenceindexfortestarea1Click
+    end
+    object Advancedanalysis1: TMenuItem
+      Caption = 'Advanced analysis'
+      OnClick = Advancedanalysis1Click
+    end
     object N43: TMenuItem
       Caption = '-'
     end
     object Processdifferencestatisticspertile1: TMenuItem
-      Caption = 
-        'Process difference distribution statistics per tile (DEMIX-class' +
-        'ic)'
+      Caption = 'Process difference distribution statistics per tile '
       object Overwirte2: TMenuItem
         Caption = 'Overwrite'
         OnClick = Overwirte2Click
@@ -3528,15 +3534,33 @@ object wmdem: Twmdem
     end
     object Channelnetworkmisspercentagesbytile1: TMenuItem
       Caption = 'Channel network miss percentages by tile'
-      OnClick = Channelnetworkmisspercentagesbytile1Click
+      object Overwrite7: TMenuItem
+        Caption = 'Overwrite'
+        OnClick = Overwrite7Click
+      end
+      object Skipifpresent2: TMenuItem
+        Caption = 'Skip if present'
+        OnClick = Skipifpresent2Click
+      end
     end
     object Mergechannelnetworkevaluations1: TMenuItem
       Caption = 'Merge channel network evaluations'
       OnClick = Mergechannelnetworkevaluations1Click
     end
-    object Channelnetworkcomparison1: TMenuItem
-      Caption = 'Channel network map  comparison (currently hard wired)'
-      Enabled = False
+    object Ridgesandvalleys1: TMenuItem
+      Caption = 'Ridges and valleys'
+      object Overwrite5: TMenuItem
+        Caption = 'Overwrite'
+        OnClick = Overwrite5Click
+      end
+      object Overwrite6: TMenuItem
+        Caption = 'Skip if present'
+        OnClick = Overwrite6Click
+      end
+    end
+    object Mergeridgesandvalleys1: TMenuItem
+      Caption = 'Merge ridges and valleys'
+      OnClick = Mergeridgesandvalleys1Click
     end
     object N52: TMenuItem
       Caption = '-'
@@ -3801,8 +3825,7 @@ object wmdem: Twmdem
     object Experimentaltargetsforelimination1: TMenuItem
       Caption = 'Experimental--targets for elimination'
       object Mergesourcedatatiles1: TMenuItem
-        Caption = 'Merge source data tiles and shift to EGM2008'
-        Enabled = False
+        Caption = 'Merge source data tiles (and probably not shift to EGM2008)'
         OnClick = Mergesourcedatatiles1Click
       end
       object DEMIXreferenceDEMcreation1: TMenuItem
@@ -3892,10 +3915,6 @@ object wmdem: Twmdem
       object SummarizeverticaldatumshiftforEGM96testDEMs1: TMenuItem
         Caption = 'Summarize vertical datum shift for EGM96 test DEMs'
         OnClick = SummarizeverticaldatumshiftforEGM96testDEMs1Click
-      end
-      object VerifySSIMfiles1: TMenuItem
-        Caption = 'Verify all SSIM files exist for tile (for Python)'
-        OnClick = VerifySSIMfiles1Click
       end
       object CheckfilesizesforSSIMimagemismatches1: TMenuItem
         Caption = 'Check file sizes for SSIM image mismatches (for Python)'

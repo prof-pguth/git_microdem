@@ -47,12 +47,27 @@ Command line parameters removed, April 2024
 interface
 
 uses
+//needed for inline of core DB functions
+   Petmar_db,
+   Data.DB,
+   {$IfDef UseFireDacSQLlite}
+      FireDAC.Comp.Client, FireDAC.Comp.Dataset,FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteWrapper,
+   {$EndIf}
+
+   {$IfDef UseTDBF}
+      dbf,
+   {$EndIf}
+
+   {$IfDef UseTCLientDataSet}
+      DBClient,
+   {$EndIf}
+//end for inline of core DB functions
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,  System.RTLConsts,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Dialogs, FMX.Objects3D, FMX.Types3D,
   FMX.Layouts, FMX.Layers3D, System.Math.Vectors, FMX.Controls3D,
   FMX.MaterialSources, FMX.StdCtrls,FMX.ListBox,
   FMX.Forms3D, FMX.Graphics, System.UIConsts, FMX.Controls.Presentation,
-  DEMMapDraw,Petmar_types,Petmar_db;
+  DEMMapDraw,Petmar_types;
 
 const
    ViewerVersion = ' v.32';
@@ -1014,7 +1029,7 @@ var
       var
          PointXYZColor : ^tPointXYZIArray;
          tfile : File;
-         i,j,x,y,z,pfd2 : integer;
+         i,{j,}x,y,z,pfd2 : integer;
          xf,yf : float64;
       begin
            {$IfDef Record3d} WriteLineToDebugFile('LoadMapWithColorByCodes in ' + PointsFile); {$EndIf}

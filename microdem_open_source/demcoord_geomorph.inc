@@ -1251,7 +1251,7 @@ end;
 procedure tDEMDataSet.GetRoughnessInLongArray(GridLimits: tGridLimits; var NPts : int64; var Values : Petmath.bfarray32);
 var
    Col,Row,Incr : integer;
-   SlopeAspectRec : tSlopeAspectRec;
+   //SlopeAspectRec : tSlopeAspectRec;
    Ruff1 : float32;
 begin
    NPts := 0;

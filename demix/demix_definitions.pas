@@ -16,9 +16,10 @@ unit demix_definitions;
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$Define RecordDEMIX}
    //{$Define RecordDEMIXLoad}
-   {$Define RecordDiluvium}
-   {$Define TrackAverageStats}
-   {$Define RecordDEMIX_CONIN}
+   //{$Define RecordDiluvium}
+   //{$Define TrackAverageStats}
+   //{$Define RecordDEMIX_CONIN}
+   //{$Define RecordGridFromVector}
    //{$Define Record3DEPX}
    //{$Define RecordDEMIXRefDEM}
    //{$Define Record3DEPXFull}
@@ -89,7 +90,7 @@ const
    MaskForDiluvium = false;
 
 const
-   MaxTiles = 3200;
+   MaxTiles = 3500;
    MaxCriteria = 20;
    MaxAreas = 250;
    MaxClusters = 20;
@@ -103,8 +104,8 @@ const
    DEMIXOpenMap = false;
    DEMIXCloseMap = true;
 
-   DEMisDTM = 2;
    DEMisDSM = 1;
+   DEMisDTM = 2;
 
    MeanParams : array[1..3] of shortstring = ('ELVD_MEAN','SLPD_MEAN','RUFD_MEAN');
    StdDevParams : array[1..3] of shortstring = ('ELVD_STD','SLPD_STD','RUFD_STD');
@@ -125,10 +126,9 @@ const
 
 const
    MaxDEMIXDEM = 10;
-   MaxUnretiredDEM = 7;
+   //MaxUnretiredDEM = 7;
    NumDEMIXtestDEM : integer = 0;
    AllDEMIXTheDEMs : array[1..MaxDEMIXDEM] of shortstring = ('COP','ALOS','FABDEM','TANDEM','COAST','DILUV','DELTA','SRTM','NASA','ASTER');
-   AllunretiredDEMs : array[1..MaxUnretiredDEM] of shortstring = ('COP','ALOS','FABDEM','TANDEM','COAST','DILUV','DELTA');
 
 type
    tDEMIXindexes = array[1..MaxDEMIXDEM] of integer;
@@ -139,6 +139,9 @@ var
    DEMIXshort : array[1..MaxDEMIXDEM] of shortstring;
    DEMIXDEMcolors : array[1..MaxDEMIXDEM] of tPlatformColor;
    UseRetiredDEMs : array[1..MaxDEMIXDEM] of boolean;
+   CriteriaFamily : shortstring;
+   DEMIXModeName : shortstring;
+
 const
    Ref1SecPointStr = '_ref_1sec_point';
    Ref1SecAreaStr =  '_ref_1sec_area';
@@ -151,8 +154,6 @@ const
             NumAreaDEMs : integer = 1;
             PossPt = 8;
             PossArea = 2;
-
-            DEMIXsymsize : integer = 5;
 
          //the newer code using a set of arrays for the point and area DEMs, which can have corresponding array for derived grids like slope
          //-1 for the high latitude (currently none for area grid),
@@ -169,8 +170,6 @@ const
             AreaGrids2,PointGrids2,  //used for parameters created at the same time (slope/roughness, openness upward and downward
             PtSSIMGrids, AreaSSIMGrids : tDEM_int_array;
             dmxFirstPoint,dmxFirstArea : integer;
-            DEMIXModeName : shortstring;
-
 
          procedure ZeroPointAndAreaGrids(var PointGrids,AreaGrids : tDEM_int_array; InitValue : integer = 0);
          function RefGridForThisPointGrid(WhatGroup : tDEM_int_array; i : integer) : integer;
@@ -194,20 +193,15 @@ const
    yasBestEval = 4;
    yasBarren = 5;
    yasForest = 6;
-   yasBestEvalByCriterion = 7;
+   //yasBestEvalByCriterion = 7;
    yasBestEvalColoredBySlope = 8;
-   yasBestEvalFilteredBySlope = 9;
-   xawEvaluation = 0;
-   xawScore = 1;
-   yawArea = 0;
-   yawTile = 1;
-   DEMIX_combined_graph : boolean = false;
+   //yasBestEvalFilteredBySlope = 9;
+   //xawEvaluation = 0;
+   //xawScore = 1;
+   //yawArea = 0;
+   //yawTile = 1;
+   //DEMIX_combined_graph : boolean = false;
    MovieByTestDEM : boolean = false;
-   PanelsByTestDEM : boolean = false;
-   DEMIX_Tile_Full : byte = 75;
-var
-   XAxisWhat,YAxisWhat,YAxisSort,YaxisTileOrArea : integer;
-   DEMIXVertAxisLabel : ANSIstring;
 
 var
    RefDEMs,TestDEMs,
@@ -220,36 +214,23 @@ var
    DEMIX_DB,HalfSecRefDTM,HalfSecRefDSM,HalfSecDTM,HalfSecALOS,HalfSecCOP,
    DEMIXRefDEM,RefDTMpoint,RefDTMarea,RefDSMpoint,RefDSMarea, COPRefDTM, COPRefDSM : integer;
 
+
    DEMIX_final_DB_dir,
 
-   SSIMresultsDir, FUVresultsDir, //used internally, and set to one of the next three depending on which version is on
-   //DeltaSSIMresultsDir, DiluvSSIMresultsDir, RegularSSIMresultsDir,CoastalSSIMresultsDir,
-   //DeltaFUVresultsDir, DiluvFUVresultsDir, RegularFUVresultsDir,CoastalFUVresultsDir,
-
+   SSIMresultsDir, FUVresultsDir, //set according to the mode
 
    MD_out_ref_dir,MD_out_test_dir,
    wbt_out_ref_dir,wbt_out_test_dir,
    saga_out_ref_dir,saga_out_test_dir,
+   Stream_valley_dir,
 
-   (*
-   DEMIX_wbt_test_DEM_output,DEMIX_wbt_ref_DEM_output,
-   DEMIX_saga_test_DEM_output,DEMIX_saga_ref_DEM_output,
-   *)
-
-
-   DEMIX_Ref_1sec,DEMIX_Ref_dsm_1sec,DEMIX_test_dems,DEMIX_diluvium_dtms,DEMIX_delta_dtms,DEMIX_coastal_dtms,  //locations for the 1" DEMs used in comparison
+   DEMIX_Ref_1sec,DEMIX_Ref_dsm_1sec,DEMIX_test_dems,
+   DEMIX_Under_ref_dtm,DEMIX_Under_test_dems,                //locations for the 1" DEMs used in comparison
+   DEMIX_diluvium_dtms,DEMIX_delta_dtms,DEMIX_coastal_dtms,  //used for inventories, when mixing comparison modes
 
    DEMIX_Ref_Half_sec,
    DEMIX_Base_DB_Path,
    DEMIX_profile_test_dir,
-
-  {$IfDef DEMIX_SAGA_channels}
-      //directories for channel criterion calculations, currently replaced with Python WbW creation
-      DEMIX_test_DEMs_no_sink, DEMIX_ref_DEMs_no_sink,
-      DEMIX_test_DEMs_channels, DEMIX_ref_DEMs_channels,
-      DEMIX_test_DEMs_channel_grids, DEMIX_ref_DEMs_channel_grids,
-   {$EndIf}
-
 
    GeomorphonsDir,
    ChannelMissesDir,DEMIX_diff_dist,
@@ -258,7 +239,6 @@ var
 
    DEMIX_area_dbName,
    DEMIX_criteria_dbName,
-   //DEMIX_Ref_Source,
    DEMIX_Ref_Merge,
    DEMIX_GIS_dbName,
 
@@ -271,7 +251,16 @@ var
    LocalDatumAddFName,LocalDatumSubFName,
    RefDSMPointFName,RefDSMareaFName,RefDTMPointFName,RefDTMareaFName, COPRefDTMFName,COPRefDSMFName : PathStr;
 
-function DEMIX_mode_abbreviation(DEMIX_mode : integer) : shortstring;
+  {$IfDef DEMIX_SAGA_channels}
+      //directories for channel criterion calculations, currently replaced with Python WbW creation
+      DEMIX_test_DEMs_no_sink, DEMIX_ref_DEMs_no_sink,
+      DEMIX_test_DEMs_channels, DEMIX_ref_DEMs_channels,
+      DEMIX_test_DEMs_channel_grids, DEMIX_ref_DEMs_channel_grids : PathStrl
+   {$EndIf}
+
+
+
+//function DEMIX_mode_abbreviation(DEMIX_mode : integer) : shortstring;
 
 
 //create or edit database
@@ -280,7 +269,7 @@ function DEMIX_mode_abbreviation(DEMIX_mode : integer) : shortstring;
    procedure ComputeDEMIX_Diff_Dist_tile_stats(Overwrite : boolean);
    procedure CreateDEMIX_GIS_database_by_transposing(Overwrite : boolean);
    procedure RankDEMS(DBonTable : integer);
-   procedure SumsOfRankDEMS(DBonTable : integer);
+   function AverageScoresOfDEMs(DBonTable : integer; DEMs : tStringList; Ext : ExtStr = '_SCR'; Filters : tStringList = nil; Labels : tStringList = Nil) : integer;
    procedure AddFilteredRankID(DBonTable : integer);
    procedure ModeOfDifferenceDistributions;
    procedure AddTileCharacteristicsToDB(DBonTable : integer);
@@ -289,14 +278,12 @@ function DEMIX_mode_abbreviation(DEMIX_mode : integer) : shortstring;
 
    procedure EvalRangeAndBestEvalForCriterion(DBonTable : integer);
    procedure CreateFinalDB;
-   procedure AddCountryAreaToDB(DB : integer);
-   procedure MergeCSVtoCreateFinalDB(CSVdir : PathStr;FileDescription,dbName : shortstring);
+   procedure MergeCSV(Mode : integer);
    procedure AddPercentPrimaryData(DBonTable : integer);
-   //procedure AddAreaToDB(DBonTable : integer);
 
 
 //clusters function
-   procedure TileCharateristicsWhiskerPlotsByCluster(DBonTable : integer; NoFiltering : boolean; SingleCriterion : shortstring = '');
+   procedure TileCharateristicsWhiskerPlotsByCluster(DBonTable : integer; NoFilteringToGetAllTiles : boolean; FilterToUse : tStringList = Nil; {UseStringsInCriterion : boolean = false;} SingleCriterion : shortstring = '');
    procedure DEMIX_COP_clusters_tile_stats(DBonTable : integer);
    procedure DEMIX_clusters_per_tile(DBonTable : integer);
 
@@ -308,7 +295,6 @@ function DEMIX_mode_abbreviation(DEMIX_mode : integer) : shortstring;
 //create reference DEMs
    procedure DEMIX_CreateReferenceDEMsFromSource(Overwrite : boolean; DataDirs : tStringList = Nil);
    procedure DEMIX_GDAL_Ref_DEM_datum_shift(Overwrite : boolean; DataDirs : tStringList = Nil);
-   //procedure DEMIXRef_DEM_create_full_chain(overwrite : boolean);
    procedure DEMIX_Ref_DEM_full_chain(overwrite : boolean);
    procedure ShifDEMsto_UTM_WGS84_EGM2008(Overwrite : boolean; DataDirs : tStringList = Nil);
    procedure DEMIX_MergeReferenceDEMs(Overwrite : boolean; DataDirs : tStringList = Nil);
@@ -317,7 +303,6 @@ function DEMIX_mode_abbreviation(DEMIX_mode : integer) : shortstring;
 
 
 //create reference DEMs, non-3DEP
-   //procedure DEMIX_merge_Visioterra_source(AreaName : shortstring = '');
    procedure DEMIX_merge_source(Areas : tStringList = Nil);
    procedure DEMIX_CreateReferenceDEMs(Overwrite : boolean; ResampleMode : byte; Areas : tStringList = Nil);
    procedure DEMIXCreateHalfSecRefDEMs(AreaName : shortstring = '');
@@ -332,7 +317,6 @@ function DEMIX_mode_abbreviation(DEMIX_mode : integer) : shortstring;
    procedure CreateTestAreaDEMs(Overwrite : boolean);
    procedure AllHallucinatingDTMsforCoastalAreas(Overwrite : boolean);
 
-
 //inventory and reports
    procedure DEMIXTileSummary(DBonTable : integer);
    procedure DEMIXtile_inventory(DBonTable : integer);
@@ -341,10 +325,7 @@ function DEMIX_mode_abbreviation(DEMIX_mode : integer) : shortstring;
    procedure CheckTestDEMs;
    procedure Inventory3DEPtiles;
    procedure CheckReferenceDEMsAreEGMandPixelIs;
-   {$IfDef DEMIX_SAGA_channels} procedure InventoryChannelDataByArea; {$EndIf}
    procedure CheckLowElevationAreas;
-   //procedure CheckDeltaDTMAreas;
-   procedure VerifyAllMapsReadyForSSIM;
    procedure VerifyTestDEMcoverages;
    procedure ComputeDEMIX_Summary_stats_DB;
    procedure InventoryDEMIX_SSIM_FUV_Stats;
@@ -361,15 +342,17 @@ function DEMIX_mode_abbreviation(DEMIX_mode : integer) : shortstring;
    procedure PruneMisnamedReferenceDTMs;
    procedure TilesInEachElevRangeForTestAreas;
    procedure AddColorsForUnderDBs(DBonTable : integer);
+   procedure InventoryAreasAndTilesByCountry(DB : integer);
+   {$IfDef DEMIX_SAGA_channels} procedure InventoryChannelDataByArea; {$EndIf}
 
 
 procedure ClassificationAgreement(Overwrite : boolean; AreasWanted : tstringlist = nil);
 
 
-//channel network comparisons
-  // function ChannelSHPToGrid(DEM,db : integer; fName : PathStr; PlotOrder : integer = 1) : integer;
+//vector (channel network, ridges, valleys) comparisons
    procedure CompareChannelNetworks(Overwrite : boolean; Area : shortstring);
    procedure ChannelNetworkMissPercentages(Overwrite : boolean; AreasWanted : tstringlist = nil);
+   procedure DEMIX_CreateGridsFromVectors(Overwrite : boolean);
 
    {$IfDef DEMIX_SAGA_channels}
       procedure CreateChannelNetworkGridsFromVectors(Overwrite : boolean; AreasWanted : tstringlist = nil);
@@ -398,8 +381,7 @@ procedure ClusterCompositionByDBfield(DBonTable : integer);
 procedure ClusterFrequencyForSelectedField(DBonTable : integer);
 procedure AreasInClusters(DB : integer);
 
-procedure FilterTableForDEMIXevaluation(DBonTable,Value : integer);
-
+procedure FilterTableForDEMIXevaluation(DBonTable,Value : integer; anOperator : shortString = '<=');
 
 //links to other programs
    function OpenGridsCreatedByExternalProgram(OpenMaps : boolean; aProgram,AreaName,Param : shortString; var PointGrids,AreaGrids : tDEM_int_array) : boolean;
@@ -409,14 +391,13 @@ procedure FilterTableForDEMIXevaluation(DBonTable,Value : integer);
    function SAGACreateDEMIX_ConIn_Grids(OpenMaps : boolean; AreaName,aParam : shortstring) : boolean;
 
 
-procedure MapsByClusterAndDEM(DBonTable : integer);
 
 procedure ClearDerivedGrids;
 
 function ExternalProgramOutPutFile(i : integer; aProgram,Param,AreaName : shortstring; IsPoint : boolean) : PathStr;
 procedure MakeTerrainGridsFromMICRODEM(DataDir : PathStr; DEMIndex : integer; IsPoint : boolean);
 
-         function LinkedGraphofCriteriaEvaluations(DBonTable : integer; What : shortstring; ClusterOption : boolean): tThisBaseGraph;
+function LinkedGraphofCriteriaEvaluations(DBonTable : integer; What : shortstring; ClusterOption : boolean): tThisBaseGraph;
 
 
 
@@ -445,58 +426,19 @@ uses
 
 {$include demix_external_program_derived_grids.inc}
 
-
-procedure MapsByClusterAndDEM(DBonTable : integer);
-const
-   PlotOrder : array[1..7] of shortstring = ('COP','TANDEM','FABDEM','ALOS','NASA','SRTM','ASTER');
-var
-   DEM,Cluster,NCluster : integer;
-   Panels : tStringList;
-   fName : PathStr;
-   aFilter : shortstring;
-   bmp : tMyBitmap;
-begin
-    Panels := tStringList.Create;
-    GISdb[DBontable].EmpSource.Enabled := false;
-    NCluster := GISdb[DBontable].MyData.NumUniqueEntriesInDB('CLUSTER');
-    if GISdb[DBontable].MyData.FieldExists('CLUSTER') and GISdb[DBontable].MyData.FieldExists('DEM') then begin
-       for DEM := 1 to NumDEMIXtestDEM  do begin
-          for Cluster := 1 to NCluster do begin
-             aFilter := 'DEM=' + QuotedStr(PlotOrder[DEM]) + ' AND CLUSTER=' + IntToStr(Cluster);
-             GISdb[DBontable].ApplyGISFilter(aFilter);
-             GISdb[DBontable].RedrawLayerOnMap;
-             fName := NextFileNumber(MDtempDir,'dem_cluster_map_','.bmp');
-             //SaveImageAsBMP(GISdb[DBontable].TheMapOwner.Image1,fName);
-             GISdb[DBontable].TheMapOwner.Image1.Canvas.Font.Size := 14;
-             aFilter := aFilter + ' (n=' + IntToStr(GISdb[DBontable].MyData.FiltRecsInDB) + ')';
-             GISdb[DBontable].TheMapOwner.Image1.Canvas.TextOut(5,GISdb[DBontable].TheMapOwner.Image1.Height - 30,aFilter);
-             GISdb[DBontable].TheMapOwner.OutlineMap;
-             CopyImageToBitmap(GISdb[DBontable].TheMapOwner.Image1,bmp);
-             if DEM < NumDEMIXtestDEM then bmp.Width := bmp.Width + 10;
-             if Cluster < nCluster then bmp.Height := bmp.height + 10;
-             bmp.SaveToFile(fName);
-             Panels.Add(fName);
-          end;
-       end;
-       GISdb[DBontable].ClearGISFilter;
-       MakeBigBitmap(Panels,'','',NCluster);
-    end
-    else begin
-       MessageToContinue('Required fields CLUSTER and DEM');
-    end;
-end;
-
+(*
 function DEMIX_mode_abbreviation(DEMIX_mode : integer) : shortstring;
 begin
    case DEMIX_mode of
-      dmClassic : Result := 'FULL';
-      dmAddCoastal : Result := 'U120';
-      dmAddDiluvium : Result := 'U80';
-      dmAddDelta : Result := 'U10';
+      dmFull : Result := 'FULL';
+      dmU120 : Result := 'U120';
+      dmU80 : Result := 'U80';
+      dmU10 : Result := 'U10';
    end;
 end;
+*)
 
-procedure FilterTableForDEMIXevaluation(DBonTable,Value : integer);
+procedure FilterTableForDEMIXevaluation(DBonTable,Value : integer; anOperator : shortString = '<=');
 var
    i : integer;
    aFilter : shortstring;
@@ -505,8 +447,8 @@ var
    procedure CheckFieldForFilter(fName : shortstring);
    begin
       if GISdb[DBonTable].MyData.FieldExists(fName) then begin
-         if length(aFilter) > 0 then aFilter := aFilter + ' OR ';
-         aFilter := aFilter + fname + '<=' + IntToStr(Value);
+         if (length(aFilter) > 0) then aFilter := aFilter + ' OR ';
+         aFilter := aFilter + fname + anOperator + IntToStr(Value);
       end;
    end;
 
@@ -575,7 +517,8 @@ var
 
 begin
    if (not GISdb[DB].MyData.FieldExists('TOLERANCE')) then begin
-      RankDEMS(DB);
+      if AnswerIsYes('Rank DEMs to get TOLERANCEs') then RankDEMS(DB)
+      else exit;
    end;
    //Outcomes := tStringList.Create;
    GISdb[DB].EmpSource.Enabled := false;

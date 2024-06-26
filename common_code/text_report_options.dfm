@@ -4,29 +4,27 @@ object ReportOptionsForm: TReportOptionsForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Text/CSV Report Options'
-  ClientHeight = 159
-  ClientWidth = 198
+  ClientHeight = 192
+  ClientWidth = 208
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
-  OldCreateOrder = False
   Position = poDefaultSizeOnly
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Label4: TLabel
     Left = 8
-    Top = 98
+    Top = 122
     Width = 51
     Height = 13
     Caption = 'Thin factor'
   end
   object OKBtn: TBitBtn
     Left = 8
-    Top = 122
+    Top = 146
     Width = 77
     Height = 27
     Kind = bkOK
@@ -40,8 +38,8 @@ object ReportOptionsForm: TReportOptionsForm
   object RadioGroup1: TRadioGroup
     Left = 8
     Top = 8
-    Width = 113
-    Height = 81
+    Width = 121
+    Height = 105
     Caption = 'Field separators'
     ItemIndex = 1
     Items.Strings = (
@@ -53,7 +51,7 @@ object ReportOptionsForm: TReportOptionsForm
   end
   object HelpBtn: TBitBtn
     Left = 93
-    Top = 122
+    Top = 146
     Width = 76
     Height = 27
     Kind = bkHelp
@@ -66,7 +64,7 @@ object ReportOptionsForm: TReportOptionsForm
   end
   object Edit1: TEdit
     Left = 80
-    Top = 95
+    Top = 119
     Width = 49
     Height = 21
     TabOrder = 3
@@ -75,7 +73,7 @@ object ReportOptionsForm: TReportOptionsForm
   end
   object UpDown1: TUpDown
     Left = 152
-    Top = 91
+    Top = 115
     Width = 17
     Height = 25
     TabOrder = 4

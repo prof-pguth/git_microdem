@@ -4,7 +4,7 @@ unit veg_density;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -54,7 +54,6 @@ implementation
 
 uses
    DEMCoord,Petmar,PetMath,PetImage,
-   //Read_dem,
    DEMMapDraw,
    DEM_Manager,
    point_cloud_options,las_lidar;
@@ -78,7 +77,7 @@ var
             y := VegGraph.GraphDraw.GraphY(i);
             if (not DEMGlb[VegLayers[i]].GetElevMeters(xg+j,yg+k,z)) then z := 0;
             x := VegGraph.GraphDraw.GraphX(z);
-            if i = 1 then VegGraph.Image1.Canvas.MoveTo(x,y)
+            if (i = 1) then VegGraph.Image1.Canvas.MoveTo(x,y)
             else VegGraph.Image1.Canvas.LineTo(x,y);
          end;
       end;

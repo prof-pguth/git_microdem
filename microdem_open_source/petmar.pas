@@ -390,7 +390,6 @@ procedure ReadDefault(Prompt : ShortString;  var WordVal : word); overload;
 
 
 // print routines
-
       {$IfDef ExPrintFile}
       {$Else}
          procedure PrintImageToSpecifiedSize(Image1 : TImage; PrinterXInches,PrinterYInches : float64);

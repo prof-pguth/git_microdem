@@ -8,6 +8,114 @@
 {____________________________________}
 
 
+function MakeFiltersForCluster(DBonTable : integer; IncludeBaseFilter : boolean) : tStringList;
+var
+   UniqueEntries : tStringList;
+   BaseFilter,aField,TStr : shortstring;
+   i : integer;
+begin
+   if IncludeBaseFilter then BaseFilter := GISdb[DBonTable].MyData.Filter else BaseFilter := '';
+   Result := tStringList.Create;
+   GISdb[DBonTable].EmpSource.Enabled := false;
+   if GISdb[DBonTable].MyData.FieldExists('GROUP') then aField := 'GROUP'
+   else aField := 'CLUSTER';
+   UniqueEntries := GISdb[DBonTable].MyData.ListUniqueEntriesInDB(aField);
+   for i := 0 to pred(UniqueEntries.Count) do begin
+      if aField = 'GROUP' then TStr := QuotedStr(UniqueEntries.Strings[i])
+      else TStr := UniqueEntries.Strings[i];
+      Result.Add(PetDBUtils.AddAndIfNeeded(BaseFilter) + aField + '=' + TStr);
+   end;
+   UniqueEntries.Destroy;
+end;
+
+
+procedure ClusterMapLocation(DBonTable : integer; TheFilters : tStringList = nil);
+var
+   i : integer;
+   Results : tStringList;
+   fName : PathStr;
+   BaseFilter : shortstring;
+   Bitmap : tMyBitmap;
+begin
+   if (GISdb[DBonTable].theMapOwner = Nil) then begin
+      MessageToContinue('DB must be plotted on a map');
+   end
+   else begin
+      {$IfDef RecordClustering} WriteLineToDebugFile('Clustermaplocations1Click in'); {$EndIf}
+      SaveBackupDefaults;
+      BaseFilter := GISdb[DBonTable].MyData.Filter;
+
+      if (TheFilters = Nil) then begin
+         TheFilters := MakeFiltersForCluster(DBonTable,false);
+      end;
+
+      Results := tStringList.Create;
+      for i := 0 to pred(TheFilters.Count) do begin
+         GISdb[DBonTable].MyData.ApplyFilter(TheFilters.Strings[i]);
+         MDDef.MapNameLocation.DrawItem := true;
+         MDDef.MapNameLocation.MapPosition := lpSEmap;
+         GISdb[DBonTable].theMapOwner.MapDraw.GrayscaleWorldOutline := true;
+         GISdb[DBonTable].theMapOwner.MapDraw.SubdueWorldOutline := true;
+         GISdb[DBonTable].theMapOwner.MapDraw.BaseTitle := GISdb[DBonTable].MyData.Filter  + '  (n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) +')';
+         GISdb[DBonTable].theMapOwner.DoCompleteMapRedraw;
+         GISdb[DBonTable].dbOpts.DBAutoShow := dbasColorField;
+         GISdb[DBonTable].theMapOwner.OutlineMap;
+         CopyImageToBitmap(GISdb[DBonTable].theMapOwner.Image1,Bitmap);
+         fName := MDTempDir + 'clusters_map_' + IntToStr(i) + '.bmp';
+         Bitmap.SaveToFile(fName);
+         Results.Add(fName);
+      end;
+      MakeBigBitmap(Results,'','',3);
+      GISdb[DBonTable].ApplyGISFilter(BaseFilter);
+      GISdb[DBonTable].theMapOwner.MapDraw.BaseTitle := '';
+      GISdb[DBonTable].theMapOwner.DoCompleteMapRedraw;
+      GISdb[DBonTable].ShowStatus;
+      RestoreBackupDefaults;
+      {$IfDef RecordClustering} WriteLineToDebugFile('Clustermaplocations1Click out'); {$EndIf}
+   end;
+end;
+
+
+procedure MapsByClusterAndDEM(DBonTable : integer);
+const
+   PlotOrder : array[1..7] of shortstring = ('COP','TANDEM','FABDEM','ALOS','NASA','SRTM','ASTER');
+var
+   DEM,Cluster,NCluster : integer;
+   Panels : tStringList;
+   fName : PathStr;
+   aFilter : shortstring;
+   bmp : tMyBitmap;
+begin
+    Panels := tStringList.Create;
+    NCluster := GISdb[DBontable].MyData.NumUniqueEntriesInDB('CLUSTER');
+    if GISdb[DBontable].MyData.FieldExists('CLUSTER') and GISdb[DBontable].MyData.FieldExists('DEM') then begin
+       GISdb[DBontable].EmpSource.Enabled := false;
+       for DEM := 1 to NumDEMIXtestDEM  do begin
+          for Cluster := 1 to NCluster do begin
+             aFilter := 'DEM=' + QuotedStr(PlotOrder[DEM]) + ' AND CLUSTER=' + IntToStr(Cluster);
+             GISdb[DBontable].ApplyGISFilter(aFilter);
+             GISdb[DBontable].RedrawLayerOnMap;
+             fName := NextFileNumber(MDtempDir,'dem_cluster_map_','.bmp');
+             GISdb[DBontable].TheMapOwner.Image1.Canvas.Font.Size := 14;
+             aFilter := aFilter + ' (n=' + IntToStr(GISdb[DBontable].MyData.FiltRecsInDB) + ')';
+             GISdb[DBontable].TheMapOwner.Image1.Canvas.TextOut(5,GISdb[DBontable].TheMapOwner.Image1.Height - 30,aFilter);
+             GISdb[DBontable].TheMapOwner.OutlineMap;
+             CopyImageToBitmap(GISdb[DBontable].TheMapOwner.Image1,bmp);
+             if DEM < NumDEMIXtestDEM then bmp.Width := bmp.Width + 10;
+             if (Cluster < nCluster) then bmp.Height := bmp.height + 10;
+             bmp.SaveToFile(fName);
+             Panels.Add(fName);
+          end;
+       end;
+       GISdb[DBontable].ClearGISFilter;
+       MakeBigBitmap(Panels,'','',NCluster);
+    end
+    else begin
+       MessageToContinue('Required fields CLUSTER and DEM');
+    end;
+end;
+
+
 
 procedure DoKMeansClustering(DBonTable : integer);
 var
@@ -376,6 +484,7 @@ var
 
       {$IfDef RecordClustering} WriteLineToDebugFile('DB created'); {$EndIf}
 
+      (*
       if GISdb[DBonTable].LatLongFieldsPresent and (GISdb[DBonTable].TheMapOwner <> Nil) then begin
          fName := Petmar.NextFileNumber(ExtractFilePath(GISdb[DBonTable].dbFullName),'Cluster_stats_' + GISdb[DBonTable].dbName + '_',DefaultDBExt);
          {$IfDef RecordClustering} WriteLineToDebugFile('save and open ' + fName); {$EndIf}
@@ -384,6 +493,7 @@ var
          GISdb[DBonTable].dbOpts.dbAutoShow := dbasColorByString;
          GISdb[DBonTable].RedrawLayerOnMap;
       end;
+      *)
 
       //if MDDef.ShowClusterResults then Petmar.QuickOpenEditWindow(MDTempDir + 'Clster_Results.HTML','Cluster results');
       wmDEM.SetPanelText(0,'');

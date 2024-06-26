@@ -79,9 +79,12 @@ var
 begin
    for j := MaxDataBase downto 1 do begin
       i := DBPlotOrder[j];
-      if ValidDB(i) and (GISdb[i].MyData.FiltRecsInDB > 0) then begin
-         if (GISdb[i].LayerIsOn) and DBPlotNow[i] and ( (DBonThisMap[i]) or (MDdef.DBsOnAllMaps and ( not GISdb[i].ShowLocalMapOnly))) then begin
-            PlotDBLegend(i,Bitmap);
+      if ValidDB(i) then begin
+         {$IfDef RecordMapDrawLegends} WriteLineToDebugFile('TMapDraw.PlotDataBaseLegends ' + GISdb[i].DBName); {$EndIf}
+         if (GISdb[i].MyData.FiltRecsInDB > 0) then begin
+            if (GISdb[i].LayerIsOn) and DBPlotNow[i] and ( (DBonThisMap[i]) or (MDdef.DBsOnAllMaps and (not GISdb[i].ShowLocalMapOnly))) then begin
+               PlotDBLegend(i,Bitmap);
+            end;
          end;
       end;
    end;
@@ -156,6 +159,7 @@ begin
    end;
    {$IfDef RecordDBPlot} WriteLineToDebugFile('TGISDataBase.PlotDataBase out, ' + DBName + '   Mode=' + IntToStr(dbOpts.DBAutoShow) + '  Recs=' + IntToStr(MyData.RecordCount)); {$EndIf}
 end;
+
 
 
 procedure TMapDraw.PlotDataBases(var Bitmap : tMyBitmap);

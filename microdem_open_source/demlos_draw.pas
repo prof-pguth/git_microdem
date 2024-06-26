@@ -213,15 +213,15 @@ begin
 end;
 
 
-      procedure tLOSdraw.SetSize(var Bitmap : tMybitmap; x,y : integer);
-      begin
-         if MDDef.LOSLeftTixLabels then StartLOSLeft := 10 + Bitmap.Canvas.TextWidth('10000') else StartLOSLeft := 10;
-         StartLOSDown := 25;
-         if (LOSVariety = losSimpleMagModel) then PixelsHigh := PixelsHigh div 2;
-         ProfileBot := y - 50;
-         PixelsHigh := ProfileBot - StartLOSDown;
-         PixLong := x - 105 - StartLOSLeft;
-      end;
+procedure tLOSdraw.SetSize(var Bitmap : tMybitmap; x,y : integer);
+begin
+   if MDDef.LOSLeftTixLabels then StartLOSLeft := 10 + Bitmap.Canvas.TextWidth('10000') else StartLOSLeft := 10;
+   StartLOSDown := 25;
+   if (LOSVariety = losSimpleMagModel) then PixelsHigh := PixelsHigh div 2;
+   ProfileBot := y - 50;
+   PixelsHigh := ProfileBot - StartLOSDown;
+   PixLong := x - 105 - StartLOSLeft;
+end;
 
 
 
@@ -337,7 +337,7 @@ begin
         end;
 
         if (MDdef.ShowPointCloundOnProfile = spcPoints) then begin
-          {$IfDef RecordLOS} WriteLineToDebugFile('TDEMLOSF.OverlayProfilePointCloud, sVXPoints'); {$EndIf}
+            {$IfDef RecordLOS} WriteLineToDebugFile('TDEMLOSF.OverlayProfilePointCloud, sVXPoints'); {$EndIf}
             SymSize := MDDef.CloudSymbol[1].Size;
             with LOSMemoryPointCloud[PtCldInUse] do begin
                rgbColor := ConvertTColorToPlatformColor(clAqua);
@@ -401,18 +401,14 @@ begin
       end;
       LOSProfileDB := 0;
 
-      {$IfDef VCL}
-         fName := NextFileNumber(MDTempDir, DEMGlb[DEMonView].AreaName + '_los_',DefaultDBExt);
-      {$Else}
-         fName := NextFileNumber(MDTempDir,'topo_los_',DefaultDBExt);
-      {$EndIf}
+      fName := NextFileNumber(MDTempDir, DEMGlb[DEMonView].AreaName + '_los_',DefaultDBExt);
 
    if (not MDdef.LOSVisible) and (not MDdef.DrawLOS) then begin
       LOSCalculation := tLOSCalculation.Create;
       LOSProfileDB := LosCalculation.SimpleProfileExecuteDB(fName,DEMonView,LatLeft,LongLeft,LatRight,LongRight);
       LosCalculation.Destroy;
    end
-   else begin;
+   else begin
 
          {$If Defined(RecordLOS) or Defined(RecordLOSDraw)} WriteLineToDebugFile('Create=' + fName); {$EndIf}
 
@@ -1201,7 +1197,8 @@ var
    DropCurve : float64;
    VegHt : float32;
    Color : tPlatformColor;
-   IsPeak,IsPit,VisPoints : tBooleans;
+   //IsPeak,IsPit,
+   VisPoints : tBooleans;
    ch : char;
    NeedToCheckPointCloud : boolean;
    NeedZ,xgrids,ygrids,dists,elevs : ^Petmath.bfarray32;
@@ -1526,9 +1523,10 @@ end;
 
 function tLOSCalculation.SimpleProfileExecuteDB(fName : PathStr; DEMonView : integer; LatLeft,LongLeft,LatRight,LongRight : float64) : integer;
 var
-   i,j,VegLayer,NumPts,NumPts2 : integer;
+   i,j{,VegLayer,NumPts,NumPts2} : integer;
    LOSLen,LOSAzimuth,Lat,Long,DropCurve : float64;
-   NeedZ,xgrids,ygrids,dists,elevs : ^Petmath.bfarray32;
+   //NeedZ,
+   xgrids,ygrids,dists,elevs : ^Petmath.bfarray32;
    VisPoints : tBooleans;
    Results : tStringList;
 begin

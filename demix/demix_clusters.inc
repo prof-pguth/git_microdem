@@ -97,10 +97,11 @@ begin
 end;
 
 
-procedure TileCharateristicsWhiskerPlotsByCluster(DBonTable : integer; NoFiltering : boolean; SingleCriterion : shortstring = '');
+procedure TileCharateristicsWhiskerPlotsByCluster(DBonTable : integer; NoFilteringToGetAllTiles : boolean; FilterToUse : tStringList = Nil; SingleCriterion : shortstring = '');
 //makes 7 graphs, one per tile characteristic, for all of the clusters
 //if no filtering, does for all the tiles in the DB
 var
+   //StringsToUse,
    GraphImages : tStringList;
    FieldWanted,BaseFilter : shortstring;
 
@@ -122,54 +123,82 @@ var
             end;
          end;
 
+
       begin
          if GISdb[DBonTable].MyData.FieldExists(Param) then begin
+            BaseFilter := GISdb[DBonTable].MyData.Filter;
             Stats := tStringList.Create;
             Stats.Add(MomentStr);
-            if NoFiltering then begin
-               DoOneCluster(BaseFilter,DEMIX_mode_abbreviation(MDDef.DEMIX_mode) + ' tiles');
+            if NoFilteringToGetAllTiles then begin
+               DoOneCluster(BaseFilter,DEMIXmodeName + ' tiles');
             end
             else begin
-               for i := 1 to 15 do begin  //loop through clusters, quantiles
-                  aFilter := FieldWanted + '=' + IntToStr(i);
-                  if (BaseFilter <> '') then aFilter := BaseFilter + ' AND ' + aFilter;
-                  DoOneCluster(aFilter,FieldWanted + IntegerToString(i,3));
+
+               for i := 0 to pred(FilterToUse.Count) do begin
+                  if (FilterToUse[i] = '') then aFilter := BaseFilter
+                  else begin
+                     aFilter := FilterToUse[i];
+                     if (BaseFilter <> '') then aFilter := BaseFilter + ' AND ' + aFilter;
+                  end;
+                  DoOneCluster(aFilter,FilterToUse[i]);
                end;
             end;
-            fName := NextFileNumber(MDTempDir,DEMIX_mode_abbreviation(MDDef.DEMIX_mode) + '_' + SingleCriterion + '_' + Param,'.dbf');
-            db := StringList2CSVtoDB(Stats,fName);
+            fName := NextFileNumber(MDTempDir,DEMIXmodeName + '_' + SingleCriterion + '_' + Param,'.dbf');
+            db := StringList2CSVtoDB(Stats,fName,false,false,false);
             Result := StartBoxPlot(db);
+            (*
             fName := MDTempDir + SingleCriterion + Param + '.bmp';
             SaveImageAsBMP(Result.Image1,fName);
             GraphImages.Add(fName);
+            *)
+            GISdb[DBonTable].ApplyGISFilter(BaseFilter);
          end
          else Result := Nil;
       end;
 
 var
-   Graph : array[1..7] of  tThisBaseGraph;
+   Graph : array[1..9] of tThisBaseGraph;
    i : integer;
+   OverallBaseFilter : shortstring;
    fName : PathStr;
+   //LeftStart : integer;
+   GraphPanelsWide,GraphPanelsHigh : integer;
+   BigBitmap,LegBMP : tMyBitmap;
 begin
-   if (SingleCriterion <> '') then BaseFilter := 'CRITERION=' + QuotedStr(SingleCriterion)
-   else BaseFilter := GISdb[DBonTable].MyData.Filter;
-   if (not NoFiltering) then begin
+   OverallBaseFilter := GISdb[DBonTable].MyData.Filter;
+   if (not NoFilteringToGetAllTiles) then begin
       if GISdb[DBonTable].MyData.FieldExists('CLUSTER') then FieldWanted := 'CLUSTER'
       else if GISdb[DBonTable].MyData.FieldExists('NUM_CLUSTR') then FieldWanted := 'NUM_CLUSTR'
       else if GISdb[DBonTable].MyData.FieldExists('QUARTILE') then FieldWanted := 'QUARTILE'
       else FieldWanted := '';
    end;
    GraphImages := tStringList.Create;
-   for i := 1 to 7 do Graph[i] := OneGraph(TileCharacters[i]);
-   if GISdb[DBonTable].MyData.FieldExists('COP_PDF') then OneGraph('COP_PDF');
-   if GISdb[DBonTable].MyData.FieldExists('COP_PDF') then OneGraph('ALOS_PDF');
+   for i := 1 to 7 do begin
+      Graph[i] := OneGraph(TileCharacters[i]);
+      AddGraphToBigBitmap(i,{LeftStart,}3,3,Graph[i],BigBitmap);
+   end;
+
+   if GISdb[DBonTable].MyData.FieldExists('COP_PDF') then begin
+      Graph[8] := OneGraph('COP_PDF');
+      AddGraphToBigBitmap(8,{LeftStart,}3,3,Graph[8],BigBitmap);
+   end;
+   if GISdb[DBonTable].MyData.FieldExists('COP_PDF') then begin
+      Graph[9] := OneGraph('ALOS_PDF');
+      AddGraphToBigBitmap(9,{LeftStart,}3,3,Graph[9],BigBitmap);
+   end;
+
+   LegBMP := Nil;
+   FinishBigMap(BigBitmap,LegBMP);
+
+   (*
    fName := MDTempDir + DEMIX_mode_abbreviation(MDDef.DEMIX_mode) + SingleCriterion + '_tile_characters.png';
    if (GraphImages.Count = 0) then begin
       MessageToContinue('Add tile characteristics to DB');
       GraphImages.Destroy;
    end
    else MakeBigBitmap(GraphImages,'',fName,3);
-   GISdb[DBonTable].ApplyGISFilter(BaseFilter);
+   *)
+   GISdb[DBonTable].ApplyGISFilter(OverallBaseFilter);
 end;
 
 

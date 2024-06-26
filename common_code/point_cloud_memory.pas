@@ -4,7 +4,7 @@
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -417,7 +417,8 @@ var
    zd : float32;
    xlo,xhi,ylo,yhi, Lat,Long,CellDZ,
    PC_99,PC_95,PC_5,PC_1,xcoord,ycoord : float64;
-   WantImage,DensityGrid,i,j,x,y,db,n : integer;
+   //WantImage,
+   DensityGrid,i,j,x,y,db,n : integer;
    TStr : shortString;
    Results : tStringList;
    fName : pathStr;
@@ -556,9 +557,9 @@ end;
 
 procedure tMemoryPointCloud.GetRegionStats(Lat,Long : float64);
 var
-   xlo,xhi,ylo,yhi,xcoord,ycoord, BoxSize,z1,z2,z3 : float64;
+   xlo,xhi,ylo,yhi,xcoord,ycoord, BoxSize{,z1,z2,z3} : float64;
    i: integer;
-   TStr : shortString;
+   //TStr : shortString;
    Results,Distributions : tStringList;
    fName : pathStr;
    z : float32;
@@ -633,7 +634,7 @@ begin
          Results.Add('50 pc: ' + RealToString(zvs^[round(0.50 * MomentVar.Npts)],8,2));
          Results.Add(' 5 pc: ' + RealToString(zvs^[round(0.05 * MomentVar.Npts)],8,2));
          Results.Add('Min:   ' + RealToString(MomentVar.MinZ,8,2));
-         Results.Add('StdDev: ' + RealToString(MomentVar.sdev,8,2));
+         Results.Add('StdDev: ' + RealToString(MomentVar.std_dev,8,2));
 
          for i := 1 to MaxCompare do begin
             if (CompareDEMIndexes[i] <> 0) then DEMPercentile(CompareDEMIndexes[i],CompareDEMNames[i]);
@@ -1049,7 +1050,7 @@ end;
 
 procedure tMemoryPointCloud.LoadFromASCIIFile(fName: PathStr);
 begin
-   fName := DoCSVFileImport(fName);
+   fName := CSVFileImportToDB(fName);
    LoadFromShapeFile(fName);
 end;
 
@@ -1086,7 +1087,7 @@ var
             i,TotalRead,RecsRead,tr  : integer;
             x,y,z : float64;
             ShapePoints : ^tLotsOfPoints3D;
-            Success : boolean;
+            //Success : boolean;
          begin
             if FileExists(Name1) then begin
                TotalRead := 0;

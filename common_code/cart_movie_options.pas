@@ -36,7 +36,7 @@ type
   end;
 
 var
-  CartMovieOptsForm: TCartMovieOptsForm;
+  CartMovieOptsForm : TCartMovieOptsForm;
 
 implementation
 

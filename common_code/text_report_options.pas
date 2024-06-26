@@ -1,6 +1,6 @@
 unit text_report_options;
 
- {^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }

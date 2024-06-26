@@ -17,6 +17,7 @@ unit demix_control;
    {$Define RecordDEMIX}
    //{$Define RecordDEMIXStart}
    //{$Define RecordDEMIXopenGrids}
+   //{$Define RecordDEMIXversion}
    {$Define RecordDEMIXLoad}
    //{$Define TrackDEMboundingBox}      //must also be enabled in DEMCoord
    //{$Define Record3DEPX}
@@ -93,7 +94,7 @@ const
    function DEMIXColorForCriterion(Criterion : shortstring) : tColor;
    function WhatTestDEMisThis(fName : PathStr) : shortstring;
    function IsDEMaDSMorDTM(DEMName : ShortString) : integer;
-   function DEMIXTestDEMLegend(Horizontal : boolean = true; DEMsUsed : tstringList = nil) : tMyBitmap;
+   function DEMIXTestDEMLegend(Horizontal : boolean = true; DEMsUsed : tstringList = nil; MaxWide : integer = 9999) : tMyBitmap;
    function FilterForDEMIXtilesToUse : shortstring;
    function FilterForDEMIXtilesToAvoid : shortstring;
 
@@ -138,6 +139,9 @@ procedure DifferentRankingsByCriteria(DBonTable : integer);
    procedure WinsAndTies(DBonTable : integer);
    procedure DEMIXisCOPorALOSbetter(DBonTable : integer);
 
+function GetWinner(dbOnTable : integer; DEM1,DEM2 : shortstring) : shortstring;
+
+
    function LoadLandcoverForDEMIXarea(AreaName : shortstring; OpenMap : boolean = true) : integer;
 function ClipTheDEMtoFullDEMIXTiles(DEM : integer; NewName : PathStr = '') : boolean;
 
@@ -148,7 +152,7 @@ procedure ReinterpolateTestDEMtoHalfSec(var DEM : integer; OpenMap : boolean);
 
 function DEMsinIndex(Index : tDEMIXindexes) : integer;
 
-procedure OpenCopDEMandLandcoverForArea;
+procedure OpenCopDEMandLandcoverForArea(CopLand : boolean = true);
 procedure OpenDEMIXAreaMaps;
 
 procedure GetAreaDEMNames(TestAreaName : shortstring);
@@ -198,7 +202,7 @@ uses
    DEMstat,Make_grid,PetImage,PetImage_form,new_petmar_movie,DEMdatabase,PetDButils,Pick_several_dems,
    Geotiff, BaseMap, GDAL_tools, DEMIX_filter, DEMstringgrid,DEM_NLCD,
    DEMCoord,DEMMapf,DEMDef_routines,DEM_Manager,DEM_indexes,PetMath,
-   DEMIX_graphs,Pick_DEMIX_mode;
+   DEMIX_graphs,Pick_DEMIX_mode,pick_demix_areas;
 
 var
    vd_path : PathStr;
@@ -234,7 +238,7 @@ begin
   PickDEMIXmodeForm.ShowModal;
   MDDef.DEMIX_mode := PickDEMIXmodeForm.RadioGroup1.ItemIndex;
   if MDDef.DEMIX_mode = dmNotYetDefined then begin
-     MDDef.DEMIX_mode := dmClassic;
+     MDDef.DEMIX_mode := dmFull;
      MessageToContinue('Set to classic; it has to be defined');
   end;
   PickDEMIXmodeForm.Destroy;
@@ -245,12 +249,12 @@ end;
 
 function FilterForDEMIXtilesToUse : shortstring;
 begin
-   Result := 'GRID_FULL>' + IntToStr(DEMIX_Tile_Full) + ' AND RELIEF>1';
+   Result := 'GRID_FULL>' + IntToStr(MDDef.DEMIX_Tile_Full) + ' AND RELIEF>1';
 end;
 
 function FilterForDEMIXtilesToAvoid : shortstring;
 begin
-   Result := 'GRID_FULL<' + IntToStr(DEMIX_Tile_Full) + ' OR RELIEF<1';
+   Result := 'GRID_FULL<' + IntToStr(MDDef.DEMIX_Tile_Full) + ' OR RELIEF<1';
 end;
 
 
@@ -280,7 +284,7 @@ begin
       {$If Defined(RecordCartoFull)} WriteLineToDebugFile('TMapForm.ClipDEMtoFullDEMIXTiles, DEM in ' + sfBoundBoxToString(bb,8)); {$EndIf}
       db := DEMIXtileFill(DEM,bb,False);
       GISdb[DB].Empsource.Enabled := false;
-      GISdb[DB].ApplyGISFilter('GRID_FULL >' + IntToStr(DEMIX_Tile_Full));
+      GISdb[DB].ApplyGISFilter('GRID_FULL >' + IntToStr(MDDef.DEMIX_Tile_Full));
       if (GISdb[DB].MyData.FiltRecsInDB = 0) then begin
          Result := false;
       end
@@ -415,7 +419,6 @@ begin
 
    EndProgress;
    GISdb[DBonTable].ShowStatus;
-
 end;
 
 
@@ -423,10 +426,10 @@ procedure CompareRankings(DBonTable : integer);
    //DiffParams : array[1..3] of shortstring = ('ELVD','SLPD','RUFD');
    //ParamSuffixes : array[1..5] of shortstring = ('_AVD','_STD','_RMSE','_MAE','_LE90');
 var
-   Tile,Crit,aline,aline2,Scores,Tstr : shortstring;
+   Tile,Crit,aline,{aline2,}Scores,Tstr : shortstring;
    i,j,k,N,DEM : integer;
    rfile : file;
-   theTiles,sl,sl2,Crits : tStringList;
+   theTiles,sl,{sl2,}Crits : tStringList;
    fName : PathStr;
    ScoreSheet,ScoreSheet2 : array[0..14] of shortstring;
 begin
@@ -437,7 +440,7 @@ begin
 
    Crits := tStringList.Create;
    sl := tStringList.Create;
-   sl2 := tStringList.Create;
+   //sl2 := tStringList.Create;
 
    aline := 'DEMIX_TILE';
    for I := 1 to 3 do begin
@@ -447,7 +450,7 @@ begin
       end;
    end;
    sl.Add(Aline);
-   sl2.Add(Aline);
+   //sl2.Add(Aline);
 
    LoadDEMIXnames;
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('CompareRankings for tiles=' + IntToStr(TheTiles.Count)); {$EndIf}
@@ -458,7 +461,7 @@ begin
       GISdb[DBonTable].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(Tile) + ' AND REF_TYPE=' + QuotedStr('DTM'));
       GISdb[DBonTable].EmpSource.Enabled := false;
       aline := Tile;
-      aline2 := Tile;
+      //aline2 := Tile;
 
        while not GISdb[DBonTable].MyData.eof do begin
           Crit := UpperCase(GISdb[DBonTable].MyData.GetFieldByNameAsString('CRITERION'));
@@ -469,22 +472,22 @@ begin
                 Scores := Scores + GISdb[DBonTable].MyData.GetFieldByNameAsString(DEMIXShort[DEM] + '_SCR') + '-';
              end;
              ScoreSheet[n] := Scores;
-            TStr := GISdb[DBonTable].MyData.GetFieldByNameAsString('DEM_LOW_SC');
-            Petmar.ReplaceCharacter(Tstr,',','-');
-            ScoreSheet2[n] := tstr;
+             TStr := GISdb[DBonTable].MyData.GetFieldByNameAsString('DEM_LOW_SC');
+             Petmar.ReplaceCharacter(Tstr,',','-');
+             ScoreSheet2[n] := tstr;
           end;
           GISdb[DBonTable].MyData.Next;
        end;
        for I := 0 to 14 do aline := aline + ',' + ScoreSheet[i];
-       for I := 0 to 14 do aline2 := aline2 + ',' + ScoreSheet2[i];
+       //for I := 0 to 14 do aline2 := aline2 + ',' + ScoreSheet2[i];
        sl.Add(Aline);
-       sl2.Add(Aline2);
+       //sl2.Add(Aline2);
    end;
 
    fName := NextFileNumber(MDTempDir,'compare_ranking_','.dbf');
    StringList2CSVtoDB(sl,fName);
-   fName := NextFileNumber(MDTempDir,'compare_winners_','.dbf');
-   StringList2CSVtoDB(sl2,fName);
+   //fName := NextFileNumber(MDTempDir,'compare_winners_','.dbf');
+   //StringList2CSVtoDB(sl2,fName);
 
    EndDEMIXProcessing(dbOnTable);
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('CompareRankings out'); {$EndIf}
@@ -649,7 +652,6 @@ begin
       RefDTMPointFName := '';
    end;
 end;
-
 
 
 procedure LoadDEMIXnames;
@@ -836,9 +838,9 @@ end;
 
 
 
-function DEMIXTestDEMLegend(Horizontal : boolean = true; DEMsUsed : tstringList = nil) : tMyBitmap;
+function DEMIXTestDEMLegend(Horizontal : boolean = true; DEMsUsed : tstringList = nil; MaxWide : integer = 9999) : tMyBitmap;
 var
-   i,Left,Top : integer;
+   i,Left,Top,StartFontSize : integer;
 
          procedure AnEntry(DEM : shortString);
          begin
@@ -853,24 +855,30 @@ var
          end;
 
 begin
-   CreateBitmap(Result,1500,250);
-   LoadMyFontIntoWindowsFont(MDDef.LegendFont,Result.Canvas.Font);
-   Result.Canvas.Font.Size := MDDef.DEMIXlegendFontSize;
-   Left := 25;
-   Top := 10;
-   if (DEMsUsed <> Nil) then begin
-      for i := 0 to pred(DEMsUsed.Count) do begin
-         AnEntry(DEMsUsed.Strings[i]);
-      end;
-   end
-   else begin
-      for i := 1 to NumDEMIXtestDEM do begin
-         if UseRetiredDEMs[i] then begin
-            AnEntry(DEMIXShort[i]);
+   StartFontSize := MDDef.DEMIXlegendFontSize;
+   Result := Nil;
+   repeat
+      if (Result <> Nil) then Result.Destroy;
+      CreateBitmap(Result,1500,250);
+      LoadMyFontIntoWindowsFont(MDDef.LegendFont,Result.Canvas.Font);
+      Result.Canvas.Font.Size := StartFontSize;
+      Left := 25;
+      Top := 10;
+      if (DEMsUsed <> Nil) then begin
+         for i := 0 to pred(DEMsUsed.Count) do begin
+            AnEntry(DEMsUsed.Strings[i]);
+         end;
+      end
+      else begin
+         for i := 1 to NumDEMIXtestDEM do begin
+            if UseRetiredDEMs[i] then begin
+               AnEntry(DEMIXShort[i]);
+            end;
          end;
       end;
-   end;
-   PutBitmapInBox(Result);
+      PutBitmapInBox(Result);
+      Dec(StartFontSize);
+   until Result.Width < MaxWide;
 end;
 
 
@@ -890,80 +898,102 @@ end;
 
 procedure SetParamsForDEMIXmode;
 begin
-   {$If Defined(RecordDEMIXStart)} WriteLineToDebugFile('SetParamsForDEMIXmode in, DEMIX_mode=' + IntToStr(MDDef.DEMIX_mode)); {$EndIf}
+   {$If Defined(RecordDEMIXStart) or Defined(RecordDEMIXversion)} WriteLineToDebugFile('SetParamsForDEMIXmode in, DEMIX_mode=' + IntToStr(MDDef.DEMIX_mode)); {$EndIf}
 
-   if MDDef.DEMIX_mode = dmClassic then begin
+   DEMIX_Ref_1sec := DEMIX_Base_DB_Path + 'wine_contest_ref_1sec\';
+   DEMIX_Ref_dsm_1sec := DEMIX_Base_DB_Path + 'wine_contest_ref_dsm_1sec\';
+   DEMIX_test_dems := DEMIX_Base_DB_Path + 'wine_contest_test_dems\';
+
+   //these are needed for inventories
+      DEMIX_diluvium_dtms := DEMIX_Base_DB_Path + 'diluvium_test_dems\';
+      DEMIX_delta_dtms := DEMIX_Base_DB_Path + 'delta_test_dems\';
+      DEMIX_coastal_dtms := DEMIX_Base_DB_Path + 'coastal_test_dems\';
+
+   if (MDDef.DEMIX_mode = dmFull) then begin
       NumPtDEMs := 6;
       NumAreaDEMs := 1;
-      //SSIMresultsDir := RegularSSIMresultsDir;
-      //FUVresultsDir := RegularFUVresultsDir;
       AreaListFName := DEMIXSettingsDir + 'areas_list.txt';
-      DEMListFName := DEMIXSettingsDir + 'dems_classic.txt';
-      //DEMIX_Tile_Full := MDDef.DEMIX_full_all;
       DEMIXModeName := 'FULL';
-      //GeomorphonsDir := UINFGeomorphonsDir;
+      DEMIX_Under_ref_dtm := '';
+      DEMIX_Under_test_dems := '';
    end
-   else if (MDDef.DEMIX_mode = dmAddCoastal) then begin
+   else if (MDDef.DEMIX_mode = dmU120) then begin
       NumPtDEMs := 7;   //adds coastal
       NumAreaDEMs := 1;
-      //SSIMresultsDir := CoastalSSIMresultsDir;
-      //FUVresultsDir := CoastalFUVresultsDir;
       AreaListFName := DEMIXSettingsDir + 'areas_coastal.txt';
-      DEMListFName := DEMIXSettingsDir + 'dems_add_coastal.txt';
-      //DEMIX_Tile_Full := MDDef.DEMIX_full_U120;
       DEMIXModeName := 'U120';
-      //GeomorphonsDir := U120GeomorphonsDir;
+      DEMIX_Under_ref_dtm := DEMIX_Base_DB_Path + 'coastal_ref_dtms\';
+      DEMIX_Under_test_dems := DEMIX_Base_DB_Path + 'coastal_test_dems\';
    end
-   else if (MDDef.DEMIX_mode = dmAddDiluvium) then begin
+   else if (MDDef.DEMIX_mode = dmU80) then begin
       NumPtDEMs := 7;    //adds coatal
       NumAreaDEMs := 2; //adds dilumium
-      //SSIMresultsDir := DiluvSSIMresultsDir;
-      //FUVresultsDir := DILUVFUVresultsDir;
       AreaListFName := DEMIXSettingsDir + 'areas_diluvium.txt';
-      DEMListFName := DEMIXSettingsDir + 'dems_add_diluvium.txt';
-      //DEMIX_Tile_Full := MDDef.DEMIX_full_U80;
       DEMIXModeName := 'U80';
-      //GeomorphonsDir := U80GeomorphonsDir;
+      DEMIX_Under_ref_dtm := DEMIX_Base_DB_Path + 'diluvium_ref_dtms\';
+      DEMIX_Under_test_dems := DEMIX_Base_DB_Path + 'diluvium_test_dems\';
    end
-   else if (MDDef.DEMIX_mode = dmAddDelta) then begin
+   else if (MDDef.DEMIX_mode = dmU10) then begin
       NumPtDEMs := 8;    //adds coastal, delta
       NumAreaDEMs := 2;  //adds diluvium
-      //SSIMresultsDir := DeltaSSIMresultsDir;
-      //FUVresultsDir := DeltaFUVresultsDir;
       AreaListFName := DEMIXSettingsDir + 'areas_delta.txt';
-      DEMListFName := DEMIXSettingsDir + 'dems_add_delta.txt';
-      //DEMIX_Tile_Full := MDDef.DEMIX_full_U10;
       DEMIXModeName := 'U10';
-      //GeomorphonsDir := U10GeomorphonsDir;
+      DEMIX_Under_ref_dtm := DEMIX_Base_DB_Path + 'delta_ref_dtms\';
+      DEMIX_Under_test_dems := DEMIX_Base_DB_Path + 'delta_test_dems\';
    end;
+   NumDEMIXtestDEM := NumPtDEMs + NumAreaDEMs;
 
+   DEMListFName := DEMIXSettingsDir + 'dems_' + DEMIXModeName + '.txt';
    Diff_dist_results_dir := DEMIX_Base_DB_Path + DEMIXModeName + '_diff_dist_results\';
    ChannelMissesDir := DEMIX_Base_DB_Path + DEMIXModeName + '_channel_misses\';
    GeomorphonsDir := DEMIX_Base_DB_Path + DEMIXModeName + '_geomorphons\';
    SSIMresultsDir := DEMIX_Base_DB_Path + DEMIXModeName + '_ssim_results\';
    FUVresultsDir := DEMIX_Base_DB_Path + DEMIXModeName + '_fuv_results\';
 
-   DEMIX_Tile_Full := 25;
-   {$If Defined(RecordDEMIXStart)} WriteLineToDebugFile('SetParamsForDEMIXmode out, DEMIX_mode=' + IntToStr(MDDef.DEMIX_mode)); {$EndIf}
+   MDDef.DEMIX_Tile_Full := 25;
+   {$If Defined(RecordDEMIXStart) or Defined(RecordDEMIXversion)} WriteLineToDebugFile('SetParamsForDEMIXmode out, DEMIX_mode=' + IntToStr(MDDef.DEMIX_mode) + ' ' + DEMIXModeName); {$EndIf}
 end;
 
 
 procedure RecognizeDEMIXVersion(DB : integer);
 begin
    if ValidDB(DB) then begin
+      {$IfDef RecordDEMIXversion} WriteLineToDebugFile('RecognizeDEMIXVersion in, ' + GISdb[db].dbName + ' ' + IntToStr(DB)); {$EndIf}
       if StrUtils.ANSIcontainsText(UpperCase(GISDB[db].DBName),'DEMIX') then begin
-         if StrUtils.ANSIcontainsText(UpperCase(GISDB[db].DBName),'ALL') then MDDef.DEMIX_mode := dmClassic
-         else if StrUtils.ANSIcontainsText(UpperCase(GISDB[db].DBName),'U120') then MDDef.DEMIX_mode := dmAddCoastal
-         else if StrUtils.ANSIcontainsText(UpperCase(GISDB[db].DBName),'U80') then MDDef.DEMIX_mode := dmAddDiluvium
-         else if StrUtils.ANSIcontainsText(UpperCase(GISDB[db].DBName),'U10') then MDDef.DEMIX_mode := dmAddDelta
+         if StrUtils.ANSIcontainsText(UpperCase(GISDB[db].DBName),'FULL') then begin
+            MDDef.DEMIX_mode := dmFull;
+         end
+         else if StrUtils.ANSIcontainsText(UpperCase(GISDB[db].DBName),'U120') then begin
+            MDDef.DEMIX_mode := dmU120;
+         end
+         else if StrUtils.ANSIcontainsText(UpperCase(GISDB[db].DBName),'U80') then begin
+            MDDef.DEMIX_mode := dmU80;
+         end
+         else if StrUtils.ANSIcontainsText(UpperCase(GISDB[db].DBName),'U10') then begin
+            MDDef.DEMIX_mode := dmU10;
+         end;
+         {$IfDef RecordDEMIXversion} WriteLineToDebugFile('RecognizeDEMIXVersion parsed, ' + GISdb[db].dbName + ' ' + IntToStr(MDDef.DEMIX_mode)); {$EndIf}
       end
       else begin
-         MDDef.DEMIX_mode := dmClassic;
-         if GISDB[db].MyData.FieldExists('COAST') then MDDef.DEMIX_mode := dmAddCoastal
-         else if GISDB[db].MyData.FieldExists('DELTA') then MDDef.DEMIX_mode := dmAddDelta
-         else if GISDB[db].MyData.FieldExists('DILUV') then MDDef.DEMIX_mode := dmAddDiluvium;
+         MDDef.DEMIX_mode := dmFull;
+         DEMIXModeName := 'FULL';
+         if GISDB[db].MyData.FieldExists('COAST') then begin
+            MDDef.DEMIX_mode := dmU120;
+         end
+         else if GISDB[db].MyData.FieldExists('DELTA') then begin
+            MDDef.DEMIX_mode := dmU10;
+         end
+         else if GISDB[db].MyData.FieldExists('DILUV') then begin
+            MDDef.DEMIX_mode := dmU80;
+         end;
       end;
+      if ANSIContainsText(UpperCase(GISdb[db].DBname),'DIFF_DIST') then CriteriaFamily := 'Difference Distribution'
+      else if ANSIContainsText(UpperCase(GISdb[db].DBname),'FUV_') then CriteriaFamily := 'FUV'
+      else if ANSIContainsText(UpperCase(GISdb[db].DBname),'PT_CLASS_') then CriteriaFamily := 'Raster Classification'
+      else if ANSIContainsText(UpperCase(GISdb[db].DBname),'CHANNEL_') then CriteriaFamily := 'Vector Mismatch';
+
       SetParamsForDEMIXmode;
+      {$IfDef RecordDEMIXversion} WriteLineToDebugFile('RecognizeDEMIXVersion out, ' + GISdb[db].dbName + ' ' + DEMIXModeName + '  ' + CriteriaFamily); {$EndIf}
    end;
 end;
 
@@ -984,13 +1014,13 @@ begin
 
    if (not Result) then exit;
    DEMIX_initialized := true;
-
+   wmdem.ClearStatusBarPanelText;
    {$If Defined(RecordDEMIXStart)} WriteLineToDebugFile('Wine contest location done'); {$EndIf}
 
    if StartProcessing then begin
       HeavyDutyProcessing := true;
-      WMdem.Color := clInactiveCaption;
       DEMIXProcessing := true;
+      WMdem.Color := clInactiveCaption;
       ToggleShowProgress(false);
    end;
    StopSplashing;
@@ -1039,13 +1069,6 @@ begin
       DEMIX_ref_DEMs_channel_grids := DEMIX_Base_DB_Path + 'area_ref_dems_channel_grids\';
    {$EndIf}
 
-   //ChannelMissesDir := DEMIX_Base_DB_Path + 'channel_misses\';
-   //GeomorphonsDir := DEMIX_Base_DB_Path + 'geomorphons\';
-   //UINFGeomorphonsDir := DEMIX_Base_DB_Path + 'UINF_geomorphons\';
-   //U120GeomorphonsDir := DEMIX_Base_DB_Path + 'U120_geomorphons\';
-   //U80GeomorphonsDir := DEMIX_Base_DB_Path + 'U80_geomorphons\';
-   //U10GeomorphonsDir := DEMIX_Base_DB_Path + 'U10_geomorphons\';
-
    MD_out_ref_dir := DEMIX_Base_DB_Path + 'md_out_ref_areas\';
    MD_out_test_dir := DEMIX_Base_DB_Path + 'md_out_test_areas\';
    wbt_out_ref_dir  := DEMIX_Base_DB_Path + 'wbt_out_ref_areas\';
@@ -1053,24 +1076,9 @@ begin
    saga_out_ref_dir := DEMIX_Base_DB_Path + 'saga_out_ref_areas\';
    saga_out_test_dir := DEMIX_Base_DB_Path + 'saga_out_test_areas\';
 
-   //RegularSSIMresultsDir := DEMIX_Base_DB_Path + 'all_ssim_results\';
-   //CoastalSSIMresultsDir := DEMIX_Base_DB_Path + 'coastal_SSIM_results\';
-   //DiluvSSIMresultsDir := DEMIX_Base_DB_Path + 'diluvium_SSIM_results\';
-   //DeltaSSIMresultsDir := DEMIX_Base_DB_Path + 'delta_SSIM_results\';
-
-   //RegularFUVresultsDir := DEMIX_Base_DB_Path + 'all_fuv_results\';
-   //CoastalFUVresultsDir := DEMIX_Base_DB_Path + 'coastal_fuv_results\';
-   //DiluvFUVresultsDir := DEMIX_Base_DB_Path + 'diluvium_fuv_results\';
-   //DeltaFUVresultsDir := DEMIX_Base_DB_Path + 'delta_fuv_results\';
+   Stream_valley_dir := DEMIX_Base_DB_Path + 'full_valleys_ridges\';
 
    DEMIX_final_DB_dir := DEMIX_Base_DB_Path + 'wine_contest_database\';
-
-   DEMIX_Ref_1sec := DEMIX_Base_DB_Path + 'wine_contest_ref_1sec\';
-   DEMIX_Ref_dsm_1sec := DEMIX_Base_DB_Path + 'wine_contest_ref_dsm_1sec\';
-   DEMIX_test_dems := DEMIX_Base_DB_Path + 'wine_contest_test_dems\';
-   DEMIX_diluvium_dtms := DEMIX_Base_DB_Path + 'diluvium_test_dems\';
-   DEMIX_delta_dtms := DEMIX_Base_DB_Path + 'delta_test_dems\';
-   DEMIX_coastal_dtms := DEMIX_Base_DB_Path + 'coastal_test_dems\';
 
    {$If Defined(RecordDEMIXStart)} WriteLineToDebugFile('GetDEMIXpaths point 4'); {$EndIf}
 
@@ -1090,7 +1098,7 @@ begin
    LoadDEMIXnames;
 
    {$If Defined(RecordDEMIXStart) or Defined(RecordDEMIX)}
-      WriteLineToDebugFile('GetDEMIXpaths out, DEMIX_mode=' + IntToStr(MDDef.DEMIX_mode) + ' ' + DEMIX_mode_abbreviation(MDDef.DEMIX_mode));
+      WriteLineToDebugFile('GetDEMIXpaths out, DEMIX_mode=' + IntToStr(MDDef.DEMIX_mode) + ' ' + DEMIXModeName);
    {$EndIf}
 end;
 
@@ -1122,10 +1130,36 @@ var
 begin
    Result := tStringList.Create;
    fName := AreaListFName;
+   if CanLimitAreas then begin
+      case ModeForAreaSelection of
+         1 : begin
+                Result.LoadFromFile(fName);
+             end;
+         2 : begin
+                Result.LoadFromFile(fName);
+                MultiSelectSingleColumnStringList(DEMIXModeName + ' Areas to process',PickedNum,Result,true,true);
+             end;
+         3 : begin
+               fName := DEMIXSettingsDir;
+               if GetExistingFileName('DEMIX areas','area*.txt',fName) then begin
+                  Result.LoadFromFile(fName);
+               end;
+             end;
+      end;
+   end
+   else begin
+      Result.LoadFromFile(fName);
+   end;
+
+
+(*
+
+   fName := AreaListFName;
    if FileExists(fName) or GetExistingFileName('DEMIX areas','*.txt',fName) then begin
       Result.LoadFromFile(fName);
       if CanLimitAreas then MultiSelectSingleColumnStringList(DEMIX_mode_abbreviation(MDDef.DEMIX_mode) + ' Areas to process',PickedNum,Result,true,true);
    end;
+*)
 end;
 
 
@@ -1201,9 +1235,11 @@ procedure OpenDEMIXDatabaseForAnalysis;
 begin
    if not FileExists(DEMIX_GIS_dbName) then Petmar.GetExistingFileName('DEMIX db version','*.dbf',DEMIX_GIS_dbName);
    OpenNumberedGISDataBase(DEMIX_DB,DEMIX_GIS_dbName,false);
-   GetDEMIXpaths(false,DEMIX_DB);
-   GISdb[DEMIX_DB].LayerIsOn := false;
-   DoDEMIXFilter(DEMIX_DB);
+   if ValidDB(DEMIX_DB) then begin
+      GetDEMIXpaths(false,DEMIX_DB);
+      GISdb[DEMIX_DB].LayerIsOn := false;
+      DoDEMIXFilter(DEMIX_DB);
+   end;
 end;
 
 
@@ -1218,51 +1254,68 @@ begin
 end;
 
 
+function GetWinner(dbOnTable : integer; DEM1,DEM2 : shortstring) : shortstring;
+var
+   eval1,eval2,tolerance : float32;
+begin
+   eval1 := GISdb[dbOnTable].MyData.GetFieldByNameAsFloat(DEM1);
+   eval2 := GISdb[dbOnTable].MyData.GetFieldByNameAsFloat(DEM2);
+   tolerance := GISdb[dbOnTable].MyData.GetFieldByNameAsFloat('TOLERANCE');
+   if (eval1 + Tolerance < Eval2) then Result := DEM1
+   else if (eval2 + Tolerance < Eval1) then Result := DEM2
+   else Result := 'TIE';
+end;
+
+
+
 procedure CompareSeriousCompetitors(DBonTable : integer);
 
 
    procedure OnePair(DEM1,DEM2 : shortstring);
    var
-      eval1,eval2,tolerance : float32;
       tStr,fName,Criterion : shortstring;
+      j : integer;
    begin
       if GISdb[dbOnTable].MyData.FieldExists(DEM1) and GISdb[dbOnTable].MyData.FieldExists(DEM2) then begin
          fName := DEM1 + '_' + DEM2;
          GISdb[dbOnTable].AddFieldToDataBase(ftstring,fName,12);
          GISdb[dbOnTable].MyData.First;
          GISdb[dbOnTable].EmpSource.Enabled := false;
+         j := 0;
          while not GISdb[dbOnTable].MyData.eof do begin
+            if (j mod 25 = 0) then wmdem.SetPanelText(3,fName + '  ' + IntToStr(j) + '/' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB),true);
+            inc(j);
             Criterion := GISdb[dbOnTable].MyData.GetFieldByNameAsString('CRITERION');
-            if not IsDEMIX_signedCriterion(Criterion) then begin
-               eval1 := GISdb[dbOnTable].MyData.GetFieldByNameAsFloat(DEM1);
-               eval2 := GISdb[dbOnTable].MyData.GetFieldByNameAsFloat(DEM2);
-               tolerance := GISdb[dbOnTable].MyData.GetFieldByNameAsFloat('TOLERANCE');
-               if eval1 + Tolerance < Eval2 then tStr := DEM1
-               else if eval2 + Tolerance < Eval1 then tStr := DEM2
-               else tStr := 'TIE';
-               GISdb[dbOnTable].MyData.Edit;
-               GISdb[dbOnTable].MyData.SetFieldByNameAsString(fName,tStr);
+            if IsDEMIX_signedCriterion(Criterion) then begin
+               tStr := 'N/A';
+            end
+            else begin
+               TStr := GetWinner(dbOnTable,DEM1,DEM2);
             end;
+            GISdb[dbOnTable].MyData.Edit;
+            GISdb[dbOnTable].MyData.SetFieldByNameAsString(fName,tStr);
             GISdb[dbOnTable].MyData.Next;
          end;
       end;
    end;
 
 begin
-   if not GISdb[DBonTable].MyData.FieldExists('CRITERION') then begin
-      RankDEMS(DBonTable);
+   try
+      ShowHourGlassCursor;
+      OnePair('COP','ALOS');
+      OnePair('COP','FABDEM');
+      OnePair('COP','TANDEM');
+      OnePair('COP','NASA');
+      OnePair('COP','SRTM');
+      OnePair('COP','ASTER');
+      OnePair('COP','DILUV');
+      OnePair('COP','DELTA');
+      OnePair('COP','COAST');
+   finally
+      ShowDefaultCursor;
+      GISdb[dbOnTable].EmpSource.Enabled := true;
+      wmdem.SetPanelText(3,'',true);
    end;
-
-   OnePair('COP','ALOS');
-   OnePair('COP','FABDEM');
-   OnePair('COP','TANDEM');
-   OnePair('COP','NASA');
-   OnePair('COP','SRTM');
-   OnePair('COP','ASTER');
-   OnePair('COP','DILUV');
-   OnePair('COP','DELTA');
-   OnePair('COP','COAST');
-   GISdb[dbOnTable].EmpSource.Enabled := true;
 end;
 
 

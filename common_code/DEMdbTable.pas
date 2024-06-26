@@ -15,7 +15,7 @@
    {$IfDef Debug}
        {$Define RecordDEMIX}
        {$Define RecordDetailedDEMIX}
-       {$Define RecordClosing}
+       //{$Define RecordCloseDB}
        //{$Define RecordDataBaseSaveFiles}
        //{$Define RecordDBPlot}
        //{$Define RecordCSVOut}
@@ -1041,11 +1041,15 @@ type
     N58: TMenuItem;
     Graphofcriteriaforareaortile1: TMenuItem;
     GraphofPrimaryDataFractionbyClusters1: TMenuItem;
-    AddcountryareafieldstoDB1: TMenuItem;
     AddcolorsforFULLU120U80U101: TMenuItem;
     SortandreplaceDB1: TMenuItem;
     SortandreplaceDB2: TMenuItem;
     Descending3: TMenuItem;
+    Winlosstie1: TMenuItem;
+    Filterforevaluations11: TMenuItem;
+    LATEXtable1: TMenuItem;
+    AddKoppenclass1: TMenuItem;
+    Numberoftestareasandtilesbycountry1: TMenuItem;
     //Pointfilter1: TMenuItem;
     //Pointfilter2: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
@@ -1737,7 +1741,6 @@ type
     procedure N1degreetilestocoverrecordsintable1Click(Sender: TObject);
     procedure BestDEMbycategory1Click(Sender: TObject);
     procedure RankDEMs1Click(Sender: TObject);
-    procedure Sumscores1Click(Sender: TObject);
     procedure DEMIXtilesummary1Click(Sender: TObject);
     procedure PickParam1Click(Sender: TObject);
     procedure Filteroutsignedcriteriameanandmedian1Click(Sender: TObject);
@@ -1751,11 +1754,9 @@ type
     procedure Ascending1Click(Sender: TObject);
     procedure Descending1Click(Sender: TObject);
     procedure Alphabetize1Click(Sender: TObject);
-    procedure Createshapefilewithboundingboxforeachrecord1Click(
-      Sender: TObject);
+    procedure Createshapefilewithboundingboxforeachrecord1Click(Sender: TObject);
     procedure CreateDBwithcornersandcenterofeveryrecord1Click(Sender: TObject);
-    procedure GraphsbestDEMpertilebycriteriasortbytilecharacteristics1Click(
-      Sender: TObject);
+    procedure GraphsbestDEMpertilebycriteriasortbytilecharacteristics1Click(Sender: TObject);
     procedure Graphfilters1Click(Sender: TObject);
     procedure FilterforDEMIXtiles1Click(Sender: TObject);
     procedure NormalizeddifferencesfromreferenceDEM1Click(Sender: TObject);
@@ -1852,6 +1853,11 @@ type
     procedure AddcolorsforFULLU120U80U101Click(Sender: TObject);
     procedure SortandreplaceDB2Click(Sender: TObject);
     procedure Descending3Click(Sender: TObject);
+    procedure Winlosstie1Click(Sender: TObject);
+    procedure Filterforevaluations11Click(Sender: TObject);
+    procedure LATEXtable1Click(Sender: TObject);
+    procedure AddKoppenclass1Click(Sender: TObject);
+    procedure Numberoftestareasandtilesbycountry1Click(Sender: TObject);
     //procedure Pointfilter2Click(Sender: TObject);
     //procedure Pointfilter1Click(Sender: TObject);
   private
@@ -2422,21 +2428,26 @@ var
    Min,Max,z : float64;
    Output,FieldsUsed : tStringList;
    TStr : ANSIString;
+   UniqueField,fu : shortString;
    MomentVar : array[0..100] of tMomentVar;
 begin
+   UniqueField := 'DEMIX_TILE';   //GISdb[DBonTable].PickField('Unique field for linking normalized DB',[ftString,ftInteger]);
    FieldsUsed := GISdb[DBonTable].GetAnalysisFields;
    FieldsUsed.Duplicates := DupIgnore;
    FieldsUsed.Insert(0,RecNoFName);
-   FieldsUsed.Insert(0,GISdb[DBonTable].LongFieldName);
-   FieldsUsed.Insert(0,GISdb[DBonTable].LatFieldName);
+   if GISdb[DBonTable].MyData.FieldExists(GISdb[DBonTable].LongFieldName) then FieldsUsed.Insert(0,GISdb[DBonTable].LongFieldName);
+   if GISdb[DBonTable].MyData.FieldExists(GISdb[DBonTable].LatFieldName) then FieldsUsed.Insert(0,GISdb[DBonTable].LatFieldName);
+   FieldsUsed.Insert(0,UniqueField);
 
    StartProgress('Moments');
    GISdb[DBonTable].EmpSource.Enabled := false;
    for j := 0 to pred(FieldsUsed.Count) do begin
-       if (FieldsUsed.Strings[j] <> GISdb[DBonTable].LatFieldName) and (FieldsUsed.Strings[j] <> GISdb[DBonTable].LongFieldName) and (FieldsUsed.Strings[j] <> RecNoFName) then begin
+      fu := FieldsUsed.Strings[j];
+       if (fu <> GISdb[DBonTable].LatFieldName) and (fu <> GISdb[DBonTable].LongFieldName) and (fu <> RecNoFName) and (fu <> UniqueField) then begin
           New(zs);
           UpdateProgressBar(j/FieldsUsed.Count);
-          GetFieldValuesInArray(GISdb[DBonTable].MyData,FieldsUsed.Strings[j],zs^,MomentVar[j].NPts,Missing,Min,Max);
+          GISdb[DBonTable].EmpSource.Enabled := false;
+          GetFieldValuesInArray(GISdb[DBonTable].MyData,fu,zs^,MomentVar[j].NPts,Missing,Min,Max);
           moment(zs^,MomentVar[j],msAll);
           Dispose(zs);
        end;
@@ -2463,8 +2474,9 @@ begin
 
        TStr := '';
        for j := 0 to pred(FieldsUsed.Count) do begin
+          fu := FieldsUsed.Strings[j];
           if (j > 0) then TStr := TStr + ',';
-          if (FieldsUsed.Strings[j] = GISdb[DBonTable].LatFieldName) or (FieldsUsed.Strings[j] = GISdb[DBonTable].LongFieldName) or (FieldsUsed.Strings[j] = RecNoFName) then begin
+          if (fu = GISdb[DBonTable].LatFieldName) or (fu = GISdb[DBonTable].LongFieldName) or (fu = RecNoFName) or  (fu = UniqueField)  then begin
              TStr := TStr + GISdb[DBonTable].MyData.GetFieldByNameAsString(FieldsUsed.Strings[j]);
           end
           else begin
@@ -2491,6 +2503,11 @@ begin
 end;
 
 
+
+procedure Tdbtablef.Numberoftestareasandtilesbycountry1Click(Sender: TObject);
+begin
+   InventoryAreasAndTilesByCountry(DBonTable);
+end;
 
 procedure Tdbtablef.Octree1Click(Sender: TObject);
 const
@@ -3180,6 +3197,12 @@ begin
    N2Dgraphallopendatabases1Click(Sender);
 end;
 
+procedure Tdbtablef.Winlosstie1Click(Sender: TObject);
+begin
+   MessageToContinue('disabled Tdbtablef.Winlosstie1Click');
+   //TileCharateristicsWhiskerPlotsByCluster(DBonTable,false,Nil,true,'COP_ALOS');
+end;
+
 procedure Tdbtablef.Winpercentagebycriterion1Click(Sender: TObject);
 begin
    MakeWinsDB(DBonTable,'CRITERION');
@@ -3752,26 +3775,24 @@ var
    RecID : integer;
    Findings : tStringList;
 begin
-   //with GISdb[DBonTable] do begin
-      ShowHourglassCursor;
-      Findings := tStringList.Create;
-      GISdb[DBonTable].EmpSource.Enabled := false;
-      GISdb[DBonTable].MyData.First;
-      while not GISdb[DBonTable].MyData.eof do begin
-         aString := GISdb[DBonTable].MyData.GetFieldByNameAsString(SelectedColumn);
-         if not IsNumeric(aString) then begin
-             RecID := GISdb[DBonTable].MyData.GetFieldByNameAsInteger('REC_ID');
-             Findings.Add(IntegerToString(RecID,12) + '  ' + aString);
-         end;
-         GISdb[DBonTable].MyData.Next;
+   ShowHourglassCursor;
+   Findings := tStringList.Create;
+   GISdb[DBonTable].EmpSource.Enabled := false;
+   GISdb[DBonTable].MyData.First;
+   while not GISdb[DBonTable].MyData.eof do begin
+      aString := GISdb[DBonTable].MyData.GetFieldByNameAsString(SelectedColumn);
+      if not IsNumeric(aString) then begin
+          RecID := GISdb[DBonTable].MyData.GetFieldByNameAsInteger('REC_ID');
+          Findings.Add(IntegerToString(RecID,12) + '  ' + aString);
       end;
-      ShowStatus;
-      if (Findings.Count = 0) then begin
-         MessageToContinue('All records have numeric values in ' + SelectedColumn);
-         Findings.Free;
-      end
-      else DisplayAndPurgeStringList(Findings,SelectedColumn + ' non numeric values=' + IntToStr(Findings.Count));
-   //end;
+      GISdb[DBonTable].MyData.Next;
+   end;
+   ShowStatus;
+   if (Findings.Count = 0) then begin
+      MessageToContinue('All records have numeric values in ' + SelectedColumn);
+      Findings.Free;
+   end
+   else DisplayAndPurgeStringList(Findings,SelectedColumn + ' non numeric values=' + IntToStr(Findings.Count));
 end;
 
 procedure Tdbtablef.BitBtn4Click(Sender: TObject);
@@ -3784,31 +3805,31 @@ end;
 
 procedure Tdbtablef.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-   {$IfDef RecordClosing} WriteLineToDebugFile('Tdbtablef.FormClose in'); {$EndIf}
+   {$IfDef RecordCloseDB} WriteLineToDebugFile('Tdbtablef.FormClose in'); {$EndIf}
    inherited;
    Action := caFree;
-   {$IfDef RecordClosing} WriteLineToDebugFile('Tdbtablef.FormClose out'); {$EndIf}
+   {$IfDef RecordCloseDB} WriteLineToDebugFile('Tdbtablef.FormClose out'); {$EndIf}
 end;
 
 
 procedure Tdbtablef.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
-   {$IfDef RecordClosing} WriteLineToDebugFile('Tdbtablef.FormCloseQuery in'); {$EndIf}
+   {$IfDef RecordCloseDB} WriteLineToDebugFile('Tdbtablef.FormCloseQuery in'); {$EndIf}
    if (Closing) then begin
-      {$IfDef RecordClosing} WriteLineToDebugFile('already closing'); {$EndIf}
+      {$IfDef RecordCloseDB} WriteLineToDebugFile('already closing'); {$EndIf}
    end
    else begin
       if ValidDB(DBonTable) then begin
-         {$IfDef RecordClosing} WriteLineToDebugFile('Tdbtablef.FormCloseQuery has valid DB'); {$EndIf}
+         {$IfDef RecordCloseDB} WriteLineToDebugFile('Tdbtablef.FormCloseQuery has valid DB'); {$EndIf}
          CanClose := CanCloseIt;
          if CanClose then begin
-            {$IfDef RecordClosing} WriteLineToDebugFile('Tdbtablef.FormCloseQuery call CloseAndNilNumberedDB'); {$EndIf}
+            {$IfDef RecordCloseDB} WriteLineToDebugFile('Tdbtablef.FormCloseQuery call CloseAndNilNumberedDB'); {$EndIf}
             CloseAndNilNumberedDB(DBonTable);
-            {$IfDef RecordClosing} WriteLineToDebugFile('Tdbtablef.FormCloseQuery closed'); {$EndIf}
+            {$IfDef RecordCloseDB} WriteLineToDebugFile('Tdbtablef.FormCloseQuery closed'); {$EndIf}
          end;
       end;
    end;
-   {$IfDef RecordClosing} WriteLineToDebugFile('Tdbtablef.FormCloseQuery out'); {$EndIf}
+   {$IfDef RecordCloseDB} WriteLineToDebugFile('Tdbtablef.FormCloseQuery out'); {$EndIf}
 end;
 
 procedure Tdbtablef.Button1Click(Sender: TObject);
@@ -3904,7 +3925,7 @@ begin
          GISdb[DBonTable].TheMapOwner.BringToFront;
          Self.BringToFront;
       end;
-      RecognizeDEMIXVersion(DBonTable);
+      //RecognizeDEMIXVersion(DBonTable);
       ShowStatus;
       {$IfDef RecordFormActivate} WriteLineToDebugFile('Tdbtablef.FormActivate out'); {$EndIf}
    end;
@@ -3915,7 +3936,6 @@ procedure Tdbtablef.BitBtn8Click(Sender: TObject);
 begin
    if ValidDB(DBonTable) then begin
         Vectoraverageinbox1.Enabled := GISdb[DBonTable].DEMwithDBsMap and (GISdb[DBonTable].dbOpts.MagField <> '') and (GISdb[DBonTable].dbOpts.DirField<> '');
-
         N3dGraph1.Visible := (GISdb[DBonTable].NumericFields > 2);
         N2dGraph1.Visible := (GISdb[DBonTable].NumericFields > 1);
         N2dGraph2series1.Visible := (GISdb[DBonTable].NumericFields > 2);
@@ -4095,7 +4115,7 @@ begin
           WantedFieldName := PickField('unique values',[ftString]);
        end
        else begin
-          WantedFieldName := PickField('unique values',[ftString,ftInteger,ftSmallInt,ftLargeInt]);
+          WantedFieldName := PickField('unique values',StringOrIntegerField);
        end;
      end;
 
@@ -4107,7 +4127,7 @@ begin
      {$IfDef CountUniqueValues} WriteLineToDebugFile('WantedFieldName =' + WantedFieldName); {$EndIf}
      if (WantedFieldName <> '') then begin
         if (Sender = TwoFields1) then begin
-           SecondFieldName := PickField('second field',[ftString,ftInteger,ftSmallInt,ftLargeInt]);
+           SecondFieldName := PickField('second field',StringOrIntegerField);
            DBFieldUniqueEntries(SecondFieldName,SecondFields);
         end;
         if (Sender = Allrecordsmatchingsinglefield1) then begin
@@ -4320,11 +4340,6 @@ end;
 procedure Tdbtablef.Sumofneighbors1Click(Sender: TObject);
 begin
    IgnoreMissingData1Click(Sender);
-end;
-
-procedure Tdbtablef.Sumscores1Click(Sender: TObject);
-begin
-   SumsOfRankDEMS(DBonTable);
 end;
 
 procedure Tdbtablef.Sumtwofields1Click(Sender: TObject);
@@ -5406,7 +5421,7 @@ end;
 
 procedure Tdbtablef.AddcountryareafieldstoDB1Click(Sender: TObject);
 begin
-   AddCountryAreaToDB(DBonTable);
+   //AddCountryAreaToDB(DBonTable);
 end;
 
 procedure Tdbtablef.Addfromsubstring1Click(Sender: TObject);
@@ -5503,6 +5518,33 @@ begin
 end;
 
 
+procedure Tdbtablef.AddKoppenclass1Click(Sender: TObject);
+var
+   Lat,Long : float64;
+   i : integer;
+   aClass : shortstring;
+begin
+   GISdb[DBonTable].AddFieldToDataBase(ftString,'KOPPEN',4);
+   GISdb[DBonTable].ClearGISFilter;
+   GISdb[DBonTable].EmpSource.Enabled := false;
+   GISdb[DBonTable].MyData.First;
+   StartProgress('Add Koppen');
+   i := 0;
+   while not GISdb[DBonTable].MyData.eof do begin
+      GISdb[DBonTable].EmpSource.Enabled := false;
+      if (i mod 25 = 0) then UpdateProgressBar(i / GISdb[DBonTable].MyData.FiltRecsinDB);
+      inc(i);
+      if GISdb[DBonTable].ValidLatLongFromTable(Lat,Long) then begin
+         aClass := GetKoppenClass(Lat,Long);
+         GISdb[DBonTable].MyData.Edit;
+         GISdb[DBonTable].MyData.SetFieldByNameAsString('KOPPEN',aClass);
+      end;
+      GISdb[DBonTable].MyData.Next;
+   end;
+   EndProgress;
+   GISdb[DBonTable].ShowStatus;
+end;
+
 procedure Tdbtablef.AddLatlong1Click(Sender: TObject);
 begin
    AddUTMcoordfields1Click(Sender);
@@ -5517,6 +5559,8 @@ begin
    theFields := tStringList.Create;
    theFields.Add('LAT');
    theFields.Add('LONG');
+   theFields.Add('AREA');
+   theFields.Add('COUNTRY');
    AddFieldsToDEMIXDB(DBonTable,theFields);
 end;
 
@@ -5669,11 +5713,16 @@ end;
 
 procedure Tdbtablef.Addmultiplefields1Click(Sender: TObject);
 begin
-   RankDEMS(DBonTable);
-   EvalRangeAndBestEvalForCriterion(DBonTable);
-   CompareSeriousCompetitors(DBonTable);
-   AddTileCharacteristicsToDB(DBonTable);
-   AddCountryAreaToDB(DBonTable);
+   try
+      GetDEMIXPaths(true);
+      //Removerowsmissinganyevaluations1Click(Sender);
+      RankDEMS(DBonTable);
+      EvalRangeAndBestEvalForCriterion(DBonTable);
+      //CompareSeriousCompetitors(DBonTable);
+      AddTileCharacteristicsToDB(DBonTable);
+   finally
+      EndDEMIXProcessing;
+   end;
 end;
 
 procedure Tdbtablef.AddnearestelevationfromDEM1Click(Sender: TObject);
@@ -6321,12 +6370,21 @@ begin
 end;
 
 procedure Tdbtablef.Alltiles1Click(Sender: TObject);
+//Cluster whisker plots for tile characteristics, get all tiles by picking just one criterion
 var
    aFilter : shortstring;
+   Filters : tStringList;
 begin
    aFilter := GISdb[DBonTable].MyData.Filter;
    GISdb[DBonTable].ApplyGISFilter('CRITERION=' + QuotedStr('ELEV_FUV'));
-   TileCharateristicsWhiskerPlotsByCluster(DBonTable,true);
+ (*
+               for i := 1 to 15 do begin  //loop through clusters, quantiles
+                  aFilter := FieldWanted + '=' + IntToStr(i);
+                  if (BaseFilter <> '') then aFilter := BaseFilter + ' AND ' + aFilter;
+                  DoOneCluster(aFilter,FieldWanted + IntegerToString(i,3));
+               end;
+ *)
+   TileCharateristicsWhiskerPlotsByCluster(DBonTable,true,Nil);
    GISdb[DBonTable].MyData.Filter := aFilter;
 end;
 
@@ -6764,9 +6822,9 @@ begin
       GetDEMIXPaths(true);
       Removerowsmissinganyevaluations1Click(Sender);
       RankDEMS(DBonTable);
-      AddTileCharacteristicsToDB(DBonTable);
       EvalRangeAndBestEvalForCriterion(DBonTable);
       CompareSeriousCompetitors(DBonTable);
+      AddTileCharacteristicsToDB(DBonTable);
    finally
       EndDEMIXProcessing;
    end;
@@ -7493,24 +7551,27 @@ end;
 procedure Tdbtablef.Colorallrecords1Click(Sender: TObject);
 var
    fName : ShortString;
+   i : integer;
 begin
    {$IfDef RecordEditDB} WriteLineRoDebugFile('Tdbtablef.Colorallrecords1Click in'); {$EndIf}
-   with GISdb[DBonTable] do begin
-      if MyData.FieldExists('COLOR') then fName := 'COLOR'
-      else fName := 'LINE_COLOR';
-      if (MyData.GetFieldByNameAsString(fName) = '') then ColorDialog1.Color := clBlack
-      else ColorDialog1.Color := MyData.GetFieldByNameAsInteger(fName);
-      if ColorDialog1.Execute then begin
-         EmpSource.Enabled := false;
-         MyData.First;
-         repeat
-            MyData.Edit;
-            if (Sender <> Coloruncoloredrecords1) or (MyData.GetFieldByNameAsString(fName) = '') then MyData.SetFieldByNameAsInteger(fName,ColorDialog1.Color);
-            MyData.Next;
-         until MyData.EOF;
-      end;
-      ShowStatus;
+   if GISdb[DBonTable].MyData.FieldExists('COLOR') then fName := 'COLOR'
+   else fName := 'LINE_COLOR';
+   if (GISdb[DBonTable].MyData.GetFieldByNameAsString(fName) = '') then ColorDialog1.Color := clBlack
+   else ColorDialog1.Color := GISdb[DBonTable].MyData.GetFieldByNameAsInteger(fName);
+   if ColorDialog1.Execute then begin
+      GISdb[DBonTable].EmpSource.Enabled := false;
+      StartProgress('Color field');
+      i := 0;
+      GISdb[DBonTable].MyData.First;
+      repeat
+         if i mod 100 = 0 then UpdateProgressBar(i/ GISdb[DBonTable].MyData.FiltRecsInDB);
+
+         GISdb[DBonTable].MyData.Edit;
+         if (Sender <> Coloruncoloredrecords1) or (GISdb[DBonTable].MyData.GetFieldByNameAsString(fName) = '') then GISdb[DBonTable].MyData.SetFieldByNameAsInteger(fName,ColorDialog1.Color);
+         GISdb[DBonTable].MyData.Next;
+      until GISdb[DBonTable].MyData.EOF;
    end;
+   GISdb[DBonTable].ShowStatus;
    {$IfDef RecordEditDB} WriteLineRoDebugFile('Tdbtablef.Colorallrecords1Click out'); {$EndIf}
 end;
 
@@ -7706,10 +7767,7 @@ end;
 
 procedure Tdbtablef.Connectsequentialpoints1Click(Sender: TObject);
 begin
-   {$IfDef ExAdvancedGIS}
-   {$Else}
-      GISdb[DBonTable].GISProportionalSymbols(dbasConnectSeqPts);
-   {$EndIf}
+   GISdb[DBonTable].GISProportionalSymbols(dbasConnectSeqPts);
 end;
 
 
@@ -7756,29 +7814,29 @@ var
   i : integer;
 begin
    {$IfDef RecordEditDB} WriteLineRoDebugFile('Tdbtablef.Colorbasedonfield1Click in'); {$EndIf}
-   with GISdb[DBonTable] do begin
-     if (Sender = Colorbasedonfield1) then WantedFieldName := PickField('unique values',[ftString,ftInteger,ftSmallInt])
-     else WantedFieldName := dbOpts.LinkFieldThisDB;
+   //with GISdb[DBonTable] do begin
+     if (Sender = Colorbasedonfield1) then WantedFieldName := GISdb[DBonTable].PickField('unique values',[ftString,ftInteger,ftSmallInt])
+     else WantedFieldName := GISdb[DBonTable].dbOpts.LinkFieldThisDB;
      if (WantedFieldName <> '') then begin
-        DBFieldUniqueEntries(WantedFieldName,FieldsInDB);
-        EmpSource.Enabled := true;
-        ClearGISFilter;
+        GISdb[DBonTable].DBFieldUniqueEntries(WantedFieldName,FieldsInDB);
+        GISdb[DBonTable].EmpSource.Enabled := true;
+        GISdb[DBonTable].ClearGISFilter;
         for i := 0 to pred(FieldsInDB.Count) do begin
            GISdb[DBonTable].MyData.ApplyFilter(WantedFieldName + ' = ' + QuotedStr(FieldsInDB.Strings[i]));
            ShowStatus;
            if Sender = Colorbasedonjoinedtable1 then begin
-              LinkTable.ApplyFilter(dbOpts.LinkFieldOtherDB + ' = ' + QuotedStr(FieldsInDB.Strings[i]));
-              FillFieldWithValue('COLOR',IntToStr(LinkTable.TColorFromTable));
+              GISdb[DBonTable].LinkTable.ApplyFilter( GISdb[DBonTable].dbOpts.LinkFieldOtherDB + ' = ' + QuotedStr(FieldsInDB.Strings[i]));
+               GISdb[DBonTable].FillFieldWithValue('COLOR',IntToStr( GISdb[DBonTable].LinkTable.TColorFromTable));
            end
            else begin
               Colorallrecords1Click(Colorallrecords1);
            end;
         end;
         FieldsInDB.Free;
-        ClearGISFilter;
+        GISdb[DBonTable].ClearGISFilter;
         ShowStatus;
      end;
-   end;
+   //end;
    {$IfDef RecordEditDB} WriteLineRoDebugFile('Tdbtablef.Colorbasedonfield1Click out'); {$EndIf}
 end;
 
@@ -7807,7 +7865,7 @@ end;
 
 procedure Tdbtablef.Byclusters1Click(Sender: TObject);
 begin
-   TileCharateristicsWhiskerPlotsByCluster(DBonTable,false);
+   TileCharateristicsWhiskerPlotsByCluster(DBonTable,false,MakeFiltersForCluster(DBonTable,false));
 end;
 
 procedure Tdbtablef.Bylatitude1Click(Sender: TObject);
@@ -9521,7 +9579,7 @@ begin
    GISdb[DBonTable].EmpSource.Enabled := false;
    GISdb[DBonTable].MyData.First;
    while not GISdb[DBonTable].MyData.eof do begin
-      ProcessClimateStationData(ClimateData);
+       ProcessClimateStationData(ClimateData);
        GISdb[DBonTable].MyData.Edit;
        GISdb[DBonTable].MyData.SetFieldByNameAsString('CLASS',ClimateData.L1 + ClimateData.L2 + ClimateData.L3);
        if GetKoppenColor(ClimateData.L1 + ClimateData.L2 + ClimateData.L3, Color) then GISdb[DBonTable].MyData.SetFieldByNameAsInteger('COLOR',ConvertPlatformColorToTColor(Color));
@@ -9921,10 +9979,10 @@ end;
 
 procedure Tdbtablef.COPoALOS1Click(Sender: TObject);
 begin
-{$IfDef ExDEMIXexperimentalOptions}
-{$Else}
-   DEMIXisCOPorALOSbetter(DBonTable);
-{$EndIf}
+   {$IfDef ExDEMIXexperimentalOptions}
+   {$Else}
+      DEMIXisCOPorALOSbetter(DBonTable);
+   {$EndIf}
 end;
 
 procedure Tdbtablef.N2Dgraphcolorcodetext1Click(Sender: TObject);
@@ -10131,6 +10189,47 @@ procedure Tdbtablef.Landcoversummary1Click(Sender: TObject);
 begin
    LandCoverSummary;
 end;
+
+procedure Tdbtablef.LATEXtable1Click(Sender: TObject);
+var
+   Latex : tStringList;
+   TStr : shortstring;
+   i : integer;
+begin
+   Latex := tStringList.Create;
+
+   Latex.Add('\begin{table}[]');
+   Latex.Add('\caption{add caption}');
+   Latex.Add('\label{tab: add label}');
+   TStr := '';
+   for i := 1 to GISdb[DBonTable].MyData.FieldCount do
+      if GISdb[DBonTable].dbOpts.VisCols[i] then Tstr := Tstr + 'C';
+
+   Latex.Add('\begin{tabularx}{\textwidth}{' + TStr + '}');
+   Latex.Add('\toprule');
+   TStr := '\textbf{' + GISdb[DBonTable].MyData.GetFieldName(0) + '}';
+   for i := 1 to pred(GISdb[DBonTable].MyData.FieldCount) do
+      if GISdb[DBonTable].dbOpts.VisCols[i] then begin
+         Tstr := Tstr + ' & \textbf{' + RemoveUnderscores(GISdb[DBonTable].MyData.GetFieldName(i)) + '}';
+      end;
+   Latex.Add(TStr + ' \\');
+   Latex.Add('\midrule');
+   GISdb[DBonTable].MyData.First;
+   while not GISdb[DBonTable].MyData.eof do begin
+      TStr := GISdb[DBonTable].MyData.GetFieldByNameAsString(GISdb[DBonTable].MyData.GetFieldName(0));
+      for i := 1 to pred(GISdb[DBonTable].MyData.FieldCount) do
+         if GISdb[DBonTable].dbOpts.VisCols[i] then
+            Tstr := Tstr + ' & ' + GISdb[DBonTable].MyData.GetFieldByNameAsString(GISdb[DBonTable].MyData.GetFieldName(i));
+      TStr := TStr + ' \\';
+      Latex.Add(TStr);
+      GISdb[DBonTable].MyData.Next;
+   end;
+   Latex.Add('\bottomrule');
+   Latex.Add('\end{tabularx}');
+   Latex.Add('\end{table}');
+   DisplayAndPurgeStringList(Latex,' LATEX for ' + GISdb[DBonTable].dbName);
+end;
+
 
 procedure Tdbtablef.Latlongelevofrecordcorners1Click(Sender: TObject);
 var
@@ -10356,12 +10455,14 @@ end;
 
 procedure Tdbtablef.Graphbyareawithaveragescoreforselectedcriteria1Click(Sender: TObject);
 begin
-   DEMIX_AreaAverageScores_graph(DBonTable);
+   MessageToContinue('Disabled; need to add DEM stringlist');
+   //DEMIX_AreaAverageScores_graph(DBonTable);
 end;
 
 procedure Tdbtablef.Graphbytilewithaveragescoreforselectedcriteria1Click(Sender: TObject);
 begin
-   GraphAverageScoresByTile(DBonTable,Nil,Nil);
+   MessageToContinue('Disabled; need to add DEM stringlist');
+   //GraphAverageScoresByTile(DBonTable,Nil,Nil);
 end;
 
 procedure Tdbtablef.Graphfilters1Click(Sender: TObject);
@@ -10448,7 +10549,8 @@ end;
 
 procedure Tdbtablef.GraphwinningpercentagebyDEM1Click(Sender: TObject);
 begin
-   DEMWinningPercentageGraph(DBonTable,'');
+   MessageToContinue('Disabled; need to add DEM stringlist');
+   //DEMWinningPercentageGraph(DBonTable,'');
 end;
 
 procedure Tdbtablef.Graphwithranges1Click(Sender: TObject);
@@ -11481,13 +11583,14 @@ var
 
 begin
    {$IfDef RecordDEMIX} HighlightLineToDebugFile('Tdbtablef.iesbyopinions1Click in'); {$EndIf}
-    GISdb[DBonTable].AddFieldToDataBase(ftInteger,'ALOS_TIE',2);
-    GISdb[DBonTable].AddFieldToDataBase(ftInteger,'ASTER_TIE',2);
-    GISdb[DBonTable].AddFieldToDataBase(ftInteger,'COP_TIE',2);
-    GISdb[DBonTable].AddFieldToDataBase(ftInteger,'SRTM_TIE',2);
-    GISdb[DBonTable].AddFieldToDataBase(ftInteger,'NASA_TIE',2);
-    GISdb[DBonTable].AddFieldToDataBase(ftInteger,'FABDEM_TIE',2);
-    GISdb[DBonTable].AddFieldToDataBase(ftInteger,'TIES',2);
+    GISdb[DBonTable].AddFieldToDataBase(ftInteger,'ALOS_TIE',4);
+    GISdb[DBonTable].AddFieldToDataBase(ftInteger,'ASTER_TIE',4);
+    GISdb[DBonTable].AddFieldToDataBase(ftInteger,'COP_TIE',4);
+    GISdb[DBonTable].AddFieldToDataBase(ftInteger,'SRTM_TIE',4);
+    GISdb[DBonTable].AddFieldToDataBase(ftInteger,'NASA_TIE',4);
+    GISdb[DBonTable].AddFieldToDataBase(ftInteger,'FABDEM_TIE',4);
+    GISdb[DBonTable].AddFieldToDataBase(ftInteger,'TANDEM_TIE',4);
+    GISdb[DBonTable].AddFieldToDataBase(ftInteger,'TIES',4);
     GISdb[DBonTable].AddFieldToDataBase(ftString,'CRIT_CAT',4);
     GISdb[DBonTable].EmpSource.Enabled := false;
     GISdb[DBonTable].MyData.First;
@@ -11509,6 +11612,7 @@ begin
        DoOne('SRTM');
        DoOne('COP');
        DoOne('FABDEM');
+       DoOne('TANDEM');
        GISdb[DBonTable].MyData.Next;
     end;
 
@@ -12024,10 +12128,10 @@ end;
 
 procedure Tdbtablef.BestDEMpertilebycriteria1Click(Sender: TObject);
 begin
-{$IfDef ExDEMIXexperimentalOptions}
-{$Else}
-   DEMIX_graph_best_in_Tile(DBonTable,true);
-{$EndIf}
+   {$IfDef ExDEMIXexperimentalOptions}
+   {$Else}
+      DEMIX_graph_best_in_Tile(DBonTable,true);
+   {$EndIf}
 end;
 
 procedure Tdbtablef.Showarearecords1Click(Sender: TObject);
@@ -12458,48 +12562,8 @@ end;
 
 
 procedure Tdbtablef.Clustermaplocations1Click(Sender: TObject);
-var
-   i{,j} : integer;
-   UniqueEntries,Results : tStringList;
-   fName : PathStr;
-   Bitmap : tMyBitmap;
 begin
-   {$IfDef RecordClustering} WriteLineRoDebugFile('Clustermaplocations1Click in'); {$EndIf}
-
-   SaveBackupDefaults;
-      GISdb[DBonTable].ClearGISFilter;
-      //SaveHiddenColumns(DBonTable);
-      //UnHideColumns;
-      Results := tStringList.Create;
-      GISdb[DBonTable].EmpSource.Enabled := false;
-      UniqueEntries := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('CLUSTER');
-      for i := 0 to pred(UniqueEntries.Count) do begin
-         GISdb[DBonTable].MyData.ApplyFilter('CLUSTER=' + UniqueEntries.Strings[i]);
-         MDDef.MapNameLocation.DrawItem := true;
-          //MDDef.MapNameLocation.MapPosition := lpSMap;
-
-          GISdb[DBonTable].theMapOwner.MapDraw.GrayscaleWorldOutline := true;
-          GISdb[DBonTable].theMapOwner.MapDraw.SubdueWorldOutline := true;
-
-          GISdb[DBonTable].theMapOwner.MapDraw.BaseTitle := GISdb[DBonTable].MyData.Filter  + '  (n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) +')';
-          GISdb[DBonTable].theMapOwner.DoCompleteMapRedraw;
-         GISdb[DBonTable].GISProportionalSymbols(dbasColorField);
-         GISdb[DBonTable].theMapOwner.OutlineMap;
-
-         CopyImageToBitmap(GISdb[DBonTable].theMapOwner.Image1,Bitmap);
-
-         fName := MDTempDir + GISdb[DBonTable].MyData.Filter + '.bmp';
-         Bitmap.SaveToFile(fName);
-         Results.Add(fName);
-      end;
-      MakeBigBitmap(Results,'Cluster locations');
-
-   GISdb[DBonTable].ClearGISFilter;
-   GISdb[DBonTable].theMapOwner.MapDraw.BaseTitle := '';
-   RestoreBackupDefaults;
-   GISdb[DBonTable].theMapOwner.DoCompleteMapRedraw;
-   ShowStatus;
-   {$IfDef RecordClustering} WriteLineRoDebugFile('Clustermaplocations1Click out'); {$EndIf}
+   ClusterMapLocation(DBonTable);
 end;
 
 procedure Tdbtablef.Clustermeangraphs1Click(Sender: TObject);
@@ -13800,6 +13864,11 @@ begin
    GISdb[DBonTable].ApplyGISFilter('REF_TYPE=' + QuotedStr('DTM') + ' AND LAND_TYPE=' + QuotedStr('ALL') + ' AND CRITERION=' + QuotedStr('ELVD_AVD'));
 end;
 
+
+procedure Tdbtablef.Filterforevaluations11Click(Sender: TObject);
+begin
+   FilterTableForDEMIXevaluation(DBonTable,1, '>');
+end;
 
 procedure Tdbtablef.Filterforjustsignedcrirteria1Click(Sender: TObject);
 begin

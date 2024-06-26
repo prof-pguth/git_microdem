@@ -198,7 +198,6 @@ end;
 procedure DiluviumDEMIXtileReport;
 var
    sl : tStringList;
-   //db,
    DEM,i : integer;
    MapLib : tMyData;
    fName : PathStr;
@@ -239,8 +238,6 @@ begin
 end;
 
 
-
-
 function BoundingBoxFromFileName(fName : PathStr; var bb : sfBoundBox) : boolean;
 var
    WorkName,WorkingString : ANSIstring;
@@ -249,14 +246,25 @@ var
    function Decode : boolean;
    begin
       Result := false;
-      if (Length(workingString) = 7) and ((WorkingString[1] = 'N') or (WorkingString[1] = 'S')) and ((WorkingString[4] = 'E') or (WorkingString[4] = 'W')) then begin
-         bb.xmin := StrToInt(Copy(WorkingString,5,3));
-         if WorkingString[4] = 'W' then bb.xmin := -bb.xmin;
-         bb.ymin := StrToInt(Copy(WorkingString,2,2));
-         if WorkingString[1] = 'S' then bb.ymin := -bb.ymin;
-         bb.xmax := bb.xmin + TileSize;
-         bb.ymax := bb.ymin + TileSize;
-         Result := true;
+      if (Length(workingString) = 7) then begin
+         if ((WorkingString[1] = 'N') or (WorkingString[1] = 'S')) and ((WorkingString[4] = 'E') or (WorkingString[4] = 'W')) then begin
+            bb.xmin := StrToInt(Copy(WorkingString,5,3));
+            if WorkingString[4] = 'W' then bb.xmin := -bb.xmin;
+            bb.ymin := StrToInt(Copy(WorkingString,2,2));
+            if WorkingString[1] = 'S' then bb.ymin := -bb.ymin;
+            bb.xmax := bb.xmin + TileSize;
+            bb.ymax := bb.ymin + TileSize;
+            Result := true;
+         end
+         else  if ((WorkingString[5] = 'N') or (WorkingString[5] = 'S')) and ((WorkingString[1] = 'E') or (WorkingString[1] = 'W')) then begin
+            bb.xmin := StrToInt(Copy(WorkingString,2,3));
+            if WorkingString[1] = 'W' then bb.xmin := -bb.xmin;
+            bb.ymin := StrToInt(Copy(WorkingString,6,2));
+            if WorkingString[5] = 'S' then bb.ymin := -bb.ymin;
+            bb.xmax := bb.xmin + TileSize;
+            bb.ymax := bb.ymin + TileSize;
+            Result := true;
+         end;
       end;
    end;
 
@@ -266,7 +274,9 @@ begin
    Result := false;
    if Length(WorkName) < 7 then exit;
    try
-      if StrUtils.AnsiContainsText(UpperCase(fName),'MERIT') then TileSize := 5 else TileSize := 1;
+      if StrUtils.AnsiContainsText(UpperCase(fName),'MERIT') then TileSize := 5
+      else if StrUtils.AnsiContainsText(UpperCase(fName),'_XSAR_') then TileSize := 10
+      else TileSize := 1;
 
       if (Length(WorkName) = 7) then begin
          WorkingString := WorkName;
@@ -295,6 +305,13 @@ begin
          exit;
       end;
 
+      if StrUtils.AnsiContainsText(WorkName,'_XSAR_') then begin
+         WorkingString := Copy(WorkName,1,7);
+         Result := decode;
+         exit;
+      end;
+
+
       if StrUtils.AnsiContainsText(WorkName,'ASTGTMV003_') then begin  //aster ASTGTMV003_N18W156_dem
          WorkingString := Copy(WorkName,11,7);
          Result := decode;
@@ -302,9 +319,6 @@ begin
       end;
 
       if StrUtils.AnsiContainsText(WorkName,'DiluviumDEM') then begin
-{
-DiluviumDEM_N00_00_E006_00.tif
-}
          WorkingString := Copy(WorkName,13,3) + Copy(WorkName,20,4);
          Result := decode;
          exit;
@@ -1191,8 +1205,8 @@ var
    DataInSeries : tStringList;
    IndexSeriesTable : tMyData;
    DataType : ShortString;
-   i : integer;
-   fName : PathStr;
+   //i : integer;
+   //fName : PathStr;
 begin
    {$If Defined(RecordIndex) or Defined(RecordImageIndex) or Defined(LoadLibrary)} WriteLineToDebugFile('Enter LoadMapLibraryBox, display=' + TrueOrFalse(DisplayIt) + '  Open DEMs=, ' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
    try

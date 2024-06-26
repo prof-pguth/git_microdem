@@ -27,6 +27,7 @@
 
    {$IfDef Debug}
       //{$Define RecordNumberOpenMaps}
+     {$Define RecordMapDrawLegends}
       //{$Define TrackHorizontalDatum}
       //{$Define RecordFan}
       //{$Define RecordVAT}
@@ -833,6 +834,7 @@ function tMapDraw.ColsDisplayed : integer;
 begin
     Result := round(MapCorners.BoundBoxDataGrid.xmax - MapCorners.BoundBoxDataGrid.xmin);
 end;
+
 
 function tMapDraw.RowsDisplayed : integer;
 begin

@@ -101,7 +101,6 @@ begin
    Result := false;
 
    if OnGridNode(Xincr,YIncr) then begin
-      //point desired is on a grid node
       Result := GetElevMetersOnGrid(round(xgrid),round(ygrid),z);
    end
    else begin

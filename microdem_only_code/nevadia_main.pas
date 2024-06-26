@@ -4,7 +4,7 @@
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -164,7 +164,6 @@ type
     NASABlueMarbleSpeedButton: TSpeedButton;
     PopupMenu7: TPopupMenu;
     UTMordatumconversion1: TMenuItem;
-    Stateplanecoordinatesystem1: TMenuItem;
     UKOSgrid1: TMenuItem;
     TINSpeedButton: TSpeedButton;
     Geology1: TMenuItem;
@@ -518,7 +517,6 @@ type
     Noaddedlegends2: TMenuItem;
     N36: TMenuItem;
     N45: TMenuItem;
-    VerifySSIMfiles1: TMenuItem;
     MergeSSIMandR2database1: TMenuItem;
     CheckfilesizesforSSIMimagemismatches1: TMenuItem;
     DiluviumDEMandDEMIXDBoverlap1: TMenuItem;
@@ -624,6 +622,15 @@ type
     DeletereferenceDTMswithoutDTMinfilename1: TMenuItem;
     MovereferenceDSMs1: TMenuItem;
     DEMIXtilesineachareaforFULLU120U80andandU101: TMenuItem;
+    Ridgesandvalleys1: TMenuItem;
+    Overwrite5: TMenuItem;
+    Overwrite6: TMenuItem;
+    Mergeridgesandvalleys1: TMenuItem;
+    Overwrite7: TMenuItem;
+    Skipifpresent2: TMenuItem;
+    N56: TMenuItem;
+    Compareconvergenceindexfortestarea1: TMenuItem;
+    Open4elevationrangeDEMIXDBs1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -979,7 +986,6 @@ type
     procedure Noaddedlegends1Click(Sender: TObject);
     procedure Noaddedlegends2Click(Sender: TObject);
     procedure N45Click(Sender: TObject);
-    procedure VerifySSIMfiles1Click(Sender: TObject);
     procedure MergeSSIMandR2database1Click(Sender: TObject);
     procedure CheckfilesizesforSSIMimagemismatches1Click(Sender: TObject);
     procedure DiluviumDEMandDEMIXDBoverlap1Click(Sender: TObject);
@@ -990,11 +996,6 @@ type
     procedure Addprefixtoallfilesindirectory1Click(Sender: TObject);
     procedure Inventorydifferencestats1Click(Sender: TObject);
     procedure MergeDEMIXtilestats1Click(Sender: TObject);
-    //procedure FillholesintestareaDEMs1Click(Sender: TObject);
-    //procedure VectorchannelnetworksSAGA1Click(Sender: TObject);
-    //procedure Createchannelnetworkgrids1Click(Sender: TObject);
-    //procedure Channelnetworkcomparison1Click(Sender: TObject);
-    procedure Channelnetworkmisspercentagesbytile1Click(Sender: TObject);
     procedure MergemultipleTXTCSVintoDB1Click(Sender: TObject);
     procedure Overwrite4Click(Sender: TObject);
     procedure CreatetestareaDEMSskipifexists1Click(Sender: TObject);
@@ -1064,6 +1065,13 @@ type
     procedure MovereferenceDSMs1Click(Sender: TObject);
     procedure DEMIXtilesineachareaforFULLU120U80andandU101Click(
       Sender: TObject);
+    procedure Overwrite5Click(Sender: TObject);
+    procedure Overwrite6Click(Sender: TObject);
+    procedure Mergeridgesandvalleys1Click(Sender: TObject);
+    procedure Overwrite7Click(Sender: TObject);
+    procedure Skipifpresent2Click(Sender: TObject);
+    procedure Compareconvergenceindexfortestarea1Click(Sender: TObject);
+    procedure Open4elevationrangeDEMIXDBs1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1483,12 +1491,6 @@ begin
    MDDef.DEMIX_Mode := dmNotYetDefined;
    GetDEMIXPaths(false);
 end;
-
-procedure Twmdem.Channelnetworkmisspercentagesbytile1Click(Sender: TObject);
-begin
-    ChannelNetworkMissPercentages(True);
-end;
-
 
 procedure Twmdem.CheckfilesizesforSSIMimagemismatches1Click(Sender: TObject);
 var
@@ -2692,6 +2694,21 @@ begin
    CreateTestAreaDEMs(True);
 end;
 
+procedure Twmdem.Overwrite5Click(Sender: TObject);
+begin
+   DEMIX_CreateGridsFromVectors(true);
+end;
+
+procedure Twmdem.Overwrite6Click(Sender: TObject);
+begin
+   DEMIX_CreateGridsFromVectors(false);
+end;
+
+procedure Twmdem.Overwrite7Click(Sender: TObject);
+begin
+   ChannelNetworkMissPercentages(True);
+end;
+
 procedure Twmdem.N81Sfileviewer1Click(Sender: TObject);
 begin
    {$IfDef ExSidescan}
@@ -3170,6 +3187,11 @@ end;
 procedure Twmdem.Skipifpresent1Click(Sender: TObject);
 begin
    ClassificationAgreement(false);
+end;
+
+procedure Twmdem.Skipifpresent2Click(Sender: TObject);
+begin
+   ChannelNetworkMissPercentages(False);
 end;
 
 procedure Twmdem.NewDEMButtonClick(Sender: TObject);
@@ -4274,11 +4296,7 @@ end;
 
 procedure Twmdem.Mergechannelnetworkevaluations1Click(Sender: TObject);
 begin
-   MDDef.DEMIX_all_areas := true;
-   PickDEMIXMode;
-   SetParamsForDEMIXmode;
-   GetDEMIXpaths;
-   MergeCSVtoCreateFinalDB(ChannelMissesDir,'_Channel_Misses.csv','_channel_misses_' );
+   MergeCSV(3);
 end;
 
 
@@ -4290,11 +4308,7 @@ end;
 
 procedure Twmdem.Mergegeomorphonevaluatioins1Click(Sender: TObject);
 begin
-   MDDef.DEMIX_all_areas := true;
-   PickDEMIXMode;
-   SetParamsForDEMIXmode;
-   GetDEMIXpaths;
-   MergeCSVtoCreateFinalDB(GeomorphonsDir,'_geomorphons.csv','_pt_class_demix_db_');
+   MergeCSV(4);
 end;
 
 procedure Twmdem.Mergemasp1Click(Sender: TObject);
@@ -4311,6 +4325,11 @@ begin
    MergeMultipleCSVorTextFiles;
 end;
 
+procedure Twmdem.Mergeridgesandvalleys1Click(Sender: TObject);
+begin
+   MergeCSV(5);
+end;
+
 procedure Twmdem.Mergesourcedatatiles1Click(Sender: TObject);
 begin
    DEMIX_merge_source;
@@ -4323,12 +4342,8 @@ end;
 
 procedure Twmdem.MergeSSIMFUV1Click(Sender: TObject);
 begin
-   MDDef.DEMIX_all_areas := true;
-   PickDEMIXMode;
-   SetParamsForDEMIXmode;
-   GetDEMIXpaths;
-   if MDDef.DoFUV then MergeCSVtoCreateFinalDB(FUVresultsDir,'_fuv_results.csv','_fuv_demix_db_');
-   if MDDef.DoSSIM then MergeCSVtoCreateFinalDB(SSIMresultsDir,'_ssim_results.csv','_ssim_demix_db_');
+   if MDDef.DoFUV then MergeCSV(1);
+   if MDDef.DoSSIM then MergeCSV(2);
 end;
 
 
@@ -5555,12 +5570,6 @@ begin
 end;
 
 
-procedure Twmdem.VerifySSIMfiles1Click(Sender: TObject);
-begin
-   VerifyAllMapsReadyForSSIM;
-end;
-
-
 procedure Twmdem.VerifytestDEMcoverages1Click(Sender: TObject);
 begin
     VerifyTestDEMcoverages;
@@ -5927,6 +5936,11 @@ begin
 end;
 
 
+procedure Twmdem.Open4elevationrangeDEMIXDBs1Click(Sender: TObject);
+begin
+   StartDEMIXgraphs(-4);
+end;
+
 procedure MergeDEMs(Mode : integer);
 var
    UseGDALvrt : boolean;
@@ -6043,6 +6057,11 @@ begin
    CombineAllPanelGraphs;
 end;
 
+
+procedure Twmdem.Compareconvergenceindexfortestarea1Click(Sender: TObject);
+begin
+   OpenCopDEMandLandcoverForArea(false);
+end;
 
 procedure Twmdem.CompressDecompress1Click(Sender: TObject);
 begin

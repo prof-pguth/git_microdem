@@ -4,7 +4,7 @@ unit Least_cost_path;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -85,7 +85,7 @@ begin
    Result := ChangeFileExt(MDDef.LCPRoadfName,'_ldp_cost_surface.dem');
 end;
 
-
+(*
 function MakeSafeFileName(fName : ANSIString) : ANSIstring;
 var
   i: Integer;
@@ -94,13 +94,15 @@ begin
    for i := 1 to length(fName) do
       if not (fName[i] in ['0'..'9','a'..'z','A'..'Z']) then Result[i] := '_';
 end;
+*)
 
 function LCP_AccumCostfName(GISNum : integer) : PathStr;
 begin
    Result := '';
    if GISdb[GISnum].MyData.FieldExists(MDDef.PrecintField) then begin
-      Result := MakeSafeFileName(GISdb[GISnum].MyData.GetFieldByNameAsString(MDDef.PrecintField));
-      Result := ExtractFilePath(GISdb[GISnum].dbFullName) + Result + '_lcp_accum_cost_surf.dem';
+      //Result := CleanUpFileName(GISdb[GISnum].MyData.GetFieldByNameAsString(MDDef.PrecintField));
+      Result := ExtractFilePath(GISdb[GISnum].dbFullName) + GISdb[GISnum].MyData.GetFieldByNameAsString(MDDef.PrecintField) + '_lcp_accum_cost_surf.dem';
+      CleanUpFileName(Result);
    end;
 end;
 
@@ -108,8 +110,9 @@ function LCP_AccumDistancefName(GISNum : integer) : PathStr;
 begin
    Result := '';
    if GISdb[GISnum].MyData.FieldExists(MDDef.PrecintField) then begin
-      Result := MakeSafeFileName(GISdb[GISnum].MyData.GetFieldByNameAsString(MDDef.PrecintField));
-      Result := ExtractFilePath(GISdb[GISnum].dbFullName) + Result + '_lcp_accum_dist.dem';
+      //Result := CleanUpFileName(GISdb[GISnum].MyData.GetFieldByNameAsString(MDDef.PrecintField));
+      Result := ExtractFilePath(GISdb[GISnum].dbFullName) + GISdb[GISnum].MyData.GetFieldByNameAsString(MDDef.PrecintField) + '_lcp_accum_dist.dem';
+      CleanUpFileName(Result);
    end;
 end;
 
@@ -117,8 +120,9 @@ function LDP_AccumCostfName(GISNum : integer) : PathStr;
 begin
    Result := '';
    if GISdb[GISnum].MyData.FieldExists(MDDef.PrecintField) then begin
-      Result := MakeSafeFileName(GISdb[GISnum].MyData.GetFieldByNameAsString(MDDef.PrecintField));
-      Result := ExtractFilePath(GISdb[GISnum].dbFullName) + Result + '_ldp_accum_cost_surf.dem';
+      //Result := CleanUpFileName(GISdb[GISnum].MyData.GetFieldByNameAsString(MDDef.PrecintField));
+      Result := ExtractFilePath(GISdb[GISnum].dbFullName) + GISdb[GISnum].MyData.GetFieldByNameAsString(MDDef.PrecintField) + '_ldp_accum_cost_surf.dem';
+      CleanUpFileName(Result);
    end;
 end;
 
@@ -126,8 +130,9 @@ function LDP_AccumDistancefName(GISNum : integer) : PathStr;
 begin
    Result := '';
    if GISdb[GISnum].MyData.FieldExists(MDDef.PrecintField) then begin
-      Result := MakeSafeFileName(GISdb[GISnum].MyData.GetFieldByNameAsString(MDDef.PrecintField));
-      Result := ExtractFilePath(GISdb[GISnum].dbFullName) + Result + '_ldp_accum_dist.dem';
+      //Result := CleanUpFileName(GISdb[GISnum].MyData.GetFieldByNameAsString(MDDef.PrecintField));
+      Result := ExtractFilePath(GISdb[GISnum].dbFullName) + GISdb[GISnum].MyData.GetFieldByNameAsString(MDDef.PrecintField) + '_ldp_accum_dist.dem';
+      CleanUpFileName(Result);
    end;
 end;
 

@@ -30,8 +30,8 @@ uses
 
 const
    GoogleAPIsURL = 'https://maps.googleapis.com/maps/api/geocode/xml?';   //need for geocoding
-   PythonEXEname = 'C:\OSGeo4W\apps\Python39\python.exe';
-   PythonScriptDir = 'C:\OSGeo4W\apps\Python39\Scripts\';
+   PythonEXEname = 'C:\OSGeo4W\apps\Python312\python.exe';
+   PythonScriptDir = 'C:\OSGeo4W\apps\Python312\Scripts\';
 
    {$IfDef VCL}
       {$IfDef MonsterGrids}
@@ -118,10 +118,10 @@ const
 
 const
    dmNotYetDefined = 0;
-   dmClassic = 1;
-   dmAddCoastal = 2;
-   dmAddDiluvium = 3;
-   dmAddDelta = 4;
+   dmFull = 1;
+   dmU120 = 2;
+   dmU80 = 3;
+   dmU10 = 4;
 
 
 type
@@ -144,8 +144,7 @@ type
    tvdShift = (vdWGS84toEGM2008,vdEGM2008toWGS84,vdEGM96toEGM2008);
 
 
-{$IfDef ExRiverNetworks}
-{$Else}
+{$IfDef IncludeRiverNetworks}
    const   //for Hydrosheds river basins
       MaxRiverBasinNodes = 850000; //160000;
       MaxRiverSegs = 950000;
@@ -1918,15 +1917,25 @@ type
       WBDenoiseElevDiff  : float32;
 
       DEMIX_Mode,
+      DEMIXsymsize,
+      DEMIX_Tile_Full,
       DEMIX_groupWonLost : byte;
       //DEMIX_full_all,
       //DEMIX_full_U120,
       //DEMIX_full_U80,
       //DEMIX_full_U10 : byte;
+      DEMIX_FullDBfName,
+      DEMIX_U120DBfName,
+      DEMIX_U80DBfName,
+      DEMIX_U10DBfName,
+
       DEMIX_base_dir,
       DEMIX_criterion_tolerance_fName : PathStr;
       DEMIX_default_area,
       DEMIX_default_tile   : shortstring;
+      DEMIX_combined_graph,
+      PanelsByTestDEM,
+
       DEMIX_overwrite_enabled,
       DEMIX_highlat,
       DEMIX_default_half_sec_ref : boolean;

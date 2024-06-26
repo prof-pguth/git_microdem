@@ -4,7 +4,7 @@ unit Demterrc;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 {$I nevadia_defines.inc}
@@ -168,7 +168,6 @@ begin
    {$IfDef RecordTerrCats} WriteLineToDebugFile('GetTerrainCategory in=' + DEMGlb[inDEM].TerrainCategoryLabel(inTerrainCategory)); {$EndIf}
    GetTerrC := tGetTerrC.Create(Application);
    GetTerrC.FullOptions := FullOptions;
-   {$IfDef RecordTerrCats} WriteLineToDebugFile('GetTerrainCategory form created'); {$EndIf}
    with GetTerrC do begin
       MapOwner := theMap;
       DEMUsed := inDEM;
@@ -205,6 +204,8 @@ begin
       BitBtn4.Enabled := (CatDoing <> tcTwoAspects);
       SizeForm;
       {$IfDef RecordTerrCats} WriteLineToDebugFile('GetTerrainCategory form sized'); {$EndIf}
+
+      BitBtn10.Enabled := (CatDoing = tcElevOnly);
 
       CheckBox13.Checked := TerrainCategory.UseElevation and (CatDoing <> tcTwoAspects);
       CheckBox14.Checked := TerrainCategory.UseRelief and (CatDoing <> tcTwoAspects);
@@ -268,7 +269,6 @@ begin
       {$IfDef RecordTerrCats} WriteLineToDebugFile('GetTerrainCategory out=' + DEMGlb[inDEM].TerrainCategoryLabel(TerrainCategory)); {$EndIf}
    end;
 end;
-
 
 
 procedure TGetTerrC.SizeForm;
@@ -491,22 +491,18 @@ var
    fName : PathStr;
    DBlist : tStringList;
 begin
-   DBlist := tStringList.Create;
-   DefineTerrainCategory;
 
    if (CatDoing = tcElevOnly) then begin
+      DBlist := tStringList.Create;
+      DefineTerrainCategory;
       DBlist.Add('LAT,LONG,ELEV');
       DEMGlb[MapOwner.MapDraw.DEMonMap].SelectionMap.HighZ := TerrainCategory.CatMaxElev;
       DEMGlb[MapOwner.MapDraw.DEMonMap].SelectionMap.LowZ := TerrainCategory.CatMinElev;
       DEMGlb[MapOwner.MapDraw.DEMonMap].SelectionMap.PlotExtremeZValues(nil,dblist);
-   end
-   else begin
-     exit;
+      fName := Petmar.NextFileNumber(MDTempDir, 'terrain_cat_',DefaultDBExt);
+      DEMGlb[MapOwner.MapDraw.DEMonMap].SelectionMap.StringListToLoadedDatabase(DBList,fName);
+      EndProgress;
    end;
-
-   fName := Petmar.NextFileNumber(MDTempDir, 'terrain_cat_',DefaultDBExt);
-   DEMGlb[MapOwner.MapDraw.DEMonMap].SelectionMap.StringListToLoadedDatabase(DBList,fName);
-   EndProgress;
 end;
 
 procedure TGetTerrC.BitBtn1Click(Sender: TObject);
@@ -690,7 +686,6 @@ begin
    end;
    MapOwner.CheckThatLegendsAreOnTop;
    {$IfDef RecordTerrCats} WriteLineToDebugFile('BitBtn2Click out'); {$EndIf}
-
 {$EndIf}
 end;
 

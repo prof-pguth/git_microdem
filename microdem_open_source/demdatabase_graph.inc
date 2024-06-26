@@ -465,7 +465,6 @@ end;
 function TGISdataBaseModule.WaveFormGraph(SingleGraph : boolean) : tThisBaseGraph;
 var
    sl,sl2 : tStringList;
-   //i,
    LastI,FileNum : integer;
    fname : shortstring;
    z,lastz : float64;
@@ -817,15 +816,7 @@ begin
      end;
 
      {$IfDef RecordDataBaseTiming} writeLineToDebugFile('TGISDataBase.CreateHistogram done'); {$EndIf}
-
-     (*
-     //not working 8/23/2023
-     Result := CreateMultipleHistogram(True,FilesList,LegendList,WantXField,'Histogram');
-     *)
-
      Dispose(Values);
-     //FilesList.Free;
-     //LegendList.Free;
      MyData.ApplyFilter(OldFilter);
 end;
 

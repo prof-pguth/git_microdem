@@ -2440,7 +2440,7 @@ var
          AParameter('DEMIX','DEMIX_default_area',DEMIX_default_area,'');
          AParameter('DEMIX','DEMIX_default_tile',DEMIX_default_tile,'');
          AParameter('DEMIX','DEMIX_groupWonLost',DEMIX_groupWonLost,0);
-
+         AParameter('DEMIX','DEMIXsymsize',DEMIXsymsize,2);
          AParameter('DEMIX','DEMIX_xsize',DEMIX_xsize,900);
          AParameter('DEMIX','DEMIX_ysize',DEMIX_ysize,600);
          AParameter('DEMIX','DEMIX_DoCHM',DEMIX_DoCHM,true);
@@ -2463,9 +2463,6 @@ var
          AParameter('DEMIX','DEMIX_default_half_sec_ref',DEMIX_default_half_sec_ref,false);
          AParameter('DEMIX','DEMIX_open_ref_DEM',DEMIX_open_ref_DSM,true);
          AParameter('DEMIX','DEMIX_Tile_Full',DEMIX_Tile_Full,25);
-         //AParameter('DEMIX','DEMIX_Full_U120',DEMIX_Full_all,75);
-         //AParameter('DEMIX','DEMIX_Full_U80',DEMIX_Full_all,75);
-         //AParameter('DEMIX','DEMIX_Full_U10',DEMIX_Full_all,50);
          AParameter('DEMIX','LoadRefDEMMaps',LoadRefDEMMaps,true);
          AParameter('DEMIX','LoadTestDEMMaps',LoadTestDEMMaps,true);
          AParameter('DEMIX','LoadRefDEMs',LoadRefDEMs,true);
@@ -2492,11 +2489,16 @@ var
          AParameter('DEMIX','DoSSIM',DoSSIM,true);
          AParameter('DEMIX','DoFUV',DoFUV,true);
          AParameter('DEMIX','DEMIX_all_areas',DEMIX_all_areas,true);
-
+         AParameter('DEMIX','DEMIX_combined_graph',DEMIX_combined_graph,true);
+         AParameter('DEMIX','DEMIX_combined_graph',PanelsByTestDEM,true);
          AParameter('DEMIX','DEMIX_overwrite_enabled',DEMIX_overwrite_enabled,true);
          AParameter('DEMIX','DEMIX_Base_DB_Path',DEMIX_Base_DB_Path,'');
          AParameter('DEMIX','DEMIXlegendFontSize',DEMIXlegendFontSize,18);
          AParameter('DEMIX','DEMIXUseBins',DEMIXUseBins,6);
+         AParameter('DEMIX','DEMIX_FullDBfName',DEMIX_FullDBfName,'');
+         AParameter('DEMIX','DEMIX_U120DBfName',DEMIX_U120DBfName,'');
+         AParameter('DEMIX','DEMIX_U80DBfName',DEMIX_U80DBfName,'');
+         AParameter('DEMIX','DEMIX_U10DBfName',DEMIX_U10DBfName,'');
       end;
    end;
 
@@ -4676,8 +4678,7 @@ begin
          SafeMakeDir(TINDir);
       {$EndIf}
 
-      {$IfDef ExRiverNetworks}
-      {$Else}
+      {$IfDef IncludeRiverNetworks}
          SafeMakeDir(MainMapData + 'DRAINAGE');
       {$EndIf}
 

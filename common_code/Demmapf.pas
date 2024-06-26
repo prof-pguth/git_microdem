@@ -28,6 +28,7 @@
       //{$Define FanDrawProblems}
       //{$Define RawProjectInverse}  //must also be set in BaseMap
       {$Define RecordDEMIX}
+      //{$Define RecordClosing}
       //{$Define RecordDerivedGrids}
       //{$Define RecordDEMMapProjection}
       //{$Define RecordMatchMaps}
@@ -99,7 +100,6 @@
       //{$Define RecordOpenVectorMap}
       //{$Define RecordPrinter}
       //{$Define RecordKMLexport}
-      {$Define RecordClosing}
       //{$Define RecordCollarMapMargins}
       //{$Define RecordPitsSpires}
       //{$Define RecordFresnel}
@@ -149,7 +149,7 @@
       //{$Define RecordDrape}
       //{$Define RecordPLSS}
       //{$Define RecordPlateRotations}
-      {$Define RecordMapFormCreation}
+      //{$Define RecordMapFormCreation}
       //{$Define RecordReqAnt}
       //{$Define MouseMoving}
       //{$Define RecordButton}
@@ -1536,6 +1536,7 @@ type
     SAGAIwahashiandPikeclassification1: TMenuItem;
     SAGAtophatvalleyridgedetection1: TMenuItem;
     Whiteboxkappaindex1: TMenuItem;
+    SAGAgeomorphons1: TMenuItem;
     //procedure HiresintervisibilityDEM1Click(Sender: TObject);
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
@@ -2667,6 +2668,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure SAGAIwahashiandPikeclassification1Click(Sender: TObject);
     procedure SAGAtophatvalleyridgedetection1Click(Sender: TObject);
     procedure Whiteboxkappaindex1Click(Sender: TObject);
+    procedure SAGAgeomorphons1Click(Sender: TObject);
     //procedure RescaleallDEMsforSSIM1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
@@ -2918,7 +2920,8 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     function SaveDEMtoDBF(fName : PathStr; zName : shortString = 'Z'; ThinFactor : integer = -99;  FilterZ : boolean = false; ReportOut : boolean = false) : PathStr;
 
     function DrawRidgeMask(Color : tColor; RidgeMask,DisplayAndPurge : boolean) : tMyBitmap;
-    function CreateGridToMatchMap(What : tCreateGrid;  OpenMap : boolean = true; Resolution : tDEMprecision = FloatingPointDEM; SpacingX : float64 = -99; SpacingY : float64 = -99; DesiredUTMZone : integer = -99; RasterPixelIs : byte = 1) : integer;
+    function CreateGridToMatchMap(What : tCreateGrid;  OpenMap : boolean = true; Resolution : tDEMprecision = FloatingPointDEM; SpacingX : float64 = -99; SpacingY : float64 = -99;
+       DesiredUTMZone : integer = -99; RasterPixelIs : byte = 1; GridName : shortstring = '') : integer;
     function MakeTempGrid(OpenMap : boolean = false; GetParameters : boolean = false) : integer;
 
     function DrawStreamProfileOnMap(db : integer; WhatWanted : tDEMDoingWhat; Color : tPlatformColor; Width : byte) : tMyBitmap;
@@ -18838,7 +18841,6 @@ var
    MaskBitmap,Bitmap,SatBMP : tMyBitmap;
    ScreenLocations : ^tScreenLocations;
 
-
          procedure DesiredSteps;
          begin
             case MDDef.CartMovieSteps of
@@ -18904,7 +18906,6 @@ begin
             DesiredSteps;
          end
          else Steps := 0;
-
 
          if (Steps <> 0) then begin
             AngleShift := 360 div Steps;
@@ -19008,8 +19009,6 @@ begin
             {$IfDef RecordGlobeRotation} WriteLineToDebugFile('Start Movie'); {$EndIf}
             fName := DEMdefs.MovieDir + 'earth_rotation.mov';
             MovieList.SaveToFile(fName);
-
-            //PetImage.MakeMovie(fName);
             CreateNewMovie(fName);
             MovieList.Free;
          end;
@@ -19132,7 +19131,6 @@ end;
 procedure TMapForm.ResampleDEMgridbyaveraging1Click(Sender: TObject);
 begin
    DEMGlb[MapDraw.DEMonMap].ThinThisDEM('',0,true);
-   //AverageResampleThisDEM(NewDEM,0);
 end;
 
 
@@ -19170,42 +19168,8 @@ begin
 end;
 
 procedure TMapForm.MatchMapToThisOne(var DrapeMap : tMapForm);
-(*
-//changed 10/22/2023
-var
-   Lat1,Long1,Lat2,Long2 : float64;
-   xg1,yg1,xg2,yg2 : float32;
-*)
 begin
    MatchAnotherMapThisCoverageArea(Self,DrapeMap);
-(*
-   MapDraw.ScreenToLatLongDegree(0,0,Lat1,Long1);
-   MapDraw.ScreenToLatLongDegree(MapDraw.MapXSize,MapDraw.MapYSize,Lat2,Long2);
-   if (DrapeMap.MapDraw.DEMMap ) then begin
-      DEMGlb[DrapeMap.MapDraw.DEMOnMap].LatLongDegreetoDEMGrid(Lat1,Long1,xg1,yg1);
-      DEMGlb[DrapeMap.MapDraw.DEMOnMap].LatLongDegreetoDEMGrid(Lat2,Long2,xg2,yg2);
-      DrapeMap.FullMapSpeedButton.Enabled := true;
-   end
-   else begin
-      {$IfDef ExSat}
-      {$Else}
-        SatImage[DrapeMap.MapDraw.SatOnMap].LatLongDegreeToSatGrid(SatImage[MapDraw.SatOnMap].BandForSize,Lat1,Long1,xg1,yg1);
-        SatImage[DrapeMap.MapDraw.SatOnMap].LatLongDegreeToSatGrid(SatImage[MapDraw.SatOnMap].BandForSize,Lat2,Long2,xg2,yg2);
-        DrapeMap.MapDraw.MapCorners.BoundBoxDataGrid.xmin := round(xg1);
-        DrapeMap.MapDraw.MapCorners.BoundBoxDataGrid.ymin := round(yg1);
-        //DrapeMap.MapDraw.SatView.ColsDisplayed := succ(round(xg2-xg1));
-        //DrapeMap.MapDraw.SatView.RowsDisplayed := succ(round(yg2-yg1));
-      {$EndIf}
-   end;
-
-   DrapeMap.MapDraw.MapXSize := Self.MapDraw.MapXSize;
-   DrapeMap.MapDraw.MapYSize := Self.MapDraw.MapYSize;
-   SizeIsCorrectThankYou := true;
-   DrapeMap.ClientWidth := Self.ClientWidth;
-   DrapeMap.ClientHeight := Self.ClientHeight;
-   SizeIsCorrectThankYou := false;
-   DrapeMap.DoCompleteMapRedraw;
-*)
 end;
 
 
@@ -19588,8 +19552,19 @@ begin
 end;
 
 procedure TMapForm.Whiteboxkappaindex1Click(Sender: TObject);
+var
+   RefGrid,ClassGrid : integer;
+   Kappa,OverallAccuracy,AvgUsers,AvgProd : float32;
 begin
-   WBT_KappaIndex(ClassifiedName,ReferenceName : PathStr;
+   if GetTwoCompatibleGrids('#1 classified, #2 reference',true,ClassGrid,RefGrid,true,true) then begin
+      WBT_KappaIndex(DEMglb[ClassGrid].GeotiffDEMName,DEMglb[RefGrid].GeotiffDEMName);
+
+      ComputeKappa(RefGrid,ClassGrid,DEMglb[ClassGrid].FullDEMGridLimits,Kappa,OverallAccuracy,AvgUsers,AvgProd);
+      WriteLineToDebugFile('Kappa=' + RealToString(Kappa,-12,-2));
+      WriteLineToDebugFile('OverallAccuracy=' + RealToString(OverallAccuracy,-12,-2));
+      WriteLineToDebugFile('AvgUsers=' + RealToString(AvgUsers,-12,-2));
+      WriteLineToDebugFile('AvgProd=' + RealToString(AvgProd,-12,-2));
+   end;
 end;
 
 procedure TMapForm.WhiteBoxmultiscaleroughness1Click(Sender: TObject);
@@ -21194,7 +21169,8 @@ end;
 
 
 
-function TMapForm.CreateGridToMatchMap(What : tCreateGrid;  OpenMap : boolean = true; Resolution : tDEMprecision = FloatingPointDEM; SpacingX : float64 = -99; SpacingY : float64 = -99; DesiredUTMZone : integer = -99; RasterPixelIs : byte = 1) : integer;
+function TMapForm.CreateGridToMatchMap(What : tCreateGrid;  OpenMap : boolean = true; Resolution : tDEMprecision = FloatingPointDEM;
+    SpacingX : float64 = -99; SpacingY : float64 = -99; DesiredUTMZone : integer = -99; RasterPixelIs : byte = 1; GridName : shortstring = '') : integer;
 var
    Lat,Long : float64;
    NewHeader : tDEMheader;
@@ -21268,7 +21244,7 @@ begin
            MessageToContinue(ImpGridIncSpace + ' would require ' + IntToStr(NewHeader.NumCol) + 'x' + IntToStr(NewHeader.NumRow));
            exit;
         end;
-       NewName := 'geographic coordinates';
+        NewName := 'geographic coordinates';
     end
     else if (What = cgWKT) then begin
        fName := MDDef.WKTLidarProj;
@@ -21319,8 +21295,10 @@ begin
        NewName := ExtractFileName(fName);
     end;
 
+    if (GridName = '') then GridName := 'Grid with ' + NewName;
+
     {$IfDef RecordNewMaps} WriteLineToDebugFile('Variables set DEM size: ' + IntToStr(NewHeader.NumCol) + 'x' + IntToStr(NewHeader.NumRow) + '  ' + NewHeader.WKTString); {$EndIf}
-    OpenAndZeroNewDEM(false,NewHeader,Result,'Grid with ' + NewName, InitDEMmissing);
+    OpenAndZeroNewDEM(false,NewHeader,Result,GridName, InitDEMmissing);
     {$IfDef RecordNewMaps} WriteLineToDebugFile('OpenAndZeroNewDEM done, DEM=' + IntToStr(Result) + '  Projection ' + DEMGlb[Result].DEMMapProjection.GetProjectionName); {$EndIf}
 
     if OpenMap then begin
@@ -22224,7 +22202,7 @@ end;
 
 procedure TMapForm.N51Click(Sender: TObject);
 begin
-   SagaTRIMap(DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
+   SagaTRIMap(True,DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
 end;
 
 procedure TMapForm.PerpProfiles1Click(Sender: TObject);
@@ -23078,12 +23056,9 @@ begin
 end;
 
 procedure TMapForm.Convertcoordinates1Click(Sender: TObject);
-{$IfDef ExCartography}
 begin
-{$Else}
-var
-   ConvertForm : TUKOSConvertForm;
-begin
+   wmdem.PopUpMenu7.Popup(Mouse.CursorPos.X,Mouse.CursorPos.Y);
+(*
    ConvertForm := TUKOSConvertForm.Create(Application);
    ConvertForm.Caption := 'Coordinate converter';
    if MapDraw.DEMMap then ConvertForm.This_projection := DEMGlb[MapDraw.DEMonMap].DEMMapProj
@@ -23092,6 +23067,7 @@ begin
    ConvertForm.ShowParams;
    ConvertForm.ShowModal;
    {$EndIf}
+*)
 end;
 
 procedure TMapForm.ConvertUKOSDEMtoUTM1Click(Sender: TObject);
@@ -23831,8 +23807,7 @@ procedure TMapForm.Koppengrid1Click(Sender: TObject);
 begin
    {$IfDef ExGeography}
    {$Else}
-      LoadDataBaseFile(ClimateDir + 'koppen_grid' + DefaultDBExt);
-      CreateKoppenLegend(false);
+      OpenKoppenGridDB(self);
    {$EndIf}
 end;
 
@@ -23848,11 +23823,7 @@ procedure TMapForm.KoppenSpeedButton7Click(Sender: TObject);
 begin
 {$IfDef ExGeography}
 {$Else}
-   if (ClimateStationDB = 0) or (GISdb[ClimateStationDB] = Nil) then begin
-      ClimateStationDB := 0;
-      BackToWandering;
-   end
-   else begin
+   if ValidDB(ClimateStationDB) then begin
       ChangeDEMNowDoing(IDDataBaseOne);
       DBEditting := ClimateStationDB;
    end;
@@ -24289,6 +24260,11 @@ begin
    SAGA_FlowAccumulationParallizeable(DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
 end;
 
+procedure TMapForm.SAGAgeomorphons1Click(Sender: TObject);
+begin
+   SAGA_Geomorphons(true,DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
+end;
+
 procedure TMapForm.SAGAIwahashiandPikeclassification1Click(Sender: TObject);
 begin
    SAGA_IwahashiAndPikeClassification(true,DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
@@ -24326,7 +24302,7 @@ end;
 
 procedure TMapForm.SAGATPImap1Click(Sender: TObject);
 begin
-   SagaTPIMap(DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
+   SagaTPIMap(true,DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
 end;
 
 procedure TMapForm.SAGAVRMmapvectorruggedness1Click(Sender: TObject);
@@ -24334,7 +24310,7 @@ const
    Radius : integer = 5;
 begin
    ReadDefault('Radius (pixels)',Radius);
-   SagaVectorRuggednessMap(DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap,Radius);
+   SagaVectorRuggednessMap(true,DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap,Radius);
 end;
 
 procedure TMapForm.SAGAwatershedbasinsWangLiu1Click(Sender: TObject);

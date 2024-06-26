@@ -246,7 +246,7 @@ begin
    if ValidDEM(DEM) then begin
       Result := tStringList.Create;
       db := DEMIXtileFill(DEM,DEMGlb[DEM].DEMBoundBoxGeo,False);
-      GISdb[DB].ApplyGISFilter('GRID_FULL >' + IntToStr(DEMIX_Tile_Full));
+      GISdb[DB].ApplyGISFilter('GRID_FULL >' + IntToStr(MDDef.DEMIX_Tile_Full));
       GISdb[DB].Empsource.Enabled := false;
       {$If Defined(RecordCarto)} WriteLineToDebugFile('TMapForm.DEMIXtilesOnMap, tiles=' + IntToStr(GISdb[db].MyData.FiltRecsInDB)); {$EndIf}
       while not GISdb[db].MyData.Eof do begin
@@ -265,11 +265,11 @@ end;
 function NumFilledDEMIXtilesOnDEM(DEM : integer) : integer;
 var
    db : integer;
-   Name : shortstring;
+   //Name : shortstring;
 begin
    if ValidDEM(DEM) then begin
       db := DEMIXtileFill(DEM,DEMGlb[DEM].DEMBoundBoxGeo,False);
-      GISdb[DB].ApplyGISFilter('GRID_FULL >' + IntToStr(DEMIX_Tile_Full));
+      GISdb[DB].ApplyGISFilter('GRID_FULL >' + IntToStr(MDDef.DEMIX_Tile_Full));
       Result := GISdb[db].MyData.FiltRecsInDB;
       CloseAndNilNumberedDB(db);
    end
@@ -288,7 +288,7 @@ begin
    bb := MapDraw.MapCorners.BoundBoxGeo;
    if ValidDEM(MapDraw.DEMonMap) then begin
       db := DEMIXtileFill(MapDraw.DEMonMap,bb,False);
-      GISdb[DB].ApplyGISFilter('GRID_FULL >' + IntToStr(DEMIX_Tile_Full));
+      GISdb[DB].ApplyGISFilter('GRID_FULL >' + IntToStr(MDDef.DEMIX_Tile_Full));
       GISdb[DB].Empsource.Enabled := false;
    end
    else begin

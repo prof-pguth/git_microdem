@@ -13,6 +13,7 @@ unit petimage_form;
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    //{$Define RecordImageOverlayProblems}
+   //{$Define RecordAddGraphToBigBitmap}
    //{$Define RecordImageLoadProblems}
    //{$Define RecordImageResize}
    //{$Define RecordBitmapEdit}
@@ -52,7 +53,7 @@ uses
   Windows,  SysUtils, Messages, Classes, Graphics, Controls,
   Forms, Dialogs, Menus, ExtCtrls,{Printers,}JPEG,ClipBrd,
   Buttons, ToolWin, ComCtrls,
-  PETMAR,Petmar_types,PetImage,
+  PETMAR,Petmar_types,PetImage,BaseGraf,
   {$IfDef RegisterPhoto}    //unclear if all the code for this is still available, and if it would run
      DEMPersW,
      DEMCoord,
@@ -363,6 +364,11 @@ procedure AlphaMatchBitmaps(Bitmap,Bitmap2 : tMyBitmap);
 function MakeBigBitmap(var theFiles : tStringList; Capt : shortstring; SaveName : PathStr = ''; Cols : integer = -1; Legend : PathStr ='') : TImageDisplayForm;
 procedure CombineAllPanelGraphs;
 
+procedure AddGraphToBigBitmap(ap : integer; {var LeftStart : integer;} GraphPanelsWide,GraphPanelsHigh : integer; gr : TThisBaseGraph; var BigBitmap : tMyBitmap);
+procedure FinishBigMap(var BigBitmap,LegendBMP : tMyBitmap; aName : shortstring = ''; LegendBelow : boolean = true);
+
+
+
 procedure DifferenceTwoBitmaps;
 
 function OpenImageEditor : TImageDisplayForm;
@@ -388,11 +394,6 @@ uses
   sc_ColLith,
 {$EndIf}
 
-
-{$IfDef ExGraphs}
-{$Else}
-   BaseGraf,
-{$EndIf}
 
 {$IfDef ExTiff}
 {$Else}
@@ -445,6 +446,80 @@ type
 var
    FirstX,FirstY,LastX,LastY : integer;
 
+
+
+procedure AddGraphToBigBitmap(ap : integer; GraphPanelsWide,GraphPanelsHigh : integer; gr : TThisBaseGraph; var BigBitmap : tMyBitmap);
+ var
+    Bitmap : tMyBitmap;
+    UseFullWidth,FullWidth,Top,Row,Col,i,LeftStart  : integer;
+    SourceRect, DestRect : TRect;
+begin
+   CopyImageToBitmap(gr.Image1,Bitmap);
+   {$If Defined(RecordDEMIXSortGraph)}
+      fName := Petmar.NextFileNumber(MDTempDir,'frame_' + TheParameter + '_' + TheCriteria + '_' + theDEM + '_','.bmp');
+      Bitmap.SaveToFile(fName);
+   {$EndIf}
+   UseFullWidth := Bitmap.Width - Gr.GraphDraw.LeftMargin;
+   if (ap = 1) then begin
+      FullWidth := Bitmap.Width + pred(GraphPanelsWide) * (UsefullWidth + 10) + 10;
+      CreateBitmap(BigBitmap,FullWidth, (Bitmap.Height + 10) * GraphPanelsHigh);
+   end;
+   Col := 0;
+   Row := 1;
+   for I := 1 to ap do begin
+      inc(Col);
+      if (Col > GraphPanelsWide) then begin
+         inc(Row);
+         Col := 1;
+      end;
+   end;
+
+   Top := pred(Row) * (Bitmap.Height + 10);
+   if (Col = 1) then LeftStart := 0
+   else LeftStart := (Bitmap.Width + 10) + (Col-2) * (UsefullWidth + 10);
+
+   {$IfDef RecordAddGraphToBigBitmap} WriteLineToDebugFile('ap=' + IntToStr(ap) + ' Row=' + IntToStr(Row) + ' col=' + IntToStr(Col) + ' top=' + IntToStr(Top) + ' left=' + IntToStr(LeftStart)); {$EndIf}
+
+   if (Col = 1) then begin
+      BigBitmap.Canvas.Draw(0,Top,Bitmap);
+   end
+   else begin
+      SourceRect := Rect(Gr.GraphDraw.LeftMargin,0,Bitmap.Width,Bitmap.Height);
+      DestRect := Rect(LeftStart,Top,LeftStart + UsefullWidth,Top + Bitmap.Height);
+      BigBitmap.Canvas.CopyRect(DestRect,Bitmap.Canvas,SourceRect);
+   end;
+   //Gr.Destroy;
+   Bitmap.Free;
+end;
+
+
+procedure FinishBigMap(var BigBitmap,LegendBMP : tMyBitmap; aName : shortstring = ''; LegendBelow : boolean = true);
+var
+   LegHt,LegWidth : integer;
+begin
+   if (LegendBMP <> Nil) then begin
+      LegHt := LegendBmp.Height;
+      LegWidth := LegendBmp.Width;
+
+      if LegendBelow then begin
+         BigBitmap.Height := BigBitmap.Height + LegHt;
+         BigBitmap.Canvas.Draw((BigBitmap.Width div 2) - (LegWidth div 2), BigBitmap.Height - LegHt,LegendBMP);
+      end
+      else begin
+         BigBitmap.Width := BigBitmap.Width + 10 + LegWidth;
+         BigBitmap.Canvas.Draw(BigBitmap.Width + 10,BigBitmap.Height - LegHt - 5,LegendBMP);
+      end;
+   end;
+   if (aName = '') then aName := MDTempDir + 'Supp_fig_' + aName + '.png';
+   SaveBitmap(BigBitmap,aName);
+   {$If Defined(RecordAddGraphToBigBitmap)} WriteLineToDebugFile('MultipleBestByParameters done graph=' + aName  + ' ' + BitmapSizeString(BigBitmap)); {$EndIf}
+   DisplayBitmap(BigBitmap);
+   BigBitmap.Free;
+   LegendBMP.Free;
+end;
+
+
+
 procedure CombineAllPanelGraphs;
 var
    i : integer;
@@ -465,8 +540,6 @@ begin
       {$IfDef RecordBigBitmap}  WriteLineToDebugFile('No graphs found, AllGraphsOneImage out'); {$EndIf}
    end;
 end;
-
-
 
 
 
@@ -506,7 +579,6 @@ begin
          if (SaveName <> '') then begin
             {$IfDef RecordBigBitmap} WriteLineToDebugFile('MakeBigBitmap save in ' + SaveName); {$EndIf}
             SaveBitmap(BigBmp,SaveName);
-            //Result.Caption := ExtractFileNameNoExt(SaveName);
             Result.LoadImage(SaveName,true);
          end
          else begin

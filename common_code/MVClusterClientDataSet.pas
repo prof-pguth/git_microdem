@@ -924,7 +924,6 @@ type
                                                         const NumberClusters : byte;
                                                         const k              : byte;
                                                         const n              : integer)  :  TVectorClassLabels;
-
       function CalcClusterSSE      (  const PRegressData : PTRegressDataArray;
                                       const ClsLabs      : TVectorClassLabels;
                                       const NewCenters   : TClusterMeansArray;
@@ -1675,7 +1674,7 @@ implementation
         ******************************************************************************)
         function InitMultStatRec: TMultStatRec;
 var
-  i : TMultStatRec;
+  //i : TMultStatRec;
   j : integer;
         //var i:byte;
 
@@ -10665,10 +10664,10 @@ function TMVClusterClientDataSet.AssignDataToOrderedClusters (  const PRegressDa
                                                         const n              : integer)  :  TVectorClassLabels;
 //added by PLG, October 2023
 var
-  i,j,ObsCnt : integer;
+  i,j{,ObsCnt} : integer;
   aSum       : extended;
-  aMin       : extended;
-  BestClass  : integer;
+  //aMin       : extended;
+  //BestClass  : integer;
 begin
      for j := 1 to NumberClusters do begin
         DistArr[j] := 0;
@@ -10827,7 +10826,8 @@ function TMVClusterClientDataSet.KMeansClustering ( var ClusterSummary : tString
                                                     const k        : byte;
                                                     const sHTMLFileName : AnsiString): extended;
 var
-  ClusterCount,StartCluster,
+  //ClusterCount,
+  StartCluster,
   i,j,l,iEndIter : integer;
   f              : textfile;
   cf             : double;

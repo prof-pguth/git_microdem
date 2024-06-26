@@ -4,7 +4,7 @@ unit uk_os_converter;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -103,14 +103,11 @@ begin
    Petmar.PlaceFormAtMousePosition(Self);
    RadioGroup1.ItemIndex := ord(MDDef.OutPutLatLongMethod);
    This_projection := CreateUKOSprojection;
-
    {$IfDef ShowProjection} This_projection.WriteProjectionParametersToDebugFile('TUKOSConvertForm.FormCreate');  {$EndIf}
-
    ShowParams;
    FromMap := tMapProjection.Create;
    ToMap := tMapProjection.Create;
 end;
-
 
 
 procedure TUKOSConvertForm.FormDestroy(Sender: TObject);
@@ -138,8 +135,8 @@ var
 begin
    ToMap.DefineDatumFromUTMZone('WGS84',GetUTMZone(long),HemiFromLat(Lat),'TUKOSConvertForm.CommonConversion');
    if (This_projection.PName <> PolarStereographicEllipsoidal) then begin
-      if This_projection.PName = UK_OS then FromMap.DefineDatumFromUTMZone('OGB-A',GetUTMZone(long),'N','TUKOSConvertForm.CommonConversion UKOS')
-      else if This_projection.PName = Finn_GK then FromMap.DefineDatumFromUTMZone('KKJ',GetUTMZone(long),'N','TUKOSConvertForm.CommonConversion KKJ');
+      if (This_projection.PName = UK_OS) then FromMap.DefineDatumFromUTMZone('OGB-A',GetUTMZone(long),'N','TUKOSConvertForm.CommonConversion UKOS')
+      else if (This_projection.PName = Finn_GK) then FromMap.DefineDatumFromUTMZone('KKJ',GetUTMZone(long),'N','TUKOSConvertForm.CommonConversion KKJ');
       if (FromMap.h_datumcode <> ToMap.h_datumcode) then MolodenskiyTransformation(Lat,Long,OutLat,OutLong,FromMap,ToMap);
       RichEdit1.Lines.Add('WGS84:  ' + LatLongDegreeToString(OutLat,OutLong,MDDef.OutPutLatLongMethod));
    end;
@@ -160,7 +157,6 @@ begin
    RichEdit1.Lines.Add('Local datum: ' + LatLongDegreeToString(Lat,Long,MDDef.OutPutLatLongMethod));
    CommonConversion(Lat,Long);
 end;
-
 
 
 procedure TUKOSConvertForm.BitBtn2Click(Sender: TObject);

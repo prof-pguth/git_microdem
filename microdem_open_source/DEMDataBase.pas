@@ -10,15 +10,15 @@
 
 {$I nevadia_defines.inc}
 
-{$Define ExRiverNetworks}
+{$Define InlineSlowdowns}
 
 {$IFDEF DEBUG}
    {$IfDef RecordProblems}  //normally only defined for debugging specific problems
-      //{$Define RecordCloseDB}
       {$Define RecordDEMIX}
       {$Define RecordDBsort}
-      //{$Define RecordCopyFieldLinkDB}
       {$Define RecordClustering}
+      //{$Define RecordCloseDB}
+      //{$Define RecordCopyFieldLinkDB}
       //{$Define RecordLegend}
       //{$Define RecordDBNumericPlot}
       //{$Define RecordHyperion}
@@ -96,9 +96,10 @@
       //{$Define RecordValidScreenPosition}
       //{$Define RecordLineWidth}
    {$EndIf}
-{$ELSE}
-{$ENDIF}
+{$Else}
+{$EndIf}
 
+//{$Define IncludeRiverNetworks}
 
 
 
@@ -163,6 +164,8 @@ uses
    Petmar_ini_file,
    DEMESRIShapeFile, FireDAC.Stan.StorageBin;
 
+var
+   AddBBtoShapeFiles : boolean = true;  //set to false before opening DBif you are doing many files and know it won't be needed
 
 const
    NotAllowedDBtype = 'Not allowed for this type of database';
@@ -461,7 +464,7 @@ type
 
         function FindFieldRangeLinkPossible(FieldDesired : shortString; var aMinVal,aMaxVal : float64) : boolean;  overload;
         function FindFieldRangeLinkPossible(FieldDesired : shortString; var Num,Valid  : integer; var Sum,aMinVal,aMaxVal : float64) : boolean; overload;
-        function FindValidJoin(TheFilter : string) : boolean;
+        function FindValidJoin(TheFilter : string) : boolean;  {$IfDef InlineSlowdowns} inline; {$EndIf}
 
         procedure ClearLinkTable(ZeroNames : boolean);
         function FieldSum(FieldDesired : shortstring; ReEnable : boolean = true) : float64;
@@ -507,7 +510,7 @@ type
          procedure CreatePopupLegend(Title : shortstring = ''; SaveName : PathStr = '');
 
 
-
+     function NumUniqueEntriesInDB(fName : shortstring) : integer;
 
      procedure DefineColorTable;
      function ComputeColorFromRecord(var Color : tColor) : boolean;
@@ -679,8 +682,7 @@ type
         //procedure PlotSingleSideScanLeg(Bitmap : tMyBitmap);
      {$EndIf}
 
-     {$IfDef ExRiverNetworks}
-     {$Else}
+     {$IfDef IncludeRiverNetworks}
         procedure GetDrainageBasinStats(var StrahlerOrder : integer; var ThalwegLength,TotalLength : float64);
         procedure GetDrainageBasinNetwork;
         procedure FindDrainageBasinFromStreams;
@@ -755,7 +757,8 @@ procedure AdjustGazFeatureName(var FeatureName : ShortString);
 procedure MakeLinesFromPoints(GISDataBase : TGISdataBaseModule; fName : PathStr = ''; ShapeTypeWanted : integer = -99; Thin : integer = -1);
 
 procedure DoKMeansClustering(DBonTable : integer);
-
+procedure ClusterMapLocation(DBonTable : integer; TheFilters : tStringList = nil);
+procedure MapsByClusterAndDEM(DBonTable : integer);
 
 procedure ComputeVDatumShift(dbOnTable : integer);
 function AnalyzeVDatumShift(CSVName : PathStr; ErrorLog : tStringList = Nil) : integer;
@@ -763,9 +766,9 @@ function AnalyzeVDatumShift(CSVName : PathStr; ErrorLog : tStringList = Nil) : i
 function SortDataBase(DBOnTable : integer; Ascending : boolean; aField : shortString = ''; OutputDir : PathStr = '') : integer;
 procedure SortAndReplaceDataBase(DBOnTable : integer; Ascending : boolean; aField : shortString = '');
 
+function MakeFiltersForCluster(DBonTable : integer; IncludeBaseFilter : boolean) : tStringList;
 
-{$IfDef ExRiverNetworks}
-{$Else}
+{$IfDef IncludeRiverNetworks}
    procedure LoadNodeTableToMemory(NodeTable : tMyData; var NumNodes : integer; var RiverNetwork : pRiverNetwork; ReadLinks,ReadCont,ReadOrders : boolean);
 {$EndIf}
 
@@ -778,6 +781,7 @@ var
    DBPlotOrder :  array[1..MaxDataBase] of byte;
    DBPlotNow :  array[1..MaxDataBase] of boolean;
    ClimateStationDB,
+   KoppenGridDB,
    WindsDB,
    PiratesDB,
    DBEditting,
@@ -920,8 +924,7 @@ uses
    {$include demdatabase_geology.inc}
 {$Endif}
 
-{$IfDef ExRiverNetworks}
-{$Else}
+{$IfDef IncludeRiverNetworks}
    {$include demdatabase_drainage_basin.inc}
 {$EndIf}
 
@@ -932,6 +935,11 @@ begin
 end;
 
 
+function TGISdataBaseModule.NumUniqueEntriesInDB(fName : shortstring) : integer;
+begin
+   EmpSource.Enabled := false;
+   Result := MyData.NumUniqueEntriesInDB(fName);
+end;
 
 function SortDataBase(DBOnTable : integer; Ascending : boolean; aField : shortString = ''; OutputDir : PathStr = '') : integer;
 var
@@ -943,6 +951,9 @@ var
    NeedRestore : boolean;
 begin
    {$IfDef RecordDBsort} WriteLineToDebugFile('SortDataBase ' + GISDB[DBonTable].dbName + '  ' + aField); {$EndIf}
+   if (aField = '') then aField := GISDB[DBonTable].PickField('field to sort on',[ftString,ftSmallInt,ftFloat,ftInteger]);
+   if aField = '' then exit;
+
    NeedRestore := false;
    if (GISDB[DBonTable].dbtablef <> Nil) and GISDB[DBonTable].dbtablef.AnyHiddenColumns then begin
       If not AnswerIsYes('Sort without hidden fields') then begin
@@ -952,7 +963,6 @@ begin
       end;
    end;
 
-   if (aField = '') then aField := GISDB[DBonTable].PickField('field to sort on',[ftString,ftSmallInt,ftFloat,ftInteger]);
    if (GISDB[DBonTable].MyData.GetFieldType(aField) = ftString) then ft := 0 else ft := 2;
    GridForm := tGridForm.Create(Application);
    GridForm.HideCorrelationControls;
@@ -2557,8 +2567,8 @@ end;
 
          procedure TGISdataBaseModule.SaveCurrentDBaseSubset(fName : PathStr; ThinFactor : integer = 1; BatchRun : boolean = false; ForceAsk : boolean = false);
          var
-             db : integer;
-            Extract    : tStringList;
+            db : integer;
+            Extract : tStringList;
          begin
             {$IfDef RecordDataBaseSaveFiles} WriteLineToDebugFile('TGISdataBaseModule.SaveCurrentDBaseSubset in, db=' + MyData.TableName); {$EndIf}
             if (MyData.FiltRecsInDB = 0) then exit;
@@ -2642,7 +2652,7 @@ end;
              Result := (MyData.FieldExists('COP') and MyData.FieldExists('ALOS')) or
                        StrUtils.AnsiContainsText(dbName,'DEMIX') or
                        (MyData.FieldExists('U120_TILES') and MyData.FieldExists('U80_TILES')) or
-                       MyData.FieldExists('DEMIX_TILE') or MyData.FieldExists('COP_WIN')
+                       MyData.FieldExists('DEMIX_TILE');  // or MyData.FieldExists('COP_WIN')
          end;
 
          procedure TGISdataBaseModule.DisplayTable(fString : AnsiString = 'NONE'; CompleteFilter : boolean = false);
@@ -2785,7 +2795,7 @@ end;
             var
                Lat,Long,Avg,Delta : float64;
                z,sum : float32;
-               x,y,i,UseDEM,Col,Row,n,ic,Window : integer;
+               x,y,i,j,UseDEM,Col,Row,n,ic,Window : integer;
                eName : ShortString;
                SlopeAspectRec : tSlopeAspectRec;
             begin
@@ -2867,10 +2877,10 @@ end;
                       if (AddDEM = adDeltaAllGrids) then begin
                            n := 0;
                            Avg := 0;
-                           for i := 1 to MaxDEMDataSets do begin
-                              if ValidDEM(i) then begin
-                                 if DEMGlb[i].GetElevFromLatLongDegree(Lat,Long,z) then begin
-                                    fName := DEMGlb[i].AreaName;
+                           for j := 1 to MaxDEMDataSets do begin
+                              if ValidDEM(j) then begin
+                                 if DEMGlb[j].GetElevFromLatLongDegree(Lat,Long,z) then begin
+                                    fName := DEMGlb[j].AreaName;
                                     if length(fName) > 10 then fName := Copy(fName,1,10);
                                     Delta := z - MyData.GetFieldByNameAsFloat(eName);
                                     MyData.SetFieldByNameAsFloat(fName,delta);
@@ -4050,6 +4060,7 @@ begin
 
    NeedCentroid := false;
    ClimateStationDB := 0;
+   KoppenGridDB := 0;
    WindsDB := 0;
    PiratesDB := 0;
 end;
@@ -5438,7 +5449,7 @@ begin
      if ItsAShapeFile then begin
          dbBoundBox := aShapeFile.MainFileHeader.BoundBox;
          {$IfDef VCL}
-            if (MyData.TotRecsInDB < 10000) then begin
+            if (MyData.TotRecsInDB < 10000) and AddBBtoShapeFiles then begin
                if LineOrAreaShapeFile(ShapeFileType) then begin
                   if not(LatLongCornersPresent) then AddBoundingBox;
                end
@@ -5448,6 +5459,7 @@ begin
                AddSequentialIndex(RecNoFName,false);
             end;
          {$EndIf}
+         AddBBtoShapeFiles := true;
      end
      else begin
         fName := ChangeFileExt(dbFullName,'.shx');
@@ -5733,7 +5745,7 @@ end;
          dbTablef.DBonTable := 0;
          Action := caFree;
          dbTablef.FormClose(nil,Action);
-         dbTablef.Destroy;
+         //dbTablef.Destroy;
          dbTablef := Nil;
          {$IfDef RecordCloseDB} WriteLineToDebugFile('TGISdataBaseModule.CloseDBtableF done'); {$EndIf}
       end;
@@ -5745,8 +5757,8 @@ end;
 
 
 function TGISdataBaseModule.CloseDataBase : boolean;
-var
-   i : integer;
+//var
+   //i : integer;
 begin
    {$IfDef RecordCloseDB} WriteLineToDebugFile('TGISDataBase.CloseDataBase, ' + dbName); {$EndIf}
    if not (WMDEM.ProgramClosing) then begin
@@ -5754,14 +5766,12 @@ begin
       ToggleLayer(LayerIsOn);
    end;
 
+   ChangeDEMNowDoing(JustWandering);
+
+   if (DBNumber = KoppenGridDB) then KoppenGridDB := 0;
    if (DBNumber = ClimateStationDB) then ClimateStationDB := 0;
    if (DBNumber = WindsDB) then WindsDB := 0;
    if (DBNumber = PiratesDB) then PiratesDB := 0;
-
-   {$IfDef ExSidescan}
-   {$Else}
-      if (DBNumber = SideImg.SideIndexDB) then SideImg.SideIndexDB := 0;
-   {$EndIf}
 
    if ItsFanFile and (Not FanCanClose) then  begin
       MessageToContinue('Cannot close until you close the DEM');
@@ -5782,11 +5792,6 @@ begin
       CloseDBtableF;
    {$EndIf}
 
-   if (aShapeFile <> Nil) then begin
-      aShapeFile.Destroy;
-      aShapeFile := Nil;
-   end;
-
    {$IfDef ExRedistrict}
    {$Else}
       if (RedistrictForm <> Nil) then begin
@@ -5796,7 +5801,10 @@ begin
       end;
    {$EndIf}
 
-   ChangeDEMNowDoing(JustWandering);
+   if (aShapeFile <> Nil) then begin
+      aShapeFile.Destroy;
+      aShapeFile := Nil;
+   end;
 
    if (LayerTable <> Nil) then LayerTable.Destroy;
    if (LinkTable <> Nil) then LinkTable.Destroy;
