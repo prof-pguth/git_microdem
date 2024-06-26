@@ -168,12 +168,12 @@
         <VerInfo_MajorVer>2024</VerInfo_MajorVer>
         <VerInfo_Release>17</VerInfo_Release>
         <DCC_DcuOutput>C:\turbo\obj_files_64\</DCC_DcuOutput>
-        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2024.6.17.5;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2024.6.17.6;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
         <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
         <DCC_OutputDRCFile>false</DCC_OutputDRCFile>
         <DCC_RangeChecking>true</DCC_RangeChecking>
-        <VerInfo_Build>5</VerInfo_Build>
+        <VerInfo_Build>6</VerInfo_Build>
         <AppDPIAwarenessMode>none</AppDPIAwarenessMode>
         <DCC_MapFile>3</DCC_MapFile>
     </PropertyGroup>
@@ -512,8 +512,6 @@
         <DCCReference Include="..\common_code\get_sunrise.pas">
             <Form>sunrisepicker</Form>
         </DCCReference>
-        <DCCReference Include="..\common_code\SGP4SDP4.PAS"/>
-        <DCCReference Include="..\common_code\SGP_OUT.PAS"/>
         <DCCReference Include="..\common_code\DEMTigerOps.pas">
             <Form>TigerOverlayOptions</Form>
         </DCCReference>
@@ -647,7 +645,6 @@
         <DCCReference Include="..\common_code\DEMXYZdisplay.pas">
             <Form>XYZDisplayForm</Form>
         </DCCReference>
-        <DCCReference Include="..\common_code\SGP_INTF.PAS"/>
         <DCCReference Include="..\common_code\petfont.pas">
             <Form>FontDlg</Form>
         </DCCReference>
@@ -692,14 +689,7 @@
         <DCCReference Include="..\common_code\OKCANCL1.PAS">
             <Form>OKBottomDlg</Form>
         </DCCReference>
-        <DCCReference Include="..\common_code\SGP_OBS.PAS"/>
         <DCCReference Include="..\common_code\SOLAR.PAS"/>
-        <DCCReference Include="..\common_code\SGP_CONV.PAS"/>
-        <DCCReference Include="..\common_code\Sgp_in.pas"/>
-        <DCCReference Include="..\common_code\SGP_TIME.PAS"/>
-        <DCCReference Include="..\common_code\Sgp_init.pas"/>
-        <DCCReference Include="..\common_code\SGP_MATH.PAS"/>
-        <DCCReference Include="..\common_code\Support.pas"/>
         <DCCReference Include="..\common_code\contouroptsform.pas">
             <Form>SimpleContourOptions</Form>
         </DCCReference>
@@ -936,6 +926,16 @@
             <Form>PickAreasForm</Form>
             <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="..\sgp\SGP_CONV.PAS"/>
+        <DCCReference Include="..\sgp\Sgp_in.pas"/>
+        <DCCReference Include="..\sgp\Sgp_init.pas"/>
+        <DCCReference Include="..\sgp\SGP_INTF.PAS"/>
+        <DCCReference Include="..\sgp\SGP_MATH.PAS"/>
+        <DCCReference Include="..\sgp\SGP_OBS.PAS"/>
+        <DCCReference Include="..\sgp\SGP_OUT.PAS"/>
+        <DCCReference Include="..\sgp\SGP_TIME.PAS"/>
+        <DCCReference Include="..\sgp\SGP4SDP4.PAS"/>
+        <DCCReference Include="..\sgp\SGP_Support.pas"/>
         <None Include="nevadia_defines.inc"/>
         <None Include="..\common_code\demdatabase_maps.inc"/>
         <None Include="..\common_code\demdatabase_vcl.inc"/>
