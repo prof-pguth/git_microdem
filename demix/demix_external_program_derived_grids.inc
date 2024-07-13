@@ -52,10 +52,13 @@ end;
 
 
 function RefGridForThisPointGrid(WhatGroup : tDEM_int_array; i : integer) : integer;
+var
+   SpaceSec : float64;
 begin
-    if ValidDEM(i) then begin
-       {$IfDef RecordDEMIXRefDEM} WriteLineToDebugFile(DEMGlb[WhatGroup[i]].AreaName + ' ' + RealToString(3600 * DEMglb[WhatGroup[i]].DEMHeader.DEMxSpacing,-8,-2) + 'sec'); {$EndIf}
-       if (DEMglb[WhatGroup[i]].DEMHeader.DEMxSpacing > 1.05/3600) then Result := WhatGroup[-1]
+    if ValidDEM(WhatGroup[i]) then begin
+       SpaceSec := 3600 * DEMglb[WhatGroup[i]].DEMHeader.DEMxSpacing;
+       {$IfDef RecordDEMIXRefDEM} WriteLineToDebugFile(DEMGlb[WhatGroup[i]].AreaName + ' ' + RealToString(SpaceSec,-8,-2) + 'sec'); {$EndIf}
+       if (SpaceSec > 1.05) then Result := WhatGroup[-1]
        else Result := WhatGroup[0];
        {$IfDef RecordDEMIXRefDEM} WriteLineToDebugFile('Ref DEM for ' + DEMGlb[WhatGroup[i]].AreaName + ' is ' + DEMGlb[Result].AreaName); {$EndIf}
     end
@@ -115,6 +118,7 @@ begin
     end;
     Result := true;
     {$If Defined(RecordFUVsteps)} WriteLineToDebugFile(Param + ' files opened   ' + RealToString(StopWatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
+    {$If Defined(RecordOpenExternalProgramGrids)} ShowDEMIXgrids(Param,PointGrids,AreaGrids); {$EndIf}
 end;
 
 
@@ -321,13 +325,19 @@ begin
        fName := ExternalProgramOutPutFile(i,'SAGA',aParam,AreaName,true);
        {$IfDef RecordDEMIX_CONIN} WriteLineToDebugFile(fname + '  start'); {$EndIf}
        if FileExists(fName) then LoadNewDEM(PointGrids[i],fName,MDDef.OpenMapsFUVSSIM)
-       else PointGrids[i] := SAGA_ConvergenceIndex(MDDef.OpenMapsFUVSSIM,DEMGlb[PointDEMs[i]].GeotiffDEMName,fName);
+       else begin
+          wmdem.SetPanelText(2,DEMglb[PointDEMs[i]].AreaName,true);
+          PointGrids[i] := SAGA_ConvergenceIndex(MDDef.OpenMapsFUVSSIM,DEMGlb[PointDEMs[i]].GeotiffDEMName,fName);
+       end;
     end;
     for i := dmxFirstArea to NumAreaDEMs do begin
        fName := ExternalProgramOutPutFile(i,'SAGA',aParam,AreaName,false);
        {$IfDef RecordDEMIX_CONIN} WriteLineToDebugFile(fname + '  start'); {$EndIf}
        if FileExists(fName) then LoadNewDEM(AreaGrids[i],fName,MDDef.OpenMapsFUVSSIM)
-       else AreaGrids[i] := SAGA_ConvergenceIndex(MDDef.OpenMapsFUVSSIM,DEMGlb[AreaDEMs[i]].GeotiffDEMName,fName);
+       else begin
+          wmdem.SetPanelText(2,DEMglb[AreaDEMs[i]].AreaName,true);
+          AreaGrids[i] := SAGA_ConvergenceIndex(MDDef.OpenMapsFUVSSIM,DEMGlb[AreaDEMs[i]].GeotiffDEMName,fName);
+       end;
     end;
     Result := true;
     {$IfDef RecordDEMIX_CONIN} WriteLineToDebugFile('SAGACreateDEMIX_ConIn_Grids out'); {$EndIf}
@@ -386,7 +396,7 @@ begin
 end;
 
 
-procedure WBT_CreateDEMIX_Flow_AccumulationGrids(OpenMaps : boolean = false);
+procedure WBT_CreateDEMIX_Flow_AccumulationGrids(Log : boolean; OpenMaps : boolean = false);
 var
    i : integer;
    BreachName,FlowAccumulationName,StreamName,HANDName  : PathStr;
@@ -397,14 +407,14 @@ begin
       FlowAccumulationName  := '';
       StreamName := '';
       HANDName := '';
-      PointGrids[i] := WBT_FlowAccumulation(OpenMaps,True,True,DEMGlb[PointDEMs[i]].GeotiffDEMName,BreachName,FlowAccumulationName);
+      PointGrids[i] := WBT_FlowAccumulation(OpenMaps,Log,True,DEMGlb[PointDEMs[i]].GeotiffDEMName,BreachName,FlowAccumulationName);
     end;
     for i := dmxFirstArea to NumAreaDEMs do begin
        BreachName := '';
        FlowAccumulationName  := '';
        StreamName := '';
        HANDName := '';
-       AreaGrids[i] := WBT_FlowAccumulation(OpenMaps,True,True,DEMGlb[AreaDEMs[i]].GeotiffDEMName,BreachName,FlowAccumulationName);
+       AreaGrids[i] := WBT_FlowAccumulation(OpenMaps,Log,True,DEMGlb[AreaDEMs[i]].GeotiffDEMName,BreachName,FlowAccumulationName);
     end;
     {$IfDef RecordDEMIXFull} WriteLineToDebugFile('Flow accumulation grids created'); {$EndIf}
 end;

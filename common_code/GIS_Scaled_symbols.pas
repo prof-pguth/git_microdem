@@ -1096,7 +1096,7 @@ begin
      if (QFField = '') or (Not GISdb[theDB].MyData.FieldExists(QFField)) then begin
         QFField := GISdb[theDB].PickField('Field',[ftString,ftInteger,ftSmallInt]);
      end;
-     GISdb[theDB].FillComboBoxFromField(qfCombo,QFField);
+     GISdb[theDB].FillComboBoxFromSingleField(qfCombo,QFField);
   end
   else begin
      QFField := '';

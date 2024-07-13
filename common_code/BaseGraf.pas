@@ -428,6 +428,7 @@ type
      procedure MultipleHistogramPrep;
      function PlotDataFile(i : integer) : boolean;
      procedure PlotBarGraphFromDB(Bitmap : tMyBitmap);
+     procedure PlotXYColorFromDB(Bitmap : tMyBitmap);
      procedure DrawScaledColoredSymbols(Bitmap : tMyBitmap);
      procedure DrawScaledPieCharts(Bitmap : tMyBitmap);
   public
@@ -461,6 +462,7 @@ type
      SaveGraphName,
      RangeGraphName,
      BarGraphDBName,
+     XYColorDBName,
      ASCIIXYZFile        : PathStr;
      GraphName,
      BaseCaption,
@@ -1150,6 +1152,7 @@ begin
    sTable.Destroy;
 end;
 
+
 procedure TThisBaseGraph.DrawBoxPlot(Bitmap : tMyBitmap);
 var
    y : float32;
@@ -1157,12 +1160,20 @@ var
    TStr : shortstring;
    color : TPlatformColor;
 begin
+   GraphDraw.LeftMargin := 0;
+   GISDB[DataBaseOnGraph].MyData.First;
+   while not GISDB[DataBaseOnGraph].MyData.eof do begin
+      TStr := RemoveUnderscores(GISdb[DataBaseOnGraph].MyData.GetFieldByNameAsString('NAME'));
+      if Bitmap.Canvas.TextWidth(TStr) > (GraphDraw.LeftMargin + 30) then GraphDraw.LeftMargin := Bitmap.Canvas.TextWidth(TStr) + 30;
+      GISDB[DataBaseOnGraph].MyData.Next;
+   end;
+
    GISDB[DataBaseOnGraph].MyData.First;
    y := 1;
    while not GISDB[DataBaseOnGraph].MyData.eof do begin
       yi := GraphDraw.GraphY(y);
       TStr := RemoveUnderscores(GISdb[DataBaseOnGraph].MyData.GetFieldByNameAsString('NAME'));
-      Bitmap.Canvas.TextOut(2,yi - Bitmap.Canvas.TextHeight(TStr) div 2,TStr);
+      Bitmap.Canvas.TextOut(5,yi - Bitmap.Canvas.TextHeight(TStr) div 2,TStr);
       Color := ConvertTColorToPlatformColor(WinGraphColors[round(y) mod 15]);
       if StrUtils.AnsiContainsText(TStr,'(n=1)') or StrUtils.AnsiContainsText(TStr,'(n=2)') then begin
          ScreenSymbol(Bitmap.Canvas,GraphDraw.GraphX(GISdb[DataBaseOnGraph].MyData.GetFieldByNameAsFloat('MEAN') ),Yi,FilledBox,3,Color);
@@ -1215,7 +1226,7 @@ begin
    Result.GraphDraw.ShowHorizAxis0 := true;
    Result.GraphDraw.MinHorizAxis := GISDB[Result.DataBaseOnGraph].MyData.FindFieldMin('MIN');
    Result.GraphDraw.MaxHorizAxis := GISDB[Result.DataBaseOnGraph].MyData.FindFieldMax('MAX');
-   Result.GraphDraw.LeftMargin := 275;
+
    Result.GraphDraw.BottomMargin := 75;
 
    Result.Width := 850;
@@ -1232,13 +1243,14 @@ end;
 
       function GetAxisDecimals(inc : float32) : integer;
       begin
-         if inc > 10 then Result := 0
-         else if inc > 0.5 then Result := 1
-         else if inc > 0.05 then Result := 2
-         else if inc > 0.005 then Result := 3
-         else if inc > 0.0005 then Result := 4
-         else if inc > 0.00005 then Result := 5
-         else if inc > 0.000005 then Result := 6;
+         if (inc > 10) then Result := 0
+         else if inc > 1 then Result := 1
+         else if inc > 0.55 then Result := 2
+         else if inc > 0.055 then Result := 3
+         else if inc > 0.0055 then Result := 4
+         else if inc > 0.00055 then Result := 5
+         else if inc > 0.000055 then Result := 6
+         else if inc > 0.0000055 then Result := 7;
       end;
 
 
@@ -1434,6 +1446,8 @@ begin
          Dispose(NeighborHood);
       if (GraphDraw.LLcornerText <> '') then begin
          Bitmap.Canvas.Font.Color := clBlack;
+         Bitmap.Canvas.Brush.Color := clWhite;
+         Bitmap.Canvas.Brush.Style := bsClear;
          Bitmap.Canvas.TextOut(1, Bitmap.Height - Bitmap.Canvas.TextHeight(GraphDraw.LLcornerText), RemoveUnderScores(GraphDraw.LLcornerText));
       end;
 
@@ -3229,7 +3243,7 @@ var
    tf    : file;
    NumDone,TotNum : LongInt;
    Coords : ^Coord3Array;
-   Plot : boolean;
+   //Plot : boolean;
 begin
    {$IfDef RecordPlotFiles} WriteLineToDebugFile('TThisBaseGraph.PlotXYColorFile in, ' + inf); {$EndIf}
    try
@@ -3247,22 +3261,22 @@ begin
              yf := Coords^[pred(3*i)];
              if GraphDraw.PtOnGraph(xf,yf) then  begin
                 zf := Coords^[(3*i)];
-                Plot := true;
+                //Plot := true;
                 if GraphDraw.RainBowColors and (zf >= MinZShow) then begin
                    GraphDraw.Symbol[1].Color := PlatformRainbowColorFunct(zf,Minz,MaxZ);
                 end
                 else GraphDraw.Symbol[1].Color := ConvertTColorToPlatformColor(round(zf));
-                if Plot then begin
+                //if Plot then begin
                    xp := GraphDraw.GraphX(xf);
                    yp := GraphDraw.GraphY(yf);
                    if GraphDraw.Symbol[1].Size = 0 then begin
                       Bitmap.Canvas.Pen.Color := ConvertPlatformColorToTColor(GraphDraw.Symbol[1].Color);
                       Bitmap.Canvas.Pen.Width := GraphDraw.Symbol[1].Size;
-                      if i=1 then Bitmap.Canvas.MoveTo(xp,yp)
+                      if (i=1) then Bitmap.Canvas.MoveTo(xp,yp)
                       else Bitmap.Canvas.LineTo(xp,yp);
                    end
                    else ScreenSymbol(Bitmap.Canvas, xp,yp,GraphDraw.Symbol[1]);
-                end;
+                //end;
              end;
           end;
        end;
@@ -3883,6 +3897,7 @@ begin
      SaveGraphName := '';
      RangeGraphName := '';
      BarGraphDBName := '';
+     XYColorDBName := '';
      GraphFilter := '';
      SlicerOverlay := false;
      HistogramChanged := false;
@@ -4341,6 +4356,8 @@ end;
 
 
 procedure ForceLogAxisFit(var CycleCuts : tCycleCut; var NumCycles : integer; var Min,Max : float32);
+//const
+   //MaxCycles = 10;
 var
    i : integer;
 begin
@@ -4367,6 +4384,8 @@ end {proc ForceLogAxisFit};
 
 
 procedure ForceLinearAxisFit(var CycleCuts : tCycleCut; var NumCycles : integer; Min,Max : float32; PixelsHigh,TickSpacing : integer);
+//const
+   //MaxCycles = 10;
 var
   i  : integer;
   CycleSize,TickIncr,Range : float32;
@@ -4384,7 +4403,7 @@ begin
 
    i := 1;
    CycleCuts[i,1] := Min;
-   if (Min < 0) then CycleCuts[i,2] := CycleSize*trunc(Min / CycleSize)
+   if (Min < 0) then CycleCuts[i,2] := CycleSize * trunc(Min / CycleSize)
    else CycleCuts[i,2] := CycleSize*trunc(Min / CycleSize)  + CycleSize;
    CycleCuts[i,3] := TickIncr;
    while (CycleCuts[i,2]  < Max) and (i < MaxCycles) do begin
@@ -5145,6 +5164,50 @@ begin
 end;
 
 
+procedure TThisBaseGraph.PlotXYColorFromDB(Bitmap : tMyBitmap);
+var
+   Table : tMyData;
+   x,y : float32;
+   //Color : tColor;
+   xp,yp,Color : array[1..25] of integer;
+   i,j,k: integer;
+   Lines : tStringList;
+begin
+   Table := tMyData.Create(XYColorDBName);
+   GraphDraw.Symbol[1].Size := MDDef.DemixSymSize;
+   Lines := Table.ListUniqueEntriesInDB('Y');
+   for I := 0 to pred(Lines.Count) do begin
+      Table.ApplyFilter('Y=' + Lines[i]);
+      j := 0;
+      while not Table.eof do begin
+         inc(j);
+         xp[j] := GraphDraw.GraphX(Table.GetFieldByNameAsFloat('X'));
+         yp[j] := GraphDraw.GraphY(Table.GetFieldByNameAsFloat('Y'));
+         Color[j] := Table.GetFieldByNameAsInteger('COLOR');
+         Table.Next;
+      end;
+      for k := 1 to pred(Table.FiltRecsInDB) do begin
+         for j := 1 to pred(Table.FiltRecsInDB) do begin
+            if xp[j] > xp[j+1] then begin
+               SwapPair(xp[j],xp[j+1]);
+               SwapPair(yp[j],yp[j+1]);
+               SwapPair(Color[j],Color[j+1]);
+            end;
+         end;
+      end;
+
+      for j := Table.FiltRecsInDB downto 1 do begin
+         GraphDraw.Symbol[1].Color := ConvertTColorToPlatformColor(Color[j]);
+         ScreenSymbol(Bitmap.Canvas, xp[j],yp[j],GraphDraw.Symbol[1]);
+      end;
+   end;
+   Table.Destroy;
+   Lines.Destroy;
+end;
+
+
+
+
 procedure TThisBaseGraph.PlotBarGraphFromDB(Bitmap : tMyBitmap);
 var
    Table : tMyData;
@@ -5175,6 +5238,7 @@ begin
    end;
    Table.Destroy;
 end;
+
 
 procedure TThisBaseGraph.PlotDataFilesPlotted(Bitmap : tMyBitmap; fName : PathStr; i : integer);
 var
@@ -5497,6 +5561,10 @@ begin
 
           if (BarGraphDBName <> '') and (GraphDraw.GraphType <> gtScaledColorSymbols)then begin
              PlotBarGraphFromDB(BitMap);
+          end;
+
+          if (XYColorDBName <> '') then begin
+             PlotXYColorFromDB(Bitmap);
           end;
        end;
        GraphLabels;

@@ -417,6 +417,8 @@ const
 type
    tSetFieldType = set of TFieldType;
    Array100Boolean = array[0..MaxFieldsInDB] of boolean;
+const
+   StringOrIntegerField : tSetFieldType = [ftString,ftInteger,ftSmallInt,ftLargeInt];
 
 function ByteArrayToString(values : array of byte; alen : int16 = 0) : Ansistring;
 
@@ -436,7 +438,7 @@ var
 
 {$IfDef VCL}
 const
-   WinGraphColors : tColorArray = (clBlack,clRed,clBlue,clLime,clFuchsia,clPurple,clNavy,clAqua,clTeal,clSilver,clGreen,clYellow,clDkGray,clOlive,clMaroon,clWhite);
+   WinGraphColors : tColorArray = (clBlack,clRed,clBlue,clLime,clFuchsia,clPurple,clNavy,clAqua,clTeal,clOlive,clMaroon,clGreen,clYellow,clDkGray,clSilver,clWhite);
 {$EndIf}
 
 
@@ -848,7 +850,8 @@ var
    pName : shortString;
 begin
    {$IfDef MSWindows}
-      pName := uppercase(ExtractFileNameNoExt(ParamStr(0)));
+      //pName := uppercase(ExtractFileNameNoExt(ParamStr(0)));
+      pName := 'microdem';
       {$IfDef VCL}
          if (UpperCase(Copy(pName,1,8)) = 'MICRODEM') or (UpperCase(Copy(pName,1,4)) = 'MD64') or (UpperCase(Copy(pName,1,4)) = 'MD32') then pName := 'microdem';
          Result := GetAppDataFolder + PathDelim + pName + PathDelim;

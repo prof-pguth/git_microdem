@@ -15,6 +15,7 @@ unit demix_definitions;
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$Define RecordDEMIX}
+   //{$Define RecordOpenExternalProgramGrids}
    //{$Define RecordDEMIXLoad}
    //{$Define RecordDiluvium}
    //{$Define TrackAverageStats}
@@ -23,8 +24,8 @@ unit demix_definitions;
    //{$Define Record3DEPX}
    //{$Define RecordDEMIXRefDEM}
    //{$Define Record3DEPXFull}
-   {$Define RecordDEMIX_evaluations_graph}
-   {$Define RecordComputeDEMIX_Diff_Dist}
+   //{$Define RecordDEMIX_evaluations_graph}
+   //{$Define RecordComputeDEMIX_Diff_Dist}
    //{$Define RecordDEMIXLSgrids}
    {//$Define RecordDEMIXhillshades}
    //{$Define RecordDiluviumFull}
@@ -332,7 +333,7 @@ var
    procedure DeleteFilesForATestArea;
    procedure FindFilesWith42112;
    procedure FixFilesWith42112;
-   procedure EvalRangeAndStatsByCriterion(DBonTable : integer);
+   procedure EvalRangeAndStatsByCriterion(DBonTable : integer; aField : shortstring = '');
    procedure GetRangesForSSIM;
    procedure InventoryCriteriaEachDEMIXtile(DB : integer);
    procedure InventoryPercentileByCriterionEachDEMIXtile(DB : integer);
@@ -386,7 +387,7 @@ procedure FilterTableForDEMIXevaluation(DBonTable,Value : integer; anOperator : 
 //links to other programs
    function OpenGridsCreatedByExternalProgram(OpenMaps : boolean; aProgram,AreaName,Param : shortString; var PointGrids,AreaGrids : tDEM_int_array) : boolean;
    procedure WBT_CreateDEMIX_HANDGrids(OpenMaps : boolean = false);
-   procedure WBT_CreateDEMIX_Flow_AccumulationGrids(OpenMaps : boolean = false);
+   procedure WBT_CreateDEMIX_Flow_AccumulationGrids(Log : boolean; OpenMaps : boolean = false);
    procedure WBT_CreateDEMIX_GeomorphonGrids(OpenMaps : boolean = false);
    function SAGACreateDEMIX_ConIn_Grids(OpenMaps : boolean; AreaName,aParam : shortstring) : boolean;
 

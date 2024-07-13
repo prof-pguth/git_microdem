@@ -133,7 +133,6 @@ var
                DoOneCluster(BaseFilter,DEMIXmodeName + ' tiles');
             end
             else begin
-
                for i := 0 to pred(FilterToUse.Count) do begin
                   if (FilterToUse[i] = '') then aFilter := BaseFilter
                   else begin
@@ -146,11 +145,6 @@ var
             fName := NextFileNumber(MDTempDir,DEMIXmodeName + '_' + SingleCriterion + '_' + Param,'.dbf');
             db := StringList2CSVtoDB(Stats,fName,false,false,false);
             Result := StartBoxPlot(db);
-            (*
-            fName := MDTempDir + SingleCriterion + Param + '.bmp';
-            SaveImageAsBMP(Result.Image1,fName);
-            GraphImages.Add(fName);
-            *)
             GISdb[DBonTable].ApplyGISFilter(BaseFilter);
          end
          else Result := Nil;
@@ -161,7 +155,6 @@ var
    i : integer;
    OverallBaseFilter : shortstring;
    fName : PathStr;
-   //LeftStart : integer;
    GraphPanelsWide,GraphPanelsHigh : integer;
    BigBitmap,LegBMP : tMyBitmap;
 begin
@@ -175,29 +168,20 @@ begin
    GraphImages := tStringList.Create;
    for i := 1 to 7 do begin
       Graph[i] := OneGraph(TileCharacters[i]);
-      AddGraphToBigBitmap(i,{LeftStart,}3,3,Graph[i],BigBitmap);
+      AddGraphToBigBitmap(i,3,3,Graph[i],BigBitmap);
    end;
 
    if GISdb[DBonTable].MyData.FieldExists('COP_PDF') then begin
       Graph[8] := OneGraph('COP_PDF');
-      AddGraphToBigBitmap(8,{LeftStart,}3,3,Graph[8],BigBitmap);
+      AddGraphToBigBitmap(8,3,3,Graph[8],BigBitmap);
    end;
    if GISdb[DBonTable].MyData.FieldExists('COP_PDF') then begin
       Graph[9] := OneGraph('ALOS_PDF');
-      AddGraphToBigBitmap(9,{LeftStart,}3,3,Graph[9],BigBitmap);
+      AddGraphToBigBitmap(9,3,3,Graph[9],BigBitmap);
    end;
 
    LegBMP := Nil;
    FinishBigMap(BigBitmap,LegBMP);
-
-   (*
-   fName := MDTempDir + DEMIX_mode_abbreviation(MDDef.DEMIX_mode) + SingleCriterion + '_tile_characters.png';
-   if (GraphImages.Count = 0) then begin
-      MessageToContinue('Add tile characteristics to DB');
-      GraphImages.Destroy;
-   end
-   else MakeBigBitmap(GraphImages,'',fName,3);
-   *)
    GISdb[DBonTable].ApplyGISFilter(OverallBaseFilter);
 end;
 

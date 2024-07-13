@@ -1099,6 +1099,8 @@ var
 
 function OpenGazFile(fName : PathStr = '') : integer;
 procedure InsureFormOnScreenCurrentLocation(Form4 : tForm; x,y : integer);
+procedure SetColorForWaiting; inline
+procedure SetColorForProcessing; inline
 
 
 implementation
@@ -1348,6 +1350,17 @@ uses
 
 
 {$I nevadia_main_batch.inc}
+
+
+procedure SetColorForWaiting; inline
+begin
+   WMdem.Color := clScrollBar;
+end;
+
+procedure SetColorForProcessing; inline
+begin
+   WMdem.Color := clInactiveCaption;
+end;
 
 
 procedure InsureFormOnScreenCurrentLocation(Form4 : tForm; x,y : integer);
@@ -2022,9 +2035,13 @@ begin
    yval := '';
    upfile := '';
    downfile := '';
+
    Delete(CommandLine,1,1);      //the question mark
    ReplaceCharacter(CommandLine,'+','&');
    CommandLine := CommandLine + '&';
+
+
+
    while length(CommandLine) > 1 do begin
       Value := Petmar_Types.BeforeSpecifiedCharacterANSI(CommandLine,'&',true,true);
       Key := Petmar_Types.BeforeSpecifiedCharacterANSI(Value,'=',true,true);
@@ -2288,7 +2305,19 @@ begin
                for i := 1 to ParamCount do begin
                   TStr := UpperCase(ptTrim(ParamStr(i)));
                   {$IfDef RecordProblems} WriteLineToDebugFile('Command line parameter ' + IntToStr(i) + '=' + TStr); {$EndIf}
-                  SetProgramOptions(TStr);
+                  if TStr = '-FUVSSIM' then begin
+                     Self.Width := 750;
+                     Self.Height := 450;
+                     Self.Top := 100;
+                     Self.Left := 100;
+                     FUV_SSIM_Processing(dmFull,false);
+                     Halt;
+                     //Close;
+                     exit;
+                  end
+                  else begin
+                     SetProgramOptions(TStr);
+                  end;
                end;
            end;
        end;
@@ -2482,13 +2511,14 @@ begin
      Application.MainFormOnTaskbar := false;
      Application.Icon.LoadFromFile(fName);
   end;
+(*
   if StrUtils.AnsiContainsText(Application.ExeName,'1') then Self.Color := clGradientInactiveCaption;
   if StrUtils.AnsiContainsText(Application.ExeName,'2') then Self.Color := clGradientActiveCaption;
   if StrUtils.AnsiContainsText(Application.ExeName,'3') then Self.Color := clMoneyGreen;
   if StrUtils.AnsiContainsText(Application.ExeName,'4') then Self.Color := cl3DLight;
   if StrUtils.AnsiContainsText(Application.ExeName,'5') then Self.Color := clInfoBk;
   if StrUtils.AnsiContainsText(Application.ExeName,'6') then Self.Color := clYellow;
-
+*)
   ProgramClosing := false;
   AskForDebugUpdateNow := false;
   AskForNewUpdateNow := false;
@@ -4224,35 +4254,15 @@ begin
 end;
 
 
-(*
-procedure Twmdem.SanitizedXTF1Click(Sender: TObject);
-{$IfDef ExSideScan}
-begin
-{$Else}
-var
-   dName : PathStr;
-   i : integer;
-begin
-   MDDef.SonarMapDef.CustomPalette := true;
-   Maxwellplanning1Click(Sender);
-   dName := 'sanitized_wreck';
-   DownloadandUnzipDataFileIfNotPresent(dName);
-   for i := 1 to 4 do LoadSideScanFile(DEMGlb[LastDEMLoaded].SelectionMap,MainMapData + dName + '\sanitized_' + IntToStr(i) + '.xtf');
-{$EndIf}
-end;
-*)
 
 procedure Twmdem.Satellitepredictions1Click(Sender: TObject);
 begin
     {$IfDef ExTrackSat}
     {$Else}
-       SatTractForm := TSatTractForm.Create(Application);
        wmdem.Vectormap1Click(Sender);
-       VectorMap[LastVectorMap].Closable := false;
        VectorMap[LastVectorMap].Caption := 'Satellite predictions';
-       SatTractForm.MapOwner := VectorMap[LastVectorMap];
-       SatTractForm.BitBtn5.Enabled := false;
-       SatTractForm.BitBtn4Click(Sender);
+       //VectorMap[LastVectorMap].Closable := false;
+       StartSatelliteTracking(VectorMap[LastVectorMap]);
     {$EndIf}
 end;
 
@@ -4276,7 +4286,7 @@ end;
 
 procedure Twmdem.Mediansatellitedatacontest1Click(Sender: TObject);
 begin
-   {$IfDef Include2021datafusion}  Experimental_MD.MedianOfSatelliteData;  MakeLittleTiles; {$EndIf}
+   {$IfDef Include2021datafusion} Experimental_MD.MedianOfSatelliteData; MakeLittleTiles; {$EndIf}
 end;
 
 procedure Twmdem.Megathrusts1Click(Sender: TObject);

@@ -27,7 +27,7 @@
 
    {$IfDef Debug}
       //{$Define RecordNumberOpenMaps}
-     {$Define RecordMapDrawLegends}
+     //{$Define RecordMapDrawLegends}
       //{$Define TrackHorizontalDatum}
       //{$Define RecordFan}
       //{$Define RecordVAT}

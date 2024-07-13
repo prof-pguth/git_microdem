@@ -1204,6 +1204,11 @@ begin
    end;
 end;
 
+
+
+
+
+
 procedure MergeCSV(Mode : integer);
 begin
    MDDef.DEMIX_all_areas := true;
@@ -1392,7 +1397,7 @@ var
              ShowHourglassCursor;
              Sum := GISdb[DBonTable].MyData.FieldSum(Field);
              Average := Sum / GISdb[DBonTable].MyData.FiltRecsInDB;
-             aline := aline + ',' + RealToString(Average,12,-2);
+             aline := aline + ',' + RealToString(Average,-12,-4);
           end;
        end;
        Findings.Add(aline);
@@ -1898,6 +1903,7 @@ var
 begin
    try
       ShowHourglassCursor;
+      SetColorForProcessing;
       fName := 'J:\visioterra_primary_data_fraction\COP-DEM_GLO-30-DGED_v2019_1_A03_Primary_data_fraction.tif';
       Cop := OpenNewDEM(fName,false,'COP-PDF');
       fName := 'J:\visioterra_primary_data_fraction\AW3D30_v2003_A03_Primary_data_fraction.tif';
@@ -1906,6 +1912,7 @@ begin
       GISdb[dbOnTable].AddFieldToDataBase(ftFloat,'ALOS_PDF',6,2);
       GISdb[dbOnTable].EmpSource.Enabled := false;
       GISdb[dbOnTable].MyData.First;
+      ShowHourglassCursor;
       while not GISdb[dbOnTable].MyData.eof do begin
          GISdb[dbOnTable].MyData.Edit;
          Tile := GISdb[dbOnTable].MyData.GetFieldByNameAsString('DEMIX_TILE');
@@ -1919,11 +1926,12 @@ begin
       CloseSingleDEM(ALOS);
    finally
       ShowDefaultCursor;
+      SetColorForWaiting;
    end;
 end;
 
 
-procedure EvalRangeAndStatsByCriterion(DBonTable : integer);
+procedure EvalRangeAndStatsByCriterion(DBonTable : integer; aField : shortstring = '');
 var
    Criteria : tstringlist;
    i,db : integer;
@@ -1931,33 +1939,43 @@ var
    MomentVar : tMomentVar;
    Findings : tStringList;
    Tol : float32;
+   BaseFilter : shortstring;
 begin
-   GISdb[DBonTable].EmpSource.Enabled := false;
-   Criteria := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('CRITERION');
-   Findings := tStringList.Create;
-   Findings.Add('CRITERION,MIN,PC5,PC25,MEDIAN,MEAN,PC75,PC95,MAX,N,TOLERANCE');
-   for i := 0 to pred(Criteria.Count) do begin
-       GISdb[DBonTable].ApplyGISFilter('CRITERION=' + QuotedStr(Criteria.Strings[i]));
-       GISdb[DBonTable].EmpSource.Enabled := false;
-       MomentVar := GISdb[DBonTable].GetFieldStatistics('EVAL_RANGE');
-       Tol := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('TOLERANCE');
-       Findings.Add(Criteria.Strings[i] + ',' + RealToString(MomentVar.MinZ,-12,-6)  + ',' +
-                                                RealToString(MomentVar.PC5,-12,-6)  + ',' +
-                                                RealToString(MomentVar.Q1,-12,-6)  + ',' +
-                                                RealToString(MomentVar.Median,-12,-6)  + ',' +
-                                                RealToString(MomentVar.Mean,-12,-6)  + ',' +
-                                                RealToString(MomentVar.Q3,-12,-6)  + ',' +
-                                                RealToString(MomentVar.PC95,-12,-6)  + ',' +
-                                                RealToString(MomentVar.MaxZ,-12,-6)  + ',' +
-                                                IntToStr(MomentVar.NPts)  + ',' +
-                                                RealToString(Tol,-12,-6) );
+   try
+      if (aField = '') then begin
+         GISdb[DBonTable].EmpSource.Enabled := false;
+         aField := GISdb[DBonTable].PickField('Field statistics by criterion',NumericFieldTypes);
+      end;
+      SetColorForProcessing;
+      GISdb[DBonTable].EmpSource.Enabled := false;
+      BaseFilter := GISdb[DBonTable].MyData.Filter;
+      Criteria := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('CRITERION');
+      Findings := tStringList.Create;
+      Findings.Add('CRITERION,MIN,PC5,PC25,MEDIAN,MEAN,PC75,PC95,MAX,N,TOLERANCE');
+      for i := 0 to pred(Criteria.Count) do begin
+          GISdb[DBonTable].ApplyGISFilter(AddAndIfNeeded(BaseFilter) + 'CRITERION=' + QuotedStr(Criteria.Strings[i]));
+          GISdb[DBonTable].EmpSource.Enabled := false;
+          MomentVar := GISdb[DBonTable].GetFieldStatistics(aField);
+          Tol := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('TOLERANCE');
+          Findings.Add(Criteria.Strings[i] + ',' + RealToString(MomentVar.MinZ,-12,-6)  + ',' +
+                                                   RealToString(MomentVar.PC5,-12,-6)  + ',' +
+                                                   RealToString(MomentVar.Q1,-12,-6)  + ',' +
+                                                   RealToString(MomentVar.Median,-12,-6)  + ',' +
+                                                   RealToString(MomentVar.Mean,-12,-6)  + ',' +
+                                                   RealToString(MomentVar.Q3,-12,-6)  + ',' +
+                                                   RealToString(MomentVar.PC95,-12,-6)  + ',' +
+                                                   RealToString(MomentVar.MaxZ,-12,-6)  + ',' +
+                                                   IntToStr(MomentVar.NPts)  + ',' +
+                                                   RealToString(Tol,-12,-6) );
+      end;
+      fName := NextFileNumber(MDTempDir,'Evaluation_range_' + GISdb[DBonTable].dbName + '_','.dbf');
+      db := StringList2CSVtoDB(Findings,fName);
+      GISdb[DBonTable].ApplyGISFilter(BaseFilter);
+   finally
+      ShowDefaultCursor;
+      SetColorForWaiting;
    end;
-   fName := NextFileNumber(MDTempDir,'Evaluation_range_','.dbf');
-   db := StringList2CSVtoDB(Findings,fName);
-   GISdb[DBonTable].ClearGISFilter;
 end;
-
-
 
 
 procedure EvalRangeAndBestEvalForCriterion(DBonTable : integer);

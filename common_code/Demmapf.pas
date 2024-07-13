@@ -10985,6 +10985,8 @@ begin
        if (DEMNowDoing = VisPolarOrbiter) then begin
           DEMGlb[MapDraw.DEMonMap].GetElevFromLatLongDegree(Lat,Long,z);
           MDDef.HorizonSkyMap := true;
+          StartSatelliteTracking(Self,Lat,Long,Elev);
+(*
           SatTractForm := TSatTractForm.Create(Application);
           SatTractForm.MapOwner := Self;
           SatTractForm.ObsLat := Lat;
@@ -10992,6 +10994,7 @@ begin
           SatTractForm.ObsElev := z;
           SatTractForm.BitBtn5Click(Nil);
           SatTractForm.BitBtn4Click(Nil);
+*)
        end;
     {$EndIf}
 

@@ -633,7 +633,7 @@ type
          function GetElevationField(CheckOverWrite : boolean = true) : shortstring;
          procedure LimitDBtoMapArea;
          procedure ColorButtonForSymbol(BitBtn1 : tBitBtn; Capt : shortString = '');
-         procedure FillComboBoxFromField(var ComboBox : tComboBox; Field : shortstring);
+         procedure FillComboBoxFromSingleField(var ComboBox : tComboBox; Field : shortstring);
          procedure PrepColors(Bitmap : tMyBitmap);
          function GetAnalysisFields : tStringlist;
          procedure StartVATEdits;
@@ -2161,7 +2161,7 @@ end;
             end;
          end;
 
-         procedure TGISdataBaseModule.FillComboBoxFromField(var ComboBox : tComboBox; Field : shortstring);
+         procedure TGISdataBaseModule.FillComboBoxFromSingleField(var ComboBox : tComboBox; Field : shortstring);
          var
             FieldValues : tStringList;
             i : integer;

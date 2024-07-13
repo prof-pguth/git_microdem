@@ -3,7 +3,7 @@ object fuv_ssim_control: Tfuv_ssim_control
   Top = 0
   Caption = 'fuv_ssim_control_form'
   ClientHeight = 441
-  ClientWidth = 624
+  ClientWidth = 656
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -234,7 +234,7 @@ object fuv_ssim_control: Tfuv_ssim_control
     TabOrder = 6
   end
   object BitBtn1: TBitBtn
-    Left = 24
+    Left = 32
     Top = 400
     Width = 105
     Height = 25
@@ -277,13 +277,30 @@ object fuv_ssim_control: Tfuv_ssim_control
     OnClick = BitBtn2Click
   end
   object BitBtn3: TBitBtn
-    Left = 280
-    Top = 400
-    Width = 105
+    Left = 560
+    Top = 160
+    Width = 75
     Height = 25
-    Caption = 'Make MD grids'
-    Enabled = False
+    Caption = 'Check all'
     TabOrder = 12
     OnClick = BitBtn3Click
+  end
+  object BitBtn4: TBitBtn
+    Left = 560
+    Top = 200
+    Width = 75
+    Height = 25
+    Caption = 'Uncheck all'
+    TabOrder = 13
+    OnClick = BitBtn4Click
+  end
+  object BitBtn5: TBitBtn
+    Left = 263
+    Top = 400
+    Width = 75
+    Height = 25
+    Caption = 'Spawn'
+    TabOrder = 14
+    OnClick = BitBtn5Click
   end
 end

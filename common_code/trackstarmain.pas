@@ -58,8 +58,7 @@ type
      BaseBitMap : tMyBitmap;
   end;
 
-var
-  SatTractForm : TSatTractForm;
+procedure StartSatelliteTracking(MapOwner : tMapForm; Lat : float64 = -999; Long : float64 = -999; Elev : float32 = -999);
 
 implementation
 
@@ -87,6 +86,37 @@ var
   jtime1,dt  : double;
 
 
+procedure StartSatelliteTracking(MapOwner : tMapForm; Lat : float64 = -999; Long : float64 = -999; Elev : float32 = -999);
+var
+  SatTractForm : TSatTractForm;
+begin
+       SatTractForm := TSatTractForm.Create(Application);
+       //VectorMap[LastVectorMap].Closable := false;
+       SatTractForm.MapOwner := MapOwner;
+       if Lat > -991 then begin
+          SatTractForm.ObsLat := Lat;
+          SatTractForm.ObsLong := Long;
+          SatTractForm.ObsElev := Elev;
+          SatTractForm.BitBtn5Click(Nil);
+       end
+       else begin
+          SatTractForm.BitBtn5.Enabled := false;
+       end;
+       SatTractForm.BitBtn4Click(Nil);
+
+(*
+          SatTractForm := TSatTractForm.Create(Application);
+          SatTractForm.MapOwner := Self;
+          SatTractForm.ObsLat := Lat;
+          SatTractForm.ObsLong := Long;
+          SatTractForm.ObsElev := z;
+          SatTractForm.BitBtn4Click(Nil);
+*)
+
+end;
+
+
+
 procedure TSatTractForm.RedrawSpeedButton12Click(Sender: TObject);
 begin
    ResetBaseMap;
@@ -104,10 +134,12 @@ procedure TSatTractForm.FormClose(Sender: TObject;  var Action: TCloseAction);
 begin
    Timer1.Enabled := false;
    Action := caFree;
+   (*
    if ObsLat < -999 then begin
       MapOwner.Closable := true;
       MapOwner.Close;
    end;
+   *)
    NetBMP.Free;
 end;
 

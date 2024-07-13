@@ -18,7 +18,7 @@ unit demix_control;
    //{$Define RecordDEMIXStart}
    //{$Define RecordDEMIXopenGrids}
    //{$Define RecordDEMIXversion}
-   {$Define RecordDEMIXLoad}
+   //{$Define RecordDEMIXLoad}
    //{$Define TrackDEMboundingBox}      //must also be enabled in DEMCoord
    //{$Define Record3DEPX}
    //{$Define RecordDiluvium}
@@ -264,8 +264,10 @@ var
 begin
    Table := tMyData.Create(DEMIX_criteria_dbName);
    Table.ApplyFilter('CRITERION=' + QuotedStr(Criterion));
-   if Table.FiltRecsInDB = 1 then Result := Table.TColorFromTable
-   else Result := clRed;
+   if (Table.FiltRecsInDB = 1) then Result := Table.TColorFromTable
+   else begin
+      Result := clRed;
+   end;
    Table.Destroy;
 end;
 
@@ -350,7 +352,6 @@ procedure MergeDEMIXtileStats;
 
 var
    TheFiles{,Results,Areas} : tStringList;
-   //i,j,n : integer;
    fName : PathStr;
 begin
    TheFiles := GetListOfDEMIXtileStats;
@@ -1020,7 +1021,7 @@ begin
    if StartProcessing then begin
       HeavyDutyProcessing := true;
       DEMIXProcessing := true;
-      WMdem.Color := clInactiveCaption;
+      SetColorForProcessing;
       ToggleShowProgress(false);
    end;
    StopSplashing;
@@ -1112,7 +1113,7 @@ begin
    ReportErrors := true;
    DEMIXProcessing := false;
    ToggleShowProgress(true);
-   WMdem.Color := clScrollBar;
+   SetColorForWaiting;
    LockStatusBar := false;
    wmdem.ClearStatusBarPanelText;
    EndProgress;

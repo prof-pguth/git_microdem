@@ -13,7 +13,8 @@ unit petdbutils;
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
       //{$Define RecordDataBaseFilter}
-      {$Define RecordCSVMerge}
+      //{$Define RecordCSVMerge}
+      //{$Define RecordCSV}
       //{$Define RecordDataBaseImage}
       //{$Define RecordOpenDB}
       //{$Define RecordCSVimport}
@@ -27,7 +28,6 @@ unit petdbutils;
       //{$Define RecordStringFromTable}
       //{$Define RecordGAZ}
       //{$Define RecordShortCSV}
-      //{$Define RecordCSV}
       //{$Define RecordKML}
       //{$Define RecordGPX}
       //{$Define RecordCSVParse}
@@ -272,18 +272,20 @@ begin
       if  FileExtEquals(fName,'.csv') or FileExtEquals(fName,'.txt') then begin
          Tstrl := tStringList.Create;
          TStrl.LoadFromFile(fName);
-         {$IfDef RecordCSVMerge} writelinetoDebugFile(IntegerToString(pred(Tstrl.count),12) + ' lines in  ' + fname); {$Endif}
-         if (i = 0) then begin
-            Header1 := tstrl.strings[0];
-            for j := 0 to pred(TStrl.Count) do Output.Add(TStrl.Strings[j]);
-         end
-         else begin
-            Header := tstrl.strings[0];
-            if (Uppercase(Header) <> UpperCase(Header1)) then begin
-               {$IfDef RecordCSVMerge} writelinetoDebugFile('Header mismatch, ' + Header + ' and '+ Header1); {$Endif}
+         if TStrl.Count > 0 then begin
+            {$IfDef RecordCSVMerge} writelinetoDebugFile(IntegerToString(pred(Tstrl.count),12) + ' lines in  ' + fname); {$Endif}
+            if (i = 0) then begin
+               Header1 := tstrl.strings[0];
+               for j := 0 to pred(TStrl.Count) do Output.Add(TStrl.Strings[j]);
             end
             else begin
-               for j := 1 to pred(TStrl.Count) do Output.Add(TStrl.Strings[j]);
+               Header := tstrl.strings[0];
+               if (Uppercase(Header) <> UpperCase(Header1)) then begin
+                  {$IfDef RecordCSVMerge} writelinetoDebugFile('Header mismatch, ' + Header + ' and '+ Header1); {$Endif}
+               end
+               else begin
+                  for j := 1 to pred(TStrl.Count) do Output.Add(TStrl.Strings[j]);
+               end;
             end;
          end;
          TStrl.Free;

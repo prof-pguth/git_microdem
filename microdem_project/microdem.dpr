@@ -332,13 +332,6 @@ uses
   SGP4SDP4 in '..\sgp\SGP4SDP4.PAS',
   SGP_Support in '..\sgp\SGP_Support.pas';
 
-//MethodCallBack in '..\python4delphi\Source\MethodCallBack.pas',
-  //VarPyth in '..\python4delphi\Source\VarPyth.pas',
-  //WrapActions in '..\python4delphi\Source\WrapActions.pas',
-  //Vcl.PythonGUIInputOutput in '..\python4delphi\Source\vcl\Vcl.PythonGUIInputOutput.pas',
-  //Vcl.PythonReg in '..\python4delphi\Source\vcl\Vcl.PythonReg.pas',
-  //simple_python in '..\python\simple_python.pas' {PythonForm1};
-
 {$R *.RES}
 
 {$SetPEFlags IMAGE_FILE_LARGE_ADDRESS_AWARE}
@@ -353,7 +346,7 @@ begin
   end
   else begin
     try
-      if (GetLastError = ERROR_ALREADY_EXISTS) then begin
+      if false and (GetLastError = ERROR_ALREADY_EXISTS) then begin
         MessageToContinue('Program already running.  Closing...');
       end
       else begin
@@ -363,7 +356,7 @@ begin
          Application.Title := '';
          Application.HelpFile := 'microdem.chm';
          Application.CreateForm(Twmdem, wmdem);
-  Application.Run;
+         Application.Run;
       end;
     finally
        CloseHandle(FMutex);

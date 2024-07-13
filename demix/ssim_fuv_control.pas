@@ -51,6 +51,8 @@ type
     CheckBox157: TCheckBox;
     BitBtn2: TBitBtn;
     BitBtn3: TBitBtn;
+    BitBtn4: TBitBtn;
+    BitBtn5: TBitBtn;
     procedure FormCreate(Sender: TObject);
     procedure BitBtn1Click(Sender: TObject);
     procedure BitBtn38Click(Sender: TObject);
@@ -58,23 +60,28 @@ type
     procedure BitBtn3Click(Sender: TObject);
     procedure HillshadeClick(Sender: TObject);
     procedure HANDClick(Sender: TObject);
+    procedure BitBtn4Click(Sender: TObject);
+    procedure BitBtn5Click(Sender: TObject);
   private
     { Private declarations }
     procedure CheckParameters;
-
+    procedure CheckAll(whichway : boolean);
   public
     { Public declarations }
   end;
 
 
 procedure FUV_SSIM_work;
+procedure FUV_SSIM_Processing(Mode : Byte; Overwrite : boolean);
+
 
 implementation
 
 {$R *.dfm}
 
 uses
-  Petmar_types,DEMDefs,demdef_routines,demix_definitions,Demix_control,DEMstat;
+  Petmar_types,DEMDefs,demdef_routines,demix_definitions,Demix_control,DEMstat,
+  petmar;
 
 
 procedure FUV_SSIM_work;
@@ -85,6 +92,27 @@ begin
    fuv_ssim_control.Show;
    //fuv_ssim_control.Destroy;
 end;
+
+procedure Tfuv_ssim_control.CheckAll(whichway : boolean);
+begin
+   CheckBox12.Checked := WhichWay;
+   CheckBox13.Checked := WhichWay;
+   CheckBox14.Checked := WhichWay;
+   CheckBox15.Checked := WhichWay;
+   Hillshade.Checked := WhichWay;
+   HAND.Checked := WhichWay;
+   CheckBox17.Checked := WhichWay;
+   CheckBox19.Checked := WhichWay;
+   CheckBox20.Checked := WhichWay;
+   CheckBox21.Checked := WhichWay;
+   CheckBox26.Checked := WhichWay;
+   CheckBox27.Checked := WhichWay;
+   CheckBox28.Checked := WhichWay;
+   CheckBox7.Checked := WhichWay;
+   CheckBox8.Checked := WhichWay;
+   CheckBox10.Checked := WhichWay;
+end;
+
 
 procedure Tfuv_ssim_control.FormCreate(Sender: TObject);
 begin
@@ -106,6 +134,7 @@ begin
    CheckBox7.Checked := MDDef.SSIM_rotor;
    CheckBox8.Checked := MDDef.SSIM_Openness;
    CheckBox10.Checked := MDDef.SSIM_ConvergeIndex;
+
    CheckBox5.Checked := MDDef.DEMIX_overwrite_enabled;
    CheckBox25.Checked := MDDef.OpenMapsFUVSSIM;
    CheckBox6.Checked := MDDef.DEMIX_all_areas;
@@ -125,47 +154,69 @@ begin
    MDDef.SSIM_hill := Hillshade.Checked;
 end;
 
+
+procedure FUV_SSIM_Processing(Mode : Byte; Overwrite : boolean);
+var
+   Areas : tStringList;
+begin
+   GetDEMIXpaths;
+   DEMIX_initialized := true;
+   MDDef.DEMIX_mode := Mode;
+   SetParamsForDEMIXmode;
+   Areas := DEMIX_AreasWanted(not MDDef.DEMIX_all_areas);
+   AreaSSIMandFUVComputations(Overwrite,Areas);
+   Areas.Destroy;
+end;
+
+
+procedure Spawn_FUV_SSIMProcessing;
+var
+   NewName : PathStr;
+   i : integer;
+begin
+   i := 0;
+   repeat
+      inc(i);
+      NewName := ExtractFilePath(application.exename) + 'md_' + IntToStr(i) + '.exe';
+   until not FileExists(NewName);
+   CopyFile(application.exename,NewName);
+   Petmar.ExecuteFile(NewName,'-fuvssim -mode=' + IntToStr(dmFull),'');
+end;
+
+
 procedure Tfuv_ssim_control.BitBtn1Click(Sender: TObject);
 
+
    procedure DoOne(Mode : byte);
-   var
-      Areas : tStringList;
+   //var
+      //Areas : tStringList;
    begin
-      MDDef.DEMIX_mode := Mode;
-      SetParamsForDEMIXmode;
       if (Sender = BitBtn1) then begin
-         Areas := DEMIX_AreasWanted(not MDDef.DEMIX_all_areas);
-         AreaSSIMandFUVComputations(MDDef.DEMIX_overwrite_enabled,Areas);
-         Areas.Destroy;
-      end
-      else if (Sender = BitBtn3) then begin
-(*
-         case Mode of
-            dmClassic : Make_MD_derivedGrids(Areas);
-            dmAddCoastal : MakeTerrainGridsFromMICRODEM('J:\wine_contest\coastal_test_dems',7,true);
-            dmAddDiluvium : MakeTerrainGridsFromMICRODEM('J:\wine_contest\diluvium_test_dems',2,false);
-            dmAddDelta : MakeTerrainGridsFromMICRODEM('J:\wine_contest\delta_test_dems',8,true);
-         end;
-*)
+         FUV_SSIM_Processing(Mode,MDDef.DEMIX_overwrite_enabled);
       end
       else begin
-         if MDDef.DoFUV then MergeCSVtoCreateFinalDB(FUVresultsDir,'_fuv_results.csv','_fuv_demix_db_');
-         if MDDef.DoSSIM then MergeCSVtoCreateFinalDB(SSIMresultsDir,'_ssim_results.csv','_ssim_demix_db_');
+(*
+         GetDEMIXpaths;
+         DEMIX_initialized := true;
+         SetParamsForDEMIXmode;
+         Areas := DEMIX_AreasWanted(not MDDef.DEMIX_all_areas);
+*)
+         MDDef.DEMIX_mode := Mode;
+         if MDDef.DoFUV then MergeCSV(1);   //MergeCSVtoCreateFinalDB(FUVresultsDir,'_fuv_results.csv','_fuv_demix_db_');
+         if MDDef.DoSSIM then MergeCSV(2); //MergeCSVtoCreateFinalDB(SSIMresultsDir,'_ssim_results.csv','_ssim_demix_db_');
       end;
    end;
 
 
 begin
    CheckParameters;
-   MDDef.DEMIX_mode := dmClassic;
+   MDDef.DEMIX_mode := dmFull;
    PickWineContestDBLocation;
-   GetDEMIXpaths;
-   DEMIX_initialized := true;
    ToggleShowProgress(false);
-   if CheckBox1.Checked then DoOne(dmClassic);
-   if CheckBox2.Checked then DoOne(dmAddCoastal);
-   if CheckBox3.Checked then DoOne(dmAddDiluvium);
-   if CheckBox4.Checked then DoOne(dmAddDelta);
+   if CheckBox1.Checked then DoOne(dmFull);
+   if CheckBox2.Checked then DoOne(dmU120);
+   if CheckBox3.Checked then DoOne(dmU80);
+   if CheckBox4.Checked then DoOne(dmU10);
    ToggleShowProgress(true);
 end;
 
@@ -177,13 +228,23 @@ end;
 
 procedure Tfuv_ssim_control.BitBtn38Click(Sender: TObject);
 begin
-    CheckParameters;
-    SaveMDdefaults;
+   CheckParameters;
+   SaveMDdefaults;
 end;
 
 procedure Tfuv_ssim_control.BitBtn3Click(Sender: TObject);
 begin
-   BitBtn1Click(Sender);
+   CheckAll(true);
+end;
+
+procedure Tfuv_ssim_control.BitBtn4Click(Sender: TObject);
+begin
+   CheckAll(false);
+end;
+
+procedure Tfuv_ssim_control.BitBtn5Click(Sender: TObject);
+begin
+   Spawn_FUV_SSIMProcessing;
 end;
 
 procedure Tfuv_ssim_control.CheckParameters;

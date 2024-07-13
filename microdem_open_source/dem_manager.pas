@@ -1250,7 +1250,7 @@ begin
       end;
    end;
 
-   FastRedrawAllMaps;
+   if not ClosingEverything then FastRedrawAllMaps;
 end;
 
 
@@ -1284,7 +1284,7 @@ begin
 
    {$IfDef VCL}
       if (WmDEM.MDIChildCount > 0) then begin
-         for j := WmDEM.MDIChildCount-1 downto 0 do begin
+         for j := pred(WmDEM.MDIChildCount) downto 0 do begin
             {$IfDef RecordClosingData} WriteLineToDebugFile('Try to close window: '+  WmDEM.MDIChildren[j].Caption); {$EndIf}
             try
                WmDEM.MDIChildren[j].Close;
@@ -1339,23 +1339,23 @@ end;
 
       function GetDEM(var DEMWanted : integer; CanCancel : boolean = false; TheMessage : ShortString = '') : boolean;
       var
-         i,Wanted,err : integer;
+         i,{Wanted,}err : integer;
          TheList : tStringList;
       begin
-         if (NumDEMDataSetsOpen = 1) and ValidDEM(1) then DEMWanted := 1
-         else begin
+         //if (NumDEMDataSetsOpen = 1) and ValidDEM(1) then DEMWanted := 1
+         //else begin
             DEMWanted := 0;
-            Wanted := 0;
+            //Wanted := 0;
             TheList := TStringList.Create;
             for i := 1 to MaxDEMDataSets do if (ValidDEM(i)) and (not DEMGlb[i].HiddenGrid) {and (ExcludeDEM <> i} then
                   TheList.Add('DEM' + IntegerToString(i,4) +': ' + DEMGlb[i].AreaName);
             {$IfDef VCL}
-               if (TheList.Count = 1) or MultiSelectSingleColumnStringList('DEM for ' + TheMessage,Wanted,TheList,CanCancel) then begin
-                  Val(Copy(theList.Strings[Wanted],5,3),DEMWanted,err);
+               if (TheList.Count = 1) or MultiSelectSingleColumnStringList('DEM for ' + TheMessage,DEMWanted,TheList,CanCancel) then begin
+                  //Val(Copy(theList.Strings[DEMWanted],5,3),DEMWanted,err);
                end;
             {$EndIf}
             TheList.Free;
-         end;
+         //end;
          Result := (DEMWanted <> 0);
       end;
 

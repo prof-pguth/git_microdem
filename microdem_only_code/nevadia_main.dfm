@@ -24,11 +24,12 @@ object wmdem: Twmdem
   OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
   OnResize = FormResize
-  TextHeight = 20
+  TextHeight = 16
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
     Width = 2418
+    Height = 29
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34

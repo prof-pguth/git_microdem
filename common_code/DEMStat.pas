@@ -19,14 +19,17 @@ unit DEMStat;
    {$IfDef Debug }
       //{$Define NoParallelFor}
       //{$Define RecordDEMIX_colors}
-      //{$Define RecordSSIM}
+      {$Define RecordSSIM}
       //{$Define RecordSSIMFull}
       {$Define RecordDEMIX}
       {$Define RecordFUVsteps}
       {$Define TimeGridsForArea}
+      {$Define TimeOpenCreateGrids}
+      //{$Define RecordMakeSSIMMapFull}
+      //{$Define RecordKappa}
       //{$Define RecordDEMIXFull}
       //{$Define TrackPixelIs}
-      {$Define RecordCovarianceFail}
+      //{$Define RecordCovarianceFail}
       //{$Define RecordDEMIXSSIMGrid}
       //{$Define RepeatProblematicComputations}  //put in breakpoint, and then follow debugger but may have issues
       //{$Define RecordCovariance}
@@ -206,7 +209,6 @@ type
    procedure NormalizeDEMforSSIM(DEM : integer; What : shortstring);
    function MakeSSIMMap(OpenMap,AlreadyNormalized : boolean; DEM1,DEM2,NumberOfGrids,WindowSize : integer; ThinFactor : integer = 1; AreaName : shortstring = '') : integer;
    procedure SSIMcheck(DoThinning : boolean);
-   //procedure Make_MD_derivedGrids(Areas : tStringList);
 
 
 const
@@ -3482,6 +3484,7 @@ begin
        end;
    end;
    AvgProd := AvgProd / n;
+   {$IfDef RecordKappa} WriteLineToDebugFile('Ref=' + DEMGlb[RefGrid].AreaName + ' Test=' + DEMGlb[TestGrid].AreaName + ' KAPPA=' + RealToString(1-Kappa,-12,-4)); {$EndIf}
 end;
 
 
