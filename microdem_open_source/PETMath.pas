@@ -17,7 +17,7 @@ unit PETMATH;
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    //{$Define RecordFitProblems}
-  {$Define TrackNegStdDev}
+   //{$Define TrackNegStdDev}
    //{$Define RecordCovar}
    //{$Define RecordMatrixOps} //can really degrade performance
 {$EndIf}
@@ -270,8 +270,6 @@ function EnoughPoints(MomentVar : tMomentVar) : boolean;
 procedure LoadBFarray32(fName : PathStr; var Values : Petmath.bfarray32; var npts : integer);
 
 
-
-
 implementation
 
 
@@ -283,7 +281,7 @@ var
 
 
 function IsInfinity(const d : double): boolean;
-// Like a NaN, an INF Double value has an exponent of 7FF, but the INF
+// Like NaN, an INF Double value has an exponent of 7FF, but the INF
 // values have a fraction field of 0. INF values can be positive or
 // negative, which is specified in the high-order, sign bit.
 VAR

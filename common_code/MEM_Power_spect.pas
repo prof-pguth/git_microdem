@@ -10,7 +10,7 @@ unit MEM_Power_spect;
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
-   {$Define RecordMemPower}
+   //{$Define RecordMemPower}
    //{$Define RecordFullMemPower}
 {$EndIf}
 

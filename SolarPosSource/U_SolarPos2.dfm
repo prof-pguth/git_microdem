@@ -334,6 +334,5 @@ object SolorPosForm1: TSolorPosForm1
     ParentFont = False
     TabOrder = 5
     OnClick = StaticText1Click
-    ExplicitWidth = 514
   end
 end

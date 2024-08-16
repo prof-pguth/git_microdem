@@ -9,7 +9,7 @@
 //it accomplishes several things:
 //   1. turns options on or off
 //   2. adds debug code to track down problems
-//   3. adapt to the different supported operating systems
+//   3. adapt to different supported operating systems (only Windows has been tested recently)
 
 
 {$O-,W+,V-,J+}
@@ -20,37 +20,14 @@
 
 //{$Define ExDEMIXexperimentalOptions}
 
-
-//{$Define TrackDEMboundingBox}
-
-
- //deleted 4/19/2023 to track down problems; they are not key options
-   {$Define ExSidescan}
-   {$Define ExOceanography}
-   {$Define ExDriftModel}
-   {$Define ExSieve}
-   {$Define ExLabDownloads}
-   {$Define ExRedistrict}
-   //{$Define ExTIN}      //this will take some work to get out of the core program
-
-
 //{$Define IncludePython}
 
 //{$Define ExFresnel}
 
-
-{$Define ExWaveLengthHeight}
-
-{$Define ExDRGimport}
-{$Define ExGeoPDF}
-{$Define ExWMS}
-{$Define ExMrSID}
-{$Define ExLandsatQA}
-
-
 {$Define MICRODEM}
 {$Define VCL}
 {$Define RecordProblems}
+{$Define UseGrass}
 
 {$IfDef MSWindows}
    {$Define UseTDBF}
@@ -60,16 +37,31 @@
 {$EndIf}
 
    {$Define RecordTime}
-   {$Define ExDTED}
    {$Define RecordIniMemoryOverwrite}
-   {$Define microdem}
 
-   {$Define AllowOddballDEMs}
    {$Define IncludeBILWrite}
    {$Define AllowGeomorphometry}
-   {$Define AllowOddballDEMexports}
    {$Define AllowDEMGeomorph}
+   {$Define AllowOddballDEMexports}
+   {$Define AllowOddballDEMs}
    {$Define UseFireDacSQLlite}
 
+
+{$Define ExDRGimport}
+{$Define ExGeoPDF}
+{$Define ExWMS}
+{$Define ExMrSID}
+{$Define ExLandsatQA}
+{$Define ExWaveLengthHeight}
+{$Define ExDTED}
+
+ //deleted 4/19/2023 to track down problems with recent optimizations; they are not key options
+   {$Define ExSidescan}
+   {$Define ExOceanography}
+   {$Define ExDriftModel}
+   {$Define ExSieve}
+   {$Define ExLabDownloads}
+   {$Define ExRedistrict}
+   //{$Define ExTIN}      //this will take some work to get out of the core program
 
 

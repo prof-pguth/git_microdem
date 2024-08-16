@@ -208,7 +208,7 @@ begin
    MapOverlayForm.CheckBox4.Checked := MapForm.OverlayUp(ovoPLSS);
    MapOverlayForm.CheckBox5.Checked := MapForm.OverlayUp(ovoGazetteer);
    MapOverlayForm.CheckBox7.Checked := MapForm.OverlayUp(ovoSRTMWater);
-   MapOverlayForm.CheckBox7.Enabled := Petmar_types.PathIsValid(MainMapData + 'srtm-swbd\');
+   MapOverlayForm.CheckBox7.Enabled := Petmar_types.ValidPath(MainMapData + 'srtm-swbd\');
    MapOverlayForm.CheckBox8.Checked := MapForm.OverlayUp(ovoCartoDB);
    MapOverlayForm.CheckBox9.Checked := MapForm.OverlayUp(ovoUSOutlines);
    MapOverlayForm.CheckBox10.Checked := MapForm.OverlayUp(ovoWorldOutlines);
@@ -216,7 +216,7 @@ begin
    MapOverlayForm.CheckBox6.Checked := MapForm.OverlayUp(ovoTissot);
    MapOverlayForm.CheckBox14.Checked := MapForm.OverlayUp(ovoSecondGrid);
    MapOverlayForm.CheckBox15.Checked := MapForm.OverlayUp(ovoOSM);
-   MapOverlayForm.CheckBox7.Visible := (MDDef.ProgramOption = ExpertProgram) and PathIsValid(MainMapData + 'srtm-swbd\');
+   MapOverlayForm.CheckBox7.Visible := (MDDef.ProgramOption = ExpertProgram) and ValidPath(MainMapData + 'srtm-swbd\');
    MapOverlayForm.CheckBox5.Visible := (MDDef.ProgramOption in [ExpertProgram,DragonPlotProgram]) and MDDef.UseGazetteer;
    MapOverlayForm.CheckBox13.Visible := (MapForm.MapDraw.AllFansCoverageFName <> '');
    MapOverlayForm.CheckPanels(false);

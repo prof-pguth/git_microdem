@@ -411,7 +411,7 @@ begin
          {$IfDef RecordMapMaking} WriteLineToDebugFile('TPickGeoStat.BitBtn20Click DEM saved'); {$EndIf}
          WBT_AvgNormVectAngDev(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap,Box);
          WBT_CircularVarianceOfAspect(true,DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap,Box);
-         SagaVectorRuggednessMap(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap,Box);
+         SagaVectorRuggednessMap(true,DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap,Box);
          GrassVectorRuggedness(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap,Box);
          {$IfDef RecordMapMaking} WriteLineToDebugFile('TPickGeoStat.BitBtn20Click loope done, radius=' + IntToStr(Radius)); {$EndIf}
       end;
@@ -432,54 +432,12 @@ end;
 
 
 procedure TPickGeoStat.BitBtn21Click(Sender: TObject);
-var
-   NewMap : integer;
-
-   procedure MatchAndSave;
-   begin
-      if ValidDEM(NewMap) then begin
-         MatchAnotherDEMMap(NewMap,CurDEM);
-         DEMGlb[NewMap].SaveAsGeotiff(ExtractFilePath(DEMGlb[CurDEM].DEMFileName) + DEMGlb[NewMap].AreaName + '.tif');
-      end;
-   end;
-
 begin
-   SaveBackupDefaults;
    NeedSingleDEM;
-
-   MDdef.SlopeAlg := smEightNeighborsUnweighted;
-   NewMap := CreateSlopeMap(CurDEM);
-   //FirstMap := NewMap;
-   DEMGlb[NewMap].AreaName := 'md_evans_slope';
-   MatchAndSave;
-
-   MDdef.SlopeAlg := smEightNeighborsWeighted;
-   NewMap := CreateSlopeMap(CurDEM);
-   DEMGlb[NewMap].AreaName := 'md_horn_slope';
-   MatchAndSave;
-
-   MDdef.SlopeAlg := smFourNeighbors;
-   NewMap := CreateSlopeMap(CurDEM);
-   DEMGlb[NewMap].AreaName := 'md_zt_slope';
-   MatchAndSave;
-
-   NewMap := WBT_SlopeMap(true,DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
-   MatchAndSave;
-
-   NewMap := GRASSSlopeMap(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
-   DEMGlb[NewMap].DEMHeader.RasterPixelIsGeoKey1025 := 1;
-   MatchAndSave;
-
-   NewMap := GDAL_SlopeMap_ZT(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap, DEMGlb[CurDEM].GDAL_ScaleFactorString);
-   DEMGlb[NewMap].DEMHeader.RasterPixelIsGeoKey1025 := 1;
-   MatchAndSave;
-
-   NewMap := GDAL_SlopeMap_Horn(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap, DEMGlb[CurDEM].GDAL_ScaleFactorString);
-   DEMGlb[NewMap].DEMHeader.RasterPixelIsGeoKey1025 := 1;
-   MatchAndSave;
-
-   RestoreBackupDefaults;
+   if (CurDEM = 0) and GetDEM(CurDEM,true,'single DEM geomorphometry') then CheckBox2.Checked := false;
+   CompareSlopeMaps(CurDEM);
 end;
+
 
 
 procedure TPickGeoStat.BitBtn22Click(Sender: TObject);
@@ -499,8 +457,8 @@ begin
    GDAL_TRI_Wilson(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
    GDAL_TPI(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
    WBT_TRI(true,DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
-   SagaTRIMap(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
-   SagaTPIMap(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
+   SagaTRIMap(True,DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
+   SagaTPIMap(True,DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
    GRASSTRIMap(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
    GRASSTPIMap(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
    HeavyDutyProcessing := false;

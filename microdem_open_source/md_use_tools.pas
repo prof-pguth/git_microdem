@@ -78,7 +78,6 @@ uses
    procedure Lastools_DEMToLAZ(InName,OutName : PathStr; Extra : shortString = '');
 {$EndIf}
 
-
 {$IfDef ExWhiteBox}
 {$Else}
    function WhiteBoxPresent : boolean;
@@ -87,9 +86,9 @@ uses
    function WBT_DeNoise(InName,OutName : PathStr) : shortString;
 
    function WBT_SlopeMap(OpenMap : boolean; InName : PathStr) : integer;
-   function WBT_ProfileCurvature(OpenMap : boolean; InName : PathStr): integer;
-   function WBT_PlanCurvature(OpenMap : boolean; InName : PathStr): integer;
-   function WBT_TangentialCurvature(OpenMap : boolean; InName : PathStr): integer;
+   function WBT_ProfileCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = ''): integer;
+   function WBT_PlanCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = ''): integer;
+   function WBT_TangentialCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
    function WBT_MinimalCurvature(OpenMap : boolean; InName : PathStr): integer;
    function WBT_MaximalCurvature(OpenMap : boolean; InName : PathStr): integer;
    function WBT_MeanCurvature(OpenMap : boolean; InName : PathStr): integer;
@@ -119,9 +118,9 @@ uses
 {$IfDef ExSAGA}
 {$Else}
    procedure SAGA_all_DEMs_remove_sinks;
-   function SagaTRIMap(InName : PathStr) : integer;
-   function SagaTPIMap(InName : PathStr) : integer;
-   function SagaVectorRuggednessMap(InName : PathStr; Radius : integer) : integer;
+   function SagaTRIMap(OpenMap : boolean; InName : PathStr) : integer;
+   function SagaTPIMap(OpenMap : boolean; InName : PathStr) : integer;
+   function SagaVectorRuggednessMap(OpenMap : boolean; InName : PathStr; Radius : integer) : integer;
    function SagaSinkRemoval(InName : PathStr; OutName : PathStr = '') : integer;
    function SagaChannelNetworkGrid(OpenMap : boolean; InName : PathStr; OutGridName : PathStr = '') : integer;
    function SagaChannelShapefile(InName : PathStr; ChannelName : PathStr = '') : integer;
@@ -131,13 +130,14 @@ uses
    function SAGA_StrahlerOrderGrid(InName : PathStr; OutName : PathStr = '') : integer;
    function SAGA_FlowAccumulationParallizeable(InName : PathStr; OutName : PathStr = '') : integer;
    function SAGA_LSFactor(OpenMap : boolean; InName : PathStr; LSGridName : PathStr = '') : integer;
+   function SAGA_Slope_percent(OpenMap : boolean; EvansMethod : char; InName : PathStr; SlopeFName : PathStr = '') : integer;
    function SAGA_ConvergenceIndex(OpenMap : boolean; InName : PathStr; ConIndexGridName : PathStr = '') : integer;
    function SAGA_PlanCurvature(OpenMap : boolean; InName : PathStr; PlanCurvatureFName : PathStr = '') : integer;
    function SAGA_ProfileCurvature(OpenMap : boolean; InName : PathStr; ProfileCurvatureFName : PathStr = '') : integer;
    function SAGA_CurvatureClassification(OpenMap : boolean; DEMName : PathStr; CurvatureClassFName : PathStr = '') : integer;
    function SAGA_IwahashiAndPikeClassification(OpenMap : boolean; DEMName : PathStr; Classes : integer = 12; ClassFName : PathStr = '') : integer;
    function SAGA_HillValleyIndexes(OpenMap : boolean; DEMName : PathStr; ValleyIndexName : PathStr = ''; HillIndexName : PathStr = '') : integer;
-
+   function SAGA_Geomorphons(OpenMap : boolean; DEMName : PathStr; GeomorphonsFName : PathStr = '') : integer;
 {$EndIf}
 
 
@@ -457,8 +457,10 @@ begin
 end;
 
 
+
+
 const
-   GrassEXE = 'grass78';
+   GrassEXE = 'grass83';
    //GrassPath = 'H:\gis_software\grass_gis_8.2\';        only needed for 8.2
    GetGrassExtensions : boolean = false;
 
@@ -483,7 +485,6 @@ begin
 end;
 
 
-
 function AssembleGrassCommand(InName : PathStr; GridName,CommandName,NewLayer,BatchName : ShortString; eu : tElevUnit; mt : tMapType; TypeStr : shortstring = '32') : integer;
 var
    OutName : PathStr;
@@ -493,24 +494,26 @@ var
       begin
          BatchFile := tStringList.Create;
          BatchFile.Add(ClearGrassDirectory);
-
-         if (GrassEXE = 'grass78') then begin
+         if (GrassEXE = 'grass83') then begin
             BatchFile.Add('call "C:\OSGeo4W\bin\o4w_env.bat"');
             BatchFile.Add(SetGDALdataStr);
             BatchFile.Add('set USE_PATH_FOR_GDAL_PYTHON=YES');
-            BatchFile.Add('grass78 -c ' + InName + ' c:\mapdata\temp\grass1\ --exec r.in.gdal input=' + InName + ' output=mymap |more');
-         end
-         else begin
-            //this is not yet working  for GRASS 8.2, which makes some major changes
-            //BatchFile.Add('call ' + GrassPath + 'grass82.bat');
+            BatchFile.Add('grass83 -c ' + InName + ' c:\mapdata\temp\grass1\ --exec r.in.gdal input=' + InName + ' output=mymap |more');
          end;
       end;
-
 
 begin
   if FileExistsErrorMessage(InName) then begin
      OutName := MDTempDir + GridName + ExtractFileNameNoExt(InName) + '.tif';
-     StartGRASSbatchFile(BatchFile,InName);
+     //StartGRASSbatchFile(BatchFile,InName);
+         BatchFile := tStringList.Create;
+         BatchFile.Add(ClearGrassDirectory);
+         if (GrassEXE = 'grass83') then begin
+            BatchFile.Add('call "C:\OSGeo4W\bin\o4w_env.bat"');
+            BatchFile.Add(SetGDALdataStr);
+            BatchFile.Add('set USE_PATH_FOR_GDAL_PYTHON=YES');
+            BatchFile.Add('grass83 -c ' + InName + ' c:\mapdata\temp\grass1\ --exec r.in.gdal input=' + InName + ' output=mymap |more');
+         end;
 
      BatchFile.Add(GrassEXE + ' c:\mapdata\temp\grass1\PERMANENT --exec ' + CommandName  + ' |more');
      BatchFile.Add(GrassEXE + ' c:\mapdata\temp\grass1\PERMANENT --exec r.out.gdal input=' + NewLayer + ' out=' + OutName + ' type=Float' + TypeStr + ' --overwrite --quiet |more');
@@ -568,14 +571,13 @@ begin
 //maxradius=25 fails (but might work in the user interface for GRASS?
 //variants of the option below, trying to get for just a single radius, failed
 //Result := AssembleGrassCommand(InName,'grass_TPI_','r.tpi input=mymap minradius=1 maxradius=5 steps=2 output=tpi','tpi','GrassTPI_',Undefined,mtElevSpectrum,'64');
-
    Result := AssembleGrassCommand(InName,'grass_TPI_','r.tpi input=mymap minradius=1 maxradius=15 steps=5 output=tpi','tpi','GrassTPI_',euUndefined,mtElevSpectrum,'64');
 end;
 
 
 function GrassSlopeMap(InName : PathStr) : integer;
 begin
-   Result := AssembleGrassCommand(InName,'grass_slope_','r.slope.aspect elevation=mymap slope=slope format=percent','slope','GrassSlope_',euPercentSlope,mtElevSpectrum);
+   Result := AssembleGrassCommand(InName,'grass_slope_','r.slope.aspect elevation=mymap slope=slope format=percent','slope','GrassSlope_',euPercentSlope,MDDef.DefSlopeMap);
 end;
 
 function GrassAspectMap(InName : PathStr) : integer;
@@ -606,7 +608,7 @@ begin
    {$IfDef RecordSaveProblems} WriteLineToDebugFile('RVTgrids in'); {$EndIf}
 
    RVTEXE := 'C:\microdem\rvt\RVT_1.3_Win64.exe';
-   if PathIsValid(ExtractFilePath(RVTEXE)) then begin
+   if ValidPath(ExtractFilePath(RVTEXE)) then begin
       NewDir := ExtractFilePath(DEMGlb[DEM].DEMFileName) + 'rvt\';
       SafeMakeDir(NewDir);
       NewDEMName := NewDir + ExtractFileNameNoExt(DEMGlb[DEM].DEMFileName) + '.tif';
@@ -695,8 +697,8 @@ begin
    Result := true;
    if not FileExists(fName) then begin
       {$If Defined(RecordGDAL) or Defined(RecordGDALOpen) or Defined(OpenLasTools)} HighlightLineToDebugFile('GetGDALFileNames in, but not in ' + fName); {$EndIf}
+      FindPath('Map library',':\gis_software\LAStools\bin\',LAStools_BinDir);
       BaseName := ExtractFileName(fName);
-      LAStools_BinDir := ProgramRootDir + 'lastools\bin\';
       fName := LAStools_BinDir + BaseName;
       if not FileExists(fName) then begin
          {$If Defined(RecordGDAL) or Defined(RecordGDALOpen) or Defined(OpenLasTools)} HighlightLineToDebugFile('File not in ' + fName); {$EndIf}
@@ -849,7 +851,7 @@ begin
    {$IfDef RecordSaveProblems} WriteLineToDebugFile('TauDEMOp in'); {$EndIf}
 
    TaudemDir := 'C:\Program Files\TauDEM\TauDEM5Exe\';
-   if PathIsValid(TauDEMDir) then begin
+   if ValidPath(TauDEMDir) then begin
       NewDir := ExtractFilePath(DEMGlb[DEM].DEMFileName) + 'taudem\';
       SafeMakeDir(NewDir);
       NewDEMName := NewDir + ExtractFileNameNoExt(DEMGlb[DEM].DEMFileName) + '.tif';

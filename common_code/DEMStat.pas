@@ -19,12 +19,12 @@ unit DEMStat;
    {$IfDef Debug }
       //{$Define NoParallelFor}
       //{$Define RecordDEMIX_colors}
-      {$Define RecordSSIM}
+      //{$Define RecordSSIM}
       //{$Define RecordSSIMFull}
       {$Define RecordDEMIX}
-      {$Define RecordFUVsteps}
-      {$Define TimeGridsForArea}
-      {$Define TimeOpenCreateGrids}
+      //{$Define RecordFUVsteps}
+      //{$Define TimeGridsForArea}
+      //{$Define TimeOpenCreateGrids}
       //{$Define RecordMakeSSIMMapFull}
       //{$Define RecordKappa}
       //{$Define RecordDEMIXFull}
@@ -204,11 +204,14 @@ type
    procedure ComputeKappa(RefGrid,TestGrid : integer; RefGridLimits : tGridLimits; var Kappa,OverallAccuracy,AvgUsers,AvgProd : float32);
 
 //ssim operations
-   function ComputeSSIM(DEM1,DEM2 : integer; gl1{,gl2} : tGridLimits; var SSIM,Luminance,Contrast,Structure : float64) : boolean; //inline;
+   function ComputeSSIM(DEM1,DEM2 : integer; gl1 : tGridLimits; var SSIM,Luminance,Contrast,Structure : float64) : boolean; //inline;
    procedure AreaSSIMandFUVComputations(Overwrite : boolean; Areas : tStringList = nil);
    procedure NormalizeDEMforSSIM(DEM : integer; What : shortstring);
    function MakeSSIMMap(OpenMap,AlreadyNormalized : boolean; DEM1,DEM2,NumberOfGrids,WindowSize : integer; ThinFactor : integer = 1; AreaName : shortstring = '') : integer;
    procedure SSIMcheck(DoThinning : boolean);
+
+
+procedure CompareResamplingFiltering(DEM : integer);
 
 
 const
@@ -296,6 +299,37 @@ var
    {$I demstat_grid_compare.inc}
 {$EndIf}
 
+
+procedure CompareResamplingFiltering(DEM : integer);
+const
+   Averages : array[1..6] of integer = (5,10,15,20,25,30);
+   GeoSpace : array[1..5] of float32 = (1/9,0.25,1/3,0.5,1);
+   Filters : array[1..5] of integer = (1,3,5,7,10);
+var
+   i : integer;
+   fName : PathStr;
+   OpenMap : boolean;
+begin
+   SetColorForProcessing;
+   OpenMap := true;
+   for i := 1 to 5 do begin
+     wmdem.SetPanelText(3,'Mean filter ' + IntToStr(i) + '/5');
+     DEMGlb[DEM].FilterThisDEM(OpenMap,fcMean,Filters[i]);
+   end;
+
+   for i := 1 to 6 do begin
+      fName := 'utm_' + IntToStr(Averages[i]) + '_m';
+      wmdem.SetPanelText(3,'utm ' + IntToStr(i) + '/6');
+      DEMGlb[DEM].ThinThisDEM(OpenMap,fName,Averages[i],true);
+   end;
+   for i := 1 to 5 do begin
+      fName := MDtempDir + 'arc_sec_' + RealToString(GeoSpace[i],-8,-3) + '_sec.tif';
+      wmdem.SetPanelText(3,'geo ' + IntToStr(i) + '/5');
+      CreateArcSecDEM(false,OpenMap,DEM,PixelIsPoint,GeoSpace[i],GeoSpace[i],fName);
+   end;
+   wmdem.SetPanelText(3,'');
+   SetColorForWaiting;
+end;
 
 
 procedure CreateGridHistograms(DEMSwanted : tDEMbooleanArray; TailCutoff : float32 = 0.5);
@@ -1826,7 +1860,7 @@ begin
          NakedMapOptions;
          TStr := ShortLandsatName(ExtractFileName(MG.BasePath));
          MGPath := ExtractFilePath(MG.BasePath) + '\princ_comps\';
-         if not PathIsValid(MGPath) then SafeMakeDir(MGPath);
+         if not ValidPath(MGPath) then SafeMakeDir(MGPath);
          MGPath := MGPath + TStr;
 
          for k := 1 to MDDef.MaxPCBands do begin
@@ -2664,7 +2698,7 @@ begin
       ToDo := 0;
       for j := 1 to MaxDEMDataSets do if DEMsWanted[j] then inc(ToDo);
 
-      for j := 1 to MaxDEMDataSets do if DEMsWanted[j] then begin
+      for j := 1 to MaxDEMDataSets do if DEMsWanted[j] and ValidDEM(j) then begin
          inc(Done);
          if (Memo1 <> Nil) then Memo1.Lines.Add('DEM ' + IntToStr(Done) + '/' + IntToStr(ToDo) );
          GridLimits := DEMGlb[j].SelectionMap.MapDraw.MapAreaDEMGridLimits;
@@ -3014,17 +3048,21 @@ type
   tCorrs = array[1..MaxDEMDataSets,1..MaxDEMDataSets] of float64;
 var
   r,covar,Mean1,Mean2,StdDev1,StdDev2 : float64;
-  i,n: Integer;
-  j: Integer;
+  i,n,j: Integer;
   Findings : tStringList;
   MenuStr : ansistring;
   fName : PathStr;
   Corrs : ^tCorrs;
+  DEMsWanted : tDEMbooleanArray;
 begin
 //would be good to thread
+
+   GetMultipleDEMsFromList('Grid correlations',DEMsWanted);
+
+
    MenuStr := 'DEM/Grid';
    for i := 1 to MaxDEMDataSets do begin
-      if ValidDEM(i) then begin
+      if ValidDEM(i) and DEMsWanted[i] then begin
          MenuStr := MenuStr + ',' + DEMGlb[i].AreaName;
       end;
    end;
@@ -3034,11 +3072,11 @@ begin
    StartProgress('Grid correlations');
    n := 0;
    for i := 1 to MaxDEMDataSets do begin
-      if ValidDEM(i) then begin
+      if ValidDEM(i) and DEMsWanted[i] then begin
          inc(n);
          UpdateProgressBar(n/NumDEMDataSetsOpen);
          for j := i to MaxDEMDataSets do begin
-            if ValidDEM(j) then begin
+            if ValidDEM(j) and DEMsWanted[j] then begin
                if (i = j) then begin
                   Corrs^[i,j] := 1;
                end
@@ -3053,10 +3091,10 @@ begin
    end;
 
    for i := 1 to MaxDEMDataSets do begin
-      if ValidDEM(i) then begin
+      if ValidDEM(i) and DEMsWanted[i] then begin
          MenuStr := DEMGlb[i].AreaName;
          for j := 1 to MaxDEMDataSets do begin
-            if ValidDEM(j) then begin
+            if ValidDEM(j) and DEMsWanted[j] then begin
                MenuStr := MenuStr + ',' + RealToString(Corrs^[i,j],-18,8);
             end;
          end;

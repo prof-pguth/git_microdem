@@ -4,8 +4,8 @@ object ReqAntOptsForm: TReqAntOptsForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Required Antenna Height'
-  ClientHeight = 228
-  ClientWidth = 259
+  ClientHeight = 244
+  ClientWidth = 239
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

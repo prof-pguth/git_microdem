@@ -27,7 +27,7 @@
 
    {$IfDef Debug}
       //{$Define RecordNumberOpenMaps}
-     //{$Define RecordMapDrawLegends}
+      //{$Define RecordMapDrawLegends}
       //{$Define TrackHorizontalDatum}
       //{$Define RecordFan}
       //{$Define RecordVAT}
@@ -309,7 +309,7 @@ type
      MapCorners : CurScreenMapType;
      CurrentZoomLevel : integer;
      MapXSize,MapYSize : int32;
-
+     z_Mean,Z_std,
      MinMapElev,MaxMapElev : float32;
      MapLatCent, MapLongCent,
      ScreenPixelSize,
@@ -1763,7 +1763,7 @@ end;
             if MDDef.LasAutoThin then begin
                MDDef.CloudMapThinFactor := trunc(pt_cloud_opts_fm.LasFiles[Cloud].PointDensity * ScreenPixelSize / 2);
                if (MDDef.CloudMapThinFactor <= 0) then MDDef.CloudMapThinFactor := 1;
-               if (MDDef.CloudMapThinFactor >500) then MDDef.CloudMapThinFactor := 500;
+               if (MDDef.CloudMapThinFactor > 500) then MDDef.CloudMapThinFactor := 500;
                if (pt_cloud_opts_fm <> Nil) then begin
                   pt_cloud_opts_fm.Edit3.Text := IntToStr(MDDef.CloudMapThinFactor);
                end;
@@ -2106,9 +2106,6 @@ procedure TMapDraw.SaveLayerBitmap(Bitmap : tMyBitmap; var FName : PathStr);
 begin
    fName := NextFileNumber(MDTempDir, BaseTitle + '_map_layer', OverlayFExt);
    {$IfDef Defined(RecordFullMapDraw) or Defined(RecordOverlays)} WriteLineToDebugFile('TMapDraw.SaveLayerBitmap, fname=' + FName); {$EndIf}
-   //StripInvalidPathNameChars(fName);
-
-
    PetImage.SaveBitmap(Bitmap,fName);
    {$IfDef Defined(RecordFullMapDraw) or Defined(RecordOverlays)} WriteLineToDebugFile('  save OK'); {$EndIf}
 end;

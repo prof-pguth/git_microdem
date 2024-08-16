@@ -61,7 +61,8 @@
          DEMheader.DEMSWCornerY := Header[3] + Header[4] /60 + Header[5] / 3600 - pred(NumRow) * DEMheader.DEMySpacing;
 
          DigitizeDatum := NAD83d;
-         StringToByteArray('WGS84',DEMheader.DMAMapDefinition.h_DatumCode);
+         //StringToByteArray('WGS84',DEMheader.DMAMapDefinition.h_DatumCode);
+         DEMheader.h_DatumCode := 'WGS84';
          ElevUnits := euMeters;
 
          if not AllocateDEMMemory(InitDEMnone) then exit;
@@ -136,7 +137,8 @@
          closeFile(PRUfile);
 
          DigitizeDatum := NAD83d;
-         StringToByteArray('WGS84', DEMheader.DMAMapDefinition.h_DatumCode);
+         DEMheader.h_DatumCode := 'WGS84';
+         //StringToByteArray('WGS84', DEMheader.DMAMapDefinition.h_DatumCode);
          ElevUnits := euMeters;
          if ReallyReadDEM then begin
             if not AllocateDEMMemory(InitDEMMissing) then exit;

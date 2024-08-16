@@ -732,6 +732,7 @@ const
    euCOPEDM = 65;
    euCOPFLM = 66;
    euTANEDM = 67;
+   //euCurvature = 68;
    euHighElevUnits = 67;  //same as last real one;  used only for loops through all the elevation units;
 
 const
@@ -783,6 +784,7 @@ type
       CylindricalEqualArea,LambertConformalConicEllipse,UK_OS,Finn_GK,GeneralTransverseMercator,PlateCaree,LamAzEqAreaEllipsoidal,SphericalStereographic,
       WebMercator,IrishGrid,UndefinedProj,EqualEarth,CylindricalEqualAreaEllipsoidal,AzimuthalEquidistantEllipsoidal,ObliqueStereoGraphic);
 
+   {$IfDef UsetDMAMapRawDefinition}
    tDMAMapRawDefinition = packed record
       h_Adat,
       h_f          : double;
@@ -792,6 +794,7 @@ type
       h_DatumCode  : array[1..6] of byte;
       h_EllipsCode : array[1..3] of byte;
    end;
+   {$EndIf}
 
    tDEMheader = packed record  //for a DEM, version 4, introduced July 2014
       DEMUsed      : byte;
@@ -808,7 +811,7 @@ type
       DEMSWCornerY : float64;
       VerticalCSTypeGeoKey,
       UTMZone  : Int16;     {6 degree UTM Zone number, USGS/MGRS standard: 1 = W177, 60 = E177}
-      DMAMapDefinition : tDMAMapRawDefinition;
+      {$IfDef UsetDMAMapRawDefinition}DMAMapDefinition : tDMAMapRawDefinition; {$EndIf}
       DigitizeDatum : tDigitizeDatum; {sets datum for DEM, and it is transformed to the desired local datum for use}
       LatHemi    : AnsiChar;  {N or S}
       NumCol,NumRow  : int32;
@@ -1361,10 +1364,17 @@ const
     tixLatLong = 1;
     tixBoth = 2;
     tixNone = 3;
+const
+   dncDN = 0;
+   dncRadiance = 1;
+   dncReflectance = 2;
+   dncReflectSun = 3;
+   dncBrightness = 4;
+   dncMDDefault = 5;
 
 type
    tCreateGrid = (cgUTM,cgLatLong,cgSpecifyUTM,cgWKT);
-   tMapTick      = byte;   
+   tMapTick      = byte;
    tAutoOpen     = (aoNothing,aoProject,aoDEM,aoImage,aoHyper,aoMultigrid,aoLastPointCloud,aoShapeFile,aoVector,aoLastLidarMulti);
    tBeachBallMap = (bbmColor,bbmFocal,bbmSwitch);
    tCheckPoint = (CheckNothing,CheckReasonable,CheckAll);
@@ -1373,17 +1383,7 @@ type
    tStereoMode = (smNone,smAnaglyph,smPair);
    tDigitizeMode = (dmStream,dmPoint);
    temvc = (emvcBasicMask,emvcSelectedColor,emvcAllButSelectedColor,emvcFlattenLake,emvcAreaOfSingleColor,emvcSetElevation);
-const
-   dncDN = 0;
-   dncRadiance = 1;
-   dncReflectance = 2;
-   dncReflectSun = 3;
-   dncBrightness = 4;
-   dncMDDefault = 5;
-type
    tdnConvert = byte;
-
-type
    tSatView = record
      WindowContrast : tContrastEnhancement;
      WindowContrastLowTailSize,
@@ -1930,7 +1930,7 @@ type
       DEMIX_U10DBfName,
 
       DEMIX_base_dir,
-      DEMIX_criterion_tolerance_fName : PathStr;
+      DEMIX_criterion_fName : PathStr;
       DEMIX_default_area,
       DEMIX_default_tile   : shortstring;
       DEMIX_combined_graph,
@@ -1958,7 +1958,7 @@ type
       SSIM_flow,SSIM_LS,SSIM_Wet,SSIM_HAND,SSIM_PLANC,SSIM_PROFC,SSIM_TANGC,SSIM_Openness,
       DEMIX_graph_Retired_DEMs,
       DEMIXCompositeImage,
-      DEMIX_DoCHM,
+      //DEMIX_DoCHM,
       DEMIX_DoAirOrDirt,
       DEMIX_DoElevDiff,
       DEMIX_DoSlopeDiff,
@@ -1994,8 +1994,8 @@ type
 
        ShowLocationSensitivity : boolean;
        TerrainCatPercentages : boolean;
-       MaxMrSidImageSize : int32;
-       AskAboutSIDLevel : boolean;
+       //MaxMrSidImageSize : int32;
+       //AskAboutSIDLevel : boolean;
 
       ChangeMinRedColor,
       ChangeMaxRedColor,

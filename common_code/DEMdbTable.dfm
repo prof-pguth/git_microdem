@@ -603,7 +603,7 @@ object dbtablef: Tdbtablef
         OnClick = Singlefield1Click
       end
       object Twofields1: TMenuItem
-        Caption = 'Two fields'
+        Caption = 'Either of two fields'
         OnClick = Twofields1Click
       end
     end
@@ -1632,6 +1632,10 @@ object dbtablef: Tdbtablef
       object DeliberateKMLGoogleEarthexport1: TMenuItem
         Caption = 'Deliberate KML/Google Earth export'
         OnClick = DeliberateKMLGoogleEarthexport1Click
+      end
+      object LATEXtable1: TMenuItem
+        Caption = 'LATEX table'
+        OnClick = LATEXtable1Click
       end
       object N42: TMenuItem
         Caption = '-'
@@ -3399,6 +3403,10 @@ object dbtablef: Tdbtablef
       Caption = 'Octree'
       OnClick = Octree1Click
     end
+    object AddKoppenclass1: TMenuItem
+      Caption = 'Add Koppen class'
+      OnClick = AddKoppenclass1Click
+    end
     object RedclassifyLoppen1: TMenuItem
       Caption = 'Reclassify Koppen'
       OnClick = RedclassifyLoppen1Click
@@ -3791,6 +3799,10 @@ object dbtablef: Tdbtablef
         Caption = 'By clusters'
         OnClick = Byclusters1Click
       end
+      object Winlosstie1: TMenuItem
+        Caption = 'Win/loss/tie'
+        OnClick = Winlosstie1Click
+      end
     end
     object Areasinclusters1: TMenuItem
       Caption = 'Areas in clusters'
@@ -3820,6 +3832,10 @@ object dbtablef: Tdbtablef
       object N56: TMenuItem
         Caption = '-'
       end
+      object Numberoftestareasandtilesbycountry1: TMenuItem
+        Caption = 'Number of test areas and tiles by country'
+        OnClick = Numberoftestareasandtilesbycountry1Click
+      end
       object ClustersperDEMIXtile1: TMenuItem
         Caption = 'Number of clusters per DEMIX tile'
         OnClick = ClustersperDEMIXtile1Click
@@ -3837,7 +3853,7 @@ object dbtablef: Tdbtablef
         OnClick = CopHeadtoheadrecord1Click
       end
       object Evaluationrangebycriterion1: TMenuItem
-        Caption = 'Evaluation range by criterion'
+        Caption = 'Evaluation range statistics by criterion'
         OnClick = Evaluationrangebycriterion1Click
       end
       object Winpercentagebycriterion1: TMenuItem
@@ -3871,16 +3887,12 @@ object dbtablef: Tdbtablef
         OnClick = CiompareCOPtorivals1Click
       end
       object AddlatlongfieldstoDB1: TMenuItem
-        Caption = 'Add lat/long fields to DB'
+        Caption = 'Add lat/long/country/area fields to DB'
         OnClick = AddlatlongfieldstoDB1Click
       end
       object Addtilecharacteristics1: TMenuItem
         Caption = 'Add tile characteristics to DB'
         OnClick = Addtilecharacteristics1Click
-      end
-      object AddcountryareafieldstoDB1: TMenuItem
-        Caption = 'Add country/area fields to DB'
-        OnClick = AddcountryareafieldstoDB1Click
       end
       object AddCOPALOSpercentprimarydata1: TMenuItem
         Caption = 'Add COP/ALOS PDF (percent primary data fraction)'
@@ -3900,6 +3912,10 @@ object dbtablef: Tdbtablef
       object Removerowsmissinganyevaluations1: TMenuItem
         Caption = 'Remove rows missing any evaluations'
         OnClick = Removerowsmissinganyevaluations1Click
+      end
+      object RemoveSCRfields1: TMenuItem
+        Caption = 'Remove _SCR and _WIN  and COP_ fields'
+        OnClick = RemoveSCRfields1Click
       end
       object N50: TMenuItem
         Caption = '-'
@@ -3928,8 +3944,12 @@ object dbtablef: Tdbtablef
         OnClick = Filterfor999valuesinanyevaluation1Click
       end
       object Filterfor0valuesinanyevaluation1: TMenuItem
-        Caption = 'Filter for 0 values in any evaluation'
+        Caption = 'Filter for mmissing evaluations'
         OnClick = Filterfor0valuesinanyevaluation1Click
+      end
+      object Filterforevaluations11: TMenuItem
+        Caption = 'Filter for evaluations > 1'
+        OnClick = Filterforevaluations11Click
       end
     end
     object AssignDEMIXDEMcolors1: TMenuItem
@@ -4013,8 +4033,7 @@ object dbtablef: Tdbtablef
       Caption = '-'
     end
     object Sumscores1: TMenuItem
-      Caption = 'Sum scores based on active filters'
-      OnClick = Sumscores1Click
+      Caption = 'Average cores based on active filters'
     end
     object Graphmeanmedianbyterraincategory1: TMenuItem
       Caption = 'Graphs with various filters (experimental, untested recently)'
@@ -4053,24 +4072,29 @@ object dbtablef: Tdbtablef
     end
     object Comparerankingswithdifferentcriteria1: TMenuItem
       Caption = 'Compare rankings with different criteria'
+      Enabled = False
       OnClick = Comparerankingswithdifferentcriteria1Click
     end
     object DifferentrankingsbyCriteria1: TMenuItem
       Caption = 'Different rankings by Criteria'
+      Enabled = False
       OnClick = DifferentrankingsbyCriteria1Click
     end
     object COPoALOS1: TMenuItem
       Caption = 'Winning percentages and shootouts'
+      Enabled = False
       OnClick = COPoALOS1Click
     end
     object BestDEMpertilebycriteria1: TMenuItem
       Caption = 'Graphs best DEM per tile, by criteria (sort by area)'
+      Enabled = False
       OnClick = BestDEMpertilebycriteria1Click
     end
     object GraphsbestDEMpertilebycriteriasortbytilecharacteristics1: TMenuItem
       Caption = 
         'Graphs best DEM per tile, by criteria (sort by tile characterist' +
         'ics)'
+      Enabled = False
       OnClick = GraphsbestDEMpertilebycriteriasortbytilecharacteristics1Click
     end
     object iesbyopinions1: TMenuItem
@@ -4079,6 +4103,7 @@ object dbtablef: Tdbtablef
     end
     object Wins1: TMenuItem
       Caption = 'Wins and Ties'
+      Enabled = False
       OnClick = Wins1Click
     end
   end

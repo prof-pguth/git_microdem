@@ -395,7 +395,7 @@ type
     GroupBox18: TGroupBox;
     //Edit12: TEdit;
     DTfilllabel: TLabel;
-    CheckBox5: TCheckBox;
+    //CheckBox5: TCheckBox;
     CheckBox154: TCheckBox;
     CheckBox158: TCheckBox;
     CheckBox162: TCheckBox;
@@ -643,6 +643,7 @@ uses
 
 var
    MainMap,
+   MapLib,
    EtopoRow,
    ViewSheds,
    VectorMap,
@@ -843,6 +844,7 @@ begin
 
    OnRow := 0;
    DrawRow(MainMap,'Main map directory',MainMapData);
+   DrawRow(MapLib,'Main map directory',MapLibDir);
    DrawRow(SAGArow,'SAGA EXE name',MDDef.SagaCMD);
    DrawRow(EtopoRow,'ETOPO DEM',ETOPODEMName);
    DrawRow(Viewsheds,'Viewshed dir',SaveViewShedDir);
@@ -867,7 +869,9 @@ procedure TOptionsForm.StringGrid1SelectCell(Sender: TObject; ACol, ARow: Intege
 begin
    if (Arow > 0) then begin
       {$IfDef ShowDirectories} WriteLineToDebugFile('TOptionsForm.StringGrid1SelectCell, arow=' + IntToStr(ARow));{$EndIf}
-      if Arow = MainMap then GetMapDataDirectory;
+      if Arow = MainMap then FindPath('Map library',':\mapdata\',MapLibDir);
+      if Arow = MapLib then PickMapIndexLocation;
+
       if Arow = EtopoRow then GetFileFromDirectory('ETOPO DEM','*.dem',ETOPODEMName);
       if Arow = ViewSheds then GetDOSPath('Viewshed dir',SaveViewShedDir);
       if Arow = VectorMap then GetFileFromDirectory('Vector map name','*.prj',VectorMapName);
@@ -1040,7 +1044,7 @@ begin
    CheckBox2.Checked := MDdef.SatImageCoords;
    CheckBox3.Checked := MDdef.ShowMapToolbar;
    CheckBox4.Checked := MDdef.ShowMainToolbar;
-   CheckBox5.Checked := MDDef.AskAboutSIDLevel;
+   //CheckBox5.Checked := MDDef.AskAboutSIDLevel;
    CheckBox9.Checked := MDdef.ShowSHPButton;
    UpDown1.Position := MDdef.StatSampleIncr;
    CheckBox12.Checked := MDdef.StatGrafReverseYAxis;
@@ -1251,7 +1255,7 @@ begin
       end;
    {$EndIf}
 
-   CheckBox5.Checked := MDDef.DEMIX_DoCHM;
+   //CheckBox5.Checked := MDDef.DEMIX_DoCHM;
    CheckBox154.Checked := MDDef.DEMIX_DoAirOrDirt;
    CheckBox158.Checked := MDDef.DEMIX_DoElevDiff;
    CheckBox162.Checked := MDDef.DEMIX_DoSlopeDiff;
@@ -1437,7 +1441,7 @@ begin
    MDdef.SatImageCoords := CheckBox2.Checked;
    MDdef.ShowMapToolbar := CheckBox3.Checked;
    MDdef.ShowMainToolbar := CheckBox4.Checked;
-   MDDef.AskAboutSIDLevel := CheckBox5.Checked;
+   //MDDef.AskAboutSIDLevel := CheckBox5.Checked;
    MDDef.RoamAllZ := CheckBox6.Checked;
    MDdef.ShowSHPButton:= CheckBox9.Checked;
    MDdef.StatGrafReverseYAxis := CheckBox12.Checked;
@@ -1607,9 +1611,7 @@ begin
 
    MDDef.ProcessLoopsForward := CheckBox161.Checked;
 
-
-
-   MDDef.DEMIX_DoCHM := CheckBox5.Checked;
+   //MDDef.DEMIX_DoCHM := CheckBox5.Checked;
    MDDef.DEMIX_DoAirOrDirt := CheckBox154.Checked;
    MDDef.DEMIX_DoElevDiff  := CheckBox158.Checked;
    MDDef.DEMIX_DoSlopeDiff := CheckBox162.Checked;

@@ -1286,7 +1286,7 @@ begin {procedure RankDEMS}
     {$If Defined(RecordDEMIX)} WriteLineToDebugFile('RankDEMS in, ' + GISdb[DBonTable].dbName); {$EndIf}
     LoadDEMIXnames;
 
-    if (not FileExists(MDDef.DEMIX_criterion_tolerance_fName)) and (not GetFileFromDirectory('DEMIX criterial tolerances','*.dbf',MDDef.DEMIX_criterion_tolerance_fName)) then exit;
+    if (not FileExists(MDDef.DEMIX_criterion_fName)) and (not GetFileFromDirectory('DEMIX criterial tolerances','*.dbf',MDDef.DEMIX_criterion_fName)) then exit;
 
     GISdb[DBonTable].AddFieldToDataBase(ftString,'DEM_LOW_SC',48);
     if GISdb[DBonTable].MyData.GetFieldLength('DEM_LOW_SC') < 48 then GISdb[DBonTable].MyData.TrimField('DEM_LOW_SC',48);
@@ -1301,8 +1301,8 @@ begin {procedure RankDEMS}
     GISdb[DBonTable].AddFieldToDataBase(ftInteger,'NUM_TIES',2);
 
     i := 0;
-    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Load criterion tolerances, ' + MDDef.DEMIX_criterion_tolerance_fName); {$EndIf}
-    TieToleranceTable := tMyData.Create(MDDef.DEMIX_criterion_tolerance_fName);
+    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Load criterion tolerances, ' + MDDef.DEMIX_criterion_fName); {$EndIf}
+    TieToleranceTable := tMyData.Create(MDDef.DEMIX_criterion_fName);
     if TieToleranceTable.FieldExists('CRITERION') and TieToleranceTable.FieldExists('TOLERANCE') then begin
        //StartProgress('Rank DEMs');
        j := 0;
@@ -1536,6 +1536,7 @@ var
    AreaGridFull,
    AreaAveElev,AreaAveSlope,AreaAveRuff,AreaAveRelief,
    AreaForestPC, AreaUrbanPC,AreaBarrenPC,AreaWaterPC,
+   AreaMinElev,AreaMaxElev,
    LatCent,LongCent,
    GridFull,Lat,Long : float64;
    TileStats,AreaStats : tStringList;
@@ -1670,6 +1671,8 @@ var
                   AreaUrbanPC := AreaUrbanPC + UrbanPC;
                   AreaBarrenPC := AreaBarrenPC + BarrenPC;
                   AreaWaterPC := AreaWaterPC + WaterPC;
+                  if AreaMinElev > ElevMomentVar.MinZ then AreaMinElev := ElevMomentVar.MinZ;
+                  if AreaMaxElev < ElevMomentVar.MaxZ then AreaMaxElev := ElevMomentVar.MaxZ;
 
                   TileHeader := AreaName + ',' + DEMIXTile + ',' + Country + ',' + RealToString(LatCent,-12,-2) + ',' + RealToString(LongCent,-12,-2) + ',' +
                      RealToString(GridFull,-6,-2)   + ','  + RealToString(ElevMomentVar.Mean,-12,-2) + ',' +
@@ -1713,7 +1716,8 @@ var
          DEMIXtileDB := DEMIXtileFill(DEMIXRefDEM,DEMGlb[DEMIXRefDEM].DEMBoundBoxGeo,false);
          GISdb[DEMIXtileDB].ApplyGISFilter(FilterForDEMIXtilesToUse);
          {$IfDef RecordDEMIX} WriteLineToDebugFile('DTM tiles=' + IntToStr(GISdb[DEMIXtileDB].MyData.FiltRecsInDB)); {$EndIf}
-
+         AreaMinElev := 99e38;
+         AreaMaxElev := -99e38;
          if (GISdb[DEMIXtileDB].MyData.FiltRecsInDB = 0) then begin
             TStr := 'No filled DEMIX tiles on ' + AreaName;
             {$IfDef RecordDEMIX} WriteLineToDebugFile(TStr); {$EndIf}
@@ -1739,7 +1743,7 @@ var
                RealToString(AreaAveSlope / j,-12,-2)  + ',' + RealToString(AreaAveRuff / j,-12,-2)  + ',' +
                RealToString(AreaAveRelief / j,-12,-2) + ',' + RealToString(AreaForestPC / j,-12,-2)  + ',' + RealToString(AreaUrbanPC / j,-12,-2) + ',' +
                RealToString(AreaBarrenPC / j,-12,-2) + ',' + RealToString(AreaWaterPC / j,-12,-2) + ',' +
-               RealToString(DEMglb[DEMIXRefDEM].DEMHeader.MinElev / j,-12,-2) + ',' + RealToString(DEMglb[DEMIXRefDEM].DEMHeader.MaxElev / j,-12,-2);
+               RealToString(AreaMinElev,-12,-2) + ',' + RealToString(AreaMaxElev,-12,-2);
             AreaStats.Add(TileHeader);
             {$If Defined(RecordFullDEMIX)} for i := 1 to 2 do writeLineToDebugFile(''); {$EndIf}
          end;
@@ -1836,7 +1840,7 @@ begin {FindTilesInAreaForCoast}
    {$IfDef RecordDEMIX} WriteLineToDebugFile('End FindTilesInAreaForCoast'); {$EndIf}
 end;
 
-
+(*
 procedure AddFilteredRankID(DBonTable : integer);
 //  as of 6/3/2024, this is not being used
 var
@@ -1855,7 +1859,7 @@ begin
       GISdb[DBonTable].MyData.Next;
    end;
 end;
-
+*)
 
 procedure AddFieldsToDEMIXDB(DBonTable : integer; theFields : tStringList);
 begin

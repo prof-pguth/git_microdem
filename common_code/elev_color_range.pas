@@ -188,9 +188,9 @@ begin
                   MapOwner.MapDraw.MaxMapElev := DEMGlb[MapOwner.MapDraw.DEMonMap].DEMheader.MaxElev;
                end;
       esSD : begin
-                DEMGlb[MapOwner.MapDraw.DEMOnMap].GetDEMMeanStd;
-                MapOwner.MapDraw.MinMapElev := (DEMGlb[MapOwner.MapDraw.DEMonMap].DEMheader.MinElev - DEMGlb[MapOwner.MapDraw.DEMonMap].Z_Mean) / DEMGlb[MapOwner.MapDraw.DEMonMap].Z_std;
-                MapOwner.MapDraw.MaxMapElev := (DEMGlb[MapOwner.MapDraw.DEMonMap].DEMheader.MaxElev - DEMGlb[MapOwner.MapDraw.DEMonMap].Z_Mean) / DEMGlb[MapOwner.MapDraw.DEMonMap].Z_std;
+                DEMGlb[MapOwner.MapDraw.DEMOnMap].ElevationStatistics(DEMGlb[MapOwner.MapDraw.DEMonMap].FullDEMGridLimits,MapOwner.MapDraw.Z_Mean,MapOwner.MapDraw.Z_Std);
+                MapOwner.MapDraw.MinMapElev := (DEMGlb[MapOwner.MapDraw.DEMonMap].DEMheader.MinElev - MapOwner.MapDraw.Z_Mean) / MapOwner.MapDraw.Z_std;
+                MapOwner.MapDraw.MaxMapElev := (DEMGlb[MapOwner.MapDraw.DEMonMap].DEMheader.MaxElev - MapOwner.MapDraw.Z_Mean) / MapOwner.MapDraw.Z_std;
              end;
       esPercentile : begin
                         DEMGlb[MapOwner.MapDraw.DEMOnMap].GetElevPercentiles(DEMGlb[MapOwner.MapDraw.DEMOnMap].FullDEMGridLimits);

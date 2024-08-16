@@ -355,7 +355,7 @@ var
    fRow   : ^tFloatRow;
 begin
    if (FileName = '') or (not FileExtEquals(FileName, '.FLT')) then begin
-      if (FileName = '') or (not PathIsValid(FileName)) then FileName := DEMDefs.WriteDEMDir;
+      if (FileName = '') or (not ValidPath(FileName)) then FileName := DEMDefs.WriteDEMDir;
       if not GetFileNameDefaultExt('new float64 DEM','DEM|*.FLT',FileName) then exit;
    end;
    FSplit(FileName,Dir,Name,Ext);
@@ -403,7 +403,7 @@ var
 begin
    {$IfDef RecordWriteDEM}   WriteLineToDebugFile('tDEMDataSet.WriteBILFormatDEM in'); {$EndIf}
    if (FileName = '') or  (not FileExtEquals(FileName, '.BIL')) then begin
-      if (FileName = '') or (not PathIsValid(FileName)) then FileName := DEMDefs.WriteDEMDir;
+      if (FileName = '') or (not ValidPath(FileName)) then FileName := DEMDefs.WriteDEMDir;
       if not GetFileNameDefaultExt('new BIL DEM','BIL DEM|*.BIL',FileName) then exit;
    end;
    FSplit(FileName,Dir,Name,Ext);

@@ -892,7 +892,7 @@ end;
 
 function PickWineContestDBLocation : boolean;
 begin
-   if PathIsValid(DEMIX_Base_DB_Path) then Result := true
+   if ValidPath(DEMIX_Base_DB_Path) then Result := true
    else Result := FindPath('DEMIX Wine contest location',':\Wine_contest\',DEMIX_Base_DB_Path);
 end;
 
@@ -1248,7 +1248,7 @@ function CriterionTieTolerance(Criterion : shortstring) : float32;
 var
    TieToleranceTable : tMyData;
 begin
-   TieToleranceTable := tMyData.Create(MDDef.DEMIX_criterion_tolerance_fName);
+   TieToleranceTable := tMyData.Create(MDDef.DEMIX_criterion_fName);
    TieToleranceTable.ApplyFilter('CRITERION=' + QuotedStr(Criterion));
    Result := TieToleranceTable.GetFieldByNameAsFloat('TOLERANCE');
    TieToleranceTable.Destroy;

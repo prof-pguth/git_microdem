@@ -381,7 +381,7 @@ procedure SubsetLASfiles(fName : PathStr; Memo1 : tMemo = nil);
          begin
             FirstFile := '';
             LastLidarDirectory := fName;
-            if PathIsValid(fName) then begin
+            if ValidPath(fName) then begin
                repeat
                    {$IfDef RecordLAS_subset} writeLineToDebugFile('start for loop'); {$EndIf}
                    TheFiles := Nil;

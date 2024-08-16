@@ -576,7 +576,7 @@ begin
    Result := false;
    for ch := 'A' to 'Z' do begin
       Dir := FromDriveLetter(ch);
-      if PathIsValid(dir) then Locations.Add(Dir + '  (' + GetVolumeName(ch) + ')');
+      if ValidPath(dir) then Locations.Add(Dir + '  (' + GetVolumeName(ch) + ')');
    end;
    if (Locations.Count = 0) then begin
       {$IfDef WarnMapIndexes} MessageToContinue('No map indexes found'); {$EndIf}
@@ -648,11 +648,11 @@ function FindDriveWithPath(var aPath : PathStr) : boolean;
 var
    ch : ANSIchar;
 begin
-   Result := PathIsValid(aPath);
+   Result := ValidPath(aPath);
    if (not Result) then begin
       for ch := 'c' to 'z' do begin
          aPath[1] := ch;
-         if PathIsValid(aPath) then begin
+         if ValidPath(aPath) then begin
             Result := true;
             exit;
          end;
@@ -1172,7 +1172,7 @@ end;
          begin
             PETMARCommonForm.SaveDialog1.Title := Mess;
             PETMARCommonForm.SaveDialog1.Filter := Filters;
-            if FileExists(fName) or PathIsValid(ExtractFilePath(fName)) then begin
+            if FileExists(fName) or ValidPath(ExtractFilePath(fName)) then begin
                PETMARCommonForm.SaveDialog1.InitialDir := ExtractFilePath(FName);
                PETMARCommonForm.SaveDialog1.FileName := ExtractFileName(fName);
             end
@@ -3408,7 +3408,7 @@ begin
    ReadFilter := false;
    if (FilterName = '') then begin
       FilterName := ProgramRootDir + 'filters\';
-      if not PathIsValid(FilterName)  then FilterName := ProgramRootDir;
+      if not ValidPath(FilterName)  then FilterName := ProgramRootDir;
       {$IfDef VCL}
          if not GetFileFromDirectory('Filter','*.FIL',FilterName) then exit;
          if DisplayFilter then QuickOpenEditWindow(FilterName,'Filter ' + ExtractFileName(FilterName));
@@ -3846,6 +3846,7 @@ var
 begin
     StripBlanks(fName);
     CleanUpFileName(fName);
+    StripInvalidPathNameChars(fName);
     if (fName[length(fName)] <> '_') then fName := fName + '_';
     i := 0;
     repeat
@@ -3863,7 +3864,7 @@ begin
    repeat
       inc(i);
       Result := Path + '_' + IntToStr(i) + '\';
-   until Not (PathIsValid(Result));
+   until Not (ValidPath(Result));
    SafeMakeDir(Result);
 end;
 
@@ -4010,7 +4011,7 @@ begin
       fName := System.IOUtils.TPath.Combine(BaseDir, Subdirs.Strings[i] + '\');
       {$IfDef RecordFileDelection} WriteLineToDebugFile(' Deleting ' + fName); {$EndIf}
       DeleteMultipleFiles(fName,'*.*');
-      if (fName <> '') and PathIsValid(fName) then begin
+      if (fName <> '') and ValidPath(fName) then begin
          try
             RmDir(fName);
          except

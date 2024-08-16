@@ -1,11 +1,10 @@
 ﻿unit ParseExpr;
+
 {--------------------------------------------------------------
 | TExpressionParser
-| a flexible and fast expression parser for logical and
-| mathematical functions
+| a flexible and fast expression parser for logical and mathematical functions
 | Author: Egbert van Nes  (Egbert.vanNes@wur.nl)
-| With contributions of: John Bultena, Ralf Junker, Arnulf Sortland
-| and Xavier Mor-Mur
+| With contributions of: John Bultena, Ralf Junker, Arnulf Sortland and Xavier Mor-Mur
 | Status: Freeware with source
 | Version: 1.2
 | Date: Sept 2002
@@ -112,13 +111,10 @@
 interface
 
 {.$DEFINE NAN}
-{use this directive to suppress math exceptions,
-instead NAN is returned.
-Note that using this directive is less efficient}
+{use this directive to suppress math exceptions, instead NAN is returned. Note that using this directive is less efficient}
 
 uses
-   OObjects, Classes, ParseClass;
-
+   Classes, OObjects, ParseClass;
 
 type
   TCustomExpressionParser = class

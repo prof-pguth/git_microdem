@@ -15,11 +15,11 @@ unit demix_cop_alos;
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$Define RecordDEMIX}
-   {$Define RecordDEMIXLoad}
-   {$Define RecordDEMIXsave}
-   {$Define RecordCreateHalfSec}
-   {$Define StartCOPALOSmaps}
-   {$Define Differencemaps}
+   //{$Define RecordDEMIXLoad}
+   //{$Define RecordDEMIXsave}
+   //{$Define RecordCreateHalfSec}
+   //{$Define StartCOPALOSmaps}
+   //{$Define Differencemaps}
    //{$Define RecordDEMIXMovies}
    //{$Define RecordFullDEMIX}
    //{$Define ShowDEMIXWhatsOpen}

@@ -2,8 +2,8 @@ object MapForm: TMapForm
   Left = 45
   Top = 303
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1050
-  ClientWidth = 1924
+  ClientHeight = 1255
+  ClientWidth = 2112
   Color = clBtnHighlight
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -40,8 +40,8 @@ object MapForm: TMapForm
   object ScrollBox1: TScrollBox
     Left = 0
     Top = 27
-    Width = 1924
-    Height = 1023
+    Width = 2112
+    Height = 1228
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clRed
@@ -207,8 +207,8 @@ object MapForm: TMapForm
     end
     object BlendPanel: TPanel
       Left = 0
-      Top = 978
-      Width = 1920
+      Top = 1183
+      Width = 2108
       Height = 41
       Align = alBottom
       TabOrder = 8
@@ -330,7 +330,7 @@ object MapForm: TMapForm
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1924
+    Width = 2112
     Height = 27
     Align = alTop
     TabOrder = 1
@@ -3922,7 +3922,6 @@ object MapForm: TMapForm
           Caption = 'Isolated values'
           object Removeifmissingneighbors1: TMenuItem
             Caption = 'Remove if missing neighbors'
-            OnClick = Removeifmissingneighbors1Click
           end
           object Removetoofewsimilarneighbors1: TMenuItem
             Caption = 'Remove too few similar neighbors'
@@ -4000,6 +3999,10 @@ object MapForm: TMapForm
         object DEMIXevaluatehalfsecondgrids1: TMenuItem
           Caption = 'Evaluate half second grids'
         end
+        object Resampleaveragemultiplespacings1: TMenuItem
+          Caption = 'Resample filter comparison'
+          OnClick = Resampleaveragemultiplespacings1Click
+        end
       end
       object SSIM1: TMenuItem
         Caption = 'SSIM'
@@ -4027,6 +4030,25 @@ object MapForm: TMapForm
       end
       object Externaltools1: TMenuItem
         Caption = 'External tools'
+        object CompareProfileCurvature: TMenuItem
+          Caption = 'Compare slope maps'
+          OnClick = CompareProfileCurvatureClick
+        end
+        object MDDefDefSlopeMap1: TMenuItem
+          Caption = 'Compare profile curvature'
+          OnClick = MDDefDefSlopeMap1Click
+        end
+        object Compareplancurvature1: TMenuItem
+          Caption = 'Compare plan curvature'
+          OnClick = Compareplancurvature1Click
+        end
+        object Comparetangentialcurvature1: TMenuItem
+          Caption = 'Compare tangential curvature'
+          OnClick = Comparetangentialcurvature1Click
+        end
+        object N46: TMenuItem
+          Caption = '-'
+        end
         object Whiteboxslopemape1: TMenuItem
           Caption = 'Whitebox slope map (Horn)'
           OnClick = Whiteboxslopemape1Click
@@ -4136,33 +4158,9 @@ object MapForm: TMapForm
         object N50: TMenuItem
           Caption = '-'
         end
-        object GRASSslopeHorn1: TMenuItem
-          Caption = 'GRASS slope (Horn)'
-          OnClick = GRASSslopeHorn1Click
-        end
-        object GRASSaspect1: TMenuItem
-          Caption = 'GRASS aspect (Horn)'
-          OnClick = GRASSaspect1Click
-        end
-        object Grassprofilecurvature1: TMenuItem
-          Caption = 'Grass profile curvature'
-          OnClick = Grassprofilecurvature1Click
-        end
-        object Grasstangentialcurvature1: TMenuItem
-          Caption = 'Grass tangential curvature'
-          OnClick = Grasstangentialcurvature1Click
-        end
-        object GRASSTRI1: TMenuItem
-          Caption = 'GRASS TRI'
-          OnClick = GRASSTRI1Click
-        end
-        object GRASSTPI1: TMenuItem
-          Caption = 'GRASS TPI'
-          OnClick = GRASSTPI1Click
-        end
-        object GRASSvectorruggedness1: TMenuItem
-          Caption = 'GRASS vector ruggedness'
-          OnClick = GRASSvectorruggedness1Click
+        object GRASSoptions1: TMenuItem
+          Caption = 'GRASS options'
+          OnClick = GRASSoptions1Click
         end
         object N45: TMenuItem
           Caption = '-'
@@ -4296,6 +4294,10 @@ object MapForm: TMapForm
         object SAGAIwahashiandPikeclassification1: TMenuItem
           Caption = 'SAGA Iwahashi and Pike classification'
           OnClick = SAGAIwahashiandPikeclassification1Click
+        end
+        object SAGAgeomorphons1: TMenuItem
+          Caption = 'SAGA geomorphons'
+          OnClick = SAGAgeomorphons1Click
         end
         object SAGAtophatvalleyridgedetection1: TMenuItem
           Caption = 'SAGA top hat valley ridge detection'
@@ -6286,6 +6288,10 @@ object MapForm: TMapForm
         Caption = 'RRI (radial roughness index)'
         OnClick = RICK1Click
       end
+      object MAD2K1: TMenuItem
+        Caption = 'MAD2K'
+        OnClick = MAD2K1Click
+      end
       object Normalizeeastwest1: TMenuItem
         Caption = 'TRI  normalize east-west'
         OnClick = Normalizeeastwest1Click
@@ -6833,6 +6839,38 @@ object MapForm: TMapForm
       Caption = 'Outline other map coverages on this map'
       GroupIndex = 1
       OnClick = Outlineothermaps1Click
+    end
+  end
+  object GrassPopupMenu1: TPopupMenu
+    Left = 768
+    Top = 411
+    object GRASSslopeHorn1: TMenuItem
+      Caption = 'GRASS slope (Horn)'
+      OnClick = GRASSslopeHorn1Click
+    end
+    object GRASSaspect1: TMenuItem
+      Caption = 'GRASS aspect (Horn)'
+      OnClick = GRASSaspect1Click
+    end
+    object Grassprofilecurvature1: TMenuItem
+      Caption = 'Grass profile curvature'
+      OnClick = Grassprofilecurvature1Click
+    end
+    object Grasstangentialcurvature1: TMenuItem
+      Caption = 'Grass tangential curvature'
+      OnClick = Grasstangentialcurvature1Click
+    end
+    object GRASSTRI1: TMenuItem
+      Caption = 'GRASS TRI'
+      OnClick = GRASSTRI1Click
+    end
+    object GRASSTPI1: TMenuItem
+      Caption = 'GRASS TPI'
+      OnClick = GRASSTPI1Click
+    end
+    object GRASSvectorruggedness1: TMenuItem
+      Caption = 'GRASS vector ruggedness'
+      OnClick = GRASSvectorruggedness1Click
     end
   end
 end

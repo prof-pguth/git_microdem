@@ -277,13 +277,13 @@ end;
 function IntMapColorFunct(z : integer) : TColor;
 begin
    IntMapColorFunct := RainbowColorFunct(z,ContourData^.MinValue,ContourData^.MaxValue);
-end {function};
+end;
 
 
 function IntConstantColor(z : integer) : TPlatformColor;
 begin
    IntConstantColor := UserContourColor;
-end {function};
+end;
 
 
 procedure GetColumnOfElevs(x : integer; var z : tElevColPointer);
@@ -388,8 +388,7 @@ end;
 
 
 procedure TThisContourGraph.DrawContours(DrawCanvas : TCanvas; ContInt,MinElev,LeftGrid,BottGrid,RightGrid,
-    TopGrid : integer;  ColorFunction : ColorFunctType;
-    GetElevColProc : GetElevColProcType;  TopCont,BotCont : integer);
+    TopGrid : integer;  ColorFunction : ColorFunctType; GetElevColProc : GetElevColProcType;  TopCont,BotCont : integer);
 
 {++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++}
 { Prototype for routine written by Cadet Karen R. Gorkowski '85 in }
@@ -756,9 +755,9 @@ initialization
    DoInit;
 finalization
    DoFinal;
-{$IfDef RecordDetailedXYZProblems} WriteLineToDebugFile('RecordDetailedXYZProblems active in ContGraf'); {$EndIf}
-{$IfDef RecordXYZProblems} WriteLineToDebugFile('RecordXYZProblems active in ContGraf'); {$EndIf}
-{$IfDef RecordTINProblems} WriteLineToDebugFile('RecordTINProblems active in ContGraf'); {$EndIf}
+   {$IfDef RecordDetailedXYZProblems} WriteLineToDebugFile('RecordDetailedXYZProblems active in ContGraf'); {$EndIf}
+   {$IfDef RecordXYZProblems} WriteLineToDebugFile('RecordXYZProblems active in ContGraf'); {$EndIf}
+   {$IfDef RecordTINProblems} WriteLineToDebugFile('RecordTINProblems active in ContGraf'); {$EndIf}
 end.
 
 

@@ -92,7 +92,6 @@ uses
    Nevadia_Main,
 {End MDI parent declaration}
 
-   //Printers,
    PETMath,GetLatLn,
    DEMCoord;
 
@@ -111,16 +110,18 @@ end;
 procedure TCoordConverter.FormCreate(Sender: TObject);
 begin
    {$IfDef RecordDEMconvert} WriteLineToDebugFile('TCoordConverter.FormCreate in'); {$EndIf}
-   InLat := 36;
-   InLong := -117;
+   //InLat := 36;
+   //InLong := -117;
 
    Petmar.PlaceFormAtMousePosition(Self);
-   InputMap  := tMapProjection.Create;
+   InputMap := tMapProjection.Create;
+   InputMap.pName := UTMellipsoidal;
    InputMap.h_DatumCode := MDDef.PreferPrimaryDatum;  //'WGS84';
    InputMap.projUTMZone := MDDef.DefaultUTMZone;
-   InputMap.projUTMZone := GetUTMZone(InLong);
+   //InputMap.projUTMZone := GetUTMZone(InLong);
 
    OutputMap := tMapProjection.Create;
+   OutputMap.pName := UTMellipsoidal;
    OutputMap.h_DatumCode := MDDef.PreferSecondaryDatum;  //  'NAD27';
    OutputMap.projUTMZone := MDDef.DefaultUTMZone;
 

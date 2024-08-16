@@ -164,16 +164,16 @@
         <Icon_MainIcon>..\icons\md_logo.ico</Icon_MainIcon>
         <DCC_ExeOutput>C:\microdem\</DCC_ExeOutput>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-        <VerInfo_MinorVer>7</VerInfo_MinorVer>
+        <VerInfo_MinorVer>8</VerInfo_MinorVer>
         <VerInfo_MajorVer>2024</VerInfo_MajorVer>
-        <VerInfo_Release>12</VerInfo_Release>
+        <VerInfo_Release>16</VerInfo_Release>
         <DCC_DcuOutput>C:\turbo\obj_files_64\</DCC_DcuOutput>
-        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2024.7.12.1;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2024.8.16.2;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
         <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
         <DCC_OutputDRCFile>false</DCC_OutputDRCFile>
         <DCC_RangeChecking>true</DCC_RangeChecking>
-        <VerInfo_Build>1</VerInfo_Build>
+        <VerInfo_Build>2</VerInfo_Build>
         <AppDPIAwarenessMode>none</AppDPIAwarenessMode>
         <DCC_MapFile>3</DCC_MapFile>
     </PropertyGroup>
@@ -702,12 +702,6 @@
         <DCCReference Include="..\common_code\dem_sat_header.pas">
             <Form>SatHeaderForm</Form>
         </DCCReference>
-        <DCCReference Include="..\common_code\OKCNHLP2.PAS">
-            <Form>OKHelpRightDlg</Form>
-        </DCCReference>
-        <DCCReference Include="..\common_code\OKCNHLP1.PAS">
-            <Form>OKHelpBottomDlg</Form>
-        </DCCReference>
         <DCCReference Include="..\common_code\net_quiz.pas">
             <Form>NetQuizForm</Form>
         </DCCReference>
@@ -912,19 +906,15 @@
         <DCCReference Include="..\demix\demix_graphs.pas"/>
         <DCCReference Include="..\demix\demix_evals_scores_graphs.pas">
             <Form>eval_scores_graph_form</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="..\demix\pick_demix_mode.pas">
             <Form>PickDEMIXmodeForm</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="..\demix\ssim_fuv_control.pas">
             <Form>fuv_ssim_control</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="..\demix\pick_demix_areas.pas">
             <Form>PickAreasForm</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="..\sgp\SGP_CONV.PAS"/>
         <DCCReference Include="..\sgp\Sgp_in.pas"/>

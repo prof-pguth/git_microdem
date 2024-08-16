@@ -128,16 +128,10 @@ end;
 
 
 
-function CreateGridToMatchDEM(DEM : integer; What : tCreateGrid;  OpenMap : boolean = true; Resolution : tDEMprecision = FloatingPointDEM; SpacingX : float64 = -99; SpacingY : float64 = -99; DesiredUTMZone : integer = -99; RasterPixelIs : byte = 1) : integer;
+function CreateGridToMatchDEM(NewName : shortstring;  DEM : integer; What : tCreateGrid;  OpenMap : boolean = true; Resolution : tDEMprecision = FloatingPointDEM;
+   SpacingX : float64 = -99; SpacingY : float64 = -99; DesiredUTMZone : integer = -99; RasterPixelIs : byte = 1) : integer;
 var
-   //Lat,Long : float64;
    NewHeader : tDEMheader;
-   NewName : shortstring;
-   //fName : PathStr;
-   //Perimeter : integer;
-   //Projection : tMapProjection;
-   //xmin,xmax,ymin,ymax,
-   //x,y : float64;
 begin
    //MapDraw.MapCorners.BoundBoxGeo := MapDraw.GetBoundBoxGeo;
 
@@ -180,7 +174,7 @@ begin
            MessageToContinue('Grid spacing would require ' + IntToStr(NewHeader.NumCol) + 'x' + IntToStr(NewHeader.NumRow) + '  increase grid spacing or decrease grid extent');
            exit;
         end;
-        NewName := 'UTM projection zone ' + IntToStr(NewHeader.UTMzone) + NewHeader.LatHemi;
+        if (NewName = '') then NewName := 'UTM projection zone ' + IntToStr(NewHeader.UTMzone) + NewHeader.LatHemi;
     end
     else if (What = cgLatLong) then begin
         if (SpacingX < 0) then begin
@@ -201,7 +195,7 @@ begin
            MessageToContinue(ImpGridIncSpace + ' would require ' + IntToStr(NewHeader.NumCol) + 'x' + IntToStr(NewHeader.NumRow));
            exit;
         end;
-       NewName := 'geographic_coordinates';
+       if (NewName = '') then NewName := 'geographic_coordinates';
     end
     else if (What = cgWKT) then begin
        Result := 0;
@@ -253,12 +247,12 @@ begin
        NewHeader.NumCol := round((xmax-xmin) / NewHeader.DEMxSpacing);
        NewHeader.NumRow := round((ymax-ymin) / NewHeader.DEMxSpacing);
        Projection.Destroy;
-       NewName := ExtractFileName(fName);
+       if (NewName = '') then NewName := ExtractFileName(fName);
 *)
     end;
 
     {$IfDef RecordNewMaps} WriteLineToDebugFile('Variables set DEM size: ' + IntToStr(NewHeader.NumCol) + 'x' + IntToStr(NewHeader.NumRow) + '  ' + NewHeader.WKTString); {$EndIf}
-    OpenAndZeroNewDEM(false,NewHeader,Result,'Grid with ' + NewName, InitDEMmissing);
+    OpenAndZeroNewDEM(false,NewHeader,Result,NewName, InitDEMmissing);
     {$IfDef RecordNewMaps} WriteLineToDebugFile('OpenAndZeroNewDEM done, DEM=' + IntToStr(Result) + '  Projection ' + DEMGlb[Result].DEMMapProjection.GetProjectionName); {$EndIf}
 
     if OpenMap then begin
@@ -274,11 +268,12 @@ function tDEMDataSet.ResampleByAveraging(OpenMap : boolean; SaveCountGrid : bool
 var
    CountGrid,x,y,xi,yi : integer;
    Lat,Long : float64;
-   z,z1{,avgz} : float32;
+   z,z1 : float32;
    NewHeadRecs : tDEMheader;
    NewAreaName : shortstring;
    UTMzone : integer;
    LatCh : ANSIchar;
+   fName : PathStr;
 
    {$If Defined(RecordCreateNewDEMSWCorner)}
       procedure RecordSWCorner(What : shortstring);
@@ -295,11 +290,15 @@ begin
     UTMzone := DEMMapProj.projUTMZone;
     LatCh := DEMMapProj.LatHemi;
     WGS84DatumConstants.DefineDatumFromUTMZone('WGS84',UTMZone,LatCh,'');
+    if SaveName <> '' then fName := ExtractFileNameNoExt(SaveName);
+
     if (MDDef.LidarGridProjection = UTMBasedDEM) then begin
-       Result := CreateGridToMatchDEM(ThisDEM,cgUTM,false,FloatingPointDEM,MDDef.DefLidarXGridSize,MDDef.DefLidarYGridSize,UTMZone,MDDef.LasDEMPixelIs);
+       if (fName = '') then fName := 'utm_resample';
+       Result := CreateGridToMatchDEM(fName,ThisDEM,cgUTM,false,FloatingPointDEM,MDDef.DefLidarXGridSize,MDDef.DefLidarYGridSize,UTMZone,MDDef.LasDEMPixelIs);
     end
     else if (MDDef.LidarGridProjection = ArcSecDEM) then begin
-       Result := CreateGridToMatchDEM(ThisDEM,cgLatLong,false,FloatingPointDEM,MDDef.DefLidarGeoGridSizeX,MDDef.DefLidarGeoGridSizeY,UTMZone,MDDef.LasDEMPixelIs);
+       if (fName = '') then fName := 'geo_resample';
+       Result := CreateGridToMatchDEM(fName,ThisDEM,cgLatLong,false,FloatingPointDEM,MDDef.DefLidarGeoGridSizeX,MDDef.DefLidarGeoGridSizeY,UTMZone,MDDef.LasDEMPixelIs);
     end;
     DEMGlb[Result].SetEntireGridToConstant(0);
    {$IfDef RecordMakeGrid} WriteLineToDebugFile('MakeTempGrid out, TempDEM=' + IntToStr(Result) + ' ' + DEMGlb[Result].GridDefinition + ' ' + DEMGlb[Result].DEMSizeString + ' ' + DEMGlb[Result].ColsRowsString); {$EndIf}
@@ -378,9 +377,9 @@ var
    Sum, Min,Max,FilterValue,Mag     : float64;
    MomentVar : tMomentVar;
    Aspects : farray;
-   xs    : array[0..MaxFilterSize] of float32;
+   xs : array[0..MaxFilterSize] of float32;
 begin
-   if (not ThreadsWorking) then StartProgress('Filtering');
+   if (not ThreadsWorking) then StartProgress('Filtering ' + DEMGlb[NewDEM].AreaName);
 
    for Row := GridLimits.YGridLow to GridLimits.YGridHigh do begin
       if (not ThreadsWorking) and (CountInStrips mod 50 = 0) and ShowSatProgress then begin
@@ -434,12 +433,12 @@ begin
                   if (FilterCategory = fcDissimilarNeighbors) then GetElevMeters(Col,Row,ItsZ);
                   for x := (Col-FilterLap) to (Col + FilterLap) do begin
                      for y := (Row-FilterLap) to (Row + FilterLap) do begin
-                        if GetElevMeters(x,y,z1) then begin
-                           if FilterCategory in [fcSum] then Sum := Sum + z1
+                        if GetElevMetersOnGrid(x,y,z1) then begin
+                           if FilterCategory in [fcMedian,fcMean,fcSTD] then xs[MomentVar.NPts] := z1
+                           else if FilterCategory in [fcSum] then Sum := Sum + z1
                            else if (FilterCategory = fcDissimilarNeighbors) then begin
                               if abs(ItsZ-z1) < 0.01 then inc(NumSame);
                            end
-                           else if FilterCategory in [fcMedian,fcMean,fcSTD] then xs[MomentVar.NPts] := z1
                            else if FilterCategory in [fcVectAvg] then begin
                               Aspects[MomentVar.NPts] := z1;
                            end
@@ -453,14 +452,14 @@ begin
                   if (MomentVar.NPts > 0) then begin
                      if FilterCategory in [fcVectAvg] then begin
                         z1 := VectorAverage(MomentVar.NPts,Aspects,Mag);
-                        if z1 > -90 then DEMGlb[NewDEM].SetGridElevation(Col,Row,z1);
+                        if (z1 > -90) then DEMGlb[NewDEM].SetGridElevation(Col,Row,z1);
                      end
                      else if (FilterCategory = fcDissimilarNeighbors) then begin
                         if NumSame >= MDDef.ExpandNeighborsRequired then DEMGlb[NewDEM].SetGridElevation(Col,Row,ItsZ)
                         else inc(Removed);
                      end
                      else if (FilterCategory = fcMedian) then begin
-                        if MomentVar.NPts > Missing then DEMGlb[NewDEM].SetGridElevation(Col,Row,Petmath.Median(xs,MomentVar.NPts))
+                        if (MomentVar.NPts > Missing) then DEMGlb[NewDEM].SetGridElevation(Col,Row,Petmath.Median(xs,MomentVar.NPts))
                         else DEMGlb[NewDEM].SetGridMissing(Col,Row);
                      end
                      else if (FilterCategory in [fcMean,fcSTD]) then begin
@@ -481,7 +480,7 @@ begin
 end;
 
 
-procedure tDEMDataSet.FilterThisDEM(FilterCategory : tFilterCat; var NewDEM : integer; BoxSize : integer = 0; FilterName : PathStr = '');
+function tDEMDataSet.FilterThisDEM(OpenMap : boolean; FilterCategory : tFilterCat; BoxSize : integer = 0; FilterName : PathStr = '') : integer;
 const
    MaxSize = 1000;
 var
@@ -489,6 +488,7 @@ var
    NewHeadRecs   : tDEMheader;
    FilterLap,Sum : integer;
    Filter   : FilterType;
+   fName : PathStr;
    {$IfDef NoParallelFor}
    {$Else}
        //PartLimits : tGridLimitsArray;
@@ -497,7 +497,7 @@ var
 begin
    {$IfDef RecordDEMEdits}  WriteLineToDebugFile('tDEMDataSet.FilterThisDEM in'); {$EndIf}
    SaveBackupDefaults;
-   NewDEM := 0;
+   //NewDEM := 0;
    NewHeadRecs := DEMheader;
    NewHeadRecs.DEMPrecision := FloatingPointDEM;
    if (FilterCategory = fcFilFile) then begin
@@ -508,10 +508,10 @@ begin
    end
    else begin
       if (BoxSize = 0) then begin
-         FilterLap := 2;
-         ReadDefault('Box size (postings each side of grid point)',FilterLap);
+         BoxSize := 2;
+         ReadDefault('Box size (postings each side of grid point)',BoxSize);
       end;
-      while sqr(succ(2*FilterLap)) > MaxSize do dec(FilterLap);
+      while sqr(succ(2*BoxSize)) > MaxSize do dec(Boxsize);
       if (FilterCategory = fcNumNeigh) then begin
          NewHeadRecs.DEMPrecision := ByteDEM;
       end
@@ -521,24 +521,24 @@ begin
    end;
 
    case FilterCategory of
-       fcVectAvg : Title := 'Vector Average';
-       fcMedian : Title := 'Median' ;
-       fcMean   : Title := 'Mean';
+       fcVectAvg : Title := 'Vector_Average';
+       fcMedian : Title := 'Median_filter' ;
+       fcMean   : Title := 'Mean_filter';
        fcMin    : Title := 'Min';
        fcMax    : Title := 'Max';
        fcSum    : Title := 'Sum';
-       fcSTD    : Title := 'Std Dev';
-       fcNumNeigh : Title := 'Num nearest neighbors, box =' + IntToStr(BoxSize);
+       fcSTD    : Title := 'Std_Dev';
+       fcNumNeigh : Title := 'Num_nearest_neighbors';
        fcNeighbors : Title := 'Neighbors';
-       fcDissimilarNeighbors : Title := 'Dissimilar neighbors';
-       fcParamIsotrop : Title  := 'Par Isotrop';
+       fcDissimilarNeighbors : Title := 'Dissimilar_neighbors';
+       fcParamIsotrop : Title  := 'Par_Isotrop';
        fcFilFile : Title := ExtractFileNameNoExt(FilterName);
    end;
-   if (not (FilterCategory in [fcDissimilarNeighbors])) then begin
-      Title := Title + ' (box size = ' + IntToStr(2*FilterLap+1) + ')';
-   end;
+   //if (not (FilterCategory in [fcDissimilarNeighbors])) then begin
+      Title := Title + '_' + IntToStr(2*Boxsize+1) + 'x' + IntToStr(2*Boxsize+1);
+   //end;
    {$IfDef RecordDEMEdits} WriteLineToDebugFile('tDEMDataSet.FilterThisDEM setup done'); {$EndIf}
-   OpenAndZeroNewDEM(true,NewHeadRecs,NewDEM,Title + '_filter_' + AreaName,InitDEMmissing);
+   OpenAndZeroNewDEM(true,NewHeadRecs,Result,Title + '_filter_' + AreaName,InitDEMmissing);
    {$IfDef RecordDEMEdits} WriteLineToDebugFile('tDEMDataSet.FilterThisDEM OpenZero done'); {$EndIf}
    EndProgress;
    ShowHourglassCursor;
@@ -547,9 +547,9 @@ begin
    CountInStrips := 0;
 
    //{$IfDef NoParallelFor}
-       StartProgressAbortOption('Filter ' + DEMGlb[NewDEM].AreaName);
+       StartProgressAbortOption('Filter ' + DEMGlb[Result].AreaName);
        ThreadsWorking := false;
-       FilterStrip(NewDEM,FilterLap,FullDEMGridLimits,FilterCategory,Filter);
+       FilterStrip(Result,Boxsize,FullDEMGridLimits,FilterCategory,Filter);
        EndProgress;
    (*
    {$Else}
@@ -563,8 +563,14 @@ begin
       ThreadsWorking := false;
    {$EndIf}
    *)
-   DEMGlb[NewDEM].CheckMaxMinElev;
+   DEMGlb[Result].CheckMaxMinElev;
    RestoreBackupDefaults;
+
+   if OpenMap then DEMGlb[Result].SetUpMap(Result,true,SelectionMap.MapDraw.MapType);
+   fName := '';
+   if MDdef.PromptToSaveNewDEMs then DEMGlb[Result].WriteNewFormatDEM(fName);
+
+
    {$IfDef RecordDEMEdits} WriteLineToDebugFile('tDEMDataSet.FilterThisDEM out'); {$EndIf}
 end;
 

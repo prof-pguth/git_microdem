@@ -1,10 +1,10 @@
-object UKOSConvertForm: TUKOSConvertForm
+object CoordConvertForm: TCoordConvertForm
   Left = 508
   Top = 325
   BorderIcons = [biSystemMenu]
   BorderStyle = bsDialog
-  ClientHeight = 252
-  ClientWidth = 333
+  ClientHeight = 234
+  ClientWidth = 321
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -17,8 +17,8 @@ object UKOSConvertForm: TUKOSConvertForm
   TextHeight = 13
   object RichEdit1: TRichEdit
     Left = 0
-    Top = 164
-    Width = 333
+    Top = 146
+    Width = 321
     Height = 88
     Align = alBottom
     Font.Charset = ANSI_CHARSET

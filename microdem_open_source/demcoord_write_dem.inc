@@ -157,7 +157,7 @@ begin
     end;
    {$IfDef VCL}
       if (FileName = '') or (not FileExtEquals(FileName,'.DEM')) then begin
-         if (FileName = '') or (not PathIsValid(FileName)) then begin
+         if (FileName = '') or (not ValidPath(FileName)) then begin
             FileName := AreaName;
             StripInvalidPathNameChars(Filename);
             FileName := DEMDefs.WriteDEMDir + FileName;

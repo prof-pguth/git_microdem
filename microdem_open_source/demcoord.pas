@@ -1,7 +1,7 @@
 {$F+}
 
 unit DEMCoord;
-//this unit contains an object for manipulating a DEM/grid
+//unit contains object for manipulating a DEM/grid
 //the name is a relic from long ago, but permeates the code and my personal memory
 
 {^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
@@ -34,7 +34,8 @@ unit DEMCoord;
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
 
    {$IFDEF DEBUG}
-      {$Define RecordDEMIX}
+      //{$Define RecordDEMIX}
+      //{$Define RecordBoundingBox}
       //{$Define RecordReadDEM}
       //{$Define RecordDEMIXResample}
       //{$Define RecordMaskFromSecondGrid}
@@ -130,8 +131,6 @@ unit DEMCoord;
 {$EndIf}
 
 
-
-
 interface
 
 
@@ -154,16 +153,13 @@ uses
 
    {$IfDef VCL}
       Graphics,Forms,StdCtrls,ComCtrls,Controls,
+      DEMMapF,
+      BaseGraf,
    {$EndIf}
 
     {$IfDef MSWindows}
        Windows,
     {$EndIf}
-
-   {$IfDef VCL}
-      DEMMapF,
-      BaseGraf,
-   {$EndIf}
 
    {$IfDef ExVegDensity}
    {$Else}
@@ -185,16 +181,6 @@ uses
 
    Petmar_types,PETMAR,PETMath,BaseMap,
    DEMdefs;
-
-
-{$Define CarlosErrorTrap}
-
-{$IfDef CarlosErrorTrap}
-const
-   CarlosXRecord : integer = 600;
-   CarlosYRecord : integer = 400;
-{$EndIf}
-
 
 
 type
@@ -333,7 +319,7 @@ type
          FanBlowUpDEM,
          DSMGrid            : integer;
          ThisDEMMissingValue : LongWord;
-         Z_Mean,Z_Std : float32;
+         //Z_Mean,Z_Std : float32;
          ElevationMultiple,
          Over30PercentSlope,
          Over50PercentSlope   : float64;
@@ -475,6 +461,7 @@ type
          function ZinMeters(z : float64) : float64;
          procedure GetElevCol(XGrid: int32; var z : pSmallIntCol); {returns entire column of elevations, needed to pass to contouring routine}
          procedure GetFloatElevCol(XGrid: int32; var z : pShortFloatCol); {returns an entire column of elevations, needed to pass to contouring routine}
+         procedure GetBilinearWeights(XGrid,YGrid : float64; var fSW,fSE,fNE,fNW : float32);
 
          procedure LocationOfMaximumZAroundPoint(var Lat,Long : float64; var MaxZ : float32; BoxSize : integer);
 
@@ -562,14 +549,13 @@ type
 
       //reflectance/hillshade operations
          function ReflectanceColor(TintedReflectance : tMapType; x,y : integer) : tcolor;
-         function ReflectanceValueFloat(x,y : integer; var z : float32) : boolean;  inline;
-         function ReflectanceValue(x,y : integer; var z : byte) : boolean;  inline;
+         function ReflectanceValueFloat(x,y : integer; var z : float32) : boolean;  {$IfDef InlineReflectance} inline; {$EndIf}
+         function ReflectanceValue(x,y : integer; var z : byte) : boolean;  {$IfDef InlineReflectance} inline; {$EndIf}
          function RGBReflectanceColor(TintedReflectance : tMapType; Col,Row : integer) : tPlatformColor;
-         //function InterpolateReflectanceValue(x,y :  float64) : integer;
          procedure ReflectanceParams(Min : float64 = -9999; Max : float64 = -9999);
 
      //slope and aspect
-         function GetSlopeAndAspect(Col,Row : integer; var SlopeAsp : tSlopeAspectRec) : boolean;   inline;
+         function GetSlopeAndAspect(Col,Row : integer; var SlopeAsp : tSlopeAspectRec) : boolean; {$IfDef InlineReflectance} inline; {$EndIf}
          function GetSlopeAndAspectFromLatLong(Lat,Long : float64; var SlopeAspectRec : tSlopeAspectRec) : boolean;
          function SlopePercent(XGrid,YGrid : integer) : float64;  inline;
          function SlopePercentFromLatLong(Lat,Long : float64) : float64;
@@ -622,10 +608,10 @@ type
          function CloneAndOpenGridSetMissing(NewPrecision : tDEMprecision; Gridname : shortstring; ElevUnits : tElevUnit) : integer;
          function ThinAndOpenGridSetMissing(ThinFactor : integer; NewPrecision : tDEMprecision; Gridname : shortstring; ElevUnits : tElevUnit) : integer;
 
-         function ThinThisDEM(fName : PathStr = ''; ThinFactor : integer = 0; DoItByAveraging : boolean = false; Offset : integer = 0) : integer;
+         function ThinThisDEM(OpenMap : boolean = true; fName : PathStr = ''; ThinFactor : integer = 0; DoItByAveraging : boolean = false; Offset : integer = 0) : integer;
          function HalfPixelAggregation(fName : PathStr; PixelIs : byte; SaveFile : boolean; Offset : integer = 0) : integer;
 
-         procedure FilterThisDEM(FilterCategory : tFilterCat; var NewDEM : integer; BoxSize : integer = 0; FilterName : PathStr = '');
+         function FilterThisDEM(OpenMap : boolean; FilterCategory : tFilterCat; BoxSize : integer = 0; FilterName : PathStr = '') : integer;
          procedure RGBFilterDEM(BufferSize : integer; JustDoHoles : boolean);
 
          function DetrendDEM(Normalize : boolean = true; FilterRadius : integer = 2) : integer;
@@ -671,7 +657,7 @@ type
 
          procedure SetElevationMultiple;  //must be public
          procedure DefineDEMvariables(TransformToPreferDatum : boolean);
-         procedure AssignProjectionFromDEM(var MapProjection : tMapProjection; DebugName : shortstring);
+         //procedure AssignProjectionFromDEM(var MapProjection : tMapProjection; DebugName : shortstring);
 
          function MetadataFileName : PathStr;
 
@@ -706,19 +692,22 @@ type
             procedure GetProfCInLongArray(GridLimits: tGridLimits; var NPts : int64; var Values : Petmath.bfarray32; IncludeSeaLevel : boolean = true);
             procedure GetBothOpennessInLongArray(GridLimits: tGridLimits; var NPts : int64; var UpValues,DownValues : Petmath.bfarray32; IncludeSeaLevel : boolean = true);
             {$IfDef MultipleCurvatureMethods} function GetCurvature(Col,Row : integer; var PlanCurvature,SlopeCurvature : float64) : boolean; {$EndIf}
-            procedure GetDEMMeanStd;
+            //procedure GetDEMMeanStd(z_Mean,Z_std : float32);
             procedure ElevationStatistics(GridLimits: tGridLimits; var Mean,Std : float32);
-            function ElevationMoments(GridLimits: tGridLimits) : tMomentVar;
-            procedure ElevationMomentsWithArray(GridLimits: tGridLimits; var MomentVar : tMomentVar; var zvs : bfarray32);
+            function ElevationMoments(GridLimits: tGridLimits; MomentStop : tMomentStop = msAll) : tMomentVar;
+            procedure ElevationMomentsWithArray(GridLimits: tGridLimits; var MomentVar : tMomentVar; var zvs : bfarray32; MomentStop : tMomentStop = msAll);
 
-            procedure SlopeMoments(GridLimits: tGridLimits; var SlopeMoment : tMomentVar);
-            procedure SlopeMomentsWithArray(GridLimits: tGridLimits; var SlopeMoment : tMomentVar; var zvs : bfarray32);
+            procedure SlopeMoments(GridLimits: tGridLimits; var SlopeMoment : tMomentVar; MomentStop : tMomentStop = msAll);
+            procedure SlopeMomentsWithArray(GridLimits: tGridLimits; var SlopeMoment : tMomentVar; var zvs : bfarray32; MomentStop : tMomentStop = msAll);
+            procedure GetSlopeMeanStd(GridLimits: tGridLimits; var Mean,Std : float32);
 
-            procedure RoughnessMomentsWithArray(GridLimits: tGridLimits; var MomentVar : tMomentVar; var zvs : bfarray32);
+            procedure RoughnessMomentsWithArray(GridLimits: tGridLimits; var MomentVar : tMomentVar; var zvs : bfarray32; MomentStop : tMomentStop = msAll);
             procedure GetRoughnessInLongArray(GridLimits: tGridLimits; var NPts : int64; var Values : Petmath.bfarray32);
+            procedure GetRoughnessMeanStd(GridLimits: tGridLimits; var Mean,Std : float32);
 
             procedure PlanCMoments(GridLimits: tGridLimits; var PlanCMoment : tMomentVar);
             procedure ProfCMoments(GridLimits: tGridLimits; var ProfCMoment : tMomentVar);
+
             procedure BothOpennessMoments(GridLimits: tGridLimits; var UpOpenMoment,DownOpenMoment : tMomentVar);
 
             function TerrainCategoryLabel(TerrainCategory : tTerrainCatDefinition) : ShortString;
@@ -728,6 +717,8 @@ type
             function HighLowPointNeighbors(Col,Row,Region : integer; Tolerance : float32; var Higher,Lower : integer) : boolean;  inline;
 
             function GDAL_ScaleFactorString : shortstring;
+            function GDAL_ScaleFactor : float64;
+
 
             function GetRelief(Col,Row,BoxSize : integer; var AvgElev,Relief,ElevStdDev,PCLower,TPI : float32) : boolean;
             function InTerrainCategory(x,Y : integer; TerrainCategory : tTerrainCatDefinition) : boolean;
@@ -1064,7 +1055,7 @@ begin
 end;
 
 
-function tDEMDataSet.ThinThisDEM(fName : PathStr = ''; ThinFactor : integer = 0; DoItByAveraging : boolean = false; Offset : integer = 0) : integer;
+function tDEMDataSet.ThinThisDEM(OpenMap : boolean = true; fName : PathStr = ''; ThinFactor : integer = 0; DoItByAveraging : boolean = false; Offset : integer = 0) : integer;
 var
    Col,Row,x,y,Npts : integer;
    z : float32;
@@ -1075,7 +1066,7 @@ begin
    if (ThinFactor = 0) then begin
       ThinFactor := 3;
       if DoItByAveraging then begin
-         ReadDefault('Average NxN (odd) pixel region to use (use with caution)',ThinFactor);
+         ReadDefault('Average NxN pixel region to use (use with caution)',ThinFactor);
       end
       else begin
          ReadDefault('Decimation thin factor',ThinFactor);
@@ -1092,8 +1083,10 @@ begin
    else begin
       TStr := 'Thin_';
    end;
+   if fName = '' then fName := TStr + IntToStr(ThinFactor) + '_' + AreaName;
 
-   OpenAndZeroNewDEM(true,NewHeadRecs,Result,TStr + IntToStr(ThinFactor) + '_' + AreaName,InitDEMmissing);
+
+   OpenAndZeroNewDEM(true,NewHeadRecs,Result,fName,InitDEMmissing);
 
    StartProgress(DEMGlb[Result].AreaName);
    for Col := 0 to pred(DEMGlb[Result].DEMheader.NumCol) do begin
@@ -1117,7 +1110,7 @@ begin
    end {while};
    DEMGlb[Result].CheckMaxMinElev;
    EndProgress;
-   DEMGlb[Result].SetUpMap(Result,false,SelectionMap.MapDraw.MapType);
+   if OpenMap then DEMGlb[Result].SetUpMap(Result,false,SelectionMap.MapDraw.MapType);
 end;
 
 
@@ -1191,7 +1184,8 @@ begin
    Result := 0;
    if OpenAndZeroNewDEM(true,NewHeadRecs,Result,Gridname,InitDEMMissing,0) then begin
       DEMGlb[Result].AreaName := GridName;
-      AssignProjectionFromDEM(DEMGlb[Result].DEMMapProj,'DEM=' + IntToStr(Result));
+      //AssignProjectionFromDEM(DEMGlb[Result].DEMMapProj,'DEM=' + IntToStr(Result));
+      DEMGlb[Result].DEMMapProj.InitializeProjectionFromDEMHeader(DEMHeader,'DEM=' + IntToStr(Result));
       DEMGlb[Result].DEMMapProj.ProjectionSharedWithDataset := true;
    end;
   {$If Defined(RecordCreateNewDEM) or Defined(RecordClone)} WriteLineToDebugFile('tDEMDataSet.CloneAndOpenGrid out, ElevUnits=' + ElevUnitsAre(ElevUnits)); {$EndIf}
@@ -1201,6 +1195,16 @@ end;
 procedure tDEMDataSet.TrackElevationRange(Where : shortstring);
 begin
    WriteLineToDebugFile(Where + ' ' + AreaName + ' DEM=' + IntToStr(ThisDEM) + ' ' + ZRange);
+end;
+
+
+function tDEMDataSet.GDAL_ScaleFactor : float64;
+var
+   Distance1,Distance2,Distance3 : float64;
+begin
+   if (DEMheader.DEMUsed = ArcSecDEM) then begin
+     MetersPerDegree(DEMSWcornerLat + 0.5 * LatSizeMap,DEMSWcornerLong + 0.5 * LongSizeMap,Distance1,Distance2,Result);
+   end;
 end;
 
 
@@ -1398,20 +1402,21 @@ end;
 procedure ZeroDEMHeader(var HeadRecs : tDEMheader; UTM : boolean);
 begin
    FillChar(HeadRecs,SizeOf(tDEMheader),0);
+   HeadRecs.ElevUnits := euMeters;
    HeadRecs.DEMPrecision := FloatingPointDEM;
+   Headrecs.DigitizeDatum := WGS84d;
+   HeadRecs.h_DatumCode := MDdef.PreferPrimaryDatum;
+   //StringToByteArray(MDdef.PreferPrimaryDatum,HeadRecs.DMAMapDefinition.h_DatumCode);
+   Headrecs.UTMZone := MDdef.DefaultUTMZone;
+   Headrecs.LatHemi := MDdef.DefaultLatHemi;
    if UTM then begin
       Headrecs.DEMUsed := UTMBasedDEM;
       Headrecs.DataSpacing := SpaceMeters;
    end
    else begin
       Headrecs.DEMUsed := ArcSecDEM;
-      Headrecs.DataSpacing  := SpaceDegrees;
+      Headrecs.DataSpacing := SpaceDegrees;
    end;
-   Headrecs.DigitizeDatum := WGS84d;
-   HeadRecs.ElevUnits := euMeters;
-   StringToByteArray(MDdef.PreferPrimaryDatum,HeadRecs.DMAMapDefinition.h_DatumCode);
-   Headrecs.UTMZone := MDdef.DefaultUTMZone;
-   Headrecs.LatHemi := MDdef.DefaultLatHemi;
    HeadRecs.VerticalCSTypeGeoKey := 0;
    HeadRecs.RasterPixelIsGeoKey1025 := 0;
    HeadRecs.wktString := '';
@@ -1642,8 +1647,8 @@ begin
    FanBlowUpDEM := 0;
    FilterGrid := 0;
    FilterGridValue := 0;
-   Z_Mean := -99;
-   Z_Std := -99;
+   //Z_Mean := -99;
+   //Z_Std := -99;
    HiddenGrid := false;
    NilAllDEMPointers;
 
@@ -1806,7 +1811,6 @@ end;
 destructor tDEMDataSet.Destroy;
 var
    Action: TCloseAction;
-   //i : integer;
 begin
    {$If Defined(RecordClosing) or Defined(RecordDEMClose)} if (not DEMMergeInProgress) then WriteLineToDebugFile('tDEMDataSet.Destroy DEM=' + IntToStr(ThisDEM) + '  ' + AreaName); {$EndIf}
    FreeDEMPointers;
@@ -2256,7 +2260,7 @@ begin
      cdW: Tstr := 'west';
      cdNW: Tstr := 'northwest';
    end;
-   {$IfDef RecordFilter} WriteLineToDebugFile('tDEMDataSet.FindEdgeThisDEM in, dir=' + TStr): {$EndIf}
+   {$IfDef RecordFilter} WriteLineToDebugFile('tDEMDataSet.FindEdgeThisDEM in, dir=' + TStr); {$EndIf}
 
    NewDEM := CloneAndOpenGridSetMissing(ByteDEM,AreaName + TStr + '_edge',euUndefined);
 
@@ -2358,29 +2362,6 @@ begin
          Dispose(NLCDCats);
       end;
       New(NLCDCats);
-(*
-      if (DEMheader.ElevUnits in [euGLC2000]) then TStr := 'GLC-2000'
-      else if (DEMheader.ElevUnits in [euGLCS_LC100]) then TStr := 'GLCS-LC100'
-      else if (DEMheader.ElevUnits in [euS2GLC]) then TStr := 'S2GLC'
-      else if (DEMheader.ElevUnits in [euGLOBCOVER]) then TStr := 'GlobCover'
-      else if (DEMheader.ElevUnits in [euCCI_LC]) then TStr := 'CCI-LC'
-      else if (DEMheader.ElevUnits in [euNLCD2001up]) then TStr := 'NLCD-2001up'
-      else if (DEMheader.ElevUnits in [euNLCD1992]) then TStr := 'NLCD-1990'
-      else if (DEMheader.ElevUnits in [euWORLDCover10m]) then TStr := 'WORLDCOVER10M'
-      else if (DEMheader.ElevUnits in [euCCAP]) then TStr := 'C-CAP'
-      else if (DEMheader.ElevUnits in [euMeybeck]) then TStr := 'MEYBECK'
-      else if (DEMheader.ElevUnits in [euESRI2020]) then TStr := 'ESRI2020'
-      else if (DEMheader.ElevUnits in [euIwahashi]) then TStr := 'IWAHASHI'
-      else if (DEMheader.ElevUnits in [euGeomorphon]) then TStr := 'GEOMORPHON'
-      else if (DEMheader.ElevUnits in [euPennock]) then TStr := 'PENNOCK'
-      else if (DEMheader.ElevUnits in [euLCMAP]) then TStr := 'LCMAP'
-      else if (DEMheader.ElevUnits in [euSent2SLC]) then TStr := 'Sent-2_SLC'
-      else if (DEMheader.ElevUnits in [euNLCD_Change]) then TStr := 'NLCD-Change'
-      else if (DEMheader.ElevUnits in [euSimpleLandCover]) then TStr := 'Simplify'
-      else if (DEMheader.ElevUnits in [euLandfire]) thenTStr := 'LANDFIRE';                                               //this is in the DB for the filter
-      //if not StrUtils.AnsiContainsText(UpperCase(AreaName),UpperCase(TStr)) then AreaName := AreaName + ' ' + TStr;
-      {$IfDef RecordNLCD} WriteLineToDebugFile('tDEMDataSet.CheckForLandCover with NLCD=' + TStr); {$EndIf}
-*)
       DEM_NLCD.SetUpNLCDCategories(false,DEMheader.ElevUnits,NLCDCats^);
    end;
   {$IfDef RecordNLCD} WriteLineToDebugFile('tDEMDataSet.CheckForLandCover out'); {$EndIf}
@@ -2389,11 +2370,10 @@ end;
 
 
 
+(*
 procedure tDEMDataSet.AssignProjectionFromDEM(var MapProjection : tMapProjection; DebugName : shortstring);
 begin
    MapProjection.InitializeProjectionFromDEMHeader(DEMHeader,DebugName);
-(*
-
    if MapProjection.PName = UndefinedProj then begin
       {$IfDef RecordCreateNewDEM} WriteLineToDebugFile('tDEMDataSet.AssignProjectionFromDEM in, projection=' + MapProjection.GetProjectionName); {$EndIf}
       MapProjection.projUTMZone := DEMheader.UTMZone;
@@ -2410,11 +2390,8 @@ begin
       end;
    end;
    MapProjection.ProjDebugName := DebugName;
-*)
-   {$IfDef RecordProjectionParameters} MapProjection.ProjectionParamsToDebugFile('tDEMDataSet.AssignProjectionFromDEM, after definition'); {$EndIf}
-   {$IfDef RecordCreateNewDEM} WriteLineToDebugFile('tDEMDataSet.AssignProjectionFromDEM out, projection=' + MapProjection.GetProjectionName); {$EndIf}
 end;
-
+*)
 
 
 
@@ -2457,7 +2434,7 @@ var
                      DEMheader.DEMSWCornerX := DEMSWcornerLong;
                      DEMheader.DEMSWCornerY := DEMSWcornerLat;
                   end;
-                  StringToByteArray(MDdef.PreferPrimaryDatum, DEMheader.DMAMapDefinition.h_DatumCode);
+                  {$IfDef UsetDMAMapRawDefinition} StringToByteArray(MDdef.PreferPrimaryDatum, DEMheader.DMAMapDefinition.h_DatumCode); {$EndIf}
                   DigitizeDatumConstants.Destroy;
                end;
             end;
@@ -2468,10 +2445,11 @@ var
          if (DEMheader.DigitizeDatum in [Rectangular]) then exit;
 
          if (DEMheader.WKTString <> '') then begin
+            {$IfDef RecordBoundingBox} WriteLineToDebugFile('initialize datum, wkt=' + DEMheader.WKTString); {$EndIf}
             DEMMapProj.DecodeWKTProjectionFromString(DEMheader.WKTString);
             DEMMapProj.InverseProjectDegrees(DEMheader.DEMSWCornerX,DEMheader.DEMSWCornerY,DEMSWcornerLat,DEMSWcornerLong);
          end
-         else if (DEMheader.DigitizeDatum in [Spherical{,unusedLamAzEqAreaSphere}]) then begin
+         else if (DEMheader.DigitizeDatum in [Spherical]) then begin
             Transform := false;
             if (DEMheader.DEMUsed = UTMBasedDEM) then begin
                UTMToLatLongDegree(DEMheader.DEMSWCornerX,DEMheader.DEMSWCornerY,DEMSWcornerLat,DEMSWcornerLong);
@@ -2491,7 +2469,8 @@ var
            CheckForUTMZones;
            {$IfDef RecordDefineDatum} WriteLineToDebugFile('initialize datum 2, HeadRecs.UTMZone=' + IntToStr(DEMHeader.UTMZone) + ' proj=' + DEMMapProjection.GetProjectionName); {$EndIf}
            if (DEMMapProj.PName = UTMEllipsoidal) then begin
-               UTMtoLatLongDegree(DEMheader.DEMSWCornerX,DEMheader.DEMSWCornerY,DEMSWcornerLat,DEMSWcornerLong);
+               DEMMapProj.InverseProjectDegrees(DEMheader.DEMSWCornerX,DEMheader.DEMSWCornerY,DEMSWcornerLat,DEMSWcornerLong);
+               {$IfDef RecordBoundingBox} WriteLineToDebugFile('initialize datum, SW corner=' + LatLongDegreeToString(DEMSWcornerLat,DEMSWcornerLong)); {$EndIf}
             end
             else if (DEMMapProj.PName = PlateCaree) then begin
                {$IfDef RecordDefineDatum} WriteLineToDebugFile('initialize datum 4 (Lat/long)'); {$EndIf}
@@ -2527,6 +2506,7 @@ var
             DEMBoundBoxGeo.yMin := MinFloat(y[1],y[2],y[3],y[4]);
             DEMBoundBoxGeo.yMax := MaxFloat(y[1],y[2],y[3],y[4]);
          end;
+        {$IfDef RecordBoundingBox} WriteLineToDebugFile('initialize datum, geo box=' + sfBoundBoxToString(DEMBoundBoxGeo,4) + ' Long0=' + RealToString(DEMMapProj.Long0/DegToRad,-8,-2)); {$EndIf}
 
         if (DEMheader.DEMUsed = UTMBasedDEM) then begin
            DEMBoundBoxUTM := DEMBoundBoxProjected;
@@ -2541,6 +2521,7 @@ var
             DEMBoundBoxUTM.yMin := MinFloat(y[1],y[2],y[3],y[4]);
             DEMBoundBoxUTM.yMax := MaxFloat(y[1],y[2],y[3],y[4]);
          end;
+        {$IfDef RecordBoundingBox} WriteLineToDebugFile('initialize datum, utm box=' + sfBoundBoxToString(DEMBoundBoxUTM,0)); {$EndIf}
 
          DEMBoundBoxDataGrid.xmin := 0;
          DEMBoundBoxDataGrid.ymin := 0;
@@ -2623,7 +2604,6 @@ begin {tDEMDataSet.DefineDEMVariables}
       CheckForLandCover;
    {$EndIf}
 
-   //ElevationDEM := ElevationGrid;
    if not (DEMheader.LatHemi in ['N','S']) then DEMheader.LatHemi := MDDef.DefaultLatHemi;
    SetElevationMultiple;
    DEMheader.MinElev := DEMheader.StoredMinElev * ElevationMultiple;;
@@ -2636,12 +2616,10 @@ begin {tDEMDataSet.DefineDEMVariables}
    if (DEMheader.DigitizeDatum = Rectangular) then MDdef.CoordUse := coordUTM;
 
    {$If Defined(RecordCreateNewDEM) or Defined(RecordUKOS)} WriteLineToDebugFile('tDEMDataSet.DefineDEMVariables call init datum, pname=' + DEMmapProj.GetProjectionName); {$EndIf}
-   {$IfDef RecordProjectionParameters} DEMmapProj.ProjectionParamsToDebugFile('tDEMDataSet.DefineDEMVariables step 2'); {$EndIf}
-
-   AssignProjectionFromDEM(DEMMapProj,AreaName);
+   //AssignProjectionFromDEM(DEMMapProj,AreaName);
+   DEMMapProj.InitializeProjectionFromDEMHeader(DEMHeader,AreaName);
    {$If Defined(RecordCreateNewDEM) or Defined(RecordUKOS)} WriteLineToDebugFile('tDEMDataSet.DefineDEMVariables assigned projection, pname=' + DEMmapProj.GetProjectionName); {$EndIf}
 
-   //CheckUK_OS;
    InitializeDatum(TransformToPreferDatum);
    {$If Defined(RecordCreateNewDEM) or Defined(RecordUKOS)} WriteLineToDebugFile('tDEMDataSet.DefineDEMVariables datum init, pname=' + DEMmapProj.GetProjectionName); {$EndIf}
    if (DEMheader.DigitizeDatum <> Rectangular) then  begin
@@ -3222,26 +3200,30 @@ function tDEMDataSet.ReflectanceValueFloat(x,y : integer; var z : float32) : boo
 //Hillshade = 255.0 * ((cos(Zenith_rad) * cos(Slope_rad)) + (sin(Zenith_rad) * sin(Slope_rad) * cos(Azimuth_rad - Aspect_rad)))
 //If the calculation of the hillshade value is < 0, the output cell value will be = 0.
 var
-   sum,value  : float64;
+   sum,value,SlopeDeg  : float64;
    i : integer;
    SlopeAsp : tSlopeAspectRec;
 begin
    //Result := MaxSmallInt;
    Result := GetSlopeAndAspect(x,y,SlopeAsp);
+   z := 0;
    if Result then begin
       try
+         SlopeDeg := SlopeAsp.SlopeDegree * MDDef.RefVertExag;
          Sum := 0;
          for I := 1 to MDdef.UseRefDirs do begin
             //allows multi-directions if i > 1
-            Value := RefWeight[i] * ( (cosAlt[i] * cosDeg(MDDef.RefVertExag * SlopeAsp.SlopeDegree)) + (sinAlt[i] * sinDeg(MDDef.RefVertExag * SlopeAsp.SlopeDegree * cosDeg(RefPhi[i] - SlopeAsp.AspectDir))));
+            Value := RefWeight[i] * ( (cosAlt[i] * cosDeg(SlopeDeg)) + (sinAlt[i] * sinDeg(SlopeDeg * cosDeg(RefPhi[i] - SlopeAsp.AspectDir))));
             Sum := sum + Value;
          end;
          z := 255 * Sum;
+         if IsNAN(z) then Result := false;
       except
-          on Exception do Result := false;
+         on Exception do Result := false;
       end;
    end;
 end;
+
 
 function tDEMDataSet.ReflectanceValue(x,y : integer; var z : byte) : boolean;
 {heavily modified for multidirectional hillshade}
@@ -3257,24 +3239,8 @@ var
    //SlopeAsp : tSlopeAspectRec;
 begin
    Result := ReflectanceValueFloat(x,y,zf);
-   if Result then z := ValidByteRange(round(zf));
-(*
-   //Result := MaxSmallInt;
-   Result := GetSlopeAndAspect(x,y,SlopeAsp);
-   if Result then begin
-      try
-         Sum := 0;
-         for I := 1 to MDdef.UseRefDirs do begin
-            //allows multi-directions if i > 1
-            Value := RefWeight[i] * ( (cosAlt[i] * cosDeg(MDDef.RefVertExag * SlopeAsp.SlopeDegree)) + (sinAlt[i] * sinDeg(MDDef.RefVertExag * SlopeAsp.SlopeDegree * cosDeg(RefPhi[i] - SlopeAsp.AspectDir))));
-            Sum := sum + Value;
-         end;
-         z := ValidByteRange(round(255 * Sum));
-      except
-          on Exception do Result := false;
-      end;
-   end;
-*)
+   if Result then z := ValidByteRange(round(zf))
+   else z := 0;
 end;
 
 
@@ -3293,110 +3259,112 @@ var
    r : byte;
    zv : float32;
 begin
-   GetElevMeters(Col,Row,zv);
-   if (TintedReflectance = mtGrayReflect) and (MDdef.WaterCheck and (abs(zv) < 0.001)) or (MDdef.LakeCheck and LakePoint(Col,Row)) then begin
-      Result := MDdef.WaterColor;
-   end
-   else begin
-      //R := ReflectanceValue(Col,Row,R);
-      if ReflectanceValue(Col,Row,R) and (abs(RefMaxElev - RefMinElev) > 0.001) then begin
-         if (TintedReflectance in [mtGrayReflect]) then begin
-            Result := GrayRGBTrip(r);
-         end
-         else if (TintedReflectance in [mtIHSReflect]) then begin
-            if (zv > RefMaxElev) then zv := RefMaxElev;
-            if (zv < RefMinElev) then zv := RefMinElev;
-            Result := RGBtripFromHSI((360.0 - ((zv - RefMinElev) / (RefMaxElev - RefMinElev) * 360.0)),MDDef.MergeSat,R);
-         end
-         else if (TintedReflectance in [mtRefGrayColor]) then begin
-            if (zv < 0) then begin
-               Result := RainbowRGBFunct(zv,RefMinElev,0);
-            end
-            else begin
+   if (abs(RefMaxElev - RefMinElev) > 0.001) then begin
+      GetElevMeters(Col,Row,zv);
+      if (TintedReflectance = mtGrayReflect) and (MDdef.WaterCheck and (abs(zv) < 0.001)) or (MDdef.LakeCheck and LakePoint(Col,Row)) then begin
+         Result := MDdef.WaterColor;
+      end
+      else begin
+         //R := ReflectanceValue(Col,Row,R);
+         if ReflectanceValue(Col,Row,R) {and (abs(RefMaxElev - RefMinElev) > 0.001)} then begin
+            if (TintedReflectance in [mtGrayReflect]) then begin
                Result := GrayRGBTrip(r);
-            end;
-         end
-         else if (TintedReflectance in [mtRefColorGray]) then begin
-            if (zv > MDDef.CurrentSeaLevel) then begin
-               Result := RainbowRGBFunct(zv,0,RefMaxElev);
             end
-            else begin
-               Result := GrayRGBTrip(r);
-            end;
-         end
-         else if (TintedReflectance in [mtRefGrayBlue]) then begin
-            if (zv < MDDef.CurrentSeaLevel) then begin
-               Result := RGBTrip(0,0,r);
+            else if (TintedReflectance in [mtIHSReflect]) then begin
+               if (zv > RefMaxElev) then zv := RefMaxElev;
+               if (zv < RefMinElev) then zv := RefMinElev;
+               Result := RGBtripFromHSI((360.0 - ((zv - RefMinElev) / (RefMaxElev - RefMinElev) * 360.0)),MDDef.MergeSat,R);
             end
-            else begin
-               Result := GrayRGBTrip(r);
-            end;
-         end
-         else if (TintedReflectance = mtGYRReflect) then begin
-             if (zv > MDDef.TopCutLevel) then begin
-                Result := RGBTrip(0,r,0);
+            else if (TintedReflectance in [mtRefGrayColor]) then begin
+               if (zv < 0) then begin
+                  Result := RainbowRGBFunct(zv,RefMinElev,0);
+               end
+               else begin
+                  Result := GrayRGBTrip(r);
+               end;
+            end
+            else if (TintedReflectance in [mtRefColorGray]) then begin
+               if (zv > MDDef.CurrentSeaLevel) then begin
+                  Result := RainbowRGBFunct(zv,0,RefMaxElev);
+               end
+               else begin
+                  Result := GrayRGBTrip(r);
+               end;
+            end
+            else if (TintedReflectance in [mtRefGrayBlue]) then begin
+               if (zv < MDDef.CurrentSeaLevel) then begin
+                  Result := RGBTrip(0,0,r);
+               end
+               else begin
+                  Result := GrayRGBTrip(r);
+               end;
+            end
+            else if (TintedReflectance = mtGYRReflect) then begin
+                if (zv > MDDef.TopCutLevel) then begin
+                   Result := RGBTrip(0,r,0);
+                end
+                else if (zv < MDDef.BottomCutLevel) then begin
+                   Result := RGBTrip(r,0,0);
+                end
+                else begin
+                   Result := RGBTrip(r,r,0);
+                end;
              end
-             else if (zv < MDDef.BottomCutLevel) then begin
-                Result := RGBTrip(r,0,0);
+            else if (TintedReflectance = mtGGRReflect) then begin
+                if (zv > MDDef.TopCutLevel) then begin
+                   Result := RGBTrip(0,r,0);
+                end
+                else if (zv < MDDef.BottomCutLevel) then begin
+                   Result := RGBTrip(r,0,0);
+                end
+                else begin
+                   Result := RGBTrip(r,r,r);
+                end;
              end
-             else begin
-                Result := RGBTrip(r,r,0);
-             end;
-          end
-         else if (TintedReflectance = mtGGRReflect) then begin
-             if (zv > MDDef.TopCutLevel) then begin
-                Result := RGBTrip(0,r,0);
+             else if (TintedReflectance = mtGrCyBlReflect) then begin
+                if (zv > MDDef.TopCutLevel) then begin
+                   Result := RGBTrip(0,r,0);
+                end
+                else if (zv < MDDef.BottomCutLevel) then begin
+                   Result := RGBTrip(0,r,r);
+                end
+                else begin
+                   Result := RGBTrip(0,0,r);
+                end;
              end
-             else if (zv < MDDef.BottomCutLevel) then begin
-                Result := RGBTrip(r,0,0);
+             else if (TintedReflectance = mtBlueGreenReflect) then begin
+                if (zv > MDDef.CurrentSeaLevel) then begin
+                   Result := RGBTrip(0,r,0);
+                end
+                else begin
+                   Result := RGBTrip(0,0,r);
+                end;
              end
-             else begin
-                Result := RGBTrip(r,r,r);
-             end;
-          end
-          else if (TintedReflectance = mtGrCyBlReflect) then begin
-             if (zv > MDDef.TopCutLevel) then begin
-                Result := RGBTrip(0,r,0);
+             else if (TintedReflectance = mt6ColorVAToverlay) then begin
+                if DEMglb[VATrelatedGrid].GetElevMeters(Col,Row,ZV) then begin
+                   zi := pred(round(zv));
+                   if zi in [3,4,5,6] then Red := 1 else Red := 0;
+                   if zi in [1,2,3] then Green := 1 else Green := 0;
+                   if zi in [0,1,5,6] then Blue := 1 else Blue := 0;
+                   Result := RGBTrip(r*Red,r*Green,r*Blue);
+                end
+                else Result := RGBTrip(r,r,r);
              end
-             else if (zv < MDDef.BottomCutLevel) then begin
-                Result := RGBTrip(0,r,r);
-             end
-             else begin
-                Result := RGBTrip(0,0,r);
-             end;
-          end
-          else if (TintedReflectance = mtBlueGreenReflect) then begin
-             if (zv > MDDef.CurrentSeaLevel) then begin
-                Result := RGBTrip(0,r,0);
-             end
-             else begin
-                Result := RGBTrip(0,0,r);
-             end;
-          end
-          else if (TintedReflectance = mt6ColorVAToverlay) then begin
-             if DEMglb[VATrelatedGrid].GetElevMeters(Col,Row,ZV) then begin
-                zi := pred(round(zv));
+             else if (TintedReflectance = mt6ColorsReflect) then begin
+               // GetReflectanceRGB(TintedReflectance,zv,Red,Green,Blue);
+                zi := round(zv - RefMinElev) * 6 div round(RefMaxElev - RefMinElev);
+                { 0  : Blue}   { 1  : Cyan}  { 2  : Green} { 3  : Yellow}  { 4  : Red } { 5  : Magneta}
                 if zi in [3,4,5,6] then Red := 1 else Red := 0;
                 if zi in [1,2,3] then Green := 1 else Green := 0;
                 if zi in [0,1,5,6] then Blue := 1 else Blue := 0;
-                Result := RGBTrip(r*Red,r*Green,r*Blue);
-             end
-             else Result := RGBTrip(r,r,r);
-          end
-          else if (TintedReflectance = mt6ColorsReflect) then begin
-            // GetReflectanceRGB(TintedReflectance,zv,Red,Green,Blue);
-             zi := round(zv - RefMinElev) * 6 div round(RefMaxElev - RefMinElev);
-             { 0  : Blue}   { 1  : Cyan}  { 2  : Green} { 3  : Yellow}  { 4  : Red } { 5  : Magneta}
-             if zi in [3,4,5,6] then Red := 1 else Red := 0;
-             if zi in [1,2,3] then Green := 1 else Green := 0;
-             if zi in [0,1,5,6] then Blue := 1 else Blue := 0;
 
-             Result := RGBTrip(r*Red,r*Green,r*Blue);
+                Result := RGBTrip(r*Red,r*Green,r*Blue);
+             end;
+          end
+          else begin
+             Result := MissingColorRGBTriple(Col,Row);
           end;
-       end
-       else begin
-          Result := MissingColorRGBTriple(Col,Row);
-       end;
+      end;
    end;
 end;
 
@@ -3582,51 +3550,6 @@ begin
    {$EndIf}
 end;
 
-
-
-{$IfDef NoMapOptions}
-{$Else}
-
-      function tDEMDataSet.LatLongDegreePointsIntervisible(Lat1,Long1,ObsUp,Lat2,Long2,TargetUp : float64; var Distance,BlockDistance : float64) : boolean;
-      const
-         MaxPts = 25000;
-      type
-        boolarr = array[0..MaxPts] of boolean;
-      var
-         NumPts,i : integer;
-         Heading : float64;
-         VisPoints : ^boolarr;
-         xs,ys,ds,elevs : ^Petmath.bfarray32;
-      begin
-         Result := True;
-         NumPts := 0;
-         VincentyCalculateDistanceBearing(Lat1,Long1,Lat2,Long2,Distance,Heading);
-         {$IfDef RecordLOS} WriteLineToDebugFile('tDEMDataSet.PointsIntervisible Len: ' + RealToString(Distance,8,2)); {$EndIf}
-         if (Distance < MDDef.wf.ClosestBlockingDistance) then exit;
-         new(xs);
-         New(ys);
-         New(ds);
-         if (MDDef.wf.LOSAlgorithm = losMicrodemFractional) then NumPts := round(Distance / (AverageSpace * MDDef.wf.FanDEMSpaceMultiple));
-         if (MDDef.wf.LOSAlgorithm = losMicrodemConstant) then NumPts := round(Distance / (MDDef.wf.MaskAreaInterval));
-         if (NumPts > MaxPts) then NumPts := MaxPts;
-         GetStraightRouteDEMGrid(Lat1,Long1,Lat2,Long2,MDDef.wf.StraightAlgorithm,NumPts,xs^,ys^,ds^);
-         New(Elevs);
-         New(VisPoints);
-         GetVisiblePoints(ObsUp,TargetUp,-89,89,true,true,NumPts,xs^,ys^,ds^,elevs^,VisPoints^);
-         for i := 1 to NumPts do begin
-            if VisPoints^[i] then begin
-               BlockDistance := ds^[i];
-            end;
-         end;
-         Result := VisPoints^[NumPts];
-         Dispose(Elevs);
-         Dispose(VisPoints);
-         Dispose(xs);
-         Dispose(ys);
-         Dispose(ds);
-      end;
-
-{$EndIf}
 
 {$IfDef TrackSWcorner}
    procedure tDEMDataSet.WriteToDebugSWCornerForComputations(Where : shortstring);
@@ -3816,7 +3739,7 @@ function tDEMDataSet.CheckForUTMZones : boolean;
 var
    NumZones : integer;
 begin
-   Result := false;
+   //Result := false;
    if (DEMheader.DigitizeDatum = Spherical) then begin
       NumZones := succ(GetUTMZone(DEMSWcornerLong + LongSizeMap)- GetUTMZone(DEMSWcornerLong));
       if (NumZones > 1) and (not (AnswerIsYes('DEM covers ' + IntToStr(NumZones) + ' UTM zones; proceed'))) then exit;
@@ -3868,60 +3791,101 @@ end;
 
 {$IfDef NoMapOptions}
 {$Else}
-procedure MaskGrid(Map : tMapForm; DEM : integer; MatchCriteria : boolean; OnlyMissing : boolean = false);
-var
-   Col,Row : integer;
-begin
-   ShowHourglassCursor;
-   if ValidDEM(GridMaskDEM) then begin
-      for Col := 0 to DEMGlb[DEM].DEMheader.NumCol do
-         for Row := 0 to DEMGlb[DEM].DEMheader.NumRow do
-            if DEMGlb[GridMaskDEM].MissingDataInGrid(Col,Row) then DEMGlb[DEM].SetGridMissing(Col,Row)
-            else if (not OnlyMissing) then begin
-               if MatchCriteria then begin
-                  if not(MaskValidPoint(Col,Row)) then DEMGlb[DEM].SetGridMissing(Col,Row);
-               end
-               else begin
-                  if MaskValidPoint(Col,Row) then DEMGlb[DEM].SetGridMissing(Col,Row);
-               end;
+
+      function tDEMDataSet.LatLongDegreePointsIntervisible(Lat1,Long1,ObsUp,Lat2,Long2,TargetUp : float64; var Distance,BlockDistance : float64) : boolean;
+      const
+         MaxPts = 25000;
+      type
+        boolarr = array[0..MaxPts] of boolean;
+      var
+         NumPts,i : integer;
+         Heading : float64;
+         VisPoints : ^boolarr;
+         xs,ys,ds,elevs : ^Petmath.bfarray32;
+      begin
+         Result := True;
+         NumPts := 0;
+         VincentyCalculateDistanceBearing(Lat1,Long1,Lat2,Long2,Distance,Heading);
+         {$IfDef RecordLOS} WriteLineToDebugFile('tDEMDataSet.PointsIntervisible Len: ' + RealToString(Distance,8,2)); {$EndIf}
+         if (Distance < MDDef.wf.ClosestBlockingDistance) then exit;
+         new(xs);
+         New(ys);
+         New(ds);
+         if (MDDef.wf.LOSAlgorithm = losMicrodemFractional) then NumPts := round(Distance / (AverageSpace * MDDef.wf.FanDEMSpaceMultiple));
+         if (MDDef.wf.LOSAlgorithm = losMicrodemConstant) then NumPts := round(Distance / (MDDef.wf.MaskAreaInterval));
+         if (NumPts > MaxPts) then NumPts := MaxPts;
+         GetStraightRouteDEMGrid(Lat1,Long1,Lat2,Long2,MDDef.wf.StraightAlgorithm,NumPts,xs^,ys^,ds^);
+         New(Elevs);
+         New(VisPoints);
+         GetVisiblePoints(ObsUp,TargetUp,-89,89,true,true,NumPts,xs^,ys^,ds^,elevs^,VisPoints^);
+         for i := 1 to NumPts do begin
+            if VisPoints^[i] then begin
+               BlockDistance := ds^[i];
             end;
-   end;
-   DEMGlb[DEM].DEMstatus := dsUnsaved;
-   Map.DoBaseMapRedraw;
-end;
+         end;
+         Result := VisPoints^[NumPts];
+         Dispose(Elevs);
+         Dispose(VisPoints);
+         Dispose(xs);
+         Dispose(ys);
+         Dispose(ds);
+      end;
 
 
-function tDEMDataSet.ValuesInRange(Min,Max : float64; ShowOnMap : boolean; Map : tMapForm) : integer;
-var
-   Col,Row,x,y : integer;
-   Lat,Long : float64;
-  z : float32;
-   Bitmap : tMyBitmap;
-begin
-   Result := 0;
-   if ShowOnMap then begin
-      Map.DoFastMapRedraw;
-      PetImage.CopyImageToBitmap(Map.Image1,Bitmap);
+   procedure MaskGrid(Map : tMapForm; DEM : integer; MatchCriteria : boolean; OnlyMissing : boolean = false);
+   var
+      Col,Row : integer;
+   begin
+      ShowHourglassCursor;
+      if ValidDEM(GridMaskDEM) then begin
+         for Col := 0 to DEMGlb[DEM].DEMheader.NumCol do
+            for Row := 0 to DEMGlb[DEM].DEMheader.NumRow do
+               if DEMGlb[GridMaskDEM].MissingDataInGrid(Col,Row) then DEMGlb[DEM].SetGridMissing(Col,Row)
+               else if (not OnlyMissing) then begin
+                  if MatchCriteria then begin
+                     if not(MaskValidPoint(Col,Row)) then DEMGlb[DEM].SetGridMissing(Col,Row);
+                  end
+                  else begin
+                     if MaskValidPoint(Col,Row) then DEMGlb[DEM].SetGridMissing(Col,Row);
+                  end;
+               end;
+      end;
+      DEMGlb[DEM].DEMstatus := dsUnsaved;
+      Map.DoBaseMapRedraw;
    end;
-   for Col := 0 to pred(DEMheader.NumCol) do begin
-      for Row := 0 to pred(DEMheader.NumRow) do   begin
-         if GetElevMeters(Col,Row,z) then  begin
-            if (z <= Max) and (z >= Min) then  begin
-               inc(Result);
-               if ShowOnMap then begin
-                  DEMGridToLatLongDegree(Col,Row,Lat,Long);
-                  Map.MapDraw.LatLongDegreeToScreen(Lat,Long,x,y);
-                  Petmar.ScreenSymbol(Bitmap.Canvas,x,y,FilledBox,2,claRed);
+
+
+   function tDEMDataSet.ValuesInRange(Min,Max : float64; ShowOnMap : boolean; Map : tMapForm) : integer;
+   var
+      Col,Row,x,y : integer;
+      Lat,Long : float64;
+     z : float32;
+      Bitmap : tMyBitmap;
+   begin
+      Result := 0;
+      if ShowOnMap then begin
+         Map.DoFastMapRedraw;
+         PetImage.CopyImageToBitmap(Map.Image1,Bitmap);
+      end;
+      for Col := 0 to pred(DEMheader.NumCol) do begin
+         for Row := 0 to pred(DEMheader.NumRow) do   begin
+            if GetElevMeters(Col,Row,z) then  begin
+               if (z <= Max) and (z >= Min) then  begin
+                  inc(Result);
+                  if ShowOnMap then begin
+                     DEMGridToLatLongDegree(Col,Row,Lat,Long);
+                     Map.MapDraw.LatLongDegreeToScreen(Lat,Long,x,y);
+                     Petmar.ScreenSymbol(Bitmap.Canvas,x,y,FilledBox,2,claRed);
+                  end;
                end;
             end;
          end;
       end;
+      if ShowOnMap then  begin
+         Map.Image1.Picture.Graphic := Bitmap;
+         Bitmap.Free;
+      end;
    end;
-   if ShowOnMap then  begin
-      Map.Image1.Picture.Graphic := Bitmap;
-      Bitmap.Free;
-   end;
-end;
 
 {$EndIf}
 

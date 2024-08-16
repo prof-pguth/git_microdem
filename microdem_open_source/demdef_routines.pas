@@ -26,7 +26,7 @@
       //{$Define RecordFindUTM}
       //{$Define RecordGDAL}
       //{$Define RecordNaturalEarthFileNames}
-      {$Define RecordInitialization}
+      //{$Define RecordInitialization}
       //{$IfDef RecordInitializationDetailed}
       //{$Define RecordINIfiles}
       //{$Define Options}
@@ -286,7 +286,6 @@ function WarnAboutSpaces(fName : PathStr) : boolean;
 function AskUserAboutMemory(MemNeed : int64) : boolean;
 function GridLimitsString(GridLimits : tGridLimits) : shortstring;
 
-
 function DEMGridString(xgrid,ygrid : float32) : shortstring;
 
 function UNIXTimeToDateTime(UnixTime: LongWord): TDateTime;
@@ -311,11 +310,12 @@ function PixelIsString(Code : integer) : shortstring;
 function RasterPixelIsString(Code : integer) : shortstring;
 function VertDatumName(VerticalCSTypeGeoKey : integer) : shortstring;
 
+procedure MaskAllDEMsWithGeoBoundingBox(bb : sfboundBox);
+procedure InitLatLongBoundBox(LatLow,LongLow,LatHi,LongHi : float64);
+
 var
    VegDenstColors : array[0..255] of tPlatformColor;
 
-procedure MaskAllDEMsWithGeoBoundingBox(bb : sfboundBox);
-procedure InitLatLongBoundBox(LatLow,LongLow,LatHi,LongHi : float64);
 
 
 implementation
@@ -474,6 +474,7 @@ begin
       euLCMAP : Result := 'LCMAP';
       euDNBR	 : Result := 'dNBR';
       euSent2SLC : Result := 'Sentinel-2 SLC';
+      //euCurvature : Result := 'curvature';
       else Result := '';
    end;
 end;
@@ -1144,7 +1145,7 @@ begin
         InitializeMagneticVariation;
      {$EndIf}
 
-     if not PathIsValid(MainMapData) then begin
+     if not ValidPath(MainMapData) then begin
         {$IfDef RecordInitialization} WriteLineToDebugFile('InitializeMICRODEM Invalid MainMapData'); {$EndIf}
         {$IfDef FMX}
            {$IfDef MSWindows}
@@ -1165,7 +1166,7 @@ begin
            {$EndIf}
         {$Else}
            MainMapData := 'c:\mapdata\';
-           if not PathIsValid(MainMapData) then GetDOSPath('Main map data',MainMapData);
+           if not ValidPath(MainMapData) then GetDOSPath('Main map data',MainMapData);
         {$EndIf}
      end;
 
@@ -2435,7 +2436,7 @@ var
          AParameter('DEMIX','DEMIX_mode',DEMIX_Mode,dmNotYetDefined);
          AParameter('DEMIX','DEMIX_high',DEMIX_highlat,true);
          AParameter('DEMIX','TwoParameterVisualization',TwoParameterVisualization,0);
-         AParameter('DEMIX','DEMIX_criterion_tolerance_fName',DEMIX_criterion_tolerance_fName,'');
+         AParameter('DEMIX','DEMIX_criterion_fName',DEMIX_criterion_fName,'');
          AParameter('DEMIX','DEMIX_base_dir',DEMIX_base_dir,'');
          AParameter('DEMIX','DEMIX_default_area',DEMIX_default_area,'');
          AParameter('DEMIX','DEMIX_default_tile',DEMIX_default_tile,'');
@@ -2443,7 +2444,7 @@ var
          AParameter('DEMIX','DEMIXsymsize',DEMIXsymsize,2);
          AParameter('DEMIX','DEMIX_xsize',DEMIX_xsize,900);
          AParameter('DEMIX','DEMIX_ysize',DEMIX_ysize,600);
-         AParameter('DEMIX','DEMIX_DoCHM',DEMIX_DoCHM,true);
+         //AParameter('DEMIX','DEMIX_DoCHM',DEMIX_DoCHM,true);
          AParameter('DEMIX','DEMIX_DoAirOrDirt',DEMIX_DoAirOrDirt,true);
          AParameter('DEMIX','DEMIX_DoElevDiff',DEMIX_DoElevDiff,true);
          AParameter('DEMIX','DEMIX_DoSlopeDiff',DEMIX_DoSlopeDiff,true);
@@ -3822,12 +3823,6 @@ begin
 
     {$If Defined(RecordINIfiles) or Defined(RecordINIfiles)} WriteLineToDebugFile('Breakpoint 7'); {$EndIf}
 
-      {$IfDef ExMrSID}
-      {$Else}
-         AParameter('MrSID','MaxMrSidImageSize',MaxMrSidImageSize,4000);
-         AParameter('MrSID','AskAboutSIDLevel',AskAboutSIDLevel,true);
-      {$EndIf}
-
       {$IfDef ExMultiGrid}
       {$Else}
          AParameter('MultiGridOp','doEnvDEM',doEnvDEM,false);
@@ -3951,9 +3946,9 @@ begin
          AParameter('Veg','VegDensityGroundPoints',VegDensityGroundPoints,true);
          AParameter('Veg','VegDensityBuildingPoints',VegDensityBuildingPoints,true);
          AParameter('Veg','VegDensityRandomizePoints',VegDensityRandomizePoints,true);
-         AParameterShortFloat('Veg','VegGridRandomizationDistance',VegGridRandomizationDistance,0.6);
          AParameter('Veg','VegDensityHeights',VegDensityHeights,45);
          AParameter('Veg','MaxVegHeight',MaxVegHeight,45);
+         AParameterShortFloat('Veg','VegGridRandomizationDistance',VegGridRandomizationDistance,0.6);
       {$EndIf}
 
       {$IfDef ExWebDownload}
@@ -4733,7 +4728,7 @@ begin
    RiversFile := DBDir + 'natural_earth_vector\50m_physical\ne_50m_rivers_lake_centerlines' + DefaultDBExt;
 
    //needed if map library is on an external drive and has changed
-   if (MapLibDir <> '') and (not PathIsValid(MapLibDir)) then PickMapIndexLocation;
+   if (MapLibDir <> '') and (not ValidPath(MapLibDir)) then PickMapIndexLocation;
 
    {$IfDef MessageStartupUnit} MessageToContinue('end demdefs setdefaultdirectories'); {$EndIf}
    {$IfDef RecordInitialization} WriteLineToDebugFile('SetDefaultDirectories in, MainMapData=' + MainMapData); {$EndIf}
@@ -4743,11 +4738,12 @@ end;
 procedure MakeRequiredDirectories;
 begin
    {$IfDef MessageStartupUnit}  MessageToContinue('start demdefs MakeRequiredDirectories'); {$EndIf}
-   {$IfDef  RecordInitialization} WriteLineToDebugFile('MakeRequiredDirectories in, MainMapData=' + MainMapData); {$EndIf}
+   {$IfDef RecordInitialization} WriteLineToDebugFile('MakeRequiredDirectories in, MainMapData=' + MainMapData); {$EndIf}
 
    {$IfDef MSWindows}
-      if (MainMapData = '') then MainMapData := 'c:\mapdata\';
+      if not ValidPath(MainMapData) then FindPath('Map library',':\mapdata\',MainMapData);
 
+      (*
       if (UpperCase(MainMapData) <> 'C:\MAPDATA\') then begin
          if (not MDDef.RunOddballLocation) then begin
             if AnswerIsYes('Sure you want main data location at ' + MainMapData +  '  (not recommended)') then begin
@@ -4756,6 +4752,7 @@ begin
             else MainMapData := 'c:\mapdata\';
          end;
       end;
+      *)
    {$Else}
       MainMapData := System.IOutils.TPath.GetDocumentsPath;
    {$EndIf}
@@ -5216,8 +5213,8 @@ procedure LoadMDdefaults;
 
          procedure TrySettingDefaultDir(var fName : PathStr; NewValue : PathStr);
          begin
-            if (PathIsValid(fName)) then exit;
-            if PathIsValid(NewValue) then fName := NewValue;
+            if (ValidPath(fName)) then exit;
+            if ValidPath(NewValue) then fName := NewValue;
          end;
 
 
@@ -5273,7 +5270,7 @@ begin
 
    {$IfDef MSWindows}
       TrySettingDefaultDir(GADMDir,MainMapData + 'GADM\');
-      if (not PathIsValid(SaveViewshedDir)) then SaveViewshedDir := MDTempDir;
+      if (not ValidPath(SaveViewshedDir)) then SaveViewshedDir := MDTempDir;
       if not FileExists(LastDesktop) then begin
         {$IfDef RecordProjects} WriteLineToDebugFile('LoadMDdefaults, cannot find LastDESKtop=' + LastDesktop); {$EndIf}
          LastDesktop := ProjectDir;

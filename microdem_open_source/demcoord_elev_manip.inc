@@ -57,8 +57,6 @@ begin
    Result := false;
    if (xg >= 1) and (yg >= 1) and (xg < DEMHeader.NumCol - 2) and (yg < DEMHeader.NumRow - 2) then begin
      if FindGradients(1,xg,yg) and FindGradients(2,xg+1,yg) and FindGradients(3,xg+1,yg+1) and FindGradients(4,xg,yg+1) then begin
-        //function bicuint(y,y1,y2,y12: tElevFloatarray; x1l,x1u,x2l,x2u : integer; x1,x2: float32;  VAR ansy,ansy1,ansy2: float32) : boolean;
-
         Result := bicuint(Elev,xgrad,ygrad,crossgrad,  xg,xg+1,yg,yg+1,  Xgrid,Ygrid,  z,grad1,grad2);
      end;
    end;
@@ -188,6 +186,19 @@ begin
 end;
 
 
+procedure tDEMDataSet.GetBilinearWeights(XGrid,YGrid : float64; var fSW,fSE,fNE,fNW  : float32);
+var
+   XIncr,YIncr : float64;
+begin
+   XIncr := frac(XGrid);
+   YIncr := frac(YGrid);
+   fSW := (1-XIncr) * (1-YIncr);
+   fSE := XIncr * (1-YIncr);
+   fNE := XIncr * YIncr;
+   fNW := (1-XIncr) * YIncr;
+end;
+
+
 function tDEMDataSet.GetElevMeters(XGrid,YGrid : float64; var z  : float32) : boolean;
 {interpolate to get point elevation}
 var
@@ -222,7 +233,7 @@ begin
           end
           else if  MDDef.wf.ElevInterpolation = piTriangle then begin
              if (Yincr < 1 - XIncr) then z := YIncr * Elev[4] + (1 - YIncr - XIncr) * Elev[1] + XIncr * Elev[2]
-             else z := (1-YIncr) * Elev[2] + (YIncr + XIncr -1) * Elev[3] + (1-XIncr) * Elev[4];
+             else z := (1-YIncr) * Elev[2] + (YIncr + XIncr - 1) * Elev[3] + (1-XIncr) * Elev[4];
           end
           else if MDDef.wf.ElevInterpolation in [piWeightedR,piWeightedR2] then begin
              if MDDef.wf.ElevInterpolation in [piWeightedR] then begin

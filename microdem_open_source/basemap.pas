@@ -159,7 +159,6 @@ type
          UTM_S1,S2,S4,S6,
          M0,M1,M2     : float64;
 
-
          constructor Create(DebugName : shortstring = '');
          destructor Destroy; override;
 
@@ -344,52 +343,29 @@ const
 
 function tMapProjection.InitializeProjectionFromDEMHeader(var DEMHeader : tDEMHeader; DebugName : shortstring = '') : boolean;
 begin
-
-(*
-   if MapProjection.PName = UndefinedProj then begin
-      {$IfDef RecordCreateNewDEM} WriteLineToDebugFile('tDEMDataSet.AssignProjectionFromDEM in, projection=' + MapProjection.GetProjectionName); {$EndIf}
-      MapProjection.projUTMZone := DEMheader.UTMZone;
-      MapProjection.LatHemi := DEMheader.LatHemi;
-      if (DEMheader.wktString <> '') then begin
-         {$IfDef RecordProjectionParameters} MapProjection.ProjectionParamsToDebugFile('tDEMDataSet.AssignProjectionFromDEM, wkt=' + DEMheader.wktString); {$EndIf}
-         MapProjection.DecodeWKTProjectionFromString(DEMheader.wktString);
-      end
-      else if DEMheader.DEMUsed in [ArcSecDEM] then MapProjection.PName := PlateCaree
-      else if (DEMheader.DEMUsed = UTMBasedDEM) then begin
-         MapProjection.PName := UTMellipsoidal;
-         MapProjection.DefineDatumFromUTMZone(MapProjection.h_DatumCode,DEMheader.UTMZone,DEMMapProjection.LatHemi,'tDEMDataSet.DefineDEMVariables');
-         MapProjection.StartUTMProjection(DEMheader.UTMZone);
-      end;
-   end;
-   MapProjection.ProjDebugName := DebugName;
-*)
-   {$IfDef RecordProjectionParameters} MapProjection.ProjectionParamsToDebugFile('tDEMDataSet.AssignProjectionFromDEM, after definition'); {$EndIf}
+   {$IfDef RecordProjectionParameters} ProjectionParamsToDebugFile('tMapProjection.InitializeProjectionFromDEMHeader, after definition'); {$EndIf}
    {$IfDef RecordCreateNewDEM} WriteLineToDebugFile('tDEMDataSet.AssignProjectionFromDEM out, projection=' + MapProjection.GetProjectionName); {$EndIf}
-
    Result := true;
    LatHemi := DEMheader.LatHemi;
    h_DatumCode := DEMHeader.h_DatumCode;
    projUTMZone := DEMheader.UTMZone;
-   //if (pName = UndefinedProj) then begin
-      if (DEMheader.DEMUsed = UTMbasedDEM) then begin
-         PName := UTMEllipsoidal;
-         DefineDatumFromUTMZone(h_DatumCode,DEMheader.UTMZone,LatHemi,'tDEMDataSet.DefineDEMVariables');
-         StartUTMProjection(DEMheader.UTMZone);
-         //GetProjectParameters;
+   if (DEMheader.DEMUsed = UTMbasedDEM) then begin
+      PName := UTMEllipsoidal;
+      DefineDatumFromUTMZone(h_DatumCode,DEMheader.UTMZone,LatHemi,'tDEMDataSet.DefineDEMVariables');
+      StartUTMProjection(DEMheader.UTMZone);
+   end
+   else begin
+      if (DEMheader.DEMUsed = ArcSecDEM) then PName := PlateCaree;
+      if (DEMheader.DigitizeDatum = UK_OS_grid) then PName := UK_OS;
+      if (DEMheader.wktString <> '') then begin
+         DEMheader.DEMUsed := WKTDEM;
+         InitializeProjectionFromWKT(DEMheader.wktString);
+         Result := DecodeWKTProjectionFromString(DEMheader.wktString);
       end
       else begin
-         if (DEMheader.DEMUsed = ArcSecDEM) then PName := PlateCaree;
-         if (DEMheader.DigitizeDatum = UK_OS_grid) then PName := UK_OS;
-         if (DEMheader.wktString <> '') then begin
-            DEMheader.DEMUsed := WKTDEM;
-            InitializeProjectionFromWKT(DEMheader.wktString);
-            Result := DecodeWKTProjectionFromString(DEMheader.wktString);
-         end
-         else begin
-            GetProjectParameters;
-         end;
+         GetProjectParameters;
       end;
-   //end;
+   end;
    ProjDebugName := DebugName;
    {$IfDef RecordDEMprojection} WriteLineToDebugFile('tMapProjection.InitializeProjectionFromDEMHeader, map ' + GetProjectionName); {$EndIf}
 end;
@@ -667,7 +643,7 @@ function tMapProjection.OpenFromTiff3072(TiffOffset : integer) : shortstring;
 var
    tCode : integer;
 begin
-   {$If Defined(RecordGeotiffCodes) or Defined(RecordOpenFromTiff3072)} WriteLineToDebugFile('OpenFromTiff3072 Code ' + IntToStr(FIPS_Zone)); {$EndIf}
+   {$If Defined(RecordGeotiffCodes) or Defined(RecordOpenFromTiff3072)} WriteLineToDebugFile('OpenFromTiff3072 Code ' + IntToStr(TiffOffset)); {$EndIf}
    if (TiffOffset = 32767) then Result := 'User defined'
    else begin
       EPSGCode3072 := TiffOffset;
@@ -686,6 +662,10 @@ begin
       else if ((TiffOffset = 3067)) then begin
           StartUTMProjection(35);
           H_DatumCode := 'ETR89';
+      end
+      else if ((TiffOffset = 4283)) then begin
+          StartUTMProjection(35);
+          H_DatumCode := 'GDA94';
       end
       else if ((TiffOffset = 5070)) then begin
           PName := AlbersEqAreaConicalEllipsoid;
@@ -713,22 +693,26 @@ begin
       end
       else begin
           tCode := TiffOffset div 100;
-          if ((tCode = 230) or (tCode = 267) or (tCode = 269) or (tCode = 326) or (tCode = 258)) and (TiffOffset mod 100 <= 60) then begin
+          if ((tCode = 230) or (tCode = 267) or (tCode = 269) or (tCode = 326) or (tCode = 258) or (tCode = 283) or (tCode = 322)) and (TiffOffset mod 100 <= 60) then begin
              {$IfDef RecordOpenFromTiff3072} WriteLineToDebugFile('OpenFromTiff3072 UTM Code 258, 267, 269, 326'); {$EndIf}
              case tCode of
                 230 : H_DatumCode := 'EUR-A';
                 258 : H_DatumCode := 'ETR89';
                 267 : H_DatumCode := 'NAD27';
                 269 : H_DatumCode := 'NAD83';
+                283 : begin
+                         H_DatumCode := 'GDA94';
+                         LatHemi := 'S';
+                      end;
+                322 : H_DatumCode := 'WGS72';
                 326 : H_DatumCode := 'WGS84';
              end;
              StartUTMProjection(TiffOffset mod 100);
           end
-          else if (tCode = 323) or (tCode = 327)  or (tCode=161) then begin
-             //Hemi := -45;
+          else if (tCode = 323) or (tCode = 327) or (tCode=161) then begin
              case tCode of
-                322..323 : H_datumCode := 'WGS72';
-                326..327 : H_datumCode := 'WGS84';
+                323 : H_datumCode := 'WGS72';
+                327 : H_datumCode := 'WGS84';
              end;
              LatHemi := 'S';
              StartUTMProjection(TiffOffset mod 100);
@@ -738,7 +722,7 @@ begin
              {$IfDef RecordProblems} HighlightLineToDebugFile('SPCS only supported with WKT'); {$EndIf}  //Message, since there might also be good WKT in the file
           end
           else begin
-             {$IfDef RecordOpenFromTiff3072} WriteLineToDebugFile('OpenFromTiff3072 Unhandled Code ' + IntToStr(FIPS_Zone)); {$EndIf}
+             {$IfDef RecordOpenFromTiff3072} WriteLineToDebugFile('OpenFromTiff3072 Unhandled Code ' + IntToStr(TiffOffset)); {$EndIf}
           end;
       end;
       if Result = '' then Result := GetProjectionName;
@@ -969,6 +953,7 @@ begin
 
        if ParameterInString('NAD') and ParameterInString('83') then begin
           h_datumcode := 'NAD83';  //vmDatum := MapProjNAD83;
+          LatHemi := 'N';
        end;
 
        if ParameterInString('AzimuthalEquidistant') then begin
@@ -1011,13 +996,11 @@ begin
       //HorizWKT := AfterSpecifiedString(HorizWKT,'VertCS');
 
       TheProjectionString := VertWKT;
-      //VertFeet := StrUtils.AnsiContainsText(VertWKT,'9003');
-      //if VertFeet then begin
-         if ParameterInString('UNIT["FOOT",') or ParameterInString('USSURVEYFOOT') then begin
-             if ParameterInString('UNIT["FOOT",') then VertFootFactor := FloatFromParameter(HorizWKT,'"FOOT"',0,']')
-             else VertFootFactor := FloatFromParameter(HorizWKT,'"USSURVEYFOOT"',0,']');
-         end
-         else VertFootFactor := 1;
+      if ParameterInString('UNIT["FOOT",') or ParameterInString('USSURVEYFOOT') then begin
+          if ParameterInString('UNIT["FOOT",') then VertFootFactor := FloatFromParameter(HorizWKT,'"FOOT"',0,']')
+          else VertFootFactor := FloatFromParameter(HorizWKT,'"USSURVEYFOOT"',0,']');
+      end
+      else VertFootFactor := 1;
 
       {$IfDef RecordWKT} ShortProjInfo('finished WKT read'); {$EndIf}
       GetProjectParameters;

@@ -247,15 +247,17 @@ uses
    DEMmapf, nevadia_main, PetDBUtils,
    DEMIX_Graphs;
 
-const
-   SaveDifferenceDistribution : boolean = false;
+//const
+   //SaveDifferenceDistribution : boolean = false;
 
+(*
 const
    ssimOneArea = 1;
    ssimAllAreas = 2;
    ssimDiluvium = 3;
+*)
 var
-   SSIMOutPath : PathStr;
+   //SSIMOutPath : PathStr;
    LoadRefDEMMaps,LoadTestDEMMaps : boolean;
 
 
@@ -1358,7 +1360,7 @@ begin
          fName := NextFileNumber(MDtempdir,'diff_graph_','.bmp');
          SaveImageAsBMP(Graph[i].Image1,fName);
          FileList.Add(fName);
-         if SaveDifferenceDistribution then Graph[i].ViewGraphData;
+         //if SaveDifferenceDistribution then Graph[i].ViewGraphData;
       end;
    end;
    fName := NextFileNumber(MDTempDir,ComboBox1.Text + '_difference_distrib_graphs_','.png');

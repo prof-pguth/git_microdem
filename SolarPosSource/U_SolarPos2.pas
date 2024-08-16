@@ -14,10 +14,7 @@ unit U_SolarPos2;
 //      so long as this original notice remains in place.  All other rights are reserved
 
 
- {SunPos displays solar position and sunrise/sunset infor for any given date
- and time at any given location on earth.
- Also displays a plot of the shadow analemma for a location and time of day
- }
+{SunPos displays solar position and sunrise/sunset for any date and time at any location on earth. Also displays plot of shadow analemma for location and time of day}
 
 interface
 
@@ -116,8 +113,7 @@ implementation
 {$R *.DFM}
 
 Uses
-   Petmar,PetDBUtils,Nevadia_Main,Petmar_types,DEMDefs,DEMDatabase,
-   math;
+   Petmar,PetDBUtils,Nevadia_Main,Petmar_types,DEMDefs,DEMDatabase, math;
 
 {************************** Local Routines ******************}
   function GetTimeZone(aStr: String): extended;
@@ -498,8 +494,8 @@ begin
   tag:=1;   {stop auto sunposition compute as fields are set}
   {GetsystimebtnClick(sender);  }
 
-  TZBox.itemindex:=7;
-  datepicker.date:=date;
+  TZBox.itemindex := 7;
+  datepicker.date := date;
 
   drawmode:=none;
   doublebuffered:=true;
@@ -609,7 +605,6 @@ var
   i,n,nx,ny:integer;
   dayinc:integer;
   pos:T3DVector;
-  {L:extended; }
   Hour:extended;
   xmax, ymax, xmin, ymin:integer;
   range:integer;
@@ -644,12 +639,10 @@ var
         end;
 
 begin
-  if getbasedata then
-  Begin
+  if getbasedata then Begin
     sunpos(long,lat,Timepicker.time*24,
             tzHours, Julianday(datepicker.date), pos);
-    with memo1.lines do
-    begin
+    with memo1.lines do begin
       Lastplot:='A';
       clear;
       add('An analemma describes the shape of a figure formed by the sun''s');
@@ -681,8 +674,7 @@ begin
     {plotindex:= trunc(0.0+round(JDate / dayinc));}
     n:=0;
     i:=0;
-    while i<nbrpoints do
-    begin
+    while i<nbrpoints do begin
       inc(i);
 
          sunpos(long, Lat,hour, trunc(tzhours),  dayinc*i, pos);
@@ -820,7 +812,7 @@ begin
        sunpos(long,lat,Timepicker.time*24,tzHours, Julianday(datepicker.date), pos);
 
     end
-    else if (drawmode=analemma) and (length(anpoints)>0) then  begin
+    else if (drawmode=analemma) and (length(anpoints)>0) then begin
       brush.color:=clblue;
       pen.color:=clblack;
       rectangle(rect(0,0,width,height));
@@ -840,8 +832,7 @@ procedure TSolorPosForm1.LongEdtExit(Sender: TObject);
 var W:extended;
 
 begin
-  if strtoangle(longedt.text,W) then
-  begin
+  if strtoangle(longedt.text,W) then begin
     if ewrgrp.itemindex=1 then W:=-w;
     If (W<>long) then tzbox.itemindex:=12+trunc(round(w) / 15); {guess 15 degrees per time zone}
   end;
@@ -865,31 +856,28 @@ var
 begin
   case getTimeZOneInformation(TZ) of
     Time_Zone_Id_daylight:
-    begin
-      if tz.daylightbias=-60 then dlsrgrp.itemindex:=1
-      else if tz.daylightbias=-120 then dlsrgrp.itemindex:=2
-      else
-      begin
-        memo1.lines.add('');
-         memo1.lines.add('Unexpected Daylight Savings Time bias = '+ inttostr(tz.daylightbias)
-                      +' minutes.'+#13+'Please, notify feedbackk@delphiforfun.org');
-      end;
-    end;
+             begin
+               if tz.daylightbias=-60 then dlsrgrp.itemindex:=1
+               else if tz.daylightbias=-120 then dlsrgrp.itemindex:=2
+               else begin
+                 memo1.lines.add('');
+                  memo1.lines.add('Unexpected Daylight Savings Time bias = '+ inttostr(tz.daylightbias)
+                               +' minutes.'+#13+'Please, notify feedbackk@delphiforfun.org');
+               end;
+             end;
     Time_Zone_id_Unknown:
-    begin
-        memo1.lines.add('');
-        memo1.lines.add('Time zone information not available in  this system');
-        exit;
-    end;
+             begin
+                 memo1.lines.add('');
+                 memo1.lines.add('Time zone information not available in  this system');
+                 exit;
+             end;
   end;
 
   {set time zone index}
   h:=-tz.bias/60;
   for i:= 0 to tzbox.items.count-1 do
-  with tzbox do
-  begin
-    if gettimezone(items[i])=h then
-    begin
+  with tzbox do begin
+    if gettimezone(items[i])=h then begin
       itemindex:=i;
       break;
     end;

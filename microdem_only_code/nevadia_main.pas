@@ -14,11 +14,11 @@
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
-      {$Define RecordBatch}
+      //{$Define RecordBatch}
       {$Define RecordCommandLine}
       {$Define RecordDEMIX}
       //{$Define RecordMerge}
-      {$Define RecordDragonPlot}
+      //{$Define RecordDragonPlot}
       //{$Define RecordFullDEMIX}
       //{$Define RecordDEMIXLoops}
       //{$Define RecordDEMIXGridCompare}
@@ -162,7 +162,7 @@ type
     PredBathySpeedButton: TSpeedButton;
     PlateRotateSpeedButton: TSpeedButton;
     NASABlueMarbleSpeedButton: TSpeedButton;
-    PopupMenu7: TPopupMenu;
+    CoordsPopupMenu7: TPopupMenu;
     UTMordatumconversion1: TMenuItem;
     UKOSgrid1: TMenuItem;
     TINSpeedButton: TSpeedButton;
@@ -631,6 +631,7 @@ type
     N56: TMenuItem;
     Compareconvergenceindexfortestarea1: TMenuItem;
     Open4elevationrangeDEMIXDBs1: TMenuItem;
+    UTMprojection1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -1072,6 +1073,7 @@ type
     procedure Skipifpresent2Click(Sender: TObject);
     procedure Compareconvergenceindexfortestarea1Click(Sender: TObject);
     procedure Open4elevationrangeDEMIXDBs1Click(Sender: TObject);
+    procedure UTMprojection1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -2040,8 +2042,6 @@ begin
    ReplaceCharacter(CommandLine,'+','&');
    CommandLine := CommandLine + '&';
 
-
-
    while length(CommandLine) > 1 do begin
       Value := Petmar_Types.BeforeSpecifiedCharacterANSI(CommandLine,'&',true,true);
       Key := Petmar_Types.BeforeSpecifiedCharacterANSI(Value,'=',true,true);
@@ -2091,7 +2091,6 @@ begin
          if Key = 'BOXSIZE' then MDDef.GeomorphBoxSizeMeters := StrToInt(Value);
       {$EndIf}
    end;
-
    {$IfDef RecordCommandLine} WriteLineToDebugFile('action=' + Action); {$EndIf}
 
    if Action = 'DEM2JSON' then begin
@@ -2099,6 +2098,15 @@ begin
          DEMGlb[DEM].SaveAsGeoJSON;
       end;
    end;
+
+   {$IfDef ExPointCloud}
+   {$Else}
+      if Action = 'LAS2JSON' then begin
+         QuietActions := true;
+         LAS2GeoJSON(infile);
+      end;
+   {$EndIf}
+
 
    if Action = 'RESAMPAVG' then begin
       if OpenADEM(true) then begin
@@ -2137,22 +2145,7 @@ begin
       end;
    end;
 
-   if (Action = 'SLOPEUNCERTAIN') then begin
-      if OpenADEM then begin
-         if (xval <> '') then CarlosXRecord := StrToInt(xVal);
-         if (yval <> '') then CarlosYRecord := StrToInt(yVal);
-         DEMGlb[DEM].RichardsonExtrapolationSlopeMaps(true);
-      end;
-   end;
 *)
-
-   {$IfDef ExPointCloud}
-   {$Else}
-      if Action = 'LAS2JSON' then begin
-         QuietActions := true;
-         LAS2GeoJSON(infile);
-      end;
-   {$EndIf}
 
    {$IfDef AllowGeomorphometry}
       if Action = 'TERR_FABRIC' then begin
@@ -2292,7 +2285,7 @@ begin
         {$EndIf}
      {$EndIf}
 
-     if not PathIsValid(MapLibDir) then PickMapIndexLocation;
+     if not ValidPath(MapLibDir) then PickMapIndexLocation;
 
     {$IfDef NoCommandLineParameters}
     {$Else}
@@ -3351,7 +3344,7 @@ end;
 procedure Twmdem.CoordButtonClick(Sender: TObject);
 begin
    StopSplashing;
-   PopUpMenu7.Popup(Mouse.CursorPos.X,Mouse.CursorPos.Y);
+   CoordsPopUpMenu7.Popup(Mouse.CursorPos.X,Mouse.CursorPos.Y);
 end;
 
 
@@ -5118,10 +5111,10 @@ begin
    for i := 0 to pred(TheFiles.Count) do begin
       ThreadTimers.OverallGauge9.Progress := round(100 * i/TheFiles.Count);
       fName := TheFiles.Strings[i];
-      {$IfDef RecordGeostats}     WriteLineToDebugFile(fName,true): {$EndIf}
+      {$IfDef RecordGeostats}     WriteLineToDebugFile(fName,true); {$EndIf}
       aDEM := OpenNewDEM(fName);
       DEMGlb[aDEM].SelectionMap.OpenDBonMap('',dbname);
-      {$IfDef RecordGeostats}   WriteLineToDebugFile(DEMGlb[aDEM].AreaName): {$EndIf}
+      {$IfDef RecordGeostats}   WriteLineToDebugFile(DEMGlb[aDEM].AreaName); {$EndIf}
       GISdb[db].AddAndFillFieldFromDEM(adElevNearest,ptTrim(DEMGlb[aDEM].AreaName));
       MomentVar := DEMGlb[aDEM].ElevationMoments(DEMGlb[aDEM].FullDEMGridLimits);
       Results.Add(ptTrim(DEMGlb[aDEM].AreaName) + ',' +
@@ -5169,16 +5162,22 @@ procedure Twmdem.FinnishGaussKruger1Click(Sender: TObject);
 begin
 {$Else}
 var
-   ConvertForm : TUKOSConvertForm;
+   ConvertForm : TCoordConvertForm;
 begin
-   ConvertForm := TUKOSConvertForm.Create(Application);
+   ConvertForm := TCoordConvertForm.Create(Application);
    if (Sender = UKOSgrid1) then begin
       ConvertForm.This_projection.PName := UK_OS;
       ConvertForm.Caption := 'United Kingdon Ordnance Survey converter';
    end;
+   if (Sender = UTMprojection1) then begin
+      ConvertForm.Caption := 'UTM projection converter';
+      ConvertForm.This_projection.PName := UTMellipsoidal;
+      ConvertForm.This_projection.h_DatumCode := MDDef.PreferPrimaryDatum;  //'WGS84';
+      ConvertForm.This_projection.projUTMZone := MDDef.DefaultUTMZone;
+   end;
    if (Sender = Guam1) then begin
-      ConvertForm.This_projection.PName := AzimuthalEquidistantEllipsoidal;
       ConvertForm.Caption := 'Guam converter';
+      ConvertForm.This_projection.PName := AzimuthalEquidistantEllipsoidal;
       ConvertForm.Edit1.Text := '37712.48';  //x
       ConvertForm.Edit2.Text := '35242';  //y
       ConvertForm.Edit3.Text := '13.339038461';  //lat
@@ -5258,6 +5257,11 @@ begin
    {$Else}
       DEMCnvrt.ConvertCoordinates;
    {$EndIf}
+end;
+
+procedure Twmdem.UTMprojection1Click(Sender: TObject);
+begin
+   FinnishGaussKruger1Click(Sender);
 end;
 
 procedure Twmdem.UTMprojectoiin1Click(Sender: TObject);
@@ -6129,7 +6133,7 @@ finalization
    {$IfDef RecordFullLag} WriteLineToDebugFile('RecordFullLagProblems active in Wmaindem'); {$EndIf}
    {$IfDef FullDrainageBasinStats} WriteLineToDebugFile('FullDrainageBasinStats active in Wmaindem'); {$EndIf}
    {$IfDef DrainageBasinStats} WriteLineToDebugFile('DrainageBasinStats active in Wmaindem'); {$EndIf}
-   {$IfDef RecordUpdate} WriteLineToDebugFile('RecordUpdateProblem active in WMainDEM'): {$EndIf}
+   {$IfDef RecordUpdate} WriteLineToDebugFile('RecordUpdateProblem active in WMainDEM'); {$EndIf}
    {$IfDef RecordButton} WriteLineToDebugFile('RecordButtonProblems active in WMainDEM'); {$EndIf}
    {$IfDef RecordOpenVectorMap} WriteLineToDebugFile('RecordOpenVectorMap active in WMainDEM'); {$EndIf}
    {$IfDef RecordHelp} WriteLineToDebugFile('RecordHelp active in WMainDEM'); {$EndIf}

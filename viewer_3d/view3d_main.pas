@@ -36,7 +36,7 @@ Command line parameters removed, April 2024
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
-      {$Define Record3d}
+      //{$Define Record3d}
       //{$Define ShortRecord}
       //{$Define RecordMoves}
       //{$Define Record3dDetailed}
@@ -356,7 +356,7 @@ begin
    View3DForm.ShowDataSetsToPickGroupBox2.Visible := ViewSeveral;
    NumSingle := 0;
 
-   View3DForm.PointRepeatFactor := 5;
+   View3DForm.PointRepeatFactor := 1;
 
    View3DForm.DrapeFile[1] := TextureName1;
    View3DForm.DrapeFile[2] := TextureName2;
@@ -914,14 +914,15 @@ end;
 
 procedure TView3DForm.Initialize(PointsToAllocate : integer);
 var
-   k,NeededPoints : integer;
+   k : integer;
+   NeededPoints : int64;
    BMP : TBitmap;
    Data : tBitmapData;
 begin
    {$IfDef Record3d} writeLineToDebugFile('TView3DForm.Initialize in'); {$EndIf}
    if (CurCloud < MaxClouds) then begin
       inc(CurCloud);
-      NeededPoints := PointsToAllocate * PointRepeatFactor* PointRepeatFactor*PointRepeatFactor;
+      NeededPoints := PointsToAllocate * PointRepeatFactor * PointRepeatFactor * PointRepeatFactor;
       NPtsAllocated[CurCloud] := NeededPoints;
       ShowCloud[CurCloud] := true;
       NPtsUsed[CurCloud] := 0;
@@ -1058,7 +1059,7 @@ var
           NP := 0;
           pfd2 := PointRepeatFactor div 2;
           for i := 1 to Pts do begin
-            if PointRepeatFactor = 1 then begin
+            if (PointRepeatFactor = 1) then begin
                //we use coordinates with x and y horizontal, and z vertical
                P.x := ScaledX(PointXYZColor^[i].x);
                P.z := ScaledY(PointXYZColor^[i].y);

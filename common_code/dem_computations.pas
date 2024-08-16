@@ -189,8 +189,8 @@ begin
    StopSplashing;
    dbfDir := MainMapData + '0--current_projects\0_srtm_dbfs\';
    GridDir := MainMapData + '0--current_projects\0--srtm_grids\';
-   if not PathIsValid(dbfDir) then GetDOSPath('DBFs',dbfDir);
-   if not PathIsValid(GridDir) then GetDOSPath('atlas grids',GridDir);
+   if not ValidPath(dbfDir) then GetDOSPath('DBFs',dbfDir);
+   if not ValidPath(GridDir) then GetDOSPath('atlas grids',GridDir);
 end;
 
 

@@ -4,7 +4,7 @@
 { Part of MICRODEM GIS Program       }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
-{ Copyright (c) 2023 Peter L. Guth   }
+{ Copyright (c) 2024 Peter L. Guth   }
 {____________________________________}
 
 {$I nevadia_defines.inc}
@@ -203,8 +203,8 @@ uses
   FourOpF in '..\common_code\FourOpF.pas' {FourierOptionsForm},
   dem_fan_compare in '..\common_code\dem_fan_compare.pas' {FanCompareForm},
   dem_sat_header in '..\common_code\dem_sat_header.pas' {SatHeaderForm},
-  OKCNHLP2 in '..\common_code\OKCNHLP2.PAS' {OKHelpRightDlg},
-  OKCNHLP1 in '..\common_code\OKCNHLP1.PAS' {OKHelpBottomDlg},
+  //OKCNHLP2 in '..\common_code\OKCNHLP2.PAS' {OKHelpRightDlg},
+  //OKCNHLP1 in '..\common_code\OKCNHLP1.PAS' {OKHelpBottomDlg},
   net_quiz in '..\common_code\net_quiz.pas' {NetQuizForm},
   net_entry in '..\common_code\net_entry.pas' {NetEntryForm},
   multigrid in '..\common_code\multigrid.pas',

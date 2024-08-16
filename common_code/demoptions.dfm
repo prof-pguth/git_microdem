@@ -48,7 +48,7 @@ inherited OptionsForm: TOptionsForm
     Top = 0
     Width = 793
     Height = 505
-    ActivePage = TabSheet10
+    ActivePage = TabSheet3
     Align = alClient
     MultiLine = True
     TabOrder = 2
@@ -136,6 +136,7 @@ inherited OptionsForm: TOptionsForm
         ScrollBars = ssVertical
         TabOrder = 0
         OnSelectCell = StringGrid1SelectCell
+        ExplicitTop = -2
         ColWidths = (
           64
           64)

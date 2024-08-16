@@ -554,7 +554,7 @@ end;
                BMPname : PathStr;
                Opacity : byte;
             begin
-                if PathIsValid(fName) then begin
+                if ValidPath(fName) then begin
                    {$IfDef RecordShapeFileGroup} WriteLineToDebugFile('PlotShapeFileGroup in ' + fName); {$EndIf}
                    {$IfDef ExOSM}
                    {$Else}
@@ -572,9 +572,9 @@ end;
                    {$IfDef RecordShapeFileGroup} WriteLineToDebugFile('Reading ' + BMPName); {$EndIf}
                    Bitmap := PetImage.LoadBitmapFromFile(BMPName);
                 end
-                else if (FileExists(fName) or PathIsValid(fName)) then begin
+                else if (FileExists(fName) or ValidPath(fName)) then begin
                    CreateBitmap(Bitmap,inBitmap.Width,inBitmap.Height);
-                   if PathIsValid(fName) then begin
+                   if ValidPath(fName) then begin
                        {$IfDef ExOSM}
                        {$Else}
                           OSMthread(1,fname,Bitmap);   //everything except roads

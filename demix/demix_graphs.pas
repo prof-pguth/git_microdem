@@ -17,7 +17,7 @@ unit demix_graphs;
    {$Define RecordDEMIX}
    //{$Define RecordDEMIX_OpenGraph}
    //{$Define RecordDEMIX_evaluations_graph}
-   {$Define RecordDEMIX_criteria_colors}
+   //{$Define RecordDEMIX_criteria_colors}
    //{$Define RecordDEMIXWins}
 {$EndIf}
 
@@ -141,15 +141,14 @@ procedure BestEvalGraphPerCriterionMultipleFilters(db : integer; GeomorphFilters
 var
    i,j : integer;
    HL,TopLabel : shortstring;
-   //Filters : tStringList;
    gr : array[0..25] of tThisBaseGraph;
    Legend,BigBitmap : tMyBitmap;
 begin
    if GISdb[db].MyData.FieldExists('AVG_SLOPE') then begin
-      //Filters := MakeGeomorphFilters;
       try
          GetDEMIXpaths(False);
          for i := 0 to pred(GeomorphFilters.Count) do begin //filters to tile characteristics
+            SetColorForWaiting;
             if GeomorphFilters.Strings[i] = '(None)' then GISdb[db].ClearGISFilter
             else GISdb[db].ApplyGISFilter(GeomorphFilters.Strings[i]);
             HL := DEMIXModeName + '_' + CriteriaFamily + '_Evaluation';
@@ -973,14 +972,47 @@ var
    Color : tColor;
    Symbol : tFullSymbolDeclaration;
    Criterion,BaseFilter : shortstring;
+
+
+      procedure AllColors;
+      var
+         j : integer;
+         AllCrits : tStringList;
+      begin
+         AllCrits := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('CRITERION');
+         for j := 0 to pred(AllCrits.Count) do begin
+            Criterion := AllCrits.Strings[j];
+            GISdb[DBonTable].ApplyGISFilter(PetDBUtils.AddAndIfNeeded(BaseFilter) + 'CRITERION=' + QuotedStr(Criterion));
+            Result.GraphDraw.LegendList.Add(AllCrits.Strings[j]);
+            Symbol.Color := ConvertTColorToPlatformColor(clSilver);
+            Symbol.DrawingSymbol := FilledBox;
+            Symbol.Size := 1;
+            Result.OpenDataFile(rfile,clSilver);
+            y := 0;
+            GISdb[DBonTable].EmpSource.Enabled := false;
+            while not GISdb[DBonTable].MyData.eof do begin
+               v[1] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('BEST_EVAL');
+               v[2] := 100 * y / GISdb[DBonTable].MyData.FiltRecsInDB;
+               BlockWrite(rfile,v,1);
+               inc(y);
+               GISdb[DBonTable].MyData.Next;
+            end;
+            CloseFile(rfile);
+         end;
+         AllCrits.Free;
+      end;
+
+
 begin
    {$If Defined(RecordDEMIX_evaluations_graph)} WriteLineToDebugFile('PlotBestEvalVersusPercentileMultipleCriteria in, Criteria=' + IntToStr(Criteria.Count)); {$EndIf}
    GISdb[DBonTable].EmpSource.Enabled := false;
    BaseFilter :=  GISdb[DBonTable].MyData.Filter;
    Result := nil;
    Result := GraphForOneCriterion(DBonTable,Nil,true,Evaluations,HL,VertAxisField,'',TopLabel);
-
    Result.GraphDraw.LegendList := tStringList.Create;
+
+   AllColors;
+
    for j := 0 to pred(Criteria.Count) do begin
       Criterion := Criteria.Strings[j];
       GISdb[DBonTable].ApplyGISFilter(PetDBUtils.AddAndIfNeeded(BaseFilter) + 'CRITERION=' + QuotedStr(Criterion));
@@ -1004,6 +1036,7 @@ begin
       end;
       CloseFile(rfile);
    end;
+
    Result.GraphDraw.SetShowAllPoints(false);
    Result.GraphDraw.SetShowAllLines(true);
    for i := 1 to MaxGraphSeries do Result.GraphDraw.LineSize256[i] := MDDef.DemixSymSize;

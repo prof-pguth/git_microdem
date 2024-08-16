@@ -29,7 +29,6 @@ object wmdem: Twmdem
     Left = 0
     Top = 0
     Width = 2418
-    Height = 29
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34
@@ -2584,12 +2583,16 @@ object wmdem: Twmdem
       Caption = 'Map projection'
     end
   end
-  object PopupMenu7: TPopupMenu
+  object CoordsPopupMenu7: TPopupMenu
     Left = 312
     Top = 96
     object UTMordatumconversion1: TMenuItem
       Caption = 'UTM or datum conversion'
       OnClick = UTMordatumconversion1Click
+    end
+    object UTMprojection1: TMenuItem
+      Caption = 'UTM projection'
+      OnClick = UTMprojection1Click
     end
     object WKTprojection1: TMenuItem
       Caption = 'WKT projection'

@@ -165,9 +165,11 @@ begin
    DEM := aDEM;
    Caption := DEMGlb[DEM].AreaName + ' Header';
    EditHeadRec := DEMGlb[DEM].DEMHeader;
-   TStr := ByteArrayToString(EditHeadRec.DMAMapDefinition.h_DatumCode);
-   Label6.Caption := DatumName(TStr);
-   ComboBox2.Text := DatumName(TStr);
+   //TStr := ByteArrayToString(EditHeadRec.DMAMapDefinition.h_DatumCode);
+   //Label6.Caption := DatumName(TStr);
+   //ComboBox2.Text := DatumName(TStr);
+   Label6.Caption := DatumName(EditHeadRec.h_DatumCode);
+   ComboBox2.Text := DatumName(EditHeadRec.h_DatumCode);
    for zu := 0 to euHighElevUnits do begin
       TStr := ElevUnitsAre(zu);
       if (TStr <> '') then ComboBox3.Items.Add(ElevUnitsAre(zu));
@@ -198,13 +200,13 @@ end;
 
 
 procedure TDEMHeaderForm.BitBtn5Click(Sender: TObject);
-var
-   TStr : shortstring;
+//var
+   //TStr : shortstring;
 begin
-   TStr := ByteArrayToString(EditHeadRec.DMAMapDefinition.h_DatumCode);
-   PickDatum('DEM',TStr);
-   StringToByteArray(TStr,EditHeadRec.DMAMapDefinition.h_DatumCode);
-   Label6.Caption := DatumName(TStr);
+   //TStr := ByteArrayToString(EditHeadRec.DMAMapDefinition.h_DatumCode);
+   PickDatum('DEM',EditHeadRec.h_DatumCode);
+   //StringToByteArray(TStr,EditHeadRec.DMAMapDefinition.h_DatumCode);
+   Label6.Caption := DatumName(EditHeadRec.h_DatumCode);
 end;
 
 procedure TDEMHeaderForm.BitBtn6Click(Sender: TObject);

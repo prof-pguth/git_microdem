@@ -15,7 +15,6 @@ unit slicer_3d;
    {$IfDef DEBUG}
       //{$Define NoSetColorOptions}
       //{$Define NoArrangeControls}
-
       //{$Define Slicer}
       //{$Define SliceCenter}
       //{$Define SlicePlot}
@@ -826,7 +825,7 @@ begin
    z := EditTable.GetFieldByNameAsFloat('Z');
    SymbolXZPlane(x,z,ConvertTColorToPlatformColor(clBlue));
    SymbolXZPlane(x,Newz,ConvertTColorToPlatformColor(clLime));
-   {$IfDef SlicerEdits} WriteLineToDebugFile('TSlicerForm.ZShift in Old Point, x=' + RealToString(x,-12,2) + '  z=' + RealToString(z,-12,2) + ' Clicked:  x=' + RealToString(Newx,-12,2) + '  z=' + RealToString(Newz,-12,2)): {$EndIf}
+   {$IfDef SlicerEdits} WriteLineToDebugFile('TSlicerForm.ZShift in Old Point, x=' + RealToString(x,-12,2) + '  z=' + RealToString(z,-12,2) + ' Clicked:  x=' + RealToString(Newx,-12,2) + '  z=' + RealToString(Newz,-12,2)); {$EndIf}
    EditTable.Edit;
    EditTable.SetFieldByNameAsFloat('Z',NewZ);
    EditTable.Next;
@@ -1191,7 +1190,7 @@ end;
 
 procedure TSlicerForm.RadioGroup1Click(Sender: TObject);
 begin
-   {$IfDef Slicer} WriteLinetoDebugFile('TTSlicerForm.RadioGroup1Click (slice view) in, cloud=' + IntToStr(CloudInUse));{$EndIf}
+   {$IfDef Slicer} WriteLinetoDebugFile('TTSlicerForm.RadioGroup1Click (slice view) in, cloud=' + IntToStr(CloudInUse)); {$EndIf}
    if ReadyToRoll then begin
       {$IfDef Slicer} WriteLinetoDebugFile('TTSlicerForm.RadioGroup1Click (slice view) ready to roll'); {$EndIf}
       MDDef.PtSlicerDefView := RadioGroup1.ItemIndex;
@@ -1201,7 +1200,7 @@ begin
       SetSliceSettings;
       BitBtn1Click(Nil);
    end;
-   {$IfDef Slicer} WriteLinetoDebugFile('TTSlicerForm.RadioGroup1Click out, cloud=' + IntToStr(CloudInUse)): {$EndIf}
+   {$IfDef Slicer} WriteLinetoDebugFile('TTSlicerForm.RadioGroup1Click out, cloud=' + IntToStr(CloudInUse)); {$EndIf}
 end;
 
 
@@ -1242,7 +1241,7 @@ begin
    else if RadioGroup3.Items[RadioGroup3.ItemIndex] = 'RGB' then MDDef.SliceColorOpt := scoRGB
    else if RadioGroup3.Items[RadioGroup3.ItemIndex] = 'Grayscale' then MDDef.SliceColorOpt := scoGray
    else MDDef.SliceColorOpt := scoCloudID;
-   BitBtn1Click(Sender);
+   RedrawClouds;
 end;
 
 
@@ -1529,7 +1528,7 @@ begin
          SliceGraph[CurSlice].GISGraf.Image1.Picture.Graphic := CloudBmp;
          CloudBMP.Free;
       end;
-      {$If Defined(Slicer) or Defined(TimeSlicer) } WriteLinetoDebugFile('TSlicerForm.RedrawClouds out'): {$EndIf}
+      {$If Defined(Slicer) or Defined(TimeSlicer) } WriteLinetoDebugFile('TSlicerForm.RedrawClouds out'); {$EndIf}
    end;
 end;
 
@@ -1676,7 +1675,7 @@ begin
     GISdb[db].aShapeFile.Symbol := GISdb[db].dbOpts.Symbol;
     GISdb[db].aShapeFile.ZPlaneMin := SliceGraph[CurSlice].SliceLo;
     GISdb[db].aShapeFile.ZPlaneMax := SliceGraph[CurSlice].SliceHi;
-    {$IfDef Slicer} WriteLineToDebugFile('TSlicerForm.PlotShapeFileOnSlice, fname=' + fName + '  z filter ' + RealToString(GISdb[db].aShapeFile.ZPlaneMin,-12,CoordDec) + ' to ' + RealToString(GISdb[db].aShapeFile.ZPlaneMax,-12,CoordDec) ): {$EndIf}
+    {$IfDef Slicer} WriteLineToDebugFile('TSlicerForm.PlotShapeFileOnSlice, fname=' + fName + '  z filter ' + RealToString(GISdb[db].aShapeFile.ZPlaneMin,-12,CoordDec) + ' to ' + RealToString(GISdb[db].aShapeFile.ZPlaneMax,-12,CoordDec) ); {$EndIf}
     GISdb[db].aShapeFile.PlotAllRecordsOnGraph(SliceGraph[CurSlice].GISGraf,Bitmap);
     SliceGraph[CurSlice].GISGraf.Image1.Picture.Graphic := Bitmap;
     Bitmap.Free;

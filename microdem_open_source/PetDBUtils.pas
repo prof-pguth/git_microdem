@@ -359,7 +359,7 @@ begin
           end;
       end;
       {$IfDef RecordGPX} WriteLineToDebugFile('GPXtoDBF, parsed');  OutList.SaveToFile(MDtempDir + 'gpx_stringlist.txt'); {$EndIf}
-      if PathIsValid(OutName) then begin
+      if ValidPath(OutName) then begin
          ReplaceCharacter(TimeStr,':','_');
          OutName := OutName + TimeStr + '.dbf';
       end;

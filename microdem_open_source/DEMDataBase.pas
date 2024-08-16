@@ -15,8 +15,8 @@
 {$IFDEF DEBUG}
    {$IfDef RecordProblems}  //normally only defined for debugging specific problems
       {$Define RecordDEMIX}
-      {$Define RecordDBsort}
-      {$Define RecordClustering}
+      //{$Define RecordDBsort}
+      //{$Define RecordClustering}
       //{$Define RecordCloseDB}
       //{$Define RecordCopyFieldLinkDB}
       //{$Define RecordLegend}

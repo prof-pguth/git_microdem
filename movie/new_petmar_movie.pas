@@ -120,8 +120,10 @@ begin
       FormAnimate.Show;
    end;
    if (SaveName <> '') then begin
+      {$IfDef RecordMovie} WriteLineToDebugFile('CreateNewMovie call save ' + SaveName); {$EndIf}
       FormAnimate.ImageAnimate.Picture.SaveToFile(SaveName);
    end;
+   {$IfDef RecordMovie} WriteLineToDebugFile('CreateNewMovie out'); {$EndIf}
 end;
 
 

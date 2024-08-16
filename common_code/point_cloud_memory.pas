@@ -200,7 +200,7 @@ begin
    Name := UpperCase(ExtractFileName(fName));
 
    if ExtEquals(Ext, '.LAS') then begin
-      {$IfDef RecordPointCloudMemory} WriteLineToDebugFile('tMemoryPointCloud.Create LAS'): {$EndIf}
+      {$IfDef RecordPointCloudMemory} WriteLineToDebugFile('tMemoryPointCloud.Create LAS'); {$EndIf}
       LoadFromLASFile(MapOwner,fName);
    end
    else begin
@@ -917,7 +917,7 @@ begin
 
    if (xyPts = Nil) then begin
       GetMem(xyPts,AllocatedPoints * 2 * sizeOf(float64));
-      {$IfDef RecordMemoryAllocations} WriteLineToDebugFile('allocate xypoints in tMemoryPointCloud.TranslateAndRotate=' + IntToStr(AllocatedPoints * 2 * sizeOf(float64))): {$EndIf}
+      {$IfDef RecordMemoryAllocations} WriteLineToDebugFile('allocate xypoints in tMemoryPointCloud.TranslateAndRotate=' + IntToStr(AllocatedPoints * 2 * sizeOf(float64))); {$EndIf}
    end;
 
    ZeroXLimits;
@@ -1143,7 +1143,7 @@ begin
 
        while not MyData.EOF do begin
           if MyData.GetFullFileName(fName2) then AllocatedPoints := AllocatedPoints + GetPointsInFile(fName2);
-          {$IfDef RecordPointCloudmemory} WriteLinetoDebugFile(ExtractFileName(fName2) +  ' GetPointsInFile: ' + IntToStr(GetPointsInFile(fName2)) +  '  total pts: ' + IntToStr(AllocatedPoints)): {$EndIf}
+          {$IfDef RecordPointCloudmemory} WriteLinetoDebugFile(ExtractFileName(fName2) +  ' GetPointsInFile: ' + IntToStr(GetPointsInFile(fName2)) +  '  total pts: ' + IntToStr(AllocatedPoints)); {$EndIf}
           MyData.Next;
        end;
        MyData.Destroy;

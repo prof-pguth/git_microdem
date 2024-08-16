@@ -9,8 +9,6 @@
 {       include file for petmath     }
 {____________________________________}
 
-
-
 //  https://stackoverflow.com/questions/50394952/code-for-chi-square-distribution-function-in-delphi
 
          function LnGamma(x : float64) : float64;
@@ -82,7 +80,7 @@ TYPE
 {******************************************************}
 
 FUNCTION gammln(xx: extended): float64;
-//PLG note: p.157,p.704 "Numerical Recipes in Pascal"   returns natural log of Gamma function
+//PLG note: p.157,p.704 "Numerical Recipes in Pascal" returns natural log of Gamma function
 CONST
    stp = 2.50662827465;
    half = 0.5;
@@ -230,11 +228,14 @@ BEGIN
    prob := gammq(0.5*df,0.5*chsq);
 END;
 
-
-
 {******************************************************}
 {  End of "Numerical Recipes in Pascal" Includes       }
 {******************************************************}
+
+
+
+
+
 
 {==============================================================================================================================}
 

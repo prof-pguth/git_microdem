@@ -31,7 +31,7 @@
       //{$Define CheckBMPMem}
       //{$Define RecordBitmapExt}
   {$Else}
-     {$Define BMPMemInline}
+     //{$Define BMPMemInline}
   {$EndIf}
 {$EndIf}
 
@@ -1377,7 +1377,7 @@ begin
    UserInputName := false;
    //StripInvalidPathNameChars(SaveName);
    {$IfDef VCL}
-      if (SaveName = '') or PathIsValid(SaveName) then begin
+      if (SaveName = '') or ValidPath(SaveName) then begin
          if (ImageDir = MDtempDir) then ImageDir := MainMapData + 'images\';
 
          SaveName := ImageDir;

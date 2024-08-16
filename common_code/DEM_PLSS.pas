@@ -130,7 +130,7 @@ end;
 function TryToOpenOnePLSS(MapOwner : tMapForm; I : integer; fName : PathStr; CleanSections : boolean = false) : boolean;
 begin
    Result := false;
-   if PathIsValid(fName) then begin
+   if ValidPath(fName) then begin
      if (PLSS[i] = Nil) then begin
        PLSS[i] := tPLSSDataBase.Create;
        Result := PLSS[i].OpenFiles(MapOwner,fname,CleanSections);

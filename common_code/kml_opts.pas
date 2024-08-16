@@ -576,7 +576,7 @@ var
                 if (GISdb[DBonTable].dbOpts.DBAutoShow =  dbasIconAll) then begin
                    DoAnIcon('c:\mapdata\icons\' + GISdb[DBonTable].dbOpts.AllIconFName);
                 end
-                else if (not PathIsValid(IconFName)) and (FileExists(IconFName)) then begin
+                else if (not ValidPath(IconFName)) and (FileExists(IconFName)) then begin
                    DoAnIcon(IconFName);
                 end
                 else begin

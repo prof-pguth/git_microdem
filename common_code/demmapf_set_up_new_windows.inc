@@ -15,7 +15,6 @@ var
    LatCh : ANSIchar;
 begin
    {$IfDef RecordMakeGrid} WriteLineToDebugFile('MakeTempGrid in'); {$EndIf}
-
     if GetParameters then begin
        if ValidDEM(MapDraw.DEMonMap) then MDDef.LasDEMPixelIs := DEMGlb[MapDraw.DEMonMap].DEMHeader.RasterPixelIsGeoKey1025;
        GetGridParameters;
@@ -106,7 +105,7 @@ begin
      {$IfDef RecordOpenVectorMap}   if (fName = '') then WriteLineToDebugFile('get db name (time to next step includes user delay)'); {$EndIf}
      db := VectorMap[Result].OpenDBonMap('',fName);
      {$IfDef RecordOpenVectorMap} WriteLineToDebugFile('VectorMap[i].OpenDBonMap over'); {$EndIf}
-     if (db = 0) then begin
+     if not ValidDB(db) then begin
         VectorMap[Result].Close;
         Result := 0;
         exit;
@@ -255,6 +254,7 @@ var
          else if IsThisSentinel2(DEMGlb[DEM].DEMFileName) or IsLandsat(DEMGlb[DEM].DEMFileName, MPath) or (DEMGlb[DEM].DEMheader.ElevUnits in [euImagery,euNBR]) then Result := mtElevGray
          else if (DEMGlb[DEM].DEMheader.ElevUnits in [euRGB]) then Result := mtRGBimagery
          else if (DEMGlb[DEM].DEMheader.ElevUnits in [euAspectDeg]) then Result := mtDEMaspect
+         else if (DEMGlb[DEM].DEMheader.ElevUnits in [euPercentSlope]) then Result := MDDef.DefSlopeMap
          else if (DEMGlb[DEM].DEMheader.ElevUnits in [euIntCode]) or (abs(DEMGlb[DEM].DEMheader.MaxElev - DEMGlb[DEM].DEMheader.MinElev) < 0.00001) then Result := mtElevContrast
          {$IfDef ExPointCloud}
          {$Else}
@@ -281,7 +281,7 @@ begin
    {$Else}
       if not ValidDEM(DEM) then exit;
 
-      {$If Defined(RecordOpenMap) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('CreateDEMSelectionMap in, DEM=' + IntToStr(DEM) + ' ' + DEMglb[DEM].DEMMapProjection.GetProjectionName); {$EndIf}
+      {$If Defined(RecordOpenMap) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('CreateDEMSelectionMap in, DEM=' + IntToStr(DEM) + ' ' + DEMglb[DEM].DEMMapProj.GetProjectionName); {$EndIf}
       {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('CreateDEMSelectionMap in, current maps=' + IntToStr(NumOpenMaps)); {$EndIf}
       {$If Defined(TrackHorizontalDatum)} DEMGlb[DEM].TrackHorizontalDatumDebugLog('enter CreateDEMSelectionMap,'); {$EndIf}
       {$IfDef RecordDEMMapProjection} WriteLineToDebugFile('CreateDEMSelectionMap in, DEM=' + DEMglb[DEM].DEMMapProjection.GetProjectionName); {$EndIf}

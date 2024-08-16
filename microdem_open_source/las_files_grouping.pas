@@ -11,7 +11,7 @@ unit las_files_grouping;
 
 {$IFDEF DEBUG}
    //{$Define NoParallelFor} //used to debug only
-   {$Define NoInline}
+   //{$Define NoInline}
 {$ENDIF}
 
 
@@ -37,6 +37,7 @@ unit las_files_grouping;
       //{$Define RecordLASHist}
       //{$Define RecordLASHistFull}
       //{$Define RecordLAS_subset}
+      //{$Define RecordHemisphere}
    {$ENDIF}
 {$EndIf}
 
@@ -177,11 +178,8 @@ var
    lf : tLAS_data;
    fName : PathStr;
    Points : ^tPointXYZIArray;
-   //last,xc,yc : integer;
    Outf : file;
-   //zf,z,
    xutm,yutm : float64;
-   //bmp : tMyBitmap;
    Range : float64;
    ThisPoint : tLASClassificationCategory;
    Color : tPlatformColor;
@@ -213,6 +211,10 @@ begin
                       ThisPoint := lf.LASClassificationCategory(j);
                       if (ExportFilter = lccAll) or (ThisPoint = ExportFilter) then begin
                          inc(NPts);
+                         if (NPts >= MaxPts) then begin
+                            {$IfDef RecordMergeLASfiles} WriteLineToDebugFile('Hit points limit'); {$EndIf}
+                            goto MaxPoints;
+                         end;
                          lf.GetShotCoordinatesUTM(j,xutm, yutm);
                          Points^[NPTs].x := xutm;
                          Points^[NPTs].y := yutm;
@@ -223,10 +225,6 @@ begin
                          Points^[NPTs].Int := Color.rgbtRed;
                          Points^[NPTs].Int2 := Color.rgbtGreen;
                          Points^[NPTs].Int3 := Color.rgbtBlue;
-                         if (NPts >= MaxPts) then begin
-                            {$IfDef RecordMergeLASfiles} WriteLineToDebugFile('Hit points limit'); {$EndIf}
-                            goto MaxPoints;
-                         end;
                       end;
                    end;
                 end;
@@ -588,16 +586,13 @@ type
    tElevArray = array[LowElev..HighElev] of integer;
 var
    WithHeldPoints,OverlapPoints,z1,z99,
-   //I,j,ThisReturn,
    k,RecsRead,z,First,Last,Total,TotalPoints,AirPoints : Integer;
    CenterLat,CenterLong : float64;
    ze : float64;
    r,g,b,n : word;
    LasData : tLas_Data;
-   //PointCat : tLASClassificationCategory;
    Elevs : tElevArray;
    HasNIR : boolean;
-   //ThisGraph,
    ThisGraph2 : TThisBaseGraph;
    rFile : file;
    v : tGraphPoint32;
@@ -765,7 +760,6 @@ var
                Inten_1 := round(IndexTable.FindFieldMax('INTEN_1'));
                Max_Inten := round(IndexTable.FindFieldMax('MAX_INTEN'));
                Min_Inten := round(IndexTable.FindFieldMax('MIN_INTEN'));
-               //if MDDef.LASPC99 then begin
             end;
 
             HasClassification := IndexTable.FieldHasChar('HAS_CLASS','Y');
@@ -810,8 +804,6 @@ var
 
 
          procedure DoResults(fName : PathStr;  LasData : tLas_Data);
-         //var
-            //i : integer;
 
                  procedure TimeForScanAngles;
                  var
@@ -1447,7 +1439,6 @@ begin
    end;
    EndThreadTimers;
 end;
-//{$EndIf}
 
 
 procedure ExtendBoundingBox(var MainBox : sfBoundBox; NewBox : sfBoundBox);
@@ -1488,12 +1479,13 @@ begin
       fName := Las_fNames.Strings[k];
       lf := tLAS_data.Create(fName);
       if lf.HasProjection then begin
+         {$IfDef Defined(RecordHemisphere)} WriteLineToDebugFile(fName + '  ' + lf.lasProjectionDefinition.LASProjection.LatHemi); {$EndIf}
          if (BaseMapDraw <> Nil) and (not lf.IsLASFileOnMap(BaseMapDraw)) then begin
             {$IfDef RecordListFilesProcessed} WriteLineToDebugFile('Not on map: ' + fName + ' LAS geo limits ' + sfBoundBoxToString(lf.LAS_LatLong_Box,6) + '  map geo limits=' + sfBoundBoxToString(BaseMapDraw.MapCorners.BoundBoxGeo,6)); {$EndIf}
             Las_fNames.Delete(k);
          end
          else begin
-            UTMfiles := lf.lasProjectionDefinition.LASProjection.pName = UTMEllipsoidal;
+            UTMfiles := (lf.lasProjectionDefinition.LASProjection.pName = UTMEllipsoidal);
             ExtendBoundingBox(GeoBBox,lf.LAS_LatLong_Box);
             ExtendBoundingBox(UTMBBox,lf.LAS_UTM_Box);
             if (lf.SingleFilePointDensity > MaxPointDensity) then MaxPointDensity := lf.SingleFilePointDensity;
@@ -1531,8 +1523,9 @@ begin
          2 : PointDensity := MinPointDensity;
       end;
    end;
+   MDdef.DefaultLatHemi := LatHemi;
    EndProgress;
-   {$IfDef Defined(RecordListFilesProcessed) or Defined(BasicOpens)} WriteLineToDebugFile('tLas_files.RemoveTilesNotOnMap out, UTM zone=' + IntToStr(UTMzone) + LatHemi); {$EndIf}
+   {$IfDef Defined(RecordListFilesProcessed) or Defined(BasicOpens) or Defined(RecordHemisphere)} WriteLineToDebugFile('tLas_files.RemoveTilesNotOnMap out, UTM zone=' + IntToStr(UTMzone) + LatHemi); {$EndIf}
 end;
 
 

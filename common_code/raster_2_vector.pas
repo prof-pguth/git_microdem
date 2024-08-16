@@ -61,6 +61,8 @@ uses
 
 
 procedure RasterToVector(inMapOwner : tMapForm);
+//uses GDAL and potrace, https://potrace.sourceforge.net/
+//not recently tested
 var
    rast_2_vect_f : Trast_2_vect_f;
 begin
@@ -131,7 +133,7 @@ begin
     repeat
        inc(i);
        aDir := MDTempDir + 'shp' + IntToStr(i);
-    until Not PathIsValid(aDir);
+    until Not ValidPath(aDir);
 
     fName2 := ExtractShortPathName(GDAL_ogr_Name);
     if IsGDALFilePresent(fName2) then begin

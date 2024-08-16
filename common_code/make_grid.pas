@@ -28,7 +28,7 @@ unit make_grid;
       //{$Define RecordMapSteps}
    {$EndIf}
 {$ELSE}
-   {$Define NoParallelFor}
+   //{$Define NoParallelFor}
 {$ENDIF}
 
 
@@ -42,11 +42,6 @@ interface
 
    {$IfDef MSWindows}
       ShlObj, URLMon,Messages,ShellAPI,
-      //ActiveX,Registry,
-   {$EndIf}
-
-   {$IfDef UseFireDacSQLlite}
-     //FireDAC.Comp.Client,
    {$EndIf}
 
    {$IfDef ExStereoNet}
@@ -68,8 +63,7 @@ const
 
 type
    tListOfDEMs = array[1..MaxGrids] of integer;
-   tNormalMethod = (nmNone,nmEastWest,nmNorthSouth,nmInterpolate,nm30m,nmTRIK,nmRRI);
-
+   tNormalMethod = (nmNone,nmEastWest,nmNorthSouth,nmInterpolate,nm30m,nmTRIK,nmRRI,nmMAD2K);
 
 //new, faster (hopefully)
    function CreateHillshadeMap(OpenMap : boolean; DEM : integer) : integer;
@@ -78,13 +72,10 @@ type
 
 function BoxCarDetrendDEM(OpenMap : boolean; DEM : integer; GridLimits : tGridLimits; FilterRadius : integer = 2) : integer;
 
-
 function ShortDerivativeMapName(ch : AnsiChar; SampleBoxSize : integer = 0) : ShortString;
 function DerivativeMapName(ch : AnsiChar; SampleBoxSize : integer = 0) : ShortString;
 
-
 function MakeSingleNewDerivativeMap(ch : AnsiChar; CurDEM : integer = 0; SampleBoxSize : integer = 0; ShowMap : boolean = true) : integer;
-
 
 function CreateRidgeMap(WhichDEM : integer; GridLimits : tGridLimits;  RidgeTypeMap : tRidgeTypemap; Memo1 : tMemo = Nil) : integer;
 function CreateIwashishiPikeMap(NewName : ShortString; BaseGrid,SlopeGrid,RoughGrid,ConvexGrid : integer) : integer;
@@ -103,6 +94,8 @@ procedure ModeFilterDEM(DEM,BufferSize : integer; JustDoHoles : boolean);
 function MakeTRIGrid(CurDEM : integer; Normalize : tNormalMethod; OpenMap : boolean = true) : integer;
 function MakeTPIGrid(CurDEM : integer; Normalize : tNormalMethod; OpenMap : boolean = true) : integer;
 function MakeSpecifiedTPIGrid(CurDEM : integer; GridLimits : tGridLimits; Normalize : tNormalMethod; OpenMap : boolean = true) : integer;
+function MakeMAD2KGrid(CurDEM : integer; OpenMap : boolean = true) : integer;
+
 
 function CreateSpecifiedRoughnessMap(DEM : integer; GridLimits : tGridLimits;OpenMap : boolean = true; SaveSlopeMap : boolean = true) : integer;
 
@@ -120,11 +113,18 @@ function DifferenceCategoryMap(DEMonMap : integer; fName : PathStr = '') : integ
 function MakeDNBRMap(PreNBR,PostNBR : integer) : integer;
 
 
+procedure CompareSlopeMaps(CurDEM : integer);
+
 
 {$IfDef ExExoticMaps}
 {$Else}
     function CreateAnOrganizationMap(WhichDEM : integer; OpenMap : boolean = true) : integer;
 {$EndIf}
+
+
+function CreateArcSecDEM(OverWrite,OpenMap : boolean; DEM : integer; PixelIs : byte; xgridsize,ygridsize : float32; fName : PathStr) : integer;
+
+
 
 var
    NewTrendDirGrid : integer;
@@ -138,11 +138,85 @@ uses
    DEMDef_routines,Petimage,DEMRefOp,DEMterrC,
    DEMStat,DEMMapf,
    Geomorph_point_class,
+   MD_use_tools,
+   gdal_tools,
    DEMEros,
    DEMweapn;
 
 var
    CountInStrips : integer;
+
+
+function CreateArcSecDEM(OverWrite,OpenMap : boolean; DEM : integer; PixelIs : byte; xgridsize,ygridsize : float32; fName : PathStr) : integer;
+begin
+   if (not Overwrite) and FileExists(fName) then begin
+      Result := OpenNewDEM(fName);
+   end
+   else begin
+      MDDef.LidarGridProjection := ArcSecDEM;
+      MDdef.DefLidarGeoGridSizeX := xgridsize;
+      MDdef.DefLidarGeoGridSizeY := ygridsize;
+      MDDef.LasDEMPixelIs := PixelIs;
+      {$If Defined(Record3DEPXFull)} WriteLineToDebugFile('CreateOneRefDEM, ' + fName); {$EndIf}
+      Result := DEMGlb[DEM].ResampleByAveraging(OpenMap,false,fName);
+      {$If Defined(Record3DEPXFull)} WriteLineToDebugFile('ResampleForDEMIXOneSecDEMs, new DEM=' + IntToStr(Result)); {$EndIf}
+      {$If Defined(TrackDEMCorners)} DEMGlb[Result].WriteDEMCornersToDebugFile('ResampleForDEMIXOneSecDEMs, new DEM=' + IntToStr(Result)); {$EndIf}
+   end;
+end;
+
+
+
+procedure CompareSlopeMaps(CurDEM : integer);
+var
+   NewMap : integer;
+
+      procedure MatchAndSave(AreaName : shortstring);
+      begin
+         if ValidDEM(NewMap) then begin
+            DEMGlb[NewMap].AreaName := AreaName;
+            MatchAnotherDEMMap(NewMap,CurDEM);
+            DEMGlb[NewMap].SaveAsGeotiff(ExtractFilePath(DEMGlb[CurDEM].DEMFileName) + DEMGlb[NewMap].AreaName + '.tif');
+         end;
+      end;
+
+begin
+   if ValidDEM(CurDEM) then begin
+      SaveBackupDefaults;
+      MDdef.SlopeAlg := smEightNeighborsUnweighted;
+      NewMap := CreateSlopeMap(CurDEM);
+      MatchAndSave('md_evans_slope');
+      MDdef.SlopeAlg := smEightNeighborsWeighted;
+      NewMap := CreateSlopeMap(CurDEM);
+      MatchAndSave('md_horn_slope');
+      MDdef.SlopeAlg := smFourNeighbors;
+      NewMap := CreateSlopeMap(CurDEM);
+      MatchAndSave('md_zt_slope');
+
+      NewMap := WBT_SlopeMap(true,DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
+      MatchAndSave('wbt_evans_slope');
+
+      NewMap := SAGA_Slope_percent(true,'2',DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
+      MatchAndSave('saga_horn_slope');
+      NewMap := SAGA_Slope_percent(true,'3',DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
+      MatchAndSave('saga_evans_slope');
+      NewMap := SAGA_Slope_percent(true,'6',DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
+      MatchAndSave('saga_zt_slope');
+
+      {$IfDef UseGrass}
+         NewMap := GRASSSlopeMap(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
+         MatchAndSave('grass_slope');
+      {$EndIf}
+
+      NewMap := GDAL_SlopeMap_ZT(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap, DEMGlb[CurDEM].GDAL_ScaleFactorString);
+      MatchAndSave('gdal_zt_slope');
+
+      NewMap := GDAL_SlopeMap_Horn(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap, DEMGlb[CurDEM].GDAL_ScaleFactorString);
+      MatchAndSave('gdal_horn_slope');
+
+      RestoreBackupDefaults;
+   end;
+end {procedure CompareSlopeMaps};
+
 
 
 function BoxCarDetrendDEM(OpenMap : boolean; DEM : integer; GridLimits : tGridLimits; FilterRadius : integer = 2) : integer;
@@ -206,7 +280,6 @@ begin
     DEMGlb[Result].SelectionMap.DoBaseMapRedraw;
    {$IfDef RecordSat} WriteLineToDebugFile('TMapForm.dNBRNBRbeforeandafterfire1Click out'); {$EndIf}
 end;
-
 
 
 function MakeAspectMap(ElevMap : integer) : integer;
@@ -569,11 +642,39 @@ begin
 end;
 
 
+procedure GetSpacingMultiples(CurDEM,Row : integer; Normalize : tNormalMethod; var FactorNS,FactorEW,FactorDiag : float32); inline;
+//inline for speed and code maintence so multiple uses share the exact same code
+var
+   DiagonalSpace : float32;
+begin
+    DiagonalSpace := sqrt(sqr(DEMGlb[CurDEM].XSpaceByDEMrow[Row]) + sqr(DEMGlb[CurDEM].AverageYSpace));
+    if (Normalize in [nmEastWest,nmRRI,nmMAD2K]) then begin
+       FactorNS := DEMGlb[CurDEM].XSpaceByDEMrow[Row] / DEMGlb[CurDEM].AverageYSpace;
+       FactorEW := 1;
+       FactorDiag := DEMGlb[CurDEM].XSpaceByDEMrow[Row] / DiagonalSpace;
+    end
+    else if (Normalize = nmNorthSouth) then begin
+       FactorNS := 1;
+       FactorEW := DEMGlb[CurDEM].AverageYSpace / DEMGlb[CurDEM].XSpaceByDEMrow[Row];
+       FactorDiag := DEMGlb[CurDEM].AverageYSpace / DiagonalSpace;
+    end
+    else if (Normalize = nm30m) then begin
+       FactorNS := 30 / DEMGlb[CurDEM].AverageYSpace;
+       FactorEW := 30 / DEMGlb[CurDEM].XSpaceByDEMrow[Row];
+       FactorDiag := 30 / DiagonalSpace;
+    end
+    else if (Normalize in [nmNone,nmTRIK]) then begin
+       //Factors remain 1
+    end;
+end;
+
+
+
 function MakeSpecifiedTPIGrid(CurDEM : integer; GridLimits : tGridLimits; Normalize : tNormalMethod; OpenMap : boolean = true) : integer;
 var
    Col,Row : integer;
-   znw,zw,zsw,zn,z,zs,zne,ze,zse,z1,z11,z21,z3,z23,z5,z15,z25 : float32;
-   sum,FactorEW,FactorDiag,FactorNS,DiagonalSpace : float64;
+   znw,zw,zsw,zn,z,zs,zne,ze,zse,z1,z11,z21,z3,z23,z5,z15,z25,FactorEW,FactorDiag,FactorNS,DiagonalSpace : float32;
+   sum : float64;
    TStr,NormStr : shortstring;
 begin
     {$IfDef RecordTimeGridCreate} Stopwatch1 := TStopwatch.StartNew; {$EndIf}
@@ -597,26 +698,7 @@ begin
     //it would not be much faster, and the approximation would be increasingly in error for geographic DEMs as the latitude or size of the DEM increased
     for Row := GridLimits.YGridLow to GridLimits.YGridHigh do begin
        if (Row mod 25 = 0) and ShowSatProgress then UpdateProgressBar((Row-GridLimits.YGridLow) / (GridLimits.YGridHigh-GridLimits.YGridLow));
-
-       DiagonalSpace := sqrt(sqr(DEMGlb[CurDEM].XSpaceByDEMrow[Row]) + sqr(DEMGlb[CurDEM].AverageYSpace));
-       if (Normalize = nmNorthSouth) then begin
-          FactorNS := 1;
-          FactorEW := DEMGlb[CurDEM].AverageYSpace / DEMGlb[CurDEM].XSpaceByDEMrow[Row];
-          FactorDiag := DEMGlb[CurDEM].AverageYSpace / DiagonalSpace;
-       end
-       else if (Normalize in [nmEastWest,nmRRI]) then begin
-          FactorNS := DEMGlb[CurDEM].XSpaceByDEMrow[Row] / DEMGlb[CurDEM].AverageYSpace;
-          FactorEW := 1;
-          FactorDiag := DEMGlb[CurDEM].XSpaceByDEMrow[Row] / DiagonalSpace;
-       end
-       else if (Normalize = nm30m) then begin
-          FactorNS := 30 / DEMGlb[CurDEM].AverageYSpace;
-          FactorEW := 30 / DEMGlb[CurDEM].XSpaceByDEMrow[Row];
-          FactorDiag := 30 / DiagonalSpace;
-       end
-       else if (Normalize in [nmNone,nmTRIK]) then begin
-          //Factors remain 1
-       end;
+       GetSpacingMultiples(CurDEM,Row,Normalize,FactorNS,FactorEW,FactorDiag);
 
        for Col := GridLimits.XGridLow to GridLimits.XGridHigh do begin
           if DEMGLB[CurDEM].SurroundedPointElevs(Col,Row,znw,zw,zsw,zn,z,zs,zne,ze,zse) then begin
@@ -638,13 +720,7 @@ begin
                 DEMGLB[CurDEM].GetElevMeters(Col-0.707,Row-0.707,zsw);
                 DEMGLB[CurDEM].GetElevMeters(Col+0.707,Row-0.707,zse);
              end;
-
              Sum := z - (zn+zne+ze+zse+zs+zsw+zw+znw) / 8;
-            (*
-            if sum > 1000 then begin
-               sum := sum;
-             end;
-             *)
              DEMGlb[Result].SetGridElevation(Col,Row,sum);
           end;
        end;
@@ -658,13 +734,20 @@ end;
 
 
 
+function InterpolateElevs(CurDEM,Col,Row : integer; delta : float32; var znw,zne,zsw,zse : float32) : boolean; inline;
+begin
+    Result := DEMGLB[CurDEM].GetElevMeters(Col-delta,Row+delta,znw) and DEMGLB[CurDEM].GetElevMeters(Col+delta,Row+delta,zne) and
+              DEMGLB[CurDEM].GetElevMeters(Col-delta,Row-delta,zsw) and DEMGLB[CurDEM].GetElevMeters(Col+delta,Row-delta,zse);
+end;
+
 function MakeTRIGrid(CurDEM : integer; Normalize : tNormalMethod; OpenMap : boolean = true) : integer;
 var
    Col,Row : integer;
    GridLimits : tGridLimits;
-   znw,zw,zsw,zn,z,zs,zne,ze,zse,z1,z11,z21,z3,z23,z5,z15,z25 : float32;
-   sum,FactorEW,FactorDiag,FactorNS,DiagonalSpace : float64;
+   znw,zw,zsw,zn,z,zs,zne,ze,zse,z1,z11,z21,z3,z23,z5,z15,z25,FactorEW,FactorDiag,FactorNS,Median : float32;
+   sum : float64;
    TStr,NormStr : shortstring;
+   zees : array[1..12] of float32;
 begin
     {$IfDef RecordTimeGridCreate} Stopwatch1 := TStopwatch.StartNew; {$EndIf}
     if (Normalize = nmNorthSouth) then NormStr := '_norm_NS'
@@ -705,38 +788,35 @@ begin
        *)
     for Row := GridLimits.YGridLow to GridLimits.YGridHigh do begin
        if (Row mod 25 = 0) and ShowSatProgress then UpdateProgressBar((Row-GridLimits.YGridLow) / (GridLimits.YGridHigh-GridLimits.YGridLow));
-
-       DiagonalSpace := sqrt(sqr(DEMGlb[CurDEM].XSpaceByDEMrow[Row]) + sqr(DEMGlb[CurDEM].AverageYSpace));
-       if (Normalize in [nmEastWest,nmRRI]) then begin
-          FactorNS := DEMGlb[CurDEM].XSpaceByDEMrow[Row] / DEMGlb[CurDEM].AverageYSpace;
-          FactorEW := 1;
-          FactorDiag := DEMGlb[CurDEM].XSpaceByDEMrow[Row] / DiagonalSpace;
-       end
-       else if (Normalize = nmNorthSouth) then begin
-          FactorNS := 1;
-          FactorEW := DEMGlb[CurDEM].AverageYSpace / DEMGlb[CurDEM].XSpaceByDEMrow[Row];
-          FactorDiag := DEMGlb[CurDEM].AverageYSpace / DiagonalSpace;
-       end
-       else if (Normalize = nm30m) then begin
-          FactorNS := 30 / DEMGlb[CurDEM].AverageYSpace;
-          FactorEW := 30 / DEMGlb[CurDEM].XSpaceByDEMrow[Row];
-          FactorDiag := 30 / DiagonalSpace;
-       end
-       else if (Normalize in [nmNone,nmTRIK]) then begin
-          //Factors remain 1
-       end;
+       if not (Normalize in [nmTRIK,nmRRI]) then GetSpacingMultiples(CurDEM,Row,Normalize,FactorNS,FactorEW,FactorDiag);
 
        for Col := GridLimits.XGridLow to GridLimits.XGridHigh do begin
           if DEMGLB[CurDEM].SurroundedPointElevs(Col,Row,znw,zw,zsw,zn,z,zs,zne,ze,zse) then begin
              if (Normalize in [nmTRIK,nmRRI]) then begin
-                if DEMGLB[CurDEM].GetElevMetersOnGrid(Col-2,Row+2,z1) and
+                InterpolateElevs(CurDEM,Col,Row,0.707,znw,zne,zsw,zse);
+                if InterpolateElevs(CurDEM,Col,Row,1.414,z1,z21,z5,z25) and
                    DEMGLB[CurDEM].GetElevMetersOnGrid(Col,Row+2,z11) and
-                   DEMGLB[CurDEM].GetElevMetersOnGrid(Col+2,Row+2,z21) and
                    DEMGLB[CurDEM].GetElevMetersOnGrid(Col-2,Row,z3) and
                    DEMGLB[CurDEM].GetElevMetersOnGrid(Col+2,Row,z23) and
-                   DEMGLB[CurDEM].GetElevMetersOnGrid(Col-2,Row-2,z5) and
-                   DEMGLB[CurDEM].GetElevMetersOnGrid(Col,Row-2,z15) and
-                   DEMGLB[CurDEM].GetElevMetersOnGrid(Col+2,Row-2,z25) then begin
+                   DEMGLB[CurDEM].GetElevMetersOnGrid(Col,Row-2,z15) then begin
+                      //outer ring, 5x5 window
+                      zees[1] := abs(-z1 + 2 * zNW - z); //point to NW, and its two neighbors
+                      zees[2] := abs(-z11 + 2 * zN - z); //point to N, and its two neighbors
+                      zees[3] := abs(-z21 + 2 * zNE - z); //point to NE, and its two neighbors
+                      zees[4] := abs(-z23 + 2 * zE - z);  //point to E, and its two neighbors
+                      zees[5] := abs(-z25 + 2 * zSE - z); //point to SE, and its two neighbors
+                      zees[6] := abs(-z15 + 2 * zS - z);  //point to S, and its two neighbors
+                      zees[7] := abs(-z5 + 2 * zSW - z);  //point to SW, and its two neighbors
+                      zees[8] := abs(-z3 + 2 * zW - z);   //point to W, and its two neighbors
+                      //inner ring, 3x3 window
+                      zees[9] := abs(-zNW + 2 * z - zSE); //central point, and its two neighbors to NW-SE
+                      zees[10] := abs(-zN + 2 * z - zS);  //central point, and its two neighbors to N-S
+                      zees[11] := abs(-zNE + 2 * z - zSW); //central point, and its two neighbors to NE-SW
+                      zees[12] := abs(-zE + 2 * z - zW);   //central point, and its two neighbors to W-E
+                      Median := Petmath.Median(zees,12);
+                      DEMGlb[Result].SetGridElevation(Col,Row,Median);
+                      (*
+
                       Sum := abs(-z1 + 2 * zNW - z) * FactorDiag +      //zNW=z7,z=z13
                              abs(-z11 + 2 * zN - z) * FactorNS +        //zN=z12
                              abs(-z21 + 2 * zNE - z) * FactorDiag +     //zNE=z17
@@ -750,11 +830,12 @@ begin
                              abs(-zNE + 2 * z - zSW) * FactorDiag +     //zNE=z17,zSW=z9
                              abs(-zE + 2 * z - zW) * FactorEW;          //zE=z18,zW=z8
                       DEMGlb[Result].SetGridElevation(Col,Row,sum/12);
+                      *)
                 end;
              end
              else begin
                 if (Normalize in [nmNorthSouth,nmEastWest,nm30m]) then begin
-                   //calculate the elevation in the direction of the neighbor, assuming linear slope in that direction
+                   //calculate elevation in direction of the neighbor, assuming linear slope in that direction
                    znw := z + (zNW-z) * FactorDiag;
                    zne := z + (zNE-z) * FactorDiag;
                    zsw := z + (zSW-z) * FactorDiag;
@@ -766,16 +847,83 @@ begin
                 end;
                 if (Normalize = nmInterpolate) then begin
                    //this is precise only for UTM grids, but it's so close to the others it's not worth adjusting for geo grids
-                   DEMGLB[CurDEM].GetElevMeters(Col-0.707,Row+0.707,znw);
-                   DEMGLB[CurDEM].GetElevMeters(Col+0.707,Row+0.707,zne);
-                   DEMGLB[CurDEM].GetElevMeters(Col-0.707,Row-0.707,zsw);
-                   DEMGLB[CurDEM].GetElevMeters(Col+0.707,Row-0.707,zse);
+                   //DEMGLB[CurDEM].GetElevMeters(Col-0.707,Row+0.707,znw);
+                   //DEMGLB[CurDEM].GetElevMeters(Col+0.707,Row+0.707,zne);
+                   //DEMGLB[CurDEM].GetElevMeters(Col-0.707,Row-0.707,zsw);
+                   //DEMGLB[CurDEM].GetElevMeters(Col+0.707,Row-0.707,zse);
+                   InterpolateElevs(CurDEM,Col,Row,0.707,znw,zne,zsw,zse);
                 end;
 
-                Sum := sqr(z-zn) + sqr(z-zne) + sqr(z-ze)+ sqr(z-zse)+ sqr(z-zs) + sqr(z-zsw)+ sqr(z-zw)+ sqr(z-znw);
+                Sum := sqr(z-zn) + sqr(z-zne) + sqr(z-ze) + sqr(z-zse)+ sqr(z-zs) + sqr(z-zsw) + sqr(z-zw) + sqr(z-znw);
                 sum := sqrt(sum/8);
                 DEMGlb[Result].SetGridElevation(Col,Row,sum);
              end;
+          end;
+       end;
+    end;
+    if ShowSatProgress then EndProgress;
+    DEMGlb[Result].CheckMaxMinElev;
+    if OpenMap then begin
+       DEMGlb[Result].SetUpMap(Result,false,mtElevSpectrum);
+    end;
+    {$IfDef RecordTimeGridCreate} WriteLineToDebugFile('Make TRIGrid took ' + RealToString(Stopwatch1.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
+end;
+
+
+
+function MakeMAD2KGrid(CurDEM : integer; OpenMap : boolean = true) : integer;
+var
+   Col,Row : integer;
+   GridLimits : tGridLimits;
+   fSW,fSE,fNE,fNW : float32;
+   znw,zw,zsw,zn,z,zs,zne,ze,zse,z1,z11,z21,z3,z23,z5,z15,z25,{FactorEW,FactorDiag,FactorNS,}Median : float32;
+   sum : float64;
+   TStr,NormStr : shortstring;
+   zees : array[1..8] of float32;
+begin
+    {$IfDef RecordTimeGridCreate} Stopwatch1 := TStopwatch.StartNew; {$EndIf}
+    Result := DEMGlb[CurDEM].CloneAndOpenGridSetMissing(FloatingPointDEM, 'MD_' + 'MAD2K' + '_' + DEMGlb[CurDem].AreaName,euMeters);
+    GridLimits := TheDesiredLimits(CurDEM);
+    //FactorNS := 1;
+    //FactorEW := 1;
+    //FactorDiag := 1;
+
+    {$IfDef RecordProblems}
+       DEMGLB[CurDEM].GetBilinearWeights(0.707, 0.707, fSW,fSE,fNE,fNW);
+       WriteLineToDebugFile('Interpolation weights');
+       WriteLineToDebugFile(RealToString(fNW,8,3) + RealToString(fNE,8,3));
+       WriteLineToDebugFile(RealToString(fSW,8,3) + RealToString(fSE,8,3));
+    {$EndIf}
+
+
+    if ShowSatProgress then StartProgressAbortOption(TStr + ' ' + DEMGlb[CurDEM].AreaName);
+    for Row := GridLimits.YGridLow to GridLimits.YGridHigh do begin
+       if (Row mod 25 = 0) and ShowSatProgress then UpdateProgressBar((Row-GridLimits.YGridLow) / (GridLimits.YGridHigh-GridLimits.YGridLow));
+
+       for Col := GridLimits.XGridLow to GridLimits.XGridHigh do begin
+          if DEMGLB[CurDEM].SurroundedPointElevs(Col,Row,znw,zw,zsw,zn,z,zs,zne,ze,zse) then begin
+             //DEMGLB[CurDEM].GetElevMeters(Col-0.707,Row+0.707,znw);
+             //DEMGLB[CurDEM].GetElevMeters(Col+0.707,Row+0.707,zne);
+             //DEMGLB[CurDEM].GetElevMeters(Col-0.707,Row-0.707,zsw);
+             //DEMGLB[CurDEM].GetElevMeters(Col+0.707,Row-0.707,zse);
+             InterpolateElevs(CurDEM,Col,Row,0.707,znw,zne,zsw,zse);
+             zees[1] := abs(zNW - z); // * FactorDiag;
+             zees[2] := abs(zN - z); // * FactorNS;
+             zees[3] := abs(zE - z); // * FactorEW;
+             zees[4] := abs(zNE - z); // * FactorDiag;
+             zees[5] := abs(zSW - z); // * FactorDiag;
+             zees[6] := abs(zS - z); // * FactorNS;
+             zees[7] := abs(zW - z); // * FactorEW;
+             zees[8] := abs(zSE - z); // * FactorDiag;
+             Median := 0.5 * Petmath.Median(zees,8);
+             (*
+             zees[1] := abs(zNW - zSE) * FactorDiag;
+             zees[2] := abs(zN - zS) * FactorNS;
+             zees[3] := abs(zE - zW) * FactorEW;
+             zees[4] := abs(zNE - zSW) * FactorDiag;
+             Median := 0.25* Petmath.Median(zees,4);
+             *)
+             DEMGlb[Result].SetGridElevation(Col,Row,Median);
           end;
        end;
     end;
@@ -969,9 +1117,9 @@ begin
           end
           else begin
              if What = 'e' then MomentVar := DEMGlb[CurDEM].ElevationMoments(Limits)
-             else if What = 's' then DEMGlb[CurDEM].SlopeMoments(Limits,MomentVar)
              else if What = 'l' then DEMGlb[CurDEM].PlanCMoments(Limits,MomentVar)
-             else if What = 'r' then DEMGlb[CurDEM].ProfCMoments(Limits,MomentVar);
+             else if What = 'r' then DEMGlb[CurDEM].ProfCMoments(Limits,MomentVar)
+             else if What = 's' then DEMGlb[CurDEM].SlopeMoments(Limits,MomentVar);
              if (MomentVar.NPts > 3) then  begin
                 PostResults(DEMs[1],x,y,GridInc,MomentVar.mean);
                 PostResults(DEMs[2],x,y,GridInc,MomentVar.std_dev);
@@ -995,8 +1143,6 @@ var
    WantMapType : tMapType;
    fName,pName : PathStr;
    {$If Defined(NoParallelFor) or Defined(NoParallelMoments)} {$Else} PartLimits : tGridLimits;  {$EndIf}
-
-
 
        procedure NewGrid(var DEM : integer; Gridname : shortstring; ElevUnits : tElevUnit);
        begin
@@ -1072,7 +1218,10 @@ begin
       NewGrid(MomentDEMs[4],'Relief (m) ' + TStr, DEMGlb[CurDEM].DEMheader.ElevUnits);
    end
    else if (What = 'S') then begin
-       if MDDef.DoSlopePC then NewGrid(MomentDEMs[1], ShortSlopeMethodName(MDDef.SlopeAlg) +'_Slope_percent',euPercentSlope);
+       if MDDef.DoSlopePC then begin
+          NewGrid(MomentDEMs[1], ShortSlopeMethodName(MDDef.SlopeAlg) +'_Slope_percent',euPercentSlope);
+          WantMapType := MDDef.DefSlopeMap;
+       end;
        if MDDef.DoSlopeDeg then NewGrid(MomentDEMs[2],ShortSlopeMethodName(MDDef.SlopeAlg) + '_Slope_degree)',euzDegrees);
        if MDDef.DoSlopeSin then NewGrid(MomentDEMs[3],ShortSlopeMethodName(MDDef.SlopeAlg) + '_Sin_slope',euUndefined);
        if MDDef.DoSlopeLogTan then NewGrid(MomentDEMs[4],ShortSlopeMethodName(MDDef.SlopeAlg) + '_log_tan_slope',euUndefined);

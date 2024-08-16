@@ -407,7 +407,7 @@ end;
 
 procedure OpenSolarRad;
 begin
-   if (PathIsValid(WorldClimate2Dir)) then begin
+   if (ValidPath(WorldClimate2Dir)) then begin
       if not ValidMultiGrid(SolarRad) then SolarRad := OpenMonthlyMultiGrids('Solar radiation (entire earth)',OpenMaps);
    end
    else MessageToContinue('Missing World Climate 2 data');
@@ -417,7 +417,7 @@ end;
 procedure OpenDailyTemps;
 begin
    {$IfDef AllowUSNAdataDownloads}  ClimateGetData;  {$EndIf}
-   if (PathIsValid(WorldClimate2Dir)) then begin
+   if (ValidPath(WorldClimate2Dir)) then begin
       if (MaxTempMG = 0) then MaxTempMG := OpenMonthlyMultiGrids('Maximum temperature',OpenMaps);
       if (TempMG = 0) then TempMG := OpenMonthlyMultiGrids('Average temperature (entire earth)',OpenMaps);
       if (MinTempMG = 0) then MinTempMG := OpenMonthlyMultiGrids('Minimum temperature',OpenMaps);
@@ -429,7 +429,7 @@ end;
 procedure OpenTempPrecipEvap;
 begin
    {$IfDef AllowUSNAdataDownloads}  ClimateGetData;  {$EndIf}
-   if (PathIsValid(WorldClimate2Dir)) then begin
+   if (ValidPath(WorldClimate2Dir)) then begin
       if (TempMG = 0) then TempMG := OpenMonthlyMultiGrids('Average temperature (entire earth)',OpenMaps);
       if (PrecipMG = 0) then PrecipMG := OpenMonthlyMultiGrids('Precipitation',OpenMaps);
       if (ETOMG = 0) then ETOMG := OpenMonthlyMultiGrids('Reference evapotranspiration',OpenMaps);
@@ -1140,10 +1140,10 @@ begin
    with TiffImage do begin
       MainName := TiffImage.TIFFFileName;
       BasePath := ExtractFilePath(MainName) + '\multi_grids\';
-      if not PathIsValid(BasePath) then SafeMakeDir(BasePath);
+      if not ValidPath(BasePath) then SafeMakeDir(BasePath);
       NumGrids := TiffHeader.SamplesPerPixel;
 
-      if PathIsValid(BasePath) then begin
+      if ValidPath(BasePath) then begin
          ReadMultigrids;
       end
       else begin
@@ -1276,7 +1276,7 @@ begin
    {$IfDef RecordMultiGrids}   WriteLineToDebugFile('tMultiGridArray.LoadLandsatMultigrid ' + BasePath); {$EndIf}
    if (SatImage[SatImageIndex].LandsatNumber in [1..9]) or IsThisSentinel2(basePath) then begin
       MGPath := SatImage[SatImageIndex].LandsatDir + 'multi_grids\';
-      if not PathIsValid(MGPath) then SafeMakeDir(MGPath);
+      if not ValidPath(MGPath) then SafeMakeDir(MGPath);
 
       if IsThisSentinel2(basePath) then begin
          PossGrids := 13;
@@ -1647,7 +1647,7 @@ var
    i : integer;
    fName : PathStr;
 begin
-   if not PathIsValid(BasePath+ 'multi_grids\') then SafeMakeDir(BasePath+ 'multi_grids\');
+   if not ValidPath(BasePath+ 'multi_grids\') then SafeMakeDir(BasePath+ 'multi_grids\');
    StartProgress('Write multigrids');
    for i := 1 to NumGrids do begin
       UpDateProgressBar(i/NumGrids);
@@ -2212,7 +2212,7 @@ var
    end;
 
 begin
-   if PathIsValid(TheDir) then LastLidarMulti := TheDir
+   if ValidPath(TheDir) then LastLidarMulti := TheDir
    else begin
       if LastLidarMulti = '' then LastLidarMulti := MainMapData;
       GetDOSPath('Lidar grids',LastLidarMulti);

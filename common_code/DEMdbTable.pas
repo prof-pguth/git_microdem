@@ -14,7 +14,7 @@
    //{$Define RecordMaskDEMShapeFile}
    {$IfDef Debug}
        {$Define RecordDEMIX}
-       {$Define RecordDetailedDEMIX}
+       //{$Define RecordDetailedDEMIX}
        //{$Define RecordCloseDB}
        //{$Define RecordDataBaseSaveFiles}
        //{$Define RecordDBPlot}
@@ -1050,6 +1050,7 @@ type
     LATEXtable1: TMenuItem;
     AddKoppenclass1: TMenuItem;
     Numberoftestareasandtilesbycountry1: TMenuItem;
+    RemoveSCRfields1: TMenuItem;
     //Pointfilter1: TMenuItem;
     //Pointfilter2: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
@@ -1858,6 +1859,7 @@ type
     procedure LATEXtable1Click(Sender: TObject);
     procedure AddKoppenclass1Click(Sender: TObject);
     procedure Numberoftestareasandtilesbycountry1Click(Sender: TObject);
+    procedure RemoveSCRfields1Click(Sender: TObject);
     //procedure Pointfilter2Click(Sender: TObject);
     //procedure Pointfilter1Click(Sender: TObject);
   private
@@ -4397,7 +4399,7 @@ begin
 
        SumName := GetFieldNameForDB('New Field',True,SumName);
 
-       {$IfDef RecordEditsDone} WriteLineToDebugFie('New field ' + SumName + ' from ' + dbOpts.XField + '  ' + dbOpts.YField): {$EndIf}
+       {$IfDef RecordEditsDone} WriteLineToDebugFie('New field ' + SumName + ' from ' + dbOpts.XField + '  ' + dbOpts.YField); {$EndIf}
 
        if (Sender = SinOfField1) or (Sender = CosOfField1) then AddFieldToDataBase(ftFloat,SumName,8,5)
        else AddFieldToDataBase(ftFloat,SumName,18,6);
@@ -8795,7 +8797,7 @@ begin
      EndThreadTimers;
      ShowSatProgress := true;
      fName := MDTempDir + GISdb[DBonTable].DBName + '_vector_average.csv';
-     {$IfDef AverageNeighbors} WriteLineRoDebugFile('fName=' + fName): {$EndIf}
+     {$IfDef AverageNeighbors} WriteLineRoDebugFile('fName=' + fName); {$EndIf}
      theMapOwner.StringListToLoadedDatabase(Results,fName);
      GISdb[DBonTable].MyData.ApplyFilter('');
      ShowStatus;
@@ -9562,7 +9564,7 @@ begin
       HideColumns;
       EndProgress;
       ShowDefaultCursor;
-      {$IfDef RecordStatus} WriteLineRoDebugFile('UpdateStatus EmpSource.Enabled=' + TrueOrFalse(GISdb[DBonTable].EmpSource.Enabled) + '  DBGrid1.Enabled=' + TrueOrFalse(DBGrid1.Enabled)): {$EndIf}
+      {$IfDef RecordStatus} WriteLineRoDebugFile('UpdateStatus EmpSource.Enabled=' + TrueOrFalse(GISdb[DBonTable].EmpSource.Enabled) + '  DBGrid1.Enabled=' + TrueOrFalse(DBGrid1.Enabled)); {$EndIf}
    end;
    {$IfDef RecordShowStatus} WriteLineRoDebugFile('ShowStatus out'); {$EndIf}
  end;
@@ -9784,6 +9786,23 @@ begin
    else GISdb[DBonTable].DeleteAllSelectedRecords;
 end;
 
+procedure Tdbtablef.RemoveSCRfields1Click(Sender: TObject);
+var
+   fNames : tStringList;
+   fName : shortstring;
+   i : integer;
+begin
+   fNames := GISdb[DBonTable].MyData.FieldsInDataBase;
+   for i := 0 to pred(fNames.Count) do begin
+      fName := fNames[i];
+      if AnsiContainsText(fName,'_SCR') or AnsiContainsText(fName,'_WIN') or AnsiContainsText(fName,'COP_') then begin
+          GISdb[DBonTable].MyData.DeleteField(fName);
+      end;
+   end;
+   fNames.Free;
+   ShowStatus;
+end;
+
 procedure Tdbtablef.Removesubstringandfollowingcharacters1Click(Sender: TObject);
 begin
    Removelowercasecharacters1Click(Sender);
@@ -9832,7 +9851,7 @@ begin
       if (Not Table.FieldExists(NewFieldName)) then NewFieldName := OrigPickField(Table,'Field name to replace with',[ftString]);
 
       for i := 0 to pred(FieldsInDB.Count) do begin
-         {$IfDef RecordFieldRename} WriteLineRoDebugFile('check field=' + FieldsInDB.Strings[i], true): {$EndIf}
+         {$IfDef RecordFieldRename} WriteLineRoDebugFile('check field=' + FieldsInDB.Strings[i], true); {$EndIf}
          GISdb[DBonTable].EmpSource.Enabled := false;
          Table.ApplyFilter(OldFieldName + '=' + QuotedStr(ptTrim(FieldsInDB.Strings[i])));
          {$IfDef RecordFieldRename} WriteLineRoDebugFile('filter=' + Table.Filter); {$EndIf}

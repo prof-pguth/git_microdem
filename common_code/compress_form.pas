@@ -662,7 +662,7 @@ var
    DeCompressing,DeleteFiles : boolean;
 begin
    {$IfDef RecordCompressionProblems} WriteLinetoDebugFile('Tpetcompressform.CompressLASretain1Click in'); {$EndIf}
-   LazName := LAStools_BinDir+ 'laszip.exe';
+   LazName := LAStools_BinDir + 'laszip64.exe';
    if GetLASToolsFileName(LazName) then begin
        FilesWanted := tStringList.Create;
        DefaultFilter := 1;

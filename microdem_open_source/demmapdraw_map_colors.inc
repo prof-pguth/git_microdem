@@ -975,7 +975,7 @@ begin
    else begin
       case ElevStretch of
          esPercentile : zj := DEMGlb[DEMonMap].PercentileOfElevation(zj);
-         esSD : zj := (zj - DEMGlb[DEMonMap].Z_Mean) / DEMGlb[DEMonMap].Z_std;
+         esSD : zj := (zj - Z_Mean) / Z_std;
       end;
       if Log10Elev then begin
          if zj <= 0 then begin

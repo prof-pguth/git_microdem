@@ -331,7 +331,7 @@ var
 {$EndIf}
 
 procedure SafeMakeDir(DirName : PathStr);
-function PathIsValid(Path : PathStr) : boolean;
+function ValidPath(Path : PathStr) : boolean;
 function ParsePath(FName : PathStr) : tStringList;
 function IniFileName : PathStr;
 
@@ -640,7 +640,7 @@ var
    IntDirs : tStringList;
    i : integer;
 begin
-   if (DirName <> '') and (not PathIsValid(DirName)) then begin
+   if (DirName <> '') and (not ValidPath(DirName)) then begin
       IntDirs := ParsePath(DirName);
       {$IfDef VCL}
          {$IfDef RecordMakeDir}
@@ -651,7 +651,7 @@ begin
          for i := 1 to pred(IntDirs.Count) do begin
             DirName := DirName + IntDirs.Strings[i];
             if DirName[length(DirName)] <> PathDelim then DirName := DirName + PathDelim;
-            if (not PathIsValid(DirName)) then begin
+            if (not ValidPath(DirName)) then begin
                {$IfDef RecordMakeDir} WriteLineToDebugFile('Petmar.SafeMakeDir ' + DirName); {$EndIf}
                MkDir(DirName);
             end;
@@ -663,7 +663,7 @@ begin
 end;
 
 
-function PathIsValid(Path : PathStr) : boolean;
+function ValidPath(Path : PathStr) : boolean;
 begin
    {$IfDef MSWindows}
       if length(Path)= 0 then Result := false
@@ -858,7 +858,7 @@ begin
       {$Else}
          Result := GetAppDataFolder + PathDelim + pName + PathDelim;
       {$EndIf}
-      if not PathIsValid(Result) then begin
+      if not ValidPath(Result) then begin
          SafeMakeDir(Result);
       end;
       Result:= Result + pName + '.ini';

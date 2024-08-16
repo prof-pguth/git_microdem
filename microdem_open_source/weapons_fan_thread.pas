@@ -10,7 +10,7 @@ unit weapons_fan_thread;
 {$I nevadia_defines.inc}
 
 {$IFDEF DEBUG}
-   {$Define NoParallelFor} //used to debug only
+   //{$Define NoParallelFor} //used to debug only
 {$ELSE}
    //{$Define NoParallelFor}
 {$ENDIF}
@@ -19,7 +19,6 @@ unit weapons_fan_thread;
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
       //{$Define RecordFanProblems}
-
       //{$Define RecordThreadProgress}
       //{$Define RecordThreadTiming}
       //{$Define RecordFanRadialsInMetadata}

@@ -260,10 +260,6 @@ var
    {$EndIf}
 
 
-
-//function DEMIX_mode_abbreviation(DEMIX_mode : integer) : shortstring;
-
-
 //create or edit database
    procedure MakeDBForParamStats(Option,DBonTable : integer);
    procedure DEMIX_SSIM_FUV_transpose_kmeans_new_db(DBonTable : integer);
@@ -271,7 +267,7 @@ var
    procedure CreateDEMIX_GIS_database_by_transposing(Overwrite : boolean);
    procedure RankDEMS(DBonTable : integer);
    function AverageScoresOfDEMs(DBonTable : integer; DEMs : tStringList; Ext : ExtStr = '_SCR'; Filters : tStringList = nil; Labels : tStringList = Nil) : integer;
-   procedure AddFilteredRankID(DBonTable : integer);
+   //procedure AddFilteredRankID(DBonTable : integer);
    procedure ModeOfDifferenceDistributions;
    procedure AddTileCharacteristicsToDB(DBonTable : integer);
    procedure AddFieldsToDEMIXDB(DBonTable : integer; theFields : tStringList);
@@ -391,8 +387,6 @@ procedure FilterTableForDEMIXevaluation(DBonTable,Value : integer; anOperator : 
    procedure WBT_CreateDEMIX_GeomorphonGrids(OpenMaps : boolean = false);
    function SAGACreateDEMIX_ConIn_Grids(OpenMaps : boolean; AreaName,aParam : shortstring) : boolean;
 
-
-
 procedure ClearDerivedGrids;
 
 function ExternalProgramOutPutFile(i : integer; aProgram,Param,AreaName : shortstring; IsPoint : boolean) : PathStr;
@@ -427,17 +421,6 @@ uses
 
 {$include demix_external_program_derived_grids.inc}
 
-(*
-function DEMIX_mode_abbreviation(DEMIX_mode : integer) : shortstring;
-begin
-   case DEMIX_mode of
-      dmFull : Result := 'FULL';
-      dmU120 : Result := 'U120';
-      dmU80 : Result := 'U80';
-      dmU10 : Result := 'U10';
-   end;
-end;
-*)
 
 procedure FilterTableForDEMIXevaluation(DBonTable,Value : integer; anOperator : shortString = '<=');
 var
@@ -501,17 +484,14 @@ var
             if Win = 'COP' then begin
                inc(Counts[1 + Offset,Criteria.Count]);
                inc(Counts[1 + Offset,theIndex]);
-               //Outcomes.Add('Win ' + aField);
             end
             else if Win = 'TIE' then begin
                inc(Counts[2 + Offset,Criteria.Count]);
                inc(Counts[2 + Offset,theIndex]);
-               //Outcomes.Add('Tie ' + aField);
             end
             else begin
                inc(Counts[3 + Offset,Criteria.Count]);
                inc(Counts[3 + Offset,theIndex]);
-               //Outcomes.Add('Loss ' + aField);
             end;
          end;
 
@@ -521,7 +501,6 @@ begin
       if AnswerIsYes('Rank DEMs to get TOLERANCEs') then RankDEMS(DB)
       else exit;
    end;
-   //Outcomes := tStringList.Create;
    GISdb[DB].EmpSource.Enabled := false;
    Criteria := GISdb[DB].MyData.ListUniqueEntriesInDB('CRITERION');
    Results := tStringList.Create;
@@ -541,9 +520,8 @@ begin
       GISdb[DB].MyData.Next;
    end;
    for I := 1 to 9 do begin
-      aLine := Outcomes[i];  //Outcomes.Strings[pred(i)];
+      aLine := Outcomes[i];
       for j := 0 to Criteria.Count do begin
-         //if j <> 0 then aline := aline + ',';
          aline := aline + ',' + IntToStr(Counts[i,j])
       end;
       Results.Add(aline);

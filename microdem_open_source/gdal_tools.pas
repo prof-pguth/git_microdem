@@ -22,8 +22,8 @@ unit gdal_tools;
    {$IFDEF DEBUG}
       //{$Define RecordGDALOpen}
       //{$Define RecordSubsetOpen}
-      {$Define RecordDEMIX}
-      {$Define RecordDEMIXCompositeDatum}
+      //{$Define RecordDEMIX}
+      //{$Define RecordDEMIXCompositeDatum}
       //{$Define RecordSubsetGDAL}
       //{$Define RecordGDALinfo}
       //{$Define RecordReformatCommand}
@@ -80,8 +80,10 @@ uses
 
    function GetGDALFileNames : boolean;
    function GetGDALversion : ANSIstring;
-
    function IsGDALFilePresent(fName : PathStr) : boolean;
+   function GDALImageFormat(Ext : ExtStr; OnlyGDAL : boolean = false) :  boolean;
+   function GDALGridFormat(Ext : ExtStr; OnlyGDAL : boolean = false) :  boolean;
+
    procedure GDALcommand(BatchName : PathStr; cmd : ShortString; Log : boolean = true);
    procedure StartGDALbatchFile(var BatchFile : tStringList);
 
@@ -94,8 +96,6 @@ uses
 
    procedure ResaveAsGDALgeotiff(fName : PathStr);
 
-   function GDALImageFormat(Ext : ExtStr; OnlyGDAL : boolean = false) :  boolean;
-   function GDALGridFormat(Ext : ExtStr; OnlyGDAL : boolean = false) :  boolean;
    function GDALinfoOutputFName(fname : PathStr) : PathStr;
    procedure GetGDALinfo(fName : PathStr; var GDALinfo : tGDALinfo);
    procedure ZeroGDALinfo(var GDALinfo : tGDALinfo);
@@ -103,71 +103,72 @@ uses
    procedure BatchGDALinfo(Infiles : tStringList; GetClipBox : boolean; var UTMZone : int16);
    procedure BatchGDALSRSinfo(Infiles : tStringList);
    procedure GDAL_Convert_JSON(var fName : pathStr);
-
-   function GDAL_SlopeMap_ZT(InName : PathStr; sf : shortstring = ''; outname : shortstring = '') : integer;
-   function GDAL_SlopeMap_Horn(InName : PathStr; sf : shortstring = ''; outname : shortstring = '') : integer;
-   function GDAL_AspectMap_Horn(InName : PathStr; sf : shortstring = ''; outname : shortstring = '') : integer;
-   function GDAL_AspectMap_ZT(InName : PathStr; sf : shortstring = ''; outname : shortstring = '') : integer;
-   function GDAL_HillshadeMap_Horn(InName : PathStr; sf : shortstring = ''; outname : shortstring = '') : integer;
-   function GDAL_TRI_Wilson(InName : PathStr; sf : shortstring = ''; outname : shortstring = '') : integer;
-   function GDAL_TRI_Riley(InName : PathStr; sf : shortstring = ''; outname : shortstring = '') : integer;
-   function GDAL_TPI(InName : PathStr; sf : shortstring = ''; outname : shortstring = '') : integer;
-   function GDAL_Roughness(InName : PathStr; sf : shortstring = ''; outname : shortstring = '') : integer;
-
    procedure GDAL_Fill_Holes(InName : PathStr);
    function GDAL_upsample_DEM(DEM : integer; Bilinear : boolean; Spacing : float32 = -99) : integer;
    function GDAL_downsample_DEM_1sec(DEM : integer; OutName : PathStr) : integer;
-
-   procedure GDALGeotiffToWKT(fName : PathStr);
+   procedure GDAL_dual_UTM(DEM : integer);
 
    procedure GDAL_replace_42112_tag(DEMName : PathStr; ReplaceStr : shortstring = '');
 
-
-   procedure GDAL_ConvertGPXToSHP(var fName : pathStr);
-   procedure GDALGeodatabasetoshapefile;
-   procedure GDAL_Convert_Shapefile_2_geopackage(fName : pathStr);
-   procedure GDALreprojectshapefile;
-   procedure GeneralConvertToWGS84Shapefile(fName : pathStr);
-   function OGRrewriteShapefile(fName : pathStr) : PathStr;
-   function ReprojectShapeFileToGeographic(var fName : Pathstr; aDir : PathStr) : boolean;
-   function ExtractMapCoverageToWGS84Shapefile(fName : pathStr; BoundBox : sfBoundBox) : PathStr;
-
-   procedure CallGDALMerge(var MergefName : PathStr; InNames : tStringList; MissingData : integer = 255);
    function GDAL_translateUTM(InName,OutName : PathStr; WGS84,NHemi : boolean;  UTMzone : int16) : shortstring;
-   procedure GDALBandExtraction;
-   procedure GDALcreatemultibandTIFF;
-   procedure GDAL_dual_UTM(DEM : integer);
-
-   procedure GDALAssignDEMProjection(DEMName,ProjName : PathStr);
 
    procedure GDALConvertImagesToGeotiff(fName : PathStr = ''; Recycle : boolean = true);
    function GDAL_Translate_2_geotiff(fName : PathStr; OutName : PathStr = ''; ExtraOptions : ANSIString = ''; TrashOriginal : boolean = true) : PathStr;
    function GDAL_warp(var fName : PathStr) : PathStr;
    function GDAL_warp_Multiple(var theFiles : tStringList) : PathStr;
 
-   procedure GDALregister(LatLong : boolean; GISNum : Integer; ImageName : PathStr; LatHemi : AnsiChar);
-
    procedure GDALreprojectLASfile(fName : PathStr; T_EPSG,a_EPSG : integer);
 
-   procedure GDALSubsetSatImageToMatchMap(MapOwner : tMapForm; GDAL_program : PathStr);
    function GDALsubsetGridAndOpen(bb : sfBoundBox; LatLongBox : boolean; fName : PathStr; OpenMap : boolean; BaseOutPath : PathStr = '') : integer;
    procedure GDALConvert4BitGeotiff(fName : PathStr);
-   function GDALConvertSingleImageToGeotiff(var fName : PathStr) : boolean;
-
-   procedure UseGDAL_VRT_to_merge(var MergefName,OutVRT : PathStr; OutNames : tStringList; Added : ShortString = '');
-
-   procedure ResampleSentinel_1(Path : PathStr; Recycle : boolean = false);
 
    procedure GDAL_Raster_Calculator(Expression : shortstring);
 
-   //procedure MergeDEMsForDEMIX;
 
-   procedure CompositeDatumShiftWithGDAL(var InName,SaveName : shortstring; s_SRSstring,t_srsstring : shortstring);
+   //create grids from DEM
+      function GDAL_SlopeMap_ZT(InName : PathStr; sf : shortstring = ''; outname : shortstring = '') : integer;
+      function GDAL_SlopeMap_Horn(InName : PathStr; sf : shortstring = ''; outname : shortstring = '') : integer;
+      function GDAL_AspectMap_Horn(InName : PathStr; sf : shortstring = ''; outname : shortstring = '') : integer;
+      function GDAL_AspectMap_ZT(InName : PathStr; sf : shortstring = ''; outname : shortstring = '') : integer;
+      function GDAL_HillshadeMap_Horn(InName : PathStr; sf : shortstring = ''; outname : shortstring = '') : integer;
+      function GDAL_TRI_Wilson(InName : PathStr; sf : shortstring = ''; outname : shortstring = '') : integer;
+      function GDAL_TRI_Riley(InName : PathStr; sf : shortstring = ''; outname : shortstring = '') : integer;
+      function GDAL_TPI(InName : PathStr; sf : shortstring = ''; outname : shortstring = '') : integer;
+      function GDAL_Roughness(InName : PathStr; sf : shortstring = ''; outname : shortstring = '') : integer;
+
+   //shapefiles
+      procedure GDAL_ConvertGPXToSHP(var fName : pathStr);
+      procedure GDALGeodatabasetoshapefile;
+      procedure GDAL_Convert_Shapefile_2_geopackage(fName : pathStr);
+      procedure GDALreprojectshapefile;
+      procedure GeneralConvertToWGS84Shapefile(fName : pathStr);
+      function OGRrewriteShapefile(fName : pathStr) : PathStr;
+      function ReprojectShapeFileToGeographic(var fName : Pathstr; aDir : PathStr) : boolean;
+      function ExtractMapCoverageToWGS84Shapefile(fName : pathStr; BoundBox : sfBoundBox) : PathStr;
+
+   //merge files
+      procedure CallGDALMerge(var MergefName : PathStr; InNames : tStringList; MissingData : integer = 255);
+      procedure UseGDAL_VRT_to_merge(var MergefName,OutVRT : PathStr; OutNames : tStringList; Added : ShortString = '');
+
+   //satellite imagery
+      procedure GDALBandExtraction;
+      procedure GDALcreatemultibandTIFF;
+      procedure GDALSubsetSatImageToMatchMap(MapOwner : tMapForm; GDAL_program : PathStr);
+      procedure ResampleSentinel_1(Path : PathStr; Recycle : boolean = false);
+      function GDALConvertSingleImageToGeotiff(var fName : PathStr) : boolean;
+
+   //projection and datum issues
+      procedure GDALAssignProjectionViaWKTorEPSG(DEMName,ProjWKTFileNameOrEPSG : PathStr);
+      procedure CompositeDatumShiftWithGDAL(var InName,SaveName : shortstring; s_SRSstring,t_srsstring : shortstring);
+      procedure GDALGeotiffToWKT(fName : PathStr);
+      procedure GDALregister(LatLong : boolean; GISNum : Integer; ImageName : PathStr; LatHemi : AnsiChar);
+      procedure ShiftToUTM_WGS84_EGM2008(inName,SaveName : PathStr; s_SRSstring : shortString; UTMzone : integer);
+
+
 
    {$IfDef IncludePython}
       procedure TestPythonFile;
    {$EndIf}
-
 
    {$IfDef ExGeoPDF}
    {$Else}
@@ -213,6 +214,38 @@ const
          EndBatchFile(fName,BatchFile);
       end;
    {$EndIf}
+
+
+procedure UseGDAL_VRT_to_merge(var MergefName,OutVRT : PathStr; OutNames : tStringList; Added : ShortString = '');
+//GDAL_VRT was about three times faster than other options tested
+//OutVRT has the VRT table if you want to look at it
+//added allows adding a projection of the files are lacking them, say for ASC input DEMs
+var
+   aName : PathStr;
+   cmd : shortstring;
+   BatchFile : tStringList;
+begin
+   try
+      ShowHourglassCursor;
+      HeavyDutyProcessing := true;
+      aName := Petmar.NextFileNumber(MDTempDir, 'gdal_merge_file_list_','.txt');
+      OutNames.SaveToFile(aName);
+      OutVRT := Petmar.NextFileNumber(MDTempDir, 'gdal_vrt_','.vrt');
+
+      StartGDALbatchFile(BatchFile);
+      BatchFile.Add('REM create VRT');
+      cmd := GDALtools_Dir + 'gdalbuildvrt ' + Added + ' -input_file_list ' + aName + ' ' + OutVRT;
+      BatchFile.Add(cmd);
+      cmd := GDALtools_Dir + 'gdal_translate -of GTiff ' + OutVrt + ' ' + MergefName;
+      BatchFile.Add(cmd);
+
+      aName := Petmar.NextFileNumber(MDTempDir, 'vrt2merge_','.bat');
+      EndBatchFile(aName,BatchFile);
+   finally
+      ShowDefaultCursor;
+      HeavyDutyProcessing := false;
+   end;
+end;
 
 
 
@@ -293,13 +326,13 @@ label
 begin
    {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} HighlightLineToDebugFile('GetGDALFileNames in'); {$EndIf}
    Result := true;
-   if PathIsValid(GDALtools_Dir) and SetRest then begin
+   if ValidPath(GDALtools_Dir) and SetRest then begin
       {$If Defined(RecordGDAL) or Defined(RecordGDALOpen) or Defined(RecordProblems)} WriteLineToDebugFile('GDAL valid, ' + GDALtools_Dir + '  ' + GetGDALversion); {$EndIf}
       exit;
    end;
 
    GDALtools_Dir := 'C:\OSGeo4W\bin\';
-   if PathIsValid(GDALtools_Dir) and SetRest then begin
+   if ValidPath(GDALtools_Dir) and SetRest then begin
       {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('GDAL valid, ' + GDALtools_Dir + '  ' + GetGDALversion); {$EndIf}
       exit;
    end;
@@ -312,7 +345,7 @@ begin
    GetDOSPath('GDAL binary directory, something like ' +  GDALtools_Dir,GDALtools_Dir);
    {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('User pick GDAL tools dir: ' + GDALtools_Dir); {$EndIf}
 
-   if PathIsValid(GDALtools_Dir) and SetRest then begin
+   if ValidPath(GDALtools_Dir) and SetRest then begin
       {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} WriteLineToDebugFile('User picked GDAL valid, ' + GDALtools_Dir + '  ' + GetGDALversion); {$EndIf}
       exit;
    end;
@@ -406,7 +439,6 @@ procedure CallGDALMerge(var MergefName : PathStr; InNames : tStringList; Missing
 var
    BatchFile : tStringList;
    cmd : ANSIString;
-   //i : integer;
    DefFilter : byte;
    fName : PathStr;
 begin
@@ -459,14 +491,14 @@ end;
 
 
 
-procedure GDALAssignDEMProjection(DEMName,ProjName : PathStr);
+procedure GDALAssignProjectionViaWKTorEPSG(DEMName,ProjWKTFileNameOrEPSG : PathStr);
 var
    bfile : PathStr;
    cmd : shortString;
    BatchFile : tStringList;
 begin
    StartGDALbatchFile(BatchFile);
-   cmd := PythonEXEname + ' ' + PythonScriptDir + 'gdal_edit.py -a_srs ' + ProjName + ' ' + DEMName;
+   cmd := PythonEXEname + ' ' + PythonScriptDir + 'gdal_edit.py -a_srs ' + ProjWKTFileNameOrEPSG + ' ' + DEMName;
    BatchFile.Add(cmd);
    bfile := Petmar.NextFileNumber(MDTempDir, 'gdal_assign_proj_','.bat');
    EndBatchFile(bfile ,batchfile);
@@ -559,7 +591,7 @@ begin
    if FileExistsErrorMessage(InName) then begin
       if sf <> '' then sf := ' -s ' + sf + ' ';
       if (Outname = '') then OutName := MDTempDir + 'gdal_slope_zt_' + ExtractFileNameNoExt(InName) + '.tif';
-      Result := GDAL_DEM_command(0,GDAL_dem_name + ' slope ' + InName + ' ' + OutName +  ' -p -alg ZevenbergenThorne' + sf, OutName,mtElevSpectrum,euPercentSlope);
+      Result := GDAL_DEM_command(0,GDAL_dem_name + ' slope ' + InName + ' ' + OutName +  ' -p -alg ZevenbergenThorne' + sf, OutName,MDDef.DefSlopeMap,euPercentSlope);
    end;
 end;
 
@@ -569,7 +601,7 @@ begin
    if FileExistsErrorMessage(InName) then begin
       if sf <> '' then sf := ' -s ' + sf + ' ';
       if (Outname = '') then OutName := MDTempDir + 'gdal_slope_horn_' + ExtractFileNameNoExt(InName) + '.tif';
-      Result := GDAL_DEM_command(0,GDAL_dem_name + ' slope ' + InName + ' ' + OutName +  ' -p ' + sf, OutName,mtElevSpectrum,euPercentSlope);
+      Result := GDAL_DEM_command(0,GDAL_dem_name + ' slope ' + InName + ' ' + OutName +  ' -p ' + sf, OutName,MDDef.DefSlopeMap,euPercentSlope);
    end;
 end;
 
@@ -877,10 +909,6 @@ end;
       end;
 
       procedure ParseForUTM(TStr, Corner: ANSIstring; var xutm,yutm : float64);
-      //input from GDALinfo
-      //var
-        // DegStr,MinStr,SecStr : shortstring;
-         //Mult : float64;
       begin
           if StrUtils.AnsiContainsText(TStr,Corner) and StrUtils.AnsiContainsText(TStr,'(') then begin
             //Center      (  723282.207, 4270968.445) ( 78d26'14.85"W, 38d33'32.88"N)
@@ -1051,7 +1079,7 @@ end;
            Ext : ExtStr;
          begin
             CheckFileNameForSpaces(fName);
-            if (BaseOutPath = '') or (not PathIsValid(BaseOutPath)) then BaseOutPath := MDtempdir;
+            if (BaseOutPath = '') or (not ValidPath(BaseOutPath)) then BaseOutPath := MDtempdir;
             OutPath := NextFilePath(BaseOutPath + ExtractFileNameNoExt(fName) + '_subset_');
             OutName := OutPath + ExtractFileName(fName);
             {$IfDef RecordSubsetOpen} WriteLineToDebugFile('GDALsubsetGridAndOpen ' + ExtractFileName(fname) + ' want out ' + sfBoundBoxToString(BB,4)); {$EndIf}
@@ -1112,13 +1140,13 @@ end;
       end;
 
 
-      procedure GetFilesNamesForGDALtranslate(var InName,OutName : Pathstr; TempStorage : boolean = false);
+      procedure GetFilesNamesForGDALtranslate(var InName,OutName : Pathstr; TempStorage : boolean = false; TrashOriginal : boolean = false);
       var
          tName : PathStr;
       begin
          {$IfDef RecordReformat} WriteLineToDebugFile('Enter GetFilesNamesForGDALtranslate, in=' + InName); {$EndIf}
          if (UpperCase(ExtractFileExt(InName)) = '.TIF') or (UpperCase(ExtractFileExt(InName)) = '.TIFF') then begin
-             if TempStorage then begin
+             if (not TrashOriginal) and TempStorage then begin
                 if ExtractFilePath(InName) = MDtempDir then
                      OutName := MDtempdir + 'rewritten_' + ExtractFileName(InName)
                 else OutName := MDtempdir + ExtractFileName(InName);
@@ -1147,7 +1175,7 @@ end;
       begin
          {$If Defined(RecordGDAL) or Defined(Reformat)} WriteLineToDebugFile(' GDAL_Translate_2_geotiff in with ' + GDAL_translate_name); {$EndIf}
          if IsGDALFilePresent(GDAL_translate_name) then begin
-            if (OutName = '') then GetFilesNamesForGDALtranslate(fName,OutName);
+            if (OutName = '') then GetFilesNamesForGDALtranslate(fName,OutName,TrashOriginal);
             Result := OutName;
             StartGDALbatchFile(BatchFile);
             BatchFile.Add(GDAL_translate_name + ' -of Gtiff '  + ExtraOptions + ' ' + fName + ' ' + OutName);
@@ -1365,7 +1393,7 @@ end;
           repeat
              NewDir := ExtractFilePath(fName) + ExtractFileNameNoExt(fName) + '_shapefile_extract_' + intToStr(i);
              inc(i);
-          until not PathIsValid(NewDir);
+          until not ValidPath(NewDir);
          {$IfDef RecordOGR} WriteLineToDebugFile('ExtractMapCoverageToWGS84Shapefile to' + NewDir); {$EndIf}
 
           cmd := GDAL_ogr_Name + ' ' + NewDir + ' ' + fname + ogr2ogr_params + ' -s_srs EPSG:4326' + ' -clipdst ' + GDALextentBoxGeo(BoundBox);
@@ -1457,7 +1485,20 @@ end;
       end;
 
 
+procedure ShiftToUTM_WGS84_EGM2008(inName,SaveName : PathStr; s_SRSstring : shortString; UTMzone : integer);
+var
+   t_srsstring : shortstring;
+begin
+   if (s_SRSstring <> '') then s_SRSstring := ' -s_srs EPSG:' + s_SRSstring;
+   t_srsstring := ' -t_srs EPSG:' + '326' + AddDayMonthLeadingZero(UTMzone) + '+3855';          //WGS84 + EGM2008
+   CompositeDatumShiftWithGDAL(InName,SaveName,s_SRSstring,t_srsstring);
+end;
+
+
+
 procedure CompositeDatumShiftWithGDAL(var InName,SaveName : PathStr; s_SRSstring,t_srsstring : shortstring);
+//  s_SRSstring can be empty is the source Geotiff has the corrrect projection assigned
+//  s_SRSstring will overwrite existing source Geotiff, or assign it it undefined
 const
    NoUnitShift = '-wo MULT_FACTOR_VERTICAL_SHIFT=1 ';
 var
@@ -1472,38 +1513,6 @@ begin
    aName := Petmar.NextFileNumber(MDTempDir, 'gdal_datumshift_','.bat');
    EndBatchFile(aName,BatchFile);
 end;
-
-
-      procedure UseGDAL_VRT_to_merge(var MergefName,OutVRT : PathStr; OutNames : tStringList; Added : ShortString = '');
-      //GDAL_VRT was about three times faster than other options tested
-      //OutVRT has the VRT table if you want to look at it
-      //added allows adding a projection of the files are lacking them, say for ASC input DEMs
-      var
-         aName : PathStr;
-         cmd : shortstring;
-         BatchFile : tStringList;
-      begin
-         try
-            ShowHourglassCursor;
-            HeavyDutyProcessing := true;
-            aName := Petmar.NextFileNumber(MDTempDir, 'gdal_merge_file_list_','.txt');
-            OutNames.SaveToFile(aName);
-            OutVRT := Petmar.NextFileNumber(MDTempDir, 'gdal_vrt_','.vrt');
-
-            StartGDALbatchFile(BatchFile);
-            BatchFile.Add('REM create VRT');
-            cmd := GDALtools_Dir + 'gdalbuildvrt ' + Added + ' -input_file_list ' + aName + ' ' + OutVRT;
-            BatchFile.Add(cmd);
-            cmd := GDALtools_Dir + 'gdal_translate -of GTiff ' + OutVrt + ' ' + MergefName;
-            BatchFile.Add(cmd);
-
-            aName := Petmar.NextFileNumber(MDTempDir, 'vrt2merge_','.bat');
-            EndBatchFile(aName,BatchFile);
-         finally
-            ShowDefaultCursor;
-            HeavyDutyProcessing := false;
-         end;
-      end;
 
 
       function GDALinfoOutputFName(fname : PathStr) : PathStr;

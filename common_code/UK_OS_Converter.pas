@@ -23,7 +23,7 @@ uses
   DEMDefs,Petmar_types,BaseMap;
 
 type
-  TUKOSConvertForm = class(TForm)
+  TCoordConvertForm = class(TForm)
     RichEdit1: TRichEdit;
     BitBtn4: TBitBtn;
     HelpBtn: TBitBtn;
@@ -87,7 +87,7 @@ uses
    PETMAR,PETMATH,GetLatLn;
 
    
-procedure TUKOSConvertForm.ShowParams;
+procedure TCoordConvertForm.ShowParams;
 begin
    Edit5.Text := RealToString(This_projection.ProjMapScale,-18,-6);
    Edit6.Text := RealToString(This_projection.false_east,-18,-6);
@@ -98,7 +98,7 @@ begin
 end;
 
 
-procedure TUKOSConvertForm.FormCreate(Sender: TObject);
+procedure TCoordConvertForm.FormCreate(Sender: TObject);
 begin
    Petmar.PlaceFormAtMousePosition(Self);
    RadioGroup1.ItemIndex := ord(MDDef.OutPutLatLongMethod);
@@ -110,7 +110,7 @@ begin
 end;
 
 
-procedure TUKOSConvertForm.FormDestroy(Sender: TObject);
+procedure TCoordConvertForm.FormDestroy(Sender: TObject);
 begin
    This_projection.Free;
    FromMap.Free;
@@ -118,18 +118,18 @@ begin
 end;
 
 
-procedure TUKOSConvertForm.HelpBtnClick(Sender: TObject);
+procedure TCoordConvertForm.HelpBtnClick(Sender: TObject);
 begin
    DisplayHTMLTopic('html\drift\proj_conv.htm');
 end;
 
-procedure TUKOSConvertForm.RadioGroup1Click(Sender: TObject);
+procedure TCoordConvertForm.RadioGroup1Click(Sender: TObject);
 begin
    MDDef.OutPutLatLongMethod := tLatLongMethod(RadioGroup1.ItemIndex);
 end;
 
 
-procedure TUKOSConvertForm.CommonConversion(Lat,Long : float64);
+procedure TCoordConvertForm.CommonConversion(Lat,Long : float64);
 var
    OutLat,OutLong,xutm,yutm  : float64;
 begin
@@ -146,7 +146,7 @@ begin
 end;
 
 
-procedure TUKOSConvertForm.BitBtn1Click(Sender: TObject);
+procedure TCoordConvertForm.BitBtn1Click(Sender: TObject);
 var
    x_spcs,y_spcs,Lat,Long : float64;
 begin
@@ -159,7 +159,7 @@ begin
 end;
 
 
-procedure TUKOSConvertForm.BitBtn2Click(Sender: TObject);
+procedure TCoordConvertForm.BitBtn2Click(Sender: TObject);
 var
    Lat,Long,x,y : float64;
 begin
@@ -172,7 +172,7 @@ begin
 end;
 
 
-procedure TUKOSConvertForm.BitBtn3Click(Sender: TObject);
+procedure TCoordConvertForm.BitBtn3Click(Sender: TObject);
 var
    Lat,Long : float64;
 begin
@@ -184,13 +184,13 @@ begin
 end;
 
 
-procedure TUKOSConvertForm.BitBtn4Click(Sender: TObject);
+procedure TCoordConvertForm.BitBtn4Click(Sender: TObject);
 begin
    RichEdit1.Lines.Clear;
 end;
 
 
-procedure TUKOSConvertForm.BitBtn5Click(Sender: TObject);
+procedure TCoordConvertForm.BitBtn5Click(Sender: TObject);
 var
    f : float64;
 begin

@@ -11,8 +11,8 @@ unit petfouri;
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
-   {$Define FFTGraphProblems}
-   {$Define MemProblems}
+   //{$Define FFTGraphProblems}
+   //{$Define MemProblems}
 {$EndIf}
 
 

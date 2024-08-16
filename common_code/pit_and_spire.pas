@@ -13,7 +13,7 @@ unit pit_and_spire;
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
-      {$Define RecordPitsSpires}
+      //{$Define RecordPitsSpires}
    {$EndIf}
 {$EndIf}
 

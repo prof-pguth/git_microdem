@@ -1945,7 +1945,7 @@ var
          {$IfDef RecordDetailedTIN}   WriteLineToDebugFile(IntToStr(i) + RealToString(Pnt[1]^[i],12,3) + RealToString(Pnt[2]^[i],12,3)); {$EndIf}
          Pnt[1]^[i] := (Pnt[1]^[i] - XMin) / DataX;
          Pnt[2]^[i] := (Pnt[2]^[i] - YMin) / DataX;
-         {$IfDef RecordDetailedTIN} WriteLineToDebugFile(IntToStr(i) + RealToString(Pnt[1]^[i],12,3) + RealToString(Pnt[2]^[i],12,3)): {$EndIf}
+         {$IfDef RecordDetailedTIN} WriteLineToDebugFile(IntToStr(i) + RealToString(Pnt[1]^[i],12,3) + RealToString(Pnt[2]^[i],12,3)); {$EndIf}
       end {for i};
 
       {$IfDef RecordTIN} WriteLineToDebugFile('start Delauney triangles'); {$EndIf}
@@ -2028,7 +2028,7 @@ var
    var
       i,JT,jc : integer;
    begin
-      {$IfDef RecordTIN} WriteLineToDebugFile('Created SaveTIN file: '+ SaveTIN): {$EndIf}
+      {$IfDef RecordTIN} WriteLineToDebugFile('Created SaveTIN file: '+ SaveTIN); {$EndIf}
       Make_tables.MakeDelauneyTable(SaveTIN,AddDelauneyZ,AddDelauneyImage);
       ApplicationProcessMessages;
 
@@ -5280,7 +5280,7 @@ var
    Coords3 : ^Coord3Array;
 
 
-       procedure GraphLabels;
+       procedure GraphLabels(var Bitmap : tMyBitmap);
        begin
           if (GraphDraw.UpperLeftText <> '') then begin
              Bitmap.Canvas.TextOut(GraphDraw.LeftMargin + 12, GraphDraw.TopMargin + 8, RemoveUnderScores(GraphDraw.UpperLeftText));
@@ -5332,13 +5332,6 @@ var
           end;
 
          {$If Defined(RecordGrafSize) or Defined(RecordScaling) or Defined(RecordGrafAxes)} WriteLineToDebugFile('RedrawDiagram11Click done, bitmap=' + BitmapSize(Bitmap) + '  ' + GraphDraw.AxisRange); {$EndIf}
-
-          Image1.Picture.Graphic := Bitmap;
-          BitMap.Free;
-          if (BaseCaption <> '') then with GraphDraw do begin
-             Caption := BaseCaption + '   V.E.= ' + RealToString( ( YWindowSize / (MaxVertAxis - MinVertAxis)  / ( XWindowSize / (MaxHorizAxis - MinHorizAxis) * VertCompare)  ),-12,-2) ;
-          end;
-          RedrawingNow := false;
       end;
 
 
@@ -5352,18 +5345,12 @@ begin
        ShowHourglassCursor;
        if (RoseData <> Nil) then begin
           DrawAspectRose(RoseData^);
-          //RedrawingNow := false;
-          //exit;
        end
        else if GraphDraw.AutoPointDensity then begin
           MakePointDensityGraph(dsAll);
-          //RedrawingNow := false;
-          //exit;
        end
        else if GraphDraw.GraphType = gtStackedHist then begin;
           SetUpStackedHistogram(true);
-          //RedrawingNow := false;
-          //exit;
        end
        else begin
           CreateBitmap(Bitmap,ClientWidth,ClientHeight - Panel1.Height - ToolBar1.Height);
@@ -5399,22 +5386,7 @@ begin
                    ShowSatelliteBands(Bitmap);
                 end;
 
-                if (GraphDraw.GraphType = gtBoxPlot) then begin
-                   DrawBoxPlot(Bitmap);
-                   GraphLabels;
-                   exit;
-                end
-                else if (GraphDraw.GraphType = gtScaledPieCharts) then begin
-                   DrawScaledPieCharts(Bitmap);
-                   GraphLabels;
-                   exit;
-                end
-                else if (GraphDraw.GraphType = gtScaledColorSymbols) then begin
-                   DrawScaledColoredSymbols(Bitmap);
-                   GraphLabels;
-                   exit;
-                end
-                else if (GraphDraw.GraphType = gtTwoVertAxes) then begin
+                if (GraphDraw.GraphType = gtTwoVertAxes) then begin
                   LastXI := -9999;
                   assignFile(tf,GraphDraw.XYZFilesPlotted[0]);
                   reset(tf,3*SizeOf(float32));
@@ -5447,6 +5419,21 @@ begin
                 end
                 else begin
                    if (GraphDraw.GraphType = gtMultHist) and HistogramChanged then MultipleHistogramPrep;
+                   if (GraphDraw.GraphType = gtBoxPlot) then begin
+                      DrawBoxPlot(Bitmap);
+                      //GraphLabels;
+                      //exit;
+                   end
+                   else if (GraphDraw.GraphType = gtScaledPieCharts) then begin
+                      DrawScaledPieCharts(Bitmap);
+                      //GraphLabels;
+                      //exit;
+                   end
+                   else if (GraphDraw.GraphType = gtScaledColorSymbols) then begin
+                      DrawScaledColoredSymbols(Bitmap);
+                      //GraphLabels;
+                      //exit;
+                   end;
 
                    if (RangeGraphName <> '') then begin
                       Image1.Picture.Graphic := Bitmap;
@@ -5520,7 +5507,6 @@ begin
                    if (GraphDraw.GraphTopLabels <> Nil) and GraphDraw.LabelPointsAtop then begin
                       Bitmap.Canvas.Pen.Color := clRed;
                       Bitmap.Canvas.Pen.Width := 3;
-                      //Bitmap.Canvas.Brush.Style := bsClear;
                       for i := 0 to pred(GraphDraw.GraphTopLabels.Count) do begin
                           MenuStr := GraphDraw.GraphTopLabels[i];
                           Val(copy(MenuStr,1,12),x,err);
@@ -5567,15 +5553,21 @@ begin
              PlotXYColorFromDB(Bitmap);
           end;
        end;
-       GraphLabels;
+       //GraphLabels(Bitmap);
 
-          {$IfDef ExSlicer3D}
-          {$Else}
-             if SlicerOverlay and (SlicerForm <> Nil) then begin
-                SlicerForm.BitBtn1Click(Sender);
-             end;
-         {$EndIf}
-       //end;
+       Image1.Picture.Graphic := Bitmap;
+       BitMap.Free;
+       if (BaseCaption <> '') then with GraphDraw do begin
+          Caption := BaseCaption + '   V.E.= ' + RealToString( ( YWindowSize / (MaxVertAxis - MinVertAxis)  / ( XWindowSize / (MaxHorizAxis - MinHorizAxis) * VertCompare)  ),-12,-2) ;
+       end;
+       RedrawingNow := false;
+
+       {$IfDef ExSlicer3D}
+       {$Else}
+          if SlicerOverlay and (SlicerForm <> Nil) then begin
+             //SlicerForm.BitBtn1Click(Sender);
+          end;
+      {$EndIf}
     finally
       ShowDefaultCursor;
     end;

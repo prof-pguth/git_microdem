@@ -10,7 +10,7 @@ unit dem_manager;
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
-   {$IFDEF DEBUG}
+   {$IfDef DEBUG}
       //{$Define RecordCloseDEM}
       //{$Define RecordCleanUpTempDir}
       //{$Define TrackHorizontalDatum}
@@ -32,7 +32,7 @@ unit dem_manager;
       //{$Define RecordSimpleClose}
       //{$Define RecordSatDirOpen}
    {$Else}
-      {$Define TimeLoadDEM}
+      //{$Define TimeLoadDEM}
    {$EndIf}
 {$EndIf}
 
@@ -147,7 +147,7 @@ function LoadDatumShiftGrids(var LocalToWGS84,WGS84toEGM2008 : integer) : boolea
    procedure EditDEMHeader;
 
    procedure FastRedrawAllMaps;
-   function CreateNewGrid(DEMName : shortstring; What : tCreateGrid; bb : sfBoundBox; Resolution : tDEMprecision = FloatingPointDEM; Spacing : float64 = -99) : integer;
+   //function CreateNewUTMGrid(DEMName : shortstring; {What : tCreateGrid;} bb : sfBoundBox; {Resolution : tDEMprecision;} Spacing : float64) : integer;
 
    function FileExistsErrorMessage(InName : PathStr) : boolean;
 
@@ -278,6 +278,7 @@ uses
    Compress_form,
    Geotiff,
    Petmar_ini_file,
+   PetMath,
    DEMDef_routines,
    DEMhandW,
    BaseMap;
@@ -330,7 +331,7 @@ var
 begin
    ShowHourglassCursor;
    Results := tStringList.Create;
-   Results.Add('DEM,PIXEL_IS,NOM_CORNER,HORIZ_DATM,VERT_DATUM,LAT_CENT,LONG_CENT,MIN_Z,MAX_Z,NW_CornerX,NW_CornerY,SW_POINTX,SW_POINTY,SW_CornerX,SW_CornerY,DX,DY,NUM_COL,NUM_ROW,AVG_X_M,AVG_Y_M,AVG_SP_M');
+   Results.Add('DEM,PIXEL_IS,NOM_CORNER,HORIZ_DATM,VERT_DATUM,LAT_CENT,LONG_CENT,MIN_Z,MAX_Z,NW_CornerX,NW_CornerY,SW_POINTX,SW_POINTY,SW_CornerX,SW_CornerY,DX,DY,NUM_COL,NUM_ROW,AVG_X_M,AVG_Y_M,AVG_SP_M,DIAGONAL');
    for i := 1 to MaxDEMDataSets do if ValidDEM(i) then begin
       if (DEMGlb[i].DEMheader.DEMUsed = UTMBasedDEM) then Decs := -2 else Decs := -8;
       Results.Add(DEMGlb[i].AreaName + ',' + PixelIsString(DEMGlb[i].DEMheader.RasterPixelIsGeoKey1025) + ',' + DEMGlb[i].GridCornerModel + ',' +
@@ -343,7 +344,8 @@ begin
           RealToString(DEMGlb[i].DEMheader.DEMSWCornerX,-12,Decs)  + ',' +RealToString(DEMGlb[i].DEMheader.DEMSWCornerY,-12,Decs)  + ',' +
           RealToString(DEMGlb[i].DEMheader.DEMxSpacing,-12,Decs) + ',' + RealToString(DEMGlb[i].DEMheader.DEMySpacing,-12,Decs)  + ',' +
           IntToStr(DEMGlb[i].DEMheader.NumCol) + ',' + IntToStr(DEMGlb[i].DEMheader.NumRow) + ',' +
-          RealToString(DEMGlb[i].AverageXSpace,-12,-2) + ',' + RealToString(DEMGlb[i].AverageYSpace,-12,-2)  + ',' + RealToString(DEMGlb[i].AverageSpace,-12,-2));
+          RealToString(DEMGlb[i].AverageXSpace,-12,-2) + ',' + RealToString(DEMGlb[i].AverageYSpace,-12,-2)  + ',' + RealToString(DEMGlb[i].AverageSpace,-12,-2) + ',' +
+          RealToString(Petmath.HeadingOfLine(DEMGlb[i].AverageXSpace,DEMGlb[i].AverageYSpace),-8,-1));
    end;
    fName := Petmar.NextFileNumber(MDTempDir,'dem_summary_','.dbf');
    StringList2CSVtoDB(Results,fName);
@@ -428,7 +430,7 @@ begin
          if ASatImage then begin
             {$IfDef RecordSatLoad} WriteLineToDebugFile('ASatImage'); {$EndIf}
             if (IndexFileName = '') then begin
-               if FileExists(LastImageName) or PathIsValid(LastImageName) then IndexFilename := LastImageName
+               if FileExists(LastImageName) or ValidPath(LastImageName) then IndexFilename := LastImageName
                else IndexFileName := WriteSatDir;
             end;
             if not GetFileMultipleMask('Satellite image',GetSatMaskList(true),IndexFileName,MDDef.DefaultSatFilter) then exit;
@@ -518,37 +520,6 @@ begin
    end;
    StopSplashing;
    wmDEM.SetMenusForVersion;
-end;
-
-
-function CreateNewGrid(DEMName : shortstring; What : tCreateGrid; bb : sfBoundBox; Resolution : tDEMprecision = FloatingPointDEM; Spacing : float64 = -99) : integer;
-var
-   Mult : int64;
-   NewHeader : tDEMheader;
-begin
-   {$IfDef RecordNewMaps} WriteLineToDebugFile('CreateNewGrid in, UTM=' + IntToStr(MDDef.DefaultUTMZone) + MDDef.DefaultLatHemi + '  bb: ' + sfBoundBoxToString(bb,2)); {$EndIf}
-   Result := 0;
-   ZeroDEMHeader(NewHeader, (What in [cgUTM,cgSpecifyUTM]) );
-   NewHeader.DEMPrecision := Resolution;
-   NewHeader.UTMZone := MDDef.DefaultUTMZone;
-   NewHeader.LatHemi := MDDef.DefaultLatHemi;
-   NewHeader.DEMxSpacing := Spacing;
-   NewHeader.DEMySpacing := Spacing;
-   NewHeader.DEMSWCornerX := bb.XMin;
-   NewHeader.DEMSWCornerY := bb.YMin;
-   NewHeader.NumCol := round((bb.xmax - bb.xmin) / Spacing);
-   NewHeader.NumRow := round((bb.ymax - bb.ymin) / Spacing);
-
-   if (Resolution = FloatingPointDEM) then Mult := 4
-   else if (Resolution = ByteDEM) then Mult := 1
-   else Mult := 2;
-
-   {$IfDef RecordNewMaps} WriteLineToDebugFile('CreateNewGrid call OpenAndZero'); {$EndIf}
-   OpenAndZeroNewDEM(false,NewHeader,Result,DEMName,InitDEMmissing);
-   {$IfDef RecordNewMaps} WriteLineToDebugFile('CreateNewGrid call CreateDEMSelectionMap'); {$EndIf}
-   CreateDEMSelectionMap(Result,false,MDDef.DefElevsPercentile,mtDEMBlank);
-   {$IfDef RecordNewMaps} WriteLineToDebugFile('CreateNewGrid out ' + DEMGlb[Result].FullDEMParams); {$EndIf}
-   {$IfDef RecordNewMaps} WriteLineToDebugFile('CreateNewGrid out, map grid box:' + sfBoundBoxToString(DEMGlb[Result].SelectionMap.MapDraw.MapCorners.BoundBoxDataGrid,2)); {$EndIf}
 end;
 
 
@@ -1425,7 +1396,7 @@ end;
       begin
          {$IfDef RecordDownload} WriteLineToDebugFile('DownloadandUnzipDataFileIfNotPresent for ' + PName); {$EndIf}
          StopSplashing;
-         if (not Force) and PathIsValid(MainMapData + pname) then begin
+         if (not Force) and ValidPath(MainMapData + pname) then begin
             {$IfDef RecordDownload} WriteLineToDebugFile('DownloadandUnzipDataFileIfNotPresent, already there'); {$EndIf}
             exit;
          end;
@@ -1507,7 +1478,7 @@ end;
       var
          dName,grDir : PathStr;
       begin
-         if Force or (Not PathIsValid(DBDir + 'natural_earth_vector\10m_physical')) then begin
+         if Force or (Not ValidPath(DBDir + 'natural_earth_vector\10m_physical')) then begin
             dName := 'natural_earth_vector.zip';
             DownloadFileFromWeb(WebDataDownLoadDir + dName,DBDir + dName);
             ZipMasterUnzip(DBDir + dName,DBDir);
@@ -1632,7 +1603,7 @@ begin
       if (CurrentProject <> '') then DeleteMultipleFiles(CurrentProject + '\','*.*');
    {$EndIf}
 
-   if PathIsValid('c:\mapdata\temp\grass1') then begin
+   if ValidPath('c:\mapdata\temp\grass1') then begin
       {$IfDef RecordCleanUpTempDir} WriteLineToDebugFile('CleanUpTempDirectory, start GRASS'); {$EndIf}
       bf := tstringlist.Create;
       bf.Add( 'rd /S /Q c:\mapdata\temp\grass1');

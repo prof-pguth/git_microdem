@@ -20,6 +20,7 @@
        Result := Result + PrimaryMapDatum.projUTMZone;
      end;
 
+
      function GetGeoDatumCode(PrimaryMapDatum : tMapProjection) : word;
      begin
        Result := 4326; {WGS84 default}
@@ -951,9 +952,6 @@ end;
 
 
 
-
-
-
 {$IfDef VCL}
 
       procedure PickDatum(WhatFor : shortstring; var DatumCode : ShortString);
@@ -1160,40 +1158,7 @@ procedure tMapProjection.TransverseMercatorInverseProjectionRadians(X,Y : float6
 var
    mu,dd,NewC1,Phi2forY,tanPhi2,cosPhi2,sinPhi2,C1,T1,N1,R1 : float64;
 begin
-(*
- WriteLineToDebugFile('***');
-   {$IfDef RawProjectInverse} if DebugRawProjectInverse then WriteLineToDebugFile(ProjDebugName + ' InverseProject TM start, x=' + RealToString(x,-12,-1)+ '  y=' + RealToString(y,-12,-1) + ' ' + FalseSettingsString); {$EndIf}
-
-   SubtractFalseEastingsNorthings(x,y);
-   MU := (M0 + Y / ProjMapScale) / MUPRM;
-   Phi2forY := MU + TM_Phi2 * Sin(2.0*MU) + Phi4 * Sin(4.0*MU) + Phi6 * Sin(6.0*MU);
-   cosPhi2 := Cos(Phi2forY);
-   sinPhi2 := sin(Phi2forY);
-   tanPhi2 := Math.Tan(Phi2forY);
-
-   C1 := EP2*Sqr(cosPhi2);
-   T1 := Sqr(TanPhi2);
-   N1 := a/Sqrt(1.0-E2*Sqr(SinPhi2));
-   R1 := a*(1.0-E2) / Sqrt((1.0 - E2 * Sqr(SinPhi2)) * Sqr(1.0-E2*Sqr(SinPhi2)));
-   {$IfDef RawProjectInverse} if DebugRawProjectInverse then WriteLineToDebugFile(ProjDebugName + ' InverseProject TM, c1=' + RealToString(c1,-12,-6) + ' t1=' + RealToString(t1,-12,-6) + ' n1=' + RealToString(n1,-12,-6)  + ' r1=' + RealToString(r1,-12,-6)); {$EndIf}
-
-   DD := X / (N1 * ProjMapScale);
-
-   Lat := Phi2forY - (N1 * TanPhi2 / R1) * (Sqr(DD) / 2.0 - (5.0 + 3.0 * T1 + 10.0 * C1 - 4.0 * IntPower(C1,2) - 9.0 * EP2) *  Math.IntPower(DD,4) / 24.0 + (61.0 + 90.0 * T1 + 298.0 * C1 + 45.0 * Sqr(T1) - 25.0 *EP2 - 3.0 * Sqr(C1)) * IntPower(DD,6) / 720);
-   Lat := Lat + Lat0;
-
-   NewC1 := (1.0 + (2.0 * T1) + C1) * Math.IntPower(DD,3) / 6.0;
-
-   Long := 5.0 - (2.0 * C1) + (28.0 * T1) - (3.0 * Sqr(C1)) + (8.0 * EP2) + (24.0 * Sqr(T1));
-   Long := Long * Math.IntPower(DD,5) / 120;
-   Long := (DD - NewC1 + Long) / cosPhi2;
-   Long := (Long0 + Long);
-   {$IfDef RawProjectInverse} if DebugRawProjectInverse then WriteLineToDebugFile(ProjDebugName + ' InverseProject TM, Answer out:  ' + LatLongDegreeToString(Lat/DegToRad,Long/DegToRad)); {$EndIf}
-
- WriteLineToDebugFile('***');
-*)
-
- {$IfDef RawProjectInverse} if DebugRawProjectInverse then WriteLineToDebugFile('InverseProject TM restart start, x=' + RealToString(x,-12,-1)+ '  y=' + RealToString(y,-12,-1)); {$EndIf}
+  {$IfDef RawProjectInverse} if DebugRawProjectInverse then WriteLineToDebugFile('InverseProject TM restart start, x=' + RealToString(x,-12,-1)+ '  y=' + RealToString(y,-12,-1)); {$EndIf}
    SubtractFalseEastingsNorthings(x,y);
    MU := (M0 + Y / ProjMapScale) / MUPRM;
    {$IfDef RawProjectInverse} if DebugRawProjectInverse then WriteLineToDebugFile('long0=' + RadToDegString(Long0) + '  falsex=' + RealToString(x,-12,-1) + '  falsey=' + RealToString(y,-12,-1)); {$EndIf}
@@ -1347,7 +1312,7 @@ end;
 
 function WGSEquivalentDatum(StartDatum : shortstring) : boolean;
 begin
-   Result := (StartDatum = 'WGS84') or (StartDatum = 'ETR89') or (StartDatum = 'NAD83') or (StartDatum = 'NAR-C') or (StartDatum = 'GRS1980');
+   Result := (StartDatum = 'WGS84') or (StartDatum = 'ETR89') or (StartDatum = 'NAD83') or (StartDatum = 'NAR-C') or (StartDatum = 'GRS1980') or (StartDatum = 'GDA94');;
 end;
 
 

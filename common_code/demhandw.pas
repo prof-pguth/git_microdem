@@ -258,6 +258,8 @@ type
     N8: TMenuItem;
     N9: TMenuItem;
     Verifyfilesinmaplibrary1: TMenuItem;
+    GDALassignprojectionviaEPSG1: TMenuItem;
+    GDALwarptoWGS84UTMandEGM20081: TMenuItem;
     procedure ASCIIremovequotes1Click(Sender: TObject);
     procedure ASCII01Click(Sender: TObject);
     procedure HTMLcleanup1Click(Sender: TObject);
@@ -409,6 +411,8 @@ type
     procedure emplatedownload1Click(Sender: TObject);
     procedure MICRODEMformat1Click(Sender: TObject);
     procedure Verifyfilesinmaplibrary1Click(Sender: TObject);
+    procedure GDALassignprojectionviaEPSG1Click(Sender: TObject);
+    procedure GDALwarptoWGS84UTMandEGM20081Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -598,7 +602,7 @@ end;
             fName := UpperCase(FilesWanted.Strings[k]);
             {$IfDef RecordGAZProblems} WriteLineToDebugFile('file=' + fName); {$EndIf}
             gName := ChangeFileExt(fName,DefaultDBExt);
-            fName := DoCSVFileImport(fName,GazWant);
+            fName := CSVFileImportToDB(fName,GazWant);
          end;
       end;
       FilesWanted.Free;
@@ -1338,6 +1342,17 @@ begin
    GDALreprojectimagetoUTMNAD831Click(Sender);
 end;
 
+procedure TDemHandForm.GDALassignprojectionviaEPSG1Click(Sender: TObject);
+var
+   fName : PathStr;
+   ProjEPSG : shortstring;
+begin
+   if Petmar.GetFileFromDirectory('TIFF file','*.tif',fName) then begin
+      Petmar.GetString('EPSG code: Horiz or Horiz + Vert',ProjEPSG,false,['0'..'9','+'] );
+      GDALAssignProjectionViaWKTorEPSG(fName,'EPSG:' + ProjEPSG);
+   end;
+end;
+
 procedure TDemHandForm.GDALbandextraction1Click(Sender: TObject);
 begin
    GDALBandExtraction;
@@ -1471,6 +1486,33 @@ begin
       end;
    end;
 
+end;
+
+procedure TDemHandForm.GDALwarptoWGS84UTMandEGM20081Click(Sender: TObject);
+const
+   SourceEPSG : shortstring = '2056+5728';
+   UTMZone : int16 = 32;
+var
+   fName,NewName : PathStr;
+   fNames : tStringList;
+   DefaultFilter : byte;
+   i : integer;
+begin
+   //if Petmar.GetFileFromDirectory('TIFF file','*.tif',fName) then begin
+   fNames := tStringList.Create;
+   Petmar.GetMultipleFiles('TIFF files','*.tif',fNames,DefaultFilter);
+   if (Fnames.Count > 0) then begin
+      for i := 0 to pred(FNames.Count) do begin
+         if i = 0 then begin
+            Petmar.GetString('Source EPSG code: Horiz or Horiz + Vert (blank if correctly defined)',SourceEPSG,false,['0'..'9','+'] );
+            PickUTMzone(UTMZone);
+         end;
+         fName := FNames[i];
+         NewName := ChangeFileExt(fName,'_utm_egm2008.tif');
+         ShiftToUTM_WGS84_EGM2008(fName,NewName,SourceEPSG,UTMzone);
+      end;
+   end;
+   FNames.Destroy;
 end;
 
 procedure TDemHandForm.LineKML1Click(Sender: TObject);
@@ -3319,7 +3361,7 @@ procedure TDemHandForm.LASGeotoUTM1Click(Sender: TObject);
          params,params2 : Shortstring;
          i : integer;
          DefaultFilter : byte;
-         DeleteOriginalFiles : boolean;
+         //DeleteOriginalFiles : boolean;
          bf,theFileNames : tStringList;
       begin
          pName := lastools_bindir + 'las2las.exe';
@@ -3341,7 +3383,6 @@ procedure TDemHandForm.LASGeotoUTM1Click(Sender: TObject);
 
             if (Sender = ToUTM1) or (Sender = AssignprojectionUTM1) or (Sender = AssignbyEPSGandreprojecttoUTM1) then begin
                PickUTMzone(MDDef.DefaultUTMZone);
-               if AnswerIsYes('Are elevations in feet') then elevparams := ' -elevation_feet';
             end;
             DefaultFilter := 1;
             fName := MainMapData;
@@ -3352,7 +3393,8 @@ procedure TDemHandForm.LASGeotoUTM1Click(Sender: TObject);
             theFileNames.Add(StartDir);
 
             if GetMultipleFiles('input LAS file','Lidar files|*.las;*.laz|*.laz|LAS files|*.las|LAZ files|*.laz',theFileNames,DefaultFilter) then begin
-               DeleteOriginalFiles := AnswerIsYes('Recylceal files');
+               //DeleteOriginalFiles := AnswerIsYes('Recycle original files');
+               if AnswerIsYes('Are elevations in feet') then elevparams := ' -elevation_feet';
 
                for I := 0 to pred(TheFileNames.Count) do begin
                   fName := theFileNames.Strings[i];
@@ -3391,11 +3433,13 @@ procedure TDemHandForm.LASGeotoUTM1Click(Sender: TObject);
                   end;
                   bf.Add('REM ' + IntToStr(i) + '/' + IntToStr(TheFileNames.Count));
                   bf.Add(pName +  ' -i ' + fName + ' -o ' + OutName + ' ' + params + Params2 + elevparams);
-                  if DeleteOriginalFiles then bf.Add('del ' + fName);
+                  //if DeleteOriginalFiles then bf.Add('del ' + fName);
+                  (*
                   if (i = TheFileNames.Count div 2) then begin
                      EndBatchFile(MDTempDir + 'las2las1.bat',bf,false);
                      bf := tStringList.Create;
                   end;
+                  *)
               end;
               EndBatchFile(MDTempDir + 'las2las2.bat',bf,false);
             end;
@@ -3612,7 +3656,7 @@ begin
    StartProgress('Download');
    for I := 0 to sl2.Count do begin
       UpDateProgressBar(i/sl2.Count);
-      if PathIsValid(WorkDir + sl2.Strings[i]) then begin
+      if ValidPath(WorkDir + sl2.Strings[i]) then begin
       end
       else begin
          cmd :=  StringReplace(Template,'XXX',sl2.Strings[i],[rfReplaceAll]);

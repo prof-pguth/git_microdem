@@ -37,7 +37,7 @@
       //{$Define RecordLASHist}
       //{$Define RecordLAS_subset}
    {$Else}
-      {$Define RecordLASplot}
+      //{$Define RecordLASplot}
    {$EndIf}
 {$EndIf}
 
@@ -959,7 +959,6 @@ var
          begin
             if lasProjectionDefinition.LasProjection.DecodeWKTProjectionFromString(ASCIIProjectionData) then begin
                LAS_Proj_Box := SetLasBoundBoxFromLasHeader;
-               LAS_LatLong_Box := lasProjectionDefinition.LasProjection.ConvertProjectedBoundBoxToGeoBoundBox(LAS_Proj_Box);
                {$If Defined(RecordWKT)} WriteLineToDebugFile('DoWKTfromVariableLengthRecord geobox=' + sfBoundBoxToString(LAS_LatLong_Box)); {$EndIf}
 
                LasHeader.ZscaleFac := LasHeader.ZscaleFac * lasProjectionDefinition.LasProjection.VertFootFactor;
@@ -975,8 +974,12 @@ var
                end;
 
                UTMZone := GetUTMZone(0.5 * (LAS_LatLong_Box.xmax + LAS_LatLong_Box.xmin));
-               if LAS_LatLong_Box.ymin > 0 then lasProjectionDefinition.LASProjection.LatHemi := 'N'
+               LAS_LatLong_Box := lasProjectionDefinition.LasProjection.ConvertProjectedBoundBoxToGeoBoundBox(LAS_Proj_Box);
+
+               if (LAS_LatLong_Box.ymin > 0) or StrUtils.AnsiContainsText(ASCIIProjectionData,'NAD') then lasProjectionDefinition.LASProjection.LatHemi := 'N'
                else lasProjectionDefinition.LASProjection.LatHemi := 'S';
+
+               if StrUtils.AnsiContainsText(ASCIIProjectionData,'NAD83') then lasProjectionDefinition.LASProjection.h_datumcode := 'NAD83';
 
                Area := (LasHeader.MaxX - LasHeader.MinX) * (LasHeader.MaxY - LasHeader.MinY);
             end;
@@ -1033,12 +1036,12 @@ begin
       RGBPresent := LidarPointType in [2,3,5,7,8];
       ExtraBytesPrep;
 
-       LAS_x_range := LasHeader.MaxX - LasHeader.MinX;
-       LAS_y_range := LasHeader.MaxY - LasHeader.MinY;
-       LAS_Z_range := LasHeader.MaxZ - LasHeader.MinZ;
-       MeterXscaleFac := LasHeader.XscaleFac;
-       MeterYscaleFac := LasHeader.YscaleFac;
-       MeterZscaleFac := LasHeader.ZscaleFac;
+      LAS_x_range := LasHeader.MaxX - LasHeader.MinX;
+      LAS_y_range := LasHeader.MaxY - LasHeader.MinY;
+      LAS_Z_range := LasHeader.MaxZ - LasHeader.MinZ;
+      MeterXscaleFac := LasHeader.XscaleFac;
+      MeterYscaleFac := LasHeader.YscaleFac;
+      MeterZscaleFac := LasHeader.ZscaleFac;
 
       lasProjectionDefinition.LASProjection := tMapProjection.Create(ExtractFileName(FileName));
       lasProjectionDefinition.LasProjection.H_DatumCode := '';
@@ -1757,6 +1760,7 @@ finalization
    {$IfDef RecordLASplot} writeLineToDebugFile('RecordLASplot active in las_lidar'); {$EndIf}
    {$IfDef RecordListFilesProcessed} writeLineToDebugFile('RecordListFilesProcessed active in las_lidar'); {$EndIf}
  end.
+
 
 
 

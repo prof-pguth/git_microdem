@@ -110,7 +110,7 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
     Top = 0
     Width = 445
     Height = 222
-    ActivePage = TabSheet6
+    ActivePage = TabSheet1
     Align = alClient
     TabOrder = 1
     object General: TTabSheet
@@ -1154,7 +1154,7 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
       end
       object RadioGroup5: TRadioGroup
         Left = 3
-        Top = 160
+        Top = 154
         Width = 103
         Height = 40
         Caption = 'Pixel Is'
@@ -1212,7 +1212,7 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
       object Edit21: TEdit
         Left = 81
         Top = 67
-        Width = 51
+        Width = 61
         Height = 21
         TabOrder = 6
         OnChange = Edit21Change
@@ -1220,7 +1220,7 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
       object Edit17: TEdit
         Left = 81
         Top = 43
-        Width = 56
+        Width = 61
         Height = 21
         TabOrder = 7
         Text = 'Edit17'
@@ -1283,6 +1283,18 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
         Caption = 'Force equal  X + Y spacing'
         TabOrder = 13
         OnClick = CheckBox34Click
+      end
+      object RadioGroup8: TRadioGroup
+        Left = 328
+        Top = 77
+        Width = 88
+        Height = 61
+        Caption = 'Lat hemi'
+        Items.Strings = (
+          'North'
+          'South')
+        TabOrder = 14
+        OnClick = RadioGroup8Click
       end
     end
     object Filters: TTabSheet

@@ -41,7 +41,6 @@ begin
 end;
 
 
-
 procedure Get3DEPDataDirs(var DataDirs : tStringList);
 begin
    DataDirs := tStringList.Create;
@@ -91,17 +90,6 @@ begin
    finally
       EndDEMIXProcessing;
    end;
-end;
-
-
-
-procedure ShiftToUTM_WGS84_EGM2008(inName,SaveName : PathStr; SourceEPSG,TargetEPSG : shortString);
-var
-   s_SRSstring,t_srsstring : shortstring;
-begin
-   s_SRSstring := ' -s_srs EPSG:' + SourceEPSG;
-   t_srsstring := ' -t_srs EPSG:' + TargetEPSG;
-   CompositeDatumShiftWithGDAL(InName,SaveName,s_SRSstring,t_srsstring);
 end;
 
 
@@ -157,7 +145,7 @@ var
                end;
                s_SRSstring := HorizCode + '+' + VertCode;
                t_srsstring := '326' + UTMzone + '+3855';          //WGS84 + EGM2008
-               ShiftToUTM_WGS84_EGM2008(inName,SaveName,s_SRSstring,t_srsstring);
+               CompositeDatumShiftWithGDAL(inName,SaveName,s_SRSstring,t_srsstring);
             end
             else begin
                {$If Defined(Record3DEPXfull)} WriteLineToDebugFile('Already shifted=' + fName); {$EndIf}
@@ -585,7 +573,7 @@ end;
 
 procedure DEMIX_merge_source(Areas : tStringList = Nil);
 var
-   DEMs,ErrorLog : tStringList;
+   DEMs{,ErrorLog} : tStringList;
    Fixed : int64;
    VDatumCode,NewDEM,AnArea : integer;
    AreaInventoryName,AreaMergeName, AreaPath,DEMName,OutVRT : PathStr;
@@ -595,22 +583,16 @@ begin
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_merge_source in'); {$EndIf}
    try
       GetDEMIXPaths(true);
-      ErrorLog := tStringList.Create;
+      //ErrorLog := tStringList.Create;
       if (Areas = nil) then begin
          Areas := tStringList.Create;
          Areas.Add(DEMIX_3DEP_Dir);
          GetMultipleDirectories('Non-3DEP DEMs', Areas);
       end;
-
-//put the black box back up for this since it takes so long
-
-
       if (Areas.Count = 0) then begin
          {$If Defined(RecordDEMIX)} WriteLineToDebugFile('No areas selected'); {$EndIf}
       end
       else begin
-         //LocalToWGS84 := 0;
-         //WGS84toEGM2008 := 0;
          AreaInventoryName := DEMIX_area_dbName;
          if FileExists(AreaInventoryName) or GetFileFromDirectory('New DEMIX area inventory','*.dbf',AreaInventoryName) then begin
             AreaInventory := tMyData.Create(AreaInventoryName);
@@ -620,7 +602,7 @@ begin
                AreaPath := ExtractFilePath(Areas.Strings[AnArea]);
                wmdem.SetPanelText(2, 'Area: ' + IntToStr(succ(anArea)) + '/' + IntToStr(Areas.Count) + ' ' + AreaName);
                AreaMergeName := AreaPath + AreaName + '.tif';
-               if {DEMIXSkipFilesAlreadyDone and} FileExists(AreaMergeName) then begin
+               if FileExists(AreaMergeName) then begin
                   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('File Existed ' + AreaMergeName); {$EndIf}
                end
                else begin
@@ -633,55 +615,25 @@ begin
                   end;
 
                   wmdem.SetPanelText(3, 'Convert ASC to Geotiff');
-                  ConvertASCtoGeotiffDEMs(Areas.Strings[AnArea]);
-
-                  (*
-                  if (VDatumCode = 0) then begin
-                     ErrorLog.Add(AreaName + ' undefined VDatumCode');
-                     ReadDefault('Vertical datum code for ' + AreaName,VDatumCode);
+                  //   6/1/2024, this is not working (for French DEMs)
+                  //ConvertASCtoGeotiffDEMs(Areas.Strings[AnArea]);
+                  DEMs := Nil;
+                  FindMatchingFiles(AreaPath,'*.tif',DEMs,5);
+                  if (DEMs.Count = 0) then begin
+                     FindMatchingFiles(AreaPath,'*.asc',DEMs,5);
+                  end;
+                  if (DEMs.Count > 1) then begin
+                     wmdem.SetPanelText(3, 'Merge DEMs=' + IntToStr(DEMs.Count));
+                     {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Merge files= ' + IntToStr(DEMs.Count) + ' for ' + AreaMergeName); {$EndIf}
+                     UseGDAL_VRT_to_merge(AreaMergeName,OutVRT,DEMs);
+                     CleanUpTempDirectory;  //might be many tiled or compressed DEMs expanded
                   end
                   else begin
-                  *)
-                     DEMs := Nil;
-                     FindMatchingFiles(AreaPath,'*.tif',DEMs,5);
-                     if (DEMs.Count > 1) then begin
-                        wmdem.SetPanelText(3, 'Merge DEMs=' + IntToStr(DEMs.Count));
-                        {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Merge files= ' + IntToStr(DEMs.Count) + ' for ' + AreaMergeName); {$EndIf}
-                        //if (DEMs.Count = 1) then NewDEM := OpenNewDEM(DEMs.Strings[0],false)
-                        //else NewDEM := MergeMultipleDEMsHere(DEMs,false,false);  //Frees DEMs
-                       UseGDAL_VRT_to_merge(AreaMergeName,OutVRT,DEMs);
-
-(*
-                        {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Merge files over, MinZ=' + RealToString(DEMGlb[NewDEM].DEMheader.MinElev,-12,-2)); {$EndIf}
-                        DEMGlb[NewDEM].DEMheader.VerticalCSTypeGeoKey := VDatumCode;
-                        DEMGlb[NewDEM].CheckMaxMinElev;
-                        DEMGlb[NewDEM].WriteNewFormatDEM(AreaMergeName);
-                        if (VDatumCode <> VertCSEGM2008) then begin //shift to EGM2008
-                           if (AreaInventory.FiltRecsInDB = 1) then begin
-                              wmdem.SetPanelText(3, 'Vertical datum shift ' + AreaMergeName);
-                              GeoidWGS84ellipsoidToLocalVDatum := AreaInventory.GetFieldByNameAsString('VERT_SUB');
-                              FindDriveWithFile(GeoidWGS84ellipsoidToLocalVDatum);
-                              LoadDatumShiftGrids(LocalToWGS84,WGS84toEGM2008);
-                              DEMGlb[NewDEM].MoveToEGM2008(WGS84toEGM2008,LocalToWGS84);
-                              {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Shifted to EGM2008 using ' + DEMGLB[LocalToWGS84].AreaName + ' and ' + DEMGLB[WGS84toEGM2008].AreaName); {$EndIf}
-                              CloseSingleDEM(LocalToWGS84);
-                           end;
-                           ShowHourglassCursor;
-                           wmdem.SetPanelText(3, 'Write DEM ' + AreaMergeName);
-                           DEMGlb[NewDEM].CheckMaxMinElev;
-                           DEMGlb[NewDEM].WriteNewFormatDEM(AreaMergeName);
-                           {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Merge saved to ' + AreaMergeName); {$EndIf}
-                        end;
-                        CloseSingleDEM(NewDEM);
-*)
-                        CleanUpTempDirectory;  //might be many tiled or compressed DEMs expanded
-                     end
-                     else begin
-                        TStr := 'No TIF files found in ' + AreaPath;
-                        {$If Defined(RecordDEMIX)} WriteLineToDebugFile(TStr); {$EndIf}
-                        ErrorLog.Add(TStr);
-                     end;
-                  //end;
+                     TStr := 'No TIF files found in ' + AreaPath;
+                     {$If Defined(RecordDEMIX)} WriteLineToDebugFile(TStr); {$EndIf}
+                     //ErrorLog.Add(TStr);
+                  end;
+                  DEMs.Free;
                end;
             end {for area};
          end;
@@ -689,8 +641,7 @@ begin
       end;
       Areas.Free;
    finally
-      //CloseSingleDEM(WGS84toEGM2008);
-      DisplayAndPurgeStringList(ErrorLog,'DEMIX_merge_source problems');
+      //DisplayAndPurgeStringList(ErrorLog,'DEMIX_merge_source problems');
       EndDEMIXProcessing;
    end;
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_merge_source out'); {$EndIf}
@@ -815,29 +766,13 @@ end;
 
 
 
+
 procedure ResampleForDEMIXOneSecDEMs(OverWrite : boolean; CloseAfter : boolean; DEM : integer; OpenMap : boolean = false; OutPath : PathStr = ''; ResampleMode : byte = 1);
 var
    NewDEM : integer;
    fName,BaseName : PathStr;
    Ext : ExtStr;
    ps : float32;
-
-      function CreateOneRefDEM(PixelIs : byte; xgridsize,ygridsize : float32; fName : PathStr) : integer;
-      begin
-         if (not Overwrite) and FileExists(fName) then begin
-            Result := OpenNewDEM(fName);
-         end
-         else begin
-            MDdef.DefLidarGeoGridSizeX := xgridsize;
-            MDdef.DefLidarGeoGridSizeY := ygridsize;
-            MDDef.LasDEMPixelIs := PixelIs;
-            {$If Defined(Record3DEPXFull)} WriteLineToDebugFile('CreateOneRefDEM, ' + fName); {$EndIf}
-            Result := DEMGlb[DEM].ResampleByAveraging(OpenMap,false,fName);
-            {$If Defined(Record3DEPXFull)} WriteLineToDebugFile('ResampleForDEMIXOneSecDEMs, new DEM=' + IntToStr(Result)); {$EndIf}
-            {$If Defined(TrackDEMCorners)} DEMGlb[Result].WriteDEMCornersToDebugFile('ResampleForDEMIXOneSecDEMs, new DEM=' + IntToStr(Result)); {$EndIf}
-         end;
-      end;
-
 begin
    {$If Defined(Record3DEPXFull)} WriteLineToDebugFile(''); WriteLineToDebugFile('ResampleForDEMIX DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
    if (DEMGlb[DEM].DEMFileName = '') then begin
@@ -848,7 +783,6 @@ begin
       SaveBackupDefaults;
       HeavyDutyProcessing := true;
       MDDef.DefDEMMap := mtDEMBlank;
-      MDDef.LidarGridProjection := ArcSecDEM;
       Ext := '.tif';
 
       if (OutPath = '') then OutPath := ExtractFilePath(DEMGlb[DEM].DEMFileName);
@@ -856,11 +790,11 @@ begin
 
       if ResampleMode in [ResampleModeBoth,ResampleModeOneSec] then begin
          {$If Defined(Record3DEPXFull)} WriteLineToDebugFile('Start one sec'); {$EndIf}
-         CreateOneRefDEM(PixelIsPoint,1,1,OutPath + BaseName + Ref1SecPointStr + Ext);
-         CreateOneRefDEM(PixelIsArea,1,1,OutPath + BaseName + Ref1SecAreaStr + Ext);
+         CreateArcSecDEM(Overwrite,OpenMap,DEM,PixelIsPoint,1,1,OutPath + BaseName + Ref1SecPointStr + Ext);
+         CreateArcSecDEM(Overwrite,OpenMap,DEM,PixelIsArea,1,1,OutPath + BaseName + Ref1SecAreaStr + Ext);
 
          if (DEMGlb[DEM].DEMSWcornerLat > 50) and (DEMGlb[DEM].DEMSWcornerLat < 60) then begin
-            CreateOneRefDEM(PixelIsPoint,1.5,1,OutPath + BaseName + Ref1_5SecPointStr + Ext);
+            CreateArcSecDEM(Overwrite,OpenMap,DEM,PixelIsPoint,1.5,1,OutPath + BaseName + Ref1_5SecPointStr + Ext);
          end;
       end;
 
@@ -868,14 +802,14 @@ begin
          {$If Defined(Record3DEPXFull)} WriteLineToDebugFile('Range scales'); {$EndIf}
          ps := 0.5;
          while ps <= 5 do begin
-            CreateOneRefDEM(PixelIsPoint,ps,ps,DEMIX_Ref_Half_sec + BaseName + RealToString(ps,-5,1) + 'sec' + Ext);
+            CreateArcSecDEM(Overwrite,OpenMap,DEM,PixelIsPoint,ps,ps,DEMIX_Ref_Half_sec + BaseName + RealToString(ps,-5,1) + 'sec' + Ext);
             ps := ps + 0.5;
          end;
       end;
 
       if ResampleMode in [ResampleModeBoth,ResampleModeHalfSec] then begin
          {$If Defined(Record3DEPXFull)} WriteLineToDebugFile('Half sec'); {$EndIf}
-         NewDEM := CreateOneRefDEM(PixelIsPoint,0.5,0.5,OutPath + BaseName + '0.5sec' + Ext);
+         NewDEM := CreateArcSecDEM(Overwrite,OpenMap,DEM,PixelIsPoint,0.5,0.5,OutPath + BaseName + '0.5sec' + Ext);
       end;
    finally
       if CloseAfter then CloseAllDEMs;

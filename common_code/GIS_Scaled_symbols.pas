@@ -455,7 +455,7 @@ begin
    end;
 
    GISdb[theDB].EmpSource.Enabled := false;
-   {$IfDef RecordQuickFilter} WriteLineToDebugFile('Filter applied, ' + ff): {$EndIf}
+   {$IfDef RecordQuickFilter} WriteLineToDebugFile('Filter applied, ' + ff); {$EndIf}
 
    if MDDef.ApplySameFilterAllDBs then GISdb[theDB].ShowOtherDBsWithSameFilter(CheckBox19.Checked,CheckBox20.Checked,true)
    else GISdb[theDB].dbTableF.ShowFilteredDB(CheckBox19.Checked,CheckBox20.Checked);
@@ -1031,7 +1031,7 @@ begin
    if StillSettingUp or ((Sender = nil) and (not MDDef.QuickMapRedraw)) then exit;
    if NowIdle then begin
       NowIdle := false;
-      {$IfDef RecordSym} WriteLineToDebugFile('Tgis_scaled_form.PlotScaledSymbolsButtonClick in, dbAutoShow=' + IntToStr(GISdb[theDB].dbOpts.dbAutoShow) + ' DbOpts.dbColorMode=' + IntToStr(GISdb[theDB].DbOpts.dbColorMode)): {$EndIf}
+      {$IfDef RecordSym} WriteLineToDebugFile('Tgis_scaled_form.PlotScaledSymbolsButtonClick in, dbAutoShow=' + IntToStr(GISdb[theDB].dbOpts.dbAutoShow) + ' DbOpts.dbColorMode=' + IntToStr(GISdb[theDB].DbOpts.dbColorMode)); {$EndIf}
       GISdb[theDB].RedrawLayerOnMap;
       GISdb[theDB].ColorButtonForSymbol(GISdb[theDB].dbTableF.BitBtn1);
 
@@ -1791,11 +1791,11 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordSym} WriteLineToDebugFile('RecordSymProblems active in gis_scaled_symbols'): {$EndIf}
-   {$IfDef RecordDataBase} WriteLineToDebugFile('RecordDataBaseProblems active in gis_scaled_symbols'): {$EndIf}
-   {$IfDef RecordDataInsideLoopPlots} WriteLineToDebugFile('RecordDataInsideLoopPlots active in gis_scaled_symbols'): {$EndIf}
-   {$IfDef RecordQuantile} WriteLineToDebugFile('RecordQuantileProblems active in gis_scaled_symbols'): {$EndIf}
-   {$IfDef RecordGISvectors} WriteLineToDebugFile('RecordGISvectors active in gis_scaled_symbols'): {$EndIf}
+   {$IfDef RecordSym} WriteLineToDebugFile('RecordSymProblems active in gis_scaled_symbols'); {$EndIf}
+   {$IfDef RecordDataBase} WriteLineToDebugFile('RecordDataBaseProblems active in gis_scaled_symbols'); {$EndIf}
+   {$IfDef RecordDataInsideLoopPlots} WriteLineToDebugFile('RecordDataInsideLoopPlots active in gis_scaled_symbols'); {$EndIf}
+   {$IfDef RecordQuantile} WriteLineToDebugFile('RecordQuantileProblems active in gis_scaled_symbols'); {$EndIf}
+   {$IfDef RecordGISvectors} WriteLineToDebugFile('RecordGISvectors active in gis_scaled_symbols'); {$EndIf}
    {$IfDef RecordFormSetup} WriteLineToDebugFile('RecordFormSetup active in gis_scaled_symbols'); {$EndIf}
    {$IfDef RecordColorPalette} WriteLineToDebugFile('RecordColorPalette active in gis_scaled_symbols'); {$EndIf}
    {$IfDef RecordQuickFilter} WriteLineToDebugFile('RecordQuickFilter active in gis_scaled_symbols'); {$EndIf}

@@ -330,6 +330,7 @@ type
     CheckBox34: TCheckBox;
     CheckBox29: TCheckBox;
     DTMfromlowestreturn1: TMenuItem;
+    RadioGroup8: TRadioGroup;
     procedure BitBtn14Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure RadioGroup1Click(Sender: TObject);
@@ -518,6 +519,7 @@ type
     procedure CheckBox34Click(Sender: TObject);
     procedure BitBtn63Click(Sender: TObject);
     procedure DTMfromlowestreturn1Click(Sender: TObject);
+    procedure RadioGroup8Click(Sender: TObject);
   private
     { Private declarations }
     MinAreaZ,MaxAreaZ : float64;
@@ -635,7 +637,6 @@ begin
       if MDDef.PickLASDirs and GetMultipleDirectories('Lidar point clouds',Paths) then begin
          for i := 0 to pred(Paths.Count) do begin
             if (i=0) then LastLidarDirectory := Paths.Strings[0];
-
             if (succ(i) < MaxClouds) then begin
                if (i>1) then pt_cloud_opts_fm.InitialCloudDisplay := false;
                fName := Paths.Strings[i];
@@ -981,16 +982,9 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
          TempDEM,
        CheckDEM,
        Intensity,
-       //GISNum,x,y,i,xgrid,ygrid,
        i,RecsRead : integer;
-       //xApp,yApp,z2,z1,z3 ,
        zShot,zCrit: float64;
-       //TStr : ShortString;
-       fName,OutDir{,DTMName} : PathStr;
-       //Table : tMyData;
-       //TheFilter : AnsiString;
-       //Output : tstringList;
-       //ChangeUse : boolean;
+       fName,OutDir : PathStr;
        Count : int64;
        Ext : ExtStr;
        LasData : Las_Lidar.tLAS_data;
@@ -2387,7 +2381,7 @@ begin
        NewName := '';
        for i := MaxClouds downto 1 do begin
           if UsePC[i] and (LasFiles[i] <> Nil) then begin
-             {$IfDef RecordPointCloudViewing} WriteLineToDebugFile('Tpt_cloud_opts_fm.BitBtn21Click cloud=' + IntToStr(i)): {$EndIf}
+             {$IfDef RecordPointCloudViewing} WriteLineToDebugFile('Tpt_cloud_opts_fm.BitBtn21Click cloud=' + IntToStr(i)); {$EndIf}
              wmdem.SetPanelText(0,'Slice out=' + IntToStr(i) + ' ' + LasFiles[i].CloudName);
              LasFiles[i].ShowLASProgress := true;
              if (LasFiles[i].LAS_fnames.Count = 1) and BaseMap.MapDraw.LatLongOnScreen(LasFiles[i].GeoBBox.ymin,LasFiles[i].GeoBBox.xmin) and BaseMap.MapDraw.LatLongOnScreen(LasFiles[i].GeoBBox.ymax,LasFiles[i].GeoBBox.xmax) then begin
@@ -2707,7 +2701,7 @@ begin
    Extra := 0.025 * (LasFiles[Layer].GeoBBox.xmax - LasFiles[Layer].GeoBBox.xmin);
    Extra := 0;
    BaseMap.MapDraw.MaximizeLatLongMapCoverage(LasFiles[Layer].GeoBBox.ymin - Extra,LasFiles[Layer].GeoBBox.xmin  - Extra,LasFiles[Layer].GeoBBox.ymax  + Extra,LasFiles[Layer].GeoBBox.xmax  + Extra);
-   {$IfDef RecordPointCloudOptionsForm} WriteLineToDebugFile('MaximizeLatLongMapCoverage over'): {$EndIf}
+   {$IfDef RecordPointCloudOptionsForm} WriteLineToDebugFile('MaximizeLatLongMapCoverage over'); {$EndIf}
    BaseMap.DoCompleteMapRedraw;
    BaseMap.FullMapSpeedButton.Enabled := true;
    OutlineClouds;
@@ -2814,7 +2808,6 @@ begin
       MDDef.DTMpercentile := aTable.GetFieldByNameAsFloat('PERCENTILE');
    end;
 end;
-
 
 
 procedure Tpt_cloud_opts_fm.BitBtn50Click(Sender: TObject);
@@ -3034,10 +3027,36 @@ begin
    {$If Defined(PointCloudMap) or Defined(TrackPointCloud)} WriteLineToDebugFile('Tpt_cloud_opts_fm.BitBtn6Click out'); {$EndIf}
 end;
 
+
 procedure Tpt_cloud_opts_fm.BitBtn7Click(Sender: TObject);
 begin
    BaseMap.OutlineGridOutlines;
 end;
+
+
+function CreateNewUTMGrid(DEMName : shortstring; bb : sfBoundBox; Spacing : float64) : integer;
+var
+   NewHeader : tDEMheader;
+begin
+   {$IfDef RecordMakeBaseMap} WriteLineToDebugFile('CreateNewUTMGrid in, UTM=' + IntToStr(MDDef.DefaultUTMZone) + MDDef.DefaultLatHemi + '  bb: ' + sfBoundBoxToString(bb,4)); {$EndIf}
+   Result := 0;
+   ZeroDEMHeader(NewHeader, true);
+   NewHeader.DEMxSpacing := Spacing;
+   NewHeader.DEMySpacing := Spacing;
+   NewHeader.DEMSWCornerX := bb.XMin;
+   NewHeader.DEMSWCornerY := bb.YMin;
+   NewHeader.NumCol := round((bb.xmax - bb.xmin) / Spacing);
+   NewHeader.NumRow := round((bb.ymax - bb.ymin) / Spacing);
+
+   OpenAndZeroNewDEM(false,NewHeader,Result,DEMName,InitDEMmissing);
+   {$IfDef RecordMakeBaseMap} WriteLineToDebugFile('CreateNewUTMGrid created, OpenAndZero ' + sfBoundBoxToString(DEMGlb[Result].DEMBoundBoxGeo,4)); {$EndIf}
+   {$IfDef RRecordMakeBaseMap} WriteLineToDebugFile('CreateNewUTMGrid ' + DEMGlb[Result].FullDEMParams); {$EndIf}
+
+   CreateDEMSelectionMap(Result,false,MDDef.DefElevsPercentile,mtDEMBlank);
+   {$IfDef RecordMakeBaseMap} WriteLineToDebugFile('CreateNewUTMGrid out, map grid box:' + sfBoundBoxToString(DEMGlb[Result].SelectionMap.MapDraw.MapCorners.BoundBoxDataGrid,2)); {$EndIf}
+   {$IfDef RecordMakeBaseMap} WriteLineToDebugFile('CreateNewUTMGrid out, map geo box:' + sfBoundBoxToString(DEMGlb[Result].SelectionMap.MapDraw.MapCorners.BoundBoxGeo,4)); {$EndIf}
+end;
+
 
 
 function Tpt_cloud_opts_fm.GetFilesForPointCloud(CloudNum : integer; var BaseDir : PathStr; AutoLoad : boolean = false) : boolean;
@@ -3058,7 +3077,7 @@ begin
    for i := 0 to pred(Files.Count) do DeleteFile(Files[i]);
    Files.Free;
 
-   if AutoLoad and PathIsValid(BaseDir) then begin
+   if AutoLoad and ValidPath(BaseDir) then begin
       Petmar.FindMatchingFiles(BaseDir,'*.las',LasFiles[CloudNum].LAS_fnames,6);
    end
    else begin
@@ -3128,8 +3147,7 @@ begin
             WriteLineToDebugFile('utm resizing, ' + RealToString(Width,-12,-1) + 'x' + RealToString(Height,-12,-1) + ' to ' + RealToString(NewWidth,-12,-1) + 'x' + RealToString(NewHeight,-12,-1));
          {$EndIf}
 
-
-         DEMBase := CreateNewGrid(LasFiles[CloudNum].CloudName + '_cloud',cgUTM,MakeBox,FloatingPointDEM,2);
+         DEMBase := CreateNewUTMGrid(LasFiles[CloudNum].CloudName + '_cloud',{cgUTM,}MakeBox,{FloatingPointDEM,}2);
          BaseMap := DEMGlb[DemBase].SelectionMap;
 
          {$If Defined(RecordMakeBaseMap)}
@@ -4035,11 +4053,11 @@ begin
    RadioGroup5.ItemIndex := pred(MDDef.LasDEMPixelIs);
 
    RadioGroup7.ItemIndex := MDDef.LidarGridProjection;
+   if (MDdef.DefaultLatHemi = 'N') then RadioGroup8.ItemIndex := 0 else RadioGroup8.ItemIndex := 1;
 
    if (MDDef.WKTLidarProj <> '') then BitBtn45.Caption := ExtractFileNameNoExt(MDDef.WKTLidarProj);
    Label22.Enabled := MDDef.PCAutoFillHoles;
    Edit24.Enabled := MDDef.PCAutoFillHoles;
-
 
    MemPtCloud := Nil;
    AutoSaveDir := '';
@@ -4123,6 +4141,11 @@ begin
    HideOptions;
 end;
 
+
+procedure Tpt_cloud_opts_fm.RadioGroup8Click(Sender: TObject);
+begin
+   if RadioGroup8.ItemIndex = 0 then MDdef.DefaultLatHemi := 'N' else MDdef.DefaultLatHemi := 'S';
+end;
 
 procedure Tpt_cloud_opts_fm.BitBtn8Click(Sender: TObject);
 var

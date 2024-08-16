@@ -8,9 +8,6 @@
 {____________________________________}
 
 
-{$Define MakePartialGrids}
-
-
          procedure tDEMDataSet.DoSSOStrip(Limits : tGridLimits; var Results : tStringList);
          var
             s1,s2,S3 : ShortString;
@@ -525,6 +522,12 @@ begin
 end;
 
 
+
+
+//{$Define CarlosErrorTrap}
+//{$Define MakePartialGrids}
+
+
 procedure tDEMDataSet.RichardsonExtrapolationSlopeMaps(Save : boolean = false);
 //Extrapolated Evans-Young method (López-Vázquez, 2022), using Richardson extrapolation
 //Carlos López-Vázquez (2022) Uncertainty interval estimates for computing slope and aspect from a gridded digital elevation model,
@@ -536,6 +539,13 @@ procedure tDEMDataSet.RichardsonExtrapolationSlopeMaps(Save : boolean = false);
 
 //there is error trapping code, with a conditional compilation directive, to store intermediate values for debugging with the partial derivatives
 //this creates a lot of grids, which are not necessarily easy to interpret or immediately useful
+
+{$IfDef CarlosErrorTrap}
+const
+   CarlosXRecord : integer = 600;
+   CarlosYRecord : integer = 400;
+{$EndIf}
+
 
     procedure MapAndSave(DEM : integer);
     begin
@@ -597,7 +607,8 @@ begin
    //grid containing DEM is zero based, 0,0 at the SW corner
    for x := 1 to (DEMHeader.NumCol - 2) do begin   //don't worry about edge and corner cases, leave them missing (merge with neighbor if needed)
       for y := 1 to (DEMHeader.NumRow - 2) do begin
-         {$IfDef CarlosErrorTrap} if (x=CarlosXRecord) and (y=CarlosYRecord) then begin
+         {$IfDef CarlosErrorTrap}
+            if (x=CarlosXRecord) and (y=CarlosYRecord) then begin
                 WriteLineToDebugFile('Point to check: ' + IntToStr(CarlosXRecord) + '/' + IntToStr(CarlosYRecord) + '  ' + DEMLocationString(CarlosXRecord,CarlosYRecord));
             end;
          {$EndIf}
@@ -1230,21 +1241,21 @@ begin
 end;
 
 
-procedure tDEMDataSet.SlopeMoments(GridLimits: tGridLimits; var SlopeMoment : tMomentVar);
+procedure tDEMDataSet.SlopeMoments(GridLimits: tGridLimits; var SlopeMoment : tMomentVar; MomentStop : tMomentStop = msAll);
 var
    zvs : ^bfarray32;
 begin
    New(zvs);
-   SlopeMomentsWithArray(GridLimits,SlopeMoment,zvs^);
+   SlopeMomentsWithArray(GridLimits,SlopeMoment,zvs^,MomentStop);
    Dispose(zvs);
 end;
 
 
-procedure tDEMDataSet.RoughnessMomentsWithArray(GridLimits: tGridLimits; var MomentVar : tMomentVar; var zvs : bfarray32);
+procedure tDEMDataSet.RoughnessMomentsWithArray(GridLimits: tGridLimits; var MomentVar : tMomentVar; var zvs : bfarray32; MomentStop : tMomentStop = msAll);
 begin
    InitializeMomentVar(MomentVar);
    GetRoughnessInLongArray(GridLimits,MomentVar.Npts,zvs);
-   moment(zvs,MomentVar,msAll);
+   moment(zvs,MomentVar,MomentStop);
 end;
 
 
@@ -1262,10 +1273,8 @@ begin
       Row := GridLimits.YGridLow;
       while (Row <= GridLimits.YGridHigh) do begin
           if RoughnessFromSlopeSTD(Col,Row,MDDef.RoughnessBox,Ruff1) then begin
-            //if GetSlopeAndAspect(Col,Row,SlopeAspectRec) then begin
-               Values[Npts] := Ruff1;
-               inc(NPts);
-            //end;
+            Values[Npts] := Ruff1;
+            inc(NPts);
          end;
          inc(Row,Incr);
       end;
@@ -1274,7 +1283,7 @@ begin
 end;
 
 
-procedure tDEMDataSet.SlopeMomentsWithArray(GridLimits: tGridLimits; var SlopeMoment : tMomentVar; var zvs : bfarray32);
+procedure tDEMDataSet.SlopeMomentsWithArray(GridLimits: tGridLimits; var SlopeMoment : tMomentVar; var zvs : bfarray32; MomentStop : tMomentStop = msAll);
 var
    Nover30,Nover50 : integer;
    I: Integer;
@@ -1291,40 +1300,59 @@ begin
    end;
    Over30PercentSlope := 100.0 * nOver30 / SlopeMoment.NPts;
    Over50PercentSlope := 100.0 * nOver50 / SlopeMoment.NPts;
-   Moment(zvs,SlopeMoment,msAll);
+   Moment(zvs,SlopeMoment,MomentStop);
 end;
 
 
-function tDEMDataSet.ElevationMoments(GridLimits: tGridLimits) : tMomentVar;
+function tDEMDataSet.ElevationMoments(GridLimits: tGridLimits; MomentStop : tMomentStop = msAll) : tMomentVar;
 var
    zvs : ^bfarray32;
 begin
    New(zvs);
-   ElevationMomentsWithArray(GridLimits,Result,zvs^);
+   ElevationMomentsWithArray(GridLimits,Result,zvs^,MomentStop);
    Dispose(zvs);
 end;
 
 
-procedure tDEMDataSet.ElevationMomentsWithArray(GridLimits: tGridLimits; var MomentVar : tMomentVar; var zvs : bfarray32);
+procedure tDEMDataSet.ElevationMomentsWithArray(GridLimits: tGridLimits; var MomentVar : tMomentVar; var zvs : bfarray32; MomentStop : tMomentStop = msAll);
 begin
    InitializeMomentVar(MomentVar);
    GetElevationsInLongArray(GridLimits,MomentVar.NPts,zvs,false);
-   moment(zvs,MomentVar,msAll);
+   moment(zvs,MomentVar,MomentStop);
 end;
 
 procedure tDEMDataSet.ElevationStatistics(GridLimits: tGridLimits; var Mean,Std : float32);
 var
    MomentVar : tMomentVar;
 begin
-   MomentVar := ElevationMoments(GridLimits);   //FullDEMGridLimits);
+   MomentVar := ElevationMoments(GridLimits,msAfterStdDev);
    Mean := MomentVar.mean;
    Std := MomentVar.std_dev;
 end;
 
 
-procedure tDEMDataSet.GetDEMMeanStd;
+procedure tDEMDataSet.GetSlopeMeanStd(GridLimits: tGridLimits; var Mean,Std : float32);
+var
+   zvs : ^bfarray32;
+   MomentVar : tMomentVar;
 begin
-   ElevationStatistics(FullDEMGridLimits,Z_Mean,Z_Std);
+   New(zvs);
+   RoughnessMomentsWithArray(GridLimits,MomentVar, zvs^,msAfterStdDev);
+   Dispose(zvs);
+   Mean := MomentVar.mean;
+   Std := MomentVar.std_dev;
+end;
+
+procedure tDEMDataSet.GetRoughnessMeanStd(GridLimits: tGridLimits; var Mean,Std : float32);
+var
+   zvs : ^bfarray32;
+   MomentVar : tMomentVar;
+begin
+   New(zvs);
+   SlopeMomentsWithArray(GridLimits,MomentVar,zvs^,msAfterStdDev);
+   Dispose(zvs);
+   Mean := MomentVar.mean;
+   Std := MomentVar.std_dev;
 end;
 
 
@@ -2378,6 +2406,8 @@ begin
    else GetCurvature := false;
 end;
 {$EndIf}
+
+
 
 procedure tDEMDataSet.GetPlanCInLongArray(GridLimits: tGridLimits; var NPts : int64; var Values : Petmath.bfarray32; IncludeSeaLevel : boolean = true);
 var

@@ -907,8 +907,6 @@ var
    Line : ANSIString;
    i,x,y,Band,Band2,Value,Start    : integer;
    TotalPts : int64;
-   //Row16Bit  : tWordRow16Bit;
-   //Row8Bit   : tRow8Bit;
    cum,PC : float64;
    Hist  : array[1..MaxBands] of ^tWordValues;
    Results : tStringList;
@@ -1270,7 +1268,9 @@ begin {tTIFFImage.CreateTiffDEM}
                         z := FloatRow^[Col];
                         if BigEndian then SwapToShortFloat(z);
                         if ValidZ(z) then begin
-                           WantDEM.SetGridElevation(Col,dRow,z * TiffHeader.Factor);
+                           z := z * TiffHeader.Factor;
+                           WantDEM.SetGridElevation(Col,dRow,z);
+                           Petmath.CompareValueToExtremes(z,WantDEM.DEMheader.MinElev,WantDEM.DEMheader.MaxElev);
                         end
                         else WantDEM.SetGridMissing(Col,dRow);
                      end;
@@ -1279,7 +1279,11 @@ begin {tTIFFImage.CreateTiffDEM}
                      RecsRead := FileRead(TiffHandle,Int32Row^,bs);
                      for Col := 0 to pred(WantDEM.DEMheader.NumCol) do begin
                         z := Int32Row^[Col];
-                        if ValidZ(z) then WantDEM.SetGridElevation(Col,dRow,z * TiffHeader.Factor)
+                        if ValidZ(z) then begin
+                           z := z * TiffHeader.Factor;
+                           WantDEM.SetGridElevation(Col,dRow,z);
+                           Petmath.CompareValueToExtremes(z,WantDEM.DEMheader.MinElev,WantDEM.DEMheader.MaxElev);
+                        end
                         else WantDEM.SetGridMissing(Col,dRow);
                      end;
                   end;
@@ -1290,7 +1294,10 @@ begin {tTIFFImage.CreateTiffDEM}
                      for Col := 0 to pred(WantDEM.DEMheader.NumCol) do begin
                         if BigEndian then zi := Swap(IntRow^[Col])
                         else zi := IntRow^[Col];
-                        if ValidZ(zi) then WantDEM.SetGridElevation(Col,dRow,zi)
+                        if ValidZ(zi) then begin
+                           WantDEM.SetGridElevation(Col,dRow,zi);
+                           Petmath.CompareValueToExtremes(zi,WantDEM.DEMheader.MinElev,WantDEM.DEMheader.MaxElev);
+                        end
                         else WantDEM.SetGridMissing(Col,dRow);
                      end;
                   end
@@ -1299,7 +1306,10 @@ begin {tTIFFImage.CreateTiffDEM}
                      for Col := 0 to pred(WantDEM.DEMheader.NumCol) do begin
                         if BigEndian then zw := Swap(WordRow^[Col])
                         else zw := WordRow^[Col];
-                        if ValidZ(zw) then WantDEM.SetGridElevation(Col,dRow,zw)
+                        if ValidZ(zw) then begin
+                           Petmath.CompareValueToExtremes(zw,WantDEM.DEMheader.MinElev,WantDEM.DEMheader.MaxElev);
+                           WantDEM.SetGridElevation(Col,dRow,zw);
+                        end
                         else WantDEM.SetGridMissing(Col,dRow);
                      end;
                   end;
@@ -1309,7 +1319,9 @@ begin {tTIFFImage.CreateTiffDEM}
                   for Col := 0 to pred(WantDEM.DEMheader.NumCol) do begin
                      z := DoubleRow^[Col];
                      if ValidZ(z) then begin
-                        WantDEM.SetGridElevation(Col,dRow,z * TiffHeader.Factor);
+                        z := z * TiffHeader.Factor;
+                        WantDEM.SetGridElevation(Col,dRow,z);
+                        Petmath.CompareValueToExtremes(z,WantDEM.DEMheader.MinElev,WantDEM.DEMheader.MaxElev);
                      end
                      else WantDEM.SetGridMissing(Col,dRow);;
                   end;
@@ -1319,6 +1331,7 @@ begin {tTIFFImage.CreateTiffDEM}
                   for Col := 0 to pred(WantDEM.DEMheader.NumCol) do begin
                      zb := ByteRow^[Col];
                      WantDEM.SetGridElevation(Col,dRow,zb);
+                     Petmath.CompareValueToExtremes(zb,WantDEM.DEMheader.MinElev,WantDEM.DEMheader.MaxElev);
                   end;
                end
                else if (TiffHeader.BitsPerSample in [4]) then begin
@@ -1326,8 +1339,10 @@ begin {tTIFFImage.CreateTiffDEM}
                   for Col := 0 to pred(WantDEM.DEMheader.NumCol) div 2 do begin
                      zb := ByteRow^[Col] div 16;
                      WantDEM.SetGridElevation(2*Col,dRow,zb);
+                     Petmath.CompareValueToExtremes(zb,WantDEM.DEMheader.MinElev,WantDEM.DEMheader.MaxElev);
                      zb := ByteRow^[Col] mod 16;
                      WantDEM.SetGridElevation(succ(2*Col),dRow,zb);
+                     Petmath.CompareValueToExtremes(zb,WantDEM.DEMheader.MinElev,WantDEM.DEMheader.MaxElev);
                   end;
                end;
             except
@@ -1347,7 +1362,7 @@ begin {tTIFFImage.CreateTiffDEM}
 
          CloseTiffFile;
          if ShowDEMReadingProgress then EndProgress;
-         WantDEM.CheckMaxMinElev;
+         //WantDEM.CheckMaxMinElev;
          {$If Defined(RecordFullGeotiff) or Defined(ShowKeyDEM) or Defined(TrackZ) or Defined(RecordUKOS)} WantDEM.TrackElevationRange('Geotiff DEM CheckMaxMinElev over '); {$EndIf}
       end;
    {$If Defined(RecordGeotiff) or Defined(RecordInitializeDEM)} WriteLineToDebugFile('tTIFFImage.CreateDEM out, ' + sfBoundBoxToString(WantDEM.DEMBoundBoxProjected,4)); {$EndIf}
@@ -1504,7 +1519,7 @@ var
         function LogASCIIdata(anOffset,aSize : int64) : ANSIString;
         var
            I : integer;
-           TheBytes : array[0..4000] of byte;
+           TheBytes : array[0..62000] of byte;
         begin
             {$IfDef RecordWhileProcessingHeader} WriteLineToDebugFile('LogASCIIdata, offset=' + IntToStr(anOffset) + '  size=' + IntToStr(aSize)); {$EndIf}
             FileSeek(TiffHandle,anOffset,0);
@@ -2065,6 +2080,7 @@ var
                                  HaveRegistration := true;
                              end
                              else ASCIIStr := TStr;
+                             //not processing GDA94 / MGA zone 53|GDA94|, since it will be covered with tag 3072
                          end;
                       end;
               42112 : begin
@@ -2281,7 +2297,7 @@ var
                             TStr := MapProjection.ProcessTiff4096(TiffOffset);
                          end;
                   5120 : begin
-                            //The coordinate epoch is encoded as a new GeoTIFF GeoKey, CoordinateEpochGeoKey of code 5120 and type DOUBLE
+                            //Coordinate epoch is encoded in GeoTIFF GeoKey, CoordinateEpochGeoKey code 5120 type DOUBLE
                             MessageToContinue('found CoordinateEpochGeoKey');
                          end;
                end;
@@ -2351,7 +2367,7 @@ var
                      end
                      else GeoSuccess := false;
                      if TiffHeader.HemiChar = 'N' then Hemi := 45 else Hemi := -45;
-                  MapProjection.projUTMZone := Zone;
+                     MapProjection.projUTMZone := Zone;
                   end;
                end;
                if (Hemi > 0) then TiffHeader.HemiChar := 'N' else TiffHeader.HemiChar := 'S';
@@ -2385,11 +2401,12 @@ var
             b[1] := 73;
             B[2] := 73;
             B[3] := 42;
-            Result := false;
+            //Result := false;
             {$If Defined(RecordGeotiff) or Defined(RecordGeotiffFailures)} WriteLineToDebugFile('ReadTiffFileHeader failure: ' + inFileName); {$EndIf}
-            exit;
+            //exit;
          end;
          *)
+
 
          if (B[3] = 43) or (B[4] = 43) then BigTiff := true
          else if ((B[3] = 42) or (B[4] = 42)) then BigTiff := false
@@ -2434,8 +2451,6 @@ var
    end;
 
 
-
-
 begin
    Success := false;
    if (Not(FileExists(inFileName))) or (GetFileSize(inFileName) = 0) then begin
@@ -2476,6 +2491,7 @@ begin
       {$If Defined(RecordGeotiffFailures) or Defined(RecordProblems)} WriteLineToDebugFile('NumEnt problem=' + IntToStr(TiffHeader.NumEnt) + '  ' + inFileName); {$EndIf}
       Success := false;
       CloseTiffFile;
+      MessageToContinue('Tiff read problem; check that file is not open in another program');
       exit;
    end;
 
@@ -2494,7 +2510,7 @@ begin
       CloseTiffFile;
       if (TiffHeader.OffsetArray <> Nil) then FreeMem(TiffHeader.OffsetArray,OffsetArraySize);
 
-      if PathIsValid(GDALtools_Dir) then begin
+      if ValidPath(GDALtools_Dir) then begin
          {$If Defined(RecordGeotiffFailures) or Defined(RecordGeotiffRestart)}
             if TiledImage then WriteLineToDebugFile('Try GDAL fix for tiled image problem ' + inFileName)
             else if (TiffHeader.BitsPerSample in [4]) then WriteLineToDebugFile('Try GDAL fix for 4 bit image problem ' + inFileName)
