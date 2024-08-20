@@ -215,6 +215,13 @@ const
       end;
    {$EndIf}
 
+function Expand(sf : shortString) : shortstring;
+begin
+  if (sf <> '') then Result := ' -s ' + sf + ' '
+  else Result := '';
+end;
+
+
 
 procedure UseGDAL_VRT_to_merge(var MergefName,OutVRT : PathStr; OutNames : tStringList; Added : ShortString = '');
 //GDAL_VRT was about three times faster than other options tested
@@ -549,9 +556,9 @@ end;
 function GDAL_TRI_Wilson(InName : PathStr; sf : shortstring = ''; outname : shortstring = '') : integer;
 begin
    if FileExistsErrorMessage(InName) then begin
-      if sf <> '' then sf := ' -s ' + sf + ' ';
+      //if sf <> '' then sf := ' -s ' + sf + ' ';
       if (Outname = '') then OutName := MDTempDir + 'gdal_TRI_Wilson_' + ExtractFileNameNoExt(InName) + '.tif';
-      GDAL_DEM_command(0,GDAL_dem_name + ' TRI ' + InName + ' ' + OutName + ' -alg Wilson' + sf, OutName,mtElevSpectrum);
+      GDAL_DEM_command(0,GDAL_dem_name + ' TRI ' + InName + ' ' + OutName + ' -alg Wilson' + Expand(sf), OutName,mtElevSpectrum);
    end;
 end;
 
@@ -559,18 +566,18 @@ end;
 function GDAL_TRI_Riley(InName : PathStr; sf : shortstring = ''; outname : shortstring = '') : integer;
 begin
    if FileExistsErrorMessage(InName) then begin
-      if sf <> '' then sf := ' -s ' + sf + ' ';
+      //if sf <> '' then sf := ' -s ' + sf + ' ';
       if (Outname = '') then OutName := MDTempDir + 'gdal_TRI_Riley_' + ExtractFileNameNoExt(InName) + '.tif';
-      GDAL_DEM_command(0,GDAL_dem_name + ' TRI ' + InName + ' ' + OutName + ' -alg Riley' + sf, OutName,mtElevSpectrum);
+      GDAL_DEM_command(0,GDAL_dem_name + ' TRI ' + InName + ' ' + OutName + ' -alg Riley' + Expand(sf), OutName,mtElevSpectrum);
    end;
 end;
 
 function GDAL_TPI(InName : PathStr; sf : shortstring = ''; outname : shortstring = '') : integer;
 begin
    if FileExistsErrorMessage(InName) then begin
-      if sf <> '' then sf := ' -s ' + sf + ' ';
+      //if sf <> '' then sf := ' -s ' + sf + ' ';
       if (Outname = '') then OutName := MDTempDir + 'gdal_TPI_' + ExtractFileNameNoExt(InName) + '.tif';
-      GDAL_DEM_command(0,GDAL_dem_name + ' TPI ' + InName + ' ' + OutName + sf, OutName,mtElevSpectrum);
+      GDAL_DEM_command(0,GDAL_dem_name + ' TPI ' + InName + ' ' + OutName + Expand(sf), OutName,mtElevSpectrum);
    end;
 end;
 
@@ -578,9 +585,9 @@ end;
 function GDAL_Roughness(InName : PathStr; sf : shortstring = ''; outname : shortstring = '') : integer;
 begin
    if FileExistsErrorMessage(InName) then begin
-      if sf <> '' then sf := ' -s ' + sf + ' ';
+      //if sf <> '' then sf := ' -s ' + sf + ' ';
       if (Outname = '') then OutName := MDTempDir + 'gdal_roughness_' + ExtractFileNameNoExt(InName) + '.tif';
-      GDAL_DEM_command(0,GDAL_dem_name + ' roughness ' + InName + ' ' + OutName + sf, OutName,mtElevSpectrum,eumeters);
+      GDAL_DEM_command(0,GDAL_dem_name + ' roughness ' + InName + ' ' + OutName + Expand(sf), OutName,mtElevSpectrum,eumeters);
    end;
 end;
 
@@ -589,9 +596,9 @@ function GDAL_SlopeMap_ZT(InName : PathStr; sf : shortstring = ''; outname : sho
 //https://gdal.org/programs/gdaldem.html
 begin
    if FileExistsErrorMessage(InName) then begin
-      if sf <> '' then sf := ' -s ' + sf + ' ';
+      //if sf <> '' then sf := ' -s ' + sf + ' ';
       if (Outname = '') then OutName := MDTempDir + 'gdal_slope_zt_' + ExtractFileNameNoExt(InName) + '.tif';
-      Result := GDAL_DEM_command(0,GDAL_dem_name + ' slope ' + InName + ' ' + OutName +  ' -p -alg ZevenbergenThorne' + sf, OutName,MDDef.DefSlopeMap,euPercentSlope);
+      Result := GDAL_DEM_command(0,GDAL_dem_name + ' slope ' + InName + ' ' + OutName +  ' -p -alg ZevenbergenThorne' + Expand(sf), OutName,MDDef.DefSlopeMap,euPercentSlope);
    end;
 end;
 
@@ -599,9 +606,9 @@ function GDAL_SlopeMap_Horn(InName : PathStr; sf : shortstring = ''; outname : s
 //https://gdal.org/programs/gdaldem.html
 begin
    if FileExistsErrorMessage(InName) then begin
-      if sf <> '' then sf := ' -s ' + sf + ' ';
+      //if sf <> '' then sf := ' -s ' + sf + ' ';
       if (Outname = '') then OutName := MDTempDir + 'gdal_slope_horn_' + ExtractFileNameNoExt(InName) + '.tif';
-      Result := GDAL_DEM_command(0,GDAL_dem_name + ' slope ' + InName + ' ' + OutName +  ' -p ' + sf, OutName,MDDef.DefSlopeMap,euPercentSlope);
+      Result := GDAL_DEM_command(0,GDAL_dem_name + ' slope ' + InName + ' ' + OutName +  ' -p ' + Expand(sf), OutName,MDDef.DefSlopeMap,euPercentSlope);
    end;
 end;
 
@@ -609,9 +616,9 @@ function GDAL_AspectMap_Horn(InName : PathStr; sf : shortstring = ''; outname : 
 //https://gdal.org/programs/gdaldem.html
 begin
    if FileExistsErrorMessage(InName) then begin
-      if sf <> '' then sf := ' -s ' + sf + ' ';
+      //if sf <> '' then sf := ' -s ' + sf + ' ';
       if (Outname = '') then OutName := MDTempDir + 'gdal_aspect_horn_' + ExtractFileNameNoExt(InName) + '.tif';
-      Result := GDAL_DEM_command(0,GDAL_dem_name + ' aspect ' + InName + ' ' + OutName + sf, OutName,mtElevSpectrum,euAspectDeg);
+      Result := GDAL_DEM_command(0,GDAL_dem_name + ' aspect ' + InName + ' ' + OutName + Expand(sf), OutName,mtElevSpectrum,euAspectDeg);
    end;
 end;
 
@@ -620,9 +627,9 @@ function GDAL_AspectMap_ZT(InName : PathStr; sf : shortstring = ''; outname : sh
 //https://gdal.org/programs/gdaldem.html
 begin
    if FileExistsErrorMessage(InName) then begin
-      if sf <> '' then sf := ' -s ' + sf + ' ';
+      //if sf <> '' then sf := ' -s ' + sf + ' ';
       if (Outname = '') then OutName := MDTempDir + 'gdal_aspect_zt_' + ExtractFileNameNoExt(InName) + '.tif';
-      Result := GDAL_DEM_command(0,GDAL_dem_name + ' aspect ' + InName + ' ' + OutName +  ' -alg ZevenbergenThorne' + sf, OutName,mtElevSpectrum,euAspectDeg);
+      Result := GDAL_DEM_command(0,GDAL_dem_name + ' aspect ' + InName + ' ' + OutName +  ' -alg ZevenbergenThorne' + Expand(sf), OutName,mtElevSpectrum,euAspectDeg);
    end;
 end;
 
@@ -631,9 +638,9 @@ function GDAL_HillshadeMap_Horn(InName : PathStr; sf : shortstring = ''; outname
 //https://gdal.org/programs/gdaldem.html
 begin
    if FileExistsErrorMessage(InName) then begin
-      if sf <> '' then sf := ' -s ' + sf + ' ';
+      //if sf <> '' then sf := ' -s ' + sf + ' ';
       if (Outname = '') then OutName := MDTempDir + 'gdal_aspect_zt_' + ExtractFileNameNoExt(InName) + '.tif';
-      Result := GDAL_DEM_command(0,GDAL_dem_name + ' hillshade ' + InName + ' ' + OutName +  ' -alg Horn' + sf, OutName,mtGrayReflect);
+      Result := GDAL_DEM_command(0,GDAL_dem_name + ' hillshade ' + InName + ' ' + OutName +  ' -alg Horn' + Expand(sf), OutName,mtGrayReflect);
    end;
 end;
 

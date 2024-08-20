@@ -14,7 +14,7 @@ unit demix_definitions;
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
-   {$Define RecordDEMIX}
+   //{$Define RecordDEMIX}
    //{$Define RecordOpenExternalProgramGrids}
    //{$Define RecordDEMIXLoad}
    //{$Define RecordDiluvium}

@@ -23,7 +23,7 @@ unit petmar;
       //{$Define RecordDialogs}
       //{$Define ShowProgressBarSize}
       //{$Define RecordFileDelection}
-
+      //{$Define RecordLegends}
       //{$Define RecordHelp}
       //{$Define TrackFileDeletion}
       //{$Define RecordRandomize}
@@ -35,8 +35,6 @@ unit petmar;
       //{$Define RecordFindFiles}
       //{$Define TempFileClose}
       //{$Define RecordBitmap}
-      //{$Define RecordLegends}
-      //{$Define RecordLegends}
       //{$Define RecordListPick}
       //{$Define RecordGeology}
    {$EndIf}
@@ -207,6 +205,9 @@ var
 
       //color routines
          function ColorString(Color : tRGBTriple) : shortString; overload;
+         function ColorString(Color : tColor) : shortString; overload;
+         function RGBString(r,g,b : SmallInt; IncludeGray : boolean = false) : ShortString;
+         function ColorStringFromPlatformColor(Color : tPlatformColor) : shortString;
 
          function GrayColorFunct(i : integer) : TColor;  overload;
          function GrayColorFunct(z,Min,Max : float64) : TColor; overload; inline;
@@ -223,6 +224,30 @@ var
 
          function MonthColor(i : integer) : TPlatformColor;
          function SameColor(c1,c2 : tPlatformColor) : boolean; inline;
+
+         function RainbowRGBFunct(z,MinV,MaxV : float64) : tPlatformColor; inline;
+         function TerrainRGBFunct(z,Min,Max : float64) : tPlatformColor;
+         function SpectrumRGBFunct(z,Min,Max : float64) : tPlatformColor;
+         function OceanRGBFunct(z,Min,Max : float64) : tPlatformColor;
+
+         function RGBtripFromHSI(Hue,Sat,Int : float64) : tPlatformColor;
+         procedure GetRGBfromTColor(Color : TColor; var r,g,b : byte);
+
+         procedure RGBtoHLS(r,g,b : integer; var h,l,s : float64);
+         procedure HLStoRGB(h,l,s : float64; var r,g,b : byte);
+
+         function SelectedColorSchemeColorFunct(ColorScheme: tLegendColors; ColorTable : tColorTableDefinitions; z : float64; Min,Max : float64) : TColor;
+         function ColorFromZColorTable(ZColorTable : tColorTableDefinitions; zj : float64; var k : integer) : tRGBTriple;
+         {$IfDef VCL}
+            function DefineColorArray(Palette : shortstring; var NumColors : integer; var ColorsTable : tZTableColors255; Reverse : boolean = false) : boolean;
+         {$EndIf}
+
+         function RGBtrip(r,g,b : integer; a : integer = 255) : TPlatformColor;  inline;
+         function GrayRGBtrip(i : integer; a : integer = 255) : TPlatformColor;  inline;
+
+         procedure ModifyRGBColor(Color : TPlatformColor; r,g,b : integer; a : integer = 255);
+
+
 
       //legends
          function MakeColorScaleBitmap(width,height : integer; ColorScheme : tLegendColors; ColorTable : tColorTableDefinitions) : tMyBitmap;
@@ -359,35 +384,6 @@ procedure ReadDefault(Prompt : ShortString;  var WordVal : word); overload;
 
       function GetIntegerFromString(var Input : ShortString; var Int : integer) : boolean;
       function GetRealFromString(var Input : ShortString; var Int : float64) : boolean;
-
-//color functions
-      function RainbowRGBFunct(z,MinV,MaxV : float64) : tPlatformColor; inline;
-      function TerrainRGBFunct(z,Min,Max : float64) : tPlatformColor;
-      function SpectrumRGBFunct(z,Min,Max : float64) : tPlatformColor;
-      function OceanRGBFunct(z,Min,Max : float64) : tPlatformColor;
-
-      function RGBtripFromHSI(Hue,Sat,Int : float64) : tPlatformColor;
-
-      function ColorString(Color : tColor) : shortString; overload;
-      function RGBString(r,g,b : SmallInt; IncludeGray : boolean = false) : ShortString;
-      function ColorStringFromPlatformColor(Color : tPlatformColor) : shortString;
-
-      procedure GetRGBfromTColor(Color : TColor; var r,g,b : byte);
-
-      procedure RGBtoHLS(r,g,b : integer; var h,l,s : float64);
-      procedure HLStoRGB(h,l,s : float64; var r,g,b : byte);
-
-      function SelectedColorSchemeColorFunct(ColorScheme: tLegendColors; ColorTable : tColorTableDefinitions; z : float64; Min,Max : float64) : TColor;
-      function ColorFromZColorTable(ZColorTable : tColorTableDefinitions; zj : float64; var k : integer) : tRGBTriple;
-      {$IfDef VCL}
-         function DefineColorArray(Palette : shortstring; var NumColors : integer; var ColorsTable : tZTableColors255; Reverse : boolean = false) : boolean;
-      {$EndIf}
-
-      function RGBtrip(r,g,b : integer; a : integer = 255) : TPlatformColor;  inline;
-      function GrayRGBtrip(i : integer; a : integer = 255) : TPlatformColor;  inline;
-
-      procedure ModifyRGBColor(Color : TPlatformColor; r,g,b : integer; a : integer = 255);
-
 
 // print routines
       {$IfDef ExPrintFile}

@@ -694,7 +694,7 @@ var
       Found1,Found2,Found3,Found4;
    var
       x,y : integer;
-      s1 : float64;
+      s1,s2 : float64;
       TheMinElev,TheMaxElev,avgZ : float32;
       zb  : array[1..4] of float32;
       Limits : tGridLimits;
@@ -740,14 +740,15 @@ var
               //go west
               for x := Col - 1 downto Col - dx do begin
                  if DEMGlb[MapOwner.MapDraw.DEMonMap].GetElevMeters(x,Row,zb[2]) then begin
-                    s1 := DEMGlb[MapOwner.MapDraw.DEMonMap].SlopePerCent(x,Row);
-                    zb[2] := z - zb[2];
-                    if (zb[2] > MDDef.BuildingMinHeight) then begin
-                       Rad[2] := (Col - x) * DEMGlb[MapOwner.MapDraw.DEMonMap].AverageXSpace;
-                       if (DEMGlb[MapOwner.MapDraw.DEMonMap].SlopePerCent(succ(x),Row) < MDDef.MinRoofEdgeSlope) then exit;
-                       goto Found2;
-                    end
-                    else if (s1 > MDDef.BuildingMaxSlope) then exit;
+                    if DEMGlb[MapOwner.MapDraw.DEMonMap].SlopePerCent(x,Row,s1) then begin
+                       zb[2] := z - zb[2];
+                       if (zb[2] > MDDef.BuildingMinHeight) then begin
+                          Rad[2] := (Col - x) * DEMGlb[MapOwner.MapDraw.DEMonMap].AverageXSpace;
+                          if (DEMGlb[MapOwner.MapDraw.DEMonMap].SlopePerCent(succ(x),Row,s2)) and (s2 < MDDef.MinRoofEdgeSlope) then exit;
+                          goto Found2;
+                       end
+                       else if (s1 > MDDef.BuildingMaxSlope) then exit;
+                    end;
                  end;
               end;
               exit;
@@ -755,14 +756,15 @@ var
               //go south
               for y := Row - 1 downto Row - dy do begin
                  if DEMGlb[MapOwner.MapDraw.DEMonMap].GetElevMeters(Col,y,zb[3]) then begin
-                    s1 := DEMGlb[MapOwner.MapDraw.DEMonMap].SlopePerCent(Col,y);
-                    zb[3] := z - zb[3];
-                    if (zb[3] > MDDef.BuildingMinHeight) then begin
-                       Rad[3] := (Row - y) * DEMGlb[MapOwner.MapDraw.DEMonMap].AverageYSpace;
-                       if (DEMGlb[MapOwner.MapDraw.DEMonMap].SlopePerCent(Col,succ(y)) < MDDef.MinRoofEdgeSlope) then exit;
-                       goto Found3;
-                    end
-                    else if (s1 > MDDef.BuildingMaxSlope) then exit;
+                    if DEMGlb[MapOwner.MapDraw.DEMonMap].SlopePerCent(Col,y,s1) then begin
+                       zb[3] := z - zb[3];
+                       if (zb[3] > MDDef.BuildingMinHeight) then begin
+                          Rad[3] := (Row - y) * DEMGlb[MapOwner.MapDraw.DEMonMap].AverageYSpace;
+                          if (DEMGlb[MapOwner.MapDraw.DEMonMap].SlopePerCent(Col,succ(y),s2)) and (s2 < MDDef.MinRoofEdgeSlope) then exit;
+                          goto Found3;
+                       end
+                       else if (s1 > MDDef.BuildingMaxSlope) then exit;
+                    end;
                  end;
               end;
               exit;
@@ -770,14 +772,15 @@ var
               //go north
               for y := Row + 1 to Row + dy do begin
                  if DEMGlb[MapOwner.MapDraw.DEMonMap].GetElevMeters(Col,y,zb[4]) then begin
-                    s1 := DEMGlb[MapOwner.MapDraw.DEMonMap].SlopePerCent(Col,y);
-                    zb[4] := z - zb[4];
-                    if (zb[4] > MDDef.BuildingMinHeight) then begin
-                       Rad[4] := (y - Row) * DEMGlb[MapOwner.MapDraw.DEMonMap].AverageYSpace;
-                       if (DEMGlb[MapOwner.MapDraw.DEMonMap].SlopePerCent(Col,Pred(y)) < MDDef.MinRoofEdgeSlope) then exit;
-                       goto Found4;
-                    end
-                    else if (s1 > MDDef.BuildingMaxSlope) then exit;
+                    if DEMGlb[MapOwner.MapDraw.DEMonMap].SlopePerCent(Col,y,s1) then begin
+                       zb[4] := z - zb[4];
+                       if (zb[4] > MDDef.BuildingMinHeight) then begin
+                          Rad[4] := (y - Row) * DEMGlb[MapOwner.MapDraw.DEMonMap].AverageYSpace;
+                          if (DEMGlb[MapOwner.MapDraw.DEMonMap].SlopePerCent(Col,Pred(y),s2)) and (s2 < MDDef.MinRoofEdgeSlope) then exit;
+                          goto Found4;
+                       end
+                       else if (s1 > MDDef.BuildingMaxSlope) then exit;
+                    end;
                  end;
               end;
               exit;

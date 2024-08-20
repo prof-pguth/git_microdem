@@ -1310,23 +1310,17 @@ end;
 
       function GetDEM(var DEMWanted : integer; CanCancel : boolean = false; TheMessage : ShortString = '') : boolean;
       var
-         i,{Wanted,}err : integer;
+         i,err : integer;
          TheList : tStringList;
       begin
-         //if (NumDEMDataSetsOpen = 1) and ValidDEM(1) then DEMWanted := 1
-         //else begin
-            DEMWanted := 0;
-            //Wanted := 0;
-            TheList := TStringList.Create;
-            for i := 1 to MaxDEMDataSets do if (ValidDEM(i)) and (not DEMGlb[i].HiddenGrid) {and (ExcludeDEM <> i} then
-                  TheList.Add('DEM' + IntegerToString(i,4) +': ' + DEMGlb[i].AreaName);
-            {$IfDef VCL}
-               if (TheList.Count = 1) or MultiSelectSingleColumnStringList('DEM for ' + TheMessage,DEMWanted,TheList,CanCancel) then begin
-                  //Val(Copy(theList.Strings[DEMWanted],5,3),DEMWanted,err);
-               end;
-            {$EndIf}
-            TheList.Free;
-         //end;
+         DEMWanted := 0;
+         TheList := TStringList.Create;
+         for i := 1 to MaxDEMDataSets do if (ValidDEM(i)) and (not DEMGlb[i].HiddenGrid) then
+            TheList.Add('DEM' + IntegerToString(i,4) +': ' + DEMGlb[i].AreaName);
+         if (TheList.Count = 1) or MultiSelectSingleColumnStringList('DEM for ' + TheMessage,DEMWanted,TheList,CanCancel) then begin
+            Val(Copy(theList.Strings[DEMWanted],5,3),DEMWanted,err);
+         end;
+         TheList.Free;
          Result := (DEMWanted <> 0);
       end;
 

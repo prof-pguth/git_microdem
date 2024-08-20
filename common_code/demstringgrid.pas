@@ -20,6 +20,8 @@ unit demstringgrid;
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    //{$Define StringGridSortProblems}
    //{$Define StringGridProblems}
+   //{$Define StringGridColors}
+   //{$Define CorrleationMatrixProblems}
 {$EndIf}
 
 interface
@@ -90,7 +92,7 @@ type
   end;
 
 
-procedure OpenCorrelationMatrix(Variety : shortString; fName : PathStr);
+function OpenCorrelationMatrix(Variety : shortString; fName : PathStr) : DEMStringGrid.TGridForm;
 
 procedure SortGrid(Grid : TStringGrid; const SortCol : integer; const datatype : integer; const ascending : boolean);
 
@@ -231,17 +233,15 @@ end;
 {------------------------------------------------------------------------------------------------------------------}
 
 
-procedure OpenCorrelationMatrix(Variety : shortString; fName : PathStr);
-var
-   GridForm : DEMStringGrid.TGridForm;
+function OpenCorrelationMatrix(Variety : shortString; fName : PathStr) : DEMStringGrid.TGridForm;
 begin
    {$IfDef StringGridProblems} WriteLineToDebugFile('OpenCorrelationMatrix in'); {$EndIf}
-   GridForm := TGridForm.Create(Application);
-   GridForm.Caption := Variety + ' Matrix';
-   GridForm.NeedRs := true;
-   GridForm.ReadCSVFile(fName);
-   GridForm.Variety := Variety;
-   GridForm.SetFormSize;
+   Result := TGridForm.Create(Application);
+   Result.Caption := Variety + ' Matrix';
+   Result.NeedRs := true;
+   Result.ReadCSVFile(fName);
+   Result.Variety := Variety;
+   Result.SetFormSize;
    {$IfDef StringGridProblems} WriteLineToDebugFile('OpenCorrelationMatrix out'); {$EndIf}
 end;
 
@@ -485,22 +485,7 @@ var
    r : float64;
    ShowHeader : boolean;
 begin
-   {$IfDef StringGridProblems} WriteLineToDebugFile('TGridForm.BitBtn6Click in'); {$EndIf}
-   if (fName = '') then fName := ProgramRootDir + 'correlations' + DefaultDBExt;
-   if GetFileFromDirectory('Correlation color table',DefaultDBMask,fName) then
-      Table := tMyData.Create(fName)
-    else begin
-       Table := Nil;
-       MinVal := 99999;
-       MaxVal := -9999;
-       for i := 1 to pred(StringGrid1.ColCount) do begin
-          for j := 1 to pred(StringGrid1.RowCount) do  begin
-             Petmath.CompareValueToExtremes(StrToFloat(StringGrid1.Cells[i,j]),MinVal,MaxVal);
-          end;
-       end;
-    end;
-
-   ShowHourglassCursor;
+   {$IfDef StringGridColors} WriteLineToDebugFile('TGridForm.BitBtn6Click in'); {$EndIf}
    if (BoxSize = 0) then begin
       if (StringGrid1.ColCount > 100) then begin
          BoxSize := 10;
@@ -511,10 +496,33 @@ begin
          FontSize := 14;
       end;
    end;
-   ReadDefault('Box size',BoxSize);
-   ReadDefault('Font size',FontSize);
-   ShowHeader := AnswerIsYes('Show caption');
 
+   if (Sender <> nil) then begin
+      ReadDefault('Box size',BoxSize);
+      ReadDefault('Font size',FontSize);
+      ShowHeader := AnswerIsYes('Show caption');
+      if (fName = '') then begin
+         fName := ProgramRootDir + 'correlations' + DefaultDBExt;
+         GetFileFromDirectory('Correlation color table',DefaultDBMask,fName);
+      end;
+   end;
+
+    if FileExists(fName) then begin
+      Table := tMyData.Create(fName);
+    end
+    else begin
+       Table := Nil;
+       MinVal := 99999;
+       MaxVal := -9999;
+       for i := 1 to pred(StringGrid1.ColCount) do begin
+          for j := 1 to pred(StringGrid1.RowCount) do  begin
+             if (j <> i) then Petmath.CompareValueToExtremes(StrToFloat(StringGrid1.Cells[i,j]),MinVal,MaxVal);
+          end;
+       end;
+      {$IfDef CorrleationMatrixProblems} WriteLineToDebugFile('TGridForm.BitBtn6Click, range of correlations ' + RealToString(MinVal,-8,-4) + ' to ' + RealToString(MaxVal,-8,-4)); {$EndIf}
+    end;
+
+   ShowHourglassCursor;
    CreateBitmap(Bitmap,LeftOffset + pred(StringGrid1.ColCount)*BoxSize + LegendSize,LeftOffset + StringGrid1.RowCount * BoxSize);
    Bitmap.Canvas.Font.Name := 'Verdana';
    Bitmap.Canvas.Font.Size := FontSize;
@@ -542,19 +550,22 @@ begin
          TStr := RemoveUnderscores(StringGrid1.Cells[0,j]);
          Bitmap.Canvas.TextOut(LeftOffset - 5 - Bitmap.Canvas.TextWidth(TStr),LeftOffset+5 + pred(j) * BoxSize,TStr);
          r := StrToFloat(StringGrid1.Cells[i,j]);
-         if (Table = Nil) then begin
-            Bitmap.Canvas.Brush.Color := Petmar.TerrainTColor(r,MinVal,MaxVal);
+         if (i=j) and (r > 0.9999999) then begin
+            Bitmap.Canvas.Brush.Color := clWhite;
          end
          else begin
-             if (i=j) and (r > 0.9999999) then Bitmap.Canvas.Brush.Color := clWhite
-             else begin
+            if (Table = Nil) then begin
+               Bitmap.Canvas.Brush.Color := Petmar.TerrainTColor(r,MinVal,MaxVal);
+               {$IfDef StringGridColors} WriteLineToDebugFile('i=' + IntToStr(i) + ' j=' + IntToStr(j) + ' r=' + RealToString(r,-8,3) + ' ' + ColorString(Bitmap.Canvas.Brush.Color)); {$EndIf}
+            end
+            else begin
                 Table.First;
                 while (r < Table.GetFieldByNameAsFloat('MIN')) or (r > Table.GetFieldByNameAsFloat('MAX')) do begin
                    Table.Next;
                    if Table.eof then break;
                 end;
                 Bitmap.Canvas.Brush.Color := Table.TColorFromTable;  //(Table.GetFieldByNameAsInteger('RED'),Table.GetFieldByNameAsInteger('GREEN'),Table.GetFieldByNameAsInteger('BLUE'));
-             end;
+            end;
          end;
          Bitmap.Canvas.Brush.Style := bsSolid;
          Bitmap.Canvas.Rectangle(LeftOffset + pred(i)*BoxSize,LeftOffset + pred(j)*BoxSize,LeftOffset + (i)*BoxSize,LeftOffset + (j)*BoxSize );
@@ -565,7 +576,7 @@ begin
 
    if (Table = Nil) then begin
        Bitmap2 := DefaultVerticalLegendOnBitmap(MinVal,MaxVal,'','',LegTerrain);
-       Bitmap.Canvas.Draw(LeftOffset + pred(StringGrid1.ColCount)*BoxSize + 45,15,Bitmap2);
+       Bitmap.Canvas.Draw(LeftOffset + pred(StringGrid1.ColCount)*BoxSize + 45,BitMap.Height - 10 - Bitmap2.Height,Bitmap2);
        FreeAndNil(Bitmap2);
    end
    else begin
@@ -584,12 +595,13 @@ begin
        Table.Destroy;
    end;
 
-   Petimage_form.DisplayBitmap(Bitmap,'Correlations');
+   Petimage_form.DisplayBitmap(Bitmap,'Correlation Matrix');
    FreeAndNil(Bitmap);
    ShowDefaultCursor;
    {$IfDef StringGridProblems} WriteLineToDebugFile('TGridForm.BitBtn6Click out'); {$EndIf}
 {$EndIf}
 end;
+
 
 procedure TGridForm.BitBtn7Click(Sender: TObject);
 var

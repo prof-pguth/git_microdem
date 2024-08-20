@@ -395,6 +395,7 @@ var
    fFile : file;
    x,y    : integer;
    Mean,Std,z : float32;
+   NPts : int64;
    Dir      : DirStr;
    Name     : NameStr;
    Ext      : ExtStr;
@@ -433,7 +434,7 @@ begin
    Header.SaveToFile(Dir + Name + '.BLW');
    Header.Clear;
    {$IfDef RecordWriteDEM}   WriteLineToDebugFile('blw written'); {$EndIf}
-   ElevationStatistics(FullDEMGridLimits, Mean,Std);
+   ElevationStatistics(FullDEMGridLimits, Mean,Std,NPts);
    Header.Add('1 ' + RealToString(ZinMeters(DEMheader.MinElev),-12,0) + ' ' + RealToString(ZinMeters(DEMheader.MaxElev),-12,0) + ' ' +  RealToString(Mean,-12,1) + ' ' + RealToString(Std,-12,1)  );
    Header.SaveToFile(Dir + Name + '.STX');
    Header.Free;

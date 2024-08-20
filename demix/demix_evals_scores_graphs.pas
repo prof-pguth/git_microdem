@@ -23,7 +23,7 @@ unit demix_evals_scores_graphs;
 
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
-      {$Define RecordDEMIX}
+      //{$Define RecordDEMIX}
       //{$Define RecordChangeDB}
    {$Else}
    {$EndIf}
@@ -105,6 +105,8 @@ type
     BitBtn1: TBitBtn;
     RadioGroup3: TRadioGroup;
     RadioGroup6: TRadioGroup;
+    BitBtn7: TBitBtn;
+    BitBtn8: TBitBtn;
     procedure RadioGroup3Click(Sender: TObject);
     procedure RadioGroup2Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -151,6 +153,8 @@ type
     procedure BitBtn22Click(Sender: TObject);
     procedure RadioGroup1Click(Sender: TObject);
     procedure BitBtn1Click(Sender: TObject);
+    procedure BitBtn7Click(Sender: TObject);
+    procedure BitBtn8Click(Sender: TObject);
   private
     { Private declarations }
     procedure ChangeDBonForm(Newdb : integer);
@@ -183,9 +187,6 @@ uses
    DEMIX_graphs,
    DEMIX_control,
    DEMIX_definitions;
-
-//const
-   //DoingRanks : boolean = true;
 
 
 procedure StartDEMIXgraphs(DB : integer);
@@ -289,6 +290,7 @@ end;
 
 
 procedure Teval_scores_graph_form.BitBtn10Click(Sender: TObject);
+//graphs for each of the elevation range DBs, win/loss versus basecompareDEM
 var
    i,j,k,ColBigBitmap : integer;
    HL : shortstring;
@@ -328,10 +330,7 @@ var
 begin
   {$IfDef RecordDEMIX} HighlightLineToDebugFile('Teval_scores_graph_form.BitBtn10Click in'); {$EndIf}
    if GISdb[db].MyData.FieldExists('AVG_SLOPE') then begin
-      if (not ValidDB(db_U10)) and (not ValidDB(db_U80)) and (not ValidDB(db_U120)) and (not ValidDB(db_Full)) then begin
-        BitBtn4Click(Sender);
-      end;
-
+      BitBtn4Click(Sender);   //If needed loads db_U10,db_U80,db_U120,db_Full))
       GeomorphFilters := MakeGeomorphFilters;
       DEMList := AssembleDEMlist;
       for i := 0 to pred(GeomorphFilters.Count) do begin
@@ -345,8 +344,8 @@ begin
            if ValidDB(db_U120) then DoElevationRange(db_U120,DEMlist[j],GeomorphFilters[i]);
            if ValidDB(db_Full) then DoElevationRange(db_Full,DEMlist[j],GeomorphFilters[i]);
            {$IfDef RecordDEMIX} WriteLineToDebugFile('DEMs=' + IntToStr(DEMList.Count)); {$EndIf}
-           if ColBigBitmap > 0 then begin
-              Legend := DEMIXTestDEMLegend(true, DEMList);     //gr[1].MakeLegend(gr[1].GraphDraw.LegendList,false);
+           if (ColBigBitmap > 0) then begin
+              Legend := DEMIXTestDEMLegend(true, DEMList);
               aName := MDTempDir + 'win_lose_tie_' + DEMlist[j] + '.png';
               FinishBigMap(BigBitmap,Legend,aname);
            end
@@ -453,7 +452,7 @@ end;
 
 procedure Teval_scores_graph_form.BitBtn28Click(Sender: TObject);
 begin
-   BestEvalGraphPerCriterionMultipleFilters(db,MakeGeomorphFilters,MakeCritriaList);
+   BestEvalGraphPerCriterionMultipleFilters(db,MakeGeomorphFilters,MakeCritriaList,CriteriaFamily);
 end;
 
 
@@ -526,12 +525,14 @@ procedure Teval_scores_graph_form.BitBtn4Click(Sender: TObject);
 
    procedure TryOne(Which : shortString; var db_num : integer; var fName : PathStr);
    begin
-      if FileExists(fName) then begin
-         OpenNumberedGISDataBase(db_num,fName,True);
-      end
-      else begin
-         db_num := OpenMultipleDataBases(Which + ' DB for DEMIX graphs');
-         fName := GISdb[db_num].dbFullName;
+      if not ValidDB(db_num) then begin
+         if FileExists(fName) then begin
+            OpenNumberedGISDataBase(db_num,fName,True);
+         end
+         else begin
+            db_num := OpenMultipleDataBases(Which + ' DB for DEMIX graphs');
+            fName := GISdb[db_num].dbFullName;
+         end;
       end;
    end;
 
@@ -555,6 +556,39 @@ begin
    HistogramsAllCriteria(db);
 end;
 
+
+procedure Teval_scores_graph_form.BitBtn7Click(Sender: TObject);
+begin
+   Memo2.Lines.Clear;
+   Memo2.Lines.Add('(None)');
+end;
+
+procedure Teval_scores_graph_form.BitBtn8Click(Sender: TObject);
+var
+   i,j,k,ColBigBitmap : integer;
+   HL : shortstring;
+   aName : PathStr;
+   Legend,BigBitmap : tMyBitmap;
+   //GeomorphFilters,DEMList: tStringList;
+begin
+  {$IfDef RecordDEMIX} HighlightLineToDebugFile('Teval_scores_graph_form.BitBtn8Click in'); {$EndIf}
+      BitBtn4Click(Sender);   //If needed loads db_U10,db_U80,db_U120,db_Full))
+           //ColBigBitmap := 0;
+           //CreateBitmap(BigBitmap,1800,4500);
+           if ValidDB(db_Full) then BestEvalGraphPerCriterionMultipleFilters(db_Full,MakeGeomorphFilters,MakeCritriaList,'Full');
+           if ValidDB(db_U120) then BestEvalGraphPerCriterionMultipleFilters(db_U120,MakeGeomorphFilters,MakeCritriaList,'U120');
+           if ValidDB(db_U80) then BestEvalGraphPerCriterionMultipleFilters(db_U80,MakeGeomorphFilters,MakeCritriaList,'U80');
+           if ValidDB(db_U10) then BestEvalGraphPerCriterionMultipleFilters(db_U10,MakeGeomorphFilters,MakeCritriaList,'U10');
+           (*
+           if (ColBigBitmap > 0) then begin
+              Legend := DEMIXTestDEMLegend(true, DEMList);
+              aName := MDTempDir + 'criteria_performance.png';
+              FinishBigMap(BigBitmap,Legend,aname);
+           end
+           else BigBitmap.Destroy;
+           *)
+           //{$IfDef RecordDEMIX} WriteLineToDebugFile('j=' + IntToStr(j) + '  Saved, ' + aName + '  DEMs=' + IntToStr(DEMList.Count)); {$EndIf}
+end;
 
 procedure Teval_scores_graph_form.CheckBox1Click(Sender: TObject);
 begin

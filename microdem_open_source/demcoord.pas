@@ -35,6 +35,7 @@ unit DEMCoord;
 
    {$IFDEF DEBUG}
       //{$Define RecordDEMIX}
+      //{$Define RecordDEMClose}
       //{$Define RecordBoundingBox}
       //{$Define RecordReadDEM}
       //{$Define RecordDEMIXResample}
@@ -65,7 +66,6 @@ unit DEMCoord;
       //{$Define RecordDEMDigitizeDatum}
       //{$Define TimeLoadDEM}
       //{$Define RecordZ2ndDEM}
-      //{$Define RecordDEMClose}
       //{$Define RecordNormalInit}
       //{$Define RecordMinMax}
       //{$Define RecordExtremeZ}
@@ -319,7 +319,6 @@ type
          FanBlowUpDEM,
          DSMGrid            : integer;
          ThisDEMMissingValue : LongWord;
-         //Z_Mean,Z_Std : float32;
          ElevationMultiple,
          Over30PercentSlope,
          Over50PercentSlope   : float64;
@@ -557,7 +556,7 @@ type
      //slope and aspect
          function GetSlopeAndAspect(Col,Row : integer; var SlopeAsp : tSlopeAspectRec) : boolean; {$IfDef InlineReflectance} inline; {$EndIf}
          function GetSlopeAndAspectFromLatLong(Lat,Long : float64; var SlopeAspectRec : tSlopeAspectRec) : boolean;
-         function SlopePercent(XGrid,YGrid : integer) : float64;  inline;
+         function SlopePercent(XGrid,YGrid : integer; var Slope : float64) : boolean; inline;
          function SlopePercentFromLatLong(Lat,Long : float64) : float64;
          procedure RichardsonExtrapolationSlopeMaps(Save : boolean = false);
 
@@ -688,12 +687,8 @@ type
          {$IfDef AllowDEMGeomorph}
             procedure GetSlopesInLongArray(GridLimits: tGridLimits; var NPts : int64; var Values : Petmath.bfarray32; IncludeSeaLevel : boolean = true);
             procedure GetBoxGridSizeDiameter(BoxSizeMeters : integer; var XBoxGridSize,YBoxGridSize : integer; var BoxSizeString : shortstring);
-            procedure GetPlanCInLongArray(GridLimits: tGridLimits; var NPts : int64; var Values : Petmath.bfarray32; IncludeSeaLevel : boolean = true);
-            procedure GetProfCInLongArray(GridLimits: tGridLimits; var NPts : int64; var Values : Petmath.bfarray32; IncludeSeaLevel : boolean = true);
             procedure GetBothOpennessInLongArray(GridLimits: tGridLimits; var NPts : int64; var UpValues,DownValues : Petmath.bfarray32; IncludeSeaLevel : boolean = true);
-            {$IfDef MultipleCurvatureMethods} function GetCurvature(Col,Row : integer; var PlanCurvature,SlopeCurvature : float64) : boolean; {$EndIf}
-            //procedure GetDEMMeanStd(z_Mean,Z_std : float32);
-            procedure ElevationStatistics(GridLimits: tGridLimits; var Mean,Std : float32);
+            procedure ElevationStatistics(GridLimits: tGridLimits; var Mean,Std : float32; var NPts : int64);
             function ElevationMoments(GridLimits: tGridLimits; MomentStop : tMomentStop = msAll) : tMomentVar;
             procedure ElevationMomentsWithArray(GridLimits: tGridLimits; var MomentVar : tMomentVar; var zvs : bfarray32; MomentStop : tMomentStop = msAll);
 
@@ -704,9 +699,6 @@ type
             procedure RoughnessMomentsWithArray(GridLimits: tGridLimits; var MomentVar : tMomentVar; var zvs : bfarray32; MomentStop : tMomentStop = msAll);
             procedure GetRoughnessInLongArray(GridLimits: tGridLimits; var NPts : int64; var Values : Petmath.bfarray32);
             procedure GetRoughnessMeanStd(GridLimits: tGridLimits; var Mean,Std : float32);
-
-            procedure PlanCMoments(GridLimits: tGridLimits; var PlanCMoment : tMomentVar);
-            procedure ProfCMoments(GridLimits: tGridLimits; var ProfCMoment : tMomentVar);
 
             procedure BothOpennessMoments(GridLimits: tGridLimits; var UpOpenMoment,DownOpenMoment : tMomentVar);
 
@@ -732,8 +724,17 @@ type
             procedure BoxStatsDB(BoxSize: integer = 0);
             function QuickRelief(Col,Row : integer; Limits : tGridLimits; var Relief,Summit,BaseLevel,GeoRelief,Dropoff,Elev_Relf : float32) : boolean; overload;
             function QuickRelief(Col,Row,BoxSize : integer; var Relief,Summit,BaseLevel,GeoRelief,Dropoff,Elev_Relf : float32) : boolean; overload;
-            procedure WoodPointClassify(Col,Row : integer; var PointType : tPointType);
-            function GetEvansParams(Col,Row,RegionSize : integer; var SlopeDeg,SlopeCurvature, PlanCurvature,crossc,MaxCurve,MinCurve : float64) : boolean;
+
+            {$IfDef MultipleCurvatureMethods}
+               procedure WoodPointClassify(Col,Row : integer; var PointType : tPointType);
+               procedure PlanCMoments(GridLimits: tGridLimits; var PlanCMoment : tMomentVar);
+               procedure ProfCMoments(GridLimits: tGridLimits; var ProfCMoment : tMomentVar);
+               function GetEvansParams(Col,Row,RegionSize : integer; var SlopeDeg,SlopeCurvature, PlanCurvature,crossc,MaxCurve,MinCurve : float64) : boolean;
+               function GetCurvature(Col,Row : integer; var PlanCurvature,SlopeCurvature : float64) : boolean;
+               procedure GetPlanCInLongArray(GridLimits: tGridLimits; var NPts : int64; var Values : Petmath.bfarray32; IncludeSeaLevel : boolean = true);
+               procedure GetProfCInLongArray(GridLimits: tGridLimits; var NPts : int64; var Values : Petmath.bfarray32; IncludeSeaLevel : boolean = true);
+            {$EndIf}
+
 
             {$IfDef ExGeostats}
             {$Else}
@@ -857,7 +858,7 @@ const
    DEMRequestBeyondDataString = 'DEM request beyond data';
 
 const
-   CalculatingCurvature : boolean = true;
+   CalculatingEarthCurvature : boolean = true;
    WeKnowItsUTMZone : int16 = -99;
 var
    MaskMaxVal,MaskMinVal : float64;
@@ -1818,11 +1819,17 @@ begin
    {$Else}
        if CloseMap and Assigned(SelectionMap) then try
           {$If Defined(RecordClosing) or Defined(RecordDEMClose)}  WriteLineToDebugFile('tDEMDataSet.Destroy has selection map'); {$EndIf}
-          SelectionMap.MapDraw.ClosingMapNow := true;
-          SelectionMap.Closable := true;
-          SelectionMap.FormClose(Nil,Action);
+          if SelectionMap.MapFormNowClosing then begin
+             {$If Defined(RecordClosing) or Defined(RecordDEMClose)}  WriteLineToDebugFile('tDEMDataSet.Destroy selection map already closing'); {$EndIf}
+          end
+          else begin
+             {$If Defined(RecordClosing) or Defined(RecordDEMClose)}  WriteLineToDebugFile('tDEMDataSet.Destroy selection call map closing now'); {$EndIf}
+             SelectionMap.MapDraw.ClosingMapNow := true;
+             SelectionMap.Closable := true;
+             SelectionMap.FormClose(Nil,Action);
+          end;
        finally
-          {$If Defined(RecordClosing) or Defined(RecordDEMClose)} WriteLineToDebugFile('tDEMDataSet.Destroy finished close selection map'); {$EndIf}
+          {$If Defined(RecordClosing) or Defined(RecordDEMClose)} WriteLineToDebugFile('tDEMDataSet.Destroy finally reached'); {$EndIf}
        end;
    {$EndIf}
    {$If Defined(RecordClosing) or Defined(RecordDEMClose)} if not DEMMergeInProgress then WriteLineToDebugFile('tDEMDataSet.Destroy done ' + AreaName); {$EndIf}
@@ -3459,7 +3466,7 @@ function DropEarthCurve(d : float64) : float64;
    {d and DropEarthCurve in meters}
 begin
   DropEarthCurve := 0;
-  if CalculatingCurvature then case MDDef.CurvAlg of
+  if CalculatingEarthCurvature then case MDDef.CurvAlg of
       vcTM5441 : DropEarthCurve := Sqr(0.001*d) * 0.0676; {from Army TM5-441 (Feb 70) p.2-12}
       vcRadioLineOfSight : DropEarthCurve := Sqr(0.001*d) / (MDDef.RadioK * 0.25 * 51);
       vcYoeli : DropEarthCurve := 0.87 * sqr(0.001 * d) / (2 * 6370) * 1e3;

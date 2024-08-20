@@ -14,7 +14,7 @@ unit demix_cop_alos;
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
-   {$Define RecordDEMIX}
+   //{$Define RecordDEMIX}
    //{$Define RecordDEMIXLoad}
    //{$Define RecordDEMIXsave}
    //{$Define RecordCreateHalfSec}

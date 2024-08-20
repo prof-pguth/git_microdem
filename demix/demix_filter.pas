@@ -13,7 +13,7 @@ unit demix_filter;
    //{$Define RecordFullDEMIX}
   //{$Define RecordDEMIXLoad}
   //{$Define RecordSSIMprep}
-  {$Define RecordDEMIX}
+  //{$Define RecordDEMIX}
   //{$Define TrackFUV}    //should probably use only when doing a single tile
   //{$Define RecordSSIMprepFull}
   //{$Define RecordDEMIXDiffMaps}

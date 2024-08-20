@@ -100,7 +100,6 @@ uses
   optima_reg in '..\common_code\optima_reg.pas' {RegOptsForm},
   pick_limits in '..\common_code\pick_limits.pas' {picklimitsForm},
   mask_multiple in '..\common_code\mask_multiple.pas' {Mask_mult_form},
-  curv_tend_map in '..\common_code\curv_tend_map.pas' {CurvMapForm},
   demconop in '..\common_code\demconop.pas' {ContourOptions},
   dem_plss_op in '..\common_code\dem_plss_op.pas' {PLSSform},
   DEMGrPik in '..\common_code\DEMGrPik.pas' {PickGrid},
@@ -203,8 +202,6 @@ uses
   FourOpF in '..\common_code\FourOpF.pas' {FourierOptionsForm},
   dem_fan_compare in '..\common_code\dem_fan_compare.pas' {FanCompareForm},
   dem_sat_header in '..\common_code\dem_sat_header.pas' {SatHeaderForm},
-  //OKCNHLP2 in '..\common_code\OKCNHLP2.PAS' {OKHelpRightDlg},
-  //OKCNHLP1 in '..\common_code\OKCNHLP1.PAS' {OKHelpBottomDlg},
   net_quiz in '..\common_code\net_quiz.pas' {NetQuizForm},
   net_entry in '..\common_code\net_entry.pas' {NetEntryForm},
   multigrid in '..\common_code\multigrid.pas',
@@ -356,7 +353,7 @@ begin
          Application.Title := '';
          Application.HelpFile := 'microdem.chm';
          Application.CreateForm(Twmdem, wmdem);
-         Application.Run;
+  Application.Run;
       end;
     finally
        CloseHandle(FMutex);

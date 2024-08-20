@@ -339,7 +339,7 @@ begin
       Row := GridLimits.YGridLow;
       while (Row <= GridLimits.YGridHigh) do begin
          if GetElevMeters(Col,Row,z) then begin
-            if (IncludeSeaLevel) or (abs(z) > 0.01) then begin
+            if (IncludeSeaLevel) or (abs(z) > 0.0001) then begin
                Values[NPts] := z;
                inc(NPts);
             end;

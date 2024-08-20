@@ -1774,7 +1774,7 @@ type
           DoAspectEW,
           doDEMwithMax,doDEMwithMin,
           doMeanDEM,doEnvDEM,doNPTsDEM,doSTDDEM,doMedDEM,doFloorDEM,doCeilingDEM,
-          SignedSlopeComponents,
+          //SignedSlopeComponents,
           GeomorphMapsFullDEM : boolean;
           PointFabricTerrBlowup,
           GemorphSSOPoles,GemorphAspectRose : boolean;

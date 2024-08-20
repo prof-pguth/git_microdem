@@ -468,7 +468,6 @@ begin {DEMIX_graph_best_in_Tile}
 end {DEMIX_graph_best_in_Tile};
 
 
-
 procedure ModeSTDPlot(DBonTable : integer);
 const
    NumParams = 3;
@@ -987,8 +986,6 @@ var
              for i := 1 to NumDEMIXtestDEM do Winners := Winners + ',' + RealToString(100 * BestCount[i] / TotalPoss,-8,-2);
              Statistics.Add(Winners);
          end;
-
-
 
     var
        Gr : TThisBaseGraph;

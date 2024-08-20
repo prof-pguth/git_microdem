@@ -5553,7 +5553,8 @@ begin
              PlotXYColorFromDB(Bitmap);
           end;
        end;
-       //GraphLabels(Bitmap);
+
+       GraphLabels(Bitmap);
 
        Image1.Picture.Graphic := Bitmap;
        BitMap.Free;

@@ -251,8 +251,6 @@ end;
          end;
 
 
-
-
          function PlatformRainbowColorFunct(z,Min,Max : float64) : TPlatformColor;
          begin
             Result := ConvertTColorToPlatformColor(RainbowColorFunct(z,Min,Max));
@@ -281,6 +279,7 @@ end;
             end;
          end {function};
 
+
          function DefineColorArray(Palette : shortstring; var NumColors : integer; var ColorsTable : tZTableColors255; Reverse : boolean = false) : boolean;
          var
             ColorTable : tMyData;
@@ -308,8 +307,6 @@ end;
             end;
             Result := (NumColors > 0);
          end;
-
-
 
 
         function DoLegendOnBitmap(Horizontal : boolean; Colors : tColors256; Values : array of float64; Units : shortstring; LegendTitle : shortstring = ''; LegendSize : integer = 1) : tMyBitmap;
@@ -504,6 +501,8 @@ end;
             Colors : tColors256;
             Vals : array[0..255] of float64;
          begin
+            {$IfDef RecordLegends} WriteLineToDebugFile('DefaultVerticalLegendOnBitmap, range ' + RealToString(Min,-12,-4) + ' to ' + RealToString(Max,-12,-4)); {$EndIf}
+
             MakeValuesForLegend(Colors,Vals,Min,Max,Legend,ChloroplethScheme,Reverse);
             Result := DoLegendOnBitmap(false,Colors,vals,Units,LegendTitle);
          end;

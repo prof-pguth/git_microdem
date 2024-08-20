@@ -133,7 +133,7 @@ begin
       end;
 
       sl := tStringList.Create;
-      sl.add('LAT,LONG,' + Name1 + ',' + Name2);
+      sl.add('COL,ROW,LAT,LONG,' + Name1 + ',' + Name2);
 
       Col := GridLimits.XGridLow;
       for Col := 0 to pred(DEMGlb[DEM1].DEMHeader.NumCol) do begin
@@ -142,11 +142,11 @@ begin
             if DEMGlb[DEM1].GetElevMeters(Col,Row,z1) then begin
                if DEMGlb[DEM2].GetElevMeters(Col,Row,z2) then begin
                end
-               else sl.add(RealToString(Lat,-12,-6) + ',' + RealToString(Long,-12,-6) + ',' + RealToString(z1,-8,2) + ',  ');
+               else sl.add(IntToStr(Col) + ',' + IntToStr(Row) + ',' + RealToString(Lat,-12,-6) + ',' + RealToString(Long,-12,-6) + ',' + RealToString(z1,-8,2) + ',-9999');
             end
             else begin
                if DEMGlb[DEM2].GetElevMeters(Col,Row,z2) then begin
-                  sl.add(RealToString(Lat,-12,-6) + ',' + RealToString(Long,-12,-6) + ',  ,' + RealToString(z2,-8,2));
+                  sl.add(IntToStr(Col) + ',' + IntToStr(Row) + ',' + RealToString(Lat,-12,-6) + ',' + RealToString(Long,-12,-6) + ',-9999,' + RealToString(z2,-8,2));
                end;
             end;
          end;

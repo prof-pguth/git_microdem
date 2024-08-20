@@ -27,7 +27,8 @@
       //{$Define Record3d}
       //{$Define FanDrawProblems}
       //{$Define RawProjectInverse}  //must also be set in BaseMap
-      {$Define RecordDEMIX}
+      //{$Define RecordDEMIX}
+      //{$Define RecordMapClosing}
       //{$Define RecordClosing}
       //{$Define RecordDerivedGrids}
       //{$Define RecordDEMMapProjection}
@@ -80,7 +81,6 @@
       //{$Define RecordDatumShift}
       //{$Define RecordElevationScaling}
       //{$Define RecordMultiGrids}
-      //{$Define RecordMapClosing}
       //{$Define RecordGridToDBFSave}
       //{$Define RecordIndex}
       //{$Define RecordGISDB}
@@ -1537,15 +1537,17 @@ type
     SAGAtophatvalleyridgedetection1: TMenuItem;
     Whiteboxkappaindex1: TMenuItem;
     SAGAgeomorphons1: TMenuItem;
-    CompareProfileCurvature: TMenuItem;
+    CompareSlopeMaps: TMenuItem;
     N46: TMenuItem;
     GrassPopupMenu1: TPopupMenu;
     GRASSoptions1: TMenuItem;
-    MDDefDefSlopeMap1: TMenuItem;
+    CompareProfileCurvature1: TMenuItem;
     Resampleaveragemultiplespacings1: TMenuItem;
     Compareplancurvature1: TMenuItem;
     Comparetangentialcurvature1: TMenuItem;
     MAD2K1: TMenuItem;
+    SAGAmultliplecurvatures1: TMenuItem;
+    GRASSpartialderivatives1: TMenuItem;
     //procedure HiresintervisibilityDEM1Click(Sender: TObject);
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
@@ -2678,13 +2680,15 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure SAGAtophatvalleyridgedetection1Click(Sender: TObject);
     procedure Whiteboxkappaindex1Click(Sender: TObject);
     procedure SAGAgeomorphons1Click(Sender: TObject);
-    procedure CompareProfileCurvatureClick(Sender: TObject);
+    procedure CompareSlopeMapsClick(Sender: TObject);
     procedure GRASSoptions1Click(Sender: TObject);
-    procedure MDDefDefSlopeMap1Click(Sender: TObject);
+    procedure CompareProfileCurvature1Click(Sender: TObject);
     procedure Resampleaveragemultiplespacings1Click(Sender: TObject);
     procedure Compareplancurvature1Click(Sender: TObject);
     procedure Comparetangentialcurvature1Click(Sender: TObject);
     procedure MAD2K1Click(Sender: TObject);
+    procedure SAGAmultliplecurvatures1Click(Sender: TObject);
+    procedure GRASSpartialderivatives1Click(Sender: TObject);
     //procedure RescaleallDEMsforSSIM1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
@@ -2797,6 +2801,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     { Public declarations }
      MapDraw    : tMapDraw;
      ShowAMenu,    //allows not showing menus on just this map
+     MapFormNowClosing,
      PanButtonsOnMap,
      FormOperational,
      SizingWindow,
@@ -3304,11 +3309,14 @@ uses
       Check_8_Dirs,
       DEM_optimal_lag,
       Feature_Migration,
-      geomorph_point_class, curv_tend_map,
+      geomorph_point_class,
       ant_hts_ops,
       Sup_Class_Aux_Grids,
       DEMTrendOpt,
       geomorph_region_size_graph,
+      {$IfDef MultipleCurvatureMethods}
+         curv_tend_map,
+      {$EndIf}
    {$EndIf}
 
    {$IfDef ExGridOverMap}
@@ -5594,19 +5602,19 @@ end;
 
 procedure TMapForm.Compareplancurvature1Click(Sender: TObject);
 begin
-   SAGA_PlanCurvature(true,DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap,MDtempDir + 'saga_plan_curvature.tif');
-   WBT_PlanCurvature(true,DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap,MDtempDir + 'wbt_plan_curvature.tif');
+   Make_grid.ComparePlanCurvatures(MapDraw.DEMonMap);
 end;
 
-procedure TMapForm.CompareProfileCurvatureClick(Sender: TObject);
+
+procedure TMapForm.CompareSlopeMapsClick(Sender: TObject);
 begin
-   CompareSlopeMaps(MapDraw.DEMonMap);
+   Make_grid.CompareSlopeMaps(MapDraw.DEMonMap);
 end;
+
 
 procedure TMapForm.Comparetangentialcurvature1Click(Sender: TObject);
 begin
-   WBT_TangentialCurvature(true,DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap,MDtempDir + 'wbt_tangential_curvature.tif');
-   GrassTangentialCurvatureMap(DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
+   Make_grid.CompareTangentialCurvature(MapDraw.DEMonMap);
 end;
 
 
@@ -6377,8 +6385,8 @@ begin
       for i := trunc(BoundBoxDataGrid.xmin) to round(BoundBoxDataGrid.xmax) do begin
          if ShowSatProgress then UpdateProgressBar(i/DEMheader.NumCol);
          for j := trunc(BoundBoxDataGrid.ymin) to round(BoundBoxDataGrid.ymax) do begin
-             if (MDDef.RidgePointClassify = raWood) then WoodPointClassify(i,j,PointType)
-             else PointType := ClassifyAPoint(i,j);
+             {if (MDDef.RidgePointClassify = raWood) then WoodPointClassify(i,j,PointType)
+             else} PointType := ClassifyAPoint(i,j);
              if (RidgeMask and (PointType in [PeakPoint,RidgePoint])) or ((not RidgeMask) and (PointType in [PitPoint,ValleyPoint]))  then begin
                 MapDraw.DEMGridToScreen(i,j,x1,y1);
                 if (MDDef.RidgePointClassify = raWood) then Result.Canvas.Pixels[x1,y1] := Color
@@ -6725,6 +6733,11 @@ end;
 procedure TMapForm.GRASSoptions1Click(Sender: TObject);
 begin
    GRASSPopupMenu1.Popup(Mouse.CursorPos.X,Mouse.CursorPos.Y);
+end;
+
+procedure TMapForm.GRASSpartialderivatives1Click(Sender: TObject);
+begin
+  GRASS_partialDerivatives(MapDraw.DEMonMap);
 end;
 
 procedure TMapForm.Parameterpercentiles1Click(Sender: TObject);
@@ -7393,10 +7406,13 @@ begin
 end;
 
 procedure TMapForm.Gridcorrelations1Click(Sender: TObject);
+var
+   DEMsWanted : tDEMBooleanArray;
 begin
    {$IfDef ExGeostats}
    {$Else}
-      GridCorrelationMatrix;
+      GetMultipleDEMsFromList('Grid correlations',DEMsWanted);
+      GridCorrelationMatrix(DEMsWanted);
    {$EndIf}
 end;
 
@@ -9867,6 +9883,7 @@ begin
    Image1.Stretch := true;             //Required for Delphi 6 "feature"
    PointCloudBase := false;
    Blending := false;
+   MapFormNowClosing := false;
    MapSubsetAllowed := true;
    UseMapForMultipleMapOperations := true;
    MapDraw := tMapDraw.Create;
@@ -9951,8 +9968,10 @@ label
    CleanUp;
 begin
    {$If Defined(RecordClosing) or Defined(RecordMapClosing)} WriteLineToDebugFile('TMapForm FormCloseQuery in, map=' + Caption); {$EndIf}
-   ApplicationProcessMessages;
+   //ApplicationProcessMessages;
+
    if ClosingMapNotAllowed then begin
+      {$If Defined(RecordMapClosing)} WriteLineToDebugFile('TMapForm FormCloseQuery out, ClosingMapNotAllowed'); {$EndIf}
       CanClose := false;
       exit;
    end;
@@ -9973,28 +9992,26 @@ begin
        GISdb[MapDraw.CurrentFansTable].FanCanClose := true;
     end;
 
-   if (MapDraw.MapOwner in [moHiResIntervis,moDrapeMap]) then exit;
-
-   if (MapDraw.MapOwner in [moNone,moPointVerificationMap]) then begin
+   if (MapDraw.MapOwner in [moHiResIntervis,moDrapeMap]) then begin
+      exit;
+   end
+   else if (MapDraw.MapOwner in [moNone,moPointVerificationMap]) then begin
       if (MapDraw.MapOwner in [moPointVerificationMap]) then Closable := true;
       CanClose := Closable;
       {$IfDef RecordClosing} WriteLineToDebugFile('TMapForm close without checking'); if Closable then WriteLineToDebugFile('   closable'); {$EndIf}
    end
    else if (MapDraw.MapOwner in [moEditMap,moDEMSelectionMap]) and MapDraw.ValidDEMonMap then begin
-       {$If Defined(RecordClosing) or Defined(RecordMapClosing)} WriteLineToDebugFile('MapOwner in [moDEMSelectionMap,moEditMap'); {$EndIf}
+       {$If Defined(RecordClosing) or Defined(RecordMapClosing)} WriteLineToDebugFile('MapOwner in [moDEMSelectionMap,moEditMap]'); {$EndIf}
        CanClose := false;
-       {$IfDef ExMultiGrid}
-          CloseSingleDEM(MapDraw.DEMonMap);
-       {$Else}
-          if (MapDraw.MonthlyDBArrayOnMap <> 0) then CloseSingleMonthlyDBArray(MapDraw.MonthlyDBArrayOnMap)
-          else if (MapDraw.MultiGridOnMap <> 0) then CloseSingleMultigrid(MapDraw.MultiGridOnMap)
-          else begin
-             CloseSingleDEM(MapDraw.DEMonMap,false,false);
-             CanClose := true;
-          end;
-       {$EndIf}
-    end
-    else if MapDraw.MapOwner in [moImageSelectionMap] then begin
+       if (MapDraw.MonthlyDBArrayOnMap <> 0) then CloseSingleMonthlyDBArray(MapDraw.MonthlyDBArrayOnMap)
+       else if (MapDraw.MultiGridOnMap <> 0) then CloseSingleMultigrid(MapDraw.MultiGridOnMap)
+       else begin
+          CloseSingleDEM(MapDraw.DEMonMap,false,false);
+          MapFormNowClosing := true;
+          CanClose := true;
+       end;
+   end
+   else if MapDraw.MapOwner in [moImageSelectionMap] then begin
        {$IfDef ExSat}
        {$Else}
           if (MapDraw.MapOwner = moImageSelectionMap) and MapDraw.ValidSatOnMap then begin
@@ -10003,7 +10020,7 @@ begin
              CloseSingleSatelliteImage(MapDraw.SatOnMap);
           end;
        {$EndIf}
-    end
+   end
    else CanClose := Closable;
    {$If Defined(RecordClosing) or Defined(RecordMapClosing)} WriteLineToDebugFile('Exit TMapForm.FormCloseQuery fallthrough'); {$EndIf}
 end;
@@ -10024,31 +10041,22 @@ begin
 
    if (MapDraw <> Nil) then MapDraw.ClosingMapNow := true;
    if (BlendPanel.Height > 0) then BitBtn1Click(Nil);
-
-(*
-   If (NumOpenMaps = 1) then begin
-      {$IfDef RecordClosing} WriteLineToDebugFile('TMapForm.formClose CloseAllDataBases'); {$EndIf}
-      CloseAllDataBases;
-   end
-   else begin
-*)
-      for i := 1 to MaxDataBase do begin
-         if (ValidDB(i)) then begin
-            {$If Defined(RecordClosing) or Defined(RecordMapClosing)}  WriteLineToDebugFile('TMapForm.formClose Close db=' + IntToStr(i)); {$EndIf}
-            if (GISdb[i].theMapOwner <> Nil) and (not GISdb[i].PLSSFile) then begin
-               if (GISdb[i].theMapOwner = Self) and GISdb[i].ShowLocalMapOnly then begin
-                  CloseIt(i);
-               end
-               else if MDDef.DBsOnAllMaps then begin
-                  if (NumOpenMaps = 1) then CloseIt(i);
-               end
-               else if (GISdb[i].theMapOwner = Self) then begin
-                  CloseIt(i);
-               end;
+   for i := 1 to MaxDataBase do begin
+      if (ValidDB(i)) then begin
+         {$If Defined(RecordClosing) or Defined(RecordMapClosing)}  WriteLineToDebugFile('TMapForm.formClose Close db=' + IntToStr(i)); {$EndIf}
+         if (GISdb[i].theMapOwner <> Nil) and (not GISdb[i].PLSSFile) then begin
+            if (GISdb[i].theMapOwner = Self) and GISdb[i].ShowLocalMapOnly then begin
+               CloseIt(i);
+            end
+            else if MDDef.DBsOnAllMaps then begin
+               if (NumOpenMaps = 1) then CloseIt(i);
+            end
+            else if (GISdb[i].theMapOwner = Self) then begin
+               CloseIt(i);
             end;
          end;
       end;
-//   end;
+   end;
    BackToWandering;
 
    {$If Defined(RecordClosing) or Defined(RecordMapClosing)}  WriteLineToDebugFile('TMapForm.formClose Tdb_display_opts'); {$EndIf}
@@ -10060,8 +10068,8 @@ begin
       end;
    end;
 
-   {$If Defined(RecordClosing) or Defined(RecordMapClosing)} WriteLineToDebugFile('TMapForm.formClose closing MapDraw'); {$EndIf}
    if (MapDraw <> Nil) then begin
+      {$If Defined(RecordClosing) or Defined(RecordMapClosing)} WriteLineToDebugFile('TMapForm.formClose closing MapDraw'); {$EndIf}
       MapDraw.MapDrawValid := false;
       MapDraw.Destroy;
       MapDraw := Nil;
@@ -10078,8 +10086,8 @@ begin
        VegGraph := Nil;
    end;
 
-   {$If Defined(RecordClosing) or Defined(RecordMapClosing)}  WriteLineToDebugFile('TMapForm.formClose WMDEM form ops'); {$EndIf}
    if (WMDEM <> Nil) then begin
+      {$If Defined(RecordClosing) or Defined(RecordMapClosing)}  WriteLineToDebugFile('TMapForm.formClose WMDEM form ops'); {$EndIf}
       if (not LockStatusBar) then wmDEM.ClearStatusBarPanelText;
       WmDem.SetMenusForVersion;
    end;
@@ -10087,7 +10095,9 @@ begin
    {$If Defined(RecordClosing) or Defined(RecordMapClosing)} WriteLineToDebugFile('TMapForm.formClose zoom window'); {$EndIf}
    if (ZoomWindow <> Nil) and (ZoomWindow.Handle = Self.Handle) then ZoomWindow := Nil;
    {$If Defined(RecordClosing) or Defined(RecordMapClosing)} WriteLineToDebugFile('TMapForm.formClose self destroy'); {$EndIf}
-   Self.Destroy;
+
+
+   //Self.Destroy;
 
    //{$If Defined(RecordClosing) or Defined(RecordMapClosing)} WriteLineToDebugFile('TMapForm.formClose self Nil'); {$EndIf}
    //Self := Nil;
@@ -10854,8 +10864,7 @@ end;
 
 procedure TMapForm.Curvaturecategories1Click(Sender: TObject);
 begin
-    {$IfDef ExGeostats}
-    {$Else}
+    {$IfDef MultipleCurvatureMethods}
        Curv_tend_map.DrawCurveCatMap(self);
     {$EndIf}
 end;
@@ -20108,10 +20117,9 @@ begin
     NASADEMtomatchthismap1Click(Sender);
 end;
 
-procedure TMapForm.MDDefDefSlopeMap1Click(Sender: TObject);
+procedure TMapForm.CompareProfileCurvature1Click(Sender: TObject);
 begin
-   SAGA_ProfileCurvature(true,DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap,MDtempDir + 'saga_profile_curvature.tif');
-   WBT_ProfileCurvature(true,DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap,MDtempDir + 'wbt_profile_curvature.tif');
+   Make_grid.CompareProfileCurvatures(MapDraw.DEMonMap);
 end;
 
 procedure TMapForm.MDDEM1Click(Sender: TObject);
@@ -24345,6 +24353,11 @@ begin
    SAGA_LSFactor(true,DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
 end;
 
+procedure TMapForm.SAGAmultliplecurvatures1Click(Sender: TObject);
+begin
+   SAGAMultipleCurvatures(MapDraw.DEMonMap);
+end;
+
 procedure TMapForm.SAGAplancurvature1Click(Sender: TObject);
 begin
    SAGA_PlanCurvature(true,DEMGlb[MapDraw.DEMonMap].SelectionMap.GeotiffDEMNameOfMap);
@@ -25296,7 +25309,7 @@ end;
 
 procedure TMapForm.Gridcorrelations2Click(Sender: TObject);
 begin
-   GridCorrelationMatrix;
+   Gridcorrelations1Click(Sender);
 end;
 
 initialization

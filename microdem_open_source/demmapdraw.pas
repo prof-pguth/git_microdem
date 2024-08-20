@@ -26,6 +26,7 @@
    //{$Define RecordKeyMap}         //don't use if there will be a lot of map drawing
 
    {$IfDef Debug}
+      //{$Define RecordClosing}
       //{$Define RecordNumberOpenMaps}
       //{$Define RecordMapDrawLegends}
       //{$Define TrackHorizontalDatum}
@@ -108,7 +109,6 @@
       //{$Define RecordContourLines}
       //{$Define RecordOblique}
       //{$Define RecordTIGERFull}
-      //{$Define RecordClosing}
       //{$Define RecordMagDecDiagram}
       //{$Define RecordThreadContour}
       //{$Define RecordRoute}

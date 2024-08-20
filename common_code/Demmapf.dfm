@@ -2,7 +2,7 @@ object MapForm: TMapForm
   Left = 45
   Top = 303
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1255
+  ClientHeight = 1275
   ClientWidth = 2112
   Color = clBtnHighlight
   Font.Charset = DEFAULT_CHARSET
@@ -41,7 +41,7 @@ object MapForm: TMapForm
     Left = 0
     Top = 27
     Width = 2112
-    Height = 1228
+    Height = 1248
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clRed
@@ -207,7 +207,7 @@ object MapForm: TMapForm
     end
     object BlendPanel: TPanel
       Left = 0
-      Top = 1183
+      Top = 1203
       Width = 2108
       Height = 41
       Align = alBottom
@@ -4030,13 +4030,13 @@ object MapForm: TMapForm
       end
       object Externaltools1: TMenuItem
         Caption = 'External tools'
-        object CompareProfileCurvature: TMenuItem
+        object CompareSlopeMaps: TMenuItem
           Caption = 'Compare slope maps'
-          OnClick = CompareProfileCurvatureClick
+          OnClick = CompareSlopeMapsClick
         end
-        object MDDefDefSlopeMap1: TMenuItem
+        object CompareProfileCurvature1: TMenuItem
           Caption = 'Compare profile curvature'
-          OnClick = MDDefDefSlopeMap1Click
+          OnClick = CompareProfileCurvature1Click
         end
         object Compareplancurvature1: TMenuItem
           Caption = 'Compare plan curvature'
@@ -4045,6 +4045,14 @@ object MapForm: TMapForm
         object Comparetangentialcurvature1: TMenuItem
           Caption = 'Compare tangential curvature'
           OnClick = Comparetangentialcurvature1Click
+        end
+        object SAGAmultliplecurvatures1: TMenuItem
+          Caption = 'SAGA multliple curvatures'
+          OnClick = SAGAmultliplecurvatures1Click
+        end
+        object GRASSpartialderivatives1: TMenuItem
+          Caption = 'GRASS partial derivatives'
+          OnClick = GRASSpartialderivatives1Click
         end
         object N46: TMenuItem
           Caption = '-'
@@ -6388,6 +6396,7 @@ object MapForm: TMapForm
     end
     object Curvaturecategories1: TMenuItem
       Caption = 'Curvature categories'
+      Visible = False
       OnClick = Curvaturecategories1Click
     end
     object N5: TMenuItem

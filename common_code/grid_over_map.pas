@@ -902,8 +902,9 @@ end;
 
 procedure TGridOverlayonMap.BitBtn5Click(Sender: TObject);
 var
-   GISNum,DEM,x,y,Npts,skip,LowG,HighG,LeftG,RightG : integer;
+   GISNum,DEM,x,y,skip,LowG,HighG,LeftG,RightG : integer;
    z  : float32;
+   NPts : int64;
    Lat,Long : float64;
    fName,fName2 : PathStr;
    TrainingSets : boolean;
@@ -968,7 +969,7 @@ begin
     if TrainingSets then CreateDataBase.AddAField('AREA',ftstring,24);
     for DEM := 2 to LastDEMtoUse do begin
        CreateDataBase.AddAField(ShortBaseName(DEMGlb[DEM].AreaName),ftFloat,9,4);
-       DEMGlb[DEM].ElevationStatistics(DEMGlb[DEM].FullDEMGridLimits,Mean[DEM],Std[DEM]);
+       DEMGlb[DEM].ElevationStatistics(DEMGlb[DEM].FullDEMGridLimits,Mean[DEM],Std[DEM],NPts);
     end;
     CreateDataBase.AddAField('CLUSTER',ftFloat,3,0);
     CreateDataBase.WriteCorrectHeader;

@@ -27,7 +27,7 @@ uses
 
 type
    tRegionSizeParameter = (rsRelief,rsOpenUp,rsOpenDown,rsOpenDiff,rsSummit,rsBaseLevel,rsGeoRelief,rsDropoff,rsElevRelf,
-      rsElevMoment,rsSlopeMoment,rsPlanCurveMoment,rsProfCurveMoment);
+      rsElevMoment,rsSlopeMoment{,rsPlanCurveMoment,rsProfCurveMoment});
 
 type
   Tregionsizeform = class(TForm)
@@ -85,8 +85,9 @@ var
       function PerformPointComputations(Col,Row : integer) : boolean;
       var
          Relief,Summit,BaseLevel,GeoRelief,Dropoff,Elev_relf,z : float32;
+         PlanCurvature,SlopeCurvature,
          MaxSlp,crossc,MaxCurve,MinCurve,
-         Upward,Downward,Relief1,PlanCurvature,SlopeCurvature : float64;
+         Upward,Downward,Relief1 : float64;
          SlopeAspectRec : tSlopeAspectRec;
       begin
          if Param in [rsOpenUp,rsOpenDown,rsOpenDiff] then begin
@@ -95,7 +96,7 @@ var
             else if Param in [rsOpenDown] then Relief1 := Downward
             else Relief1 := Upward-Downward;
          end
-         else if Param in [rsElevMoment,rsSlopeMoment,rsPlanCurveMoment,rsProfCurveMoment] then begin
+         else if Param in [rsElevMoment,rsSlopeMoment{,rsPlanCurveMoment,rsProfCurveMoment}] then begin
              if Param in [rsElevMoment] then begin
                 Result := DEMGlb[CurDEM].GetElevMeters(Col,Row,z);
              end
@@ -104,13 +105,15 @@ var
                    Result := DEMGlb[CurDEM].GetSlopeAndAspect(Col,Row,SlopeAspectRec);
                    z := SlopeAspectRec.SlopePercent;
                 end
-                else if DEMGlb[CurDEM].IsSurroundedPoint(Col,Row) then  begin
-                    Result := true;
-                    if DEMGlb[CurDEM].GetEvansParams(Col,Row,MDDef.WoodRegionRadiusPixels,MaxSlp,SlopeCurvature,PlanCurvature,crossc,MaxCurve,MinCurve) then begin
-                       if Param in [rsPlanCurveMoment] then z := PlanCurvature;
-                       if Param in [rsProfCurveMoment] then z := SlopeCurvature;
-                    end;
-                end
+                {$IfDef MultipleCurvatureMethods}
+                   else if DEMGlb[CurDEM].IsSurroundedPoint(Col,Row) then  begin
+                       Result := true;
+                       if DEMGlb[CurDEM].GetEvansParams(Col,Row,MDDef.WoodRegionRadiusPixels,MaxSlp,SlopeCurvature,PlanCurvature,crossc,MaxCurve,MinCurve) then begin
+                          if Param in [rsPlanCurveMoment] then z := PlanCurvature;
+                          if Param in [rsProfCurveMoment] then z := SlopeCurvature;
+                       end;
+                   end
+                {$EndIf}
                 else Result := false;
              end;
 
@@ -143,7 +146,7 @@ begin
    Lat := aLat;
    Long := aLong;
    DEMGlb[CurDEM].LatLongDegreeToDEMGridInteger(Lat,Long,Col,Row);
-   if Param in [rsElevMoment,rsSlopeMoment,rsPlanCurveMoment,rsProfCurveMoment] then begin
+   if Param in [rsElevMoment,rsSlopeMoment{,rsPlanCurveMoment,rsProfCurveMoment}] then begin
       New(zvs);
    end;
 
@@ -186,6 +189,16 @@ begin
       TStr1 := 'Dropoff';
       TStr2 := TStr1 + ' (m)';
    end
+   {$IfDef MultipleCurvatureMethods}
+      else if Param = rsPlanCurveMoment then begin
+         TStr1 := 'Plan Curvature ' + TStr1;
+         TStr2 := TStr1;
+      end
+      else if Param = rsProfCurveMoment then begin
+         TStr1 := 'Profile Curvature ' + TStr1;
+         TStr2 := TStr1;
+      end
+   {$EndIf}
    else if Param = rsElevMoment then begin
       TStr1 := 'Elevation ' + TStr1;
       TStr2 := TStr1 + ' (m)';
@@ -193,14 +206,6 @@ begin
    else if Param = rsSlopeMoment then begin
       TStr1 := 'Slope ' + TStr1;
       TStr2 := TStr1 + ' (%)';
-   end
-   else if Param = rsPlanCurveMoment then begin
-      TStr1 := 'Plan Curvature ' + TStr1;
-      TStr2 := TStr1;
-   end
-   else if Param = rsProfCurveMoment then begin
-      TStr1 := 'Profile Curvature ' + TStr1;
-      TStr2 := TStr1;
    end;
 
    Result := TThisBaseGraph.Create(Application);
@@ -265,7 +270,7 @@ begin
       end;
 
       if (MomentVar.NPts > 0) then begin
-         if Param in [rsElevMoment,rsSlopeMoment,rsPlanCurveMoment,rsProfCurveMoment] then begin
+         if Param in [rsElevMoment,rsSlopeMoment{,rsPlanCurveMoment,rsProfCurveMoment}] then begin
             moment(zvs^,MomentVar,msBeforeMedian);
             case RadioGroup2.ItemIndex of
                0 : v[2] := MomentVar.mean;
@@ -286,7 +291,7 @@ begin
    Result.AutoScaleAndRedrawDiagram;
    wmdem.FormPlacementInCorner(Result,lpNEMap);
    EndProgress;
-   if Param in [rsElevMoment,rsSlopeMoment,rsPlanCurveMoment,rsProfCurveMoment] then begin
+   if Param in [rsElevMoment,rsSlopeMoment{,rsPlanCurveMoment,rsProfCurveMoment}] then begin
       Dispose(zvs);
    end;
    {$IfDef RecordGeostat} WriteLineToDebugFile('GeomorphParameterVersusRegion out'); {$EndIf}

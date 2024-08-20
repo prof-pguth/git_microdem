@@ -497,7 +497,6 @@ const
    MaxPoints = 51 * 51;
 var
    i,j : integer;
-   //z : float32;
    MomentVar : tMomentVar;
    SlopeAsp : tSlopeAspectRec;
    sl : array[1..MaxPoints] of float32;
@@ -933,8 +932,12 @@ begin
             SlopeAsp.dzdy := (+SlopeAsp.znw+SlopeAsp.zn+SlopeAsp.zne-SlopeAsp.zsw-SlopeAsp.zs-SlopeAsp.zse) / SlopeAsp.dy / 6;
          end
          else if (MDdef.SlopeAlg = smEightNeighborsWeighted) then begin  //Horn method
-            SlopeAsp.dzdx := 0.125 * ( SlopeAsp.zne + (2 * SlopeAsp.ze) + SlopeAsp.zse  -SlopeAsp.znw - (2 * SlopeAsp.zw) - SlopeAsp.zsw) / SlopeAsp.dx;
-            SlopeAsp.dzdy := 0.125 * ( SlopeAsp.znw + (2 * SlopeAsp.zn) + SlopeAsp.zne  -SlopeAsp.zsw - (2 * SlopeAsp.zs) - SlopeAsp.zse) / SlopeAsp.dy;
+            SlopeAsp.dzdx := 0.125 * ( SlopeAsp.zne + (2 * SlopeAsp.ze) + SlopeAsp.zse  - SlopeAsp.znw - (2 * SlopeAsp.zw) - SlopeAsp.zsw) / SlopeAsp.dx;
+            SlopeAsp.dzdy := 0.125 * ( SlopeAsp.znw + (2 * SlopeAsp.zn) + SlopeAsp.zne  - SlopeAsp.zsw - (2 * SlopeAsp.zs) - SlopeAsp.zse) / SlopeAsp.dy;
+         end
+         else if (MDDef.SlopeAlg = smFourNeighbors) then begin  //Fleming and Hoffer, 1979; Ritter, 1987; Zevenbergen and Thorne, 1987; O'Neill & Mark, 1987
+            SlopeAsp.dzdy := (SlopeAsp.zn - SlopeAsp.zs) * 0.5 / SlopeAsp.dy;
+            SlopeAsp.dzdx := (SlopeAsp.ze - SlopeAsp.zw) * 0.5 / SlopeAsp.dx;
          end
          else if (MDdef.SlopeAlg = smEightNeighborsWeightedByDistance) then begin  //Unwin, 1981
             SlopeAsp.dzdy := 1 / (4 + 2 * sqrt_2) * ((SlopeAsp.znw + Sqrt_2 * SlopeAsp.zn + SlopeAsp.zne) - (SlopeAsp.zsw + Sqrt_2 * SlopeAsp.zs + SlopeAsp.zse)) / SlopeAsp.dy;
@@ -943,10 +946,6 @@ begin
          else if (MDDef.SlopeAlg = smFrameFiniteDifference) then begin
             SlopeAsp.dzdy := (SlopeAsp.znw - SlopeAsp.zsw + SlopeAsp.zne - SlopeAsp.zse) * 0.25 / SlopeAsp.dy;
             SlopeAsp.dzdx := (SlopeAsp.zse - SlopeAsp.zsw + SlopeAsp.zne - SlopeAsp.znw) * 0.25 / SlopeAsp.dx;
-         end
-         else if (MDDef.SlopeAlg = smFourNeighbors) then begin  //Fleming and Hoffer, 1979; Ritter, 1987; Zevenbergen and Thorne, 1987; O'Neill & Mark, 1987
-            SlopeAsp.dzdy := (SlopeAsp.zn - SlopeAsp.zs) * 0.5 / SlopeAsp.dy;
-            SlopeAsp.dzdx := (SlopeAsp.ze - SlopeAsp.zw) * 0.5 / SlopeAsp.dx;
          end
          else if (MDDef.SlopeAlg = smSimpleDifference) then begin
             SlopeAsp.dzdy := (SlopeAsp.z - SlopeAsp.zs) * 0.5 / SlopeAsp.dy;
@@ -1031,12 +1030,12 @@ begin
 end;
 
 
-function tDEMDataSet.SlopePercent(XGrid,YGrid : integer) : float64;
+function tDEMDataSet.SlopePercent(XGrid,YGrid : integer; var Slope : float64) : boolean;
 var
-  SlpAsp : tSlopeAspectRec;
+   SlpAsp : tSlopeAspectRec;
 begin
-   GetSlopeAndAspect(xgrid,ygrid,SlpAsp);
-   Result := SlpAsp.SlopePercent;
+   Result := GetSlopeAndAspect(xgrid,ygrid,SlpAsp);
+   if Result then Slope := SlpAsp.SlopePercent else Slope := -9999;
 end;
 
 
@@ -1057,58 +1056,6 @@ begin
    LatLongDegreeToDEMGrid(Lat,Long,xgrid,ygrid);
    GetSlopeAndAspect(round(xgrid),round(ygrid),SlopeAsp);
    Result := SlopeAsp.SlopePercent;
-end;
-
-
-
-function tDEMDataSet.GetEvansParams(Col,Row,RegionSize : integer; var SlopeDeg,SlopeCurvature,PlanCurvature,crossc,MaxCurve,MinCurve : float64) : boolean;
-const
-   Tolerance = 0.000000000001;
-var
-   SqED,z1,z2,z3,z4,z6,z7,z8,z9,a,b,c,d,e,SqABC,
-   xsp,ysp,asp : float64;
-   znw,zw,zsw,zn,z,zs,zne,ze,zse : float32;
-begin
-   if SurroundedPointElevs(Col,Row,znw,zw,zsw,zn,z,zs,zne,ze,zse,RegionSize) then begin
-      Result := true;
-      ysp := AverageYSpace * RegionSize;
-      xsp := XSpaceByDEMrow^[Row] * RegionSize;
-
-      Asp := 0.5 * (xsp + ysp);
-      z7 := zsw - z;
-      z8 := zs - z;
-      z9 := zse - z;
-      z4 := zw - z;
-      //z5 := 0;
-      z6 := ze - z;
-      z1 := znw - z;
-      z2 := zn - z;
-      z3 := zne - z;
-
-      A := ((z1 + z3 + z4 + z6 + z7 + z9) / 6 - (z2 + {z5 +} z8) / 3) / XSp / YSp;
-      B := ((Z1 + z2 + z3 + z7 + z8 + z9) / 6 - (z4 + {z5 +} z6) / 3) / XSp / YSp;
-      C := (z3 + z7 -z1 - z9) / 4  / XSp / YSp;
-      D := (z3 + z6 + z9 - z1 - z4 - z7) / 6 / XSp;
-      E := (z1 + z2 + z3 - z7 - z8 - z9) / 6 / YSp;
-      //F := (2 * ( z2 + z4 + z6 - z8) - (z1 + z3 + z7 + z9) {+ 5 * z5} ) / 9;
-
-      SqABC := sqrt(sqr(a-b) + sqr(c));
-      MaxCurve := 20 * (ASp)*(-a - b + SqABC);
-      MinCurve := 20 * (ASp)*(-a - b - SqABC);
-      SqED := (sqr(E) + sqr(D));
-      if (SqED > Tolerance) then begin
-         SlopeCurvature {Profile convexity} := -200 * (A * sqr(D) + B * sqr(E) + C * D * E) / SqED / Math.Power(1 + SqED, 1.5);
-         PlanCurvature {Plan convexity} := 200 * (B * sqr(D) + A * sqr(E) - C * D * E) / Math.Power(1 +SqED, 1.5);
-         crossc := -20 * (ASp)*(b*d*d + a*e*e - c*d*e)/  SqED;
-      end
-      else begin
-         SlopeCurvature := 0;
-         PlanCurvature := 0;
-         CrossC := 0;
-      end;
-      SlopeDeg := arctan(sqrt(sqED)) / DegToRad;
-   end
-   else Result := false;
 end;
 
 
@@ -1205,26 +1152,6 @@ begin
 end;
 
 
-procedure tDEMDataSet.PlanCMoments(GridLimits: tGridLimits; var PlanCMoment : tMomentVar);
-var
-   zvs : ^bfarray32;
-begin
-   New(zvs);
-   GetPlanCInLongArray(GridLimits,PlancMoment.NPts,zvs^,false);
-   moment(zvs^,PlanCMoment,msBeforeMedian);
-   Dispose(zvs);
-end;
-
-procedure tDEMDataSet.ProfCMoments(GridLimits: tGridLimits;  var ProfCMoment : tMomentVar);
-var
-   zvs : ^bfarray32;
-begin
-   New(zvs);
-   GetProfCInLongArray(GridLImits,ProfCMoment.NPts,zvs^,false);
-   moment(zvs^,ProfCMoment,msBeforeMedian);
-   Dispose(zvs);
-end;
-
 
 procedure tDEMDataSet.BothOpennessMoments(GridLimits: tGridLimits; var UpOpenMoment,DownOpenMoment : tMomentVar);
 var
@@ -1317,17 +1244,18 @@ end;
 procedure tDEMDataSet.ElevationMomentsWithArray(GridLimits: tGridLimits; var MomentVar : tMomentVar; var zvs : bfarray32; MomentStop : tMomentStop = msAll);
 begin
    InitializeMomentVar(MomentVar);
-   GetElevationsInLongArray(GridLimits,MomentVar.NPts,zvs,false);
+   GetElevationsInLongArray(GridLimits,MomentVar.NPts,zvs,true);
    moment(zvs,MomentVar,MomentStop);
 end;
 
-procedure tDEMDataSet.ElevationStatistics(GridLimits: tGridLimits; var Mean,Std : float32);
+procedure tDEMDataSet.ElevationStatistics(GridLimits: tGridLimits; var Mean,Std : float32; var NPts : int64);
 var
    MomentVar : tMomentVar;
 begin
    MomentVar := ElevationMoments(GridLimits,msAfterStdDev);
    Mean := MomentVar.mean;
    Std := MomentVar.std_dev;
+   Npts := MomentVar.NPts;
 end;
 
 
@@ -2033,7 +1961,7 @@ begin
 
    {$IfDef ExGeostats}
    {$Else}
-      {$If Defined(CurvaturePointParameters)}
+      {$IfDef MultipleCurvatureMethods}
          //this one is off by default, since curvature is so messy
          if GetEvansParams(Col,Row,MDDef.WoodRegionRadiusPixels,MaxSlp,SlopeCurvature,PlanCurvature,crossc,MaxCurve,MinCurve) then begin
             Results.Add('');
@@ -2280,6 +2208,79 @@ end;
 
 {$IfDef MultipleCurvatureMethods}
 
+procedure tDEMDataSet.PlanCMoments(GridLimits: tGridLimits; var PlanCMoment : tMomentVar);
+var
+   zvs : ^bfarray32;
+begin
+   New(zvs);
+   GetPlanCInLongArray(GridLimits,PlancMoment.NPts,zvs^,false);
+   moment(zvs^,PlanCMoment,msBeforeMedian);
+   Dispose(zvs);
+end;
+
+procedure tDEMDataSet.ProfCMoments(GridLimits: tGridLimits;  var ProfCMoment : tMomentVar);
+var
+   zvs : ^bfarray32;
+begin
+   New(zvs);
+   GetProfCInLongArray(GridLImits,ProfCMoment.NPts,zvs^,false);
+   moment(zvs^,ProfCMoment,msBeforeMedian);
+   Dispose(zvs);
+end;
+
+
+function tDEMDataSet.GetEvansParams(Col,Row,RegionSize : integer; var SlopeDeg,SlopeCurvature,PlanCurvature,crossc,MaxCurve,MinCurve : float64) : boolean;
+const
+   Tolerance = 0.000000000001;
+var
+   SqED,z1,z2,z3,z4,z6,z7,z8,z9,a,b,c,d,e,SqABC,
+   xsp,ysp,asp : float64;
+   znw,zw,zsw,zn,z,zs,zne,ze,zse : float32;
+begin
+   if SurroundedPointElevs(Col,Row,znw,zw,zsw,zn,z,zs,zne,ze,zse,RegionSize) then begin
+      Result := true;
+      ysp := AverageYSpace * RegionSize;
+      xsp := XSpaceByDEMrow^[Row] * RegionSize;
+
+      Asp := 0.5 * (xsp + ysp);
+      z7 := zsw - z;
+      z8 := zs - z;
+      z9 := zse - z;
+      z4 := zw - z;
+      //z5 := 0;
+      z6 := ze - z;
+      z1 := znw - z;
+      z2 := zn - z;
+      z3 := zne - z;
+
+      A := ((z1 + z3 + z4 + z6 + z7 + z9) / 6 - (z2 + {z5 +} z8) / 3) / XSp / YSp;
+      B := ((Z1 + z2 + z3 + z7 + z8 + z9) / 6 - (z4 + {z5 +} z6) / 3) / XSp / YSp;
+      C := (z3 + z7 -z1 - z9) / 4  / XSp / YSp;
+      D := (z3 + z6 + z9 - z1 - z4 - z7) / 6 / XSp;
+      E := (z1 + z2 + z3 - z7 - z8 - z9) / 6 / YSp;
+      //F := (2 * ( z2 + z4 + z6 - z8) - (z1 + z3 + z7 + z9) {+ 5 * z5} ) / 9;
+
+      SqABC := sqrt(sqr(a-b) + sqr(c));
+      MaxCurve := 20 * (ASp)*(-a - b + SqABC);
+      MinCurve := 20 * (ASp)*(-a - b - SqABC);
+      SqED := (sqr(E) + sqr(D));
+      if (SqED > Tolerance) then begin
+         SlopeCurvature {Profile convexity} := -200 * (A * sqr(D) + B * sqr(E) + C * D * E) / SqED / Math.Power(1 + SqED, 1.5);
+         PlanCurvature {Plan convexity} := 200 * (B * sqr(D) + A * sqr(E) - C * D * E) / Math.Power(1 +SqED, 1.5);
+         crossc := -20 * (ASp)*(b*d*d + a*e*e - c*d*e)/  SqED;
+      end
+      else begin
+         SlopeCurvature := 0;
+         PlanCurvature := 0;
+         CrossC := 0;
+      end;
+      SlopeDeg := arctan(sqrt(sqED)) / DegToRad;
+   end
+   else Result := false;
+end;
+
+
+
 function tDEMDataSet.GetCurvature(Col,Row : integer; var PlanCurvature,SlopeCurvature : float64) : boolean;
 const
    Tolerance = 0.000000000001;
@@ -2408,55 +2409,89 @@ end;
 {$EndIf}
 
 
+{$IfDef MultipleCurvatureMethods}
 
-procedure tDEMDataSet.GetPlanCInLongArray(GridLimits: tGridLimits; var NPts : int64; var Values : Petmath.bfarray32; IncludeSeaLevel : boolean = true);
-var
-   Col,Row,Incr : integer;
-   SlopeDeg,crossc,MaxCurve,MinCurve,
-   PlanCurvature,SlopeCurvature : float64;
- begin
-   NPts := 0;
-   Incr := GetSamplingSize(GridLimits);
-   Col := GridLimits.XGridLow;
-   while (Col <= GridLimits.XGridHigh) do begin
-      Row := GridLimits.YGridLow;
-      while (Row <= GridLimits.YGridHigh) do begin
-         if (IncludeSeaLevel) or (not SeaLevelCell(Col,Row)) then begin
-            if GetEvansParams(Col,Row,1,SlopeDeg,SlopeCurvature,PlanCurvature,crossc,MaxCurve,MinCurve)  then begin
-               Values[Npts] := PlanCurvature;
-               inc(NPts);
-            end;
+      procedure tDEMDataSet.WoodPointClassify(Col,Row : integer; var PointType : tPointType);
+      {after Wood, 1996, algorithm 5.1}
+      {used GRASS C code available on the web}
+      var
+         MaxCurve,MinCurve,SlopeDeg,CrossC,
+         SlopeCurvature,PlanCurvature  : float64;
+      begin
+         if GetEvansParams(Col,Row,MDDef.WoodRegionRadiusPixels,SlopeDeg,SlopeCurvature,PlanCurvature,CrossC,MaxCurve,MinCurve) then begin
+            if (SlopeDeg < MDDef.MinSlopeToClassify) then PointType := FlatPoint
+            else if (slopeDeg > MDDef.SlopeClassTolerance) then begin
+               if (CrossC > MDDef.ConvexClassTolerance) then PointType := RidgePoint
+               else if (CrossC < -MDDef.ConvexClassTolerance) then PointType := ValleyPoint
+               else PointType := OtherPoint;
+            end
+            else if (MaxCurve > MDDef.ConvexClassTolerance) then begin
+               if (MinCurve > MDDef.ConvexClassTolerance) then PointType := PeakPoint
+               else if (MinCurve < -MDDef.ConvexClassTolerance) then PointType := PassPoint
+               else PointType := RidgePoint;
+            end
+            else if (MinCurve < -MDDef.ConvexClassTolerance) then begin
+               if (MaxCurve < -MDDef.ConvexClassTolerance) then PointType := PitPoint
+               else PointType := ValleyPoint
+            end
+            else PointType := OtherPoint;
+         end
+         else begin
+            PointType := EdgePoint;
+            if MissingDataInGrid(Col,Row) then PointType := MissingPoint;
          end;
-         inc(Row,Incr);
       end;
-      inc(Col,Incr);
-   end;
-end;
 
-
-procedure tDEMDataSet.GetProfCInLongArray(GridLimits: tGridLimits; var NPts : int64; var Values : Petmath.bfarray32; IncludeSeaLevel : boolean = true);
-var
-   Col,Row,Incr : integer;
-   SlopeDeg,crossc,MaxCurve,MinCurve,
-   PlanCurvature,SlopeCurvature : float64;
- begin
-   NPts := 0;
-   Incr := GetSamplingSize(GridLimits);
-   Col := GridLimits.XGridLow;
-   while (Col <= GridLimits.XGridHigh) do begin
-      Row := GridLimits.YGridLow;
-      while (Row <= GridLimits.YGridHigh) do begin
-         if (IncludeSeaLevel) or (not SeaLevelCell(Col,Row)) then begin
-            if GetEvansParams(Col,Row,1,SlopeDeg,SlopeCurvature,PlanCurvature,crossc,MaxCurve,MinCurve)  then begin
-               Values[Npts] := SlopeCurvature;
-               inc(NPts);
+   procedure tDEMDataSet.GetPlanCInLongArray(GridLimits: tGridLimits; var NPts : int64; var Values : Petmath.bfarray32; IncludeSeaLevel : boolean = true);
+   var
+      Col,Row,Incr : integer;
+      SlopeDeg,crossc,MaxCurve,MinCurve,
+      PlanCurvature,SlopeCurvature : float64;
+    begin
+      NPts := 0;
+      Incr := GetSamplingSize(GridLimits);
+      Col := GridLimits.XGridLow;
+      while (Col <= GridLimits.XGridHigh) do begin
+         Row := GridLimits.YGridLow;
+         while (Row <= GridLimits.YGridHigh) do begin
+            if (IncludeSeaLevel) or (not SeaLevelCell(Col,Row)) then begin
+               if GetEvansParams(Col,Row,1,SlopeDeg,SlopeCurvature,PlanCurvature,crossc,MaxCurve,MinCurve)  then begin
+                  Values[Npts] := PlanCurvature;
+                  inc(NPts);
+               end;
             end;
+            inc(Row,Incr);
          end;
-         inc(Row,Incr);
+         inc(Col,Incr);
       end;
-      inc(Col,Incr);
    end;
-end;
+
+
+   procedure tDEMDataSet.GetProfCInLongArray(GridLimits: tGridLimits; var NPts : int64; var Values : Petmath.bfarray32; IncludeSeaLevel : boolean = true);
+   var
+      Col,Row,Incr : integer;
+      SlopeDeg,crossc,MaxCurve,MinCurve,
+      PlanCurvature,SlopeCurvature : float64;
+    begin
+      NPts := 0;
+      Incr := GetSamplingSize(GridLimits);
+      Col := GridLimits.XGridLow;
+      while (Col <= GridLimits.XGridHigh) do begin
+         Row := GridLimits.YGridLow;
+         while (Row <= GridLimits.YGridHigh) do begin
+            if (IncludeSeaLevel) or (not SeaLevelCell(Col,Row)) then begin
+               if GetEvansParams(Col,Row,1,SlopeDeg,SlopeCurvature,PlanCurvature,crossc,MaxCurve,MinCurve)  then begin
+                  Values[Npts] := SlopeCurvature;
+                  inc(NPts);
+               end;
+            end;
+            inc(Row,Incr);
+         end;
+         inc(Col,Incr);
+      end;
+   end;
+
+{$EndIf}
 
 {$IfDef ExGeostats}
 {$Else}

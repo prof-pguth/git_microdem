@@ -28,6 +28,7 @@
 {$Define VCL}
 {$Define RecordProblems}
 {$Define UseGrass}
+//{$Define RecordDEMIX}
 
 {$IfDef MSWindows}
    {$Define UseTDBF}

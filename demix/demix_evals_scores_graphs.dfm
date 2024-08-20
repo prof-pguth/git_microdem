@@ -284,7 +284,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
   object BitBtn28: TBitBtn
     Left = 8
     Top = 194
-    Width = 159
+    Width = 170
     Height = 25
     Caption = 'Best eval graph per criterion'
     TabOrder = 22
@@ -535,18 +535,27 @@ object eval_scores_graph_form: Teval_scores_graph_form
         'BARREN_PC>40')
       TabOrder = 0
     end
+    object BitBtn7: TBitBtn
+      Left = 3
+      Top = 154
+      Width = 75
+      Height = 25
+      Caption = 'Clear'
+      TabOrder = 1
+      OnClick = BitBtn7Click
+    end
   end
   object GroupBox4: TGroupBox
-    Left = 1136
-    Top = 345
+    Left = 928
+    Top = 279
     Width = 185
-    Height = 96
+    Height = 122
     Caption = 'Multiple elevation range DBs'
     TabOrder = 38
     object BitBtn4: TBitBtn
       Left = 14
       Top = 24
-      Width = 83
+      Width = 107
       Height = 25
       Caption = 'Load 4 DBs'
       TabOrder = 0
@@ -555,11 +564,20 @@ object eval_scores_graph_form: Teval_scores_graph_form
     object BitBtn10: TBitBtn
       Left = 16
       Top = 55
-      Width = 89
+      Width = 113
       Height = 25
       Caption = 'Multiple wins'
       TabOrder = 1
       OnClick = BitBtn10Click
+    end
+    object BitBtn8: TBitBtn
+      Left = 16
+      Top = 88
+      Width = 113
+      Height = 25
+      Caption = 'Criteria performance'
+      TabOrder = 2
+      OnClick = BitBtn8Click
     end
   end
   object GroupBox5: TGroupBox

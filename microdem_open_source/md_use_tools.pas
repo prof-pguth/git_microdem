@@ -16,7 +16,8 @@ unit md_use_tools;
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
       //{$Define RecordWBT}
-      //{$Define RecordSAGA}
+      //{$RecordSAGA}
+      //{$Define RecordSAGARanges}
       //{$Define RecordSAGA_JustResult}
       //{$Define RecordSAGALS}
       //{$Define SAGA_HillValley}
@@ -130,10 +131,12 @@ uses
    function SAGA_StrahlerOrderGrid(InName : PathStr; OutName : PathStr = '') : integer;
    function SAGA_FlowAccumulationParallizeable(InName : PathStr; OutName : PathStr = '') : integer;
    function SAGA_LSFactor(OpenMap : boolean; InName : PathStr; LSGridName : PathStr = '') : integer;
-   function SAGA_Slope_percent(OpenMap : boolean; EvansMethod : char; InName : PathStr; SlopeFName : PathStr = '') : integer;
+   function SAGA_Slope_percent(OpenMap : boolean; SlopeMethod : char; InName : PathStr; SlopeFName : PathStr = '') : integer;
    function SAGA_ConvergenceIndex(OpenMap : boolean; InName : PathStr; ConIndexGridName : PathStr = '') : integer;
    function SAGA_PlanCurvature(OpenMap : boolean; InName : PathStr; PlanCurvatureFName : PathStr = '') : integer;
-   function SAGA_ProfileCurvature(OpenMap : boolean; InName : PathStr; ProfileCurvatureFName : PathStr = '') : integer;
+   function SAGA_ProfileCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
+   function SAGA_TangentialCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
+
    function SAGA_CurvatureClassification(OpenMap : boolean; DEMName : PathStr; CurvatureClassFName : PathStr = '') : integer;
    function SAGA_IwahashiAndPikeClassification(OpenMap : boolean; DEMName : PathStr; Classes : integer = 12; ClassFName : PathStr = '') : integer;
    function SAGA_HillValleyIndexes(OpenMap : boolean; DEMName : PathStr; ValleyIndexName : PathStr = ''; HillIndexName : PathStr = '') : integer;
@@ -144,13 +147,19 @@ uses
 {$IfDef ExGRASS}
 {$Else}
    procedure GetGrassExtensionsNow(InName : PathStr);
-   function GrassSlopeMap(InName : PathStr) : integer;
-   function GrassAspectMap(InName : PathStr) : integer;
-   function GrassVectorRuggedness(InName : PathStr; WindowSize : integer) : integer;
-   function GrassProfileCurvatureMap(InName : PathStr) : integer;
-   function GrassTangentialCurvatureMap(InName : PathStr) : integer;
-   function GrassTRIMap(InName : PathStr) : integer;
-   function GrassTPIMap(InName : PathStr) : integer;
+   function GrassSlopeMap(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
+   function GrassProfileCurvatureMap(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
+   function GrassTangentialCurvatureMap(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
+   function GrassAspectMap(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
+   function GrassVectorRuggedness(InName : PathStr; WindowSize : integer; OutName : PathStr = '') : integer;
+   function GrassTRIMap(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
+   function GrassTPIMap(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
+   function Grass_dx_partial(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
+   function Grass_dy_partial(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
+   function Grass_dxx_partial(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
+   function Grass_dyy_partial(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
+   function Grass_dxy_partial(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
+
 {$EndIf}
 
 
@@ -466,7 +475,7 @@ const
 
 
 
-function ExecuteGrassAndOpenMap(var BatchFile : tstringList; BatchName,OutName : PathStr; eu : tElevUnit; mt : tMapType) : integer;
+function ExecuteGrassAndOpenMap(var BatchFile : tstringList; BatchName,OutName : PathStr; eu : tElevUnit; mt : tMapType; OpenMap : boolean = true) : integer;
 begin
    {$IfDef RecordWBT} WriteLineToDebugFile('ExecuteGrassAndOpenMap, bf=' + BatchName); {$EndIf}
    BatchName := Petmar.NextFileNumber(MDTempDir,BatchName,'.bat');
@@ -477,7 +486,7 @@ begin
    if FileExists(OutName) then begin
       Result := OpenNewDEM(OutName,false);
       DEMGlb[Result].DEMheader.ElevUnits := eu;
-      CreateDEMSelectionMap(Result,true,true,mt);
+      if OpenMap then CreateDEMSelectionMap(Result,true,true,mt);
       {$IfDef RecordWBT} WriteLineToDebugFile('ExecuteGrassAndOpenMap map opened'); {$EndIf}
    end
    else MessageToContinue('Grass failure, try command in DOS window: ' + BatchName);
@@ -485,9 +494,9 @@ begin
 end;
 
 
-function AssembleGrassCommand(InName : PathStr; GridName,CommandName,NewLayer,BatchName : ShortString; eu : tElevUnit; mt : tMapType; TypeStr : shortstring = '32') : integer;
+function AssembleGrassCommand(InName : PathStr; GridName,CommandName,NewLayer,BatchName : ShortString; eu : tElevUnit; mt : tMapType;
+   OutName : PathStr = ''; OpenMap : boolean = true; TypeStr : shortstring = '32') : integer;
 var
-   OutName : PathStr;
    BatchFile : tStringList;
 
       procedure StartGrassBatchFile(var BatchFile : tStringList; InName : PathStr);
@@ -504,7 +513,7 @@ var
 
 begin
   if FileExistsErrorMessage(InName) then begin
-     OutName := MDTempDir + GridName + ExtractFileNameNoExt(InName) + '.tif';
+     if (OutName = '') then OutName := MDTempDir + GridName + ExtractFileNameNoExt(InName) + '.tif';
      //StartGRASSbatchFile(BatchFile,InName);
          BatchFile := tStringList.Create;
          BatchFile.Add(ClearGrassDirectory);
@@ -524,12 +533,12 @@ begin
         BatchFile.Add(GrassEXE + ' c:\mapdata\temp\grass1\PERMANENT --exec g.extension r.tpi |more');
         GetGrassExtensions := false;
      end;
-     Result := ExecuteGrassAndOpenMap(BatchFile,BatchName,OutName,eu,mt);
+     Result := ExecuteGrassAndOpenMap(BatchFile,BatchName,OutName,eu,mt,OpenMap);
   end;
 end;
 
 
-function GrassVectorRuggedness(InName : PathStr; WindowSize : integer) : integer;
+function GrassVectorRuggedness(InName : PathStr; WindowSize : integer; OutName : PathStr = '') : integer;
 var
    PartialResults : shortstring;
 begin
@@ -540,7 +549,7 @@ begin
    *)
    PartialResults := 'size=' + IntToStr(WindowSize);
    Result := AssembleGrassCommand(InName,'grass_vector_ruggedness_' + FilterSizeStr(WindowSize) + '_','r.vector.ruggedness elevation=mymap output=rugged ' +
-      PartialResults +  ' nprocs=-1','rugged','GrassVectorRugged_',euUndefined,mtElevSpectrum);
+      PartialResults +  ' nprocs=-1','rugged','GrassVectorRugged_',euUndefined,mtElevSpectrum,OutName);
    //Result := AssembleGrassCommand(InName,'grass_vector_ruggedness_','r.vector.ruggedness elevation=mymap slope=slope aspect=aspect output=rugged nprocs=-1','rugged','GrassRugged_',Undefined,mtElevSpectrum);
 end;
 
@@ -560,41 +569,75 @@ begin
 end;
 
 
-function GrassTRIMap(InName : PathStr) : integer;
+function GrassTRIMap(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
 begin
-   Result := AssembleGrassCommand(InName,'grass_TRI_','r.tri input=mymap output=tri ','tri','GrassTRI_',euUndefined,mtElevSpectrum);
+   Result := AssembleGrassCommand(InName,'grass_TRI_','r.tri input=mymap output=tri ','tri','GrassTRI_',euUndefined,mtElevSpectrum,OutName,OpenMap);
 end;
 
-function GrassTPIMap(InName : PathStr) : integer;
+
+function GrassTPIMap(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
 begin
 //r.tpi input=elevation@PERMANENT minradius=1 maxradius=25 steps=5 output=tpi
 //maxradius=25 fails (but might work in the user interface for GRASS?
 //variants of the option below, trying to get for just a single radius, failed
 //Result := AssembleGrassCommand(InName,'grass_TPI_','r.tpi input=mymap minradius=1 maxradius=5 steps=2 output=tpi','tpi','GrassTPI_',Undefined,mtElevSpectrum,'64');
-   Result := AssembleGrassCommand(InName,'grass_TPI_','r.tpi input=mymap minradius=1 maxradius=15 steps=5 output=tpi','tpi','GrassTPI_',euUndefined,mtElevSpectrum,'64');
+   Result := AssembleGrassCommand(InName,'grass_TPI_','r.tpi input=mymap minradius=1 maxradius=15 steps=5 output=tpi','tpi','GrassTPI_',euUndefined,mtElevSpectrum,OutName,OpenMap,'64');
 end;
 
 
-function GrassSlopeMap(InName : PathStr) : integer;
+function GrassSlopeMap(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
 begin
-   Result := AssembleGrassCommand(InName,'grass_slope_','r.slope.aspect elevation=mymap slope=slope format=percent','slope','GrassSlope_',euPercentSlope,MDDef.DefSlopeMap);
+   Result := AssembleGrassCommand(InName,'grass_slope_','r.slope.aspect elevation=mymap slope=slope format=percent','slope','GrassSlope_',euPercentSlope,MDDef.DefSlopeMap,OutName,OpenMap);
 end;
 
-function GrassAspectMap(InName : PathStr) : integer;
+function GrassAspectMap(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
 begin
-   Result := AssembleGrassCommand(InName,'grass_aspect_','r.slope.aspect elevation=mymap aspect=aspect format=percent -n','aspect','GrassAspect_',euAspectDeg,mtDEMaspect);
-end;
-
-
-function GrassProfileCurvatureMap(InName : PathStr) : integer;
-begin
-   Result := AssembleGrassCommand(InName,'grass_profile_curvature_','r.slope.aspect elevation=mymap pcurvature=pcurve','pcurve','GrassProfCurv_',euPerMeter,mtElevSpectrum);
+   Result := AssembleGrassCommand(InName,'grass_aspect_','r.slope.aspect elevation=mymap aspect=aspect format=percent -n','aspect','GrassAspect_',euAspectDeg,mtDEMaspect,OutName,OpenMap);
 end;
 
 
-function GrassTangentialCurvatureMap(InName : PathStr) : integer;
+//additional GRASS curvatures in
+//   https://grass.osgeo.org/grass83/manuals/r.param.scale.html
+//   https://grass.osgeo.org/grass83/manuals/v.surf.rst.html
+
+function Grass_dx_partial(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
 begin
-   Result := AssembleGrassCommand(InName,'grass_tangential_curvature_','r.slope.aspect elevation=mymap pcurvature=tcurve','tcurve','GrassTang_',euPerMeter,mtElevSpectrum);
+   Result := AssembleGrassCommand(InName,'grass_dx_partial_','r.slope.aspect elevation=mymap dx=dx','dx','GrassDX_',euPerMeter,mtElevSpectrum,OutName,OpenMap);
+end;
+
+
+function Grass_dy_partial(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
+begin
+   Result := AssembleGrassCommand(InName,'grass_dy_partial_','r.slope.aspect elevation=mymap dy=dy','dy','GrassDY_',euPerMeter,mtElevSpectrum,OutName,OpenMap);
+end;
+
+function Grass_dxx_partial(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
+begin
+   Result := AssembleGrassCommand(InName,'grass_dxx_partial_','r.slope.aspect elevation=mymap dxx=dxx','dxx','GrassDXX_',euPerMeter,mtElevSpectrum,OutName,OpenMap);
+end;
+
+
+function Grass_dyy_partial(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
+begin
+   Result := AssembleGrassCommand(InName,'grass_dyy_partial_','r.slope.aspect elevation=mymap dyy=dyy','dyy','GrassDYY_',euPerMeter,mtElevSpectrum,OutName,OpenMap);
+end;
+
+
+function Grass_dxy_partial(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
+begin
+   Result := AssembleGrassCommand(InName,'grass_dxy_partial_','r.slope.aspect elevation=mymap dxy=dxy','dxy','GrassDXY_',euPerMeter,mtElevSpectrum,OutName,OpenMap);
+end;
+
+
+function GrassProfileCurvatureMap(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
+begin
+   Result := AssembleGrassCommand(InName,'grass_profile_curvature_','r.slope.aspect elevation=mymap pcurvature=pcurve','pcurve','GrassProfCurv_',euPerMeter,mtElevSpectrum,OutName,OpenMap);
+end;
+
+
+function GrassTangentialCurvatureMap(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
+begin
+   Result := AssembleGrassCommand(InName,'grass_tangential_curvature_','r.slope.aspect elevation=mymap tcurvature=tcurve','tcurve','GrassTang_',euPerMeter,mtElevSpectrum,OutName,OpenMap);
 end;
 
 

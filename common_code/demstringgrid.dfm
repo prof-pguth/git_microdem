@@ -25,8 +25,6 @@ object GridForm: TGridForm
     Align = alClient
     DefaultColWidth = 100
     TabOrder = 0
-    ExplicitWidth = 1007
-    ExplicitHeight = 481
     ColWidths = (
       100
       100
@@ -47,7 +45,6 @@ object GridForm: TGridForm
     Height = 41
     Align = alTop
     TabOrder = 1
-    ExplicitWidth = 1007
     object Label1: TLabel
       Left = 785
       Top = 22

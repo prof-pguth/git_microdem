@@ -13,7 +13,7 @@
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    //{$Define RecordMaskDEMShapeFile}
    {$IfDef Debug}
-       {$Define RecordDEMIX}
+       //{$Define RecordDEMIX}
        //{$Define RecordDetailedDEMIX}
        //{$Define RecordCloseDB}
        //{$Define RecordDataBaseSaveFiles}

@@ -1200,6 +1200,7 @@ var
    Results : tStringList;
    fName : PathStr;
    ch : char;
+   NPts : int64;
 begin
    fName := MDTempDir + MG_short_name + 'grid_stats.dbf';
    if FileExists(fName) then  begin
@@ -1212,7 +1213,7 @@ begin
       for i := 1 to MaxGridsInMG do begin
          if ValidDEM(Grids[i]) then begin
             UpdateProgressBar(i/NumGrids);
-            DEMGlb[Grids[i]].ElevationStatistics(DEMGlb[Grids[i]].FullDEMGridLimits,Mean,Std);
+            DEMGlb[Grids[i]].ElevationStatistics(DEMGlb[Grids[i]].FullDEMGridLimits,Mean,Std,NPts);
             if (abs(DEMGlb[Grids[i]].DEMheader.MaxElev - DEMGlb[Grids[i]].DEMheader.MinElev) > 0.5) then ch := 'Y' else ch := 'N';
             Results.Add(DEMGlb[Grids[i]].AreaName + ',' + IntToStr(round(DEMGlb[Grids[i]].DEMheader.MinElev)) + ',' + IntToStr(round(DEMGlb[Grids[i]].DEMheader.MaxElev)) + ',' + RealToString(Mean,-12,-2) + ',' + RealToString(Std,-12,-2)+ ',' + ch);
          end;

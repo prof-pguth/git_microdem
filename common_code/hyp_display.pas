@@ -147,6 +147,7 @@ implementation
 uses
    DEMEROS,
    sup_class,
+   DEM_manager,
    demdatabase,
    MultiGrid,
    PetMath, Petmar,DEMDefs,DEMCoord, DEMStat,nevadia_main, basemap;
@@ -333,10 +334,13 @@ end;
 procedure THyperspectralForm.BitBtn15Click(Sender: TObject);
 var
    Incr : integer;
+var
+   DEMsWanted : tDEMBooleanArray;
 begin
+   GetMultipleDEMsFromList('Grid correlations',DEMsWanted);
    Incr := 10;
    ReadDefault('Sampling interval',Incr);
-   GridCorrelationMatrix(incr);
+   GridCorrelationMatrix(DEMsWanted,incr);
 end;
 
 procedure THyperspectralForm.BitBtn16Click(Sender: TObject);

@@ -12,7 +12,7 @@ unit pick_demix_mode;
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
-   {$Define RecordDEMIX}
+   //{$Define RecordDEMIX}
 {$EndIf}
 
 

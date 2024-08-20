@@ -14,7 +14,7 @@
 
 {$IFDEF DEBUG}
    {$IfDef RecordProblems}  //normally only defined for debugging specific problems
-      {$Define RecordDEMIX}
+      //{$Define RecordDEMIX}
       //{$Define RecordDBsort}
       //{$Define RecordClustering}
       //{$Define RecordCloseDB}

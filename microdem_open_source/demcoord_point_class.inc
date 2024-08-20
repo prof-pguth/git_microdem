@@ -9,36 +9,6 @@
 
 
 
-procedure tDEMDataSet.WoodPointClassify(Col,Row : integer; var PointType : tPointType);
-{after Wood, 1996, algorithm 5.1}
-{used GRASS C code available on the web}
-var
-   MaxCurve,MinCurve,SlopeDeg,CrossC,
-   SlopeCurvature,PlanCurvature  : float64;
-begin
-   if GetEvansParams(Col,Row,MDDef.WoodRegionRadiusPixels,SlopeDeg,SlopeCurvature,PlanCurvature,CrossC,MaxCurve,MinCurve) then begin
-      if (SlopeDeg < MDDef.MinSlopeToClassify) then PointType := FlatPoint
-      else if (slopeDeg > MDDef.SlopeClassTolerance) then begin
-         if (CrossC > MDDef.ConvexClassTolerance) then PointType := RidgePoint
-         else if (CrossC < -MDDef.ConvexClassTolerance) then PointType := ValleyPoint
-         else PointType := OtherPoint;
-      end
-      else if (MaxCurve > MDDef.ConvexClassTolerance) then begin
-         if (MinCurve > MDDef.ConvexClassTolerance) then PointType := PeakPoint
-         else if (MinCurve < -MDDef.ConvexClassTolerance) then PointType := PassPoint
-         else PointType := RidgePoint;
-      end
-      else if (MinCurve < -MDDef.ConvexClassTolerance) then begin
-         if (MaxCurve < -MDDef.ConvexClassTolerance) then PointType := PitPoint
-         else PointType := ValleyPoint
-      end
-      else PointType := OtherPoint;
-   end
-   else begin
-      PointType := EdgePoint;
-      if MissingDataInGrid(Col,Row) then PointType := MissingPoint;
-   end;
-end;
 
 function tDEMDataSet.AmbiguosRidgeValley(SWCol,SWRow : integer; var CouldKnow : boolean) : boolean;
 var
@@ -86,60 +56,37 @@ var
    znw,zw,zsw,zn,z,zs,zne,ze,zse : float32;
    Higher,Lower : integer;
 begin
-   //if SurroundedPointElevs(Col,Row,znw,zw,zsw,zn,z,zs,zne,ze,zse,MDDef.WoodRegionSize) then begin
-   if  (MDDef.RidgePointClassify = raSimple2) and HighLowPointNeighbors(Col,Row,MDDef.WoodRegionRadiusPixels,MDDef.MinDeltaZToClassify,Higher,Lower) then begin
-       (*
-          Higher := 0;
-         if (z < znw - MDDef.MinDeltaZToClassify) then inc(Higher);
-         if (z < zn - MDDef.MinDeltaZToClassify) then inc(Higher);
-         if (z < zne - MDDef.MinDeltaZToClassify) then inc(Higher);
-         if (z < zsw - MDDef.MinDeltaZToClassify) then inc(Higher);
-         if (z < zs - MDDef.MinDeltaZToClassify) then inc(Higher);
-         if (z < zse - MDDef.MinDeltaZToClassify) then inc(Higher);
-         if (z < zw - MDDef.MinDeltaZToClassify) then inc(Higher);
-         if (z < ze - MDDef.MinDeltaZToClassify) then inc(Higher);
-
-         Lower := 0;
-         if (z > znw + MDDef.MinDeltaZToClassify) then inc(Lower);
-         if (z > zn + MDDef.MinDeltaZToClassify) then inc(Lower);
-         if (z > zne + MDDef.MinDeltaZToClassify) then inc(Lower);
-         if (z > zsw + MDDef.MinDeltaZToClassify) then inc(Lower);
-         if (z > zs + MDDef.MinDeltaZToClassify) then inc(Lower);
-         if (z > zse + MDDef.MinDeltaZToClassify) then inc(Lower);
-         if (z > zw + MDDef.MinDeltaZToClassify) then inc(Lower);
-         if (z > ze + MDDef.MinDeltaZToClassify) then inc(Lower);
-         *)
-
-         if (Higher = 8) then Result := PitPoint
-         else if (Lower = 8) then Result := PeakPoint
-         else if (Higher = 0) and (Lower = 0) then Result := FlatPoint
-         else if (Higher >= MDDef.ValleyRidgeThreshold) then Result := ValleyPoint
-         else if (Lower >= MDDef.ValleyRidgeThreshold) then Result := RidgePoint
-         else Result := OtherPoint;
-      end
-      else if SurroundedPointElevs(Col,Row,znw,zw,zsw,zn,z,zs,zne,ze,zse,MDDef.WoodRegionRadiusPixels) then begin
-         if (z < znw - MDDef.MinDeltaZToClassify) and (z < zn - MDDef.MinDeltaZToClassify)  and (z < zne - MDDef.MinDeltaZToClassify) and
-            (z < zsw - MDDef.MinDeltaZToClassify) and (z < zs - MDDef.MinDeltaZToClassify)  and (z < zse - MDDef.MinDeltaZToClassify) and
-            (z < zw - MDDef.MinDeltaZToClassify) and (z < ze - MDDef.MinDeltaZToClassify) then Result := PitPoint
-         else if (z = znw) and (z = zn)  and (z = zne) and
-            (z = zsw) and (z = zs)  and (z = zse) and
-            (z = zw) and (z = ze) then Result := FlatPoint
-         else if (z > znw + MDDef.MinDeltaZToClassify) and (z > zn + MDDef.MinDeltaZToClassify)  and (z > zne + MDDef.MinDeltaZToClassify) and
-            (z > zsw + MDDef.MinDeltaZToClassify) and (z > zs + MDDef.MinDeltaZToClassify)  and (z > zse + MDDef.MinDeltaZToClassify) and
-            (z > zw + MDDef.MinDeltaZToClassify) and (z > ze + MDDef.MinDeltaZToClassify) then Result := PeakPoint
-         else if ((zn > znw + MDDef.MinDeltaZToClassify) and (zn > zne + MDDef.MinDeltaZToClassify)) and
-            ((z > zw + MDDef.MinDeltaZToClassify) and (z > ze + MDDef.MinDeltaZToClassify)) and
-            ((zs > zsw + MDDef.MinDeltaZToClassify) and (zs > zse + MDDef.MinDeltaZToClassify)) then Result := RidgePoint {NS trend}
-         else if ((zw > znw + MDDef.MinDeltaZToClassify) and (zw > zsw + MDDef.MinDeltaZToClassify)) and
-            ((z > zn + MDDef.MinDeltaZToClassify) and (z > zs + MDDef.MinDeltaZToClassify)) and
-            ((ze > zne + MDDef.MinDeltaZToClassify) and (ze > zse + MDDef.MinDeltaZToClassify)) then Result := RidgePoint {WE trend}
-         else if ((zn < znw - MDDef.MinDeltaZToClassify) and (zn < zne - MDDef.MinDeltaZToClassify)) and
-            ((z < zw - MDDef.MinDeltaZToClassify) and (z < ze - MDDef.MinDeltaZToClassify)) and
-            ((zs < zsw - MDDef.MinDeltaZToClassify) and (zs < zse - MDDef.MinDeltaZToClassify)) then Result := ValleyPoint {NS trend}
-         else if ((zw < znw - MDDef.MinDeltaZToClassify) and (zw < zsw - MDDef.MinDeltaZToClassify)) and
-            ((z < zn - MDDef.MinDeltaZToClassify) and (z < zs - MDDef.MinDeltaZToClassify)) and
-            ((ze < zne - MDDef.MinDeltaZToClassify) and (ze < zse - MDDef.MinDeltaZToClassify)) then Result := ValleyPoint {WE trend}
-         else Result := OtherPoint;
+   if (MDDef.RidgePointClassify = raSimple2) and HighLowPointNeighbors(Col,Row,MDDef.WoodRegionRadiusPixels,MDDef.MinDeltaZToClassify,Higher,Lower) then begin
+      if (Higher = 8) then Result := PitPoint
+      else if (Lower = 8) then Result := PeakPoint
+      else if (Higher = 0) and (Lower = 0) then Result := FlatPoint
+      else if (Higher >= MDDef.ValleyRidgeThreshold) then Result := ValleyPoint
+      else if (Lower >= MDDef.ValleyRidgeThreshold) then Result := RidgePoint
+      else Result := OtherPoint;
+   end
+   else if SurroundedPointElevs(Col,Row,znw,zw,zsw,zn,z,zs,zne,ze,zse,MDDef.WoodRegionRadiusPixels) then begin
+      if (z < znw - MDDef.MinDeltaZToClassify) and (z < zn - MDDef.MinDeltaZToClassify)  and (z < zne - MDDef.MinDeltaZToClassify) and
+         (z < zsw - MDDef.MinDeltaZToClassify) and (z < zs - MDDef.MinDeltaZToClassify)  and (z < zse - MDDef.MinDeltaZToClassify) and
+         (z < zw - MDDef.MinDeltaZToClassify) and (z < ze - MDDef.MinDeltaZToClassify) then Result := PitPoint
+      else if (z = znw) and (z = zn)  and (z = zne) and
+         (z = zsw) and (z = zs)  and (z = zse) and
+         (z = zw) and (z = ze) then Result := FlatPoint
+      else if (z > znw + MDDef.MinDeltaZToClassify) and (z > zn + MDDef.MinDeltaZToClassify)  and (z > zne + MDDef.MinDeltaZToClassify) and
+         (z > zsw + MDDef.MinDeltaZToClassify) and (z > zs + MDDef.MinDeltaZToClassify)  and (z > zse + MDDef.MinDeltaZToClassify) and
+         (z > zw + MDDef.MinDeltaZToClassify) and (z > ze + MDDef.MinDeltaZToClassify) then Result := PeakPoint
+      else if ((zn > znw + MDDef.MinDeltaZToClassify) and (zn > zne + MDDef.MinDeltaZToClassify)) and
+         ((z > zw + MDDef.MinDeltaZToClassify) and (z > ze + MDDef.MinDeltaZToClassify)) and
+         ((zs > zsw + MDDef.MinDeltaZToClassify) and (zs > zse + MDDef.MinDeltaZToClassify)) then Result := RidgePoint {NS trend}
+      else if ((zw > znw + MDDef.MinDeltaZToClassify) and (zw > zsw + MDDef.MinDeltaZToClassify)) and
+         ((z > zn + MDDef.MinDeltaZToClassify) and (z > zs + MDDef.MinDeltaZToClassify)) and
+         ((ze > zne + MDDef.MinDeltaZToClassify) and (ze > zse + MDDef.MinDeltaZToClassify)) then Result := RidgePoint {WE trend}
+      else if ((zn < znw - MDDef.MinDeltaZToClassify) and (zn < zne - MDDef.MinDeltaZToClassify)) and
+         ((z < zw - MDDef.MinDeltaZToClassify) and (z < ze - MDDef.MinDeltaZToClassify)) and
+         ((zs < zsw - MDDef.MinDeltaZToClassify) and (zs < zse - MDDef.MinDeltaZToClassify)) then Result := ValleyPoint {NS trend}
+      else if ((zw < znw - MDDef.MinDeltaZToClassify) and (zw < zsw - MDDef.MinDeltaZToClassify)) and
+         ((z < zn - MDDef.MinDeltaZToClassify) and (z < zs - MDDef.MinDeltaZToClassify)) and
+         ((ze < zne - MDDef.MinDeltaZToClassify) and (ze < zse - MDDef.MinDeltaZToClassify)) then Result := ValleyPoint {WE trend}
+      else Result := OtherPoint;
    end
    else begin
       if MissingDataInGrid(Col,Row) then Result := MissingPoint

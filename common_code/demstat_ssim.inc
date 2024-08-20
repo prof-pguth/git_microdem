@@ -17,6 +17,7 @@ var
    Grids : array[1..5] of integer;
    bb : sfBoundBox;
    Mean,Std : float32;
+   NPts : int64;
    aLine,AreaName : shortstring;
    Results : tStringList;
    gl1,gl2 : tGridLimits;
@@ -59,7 +60,7 @@ begin
 
        for i := 1 to 5 do begin
           gl1 := DEMglb[Grids[i]].sfBoundBox2tGridLimits(bb);
-          DEMglb[Grids[i]].ElevationStatistics(gl1,Mean,Std);
+          DEMglb[Grids[i]].ElevationStatistics(gl1,Mean,Std,NPts);
           aLine := aline + ',' + RealToString(Mean,-12,-8);
        end;
        Results.Add(aLine);
@@ -286,6 +287,7 @@ var
       RefGridLimits,TestGridLimits : tGridLimits;
       gl1 : tGridLimits;
       Mean,Std : float32;
+      NPts : int64;
 
             function TileSetUp : shortstring;
             begin
@@ -377,7 +379,7 @@ var
              for i := 1 to NumAreaDEMs do begin
                 if ValidDEM(AreaSSIMGrids[i]) then begin
                    gl1 := DEMglb[AreaSSIMGrids[i]].sfBoundBox2tGridLimits(bb);
-                   DEMglb[AreaSSIMGrids[i]].ElevationStatistics(gl1,Mean,Std);
+                   DEMglb[AreaSSIMGrids[i]].ElevationStatistics(gl1,Mean,Std,NPts);
                    aLine := aline + ',' + RealToString(1-Mean,-12,8);
                 end
                 else begin
@@ -388,7 +390,7 @@ var
              for i := 1 to NumPtDEMs do begin
                 if ValidDEM(PtSSIMGrids[i]) then begin
                    gl1 := DEMglb[PtSSIMGrids[i]].sfBoundBox2tGridLimits(bb);
-                   DEMglb[PtSSIMGrids[i]].ElevationStatistics(gl1,Mean,Std);
+                   DEMglb[PtSSIMGrids[i]].ElevationStatistics(gl1,Mean,Std,NPts);
                    aLine := aline + ',' + RealToString(1-Mean,-12,8);
                 end
                 else begin

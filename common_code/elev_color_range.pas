@@ -180,6 +180,8 @@ end;
 
 
 procedure TElevationRangeForm.RadioGroup2Click(Sender: TObject);
+var
+   NPts : int64;
 begin
    MapOwner.MapDraw.ElevStretch := tElevStretch(RadioGroup2.ItemIndex);
    case MapOwner.MapDraw.ElevStretch of
@@ -188,7 +190,7 @@ begin
                   MapOwner.MapDraw.MaxMapElev := DEMGlb[MapOwner.MapDraw.DEMonMap].DEMheader.MaxElev;
                end;
       esSD : begin
-                DEMGlb[MapOwner.MapDraw.DEMOnMap].ElevationStatistics(DEMGlb[MapOwner.MapDraw.DEMonMap].FullDEMGridLimits,MapOwner.MapDraw.Z_Mean,MapOwner.MapDraw.Z_Std);
+                DEMGlb[MapOwner.MapDraw.DEMOnMap].ElevationStatistics(DEMGlb[MapOwner.MapDraw.DEMonMap].FullDEMGridLimits,MapOwner.MapDraw.Z_Mean,MapOwner.MapDraw.Z_Std,NPts);
                 MapOwner.MapDraw.MinMapElev := (DEMGlb[MapOwner.MapDraw.DEMonMap].DEMheader.MinElev - MapOwner.MapDraw.Z_Mean) / MapOwner.MapDraw.Z_std;
                 MapOwner.MapDraw.MaxMapElev := (DEMGlb[MapOwner.MapDraw.DEMonMap].DEMheader.MaxElev - MapOwner.MapDraw.Z_Mean) / MapOwner.MapDraw.Z_std;
              end;

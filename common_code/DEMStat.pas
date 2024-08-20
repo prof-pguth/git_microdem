@@ -21,7 +21,7 @@ unit DEMStat;
       //{$Define RecordDEMIX_colors}
       //{$Define RecordSSIM}
       //{$Define RecordSSIMFull}
-      {$Define RecordDEMIX}
+      //{$Define RecordDEMIX}
       //{$Define RecordFUVsteps}
       //{$Define TimeGridsForArea}
       //{$Define TimeOpenCreateGrids}
@@ -62,7 +62,7 @@ unit DEMStat;
       //{$Define RecordHistogram}
       //{$Define RecordGridScatterGram}
    {$Else}
-      {$Define RecordDEMIX}
+      //{$Define RecordDEMIX}
       {$Define RecordFUVsteps}
    {$EndIf}
 {$EndIf}
@@ -100,6 +100,7 @@ uses
    {$Else}
      DEMEros,Multigrid,
    {$EndIf}
+   DEMStringGrid,
    DEMLosW,PETMAR,Petmar_types,BaseGraf,DEMDefs,DEMMapf;
 
 
@@ -175,7 +176,7 @@ type
    procedure AddaDEM(FirstDEM,AddDEM : integer; Mult : integer = 1);
 
    function MakeChangeMap(Map1,Map2 : integer; GridLimits: tGridLimits) : integer;
-   procedure GridCorrelationMatrix(Incr : integer = 1);
+   function GridCorrelationMatrix(DEMsWanted : tDEMbooleanArray; Incr : integer = 1) : DEMStringGrid.TGridForm;
 
    procedure HistogramPointCloudAndGlobalDEMs(DB : integer = 0; Title : shortString = '');
    procedure DirtAndAirShots(DB : integer; Title : shortString);
@@ -265,7 +266,7 @@ uses
    Make_tables,
    DEM_Indexes,
    DEM_Manager,
-   DEMStringGrid,
+   //DEMStringGrid,
    Petimage_form,
    DEMDef_routines,
    PetImage,
@@ -1097,28 +1098,29 @@ var
                      end;
                     {$IfDef FullRecordBlockGeostats} WriteLineToDebugFile('ComputeStats finished slope'); {$EndIf}
                  end;
+                 {$IfDef MultipleCurvatureMethods}
+                    if MDDef.IncludePlanCMeasures then begin
+                         DEMGlb[WantedDEM].PlanCMoments(GridLimits,MomentVar);
+                         if MomentVar.NPts > 1 then begin
+                            Table1.CarefullySetFloat('PLANC_AVG',MomentVar.mean,0.000001);
+                            Table1.CarefullySetFloat('PLANC_STD',MomentVar.std_dev,0.000001);
+                            Table1.CarefullySetFloat('PLANC_SKW',MomentVar.skew,0.000001);
+                            Table1.CarefullySetFloat('PLANC_KRT',MomentVar.curt,0.000001);
+                         end;
+                        {$IfDef FullRecordBlockGeostats} WriteLineToDebugFile('ComputeStats finished plan curvature'); {$EndIf}
+                    end;
 
-                 if MDDef.IncludePlanCMeasures then begin
-                      DEMGlb[WantedDEM].PlanCMoments(GridLimits,MomentVar);
-                      if MomentVar.NPts > 1 then begin
-                         Table1.CarefullySetFloat('PLANC_AVG',MomentVar.mean,0.000001);
-                         Table1.CarefullySetFloat('PLANC_STD',MomentVar.std_dev,0.000001);
-                         Table1.CarefullySetFloat('PLANC_SKW',MomentVar.skew,0.000001);
-                         Table1.CarefullySetFloat('PLANC_KRT',MomentVar.curt,0.000001);
-                      end;
-                     {$IfDef FullRecordBlockGeostats} WriteLineToDebugFile('ComputeStats finished plan curvature'); {$EndIf}
-                 end;
-
-                 if MDDef.IncludeProfCMeasures then begin
-                     DEMGlb[WantedDEM].ProfCMoments(GridLimits,MomentVar);
-                     if MomentVar.NPts > 1 then begin
-                        Table1.CarefullySetFloat('PROFC_AVG',MomentVar.mean,0.000001);
-                        Table1.CarefullySetFloat('PROFC_STD',MomentVar.std_dev,0.000001);
-                        Table1.CarefullySetFloat('PROFC_SKW',MomentVar.skew,0.000001);
-                        Table1.CarefullySetFloat('PROFC_KRT',MomentVar.curt,0.000001);
-                     end;
-                    {$IfDef FullRecordBlockGeostats} WriteLineToDebugFile('ComputeStats finished profile curvature'); {$EndIf}
-                 end;
+                    if MDDef.IncludeProfCMeasures then begin
+                        DEMGlb[WantedDEM].ProfCMoments(GridLimits,MomentVar);
+                        if MomentVar.NPts > 1 then begin
+                           Table1.CarefullySetFloat('PROFC_AVG',MomentVar.mean,0.000001);
+                           Table1.CarefullySetFloat('PROFC_STD',MomentVar.std_dev,0.000001);
+                           Table1.CarefullySetFloat('PROFC_SKW',MomentVar.skew,0.000001);
+                           Table1.CarefullySetFloat('PROFC_KRT',MomentVar.curt,0.000001);
+                        end;
+                       {$IfDef FullRecordBlockGeostats} WriteLineToDebugFile('ComputeStats finished profile curvature'); {$EndIf}
+                    end;
+                 {$EndIf}
 
                  if MDDef.IncludeOpenness then begin
                     {$IfDef FullRecordBlockGeostats} WriteLineToDebugFile('ComputeStats start openness'); {$EndIf}
@@ -1439,9 +1441,10 @@ label
    MissingData,MissingData2,ReclassDone,ReachedLimit;
 var
    MVClusterClientDataSet : TMVClusterClientDataSet;
-   BestClass,Sampler,i,j,x,y,NPts,db : integer;
+   BestClass,Sampler,i,j,x,y,db : integer;
    Limits : tGridLimits;
    aMin,zf : float32;
+   NPts : int64;
    FieldsUsed : byte;
    FieldsToUse : array[1..MaxBands] of AnsiString;
    z,Mean,Std : array[1..MaxDEMDataSets] of float32;
@@ -1483,7 +1486,7 @@ begin
              MVClusterClientDataSet.FieldDefs.Add('DEM_' + IntToStr(i),ftFloat, 0, False);
              inc(FieldsUsed);
              FieldsToUse[FieldsUsed] := 'DEM_' + IntToStr(i);
-             DEMGlb[i].ElevationStatistics(DEMGlb[i].FullDEMGridLimits,Mean[i],Std[i]);
+             DEMGlb[i].ElevationStatistics(DEMGlb[i].FullDEMGridLimits,Mean[i],Std[i],NPts);
              {$IfDef RecordClustering} WriteLineToDebugFile(DEMGlb[i].AreaName + '   DEM ' + IntToStr(i) + ' mean=' + RealToString(Mean[i],-18,-5) + '  std=' + RealToString(STD[i],-12,-5)); {$EndIf}
           end;
       end;
@@ -2603,7 +2606,7 @@ var
          Incr := Incr * MDDef.StatSampleIncr;
          GridForm.StringGrid1.Cells[DEMsDone,2] := IntToStr(Incr);
 
-         {$IfDef AllowCurvatureStatistics}
+         {$IfDef MultipleCurvatureMethods}
             if MDDef.PlanCurvMoments or MDDef.SlopeCurvMoments then begin
                 {$IfDef RecordElevMoment} WriteLineToDebugFile('Start curvature'); {$EndIf}
                 MomentVar.Npts := 0;
@@ -3040,7 +3043,7 @@ begin
 end;
 
 
-procedure GridCorrelationMatrix(Incr : integer = 1);
+function GridCorrelationMatrix(DEMsWanted : tDEMbooleanArray; Incr : integer = 1) : DEMStringGrid.TGridForm;
 {$IfDef ExGeoStats}
 begin
 {$Else}
@@ -3049,17 +3052,15 @@ type
 var
   r,covar,Mean1,Mean2,StdDev1,StdDev2 : float64;
   i,n,j: Integer;
+  NPts : int64;
   Findings : tStringList;
   MenuStr : ansistring;
   fName : PathStr;
   Corrs : ^tCorrs;
-  DEMsWanted : tDEMbooleanArray;
+  Metrics : tStringList;
+  Mean,Std : float32;
 begin
 //would be good to thread
-
-   GetMultipleDEMsFromList('Grid correlations',DEMsWanted);
-
-
    MenuStr := 'DEM/Grid';
    for i := 1 to MaxDEMDataSets do begin
       if ValidDEM(i) and DEMsWanted[i] then begin
@@ -3107,7 +3108,20 @@ begin
    fName := Petmar.NextFileNumber(MDTempDir,'grid_r_matrix_', '.csv');
    Findings.SaveToFile(fName);
    Findings.Free;
-   DEMStringGrid.OpenCorrelationMatrix('Correlation',fName);
+   Result := DEMStringGrid.OpenCorrelationMatrix('Correlation',fName);
+   Result.BitBtn6Click(Nil);
+
+   Metrics := tStringList.Create;
+   Metrics.Add('GRID,MINIMUM,MEAN,MAXIMUM,STD_DEV,NUM_PIXELS');
+   for i := 1 to MaxDEMDataSets do begin
+      if ValidDEM(i) and DEMsWanted[i] then begin
+         DEMGlb[i].ElevationStatistics(DEMGlb[i].FullDEMGridLimits,Mean,Std,NPts);
+         Metrics.Add(DEMGlb[i].AreaName + ',' + RealToString(DEMGlb[i].DEMHeader.MinElev,-12,-6) + ',' + RealToString(Mean,-12,-6) + ',' +
+                                RealToString(DEMGlb[i].DEMHeader.MaxElev,-12,-6) + ',' + RealToString(Std,-12,-6) + ',' + IntToStr(NPts));
+      end;
+   end;
+   fName := Petmar.NextFileNumber(MDTempDir,'grid_statistics_', '.dbf');
+   StringList2CSVtoDB(Metrics,fName);
 {$EndIf}
 end;
 

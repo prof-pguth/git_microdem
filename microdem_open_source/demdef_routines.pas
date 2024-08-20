@@ -1618,7 +1618,7 @@ var
                AParameter('Geomorph','DoSTD',DoSTD,false);
                AParameter('Geomorph','DoSkew',DoSkew,false);
                AParameter('Geomorph','DoKurt',DoKurt,false);
-               AParameter('Geomorph','SignedSlopeComponents',SignedSlopeComponents,true);
+               //AParameter('Geomorph','SignedSlopeComponents',SignedSlopeComponents,true);
             {$EndIf}
 
             AParameterShortFloat('Geomorph','GeomorphSlopeCut1',GeomorphSlopeCut[1],10);
