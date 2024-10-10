@@ -64,7 +64,7 @@ end;
       if (PhotoDir <> '') or GetDosPath('files to rename',PhotoDir) then begin
          SubDirs := 1;
          Ext := '.jpg';
-         if NameContains = '' then NameContains := 'DSC_';
+         if (NameContains = '') then NameContains := 'DSC_';
          if Ask then begin
             Petmar.ReadDefault('subdirectoy level',SubDirs);
             Petmar.GetString('file extension',Ext,false,ValidDosFileNameChars);
@@ -77,7 +77,7 @@ end;
             if (i mod 10 = 0) then UpdateProgressBar(i/TheFiles.Count);
             OldName := TheFiles.Strings[i];
             if StrUtils.AnsiContainsText(Copy(ExtractFileNameNoExt(OldName),1,length(NameContains)),NameContains) then begin
-               if NameContains[length(NameContains)] <> '_' then TStr := '_' else TStr := '';
+               if (NameContains[length(NameContains)] <> '_') then TStr := '_' else TStr := '';
                BaseName := NameContains + TStr + FileTimeFromFileName(OldName);
                NewName := ExtractFilePath(OldName) + BaseName + Ext;
                while FileExists(NewName) do begin
@@ -1287,7 +1287,7 @@ var
       if (EndY > LastEndY + 15) then begin
          Result.Canvas.MoveTo(StartX,StartY);
          Result.Canvas.LineTo(EndX,EndY);
-         TStr := IntToStr(InAngle) + DegSym;
+         TStr := IntToStr(InAngle) + '°';
          Result.Canvas.TextOut(EndX+5,EndY,TStr);
          if Double then begin
             Result.Canvas.MoveTo(StartX,StartY);

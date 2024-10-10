@@ -14,12 +14,15 @@ unit basemap;
 
 //{$Define UseExternalDLLRoutines}
 
+//{$Define AdjustFalseCoords}
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
+      //{$Define RecordWKTFull}
       //{$Define RecordWKT}
       //{$Define RecordUKOS}
       //{$Define RecordDEMprojection}
+      //{$Define TrackWKTstring}
       //{$Define RawProjectInverse}
       //{$Define ForwardProject}
       //{$Define RecordGridSize}
@@ -39,7 +42,6 @@ unit basemap;
       //{$Define RecordMapRoamProblems}
       //{$Define RecordPickDatum}
       //{$Define RecordWGS84Projection}
-      //{$Define RecordWKTFull}
       //{$Define RecordProjection}
       //{$Define RecordM}
       //{$Define RecordVectorMap}
@@ -105,8 +107,8 @@ type
           function fm(Phi : float64) : float64; inline;
           function fq(Phi : float64) : float64; inline;
           function ft(Lat : float64) : float64; inline;
-          procedure SubtractFalseEastingsNorthings(var x, y: float64); inline;
-          procedure AddFalseEastingsNorthings(var x,y : float64); inline;
+          procedure SubtractFalseEastingsNorthings(var x, y: float64); {$IfDef AdjustFalseCoords} inline; {$EndIf}
+          procedure AddFalseEastingsNorthings(var x,y : float64); {$IfDef AdjustFalseCoords} inline; {$EndIf}
           procedure TransverseMercatorInverseProjectionRadians(X,Y : float64; var Lat,Long : float64);
           procedure TransverseMercatorForwardProjectionRadians(Lat,Long : float64; var X,Y : float64);
           function M_3_21(LatRadians : float64) : float64;  //equation 3-21 of Synder, p.17
@@ -119,6 +121,7 @@ type
          ProjDebugName : shortstring;
          ProjectionGeoBox : sfBoundBox;
          GeoKeys : tGeoKeys;
+         GeotiffDoubles : array[0..25] of double;
          ModelType : SmallInt;
          VertFootFactor,
          MultFactorForFeet : float64;
@@ -162,17 +165,19 @@ type
          constructor Create(DebugName : shortstring = '');
          destructor Destroy; override;
 
+         function InitProjFomDEMHeader(var DEMHeader : tDEMHeader; DebugName : shortstring = '') : boolean;
+         function InitializeProjectionFromWKTfile(fName : PathStr) : boolean;
+         function InitializeProjectionFromWKTstring(TheProjectionString : Ansistring) : boolean;
+         procedure StartUTMProjection(UTMZone : integer);
+
+
          procedure SetDatumConstants;
          procedure SetDatumAndTMConstants;
          procedure DefineWGS84;
          procedure DefineDatumFromUTMZone(DatumCode : ShortString; UTMZone : byte; inLatHemi : ANSIchar;  Why : shortstring = '');
-         function InitializeProjectionFromWKT(fName : PathStr) : boolean;
          function CheckForAllInDirectoryWKT(thePath : PathStr) : boolean;
-         function InitializeProjectionFromDEMHeader(var DEMHeader : tDEMHeader; DebugName : shortstring = '') : boolean;
 
-         function DecodeWKTProjectionFromString(TheProjectionString : Ansistring) : boolean;
-         procedure StartUTMProjection(UTMZone : integer);
-
+         procedure ProcessGeotiffKey(wKeyID,wValueOffset : word);
          function ProcessTiff2048(TiffOffset : integer) : shortString;
          function OpenFromTiff3072(TiffOffset : integer) : shortstring;
          function ProcessTiff3075(TiffOffset : int16) : shortString;
@@ -210,11 +215,14 @@ type
          procedure ProjectionParamsToDebugFile(Why : shortstring; Full : boolean = false);
          function GetProjectionName : shortstring;
          function KeyDatumParams : shortstring;
+         procedure WriteProjectionSummaryToDebugFile(why : shortstring);
 
          function ConformalProjection : boolean;
          function UTMLikeProjection : boolean;
          function EllipsoidalProjection : boolean;
          function SeriousWorkingProjection : boolean;
+         function ProjectionUsingWKT : boolean;
+
 
          function TissotEnabled : boolean;
 
@@ -340,34 +348,50 @@ const
 
 {$I basemap_vincenty.inc}
 
+procedure tMapProjection.WriteProjectionSummaryToDebugFile(why : shortstring);
+begin
+   WriteLineToDebugFile(Why + ' Pname=' + GetProjectionName + ' ' + KeyDatumParams);
+end;
 
-function tMapProjection.InitializeProjectionFromDEMHeader(var DEMHeader : tDEMHeader; DebugName : shortstring = '') : boolean;
+
+
+function tMapProjection.ProjectionUsingWKT : boolean;
+begin
+   Result := PName in [AlbersEqAreaConicalEllipsoid,PolarStereographicEllipsoidal,LambertConformalConicEllipse,LamAzEqAreaEllipsoidal,CylindricalEqualAreaEllipsoidal,AzimuthalEquidistantEllipsoidal];
+end;
+
+
+function tMapProjection.InitProjFomDEMHeader(var DEMHeader : tDEMHeader; DebugName : shortstring = '') : boolean;
 begin
    {$IfDef RecordProjectionParameters} ProjectionParamsToDebugFile('tMapProjection.InitializeProjectionFromDEMHeader, after definition'); {$EndIf}
-   {$IfDef RecordCreateNewDEM} WriteLineToDebugFile('tDEMDataSet.AssignProjectionFromDEM out, projection=' + MapProjection.GetProjectionName); {$EndIf}
+   {$IfDef RecordDEMprojection} WriteProjectionSummaryToDebugFile('tMapProjection.InitProjFomDEMHeader in, '); {$EndIf}
+   {$If Defined(TrackWKTstring)} WriteLineToDebugFile('tMapProjection.InitProjFomDEMHeader, Map wkt=' + IntToStr(Length(wktString))); {$EndIf}
+   {$If Defined(TrackWKTstring)} WriteLineToDebugFile('tMapProjection.InitProjFomDEMHeader, DEM wkt=' + IntToStr(Length(DEMHeader.wktString))); {$EndIf}
+
    Result := true;
    LatHemi := DEMheader.LatHemi;
    h_DatumCode := DEMHeader.h_DatumCode;
    projUTMZone := DEMheader.UTMZone;
-   if (DEMheader.DEMUsed = UTMbasedDEM) then begin
+   if (DEMheader.DigitizeDatum = UK_OS_grid) then PName := UK_OS
+   else if (DEMheader.DEMUsed = ArcSecDEM) then PName := PlateCaree;
+
+   if (DEMheader.wktString <> '') then begin
+      {$If Defined(RecordDEMprojection) or Defined(TrackWKTstring)} WriteLineToDebugFile('tMapProjection.InitProjFomDEMHeader DEM wkt=' + IntToStr(Length(DEMheader.wktString))); {$EndIf}
+      DEMheader.DEMUsed := WKTDEM;
+      InitializeProjectionFromWKTstring(DEMheader.wktString);
+      //Result := DecodeWKTProjectionFromString(DEMheader.wktString);
+   end
+   else if (DEMheader.DEMUsed = UTMbasedDEM) then begin
       PName := UTMEllipsoidal;
       DefineDatumFromUTMZone(h_DatumCode,DEMheader.UTMZone,LatHemi,'tDEMDataSet.DefineDEMVariables');
       StartUTMProjection(DEMheader.UTMZone);
    end
    else begin
-      if (DEMheader.DEMUsed = ArcSecDEM) then PName := PlateCaree;
-      if (DEMheader.DigitizeDatum = UK_OS_grid) then PName := UK_OS;
-      if (DEMheader.wktString <> '') then begin
-         DEMheader.DEMUsed := WKTDEM;
-         InitializeProjectionFromWKT(DEMheader.wktString);
-         Result := DecodeWKTProjectionFromString(DEMheader.wktString);
-      end
-      else begin
-         GetProjectParameters;
-      end;
+      GetProjectParameters;
    end;
    ProjDebugName := DebugName;
    {$IfDef RecordDEMprojection} WriteLineToDebugFile('tMapProjection.InitializeProjectionFromDEMHeader, map ' + GetProjectionName); {$EndIf}
+   {$If Defined(RecordDEMprojection) or Defined(TrackWKTstring)} WriteLineToDebugFile('tMapProjection.InitProjFomDEMHeader out, Map wkt=' + IntToStr(Length(wktString))); {$EndIf}
 end;
 
 
@@ -483,14 +507,14 @@ var
    fName : PathStr;
 begin
    fName := thePath + 'all.prj';
-   if FileExists(fName) then Result := InitializeProjectionFromWKT(fName)
+   if FileExists(fName) then Result := InitializeProjectionFromWKTfile(fName)
    else begin
       fName := thePath + 'all.wkt';
-      if FileExists(fName) then Result := InitializeProjectionFromWKT(fName)
+      if FileExists(fName) then Result := InitializeProjectionFromWKTfile(fName)
       else begin
          fName := FindSingleWKTinDirectory(thePath);
          if fName = '' then Result := false
-         else Result := InitializeProjectionFromWKT(fName);
+         else Result := InitializeProjectionFromWKTfile(fName);
       end;
    end;
 end;
@@ -649,7 +673,8 @@ begin
       EPSGCode3072 := TiffOffset;
       LatHemi := 'N';
       if (TiffOffset = 2193) then begin
-         InitializeProjectionFromWKT(ProgramRootDir + 'wkt_proj\nzgd2000_epsg_2193.wkt');
+         LatHemi := 'S';
+         InitializeProjectionFromWKTfile(ProgramRootDir + 'wkt_proj\nzgd2000_epsg_2193.wkt');
          Result := wktProjName;
       end
       else if (TiffOffset = 27700) then begin
@@ -751,6 +776,37 @@ begin
    end;
 end;
 
+procedure tMapProjection.ProcessGeotiffKey(wKeyID,wValueOffset : word);
+var
+   hFactor,vFactor : float64;
+begin
+   if (wKeyID = 1024) then ModelType := wValueOffset;
+   if (wKeyID = 2048) then ProcessTiff2048(wValueOffset);
+   if (wKeyID = 2057) then a := GeotiffDoubles[wValueOffset] * DegToRad;
+   if (wKeyID = 2059) then h_f := GeotiffDoubles[wValueOffset] * DegToRad;
+
+   if (wKeyID = 3072) then OpenFromTiff3072(wValueOffset);
+   if (wKeyID = 3074) then OpenFromTiff3072(wValueOffset);
+   if (wKeyID = 3075) then ProcessTiff3075(wValueOffset);
+   if (wKeyID = 3076) then begin
+      ProjLinearUnitsGeoKey := wValueOffset;
+      hFactor := LengthConversion(wValueOffset);
+   end;
+
+   if (wKeyID = 3078) then phi1 := GeotiffDoubles[wValueOffset] * DegToRad;
+   if (wKeyID = 3079) then phi2 := GeotiffDoubles[wValueOffset] * DegToRad;
+   if (wKeyID = 3084) then Long0 := GeotiffDoubles[wValueOffset]* Petmar_types.DegToRad;
+   if (wKeyID = 3085) then Lat0 := GeotiffDoubles[wValueOffset] * Petmar_types.DegToRad;
+   if (wKeyID = 3086) then false_east := hfactor * GeotiffDoubles[wValueOffset];
+   if (wKeyID = 3087) then false_north := hfactor * GeotiffDoubles[wValueOffset];
+   if (wKeyID = 4096) then ProcessTiff4096(wValueOffset);
+   if (wKeyID = 4099) then begin
+      VerticalUnitsGeoKey := wValueOffset;
+      vFactor := LengthConversion(wValueOffset);
+   end;
+end;
+
+
 
 function CreateUKOSprojection : tMapProjection;
 begin
@@ -782,7 +838,7 @@ begin
 end;
 
 
-function tMapProjection.InitializeProjectionFromWKT(fName : PathStr) : boolean;
+function tMapProjection.InitializeProjectionFromWKTfile(fName : PathStr) : boolean;
 var
    ProjData : tStringList;
    i : integer;
@@ -801,7 +857,7 @@ begin
             wktString := wktString + ptTrim(ProjData.Strings[i]);
       end;
       ProjData.Free;
-      Result := DecodeWKTProjectionFromString(wktString);
+      Result := InitializeProjectionFromWKTstring(wktString);
    end
    else begin
       MessageToContinue('WKT file required: ' + fName);
@@ -810,7 +866,7 @@ begin
 end;
 
 
-function tMapProjection.DecodeWKTProjectionFromString(TheProjectionString : ANSIstring) : boolean;
+function tMapProjection.InitializeProjectionFromWKTstring(TheProjectionString : ANSIstring) : boolean;
 var
    ftf : float64;
 
@@ -884,7 +940,7 @@ var
 
        function ParameterInString(Name : shortstring) : boolean;
        begin
-          Result := StrUtils.AnsiContainsText(TheProjectionString,UpperCase(Name));
+          Result := StrUtils.AnsiContainsText(UpperCase(TheProjectionString),UpperCase(Name));
        end;
 
 
@@ -990,10 +1046,12 @@ begin
           PName := UTMEllipsoidal;
           ProjUTMZone := GetUTMZone(Long0 / DegToRad);
        end
-       else begin
+       else if ParameterInString('TransverseMercator') then begin
           PName := GeneralTransverseMercator;
+       end
+       else begin
+          {$IfDef RecordDEMprojection} WriteLineToDebugFile('WKTProjectionFromString defined fallthrough, wkt=' + TheProjectionString); {$EndIf}
        end;
-      //HorizWKT := AfterSpecifiedString(HorizWKT,'VertCS');
 
       TheProjectionString := VertWKT;
       if ParameterInString('UNIT["FOOT",') or ParameterInString('USSURVEYFOOT') then begin
@@ -1004,7 +1062,7 @@ begin
 
       {$IfDef RecordWKT} ShortProjInfo('finished WKT read'); {$EndIf}
       GetProjectParameters;
-      {$IfDef RecordWKT} ShortProjInfo('finished GetProjectParameters'); {$EndIf}
+      {$If Defined(RecordDEMprojection) or Defined(RecordWKT)} WriteProjectionSummaryToDebugFile('WKTProjectionFromString out, '); {$EndIf}
    end
    else begin
       {$IfDef RecordWKT} WriteLineToDebugFile('WKTProjectionFromString failure'); {$EndIf}

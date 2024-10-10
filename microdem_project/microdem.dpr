@@ -327,7 +327,8 @@ uses
   SGP_OUT in '..\sgp\SGP_OUT.PAS',
   SGP_TIME in '..\sgp\SGP_TIME.PAS',
   SGP4SDP4 in '..\sgp\SGP4SDP4.PAS',
-  SGP_Support in '..\sgp\SGP_Support.pas';
+  SGP_Support in '..\sgp\SGP_Support.pas',
+  edit_exif_fields in '..\common_code\edit_exif_fields.pas' {Form1};
 
 {$R *.RES}
 
@@ -353,7 +354,7 @@ begin
          Application.Title := '';
          Application.HelpFile := 'microdem.chm';
          Application.CreateForm(Twmdem, wmdem);
-  Application.Run;
+         Application.Run;
       end;
     finally
        CloseHandle(FMutex);

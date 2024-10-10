@@ -2008,10 +2008,6 @@ object wmdem: Twmdem
           Caption = 'UTM spacing and grid-true angle'
           OnClick = UTMspacingandgridtrueangle1Click
         end
-        object GDALslopesarcsecondDEMs1: TMenuItem
-          Caption = 'GDAL slopes arc second DEMs'
-          OnClick = GDALslopesarcsecondDEMs1Click
-        end
         object DEMIXtilesizebylatitude1: TMenuItem
           Caption = 'DEMIX tile size by latitude'
           OnClick = DEMIXtilesizebylatitude1Click
@@ -2902,6 +2898,13 @@ object wmdem: Twmdem
         Caption = 'Rename JPEGs with base name/number'
         OnClick = RenameJPRGswithbasenamenumber1Click
       end
+      object N57: TMenuItem
+        Caption = '-'
+      end
+      object AddEXIFtagsworkinprogress1: TMenuItem
+        Caption = 'Add EXIF tags (work in progress)'
+        OnClick = AddEXIFtagsworkinprogress1Click
+      end
     end
     object Allgraphsononeimage1: TMenuItem
       Caption = 'All graphs on one image'
@@ -2915,7 +2918,7 @@ object wmdem: Twmdem
       end
     end
     object Combineallcombinedimages1: TMenuItem
-      Caption = 'Combine all combined images'
+      Caption = 'Combine all "dumb" images'
       OnClick = Combineallcombinedimages1Click
     end
     object Experimental1: TMenuItem
@@ -3024,13 +3027,13 @@ object wmdem: Twmdem
         Caption = 'Batch change part of file names'
         OnClick = Batchchangepartoffilenames1Click
       end
-      object Addversionnumbertoallfilesinapath1: TMenuItem
-        Caption = 'Add suffix to all files in a path'
-        OnClick = Addversionnumbertoallfilesinapath1Click
-      end
       object Addprefixtoallfilesindirectory1: TMenuItem
         Caption = 'Add prefix to all files in a path'
         OnClick = Addprefixtoallfilesindirectory1Click
+      end
+      object Addversionnumbertoallfilesinapath1: TMenuItem
+        Caption = 'Add suffix to all files in a path'
+        OnClick = Addversionnumbertoallfilesinapath1Click
       end
       object MergemultipleTXTCSVintoDB1: TMenuItem
         Caption = 'Merge multiple TXT/CSV into DB'
@@ -3055,26 +3058,6 @@ object wmdem: Twmdem
         OnClick = ConvertDBFsfor64bit1Click
       end
     end
-    object Downloaddatasets1: TMenuItem
-      Caption = 'Download data sets'
-      object All1: TMenuItem
-        Caption = 'All'
-      end
-      object Climate1: TMenuItem
-        Caption = 'Climate'
-      end
-      object Geology2: TMenuItem
-        Caption = 'Geology'
-        OnClick = Geology2Click
-      end
-      object NaturalEarthvectoroutlines1: TMenuItem
-        Caption = 'Natural Earth vector outlines'
-        OnClick = NaturalEarthvectoroutlines1Click
-      end
-      object ETOPO11: TMenuItem
-        Caption = 'ETOPO1'
-      end
-    end
     object N2: TMenuItem
       Caption = '-'
     end
@@ -3089,17 +3072,6 @@ object wmdem: Twmdem
     object RestorepreviousprogramEXE1: TMenuItem
       Caption = 'Restore previous program EXE'
       OnClick = RestorepreviousprogramEXE1Click
-    end
-    object N15: TMenuItem
-      Caption = '-'
-    end
-    object Closeprogramgetdebugversionoftheprogram7MB1: TMenuItem
-      Caption = 'Close program, get debug version of the program (7 MB)'
-      Enabled = False
-      Visible = False
-    end
-    object CloseprogramupdateEXEnewversion7MBdownload1: TMenuItem
-      Caption = 'Close program, update EXE (new updater, 7 MB download)'
     end
   end
   object Timer2: TTimer
@@ -3227,7 +3199,6 @@ object wmdem: Twmdem
     end
     object Hurricanes1: TMenuItem
       Caption = 'Hurricanes'
-      OnClick = Hurricanes1Click
     end
     object N33: TMenuItem
       Caption = '-'
@@ -3799,6 +3770,10 @@ object wmdem: Twmdem
         Caption = 'Fix tiles with 42114 foot tag'
         OnClick = Fixtileswith42114foottag1Click
       end
+    end
+    object Criteriaranges1: TMenuItem
+      Caption = 'Criteria ranges'
+      OnClick = Criteriaranges1Click
     end
     object N53: TMenuItem
       Caption = '-'

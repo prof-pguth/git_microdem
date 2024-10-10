@@ -19,7 +19,7 @@ unit DEMEROS;
    {$IfDef Debug}
       //{$Define RecordLoadSat}
       //{$Define RecordUTM}
-      {$Define RecordSentinel}
+      //{$Define RecordSentinel}
       //{$Define RecordEOBrowser}
       //{$Define RecordKeyDraw}
       //{$Define RecordTMSat}
@@ -360,14 +360,6 @@ begin
 end;
 
 
-(*
-procedure FileNamesForSentinel2Levels;
-begin
-   //"J:\china_desert\level_1c\S2A_MSIL1C_20230605T051651_N0509_R062_T44SNH_20230605T070628.SAFE\GRANULE\L1C_T44SNH_A041529_20230605T051754\IMG_DATA\T44SNH_20230605T051651_B02.tif"
-   //"J:\china_desert\level_2a\S2A_MSIL2A_20230913T051651_N0509_R062_T44SNH_20230913T105102.SAFE\GRANULE\L2A_T44SNH_A042959_20230913T051654\IMG_DATA\R10m\T44SNH_20230913T051651_B02_10m.tif"
-end;
-*)
-
 function IsEOBrowserExport(fName : PathStr) : boolean;
 begin
    fName := UpperCase(fName);
@@ -375,6 +367,7 @@ begin
 //2022-05-03-00_00_2022-05-03-23_59_Sentinel-2_L2A_Scene_classification_map
    Result := StrUtils.AnsiContainsText(fName,'_SENTINEL-1_AWS') or StrUtils.AnsiContainsText(fName,'_SENTINEL-2_L2A_') or StrUtils.AnsiContainsText(fName,'_SENTINEL-2_L1C_');
 end;
+
 
 
 function tSatImage.ImageDateString : shortstring;
@@ -2539,7 +2532,7 @@ var
             end
             else begin
                Result := false;
-               MessageToContinue('GDAL failure; run c:\mapdata\temp\rev2.bat in command window to see why');
+               MessageToContinue('GDAL failure; run ' + MDtempDir + 'rev2.bat in command window to see why');
             end;
          end;
          {$EndIf}

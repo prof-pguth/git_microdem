@@ -18,6 +18,7 @@ unit PETMATH;
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    //{$Define RecordFitProblems}
    //{$Define TrackNegStdDev}
+   {$Define TrackNAN}
    //{$Define RecordCovar}
    //{$Define RecordMatrixOps} //can really degrade performance
 {$EndIf}
@@ -2006,17 +2007,28 @@ BEGIN
    end;
    s := 0.0;
    s2 := 0.0;
-   FOR j := 0 to pred(MomentVar.Npts) DO begin
-      s := s+data[j];
-      s2 := s2+sqr(data[j]);
+   for j := 0 to pred(MomentVar.Npts) do begin
+      s := s + data[j];
+      s2 := s2 + sqr(data[j]);
       Petmath.CompareValueToExtremes(data[j],MomentVar.MinZ,MomentVar.MaxZ);
    end;
    MomentVar.Mean := s / MomentVar.Npts;
+
+   {$IfDef TrackNAN}
+      if IsNAN(MomentVar.Mean) then begin
+         for j := 0 to pred(MomentVar.Npts) do begin
+            if IsNAN(data[j]) then begin
+               WriteLineToDebugFile(IntToStr(j));
+            end;
+         end;
+      end;
+   {$EndIf}
+
    if (MomentStop = msAfterMean) then exit;
 
    FOR j := 0 to pred(MomentVar.Npts) do begin
-      s := data[j]-MomentVar.Mean;
-      MomentVar.avg_dev := MomentVar.avg_dev+abs(s);
+      s := data[j] - MomentVar.Mean;
+      MomentVar.avg_dev := MomentVar.avg_dev + abs(s);
       p := s*s;
       MomentVar.svar := MomentVar.svar + p;
       p := p*s;

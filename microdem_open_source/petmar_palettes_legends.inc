@@ -329,7 +329,7 @@ end;
 
             if Horizontal then begin
                if (LegendTitle <> '') then i := 2 else i := 1;
-               Height := MDDef.LegendBarWidth + MDDef.LegendTickSize + 5 + i * Result.Canvas.TextHeight('Mj');
+               Height := LegendSize * MDDef.LegendBarWidth + MDDef.LegendTickSize + 5 + i * Result.Canvas.TextHeight('Mj');
                Width := LegendSize * (256) + 20 + Result.Canvas.TextWidth(Units) + 1;
                {$IfDef RecordLegends} WriteLineToDebugFile('Legend: ' + IntToStr(Width) + 'x' + IntToStr(Height)); {$EndIf}
             end
@@ -361,7 +361,7 @@ end;
                      Pen.Width := LegendSize;
                      if Horizontal then begin
                         MoveTo(5 + Size * LegendSize * (256-i),1);
-                        LineTo(5 + Size * LegendSize * (256-i),MDDef.LegendBarWidth);
+                        LineTo(5 + Size * LegendSize * (256-i),LegendSize * MDDef.LegendBarWidth);
                      end
                      else begin
                         MoveTo(1,5 + Size * LegendSize *(256-i));
@@ -392,13 +392,13 @@ end;
                      if First then begin
                         First := false;
                         if Horizontal then begin
-                           TopText := MDDef.LegendBarWidth + MDDef.LegendTickSize + 3;
+                           TopText := LegendSize *MDDef.LegendBarWidth + MDDef.LegendTickSize + 3;
                            LastLabel := LegendSize * (256) + 5;
                            TextOut(LastLabel,TopText,Units);
                         end
                         else TStr := TStr + Units;
                      end;
-                     if Horizontal then begin
+                     if Horizontal then begin //draw the ticks
                         xloc := 5 + LegendSize * (256-i)*Size;
                         if LastLabel >  (xloc -5 + TextWidth(TStr)) then begin
                            LastLabel := xloc - TextWidth(TStr) div 2;
@@ -408,8 +408,8 @@ end;
                            Pen.Width := 3;
                         end
                         else Pen.Width := 1;
-                        MoveTo(xloc,MDDef.LegendBarWidth);
-                        LineTo(xloc,MDDef.LegendBarWidth + MDDef.LegendTickSize);
+                        MoveTo(xloc,LegendSize * MDDef.LegendBarWidth);
+                        LineTo(xloc,LegendSize * MDDef.LegendBarWidth + MDDef.LegendTickSize);
                      end
                      else begin
                         yloc := 5+LegendSize *256*Size-Size*i;

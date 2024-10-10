@@ -300,7 +300,6 @@ type
     Landsatfullsceneindex1: TMenuItem;
     Satellitepredictions1: TMenuItem;
     Subset81Ssidescan1: TMenuItem;
-    N15: TMenuItem;
     Sealevelrise1: TMenuItem;
     N29: TMenuItem;
     Ages1: TMenuItem;
@@ -362,7 +361,6 @@ type
     Monthlyclimateparameters1: TMenuItem;
     Createmoviefromstills1: TMenuItem;
     Experimental1: TMenuItem;
-    Downloaddatasets1: TMenuItem;
     Lidarandbeacherosion1: TMenuItem;
     Closewindows1: TMenuItem;
     Mapprojectionsanddistortion1: TMenuItem;
@@ -371,7 +369,7 @@ type
     Koppen1: TMenuItem;
     Climatestationsforclimographs1: TMenuItem;
     Classificationmap1: TMenuItem;
-    Hurricanes1: TMenuItem;
+   // Hurricanes1: TMenuItem;
     Dailytemperaturerange1: TMenuItem;
     Gridswithmonthlyprecipitationandtemperature1: TMenuItem;
     Geoid1: TMenuItem;
@@ -399,8 +397,6 @@ type
     Quickplatetectonicsmaps1: TMenuItem;
     N34: TMenuItem;
     Seismicfencediagram1: TMenuItem;
-    Geology2: TMenuItem;
-    NaturalEarthvectoroutlines1: TMenuItem;
     Slidesorter1: TMenuItem;
     Fileoperations1: TMenuItem;
     Movefileswithnamematch1: TMenuItem;
@@ -422,13 +418,12 @@ type
     N18: TMenuItem;
     CloseallDBs1: TMenuItem;
     Remotesensinglabs1: TMenuItem;
-    CloseprogramupdateEXEnewversion7MBdownload1: TMenuItem;
     Spectrallibrary3: TMenuItem;
     N19: TMenuItem;
     RGBcolorlayers1: TMenuItem;
     GDALSRSinfo1: TMenuItem;
     WhiteboxGeotiff1: TMenuItem;
-    GDALslopesarcsecondDEMs1: TMenuItem;
+    //GDALslopesarcsecondDEMs1: TMenuItem;
     Mediansatellitedatacontest1: TMenuItem;
     Makelittletilescontest1: TMenuItem;
     Guam1: TMenuItem;
@@ -450,7 +445,6 @@ type
     netcdf1: TMenuItem;
     ACOLITEallopensatelliteimages1: TMenuItem;
     Fatfingers1: TMenuItem;
-    Closeprogramgetdebugversionoftheprogram7MB1: TMenuItem;
     Openrecyclebin1: TMenuItem;
     Existingfile1: TMenuItem;
     Existingfile2: TMenuItem;
@@ -632,6 +626,9 @@ type
     Compareconvergenceindexfortestarea1: TMenuItem;
     Open4elevationrangeDEMIXDBs1: TMenuItem;
     UTMprojection1: TMenuItem;
+    AddEXIFtagsworkinprogress1: TMenuItem;
+    N57: TMenuItem;
+    Criteriaranges1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -870,7 +867,7 @@ type
     procedure Physicalgeographylabs1Click(Sender: TObject);
     procedure Climatestationsforclimographs1Click(Sender: TObject);
     procedure Classificationmap1Click(Sender: TObject);
-    procedure Hurricanes1Click(Sender: TObject);
+    //procedure Hurricanes1Click(Sender: TObject);
     procedure Dailytemperaturerange1Click(Sender: TObject);
     procedure Gridswithmonthlyprecipitationandtemperature1Click(Sender: TObject);
     procedure Geoid1Click(Sender: TObject);
@@ -895,8 +892,6 @@ type
     procedure Platetectonics1Click(Sender: TObject);
     procedure Quickplatetectonicsmaps1Click(Sender: TObject);
     procedure Seismicfencediagram1Click(Sender: TObject);
-    procedure NaturalEarthvectoroutlines1Click(Sender: TObject);
-    procedure Geology2Click(Sender: TObject);
     procedure Slidesorter1Click(Sender: TObject);
     procedure Movefileswithnamematch1Click(Sender: TObject);
     procedure RenameJPEGswithcreationtime1Click(Sender: TObject);
@@ -916,7 +911,7 @@ type
     procedure RGBcolorlayers1Click(Sender: TObject);
     procedure GDALSRSinfo1Click(Sender: TObject);
     procedure WhiteboxGeotiff1Click(Sender: TObject);
-    procedure GDALslopesarcsecondDEMs1Click(Sender: TObject);
+    //procedure GDALslopesarcsecondDEMs1Click(Sender: TObject);
     procedure Mediansatellitedatacontest1Click(Sender: TObject);
     procedure Makelittletilescontest1Click(Sender: TObject);
     procedure Guam1Click(Sender: TObject);
@@ -1074,6 +1069,8 @@ type
     procedure Compareconvergenceindexfortestarea1Click(Sender: TObject);
     procedure Open4elevationrangeDEMIXDBs1Click(Sender: TObject);
     procedure UTMprojection1Click(Sender: TObject);
+    procedure AddEXIFtagsworkinprogress1Click(Sender: TObject);
+    procedure Criteriaranges1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1101,8 +1098,8 @@ var
 
 function OpenGazFile(fName : PathStr = '') : integer;
 procedure InsureFormOnScreenCurrentLocation(Form4 : tForm; x,y : integer);
-procedure SetColorForWaiting; inline
 procedure SetColorForProcessing; inline
+procedure SetColorForWaiting; inline
 
 
 implementation
@@ -1312,6 +1309,8 @@ uses
    {$EndIf}
 
    ufrmMain,
+   CCR.Exif,
+   edit_exif_fields,
 
    Slider_sorter_form,
    NyqGraph,
@@ -1357,11 +1356,13 @@ uses
 procedure SetColorForWaiting; inline
 begin
    WMdem.Color := clScrollBar;
+   ShowDefaultCursor;
 end;
 
 procedure SetColorForProcessing; inline
 begin
    WMdem.Color := clInactiveCaption;
+   ShowHourglassCursor;
 end;
 
 
@@ -2014,157 +2015,6 @@ begin
 end;
 
 
-procedure ProcessCommandLine(CommandLine : AnsiString);
-//CommandLine comes in capitalized
-var
-   Key,Value : AnsiString;
-   DEM,NewDEM : integer;
-   FileList : tStringList;
-   Action,xval,yval : shortstring;
-   infile,outfile,upfile,downfile : PathStr;
-
-         function OpenADEM(OpenMap : boolean = false) : boolean;
-         begin
-            Result := FileExists(Infile) and LoadNewDEM(DEM,infile,OpenMap);
-         end;
-
-begin
-   {$IfDef RecordCommandLine} WriteLineToDebugFile('Process ? command line ' + Commandline); {$EndIf}
-   Action := '';
-   infile := '';
-   outfile := '';
-   xval := '';
-   yval := '';
-   upfile := '';
-   downfile := '';
-
-   Delete(CommandLine,1,1);      //the question mark
-   ReplaceCharacter(CommandLine,'+','&');
-   CommandLine := CommandLine + '&';
-
-   while length(CommandLine) > 1 do begin
-      Value := Petmar_Types.BeforeSpecifiedCharacterANSI(CommandLine,'&',true,true);
-      Key := Petmar_Types.BeforeSpecifiedCharacterANSI(Value,'=',true,true);
-      {$IfDef RecordCommandLine} WriteLineToDebugFile(Key + '   ' + Value); {$EndIf}
-      if Key = 'ACT' then Action := Value;
-      if Key = 'IN' then infile := Value;
-      if Key = 'OUT' then outfile := Value;
-      if Key = 'UPNAME' then upfile := Value;
-      if Key = 'DOWNNAME' then downfile := Value;
-      if Key = 'PTSEP' then MDDef.PointSeparation := StrToInt(Value);
-      if Key = 'ROAD_FILE' then MDDef.LCPRoadfName := Value;
-      if Key = 'START_PTS' then MDDef.LCPstartFName := Value;
-      if Key = 'END_PTS' then MDDef.LCPendFName := Value;
-      if Key = 'INI' then ProcessIniFile(iniRead,'',Value);
-      if Key = 'X' then xval := Value;
-      if Key = 'Y' then yval := Value;
-      if Key = 'RAD' then MDDef.OpenBoxSizeMeters := StrToInt(Value);
-      if Key = 'FILELIST' then begin
-         FileList := tStringList.Create;
-         FileList.LoadFromFile(Value)
-      end;
-
-      if Key = 'PROJ' then begin
-          if Value = 'UTM' then MDDef.LidarGridProjection := 0;
-          if Value = 'GEO' then MDDef.LidarGridProjection := 1;
-          if Value = 'WKT' then MDDef.LidarGridProjection := 2;
-      end;
-      if Key = 'DX' then begin
-          if MDDef.LidarGridProjection = 0 then MDdef.DefLidarXGridSize := StrToFloat(Value);
-          if MDDef.LidarGridProjection = 1 then MDdef.DefLidarGeoGridSizeX := StrToFloat(Value);
-          if MDDef.LidarGridProjection = 2 then MDdef.DefWKTGridSize := StrToFloat(Value);
-      end;
-      if Key = 'DY' then begin
-          if MDDef.LidarGridProjection = 0 then MDdef.DefLidarYGridSize := StrToFloat(Value);
-          if MDDef.LidarGridProjection = 1 then MDdef.DefLidarGeoGridSizeY := StrToFloat(Value);
-      end;
-      if Key = 'HOLES' then begin
-          MDdef.FillHoleRadius := StrToInt(Value);
-          MDDef.PCAutoFillHoles := MDdef.FillHoleRadius > 0;
-      end;
-      if Key = 'PIXELIS' then begin
-          if Value = 'AREA' then MDDef.LasDEMPixelIs := 1;
-          if Value = 'POINT' then MDDef.LasDEMPixelIs := 2;
-      end;
-
-      {$IfDef AllowGeomorphometry}
-         if Key = 'BOXSIZE' then MDDef.GeomorphBoxSizeMeters := StrToInt(Value);
-      {$EndIf}
-   end;
-   {$IfDef RecordCommandLine} WriteLineToDebugFile('action=' + Action); {$EndIf}
-
-   if Action = 'DEM2JSON' then begin
-      if OpenADEM then begin
-         DEMGlb[DEM].SaveAsGeoJSON;
-      end;
-   end;
-
-   {$IfDef ExPointCloud}
-   {$Else}
-      if Action = 'LAS2JSON' then begin
-         QuietActions := true;
-         LAS2GeoJSON(infile);
-      end;
-   {$EndIf}
-
-
-   if Action = 'RESAMPAVG' then begin
-      if OpenADEM(true) then begin
-         {$IfDef RecordCommandLine} WriteLineToDebugFile('dem opened'); {$EndIf}
-         NewDEM := DEMGlb[DEM].ResampleByAveraging(false, false,Outfile);
-         {$IfDef RecordCommandLine} WriteLineToDebugFile('resampled created'); {$EndIf}
-      end;
-   end;
-
-   if Action = 'SLOPEMAP' then begin
-      if OpenADEM then begin
-         {$IfDef RecordCommandLine} WriteLineToDebugFile('dem opened'); {$EndIf}
-         NewDEM := CreateSlopeMap(DEM,false);
-         {$IfDef RecordCommandLine} WriteLineToDebugFile('slope map created'); {$EndIf}
-         DEMGlb[NewDEM].SaveAsGeotiff(outfile);
-         {$IfDef RecordCommandLine} WriteLineToDebugFile('geotiff saved'); {$EndIf}
-      end;
-   end;
-
-   if Action = 'DEMIX-CREATE-REF' then begin
-      BatchResampleForDEMIX(FileList);
-   end;
-
-(*
-   if Action = 'OPENMAP' then begin
-      if OpenADEM then begin
-         {$IfDef RecordCommandLine} WriteLineToDebugFile('dem opened'); {$EndIf}
-         MDDef.DoUpOpen := (UpFile <> '');
-         MDDef.DoDownOpen := (DownFile <> '');
-         MDDef.DoDiffOpen := false;
-         MakeMomentsGrid(DEM,'O',MDDef.OpenBoxSizeMeters,false);
-         {$IfDef RecordCommandLine} WriteLineToDebugFile('openness map created'); {$EndIf}
-         if (UpFile <> '') then DEMGlb[MomentDEMs[UpOpenDEM]].SaveAsGeotiff(UpFile);
-         if (DownFile <> '') then DEMGlb[MomentDEMs[DownOpenDEM]].SaveAsGeotiff(DownFile);
-         {$IfDef RecordCommandLine} WriteLineToDebugFile('geotiff saved'); {$EndIf}
-      end;
-   end;
-
-*)
-
-   {$IfDef AllowGeomorphometry}
-      if Action = 'TERR_FABRIC' then begin
-         if OpenADEM then begin
-            DEMGlb[DEM].OrientationTable(OutFile,Nil);
-         end;
-      end;
-   {$EndIf}
-
-   if Action = 'LCP' then begin
-      LeastCostPathOptions(1);
-   end;
-
-   DEM_Manager.CloseAllWindowsAndData;
-   {$IfDef RecordCommandLine} WriteLineToDebugFile('ending command line ops'); {$EndIf}
-   halt;
-   wmdem.Close;
-end;
-
 
 procedure Twmdem.Fontsinstalled1Click(Sender: TObject);
 var
@@ -2182,6 +2032,159 @@ procedure Twmdem.FormActivate(Sender: TObject);
 var
    TStr  : ShortString;
    i     : integer;
+
+
+      procedure ProcessCommandLine(CommandLine : AnsiString);
+      //CommandLine comes in capitalized
+      var
+         Key,Value : AnsiString;
+         DEM,NewDEM : integer;
+         FileList : tStringList;
+         Action,xval,yval : shortstring;
+         infile,outfile,upfile,downfile : PathStr;
+
+               function OpenADEM(OpenMap : boolean = false) : boolean;
+               begin
+                  Result := FileExists(Infile) and LoadNewDEM(DEM,infile,OpenMap);
+               end;
+
+      begin
+         {$IfDef RecordCommandLine} WriteLineToDebugFile('Process ? command line ' + Commandline); {$EndIf}
+         Action := '';
+         infile := '';
+         outfile := '';
+         xval := '';
+         yval := '';
+         upfile := '';
+         downfile := '';
+
+         Delete(CommandLine,1,1);      //the question mark
+         ReplaceCharacter(CommandLine,'+','&');
+         CommandLine := CommandLine + '&';
+
+         while length(CommandLine) > 1 do begin
+            Value := Petmar_Types.BeforeSpecifiedCharacterANSI(CommandLine,'&',true,true);
+            Key := Petmar_Types.BeforeSpecifiedCharacterANSI(Value,'=',true,true);
+            {$IfDef RecordCommandLine} WriteLineToDebugFile(Key + '   ' + Value); {$EndIf}
+            if Key = 'ACT' then Action := Value;
+            if Key = 'IN' then infile := Value;
+            if Key = 'OUT' then outfile := Value;
+            if Key = 'UPNAME' then upfile := Value;
+            if Key = 'DOWNNAME' then downfile := Value;
+            if Key = 'PTSEP' then MDDef.PointSeparation := StrToInt(Value);
+            if Key = 'ROAD_FILE' then MDDef.LCPRoadfName := Value;
+            if Key = 'START_PTS' then MDDef.LCPstartFName := Value;
+            if Key = 'END_PTS' then MDDef.LCPendFName := Value;
+            if Key = 'INI' then ProcessIniFile(iniRead,'',Value);
+            if Key = 'X' then xval := Value;
+            if Key = 'Y' then yval := Value;
+            if Key = 'RAD' then MDDef.OpenBoxSizeMeters := StrToInt(Value);
+            if Key = 'FILELIST' then begin
+               FileList := tStringList.Create;
+               FileList.LoadFromFile(Value)
+            end;
+
+            if Key = 'PROJ' then begin
+                if Value = 'UTM' then MDDef.LidarGridProjection := 0;
+                if Value = 'GEO' then MDDef.LidarGridProjection := 1;
+                if Value = 'WKT' then MDDef.LidarGridProjection := 2;
+            end;
+            if Key = 'DX' then begin
+                if MDDef.LidarGridProjection = 0 then MDdef.DefLidarXGridSize := StrToFloat(Value);
+                if MDDef.LidarGridProjection = 1 then MDdef.DefLidarGeoGridSizeX := StrToFloat(Value);
+                if MDDef.LidarGridProjection = 2 then MDdef.DefWKTGridSize := StrToFloat(Value);
+            end;
+            if Key = 'DY' then begin
+                if MDDef.LidarGridProjection = 0 then MDdef.DefLidarYGridSize := StrToFloat(Value);
+                if MDDef.LidarGridProjection = 1 then MDdef.DefLidarGeoGridSizeY := StrToFloat(Value);
+            end;
+            if Key = 'HOLES' then begin
+                MDdef.FillHoleRadius := StrToInt(Value);
+                MDDef.PCAutoFillHoles := MDdef.FillHoleRadius > 0;
+            end;
+            if Key = 'PIXELIS' then begin
+                if Value = 'AREA' then MDDef.LasDEMPixelIs := 1;
+                if Value = 'POINT' then MDDef.LasDEMPixelIs := 2;
+            end;
+
+            {$IfDef AllowGeomorphometry}
+               if Key = 'BOXSIZE' then MDDef.GeomorphBoxSizeMeters := StrToInt(Value);
+            {$EndIf}
+         end;
+         {$IfDef RecordCommandLine} WriteLineToDebugFile('action=' + Action); {$EndIf}
+
+         if Action = 'DEM2JSON' then begin
+            if OpenADEM then begin
+               DEMGlb[DEM].SaveAsGeoJSON;
+            end;
+         end;
+
+         {$IfDef ExPointCloud}
+         {$Else}
+            if Action = 'LAS2JSON' then begin
+               QuietActions := true;
+               LAS2GeoJSON(infile);
+            end;
+         {$EndIf}
+
+         if Action = 'RESAMPAVG' then begin
+            if OpenADEM(true) then begin
+               {$IfDef RecordCommandLine} WriteLineToDebugFile('dem opened'); {$EndIf}
+               NewDEM := DEMGlb[DEM].ResampleByAveraging(false, false,Outfile);
+               {$IfDef RecordCommandLine} WriteLineToDebugFile('resampled created'); {$EndIf}
+            end;
+         end;
+
+         if Action = 'SLOPEMAP' then begin
+            if OpenADEM then begin
+               {$IfDef RecordCommandLine} WriteLineToDebugFile('dem opened'); {$EndIf}
+               NewDEM := CreateSlopeMap(DEM,false);
+               {$IfDef RecordCommandLine} WriteLineToDebugFile('slope map created'); {$EndIf}
+               DEMGlb[NewDEM].SaveAsGeotiff(outfile);
+               {$IfDef RecordCommandLine} WriteLineToDebugFile('geotiff saved'); {$EndIf}
+            end;
+         end;
+
+         {$IfDef AllowGeomorphometry}
+            if Action = 'TERR_FABRIC' then begin
+               if OpenADEM then begin
+                  DEMGlb[DEM].OrientationTable(OutFile,Nil);
+               end;
+            end;
+         {$EndIf}
+
+         if Action = 'DEMIX-CREATE-REF' then begin
+            BatchResampleForDEMIX(FileList);
+         end;
+
+      (*
+         if Action = 'OPENMAP' then begin
+            if OpenADEM then begin
+               {$IfDef RecordCommandLine} WriteLineToDebugFile('dem opened'); {$EndIf}
+               MDDef.DoUpOpen := (UpFile <> '');
+               MDDef.DoDownOpen := (DownFile <> '');
+               MDDef.DoDiffOpen := false;
+               MakeMomentsGrid(DEM,'O',MDDef.OpenBoxSizeMeters,false);
+               {$IfDef RecordCommandLine} WriteLineToDebugFile('openness map created'); {$EndIf}
+               if (UpFile <> '') then DEMGlb[MomentDEMs[UpOpenDEM]].SaveAsGeotiff(UpFile);
+               if (DownFile <> '') then DEMGlb[MomentDEMs[DownOpenDEM]].SaveAsGeotiff(DownFile);
+               {$IfDef RecordCommandLine} WriteLineToDebugFile('geotiff saved'); {$EndIf}
+            end;
+         end;
+
+      *)
+
+         if Action = 'LCP' then begin
+            LeastCostPathOptions(1);
+         end;
+
+         DEM_Manager.CloseAllWindowsAndData;
+         {$IfDef RecordCommandLine} WriteLineToDebugFile('ending command line ops'); {$EndIf}
+         halt;
+         wmdem.Close;
+      end;
+
+
 
       procedure SetProgramOptions(TStr : ShortString);
       begin
@@ -2218,14 +2221,14 @@ var
       begin
          if (MDDef.ProgramOption = DragonPlotProgram) then begin
             {$IfDef RecordDragonPlot} WriteLineToDebugFile('CheckDragonPlotOptions and it is DragonPlotProgram'); {$EndIf}
-              {$IfDef ExDP}
-                 MDDef.ProgramOption := ExpertProgram;
-                 ShowDragonPlot := false;
-              {$Else}
-                 if (UpperCase(ptTrim(ParamStr(1))) = '-DP') then DragonPlotDef.AdvancedOptions := true;
-                 {$IfDef RecordDirs}  RecordDirs('before start DP'); {$EndIf}
-                 StartDragonPlot;
-              {$EndIf}
+            {$IfDef ExDP}
+               MDDef.ProgramOption := ExpertProgram;
+               ShowDragonPlot := false;
+            {$Else}
+               if (UpperCase(ptTrim(ParamStr(1))) = '-DP') then DragonPlotDef.AdvancedOptions := true;
+               {$IfDef RecordDirs}  RecordDirs('before start DP'); {$EndIf}
+               StartDragonPlot;
+            {$EndIf}
          end;
       end;
 
@@ -2303,9 +2306,8 @@ begin
                      Self.Height := 450;
                      Self.Top := 100;
                      Self.Left := 100;
-                     FUV_SSIM_Processing(dmFull,false);
+                     FUV_SSIM_Processing(dmFull,false,false);
                      Halt;
-                     //Close;
                      exit;
                   end
                   else begin
@@ -2537,15 +2539,9 @@ begin
    {$IfDef IncludeGeologyLabs}
    {$Else}
    {$EndIf}
-   {$IfDef AllowUSNAdataDownloads}
-   {$Else}
-      Downloaddatasets1.Visible := false;
-   {$EndIf}
    {$IfDef AllowProgramWebUpdates}
    {$Else}
        Updatehelpfile1.Visible := false;
-       Closeprogramgetdebugversionoftheprogram7MB1.Visible := false;
-       CloseprogramupdateEXEnewversion7MBdownload1.Visible := false;
    {$EndIf}
    {$IfDef Include2021datafusion}
    {$Else}
@@ -2568,6 +2564,60 @@ begin
           ACOLITEprocessing(SatImage[i].SelectionMap,false);
        end;
    end;
+end;
+
+
+procedure Twmdem.AddEXIFtagsworkinprogress1Click(Sender: TObject);
+(*
+var
+   TheAuthor,TheSubject : shortstring;
+   FilesWanted : tStringList;
+   DefaultFilter : byte;
+   f : integer;
+   LatDeg,LatMin,LongDeg,LongMin :LongWord;
+   LatSec,LongSec : Currency;
+
+      procedure ProcessFile(FileName : PathStr);
+      var
+        ExifData: TExifData;
+      begin
+        ExifData := TExifData.Create;
+        try
+          ExifData.LoadFromGraphic(FileName);
+          if (TheAuthor <> '') then ExifData.Author := TheAuthor;
+          if (TheSubject <> '') then ExifData.Subject := TheSubject;
+          //ExifData.SetKeyWords(['tennis', 'Wimbledon', 'match', 'SW19']);
+          ExifData.GPSLatitude.Assign(LatDeg,LatMin,LatSec, ltNorth);
+          ExifData.GPSLongitude.Assign(LongDeg,LongMin,LongSec, lnWest);
+          ExifData.SaveToGraphic(FileName);
+        finally
+          ExifData.Free;
+        end;
+      end;
+
+begin
+   TheAuthor := 'Peter L. Guth DS69';
+   TheSubject := 'DS Reunion 2024';
+
+   LatDeg := 37;
+   LatMin := 22;
+   LatSec := 26.5;
+   LongDeg := 117;
+   LongMin := 58;
+   LongSec := 47.8;
+
+   DefaultFilter := 1;
+   FilesWanted := tStringList.Create;
+   FilesWanted.Add(PhotoDir);
+   if GetMultipleFiles('Add Exif metadata','AnyFile|*.*',FilesWanted, DefaultFilter) then begin
+       for f := 0 to pred(FilesWanted.Count) do begin
+          ProcessFile(FilesWanted.Strings[f]);
+       end;
+   end;
+   FilesWanted.Destroy;
+*)
+begin
+   AddEXIFfields;
 end;
 
 procedure Twmdem.Addnormaliziedstatsforblockgridstotrainingset1Click(Sender: TObject);
@@ -3453,6 +3503,11 @@ begin
    CreateTestAreaDEMs(False);
 end;
 
+procedure Twmdem.Criteriaranges1Click(Sender: TObject);
+begin
+   ComputeCriteriaRanges;
+end;
+
 procedure Twmdem.ImportCTDfile1Click(Sender: TObject);
 begin
    {$IfDef ExOceanography}
@@ -3938,7 +3993,7 @@ end;
 procedure Twmdem.Onlinehelp1Click(Sender: TObject);
 begin
    {$IfDef AllowUSNAhelp}
-      ExecuteFile('https://www.usna.edu/Users/oceano/pguth/md_help/html/microdem.htm', '', '');
+      ExecuteFile('https://www.usna.edu/Users/oceano/pguth/md_help/html/microdem.htm');
    {$EndIf}
 end;
 
@@ -4095,6 +4150,7 @@ begin
    DEMIX_CreateReferenceDEMsFromSource(true);
 end;
 
+
 procedure Twmdem.RenameJPEGSwithbaseandcreationtime1Click(Sender: TObject);
 var
    FilesWanted : TStringList;
@@ -4119,6 +4175,7 @@ begin
          RenameFile(OldName,NewName);
       end;
    end;
+   FilesWanted.Destroy;
 end;
 
 
@@ -4142,6 +4199,7 @@ begin
          RenameFile(FilesWanted.Strings[i],FilesWanted.Strings[i] + '.jpg');
       end;
    end;
+   FilesWanted.Destroy;
 end;
 
 
@@ -4165,6 +4223,7 @@ begin
          RenameFile(OldName,NewName);
       end;
    end;
+   FilesWanted.Destroy;
 end;
 
 
@@ -4491,24 +4550,6 @@ begin
    MetaData1Click(Sender);
 end;
 
-procedure Twmdem.GDALslopesarcsecondDEMs1Click(Sender: TObject);
-var
-   CurDEM : integer;
-   Distance1,Distance2,Distance3 : float64;
-begin
-   if GetDEM(CurDEM,true,'GDAL spacing') then begin
-      if (DEMGlb[CurDEM].DEMheader.DEMUsed = ArcSecDEM) then begin
-         MetersPerDegree(DEMGlb[CurDEM].DEMSWcornerLat + 0.5 * DEMGlb[CurDEM].LatSizeMap,DEMGlb[CurDEM].DEMSWcornerLong + 0.5 * DEMGlb[CurDEM].LongSizeMap,Distance1,Distance2,Distance3);
-         GDAL_SlopeMap_ZT(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap,RealToString(Distance1,-12,1),MDTempDir + 'gdal_zt_ns' + '.tif');
-         GDAL_SlopeMap_ZT(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap,RealToString(Distance2,-12,1),MDTempDir + 'gdal_zt_ew' + '.tif');
-         GDAL_SlopeMap_ZT(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap,RealToString(Distance3,-12,1),MDTempDir + 'gdal_zt_avg' + '.tif');
-         GDAL_SlopeMap_Horn(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap,RealToString(Distance1,-12,1),MDTempDir + 'gdal_horn_ns' + '.tif');
-         GDAL_SlopeMap_Horn(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap,RealToString(Distance2,-12,1),MDTempDir + 'gdal_horn_ew' + '.tif');
-         GDAL_SlopeMap_Horn(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap,RealToString(Distance3,-12,1),MDTempDir + 'gdal_horn_avg' + '.tif');
-      end
-      else MessageToContinue('Not arc second DEM');
-   end;
-end;
 
 
 procedure Twmdem.GDALSRSinfo1Click(Sender: TObject);
@@ -4560,14 +4601,6 @@ begin
    {$IfDef IncludeGeologyLabs} Afar1Click(Sender); {$EndIf}
 end;
 
-
-procedure Twmdem.Geology2Click(Sender: TObject);
-begin
-   {$If Defined(ExGeology) or Defined(ExLabDownloads)}
-   {$Else}
-      GeologyGetData(true);
-   {$EndIf}
-end;
 
 procedure Twmdem.GeoPDF1Click(Sender: TObject);
 {$IfDef ExGDAL}
@@ -4948,7 +4981,7 @@ begin
       end
       else begin
          PredAgesDEM := OpenNewDEM(PredAgesFile,false);
-         if (PredAgesDEM <> 0) then DEMGlb[PredAgesDEM].SetUpMap(PredAgesDEM,false,mtElevSpectrum);
+         if (PredAgesDEM <> 0) then DEMGlb[PredAgesDEM].SetUpMap(false,mtElevSpectrum);
       end;
    {$EndIf}
 end;
@@ -4999,7 +5032,7 @@ begin
          GeologyGetData;
          //if not FileExists(SedThickFile) then DownloadFileFromWeb(WebDataDownLoadDir + ExtractFileName(SedThickFile),SedThickFile);
          SedThickDEM := OpenNewDEM(SedThickFile,false);
-         if (SedThickDEM <> 0) then DEMGlb[LastDEMLoaded].SetUpMap(LastDEMLoaded,false,mtElevSpectrum);
+         if (SedThickDEM <> 0) then DEMGlb[LastDEMLoaded].SetUpMap(false,mtElevSpectrum);
       end;
    {$EndIf}
 end;
@@ -5068,12 +5101,6 @@ begin
          StopSplashing;
      end;
    {$EndIf}
-end;
-
-
-procedure Twmdem.NaturalEarthvectoroutlines1Click(Sender: TObject);
-begin
-   {$IfDef AllowUSNAdataDownloads}  GetNaturalEarthData(True); {$EndIf}
 end;
 
 
@@ -5198,7 +5225,7 @@ begin
 
    if (Sender = WKTprojection1) then begin
       Petmar.GetExistingFileName('wkt projection','*.prj;*.wkt',MDDef.WKTLidarProj);
-      ConvertForm.This_projection.InitializeProjectionFromWKT(MDDef.WKTLidarProj);
+      ConvertForm.This_projection.InitializeProjectionFromWKTfile(MDDef.WKTLidarProj);
       ConvertForm.Caption := ExtractFileNameNoExt(MDDef.WKTLidarProj);
    end;
 
@@ -5648,12 +5675,6 @@ end;
 procedure Twmdem.hreeviews1Click(Sender: TObject);
 begin
    SunViews(0);
-end;
-
-procedure Twmdem.Hurricanes1Click(Sender: TObject);
-begin
-   VectorMapButtonClick(Nil);
-   VectorMap[LastVectorMap].Hurricanes1Click(Sender);
 end;
 
 procedure Twmdem.Hyperspectralimagery1Click(Sender: TObject);

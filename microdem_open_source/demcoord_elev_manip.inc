@@ -65,8 +65,8 @@ end;
 
 
 function tDEMDataSet.InterpolateBiCubicVisioTerra(xgrid,ygrid : float32; var z : float32) : boolean;
-var
-   Elev,xgrad,ygrad,crossgrad  : tElevFloatArray;
+//var
+  // Elev,xgrad,ygrad,crossgrad  : tElevFloatArray;
 
 // uses notation in Gross and Cosseaux, 2022, in the figure page 25
 //        dy-1  dy0  dy1   dy2
@@ -339,7 +339,7 @@ begin
       Row := GridLimits.YGridLow;
       while (Row <= GridLimits.YGridHigh) do begin
          if GetElevMeters(Col,Row,z) then begin
-            if (IncludeSeaLevel) or (abs(z) > 0.0001) then begin
+            if (IncludeSeaLevel) or (abs(z) > 0.0000001) then begin
                Values[NPts] := z;
                inc(NPts);
             end;

@@ -655,7 +655,7 @@ begin
       DEMGlb[DEMonMap].ReflectanceParams(MinMapElev,MaxMapElev);
       for i := 0 to 255 do pPal[i] := RGBtripFromHSI(TheHue(MDDef.MergeHue,i),MDDef.MergeSat,MDDef.MergeInt);
    end
-   else if (MapType in [mtFlowDir360,mtFlowDirArc,mtFlowDirTau]) then begin
+   else if (MapType in [mtFlowDir360,mtFlowDirArc,mtFlowDirTau,mtSlopeStandardCats,mtSlopeTrafficCats,mtSlopeGrayScale,mtSlopeGrayScaleReversed,mtSlopeRainbow,mtSlopeGoNoGo]) then begin
       for I := 0 to 255 do pPal[i] := MDdef.MissingDataColor;
       if (MapType = mtFlowDir360) then begin
          DefineSlopeColors;
@@ -896,6 +896,7 @@ begin
           for i := 30 to 255 do SlopeColorChoices[i] := RGBtrip(252,113,106);
        end
        else if (MapType in [mtSlopeStandardCats]) then begin
+          SetSlopedefaultColors(MDDef.NumSlopeBands,SlopeCut,SlopeColors);
           for i := 0 to pred(MDdef.NumSlopeBands) do begin
              if (i = 0) then LowCut := 0 else LowCut := round(SlopeCut[pred(i)]);
              if i = pred(MDdef.NumSlopeBands) then HighCut := 255 else HighCut := round(SlopeCut[i]);

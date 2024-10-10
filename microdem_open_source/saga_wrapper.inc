@@ -287,7 +287,7 @@ Usage: saga_cmd ta_morphometry 0 [-ELEVATION <str>] [-SLOPE <str>] [-ASPECT <str
 *)
 
 
-function SAGA_PlanCurvature(OpenMap : boolean; InName : PathStr; PlanCurvatureFName : PathStr = '') : integer;
+function SAGA_PlanCurvature(OpenMap : boolean; InName : PathStr; SlopeMethod : char = '3'; PlanCurvatureFName : PathStr = '') : integer;
 //  https://saga-gis.sourceforge.io/saga_tool_doc/8.2.1/ta_compound_0.html
 var
    cmd : shortstring;
@@ -296,16 +296,14 @@ begin
    if IsSagaCMDthere then begin
       if (PlanCurvatureFName = '') then PlanCurvatureFName := MDTempDir + 'saga_plan_curvature_' + ExtractFileNameNoExt(InName) + '.tif';
       {$If Defined(RecordSAGALS)} Stopwatch := TStopwatch.StartNew; {$EndIf}
-      cmd := MDDef.SagaCMD + ' ta_morphometry 0 -ELEVATION ' + InName + ' -C_PLAN '  + PlanCurvatureFName;
-
-      //cmd := MDDef.SagaCMD + ' ta_morphometry 0 -ELEVATION ' + InName + ' -C_PLAN ' + PlanCurvatureFName + ' -METHOD 3';
-      Result := SAGAMap(OpenMap,cmd,PlanCurvatureFName,euPerMeter,mtElevSpectrum);
+      cmd := MDDef.SagaCMD + ' ta_morphometry 0 -ELEVATION ' + InName + ' -C_PLAN '  + PlanCurvatureFName + ' -METHOD ' + SlopeMethod;
+      Result := SAGAMap(OpenMap,cmd,PlanCurvatureFName,euPerMeter,MDDef.DefCurveMap);
       {$If Defined(RecordSAGALS)} WriteLineToDebugFile('Saga plan curvature   ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
    end;
 end;
 
 
-function SAGA_ProfileCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
+function SAGA_ProfileCurvature(OpenMap : boolean; InName : PathStr; SlopeMethod : char = '3'; OutName : PathStr = '') : integer;
 //  https://saga-gis.sourceforge.io/saga_tool_doc/8.2.1/ta_compound_0.html
 var
    cmd : shortstring;
@@ -314,14 +312,13 @@ begin
    if IsSagaCMDthere then begin
       if (OutName = '') then OutName := MDTempDir + 'saga_profile_curvature_' + ExtractFileNameNoExt(InName) + '.tif';
       {$If Defined(RecordSAGALS)} Stopwatch := TStopwatch.StartNew; {$EndIf}
-      cmd := MDDef.SagaCMD + ' ta_morphometry 0 -ELEVATION ' + InName + ' -C_PROF ' + OutName;
-      //cmd := MDDef.SagaCMD + ' ta_morphometry 0 -ELEVATION ' + InName + ' -C_PROF '  + ProfileCurvatureFName + ' -METHOD 3';
-      Result := SAGAMap(OpenMap,cmd,OutName,euPerMeter,mtElevSpectrum);
+      cmd := MDDef.SagaCMD + ' ta_morphometry 0 -ELEVATION ' + InName + ' -C_PROF ' + OutName + ' -METHOD ' + SlopeMethod;
+      Result := SAGAMap(OpenMap,cmd,OutName,euPerMeter,MDDef.DefCurveMap);
       {$If Defined(RecordSAGALS)} WriteLineToDebugFile('Saga profile curvature   ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
    end;
 end;
 
-function SAGA_TangentialCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
+function SAGA_TangentialCurvature(OpenMap : boolean; InName : PathStr; SlopeMethod : char = '3'; OutName : PathStr = '') : integer;
 //  https://saga-gis.sourceforge.io/saga_tool_doc/8.2.1/ta_compound_0.html
 //  https://saga-gis.sourceforge.io/saga_tool_doc/8.2.1/ta_morphometry_0.html
 var
@@ -331,8 +328,8 @@ begin
    if IsSagaCMDthere then begin
       if (OutName = '') then OutName := MDTempDir + 'saga_profile_curvature_' + ExtractFileNameNoExt(InName) + '.tif';
       {$If Defined(RecordSAGALS)} Stopwatch := TStopwatch.StartNew; {$EndIf}
-      cmd := MDDef.SagaCMD + ' ta_morphometry 0 -ELEVATION ' + InName + ' -C_TANG ' + OutName;
-      Result := SAGAMap(OpenMap,cmd,OutName,euPerMeter,mtElevSpectrum);
+      cmd := MDDef.SagaCMD + ' ta_morphometry 0 -ELEVATION ' + InName + ' -C_TANG ' + OutName + ' -METHOD ' + SlopeMethod;
+      Result := SAGAMap(OpenMap,cmd,OutName,euPerMeter,MDDef.DefCurveMap);
       {$If Defined(RecordSAGALS)} WriteLineToDebugFile('Saga tangential curvature   ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
    end;
 end;
@@ -590,12 +587,11 @@ function SagaWatershedBasins(InName : PathStr; BasinGrid : PathStr = ''; Channel
     end;
 
 
-    function SagaTRIMap(OpenMap : boolean; InName : PathStr) : integer;
+    function SagaTRIMap(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
     var
        cmd : shortstring;
-       OutName : shortstring;
     begin
-       OutName := MDTempDir + 'saga_tri_' + ExtractFileNameNoExt(InName) + '.tif';
+       if OutName = '' then OutName := MDTempDir + 'saga_tri_' + ExtractFileNameNoExt(InName) + '.tif';
        CMD := MDDef.SagaCMD + ' ta_morphometry 16 -DEM ' + inName + ' -TRI ' + OutName + ' -MODE 0';
        Result := SAGAMap(OpenMap,cmd,outname,euMeters);
     end;

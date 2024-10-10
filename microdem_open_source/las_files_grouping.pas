@@ -331,7 +331,7 @@ begin
                     if (MergeLas = mlRGBFilter) then begin
                        AddPt := not lf.ColorFilterOut(j);
                     end
-                    else if (MergeLas = mlThin) or (MergeLas = mlTranslate) or (MergeLas = mlScaleUp) or lf.lasProjectionDefinition.RawXYZFile then begin
+                    else if (MergeLas = mlThin) or (MergeLas = mlTranslate) or (MergeLas = mlScaleUp) or lf.lasProjDef.RawXYZFile then begin
                        AddPt := true;
                     end
                     else if (MergeLas = mlInBox) then begin
@@ -1248,7 +1248,7 @@ var
        Newname := OutPath + Title + CloudName + '.las';
        Creator := tCreateLasFile.Create;
        Creator.NewLasHeader := lf.LasHeader;
-       Creator.CreateNewLASfile(NewName,lf.lasProjectionDefinition,lf.lasheader);
+       Creator.CreateNewLASfile(NewName,lf.lasProjDef,lf.lasheader);
    end;
 
 
@@ -1329,7 +1329,7 @@ begin
 
        NewLas := tCreateLasFile.Create;
        NewLas.NewLasHeader := lf.LasHeader;
-       NewLAS.CreateNewLASfile(ExtractFilePath(fName) + Prefix + ExtractFileName(fName),lf.lasProjectionDefinition,lf.LidarPointType);
+       NewLAS.CreateNewLASfile(ExtractFilePath(fName) + Prefix + ExtractFileName(fName),lf.lasProjDef,lf.LidarPointType);
        Reads := lf.ReadsRequired;
 
        for i := 0 to Reads do begin
@@ -1378,7 +1378,7 @@ begin
        if (NewLAS = Nil) then begin
           NewLas := tCreateLasFile.Create;
           NewLas.NewLasHeader := lf.LasHeader;
-          NewLAS.CreateNewLASfile(NewName,lf.lasProjectionDefinition,lf.LidarPointType);
+          NewLAS.CreateNewLASfile(NewName,lf.lasProjDef,lf.LidarPointType);
        end;
        for i := 0 to lf.ReadsRequired do begin
           lf.ReadPoints(RecsRead);
@@ -1422,7 +1422,7 @@ begin
              {$IfDef RecordMergeLASfiles} WriteLineToDebugFile('Create new LAS file'); {$EndIf}
              NewLas := tCreateLasFile.Create;
              NewLas.NewLasHeader := lf.LasHeader;
-             NewLAS.CreateNewLASfile(NewName,lf.lasProjectionDefinition,lf.LasHeader);
+             NewLAS.CreateNewLASfile(NewName,lf.lasProjDef,lf.LasHeader);
           end;
           for i := 0 to lf.ReadsRequired do begin
              lf.ReadPoints(RecsRead);
@@ -1485,7 +1485,7 @@ begin
             Las_fNames.Delete(k);
          end
          else begin
-            UTMfiles := (lf.lasProjectionDefinition.LASProjection.pName = UTMEllipsoidal);
+            UTMfiles := (lf.lasProjDef.LASProj.pName = UTMEllipsoidal);
             ExtendBoundingBox(GeoBBox,lf.LAS_LatLong_Box);
             ExtendBoundingBox(UTMBBox,lf.LAS_UTM_Box);
             if (lf.SingleFilePointDensity > MaxPointDensity) then MaxPointDensity := lf.SingleFilePointDensity;
@@ -1495,7 +1495,7 @@ begin
             if (MinZ > lf.LasHeader.MinZ) then MinZ := lf.LasHeader.MinZ;
             if (MaxZ < lf.LasHeader.MaxZ) then MaxZ := lf.LasHeader.MaxZ;
             UTMZone := lf.UTMZone;
-            LatHemi := lf.lasProjectionDefinition.LASProjection.LatHemi;
+            LatHemi := lf.lasProjDef.LASProj.LatHemi;
          end;
          {$IfDef RecordListFilesProcessed}
             WriteLineToDebugFile('On map: ' + fName + ' geo limits ' + sfBoundBoxToString(lf.LAS_LatLong_Box,6) + ' utm limits ' + sfBoundBoxToString(lf.LAS_UTM_Box,1) +

@@ -327,14 +327,13 @@ var
    Str,aline : AnsiString;
 begin
    if FileExists(inName) then begin
-
       {$IfDef RecordGPX} WriteLineToDebugFile('GPXtoDBF, in for ' + inName); {$EndIf}
       ShowHourglassCursor;
       FileInMemory := tStringList.Create;
       FileInMemory.LoadFromFile(inName);
 
       OutList := tStringList.Create;
-      OutList.Add('LAT,LONG,DTG,DEC_HOURS');
+      OutList.Add('LAT,LONG,ELEV,DTG,DEC_HOURS');
       aLine := '';
       TimeStr := '';
        for I := 0 to pred(FileInMemory.count) do begin
@@ -346,10 +345,13 @@ begin
               Petmar_Types.BeforeSpecifiedCharacterANSI(Str,'"',true,true);
               aline := aline + Petmar_Types.BeforeSpecifiedCharacterANSI(Str,'"') + ',';
           end;
+          if (aline <> '') and StrUtils.AnsiContainsText(Str,'<ELE>') then begin
+
+          end;
           if (aline <> '') and StrUtils.AnsiContainsText(Str,'<TIME') then begin
               Petmar_Types.BeforeSpecifiedCharacterANSI(Str,'>',true,true);
               Str := Petmar_Types.BeforeSpecifiedCharacterANSI(Str,'<');
-              if TimeStr = '' then TimeStr := Str;
+              if (TimeStr = '') then TimeStr := Str;
               aline := aline + Str;
               Delete(Str,1,11);
               Hours := 1.0 * StrToInt(Copy(Str,1,2)) + StrToInt(Copy(Str,4,2)) / 60 + StrToInt(Copy(Str,7,2)) / 3600;
@@ -717,7 +719,7 @@ begin
           else if (UpperCase(Copy(URL,1,4)) <> 'HTTP') then URL := 'https://' + URL;
        end;
    end;
-   ExecuteFile(URL, '', '');
+   ExecuteFile(URL);
 {$Else}
 begin
 {$EndIf}
@@ -964,7 +966,7 @@ begin
             if (BlowUp < 100) then LoadedImage.ResizeImage(LoadedImage.Width * BlowUp div 100, LoadedImage.Height * BlowUp div 100);
          end
          else begin
-            ExecuteFile(fName, '', '');
+            ExecuteFile(fName);
          end;
       end;
    end;
@@ -1268,7 +1270,7 @@ begin
    {$IfDef RecordHTML} WriteLineToDebugFile('');  WriteLineToDebugFile(LineClipboard);  WriteLineToDebugFile(''); {$EndIf}
    ClipBrd.ClipBoard.AsText := LineClipboard;
    {$IfDef VCL}
-      ExecuteFile(fname, '', '');
+      ExecuteFile(fname);
    {$EndIf}
    {$IfDef RecordHTML} WriteLineToDebugFile('SingleRecordHTMLReport out'); {$EndIf}
 end;
@@ -1886,7 +1888,7 @@ begin
    ReportSL.Add(Report);
    ReportSL.SaveToFile(fName);
    ReportSL.Free;
-   ExecuteFile(fname, '', '');
+   ExecuteFile(fname);
 end;
 
 
@@ -1904,7 +1906,7 @@ begin
    ReportSL.Add(Report);
    ReportSL.SaveToFile(fName);
    ReportSL.Free;
-   ExecuteFile(fname, '', '');
+   ExecuteFile(fname);
 end;
 
 

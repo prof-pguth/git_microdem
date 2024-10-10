@@ -7,7 +7,7 @@
         <TargetedPlatforms>3</TargetedPlatforms>
         <AppType>Application</AppType>
         <FrameworkType>VCL</FrameworkType>
-        <ProjectVersion>20.1</ProjectVersion>
+        <ProjectVersion>20.2</ProjectVersion>
         <Platform Condition="'$(Platform)'==''">Win64</Platform>
         <ProjectName Condition="'$(ProjectName)'==''">microdem</ProjectName>
     </PropertyGroup>
@@ -164,16 +164,16 @@
         <Icon_MainIcon>..\icons\md_logo.ico</Icon_MainIcon>
         <DCC_ExeOutput>C:\microdem\</DCC_ExeOutput>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-        <VerInfo_MinorVer>8</VerInfo_MinorVer>
+        <VerInfo_MinorVer>10</VerInfo_MinorVer>
         <VerInfo_MajorVer>2024</VerInfo_MajorVer>
-        <VerInfo_Release>16</VerInfo_Release>
+        <VerInfo_Release>3</VerInfo_Release>
         <DCC_DcuOutput>C:\turbo\obj_files_64\</DCC_DcuOutput>
-        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2024.8.16.1;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2024.10.3.19;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
         <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
         <DCC_OutputDRCFile>false</DCC_OutputDRCFile>
         <DCC_RangeChecking>true</DCC_RangeChecking>
-        <VerInfo_Build>1</VerInfo_Build>
+        <VerInfo_Build>19</VerInfo_Build>
         <AppDPIAwarenessMode>none</AppDPIAwarenessMode>
         <DCC_MapFile>3</DCC_MapFile>
     </PropertyGroup>
@@ -923,6 +923,10 @@
         <DCCReference Include="..\sgp\SGP_TIME.PAS"/>
         <DCCReference Include="..\sgp\SGP4SDP4.PAS"/>
         <DCCReference Include="..\sgp\SGP_Support.pas"/>
+        <DCCReference Include="..\common_code\edit_exif_fields.pas">
+            <Form>Form1</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <None Include="nevadia_defines.inc"/>
         <None Include="..\common_code\demdatabase_maps.inc"/>
         <None Include="..\common_code\demdatabase_vcl.inc"/>
@@ -1003,6 +1007,9 @@
         <None Include="..\demix\demix_maps.inc"/>
         <None Include="..\microdem_open_source\petmar_palettes_legends.inc"/>
         <None Include="..\demix\demix_open_dems.inc"/>
+        <None Include="..\microdem_open_source\demcoord_aspect_stats.inc"/>
+        <None Include="..\microdem_open_source\demcoord_sso.inc"/>
+        <None Include="..\microdem_open_source\demcoord_richardson_extrapolate.inc"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -1300,7 +1307,7 @@
                 <Platform value="Win64">True</Platform>
             </Platforms>
             <ModelSupport>False</ModelSupport>
-            <Deployment Version="4">
+            <Deployment Version="5">
                 <DeployFile LocalName="..\TDbf_Delphi_XE2_v2\tdbf-code-507-trunk\src\dbf_common.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\TDbf_Delphi_XE2_v2\tdbf-code-507-trunk\src\dbf_str.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\TDbf_Delphi_XE2_v2\tdbf-code-507-trunk\src\dbf_struct.inc" Configuration="Debug" Class="ProjectFile"/>
@@ -1529,6 +1536,7 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="..\common_code\demstat_grid_compare.inc" Configuration="Release" Class="ProjectFile"/>
+                <DeployFile LocalName="..\common_code\demstat_ssim.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demstat_ssim.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
                         <RemoteDir>.\</RemoteDir>
@@ -1551,60 +1559,70 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="..\common_code\petmar_vcl.inc" Configuration="Release" Class="ProjectFile"/>
+                <DeployFile LocalName="..\demix\demix_channels.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\demix\demix_channels.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
+                <DeployFile LocalName="..\demix\demix_clusters.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\demix\demix_clusters.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
+                <DeployFile LocalName="..\demix\demix_create_database.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\demix\demix_create_database.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
+                <DeployFile LocalName="..\demix\demix_create_ref_dems.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\demix\demix_create_ref_dems.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
+                <DeployFile LocalName="..\demix\demix_create_test_dems.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\demix\demix_create_test_dems.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
+                <DeployFile LocalName="..\demix\demix_external_program_derived_grids.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\demix\demix_external_program_derived_grids.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
+                <DeployFile LocalName="..\demix\demix_graphs.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\demix\demix_graphs.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
+                <DeployFile LocalName="..\demix\demix_inventory_check_dems.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\demix\demix_inventory_check_dems.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
+                <DeployFile LocalName="..\demix\demix_maps.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\demix\demix_maps.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
+                <DeployFile LocalName="..\demix\demix_open_dems.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\demix\demix_open_dems.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
                         <RemoteDir>.\</RemoteDir>
@@ -1659,6 +1677,13 @@
                 </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\basemap_vincenty.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\dem_database_demix_ops.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\demcoord_aspect_stats.inc" Configuration="Debug" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\demcoord_aspect_stats.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\demcoord_edits.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\demcoord_edits.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
@@ -1683,6 +1708,7 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\demcoord_geomorph.inc" Configuration="Release" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\demcoord_point_class.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\demcoord_point_class.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
                         <RemoteDir>.\</RemoteDir>
@@ -1705,6 +1731,18 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\demcoord_read_dted.inc" Configuration="Release" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\demcoord_richardson_extrapolate.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="..\microdem_open_source\demcoord_sso.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\demcoord_straight.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\demcoord_straight.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
@@ -1713,6 +1751,7 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\demcoord_straight.inc" Configuration="Release" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\demcoord_vert_datum.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\demcoord_vert_datum.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
                         <RemoteDir>.\</RemoteDir>
@@ -1822,6 +1861,7 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\demmapdraw_grids.inc" Configuration="Release" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\demmapdraw_legends.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\demmapdraw_legends.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
                         <RemoteDir>.\</RemoteDir>
@@ -1875,12 +1915,14 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\demmapdraw_viewshed.inc" Configuration="Release" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\petimage_vcl.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\petimage_vcl.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
+                <DeployFile LocalName="..\microdem_open_source\petmar_palettes_legends.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\petmar_palettes_legends.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
                         <RemoteDir>.\</RemoteDir>
@@ -1889,6 +1931,7 @@
                 </DeployFile>
                 <DeployFile LocalName="..\microdem_open_source\petmar_types_db.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\petmar_types_db.inc" Configuration="Release" Class="ProjectFile"/>
+                <DeployFile LocalName="..\microdem_open_source\saga_wrapper.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\saga_wrapper.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
                         <RemoteDir>.\</RemoteDir>
@@ -1910,6 +1953,7 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
+                <DeployFile LocalName="..\microdem_open_source\wbt_wrapper.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\wbt_wrapper.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
                         <RemoteDir>.\</RemoteDir>
@@ -1984,16 +2028,6 @@
                         <Operation>0</Operation>
                     </Platform>
                 </DeployClass>
-                <DeployClass Name="AndroidClasses">
-                    <Platform Name="Android">
-                        <RemoteDir>classes</RemoteDir>
-                        <Operation>64</Operation>
-                    </Platform>
-                    <Platform Name="Android64">
-                        <RemoteDir>classes</RemoteDir>
-                        <Operation>64</Operation>
-                    </Platform>
-                </DeployClass>
                 <DeployClass Name="AndroidFileProvider">
                     <Platform Name="Android">
                         <RemoteDir>res\xml</RemoteDir>
@@ -2001,12 +2035,6 @@
                     </Platform>
                     <Platform Name="Android64">
                         <RemoteDir>res\xml</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="AndroidGDBServer">
-                    <Platform Name="Android">
-                        <RemoteDir>library\lib\armeabi-v7a</RemoteDir>
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>

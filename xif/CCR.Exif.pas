@@ -242,8 +242,7 @@ type
     FModified: Boolean;
     FOwner: TCustomExifData;
     FTagList: TList;
-    procedure DoSetFractionValue(TagID: TExifTagID; Index: Integer;
-      DataType: TExifDataType; const Value);
+    procedure DoSetFractionValue(TagID: TExifTagID; Index: Integer; DataType: TExifDataType; const Value);
   protected
     { ITiffDirectory }
     function FindTag(TagID: TTiffTagID; out ParsedTag: ITiffTag): Boolean;
@@ -261,11 +260,9 @@ type
     procedure DoDelete(TagIndex: Integer; FreeTag: Boolean);
     function EnforceASCII: Boolean;
     function FindIndex(ID: TExifTagID; var TagIndex: Integer): Boolean;
-    function ForceSetElement(ID: TExifTagID; DataType: TExifDataType;
-      Index: Integer; const Value): TExifTag;
+    function ForceSetElement(ID: TExifTagID; DataType: TExifDataType; Index: Integer; const Value): TExifTag;
     procedure Load(const Directory: IFoundTiffDirectory; TiffImageSource: Boolean);
-    procedure TagChanging(Tag: TExifTag; NewID: TExifTagID;
-      NewDataType: TExifDataType; NewElementCount: LongInt; NewData: Boolean);
+    procedure TagChanging(Tag: TExifTag; NewID: TExifTagID; NewDataType: TExifDataType; NewElementCount: LongInt; NewData: Boolean);
     procedure TagChanged(Tag: TExifTag; ChangeType: TExifTagChangeType);
     procedure TagDeleting(Tag: TExifTag);
     property FirstTagHeaderOffset: Int64 read FFirstTagHeaderOffset;
@@ -274,8 +271,7 @@ type
     function GetEnumerator: TEnumerator;
     procedure Clear;
     function Find(ID: TExifTagID; out Tag: TExifTag): Boolean;
-    function GetByteValue(TagID: TExifTagID; Index: Integer; Default: Byte;
-      MinValue: Byte = 0; MaxValue: Byte = High(Byte)): Byte;
+    function GetByteValue(TagID: TExifTagID; Index: Integer; Default: Byte; MinValue: Byte = 0; MaxValue: Byte = High(Byte)): Byte;
     function GetDateTimeValue(MainID, SubSecsID: TExifTagID): TDateTimeTagValue;
     function GetFractionValue(TagID: TExifTagID; Index: Integer): TExifFraction; overload;
     function GetFractionValue(TagID: TExifTagID; Index: Integer;  const Default: TExifFraction): TExifFraction; overload;
@@ -283,8 +279,7 @@ type
     function GetLongIntValue(TagID: TExifTagID; Index: Integer; Default: LongInt): LongInt; overload;
     function GetLongWordValue(TagID: TExifTagID; Index: Integer): TLongWordTagValue; overload;
     function GetLongWordValue(TagID: TExifTagID; Index: Integer; Default: LongWord): LongWord; overload;
-    function GetSmallIntValue(TagID: TExifTagID; Index: Integer; Default: SmallInt;
-      MinValue: SmallInt = Low(SmallInt); MaxValue: SmallInt = High(SmallInt)): SmallInt;
+    function GetSmallIntValue(TagID: TExifTagID; Index: Integer; Default: SmallInt; MinValue: SmallInt = Low(SmallInt); MaxValue: SmallInt = High(SmallInt)): SmallInt;
     function GetStringValue(TagID: TExifTagID; const Default: string = ''): string;
     function GetWindowsStringValue(TagID: TExifTagID; const Default: UnicodeString = ''): UnicodeString;
     function GetWordValue(TagID: TExifTagID; Index: Integer): TWordTagValue; overload;
@@ -297,8 +292,7 @@ type
     procedure SetDateTimeValue(MainID, SubSecsID: TExifTagID; const Value: TDateTimeTagValue);
     procedure SetFractionValue(TagID: TExifTagID; Index: Integer; const Value: TExifFraction);
     function SetLongWordValue(TagID: TExifTagID; Index: Integer; Value: LongWord): TExifTag;
-    procedure SetSignedFractionValue(TagID: TExifTagID; Index: Integer;
-      const Value: TExifSignedFraction);
+    procedure SetSignedFractionValue(TagID: TExifTagID; Index: Integer; const Value: TExifSignedFraction);
     procedure SetStringValue(TagID: TExifTagID; const Value: string);
     procedure SetWindowsStringValue(TagID: TExifTagID; const Value: UnicodeString);
     function SetWordValue(TagID: TExifTagID; Index: Integer; Value: Word): TExifTag;
@@ -707,8 +701,7 @@ type
   protected
     const HeaderStart: array[0..6] of AnsiChar = 'Nikon'#0#2;
     class function FormatIsOK(SourceTag: TExifTag; out HeaderSize: Integer): Boolean; override;
-    procedure GetIFDInfo(SourceTag: TExifTag; var ProbableEndianness: TEndianness;
-      var DataOffsetsType: TExifDataOffsetsType); override;
+    procedure GetIFDInfo(SourceTag: TExifTag; var ProbableEndianness: TEndianness; var DataOffsetsType: TExifDataOffsetsType); override;
   public
     property ColorMode: string index ttNikonType3ColorMode read GetTagAsString;
     property Quality: string index ttNikonType3Quality read GetTagAsString;
@@ -741,8 +734,7 @@ type
   protected
     const Header: array[0..7] of AnsiChar = 'SONY DSC';
     class function FormatIsOK(SourceTag: TExifTag; out HeaderSize: Integer): Boolean; override;
-    procedure GetIFDInfo(SourceTag: TExifTag; var ProbableEndianness: TEndianness;
-      var DataOffsetsType: TExifDataOffsetsType); override;
+    procedure GetIFDInfo(SourceTag: TExifTag; var ProbableEndianness: TEndianness; var DataOffsetsType: TExifDataOffsetsType); override;
   end;
 
   EInvalidExifData = class(ECCRExifException);
@@ -1565,8 +1557,7 @@ end;
 
 { TExifTag }
 
-constructor TExifTag.Create(const Section: TExifSection;
-  const ID: TExifTagID; DataType: TExifDataType; ElementCount: Integer);
+constructor TExifTag.Create(const Section: TExifSection; const ID: TExifTagID; DataType: TExifDataType; ElementCount: Integer);
 begin
   inherited Create;
   FDataType := DataType;

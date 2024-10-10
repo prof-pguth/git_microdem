@@ -184,7 +184,7 @@ var
             procedure UpdateCount(HowFar : LongInt);
             procedure EndCount;
 
-      function ExecuteFile(const FileName, Params, DefaultDir: ANSIstring): THandle;
+      function ExecuteFile(const FileName : ANSIstring; Params : ANSIstring = ''; DefaultDir : ANSIstring = '') : THandle;
       function WinExecAndWait32(FileName : ANSIstring; Wait : boolean = true; Log : boolean = true) : integer;
 
       function MultiSelectSingleColumnStringList(InMessage : ANSIstring; var PickedNum : integer; var InList : TStringList; CanCancel : boolean = false; MultiPick : boolean = false) : boolean;
@@ -369,9 +369,7 @@ procedure ReadDefault(Prompt : ShortString;  var WordVal : word); overload;
       function FileExtEquals(fName : PathStr; Wanted : ExtStr) : boolean;
       procedure UnblockFile(fName : PathStr);
 
-      procedure AddSuffixOrPrefixToFiles(PrefixWanted : boolean; aPath : Pathstr = '');
-
-
+      procedure AddSuffixOrPrefixToFiles(PrefixWanted : boolean);
 
 //values from strings
       function CheckEditString(Text : string; var OutValue : float64) : boolean; overload;
@@ -594,35 +592,36 @@ begin
 end;
 
 
-procedure AddSuffixOrPrefixToFiles(PrefixWanted : boolean; aPath : Pathstr = '');
+procedure AddSuffixOrPrefixToFiles(PrefixWanted : boolean);
+const
+   aPath : Pathstr = '';
 var
    FilesWanted : tStringList;
    j : integer;
-   //ext : extStr;
    version,what : shortstring;
    fName,NewName : PathStr;
 begin
-   if aPath = '' then GetDOSPath('files to add ' + What,aPath);
-   //Ext := '*.*';
-   if PrefixWanted then What := 'prefix' else what := 'suffix';
-
-   ShowHourglassCursor;
-   FilesWanted := tStringList.Create;
-   FindMatchingFiles(aPath,'*.*',FilesWanted,2);
-   if FilesWanted.Count > 0 then begin
-      Version := LastSubDir(ExtractFilePath(FilesWanted.Strings[0])) + '_';
-      Petmar.GetString('file name ' + What,Version,false,ValidDosFileNameChars);
-      for j := 0 to pred(FilesWanted.Count) do begin
-         fName := FilesWanted.Strings[j];
-         if not StrUtils.AnsiContainsText(UpperCase(ExtractFileNameNoExt(fName)),UpperCase(version)) then begin
-            if PrefixWanted then NewName := ExtractFilePath(fName) + Version + ExtractFileNameNoExt(fName) + ExtractFileExt(fName)
-            else NewName := ExtractFilePath(fName) + ExtractFileNameNoExt(fName) + Version + ExtractFileExt(fName);
-            RenameFile(fName, NewName);
+   repeat
+      GetDOSPath('files to add ' + What,aPath);
+      if PrefixWanted then What := 'prefix' else what := 'suffix';
+      ShowHourglassCursor;
+      FilesWanted := tStringList.Create;
+      FindMatchingFiles(aPath,'*.*',FilesWanted,2);
+      if (FilesWanted.Count > 0) then begin
+         Version := LastSubDir(ExtractFilePath(FilesWanted.Strings[0])) + '_';
+         Petmar.GetString('file name ' + What,Version,false,ValidDosFileNameChars);
+         for j := 0 to pred(FilesWanted.Count) do begin
+            fName := FilesWanted.Strings[j];
+            if not StrUtils.AnsiContainsText(UpperCase(ExtractFileNameNoExt(fName)),UpperCase(version)) then begin
+               if PrefixWanted then NewName := ExtractFilePath(fName) + Version + ExtractFileNameNoExt(fName) + ExtractFileExt(fName)
+               else NewName := ExtractFilePath(fName) + ExtractFileNameNoExt(fName) + Version + ExtractFileExt(fName);
+               RenameFile(fName, NewName);
+            end;
          end;
       end;
-   end;
-   FilesWanted.Free;
-   ShowDefaultCursor;
+      FilesWanted.Free;
+      ShowDefaultCursor;
+   until not AnswerIsYes('Another directory');
 end;
 
 
@@ -678,7 +677,6 @@ begin
 end;
 
 
-
 function BitmapSizeString(Bitmap : tMyBitmap) : shortstring;
 begin
    Result := ' Bitmap size: ' + BitmapSize(Bitmap);
@@ -688,9 +686,9 @@ end;
 function FileTimeFromFileName(fName : PathStr) : ShortString;
 begin
    Result := DateTimeToStr(FileDateToDateTime(FileAge(fName)));
-            Petmar.ReplaceCharacter(Result,'/','_');
-            Petmar.ReplaceCharacter(Result,':','_');
-            Petmar.ReplaceCharacter(Result,' ','_');
+   Petmar.ReplaceCharacter(Result,'/','_');
+   Petmar.ReplaceCharacter(Result,':','_');
+   Petmar.ReplaceCharacter(Result,' ','_');
 end;
 
 
@@ -701,18 +699,18 @@ var
     Handle : tHandle;
 begin
     SHGetSpecialFolderLocation(Handle, CSIDL_BITBUCKET, recycleBinPIDL);
-    with execInfo do begin
-      cbSize := Sizeof(execInfo) ;
-      fMask := SEE_MASK_IDLIST;
-      Wnd := Handle;
-      lpVerb := nil;
-      lpFile := nil;
-      lpParameters := nil;
-      lpDirectory := nil;
-      nShow := SW_SHOWNORMAL;
-      hInstApp:=0;
-      lpIDList := recycleBinPIDL;
-    end;
+    //with execInfo do begin
+      execInfo.cbSize := Sizeof(execInfo) ;
+      execInfo.fMask := SEE_MASK_IDLIST;
+      execInfo.Wnd := Handle;
+      execInfo.lpVerb := nil;
+      execInfo.lpFile := nil;
+      execInfo.lpParameters := nil;
+      execInfo.lpDirectory := nil;
+      execInfo.nShow := SW_SHOWNORMAL;
+      execInfo.hInstApp:=0;
+      execInfo.lpIDList := recycleBinPIDL;
+    //end;
     ShellExecuteEx(@execInfo) ;
 end;
 
@@ -720,20 +718,13 @@ end;
 function GetVolumeName(DriveLetter: ANSIChar): shortstring;
 //https://www.swissdelphicenter.ch/en/showcode.php?id=153
 var
-  dummy: DWORD;
-  buffer: array[0..MAX_PATH] of Char;
-  oldmode: LongInt;
+  dummy : DWORD;
+  buffer : array[0..MAX_PATH] of Char;
+  oldmode : LongInt;
 begin
   oldmode := SetErrorMode(SEM_FAILCRITICALERRORS);
   try
-    GetVolumeInformation(PChar(DriveLetter + ':\'),
-                         buffer,
-                         SizeOf(buffer),
-                         nil,
-                         dummy,
-                         dummy,
-                         nil,
-                         0);
+    GetVolumeInformation(PChar(DriveLetter + ':\'),buffer,SizeOf(buffer),nil,dummy,dummy,nil,0);
     Result := StrPas(buffer);
   finally
     SetErrorMode(oldmode);
@@ -754,23 +745,23 @@ function FileCanBeOpened(fName : PathStr) : boolean;
 var
    f : tHandle;
 begin
-      repeat
-        try
-            f := FileOpen(fName,fmOpenRead);
-            Result := true;
-        except
-            on EFOpenError do begin
-              if AnswerIsYes('Cannot open ' + fName + '; Close it in other program') then begin
+   repeat
+     try
+         f := FileOpen(fName,fmOpenRead);
+         Result := true;
+     except
+         on EFOpenError do begin
+           if AnswerIsYes('Cannot open ' + fName + '; Close it in other program') then begin
 
-              end
-              else begin
-                 Result := false;
-                 exit;
-              end;
-            end;
-        end;
-      until Result;
-      FileClose(f);
+           end
+           else begin
+              Result := false;
+              exit;
+           end;
+         end;
+     end;
+   until Result;
+   FileClose(f);
 end;
 
 
@@ -2394,11 +2385,13 @@ end;
             end;
             ApplicationProcessMessages;
             if Wait then ShowDefaultCursor;
-            {$IfDef RecordShellExecute} if Log and (not HeavyDutyProcessing) and (not DEMMergeInProgress) then WriteLineToDebugFile('WinExecAndWait32 out, result=' + IntToStr(Result)); {$EndIf}
+            {$IfDef RecordShellExecute}
+               if Log and (not HeavyDutyProcessing) and (not DEMMergeInProgress) and (Result <> 0) then WriteLineToDebugFile('WinExecAndWait32 out, result=' + IntToStr(Result));
+            {$EndIf}
          end;
 
 
-         function ExecuteFile(const FileName, Params, DefaultDir : ANSIstring): THandle;
+         function ExecuteFile(const FileName : ANSIstring; Params : ANSIstring = ''; DefaultDir : ANSIstring = ''): THandle;
          var
            zFileName, zParams, zDir: array[0..255] of char;
            tDir : ANSIstring;
@@ -3534,7 +3527,7 @@ end;
 function AngleFormat(Angle : float64; Units : tAngleMeasure; ShowUnits : boolean = true) : shortstring;
 begin
    case Units of
-      amDegree : Result := RealToString(Angle,-18,-8) + DegSym;
+      amDegree : Result := RealToString(Angle,-18,-8) + '°';
       amMinute : Result := RealToString(Angle*60,-18,-5) + '''';
       amSecond : Result := RealToString(Angle*3600,-18,-2) + '"';
    end;
@@ -3616,7 +3609,7 @@ var
    DegString,MinString,SecString : string10;
 begin
    ConvertToDegMinSecString(Value,OutPutMethod,DegString,MinString,SecString,HighAccuracy);
-   Result := ptTrim(DegString) + DegSym;
+   Result := ptTrim(DegString) + '°';
    if (Value < 0) then Result := '-' + Result;
    if not (OutPutMethod in [DecDegrees,NearestDegree,ShortDegrees,VeryShortDegrees,LongDegrees]) then begin
       Result := Result + MinString + chr(39);
@@ -3629,7 +3622,7 @@ end;
 function LatToString3(Lat : float64) : shortstring;
 begin
    Result := LatToString(Lat,ShortDegrees);
-   StripCharacter(Result,DegSym);
+   StripCharacter(Result,'°');
    if length(Result) = 2 then Result := Result[1] + '0' + Result[2];
 end;
 
@@ -3637,7 +3630,7 @@ function LongToString4(Long : float64) : shortstring;
 begin
    LongitudeAngleInRange(Long);
    Result := LongToString(Long,ShortDegrees);
-   StripCharacter(Result,DegSym);
+   StripCharacter(Result,'°');
    if length(Result) = 2 then Result := Result[1] + '00' + Result[2];
    if length(Result) = 3 then Result := Result[1] + '0' + Result[2] + Result[3];
 end;

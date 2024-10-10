@@ -11,7 +11,7 @@
 
 procedure tGISdataBaseModule.ZoomToDBCoverageOnMap;
 var
-  extra{,xf} : float64;
+  extra : float64;
   xminproj,xmaxproj,yminproj,ymaxproj,
   xmin,xmax,ymin,ymax : float64;
 
@@ -73,7 +73,7 @@ end;
          Lat,Long : float64;
          x,y,Len,i,j,rc : Integer;
       begin
-         {$IfDef RecordDBPlot} WriteLineToDebugFile('PlotFabric in, ' + dbName); {$EndIf}
+         {$If Defined(RecordDBPlot) or Defined(RecordPlotFabric)} WriteLineToDebugFile('PlotFabric in, ' + dbName); {$EndIf}
          PlotColor := MDDef.GrainColor;
          MyData.First;
          if MDDef.FabColorByField then begin
@@ -99,20 +99,20 @@ end;
            for i := 1 to MDDef.FabricCalcThin do MyData.Next;
            if WantOut then break;
          end;
-         {$IfDef RecordDBPlot} WriteLineToDebugFile('PlotFabric out, ' + dbName); {$EndIf}
+         {$If Defined(RecordDBPlot) or Defined(RecordPlotFabric)}  WriteLineToDebugFile('PlotFabric out, ' + dbName); {$EndIf}
       end;
 
 {$EndIf}
 
 
             procedure TGISdataBaseModule.RedrawLayerOnMap;
-            var
-               NoRedraw : boolean;
+            //var
+               //NoRedraw : boolean;
             begin
                if (TheMapOwner <> Nil) {and dbPlotted} then begin
-                  NoRedraw := (theMapOwner <> Nil) and theMapOwner.MapDraw.ClosingMapNow;
-                  TheMapOwner.MapDraw.ClearGISLayer(DBNumber);
-                  if (not NoRedraw) then begin
+                  //NoRedraw := {(theMapOwner <> Nil) and} theMapOwner.MapDraw.ClosingMapNow;
+                  if (not theMapOwner.MapDraw.ClosingMapNow) then begin
+                     TheMapOwner.MapDraw.ClearGISLayer(DBNumber);
                      theMapOwner.DoFastMapRedraw;
                   end;
                   if (TheMapOwner.MapDraw.CurrentFansTable = DBNumber) then TheMapOwner.MapDraw.CurrentFansTable := 0;
@@ -945,7 +945,7 @@ end;
                      end;
                      FreeAndNil(FieldsInDB);
 
-                     GetFieldsLinkPossible(MyData,LinkTable,dbOpts.VisCols,[ftString,ftInteger,ftSmallInt,ftLargeInt],FieldsInDB);
+                     GetFieldsLinkPossible(MyData,LinkTable,dbOpts.VisCols,[ftString,ftFloat,ftInteger,ftSmallInt],FieldsInDB);
                      if (FieldsInDB <> Nil) and (FieldsInDB.Count > 0) then begin
                         gis_scaled_form.StringsComboBox2.Items := FieldsInDB;
                         gis_scaled_form.ComboBox3.Items := FieldsInDB;

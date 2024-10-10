@@ -2302,31 +2302,31 @@ begin
        end;
    end
    else begin
-      {$IfDef TimeDBPlot} writeLineToDebugFile('Line/area DB    Pen color: ' + IntToStr(Bitmap.Canvas.Pen.Color) + '  Pen width ' + IntToStr(Bitmap.Canvas.Pen.Width) + '  Brush color ' + IntToStr(Bitmap.Canvas.Brush.Color)); {$EndIf}
-       nDrawn := 0;
-       Track:= UpdateRate(NumRecs);
-         MoveToStartShapefile;
-         try
-            ShapefileRandomAccess := false;
-             for i := 1 to NumRecs do begin
-                if OSMdata then begin
-                   Bitmap.Canvas.Pen.Width := Bitmap.Canvas.Pen.Width * 2;
-                end;
-                if PlotSingleRecordMap(MapDraw,Bitmap,i) then inc(NDrawn)
-                else begin
-                    {$IfDef TrackNoPlots} writeLineToDebugFile('tShapeFile.PlotAllRecords, fail to draw ' + IntToStr(i)); {$EndIf}
-                end;
-                if ShowSatProgress and (i mod Track = 0) and (not ThreadsWorking) then begin
-                   {$IfDef VCL} UpdateProgressBar(i/Numrecs); {$EndIf}
-                   if WantOut then Break;
-                end;
-                if OSMdata then begin
-                   Bitmap.Canvas.Pen.Width := Bitmap.Canvas.Pen.Width div 2;
-                end;
+     {$IfDef TimeDBPlot} writeLineToDebugFile('Line/area DB    Pen color: ' + IntToStr(Bitmap.Canvas.Pen.Color) + '  Pen width ' + IntToStr(Bitmap.Canvas.Pen.Width) + '  Brush color ' + IntToStr(Bitmap.Canvas.Brush.Color)); {$EndIf}
+      nDrawn := 0;
+      Track:= UpdateRate(NumRecs);
+      MoveToStartShapefile;
+      try
+         ShapefileRandomAccess := false;
+          for i := 1 to NumRecs do begin
+             if OSMdata then begin
+                Bitmap.Canvas.Pen.Width := Bitmap.Canvas.Pen.Width * 2;
              end;
-          finally
-            ShapefileRandomAccess := true;
+             if PlotSingleRecordMap(MapDraw,Bitmap,i) then inc(NDrawn)
+             else begin
+                 {$IfDef TrackNoPlots} writeLineToDebugFile('tShapeFile.PlotAllRecords, fail to draw ' + IntToStr(i)); {$EndIf}
+             end;
+             if ShowSatProgress and (i mod Track = 0) and (not ThreadsWorking) then begin
+                {$IfDef VCL} UpdateProgressBar(i/Numrecs); {$EndIf}
+                if WantOut then Break;
+             end;
+             if OSMdata then begin
+                Bitmap.Canvas.Pen.Width := Bitmap.Canvas.Pen.Width div 2;
+             end;
           end;
+       finally
+         ShapefileRandomAccess := true;
+       end;
    end;
    {$IfDef VCL} if ShowSatProgress and (not ThreadsWorking) then EndProgress; {$EndIf}
    {$If Defined(TimeShapefile) or Defined(TimeDBPlot)}  WriteLineToDebugFile('PlotAllRecords, n=' + IntToStr(nDrawn) + '  took ' + RealToString(Stopwatch1.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}

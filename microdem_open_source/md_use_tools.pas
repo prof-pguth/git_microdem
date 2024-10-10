@@ -88,13 +88,15 @@ uses
 
    function WBT_SlopeMap(OpenMap : boolean; InName : PathStr) : integer;
    function WBT_ProfileCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = ''): integer;
+   function WBT_HillshadeMap(OpenMap : boolean; DEM : integer; OutName : PathStr = '') : integer;
+
    function WBT_PlanCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = ''): integer;
    function WBT_TangentialCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
    function WBT_MinimalCurvature(OpenMap : boolean; InName : PathStr): integer;
    function WBT_MaximalCurvature(OpenMap : boolean; InName : PathStr): integer;
    function WBT_MeanCurvature(OpenMap : boolean; InName : PathStr): integer;
    function WBT_GaussianCurvature(OpenMap : boolean; InName : PathStr): integer;
-   function WBT_TRI(OpenMap : boolean; InName : PathStr) : integer;
+   function WBT_TRI(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
    function WBT_AvgNormVectAngDev(InName : PathStr; filtersize : integer) : integer;
    function WBT_CircularVarianceOfAspect(OpenMap : boolean; InName : PathStr; filtersize : integer) : integer;
    function WBT_DrainageBasins(InName : PathStr) : integer;
@@ -119,7 +121,7 @@ uses
 {$IfDef ExSAGA}
 {$Else}
    procedure SAGA_all_DEMs_remove_sinks;
-   function SagaTRIMap(OpenMap : boolean; InName : PathStr) : integer;
+   function SagaTRIMap(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
    function SagaTPIMap(OpenMap : boolean; InName : PathStr) : integer;
    function SagaVectorRuggednessMap(OpenMap : boolean; InName : PathStr; Radius : integer) : integer;
    function SagaSinkRemoval(InName : PathStr; OutName : PathStr = '') : integer;
@@ -133,9 +135,9 @@ uses
    function SAGA_LSFactor(OpenMap : boolean; InName : PathStr; LSGridName : PathStr = '') : integer;
    function SAGA_Slope_percent(OpenMap : boolean; SlopeMethod : char; InName : PathStr; SlopeFName : PathStr = '') : integer;
    function SAGA_ConvergenceIndex(OpenMap : boolean; InName : PathStr; ConIndexGridName : PathStr = '') : integer;
-   function SAGA_PlanCurvature(OpenMap : boolean; InName : PathStr; PlanCurvatureFName : PathStr = '') : integer;
-   function SAGA_ProfileCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
-   function SAGA_TangentialCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
+   function SAGA_PlanCurvature(OpenMap : boolean; InName : PathStr; SlopeMethod : char = '3'; PlanCurvatureFName : PathStr = '') : integer;
+   function SAGA_ProfileCurvature(OpenMap : boolean; InName : PathStr; SlopeMethod : char = '3'; OutName : PathStr = '') : integer;
+   function SAGA_TangentialCurvature(OpenMap : boolean; InName : PathStr; SlopeMethod : char = '3'; OutName : PathStr = '') : integer;
 
    function SAGA_CurvatureClassification(OpenMap : boolean; DEMName : PathStr; CurvatureClassFName : PathStr = '') : integer;
    function SAGA_IwahashiAndPikeClassification(OpenMap : boolean; DEMName : PathStr; Classes : integer = 12; ClassFName : PathStr = '') : integer;
@@ -146,13 +148,14 @@ uses
 
 {$IfDef ExGRASS}
 {$Else}
+   function ClearGRASSdirectory : shortstring;
    procedure GetGrassExtensionsNow(InName : PathStr);
    function GrassSlopeMap(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
    function GrassProfileCurvatureMap(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
    function GrassTangentialCurvatureMap(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
    function GrassAspectMap(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
    function GrassVectorRuggedness(InName : PathStr; WindowSize : integer; OutName : PathStr = '') : integer;
-   function GrassTRIMap(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
+   function GrassTRIMap(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
    function GrassTPIMap(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
    function Grass_dx_partial(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
    function Grass_dy_partial(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
@@ -202,12 +205,17 @@ uses
 
 const
    WBNoCompress = ' --compress_rasters=false ';
-   ClearGRASSdirectory = 'rd /S /Q c:\mapdata\temp\grass1';
 
 
 {$i saga_wrapper.inc}
 
 {$I wbt_wrapper.inc}
+
+
+function ClearGRASSdirectory : shortstring;
+begin
+   ClearGRASSdirectory := 'rd /S /Q ' + MDtempDir + 'grass1';
+end;
 
 
 function BBtoPathString(bb : sfBoundBox; Decs : integer = 2) : shortstring;
@@ -507,30 +515,30 @@ var
             BatchFile.Add('call "C:\OSGeo4W\bin\o4w_env.bat"');
             BatchFile.Add(SetGDALdataStr);
             BatchFile.Add('set USE_PATH_FOR_GDAL_PYTHON=YES');
-            BatchFile.Add('grass83 -c ' + InName + ' c:\mapdata\temp\grass1\ --exec r.in.gdal input=' + InName + ' output=mymap |more');
+            BatchFile.Add('grass83 -c ' + InName + ' ' + MDTempDir + 'grass1\ --exec r.in.gdal input=' + InName + ' output=mymap |more');
          end;
       end;
 
 begin
   if FileExistsErrorMessage(InName) then begin
      if (OutName = '') then OutName := MDTempDir + GridName + ExtractFileNameNoExt(InName) + '.tif';
-     //StartGRASSbatchFile(BatchFile,InName);
-         BatchFile := tStringList.Create;
-         BatchFile.Add(ClearGrassDirectory);
-         if (GrassEXE = 'grass83') then begin
-            BatchFile.Add('call "C:\OSGeo4W\bin\o4w_env.bat"');
-            BatchFile.Add(SetGDALdataStr);
-            BatchFile.Add('set USE_PATH_FOR_GDAL_PYTHON=YES');
-            BatchFile.Add('grass83 -c ' + InName + ' c:\mapdata\temp\grass1\ --exec r.in.gdal input=' + InName + ' output=mymap |more');
-         end;
 
-     BatchFile.Add(GrassEXE + ' c:\mapdata\temp\grass1\PERMANENT --exec ' + CommandName  + ' |more');
-     BatchFile.Add(GrassEXE + ' c:\mapdata\temp\grass1\PERMANENT --exec r.out.gdal input=' + NewLayer + ' out=' + OutName + ' type=Float' + TypeStr + ' --overwrite --quiet |more');
+     BatchFile := tStringList.Create;
+     BatchFile.Add(ClearGrassDirectory);
+     if (GrassEXE = 'grass83') then begin
+        BatchFile.Add('call "C:\OSGeo4W\bin\o4w_env.bat"');
+        BatchFile.Add(SetGDALdataStr);
+        BatchFile.Add('set USE_PATH_FOR_GDAL_PYTHON=YES');
+        BatchFile.Add(GrassEXE + ' -c ' + InName + ' ' + MDTempDir + 'grass1\ --exec r.in.gdal input=' + InName + ' output=mymap |more');
+     end;
+
+     BatchFile.Add(GrassEXE + ' ' + MDTempDir + 'grass1\PERMANENT --exec ' + CommandName  + ' |more');
+     BatchFile.Add(GrassEXE + ' ' + MDTempDir + 'grass1\PERMANENT --exec r.out.gdal input=' + NewLayer + ' out=' + OutName + ' type=Float' + TypeStr + ' --overwrite --quiet |more');
 
      if GetGrassExtensions then begin   //add these to get the extensions; they need to be done with a grass workspace set up
-        BatchFile.Add(GrassEXE + ' c:\mapdata\temp\grass1\PERMANENT --exec g.extension r.vector.ruggedness |more');
-        BatchFile.Add(GrassEXE + ' c:\mapdata\temp\grass1\PERMANENT --exec g.extension r.tri |more');
-        BatchFile.Add(GrassEXE + ' c:\mapdata\temp\grass1\PERMANENT --exec g.extension r.tpi |more');
+        BatchFile.Add(GrassEXE + ' ' + MDTempDir + 'grass1\PERMANENT --exec g.extension r.vector.ruggedness |more');
+        BatchFile.Add(GrassEXE + ' ' + MDTempDir + 'grass1\PERMANENT --exec g.extension r.tri |more');
+        BatchFile.Add(GrassEXE + ' ' + MDTempDir + 'grass1\PERMANENT --exec g.extension r.tpi |more');
         GetGrassExtensions := false;
      end;
      Result := ExecuteGrassAndOpenMap(BatchFile,BatchName,OutName,eu,mt,OpenMap);
@@ -543,6 +551,7 @@ var
    PartialResults : shortstring;
 begin
    (*
+      //Oct 2024, this might now work, but has not been tested recently
       //this only is valid for GRASS 82, and we are using 78
       PartialResults :=  'strength=' + MDTempDir + 'grass_vector_strength' + ExtractFileNameNoExt(InName) + '.tif' +
                       ' fisher=' + MDTempDir + 'grass_fisher_k' + ExtractFileNameNoExt(InName) + '.tif';
@@ -550,14 +559,13 @@ begin
    PartialResults := 'size=' + IntToStr(WindowSize);
    Result := AssembleGrassCommand(InName,'grass_vector_ruggedness_' + FilterSizeStr(WindowSize) + '_','r.vector.ruggedness elevation=mymap output=rugged ' +
       PartialResults +  ' nprocs=-1','rugged','GrassVectorRugged_',euUndefined,mtElevSpectrum,OutName);
-   //Result := AssembleGrassCommand(InName,'grass_vector_ruggedness_','r.vector.ruggedness elevation=mymap slope=slope aspect=aspect output=rugged nprocs=-1','rugged','GrassRugged_',Undefined,mtElevSpectrum);
 end;
 
 
 procedure GetGrassExtensionsNow(InName : PathStr);
 begin
    GetGrassExtensions := true;
-   AssembleGrassCommand(InName,'grass_slope_','r.slope.aspect elevation=mymap slope=slope format=percent','slope','GrassSlope_',euPercentSlope,mtElevSpectrum);
+   GrassSlopeMap(InName);
 end;
 
 
@@ -569,7 +577,7 @@ begin
 end;
 
 
-function GrassTRIMap(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
+function GrassTRIMap(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
 begin
    Result := AssembleGrassCommand(InName,'grass_TRI_','r.tri input=mymap output=tri ','tri','GrassTRI_',euUndefined,mtElevSpectrum,OutName,OpenMap);
 end;
@@ -586,6 +594,7 @@ end;
 
 
 function GrassSlopeMap(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
+//uses Horn algorithm
 begin
    Result := AssembleGrassCommand(InName,'grass_slope_','r.slope.aspect elevation=mymap slope=slope format=percent','slope','GrassSlope_',euPercentSlope,MDDef.DefSlopeMap,OutName,OpenMap);
 end;
@@ -631,13 +640,13 @@ end;
 
 function GrassProfileCurvatureMap(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
 begin
-   Result := AssembleGrassCommand(InName,'grass_profile_curvature_','r.slope.aspect elevation=mymap pcurvature=pcurve','pcurve','GrassProfCurv_',euPerMeter,mtElevSpectrum,OutName,OpenMap);
+   Result := AssembleGrassCommand(InName,'grass_profile_curvature_','r.slope.aspect elevation=mymap pcurvature=pcurve','pcurve','GrassProfCurv_',euPerMeter,MDDef.DefCurveMap,OutName,OpenMap);
 end;
 
 
 function GrassTangentialCurvatureMap(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
 begin
-   Result := AssembleGrassCommand(InName,'grass_tangential_curvature_','r.slope.aspect elevation=mymap tcurvature=tcurve','tcurve','GrassTang_',euPerMeter,mtElevSpectrum,OutName,OpenMap);
+   Result := AssembleGrassCommand(InName,'grass_tangential_curvature_','r.slope.aspect elevation=mymap tcurvature=tcurve','tcurve','GrassTang_',euPerMeter,MDDef.DefCurveMap,OutName,OpenMap);
 end;
 
 

@@ -1515,8 +1515,7 @@ end;
 {$EndIf}
 
 
-procedure PlotVector(Bitmap : tMyBitmap; xt,yt,xp,yp : integer;
-   Color : tPlatformColor; LineWidth : integer = 1; ArrowHead : boolean = false; PointLabel : shortString = '');
+procedure PlotVector(Bitmap : tMyBitmap; xt,yt,xp,yp : integer; Color : tPlatformColor; LineWidth : integer = 1; ArrowHead : boolean = false; PointLabel : shortString = '');
 const
    ArrowHeadSize = 12;
 var

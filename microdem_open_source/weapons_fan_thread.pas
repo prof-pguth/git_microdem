@@ -757,7 +757,7 @@ begin
              if ComputeFanMetadata then begin
                 FanMetadata.Add('Current map zoom: ' + IntToStr(WeaponsFan.FanZoomFactor));
                 FanMetadata.Add('Radials computed: ' + IntToStr(NumRays));
-                FanMetadata.Add('Radial spacing: ' + RealToString(MDDef.wf.MaskRaySpacingDeg, -18,2) + DegSym);
+                FanMetadata.Add('Radial spacing: ' + RealToString(MDDef.wf.MaskRaySpacingDeg, -18,2) + '°');
                 FanMetadata.Add('Points per radial: ' + IntToStr(PointsPerRay));
                 FanMetadata.Add('Spacing along radial: ' + RealToString(WeaponsFan.w_range / PointsPerRay, -18,2) + ' m');
                 FanMetadata.Add('Sensor range: '+ RealToString(WeaponsFan.w_range,-18,0) + ' m');

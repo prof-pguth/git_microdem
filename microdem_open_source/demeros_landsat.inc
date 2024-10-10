@@ -345,7 +345,7 @@ end;
               DEMGlb[NewDEM].WriteNewFormatDEM(fName2);
               fName2 := ChangeFileExt(fName2,'.vat.dbf');
               StringList2CSVtoDB(VAT,fName2,true);
-              DEMGlb[NewDEM].SetUpMap(NewDEM,true,mtDEMVATTable,DEMGlb[NewDEM].AreaName);
+              DEMGlb[NewDEM].SetUpMap(true,mtDEMVATTable,DEMGlb[NewDEM].AreaName);
               {$IfDef RecordProblems} WriteLineToDebugFile(DEMGlb[NewDEM].AreaName ); for i := 0 to 3 do WriteLineToDebugFile(IntToStr(i) + IntegerToString(BitSet[i],12)); {$EndIf}
           end;
        end

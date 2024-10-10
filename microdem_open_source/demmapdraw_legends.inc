@@ -198,292 +198,306 @@ end;
 {$EndIf}
 
 
-         function TMapDraw.DrawLegendOnBitmap : tMyBitmap;
-         var
-            Colors : tColors256;
-            Radius,x,i,l,rad,SlopeBin : integer;
-            AspectBin : integer;
-            Hue : float64;
-            Values      : array[0..255] of float64;
-            SlopeBands,
-            BinWidth,xc,yc,
-            y : integer;
-            Color        : tColor;
-            TStr : ShortString;
-            LegendGIS : integer;
+function TMapDraw.DrawLegendOnBitmap : tMyBitmap;
+var
+   Colors : tColors256;
+   Radius,x,i,l,rad,SlopeBin : integer;
+   AspectBin : integer;
+   Hue,Angle : float64;
+   Values      : array[0..255] of float64;
+   SlopeBands,
+   BinWidth,xc,yc,
+   y : integer;
+   Color        : tColor;
+   TStr : ShortString;
+   LegendGIS : integer;
 
-                      procedure Box(Color : tColor; ylo : integer; Capt : shortstring);
-                      begin
-                         Result.Canvas.Brush.Color := Color;
-                         Result.Canvas.Rectangle(4,ylo,25,ylo+20);
-                         Result.Canvas.Brush.Color := clNearWhite;
-                         Result.Canvas.TextOut(30,ylo+2,Capt);
-                      end;
+             procedure Box(Color : tColor; ylo : integer; Capt : shortstring);
+             begin
+                Result.Canvas.Brush.Color := Color;
+                Result.Canvas.Rectangle(4,ylo,25,ylo+20);
+                Result.Canvas.Brush.Color := clNearWhite;
+                Result.Canvas.TextOut(30,ylo+2,Capt);
+             end;
 
-         begin
-            {$If Defined(RecordMapDraw) or Defined(RecordMapType)} WriteLineToDebugFile('TMapDraw.DrawLegendOnBitmap in, maptype='+ IntToStr(MapType)); {$EndIf}
+begin
+   {$If Defined(RecordMapDraw) or Defined(RecordMapType)} WriteLineToDebugFile('TMapDraw.DrawLegendOnBitmap in, maptype='+ IntToStr(MapType)); {$EndIf}
 
-            Result := Nil;
-            if ((MaxMapElev - MinMapElev) < 0.0001) and (MapType <> mtDEMVATTable) then exit;
+   Result := Nil;
+   if ((MaxMapElev - MinMapElev) < 0.0001) and (MapType <> mtDEMVATTable) then exit;
 
-            if (MapMerge in [mmElevation]) then begin
-               if not DEMMap then ScaleMapElevationsToDEM;
-               for i := 0 to 255 do begin
-                  Hue := (360.0 - (MDDef.MergeHue/255) * (i / 255 * 360.0));
-                  if (MapMerge = mmElevation) or (MapType in [mtIHSReflect]) then Values[i] := MinMapElev + i/255 * (MapZRange)
-                  else Values[i] := i/255 * (100 * MDDef.MaxMergeSlope);
-                  Colors[i] := ConvertPlatformColorToTColor(RGBtripFromHSI(Hue,MDDef.MergeSat,MDDef.MergeInt));
-               end;
-               if isSlopeMap(MapType) then TStr := '%'
-               else TStr := ElevUnitsAre(DEMGlb[DEMOnMap].DEMheader.ElevUnits);
+   if (MapMerge in [mmElevation]) then begin
+      if not DEMMap then ScaleMapElevationsToDEM;
+      for i := 0 to 255 do begin
+         Hue := (360.0 - (MDDef.MergeHue/255) * (i / 255 * 360.0));
+         if (MapMerge = mmElevation) or (MapType in [mtIHSReflect]) then Values[i] := MinMapElev + i/255 * (MapZRange)
+         else Values[i] := i/255 * (100 * MDDef.MaxMergeSlope);
+         Colors[i] := ConvertPlatformColorToTColor(RGBtripFromHSI(Hue,MDDef.MergeSat,MDDef.MergeInt));
+      end;
+      if isSlopeMap(MapType) then TStr := '%'
+      else TStr := ElevUnitsAre(DEMGlb[DEMOnMap].DEMheader.ElevUnits);
 
-               {$IfDef RecordMapDraw} WriteLineToDebugFile('Going to draw legend, case 1'); {$EndIf}
-               if MDDef.GridLegendLocation.HorizontalLegend then begin
-                  Result := HorizontalLegendOnBitmap(Colors,Values,TStr,'',MDDef.GridLegendLocation.LegendSize);
-               end
-               else begin
-                  Result := VerticalLegendOnBitmap(Colors,Values,TStr);
-               end;
-            end;
+      {$IfDef RecordMapDraw} WriteLineToDebugFile('Going to draw legend, case 1'); {$EndIf}
+      if MDDef.GridLegendLocation.HorizontalLegend then begin
+         Result := HorizontalLegendOnBitmap(Colors,Values,TStr,'',MDDef.GridLegendLocation.LegendSize);
+      end
+      else begin
+         Result := VerticalLegendOnBitmap(Colors,Values,TStr);
+      end;
+   end;
 
-            if (MapType = mtGGRReflect) then begin
-               Result := ChangeMapLegend;
-            end
-            else if (MapType = mtDEMVATTable) {and FileExists(DEMGlb[DEMOnMap].VATFileName)} then begin
-               {$If Defined(RecordVAT) or Defined(RecordMapType)} WriteLineToDebugFile('TMapDraw.DrawLegendOnBitmap (MapType = mtDEMVATTable)'); {$EndIf}
-               Result := MakeVATLegend;
-            end;
+   if (MapType = mtGGRReflect) then begin
+      Result := ChangeMapLegend;
+   end
+   else if (MapType = mtDEMVATTable) {and FileExists(DEMGlb[DEMOnMap].VATFileName)} then begin
+      {$If Defined(RecordVAT) or Defined(RecordMapType)} WriteLineToDebugFile('TMapDraw.DrawLegendOnBitmap (MapType = mtDEMVATTable)'); {$EndIf}
+      Result := MakeVATLegend;
+   end;
 
-            if isElevationMap(MapType) or (MapType in [mtIHSReflect]) then begin
-               if (MapType = mtElevFromTable) then begin
-                  if OpenNumberedGISDataBase(LegendGIS,HardLimitColorPaletteFName) then begin
-                     GISDB[LegendGIS].MyData.ApplyFilter('PALETTE=' + QuotedStr(ElevationFixedPalette));
-                     Result := GISDB[LegendGIS].CreateDataBaseLegend(true);
-                     CloseAndNilNumberedDB(LegendGIS);
-                  end;
-               end
-               else begin
-                   for i := 0 to 255 do begin
-                      Colors[i] := ConvertPlatformColorToTColor(pPal[i]);
-                      Values[i] := MinMapElev + i/255 * (MapZRange);
-                   end;
-                   if (MapType = mtElevIHS) then begin
-                      for i := 0 to 255 do Colors[i] := ConvertPlatformColorToTColor(RGBtripFromHSI(TheHue(MDDef.MergeHue,i),MDDef.MergeSat,MDDef.MergeInt));
-                   end;
-                   TStr := ElevUnitsAre(DEMGlb[DEMOnMap].DEMheader.ElevUnits);
-                   if Log10Elev then TStr := 'log10(' + TStr + ')';
-                   if (MapType = mtElevLandSea) then begin
-                      for i := 0 to 255 do begin
-                         if Values[i] > 0 then begin
-                            l := round(253.0 * (Values[i] - 0) / (MaxMapElev - 0));
-                            if (l > 254) then l := 254;
-                            if (l < 1) then l := 1;
-                            Colors[i] := ConvertPlatformColorToTColor(pPal[l]);
-                         end
-                         else begin
-                            if (MinMapElev = 0) then l := round(253.0 * (Values[i] - MinMapElev))
-                            else l := round(253.0 * (Values[i] - MinMapElev) / (0 - MinMapElev));
-                            if (l > 254) then l := 254;
-                            if (l < 1) then l := 1;
-                            Colors[i] := ConvertPlatformColorToTColor(seaPal[l]);
-                         end;
-                      end;
-                   end;
-                   if MDDef.GridLegendLocation.HorizontalLegend then begin
-                      Result := HorizontalLegendOnBitmap(Colors,Values,TStr,'',MDDef.GridLegendLocation.LegendSize);
-                   end
-                   else Result := VerticalLegendOnBitmap(Colors,Values,TStr);
-               end;
-            end;
-
-            if (MapType in [mtDEMaspect,mtFlowDir360,mtDEMAspectSlope]) or (DEMGlb[DEMonMap].DEMHeader.ElevUnits = euAspectDeg) then begin
-               if (MapType in [mtDEMAspectSlope]) then TStr := 'Slope/aspect' else TStr := 'Aspect';
-               Radius := 50 * MDDef.GridLegendLocation.LegendSize;
-               CreateBitmap(Result,2*Radius+15,2*Radius+15);
-               LoadMyFontIntoWindowsFont(MDDef.LegendFont,Result.Canvas.Font);
-               while Result.Canvas.TextWidth(TStr) > Result.Width do Result.Canvas.Font.Size := Result.Canvas.Font.Size - 1;
-
-               Result.Height := 2 * Radius + 15 + Result.Canvas.TextHeight(TStr);
-               ClearBitmap(Result,clNearWhite);
-               xc := 5+Radius;
-               yc := 5+Radius;
-               if (MapType in [mtDEMAspectSlope]) then begin
-                  for i := 1 to 360 do begin
-                     AspectBin := succ(ord(AspectDir8FromAspect(i)));
-                     //two times multiple to avoid holes
-                     for rad := 0 to 2 * Radius do begin
-                        if (Rad > 3 * 2 * Radius div 4) then Color := Rgb(161,161,161)
-                        else begin
-                           if (Rad < 2 * Radius div 4) then SlopeBin := 3
-                           else if (Rad < 2 * Radius div 2) then SlopeBin := 2
-                           else if (Rad < 3 * 2 * Radius div 4) then SlopeBin := 1;
-                           Color := SlopeAspectColor[SlopeBin,AspectBin];
-                        end;
-                        x := xc + round(Rad * SinDeg(i)) div 2;
-                        y := yc - round(Rad * CosDeg(i)) div 2;
-                        Result.Canvas.Pixels[x,y] := Color;
-                     end;
-                  end;
-               end
-               else begin
-                  for i := 1 to 360 do begin
-                     x := xc + round(Radius * SinDeg(i));
-                     y := yc - round(Radius * CosDeg(i));
-                     Color := ConvertPlatformColorToTColor(AspColor[i]);
-                     Result.Canvas.Pen.Color := Color;
-                     Result.Canvas.Pen.Width := 2;
-                     Result.Canvas.MoveTo(xc,yc);
-                     Result.Canvas.LineTo(x,y);
-                  end;
-               end;
-               Result.Canvas.Brush.Color := ClWhite;
-               Result.Canvas.Brush.Style := bsClear;
-               Result.Canvas.TextOut(5,2*Radius+8,TStr);
-               {$IfDef RecordLegendDraw} Result.SaveToFile(MDTempDir + 'legend_step_1.bmp'); {$EndIf}
-               PutBitmapInBox(Result);
-               {$IfDef RecordLegendDraw} Result.SaveToFile(MDTempDir + 'legend_step_2.bmp'); {$EndIf}
-            end
-            else if isSlopemap(MapType) or (MapMerge in [mmSlope]) then begin
-               {$IfDef RecordMapDraw} WriteLineToDebugFile('Slope legend'); {$EndIf}
-                if MapType in [mtSlopeGrayScale,mtSlopeGrayScaleReversed,mtSlopeRainbow,mtSlopePastel] then begin
-                   for i := 0 to 254 do begin
-                      Colors[i] := ConvertPlatformColorToTColor(SlopeColorChoices[i]);
-                      Values[i] := i/254 * MDDef.MaxSlopeOnMaps;
-                   end;
-                   if MDDef.GridLegendLocation.HorizontalLegend then Result := HorizontalLegendOnBitmap(Colors,Values,'%','',MDDef.GridLegendLocation.LegendSize)
-                   else Result := VerticalLegendOnBitmap(Colors,Values,'%');
+   if isElevationMap(MapType) or (MapType in [mtIHSReflect]) then begin
+      if (MapType = mtElevFromTable) then begin
+         if OpenNumberedGISDataBase(LegendGIS,HardLimitColorPaletteFName) then begin
+            GISDB[LegendGIS].MyData.ApplyFilter('PALETTE=' + QuotedStr(ElevationFixedPalette));
+            Result := GISDB[LegendGIS].CreateDataBaseLegend(true);
+            CloseAndNilNumberedDB(LegendGIS);
+         end;
+      end
+      else begin
+          for i := 0 to 255 do begin
+             Colors[i] := ConvertPlatformColorToTColor(pPal[i]);
+             Values[i] := MinMapElev + i/255 * (MapZRange);
+          end;
+          if (MapType = mtElevIHS) then begin
+             for i := 0 to 255 do Colors[i] := ConvertPlatformColorToTColor(RGBtripFromHSI(TheHue(MDDef.MergeHue,i),MDDef.MergeSat,MDDef.MergeInt));
+          end;
+          TStr := ElevUnitsAre(DEMGlb[DEMOnMap].DEMheader.ElevUnits);
+          if Log10Elev then TStr := 'log10(' + TStr + ')';
+          if (MapType = mtElevLandSea) then begin
+             for i := 0 to 255 do begin
+                if Values[i] > 0 then begin
+                   l := round(253.0 * (Values[i] - 0) / (MaxMapElev - 0));
+                   if (l > 254) then l := 254;
+                   if (l < 1) then l := 1;
+                   Colors[i] := ConvertPlatformColorToTColor(pPal[l]);
                 end
                 else begin
-                   if MapType in [mtSlopeGoNoGo,mtSlopeTrafficCats] then begin
-                      if MapType in [mtSlopeGoNoGo] then CreateBitmap(Result,80,60)
-                      else CreateBitmap(Result,80,80);
-                      ClearBitmap(Result,clNearWhite);
-                      Result.Canvas.Brush.Style := bsSolid;
-                      Result.Canvas.Pen.Color := clBlack;
-                      Box(clLime,0,'Go');
-                      if MapType in [mtSlopeGoNoGo] then begin
-                         Box(clRed,20,'No Go');
-                         Box(clBlack,40,'Flat');
-                         Result.Canvas.Brush.Style := bsClear;
-                         Result.Canvas.Rectangle(0,0,79,60);
-                      end
-                      else begin
-                         Box(clYellow,20,'Slow Go');
-                         Box(clRed,40,'No Go');
-                         Box(clBlack,60,'Flat');
-                         Result.Canvas.Brush.Style := bsClear;
-                         Result.Canvas.Rectangle(0,0,79,80);
-                      end;
-                   end
-                   else begin
-                     {$IfDef RecordMapDraw} WriteLineToDebugFile('slope legend drop through'); {$EndIf}
-                      if MapType in [mtSlopeStandardCats] then begin
-                         BinWidth := 25;
-                         SlopeBands := MDDef.NumSlopeBands;
-                      end
-                      else begin
-                         BinWidth := 50;
-                         SlopeBands := 4;
-                      end;
-                      CreateBitmap(Result,succ(SlopeBands) * BinWidth + 5,50);
-                      ClearBitmap(Result,clNearWhite);
-                      for i := 0 to pred(SlopeBands) do begin
-                         Result.Canvas.Brush.Style := bsSolid;
-                         Result.Canvas.Brush.Color := SlopeColors[i];
-                         Result.Canvas.Pen.Color := SlopeColors[i];
-                         Result.Canvas.Rectangle(i*BinWidth,0,succ(i)*BinWidth,25);
-                         Result.Canvas.Brush.Color := clNearWhite;
-                         if (i < pred(SlopeBands)) then begin
-                            Result.Canvas.Pen.Color := clBlack;
-                            if i = pred(MDDef.NumSlopeBands) then TStr := '%' else TStr := '';
-                            Result.Canvas.TextOut(succ(i)*BinWidth, 32,RealToString(SlopeCut[i],-5,0)+TStr);
-                            Result.Canvas.MoveTo(succ(i)*BinWidth, 25);
-                            Result.Canvas.LineTo(succ(i)*BinWidth, 30);
-                         end;
-                      end {for i}
-                   end;
+                   if (MinMapElev = 0) then l := round(253.0 * (Values[i] - MinMapElev))
+                   else l := round(253.0 * (Values[i] - MinMapElev) / (0 - MinMapElev));
+                   if (l > 254) then l := 254;
+                   if (l < 1) then l := 1;
+                   Colors[i] := ConvertPlatformColorToTColor(seaPal[l]);
                 end;
-               {$IfDef RecordMapDraw} WriteLineToDebugFile('Slope legend OK');{$EndIf}
+             end;
+          end;
+          if MDDef.GridLegendLocation.HorizontalLegend then begin
+             Result := HorizontalLegendOnBitmap(Colors,Values,TStr,'',MDDef.GridLegendLocation.LegendSize);
+          end
+          else Result := VerticalLegendOnBitmap(Colors,Values,TStr);
+      end;
+   end;
+
+   if (MapType in [mtDEMaspect,mtFlowDir360,mtDEMAspectSlope]) or (DEMGlb[DEMonMap].DEMHeader.ElevUnits = euAspectDeg) then begin
+      if (MapType in [mtDEMAspectSlope]) then TStr := 'Slope/aspect' else TStr := 'Aspect';
+      Radius := 50 * MDDef.GridLegendLocation.LegendSize;
+      CreateBitmap(Result,2*Radius+15,2*Radius+15);
+      LoadMyFontIntoWindowsFont(MDDef.LegendFont,Result.Canvas.Font);
+      while Result.Canvas.TextWidth(TStr) > Result.Width do Result.Canvas.Font.Size := Result.Canvas.Font.Size - 1;
+
+      Result.Height := 2 * Radius + 15 + Result.Canvas.TextHeight(TStr);
+      ClearBitmap(Result,clNearWhite);
+      xc := 5+Radius;
+      yc := 5+Radius;
+      if (MapType in [mtDEMAspectSlope]) then begin
+         angle := 0;
+         while Angle <= 360 do begin
+            AspectBin := succ(ord(AspectDir8FromAspect(Angle)));
+            //two times multiple to avoid holes
+            for rad := 0 to 2 * Radius do begin
+               if (Rad > 3 * 2 * Radius div 4) then Color := Rgb(161,161,161)
+               else begin
+                  if (Rad < 2 * Radius div 4) then SlopeBin := 3
+                  else if (Rad < 2 * Radius div 2) then SlopeBin := 2
+                  else if (Rad < 3 * 2 * Radius div 4) then SlopeBin := 1;
+                  Color := SlopeAspectColor[SlopeBin,AspectBin];
+               end;
+               x := xc + round(Rad * SinDeg(Angle)) div 2;
+               y := yc - round(Rad * CosDeg(Angle)) div 2;
+               Result.Canvas.Pixels[x,y] := Color;
             end;
-            {$IfDef RecordMapDraw} WriteLineToDebugFile('TMapDraw.DrawLegendOnBitmap out');{$EndIf}
+            Angle := Angle + 1 / MDDef.GridLegendLocation.LegendSize;
          end;
-
-
-         procedure tMapDraw.DrawLegendsOnMap(var Bitmap : tMyBitmap);
-         var
-            bmp,overlay : tMyBitmap;
-            TStr : ANSIstring;
-         begin
-             if (Bitmap = Nil) then exit;
-             if (LegendOverlayFName <> '') and FileExists(LegendOverlayFName) then begin
-                Overlay := PetImage.LoadBitmapFromFile(LegendOverlayFName);
+      end
+      else begin
+         for i := 1 to 360 do begin
+            x := xc + round(Radius * SinDeg(i));
+            y := yc - round(Radius * CosDeg(i));
+            Color := ConvertPlatformColorToTColor(AspColor[i]);
+            Result.Canvas.Pen.Color := Color;
+            Result.Canvas.Pen.Width := 2;
+            Result.Canvas.MoveTo(xc,yc);
+            Result.Canvas.LineTo(x,y);
+         end;
+      end;
+      Result.Canvas.Brush.Color := ClWhite;
+      Result.Canvas.Brush.Style := bsClear;
+      Result.Canvas.TextOut(5,2*Radius+8,TStr);
+      {$IfDef RecordLegendDraw} Result.SaveToFile(MDTempDir + 'legend_step_1.bmp'); {$EndIf}
+      PutBitmapInBox(Result);
+      {$IfDef RecordLegendDraw} Result.SaveToFile(MDTempDir + 'legend_step_2.bmp'); {$EndIf}
+   end
+   else if isSlopemap(MapType) or (MapMerge in [mmSlope]) then begin
+      {$IfDef RecordMapDraw} WriteLineToDebugFile('Slope legend'); {$EndIf}
+       if MapType in [mtSlopeGrayScale,mtSlopeGrayScaleReversed,mtSlopeRainbow,mtSlopePastel] then begin
+          for i := 0 to 254 do begin
+             Colors[i] := ConvertPlatformColorToTColor(SlopeColorChoices[i]);
+             Values[i] := i/254 * MDDef.MaxSlopeOnMaps;
+          end;
+          if MDDef.GridLegendLocation.HorizontalLegend then Result := HorizontalLegendOnBitmap(Colors,Values,'%','',MDDef.GridLegendLocation.LegendSize)
+          else Result := VerticalLegendOnBitmap(Colors,Values,'%');
+       end
+       else begin
+          if MapType in [mtSlopeGoNoGo,mtSlopeTrafficCats] then begin
+             if MapType in [mtSlopeGoNoGo] then CreateBitmap(Result,80,60)
+             else CreateBitmap(Result,80,80);
+             ClearBitmap(Result,clNearWhite);
+             Result.Canvas.Brush.Style := bsSolid;
+             Result.Canvas.Pen.Color := clBlack;
+             Box(clLime,0,'Go');
+             if MapType in [mtSlopeGoNoGo] then begin
+                Box(clRed,20,'No Go');
+                Box(clBlack,40,'Flat');
+                Result.Canvas.Brush.Style := bsClear;
+                Result.Canvas.Rectangle(0,0,79,60);
              end
              else begin
-                CreateBitmap(Overlay,Bitmap.Width,Bitmap.Height);
-                if MDDef.ScaleBarLocation.DrawItem and DrawScaleBarThisMap then begin
-                   if MaxScaleDistortionOnMap < MDDef.ScalebarDistortionTolerable then begin
-                      bmp := DrawScaleBarOnBitmap;
-                      PositionBitmap(Overlay,bmp,MDDef.ScaleBarLocation.MapPosition);
-                   end;
-                end;
-
-                if (DEMMap) and (DEMGlb[DEMonMap].LandCoverGrid) then begin
-                end
-                else begin
-                   {$IfDef ExPointCloud}
-                   {$Else}
-                      if MDDef.LasLegend and LASlayerOnMap and (pt_cloud_opts_fm <> Nil) then begin
-                         bmp := pt_cloud_opts_fm.LegendForPointCloudLayers;
-                         if (bmp <> Nil) then PositionBitmap(Overlay,bmp,lpNEMap);
-                      end;
-                   {$EndIf}
-                   if MDDef.GridLegendLocation.DrawItem and DrawLegendsThisMap then begin
-                      bmp := DrawLegendOnBitmap;
-                      PositionBitmap(Overlay,bmp,MDDef.GridLegendLocation.MapPosition);
-                   end;
-                   if MDDef.MapNameLocation.DrawItem then begin
-                      CreateBitmap(bmp,1500,50);
-                      Petmar.LoadMyFontIntoWindowsFont(MDDef.TitleLabelFont,bmp.Canvas.Font);
-                      bmp.Canvas.Brush.Color := clNearWhite;
-                      bmp.Canvas.Brush.Style := bsSolid;
-                      bmp.Canvas.Rectangle(0,0,bmp.Width,bmp.Height);
-
-                       if ValidSatImage(SatOnMap) then begin
-                           if (SatImage[SatonMap].LandsatNumber in [1..9]) or SatImage[SatonMap].LandsatLook then begin
-                              TStr := ShortLandsatName(SatImage[SatonMap].SceneBaseName) + '  ' + CurrentSatelliteColors;
-                           end
-                           else if SatImage[SatonMap].IsSentinel2 then begin
-                              TStr := 'Sentinel-2  ' + SatImage[SatonMap].ImageDateString + '  ' + CurrentSatelliteColors;
-                           end
-                           else begin
-                              TStr := SatImage[SatonMap].SceneBaseName;
-                              if copy(TStr,1,7) = 'Image: ' then Delete(TStr,1,7);
-                           end;
-                       end
-                       else begin
-                         TStr := BaseTitle;
-                         if copy(TStr,1,6) = 'Grid: ' then Delete(TStr,1,6);
-                       end;
-                       {$IfDef RecordLegend} WriteLineToDebugFile('tMapDraw.DrawLegendsOnMap, title=' + TStr); {$EndIf}
-
-                      TStr := RemoveUnderScores(TStr);
-                      bmp.Canvas.TextOut(5,5,TStr);
-                      bmp.Width := 10 + Bmp.Canvas.TextWidth(TStr);
-                      bmp.Height := 10 + Bmp.Canvas.TextHeight(TStr);
-                      bmp.Canvas.Brush.Style := bsClear;
-                      bmp.Canvas.Rectangle(0,0,pred(bmp.Width),pred(bmp.Height));
-                      PositionBitmap(Overlay,Bmp,MDDef.MapNameLocation.MapPosition);
-                   end;
-                   {$IfDef AllowDEMGeomorph}
-                      if (MapOverlays.ovTerrainCat.Count > 0) and DrawLegendsThisMap and (MDDef.TerrainCatLegend.DrawItem) then begin
-                         bmp := TerrainCategoryLegend;
-                         PositionBitmap(Overlay,bmp,MDDef.TerrainCatLegend.MapPosition);
-                      end;
-                   {$EndIf}
-                end;
-                SaveLayerBitmap(Overlay,LegendOverlayFName);
+                Box(clYellow,20,'Slow Go');
+                Box(clRed,40,'No Go');
+                Box(clBlack,60,'Flat');
+                Result.Canvas.Brush.Style := bsClear;
+                Result.Canvas.Rectangle(0,0,79,80);
              end;
-             PlotDataBaseLegends(Bitmap);
-             DrawAndDeleteOverlay(Bitmap,Overlay);
-         end;
+          end
+          else begin
+            {$IfDef RecordMapDraw} WriteLineToDebugFile('slope legend drop through'); {$EndIf}
+             if MapType in [mtSlopeStandardCats] then begin
+                BinWidth := 25  * MDDef.GridLegendLocation.LegendSize;
+                SlopeBands := MDDef.NumSlopeBands;
+             end
+             else begin
+                BinWidth := 50 * MDDef.GridLegendLocation.LegendSize;
+                SlopeBands := 4;
+             end;
+             CreateBitmap(Result,1500,500);
+             ClearBitmap(Result,clNearWhite);
+             LoadMyFontIntoWindowsFont(MDDef.LegendFont,Result.Canvas.Font);
+             for i := 0 to pred(SlopeBands) do begin
+                Result.Canvas.Brush.Style := bsSolid;
+                Result.Canvas.Brush.Color := SlopeColors[i];
+                Result.Canvas.Pen.Color := SlopeColors[i];
+                Result.Canvas.Rectangle(i*BinWidth,0,succ(i)*BinWidth,25);
+                Result.Canvas.Brush.Color := clNearWhite;
+                if (i < pred(SlopeBands)) then begin
+                   Result.Canvas.Pen.Color := clBlack;
+                   if i = pred(MDDef.NumSlopeBands) then TStr := '%' else TStr := '';
+                   Result.Canvas.TextOut(succ(i)*BinWidth, 32,RealToString(SlopeCut[i],-5,0)+TStr);
+                   Result.Canvas.MoveTo(succ(i)*BinWidth, 25);
+                   Result.Canvas.LineTo(succ(i)*BinWidth, 30);
+                end;
+             end; {for i}
+             GetImagePartOfBitmap(Result);
+          end;
+       end;
+      {$IfDef RecordMapDraw} WriteLineToDebugFile('Slope legend OK');{$EndIf}
+   end;
+   {$IfDef RecordMapDraw} WriteLineToDebugFile('TMapDraw.DrawLegendOnBitmap out');{$EndIf}
+end;
+
+
+procedure tMapDraw.DrawLegendsOnMap(var Bitmap : tMyBitmap);
+var
+   bmp,overlay : tMyBitmap;
+   NewSize : integer;
+   TStr : ANSIstring;
+begin
+    {$IfDef RecordMapDrawLegends} WriteLineToDebugFile('tMapDraw.DrawLegendsOnMap in');{$EndIf}
+    if (Bitmap = Nil) then exit;
+    if (LegendOverlayFName <> '') and FileExists(LegendOverlayFName) then begin
+       Overlay := PetImage.LoadBitmapFromFile(LegendOverlayFName);
+    end
+    else begin
+       CreateBitmap(Overlay,Bitmap.Width,Bitmap.Height);
+       if MDDef.ScaleBarLocation.DrawItem and DrawScaleBarThisMap then begin
+          if MaxScaleDistortionOnMap < MDDef.ScalebarDistortionTolerable then begin
+             bmp := DrawScaleBarOnBitmap;
+             PositionBitmap(Overlay,bmp,MDDef.ScaleBarLocation.MapPosition);
+          end;
+       end;
+
+       if (DEMMap) and (DEMGlb[DEMonMap].LandCoverGrid) then begin
+       end
+       else begin
+          {$IfDef ExPointCloud}
+          {$Else}
+             if MDDef.LasLegend and LASlayerOnMap and (pt_cloud_opts_fm <> Nil) then begin
+                bmp := pt_cloud_opts_fm.LegendForPointCloudLayers;
+                if (bmp <> Nil) then PositionBitmap(Overlay,bmp,lpNEMap);
+             end;
+          {$EndIf}
+          if MDDef.GridLegendLocation.DrawItem and DrawLegendsThisMap then begin
+             bmp := DrawLegendOnBitmap;
+             PositionBitmap(Overlay,bmp,MDDef.GridLegendLocation.MapPosition);
+          end;
+          if MDDef.MapNameLocation.DrawItem then begin
+             bmp := nil;
+             NewSize := 0;
+             repeat
+                if bmp <> Nil then BMP.Destroy;
+                CreateBitmap(bmp,1500,50);
+                Petmar.LoadMyFontIntoWindowsFont(MDDef.TitleLabelFont,bmp.Canvas.Font);
+                bmp.Canvas.Font.Size := bmp.Canvas.Font.Size + NewSize;
+                bmp.Canvas.Brush.Color := clNearWhite;
+                bmp.Canvas.Brush.Style := bsSolid;
+                bmp.Canvas.Rectangle(0,0,bmp.Width,bmp.Height);
+
+                 if ValidSatImage(SatOnMap) then begin
+                     if (SatImage[SatonMap].LandsatNumber in [1..9]) or SatImage[SatonMap].LandsatLook then begin
+                        TStr := ShortLandsatName(SatImage[SatonMap].SceneBaseName) + '  ' + CurrentSatelliteColors;
+                     end
+                     else if SatImage[SatonMap].IsSentinel2 then begin
+                        TStr := 'Sentinel-2  ' + SatImage[SatonMap].ImageDateString + '  ' + CurrentSatelliteColors;
+                     end
+                     else begin
+                        TStr := SatImage[SatonMap].SceneBaseName;
+                        if copy(TStr,1,7) = 'Image: ' then Delete(TStr,1,7);
+                     end;
+                 end
+                 else begin
+                   TStr := BaseTitle;
+                   if copy(TStr,1,6) = 'Grid: ' then Delete(TStr,1,6);
+                 end;
+                 {$IfDef RecordLegend} WriteLineToDebugFile('tMapDraw.DrawLegendsOnMap, title=' + TStr); {$EndIf}
+
+                TStr := RemoveUnderScores(TStr);
+                bmp.Canvas.TextOut(5,5,TStr);
+                bmp.Width := 10 + Bmp.Canvas.TextWidth(TStr);
+                bmp.Height := 10 + Bmp.Canvas.TextHeight(TStr);
+                if Bmp.Width >= MapXSize then NewSize := NewSize - 1;
+             until Bmp.Width < MapXSize;
+             bmp.Canvas.Brush.Style := bsClear;
+             bmp.Canvas.Rectangle(0,0,pred(bmp.Width),pred(bmp.Height));
+             PositionBitmap(Overlay,Bmp,MDDef.MapNameLocation.MapPosition);
+          end;
+          {$IfDef AllowDEMGeomorph}
+             if (MapOverlays.ovTerrainCat.Count > 0) and DrawLegendsThisMap and (MDDef.TerrainCatLegend.DrawItem) then begin
+                bmp := TerrainCategoryLegend;
+                PositionBitmap(Overlay,bmp,MDDef.TerrainCatLegend.MapPosition);
+             end;
+          {$EndIf}
+       end;
+       SaveLayerBitmap(Overlay,LegendOverlayFName);
+    end;
+    PlotDataBaseLegends(Bitmap);
+    DrawAndDeleteOverlay(Bitmap,Overlay);
+    {$IfDef RecordMapDrawLegends} WriteLineToDebugFile('tMapDraw.DrawLegendsOnMap out');{$EndIf}
+end;
 

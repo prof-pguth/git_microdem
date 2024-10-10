@@ -49,6 +49,7 @@ uses
    {$IfDef FMX}
       FMX.Controls, FMX.Types, FMX.Graphics,
    {$EndIf}
+
    {$IfDef MSWindows}
       SHLOBJ,Registry, Messages,ShellAPI,
    {$EndIf}
@@ -56,14 +57,7 @@ uses
    Math,Db,Classes,StrUtils;
 
 const
-   {$IF (CompilerVersion = 36) and System.RTLVersion121} DelphiCompiler = '12.1 Athens'; {$EndIf}
-   {$IF (CompilerVersion = 36) and (not System.RTLVersion121)} DelphiCompiler = '12.0 Delphi'; {$EndIf}
-   {$IF (CompilerVersion >= 35) and (CompilerVersion < 36)} DelphiCompiler = '11 Alexandria'; {$EndIf}
-   {$IF (CompilerVersion >= 34) and (CompilerVersion < 35)} DelphiCompiler = '10.4 Sydney'; {$EndIf}
-   {$IF (CompilerVersion >= 33) and (CompilerVersion < 34)} DelphiCompiler = '10.3 Rio'; {$EndIf}
-   {$IF (CompilerVersion >= 32) and (CompilerVersion < 33)} DelphiCompiler = '10.2 Tokyo'; {$EndIf}
-   {$IF (CompilerVersion >= 31) and (CompilerVersion < 32)} DelphiCompiler = '10.1 Berlin'; {$EndIf}
-   {$IF (CompilerVersion >= 30) and (CompilerVersion < 31)} DelphiCompiler = '10 Seattle';  {$EndIf}
+   {$IF (CompilerVersion = 36) and System.RTLVersion122} DelphiCompiler = '12.2 Athens'; {$Else} DelphiCompiler = 'Old version'; {$EndIf}
 
 {$IfDef MSWindows}
 const
@@ -304,7 +298,7 @@ const
    lpSEMap = 6;
    lpCenterMap = 7;
 type
-   tLegendLocation = record
+   tLegendParameters = record
       DrawItem,
       HorizontalLegend : boolean;
       LegendSize,
@@ -420,7 +414,7 @@ type
 const
    StringOrIntegerField : tSetFieldType = [ftString,ftInteger,ftSmallInt,ftLargeInt];
 
-function ByteArrayToString(values : array of byte; alen : int16 = 0) : Ansistring;
+function ByteArrayToString(values : array of byte; alen : int64 = 0) : Ansistring;
 
 procedure StringToByteArray(TStr : shortString; var values : array of byte);
 
@@ -513,7 +507,7 @@ begin
 end;
 
 
-function ByteArrayToString(values : array of byte; alen : int16 = 0) : ANSIstring;
+function ByteArrayToString(values : array of byte; alen : int64 = 0) : ANSIstring;
 var
    i : integer;
 begin

@@ -1025,7 +1025,7 @@ var
       if (ElevRange > 0) then begin
          while (i > MinPitch) do begin
             y := BitMap.Height - round((BitMap.Height) * (i - MinPitch) / (ViewVFOV));
-            TStr := IntToStr(i)+DegSym;
+            TStr := IntToStr(i)+'°';
             {$IfDef RecordPerspLabel} WriteLineToDebugFile('i=' + IntToStr(i) + '  '  + 'x=' + x.ToString  + '  '  + 'y=' + y.ToString + ' ' + TStr);     {$EndIf}
             if (y > 6) then begin
                BitmapTextOut(Bitmap,12,y-5,TStr);
@@ -1047,7 +1047,7 @@ var
          else if (Az > 360) then Str(Az-360,TStr)
          else Str(Az,TStr);
          PetImage.DrawLine(Bitmap,x,0,x,8);
-         TStr := TStr + DegSym;
+         TStr := TStr + '°';
          {$IfDef RecordPerspLabel} WriteLineToDebugFile('x=' + IntToStr(x) + '  '  + 'Az=' + RealToString(Az,-12,1) + '  ' + TStr); {$EndIf}
          if (x > 12) and (x > (LastX + Bitmap.Canvas.TextWidth(TStr))) then begin
             BitmapTextOut(Bitmap,x-8,7,TStr);

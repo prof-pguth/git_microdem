@@ -478,7 +478,8 @@ type
 
    tSlopeAspectRec = record
        z,znw,zw,zsw,zn,zs,zne,ze,zse,
-       dzdx,dzdy,
+       dzdx,dzdy,     //first order partial derivatives
+       dxx,dxy,dyy,   //second order partial derivatives
        dx,dy,dia_space,
        GridTrueAngle,
        Slope,
@@ -688,7 +689,7 @@ const
    euHundredthMa = 11;
    euPercentSlope = 12;
    euUndefined = 13;
-   euzDegrees = 14;
+   euDegrees = 14;
    eulnElev = 16;
    euLogElev = 17;
    euPercent = 20;
@@ -702,7 +703,7 @@ const
    euImagery = 35;
    euMM = 36;
    euMetersPerSec = 37;
-   euzMperM = 38;
+   euMperM = 38;
    euKM = 39;
    euCCAP = 40;
    euLASclass13 = 41;
@@ -1050,8 +1051,6 @@ type
       BoundBoxUTM,
       BoundBoxProj : sfBoundBox;
    end;
-   //LongReal        = array[0..100] of float64;
-   //LongRealPointer = ^LongReal;
    ColorCutArrayType = array[0..14] of float64;
    tGridZ = packed record
       x,y : Int32;
@@ -1347,18 +1346,10 @@ const
        'CartoDB','Fans','ContoursDEM2','WorldOutlines','USOutlines','Tissot indicatrices','Second DEM/grid','Vectors','OSM');
 const
    FirstSlopeMethod = 0;
-   smEightNeighborsUnweighted = 0;
-   smEightNeighborsWeighted = 1;
-   smEightNeighborsWeightedByDistance = 2;
-   smGuthHybrid = 3;
-   smFrameFiniteDifference = 4;
-   smFourNeighbors = 5;
-   smSimpleDifference = 6;
-   smONeillAndMark = 7;
-   smSteepestNeighbor = 8;
-   smAverageNeighbor = 9;
-   smMaxDownHillSlope = 10;
-   LastSlopeMethod = 10;
+   smEvansYoung = 0;
+   smHorn = 1;
+   smZevenbergenThorne = 2;
+   LastSlopeMethod = 2;
 const
     tixUTM = 0;
     tixLatLong = 1;
@@ -1888,6 +1879,7 @@ type
        ZoomWindowMapType,
        DefaultElevationColors,
        DefRefMap,
+       DefCurveMap,
        DefSlopeMap,
        DefDEMMap             : tMapType;
        AutoMergeStartDEM,
@@ -2013,7 +2005,7 @@ type
        GridLegendLocation,
        TerrainCatLegend,
        NorthArrowLocation,
-       ScaleBarLocation : tLegendLocation;
+       ScaleBarLocation : tLegendParameters;
        OpenGLCleanOverlays : boolean;
        ScalebarDistortionTolerable : float64;
 
@@ -2674,7 +2666,8 @@ type
 
        OpenMultipleVectorMaps : boolean;
 
-       SlopeAlg     : byte;
+       SlopeAlgorithm     : byte;
+       CD2 : boolean;
        AspectRegionSize,
        SlopeRegionRadius : int32;
 

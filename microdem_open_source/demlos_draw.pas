@@ -810,7 +810,7 @@ begin
 
       if (not (LOSVariety in [losSimpleOne])) and MDDef.LOSShowPitch then begin
          Pitch := arcTan( -((ObsGroundElev +   MDDef.ObsAboveGround) - (TargetGroundElev +  MDDef.TargetAboveGround - Dropcurve)) / FormSectLenMeters) / DegToRad;
-         TStr := '  Pitch= ' + RealToString(Pitch,-8,-2) + DegSym;
+         TStr := '  Pitch= ' + RealToString(Pitch,-8,-2) + '°';
       end
       else TStr := '';
    end;

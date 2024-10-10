@@ -32,6 +32,7 @@
       //{$Define RecordTiger}
       //{$Define LogModuleCreate}
       //{$Define RecordIcesat}
+      {$Define RecordPlotFabric}
 
       //{$Define RecordFieldStatistics}
       //{$Define RecordOpenDataBase}
@@ -256,7 +257,7 @@ type
      ScaledSymMinSize,
      ScaledSymMaxSize,
      dbColorMode : byte;
-     DBLegendLocation : tLegendLocation;
+     DBLegendLocation : tLegendParameters;
      DBColorScheme : tLegendColors;
      DBColorPaletteName : shortstring;
   end;

@@ -27,18 +27,17 @@
 
 unit JpegDumpForm;
 {
-  Demonstrates using the enumerator functions of CCR.Exif.JPEGUtils to parse a JPEG
-  file's structure - see JpegDumpOutputFrame.pas for the actual parsing code.
-  While the implementation of JPEGHeader may look a bit funky if you're unused to
-  the details of Delphi's for/in loop support, its use should be straightforward.
+  Demonstrates using the enumerator functions of CCR.Exif.JPEGUtils to parse a JPEG file's structure - see JpegDumpOutputFrame.pas for the actual parsing code.
+  While the implementation of JPEGHeader may look a bit funky if you're unused to the details of Delphi's for/in loop support, its use should be straightforward.
 }
 interface
 
 {$I nevadia_defines.inc}
 
 uses
+//units for integration with MICRODEM
+  DEMMapF,Petmar_types, Petmar,Petmar_db,
 //needed for inline of the core DB functions
-   Petmar_db,
    Data.DB,
    {$IfDef UseFireDacSQLlite}
       FireDAC.Comp.Client, FireDAC.Comp.Dataset,FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteWrapper,
@@ -57,8 +56,7 @@ uses
   Buttons, StdCtrls, ExtCtrls, ComCtrls, ActnList, StdActns,
   System.Math,System.Actions,
   CCR.Exif.Demos,
-  JpegDumpOutputFrame,
-  DEMMapF,Petmar_types, Petmar;
+  JpegDumpOutputFrame;
 
 type
   TNewfrmJpegDump = class(TForm)
@@ -114,12 +112,12 @@ uses
 
 function GetPhotoInfo(fName : PathStr) : shortstring;
 var
-  NewfrmJpegDump :   TNewfrmJpegDump;
+   NewfrmJpegDump :   TNewfrmJpegDump;
 begin
-  NewfrmJpegDump := TNewfrmJpegDump.Create(Application);
-  NewfrmJpegDump.OpenFile(fName);
-  Result := NewfrmJpegDump.FOriginalFrame.FocalLength + ' ISO=' + NewfrmJpegDump.FOriginalFrame.ISO + '  f_stop=' + NewfrmJpegDump.FOriginalFrame.fStop  + '  shutter=' + NewfrmJpegDump.FOriginalFrame.Shutter;
-  NewfrmJpegDump.Close;
+   NewfrmJpegDump := TNewfrmJpegDump.Create(Application);
+   NewfrmJpegDump.OpenFile(fName);
+   Result := NewfrmJpegDump.FOriginalFrame.FocalLength + ' ISO=' + NewfrmJpegDump.FOriginalFrame.ISO + '  f_stop=' + NewfrmJpegDump.FOriginalFrame.fStop  + '  shutter=' + NewfrmJpegDump.FOriginalFrame.Shutter;
+   NewfrmJpegDump.Close;
 end;
 
 
@@ -136,13 +134,13 @@ begin
 end;
 
 
-
 procedure StartExif;
 var
   NewfrmJpegDump : TNewfrmJpegDump;
 begin
   NewfrmJpegDump := TNewfrmJpegDump.Create(Application);
 end;
+
 
 procedure TNewfrmJpegDump.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
@@ -173,9 +171,7 @@ var
   List2 : tStringList;
   i : integer;
 begin
-  {$IfDef RecordEXIF}
-  WriteLineToDebugFile('TfrmExifList.BitBtn1Click',true);
-  {$EndIf}
+  {$IfDef RecordEXIF} WriteLineToDebugFile('TfrmExifList.BitBtn1Click'); {$EndIf}
    if (Sender <> Nil) then Petmar.GetDOSPath('with EXIF files',PhotoDir);
 
    if (TheFiles <> Nil) then begin
@@ -285,7 +281,7 @@ end;
 
 procedure TNewfrmJpegDump.BitBtn3Click(Sender: TObject);
 begin
-   if CurrentImage < TheFiles.Count-2 then inc (CurrentImage);
+   if (CurrentImage < TheFiles.Count-2) then inc (CurrentImage);
    OpenFile(TheFiles.Strings[CurrentImage]);
 end;
 

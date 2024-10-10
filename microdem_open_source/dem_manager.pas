@@ -331,7 +331,8 @@ var
 begin
    ShowHourglassCursor;
    Results := tStringList.Create;
-   Results.Add('DEM,PIXEL_IS,NOM_CORNER,HORIZ_DATM,VERT_DATUM,LAT_CENT,LONG_CENT,MIN_Z,MAX_Z,NW_CornerX,NW_CornerY,SW_POINTX,SW_POINTY,SW_CornerX,SW_CornerY,DX,DY,NUM_COL,NUM_ROW,AVG_X_M,AVG_Y_M,AVG_SP_M,DIAGONAL');
+   Results.Add('DEM,PIXEL_IS,NOM_CORNER,HORIZ_DATM,VERT_DATUM,LAT_CENT,LONG_CENT,MIN_Z,MAX_Z,NW_CornerX,NW_CornerY,SW_POINTX,SW_POINTY,SW_CornerX,SW_CornerY,' +
+      'DX,DY,NUM_COL,NUM_ROW,AVG_X_M,AVG_Y_M,AVG_SP_M,DIAGONAL,VALID_PTS');
    for i := 1 to MaxDEMDataSets do if ValidDEM(i) then begin
       if (DEMGlb[i].DEMheader.DEMUsed = UTMBasedDEM) then Decs := -2 else Decs := -8;
       Results.Add(DEMGlb[i].AreaName + ',' + PixelIsString(DEMGlb[i].DEMheader.RasterPixelIsGeoKey1025) + ',' + DEMGlb[i].GridCornerModel + ',' +
@@ -345,7 +346,8 @@ begin
           RealToString(DEMGlb[i].DEMheader.DEMxSpacing,-12,Decs) + ',' + RealToString(DEMGlb[i].DEMheader.DEMySpacing,-12,Decs)  + ',' +
           IntToStr(DEMGlb[i].DEMheader.NumCol) + ',' + IntToStr(DEMGlb[i].DEMheader.NumRow) + ',' +
           RealToString(DEMGlb[i].AverageXSpace,-12,-2) + ',' + RealToString(DEMGlb[i].AverageYSpace,-12,-2)  + ',' + RealToString(DEMGlb[i].AverageSpace,-12,-2) + ',' +
-          RealToString(Petmath.HeadingOfLine(DEMGlb[i].AverageXSpace,DEMGlb[i].AverageYSpace),-8,-1));
+          RealToString(Petmath.HeadingOfLine(DEMGlb[i].AverageXSpace,DEMGlb[i].AverageYSpace),-8,-1) + ',' +
+          IntToStr(DEMGlb[i].ComputeNumberValidPoints(DEMGlb[i].FullDEMGridLimits)));
    end;
    fName := Petmar.NextFileNumber(MDTempDir,'dem_summary_','.dbf');
    StringList2CSVtoDB(Results,fName);
@@ -1597,12 +1599,14 @@ begin
       if (CurrentProject <> '') then DeleteMultipleFiles(CurrentProject + '\','*.*');
    {$EndIf}
 
-   if ValidPath('c:\mapdata\temp\grass1') then begin
+(*
+   if ValidPath(MDTempDir + 'temp\grass1') then begin
       {$IfDef RecordCleanUpTempDir} WriteLineToDebugFile('CleanUpTempDirectory, start GRASS'); {$EndIf}
       bf := tstringlist.Create;
-      bf.Add( 'rd /S /Q c:\mapdata\temp\grass1');
+      bf.Add(ClearGRASSdirectory);
       EndBatchFile(MDTempdir + 'clear_grass.bat',bf);
    end;
+*)
 
    if (MDTempDir <> '') then begin
       {$IfDef RecordCleanUpTempDir} WriteLineToDebugFile('CleanUpTempDirectory, start main'); {$EndIf}
@@ -1614,7 +1618,7 @@ begin
       if MDDef.CleanKMLDirOnClosing then CleanOutDirectory(MainMapData + 'kml\');
       if IncudeDirs then begin
          {$IfDef RecordCleanUpTempDir} WriteLineToDebugFile('CleanUpTempDirectory, call CleanOutDirectory'); {$EndIf}
-         CleanOutDirectory(MDTempDir);
+         //CleanOutDirectory(MDTempDir);
       end;
    end;
    ShowDefaultCursor;

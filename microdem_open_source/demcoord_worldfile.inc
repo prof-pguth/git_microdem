@@ -253,7 +253,7 @@ begin
           end
           else if FileExists(ChangeFileExt(FileName,'.prj')) then begin
              {$IfDef RecordWorldFile} WriteLineToDebugFile('Using PRJ file'); {$EndIf}
-             vmProjection.InitializeProjectionFromWKT(ChangeFileExt(FileName,'.prj'));
+             vmProjection.InitializeProjectionFromWKTFile(ChangeFileExt(FileName,'.prj'));
              if vmProjection.ProjUTMZone in [1..60] then begin
                 projUTMzone := vmProjection.ProjUTMZone;
                 vmProjection.Pname := UTMellipsoidal;

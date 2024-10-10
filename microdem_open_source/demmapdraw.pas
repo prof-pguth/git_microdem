@@ -1238,7 +1238,7 @@ begin
                      if (MapType = mtDEMContour) then BaseTitle := DEMGlb[DEMonMap].AreaName + ' with ' + RealToString(DEMGlb[DEMonMap].ZinMeters(MapOverlays.ConInt),-6,-1) + ' m contours';
                      if isReflectanceMap(MapType) then begin
                         if MDDef.UseRefDirs = 1 then
-                            BaseTitle := DEMGlb[DEMonMap].AreaName + '_Sun Az=' + RealToString(MDdef.RefPhi,-4,0) + '_Elev='+ RealToString(MDDef.RefTheta,-4,0) + DegSym
+                            BaseTitle := DEMGlb[DEMonMap].AreaName + '_Sun Az=' + RealToString(MDdef.RefPhi,-4,0) + '_Elev='+ RealToString(MDDef.RefTheta,-4,0) + '°'
                         else BaseTitle := DEMGlb[DEMonMap].AreaName + '_multidirectional hillshade';
                      end;
                   end;
@@ -1250,7 +1250,7 @@ begin
                       {$EndIf}
                   end
                   else if isSlopeMap(MapType) or (MapType in [mtDEMaspectSlope,mtDEMAspect,mtFlowDir360,mtFlowDirArc,mtFlowDirTau]) or (DEMGlb[DEMonMap].DEMheader.ElevUnits in [euAspectDeg]) then begin
-                     if isSlopeMap(MapType) then BaseTitle := 'Slope Map (' + SlopeMethodName(MDdef.SlopeAlg) + ')'
+                     if isSlopeMap(MapType) then BaseTitle := 'Slope Map (' + SlopeMethodName(MDDef.SlopeAlgorithm) + ')'
                      else BaseTitle := 'Aspect Map';
                      BaseTitle := DEMGlb[DEMonMap].AreaName + '_'+ BaseTitle;
                      DrawSlopeMap(BitMap);

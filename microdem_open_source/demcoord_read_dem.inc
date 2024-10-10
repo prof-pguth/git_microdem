@@ -175,7 +175,7 @@ var
           end;
 
           {$IfDef RecordReadMDDEM} if not DEMMergeInProgress then WriteLineToDebugFile('Read new DEM call DefineDEMvariables'); {$EndIf}
-          DEMMapProj.InitializeProjectionFromDEMHeader(DEMHeader);
+          DEMMapProj.InitProjFomDEMHeader(DEMHeader);
           DefineDEMVariables(true);
           DEMheader.MaxElev := zInMeters(DEMheader.StoredMaxElev);
           DEMheader.MinElev := zInMeters(DEMheader.StoredMinElev);
@@ -340,7 +340,7 @@ var
 
 var
    ofName,WKTfile : PathStr;
-begin
+begin {tDEMDataSet.ReadDEMNow}
    {$IfDef RecordReadDEM} WriteLineToDebugFile('enter read DEM for ' +  tFile); {$EndIf}
    InsureFileIsNotReadOnly(tFile);
    DEMFileName := tfile;
@@ -369,6 +369,8 @@ begin
       end;
       Error := not ReadTIFFDEM(DEMFileName);
       if Error then exit;
+      {$If Defined(TrackWKTstring)} WriteLineToDebugFile('tDEMDataSet.ReadDEMNow after ReadTIFFDEM, dem map proj WKT=' + IntToStr(Length(DEMMapProj.wktString)) + ' dem header WKT=' + IntToStr(Length(DEMheader.wktString))); {$EndIf}
+
 
       {$If Defined(RecordReadDEM)} WriteLineToDebugFile('Load Geotiff read ' + AreaName + ' ' + DEMmapProj.GetProjectionName); {$EndIf}
       {$If Defined(RecordUKOS)}
@@ -404,17 +406,19 @@ begin
       Result := false;
       exit;
    end;
+   {$If Defined(TrackWKTstring)} WriteLineToDebugFile('tDEMDataSet.ReadDEMNow after read, dem map proj WKT=' + IntToStr(Length(DEMMapProj.wktString)) + ' dem header WKT=' + IntToStr(Length(DEMheader.wktString))); {$EndIf}
+
    Result := true;
    DeleteMissingDataPoints;
    if (MDdef.AutoFillHoles) and (not DEMMergeInProgress) then InterpolateAcrossHoles(false);
    DefineDEMVariables(TransformToNewDatum);
 
-
    DEMstatus := dsSaved;
    {$If Defined(RecordUKOS)} DEMmapProj.ShortProjInfo('Exit NewArea for ' + AreaName); {$EndIf}
    {$IfDef TrackPixelIs} WriteLineToDebugFile('tDEMDataSet.ReadDEMNow exit, ' + GridCornerModelAndPixelIsString); {$EndIf}
    {$IfDef RecordReadDEM} WriteLineToDebugFile('exit NewArea with DEM: ' + AreaName + '  ' + HorizontalDEMSpacing); {$EndIf}
-end;
+   {$If Defined(TrackWKTstring)} WriteLineToDebugFile('tDEMDataSet.ReadDEMNow very end, dem map proj WKT=' + IntToStr(Length(DEMMapProj.wktString)) + ' dem header WKT=' + IntToStr(Length(DEMheader.wktString))); {$EndIf}
+end {tDEMDataSet.ReadDEMNow};
 
 
 procedure ConvertUKOSDEMtoUTM(BigDEM : integer; ToUTM : boolean);
@@ -524,11 +528,7 @@ begin
     until OK;
     ShowHourglassCursor;
     OpenAndZeroNewDEM(false,NewHeader,Result,'Global DEM',InitDEMmissing);
-
-    {$IfDef NoMapOptions}
-    {$Else}
-    DEMGlb[Result].SetUpMap(Result,false,MDDef.DefDEMMap);
-    {$EndIf}
+    DEMGlb[Result].SetUpMap(false,MDDef.DefDEMMap);
 
     ShowDefaultCursor;
    {$IfDef RecordNewMaps} WriteLineToDebugFile('CreateNewGlobalGrid out'); {$EndIf}
@@ -727,7 +727,7 @@ begin
       fName2 := ChangeFileExt(FileName,'.prj');
       if not FileExists(fName2) then fName2 := ChangeFileExt(FileName,'.wkt');
       if FileExists(fName2) then begin
-         DEMMapProj.InitializeProjectionFromWKT(fName2);
+         DEMMapProj.InitializeProjectionFromWKTFile(fName2);
       end;
 
       assignFile(InputFile,FileName);
@@ -787,7 +787,7 @@ begin
       else if (abs(xBase) > 180) then begin
          fName2 := Dir + Name + '.prj';
          if FileExists(fName2) then begin
-            DEMMapProj.InitializeProjectionFromWKT(fName2);
+            DEMMapProj.InitializeProjectionFromWKTfile(fName2);
             DEMMapProj.DefineDatumFromUTMZone(DEMMapProj.h_DatumCode,GetUTMZone(DEMMapProj.Long0 / DegToRad),MDDef.DefaultLatHemi,'read dem 3');
          end
          else if not DEMMapProj.CheckForAllInDirectoryWKT(Dir) then begin
@@ -862,15 +862,17 @@ begin
    {$IfDef RecordReadDEM} WriteLineToDebugFile('LoadNewDEM calling new area for ' + FullFileName); {$EndIf}
 
    if NewArea(True,WantedDEM,DEMMessage,FullFileName) then begin
+      {$If Defined(TrackWKTstring)} writelineToDebugFile('LoadNewDEM NewArea over DEM wktstring=' + IntToStr(length(DEMGlb[WantedDEM].DEMHeader.WKTString))); {$EndIf}
       {$If Defined(RecordZRange) or Defined(RecordReadDEM)} WriteLineToDebugFile('LoadNewDEM NewArea over, ' + DEMGlb[WantedDEM].AreaName + ' ' + DEMGlb[WantedDEM].Zrange); {$EndIf}
       {$If Defined(TrackHorizontalDatum)}
          WriteLineToDebugFile('LoadNewDEM NewArea over, ' + DEMGlb[WantedDEM].AreaName + ' ' +  DEMGlb[WantedDEM].DEMmapProj.h_DatumCode + ' ' +
            StringFromDatumCode(DEMGlb[WantedDEM].DEMheader.DigitizeDatum));
       {$EndIf}
-      {$IfDef RecordDEMmapProj} WriteLineToDebugFile('After NewArea in LoadNewDEM, DEM proj=' + DEMGlb[WantedDEM].DEMmapProj.GetProjectionName); {$EndIf}
+      {$IfDef RecordDEMmapProj} WriteLineToDebugFile('After NewArea in LoadNewDEM, DEM proj wktstring=' + DEMGlb[WantedDEM].DEMmapProj.GetProjectionName); {$EndIf}
 
       Result := true;
       if CreateMap then begin
+        {$If Defined(TrackWKTstring)} writelineToDebugFile('LoadNewDEM start create map' + IntToStr(length(DEMGlb[WantedDEM].DEMHeader.WKTString))); {$EndIf}
         {$IfDef VCL}
            {$If Defined(RecordReadDEM) or Defined(TimeLoadDEM)} WriteLineToDebugFile('LoadNewDEM 2 SetUpSelectionsMap ' + DEMGlb[WantedDEM].AreaName + '  ' + DEMGlb[WantedDEM].DEMmapProj.GetProjectionName); {$EndIf}
            CreateDEMSelectionMap(WantedDEM,DrawTheMap,MDDef.DefElevsPercentile,mtDEMBlank);
@@ -900,12 +902,13 @@ begin
       if (WantedDEM <> 0) then WriteLineToDebugFile('Exit LoadNewDEM=' + IntToStr(WantedDEM) + '  ' + DEMGlb[WantedDEM].KeyDEMParams(true));
    {$EndIf}
    {$If Defined(TrackHorizontalDatum)} DEMGlb[WantedDEM].TrackHorizontalDatumDebugLog('exit LoadNewDEM,'); {$EndIf}
+   {$If Defined(TrackWKTstring)} writelineToDebugFile('LoadNewDEM out ' + IntToStr(length(DEMGlb[WantedDEM].DEMHeader.WKTString))); {$EndIf}
 end;
 
 
 function OpenAndZeroNewDEM(TransformToNewDatum : boolean; NewHeader : tDEMheader; var WantedDEM : integer; DEMname : ShortString; InitDEMMode : byte; InitialValue : float64 = 0) : boolean;
 begin
-   {$IfDef RecordCreateNewDEM} writelineToDebugFile('OpenAndZeroNewDEM ' + NewHeader.WKTString); {$EndIf}
+   {$If Defined( RecordCreateNewDEM) or Defined(TrackWKTstring)} writelineToDebugFile('OpenAndZeroNewDEM ' + IntToStr(length(NewHeader.WKTString))); {$EndIf}
    try
       OpeningNewGrid := true;
       WantedDEM := 0;
@@ -919,7 +922,7 @@ begin
    finally
       OpeningNewGrid := false;
    end;
-   {$IfDef RecordCreateNewDEM} WritelineToDebugFile('Depart with DEMHeader.WKTString=' + DEMGlb[WantedDEM].DEMHeader.WKTString); {$EndIf}
+   {$If Defined( RecordCreateNewDEM) or Defined(TrackWKTstring)} WritelineToDebugFile('Depart with DEMHeader.WKTString=' + IntToStr(length(DEMGlb[WantedDEM].DEMHeader.WKTString))); {$EndIf}
 end;
 
 
@@ -973,6 +976,8 @@ begin
    OpenDEMDataStructures(ImportingDEM);
    {$If Defined(RecordReadDEM) or Defined(TimeLoadDEM)} WriteLineToDebugFile('off to ReadDEMNow, DEM=' + IntToStr(ImportingDEM)); {$EndIf}
    Result := DEMGlb[ImportingDEM].ReadDEMNow(tFile,TransformToNewDatum);
+   {$If Defined(TrackWKTstring)} WriteLineToDebugFile('NewArea after ReadDEMNow , dem WKT=' + IntToStr(Length(DEMGlb[ImportingDEM].DEMHeader.wktString))); {$EndIf}
+
    {$If Defined(RecordReadDEM) or Defined(TimeLoadDEM)} if (not Result) then WriteLineToDebugFile('ReadDEM failure'); {$EndIf}
 
    if MDdef.MissingToSeaLevel and DEMGlb[ImportingDEM].ElevationDEM then DEMGlb[ImportingDEM].MissingDataToConstantVelue;

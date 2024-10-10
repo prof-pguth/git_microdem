@@ -214,7 +214,7 @@ type
         function IsFloatField(WantFieldName : ANSIString) : boolean;
         function IsIntegerField(WantFieldName : ANSIString) : boolean;
         function IsStringField(WantFieldName : ANSIString) : boolean;
-        function IsStringOrIntergerField(WantFieldName : ANSIString) : boolean;
+        function IsStringOrIntegerField(WantFieldName : ANSIString) : boolean;
 
         function FieldSum(FieldDesired : shortstring) : float64;
         function FieldAverage(FieldDesired : shortstring) : float64;
@@ -1592,6 +1592,7 @@ end;
 
 function tMyData.ListUniqueEntriesInDB(FieldName : ANSIString) : tStringList;
 begin
+
    PetDBUtils.FindUniqueEntries(Self,FieldName,Result);
 end;
 
@@ -2135,7 +2136,7 @@ begin
     Result := GetFieldType(WantFieldName) in [ftString];
 end;
 
-function tMyData.IsStringOrIntergerField(WantFieldName : ANSIString) : boolean;
+function tMyData.IsStringOrIntegerField(WantFieldName : ANSIString) : boolean;
 begin
     Result := GetFieldType(WantFieldName) in [ftString, ftInteger, ftSmallInt, ftLargeInt];
 end;
@@ -2742,6 +2743,9 @@ finalization
    {$IfDef RecordSQLite} WriteLineToDebugFile('RecordSQLite active in petmar_db'); {$EndIf}
    {$IfDef TrackCDStiming} WriteLineToDebugFile('TrackCDStiming active in petmar_db'); {$EndIf}
 end.
+
+
+
 
 
 

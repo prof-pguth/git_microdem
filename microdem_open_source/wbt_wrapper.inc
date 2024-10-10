@@ -13,7 +13,7 @@ function WhiteBoxPresent : boolean;
 begin
    Result := FileExists(WhiteBoxfName);
    if Not Result then begin
-      WhiteBoxfName := ':\gis_software\wbt\whitebox_tools.exe';
+      WhiteBoxfName := ':\gis_software\wbt_2.4.0\whitebox_tools.exe';
       FindDriveWithFile(WhiteBoxfName);
       Result := FileExists(WhiteBoxfName);
       if Not Result then begin
@@ -189,13 +189,27 @@ begin
 end;
 
 
-function WBT_TRI(OpenMap : boolean; InName : PathStr) : integer;
+function WBT_HillshadeMap(OpenMap : boolean; DEM : integer; OutName : PathStr = '') : integer;
+//https://www.whiteboxgeo.com/manual/wbt_book/available_tools/geomorphometric_analysis.html#Hillshade
 var
    cmd : ansistring;
-   OutName : PathStr;
+begin
+  if WhiteBoxPresent then begin
+     if Outname = '' then OutName := MDTempDir + 'wbt_hillshade_' + DEMGlb[DEM].AreaName + '.tif';
+//     >>./whitebox_tools -r=Hillshade -v --wd="/path/to/data/" -i=DEM.tif -o=output.tif --azimuth=315.0 --altitude=30.0
+     cmd := WhiteBoxfName + WBNoCompress + '-r=Hillshade -v -i=' + DEMGlb[DEM].GeotiffDEMName + ' -o=' + OutName + ' --azimuth=' + RealToString(MDdef.RefPhi,-8,1) + ' --altitude=' + RealToString(90-MDdef.RefTheta,-8,1);
+     Result := ExecuteWBandOpenMap(OpenMap,cmd,OutName,euUndefined,mtElevGray);
+  end;
+end;
+
+
+
+function WBT_TRI(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
+var
+   cmd : ansistring;
 begin
   if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
-     OutName := MDTempDir + 'wbt_TRI_' + ExtractFileNameNoExt(InName) + '.tif';
+     if (OutName = '') then OutName := MDTempDir + 'wbt_TRI_' + ExtractFileNameNoExt(InName) + '.tif';
      cmd := WhiteBoxfName + WBNoCompress + '-r=RuggednessIndex -v --dem=' + InName + ' -o=' + OutName;
      Result := ExecuteWBandOpenMap(Openmap,cmd,OutName,euMeters,mtElevRainbow);
   end;
@@ -209,7 +223,7 @@ begin
   if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
      OutName := MDTempDir + 'wbt_avg_norm_vect_dev_' + FilterSizeStr(FilterSize) + '_' + ExtractFileNameNoExt(InName) + '.tif';
      cmd := WhiteBoxfName + WBNoCompress + '-r=AverageNormalVectorAngularDeviation -v --dem=' + InName + ' -o=' + OutName + ' --filter=' + IntToStr(FilterSize);
-     Result := ExecuteWBandOpenMap(False,cmd,OutName,euzDegrees,mtElevSpectrum);
+     Result := ExecuteWBandOpenMap(False,cmd,OutName,euDegrees,mtElevSpectrum);
   end;
 end;
 
@@ -333,7 +347,7 @@ begin
   if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
      if OutName = '' then OutName := MDTempDir + 'wbt_profile_curvature_' + ExtractFileNameNoExt(InName) + '.tif';
      cmd := WhiteBoxfName + WBNoCompress + '-r=ProfileCurvature -v --dem=' + InName + ' -o=' + OutName;
-     Result := ExecuteWBandOpenMap(OpenMap,cmd,OutName,euPerMeter,mtElevSpectrum);
+     Result := ExecuteWBandOpenMap(OpenMap,cmd,OutName,euPerMeter,MDDef.DefCurveMap);
   end;
 end;
 
@@ -344,7 +358,7 @@ begin
   if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
      if OutName = '' then OutName := MDTempDir + 'wbt_profile_curvature_' + ExtractFileNameNoExt(InName) + '.tif';
      cmd := WhiteBoxfName + WBNoCompress + '-r=PlanCurvature -v --dem=' + InName + ' -o=' + OutName;
-     Result := ExecuteWBandOpenMap(OpenMap,cmd,OutName,euPerMeter,mtElevSpectrum);
+     Result := ExecuteWBandOpenMap(OpenMap,cmd,OutName,euPerMeter,MDDef.DefCurveMap);
   end;
 end;
 
@@ -356,7 +370,7 @@ begin
   if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
      if (OutName = '') then OutName := MDTempDir + 'wbt_tangential_curvature_' + ExtractFileNameNoExt(InName) + '.tif';
      cmd := WhiteBoxfName + WBNoCompress + '-r=TangentialCurvature -v --dem=' + InName + ' -o=' + OutName;
-     Result := ExecuteWBandOpenMap(OpenMap,cmd,OutName,euPerMeter,mtElevSpectrum);
+     Result := ExecuteWBandOpenMap(OpenMap,cmd,OutName,euPerMeter,MDDef.DefCurveMap);
   end;
 end;
 
@@ -369,7 +383,7 @@ begin
   if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
      OutName := MDTempDir + 'wbt_minimal_curvature_' + ExtractFileNameNoExt(InName) + '.tif';
      cmd := WhiteBoxfName + WBNoCompress + '-r=MinimalCurvature -v --dem=' + InName + ' -o=' + OutName;
-     Result := ExecuteWBandOpenMap(OpenMap,cmd,OutName,euPerMeter,mtElevSpectrum);
+     Result := ExecuteWBandOpenMap(OpenMap,cmd,OutName,euPerMeter,MDDef.DefCurveMap);
   end;
 end;
 
@@ -382,7 +396,7 @@ begin
   if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
      OutName := MDTempDir + 'wbt_maximal_curvature_' + ExtractFileNameNoExt(InName) + '.tif';
      cmd := WhiteBoxfName + WBNoCompress + '-r=MaximalCurvature -v --dem=' + InName + ' -o=' + OutName;
-     Result := ExecuteWBandOpenMap(OpenMap,cmd,OutName,euPerMeter,mtElevSpectrum);
+     Result := ExecuteWBandOpenMap(OpenMap,cmd,OutName,euPerMeter,MDDef.DefCurveMap);
   end;
 end;
 
@@ -395,7 +409,7 @@ begin
   if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
      OutName := MDTempDir + 'wbt_mean_curvature_' + ExtractFileNameNoExt(InName) + '.tif';
      cmd := WhiteBoxfName + WBNoCompress + '-r=MeanCurvature -v --dem=' + InName + ' -o=' + OutName;
-     Result := ExecuteWBandOpenMap(OpenMap,cmd,OutName,euPerMeter,mtElevSpectrum);
+     Result := ExecuteWBandOpenMap(OpenMap,cmd,OutName,euPerMeter,MDDef.DefCurveMap);
   end;
 end;
 
@@ -408,7 +422,7 @@ begin
   if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
      OutName := MDTempDir + 'wbt_gaussian_curvature_' + ExtractFileNameNoExt(InName) + '.tif';
      cmd := WhiteBoxfName + WBNoCompress + '-r=GaussianCurvature -v --dem=' + InName + ' -o=' + OutName;
-     Result := ExecuteWBandOpenMap(OpenMap,cmd,OutName,euPerMeter,mtElevSpectrum);
+     Result := ExecuteWBandOpenMap(OpenMap,cmd,OutName,euPerMeter,MDDef.DefCurveMap);
   end;
 end;
 

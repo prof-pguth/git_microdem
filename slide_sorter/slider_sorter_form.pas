@@ -177,7 +177,7 @@ uses
 
 procedure StartSlideSorter;
 var
-  SlideSorterForm : TSlideSorterForm;
+   SlideSorterForm : TSlideSorterForm;
    TheFiles : tStringList;
    fName,fName2 : PathStr;
 

@@ -8,488 +8,6 @@
 {____________________________________}
 
 
-         procedure tDEMDataSet.DoSSOStrip(Limits : tGridLimits; var Results : tStringList);
-         var
-            s1,s2,S3 : ShortString;
-            aLine : ANSIString;
-            SSOvars : tSSOvars;
-            Col,Row,xsize,ysize,ColInc,RowInc,Done : integer;
-            {$IfDef FabricWavelengthAmplitude}
-               WavelengthMean,WavelengthMedian,WavelengthStdDev,Lat1,Long1,Lat2,Long2,aMinVal,aMaxVal,
-            {$EndIf}
-            //HeightMean,HeightMedian,//HeightStd,
-            Lat,Long : float64;
-            z : float32;
-            TableName : PathStr;
-         begin
-             xsize := round(0.5 * MDDef.SSOBoxSizeMeters / AverageXSpace);
-             ysize := round(0.5 * MDDef.SSOBoxSizeMeters / AverageYSpace);
-
-             ColInc := round(MDDef.PointSeparation / AverageXSpace);
-             RowInc := round(MDDef.PointSeparation / AverageYSpace);
-             Results := tStringList.Create;
-             {$IfDef FabricWavelengthAmplitude}
-                if MDdef.DoFabricAmplitude then s1 := ',ELEV_M,FABRIC_AMP' else s1 := '';
-                if MDDef.DoWavelength then s2 := ',LEN_MEAN,LEN_MEDIAN,LEN_STD,HT_MEAN,HT_MEDIAN,HT_STD' else s2 := '';
-                if MDdef.DoFabricAmplitude then S3 := ',FABRIC_AMP' else s3 := '';
-             {$EndIf}
-             Results.Add('LAT,LONG,S1S2,S2S3,NPTS,RELIEF,FABRIC_DIR' + s1 + s2 + S3);
-             Col := Limits.xGridLow;
-             while Col <= Limits.xGridHigh do begin
-                 Row := Limits.YGridLow;
-                 while (Row <= Limits.YGridHigh) do begin
-                    if (GetElevMeters(Col,Row,z)) and SSOComputations(SpecifyDEMGridLimits(Col-xsize,Row-ysize,Col+xsize,Row+Ysize),SSOvars,false,'','') then begin
-                       if (SSOvars.s1s2 >= MDdef.FlatnessCutoff) then System.SyncObjs.TInterlocked.Increment(SSOfailFlat);
-                       if (SSOvars.s2s3 < MDDef.OrganizationCutoff) then System.SyncObjs.TInterlocked.Increment(SSOfailorg);
-
-                       if (MDDef.SSOallInTable) or ((SSOvars.s1s2 <= MDdef.FlatnessCutoff) and (SSOvars.s2s3 >= MDDef.OrganizationCutoff)) then begin
-                           DEMGridToLatLongDegree(Col,Row,Lat,Long);
-                           aline := RealToString(Lat,-12,-7) + ',' +
-                                    RealToString(Long,-12,-7)+ ',' +
-                                    RealToString(SSOvars.s1s2,-12,-3)+ ',' +
-                                    RealToString(SSOvars.s2s3,-12,-3)+ ',' +
-                                    IntToStr(SSOvars.NumPts)+ ',' +
-                                    RealToString(SSOvars.ElevRange,-12,-2)+ ',' +
-                                    RealToString(SSOvars.TheDipDirs[3],-12,-1);
-
-                           {$IfDef FabricWavelengthAmplitude}
-                              if (MDdef.DoFabricAmplitude or MDDef.DoWavelength) and GetPerpendicularLineEnd(Lat,Long,0.5*MDDef.FabricAmplitudeDistance,SSOvars.TheDipDirs[3],Lat1,Long1,Lat2,Long2) then begin
-                                 MDDef.ForceCrestComputations := true;
-                                 LOSComputeOnly(0,lat1,long1,lat2,long2,0,0);
-                                 WantShowProgress := false;
-                                 if MDdef.DoFabricAmplitude then begin
-                                    if ProfileData.FindFieldRange('ELEV_M',aMinVal,aMaxVal) then
-                                       aLine := aLine + ',' + RealToString(aMaxVal - aMinVal,-12,-2);
-                                 end;
-                                 if MDDef.DoWavelength then begin
-                                   FindWavelengthStats(ProfileData,WavelengthMean,WavelengthMedian,WavelengthStdDev,HeightMean,HeightMedian,HeightStd);
-                                   if (WaveLengthMean > 0.01) then  begin
-                                      aline := aLine + ',' + RealToString(WavelengthMean,-12,-3)+ ',' +
-                                               RealToString(WavelengthMedian,-12,-3)+ ',' +
-                                               RealToString(WavelengthStdDev,-12,-3)+ ',' +
-                                               RealToString(HeightMean,-12,-3)+ ',' +
-                                               RealToString(HeightMedian,-12,-3)+ ',' +
-                                               RealToString(HeightStd,-12,-3);
-                                   end;
-                                 end;
-                                 WantShowProgress := true;
-                              end;
-                          {$EndIf}
-
-                           Results.Add(aLine);
-                       end;
-                    end
-                    else begin
-                       System.SyncObjs.TInterlocked.Increment(SSOFailPts);
-                    end;
-                    inc(Row,RowInc);
-                    if ShowSatProgress and WantOut then break;
-                 end {while Row};
-                inc(Col,ColInc);
-                inc(Done);
-                if ShowSatProgress and WantOut then break;
-             end {while Col};
-             if MDdef.DoWaveLength then begin
-                DeleteFileIfExists(TableName);
-             end;
-         end;
-
-
-         function tDEMDataSet.OrientationTable(fName : PathStr; UseMap : tMapForm) : integer;
-         var
-            Limits :  tGridLimits;
-            Results : array[1..MaxThreadsAllowed] of tStringList;
-            {$IfDef NoParallelFor}
-            {$Else}
-               PartLimits : tGridLimitsArray;
-               i,it : integer;
-            {$EndIf}
-         begin
-            {$If Defined(ShowDEMSSOCalc) or Defined(RecordTime)} WriteLineToDebugFile('tDEMDataSet.OrientationTable in'); Stopwatch := TStopwatch.StartNew; {$EndIf}
-
-             if (UseMap <> Nil) or MDDef.GeomorphMapsFullDEM then Limits := UseMap.MapDraw.MapAreaDEMGridLimits
-             else Limits := FullDEMGridLimits;
-
-             SSOFailPts := 0;
-             SSOFailFlat := 0;
-             SSOfailOrg := 0;
-
-             StartProgress('SSO computations');
-
-            {$IfDef NoParallelFor}
-                DoSSOStrip(limits,Results[1]);
-            {$Else}
-                PartLimits := GetLimitsForParallelLoops(Limits);
-                TParallel.For(1,MDdef.MaxThreadsForPC,
-                      procedure (Value: Integer)
-                      begin
-                        DoSSOStrip(PartLimits[Value],Results[Value]);
-                      end);
-
-                 for it := 2 to MDdef.MaxThreadsForPC do begin
-                    for I := 1 to pred(Results[it].Count) do
-                       Results[1].Add(Results[it].Strings[i]);
-                    Results[it].Free;
-                 end;
-                 ThreadsWorking := false;
-             {$EndIf}
-             EndProgress;
-             Result := UseMap.StringListToLoadedDatabase(Results[1],fName,false,true);
-             GISdb[Result].dbOpts.dbAutoShow := dbasTerrainFabric;
-             GISdb[Result].RedrawLayerOnMap;
-            {$If Defined(ShowDEMSSOCalc) or Defined(RecordTime)} Elapsed := Stopwatch.Elapsed; WriteLineToDebugFile('OrientationTable, out: ' + RealToString(Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
-         end;
-
-         function tDEMDataSet.PointSSOComputations(Col,Row,FullBoxSizeMeters : integer; var SSOvars : tSSOvars; PlotResults,Complete,PlotAspectFreq : boolean) : boolean;
-         var
-            xsize,ysize : integer;
-         begin
-            {$IfDef ShowDEMSSOCalc} WriteLineToDebugFile('tDEMDataSet.PointSSOComputations in: ' + IntToStr(Col) + ' & ' + IntToStr(Row)+ ' rad=' + IntToStr(FullBoxSize)); {$EndIf}
-            xsize := round(0.5 * FullBoxSizeMeters / AverageXSpace);
-            ysize := round(0.5 * FullBoxSizeMeters / AverageYSpace);
-            Result := SSOComputations(SpecifyDEMGridLimits(Col-xsize,Row-ysize,Col+xsize,Row+Ysize),SSOvars,PlotResults,'','');
-         end;
-
-
-         function tDEMDataSet.SimplePointSSOComputations(PlotResults : boolean; Col,Row,FullBoxSizeMeters : integer; var s1s2,s2s3,Trend,RoughnessFactor : float64) : boolean;
-         var
-             SSOvars : tSSOvars;
-         begin
-            {$IfDef ShowDEMSSOCalc} WriteLineToDebugFile('tDEMDataSet.SimplePointSSOComputations in: ' + IntToStr(Col) + ' & ' + IntToStr(Row) + ' rad=' + IntToStr(FullBoxSize)); {$EndIf}
-            Result := PointSSOComputations(Col,Row,FullBoxSizeMeters,SSOvars,PlotResults,false,false);
-            Trend := SSOvars.TheDipDirs[3];
-            s1s2 := SSOvars.s1s2;
-            s2s3 := SSOvars.s2s3;
-            RoughnessFactor := SSOvars.RoughnessFactor;
-         end;
-
-
-         function tDEMDataSet.FeatureSSOComputations(inFeatureDEM,inFeatureID,LoX,LoY,HiX,HiY : integer; var s1s2,s2s3,Trend,RoughnessFactor,DownDip : float64) : boolean;
-         var
-             SSOvars : tSSOvars;
-         begin
-             {$IfDef ShowDEMSSOCalc} WriteLineToDebugFile('tDEMDataSet.FeatureSSOComputations in, Feature=: ' + IntToStr(inFeatureID)); {$EndIf}
-             FilterGrid := inFeatureDEM;
-             FilterGridValue := inFeatureID;
-             Result := SSOComputations(SpecifyDEMGridLimits(LoX,LoY,HiX,HiY),SSOvars,true,'','');
-             Trend := SSOvars.TheDipDirs[3];
-             DownDip := SSOvars.TheDipDirs[1];
-             s1s2 := SSOvars.s1s2;
-             s2s3 := SSOvars.s2s3;
-             RoughnessFactor := SSOvars.RoughnessFactor;
-             FilterGrid := 0;
-             FilterGridValue := 0;
-         end;
-
-
-         function tDEMDataSet.SSOByRegionSize(Col,Row : integer; var Maxs2s3,BoxSizeForMax,DirForMax,Relief : float32; var Results : tStringList) : boolean;
-         var
-            i,j,k,NRot,PtsForMax,NumPts : integer;
-            DipDirect,Dip,Strike : float32;
-            MaxZ,MinZ,s2s3,s1s2,StepRelief : float64;
-            V : tTrendVector;
-            M,S,tm  : ^tTrendMatrix;
-            TStr : shortString;
-            TheDipDirs : VectorType;
-
-
-                  procedure PerformPointComputations(aCol,aRow : integer);
-                  var
-                     j,k : integer;
-                     s2 : VectorType;
-                     SlopAsp : tSlopeAspectRec;
-                  begin
-                     if GetSlopeAndAspect(aCol,aRow,SlopAsp) then begin
-                        PetMath.CompareValueToExtremes(SlopAsp.z,MinZ,MaxZ);
-                        inc(NumPts);
-                        S2[1] := sinDeg(SlopAsp.SlopeDegree) * sinDeg(SlopAsp.AspectDir);
-                        S2[2] := sinDeg(SlopAsp.SlopeDegree) * cosDeg(SlopAsp.AspectDir);
-                        S2[3] := cosDeg(SlopAsp.SlopeDegree);
-                        for j := 1 to 3 do
-                           for k := 1 to 3 do
-                              M^[j,k] := M^[j,k] + S2[j] * S2[k];
-                     end;
-                  end;
-
-         var
-            x,y,MinX,MaxX,MinY,MaxY,NewMinX,NewMaxX,NewMinY,NewMaxY,RegionM : integer;
-            First : boolean;
-            s2    : VectorType;
-         begin
-            {$If Defined(ShowDEMSSOCalc) or Defined(ShowFullDEMSSOCalc)} WriteLineToDebugFile('tDEMDataSet.SSOByRegionSize in, col=' + IntToStr(Col) + ' row'+IntToStr(Row)); {$EndIf}
-            Result := false;
-            First := true;
-            try
-               New(S);
-               New(M);
-               for j := 1 to 3 do
-                  for k := 1 to 3 do
-                     M^[j,k] := 0.0;
-
-               New(tM);
-               NumPts := 0;
-               MinZ := MaxSmallInt;
-               MaxZ := -MaxSmallInt;
-               TStr := AreaName + TStr;
-               MaxS2S3 := -99;
-
-               if (Results <> Nil) then Results.Add('REGION_M,S2S3,FABRIC_DIR,FLATNESS,RELIEF,NPTS');
-
-               RegionM := MDDef.FirstBoxSize;
-               while (RegionM < MDDef.LastBoxSize) do begin
-                  if First then begin
-                     Minx := Col - round(0.5*MDDef.FirstBoxSize / AverageXSpace);
-                     MaxX := Col + round(0.5*MDDef.FirstBoxSize / AverageXSpace);
-                     MinY := Row - round(0.5*MDDef.FirstBoxSize / AverageYSpace);
-                     MaxY := Row + round(0.5*MDDef.FirstBoxSize / AverageYSpace);
-                     First := false;
-                        x := Minx;
-                        while x <= MaxX do begin
-                           y := MinY;
-                           while Y <= MaxY do begin
-                              PerformPointComputations(Col,Row);
-                              inc(y);
-                           end {while Row};
-                           inc(x);
-                        end {while Col};
-                  end
-                  else begin
-                     //strip on left of analysis region
-                     NewMinX := Col - round(0.5*RegionM / AverageXSpace);
-                     for y := MinY to MaxY do PerformPointComputations(NewMinX,y);
-                     //new strip on right of analysis region
-                     NewMaxX := Col + round(0.5*RegionM / AverageXSpace);
-                     for y := MinY to MaxY do PerformPointComputations(NewMAxX,y);
-
-                     //new strips on Bottom
-                     NewMinY := Row - round(0.5*RegionM / AverageYSpace);
-                     if NewMinY <> MinY then begin
-                        for y := NewMinY to pred(MinY) do
-                           for x := NewMinX to NewMaxX do PerformPointComputations(x,y);
-                     end;
-                     //new strips on top
-                     NewMaxY := Row + round(0.5*RegionM / AverageYSpace);
-                     if NewMaxY <> MaxY then begin
-                        for y := NewMinY to pred(MinY) do
-                           for x := NewMinX to NewMaxX do PerformPointComputations(x,y);
-                     end;
-                     Minx := NewMinX;
-                     MaxX := NewMaxX;
-                     MinY := NewMinY;
-                     MaxY := NewMaxY;
-                  end;
-
-                  if (NumPts >= MDDef.MinPointsForSSO) then begin
-                     Result := true;
-                     for j := 1 to 3 do
-                        for k := 1 to 3 do
-                           tM^[j,k] := M^[j,k];
-
-                     Jacobi(tM^,3,V,s^,NRot);
-                     Eigsrt(V,S^,3);
-                     if abs(v[3]) < 0.00001 then begin
-                        s2s3 := 0;
-                     end
-                     else begin
-                        s2s3 := ln(v[2]/v[3]);
-                        s1s2 := ln(v[1]/v[2]);
-                     end;
-                     for i := 1 to 3 do begin
-                        S2[1] := s[1,i];
-                        S2[2] := s[2,i];
-                        S2[3] := s[3,i];
-                        CartesianToDipStrike(s2,Dip,Strike);
-                        if (Dip < 0) then begin
-                          Dip := abs(Dip);
-                          DipDirect := Strike - 90;
-                        end
-                        else DipDirect := Strike + 90;
-                        DipDirect := FindCompassAngleInRange(DipDirect);
-                        TheDipDirs[i] := DipDirect;
-                     end {for i};
-
-                     if (s2s3 > Maxs2s3) and (s2s3 > 0.001) then begin
-                        BoxSizeForMax := RegionM;
-                        DirForMax := TheDipDirs[3];
-                        Maxs2s3 := s2s3;
-                        PtsForMax := NumPts;
-                        Relief := MaxZ - MinZ;
-                     end;
-                     if (s2s3 > 0.001) then begin
-                        StepRelief := MaxZ - MinZ;
-                        TStr := IntToStr(round(RegionM)) + ',' + RealToString(s2s3,-8,-3) + ',' + RealToString(TheDipDirs[3],-8,-1) + ',' + RealToString(s1s2,-8,-3) + ',' + RealToString(StepRelief,-8,-2);
-                        if (Results <> Nil) then Results.Add(TStr);
-                        {$If Defined(ShowDEMSSOCalc) or Defined(ShowFullDEMSSOCalc)} WriteLineToDebugFile(TStr + '  NPTS=' + IntToStr(NumPts)); {$EndIf}
-                     end;
-                  end;
-                  RegionM := RegionM + round(2 * AverageXSpace);
-               end;
-            finally
-              Dispose(M);
-              Dispose(tm);
-              Dispose(S);
-            end;
-
-            {$If Defined(ShowDEMSSOCalc) or Defined(ShowFullDEMSSOCalc)}
-               if Result then WriteLineToDebugFile('tDEMDataSet.SSObyregionsize out, Boxsize=' + IntToStr(round(BoxSizeForMax)) + '  org=' +  RealToString(Maxs2s3,-8,-3) +  '   PTs used=' + IntToStr(PtsForMax))
-               else WriteLineToDebugFile('tDEMDataSet.SSObyregionsize out, No result');
-            {$EndIf}
-         end;
-
-
-         function tDEMDataSet.SSOComputations(GridLimits : tGridLimits; var SSOvars : tSSOvars; PlotResults : boolean; NetName,AspName : PathStr;
-              UseMinSlope : float64 = 0; UseMaxSlope : float64 = 9999) : boolean;
-         var
-            xd,yd,y,Col,Row,k  : integer;
-            MaxZ,MinZ,SumElev,SumSlope,
-            SumSqSlope,SumSqElev : float64;
-            zf : float32;
-            Symbol : tFullSymbolDeclaration;
-            TStr : shortString;
-            SlopeAspectRec : tSlopeAspectRec;
-            SSOVarAnalysis : tSSOVarAnalysis;
-            AspectStats : tAspectStats;
-         begin
-            {$IfDef ShowDEMSSOCalc} WriteLineToDebugFile('tDEMDataSet.SSOComputations in, ' + GridLimitsToString(GridLimits) + ' plot=' + IntToStr(Ord(MDDef.SSObyPole))); {$EndIf}
-            Result := false;
-            try
-               AspectStats.Create(ThisDEM);
-               SSOVars.AspPts := 0;
-               SSOvars.NumPts := 0;
-               SSOVars.MaxSlope := 0;
-               SumSlope := 0;
-               SumElev := 0;
-               SumSqSlope := 0;
-               SumSqElev := 0;
-               MinZ := MaxSmallInt;
-               MaxZ := -MaxSmallInt;
-
-               if (UseMaxSlope - UseMinSlope) < 90 then TStr := ' slopes ' + round(UseMinSlope).ToString + ' to ' + round(UseMaxSlope).ToString
-               else TStr := '';
-               TStr := AreaName + TStr;
-
-               if PlotResults and MDDef.GemorphSSOPoles then begin
-                  MDDef.NetDef.NetScreenMult := 2;
-                  NetForm := TNetForm.Create(Application);
-                  NetForm.Caption := 'SSO Diagram, ' + TStr;
-                  NetForm.nd.ReallyPlot := false;
-               end {if PlotResults};
-               {$IfDef ShowDEMSSOCalc} WriteLineToDebugFile('SSO setup done'); {$EndIf}
-
-               SSOVarAnalysis.Create(ThisDEM);
-               SSOVarAnalysis.SSOVars.NumPts := 0;
-               SSOVarAnalysis.NormalsInBox(GridLimits);
-               SSOVarAnalysis.ComputeEigenVectors;
-               SSOVars := SSOVarAnalysis.SSOVars;
-               SSOVarAnalysis.Destroy;
-
-               {$IfDef ShowDEMSSOCalc} WriteLineToDebugFile('SSOVarAnalysis done'); {$EndIf}
-
-               Col := GridLimits.XGridLow;
-               while Col <= GridLimits.XGridHigh do begin
-                  Row := GridLimits.YGridLow;
-                  while Row <= GridLimits.YGridHigh do begin
-                     if (FilterGrid = 0) or (GetElevMetersFromSecondDEM(false,FilterGrid,Col,Row,zf) and (round(zf) = FilterGridValue)) then begin
-                        if GetSlopeAndAspect(Col,Row,SlopeAspectRec) then begin
-                           if (SlopeAspectRec.SlopeDegree> SSOvars.MaxSlope) then SSOvars.MaxSlope := SlopeAspectRec.SlopeDegree;
-                           if (SlopeAspectRec.SlopeDegree >= UseMinSlope) and (SlopeAspectRec.SlopeDegree <= UseMaxSlope) then begin
-                              PetMath.CompareValueToExtremes(SlopeAspectRec.z,MinZ,MaxZ);
-                              SumSlope := SumSlope + SlopeAspectRec.Slope;
-                              SumSqSlope := SumSqSlope + Sqr(SlopeAspectRec.Slope);
-                              SumElev := SumElev + SlopeAspectRec.z;
-                              SumSqElev := SumSqElev + Sqr(SlopeAspectRec.z);
-                              AspectStats.AddPoint(SlopeAspectRec);
-                              inc(SSOVars.AspPts);
-                              inc(SSOvars.NumPts);
-                              if PlotResults and MDDef.GemorphSSOPoles then begin
-                                 Symbol.DrawingSymbol := Dot;
-                                 Symbol.Size := 3;
-                                 Symbol.Color := claRed;
-                                 if MDDef.SSObyPole then NetForm.nd.PlotPointOnNet(PolePlot,SlopeAspectRec.SlopeDegree,SlopeAspectRec.AspectDir,Symbol,xd,yd)
-                                 else NetForm.nd.PlotPointOnNet(LinePlot,SlopeAspectRec.SlopeDegree,SlopeAspectRec.AspectDir,Symbol,xd,yd);
-                              end;
-                           end;
-                        end;
-                     end;
-                     inc(Row,MDDef.SSOSampleIncr);
-                  end {while Row};
-                  inc(Col,MDDef.SSOSampleIncr);
-                  if WantOut then break;
-               end {while Col};
-               {$IfDef ShowDEMSSOCalc} WriteLineToDebugFile('Vectors done, npts=' + IntToStr(SSOvars.NumPts)); {$EndIf}
-
-               SSOvars.ElevRange := MaxZ - MinZ;
-
-               if (SSOvars.NumPts > 8) then begin
-                  SSOvars.StdDevSlope := SumSqSlope * SSOvars.NumPts - SumSlope * SumSlope;
-                  if SSOvars.StdDevSlope < 0 then SSOvars.StdDevSlope := 0
-                  else SSOvars.StdDevSlope := 100 * (sqrt(SSOvars.StdDevSlope / (1.0 * SSOvars.NumPts * pred(SSOvars.NumPts))));
-                  SSOvars.AvgElev := SumElev / SSOvars.NumPts;
-                  SSOvars.StdDevElev := (SumSqElev * SSOvars.NumPts - SumElev * SumElev);
-                  if SSOvars.StdDevElev < 0 then SSOvars.StdDevElev := 0
-                  else SSOvars.StdDevElev := sqrt(SSOvars.StdDevElev / (1.0 * SSOvars.NumPts * pred(SSOvars.NumPts)));
-               end;
-
-               if (SSOVars.AspPts > 1) then begin
-                  AspectStats.VectorAverage;
-                  SSOVars.AvgAspect := AspectStats.AvgAspectDir;
-                  SSOVars.AspectStrength := AspectStats.AvgAspectMag;
-               end
-               else begin
-                  SSOVars.AvgAspect := -99;
-                  SSOVars.AspectStrength := -99;
-               end;
-
-               if (SSOvars.NumPts >= MDDef.MinPointsForSSO) then begin
-                  Result := true;
-                  SSOvars.QueensAspect := AspectStats.QueensAspect;
-                  SSOvars.AvgSlope := (100*SumSlope/SSOvars.NumPts);
-                  SSOvars.RoughnessFactor := 1 - sqrt(sqr(SSOvars.x1sq) + sqr(SSOvars.y1sq) + sqr(SSOvars.z1sq)) / SSOvars.NumPts;   //Mark, 1975; Etzelmuller, 2000;
-
-                  if PlotResults then begin
-                     if MDDef.GemorphSSOPoles then begin
-                        NetForm.nd.ReallyPlot := true;
-                        NetForm.nd.ContourPoles(false);
-                        Netform.nd.WorkingBitmap.Canvas.Font.Size := 15;
-                        y := Netform.nd.WorkingBitmap.Height-Netform.nd.WorkingBitmap.Canvas.TextHeight(AreaName)-3;
-                        Netform.nd.WorkingBitmap.Canvas.TextOut(1,y,RemoveUnderScores(AreaName));
-                        Netform.nd.WorkingBitmap.Canvas.Font.Size := 12;
-                        Netform.nd.WorkingBitmap.Canvas.TextOut(1,1,'ln(s1/s2)=' + RealToString(SSOVars.s1s2,-5,2));
-                        Netform.nd.WorkingBitmap.Canvas.TextOut(1,18,'ln(s2/23)=' + RealToString(SSOVars.s2s3,-5,2) );
-                        Netform.nd.WorkingBitmap.Canvas.TextOut(1,35,'Trend:' + RealToString(SSOVars.TheDipDirs[3],6,1) + '°' );
-                        Netform.nd.WorkingBitmap.Canvas.Font.Size := 10;
-                        Netform.nd.WorkingBitmap.Canvas.TextOut(1,53,'n=' + IntToStr(k));
-                        if (NetName <> '') then begin
-                           PetImage.SaveBitmap(Netform.nd.WorkingBitmap,NetName);
-                           NetForm.Close;
-                           NetForm := Nil;
-                        end;
-                     end
-                     else begin
-                        NetForm.Close;
-                        NetForm := Nil;
-                     end;
-
-                     if MDDef.GemorphAspectRose then begin
-                        RoseGraph := AspectStats.CreateRose;
-                        if (AspName <> '') then begin
-                           PetImage.SaveImageAsBMP(RoseGraph.Image1,AspName);
-                           RoseGraph.Close;
-                           RoseGraph := Nil;
-                        end;
-                     end {if};
-                  end;
-               end
-               else if PlotResults then begin
-                  NetForm.Close;
-                  NetForm := Nil;
-               end;
-            finally
-              AspectStats.Destroy;
-            end;
-            {$IfDef ShowDEMSSOCalc} WriteLineToDebugFile('tDEMDataSet.SSOComputations out'); {$EndIf}
-         end;
-
 
 
 function tDEMDataSet.RoughnessFromSlopeSTD(x,y,Radius : integer; var Roughness : float32) : boolean;
@@ -521,317 +39,18 @@ begin
 end;
 
 
-
-
-//{$Define CarlosErrorTrap}
-//{$Define MakePartialGrids}
-
-
-procedure tDEMDataSet.RichardsonExtrapolationSlopeMaps(Save : boolean = false);
-//Extrapolated Evans-Young method (López-Vázquez, 2022), using Richardson extrapolation
-//Carlos López-Vázquez (2022) Uncertainty interval estimates for computing slope and aspect from a gridded digital elevation model,
-//   International Journal of Geographical Information Science, 36:8, 1601-1628, DOI: 10.1080/13658816.2022.2063294
-
-//DEM is entirely in memory, and could be stored as bytes, short integers, long integers, unsigned integers, or floats
-//while some of these do not make sense for a DEM, they do for other grids, where it does not make sense to store bytes as floats
-//calls to get elevations sort out the storage issues and return floats for all the internal computations
-
-//there is error trapping code, with a conditional compilation directive, to store intermediate values for debugging with the partial derivatives
-//this creates a lot of grids, which are not necessarily easy to interpret or immediately useful
-
-{$IfDef CarlosErrorTrap}
-const
-   CarlosXRecord : integer = 600;
-   CarlosYRecord : integer = 400;
-{$EndIf}
-
-
-    procedure MapAndSave(DEM : integer);
-    begin
-        if ValidDEM(DEM) then begin
-           if Save then DEMGlb[DEM].SaveAsGeotiff(ExtractFilePath(DEMFileName) + DEMGlb[DEM].AreaName + '.tif')
-           else begin
-              DEMGlb[DEM].SetUpMap(DEM,true,mtElevSpectrum);
-           end;
-        end;
-    end;
-
-
-var
-   {$IfDef MakePartialGrids}
-      dxgrid,dygrid,dx2grid,dy2grid,dx3grid,dy3grid,
-   {$EndIf}
-
-   Aspect_3x3Grid,Aspect_5x5Grid,Aspect_7x7Grid,Aspect4thGrid,Aspect6thGrid,
-   Slope3x3Grid,slope5x5Grid,Slope4thgrid,slope7x7Grid,Slope6thgrid,
-   SlopeErrorBoundGrid,SlopeUncertaintyGrid,TruncationErrorGrid,
-   x,y : integer;
-
-   dzdx_3x3,dzdy_3x3,dzdx_5x5,dzdy_5x5,dzdx_7x7,dzdy_7x7,dzdx_4th,dzdy_4th,dzdx_6th,dzdy_6th,
-
-   slope_3x3,slope_5x5,slope_4th,slope_7x7,slope_6th,
-
-   Aspect_3x3, Aspect_5x5,Aspect4th,Aspect_7x7,Aspect6th,
-   SlopeErrBound,uncertainty_bndX, uncertainty_bndY,TruncationError,
-   UB_fx,LB_fx,UB_fy,LB_fy,LB_fx2,UB_fx2,LB_fy2, UB_fy2,LB_m,UB_m,UB_slope,LB_slope,uncertainty_slope,
-   Lat,Long : float64;
-   znw,zw,zsw,zn,z,zs,zne,ze,zse,dx,dy,GridTrueAngle : float32;
-begin
-   {$IfDef RecordProblems} WriteLineToDebugFile('tDEMDataSet.CarlosLopezSlopeMaps in'); {$EndIf}
-
-   Slope3x3Grid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_slope3x3',euPercentSlope);
-   slope5x5Grid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_slope5x5',euPercentSlope);
-   slope7x7Grid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_slope7x7',euPercentSlope);
-   Slope4thGrid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_slope_4th',euPercentSlope);
-   Slope6thGrid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_slope_6th',euPercentSlope);
-   SlopeErrorBoundGrid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_slope_error',euPercentSlope);
-   SlopeUncertaintyGrid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_slope_uncertainty',euPercentSlope);
-   TruncationErrorGrid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_truncation_error',euUndefined);
-
-   Aspect_3x3Grid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_aspect3x3',euAspectDeg);
-   Aspect_5x5Grid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_aspect5x5',euAspectDeg);
-   Aspect4thGrid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_aspect_4th',euAspectDeg);
-   Aspect_7x7grid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_aspect7x7',euAspectDeg);
-   Aspect6thGrid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_aspect_6th',euAspectDeg);
-
-   {$IfDef MakePartialGrids}
-      dxGrid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_dzdx3x3',euPercentSlope);
-      dyGrid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_dzdy3x3',euPercentSlope);
-      dx2Grid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_dzdx5x5',euPercentSlope);
-      dy2Grid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_dzdy5x5',euPercentSlope);
-      dx3Grid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_dzdx7x7',euPercentSlope);
-      dy3Grid := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_dzdy7x7',euPercentSlope);
-   {$EndIf}
-
-   //grid containing DEM is zero based, 0,0 at the SW corner
-   for x := 1 to (DEMHeader.NumCol - 2) do begin   //don't worry about edge and corner cases, leave them missing (merge with neighbor if needed)
-      for y := 1 to (DEMHeader.NumRow - 2) do begin
-         {$IfDef CarlosErrorTrap}
-            if (x=CarlosXRecord) and (y=CarlosYRecord) then begin
-                WriteLineToDebugFile('Point to check: ' + IntToStr(CarlosXRecord) + '/' + IntToStr(CarlosYRecord) + '  ' + DEMLocationString(CarlosXRecord,CarlosYRecord));
-            end;
-         {$EndIf}
-         if SurroundedPointElevs(x,y,znw,zw,zsw,zn,z,zs,zne,ze,zse,1) then begin //get elevations in first tier surrounding point
-            PixelSpacingAndRotation(x,y,Lat,Long,dx,dy,GridTrueAngle,true);
-
-            {$IfDef CarlosErrorTrap} if (x=CarlosXRecord) and (y=CarlosYRecord) then begin
-                  WriteLineToDebugFile('Pixel spacing, x=' + RealToString(dx,-8,-2) + '  y=' + RealToString(dy,-8,-2));
-                  WriteLineToDebugFile('znw=' + RealToString(znw,-8,-2) + '  zn=' + RealToString(zn,-8,-2) + '  zne=' + RealToString(zne,-8,-2));
-                  WriteLineToDebugFile('zw=' + RealToString(zw,-8,-2) + '  z=' + RealToString(z,-8,-2) + '  ze=' + RealToString(zne,-8,-2));
-                  WriteLineToDebugFile('zsw=' + RealToString(zsw,-8,-2) + '  zs=' + RealToString(zs,-8,-2) + '  zse=' + RealToString(zse,-8,-2));
-               end;
-            {$EndIf}
-
-            dzdx_3x3 := 1 / dx / 6 * (+zne+ze+zse-znw-zw-zsw);
-            dzdy_3x3 := 1 / dy / 6 * (+znw+zn+zne-zsw-zs-zse);
-            slope_3x3 := 100 * sqrt(sqr(dzdx_3x3) + sqr(dzdy_3x3));
-            DEMGlb[Slope3x3Grid].SetGridElevation(x,y,slope_3x3);
-            if (slope_3x3 > 0.01) then begin
-               Aspect_3x3 := FindCompassAngleInRange(HeadingOfLine(dzdx_3x3,dzdy_3x3)+180);
-               DEMGlb[Aspect_3x3Grid].SetGridElevation(x,y,Aspect_3x3);
-            end;
-
-            {$IfDef MakePartialGrids}
-               DEMGlb[dxGrid].SetGridElevation(x,y,100 * dzdx_3x3);
-               DEMGlb[dyGrid].SetGridElevation(x,y,100 * dzdy_3x3);
-            {$EndIf}
-
-            {$IfDef CarlosErrorTrap} if (x=CarlosXRecord) and (y=CarlosYRecord) then begin
-                  WriteLineToDebugFile('slope_3x3=' + RealToString(slope_3x3,-8,-2) + '  dzdx=' + RealToString(100*dzdx_3x3,-8,-2) + '  dzdy=' + RealToString(100*dzdy_3x3,-8,-2) + '  aspect=' + RealToString(Aspect_3x3,-8,-2));
-               end;
-            {$EndIf}
-
-            //don't worry about second row from edges
-            if (x > 1) and (x < (DEMHeader.NumCol - 3)) and (y > 1) and (y < (DEMHeader.NumRow - 3)) then begin
-               if SurroundedPointElevs(x,y,znw,zw,zsw,zn,z,zs,zne,ze,zse,2) then begin //get elevations in second tier surrounding point
-                  {$IfDef CarlosErrorTrap} if (x=CarlosXRecord) and (y=CarlosYRecord) then begin
-                        WriteLineToDebugFile('znw=' + RealToString(znw,-8,-2) + '  zn=' + RealToString(zn,-8,-2) + '  zne=' + RealToString(zne,-8,-2));
-                        WriteLineToDebugFile('zw=' + RealToString(zw,-8,-2) + '  z=' + RealToString(z,-8,-2) + '  ze=' + RealToString(zne,-8,-2));
-                        WriteLineToDebugFile('zsw=' + RealToString(zsw,-8,-2) + '  zs=' + RealToString(zs,-8,-2) + '  zse=' + RealToString(zse,-8,-2));
-                     end;
-                  {$EndIf}
-                  dzdx_5x5 := 1 / (2*dx) / 6 * (+zne+ze+zse-znw-zw-zsw);
-                  dzdy_5x5 := 1 / (2*dy) / 6 * (+znw+zn+zne-zsw-zs-zse);
-                  slope_5x5 := 100 * sqrt(sqr(dzdx_5x5) + sqr(dzdy_5x5));
-                  DEMGlb[slope5x5Grid].SetGridElevation(x,y,slope_5x5);
-
-                  {$IfDef MakePartialGrids}
-                     DEMGlb[dx2Grid].SetGridElevation(x,y,100 * dzdx_5x5);
-                     DEMGlb[dy2Grid].SetGridElevation(x,y,100 * dzdy_5x5);
-                  {$EndIf}
-
-                  if (slope_5x5 > 0.01) then begin
-                     Aspect_5x5 := FindCompassAngleInRange(HeadingOfLine(dzdx_5x5,dzdy_5x5)+180);
-                     DEMGlb[Aspect_5x5Grid].SetGridElevation(x,y,Aspect_5x5);
-                  end;
-
-                  {$IfDef CarlosErrorTrap} if (x=CarlosXRecord) and (y=CarlosYRecord) then begin
-                        WriteLineToDebugFile('slope_5x5=' + RealToString(slope_5x5,-8,-2) + '  dzdx=' + RealToString(100*dzdx_5x5,-8,-2) + '  dzdy=' + RealToString(100*dzdy_5x5,-8,-2) +
-                             '  aspect=' + RealToString(Aspect_5x5,-8,-2));
-                     end;
-                  {$EndIf}
-
-                  dzdx_4th := 4/3*dzdx_3x3-1/3*dzdx_5x5;
-                  dzdy_4th := 4/3*dzdy_3x3-1/3*dzdy_5x5;
-
-                  slope_4th := 100 * sqrt(sqr(dzdx_4th) + sqr(dzdy_4th));
-
-                  DEMGlb[Slope4thGrid].SetGridElevation(x,y,slope_4th);
-                  if (slope_4th > 0.01) then begin
-                     Aspect4th := FindCompassAngleInRange(HeadingOfLine(dzdx_4th,dzdy_4th)+180);
-                     DEMGlb[Aspect4thGrid].SetGridElevation(x,y,Aspect4th);
-                  end;
-
-                  if (x > 2) and (x < (DEMHeader.NumCol - 4)) and (y > 2) and (y < (DEMHeader.NumRow - 4)) then begin
-                     if SurroundedPointElevs(x,y,znw,zw,zsw,zn,z,zs,zne,ze,zse,3) then begin //get elevations in third tier surrounding point
-                        dzdx_7x7 := 1 / (3*dx) / 6 * (+zne+ze+zse-znw-zw-zsw);
-                        dzdy_7x7 := 1 / (3*dy) / 6 * (+znw+zn+zne-zsw-zs-zse);
-                        slope_7x7 := 100 * sqrt(sqr(dzdx_7x7) + sqr(dzdy_7x7));
-
-                        DEMGlb[slope7x7Grid].SetGridElevation(x,y,slope_7x7);
-                        if (slope_7x7 > 0.01) then begin
-                           Aspect_7x7 := FindCompassAngleInRange(HeadingOfLine(dzdx_7x7,dzdy_7x7)+180);
-                           DEMGlb[Aspect_7x7Grid].SetGridElevation(x,y,Aspect_7x7);
-                        end;
-
-                        dzdx_6th := 3/2*dZdX_3x3 - 3/5*dZdX_5x5 + 1/10*dZdX_7x7;
-                        dzdy_6th := 3/2*dZdy_3x3 - 3/5*dZdy_5x5 + 1/10*dZdy_7x7;
-
-                        {$IfDef MakePartialGrids}
-                           DEMGlb[dx3Grid].SetGridElevation(x,y,100 * dzdx_7x7);
-                           DEMGlb[dy3Grid].SetGridElevation(x,y,100 * dzdy_7x7);
-                        {$EndIf}
-
-                        slope_6th := 100 * sqrt(sqr(dzdx_6th) + sqr(dzdy_6th));
-
-                        DEMGlb[Slope6thGrid].SetGridElevation(x,y,slope_6th);
-                        if (slope_6th > 0.01) then begin
-                           Aspect6th := FindCompassAngleInRange(HeadingOfLine(dzdx_6th,dzdy_6th)+180);
-                           DEMGlb[Aspect6thGrid].SetGridElevation(x,y,Aspect6th);
-                        end;
-                     end;
-                  end;
-
-                  uncertainty_bndX := abs(dzdx_3x3-dzdx_5x5) / 3;  //will be needed later
-                  uncertainty_bndY := abs(dzdy_3x3-dzdy_5x5) / 3;
-
-                  dzdx_4th := dzdx_3x3 + (dzdx_3x3-dzdx_5x5) / 3;  //Now this is 4th order. It has been using Richardson Extrapolation after a 2nd order estimate
-                  dzdy_4th := dzdy_3x3 + (dzdy_3x3-dzdy_5x5) / 3;
-
-                  //The uncertainty bound for the slope should be computed using Interval Arithmetic. To make it simple I will introduce some extra variables
-                  UB_fx := dzdx_4th + uncertainty_bndX;  //This stands for Upper Bound
-                  LB_fx := dzdx_4th - uncertainty_bndX;  //This stands for Lower Bound
-                  UB_fy := dzdy_4th + uncertainty_bndY;  //same for y
-                  LB_fy := dzdy_4th - uncertainty_bndY;  //same for y
-                  if (LB_fx > 0) then begin
-                     LB_fx2 := LB_fx* LB_fx;
-                     UB_fx2 := UB_fx* UB_fx;
-                  end
-                  else if (UB_fx < 0) then begin
-                     LB_fx2 := UB_fx * UB_fx;
-                     UB_fx2 := LB_fx * LB_fx;
-                  end
-                  else begin
-                     LB_fx2 := 0;
-                     UB_fx2 := max(LB_fx * LB_fx, UB_fx * UB_fx);
-                  end;
-                  if (LB_fy > 0) then begin
-                     LB_fy2 := LB_fy* LB_fy;
-                     UB_fy2 := UB_fy* UB_fy;
-                  end
-                  else if (UB_fy < 0) then begin
-                     LB_fy2 := UB_fy* UB_fy;
-                     UB_fy2 := LB_fy* LB_fy;
-                  end
-                  else begin
-                     LB_fy2 := 0;
-                     UB_fy2 := max(LB_fy* LB_fy, UB_fy* UB_fy);
-                  end;
-
-                  //Now we should find bounds for the sum of intervals
-                  LB_m := LB_fx2 + LB_fy2;
-                  UB_m := UB_fx2 + UB_fy2; //m stands for the sum of squares of the partial derivatives
-                  UB_slope := 100*sqrt(UB_m);
-                  LB_slope := 100*sqrt(LB_m); //slope should belong to the interval [LB_slope, UB_slope]
-                  uncertainty_slope := (UB_slope-LB_slope);  //must be positive. equivalent to what denoted as SlopeErrBound
-                  SlopeErrBound := abs(slope_3x3 - slope_5x5) / 3;
-                  TruncationError := 1/3*(dZdX_3x3-dZdX_5x5);
-                  DEMGlb[SlopeErrorBoundGrid].SetGridElevation(x,y,SlopeErrBound);
-                  DEMGlb[SlopeUncertaintyGrid].SetGridElevation(x,y,uncertainty_slope);
-                  DEMGlb[TruncationErrorGrid].SetGridElevation(x,y,TruncationError);
-
-                  {$IfDef CarlosErrorTrap}
-                     if (x=CarlosXRecord) and (y=CarlosYRecord) then begin
-                        WriteLineToDebugFile('slope_4th=' + RealToString(slope_4th,-8,-2) + '  dzdx_4th=' + RealToString(dzdx_4th,-8,-2) + '  dzdy_4th =' + RealToString(dzdy_4th ,-8,-2));
-                        WriteLineToDebugFile('uncertainty_bndX=' + RealToString(uncertainty_bndX,-8,-2) + '  uncertainty_bndY=' + RealToString(uncertainty_bndY,-8,-2));
-                        WriteLineToDebugFile('UB_slope=' + RealToString(UB_slope,-8,-2) + '  LB_slope=' + RealToString(LB_slope,-8,-2));
-                        WriteLineToDebugFile('uncertainty_slope=' + RealToString(uncertainty_slope,-8,-2) + '  SlopeErrBound=' + RealToString(SlopeErrBound,-8,-2));
-                     end;
-                  {$EndIf}
-               end;
-            end;
-         end;
-      end;
-   end;
-   MapAndSave(Slope3x3Grid);
-   MapAndSave(slope5x5Grid);
-   MapAndSave(slope7x7Grid);
-   MapAndSave(Slope4thGrid);
-   MapAndSave(Slope6thGrid);
-
-   MapAndSave(Aspect_3x3Grid);
-   MapAndSave(Aspect_5x5Grid);
-   MapAndSave(Aspect_7x7Grid);
-   MapAndSave(Aspect4thGrid);
-   MapAndSave(Aspect6thGrid);
-
-   MapAndSave(SlopeErrorBoundGrid);
-   MapAndSave(SlopeUncertaintyGrid);
-   MapAndSave(TruncationErrorGrid);
-
-   {$IfDef MakePartialGrids}
-      MapAndSave(dxGrid);
-      MapAndSave(dx2Grid);
-      MapAndSave(dx3Grid);
-      MapAndSave(dyGrid);
-      MapAndSave(dy2Grid);
-      MapAndSave(dy3Grid);
-   {$EndIf}
-
-    if not Save then AllAspects;  //create aspect roses
-
-   {$IfDef RecordProblems} WriteLineToDebugFile('tDEMDataSet.CarlosLopezSlopeMaps out'); {$EndIf}
-end;
-
-
-procedure MaxDownHill(z,z1,z2,Dist : float64; var Max : float64; Dir1,Dir2 : tCompassDirection; var AspDir : tCompassDirection);  inline;
-//used only for MaxDownhillSlope, not recommended
-var
-   d1,d2 : float64;
-begin {proc MaxDownHill}
-   d1 := (z - z1);
-   d2 := (z - z2);
-   if (d1 = d2) then if Odd(Random(100)) then d1 := 0 else d2 := 0;
-   if (d1 > d2) and (d1 > 0) then begin
-      AspDir := Dir1;
-      Max := d1 / Dist;
-   end
-   else if (d2 > d1) and (d2 > 0) then begin
-      AspDir := Dir2;
-      Max := d2 / Dist;
-   end
-   else begin
-      Max := 0;
-      AspDir := cdPit;
-   end;
-end {proc MaxSlope};
-
-
 function IsPit(var SlopeAsp : tSlopeAspectRec) : boolean; inline;
 begin
    Result := (SlopeAsp.z < SlopeAsp.zne) and (SlopeAsp.z < SlopeAsp.znw) and (SlopeAsp.z < SlopeAsp.zn) and (SlopeAsp.z < SlopeAsp.ze) and
          (SlopeAsp.z < SlopeAsp.zw) and (SlopeAsp.z < SlopeAsp.zse) and (SlopeAsp.z < SlopeAsp.zsw) and (SlopeAsp.z < SlopeAsp.zs);
 end;
+
+
+
+function tDEMDataSet.GetSlopeAndAspect(Col,Row : integer; var SlopeAsp : tSlopeAspectRec; Radius : integer = 0) : boolean;
+var
+   Ring2 : tSlopeAspectRec;
+   Lat,Long : float64;
 
          procedure GetAspect(var SlopeAsp : tSlopeAspectRec); inline;
          begin
@@ -861,146 +80,118 @@ end;
             end;
          end;
 
-
-         procedure MaxSlopeComputations(var SlopeAsp : tSlopeAspectRec; var sl : tFourFloats; var AspDir : tAspectDir);
-         //used only for SteepestNeighbor,AverageNeighbor; not recommended
-         //not inline because if you want to use it you can take the performance hit
-
-                  procedure MaxSlope(z,z1,z2,Dist : float64; var Max : float64; Dir1,Dir2 : tCompassDirection; var AspDir : tCompassDirection);
-                  const
-                     Opp : array[tCompassDirection] of tCompassDirection = (cdS,cdSW,cdW,cdNW,cdN,cdNE,cdE,cdSE,cdFlat,cdPit);
-                  var
-                     d1,d2 : float64;
-                  begin {proc MaxSlope}
-                     d1 := (z - z1);
-                     d2 := (z - z2);
-                     if (d1 = d2) then if Odd(Random(100)) then d1 := 0 else d2 := 0;
-
-                     if abs(d1) > abs(d2) then begin
-                        if d1 < 0 then AspDir := Opp[Dir1] else AspDir := Dir1;
-                        d1 := abs(d1);
-                        Max := d1 / Dist;
-                     end
-                     else begin
-                        if d2 < 0 then AspDir := Opp[Dir2] else AspDir := Dir2;
-                        d2 := abs(d2);
-                        Max := d2 / Dist;
-                     end;
-                  end {proc MaxSlope};
-
-         begin
-             MaxSlope(SlopeAsp.z,SlopeAsp.zs,SlopeAsp.zn,SlopeAsp.dy,sl[1],cdS,cdN,SlopeAsp.Dir);
-             MaxSlope(SlopeAsp.z,SlopeAsp.zw,SlopeAsp.ze,SlopeAsp.dx,sl[2],cdW,cdE,AspDir[2]);
-             MaxSlope(SlopeAsp.z,SlopeAsp.zsw,SlopeAsp.znw,SlopeAsp.Dia_Space,sl[3],cdSW,cdNW,AspDir[3]);
-             MaxSlope(SlopeAsp.z,SlopeAsp.zse,SlopeAsp.zne,SlopeAsp.Dia_Space,sl[4],cdSE,cdNE,AspDir[4]);
-         end;
-
-         procedure AddSlope(var SlopeAsp : tSlopeAspectRec; z,z1,z2,Dist : float64);  inline;
-         //used only for average neighbors method, not recommended
+         (*
+         procedure ComputeSecondOrderPartials(var SlopeAsp : tSlopeAspectRec); inline;
          var
-            d1,d2 : float64;
+            s3,s4,s5,s6 : float64;
          begin
-            d1 := (z - z1);
-            d2 := (z - z2);
-            d1 := abs(d1);
-            SlopeAsp.Slope := SlopeAsp.Slope + d1 / Dist;
-            d2 := abs(d2);
-            SlopeAsp.Slope := SlopeAsp.Slope + d2 / Dist;
+
+         //https://github.com/OSGeo/grass/blob/main/raster/r.slope.aspect/main.c#L954
+         //https://grass.osgeo.org/grass84/manuals/r.slope.aspect.html
+         //Horn's formula is used to find the first order derivatives in x and y directions; 2d order not specified.
+                                ____________________________
+                                |c1      |c2      |c3      |
+                                |        |  north |        |
+                                ----------------------------
+                                |c4      |c5      |c6      |
+                                |  west  | ns_med |  east  |
+                                ----------------------------
+                                |c7      |c8      |c9      |
+                                |        |  south |        |
+                                ----------------------------
+
+                dx = ((c1 + c4 + c4 + c7) - (c3 + c6 + c6 + c9)) / H;
+                dy = ((c7 + c8 + c8 + c9) - (c1 + c2 + c2 + c3)) / V;
+
+
+                /* compute second order derivatives */
+                             s3 = c7 - c9 + c3 - c1;
+                             s4 = c1 + c3 + c7 + c9 - c5 * 8.;
+                             s5 = c4 * 4. + c6 * 4. - c8 * 2. - c2 * 2.;
+                             s6 = c8 * 4. + c2 * 4. - c4 * 2. - c6 * 2.;
+
+                             dxx = -(s4 + s5) / ((3. / 32.) * H * H);
+                             dyy = -(s4 + s6) / ((3. / 32.) * V * V);
+                             dxy = -s3 / ((1. / 16.) * H * V);
+
+              with SlopeAsp do begin
+                 s3 := zsw - zse + zne - znw;
+                 s4 := znw + zne + zsw + zse - z * 8.0;
+                 s5 := zw * 4.0 + ze * 4.0 - zs * 2.0 - zn * 2.0;
+                 s6 := zs * 4.0 + zn * 4.0 - zw * 2.0 - ze * 2.0;
+              end;
+              SlopeAsp.dxx := -(s4 + s5) / ( (3.0 / 32.0) * 8 * SlopeAsp.dx * 8 * SlopeAsp.dx);
+              SlopeAsp.dyy := -(s4 + s6) / ( (3.0 / 32.0) * 8 * SlopeAsp.dy * 8 * SlopeAsp.dy);
+              SlopeAsp.dxy := -s3 / ( (1.0 / 16.0) * 8 * SlopeAsp.dx * 8 * SlopeAsp.dy);
          end;
+         *)
 
 
-function tDEMDataSet.GetSlopeAndAspect(Col,Row : integer; var SlopeAsp : tSlopeAspectRec) : boolean;
-var
-   sl     : tFourFloats;
-   AspDir : tAspectDir;
-var
-   j : integer;
-   Lat,Long : float64;
 begin
    Result := false;
    SlopeAsp.AspectDir := MaxSmallInt;
    SlopeAsp.Slope := 0;
-   if SurroundedPointElevs(Col,Row,SlopeAsp.znw,SlopeAsp.zw,SlopeAsp.zsw,SlopeAsp.zn,SlopeAsp.z,SlopeAsp.zs,SlopeAsp.zne,SlopeAsp.ze,SlopeAsp.zse,MDDef.SlopeRegionRadius) then begin
+   if (Radius = 0) then Radius := MDDef.SlopeRegionRadius;
+
+   if SurroundedPointElevs(Col,Row,SlopeAsp.znw,SlopeAsp.zw,SlopeAsp.zsw,SlopeAsp.zn,SlopeAsp.z,SlopeAsp.zs,SlopeAsp.zne,SlopeAsp.ze,SlopeAsp.zse,Radius) then begin
       Result := true;
       PixelSpacingAndRotation(Col,Row,Lat,Long,SlopeAsp.dx,SlopeAsp.dy,SlopeAsp.GridTrueAngle,MDDef.QuickSlopeSpacings);
-      SlopeAsp.dx := SlopeAsp.dx * MDDef.SlopeRegionRadius;
-      SlopeAsp.dy := SlopeAsp.dy * MDDef.SlopeRegionRadius;
 
-      if (MDDef.SlopeAlg in [smEightNeighborsUnweighted,smFourNeighbors,smEightNeighborsWeighted,smEightNeighborsWeightedByDistance,smFrameFiniteDifference,smSimpleDifference,smONeillAndMark]) then begin
-         if (MDDef.SlopeAlg in [smEightNeighborsUnweighted]) then begin //preferred method, Evans
-            SlopeAsp.dzdx := (+SlopeAsp.zne+SlopeAsp.ze+SlopeAsp.zse-SlopeAsp.znw-SlopeAsp.zw-SlopeAsp.zsw) / SlopeAsp.dx / 6;
-            SlopeAsp.dzdy := (+SlopeAsp.znw+SlopeAsp.zn+SlopeAsp.zne-SlopeAsp.zsw-SlopeAsp.zs-SlopeAsp.zse) / SlopeAsp.dy / 6;
+      SlopeAsp.dx := SlopeAsp.dx * Radius;
+      SlopeAsp.dy := SlopeAsp.dy * Radius;
+      with SlopeAsp do begin
+         // first order partial derivatives
+         if (MDDef.SlopeAlgorithm = smZevenbergenThorne) then begin
+            dzdx := (ze - zw) / (2 * dx);
+            dzdy := (zn - zs) / (2 * dy);
          end
-         else if (MDdef.SlopeAlg = smEightNeighborsWeighted) then begin  //Horn method
-            SlopeAsp.dzdx := 0.125 * ( SlopeAsp.zne + (2 * SlopeAsp.ze) + SlopeAsp.zse  - SlopeAsp.znw - (2 * SlopeAsp.zw) - SlopeAsp.zsw) / SlopeAsp.dx;
-            SlopeAsp.dzdy := 0.125 * ( SlopeAsp.znw + (2 * SlopeAsp.zn) + SlopeAsp.zne  - SlopeAsp.zsw - (2 * SlopeAsp.zs) - SlopeAsp.zse) / SlopeAsp.dy;
+         else if (MDDef.SlopeAlgorithm = smEvansYoung) then begin
+            dzdx := (+zne+ze+zse-znw-zw-zsw) / (6 * dx);
+            dzdy := (+znw+zn+zne-zsw-zs-zse) / (6 * dy);
          end
-         else if (MDDef.SlopeAlg = smFourNeighbors) then begin  //Fleming and Hoffer, 1979; Ritter, 1987; Zevenbergen and Thorne, 1987; O'Neill & Mark, 1987
-            SlopeAsp.dzdy := (SlopeAsp.zn - SlopeAsp.zs) * 0.5 / SlopeAsp.dy;
-            SlopeAsp.dzdx := (SlopeAsp.ze - SlopeAsp.zw) * 0.5 / SlopeAsp.dx;
-         end
-         else if (MDdef.SlopeAlg = smEightNeighborsWeightedByDistance) then begin  //Unwin, 1981
-            SlopeAsp.dzdy := 1 / (4 + 2 * sqrt_2) * ((SlopeAsp.znw + Sqrt_2 * SlopeAsp.zn + SlopeAsp.zne) - (SlopeAsp.zsw + Sqrt_2 * SlopeAsp.zs + SlopeAsp.zse)) / SlopeAsp.dy;
-            SlopeAsp.dzdx := 1 / (4 + 2 * sqrt_2) * ((SlopeAsp.zne + Sqrt_2 * SlopeAsp.ze + SlopeAsp.zse) - (SlopeAsp.znw + Sqrt_2 * SlopeAsp.zw + SlopeAsp.zsw)) / SlopeAsp.dx;
-         end
-         else if (MDDef.SlopeAlg = smFrameFiniteDifference) then begin
-            SlopeAsp.dzdy := (SlopeAsp.znw - SlopeAsp.zsw + SlopeAsp.zne - SlopeAsp.zse) * 0.25 / SlopeAsp.dy;
-            SlopeAsp.dzdx := (SlopeAsp.zse - SlopeAsp.zsw + SlopeAsp.zne - SlopeAsp.znw) * 0.25 / SlopeAsp.dx;
-         end
-         else if (MDDef.SlopeAlg = smSimpleDifference) then begin
-            SlopeAsp.dzdy := (SlopeAsp.z - SlopeAsp.zs) * 0.5 / SlopeAsp.dy;
-            SlopeAsp.dzdx := (SlopeAsp.z - SlopeAsp.zw) * 0.5 / SlopeAsp.dx;
-         end
-         else if (MDDef.SlopeAlg in [smONeillAndMark]) then begin
-            SlopeAsp.dzdy := (SlopeAsp.zn - SlopeAsp.z) / SlopeAsp.dy;
-            SlopeAsp.dzdx := (SlopeAsp.ze - SlopeAsp.z) / SlopeAsp.dx;
+         else if (MDDef.SlopeAlgorithm = smHorn) then begin
+            dzdx := ( zne + (2 * ze) + zse  - znw - (2 * zw) - zsw) / (8 * dx);
+            dzdy := ( znw + (2 * zn) + zne  - zsw - (2 * zs) - zse) / (8 * dy);
          end;
-         SlopeAsp.Slope := sqrt(sqr(SlopeAsp.dzdx) + sqr(SlopeAsp.dzdy));
-         GetAspect(SlopeAsp);
-      end
-      else begin //these methods probably have no good reasons to recommend them any longer
-         SlopeAsp.Dia_Space := DiagSpaceByDEMrow^[Row] * MDDef.SlopeRegionRadius;
-         if (MDDef.SlopeAlg in [smGuthHybrid]) then begin  //no longer recommended
-             MaxSlopeComputations(SlopeAsp,sl,AspDir);
-             for j := 2 to 4 do if sl[j] > sl[1] then sl[1] := sl[j];
-             SlopeAsp.Slope := Sl[1];
-             SlopeAsp.dzdx := (SlopeAsp.zne + SlopeAsp.ze + SlopeAsp.zse - SlopeAsp.zsw - SlopeAsp.zw - SlopeAsp.znw) / 6 / SlopeAsp.dx;
-             SlopeAsp.dzdy := (SlopeAsp.znw + SlopeAsp.zn + SlopeAsp.zne - SlopeAsp.zsw - SlopeAsp.zs - SlopeAsp.zse) / 6 / SlopeAsp.dy;
-             GetAspect(SlopeAsp);
-         end
-         else if (MDDef.SlopeAlg in [smSteepestNeighbor,smAverageNeighbor]) then begin
-            MaxSlopeComputations(SlopeAsp,sl,AspDir);
-            for j := 2 to 4 do if sl[j] > sl[1] then begin
-                sl[1] := sl[j];
-                SlopeAsp.Dir := AspDir[j];
-            end {for j};
-            SlopeAsp.Slope := Sl[1];
-            SlopeAsp.AspectDir := 45.0 * Ord(SlopeAsp.Dir);
-            if (MDDef.SlopeAlg = smAverageNeighbor) then begin
-               SlopeAsp.Slope := 0;
-               AddSlope(SlopeAsp,SlopeAsp.z,SlopeAsp.zs,SlopeAsp.zn,SlopeAsp.dy);
-               AddSlope(SlopeAsp,SlopeAsp.z,SlopeAsp.zw,SlopeAsp.ze,SlopeAsp.dx);
-               AddSlope(SlopeAsp,SlopeAsp.z,SlopeAsp.zsw,SlopeAsp.znw,SlopeAsp.Dia_Space);
-               AddSlope(SlopeAsp,SlopeAsp.z,SlopeAsp.zse,SlopeAsp.zne,SlopeAsp.Dia_Space);
-               SlopeAsp.Slope := SlopeAsp.Slope / 8;
+
+         // second order partial derivatives
+         if (not MDDef.CD2) and SurroundedPointElevs(Col,Row,Ring2.znw,Ring2.zw,Ring2.zsw,Ring2.zn,Ring2.z,Ring2.zs,Ring2.zne,Ring2.ze,Ring2.zse,2) then begin
+            if (MDDef.SlopeAlgorithm = smZevenbergenThorne) then begin
+               dxx := (Ring2.ze - 2 * Ring2.z + Ring2.zw) / (4 * sqr(dx));
+               dyy := (Ring2.zn - 2 * Ring2.z + Ring2.zs) / (4 * sqr(dy));
+            end
+            else if (MDDef.SlopeAlgorithm = smEvansYoung) then begin
+               dxx := (Ring2.znw + Ring2.zw + Ring2.zsw + Ring2.zne + Ring2.ze + Ring2.zse - 2 * (Ring2.z + Ring2.zn + Ring2.zs)) / (6 * sqr(dx));
+               dyy := (Ring2.znw + Ring2.zn + Ring2.zne + Ring2.zsw + Ring2.zs + Ring2.zse - 2 * (Ring2.z + Ring2.ze + Ring2.zw)) / (6 * sqr(dx));
+            end
+            else if (MDDef.SlopeAlgorithm = smHorn) then begin
+               dxx := (Ring2.znw + 2 * Ring2.zw + Ring2.zsw + Ring2.zne + 2 * Ring2.ze + Ring2.zse - 2 * (Ring2.z + 2 * Ring2.zn + Ring2.zs)) / (8 * sqr(dx));
+               dyy := (Ring2.znw + 2 * Ring2.zn + Ring2.zne + Ring2.zsw + 2 * Ring2.zs + Ring2.zse - 2 * (Ring2.z + 2 * Ring2.ze + Ring2.zw)) / (8 * sqr(dx));
             end;
-         end
-         else if (MDDef.SlopeAlg = smMaxDownhillSlope) then begin
-            MaxDownHill(SlopeAsp.z,SlopeAsp.zs,SlopeAsp.zn,SlopeAsp.dy,sl[1],cdS,cdN,SlopeAsp.Dir);
-            MaxDownHill(SlopeAsp.z,SlopeAsp.zw,SlopeAsp.ze,SlopeAsp.dx,sl[2],cdW,cdE,AspDir[2]);
-            MaxDownHill(SlopeAsp.z,SlopeAsp.zsw,SlopeAsp.znw,SlopeAsp.Dia_Space,sl[3],cdSW,cdNW,AspDir[3]);
-            MaxDownHill(SlopeAsp.z,SlopeAsp.zse,SlopeAsp.zne,SlopeAsp.Dia_Space,sl[4],cdSE,cdNE,AspDir[4]);
-            for j := 2 to 4 do if sl[j] > sl[1] then begin
-                sl[1] := sl[j];
-                SlopeAsp.Dir := AspDir[j];
-            end {for j};
-            SlopeAsp.Slope := Sl[1];
-            SlopeAsp.AspectDir := 45.0 * Ord(SlopeAsp.Dir);
+            dxy := (Ring2.zne - Ring2.znw) / (4 * sqr(dx)) + (Ring2.zsw - Ring2.zse) / (4 * sqr(dy));
+        end
+        else begin
+            if (MDDef.SlopeAlgorithm = smZevenbergenThorne) then begin
+               dxx := (ze - 2 * z + zw) / (2 * sqr(dx));
+               dyy := (zn - 2 * z + zs) / (2 * sqr(dy));
+            end
+            else if (MDDef.SlopeAlgorithm = smEvansYoung) then begin
+               dxx := (znw + zw + zsw + zne + ze + zse - 2 * (z + zn + zs)) / (3 * sqr(dx));
+               dyy := (znw + zn + zne + zsw + zs + zse - 2 * (z + ze + zw)) / (3 * sqr(dx));
+            end
+            else if (MDDef.SlopeAlgorithm = smHorn) then begin
+               dxx := (znw + 2 * zw + zsw + zne + 2 * ze + zse - 2 * (z + 2 * zn + zs)) / (4 * sqr(dx));
+               dyy := (znw + 2 * zn + zne + zsw + 2 * zs + zse - 2 * (z + 2 * ze + zw)) / (4 * sqr(dx));
+            end;
+            dxy := (zne - znw) / (4 * sqr(dx)) + (zsw - zse) / (4 * sqr(dy));  //same for all 3 algorithms
          end;
-         if IsPit(SlopeAsp) then SlopeAsp.Dir := cdPit;
       end;
+      //ComputeSecondOrderPartials(SlopeAsp);
+      SlopeAsp.Slope := sqrt(sqr(SlopeAsp.dzdx) + sqr(SlopeAsp.dzdy));
       SlopeAsp.SlopePercent := 100 * SlopeAsp.Slope;
       SlopeAsp.SlopeDegree := ArcTan(SlopeAsp.Slope) / DegToRad;
+
+      GetAspect(SlopeAsp);
    end;
 end {proc GetSlopeAndAspect};
 
@@ -1030,11 +221,11 @@ begin
 end;
 
 
-function tDEMDataSet.SlopePercent(XGrid,YGrid : integer; var Slope : float64) : boolean;
+function tDEMDataSet.SlopePercent(XGrid,YGrid : integer; var Slope : float64; Radius : integer) : boolean;
 var
    SlpAsp : tSlopeAspectRec;
 begin
-   Result := GetSlopeAndAspect(xgrid,ygrid,SlpAsp);
+   Result := GetSlopeAndAspect(xgrid,ygrid,SlpAsp,Radius);
    if Result then Slope := SlpAsp.SlopePercent else Slope := -9999;
 end;
 
@@ -1189,7 +380,6 @@ end;
 procedure tDEMDataSet.GetRoughnessInLongArray(GridLimits: tGridLimits; var NPts : int64; var Values : Petmath.bfarray32);
 var
    Col,Row,Incr : integer;
-   //SlopeAspectRec : tSlopeAspectRec;
    Ruff1 : float32;
 begin
    NPts := 0;
@@ -1213,13 +403,14 @@ end;
 procedure tDEMDataSet.SlopeMomentsWithArray(GridLimits: tGridLimits; var SlopeMoment : tMomentVar; var zvs : bfarray32; MomentStop : tMomentStop = msAll);
 var
    Nover30,Nover50 : integer;
-   I: Integer;
+   //I: Integer;
 begin
    nOver30 := 0;
    nOver50 := 0;
    InitializeMomentVar(SlopeMoment);
    GetSlopesInLongArray(GridLimits,SlopeMoment.NPts,zvs,false);
-   for I := 0 to pred(SlopeMoment.NPts) do begin
+
+(*   for I := 0 to pred(SlopeMoment.NPts) do begin
       if (zvs[i] >= 30) then begin
          inc(nOver30);
          if zvs[i] >= 50 then inc(nOver50);
@@ -1227,6 +418,7 @@ begin
    end;
    Over30PercentSlope := 100.0 * nOver30 / SlopeMoment.NPts;
    Over50PercentSlope := 100.0 * nOver50 / SlopeMoment.NPts;
+*)
    Moment(zvs,SlopeMoment,MomentStop);
 end;
 
@@ -1400,16 +592,9 @@ end;
 
 procedure tDEMDataSet.DisposeNormals;
 var
-   Col     : integer;
+   i : integer;
 begin
-   if (Normals <> Nil) then begin
-      {$If Defined(RecordDEMMemoryAllocations) or Defined(RecordNormalInit) or Defined(RecordSSO)} WriteLineToDebugFile('tDEMDataSet.DisposeNormals in'); {$EndIf}
-      for Col := 0 to pred(DEMheader.NumCol) do begin
-         FreeMem(Normals^[Col],DEMheader.NumRow * SizeOf(VectorType));
-      end;
-      Dispose(Normals);
-      {$If Defined(RecordDEMMemoryAllocations) or Defined(RecordNormalInit) or Defined(RecordSSO)} WriteLineToDebugFile('tDEMDataSet.DisposeNormals out'); {$EndIf}
-   end;
+   for i := 1 to 3 do CloseSingleDEM(Normals[i]);
 end;
 
 
@@ -1440,28 +625,27 @@ begin
    end;
 end;
 
-
-
 procedure tDEMDataSet.InitializeNormals(var NumPts : Integer);
 var
    j,Col,Row     : integer;
-   MissingVector : VectorType32;
+   ns : array[1..3] of float32;
 begin
-   if (Normals = Nil) then begin
-      {$If Defined(RecordDEMMemoryAllocations) or Defined(RecordNormalInit) or Defined(RecordSSO)} WriteLineToDebugFile('allocate tDEMDataSet.InitializeNormals, pointer size=' + IntToStr(DEMheader.NumRow * SizeOf(VectorType))); {$EndIf}
-      for j := 1 to 3 do MissingVector[j] := MaxSmallint;
-      New(Normals);
-      NumPts := 0;
+   if ValidDEM(Normals[1]) then exit;
+
+   {$If Defined(RecordDEMMemoryAllocations) or Defined(RecordNormalInit) or Defined(RecordSSO)} WriteLineToDebugFile('allocate tDEMDataSet.InitializeNormals, pointer size=' + IntToStr(DEMheader.NumRow * SizeOf(VectorType))); {$EndIf}
+   for j := 1 to 3 do begin
+      if not ValidDEM(Normals[j]) then begin
+         Normals[j] := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_normals_' + IntToStr(j),euUndefined);
+      end;
+   end;
       for Col := 0 to pred(DEMheader.NumCol) do begin
-         GetMem(Normals^[Col],DEMheader.NumRow * SizeOf(VectorType));
          for Row := 0 to pred(DEMheader.NumRow) do begin
-            if NormalAtPoint(Col,Row,Normals^[Col]^[Row][1],Normals^[Col]^[Row][2],Normals^[Col]^[Row][3]) then
-               inc(NumPts)
-            else Normals^[Col]^[Row] := MissingVector;
+            if NormalAtPoint(Col,Row,ns[1],ns[2],ns[3]) then begin
+               for j := 1 to 3 do DEMGlb[Normals[j]].SetGridElevation(Col,Row,ns[j]);
+            end;
          end;
       end;
-      {$If Defined(RecordDEMMemoryAllocations) or Defined(RecordNormalInit)or Defined(RecordSSO)} WriteLineToDebugFile('allocated tDEMDataSet.InitializeNormals'); {$EndIf}
-   end;
+   {$If Defined(RecordDEMMemoryAllocations) or Defined(RecordNormalInit)or Defined(RecordSSO)} WriteLineToDebugFile('allocated tDEMDataSet.InitializeNormals'); {$EndIf}
 end;
 
 
@@ -1490,8 +674,6 @@ begin
        inc(i);
     until Result or (i > DEMheader.NumCol) or (i > DEMheader.NumRow) or (ThisDistance > MDdef.LastBoxSize);
 end;
-
-
 
 
 procedure tDEMDataSet.FractalBox(GridLimits: tGridLimits; var FracDim,r : float32; SkipDraw : boolean = false; CloseGraph : boolean = false);
@@ -1920,9 +1102,7 @@ procedure tDEMDataSet.PointParameters(xgrid,ygrid : float64);
 var
    Results,Results2 : tStringList;
    i,Col,Row : integer;
-   //SSOvars : tSSOvars;
    {$IfDef MultipleCurvatureMethods} PlanCurv,SlopeCurv : float64; {$EndIf}
-   {SlopeCurvature, PlanCurvature,crossc,MaxCurve,MinCurve,}//MaxSlp,
    Upward,Downward : float64;
    z : float32;
    SlopeAspectRec : tSlopeAspectRec;
@@ -2043,9 +1223,9 @@ begin
    Results.Add('');
    Results.Add('         Slope             Aspect         Method');
    for CurMethod := FirstSlopeMethod to LastSlopeMethod do begin
-      MDdef.SlopeAlg := CurMethod;
+      MDDef.SlopeAlgorithm := CurMethod;
       GetSlopeAndAspect(xp,yp,SlopeAspectRec);
-      Results.Add(RealToString(SlopeAspectRec.SlopePercent,8,2) + '%   ' + RealToString(SlopeAspectRec.SlopeDegree,8,2) + '°   ' + RealToString(SlopeAspectRec.AspectDir,8,1) + '°    ' + SlopeMethodName(MDdef.SlopeAlg));
+      Results.Add(RealToString(SlopeAspectRec.SlopePercent,8,2) + '%   ' + RealToString(SlopeAspectRec.SlopeDegree,8,2) + '°   ' + RealToString(SlopeAspectRec.AspectDir,8,1) + '°    ' + SlopeMethodName(MDDef.SlopeAlgorithm));
    end;
    DisplayAndPurgeStringList(Results,'Point Slope Algorithms');
    RestoreBackupDefaults
@@ -2075,7 +1255,7 @@ begin
               RealToString( 100*(SlopeAspectRec.zsw-SlopeAspectRec.z)/AverageDiaSpace,12,2) + '%' + RealToString( 100*(SlopeAspectRec.zs-SlopeAspectRec.z)/AverageYSpace,12,2) + '%' + RealToString( 100*(SlopeAspectRec.zse-SlopeAspectRec.z)/AverageDiaSpace,12,2) + '%'+  MessLineBreak + '  ' +
               MessLineBreak +
               'Point slope:' + MessLineBreak +   RealToString(SlopeAspectRec.SlopePercent,8,2) + '%   ' + RealToString(SlopeAspectRec.SlopeDegree,8,2) + '°   aspect ' + RealToString(SlopeAspectRec.AspectDir,8,1) + '°    ' +
-                   SlopeMethodName(MDdef.SlopeAlg);
+                   SlopeMethodName(MDDef.SlopeAlgorithm);
    MessageToContinue(MenuStr);
 end;
 
@@ -2206,292 +1386,6 @@ begin
 end;
 
 
-{$IfDef MultipleCurvatureMethods}
-
-procedure tDEMDataSet.PlanCMoments(GridLimits: tGridLimits; var PlanCMoment : tMomentVar);
-var
-   zvs : ^bfarray32;
-begin
-   New(zvs);
-   GetPlanCInLongArray(GridLimits,PlancMoment.NPts,zvs^,false);
-   moment(zvs^,PlanCMoment,msBeforeMedian);
-   Dispose(zvs);
-end;
-
-procedure tDEMDataSet.ProfCMoments(GridLimits: tGridLimits;  var ProfCMoment : tMomentVar);
-var
-   zvs : ^bfarray32;
-begin
-   New(zvs);
-   GetProfCInLongArray(GridLImits,ProfCMoment.NPts,zvs^,false);
-   moment(zvs^,ProfCMoment,msBeforeMedian);
-   Dispose(zvs);
-end;
-
-
-function tDEMDataSet.GetEvansParams(Col,Row,RegionSize : integer; var SlopeDeg,SlopeCurvature,PlanCurvature,crossc,MaxCurve,MinCurve : float64) : boolean;
-const
-   Tolerance = 0.000000000001;
-var
-   SqED,z1,z2,z3,z4,z6,z7,z8,z9,a,b,c,d,e,SqABC,
-   xsp,ysp,asp : float64;
-   znw,zw,zsw,zn,z,zs,zne,ze,zse : float32;
-begin
-   if SurroundedPointElevs(Col,Row,znw,zw,zsw,zn,z,zs,zne,ze,zse,RegionSize) then begin
-      Result := true;
-      ysp := AverageYSpace * RegionSize;
-      xsp := XSpaceByDEMrow^[Row] * RegionSize;
-
-      Asp := 0.5 * (xsp + ysp);
-      z7 := zsw - z;
-      z8 := zs - z;
-      z9 := zse - z;
-      z4 := zw - z;
-      //z5 := 0;
-      z6 := ze - z;
-      z1 := znw - z;
-      z2 := zn - z;
-      z3 := zne - z;
-
-      A := ((z1 + z3 + z4 + z6 + z7 + z9) / 6 - (z2 + {z5 +} z8) / 3) / XSp / YSp;
-      B := ((Z1 + z2 + z3 + z7 + z8 + z9) / 6 - (z4 + {z5 +} z6) / 3) / XSp / YSp;
-      C := (z3 + z7 -z1 - z9) / 4  / XSp / YSp;
-      D := (z3 + z6 + z9 - z1 - z4 - z7) / 6 / XSp;
-      E := (z1 + z2 + z3 - z7 - z8 - z9) / 6 / YSp;
-      //F := (2 * ( z2 + z4 + z6 - z8) - (z1 + z3 + z7 + z9) {+ 5 * z5} ) / 9;
-
-      SqABC := sqrt(sqr(a-b) + sqr(c));
-      MaxCurve := 20 * (ASp)*(-a - b + SqABC);
-      MinCurve := 20 * (ASp)*(-a - b - SqABC);
-      SqED := (sqr(E) + sqr(D));
-      if (SqED > Tolerance) then begin
-         SlopeCurvature {Profile convexity} := -200 * (A * sqr(D) + B * sqr(E) + C * D * E) / SqED / Math.Power(1 + SqED, 1.5);
-         PlanCurvature {Plan convexity} := 200 * (B * sqr(D) + A * sqr(E) - C * D * E) / Math.Power(1 +SqED, 1.5);
-         crossc := -20 * (ASp)*(b*d*d + a*e*e - c*d*e)/  SqED;
-      end
-      else begin
-         SlopeCurvature := 0;
-         PlanCurvature := 0;
-         CrossC := 0;
-      end;
-      SlopeDeg := arctan(sqrt(sqED)) / DegToRad;
-   end
-   else Result := false;
-end;
-
-
-
-function tDEMDataSet.GetCurvature(Col,Row : integer; var PlanCurvature,SlopeCurvature : float64) : boolean;
-const
-   Tolerance = 0.000000000001;
-var
-   xsp,ysp,
-   znw,zw,zsw,zn,z,zs,zne,ze,zse,SqED,SqPQ,SqGH,P,Q,R,S,T,
-   a,b,c,d,e,f,g,h,z1,z2,z3,z4,z6,z7,z8,z9,v1,v2,v3,v4,v5 : float64;
-begin
-   {all algorithms use the original notation; have the elevations normalized to the central point, z5; and retain but comment out any computations involving z5}
-   //only works if all 9 neighbors are defined, so undefined near data voids and on edge of the grid
-   if SurroundedPointElevs(Col,Row,znw,zw,zsw,zn,z,zs,zne,ze,zse,MDDef.CurvRegionSize) then begin
-      GetCurvature := true;
-      SlopeCurvature := 0;
-      PlanCurvature := 0;
-
-      ysp := AverageYSpace * MDDef.CurvRegionSize;
-      xsp := XSpaceByDEMrow^[Row] * MDDef.CurvRegionSize;
-
-      if (MDDef.CurvatureMethod = cmEvans) or (MDDef.CurvatureMethod = cmZevenbergenAndThorne) then begin
-         {   1      2      3}
-         {   4      5      6}
-         {   7      8      9}
-         z7 := zsw - z;
-         z8 := zs - z;
-         z9 := zse - z;
-         z4 := zw - z;
-         //z5 := 0;
-         z6 := ze - z;
-         z1 := znw - z;
-         z2 := zn - z;
-         z3 := zne - z;
-         if (MDDef.CurvatureMethod = cmEvans) then begin
-           {Evans, 1979, as defined in Woods PhD thesis}
-            A := ((z1 + z3 + z4 + z6 + z7 + z9) / 6 - (z2 + {z5 +} z8) / 3) / xsp / ysp;
-            B := ((Z1 + z2 + z3 + z7 + z8 + z9) / 6 - (z4 + {z5 +} z6) / 3) / xsp / ysp;
-            C := (z3 + z7 -z1 - z9) / 4  / xsp / ysp;
-            D := (z3 + z6 + z9 - z1 - z4 - z7) / 6 / xsp;
-            E := (z1 + z2 + z3 - z7 - z8 - z9) / 6 / xsp;
-            //F := (2 * ( z2 + z4 + z6 - z8) - (z1 + z3 + z7 + z9) {+ 5 * z5} ) / 9;
-
-            SqED := (sqr(E) + sqr(D));
-            if (SqED > Tolerance) then begin
-               SlopeCurvature {Profile convexity} := -200 * (A * sqr(D) + B * sqr(E) + C * D * E) / SqED / Math.Power(1 + SqED, 1.5);
-               PlanCurvature {Plan convexity} := 200 * (B * sqr(D) + A * sqr(E) - C * D * E) / Math.Power(1 + SqED, 1.5);
-            end;
-         end
-         else if (MDDef.CurvatureMethod = cmZevenbergenAndThorne) then begin
-            //A := ( (z1 + z3 + z7 + z9) / 4 - (z2 + z4 + z6 + z8) / 2 {+ z5}) / sqr(AverageXSpace) / sqr(AverageYSpace);
-            //B := ( (Z1 + z3 - z7 - z9) / 4 - (z2 - z8) / 2 ) / sqr(AverageXSpace) / (AverageYSpace);
-            //C := ( (-z1 + z3  - z7 + z9) / 4 + (z4 - z6) / 2 ) / (AverageXSpace) / sqr(AverageYSpace);
-            D := ( (z4 + z6) / 2 {- z5}) / sqr(xsp);
-            E := ( (z2 + z8) / 2 {- z5})  / sqr(ysp);
-            F := ( -z1 + z3 + z7 - z9) / (4 * xsp * ysp);
-            G := (-z4 + z6)  / (2 * xsp);
-            H := (z2 - z8)  / (2 * ysp);
-            //I := z5;
-            SqGH := (sqr(G) + sqr(H));
-            If (SqGH > Tolerance) then begin
-               SlopeCurvature := 100 * -2 * (D * sqr(G) + E * sqr(H) + F * G * H) / SqGH;
-               PlanCurvature := 100 * 2 * (D * sqr(H) + E * sqr(G) - F * G * H) / SqGH;
-               //LaplacianCurvature := 100 * 2 * E + D;
-            end
-         end;
-      end
-      else begin
-         {   7      8      9}
-         {   4      5      6}
-         {   1      2      3}
-         z1 := zsw - z;
-         z2 := zs - z;
-         z3 := zse - z;
-         z4 := zw - z;
-         z6 := ze - z;
-         z7 := znw - z;
-         z8 := zn - z;
-         z9 := zne - z;
-
-         if (MDDef.CurvatureMethod = cmHeerdegenAndBeran) then begin
-            {after Heerdegen, R.C., and Beran, M.A., 1982, Quantifying source areas through land surface curvature and shape: Journal of Hydrology, vol.57, p.359-373; modified to
-             --work with variable x and y spacing;
-             --have same sign for Plan curvature as others;
-             --multiply both curvatures by 100;}
-            v1 := z1 + z3 + z4 + z6 + z7 + z9;
-            v2 := z1 + z2 + z3 + z7 + z8 + z9;
-            v3 := z1 - z3 - z7 + z9;
-            v4 := -z1 + z3 - z4 + z6 - z7 + z9;
-            v5 := -z1 - z2 - z3 + z7 + z8 + z9;
-
-            a := (0.3 * v1 - 0.2 * v2) / sqr(xsp);
-            b := (0.3 * v2 - 0.2 * v1) / sqr(ysp);
-            c := v3 / 4 / xsp / ysp;
-            d := v4 / 6 / xsp;
-            e := v5 / 6 / ysp;
-
-            SqED := (sqr(E) + sqr(D));
-
-            if SqED > Tolerance then  begin
-               PlanCurvature := -200 * e * (c * d - 2 * a * e) / Math.Power(SqED,1.5);
-               SlopeCurvature := -200 * (a * sqr(d) + b * sqr(e) + c * d * e) / (SqED * Math.Power((1.0 + SqED), 1.5));
-            end;
-         end
-         else if (MDDef.CurvatureMethod = cmShary) then begin
-            {after Shary, 1991, as given in Florinsky, 1998;  --multiply both curvatures by 100;}
-            //r = d2z/dx2
-            r := ( (z1 + z3 + z4 + z6 + z7 + z9) - 2 * (z2 + {z5 +} z8) ) / (3 * sqr(xsp));
-            //r = d2z/dy2
-            t := ( (z1 + z2 + z3 + z7 + z8 + z9) - 2 * (z4 + {z5 +} z6) ) / (3 * sqr(ysp));
-            //s=d2z/dxdy
-            s := (z3 + z7 - z1 - z9) / (4 * xsp * ysp);
-            //p=dz/dx
-            p := (z3 + z6 + z9 - z1 - z4 - z7) / (6 * xsp);
-            //q=dz/dy
-            q := (z1 + z2 + z3 - z7 - z8 - z9) / (6 * ysp);
-
-            SqPQ := (sqr(P) + sqr(Q));
-            if SqPQ > Tolerance then begin
-               SqPQ := SqPQ * sqrt ( 1 + SqPQ);
-               SlopeCurvature := -100 * (p * p * r  + 2 * P * q * s + q * q * t) / SqPQ;
-               PlanCurvature := -100 * (q * q * r  - 2 * P * q * s + p * p * t) / SqPQ;
-            end;
-         end;
-      end;
-   end
-   else GetCurvature := false;
-end;
-{$EndIf}
-
-
-{$IfDef MultipleCurvatureMethods}
-
-      procedure tDEMDataSet.WoodPointClassify(Col,Row : integer; var PointType : tPointType);
-      {after Wood, 1996, algorithm 5.1}
-      {used GRASS C code available on the web}
-      var
-         MaxCurve,MinCurve,SlopeDeg,CrossC,
-         SlopeCurvature,PlanCurvature  : float64;
-      begin
-         if GetEvansParams(Col,Row,MDDef.WoodRegionRadiusPixels,SlopeDeg,SlopeCurvature,PlanCurvature,CrossC,MaxCurve,MinCurve) then begin
-            if (SlopeDeg < MDDef.MinSlopeToClassify) then PointType := FlatPoint
-            else if (slopeDeg > MDDef.SlopeClassTolerance) then begin
-               if (CrossC > MDDef.ConvexClassTolerance) then PointType := RidgePoint
-               else if (CrossC < -MDDef.ConvexClassTolerance) then PointType := ValleyPoint
-               else PointType := OtherPoint;
-            end
-            else if (MaxCurve > MDDef.ConvexClassTolerance) then begin
-               if (MinCurve > MDDef.ConvexClassTolerance) then PointType := PeakPoint
-               else if (MinCurve < -MDDef.ConvexClassTolerance) then PointType := PassPoint
-               else PointType := RidgePoint;
-            end
-            else if (MinCurve < -MDDef.ConvexClassTolerance) then begin
-               if (MaxCurve < -MDDef.ConvexClassTolerance) then PointType := PitPoint
-               else PointType := ValleyPoint
-            end
-            else PointType := OtherPoint;
-         end
-         else begin
-            PointType := EdgePoint;
-            if MissingDataInGrid(Col,Row) then PointType := MissingPoint;
-         end;
-      end;
-
-   procedure tDEMDataSet.GetPlanCInLongArray(GridLimits: tGridLimits; var NPts : int64; var Values : Petmath.bfarray32; IncludeSeaLevel : boolean = true);
-   var
-      Col,Row,Incr : integer;
-      SlopeDeg,crossc,MaxCurve,MinCurve,
-      PlanCurvature,SlopeCurvature : float64;
-    begin
-      NPts := 0;
-      Incr := GetSamplingSize(GridLimits);
-      Col := GridLimits.XGridLow;
-      while (Col <= GridLimits.XGridHigh) do begin
-         Row := GridLimits.YGridLow;
-         while (Row <= GridLimits.YGridHigh) do begin
-            if (IncludeSeaLevel) or (not SeaLevelCell(Col,Row)) then begin
-               if GetEvansParams(Col,Row,1,SlopeDeg,SlopeCurvature,PlanCurvature,crossc,MaxCurve,MinCurve)  then begin
-                  Values[Npts] := PlanCurvature;
-                  inc(NPts);
-               end;
-            end;
-            inc(Row,Incr);
-         end;
-         inc(Col,Incr);
-      end;
-   end;
-
-
-   procedure tDEMDataSet.GetProfCInLongArray(GridLimits: tGridLimits; var NPts : int64; var Values : Petmath.bfarray32; IncludeSeaLevel : boolean = true);
-   var
-      Col,Row,Incr : integer;
-      SlopeDeg,crossc,MaxCurve,MinCurve,
-      PlanCurvature,SlopeCurvature : float64;
-    begin
-      NPts := 0;
-      Incr := GetSamplingSize(GridLimits);
-      Col := GridLimits.XGridLow;
-      while (Col <= GridLimits.XGridHigh) do begin
-         Row := GridLimits.YGridLow;
-         while (Row <= GridLimits.YGridHigh) do begin
-            if (IncludeSeaLevel) or (not SeaLevelCell(Col,Row)) then begin
-               if GetEvansParams(Col,Row,1,SlopeDeg,SlopeCurvature,PlanCurvature,crossc,MaxCurve,MinCurve)  then begin
-                  Values[Npts] := SlopeCurvature;
-                  inc(NPts);
-               end;
-            end;
-            inc(Row,Incr);
-         end;
-         inc(Col,Incr);
-      end;
-   end;
-
-{$EndIf}
 
 {$IfDef ExGeostats}
 {$Else}

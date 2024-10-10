@@ -434,7 +434,7 @@ begin
       euHundredthMa	 : Result := 	' Ma'	;
       euPercentSlope	 : Result := 	'%'	;
       euUndefined	 : Result := 	''	;
-      euzDegrees	 : Result := 	'°'	;
+      euDegrees	 : Result := 	'°'	;
       eulnElev	 : Result := 	'ln(z)'	;
       euLogElev	 : Result := 	'log(z)'	;
       euPercent	 : Result := 	'%'	;
@@ -448,7 +448,7 @@ begin
       euImagery	 : Result := 	' Imagery'	;
       euMM	 : Result := 	' mm'	;
       euMetersPerSec	 : Result := 	' m/s'	;
-      euzMperM	 : Result := 	' m/m'	;
+      euMperM	 : Result := 	' m/m'	;
       euKM	 : Result := 	' km'	;
       euCCAP	 : Result := 	' C-CAP'	;
       euLASclass13	 : Result := 	' LAS13'	;
@@ -1751,7 +1751,7 @@ var
       {$IfDef ExDrainage}
       {$Else}
          with MDINIfile,MDDef do begin
-            AParameter('Drain','DrainageSlopeAlgorithm',DrainageSlopeAlgorithm,smEightNeighborsUnweighted);
+            AParameter('Drain','DrainageSlopeAlgorithm',DrainageSlopeAlgorithm,smEvansYoung);
             AParameter('Drain','DrainageArrowSeparation',DrainageArrowSeparation,12);
             AParameter('Drain','DrainageArrowWidth',DrainageArrowWidth,2);
             AParameter('Drain','DrainageArrowLength',DrainageArrowLength,10);
@@ -3345,11 +3345,17 @@ var
          if (IniWhat = iniRead) then ShadeOpts := tShadeOpts(IniFile.ReadInteger('MapDraw','ShadeOpts',ord(soNone)));
          if (iniWhat = iniInit) then ShadeOpts := soNone;
 
+         AParameter('MapDrawing','DefDEMMap',DefDEMMap,mtIHSReflect);
+         AParameter('MapDrawing','DefRefMap',DefRefMap,mtIHSReflect);
+         AParameter('MapDrawing','DefSlopeMap',DefSlopeMap,mtSlopeTrafficCats);
+         AParameter('MapDrawing','DefCurveMap',DefCurveMap,mtElevSpectrum);
+
+(*
          //AParameter('MapDrawing','DefaultMap',DefaultMap,mtDEMReflectance);
          if (IniWhat = iniWrite) then IniFile.WriteInteger('MapDraw','DefaultMap',ord(DefDEMMap));
-         if (IniWhat = iniRead) then DefDEMMap := tMapType(IniFile.ReadInteger('MapDraw','DefaultMap',ord(mtIHSReflect)));
+         if (IniWhat = iniRead) then DefDEMMap := tMapType(IniFile.ReadInteger('MapDraw','DefaultMap',ord(DefDEMMap)));
          if (iniWhat = iniInit) then DefDEMMap := mtIHSReflect;
-
+*)
          if (IniWhat = iniWrite) then IniFile.WriteInteger('MapDraw','DefaultRefMap',ord(DefRefMap));
          if (IniWhat = iniRead) then DefRefMap := tMapType(IniFile.ReadInteger('MapDraw','DefRefMap',ord(mtIHSReflect)));
          if (iniWhat = iniInit) then DefRefMap := mtIHSReflect;
@@ -3487,7 +3493,7 @@ var
    end;
 
 
-   procedure MarginaliaLocation(tName : shortstring; var ItemLocation : tLegendLocation; DefSpot : byte; DefDraw : boolean);
+   procedure MarginaliaLocation(tName : shortstring; var ItemLocation : tLegendParameters; DefSpot : byte; DefDraw : boolean);
    begin
       with MDIniFile do begin
          AParameter('MapMargin',tName + '.DrawItem',ItemLocation.DrawItem,DefDraw);
@@ -3895,7 +3901,8 @@ begin
          AParameterShortFloat('RasterVector','potrace_corner', potrace_corner,1);
       {$EndIf}
 
-      AParameter('Slope','SlopeAlg',SlopeAlg,smEightNeighborsUnweighted);
+      AParameter('Slope','CD2',CD2,True);
+      AParameter('Slope','SlopeAlgorithm',SlopeAlgorithm,smEvansYoung);
       AParameter('Slope','SlopeRegionRadius',SlopeRegionRadius,1);
       AParameter('Slope','AspectRegionSize',AspectRegionSize,5);
       AParameter('Slope','NumSlopeBands',NumSlopeBands,5);
@@ -5004,17 +5011,19 @@ end;
 function SlopeMethodName(Method : byte) : shortstring;
 begin
    case Method of
-      smSteepestNeighbor   : SlopeMethodName := 'Steepest Neighbor';
-      smGuthHybrid         : SlopeMethodName := 'Hybrid (Steepest + 8 even)';
-      smAverageNeighbor    : SlopeMethodName := 'Average Neighbor';
-      smMaxDownHillSlope   : SlopeMethodName := 'Steepest Downhill';
-      smFourNeighbors      : SlopeMethodName := '4 neighbors (Zevenbergen and Thorne)';
-      smEightNeighborsWeighted  : SlopeMethodName := '8 neighbors (weight) (Horn)';
-      smONeillAndMark      : SlopeMethodName := '3 neighbors';
-      smEightNeighborsUnweighted  : SlopeMethodName := '8 neighbors (even) (Evans)';
-      smEightNeighborsWeightedByDistance : SlopeMethodName := '8 neighbors (dist weight)';
-      smFrameFiniteDifference : SlopeMethodName := 'Frame Finite Difference';
-      smSimpleDifference : SlopeMethodName := 'Simple Difference';
+      smZevenbergenThorne      : SlopeMethodName := '4 neighbors (Zevenbergen and Thorne)';
+      smHorn  : SlopeMethodName := '8 neighbors (weight) (Horn)';
+      smEvansYoung  : SlopeMethodName := '8 neighbors (even) (Evans)';
+      {$IfDef IncludeOldSlopeAlgoritms}
+         smEightNeighborsWeightedByDistance : SlopeMethodName := '8 neighbors (dist weight)';
+         smONeillAndMark      : SlopeMethodName := '3 neighbors';
+         smFrameFiniteDifference : SlopeMethodName := 'Frame Finite Difference';
+         smSimpleDifference : SlopeMethodName := 'Simple Difference';
+         smSteepestNeighbor   : SlopeMethodName := 'Steepest Neighbor';
+         smGuthHybrid         : SlopeMethodName := 'Hybrid (Steepest + 8 even)';
+         smAverageNeighbor    : SlopeMethodName := 'Average Neighbor';
+         smMaxDownHillSlope   : SlopeMethodName := 'Steepest Downhill';
+      {$EndIf}
     end {case};
 end;
 
@@ -5022,17 +5031,19 @@ end;
 function ShortSlopeMethodName(Method : byte) : shortstring;
 begin
    case Method of
-      smSteepestNeighbor   : Result := 'SAN';
-      smGuthHybrid         : Result := 'HYB';
-      smAverageNeighbor    : Result := 'AVN';
-      smMaxDownHillSlope   : Result := 'SDN';
-      smFourNeighbors      : Result := 'N4';
-      smEightNeighborsWeighted  : Result := 'N8S';
-      smONeillAndMark      : Result := 'N3';
-      smEightNeighborsUnweighted  : Result := 'N8E';
-      smEightNeighborsWeightedByDistance : Result := 'N8R';
-      smFrameFiniteDifference : Result := 'FFD';
-      smSimpleDifference : Result := 'SD';
+      smZevenbergenThorne      : Result := 'N4';
+      smHorn  : Result := 'N8S';
+      smEvansYoung  : Result := 'N8E';
+      {$IfDef IncludeOldSlopeAlgoritms}
+         smSteepestNeighbor   : Result := 'SAN';
+         smONeillAndMark      : Result := 'N3';
+         smGuthHybrid         : Result := 'HYB';
+         smAverageNeighbor    : Result := 'AVN';
+         smMaxDownHillSlope   : Result := 'SDN';
+         smEightNeighborsWeightedByDistance : Result := 'N8R';
+         smFrameFiniteDifference : Result := 'FFD';
+         smSimpleDifference : Result := 'SD';
+      {$EndIf}
    end {case};
 end;
 

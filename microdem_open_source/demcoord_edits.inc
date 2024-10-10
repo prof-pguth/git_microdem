@@ -102,7 +102,7 @@ begin
       end;
    end;
    EndProgress;
-   DEMGlb[NewDEM].SetUpMap(NewDEM,true,mtRGBimagery);
+   DEMGlb[NewDEM].SetUpMap(true,mtRGBimagery);
 end;
 
 
@@ -256,7 +256,7 @@ begin
     {$IfDef RecordNewMaps} WriteLineToDebugFile('OpenAndZeroNewDEM done, DEM=' + IntToStr(Result) + '  Projection ' + DEMGlb[Result].DEMMapProjection.GetProjectionName); {$EndIf}
 
     if OpenMap then begin
-       DEMGlb[Result].SetUpMap(Result,false,MDDef.DefDEMMap);
+       DEMGlb[Result].SetupMap(false,MDDef.DefDEMMap);
        {$IfDef RecordNewMaps} WriteLineToDebugFile('TMapForm.CreateGridToMatchMap out ' + DEMGlb[Result].SelectionMap.MapDraw.PrimMapProj.KeyDatumParams); {$EndIf}
     end;
    {$IfDef RecordNewMaps} WriteLineToDebugFile('TMapForm.CreateGridToMatchMap out ' + DEMGlb[Result].FullDEMParams); {$EndIf}
@@ -290,7 +290,7 @@ begin
     UTMzone := DEMMapProj.projUTMZone;
     LatCh := DEMMapProj.LatHemi;
     WGS84DatumConstants.DefineDatumFromUTMZone('WGS84',UTMZone,LatCh,'');
-    if SaveName <> '' then fName := ExtractFileNameNoExt(SaveName);
+    if (SaveName <> '') then fName := ExtractFileNameNoExt(SaveName);
 
     if (MDDef.LidarGridProjection = UTMBasedDEM) then begin
        if (fName = '') then fName := 'utm_resample';
@@ -352,13 +352,13 @@ begin
       {$IfDef RecordSaveAverageResampleDEMformat} SaveName := ChangeFileExt(SaveName,'.dem'); DEMGlb[Result].WriteNewFormatDEM(SaveName); {$EndIf}
    end;
    if SaveCountGrid then begin
-      DEMGlb[CountGrid].SetUpMap(CountGrid,true,mtElevSpectrum);
+      DEMGlb[CountGrid].SetUpMap(true,mtElevSpectrum);
    end
    else begin
       CloseSingleDEM(CountGrid);
    end;
    if OpenMap then begin
-      DEMGlb[Result].SetUpMap(Result,true,SelectionMap.MapDraw.MapType);
+      DEMGlb[Result].SetupMap(true,SelectionMap.MapDraw.MapType);
       DEMGlb[Result].SelectionMap.Caption := DEMGlb[Result].AreaName;
    end;
    EndProgress;
@@ -566,7 +566,7 @@ begin
    DEMGlb[Result].CheckMaxMinElev;
    RestoreBackupDefaults;
 
-   if OpenMap then DEMGlb[Result].SetUpMap(Result,true,SelectionMap.MapDraw.MapType);
+   if OpenMap then DEMGlb[Result].SetupMap(true,SelectionMap.MapDraw.MapType);
    fName := '';
    if MDdef.PromptToSaveNewDEMs then DEMGlb[Result].WriteNewFormatDEM(fName);
 
@@ -585,7 +585,7 @@ begin
        if (x mod 50 = 0) then UpDateProgressBar(x/pred(DEMheader.NumCol));
        for y := 0 to pred(DEMheader.NumRow) do begin
           if GetElevMeters(x,y,z) then begin
-             SetGridElevation(x,y,aConst*z);
+             SetGridElevation(x,y,aConst * z);
           end;
        end;
     end;
